@@ -19,6 +19,42 @@ TICK_RATE = 10
 TICK_MS = 1000 // TICK_RATE
 
 
+MODULE_INTERACTION_UNLOCK_MS = 15_000
+
+
+def max_active_modules_for_elapsed_ms(elapsed_ms: int) -> int | None:
+    """
+    Maç süresine göre aynı anda aktif olabilecek modül üst sınırını döndürür.
+
+    0–15 saniye başlangıç düzenidir; bu aralıkta dinamik modül yerleştirme
+    kapalı olduğundan None döner.
+
+    15–25 sn: 4
+    25–35 sn: 5
+    35–45 sn: 6
+    45–55 sn: 7
+    55–65 sn: 8
+    65–75 sn: 9
+    75 sn ve sonrası: 10
+    """
+    if elapsed_ms < MODULE_INTERACTION_UNLOCK_MS:
+        return None
+    if elapsed_ms < 25_000:
+        return 4
+    if elapsed_ms < 35_000:
+        return 5
+    if elapsed_ms < 45_000:
+        return 6
+    if elapsed_ms < 55_000:
+        return 7
+    if elapsed_ms < 65_000:
+        return 8
+    if elapsed_ms < 75_000:
+        return 9
+    return 10
+
+
+
 class CommandRejected(ValueError):
     pass
 
@@ -148,6 +184,38 @@ class BattleEngine:
                 },
             )
 
+
+    def max_active_modules(self) -> int | None:
+        return max_active_modules_for_elapsed_ms(self.state.elapsed_ms)
+
+    def active_module_count(self, player_id: str) -> int:
+        player = self._require_player(player_id)
+        return sum(
+            1
+            for module in player.modules.values()
+            if module.status == ModuleStatus.ACTIVE
+        )
+
+    def _ensure_module_interaction_unlocked(self) -> None:
+        if self.state.elapsed_ms < MODULE_INTERACTION_UNLOCK_MS:
+            remaining_ms = MODULE_INTERACTION_UNLOCK_MS - self.state.elapsed_ms
+            raise CommandRejected(
+                f"Modül müdahalesi henüz açık değil. Kalan süre: {remaining_ms} ms."
+            )
+
+    def _ensure_active_capacity_for_new_module(self, player_id: str) -> None:
+        self._ensure_module_interaction_unlocked()
+
+        limit = self.max_active_modules()
+        if limit is None:
+            raise CommandRejected("Aktif modül kapasitesi henüz açılmadı.")
+
+        active_count = self.active_module_count(player_id)
+        if active_count >= limit:
+            raise CommandRejected(
+                f"Aktif modül sınırına ulaşıldı: {active_count}/{limit}."
+            )
+
     def _process_commands(self) -> None:
         while self._command_queue:
             command = self._command_queue.popleft()
@@ -188,6 +256,7 @@ class BattleEngine:
             )
 
     def _cmd_place_module(self, player_id: str, payload: dict) -> None:
+        self._ensure_active_capacity_for_new_module(player_id)
         module = self._require_module(player_id, payload["module_id"])
 
         if module.status == ModuleStatus.DESTROYED:
@@ -207,6 +276,7 @@ class BattleEngine:
         )
 
     def _cmd_remove_module(self, player_id: str, payload: dict) -> None:
+        self._ensure_module_interaction_unlocked()
         module = self._require_active_module(player_id, payload["module_id"])
 
         if not module.definition.removable:
@@ -221,6 +291,7 @@ class BattleEngine:
         )
 
     def _cmd_move_module(self, player_id: str, payload: dict) -> None:
+        self._ensure_module_interaction_unlocked()
         module = self._require_active_module(player_id, payload["module_id"])
 
         if not module.definition.movable:
@@ -241,6 +312,7 @@ class BattleEngine:
         )
 
     def _cmd_replace_module(self, player_id: str, payload: dict) -> None:
+        self._ensure_module_interaction_unlocked()
         outgoing = self._require_active_module(
             player_id,
             payload["outgoing_module_id"],
@@ -281,6 +353,7 @@ class BattleEngine:
         )
 
     def _cmd_rotate_module(self, player_id: str, payload: dict) -> None:
+        self._ensure_module_interaction_unlocked()
         module = self._require_active_module(player_id, payload["module_id"])
 
         if not module.definition.rotatable:

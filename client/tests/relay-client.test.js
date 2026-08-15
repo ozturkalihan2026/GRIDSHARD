@@ -2,6 +2,7 @@ const assert = require("assert");
 const {
   RelayBattleClient,
   MODULE_STATUS,
+  maxActiveModulesForElapsedMs,
 } = require("../src/relay-client.js");
 
 function createClient() {
@@ -104,4 +105,25 @@ function createClient() {
   );
 }
 
-console.log("6 client tests passed");
+
+
+{
+  assert.strictEqual(maxActiveModulesForElapsedMs(14999), null);
+  assert.strictEqual(maxActiveModulesForElapsedMs(15000), 4);
+  assert.strictEqual(maxActiveModulesForElapsedMs(25000), 5);
+  assert.strictEqual(maxActiveModulesForElapsedMs(35000), 6);
+  assert.strictEqual(maxActiveModulesForElapsedMs(45000), 7);
+  assert.strictEqual(maxActiveModulesForElapsedMs(55000), 8);
+  assert.strictEqual(maxActiveModulesForElapsedMs(65000), 9);
+  assert.strictEqual(maxActiveModulesForElapsedMs(75000), 10);
+  assert.strictEqual(maxActiveModulesForElapsedMs(85000), 10);
+}
+
+{
+  const { client } = createClient();
+  client.updateElapsedMs(25000);
+  assert.strictEqual(client.maxActiveModules(), 5);
+  assert.strictEqual(client.activeModuleCount(), 1);
+}
+
+console.log("8 client tests passed");

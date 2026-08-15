@@ -1,7 +1,7 @@
 # Project Relay 2.0 — YOL HARİTASI
 
-**Güncel Sürüm:** `2.0.0-alpha.3`  
-**Paket:** Modül Rafı ve Sürükle-Bırak Temeli  
+**Güncel Sürüm:** `2.0.0-alpha.4`  
+**Paket:** Zaman Bazlı Aktif Modül Kapasitesi  
 **Kanonik Dosya:** `docs/YOL_HARITASI.md`
 
 > Bu dosya Project Relay 2.0 için tek kanonik geliştirme kaydıdır. Her paket tamamlandığında sürüm numarası artırılır; **Tamamlananlar** ve **Yapılacaklar** bu dosyada güncellenir. Sonraki geliştirme paketi bu dosya okunarak başlatılır.
@@ -59,22 +59,17 @@
 - [x] Toplam **5 test başarılı**.
 
 
-### 2.0.0-alpha.4 — Zaman Bazlı Aktif Modül Kapasitesi
+### 2.0.0-alpha.5 — Modül Durum Kalıcılığının Genişletilmesi
 
-- [ ] 0–15 saniye başlangıç düzeni kuralı motor tarafında tanımlanacak.
-- [ ] 15–25 saniye maksimum 4 aktif modül uygulanacak.
-- [ ] 25–35 saniye maksimum 5 aktif modül uygulanacak.
-- [ ] 35–45 saniye maksimum 6 aktif modül uygulanacak.
-- [ ] 45–55 saniye maksimum 7 aktif modül uygulanacak.
-- [ ] 55–65 saniye maksimum 8 aktif modül uygulanacak.
-- [ ] 65–75 saniye maksimum 9 aktif modül uygulanacak.
-- [ ] 75–85 saniye maksimum 10 aktif modül uygulanacak.
-- [ ] 85 saniye ve sonrasında maksimum 10 aktif modül korunacak.
-- [ ] Kapasite savaş motorunun gerçek zamanından hesaplanacak.
-- [ ] İstemci aktif modül sınırını savaş boyunca gösterecek.
-- [ ] Kapasite artışı kullanıcıya kısa ve savaş durdurmayan bildirimle gösterilecek.
-- [ ] Modül değiştirme/çıkarma/taşıma için yapay cooldown eklenmeyecek.
-- [ ] Kapasite sınırı testleri eklenecek.
+- [ ] Can kalıcılığı mevcut haliyle regresyon testleriyle korunacak.
+- [ ] Isı durumunun rezervde nasıl saklanacağı için motor veri modeli oluşturulacak.
+- [ ] Depolanmış enerjinin rezervde nasıl saklanacağı için motor veri modeli oluşturulacak.
+- [ ] Zayıflatmaların rezervde nasıl davranacağı tanımlanacak.
+- [ ] Kalıcı maç etkilerinin rezervde nasıl davranacağı tanımlanacak.
+- [ ] Bekleme sürelerinin rezervde nasıl davranacağı tanımlanacak.
+- [ ] Geçici güçlendiricilerin rezervdeki davranışı için altyapı hazırlanacak; gerçek güçlendirici sistemi FAZ 12'de eklenecek.
+- [ ] Devreden çıkan ve yeniden giren modüllerin savaş geçmişini kaybetmediğini doğrulayan testler genişletilecek.
+- [ ] Bu paket Devre Kredisi içermeyecek.
 
 ### Sonraki Fazlar — Sabit Yol Haritası
 
@@ -119,10 +114,10 @@
 - [ ] 55–65 sn maksimum 8 aktif modül uygulanacak.
 - [ ] 65–75 sn maksimum 9 aktif modül uygulanacak.
 - [ ] 75–85 sn maksimum 10 aktif modül uygulanacak.
-- [ ] 85 sn ve sonrasında maksimum 10 aktif modül korunacak.
-- [ ] Kapasite sınırı gerçek savaş saatinden anlık hesaplanacak.
-- [ ] Kapasite artışı oyuncuyu yeni modül koymaya zorlamayacak.
-- [ ] Modül değişimi için yapay cooldown eklenmeyecek.
+- [x] 85 sn ve sonrasında maksimum 10 aktif modül korunacak.
+- [x] Kapasite sınırı gerçek savaş saatinden anlık hesaplanacak.
+- [x] Kapasite artışı oyuncuyu yeni modül koymaya zorlamayacak.
+- [x] Modül değişimi için yapay cooldown eklenmeyecek.
 
 #### FAZ 5 — Modül Durum Kalıcılığı
 
@@ -357,7 +352,7 @@ Aşağıdaki alanlar ilk sürüm kapsamına dahil değildir ve mevcut yol harita
 4. [x] Modül Rafı
 5. [x] Sürükle-bırak ile maç içi modül müdahalesi — **istemci komut üretimi tamamlandı; ekonomik doğrulama sonraki fazlarda eklenecek.**
 6. [x] 15. saniye sonrası müdahale açılması — **istemci kilidi tamamlandı; motor tarafı alpha.4 kapasite kuralıyla bağlanacak.**
-7. [ ] 4 → 10 zaman bazlı aktif modül kapasitesi
+7. [x] 4 → 10 zaman bazlı aktif modül kapasitesi
 8. [ ] Modül Can ve durum kalıcılığı — **Can tamamlandı; ısı/enerji/etkiler gibi diğer durumlar bekliyor.**
 9. [ ] Gerçek zamanlı Devre Kredisi
 10. [ ] Otomatik modül maliyetleri
@@ -368,9 +363,9 @@ Aşağıdaki alanlar ilk sürüm kapsamına dahil değildir ve mevcut yol harita
 
 ## Sıradaki Paket
 
-**`2.0.0-alpha.4 — Zaman Bazlı Aktif Modül Kapasitesi`**
+**`2.0.0-alpha.5 — Modül Durum Kalıcılığının Genişletilmesi`**
 
-Bu pakette 15–85 saniye arasındaki 4→10 aktif modül sınırı ilk kez **sunucu savaş motoru kuralı** olacaktır. İstemci yalnızca bu otoriter sınırı gösterecek ve savaş hiçbir kapasite bildirimi nedeniyle durmayacaktır. Devre Kredisi henüz bu pakete dahil edilmeyecektir.
+Bu pakette mevcut Can kalıcılığını bozmadan ısı, depolanmış enerji, zayıflatma ve bekleme süreleri gibi maç içi modül durumlarının rezervde nasıl korunacağı motor seviyesinde tanımlanacaktır. Devre Kredisi bir sonraki ana ekonomi fazında ele alınacaktır.
 
 
 ---

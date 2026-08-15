@@ -36,12 +36,14 @@
   const board = document.getElementById("board");
   const shelf = document.getElementById("module-shelf");
   const timeEl = document.getElementById("battle-time");
+  const capacityEl = document.getElementById("capacity-indicator");
   const lockLabel = document.getElementById("shelf-lock-label");
   const shelfHelp = document.getElementById("shelf-help");
   const logEl = document.getElementById("event-log");
 
   const BOARD_SIZE = 5;
   const startedAt = performance.now();
+  let previousCapacity = null;
 
   function createBoard() {
     board.innerHTML = "";
@@ -207,6 +209,31 @@
     render();
   }
 
+
+  function renderCapacity() {
+    const limit = client.maxActiveModules();
+    const active = client.activeModuleCount();
+
+    if (limit === null) {
+      capacityEl.textContent = `Aktif Modül: ${active} / Başlangıç`;
+      capacityEl.classList.remove("capacity-opened");
+      previousCapacity = null;
+      return;
+    }
+
+    capacityEl.textContent = `Aktif Modül: ${active} / ${limit}`;
+
+    if (previousCapacity !== null && limit > previousCapacity) {
+      capacityEl.classList.add("capacity-opened");
+      logClientMessage(`Aktif modül kapasitesi ${limit} oldu.`);
+      window.setTimeout(() => {
+        capacityEl.classList.remove("capacity-opened");
+      }, 900);
+    }
+
+    previousCapacity = limit;
+  }
+
   function renderLockState() {
     const unlocked = client.isShelfUnlocked();
     lockLabel.dataset.active = String(unlocked);
@@ -248,6 +275,7 @@
       `${String(minutes).padStart(2, "0")}:${secs.toFixed(1).padStart(4, "0")}`;
 
     renderLockState();
+    renderCapacity();
 
     if (Math.floor(elapsedMs / 250) !== Math.floor((elapsedMs - 16) / 250)) {
       renderShelf();
@@ -259,5 +287,6 @@
 
   createBoard();
   render();
+  renderCapacity();
   requestAnimationFrame(updateClock);
 })();

@@ -7,6 +7,18 @@
     DESTROYED: "destroyed",
   });
 
+
+  function maxActiveModulesForElapsedMs(elapsedMs) {
+    if (elapsedMs < 15000) return null;
+    if (elapsedMs < 25000) return 4;
+    if (elapsedMs < 35000) return 5;
+    if (elapsedMs < 45000) return 6;
+    if (elapsedMs < 55000) return 7;
+    if (elapsedMs < 65000) return 8;
+    if (elapsedMs < 75000) return 9;
+    return 10;
+  }
+
   const DRAG_KIND = Object.freeze({
     SHELF_MODULE: "shelf-module",
     ACTIVE_MODULE: "active-module",
@@ -36,6 +48,18 @@
 
     isShelfUnlocked() {
       return this.elapsedMs >= this.unlockAtMs;
+    }
+
+    maxActiveModules() {
+      return maxActiveModulesForElapsedMs(this.elapsedMs);
+    }
+
+    activeModuleCount() {
+      let count = 0;
+      for (const module of this.modules.values()) {
+        if (module.status === MODULE_STATUS.ACTIVE) count += 1;
+      }
+      return count;
     }
 
     beginDrag(moduleId) {
@@ -153,6 +177,7 @@
     RelayBattleClient,
     MODULE_STATUS,
     DRAG_KIND,
+    maxActiveModulesForElapsedMs,
   };
 
   if (typeof module !== "undefined" && module.exports) {

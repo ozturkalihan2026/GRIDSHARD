@@ -29,6 +29,10 @@ def start_with_core_and_generator(engine: BattleEngine) -> None:
     engine.set_initial_active_module("player-1", "generator-1", 2, 3)
     engine.start()
 
+    # alpha.4: dinamik modül müdahalesi 15. saniyede açılır.
+    for _ in range(150):
+        engine.step()
+
 
 def run_command(engine: BattleEngine, kind: str, **payload) -> None:
     engine.enqueue_command(
@@ -57,7 +61,7 @@ def test_place_module_while_battle_keeps_running():
     laser = engine.state.players["player-1"].modules["laser-1"]
     assert laser.status == ModuleStatus.ACTIVE
     assert (laser.position.x, laser.position.y) == (3, 3)
-    assert engine.state.elapsed_ms == 100
+    assert engine.state.elapsed_ms == 15_100
 
 
 def test_command_is_not_applied_until_next_tick():
@@ -243,4 +247,4 @@ def test_dynamic_commands_do_not_pause_battle_clock():
     run_command(engine, "remove_module", module_id="laser-1")
     run_command(engine, "place_module", module_id="shield-1", x=3, y=3)
 
-    assert engine.state.elapsed_ms == 500
+    assert engine.state.elapsed_ms == 15_500
