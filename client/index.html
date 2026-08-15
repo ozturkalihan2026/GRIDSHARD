@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Project Relay 2.0 — Modül Rafı</title>
+  <link rel="stylesheet" href="./src/styles.css" />
+</head>
+<body>
+  <main class="battle-shell">
+    <header class="battle-header">
+      <div>
+        <h1>Project Relay 2.0</h1>
+        <p>2.0.0-alpha.3 — Modül Rafı ve Sürükle-Bırak Temeli</p>
+      </div>
+      <div class="battle-time" id="battle-time">00:00.0</div>
+    </header>
+
+    <section class="battle-layout">
+      <section class="arena-panel">
+        <div class="panel-title-row">
+          <h2>Savaş Alanı</h2>
+          <span id="battle-state-label">Savaş devam ediyor</span>
+        </div>
+        <div id="board" class="board" aria-label="Savaş Alanı"></div>
+      </section>
+
+      <aside class="shelf-panel">
+        <div class="panel-title-row">
+          <h2>Modül Rafı</h2>
+          <span id="shelf-lock-label">Kilitli</span>
+        </div>
+        <p class="shelf-help" id="shelf-help">
+          Modül müdahalesi 15. saniyede açılır.
+        </p>
+        <div id="module-shelf" class="module-shelf" aria-label="Modül Rafı"></div>
+      </aside>
+    </section>
+
+    <section class="event-panel">
+      <h2>İstemci Komutları</h2>
+      <p>Bu alpha istemcisi savaş kararını vermez; yalnızca sunucuya gönderilecek komutları üretir.</p>
+      <pre id="event-log"></pre>
+    </section>
+  </main>
+
+  <script src="./src/relay-client.js"></script>
+  <script src="./src/app.js"></script>
+</body>
+</html>

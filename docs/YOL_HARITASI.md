@@ -1,7 +1,7 @@
 # Project Relay 2.0 — YOL HARİTASI
 
-**Güncel Sürüm:** `2.0.0-alpha.2`  
-**Paket:** Dinamik Modül Temeli  
+**Güncel Sürüm:** `2.0.0-alpha.3`  
+**Paket:** Modül Rafı ve Sürükle-Bırak Temeli  
 **Kanonik Dosya:** `docs/YOL_HARITASI.md`
 
 > Bu dosya Project Relay 2.0 için tek kanonik geliştirme kaydıdır. Her paket tamamlandığında sürüm numarası artırılır; **Tamamlananlar** ve **Yapılacaklar** bu dosyada güncellenir. Sonraki geliştirme paketi bu dosya okunarak başlatılır.
@@ -59,20 +59,22 @@
 - [x] Toplam **5 test başarılı**.
 
 
-### 2.0.0-alpha.3 — Modül Rafı ve Sürükle-Bırak Temeli
+### 2.0.0-alpha.4 — Zaman Bazlı Aktif Modül Kapasitesi
 
-- [ ] Temel istemci projesi oluşturulacak.
-- [ ] İlk savaş ekranı yalnızca gerekli savaş bileşenleri için hazırlanacak.
-- [ ] Modül Rafı savaş alanıyla birlikte sürekli görünür olacak.
-- [ ] Modül Rafı ilk 15 saniyede görünür fakat pasif/kilitli olacak.
-- [ ] Modül kartlarında Türkçe isim, Can ve gerekli temel bilgiler gösterilecek.
-- [ ] Raftan savaş alanına sürükle-bırak komut akışı hazırlanacak.
-- [ ] Sahadaki modülü rafa geri sürükleme komut akışı hazırlanacak.
-- [ ] Hücreler arasında taşıma sürükle-bırak akışı hazırlanacak.
-- [ ] Bir modülü diğerinin üzerine bırakma ile değiştirme akışı hazırlanacak.
-- [ ] Sürükleme sırasında savaşın ve aktif modülün kesintisiz devam ettiği istemci davranışı korunacak.
-- [ ] Ayrı Satın Al / Sat / Değiştir / Onayla düğmeleri oluşturulmayacak.
-- [ ] Bu pakette Devre Kredisi maliyet hesabı henüz uygulanmayacak; ekonomik doğrulama sonraki fazda motor tarafından eklenecek.
+- [ ] 0–15 saniye başlangıç düzeni kuralı motor tarafında tanımlanacak.
+- [ ] 15–25 saniye maksimum 4 aktif modül uygulanacak.
+- [ ] 25–35 saniye maksimum 5 aktif modül uygulanacak.
+- [ ] 35–45 saniye maksimum 6 aktif modül uygulanacak.
+- [ ] 45–55 saniye maksimum 7 aktif modül uygulanacak.
+- [ ] 55–65 saniye maksimum 8 aktif modül uygulanacak.
+- [ ] 65–75 saniye maksimum 9 aktif modül uygulanacak.
+- [ ] 75–85 saniye maksimum 10 aktif modül uygulanacak.
+- [ ] 85 saniye ve sonrasında maksimum 10 aktif modül korunacak.
+- [ ] Kapasite savaş motorunun gerçek zamanından hesaplanacak.
+- [ ] İstemci aktif modül sınırını savaş boyunca gösterecek.
+- [ ] Kapasite artışı kullanıcıya kısa ve savaş durdurmayan bildirimle gösterilecek.
+- [ ] Modül değiştirme/çıkarma/taşıma için yapay cooldown eklenmeyecek.
+- [ ] Kapasite sınırı testleri eklenecek.
 
 ### Sonraki Fazlar — Sabit Yol Haritası
 
@@ -96,15 +98,15 @@
 
 #### FAZ 3 — Modül Rafı ve Sürükle-Bırak
 
-- [ ] 18 modüllük Savaş Havuzu savaş boyunca ekranda görünen **Modül Rafı** içinde gösterilecek.
-- [ ] Modül Rafı ilk 15 saniyede görünür fakat kilitli olacak.
-- [ ] 15. saniyede Modül Rafı otomatik aktif olacak.
-- [ ] Raftan sahaya sürükle-bırak ile modül yerleştirme yapılacak.
-- [ ] Sahadan rafa sürükle-bırak ile modül rezerve alınacak.
-- [ ] Hücreler arasında sürükle-bırak ile modül taşıma yapılacak.
-- [ ] Modülün başka modül üzerine bırakılmasıyla değiştirme yapılacak.
-- [ ] Ayrı `Satın Al`, `Sat`, `Değiştir`, `Onayla` düğmeleri oluşturulmayacak.
-- [ ] Modül Rafı savaş boyunca görünür kalacak.
+- [x] Modül Rafı savaş boyunca görünür olacak şekilde istemci temeli oluşturuldu; 18 modüllük tam Savaş Havuzu FAZ 9'da bağlanacak.
+- [x] Modül Rafı ilk 15 saniyede görünür fakat kilitli.
+- [x] 15. saniyede Modül Rafı istemci tarafında otomatik aktif oluyor.
+- [x] Raftan sahaya sürükle-bırak ile modül yerleştirme komutu üretimi hazırlandı.
+- [x] Sahadan rafa sürükle-bırak ile modül çıkarma komutu üretimi hazırlandı.
+- [x] Hücreler arasında sürükle-bırak ile modül taşıma komutu üretimi hazırlandı.
+- [x] Rezerv modülün aktif modül üzerine bırakılmasıyla değiştirme komutu üretimi hazırlandı.
+- [x] Ayrı `Satın Al`, `Sat`, `Değiştir`, `Onayla` düğmeleri oluşturulmadı.
+- [x] Modül Rafı savaş boyunca görünür kalıyor.
 - [ ] 18 modül için kompakt ve kaydırılabilir raf arayüzü oluşturulacak.
 
 #### FAZ 4 — Zaman Bazlı Aktif Modül Kapasitesi
@@ -352,9 +354,9 @@ Aşağıdaki alanlar ilk sürüm kapsamına dahil değildir ve mevcut yol harita
 1. [x] Proje iskeleti ve `YOL_HARITASI.md`
 2. [x] Kesintisiz çalışan gerçek zamanlı savaş motorunun ilk çekirdeği
 3. [x] Çekirdek + Jeneratör + 6–8 temel modül
-4. [ ] Modül Rafı
-5. [ ] Sürükle-bırak ile maç içi modül müdahalesi
-6. [ ] 15. saniye sonrası müdahale açılması
+4. [x] Modül Rafı
+5. [x] Sürükle-bırak ile maç içi modül müdahalesi — **istemci komut üretimi tamamlandı; ekonomik doğrulama sonraki fazlarda eklenecek.**
+6. [x] 15. saniye sonrası müdahale açılması — **istemci kilidi tamamlandı; motor tarafı alpha.4 kapasite kuralıyla bağlanacak.**
 7. [ ] 4 → 10 zaman bazlı aktif modül kapasitesi
 8. [ ] Modül Can ve durum kalıcılığı — **Can tamamlandı; ısı/enerji/etkiler gibi diğer durumlar bekliyor.**
 9. [ ] Gerçek zamanlı Devre Kredisi
@@ -366,9 +368,10 @@ Aşağıdaki alanlar ilk sürüm kapsamına dahil değildir ve mevcut yol harita
 
 ## Sıradaki Paket
 
-**`2.0.0-alpha.3 — Modül Rafı ve Sürükle-Bırak Temeli`**
+**`2.0.0-alpha.4 — Zaman Bazlı Aktif Modül Kapasitesi`**
 
-Bu pakette savaş motoru değiştirilmeden ilk istemci ve savaş içi Modül Rafı etkileşimi kurulacaktır. Modül Rafı savaş boyunca görünür kalacak; savaş hiçbir sürükle-bırak işlemi nedeniyle durmayacaktır. Devre Kredisi ve zaman bazlı 4→10 aktif modül sınırı kendi sonraki paketlerinde eklenecektir.
+Bu pakette 15–85 saniye arasındaki 4→10 aktif modül sınırı ilk kez **sunucu savaş motoru kuralı** olacaktır. İstemci yalnızca bu otoriter sınırı gösterecek ve savaş hiçbir kapasite bildirimi nedeniyle durmayacaktır. Devre Kredisi henüz bu pakete dahil edilmeyecektir.
+
 
 ---
 
@@ -383,8 +386,8 @@ Bu pakette savaş motoru değiştirilmeden ilk istemci ve savaş içi Modül Raf
 
 ### M2 — Dinamik Devre
 
-- [ ] Modül Rafı
-- [ ] Sürükle-bırak
+- [x] Modül Rafı
+- [x] Sürükle-bırak
 - [x] Ekleme (motor)
 - [x] Çıkarma (motor)
 - [x] Değiştirme (motor)
