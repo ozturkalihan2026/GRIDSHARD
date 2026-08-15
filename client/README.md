@@ -1,6 +1,6 @@
 # Project Relay 2.0 — Alpha.3 İstemci
 
-Bu klasör `2.0.0-alpha.4 — Zaman Bazlı Aktif Modül Kapasitesi` için bağımsız bir web istemci prototipi içerir.
+Bu klasör `2.0.0-alpha.5 — Modül Durum Kalıcılığının Genişletilmesi` için bağımsız bir web istemci prototipi içerir.
 
 ## Çalıştırma
 

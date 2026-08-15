@@ -50,12 +50,27 @@ class BattleEvent:
     data: dict[str, Any] = field(default_factory=dict)
 
 
+@dataclass(slots=True)
+class TimedModuleEffect:
+    id: str
+    name_tr: str
+    expires_at_ms: int | None = None
+    data: dict[str, Any] = field(default_factory=dict)
+
+    def is_expired(self, elapsed_ms: int) -> bool:
+        return (
+            self.expires_at_ms is not None
+            and elapsed_ms >= self.expires_at_ms
+        )
+
+
 @dataclass(slots=True, frozen=True)
 class ModuleDefinition:
     id: str
     name_tr: str
     category: str
     max_hp: int
+    circuit_credit_cost: int = 0
     movable: bool = True
     removable: bool = True
     rotatable: bool = True
@@ -69,6 +84,14 @@ class BattleModule:
     status: ModuleStatus = ModuleStatus.RESERVE
     position: Position | None = None
     direction: Direction = Direction.UP
+
+    # alpha.5 — maç içi durum kalıcılığı
+    heat: float = 0.0
+    stored_energy: float = 0.0
+    debuffs: dict[str, TimedModuleEffect] = field(default_factory=dict)
+    persistent_effects: dict[str, TimedModuleEffect] = field(default_factory=dict)
+    cooldowns_ready_at_ms: dict[str, int] = field(default_factory=dict)
+    temporary_boosters: dict[str, TimedModuleEffect] = field(default_factory=dict)
 
     @classmethod
     def create(
@@ -87,6 +110,9 @@ class BattleModule:
 class PlayerBattleState:
     player_id: str
     modules: dict[str, BattleModule] = field(default_factory=dict)
+    circuit_credits: int = 0
+    total_circuit_credits_earned: int = 0
+    total_circuit_credits_spent: int = 0
 
 
 @dataclass(slots=True)

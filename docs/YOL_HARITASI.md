@@ -1,7 +1,7 @@
 # Project Relay 2.0 — YOL HARİTASI
 
-**Güncel Sürüm:** `2.0.0-alpha.4`  
-**Paket:** Zaman Bazlı Aktif Modül Kapasitesi  
+**Güncel Sürüm:** `2.0.0-alpha.6`  
+**Paket:** Devre Kredisi Motoru  
 **Kanonik Dosya:** `docs/YOL_HARITASI.md`
 
 > Bu dosya Project Relay 2.0 için tek kanonik geliştirme kaydıdır. Her paket tamamlandığında sürüm numarası artırılır; **Tamamlananlar** ve **Yapılacaklar** bu dosyada güncellenir. Sonraki geliştirme paketi bu dosya okunarak başlatılır.
@@ -59,17 +59,33 @@
 - [x] Toplam **5 test başarılı**.
 
 
-### 2.0.0-alpha.5 — Modül Durum Kalıcılığının Genişletilmesi
+### 2.0.0-alpha.6 — Devre Kredisi Motoru
 
-- [ ] Can kalıcılığı mevcut haliyle regresyon testleriyle korunacak.
-- [ ] Isı durumunun rezervde nasıl saklanacağı için motor veri modeli oluşturulacak.
-- [ ] Depolanmış enerjinin rezervde nasıl saklanacağı için motor veri modeli oluşturulacak.
-- [ ] Zayıflatmaların rezervde nasıl davranacağı tanımlanacak.
-- [ ] Kalıcı maç etkilerinin rezervde nasıl davranacağı tanımlanacak.
-- [ ] Bekleme sürelerinin rezervde nasıl davranacağı tanımlanacak.
-- [ ] Geçici güçlendiricilerin rezervdeki davranışı için altyapı hazırlanacak; gerçek güçlendirici sistemi FAZ 12'de eklenecek.
-- [ ] Devreden çıkan ve yeniden giren modüllerin savaş geçmişini kaybetmediğini doğrulayan testler genişletilecek.
-- [ ] Bu paket Devre Kredisi içermeyecek.
+- [x] Devre Kredisi oyuncunun gerçek zamanlı maç kaynağı olarak motor modeline eklendi.
+- [x] Enerji ile Devre Kredisi ayrı sistemler olarak tutuldu; modülün depolanmış enerjisi kredi bakiyesinden bağımsızdır.
+- [x] Yapılandırılabilir başlangıç Devre Kredisi eklendi (`200 DK` alpha denge değeri).
+- [x] Yapılandırılabilir pasif Devre Kredisi geliri eklendi (`10 DK/sn` alpha denge değeri).
+- [x] Devre Kredisi savaş tick'leri boyunca anlık güncelleniyor.
+- [x] İlk 8 temel modül için alpha Devre Kredisi maliyetleri tanımlandı.
+- [x] Modül Rafı'ndan sahaya yerleştirme maliyeti motor tarafından otomatik düşülüyor.
+- [x] Aktif modülü rafa geri çekme ayrı bir satış işlemi oluşturmuyor; alpha.6'da maliyet/iade `0 DK`.
+- [x] Modül taşıma için yapılandırılabilir işlem maliyeti eklendi (`10 DK` alpha değeri).
+- [x] Modül değiştirmede sahaya giren modülün maliyeti motor tarafından otomatik uygulanıyor.
+- [x] Rezervdeki modül tekrar sahaya sürüklendiğinde yerleştirme maliyeti yeniden motor tarafından uygulanıyor.
+- [x] Modül döndürme alpha.6'da `0 DK`; motor ekonomik kuralı üzerinden geçiyor.
+- [x] İşlemin gerçekleştiği tick'teki güncel Devre Kredisi bakiyesi esas alınıyor.
+- [x] Kredi yetersizse komut savaş durmadan reddediliyor ve modül/konum durumu değiştirilmeden kalıyor.
+- [x] Başarısız değiştirme işleminin atomik kalması sağlandı; çıkan/giren modül durumu bozulmuyor.
+- [x] Kredi kazanımı için ileride savaş performansı kaynaklarına bağlanabilecek genel ödül kancası (`award_circuit_credits`) eklendi.
+- [x] Pasif kredi artışı olay günlüğünü her tick doldurmadan motor durumunda güncelleniyor.
+- [x] İstemcide `Devre Kredisi: ... DK` göstergesi eklendi.
+- [x] Modül kartlarında alpha Devre Kredisi maliyeti gösteriliyor.
+- [x] İstemci yalnızca sunucudan gelen ekonomi durumunu göstermeye uygun `applyServerEconomyState` arayüzüne sahip.
+- [x] Görsel demo katmanında yetersiz kredi için savaş durdurmayan kısa uyarı eklendi.
+- [x] Ayrı Satın Al / Sat / Değiştir / Onayla düğmeleri oluşturulmadı.
+- [x] Devre Kredisi ve otomatik modül maliyetleri için yeni sunucu testleri eklendi.
+- [x] İstemci Devre Kredisi durumunu doğrulayan yeni testler eklendi.
+- [x] Oyun tanıtımı amaçlı `README.md` dosyaları bu paket kapsamından çıkarıldı.
 
 ### Sonraki Fazlar — Sabit Yol Haritası
 
@@ -106,14 +122,14 @@
 
 #### FAZ 4 — Zaman Bazlı Aktif Modül Kapasitesi
 
-- [ ] 0–15 sn başlangıç düzeni uygulanacak.
-- [ ] 15–25 sn maksimum 4 aktif modül uygulanacak.
-- [ ] 25–35 sn maksimum 5 aktif modül uygulanacak.
-- [ ] 35–45 sn maksimum 6 aktif modül uygulanacak.
-- [ ] 45–55 sn maksimum 7 aktif modül uygulanacak.
-- [ ] 55–65 sn maksimum 8 aktif modül uygulanacak.
-- [ ] 65–75 sn maksimum 9 aktif modül uygulanacak.
-- [ ] 75–85 sn maksimum 10 aktif modül uygulanacak.
+- [x] 0–15 sn başlangıç düzeni uygulanacak.
+- [x] 15–25 sn maksimum 4 aktif modül uygulanacak.
+- [x] 25–35 sn maksimum 5 aktif modül uygulanacak.
+- [x] 35–45 sn maksimum 6 aktif modül uygulanacak.
+- [x] 45–55 sn maksimum 7 aktif modül uygulanacak.
+- [x] 55–65 sn maksimum 8 aktif modül uygulanacak.
+- [x] 65–75 sn maksimum 9 aktif modül uygulanacak.
+- [x] 75–85 sn maksimum 10 aktif modül uygulanacak.
 - [x] 85 sn ve sonrasında maksimum 10 aktif modül korunacak.
 - [x] Kapasite sınırı gerçek savaş saatinden anlık hesaplanacak.
 - [x] Kapasite artışı oyuncuyu yeni modül koymaya zorlamayacak.
@@ -123,36 +139,36 @@
 
 - [x] Devreden çıkan modül Can değerini koruyor.
 - [x] Tekrar devreye alınan modül aynı Can değeriyle dönüyor.
-- [ ] Isı durumunun rezervde nasıl korunacağı belirlenecek.
-- [ ] Depolanmış enerjinin rezervde nasıl korunacağı belirlenecek.
-- [ ] Zayıflatmaların rezervde nasıl korunacağı belirlenecek.
-- [ ] Kalıcı maç etkilerinin rezervde nasıl korunacağı belirlenecek.
-- [ ] Bekleme sürelerinin rezervde nasıl korunacağı belirlenecek.
-- [ ] Geçici güçlendiricilerin rezerv durumundaki davranışı belirlenecek.
+- [x] Isı rezervde aynen korunuyor; bu pakette pasif rezerv soğuması uygulanmıyor.
+- [x] Depolanmış enerji rezervde aynen korunuyor.
+- [x] Zayıflatmalar modüle bağlı kalıyor; süreli olanlar savaş saatiyle rezervde de sona eriyor.
+- [x] Kalıcı maç etkileri modüle bağlı kalıyor; süreli olanlar savaş saatiyle ilerliyor.
+- [x] Bekleme süreleri mutlak savaş saatine bağlı ve rezervde de ilerliyor.
+- [x] Geçici güçlendirici durumları rezervde kalıyor ancak süreleri savaş saatiyle işlemeye devam ediyor.
 - [x] Motor tarafında modül, çıkarma/değiştirme komutu uygulanana kadar Aktif durumda kalıyor; istemci sürükleme davranışı FAZ 3'te bağlanacak.
 
 #### FAZ 6 — Devre Kredisi Motoru
 
-- [ ] Devre Kredisi gerçek zamanlı savaş kaynağı olarak oluşturulacak.
-- [ ] Enerji ve Devre Kredisi tamamen ayrı sistemler olacak.
-- [ ] Anlık Devre Kredisi değişimi destekleyecek.
-- [ ] Pasif Devre Kredisi geliri eklenecek.
-- [ ] Savaş performansı kaynaklı gelir kuralları tasarlanacak.
-- [ ] Modül yok etme ve savunma başarısı gibi gelir kaynakları dengelenecek.
-- [ ] Snowball etkisini önlemek için kredi dağılımı simülasyonla test edilecek.
-- [ ] Modül maliyetleri oluşturulacak.
-- [ ] Sürükle-bırak bırakma anında Devre Kredisi tekrar doğrulanacak.
-- [ ] Kredi yetersizse işlem uygulanmayacak ve savaş durmadan kısa bildirim gösterilecek.
+- [x] Devre Kredisi gerçek zamanlı savaş kaynağı olarak oluşturuldu.
+- [x] Enerji ve Devre Kredisi tamamen ayrı sistemler olarak tutuluyor.
+- [x] Anlık Devre Kredisi değişimi destekleniyor.
+- [x] Pasif Devre Kredisi geliri eklendi.
+- [ ] Savaş performansı kaynaklı gerçek gelir kuralları saldırı/savunma motoru geliştikçe bağlanacak; genel kredi ödül kancası hazır.
+- [ ] Modül yok etme ve savunma başarısı gelirleri gerçek savaş/denge fazında belirlenecek.
+- [ ] Snowball etkisi otomatik savaş simülasyonu fazında ölçülüp dengelenecek.
+- [x] İlk 8 temel modül için alpha maliyetleri oluşturuldu.
+- [x] Modül komutu uygulandığı tick içinde güncel Devre Kredisi yeniden doğrulanıyor.
+- [x] Kredi yetersizse motor işlemi reddediyor; istemci savaş durmadan kısa uyarı gösterebiliyor.
 
 #### FAZ 7 — Otomatik Modül İşlem Ekonomisi
 
-- [ ] Modül yerleştirme maliyeti motor tarafından otomatik hesaplanacak.
-- [ ] Modül çıkarma/rezerve alma ekonomik kuralı motor tarafından otomatik uygulanacak.
-- [ ] Modül değiştirme ekonomik kuralı otomatik uygulanacak.
-- [ ] Modül taşıma ekonomik kuralı otomatik uygulanacak.
-- [ ] Rezervden yeniden devreye alma ekonomik kuralı otomatik uygulanacak.
-- [ ] Kullanıcı ekonomik işlem türü seçmeyecek; yalnızca sürükle-bırak yapacak.
-- [ ] Devre Kredisi arayüzde savaş boyunca anlık güncellenecek.
+- [x] Modül yerleştirme maliyeti motor tarafından otomatik hesaplanıyor.
+- [x] Modül çıkarma/rezerve alma ekonomik kuralı otomatik uygulanıyor; alpha.6 değeri 0 DK ve satış/iade yok.
+- [x] Modül değiştirme ekonomik kuralı otomatik uygulanıyor.
+- [x] Modül taşıma ekonomik kuralı otomatik uygulanıyor.
+- [x] Rezervden yeniden devreye alma ekonomik kuralı otomatik uygulanıyor.
+- [x] Kullanıcı ekonomik işlem türü seçmiyor; sürükle-bırak komutlarının maliyetini motor hesaplıyor.
+- [x] Devre Kredisi istemci arayüzünde savaş boyunca anlık gösteriliyor.
 
 #### FAZ 8 — 24 Modüllük Ekosistem
 
@@ -353,9 +369,9 @@ Aşağıdaki alanlar ilk sürüm kapsamına dahil değildir ve mevcut yol harita
 5. [x] Sürükle-bırak ile maç içi modül müdahalesi — **istemci komut üretimi tamamlandı; ekonomik doğrulama sonraki fazlarda eklenecek.**
 6. [x] 15. saniye sonrası müdahale açılması — **istemci kilidi tamamlandı; motor tarafı alpha.4 kapasite kuralıyla bağlanacak.**
 7. [x] 4 → 10 zaman bazlı aktif modül kapasitesi
-8. [ ] Modül Can ve durum kalıcılığı — **Can tamamlandı; ısı/enerji/etkiler gibi diğer durumlar bekliyor.**
-9. [ ] Gerçek zamanlı Devre Kredisi
-10. [ ] Otomatik modül maliyetleri
+8. [x] Modül Can ve durum kalıcılığı — **Can, ısı, depolanmış enerji, zayıflatmalar, kalıcı etkiler, cooldown ve geçici güçlendirici durum kuralları tanımlandı.**
+9. [x] Gerçek zamanlı Devre Kredisi
+10. [x] Otomatik modül maliyetleri
 
 > Bu ilk on madde tamamlanmadan 24 modül, özel hücreler veya gelişmiş güçlendirici sistemine geçilmeyecektir.
 
@@ -363,10 +379,9 @@ Aşağıdaki alanlar ilk sürüm kapsamına dahil değildir ve mevcut yol harita
 
 ## Sıradaki Paket
 
-**`2.0.0-alpha.5 — Modül Durum Kalıcılığının Genişletilmesi`**
+**`2.0.0-alpha.7 — 12 Modüllük Ekosistem ve Rol Temeli`**
 
-Bu pakette mevcut Can kalıcılığını bozmadan ısı, depolanmış enerji, zayıflatma ve bekleme süreleri gibi maç içi modül durumlarının rezervde nasıl korunacağı motor seviyesinde tanımlanacaktır. Devre Kredisi bir sonraki ana ekonomi fazında ele alınacaktır.
-
+İlk geliştirme sırasındaki 10 temel madde tamamlandığı için modül ekosistemini kontrollü şekilde genişletmeye başlanacaktır. Bu pakette 8 temel modül 12 modüle çıkarılacak; yeni modüllerin mevcut Enerji / Saldırı / Savunma / Destek / Sabotaj rollerine gerçek stratejik fark katması hedeflenecektir. 24 modülün tamamı tek pakette eklenmeyecektir.
 
 ---
 
@@ -392,10 +407,10 @@ Bu pakette mevcut Can kalıcılığını bozmadan ısı, depolanmış enerji, za
 
 ### M3 — Devre Ekonomisi
 
-- [ ] Devre Kredisi
-- [ ] Gerçek zamanlı kredi değişimi
-- [ ] Otomatik maliyet hesabı
-- [ ] Modül işlemleri
+- [x] Devre Kredisi
+- [x] Gerçek zamanlı kredi değişimi
+- [x] Otomatik maliyet hesabı
+- [x] Modül işlemleri
 
 ### M4 — 24 Modüllük Meta
 

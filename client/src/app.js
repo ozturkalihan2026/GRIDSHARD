@@ -2,19 +2,20 @@
   "use strict";
 
   const moduleDefinitions = [
-    ["core-1", "Çekirdek", 300, "active", { x: 2, y: 2 }],
-    ["generator-1", "Jeneratör", 150, "active", { x: 2, y: 3 }],
-    ["laser-1", "Lazer", 100, "reserve", null],
-    ["shield-1", "Kalkan", 140, "reserve", null],
-    ["battery-1", "Batarya", 120, "reserve", null],
-    ["amplifier-1", "Güçlendirici", 90, "reserve", null],
-    ["cooler-1", "Soğutucu", 100, "reserve", null],
-    ["repair-1", "Onarım Modülü", 100, "reserve", null],
-  ].map(([instanceId, nameTr, hp, status, position]) => ({
+    ["core-1", "Çekirdek", 300, 0, "active", { x: 2, y: 2 }],
+    ["generator-1", "Jeneratör", 150, 0, "active", { x: 2, y: 3 }],
+    ["laser-1", "Lazer", 100, 90, "reserve", null],
+    ["shield-1", "Kalkan", 140, 100, "reserve", null],
+    ["battery-1", "Batarya", 120, 70, "reserve", null],
+    ["amplifier-1", "Güçlendirici", 90, 85, "reserve", null],
+    ["cooler-1", "Soğutucu", 100, 65, "reserve", null],
+    ["repair-1", "Onarım Modülü", 100, 80, "reserve", null],
+  ].map(([instanceId, nameTr, hp, circuitCreditCost, status, position]) => ({
     instanceId,
     nameTr,
     hp,
     maxHp: hp,
+    circuitCreditCost,
     status,
     position,
   }));
@@ -23,6 +24,7 @@
   const client = new RelayBattleClient({
     modules: moduleDefinitions,
     unlockAtMs: 15000,
+    circuitCredits: 200,
     emitCommand(command) {
       commandLog.push({
         atMs: client.elapsedMs,
@@ -36,6 +38,7 @@
   const board = document.getElementById("board");
   const shelf = document.getElementById("module-shelf");
   const timeEl = document.getElementById("battle-time");
+  const creditEl = document.getElementById("credit-indicator");
   const capacityEl = document.getElementById("capacity-indicator");
   const lockLabel = document.getElementById("shelf-lock-label");
   const shelfHelp = document.getElementById("shelf-help");
@@ -44,6 +47,8 @@
   const BOARD_SIZE = 5;
   const startedAt = performance.now();
   let previousCapacity = null;
+  let mockServerCredits = 200;
+  let mockServerPassiveSeconds = 0;
 
   function createBoard() {
     board.innerHTML = "";
@@ -143,7 +148,10 @@
 
     const meta = document.createElement("span");
     meta.className = "meta";
-    meta.textContent = `Can ${module.hp}/${module.maxHp}`;
+    const costText = module.circuitCreditCost > 0
+      ? ` · ${module.circuitCreditCost} DK`
+      : "";
+    meta.textContent = `Can ${module.hp}/${module.maxHp}${costText}`;
 
     card.append(name, meta);
 
@@ -167,9 +175,31 @@
   }
 
   function applyMockServerCommand(command) {
-    // Alpha.3 yalnızca istemci sürükle-bırak akışını gösterir.
-    // Buradaki durum güncellemesi sunucu cevabını taklit eder; gerçek
-    // otoriter bağlantı sonraki online entegrasyon fazında bağlanacaktır.
+    // Alpha.6: Bu katman yalnızca UI demosu için sahte sunucu cevabıdır.
+    // Gerçek Devre Kredisi otoritesi Python savaş motorundadır.
+    const moduleCost = (moduleId) =>
+      client.requireModule(moduleId).circuitCreditCost || 0;
+
+    let cost = 0;
+    if (command.kind === "place_module") {
+      cost = moduleCost(command.payload.module_id);
+    } else if (command.kind === "move_module") {
+      cost = 10;
+    } else if (command.kind === "replace_module") {
+      cost = moduleCost(command.payload.incoming_module_id);
+    }
+
+    if (mockServerCredits < cost) {
+      logClientMessage(
+        `Yetersiz Devre Kredisi: gerekli ${cost} DK, mevcut ${mockServerCredits} DK.`
+      );
+      flashInsufficientCredits();
+      return;
+    }
+
+    mockServerCredits -= cost;
+    client.applyServerEconomyState({ circuitCredits: mockServerCredits });
+
     if (command.kind === "place_module") {
       const module = client.requireModule(command.payload.module_id);
       client.applyServerModuleState({
@@ -207,6 +237,28 @@
     }
 
     render();
+    renderCredits();
+  }
+
+  function updateMockServerPassiveCredits(elapsedMs) {
+    const passiveSeconds = Math.floor(elapsedMs / 1000);
+    if (passiveSeconds <= mockServerPassiveSeconds) return;
+
+    const gainedSeconds = passiveSeconds - mockServerPassiveSeconds;
+    mockServerCredits += gainedSeconds * 10;
+    mockServerPassiveSeconds = passiveSeconds;
+    client.applyServerEconomyState({ circuitCredits: mockServerCredits });
+  }
+
+  function renderCredits() {
+    creditEl.textContent = `Devre Kredisi: ${client.circuitCredits} DK`;
+  }
+
+  function flashInsufficientCredits() {
+    creditEl.classList.add("credit-insufficient");
+    window.setTimeout(() => {
+      creditEl.classList.remove("credit-insufficient");
+    }, 700);
   }
 
 
@@ -267,6 +319,7 @@
   function updateClock(now) {
     const elapsedMs = now - startedAt;
     client.updateElapsedMs(elapsedMs);
+    updateMockServerPassiveCredits(elapsedMs);
 
     const seconds = elapsedMs / 1000;
     const minutes = Math.floor(seconds / 60);
@@ -276,6 +329,7 @@
 
     renderLockState();
     renderCapacity();
+    renderCredits();
 
     if (Math.floor(elapsedMs / 250) !== Math.floor((elapsedMs - 16) / 250)) {
       renderShelf();
@@ -288,5 +342,6 @@
   createBoard();
   render();
   renderCapacity();
+  renderCredits();
   requestAnimationFrame(updateClock);
 })();

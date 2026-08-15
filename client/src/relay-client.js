@@ -25,10 +25,11 @@
   });
 
   class RelayBattleClient {
-    constructor({ modules, unlockAtMs = 15000, emitCommand }) {
+    constructor({ modules, unlockAtMs = 15000, circuitCredits = 0, emitCommand }) {
       this.unlockAtMs = unlockAtMs;
       this.emitCommand = emitCommand;
       this.elapsedMs = 0;
+      this.circuitCredits = Math.max(0, Math.floor(circuitCredits));
       this.dragState = null;
       this.modules = new Map(
         modules.map((module) => [
@@ -162,6 +163,10 @@
     applyServerModuleState(moduleState) {
       const module = this.requireModule(moduleState.instanceId);
       Object.assign(module, moduleState);
+    }
+
+    applyServerEconomyState({ circuitCredits }) {
+      this.circuitCredits = Math.max(0, Math.floor(circuitCredits));
     }
 
     requireModule(moduleId) {

@@ -14,6 +14,7 @@ function createClient() {
         nameTr: "Lazer",
         hp: 43,
         maxHp: 100,
+        circuitCreditCost: 90,
         status: MODULE_STATUS.RESERVE,
         position: null,
       },
@@ -22,11 +23,13 @@ function createClient() {
         nameTr: "Kalkan",
         hp: 140,
         maxHp: 140,
+        circuitCreditCost: 100,
         status: MODULE_STATUS.ACTIVE,
         position: { x: 2, y: 2 },
       },
     ],
     unlockAtMs: 15000,
+    circuitCredits: 200,
     emitCommand(command) {
       emitted.push(command);
     },
@@ -126,4 +129,17 @@ function createClient() {
   assert.strictEqual(client.activeModuleCount(), 1);
 }
 
-console.log("8 client tests passed");
+{
+  const { client } = createClient();
+  assert.strictEqual(client.circuitCredits, 200);
+  client.applyServerEconomyState({ circuitCredits: 137 });
+  assert.strictEqual(client.circuitCredits, 137);
+}
+
+{
+  const { client } = createClient();
+  assert.strictEqual(client.requireModule("laser-1").circuitCreditCost, 90);
+  assert.strictEqual(client.requireModule("shield-1").circuitCreditCost, 100);
+}
+
+console.log("10 client tests passed");
