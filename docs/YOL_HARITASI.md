@@ -1,7 +1,7 @@
 # Project Relay 2.0 — YOL HARİTASI
 
-**Güncel Sürüm:** `2.0.0-alpha.15`  
-**Paket:** Enerji Akışı Motoru Temeli  
+**Güncel Sürüm:** `2.0.0-alpha.16`  
+**Paket:** Bağlantı ve Port Enerji Topolojisi  
 **Kanonik Dosya:** `docs/YOL_HARITASI.md`
 
 > Bu dosya Project Relay 2.0 için tek kanonik geliştirme kaydıdır. Her paket tamamlandığında sürüm numarası artırılır; **Tamamlananlar** ve **Yapılacaklar** bu dosyada güncellenir. Sonraki geliştirme paketi bu dosya okunarak başlatılır.
@@ -379,9 +379,9 @@ Aşağıdaki alanlar ilk sürüm kapsamına dahil değildir ve mevcut yol harita
 
 ## Sıradaki Paket
 
-**`2.0.0-alpha.16 — Bağlantı ve Port Enerji Topolojisi`**
+**`2.0.0-alpha.17 — Gerçek Savaş Aksiyonları: Saldırı ve Hasar`**
 
-Enerji üretim/depolama/tüketim motoru tamamlandı. Sıradaki pakette enerjinin yalnızca geçerli port bağlantıları üzerinden taşınması, Dağıtıcı'nın gerçek dallandırma davranışı ve bağlantısız modüllerin enerjisiz kalması motor seviyesinde uygulanacak.
+Port tabanlı enerji topolojisi tamamlandı. Sıradaki pakette enerji alabilen saldırı modüllerinin cooldown, hedef seçimi ve hasar üretimi gerçek savaş motoruna bağlanacak. Enerjisiz saldırı modülleri ateş etmeyecek; savaş kesintisiz devam edecek.
 
 
 ---

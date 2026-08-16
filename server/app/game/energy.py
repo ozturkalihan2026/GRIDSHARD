@@ -1,7 +1,8 @@
 from dataclasses import dataclass
 
 from .board import get_cell_effects
-from .models import ModuleStatus, PlayerBattleState
+from .models import ModuleStatus, PlayerBattleState, Position
+from .topology import build_energy_topology
 
 
 TICK_SECONDS = 0.1
@@ -70,28 +71,37 @@ def _discharge_rate_per_tick(module) -> float:
     return 0.0
 
 
-def process_energy_tick(player: PlayerBattleState) -> EnergyTickResult:
+def process_energy_tick(
+    player: PlayerBattleState,
+    core_position: Position = Position(2, 2),
+) -> EnergyTickResult:
     active = _active_modules(player)
+    topology = build_energy_topology(player, core_position)
+    reachable_ids = set(topology.reachable_from_generator)
 
     generators = [
         module
         for module in active
         if module.definition.energy_generation > 0
+        and module.instance_id in reachable_ids
     ]
     splitters = [
         module
         for module in active
         if module.definition.id == "splitter"
+        and module.instance_id in reachable_ids
     ]
     capacitors = [
         module
         for module in active
         if module.definition.id == "capacitor"
+        and module.instance_id in reachable_ids
     ]
     batteries = [
         module
         for module in active
         if module.definition.id == "battery"
+        and module.instance_id in reachable_ids
     ]
 
     # Kapasitör kısa süreli destek olarak Batarya'dan önce kullanılır.
@@ -129,6 +139,26 @@ def process_energy_tick(player: PlayerBattleState) -> EnergyTickResult:
         not in {"battery", "capacitor", "splitter"}
     ]
 
+    disconnected_consumers = [
+        module
+        for module in consumers
+        if module.instance_id not in reachable_ids
+    ]
+    consumers = [
+        module
+        for module in consumers
+        if module.instance_id in reachable_ids
+    ]
+
+    for module in disconnected_consumers:
+        module.energy_required_last_tick = (
+            module.definition.energy_consumption
+            * TICK_SECONDS
+            / _energy_multiplier(module)
+        )
+        module.energy_received_last_tick = 0.0
+        module.is_powered = False
+
     for module in consumers:
         module.energy_required_last_tick = (
             module.definition.energy_consumption
@@ -163,7 +193,10 @@ def process_energy_tick(player: PlayerBattleState) -> EnergyTickResult:
 
     consumed = 0.0
     powered: list[str] = []
-    unpowered: list[str] = []
+    unpowered: list[str] = sorted(
+        module.instance_id
+        for module in disconnected_consumers
+    )
 
     # Deterministik enerji önceliği.
     for module in sorted(

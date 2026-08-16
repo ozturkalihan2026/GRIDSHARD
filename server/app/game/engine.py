@@ -11,6 +11,7 @@ from .economy import (
     DEFAULT_CIRCUIT_CREDIT_CONFIG,
 )
 from .energy import process_energy_tick
+from .topology import build_energy_topology, module_port_directions
 from .models import (
     BattleCommand,
     BattleEvent,
@@ -514,9 +515,16 @@ class BattleEngine:
             },
         )
 
+    def energy_topology_for_player(self, player_id: str):
+        player = self._require_player(player_id)
+        return build_energy_topology(
+            player,
+            self.board.core_position,
+        )
+
     def _process_energy_flow(self) -> None:
         for player in self.state.players.values():
-            process_energy_tick(player)
+            process_energy_tick(player, self.board.core_position)
 
     def _expire_timed_module_state(self) -> None:
         elapsed_ms = self.state.elapsed_ms
@@ -957,6 +965,13 @@ class BattleEngine:
             "is_powered": module.is_powered,
             "energy_received_last_tick": module.energy_received_last_tick,
             "energy_required_last_tick": module.energy_required_last_tick,
+            "ports": [
+                direction.value
+                for direction in module_port_directions(
+                    module,
+                    self.board.core_position,
+                )
+            ],
             "debuffs": sorted(module.debuffs),
             "persistent_effects": sorted(module.persistent_effects),
             "cooldowns": sorted(module.cooldowns_ready_at_ms),

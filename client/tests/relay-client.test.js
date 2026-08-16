@@ -268,4 +268,17 @@ function createClient() {
   assert.ok(src.includes("Enerji:"));
 }
 
-console.log("22 client tests passed");
+
+{
+  const fs = require("fs");
+  const src = fs.readFileSync("./src/app.js", "utf8");
+
+  assert.ok(src.includes("PORT_COUNT_BY_NAME"));
+  assert.ok(src.includes("modulePorts"));
+  assert.ok(src.includes("areConnected"));
+  assert.ok(src.includes("connectedEnergyModuleIds"));
+  assert.ok(src.includes("port-dot"));
+  assert.ok(src.includes("energy-disconnected"));
+}
+
+console.log("23 client tests passed");

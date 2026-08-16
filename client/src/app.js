@@ -33,9 +33,60 @@
     energyReceived: 0,
     isPowered: true,
     storedEnergy: 0,
+    portCount: PORT_COUNT_BY_NAME[nameTr] || 1,
+    direction: "up",
   }));
 
   const commandLog = [];
+
+  const PORT_COUNT_BY_NAME = {
+    "Çekirdek":4,
+    "Jeneratör":3,
+    "Batarya":2,
+    "Dağıtıcı":3,
+    "Kapasitör":2,
+    "Lazer":1,
+    "Darbe Topu":1,
+    "Ray Topu":1,
+    "Füze Fırlatıcı":1,
+    "Dron Üssü":2,
+    "Ark Topu":1,
+    "Kalkan":2,
+    "Zırh":2,
+    "Yansıtıcı":2,
+    "Bariyer":2,
+    "Onarım Modülü":2,
+    "Soğutucu":2,
+    "Güçlendirici":2,
+    "Hedefleme Bilgisayarı":2,
+    "Aşırı Hızlandırıcı":2,
+    "EMP":1,
+    "Sinyal Bozucu":1,
+    "Virüs":1,
+    "Enerji Sömürücü":1,
+    "Kesici":1,
+  };
+
+  const OPPOSITE = {
+    up:"down",
+    right:"left",
+    down:"up",
+    left:"right",
+  };
+
+  const LEFT_OF = {
+    up:"left",
+    right:"up",
+    down:"right",
+    left:"down",
+  };
+
+  const RIGHT_OF = {
+    up:"right",
+    right:"down",
+    down:"left",
+    left:"up",
+  };
   const BOOSTER_FIRST_OFFER_MS = 85000;
   const BOOSTER_OFFER_INTERVAL_MS = 10000;
   let nextBoosterOfferIndex = 0;
@@ -311,6 +362,21 @@ const SPECIAL_CELL_INFO = {
 
     card.append(name, meta);
 
+    for (const side of modulePorts(module)) {
+      const port = document.createElement("span");
+      port.className = `port-dot port-${side}`;
+      port.title = `Port: ${side}`;
+      card.appendChild(port);
+    }
+
+    if (
+      module.status === "active" &&
+      !module.isPowered &&
+      Number(module.energyRequired || 0) > 0
+    ) {
+      card.classList.add("energy-disconnected");
+    }
+
     if (selectedBoosterId && module.status === "active") {
       card.classList.add("booster-target");
     }
@@ -413,13 +479,96 @@ const SPECIAL_CELL_INFO = {
     client.applyServerEconomyState({ circuitCredits: mockServerCredits });
   }
 
+  function modulePorts(module) {
+    if (module.nameTr === "Çekirdek") {
+      return ["up","right","down","left"];
+    }
+
+    const count = module.portCount || 1;
+
+    const forward =
+      module.nameTr === "Jeneratör" && module.position
+        ? (
+            module.position.x === 2 && module.position.y === 3 ? "up" :
+            module.position.x === 2 && module.position.y === 1 ? "down" :
+            module.position.x === 1 && module.position.y === 2 ? "right" :
+            module.position.x === 3 && module.position.y === 2 ? "left" :
+            module.direction
+          )
+        : module.direction;
+
+    if (count === 1) return [forward];
+    if (count === 2) return [forward, OPPOSITE[forward]];
+    if (count === 3) {
+      return [
+        forward,
+        LEFT_OF[forward],
+        RIGHT_OF[forward],
+      ];
+    }
+
+    return ["up","right","down","left"];
+  }
+
+  function areConnected(first, second) {
+    if (!first.position || !second.position) {
+      return false;
+    }
+
+    const dx = second.position.x - first.position.x;
+    const dy = second.position.y - first.position.y;
+
+    const direction =
+      dx === 0 && dy === -1 ? "up" :
+      dx === 1 && dy === 0 ? "right" :
+      dx === 0 && dy === 1 ? "down" :
+      dx === -1 && dy === 0 ? "left" :
+      null;
+
+    if (!direction) return false;
+
+    return (
+      modulePorts(first).includes(direction) &&
+      modulePorts(second).includes(OPPOSITE[direction])
+    );
+  }
+
+  function connectedEnergyModuleIds(active) {
+    const sources = active.filter(
+      (module) => module.nameTr === "Jeneratör"
+    );
+    const reachable = new Set(
+      sources.map((module) => module.instanceId)
+    );
+    const queue = [...sources];
+
+    while (queue.length) {
+      const current = queue.shift();
+
+      for (const candidate of active) {
+        if (reachable.has(candidate.instanceId)) continue;
+        if (!areConnected(current, candidate)) continue;
+
+        reachable.add(candidate.instanceId);
+        queue.push(candidate);
+      }
+    }
+
+    return reachable;
+  }
+
   function updateMockEnergy() {
     const active = [...client.modules.values()].filter(
       (module) => module.status === "active"
     );
+    const connected = connectedEnergyModuleIds(active);
 
     const generated =
-      active.filter((module) => module.nameTr === "Jeneratör").length * 8;
+      active.filter(
+        (module) =>
+          module.nameTr === "Jeneratör" &&
+          connected.has(module.instanceId)
+      ).length * 8;
 
     const demandByName = {
       "Lazer": 3,
@@ -456,9 +605,14 @@ const SPECIAL_CELL_INFO = {
       module.energyRequired = demand;
       totalDemand += demand;
 
-      if (demand <= 0) {
+      if (!connected.has(module.instanceId) && demand > 0) {
         module.energyReceived = 0;
-        module.isPowered = true;
+        module.isPowered = false;
+      } else if (demand <= 0) {
+        module.energyReceived = 0;
+        module.isPowered =
+          connected.has(module.instanceId) ||
+          module.nameTr === "Çekirdek";
       } else if (available >= demand) {
         available -= demand;
         module.energyReceived = demand;

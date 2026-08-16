@@ -286,3 +286,41 @@ button, input { font: inherit; }
 .module-card.booster-target { outline:2px solid rgba(255,255,255,.35); }
 
 .booster-option:disabled { opacity:.4; cursor:not-allowed; }
+
+.module-card {
+  position: relative;
+}
+
+.port-dot {
+  position: absolute;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: currentColor;
+  opacity: .85;
+  pointer-events: none;
+}
+
+.port-up {
+  top: -4px;
+  left: calc(50% - 3px);
+}
+
+.port-right {
+  right: -4px;
+  top: calc(50% - 3px);
+}
+
+.port-down {
+  bottom: -4px;
+  left: calc(50% - 3px);
+}
+
+.port-left {
+  left: -4px;
+  top: calc(50% - 3px);
+}
+
+.module-card.energy-disconnected {
+  outline: 2px dashed rgba(255,255,255,.35);
+}
