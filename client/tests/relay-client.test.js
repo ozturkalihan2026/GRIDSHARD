@@ -401,61 +401,61 @@ function createClient() {
   const fs=require("fs");
   const src=fs.readFileSync("./src/app.js","utf8");
   assert.ok(src.includes("PVP_STATUS"));
-  assert.ok(src.includes("Ana Menü yönlendirmesi aktif"));
+  assert.ok(src.includes("Tarayıcı WebSocket yöneticisi aktif"));
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync("./src/app.js","utf8");
-  assert.ok(src.includes("Ana Menü yönlendirmesi aktif")); // alpha32->33 protocol status
+  assert.ok(src.includes("Tarayıcı WebSocket yöneticisi aktif")); // alpha32->33 protocol status
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync("./src/app.js","utf8");
-  assert.ok(src.includes("Ana Menü yönlendirmesi aktif")); // alpha33 protocol
+  assert.ok(src.includes("Tarayıcı WebSocket yöneticisi aktif")); // alpha33 protocol
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync("./src/app.js","utf8");
-  assert.ok(src.includes("Ana Menü yönlendirmesi aktif")); // alpha34 websocket
+  assert.ok(src.includes("Tarayıcı WebSocket yöneticisi aktif")); // alpha34 websocket
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync("./src/app.js","utf8");
-  assert.ok(src.includes("Ana Menü yönlendirmesi aktif")); // alpha35 gateway
+  assert.ok(src.includes("Tarayıcı WebSocket yöneticisi aktif")); // alpha35 gateway
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync("./src/app.js","utf8");
-  assert.ok(src.includes("Ana Menü yönlendirmesi aktif")); // alpha36 setup
+  assert.ok(src.includes("Tarayıcı WebSocket yöneticisi aktif")); // alpha36 setup
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync("./src/app.js","utf8");
-  assert.ok(src.includes("Ana Menü yönlendirmesi aktif")); // alpha37 lobby
+  assert.ok(src.includes("Tarayıcı WebSocket yöneticisi aktif")); // alpha37 lobby
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync("./src/app.js","utf8");
-  assert.ok(src.includes("Ana Menü yönlendirmesi aktif")); // alpha38 runner
+  assert.ok(src.includes("Tarayıcı WebSocket yöneticisi aktif")); // alpha38 runner
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync("./src/app.js","utf8");
-  assert.ok(src.includes("Ana Menü yönlendirmesi aktif")); // alpha39 heartbeat
+  assert.ok(src.includes("Tarayıcı WebSocket yöneticisi aktif")); // alpha39 heartbeat
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync("./src/app.js","utf8");
-  assert.ok(src.includes("Ana Menü yönlendirmesi aktif")); // alpha40 online pvp
+  assert.ok(src.includes("Tarayıcı WebSocket yöneticisi aktif")); // alpha40 online pvp
 }
 
 {
@@ -681,7 +681,7 @@ function createClient() {
 {
   const fs=require("fs");
   const src=fs.readFileSync("./src/app.js","utf8");
-  assert.ok(src.includes("Ana Menü yönlendirmesi aktif"));
+  assert.ok(src.includes("Tarayıcı WebSocket yöneticisi aktif"));
   assert.ok(src.includes("buildPvPCommandEnvelope"));
   assert.ok(src.includes("applyPvPServerEnvelope"));
 }
@@ -916,4 +916,307 @@ function createClient() {
   );
 }
 
-console.log("64 client tests passed");
+{
+  const {
+    RelayPvPClientState,
+    RelayWebSocketConnectionManager,
+    WS_CONNECTION_STATUS,
+  } = require("../src/relay-client.js");
+
+  class FakeSocket {
+    constructor() {
+      this.readyState = 0;
+      this.sent = [];
+      this.closed = false;
+      this.onopen = null;
+      this.onmessage = null;
+      this.onclose = null;
+      this.onerror = null;
+    }
+
+    send(data) {
+      this.sent.push(data);
+    }
+
+    close() {
+      this.closed = true;
+      this.readyState = 3;
+      if (this.onclose) {
+        this.onclose({});
+      }
+    }
+
+    open() {
+      this.readyState = 1;
+      if (this.onopen) {
+        this.onopen({});
+      }
+    }
+
+    message(message) {
+      if (this.onmessage) {
+        this.onmessage({
+          data: JSON.stringify(message),
+        });
+      }
+    }
+  }
+
+  const sockets = [];
+  const timers = [];
+  const pvp = new RelayPvPClientState({
+    playerId: "a",
+    sessionId: "m",
+  });
+
+  const manager =
+    new RelayWebSocketConnectionManager({
+      pvpState: pvp,
+      createWebSocket() {
+        const socket = new FakeSocket();
+        sockets.push(socket);
+        return socket;
+      },
+      setTimer(fn, ms) {
+        const timer = { fn, ms };
+        timers.push(timer);
+        return timer;
+      },
+      clearTimer() {},
+      heartbeatIntervalMs: 5000,
+    });
+
+  manager.connect("ws://test");
+  assert.strictEqual(
+    manager.status,
+    WS_CONNECTION_STATUS.CONNECTING
+  );
+
+  sockets[0].open();
+
+  assert.strictEqual(
+    manager.status,
+    WS_CONNECTION_STATUS.OPEN
+  );
+
+  const first = JSON.parse(
+    sockets[0].sent[0]
+  );
+  assert.strictEqual(
+    first.type,
+    "request_lobby"
+  );
+  assert.ok(timers.length >= 1);
+}
+
+{
+  const {
+    RelayPvPClientState,
+    RelayWebSocketConnectionManager,
+  } = require("../src/relay-client.js");
+
+  class FakeSocket {
+    constructor() {
+      this.readyState = 0;
+      this.sent = [];
+    }
+    send(data) {
+      this.sent.push(data);
+    }
+    close() {}
+  }
+
+  const pvp = new RelayPvPClientState({
+    playerId: "a",
+    sessionId: "m",
+  });
+  let socket;
+
+  const manager =
+    new RelayWebSocketConnectionManager({
+      pvpState: pvp,
+      createWebSocket() {
+        socket = new FakeSocket();
+        return socket;
+      },
+      setTimer() {
+        return 1;
+      },
+      clearTimer() {},
+    });
+
+  manager.connect("ws://test");
+
+  const result = manager.sendEnvelope(
+    pvp.buildLobbyRequest()
+  );
+
+  assert.strictEqual(result.queued,true);
+  assert.strictEqual(
+    manager.outgoingQueue.length,
+    1
+  );
+
+  socket.readyState = 1;
+  assert.strictEqual(
+    manager.flushQueue(),
+    1
+  );
+  assert.strictEqual(
+    manager.outgoingQueue.length,
+    0
+  );
+}
+
+{
+  const {
+    RelayPvPClientState,
+    RelayWebSocketConnectionManager,
+    WS_CONNECTION_STATUS,
+  } = require("../src/relay-client.js");
+
+  class FakeSocket {
+    constructor() {
+      this.readyState = 0;
+      this.sent = [];
+    }
+    send(data) {
+      this.sent.push(data);
+    }
+    close() {}
+  }
+
+  const sockets = [];
+  const scheduled = [];
+  const pvp = new RelayPvPClientState({
+    playerId: "a",
+    sessionId: "m",
+  });
+
+  const manager =
+    new RelayWebSocketConnectionManager({
+      pvpState: pvp,
+      createWebSocket() {
+        const socket = new FakeSocket();
+        sockets.push(socket);
+        return socket;
+      },
+      setTimer(fn, ms) {
+        scheduled.push({ fn, ms });
+        return scheduled.length;
+      },
+      clearTimer() {},
+      reconnectBaseDelayMs: 1000,
+      reconnectMaxDelayMs: 4000,
+    });
+
+  manager.connect("ws://test");
+  sockets[0].onclose({});
+
+  assert.strictEqual(
+    manager.status,
+    WS_CONNECTION_STATUS.RECONNECTING
+  );
+  assert.strictEqual(
+    scheduled[0].ms,
+    1000
+  );
+
+  scheduled[0].fn();
+
+  assert.strictEqual(
+    sockets.length,
+    2
+  );
+}
+
+{
+  const {
+    RelayPvPClientState,
+    RelayWebSocketConnectionManager,
+  } = require("../src/relay-client.js");
+
+  class FakeSocket {
+    constructor() {
+      this.readyState = 1;
+      this.sent = [];
+    }
+    send(data) {
+      this.sent.push(data);
+    }
+    close() {}
+  }
+
+  const pvp = new RelayPvPClientState({
+    playerId: "a",
+    sessionId: "m",
+  });
+  const socket = new FakeSocket();
+
+  const manager =
+    new RelayWebSocketConnectionManager({
+      pvpState: pvp,
+      createWebSocket() {
+        return socket;
+      },
+      setTimer() {
+        return 1;
+      },
+      clearTimer() {},
+      now() {
+        return 12345;
+      },
+    });
+
+  manager.socket = socket;
+  manager.status = "open";
+  manager._scheduleHeartbeat();
+
+  // Direct heartbeat envelope path is deterministic.
+  const heartbeat = pvp.buildHeartbeat(
+    12345
+  );
+  manager.sendEnvelope(heartbeat);
+
+  const sent = JSON.parse(
+    socket.sent[0]
+  );
+  assert.strictEqual(
+    sent.type,
+    "heartbeat"
+  );
+  assert.strictEqual(
+    sent.payload.sent_at_ms,
+    12345
+  );
+}
+
+{
+  const fs=require("fs");
+  const app=fs.readFileSync(
+    "./src/app.js",
+    "utf8"
+  );
+  const html=fs.readFileSync(
+    "./index.html",
+    "utf8"
+  );
+
+  assert.ok(
+    app.includes(
+      "RelayWebSocketConnectionManager"
+    )
+  );
+  assert.ok(
+    app.includes(
+      "renderConnectionStatus"
+    )
+  );
+  assert.ok(
+    html.includes(
+      'id="pvp-connection-status"'
+    )
+  );
+}
+
+console.log("69 client tests passed");

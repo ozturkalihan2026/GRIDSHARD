@@ -42,7 +42,7 @@
   const COMPETITIVE_STATUS = "M7 Simülasyon aktif";
   const BALANCE_STATUS = "Eşit modül + counter doğrulandı";
   const AI_STATUS = "Adaptif AI + rekabetçi denge doğrulandı";
-  const PVP_STATUS = "Ana Menü yönlendirmesi aktif";
+  const PVP_STATUS = "Tarayıcı WebSocket yöneticisi aktif";
 
   const PORT_COUNT_BY_NAME = {
     "Çekirdek":4,
@@ -116,13 +116,27 @@
     unlockAtMs: 15000,
     circuitCredits: 200,
     emitCommand(command) {
+      const pvpEnvelope =
+        buildPvPCommandEnvelope(command);
+
       commandLog.push({
         atMs: client.elapsedMs,
         ...command,
-        pvpEnvelope: buildPvPCommandEnvelope(command),
+        pvpEnvelope,
       });
+
+      if (
+        typeof pvpConnection !== "undefined"
+        && pvpConnection.status === "open"
+      ) {
+        pvpConnection.sendEnvelope(
+          pvpEnvelope
+        );
+      } else {
+        applyMockServerCommand(command);
+      }
+
       renderLog();
-      applyMockServerCommand(command);
     },
   });
 
@@ -237,6 +251,65 @@
     return result;
   }
 
+  const connectionStatusEl =
+    document.getElementById(
+      "pvp-connection-status"
+    );
+
+  function renderConnectionStatus(status) {
+    if (!connectionStatusEl) {
+      return;
+    }
+
+    const labels = {
+      idle: "Bağlantı: Hazır",
+      connecting: "Bağlantı: Kuruluyor",
+      open: "Bağlantı: Aktif",
+      reconnecting: "Bağlantı: Yeniden bağlanıyor",
+      closed: "Bağlantı: Kapalı",
+      error: "Bağlantı: Hata",
+    };
+
+    connectionStatusEl.textContent =
+      labels[status] || `Bağlantı: ${status}`;
+    connectionStatusEl.dataset.status =
+      status;
+  }
+
+  const pvpConnection =
+    new RelayWebSocketConnectionManager({
+      pvpState,
+      onStatusChange:
+        renderConnectionStatus,
+      onMessageApplied:
+        (_message, result) => {
+          if (
+            result
+            && result.ok === false
+            && result.reason
+          ) {
+            logClientMessage(
+              result.reason
+            );
+          }
+          render();
+        },
+    });
+
+  function connectPvP(url) {
+    pvpConnection.connect(url);
+  }
+
+  function disconnectPvP() {
+    pvpConnection.disconnect();
+  }
+
+  function sendPvPCommand(command) {
+    return pvpConnection.sendCommand(
+      command
+    );
+  }
+
   function buildPvPCommandEnvelope(command) {
     return pvpState.buildCommandMessage(command);
   }
@@ -292,6 +365,9 @@
   }
 
   renderAppScreen();
+  renderConnectionStatus(
+    pvpConnection.status
+  );
 
   const BOARD_CELLS = [
     [1,0],[2,0],[3,0],

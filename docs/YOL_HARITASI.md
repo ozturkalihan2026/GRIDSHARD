@@ -1,7 +1,7 @@
 # Project Relay 2.0 — YOL HARİTASI
 
-**Güncel Sürüm:** `2.0.0-alpha.45`  
-**Paket:** İlk Menü Kapsamı Birleştirme ve Ekran Yönlendirme  
+**Güncel Sürüm:** `2.0.0-alpha.46`  
+**Paket:** Tarayıcı WebSocket Bağlantı Yöneticisi  
 **Kanonik Dosya:** `docs/YOL_HARITASI.md`
 
 > Bu dosya Project Relay 2.0 için tek kanonik geliştirme kaydıdır. Her paket tamamlandığında sürüm numarası artırılır; **Tamamlananlar** ve **Yapılacaklar** bu dosyada güncellenir. Sonraki geliştirme paketi bu dosya okunarak başlatılır.
@@ -379,9 +379,9 @@ Aşağıdaki alanlar ilk sürüm kapsamına dahil değildir ve mevcut yol harita
 
 ## Sıradaki Paket
 
-**`2.0.0-alpha.46 — Tarayıcı WebSocket Bağlantı Yöneticisi`**
+**`2.0.0-alpha.47 — Eşleştirme Kuyruğu ve Başlangıç Derece Puanı`**
 
-İlk dört ekranın Ana Menü yönlendirmesi tamamlandı. Sıradaki paket yeni menü/özellik alanı eklemeyecek; `Oyna` akışındaki son önemli istemci altyapısına dönecek. Gerçek tarayıcı `WebSocket` bağlantısı, reconnect denemesi, heartbeat gönderimi, gelen PvP mesajlarının `RelayPvPClientState` durum makinesine aktarılması ve bağlantı durumunun Oyna ekranında gösterilmesi hazırlanacak.
+Tarayıcı WebSocket bağlantı yöneticisi tamamlandı. Sıradaki paket yol haritasındaki FAZ 18 Eşleştirme alanına geçecek. Başlangıç derece puanı 1000 olacak; eşleştirme kuyruğu öncelikle derece puanı yakınlığına göre iki oyuncuyu eşleştirecek, bekleme süresi arttıkça kabul edilen derece aralığı kontrollü biçimde genişleyecek. Lig ve deneyim ek parametreleri bu alpha'da yalnızca metadata olarak tutulacak, karmaşık eşleştirme algoritmasına dönüştürülmeyecek.
 
 
 ---

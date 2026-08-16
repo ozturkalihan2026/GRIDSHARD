@@ -788,6 +788,336 @@
   }
 
 
+
+  const WS_CONNECTION_STATUS = Object.freeze({
+    IDLE: "idle",
+    CONNECTING: "connecting",
+    OPEN: "open",
+    RECONNECTING: "reconnecting",
+    CLOSED: "closed",
+    ERROR: "error",
+  });
+
+  class RelayWebSocketConnectionManager {
+    constructor({
+      pvpState,
+      createWebSocket = (url) => new WebSocket(url),
+      now = () => Date.now(),
+      setTimer = (fn, ms) => setTimeout(fn, ms),
+      clearTimer = (id) => clearTimeout(id),
+      heartbeatIntervalMs = 5000,
+      reconnectBaseDelayMs = 1000,
+      reconnectMaxDelayMs = 8000,
+      maxReconnectAttempts = 8,
+      onStatusChange = null,
+      onMessageApplied = null,
+    }) {
+      if (!pvpState) {
+        throw new Error("PvP istemci durumu zorunludur.");
+      }
+
+      this.pvpState = pvpState;
+      this.createWebSocket = createWebSocket;
+      this.now = now;
+      this.setTimer = setTimer;
+      this.clearTimer = clearTimer;
+      this.heartbeatIntervalMs = heartbeatIntervalMs;
+      this.reconnectBaseDelayMs = reconnectBaseDelayMs;
+      this.reconnectMaxDelayMs = reconnectMaxDelayMs;
+      this.maxReconnectAttempts = maxReconnectAttempts;
+      this.onStatusChange = onStatusChange;
+      this.onMessageApplied = onMessageApplied;
+
+      this.socket = null;
+      this.url = null;
+      this.status = WS_CONNECTION_STATUS.IDLE;
+      this.manualClose = false;
+      this.reconnectAttempts = 0;
+      this.heartbeatTimer = null;
+      this.reconnectTimer = null;
+      this.outgoingQueue = [];
+      this.lastHeartbeatSentAtMs = null;
+      this.lastHeartbeatAckAtMs = null;
+    }
+
+    connect(url) {
+      if (!url) {
+        throw new Error("WebSocket adresi zorunludur.");
+      }
+
+      this.url = url;
+      this.manualClose = false;
+      this._clearReconnectTimer();
+      this._openSocket(false);
+    }
+
+    disconnect() {
+      this.manualClose = true;
+      this._clearHeartbeatTimer();
+      this._clearReconnectTimer();
+
+      if (
+        this.socket &&
+        typeof this.socket.close === "function"
+      ) {
+        this.socket.close(1000, "client_disconnect");
+      }
+
+      this.socket = null;
+      this.pvpState.markDisconnected();
+      this._setStatus(WS_CONNECTION_STATUS.CLOSED);
+    }
+
+    sendEnvelope(envelope) {
+      const serialized = JSON.stringify(envelope);
+
+      if (this._socketIsOpen()) {
+        this.socket.send(serialized);
+        return {
+          ok: true,
+          queued: false,
+        };
+      }
+
+      this.outgoingQueue.push(serialized);
+      return {
+        ok: true,
+        queued: true,
+      };
+    }
+
+    sendCommand(command) {
+      return this.sendEnvelope(
+        this.pvpState.buildCommandMessage(command)
+      );
+    }
+
+    sendLobbyRequest() {
+      return this.sendEnvelope(
+        this.pvpState.buildLobbyRequest()
+      );
+    }
+
+    sendSetup(setup) {
+      return this.sendEnvelope(
+        this.pvpState.buildSetupMessage(setup)
+      );
+    }
+
+    sendReady(ready = true) {
+      return this.sendEnvelope(
+        this.pvpState.buildReadyMessage(ready)
+      );
+    }
+
+    sendReconnect() {
+      return this.sendEnvelope(
+        this.pvpState.buildReconnectRequest()
+      );
+    }
+
+    flushQueue() {
+      if (!this._socketIsOpen()) {
+        return 0;
+      }
+
+      let sent = 0;
+      while (this.outgoingQueue.length) {
+        this.socket.send(
+          this.outgoingQueue.shift()
+        );
+        sent += 1;
+      }
+      return sent;
+    }
+
+    _openSocket(isReconnect) {
+      this._clearHeartbeatTimer();
+
+      this._setStatus(
+        isReconnect
+          ? WS_CONNECTION_STATUS.RECONNECTING
+          : WS_CONNECTION_STATUS.CONNECTING
+      );
+
+      const socket = this.createWebSocket(this.url);
+      this.socket = socket;
+
+      socket.onopen = () => {
+        this.reconnectAttempts = 0;
+        this.pvpState.markConnected();
+        this._setStatus(WS_CONNECTION_STATUS.OPEN);
+
+        if (isReconnect) {
+          this.sendReconnect();
+        } else {
+          this.sendLobbyRequest();
+        }
+
+        this.flushQueue();
+        this._scheduleHeartbeat();
+      };
+
+      socket.onmessage = (event) => {
+        let message;
+
+        try {
+          message = JSON.parse(event.data);
+        } catch (_error) {
+          this._setStatus(
+            WS_CONNECTION_STATUS.ERROR
+          );
+          return;
+        }
+
+        const result =
+          this.pvpState.applyServerEnvelope(
+            message
+          );
+
+        if (
+          message.type === "heartbeat_ack"
+        ) {
+          this.lastHeartbeatAckAtMs =
+            this.now();
+        }
+
+        if (
+          typeof this.onMessageApplied
+          === "function"
+        ) {
+          this.onMessageApplied(
+            message,
+            result
+          );
+        }
+      };
+
+      socket.onerror = () => {
+        if (!this.manualClose) {
+          this._setStatus(
+            WS_CONNECTION_STATUS.ERROR
+          );
+        }
+      };
+
+      socket.onclose = () => {
+        this._clearHeartbeatTimer();
+
+        if (this.manualClose) {
+          this._setStatus(
+            WS_CONNECTION_STATUS.CLOSED
+          );
+          return;
+        }
+
+        this.pvpState.markDisconnected();
+        this._scheduleReconnect();
+      };
+    }
+
+    _scheduleHeartbeat() {
+      this._clearHeartbeatTimer();
+
+      this.heartbeatTimer = this.setTimer(
+        () => {
+          if (!this._socketIsOpen()) {
+            return;
+          }
+
+          const sentAtMs = this.now();
+          this.lastHeartbeatSentAtMs = sentAtMs;
+          this.sendEnvelope(
+            this.pvpState.buildHeartbeat(
+              sentAtMs
+            )
+          );
+          this._scheduleHeartbeat();
+        },
+        this.heartbeatIntervalMs
+      );
+    }
+
+    _scheduleReconnect() {
+      this._clearReconnectTimer();
+
+      if (
+        this.reconnectAttempts
+        >= this.maxReconnectAttempts
+      ) {
+        this._setStatus(
+          WS_CONNECTION_STATUS.CLOSED
+        );
+        return;
+      }
+
+      const delay = Math.min(
+        this.reconnectBaseDelayMs
+          * (2 ** this.reconnectAttempts),
+        this.reconnectMaxDelayMs
+      );
+
+      this.reconnectAttempts += 1;
+      this._setStatus(
+        WS_CONNECTION_STATUS.RECONNECTING
+      );
+
+      this.reconnectTimer = this.setTimer(
+        () => {
+          this.reconnectTimer = null;
+          if (!this.manualClose) {
+            this._openSocket(true);
+          }
+        },
+        delay
+      );
+    }
+
+    _socketIsOpen() {
+      if (!this.socket) {
+        return false;
+      }
+
+      const openValue =
+        typeof WebSocket !== "undefined"
+          ? WebSocket.OPEN
+          : 1;
+
+      return this.socket.readyState === openValue
+        || this.socket.readyState === 1;
+    }
+
+    _setStatus(status) {
+      this.status = status;
+
+      if (
+        typeof this.onStatusChange
+        === "function"
+      ) {
+        this.onStatusChange(status);
+      }
+    }
+
+    _clearHeartbeatTimer() {
+      if (this.heartbeatTimer !== null) {
+        this.clearTimer(
+          this.heartbeatTimer
+        );
+        this.heartbeatTimer = null;
+      }
+    }
+
+    _clearReconnectTimer() {
+      if (this.reconnectTimer !== null) {
+        this.clearTimer(
+          this.reconnectTimer
+        );
+        this.reconnectTimer = null;
+      }
+    }
+  }
+
+
   const api = {
     RelayBattleClient,
     RelayPvPClientState,
@@ -795,8 +1125,10 @@
     RelayStatisticsClientState,
     RelaySettingsClientState,
     RelayAppRouter,
+    RelayWebSocketConnectionManager,
     BattlePoolSelection,
     APP_SCREEN,
+    WS_CONNECTION_STATUS,
     PVP_PHASE,
     MODULE_STATUS,
     DRAG_KIND,
@@ -813,7 +1145,9 @@
   global.RelayStatisticsClientState = RelayStatisticsClientState;
   global.RelaySettingsClientState = RelaySettingsClientState;
   global.RelayAppRouter = RelayAppRouter;
+  global.RelayWebSocketConnectionManager = RelayWebSocketConnectionManager;
   global.RelayAppScreen = APP_SCREEN;
+  global.RelayWebSocketStatus = WS_CONNECTION_STATUS;
   global.RelayPvPPhase = PVP_PHASE;
   global.BattlePoolSelection = BattlePoolSelection;
   global.RelayModuleStatus = MODULE_STATUS;
