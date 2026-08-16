@@ -12,6 +12,7 @@ OVERCLOCK_DAMAGE_MULTIPLIER = 1.20
 OVERCLOCK_COOLDOWN_MULTIPLIER = 0.80
 OVERCLOCK_HEAT_PER_TICK = 1.0
 COOLER_HEAT_REDUCTION_PER_TICK = 2.0
+JAMMER_DEBUFF_ID = "support_jammed"
 
 @dataclass(slots=True, frozen=True)
 class AttackSupportModifiers:

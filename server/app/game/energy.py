@@ -4,6 +4,10 @@ from .board import get_cell_effects
 from .models import ModuleStatus, PlayerBattleState, Position
 from .topology import build_energy_topology
 
+EMP_DEBUFF_ID = "emp_disabled"
+ENERGY_LEECH_DEBUFF_ID = "energy_leech"
+ENERGY_LEECH_GENERATION_MULTIPLIER = 0.70
+
 
 TICK_SECONDS = 0.1
 
@@ -90,18 +94,21 @@ def process_energy_tick(
         for module in active
         if module.definition.id == "splitter"
         and module.instance_id in reachable_ids
+        and EMP_DEBUFF_ID not in module.debuffs
     ]
     capacitors = [
         module
         for module in active
         if module.definition.id == "capacitor"
         and module.instance_id in reachable_ids
+        and EMP_DEBUFF_ID not in module.debuffs
     ]
     batteries = [
         module
         for module in active
         if module.definition.id == "battery"
         and module.instance_id in reachable_ids
+        and EMP_DEBUFF_ID not in module.debuffs
     ]
 
     # Kapasitör kısa süreli destek olarak Batarya'dan önce kullanılır.
@@ -109,10 +116,17 @@ def process_energy_tick(
 
     generated = 0.0
     for module in generators:
+        generation_multiplier = (
+            ENERGY_LEECH_GENERATION_MULTIPLIER
+            if ENERGY_LEECH_DEBUFF_ID in module.debuffs
+            else 1.0
+        )
+
         amount = (
             module.definition.energy_generation
             * TICK_SECONDS
             * _energy_multiplier(module)
+            * generation_multiplier
         )
         generated += amount
         module.is_powered = True
@@ -131,12 +145,22 @@ def process_energy_tick(
         module.energy_required_last_tick = 0.0
         module.energy_received_last_tick = 0.0
 
+    emp_disabled = [
+        module
+        for module in active
+        if EMP_DEBUFF_ID in module.debuffs
+    ]
+    for module in emp_disabled:
+        module.is_powered = False
+        module.energy_received_last_tick = 0.0
+
     consumers = [
         module
         for module in active
         if module.definition.energy_consumption > 0
         and module.definition.id
         not in {"battery", "capacitor", "splitter"}
+        and EMP_DEBUFF_ID not in module.debuffs
     ]
 
     disconnected_consumers = [

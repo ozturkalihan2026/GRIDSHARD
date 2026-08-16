@@ -320,4 +320,17 @@ function createClient() {
   assert.ok(src.includes("Saldırı engellendi: kritik ısı"));
 }
 
-console.log("27 client tests passed");
+
+{
+  const fs=require("fs");
+  const src=fs.readFileSync("./src/app.js","utf8");
+  assert.ok(src.includes("sabotageLabelForModule"));
+  assert.ok(src.includes("Enerji Kesme"));
+  assert.ok(src.includes("Destek Susturma"));
+  assert.ok(src.includes("Periyodik Hasar"));
+  assert.ok(src.includes("Üretim -%30"));
+  assert.ok(src.includes("Hat Kesme"));
+  assert.ok(src.includes("Virüs:"));
+}
+
+console.log("28 client tests passed");

@@ -3,6 +3,8 @@ from dataclasses import dataclass
 
 from .models import BattleModule, Direction, ModuleStatus, PlayerBattleState, Position
 
+DISRUPTOR_DEBUFF_ID = "line_disrupted"
+
 
 DIRECTION_VECTOR = {
     Direction.UP: (0, -1),
@@ -152,6 +154,7 @@ def build_energy_topology(
         for module in player.modules.values()
         if module.status == ModuleStatus.ACTIVE
         and module.position is not None
+        and DISRUPTOR_DEBUFF_ID not in module.debuffs
     ]
 
     adjacency_lists = {

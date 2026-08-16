@@ -28,6 +28,17 @@ from .heat import (
     heat_performance,
 )
 from .topology import build_energy_topology, module_port_directions
+from .sabotage import (
+    EMP_DEBUFF_ID,
+    ENERGY_LEECH_DEBUFF_ID,
+    JAMMER_DEBUFF_ID,
+    SABOTAGE_COOLDOWN_ID,
+    VIRUS_DEBUFF_ID,
+    VIRUS_TICK_DAMAGE,
+    VIRUS_TICK_INTERVAL_MS,
+    plan_sabotage,
+    sabotage_cooldown_ms,
+)
 from .support import (
     COOLER_HEAT_REDUCTION_PER_TICK,
     OVERCLOCK_HEAT_PER_TICK,
@@ -552,6 +563,142 @@ class BattleEngine:
         for player in self.state.players.values():
             process_energy_tick(player, self.board.core_position)
 
+    def _process_virus_effects(self) -> None:
+        for player in self.state.players.values():
+            for module in sorted(
+                player.modules.values(),
+                key=lambda current: current.instance_id,
+            ):
+                effect = module.debuffs.get(VIRUS_DEBUFF_ID)
+                if effect is None:
+                    continue
+                if module.status != ModuleStatus.ACTIVE:
+                    continue
+
+                next_tick_at_ms = int(
+                    effect.data.get("next_tick_at_ms", 0)
+                )
+                if self.state.elapsed_ms < next_tick_at_ms:
+                    continue
+
+                self.apply_damage(
+                    player.player_id,
+                    module.instance_id,
+                    VIRUS_TICK_DAMAGE,
+                )
+                effect.data["next_tick_at_ms"] = (
+                    self.state.elapsed_ms
+                    + VIRUS_TICK_INTERVAL_MS
+                )
+
+                self._emit(
+                    "virus_damage",
+                    {
+                        "player_id": player.player_id,
+                        "module_id": module.instance_id,
+                        "damage": VIRUS_TICK_DAMAGE,
+                        "next_tick_at_ms": effect.data["next_tick_at_ms"],
+                    },
+                )
+
+    def _process_sabotage_actions(self) -> None:
+        if len(self.state.players) < 2:
+            return
+
+        player_ids = sorted(self.state.players)
+
+        for attacker_player_id in player_ids:
+            attacker_player = self.state.players[attacker_player_id]
+            opponent_ids = [
+                player_id
+                for player_id in player_ids
+                if player_id != attacker_player_id
+            ]
+            if not opponent_ids:
+                continue
+
+            target_player_id = opponent_ids[0]
+            target_player = self.state.players[target_player_id]
+
+            sabotage_modules = sorted(
+                (
+                    module
+                    for module in attacker_player.modules.values()
+                    if module.status == ModuleStatus.ACTIVE
+                    and module.definition.category == "sabotaj"
+                ),
+                key=lambda module: module.instance_id,
+            )
+
+            for module in sabotage_modules:
+                if not module.is_powered:
+                    self._emit(
+                        "sabotage_skipped_unpowered",
+                        {
+                            "player_id": attacker_player_id,
+                            "module_id": module.instance_id,
+                        },
+                    )
+                    continue
+
+                if not self.is_cooldown_ready(
+                    attacker_player_id,
+                    module.instance_id,
+                    SABOTAGE_COOLDOWN_ID,
+                ):
+                    continue
+
+                plan = plan_sabotage(
+                    module,
+                    target_player,
+                )
+                if plan is None:
+                    continue
+
+                data = {
+                    "source_player_id": attacker_player_id,
+                    "source_module_id": module.instance_id,
+                }
+                if plan.effect_id == VIRUS_DEBUFF_ID:
+                    data["next_tick_at_ms"] = self.state.elapsed_ms
+
+                self.add_debuff(
+                    target_player_id,
+                    plan.target_module_id,
+                    plan.effect_id,
+                    plan.name_tr,
+                    plan.duration_ms,
+                    data,
+                )
+
+                if plan.effect_id == EMP_DEBUFF_ID:
+                    target_module = self._require_module(
+                        target_player_id,
+                        plan.target_module_id,
+                    )
+                    target_module.is_powered = False
+                    target_module.energy_received_last_tick = 0.0
+
+                self.start_cooldown(
+                    attacker_player_id,
+                    module.instance_id,
+                    SABOTAGE_COOLDOWN_ID,
+                    sabotage_cooldown_ms(module),
+                )
+
+                self._emit(
+                    "sabotage_applied",
+                    {
+                        "attacker_player_id": attacker_player_id,
+                        "attacker_module_id": module.instance_id,
+                        "target_player_id": target_player_id,
+                        "target_module_id": plan.target_module_id,
+                        "effect_id": plan.effect_id,
+                        "duration_ms": plan.duration_ms,
+                        "cooldown_ms": sabotage_cooldown_ms(module),
+                    },
+                )
+
     def _process_support_actions(self) -> None:
         for player in self.state.players.values():
             support_modules = sorted(
@@ -566,6 +713,16 @@ class BattleEngine:
 
             for module in support_modules:
                 if not module.is_powered:
+                    continue
+
+                if JAMMER_DEBUFF_ID in module.debuffs:
+                    self._emit(
+                        "support_skipped_jammed",
+                        {
+                            "player_id": player.player_id,
+                            "module_id": module.instance_id,
+                        },
+                    )
                     continue
 
                 if module.definition.id == "repair":
@@ -1199,6 +1356,8 @@ class BattleEngine:
         self._update_booster_offers()
         self._apply_passive_circuit_credit_income()
         self._process_energy_flow()
+        self._process_sabotage_actions()
+        self._process_virus_effects()
         self._process_support_actions()
         self._process_combat_actions()
         self._process_passive_heat()

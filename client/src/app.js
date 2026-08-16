@@ -364,11 +364,13 @@ const SPECIAL_CELL_INFO = {
         : "";
     const supportLabel = supportLabelForModule(module);
     const supportText = supportLabel ? ` · ${supportLabel}` : "";
+    const sabotageLabel = sabotageLabelForModule(module);
+    const sabotageText = sabotageLabel ? ` · ${sabotageLabel}` : "";
     const heatText = module.status === "active"
       ? ` · ${heatStatusLabel(module)}`
       : "";
     meta.textContent =
-      `Can ${module.hp}/${module.maxHp}${costText}${energyText}${supportText}${heatText}`;
+      `Can ${module.hp}/${module.maxHp}${costText}${energyText}${supportText}${sabotageText}${heatText}`;
 
     card.append(name, meta);
 
@@ -637,6 +639,15 @@ const SPECIAL_CELL_INFO = {
       `Enerji: ${generated.toFixed(1)} Ü / ${totalDemand.toFixed(1)} T`;
   }
 
+  function sabotageLabelForModule(module) {
+    if (module.nameTr === "EMP") return "Enerji Kesme";
+    if (module.nameTr === "Sinyal Bozucu") return "Destek Susturma";
+    if (module.nameTr === "Virüs") return "Periyodik Hasar";
+    if (module.nameTr === "Enerji Sömürücü") return "Üretim -%30";
+    if (module.nameTr === "Kesici") return "Hat Kesme";
+    return "";
+  }
+
   function heatStatusLabel(module) {
     const heat = Number(module.heat || 0);
     if (heat >= 100) return `KRİTİK ISI ${heat.toFixed(0)}`;
@@ -804,6 +815,15 @@ const SPECIAL_CELL_INFO = {
         }
         if (entry.kind === "attack_skipped_overheated") {
           return `Saldırı engellendi: kritik ısı`;
+        }
+        if (entry.kind === "sabotage_applied") {
+          return `Sabotaj: ${entry.effectId || entry.effect_id} · ${entry.durationMs || entry.duration_ms} ms`;
+        }
+        if (entry.kind === "virus_damage") {
+          return `Virüs: ${entry.damage} hasar`;
+        }
+        if (entry.kind === "support_skipped_jammed") {
+          return `Destek engellendi: Sinyal Bozma`;
         }
         if (entry.kind === "module_damaged") {
           return `${entry.moduleName || "Modül"}: ${entry.damage} hasar · Can ${entry.hp}`;
