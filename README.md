@@ -16,22 +16,6 @@ Oyuncular savaş sırasında:
 
 Project Relay'de **savaş hiçbir zaman durmaz**. Oyuncunun yaptığı bütün müdahaleler gerçek zamanlı savaş devam ederken gerçekleşir.
 
-## Geliştirme Durumu
-
-Tamamlanan temel sistemler:
-
-- Kesintisiz gerçek zamanlı savaş motoru
-- 10 Hz sabit tick sistemi
-- Oyuncu komut kuyruğu
-- Çekirdek ve Jeneratör temel modelleri
-- Aktif / Rezerv / Yok Edilmiş modül durumları
-- Maç sırasında modül ekleme, çıkarma, taşıma, değiştirme ve döndürme
-- Modül Can değerinin rezerv durumunda korunması
-
-Geliştirme ilerlemesi ve sıradaki çalışmalar tek kanonik dosyada tutulur:
-
-`docs/YOL_HARITASI.md`
-
 ## Proje Hedefi
 
 Project Relay'in amacı; kolay anlaşılabilen ancak enerji yönetimi, modül kombinasyonları, konumlandırma, ekonomi ve anlık karşı hamleler sayesinde ustalaşması zaman alan rekabetçi bir PvP deneyimi oluşturmaktır.
