@@ -42,7 +42,7 @@
   const COMPETITIVE_STATUS = "M7 Simülasyon aktif";
   const BALANCE_STATUS = "Eşit modül + counter doğrulandı";
   const AI_STATUS = "Adaptif AI + rekabetçi denge doğrulandı";
-  const PVP_STATUS = "Oyna PvP istemci durum makinesi aktif";
+  const PVP_STATUS = "Oyna + Profil temel akışı aktif";
 
   const PORT_COUNT_BY_NAME = {
     "Çekirdek":4,
@@ -132,6 +132,20 @@
     battleClient: client,
   });
   pvpState.markConnected();
+
+  const profileState = new RelayProfileClientState();
+  profileState.applyProfile({
+    player_id: "local-player",
+    display_name: "Oyuncu",
+    level: 1,
+    experience: 0,
+    experience_into_level: 0,
+    experience_to_next_level: 1000,
+    rating: 1000,
+    league_name_tr: "Gümüş",
+    preferred_battle_pool_ids:
+      battlePoolSelection.selectedIds(),
+  });
 
   function buildPvPCommandEnvelope(command) {
     return pvpState.buildCommandMessage(command);

@@ -401,61 +401,61 @@ function createClient() {
   const fs=require("fs");
   const src=fs.readFileSync("./src/app.js","utf8");
   assert.ok(src.includes("PVP_STATUS"));
-  assert.ok(src.includes("Oyna PvP istemci durum makinesi aktif"));
+  assert.ok(src.includes("Oyna + Profil temel akışı aktif"));
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync("./src/app.js","utf8");
-  assert.ok(src.includes("Oyna PvP istemci durum makinesi aktif")); // alpha32->33 protocol status
+  assert.ok(src.includes("Oyna + Profil temel akışı aktif")); // alpha32->33 protocol status
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync("./src/app.js","utf8");
-  assert.ok(src.includes("Oyna PvP istemci durum makinesi aktif")); // alpha33 protocol
+  assert.ok(src.includes("Oyna + Profil temel akışı aktif")); // alpha33 protocol
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync("./src/app.js","utf8");
-  assert.ok(src.includes("Oyna PvP istemci durum makinesi aktif")); // alpha34 websocket
+  assert.ok(src.includes("Oyna + Profil temel akışı aktif")); // alpha34 websocket
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync("./src/app.js","utf8");
-  assert.ok(src.includes("Oyna PvP istemci durum makinesi aktif")); // alpha35 gateway
+  assert.ok(src.includes("Oyna + Profil temel akışı aktif")); // alpha35 gateway
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync("./src/app.js","utf8");
-  assert.ok(src.includes("Oyna PvP istemci durum makinesi aktif")); // alpha36 setup
+  assert.ok(src.includes("Oyna + Profil temel akışı aktif")); // alpha36 setup
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync("./src/app.js","utf8");
-  assert.ok(src.includes("Oyna PvP istemci durum makinesi aktif")); // alpha37 lobby
+  assert.ok(src.includes("Oyna + Profil temel akışı aktif")); // alpha37 lobby
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync("./src/app.js","utf8");
-  assert.ok(src.includes("Oyna PvP istemci durum makinesi aktif")); // alpha38 runner
+  assert.ok(src.includes("Oyna + Profil temel akışı aktif")); // alpha38 runner
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync("./src/app.js","utf8");
-  assert.ok(src.includes("Oyna PvP istemci durum makinesi aktif")); // alpha39 heartbeat
+  assert.ok(src.includes("Oyna + Profil temel akışı aktif")); // alpha39 heartbeat
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync("./src/app.js","utf8");
-  assert.ok(src.includes("Oyna PvP istemci durum makinesi aktif")); // alpha40 online pvp
+  assert.ok(src.includes("Oyna + Profil temel akışı aktif")); // alpha40 online pvp
 }
 
 {
@@ -681,9 +681,70 @@ function createClient() {
 {
   const fs=require("fs");
   const src=fs.readFileSync("./src/app.js","utf8");
-  assert.ok(src.includes("Oyna PvP istemci durum makinesi aktif"));
+  assert.ok(src.includes("Oyna + Profil temel akışı aktif"));
   assert.ok(src.includes("buildPvPCommandEnvelope"));
   assert.ok(src.includes("applyPvPServerEnvelope"));
 }
 
-console.log("54 client tests passed");
+{
+  const {
+    RelayProfileClientState,
+  } = require("../src/relay-client.js");
+
+  const state = new RelayProfileClientState();
+  state.applyProfile({
+    player_id: "a",
+    display_name: "Alihan",
+    level: 3,
+    experience: 2500,
+    experience_into_level: 500,
+    experience_to_next_level: 500,
+    rating: 1200,
+    league_name_tr: "Altın",
+    preferred_battle_pool_ids: Array.from(
+      { length: 18 },
+      (_, i) => `m${i}`
+    ),
+  });
+
+  const view = state.viewModel();
+
+  assert.strictEqual(view.displayName, "Alihan");
+  assert.strictEqual(view.level, 3);
+  assert.strictEqual(view.leagueNameTr, "Altın");
+  assert.strictEqual(view.battlePoolIds.length, 18);
+}
+
+{
+  const {
+    RelayProfileClientState,
+  } = require("../src/relay-client.js");
+
+  const state = new RelayProfileClientState();
+
+  assert.strictEqual(
+    state.setSection("İlerleme").ok,
+    true
+  );
+  assert.strictEqual(
+    state.setSection("Kozmetik").ok,
+    false
+  );
+  assert.deepStrictEqual(
+    state.allowedSections,
+    ["Genel", "İlerleme", "Savaş Havuzu"]
+  );
+}
+
+{
+  const fs=require("fs");
+  const html=fs.readFileSync("./index.html","utf8");
+  assert.ok(html.includes(">Oyna<"));
+  assert.ok(html.includes(">Profil<"));
+  assert.ok(html.includes(">İstatistikler<"));
+  assert.ok(html.includes(">Ayarlar<"));
+  assert.ok(!html.includes(">Mağaza<"));
+  assert.ok(!html.includes(">Kozmetik<"));
+}
+
+console.log("57 client tests passed");

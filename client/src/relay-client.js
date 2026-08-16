@@ -531,9 +531,74 @@
   }
 
 
+
+  class RelayProfileClientState {
+    constructor() {
+      this.profile = null;
+      this.activeSection = "Genel";
+      this.allowedSections = [
+        "Genel",
+        "İlerleme",
+        "Savaş Havuzu",
+      ];
+    }
+
+    applyProfile(profile) {
+      if (!profile || !profile.player_id) {
+        throw new Error(
+          "Geçerli oyuncu profili gerekli."
+        );
+      }
+
+      this.profile = {
+        ...profile,
+        preferred_battle_pool_ids: [
+          ...(profile.preferred_battle_pool_ids || []),
+        ],
+      };
+
+      return this.profile;
+    }
+
+    setSection(section) {
+      if (!this.allowedSections.includes(section)) {
+        return {
+          ok: false,
+          reason: "Bu Profil bölümü mevcut kapsamda yok.",
+        };
+      }
+
+      this.activeSection = section;
+      return { ok: true };
+    }
+
+    viewModel() {
+      if (!this.profile) return null;
+
+      return {
+        playerId: this.profile.player_id,
+        displayName: this.profile.display_name,
+        level: this.profile.level,
+        experience: this.profile.experience,
+        experienceIntoLevel:
+          this.profile.experience_into_level,
+        experienceToNextLevel:
+          this.profile.experience_to_next_level,
+        rating: this.profile.rating,
+        leagueNameTr: this.profile.league_name_tr,
+        battlePoolIds: [
+          ...this.profile.preferred_battle_pool_ids,
+        ],
+        activeSection: this.activeSection,
+      };
+    }
+  }
+
+
   const api = {
     RelayBattleClient,
     RelayPvPClientState,
+    RelayProfileClientState,
     BattlePoolSelection,
     PVP_PHASE,
     MODULE_STATUS,
@@ -547,6 +612,7 @@
 
   global.RelayBattleClient = RelayBattleClient;
   global.RelayPvPClientState = RelayPvPClientState;
+  global.RelayProfileClientState = RelayProfileClientState;
   global.RelayPvPPhase = PVP_PHASE;
   global.BattlePoolSelection = BattlePoolSelection;
   global.RelayModuleStatus = MODULE_STATUS;

@@ -1,7 +1,7 @@
 # Project Relay 2.0 — YOL HARİTASI
 
-**Güncel Sürüm:** `2.0.0-alpha.41`  
-**Paket:** Oyna Ana Akışı ve PvP İstemci Durum Makinesi  
+**Güncel Sürüm:** `2.0.0-alpha.42`  
+**Paket:** Profil Temeli ve Oyuncu İlerleme Verisi  
 **Kanonik Dosya:** `docs/YOL_HARITASI.md`
 
 > Bu dosya Project Relay 2.0 için tek kanonik geliştirme kaydıdır. Her paket tamamlandığında sürüm numarası artırılır; **Tamamlananlar** ve **Yapılacaklar** bu dosyada güncellenir. Sonraki geliştirme paketi bu dosya okunarak başlatılır.
@@ -379,9 +379,9 @@ Aşağıdaki alanlar ilk sürüm kapsamına dahil değildir ve mevcut yol harita
 
 ## Sıradaki Paket
 
-**`2.0.0-alpha.42 — Profil Temeli ve Oyuncu İlerleme Verisi`**
+**`2.0.0-alpha.43 — İstatistikler Temeli ve Maç Sonucu İşleme`**
 
-Oyna PvP istemci akışı hazır. Sıradaki paket yalnızca sabitlenen ilk menü kapsamındaki `Profil` alanına geçecek. Kozmetik olmadan oyuncu kimliği, seviye/deneyim, derece puanı, mevcut lig özeti ve Savaş Havuzu erişimini taşıyan profil modeli; viewer-scoped profil endpoint'i ve sade Profil ekranı hazırlanacak. Mağaza, kozmetik, sezon, görev veya sosyal alan eklenmeyecek.
+Profil temeli hazır. Sıradaki paket yalnızca `İstatistikler` alanına geçecek. Sunucu otoriteli tamamlanmış PvP sonuçlarından toplam maç, galibiyet, mağlubiyet, beraberlik, galibiyet oranı, ortalama maç süresi, toplam verilen hasar, modül değiştirme ve güçlendirici kullanım sayaçları üretilecek; aynı maçın iki kez işlenmesi engellenecek ve sade İstatistikler ekranı hazırlanacak.
 
 
 ---
@@ -444,7 +444,7 @@ Oyna PvP istemci akışı hazır. Sıradaki paket yalnızca sabitlenen ilk menü
 ### M8 — Project Relay 2.0 Beta
 
 - [x] Oyna
-- [ ] Profil
+- [x] Profil
 - [ ] İstatistikler
 - [ ] Ayarlar
 - [ ] Eğitim

@@ -332,3 +332,20 @@ button, input { font: inherit; }
   border-radius: 10px;
   background: rgba(16,26,41,.88);
 }
+
+
+.main-scope-nav {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.main-scope-nav button {
+  padding: 0.65rem 1rem;
+}
+
+.profile-summary-panel {
+  border: 1px solid currentColor;
+  border-radius: 0.75rem;
+  padding: 1rem;
+}

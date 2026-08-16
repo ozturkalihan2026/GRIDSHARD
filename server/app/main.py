@@ -15,6 +15,10 @@ from .game.pvp_setup import InitialModulePlacement, PvPSetupPayload
 from .game.pvp_websocket import PvPWebSocketAdapter
 from .game.pvp_runner import PvPTickRunner
 from .version import VERSION
+from .player_profile import (
+    PlayerProfileError,
+    PlayerProfileService,
+)
 
 
 app = FastAPI(
@@ -29,6 +33,7 @@ pvp_websocket_adapter = PvPWebSocketAdapter(
     grace_period_seconds=15.0,
 )
 pvp_tick_runner = PvPTickRunner(pvp_service,pvp_websocket_adapter)
+player_profile_service = PlayerProfileService()
 
 
 class CreateSessionRequest(BaseModel):
@@ -54,6 +59,63 @@ class SetupSessionRequest(BaseModel):
 class ReadySessionRequest(BaseModel):
     player_id: str
     ready: bool = True
+
+
+class ProfileNameRequest(BaseModel):
+    display_name: str
+
+
+class ProfileBattlePoolRequest(BaseModel):
+    battle_pool_ids: list[str]
+
+
+@app.get("/profile/{player_id}")
+def get_profile(
+    player_id: str,
+) -> dict:
+    profile = player_profile_service.get_or_create(
+        player_id
+    )
+    return profile.to_view()
+
+
+@app.put("/profile/{player_id}/display-name")
+def update_profile_display_name(
+    player_id: str,
+    request: ProfileNameRequest,
+) -> dict:
+    try:
+        profile = player_profile_service.set_display_name(
+            player_id,
+            request.display_name,
+        )
+    except PlayerProfileError as exc:
+        raise HTTPException(
+            status_code=422,
+            detail=str(exc),
+        ) from exc
+    return profile.to_view()
+
+
+@app.put("/profile/{player_id}/battle-pool")
+def update_profile_battle_pool(
+    player_id: str,
+    request: ProfileBattlePoolRequest,
+) -> dict:
+    try:
+        profile = (
+            player_profile_service
+            .set_preferred_battle_pool(
+                player_id,
+                request.battle_pool_ids,
+            )
+        )
+    except ValueError as exc:
+        raise HTTPException(
+            status_code=422,
+            detail=str(exc),
+        ) from exc
+    return profile.to_view()
 
 
 @app.get("/health")
