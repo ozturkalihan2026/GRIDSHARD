@@ -83,6 +83,10 @@ class ModuleDefinition:
     cooldown_ms: int = 0
     port_count: int = 1
 
+    strong_against: tuple[str, ...] = ()
+    weak_against: tuple[str, ...] = ()
+    synergy_with: tuple[str, ...] = ()
+
     movable: bool = True
     removable: bool = True
     rotatable: bool = True

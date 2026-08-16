@@ -1,7 +1,7 @@
 # Project Relay 2.0 — YOL HARİTASI
 
-**Güncel Sürüm:** `2.0.0-alpha.7`  
-**Paket:** 12 Modüllük Ekosistem ve Rol Temeli  
+**Güncel Sürüm:** `2.0.0-alpha.8`  
+**Paket:** 18 Modüllük Ekosistem ve Karşı Strateji Temeli  
 **Kanonik Dosya:** `docs/YOL_HARITASI.md`
 
 > Bu dosya Project Relay 2.0 için tek kanonik geliştirme kaydıdır. Her paket tamamlandığında sürüm numarası artırılır; **Tamamlananlar** ve **Yapılacaklar** bu dosyada güncellenir. Sonraki geliştirme paketi bu dosya okunarak başlatılır.
@@ -379,9 +379,9 @@ Aşağıdaki alanlar ilk sürüm kapsamına dahil değildir ve mevcut yol harita
 
 ## Sıradaki Paket
 
-**`2.0.0-alpha.8 — 18 Modüllük Ekosistem ve Karşı Strateji Temeli`**
+**`2.0.0-alpha.9 — 24 Modüllük Başlangıç Havuzu`**
 
-12 modüllük ilk rol dağılımı tamamlandığı için katalog kontrollü biçimde 18 modüle genişletilecektir. Yeni modüller mevcut seçenekleri tekrar etmeyecek; enerji, saldırı, savunma, destek ve sabotaj sınıflarında farklı karşı hamleler oluşturacak şekilde seçilecektir. Gerçek enerji/hasar simülasyonu ayrı motor fazında uygulanacaktır.
+18 modüllük karşı strateji temeli tamamlandı. Sıradaki paket başlangıç kataloğunu yaklaşık 24 modüle tamamlayacak; yeni seçenekler mevcut rolleri tekrar etmeyecek ve farklı karşı hamle/sinerji üretecek.
 
 
 ---

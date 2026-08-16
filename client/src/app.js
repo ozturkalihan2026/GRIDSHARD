@@ -2,28 +2,26 @@
   "use strict";
 
   const moduleDefinitions = [
-    ["core-1", "Çekirdek", 300, 0, "çekirdek", "Ana hedef ve devre merkezi", "active", { x: 2, y: 2 }],
-    ["generator-1", "Jeneratör", 150, 0, "enerji", "Ana enerji kaynağı", "active", { x: 2, y: 3 }],
-    ["laser-1", "Lazer", 100, 90, "saldırı", "Sürekli tek hedef hasarı", "reserve", null],
-    ["shield-1", "Kalkan", 140, 100, "savunma", "Aktif hasar emme", "reserve", null],
-    ["battery-1", "Batarya", 120, 70, "enerji", "Enerji rezervi", "reserve", null],
-    ["amplifier-1", "Güçlendirici", 90, 85, "destek", "Saldırı hattını güçlendirme", "reserve", null],
-    ["cooler-1", "Soğutucu", 100, 65, "destek", "Isı kontrolü", "reserve", null],
-    ["repair-1", "Onarım Modülü", 100, 80, "destek", "Can onarımı", "reserve", null],
-    ["splitter-1", "Dağıtıcı", 85, 60, "enerji", "Enerji hattını dallandırma", "reserve", null],
-    ["pulse-cannon-1", "Darbe Topu", 115, 120, "saldırı", "Yüksek ani hasar", "reserve", null],
-    ["armor-1", "Zırh", 180, 95, "savunma", "Pasif dayanıklılık", "reserve", null],
-    ["emp-1", "EMP", 80, 110, "sabotaj", "Geçici sistem bozma", "reserve", null],
-  ].map(([instanceId, nameTr, hp, circuitCreditCost, category, strategicRole, status, position]) => ({
-    instanceId,
-    nameTr,
-    hp,
-    maxHp: hp,
-    circuitCreditCost,
-    category,
-    strategicRole,
-    status,
-    position,
+    ["core-1","Çekirdek",300,0,"çekirdek","Ana hedef ve devre merkezi","active",{x:2,y:2}],
+    ["generator-1","Jeneratör",150,0,"enerji","Ana enerji kaynağı","active",{x:2,y:3}],
+    ["battery-1","Batarya",120,70,"enerji","Enerji rezervi","reserve",null],
+    ["splitter-1","Dağıtıcı",85,60,"enerji","Enerji hattını dallandırma","reserve",null],
+    ["capacitor-1","Kapasitör",90,75,"enerji","Kısa süreli güç boşaltımı","reserve",null],
+    ["laser-1","Lazer",100,90,"saldırı","Sürekli tek hedef hasarı","reserve",null],
+    ["pulse-cannon-1","Darbe Topu",115,120,"saldırı","Yüksek ani hasar","reserve",null],
+    ["railgun-1","Ray Topu",95,135,"saldırı","Yüksek delici hasar","reserve",null],
+    ["shield-1","Kalkan",140,100,"savunma","Aktif hasar emme","reserve",null],
+    ["armor-1","Zırh",180,95,"savunma","Pasif dayanıklılık","reserve",null],
+    ["reflector-1","Yansıtıcı",110,115,"savunma","Enerji saldırısını geri çevirme","reserve",null],
+    ["barrier-1","Bariyer",165,105,"savunma","Bağlantı hattını koruma","reserve",null],
+    ["repair-1","Onarım Modülü",100,80,"destek","Can onarımı","reserve",null],
+    ["cooler-1","Soğutucu",100,65,"destek","Isı kontrolü","reserve",null],
+    ["amplifier-1","Güçlendirici",90,85,"destek","Saldırı hattını güçlendirme","reserve",null],
+    ["targeting-computer-1","Hedefleme Bilgisayarı",85,90,"destek","Hedefleme desteği","reserve",null],
+    ["emp-1","EMP",80,110,"sabotaj","Geçici sistem bozma","reserve",null],
+    ["jammer-1","Sinyal Bozucu",85,100,"sabotaj","Destek hatlarını bozma","reserve",null],
+  ].map(([instanceId,nameTr,hp,circuitCreditCost,category,strategicRole,status,position]) => ({
+    instanceId,nameTr,hp,maxHp:hp,circuitCreditCost,category,strategicRole,status,position,
   }));
 
   const commandLog = [];

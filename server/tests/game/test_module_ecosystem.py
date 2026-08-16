@@ -6,8 +6,8 @@ from app.game.catalog import (
 )
 
 
-def test_catalog_contains_exactly_12_alpha7_definitions():
-    assert len(BASIC_MODULE_DEFINITIONS) == 12
+def test_catalog_contains_exactly_18_alpha8_definitions():
+    assert len(BASIC_MODULE_DEFINITIONS) == 18
 
 
 def test_four_new_alpha7_modules_exist_with_turkish_names():
@@ -58,7 +58,7 @@ def test_role_metadata_contains_energy_damage_cooldown_and_ports():
 def test_player_selectable_list_excludes_core_and_keeps_generator():
     assert "core" not in PLAYER_SELECTABLE_MODULE_IDS
     assert "generator" in PLAYER_SELECTABLE_MODULE_IDS
-    assert len(PLAYER_SELECTABLE_MODULE_IDS) == 11
+    assert len(PLAYER_SELECTABLE_MODULE_IDS) == 17
 
 
 def test_category_query_returns_only_requested_category():
@@ -66,6 +66,7 @@ def test_category_query_returns_only_requested_category():
     assert {module.id for module in attack_modules} == {
         "laser",
         "pulse_cannon",
+        "railgun",
     }
     assert all(module.category == "saldırı" for module in attack_modules)
 
@@ -85,5 +86,11 @@ def test_all_player_facing_module_names_are_turkish_or_established_abbreviation(
         "Darbe Topu",
         "Zırh",
         "EMP",
+        "Kapasitör",
+        "Ray Topu",
+        "Yansıtıcı",
+        "Bariyer",
+        "Hedefleme Bilgisayarı",
+        "Sinyal Bozucu",
     }
     assert names == expected
