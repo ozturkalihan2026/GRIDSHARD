@@ -1,7 +1,7 @@
 # Project Relay 2.0 — YOL HARİTASI
 
-**Güncel Sürüm:** `2.0.0-alpha.36`  
-**Paket:** PvP Maç Kurulum Payload'ı ve 18 Modüllük Havuz Doğrulaması  
+**Güncel Sürüm:** `2.0.0-alpha.37`  
+**Paket:** PvP Hazırlık Protokol Mesajları ve Lobi Durumu  
 **Kanonik Dosya:** `docs/YOL_HARITASI.md`
 
 > Bu dosya Project Relay 2.0 için tek kanonik geliştirme kaydıdır. Her paket tamamlandığında sürüm numarası artırılır; **Tamamlananlar** ve **Yapılacaklar** bu dosyada güncellenir. Sonraki geliştirme paketi bu dosya okunarak başlatılır.
@@ -379,9 +379,9 @@ Aşağıdaki alanlar ilk sürüm kapsamına dahil değildir ve mevcut yol harita
 
 ## Sıradaki Paket
 
-**`2.0.0-alpha.37 — PvP Hazırlık Protokol Mesajları ve Lobi Durumu`**
+**`2.0.0-alpha.38 — PvP Sunucu Tick Runner ve Canlı Olay Yayını`**
 
-18 modüllük setup ve ready doğrulaması hazır. Sıradaki pakette `submit_setup` ve `set_ready` işlemleri PvP protokol v1 mesajlarına eklenecek, WebSocket üzerinden hazırlık akışı tamamlanacak, lobi snapshot'ı iki oyuncunun bağlantı/setup/ready durumunu yayınlayacak ve iki oyuncu hazır olduğunda güvenli otomatik başlatma seçeneği eklenecek.
+Lobi ve WebSocket hazırlık akışı tamamlandı. Sıradaki pakette çalışan PvP oturumları için sunucu tarafında gerçek 10 Hz tick runner, oturum bazlı başlat/durdur yaşam döngüsü ve bağlı oyunculara snapshot/olay yayın mekanizması eklenecek. Maçın ilerlemesi artık istemcinin `step` çağrısına bağlı olmayacak.
 
 
 ---

@@ -29,6 +29,7 @@ pvp_websocket_adapter = PvPWebSocketAdapter(
 
 class CreateSessionRequest(BaseModel):
     session_id: str
+    auto_start_when_ready: bool = False
 
 
 class JoinSessionRequest(BaseModel):
@@ -67,6 +68,7 @@ def create_pvp_session(
         session = pvp_service.create_session(
             request.session_id,
             setup_required=True,
+            auto_start_when_ready=request.auto_start_when_ready,
         )
     except PvPSessionError as exc:
         raise HTTPException(
@@ -177,6 +179,14 @@ def start_pvp_session(
         "status": session.engine.state.status.value,
         "tick": session.engine.state.tick,
     }
+
+
+@app.get("/pvp/sessions/{session_id}/lobby")
+def pvp_lobby(session_id: str) -> dict:
+    try:
+        return pvp_service.lobby_snapshot(session_id)
+    except PvPSessionError as exc:
+        raise HTTPException(status_code=404,detail=str(exc)) from exc
 
 
 @app.get("/pvp/sessions/{session_id}/snapshot")

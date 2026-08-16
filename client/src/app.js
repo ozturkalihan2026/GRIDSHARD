@@ -42,7 +42,7 @@
   const COMPETITIVE_STATUS = "M7 Simülasyon aktif";
   const BALANCE_STATUS = "Eşit modül + counter doğrulandı";
   const AI_STATUS = "Adaptif AI + rekabetçi denge doğrulandı";
-  const PVP_STATUS = "18 modüllük PvP setup + ready aktif";
+  const PVP_STATUS = "WebSocket PvP lobi + ready aktif";
 
   const PORT_COUNT_BY_NAME = {
     "Çekirdek":4,

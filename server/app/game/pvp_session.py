@@ -33,6 +33,7 @@ class PvPSession:
     engine: BattleEngine
     slots: dict[str, PvPPlayerSlot] = field(default_factory=dict)
     setup_required: bool = False
+    auto_start_when_ready: bool = False
 
     @property
     def is_full(self) -> bool:
@@ -60,6 +61,7 @@ class PvPSessionService:
         session_id: str,
         *,
         setup_required: bool = False,
+        auto_start_when_ready: bool = False,
     ) -> PvPSession:
         if session_id in self._sessions:
             raise PvPSessionError(
@@ -73,6 +75,7 @@ class PvPSessionService:
             session_id=session_id,
             engine=engine,
             setup_required=setup_required,
+            auto_start_when_ready=auto_start_when_ready,
         )
         self._sessions[session_id] = session
         return session
@@ -197,6 +200,41 @@ class PvPSessionService:
                 "Oyuncu geçerli kurulum göndermeden hazır olamaz."
             )
         slot.ready = ready
+
+        if (
+            ready
+            and session.auto_start_when_ready
+            and session.is_full
+            and all(
+                current.setup_submitted and current.ready
+                for current in session.slots.values()
+            )
+        ):
+            self.start(session_id)
+
+    def lobby_snapshot(self, session_id: str) -> dict:
+        session = self.get_session(session_id)
+        return {
+            "session_id": session_id,
+            "status": session.engine.state.status.value,
+            "setup_required": session.setup_required,
+            "auto_start_when_ready": session.auto_start_when_ready,
+            "player_count": len(session.slots),
+            "is_full": session.is_full,
+            "players": [
+                {
+                    "player_id": slot.player_id,
+                    "slot_index": slot.slot_index,
+                    "connected": slot.connected,
+                    "setup_submitted": slot.setup_submitted,
+                    "ready": slot.ready,
+                }
+                for slot in sorted(
+                    session.slots.values(),
+                    key=lambda current: current.slot_index,
+                )
+            ],
+        }
 
     def start(self, session_id: str) -> None:
         session = self.get_session(session_id)

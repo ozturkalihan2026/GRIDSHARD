@@ -401,37 +401,43 @@ function createClient() {
   const fs=require("fs");
   const src=fs.readFileSync("./src/app.js","utf8");
   assert.ok(src.includes("PVP_STATUS"));
-  assert.ok(src.includes("18 modüllük PvP setup + ready aktif"));
+  assert.ok(src.includes("WebSocket PvP lobi + ready aktif"));
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync("./src/app.js","utf8");
-  assert.ok(src.includes("18 modüllük PvP setup + ready aktif")); // alpha32->33 protocol status
+  assert.ok(src.includes("WebSocket PvP lobi + ready aktif")); // alpha32->33 protocol status
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync("./src/app.js","utf8");
-  assert.ok(src.includes("18 modüllük PvP setup + ready aktif")); // alpha33 protocol
+  assert.ok(src.includes("WebSocket PvP lobi + ready aktif")); // alpha33 protocol
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync("./src/app.js","utf8");
-  assert.ok(src.includes("18 modüllük PvP setup + ready aktif")); // alpha34 websocket
+  assert.ok(src.includes("WebSocket PvP lobi + ready aktif")); // alpha34 websocket
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync("./src/app.js","utf8");
-  assert.ok(src.includes("18 modüllük PvP setup + ready aktif")); // alpha35 gateway
+  assert.ok(src.includes("WebSocket PvP lobi + ready aktif")); // alpha35 gateway
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync("./src/app.js","utf8");
-  assert.ok(src.includes("18 modüllük PvP setup + ready aktif")); // alpha36 setup
+  assert.ok(src.includes("WebSocket PvP lobi + ready aktif")); // alpha36 setup
 }
 
-console.log("43 client tests passed");
+{
+  const fs=require("fs");
+  const src=fs.readFileSync("./src/app.js","utf8");
+  assert.ok(src.includes("WebSocket PvP lobi + ready aktif")); // alpha37 lobby
+}
+
+console.log("44 client tests passed");
