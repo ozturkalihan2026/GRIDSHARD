@@ -32,6 +32,12 @@
   }));
 
   const commandLog = [];
+  const BOOSTER_OPTIONS = [
+    { id:"overcharge_chip", nameTr:"Aşırı Yük Çipi", descriptionTr:"+%25 saldırı · 15 sn", targetCategories:["saldırı"] },
+    { id:"emergency_repair", nameTr:"Acil Onarım", descriptionTr:"%25 anlık onarım", targetCategories:[] },
+    { id:"dual_port_adapter", nameTr:"Çift Port Adaptörü", descriptionTr:"+1 geçici port · 15 sn", targetCategories:[] },
+  ];
+  let selectedBoosterId = null;
   const selectablePoolModules = moduleDefinitions.filter(
     (module) => module.instanceId !== "core-1"
   );
@@ -62,6 +68,8 @@
   const lockLabel = document.getElementById("shelf-lock-label");
   const shelfHelp = document.getElementById("shelf-help");
   const logEl = document.getElementById("event-log");
+  const boosterOptionsEl = document.getElementById("booster-options");
+  const boosterStatusEl = document.getElementById("booster-status");
   const poolSelectionEl = document.getElementById("battle-pool-selection");
   const poolCountEl = document.getElementById("battle-pool-count");
   const poolConfirmEl = document.getElementById("battle-pool-confirm");
@@ -113,6 +121,45 @@ const SPECIAL_CELL_INFO = {
     poolCountEl.textContent =
       `${battlePoolSelection.selected.size} / ${battlePoolSelection.requiredSize}`;
     poolConfirmEl.disabled = !battlePoolSelection.isComplete();
+  }
+
+  function renderBoosterOptions() {
+    boosterOptionsEl.innerHTML = "";
+    for (const booster of BOOSTER_OPTIONS) {
+      const button = document.createElement("button");
+      button.type = "button";
+      button.className = "booster-option";
+      button.textContent = `${booster.nameTr} · ${booster.descriptionTr}`;
+      if (selectedBoosterId === booster.id) button.classList.add("selected");
+      button.addEventListener("click", () => {
+        selectedBoosterId = selectedBoosterId === booster.id ? null : booster.id;
+        boosterStatusEl.textContent = selectedBoosterId ? "Hedef modül seç" : "Seçim bekleniyor";
+        renderBoosterOptions();
+        renderBoard();
+      });
+      boosterOptionsEl.appendChild(button);
+    }
+  }
+
+  function tryApplySelectedBooster(module) {
+    if (!selectedBoosterId) return false;
+    const booster = BOOSTER_OPTIONS.find(item => item.id === selectedBoosterId);
+    if (!booster) return false;
+    if (booster.targetCategories.length && !booster.targetCategories.includes(module.category)) {
+      logClientMessage(`${booster.nameTr}, ${module.nameTr} modülüne uygulanamaz.`);
+      return true;
+    }
+    commandLog.push({
+      atMs: client.elapsedMs,
+      kind: "apply_booster",
+      payload: { booster_id: booster.id, target_module_id: module.instanceId },
+    });
+    selectedBoosterId = null;
+    boosterStatusEl.textContent = "Seçim bekleniyor";
+    renderLog();
+    renderBoosterOptions();
+    renderBoard();
+    return true;
   }
 
   function createBoard() {
@@ -231,6 +278,13 @@ const SPECIAL_CELL_INFO = {
     meta.textContent = `Can ${module.hp}/${module.maxHp}${costText}`;
 
     card.append(name, meta);
+
+    if (selectedBoosterId && module.status === "active") {
+      card.classList.add("booster-target");
+    }
+    card.addEventListener("click", () => {
+      tryApplySelectedBooster(module);
+    });
 
     card.addEventListener("dragstart", (event) => {
       const result = client.beginDrag(module.instanceId);
@@ -427,6 +481,7 @@ const SPECIAL_CELL_INFO = {
   });
 
   renderBattlePoolSelection();
+  renderBoosterOptions();
   createBoard();
   render();
   renderCapacity();

@@ -239,4 +239,13 @@ function createClient() {
   assert.ok(src.includes("SPECIAL_CELL_INFO"));
 }
 
-console.log("19 client tests passed");
+
+{
+  const fs=require("fs");
+  const src=fs.readFileSync("./src/app.js","utf8");
+  for (const name of ["Aşırı Yük Çipi","Acil Onarım","Çift Port Adaptörü"]) assert.ok(src.includes(name));
+  assert.ok(src.includes("apply_booster"));
+  assert.ok(src.includes("Hedef modül seç"));
+}
+
+console.log("20 client tests passed");

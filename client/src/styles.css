@@ -278,3 +278,9 @@ button, input { font: inherit; }
 .board-cell.cooling-cell { box-shadow: inset 0 0 0 1px rgba(255,255,255,.07); }
 .board-cell.repair-cell { box-shadow: inset 0 0 0 1px rgba(255,255,255,.09); }
 .board-cell.signal-cell { box-shadow: inset 0 0 0 1px rgba(255,255,255,.11); }
+
+.booster-panel { margin-bottom:16px; border:1px solid #263750; background:rgba(16,26,41,.94); border-radius:14px; padding:16px; }
+.booster-options { display:flex; gap:8px; flex-wrap:wrap; }
+.booster-option { border:1px solid #334967; border-radius:10px; background:#142136; color:inherit; padding:10px 12px; cursor:pointer; }
+.booster-option.selected { outline:2px solid rgba(126,229,166,.55); }
+.module-card.booster-target { outline:2px solid rgba(255,255,255,.35); }

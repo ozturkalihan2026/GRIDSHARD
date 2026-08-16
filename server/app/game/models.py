@@ -123,6 +123,15 @@ class BattleModule:
 
 
 @dataclass(slots=True, frozen=True)
+class BoosterDefinition:
+    id: str
+    name_tr: str
+    description_tr: str
+    duration_ms: int
+    target_categories: tuple[str, ...] = ()
+    effect_data: dict[str, Any] = field(default_factory=dict)
+
+@dataclass(slots=True, frozen=True)
 class BattlePool:
     module_definition_ids: tuple[str, ...]
 

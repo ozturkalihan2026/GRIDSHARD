@@ -1,7 +1,7 @@
 # Project Relay 2.0 — YOL HARİTASI
 
-**Güncel Sürüm:** `2.0.0-alpha.12`  
-**Paket:** Özel Hücreler  
+**Güncel Sürüm:** `2.0.0-alpha.13`  
+**Paket:** Geçici Güçlendirici Temeli  
 **Kanonik Dosya:** `docs/YOL_HARITASI.md`
 
 > Bu dosya Project Relay 2.0 için tek kanonik geliştirme kaydıdır. Her paket tamamlandığında sürüm numarası artırılır; **Tamamlananlar** ve **Yapılacaklar** bu dosyada güncellenir. Sonraki geliştirme paketi bu dosya okunarak başlatılır.
@@ -379,9 +379,9 @@ Aşağıdaki alanlar ilk sürüm kapsamına dahil değildir ve mevcut yol harita
 
 ## Sıradaki Paket
 
-**`2.0.0-alpha.13 — Geçici Güçlendirici Temeli`**
+**`2.0.0-alpha.14 — 85+ Saniye Güçlendirici Döngüsü`**
 
-Özel hücre veri ve görünüm altyapısı tamamlandı. Sıradaki pakette savaş durmadan seçilebilen geçici güçlendiricilerin motor modeli, hedef modül seçimi ve temel istemci seçim akışı hazırlanacak. 85+ saniye tekrar döngüsü bir sonraki ayrı pakette bağlanacak.
+Geçici güçlendirici motor ve hedefleme temeli tamamlandı. Sıradaki pakette 85. saniyeden başlayarak her 10 saniyede bir 3 seçenekten 1 güçlendirici seçme döngüsü motor ve istemciye bağlanacak. Seçim sırasında savaş, Can ve Devre Kredisi akışı durmayacak.
 
 
 ---
