@@ -11,7 +11,7 @@
     <header class="battle-header">
       <div>
         <h1>Project Relay 2.0</h1>
-        <p>2.0.0-alpha.44 — Ayarlar Temeli</p>
+        <p>2.0.0-alpha.45 — İlk Menü Yönlendirmesi</p>
       </div>
       <div class="battle-status-cluster">
         <div class="credit-indicator" id="credit-indicator">Devre Kredisi: 200 DK</div>
@@ -20,14 +20,24 @@
       </div>
     </header>
 
-    <nav class="main-scope-nav" aria-label="Ana Menü">
-      <button type="button" data-section="play">Oyna</button>
-      <button type="button" data-section="profile">Profil</button>
-      <button type="button" data-section="statistics">İstatistikler</button>
-      <button type="button" data-section="settings">Ayarlar</button>
-    </nav>
+    <section id="main-menu-panel" class="main-menu-panel">
+      <div class="panel-title-row">
+        <h2>Ana Menü</h2>
+        <span id="current-screen-label">Ana Menü</span>
+      </div>
+      <nav class="main-scope-nav" aria-label="Ana Menü">
+        <button type="button" data-open-screen="play">Oyna</button>
+        <button type="button" data-open-screen="profile">Profil</button>
+        <button type="button" data-open-screen="statistics">İstatistikler</button>
+        <button type="button" data-open-screen="settings">Ayarlar</button>
+      </nav>
+    </section>
 
-    <section class="profile-summary-panel" id="profile-summary-panel">
+    <button id="return-main-menu" type="button" hidden>
+      Ana Menüye Dön
+    </button>
+
+    <section class="profile-summary-panel" id="profile-summary-panel" data-screen-panel="profile" hidden>
       <div class="panel-title-row">
         <h2>Profil</h2>
         <span>Genel · İlerleme · Savaş Havuzu</span>
@@ -35,7 +45,7 @@
       <p>Seviye 1 · Gümüş · 1000 Derece Puanı</p>
     </section>
 
-    <section class="statistics-summary-panel" id="statistics-summary-panel">
+    <section class="statistics-summary-panel" id="statistics-summary-panel" data-screen-panel="statistics" hidden>
       <div class="panel-title-row">
         <h2>İstatistikler</h2>
         <span>Sunucu otoriteli maç sonuçları</span>
@@ -43,7 +53,7 @@
       <p>Maç 0 · Galibiyet 0 · Mağlubiyet 0 · Beraberlik 0 · Galibiyet %0</p>
     </section>
 
-    <section class="settings-summary-panel" id="settings-summary-panel">
+    <section class="settings-summary-panel" id="settings-summary-panel" data-screen-panel="settings" hidden>
       <div class="panel-title-row">
         <h2>Ayarlar</h2>
         <span>Ses · Müzik · Titreşim · Grafik · Dil</span>
@@ -51,7 +61,7 @@
       <p>Ses %100 · Müzik %70 · Titreşim Açık · Grafik Yüksek · Türkçe</p>
     </section>
 
-    <section class="battle-pool-panel" id="battle-pool-panel">
+    <section class="battle-pool-panel" id="battle-pool-panel" data-screen-panel="play" hidden>
       <div class="panel-title-row">
         <h2>Savaş Havuzu</h2>
         <span id="battle-pool-count">0 / 18</span>
@@ -61,7 +71,7 @@
       <button id="battle-pool-confirm" type="button" disabled>Savaş Havuzunu Onayla</button>
     </section>
 
-    <section class="booster-panel" id="booster-panel">
+    <section class="booster-panel" id="booster-panel" data-screen-panel="play" hidden>
       <div class="panel-title-row">
         <h2>Geçici Güçlendiriciler</h2>
         <span id="booster-status">Seçim bekleniyor</span>
@@ -70,12 +80,12 @@
       <div id="booster-options" class="booster-options"></div>
     </section>
 
-    <section class="combat-summary-panel">
+    <section class="combat-summary-panel" data-screen-panel="play" hidden>
       <strong id="combat-summary">Rakip: 300/300 Çekirdek</strong>
       <span id="pvp-flow-status">PvP: Lobi → Setup → Hazır → Savaş → Sonuç</span>
     </section>
 
-    <section class="battle-layout">
+    <section class="battle-layout" data-screen-panel="play" hidden>
       <section class="arena-panel">
         <div class="panel-title-row">
           <h2>Savaş Alanı</h2>
@@ -96,7 +106,7 @@
       </aside>
     </section>
 
-    <section class="event-panel">
+    <section class="event-panel" data-screen-panel="play" hidden>
       <h2>İstemci Komutları</h2>
       <p>Bu alpha istemcisi savaş kararını vermez; yalnızca sunucuya gönderilecek komutları üretir.</p>
       <pre id="event-log"></pre>

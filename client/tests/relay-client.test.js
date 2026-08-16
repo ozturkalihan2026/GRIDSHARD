@@ -401,61 +401,61 @@ function createClient() {
   const fs=require("fs");
   const src=fs.readFileSync("./src/app.js","utf8");
   assert.ok(src.includes("PVP_STATUS"));
-  assert.ok(src.includes("İlk menü kapsamı: Oyna + Profil + İstatistikler + Ayarlar"));
+  assert.ok(src.includes("Ana Menü yönlendirmesi aktif"));
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync("./src/app.js","utf8");
-  assert.ok(src.includes("İlk menü kapsamı: Oyna + Profil + İstatistikler + Ayarlar")); // alpha32->33 protocol status
+  assert.ok(src.includes("Ana Menü yönlendirmesi aktif")); // alpha32->33 protocol status
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync("./src/app.js","utf8");
-  assert.ok(src.includes("İlk menü kapsamı: Oyna + Profil + İstatistikler + Ayarlar")); // alpha33 protocol
+  assert.ok(src.includes("Ana Menü yönlendirmesi aktif")); // alpha33 protocol
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync("./src/app.js","utf8");
-  assert.ok(src.includes("İlk menü kapsamı: Oyna + Profil + İstatistikler + Ayarlar")); // alpha34 websocket
+  assert.ok(src.includes("Ana Menü yönlendirmesi aktif")); // alpha34 websocket
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync("./src/app.js","utf8");
-  assert.ok(src.includes("İlk menü kapsamı: Oyna + Profil + İstatistikler + Ayarlar")); // alpha35 gateway
+  assert.ok(src.includes("Ana Menü yönlendirmesi aktif")); // alpha35 gateway
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync("./src/app.js","utf8");
-  assert.ok(src.includes("İlk menü kapsamı: Oyna + Profil + İstatistikler + Ayarlar")); // alpha36 setup
+  assert.ok(src.includes("Ana Menü yönlendirmesi aktif")); // alpha36 setup
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync("./src/app.js","utf8");
-  assert.ok(src.includes("İlk menü kapsamı: Oyna + Profil + İstatistikler + Ayarlar")); // alpha37 lobby
+  assert.ok(src.includes("Ana Menü yönlendirmesi aktif")); // alpha37 lobby
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync("./src/app.js","utf8");
-  assert.ok(src.includes("İlk menü kapsamı: Oyna + Profil + İstatistikler + Ayarlar")); // alpha38 runner
+  assert.ok(src.includes("Ana Menü yönlendirmesi aktif")); // alpha38 runner
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync("./src/app.js","utf8");
-  assert.ok(src.includes("İlk menü kapsamı: Oyna + Profil + İstatistikler + Ayarlar")); // alpha39 heartbeat
+  assert.ok(src.includes("Ana Menü yönlendirmesi aktif")); // alpha39 heartbeat
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync("./src/app.js","utf8");
-  assert.ok(src.includes("İlk menü kapsamı: Oyna + Profil + İstatistikler + Ayarlar")); // alpha40 online pvp
+  assert.ok(src.includes("Ana Menü yönlendirmesi aktif")); // alpha40 online pvp
 }
 
 {
@@ -681,7 +681,7 @@ function createClient() {
 {
   const fs=require("fs");
   const src=fs.readFileSync("./src/app.js","utf8");
-  assert.ok(src.includes("İlk menü kapsamı: Oyna + Profil + İstatistikler + Ayarlar"));
+  assert.ok(src.includes("Ana Menü yönlendirmesi aktif"));
   assert.ok(src.includes("buildPvPCommandEnvelope"));
   assert.ok(src.includes("applyPvPServerEnvelope"));
 }
@@ -841,4 +841,79 @@ function createClient() {
   assert.ok(!html.includes(">Battle Pass<"));
 }
 
-console.log("61 client tests passed");
+{
+  const {
+    RelayAppRouter,
+    APP_SCREEN,
+  } = require("../src/relay-client.js");
+
+  const router = new RelayAppRouter();
+
+  assert.strictEqual(
+    router.currentScreen,
+    APP_SCREEN.MENU
+  );
+
+  assert.strictEqual(
+    router.go(APP_SCREEN.PLAY).ok,
+    true
+  );
+  assert.strictEqual(
+    router.currentScreen,
+    APP_SCREEN.PLAY
+  );
+
+  router.goMenu();
+  assert.strictEqual(
+    router.currentScreen,
+    APP_SCREEN.MENU
+  );
+}
+
+{
+  const {
+    RelayAppRouter,
+  } = require("../src/relay-client.js");
+
+  const router = new RelayAppRouter();
+  const result = router.go("store");
+
+  assert.strictEqual(result.ok,false);
+  assert.strictEqual(
+    router.currentScreen,
+    "menu"
+  );
+}
+
+{
+  const fs=require("fs");
+  const html=fs.readFileSync("./index.html","utf8");
+  const app=fs.readFileSync("./src/app.js","utf8");
+
+  assert.ok(
+    html.includes('id="main-menu-panel"')
+  );
+  assert.ok(
+    html.includes('id="return-main-menu"')
+  );
+  assert.ok(
+    html.includes('data-screen-panel="play"')
+  );
+  assert.ok(
+    html.includes('data-screen-panel="profile"')
+  );
+  assert.ok(
+    html.includes('data-screen-panel="statistics"')
+  );
+  assert.ok(
+    html.includes('data-screen-panel="settings"')
+  );
+  assert.ok(
+    app.includes("returnToMainMenu")
+  );
+  assert.ok(
+    app.includes("renderAppScreen")
+  );
+}
+
+console.log("64 client tests passed");

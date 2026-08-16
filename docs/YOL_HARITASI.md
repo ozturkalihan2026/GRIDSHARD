@@ -1,7 +1,7 @@
 # Project Relay 2.0 — YOL HARİTASI
 
-**Güncel Sürüm:** `2.0.0-alpha.44`  
-**Paket:** Ayarlar Temeli ve Oyun Tercihleri  
+**Güncel Sürüm:** `2.0.0-alpha.45`  
+**Paket:** İlk Menü Kapsamı Birleştirme ve Ekran Yönlendirme  
 **Kanonik Dosya:** `docs/YOL_HARITASI.md`
 
 > Bu dosya Project Relay 2.0 için tek kanonik geliştirme kaydıdır. Her paket tamamlandığında sürüm numarası artırılır; **Tamamlananlar** ve **Yapılacaklar** bu dosyada güncellenir. Sonraki geliştirme paketi bu dosya okunarak başlatılır.
@@ -379,9 +379,9 @@ Aşağıdaki alanlar ilk sürüm kapsamına dahil değildir ve mevcut yol harita
 
 ## Sıradaki Paket
 
-**`2.0.0-alpha.45 — İlk Menü Kapsamı Birleştirme ve Ekran Yönlendirme`**
+**`2.0.0-alpha.46 — Tarayıcı WebSocket Bağlantı Yöneticisi`**
 
-Sabitlenen ilk dört alanın veri temelleri tamamlandı: Oyna, Profil, İstatistikler ve Ayarlar. Sıradaki pakette yeni özellik alanı eklenmeden yalnızca bu dört ekranın gerçek ana menü yönlendirmesi, görünür/gizli ekran durumu, geri dönüş akışı ve istemci durumlarının birbirinden ayrılması tamamlanacak. Mağaza, kozmetik, sezon, görev, eğitim veya diğer yan alanlara geçilmeyecek.
+İlk dört ekranın Ana Menü yönlendirmesi tamamlandı. Sıradaki paket yeni menü/özellik alanı eklemeyecek; `Oyna` akışındaki son önemli istemci altyapısına dönecek. Gerçek tarayıcı `WebSocket` bağlantısı, reconnect denemesi, heartbeat gönderimi, gelen PvP mesajlarının `RelayPvPClientState` durum makinesine aktarılması ve bağlantı durumunun Oyna ekranında gösterilmesi hazırlanacak.
 
 
 ---

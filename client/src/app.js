@@ -42,7 +42,7 @@
   const COMPETITIVE_STATUS = "M7 Simülasyon aktif";
   const BALANCE_STATUS = "Eşit modül + counter doğrulandı";
   const AI_STATUS = "Adaptif AI + rekabetçi denge doğrulandı";
-  const PVP_STATUS = "İlk menü kapsamı: Oyna + Profil + İstatistikler + Ayarlar";
+  const PVP_STATUS = "Ana Menü yönlendirmesi aktif";
 
   const PORT_COUNT_BY_NAME = {
     "Çekirdek":4,
@@ -174,6 +174,69 @@
     language: "tr",
   });
 
+  const appRouter = new RelayAppRouter();
+
+  function renderAppScreen() {
+    const current = appRouter.currentScreen;
+
+    for (
+      const panel
+      of document.querySelectorAll(
+        "[data-screen-panel]"
+      )
+    ) {
+      panel.hidden =
+        panel.dataset.screenPanel !== current;
+    }
+
+    const menu = document.getElementById(
+      "main-menu-panel"
+    );
+    if (menu) {
+      menu.hidden =
+        current !== RelayAppScreen.MENU;
+    }
+
+    const backButton = document.getElementById(
+      "return-main-menu"
+    );
+    if (backButton) {
+      backButton.hidden =
+        current === RelayAppScreen.MENU;
+    }
+
+    const label = document.getElementById(
+      "current-screen-label"
+    );
+    if (label) {
+      const names = {
+        menu: "Ana Menü",
+        play: "Oyna",
+        profile: "Profil",
+        statistics: "İstatistikler",
+        settings: "Ayarlar",
+      };
+      label.textContent =
+        names[current] || current;
+    }
+  }
+
+  function openAppScreen(screen) {
+    const result = appRouter.go(screen);
+    if (!result.ok) {
+      logClientMessage(result.reason);
+      return result;
+    }
+    renderAppScreen();
+    return result;
+  }
+
+  function returnToMainMenu() {
+    const result = appRouter.goMenu();
+    renderAppScreen();
+    return result;
+  }
+
   function buildPvPCommandEnvelope(command) {
     return pvpState.buildCommandMessage(command);
   }
@@ -202,6 +265,33 @@
   const poolSelectionEl = document.getElementById("battle-pool-selection");
   const poolCountEl = document.getElementById("battle-pool-count");
   const poolConfirmEl = document.getElementById("battle-pool-confirm");
+
+  for (
+    const button
+    of document.querySelectorAll(
+      "[data-open-screen]"
+    )
+  ) {
+    button.addEventListener(
+      "click",
+      () => openAppScreen(
+        button.dataset.openScreen
+      )
+    );
+  }
+
+  const returnMainMenuButton =
+    document.getElementById(
+      "return-main-menu"
+    );
+  if (returnMainMenuButton) {
+    returnMainMenuButton.addEventListener(
+      "click",
+      returnToMainMenu
+    );
+  }
+
+  renderAppScreen();
 
   const BOARD_CELLS = [
     [1,0],[2,0],[3,0],

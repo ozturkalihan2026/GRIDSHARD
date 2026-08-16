@@ -363,3 +363,19 @@ button, input { font: inherit; }
   border-radius: 0.75rem;
   padding: 1rem;
 }
+
+
+.main-menu-panel {
+  border: 1px solid currentColor;
+  border-radius: 0.75rem;
+  padding: 1rem;
+}
+
+#return-main-menu {
+  width: fit-content;
+  padding: 0.65rem 1rem;
+}
+
+[hidden] {
+  display: none !important;
+}

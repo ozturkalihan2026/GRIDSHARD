@@ -716,13 +716,87 @@
   }
 
 
+
+  const APP_SCREEN = Object.freeze({
+    MENU: "menu",
+    PLAY: "play",
+    PROFILE: "profile",
+    STATISTICS: "statistics",
+    SETTINGS: "settings",
+  });
+
+  class RelayAppRouter {
+    constructor() {
+      this.currentScreen = APP_SCREEN.MENU;
+      this.history = [];
+      this.allowedScreens = new Set(
+        Object.values(APP_SCREEN)
+      );
+    }
+
+    go(screen) {
+      if (!this.allowedScreens.has(screen)) {
+        return {
+          ok: false,
+          reason: "Bu ekran mevcut ilk sürüm kapsamında değil.",
+        };
+      }
+
+      if (screen !== this.currentScreen) {
+        this.history.push(this.currentScreen);
+      }
+
+      this.currentScreen = screen;
+      return {
+        ok: true,
+        screen,
+      };
+    }
+
+    goMenu() {
+      if (this.currentScreen !== APP_SCREEN.MENU) {
+        this.history.push(this.currentScreen);
+      }
+      this.currentScreen = APP_SCREEN.MENU;
+      return {
+        ok: true,
+        screen: APP_SCREEN.MENU,
+      };
+    }
+
+    back() {
+      if (!this.history.length) {
+        return this.goMenu();
+      }
+
+      const previous = this.history.pop();
+
+      if (!this.allowedScreens.has(previous)) {
+        return this.goMenu();
+      }
+
+      this.currentScreen = previous;
+      return {
+        ok: true,
+        screen: previous,
+      };
+    }
+
+    is(screen) {
+      return this.currentScreen === screen;
+    }
+  }
+
+
   const api = {
     RelayBattleClient,
     RelayPvPClientState,
     RelayProfileClientState,
     RelayStatisticsClientState,
     RelaySettingsClientState,
+    RelayAppRouter,
     BattlePoolSelection,
+    APP_SCREEN,
     PVP_PHASE,
     MODULE_STATUS,
     DRAG_KIND,
@@ -738,6 +812,8 @@
   global.RelayProfileClientState = RelayProfileClientState;
   global.RelayStatisticsClientState = RelayStatisticsClientState;
   global.RelaySettingsClientState = RelaySettingsClientState;
+  global.RelayAppRouter = RelayAppRouter;
+  global.RelayAppScreen = APP_SCREEN;
   global.RelayPvPPhase = PVP_PHASE;
   global.BattlePoolSelection = BattlePoolSelection;
   global.RelayModuleStatus = MODULE_STATUS;
