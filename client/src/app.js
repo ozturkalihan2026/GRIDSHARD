@@ -10,6 +10,9 @@
     ["laser-1","Lazer",100,90,"saldırı","Sürekli tek hedef hasarı","reserve",null],
     ["pulse-cannon-1","Darbe Topu",115,120,"saldırı","Yüksek ani hasar","reserve",null],
     ["railgun-1","Ray Topu",95,135,"saldırı","Yüksek delici hasar","reserve",null],
+    ["missile-launcher-1","Füze Fırlatıcı",105,125,"saldırı","Gecikmeli yüksek alan baskısı","reserve",null],
+    ["drone-bay-1","Dron Üssü",110,115,"saldırı","Dağıtık ve sürekli baskı","reserve",null],
+    ["arc-cannon-1","Ark Topu",100,130,"saldırı","Zincirleme çoklu hedef hasarı","reserve",null],
     ["shield-1","Kalkan",140,100,"savunma","Aktif hasar emme","reserve",null],
     ["armor-1","Zırh",180,95,"savunma","Pasif dayanıklılık","reserve",null],
     ["reflector-1","Yansıtıcı",110,115,"savunma","Enerji saldırısını geri çevirme","reserve",null],
@@ -18,8 +21,12 @@
     ["cooler-1","Soğutucu",100,65,"destek","Isı kontrolü","reserve",null],
     ["amplifier-1","Güçlendirici",90,85,"destek","Saldırı hattını güçlendirme","reserve",null],
     ["targeting-computer-1","Hedefleme Bilgisayarı",85,90,"destek","Hedefleme desteği","reserve",null],
+    ["overclock-unit-1","Aşırı Hızlandırıcı",80,105,"destek","Yüksek performans ve ısı riski","reserve",null],
     ["emp-1","EMP",80,110,"sabotaj","Geçici sistem bozma","reserve",null],
     ["jammer-1","Sinyal Bozucu",85,100,"sabotaj","Destek hatlarını bozma","reserve",null],
+    ["virus-1","Virüs",70,115,"sabotaj","Zamanla yayılan sistem zayıflatması","reserve",null],
+    ["energy-leech-1","Enerji Sömürücü",75,120,"sabotaj","Enerji ekonomisini baskılama","reserve",null],
+    ["disruptor-1","Kesici",80,125,"sabotaj","Kritik bağlantıyı geçici kesme","reserve",null],
   ].map(([instanceId,nameTr,hp,circuitCreditCost,category,strategicRole,status,position]) => ({
     instanceId,nameTr,hp,maxHp:hp,circuitCreditCost,category,strategicRole,status,position,
   }));

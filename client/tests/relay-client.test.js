@@ -183,4 +183,13 @@ function createClient() {
   }
 }
 
-console.log("13 client tests passed");
+
+{
+  const fs=require("fs");
+  const src=fs.readFileSync("./src/app.js","utf8");
+  for (const name of ["Füze Fırlatıcı","Dron Üssü","Ark Topu","Aşırı Hızlandırıcı","Virüs","Enerji Sömürücü","Kesici"]) {
+    assert.ok(src.includes(`"${name}"`));
+  }
+}
+
+console.log("14 client tests passed");
