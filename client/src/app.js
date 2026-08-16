@@ -42,7 +42,7 @@
   const COMPETITIVE_STATUS = "M7 Simülasyon aktif";
   const BALANCE_STATUS = "Eşit modül + counter doğrulandı";
   const AI_STATUS = "Adaptif AI + rekabetçi denge doğrulandı";
-  const PVP_STATUS = "Tarayıcı WebSocket yöneticisi aktif";
+  const PVP_STATUS = "PvP eşleştirme kuyruğu aktif";
 
   const PORT_COUNT_BY_NAME = {
     "Çekirdek":4,
@@ -275,6 +275,9 @@
     connectionStatusEl.dataset.status =
       status;
   }
+
+  const matchmakingState =
+    new RelayMatchmakingClientState();
 
   const pvpConnection =
     new RelayWebSocketConnectionManager({

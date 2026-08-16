@@ -1118,6 +1118,67 @@
   }
 
 
+
+  class RelayMatchmakingClientState {
+    constructor() {
+      this.queued = false;
+      this.matched = false;
+      this.sessionId = null;
+      this.players = [];
+      this.ratingDifference = null;
+      this.queue = null;
+    }
+
+    applyJoinResponse(response) {
+      if (response.matched) {
+        this.queued = false;
+        this.matched = true;
+        this.sessionId = response.session_id;
+        this.players = [
+          ...(response.players || []),
+        ];
+        this.ratingDifference =
+          response.rating_difference;
+        this.queue = null;
+      } else {
+        this.queued = true;
+        this.matched = false;
+        this.queue = response.queue || null;
+      }
+
+      return this.viewModel();
+    }
+
+    applyQueueStatus(status) {
+      this.queued = Boolean(
+        status && status.queued
+      );
+      this.queue =
+        this.queued ? { ...status } : null;
+      return this.viewModel();
+    }
+
+    cancel() {
+      this.queued = false;
+      this.queue = null;
+    }
+
+    viewModel() {
+      return {
+        queued: this.queued,
+        matched: this.matched,
+        sessionId: this.sessionId,
+        players: [...this.players],
+        ratingDifference:
+          this.ratingDifference,
+        queue: this.queue
+          ? { ...this.queue }
+          : null,
+      };
+    }
+  }
+
+
   const api = {
     RelayBattleClient,
     RelayPvPClientState,
@@ -1126,6 +1187,7 @@
     RelaySettingsClientState,
     RelayAppRouter,
     RelayWebSocketConnectionManager,
+    RelayMatchmakingClientState,
     BattlePoolSelection,
     APP_SCREEN,
     WS_CONNECTION_STATUS,
@@ -1146,6 +1208,7 @@
   global.RelaySettingsClientState = RelaySettingsClientState;
   global.RelayAppRouter = RelayAppRouter;
   global.RelayWebSocketConnectionManager = RelayWebSocketConnectionManager;
+  global.RelayMatchmakingClientState = RelayMatchmakingClientState;
   global.RelayAppScreen = APP_SCREEN;
   global.RelayWebSocketStatus = WS_CONNECTION_STATUS;
   global.RelayPvPPhase = PVP_PHASE;

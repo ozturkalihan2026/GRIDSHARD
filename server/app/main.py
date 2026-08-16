@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from uuid import uuid4
+import time
 
 from fastapi import FastAPI, HTTPException, Query, WebSocket
 from fastapi.websockets import WebSocketDisconnect
@@ -26,6 +27,10 @@ from .player_settings import (
     PlayerSettingsError,
     PlayerSettingsService,
 )
+from .matchmaking import (
+    MatchmakingError,
+    MatchmakingService,
+)
 
 
 app = FastAPI(
@@ -50,6 +55,9 @@ pvp_tick_runner = PvPTickRunner(
 )
 player_profile_service = PlayerProfileService()
 player_settings_service = PlayerSettingsService()
+matchmaking_service = MatchmakingService(
+    now_func=time.monotonic
+)
 
 
 class CreateSessionRequest(BaseModel):
@@ -85,12 +93,102 @@ class ProfileBattlePoolRequest(BaseModel):
     battle_pool_ids: list[str]
 
 
+class MatchmakingJoinRequest(BaseModel):
+    player_id: str
+
+
 class PlayerSettingsRequest(BaseModel):
     sound_volume: int | None = None
     music_volume: int | None = None
     vibration_enabled: bool | None = None
     graphics_quality: str | None = None
     language: str | None = None
+
+
+@app.post("/matchmaking/join")
+def matchmaking_join(
+    request: MatchmakingJoinRequest,
+) -> dict:
+    profile = (
+        player_profile_service
+        .get_or_create(
+            request.player_id
+        )
+    )
+
+    matchmaking_service.enqueue(
+        request.player_id,
+        rating=profile.rating,
+        league_name_tr=(
+            profile.league_name_tr
+        ),
+        level=profile.level,
+    )
+
+    match = matchmaking_service.try_match(
+        request.player_id
+    )
+
+    if match is None:
+        return {
+            "matched": False,
+            "queue": (
+                matchmaking_service
+                .queue_snapshot(
+                    request.player_id
+                )
+            ),
+        }
+
+    session = pvp_service.create_session(
+        match.match_id,
+        setup_required=True,
+        auto_start_when_ready=True,
+    )
+    pvp_service.join(
+        session.session_id,
+        match.player_a_id,
+    )
+    pvp_service.join(
+        session.session_id,
+        match.player_b_id,
+    )
+
+    return {
+        "matched": True,
+        "session_id": session.session_id,
+        "players": [
+            match.player_a_id,
+            match.player_b_id,
+        ],
+        "rating_difference": (
+            match.rating_difference
+        ),
+    }
+
+
+@app.delete("/matchmaking/{player_id}")
+def matchmaking_cancel(
+    player_id: str,
+) -> dict:
+    return {
+        "player_id": player_id,
+        "cancelled": (
+            matchmaking_service.cancel(
+                player_id
+            )
+        ),
+    }
+
+
+@app.get("/matchmaking/{player_id}")
+def matchmaking_status(
+    player_id: str,
+) -> dict:
+    return (
+        matchmaking_service
+        .queue_snapshot(player_id)
+    )
 
 
 @app.get("/settings/{player_id}")

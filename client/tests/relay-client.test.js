@@ -401,61 +401,61 @@ function createClient() {
   const fs=require("fs");
   const src=fs.readFileSync("./src/app.js","utf8");
   assert.ok(src.includes("PVP_STATUS"));
-  assert.ok(src.includes("Tarayıcı WebSocket yöneticisi aktif"));
+  assert.ok(src.includes("PvP eşleştirme kuyruğu aktif"));
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync("./src/app.js","utf8");
-  assert.ok(src.includes("Tarayıcı WebSocket yöneticisi aktif")); // alpha32->33 protocol status
+  assert.ok(src.includes("PvP eşleştirme kuyruğu aktif")); // alpha32->33 protocol status
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync("./src/app.js","utf8");
-  assert.ok(src.includes("Tarayıcı WebSocket yöneticisi aktif")); // alpha33 protocol
+  assert.ok(src.includes("PvP eşleştirme kuyruğu aktif")); // alpha33 protocol
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync("./src/app.js","utf8");
-  assert.ok(src.includes("Tarayıcı WebSocket yöneticisi aktif")); // alpha34 websocket
+  assert.ok(src.includes("PvP eşleştirme kuyruğu aktif")); // alpha34 websocket
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync("./src/app.js","utf8");
-  assert.ok(src.includes("Tarayıcı WebSocket yöneticisi aktif")); // alpha35 gateway
+  assert.ok(src.includes("PvP eşleştirme kuyruğu aktif")); // alpha35 gateway
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync("./src/app.js","utf8");
-  assert.ok(src.includes("Tarayıcı WebSocket yöneticisi aktif")); // alpha36 setup
+  assert.ok(src.includes("PvP eşleştirme kuyruğu aktif")); // alpha36 setup
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync("./src/app.js","utf8");
-  assert.ok(src.includes("Tarayıcı WebSocket yöneticisi aktif")); // alpha37 lobby
+  assert.ok(src.includes("PvP eşleştirme kuyruğu aktif")); // alpha37 lobby
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync("./src/app.js","utf8");
-  assert.ok(src.includes("Tarayıcı WebSocket yöneticisi aktif")); // alpha38 runner
+  assert.ok(src.includes("PvP eşleştirme kuyruğu aktif")); // alpha38 runner
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync("./src/app.js","utf8");
-  assert.ok(src.includes("Tarayıcı WebSocket yöneticisi aktif")); // alpha39 heartbeat
+  assert.ok(src.includes("PvP eşleştirme kuyruğu aktif")); // alpha39 heartbeat
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync("./src/app.js","utf8");
-  assert.ok(src.includes("Tarayıcı WebSocket yöneticisi aktif")); // alpha40 online pvp
+  assert.ok(src.includes("PvP eşleştirme kuyruğu aktif")); // alpha40 online pvp
 }
 
 {
@@ -681,7 +681,7 @@ function createClient() {
 {
   const fs=require("fs");
   const src=fs.readFileSync("./src/app.js","utf8");
-  assert.ok(src.includes("Tarayıcı WebSocket yöneticisi aktif"));
+  assert.ok(src.includes("PvP eşleştirme kuyruğu aktif"));
   assert.ok(src.includes("buildPvPCommandEnvelope"));
   assert.ok(src.includes("applyPvPServerEnvelope"));
 }
@@ -1219,4 +1219,70 @@ function createClient() {
   );
 }
 
-console.log("69 client tests passed");
+{
+  const {
+    RelayMatchmakingClientState,
+  } = require("../src/relay-client.js");
+
+  const state =
+    new RelayMatchmakingClientState();
+
+  state.applyJoinResponse({
+    matched:false,
+    queue:{
+      queued:true,
+      player_id:"a",
+      rating:1000,
+      league_name_tr:"Gümüş",
+      level:1,
+      accepted_rating_window:100,
+    },
+  });
+
+  assert.strictEqual(
+    state.queued,
+    true
+  );
+  assert.strictEqual(
+    state.queue.rating,
+    1000
+  );
+
+  state.applyJoinResponse({
+    matched:true,
+    session_id:"mm-1",
+    players:["a","b"],
+    rating_difference:40,
+  });
+
+  assert.strictEqual(
+    state.matched,
+    true
+  );
+  assert.strictEqual(
+    state.sessionId,
+    "mm-1"
+  );
+  assert.strictEqual(
+    state.ratingDifference,
+    40
+  );
+}
+
+{
+  const fs=require("fs");
+  const html=fs.readFileSync(
+    "./index.html",
+    "utf8"
+  );
+  assert.ok(
+    html.includes(
+      'id="matchmaking-status"'
+    )
+  );
+  assert.ok(
+    html.includes("1000 DP")
+  );
+}
+
+console.log("71 client tests passed");

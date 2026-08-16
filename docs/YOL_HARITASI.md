@@ -1,7 +1,7 @@
 # Project Relay 2.0 — YOL HARİTASI
 
-**Güncel Sürüm:** `2.0.0-alpha.46`  
-**Paket:** Tarayıcı WebSocket Bağlantı Yöneticisi  
+**Güncel Sürüm:** `2.0.0-alpha.47`  
+**Paket:** Eşleştirme Kuyruğu ve Başlangıç Derece Puanı  
 **Kanonik Dosya:** `docs/YOL_HARITASI.md`
 
 > Bu dosya Project Relay 2.0 için tek kanonik geliştirme kaydıdır. Her paket tamamlandığında sürüm numarası artırılır; **Tamamlananlar** ve **Yapılacaklar** bu dosyada güncellenir. Sonraki geliştirme paketi bu dosya okunarak başlatılır.
@@ -273,8 +273,9 @@
 
 #### FAZ 18 — Eşleştirme
 
-- [ ] Başlangıç derece puanı sistemi oluşturulacak.
-- [ ] Gerekirse performans, lig ve oyuncu deneyimi gibi ek eşleştirme parametreleri değerlendirilecek.
+- [x] Başlangıç derece puanı sistemi oluşturuldu; varsayılan değer 1000 DP.
+- [x] Derece yakınlığı ve bekleme süresi kontrollü genişleyen eşleştirme kuyruğuna bağlandı.
+- [x] Lig ve oyuncu deneyimi metadata olarak tutuluyor; ek filtre ihtiyacı sonraki denge verilerine göre değerlendirilecek.
 
 #### FAZ 19 — Profil
 
@@ -379,9 +380,9 @@ Aşağıdaki alanlar ilk sürüm kapsamına dahil değildir ve mevcut yol harita
 
 ## Sıradaki Paket
 
-**`2.0.0-alpha.47 — Eşleştirme Kuyruğu ve Başlangıç Derece Puanı`**
+**`2.0.0-alpha.48 — Derece Puanı Güncellemesi ve Maç Sonu İlerleme`**
 
-Tarayıcı WebSocket bağlantı yöneticisi tamamlandı. Sıradaki paket yol haritasındaki FAZ 18 Eşleştirme alanına geçecek. Başlangıç derece puanı 1000 olacak; eşleştirme kuyruğu öncelikle derece puanı yakınlığına göre iki oyuncuyu eşleştirecek, bekleme süresi arttıkça kabul edilen derece aralığı kontrollü biçimde genişleyecek. Lig ve deneyim ek parametreleri bu alpha'da yalnızca metadata olarak tutulacak, karmaşık eşleştirme algoritmasına dönüştürülmeyecek.
+Eşleştirme kuyruğu hazır. Sıradaki pakette tamamlanmış dereceli PvP maçından sonra sunucu otoriteli rating değişimi ve deneyim ödülü eklenecek. Kazanan, kaybeden ve beraberlik için deterministik başlangıç değerleri kullanılacak; aynı maçın rating/XP işlemi iki kez uygulanamayacak. Profil ve İstatistikler mevcut ekranlarda güncel veriyi gösterecek, yeni menü alanı eklenmeyecek.
 
 
 ---
