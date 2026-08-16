@@ -71,6 +71,18 @@ class ModuleDefinition:
     category: str
     max_hp: int
     circuit_credit_cost: int = 0
+
+    # alpha.7 — rol ve savaş/enerji tanım temeli.
+    # Bu alanlar henüz gerçek saldırı/enerji simülasyonu değildir;
+    # sonraki motor fazları için kanonik modül verisidir.
+    strategic_role: str = ""
+    description_tr: str = ""
+    energy_generation: float = 0.0
+    energy_consumption: float = 0.0
+    base_damage: float = 0.0
+    cooldown_ms: int = 0
+    port_count: int = 1
+
     movable: bool = True
     removable: bool = True
     rotatable: bool = True

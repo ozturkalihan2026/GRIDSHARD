@@ -2,20 +2,26 @@
   "use strict";
 
   const moduleDefinitions = [
-    ["core-1", "Çekirdek", 300, 0, "active", { x: 2, y: 2 }],
-    ["generator-1", "Jeneratör", 150, 0, "active", { x: 2, y: 3 }],
-    ["laser-1", "Lazer", 100, 90, "reserve", null],
-    ["shield-1", "Kalkan", 140, 100, "reserve", null],
-    ["battery-1", "Batarya", 120, 70, "reserve", null],
-    ["amplifier-1", "Güçlendirici", 90, 85, "reserve", null],
-    ["cooler-1", "Soğutucu", 100, 65, "reserve", null],
-    ["repair-1", "Onarım Modülü", 100, 80, "reserve", null],
-  ].map(([instanceId, nameTr, hp, circuitCreditCost, status, position]) => ({
+    ["core-1", "Çekirdek", 300, 0, "çekirdek", "Ana hedef ve devre merkezi", "active", { x: 2, y: 2 }],
+    ["generator-1", "Jeneratör", 150, 0, "enerji", "Ana enerji kaynağı", "active", { x: 2, y: 3 }],
+    ["laser-1", "Lazer", 100, 90, "saldırı", "Sürekli tek hedef hasarı", "reserve", null],
+    ["shield-1", "Kalkan", 140, 100, "savunma", "Aktif hasar emme", "reserve", null],
+    ["battery-1", "Batarya", 120, 70, "enerji", "Enerji rezervi", "reserve", null],
+    ["amplifier-1", "Güçlendirici", 90, 85, "destek", "Saldırı hattını güçlendirme", "reserve", null],
+    ["cooler-1", "Soğutucu", 100, 65, "destek", "Isı kontrolü", "reserve", null],
+    ["repair-1", "Onarım Modülü", 100, 80, "destek", "Can onarımı", "reserve", null],
+    ["splitter-1", "Dağıtıcı", 85, 60, "enerji", "Enerji hattını dallandırma", "reserve", null],
+    ["pulse-cannon-1", "Darbe Topu", 115, 120, "saldırı", "Yüksek ani hasar", "reserve", null],
+    ["armor-1", "Zırh", 180, 95, "savunma", "Pasif dayanıklılık", "reserve", null],
+    ["emp-1", "EMP", 80, 110, "sabotaj", "Geçici sistem bozma", "reserve", null],
+  ].map(([instanceId, nameTr, hp, circuitCreditCost, category, strategicRole, status, position]) => ({
     instanceId,
     nameTr,
     hp,
     maxHp: hp,
     circuitCreditCost,
+    category,
+    strategicRole,
     status,
     position,
   }));

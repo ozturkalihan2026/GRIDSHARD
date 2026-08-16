@@ -142,4 +142,36 @@ function createClient() {
   assert.strictEqual(client.requireModule("shield-1").circuitCreditCost, 100);
 }
 
-console.log("10 client tests passed");
+
+
+{
+  const fs = require("fs");
+  const appSource = fs.readFileSync("./src/app.js", "utf8");
+  for (const name of ["Dağıtıcı", "Darbe Topu", "Zırh", "EMP"]) {
+    assert.ok(appSource.includes(`"${name}"`));
+  }
+}
+
+{
+  const fs = require("fs");
+  const appSource = fs.readFileSync("./src/app.js", "utf8");
+  const instanceIds = [
+    "core-1",
+    "generator-1",
+    "laser-1",
+    "shield-1",
+    "battery-1",
+    "amplifier-1",
+    "cooler-1",
+    "repair-1",
+    "splitter-1",
+    "pulse-cannon-1",
+    "armor-1",
+    "emp-1",
+  ];
+  for (const instanceId of instanceIds) {
+    assert.ok(appSource.includes(`"${instanceId}"`));
+  }
+}
+
+console.log("12 client tests passed");

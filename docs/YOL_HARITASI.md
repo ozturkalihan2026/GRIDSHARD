@@ -1,7 +1,7 @@
 # Project Relay 2.0 — YOL HARİTASI
 
-**Güncel Sürüm:** `2.0.0-alpha.6`  
-**Paket:** Devre Kredisi Motoru  
+**Güncel Sürüm:** `2.0.0-alpha.7`  
+**Paket:** 12 Modüllük Ekosistem ve Rol Temeli  
 **Kanonik Dosya:** `docs/YOL_HARITASI.md`
 
 > Bu dosya Project Relay 2.0 için tek kanonik geliştirme kaydıdır. Her paket tamamlandığında sürüm numarası artırılır; **Tamamlananlar** ve **Yapılacaklar** bu dosyada güncellenir. Sonraki geliştirme paketi bu dosya okunarak başlatılır.
@@ -172,14 +172,14 @@
 
 #### FAZ 8 — 24 Modüllük Ekosistem
 
-- [ ] Modül sayısı önce 8'e, sonra 12'ye, 18'e ve yaklaşık 24'e genişletilecek.
-- [ ] Enerji modülleri: Jeneratör, Batarya, Dağıtıcı, Kapasitör.
-- [ ] Saldırı modülleri: Lazer, Darbe Topu, Ray Topu, Füze Fırlatıcı, Dron Üssü, Ark Topu.
-- [ ] Savunma modülleri: Kalkan, Zırh, Yansıtıcı, Bariyer.
+- [ ] Modül sayısı önce 8'e, sonra 12'ye, 18'e ve yaklaşık 24'e genişletilecek. **12 modül aşaması tamamlandı; sırada 18 modül var.**
+- [ ] Enerji modülleri: Jeneratör, Batarya, Dağıtıcı, Kapasitör. **Jeneratör, Batarya ve Dağıtıcı mevcut; Kapasitör bekliyor.**
+- [ ] Saldırı modülleri: Lazer, Darbe Topu, Ray Topu, Füze Fırlatıcı, Dron Üssü, Ark Topu. **Lazer ve Darbe Topu mevcut.**
+- [ ] Savunma modülleri: Kalkan, Zırh, Yansıtıcı, Bariyer. **Kalkan ve Zırh mevcut.**
 - [ ] Destek modülleri: Onarım Modülü, Soğutucu, Güçlendirici, Hedefleme Bilgisayarı, Aşırı Hızlandırıcı.
-- [ ] Sabotaj modülleri: EMP, Sinyal Bozucu, Virüs, Enerji Sömürücü, Kesici.
-- [ ] Her modülün diğerlerinden farklı stratejik amacı olacak.
-- [ ] Modüller için Can, enerji, hasar/etki, port, maliyet ve karşı strateji verileri tanımlanacak.
+- [ ] Sabotaj modülleri: EMP, Sinyal Bozucu, Virüs, Enerji Sömürücü, Kesici. **EMP mevcut.**
+- [ ] Her modülün diğerlerinden farklı stratejik amacı olacak. **İlk 12 modül için stratejik rol metadatası oluşturuldu; 18/24 genişlemesi bekliyor.**
+- [ ] Modüller için Can, enerji, hasar/etki, port, maliyet ve karşı strateji verileri tanımlanacak. **İlk 12 modül için Can, kredi maliyeti, enerji, temel hasar/bekleme ve port tanım temeli hazır; gerçek karşı strateji/simülasyon bekliyor.**
 - [ ] Kullanıcıya görünen modül ve sistem adları Türkçe olacak.
 
 #### FAZ 9 — 18 Modüllük Savaş Havuzu
@@ -379,9 +379,10 @@ Aşağıdaki alanlar ilk sürüm kapsamına dahil değildir ve mevcut yol harita
 
 ## Sıradaki Paket
 
-**`2.0.0-alpha.7 — 12 Modüllük Ekosistem ve Rol Temeli`**
+**`2.0.0-alpha.8 — 18 Modüllük Ekosistem ve Karşı Strateji Temeli`**
 
-İlk geliştirme sırasındaki 10 temel madde tamamlandığı için modül ekosistemini kontrollü şekilde genişletmeye başlanacaktır. Bu pakette 8 temel modül 12 modüle çıkarılacak; yeni modüllerin mevcut Enerji / Saldırı / Savunma / Destek / Sabotaj rollerine gerçek stratejik fark katması hedeflenecektir. 24 modülün tamamı tek pakette eklenmeyecektir.
+12 modüllük ilk rol dağılımı tamamlandığı için katalog kontrollü biçimde 18 modüle genişletilecektir. Yeni modüller mevcut seçenekleri tekrar etmeyecek; enerji, saldırı, savunma, destek ve sabotaj sınıflarında farklı karşı hamleler oluşturacak şekilde seçilecektir. Gerçek enerji/hasar simülasyonu ayrı motor fazında uygulanacaktır.
+
 
 ---
 
