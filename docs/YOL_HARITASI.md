@@ -1,7 +1,7 @@
 # Project Relay 2.0 — YOL HARİTASI
 
-**Güncel Sürüm:** `2.0.0-alpha.32`  
-**Paket:** PvP Snapshot, Olay Akışı ve Yeniden Bağlanma  
+**Güncel Sürüm:** `2.0.0-alpha.33`  
+**Paket:** PvP Taşıma Protokolü ve Mesaj Şemaları  
 **Kanonik Dosya:** `docs/YOL_HARITASI.md`
 
 > Bu dosya Project Relay 2.0 için tek kanonik geliştirme kaydıdır. Her paket tamamlandığında sürüm numarası artırılır; **Tamamlananlar** ve **Yapılacaklar** bu dosyada güncellenir. Sonraki geliştirme paketi bu dosya okunarak başlatılır.
@@ -379,9 +379,9 @@ Aşağıdaki alanlar ilk sürüm kapsamına dahil değildir ve mevcut yol harita
 
 ## Sıradaki Paket
 
-**`2.0.0-alpha.33 — PvP Taşıma Protokolü ve Mesaj Şemaları`**
+**`2.0.0-alpha.34 — WebSocket PvP Adaptörü ve Bağlantı Yaşam Döngüsü`**
 
-PvP snapshot, artımlı olay akışı ve yeniden bağlanma hazır. Sıradaki pakette ağdan bağımsız taşıma mesaj şemaları, istemci→sunucu komut zarfları, sunucu→istemci snapshot/olay zarfları, protokol sürümü ve güvenli mesaj doğrulama katmanı kurulacak.
+Sürümlü PvP taşıma protokolü hazır. Sıradaki pakette protokol handler'ını kullanan gerçek WebSocket adaptörü, bağlantı açma/kapatma, kimlik bağlama, gelen mesajı doğrulama ve snapshot/olay yanıtlarını iletme katmanı eklenecek. Oyun motoru WebSocket ayrıntılarını bilmeyecek.
 
 
 ---
