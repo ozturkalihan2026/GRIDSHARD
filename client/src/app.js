@@ -42,7 +42,7 @@
   const COMPETITIVE_STATUS = "M7 Simülasyon aktif";
   const BALANCE_STATUS = "Eşit modül + counter doğrulandı";
   const AI_STATUS = "Adaptif AI + rekabetçi denge doğrulandı";
-  const PVP_STATUS = "Oyuncu veri snapshot deposu hazır";
+  const PVP_STATUS = "Web test telemetri temeli aktif";
 
   const PORT_COUNT_BY_NAME = {
     "Çekirdek":4,
@@ -279,11 +279,39 @@
   const matchmakingState =
     new RelayMatchmakingClientState();
 
+  function trackMatchmakingStart() {
+    return telemetryDispatcher
+      .trackMatchmakingStarted({
+        rating:
+          profileState.profile?.rating
+          ?? 1000,
+      });
+  }
+
+  function trackRematchRequest() {
+    return telemetryDispatcher
+      .trackRematchRequested({
+        previous_session_id:
+          pvpState.sessionId,
+      });
+  }
+
   const progressionState =
     new RelayProgressionClientState();
 
   const playerDataSnapshotState =
     new RelayPlayerDataSnapshotState();
+
+  const telemetryDispatcher =
+    new RelayTelemetryDispatcher({
+      playerId: "local-player",
+      sessionId: pvpState.sessionId,
+    });
+
+  telemetryDispatcher.trackGameOpened({
+    platform: "web",
+    build: "2.0.0-alpha.50",
+  });
 
   const pvpConnection =
     new RelayWebSocketConnectionManager({
@@ -645,6 +673,16 @@ const SPECIAL_CELL_INFO = {
         event.preventDefault();
         logClientMessage(result.reason);
         return;
+      }
+
+      if (module.status === "reserve") {
+        telemetryDispatcher
+          .trackModuleShelfUsed({
+            module_id:
+              module.instanceId,
+            elapsed_ms:
+              client.elapsedMs,
+          });
       }
 
       event.dataTransfer.effectAllowed = "move";

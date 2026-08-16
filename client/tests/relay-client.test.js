@@ -401,61 +401,61 @@ function createClient() {
   const fs=require("fs");
   const src=fs.readFileSync("./src/app.js","utf8");
   assert.ok(src.includes("PVP_STATUS"));
-  assert.ok(src.includes("Oyuncu veri snapshot deposu hazır"));
+  assert.ok(src.includes("Web test telemetri temeli aktif"));
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync("./src/app.js","utf8");
-  assert.ok(src.includes("Oyuncu veri snapshot deposu hazır")); // alpha32->33 protocol status
+  assert.ok(src.includes("Web test telemetri temeli aktif")); // alpha32->33 protocol status
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync("./src/app.js","utf8");
-  assert.ok(src.includes("Oyuncu veri snapshot deposu hazır")); // alpha33 protocol
+  assert.ok(src.includes("Web test telemetri temeli aktif")); // alpha33 protocol
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync("./src/app.js","utf8");
-  assert.ok(src.includes("Oyuncu veri snapshot deposu hazır")); // alpha34 websocket
+  assert.ok(src.includes("Web test telemetri temeli aktif")); // alpha34 websocket
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync("./src/app.js","utf8");
-  assert.ok(src.includes("Oyuncu veri snapshot deposu hazır")); // alpha35 gateway
+  assert.ok(src.includes("Web test telemetri temeli aktif")); // alpha35 gateway
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync("./src/app.js","utf8");
-  assert.ok(src.includes("Oyuncu veri snapshot deposu hazır")); // alpha36 setup
+  assert.ok(src.includes("Web test telemetri temeli aktif")); // alpha36 setup
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync("./src/app.js","utf8");
-  assert.ok(src.includes("Oyuncu veri snapshot deposu hazır")); // alpha37 lobby
+  assert.ok(src.includes("Web test telemetri temeli aktif")); // alpha37 lobby
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync("./src/app.js","utf8");
-  assert.ok(src.includes("Oyuncu veri snapshot deposu hazır")); // alpha38 runner
+  assert.ok(src.includes("Web test telemetri temeli aktif")); // alpha38 runner
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync("./src/app.js","utf8");
-  assert.ok(src.includes("Oyuncu veri snapshot deposu hazır")); // alpha39 heartbeat
+  assert.ok(src.includes("Web test telemetri temeli aktif")); // alpha39 heartbeat
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync("./src/app.js","utf8");
-  assert.ok(src.includes("Oyuncu veri snapshot deposu hazır")); // alpha40 online pvp
+  assert.ok(src.includes("Web test telemetri temeli aktif")); // alpha40 online pvp
 }
 
 {
@@ -681,7 +681,7 @@ function createClient() {
 {
   const fs=require("fs");
   const src=fs.readFileSync("./src/app.js","utf8");
-  assert.ok(src.includes("Oyuncu veri snapshot deposu hazır"));
+  assert.ok(src.includes("Web test telemetri temeli aktif"));
   assert.ok(src.includes("buildPvPCommandEnvelope"));
   assert.ok(src.includes("applyPvPServerEnvelope"));
 }
@@ -1374,4 +1374,123 @@ function createClient() {
   );
 }
 
-console.log("74 client tests passed");
+{
+  const {
+    RelayTelemetryDispatcher,
+    TELEMETRY_EVENT_TYPE,
+  } = require("../src/relay-client.js");
+
+  const sent=[];
+  const telemetry=
+    new RelayTelemetryDispatcher({
+      playerId:"a",
+      sessionId:"m",
+      now:() => 12345.9,
+      eventIdFactory:
+        (type,sequence) =>
+          `${type}-${sequence}`,
+      transport:
+        (event) => sent.push(event),
+    });
+
+  const result=
+    telemetry.trackGameOpened({
+      platform:"web",
+    });
+
+  assert.strictEqual(result.ok,true);
+  assert.strictEqual(
+    result.event.event_type,
+    TELEMETRY_EVENT_TYPE.GAME_OPENED
+  );
+  assert.strictEqual(
+    result.event.timestamp_ms,
+    12345
+  );
+  assert.strictEqual(sent.length,1);
+}
+
+{
+  const {
+    RelayTelemetryDispatcher,
+  } = require("../src/relay-client.js");
+
+  const telemetry=
+    new RelayTelemetryDispatcher({
+      playerId:"a",
+      sessionId:"m",
+      now:() => 100,
+    });
+
+  telemetry.trackModuleShelfUsed({
+    module_id:"laser-1",
+  });
+  telemetry.trackRematchRequested();
+
+  assert.strictEqual(
+    telemetry.buffer.length,
+    2
+  );
+  assert.strictEqual(
+    telemetry.drain().length,
+    2
+  );
+  assert.strictEqual(
+    telemetry.buffer.length,
+    0
+  );
+}
+
+{
+  const {
+    RelayTelemetryDispatcher,
+  } = require("../src/relay-client.js");
+
+  const telemetry=
+    new RelayTelemetryDispatcher();
+
+  assert.strictEqual(
+    telemetry.track(
+      "not_supported"
+    ).ok,
+    false
+  );
+}
+
+{
+  const fs=require("fs");
+  const app=fs.readFileSync(
+    "./src/app.js",
+    "utf8"
+  );
+  const html=fs.readFileSync(
+    "./index.html",
+    "utf8"
+  );
+
+  assert.ok(
+    app.includes(
+      "trackGameOpened"
+    )
+  );
+  assert.ok(
+    app.includes(
+      "trackModuleShelfUsed"
+    )
+  );
+  assert.ok(
+    app.includes(
+      "trackRematchRequest"
+    )
+  );
+  assert.ok(
+    app.includes(
+      "trackMatchmakingStart"
+    )
+  );
+  assert.ok(
+    !html.includes(">Telemetri<")
+  );
+}
+
+console.log("78 client tests passed");

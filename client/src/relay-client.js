@@ -1266,6 +1266,127 @@
   }
 
 
+
+  const TELEMETRY_EVENT_TYPE = Object.freeze({
+    GAME_OPENED: "game_opened",
+    MATCHMAKING_STARTED: "matchmaking_started",
+    MATCHMAKING_MATCHED: "matchmaking_matched",
+    MATCH_STARTED: "match_started",
+    MATCH_COMPLETED: "match_completed",
+    MODULE_CHANGED: "module_changed",
+    CIRCUIT_CREDIT_SPENT: "circuit_credit_spent",
+    MODULE_SHELF_USED: "module_shelf_used",
+    BOOSTER_USED: "booster_used",
+    REMATCH_REQUESTED: "rematch_requested",
+  });
+
+  class RelayTelemetryDispatcher {
+    constructor({
+      playerId = null,
+      sessionId = null,
+      now = () => Date.now(),
+      eventIdFactory = null,
+      transport = null,
+    } = {}) {
+      this.playerId = playerId;
+      this.sessionId = sessionId;
+      this.now = now;
+      this.transport = transport;
+      this.sequence = 0;
+      this.buffer = [];
+      this.allowedTypes = new Set(
+        Object.values(TELEMETRY_EVENT_TYPE)
+      );
+      this.eventIdFactory =
+        eventIdFactory
+        || ((type, sequence) =>
+          `client-${type}-${sequence}`);
+    }
+
+    setSession(sessionId) {
+      this.sessionId = sessionId || null;
+    }
+
+    track(
+      eventType,
+      metadata = {},
+      {
+        playerId = this.playerId,
+        sessionId = this.sessionId,
+      } = {}
+    ) {
+      if (!this.allowedTypes.has(eventType)) {
+        return {
+          ok: false,
+          reason: "Desteklenmeyen telemetri olay türü.",
+        };
+      }
+
+      this.sequence += 1;
+
+      const event = {
+        event_id: this.eventIdFactory(
+          eventType,
+          this.sequence
+        ),
+        event_type: eventType,
+        timestamp_ms: Math.max(
+          0,
+          Math.floor(this.now())
+        ),
+        player_id: playerId || null,
+        session_id: sessionId || null,
+        metadata: { ...metadata },
+      };
+
+      this.buffer.push(event);
+
+      if (typeof this.transport === "function") {
+        this.transport(event);
+      }
+
+      return {
+        ok: true,
+        event,
+      };
+    }
+
+    trackGameOpened(metadata = {}) {
+      return this.track(
+        TELEMETRY_EVENT_TYPE.GAME_OPENED,
+        metadata
+      );
+    }
+
+    trackModuleShelfUsed(metadata = {}) {
+      return this.track(
+        TELEMETRY_EVENT_TYPE.MODULE_SHELF_USED,
+        metadata
+      );
+    }
+
+    trackRematchRequested(metadata = {}) {
+      return this.track(
+        TELEMETRY_EVENT_TYPE.REMATCH_REQUESTED,
+        metadata
+      );
+    }
+
+    trackMatchmakingStarted(metadata = {}) {
+      return this.track(
+        TELEMETRY_EVENT_TYPE.MATCHMAKING_STARTED,
+        metadata
+      );
+    }
+
+    drain() {
+      const events = [...this.buffer];
+      this.buffer.length = 0;
+      return events;
+    }
+  }
+
+
   const api = {
     RelayBattleClient,
     RelayPvPClientState,
@@ -1277,9 +1398,11 @@
     RelayMatchmakingClientState,
     RelayProgressionClientState,
     RelayPlayerDataSnapshotState,
+    RelayTelemetryDispatcher,
     BattlePoolSelection,
     APP_SCREEN,
     WS_CONNECTION_STATUS,
+    TELEMETRY_EVENT_TYPE,
     PVP_PHASE,
     MODULE_STATUS,
     DRAG_KIND,
@@ -1300,6 +1423,8 @@
   global.RelayMatchmakingClientState = RelayMatchmakingClientState;
   global.RelayProgressionClientState = RelayProgressionClientState;
   global.RelayPlayerDataSnapshotState = RelayPlayerDataSnapshotState;
+  global.RelayTelemetryDispatcher = RelayTelemetryDispatcher;
+  global.RelayTelemetryEventType = TELEMETRY_EVENT_TYPE;
   global.RelayAppScreen = APP_SCREEN;
   global.RelayWebSocketStatus = WS_CONNECTION_STATUS;
   global.RelayPvPPhase = PVP_PHASE;

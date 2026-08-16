@@ -1,7 +1,7 @@
 # Project Relay 2.0 — YOL HARİTASI
 
-**Güncel Sürüm:** `2.0.0-alpha.49`  
-**Paket:** Kalıcı Oyuncu Veri Deposu Arayüzü ve Snapshot Serileştirme  
+**Güncel Sürüm:** `2.0.0-alpha.50`  
+**Paket:** Web Test Hazırlığı ve Oyun Oturumu Telemetri Temeli  
 **Kanonik Dosya:** `docs/YOL_HARITASI.md`
 
 > Bu dosya Project Relay 2.0 için tek kanonik geliştirme kaydıdır. Her paket tamamlandığında sürüm numarası artırılır; **Tamamlananlar** ve **Yapılacaklar** bu dosyada güncellenir. Sonraki geliştirme paketi bu dosya okunarak başlatılır.
@@ -380,9 +380,9 @@ Aşağıdaki alanlar ilk sürüm kapsamına dahil değildir ve mevcut yol harita
 
 ## Sıradaki Paket
 
-**`2.0.0-alpha.50 — Web Test Hazırlığı ve Oyun Oturumu Telemetri Temeli`**
+**`2.0.0-alpha.51 — Web Test Sürümü Sağlık Kontrolü ve Smoke-Test Akışı`**
 
-Oyuncu veri kalıcılığı için repository sınırı hazır. Sıradaki paket M8 içindeki `Telemetri` ve Web test sürümüne hazırlık alanına geçecek. Yeni menü eklenmeden; oyun açılışı, eşleştirme başlangıcı, maç başlatma, maç tamamlama, modül değiştirme, Devre Kredisi kullanımı, Modül Rafı kullanımı ve tekrar maç sinyalleri için anonim/oyuncu-kimlikli olay sözleşmesi ile bellek içi telemetri toplama servisi hazırlanacak. Ağ analitik sağlayıcısı bu alpha'da eklenmeyecek.
+Telemetri temeli hazır. Sıradaki paket yeni menü veya oyun mekaniği eklemeyecek; mevcut Oyna → eşleştirme → setup → ready → sunucu tick → maç sonucu akışını web test sürümü için tek bir smoke-test senaryosunda doğrulayacak. Sunucu sağlık/versiyon/telemetri hazır olma bilgisi genişletilecek, istemcide web-test build durumu gösterilecek ve temel release-check test sözleşmesi hazırlanacak. Eğitim ayrı faz olduğu için bu pakette eğitim ekranı oluşturulmayacak.
 
 
 ---
@@ -449,7 +449,7 @@ Oyuncu veri kalıcılığı için repository sınırı hazır. Sıradaki paket M
 - [x] İstatistikler
 - [x] Ayarlar
 - [ ] Eğitim
-- [ ] Telemetri
+- [x] Telemetri
 - [ ] Web test sürümü
 
 ---

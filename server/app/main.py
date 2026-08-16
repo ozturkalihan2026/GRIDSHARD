@@ -39,6 +39,11 @@ from .player_data_store import (
     PlayerDataStoreError,
     PlayerDataStoreService,
 )
+from .telemetry import (
+    InMemoryTelemetryService,
+    TelemetryError,
+    TelemetryEvent,
+)
 
 
 app = FastAPI(
@@ -57,12 +62,16 @@ player_profile_service = PlayerProfileService()
 player_progression_service = PlayerProgressionService(
     player_profile_service
 )
+telemetry_service = InMemoryTelemetryService()
 
 def process_completed_pvp_battle(state) -> None:
     player_statistics_service.process_finished_battle(
         state
     )
     player_progression_service.process_finished_battle(
+        state
+    )
+    telemetry_service.ingest_finished_battle(
         state
     )
 
@@ -123,12 +132,71 @@ class MatchmakingJoinRequest(BaseModel):
     player_id: str
 
 
+class TelemetryEventRequest(BaseModel):
+    event_id: str
+    event_type: str
+    timestamp_ms: int
+    player_id: str | None = None
+    session_id: str | None = None
+    metadata: dict | None = None
+
+
 class PlayerSettingsRequest(BaseModel):
     sound_volume: int | None = None
     music_volume: int | None = None
     vibration_enabled: bool | None = None
     graphics_quality: str | None = None
     language: str | None = None
+
+
+@app.post("/telemetry/events")
+def record_telemetry_event(
+    request: TelemetryEventRequest,
+) -> dict:
+    try:
+        accepted = telemetry_service.record(
+            TelemetryEvent(
+                event_id=request.event_id,
+                event_type=request.event_type,
+                timestamp_ms=request.timestamp_ms,
+                player_id=request.player_id,
+                session_id=request.session_id,
+                metadata=dict(request.metadata or {}),
+            )
+        )
+    except TelemetryError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+
+    return {
+        "accepted": accepted,
+        "duplicate": not accepted,
+    }
+
+
+@app.get("/telemetry/events")
+def get_telemetry_events(
+    player_id: str | None = None,
+    session_id: str | None = None,
+    event_type: str | None = None,
+) -> dict:
+    return {
+        "events": telemetry_service.events(
+            player_id=player_id,
+            session_id=session_id,
+            event_type=event_type,
+        )
+    }
+
+
+@app.get("/telemetry/summary")
+def get_telemetry_summary(
+    player_id: str | None = None,
+    session_id: str | None = None,
+) -> dict:
+    return telemetry_service.summary(
+        player_id=player_id,
+        session_id=session_id,
+    )
 
 
 @app.post("/player-data/{player_id}/save")
@@ -184,13 +252,28 @@ def matchmaking_join(
         )
     )
 
-    matchmaking_service.enqueue(
+    queue_entry = matchmaking_service.enqueue(
         request.player_id,
         rating=profile.rating,
         league_name_tr=(
             profile.league_name_tr
         ),
         level=profile.level,
+    )
+
+    telemetry_service.record_now(
+        event_id=(
+            f"server:matchmaking:"
+            f"{request.player_id}:"
+            f"{round(queue_entry.joined_at * 1000)}"
+        ),
+        event_type="matchmaking_started",
+        player_id=request.player_id,
+        metadata={
+            "rating": profile.rating,
+            "league_name_tr": profile.league_name_tr,
+            "level": profile.level,
+        },
     )
 
     match = matchmaking_service.try_match(
@@ -221,6 +304,24 @@ def matchmaking_join(
         session.session_id,
         match.player_b_id,
     )
+
+    for matched_player_id in (
+        match.player_a_id,
+        match.player_b_id,
+    ):
+        telemetry_service.record_now(
+            event_id=(
+                f"server:{session.session_id}:"
+                f"matchmaking_matched:"
+                f"{matched_player_id}"
+            ),
+            event_type="matchmaking_matched",
+            player_id=matched_player_id,
+            session_id=session.session_id,
+            metadata={
+                "rating_difference": match.rating_difference,
+            },
+        )
 
     return {
         "matched": True,
