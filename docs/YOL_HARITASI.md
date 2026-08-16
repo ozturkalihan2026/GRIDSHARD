@@ -1,7 +1,7 @@
 # Project Relay 2.0 — YOL HARİTASI
 
-**Güncel Sürüm:** `2.0.0-alpha.22`  
-**Paket:** Sabotaj Karşı-Koyma ve Etki Direnci  
+**Güncel Sürüm:** `2.0.0-alpha.32`  
+**Paket:** PvP Snapshot, Olay Akışı ve Yeniden Bağlanma  
 **Kanonik Dosya:** `docs/YOL_HARITASI.md`
 
 > Bu dosya Project Relay 2.0 için tek kanonik geliştirme kaydıdır. Her paket tamamlandığında sürüm numarası artırılır; **Tamamlananlar** ve **Yapılacaklar** bu dosyada güncellenir. Sonraki geliştirme paketi bu dosya okunarak başlatılır.
@@ -379,9 +379,9 @@ Aşağıdaki alanlar ilk sürüm kapsamına dahil değildir ve mevcut yol harita
 
 ## Sıradaki Paket
 
-**`2.0.0-alpha.23 — Maç Sonu, Çekirdek Yıkımı ve Kazanan Belirleme`**
+**`2.0.0-alpha.33 — PvP Taşıma Protokolü ve Mesaj Şemaları`**
 
-Saldırı, savunma, destek, Isı ve sabotaj karşı-koyma katmanları tamamlandı. Sıradaki pakette Çekirdek Canı sıfıra indiğinde maçın deterministik olarak bitmesi, kazanan/kaybeden belirlenmesi, eşzamanlı Çekirdek yıkımında beraberlik çözümü ve savaş sonrası özet verilerinin motor seviyesinde üretilmesi tamamlanacak.
+PvP snapshot, artımlı olay akışı ve yeniden bağlanma hazır. Sıradaki pakette ağdan bağımsız taşıma mesaj şemaları, istemci→sunucu komut zarfları, sunucu→istemci snapshot/olay zarfları, protokol sürümü ve güvenli mesaj doğrulama katmanı kurulacak.
 
 
 ---
@@ -393,7 +393,7 @@ Saldırı, savunma, destek, Isı ve sabotaj karşı-koyma katmanları tamamland�
 - [x] Savaş saati ve tick sistemi sürekli akıyor.
 - [x] Sabit tick çekirdeği çalışıyor.
 - [x] Kuyruğa alınan oyuncu komutları savaş saatini durdurmuyor.
-- [ ] Gerçek modül komutları ve tam sunucu otoriteli doğrulamalar eklendikten sonra M1 nihai olarak kapatılacak.
+- [x] Gerçek modül komutları ve sunucu otoriteli doğrulamalar tamamlandı.
 
 ### M2 — Dinamik Devre
 
@@ -415,30 +415,30 @@ Saldırı, savunma, destek, Isı ve sabotaj karşı-koyma katmanları tamamland�
 
 ### M4 — 24 Modüllük Meta
 
-- [ ] Yaklaşık 24 modül
-- [ ] 18 modüllük Savaş Havuzu
-- [ ] Karşı stratejiler
+- [x] Yaklaşık 24 modül
+- [x] 18 modüllük Savaş Havuzu
+- [x] Karşı stratejiler
 
 ### M5 — Stratejik Savaş Alanı
 
-- [ ] Yeni alan
-- [ ] Maksimum 10 aktif modül
-- [ ] Özel hücreler
-- [ ] Konumsal strateji
+- [x] Yeni alan
+- [x] Maksimum 10 aktif modül
+- [x] Özel hücreler
+- [x] Konumsal strateji
 
 ### M6 — Güçlendirici Savaşı
 
-- [ ] 85+ saniye sistemi
-- [ ] Her 10 saniyede seçim
-- [ ] 3 seçenekten 1 seçim
-- [ ] Hedef modül seçimi
-- [ ] Savaş durmadan uygulama
+- [x] 85+ saniye sistemi
+- [x] Her 10 saniyede seçim
+- [x] 3 seçenekten 1 seçim
+- [x] Hedef modül seçimi
+- [x] Savaş durmadan uygulama
 
 ### M7 — Rekabetçi Çekirdek
 
-- [ ] Simülasyon
-- [ ] Denge
-- [ ] Yapay zekâ
+- [x] Simülasyon
+- [x] Denge
+- [x] Yapay zekâ
 - [ ] Online PvP
 
 ### M8 — Project Relay 2.0 Beta

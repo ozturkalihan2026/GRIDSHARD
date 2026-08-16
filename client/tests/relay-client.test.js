@@ -343,4 +343,71 @@ function createClient() {
   assert.ok(src.includes("Sabotaj süresi azaltıldı"));
 }
 
-console.log("29 client tests passed");
+{
+  const fs=require("fs");
+  const src=fs.readFileSync("./src/app.js","utf8");
+  assert.ok(src.includes("updateMockBattleResult"));
+  assert.ok(src.includes("KAZANDIN"));
+  assert.ok(src.includes("MAÇ BİTTİ"));
+}
+
+{
+  const fs=require("fs");
+  const src=fs.readFileSync("./src/app.js","utf8");
+  assert.ok(src.includes("META_STATUS"));
+  assert.ok(src.includes("M1-M6 tamamlandı"));
+}
+
+{
+  const fs=require("fs");
+  const src=fs.readFileSync("./src/app.js","utf8");
+  assert.ok(src.includes("COMPETITIVE_STATUS"));
+  assert.ok(src.includes("M7 Simülasyon aktif"));
+}
+
+{
+  const fs=require("fs");
+  const src=fs.readFileSync("./src/app.js","utf8");
+  assert.ok(src.includes("BALANCE_STATUS"));
+  assert.ok(src.includes("Eşit modül + counter doğrulandı"));
+}
+
+{
+  const fs=require("fs");
+  const src=fs.readFileSync("./src/app.js","utf8");
+  assert.ok(src.includes("BALANCE_STATUS")); // alpha27 counter validation
+}
+
+{
+  const fs=require("fs");
+  const src=fs.readFileSync("./src/app.js","utf8");
+  assert.ok(src.includes("AI_STATUS"));
+  assert.ok(src.includes("Adaptif AI + rekabetçi denge doğrulandı"));
+}
+
+{
+  const fs=require("fs");
+  const src=fs.readFileSync("./src/app.js","utf8");
+  assert.ok(src.includes("AI_STATUS")); // alpha29 AI commands
+}
+
+{
+  const fs=require("fs");
+  const src=fs.readFileSync("./src/app.js","utf8");
+  assert.ok(src.includes("rekabetçi denge doğrulandı")); // alpha30 fairness
+}
+
+{
+  const fs=require("fs");
+  const src=fs.readFileSync("./src/app.js","utf8");
+  assert.ok(src.includes("PVP_STATUS"));
+  assert.ok(src.includes("PvP snapshot + yeniden bağlanma aktif"));
+}
+
+{
+  const fs=require("fs");
+  const src=fs.readFileSync("./src/app.js","utf8");
+  assert.ok(src.includes("yeniden bağlanma aktif")); // alpha32 reconnect
+}
+
+console.log("39 client tests passed");

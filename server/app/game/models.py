@@ -176,3 +176,9 @@ class BattleState:
     elapsed_ms: int = 0
     events: list[BattleEvent] = field(default_factory=list)
     players: dict[str, PlayerBattleState] = field(default_factory=dict)
+    winner_player_id: str | None = None
+    loser_player_id: str | None = None
+    is_draw: bool = False
+    finish_reason: str | None = None
+    finished_at_ms: int | None = None
+    result_summary: dict = field(default_factory=dict)

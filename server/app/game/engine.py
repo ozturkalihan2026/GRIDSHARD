@@ -28,6 +28,12 @@ from .heat import (
     heat_performance,
 )
 from .topology import build_energy_topology, module_port_directions
+from .result import (
+    build_player_summary,
+    core_hp,
+    summary_rank,
+    summary_to_dict,
+)
 from .sabotage import (
     EMP_DEBUFF_ID,
     ENERGY_LEECH_DEBUFF_ID,
@@ -70,6 +76,7 @@ from .models import (
 
 TICK_RATE = 10
 TICK_MS = 1000 // TICK_RATE
+BATTLE_TIME_LIMIT_MS = 180_000
 
 
 MODULE_INTERACTION_UNLOCK_MS = 15_000
@@ -616,6 +623,8 @@ class BattleEngine:
                     {
                         "player_id": player.player_id,
                         "module_id": module.instance_id,
+                        "source_player_id": effect.data.get("source_player_id"),
+                        "source_module_id": effect.data.get("source_module_id"),
                         "damage": damage,
                         "next_tick_at_ms": effect.data["next_tick_at_ms"],
                     },
@@ -951,20 +960,17 @@ class BattleEngine:
             return
 
         player_ids = sorted(self.state.players)
+        planned_attacks = []
 
         for attacker_player_id in player_ids:
             attacker_player = self.state.players[attacker_player_id]
-
             opponent_ids = [
-                player_id
-                for player_id in player_ids
+                player_id for player_id in player_ids
                 if player_id != attacker_player_id
             ]
             if not opponent_ids:
                 continue
 
-            # alpha.17'de iki oyunculu savaş kuralı:
-            # deterministik olarak ilk rakip kullanılır.
             target_player_id = opponent_ids[0]
             target_player = self.state.players[target_player_id]
 
@@ -981,18 +987,11 @@ class BattleEngine:
                 if not attacker.is_powered:
                     self._emit(
                         "attack_skipped_unpowered",
-                        {
-                            "player_id": attacker_player_id,
-                            "module_id": attacker.instance_id,
-                        },
+                        {"player_id": attacker_player_id, "module_id": attacker.instance_id},
                     )
                     continue
 
-                heat_state = heat_performance(
-                    attacker,
-                    self.state.elapsed_ms,
-                )
-
+                heat_state = heat_performance(attacker, self.state.elapsed_ms)
                 if heat_state.overheated:
                     self._emit(
                         "attack_skipped_overheated",
@@ -1020,7 +1019,6 @@ class BattleEngine:
                     attacker,
                     self.board.core_position,
                 )
-
                 resolution = resolve_attack(
                     attacker_player_id,
                     attacker,
@@ -1031,49 +1029,6 @@ class BattleEngine:
                         * heat_state.damage_multiplier
                     ),
                 )
-
-                self._emit(
-                    "attack_performed",
-                    {
-                        "attacker_player_id": resolution.attacker_player_id,
-                        "attacker_module_id": resolution.attacker_module_id,
-                        "target_player_id": resolution.target_player_id,
-                        "target_module_id": resolution.target_module_id,
-                        "base_damage": resolution.base_damage,
-                        "attack_multiplier": resolution.attack_multiplier,
-                        "counter_multiplier": resolution.counter_multiplier,
-                        "raw_damage": resolution.raw_damage,
-                        "defense_type": resolution.defense_type,
-                        "defense_multiplier": resolution.defense_multiplier,
-                        "reduced_damage": resolution.reduced_damage,
-                        "damage": resolution.final_damage,
-                        "reflected_damage": resolution.reflected_damage,
-                    },
-                )
-
-                self.apply_damage(
-                    target_player_id,
-                    target.instance_id,
-                    resolution.final_damage,
-                )
-
-                if resolution.reflected_damage > 0 and attacker.status != ModuleStatus.DESTROYED:
-                    self._emit(
-                        "damage_reflected",
-                        {
-                            "source_player_id": target_player_id,
-                            "source_module_id": target.instance_id,
-                            "target_player_id": attacker_player_id,
-                            "target_module_id": attacker.instance_id,
-                            "damage": resolution.reflected_damage,
-                        },
-                    )
-                    self.apply_damage(
-                        attacker_player_id,
-                        attacker.instance_id,
-                        resolution.reflected_damage,
-                    )
-
                 effective_cooldown_ms = max(
                     TICK_MS,
                     int(
@@ -1085,68 +1040,251 @@ class BattleEngine:
                     ),
                 )
 
-                self.start_cooldown(
+                planned_attacks.append(
+                    (
+                        attacker_player_id,
+                        attacker,
+                        target_player_id,
+                        target,
+                        support,
+                        resolution,
+                        effective_cooldown_ms,
+                    )
+                )
+
+        for (
+            attacker_player_id,
+            attacker,
+            target_player_id,
+            target,
+            support,
+            resolution,
+            effective_cooldown_ms,
+        ) in planned_attacks:
+            self._emit(
+                "attack_performed",
+                {
+                    "attacker_player_id": resolution.attacker_player_id,
+                    "attacker_module_id": resolution.attacker_module_id,
+                    "target_player_id": resolution.target_player_id,
+                    "target_module_id": resolution.target_module_id,
+                    "base_damage": resolution.base_damage,
+                    "attack_multiplier": resolution.attack_multiplier,
+                    "counter_multiplier": resolution.counter_multiplier,
+                    "raw_damage": resolution.raw_damage,
+                    "defense_type": resolution.defense_type,
+                    "defense_multiplier": resolution.defense_multiplier,
+                    "reduced_damage": resolution.reduced_damage,
+                    "damage": resolution.final_damage,
+                    "reflected_damage": resolution.reflected_damage,
+                    "simultaneous_tick": True,
+                },
+            )
+            self.apply_damage(
+                target_player_id,
+                target.instance_id,
+                resolution.final_damage,
+            )
+
+            if resolution.reflected_damage > 0:
+                self._emit(
+                    "damage_reflected",
+                    {
+                        "source_player_id": target_player_id,
+                        "source_module_id": target.instance_id,
+                        "target_player_id": attacker_player_id,
+                        "target_module_id": attacker.instance_id,
+                        "damage": resolution.reflected_damage,
+                    },
+                )
+                self.apply_damage(
                     attacker_player_id,
                     attacker.instance_id,
-                    ATTACK_COOLDOWN_ID,
-                    effective_cooldown_ms,
+                    resolution.reflected_damage,
                 )
 
+            self.start_cooldown(
+                attacker_player_id,
+                attacker.instance_id,
+                ATTACK_COOLDOWN_ID,
+                effective_cooldown_ms,
+            )
+
+            self._emit(
+                "attack_support_applied",
+                {
+                    "player_id": attacker_player_id,
+                    "module_id": attacker.instance_id,
+                    "damage_multiplier": support.damage_multiplier,
+                    "cooldown_multiplier": support.cooldown_multiplier,
+                    "amplifier_active": support.amplifier_active,
+                    "targeting_active": support.targeting_active,
+                    "overclock_active": support.overclock_active,
+                },
+            )
+
+            heat_before = attacker.heat
+            attacker.heat = min(
+                MAX_HEAT,
+                attacker.heat + attack_heat_gain(attacker),
+            )
+            self._emit(
+                "module_heat_changed",
+                {
+                    "player_id": attacker_player_id,
+                    "module_id": attacker.instance_id,
+                    "heat_before": heat_before,
+                    "heat_after": attacker.heat,
+                },
+            )
+
+            if attacker.heat >= CRITICAL_HEAT_THRESHOLD:
+                self.add_debuff(
+                    attacker_player_id,
+                    attacker.instance_id,
+                    OVERHEAT_DEBUFF_ID,
+                    "Aşırı Yük",
+                    OVERHEAT_DURATION_MS,
+                    {"reason": "critical_heat"},
+                )
                 self._emit(
-                    "attack_support_applied",
+                    "module_overheated",
                     {
                         "player_id": attacker_player_id,
                         "module_id": attacker.instance_id,
-                        "damage_multiplier": support.damage_multiplier,
-                        "cooldown_multiplier": support.cooldown_multiplier,
-                        "amplifier_active": support.amplifier_active,
-                        "targeting_active": support.targeting_active,
-                        "overclock_active": support.overclock_active,
+                        "heat": attacker.heat,
+                        "duration_ms": OVERHEAT_DURATION_MS,
+                        "self_damage": OVERHEAT_SELF_DAMAGE,
                     },
                 )
-
-                heat_before = attacker.heat
-                attacker.heat = min(
-                    MAX_HEAT,
-                    attacker.heat + attack_heat_gain(attacker),
+                self.apply_damage(
+                    attacker_player_id,
+                    attacker.instance_id,
+                    OVERHEAT_SELF_DAMAGE,
                 )
 
-                self._emit(
-                    "module_heat_changed",
-                    {
-                        "player_id": attacker_player_id,
-                        "module_id": attacker.instance_id,
-                        "heat_before": heat_before,
-                        "heat_after": attacker.heat,
-                    },
-                )
+    def _finish_battle(
+        self,
+        winner_player_id: str | None,
+        loser_player_id: str | None,
+        is_draw: bool,
+        reason: str,
+    ) -> None:
+        if self.state.status == BattleStatus.FINISHED:
+            return
 
-                if attacker.heat >= CRITICAL_HEAT_THRESHOLD:
-                    self.add_debuff(
-                        attacker_player_id,
-                        attacker.instance_id,
-                        OVERHEAT_DEBUFF_ID,
-                        "Aşırı Yük",
-                        OVERHEAT_DURATION_MS,
-                        {"reason": "critical_heat"},
-                    )
+        summaries = {
+            player_id: build_player_summary(
+                player,
+                self.state.events,
+            )
+            for player_id, player in self.state.players.items()
+        }
 
-                    self._emit(
-                        "module_overheated",
-                        {
-                            "player_id": attacker_player_id,
-                            "module_id": attacker.instance_id,
-                            "heat": attacker.heat,
-                            "duration_ms": OVERHEAT_DURATION_MS,
-                            "self_damage": OVERHEAT_SELF_DAMAGE,
-                        },
-                    )
+        self.state.status = BattleStatus.FINISHED
+        self.state.winner_player_id = winner_player_id
+        self.state.loser_player_id = loser_player_id
+        self.state.is_draw = is_draw
+        self.state.finish_reason = reason
+        self.state.finished_at_ms = (
+            self.state.elapsed_ms + TICK_MS
+        )
+        self.state.result_summary = {
+            player_id: summary_to_dict(summary)
+            for player_id, summary in summaries.items()
+        }
 
-                    self.apply_damage(
-                        attacker_player_id,
-                        attacker.instance_id,
-                        OVERHEAT_SELF_DAMAGE,
-                    )
+        self._emit(
+            "battle_finished",
+            {
+                "winner_player_id": winner_player_id,
+                "loser_player_id": loser_player_id,
+                "is_draw": is_draw,
+                "reason": reason,
+                "finished_at_ms": self.state.finished_at_ms,
+                "summary": self.state.result_summary,
+            },
+        )
+
+    def _evaluate_battle_end(self) -> None:
+        if self.state.status != BattleStatus.RUNNING:
+            return
+        if len(self.state.players) < 2:
+            return
+
+        player_ids = sorted(self.state.players)
+        destroyed_core_players = [
+            player_id
+            for player_id in player_ids
+            if core_hp(self.state.players[player_id]) <= 0
+        ]
+
+        if len(destroyed_core_players) == 1:
+            loser = destroyed_core_players[0]
+            winner = next(
+                player_id for player_id in player_ids
+                if player_id != loser
+            )
+            self._finish_battle(
+                winner_player_id=winner,
+                loser_player_id=loser,
+                is_draw=False,
+                reason="core_destroyed",
+            )
+            return
+
+        should_rank = (
+            len(destroyed_core_players) >= 2
+            or self.state.elapsed_ms + TICK_MS >= BATTLE_TIME_LIMIT_MS
+        )
+        if not should_rank:
+            return
+
+        summaries = {
+            player_id: build_player_summary(
+                self.state.players[player_id],
+                self.state.events,
+            )
+            for player_id in player_ids
+        }
+        ranks = {
+            player_id: summary_rank(summary)
+            for player_id, summary in summaries.items()
+        }
+        best_rank = max(ranks.values())
+        winners = [
+            player_id for player_id in player_ids
+            if ranks[player_id] == best_rank
+        ]
+        is_time_limit = not destroyed_core_players
+
+        if len(winners) == 1:
+            winner = winners[0]
+            loser = next(
+                player_id for player_id in player_ids
+                if player_id != winner
+            )
+            self._finish_battle(
+                winner_player_id=winner,
+                loser_player_id=loser,
+                is_draw=False,
+                reason=(
+                    "time_limit_tiebreak"
+                    if is_time_limit
+                    else "simultaneous_core_tiebreak"
+                ),
+            )
+        else:
+            self._finish_battle(
+                winner_player_id=None,
+                loser_player_id=None,
+                is_draw=True,
+                reason=(
+                    "time_limit_draw"
+                    if is_time_limit
+                    else "simultaneous_core_draw"
+                ),
+            )
 
     def _process_passive_heat(self) -> None:
         for player in self.state.players.values():
@@ -1499,6 +1637,7 @@ class BattleEngine:
         self._process_combat_actions()
         self._process_passive_heat()
         self._expire_timed_module_state()
+        self._evaluate_battle_end()
 
     def _require_player(self, player_id: str) -> PlayerBattleState:
         try:

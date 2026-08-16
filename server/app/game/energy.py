@@ -236,9 +236,28 @@ def process_energy_tick(
     )
 
     # Deterministik enerji önceliği.
+    category_priority = {
+        "saldırı": 0,
+        "savunma": 1,
+        "destek": 2,
+        "sabotaj": 3,
+        "enerji": 4,
+    }
+
+    def _consumer_priority(current):
+        position = current.position
+        return (
+            category_priority.get(current.definition.category, 9),
+            current.energy_required_last_tick,
+            position.y if position is not None else 99,
+            position.x if position is not None else 99,
+            current.definition.id,
+            current.instance_id,
+        )
+
     for module in sorted(
         consumers,
-        key=lambda current: current.instance_id,
+        key=_consumer_priority,
     ):
         need = module.energy_required_last_tick
 

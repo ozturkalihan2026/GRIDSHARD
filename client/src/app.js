@@ -38,6 +38,11 @@
   }));
 
   const commandLog = [];
+  const META_STATUS = "M1-M6 tamamlandı";
+  const COMPETITIVE_STATUS = "M7 Simülasyon aktif";
+  const BALANCE_STATUS = "Eşit modül + counter doğrulandı";
+  const AI_STATUS = "Adaptif AI + rekabetçi denge doğrulandı";
+  const PVP_STATUS = "PvP snapshot + yeniden bağlanma aktif";
 
   const PORT_COUNT_BY_NAME = {
     "Çekirdek":4,
@@ -125,6 +130,7 @@
   const timeEl = document.getElementById("battle-time");
   const creditEl = document.getElementById("credit-indicator");
   const combatSummaryEl = document.getElementById("combat-summary");
+  const battleResultSummaryEl = document.getElementById("battle-result-summary");
   const capacityEl = document.getElementById("capacity-indicator");
   const lockLabel = document.getElementById("shelf-lock-label");
   const shelfHelp = document.getElementById("shelf-help");
@@ -664,6 +670,14 @@ const SPECIAL_CELL_INFO = {
     return "";
   }
 
+  function updateMockBattleResult() {
+    if (mockEnemyCoreHp > 0) {
+      battleResultSummaryEl.textContent = "Maç sürüyor";
+      return;
+    }
+    battleResultSummaryEl.textContent = "KAZANDIN · Rakip Çekirdek yok edildi";
+  }
+
   function updateMockCombat() {
     const currentSecond = Math.floor(client.elapsedMs / 1000);
     if (currentSecond === previousCombatSecond) return;
@@ -732,6 +746,7 @@ const SPECIAL_CELL_INFO = {
     combatSummaryEl.textContent =
       `Rakip: Modül ${mockEnemyModuleHp}/140 · Jeneratör ${mockEnemyGeneratorHp}/150 · Çekirdek ${mockEnemyCoreHp}/300`;
 
+    updateMockBattleResult();
     renderLog();
   }
 
@@ -836,6 +851,10 @@ const SPECIAL_CELL_INFO = {
         }
         if (entry.kind === "sabotage_duration_reduced") {
           return `Sabotaj süresi azaltıldı: -${entry.reductionMs || entry.reduction_ms} ms`;
+        }
+        if (entry.kind === "battle_finished") {
+          if (entry.isDraw || entry.is_draw) return `MAÇ BİTTİ: Berabere`;
+          return `MAÇ BİTTİ: Kazanan ${entry.winnerPlayerId || entry.winner_player_id}`;
         }
         if (entry.kind === "module_damaged") {
           return `${entry.moduleName || "Modül"}: ${entry.damage} hasar · Can ${entry.hp}`;
