@@ -116,11 +116,24 @@ def process_energy_tick(
 
     generated = 0.0
     for module in generators:
-        generation_multiplier = (
-            ENERGY_LEECH_GENERATION_MULTIPLIER
-            if ENERGY_LEECH_DEBUFF_ID in module.debuffs
-            else 1.0
+        leech_effect = module.debuffs.get(
+            ENERGY_LEECH_DEBUFF_ID
         )
+        generation_multiplier = 1.0
+        if leech_effect is not None:
+            base_penalty = (
+                1.0
+                - ENERGY_LEECH_GENERATION_MULTIPLIER
+            )
+            strength = float(
+                leech_effect.data.get(
+                    "effect_strength_multiplier",
+                    1.0,
+                )
+            )
+            generation_multiplier = (
+                1.0 - (base_penalty * strength)
+            )
 
         amount = (
             module.definition.energy_generation

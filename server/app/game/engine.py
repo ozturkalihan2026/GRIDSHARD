@@ -36,17 +36,22 @@ from .sabotage import (
     VIRUS_DEBUFF_ID,
     VIRUS_TICK_DAMAGE,
     VIRUS_TICK_INTERVAL_MS,
+    effective_sabotage_duration_ms,
     plan_sabotage,
     sabotage_cooldown_ms,
+    sabotage_resistance,
 )
 from .support import (
     COOLER_HEAT_REDUCTION_PER_TICK,
     OVERCLOCK_HEAT_PER_TICK,
     REPAIR_COOLDOWN_ID,
     attack_support_modifiers,
+    COOLER_DEBUFF_REDUCTION_MS_PER_TICK,
+    cooler_reducible_debuff_targets,
     cooler_targets,
     overclock_targets,
     repair_amount,
+    repair_cleanse_target,
     repair_target,
 )
 from .models import (
@@ -581,10 +586,25 @@ class BattleEngine:
                 if self.state.elapsed_ms < next_tick_at_ms:
                     continue
 
+                damage = max(
+                    1,
+                    int(
+                        round(
+                            VIRUS_TICK_DAMAGE
+                            * float(
+                                effect.data.get(
+                                    "effect_strength_multiplier",
+                                    1.0,
+                                )
+                            )
+                        )
+                    ),
+                )
+
                 self.apply_damage(
                     player.player_id,
                     module.instance_id,
-                    VIRUS_TICK_DAMAGE,
+                    damage,
                 )
                 effect.data["next_tick_at_ms"] = (
                     self.state.elapsed_ms
@@ -596,7 +616,7 @@ class BattleEngine:
                     {
                         "player_id": player.player_id,
                         "module_id": module.instance_id,
-                        "damage": VIRUS_TICK_DAMAGE,
+                        "damage": damage,
                         "next_tick_at_ms": effect.data["next_tick_at_ms"],
                     },
                 )
@@ -655,9 +675,48 @@ class BattleEngine:
                 if plan is None:
                     continue
 
+                target_module = self._require_module(
+                    target_player_id,
+                    plan.target_module_id,
+                )
+                resistance = sabotage_resistance(
+                    module,
+                    target_module,
+                    target_player,
+                )
+                effective_duration_ms = (
+                    effective_sabotage_duration_ms(
+                        plan.duration_ms,
+                        resistance,
+                    )
+                )
+
+                self.start_cooldown(
+                    attacker_player_id,
+                    module.instance_id,
+                    SABOTAGE_COOLDOWN_ID,
+                    sabotage_cooldown_ms(module),
+                )
+
+                if resistance.blocked:
+                    self._emit(
+                        "sabotage_blocked",
+                        {
+                            "attacker_player_id": attacker_player_id,
+                            "attacker_module_id": module.instance_id,
+                            "target_player_id": target_player_id,
+                            "target_module_id": plan.target_module_id,
+                            "effect_id": plan.effect_id,
+                            "reasons": list(resistance.reasons),
+                        },
+                    )
+                    continue
+
                 data = {
                     "source_player_id": attacker_player_id,
                     "source_module_id": module.instance_id,
+                    "effect_strength_multiplier": resistance.effect_strength_multiplier,
+                    "resistance_reasons": list(resistance.reasons),
                 }
                 if plan.effect_id == VIRUS_DEBUFF_ID:
                     data["next_tick_at_ms"] = self.state.elapsed_ms
@@ -667,24 +726,13 @@ class BattleEngine:
                     plan.target_module_id,
                     plan.effect_id,
                     plan.name_tr,
-                    plan.duration_ms,
+                    effective_duration_ms,
                     data,
                 )
 
                 if plan.effect_id == EMP_DEBUFF_ID:
-                    target_module = self._require_module(
-                        target_player_id,
-                        plan.target_module_id,
-                    )
                     target_module.is_powered = False
                     target_module.energy_received_last_tick = 0.0
-
-                self.start_cooldown(
-                    attacker_player_id,
-                    module.instance_id,
-                    SABOTAGE_COOLDOWN_ID,
-                    sabotage_cooldown_ms(module),
-                )
 
                 self._emit(
                     "sabotage_applied",
@@ -694,10 +742,27 @@ class BattleEngine:
                         "target_player_id": target_player_id,
                         "target_module_id": plan.target_module_id,
                         "effect_id": plan.effect_id,
-                        "duration_ms": plan.duration_ms,
+                        "base_duration_ms": plan.duration_ms,
+                        "duration_ms": effective_duration_ms,
+                        "duration_multiplier": resistance.duration_multiplier,
+                        "effect_strength_multiplier": resistance.effect_strength_multiplier,
+                        "resistance_reasons": list(resistance.reasons),
                         "cooldown_ms": sabotage_cooldown_ms(module),
                     },
                 )
+
+                if effective_duration_ms != plan.duration_ms:
+                    self._emit(
+                        "sabotage_resisted",
+                        {
+                            "target_player_id": target_player_id,
+                            "target_module_id": plan.target_module_id,
+                            "effect_id": plan.effect_id,
+                            "base_duration_ms": plan.duration_ms,
+                            "effective_duration_ms": effective_duration_ms,
+                            "reasons": list(resistance.reasons),
+                        },
+                    )
 
     def _process_support_actions(self) -> None:
         for player in self.state.players.values():
@@ -731,6 +796,32 @@ class BattleEngine:
                         module.instance_id,
                         REPAIR_COOLDOWN_ID,
                     ):
+                        continue
+
+                    cleanse = repair_cleanse_target(
+                        player,
+                        module,
+                        self.board.core_position,
+                    )
+                    if cleanse is not None:
+                        cleanse_target, effect_id = cleanse
+                        del cleanse_target.debuffs[effect_id]
+                        self._emit(
+                            "sabotage_cleansed",
+                            {
+                                "player_id": player.player_id,
+                                "source_module_id": module.instance_id,
+                                "target_module_id": cleanse_target.instance_id,
+                                "effect_id": effect_id,
+                                "cleanser": "repair",
+                            },
+                        )
+                        self.start_cooldown(
+                            player.player_id,
+                            module.instance_id,
+                            REPAIR_COOLDOWN_ID,
+                            module.definition.cooldown_ms,
+                        )
                         continue
 
                     target = repair_target(
@@ -770,6 +861,52 @@ class BattleEngine:
                     )
 
                 elif module.definition.id == "cooler":
+                    for target, effect_id in cooler_reducible_debuff_targets(
+                        player,
+                        module,
+                        self.board.core_position,
+                    ):
+                        effect = target.debuffs.get(effect_id)
+                        if effect is None or effect.expires_at_ms is None:
+                            continue
+
+                        before_expires = effect.expires_at_ms
+                        effect.expires_at_ms = max(
+                            self.state.elapsed_ms,
+                            effect.expires_at_ms
+                            - COOLER_DEBUFF_REDUCTION_MS_PER_TICK,
+                        )
+
+                        self._emit(
+                            "sabotage_duration_reduced",
+                            {
+                                "player_id": player.player_id,
+                                "source_module_id": module.instance_id,
+                                "target_module_id": target.instance_id,
+                                "effect_id": effect_id,
+                                "before_expires_at_ms": before_expires,
+                                "after_expires_at_ms": effect.expires_at_ms,
+                                "reduction_ms": (
+                                    before_expires
+                                    - effect.expires_at_ms
+                                ),
+                                "cleanser": "cooler",
+                            },
+                        )
+
+                        if effect.expires_at_ms <= self.state.elapsed_ms:
+                            del target.debuffs[effect_id]
+                            self._emit(
+                                "sabotage_cleansed",
+                                {
+                                    "player_id": player.player_id,
+                                    "source_module_id": module.instance_id,
+                                    "target_module_id": target.instance_id,
+                                    "effect_id": effect_id,
+                                    "cleanser": "cooler",
+                                },
+                            )
+
                     for target in cooler_targets(
                         player,
                         module,

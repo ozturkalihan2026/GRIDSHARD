@@ -14,6 +14,19 @@ OVERCLOCK_HEAT_PER_TICK = 1.0
 COOLER_HEAT_REDUCTION_PER_TICK = 2.0
 JAMMER_DEBUFF_ID = "support_jammed"
 
+REPAIR_CLEANSABLE_DEBUFFS = (
+    "virus",
+    "support_jammed",
+    "energy_leech",
+)
+
+COOLER_REDUCIBLE_DEBUFFS = (
+    "emp_disabled",
+    "line_disrupted",
+)
+
+COOLER_DEBUFF_REDUCTION_MS_PER_TICK = 500
+
 @dataclass(slots=True, frozen=True)
 class AttackSupportModifiers:
     damage_multiplier: float = 1.0
@@ -75,3 +88,46 @@ def overclock_targets(player, overclock_module, core_position):
         m for m in _neighbors(overclock_module,topology,player)
         if m.definition.category=="saldırı" and m.status==ModuleStatus.ACTIVE
     ]
+
+
+def repair_cleanse_target(player, repair_module, core_position):
+    topology = build_energy_topology(player, core_position)
+    candidates = []
+
+    for module in _neighbors(repair_module, topology, player):
+        active_effects = [
+            effect_id
+            for effect_id in REPAIR_CLEANSABLE_DEBUFFS
+            if effect_id in module.debuffs
+        ]
+        if active_effects:
+            candidates.append((module.instance_id, module, active_effects[0]))
+
+    if not candidates:
+        return None
+
+    _, module, effect_id = sorted(
+        candidates,
+        key=lambda item: item[0],
+    )[0]
+    return module, effect_id
+
+
+def cooler_reducible_debuff_targets(
+    player,
+    cooler_module,
+    core_position,
+):
+    topology = build_energy_topology(player, core_position)
+    results = []
+
+    for module in _neighbors(cooler_module, topology, player):
+        for effect_id in COOLER_REDUCIBLE_DEBUFFS:
+            if effect_id in module.debuffs:
+                results.append((module, effect_id))
+                break
+
+    return sorted(
+        results,
+        key=lambda item: item[0].instance_id,
+    )

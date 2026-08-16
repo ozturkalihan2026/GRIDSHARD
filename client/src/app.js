@@ -825,6 +825,18 @@ const SPECIAL_CELL_INFO = {
         if (entry.kind === "support_skipped_jammed") {
           return `Destek engellendi: Sinyal Bozma`;
         }
+        if (entry.kind === "sabotage_resisted") {
+          return `Sabotaj direnci: ${entry.baseDurationMs || entry.base_duration_ms} ms → ${entry.effectiveDurationMs || entry.effective_duration_ms} ms`;
+        }
+        if (entry.kind === "sabotage_blocked") {
+          return `Sabotaj engellendi`;
+        }
+        if (entry.kind === "sabotage_cleansed") {
+          return `Sabotaj temizlendi: ${entry.effectId || entry.effect_id}`;
+        }
+        if (entry.kind === "sabotage_duration_reduced") {
+          return `Sabotaj süresi azaltıldı: -${entry.reductionMs || entry.reduction_ms} ms`;
+        }
         if (entry.kind === "module_damaged") {
           return `${entry.moduleName || "Modül"}: ${entry.damage} hasar · Can ${entry.hp}`;
         }

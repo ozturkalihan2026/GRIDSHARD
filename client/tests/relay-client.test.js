@@ -333,4 +333,14 @@ function createClient() {
   assert.ok(src.includes("Virüs:"));
 }
 
-console.log("28 client tests passed");
+
+{
+  const fs=require("fs");
+  const src=fs.readFileSync("./src/app.js","utf8");
+  assert.ok(src.includes("Sabotaj direnci"));
+  assert.ok(src.includes("Sabotaj engellendi"));
+  assert.ok(src.includes("Sabotaj temizlendi"));
+  assert.ok(src.includes("Sabotaj süresi azaltıldı"));
+}
+
+console.log("29 client tests passed");

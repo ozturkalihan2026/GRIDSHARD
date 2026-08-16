@@ -33,6 +33,20 @@ class SabotagePlan:
     target_module_id: str
 
 
+@dataclass(slots=True, frozen=True)
+class SabotageResistance:
+    duration_multiplier: float = 1.0
+    effect_strength_multiplier: float = 1.0
+    blocked: bool = False
+    reasons: tuple[str, ...] = ()
+
+
+BARRIER_DURATION_MULTIPLIER = 0.75
+ARMOR_DISRUPTOR_DURATION_MULTIPLIER = 0.60
+STRONG_AGAINST_DURATION_MULTIPLIER = 1.25
+WEAK_AGAINST_DURATION_MULTIPLIER = 0.75
+
+
 def sabotage_cooldown_ms(module: BattleModule) -> int:
     multiplier = 1.0
     if module.position is not None:
@@ -144,3 +158,76 @@ def plan_sabotage(
         )
 
     return None
+
+
+def sabotage_resistance(
+    sabotage_module: BattleModule,
+    target: BattleModule,
+    target_player: PlayerBattleState,
+) -> SabotageResistance:
+    duration_multiplier = 1.0
+    effect_strength_multiplier = 1.0
+    reasons: list[str] = []
+
+    if target.definition.id in sabotage_module.definition.strong_against:
+        duration_multiplier *= STRONG_AGAINST_DURATION_MULTIPLIER
+        reasons.append("güçlü-karşılaşma")
+
+    if target.definition.id in sabotage_module.definition.weak_against:
+        duration_multiplier *= WEAK_AGAINST_DURATION_MULTIPLIER
+        reasons.append("zayıf-karşılaşma")
+
+    powered_barriers = [
+        module
+        for module in target_player.modules.values()
+        if module.status == ModuleStatus.ACTIVE
+        and module.definition.id == "barrier"
+        and module.is_powered
+        and module.hp > 0
+    ]
+
+    if powered_barriers:
+        duration_multiplier *= BARRIER_DURATION_MULTIPLIER
+        reasons.append("enerjili-bariyer")
+
+    if (
+        sabotage_module.definition.id == "disruptor"
+        and target.definition.id == "armor"
+    ):
+        duration_multiplier *= ARMOR_DISRUPTOR_DURATION_MULTIPLIER
+        reasons.append("zırh-hat-direnci")
+
+    # Sabotajın doğrudan enerjili Bariyere yönelmesi ve sabotajın
+    # Bariyere karşı zayıf olması durumunda etki tamamen engellenir.
+    blocked = (
+        target.definition.id == "barrier"
+        and target.is_powered
+        and target.definition.id in sabotage_module.definition.weak_against
+    )
+
+    if blocked:
+        reasons.append("bariyer-tam-engelleme")
+
+    if sabotage_module.definition.id == "energy_leech":
+        # Bariyer Enerji Sömürücü şiddetini de azaltır.
+        if powered_barriers:
+            effect_strength_multiplier *= 0.85
+
+    return SabotageResistance(
+        duration_multiplier=duration_multiplier,
+        effect_strength_multiplier=effect_strength_multiplier,
+        blocked=blocked,
+        reasons=tuple(reasons),
+    )
+
+
+def effective_sabotage_duration_ms(
+    base_duration_ms: int,
+    resistance: SabotageResistance,
+) -> int:
+    if resistance.blocked:
+        return 0
+    return max(
+        500,
+        int(round(base_duration_ms * resistance.duration_multiplier)),
+    )

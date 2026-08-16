@@ -1,7 +1,7 @@
 # Project Relay 2.0 — YOL HARİTASI
 
-**Güncel Sürüm:** `2.0.0-alpha.21`  
-**Paket:** Sabotaj Modülleri Temeli  
+**Güncel Sürüm:** `2.0.0-alpha.22`  
+**Paket:** Sabotaj Karşı-Koyma ve Etki Direnci  
 **Kanonik Dosya:** `docs/YOL_HARITASI.md`
 
 > Bu dosya Project Relay 2.0 için tek kanonik geliştirme kaydıdır. Her paket tamamlandığında sürüm numarası artırılır; **Tamamlananlar** ve **Yapılacaklar** bu dosyada güncellenir. Sonraki geliştirme paketi bu dosya okunarak başlatılır.
@@ -379,9 +379,9 @@ Aşağıdaki alanlar ilk sürüm kapsamına dahil değildir ve mevcut yol harita
 
 ## Sıradaki Paket
 
-**`2.0.0-alpha.22 — Sabotaj Karşı-Koyma ve Etki Direnci`**
+**`2.0.0-alpha.23 — Maç Sonu, Çekirdek Yıkımı ve Kazanan Belirleme`**
 
-Beş sabotaj modülü gerçek savaş motoruna bağlandı. Sıradaki pakette Bariyer, Zırh, Onarım Modülü, Soğutucu ve ilgili karşı-strateji verileri sabotaj etkilerine direnç/temizleme mekanikleri kazandıracak; süre ve etki şiddeti karşı kombinasyonlara göre deterministik değişecek.
+Saldırı, savunma, destek, Isı ve sabotaj karşı-koyma katmanları tamamlandı. Sıradaki pakette Çekirdek Canı sıfıra indiğinde maçın deterministik olarak bitmesi, kazanan/kaybeden belirlenmesi, eşzamanlı Çekirdek yıkımında beraberlik çözümü ve savaş sonrası özet verilerinin motor seviyesinde üretilmesi tamamlanacak.
 
 
 ---
