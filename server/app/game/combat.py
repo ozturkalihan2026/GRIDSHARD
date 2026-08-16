@@ -14,8 +14,14 @@ class AttackResolution:
     target_player_id: str
     target_module_id: str
     base_damage: float
-    damage_multiplier: float
+    attack_multiplier: float
+    counter_multiplier: float
+    raw_damage: int
+    defense_type: str
+    defense_multiplier: float
+    reduced_damage: int
     final_damage: int
+    reflected_damage: int
 
 
 def is_attack_module(module: BattleModule) -> bool:
@@ -41,10 +47,13 @@ def selectable_targets(player: PlayerBattleState) -> list[BattleModule]:
         if module.definition.id not in {"generator", "core"}
     ]
     if normal_targets:
-        return sorted(
-            normal_targets,
-            key=lambda module: module.instance_id,
-        )
+        powered_barriers = [
+            module for module in normal_targets
+            if module.definition.id == "barrier" and module.is_powered
+        ]
+        if powered_barriers:
+            return sorted(powered_barriers, key=lambda module: module.instance_id)
+        return sorted(normal_targets, key=lambda module: module.instance_id)
 
     generator_targets = [
         module
@@ -96,16 +105,69 @@ def attack_damage_multiplier(module: BattleModule) -> float:
     return multiplier
 
 
+def counter_strategy_multiplier(attacker: BattleModule, target: BattleModule) -> float:
+    multiplier = 1.0
+    if target.definition.id in attacker.definition.strong_against:
+        multiplier *= 1.25
+    if target.definition.id in attacker.definition.weak_against:
+        multiplier *= 0.80
+    return multiplier
+
+
+def defense_profile(target: BattleModule) -> tuple[str, float, float]:
+    defense_type = "Yok"
+    multiplier = 1.0
+    reflection_ratio = 0.0
+
+    if target.definition.id == "shield" and target.is_powered:
+        defense_type = "Kalkan"
+        multiplier *= 0.65
+    elif target.definition.id == "armor":
+        defense_type = "Zırh"
+        multiplier *= 0.75
+    elif target.definition.id == "reflector" and target.is_powered:
+        defense_type = "Yansıtıcı"
+        multiplier *= 0.75
+        reflection_ratio = 0.20
+    elif target.definition.id == "barrier" and target.is_powered:
+        defense_type = "Bariyer"
+        multiplier *= 0.80
+
+    if target.position is not None:
+        durability = float(
+            get_cell_effects(target.position).get("defense_multiplier", 1.0)
+        )
+        if durability > 0 and durability != 1.0:
+            multiplier /= durability
+            defense_type = (
+                f"{defense_type} + Savunma Hücresi"
+                if defense_type != "Yok"
+                else "Savunma Hücresi"
+            )
+
+    return defense_type, multiplier, reflection_ratio
+
+
 def resolve_attack(
     attacker_player_id: str,
     attacker: BattleModule,
     target_player_id: str,
     target: BattleModule,
 ) -> AttackResolution:
-    multiplier = attack_damage_multiplier(attacker)
-    final_damage = max(
+    attack_multiplier = attack_damage_multiplier(attacker)
+    counter_multiplier = counter_strategy_multiplier(attacker, target)
+
+    raw_damage = max(
         0,
-        int(round(attacker.definition.base_damage * multiplier)),
+        int(round(attacker.definition.base_damage * attack_multiplier * counter_multiplier)),
+    )
+
+    defense_type, defense_multiplier, reflection_ratio = defense_profile(target)
+    final_damage = max(0, int(round(raw_damage * defense_multiplier)))
+    reduced_damage = max(0, raw_damage - final_damage)
+    reflected_damage = (
+        max(0, int(round(final_damage * reflection_ratio)))
+        if reflection_ratio > 0 else 0
     )
 
     return AttackResolution(
@@ -114,6 +176,12 @@ def resolve_attack(
         target_player_id=target_player_id,
         target_module_id=target.instance_id,
         base_damage=attacker.definition.base_damage,
-        damage_multiplier=multiplier,
+        attack_multiplier=attack_multiplier,
+        counter_multiplier=counter_multiplier,
+        raw_damage=raw_damage,
+        defense_type=defense_type,
+        defense_multiplier=defense_multiplier,
+        reduced_damage=reduced_damage,
         final_damage=final_damage,
+        reflected_damage=reflected_damage,
     )

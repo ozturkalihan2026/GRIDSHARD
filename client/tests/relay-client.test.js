@@ -293,4 +293,12 @@ function createClient() {
   assert.ok(src.includes("hasar"));
 }
 
-console.log("24 client tests passed");
+{
+  const fs=require("fs");
+  const src=fs.readFileSync("./src/app.js","utf8");
+  assert.ok(src.includes("Azaltılan"));
+  assert.ok(src.includes("Savunma ${defense}"));
+  assert.ok(src.includes("Yansıtılan hasar"));
+}
+
+console.log("25 client tests passed");

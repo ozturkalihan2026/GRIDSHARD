@@ -661,14 +661,29 @@ const SPECIAL_CELL_INFO = {
     if (damage <= 0) return;
 
     let targetName = "Rakip Modül";
-    if (mockEnemyModuleHp > 0) {
-      mockEnemyModuleHp = Math.max(0, mockEnemyModuleHp - damage);
-    } else if (mockEnemyGeneratorHp > 0) {
+    if (mockEnemyModuleHp <= 0 && mockEnemyGeneratorHp > 0) {
       targetName = "Rakip Jeneratör";
-      mockEnemyGeneratorHp = Math.max(0, mockEnemyGeneratorHp - damage);
-    } else {
+    } else if (mockEnemyModuleHp <= 0 && mockEnemyGeneratorHp <= 0) {
       targetName = "Rakip Çekirdek";
-      mockEnemyCoreHp = Math.max(0, mockEnemyCoreHp - damage);
+    }
+
+    const rawDamage = damage;
+    let defenseType = "Yok";
+    let reducedDamage = 0;
+    let finalDamage = rawDamage;
+
+    if (targetName === "Rakip Modül") {
+      defenseType = "Kalkan";
+      finalDamage = Math.max(0, Math.round(rawDamage * 0.65));
+      reducedDamage = rawDamage - finalDamage;
+    }
+
+    if (targetName === "Rakip Modül") {
+      mockEnemyModuleHp = Math.max(0, mockEnemyModuleHp - finalDamage);
+    } else if (targetName === "Rakip Jeneratör") {
+      mockEnemyGeneratorHp = Math.max(0, mockEnemyGeneratorHp - finalDamage);
+    } else {
+      mockEnemyCoreHp = Math.max(0, mockEnemyCoreHp - finalDamage);
     }
 
     commandLog.push({
@@ -676,7 +691,10 @@ const SPECIAL_CELL_INFO = {
       kind: "attack_performed",
       attacker: attacker.nameTr,
       target: targetName,
-      damage,
+      rawDamage,
+      reducedDamage,
+      damage: finalDamage,
+      defenseType,
     });
 
     combatSummaryEl.textContent =
@@ -740,7 +758,13 @@ const SPECIAL_CELL_INFO = {
       .slice(-12)
       .map((entry) => {
         if (entry.kind === "attack_performed") {
-          return `${entry.attacker} → ${entry.target}: ${entry.damage} hasar`;
+          const raw = entry.rawDamage ?? entry.damage;
+          const reduced = entry.reducedDamage ?? 0;
+          const defense = entry.defenseType ?? "Yok";
+          return `${entry.attacker} → ${entry.target}: Ham ${raw} · Azaltılan ${reduced} · Final ${entry.damage} · Savunma ${defense}`;
+        }
+        if (entry.kind === "damage_reflected") {
+          return `Yansıtılan hasar: ${entry.damage}`;
         }
         if (entry.kind === "module_damaged") {
           return `${entry.moduleName || "Modül"}: ${entry.damage} hasar · Can ${entry.hp}`;

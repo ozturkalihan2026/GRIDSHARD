@@ -99,7 +99,7 @@ def test_powered_laser_deals_real_damage():
 
     engine._process_combat_actions()
 
-    assert shield.hp == before - 12
+    assert shield.hp == before - 10
     assert any(
         event.type == "attack_performed"
         for event in engine.state.events
@@ -163,7 +163,7 @@ def test_laser_can_attack_again_when_cooldown_finishes():
     engine.state.elapsed_ms = 1000
     engine._process_combat_actions()
 
-    assert shield.hp == hp_after_first - 12
+    assert shield.hp == hp_after_first - 10
 
 
 def test_attack_cell_increases_real_damage_by_15_percent():

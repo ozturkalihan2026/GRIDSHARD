@@ -600,8 +600,14 @@ class BattleEngine:
                         "target_player_id": resolution.target_player_id,
                         "target_module_id": resolution.target_module_id,
                         "base_damage": resolution.base_damage,
-                        "damage_multiplier": resolution.damage_multiplier,
+                        "attack_multiplier": resolution.attack_multiplier,
+                        "counter_multiplier": resolution.counter_multiplier,
+                        "raw_damage": resolution.raw_damage,
+                        "defense_type": resolution.defense_type,
+                        "defense_multiplier": resolution.defense_multiplier,
+                        "reduced_damage": resolution.reduced_damage,
                         "damage": resolution.final_damage,
+                        "reflected_damage": resolution.reflected_damage,
                     },
                 )
 
@@ -610,6 +616,23 @@ class BattleEngine:
                     target.instance_id,
                     resolution.final_damage,
                 )
+
+                if resolution.reflected_damage > 0 and attacker.status != ModuleStatus.DESTROYED:
+                    self._emit(
+                        "damage_reflected",
+                        {
+                            "source_player_id": target_player_id,
+                            "source_module_id": target.instance_id,
+                            "target_player_id": attacker_player_id,
+                            "target_module_id": attacker.instance_id,
+                            "damage": resolution.reflected_damage,
+                        },
+                    )
+                    self.apply_damage(
+                        attacker_player_id,
+                        attacker.instance_id,
+                        resolution.reflected_damage,
+                    )
 
                 self.start_cooldown(
                     attacker_player_id,
