@@ -19,6 +19,9 @@ from .player_profile import (
     PlayerProfileError,
     PlayerProfileService,
 )
+from .player_statistics import (
+    PlayerStatisticsService,
+)
 
 
 app = FastAPI(
@@ -32,7 +35,15 @@ pvp_websocket_adapter = PvPWebSocketAdapter(
     silent_timeout_seconds=12.0,
     grace_period_seconds=15.0,
 )
-pvp_tick_runner = PvPTickRunner(pvp_service,pvp_websocket_adapter)
+player_statistics_service = PlayerStatisticsService()
+pvp_tick_runner = PvPTickRunner(
+    pvp_service,
+    pvp_websocket_adapter,
+    match_finished_callback=(
+        player_statistics_service
+        .process_finished_battle
+    ),
+)
 player_profile_service = PlayerProfileService()
 
 
@@ -67,6 +78,17 @@ class ProfileNameRequest(BaseModel):
 
 class ProfileBattlePoolRequest(BaseModel):
     battle_pool_ids: list[str]
+
+
+@app.get("/statistics/{player_id}")
+def get_statistics(
+    player_id: str,
+) -> dict:
+    return (
+        player_statistics_service
+        .get_or_create(player_id)
+        .to_view()
+    )
 
 
 @app.get("/profile/{player_id}")

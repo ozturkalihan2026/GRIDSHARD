@@ -401,61 +401,61 @@ function createClient() {
   const fs=require("fs");
   const src=fs.readFileSync("./src/app.js","utf8");
   assert.ok(src.includes("PVP_STATUS"));
-  assert.ok(src.includes("Oyna + Profil temel akışı aktif"));
+  assert.ok(src.includes("Oyna + Profil + İstatistikler aktif"));
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync("./src/app.js","utf8");
-  assert.ok(src.includes("Oyna + Profil temel akışı aktif")); // alpha32->33 protocol status
+  assert.ok(src.includes("Oyna + Profil + İstatistikler aktif")); // alpha32->33 protocol status
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync("./src/app.js","utf8");
-  assert.ok(src.includes("Oyna + Profil temel akışı aktif")); // alpha33 protocol
+  assert.ok(src.includes("Oyna + Profil + İstatistikler aktif")); // alpha33 protocol
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync("./src/app.js","utf8");
-  assert.ok(src.includes("Oyna + Profil temel akışı aktif")); // alpha34 websocket
+  assert.ok(src.includes("Oyna + Profil + İstatistikler aktif")); // alpha34 websocket
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync("./src/app.js","utf8");
-  assert.ok(src.includes("Oyna + Profil temel akışı aktif")); // alpha35 gateway
+  assert.ok(src.includes("Oyna + Profil + İstatistikler aktif")); // alpha35 gateway
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync("./src/app.js","utf8");
-  assert.ok(src.includes("Oyna + Profil temel akışı aktif")); // alpha36 setup
+  assert.ok(src.includes("Oyna + Profil + İstatistikler aktif")); // alpha36 setup
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync("./src/app.js","utf8");
-  assert.ok(src.includes("Oyna + Profil temel akışı aktif")); // alpha37 lobby
+  assert.ok(src.includes("Oyna + Profil + İstatistikler aktif")); // alpha37 lobby
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync("./src/app.js","utf8");
-  assert.ok(src.includes("Oyna + Profil temel akışı aktif")); // alpha38 runner
+  assert.ok(src.includes("Oyna + Profil + İstatistikler aktif")); // alpha38 runner
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync("./src/app.js","utf8");
-  assert.ok(src.includes("Oyna + Profil temel akışı aktif")); // alpha39 heartbeat
+  assert.ok(src.includes("Oyna + Profil + İstatistikler aktif")); // alpha39 heartbeat
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync("./src/app.js","utf8");
-  assert.ok(src.includes("Oyna + Profil temel akışı aktif")); // alpha40 online pvp
+  assert.ok(src.includes("Oyna + Profil + İstatistikler aktif")); // alpha40 online pvp
 }
 
 {
@@ -681,7 +681,7 @@ function createClient() {
 {
   const fs=require("fs");
   const src=fs.readFileSync("./src/app.js","utf8");
-  assert.ok(src.includes("Oyna + Profil temel akışı aktif"));
+  assert.ok(src.includes("Oyna + Profil + İstatistikler aktif"));
   assert.ok(src.includes("buildPvPCommandEnvelope"));
   assert.ok(src.includes("applyPvPServerEnvelope"));
 }
@@ -747,4 +747,52 @@ function createClient() {
   assert.ok(!html.includes(">Kozmetik<"));
 }
 
-console.log("57 client tests passed");
+{
+  const {
+    RelayStatisticsClientState,
+  } = require("../src/relay-client.js");
+
+  const state =
+    new RelayStatisticsClientState();
+
+  state.applyStatistics({
+    player_id: "a",
+    total_matches: 10,
+    wins: 6,
+    losses: 3,
+    draws: 1,
+    win_rate: 0.6,
+    average_match_duration_ms: 125000,
+    total_damage_dealt: 8400,
+    module_replacements: 18,
+    boosters_used: 9,
+    most_used_modules: [
+      {
+        definition_id: "laser",
+        matches_used: 8,
+      },
+    ],
+  });
+
+  const view=state.viewModel();
+
+  assert.strictEqual(view.totalMatches,10);
+  assert.strictEqual(view.winRatePercent,60);
+  assert.strictEqual(
+    view.mostUsedModules[0].definition_id,
+    "laser"
+  );
+}
+
+{
+  const fs=require("fs");
+  const html=fs.readFileSync("./index.html","utf8");
+  assert.ok(
+    html.includes('id="statistics-summary-panel"')
+  );
+  assert.ok(
+    html.includes("Sunucu otoriteli maç sonuçları")
+  );
+}
+
+console.log("59 client tests passed");

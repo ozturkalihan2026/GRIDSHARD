@@ -595,10 +595,70 @@
   }
 
 
+
+  class RelayStatisticsClientState {
+    constructor() {
+      this.statistics = null;
+    }
+
+    applyStatistics(statistics) {
+      if (!statistics || !statistics.player_id) {
+        throw new Error(
+          "Geçerli oyuncu istatistiği gerekli."
+        );
+      }
+
+      this.statistics = {
+        ...statistics,
+        most_used_modules: [
+          ...(statistics.most_used_modules || []),
+        ],
+      };
+
+      return this.statistics;
+    }
+
+    viewModel() {
+      if (!this.statistics) return null;
+
+      return {
+        playerId:
+          this.statistics.player_id,
+        totalMatches:
+          this.statistics.total_matches,
+        wins:
+          this.statistics.wins,
+        losses:
+          this.statistics.losses,
+        draws:
+          this.statistics.draws,
+        winRatePercent:
+          Math.round(
+            Number(
+              this.statistics.win_rate || 0
+            ) * 10000
+          ) / 100,
+        averageMatchDurationMs:
+          this.statistics.average_match_duration_ms,
+        totalDamageDealt:
+          this.statistics.total_damage_dealt,
+        moduleReplacements:
+          this.statistics.module_replacements,
+        boostersUsed:
+          this.statistics.boosters_used,
+        mostUsedModules: [
+          ...this.statistics.most_used_modules,
+        ],
+      };
+    }
+  }
+
+
   const api = {
     RelayBattleClient,
     RelayPvPClientState,
     RelayProfileClientState,
+    RelayStatisticsClientState,
     BattlePoolSelection,
     PVP_PHASE,
     MODULE_STATUS,
@@ -613,6 +673,7 @@
   global.RelayBattleClient = RelayBattleClient;
   global.RelayPvPClientState = RelayPvPClientState;
   global.RelayProfileClientState = RelayProfileClientState;
+  global.RelayStatisticsClientState = RelayStatisticsClientState;
   global.RelayPvPPhase = PVP_PHASE;
   global.BattlePoolSelection = BattlePoolSelection;
   global.RelayModuleStatus = MODULE_STATUS;

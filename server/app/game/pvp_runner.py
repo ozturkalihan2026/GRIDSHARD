@@ -25,11 +25,13 @@ class PvPTickRunner:
         *,
         sleep_func: SleepFunc = asyncio.sleep,
         snapshot_every_ticks: int = 10,
+        match_finished_callback=None,
     ):
         self.service=service
         self.websocket_adapter=websocket_adapter
         self.sleep_func=sleep_func
         self.snapshot_every_ticks=snapshot_every_ticks
+        self.match_finished_callback=match_finished_callback
         self.tick_interval_seconds=TICK_MS/1000.0
         self._tasks={}
         self._stats={}
@@ -74,6 +76,11 @@ class PvPTickRunner:
             stats.snapshot_broadcasts += await self.websocket_adapter.broadcast_snapshot(session_id)
 
         if session.engine.state.status == BattleStatus.FINISHED:
+            if self.match_finished_callback is not None:
+                self.match_finished_callback(
+                    session.engine.state
+                )
+
             # Son savaş olayları gönderildikten sonra terminal sonuç ayrı zarfla yayınlanır.
             stats.match_finished_broadcasts += (
                 await self.websocket_adapter.broadcast_match_finished(

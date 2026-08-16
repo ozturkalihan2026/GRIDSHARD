@@ -42,7 +42,7 @@
   const COMPETITIVE_STATUS = "M7 Simülasyon aktif";
   const BALANCE_STATUS = "Eşit modül + counter doğrulandı";
   const AI_STATUS = "Adaptif AI + rekabetçi denge doğrulandı";
-  const PVP_STATUS = "Oyna + Profil temel akışı aktif";
+  const PVP_STATUS = "Oyna + Profil + İstatistikler aktif";
 
   const PORT_COUNT_BY_NAME = {
     "Çekirdek":4,
@@ -145,6 +145,22 @@
     league_name_tr: "Gümüş",
     preferred_battle_pool_ids:
       battlePoolSelection.selectedIds(),
+  });
+
+  const statisticsState =
+    new RelayStatisticsClientState();
+  statisticsState.applyStatistics({
+    player_id: "local-player",
+    total_matches: 0,
+    wins: 0,
+    losses: 0,
+    draws: 0,
+    win_rate: 0,
+    average_match_duration_ms: 0,
+    total_damage_dealt: 0,
+    module_replacements: 0,
+    boosters_used: 0,
+    most_used_modules: [],
   });
 
   function buildPvPCommandEnvelope(command) {

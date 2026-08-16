@@ -1,7 +1,7 @@
 # Project Relay 2.0 — YOL HARİTASI
 
-**Güncel Sürüm:** `2.0.0-alpha.42`  
-**Paket:** Profil Temeli ve Oyuncu İlerleme Verisi  
+**Güncel Sürüm:** `2.0.0-alpha.43`  
+**Paket:** İstatistikler Temeli ve Maç Sonucu İşleme  
 **Kanonik Dosya:** `docs/YOL_HARITASI.md`
 
 > Bu dosya Project Relay 2.0 için tek kanonik geliştirme kaydıdır. Her paket tamamlandığında sürüm numarası artırılır; **Tamamlananlar** ve **Yapılacaklar** bu dosyada güncellenir. Sonraki geliştirme paketi bu dosya okunarak başlatılır.
@@ -379,9 +379,9 @@ Aşağıdaki alanlar ilk sürüm kapsamına dahil değildir ve mevcut yol harita
 
 ## Sıradaki Paket
 
-**`2.0.0-alpha.43 — İstatistikler Temeli ve Maç Sonucu İşleme`**
+**`2.0.0-alpha.44 — Ayarlar Temeli ve Oyun Tercihleri`**
 
-Profil temeli hazır. Sıradaki paket yalnızca `İstatistikler` alanına geçecek. Sunucu otoriteli tamamlanmış PvP sonuçlarından toplam maç, galibiyet, mağlubiyet, beraberlik, galibiyet oranı, ortalama maç süresi, toplam verilen hasar, modül değiştirme ve güçlendirici kullanım sayaçları üretilecek; aynı maçın iki kez işlenmesi engellenecek ve sade İstatistikler ekranı hazırlanacak.
+İstatistikler temeli hazır. Sıradaki paket sabitlenen ilk menü kapsamındaki son alan olan `Ayarlar` olacak. Ses, müzik, titreşim, grafik kalitesi ve dil tercihleri için doğrulanmış oyuncu ayar modeli, endpoint'ler ve sade Ayarlar ekranı hazırlanacak. Ayarlar savaş motoru sonuçlarını değiştirmeyecek; yalnızca istemci sunum ve cihaz tercihlerini yönetecek.
 
 
 ---
@@ -445,7 +445,7 @@ Profil temeli hazır. Sıradaki paket yalnızca `İstatistikler` alanına geçec
 
 - [x] Oyna
 - [x] Profil
-- [ ] İstatistikler
+- [x] İstatistikler
 - [ ] Ayarlar
 - [ ] Eğitim
 - [ ] Telemetri

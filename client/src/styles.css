@@ -349,3 +349,10 @@ button, input { font: inherit; }
   border-radius: 0.75rem;
   padding: 1rem;
 }
+
+
+.statistics-summary-panel {
+  border: 1px solid currentColor;
+  border-radius: 0.75rem;
+  padding: 1rem;
+}
