@@ -44,6 +44,9 @@ from .telemetry import (
     TelemetryError,
     TelemetryEvent,
 )
+from .web_test import (
+    build_web_test_readiness,
+)
 
 
 app = FastAPI(
@@ -482,10 +485,24 @@ def update_profile_battle_pool(
 
 @app.get("/health")
 def health() -> dict:
+    readiness = build_web_test_readiness(
+        version=VERSION,
+        telemetry_service=telemetry_service,
+    )
+
     return {
         "status": "ok",
         "version": VERSION,
+        "web_test": readiness.to_dict(),
     }
+
+
+@app.get("/web-test/status")
+def web_test_status() -> dict:
+    return build_web_test_readiness(
+        version=VERSION,
+        telemetry_service=telemetry_service,
+    ).to_dict()
 
 
 @app.post("/pvp/sessions")

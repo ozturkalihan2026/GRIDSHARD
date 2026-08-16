@@ -401,61 +401,61 @@ function createClient() {
   const fs=require("fs");
   const src=fs.readFileSync("./src/app.js","utf8");
   assert.ok(src.includes("PVP_STATUS"));
-  assert.ok(src.includes("Web test telemetri temeli aktif"));
+  assert.ok(src.includes("Web test smoke-check altyapısı aktif"));
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync("./src/app.js","utf8");
-  assert.ok(src.includes("Web test telemetri temeli aktif")); // alpha32->33 protocol status
+  assert.ok(src.includes("Web test smoke-check altyapısı aktif")); // alpha32->33 protocol status
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync("./src/app.js","utf8");
-  assert.ok(src.includes("Web test telemetri temeli aktif")); // alpha33 protocol
+  assert.ok(src.includes("Web test smoke-check altyapısı aktif")); // alpha33 protocol
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync("./src/app.js","utf8");
-  assert.ok(src.includes("Web test telemetri temeli aktif")); // alpha34 websocket
+  assert.ok(src.includes("Web test smoke-check altyapısı aktif")); // alpha34 websocket
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync("./src/app.js","utf8");
-  assert.ok(src.includes("Web test telemetri temeli aktif")); // alpha35 gateway
+  assert.ok(src.includes("Web test smoke-check altyapısı aktif")); // alpha35 gateway
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync("./src/app.js","utf8");
-  assert.ok(src.includes("Web test telemetri temeli aktif")); // alpha36 setup
+  assert.ok(src.includes("Web test smoke-check altyapısı aktif")); // alpha36 setup
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync("./src/app.js","utf8");
-  assert.ok(src.includes("Web test telemetri temeli aktif")); // alpha37 lobby
+  assert.ok(src.includes("Web test smoke-check altyapısı aktif")); // alpha37 lobby
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync("./src/app.js","utf8");
-  assert.ok(src.includes("Web test telemetri temeli aktif")); // alpha38 runner
+  assert.ok(src.includes("Web test smoke-check altyapısı aktif")); // alpha38 runner
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync("./src/app.js","utf8");
-  assert.ok(src.includes("Web test telemetri temeli aktif")); // alpha39 heartbeat
+  assert.ok(src.includes("Web test smoke-check altyapısı aktif")); // alpha39 heartbeat
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync("./src/app.js","utf8");
-  assert.ok(src.includes("Web test telemetri temeli aktif")); // alpha40 online pvp
+  assert.ok(src.includes("Web test smoke-check altyapısı aktif")); // alpha40 online pvp
 }
 
 {
@@ -681,7 +681,7 @@ function createClient() {
 {
   const fs=require("fs");
   const src=fs.readFileSync("./src/app.js","utf8");
-  assert.ok(src.includes("Web test telemetri temeli aktif"));
+  assert.ok(src.includes("Web test smoke-check altyapısı aktif"));
   assert.ok(src.includes("buildPvPCommandEnvelope"));
   assert.ok(src.includes("applyPvPServerEnvelope"));
 }
@@ -1493,4 +1493,105 @@ function createClient() {
   );
 }
 
-console.log("78 client tests passed");
+{
+  const {
+    RelayWebTestBuildState,
+  } = require("../src/relay-client.js");
+
+  const state =
+    new RelayWebTestBuildState();
+
+  const result=state.applyHealth({
+    status:"ok",
+    version:"2.0.0-alpha.51",
+    web_test:{
+      ready:true,
+      build:"web-test-alpha.51",
+      release_checks:[
+        "health",
+        "matchmaking",
+        "setup",
+        "ready",
+        "server_tick",
+        "match_result",
+        "telemetry",
+      ],
+      capabilities:{
+        server_authoritative_pvp:true,
+      },
+    },
+  });
+
+  assert.strictEqual(
+    result.ok,
+    true
+  );
+  assert.strictEqual(
+    state.ready,
+    true
+  );
+  assert.strictEqual(
+    state.labelTr(),
+    "Web Test: Hazır"
+  );
+  assert.strictEqual(
+    state.releaseChecks.length,
+    7
+  );
+}
+
+{
+  const {
+    RelayWebTestBuildState,
+  } = require("../src/relay-client.js");
+
+  const state =
+    new RelayWebTestBuildState();
+
+  const result=state.applyHealth({
+    status:"ok",
+    version:"2.0.0-alpha.51",
+  });
+
+  assert.strictEqual(
+    result.ok,
+    false
+  );
+  assert.strictEqual(
+    state.labelTr(),
+    "Web Test: Sağlık Hatası"
+  );
+}
+
+{
+  const fs=require("fs");
+  const html=fs.readFileSync(
+    "./index.html",
+    "utf8"
+  );
+  const app=fs.readFileSync(
+    "./src/app.js",
+    "utf8"
+  );
+
+  assert.ok(
+    html.includes(
+      'id="web-test-status"'
+    )
+  );
+  assert.ok(
+    html.includes(
+      "Web Test: Hazır"
+    )
+  );
+  assert.ok(
+    app.includes(
+      "RelayWebTestBuildState"
+    )
+  );
+  assert.ok(
+    !html.includes(">Eğitim<")
+  );
+}
+
+console.log("81 client tests passed");

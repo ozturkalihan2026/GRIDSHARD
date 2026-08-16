@@ -1,7 +1,7 @@
 # Project Relay 2.0 — YOL HARİTASI
 
-**Güncel Sürüm:** `2.0.0-alpha.50`  
-**Paket:** Web Test Hazırlığı ve Oyun Oturumu Telemetri Temeli  
+**Güncel Sürüm:** `2.0.0-alpha.51`  
+**Paket:** Web Test Sürümü Sağlık Kontrolü ve Smoke-Test Akışı  
 **Kanonik Dosya:** `docs/YOL_HARITASI.md`
 
 > Bu dosya Project Relay 2.0 için tek kanonik geliştirme kaydıdır. Her paket tamamlandığında sürüm numarası artırılır; **Tamamlananlar** ve **Yapılacaklar** bu dosyada güncellenir. Sonraki geliştirme paketi bu dosya okunarak başlatılır.
@@ -322,7 +322,7 @@
 
 #### FAZ 23 — Web Test Sürümü
 
-- [ ] Web test sürümü hazırlanacak.
+- [x] Web test sürümü için sağlık, sürüm ve uçtan uca smoke-test sözleşmesi hazırlandı.
 - [ ] Eğitim tamamlama oranı ölçülecek.
 - [ ] İlk maç tamamlama oranı ölçülecek.
 - [ ] İkinci maça geçiş ölçülecek.
@@ -380,9 +380,9 @@ Aşağıdaki alanlar ilk sürüm kapsamına dahil değildir ve mevcut yol harita
 
 ## Sıradaki Paket
 
-**`2.0.0-alpha.51 — Web Test Sürümü Sağlık Kontrolü ve Smoke-Test Akışı`**
+**`2.0.0-alpha.52 — Web Test Eşleştirme → Oyna Bağlantısı ve Gerçek Oturum Başlatma`**
 
-Telemetri temeli hazır. Sıradaki paket yeni menü veya oyun mekaniği eklemeyecek; mevcut Oyna → eşleştirme → setup → ready → sunucu tick → maç sonucu akışını web test sürümü için tek bir smoke-test senaryosunda doğrulayacak. Sunucu sağlık/versiyon/telemetri hazır olma bilgisi genişletilecek, istemcide web-test build durumu gösterilecek ve temel release-check test sözleşmesi hazırlanacak. Eğitim ayrı faz olduğu için bu pakette eğitim ekranı oluşturulmayacak.
+Sunucu smoke-test sözleşmesi hazır. Sıradaki paket yeni menü eklemeden istemcide `Oyna` butonunu gerçek eşleştirme akışına bağlayacak: eşleştirmeye katılma/iptal, eşleşme sonucunda gerçek session_id'nin `RelayPvPClientState` ve WebSocket yöneticisine aktarılması, setup/ready mesajlarının gerçek oturuma gönderilmesi ve bağlantı/eşleştirme durumunun Oyna ekranında tek akış halinde gösterilmesi tamamlanacak. Eğitim yine ayrı faz olarak bekleyecek.
 
 
 ---
@@ -450,6 +450,6 @@ Telemetri temeli hazır. Sıradaki paket yeni menü veya oyun mekaniği eklemeye
 - [x] Ayarlar
 - [ ] Eğitim
 - [x] Telemetri
-- [ ] Web test sürümü
+- [x] Web test sürümü — **smoke-test ve sağlık sözleşmesi hazır; gerçek kullanıcı testi sonraki paketlerde yürütülecek.**
 
 ---

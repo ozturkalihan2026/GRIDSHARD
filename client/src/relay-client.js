@@ -1387,6 +1387,69 @@
   }
 
 
+
+  class RelayWebTestBuildState {
+    constructor() {
+      this.status = "unknown";
+      this.version = null;
+      this.build = null;
+      this.ready = false;
+      this.releaseChecks = [];
+      this.capabilities = {};
+    }
+
+    applyHealth(health) {
+      const webTest =
+        health && health.web_test;
+
+      if (!webTest) {
+        this.status = "error";
+        this.ready = false;
+        return {
+          ok: false,
+          reason:
+            "Web test sağlık bilgisi bulunamadı.",
+        };
+      }
+
+      this.version =
+        health.version || null;
+      this.build =
+        webTest.build || null;
+      this.ready =
+        Boolean(webTest.ready);
+      this.releaseChecks = [
+        ...(webTest.release_checks || []),
+      ];
+      this.capabilities = {
+        ...(webTest.capabilities || {}),
+      };
+      this.status =
+        this.ready
+          ? "ready"
+          : "blocked";
+
+      return {
+        ok: true,
+        ready: this.ready,
+      };
+    }
+
+    labelTr() {
+      if (this.status === "ready") {
+        return "Web Test: Hazır";
+      }
+      if (this.status === "blocked") {
+        return "Web Test: Engelli";
+      }
+      if (this.status === "error") {
+        return "Web Test: Sağlık Hatası";
+      }
+      return "Web Test: Kontrol Bekliyor";
+    }
+  }
+
+
   const api = {
     RelayBattleClient,
     RelayPvPClientState,
@@ -1399,6 +1462,7 @@
     RelayProgressionClientState,
     RelayPlayerDataSnapshotState,
     RelayTelemetryDispatcher,
+    RelayWebTestBuildState,
     BattlePoolSelection,
     APP_SCREEN,
     WS_CONNECTION_STATUS,
@@ -1424,6 +1488,7 @@
   global.RelayProgressionClientState = RelayProgressionClientState;
   global.RelayPlayerDataSnapshotState = RelayPlayerDataSnapshotState;
   global.RelayTelemetryDispatcher = RelayTelemetryDispatcher;
+  global.RelayWebTestBuildState = RelayWebTestBuildState;
   global.RelayTelemetryEventType = TELEMETRY_EVENT_TYPE;
   global.RelayAppScreen = APP_SCREEN;
   global.RelayWebSocketStatus = WS_CONNECTION_STATUS;

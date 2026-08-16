@@ -42,7 +42,7 @@
   const COMPETITIVE_STATUS = "M7 Simülasyon aktif";
   const BALANCE_STATUS = "Eşit modül + counter doğrulandı";
   const AI_STATUS = "Adaptif AI + rekabetçi denge doğrulandı";
-  const PVP_STATUS = "Web test telemetri temeli aktif";
+  const PVP_STATUS = "Web test smoke-check altyapısı aktif";
 
   const PORT_COUNT_BY_NAME = {
     "Çekirdek":4,
@@ -302,6 +302,35 @@
   const playerDataSnapshotState =
     new RelayPlayerDataSnapshotState();
 
+  const webTestBuildState =
+    new RelayWebTestBuildState();
+  webTestBuildState.applyHealth({
+    status: "ok",
+    version: "2.0.0-alpha.51",
+    web_test: {
+      ready: true,
+      build: "web-test-alpha.51",
+      release_checks: [
+        "health",
+        "matchmaking",
+        "setup",
+        "ready",
+        "server_tick",
+        "match_result",
+        "telemetry",
+      ],
+      capabilities: {
+        server_authoritative_pvp: true,
+        matchmaking: true,
+        setup_and_ready: true,
+        server_tick_runner: true,
+        match_result: true,
+        telemetry: true,
+        player_data_snapshot: true,
+      },
+    },
+  });
+
   const telemetryDispatcher =
     new RelayTelemetryDispatcher({
       playerId: "local-player",
@@ -375,6 +404,17 @@
   const poolSelectionEl = document.getElementById("battle-pool-selection");
   const poolCountEl = document.getElementById("battle-pool-count");
   const poolConfirmEl = document.getElementById("battle-pool-confirm");
+
+  const webTestStatusEl =
+    document.getElementById(
+      "web-test-status"
+    );
+  if (webTestStatusEl) {
+    webTestStatusEl.textContent =
+      webTestBuildState.labelTr();
+    webTestStatusEl.dataset.status =
+      webTestBuildState.status;
+  }
 
   for (
     const button
