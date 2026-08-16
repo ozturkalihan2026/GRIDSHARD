@@ -10,6 +10,8 @@ from .game.pvp_session import (
     PvPSessionError,
     PvPSessionService,
 )
+from .game.models import Direction
+from .game.pvp_setup import InitialModulePlacement, PvPSetupPayload
 from .game.pvp_websocket import PvPWebSocketAdapter
 from .version import VERSION
 
@@ -32,6 +34,22 @@ class CreateSessionRequest(BaseModel):
 class JoinSessionRequest(BaseModel):
     player_id: str
 
+class InitialModuleRequest(BaseModel):
+    instance_id: str
+    definition_id: str
+    x: int
+    y: int
+    direction: Direction = Direction.UP
+
+class SetupSessionRequest(BaseModel):
+    player_id: str
+    battle_pool_ids: list[str]
+    initial_modules: list[InitialModuleRequest]
+
+class ReadySessionRequest(BaseModel):
+    player_id: str
+    ready: bool = True
+
 
 @app.get("/health")
 def health() -> dict:
@@ -47,7 +65,8 @@ def create_pvp_session(
 ) -> dict:
     try:
         session = pvp_service.create_session(
-            request.session_id
+            request.session_id,
+            setup_required=True,
         )
     except PvPSessionError as exc:
         raise HTTPException(
@@ -83,6 +102,58 @@ def join_pvp_session(
         "player_id": slot.player_id,
         "slot_index": slot.slot_index,
         "connected": slot.connected,
+    }
+
+
+@app.post("/pvp/sessions/{session_id}/setup")
+def setup_pvp_session(
+    session_id: str,
+    request: SetupSessionRequest,
+) -> dict:
+    try:
+        pvp_service.submit_setup(
+            session_id,
+            request.player_id,
+            PvPSetupPayload(
+                battle_pool_ids=tuple(request.battle_pool_ids),
+                initial_modules=tuple(
+                    InitialModulePlacement(
+                        instance_id=item.instance_id,
+                        definition_id=item.definition_id,
+                        x=item.x,
+                        y=item.y,
+                        direction=item.direction,
+                    )
+                    for item in request.initial_modules
+                ),
+            ),
+        )
+    except PvPSessionError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+    return {
+        "session_id": session_id,
+        "player_id": request.player_id,
+        "setup_submitted": True,
+        "ready": False,
+    }
+
+@app.post("/pvp/sessions/{session_id}/ready")
+def ready_pvp_session(
+    session_id: str,
+    request: ReadySessionRequest,
+) -> dict:
+    try:
+        pvp_service.set_ready(
+            session_id,
+            request.player_id,
+            request.ready,
+        )
+    except PvPSessionError as exc:
+        raise HTTPException(status_code=409, detail=str(exc)) from exc
+    return {
+        "session_id": session_id,
+        "player_id": request.player_id,
+        "ready": request.ready,
     }
 
 

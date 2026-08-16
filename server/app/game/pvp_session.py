@@ -2,6 +2,11 @@ from dataclasses import dataclass, field
 
 from .engine import BattleEngine
 from .models import BattleCommand, BattleState, BattleStatus
+from .pvp_setup import (
+    PvPSetupPayload,
+    PvPSetupValidationError,
+    validate_setup_payload,
+)
 
 
 MAX_PVP_PLAYERS = 2
@@ -18,6 +23,8 @@ class PvPPlayerSlot:
     connected: bool = True
     last_command_sequence: int = 0
     acknowledged_event_cursor: int = 0
+    setup_submitted: bool = False
+    ready: bool = False
 
 
 @dataclass(slots=True)
@@ -25,6 +32,7 @@ class PvPSession:
     session_id: str
     engine: BattleEngine
     slots: dict[str, PvPPlayerSlot] = field(default_factory=dict)
+    setup_required: bool = False
 
     @property
     def is_full(self) -> bool:
@@ -47,7 +55,12 @@ class PvPSessionService:
     def __init__(self):
         self._sessions: dict[str, PvPSession] = {}
 
-    def create_session(self, session_id: str) -> PvPSession:
+    def create_session(
+        self,
+        session_id: str,
+        *,
+        setup_required: bool = False,
+    ) -> PvPSession:
         if session_id in self._sessions:
             raise PvPSessionError(
                 "Aynı kimlikte PvP oturumu zaten mevcut."
@@ -59,6 +72,7 @@ class PvPSessionService:
         session = PvPSession(
             session_id=session_id,
             engine=engine,
+            setup_required=setup_required,
         )
         self._sessions[session_id] = session
         return session
@@ -107,6 +121,83 @@ class PvPSessionService:
         )
         slot.connected = False
 
+    def submit_setup(
+        self,
+        session_id: str,
+        player_id: str,
+        payload: PvPSetupPayload,
+    ) -> None:
+        session = self.get_session(session_id)
+        slot = session.slot_for(player_id)
+
+        if session.engine.state.status != BattleStatus.WAITING:
+            raise PvPSessionError(
+                "PvP kurulumu yalnızca maç başlamadan gönderilebilir."
+            )
+
+        try:
+            validate_setup_payload(payload)
+        except PvPSetupValidationError as exc:
+            raise PvPSessionError(str(exc)) from exc
+
+        player = session.engine.state.players[player_id]
+        player.modules.clear()
+        player.battle_pool = None
+        slot.ready = False
+
+        session.engine.set_battle_pool(
+            player_id,
+            payload.battle_pool_ids,
+        )
+
+        for placement in payload.initial_modules:
+            session.engine.grant_module(
+                player_id,
+                placement.instance_id,
+                placement.definition_id,
+            )
+            session.engine.set_initial_active_module(
+                player_id,
+                placement.instance_id,
+                placement.x,
+                placement.y,
+                placement.direction,
+            )
+
+        active_definitions = {
+            placement.definition_id
+            for placement in payload.initial_modules
+        }
+        for definition_id in payload.battle_pool_ids:
+            if definition_id in active_definitions:
+                continue
+            session.engine.grant_module(
+                player_id,
+                f"{player_id}-reserve-{definition_id}",
+                definition_id,
+            )
+
+        slot.setup_submitted = True
+
+    def set_ready(
+        self,
+        session_id: str,
+        player_id: str,
+        ready: bool,
+    ) -> None:
+        session = self.get_session(session_id)
+        slot = session.slot_for(player_id)
+
+        if session.engine.state.status != BattleStatus.WAITING:
+            raise PvPSessionError(
+                "Hazır durumu yalnızca maç başlamadan değiştirilebilir."
+            )
+        if ready and not slot.setup_submitted:
+            raise PvPSessionError(
+                "Oyuncu geçerli kurulum göndermeden hazır olamaz."
+            )
+        slot.ready = ready
+
     def start(self, session_id: str) -> None:
         session = self.get_session(session_id)
 
@@ -114,6 +205,17 @@ class PvPSessionService:
             raise PvPSessionError(
                 "PvP maçı başlamadan önce iki oyuncu gerekli."
             )
+
+        if session.setup_required:
+            not_ready = [
+                slot.player_id
+                for slot in session.slots.values()
+                if not slot.setup_submitted or not slot.ready
+            ]
+            if not_ready:
+                raise PvPSessionError(
+                    "PvP maçı için iki oyuncunun da geçerli kurulumu ve hazır durumu gerekli."
+                )
 
         session.engine.start()
 
@@ -255,6 +357,8 @@ class PvPSessionService:
                 "player_id": player_id,
                 "slot_index": session.slots[player_id].slot_index,
                 "connected": session.slots[player_id].connected,
+                "setup_submitted": session.slots[player_id].setup_submitted,
+                "ready": session.slots[player_id].ready,
                 "modules": public_modules,
             }
 
@@ -263,6 +367,11 @@ class PvPSessionService:
                 player_data.update(
                     {
                         "circuit_credits": player.circuit_credits,
+                        "battle_pool_ids": (
+                            list(player.battle_pool.module_definition_ids)
+                            if player.battle_pool is not None
+                            else None
+                        ),
                         "last_command_sequence": session.slots[player_id].last_command_sequence,
                         "acknowledged_event_cursor": session.slots[player_id].acknowledged_event_cursor,
                         "pending_booster_offer": (

@@ -31,18 +31,38 @@ def create_and_join(session_id="web", players=("a", "b")):
         assert response.status_code == 200
 
 
+
+def valid_setup_body(player):
+    from app.game.battle_pool import default_battle_pool
+    return {
+        "player_id": player,
+        "battle_pool_ids": list(default_battle_pool().module_definition_ids),
+        "initial_modules": [
+            {"instance_id": f"{player}-core", "definition_id": "core", "x": 2, "y": 2, "direction": "up"},
+            {"instance_id": f"{player}-gen", "definition_id": "generator", "x": 2, "y": 3, "direction": "up"},
+            {"instance_id": f"{player}-splitter", "definition_id": "splitter", "x": 2, "y": 1, "direction": "down"},
+            {"instance_id": f"{player}-laser", "definition_id": "laser", "x": 1, "y": 1, "direction": "right"},
+        ],
+    }
+
+def ready_two(session_id="web"):
+    for player in ("a", "b"):
+        assert client.post(f"/pvp/sessions/{session_id}/setup",json=valid_setup_body(player)).status_code == 200
+        assert client.post(f"/pvp/sessions/{session_id}/ready",json={"player_id":player,"ready":True}).status_code == 200
+
 def test_health_exposes_version():
     reset_gateway()
     response = client.get("/health")
 
     assert response.status_code == 200
     assert response.json()["status"] == "ok"
-    assert response.json()["version"] == "2.0.0-alpha.35"
+    assert response.json()["version"] == "2.0.0-alpha.36"
 
 
 def test_create_join_and_start_session():
     reset_gateway()
     create_and_join()
+    ready_two()
 
     response = client.post(
         "/pvp/sessions/web/start"
