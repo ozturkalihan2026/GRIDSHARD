@@ -18,6 +18,16 @@ from .combat import (
 )
 from .energy import process_energy_tick
 from .topology import build_energy_topology, module_port_directions
+from .support import (
+    COOLER_HEAT_REDUCTION_PER_TICK,
+    OVERCLOCK_HEAT_PER_TICK,
+    REPAIR_COOLDOWN_ID,
+    attack_support_modifiers,
+    cooler_targets,
+    overclock_targets,
+    repair_amount,
+    repair_target,
+)
 from .models import (
     BattleCommand,
     BattleEvent,
@@ -532,6 +542,106 @@ class BattleEngine:
         for player in self.state.players.values():
             process_energy_tick(player, self.board.core_position)
 
+    def _process_support_actions(self) -> None:
+        for player in self.state.players.values():
+            support_modules = sorted(
+                (
+                    module
+                    for module in player.modules.values()
+                    if module.status == ModuleStatus.ACTIVE
+                    and module.definition.category == "destek"
+                ),
+                key=lambda module: module.instance_id,
+            )
+
+            for module in support_modules:
+                if not module.is_powered:
+                    continue
+
+                if module.definition.id == "repair":
+                    if not self.is_cooldown_ready(
+                        player.player_id,
+                        module.instance_id,
+                        REPAIR_COOLDOWN_ID,
+                    ):
+                        continue
+
+                    target = repair_target(
+                        player,
+                        module,
+                        self.board.core_position,
+                    )
+                    if target is None:
+                        continue
+
+                    amount = repair_amount(module)
+                    before = target.hp
+                    target.hp = min(
+                        target.definition.max_hp,
+                        target.hp + amount,
+                    )
+                    actual = target.hp - before
+
+                    if actual > 0:
+                        self._emit(
+                            "module_repaired",
+                            {
+                                "player_id": player.player_id,
+                                "source_module_id": module.instance_id,
+                                "target_module_id": target.instance_id,
+                                "repair": actual,
+                                "hp_before": before,
+                                "hp_after": target.hp,
+                            },
+                        )
+
+                    self.start_cooldown(
+                        player.player_id,
+                        module.instance_id,
+                        REPAIR_COOLDOWN_ID,
+                        module.definition.cooldown_ms,
+                    )
+
+                elif module.definition.id == "cooler":
+                    for target in cooler_targets(
+                        player,
+                        module,
+                        self.board.core_position,
+                    ):
+                        before = target.heat
+                        target.heat = max(
+                            0.0,
+                            target.heat - COOLER_HEAT_REDUCTION_PER_TICK,
+                        )
+                        if target.heat != before:
+                            self._emit(
+                                "module_cooled",
+                                {
+                                    "player_id": player.player_id,
+                                    "source_module_id": module.instance_id,
+                                    "target_module_id": target.instance_id,
+                                    "heat_before": before,
+                                    "heat_after": target.heat,
+                                },
+                            )
+
+                elif module.definition.id == "overclock_unit":
+                    for target in overclock_targets(
+                        player,
+                        module,
+                        self.board.core_position,
+                    ):
+                        target.heat += OVERCLOCK_HEAT_PER_TICK
+                        self._emit(
+                            "module_overclocked",
+                            {
+                                "player_id": player.player_id,
+                                "source_module_id": module.instance_id,
+                                "target_module_id": target.instance_id,
+                                "heat_after": target.heat,
+                            },
+                        )
+
     def _process_combat_actions(self) -> None:
         if len(self.state.players) < 2:
             return
@@ -585,11 +695,18 @@ class BattleEngine:
                 if target is None:
                     continue
 
+                support = attack_support_modifiers(
+                    attacker_player,
+                    attacker,
+                    self.board.core_position,
+                )
+
                 resolution = resolve_attack(
                     attacker_player_id,
                     attacker,
                     target_player_id,
                     target,
+                    support_damage_multiplier=support.damage_multiplier,
                 )
 
                 self._emit(
@@ -634,11 +751,29 @@ class BattleEngine:
                         resolution.reflected_damage,
                     )
 
+                effective_cooldown_ms = max(
+                    TICK_MS,
+                    int(round(attacker.definition.cooldown_ms * support.cooldown_multiplier)),
+                )
+
                 self.start_cooldown(
                     attacker_player_id,
                     attacker.instance_id,
                     ATTACK_COOLDOWN_ID,
-                    attacker.definition.cooldown_ms,
+                    effective_cooldown_ms,
+                )
+
+                self._emit(
+                    "attack_support_applied",
+                    {
+                        "player_id": attacker_player_id,
+                        "module_id": attacker.instance_id,
+                        "damage_multiplier": support.damage_multiplier,
+                        "cooldown_multiplier": support.cooldown_multiplier,
+                        "amplifier_active": support.amplifier_active,
+                        "targeting_active": support.targeting_active,
+                        "overclock_active": support.overclock_active,
+                    },
                 )
 
     def _expire_timed_module_state(self) -> None:
@@ -982,6 +1117,7 @@ class BattleEngine:
         self._update_booster_offers()
         self._apply_passive_circuit_credit_income()
         self._process_energy_flow()
+        self._process_support_actions()
         self._process_combat_actions()
         self._expire_timed_module_state()
 

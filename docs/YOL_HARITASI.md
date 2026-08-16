@@ -1,7 +1,7 @@
 # Project Relay 2.0 — YOL HARİTASI
 
-**Güncel Sürüm:** `2.0.0-alpha.18`  
-**Paket:** Savunma, Kalkan ve Hasar Azaltma  
+**Güncel Sürüm:** `2.0.0-alpha.19`  
+**Paket:** Destek Modülleri: Onarım, Soğutma ve Güçlendirme  
 **Kanonik Dosya:** `docs/YOL_HARITASI.md`
 
 > Bu dosya Project Relay 2.0 için tek kanonik geliştirme kaydıdır. Her paket tamamlandığında sürüm numarası artırılır; **Tamamlananlar** ve **Yapılacaklar** bu dosyada güncellenir. Sonraki geliştirme paketi bu dosya okunarak başlatılır.
@@ -379,9 +379,9 @@ Aşağıdaki alanlar ilk sürüm kapsamına dahil değildir ve mevcut yol harita
 
 ## Sıradaki Paket
 
-**`2.0.0-alpha.19 — Destek Modülleri: Onarım, Soğutma ve Güçlendirme`**
+**`2.0.0-alpha.20 — Isı ve Aşırı Yük Mekaniği`**
 
-Savunma katmanı gerçek hasar çözümüne bağlandı. Sıradaki pakette Onarım Modülü, Soğutucu, Güçlendirici, Hedefleme Bilgisayarı ve Aşırı Hızlandırıcı gerçek savaş davranışlarına bağlanacak; enerji ve port topolojisi üzerinden yalnızca aktif/enerjili olduklarında destek sağlayacaklar.
+Destek modülleri gerçek savaş motoruna bağlandı. Sıradaki pakette Isı değeri gerçek risk mekaniğine dönüştürülecek: yüksek Isı performans düşüşü, kritik Isı geçici devre dışı kalma veya hasar riski oluşturacak; Soğutucu ve Soğutma Hücresi bu sistemi doğrudan dengeleyecek. Savaş kesintisiz devam edecek.
 
 
 ---

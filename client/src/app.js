@@ -362,8 +362,10 @@ const SPECIAL_CELL_INFO = {
       module.status === "active"
         ? ` · E ${Number(module.energyReceived || 0).toFixed(1)}/${Number(module.energyRequired || 0).toFixed(1)}${module.isPowered ? "" : " · ENERJİSİZ"}`
         : "";
+    const supportLabel = supportLabelForModule(module);
+    const supportText = supportLabel ? ` · ${supportLabel}` : "";
     meta.textContent =
-      `Can ${module.hp}/${module.maxHp}${costText}${energyText}`;
+      `Can ${module.hp}/${module.maxHp}${costText}${energyText}${supportText}`;
 
     card.append(name, meta);
 
@@ -632,6 +634,15 @@ const SPECIAL_CELL_INFO = {
       `Enerji: ${generated.toFixed(1)} Ü / ${totalDemand.toFixed(1)} T`;
   }
 
+  function supportLabelForModule(module) {
+    if (module.nameTr === "Onarım Modülü") return "Onarım";
+    if (module.nameTr === "Soğutucu") return "Soğutma";
+    if (module.nameTr === "Güçlendirici") return "Hasar +%15";
+    if (module.nameTr === "Hedefleme Bilgisayarı") return "Cooldown -%15";
+    if (module.nameTr === "Aşırı Hızlandırıcı") return "Hasar +%20 · Cooldown -%20 · Isı +";
+    return "";
+  }
+
   function updateMockCombat() {
     const currentSecond = Math.floor(client.elapsedMs / 1000);
     if (currentSecond === previousCombatSecond) return;
@@ -765,6 +776,15 @@ const SPECIAL_CELL_INFO = {
         }
         if (entry.kind === "damage_reflected") {
           return `Yansıtılan hasar: ${entry.damage}`;
+        }
+        if (entry.kind === "module_repaired") {
+          return `Onarım: +${entry.repair} Can`;
+        }
+        if (entry.kind === "module_cooled") {
+          return `Soğutma: Isı ${entry.heatBefore} → ${entry.heatAfter}`;
+        }
+        if (entry.kind === "module_overclocked") {
+          return `Aşırı Hızlandırma: Isı ${entry.heatAfter}`;
         }
         if (entry.kind === "module_damaged") {
           return `${entry.moduleName || "Modül"}: ${entry.damage} hasar · Can ${entry.hp}`;

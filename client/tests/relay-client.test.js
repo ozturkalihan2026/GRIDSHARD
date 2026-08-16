@@ -301,4 +301,13 @@ function createClient() {
   assert.ok(src.includes("Yansıtılan hasar"));
 }
 
-console.log("25 client tests passed");
+{
+  const fs=require("fs");
+  const src=fs.readFileSync("./src/app.js","utf8");
+  assert.ok(src.includes("supportLabelForModule"));
+  assert.ok(src.includes("Cooldown -%15"));
+  assert.ok(src.includes("Hasar +%20"));
+  assert.ok(src.includes("Aşırı Hızlandırma"));
+}
+
+console.log("26 client tests passed");

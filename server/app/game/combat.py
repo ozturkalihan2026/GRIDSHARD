@@ -153,8 +153,12 @@ def resolve_attack(
     attacker: BattleModule,
     target_player_id: str,
     target: BattleModule,
+    support_damage_multiplier: float = 1.0,
 ) -> AttackResolution:
-    attack_multiplier = attack_damage_multiplier(attacker)
+    attack_multiplier = (
+        attack_damage_multiplier(attacker)
+        * support_damage_multiplier
+    )
     counter_multiplier = counter_strategy_multiplier(attacker, target)
 
     raw_damage = max(
