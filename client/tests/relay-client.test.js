@@ -401,61 +401,289 @@ function createClient() {
   const fs=require("fs");
   const src=fs.readFileSync("./src/app.js","utf8");
   assert.ok(src.includes("PVP_STATUS"));
-  assert.ok(src.includes("Online PvP uçtan uca tamamlandı"));
+  assert.ok(src.includes("Oyna PvP istemci durum makinesi aktif"));
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync("./src/app.js","utf8");
-  assert.ok(src.includes("Online PvP uçtan uca tamamlandı")); // alpha32->33 protocol status
+  assert.ok(src.includes("Oyna PvP istemci durum makinesi aktif")); // alpha32->33 protocol status
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync("./src/app.js","utf8");
-  assert.ok(src.includes("Online PvP uçtan uca tamamlandı")); // alpha33 protocol
+  assert.ok(src.includes("Oyna PvP istemci durum makinesi aktif")); // alpha33 protocol
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync("./src/app.js","utf8");
-  assert.ok(src.includes("Online PvP uçtan uca tamamlandı")); // alpha34 websocket
+  assert.ok(src.includes("Oyna PvP istemci durum makinesi aktif")); // alpha34 websocket
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync("./src/app.js","utf8");
-  assert.ok(src.includes("Online PvP uçtan uca tamamlandı")); // alpha35 gateway
+  assert.ok(src.includes("Oyna PvP istemci durum makinesi aktif")); // alpha35 gateway
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync("./src/app.js","utf8");
-  assert.ok(src.includes("Online PvP uçtan uca tamamlandı")); // alpha36 setup
+  assert.ok(src.includes("Oyna PvP istemci durum makinesi aktif")); // alpha36 setup
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync("./src/app.js","utf8");
-  assert.ok(src.includes("Online PvP uçtan uca tamamlandı")); // alpha37 lobby
+  assert.ok(src.includes("Oyna PvP istemci durum makinesi aktif")); // alpha37 lobby
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync("./src/app.js","utf8");
-  assert.ok(src.includes("Online PvP uçtan uca tamamlandı")); // alpha38 runner
+  assert.ok(src.includes("Oyna PvP istemci durum makinesi aktif")); // alpha38 runner
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync("./src/app.js","utf8");
-  assert.ok(src.includes("Online PvP uçtan uca tamamlandı")); // alpha39 heartbeat
+  assert.ok(src.includes("Oyna PvP istemci durum makinesi aktif")); // alpha39 heartbeat
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync("./src/app.js","utf8");
-  assert.ok(src.includes("Online PvP uçtan uca tamamlandı")); // alpha40 online pvp
+  assert.ok(src.includes("Oyna PvP istemci durum makinesi aktif")); // alpha40 online pvp
 }
 
-console.log("47 client tests passed");
+{
+  const {
+    RelayPvPClientState,
+    PVP_PHASE,
+  } = require("../src/relay-client.js");
+
+  const pvp = new RelayPvPClientState({
+    playerId: "a",
+    sessionId: "m",
+  });
+
+  assert.strictEqual(pvp.phase, PVP_PHASE.IDLE);
+  pvp.markConnected();
+  assert.strictEqual(pvp.phase, PVP_PHASE.LOBBY);
+
+  const lobbyResult = pvp.applyServerEnvelope({
+    version: 1,
+    type: "lobby_state",
+    payload: {
+      status: "waiting",
+      players: [
+        {
+          player_id: "a",
+          setup_submitted: false,
+          ready: false,
+        },
+      ],
+    },
+  });
+  assert.strictEqual(lobbyResult.ok, true);
+  assert.strictEqual(pvp.phase, PVP_PHASE.SETUP);
+}
+
+{
+  const { RelayPvPClientState } = require("../src/relay-client.js");
+  const pvp = new RelayPvPClientState({
+    playerId: "a",
+    sessionId: "m",
+  });
+
+  const setup = pvp.buildSetupMessage({
+    battlePoolIds: Array.from({ length: 18 }, (_, i) => `m${i}`),
+    initialModules: [
+      {
+        instanceId: "a-core",
+        definitionId: "core",
+        x: 2,
+        y: 2,
+        direction: "up",
+      },
+    ],
+  });
+
+  assert.strictEqual(setup.type, "submit_setup");
+  assert.strictEqual(setup.payload.battle_pool_ids.length, 18);
+  assert.strictEqual(
+    setup.payload.initial_modules[0].instance_id,
+    "a-core"
+  );
+}
+
+{
+  const { RelayPvPClientState } = require("../src/relay-client.js");
+  const pvp = new RelayPvPClientState({
+    playerId: "a",
+    sessionId: "m",
+  });
+
+  const first = pvp.buildCommandMessage({
+    kind: "place_module",
+    payload: { module_id: "laser" },
+  });
+  const second = pvp.buildCommandMessage({
+    kind: "remove_module",
+    payload: { module_id: "laser" },
+  });
+
+  assert.strictEqual(first.payload.sequence, 1);
+  assert.strictEqual(second.payload.sequence, 2);
+  assert.strictEqual(first.player_id, "a");
+}
+
+{
+  const {
+    RelayPvPClientState,
+    RelayBattleClient,
+    PVP_PHASE,
+  } = require("../src/relay-client.js");
+
+  const battle = new RelayBattleClient({
+    modules: [
+      {
+        instanceId: "a-core",
+        nameTr: "Çekirdek",
+        hp: 300,
+        maxHp: 300,
+        status: "active",
+        position: { x: 2, y: 2 },
+      },
+    ],
+    circuitCredits: 0,
+    emitCommand() {},
+  });
+
+  const pvp = new RelayPvPClientState({
+    playerId: "a",
+    sessionId: "m",
+    battleClient: battle,
+  });
+
+  pvp.applyServerEnvelope({
+    version: 1,
+    type: "snapshot",
+    payload: {
+      session_id: "m",
+      viewer_player_id: "a",
+      status: "running",
+      tick: 150,
+      snapshot_revision: 150,
+      elapsed_ms: 15000,
+      players: {
+        a: {
+          circuit_credits: 240,
+          modules: [
+            {
+              instance_id: "a-core",
+              definition_id: "core",
+              status: "active",
+              hp: 250,
+              max_hp: 300,
+              x: 2,
+              y: 2,
+              direction: "up",
+              is_powered: true,
+              heat: 5,
+            },
+          ],
+        },
+      },
+    },
+  });
+
+  assert.strictEqual(pvp.phase, PVP_PHASE.BATTLE);
+  assert.strictEqual(battle.elapsedMs, 15000);
+  assert.strictEqual(battle.circuitCredits, 240);
+  assert.strictEqual(battle.requireModule("a-core").hp, 250);
+}
+
+{
+  const {
+    RelayPvPClientState,
+    PVP_PHASE,
+  } = require("../src/relay-client.js");
+  const pvp = new RelayPvPClientState({
+    playerId: "a",
+    sessionId: "m",
+  });
+
+  pvp.applyServerEnvelope({
+    version: 1,
+    type: "match_finished",
+    payload: {
+      session_id: "m",
+      status: "finished",
+      winner_player_id: "a",
+      is_draw: false,
+      finish_reason: "core_destroyed",
+      result_summary: {},
+    },
+  });
+
+  assert.strictEqual(pvp.phase, PVP_PHASE.FINISHED);
+  assert.strictEqual(pvp.finalResult.winner_player_id, "a");
+  assert.strictEqual(pvp.connected, false);
+}
+
+{
+  const {
+    RelayPvPClientState,
+    PVP_PHASE,
+  } = require("../src/relay-client.js");
+  const pvp = new RelayPvPClientState({
+    playerId: "a",
+    sessionId: "m",
+  });
+  pvp.commandSequence = 2;
+  pvp.markDisconnected();
+
+  pvp.applyServerEnvelope({
+    version: 1,
+    type: "reconnect_state",
+    payload: {
+      last_command_sequence: 7,
+      event_cursor: 12,
+      snapshot: {
+        session_id: "m",
+        viewer_player_id: "a",
+        status: "finished",
+        snapshot_revision: 20,
+        players: {},
+        winner_player_id: null,
+        loser_player_id: null,
+        is_draw: true,
+        finish_reason: "time_limit_draw",
+        finished_at_ms: 180000,
+        result_summary: {},
+      },
+      events: [],
+      final_result: {
+        status: "finished",
+        is_draw: true,
+      },
+    },
+  });
+
+  assert.strictEqual(pvp.commandSequence, 7);
+  assert.strictEqual(pvp.eventCursor, 12);
+  assert.strictEqual(pvp.phase, PVP_PHASE.FINISHED);
+}
+
+{
+  const fs=require("fs");
+  const src=fs.readFileSync("./src/app.js","utf8");
+  assert.ok(src.includes("Oyna PvP istemci durum makinesi aktif"));
+  assert.ok(src.includes("buildPvPCommandEnvelope"));
+  assert.ok(src.includes("applyPvPServerEnvelope"));
+}
+
+console.log("54 client tests passed");

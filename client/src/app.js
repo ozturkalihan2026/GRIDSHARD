@@ -42,7 +42,7 @@
   const COMPETITIVE_STATUS = "M7 Simülasyon aktif";
   const BALANCE_STATUS = "Eşit modül + counter doğrulandı";
   const AI_STATUS = "Adaptif AI + rekabetçi denge doğrulandı";
-  const PVP_STATUS = "Online PvP uçtan uca tamamlandı";
+  const PVP_STATUS = "Oyna PvP istemci durum makinesi aktif";
 
   const PORT_COUNT_BY_NAME = {
     "Çekirdek":4,
@@ -119,11 +119,32 @@
       commandLog.push({
         atMs: client.elapsedMs,
         ...command,
+        pvpEnvelope: buildPvPCommandEnvelope(command),
       });
       renderLog();
       applyMockServerCommand(command);
     },
   });
+
+  const pvpState = new RelayPvPClientState({
+    playerId: "local-player",
+    sessionId: "local-preview",
+    battleClient: client,
+  });
+  pvpState.markConnected();
+
+  function buildPvPCommandEnvelope(command) {
+    return pvpState.buildCommandMessage(command);
+  }
+
+  function applyPvPServerEnvelope(message) {
+    const result = pvpState.applyServerEnvelope(message);
+    if (!result.ok) {
+      logClientMessage(result.reason);
+    }
+    render();
+    return result;
+  }
 
   const board = document.getElementById("board");
   const shelf = document.getElementById("module-shelf");

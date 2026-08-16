@@ -1,7 +1,7 @@
 # Project Relay 2.0 — YOL HARİTASI
 
-**Güncel Sürüm:** `2.0.0-alpha.40`  
-**Paket:** PvP Maç Sonu, Oturum Kapanışı ve M7 Online PvP Kapanışı  
+**Güncel Sürüm:** `2.0.0-alpha.41`  
+**Paket:** Oyna Ana Akışı ve PvP İstemci Durum Makinesi  
 **Kanonik Dosya:** `docs/YOL_HARITASI.md`
 
 > Bu dosya Project Relay 2.0 için tek kanonik geliştirme kaydıdır. Her paket tamamlandığında sürüm numarası artırılır; **Tamamlananlar** ve **Yapılacaklar** bu dosyada güncellenir. Sonraki geliştirme paketi bu dosya okunarak başlatılır.
@@ -379,9 +379,9 @@ Aşağıdaki alanlar ilk sürüm kapsamına dahil değildir ve mevcut yol harita
 
 ## Sıradaki Paket
 
-**`2.0.0-alpha.41 — Oyna Ana Akışı ve PvP İstemci Durum Makinesi`**
+**`2.0.0-alpha.42 — Profil Temeli ve Oyuncu İlerleme Verisi`**
 
-M7 Rekabetçi Çekirdek tamamlandı. Sıradaki paket M8 kapsamına geçiyor. İlk olarak yalnızca `Oyna` alanı ele alınacak: istemcide lobi → setup → hazır → savaş → maç sonucu durum makinesi, sunucudan gelen snapshot/olay/sonuç mesajlarının tek kanonik istemci durumuna uygulanması ve mevcut savaş arayüzünün gerçek PvP akışına bağlanması hazırlanacak. Profil, İstatistikler ve Ayarlar sonraki ayrı paketlerde ele alınacak.
+Oyna PvP istemci akışı hazır. Sıradaki paket yalnızca sabitlenen ilk menü kapsamındaki `Profil` alanına geçecek. Kozmetik olmadan oyuncu kimliği, seviye/deneyim, derece puanı, mevcut lig özeti ve Savaş Havuzu erişimini taşıyan profil modeli; viewer-scoped profil endpoint'i ve sade Profil ekranı hazırlanacak. Mağaza, kozmetik, sezon, görev veya sosyal alan eklenmeyecek.
 
 
 ---
@@ -443,7 +443,7 @@ M7 Rekabetçi Çekirdek tamamlandı. Sıradaki paket M8 kapsamına geçiyor. İl
 
 ### M8 — Project Relay 2.0 Beta
 
-- [ ] Oyna
+- [x] Oyna
 - [ ] Profil
 - [ ] İstatistikler
 - [ ] Ayarlar
