@@ -32,6 +32,14 @@
   }));
 
   const commandLog = [];
+  const selectablePoolModules = moduleDefinitions.filter(
+    (module) => module.instanceId !== "core-1"
+  );
+  const battlePoolSelection = new BattlePoolSelection({
+    selectableModuleIds: selectablePoolModules.map((module) => module.instanceId),
+    requiredSize: 18,
+  });
+
   const client = new RelayBattleClient({
     modules: moduleDefinitions,
     unlockAtMs: 15000,
@@ -54,12 +62,42 @@
   const lockLabel = document.getElementById("shelf-lock-label");
   const shelfHelp = document.getElementById("shelf-help");
   const logEl = document.getElementById("event-log");
+  const poolSelectionEl = document.getElementById("battle-pool-selection");
+  const poolCountEl = document.getElementById("battle-pool-count");
+  const poolConfirmEl = document.getElementById("battle-pool-confirm");
 
   const BOARD_SIZE = 5;
   const startedAt = performance.now();
   let previousCapacity = null;
   let mockServerCredits = 200;
   let mockServerPassiveSeconds = 0;
+
+  function renderBattlePoolSelection() {
+    poolSelectionEl.innerHTML = "";
+
+    for (const module of selectablePoolModules) {
+      const button = document.createElement("button");
+      button.type = "button";
+      button.className = "pool-choice";
+      button.textContent = `${module.nameTr} · ${module.category}`;
+
+      if (battlePoolSelection.selected.has(module.instanceId)) {
+        button.classList.add("selected");
+      }
+
+      button.addEventListener("click", () => {
+        const result = battlePoolSelection.toggle(module.instanceId);
+        if (!result.ok) logClientMessage(result.reason);
+        renderBattlePoolSelection();
+      });
+
+      poolSelectionEl.appendChild(button);
+    }
+
+    poolCountEl.textContent =
+      `${battlePoolSelection.selected.size} / ${battlePoolSelection.requiredSize}`;
+    poolConfirmEl.disabled = !battlePoolSelection.isComplete();
+  }
 
   function createBoard() {
     board.innerHTML = "";
@@ -350,6 +388,17 @@
     requestAnimationFrame(updateClock);
   }
 
+  poolConfirmEl.addEventListener("click", () => {
+    if (!battlePoolSelection.isComplete()) return;
+    commandLog.push({
+      atMs: client.elapsedMs,
+      kind: "set_battle_pool",
+      payload: { module_instance_ids: battlePoolSelection.selectedIds() },
+    });
+    renderLog();
+  });
+
+  renderBattlePoolSelection();
   createBoard();
   render();
   renderCapacity();

@@ -2,6 +2,7 @@ from collections import deque
 from typing import Deque
 
 from .catalog import get_module_definition
+from .battle_pool import validate_battle_pool
 from .economy import (
     CircuitCreditConfig,
     DEFAULT_CIRCUIT_CREDIT_CONFIG,
@@ -92,6 +93,27 @@ class BattleEngine:
         self.state.players[player_id] = player
         return player
 
+    def set_battle_pool(
+        self,
+        player_id: str,
+        module_definition_ids: list[str] | tuple[str, ...],
+    ) -> None:
+        player = self._require_player(player_id)
+
+        if self.state.status != BattleStatus.WAITING:
+            raise ValueError("Savaş Havuzu yalnızca maç başlamadan önce ayarlanabilir.")
+
+        player.battle_pool = validate_battle_pool(module_definition_ids)
+        self._emit(
+            "battle_pool_set",
+            {
+                "player_id": player_id,
+                "module_definition_ids": list(
+                    player.battle_pool.module_definition_ids
+                ),
+            },
+        )
+
     def grant_module(
         self,
         player_id: str,
@@ -99,6 +121,15 @@ class BattleEngine:
         definition_id: str,
     ) -> BattleModule:
         player = self._require_player(player_id)
+
+        if (
+            player.battle_pool is not None
+            and definition_id != "core"
+            and not player.battle_pool.contains(definition_id)
+        ):
+            raise ValueError(
+                f"Modül oyuncunun Savaş Havuzu'nda değil: {definition_id}"
+            )
 
         if instance_id in player.modules:
             raise ValueError(f"Modül örneği zaten mevcut: {instance_id}")

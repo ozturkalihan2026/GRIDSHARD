@@ -122,6 +122,16 @@ class BattleModule:
         )
 
 
+@dataclass(slots=True, frozen=True)
+class BattlePool:
+    module_definition_ids: tuple[str, ...]
+
+    def contains(self, definition_id: str) -> bool:
+        return definition_id in self.module_definition_ids
+
+    def as_set(self) -> set[str]:
+        return set(self.module_definition_ids)
+
 @dataclass(slots=True)
 class PlayerBattleState:
     player_id: str
@@ -129,6 +139,7 @@ class PlayerBattleState:
     circuit_credits: int = 0
     total_circuit_credits_earned: int = 0
     total_circuit_credits_spent: int = 0
+    battle_pool: BattlePool | None = None
 
 
 @dataclass(slots=True)

@@ -24,6 +24,40 @@
     ACTIVE_MODULE: "active-module",
   });
 
+  class BattlePoolSelection {
+    constructor({ selectableModuleIds, requiredSize = 18 }) {
+      this.selectableModuleIds = [...selectableModuleIds];
+      this.requiredSize = requiredSize;
+      this.selected = new Set();
+    }
+
+    toggle(moduleId) {
+      if (!this.selectableModuleIds.includes(moduleId)) {
+        return { ok: false, reason: "Modül global oyuncu havuzunda değil." };
+      }
+
+      if (this.selected.has(moduleId)) {
+        this.selected.delete(moduleId);
+        return { ok: true, selected: false };
+      }
+
+      if (this.selected.size >= this.requiredSize) {
+        return { ok: false, reason: `En fazla ${this.requiredSize} modül seçilebilir.` };
+      }
+
+      this.selected.add(moduleId);
+      return { ok: true, selected: true };
+    }
+
+    isComplete() {
+      return this.selected.size === this.requiredSize;
+    }
+
+    selectedIds() {
+      return [...this.selected];
+    }
+  }
+
   class RelayBattleClient {
     constructor({ modules, unlockAtMs = 15000, circuitCredits = 0, emitCommand }) {
       this.unlockAtMs = unlockAtMs;
@@ -180,6 +214,7 @@
 
   const api = {
     RelayBattleClient,
+    BattlePoolSelection,
     MODULE_STATUS,
     DRAG_KIND,
     maxActiveModulesForElapsedMs,
@@ -190,5 +225,6 @@
   }
 
   global.RelayBattleClient = RelayBattleClient;
+  global.BattlePoolSelection = BattlePoolSelection;
   global.RelayModuleStatus = MODULE_STATUS;
 })(typeof globalThis !== "undefined" ? globalThis : window);

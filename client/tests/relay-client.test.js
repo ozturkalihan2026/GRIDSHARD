@@ -1,6 +1,7 @@
 const assert = require("assert");
 const {
   RelayBattleClient,
+  BattlePoolSelection,
   MODULE_STATUS,
   maxActiveModulesForElapsedMs,
 } = require("../src/relay-client.js");
@@ -192,4 +193,23 @@ function createClient() {
   }
 }
 
-console.log("14 client tests passed");
+
+{
+  const selectable = Array.from({ length: 24 }, (_, i) => `mod-${i + 1}`);
+  const pool = new BattlePoolSelection({ selectableModuleIds: selectable, requiredSize: 18 });
+  for (const id of selectable.slice(0, 18)) assert.strictEqual(pool.toggle(id).ok, true);
+  assert.strictEqual(pool.isComplete(), true);
+  assert.strictEqual(pool.selectedIds().length, 18);
+}
+{
+  const selectable = Array.from({ length: 24 }, (_, i) => `mod-${i + 1}`);
+  const pool = new BattlePoolSelection({ selectableModuleIds: selectable, requiredSize: 18 });
+  for (const id of selectable.slice(0, 18)) pool.toggle(id);
+  assert.strictEqual(pool.toggle(selectable[18]).ok, false);
+}
+{
+  const pool = new BattlePoolSelection({ selectableModuleIds: ["a","b"], requiredSize: 1 });
+  assert.strictEqual(pool.toggle("core-1").ok, false);
+}
+
+console.log("17 client tests passed");
