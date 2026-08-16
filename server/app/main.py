@@ -195,6 +195,23 @@ def pvp_lobby(session_id: str) -> dict:
         raise HTTPException(status_code=404,detail=str(exc)) from exc
 
 
+@app.get("/pvp/sessions/{session_id}/result")
+def pvp_result(
+    session_id: str,
+    player_id: str = Query(min_length=1),
+) -> dict:
+    try:
+        return pvp_service.final_result_payload(
+            session_id,
+            player_id,
+        )
+    except PvPSessionError as exc:
+        raise HTTPException(
+            status_code=409,
+            detail=str(exc),
+        ) from exc
+
+
 @app.get("/pvp/sessions/{session_id}/snapshot")
 def pvp_snapshot(
     session_id: str,

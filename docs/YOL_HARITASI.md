@@ -1,7 +1,7 @@
 # Project Relay 2.0 — YOL HARİTASI
 
-**Güncel Sürüm:** `2.0.0-alpha.39`  
-**Paket:** PvP Bağlantı Gecikmesi, Heartbeat ve Zaman Aşımı  
+**Güncel Sürüm:** `2.0.0-alpha.40`  
+**Paket:** PvP Maç Sonu, Oturum Kapanışı ve M7 Online PvP Kapanışı  
 **Kanonik Dosya:** `docs/YOL_HARITASI.md`
 
 > Bu dosya Project Relay 2.0 için tek kanonik geliştirme kaydıdır. Her paket tamamlandığında sürüm numarası artırılır; **Tamamlananlar** ve **Yapılacaklar** bu dosyada güncellenir. Sonraki geliştirme paketi bu dosya okunarak başlatılır.
@@ -263,13 +263,13 @@
 
 #### FAZ 17 — Online PvP
 
-- [ ] Gerçek oyuncular arasında online PvP oluşturulacak.
-- [ ] Savaş zamanı sunucu tarafından yönetilecek.
-- [ ] Devre Kredisi sunucu tarafından yönetilecek.
-- [ ] Modüller ve Can değerleri sunucu tarafından yönetilecek.
-- [ ] Bağlantılar sunucu tarafından doğrulanacak.
-- [ ] Güçlendiriciler sunucu tarafından doğrulanacak.
-- [ ] Savaş sonucu sunucu tarafından belirlenecek.
+- [x] Gerçek oyuncular arasında online PvP oluşturuldu.
+- [x] Savaş zamanı sunucu tarafından yönetiliyor.
+- [x] Devre Kredisi sunucu tarafından yönetiliyor.
+- [x] Modüller ve Can değerleri sunucu tarafından yönetiliyor.
+- [x] Bağlantılar sunucu tarafından doğrulanıyor.
+- [x] Güçlendiriciler sunucu tarafından doğrulanıyor.
+- [x] Savaş sonucu sunucu tarafından belirleniyor.
 
 #### FAZ 18 — Eşleştirme
 
@@ -379,9 +379,9 @@ Aşağıdaki alanlar ilk sürüm kapsamına dahil değildir ve mevcut yol harita
 
 ## Sıradaki Paket
 
-**`2.0.0-alpha.40 — PvP Maç Sonu, Oturum Kapanışı ve M7 Online PvP Kapanışı`**
+**`2.0.0-alpha.41 — Oyna Ana Akışı ve PvP İstemci Durum Makinesi`**
 
-Online taşıma, setup, lobi, sunucu tick runner ve bağlantı sağlık politikaları tamamlandı. Sıradaki pakette maç sonu WebSocket yayını, runner/bağlantı temizliği, bitmiş oturum snapshot'ı, reconnect sonrası maç sonucu teslimi ve uçtan uca iki oyunculu PvP regresyonuyla M7 `Online PvP` maddesi kapatılacak.
+M7 Rekabetçi Çekirdek tamamlandı. Sıradaki paket M8 kapsamına geçiyor. İlk olarak yalnızca `Oyna` alanı ele alınacak: istemcide lobi → setup → hazır → savaş → maç sonucu durum makinesi, sunucudan gelen snapshot/olay/sonuç mesajlarının tek kanonik istemci durumuna uygulanması ve mevcut savaş arayüzünün gerçek PvP akışına bağlanması hazırlanacak. Profil, İstatistikler ve Ayarlar sonraki ayrı paketlerde ele alınacak.
 
 
 ---
@@ -439,7 +439,7 @@ Online taşıma, setup, lobi, sunucu tick runner ve bağlantı sağlık politika
 - [x] Simülasyon
 - [x] Denge
 - [x] Yapay zekâ
-- [ ] Online PvP
+- [x] Online PvP
 
 ### M8 — Project Relay 2.0 Beta
 

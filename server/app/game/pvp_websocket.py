@@ -367,3 +367,81 @@ class PvPWebSocketAdapter:
             )
             sent += 1
         return sent
+
+    async def send_match_finished(
+        self,
+        connection_id: str,
+    ) -> dict[str, Any]:
+        connection = self.registry.get(connection_id)
+        payload = self.service.final_result_payload(
+            connection.session_id,
+            connection.player_id,
+        )
+        response = {
+            "version": 1,
+            "type": "match_finished",
+            "request_id": "server-match-finished",
+            "payload": payload,
+        }
+        await connection.socket.send_json(response)
+        connection.messages_sent += 1
+        return response
+
+    async def broadcast_match_finished(
+        self,
+        session_id: str,
+    ) -> int:
+        sent = 0
+        for connection in list(
+            self.registry.connections.values()
+        ):
+            if (
+                not connection.connected
+                or connection.session_id != session_id
+            ):
+                continue
+            await self.send_match_finished(
+                connection.connection_id
+            )
+            sent += 1
+        return sent
+
+    async def close_finished_session_connections(
+        self,
+        session_id: str,
+        *,
+        close_code: int = 1000,
+    ) -> int:
+        closed = 0
+        session = self.service.get_session(
+            session_id
+        )
+
+        for connection in list(
+            self.registry.connections.values()
+        ):
+            if (
+                not connection.connected
+                or connection.session_id != session_id
+            ):
+                continue
+
+            connection.connected = False
+            await connection.socket.close(
+                code=close_code
+            )
+            closed += 1
+
+        for slot in session.slots.values():
+            slot.connected = False
+
+        for key in list(
+            self.pending_disconnect_deadlines
+        ):
+            if key[0] == session_id:
+                self.pending_disconnect_deadlines.pop(
+                    key,
+                    None,
+                )
+
+        return closed

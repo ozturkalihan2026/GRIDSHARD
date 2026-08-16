@@ -26,6 +26,7 @@ SERVER_MESSAGE_TYPES = {
     "ready_state",
     "lobby_state",
     "heartbeat_ack",
+    "match_finished",
     "error",
 }
 

@@ -320,6 +320,32 @@ class PvPSessionService:
 
         slot.acknowledged_event_cursor = cursor
 
+    def final_result_payload(
+        self,
+        session_id: str,
+        viewer_player_id: str,
+    ) -> dict:
+        session = self.get_session(session_id)
+        session.slot_for(viewer_player_id)
+        state = session.engine.state
+
+        if state.status != BattleStatus.FINISHED:
+            raise PvPSessionError(
+                "PvP maçı henüz tamamlanmadı."
+            )
+
+        return {
+            "session_id": session_id,
+            "viewer_player_id": viewer_player_id,
+            "status": state.status.value,
+            "winner_player_id": state.winner_player_id,
+            "loser_player_id": state.loser_player_id,
+            "is_draw": state.is_draw,
+            "finish_reason": state.finish_reason,
+            "finished_at_ms": state.finished_at_ms,
+            "result_summary": state.result_summary,
+        }
+
     def reconnect_payload(
         self,
         session_id: str,
@@ -346,6 +372,14 @@ class PvPSessionService:
             "event_cursor": event_page["cursor"],
             "last_command_sequence": slot.last_command_sequence,
             "acknowledged_event_cursor": slot.acknowledged_event_cursor,
+            "final_result": (
+                self.final_result_payload(
+                    session_id,
+                    player_id,
+                )
+                if session.engine.state.status == BattleStatus.FINISHED
+                else None
+            ),
         }
 
     def step(self, session_id: str) -> None:
@@ -438,8 +472,11 @@ class PvPSessionService:
             "snapshot_revision": session.snapshot_revision,
             "elapsed_ms": state.elapsed_ms,
             "winner_player_id": state.winner_player_id,
+            "loser_player_id": state.loser_player_id,
             "is_draw": state.is_draw,
             "finish_reason": state.finish_reason,
+            "finished_at_ms": state.finished_at_ms,
+            "result_summary": state.result_summary,
             "players": players,
         }
 

@@ -14,6 +14,8 @@ class RunnerStats:
     ticks_executed: int = 0
     live_event_broadcasts: int = 0
     snapshot_broadcasts: int = 0
+    match_finished_broadcasts: int = 0
+    closed_connections: int = 0
 
 class PvPTickRunner:
     def __init__(
@@ -70,6 +72,20 @@ class PvPTickRunner:
         stats.live_event_broadcasts += await self.websocket_adapter.broadcast_live_events(session_id)
         if stats.ticks_executed % self.snapshot_every_ticks == 0:
             stats.snapshot_broadcasts += await self.websocket_adapter.broadcast_snapshot(session_id)
+
+        if session.engine.state.status == BattleStatus.FINISHED:
+            # Son savaş olayları gönderildikten sonra terminal sonuç ayrı zarfla yayınlanır.
+            stats.match_finished_broadcasts += (
+                await self.websocket_adapter.broadcast_match_finished(
+                    session_id
+                )
+            )
+            stats.closed_connections += (
+                await self.websocket_adapter.close_finished_session_connections(
+                    session_id
+                )
+            )
+
         return True
 
     async def run_ticks(self,session_id: str,count: int) -> int:
