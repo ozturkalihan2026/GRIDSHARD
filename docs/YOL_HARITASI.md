@@ -1,7 +1,7 @@
 # Project Relay 2.0 — YOL HARİTASI
 
-**Güncel Sürüm:** `2.0.0-alpha.48`  
-**Paket:** Derece Puanı Güncellemesi ve Maç Sonu İlerleme  
+**Güncel Sürüm:** `2.0.0-alpha.49`  
+**Paket:** Kalıcı Oyuncu Veri Deposu Arayüzü ve Snapshot Serileştirme  
 **Kanonik Dosya:** `docs/YOL_HARITASI.md`
 
 > Bu dosya Project Relay 2.0 için tek kanonik geliştirme kaydıdır. Her paket tamamlandığında sürüm numarası artırılır; **Tamamlananlar** ve **Yapılacaklar** bu dosyada güncellenir. Sonraki geliştirme paketi bu dosya okunarak başlatılır.
@@ -380,9 +380,9 @@ Aşağıdaki alanlar ilk sürüm kapsamına dahil değildir ve mevcut yol harita
 
 ## Sıradaki Paket
 
-**`2.0.0-alpha.49 — Kalıcı Oyuncu Veri Deposu Arayüzü ve Snapshot Serileştirme`**
+**`2.0.0-alpha.50 — Web Test Hazırlığı ve Oyun Oturumu Telemetri Temeli`**
 
-Profil, İstatistikler, Ayarlar, Eşleştirme ve maç sonu ilerleme artık aynı oyuncu kimliği etrafında çalışıyor. Sıradaki paket yeni özellik ekranı eklemeden bu veriler için kalıcılık katmanının sınırını oluşturacak: profil/istatistik/ayar snapshot serileştirme, bellek içi repository arayüzü, kaydet/yükle akışı ve ileride PostgreSQL adaptörüne geçilebilecek framework-bağımsız sözleşme hazırlanacak. Bu alpha'da harici veritabanı zorunlu olmayacak.
+Oyuncu veri kalıcılığı için repository sınırı hazır. Sıradaki paket M8 içindeki `Telemetri` ve Web test sürümüne hazırlık alanına geçecek. Yeni menü eklenmeden; oyun açılışı, eşleştirme başlangıcı, maç başlatma, maç tamamlama, modül değiştirme, Devre Kredisi kullanımı, Modül Rafı kullanımı ve tekrar maç sinyalleri için anonim/oyuncu-kimlikli olay sözleşmesi ile bellek içi telemetri toplama servisi hazırlanacak. Ağ analitik sağlayıcısı bu alpha'da eklenmeyecek.
 
 
 ---

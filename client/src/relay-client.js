@@ -1225,6 +1225,47 @@
   }
 
 
+
+  class RelayPlayerDataSnapshotState {
+    constructor() {
+      this.snapshot = null;
+    }
+
+    applySnapshot(snapshot) {
+      if (
+        !snapshot
+        || !snapshot.player_id
+        || !snapshot.profile
+        || !snapshot.statistics
+        || !snapshot.settings
+      ) {
+        throw new Error(
+          "Geçerli oyuncu veri snapshot'ı gerekli."
+        );
+      }
+
+      this.snapshot = {
+        player_id: snapshot.player_id,
+        profile: {
+          ...snapshot.profile,
+        },
+        statistics: {
+          ...snapshot.statistics,
+        },
+        settings: {
+          ...snapshot.settings,
+        },
+      };
+
+      return this.snapshot;
+    }
+
+    clear() {
+      this.snapshot = null;
+    }
+  }
+
+
   const api = {
     RelayBattleClient,
     RelayPvPClientState,
@@ -1235,6 +1276,7 @@
     RelayWebSocketConnectionManager,
     RelayMatchmakingClientState,
     RelayProgressionClientState,
+    RelayPlayerDataSnapshotState,
     BattlePoolSelection,
     APP_SCREEN,
     WS_CONNECTION_STATUS,
@@ -1257,6 +1299,7 @@
   global.RelayWebSocketConnectionManager = RelayWebSocketConnectionManager;
   global.RelayMatchmakingClientState = RelayMatchmakingClientState;
   global.RelayProgressionClientState = RelayProgressionClientState;
+  global.RelayPlayerDataSnapshotState = RelayPlayerDataSnapshotState;
   global.RelayAppScreen = APP_SCREEN;
   global.RelayWebSocketStatus = WS_CONNECTION_STATUS;
   global.RelayPvPPhase = PVP_PHASE;

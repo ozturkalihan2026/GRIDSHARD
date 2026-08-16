@@ -34,6 +34,11 @@ from .matchmaking import (
 from .player_progression import (
     PlayerProgressionService,
 )
+from .player_data_store import (
+    InMemoryPlayerDataRepository,
+    PlayerDataStoreError,
+    PlayerDataStoreService,
+)
 
 
 app = FastAPI(
@@ -69,6 +74,13 @@ pvp_tick_runner = PvPTickRunner(
     ),
 )
 player_settings_service = PlayerSettingsService()
+player_data_repository = InMemoryPlayerDataRepository()
+player_data_store_service = PlayerDataStoreService(
+    profile_service=player_profile_service,
+    statistics_service=player_statistics_service,
+    settings_service=player_settings_service,
+    repository=player_data_repository,
+)
 matchmaking_service = MatchmakingService(
     now_func=time.monotonic
 )
@@ -117,6 +129,48 @@ class PlayerSettingsRequest(BaseModel):
     vibration_enabled: bool | None = None
     graphics_quality: str | None = None
     language: str | None = None
+
+
+@app.post("/player-data/{player_id}/save")
+def save_player_data(
+    player_id: str,
+) -> dict:
+    return (
+        player_data_store_service
+        .save_player(player_id)
+        .to_dict()
+    )
+
+
+@app.post("/player-data/{player_id}/load")
+def load_player_data(
+    player_id: str,
+) -> dict:
+    try:
+        snapshot = (
+            player_data_store_service
+            .load_player(player_id)
+        )
+    except PlayerDataStoreError as exc:
+        raise HTTPException(
+            status_code=404,
+            detail=str(exc),
+        ) from exc
+
+    return snapshot.to_dict()
+
+
+@app.delete("/player-data/{player_id}")
+def delete_player_data(
+    player_id: str,
+) -> dict:
+    return {
+        "player_id": player_id,
+        "deleted": (
+            player_data_repository
+            .delete(player_id)
+        ),
+    }
 
 
 @app.post("/matchmaking/join")

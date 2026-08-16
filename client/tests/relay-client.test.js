@@ -401,61 +401,61 @@ function createClient() {
   const fs=require("fs");
   const src=fs.readFileSync("./src/app.js","utf8");
   assert.ok(src.includes("PVP_STATUS"));
-  assert.ok(src.includes("Derece + XP maç sonu ilerlemesi aktif"));
+  assert.ok(src.includes("Oyuncu veri snapshot deposu hazır"));
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync("./src/app.js","utf8");
-  assert.ok(src.includes("Derece + XP maç sonu ilerlemesi aktif")); // alpha32->33 protocol status
+  assert.ok(src.includes("Oyuncu veri snapshot deposu hazır")); // alpha32->33 protocol status
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync("./src/app.js","utf8");
-  assert.ok(src.includes("Derece + XP maç sonu ilerlemesi aktif")); // alpha33 protocol
+  assert.ok(src.includes("Oyuncu veri snapshot deposu hazır")); // alpha33 protocol
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync("./src/app.js","utf8");
-  assert.ok(src.includes("Derece + XP maç sonu ilerlemesi aktif")); // alpha34 websocket
+  assert.ok(src.includes("Oyuncu veri snapshot deposu hazır")); // alpha34 websocket
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync("./src/app.js","utf8");
-  assert.ok(src.includes("Derece + XP maç sonu ilerlemesi aktif")); // alpha35 gateway
+  assert.ok(src.includes("Oyuncu veri snapshot deposu hazır")); // alpha35 gateway
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync("./src/app.js","utf8");
-  assert.ok(src.includes("Derece + XP maç sonu ilerlemesi aktif")); // alpha36 setup
+  assert.ok(src.includes("Oyuncu veri snapshot deposu hazır")); // alpha36 setup
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync("./src/app.js","utf8");
-  assert.ok(src.includes("Derece + XP maç sonu ilerlemesi aktif")); // alpha37 lobby
+  assert.ok(src.includes("Oyuncu veri snapshot deposu hazır")); // alpha37 lobby
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync("./src/app.js","utf8");
-  assert.ok(src.includes("Derece + XP maç sonu ilerlemesi aktif")); // alpha38 runner
+  assert.ok(src.includes("Oyuncu veri snapshot deposu hazır")); // alpha38 runner
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync("./src/app.js","utf8");
-  assert.ok(src.includes("Derece + XP maç sonu ilerlemesi aktif")); // alpha39 heartbeat
+  assert.ok(src.includes("Oyuncu veri snapshot deposu hazır")); // alpha39 heartbeat
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync("./src/app.js","utf8");
-  assert.ok(src.includes("Derece + XP maç sonu ilerlemesi aktif")); // alpha40 online pvp
+  assert.ok(src.includes("Oyuncu veri snapshot deposu hazır")); // alpha40 online pvp
 }
 
 {
@@ -681,7 +681,7 @@ function createClient() {
 {
   const fs=require("fs");
   const src=fs.readFileSync("./src/app.js","utf8");
-  assert.ok(src.includes("Derece + XP maç sonu ilerlemesi aktif"));
+  assert.ok(src.includes("Oyuncu veri snapshot deposu hazır"));
   assert.ok(src.includes("buildPvPCommandEnvelope"));
   assert.ok(src.includes("applyPvPServerEnvelope"));
 }
@@ -1330,4 +1330,48 @@ function createClient() {
   );
 }
 
-console.log("73 client tests passed");
+{
+  const {
+    RelayPlayerDataSnapshotState,
+  } = require("../src/relay-client.js");
+
+  const state =
+    new RelayPlayerDataSnapshotState();
+
+  const snapshot=state.applySnapshot({
+    player_id:"a",
+    profile:{
+      player_id:"a",
+      display_name:"Alihan",
+    },
+    statistics:{
+      player_id:"a",
+      total_matches:5,
+    },
+    settings:{
+      player_id:"a",
+      language:"tr",
+    },
+  });
+
+  assert.strictEqual(
+    snapshot.profile.display_name,
+    "Alihan"
+  );
+  assert.strictEqual(
+    snapshot.statistics.total_matches,
+    5
+  );
+  assert.strictEqual(
+    snapshot.settings.language,
+    "tr"
+  );
+
+  state.clear();
+  assert.strictEqual(
+    state.snapshot,
+    null
+  );
+}
+
+console.log("74 client tests passed");
