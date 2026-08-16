@@ -109,6 +109,10 @@ class BattleModule:
     cooldowns_ready_at_ms: dict[str, int] = field(default_factory=dict)
     temporary_boosters: dict[str, TimedModuleEffect] = field(default_factory=dict)
 
+    is_powered: bool = True
+    energy_received_last_tick: float = 0.0
+    energy_required_last_tick: float = 0.0
+
     @classmethod
     def create(
         cls,
@@ -159,6 +163,9 @@ class PlayerBattleState:
     battle_pool: BattlePool | None = None
     pending_booster_offer: BoosterOffer | None = None
     next_booster_offer_index: int = 0
+    energy_generated_total: float = 0.0
+    energy_consumed_total: float = 0.0
+    energy_wasted_total: float = 0.0
 
 
 @dataclass(slots=True)

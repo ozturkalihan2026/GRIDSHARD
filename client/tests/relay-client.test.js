@@ -258,4 +258,14 @@ function createClient() {
   assert.ok(src.includes("nextBoosterOfferIndex += 1"));
 }
 
-console.log("21 client tests passed");
+
+{
+  const fs = require("fs");
+  const src = fs.readFileSync("./src/app.js", "utf8");
+
+  assert.ok(src.includes("updateMockEnergy"));
+  assert.ok(src.includes("ENERJİSİZ"));
+  assert.ok(src.includes("Enerji:"));
+}
+
+console.log("22 client tests passed");

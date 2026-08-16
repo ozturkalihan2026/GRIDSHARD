@@ -10,6 +10,7 @@ from .economy import (
     CircuitCreditConfig,
     DEFAULT_CIRCUIT_CREDIT_CONFIG,
 )
+from .energy import process_energy_tick
 from .models import (
     BattleCommand,
     BattleEvent,
@@ -513,6 +514,10 @@ class BattleEngine:
             },
         )
 
+    def _process_energy_flow(self) -> None:
+        for player in self.state.players.values():
+            process_energy_tick(player)
+
     def _expire_timed_module_state(self) -> None:
         elapsed_ms = self.state.elapsed_ms
 
@@ -853,6 +858,7 @@ class BattleEngine:
         """
         self._update_booster_offers()
         self._apply_passive_circuit_credit_income()
+        self._process_energy_flow()
         self._expire_timed_module_state()
 
     def _require_player(self, player_id: str) -> PlayerBattleState:
@@ -948,6 +954,9 @@ class BattleEngine:
             "direction": module.direction.value,
             "heat": module.heat,
             "stored_energy": module.stored_energy,
+            "is_powered": module.is_powered,
+            "energy_received_last_tick": module.energy_received_last_tick,
+            "energy_required_last_tick": module.energy_required_last_tick,
             "debuffs": sorted(module.debuffs),
             "persistent_effects": sorted(module.persistent_effects),
             "cooldowns": sorted(module.cooldowns_ready_at_ms),

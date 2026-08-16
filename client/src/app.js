@@ -29,6 +29,10 @@
     ["disruptor-1","Kesici",80,125,"sabotaj","Kritik bağlantıyı geçici kesme","reserve",null],
   ].map(([instanceId,nameTr,hp,circuitCreditCost,category,strategicRole,status,position]) => ({
     instanceId,nameTr,hp,maxHp:hp,circuitCreditCost,category,strategicRole,status,position,
+    energyRequired: 0,
+    energyReceived: 0,
+    isPowered: true,
+    storedEnergy: 0,
   }));
 
   const commandLog = [];
@@ -298,7 +302,12 @@ const SPECIAL_CELL_INFO = {
     const costText = module.circuitCreditCost > 0
       ? ` · ${module.circuitCreditCost} DK`
       : "";
-    meta.textContent = `Can ${module.hp}/${module.maxHp}${costText}`;
+    const energyText =
+      module.status === "active"
+        ? ` · E ${Number(module.energyReceived || 0).toFixed(1)}/${Number(module.energyRequired || 0).toFixed(1)}${module.isPowered ? "" : " · ENERJİSİZ"}`
+        : "";
+    meta.textContent =
+      `Can ${module.hp}/${module.maxHp}${costText}${energyText}`;
 
     card.append(name, meta);
 
@@ -404,6 +413,66 @@ const SPECIAL_CELL_INFO = {
     client.applyServerEconomyState({ circuitCredits: mockServerCredits });
   }
 
+  function updateMockEnergy() {
+    const active = [...client.modules.values()].filter(
+      (module) => module.status === "active"
+    );
+
+    const generated =
+      active.filter((module) => module.nameTr === "Jeneratör").length * 8;
+
+    const demandByName = {
+      "Lazer": 3,
+      "Darbe Topu": 5,
+      "Ray Topu": 6,
+      "Kalkan": 2,
+      "Yansıtıcı": 2,
+      "Bariyer": 1,
+      "Onarım Modülü": 2,
+      "Soğutucu": 1,
+      "Güçlendirici": 1,
+      "Hedefleme Bilgisayarı": 1,
+      "EMP": 4,
+      "Sinyal Bozucu": 3,
+      "Füze Fırlatıcı": 5,
+      "Dron Üssü": 4,
+      "Ark Topu": 5,
+      "Aşırı Hızlandırıcı": 2,
+      "Virüs": 3,
+      "Enerji Sömürücü": 3,
+      "Kesici": 4,
+    };
+
+    let available =
+      generated *
+      (active.some((module) => module.nameTr === "Dağıtıcı")
+        ? 0.98
+        : 0.90);
+
+    let totalDemand = 0;
+
+    for (const module of active) {
+      const demand = demandByName[module.nameTr] || 0;
+      module.energyRequired = demand;
+      totalDemand += demand;
+
+      if (demand <= 0) {
+        module.energyReceived = 0;
+        module.isPowered = true;
+      } else if (available >= demand) {
+        available -= demand;
+        module.energyReceived = demand;
+        module.isPowered = true;
+      } else {
+        module.energyReceived = 0;
+        module.isPowered = false;
+      }
+    }
+
+    energySummaryEl.textContent =
+      `Enerji: ${generated.toFixed(1)} Ü / ${totalDemand.toFixed(1)} T`;
+  }
+
   function renderCredits() {
     creditEl.textContent = `Devre Kredisi: ${client.circuitCredits} DK`;
   }
@@ -483,6 +552,7 @@ const SPECIAL_CELL_INFO = {
 
     renderLockState();
     renderCapacity();
+    updateMockEnergy();
     renderCredits();
     updateBoosterOfferAvailability();
 
