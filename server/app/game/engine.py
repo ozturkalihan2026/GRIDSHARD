@@ -17,6 +17,16 @@ from .combat import (
     select_target,
 )
 from .energy import process_energy_tick
+from .heat import (
+    CRITICAL_HEAT_THRESHOLD,
+    MAX_HEAT,
+    OVERHEAT_DEBUFF_ID,
+    OVERHEAT_DURATION_MS,
+    OVERHEAT_SELF_DAMAGE,
+    apply_passive_cooling,
+    attack_heat_gain,
+    heat_performance,
+)
 from .topology import build_energy_topology, module_port_directions
 from .support import (
     COOLER_HEAT_REDUCTION_PER_TICK,
@@ -684,6 +694,22 @@ class BattleEngine:
                     )
                     continue
 
+                heat_state = heat_performance(
+                    attacker,
+                    self.state.elapsed_ms,
+                )
+
+                if heat_state.overheated:
+                    self._emit(
+                        "attack_skipped_overheated",
+                        {
+                            "player_id": attacker_player_id,
+                            "module_id": attacker.instance_id,
+                            "heat": attacker.heat,
+                        },
+                    )
+                    continue
+
                 if not self.is_cooldown_ready(
                     attacker_player_id,
                     attacker.instance_id,
@@ -706,7 +732,10 @@ class BattleEngine:
                     attacker,
                     target_player_id,
                     target,
-                    support_damage_multiplier=support.damage_multiplier,
+                    support_damage_multiplier=(
+                        support.damage_multiplier
+                        * heat_state.damage_multiplier
+                    ),
                 )
 
                 self._emit(
@@ -753,7 +782,13 @@ class BattleEngine:
 
                 effective_cooldown_ms = max(
                     TICK_MS,
-                    int(round(attacker.definition.cooldown_ms * support.cooldown_multiplier)),
+                    int(
+                        round(
+                            attacker.definition.cooldown_ms
+                            * support.cooldown_multiplier
+                            * heat_state.cooldown_multiplier
+                        )
+                    ),
                 )
 
                 self.start_cooldown(
@@ -775,6 +810,53 @@ class BattleEngine:
                         "overclock_active": support.overclock_active,
                     },
                 )
+
+                heat_before = attacker.heat
+                attacker.heat = min(
+                    MAX_HEAT,
+                    attacker.heat + attack_heat_gain(attacker),
+                )
+
+                self._emit(
+                    "module_heat_changed",
+                    {
+                        "player_id": attacker_player_id,
+                        "module_id": attacker.instance_id,
+                        "heat_before": heat_before,
+                        "heat_after": attacker.heat,
+                    },
+                )
+
+                if attacker.heat >= CRITICAL_HEAT_THRESHOLD:
+                    self.add_debuff(
+                        attacker_player_id,
+                        attacker.instance_id,
+                        OVERHEAT_DEBUFF_ID,
+                        "Aşırı Yük",
+                        OVERHEAT_DURATION_MS,
+                        {"reason": "critical_heat"},
+                    )
+
+                    self._emit(
+                        "module_overheated",
+                        {
+                            "player_id": attacker_player_id,
+                            "module_id": attacker.instance_id,
+                            "heat": attacker.heat,
+                            "duration_ms": OVERHEAT_DURATION_MS,
+                            "self_damage": OVERHEAT_SELF_DAMAGE,
+                        },
+                    )
+
+                    self.apply_damage(
+                        attacker_player_id,
+                        attacker.instance_id,
+                        OVERHEAT_SELF_DAMAGE,
+                    )
+
+    def _process_passive_heat(self) -> None:
+        for player in self.state.players.values():
+            apply_passive_cooling(player)
 
     def _expire_timed_module_state(self) -> None:
         elapsed_ms = self.state.elapsed_ms
@@ -1119,6 +1201,7 @@ class BattleEngine:
         self._process_energy_flow()
         self._process_support_actions()
         self._process_combat_actions()
+        self._process_passive_heat()
         self._expire_timed_module_state()
 
     def _require_player(self, player_id: str) -> PlayerBattleState:
@@ -1213,6 +1296,11 @@ class BattleEngine:
             "hp": module.hp,
             "direction": module.direction.value,
             "heat": module.heat,
+            "heat_state": (
+                "critical" if module.heat >= 100
+                else "high" if module.heat >= 70
+                else "normal"
+            ),
             "stored_energy": module.stored_energy,
             "is_powered": module.is_powered,
             "energy_received_last_tick": module.energy_received_last_tick,

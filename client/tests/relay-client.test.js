@@ -310,4 +310,14 @@ function createClient() {
   assert.ok(src.includes("Aşırı Hızlandırma"));
 }
 
-console.log("26 client tests passed");
+{
+  const fs=require("fs");
+  const src=fs.readFileSync("./src/app.js","utf8");
+  assert.ok(src.includes("heatStatusLabel"));
+  assert.ok(src.includes("YÜKSEK ISI"));
+  assert.ok(src.includes("KRİTİK ISI"));
+  assert.ok(src.includes("AŞIRI YÜK"));
+  assert.ok(src.includes("Saldırı engellendi: kritik ısı"));
+}
+
+console.log("27 client tests passed");

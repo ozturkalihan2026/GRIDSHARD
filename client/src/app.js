@@ -364,8 +364,11 @@ const SPECIAL_CELL_INFO = {
         : "";
     const supportLabel = supportLabelForModule(module);
     const supportText = supportLabel ? ` · ${supportLabel}` : "";
+    const heatText = module.status === "active"
+      ? ` · ${heatStatusLabel(module)}`
+      : "";
     meta.textContent =
-      `Can ${module.hp}/${module.maxHp}${costText}${energyText}${supportText}`;
+      `Can ${module.hp}/${module.maxHp}${costText}${energyText}${supportText}${heatText}`;
 
     card.append(name, meta);
 
@@ -634,6 +637,13 @@ const SPECIAL_CELL_INFO = {
       `Enerji: ${generated.toFixed(1)} Ü / ${totalDemand.toFixed(1)} T`;
   }
 
+  function heatStatusLabel(module) {
+    const heat = Number(module.heat || 0);
+    if (heat >= 100) return `KRİTİK ISI ${heat.toFixed(0)}`;
+    if (heat >= 70) return `YÜKSEK ISI ${heat.toFixed(0)}`;
+    return `Isı ${heat.toFixed(0)}`;
+  }
+
   function supportLabelForModule(module) {
     if (module.nameTr === "Onarım Modülü") return "Onarım";
     if (module.nameTr === "Soğutucu") return "Soğutma";
@@ -785,6 +795,15 @@ const SPECIAL_CELL_INFO = {
         }
         if (entry.kind === "module_overclocked") {
           return `Aşırı Hızlandırma: Isı ${entry.heatAfter}`;
+        }
+        if (entry.kind === "module_heat_changed") {
+          return `Isı: ${entry.heatBefore} → ${entry.heatAfter}`;
+        }
+        if (entry.kind === "module_overheated") {
+          return `AŞIRI YÜK: Isı ${entry.heat} · ${entry.selfDamage} öz hasar`;
+        }
+        if (entry.kind === "attack_skipped_overheated") {
+          return `Saldırı engellendi: kritik ısı`;
         }
         if (entry.kind === "module_damaged") {
           return `${entry.moduleName || "Modül"}: ${entry.damage} hasar · Can ${entry.hp}`;

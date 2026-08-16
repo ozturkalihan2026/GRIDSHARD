@@ -1,7 +1,7 @@
 # Project Relay 2.0 — YOL HARİTASI
 
-**Güncel Sürüm:** `2.0.0-alpha.19`  
-**Paket:** Destek Modülleri: Onarım, Soğutma ve Güçlendirme  
+**Güncel Sürüm:** `2.0.0-alpha.20`  
+**Paket:** Isı ve Aşırı Yük Mekaniği  
 **Kanonik Dosya:** `docs/YOL_HARITASI.md`
 
 > Bu dosya Project Relay 2.0 için tek kanonik geliştirme kaydıdır. Her paket tamamlandığında sürüm numarası artırılır; **Tamamlananlar** ve **Yapılacaklar** bu dosyada güncellenir. Sonraki geliştirme paketi bu dosya okunarak başlatılır.
@@ -379,9 +379,9 @@ Aşağıdaki alanlar ilk sürüm kapsamına dahil değildir ve mevcut yol harita
 
 ## Sıradaki Paket
 
-**`2.0.0-alpha.20 — Isı ve Aşırı Yük Mekaniği`**
+**`2.0.0-alpha.21 — Sabotaj Modülleri Temeli`**
 
-Destek modülleri gerçek savaş motoruna bağlandı. Sıradaki pakette Isı değeri gerçek risk mekaniğine dönüştürülecek: yüksek Isı performans düşüşü, kritik Isı geçici devre dışı kalma veya hasar riski oluşturacak; Soğutucu ve Soğutma Hücresi bu sistemi doğrudan dengeleyecek. Savaş kesintisiz devam edecek.
+Isı ve Aşırı Yük sistemi tamamlandı. Sıradaki pakette EMP, Sinyal Bozucu, Virüs, Enerji Sömürücü ve Kesici gerçek savaş davranışlarına bağlanacak. Sabotaj etkileri süreli olacak, enerji/port topolojisi ve karşı-strateji sistemiyle deterministik çalışacak; savaş kesintisiz devam edecek.
 
 
 ---

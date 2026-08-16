@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 from .board import get_cell_effects
+from .heat import heat_generation_multiplier
 from .models import BattleModule, ModuleStatus, PlayerBattleState, Position
 from .topology import build_energy_topology
 
