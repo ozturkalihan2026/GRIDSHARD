@@ -1,7 +1,7 @@
 # Project Relay 2.0 — YOL HARİTASI
 
-**Güncel Sürüm:** `2.0.0-alpha.16`  
-**Paket:** Bağlantı ve Port Enerji Topolojisi  
+**Güncel Sürüm:** `2.0.0-alpha.17`  
+**Paket:** Gerçek Savaş Aksiyonları: Saldırı ve Hasar  
 **Kanonik Dosya:** `docs/YOL_HARITASI.md`
 
 > Bu dosya Project Relay 2.0 için tek kanonik geliştirme kaydıdır. Her paket tamamlandığında sürüm numarası artırılır; **Tamamlananlar** ve **Yapılacaklar** bu dosyada güncellenir. Sonraki geliştirme paketi bu dosya okunarak başlatılır.
@@ -379,9 +379,9 @@ Aşağıdaki alanlar ilk sürüm kapsamına dahil değildir ve mevcut yol harita
 
 ## Sıradaki Paket
 
-**`2.0.0-alpha.17 — Gerçek Savaş Aksiyonları: Saldırı ve Hasar`**
+**`2.0.0-alpha.18 — Savunma, Kalkan ve Hasar Azaltma`**
 
-Port tabanlı enerji topolojisi tamamlandı. Sıradaki pakette enerji alabilen saldırı modüllerinin cooldown, hedef seçimi ve hasar üretimi gerçek savaş motoruna bağlanacak. Enerjisiz saldırı modülleri ateş etmeyecek; savaş kesintisiz devam edecek.
+Gerçek saldırı ve hasar döngüsü tamamlandı. Sıradaki pakette Kalkan, Zırh, Yansıtıcı ve Bariyer gerçek hasar çözümüne bağlanacak; savunma hücresi ve savunma karşı-strateji verileri savaş sonucunu etkilemeye başlayacak.
 
 
 ---

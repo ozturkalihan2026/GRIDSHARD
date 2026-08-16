@@ -10,6 +10,12 @@ from .economy import (
     CircuitCreditConfig,
     DEFAULT_CIRCUIT_CREDIT_CONFIG,
 )
+from .combat import (
+    ATTACK_COOLDOWN_ID,
+    is_attack_module,
+    resolve_attack,
+    select_target,
+)
 from .energy import process_energy_tick
 from .topology import build_energy_topology, module_port_directions
 from .models import (
@@ -526,6 +532,92 @@ class BattleEngine:
         for player in self.state.players.values():
             process_energy_tick(player, self.board.core_position)
 
+    def _process_combat_actions(self) -> None:
+        if len(self.state.players) < 2:
+            return
+
+        player_ids = sorted(self.state.players)
+
+        for attacker_player_id in player_ids:
+            attacker_player = self.state.players[attacker_player_id]
+
+            opponent_ids = [
+                player_id
+                for player_id in player_ids
+                if player_id != attacker_player_id
+            ]
+            if not opponent_ids:
+                continue
+
+            # alpha.17'de iki oyunculu savaş kuralı:
+            # deterministik olarak ilk rakip kullanılır.
+            target_player_id = opponent_ids[0]
+            target_player = self.state.players[target_player_id]
+
+            attackers = sorted(
+                (
+                    module
+                    for module in attacker_player.modules.values()
+                    if is_attack_module(module)
+                ),
+                key=lambda module: module.instance_id,
+            )
+
+            for attacker in attackers:
+                if not attacker.is_powered:
+                    self._emit(
+                        "attack_skipped_unpowered",
+                        {
+                            "player_id": attacker_player_id,
+                            "module_id": attacker.instance_id,
+                        },
+                    )
+                    continue
+
+                if not self.is_cooldown_ready(
+                    attacker_player_id,
+                    attacker.instance_id,
+                    ATTACK_COOLDOWN_ID,
+                ):
+                    continue
+
+                target = select_target(target_player)
+                if target is None:
+                    continue
+
+                resolution = resolve_attack(
+                    attacker_player_id,
+                    attacker,
+                    target_player_id,
+                    target,
+                )
+
+                self._emit(
+                    "attack_performed",
+                    {
+                        "attacker_player_id": resolution.attacker_player_id,
+                        "attacker_module_id": resolution.attacker_module_id,
+                        "target_player_id": resolution.target_player_id,
+                        "target_module_id": resolution.target_module_id,
+                        "base_damage": resolution.base_damage,
+                        "damage_multiplier": resolution.damage_multiplier,
+                        "damage": resolution.final_damage,
+                    },
+                )
+
+                self.apply_damage(
+                    target_player_id,
+                    target.instance_id,
+                    resolution.final_damage,
+                )
+
+                self.start_cooldown(
+                    attacker_player_id,
+                    attacker.instance_id,
+                    ATTACK_COOLDOWN_ID,
+                    attacker.definition.cooldown_ms,
+                )
+
     def _expire_timed_module_state(self) -> None:
         elapsed_ms = self.state.elapsed_ms
 
@@ -861,12 +953,13 @@ class BattleEngine:
         - Zaman tabanlı modül durumları savaş saatiyle ilerler.
         - Isı ve depolanmış enerji rezerv/aktif geçişinde aynen korunur.
 
-        Devre Kredisi, gerçek enerji akışı, saldırı ve özel hücre hesapları
-        sonraki paketlerde ayrı sistemler olarak eklenecektir.
+        Devre Kredisi, enerji akışı ve gerçek saldırı/hasar döngüsü
+        savaş durmadan aynı tick akışında ilerler.
         """
         self._update_booster_offers()
         self._apply_passive_circuit_credit_income()
         self._process_energy_flow()
+        self._process_combat_actions()
         self._expire_timed_module_state()
 
     def _require_player(self, player_id: str) -> PlayerBattleState:

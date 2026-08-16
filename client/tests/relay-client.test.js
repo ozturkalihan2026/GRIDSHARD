@@ -281,4 +281,16 @@ function createClient() {
   assert.ok(src.includes("energy-disconnected"));
 }
 
-console.log("23 client tests passed");
+
+{
+  const fs = require("fs");
+  const src = fs.readFileSync("./src/app.js", "utf8");
+
+  assert.ok(src.includes("updateMockCombat"));
+  assert.ok(src.includes("attack_performed"));
+  assert.ok(src.includes("Rakip Jeneratör"));
+  assert.ok(src.includes("Rakip Çekirdek"));
+  assert.ok(src.includes("hasar"));
+}
+
+console.log("24 client tests passed");

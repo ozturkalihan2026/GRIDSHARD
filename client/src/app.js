@@ -124,6 +124,7 @@
   const shelf = document.getElementById("module-shelf");
   const timeEl = document.getElementById("battle-time");
   const creditEl = document.getElementById("credit-indicator");
+  const combatSummaryEl = document.getElementById("combat-summary");
   const capacityEl = document.getElementById("capacity-indicator");
   const lockLabel = document.getElementById("shelf-lock-label");
   const shelfHelp = document.getElementById("shelf-help");
@@ -155,6 +156,10 @@ const SPECIAL_CELL_INFO = {
   let previousCapacity = null;
   let mockServerCredits = 200;
   let mockServerPassiveSeconds = 0;
+  let mockEnemyCoreHp = 300;
+  let mockEnemyGeneratorHp = 150;
+  let mockEnemyModuleHp = 140;
+  let previousCombatSecond = -1;
 
   function renderBattlePoolSelection() {
     poolSelectionEl.innerHTML = "";
@@ -627,6 +632,59 @@ const SPECIAL_CELL_INFO = {
       `Enerji: ${generated.toFixed(1)} Ü / ${totalDemand.toFixed(1)} T`;
   }
 
+  function updateMockCombat() {
+    const currentSecond = Math.floor(client.elapsedMs / 1000);
+    if (currentSecond === previousCombatSecond) return;
+    previousCombatSecond = currentSecond;
+
+    const attackers = [...client.modules.values()]
+      .filter(
+        (module) =>
+          module.status === "active" &&
+          module.category === "saldırı" &&
+          module.isPowered
+      )
+      .sort((a, b) => a.instanceId.localeCompare(b.instanceId));
+
+    if (!attackers.length) return;
+
+    const attacker = attackers[0];
+    const damageByName = {
+      "Lazer": 12,
+      "Darbe Topu": 32,
+      "Ray Topu": 40,
+      "Füze Fırlatıcı": 28,
+      "Dron Üssü": 8,
+      "Ark Topu": 20,
+    };
+    const damage = damageByName[attacker.nameTr] || 0;
+    if (damage <= 0) return;
+
+    let targetName = "Rakip Modül";
+    if (mockEnemyModuleHp > 0) {
+      mockEnemyModuleHp = Math.max(0, mockEnemyModuleHp - damage);
+    } else if (mockEnemyGeneratorHp > 0) {
+      targetName = "Rakip Jeneratör";
+      mockEnemyGeneratorHp = Math.max(0, mockEnemyGeneratorHp - damage);
+    } else {
+      targetName = "Rakip Çekirdek";
+      mockEnemyCoreHp = Math.max(0, mockEnemyCoreHp - damage);
+    }
+
+    commandLog.push({
+      atMs: client.elapsedMs,
+      kind: "attack_performed",
+      attacker: attacker.nameTr,
+      target: targetName,
+      damage,
+    });
+
+    combatSummaryEl.textContent =
+      `Rakip: Modül ${mockEnemyModuleHp}/140 · Jeneratör ${mockEnemyGeneratorHp}/150 · Çekirdek ${mockEnemyCoreHp}/300`;
+
+    renderLog();
+  }
+
   function renderCredits() {
     creditEl.textContent = `Devre Kredisi: ${client.circuitCredits} DK`;
   }
@@ -680,7 +738,15 @@ const SPECIAL_CELL_INFO = {
   function renderLog() {
     logEl.textContent = commandLog
       .slice(-12)
-      .map((entry) => JSON.stringify(entry))
+      .map((entry) => {
+        if (entry.kind === "attack_performed") {
+          return `${entry.attacker} → ${entry.target}: ${entry.damage} hasar`;
+        }
+        if (entry.kind === "module_damaged") {
+          return `${entry.moduleName || "Modül"}: ${entry.damage} hasar · Can ${entry.hp}`;
+        }
+        return JSON.stringify(entry);
+      })
       .join("\n");
   }
 
@@ -707,6 +773,7 @@ const SPECIAL_CELL_INFO = {
     renderLockState();
     renderCapacity();
     updateMockEnergy();
+    updateMockCombat();
     renderCredits();
     updateBoosterOfferAvailability();
 
