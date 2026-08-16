@@ -401,49 +401,55 @@ function createClient() {
   const fs=require("fs");
   const src=fs.readFileSync("./src/app.js","utf8");
   assert.ok(src.includes("PVP_STATUS"));
-  assert.ok(src.includes("Sunucu 10 Hz PvP + canlı olay aktif"));
+  assert.ok(src.includes("PvP heartbeat + grace period aktif"));
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync("./src/app.js","utf8");
-  assert.ok(src.includes("Sunucu 10 Hz PvP + canlı olay aktif")); // alpha32->33 protocol status
+  assert.ok(src.includes("PvP heartbeat + grace period aktif")); // alpha32->33 protocol status
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync("./src/app.js","utf8");
-  assert.ok(src.includes("Sunucu 10 Hz PvP + canlı olay aktif")); // alpha33 protocol
+  assert.ok(src.includes("PvP heartbeat + grace period aktif")); // alpha33 protocol
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync("./src/app.js","utf8");
-  assert.ok(src.includes("Sunucu 10 Hz PvP + canlı olay aktif")); // alpha34 websocket
+  assert.ok(src.includes("PvP heartbeat + grace period aktif")); // alpha34 websocket
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync("./src/app.js","utf8");
-  assert.ok(src.includes("Sunucu 10 Hz PvP + canlı olay aktif")); // alpha35 gateway
+  assert.ok(src.includes("PvP heartbeat + grace period aktif")); // alpha35 gateway
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync("./src/app.js","utf8");
-  assert.ok(src.includes("Sunucu 10 Hz PvP + canlı olay aktif")); // alpha36 setup
+  assert.ok(src.includes("PvP heartbeat + grace period aktif")); // alpha36 setup
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync("./src/app.js","utf8");
-  assert.ok(src.includes("Sunucu 10 Hz PvP + canlı olay aktif")); // alpha37 lobby
+  assert.ok(src.includes("PvP heartbeat + grace period aktif")); // alpha37 lobby
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync("./src/app.js","utf8");
-  assert.ok(src.includes("Sunucu 10 Hz PvP + canlı olay aktif")); // alpha38 runner
+  assert.ok(src.includes("PvP heartbeat + grace period aktif")); // alpha38 runner
 }
 
-console.log("45 client tests passed");
+{
+  const fs=require("fs");
+  const src=fs.readFileSync("./src/app.js","utf8");
+  assert.ok(src.includes("PvP heartbeat + grace period aktif")); // alpha39 heartbeat
+}
+
+console.log("46 client tests passed");

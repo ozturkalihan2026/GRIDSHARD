@@ -70,6 +70,17 @@ class PvPProtocolHandler:
                     self.service.lobby_snapshot(envelope.session_id),
                     request_id=request_id,
                 ).to_dict()
+            if envelope.message_type=="heartbeat":
+                sent_at_ms=envelope.payload.get("sent_at_ms")
+                if not isinstance(sent_at_ms,(int,float)):
+                    raise PvPSessionError(
+                        "Heartbeat `sent_at_ms` sayısal olmalıdır."
+                    )
+                return server_envelope(
+                    "heartbeat_ack",
+                    {"sent_at_ms":sent_at_ms},
+                    request_id=request_id,
+                ).to_dict()
             if envelope.message_type=="request_snapshot":
                 return server_envelope(
                     "snapshot",

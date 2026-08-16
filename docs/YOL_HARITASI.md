@@ -1,7 +1,7 @@
 # Project Relay 2.0 — YOL HARİTASI
 
-**Güncel Sürüm:** `2.0.0-alpha.38`  
-**Paket:** PvP Sunucu Tick Runner ve Canlı Olay Yayını  
+**Güncel Sürüm:** `2.0.0-alpha.39`  
+**Paket:** PvP Bağlantı Gecikmesi, Heartbeat ve Zaman Aşımı  
 **Kanonik Dosya:** `docs/YOL_HARITASI.md`
 
 > Bu dosya Project Relay 2.0 için tek kanonik geliştirme kaydıdır. Her paket tamamlandığında sürüm numarası artırılır; **Tamamlananlar** ve **Yapılacaklar** bu dosyada güncellenir. Sonraki geliştirme paketi bu dosya okunarak başlatılır.
@@ -379,9 +379,9 @@ Aşağıdaki alanlar ilk sürüm kapsamına dahil değildir ve mevcut yol harita
 
 ## Sıradaki Paket
 
-**`2.0.0-alpha.39 — PvP Bağlantı Gecikmesi, Heartbeat ve Zaman Aşımı`**
+**`2.0.0-alpha.40 — PvP Maç Sonu, Oturum Kapanışı ve M7 Online PvP Kapanışı`**
 
-Sunucu taraflı 10 Hz maç akışı hazır. Sıradaki pakette WebSocket heartbeat/ping yaşam döngüsü, bağlantı son-görülme zamanı, gecikme ölçümü, sessiz bağlantı zaman aşımı ve kısa süreli kopmalarda oyuncunun maçtan düşmeden yeniden bağlanabilmesi için grace-period politikası eklenecek.
+Online taşıma, setup, lobi, sunucu tick runner ve bağlantı sağlık politikaları tamamlandı. Sıradaki pakette maç sonu WebSocket yayını, runner/bağlantı temizliği, bitmiş oturum snapshot'ı, reconnect sonrası maç sonucu teslimi ve uçtan uca iki oyunculu PvP regresyonuyla M7 `Online PvP` maddesi kapatılacak.
 
 
 ---

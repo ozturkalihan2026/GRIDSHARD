@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import asyncio
+import time
 from dataclasses import dataclass, field
 from typing import Any, Protocol
 
@@ -26,6 +27,8 @@ class PvPConnection:
     messages_received: int = 0
     messages_sent: int = 0
     last_pushed_event_cursor: int = 0
+    last_seen_at: float = 0.0
+    last_rtt_ms: float | None = None
 
 
 @dataclass(slots=True)
@@ -72,10 +75,18 @@ class PvPWebSocketAdapter:
         self,
         service: PvPSessionService,
         registry: PvPConnectionRegistry | None = None,
+        *,
+        now_func=time.monotonic,
+        silent_timeout_seconds: float = 12.0,
+        grace_period_seconds: float = 0.0,
     ):
         self.service = service
         self.handler = PvPProtocolHandler(service)
         self.registry = registry or PvPConnectionRegistry()
+        self.now_func = now_func
+        self.silent_timeout_seconds = silent_timeout_seconds
+        self.grace_period_seconds = grace_period_seconds
+        self.pending_disconnect_deadlines: dict[tuple[str,str],float] = {}
 
     async def connect(
         self,
@@ -95,6 +106,7 @@ class PvPWebSocketAdapter:
             session_id=session_id,
             player_id=player_id,
             socket=socket,
+            last_seen_at=self.now_func(),
         )
         self.registry.bind(connection)
 
@@ -102,6 +114,10 @@ class PvPWebSocketAdapter:
         self.service.join(
             session_id,
             player_id,
+        )
+        self.pending_disconnect_deadlines.pop(
+            (session_id,player_id),
+            None,
         )
 
         return connection
@@ -134,16 +150,65 @@ class PvPWebSocketAdapter:
         connection_id: str,
     ) -> None:
         connection = self.registry.unbind(connection_id)
-
         remaining = self.registry.active_for_player(
             connection.session_id,
             connection.player_id,
         )
-        if not remaining:
-            self.service.disconnect(
-                connection.session_id,
-                connection.player_id,
+        if remaining:
+            return
+
+        if self.grace_period_seconds > 0:
+            self.pending_disconnect_deadlines[
+                (connection.session_id,connection.player_id)
+            ] = self.now_func()+self.grace_period_seconds
+            return
+
+        self.service.disconnect(
+            connection.session_id,
+            connection.player_id,
+        )
+
+    def mark_seen(
+        self,
+        connection_id: str,
+        *,
+        heartbeat_sent_at_ms: float | None = None,
+    ) -> None:
+        connection=self.registry.get(connection_id)
+        now=self.now_func()
+        connection.last_seen_at=now
+        if heartbeat_sent_at_ms is not None:
+            connection.last_rtt_ms=max(
+                0.0,
+                (now*1000.0)-heartbeat_sent_at_ms,
             )
+
+    async def sweep_connection_health(self) -> dict[str,int]:
+        now=self.now_func()
+        timed_out=0
+        grace_expired=0
+
+        for connection in list(self.registry.connections.values()):
+            if not connection.connected:
+                continue
+            if now-connection.last_seen_at <= self.silent_timeout_seconds:
+                continue
+            await self.connection_lost(connection.connection_id)
+            timed_out+=1
+
+        for key,deadline in list(self.pending_disconnect_deadlines.items()):
+            if now < deadline:
+                continue
+            session_id,player_id=key
+            if not self.registry.active_for_player(session_id,player_id):
+                self.service.disconnect(session_id,player_id)
+                grace_expired+=1
+            self.pending_disconnect_deadlines.pop(key,None)
+
+        return {
+            "timed_out_connections":timed_out,
+            "grace_expired_players":grace_expired,
+        }
 
     async def handle_one(
         self,
@@ -158,6 +223,21 @@ class PvPWebSocketAdapter:
         try:
             raw = await connection.socket.receive_json()
             connection.messages_received += 1
+
+            heartbeat_sent_at_ms=None
+            if (
+                isinstance(raw,dict)
+                and raw.get("type")=="heartbeat"
+                and isinstance(raw.get("payload"),dict)
+            ):
+                value=raw["payload"].get("sent_at_ms")
+                if isinstance(value,(int,float)):
+                    heartbeat_sent_at_ms=float(value)
+
+            self.mark_seen(
+                connection_id,
+                heartbeat_sent_at_ms=heartbeat_sent_at_ms,
+            )
 
             response = self.handler.handle(
                 raw,

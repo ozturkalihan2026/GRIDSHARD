@@ -14,6 +14,7 @@ CLIENT_MESSAGE_TYPES = {
     "submit_setup",
     "set_ready",
     "request_lobby",
+    "heartbeat",
 }
 
 SERVER_MESSAGE_TYPES = {
@@ -24,6 +25,7 @@ SERVER_MESSAGE_TYPES = {
     "setup_accepted",
     "ready_state",
     "lobby_state",
+    "heartbeat_ack",
     "error",
 }
 

@@ -24,7 +24,9 @@ app = FastAPI(
 
 pvp_service = PvPSessionService()
 pvp_websocket_adapter = PvPWebSocketAdapter(
-    pvp_service
+    pvp_service,
+    silent_timeout_seconds=12.0,
+    grace_period_seconds=15.0,
 )
 pvp_tick_runner = PvPTickRunner(pvp_service,pvp_websocket_adapter)
 
