@@ -401,19 +401,31 @@ function createClient() {
   const fs=require("fs");
   const src=fs.readFileSync("./src/app.js","utf8");
   assert.ok(src.includes("PVP_STATUS"));
-  assert.ok(src.includes("PvP protokol v1 aktif"));
+  assert.ok(src.includes("FastAPI + WebSocket PvP gateway aktif"));
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync("./src/app.js","utf8");
-  assert.ok(src.includes("PvP protokol v1 aktif")); // alpha32->33 protocol status
+  assert.ok(src.includes("FastAPI + WebSocket PvP gateway aktif")); // alpha32->33 protocol status
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync("./src/app.js","utf8");
-  assert.ok(src.includes("PvP protokol v1 aktif")); // alpha33 protocol
+  assert.ok(src.includes("FastAPI + WebSocket PvP gateway aktif")); // alpha33 protocol
 }
 
-console.log("40 client tests passed");
+{
+  const fs=require("fs");
+  const src=fs.readFileSync("./src/app.js","utf8");
+  assert.ok(src.includes("FastAPI + WebSocket PvP gateway aktif")); // alpha34 websocket
+}
+
+{
+  const fs=require("fs");
+  const src=fs.readFileSync("./src/app.js","utf8");
+  assert.ok(src.includes("FastAPI + WebSocket PvP gateway aktif")); // alpha35 gateway
+}
+
+console.log("42 client tests passed");

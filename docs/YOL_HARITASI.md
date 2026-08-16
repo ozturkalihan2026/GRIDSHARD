@@ -1,7 +1,7 @@
 # Project Relay 2.0 — YOL HARİTASI
 
-**Güncel Sürüm:** `2.0.0-alpha.33`  
-**Paket:** PvP Taşıma Protokolü ve Mesaj Şemaları  
+**Güncel Sürüm:** `2.0.0-alpha.35`  
+**Paket:** FastAPI PvP Gateway ve WebSocket Endpoint  
 **Kanonik Dosya:** `docs/YOL_HARITASI.md`
 
 > Bu dosya Project Relay 2.0 için tek kanonik geliştirme kaydıdır. Her paket tamamlandığında sürüm numarası artırılır; **Tamamlananlar** ve **Yapılacaklar** bu dosyada güncellenir. Sonraki geliştirme paketi bu dosya okunarak başlatılır.
@@ -379,9 +379,9 @@ Aşağıdaki alanlar ilk sürüm kapsamına dahil değildir ve mevcut yol harita
 
 ## Sıradaki Paket
 
-**`2.0.0-alpha.34 — WebSocket PvP Adaptörü ve Bağlantı Yaşam Döngüsü`**
+**`2.0.0-alpha.36 — PvP Maç Kurulum Payload'ı ve 18 Modüllük Havuz Doğrulaması`**
 
-Sürümlü PvP taşıma protokolü hazır. Sıradaki pakette protokol handler'ını kullanan gerçek WebSocket adaptörü, bağlantı açma/kapatma, kimlik bağlama, gelen mesajı doğrulama ve snapshot/olay yanıtlarını iletme katmanı eklenecek. Oyun motoru WebSocket ayrıntılarını bilmeyecek.
+FastAPI/WebSocket gateway hazır. Sıradaki pakette oyuncuların PvP oturumuna 18 modüllük Savaş Havuzu ve başlangıç devre dizilimiyle katılması, sunucunun havuz/başlangıç modüllerini doğrulaması, iki oyuncunun hazırlık durumunun izlenmesi ve yalnızca iki taraf da geçerli/hazır olduğunda maçın başlaması tamamlanacak.
 
 
 ---
