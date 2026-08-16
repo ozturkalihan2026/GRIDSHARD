@@ -401,61 +401,61 @@ function createClient() {
   const fs=require("fs");
   const src=fs.readFileSync("./src/app.js","utf8");
   assert.ok(src.includes("PVP_STATUS"));
-  assert.ok(src.includes("Oyna + Profil + İstatistikler aktif"));
+  assert.ok(src.includes("İlk menü kapsamı: Oyna + Profil + İstatistikler + Ayarlar"));
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync("./src/app.js","utf8");
-  assert.ok(src.includes("Oyna + Profil + İstatistikler aktif")); // alpha32->33 protocol status
+  assert.ok(src.includes("İlk menü kapsamı: Oyna + Profil + İstatistikler + Ayarlar")); // alpha32->33 protocol status
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync("./src/app.js","utf8");
-  assert.ok(src.includes("Oyna + Profil + İstatistikler aktif")); // alpha33 protocol
+  assert.ok(src.includes("İlk menü kapsamı: Oyna + Profil + İstatistikler + Ayarlar")); // alpha33 protocol
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync("./src/app.js","utf8");
-  assert.ok(src.includes("Oyna + Profil + İstatistikler aktif")); // alpha34 websocket
+  assert.ok(src.includes("İlk menü kapsamı: Oyna + Profil + İstatistikler + Ayarlar")); // alpha34 websocket
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync("./src/app.js","utf8");
-  assert.ok(src.includes("Oyna + Profil + İstatistikler aktif")); // alpha35 gateway
+  assert.ok(src.includes("İlk menü kapsamı: Oyna + Profil + İstatistikler + Ayarlar")); // alpha35 gateway
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync("./src/app.js","utf8");
-  assert.ok(src.includes("Oyna + Profil + İstatistikler aktif")); // alpha36 setup
+  assert.ok(src.includes("İlk menü kapsamı: Oyna + Profil + İstatistikler + Ayarlar")); // alpha36 setup
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync("./src/app.js","utf8");
-  assert.ok(src.includes("Oyna + Profil + İstatistikler aktif")); // alpha37 lobby
+  assert.ok(src.includes("İlk menü kapsamı: Oyna + Profil + İstatistikler + Ayarlar")); // alpha37 lobby
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync("./src/app.js","utf8");
-  assert.ok(src.includes("Oyna + Profil + İstatistikler aktif")); // alpha38 runner
+  assert.ok(src.includes("İlk menü kapsamı: Oyna + Profil + İstatistikler + Ayarlar")); // alpha38 runner
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync("./src/app.js","utf8");
-  assert.ok(src.includes("Oyna + Profil + İstatistikler aktif")); // alpha39 heartbeat
+  assert.ok(src.includes("İlk menü kapsamı: Oyna + Profil + İstatistikler + Ayarlar")); // alpha39 heartbeat
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync("./src/app.js","utf8");
-  assert.ok(src.includes("Oyna + Profil + İstatistikler aktif")); // alpha40 online pvp
+  assert.ok(src.includes("İlk menü kapsamı: Oyna + Profil + İstatistikler + Ayarlar")); // alpha40 online pvp
 }
 
 {
@@ -681,7 +681,7 @@ function createClient() {
 {
   const fs=require("fs");
   const src=fs.readFileSync("./src/app.js","utf8");
-  assert.ok(src.includes("Oyna + Profil + İstatistikler aktif"));
+  assert.ok(src.includes("İlk menü kapsamı: Oyna + Profil + İstatistikler + Ayarlar"));
   assert.ok(src.includes("buildPvPCommandEnvelope"));
   assert.ok(src.includes("applyPvPServerEnvelope"));
 }
@@ -795,4 +795,50 @@ function createClient() {
   );
 }
 
-console.log("59 client tests passed");
+{
+  const {
+    RelaySettingsClientState,
+  } = require("../src/relay-client.js");
+
+  const state =
+    new RelaySettingsClientState();
+
+  state.applySettings({
+    player_id: "a",
+    sound_volume: 80,
+    music_volume: 40,
+    vibration_enabled: false,
+    graphics_quality: "orta",
+    language: "tr",
+  });
+
+  const view=state.viewModel();
+
+  assert.strictEqual(view.soundVolume,80);
+  assert.strictEqual(view.musicVolume,40);
+  assert.strictEqual(
+    view.vibrationEnabled,
+    false
+  );
+  assert.strictEqual(
+    view.graphicsQualityTr,
+    "Orta"
+  );
+  assert.strictEqual(view.language,"tr");
+}
+
+{
+  const fs=require("fs");
+  const html=fs.readFileSync("./index.html","utf8");
+  assert.ok(
+    html.includes('id="settings-summary-panel"')
+  );
+  assert.ok(
+    html.includes("Ses · Müzik · Titreşim · Grafik · Dil")
+  );
+  assert.ok(!html.includes(">Mağaza<"));
+  assert.ok(!html.includes(">Sezon<"));
+  assert.ok(!html.includes(">Battle Pass<"));
+}
+
+console.log("61 client tests passed");

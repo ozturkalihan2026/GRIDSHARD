@@ -22,6 +22,10 @@ from .player_profile import (
 from .player_statistics import (
     PlayerStatisticsService,
 )
+from .player_settings import (
+    PlayerSettingsError,
+    PlayerSettingsService,
+)
 
 
 app = FastAPI(
@@ -45,6 +49,7 @@ pvp_tick_runner = PvPTickRunner(
     ),
 )
 player_profile_service = PlayerProfileService()
+player_settings_service = PlayerSettingsService()
 
 
 class CreateSessionRequest(BaseModel):
@@ -78,6 +83,52 @@ class ProfileNameRequest(BaseModel):
 
 class ProfileBattlePoolRequest(BaseModel):
     battle_pool_ids: list[str]
+
+
+class PlayerSettingsRequest(BaseModel):
+    sound_volume: int | None = None
+    music_volume: int | None = None
+    vibration_enabled: bool | None = None
+    graphics_quality: str | None = None
+    language: str | None = None
+
+
+@app.get("/settings/{player_id}")
+def get_player_settings(
+    player_id: str,
+) -> dict:
+    return (
+        player_settings_service
+        .get_or_create(player_id)
+        .to_view()
+    )
+
+
+@app.put("/settings/{player_id}")
+def update_player_settings(
+    player_id: str,
+    request: PlayerSettingsRequest,
+) -> dict:
+    try:
+        settings = player_settings_service.update(
+            player_id,
+            sound_volume=request.sound_volume,
+            music_volume=request.music_volume,
+            vibration_enabled=(
+                request.vibration_enabled
+            ),
+            graphics_quality=(
+                request.graphics_quality
+            ),
+            language=request.language,
+        )
+    except PlayerSettingsError as exc:
+        raise HTTPException(
+            status_code=422,
+            detail=str(exc),
+        ) from exc
+
+    return settings.to_view()
 
 
 @app.get("/statistics/{player_id}")

@@ -42,7 +42,7 @@
   const COMPETITIVE_STATUS = "M7 Simülasyon aktif";
   const BALANCE_STATUS = "Eşit modül + counter doğrulandı";
   const AI_STATUS = "Adaptif AI + rekabetçi denge doğrulandı";
-  const PVP_STATUS = "Oyna + Profil + İstatistikler aktif";
+  const PVP_STATUS = "İlk menü kapsamı: Oyna + Profil + İstatistikler + Ayarlar";
 
   const PORT_COUNT_BY_NAME = {
     "Çekirdek":4,
@@ -161,6 +161,17 @@
     module_replacements: 0,
     boosters_used: 0,
     most_used_modules: [],
+  });
+
+  const settingsState =
+    new RelaySettingsClientState();
+  settingsState.applySettings({
+    player_id: "local-player",
+    sound_volume: 100,
+    music_volume: 70,
+    vibration_enabled: true,
+    graphics_quality: "yuksek",
+    language: "tr",
   });
 
   function buildPvPCommandEnvelope(command) {

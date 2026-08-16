@@ -1,7 +1,7 @@
 # Project Relay 2.0 — YOL HARİTASI
 
-**Güncel Sürüm:** `2.0.0-alpha.43`  
-**Paket:** İstatistikler Temeli ve Maç Sonucu İşleme  
+**Güncel Sürüm:** `2.0.0-alpha.44`  
+**Paket:** Ayarlar Temeli ve Oyun Tercihleri  
 **Kanonik Dosya:** `docs/YOL_HARITASI.md`
 
 > Bu dosya Project Relay 2.0 için tek kanonik geliştirme kaydıdır. Her paket tamamlandığında sürüm numarası artırılır; **Tamamlananlar** ve **Yapılacaklar** bu dosyada güncellenir. Sonraki geliştirme paketi bu dosya okunarak başlatılır.
@@ -296,12 +296,12 @@
 
 #### FAZ 21 — Ayarlar
 
-- [ ] Ses ayarları hazırlanacak.
-- [ ] Müzik ayarları hazırlanacak.
-- [ ] Titreşim ayarları hazırlanacak.
-- [ ] Grafik ayarları hazırlanacak.
-- [ ] Dil ayarları hazırlanacak.
-- [ ] Gerekli diğer temel oyun tercihleri hazırlanacak.
+- [x] Ses ayarları hazırlandı.
+- [x] Müzik ayarları hazırlandı.
+- [x] Titreşim ayarları hazırlandı.
+- [x] Grafik ayarları hazırlandı.
+- [x] Dil ayarları hazırlandı.
+- [x] İlk sürüm için gerekli temel oyun tercihleri hazırlandı.
 
 #### FAZ 22 — Eğitim
 
@@ -379,9 +379,9 @@ Aşağıdaki alanlar ilk sürüm kapsamına dahil değildir ve mevcut yol harita
 
 ## Sıradaki Paket
 
-**`2.0.0-alpha.44 — Ayarlar Temeli ve Oyun Tercihleri`**
+**`2.0.0-alpha.45 — İlk Menü Kapsamı Birleştirme ve Ekran Yönlendirme`**
 
-İstatistikler temeli hazır. Sıradaki paket sabitlenen ilk menü kapsamındaki son alan olan `Ayarlar` olacak. Ses, müzik, titreşim, grafik kalitesi ve dil tercihleri için doğrulanmış oyuncu ayar modeli, endpoint'ler ve sade Ayarlar ekranı hazırlanacak. Ayarlar savaş motoru sonuçlarını değiştirmeyecek; yalnızca istemci sunum ve cihaz tercihlerini yönetecek.
+Sabitlenen ilk dört alanın veri temelleri tamamlandı: Oyna, Profil, İstatistikler ve Ayarlar. Sıradaki pakette yeni özellik alanı eklenmeden yalnızca bu dört ekranın gerçek ana menü yönlendirmesi, görünür/gizli ekran durumu, geri dönüş akışı ve istemci durumlarının birbirinden ayrılması tamamlanacak. Mağaza, kozmetik, sezon, görev, eğitim veya diğer yan alanlara geçilmeyecek.
 
 
 ---
@@ -446,7 +446,7 @@ Aşağıdaki alanlar ilk sürüm kapsamına dahil değildir ve mevcut yol harita
 - [x] Oyna
 - [x] Profil
 - [x] İstatistikler
-- [ ] Ayarlar
+- [x] Ayarlar
 - [ ] Eğitim
 - [ ] Telemetri
 - [ ] Web test sürümü

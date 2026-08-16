@@ -654,11 +654,74 @@
   }
 
 
+
+  class RelaySettingsClientState {
+    constructor() {
+      this.settings = null;
+    }
+
+    applySettings(settings) {
+      if (!settings || !settings.player_id) {
+        throw new Error(
+          "Geçerli oyuncu ayarları gerekli."
+        );
+      }
+
+      this.settings = {
+        ...settings,
+      };
+      return this.settings;
+    }
+
+    patch(patch) {
+      if (!this.settings) {
+        throw new Error(
+          "Önce oyuncu ayarları yüklenmelidir."
+        );
+      }
+
+      this.settings = {
+        ...this.settings,
+        ...patch,
+      };
+      return this.settings;
+    }
+
+    viewModel() {
+      if (!this.settings) return null;
+
+      const qualityLabels = {
+        dusuk: "Düşük",
+        orta: "Orta",
+        yuksek: "Yüksek",
+      };
+
+      return {
+        soundVolume:
+          this.settings.sound_volume,
+        musicVolume:
+          this.settings.music_volume,
+        vibrationEnabled:
+          this.settings.vibration_enabled,
+        graphicsQuality:
+          this.settings.graphics_quality,
+        graphicsQualityTr:
+          qualityLabels[
+            this.settings.graphics_quality
+          ] || this.settings.graphics_quality,
+        language:
+          this.settings.language,
+      };
+    }
+  }
+
+
   const api = {
     RelayBattleClient,
     RelayPvPClientState,
     RelayProfileClientState,
     RelayStatisticsClientState,
+    RelaySettingsClientState,
     BattlePoolSelection,
     PVP_PHASE,
     MODULE_STATUS,
@@ -674,6 +737,7 @@
   global.RelayPvPClientState = RelayPvPClientState;
   global.RelayProfileClientState = RelayProfileClientState;
   global.RelayStatisticsClientState = RelayStatisticsClientState;
+  global.RelaySettingsClientState = RelaySettingsClientState;
   global.RelayPvPPhase = PVP_PHASE;
   global.BattlePoolSelection = BattlePoolSelection;
   global.RelayModuleStatus = MODULE_STATUS;
