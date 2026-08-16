@@ -131,6 +131,14 @@ class BoosterDefinition:
     target_categories: tuple[str, ...] = ()
     effect_data: dict[str, Any] = field(default_factory=dict)
 
+
+@dataclass(slots=True, frozen=True)
+class BoosterOffer:
+    id: str
+    booster_ids: tuple[str, ...]
+    created_at_ms: int
+
+
 @dataclass(slots=True, frozen=True)
 class BattlePool:
     module_definition_ids: tuple[str, ...]
@@ -149,6 +157,8 @@ class PlayerBattleState:
     total_circuit_credits_earned: int = 0
     total_circuit_credits_spent: int = 0
     battle_pool: BattlePool | None = None
+    pending_booster_offer: BoosterOffer | None = None
+    next_booster_offer_index: int = 0
 
 
 @dataclass(slots=True)

@@ -1,7 +1,7 @@
 # Project Relay 2.0 — YOL HARİTASI
 
-**Güncel Sürüm:** `2.0.0-alpha.13`  
-**Paket:** Geçici Güçlendirici Temeli  
+**Güncel Sürüm:** `2.0.0-alpha.14`  
+**Paket:** 85+ Saniye Güçlendirici Döngüsü  
 **Kanonik Dosya:** `docs/YOL_HARITASI.md`
 
 > Bu dosya Project Relay 2.0 için tek kanonik geliştirme kaydıdır. Her paket tamamlandığında sürüm numarası artırılır; **Tamamlananlar** ve **Yapılacaklar** bu dosyada güncellenir. Sonraki geliştirme paketi bu dosya okunarak başlatılır.
@@ -379,9 +379,9 @@ Aşağıdaki alanlar ilk sürüm kapsamına dahil değildir ve mevcut yol harita
 
 ## Sıradaki Paket
 
-**`2.0.0-alpha.14 — 85+ Saniye Güçlendirici Döngüsü`**
+**`2.0.0-alpha.15 — Enerji Akışı Motoru Temeli`**
 
-Geçici güçlendirici motor ve hedefleme temeli tamamlandı. Sıradaki pakette 85. saniyeden başlayarak her 10 saniyede bir 3 seçenekten 1 güçlendirici seçme döngüsü motor ve istemciye bağlanacak. Seçim sırasında savaş, Can ve Devre Kredisi akışı durmayacak.
+85+ saniye güçlendirici döngüsü tamamlandı. Sıradaki pakette Jeneratör, Batarya, Kapasitör ve Dağıtıcı üzerinden gerçek enerji üretim/depolama/tüketim akışı motor seviyesinde kurulacak. Devre Kredisi enerji sisteminden ayrı kalacak ve savaş hiçbir enerji hesabı nedeniyle durmayacak.
 
 
 ---

@@ -248,4 +248,14 @@ function createClient() {
   assert.ok(src.includes("Hedef modül seç"));
 }
 
-console.log("20 client tests passed");
+
+{
+  const fs=require("fs");
+  const src=fs.readFileSync("./src/app.js","utf8");
+  assert.ok(src.includes("BOOSTER_FIRST_OFFER_MS = 85000"));
+  assert.ok(src.includes("BOOSTER_OFFER_INTERVAL_MS = 10000"));
+  assert.ok(src.includes("3 seçenekten 1'ini seç"));
+  assert.ok(src.includes("nextBoosterOfferIndex += 1"));
+}
+
+console.log("21 client tests passed");

@@ -32,6 +32,11 @@
   }));
 
   const commandLog = [];
+  const BOOSTER_FIRST_OFFER_MS = 85000;
+  const BOOSTER_OFFER_INTERVAL_MS = 10000;
+  let nextBoosterOfferIndex = 0;
+  let boosterOfferOpen = false;
+
   const BOOSTER_OPTIONS = [
     { id:"overcharge_chip", nameTr:"Aşırı Yük Çipi", descriptionTr:"+%25 saldırı · 15 sn", targetCategories:["saldırı"] },
     { id:"emergency_repair", nameTr:"Acil Onarım", descriptionTr:"%25 anlık onarım", targetCategories:[] },
@@ -123,6 +128,19 @@ const SPECIAL_CELL_INFO = {
     poolConfirmEl.disabled = !battlePoolSelection.isComplete();
   }
 
+  function boosterOfferDueAtMs(index) {
+    return BOOSTER_FIRST_OFFER_MS + index * BOOSTER_OFFER_INTERVAL_MS;
+  }
+
+  function updateBoosterOfferAvailability() {
+    if (!boosterOfferOpen && client.elapsedMs >= boosterOfferDueAtMs(nextBoosterOfferIndex)) {
+      boosterOfferOpen = true;
+      selectedBoosterId = null;
+      boosterStatusEl.textContent = "3 seçenekten 1'ini seç";
+      renderBoosterOptions();
+    }
+  }
+
   function renderBoosterOptions() {
     boosterOptionsEl.innerHTML = "";
     for (const booster of BOOSTER_OPTIONS) {
@@ -130,9 +148,11 @@ const SPECIAL_CELL_INFO = {
       button.type = "button";
       button.className = "booster-option";
       button.textContent = `${booster.nameTr} · ${booster.descriptionTr}`;
+      button.disabled = !boosterOfferOpen;
       if (selectedBoosterId === booster.id) button.classList.add("selected");
       button.addEventListener("click", () => {
-        selectedBoosterId = selectedBoosterId === booster.id ? null : booster.id;
+        if (!boosterOfferOpen) return;
+        selectedBoosterId = booster.id;
         boosterStatusEl.textContent = selectedBoosterId ? "Hedef modül seç" : "Seçim bekleniyor";
         renderBoosterOptions();
         renderBoard();
@@ -155,7 +175,10 @@ const SPECIAL_CELL_INFO = {
       payload: { booster_id: booster.id, target_module_id: module.instanceId },
     });
     selectedBoosterId = null;
-    boosterStatusEl.textContent = "Seçim bekleniyor";
+    boosterOfferOpen = false;
+    nextBoosterOfferIndex += 1;
+    boosterStatusEl.textContent =
+      `${((boosterOfferDueAtMs(nextBoosterOfferIndex) - client.elapsedMs) / 1000).toFixed(1)} sn sonra yeni hak`;
     renderLog();
     renderBoosterOptions();
     renderBoard();
@@ -461,6 +484,7 @@ const SPECIAL_CELL_INFO = {
     renderLockState();
     renderCapacity();
     renderCredits();
+    updateBoosterOfferAvailability();
 
     if (Math.floor(elapsedMs / 250) !== Math.floor((elapsedMs - 16) / 250)) {
       renderShelf();
