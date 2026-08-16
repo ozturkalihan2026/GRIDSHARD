@@ -13,6 +13,7 @@ from .game.pvp_session import (
 from .game.models import Direction
 from .game.pvp_setup import InitialModulePlacement, PvPSetupPayload
 from .game.pvp_websocket import PvPWebSocketAdapter
+from .game.pvp_runner import PvPTickRunner
 from .version import VERSION
 
 
@@ -25,6 +26,7 @@ pvp_service = PvPSessionService()
 pvp_websocket_adapter = PvPWebSocketAdapter(
     pvp_service
 )
+pvp_tick_runner = PvPTickRunner(pvp_service,pvp_websocket_adapter)
 
 
 class CreateSessionRequest(BaseModel):
@@ -140,7 +142,7 @@ def setup_pvp_session(
     }
 
 @app.post("/pvp/sessions/{session_id}/ready")
-def ready_pvp_session(
+async def ready_pvp_session(
     session_id: str,
     request: ReadySessionRequest,
 ) -> dict:
@@ -152,6 +154,7 @@ def ready_pvp_session(
         )
     except PvPSessionError as exc:
         raise HTTPException(status_code=409, detail=str(exc)) from exc
+    await pvp_tick_runner.ensure_started(session_id)
     return {
         "session_id": session_id,
         "player_id": request.player_id,
@@ -160,7 +163,7 @@ def ready_pvp_session(
 
 
 @app.post("/pvp/sessions/{session_id}/start")
-def start_pvp_session(
+async def start_pvp_session(
     session_id: str,
 ) -> dict:
     try:
@@ -168,6 +171,7 @@ def start_pvp_session(
         session = pvp_service.get_session(
             session_id
         )
+        await pvp_tick_runner.ensure_started(session_id)
     except PvPSessionError as exc:
         raise HTTPException(
             status_code=409,
@@ -241,9 +245,8 @@ async def pvp_websocket(
         )
 
         while True:
-            await pvp_websocket_adapter.handle_one(
-                connection_id
-            )
+            await pvp_websocket_adapter.handle_one(connection_id)
+            await pvp_tick_runner.ensure_started(session_id)
 
     except WebSocketDisconnect:
         pass

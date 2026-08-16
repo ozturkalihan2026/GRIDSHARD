@@ -25,6 +25,7 @@ class PvPConnection:
     connected: bool = True
     messages_received: int = 0
     messages_sent: int = 0
+    last_pushed_event_cursor: int = 0
 
 
 @dataclass(slots=True)
@@ -242,3 +243,47 @@ class PvPWebSocketAdapter:
         await connection.socket.send_json(response)
         connection.messages_sent += 1
         return response
+
+    async def send_live_events(
+        self,
+        connection_id: str,
+    ) -> dict[str, Any] | None:
+        connection = self.registry.get(connection_id)
+        page = self.service.events_since(
+            connection.session_id,
+            connection.player_id,
+            connection.last_pushed_event_cursor,
+        )
+        if not page["events"]:
+            return None
+        response = {
+            "version": 1,
+            "type": "events",
+            "request_id": "server-live-events",
+            "payload": page,
+        }
+        await connection.socket.send_json(response)
+        connection.messages_sent += 1
+        connection.last_pushed_event_cursor = page["cursor"]
+        return response
+
+    async def broadcast_live_events(self, session_id: str) -> int:
+        sent = 0
+        for connection in list(self.registry.connections.values()):
+            if not connection.connected or connection.session_id != session_id:
+                continue
+            if await self.send_live_events(connection.connection_id) is not None:
+                sent += 1
+        return sent
+
+    async def broadcast_snapshot(self, session_id: str) -> int:
+        sent = 0
+        for connection in list(self.registry.connections.values()):
+            if not connection.connected or connection.session_id != session_id:
+                continue
+            await self.send_snapshot(
+                connection.connection_id,
+                request_id="server-live-snapshot",
+            )
+            sent += 1
+        return sent

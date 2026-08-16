@@ -1,7 +1,7 @@
 # Project Relay 2.0 — YOL HARİTASI
 
-**Güncel Sürüm:** `2.0.0-alpha.37`  
-**Paket:** PvP Hazırlık Protokol Mesajları ve Lobi Durumu  
+**Güncel Sürüm:** `2.0.0-alpha.38`  
+**Paket:** PvP Sunucu Tick Runner ve Canlı Olay Yayını  
 **Kanonik Dosya:** `docs/YOL_HARITASI.md`
 
 > Bu dosya Project Relay 2.0 için tek kanonik geliştirme kaydıdır. Her paket tamamlandığında sürüm numarası artırılır; **Tamamlananlar** ve **Yapılacaklar** bu dosyada güncellenir. Sonraki geliştirme paketi bu dosya okunarak başlatılır.
@@ -379,9 +379,9 @@ Aşağıdaki alanlar ilk sürüm kapsamına dahil değildir ve mevcut yol harita
 
 ## Sıradaki Paket
 
-**`2.0.0-alpha.38 — PvP Sunucu Tick Runner ve Canlı Olay Yayını`**
+**`2.0.0-alpha.39 — PvP Bağlantı Gecikmesi, Heartbeat ve Zaman Aşımı`**
 
-Lobi ve WebSocket hazırlık akışı tamamlandı. Sıradaki pakette çalışan PvP oturumları için sunucu tarafında gerçek 10 Hz tick runner, oturum bazlı başlat/durdur yaşam döngüsü ve bağlı oyunculara snapshot/olay yayın mekanizması eklenecek. Maçın ilerlemesi artık istemcinin `step` çağrısına bağlı olmayacak.
+Sunucu taraflı 10 Hz maç akışı hazır. Sıradaki pakette WebSocket heartbeat/ping yaşam döngüsü, bağlantı son-görülme zamanı, gecikme ölçümü, sessiz bağlantı zaman aşımı ve kısa süreli kopmalarda oyuncunun maçtan düşmeden yeniden bağlanabilmesi için grace-period politikası eklenecek.
 
 
 ---
