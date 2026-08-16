@@ -401,61 +401,61 @@ function createClient() {
   const fs=require("fs");
   const src=fs.readFileSync("./src/app.js","utf8");
   assert.ok(src.includes("PVP_STATUS"));
-  assert.ok(src.includes("PvP eşleştirme kuyruğu aktif"));
+  assert.ok(src.includes("Derece + XP maç sonu ilerlemesi aktif"));
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync("./src/app.js","utf8");
-  assert.ok(src.includes("PvP eşleştirme kuyruğu aktif")); // alpha32->33 protocol status
+  assert.ok(src.includes("Derece + XP maç sonu ilerlemesi aktif")); // alpha32->33 protocol status
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync("./src/app.js","utf8");
-  assert.ok(src.includes("PvP eşleştirme kuyruğu aktif")); // alpha33 protocol
+  assert.ok(src.includes("Derece + XP maç sonu ilerlemesi aktif")); // alpha33 protocol
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync("./src/app.js","utf8");
-  assert.ok(src.includes("PvP eşleştirme kuyruğu aktif")); // alpha34 websocket
+  assert.ok(src.includes("Derece + XP maç sonu ilerlemesi aktif")); // alpha34 websocket
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync("./src/app.js","utf8");
-  assert.ok(src.includes("PvP eşleştirme kuyruğu aktif")); // alpha35 gateway
+  assert.ok(src.includes("Derece + XP maç sonu ilerlemesi aktif")); // alpha35 gateway
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync("./src/app.js","utf8");
-  assert.ok(src.includes("PvP eşleştirme kuyruğu aktif")); // alpha36 setup
+  assert.ok(src.includes("Derece + XP maç sonu ilerlemesi aktif")); // alpha36 setup
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync("./src/app.js","utf8");
-  assert.ok(src.includes("PvP eşleştirme kuyruğu aktif")); // alpha37 lobby
+  assert.ok(src.includes("Derece + XP maç sonu ilerlemesi aktif")); // alpha37 lobby
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync("./src/app.js","utf8");
-  assert.ok(src.includes("PvP eşleştirme kuyruğu aktif")); // alpha38 runner
+  assert.ok(src.includes("Derece + XP maç sonu ilerlemesi aktif")); // alpha38 runner
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync("./src/app.js","utf8");
-  assert.ok(src.includes("PvP eşleştirme kuyruğu aktif")); // alpha39 heartbeat
+  assert.ok(src.includes("Derece + XP maç sonu ilerlemesi aktif")); // alpha39 heartbeat
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync("./src/app.js","utf8");
-  assert.ok(src.includes("PvP eşleştirme kuyruğu aktif")); // alpha40 online pvp
+  assert.ok(src.includes("Derece + XP maç sonu ilerlemesi aktif")); // alpha40 online pvp
 }
 
 {
@@ -681,7 +681,7 @@ function createClient() {
 {
   const fs=require("fs");
   const src=fs.readFileSync("./src/app.js","utf8");
-  assert.ok(src.includes("PvP eşleştirme kuyruğu aktif"));
+  assert.ok(src.includes("Derece + XP maç sonu ilerlemesi aktif"));
   assert.ok(src.includes("buildPvPCommandEnvelope"));
   assert.ok(src.includes("applyPvPServerEnvelope"));
 }
@@ -1285,4 +1285,49 @@ function createClient() {
   );
 }
 
-console.log("71 client tests passed");
+{
+  const {
+    RelayProgressionClientState,
+  } = require("../src/relay-client.js");
+
+  const state =
+    new RelayProgressionClientState();
+
+  const view=state.applyResult({
+    player_id:"a",
+    rating_before:1000,
+    rating_after:1020,
+    rating_delta:20,
+    xp_awarded:120,
+    level_after:1,
+    experience_after:120,
+  });
+
+  assert.strictEqual(
+    view.ratingDelta,
+    20
+  );
+  assert.strictEqual(
+    view.xpAwarded,
+    120
+  );
+  assert.strictEqual(
+    view.ratingAfter,
+    1020
+  );
+}
+
+{
+  const fs=require("fs");
+  const html=fs.readFileSync(
+    "./index.html",
+    "utf8"
+  );
+  assert.ok(
+    html.includes(
+      "Maç sonu XP/Derece sunucudan güncellenir"
+    )
+  );
+}
+
+console.log("73 client tests passed");

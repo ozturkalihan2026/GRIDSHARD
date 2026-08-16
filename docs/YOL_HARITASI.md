@@ -1,7 +1,7 @@
 # Project Relay 2.0 — YOL HARİTASI
 
-**Güncel Sürüm:** `2.0.0-alpha.47`  
-**Paket:** Eşleştirme Kuyruğu ve Başlangıç Derece Puanı  
+**Güncel Sürüm:** `2.0.0-alpha.48`  
+**Paket:** Derece Puanı Güncellemesi ve Maç Sonu İlerleme  
 **Kanonik Dosya:** `docs/YOL_HARITASI.md`
 
 > Bu dosya Project Relay 2.0 için tek kanonik geliştirme kaydıdır. Her paket tamamlandığında sürüm numarası artırılır; **Tamamlananlar** ve **Yapılacaklar** bu dosyada güncellenir. Sonraki geliştirme paketi bu dosya okunarak başlatılır.
@@ -380,9 +380,9 @@ Aşağıdaki alanlar ilk sürüm kapsamına dahil değildir ve mevcut yol harita
 
 ## Sıradaki Paket
 
-**`2.0.0-alpha.48 — Derece Puanı Güncellemesi ve Maç Sonu İlerleme`**
+**`2.0.0-alpha.49 — Kalıcı Oyuncu Veri Deposu Arayüzü ve Snapshot Serileştirme`**
 
-Eşleştirme kuyruğu hazır. Sıradaki pakette tamamlanmış dereceli PvP maçından sonra sunucu otoriteli rating değişimi ve deneyim ödülü eklenecek. Kazanan, kaybeden ve beraberlik için deterministik başlangıç değerleri kullanılacak; aynı maçın rating/XP işlemi iki kez uygulanamayacak. Profil ve İstatistikler mevcut ekranlarda güncel veriyi gösterecek, yeni menü alanı eklenmeyecek.
+Profil, İstatistikler, Ayarlar, Eşleştirme ve maç sonu ilerleme artık aynı oyuncu kimliği etrafında çalışıyor. Sıradaki paket yeni özellik ekranı eklemeden bu veriler için kalıcılık katmanının sınırını oluşturacak: profil/istatistik/ayar snapshot serileştirme, bellek içi repository arayüzü, kaydet/yükle akışı ve ileride PostgreSQL adaptörüne geçilebilecek framework-bağımsız sözleşme hazırlanacak. Bu alpha'da harici veritabanı zorunlu olmayacak.
 
 
 ---

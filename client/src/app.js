@@ -42,7 +42,7 @@
   const COMPETITIVE_STATUS = "M7 Simülasyon aktif";
   const BALANCE_STATUS = "Eşit modül + counter doğrulandı";
   const AI_STATUS = "Adaptif AI + rekabetçi denge doğrulandı";
-  const PVP_STATUS = "PvP eşleştirme kuyruğu aktif";
+  const PVP_STATUS = "Derece + XP maç sonu ilerlemesi aktif";
 
   const PORT_COUNT_BY_NAME = {
     "Çekirdek":4,
@@ -278,6 +278,9 @@
 
   const matchmakingState =
     new RelayMatchmakingClientState();
+
+  const progressionState =
+    new RelayProgressionClientState();
 
   const pvpConnection =
     new RelayWebSocketConnectionManager({

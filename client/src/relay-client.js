@@ -1179,6 +1179,52 @@
   }
 
 
+
+  class RelayProgressionClientState {
+    constructor() {
+      this.lastResult = null;
+    }
+
+    applyResult(result) {
+      if (!result || !result.player_id) {
+        throw new Error(
+          "Geçerli maç ilerleme sonucu gerekli."
+        );
+      }
+
+      this.lastResult = {
+        ...result,
+      };
+
+      return this.viewModel();
+    }
+
+    viewModel() {
+      if (!this.lastResult) {
+        return null;
+      }
+
+      const result=this.lastResult;
+
+      return {
+        playerId: result.player_id,
+        ratingBefore:
+          result.rating_before,
+        ratingAfter:
+          result.rating_after,
+        ratingDelta:
+          result.rating_delta,
+        xpAwarded:
+          result.xp_awarded,
+        levelAfter:
+          result.level_after,
+        experienceAfter:
+          result.experience_after,
+      };
+    }
+  }
+
+
   const api = {
     RelayBattleClient,
     RelayPvPClientState,
@@ -1188,6 +1234,7 @@
     RelayAppRouter,
     RelayWebSocketConnectionManager,
     RelayMatchmakingClientState,
+    RelayProgressionClientState,
     BattlePoolSelection,
     APP_SCREEN,
     WS_CONNECTION_STATUS,
@@ -1209,6 +1256,7 @@
   global.RelayAppRouter = RelayAppRouter;
   global.RelayWebSocketConnectionManager = RelayWebSocketConnectionManager;
   global.RelayMatchmakingClientState = RelayMatchmakingClientState;
+  global.RelayProgressionClientState = RelayProgressionClientState;
   global.RelayAppScreen = APP_SCREEN;
   global.RelayWebSocketStatus = WS_CONNECTION_STATUS;
   global.RelayPvPPhase = PVP_PHASE;

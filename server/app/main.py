@@ -31,6 +31,9 @@ from .matchmaking import (
     MatchmakingError,
     MatchmakingService,
 )
+from .player_progression import (
+    PlayerProgressionService,
+)
 
 
 app = FastAPI(
@@ -45,15 +48,26 @@ pvp_websocket_adapter = PvPWebSocketAdapter(
     grace_period_seconds=15.0,
 )
 player_statistics_service = PlayerStatisticsService()
+player_profile_service = PlayerProfileService()
+player_progression_service = PlayerProgressionService(
+    player_profile_service
+)
+
+def process_completed_pvp_battle(state) -> None:
+    player_statistics_service.process_finished_battle(
+        state
+    )
+    player_progression_service.process_finished_battle(
+        state
+    )
+
 pvp_tick_runner = PvPTickRunner(
     pvp_service,
     pvp_websocket_adapter,
     match_finished_callback=(
-        player_statistics_service
-        .process_finished_battle
+        process_completed_pvp_battle
     ),
 )
-player_profile_service = PlayerProfileService()
 player_settings_service = PlayerSettingsService()
 matchmaking_service = MatchmakingService(
     now_func=time.monotonic
@@ -227,6 +241,28 @@ def update_player_settings(
         ) from exc
 
     return settings.to_view()
+
+
+@app.get("/progression/battles/{battle_id}/{player_id}")
+def get_battle_progression(
+    battle_id: str,
+    player_id: str,
+) -> dict:
+    result = (
+        player_progression_service
+        .player_result(
+            battle_id,
+            player_id,
+        )
+    )
+
+    if result is None:
+        raise HTTPException(
+            status_code=404,
+            detail="Maç ilerleme sonucu bulunamadı.",
+        )
+
+    return result
 
 
 @app.get("/statistics/{player_id}")
@@ -434,10 +470,18 @@ def pvp_result(
     player_id: str = Query(min_length=1),
 ) -> dict:
     try:
-        return pvp_service.final_result_payload(
+        result = pvp_service.final_result_payload(
             session_id,
             player_id,
         )
+        result["progression"] = (
+            player_progression_service
+            .player_result(
+                session_id,
+                player_id,
+            )
+        )
+        return result
     except PvPSessionError as exc:
         raise HTTPException(
             status_code=409,
