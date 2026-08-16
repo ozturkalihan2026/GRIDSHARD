@@ -3,6 +3,7 @@ from typing import Deque
 
 from .catalog import get_module_definition
 from .battle_pool import validate_battle_pool
+from .board import get_default_board
 from .economy import (
     CircuitCreditConfig,
     DEFAULT_CIRCUIT_CREDIT_CONFIG,
@@ -73,6 +74,7 @@ class BattleEngine:
     ):
         self.state = state
         self.circuit_credit_config = circuit_credit_config
+        self.board = get_default_board()
         self._command_queue: Deque[BattleCommand] = deque()
 
         if circuit_credit_config.passive_credits_per_second % TICK_RATE != 0:
@@ -158,6 +160,23 @@ class BattleEngine:
 
         module = self._require_module(player_id, instance_id)
         position = Position(x=x, y=y)
+
+        if module.definition.id == "core":
+            if position != self.board.core_position:
+                raise ValueError(
+                    "Çekirdek yalnızca merkez Çekirdek hücresine yerleştirilebilir."
+                )
+        else:
+            self._ensure_board_position_placeable(position)
+
+        if (
+            module.definition.id == "generator"
+            and position not in self.board.generator_gate_positions
+        ):
+            raise ValueError(
+                "Jeneratör yalnızca Çekirdek kapılarından birine yerleştirilebilir."
+            )
+
         self._ensure_position_available(player_id, position)
 
         module.status = ModuleStatus.ACTIVE
@@ -585,6 +604,7 @@ class BattleEngine:
             raise CommandRejected("Yalnızca rezervdeki modül yerleştirilebilir.")
 
         position = self._position_from_payload(payload)
+        self._ensure_board_position_placeable(position)
         self._ensure_position_available(player_id, position)
 
         self._spend_circuit_credits(
@@ -630,6 +650,7 @@ class BattleEngine:
             raise CommandRejected(f"{module.definition.name_tr} taşınamaz.")
 
         new_position = self._position_from_payload(payload)
+        self._ensure_board_position_placeable(new_position)
         self._ensure_position_available(
             player_id,
             new_position,
@@ -770,6 +791,18 @@ class BattleEngine:
             raise CommandRejected("Hücre koordinatları negatif olamaz.")
 
         return Position(x=x, y=y)
+
+    def _ensure_board_position_placeable(self, position: Position) -> None:
+        if not self.board.contains(position):
+            raise CommandRejected(
+                f"Hedef hücre savaş alanında değil: ({position.x}, {position.y})."
+            )
+
+        cell = self.board.get_cell(position)
+        if not cell.placeable:
+            raise CommandRejected(
+                f"Hedef hücre modül yerleşimine kapalı: ({position.x}, {position.y})."
+            )
 
     def _ensure_position_available(
         self,

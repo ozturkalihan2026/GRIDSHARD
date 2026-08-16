@@ -66,7 +66,15 @@
   const poolCountEl = document.getElementById("battle-pool-count");
   const poolConfirmEl = document.getElementById("battle-pool-confirm");
 
-  const BOARD_SIZE = 5;
+  const BOARD_CELLS = [
+    [1,0],[2,0],[3,0],
+    [0,1],[1,1],[2,1],[3,1],[4,1],
+    [0,2],[1,2],[2,2],[3,2],[4,2],
+    [0,3],[1,3],[2,3],[3,3],[4,3],
+    [1,4],[2,4],[3,4],
+  ];
+  const CORE_POSITION = { x: 2, y: 2 };
+  const GATE_KEYS = new Set(["2,1","3,2","2,3","1,2"]);
   const startedAt = performance.now();
   let previousCapacity = null;
   let mockServerCredits = 200;
@@ -101,42 +109,48 @@
 
   function createBoard() {
     board.innerHTML = "";
-    for (let y = 0; y < BOARD_SIZE; y += 1) {
-      for (let x = 0; x < BOARD_SIZE; x += 1) {
-        const cell = document.createElement("div");
-        cell.className = "board-cell";
-        cell.dataset.x = String(x);
-        cell.dataset.y = String(y);
 
-        cell.addEventListener("dragover", (event) => {
-          event.preventDefault();
-          cell.classList.add("drag-over");
-        });
+    for (const [x, y] of BOARD_CELLS) {
+      const cell = document.createElement("div");
+      cell.className = "board-cell";
+      cell.dataset.x = String(x);
+      cell.dataset.y = String(y);
+      cell.style.gridColumn = String(x + 1);
+      cell.style.gridRow = String(y + 1);
 
-        cell.addEventListener("dragleave", () => {
-          cell.classList.remove("drag-over");
-        });
-
-        cell.addEventListener("drop", (event) => {
-          event.preventDefault();
-          cell.classList.remove("drag-over");
-
-          const targetCard = cell.querySelector(".module-card");
-          const targetModuleId = targetCard?.dataset.moduleId || null;
-
-          const result = client.dropOnCell(
-            Number(cell.dataset.x),
-            Number(cell.dataset.y),
-            targetModuleId
-          );
-
-          if (!result.ok) {
-            logClientMessage(result.reason);
-          }
-        });
-
-        board.appendChild(cell);
+      const key = `${x},${y}`;
+      if (x === CORE_POSITION.x && y === CORE_POSITION.y) {
+        cell.classList.add("core-cell");
+      } else if (GATE_KEYS.has(key)) {
+        cell.classList.add("gate-cell");
       }
+
+      cell.addEventListener("dragover", (event) => {
+        if (cell.classList.contains("core-cell")) return;
+        event.preventDefault();
+        cell.classList.add("drag-over");
+      });
+
+      cell.addEventListener("dragleave", () => cell.classList.remove("drag-over"));
+
+      cell.addEventListener("drop", (event) => {
+        if (cell.classList.contains("core-cell")) return;
+        event.preventDefault();
+        cell.classList.remove("drag-over");
+
+        const targetCard = cell.querySelector(".module-card");
+        const targetModuleId = targetCard?.dataset.moduleId || null;
+
+        const result = client.dropOnCell(
+          Number(cell.dataset.x),
+          Number(cell.dataset.y),
+          targetModuleId
+        );
+
+        if (!result.ok) logClientMessage(result.reason);
+      });
+
+      board.appendChild(cell);
     }
   }
 

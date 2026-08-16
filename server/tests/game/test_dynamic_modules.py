@@ -141,10 +141,10 @@ def test_move_module_changes_only_position():
     run_command(engine, "place_module", module_id="laser-1", x=3, y=3)
     engine.apply_damage("player-1", "laser-1", 10)
 
-    run_command(engine, "move_module", module_id="laser-1", x=4, y=4)
+    run_command(engine, "move_module", module_id="laser-1", x=3, y=4)
 
     laser = engine.state.players["player-1"].modules["laser-1"]
-    assert (laser.position.x, laser.position.y) == (4, 4)
+    assert (laser.position.x, laser.position.y) == (3, 4)
     assert laser.hp == 90
 
 
@@ -205,7 +205,7 @@ def test_destroyed_module_cannot_be_redeployed():
     assert laser.hp == 0
     assert laser.position is None
 
-    run_command(engine, "place_module", module_id="laser-1", x=4, y=4)
+    run_command(engine, "place_module", module_id="laser-1", x=3, y=4)
 
     assert laser.status == ModuleStatus.DESTROYED
     assert engine.state.events[-1].type == "command_rejected"

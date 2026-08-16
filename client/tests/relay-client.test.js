@@ -212,4 +212,14 @@ function createClient() {
   assert.strictEqual(pool.toggle("core-1").ok, false);
 }
 
-console.log("17 client tests passed");
+
+{
+  const fs = require("fs");
+  const src = fs.readFileSync("./src/app.js", "utf8");
+  assert.ok(src.includes("const BOARD_CELLS"));
+  assert.ok(src.includes('new Set(["2,1","3,2","2,3","1,2"])'));
+  assert.ok(src.includes("core-cell"));
+  assert.ok(src.includes("gate-cell"));
+}
+
+console.log("18 client tests passed");

@@ -1,7 +1,7 @@
 # Project Relay 2.0 — YOL HARİTASI
 
-**Güncel Sürüm:** `2.0.0-alpha.10`  
-**Paket:** 18 Modüllük Savaş Havuzu  
+**Güncel Sürüm:** `2.0.0-alpha.11`  
+**Paket:** Yeni Stratejik Savaş Alanı Temeli  
 **Kanonik Dosya:** `docs/YOL_HARITASI.md`
 
 > Bu dosya Project Relay 2.0 için tek kanonik geliştirme kaydıdır. Her paket tamamlandığında sürüm numarası artırılır; **Tamamlananlar** ve **Yapılacaklar** bu dosyada güncellenir. Sonraki geliştirme paketi bu dosya okunarak başlatılır.
@@ -379,9 +379,9 @@ Aşağıdaki alanlar ilk sürüm kapsamına dahil değildir ve mevcut yol harita
 
 ## Sıradaki Paket
 
-**`2.0.0-alpha.11 — Yeni Stratejik Savaş Alanı Temeli`**
+**`2.0.0-alpha.12 — Özel Hücreler`**
 
-24 oyuncu modülü ve 18 modüllük Savaş Havuzu tamamlandı. Sıradaki paket Çekirdek merkezli yaklaşık 18–24 yerleşim hücresine sahip yeni savaş alanının veri modelini ve yerleşim doğrulamalarını hazırlayacak. Özel hücre bonusları ayrı sonraki fazda eklenecek.
+Yeni stratejik savaş alanı tamamlandı. Sıradaki pakette sınırlı sayıda Saldırı, Savunma, Enerji, Soğutma, Onarım ve Sinyal hücresi tanımlanacak. Bonuslar savaş motorunda anlık uygulanacak ve savaş hiçbir zaman durmayacak.
 
 
 ---
