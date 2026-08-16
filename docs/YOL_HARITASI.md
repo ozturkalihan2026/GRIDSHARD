@@ -1,7 +1,7 @@
 # Project Relay 2.0 — YOL HARİTASI
 
-**Güncel Sürüm:** `2.0.0-alpha.11`  
-**Paket:** Yeni Stratejik Savaş Alanı Temeli  
+**Güncel Sürüm:** `2.0.0-alpha.12`  
+**Paket:** Özel Hücreler  
 **Kanonik Dosya:** `docs/YOL_HARITASI.md`
 
 > Bu dosya Project Relay 2.0 için tek kanonik geliştirme kaydıdır. Her paket tamamlandığında sürüm numarası artırılır; **Tamamlananlar** ve **Yapılacaklar** bu dosyada güncellenir. Sonraki geliştirme paketi bu dosya okunarak başlatılır.
@@ -199,13 +199,13 @@
 
 #### FAZ 11 — Özel Hücreler
 
-- [ ] İlk savaş alanında yaklaşık 4–6 özel hücre test edilecek.
-- [ ] Saldırı Hücresi tasarlanacak.
-- [ ] Savunma Hücresi tasarlanacak.
-- [ ] Enerji Hücresi tasarlanacak.
-- [ ] Soğutma Hücresi tasarlanacak.
-- [ ] Onarım Hücresi tasarlanacak.
-- [ ] Sinyal Hücresi tasarlanacak.
+- [x] İlk savaş alanında 6 özel hücre tanımlandı.
+- [x] Saldırı Hücresi tasarlandı.
+- [x] Savunma Hücresi tasarlandı.
+- [x] Enerji Hücresi tasarlandı.
+- [x] Soğutma Hücresi tasarlandı.
+- [x] Onarım Hücresi tasarlandı.
+- [x] Sinyal Hücresi tasarlandı.
 - [ ] Bonusların ücretsiz güç olmaması için her özel hücreye konumsal/bağlantısal risk veya bedel eklenecek.
 
 #### FAZ 12 — Geçici Güçlendiriciler
@@ -379,9 +379,9 @@ Aşağıdaki alanlar ilk sürüm kapsamına dahil değildir ve mevcut yol harita
 
 ## Sıradaki Paket
 
-**`2.0.0-alpha.12 — Özel Hücreler`**
+**`2.0.0-alpha.13 — Geçici Güçlendirici Temeli`**
 
-Yeni stratejik savaş alanı tamamlandı. Sıradaki pakette sınırlı sayıda Saldırı, Savunma, Enerji, Soğutma, Onarım ve Sinyal hücresi tanımlanacak. Bonuslar savaş motorunda anlık uygulanacak ve savaş hiçbir zaman durmayacak.
+Özel hücre veri ve görünüm altyapısı tamamlandı. Sıradaki pakette savaş durmadan seçilebilen geçici güçlendiricilerin motor modeli, hedef modül seçimi ve temel istemci seçim akışı hazırlanacak. 85+ saniye tekrar döngüsü bir sonraki ayrı pakette bağlanacak.
 
 
 ---

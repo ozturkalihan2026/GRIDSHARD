@@ -3,7 +3,7 @@ from typing import Deque
 
 from .catalog import get_module_definition
 from .battle_pool import validate_battle_pool
-from .board import get_default_board
+from .board import get_cell_effects, get_default_board
 from .economy import (
     CircuitCreditConfig,
     DEFAULT_CIRCUIT_CREDIT_CONFIG,
@@ -820,8 +820,20 @@ class BattleEngine:
             if module.position == position:
                 raise CommandRejected("Hedef hücre dolu.")
 
-    @staticmethod
+    def cell_effects_for_module(
+        self,
+        player_id: str,
+        instance_id: str,
+    ) -> dict[str, float]:
+        module = self._require_module(player_id, instance_id)
+
+        if module.position is None:
+            return {}
+
+        return get_cell_effects(module.position)
+
     def _module_event_data(
+        self,
         player_id: str,
         module: BattleModule,
     ) -> dict:
@@ -840,6 +852,11 @@ class BattleEngine:
             "cooldowns": sorted(module.cooldowns_ready_at_ms),
             "temporary_boosters": sorted(module.temporary_boosters),
             "circuit_credit_cost": module.definition.circuit_credit_cost,
+            "cell_effects": (
+                get_cell_effects(module.position)
+                if module.position is not None
+                else {}
+            ),
         }
 
         if module.position is not None:

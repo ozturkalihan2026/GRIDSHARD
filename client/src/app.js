@@ -75,6 +75,14 @@
   ];
   const CORE_POSITION = { x: 2, y: 2 };
   const GATE_KEYS = new Set(["2,1","3,2","2,3","1,2"]);
+const SPECIAL_CELL_INFO = {
+  "2,0": { css: "attack-cell", label: "Saldırı Hücresi", bonus: "+%15 saldırı" },
+  "4,2": { css: "defense-cell", label: "Savunma Hücresi", bonus: "+%15 dayanıklılık" },
+  "2,4": { css: "energy-cell", label: "Enerji Hücresi", bonus: "+%15 enerji etkinliği" },
+  "0,2": { css: "cooling-cell", label: "Soğutma Hücresi", bonus: "-%20 ısı oluşumu" },
+  "1,1": { css: "repair-cell", label: "Onarım Hücresi", bonus: "+%20 onarım" },
+  "3,3": { css: "signal-cell", label: "Sinyal Hücresi", bonus: "-%15 bekleme süresi" },
+};
   const startedAt = performance.now();
   let previousCapacity = null;
   let mockServerCredits = 200;
@@ -123,6 +131,12 @@
         cell.classList.add("core-cell");
       } else if (GATE_KEYS.has(key)) {
         cell.classList.add("gate-cell");
+      } else if (SPECIAL_CELL_INFO[key]) {
+        const special = SPECIAL_CELL_INFO[key];
+        cell.classList.add("special-cell", special.css);
+        cell.title = `${special.label}: ${special.bonus}`;
+        cell.dataset.specialLabel = special.label;
+        cell.dataset.specialBonus = special.bonus;
       }
 
       cell.addEventListener("dragover", (event) => {

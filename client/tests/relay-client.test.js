@@ -222,4 +222,21 @@ function createClient() {
   assert.ok(src.includes("gate-cell"));
 }
 
-console.log("18 client tests passed");
+
+{
+  const fs = require("fs");
+  const src = fs.readFileSync("./src/app.js", "utf8");
+  for (const label of [
+    "Saldırı Hücresi",
+    "Savunma Hücresi",
+    "Enerji Hücresi",
+    "Soğutma Hücresi",
+    "Onarım Hücresi",
+    "Sinyal Hücresi",
+  ]) {
+    assert.ok(src.includes(label));
+  }
+  assert.ok(src.includes("SPECIAL_CELL_INFO"));
+}
+
+console.log("19 client tests passed");
