@@ -1,7 +1,7 @@
 # Project Relay 2.0 — YOL HARİTASI
 
-**Güncel Sürüm:** `2.0.0-alpha.113`  
-**Paket:** Gerçek Web Testi Aktif Durumu ve Tarayıcı Teknik Göstergesi  
+**Güncel Sürüm:** `2.0.0-alpha.114`  
+**Paket:** İlk Gerçek Web Testi Başlangıç KPI ve Run-Started Operasyon Özeti  
 **Kanonik Dosya:** `docs/YOL_HARITASI.md`
 
 > Bu dosya Project Relay 2.0 için tek kanonik geliştirme kaydıdır. Her paket tamamlandığında sürüm numarası artırılır; **Tamamlananlar** ve **Yapılacaklar** bu dosyada güncellenir. Sonraki geliştirme paketi bu dosya okunarak başlatılır.
@@ -383,9 +383,9 @@ Aşağıdaki alanlar ilk sürüm kapsamına dahil değildir ve mevcut yol harita
 
 ## Sıradaki Paket
 
-**`2.0.0-alpha.114 — İlk Gerçek Web Testi Başlangıç KPI ve Run-Started Operasyon Özeti`**
+**`2.0.0-alpha.115 — Run-Started Operasyon KPI ve Başlatılmış Koşu Sayacı`**
 
-Gerçek test koşusunun başlatılmış durumu izlenebiliyor. Sıradaki paket `web_test_run_started` event'ini koşu özeti ve preflight raporuna dahil edecek; aktif koşunun operasyonel olarak başlatılıp başlatılmadığı tek raporda görülebilecek. Gameplay veya menü kapsamı değişmeyecek.
+Run-started durumu koşu özetinde görünür. Sıradaki paket global ve koşu bazlı operasyon KPI'larına run-start event sayısını ekleyecek ve aktif koşunun gerçekten başlatılmış olup olmadığını KPI katmanında yayınlayacak. Teknik launch kararı değişmeyecek.
 
 
 ---

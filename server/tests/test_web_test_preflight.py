@@ -3,8 +3,8 @@ from app.web_test_preflight import build_preflight_report
 
 def test_preflight_ready_requires_all_technical_snapshots():
     result=build_preflight_report(
-        version="2.0.0-alpha.113",
-        build="web-test-alpha.113",
+        version="2.0.0-alpha.114",
+        build="web-test-alpha.114",
         test_run_id="run",
         checklist={
             "ready":True,
@@ -22,6 +22,8 @@ def test_preflight_ready_requires_all_technical_snapshots():
             "ready":True,
         },
         run_summary={
+            "run_started":True,
+            "run_started_at_ms":1234,
             "lifecycle_state":"empty",
         },
         kpis={},
@@ -29,6 +31,8 @@ def test_preflight_ready_requires_all_technical_snapshots():
 
     assert result["preflight_ready"] is True
     assert result["failed_checks"]==[]
+    assert result["test_run"]["run_started"] is True
+    assert result["test_run"]["run_started_at_ms"]==1234
     assert result["behavior_blocks_preflight"] is False
 
 

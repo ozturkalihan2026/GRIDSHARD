@@ -80,6 +80,16 @@ def build_preflight_report(
         "data_health":
             data_health,
         "test_run": {
+            "run_started":
+                bool(
+                    run_summary.get(
+                        "run_started"
+                    )
+                ),
+            "run_started_at_ms":
+                run_summary.get(
+                    "run_started_at_ms"
+                ),
             "lifecycle_state":
                 run_summary.get(
                     "lifecycle_state",

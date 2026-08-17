@@ -105,6 +105,28 @@ def build_test_run_summary(
         else 0.0
     )
 
+    run_started_events = [
+        event
+        for event in events
+        if (
+            event["event_type"]
+            == "web_test_run_started"
+        )
+    ]
+    run_started = bool(
+        run_started_events
+    )
+    run_started_at_ms = (
+        min(
+            int(
+                event["timestamp_ms"]
+            )
+            for event in run_started_events
+        )
+        if run_started_events
+        else None
+    )
+
     started = [
         event
         for event in events
@@ -233,6 +255,10 @@ def build_test_run_summary(
         "test_run_id": test_run_id,
         "lifecycle_state":
             lifecycle_state,
+        "run_started":
+            run_started,
+        "run_started_at_ms":
+            run_started_at_ms,
         "preflight_snapshots":
             preflight_snapshots,
         "preflight_ready_snapshots":
@@ -449,6 +475,14 @@ def build_test_run_catalog(
             "active":
                 run_id
                 == active_test_run_id,
+            "run_started":
+                summary[
+                    "run_started"
+                ],
+            "run_started_at_ms":
+                summary[
+                    "run_started_at_ms"
+                ],
             "launch_attempts":
                 summary[
                     "launch_attempts"
