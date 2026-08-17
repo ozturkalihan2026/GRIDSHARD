@@ -1,7 +1,7 @@
 # Project Relay 2.0 — YOL HARİTASI
 
-**Güncel Sürüm:** `2.0.0-alpha.59`  
-**Paket:** Web Test Gerçek Kullanıcı Oturumu Hazırlığı ve Hata Dayanıklılığı  
+**Güncel Sürüm:** `2.0.0-alpha.60`  
+**Paket:** Tarayıcı Açılış Sağlık Kapısı ve Sunucu Hazır Olma Doğrulaması  
 **Kanonik Dosya:** `docs/YOL_HARITASI.md`
 
 > Bu dosya Project Relay 2.0 için tek kanonik geliştirme kaydıdır. Her paket tamamlandığında sürüm numarası artırılır; **Tamamlananlar** ve **Yapılacaklar** bu dosyada güncellenir. Sonraki geliştirme paketi bu dosya okunarak başlatılır.
@@ -383,9 +383,9 @@ Aşağıdaki alanlar ilk sürüm kapsamına dahil değildir ve mevcut yol harita
 
 ## Sıradaki Paket
 
-**`2.0.0-alpha.60 — Tarayıcı Açılış Sağlık Kapısı ve Sunucu Hazır Olma Doğrulaması`**
+**`2.0.0-alpha.61 — Web Test Oturum Tanılama Raporu ve Destek Snapshot'ı`**
 
-Hata dayanıklılığı hazır. Sıradaki paket tarayıcı açılışında gerçek `/health` ve `/web-test/release-check` cevaplarını okuyacak. Sunucu hazır değilse Oyna eşleştirmesi başlatılmayacak; Profil, İstatistikler ve Ayarlar erişilebilir kalacak. Sağlık kontrolü yeniden denenebilir olacak ve gömülü hazır varsayımı kaldırılacak.
+Gerçek sağlık kapısı hazır. Sıradaki paket bir Web test oturumunda sorun yaşandığında geliştiriciye aktarılabilecek güvenli tanılama snapshot'ı hazırlayacak: sürüm/build, bağlantı durumu, matchmaking durumu, session_id, PvP fazı, son hata türü, telemetri kuyruğu adedi ve release-check başarısız maddeleri. Savaş içeriği veya hassas kullanıcı verisi kopyalanmayacak; yeni menü eklenmeyecek.
 
 
 ---

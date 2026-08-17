@@ -42,7 +42,7 @@
   const COMPETITIVE_STATUS = "M7 Simülasyon aktif";
   const BALANCE_STATUS = "Eşit modül + counter doğrulandı";
   const AI_STATUS = "Adaptif AI + rekabetçi denge doğrulandı";
-  const PVP_STATUS = "Gerçek kullanıcı oturumu hata dayanıklılığı aktif";
+  const PVP_STATUS = "Gerçek sunucu sağlık kapısı aktif";
 
   const PORT_COUNT_BY_NAME = {
     "Çekirdek":4,
@@ -252,6 +252,23 @@
       return result;
     }
 
+    if (
+      screen === "play"
+      && !serverBootGate.canPlay()
+    ) {
+      showPlayError(
+        "websocket",
+        "Oyun sunucusu henüz hazır değil. Sağlık kontrolünü yeniden dene."
+      );
+      appRouter.goMenu();
+      renderAppScreen();
+      return {
+        ok: false,
+        reason:
+          "Sunucu hazır değil.",
+      };
+    }
+
     renderAppScreen();
 
     if (screen === "profile") {
@@ -363,64 +380,18 @@
 
   const releaseCheckState =
     new RelayReleaseCheckState();
-  releaseCheckState.apply({
-    version: "2.0.0-alpha.59",
-    build: "web-test-alpha.59",
-    ready: true,
-    checks: {
-      health_ready: true,
-      matchmaking: true,
-      server_authoritative_pvp: true,
-      post_match_sync: true,
-      telemetry_transport: true,
-      web_test_kpis: true,
-      menu_scope_locked: true,
-    },
-    menu_areas: [
-      "Oyna",
-      "Profil",
-      "İstatistikler",
-      "Ayarlar",
-    ],
-    deferred_areas: [
-      "Eğitim",
-      "Mağaza",
-      "Kozmetik",
-      "Sezon",
-      "Battle Pass",
-      "Görev",
-      "Sosyal",
-    ],
-  });
+
+  const serverBootGate =
+    new RelayServerBootGate({
+      healthState:
+        webTestBuildState,
+      releaseCheckState,
+    });
+
 
   const webTestBuildState =
     new RelayWebTestBuildState();
-  webTestBuildState.applyHealth({
-    status: "ok",
-    version: "2.0.0-alpha.58",
-    web_test: {
-      ready: true,
-      build: "web-test-alpha.58",
-      release_checks: [
-        "health",
-        "matchmaking",
-        "setup",
-        "ready",
-        "server_tick",
-        "match_result",
-        "telemetry",
-      ],
-      capabilities: {
-        server_authoritative_pvp: true,
-        matchmaking: true,
-        setup_and_ready: true,
-        server_tick_runner: true,
-        match_result: true,
-        telemetry: true,
-        player_data_snapshot: true,
-      },
-    },
-  });
+
 
   const telemetryTransport =
     new RelayTelemetryHttpTransport({
@@ -440,7 +411,7 @@
 
   telemetryDispatcher.trackGameOpened({
     platform: "web",
-    build: "2.0.0-alpha.59",
+    build: "2.0.0-alpha.60",
   });
 
   const postMatchSync =
@@ -876,10 +847,91 @@
     );
   }
 
+  const serverBootStatusEl =
+    document.getElementById(
+      "server-boot-status"
+    );
+  const serverBootRetry =
+    document.getElementById(
+      "server-boot-retry"
+    );
+
+  function renderServerBootStatus() {
+    if (!serverBootStatusEl) {
+      return;
+    }
+
+    const labels = {
+      idle: "Sunucu: Kontrol bekliyor",
+      checking: "Sunucu: Kontrol ediliyor",
+      ready: "Sunucu: Hazır",
+      blocked: "Sunucu: Oyna geçici olarak kapalı",
+      error: "Sunucu: Sağlık kontrolü başarısız",
+    };
+
+    serverBootStatusEl.textContent =
+      labels[
+        serverBootGate.status
+      ] || serverBootGate.status;
+    serverBootStatusEl.dataset.status =
+      serverBootGate.status;
+
+    const playButton =
+      document.querySelector(
+        '[data-open-screen="play"]'
+      );
+    if (playButton) {
+      playButton.disabled =
+        !serverBootGate.canPlay();
+    }
+
+    if (serverBootRetry) {
+      serverBootRetry.hidden =
+        serverBootGate.canPlay();
+    }
+  }
+
+  async function checkServerReadiness() {
+    renderServerBootStatus();
+
+    const pending =
+      serverBootGate.check();
+
+    renderServerBootStatus();
+
+    const result =
+      await pending;
+
+    renderServerBootStatus();
+
+    if (!result.ok) {
+      showPlayError(
+        "websocket",
+        result.reason
+        || "Sunucu Web test release-check hazır değil."
+      );
+    } else if (
+      playRecoveryState.kind
+      === "websocket"
+    ) {
+      clearPlayError();
+    }
+
+    return result;
+  }
+
+  if (serverBootRetry) {
+    serverBootRetry.addEventListener(
+      "click",
+      checkServerReadiness
+    );
+  }
+
   renderAppScreen();
   renderConnectionStatus(
     pvpConnection.status
   );
+  checkServerReadiness();
 
   const BOARD_CELLS = [
     [1,0],[2,0],[3,0],

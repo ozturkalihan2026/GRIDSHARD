@@ -2651,6 +2651,120 @@
   }
 
 
+
+  const SERVER_BOOT_STATUS = Object.freeze({
+    IDLE: "idle",
+    CHECKING: "checking",
+    READY: "ready",
+    BLOCKED: "blocked",
+    ERROR: "error",
+  });
+
+  class RelayServerBootGate {
+    constructor({
+      healthState,
+      releaseCheckState,
+      requestJson = null,
+    }) {
+      this.healthState = healthState;
+      this.releaseCheckState =
+        releaseCheckState;
+      this.requestJson =
+        requestJson
+        || (async (path) => {
+          const response =
+            await fetch(path);
+
+          if (!response.ok) {
+            throw new Error(
+              `Sunucu sağlık isteği başarısız: ${response.status}`
+            );
+          }
+
+          return response.json();
+        });
+
+      this.status =
+        SERVER_BOOT_STATUS.IDLE;
+      this.lastError = null;
+      this.health = null;
+      this.releaseCheck = null;
+    }
+
+    async check() {
+      this.status =
+        SERVER_BOOT_STATUS.CHECKING;
+      this.lastError = null;
+
+      try {
+        const [
+          health,
+          releaseCheck,
+        ] = await Promise.all([
+          this.requestJson(
+            "/health"
+          ),
+          this.requestJson(
+            "/web-test/release-check"
+          ),
+        ]);
+
+        this.health = health;
+        this.releaseCheck =
+          releaseCheck;
+
+        const healthResult =
+          this.healthState
+            .applyHealth(
+              health
+            );
+        const releaseView =
+          this.releaseCheckState
+            .apply(
+              releaseCheck
+            );
+
+        const ready =
+          healthResult.ok
+          && healthResult.ready
+          && releaseView.ready;
+
+        this.status = ready
+          ? SERVER_BOOT_STATUS.READY
+          : SERVER_BOOT_STATUS.BLOCKED;
+
+        return {
+          ok: ready,
+          ready,
+          health,
+          releaseCheck,
+        };
+      } catch (error) {
+        this.status =
+          SERVER_BOOT_STATUS.ERROR;
+        this.lastError =
+          error instanceof Error
+            ? error.message
+            : String(error);
+
+        return {
+          ok: false,
+          ready: false,
+          reason:
+            this.lastError,
+        };
+      }
+    }
+
+    canPlay() {
+      return (
+        this.status
+        === SERVER_BOOT_STATUS.READY
+      );
+    }
+  }
+
+
   const api = {
     RelayBattleClient,
     RelayPvPClientState,
@@ -2671,6 +2785,7 @@
     RelayTelemetryHttpTransport,
     RelayReleaseCheckState,
     RelayPlayRecoveryState,
+    RelayServerBootGate,
     BattlePoolSelection,
     APP_SCREEN,
     WS_CONNECTION_STATUS,
@@ -2679,6 +2794,7 @@
     REMOTE_DATA_STATUS,
     TELEMETRY_TRANSPORT_STATUS,
     PLAY_RECOVERY_KIND,
+    SERVER_BOOT_STATUS,
     PVP_PHASE,
     MODULE_STATUS,
     DRAG_KIND,
@@ -2708,6 +2824,8 @@
   global.RelayTelemetryHttpTransport = RelayTelemetryHttpTransport;
   global.RelayReleaseCheckState = RelayReleaseCheckState;
   global.RelayPlayRecoveryState = RelayPlayRecoveryState;
+  global.RelayServerBootGate = RelayServerBootGate;
+  global.RelayServerBootStatus = SERVER_BOOT_STATUS;
   global.RelayPlayRecoveryKind = PLAY_RECOVERY_KIND;
   global.RelayTelemetryTransportStatus = TELEMETRY_TRANSPORT_STATUS;
   global.RelayRemoteDataStatus = REMOTE_DATA_STATUS;
