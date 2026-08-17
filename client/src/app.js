@@ -42,7 +42,7 @@
   const COMPETITIVE_STATUS = "M7 Simülasyon aktif";
   const BALANCE_STATUS = "Eşit modül + counter doğrulandı";
   const AI_STATUS = "Adaptif AI + rekabetçi denge doğrulandı";
-  const PVP_STATUS = "Audit başlangıç→session→finish KPI aktif";
+  const PVP_STATUS = "Go/No-Go uçtan uca huni sinyalleri aktif";
 
   const PORT_COUNT_BY_NAME = {
     "Çekirdek":4,
@@ -453,7 +453,7 @@
         webTestBuildState,
       releaseCheckState,
       expectedVersion:
-        "2.0.0-alpha.87",
+        "2.0.0-alpha.88",
       expectedProtocolVersion: 1,
     });
   const playReadinessGate =
@@ -483,7 +483,7 @@
 
   telemetryDispatcher.trackGameOpened({
     platform: "web",
-    build: "2.0.0-alpha.87",
+    build: "2.0.0-alpha.88",
   });
 
   const postMatchSync =
@@ -1011,9 +1011,9 @@
   const diagnosticSnapshot =
     new RelayDiagnosticSnapshot({
       version:
-        "2.0.0-alpha.87",
+        "2.0.0-alpha.88",
       build:
-        "web-test-alpha.87",
+        "web-test-alpha.88",
       bootGate:
         serverBootGate,
       connectionManager:

@@ -73,3 +73,41 @@ def test_behavior_signal_becomes_observed_at_minimum_sample():
         ]["value"]
         == 0.75
     )
+
+def test_audit_funnel_signals_follow_sample_threshold():
+    result=build_go_no_go(
+        operation_readiness=
+            operation(True),
+        min_sample=10,
+        kpis={
+            "audit_session_starts":12,
+            "audit_session_bounds":8,
+            "audit_to_finish_rate":0.5,
+            "bound_to_finish_rate":0.75,
+        },
+    )
+
+    assert (
+        result["behavior_signals"][
+            "audit_to_finish"
+        ]["status"]
+        == "observed"
+    )
+    assert (
+        result["behavior_signals"][
+            "audit_to_finish"
+        ]["value"]
+        == 0.5
+    )
+    assert (
+        result["behavior_signals"][
+            "bound_to_finish"
+        ]["status"]
+        == "insufficient_data"
+    )
+    assert (
+        result["behavior_signals"][
+            "bound_to_finish"
+        ]["sample"]
+        == 8
+    )

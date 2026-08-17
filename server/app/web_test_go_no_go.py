@@ -84,6 +84,36 @@ def build_go_no_go(
             ),
             min_sample=min_sample,
         ),
+        "audit_to_finish": _behavior_signal(
+            value=float(
+                kpis.get(
+                    "audit_to_finish_rate",
+                    0.0,
+                )
+            ),
+            sample=int(
+                kpis.get(
+                    "audit_session_starts",
+                    0,
+                )
+            ),
+            min_sample=min_sample,
+        ),
+        "bound_to_finish": _behavior_signal(
+            value=float(
+                kpis.get(
+                    "bound_to_finish_rate",
+                    0.0,
+                )
+            ),
+            sample=int(
+                kpis.get(
+                    "audit_session_bounds",
+                    0,
+                )
+            ),
+            min_sample=min_sample,
+        ),
     }
 
     return {
