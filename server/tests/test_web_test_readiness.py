@@ -18,11 +18,11 @@ def test_health_exposes_web_test_readiness():
     body = response.json()
 
     assert body["status"] == "ok"
-    assert body["version"] == "2.0.0-alpha.98"
+    assert body["version"] == "2.0.0-alpha.99"
     assert body["web_test"]["ready"] is True
     assert (
         body["web_test"]["build"]
-        == "web-test-alpha.98"
+        == "web-test-alpha.99"
     )
     assert (
         "server_tick"

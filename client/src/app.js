@@ -42,7 +42,7 @@
   const COMPETITIVE_STATUS = "M7 Simülasyon aktif";
   const BALANCE_STATUS = "Eşit modül + counter doğrulandı";
   const AI_STATUS = "Adaptif AI + rekabetçi denge doğrulandı";
-  const PVP_STATUS = "İlk gerçek Web test RC aday özeti hazır";
+  const PVP_STATUS = "RC aday tarayıcı durumu aktif";
 
   const PORT_COUNT_BY_NAME = {
     "Çekirdek":4,
@@ -441,6 +441,9 @@
   const testRunConsistency =
     new RelayTestRunConsistencyState();
 
+  const rcCandidateState =
+    new RelayRcCandidateState();
+
   const playRecoveryState =
     new RelayPlayRecoveryState();
 
@@ -456,7 +459,7 @@
         webTestBuildState,
       releaseCheckState,
       expectedVersion:
-        "2.0.0-alpha.98",
+        "2.0.0-alpha.99",
       expectedProtocolVersion: 1,
     });
   const playReadinessGate =
@@ -486,7 +489,7 @@
 
   telemetryDispatcher.trackGameOpened({
     platform: "web",
-    build: "2.0.0-alpha.98",
+    build: "2.0.0-alpha.99",
   });
 
   const postMatchSync =
@@ -1046,9 +1049,9 @@
   const diagnosticSnapshot =
     new RelayDiagnosticSnapshot({
       version:
-        "2.0.0-alpha.98",
+        "2.0.0-alpha.99",
       build:
-        "web-test-alpha.98",
+        "web-test-alpha.99",
       bootGate:
         serverBootGate,
       connectionManager:
@@ -1301,6 +1304,74 @@
     }
   }
 
+  async function loadRcCandidateStatus() {
+    const el =
+      document.getElementById(
+        "rc-candidate-status"
+      );
+
+    try {
+      const response =
+        await fetch(
+          "/web-test/rc-candidate"
+        );
+
+      if (!response.ok) {
+        throw new Error(
+          "RC aday özeti alınamadı."
+        );
+      }
+
+      const view =
+        rcCandidateState.apply(
+          await response.json()
+        );
+
+      if (el) {
+        el.textContent =
+          `RC Adayı: ${
+            view.ready
+              ? "Hazır"
+              : "Hazır Değil"
+          }`
+          + (
+              view.testRunId
+                ? ` · ${view.testRunId}`
+                : ""
+            )
+          + (
+              view.insufficientSignalCount
+                ? ` · ${view.insufficientSignalCount} davranış sinyalinde yetersiz veri`
+                : ""
+            );
+        el.dataset.ready =
+          String(
+            view.ready
+          );
+      }
+
+      return {
+        ok:true,
+        view,
+      };
+    } catch (error) {
+      if (el) {
+        el.textContent =
+          "RC Adayı: Durum alınamadı";
+        el.dataset.ready =
+          "false";
+      }
+
+      return {
+        ok:false,
+        reason:
+          error instanceof Error
+            ? error.message
+            : String(error),
+      };
+    }
+  }
+
   async function loadGoNoGoStatus() {
     const el =
       document.getElementById(
@@ -1371,6 +1442,7 @@
 
     renderServerBootStatus();
     loadGoNoGoStatus();
+    loadRcCandidateStatus();
 
     if (!result.ok) {
       showPlayError(

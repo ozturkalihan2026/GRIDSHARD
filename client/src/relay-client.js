@@ -3648,6 +3648,57 @@
   }
 
 
+
+  class RelayRcCandidateState {
+    constructor() {
+      this.value = null;
+    }
+
+    apply(value) {
+      if (!value) {
+        throw new Error(
+          "RC aday özeti gerekli."
+        );
+      }
+
+      this.value = {
+        ...value,
+      };
+
+      return this.viewModel();
+    }
+
+    viewModel() {
+      if (!this.value) {
+        return null;
+      }
+
+      return {
+        ready:
+          Boolean(
+            this.value.rc_candidate
+          ),
+        decision:
+          this.value.decision
+          || "NO_GO",
+        testRunId:
+          this.value.test_run_id
+          || null,
+        lifecycleState:
+          this.value.test_run
+            ?.lifecycle_state
+          || "empty",
+        insufficientSignalCount:
+          Number(
+            this.value.behavior
+              ?.insufficient_signal_count
+            || 0
+          ),
+      };
+    }
+  }
+
+
   const api = {
     RelayBattleClient,
     RelayPvPClientState,
@@ -3673,6 +3724,7 @@
     RelayWebTestRcReportState,
     RelayWebTestGoNoGoState,
     RelayTestRunConsistencyState,
+    RelayRcCandidateState,
     RelayTestParticipantIdentity,
     RelayParticipantBootstrap,
     RelayPlayReadinessGate,
@@ -3722,6 +3774,7 @@
   global.RelayWebTestRcReportState = RelayWebTestRcReportState;
   global.RelayWebTestGoNoGoState = RelayWebTestGoNoGoState;
   global.RelayTestRunConsistencyState = RelayTestRunConsistencyState;
+  global.RelayRcCandidateState = RelayRcCandidateState;
   global.RelayTestParticipantIdentity = RelayTestParticipantIdentity;
   global.RelayParticipantBootstrap = RelayParticipantBootstrap;
   global.RelayPlayReadinessGate = RelayPlayReadinessGate;
