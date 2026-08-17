@@ -138,8 +138,20 @@ def build_test_run_summary(
         else None
     )
 
+    lifecycle_state = (
+        "empty"
+        if not started_ids
+        else (
+            "completed"
+            if finish_count > 0
+            else "active"
+        )
+    )
+
     return {
         "test_run_id": test_run_id,
+        "lifecycle_state":
+            lifecycle_state,
         "audit_session_starts":
             len(started_ids),
         "audit_session_bounds":
@@ -343,6 +355,10 @@ def build_test_run_catalog(
             "audit_session_finishes":
                 summary[
                     "audit_session_finishes"
+                ],
+            "lifecycle_state":
+                summary[
+                    "lifecycle_state"
                 ],
             "event_count":
                 summary[
