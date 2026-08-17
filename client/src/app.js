@@ -42,7 +42,7 @@
   const COMPETITIVE_STATUS = "M7 Simülasyon aktif";
   const BALANCE_STATUS = "Eşit modül + counter doğrulandı";
   const AI_STATUS = "Adaptif AI + rekabetçi denge doğrulandı";
-  const PVP_STATUS = "Tek istek katılımcı bootstrap aktif";
+  const PVP_STATUS = "Birleşik Oyna hazırlık kapısı aktif";
 
   const PORT_COUNT_BY_NAME = {
     "Çekirdek":4,
@@ -221,6 +221,7 @@
     }
 
     renderParticipantBootstrapStatus();
+    renderServerBootStatus();
 
     return result;
   }
@@ -290,11 +291,12 @@
 
     if (
       screen === "play"
-      && !serverBootGate.canPlay()
+      && !playReadinessGate.canPlay()
     ) {
       showPlayError(
         "websocket",
-        "Oyun sunucusu henüz hazır değil. Sağlık kontrolünü yeniden dene."
+        playReadinessGate.labelTr()
+        + ". Hazırlık kontrollerini yeniden dene."
       );
       appRouter.goMenu();
       renderAppScreen();
@@ -429,9 +431,15 @@
         webTestBuildState,
       releaseCheckState,
       expectedVersion:
-        "2.0.0-alpha.65",
+        "2.0.0-alpha.66",
       expectedProtocolVersion: 1,
     });
+  const playReadinessGate =
+    new RelayPlayReadinessGate({
+      serverBootGate,
+      participantBootstrap,
+    });
+
 
 
   const telemetryTransport =
@@ -452,7 +460,7 @@
 
   telemetryDispatcher.trackGameOpened({
     platform: "web",
-    build: "2.0.0-alpha.65",
+    build: "2.0.0-alpha.66",
   });
 
   const postMatchSync =
@@ -812,9 +820,9 @@
   const diagnosticSnapshot =
     new RelayDiagnosticSnapshot({
       version:
-        "2.0.0-alpha.65",
+        "2.0.0-alpha.66",
       build:
-        "web-test-alpha.65",
+        "web-test-alpha.66",
       bootGate:
         serverBootGate,
       connectionManager:
@@ -948,6 +956,10 @@
     document.getElementById(
       "server-boot-retry"
     );
+  const participantBootstrapRetry =
+    document.getElementById(
+      "participant-bootstrap-retry"
+    );
 
   function renderServerBootStatus() {
     if (!serverBootStatusEl) {
@@ -975,7 +987,21 @@
       );
     if (playButton) {
       playButton.disabled =
-        !serverBootGate.canPlay();
+        !playReadinessGate.canPlay();
+    }
+
+    const playReadyEl =
+      document.getElementById(
+        "play-readiness-status"
+      );
+    if (playReadyEl) {
+      playReadyEl.textContent =
+        playReadinessGate.labelTr();
+      playReadyEl.dataset.ready =
+        String(
+          playReadinessGate
+            .canPlay()
+        );
     }
 
     if (serverBootRetry) {
@@ -1018,6 +1044,13 @@
       "click",
       checkServerReadiness
     );
+  }
+  if (participantBootstrapRetry) {
+    participantBootstrapRetry
+      .addEventListener(
+        "click",
+        bootstrapParticipant
+      );
   }
 
   renderAppScreen();
@@ -1414,6 +1447,16 @@ const SPECIAL_CELL_INFO = {
       || participantBootstrap.status;
     el.dataset.status =
       participantBootstrap.status;
+
+    const retry =
+      document.getElementById(
+        "participant-bootstrap-retry"
+      );
+    if (retry) {
+      retry.hidden =
+        participantBootstrap.status
+        !== "error";
+    }
   }
 
   function renderParticipantIdentity() {

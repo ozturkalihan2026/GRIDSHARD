@@ -3246,6 +3246,82 @@
   }
 
 
+
+  class RelayPlayReadinessGate {
+    constructor({
+      serverBootGate,
+      participantBootstrap,
+    }) {
+      this.serverBootGate =
+        serverBootGate;
+      this.participantBootstrap =
+        participantBootstrap;
+    }
+
+    canPlay() {
+      return Boolean(
+        this.serverBootGate
+          ?.canPlay?.()
+      ) && (
+        this.participantBootstrap
+          ?.status
+        === "ready"
+      );
+    }
+
+    blockers() {
+      const blockers = [];
+
+      if (
+        !this.serverBootGate
+          ?.canPlay?.()
+      ) {
+        blockers.push(
+          "server"
+        );
+      }
+
+      if (
+        this.participantBootstrap
+          ?.status
+        !== "ready"
+      ) {
+        blockers.push(
+          "participant"
+        );
+      }
+
+      return blockers;
+    }
+
+    labelTr() {
+      if (this.canPlay()) {
+        return "Oyna: Hazır";
+      }
+
+      const blockers =
+        this.blockers();
+
+      if (
+        blockers.includes("server")
+        && blockers.includes(
+          "participant"
+        )
+      ) {
+        return "Oyna: Sunucu ve hesap hazırlanıyor";
+      }
+
+      if (
+        blockers.includes("server")
+      ) {
+        return "Oyna: Sunucu bekleniyor";
+      }
+
+      return "Oyna: Hesap hazırlanıyor";
+    }
+  }
+
+
   const api = {
     RelayBattleClient,
     RelayPvPClientState,
@@ -3271,6 +3347,7 @@
     RelayWebTestRcReportState,
     RelayTestParticipantIdentity,
     RelayParticipantBootstrap,
+    RelayPlayReadinessGate,
     BattlePoolSelection,
     APP_SCREEN,
     WS_CONNECTION_STATUS,
@@ -3315,6 +3392,7 @@
   global.RelayWebTestRcReportState = RelayWebTestRcReportState;
   global.RelayTestParticipantIdentity = RelayTestParticipantIdentity;
   global.RelayParticipantBootstrap = RelayParticipantBootstrap;
+  global.RelayPlayReadinessGate = RelayPlayReadinessGate;
   global.RelayParticipantBootstrapStatus = PARTICIPANT_BOOTSTRAP_STATUS;
   global.RelayServerBootStatus = SERVER_BOOT_STATUS;
   global.RelayPlayRecoveryKind = PLAY_RECOVERY_KIND;
