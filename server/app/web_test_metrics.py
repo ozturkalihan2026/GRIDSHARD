@@ -245,6 +245,36 @@ class WebTestKpiService:
             else 0.0
         )
 
+        stability_snapshot_events = [
+            event
+            for event in events
+            if (
+                event["event_type"]
+                == "web_test_stability_snapshot"
+            )
+        ]
+        stability_snapshots = len(
+            stability_snapshot_events
+        )
+        stability_stable_snapshots = sum(
+            1
+            for event
+            in stability_snapshot_events
+            if event.get(
+                "metadata",
+                {},
+            ).get(
+                "stability"
+            )
+            == "stable"
+        )
+        stability_stable_rate = (
+            stability_stable_snapshots
+            / stability_snapshots
+            if stability_snapshots
+            else 0.0
+        )
+
         operation_snapshot_events = [
             event
             for event in events
@@ -528,6 +558,14 @@ class WebTestKpiService:
             ],
             "average_match_duration_ms": (
                 average_match_duration_ms
+            ),
+            "stability_snapshots":
+                stability_snapshots,
+            "stability_stable_snapshots":
+                stability_stable_snapshots,
+            "stability_stable_rate": round(
+                stability_stable_rate,
+                6,
             ),
             "operation_snapshots":
                 operation_snapshots,

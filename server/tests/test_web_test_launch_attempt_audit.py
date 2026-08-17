@@ -19,7 +19,7 @@ def test_launch_attempt_audit_records_minimal_gate_snapshot():
 
     assert response.status_code==200
     body=response.json()
-    assert body["test_run_id"]=="web-test-alpha.125"
+    assert body["test_run_id"]=="web-test-alpha.126"
 
     events=telemetry_service.events(
         player_id=
@@ -30,7 +30,7 @@ def test_launch_attempt_audit_records_minimal_gate_snapshot():
 
     assert len(events)==1
     metadata=events[0]["metadata"]
-    assert metadata["test_run_id"]=="web-test-alpha.125"
+    assert metadata["test_run_id"]=="web-test-alpha.126"
     assert "launch_ready" in metadata
     assert "failed_checks" in metadata
 

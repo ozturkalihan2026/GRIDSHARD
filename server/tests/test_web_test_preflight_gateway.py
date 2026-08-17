@@ -9,9 +9,9 @@ def test_preflight_endpoint():
         "/web-test/preflight"
     ).json()
 
-    assert body["version"]=="2.0.0-alpha.125"
-    assert body["build"]=="web-test-alpha.125"
-    assert body["test_run_id"]=="web-test-alpha.125"
+    assert body["version"]=="2.0.0-alpha.126"
+    assert body["build"]=="web-test-alpha.126"
+    assert body["test_run_id"]=="web-test-alpha.126"
     assert "preflight_ready" in body
     assert "checklist" in body
     assert "launch" in body
