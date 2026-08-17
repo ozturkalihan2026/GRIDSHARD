@@ -1,7 +1,7 @@
 # Project Relay 2.0 — YOL HARİTASI
 
-**Güncel Sürüm:** `2.0.0-alpha.93`  
-**Paket:** Web Test Koşusu Kataloğu ve Koşular Arası Operasyon Özeti  
+**Güncel Sürüm:** `2.0.0-alpha.94`  
+**Paket:** Test Koşusu Başlangıç/Bitiş Zaman Aralığı ve Süre Özeti  
 **Kanonik Dosya:** `docs/YOL_HARITASI.md`
 
 > Bu dosya Project Relay 2.0 için tek kanonik geliştirme kaydıdır. Her paket tamamlandığında sürüm numarası artırılır; **Tamamlananlar** ve **Yapılacaklar** bu dosyada güncellenir. Sonraki geliştirme paketi bu dosya okunarak başlatılır.
@@ -383,9 +383,9 @@ Aşağıdaki alanlar ilk sürüm kapsamına dahil değildir ve mevcut yol harita
 
 ## Sıradaki Paket
 
-**`2.0.0-alpha.94 — Test Koşusu Başlangıç/Bitiş Zaman Aralığı ve Süre Özeti`**
+**`2.0.0-alpha.95 — Test Koşusu Yaşam Döngüsü Durumu: Boş / Aktif / Tamamlanmış`**
 
-Koşu kataloğu hazır. Sıradaki paket her test koşusu için ilk audit başlangıç zamanı, son audit/finish zamanı ve koşunun ölçülen süre aralığını raporlayacak. Bu yalnızca teknik zaman özeti olacak; oyuncu bazlı zaman çizelgesi veya kişisel aktivite geçmişi çıkarılmayacak.
+Koşu zaman aralığı ölçülüyor. Sıradaki paket koşu özetine agregat bir yaşam döngüsü durumu ekleyecek: hiç audit yoksa `empty`, başlangıç/bound olup henüz tamamlanmış audit yoksa `active`, en az bir teknik finish varsa `completed`. Bu durum operasyonel sınıflandırmadır; tek tek oyuncu oturumlarını listelemeyecek.
 
 
 ---

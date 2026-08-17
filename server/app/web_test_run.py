@@ -83,6 +83,61 @@ def build_test_run_summary(
         & finished_sources
     )
 
+    timestamps = [
+        int(
+            event.get(
+                "timestamp_ms",
+                0,
+            )
+        )
+        for event in events
+        if int(
+            event.get(
+                "timestamp_ms",
+                0,
+            )
+        ) >= 0
+    ]
+
+    first_event_at_ms = (
+        min(timestamps)
+        if timestamps
+        else None
+    )
+    last_event_at_ms = (
+        max(timestamps)
+        if timestamps
+        else None
+    )
+    measured_duration_ms = (
+        last_event_at_ms
+        - first_event_at_ms
+        if (
+            first_event_at_ms
+            is not None
+            and last_event_at_ms
+            is not None
+        )
+        else 0
+    )
+
+    first_audit_started_at_ms = (
+        min(
+            int(event["timestamp_ms"])
+            for event in started
+        )
+        if started
+        else None
+    )
+    last_audit_finished_at_ms = (
+        max(
+            int(event["timestamp_ms"])
+            for event in finished
+        )
+        if finished
+        else None
+    )
+
     return {
         "test_run_id": test_run_id,
         "audit_session_starts":
@@ -123,6 +178,16 @@ def build_test_run_summary(
             ),
         "event_count":
             len(events),
+        "first_event_at_ms":
+            first_event_at_ms,
+        "last_event_at_ms":
+            last_event_at_ms,
+        "first_audit_started_at_ms":
+            first_audit_started_at_ms,
+        "last_audit_finished_at_ms":
+            last_audit_finished_at_ms,
+        "measured_duration_ms":
+            measured_duration_ms,
     }
 
 
@@ -282,6 +347,18 @@ def build_test_run_catalog(
             "event_count":
                 summary[
                     "event_count"
+                ],
+            "first_event_at_ms":
+                summary[
+                    "first_event_at_ms"
+                ],
+            "last_event_at_ms":
+                summary[
+                    "last_event_at_ms"
+                ],
+            "measured_duration_ms":
+                summary[
+                    "measured_duration_ms"
                 ],
         })
 
