@@ -245,6 +245,38 @@ class WebTestKpiService:
             else 0.0
         )
 
+        run_started_events = [
+            event
+            for event in events
+            if (
+                event["event_type"]
+                == "web_test_run_started"
+            )
+        ]
+        run_started_events_count = len(
+            run_started_events
+        )
+        started_test_run_ids = {
+            str(
+                event.get(
+                    "metadata",
+                    {},
+                ).get(
+                    "test_run_id"
+                )
+            )
+            for event in run_started_events
+            if event.get(
+                "metadata",
+                {},
+            ).get(
+                "test_run_id"
+            )
+        }
+        started_test_runs = len(
+            started_test_run_ids
+        )
+
         preflight_snapshot_events = [
             event
             for event in events
@@ -467,6 +499,10 @@ class WebTestKpiService:
             "average_match_duration_ms": (
                 average_match_duration_ms
             ),
+            "run_started_events":
+                run_started_events_count,
+            "started_test_runs":
+                started_test_runs,
             "preflight_snapshots":
                 preflight_snapshots,
             "preflight_ready_snapshots":

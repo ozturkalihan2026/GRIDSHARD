@@ -146,6 +146,20 @@ def build_preflight_report(
                 ),
         },
         "operational_kpis": {
+            "run_started_events":
+                int(
+                    kpis.get(
+                        "run_started_events",
+                        0,
+                    )
+                ),
+            "started_test_runs":
+                int(
+                    kpis.get(
+                        "started_test_runs",
+                        0,
+                    )
+                ),
             "checklist_snapshots":
                 int(
                     kpis.get(
