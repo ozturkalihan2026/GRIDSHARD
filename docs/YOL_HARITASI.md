@@ -1,7 +1,7 @@
 # Project Relay 2.0 — YOL HARİTASI
 
-**Güncel Sürüm:** `2.0.0-alpha.90`  
-**Paket:** Test Koşusu Kimliğinin Manifest / Readiness Zincirine Eklenmesi  
+**Güncel Sürüm:** `2.0.0-alpha.91`  
+**Paket:** Tarayıcıda Aktif Test Koşusu Görünümü ve Koşu Tutarlılığı  
 **Kanonik Dosya:** `docs/YOL_HARITASI.md`
 
 > Bu dosya Project Relay 2.0 için tek kanonik geliştirme kaydıdır. Her paket tamamlandığında sürüm numarası artırılır; **Tamamlananlar** ve **Yapılacaklar** bu dosyada güncellenir. Sonraki geliştirme paketi bu dosya okunarak başlatılır.
@@ -383,9 +383,9 @@ Aşağıdaki alanlar ilk sürüm kapsamına dahil değildir ve mevcut yol harita
 
 ## Sıradaki Paket
 
-**`2.0.0-alpha.91 — Tarayıcıda Aktif Test Koşusu Görünümü ve Koşu Tutarlılığı`**
+**`2.0.0-alpha.92 — Test Koşusuna Özel Go/No-Go Audit Huni Özeti`**
 
-Test_run_id sunucu readiness zincirinde yayınlanıyor. Sıradaki paket tarayıcının manifest/operation readiness üzerinden aktif test_run_id değerini göstermesini ve audit başlangıç cevabındaki test_run_id ile aynı olduğunu doğrulamasını sağlayacak. Uyuşmazlık halinde teknik audit kaydı kullanılmayacak; gerçek Oyna kararı mevcut boot gate tarafından korunacak.
+Aktif test koşusu tarayıcı ve audit zincirinde tutarlı. Sıradaki paket `/web-test/test-runs/{test_run_id}/go-no-go` endpoint'i ile belirli koşunun audit huni sinyallerini teknik operation readiness ile birleştirecek. İstenen koşu aktif koşu değilse teknik karar değiştirilmeden `historical_run=true` olarak işaretlenecek.
 
 
 ---

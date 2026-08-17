@@ -3583,6 +3583,71 @@
   }
 
 
+
+  class RelayTestRunConsistencyState {
+    constructor() {
+      this.expectedTestRunId = null;
+      this.auditTestRunId = null;
+      this.status = "unknown";
+    }
+
+    setExpected(testRunId) {
+      this.expectedTestRunId =
+        String(
+          testRunId || ""
+        ).trim() || null;
+      return this._evaluate();
+    }
+
+    applyAudit(testRunId) {
+      this.auditTestRunId =
+        String(
+          testRunId || ""
+        ).trim() || null;
+      return this._evaluate();
+    }
+
+    _evaluate() {
+      if (
+        !this.expectedTestRunId
+        || !this.auditTestRunId
+      ) {
+        this.status = "unknown";
+        return {
+          ok: false,
+          status:
+            this.status,
+        };
+      }
+
+      const ok =
+        this.expectedTestRunId
+        === this.auditTestRunId;
+
+      this.status = ok
+        ? "verified"
+        : "mismatch";
+
+      return {
+        ok,
+        status:
+          this.status,
+        expectedTestRunId:
+          this.expectedTestRunId,
+        auditTestRunId:
+          this.auditTestRunId,
+      };
+    }
+
+    isVerified() {
+      return (
+        this.status
+        === "verified"
+      );
+    }
+  }
+
+
   const api = {
     RelayBattleClient,
     RelayPvPClientState,
@@ -3607,6 +3672,7 @@
     RelayDiagnosticSnapshot,
     RelayWebTestRcReportState,
     RelayWebTestGoNoGoState,
+    RelayTestRunConsistencyState,
     RelayTestParticipantIdentity,
     RelayParticipantBootstrap,
     RelayPlayReadinessGate,
@@ -3655,6 +3721,7 @@
   global.RelayDiagnosticSnapshot = RelayDiagnosticSnapshot;
   global.RelayWebTestRcReportState = RelayWebTestRcReportState;
   global.RelayWebTestGoNoGoState = RelayWebTestGoNoGoState;
+  global.RelayTestRunConsistencyState = RelayTestRunConsistencyState;
   global.RelayTestParticipantIdentity = RelayTestParticipantIdentity;
   global.RelayParticipantBootstrap = RelayParticipantBootstrap;
   global.RelayPlayReadinessGate = RelayPlayReadinessGate;

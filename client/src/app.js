@@ -42,7 +42,7 @@
   const COMPETITIVE_STATUS = "M7 Simülasyon aktif";
   const BALANCE_STATUS = "Eşit modül + counter doğrulandı";
   const AI_STATUS = "Adaptif AI + rekabetçi denge doğrulandı";
-  const PVP_STATUS = "Test koşusu manifest/readiness zinciri aktif";
+  const PVP_STATUS = "Tarayıcı test koşusu tutarlılığı aktif";
 
   const PORT_COUNT_BY_NAME = {
     "Çekirdek":4,
@@ -438,6 +438,9 @@
   const webTestGoNoGoState =
     new RelayWebTestGoNoGoState();
 
+  const testRunConsistency =
+    new RelayTestRunConsistencyState();
+
   const playRecoveryState =
     new RelayPlayRecoveryState();
 
@@ -453,7 +456,7 @@
         webTestBuildState,
       releaseCheckState,
       expectedVersion:
-        "2.0.0-alpha.90",
+        "2.0.0-alpha.91",
       expectedProtocolVersion: 1,
     });
   const playReadinessGate =
@@ -483,7 +486,7 @@
 
   telemetryDispatcher.trackGameOpened({
     platform: "web",
-    build: "2.0.0-alpha.90",
+    build: "2.0.0-alpha.91",
   });
 
   const postMatchSync =
@@ -849,21 +852,48 @@
           ?.audit_event_id
         || null;
 
+      const auditTestRunId =
+        payload
+          ?.test_run_id
+        || null;
+      const consistency =
+        testRunConsistency
+          .applyAudit(
+            auditTestRunId
+          );
+
       if (
         response.ok
         && auditEventId
+        && consistency.ok
       ) {
         currentAuditEventId =
           auditEventId;
         currentTestRunId =
-          payload
-            ?.test_run_id
-          || null;
+          auditTestRunId;
+      } else if (
+        response.ok
+        && auditEventId
+        && !consistency.ok
+      ) {
+        currentAuditEventId =
+          null;
+        currentTestRunId =
+          null;
       }
 
+      renderServerBootStatus();
+
       return {
-        ok: response.ok,
-        auditEventId,
+        ok:
+          response.ok
+          && consistency.ok,
+        auditEventId:
+          consistency.ok
+            ? auditEventId
+            : null,
+        testRunConsistent:
+          consistency.ok,
       };
     } catch (_error) {
       return {
@@ -1016,9 +1046,9 @@
   const diagnosticSnapshot =
     new RelayDiagnosticSnapshot({
       version:
-        "2.0.0-alpha.90",
+        "2.0.0-alpha.91",
       build:
-        "web-test-alpha.90",
+        "web-test-alpha.91",
       bootGate:
         serverBootGate,
       connectionManager:
@@ -1204,6 +1234,33 @@
       document.getElementById(
         "operation-readiness-status"
       );
+    const testRunEl =
+      document.getElementById(
+        "test-run-status"
+      );
+    if (testRunEl) {
+      const manifestRunId =
+        serverBootGate
+          .manifest
+          ?.test_run_id
+        || null;
+
+      if (manifestRunId) {
+        testRunConsistency
+          .setExpected(
+            manifestRunId
+          );
+        testRunEl.textContent =
+          `Test Koşusu: ${manifestRunId}`;
+      } else {
+        testRunEl.textContent =
+          "Test Koşusu: Kontrol bekliyor";
+      }
+
+      testRunEl.dataset.status =
+        testRunConsistency.status;
+    }
+
     if (operationEl) {
       const operation =
         serverBootGate

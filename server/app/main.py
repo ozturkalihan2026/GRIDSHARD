@@ -109,8 +109,8 @@ TELEMETRY_MAX_EVENTS = int(
 )
 WEB_TEST_RUN_ID = os.environ.get(
     "RELAY_WEB_TEST_RUN_ID",
-    "web-test-alpha.90",
-).strip() or "web-test-alpha.90"
+    "web-test-alpha.91",
+).strip() or "web-test-alpha.91"
 
 telemetry_repository = (
     JsonFileTelemetryRepository(
@@ -1239,7 +1239,7 @@ def web_test_current_run() -> dict:
         "test_run_id":
             WEB_TEST_RUN_ID,
         "build":
-            "web-test-alpha.90",
+            "web-test-alpha.91",
     }
 
 
