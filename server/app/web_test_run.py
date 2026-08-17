@@ -105,6 +105,34 @@ def build_test_run_summary(
         else 0.0
     )
 
+    operation_snapshot_events = [
+        event
+        for event in events
+        if event["event_type"]
+        == "web_test_operation_snapshot"
+    ]
+    operation_snapshots = len(
+        operation_snapshot_events
+    )
+    operation_running_snapshots = sum(
+        1
+        for event
+        in operation_snapshot_events
+        if event.get(
+            "metadata",
+            {},
+        ).get(
+            "operational_state"
+        )
+        == "running"
+    )
+    operation_running_rate = (
+        operation_running_snapshots
+        / operation_snapshots
+        if operation_snapshots
+        else 0.0
+    )
+
     run_started_events = [
         event
         for event in events
@@ -255,6 +283,14 @@ def build_test_run_summary(
         "test_run_id": test_run_id,
         "lifecycle_state":
             lifecycle_state,
+        "operation_snapshots":
+            operation_snapshots,
+        "operation_running_snapshots":
+            operation_running_snapshots,
+        "operation_running_rate": round(
+            operation_running_rate,
+            6,
+        ),
         "run_started":
             run_started,
         "run_started_at_ms":

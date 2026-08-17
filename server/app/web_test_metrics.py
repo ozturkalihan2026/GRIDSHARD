@@ -245,6 +245,36 @@ class WebTestKpiService:
             else 0.0
         )
 
+        operation_snapshot_events = [
+            event
+            for event in events
+            if (
+                event["event_type"]
+                == "web_test_operation_snapshot"
+            )
+        ]
+        operation_snapshots = len(
+            operation_snapshot_events
+        )
+        operation_running_snapshots = sum(
+            1
+            for event
+            in operation_snapshot_events
+            if event.get(
+                "metadata",
+                {},
+            ).get(
+                "operational_state"
+            )
+            == "running"
+        )
+        operation_running_rate = (
+            operation_running_snapshots
+            / operation_snapshots
+            if operation_snapshots
+            else 0.0
+        )
+
         run_started_events = [
             event
             for event in events
@@ -498,6 +528,14 @@ class WebTestKpiService:
             ],
             "average_match_duration_ms": (
                 average_match_duration_ms
+            ),
+            "operation_snapshots":
+                operation_snapshots,
+            "operation_running_snapshots":
+                operation_running_snapshots,
+            "operation_running_rate": round(
+                operation_running_rate,
+                6,
             ),
             "run_started_events":
                 run_started_events_count,
