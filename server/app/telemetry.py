@@ -5,6 +5,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 import json
 import os
+import shutil
 from typing import Any, Callable, Protocol
 
 from .game.models import BattleState, BattleStatus
@@ -65,6 +66,13 @@ class JsonFileTelemetryRepository:
         path: str | Path,
     ):
         self.path = Path(path)
+
+    @property
+    def backup_path(self) -> Path:
+        return self.path.with_name(
+            self.path.name
+            + ".bak"
+        )
 
     def load(self) -> list[TelemetryEvent]:
         if not self.path.exists():
@@ -165,6 +173,25 @@ class JsonFileTelemetryRepository:
                 exist_ok=True,
             )
 
+            if self.path.exists():
+                # Mevcut ana dosyayı yalnızca geçerli ise yedekle.
+                self.load()
+                backup_temp = (
+                    self.backup_path
+                    .with_name(
+                        self.backup_path.name
+                        + ".tmp"
+                    )
+                )
+                shutil.copy2(
+                    self.path,
+                    backup_temp,
+                )
+                os.replace(
+                    backup_temp,
+                    self.backup_path,
+                )
+
             temp_path = (
                 self.path.with_name(
                     self.path.name
@@ -196,7 +223,96 @@ class JsonFileTelemetryRepository:
                 "Kalıcı telemetri dosyası yazılamadı."
             ) from exc
 
+    def backup_health(
+        self,
+    ) -> dict[str, Any]:
+        path = self.backup_path
+
+        if not path.exists():
+            return {
+                "available": False,
+                "ready": False,
+                "path": str(path),
+                "event_count": 0,
+                "error": None,
+            }
+
+        try:
+            raw = path.read_text(
+                encoding="utf-8"
+            )
+            payload = json.loads(
+                raw
+            )
+        except (
+            OSError,
+            json.JSONDecodeError,
+        ):
+            return {
+                "available": True,
+                "ready": False,
+                "path": str(path),
+                "event_count": 0,
+                "error":
+                    "Yedek telemetri dosyası okunamadı.",
+            }
+
+        if not isinstance(
+            payload,
+            list,
+        ):
+            return {
+                "available": True,
+                "ready": False,
+                "path": str(path),
+                "event_count": 0,
+                "error":
+                    "Yedek telemetri dosyası liste olmalıdır.",
+            }
+
+        return {
+            "available": True,
+            "ready": True,
+            "path": str(path),
+            "event_count": len(
+                payload
+            ),
+            "error": None,
+        }
+
+    def restore_backup(self) -> bool:
+        health = self.backup_health()
+
+        if not health["ready"]:
+            return False
+
+        try:
+            self.path.parent.mkdir(
+                parents=True,
+                exist_ok=True,
+            )
+            temp = self.path.with_name(
+                self.path.name
+                + ".restore.tmp"
+            )
+            shutil.copy2(
+                self.backup_path,
+                temp,
+            )
+            os.replace(
+                temp,
+                self.path,
+            )
+        except OSError as exc:
+            raise TelemetryError(
+                "Telemetri yedeği geri yüklenemedi."
+            ) from exc
+
+        return True
+
     def health(self) -> dict[str, Any]:
+        backup = self.backup_health()
+
         if self.path.exists():
             try:
                 events = self.load()
@@ -209,6 +325,7 @@ class JsonFileTelemetryRepository:
                     ),
                     "event_count": 0,
                     "error": str(exc),
+                    "backup": backup,
                 }
 
             return {
@@ -221,6 +338,7 @@ class JsonFileTelemetryRepository:
                     events
                 ),
                 "error": None,
+                "backup": backup,
             }
 
         probe = self.path.parent
@@ -258,6 +376,7 @@ class JsonFileTelemetryRepository:
                     if writable
                     else "Kalıcı telemetri veri yolu yazılabilir değil."
                 ),
+            "backup": backup,
         }
 
     def clear(self) -> None:

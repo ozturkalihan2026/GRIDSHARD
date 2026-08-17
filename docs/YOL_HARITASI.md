@@ -1,7 +1,7 @@
 # Project Relay 2.0 — YOL HARİTASI
 
-**Güncel Sürüm:** `2.0.0-alpha.74`  
-**Paket:** Kalıcı Telemetri Sağlık Kontrolü ve Release-Check Entegrasyonu  
+**Güncel Sürüm:** `2.0.0-alpha.75`  
+**Paket:** Telemetri Son Sağlam Yedeği ve Kontrollü Kurtarma Temeli  
 **Kanonik Dosya:** `docs/YOL_HARITASI.md`
 
 > Bu dosya Project Relay 2.0 için tek kanonik geliştirme kaydıdır. Her paket tamamlandığında sürüm numarası artırılır; **Tamamlananlar** ve **Yapılacaklar** bu dosyada güncellenir. Sonraki geliştirme paketi bu dosya okunarak başlatılır.
@@ -383,9 +383,9 @@ Aşağıdaki alanlar ilk sürüm kapsamına dahil değildir ve mevcut yol harita
 
 ## Sıradaki Paket
 
-**`2.0.0-alpha.75 — Telemetri Son Sağlam Yedeği ve Kontrollü Kurtarma Temeli`**
+**`2.0.0-alpha.76 — Kontrollü Telemetri Kurtarma Endpoint'i ve KPI Yeniden Yükleme`**
 
-Telemetri dosyası bozulması artık release-check tarafından görülüyor. Sıradaki paket oyuncu verisindeki güvenlik modelini telemetriye de uygulayacak: her başarılı telemetri yazımından önce son sağlam `.bak` korunacak, health geçerli yedek olup olmadığını bildirecek ve repository seviyesinde explicit restore fonksiyonu bulunacak. Otomatik kurtarma yapılmayacak.
+Son sağlam telemetri yedeği hazır. Sıradaki paket oyuncu verisi restore modeline paralel, yönetici anahtarı gerektiren telemetri restore endpoint'i ekleyecek. Restore yalnızca ana telemetri sağlıksız + yedek sağlıklı ise çalışacak; işlem sonrası telemetri service belleği dosyadan yeniden yüklenecek, KPI'lar yeniden hesaplanabilecek ve health tekrar `ready` doğrulanacak.
 
 
 ---
