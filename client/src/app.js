@@ -42,7 +42,7 @@
   const COMPETITIVE_STATUS = "M7 Simülasyon aktif";
   const BALANCE_STATUS = "Eşit modül + counter doğrulandı";
   const AI_STATUS = "Adaptif AI + rekabetçi denge doğrulandı";
-  const PVP_STATUS = "İlk gerçek Web test preflight raporu hazır";
+  const PVP_STATUS = "Preflight tarayıcı görünümü aktif";
 
   const PORT_COUNT_BY_NAME = {
     "Çekirdek":4,
@@ -484,6 +484,9 @@
   const firstRunChecklistState =
     new RelayFirstRunChecklistState();
 
+  const preflightState =
+    new RelayPreflightState();
+
   const playRecoveryState =
     new RelayPlayRecoveryState();
 
@@ -499,7 +502,7 @@
         webTestBuildState,
       releaseCheckState,
       expectedVersion:
-        "2.0.0-alpha.108",
+        "2.0.0-alpha.109",
       expectedProtocolVersion: 1,
     });
   const playReadinessGate =
@@ -530,7 +533,7 @@
 
   telemetryDispatcher.trackGameOpened({
     platform: "web",
-    build: "2.0.0-alpha.108",
+    build: "2.0.0-alpha.109",
   });
 
   const postMatchSync =
@@ -1090,9 +1093,9 @@
   const diagnosticSnapshot =
     new RelayDiagnosticSnapshot({
       version:
-        "2.0.0-alpha.108",
+        "2.0.0-alpha.109",
       build:
-        "web-test-alpha.108",
+        "web-test-alpha.109",
       bootGate:
         serverBootGate,
       connectionManager:
@@ -1342,6 +1345,70 @@
     if (serverBootRetry) {
       serverBootRetry.hidden =
         serverBootGate.canPlay();
+    }
+  }
+
+  async function loadPreflightStatus() {
+    const el =
+      document.getElementById(
+        "preflight-status"
+      );
+
+    try {
+      const response =
+        await fetch(
+          "/web-test/preflight"
+        );
+
+      if (!response.ok) {
+        throw new Error(
+          "Web test preflight raporu alınamadı."
+        );
+      }
+
+      const view =
+        preflightState.apply(
+          await response.json()
+        );
+
+      if (el) {
+        el.textContent =
+          `Gerçek Web Testi: ${
+            view.ready
+              ? "Başlatılabilir"
+              : "Hazır Değil"
+          }`
+          + (
+              view.testRunId
+                ? ` · ${view.testRunId}`
+                : ""
+            )
+          + (
+              view.failedChecks.length
+                ? ` · ${view.failedChecks.join(", ")}`
+                : ""
+            );
+        el.dataset.ready =
+          String(view.ready);
+      }
+
+      return {
+        ok:true,
+        view,
+      };
+    } catch (error) {
+      if (el) {
+        el.textContent =
+          "Gerçek Web Testi: Preflight alınamadı";
+        el.dataset.ready="false";
+      }
+      return {
+        ok:false,
+        reason:
+          error instanceof Error
+            ? error.message
+            : String(error),
+      };
     }
   }
 
@@ -1625,6 +1692,7 @@
     loadGoNoGoStatus();
     loadRcCandidateStatus();
     loadFirstRunChecklist();
+    loadPreflightStatus();
 
     const launch =
       result.ok

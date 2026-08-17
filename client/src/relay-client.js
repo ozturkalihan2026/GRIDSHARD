@@ -3829,6 +3829,47 @@
   }
 
 
+
+  class RelayPreflightState {
+    constructor() {
+      this.value = null;
+    }
+
+    apply(value) {
+      if (!value) {
+        throw new Error(
+          "Web test preflight özeti gerekli."
+        );
+      }
+      this.value={...value};
+      return this.viewModel();
+    }
+
+    viewModel() {
+      if (!this.value) return null;
+
+      return {
+        ready:Boolean(
+          this.value.preflight_ready
+        ),
+        failedChecks:
+          Array.isArray(
+            this.value.failed_checks
+          )
+            ? [...this.value.failed_checks]
+            : [],
+        testRunId:
+          this.value.test_run_id
+          || null,
+        lifecycleState:
+          this.value.test_run
+            ?.lifecycle_state
+          || "empty",
+      };
+    }
+  }
+
+
   const api = {
     RelayBattleClient,
     RelayPvPClientState,
@@ -3857,6 +3898,7 @@
     RelayRcCandidateState,
     RelayLaunchReadinessState,
     RelayFirstRunChecklistState,
+    RelayPreflightState,
     RelayTestParticipantIdentity,
     RelayParticipantBootstrap,
     RelayPlayReadinessGate,
@@ -3909,6 +3951,7 @@
   global.RelayRcCandidateState = RelayRcCandidateState;
   global.RelayLaunchReadinessState = RelayLaunchReadinessState;
   global.RelayFirstRunChecklistState = RelayFirstRunChecklistState;
+  global.RelayPreflightState = RelayPreflightState;
   global.RelayTestParticipantIdentity = RelayTestParticipantIdentity;
   global.RelayParticipantBootstrap = RelayParticipantBootstrap;
   global.RelayPlayReadinessGate = RelayPlayReadinessGate;
