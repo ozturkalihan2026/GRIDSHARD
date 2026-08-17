@@ -1,7 +1,7 @@
 # Project Relay 2.0 — YOL HARİTASI
 
-**Güncel Sürüm:** `2.0.0-alpha.95`  
-**Paket:** Test Koşusu Yaşam Döngüsü Durumu: Boş / Aktif / Tamamlanmış  
+**Güncel Sürüm:** `2.0.0-alpha.96`  
+**Paket:** Test Koşuları Arası Teknik Huni Karşılaştırması  
 **Kanonik Dosya:** `docs/YOL_HARITASI.md`
 
 > Bu dosya Project Relay 2.0 için tek kanonik geliştirme kaydıdır. Her paket tamamlandığında sürüm numarası artırılır; **Tamamlananlar** ve **Yapılacaklar** bu dosyada güncellenir. Sonraki geliştirme paketi bu dosya okunarak başlatılır.
@@ -383,9 +383,9 @@ Aşağıdaki alanlar ilk sürüm kapsamına dahil değildir ve mevcut yol harita
 
 ## Sıradaki Paket
 
-**`2.0.0-alpha.96 — Test Koşuları Arası Teknik Huni Karşılaştırması`**
+**`2.0.0-alpha.97 — Test Koşusu Karşılaştırmasında Örnek Yeterliliği ve Güven Etiketi`**
 
-Koşular zaman ve yaşam döngüsü bilgisiyle kataloglanıyor. Sıradaki paket iki test_run_id arasında başlangıç→session→finish oranlarını agregat olarak karşılaştıran bir endpoint ekleyecek. Yüzde puan farkları raporlanacak; oyuncu listeleri veya bireysel sonuçlar karşılaştırılmayacak.
+Koşular arası huni farkları hesaplanıyor. Sıradaki paket karşılaştırmaya örnek yeterliliği etiketi ekleyecek. Her iki koşuda minimum audit başlangıç sayısı sağlanmıyorsa `insufficient_data`, sağlanıyorsa `comparable` durumu dönecek. Bu istatistiksel anlamlılık iddiası olmayacak; yalnızca operasyonel örnek yeterliliği göstergesi olacak.
 
 
 ---

@@ -386,3 +386,112 @@ def build_test_run_catalog(
         "runs":
             runs,
     }
+
+
+def compare_test_runs(
+    *,
+    telemetry_service: InMemoryTelemetryService,
+    baseline_test_run_id: str,
+    candidate_test_run_id: str,
+) -> dict[str, Any]:
+    baseline = build_test_run_summary(
+        telemetry_service=
+            telemetry_service,
+        test_run_id=
+            baseline_test_run_id,
+    )
+    candidate = build_test_run_summary(
+        telemetry_service=
+            telemetry_service,
+        test_run_id=
+            candidate_test_run_id,
+    )
+
+    metric_names = (
+        "audit_to_session_rate",
+        "audit_to_finish_rate",
+        "bound_to_finish_rate",
+    )
+
+    metrics = {}
+
+    for name in metric_names:
+        baseline_value = float(
+            baseline.get(
+                name,
+                0.0,
+            )
+        )
+        candidate_value = float(
+            candidate.get(
+                name,
+                0.0,
+            )
+        )
+
+        metrics[name] = {
+            "baseline":
+                baseline_value,
+            "candidate":
+                candidate_value,
+            "delta":
+                round(
+                    candidate_value
+                    - baseline_value,
+                    6,
+                ),
+            "delta_percentage_points":
+                round(
+                    (
+                        candidate_value
+                        - baseline_value
+                    )
+                    * 100,
+                    2,
+                ),
+        }
+
+    return {
+        "baseline_test_run_id":
+            baseline_test_run_id,
+        "candidate_test_run_id":
+            candidate_test_run_id,
+        "baseline": {
+            "lifecycle_state":
+                baseline[
+                    "lifecycle_state"
+                ],
+            "audit_session_starts":
+                baseline[
+                    "audit_session_starts"
+                ],
+            "audit_session_bounds":
+                baseline[
+                    "audit_session_bounds"
+                ],
+            "audit_session_finishes":
+                baseline[
+                    "audit_session_finishes"
+                ],
+        },
+        "candidate": {
+            "lifecycle_state":
+                candidate[
+                    "lifecycle_state"
+                ],
+            "audit_session_starts":
+                candidate[
+                    "audit_session_starts"
+                ],
+            "audit_session_bounds":
+                candidate[
+                    "audit_session_bounds"
+                ],
+            "audit_session_finishes":
+                candidate[
+                    "audit_session_finishes"
+                ],
+        },
+        "metrics":
+            metrics,
+    }
