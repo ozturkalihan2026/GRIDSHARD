@@ -10,7 +10,7 @@ def test_manifest_publishes_test_run_id():
     telemetry=InMemoryTelemetryService()
 
     manifest=build_manifest(
-        version="2.0.0-alpha.126",
+        version="2.0.0-alpha.127",
         telemetry_service=telemetry,
         test_run_id="run-90",
     )
@@ -23,7 +23,7 @@ def test_blank_test_run_id_fails_release_check():
     telemetry=InMemoryTelemetryService()
 
     release=build_release_check(
-        version="2.0.0-alpha.126",
+        version="2.0.0-alpha.127",
         telemetry_service=telemetry,
         test_run_id_ready=False,
     )
