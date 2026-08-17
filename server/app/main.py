@@ -118,8 +118,8 @@ TELEMETRY_MAX_EVENTS = int(
 )
 WEB_TEST_RUN_ID = os.environ.get(
     "RELAY_WEB_TEST_RUN_ID",
-    "web-test-alpha.101",
-).strip() or "web-test-alpha.101"
+    "web-test-alpha.102",
+).strip() or "web-test-alpha.102"
 
 telemetry_repository = (
     JsonFileTelemetryRepository(
@@ -261,6 +261,11 @@ class WebTestSessionAuditBindRequest(BaseModel):
 class WebTestSessionAuditFinishRequest(BaseModel):
     audit_event_id: str
     session_id: str
+
+
+class WebTestLaunchAttemptRequest(BaseModel):
+    player_id: str
+    attempted_at_ms: int
 
 
 class TelemetryEventRequest(BaseModel):
@@ -548,6 +553,74 @@ def finish_web_test_session_audit(
             finished_event_id,
         "session_id":
             request.session_id,
+    }
+
+
+@app.post("/web-test/audit/launch-attempt")
+def record_web_test_launch_attempt(
+    request: WebTestLaunchAttemptRequest,
+) -> dict:
+    launch = (
+        web_test_launch_readiness()
+    )
+
+    event_id = (
+        "web-test-launch-"
+        + request.player_id
+        + "-"
+        + str(
+            request.attempted_at_ms
+        )
+    )
+
+    accepted = telemetry_service.record(
+        TelemetryEvent(
+            event_id=
+                event_id,
+            event_type=
+                "web_test_launch_attempted",
+            timestamp_ms=
+                request.attempted_at_ms,
+            player_id=
+                request.player_id,
+            metadata={
+                "test_run_id":
+                    WEB_TEST_RUN_ID,
+                "launch_ready":
+                    bool(
+                        launch[
+                            "launch_ready"
+                        ]
+                    ),
+                "failed_checks":
+                    list(
+                        launch[
+                            "failed_checks"
+                        ]
+                    ),
+            },
+        )
+    )
+
+    return {
+        "accepted":
+            accepted,
+        "duplicate":
+            not accepted,
+        "launch_ready":
+            bool(
+                launch[
+                    "launch_ready"
+                ]
+            ),
+        "failed_checks":
+            list(
+                launch[
+                    "failed_checks"
+                ]
+            ),
+        "test_run_id":
+            WEB_TEST_RUN_ID,
     }
 
 
@@ -1248,7 +1321,7 @@ def web_test_current_run() -> dict:
         "test_run_id":
             WEB_TEST_RUN_ID,
         "build":
-            "web-test-alpha.101",
+            "web-test-alpha.102",
     }
 
 
@@ -1337,7 +1410,7 @@ def web_test_rc_candidate() -> dict:
     return build_rc_candidate_summary(
         version=VERSION,
         build=
-            "web-test-alpha.101",
+            "web-test-alpha.102",
         test_run_id=
             WEB_TEST_RUN_ID,
         operation_readiness=
@@ -1378,7 +1451,7 @@ def web_test_launch_readiness() -> dict:
     return build_launch_snapshot(
         version=VERSION,
         build=
-            "web-test-alpha.101",
+            "web-test-alpha.102",
         test_run_id=
             WEB_TEST_RUN_ID,
         manifest=manifest,

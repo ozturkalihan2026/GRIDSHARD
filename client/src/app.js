@@ -42,7 +42,7 @@
   const COMPETITIVE_STATUS = "M7 Simülasyon aktif";
   const BALANCE_STATUS = "Eşit modül + counter doğrulandı";
   const AI_STATUS = "Adaptif AI + rekabetçi denge doğrulandı";
-  const PVP_STATUS = "Tarayıcı launch-readiness kapısı aktif";
+  const PVP_STATUS = "Web test launch-attempt audit aktif";
 
   const PORT_COUNT_BY_NAME = {
     "Çekirdek":4,
@@ -301,7 +301,41 @@
     }
   }
 
+  async function recordLaunchAttemptAudit() {
+    try {
+      const response =
+        await fetch(
+          "/web-test/audit/launch-attempt",
+          {
+            method:"POST",
+            headers:{
+              "content-type":
+                "application/json",
+            },
+            body:JSON.stringify({
+              player_id:
+                participantPlayerId,
+              attempted_at_ms:
+                Date.now(),
+            }),
+          }
+        );
+
+      return {
+        ok:response.ok,
+      };
+    } catch (_error) {
+      return {
+        ok:false,
+      };
+    }
+  }
+
   function openAppScreen(screen) {
+    if (screen === "play") {
+      recordLaunchAttemptAudit();
+    }
+
     const result = appRouter.go(screen);
     if (!result.ok) {
       logClientMessage(result.reason);
@@ -462,7 +496,7 @@
         webTestBuildState,
       releaseCheckState,
       expectedVersion:
-        "2.0.0-alpha.101",
+        "2.0.0-alpha.102",
       expectedProtocolVersion: 1,
     });
   const playReadinessGate =
@@ -493,7 +527,7 @@
 
   telemetryDispatcher.trackGameOpened({
     platform: "web",
-    build: "2.0.0-alpha.101",
+    build: "2.0.0-alpha.102",
   });
 
   const postMatchSync =
@@ -1053,9 +1087,9 @@
   const diagnosticSnapshot =
     new RelayDiagnosticSnapshot({
       version:
-        "2.0.0-alpha.101",
+        "2.0.0-alpha.102",
       build:
-        "web-test-alpha.101",
+        "web-test-alpha.102",
       bootGate:
         serverBootGate,
       connectionManager:
