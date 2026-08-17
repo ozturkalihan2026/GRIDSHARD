@@ -221,3 +221,75 @@ def build_test_run_go_no_go(
                 ),
         },
     }
+
+
+def build_test_run_catalog(
+    *,
+    telemetry_service: InMemoryTelemetryService,
+    active_test_run_id: str,
+) -> dict[str, Any]:
+    run_ids = {
+        str(
+            event.get(
+                "metadata",
+                {},
+            ).get(
+                "test_run_id"
+            )
+        )
+        for event in telemetry_service.events()
+        if event.get(
+            "metadata",
+            {},
+        ).get(
+            "test_run_id"
+        )
+    }
+
+    run_ids.add(
+        active_test_run_id
+    )
+
+    runs = []
+
+    for run_id in sorted(
+        run_ids
+    ):
+        summary = build_test_run_summary(
+            telemetry_service=
+                telemetry_service,
+            test_run_id=run_id,
+        )
+
+        runs.append({
+            "test_run_id":
+                run_id,
+            "active":
+                run_id
+                == active_test_run_id,
+            "audit_session_starts":
+                summary[
+                    "audit_session_starts"
+                ],
+            "audit_session_bounds":
+                summary[
+                    "audit_session_bounds"
+                ],
+            "audit_session_finishes":
+                summary[
+                    "audit_session_finishes"
+                ],
+            "event_count":
+                summary[
+                    "event_count"
+                ],
+        })
+
+    return {
+        "active_test_run_id":
+            active_test_run_id,
+        "run_count":
+            len(runs),
+        "runs":
+            runs,
+    }

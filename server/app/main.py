@@ -69,6 +69,7 @@ from .web_test_go_no_go import (
     build_go_no_go,
 )
 from .web_test_run import (
+    build_test_run_catalog,
     build_test_run_go_no_go,
     build_test_run_summary,
 )
@@ -110,8 +111,8 @@ TELEMETRY_MAX_EVENTS = int(
 )
 WEB_TEST_RUN_ID = os.environ.get(
     "RELAY_WEB_TEST_RUN_ID",
-    "web-test-alpha.92",
-).strip() or "web-test-alpha.92"
+    "web-test-alpha.93",
+).strip() or "web-test-alpha.93"
 
 telemetry_repository = (
     JsonFileTelemetryRepository(
@@ -1240,8 +1241,18 @@ def web_test_current_run() -> dict:
         "test_run_id":
             WEB_TEST_RUN_ID,
         "build":
-            "web-test-alpha.92",
+            "web-test-alpha.93",
     }
+
+
+@app.get("/web-test/test-runs")
+def web_test_run_catalog() -> dict:
+    return build_test_run_catalog(
+        telemetry_service=
+            telemetry_service,
+        active_test_run_id=
+            WEB_TEST_RUN_ID,
+    )
 
 
 @app.get("/web-test/test-runs/{test_run_id}/summary")

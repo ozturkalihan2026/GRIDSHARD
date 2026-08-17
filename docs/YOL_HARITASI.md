@@ -1,7 +1,7 @@
 # Project Relay 2.0 — YOL HARİTASI
 
-**Güncel Sürüm:** `2.0.0-alpha.92`  
-**Paket:** Test Koşusuna Özel Go/No-Go Audit Huni Özeti  
+**Güncel Sürüm:** `2.0.0-alpha.93`  
+**Paket:** Web Test Koşusu Kataloğu ve Koşular Arası Operasyon Özeti  
 **Kanonik Dosya:** `docs/YOL_HARITASI.md`
 
 > Bu dosya Project Relay 2.0 için tek kanonik geliştirme kaydıdır. Her paket tamamlandığında sürüm numarası artırılır; **Tamamlananlar** ve **Yapılacaklar** bu dosyada güncellenir. Sonraki geliştirme paketi bu dosya okunarak başlatılır.
@@ -383,9 +383,9 @@ Aşağıdaki alanlar ilk sürüm kapsamına dahil değildir ve mevcut yol harita
 
 ## Sıradaki Paket
 
-**`2.0.0-alpha.93 — Web Test Koşusu Kataloğu ve Koşular Arası Operasyon Özeti`**
+**`2.0.0-alpha.94 — Test Koşusu Başlangıç/Bitiş Zaman Aralığı ve Süre Özeti`**
 
-Koşuya özel teknik huni ve Go/No-Go özeti hazır. Sıradaki paket telemetride görülen test_run_id değerlerini kişisel veri taşımadan listeleyen bir koşu kataloğu oluşturacak. Her koşu için başlangıç/bound/finish sayıları gösterilecek, aktif koşu işaretlenecek; kullanıcı/profil listesi çıkarılmayacak.
+Koşu kataloğu hazır. Sıradaki paket her test koşusu için ilk audit başlangıç zamanı, son audit/finish zamanı ve koşunun ölçülen süre aralığını raporlayacak. Bu yalnızca teknik zaman özeti olacak; oyuncu bazlı zaman çizelgesi veya kişisel aktivite geçmişi çıkarılmayacak.
 
 
 ---
