@@ -2360,6 +2360,19 @@
           this.kpis.boosters_used,
         averageMatchDurationMs:
           this.kpis.average_match_duration_ms,
+        auditSessionStarts:
+          this.kpis.audit_session_starts
+          || 0,
+        auditSessionBounds:
+          this.kpis.audit_session_bounds
+          || 0,
+        auditToSessionRatePercent:
+          Math.round(
+            Number(
+              this.kpis.audit_to_session_rate
+              || 0
+            ) * 10000
+          ) / 100,
       };
     }
   }

@@ -6,9 +6,9 @@ from app.web_test_operation_readiness import (
 def base_manifest():
     return {
         "server_version":
-            "2.0.0-alpha.82",
+            "2.0.0-alpha.83",
         "web_test_build":
-            "web-test-alpha.82",
+            "web-test-alpha.83",
         "pvp_protocol_version": 1,
         "release_ready": True,
     }
