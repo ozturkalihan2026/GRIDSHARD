@@ -14,8 +14,8 @@ def test_current_test_run_is_non_personal_server_identifier():
         "/web-test/test-run"
     ).json()
 
-    assert body["test_run_id"]=="web-test-alpha.127"
-    assert body["build"]=="web-test-alpha.127"
+    assert body["test_run_id"]=="web-test-alpha.128"
+    assert body["build"]=="web-test-alpha.128"
 
 
 def test_audit_chain_carries_same_test_run_id():
@@ -29,7 +29,7 @@ def test_audit_chain_carries_same_test_run_id():
         },
     ).json()
 
-    assert started["test_run_id"]=="web-test-alpha.127"
+    assert started["test_run_id"]=="web-test-alpha.128"
 
     client.post(
         "/web-test/audit/session-bind",
@@ -60,10 +60,10 @@ def test_audit_chain_carries_same_test_run_id():
         if event["event_type"].startswith(
             "web_test_session_"
         )
-    }=={"web-test-alpha.127"}
+    }=={"web-test-alpha.128"}
 
     summary=client.get(
-        "/web-test/test-runs/web-test-alpha.127/summary"
+        "/web-test/test-runs/web-test-alpha.128/summary"
     ).json()
 
     assert summary["audit_session_starts"]==1

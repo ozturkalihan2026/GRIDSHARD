@@ -1,7 +1,7 @@
 # Project Relay 2.0 — YOL HARİTASI
 
-**Güncel Sürüm:** `2.0.0-alpha.127`  
-**Paket:** Test Koşusu Stabilite Geçmişi Agregat Özeti  
+**Güncel Sürüm:** `2.0.0-alpha.128`  
+**Paket:** Gerçek Web Testi Operasyon İzleme Özeti: Durum + Stabilite + Huni  
 **Kanonik Dosya:** `docs/YOL_HARITASI.md`
 
 > Bu dosya Project Relay 2.0 için tek kanonik geliştirme kaydıdır. Her paket tamamlandığında sürüm numarası artırılır; **Tamamlananlar** ve **Yapılacaklar** bu dosyada güncellenir. Sonraki geliştirme paketi bu dosya okunarak başlatılır.
@@ -383,9 +383,9 @@ Aşağıdaki alanlar ilk sürüm kapsamına dahil değildir ve mevcut yol harita
 
 ## Sıradaki Paket
 
-**`2.0.0-alpha.128 — Gerçek Web Testi Operasyon İzleme Özeti: Durum + Stabilite + Huni`**
+**`2.0.0-alpha.129 — Operasyon İzleme Özetinin Tarayıcı Teknik Görünümüne Eklenmesi`**
 
-Operasyon ve stabilite geçmişi ayrı ayrı hazır. Sıradaki paket aktif test koşusu için mevcut operation-status, stabilite sinyali, audit hunisi ve operasyon KPI'larını tek salt-okunur izleme özetinde birleştirecek. Bu ilk gerçek kullanıcı testi sırasında kullanılacak operasyon ekranı sözleşmesinin sunucu tarafı olacak.
+Birleşik operasyon izleme sözleşmesi sunucuda hazır. Sıradaki paket mevcut teknik durum alanında aktif testin operation state, stabilite ve audit huni tamamlanma oranını tek kompakt satırda gösterecek. Bu görünüm oyuncu ekranına yeni menü eklemeyecek ve Oyna kararını değiştirmeyecek.
 
 
 ---
