@@ -1,7 +1,7 @@
 # Project Relay 2.0 — YOL HARİTASI
 
-**Güncel Sürüm:** `2.0.0-alpha.103`  
-**Paket:** Launch Attempt KPI ve Gerçek Web Testi Çıkış Hunisi  
+**Güncel Sürüm:** `2.0.0-alpha.104`  
+**Paket:** Gerçek Web Testi İlk Koşu Hazırlık Raporu ve Operasyon Checklist Snapshot'ı  
 **Kanonik Dosya:** `docs/YOL_HARITASI.md`
 
 > Bu dosya Project Relay 2.0 için tek kanonik geliştirme kaydıdır. Her paket tamamlandığında sürüm numarası artırılır; **Tamamlananlar** ve **Yapılacaklar** bu dosyada güncellenir. Sonraki geliştirme paketi bu dosya okunarak başlatılır.
@@ -383,9 +383,9 @@ Aşağıdaki alanlar ilk sürüm kapsamına dahil değildir ve mevcut yol harita
 
 ## Sıradaki Paket
 
-**`2.0.0-alpha.104 — Gerçek Web Testi İlk Koşu Hazırlık Raporu ve Operasyon Checklist Snapshot'ı`**
+**`2.0.0-alpha.105 — Checklist Tarayıcı Teknik Görünümü ve Operasyon Notları`**
 
-Launch kilidi, launch attempt audit ve çıkış hunisi KPI'sı hazır. Sıradaki paket gerçek kullanıcı testini başlatmadan önce tek bir operasyon checklist snapshot'ı oluşturacak: launch_ready, aktif test_run_id, persistence/yedek sağlığı, retention, RC candidate, audit zinciri ve davranış örnek durumları. Checklist yalnızca teknik operasyon raporu olacak; yeni oyuncu özelliği eklenmeyecek.
+İlk koşu operasyon checklist snapshot'ı hazır. Sıradaki paket checklist'i mevcut teknik durum alanına bağlayacak. Tarayıcı `İlk Koşu: Hazır / Hazır Değil`, failed_checks ve bloklamayan operasyon notu sayısını gösterecek. Oyna karar mekanizması değişmeyecek.
 
 
 ---

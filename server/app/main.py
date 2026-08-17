@@ -74,6 +74,9 @@ from .web_test_rc_candidate import (
 from .web_test_launch import (
     build_launch_snapshot,
 )
+from .web_test_checklist import (
+    build_first_run_checklist,
+)
 from .web_test_run import (
     build_test_run_catalog,
     build_test_run_go_no_go,
@@ -118,8 +121,8 @@ TELEMETRY_MAX_EVENTS = int(
 )
 WEB_TEST_RUN_ID = os.environ.get(
     "RELAY_WEB_TEST_RUN_ID",
-    "web-test-alpha.103",
-).strip() or "web-test-alpha.103"
+    "web-test-alpha.104",
+).strip() or "web-test-alpha.104"
 
 telemetry_repository = (
     JsonFileTelemetryRepository(
@@ -1321,7 +1324,7 @@ def web_test_current_run() -> dict:
         "test_run_id":
             WEB_TEST_RUN_ID,
         "build":
-            "web-test-alpha.103",
+            "web-test-alpha.104",
     }
 
 
@@ -1410,7 +1413,7 @@ def web_test_rc_candidate() -> dict:
     return build_rc_candidate_summary(
         version=VERSION,
         build=
-            "web-test-alpha.103",
+            "web-test-alpha.104",
         test_run_id=
             WEB_TEST_RUN_ID,
         operation_readiness=
@@ -1451,7 +1454,7 @@ def web_test_launch_readiness() -> dict:
     return build_launch_snapshot(
         version=VERSION,
         build=
-            "web-test-alpha.103",
+            "web-test-alpha.104",
         test_run_id=
             WEB_TEST_RUN_ID,
         manifest=manifest,
@@ -1461,6 +1464,43 @@ def web_test_launch_readiness() -> dict:
             web_test_rc_candidate(),
         data_health=
             web_test_data_health(),
+    )
+
+
+@app.get("/web-test/first-run-checklist")
+def web_test_first_run_checklist() -> dict:
+    data_health = (
+        web_test_data_health()
+    )
+    rc_candidate = (
+        web_test_rc_candidate()
+    )
+    launch = (
+        web_test_launch_readiness()
+    )
+    run_summary = (
+        build_test_run_summary(
+            telemetry_service=
+                telemetry_service,
+            test_run_id=
+                WEB_TEST_RUN_ID,
+        )
+    )
+
+    return build_first_run_checklist(
+        version=VERSION,
+        build=
+            "web-test-alpha.104",
+        test_run_id=
+            WEB_TEST_RUN_ID,
+        launch_readiness=
+            launch,
+        data_health=
+            data_health,
+        rc_candidate=
+            rc_candidate,
+        run_summary=
+            run_summary,
     )
 
 

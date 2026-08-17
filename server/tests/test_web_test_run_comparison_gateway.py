@@ -9,10 +9,10 @@ def test_run_comparison_endpoint():
         "/web-test/test-runs/compare",
         params={
             "baseline_test_run_id":"old",
-            "candidate_test_run_id":"web-test-alpha.103",
+            "candidate_test_run_id":"web-test-alpha.104",
         },
     ).json()
 
     assert body["baseline_test_run_id"]=="old"
-    assert body["candidate_test_run_id"]=="web-test-alpha.103"
+    assert body["candidate_test_run_id"]=="web-test-alpha.104"
     assert "metrics" in body
