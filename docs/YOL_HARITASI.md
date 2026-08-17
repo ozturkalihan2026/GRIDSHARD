@@ -1,7 +1,7 @@
 # Project Relay 2.0 — YOL HARİTASI
 
-**Güncel Sürüm:** `2.0.0-alpha.121`  
-**Paket:** Test Koşusu Operasyon Geçmişi Agregat Özeti  
+**Güncel Sürüm:** `2.0.0-alpha.122`  
+**Paket:** Operasyon Geçmişinde Durum Geçiş Özeti  
 **Kanonik Dosya:** `docs/YOL_HARITASI.md`
 
 > Bu dosya Project Relay 2.0 için tek kanonik geliştirme kaydıdır. Her paket tamamlandığında sürüm numarası artırılır; **Tamamlananlar** ve **Yapılacaklar** bu dosyada güncellenir. Sonraki geliştirme paketi bu dosya okunarak başlatılır.
@@ -383,9 +383,9 @@ Aşağıdaki alanlar ilk sürüm kapsamına dahil değildir ve mevcut yol harita
 
 ## Sıradaki Paket
 
-**`2.0.0-alpha.122 — Operasyon Geçmişinde Durum Geçiş Özeti`**
+**`2.0.0-alpha.123 — Gerçek Web Testi Operasyon Sağlık Özeti ve Stabilite Sinyali`**
 
-Agregat operasyon geçmişi hazır. Sıradaki paket snapshot sırasından yalnızca agregat durum geçişlerini çıkaracak: not_ready→ready_not_started, ready_not_started→running ve running→diğer durum geçiş sayıları raporlanacak. Oyuncu veya savaş bilgisi tutulmayacak.
+Operasyon durum geçmişi ve geçişleri ölçülüyor. Sıradaki paket aktif test koşusu için agregat bir stabilite sinyali üretecek: running snapshot oranı, running→other gerileme sayısı ve mevcut operation-status birlikte değerlendirilerek `stable`, `degraded` veya `not_running` durumu raporlanacak. Bu gözlemsel operasyon sinyali launch kararını değiştirmeyecek.
 
 
 ---

@@ -781,3 +781,97 @@ def build_operation_history_summary(
                 else None
             ),
     }
+
+
+def build_operation_transition_summary(
+    *,
+    telemetry_service: InMemoryTelemetryService,
+    test_run_id: str,
+) -> dict[str, Any]:
+    snapshots = [
+        event
+        for event in telemetry_service.events(
+            event_type=
+                "web_test_operation_snapshot",
+        )
+        if event.get(
+            "metadata",
+            {},
+        ).get(
+            "test_run_id"
+        )
+        == test_run_id
+    ]
+
+    snapshots.sort(
+        key=lambda event: (
+            int(
+                event.get(
+                    "timestamp_ms",
+                    0,
+                )
+            ),
+            str(
+                event.get(
+                    "event_id",
+                    "",
+                )
+            ),
+        )
+    )
+
+    transitions = {
+        "not_ready_to_ready_not_started":0,
+        "ready_not_started_to_running":0,
+        "running_to_other":0,
+    }
+
+    previous = None
+
+    for event in snapshots:
+        current = event.get(
+            "metadata",
+            {},
+        ).get(
+            "operational_state"
+        )
+
+        if previous is not None:
+            if (
+                previous == "not_ready"
+                and current
+                == "ready_not_started"
+            ):
+                transitions[
+                    "not_ready_to_ready_not_started"
+                ] += 1
+            elif (
+                previous
+                == "ready_not_started"
+                and current == "running"
+            ):
+                transitions[
+                    "ready_not_started_to_running"
+                ] += 1
+            elif (
+                previous == "running"
+                and current != "running"
+            ):
+                transitions[
+                    "running_to_other"
+                ] += 1
+
+        previous = current
+
+    return {
+        "test_run_id":
+            test_run_id,
+        "snapshot_count":
+            len(snapshots),
+        "transition_count":
+            sum(
+                transitions.values()
+            ),
+        "transitions":
+            transitions,
+    }
