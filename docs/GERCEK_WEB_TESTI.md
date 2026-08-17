@@ -66,3 +66,15 @@ Yeterli örnek olduğunda şu alanlar birlikte okunur:
 - Modül/güçlendirici dengesi puanı + modül değişimi / booster / raf / Devre Kredisi kullanım sinyalleri
 
 Bu katman hiçbir denge değerini otomatik değiştirmez. Bulgular insan incelemesi gerektirir.
+
+
+## İnceleme adayları
+
+`/web-test/review-candidates` yalnızca `/web-test/findings` sonucu `sufficient` olduğunda düzeltme adayları üretir.
+
+Öncelik sırası:
+1. Ortalama puanı 3 altında olan yüksek önem alanları
+2. Düşük puan bulunan izleme alanları
+3. Aynı önem düzeyinde daha düşük ortalama puan
+
+Sistem hiçbir değişikliği otomatik uygulamaz. Her aday insan onayı gerektirir.

@@ -21,7 +21,7 @@ def test_web_test_run_start_is_idempotent_when_preflight_ready():
 
     payload={
         "test_run_id":
-            "web-test-beta.3",
+            "web-test-beta.4.1",
     }
 
     first=client.post(
@@ -49,9 +49,9 @@ def test_web_test_run_start_is_idempotent_when_preflight_ready():
     assert len(events)==1
     assert events[0]["metadata"]=={
         "test_run_id":
-            "web-test-beta.3",
+            "web-test-beta.4.1",
         "preflight_ready":
             True,
         "build":
-            "web-test-beta.3",
+            "web-test-beta.4.1",
     }

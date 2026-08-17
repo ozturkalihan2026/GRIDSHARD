@@ -1,7 +1,7 @@
 # Project Relay 2.0 — YOL HARİTASI
 
-**Güncel Sürüm:** `2.0.0-beta.3`  
-**Paket:** Project Relay 2.0 Beta — Geri Bildirim + Telemetri Bulgu Katmanı  
+**Güncel Sürüm:** `2.0.0-beta.4.1`  
+**Paket:** Project Relay 2.0 Beta — Bulgu Önceliklendirme ve İnceleme Adayları  
 **Kanonik Dosya:** `docs/YOL_HARITASI.md`
 
 > Bu dosya Project Relay 2.0 için tek kanonik geliştirme kaydıdır. Her paket tamamlandığında sürüm numarası artırılır; **Tamamlananlar** ve **Yapılacaklar** bu dosyada güncellenir. Sonraki geliştirme paketi bu dosya okunarak başlatılır.
@@ -452,11 +452,23 @@ Aşağıdaki alanlar ilk sürüm kapsamına dahil değildir ve mevcut yol harita
 - [x] Teknik alanda Beta Bulguları durumu `veri bekleniyor / analiz hazır` olarak gösteriliyor.
 - [x] Ana menü kapsamı değişmedi; Eğitim hâlâ Beta kapsamı dışında.
 
+### 2.0.0-beta.4.1 — Project Relay 2.0 Beta — Bulgu Önceliklendirme ve İnceleme Adayları
+- [x] `build_review_candidates` insan inceleme adayları servis katmanı eklendi.
+- [x] `/web-test/review-candidates` salt-okunur endpoint'i eklendi.
+- [x] Gerçek geri bildirim yetersizken durum `waiting_for_real_data` ve aday listesi boş kalıyor.
+- [x] Yeterli veri olduğunda yüksek önem alanları düşük puanlı izleme alanlarından önce sıralanıyor.
+- [x] Aynı önem düzeyinde daha düşük ortalama puan daha yüksek öncelik alıyor.
+- [x] Kullanılabilirlik, bağlantı, savaş dengesi ve modül/güçlendirici dengesi için ayrı teknik bağlamlar üretiliyor.
+- [x] `auto_apply=false`; hiçbir oyun/denge değeri otomatik değiştirilmiyor.
+- [x] `human_approval_required=true`; düzeltme kapsamı insan değerlendirmesine bırakılıyor.
+- [x] Teknik alanda aday sayısı ve ilk öncelik kompakt biçimde gösteriliyor.
+- [x] Ana menü kapsamı değişmedi; Eğitim Beta kapsamı dışında.
+
 ## Sıradaki Paket
 
-**Beta Gerçek Kullanıcı Testi — Yeterli Örnek Sonrası İlk UX/Denge Düzeltme Paketi**
+**Beta Gerçek Kullanıcı Testi — İlk Onaylı UX/Denge Düzeltmesi**
 
-`2.0.0-beta.3` ile gerçek geri bildirim ve teknik telemetri aynı test koşusunda birlikte analiz edilmeye hazır. Bundan sonraki düzeltme paketi ancak gerçek oyunculardan en az 3 geri bildirim oluşup `/web-test/findings` sonucu `sufficient` olduğunda belirlenmelidir. Sistem, veri oluşmadan denge problemi veya UX sorunu uydurmayacaktır.
+`2.0.0-beta.4.1` ile gerçek veri yeterli olduğunda düzeltme adayları yalnızca öneri seviyesinde önceliklendirilebilir. Sonraki kod değişikliği ancak gerçek Beta verisi oluşup `/web-test/review-candidates` sonucu `review_required` olduğunda ve hangi adayın uygulanacağı insan tarafından onaylandığında yapılmalıdır.
 
 
 ---

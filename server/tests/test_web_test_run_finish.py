@@ -11,7 +11,7 @@ def test_finish_requires_started_run():
         "/web-test/test-run/finish",
         json={
             "test_run_id":
-                "web-test-beta.3",
+                "web-test-beta.4.1",
         },
     )
 
@@ -25,7 +25,7 @@ def test_finish_is_idempotent_and_status_becomes_finished():
         "/web-test/test-run/start",
         json={
             "test_run_id":
-                "web-test-beta.3",
+                "web-test-beta.4.1",
         },
     )
     assert start.status_code==200
@@ -34,7 +34,7 @@ def test_finish_is_idempotent_and_status_becomes_finished():
         "/web-test/test-run/finish",
         json={
             "test_run_id":
-                "web-test-beta.3",
+                "web-test-beta.4.1",
         },
     )
     assert first.status_code==200
@@ -45,7 +45,7 @@ def test_finish_is_idempotent_and_status_becomes_finished():
         "/web-test/test-run/finish",
         json={
             "test_run_id":
-                "web-test-beta.3",
+                "web-test-beta.4.1",
         },
     )
     assert second.status_code==200

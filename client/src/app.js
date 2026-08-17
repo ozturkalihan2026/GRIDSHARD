@@ -42,7 +42,7 @@
   const COMPETITIVE_STATUS = "M7 Simülasyon aktif";
   const BALANCE_STATUS = "Eşit modül + counter doğrulandı";
   const AI_STATUS = "Adaptif AI + rekabetçi denge doğrulandı";
-  const PVP_STATUS = "Beta geri bildirim ve telemetri bulgu özeti hazır";
+  const PVP_STATUS = "Beta bulgu ve inceleme adayları hazır";
 
   const PORT_COUNT_BY_NAME = {
     "Çekirdek":4,
@@ -514,7 +514,7 @@
         webTestBuildState,
       releaseCheckState,
       expectedVersion:
-        "2.0.0-beta.3",
+        "2.0.0-beta.4.1",
       expectedProtocolVersion: 1,
     });
   const playReadinessGate =
@@ -545,7 +545,7 @@
 
   telemetryDispatcher.trackGameOpened({
     platform: "web",
-    build: "2.0.0-beta.3",
+    build: "2.0.0-beta.4.1",
   });
 
   const postMatchSync =
@@ -1105,9 +1105,9 @@
   const diagnosticSnapshot =
     new RelayDiagnosticSnapshot({
       version:
-        "2.0.0-beta.3",
+        "2.0.0-beta.4.1",
       build:
-        "web-test-beta.3",
+        "web-test-beta.4.1",
       bootGate:
         serverBootGate,
       connectionManager:
@@ -2087,6 +2087,44 @@
     }
   }
 
+  async function loadReviewCandidates() {
+    const el=document.getElementById("beta-review-status");
+
+    try {
+      const response=await fetch("/web-test/review-candidates");
+      if (!response.ok) {
+        throw new Error("İnceleme adayları alınamadı.");
+      }
+
+      const payload=await response.json();
+
+      if (el) {
+        if (payload.status==="waiting_for_real_data") {
+          el.textContent="İnceleme Adayları: Gerçek veri bekleniyor";
+        } else if (payload.status==="no_priority_issue") {
+          el.textContent="İnceleme Adayları: Öncelikli sorun yok";
+        } else {
+          const first=payload.candidates?.[0];
+          el.textContent=
+            `İnceleme Adayları: ${payload.candidate_count} alan`
+            + (first ? ` · Öncelik: ${first.label}` : "");
+        }
+        el.dataset.status=payload.status;
+      }
+
+      return {ok:true,payload};
+    } catch (error) {
+      if (el) {
+        el.textContent="İnceleme Adayları: Alınamadı";
+        el.dataset.status="error";
+      }
+      return {
+        ok:false,
+        reason:error instanceof Error ? error.message : String(error),
+      };
+    }
+  }
+
   async function loadBetaFindings() {
     const el =
       document.getElementById(
@@ -2236,6 +2274,7 @@
       );
       await loadFeedbackSummary();
       await loadBetaFindings();
+      await loadReviewCandidates();
 
       return {
         ok:true,
@@ -2297,6 +2336,7 @@
       );
       await loadFeedbackSummary();
       await loadBetaFindings();
+      await loadReviewCandidates();
 
       return {
         ok:true,
@@ -2411,6 +2451,7 @@
       );
       await loadFeedbackSummary();
       await loadBetaFindings();
+      await loadReviewCandidates();
       return {
         ok:true,
         alreadyStarted:true,
