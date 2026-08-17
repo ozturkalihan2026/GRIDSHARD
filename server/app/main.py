@@ -43,6 +43,7 @@ from .player_data_store import (
 )
 from .telemetry import (
     InMemoryTelemetryService,
+    JsonFileTelemetryRepository,
     TelemetryError,
     TelemetryEvent,
 )
@@ -79,7 +80,26 @@ player_profile_service = PlayerProfileService()
 player_progression_service = PlayerProgressionService(
     player_profile_service
 )
-telemetry_service = InMemoryTelemetryService()
+DEFAULT_TELEMETRY_PATH = (
+    Path(__file__).resolve()
+    .parent.parent
+    / "data"
+    / "web_test_telemetry.json"
+)
+TELEMETRY_PATH = Path(
+    os.environ.get(
+        "RELAY_TELEMETRY_PATH",
+        str(DEFAULT_TELEMETRY_PATH),
+    )
+)
+telemetry_repository = (
+    JsonFileTelemetryRepository(
+        TELEMETRY_PATH
+    )
+)
+telemetry_service = InMemoryTelemetryService(
+    repository=telemetry_repository
+)
 web_test_kpi_service = WebTestKpiService(
     telemetry_service
 )

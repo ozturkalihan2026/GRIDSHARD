@@ -1,7 +1,7 @@
 # Project Relay 2.0 — YOL HARİTASI
 
-**Güncel Sürüm:** `2.0.0-alpha.72`  
-**Paket:** Kontrollü Web Test Veri Kurtarma Endpoint'i ve Sonrası Health Doğrulaması  
+**Güncel Sürüm:** `2.0.0-alpha.73`  
+**Paket:** Kalıcı Telemetri / KPI Snapshot ve Sunucu Restart Ölçüm Sürekliliği  
 **Kanonik Dosya:** `docs/YOL_HARITASI.md`
 
 > Bu dosya Project Relay 2.0 için tek kanonik geliştirme kaydıdır. Her paket tamamlandığında sürüm numarası artırılır; **Tamamlananlar** ve **Yapılacaklar** bu dosyada güncellenir. Sonraki geliştirme paketi bu dosya okunarak başlatılır.
@@ -383,9 +383,9 @@ Aşağıdaki alanlar ilk sürüm kapsamına dahil değildir ve mevcut yol harita
 
 ## Sıradaki Paket
 
-**`2.0.0-alpha.73 — Kalıcı Telemetri / KPI Snapshot ve Sunucu Restart Ölçüm Sürekliliği`**
+**`2.0.0-alpha.74 — Kalıcı Telemetri Sağlık Kontrolü ve Release-Check Entegrasyonu`**
 
-Oyuncu hesabı ve recovery zinciri sunucu restart'larına dayanıklı hale geldi. Ancak Web test telemetrisi hâlâ yalnızca süreç belleğinde tutuluyor; sunucu yeniden başlatıldığında KPI geçmişi sıfırlanıyor. Sıradaki paket telemetri olaylarını test ortamında dosya tabanlı kalıcı journal/snapshot katmanına taşıyacak. Event-id deduplication ve mevcut KPI sözleşmesi korunacak; üçüncü taraf analitik sağlayıcı eklenmeyecek.
+Telemetri/KPI geçmişi artık restart sonrasında korunuyor. Sıradaki paket telemetri dosyasının bozulması veya yazılamaması durumunu persistence health zincirine ekleyecek. Telemetri sağlıksızsa Web test ölçüm güvenilirliği kaybolacağı için release-check `ready=false` olacak ve gerçek test oturumu başlamadan sorun görünür hale gelecek; oyuncu hesabı dosyasıyla telemetri dosyası ayrı sağlık durumları olarak raporlanacak.
 
 
 ---

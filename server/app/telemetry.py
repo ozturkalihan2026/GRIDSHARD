@@ -2,7 +2,10 @@ from __future__ import annotations
 
 import time
 from dataclasses import dataclass, field
-from typing import Any, Callable
+from pathlib import Path
+import json
+import os
+from typing import Any, Callable, Protocol
 
 from .game.models import BattleState, BattleStatus
 
@@ -45,15 +48,176 @@ class TelemetryError(ValueError):
     pass
 
 
+class TelemetryRepository(Protocol):
+    def load(self) -> list[TelemetryEvent]: ...
+
+    def save(
+        self,
+        events: list[TelemetryEvent],
+    ) -> None: ...
+
+    def clear(self) -> None: ...
+
+
+class JsonFileTelemetryRepository:
+    def __init__(
+        self,
+        path: str | Path,
+    ):
+        self.path = Path(path)
+
+    def load(self) -> list[TelemetryEvent]:
+        if not self.path.exists():
+            return []
+
+        try:
+            raw = self.path.read_text(
+                encoding="utf-8"
+            )
+            if not raw.strip():
+                return []
+
+            payload = json.loads(raw)
+        except (
+            OSError,
+            json.JSONDecodeError,
+        ) as exc:
+            raise TelemetryError(
+                "Kalıcı telemetri dosyası okunamadı."
+            ) from exc
+
+        if not isinstance(
+            payload,
+            list,
+        ):
+            raise TelemetryError(
+                "Kalıcı telemetri dosyası liste olmalıdır."
+            )
+
+        events: list[
+            TelemetryEvent
+        ] = []
+
+        for item in payload:
+            if not isinstance(
+                item,
+                dict,
+            ):
+                raise TelemetryError(
+                    "Kalıcı telemetri olayı nesne olmalıdır."
+                )
+
+            events.append(
+                TelemetryEvent(
+                    event_id=str(
+                        item["event_id"]
+                    ),
+                    event_type=str(
+                        item["event_type"]
+                    ),
+                    timestamp_ms=int(
+                        item[
+                            "timestamp_ms"
+                        ]
+                    ),
+                    player_id=(
+                        str(
+                            item[
+                                "player_id"
+                            ]
+                        )
+                        if item.get(
+                            "player_id"
+                        )
+                        is not None
+                        else None
+                    ),
+                    session_id=(
+                        str(
+                            item[
+                                "session_id"
+                            ]
+                        )
+                        if item.get(
+                            "session_id"
+                        )
+                        is not None
+                        else None
+                    ),
+                    metadata=dict(
+                        item.get(
+                            "metadata",
+                            {},
+                        )
+                    ),
+                )
+            )
+
+        return events
+
+    def save(
+        self,
+        events: list[TelemetryEvent],
+    ) -> None:
+        try:
+            self.path.parent.mkdir(
+                parents=True,
+                exist_ok=True,
+            )
+
+            temp_path = (
+                self.path.with_name(
+                    self.path.name
+                    + ".tmp"
+                )
+            )
+
+            temp_path.write_text(
+                json.dumps(
+                    [
+                        event.to_dict()
+                        for event
+                        in events
+                    ],
+                    ensure_ascii=False,
+                    indent=2,
+                    sort_keys=True,
+                )
+                + "\n",
+                encoding="utf-8",
+            )
+
+            os.replace(
+                temp_path,
+                self.path,
+            )
+        except OSError as exc:
+            raise TelemetryError(
+                "Kalıcı telemetri dosyası yazılamadı."
+            ) from exc
+
+    def clear(self) -> None:
+        self.save([])
+
+
 class InMemoryTelemetryService:
     def __init__(
         self,
         *,
         now_func: Callable[[], float] = time.time,
+        repository: TelemetryRepository | None = None,
     ):
         self.now_func = now_func
-        self._events: list[TelemetryEvent] = []
-        self._event_ids: set[str] = set()
+        self.repository = repository
+        self._events: list[TelemetryEvent] = (
+            repository.load()
+            if repository is not None
+            else []
+        )
+        self._event_ids: set[str] = {
+            event.event_id
+            for event in self._events
+        }
 
     def record(self, event: TelemetryEvent) -> bool:
         self._validate(event)
@@ -71,6 +235,12 @@ class InMemoryTelemetryService:
         )
         self._events.append(stored)
         self._event_ids.add(stored.event_id)
+
+        if self.repository is not None:
+            self.repository.save(
+                self._events
+            )
+
         return True
 
     def record_now(
@@ -236,6 +406,9 @@ class InMemoryTelemetryService:
     def clear(self) -> None:
         self._events.clear()
         self._event_ids.clear()
+
+        if self.repository is not None:
+            self.repository.clear()
 
     def _validate(self, event: TelemetryEvent) -> None:
         if not event.event_id:
