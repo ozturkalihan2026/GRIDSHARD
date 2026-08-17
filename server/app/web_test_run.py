@@ -715,3 +715,69 @@ def compare_test_runs(
         "metrics":
             metrics,
     }
+
+
+def build_operation_history_summary(
+    *,
+    telemetry_service: InMemoryTelemetryService,
+    test_run_id: str,
+) -> dict[str, Any]:
+    snapshots = [
+        event
+        for event in telemetry_service.events(
+            event_type=
+                "web_test_operation_snapshot",
+        )
+        if event.get(
+            "metadata",
+            {},
+        ).get(
+            "test_run_id"
+        )
+        == test_run_id
+    ]
+
+    counts = {
+        "not_ready":0,
+        "ready_not_started":0,
+        "running":0,
+    }
+
+    for event in snapshots:
+        state = event.get(
+            "metadata",
+            {},
+        ).get(
+            "operational_state"
+        )
+
+        if state in counts:
+            counts[state] += 1
+
+    timestamps = [
+        int(
+            event["timestamp_ms"]
+        )
+        for event in snapshots
+    ]
+
+    return {
+        "test_run_id":
+            test_run_id,
+        "snapshot_count":
+            len(snapshots),
+        "state_counts":
+            counts,
+        "first_snapshot_at_ms":
+            (
+                min(timestamps)
+                if timestamps
+                else None
+            ),
+        "last_snapshot_at_ms":
+            (
+                max(timestamps)
+                if timestamps
+                else None
+            ),
+    }

@@ -1,7 +1,7 @@
 # Project Relay 2.0 — YOL HARİTASI
 
-**Güncel Sürüm:** `2.0.0-alpha.120`  
-**Paket:** Operasyon Snapshot KPI ve Running Snapshot Oranı  
+**Güncel Sürüm:** `2.0.0-alpha.121`  
+**Paket:** Test Koşusu Operasyon Geçmişi Agregat Özeti  
 **Kanonik Dosya:** `docs/YOL_HARITASI.md`
 
 > Bu dosya Project Relay 2.0 için tek kanonik geliştirme kaydıdır. Her paket tamamlandığında sürüm numarası artırılır; **Tamamlananlar** ve **Yapılacaklar** bu dosyada güncellenir. Sonraki geliştirme paketi bu dosya okunarak başlatılır.
@@ -383,9 +383,9 @@ Aşağıdaki alanlar ilk sürüm kapsamına dahil değildir ve mevcut yol harita
 
 ## Sıradaki Paket
 
-**`2.0.0-alpha.121 — Test Koşusu Operasyon Geçmişi Agregat Özeti`**
+**`2.0.0-alpha.122 — Operasyon Geçmişinde Durum Geçiş Özeti`**
 
-Operasyon snapshot KPI hazır. Sıradaki paket aktif test koşusundaki operasyon snapshot'larını agregat durum dağılımına dönüştürecek: not_ready, ready_not_started ve running adetleri ile ilk/son snapshot zamanı raporlanacak. Bireysel oyuncu geçmişi oluşturulmayacak.
+Agregat operasyon geçmişi hazır. Sıradaki paket snapshot sırasından yalnızca agregat durum geçişlerini çıkaracak: not_ready→ready_not_started, ready_not_started→running ve running→diğer durum geçiş sayıları raporlanacak. Oyuncu veya savaş bilgisi tutulmayacak.
 
 
 ---

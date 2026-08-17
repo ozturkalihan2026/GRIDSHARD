@@ -4,8 +4,8 @@ from app.web_test_launch import (
 
 
 def base():
-    version="2.0.0-alpha.120"
-    build="web-test-alpha.120"
+    version="2.0.0-alpha.121"
+    build="web-test-alpha.121"
     run="run-100"
     return version,build,run
 
