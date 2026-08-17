@@ -42,7 +42,7 @@
   const COMPETITIVE_STATUS = "M7 Simülasyon aktif";
   const BALANCE_STATUS = "Eşit modül + counter doğrulandı";
   const AI_STATUS = "Adaptif AI + rekabetçi denge doğrulandı";
-  const PVP_STATUS = "Beta gerçek kullanıcı geri bildirim döngüsü hazır";
+  const PVP_STATUS = "Beta geri bildirim ve telemetri bulgu özeti hazır";
 
   const PORT_COUNT_BY_NAME = {
     "Çekirdek":4,
@@ -514,7 +514,7 @@
         webTestBuildState,
       releaseCheckState,
       expectedVersion:
-        "2.0.0-beta.2",
+        "2.0.0-beta.3",
       expectedProtocolVersion: 1,
     });
   const playReadinessGate =
@@ -545,7 +545,7 @@
 
   telemetryDispatcher.trackGameOpened({
     platform: "web",
-    build: "2.0.0-beta.2",
+    build: "2.0.0-beta.3",
   });
 
   const postMatchSync =
@@ -1105,9 +1105,9 @@
   const diagnosticSnapshot =
     new RelayDiagnosticSnapshot({
       version:
-        "2.0.0-beta.2",
+        "2.0.0-beta.3",
       build:
-        "web-test-beta.2",
+        "web-test-beta.3",
       bootGate:
         serverBootGate,
       connectionManager:
@@ -2087,6 +2087,69 @@
     }
   }
 
+  async function loadBetaFindings() {
+    const el =
+      document.getElementById(
+        "beta-findings-status"
+      );
+
+    try {
+      const response =
+        await fetch(
+          "/web-test/findings"
+        );
+
+      if (!response.ok) {
+        throw new Error(
+          "Beta bulguları alınamadı."
+        );
+      }
+
+      const payload =
+        await response.json();
+
+      if (el) {
+        if (
+          payload.status
+          === "insufficient_data"
+        ) {
+          el.textContent =
+            `Beta Bulguları: Veri bekleniyor · ${
+              payload.feedback_count
+            }/${payload.minimum_feedback} geri bildirim`;
+        } else {
+          el.textContent =
+            `Beta Bulguları: Analiz hazır`
+            + ` · ${payload.concerns.length} izleme alanı`
+            + ` · ${payload.gameplay_signals.completed_matches} tamamlanan maç`;
+        }
+
+        el.dataset.status =
+          payload.status;
+      }
+
+      return {
+        ok:true,
+        payload,
+      };
+    } catch (error) {
+      if (el) {
+        el.textContent =
+          "Beta Bulguları: Alınamadı";
+        el.dataset.status =
+          "error";
+      }
+
+      return {
+        ok:false,
+        reason:
+          error instanceof Error
+            ? error.message
+            : String(error),
+      };
+    }
+  }
+
   async function submitWebTestFeedback() {
     const statusEl =
       document.getElementById(
@@ -2172,6 +2235,7 @@
         false
       );
       await loadFeedbackSummary();
+      await loadBetaFindings();
 
       return {
         ok:true,
@@ -2232,6 +2296,7 @@
         true
       );
       await loadFeedbackSummary();
+      await loadBetaFindings();
 
       return {
         ok:true,
@@ -2345,6 +2410,7 @@
         true
       );
       await loadFeedbackSummary();
+      await loadBetaFindings();
       return {
         ok:true,
         alreadyStarted:true,

@@ -51,3 +51,18 @@ Formda 1–5 arası şu başlıklar değerlendirilir:
 İsteğe bağlı kısa not en fazla 500 karakterdir.
 
 Geri bildirim aktif `test_run_id` ile ilişkilendirilir. Oyuncunun Profil adı veya diğer Profil alanları geri bildirim kaydına eklenmez. `/web-test/feedback/summary` yalnızca agregat puan ortalamalarını ve düşük puan sayılarını yayınlar.
+
+
+## Beta bulguları
+
+`/web-test/findings` gerçek geri bildirim özetini aynı test koşusunun teknik kullanım sinyalleriyle birlikte raporlar.
+
+Minimum 3 gerçek geri bildirim oluşmadan sonuç `insufficient_data` olarak kalır ve sistem denge sorunu varmış gibi otomatik sonuç üretmez.
+
+Yeterli örnek olduğunda şu alanlar birlikte okunur:
+
+- Kullanılabilirlik ve bağlantı geri bildirim puanları
+- Savaş dengesi puanı + tamamlanan maç / rematch sinyalleri
+- Modül/güçlendirici dengesi puanı + modül değişimi / booster / raf / Devre Kredisi kullanım sinyalleri
+
+Bu katman hiçbir denge değerini otomatik değiştirmez. Bulgular insan incelemesi gerektirir.

@@ -1,7 +1,7 @@
 # Project Relay 2.0 — YOL HARİTASI
 
-**Güncel Sürüm:** `2.0.0-beta.2`  
-**Paket:** Project Relay 2.0 Beta — İnsan Geri Bildirim Toplama Döngüsü  
+**Güncel Sürüm:** `2.0.0-beta.3`  
+**Paket:** Project Relay 2.0 Beta — Geri Bildirim + Telemetri Bulgu Katmanı  
 **Kanonik Dosya:** `docs/YOL_HARITASI.md`
 
 > Bu dosya Project Relay 2.0 için tek kanonik geliştirme kaydıdır. Her paket tamamlandığında sürüm numarası artırılır; **Tamamlananlar** ve **Yapılacaklar** bu dosyada güncellenir. Sonraki geliştirme paketi bu dosya okunarak başlatılır.
@@ -437,11 +437,26 @@ Aşağıdaki alanlar ilk sürüm kapsamına dahil değildir ve mevcut yol harita
 - [x] Eğitim Beta kapsamı dışında kalmaya devam ediyor.
 - [x] Gerçek insan geri bildirimi uydurulmadı; sistem yalnızca gerçek girdileri toplamak için hazırlandı.
 
+### 2.0.0-beta.3 — Project Relay 2.0 Beta — Geri Bildirim + Telemetri Bulgu Katmanı
+- [x] `build_beta_findings` analiz servis katmanı eklendi.
+- [x] `/web-test/findings` salt-okunur Beta bulgu endpoint'i eklendi.
+- [x] Geri bildirim aynı test_run_id koşusunun başlangıç/bitiş zaman penceresindeki teknik gameplay telemetrisiyle birlikte okunuyor.
+- [x] Tamamlanan maç sayısı session_id bazında tekilleştiriliyor.
+- [x] Modül değişimi, booster kullanımı, Modül Rafı kullanımı, Devre Kredisi harcaması ve rematch sinyalleri agregat bağlam olarak raporlanıyor.
+- [x] Minimum 3 gerçek geri bildirim olmadan sonuç `insufficient_data` kalıyor.
+- [x] Yetersiz veri varken sistem sahte problem/denge bulgusu üretmiyor.
+- [x] Yeterli örnekte ortalama 3 altı alanlar yüksek önem, düşük puan bulunan diğer alanlar izleme alanı olarak raporlanıyor.
+- [x] Savaş dengesi ve modül/güçlendirici dengesi için geri bildirim + teknik kullanım bağlamları ayrı yayınlanıyor.
+- [x] `automatic_balance_change=false`; hiçbir denge değeri otomatik değiştirilmiyor.
+- [x] `human_review_required=true`; gerçek oyuncu bulguları insan incelemesine bırakılıyor.
+- [x] Teknik alanda Beta Bulguları durumu `veri bekleniyor / analiz hazır` olarak gösteriliyor.
+- [x] Ana menü kapsamı değişmedi; Eğitim hâlâ Beta kapsamı dışında.
+
 ## Sıradaki Paket
 
-**Beta Gerçek Kullanıcı Testi — İlk Gerçek Geri Bildirim Verisi ve Denge Analizi**
+**Beta Gerçek Kullanıcı Testi — Yeterli Örnek Sonrası İlk UX/Denge Düzeltme Paketi**
 
-`2.0.0-beta.2` ile gerçek insan geri bildirimini toplama altyapısı hazır. Bir sonraki aşama gerçek oyuncuların Beta testini tamamlayıp formu doldurmasıdır. Yeterli gerçek geri bildirim oluştuğunda kullanılabilirlik, bağlantı, savaş dengesi ve modül/güçlendirici dengesi agregat bulguları teknik telemetri ile birlikte analiz edilerek ilk denge/UX düzeltme paketi belirlenecektir.
+`2.0.0-beta.3` ile gerçek geri bildirim ve teknik telemetri aynı test koşusunda birlikte analiz edilmeye hazır. Bundan sonraki düzeltme paketi ancak gerçek oyunculardan en az 3 geri bildirim oluşup `/web-test/findings` sonucu `sufficient` olduğunda belirlenmelidir. Sistem, veri oluşmadan denge problemi veya UX sorunu uydurmayacaktır.
 
 
 ---
