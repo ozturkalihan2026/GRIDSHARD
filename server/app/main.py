@@ -173,6 +173,13 @@ def player_data_persistence_health() -> dict:
     )
 
 
+def telemetry_persistence_health() -> dict:
+    return (
+        telemetry_repository
+        .health()
+    )
+
+
 class CreateSessionRequest(BaseModel):
     session_id: str
     auto_start_when_ready: bool = False
@@ -714,14 +721,20 @@ def update_profile_battle_pool(
 
 @app.get("/health")
 def health() -> dict:
-    persistence = (
+    player_persistence = (
         player_data_persistence_health()
+    )
+    telemetry_persistence = (
+        telemetry_persistence_health()
     )
     readiness = build_web_test_readiness(
         version=VERSION,
         telemetry_service=telemetry_service,
         persistence_ready=bool(
-            persistence["ready"]
+            player_persistence["ready"]
+        ),
+        telemetry_persistence_ready=bool(
+            telemetry_persistence["ready"]
         ),
     )
 
@@ -733,64 +746,92 @@ def health() -> dict:
                 else "degraded"
             ),
         "version": VERSION,
-        "persistence":
-            persistence,
+        "persistence": {
+            "player_data":
+                player_persistence,
+            "telemetry":
+                telemetry_persistence,
+        },
         "web_test": readiness.to_dict(),
     }
 
 
 @app.get("/web-test/status")
 def web_test_status() -> dict:
-    persistence = (
+    player_persistence = (
         player_data_persistence_health()
+    )
+    telemetry_persistence = (
+        telemetry_persistence_health()
     )
     return build_web_test_readiness(
         version=VERSION,
         telemetry_service=telemetry_service,
         persistence_ready=bool(
-            persistence["ready"]
+            player_persistence["ready"]
+        ),
+        telemetry_persistence_ready=bool(
+            telemetry_persistence["ready"]
         ),
     ).to_dict()
 
 
 @app.get("/web-test/release-check")
 def web_test_release_check() -> dict:
-    persistence = (
+    player_persistence = (
         player_data_persistence_health()
+    )
+    telemetry_persistence = (
+        telemetry_persistence_health()
     )
     return build_release_check(
         version=VERSION,
         telemetry_service=telemetry_service,
         persistence_ready=bool(
-            persistence["ready"]
+            player_persistence["ready"]
+        ),
+        telemetry_persistence_ready=bool(
+            telemetry_persistence["ready"]
         ),
     ).to_dict()
 
 
 @app.get("/web-test/manifest")
 def web_test_manifest() -> dict:
-    persistence = (
+    player_persistence = (
         player_data_persistence_health()
+    )
+    telemetry_persistence = (
+        telemetry_persistence_health()
     )
     return build_manifest(
         version=VERSION,
         telemetry_service=telemetry_service,
         persistence_ready=bool(
-            persistence["ready"]
+            player_persistence["ready"]
+        ),
+        telemetry_persistence_ready=bool(
+            telemetry_persistence["ready"]
         ),
     )
 
 
 @app.get("/web-test/rc-report")
 def web_test_rc_report() -> dict:
-    persistence = (
+    player_persistence = (
         player_data_persistence_health()
+    )
+    telemetry_persistence = (
+        telemetry_persistence_health()
     )
     return build_rc_report(
         version=VERSION,
         telemetry_service=telemetry_service,
         persistence_ready=bool(
-            persistence["ready"]
+            player_persistence["ready"]
+        ),
+        telemetry_persistence_ready=bool(
+            telemetry_persistence["ready"]
         ),
     )
 

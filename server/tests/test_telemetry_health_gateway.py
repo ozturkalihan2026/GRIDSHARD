@@ -2,45 +2,55 @@ from fastapi.testclient import TestClient
 
 from app.main import (
     app,
-    player_data_repository,
+    telemetry_repository,
 )
 
 
 client=TestClient(app)
 
 
-def test_health_degrades_when_persistence_file_corrupt(
+def test_corrupt_telemetry_degrades_health_and_release(
     tmp_path,
     monkeypatch,
 ):
-    path=tmp_path/"players.json"
+    path=tmp_path/"telemetry.json"
     path.write_text(
         "{broken",
         encoding="utf-8",
     )
     monkeypatch.setattr(
-        player_data_repository,
+        telemetry_repository,
         "path",
         path,
     )
 
-    body=client.get(
+    health=client.get(
         "/health"
     ).json()
 
-    assert body["status"]=="degraded"
-    assert body["persistence"]["player_data"]["ready"] is False
-    assert body["persistence"]["player_data"]["state"]=="corrupt"
-    assert body["web_test"]["ready"] is False
+    assert health["status"]=="degraded"
+    assert (
+        health["persistence"][
+            "telemetry"
+        ]["ready"]
+        is False
+    )
+    assert (
+        health["web_test"][
+            "capabilities"
+        ][
+            "telemetry_persistence"
+        ]
+        is False
+    )
 
     release=client.get(
         "/web-test/release-check"
     ).json()
-
     assert release["ready"] is False
     assert (
         release["checks"][
-            "player_data_persistence"
+            "telemetry_persistence"
         ]
         is False
     )
@@ -48,10 +58,9 @@ def test_health_degrades_when_persistence_file_corrupt(
     manifest=client.get(
         "/web-test/manifest"
     ).json()
-
     assert (
         manifest[
-            "player_data_persistence_ready"
+            "telemetry_persistence_ready"
         ]
         is False
     )

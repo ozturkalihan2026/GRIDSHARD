@@ -196,6 +196,70 @@ class JsonFileTelemetryRepository:
                 "Kalıcı telemetri dosyası yazılamadı."
             ) from exc
 
+    def health(self) -> dict[str, Any]:
+        if self.path.exists():
+            try:
+                events = self.load()
+            except TelemetryError as exc:
+                return {
+                    "ready": False,
+                    "state": "corrupt",
+                    "path": str(
+                        self.path
+                    ),
+                    "event_count": 0,
+                    "error": str(exc),
+                }
+
+            return {
+                "ready": True,
+                "state": "ready",
+                "path": str(
+                    self.path
+                ),
+                "event_count": len(
+                    events
+                ),
+                "error": None,
+            }
+
+        probe = self.path.parent
+        while (
+            not probe.exists()
+            and probe != probe.parent
+        ):
+            probe = probe.parent
+
+        writable = (
+            probe.exists()
+            and os.access(
+                probe,
+                os.W_OK,
+            )
+        )
+
+        return {
+            "ready": bool(
+                writable
+            ),
+            "state":
+                (
+                    "empty"
+                    if writable
+                    else "unwritable"
+                ),
+            "path": str(
+                self.path
+            ),
+            "event_count": 0,
+            "error":
+                (
+                    None
+                    if writable
+                    else "Kalıcı telemetri veri yolu yazılabilir değil."
+                ),
+        }
+
     def clear(self) -> None:
         self.save([])
 
