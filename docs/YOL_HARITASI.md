@@ -1,7 +1,7 @@
 # Project Relay 2.0 — YOL HARİTASI
 
-**Güncel Sürüm:** `2.0.0-alpha.52`  
-**Paket:** Web Test Eşleştirme → Oyna Bağlantısı ve Gerçek Oturum Başlatma  
+**Güncel Sürüm:** `2.0.0-alpha.53`  
+**Paket:** Gerçek Maç Sonucu → Profil / İstatistikler Senkronizasyonu  
 **Kanonik Dosya:** `docs/YOL_HARITASI.md`
 
 > Bu dosya Project Relay 2.0 için tek kanonik geliştirme kaydıdır. Her paket tamamlandığında sürüm numarası artırılır; **Tamamlananlar** ve **Yapılacaklar** bu dosyada güncellenir. Sonraki geliştirme paketi bu dosya okunarak başlatılır.
@@ -380,9 +380,9 @@ Aşağıdaki alanlar ilk sürüm kapsamına dahil değildir ve mevcut yol harita
 
 ## Sıradaki Paket
 
-**`2.0.0-alpha.53 — Gerçek Maç Sonucu → Profil / İstatistikler Senkronizasyonu`**
+**`2.0.0-alpha.54 — Profil / İstatistikler / Ayarlar Gerçek Sunucu Yükleme Akışı`**
 
-Gerçek eşleştirme ve oturum başlatma istemciye bağlandı. Sıradaki paket yeni menü eklemeden gerçek `match_finished` sonrasında oyuncunun progression, Profil ve İstatistikler verilerini sunucudan yeniden çekip mevcut ekran durumlarına uygulayacak. Maç sonucu alanında DP/XP değişimi gösterilecek; tekrar maç isteği mevcut eşleştirme akışına geri bağlanacak. Eğitim yine ayrı faz olarak bekleyecek.
+Maç sonu senkronizasyonu tamamlandı. Sıradaki paket yeni menü eklemeden ana menüden Profil, İstatistikler veya Ayarlar ekranı açıldığında ilgili veriyi gerçek sunucu endpoint'lerinden yükleyecek. İstemci başlangıçta gömülü örnek değerleri yalnızca fallback olarak kullanacak; ekran durumu loading/ready/error olarak izlenecek. Ayar değişiklikleri de mevcut PUT endpoint'ine bağlanacak.
 
 
 ---

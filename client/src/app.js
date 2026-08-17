@@ -42,7 +42,7 @@
   const COMPETITIVE_STATUS = "M7 Simülasyon aktif";
   const BALANCE_STATUS = "Eşit modül + counter doğrulandı";
   const AI_STATUS = "Adaptif AI + rekabetçi denge doğrulandı";
-  const PVP_STATUS = "Gerçek eşleştirme → Oyna akışı aktif";
+  const PVP_STATUS = "Maç sonucu → Profil/İstatistik senkronizasyonu aktif";
 
   const PORT_COUNT_BY_NAME = {
     "Çekirdek":4,
@@ -307,10 +307,10 @@
     new RelayWebTestBuildState();
   webTestBuildState.applyHealth({
     status: "ok",
-    version: "2.0.0-alpha.52",
+    version: "2.0.0-alpha.53",
     web_test: {
       ready: true,
-      build: "web-test-alpha.52",
+      build: "web-test-alpha.53",
       release_checks: [
         "health",
         "matchmaking",
@@ -340,8 +340,57 @@
 
   telemetryDispatcher.trackGameOpened({
     platform: "web",
-    build: "2.0.0-alpha.52",
+    build: "2.0.0-alpha.53",
   });
+
+  const postMatchSync =
+    new RelayPostMatchSync({
+      playerId:
+        pvpState.playerId,
+      profileState,
+      statisticsState,
+      progressionState,
+    });
+
+  let postMatchSyncInFlight = null;
+
+  async function syncFinishedMatch() {
+    const battleId =
+      pvpState.finalResult
+        ?.session_id
+      || pvpState.sessionId;
+
+    if (!battleId) {
+      return {
+        ok: false,
+        reason:
+          "Maç sonucu için oturum kimliği bulunamadı.",
+      };
+    }
+
+    if (
+      postMatchSyncInFlight
+    ) {
+      return postMatchSyncInFlight;
+    }
+
+    postMatchSyncInFlight =
+      postMatchSync.sync(
+        battleId
+      ).finally(() => {
+        postMatchSyncInFlight =
+          null;
+      });
+
+    const result =
+      await postMatchSyncInFlight;
+
+    renderPostMatchSummary();
+    renderProfileSummary();
+    renderStatisticsSummary();
+
+    return result;
+  }
 
   const pvpConnection =
     new RelayWebSocketConnectionManager({
@@ -366,6 +415,18 @@
           ) {
             onlinePlay
               ?.markBattleStarted();
+          }
+
+          if (
+            _message?.type
+              === "match_finished"
+            || (
+              pvpState.phase
+                === "finished"
+              && pvpState.finalResult
+            )
+          ) {
+            syncFinishedMatch();
           }
 
           render();
@@ -778,6 +839,92 @@ const SPECIAL_CELL_INFO = {
 
       board.appendChild(cell);
     }
+  }
+
+  function renderPostMatchSummary() {
+    const resultEl =
+      document.getElementById(
+        "battle-result-summary"
+      );
+    if (!resultEl) {
+      return;
+    }
+
+    const result =
+      pvpState.finalResult;
+    if (!result) {
+      resultEl.hidden = true;
+      return;
+    }
+
+    const progression =
+      progressionState.viewModel();
+
+    let outcome =
+      result.is_draw
+        ? "Beraberlik"
+        : (
+            result.winner_player_id
+              === pvpState.playerId
+              ? "Galibiyet"
+              : "Mağlubiyet"
+          );
+
+    const ratingText =
+      progression
+        ? (
+            `${progression.ratingDelta >= 0 ? "+" : ""}`
+            + `${progression.ratingDelta} DP`
+          )
+        : "DP hesaplanıyor";
+
+    const xpText =
+      progression
+        ? `+${progression.xpAwarded} XP`
+        : "XP hesaplanıyor";
+
+    resultEl.hidden = false;
+    resultEl.textContent =
+      `${outcome} · ${ratingText} · ${xpText}`;
+  }
+
+  function renderProfileSummary() {
+    const el =
+      document.getElementById(
+        "profile-live-summary"
+      );
+    const view =
+      profileState.viewModel();
+
+    if (!el || !view) {
+      return;
+    }
+
+    el.textContent =
+      `Seviye ${view.level} · `
+      + `${view.leagueNameTr} · `
+      + `${view.rating} Derece Puanı · `
+      + `${view.experience} XP`;
+  }
+
+  function renderStatisticsSummary() {
+    const el =
+      document.getElementById(
+        "statistics-live-summary"
+      );
+    const view =
+      statisticsState.viewModel();
+
+    if (!el || !view) {
+      return;
+    }
+
+    el.textContent =
+      `Maç ${view.totalMatches} · `
+      + `Galibiyet ${view.wins} · `
+      + `Mağlubiyet ${view.losses} · `
+      + `Beraberlik ${view.draws} · `
+      + `Galibiyet %${view.winRatePercent}`;
   }
 
   function render() {
@@ -1383,6 +1530,33 @@ const SPECIAL_CELL_INFO = {
     }
 
     requestAnimationFrame(updateClock);
+  }
+
+  const rematchButton =
+    document.getElementById(
+      "rematch-button"
+    );
+
+  if (rematchButton) {
+    rematchButton.addEventListener(
+      "click",
+      async () => {
+        trackRematchRequest();
+
+        postMatchSync.clear();
+        pvpConnection.disconnect();
+
+        const result =
+          await startRealOnlineMatch();
+
+        if (!result.ok) {
+          logClientMessage(
+            result.reason
+            || "Tekrar maç başlatılamadı."
+          );
+        }
+      }
+    );
   }
 
   poolConfirmEl.addEventListener(

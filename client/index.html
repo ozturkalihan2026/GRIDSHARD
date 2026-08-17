@@ -11,7 +11,7 @@
     <header class="battle-header">
       <div>
         <h1>Project Relay 2.0</h1>
-        <p>2.0.0-alpha.52 — Gerçek Eşleştirme → Oyna</p>
+        <p>2.0.0-alpha.53 — Maç Sonu Senkronizasyonu</p>
       </div>
       <div class="battle-status-cluster">
         <div class="credit-indicator" id="credit-indicator">Devre Kredisi: 200 DK</div>
@@ -42,7 +42,7 @@
         <h2>Profil</h2>
         <span>Genel · İlerleme · Savaş Havuzu</span>
       </div>
-      <p>Seviye 1 · Gümüş · 1000 Derece Puanı · Maç sonu XP/Derece sunucudan güncellenir</p>
+      <p id="profile-live-summary">Seviye 1 · Gümüş · 1000 Derece Puanı · 0 XP</p>
     </section>
 
     <section class="statistics-summary-panel" id="statistics-summary-panel" data-screen-panel="statistics" hidden>
@@ -50,7 +50,7 @@
         <h2>İstatistikler</h2>
         <span>Sunucu otoriteli maç sonuçları</span>
       </div>
-      <p>Maç 0 · Galibiyet 0 · Mağlubiyet 0 · Beraberlik 0 · Galibiyet %0</p>
+      <p id="statistics-live-summary">Maç 0 · Galibiyet 0 · Mağlubiyet 0 · Beraberlik 0 · Galibiyet %0</p>
     </section>
 
     <section class="settings-summary-panel" id="settings-summary-panel" data-screen-panel="settings" hidden>
@@ -107,6 +107,16 @@
         </p>
         <div id="module-shelf" class="module-shelf" aria-label="Modül Rafı"></div>
       </aside>
+    </section>
+
+    <section class="post-match-panel" data-screen-panel="play" hidden>
+      <div class="panel-title-row">
+        <h2>Maç Sonucu</h2>
+        <span id="battle-result-summary" hidden>Sonuç bekleniyor</span>
+      </div>
+      <button id="rematch-button" type="button">
+        Tekrar Maç
+      </button>
     </section>
 
     <section class="event-panel" data-screen-panel="play" hidden>

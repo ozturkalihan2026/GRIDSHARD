@@ -385,3 +385,14 @@ button, input { font: inherit; }
   font-weight: 700;
   outline: 1px dashed currentColor;
 }
+
+
+.post-match-panel {
+  border: 1px solid currentColor;
+  border-radius: 0.75rem;
+  padding: 1rem;
+}
+
+#rematch-button {
+  padding: 0.65rem 1rem;
+}

@@ -1916,6 +1916,128 @@
   }
 
 
+
+  class RelayPostMatchSync {
+    constructor({
+      playerId,
+      profileState,
+      statisticsState,
+      progressionState,
+      requestJson = null,
+    }) {
+      if (!playerId) {
+        throw new Error(
+          "Maç sonu senkronizasyonu için oyuncu kimliği zorunludur."
+        );
+      }
+
+      this.playerId = playerId;
+      this.profileState = profileState;
+      this.statisticsState =
+        statisticsState;
+      this.progressionState =
+        progressionState;
+      this.requestJson =
+        requestJson
+        || (async (path) => {
+          const response =
+            await fetch(path);
+
+          if (!response.ok) {
+            throw new Error(
+              `Maç sonu senkronizasyonu başarısız: ${response.status}`
+            );
+          }
+
+          return response.json();
+        });
+
+      this.lastBattleId = null;
+      this.lastPayload = null;
+      this.loading = false;
+      this.lastError = null;
+    }
+
+    async sync(battleId) {
+      if (!battleId) {
+        return {
+          ok: false,
+          reason:
+            "Maç sonu senkronizasyonu için battle_id gerekli.",
+        };
+      }
+
+      if (
+        this.lastBattleId === battleId
+        && this.lastPayload
+      ) {
+        return {
+          ok: true,
+          cached: true,
+          payload:
+            this.lastPayload,
+        };
+      }
+
+      this.loading = true;
+      this.lastError = null;
+
+      try {
+        const payload =
+          await this.requestJson(
+            `/post-match/${encodeURIComponent(battleId)}/${encodeURIComponent(this.playerId)}`
+          );
+
+        this.progressionState
+          ?.applyResult(
+            payload.progression
+          );
+        this.profileState
+          ?.applyProfile(
+            payload.profile
+          );
+        this.statisticsState
+          ?.applyStatistics(
+            payload.statistics
+          );
+
+        this.lastBattleId =
+          battleId;
+        this.lastPayload = {
+          ...payload,
+        };
+
+        return {
+          ok: true,
+          cached: false,
+          payload:
+            this.lastPayload,
+        };
+      } catch (error) {
+        this.lastError =
+          error instanceof Error
+            ? error.message
+            : String(error);
+
+        return {
+          ok: false,
+          reason:
+            this.lastError,
+        };
+      } finally {
+        this.loading = false;
+      }
+    }
+
+    clear() {
+      this.lastBattleId = null;
+      this.lastPayload = null;
+      this.lastError = null;
+      this.loading = false;
+    }
+  }
+
+
   const api = {
     RelayBattleClient,
     RelayPvPClientState,
@@ -1930,6 +2052,7 @@
     RelayTelemetryDispatcher,
     RelayWebTestBuildState,
     RelayOnlinePlayCoordinator,
+    RelayPostMatchSync,
     BattlePoolSelection,
     APP_SCREEN,
     WS_CONNECTION_STATUS,
@@ -1958,6 +2081,7 @@
   global.RelayTelemetryDispatcher = RelayTelemetryDispatcher;
   global.RelayWebTestBuildState = RelayWebTestBuildState;
   global.RelayOnlinePlayCoordinator = RelayOnlinePlayCoordinator;
+  global.RelayPostMatchSync = RelayPostMatchSync;
   global.RelayOnlinePlayStatus = ONLINE_PLAY_STATUS;
   global.RelayTelemetryEventType = TELEMETRY_EVENT_TYPE;
   global.RelayAppScreen = APP_SCREEN;

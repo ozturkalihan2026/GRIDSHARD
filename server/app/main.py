@@ -445,6 +445,45 @@ def get_battle_progression(
     return result
 
 
+@app.get("/post-match/{battle_id}/{player_id}")
+def get_post_match_sync(
+    battle_id: str,
+    player_id: str,
+) -> dict:
+    progression = (
+        player_progression_service
+        .player_result(
+            battle_id,
+            player_id,
+        )
+    )
+    if progression is None:
+        raise HTTPException(
+            status_code=404,
+            detail="Maç sonu ilerleme sonucu bulunamadı.",
+        )
+
+    return {
+        "battle_id": battle_id,
+        "player_id": player_id,
+        "progression": progression,
+        "profile": (
+            player_profile_service
+            .get_or_create(
+                player_id
+            )
+            .to_view()
+        ),
+        "statistics": (
+            player_statistics_service
+            .get_or_create(
+                player_id
+            )
+            .to_view()
+        ),
+    }
+
+
 @app.get("/statistics/{player_id}")
 def get_statistics(
     player_id: str,
