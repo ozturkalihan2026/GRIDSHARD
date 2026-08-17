@@ -1,7 +1,7 @@
 # Project Relay 2.0 — YOL HARİTASI
 
-**Güncel Sürüm:** `2.0.0-alpha.122`  
-**Paket:** Operasyon Geçmişinde Durum Geçiş Özeti  
+**Güncel Sürüm:** `2.0.0-alpha.123`  
+**Paket:** Gerçek Web Testi Operasyon Sağlık Özeti ve Stabilite Sinyali  
 **Kanonik Dosya:** `docs/YOL_HARITASI.md`
 
 > Bu dosya Project Relay 2.0 için tek kanonik geliştirme kaydıdır. Her paket tamamlandığında sürüm numarası artırılır; **Tamamlananlar** ve **Yapılacaklar** bu dosyada güncellenir. Sonraki geliştirme paketi bu dosya okunarak başlatılır.
@@ -383,9 +383,9 @@ Aşağıdaki alanlar ilk sürüm kapsamına dahil değildir ve mevcut yol harita
 
 ## Sıradaki Paket
 
-**`2.0.0-alpha.123 — Gerçek Web Testi Operasyon Sağlık Özeti ve Stabilite Sinyali`**
+**`2.0.0-alpha.124 — Operasyon Stabilite Sinyalinin Tarayıcı Teknik Görünümüne Eklenmesi`**
 
-Operasyon durum geçmişi ve geçişleri ölçülüyor. Sıradaki paket aktif test koşusu için agregat bir stabilite sinyali üretecek: running snapshot oranı, running→other gerileme sayısı ve mevcut operation-status birlikte değerlendirilerek `stable`, `degraded` veya `not_running` durumu raporlanacak. Bu gözlemsel operasyon sinyali launch kararını değiştirmeyecek.
+Operasyon stabilite sinyali sunucuda hazır. Sıradaki paket mevcut teknik durum alanında `Stabilite: Test Çalışmıyor / Stabil / Bozulmuş` göstergesini ekleyecek. Bu gösterge Oyna veya launch kararını değiştirmeyecek.
 
 
 ---
