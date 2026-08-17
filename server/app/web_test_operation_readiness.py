@@ -35,6 +35,15 @@ def build_operation_readiness(
                     "release_ready"
                 )
             ),
+        "test_run_id":
+            bool(
+                str(
+                    manifest.get(
+                        "test_run_id",
+                        "",
+                    )
+                ).strip()
+            ),
         "player_data_ready":
             bool(
                 data_health.get(
@@ -125,6 +134,10 @@ def build_operation_readiness(
         "pvp_protocol_version":
             manifest.get(
                 "pvp_protocol_version"
+            ),
+        "test_run_id":
+            manifest.get(
+                "test_run_id"
             ),
         "player_count":
             int(

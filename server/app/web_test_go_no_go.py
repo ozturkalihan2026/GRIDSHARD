@@ -125,6 +125,10 @@ def build_go_no_go(
             ),
         "technical_ready":
             technical_ready,
+        "test_run_id":
+            operation_readiness.get(
+                "test_run_id"
+            ),
         "technical_checks":
             dict(
                 operation_readiness.get(

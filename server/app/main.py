@@ -109,8 +109,8 @@ TELEMETRY_MAX_EVENTS = int(
 )
 WEB_TEST_RUN_ID = os.environ.get(
     "RELAY_WEB_TEST_RUN_ID",
-    "web-test-alpha.89",
-).strip() or "web-test-alpha.89"
+    "web-test-alpha.90",
+).strip() or "web-test-alpha.90"
 
 telemetry_repository = (
     JsonFileTelemetryRepository(
@@ -291,6 +291,8 @@ def record_web_test_session_start_audit(
         telemetry_persistence_ready=bool(
             telemetry_persistence["ready"]
         ),
+        test_run_id=
+            WEB_TEST_RUN_ID,
     )
 
     data_health = web_test_data_health()
@@ -303,6 +305,8 @@ def record_web_test_session_start_audit(
         telemetry_persistence_ready=bool(
             telemetry_persistence["ready"]
         ),
+        test_run_id=
+            WEB_TEST_RUN_ID,
     )
     operation = build_operation_readiness(
         manifest=manifest,
@@ -1040,6 +1044,10 @@ def health() -> dict:
         telemetry_persistence_ready=bool(
             telemetry_persistence["ready"]
         ),
+        test_run_id_ready=
+            bool(
+                WEB_TEST_RUN_ID
+            ),
     )
 
     return {
@@ -1231,7 +1239,7 @@ def web_test_current_run() -> dict:
         "test_run_id":
             WEB_TEST_RUN_ID,
         "build":
-            "web-test-alpha.89",
+            "web-test-alpha.90",
     }
 
 
@@ -1303,6 +1311,8 @@ def web_test_manifest() -> dict:
         telemetry_persistence_ready=bool(
             telemetry_persistence["ready"]
         ),
+        test_run_id=
+            WEB_TEST_RUN_ID,
     )
 
 
@@ -1323,6 +1333,8 @@ def web_test_rc_report() -> dict:
         telemetry_persistence_ready=bool(
             telemetry_persistence["ready"]
         ),
+        test_run_id=
+            WEB_TEST_RUN_ID,
     )
 
 

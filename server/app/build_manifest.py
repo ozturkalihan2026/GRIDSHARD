@@ -19,6 +19,7 @@ def build_manifest(
     telemetry_service: InMemoryTelemetryService,
     persistence_ready: bool = True,
     telemetry_persistence_ready: bool = True,
+    test_run_id: str = "default-run",
 ) -> dict[str, Any]:
     release = build_release_check(
         version=version,
@@ -27,12 +28,18 @@ def build_manifest(
             persistence_ready,
         telemetry_persistence_ready=
             telemetry_persistence_ready,
+        test_run_id_ready=
+            bool(
+                str(test_run_id).strip()
+            ),
     )
 
     return {
         "server_version": version,
         "web_test_build":
             WEB_TEST_BUILD,
+        "test_run_id":
+            str(test_run_id),
         "pvp_protocol_version":
             PVP_PROTOCOL_VERSION,
         "menu_areas":

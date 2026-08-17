@@ -24,6 +24,7 @@ REQUIRED_WEB_TEST_CAPABILITIES = (
     "player_data_snapshot",
     "player_data_persistence",
     "telemetry_persistence",
+    "test_run_id",
 )
 
 
@@ -59,6 +60,7 @@ def build_release_check(
     telemetry_service: InMemoryTelemetryService,
     persistence_ready: bool = True,
     telemetry_persistence_ready: bool = True,
+    test_run_id_ready: bool = True,
 ) -> ReleaseCheckResult:
     readiness = build_web_test_readiness(
         version=version,
@@ -67,6 +69,8 @@ def build_release_check(
             persistence_ready,
         telemetry_persistence_ready=
             telemetry_persistence_ready,
+        test_run_id_ready=
+            test_run_id_ready,
     )
 
     capabilities = readiness.capabilities
@@ -128,6 +132,12 @@ def build_release_check(
             bool(
                 capabilities.get(
                     "telemetry_persistence"
+                )
+            ),
+        "test_run_id":
+            bool(
+                capabilities.get(
+                    "test_run_id"
                 )
             ),
         "post_match_sync": True,
