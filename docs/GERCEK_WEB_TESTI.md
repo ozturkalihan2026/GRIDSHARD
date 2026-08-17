@@ -35,3 +35,19 @@ Eğitim alanı bu Beta test kapsamı dışında kalmaya devam eder.
 ## Önemli not
 
 Teknik rapor gerçek insan testinin tamamlandığını kendiliğinden iddia etmez. İnsan kullanıcı gözlemleri, kullanılabilirlik sorunları ve oyun dengesi geri bildirimleri ayrıca değerlendirilmelidir.
+
+
+## Geri bildirim
+
+Test koşusu **Gerçek Test Koşusunu Bitir** düğmesiyle kapatıldıktan sonra aynı teknik alanda Beta geri bildirim formu açılır.
+
+Formda 1–5 arası şu başlıklar değerlendirilir:
+
+- Kullanılabilirlik
+- Bağlantı deneyimi
+- Savaş dengesi
+- Modül / güçlendirici dengesi
+
+İsteğe bağlı kısa not en fazla 500 karakterdir.
+
+Geri bildirim aktif `test_run_id` ile ilişkilendirilir. Oyuncunun Profil adı veya diğer Profil alanları geri bildirim kaydına eklenmez. `/web-test/feedback/summary` yalnızca agregat puan ortalamalarını ve düşük puan sayılarını yayınlar.

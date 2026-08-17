@@ -1,7 +1,7 @@
 # Project Relay 2.0 — YOL HARİTASI
 
-**Güncel Sürüm:** `2.0.0-beta.1`  
-**Paket:** Project Relay 2.0 Beta — Gerçek Web Testi Kapalı Döngüsü  
+**Güncel Sürüm:** `2.0.0-beta.2`  
+**Paket:** Project Relay 2.0 Beta — İnsan Geri Bildirim Toplama Döngüsü  
 **Kanonik Dosya:** `docs/YOL_HARITASI.md`
 
 > Bu dosya Project Relay 2.0 için tek kanonik geliştirme kaydıdır. Her paket tamamlandığında sürüm numarası artırılır; **Tamamlananlar** ve **Yapılacaklar** bu dosyada güncellenir. Sonraki geliştirme paketi bu dosya okunarak başlatılır.
@@ -422,11 +422,26 @@ Aşağıdaki alanlar ilk sürüm kapsamına dahil değildir ve mevcut yol harita
 - [x] Ana menü yalnızca Oyna, Profil, İstatistikler ve Ayarlar.
 - [x] Eğitim Beta test kapsamı dışında tutuluyor.
 
+### 2.0.0-beta.2 — Project Relay 2.0 Beta — İnsan Geri Bildirim Toplama Döngüsü
+- [x] Yeni `web_test_feedback_submitted` telemetri event tipi eklendi.
+- [x] `/web-test/feedback` geri bildirim endpoint'i eklendi.
+- [x] Geri bildirim yalnızca tamamlanmış aktif test_run_id için kabul ediliyor.
+- [x] Kullanılabilirlik, bağlantı deneyimi, savaş dengesi ve modül/güçlendirici dengesi 1–5 ölçeğinde doğrulanıyor.
+- [x] İsteğe bağlı kısa not 500 karakterle sınırlandı.
+- [x] Geri bildirim kaydına Profil adı veya oyuncu Profil içeriği eklenmiyor.
+- [x] `/web-test/feedback/summary` agregat geri bildirim özetini yayınlıyor.
+- [x] Ortalama puanlar, düşük puan sayıları ve not sayısı raporlanıyor.
+- [x] Test koşusu kapandıktan sonra teknik alanda geri bildirim formu açılıyor.
+- [x] Geri bildirim gönderildikten sonra agregat özet tarayıcıda yenileniyor.
+- [x] Ana menü yalnızca Oyna, Profil, İstatistikler ve Ayarlar olarak korunuyor.
+- [x] Eğitim Beta kapsamı dışında kalmaya devam ediyor.
+- [x] Gerçek insan geri bildirimi uydurulmadı; sistem yalnızca gerçek girdileri toplamak için hazırlandı.
+
 ## Sıradaki Paket
 
-**Beta Gerçek Kullanıcı Testi — İnsan Geri Bildirimi ve Denge Bulguları**
+**Beta Gerçek Kullanıcı Testi — İlk Gerçek Geri Bildirim Verisi ve Denge Analizi**
 
-`2.0.0-beta.1` ile teknik gerçek Web test döngüsü tamamlandı. Bundan sonraki büyük aşama kod tarafından otomatik kapatılamaz: gerçek oyuncularla Beta testinin yürütülmesi, kullanılabilirlik sorunlarının, savaş dengesi bulgularının, modül/booster tercih dağılımlarının ve bağlantı sorunlarının gözlemlenmesi gerekir. Bu bulgular bir sonraki geliştirme paketinin kapsamını belirleyecek.
+`2.0.0-beta.2` ile gerçek insan geri bildirimini toplama altyapısı hazır. Bir sonraki aşama gerçek oyuncuların Beta testini tamamlayıp formu doldurmasıdır. Yeterli gerçek geri bildirim oluştuğunda kullanılabilirlik, bağlantı, savaş dengesi ve modül/güçlendirici dengesi agregat bulguları teknik telemetri ile birlikte analiz edilerek ilk denge/UX düzeltme paketi belirlenecektir.
 
 
 ---

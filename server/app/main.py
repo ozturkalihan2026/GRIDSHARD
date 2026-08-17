@@ -96,6 +96,11 @@ from .web_test_monitoring import (
 from .web_test_post_run import (
     build_post_run_report,
 )
+from .web_test_feedback import (
+    build_feedback_summary,
+    normalize_feedback_note,
+    validate_feedback_rating,
+)
 from .web_test_run import (
     build_operation_history_summary,
     build_operation_transition_summary,
@@ -149,8 +154,8 @@ TELEMETRY_MAX_EVENTS = int(
 )
 WEB_TEST_RUN_ID = os.environ.get(
     "RELAY_WEB_TEST_RUN_ID",
-    "web-test-beta.1",
-).strip() or "web-test-beta.1"
+    "web-test-beta.2",
+).strip() or "web-test-beta.2"
 
 telemetry_repository = (
     JsonFileTelemetryRepository(
@@ -305,6 +310,16 @@ class WebTestRunStartRequest(BaseModel):
 
 class WebTestRunFinishRequest(BaseModel):
     test_run_id: str
+
+
+class WebTestFeedbackRequest(BaseModel):
+    test_run_id: str
+    submitted_at_ms: int
+    usability: int
+    connection: int
+    battle_balance: int
+    module_booster_balance: int
+    note: str | None = None
 
 
 class TelemetryEventRequest(BaseModel):
@@ -869,7 +884,7 @@ def start_web_test_run(
                 "preflight_ready":
                     True,
                 "build":
-                    "web-test-beta.1",
+                    "web-test-beta.2",
             },
         )
     )
@@ -883,7 +898,7 @@ def start_web_test_run(
         "test_run_id":
             WEB_TEST_RUN_ID,
         "build":
-            "web-test-beta.1",
+            "web-test-beta.2",
     }
 
 
@@ -935,7 +950,7 @@ def finish_web_test_run(
                 "test_run_id":
                     WEB_TEST_RUN_ID,
                 "build":
-                    "web-test-beta.1",
+                    "web-test-beta.2",
             },
         )
     )
@@ -949,8 +964,128 @@ def finish_web_test_run(
         "test_run_id":
             WEB_TEST_RUN_ID,
         "build":
-            "web-test-beta.1",
+            "web-test-beta.2",
     }
+
+
+@app.post("/web-test/feedback")
+def submit_web_test_feedback(
+    request: WebTestFeedbackRequest,
+) -> dict:
+    if (
+        request.test_run_id
+        != WEB_TEST_RUN_ID
+    ):
+        raise HTTPException(
+            status_code=409,
+            detail=(
+                "Geri bildirim aktif Web test koşusuyla eşleşmiyor."
+            ),
+        )
+
+    status = web_test_run_status()
+
+    if not status.get(
+        "finished"
+    ):
+        raise HTTPException(
+            status_code=409,
+            detail=(
+                "Geri bildirim yalnızca tamamlanmış Web test koşusu için gönderilebilir."
+            ),
+        )
+
+    try:
+        usability = (
+            validate_feedback_rating(
+                request.usability,
+                field_name=
+                    "Kullanılabilirlik",
+            )
+        )
+        connection = (
+            validate_feedback_rating(
+                request.connection,
+                field_name=
+                    "Bağlantı deneyimi",
+            )
+        )
+        battle_balance = (
+            validate_feedback_rating(
+                request.battle_balance,
+                field_name=
+                    "Savaş dengesi",
+            )
+        )
+        module_booster_balance = (
+            validate_feedback_rating(
+                request.module_booster_balance,
+                field_name=
+                    "Modül/güçlendirici dengesi",
+            )
+        )
+        note = normalize_feedback_note(
+            request.note
+        )
+    except ValueError as exc:
+        raise HTTPException(
+            status_code=422,
+            detail=str(exc),
+        ) from exc
+
+    event_id = (
+        "web-test-feedback-"
+        + WEB_TEST_RUN_ID
+        + "-"
+        + str(
+            request.submitted_at_ms
+        )
+    )
+
+    accepted = telemetry_service.record(
+        TelemetryEvent(
+            event_id=event_id,
+            event_type=
+                "web_test_feedback_submitted",
+            timestamp_ms=
+                request.submitted_at_ms,
+            metadata={
+                "test_run_id":
+                    WEB_TEST_RUN_ID,
+                "usability":
+                    usability,
+                "connection":
+                    connection,
+                "battle_balance":
+                    battle_balance,
+                "module_booster_balance":
+                    module_booster_balance,
+                "has_note":
+                    bool(note),
+                "note":
+                    note,
+            },
+        )
+    )
+
+    return {
+        "accepted":
+            accepted,
+        "duplicate":
+            not accepted,
+        "test_run_id":
+            WEB_TEST_RUN_ID,
+    }
+
+
+@app.get("/web-test/feedback/summary")
+def web_test_feedback_summary() -> dict:
+    return build_feedback_summary(
+        telemetry_service=
+            telemetry_service,
+        test_run_id=
+            WEB_TEST_RUN_ID,
+    )
 
 
 @app.post("/web-test/audit/operation-snapshot")
@@ -1784,7 +1919,7 @@ def web_test_current_run() -> dict:
         "test_run_id":
             WEB_TEST_RUN_ID,
         "build":
-            "web-test-beta.1",
+            "web-test-beta.2",
     }
 
 
@@ -1909,7 +2044,7 @@ def web_test_rc_candidate() -> dict:
     return build_rc_candidate_summary(
         version=VERSION,
         build=
-            "web-test-beta.1",
+            "web-test-beta.2",
         test_run_id=
             WEB_TEST_RUN_ID,
         operation_readiness=
@@ -1950,7 +2085,7 @@ def web_test_launch_readiness() -> dict:
     return build_launch_snapshot(
         version=VERSION,
         build=
-            "web-test-beta.1",
+            "web-test-beta.2",
         test_run_id=
             WEB_TEST_RUN_ID,
         manifest=manifest,
@@ -1986,7 +2121,7 @@ def web_test_first_run_checklist() -> dict:
     return build_first_run_checklist(
         version=VERSION,
         build=
-            "web-test-beta.1",
+            "web-test-beta.2",
         test_run_id=
             WEB_TEST_RUN_ID,
         launch_readiness=
@@ -2014,7 +2149,7 @@ def web_test_preflight() -> dict:
     return build_preflight_report(
         version=VERSION,
         build=
-            "web-test-beta.1",
+            "web-test-beta.2",
         test_run_id=
             WEB_TEST_RUN_ID,
         checklist=
@@ -2073,7 +2208,7 @@ def web_test_run_status() -> dict:
         "test_run_id":
             WEB_TEST_RUN_ID,
         "build":
-            "web-test-beta.1",
+            "web-test-beta.2",
         "started":
             started,
         "finished":
@@ -2098,7 +2233,7 @@ def web_test_operation_status() -> dict:
     return build_operation_status(
         version=VERSION,
         build=
-            "web-test-beta.1",
+            "web-test-beta.2",
         test_run_id=
             WEB_TEST_RUN_ID,
         preflight=
@@ -2153,7 +2288,7 @@ def web_test_monitoring() -> dict:
     return build_monitoring_summary(
         version=VERSION,
         build=
-            "web-test-beta.1",
+            "web-test-beta.2",
         test_run_id=
             WEB_TEST_RUN_ID,
         operation_status=
@@ -2182,7 +2317,7 @@ def web_test_run_report() -> dict:
     return build_post_run_report(
         version=VERSION,
         build=
-            "web-test-beta.1",
+            "web-test-beta.2",
         test_run_id=
             WEB_TEST_RUN_ID,
         run_summary=

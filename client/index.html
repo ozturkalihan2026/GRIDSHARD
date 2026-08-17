@@ -11,7 +11,7 @@
     <header class="battle-header">
       <div>
         <h1>Project Relay 2.0</h1>
-        <p>2.0.0-beta.1 — Gerçek Web Testi Hazır</p>
+        <p>2.0.0-beta.2 — Gerçek Web Testi Hazır</p>
       </div>
       <div class="battle-status-cluster">
         <div class="credit-indicator" id="credit-indicator">Devre Kredisi: 200 DK</div>
@@ -145,6 +145,44 @@
       <span id="monitoring-summary-status" data-state="unknown">İzleme: Bekleniyor</span>
       <span id="web-test-run-report" data-status="idle">Test Raporu: Bekleniyor</span>
       <button id="web-test-finish-button" type="button">Gerçek Test Koşusunu Bitir</button>
+      <form id="web-test-feedback-form" hidden>
+        <strong>Beta Test Geri Bildirimi</strong>
+        <label>
+          Kullanılabilirlik (1–5)
+          <select id="feedback-usability" required>
+            <option value="">Seç</option>
+            <option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option>
+          </select>
+        </label>
+        <label>
+          Bağlantı deneyimi (1–5)
+          <select id="feedback-connection" required>
+            <option value="">Seç</option>
+            <option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option>
+          </select>
+        </label>
+        <label>
+          Savaş dengesi (1–5)
+          <select id="feedback-battle-balance" required>
+            <option value="">Seç</option>
+            <option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option>
+          </select>
+        </label>
+        <label>
+          Modül / güçlendirici dengesi (1–5)
+          <select id="feedback-module-booster-balance" required>
+            <option value="">Seç</option>
+            <option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option>
+          </select>
+        </label>
+        <label>
+          Kısa not (isteğe bağlı)
+          <textarea id="feedback-note" maxlength="500" rows="3"></textarea>
+        </label>
+        <button type="submit">Geri Bildirimi Gönder</button>
+        <span id="feedback-submit-status">Geri bildirim bekleniyor</span>
+      </form>
+      <span id="feedback-summary-status">Geri Bildirim Özeti: Bekleniyor</span>
       <button id="server-boot-retry" type="button">Sağlık Kontrolünü Yeniden Dene</button>
       <span id="telemetry-send-status" data-status="idle">Telemetri: Hazır</span>
     </section>

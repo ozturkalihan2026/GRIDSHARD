@@ -42,7 +42,7 @@
   const COMPETITIVE_STATUS = "M7 Simülasyon aktif";
   const BALANCE_STATUS = "Eşit modül + counter doğrulandı";
   const AI_STATUS = "Adaptif AI + rekabetçi denge doğrulandı";
-  const PVP_STATUS = "Project Relay 2.0 Beta gerçek Web test döngüsü hazır";
+  const PVP_STATUS = "Beta gerçek kullanıcı geri bildirim döngüsü hazır";
 
   const PORT_COUNT_BY_NAME = {
     "Çekirdek":4,
@@ -514,7 +514,7 @@
         webTestBuildState,
       releaseCheckState,
       expectedVersion:
-        "2.0.0-beta.1",
+        "2.0.0-beta.2",
       expectedProtocolVersion: 1,
     });
   const playReadinessGate =
@@ -545,7 +545,7 @@
 
   telemetryDispatcher.trackGameOpened({
     platform: "web",
-    build: "2.0.0-beta.1",
+    build: "2.0.0-beta.2",
   });
 
   const postMatchSync =
@@ -1105,9 +1105,9 @@
   const diagnosticSnapshot =
     new RelayDiagnosticSnapshot({
       version:
-        "2.0.0-beta.1",
+        "2.0.0-beta.2",
       build:
-        "web-test-beta.1",
+        "web-test-beta.2",
       bootGate:
         serverBootGate,
       connectionManager:
@@ -2010,6 +2010,186 @@
       );
   }
 
+  function setFeedbackFormVisible(
+    visible
+  ) {
+    const form =
+      document.getElementById(
+        "web-test-feedback-form"
+      );
+
+    if (form) {
+      form.hidden =
+        !visible;
+    }
+  }
+
+  async function loadFeedbackSummary() {
+    const el =
+      document.getElementById(
+        "feedback-summary-status"
+      );
+
+    try {
+      const response =
+        await fetch(
+          "/web-test/feedback/summary"
+        );
+
+      if (!response.ok) {
+        throw new Error(
+          "Geri bildirim özeti alınamadı."
+        );
+      }
+
+      const payload =
+        await response.json();
+      const averages =
+        payload.average_ratings
+        || {};
+
+      if (el) {
+        el.textContent =
+          `Geri Bildirim Özeti: ${
+            payload.feedback_count
+          } kayıt`
+          + ` · Kullanılabilirlik ${
+              averages.usability ?? "-"
+            }`
+          + ` · Bağlantı ${
+              averages.connection ?? "-"
+            }`
+          + ` · Savaş Dengesi ${
+              averages.battle_balance ?? "-"
+            }`
+          + ` · Modül/Booster ${
+              averages.module_booster_balance ?? "-"
+            }`;
+      }
+
+      return {
+        ok:true,
+        payload,
+      };
+    } catch (error) {
+      if (el) {
+        el.textContent =
+          "Geri Bildirim Özeti: Alınamadı";
+      }
+
+      return {
+        ok:false,
+        reason:
+          error instanceof Error
+            ? error.message
+            : String(error),
+      };
+    }
+  }
+
+  async function submitWebTestFeedback() {
+    const statusEl =
+      document.getElementById(
+        "feedback-submit-status"
+      );
+
+    const readRating =
+      (id) => Number(
+        document.getElementById(id)
+          ?.value
+        || 0
+      );
+
+    const payload = {
+      test_run_id:
+        activeWebTestRunId,
+      submitted_at_ms:
+        Date.now(),
+      usability:
+        readRating(
+          "feedback-usability"
+        ),
+      connection:
+        readRating(
+          "feedback-connection"
+        ),
+      battle_balance:
+        readRating(
+          "feedback-battle-balance"
+        ),
+      module_booster_balance:
+        readRating(
+          "feedback-module-booster-balance"
+        ),
+      note:
+        document.getElementById(
+          "feedback-note"
+        )?.value
+        || "",
+    };
+
+    try {
+      const response =
+        await fetch(
+          "/web-test/feedback",
+          {
+            method:"POST",
+            headers:{
+              "content-type":
+                "application/json",
+            },
+            body:JSON.stringify(
+              payload
+            ),
+          }
+        );
+
+      if (!response.ok) {
+        let detail =
+          "Geri bildirim gönderilemedi.";
+
+        try {
+          const body =
+            await response.json();
+          detail =
+            body?.detail
+            || detail;
+        } catch (_error) {
+          // JSON gövdesi zorunlu değil.
+        }
+
+        throw new Error(
+          detail
+        );
+      }
+
+      if (statusEl) {
+        statusEl.textContent =
+          "Geri bildirim kaydedildi.";
+      }
+
+      setFeedbackFormVisible(
+        false
+      );
+      await loadFeedbackSummary();
+
+      return {
+        ok:true,
+      };
+    } catch (error) {
+      if (statusEl) {
+        statusEl.textContent =
+          error instanceof Error
+            ? error.message
+            : String(error);
+      }
+
+      return {
+        ok:false,
+      };
+    }
+  }
+
   async function finishActiveWebTestRun() {
     if (!activeWebTestRunId) {
       return {
@@ -2048,6 +2228,10 @@
       await loadOperationStability();
       await loadMonitoringSummary();
       await loadWebTestRunReport();
+      setFeedbackFormVisible(
+        true
+      );
+      await loadFeedbackSummary();
 
       return {
         ok:true,
@@ -2157,6 +2341,10 @@
         testRunId;
       stopWebTestSampling();
       await loadWebTestRunReport();
+      setFeedbackFormVisible(
+        true
+      );
+      await loadFeedbackSummary();
       return {
         ok:true,
         alreadyStarted:true,
@@ -2352,6 +2540,22 @@
       .addEventListener(
         "click",
         bootstrapParticipant
+      );
+  }
+
+  const webTestFeedbackForm =
+    document.getElementById(
+      "web-test-feedback-form"
+    );
+
+  if (webTestFeedbackForm) {
+    webTestFeedbackForm
+      .addEventListener(
+        "submit",
+        async (event) => {
+          event.preventDefault();
+          await submitWebTestFeedback();
+        }
       );
   }
 
