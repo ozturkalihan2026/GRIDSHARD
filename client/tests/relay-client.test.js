@@ -402,61 +402,61 @@ function createClient() {
   const fs=require("fs");
   const src=fs.readFileSync("./src/app.js","utf8");
   assert.ok(src.includes("PVP_STATUS"));
-  assert.ok(src.includes("Güvenli oturum tanılama snapshot aktif"));
+  assert.ok(src.includes("Build manifest sürüm/protokol kapısı aktif"));
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync("./src/app.js","utf8");
-  assert.ok(src.includes("Güvenli oturum tanılama snapshot aktif")); // alpha32->33 protocol status
+  assert.ok(src.includes("Build manifest sürüm/protokol kapısı aktif")); // alpha32->33 protocol status
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync("./src/app.js","utf8");
-  assert.ok(src.includes("Güvenli oturum tanılama snapshot aktif")); // alpha33 protocol
+  assert.ok(src.includes("Build manifest sürüm/protokol kapısı aktif")); // alpha33 protocol
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync("./src/app.js","utf8");
-  assert.ok(src.includes("Güvenli oturum tanılama snapshot aktif")); // alpha34 websocket
+  assert.ok(src.includes("Build manifest sürüm/protokol kapısı aktif")); // alpha34 websocket
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync("./src/app.js","utf8");
-  assert.ok(src.includes("Güvenli oturum tanılama snapshot aktif")); // alpha35 gateway
+  assert.ok(src.includes("Build manifest sürüm/protokol kapısı aktif")); // alpha35 gateway
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync("./src/app.js","utf8");
-  assert.ok(src.includes("Güvenli oturum tanılama snapshot aktif")); // alpha36 setup
+  assert.ok(src.includes("Build manifest sürüm/protokol kapısı aktif")); // alpha36 setup
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync("./src/app.js","utf8");
-  assert.ok(src.includes("Güvenli oturum tanılama snapshot aktif")); // alpha37 lobby
+  assert.ok(src.includes("Build manifest sürüm/protokol kapısı aktif")); // alpha37 lobby
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync("./src/app.js","utf8");
-  assert.ok(src.includes("Güvenli oturum tanılama snapshot aktif")); // alpha38 runner
+  assert.ok(src.includes("Build manifest sürüm/protokol kapısı aktif")); // alpha38 runner
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync("./src/app.js","utf8");
-  assert.ok(src.includes("Güvenli oturum tanılama snapshot aktif")); // alpha39 heartbeat
+  assert.ok(src.includes("Build manifest sürüm/protokol kapısı aktif")); // alpha39 heartbeat
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync("./src/app.js","utf8");
-  assert.ok(src.includes("Güvenli oturum tanılama snapshot aktif")); // alpha40 online pvp
+  assert.ok(src.includes("Build manifest sürüm/protokol kapısı aktif")); // alpha40 online pvp
 }
 
 {
@@ -682,7 +682,7 @@ function createClient() {
 {
   const fs=require("fs");
   const src=fs.readFileSync("./src/app.js","utf8");
-  assert.ok(src.includes("Güvenli oturum tanılama snapshot aktif"));
+  assert.ok(src.includes("Build manifest sürüm/protokol kapısı aktif"));
   assert.ok(src.includes("buildPvPCommandEnvelope"));
   assert.ok(src.includes("applyPvPServerEnvelope"));
 }
@@ -1504,10 +1504,10 @@ function createClient() {
 
   const result=state.applyHealth({
     status:"ok",
-    version:"2.0.0-alpha.61",
+    version:"2.0.0-alpha.62",
     web_test:{
       ready:true,
-      build:"web-test-alpha.61",
+      build:"web-test-alpha.62",
       release_checks:[
         "health",
         "matchmaking",
@@ -1551,7 +1551,7 @@ function createClient() {
 
   const result=state.applyHealth({
     status:"ok",
-    version:"2.0.0-alpha.61",
+    version:"2.0.0-alpha.62",
   });
 
   assert.strictEqual(
@@ -2322,7 +2322,7 @@ function createClient() {
   const html=fs.readFileSync("./index.html","utf8");
   assert.ok(
     html.includes(
-      "2.0.0-alpha.61"
+      "2.0.0-alpha.62"
     )
   );
   assert.ok(
@@ -2504,8 +2504,8 @@ function createClient() {
     new RelayReleaseCheckState();
 
   const view=state.apply({
-    version:"2.0.0-alpha.61",
-    build:"web-test-alpha.61",
+    version:"2.0.0-alpha.62",
+    build:"web-test-alpha.62",
     ready:true,
     checks:{
       health_ready:true,
@@ -2644,32 +2644,54 @@ function createClient() {
     new RelayServerBootGate({
       healthState:health,
       releaseCheckState:release,
+      expectedVersion:
+        "2.0.0-alpha.62",
+      expectedProtocolVersion:1,
       requestJson:
         async (path) => {
           if (path==="/health") {
             return {
               status:"ok",
-              version:"2.0.0-alpha.61",
+              version:"2.0.0-alpha.62",
               web_test:{
                 ready:true,
-                build:"web-test-alpha.61",
+                build:"web-test-alpha.62",
                 release_checks:[],
                 capabilities:{},
               },
             };
           }
+          if (
+            path
+            === "/web-test/release-check"
+          ) {
+            return {
+              version:"2.0.0-alpha.62",
+              build:"web-test-alpha.62",
+              ready:true,
+              checks:{
+                health_ready:true,
+              },
+              menu_areas:[
+                "Oyna","Profil",
+                "İstatistikler","Ayarlar",
+              ],
+              deferred_areas:[],
+            };
+          }
+
           return {
-            version:"2.0.0-alpha.61",
-            build:"web-test-alpha.61",
-            ready:true,
-            checks:{
-              health_ready:true,
-            },
+            server_version:
+              "2.0.0-alpha.62",
+            web_test_build:
+              "web-test-alpha.62",
+            pvp_protocol_version:1,
             menu_areas:[
               "Oyna","Profil",
               "İstatistikler","Ayarlar",
             ],
-            deferred_areas:[],
+            release_ready:true,
+            release_failed_checks:[],
           };
         },
     });
@@ -2713,8 +2735,8 @@ function createClient() {
 
   const snapshot=
     new RelayDiagnosticSnapshot({
-      version:"2.0.0-alpha.61",
-      build:"web-test-alpha.61",
+      version:"2.0.0-alpha.62",
+      build:"web-test-alpha.62",
       bootGate:{status:"ready"},
       connectionManager:{
         status:"open",
@@ -2783,8 +2805,81 @@ function createClient() {
   assert.ok(app.includes("renderDiagnosticSnapshot"));
 }
 
+{
+  const {
+    RelayServerBootGate,
+    RelayWebTestBuildState,
+    RelayReleaseCheckState,
+    SERVER_BOOT_STATUS,
+  } = require("../src/relay-client.js");
+
+  const gate=
+    new RelayServerBootGate({
+      healthState:
+        new RelayWebTestBuildState(),
+      releaseCheckState:
+        new RelayReleaseCheckState(),
+      expectedVersion:
+        "2.0.0-alpha.62",
+      expectedProtocolVersion:1,
+      requestJson:
+        async (path) => {
+          if (path==="/health") {
+            return {
+              version:"2.0.0-alpha.62",
+              web_test:{
+                ready:true,
+                build:"web-test-alpha.62",
+                release_checks:[],
+                capabilities:{},
+              },
+            };
+          }
+          if (
+            path
+            === "/web-test/release-check"
+          ) {
+            return {
+              version:"2.0.0-alpha.62",
+              build:"web-test-alpha.62",
+              ready:true,
+              checks:{ok:true},
+              menu_areas:[],
+              deferred_areas:[],
+            };
+          }
+          return {
+            server_version:
+              "2.0.0-alpha.61",
+            pvp_protocol_version:1,
+            release_ready:true,
+          };
+        },
+    });
+
+  asyncTests.push(
+    gate.check().then(
+      (result) => {
+        assert.strictEqual(
+          result.ok,
+          false
+        );
+        assert.strictEqual(
+          gate.status,
+          SERVER_BOOT_STATUS.BLOCKED
+        );
+        assert.ok(
+          gate.lastError.includes(
+            "Sürüm uyuşmazlığı"
+          )
+        );
+      }
+    )
+  );
+}
+
 Promise.all(asyncTests).then(() => {
-  console.log("103 client tests passed");
+  console.log("104 client tests passed");
 }).catch((error) => {
   console.error(error);
   process.exitCode = 1;

@@ -2664,11 +2664,18 @@
     constructor({
       healthState,
       releaseCheckState,
+      expectedVersion = null,
+      expectedProtocolVersion = 1,
       requestJson = null,
     }) {
       this.healthState = healthState;
       this.releaseCheckState =
         releaseCheckState;
+      this.expectedVersion =
+        expectedVersion;
+      this.expectedProtocolVersion =
+        expectedProtocolVersion;
+      this.manifest = null;
       this.requestJson =
         requestJson
         || (async (path) => {
@@ -2700,6 +2707,7 @@
         const [
           health,
           releaseCheck,
+          manifest,
         ] = await Promise.all([
           this.requestJson(
             "/health"
@@ -2707,11 +2715,16 @@
           this.requestJson(
             "/web-test/release-check"
           ),
+          this.requestJson(
+            "/web-test/manifest"
+          ),
         ]);
 
         this.health = health;
         this.releaseCheck =
           releaseCheck;
+        this.manifest =
+          manifest;
 
         const healthResult =
           this.healthState
@@ -2724,10 +2737,40 @@
               releaseCheck
             );
 
+        const versionMatches =
+          !this.expectedVersion
+          || (
+            manifest.server_version
+            === this.expectedVersion
+          );
+
+        const protocolMatches =
+          Number(
+            manifest.pvp_protocol_version
+          )
+          === Number(
+            this.expectedProtocolVersion
+          );
+
         const ready =
           healthResult.ok
           && healthResult.ready
-          && releaseView.ready;
+          && releaseView.ready
+          && Boolean(
+            manifest.release_ready
+          )
+          && versionMatches
+          && protocolMatches;
+
+        if (!versionMatches) {
+          this.lastError =
+            `Sürüm uyuşmazlığı: istemci ${this.expectedVersion}, sunucu ${manifest.server_version}`;
+        } else if (
+          !protocolMatches
+        ) {
+          this.lastError =
+            "PvP protokol sürümü uyuşmuyor.";
+        }
 
         this.status = ready
           ? SERVER_BOOT_STATUS.READY
@@ -2738,6 +2781,9 @@
           ready,
           health,
           releaseCheck,
+          manifest,
+          versionMatches,
+          protocolMatches,
         };
       } catch (error) {
         this.status =

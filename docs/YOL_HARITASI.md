@@ -1,7 +1,7 @@
 # Project Relay 2.0 — YOL HARİTASI
 
-**Güncel Sürüm:** `2.0.0-alpha.61`  
-**Paket:** Web Test Oturum Tanılama Raporu ve Destek Snapshot'ı  
+**Güncel Sürüm:** `2.0.0-alpha.62`  
+**Paket:** Web Test Build Manifest ve Dağıtım Öncesi Sürüm Tutarlılığı  
 **Kanonik Dosya:** `docs/YOL_HARITASI.md`
 
 > Bu dosya Project Relay 2.0 için tek kanonik geliştirme kaydıdır. Her paket tamamlandığında sürüm numarası artırılır; **Tamamlananlar** ve **Yapılacaklar** bu dosyada güncellenir. Sonraki geliştirme paketi bu dosya okunarak başlatılır.
@@ -383,9 +383,9 @@ Aşağıdaki alanlar ilk sürüm kapsamına dahil değildir ve mevcut yol harita
 
 ## Sıradaki Paket
 
-**`2.0.0-alpha.62 — Web Test Build Manifest ve Dağıtım Öncesi Sürüm Tutarlılığı`**
+**`2.0.0-alpha.63 — Web Test RC Oturum Özeti ve Sunucu Taraflı Test Raporu`**
 
-Tanılama özeti hazır. Sıradaki paket dağıtım öncesi tek build manifest sözleşmesi oluşturacak. Sunucu sürümü, Web test build kimliği, protokol sürümü, menü kapsamı, release-check hazır olma durumu ve istemci beklenen sürümü tek endpoint'te yayınlanacak; tarayıcı boot gate sürüm uyuşmazlığında Oyna'yı bloke edecek.
+Build manifest doğrulaması tamamlandı. Sıradaki paket mevcut telemetri/KPI verisini release-check ile birleştirerek tek bir Web test RC raporu endpoint'i hazırlayacak. Rapor build/health, toplam KPI özeti ve kritik başarısız kontrolleri içerecek; oyuncu bazlı kişisel içerik taşımayacak. Bu paket gerçek kullanıcı Web testi öncesindeki son ölçüm/operasyon paketi olacak.
 
 
 ---

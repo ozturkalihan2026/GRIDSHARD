@@ -53,6 +53,9 @@ from .web_test_metrics import (
 from .release_check import (
     build_release_check,
 )
+from .build_manifest import (
+    build_manifest,
+)
 
 
 app = FastAPI(
@@ -593,6 +596,14 @@ def web_test_release_check() -> dict:
         version=VERSION,
         telemetry_service=telemetry_service,
     ).to_dict()
+
+
+@app.get("/web-test/manifest")
+def web_test_manifest() -> dict:
+    return build_manifest(
+        version=VERSION,
+        telemetry_service=telemetry_service,
+    )
 
 
 @app.post("/pvp/sessions")
