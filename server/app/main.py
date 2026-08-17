@@ -547,6 +547,12 @@ def bootstrap_test_participant(
 
     return {
         "player_id": player_id,
+        "identity": {
+            "kind":
+                "web_test_participant",
+            "player_id":
+                player_id,
+        },
         "profile": profile.to_view(),
         "statistics":
             statistics.to_view(),

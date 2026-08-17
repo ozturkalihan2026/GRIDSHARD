@@ -1,7 +1,7 @@
 # Project Relay 2.0 — YOL HARİTASI
 
-**Güncel Sürüm:** `2.0.0-alpha.67`  
-**Paket:** Profil Görünen Adı ve Test Kimliğinin Ayrıştırılmış Düzenleme Akışı  
+**Güncel Sürüm:** `2.0.0-alpha.68`  
+**Paket:** Web Test Katılımcı Oturum Sürekliliği ve Yeniden Açılış Kontrolü  
 **Kanonik Dosya:** `docs/YOL_HARITASI.md`
 
 > Bu dosya Project Relay 2.0 için tek kanonik geliştirme kaydıdır. Her paket tamamlandığında sürüm numarası artırılır; **Tamamlananlar** ve **Yapılacaklar** bu dosyada güncellenir. Sonraki geliştirme paketi bu dosya okunarak başlatılır.
@@ -383,9 +383,9 @@ Aşağıdaki alanlar ilk sürüm kapsamına dahil değildir ve mevcut yol harita
 
 ## Sıradaki Paket
 
-**`2.0.0-alpha.68 — Web Test Katılımcı Oturum Sürekliliği ve Yeniden Açılış Kontrolü`**
+**`2.0.0-alpha.69 — Web Test Oyuncu Verisinin Sunucu Yeniden Başlatmalarına Karşı Kalıcılığı`**
 
-Teknik kimlik ile görünen ad ayrıldı. Sıradaki paket aynı tarayıcı yeniden açıldığında katılımcı kimliği, Profil görünen adı, rating/XP, İstatistikler ve Ayarlar verisinin bootstrap üzerinden aynı hesaptan geri geldiğini uçtan uca doğrulayacak. Bu paket yeni özellik eklemek yerine gerçek Web testinde oturum sürekliliğini release-check seviyesine taşıyacak.
+Tarayıcı yeniden açılışındaki hesap sürekliliği doğrulandı. Ancak mevcut Profil/İstatistik/Ayar servisleri süreç belleğinde tutulduğu için sunucu yeniden başlatılırsa gerçek Web test verisi kaybolabilir. Sıradaki paket test ortamı için dosya tabanlı kalıcı oyuncu veri adaptörü ekleyecek; mevcut repository sözleşmesi korunacak ve harici PostgreSQL zorunlu olmayacak.
 
 
 ---

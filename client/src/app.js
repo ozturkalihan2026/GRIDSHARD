@@ -42,7 +42,7 @@
   const COMPETITIVE_STATUS = "M7 Simülasyon aktif";
   const BALANCE_STATUS = "Eşit modül + counter doğrulandı";
   const AI_STATUS = "Adaptif AI + rekabetçi denge doğrulandı";
-  const PVP_STATUS = "Profil görünen adı sunucu düzenleme aktif";
+  const PVP_STATUS = "Katılımcı oturum sürekliliği doğrulanıyor";
 
   const PORT_COUNT_BY_NAME = {
     "Çekirdek":4,
@@ -194,6 +194,12 @@
     language: "tr",
   });
 
+  const participantContinuity =
+    new RelayParticipantContinuityState({
+      expectedPlayerId:
+        participantPlayerId,
+    });
+
   const participantBootstrap =
     new RelayParticipantBootstrap({
       playerId:
@@ -215,6 +221,19 @@
       result;
 
     if (result.ok) {
+      const continuity =
+        participantContinuity
+          .verify(
+            result.payload
+          );
+
+      if (!continuity.ok) {
+        showPlayError(
+          "matchmaking",
+          "Katılımcı kimliği sunucu hesabıyla eşleşmiyor. Oyna güvenlik amacıyla kapatıldı."
+        );
+      }
+
       renderProfileSummary();
       renderStatisticsSummary();
       renderSettingsForm();
@@ -431,13 +450,14 @@
         webTestBuildState,
       releaseCheckState,
       expectedVersion:
-        "2.0.0-alpha.67",
+        "2.0.0-alpha.68",
       expectedProtocolVersion: 1,
     });
   const playReadinessGate =
     new RelayPlayReadinessGate({
       serverBootGate,
       participantBootstrap,
+      participantContinuity,
     });
 
 
@@ -460,7 +480,7 @@
 
   telemetryDispatcher.trackGameOpened({
     platform: "web",
-    build: "2.0.0-alpha.67",
+    build: "2.0.0-alpha.68",
   });
 
   const postMatchSync =
@@ -820,9 +840,9 @@
   const diagnosticSnapshot =
     new RelayDiagnosticSnapshot({
       version:
-        "2.0.0-alpha.67",
+        "2.0.0-alpha.68",
       build:
-        "web-test-alpha.67",
+        "web-test-alpha.68",
       bootGate:
         serverBootGate,
       connectionManager:
@@ -1447,6 +1467,28 @@ const SPECIAL_CELL_INFO = {
       || participantBootstrap.status;
     el.dataset.status =
       participantBootstrap.status;
+
+    const continuityEl =
+      document.getElementById(
+        "participant-continuity-status"
+      );
+    if (continuityEl) {
+      const labels = {
+        unknown:
+          "Oturum Sürekliliği: Kontrol bekliyor",
+        verified:
+          "Oturum Sürekliliği: Doğrulandı",
+        mismatch:
+          "Oturum Sürekliliği: Kimlik uyuşmazlığı",
+      };
+      continuityEl.textContent =
+        labels[
+          participantContinuity.status
+        ]
+        || participantContinuity.status;
+      continuityEl.dataset.status =
+        participantContinuity.status;
+    }
 
     const retry =
       document.getElementById(

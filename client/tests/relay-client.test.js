@@ -402,61 +402,61 @@ function createClient() {
   const fs=require("fs");
   const src=fs.readFileSync("./src/app.js","utf8");
   assert.ok(src.includes("PVP_STATUS"));
-  assert.ok(src.includes("Profil görünen adı sunucu düzenleme aktif"));
+  assert.ok(src.includes("Katılımcı oturum sürekliliği doğrulanıyor"));
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync("./src/app.js","utf8");
-  assert.ok(src.includes("Profil görünen adı sunucu düzenleme aktif")); // alpha32->33 protocol status
+  assert.ok(src.includes("Katılımcı oturum sürekliliği doğrulanıyor")); // alpha32->33 protocol status
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync("./src/app.js","utf8");
-  assert.ok(src.includes("Profil görünen adı sunucu düzenleme aktif")); // alpha33 protocol
+  assert.ok(src.includes("Katılımcı oturum sürekliliği doğrulanıyor")); // alpha33 protocol
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync("./src/app.js","utf8");
-  assert.ok(src.includes("Profil görünen adı sunucu düzenleme aktif")); // alpha34 websocket
+  assert.ok(src.includes("Katılımcı oturum sürekliliği doğrulanıyor")); // alpha34 websocket
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync("./src/app.js","utf8");
-  assert.ok(src.includes("Profil görünen adı sunucu düzenleme aktif")); // alpha35 gateway
+  assert.ok(src.includes("Katılımcı oturum sürekliliği doğrulanıyor")); // alpha35 gateway
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync("./src/app.js","utf8");
-  assert.ok(src.includes("Profil görünen adı sunucu düzenleme aktif")); // alpha36 setup
+  assert.ok(src.includes("Katılımcı oturum sürekliliği doğrulanıyor")); // alpha36 setup
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync("./src/app.js","utf8");
-  assert.ok(src.includes("Profil görünen adı sunucu düzenleme aktif")); // alpha37 lobby
+  assert.ok(src.includes("Katılımcı oturum sürekliliği doğrulanıyor")); // alpha37 lobby
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync("./src/app.js","utf8");
-  assert.ok(src.includes("Profil görünen adı sunucu düzenleme aktif")); // alpha38 runner
+  assert.ok(src.includes("Katılımcı oturum sürekliliği doğrulanıyor")); // alpha38 runner
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync("./src/app.js","utf8");
-  assert.ok(src.includes("Profil görünen adı sunucu düzenleme aktif")); // alpha39 heartbeat
+  assert.ok(src.includes("Katılımcı oturum sürekliliği doğrulanıyor")); // alpha39 heartbeat
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync("./src/app.js","utf8");
-  assert.ok(src.includes("Profil görünen adı sunucu düzenleme aktif")); // alpha40 online pvp
+  assert.ok(src.includes("Katılımcı oturum sürekliliği doğrulanıyor")); // alpha40 online pvp
 }
 
 {
@@ -682,7 +682,7 @@ function createClient() {
 {
   const fs=require("fs");
   const src=fs.readFileSync("./src/app.js","utf8");
-  assert.ok(src.includes("Profil görünen adı sunucu düzenleme aktif"));
+  assert.ok(src.includes("Katılımcı oturum sürekliliği doğrulanıyor"));
   assert.ok(src.includes("buildPvPCommandEnvelope"));
   assert.ok(src.includes("applyPvPServerEnvelope"));
 }
@@ -1504,10 +1504,10 @@ function createClient() {
 
   const result=state.applyHealth({
     status:"ok",
-    version:"2.0.0-alpha.67",
+    version:"2.0.0-alpha.68",
     web_test:{
       ready:true,
-      build:"web-test-alpha.67",
+      build:"web-test-alpha.68",
       release_checks:[
         "health",
         "matchmaking",
@@ -1551,7 +1551,7 @@ function createClient() {
 
   const result=state.applyHealth({
     status:"ok",
-    version:"2.0.0-alpha.67",
+    version:"2.0.0-alpha.68",
   });
 
   assert.strictEqual(
@@ -2322,7 +2322,7 @@ function createClient() {
   const html=fs.readFileSync("./index.html","utf8");
   assert.ok(
     html.includes(
-      "2.0.0-alpha.67"
+      "2.0.0-alpha.68"
     )
   );
   assert.ok(
@@ -2504,8 +2504,8 @@ function createClient() {
     new RelayReleaseCheckState();
 
   const view=state.apply({
-    version:"2.0.0-alpha.67",
-    build:"web-test-alpha.67",
+    version:"2.0.0-alpha.68",
+    build:"web-test-alpha.68",
     ready:true,
     checks:{
       health_ready:true,
@@ -2645,17 +2645,17 @@ function createClient() {
       healthState:health,
       releaseCheckState:release,
       expectedVersion:
-        "2.0.0-alpha.67",
+        "2.0.0-alpha.68",
       expectedProtocolVersion:1,
       requestJson:
         async (path) => {
           if (path==="/health") {
             return {
               status:"ok",
-              version:"2.0.0-alpha.67",
+              version:"2.0.0-alpha.68",
               web_test:{
                 ready:true,
-                build:"web-test-alpha.67",
+                build:"web-test-alpha.68",
                 release_checks:[],
                 capabilities:{},
               },
@@ -2666,8 +2666,8 @@ function createClient() {
             === "/web-test/release-check"
           ) {
             return {
-              version:"2.0.0-alpha.67",
-              build:"web-test-alpha.67",
+              version:"2.0.0-alpha.68",
+              build:"web-test-alpha.68",
               ready:true,
               checks:{
                 health_ready:true,
@@ -2682,7 +2682,7 @@ function createClient() {
 
           return {
             server_version:
-              "2.0.0-alpha.67",
+              "2.0.0-alpha.68",
             web_test_build:
               "web-test-alpha.62",
             pvp_protocol_version:1,
@@ -2735,8 +2735,8 @@ function createClient() {
 
   const snapshot=
     new RelayDiagnosticSnapshot({
-      version:"2.0.0-alpha.67",
-      build:"web-test-alpha.67",
+      version:"2.0.0-alpha.68",
+      build:"web-test-alpha.68",
       bootGate:{status:"ready"},
       connectionManager:{
         status:"open",
@@ -2820,16 +2820,16 @@ function createClient() {
       releaseCheckState:
         new RelayReleaseCheckState(),
       expectedVersion:
-        "2.0.0-alpha.67",
+        "2.0.0-alpha.68",
       expectedProtocolVersion:1,
       requestJson:
         async (path) => {
           if (path==="/health") {
             return {
-              version:"2.0.0-alpha.67",
+              version:"2.0.0-alpha.68",
               web_test:{
                 ready:true,
-                build:"web-test-alpha.67",
+                build:"web-test-alpha.68",
                 release_checks:[],
                 capabilities:{},
               },
@@ -2840,8 +2840,8 @@ function createClient() {
             === "/web-test/release-check"
           ) {
             return {
-              version:"2.0.0-alpha.67",
-              build:"web-test-alpha.67",
+              version:"2.0.0-alpha.68",
+              build:"web-test-alpha.68",
               ready:true,
               checks:{ok:true},
               menu_areas:[],
@@ -2887,8 +2887,8 @@ function createClient() {
     new RelayWebTestRcReportState();
 
   const view=state.apply({
-    version:"2.0.0-alpha.67",
-    build:"web-test-alpha.67",
+    version:"2.0.0-alpha.68",
+    build:"web-test-alpha.68",
     ready:true,
     critical_failures:[],
     kpis:{
@@ -3363,8 +3363,79 @@ function createClient() {
   );
 }
 
+{
+  const {
+    RelayParticipantContinuityState,
+    PARTICIPANT_CONTINUITY_STATUS,
+  } = require("../src/relay-client.js");
+
+  const continuity=
+    new RelayParticipantContinuityState({
+      expectedPlayerId:
+        "wt-a-123456",
+    });
+
+  const ok=continuity.verify({
+    player_id:"wt-a-123456",
+    identity:{
+      kind:
+        "web_test_participant",
+      player_id:
+        "wt-a-123456",
+    },
+  });
+
+  assert.strictEqual(
+    ok.ok,
+    true
+  );
+  assert.strictEqual(
+    continuity.status,
+    PARTICIPANT_CONTINUITY_STATUS.VERIFIED
+  );
+  assert.strictEqual(
+    continuity.isVerified(),
+    true
+  );
+
+  const bad=continuity.verify({
+    player_id:"wt-b-654321",
+  });
+
+  assert.strictEqual(
+    bad.ok,
+    false
+  );
+  assert.strictEqual(
+    continuity.status,
+    PARTICIPANT_CONTINUITY_STATUS.MISMATCH
+  );
+}
+
+{
+  const fs=require("fs");
+  const app=fs.readFileSync("./src/app.js","utf8");
+  const html=fs.readFileSync("./index.html","utf8");
+
+  assert.ok(
+    app.includes(
+      "participantContinuity"
+    )
+  );
+  assert.ok(
+    app.includes(
+      ".verify("
+    )
+  );
+  assert.ok(
+    html.includes(
+      'id="participant-continuity-status"'
+    )
+  );
+}
+
 Promise.all(asyncTests).then(() => {
-  console.log("115 client tests passed");
+  console.log("117 client tests passed");
 }).catch((error) => {
   console.error(error);
   process.exitCode = 1;

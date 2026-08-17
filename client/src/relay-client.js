@@ -3309,14 +3309,22 @@
     constructor({
       serverBootGate,
       participantBootstrap,
+      participantContinuity = null,
     }) {
       this.serverBootGate =
         serverBootGate;
       this.participantBootstrap =
         participantBootstrap;
+      this.participantContinuity =
+        participantContinuity;
     }
 
     canPlay() {
+      const continuityReady =
+        !this.participantContinuity
+        || this.participantContinuity
+          .isVerified();
+
       return Boolean(
         this.serverBootGate
           ?.canPlay?.()
@@ -3324,7 +3332,7 @@
         this.participantBootstrap
           ?.status
         === "ready"
-      );
+      ) && continuityReady;
     }
 
     blockers() {
@@ -3349,6 +3357,16 @@
         );
       }
 
+      if (
+        this.participantContinuity
+        && !this.participantContinuity
+          .isVerified()
+      ) {
+        blockers.push(
+          "continuity"
+        );
+      }
+
       return blockers;
     }
 
@@ -3370,12 +3388,73 @@
       }
 
       if (
+        blockers.includes(
+          "continuity"
+        )
+      ) {
+        return "Oyna: Katılımcı kimliği doğrulanıyor";
+      }
+
+      if (
         blockers.includes("server")
       ) {
         return "Oyna: Sunucu bekleniyor";
       }
 
       return "Oyna: Hesap hazırlanıyor";
+    }
+  }
+
+
+
+  const PARTICIPANT_CONTINUITY_STATUS =
+    Object.freeze({
+      UNKNOWN: "unknown",
+      VERIFIED: "verified",
+      MISMATCH: "mismatch",
+    });
+
+  class RelayParticipantContinuityState {
+    constructor({
+      expectedPlayerId,
+    }) {
+      this.expectedPlayerId =
+        expectedPlayerId;
+      this.status =
+        PARTICIPANT_CONTINUITY_STATUS.UNKNOWN;
+      this.lastPlayerId = null;
+    }
+
+    verify(payload) {
+      const returnedPlayerId =
+        payload?.identity?.player_id
+        || payload?.player_id
+        || null;
+
+      this.lastPlayerId =
+        returnedPlayerId;
+
+      const ok =
+        returnedPlayerId
+        === this.expectedPlayerId;
+
+      this.status = ok
+        ? PARTICIPANT_CONTINUITY_STATUS.VERIFIED
+        : PARTICIPANT_CONTINUITY_STATUS.MISMATCH;
+
+      return {
+        ok,
+        expectedPlayerId:
+          this.expectedPlayerId,
+        returnedPlayerId,
+      };
+    }
+
+    isVerified() {
+      return (
+        this.status
+        === PARTICIPANT_CONTINUITY_STATUS.VERIFIED
+      );
     }
   }
 
@@ -3406,6 +3485,7 @@
     RelayTestParticipantIdentity,
     RelayParticipantBootstrap,
     RelayPlayReadinessGate,
+    RelayParticipantContinuityState,
     BattlePoolSelection,
     APP_SCREEN,
     WS_CONNECTION_STATUS,
@@ -3416,6 +3496,7 @@
     PLAY_RECOVERY_KIND,
     SERVER_BOOT_STATUS,
     PARTICIPANT_BOOTSTRAP_STATUS,
+    PARTICIPANT_CONTINUITY_STATUS,
     PVP_PHASE,
     MODULE_STATUS,
     DRAG_KIND,
@@ -3451,6 +3532,8 @@
   global.RelayTestParticipantIdentity = RelayTestParticipantIdentity;
   global.RelayParticipantBootstrap = RelayParticipantBootstrap;
   global.RelayPlayReadinessGate = RelayPlayReadinessGate;
+  global.RelayParticipantContinuityState = RelayParticipantContinuityState;
+  global.RelayParticipantContinuityStatus = PARTICIPANT_CONTINUITY_STATUS;
   global.RelayParticipantBootstrapStatus = PARTICIPANT_BOOTSTRAP_STATUS;
   global.RelayServerBootStatus = SERVER_BOOT_STATUS;
   global.RelayPlayRecoveryKind = PLAY_RECOVERY_KIND;
