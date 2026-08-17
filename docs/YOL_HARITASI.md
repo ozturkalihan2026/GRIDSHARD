@@ -1,7 +1,7 @@
 # Project Relay 2.0 — YOL HARİTASI
 
-**Güncel Sürüm:** `2.0.0-alpha.55`  
-**Paket:** Web Test Telemetri KPI Özeti  
+**Güncel Sürüm:** `2.0.0-alpha.56`  
+**Paket:** İstemci Telemetri Transport ve Güvenli Gönderim Kuyruğu  
 **Kanonik Dosya:** `docs/YOL_HARITASI.md`
 
 > Bu dosya Project Relay 2.0 için tek kanonik geliştirme kaydıdır. Her paket tamamlandığında sürüm numarası artırılır; **Tamamlananlar** ve **Yapılacaklar** bu dosyada güncellenir. Sonraki geliştirme paketi bu dosya okunarak başlatılır.
@@ -380,9 +380,9 @@ Aşağıdaki alanlar ilk sürüm kapsamına dahil değildir ve mevcut yol harita
 
 ## Sıradaki Paket
 
-**`2.0.0-alpha.56 — İstemci Telemetri Transport ve Güvenli Gönderim Kuyruğu`**
+**`2.0.0-alpha.57 — İkinci Maça Geçiş ve Kaybeden Tekrar Maç KPI'sı`**
 
-KPI türetme katmanı hazır. Sıradaki paket istemcide yerel tamponda kalan `game_opened`, `module_shelf_used`, `rematch_requested` ve eşleştirme başlangıcı gibi Web test sinyallerini gerçek `/telemetry/events` endpoint'ine gönderecek. Başarısız gönderimler kuyrukta korunacak, aynı event_id ile yeniden gönderilecek ve sunucu deduplication özelliği kullanılacak. Üçüncü taraf analitik sağlayıcısı yine eklenmeyecek.
+İstemci telemetri sinyalleri artık gerçek sunucuya ulaşıyor. Sıradaki paket Web test KPI'larında aynı oyuncunun tamamladığı maçtan sonraki tekrar eşleştirme başlangıcını ilişkilendirerek ikinci maça geçişi ölçecek. Ayrıca tamamlanan maç sonucu ile `rematch_requested` olayını eşleştirerek kaybeden oyuncunun tekrar maç isteği oranı türetilecek. Yeni menü veya Eğitim alanı eklenmeyecek.
 
 
 ---

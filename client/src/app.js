@@ -42,7 +42,7 @@
   const COMPETITIVE_STATUS = "M7 Simülasyon aktif";
   const BALANCE_STATUS = "Eşit modül + counter doğrulandı";
   const AI_STATUS = "Adaptif AI + rekabetçi denge doğrulandı";
-  const PVP_STATUS = "Web test KPI ölçüm katmanı aktif";
+  const PVP_STATUS = "İstemci telemetri güvenli gönderim kuyruğu aktif";
 
   const PORT_COUNT_BY_NAME = {
     "Çekirdek":4,
@@ -349,10 +349,10 @@
     new RelayWebTestBuildState();
   webTestBuildState.applyHealth({
     status: "ok",
-    version: "2.0.0-alpha.55",
+    version: "2.0.0-alpha.56",
     web_test: {
       ready: true,
-      build: "web-test-alpha.55",
+      build: "web-test-alpha.56",
       release_checks: [
         "health",
         "matchmaking",
@@ -374,15 +374,22 @@
     },
   });
 
+  const telemetryTransport =
+    new RelayTelemetryHttpTransport();
+
   const telemetryDispatcher =
     new RelayTelemetryDispatcher({
       playerId: "local-player",
       sessionId: pvpState.sessionId,
+      transport:
+        (event) =>
+          telemetryTransport
+            .enqueue(event),
     });
 
   telemetryDispatcher.trackGameOpened({
     platform: "web",
-    build: "2.0.0-alpha.55",
+    build: "2.0.0-alpha.56",
   });
 
   const postMatchSync =

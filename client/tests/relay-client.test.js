@@ -402,61 +402,61 @@ function createClient() {
   const fs=require("fs");
   const src=fs.readFileSync("./src/app.js","utf8");
   assert.ok(src.includes("PVP_STATUS"));
-  assert.ok(src.includes("Web test KPI ölçüm katmanı aktif"));
+  assert.ok(src.includes("İstemci telemetri güvenli gönderim kuyruğu aktif"));
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync("./src/app.js","utf8");
-  assert.ok(src.includes("Web test KPI ölçüm katmanı aktif")); // alpha32->33 protocol status
+  assert.ok(src.includes("İstemci telemetri güvenli gönderim kuyruğu aktif")); // alpha32->33 protocol status
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync("./src/app.js","utf8");
-  assert.ok(src.includes("Web test KPI ölçüm katmanı aktif")); // alpha33 protocol
+  assert.ok(src.includes("İstemci telemetri güvenli gönderim kuyruğu aktif")); // alpha33 protocol
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync("./src/app.js","utf8");
-  assert.ok(src.includes("Web test KPI ölçüm katmanı aktif")); // alpha34 websocket
+  assert.ok(src.includes("İstemci telemetri güvenli gönderim kuyruğu aktif")); // alpha34 websocket
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync("./src/app.js","utf8");
-  assert.ok(src.includes("Web test KPI ölçüm katmanı aktif")); // alpha35 gateway
+  assert.ok(src.includes("İstemci telemetri güvenli gönderim kuyruğu aktif")); // alpha35 gateway
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync("./src/app.js","utf8");
-  assert.ok(src.includes("Web test KPI ölçüm katmanı aktif")); // alpha36 setup
+  assert.ok(src.includes("İstemci telemetri güvenli gönderim kuyruğu aktif")); // alpha36 setup
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync("./src/app.js","utf8");
-  assert.ok(src.includes("Web test KPI ölçüm katmanı aktif")); // alpha37 lobby
+  assert.ok(src.includes("İstemci telemetri güvenli gönderim kuyruğu aktif")); // alpha37 lobby
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync("./src/app.js","utf8");
-  assert.ok(src.includes("Web test KPI ölçüm katmanı aktif")); // alpha38 runner
+  assert.ok(src.includes("İstemci telemetri güvenli gönderim kuyruğu aktif")); // alpha38 runner
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync("./src/app.js","utf8");
-  assert.ok(src.includes("Web test KPI ölçüm katmanı aktif")); // alpha39 heartbeat
+  assert.ok(src.includes("İstemci telemetri güvenli gönderim kuyruğu aktif")); // alpha39 heartbeat
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync("./src/app.js","utf8");
-  assert.ok(src.includes("Web test KPI ölçüm katmanı aktif")); // alpha40 online pvp
+  assert.ok(src.includes("İstemci telemetri güvenli gönderim kuyruğu aktif")); // alpha40 online pvp
 }
 
 {
@@ -682,7 +682,7 @@ function createClient() {
 {
   const fs=require("fs");
   const src=fs.readFileSync("./src/app.js","utf8");
-  assert.ok(src.includes("Web test KPI ölçüm katmanı aktif"));
+  assert.ok(src.includes("İstemci telemetri güvenli gönderim kuyruğu aktif"));
   assert.ok(src.includes("buildPvPCommandEnvelope"));
   assert.ok(src.includes("applyPvPServerEnvelope"));
 }
@@ -1504,10 +1504,10 @@ function createClient() {
 
   const result=state.applyHealth({
     status:"ok",
-    version:"2.0.0-alpha.55",
+    version:"2.0.0-alpha.56",
     web_test:{
       ready:true,
-      build:"web-test-alpha.55",
+      build:"web-test-alpha.56",
       release_checks:[
         "health",
         "matchmaking",
@@ -1551,7 +1551,7 @@ function createClient() {
 
   const result=state.applyHealth({
     status:"ok",
-    version:"2.0.0-alpha.55",
+    version:"2.0.0-alpha.56",
   });
 
   assert.strictEqual(
@@ -2312,7 +2312,7 @@ function createClient() {
   const html=fs.readFileSync("./index.html","utf8");
   assert.ok(
     html.includes(
-      "2.0.0-alpha.55"
+      "2.0.0-alpha.56"
     )
   );
   assert.ok(
@@ -2320,8 +2320,173 @@ function createClient() {
   );
 }
 
+{
+  const {
+    RelayTelemetryHttpTransport,
+    TELEMETRY_TRANSPORT_STATUS,
+  } = require("../src/relay-client.js");
+
+  const sent=[];
+  const transport=
+    new RelayTelemetryHttpTransport({
+      requestJson:
+        async (event) => {
+          sent.push(
+            event.event_id
+          );
+          return {
+            accepted:true,
+          };
+        },
+      setTimer() {
+        return 1;
+      },
+      clearTimer() {},
+    });
+
+  const first={
+    event_id:"e1",
+    event_type:"game_opened",
+    timestamp_ms:1,
+    metadata:{},
+  };
+
+  transport.enqueue(first);
+  transport.enqueue(first);
+
+  asyncTests.push(
+    transport.flush()
+      .then(() => {
+        assert.strictEqual(
+          transport.pending.size,
+          0
+        );
+        assert.strictEqual(
+          sent.filter(
+            (id) => id==="e1"
+          ).length,
+          1
+        );
+        assert.strictEqual(
+          transport.status,
+          TELEMETRY_TRANSPORT_STATUS.READY
+        );
+      })
+  );
+}
+
+{
+  const {
+    RelayTelemetryHttpTransport,
+    TELEMETRY_TRANSPORT_STATUS,
+  } = require("../src/relay-client.js");
+
+  const timers=[];
+  let attempts=0;
+
+  const transport=
+    new RelayTelemetryHttpTransport({
+      requestJson:
+        async () => {
+          attempts += 1;
+          if (attempts===1) {
+            throw new Error(
+              "network"
+            );
+          }
+          return {
+            accepted:true,
+          };
+        },
+      setTimer(fn,ms) {
+        timers.push({
+          fn,ms
+        });
+        return timers.length;
+      },
+      clearTimer() {},
+      retryBaseDelayMs:1000,
+      retryMaxDelayMs:4000,
+    });
+
+  const result=
+    transport.enqueue({
+      event_id:"retry-1",
+      event_type:
+        "rematch_requested",
+      timestamp_ms:1,
+      metadata:{},
+    });
+
+  assert.strictEqual(
+    result.ok,
+    true
+  );
+
+  asyncTests.push(
+    new Promise(
+      (resolve) =>
+        setImmediate(resolve)
+    )
+      .then(() => {
+        assert.strictEqual(
+          transport.pending.size,
+          1
+        );
+        assert.strictEqual(
+          transport.status,
+          TELEMETRY_TRANSPORT_STATUS.RETRY_WAIT
+        );
+        assert.strictEqual(
+          timers[0].ms,
+          1000
+        );
+
+        timers[0].fn();
+
+        return new Promise(
+          (resolve) =>
+            setImmediate(resolve)
+        );
+      })
+      .then(() => {
+        assert.strictEqual(
+          transport.pending.size,
+          0
+        );
+        assert.strictEqual(
+          attempts,
+          2
+        );
+      })
+  );
+}
+
+{
+  const fs=require("fs");
+  const app=fs.readFileSync(
+    "./src/app.js",
+    "utf8"
+  );
+  assert.ok(
+    app.includes(
+      "RelayTelemetryHttpTransport"
+    )
+  );
+  assert.ok(
+    app.includes(
+      "telemetryTransport"
+    )
+  );
+  assert.ok(
+    app.includes(
+      ".enqueue(event)"
+    )
+  );
+}
+
 Promise.all(asyncTests).then(() => {
-  console.log("92 client tests passed");
+  console.log("95 client tests passed");
 }).catch((error) => {
   console.error(error);
   process.exitCode = 1;

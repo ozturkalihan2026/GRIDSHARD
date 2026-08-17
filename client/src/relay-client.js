@@ -2293,6 +2293,236 @@
   }
 
 
+
+  const TELEMETRY_TRANSPORT_STATUS = Object.freeze({
+    IDLE: "idle",
+    SENDING: "sending",
+    RETRY_WAIT: "retry_wait",
+    READY: "ready",
+  });
+
+  class RelayTelemetryHttpTransport {
+    constructor({
+      requestJson = null,
+      setTimer = (fn, ms) =>
+        setTimeout(fn, ms),
+      clearTimer = (id) =>
+        clearTimeout(id),
+      retryBaseDelayMs = 1000,
+      retryMaxDelayMs = 10000,
+      onStatusChange = null,
+    } = {}) {
+      this.requestJson =
+        requestJson
+        || (async (event) => {
+          const response =
+            await fetch(
+              "/telemetry/events",
+              {
+                method: "POST",
+                headers: {
+                  "content-type":
+                    "application/json",
+                },
+                body: JSON.stringify(
+                  event
+                ),
+              }
+            );
+
+          if (!response.ok) {
+            throw new Error(
+              `Telemetri gönderimi başarısız: ${response.status}`
+            );
+          }
+
+          return response.json();
+        });
+
+      this.setTimer = setTimer;
+      this.clearTimer = clearTimer;
+      this.retryBaseDelayMs =
+        retryBaseDelayMs;
+      this.retryMaxDelayMs =
+        retryMaxDelayMs;
+      this.onStatusChange =
+        onStatusChange;
+
+      this.pending = new Map();
+      this.retryAttempts = 0;
+      this.retryTimer = null;
+      this.inFlight = false;
+      this.status =
+        TELEMETRY_TRANSPORT_STATUS.IDLE;
+    }
+
+    enqueue(event) {
+      if (
+        !event
+        || !event.event_id
+      ) {
+        return {
+          ok: false,
+          reason:
+            "Gönderilecek telemetri event_id içermelidir.",
+        };
+      }
+
+      if (
+        !this.pending.has(
+          event.event_id
+        )
+      ) {
+        this.pending.set(
+          event.event_id,
+          {
+            ...event,
+            metadata: {
+              ...(event.metadata || {}),
+            },
+          }
+        );
+      }
+
+      this.flush();
+
+      return {
+        ok: true,
+        pending:
+          this.pending.size,
+      };
+    }
+
+    async flush() {
+      if (
+        this.inFlight
+        || this.pending.size === 0
+      ) {
+        if (
+          this.pending.size === 0
+          && !this.inFlight
+        ) {
+          this._setStatus(
+            TELEMETRY_TRANSPORT_STATUS.READY
+          );
+        }
+        return {
+          ok: true,
+          pending:
+            this.pending.size,
+        };
+      }
+
+      this._clearRetry();
+      this.inFlight = true;
+      this._setStatus(
+        TELEMETRY_TRANSPORT_STATUS.SENDING
+      );
+
+      try {
+        for (
+          const [eventId, event]
+          of [...this.pending.entries()]
+        ) {
+          await this.requestJson(
+            event
+          );
+          this.pending.delete(
+            eventId
+          );
+        }
+
+        this.retryAttempts = 0;
+        this._setStatus(
+          TELEMETRY_TRANSPORT_STATUS.READY
+        );
+
+        return {
+          ok: true,
+          pending: 0,
+        };
+      } catch (error) {
+        this.retryAttempts += 1;
+        this._scheduleRetry();
+
+        return {
+          ok: false,
+          reason:
+            error instanceof Error
+              ? error.message
+              : String(error),
+          pending:
+            this.pending.size,
+        };
+      } finally {
+        this.inFlight = false;
+      }
+    }
+
+    pendingEvents() {
+      return [
+        ...this.pending.values()
+      ].map((event) => ({
+        ...event,
+        metadata: {
+          ...(event.metadata || {}),
+        },
+      }));
+    }
+
+    _scheduleRetry() {
+      this._clearRetry();
+
+      const exponent = Math.max(
+        0,
+        this.retryAttempts - 1
+      );
+      const delay = Math.min(
+        this.retryBaseDelayMs
+          * (2 ** exponent),
+        this.retryMaxDelayMs
+      );
+
+      this._setStatus(
+        TELEMETRY_TRANSPORT_STATUS.RETRY_WAIT
+      );
+
+      this.retryTimer =
+        this.setTimer(
+          () => {
+            this.retryTimer = null;
+            this.flush();
+          },
+          delay
+        );
+    }
+
+    _clearRetry() {
+      if (
+        this.retryTimer !== null
+      ) {
+        this.clearTimer(
+          this.retryTimer
+        );
+        this.retryTimer = null;
+      }
+    }
+
+    _setStatus(status) {
+      this.status = status;
+
+      if (
+        typeof this.onStatusChange
+        === "function"
+      ) {
+        this.onStatusChange(
+          status
+        );
+      }
+    }
+  }
+
+
   const api = {
     RelayBattleClient,
     RelayPvPClientState,
@@ -2310,12 +2540,14 @@
     RelayPostMatchSync,
     RelayAccountDataLoader,
     RelayWebTestKpiState,
+    RelayTelemetryHttpTransport,
     BattlePoolSelection,
     APP_SCREEN,
     WS_CONNECTION_STATUS,
     TELEMETRY_EVENT_TYPE,
     ONLINE_PLAY_STATUS,
     REMOTE_DATA_STATUS,
+    TELEMETRY_TRANSPORT_STATUS,
     PVP_PHASE,
     MODULE_STATUS,
     DRAG_KIND,
@@ -2342,6 +2574,8 @@
   global.RelayPostMatchSync = RelayPostMatchSync;
   global.RelayAccountDataLoader = RelayAccountDataLoader;
   global.RelayWebTestKpiState = RelayWebTestKpiState;
+  global.RelayTelemetryHttpTransport = RelayTelemetryHttpTransport;
+  global.RelayTelemetryTransportStatus = TELEMETRY_TRANSPORT_STATUS;
   global.RelayRemoteDataStatus = REMOTE_DATA_STATUS;
   global.RelayOnlinePlayStatus = ONLINE_PLAY_STATUS;
   global.RelayTelemetryEventType = TELEMETRY_EVENT_TYPE;
