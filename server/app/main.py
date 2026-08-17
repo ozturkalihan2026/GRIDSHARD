@@ -62,6 +62,9 @@ from .build_manifest import (
 from .web_test_rc_report import (
     build_rc_report,
 )
+from .web_test_operation_readiness import (
+    build_operation_readiness,
+)
 
 
 app = FastAPI(
@@ -871,6 +874,46 @@ def web_test_data_health() -> dict:
                 ),
         },
     }
+
+
+@app.get("/web-test/operation-readiness")
+def web_test_operation_readiness() -> dict:
+    player_data = (
+        player_data_persistence_health()
+    )
+    telemetry = (
+        telemetry_persistence_health()
+    )
+
+    data_health = web_test_data_health()
+
+    manifest = build_manifest(
+        version=VERSION,
+        telemetry_service=telemetry_service,
+        persistence_ready=bool(
+            player_data["ready"]
+        ),
+        telemetry_persistence_ready=bool(
+            telemetry["ready"]
+        ),
+    )
+
+    rc_report = build_rc_report(
+        version=VERSION,
+        telemetry_service=telemetry_service,
+        persistence_ready=bool(
+            player_data["ready"]
+        ),
+        telemetry_persistence_ready=bool(
+            telemetry["ready"]
+        ),
+    )
+
+    return build_operation_readiness(
+        manifest=manifest,
+        data_health=data_health,
+        rc_report=rc_report,
+    )
 
 
 @app.get("/web-test/status")
