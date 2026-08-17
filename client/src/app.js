@@ -42,7 +42,7 @@
   const COMPETITIVE_STATUS = "M7 Simülasyon aktif";
   const BALANCE_STATUS = "Eşit modül + counter doğrulandı";
   const AI_STATUS = "Adaptif AI + rekabetçi denge doğrulandı";
-  const PVP_STATUS = "Web test oturum audit kaydı aktif";
+  const PVP_STATUS = "Audit başlangıç → gerçek session bağı aktif";
 
   const PORT_COUNT_BY_NAME = {
     "Çekirdek":4,
@@ -450,7 +450,7 @@
         webTestBuildState,
       releaseCheckState,
       expectedVersion:
-        "2.0.0-alpha.81",
+        "2.0.0-alpha.82",
       expectedProtocolVersion: 1,
     });
   const playReadinessGate =
@@ -480,7 +480,7 @@
 
   telemetryDispatcher.trackGameOpened({
     platform: "web",
-    build: "2.0.0-alpha.81",
+    build: "2.0.0-alpha.82",
   });
 
   const postMatchSync =
@@ -829,6 +829,57 @@
           }
         );
 
+      const payload =
+        response.ok
+          ? await response.json()
+          : null;
+
+      return {
+        ok: response.ok,
+        auditEventId:
+          payload
+            ?.audit_event_id
+          || null,
+      };
+    } catch (_error) {
+      return {
+        ok: false,
+      };
+    }
+  }
+
+  async function bindWebTestSessionAudit(
+    auditEventId,
+    sessionId
+  ) {
+    if (
+      !auditEventId
+      || !sessionId
+    ) {
+      return {
+        ok: false,
+      };
+    }
+
+    try {
+      const response =
+        await fetch(
+          "/web-test/audit/session-bind",
+          {
+            method: "POST",
+            headers: {
+              "content-type":
+                "application/json",
+            },
+            body: JSON.stringify({
+              audit_event_id:
+                auditEventId,
+              session_id:
+                sessionId,
+            }),
+          }
+        );
+
       return {
         ok: response.ok,
       };
@@ -846,9 +897,10 @@
     trackMatchmakingStart();
 
     // Audit operasyon içindir; başarısızlığı eşleştirmeyi durdurmaz.
-    recordWebTestSessionAudit(
-      matchmakingStartedAtMs
-    );
+    const auditPromise =
+      recordWebTestSessionAudit(
+        matchmakingStartedAtMs
+      );
 
     const result =
       await onlinePlay.start({
@@ -857,6 +909,25 @@
         initialModules:
           buildInitialOnlineSetup(),
       });
+
+    if (
+      result.ok
+      && pvpState.sessionId
+    ) {
+      auditPromise.then(
+        (audit) => {
+          if (
+            audit.ok
+            && audit.auditEventId
+          ) {
+            bindWebTestSessionAudit(
+              audit.auditEventId,
+              pvpState.sessionId
+            );
+          }
+        }
+      );
+    }
 
     if (!result.ok) {
       const reason =
@@ -880,9 +951,9 @@
   const diagnosticSnapshot =
     new RelayDiagnosticSnapshot({
       version:
-        "2.0.0-alpha.81",
+        "2.0.0-alpha.82",
       build:
-        "web-test-alpha.81",
+        "web-test-alpha.82",
       bootGate:
         serverBootGate,
       connectionManager:

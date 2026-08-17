@@ -23,6 +23,7 @@ TELEMETRY_EVENT_TYPES = frozenset({
     "booster_used",
     "rematch_requested",
     "web_test_session_started",
+    "web_test_session_bound",
 })
 
 

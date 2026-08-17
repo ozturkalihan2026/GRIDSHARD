@@ -233,6 +233,11 @@ class WebTestSessionAuditRequest(BaseModel):
     matchmaking_started_at_ms: int
 
 
+class WebTestSessionAuditBindRequest(BaseModel):
+    audit_event_id: str
+    session_id: str
+
+
 class TelemetryEventRequest(BaseModel):
     event_id: str
     event_type: str
@@ -356,6 +361,72 @@ def record_web_test_session_start_audit(
             not accepted,
         "audit_event_id":
             event_id,
+    }
+
+
+@app.post("/web-test/audit/session-bind")
+def bind_web_test_session_audit(
+    request: WebTestSessionAuditBindRequest,
+) -> dict:
+    source = None
+
+    for event in telemetry_service.events(
+        event_type=
+            "web_test_session_started",
+    ):
+        if (
+            event["event_id"]
+            == request.audit_event_id
+        ):
+            source = event
+            break
+
+    if source is None:
+        raise HTTPException(
+            status_code=404,
+            detail=(
+                "Bağlanacak Web test audit başlangıç kaydı bulunamadı."
+            ),
+        )
+
+    bound_event_id = (
+        request.audit_event_id
+        + "-bound-"
+        + request.session_id
+    )
+
+    accepted = telemetry_service.record(
+        TelemetryEvent(
+            event_id=
+                bound_event_id,
+            event_type=
+                "web_test_session_bound",
+            timestamp_ms=
+                int(
+                    time.time()
+                    * 1000
+                ),
+            player_id=
+                source.get(
+                    "player_id"
+                ),
+            session_id=
+                request.session_id,
+            metadata={
+                "audit_event_id":
+                    request.audit_event_id,
+            },
+        )
+    )
+
+    return {
+        "accepted": accepted,
+        "duplicate":
+            not accepted,
+        "bound_event_id":
+            bound_event_id,
+        "session_id":
+            request.session_id,
     }
 
 

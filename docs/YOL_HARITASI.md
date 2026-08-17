@@ -1,7 +1,7 @@
 # Project Relay 2.0 — YOL HARİTASI
 
-**Güncel Sürüm:** `2.0.0-alpha.81`  
-**Paket:** Gerçek Web Testi Oturum Başlangıcı Audit Kaydı  
+**Güncel Sürüm:** `2.0.0-alpha.82`  
+**Paket:** Audit → Session Bağlama ve Gerçek Maç Oturumu İzlenebilirliği  
 **Kanonik Dosya:** `docs/YOL_HARITASI.md`
 
 > Bu dosya Project Relay 2.0 için tek kanonik geliştirme kaydıdır. Her paket tamamlandığında sürüm numarası artırılır; **Tamamlananlar** ve **Yapılacaklar** bu dosyada güncellenir. Sonraki geliştirme paketi bu dosya okunarak başlatılır.
@@ -383,9 +383,9 @@ Aşağıdaki alanlar ilk sürüm kapsamına dahil değildir ve mevcut yol harita
 
 ## Sıradaki Paket
 
-**`2.0.0-alpha.82 — Audit → Session Bağlama ve Gerçek Maç Oturumu İzlenebilirliği`**
+**`2.0.0-alpha.83 — Web Test Audit KPI: Başlangıç → Gerçek Session Dönüşüm Oranı`**
 
-Eşleştirme başlangıcı audit kaydı hazır. Sıradaki paket audit event'ini gerçek PvP `session_id` ile bağlayacak. Eşleşme tamamlandığında istemci yalnızca audit_event_id + session_id çiftini sunucuya gönderecek; sunucu yeni bir `web_test_session_bound` audit olayı üretecek. Böylece test başlangıcı ile gerçek savaş oturumu ilişkilendirilecek, profil veya savaş içeriği yine audit'e alınmayacak.
+Audit başlangıcı ile gerçek session bağı kuruluyor. Sıradaki paket Web test ölçümüne başlangıç audit sayısı, session'a bağlanan audit sayısı ve `audit_to_session_rate` metriğini ekleyecek. Böylece Oyna'ya basan test katılımcılarının ne kadarının gerçek PvP oturumuna ulaştığı ölçülebilecek; mevcut gameplay KPI'ları değişmeyecek.
 
 
 ---
