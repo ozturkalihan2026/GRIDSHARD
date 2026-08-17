@@ -1,7 +1,7 @@
 # Project Relay 2.0 — YOL HARİTASI
 
-**Güncel Sürüm:** `2.0.0-alpha.71`  
-**Paket:** Kalıcı Oyuncu Verisi Yedekleme ve Son Sağlam Snapshot Koruması  
+**Güncel Sürüm:** `2.0.0-alpha.72`  
+**Paket:** Kontrollü Web Test Veri Kurtarma Endpoint'i ve Sonrası Health Doğrulaması  
 **Kanonik Dosya:** `docs/YOL_HARITASI.md`
 
 > Bu dosya Project Relay 2.0 için tek kanonik geliştirme kaydıdır. Her paket tamamlandığında sürüm numarası artırılır; **Tamamlananlar** ve **Yapılacaklar** bu dosyada güncellenir. Sonraki geliştirme paketi bu dosya okunarak başlatılır.
@@ -383,9 +383,9 @@ Aşağıdaki alanlar ilk sürüm kapsamına dahil değildir ve mevcut yol harita
 
 ## Sıradaki Paket
 
-**`2.0.0-alpha.72 — Kontrollü Web Test Veri Kurtarma Endpoint'i ve Sonrası Health Doğrulaması`**
+**`2.0.0-alpha.73 — Kalıcı Telemetri / KPI Snapshot ve Sunucu Restart Ölçüm Sürekliliği`**
 
-Son sağlam `.bak` snapshot korunuyor. Sıradaki paket yalnızca Web test operasyonu için kontrollü veri kurtarma endpoint'i ekleyecek. Endpoint ancak ana persistence health bozuk ve yedek geçerliyse çalışacak; kurtarma sonrası health tekrar doğrulanacak. Normal oyuncu istemcisi bu endpoint'i otomatik çağırmayacak ve Oyna, health yeniden `ready` olmadan açılmayacak.
+Oyuncu hesabı ve recovery zinciri sunucu restart'larına dayanıklı hale geldi. Ancak Web test telemetrisi hâlâ yalnızca süreç belleğinde tutuluyor; sunucu yeniden başlatıldığında KPI geçmişi sıfırlanıyor. Sıradaki paket telemetri olaylarını test ortamında dosya tabanlı kalıcı journal/snapshot katmanına taşıyacak. Event-id deduplication ve mevcut KPI sözleşmesi korunacak; üçüncü taraf analitik sağlayıcı eklenmeyecek.
 
 
 ---

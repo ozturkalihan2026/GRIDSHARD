@@ -5,7 +5,7 @@ import time
 import os
 from pathlib import Path
 
-from fastapi import FastAPI, HTTPException, Query, WebSocket
+from fastapi import FastAPI, Header, HTTPException, Query, WebSocket
 from fastapi.websockets import WebSocketDisconnect
 from pydantic import BaseModel
 
@@ -773,6 +773,94 @@ def web_test_rc_report() -> dict:
             persistence["ready"]
         ),
     )
+
+
+@app.post("/web-test/persistence/restore-backup")
+def restore_web_test_persistence_backup(
+    x_relay_admin_token: str | None = Header(
+        default=None,
+    ),
+) -> dict:
+    expected_token = os.environ.get(
+        "RELAY_WEB_TEST_ADMIN_TOKEN"
+    )
+
+    if not expected_token:
+        raise HTTPException(
+            status_code=503,
+            detail=(
+                "Web test veri kurtarma yönetici anahtarı yapılandırılmamış."
+            ),
+        )
+
+    if (
+        not x_relay_admin_token
+        or x_relay_admin_token
+        != expected_token
+    ):
+        raise HTTPException(
+            status_code=403,
+            detail="Web test veri kurtarma yetkisi reddedildi.",
+        )
+
+    before = (
+        player_data_persistence_health()
+    )
+
+    if before["ready"]:
+        raise HTTPException(
+            status_code=409,
+            detail=(
+                "Kalıcı oyuncu verisi zaten sağlıklı; restore uygulanmadı."
+            ),
+        )
+
+    backup = before.get(
+        "backup",
+        {},
+    )
+    if not backup.get(
+        "ready",
+        False,
+    ):
+        raise HTTPException(
+            status_code=409,
+            detail=(
+                "Kullanılabilir sağlam oyuncu veri yedeği bulunamadı."
+            ),
+        )
+
+    restored = (
+        player_data_repository
+        .restore_backup()
+    )
+    if not restored:
+        raise HTTPException(
+            status_code=409,
+            detail="Oyuncu veri yedeği geri yüklenemedi.",
+        )
+
+    after = (
+        player_data_persistence_health()
+    )
+    if not after["ready"]:
+        raise HTTPException(
+            status_code=500,
+            detail=(
+                "Yedek geri yüklendi ancak persistence health doğrulanamadı."
+            ),
+        )
+
+    # Eski bozuk süreç state'i yeni sağlam dosyayı gölgelememeli.
+    player_profile_service._profiles.clear()
+    player_statistics_service._statistics.clear()
+    player_settings_service._settings.clear()
+
+    return {
+        "restored": True,
+        "before": before,
+        "after": after,
+    }
 
 
 @app.post("/pvp/sessions")
