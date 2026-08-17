@@ -50,6 +50,9 @@ from .web_test import (
 from .web_test_metrics import (
     WebTestKpiService,
 )
+from .release_check import (
+    build_release_check,
+)
 
 
 app = FastAPI(
@@ -579,6 +582,14 @@ def health() -> dict:
 @app.get("/web-test/status")
 def web_test_status() -> dict:
     return build_web_test_readiness(
+        version=VERSION,
+        telemetry_service=telemetry_service,
+    ).to_dict()
+
+
+@app.get("/web-test/release-check")
+def web_test_release_check() -> dict:
+    return build_release_check(
         version=VERSION,
         telemetry_service=telemetry_service,
     ).to_dict()

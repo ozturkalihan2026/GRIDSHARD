@@ -42,7 +42,7 @@
   const COMPETITIVE_STATUS = "M7 Simülasyon aktif";
   const BALANCE_STATUS = "Eşit modül + counter doğrulandı";
   const AI_STATUS = "Adaptif AI + rekabetçi denge doğrulandı";
-  const PVP_STATUS = "İkinci maç + kaybeden tekrar maç KPI aktif";
+  const PVP_STATUS = "Web test release-check kapsamı hazır";
 
   const PORT_COUNT_BY_NAME = {
     "Çekirdek":4,
@@ -345,14 +345,46 @@
   const webTestKpiState =
     new RelayWebTestKpiState();
 
+  const releaseCheckState =
+    new RelayReleaseCheckState();
+  releaseCheckState.apply({
+    version: "2.0.0-alpha.58",
+    build: "web-test-alpha.58",
+    ready: true,
+    checks: {
+      health_ready: true,
+      matchmaking: true,
+      server_authoritative_pvp: true,
+      post_match_sync: true,
+      telemetry_transport: true,
+      web_test_kpis: true,
+      menu_scope_locked: true,
+    },
+    menu_areas: [
+      "Oyna",
+      "Profil",
+      "İstatistikler",
+      "Ayarlar",
+    ],
+    deferred_areas: [
+      "Eğitim",
+      "Mağaza",
+      "Kozmetik",
+      "Sezon",
+      "Battle Pass",
+      "Görev",
+      "Sosyal",
+    ],
+  });
+
   const webTestBuildState =
     new RelayWebTestBuildState();
   webTestBuildState.applyHealth({
     status: "ok",
-    version: "2.0.0-alpha.57",
+    version: "2.0.0-alpha.58",
     web_test: {
       ready: true,
-      build: "web-test-alpha.57",
+      build: "web-test-alpha.58",
       release_checks: [
         "health",
         "matchmaking",
@@ -389,7 +421,7 @@
 
   telemetryDispatcher.trackGameOpened({
     platform: "web",
-    build: "2.0.0-alpha.57",
+    build: "2.0.0-alpha.58",
   });
 
   const postMatchSync =

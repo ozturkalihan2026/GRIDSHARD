@@ -2537,6 +2537,70 @@
   }
 
 
+
+  class RelayReleaseCheckState {
+    constructor() {
+      this.result = null;
+    }
+
+    apply(result) {
+      if (!result) {
+        throw new Error(
+          "Release-check sonucu gerekli."
+        );
+      }
+
+      this.result = {
+        ...result,
+        checks: {
+          ...(result.checks || {}),
+        },
+        menu_areas: [
+          ...(result.menu_areas || []),
+        ],
+        deferred_areas: [
+          ...(result.deferred_areas || []),
+        ],
+      };
+
+      return this.viewModel();
+    }
+
+    viewModel() {
+      if (!this.result) {
+        return null;
+      }
+
+      return {
+        ready:
+          Boolean(
+            this.result.ready
+          ),
+        version:
+          this.result.version,
+        build:
+          this.result.build,
+        menuAreas: [
+          ...this.result.menu_areas,
+        ],
+        deferredAreas: [
+          ...this.result.deferred_areas,
+        ],
+        failedChecks:
+          Object.entries(
+            this.result.checks
+          )
+            .filter(
+              ([, ok]) => !ok
+            )
+            .map(
+              ([name]) => name
+            ),
+      };
+    }
+  }
+
+
   const api = {
     RelayBattleClient,
     RelayPvPClientState,
@@ -2555,6 +2619,7 @@
     RelayAccountDataLoader,
     RelayWebTestKpiState,
     RelayTelemetryHttpTransport,
+    RelayReleaseCheckState,
     BattlePoolSelection,
     APP_SCREEN,
     WS_CONNECTION_STATUS,
@@ -2589,6 +2654,7 @@
   global.RelayAccountDataLoader = RelayAccountDataLoader;
   global.RelayWebTestKpiState = RelayWebTestKpiState;
   global.RelayTelemetryHttpTransport = RelayTelemetryHttpTransport;
+  global.RelayReleaseCheckState = RelayReleaseCheckState;
   global.RelayTelemetryTransportStatus = TELEMETRY_TRANSPORT_STATUS;
   global.RelayRemoteDataStatus = REMOTE_DATA_STATUS;
   global.RelayOnlinePlayStatus = ONLINE_PLAY_STATUS;

@@ -402,61 +402,61 @@ function createClient() {
   const fs=require("fs");
   const src=fs.readFileSync("./src/app.js","utf8");
   assert.ok(src.includes("PVP_STATUS"));
-  assert.ok(src.includes("İkinci maç + kaybeden tekrar maç KPI aktif"));
+  assert.ok(src.includes("Web test release-check kapsamı hazır"));
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync("./src/app.js","utf8");
-  assert.ok(src.includes("İkinci maç + kaybeden tekrar maç KPI aktif")); // alpha32->33 protocol status
+  assert.ok(src.includes("Web test release-check kapsamı hazır")); // alpha32->33 protocol status
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync("./src/app.js","utf8");
-  assert.ok(src.includes("İkinci maç + kaybeden tekrar maç KPI aktif")); // alpha33 protocol
+  assert.ok(src.includes("Web test release-check kapsamı hazır")); // alpha33 protocol
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync("./src/app.js","utf8");
-  assert.ok(src.includes("İkinci maç + kaybeden tekrar maç KPI aktif")); // alpha34 websocket
+  assert.ok(src.includes("Web test release-check kapsamı hazır")); // alpha34 websocket
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync("./src/app.js","utf8");
-  assert.ok(src.includes("İkinci maç + kaybeden tekrar maç KPI aktif")); // alpha35 gateway
+  assert.ok(src.includes("Web test release-check kapsamı hazır")); // alpha35 gateway
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync("./src/app.js","utf8");
-  assert.ok(src.includes("İkinci maç + kaybeden tekrar maç KPI aktif")); // alpha36 setup
+  assert.ok(src.includes("Web test release-check kapsamı hazır")); // alpha36 setup
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync("./src/app.js","utf8");
-  assert.ok(src.includes("İkinci maç + kaybeden tekrar maç KPI aktif")); // alpha37 lobby
+  assert.ok(src.includes("Web test release-check kapsamı hazır")); // alpha37 lobby
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync("./src/app.js","utf8");
-  assert.ok(src.includes("İkinci maç + kaybeden tekrar maç KPI aktif")); // alpha38 runner
+  assert.ok(src.includes("Web test release-check kapsamı hazır")); // alpha38 runner
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync("./src/app.js","utf8");
-  assert.ok(src.includes("İkinci maç + kaybeden tekrar maç KPI aktif")); // alpha39 heartbeat
+  assert.ok(src.includes("Web test release-check kapsamı hazır")); // alpha39 heartbeat
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync("./src/app.js","utf8");
-  assert.ok(src.includes("İkinci maç + kaybeden tekrar maç KPI aktif")); // alpha40 online pvp
+  assert.ok(src.includes("Web test release-check kapsamı hazır")); // alpha40 online pvp
 }
 
 {
@@ -682,7 +682,7 @@ function createClient() {
 {
   const fs=require("fs");
   const src=fs.readFileSync("./src/app.js","utf8");
-  assert.ok(src.includes("İkinci maç + kaybeden tekrar maç KPI aktif"));
+  assert.ok(src.includes("Web test release-check kapsamı hazır"));
   assert.ok(src.includes("buildPvPCommandEnvelope"));
   assert.ok(src.includes("applyPvPServerEnvelope"));
 }
@@ -1504,10 +1504,10 @@ function createClient() {
 
   const result=state.applyHealth({
     status:"ok",
-    version:"2.0.0-alpha.57",
+    version:"2.0.0-alpha.58",
     web_test:{
       ready:true,
-      build:"web-test-alpha.57",
+      build:"web-test-alpha.58",
       release_checks:[
         "health",
         "matchmaking",
@@ -1551,7 +1551,7 @@ function createClient() {
 
   const result=state.applyHealth({
     status:"ok",
-    version:"2.0.0-alpha.57",
+    version:"2.0.0-alpha.58",
   });
 
   assert.strictEqual(
@@ -2322,7 +2322,7 @@ function createClient() {
   const html=fs.readFileSync("./index.html","utf8");
   assert.ok(
     html.includes(
-      "2.0.0-alpha.57"
+      "2.0.0-alpha.58"
     )
   );
   assert.ok(
@@ -2495,8 +2495,98 @@ function createClient() {
   );
 }
 
+{
+  const {
+    RelayReleaseCheckState,
+  } = require("../src/relay-client.js");
+
+  const state=
+    new RelayReleaseCheckState();
+
+  const view=state.apply({
+    version:"2.0.0-alpha.58",
+    build:"web-test-alpha.58",
+    ready:true,
+    checks:{
+      health_ready:true,
+      matchmaking:true,
+      menu_scope_locked:true,
+    },
+    menu_areas:[
+      "Oyna",
+      "Profil",
+      "İstatistikler",
+      "Ayarlar",
+    ],
+    deferred_areas:[
+      "Eğitim",
+      "Mağaza",
+    ],
+  });
+
+  assert.strictEqual(
+    view.ready,
+    true
+  );
+  assert.deepStrictEqual(
+    view.menuAreas,
+    [
+      "Oyna",
+      "Profil",
+      "İstatistikler",
+      "Ayarlar",
+    ]
+  );
+  assert.strictEqual(
+    view.failedChecks.length,
+    0
+  );
+  assert.ok(
+    view.deferredAreas.includes(
+      "Eğitim"
+    )
+  );
+}
+
+{
+  const fs=require("fs");
+  const html=fs.readFileSync(
+    "./index.html",
+    "utf8"
+  );
+  assert.ok(
+    !html.includes(">Eğitim<")
+  );
+  assert.ok(
+    !html.includes(">Mağaza<")
+  );
+  assert.ok(
+    !html.includes(">Kozmetik<")
+  );
+  assert.ok(
+    html.includes(
+      'data-open-screen="play"'
+    )
+  );
+  assert.ok(
+    html.includes(
+      'data-open-screen="profile"'
+    )
+  );
+  assert.ok(
+    html.includes(
+      'data-open-screen="statistics"'
+    )
+  );
+  assert.ok(
+    html.includes(
+      'data-open-screen="settings"'
+    )
+  );
+}
+
 Promise.all(asyncTests).then(() => {
-  console.log("95 client tests passed");
+  console.log("97 client tests passed");
 }).catch((error) => {
   console.error(error);
   process.exitCode = 1;

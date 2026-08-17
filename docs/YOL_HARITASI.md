@@ -1,7 +1,7 @@
 # Project Relay 2.0 — YOL HARİTASI
 
-**Güncel Sürüm:** `2.0.0-alpha.57`  
-**Paket:** İkinci Maça Geçiş ve Kaybeden Tekrar Maç KPI'sı  
+**Güncel Sürüm:** `2.0.0-alpha.58`  
+**Paket:** Web Test Release Candidate Kontrol Listesi ve M8 Kapsam Temizliği  
 **Kanonik Dosya:** `docs/YOL_HARITASI.md`
 
 > Bu dosya Project Relay 2.0 için tek kanonik geliştirme kaydıdır. Her paket tamamlandığında sürüm numarası artırılır; **Tamamlananlar** ve **Yapılacaklar** bu dosyada güncellenir. Sonraki geliştirme paketi bu dosya okunarak başlatılır.
@@ -279,21 +279,24 @@
 
 #### FAZ 19 — Profil
 
-- [ ] Profil ana alanı hazırlanacak.
-- [ ] Gerekli Profil alt menüleri hazırlanacak.
-- [ ] Kozmetik bölümü bu kapsamda oluşturulmayacak.
+- [x] Profil ana alanı hazırlandı.
+- [x] Profil alt bölümleri Genel, İlerleme ve Savaş Havuzu olarak hazırlandı.
+- [x] Profil gerçek sunucu verisine bağlandı.
+- [x] Kozmetik bölümü bu kapsamda oluşturulmadı.
 
 #### FAZ 20 — İstatistikler
 
-- [ ] Toplam maç sayısı tutulacak.
-- [ ] Galibiyet sayısı tutulacak.
-- [ ] Mağlubiyet sayısı tutulacak.
-- [ ] Galibiyet oranı hesaplanacak.
-- [ ] Ortalama maç süresi tutulacak.
-- [ ] En sık kullanılan modüller tutulacak.
-- [ ] Toplam verilen hasar tutulacak.
-- [ ] Modül değiştirme sayısı tutulacak.
-- [ ] Kullanılan güçlendiriciler takip edilecek.
+- [x] Toplam maç sayısı tutuluyor.
+- [x] Galibiyet sayısı tutuluyor.
+- [x] Mağlubiyet sayısı tutuluyor.
+- [x] Beraberlik sayısı tutuluyor.
+- [x] Galibiyet oranı hesaplanıyor.
+- [x] Ortalama maç süresi tutuluyor.
+- [x] En sık kullanılan modüller tutuluyor.
+- [x] Toplam verilen hasar tutuluyor.
+- [x] Modül değiştirme sayısı tutuluyor.
+- [x] Kullanılan güçlendiriciler takip ediliyor.
+- [x] İstatistikler gerçek sunucu verisine bağlandı.
 
 #### FAZ 21 — Ayarlar
 
@@ -380,9 +383,9 @@ Aşağıdaki alanlar ilk sürüm kapsamına dahil değildir ve mevcut yol harita
 
 ## Sıradaki Paket
 
-**`2.0.0-alpha.58 — Web Test Release Candidate Kontrol Listesi ve M8 Kapsam Temizliği`**
+**`2.0.0-alpha.59 — Web Test Gerçek Kullanıcı Oturumu Hazırlığı ve Hata Dayanıklılığı`**
 
-Web test için planlanan temel telemetri/KPI zinciri tamamlandı. Sıradaki paket yeni özellik veya Eğitim ekranı eklemeden mevcut beta kapsamını release-candidate kontrolünden geçirecek: sürüm/build tutarlılığı, yalnızca Oyna/Profil/İstatistikler/Ayarlar menü kapsamı, health/smoke, gerçek matchmaking, WebSocket, post-match sync, telemetri transport ve KPI endpoint'leri tek release-check raporunda doğrulanacak. Yol haritasındaki eski durum metinleri güncel gerçek durumla hizalanacak.
+Mevcut ilk kapsam release-check seviyesinde hazır. Sıradaki paket yeni özellik veya Eğitim ekranı eklemeyecek; gerçek kullanıcı Web testine çıkmadan önce istemci ağ hataları ve kullanıcı geri dönüş yollarını sağlamlaştıracak. Eşleştirme iptali, WebSocket bağlantı hatası, setup/ready sunucu reddi, post-match yükleme hatası ve telemetri gönderim hatası için Oyna ekranında kullanıcıya anlaşılır fakat savaşı durdurmayan durum/yeniden-deneme akışları hazırlanacak.
 
 
 ---
@@ -448,7 +451,7 @@ Web test için planlanan temel telemetri/KPI zinciri tamamlandı. Sıradaki pake
 - [x] Profil
 - [x] İstatistikler
 - [x] Ayarlar
-- [ ] Eğitim
+- [ ] Eğitim — **ilk Web test kapsamı dışında, bilinçli olarak ertelendi.**
 - [x] Telemetri
 - [x] Web test sürümü — **smoke-test ve sağlık sözleşmesi hazır; gerçek kullanıcı testi sonraki paketlerde yürütülecek.**
 
