@@ -1,7 +1,7 @@
 # Project Relay 2.0 — YOL HARİTASI
 
-**Güncel Sürüm:** `2.0.0-alpha.109`  
-**Paket:** Preflight Tarayıcı Görünümü ve İlk Gerçek Kullanıcı Testi Başlangıç Kapısı  
+**Güncel Sürüm:** `2.0.0-alpha.110`  
+**Paket:** Preflight Snapshot Audit ve Gerçek Test Başlangıç Kaydı  
 **Kanonik Dosya:** `docs/YOL_HARITASI.md`
 
 > Bu dosya Project Relay 2.0 için tek kanonik geliştirme kaydıdır. Her paket tamamlandığında sürüm numarası artırılır; **Tamamlananlar** ve **Yapılacaklar** bu dosyada güncellenir. Sonraki geliştirme paketi bu dosya okunarak başlatılır.
@@ -383,9 +383,9 @@ Aşağıdaki alanlar ilk sürüm kapsamına dahil değildir ve mevcut yol harita
 
 ## Sıradaki Paket
 
-**`2.0.0-alpha.110 — Preflight Snapshot Audit ve Gerçek Test Başlangıç Kaydı`**
+**`2.0.0-alpha.111 — Preflight Snapshot KPI ve Hazır Snapshot Oranı`**
 
-Preflight tarayıcı görünümü hazır. Sıradaki paket aktif test koşusunun preflight snapshot'ını minimal bir audit olayıyla kaydedecek: test_run_id, preflight_ready, failed_checks ve operasyon KPI özet sayıları. Profil veya gameplay içeriği audit'e eklenmeyecek.
+Preflight snapshot audit hazır. Sıradaki paket test koşusunda alınan preflight snapshot sayısını, hazır snapshot sayısını ve `preflight_ready_rate` metriğini agregat olarak hesaplayacak. Bu operasyon KPI'sı teknik launch kararını değiştirmeyecek.
 
 
 ---

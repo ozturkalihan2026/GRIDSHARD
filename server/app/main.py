@@ -124,8 +124,8 @@ TELEMETRY_MAX_EVENTS = int(
 )
 WEB_TEST_RUN_ID = os.environ.get(
     "RELAY_WEB_TEST_RUN_ID",
-    "web-test-alpha.109",
-).strip() or "web-test-alpha.109"
+    "web-test-alpha.110",
+).strip() or "web-test-alpha.110"
 
 telemetry_repository = (
     JsonFileTelemetryRepository(
@@ -699,6 +699,88 @@ def record_web_test_checklist_snapshot() -> dict:
             len(
                 checklist[
                     "notes"
+                ]
+            ),
+    }
+
+
+@app.post("/web-test/audit/preflight-snapshot")
+def record_web_test_preflight_snapshot() -> dict:
+    preflight = (
+        web_test_preflight()
+    )
+    timestamp_ms = int(
+        time.time()
+        * 1000
+    )
+    event_id = (
+        "web-test-preflight-"
+        + WEB_TEST_RUN_ID
+        + "-"
+        + str(timestamp_ms)
+    )
+
+    operational = (
+        preflight.get(
+            "operational_kpis",
+            {},
+        )
+    )
+
+    accepted = telemetry_service.record(
+        TelemetryEvent(
+            event_id=event_id,
+            event_type=
+                "web_test_preflight_snapshot",
+            timestamp_ms=
+                timestamp_ms,
+            metadata={
+                "test_run_id":
+                    WEB_TEST_RUN_ID,
+                "preflight_ready":
+                    bool(
+                        preflight[
+                            "preflight_ready"
+                        ]
+                    ),
+                "failed_checks":
+                    list(
+                        preflight[
+                            "failed_checks"
+                        ]
+                    ),
+                "checklist_snapshots":
+                    int(
+                        operational.get(
+                            "checklist_snapshots",
+                            0,
+                        )
+                    ),
+                "launch_attempts":
+                    int(
+                        operational.get(
+                            "launch_attempts",
+                            0,
+                        )
+                    ),
+            },
+        )
+    )
+
+    return {
+        "accepted":accepted,
+        "test_run_id":
+            WEB_TEST_RUN_ID,
+        "preflight_ready":
+            bool(
+                preflight[
+                    "preflight_ready"
+                ]
+            ),
+        "failed_checks":
+            list(
+                preflight[
+                    "failed_checks"
                 ]
             ),
     }
@@ -1401,7 +1483,7 @@ def web_test_current_run() -> dict:
         "test_run_id":
             WEB_TEST_RUN_ID,
         "build":
-            "web-test-alpha.109",
+            "web-test-alpha.110",
     }
 
 
@@ -1490,7 +1572,7 @@ def web_test_rc_candidate() -> dict:
     return build_rc_candidate_summary(
         version=VERSION,
         build=
-            "web-test-alpha.109",
+            "web-test-alpha.110",
         test_run_id=
             WEB_TEST_RUN_ID,
         operation_readiness=
@@ -1531,7 +1613,7 @@ def web_test_launch_readiness() -> dict:
     return build_launch_snapshot(
         version=VERSION,
         build=
-            "web-test-alpha.109",
+            "web-test-alpha.110",
         test_run_id=
             WEB_TEST_RUN_ID,
         manifest=manifest,
@@ -1567,7 +1649,7 @@ def web_test_first_run_checklist() -> dict:
     return build_first_run_checklist(
         version=VERSION,
         build=
-            "web-test-alpha.109",
+            "web-test-alpha.110",
         test_run_id=
             WEB_TEST_RUN_ID,
         launch_readiness=
@@ -1595,7 +1677,7 @@ def web_test_preflight() -> dict:
     return build_preflight_report(
         version=VERSION,
         build=
-            "web-test-alpha.109",
+            "web-test-alpha.110",
         test_run_id=
             WEB_TEST_RUN_ID,
         checklist=
