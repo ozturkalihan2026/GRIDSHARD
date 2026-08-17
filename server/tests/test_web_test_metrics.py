@@ -113,3 +113,102 @@ def test_kpi_endpoint():
     assert body["game_opened"]==1
     assert "average_match_duration_ms" in body
     assert "match_completion_rate" in body
+
+
+def test_second_match_transition_uses_post_completion_matchmaking():
+    telemetry_service.clear()
+
+    items=[
+        TelemetryEvent(
+            event_id="complete-a",
+            event_type="match_completed",
+            timestamp_ms=100,
+            player_id="a",
+            session_id="s1",
+            metadata={
+                "winner_player_id":"a",
+                "is_draw":False,
+                "duration_ms":90000,
+            },
+        ),
+        TelemetryEvent(
+            event_id="next-a",
+            event_type="matchmaking_started",
+            timestamp_ms=150,
+            player_id="a",
+            metadata={},
+        ),
+        TelemetryEvent(
+            event_id="complete-b",
+            event_type="match_completed",
+            timestamp_ms=100,
+            player_id="b",
+            session_id="s2",
+            metadata={
+                "winner_player_id":"b",
+                "is_draw":False,
+                "duration_ms":90000,
+            },
+        ),
+    ]
+    for item in items:
+        telemetry_service.record(item)
+
+    kpi=WebTestKpiService(
+        telemetry_service
+    ).snapshot()
+
+    assert kpi["players_with_completed_match"]==2
+    assert kpi["players_starting_second_match"]==1
+    assert kpi["second_match_transition_rate"]==0.5
+
+
+def test_losing_player_rematch_rate_links_previous_session():
+    telemetry_service.clear()
+
+    items=[
+        TelemetryEvent(
+            event_id="winner",
+            event_type="match_completed",
+            timestamp_ms=100,
+            player_id="a",
+            session_id="s1",
+            metadata={
+                "winner_player_id":"a",
+                "is_draw":False,
+                "duration_ms":90000,
+            },
+        ),
+        TelemetryEvent(
+            event_id="loser",
+            event_type="match_completed",
+            timestamp_ms=100,
+            player_id="b",
+            session_id="s1",
+            metadata={
+                "winner_player_id":"a",
+                "is_draw":False,
+                "duration_ms":90000,
+            },
+        ),
+        TelemetryEvent(
+            event_id="rematch-b",
+            event_type="rematch_requested",
+            timestamp_ms=120,
+            player_id="b",
+            session_id="s1",
+            metadata={
+                "previous_session_id":"s1",
+            },
+        ),
+    ]
+    for item in items:
+        telemetry_service.record(item)
+
+    kpi=WebTestKpiService(
+        telemetry_service
+    ).snapshot()
+
+    assert kpi["losing_player_matches"]==1
+    assert kpi["losing_player_rematch_requests"]==1
+    assert kpi["losing_player_rematch_rate"]==1.0

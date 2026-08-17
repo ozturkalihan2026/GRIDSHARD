@@ -402,61 +402,61 @@ function createClient() {
   const fs=require("fs");
   const src=fs.readFileSync("./src/app.js","utf8");
   assert.ok(src.includes("PVP_STATUS"));
-  assert.ok(src.includes("İstemci telemetri güvenli gönderim kuyruğu aktif"));
+  assert.ok(src.includes("İkinci maç + kaybeden tekrar maç KPI aktif"));
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync("./src/app.js","utf8");
-  assert.ok(src.includes("İstemci telemetri güvenli gönderim kuyruğu aktif")); // alpha32->33 protocol status
+  assert.ok(src.includes("İkinci maç + kaybeden tekrar maç KPI aktif")); // alpha32->33 protocol status
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync("./src/app.js","utf8");
-  assert.ok(src.includes("İstemci telemetri güvenli gönderim kuyruğu aktif")); // alpha33 protocol
+  assert.ok(src.includes("İkinci maç + kaybeden tekrar maç KPI aktif")); // alpha33 protocol
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync("./src/app.js","utf8");
-  assert.ok(src.includes("İstemci telemetri güvenli gönderim kuyruğu aktif")); // alpha34 websocket
+  assert.ok(src.includes("İkinci maç + kaybeden tekrar maç KPI aktif")); // alpha34 websocket
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync("./src/app.js","utf8");
-  assert.ok(src.includes("İstemci telemetri güvenli gönderim kuyruğu aktif")); // alpha35 gateway
+  assert.ok(src.includes("İkinci maç + kaybeden tekrar maç KPI aktif")); // alpha35 gateway
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync("./src/app.js","utf8");
-  assert.ok(src.includes("İstemci telemetri güvenli gönderim kuyruğu aktif")); // alpha36 setup
+  assert.ok(src.includes("İkinci maç + kaybeden tekrar maç KPI aktif")); // alpha36 setup
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync("./src/app.js","utf8");
-  assert.ok(src.includes("İstemci telemetri güvenli gönderim kuyruğu aktif")); // alpha37 lobby
+  assert.ok(src.includes("İkinci maç + kaybeden tekrar maç KPI aktif")); // alpha37 lobby
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync("./src/app.js","utf8");
-  assert.ok(src.includes("İstemci telemetri güvenli gönderim kuyruğu aktif")); // alpha38 runner
+  assert.ok(src.includes("İkinci maç + kaybeden tekrar maç KPI aktif")); // alpha38 runner
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync("./src/app.js","utf8");
-  assert.ok(src.includes("İstemci telemetri güvenli gönderim kuyruğu aktif")); // alpha39 heartbeat
+  assert.ok(src.includes("İkinci maç + kaybeden tekrar maç KPI aktif")); // alpha39 heartbeat
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync("./src/app.js","utf8");
-  assert.ok(src.includes("İstemci telemetri güvenli gönderim kuyruğu aktif")); // alpha40 online pvp
+  assert.ok(src.includes("İkinci maç + kaybeden tekrar maç KPI aktif")); // alpha40 online pvp
 }
 
 {
@@ -682,7 +682,7 @@ function createClient() {
 {
   const fs=require("fs");
   const src=fs.readFileSync("./src/app.js","utf8");
-  assert.ok(src.includes("İstemci telemetri güvenli gönderim kuyruğu aktif"));
+  assert.ok(src.includes("İkinci maç + kaybeden tekrar maç KPI aktif"));
   assert.ok(src.includes("buildPvPCommandEnvelope"));
   assert.ok(src.includes("applyPvPServerEnvelope"));
 }
@@ -1504,10 +1504,10 @@ function createClient() {
 
   const result=state.applyHealth({
     status:"ok",
-    version:"2.0.0-alpha.56",
+    version:"2.0.0-alpha.57",
     web_test:{
       ready:true,
-      build:"web-test-alpha.56",
+      build:"web-test-alpha.57",
       release_checks:[
         "health",
         "matchmaking",
@@ -1551,7 +1551,7 @@ function createClient() {
 
   const result=state.applyHealth({
     status:"ok",
-    version:"2.0.0-alpha.56",
+    version:"2.0.0-alpha.57",
   });
 
   assert.strictEqual(
@@ -2281,6 +2281,8 @@ function createClient() {
     match_completion_rate:0.8,
     rematch_requests:4,
     rematch_request_rate:0.4,
+    second_match_transition_rate:0.6,
+    losing_player_rematch_rate:0.5,
     module_changes:25,
     average_module_changes_per_match:2.5,
     total_circuit_credits_spent:1500,
@@ -2302,6 +2304,14 @@ function createClient() {
     40
   );
   assert.strictEqual(
+    view.secondMatchTransitionRatePercent,
+    60
+  );
+  assert.strictEqual(
+    view.losingPlayerRematchRatePercent,
+    50
+  );
+  assert.strictEqual(
     view.averageMatchDurationMs,
     110000
   );
@@ -2312,7 +2322,7 @@ function createClient() {
   const html=fs.readFileSync("./index.html","utf8");
   assert.ok(
     html.includes(
-      "2.0.0-alpha.56"
+      "2.0.0-alpha.57"
     )
   );
   assert.ok(

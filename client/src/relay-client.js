@@ -2276,6 +2276,20 @@
               || 0
             ) * 10000
           ) / 100,
+        secondMatchTransitionRatePercent:
+          Math.round(
+            Number(
+              this.kpis.second_match_transition_rate
+              || 0
+            ) * 10000
+          ) / 100,
+        losingPlayerRematchRatePercent:
+          Math.round(
+            Number(
+              this.kpis.losing_player_rematch_rate
+              || 0
+            ) * 10000
+          ) / 100,
         moduleChanges:
           this.kpis.module_changes,
         averageModuleChangesPerMatch:

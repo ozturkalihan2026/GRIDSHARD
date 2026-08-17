@@ -121,6 +121,130 @@ class WebTestKpiService:
             else 0.0
         )
 
+        completed_by_player: dict[
+            str,
+            list[dict[str, Any]],
+        ] = defaultdict(list)
+        matchmaking_by_player: dict[
+            str,
+            list[dict[str, Any]],
+        ] = defaultdict(list)
+        rematch_by_player: dict[
+            str,
+            list[dict[str, Any]],
+        ] = defaultdict(list)
+
+        for event in events:
+            player = event["player_id"]
+            if not player:
+                continue
+
+            if event["event_type"] == "match_completed":
+                completed_by_player[
+                    player
+                ].append(event)
+            elif event["event_type"] == "matchmaking_started":
+                matchmaking_by_player[
+                    player
+                ].append(event)
+            elif event["event_type"] == "rematch_requested":
+                rematch_by_player[
+                    player
+                ].append(event)
+
+        players_with_completed_match = len(
+            completed_by_player
+        )
+        players_starting_second_match = 0
+
+        for player, completed in completed_by_player.items():
+            first_completed_at = min(
+                event["timestamp_ms"]
+                for event in completed
+            )
+            if any(
+                event["timestamp_ms"]
+                >= first_completed_at
+                for event
+                in matchmaking_by_player.get(
+                    player,
+                    [],
+                )
+            ):
+                players_starting_second_match += 1
+
+        second_match_transition_rate = (
+            players_starting_second_match
+            / players_with_completed_match
+            if players_with_completed_match
+            else 0.0
+        )
+
+        losing_players: set[
+            tuple[str, str]
+        ] = set()
+        losing_players_requesting_rematch: set[
+            tuple[str, str]
+        ] = set()
+
+        for event in completed_events:
+            player = event["player_id"]
+            session_id = event["session_id"]
+            if not player or not session_id:
+                continue
+
+            metadata = event["metadata"]
+            if metadata.get("is_draw"):
+                continue
+
+            winner = metadata.get(
+                "winner_player_id"
+            )
+            if winner == player:
+                continue
+
+            key = (
+                player,
+                session_id,
+            )
+            losing_players.add(key)
+
+            completion_time = event[
+                "timestamp_ms"
+            ]
+
+            if any(
+                rematch["timestamp_ms"]
+                >= completion_time
+                and (
+                    rematch["session_id"]
+                    == session_id
+                    or rematch[
+                        "metadata"
+                    ].get(
+                        "previous_session_id"
+                    )
+                    == session_id
+                )
+                for rematch
+                in rematch_by_player.get(
+                    player,
+                    [],
+                )
+            ):
+                losing_players_requesting_rematch.add(
+                    key
+                )
+
+        losing_player_rematch_rate = (
+            len(
+                losing_players_requesting_rematch
+            )
+            / len(losing_players)
+            if losing_players
+            else 0.0
+        )
+
         return {
             "player_id": player_id,
             "game_opened": counts[
@@ -144,6 +268,28 @@ class WebTestKpiService:
             ),
             "rematch_request_rate": round(
                 rematch_request_rate,
+                6,
+            ),
+            "players_with_completed_match": (
+                players_with_completed_match
+            ),
+            "players_starting_second_match": (
+                players_starting_second_match
+            ),
+            "second_match_transition_rate": round(
+                second_match_transition_rate,
+                6,
+            ),
+            "losing_player_matches": (
+                len(losing_players)
+            ),
+            "losing_player_rematch_requests": (
+                len(
+                    losing_players_requesting_rematch
+                )
+            ),
+            "losing_player_rematch_rate": round(
+                losing_player_rematch_rate,
                 6,
             ),
             "module_changes": module_changes,

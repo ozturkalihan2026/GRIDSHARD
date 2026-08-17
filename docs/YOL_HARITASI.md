@@ -1,7 +1,7 @@
 # Project Relay 2.0 — YOL HARİTASI
 
-**Güncel Sürüm:** `2.0.0-alpha.56`  
-**Paket:** İstemci Telemetri Transport ve Güvenli Gönderim Kuyruğu  
+**Güncel Sürüm:** `2.0.0-alpha.57`  
+**Paket:** İkinci Maça Geçiş ve Kaybeden Tekrar Maç KPI'sı  
 **Kanonik Dosya:** `docs/YOL_HARITASI.md`
 
 > Bu dosya Project Relay 2.0 için tek kanonik geliştirme kaydıdır. Her paket tamamlandığında sürüm numarası artırılır; **Tamamlananlar** ve **Yapılacaklar** bu dosyada güncellenir. Sonraki geliştirme paketi bu dosya okunarak başlatılır.
@@ -325,14 +325,14 @@
 - [x] Web test sürümü için sağlık, sürüm ve uçtan uca smoke-test sözleşmesi hazırlandı.
 - [ ] Eğitim tamamlama oranı ölçülecek.
 - [x] İlk maç/maç tamamlama için başlayan ve tamamlanan session sayaçları ile tamamlama oranı ölçülüyor.
-- [ ] İkinci maça geçiş oyuncu oturumu dizisi üzerinden ayrıca türetilecek.
+- [x] İkinci maça geçiş, ilk tamamlanmış maçtan sonraki yeni eşleştirme başlangıcı üzerinden ölçülüyor.
 - [x] Maç başına modül değişimi ölçülüyor.
 - [x] Devre Kredisi kullanımı ölçülüyor.
 - [x] Modül Rafı kullanımı ölçülüyor.
 - [x] Güçlendirici kullanımı ölçülüyor.
 - [x] Ortalama maç süresi ölçülüyor.
 - [x] Tekrar maç isteği sayısı ve tamamlanan maç başına oranı ölçülüyor.
-- [ ] Kaybeden oyuncunun tekrar maç açma oranı temel sinyallerden biri olacak.
+- [x] Kaybeden oyuncunun tekrar maç isteği oranı maç sonucu + tekrar maç sinyali üzerinden ölçülüyor.
 
 #### FAZ 24 — Android ve iOS
 
@@ -380,9 +380,9 @@ Aşağıdaki alanlar ilk sürüm kapsamına dahil değildir ve mevcut yol harita
 
 ## Sıradaki Paket
 
-**`2.0.0-alpha.57 — İkinci Maça Geçiş ve Kaybeden Tekrar Maç KPI'sı`**
+**`2.0.0-alpha.58 — Web Test Release Candidate Kontrol Listesi ve M8 Kapsam Temizliği`**
 
-İstemci telemetri sinyalleri artık gerçek sunucuya ulaşıyor. Sıradaki paket Web test KPI'larında aynı oyuncunun tamamladığı maçtan sonraki tekrar eşleştirme başlangıcını ilişkilendirerek ikinci maça geçişi ölçecek. Ayrıca tamamlanan maç sonucu ile `rematch_requested` olayını eşleştirerek kaybeden oyuncunun tekrar maç isteği oranı türetilecek. Yeni menü veya Eğitim alanı eklenmeyecek.
+Web test için planlanan temel telemetri/KPI zinciri tamamlandı. Sıradaki paket yeni özellik veya Eğitim ekranı eklemeden mevcut beta kapsamını release-candidate kontrolünden geçirecek: sürüm/build tutarlılığı, yalnızca Oyna/Profil/İstatistikler/Ayarlar menü kapsamı, health/smoke, gerçek matchmaking, WebSocket, post-match sync, telemetri transport ve KPI endpoint'leri tek release-check raporunda doğrulanacak. Yol haritasındaki eski durum metinleri güncel gerçek durumla hizalanacak.
 
 
 ---
