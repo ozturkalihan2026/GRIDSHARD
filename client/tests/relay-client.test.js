@@ -402,61 +402,61 @@ function createClient() {
   const fs=require("fs");
   const src=fs.readFileSync("./src/app.js","utf8");
   assert.ok(src.includes("PVP_STATUS"));
-  assert.ok(src.includes("Web test operasyon readiness kapısı hazır"));
+  assert.ok(src.includes("Tarayıcı operasyon readiness kapısı aktif"));
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync("./src/app.js","utf8");
-  assert.ok(src.includes("Web test operasyon readiness kapısı hazır")); // alpha32->33 protocol status
+  assert.ok(src.includes("Tarayıcı operasyon readiness kapısı aktif")); // alpha32->33 protocol status
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync("./src/app.js","utf8");
-  assert.ok(src.includes("Web test operasyon readiness kapısı hazır")); // alpha33 protocol
+  assert.ok(src.includes("Tarayıcı operasyon readiness kapısı aktif")); // alpha33 protocol
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync("./src/app.js","utf8");
-  assert.ok(src.includes("Web test operasyon readiness kapısı hazır")); // alpha34 websocket
+  assert.ok(src.includes("Tarayıcı operasyon readiness kapısı aktif")); // alpha34 websocket
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync("./src/app.js","utf8");
-  assert.ok(src.includes("Web test operasyon readiness kapısı hazır")); // alpha35 gateway
+  assert.ok(src.includes("Tarayıcı operasyon readiness kapısı aktif")); // alpha35 gateway
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync("./src/app.js","utf8");
-  assert.ok(src.includes("Web test operasyon readiness kapısı hazır")); // alpha36 setup
+  assert.ok(src.includes("Tarayıcı operasyon readiness kapısı aktif")); // alpha36 setup
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync("./src/app.js","utf8");
-  assert.ok(src.includes("Web test operasyon readiness kapısı hazır")); // alpha37 lobby
+  assert.ok(src.includes("Tarayıcı operasyon readiness kapısı aktif")); // alpha37 lobby
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync("./src/app.js","utf8");
-  assert.ok(src.includes("Web test operasyon readiness kapısı hazır")); // alpha38 runner
+  assert.ok(src.includes("Tarayıcı operasyon readiness kapısı aktif")); // alpha38 runner
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync("./src/app.js","utf8");
-  assert.ok(src.includes("Web test operasyon readiness kapısı hazır")); // alpha39 heartbeat
+  assert.ok(src.includes("Tarayıcı operasyon readiness kapısı aktif")); // alpha39 heartbeat
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync("./src/app.js","utf8");
-  assert.ok(src.includes("Web test operasyon readiness kapısı hazır")); // alpha40 online pvp
+  assert.ok(src.includes("Tarayıcı operasyon readiness kapısı aktif")); // alpha40 online pvp
 }
 
 {
@@ -682,7 +682,7 @@ function createClient() {
 {
   const fs=require("fs");
   const src=fs.readFileSync("./src/app.js","utf8");
-  assert.ok(src.includes("Web test operasyon readiness kapısı hazır"));
+  assert.ok(src.includes("Tarayıcı operasyon readiness kapısı aktif"));
   assert.ok(src.includes("buildPvPCommandEnvelope"));
   assert.ok(src.includes("applyPvPServerEnvelope"));
 }
@@ -1504,10 +1504,10 @@ function createClient() {
 
   const result=state.applyHealth({
     status:"ok",
-    version:"2.0.0-alpha.79",
+    version:"2.0.0-alpha.80",
     web_test:{
       ready:true,
-      build:"web-test-alpha.79",
+      build:"web-test-alpha.80",
       release_checks:[
         "health",
         "matchmaking",
@@ -1551,7 +1551,7 @@ function createClient() {
 
   const result=state.applyHealth({
     status:"ok",
-    version:"2.0.0-alpha.79",
+    version:"2.0.0-alpha.80",
   });
 
   assert.strictEqual(
@@ -2322,7 +2322,7 @@ function createClient() {
   const html=fs.readFileSync("./index.html","utf8");
   assert.ok(
     html.includes(
-      "2.0.0-alpha.79"
+      "2.0.0-alpha.80"
     )
   );
   assert.ok(
@@ -2504,8 +2504,8 @@ function createClient() {
     new RelayReleaseCheckState();
 
   const view=state.apply({
-    version:"2.0.0-alpha.79",
-    build:"web-test-alpha.79",
+    version:"2.0.0-alpha.80",
+    build:"web-test-alpha.80",
     ready:true,
     checks:{
       health_ready:true,
@@ -2645,17 +2645,17 @@ function createClient() {
       healthState:health,
       releaseCheckState:release,
       expectedVersion:
-        "2.0.0-alpha.79",
+        "2.0.0-alpha.80",
       expectedProtocolVersion:1,
       requestJson:
         async (path) => {
           if (path==="/health") {
             return {
               status:"ok",
-              version:"2.0.0-alpha.79",
+              version:"2.0.0-alpha.80",
               web_test:{
                 ready:true,
-                build:"web-test-alpha.79",
+                build:"web-test-alpha.80",
                 release_checks:[],
                 capabilities:{},
               },
@@ -2666,8 +2666,8 @@ function createClient() {
             === "/web-test/release-check"
           ) {
             return {
-              version:"2.0.0-alpha.79",
-              build:"web-test-alpha.79",
+              version:"2.0.0-alpha.80",
+              build:"web-test-alpha.80",
               ready:true,
               checks:{
                 health_ready:true,
@@ -2680,9 +2680,26 @@ function createClient() {
             };
           }
 
+          if (
+            path
+            === "/web-test/operation-readiness"
+          ) {
+            return {
+              ready:true,
+              checks:{
+                release_ready:true,
+                player_data_ready:true,
+                telemetry_ready:true,
+                retention_configured:true,
+                rc_ready:true,
+              },
+              warnings:[],
+            };
+          }
+
           return {
             server_version:
-              "2.0.0-alpha.79",
+              "2.0.0-alpha.80",
             web_test_build:
               "web-test-alpha.62",
             pvp_protocol_version:1,
@@ -2735,8 +2752,8 @@ function createClient() {
 
   const snapshot=
     new RelayDiagnosticSnapshot({
-      version:"2.0.0-alpha.79",
-      build:"web-test-alpha.79",
+      version:"2.0.0-alpha.80",
+      build:"web-test-alpha.80",
       bootGate:{status:"ready"},
       connectionManager:{
         status:"open",
@@ -2820,16 +2837,16 @@ function createClient() {
       releaseCheckState:
         new RelayReleaseCheckState(),
       expectedVersion:
-        "2.0.0-alpha.79",
+        "2.0.0-alpha.80",
       expectedProtocolVersion:1,
       requestJson:
         async (path) => {
           if (path==="/health") {
             return {
-              version:"2.0.0-alpha.79",
+              version:"2.0.0-alpha.80",
               web_test:{
                 ready:true,
-                build:"web-test-alpha.79",
+                build:"web-test-alpha.80",
                 release_checks:[],
                 capabilities:{},
               },
@@ -2840,14 +2857,31 @@ function createClient() {
             === "/web-test/release-check"
           ) {
             return {
-              version:"2.0.0-alpha.79",
-              build:"web-test-alpha.79",
+              version:"2.0.0-alpha.80",
+              build:"web-test-alpha.80",
               ready:true,
               checks:{ok:true},
               menu_areas:[],
               deferred_areas:[],
             };
           }
+          if (
+            path
+            === "/web-test/operation-readiness"
+          ) {
+            return {
+              ready:true,
+              checks:{
+                release_ready:true,
+                player_data_ready:true,
+                telemetry_ready:true,
+                retention_configured:true,
+                rc_ready:true,
+              },
+              warnings:[],
+            };
+          }
+
           return {
             server_version:
               "2.0.0-alpha.61",
@@ -2887,8 +2921,8 @@ function createClient() {
     new RelayWebTestRcReportState();
 
   const view=state.apply({
-    version:"2.0.0-alpha.79",
-    build:"web-test-alpha.79",
+    version:"2.0.0-alpha.80",
+    build:"web-test-alpha.80",
     ready:true,
     critical_failures:[],
     kpis:{
@@ -3464,8 +3498,106 @@ function createClient() {
   );
 }
 
+{
+  const {
+    RelayServerBootGate,
+    RelayWebTestBuildState,
+    RelayReleaseCheckState,
+    SERVER_BOOT_STATUS,
+  } = require("../src/relay-client.js");
+
+  const gate=
+    new RelayServerBootGate({
+      healthState:
+        new RelayWebTestBuildState(),
+      releaseCheckState:
+        new RelayReleaseCheckState(),
+      expectedVersion:
+        "2.0.0-alpha.80",
+      expectedProtocolVersion:1,
+      requestJson:
+        async (path) => {
+          if (path==="/health") {
+            return {
+              version:"2.0.0-alpha.80",
+              web_test:{
+                ready:true,
+                build:"web-test-alpha.80",
+                release_checks:[],
+                capabilities:{},
+              },
+            };
+          }
+          if (
+            path
+            === "/web-test/release-check"
+          ) {
+            return {
+              version:"2.0.0-alpha.80",
+              build:"web-test-alpha.80",
+              ready:true,
+              checks:{ok:true},
+              menu_areas:[],
+              deferred_areas:[],
+            };
+          }
+          if (
+            path
+            === "/web-test/manifest"
+          ) {
+            return {
+              server_version:
+                "2.0.0-alpha.80",
+              pvp_protocol_version:1,
+              release_ready:true,
+            };
+          }
+          return {
+            ready:false,
+            checks:{
+              telemetry_ready:false,
+            },
+            warnings:[],
+          };
+        },
+    });
+
+  asyncTests.push(
+    gate.check().then(
+      (result) => {
+        assert.strictEqual(
+          result.ok,
+          false
+        );
+        assert.strictEqual(
+          gate.status,
+          SERVER_BOOT_STATUS.BLOCKED
+        );
+        assert.ok(
+          gate.lastError.includes(
+            "telemetry_ready"
+          )
+        );
+      }
+    )
+  );
+}
+
+{
+  const fs=require("fs");
+  const html=fs.readFileSync(
+    "./index.html",
+    "utf8"
+  );
+  assert.ok(
+    html.includes(
+      'id="operation-readiness-status"'
+    )
+  );
+}
+
 Promise.all(asyncTests).then(() => {
-  console.log("119 client tests passed");
+  console.log("121 client tests passed");
 }).catch((error) => {
   console.error(error);
   process.exitCode = 1;

@@ -1,7 +1,7 @@
 # Project Relay 2.0 — YOL HARİTASI
 
-**Güncel Sürüm:** `2.0.0-alpha.79`  
-**Paket:** İlk Gerçek Web Testi Öncesi Operasyon Hazır Olma Kontrolü  
+**Güncel Sürüm:** `2.0.0-alpha.80`  
+**Paket:** Tarayıcı Boot Gate Operasyon Readiness Entegrasyonu  
 **Kanonik Dosya:** `docs/YOL_HARITASI.md`
 
 > Bu dosya Project Relay 2.0 için tek kanonik geliştirme kaydıdır. Her paket tamamlandığında sürüm numarası artırılır; **Tamamlananlar** ve **Yapılacaklar** bu dosyada güncellenir. Sonraki geliştirme paketi bu dosya okunarak başlatılır.
@@ -383,9 +383,9 @@ Aşağıdaki alanlar ilk sürüm kapsamına dahil değildir ve mevcut yol harita
 
 ## Sıradaki Paket
 
-**`2.0.0-alpha.80 — Tarayıcı Boot Gate Operasyon Readiness Entegrasyonu`**
+**`2.0.0-alpha.81 — Gerçek Web Testi Oturum Başlangıcı Audit Kaydı`**
 
-Sunucuda gerçek Web test çıkış kapısı hazır. Sıradaki paket istemci boot gate'in mevcut health/release/manifest kontrollerine `/web-test/operation-readiness` cevabını da ekleyecek. Operasyon readiness `ready=false` ise Oyna açılmayacak; Profil, İstatistikler ve Ayarlar erişilebilir kalacak. Operasyon uyarıları teknik durum alanında gösterilecek, yeni menü eklenmeyecek.
+Tarayıcı artık yalnızca operasyon readiness tamamlandığında Oyna'yı açıyor. Sıradaki paket gerçek test oturumu başlangıcında sunucu tarafında minimal bir audit kaydı tutacak: test katılımcı kimliği, build, session/matchmaking başlangıç zamanı ve readiness snapshot özeti. Profil adı, savaş dizilimi veya kişisel içerik audit kaydına alınmayacak. Audit test/operasyon içindir ve normal oyun akışını durdurmayacak.
 
 
 ---

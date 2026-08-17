@@ -23,12 +23,12 @@ def test_rc_report_combines_manifest_release_and_kpis():
     )
 
     report=build_rc_report(
-        version="2.0.0-alpha.79",
+        version="2.0.0-alpha.80",
         telemetry_service=telemetry_service,
     )
 
-    assert report["version"]=="2.0.0-alpha.79"
-    assert report["build"]=="web-test-alpha.79"
+    assert report["version"]=="2.0.0-alpha.80"
+    assert report["build"]=="web-test-alpha.80"
     assert report["ready"] is True
     assert report["critical_failures"]==[]
     assert report["manifest"]["pvp_protocol_version"]==1
@@ -50,7 +50,7 @@ def test_rc_report_endpoint():
 
     assert response.status_code==200
     body=response.json()
-    assert body["version"]=="2.0.0-alpha.79"
+    assert body["version"]=="2.0.0-alpha.80"
     assert "kpis" in body
     assert "release_check" in body
     assert "manifest" in body

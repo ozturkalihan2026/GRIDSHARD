@@ -2734,6 +2734,7 @@
       this.expectedProtocolVersion =
         expectedProtocolVersion;
       this.manifest = null;
+      this.operationReadiness = null;
       this.requestJson =
         requestJson
         || (async (path) => {
@@ -2766,6 +2767,7 @@
           health,
           releaseCheck,
           manifest,
+          operationReadiness,
         ] = await Promise.all([
           this.requestJson(
             "/health"
@@ -2776,6 +2778,9 @@
           this.requestJson(
             "/web-test/manifest"
           ),
+          this.requestJson(
+            "/web-test/operation-readiness"
+          ),
         ]);
 
         this.health = health;
@@ -2783,6 +2788,8 @@
           releaseCheck;
         this.manifest =
           manifest;
+        this.operationReadiness =
+          operationReadiness;
 
         const healthResult =
           this.healthState
@@ -2817,6 +2824,9 @@
           && Boolean(
             manifest.release_ready
           )
+          && Boolean(
+            operationReadiness.ready
+          )
           && versionMatches
           && protocolMatches;
 
@@ -2828,6 +2838,28 @@
         ) {
           this.lastError =
             "PvP protokol sürümü uyuşmuyor.";
+        } else if (
+          !operationReadiness.ready
+        ) {
+          const failedChecks =
+            Object.entries(
+              operationReadiness.checks
+              || {}
+            )
+              .filter(
+                ([, ok]) => !ok
+              )
+              .map(
+                ([name]) => name
+              );
+
+          this.lastError =
+            failedChecks.length
+              ? (
+                  "Web test operasyon hazırlığı tamamlanmadı: "
+                  + failedChecks.join(", ")
+                )
+              : "Web test operasyon hazırlığı tamamlanmadı.";
         }
 
         this.status = ready
@@ -2840,6 +2872,7 @@
           health,
           releaseCheck,
           manifest,
+          operationReadiness,
           versionMatches,
           protocolMatches,
         };

@@ -42,7 +42,7 @@
   const COMPETITIVE_STATUS = "M7 Simülasyon aktif";
   const BALANCE_STATUS = "Eşit modül + counter doğrulandı";
   const AI_STATUS = "Adaptif AI + rekabetçi denge doğrulandı";
-  const PVP_STATUS = "Web test operasyon readiness kapısı hazır";
+  const PVP_STATUS = "Tarayıcı operasyon readiness kapısı aktif";
 
   const PORT_COUNT_BY_NAME = {
     "Çekirdek":4,
@@ -450,7 +450,7 @@
         webTestBuildState,
       releaseCheckState,
       expectedVersion:
-        "2.0.0-alpha.79",
+        "2.0.0-alpha.80",
       expectedProtocolVersion: 1,
     });
   const playReadinessGate =
@@ -480,7 +480,7 @@
 
   telemetryDispatcher.trackGameOpened({
     platform: "web",
-    build: "2.0.0-alpha.79",
+    build: "2.0.0-alpha.80",
   });
 
   const postMatchSync =
@@ -840,9 +840,9 @@
   const diagnosticSnapshot =
     new RelayDiagnosticSnapshot({
       version:
-        "2.0.0-alpha.79",
+        "2.0.0-alpha.80",
       build:
-        "web-test-alpha.79",
+        "web-test-alpha.80",
       bootGate:
         serverBootGate,
       connectionManager:
@@ -1021,6 +1021,44 @@
         String(
           playReadinessGate
             .canPlay()
+        );
+    }
+
+    const operationEl =
+      document.getElementById(
+        "operation-readiness-status"
+      );
+    if (operationEl) {
+      const operation =
+        serverBootGate
+          .operationReadiness;
+
+      if (!operation) {
+        operationEl.textContent =
+          "Operasyon: Kontrol bekliyor";
+      } else if (
+        operation.ready
+      ) {
+        const warnings =
+          operation.warnings
+          || [];
+        operationEl.textContent =
+          warnings.length
+            ? (
+                "Operasyon: Hazır · "
+                + warnings.join(" | ")
+              )
+            : "Operasyon: Hazır";
+      } else {
+        operationEl.textContent =
+          "Operasyon: Hazır değil";
+      }
+
+      operationEl.dataset.ready =
+        String(
+          Boolean(
+            operation?.ready
+          )
         );
     }
 
