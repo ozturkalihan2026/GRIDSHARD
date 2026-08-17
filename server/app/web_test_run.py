@@ -124,3 +124,100 @@ def build_test_run_summary(
         "event_count":
             len(events),
     }
+
+
+def build_test_run_go_no_go(
+    *,
+    test_run_id: str,
+    active_test_run_id: str,
+    operation_readiness: dict[str, Any],
+    run_summary: dict[str, Any],
+    min_sample: int = 10,
+) -> dict[str, Any]:
+    def signal(
+        value: float,
+        sample: int,
+    ) -> dict[str, Any]:
+        return {
+            "status":
+                (
+                    "observed"
+                    if sample >= min_sample
+                    else "insufficient_data"
+                ),
+            "sample": sample,
+            "minimum_sample":
+                min_sample,
+            "value": value,
+        }
+
+    started = int(
+        run_summary.get(
+            "audit_session_starts",
+            0,
+        )
+    )
+    bound = int(
+        run_summary.get(
+            "audit_session_bounds",
+            0,
+        )
+    )
+
+    return {
+        "test_run_id":
+            test_run_id,
+        "active_test_run_id":
+            active_test_run_id,
+        "historical_run":
+            test_run_id
+            != active_test_run_id,
+        "decision":
+            (
+                "GO"
+                if operation_readiness.get(
+                    "ready"
+                )
+                else "NO_GO"
+            ),
+        "technical_ready":
+            bool(
+                operation_readiness.get(
+                    "ready"
+                )
+            ),
+        "behavior_blocks_release":
+            False,
+        "behavior_signals": {
+            "audit_to_session":
+                signal(
+                    float(
+                        run_summary.get(
+                            "audit_to_session_rate",
+                            0.0,
+                        )
+                    ),
+                    started,
+                ),
+            "audit_to_finish":
+                signal(
+                    float(
+                        run_summary.get(
+                            "audit_to_finish_rate",
+                            0.0,
+                        )
+                    ),
+                    started,
+                ),
+            "bound_to_finish":
+                signal(
+                    float(
+                        run_summary.get(
+                            "bound_to_finish_rate",
+                            0.0,
+                        )
+                    ),
+                    bound,
+                ),
+        },
+    }

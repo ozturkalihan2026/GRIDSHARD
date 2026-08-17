@@ -1,7 +1,7 @@
 # Project Relay 2.0 — YOL HARİTASI
 
-**Güncel Sürüm:** `2.0.0-alpha.91`  
-**Paket:** Tarayıcıda Aktif Test Koşusu Görünümü ve Koşu Tutarlılığı  
+**Güncel Sürüm:** `2.0.0-alpha.92`  
+**Paket:** Test Koşusuna Özel Go/No-Go Audit Huni Özeti  
 **Kanonik Dosya:** `docs/YOL_HARITASI.md`
 
 > Bu dosya Project Relay 2.0 için tek kanonik geliştirme kaydıdır. Her paket tamamlandığında sürüm numarası artırılır; **Tamamlananlar** ve **Yapılacaklar** bu dosyada güncellenir. Sonraki geliştirme paketi bu dosya okunarak başlatılır.
@@ -383,9 +383,9 @@ Aşağıdaki alanlar ilk sürüm kapsamına dahil değildir ve mevcut yol harita
 
 ## Sıradaki Paket
 
-**`2.0.0-alpha.92 — Test Koşusuna Özel Go/No-Go Audit Huni Özeti`**
+**`2.0.0-alpha.93 — Web Test Koşusu Kataloğu ve Koşular Arası Operasyon Özeti`**
 
-Aktif test koşusu tarayıcı ve audit zincirinde tutarlı. Sıradaki paket `/web-test/test-runs/{test_run_id}/go-no-go` endpoint'i ile belirli koşunun audit huni sinyallerini teknik operation readiness ile birleştirecek. İstenen koşu aktif koşu değilse teknik karar değiştirilmeden `historical_run=true` olarak işaretlenecek.
+Koşuya özel teknik huni ve Go/No-Go özeti hazır. Sıradaki paket telemetride görülen test_run_id değerlerini kişisel veri taşımadan listeleyen bir koşu kataloğu oluşturacak. Her koşu için başlangıç/bound/finish sayıları gösterilecek, aktif koşu işaretlenecek; kullanıcı/profil listesi çıkarılmayacak.
 
 
 ---
