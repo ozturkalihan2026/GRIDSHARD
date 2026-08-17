@@ -135,6 +135,7 @@ def test_best_rating_difference_is_selected_first():
 
 def reset_gateway():
     matchmaking_service._queue.clear()
+    matchmaking_service._matches_by_player.clear()
     player_profile_service._profiles.clear()
     pvp_service._sessions.clear()
 

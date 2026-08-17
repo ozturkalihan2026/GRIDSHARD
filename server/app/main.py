@@ -248,6 +248,28 @@ def delete_player_data(
 def matchmaking_join(
     request: MatchmakingJoinRequest,
 ) -> dict:
+    existing_match = (
+        matchmaking_service
+        .matched_pair_for(
+            request.player_id
+        )
+    )
+    if existing_match is not None:
+        return {
+            "matched": True,
+            "session_id": (
+                existing_match.match_id
+            ),
+            "players": [
+                existing_match.player_a_id,
+                existing_match.player_b_id,
+            ],
+            "rating_difference": (
+                existing_match
+                .rating_difference
+            ),
+        }
+
     profile = (
         player_profile_service
         .get_or_create(

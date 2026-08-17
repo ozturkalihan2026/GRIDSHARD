@@ -124,6 +124,7 @@ def test_finished_battle_generates_verified_telemetry():
 def reset_gateway():
     telemetry_service.clear()
     matchmaking_service._queue.clear()
+    matchmaking_service._matches_by_player.clear()
     player_profile_service._profiles.clear()
     pvp_service._sessions.clear()
 

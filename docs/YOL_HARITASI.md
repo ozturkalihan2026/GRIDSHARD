@@ -1,7 +1,7 @@
 # Project Relay 2.0 — YOL HARİTASI
 
-**Güncel Sürüm:** `2.0.0-alpha.51`  
-**Paket:** Web Test Sürümü Sağlık Kontrolü ve Smoke-Test Akışı  
+**Güncel Sürüm:** `2.0.0-alpha.52`  
+**Paket:** Web Test Eşleştirme → Oyna Bağlantısı ve Gerçek Oturum Başlatma  
 **Kanonik Dosya:** `docs/YOL_HARITASI.md`
 
 > Bu dosya Project Relay 2.0 için tek kanonik geliştirme kaydıdır. Her paket tamamlandığında sürüm numarası artırılır; **Tamamlananlar** ve **Yapılacaklar** bu dosyada güncellenir. Sonraki geliştirme paketi bu dosya okunarak başlatılır.
@@ -380,9 +380,9 @@ Aşağıdaki alanlar ilk sürüm kapsamına dahil değildir ve mevcut yol harita
 
 ## Sıradaki Paket
 
-**`2.0.0-alpha.52 — Web Test Eşleştirme → Oyna Bağlantısı ve Gerçek Oturum Başlatma`**
+**`2.0.0-alpha.53 — Gerçek Maç Sonucu → Profil / İstatistikler Senkronizasyonu`**
 
-Sunucu smoke-test sözleşmesi hazır. Sıradaki paket yeni menü eklemeden istemcide `Oyna` butonunu gerçek eşleştirme akışına bağlayacak: eşleştirmeye katılma/iptal, eşleşme sonucunda gerçek session_id'nin `RelayPvPClientState` ve WebSocket yöneticisine aktarılması, setup/ready mesajlarının gerçek oturuma gönderilmesi ve bağlantı/eşleştirme durumunun Oyna ekranında tek akış halinde gösterilmesi tamamlanacak. Eğitim yine ayrı faz olarak bekleyecek.
+Gerçek eşleştirme ve oturum başlatma istemciye bağlandı. Sıradaki paket yeni menü eklemeden gerçek `match_finished` sonrasında oyuncunun progression, Profil ve İstatistikler verilerini sunucudan yeniden çekip mevcut ekran durumlarına uygulayacak. Maç sonucu alanında DP/XP değişimi gösterilecek; tekrar maç isteği mevcut eşleştirme akışına geri bağlanacak. Eğitim yine ayrı faz olarak bekleyecek.
 
 
 ---

@@ -379,3 +379,9 @@ button, input { font: inherit; }
 [hidden] {
   display: none !important;
 }
+
+
+.pool-choice.required {
+  font-weight: 700;
+  outline: 1px dashed currentColor;
+}

@@ -42,7 +42,7 @@
   const COMPETITIVE_STATUS = "M7 Simülasyon aktif";
   const BALANCE_STATUS = "Eşit modül + counter doğrulandı";
   const AI_STATUS = "Adaptif AI + rekabetçi denge doğrulandı";
-  const PVP_STATUS = "Web test smoke-check altyapısı aktif";
+  const PVP_STATUS = "Gerçek eşleştirme → Oyna akışı aktif";
 
   const PORT_COUNT_BY_NAME = {
     "Çekirdek":4,
@@ -109,6 +109,7 @@
   const battlePoolSelection = new BattlePoolSelection({
     selectableModuleIds: selectablePoolModules.map((module) => module.instanceId),
     requiredSize: 18,
+    requiredModuleIds: ["generator-1"],
   });
 
   const client = new RelayBattleClient({
@@ -306,10 +307,10 @@
     new RelayWebTestBuildState();
   webTestBuildState.applyHealth({
     status: "ok",
-    version: "2.0.0-alpha.51",
+    version: "2.0.0-alpha.52",
     web_test: {
       ready: true,
-      build: "web-test-alpha.51",
+      build: "web-test-alpha.52",
       release_checks: [
         "health",
         "matchmaking",
@@ -339,7 +340,7 @@
 
   telemetryDispatcher.trackGameOpened({
     platform: "web",
-    build: "2.0.0-alpha.50",
+    build: "2.0.0-alpha.52",
   });
 
   const pvpConnection =
@@ -358,9 +359,167 @@
               result.reason
             );
           }
+
+          if (
+            pvpState.phase
+            === "battle"
+          ) {
+            onlinePlay
+              ?.markBattleStarted();
+          }
+
           render();
         },
     });
+
+  function clientDefinitionId(
+    instanceId
+  ) {
+    return instanceId
+      .replace(/-\d+$/, "")
+      .replaceAll("-", "_");
+  }
+
+  function selectedBattlePoolDefinitionIds() {
+    return battlePoolSelection
+      .selectedIds()
+      .map(clientDefinitionId);
+  }
+
+  function buildInitialOnlineSetup() {
+    const selectedModules =
+      battlePoolSelection
+        .selectedIds()
+        .filter(
+          (instanceId) =>
+            instanceId
+            !== "generator-1"
+        );
+
+    if (selectedModules.length < 2) {
+      throw new Error(
+        "Başlangıç devresi için Jeneratör dışında en az 2 modül seçilmelidir."
+      );
+    }
+
+    return [
+      {
+        instanceId: "core-1",
+        definitionId: "core",
+        x: 2,
+        y: 2,
+        direction: "up",
+      },
+      {
+        instanceId: "generator-1",
+        definitionId: "generator",
+        x: 2,
+        y: 3,
+        direction: "up",
+      },
+      {
+        instanceId:
+          selectedModules[0],
+        definitionId:
+          clientDefinitionId(
+            selectedModules[0]
+          ),
+        x: 2,
+        y: 1,
+        direction: "down",
+      },
+      {
+        instanceId:
+          selectedModules[1],
+        definitionId:
+          clientDefinitionId(
+            selectedModules[1]
+          ),
+        x: 1,
+        y: 1,
+        direction: "right",
+      },
+    ];
+  }
+
+  const matchmakingStatusEl =
+    document.getElementById(
+      "matchmaking-status"
+    );
+
+  function renderOnlinePlayStatus(
+    status
+  ) {
+    if (!matchmakingStatusEl) {
+      return;
+    }
+
+    const labels = {
+      idle:
+        "Eşleştirme: Hazır · 1000 DP",
+      matchmaking:
+        "Eşleştirme: Rakip aranıyor",
+      matched:
+        "Eşleştirme: Rakip bulundu",
+      connecting:
+        "Eşleştirme: Oturuma bağlanıyor",
+      readying:
+        "Eşleştirme: Setup + Hazır gönderildi",
+      battle:
+        "Eşleştirme: Savaş başladı",
+      cancelled:
+        "Eşleştirme: İptal edildi",
+      error:
+        "Eşleştirme: Bağlantı hatası",
+    };
+
+    matchmakingStatusEl.textContent =
+      labels[status]
+      || `Eşleştirme: ${status}`;
+
+    matchmakingStatusEl.dataset.status =
+      status;
+  }
+
+  const onlinePlay =
+    new RelayOnlinePlayCoordinator({
+      playerId:
+        pvpState.playerId,
+      pvpState,
+      matchmakingState,
+      connectionManager:
+        pvpConnection,
+      onStatusChange:
+        renderOnlinePlayStatus,
+      onSessionBound:
+        (sessionId) => {
+          telemetryDispatcher
+            .setSession(
+              sessionId
+            );
+        },
+    });
+
+  async function startRealOnlineMatch() {
+    trackMatchmakingStart();
+
+    const result =
+      await onlinePlay.start({
+        battlePoolIds:
+          selectedBattlePoolDefinitionIds(),
+        initialModules:
+          buildInitialOnlineSetup(),
+      });
+
+    if (!result.ok) {
+      logClientMessage(
+        result.reason
+        || "Eşleştirme başlatılamadı."
+      );
+    }
+
+    return result;
+  }
 
   function connectPvP(url) {
     pvpConnection.connect(url);
@@ -483,6 +642,18 @@ const SPECIAL_CELL_INFO = {
 
       if (battlePoolSelection.selected.has(module.instanceId)) {
         button.classList.add("selected");
+      }
+
+      if (
+        battlePoolSelection
+          .requiredModuleIds
+          .has(module.instanceId)
+      ) {
+        button.classList.add(
+          "required"
+        );
+        button.title =
+          "Başlangıç devresi için zorunlu";
       }
 
       button.addEventListener("click", () => {
@@ -1214,15 +1385,49 @@ const SPECIAL_CELL_INFO = {
     requestAnimationFrame(updateClock);
   }
 
-  poolConfirmEl.addEventListener("click", () => {
-    if (!battlePoolSelection.isComplete()) return;
-    commandLog.push({
-      atMs: client.elapsedMs,
-      kind: "set_battle_pool",
-      payload: { module_instance_ids: battlePoolSelection.selectedIds() },
-    });
-    renderLog();
-  });
+  poolConfirmEl.addEventListener(
+    "click",
+    async () => {
+      if (
+        !battlePoolSelection.isComplete()
+      ) {
+        return;
+      }
+
+      commandLog.push({
+        atMs: client.elapsedMs,
+        kind: "set_battle_pool",
+        payload: {
+          module_instance_ids:
+            battlePoolSelection
+              .selectedIds(),
+          module_definition_ids:
+            selectedBattlePoolDefinitionIds(),
+        },
+      });
+      renderLog();
+
+      poolConfirmEl.disabled = true;
+      poolConfirmEl.textContent =
+        "Eşleştirme Başlatılıyor...";
+
+      const result =
+        await startRealOnlineMatch();
+
+      poolConfirmEl.textContent =
+        result.ok
+          ? (
+              result.matched
+                ? "Rakip Bulundu"
+                : "Rakip Aranıyor..."
+            )
+          : "Eşleştirmeyi Yeniden Dene";
+
+      if (!result.ok) {
+        poolConfirmEl.disabled = false;
+      }
+    }
+  );
 
   renderBattlePoolSelection();
   renderBoosterOptions();

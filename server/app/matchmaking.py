@@ -38,6 +38,10 @@ class MatchmakingService:
     ):
         self.now_func = now_func
         self._queue: dict[str, MatchmakingEntry] = {}
+        self._matches_by_player: dict[
+            str,
+            MatchmakingPair,
+        ] = {}
 
     def enqueue(
         self,
@@ -162,7 +166,7 @@ class MatchmakingService:
             None,
         )
 
-        return MatchmakingPair(
+        pair = MatchmakingPair(
             match_id=f"mm-{uuid4().hex}",
             player_a_id=source.player_id,
             player_b_id=candidate.player_id,
@@ -172,16 +176,71 @@ class MatchmakingService:
             ),
         )
 
+        self._matches_by_player[
+            pair.player_a_id
+        ] = pair
+        self._matches_by_player[
+            pair.player_b_id
+        ] = pair
+
+        return pair
+
+    def matched_pair_for(
+        self,
+        player_id: str,
+    ) -> MatchmakingPair | None:
+        return self._matches_by_player.get(
+            player_id
+        )
+
+    def clear_match(
+        self,
+        player_id: str,
+    ) -> None:
+        pair = self._matches_by_player.get(
+            player_id
+        )
+        if pair is None:
+            return
+
+        self._matches_by_player.pop(
+            pair.player_a_id,
+            None,
+        )
+        self._matches_by_player.pop(
+            pair.player_b_id,
+            None,
+        )
+
     def queue_snapshot(
         self,
         player_id: str,
     ) -> dict:
+        pair = self.matched_pair_for(
+            player_id
+        )
+        if pair is not None:
+            return {
+                "queued": False,
+                "matched": True,
+                "player_id": player_id,
+                "session_id": pair.match_id,
+                "players": [
+                    pair.player_a_id,
+                    pair.player_b_id,
+                ],
+                "rating_difference": (
+                    pair.rating_difference
+                ),
+            }
+
         entry = self._queue.get(
             player_id
         )
         if entry is None:
             return {
                 "queued": False,
+                "matched": False,
                 "player_id": player_id,
             }
 
@@ -195,6 +254,7 @@ class MatchmakingService:
 
         return {
             "queued": True,
+            "matched": False,
             "player_id": entry.player_id,
             "rating": entry.rating,
             "league_name_tr": (

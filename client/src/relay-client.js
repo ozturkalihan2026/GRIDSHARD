@@ -25,10 +25,37 @@
   });
 
   class BattlePoolSelection {
-    constructor({ selectableModuleIds, requiredSize = 18 }) {
+    constructor({
+      selectableModuleIds,
+      requiredSize = 18,
+      requiredModuleIds = [],
+    }) {
       this.selectableModuleIds = [...selectableModuleIds];
       this.requiredSize = requiredSize;
-      this.selected = new Set();
+      this.requiredModuleIds = new Set(
+        requiredModuleIds
+      );
+
+      for (const moduleId of this.requiredModuleIds) {
+        if (!this.selectableModuleIds.includes(moduleId)) {
+          throw new Error(
+            `Zorunlu Savaş Havuzu modülü seçilebilir değil: ${moduleId}`
+          );
+        }
+      }
+
+      if (
+        this.requiredModuleIds.size
+        > this.requiredSize
+      ) {
+        throw new Error(
+          "Zorunlu modül sayısı Savaş Havuzu sınırını aşıyor."
+        );
+      }
+
+      this.selected = new Set(
+        this.requiredModuleIds
+      );
     }
 
     toggle(moduleId) {
@@ -37,6 +64,18 @@
       }
 
       if (this.selected.has(moduleId)) {
+        if (
+          this.requiredModuleIds.has(
+            moduleId
+          )
+        ) {
+          return {
+            ok: false,
+            reason:
+              "Bu modül başlangıç devresi için Savaş Havuzu'nda zorunludur.",
+          };
+        }
+
         this.selected.delete(moduleId);
         return { ok: true, selected: false };
       }
@@ -256,6 +295,15 @@
       if (!sessionId) throw new Error("PvP oturum kimliği zorunludur.");
       this.sessionId = sessionId;
       this.phase = PVP_PHASE.LOBBY;
+      this.connected = false;
+      this.commandSequence = 0;
+      this.eventCursor = 0;
+      this.snapshotRevision = 0;
+      this.lobby = null;
+      this.snapshot = null;
+      this.finalResult = null;
+      this.events = [];
+      this.lastError = null;
     }
 
     markConnected() {
@@ -916,6 +964,13 @@
       );
     }
 
+    clearOutgoingQueue() {
+      const removed =
+        this.outgoingQueue.length;
+      this.outgoingQueue.length = 0;
+      return removed;
+    }
+
     flushQueue() {
       if (!this._socketIsOpen()) {
         return 0;
@@ -1150,9 +1205,25 @@
     }
 
     applyQueueStatus(status) {
+      if (
+        status
+        && status.matched
+      ) {
+        return this.applyJoinResponse({
+          matched: true,
+          session_id:
+            status.session_id,
+          players:
+            status.players || [],
+          rating_difference:
+            status.rating_difference,
+        });
+      }
+
       this.queued = Boolean(
         status && status.queued
       );
+      this.matched = false;
       this.queue =
         this.queued ? { ...status } : null;
       return this.viewModel();
@@ -1450,6 +1521,401 @@
   }
 
 
+
+  const ONLINE_PLAY_STATUS = Object.freeze({
+    IDLE: "idle",
+    MATCHMAKING: "matchmaking",
+    MATCHED: "matched",
+    CONNECTING: "connecting",
+    READYING: "readying",
+    BATTLE: "battle",
+    CANCELLED: "cancelled",
+    ERROR: "error",
+  });
+
+  class RelayOnlinePlayCoordinator {
+    constructor({
+      playerId,
+      pvpState,
+      matchmakingState,
+      connectionManager,
+      requestJson = null,
+      setTimer = (fn, ms) =>
+        setTimeout(fn, ms),
+      clearTimer = (id) =>
+        clearTimeout(id),
+      pollIntervalMs = 1000,
+      webSocketUrlFactory = null,
+      onStatusChange = null,
+      onSessionBound = null,
+    }) {
+      if (!playerId) {
+        throw new Error(
+          "Online Oyna oyuncu kimliği zorunludur."
+        );
+      }
+      if (
+        !pvpState
+        || !matchmakingState
+        || !connectionManager
+      ) {
+        throw new Error(
+          "Online Oyna için PvP, eşleştirme ve bağlantı yöneticisi zorunludur."
+        );
+      }
+
+      this.playerId = playerId;
+      this.pvpState = pvpState;
+      this.matchmakingState =
+        matchmakingState;
+      this.connectionManager =
+        connectionManager;
+      this.setTimer = setTimer;
+      this.clearTimer = clearTimer;
+      this.pollIntervalMs =
+        pollIntervalMs;
+      this.onStatusChange =
+        onStatusChange;
+      this.onSessionBound =
+        onSessionBound;
+
+      this.requestJson =
+        requestJson
+        || (async (path, options = {}) => {
+          const response =
+            await fetch(path, {
+              ...options,
+              headers: {
+                "content-type":
+                  "application/json",
+                ...(options.headers || {}),
+              },
+            });
+
+          if (!response.ok) {
+            throw new Error(
+              `Sunucu isteği başarısız: ${response.status}`
+            );
+          }
+
+          return response.json();
+        });
+
+      this.webSocketUrlFactory =
+        webSocketUrlFactory
+        || ((sessionId) => {
+          if (
+            typeof window
+            === "undefined"
+            || !window.location
+          ) {
+            throw new Error(
+              "Tarayıcı WebSocket adresi oluşturulamadı."
+            );
+          }
+
+          const scheme =
+            window.location.protocol
+            === "https:"
+              ? "wss"
+              : "ws";
+
+          return (
+            `${scheme}://${window.location.host}`
+            + `/ws/pvp/${encodeURIComponent(sessionId)}`
+            + `?player_id=${encodeURIComponent(this.playerId)}`
+          );
+        });
+
+      this.status =
+        ONLINE_PLAY_STATUS.IDLE;
+      this.pollTimer = null;
+      this.pendingSetup = null;
+      this.lastError = null;
+    }
+
+    async start({
+      battlePoolIds,
+      initialModules,
+    }) {
+      if (
+        !Array.isArray(battlePoolIds)
+        || battlePoolIds.length !== 18
+      ) {
+        throw new Error(
+          "Online maç için tam 18 modüllük Savaş Havuzu gerekli."
+        );
+      }
+
+      if (
+        !Array.isArray(initialModules)
+        || initialModules.length !== 4
+      ) {
+        throw new Error(
+          "Online maç için tam 4 başlangıç modülü gerekli."
+        );
+      }
+
+      this.pendingSetup = {
+        battlePoolIds: [
+          ...battlePoolIds,
+        ],
+        initialModules:
+          initialModules.map(
+            (module) => ({
+              ...module,
+            })
+          ),
+      };
+
+      this.lastError = null;
+      this._setStatus(
+        ONLINE_PLAY_STATUS.MATCHMAKING
+      );
+
+      try {
+        const response =
+          await this.requestJson(
+            "/matchmaking/join",
+            {
+              method: "POST",
+              body: JSON.stringify({
+                player_id:
+                  this.playerId,
+              }),
+            }
+          );
+
+        this.matchmakingState
+          .applyJoinResponse(
+            response
+          );
+
+        if (response.matched) {
+          return this._activateMatch(
+            response
+          );
+        }
+
+        this._schedulePoll();
+
+        return {
+          ok: true,
+          matched: false,
+        };
+      } catch (error) {
+        this._fail(error);
+        return {
+          ok: false,
+          reason:
+            this.lastError,
+        };
+      }
+    }
+
+    async pollNow() {
+      if (
+        this.status
+        !== ONLINE_PLAY_STATUS.MATCHMAKING
+      ) {
+        return {
+          ok: false,
+          reason:
+            "Eşleştirme sorgusu aktif değil.",
+        };
+      }
+
+      try {
+        const status =
+          await this.requestJson(
+            `/matchmaking/${encodeURIComponent(this.playerId)}`
+          );
+
+        this.matchmakingState
+          .applyQueueStatus(
+            status
+          );
+
+        if (status.matched) {
+          return this._activateMatch(
+            status
+          );
+        }
+
+        this._schedulePoll();
+
+        return {
+          ok: true,
+          matched: false,
+        };
+      } catch (error) {
+        this._fail(error);
+        return {
+          ok: false,
+          reason:
+            this.lastError,
+        };
+      }
+    }
+
+    async cancel() {
+      this._clearPoll();
+
+      try {
+        await this.requestJson(
+          `/matchmaking/${encodeURIComponent(this.playerId)}`,
+          {
+            method: "DELETE",
+          }
+        );
+      } catch (_error) {
+        // Kullanıcı iptali yerel akışı yine de durdurur.
+      }
+
+      this.matchmakingState.cancel();
+      this.pendingSetup = null;
+      this._setStatus(
+        ONLINE_PLAY_STATUS.CANCELLED
+      );
+
+      return {
+        ok: true,
+      };
+    }
+
+    markBattleStarted() {
+      this._setStatus(
+        ONLINE_PLAY_STATUS.BATTLE
+      );
+    }
+
+    _activateMatch(response) {
+      const sessionId =
+        response.session_id;
+
+      if (!sessionId) {
+        this._fail(
+          new Error(
+            "Eşleşme sonucu session_id içermiyor."
+          )
+        );
+        return {
+          ok: false,
+          reason:
+            this.lastError,
+        };
+      }
+
+      this._clearPoll();
+      this.matchmakingState
+        .applyJoinResponse({
+          matched: true,
+          session_id: sessionId,
+          players:
+            response.players || [],
+          rating_difference:
+            response.rating_difference,
+        });
+
+      this.pvpState.bindSession(
+        sessionId
+      );
+
+      if (
+        typeof this.onSessionBound
+        === "function"
+      ) {
+        this.onSessionBound(
+          sessionId
+        );
+      }
+
+      this.connectionManager
+        .clearOutgoingQueue();
+
+      this.connectionManager.sendSetup(
+        this.pendingSetup
+      );
+      this.connectionManager.sendReady(
+        true
+      );
+
+      this._setStatus(
+        ONLINE_PLAY_STATUS.MATCHED
+      );
+
+      const wsUrl =
+        this.webSocketUrlFactory(
+          sessionId
+        );
+
+      this._setStatus(
+        ONLINE_PLAY_STATUS.CONNECTING
+      );
+      this.connectionManager.connect(
+        wsUrl
+      );
+
+      this._setStatus(
+        ONLINE_PLAY_STATUS.READYING
+      );
+
+      return {
+        ok: true,
+        matched: true,
+        sessionId,
+        webSocketUrl: wsUrl,
+      };
+    }
+
+    _schedulePoll() {
+      this._clearPoll();
+
+      this.pollTimer =
+        this.setTimer(
+          () => {
+            this.pollTimer = null;
+            this.pollNow();
+          },
+          this.pollIntervalMs
+        );
+    }
+
+    _clearPoll() {
+      if (this.pollTimer !== null) {
+        this.clearTimer(
+          this.pollTimer
+        );
+        this.pollTimer = null;
+      }
+    }
+
+    _setStatus(status) {
+      this.status = status;
+
+      if (
+        typeof this.onStatusChange
+        === "function"
+      ) {
+        this.onStatusChange(
+          status
+        );
+      }
+    }
+
+    _fail(error) {
+      this._clearPoll();
+      this.lastError =
+        error instanceof Error
+          ? error.message
+          : String(error);
+      this._setStatus(
+        ONLINE_PLAY_STATUS.ERROR
+      );
+    }
+  }
+
+
   const api = {
     RelayBattleClient,
     RelayPvPClientState,
@@ -1463,10 +1929,12 @@
     RelayPlayerDataSnapshotState,
     RelayTelemetryDispatcher,
     RelayWebTestBuildState,
+    RelayOnlinePlayCoordinator,
     BattlePoolSelection,
     APP_SCREEN,
     WS_CONNECTION_STATUS,
     TELEMETRY_EVENT_TYPE,
+    ONLINE_PLAY_STATUS,
     PVP_PHASE,
     MODULE_STATUS,
     DRAG_KIND,
@@ -1489,6 +1957,8 @@
   global.RelayPlayerDataSnapshotState = RelayPlayerDataSnapshotState;
   global.RelayTelemetryDispatcher = RelayTelemetryDispatcher;
   global.RelayWebTestBuildState = RelayWebTestBuildState;
+  global.RelayOnlinePlayCoordinator = RelayOnlinePlayCoordinator;
+  global.RelayOnlinePlayStatus = ONLINE_PLAY_STATUS;
   global.RelayTelemetryEventType = TELEMETRY_EVENT_TYPE;
   global.RelayAppScreen = APP_SCREEN;
   global.RelayWebSocketStatus = WS_CONNECTION_STATUS;

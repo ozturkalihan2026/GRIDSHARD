@@ -1,4 +1,5 @@
 const assert = require("assert");
+const asyncTests = [];
 const {
   RelayBattleClient,
   BattlePoolSelection,
@@ -401,61 +402,61 @@ function createClient() {
   const fs=require("fs");
   const src=fs.readFileSync("./src/app.js","utf8");
   assert.ok(src.includes("PVP_STATUS"));
-  assert.ok(src.includes("Web test smoke-check altyapısı aktif"));
+  assert.ok(src.includes("Gerçek eşleştirme → Oyna akışı aktif"));
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync("./src/app.js","utf8");
-  assert.ok(src.includes("Web test smoke-check altyapısı aktif")); // alpha32->33 protocol status
+  assert.ok(src.includes("Gerçek eşleştirme → Oyna akışı aktif")); // alpha32->33 protocol status
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync("./src/app.js","utf8");
-  assert.ok(src.includes("Web test smoke-check altyapısı aktif")); // alpha33 protocol
+  assert.ok(src.includes("Gerçek eşleştirme → Oyna akışı aktif")); // alpha33 protocol
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync("./src/app.js","utf8");
-  assert.ok(src.includes("Web test smoke-check altyapısı aktif")); // alpha34 websocket
+  assert.ok(src.includes("Gerçek eşleştirme → Oyna akışı aktif")); // alpha34 websocket
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync("./src/app.js","utf8");
-  assert.ok(src.includes("Web test smoke-check altyapısı aktif")); // alpha35 gateway
+  assert.ok(src.includes("Gerçek eşleştirme → Oyna akışı aktif")); // alpha35 gateway
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync("./src/app.js","utf8");
-  assert.ok(src.includes("Web test smoke-check altyapısı aktif")); // alpha36 setup
+  assert.ok(src.includes("Gerçek eşleştirme → Oyna akışı aktif")); // alpha36 setup
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync("./src/app.js","utf8");
-  assert.ok(src.includes("Web test smoke-check altyapısı aktif")); // alpha37 lobby
+  assert.ok(src.includes("Gerçek eşleştirme → Oyna akışı aktif")); // alpha37 lobby
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync("./src/app.js","utf8");
-  assert.ok(src.includes("Web test smoke-check altyapısı aktif")); // alpha38 runner
+  assert.ok(src.includes("Gerçek eşleştirme → Oyna akışı aktif")); // alpha38 runner
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync("./src/app.js","utf8");
-  assert.ok(src.includes("Web test smoke-check altyapısı aktif")); // alpha39 heartbeat
+  assert.ok(src.includes("Gerçek eşleştirme → Oyna akışı aktif")); // alpha39 heartbeat
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync("./src/app.js","utf8");
-  assert.ok(src.includes("Web test smoke-check altyapısı aktif")); // alpha40 online pvp
+  assert.ok(src.includes("Gerçek eşleştirme → Oyna akışı aktif")); // alpha40 online pvp
 }
 
 {
@@ -681,7 +682,7 @@ function createClient() {
 {
   const fs=require("fs");
   const src=fs.readFileSync("./src/app.js","utf8");
-  assert.ok(src.includes("Web test smoke-check altyapısı aktif"));
+  assert.ok(src.includes("Gerçek eşleştirme → Oyna akışı aktif"));
   assert.ok(src.includes("buildPvPCommandEnvelope"));
   assert.ok(src.includes("applyPvPServerEnvelope"));
 }
@@ -1503,10 +1504,10 @@ function createClient() {
 
   const result=state.applyHealth({
     status:"ok",
-    version:"2.0.0-alpha.51",
+    version:"2.0.0-alpha.52",
     web_test:{
       ready:true,
-      build:"web-test-alpha.51",
+      build:"web-test-alpha.52",
       release_checks:[
         "health",
         "matchmaking",
@@ -1550,7 +1551,7 @@ function createClient() {
 
   const result=state.applyHealth({
     status:"ok",
-    version:"2.0.0-alpha.51",
+    version:"2.0.0-alpha.52",
   });
 
   assert.strictEqual(
@@ -1594,4 +1595,343 @@ function createClient() {
   );
 }
 
-console.log("81 client tests passed");
+{
+  const {
+    BattlePoolSelection,
+  } = require("../src/relay-client.js");
+
+  const pool =
+    new BattlePoolSelection({
+      selectableModuleIds:[
+        "generator-1",
+        "laser-1",
+        "shield-1",
+      ],
+      requiredSize:2,
+      requiredModuleIds:[
+        "generator-1",
+      ],
+    });
+
+  assert.strictEqual(
+    pool.selected.has(
+      "generator-1"
+    ),
+    true
+  );
+  assert.strictEqual(
+    pool.toggle(
+      "generator-1"
+    ).ok,
+    false
+  );
+}
+
+{
+  const {
+    RelayMatchmakingClientState,
+  } = require("../src/relay-client.js");
+
+  const state =
+    new RelayMatchmakingClientState();
+
+  state.applyQueueStatus({
+    queued:false,
+    matched:true,
+    session_id:"mm-1",
+    players:["a","b"],
+    rating_difference:25,
+  });
+
+  assert.strictEqual(
+    state.matched,
+    true
+  );
+  assert.strictEqual(
+    state.sessionId,
+    "mm-1"
+  );
+}
+
+{
+  const {
+    RelayPvPClientState,
+    RelayMatchmakingClientState,
+    RelayOnlinePlayCoordinator,
+  } = require("../src/relay-client.js");
+
+  const pvp =
+    new RelayPvPClientState({
+      playerId:"a",
+    });
+  const matchmaking =
+    new RelayMatchmakingClientState();
+
+  const sent=[];
+  const connection={
+    clearOutgoingQueue() {
+      sent.length=0;
+      return 0;
+    },
+    sendSetup(setup) {
+      sent.push({
+        type:"setup",
+        setup,
+      });
+      return {
+        ok:true,
+        queued:true,
+      };
+    },
+    sendReady(ready) {
+      sent.push({
+        type:"ready",
+        ready,
+      });
+      return {
+        ok:true,
+        queued:true,
+      };
+    },
+    connect(url) {
+      sent.push({
+        type:"connect",
+        url,
+      });
+    },
+  };
+
+  const coordinator =
+    new RelayOnlinePlayCoordinator({
+      playerId:"a",
+      pvpState:pvp,
+      matchmakingState:
+        matchmaking,
+      connectionManager:
+        connection,
+      requestJson:
+        async () => ({
+          matched:true,
+          session_id:"mm-1",
+          players:["a","b"],
+          rating_difference:15,
+        }),
+      webSocketUrlFactory:
+        (sessionId) =>
+          `ws://test/${sessionId}`,
+      setTimer() {
+        return 1;
+      },
+      clearTimer() {},
+    });
+
+  asyncTests.push(coordinator.start({
+    battlePoolIds:
+      Array.from(
+        {length:18},
+        (_,i) => `m${i}`
+      ),
+    initialModules:[
+      {
+        instanceId:"core-1",
+        definitionId:"core",
+        x:2,y:2,
+        direction:"up",
+      },
+      {
+        instanceId:"generator-1",
+        definitionId:"generator",
+        x:2,y:3,
+        direction:"up",
+      },
+      {
+        instanceId:"laser-1",
+        definitionId:"laser",
+        x:2,y:1,
+        direction:"down",
+      },
+      {
+        instanceId:"shield-1",
+        definitionId:"shield",
+        x:1,y:1,
+        direction:"right",
+      },
+    ],
+  }).then((result) => {
+    assert.strictEqual(
+      result.ok,
+      true
+    );
+    assert.strictEqual(
+      result.matched,
+      true
+    );
+    assert.strictEqual(
+      pvp.sessionId,
+      "mm-1"
+    );
+    assert.strictEqual(
+      sent[0].type,
+      "setup"
+    );
+    assert.strictEqual(
+      sent[1].type,
+      "ready"
+    );
+    assert.strictEqual(
+      sent[2].url,
+      "ws://test/mm-1"
+    );
+  }));
+}
+
+{
+  const {
+    RelayPvPClientState,
+    RelayMatchmakingClientState,
+    RelayOnlinePlayCoordinator,
+  } = require("../src/relay-client.js");
+
+  const scheduled=[];
+  const pvp =
+    new RelayPvPClientState({
+      playerId:"a",
+    });
+  const matchmaking =
+    new RelayMatchmakingClientState();
+
+  const connection={
+    clearOutgoingQueue(){},
+    sendSetup(){},
+    sendReady(){},
+    connect(){},
+  };
+
+  let call=0;
+  const coordinator =
+    new RelayOnlinePlayCoordinator({
+      playerId:"a",
+      pvpState:pvp,
+      matchmakingState:
+        matchmaking,
+      connectionManager:
+        connection,
+      requestJson:
+        async () => {
+          call += 1;
+          if (call===1) {
+            return {
+              matched:false,
+              queue:{
+                queued:true,
+                matched:false,
+              },
+            };
+          }
+          return {
+            queued:false,
+            matched:true,
+            session_id:"mm-polled",
+            players:["a","b"],
+            rating_difference:40,
+          };
+        },
+      setTimer(fn,ms) {
+        scheduled.push({
+          fn,ms
+        });
+        return scheduled.length;
+      },
+      clearTimer(){},
+      webSocketUrlFactory:
+        () => "ws://test",
+    });
+
+  asyncTests.push(coordinator.start({
+    battlePoolIds:
+      Array.from(
+        {length:18},
+        (_,i) => `m${i}`
+      ),
+    initialModules:[
+      {instanceId:"c",definitionId:"core",x:2,y:2},
+      {instanceId:"g",definitionId:"generator",x:2,y:3},
+      {instanceId:"l",definitionId:"laser",x:2,y:1},
+      {instanceId:"s",definitionId:"shield",x:1,y:1},
+    ],
+  }).then(async (first) => {
+    assert.strictEqual(
+      first.matched,
+      false
+    );
+    assert.strictEqual(
+      scheduled[0].ms,
+      1000
+    );
+
+    const polled =
+      await coordinator.pollNow();
+
+    assert.strictEqual(
+      polled.matched,
+      true
+    );
+    assert.strictEqual(
+      pvp.sessionId,
+      "mm-polled"
+    );
+  }));
+}
+
+{
+  const fs=require("fs");
+  const app=fs.readFileSync(
+    "./src/app.js",
+    "utf8"
+  );
+  const html=fs.readFileSync(
+    "./index.html",
+    "utf8"
+  );
+
+  assert.ok(
+    app.includes(
+      "startRealOnlineMatch"
+    )
+  );
+  assert.ok(
+    app.includes(
+      "buildInitialOnlineSetup"
+    )
+  );
+  assert.ok(
+    app.includes(
+      "selectedBattlePoolDefinitionIds"
+    )
+  );
+  assert.ok(
+    app.includes(
+      "RelayOnlinePlayCoordinator"
+    )
+  );
+  assert.ok(
+    html.includes(
+      "Savaş Havuzunu Onayla ve Eşleş"
+    )
+  );
+  assert.ok(
+    html.includes(
+      "Jeneratör başlangıç devresi için zorunludur"
+    )
+  );
+  assert.ok(
+    !html.includes(">Eğitim<")
+  );
+}
+
+Promise.all(asyncTests).then(() => {
+  console.log("86 client tests passed");
+}).catch((error) => {
+  console.error(error);
+  process.exitCode = 1;
+});
