@@ -402,61 +402,61 @@ function createClient() {
   const fs=require("fs");
   const src=fs.readFileSync("./src/app.js","utf8");
   assert.ok(src.includes("PVP_STATUS"));
-  assert.ok(src.includes("Profil/İstatistik/Ayarlar gerçek sunucu yükleme aktif"));
+  assert.ok(src.includes("Web test KPI ölçüm katmanı aktif"));
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync("./src/app.js","utf8");
-  assert.ok(src.includes("Profil/İstatistik/Ayarlar gerçek sunucu yükleme aktif")); // alpha32->33 protocol status
+  assert.ok(src.includes("Web test KPI ölçüm katmanı aktif")); // alpha32->33 protocol status
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync("./src/app.js","utf8");
-  assert.ok(src.includes("Profil/İstatistik/Ayarlar gerçek sunucu yükleme aktif")); // alpha33 protocol
+  assert.ok(src.includes("Web test KPI ölçüm katmanı aktif")); // alpha33 protocol
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync("./src/app.js","utf8");
-  assert.ok(src.includes("Profil/İstatistik/Ayarlar gerçek sunucu yükleme aktif")); // alpha34 websocket
+  assert.ok(src.includes("Web test KPI ölçüm katmanı aktif")); // alpha34 websocket
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync("./src/app.js","utf8");
-  assert.ok(src.includes("Profil/İstatistik/Ayarlar gerçek sunucu yükleme aktif")); // alpha35 gateway
+  assert.ok(src.includes("Web test KPI ölçüm katmanı aktif")); // alpha35 gateway
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync("./src/app.js","utf8");
-  assert.ok(src.includes("Profil/İstatistik/Ayarlar gerçek sunucu yükleme aktif")); // alpha36 setup
+  assert.ok(src.includes("Web test KPI ölçüm katmanı aktif")); // alpha36 setup
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync("./src/app.js","utf8");
-  assert.ok(src.includes("Profil/İstatistik/Ayarlar gerçek sunucu yükleme aktif")); // alpha37 lobby
+  assert.ok(src.includes("Web test KPI ölçüm katmanı aktif")); // alpha37 lobby
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync("./src/app.js","utf8");
-  assert.ok(src.includes("Profil/İstatistik/Ayarlar gerçek sunucu yükleme aktif")); // alpha38 runner
+  assert.ok(src.includes("Web test KPI ölçüm katmanı aktif")); // alpha38 runner
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync("./src/app.js","utf8");
-  assert.ok(src.includes("Profil/İstatistik/Ayarlar gerçek sunucu yükleme aktif")); // alpha39 heartbeat
+  assert.ok(src.includes("Web test KPI ölçüm katmanı aktif")); // alpha39 heartbeat
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync("./src/app.js","utf8");
-  assert.ok(src.includes("Profil/İstatistik/Ayarlar gerçek sunucu yükleme aktif")); // alpha40 online pvp
+  assert.ok(src.includes("Web test KPI ölçüm katmanı aktif")); // alpha40 online pvp
 }
 
 {
@@ -682,7 +682,7 @@ function createClient() {
 {
   const fs=require("fs");
   const src=fs.readFileSync("./src/app.js","utf8");
-  assert.ok(src.includes("Profil/İstatistik/Ayarlar gerçek sunucu yükleme aktif"));
+  assert.ok(src.includes("Web test KPI ölçüm katmanı aktif"));
   assert.ok(src.includes("buildPvPCommandEnvelope"));
   assert.ok(src.includes("applyPvPServerEnvelope"));
 }
@@ -1504,10 +1504,10 @@ function createClient() {
 
   const result=state.applyHealth({
     status:"ok",
-    version:"2.0.0-alpha.54",
+    version:"2.0.0-alpha.55",
     web_test:{
       ready:true,
-      build:"web-test-alpha.54",
+      build:"web-test-alpha.55",
       release_checks:[
         "health",
         "matchmaking",
@@ -1551,7 +1551,7 @@ function createClient() {
 
   const result=state.applyHealth({
     status:"ok",
-    version:"2.0.0-alpha.54",
+    version:"2.0.0-alpha.55",
   });
 
   assert.strictEqual(
@@ -2268,8 +2268,60 @@ function createClient() {
   );
 }
 
+{
+  const {
+    RelayWebTestKpiState,
+  } = require("../src/relay-client.js");
+
+  const state=
+    new RelayWebTestKpiState();
+
+  const view=state.applyKpis({
+    completed_matches:10,
+    match_completion_rate:0.8,
+    rematch_requests:4,
+    rematch_request_rate:0.4,
+    module_changes:25,
+    average_module_changes_per_match:2.5,
+    total_circuit_credits_spent:1500,
+    module_shelf_uses:20,
+    boosters_used:8,
+    average_match_duration_ms:110000,
+  });
+
+  assert.strictEqual(
+    view.completedMatches,
+    10
+  );
+  assert.strictEqual(
+    view.completionRatePercent,
+    80
+  );
+  assert.strictEqual(
+    view.rematchRatePercent,
+    40
+  );
+  assert.strictEqual(
+    view.averageMatchDurationMs,
+    110000
+  );
+}
+
+{
+  const fs=require("fs");
+  const html=fs.readFileSync("./index.html","utf8");
+  assert.ok(
+    html.includes(
+      "2.0.0-alpha.55"
+    )
+  );
+  assert.ok(
+    !html.includes(">KPI<")
+  );
+}
+
 Promise.all(asyncTests).then(() => {
-  console.log("90 client tests passed");
+  console.log("92 client tests passed");
 }).catch((error) => {
   console.error(error);
   process.exitCode = 1;

@@ -2233,6 +2233,66 @@
   }
 
 
+
+  class RelayWebTestKpiState {
+    constructor() {
+      this.kpis = null;
+    }
+
+    applyKpis(kpis) {
+      if (!kpis) {
+        throw new Error(
+          "Web test KPI verisi gerekli."
+        );
+      }
+
+      this.kpis = {
+        ...kpis,
+      };
+      return this.viewModel();
+    }
+
+    viewModel() {
+      if (!this.kpis) {
+        return null;
+      }
+
+      return {
+        completedMatches:
+          this.kpis.completed_matches,
+        completionRatePercent:
+          Math.round(
+            Number(
+              this.kpis.match_completion_rate
+              || 0
+            ) * 10000
+          ) / 100,
+        rematchRequests:
+          this.kpis.rematch_requests,
+        rematchRatePercent:
+          Math.round(
+            Number(
+              this.kpis.rematch_request_rate
+              || 0
+            ) * 10000
+          ) / 100,
+        moduleChanges:
+          this.kpis.module_changes,
+        averageModuleChangesPerMatch:
+          this.kpis.average_module_changes_per_match,
+        totalCircuitCreditsSpent:
+          this.kpis.total_circuit_credits_spent,
+        moduleShelfUses:
+          this.kpis.module_shelf_uses,
+        boostersUsed:
+          this.kpis.boosters_used,
+        averageMatchDurationMs:
+          this.kpis.average_match_duration_ms,
+      };
+    }
+  }
+
+
   const api = {
     RelayBattleClient,
     RelayPvPClientState,
@@ -2249,6 +2309,7 @@
     RelayOnlinePlayCoordinator,
     RelayPostMatchSync,
     RelayAccountDataLoader,
+    RelayWebTestKpiState,
     BattlePoolSelection,
     APP_SCREEN,
     WS_CONNECTION_STATUS,
@@ -2280,6 +2341,7 @@
   global.RelayOnlinePlayCoordinator = RelayOnlinePlayCoordinator;
   global.RelayPostMatchSync = RelayPostMatchSync;
   global.RelayAccountDataLoader = RelayAccountDataLoader;
+  global.RelayWebTestKpiState = RelayWebTestKpiState;
   global.RelayRemoteDataStatus = REMOTE_DATA_STATUS;
   global.RelayOnlinePlayStatus = ONLINE_PLAY_STATUS;
   global.RelayTelemetryEventType = TELEMETRY_EVENT_TYPE;

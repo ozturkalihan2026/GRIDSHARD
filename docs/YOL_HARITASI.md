@@ -1,7 +1,7 @@
 # Project Relay 2.0 — YOL HARİTASI
 
-**Güncel Sürüm:** `2.0.0-alpha.54`  
-**Paket:** Profil / İstatistikler / Ayarlar Gerçek Sunucu Yükleme Akışı  
+**Güncel Sürüm:** `2.0.0-alpha.55`  
+**Paket:** Web Test Telemetri KPI Özeti  
 **Kanonik Dosya:** `docs/YOL_HARITASI.md`
 
 > Bu dosya Project Relay 2.0 için tek kanonik geliştirme kaydıdır. Her paket tamamlandığında sürüm numarası artırılır; **Tamamlananlar** ve **Yapılacaklar** bu dosyada güncellenir. Sonraki geliştirme paketi bu dosya okunarak başlatılır.
@@ -324,14 +324,14 @@
 
 - [x] Web test sürümü için sağlık, sürüm ve uçtan uca smoke-test sözleşmesi hazırlandı.
 - [ ] Eğitim tamamlama oranı ölçülecek.
-- [ ] İlk maç tamamlama oranı ölçülecek.
-- [ ] İkinci maça geçiş ölçülecek.
-- [ ] Maç başına modül değişimi ölçülecek.
-- [ ] Devre Kredisi kullanımı ölçülecek.
-- [ ] Modül Rafı kullanımı ölçülecek.
-- [ ] Güçlendirici seçimi ölçülecek.
-- [ ] Ortalama maç süresi ölçülecek.
-- [ ] Tekrar maç başlatma oranı ölçülecek.
+- [x] İlk maç/maç tamamlama için başlayan ve tamamlanan session sayaçları ile tamamlama oranı ölçülüyor.
+- [ ] İkinci maça geçiş oyuncu oturumu dizisi üzerinden ayrıca türetilecek.
+- [x] Maç başına modül değişimi ölçülüyor.
+- [x] Devre Kredisi kullanımı ölçülüyor.
+- [x] Modül Rafı kullanımı ölçülüyor.
+- [x] Güçlendirici kullanımı ölçülüyor.
+- [x] Ortalama maç süresi ölçülüyor.
+- [x] Tekrar maç isteği sayısı ve tamamlanan maç başına oranı ölçülüyor.
 - [ ] Kaybeden oyuncunun tekrar maç açma oranı temel sinyallerden biri olacak.
 
 #### FAZ 24 — Android ve iOS
@@ -380,9 +380,9 @@ Aşağıdaki alanlar ilk sürüm kapsamına dahil değildir ve mevcut yol harita
 
 ## Sıradaki Paket
 
-**`2.0.0-alpha.55 — Web Test Telemetri KPI Özeti`**
+**`2.0.0-alpha.56 — İstemci Telemetri Transport ve Güvenli Gönderim Kuyruğu`**
 
-Gerçek hesap ekranları sunucuya bağlandı. Sıradaki paket yeni menü eklemeden mevcut telemetri olaylarından Web testinde izlenecek temel KPI'ları türetecek: tamamlanan maç sayısı/oranı için temel sayaçlar, tekrar maç isteği, modül değişimi, Devre Kredisi harcaması, Modül Rafı kullanımı, güçlendirici kullanımı ve ortalama maç süresi. KPI endpoint'i yalnızca test/ölçüm katmanı olacak ve savaş motoruna etki etmeyecek.
+KPI türetme katmanı hazır. Sıradaki paket istemcide yerel tamponda kalan `game_opened`, `module_shelf_used`, `rematch_requested` ve eşleştirme başlangıcı gibi Web test sinyallerini gerçek `/telemetry/events` endpoint'ine gönderecek. Başarısız gönderimler kuyrukta korunacak, aynı event_id ile yeniden gönderilecek ve sunucu deduplication özelliği kullanılacak. Üçüncü taraf analitik sağlayıcısı yine eklenmeyecek.
 
 
 ---

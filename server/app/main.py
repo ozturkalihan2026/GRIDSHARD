@@ -47,6 +47,9 @@ from .telemetry import (
 from .web_test import (
     build_web_test_readiness,
 )
+from .web_test_metrics import (
+    WebTestKpiService,
+)
 
 
 app = FastAPI(
@@ -66,6 +69,9 @@ player_progression_service = PlayerProgressionService(
     player_profile_service
 )
 telemetry_service = InMemoryTelemetryService()
+web_test_kpi_service = WebTestKpiService(
+    telemetry_service
+)
 
 def process_completed_pvp_battle(state) -> None:
     player_statistics_service.process_finished_battle(
@@ -189,6 +195,18 @@ def get_telemetry_events(
             event_type=event_type,
         )
     }
+
+
+@app.get("/telemetry/kpis")
+def get_telemetry_kpis(
+    player_id: str | None = None,
+) -> dict:
+    return (
+        web_test_kpi_service
+        .snapshot(
+            player_id=player_id
+        )
+    )
 
 
 @app.get("/telemetry/summary")
