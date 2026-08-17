@@ -3,8 +3,8 @@ from app.web_test_monitoring import build_monitoring_summary
 
 def test_monitoring_summary_combines_operation_stability_and_funnel():
     result=build_monitoring_summary(
-        version="2.0.0-beta.4.2",
-        build="web-test-beta.4.2",
+        version="2.0.0-beta.4.3",
+        build="web-test-beta.4.3",
         test_run_id="r",
         operation_status={
             "operational_state":"running",

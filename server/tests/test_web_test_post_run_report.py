@@ -3,8 +3,8 @@ from app.web_test_post_run import build_post_run_report
 
 def test_post_run_report_calculates_duration():
     report=build_post_run_report(
-        version="2.0.0-beta.4.2",
-        build="web-test-beta.4.2",
+        version="2.0.0-beta.4.3",
+        build="web-test-beta.4.3",
         test_run_id="r",
         run_summary={
             "run_started":True,

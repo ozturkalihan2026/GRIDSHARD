@@ -63,7 +63,7 @@ def test_finish_records_minimal_completed_audit():
         "technical_completed":
             True,
         "test_run_id":
-            "web-test-beta.4.2",
+            "web-test-beta.4.3",
     }
 
 

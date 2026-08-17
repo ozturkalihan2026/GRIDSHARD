@@ -12,7 +12,7 @@
     <header class="battle-header">
       <div>
         <h1>Project Relay 2.0</h1>
-        <p>2.0.0-beta.4.2 — Gerçek Web Testi Hazır</p>
+        <p>2.0.0-beta.4.3 — Gerçek Web Testi Hazır</p>
       </div>
       <div class="battle-status-cluster">
         <div class="credit-indicator" id="credit-indicator">Devre Kredisi: 200 DK</div>
@@ -53,7 +53,7 @@
 
     <section class="profile-summary-panel" id="profile-summary-panel" data-screen-panel="profile" hidden>
       <div class="panel-title-row">
-        <h2>Profil</h2>
+        <div><h2>Profil</h2><p class="screen-subtitle">Oyuncu kimliği, ilerleme ve savaş hazırlığı.</p></div>
         <span>Genel · İlerleme · Savaş Havuzu · <strong id="profile-load-status" data-status="idle">Yerel önizleme</strong></span>
       </div>
       <p id="profile-live-summary">Oyuncu · Seviye 1 · Gümüş · 1000 Derece Puanı · 0 XP</p>
@@ -71,7 +71,7 @@
 
     <section class="statistics-summary-panel" id="statistics-summary-panel" data-screen-panel="statistics" hidden>
       <div class="panel-title-row">
-        <h2>İstatistikler</h2>
+        <div><h2>İstatistikler</h2><p class="screen-subtitle">Maç geçmişinin temel performans özeti.</p></div>
         <span>Sunucu otoriteli maç sonuçları · <strong id="statistics-load-status" data-status="idle">Yerel önizleme</strong></span>
       </div>
       <p id="statistics-live-summary">Maç 0 · Galibiyet 0 · Mağlubiyet 0 · Beraberlik 0 · Galibiyet %0</p>
@@ -79,7 +79,7 @@
 
     <section class="settings-summary-panel" id="settings-summary-panel" data-screen-panel="settings" hidden>
       <div class="panel-title-row">
-        <h2>Ayarlar</h2>
+        <div><h2>Ayarlar</h2><p class="screen-subtitle">Oyun deneyimini cihazına göre düzenle.</p></div>
         <span>Ses · Müzik · Titreşim · Grafik · Dil · <strong id="settings-load-status" data-status="idle">Yerel önizleme</strong></span>
       </div>
       <div class="settings-form">
@@ -103,14 +103,6 @@
       </div>
     </section>
 
-    <section class="diagnostic-panel" data-screen-panel="play" hidden>
-      <div class="panel-title-row">
-        <h2>Web Test Tanılama</h2>
-        <span>Yalnızca teknik durum; profil/savaş içeriği içermez</span>
-      </div>
-      <button id="diagnostic-snapshot-button" type="button">Tanılama Özeti Oluştur</button>
-      <textarea id="diagnostic-snapshot-output" readonly hidden aria-label="Tanılama özeti"></textarea>
-    </section>
 
     <section id="play-recovery-panel" class="play-recovery-panel" data-screen-panel="play" hidden>
       <strong>Bağlantı / Oturum Durumu</strong>
@@ -234,9 +226,22 @@
       </button>
     </section>
 
+
+
+    <details class="diagnostic-panel" data-screen-panel="play" hidden>
+      <summary>
+        <strong>Teknik Tanılama</strong>
+        <span>Yalnızca teknik durum</span>
+      </summary>
+      <div class="diagnostic-content">
+        <p>Profil veya savaş içeriği içermez.</p>
+        <button id="diagnostic-snapshot-button" type="button">Tanılama Özeti Oluştur</button>
+        <textarea id="diagnostic-snapshot-output" readonly hidden aria-label="Tanılama özeti"></textarea>
+      </div>
+    </details>
     <section class="event-panel" data-screen-panel="play" hidden>
-      <h2>İstemci Komutları</h2>
-      <p>Bu alpha istemcisi savaş kararını vermez; yalnızca sunucuya gönderilecek komutları üretir.</p>
+      <h2>Olay Günlüğü</h2>
+      <p>Savaş ve istemci komutları burada zaman sırasıyla gösterilir; savaş kararı sunucu otoritesindedir.</p>
       <pre id="event-log"></pre>
     </section>
   </main>

@@ -14,7 +14,7 @@ def test_stability_snapshot_audit_is_minimal():
     assert response.status_code==200
     assert response.json()[
         "test_run_id"
-    ]=="web-test-beta.4.2"
+    ]=="web-test-beta.4.3"
 
     events=telemetry_service.events(
         event_type=
