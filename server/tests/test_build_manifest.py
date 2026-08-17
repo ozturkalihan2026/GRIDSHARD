@@ -15,12 +15,12 @@ client=TestClient(app)
 
 def test_manifest_has_version_protocol_menu_and_release_state():
     manifest=build_manifest(
-        version="2.0.0-alpha.111",
+        version="2.0.0-alpha.112",
         telemetry_service=telemetry_service,
     )
 
-    assert manifest["server_version"]=="2.0.0-alpha.111"
-    assert manifest["web_test_build"]=="web-test-alpha.111"
+    assert manifest["server_version"]=="2.0.0-alpha.112"
+    assert manifest["web_test_build"]=="web-test-alpha.112"
     assert manifest["pvp_protocol_version"]==PVP_PROTOCOL_VERSION
     assert manifest["menu_areas"]==[
         "Oyna",
@@ -39,5 +39,5 @@ def test_manifest_endpoint():
 
     assert response.status_code==200
     body=response.json()
-    assert body["server_version"]=="2.0.0-alpha.111"
+    assert body["server_version"]=="2.0.0-alpha.112"
     assert body["pvp_protocol_version"]==1

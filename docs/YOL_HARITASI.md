@@ -1,7 +1,7 @@
 # Project Relay 2.0 — YOL HARİTASI
 
-**Güncel Sürüm:** `2.0.0-alpha.111`  
-**Paket:** Preflight Snapshot KPI ve Hazır Snapshot Oranı  
+**Güncel Sürüm:** `2.0.0-alpha.112`  
+**Paket:** Gerçek Web Testi Başlatma İşlemi ve Sunucu Taraflı Test-Run Kilidi  
 **Kanonik Dosya:** `docs/YOL_HARITASI.md`
 
 > Bu dosya Project Relay 2.0 için tek kanonik geliştirme kaydıdır. Her paket tamamlandığında sürüm numarası artırılır; **Tamamlananlar** ve **Yapılacaklar** bu dosyada güncellenir. Sonraki geliştirme paketi bu dosya okunarak başlatılır.
@@ -383,9 +383,9 @@ Aşağıdaki alanlar ilk sürüm kapsamına dahil değildir ve mevcut yol harita
 
 ## Sıradaki Paket
 
-**`2.0.0-alpha.112 — Gerçek Web Testi Başlatma İşlemi ve Sunucu Taraflı Test-Run Kilidi`**
+**`2.0.0-alpha.113 — Gerçek Web Testi Aktif Durumu ve Tarayıcı Teknik Göstergesi`**
 
-Preflight hazır olma durumu ölçülebiliyor. Sıradaki paket gerçek kullanıcı testini operasyonel olarak başlatan bir endpoint ekleyecek. Başlatma yalnızca preflight_ready=true ve istenen test_run_id aktif koşuyla eşleşiyorsa kabul edilecek; kişisel veri alınmayacak. Aynı koşunun tekrar başlatılması idempotent olacak.
+Sunucu taraflı test-run başlatma kilidi hazır. Sıradaki paket aktif test koşusunun başlatılıp başlatılmadığını salt-okunur bir durum endpoint'iyle yayınlayacak ve tarayıcı teknik durum alanında `Gerçek Test: Başlatıldı / Başlatılmadı` göstergesini ekleyecek. Oyna akışı ve menü kapsamı değişmeyecek.
 
 
 ---
