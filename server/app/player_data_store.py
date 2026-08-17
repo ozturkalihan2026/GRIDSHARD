@@ -98,6 +98,72 @@ class JsonFilePlayerDataRepository:
             ),
         )
 
+    def health(self) -> dict:
+        if self.path.exists():
+            try:
+                payload = self._read_all()
+            except PlayerDataStoreError as exc:
+                return {
+                    "ready": False,
+                    "state": "corrupt",
+                    "path": str(
+                        self.path
+                    ),
+                    "player_count": 0,
+                    "error": str(exc),
+                }
+
+            return {
+                "ready": True,
+                "state": "ready",
+                "path": str(
+                    self.path
+                ),
+                "player_count": len(
+                    payload
+                ),
+                "error": None,
+            }
+
+        parent = self.path.parent
+        probe = parent
+
+        while (
+            not probe.exists()
+            and probe != probe.parent
+        ):
+            probe = probe.parent
+
+        writable = (
+            probe.exists()
+            and os.access(
+                probe,
+                os.W_OK,
+            )
+        )
+
+        return {
+            "ready": bool(
+                writable
+            ),
+            "state":
+                (
+                    "empty"
+                    if writable
+                    else "unwritable"
+                ),
+            "path": str(
+                self.path
+            ),
+            "player_count": 0,
+            "error":
+                (
+                    None
+                    if writable
+                    else "Kalıcı oyuncu veri yolu yazılabilir değil."
+                ),
+        }
+
     def delete(
         self,
         player_id: str,

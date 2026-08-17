@@ -17,7 +17,7 @@ from .player_profile import PlayerProfileService
 from .telemetry import InMemoryTelemetryService
 
 
-WEB_TEST_BUILD = "web-test-alpha.69"
+WEB_TEST_BUILD = "web-test-alpha.70"
 
 RELEASE_CHECK_STEPS = (
     "health",
@@ -59,6 +59,7 @@ def build_web_test_readiness(
     *,
     version: str,
     telemetry_service: InMemoryTelemetryService,
+    persistence_ready: bool = True,
 ) -> WebTestReadiness:
     capabilities = {
         "server_authoritative_pvp": True,
@@ -68,6 +69,10 @@ def build_web_test_readiness(
         "match_result": True,
         "telemetry": True,
         "player_data_snapshot": True,
+        "player_data_persistence":
+            bool(
+                persistence_ready
+            ),
     }
 
     return WebTestReadiness(

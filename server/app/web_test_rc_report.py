@@ -12,14 +12,19 @@ def build_rc_report(
     *,
     version: str,
     telemetry_service: InMemoryTelemetryService,
+    persistence_ready: bool = True,
 ) -> dict[str, Any]:
     manifest = build_manifest(
         version=version,
         telemetry_service=telemetry_service,
+        persistence_ready=
+            persistence_ready,
     )
     release = build_release_check(
         version=version,
         telemetry_service=telemetry_service,
+        persistence_ready=
+            persistence_ready,
     )
     kpis = WebTestKpiService(
         telemetry_service

@@ -1,7 +1,7 @@
 # Project Relay 2.0 — YOL HARİTASI
 
-**Güncel Sürüm:** `2.0.0-alpha.69`  
-**Paket:** Web Test Oyuncu Verisinin Sunucu Yeniden Başlatmalarına Karşı Kalıcılığı  
+**Güncel Sürüm:** `2.0.0-alpha.70`  
+**Paket:** Kalıcı Oyuncu Veri Dosyası Sağlık Kontrolü ve Kurtarma Güvencesi  
 **Kanonik Dosya:** `docs/YOL_HARITASI.md`
 
 > Bu dosya Project Relay 2.0 için tek kanonik geliştirme kaydıdır. Her paket tamamlandığında sürüm numarası artırılır; **Tamamlananlar** ve **Yapılacaklar** bu dosyada güncellenir. Sonraki geliştirme paketi bu dosya okunarak başlatılır.
@@ -383,9 +383,9 @@ Aşağıdaki alanlar ilk sürüm kapsamına dahil değildir ve mevcut yol harita
 
 ## Sıradaki Paket
 
-**`2.0.0-alpha.70 — Kalıcı Oyuncu Veri Dosyası Sağlık Kontrolü ve Kurtarma Güvencesi`**
+**`2.0.0-alpha.71 — Kalıcı Oyuncu Verisi Yedekleme ve Son Sağlam Snapshot Koruması`**
 
-Oyuncu verisi artık sunucu yeniden başlatmalarında korunuyor. Sıradaki paket dosya bozulması veya yazma problemi halinde gerçek Web testini sessizce yanlış veriyle başlatmamak için persistence health bilgisini `/health`, manifest ve release-check zincirine ekleyecek. Kalıcı dosya okunamıyorsa Oyna bloke edilecek; Profil/İstatistikler/Ayarlar yerel fallback ile erişilebilir kalacak. Bozuk dosya otomatik olarak üzerine yazılmayacak.
+Persistence health artık bozuk dosyayı tespit ediyor ve Oyna'yı güvenli biçimde bloke ediyor. Sıradaki paket her başarılı kalıcı yazımdan önce son sağlam veri dosyasını `.bak` olarak koruyacak. Ana JSON bozulursa sistem otomatik veri değiştirmeyecek; health cevabı kullanılabilir yedek olup olmadığını bildirecek ve kontrollü kurtarma işlemi için repository seviyesinde açık bir restore fonksiyonu hazırlanacak.
 
 
 ---

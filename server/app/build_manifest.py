@@ -17,10 +17,13 @@ def build_manifest(
     *,
     version: str,
     telemetry_service: InMemoryTelemetryService,
+    persistence_ready: bool = True,
 ) -> dict[str, Any]:
     release = build_release_check(
         version=version,
         telemetry_service=telemetry_service,
+        persistence_ready=
+            persistence_ready,
     )
 
     return {
@@ -32,6 +35,10 @@ def build_manifest(
         "menu_areas":
             list(
                 REQUIRED_MENU_AREAS
+            ),
+        "player_data_persistence_ready":
+            bool(
+                persistence_ready
             ),
         "release_ready":
             release.ready,
