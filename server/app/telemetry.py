@@ -586,6 +586,24 @@ class InMemoryTelemetryService:
 
         return recorded
 
+    def reload_from_repository(self) -> int:
+        if self.repository is None:
+            return len(
+                self._events
+            )
+
+        events = self.repository.load()
+        self._events = list(
+            events
+        )
+        self._event_ids = {
+            event.event_id
+            for event in self._events
+        }
+        return len(
+            self._events
+        )
+
     def clear(self) -> None:
         self._events.clear()
         self._event_ids.clear()

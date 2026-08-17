@@ -836,6 +836,97 @@ def web_test_rc_report() -> dict:
     )
 
 
+@app.post("/web-test/telemetry/restore-backup")
+def restore_web_test_telemetry_backup(
+    x_relay_admin_token: str | None = Header(
+        default=None,
+    ),
+) -> dict:
+    expected_token = os.environ.get(
+        "RELAY_WEB_TEST_ADMIN_TOKEN"
+    )
+
+    if not expected_token:
+        raise HTTPException(
+            status_code=503,
+            detail=(
+                "Web test veri kurtarma yönetici anahtarı yapılandırılmamış."
+            ),
+        )
+
+    if (
+        not x_relay_admin_token
+        or x_relay_admin_token
+        != expected_token
+    ):
+        raise HTTPException(
+            status_code=403,
+            detail="Web test telemetri kurtarma yetkisi reddedildi.",
+        )
+
+    before = (
+        telemetry_persistence_health()
+    )
+
+    if before["ready"]:
+        raise HTTPException(
+            status_code=409,
+            detail=(
+                "Kalıcı telemetri zaten sağlıklı; restore uygulanmadı."
+            ),
+        )
+
+    backup = before.get(
+        "backup",
+        {},
+    )
+    if not backup.get(
+        "ready",
+        False,
+    ):
+        raise HTTPException(
+            status_code=409,
+            detail=(
+                "Kullanılabilir sağlam telemetri yedeği bulunamadı."
+            ),
+        )
+
+    if not telemetry_repository.restore_backup():
+        raise HTTPException(
+            status_code=409,
+            detail="Telemetri yedeği geri yüklenemedi.",
+        )
+
+    event_count = (
+        telemetry_service
+        .reload_from_repository()
+    )
+
+    after = (
+        telemetry_persistence_health()
+    )
+    if not after["ready"]:
+        raise HTTPException(
+            status_code=500,
+            detail=(
+                "Telemetri yedeği geri yüklendi ancak health doğrulanamadı."
+            ),
+        )
+
+    kpis = (
+        web_test_kpi_service
+        .snapshot()
+    )
+
+    return {
+        "restored": True,
+        "event_count": event_count,
+        "before": before,
+        "after": after,
+        "kpis": kpis,
+    }
+
+
 @app.post("/web-test/persistence/restore-backup")
 def restore_web_test_persistence_backup(
     x_relay_admin_token: str | None = Header(
