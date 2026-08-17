@@ -407,3 +407,12 @@ button, input { font: inherit; }
   display: grid;
   gap: 0.35rem;
 }
+
+
+.play-recovery-panel {
+  border: 1px solid currentColor;
+  border-radius: 0.75rem;
+  padding: 0.8rem;
+  display: grid;
+  gap: 0.55rem;
+}

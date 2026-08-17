@@ -42,7 +42,7 @@
   const COMPETITIVE_STATUS = "M7 Simülasyon aktif";
   const BALANCE_STATUS = "Eşit modül + counter doğrulandı";
   const AI_STATUS = "Adaptif AI + rekabetçi denge doğrulandı";
-  const PVP_STATUS = "Web test release-check kapsamı hazır";
+  const PVP_STATUS = "Gerçek kullanıcı oturumu hata dayanıklılığı aktif";
 
   const PORT_COUNT_BY_NAME = {
     "Çekirdek":4,
@@ -314,6 +314,19 @@
       labels[status] || `Bağlantı: ${status}`;
     connectionStatusEl.dataset.status =
       status;
+
+    if (status === "error") {
+      showPlayError(
+        "websocket",
+        "Savaş sunucusuna bağlantı kurulamadı. Yeniden bağlanmayı deneyebilirsin."
+      );
+    } else if (
+      status === "open"
+      && playRecoveryState.kind
+      === "websocket"
+    ) {
+      clearPlayError();
+    }
   }
 
   const matchmakingState =
@@ -345,11 +358,14 @@
   const webTestKpiState =
     new RelayWebTestKpiState();
 
+  const playRecoveryState =
+    new RelayPlayRecoveryState();
+
   const releaseCheckState =
     new RelayReleaseCheckState();
   releaseCheckState.apply({
-    version: "2.0.0-alpha.58",
-    build: "web-test-alpha.58",
+    version: "2.0.0-alpha.59",
+    build: "web-test-alpha.59",
     ready: true,
     checks: {
       health_ready: true,
@@ -407,7 +423,10 @@
   });
 
   const telemetryTransport =
-    new RelayTelemetryHttpTransport();
+    new RelayTelemetryHttpTransport({
+      onStatusChange:
+        renderTelemetryStatus,
+    });
 
   const telemetryDispatcher =
     new RelayTelemetryDispatcher({
@@ -421,7 +440,7 @@
 
   telemetryDispatcher.trackGameOpened({
     platform: "web",
-    build: "2.0.0-alpha.58",
+    build: "2.0.0-alpha.59",
   });
 
   const postMatchSync =
@@ -466,11 +485,117 @@
     const result =
       await postMatchSyncInFlight;
 
+    if (!result.ok) {
+      showPlayError(
+        "post_match",
+        result.reason
+        || "Maç sonucu verileri yüklenemedi."
+      );
+    } else if (
+      playRecoveryState.kind
+      === "post_match"
+    ) {
+      clearPlayError();
+    }
+
     renderPostMatchSummary();
     renderProfileSummary();
     renderStatisticsSummary();
 
     return result;
+  }
+
+  const recoveryPanel =
+    document.getElementById(
+      "play-recovery-panel"
+    );
+  const recoveryMessage =
+    document.getElementById(
+      "play-recovery-message"
+    );
+  const recoveryRetry =
+    document.getElementById(
+      "play-recovery-retry"
+    );
+  const matchmakingCancel =
+    document.getElementById(
+      "matchmaking-cancel"
+    );
+  const telemetryStatus =
+    document.getElementById(
+      "telemetry-send-status"
+    );
+
+  function renderRecoveryState() {
+    if (!recoveryPanel) return;
+
+    const view =
+      playRecoveryState
+        .viewModel();
+
+    recoveryPanel.hidden =
+      !view.active;
+
+    if (recoveryMessage) {
+      recoveryMessage.textContent =
+        view.message;
+    }
+
+    if (recoveryRetry) {
+      recoveryRetry.hidden =
+        !view.retryable;
+    }
+  }
+
+  function showPlayError(
+    kind,
+    message,
+    retryable = true
+  ) {
+    playRecoveryState.show(
+      kind,
+      message,
+      { retryable }
+    );
+    renderRecoveryState();
+  }
+
+  function clearPlayError() {
+    playRecoveryState.clear();
+    renderRecoveryState();
+  }
+
+  function renderTelemetryStatus(
+    status
+  ) {
+    if (!telemetryStatus) return;
+
+    const labels = {
+      idle: "Telemetri: Hazır",
+      sending: "Telemetri: Gönderiliyor",
+      retry_wait:
+        "Telemetri: Bağlantı bekleniyor, veri korundu",
+      ready: "Telemetri: Güncel",
+    };
+
+    telemetryStatus.textContent =
+      labels[status]
+      || `Telemetri: ${status}`;
+    telemetryStatus.dataset.status =
+      status;
+
+    if (status === "retry_wait") {
+      showPlayError(
+        "telemetry",
+        "Ölçüm verisi gönderilemedi; kuyrukta korunuyor ve otomatik yeniden denenecek.",
+        false
+      );
+    } else if (
+      playRecoveryState.kind
+      === "telemetry"
+    ) {
+      clearPlayError();
+    }
   }
 
   const pvpConnection =
@@ -654,10 +779,19 @@
       });
 
     if (!result.ok) {
-      logClientMessage(
+      const reason =
         result.reason
-        || "Eşleştirme başlatılamadı."
+        || "Eşleştirme başlatılamadı.";
+      logClientMessage(reason);
+      showPlayError(
+        "matchmaking",
+        reason
       );
+    } else if (
+      playRecoveryState.kind
+      === "matchmaking"
+    ) {
+      clearPlayError();
     }
 
     return result;
@@ -1752,6 +1886,60 @@ const SPECIAL_CELL_INFO = {
     }
 
     requestAnimationFrame(updateClock);
+  }
+
+  if (matchmakingCancel) {
+    matchmakingCancel.addEventListener(
+      "click",
+      async () => {
+        await onlinePlay.cancel();
+        poolConfirmEl.disabled = false;
+        poolConfirmEl.textContent =
+          "Savaş Havuzunu Onayla ve Eşleş";
+        clearPlayError();
+        renderOnlinePlayStatus(
+          "cancelled"
+        );
+      }
+    );
+  }
+
+  if (recoveryRetry) {
+    recoveryRetry.addEventListener(
+      "click",
+      async () => {
+        const kind =
+          playRecoveryState.kind;
+        clearPlayError();
+
+        if (
+          kind === "post_match"
+        ) {
+          await syncFinishedMatch();
+          return;
+        }
+
+        if (
+          kind === "websocket"
+          && pvpState.sessionId
+        ) {
+          pvpConnection.connect(
+            onlinePlay
+              .webSocketUrlFactory(
+                pvpState.sessionId
+              )
+          );
+          return;
+        }
+
+        if (
+          kind === "matchmaking"
+          || kind === "setup_ready"
+        ) {
+          await startRealOnlineMatch();
+        }
+      }
+    );
   }
 
   const settingsSaveButton =

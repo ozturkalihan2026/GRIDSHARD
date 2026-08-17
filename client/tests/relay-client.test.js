@@ -402,61 +402,61 @@ function createClient() {
   const fs=require("fs");
   const src=fs.readFileSync("./src/app.js","utf8");
   assert.ok(src.includes("PVP_STATUS"));
-  assert.ok(src.includes("Web test release-check kapsamı hazır"));
+  assert.ok(src.includes("Gerçek kullanıcı oturumu hata dayanıklılığı aktif"));
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync("./src/app.js","utf8");
-  assert.ok(src.includes("Web test release-check kapsamı hazır")); // alpha32->33 protocol status
+  assert.ok(src.includes("Gerçek kullanıcı oturumu hata dayanıklılığı aktif")); // alpha32->33 protocol status
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync("./src/app.js","utf8");
-  assert.ok(src.includes("Web test release-check kapsamı hazır")); // alpha33 protocol
+  assert.ok(src.includes("Gerçek kullanıcı oturumu hata dayanıklılığı aktif")); // alpha33 protocol
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync("./src/app.js","utf8");
-  assert.ok(src.includes("Web test release-check kapsamı hazır")); // alpha34 websocket
+  assert.ok(src.includes("Gerçek kullanıcı oturumu hata dayanıklılığı aktif")); // alpha34 websocket
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync("./src/app.js","utf8");
-  assert.ok(src.includes("Web test release-check kapsamı hazır")); // alpha35 gateway
+  assert.ok(src.includes("Gerçek kullanıcı oturumu hata dayanıklılığı aktif")); // alpha35 gateway
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync("./src/app.js","utf8");
-  assert.ok(src.includes("Web test release-check kapsamı hazır")); // alpha36 setup
+  assert.ok(src.includes("Gerçek kullanıcı oturumu hata dayanıklılığı aktif")); // alpha36 setup
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync("./src/app.js","utf8");
-  assert.ok(src.includes("Web test release-check kapsamı hazır")); // alpha37 lobby
+  assert.ok(src.includes("Gerçek kullanıcı oturumu hata dayanıklılığı aktif")); // alpha37 lobby
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync("./src/app.js","utf8");
-  assert.ok(src.includes("Web test release-check kapsamı hazır")); // alpha38 runner
+  assert.ok(src.includes("Gerçek kullanıcı oturumu hata dayanıklılığı aktif")); // alpha38 runner
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync("./src/app.js","utf8");
-  assert.ok(src.includes("Web test release-check kapsamı hazır")); // alpha39 heartbeat
+  assert.ok(src.includes("Gerçek kullanıcı oturumu hata dayanıklılığı aktif")); // alpha39 heartbeat
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync("./src/app.js","utf8");
-  assert.ok(src.includes("Web test release-check kapsamı hazır")); // alpha40 online pvp
+  assert.ok(src.includes("Gerçek kullanıcı oturumu hata dayanıklılığı aktif")); // alpha40 online pvp
 }
 
 {
@@ -682,7 +682,7 @@ function createClient() {
 {
   const fs=require("fs");
   const src=fs.readFileSync("./src/app.js","utf8");
-  assert.ok(src.includes("Web test release-check kapsamı hazır"));
+  assert.ok(src.includes("Gerçek kullanıcı oturumu hata dayanıklılığı aktif"));
   assert.ok(src.includes("buildPvPCommandEnvelope"));
   assert.ok(src.includes("applyPvPServerEnvelope"));
 }
@@ -1504,10 +1504,10 @@ function createClient() {
 
   const result=state.applyHealth({
     status:"ok",
-    version:"2.0.0-alpha.58",
+    version:"2.0.0-alpha.59",
     web_test:{
       ready:true,
-      build:"web-test-alpha.58",
+      build:"web-test-alpha.59",
       release_checks:[
         "health",
         "matchmaking",
@@ -1551,7 +1551,7 @@ function createClient() {
 
   const result=state.applyHealth({
     status:"ok",
-    version:"2.0.0-alpha.58",
+    version:"2.0.0-alpha.59",
   });
 
   assert.strictEqual(
@@ -2322,7 +2322,7 @@ function createClient() {
   const html=fs.readFileSync("./index.html","utf8");
   assert.ok(
     html.includes(
-      "2.0.0-alpha.58"
+      "2.0.0-alpha.59"
     )
   );
   assert.ok(
@@ -2504,8 +2504,8 @@ function createClient() {
     new RelayReleaseCheckState();
 
   const view=state.apply({
-    version:"2.0.0-alpha.58",
-    build:"web-test-alpha.58",
+    version:"2.0.0-alpha.59",
+    build:"web-test-alpha.59",
     ready:true,
     checks:{
       health_ready:true,
@@ -2585,8 +2585,50 @@ function createClient() {
   );
 }
 
+{
+  const {
+    RelayPlayRecoveryState,
+    PLAY_RECOVERY_KIND,
+  } = require("../src/relay-client.js");
+
+  const state=
+    new RelayPlayRecoveryState();
+
+  state.show(
+    PLAY_RECOVERY_KIND.WEBSOCKET,
+    "Bağlantı hatası"
+  );
+  assert.strictEqual(
+    state.viewModel().active,
+    true
+  );
+  assert.strictEqual(
+    state.viewModel().retryable,
+    true
+  );
+
+  state.clear();
+  assert.strictEqual(
+    state.viewModel().active,
+    false
+  );
+}
+
+{
+  const fs=require("fs");
+  const html=fs.readFileSync("./index.html","utf8");
+  const app=fs.readFileSync("./src/app.js","utf8");
+
+  assert.ok(html.includes('id="play-recovery-panel"'));
+  assert.ok(html.includes('id="play-recovery-retry"'));
+  assert.ok(html.includes('id="matchmaking-cancel"'));
+  assert.ok(html.includes('id="telemetry-send-status"'));
+  assert.ok(app.includes("showPlayError"));
+  assert.ok(app.includes("Eşleştirmeyi İptal Et") || html.includes("Eşleştirmeyi İptal Et"));
+}
+
 Promise.all(asyncTests).then(() => {
-  console.log("97 client tests passed");
+  console.log("99 client tests passed");
 }).catch((error) => {
   console.error(error);
   process.exitCode = 1;

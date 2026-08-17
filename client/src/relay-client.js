@@ -2601,6 +2601,56 @@
   }
 
 
+
+  const PLAY_RECOVERY_KIND = Object.freeze({
+    NONE: "none",
+    MATCHMAKING: "matchmaking",
+    WEBSOCKET: "websocket",
+    SETUP_READY: "setup_ready",
+    POST_MATCH: "post_match",
+    TELEMETRY: "telemetry",
+  });
+
+  class RelayPlayRecoveryState {
+    constructor() {
+      this.kind = PLAY_RECOVERY_KIND.NONE;
+      this.message = "";
+      this.retryable = false;
+      this.active = false;
+    }
+
+    show(kind, message, {
+      retryable = true,
+    } = {}) {
+      this.kind = kind;
+      this.message = String(
+        message || "Bilinmeyen hata"
+      );
+      this.retryable =
+        Boolean(retryable);
+      this.active = true;
+      return this.viewModel();
+    }
+
+    clear() {
+      this.kind =
+        PLAY_RECOVERY_KIND.NONE;
+      this.message = "";
+      this.retryable = false;
+      this.active = false;
+    }
+
+    viewModel() {
+      return {
+        kind: this.kind,
+        message: this.message,
+        retryable: this.retryable,
+        active: this.active,
+      };
+    }
+  }
+
+
   const api = {
     RelayBattleClient,
     RelayPvPClientState,
@@ -2620,6 +2670,7 @@
     RelayWebTestKpiState,
     RelayTelemetryHttpTransport,
     RelayReleaseCheckState,
+    RelayPlayRecoveryState,
     BattlePoolSelection,
     APP_SCREEN,
     WS_CONNECTION_STATUS,
@@ -2627,6 +2678,7 @@
     ONLINE_PLAY_STATUS,
     REMOTE_DATA_STATUS,
     TELEMETRY_TRANSPORT_STATUS,
+    PLAY_RECOVERY_KIND,
     PVP_PHASE,
     MODULE_STATUS,
     DRAG_KIND,
@@ -2655,6 +2707,8 @@
   global.RelayWebTestKpiState = RelayWebTestKpiState;
   global.RelayTelemetryHttpTransport = RelayTelemetryHttpTransport;
   global.RelayReleaseCheckState = RelayReleaseCheckState;
+  global.RelayPlayRecoveryState = RelayPlayRecoveryState;
+  global.RelayPlayRecoveryKind = PLAY_RECOVERY_KIND;
   global.RelayTelemetryTransportStatus = TELEMETRY_TRANSPORT_STATUS;
   global.RelayRemoteDataStatus = REMOTE_DATA_STATUS;
   global.RelayOnlinePlayStatus = ONLINE_PLAY_STATUS;

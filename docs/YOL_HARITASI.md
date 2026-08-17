@@ -1,7 +1,7 @@
 # Project Relay 2.0 — YOL HARİTASI
 
-**Güncel Sürüm:** `2.0.0-alpha.58`  
-**Paket:** Web Test Release Candidate Kontrol Listesi ve M8 Kapsam Temizliği  
+**Güncel Sürüm:** `2.0.0-alpha.59`  
+**Paket:** Web Test Gerçek Kullanıcı Oturumu Hazırlığı ve Hata Dayanıklılığı  
 **Kanonik Dosya:** `docs/YOL_HARITASI.md`
 
 > Bu dosya Project Relay 2.0 için tek kanonik geliştirme kaydıdır. Her paket tamamlandığında sürüm numarası artırılır; **Tamamlananlar** ve **Yapılacaklar** bu dosyada güncellenir. Sonraki geliştirme paketi bu dosya okunarak başlatılır.
@@ -383,9 +383,9 @@ Aşağıdaki alanlar ilk sürüm kapsamına dahil değildir ve mevcut yol harita
 
 ## Sıradaki Paket
 
-**`2.0.0-alpha.59 — Web Test Gerçek Kullanıcı Oturumu Hazırlığı ve Hata Dayanıklılığı`**
+**`2.0.0-alpha.60 — Tarayıcı Açılış Sağlık Kapısı ve Sunucu Hazır Olma Doğrulaması`**
 
-Mevcut ilk kapsam release-check seviyesinde hazır. Sıradaki paket yeni özellik veya Eğitim ekranı eklemeyecek; gerçek kullanıcı Web testine çıkmadan önce istemci ağ hataları ve kullanıcı geri dönüş yollarını sağlamlaştıracak. Eşleştirme iptali, WebSocket bağlantı hatası, setup/ready sunucu reddi, post-match yükleme hatası ve telemetri gönderim hatası için Oyna ekranında kullanıcıya anlaşılır fakat savaşı durdurmayan durum/yeniden-deneme akışları hazırlanacak.
+Hata dayanıklılığı hazır. Sıradaki paket tarayıcı açılışında gerçek `/health` ve `/web-test/release-check` cevaplarını okuyacak. Sunucu hazır değilse Oyna eşleştirmesi başlatılmayacak; Profil, İstatistikler ve Ayarlar erişilebilir kalacak. Sağlık kontrolü yeniden denenebilir olacak ve gömülü hazır varsayımı kaldırılacak.
 
 
 ---
