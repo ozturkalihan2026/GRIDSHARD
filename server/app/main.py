@@ -71,6 +71,9 @@ from .web_test_go_no_go import (
 from .web_test_rc_candidate import (
     build_rc_candidate_summary,
 )
+from .web_test_launch import (
+    build_launch_snapshot,
+)
 from .web_test_run import (
     build_test_run_catalog,
     build_test_run_go_no_go,
@@ -115,8 +118,8 @@ TELEMETRY_MAX_EVENTS = int(
 )
 WEB_TEST_RUN_ID = os.environ.get(
     "RELAY_WEB_TEST_RUN_ID",
-    "web-test-alpha.99",
-).strip() or "web-test-alpha.99"
+    "web-test-alpha.100",
+).strip() or "web-test-alpha.100"
 
 telemetry_repository = (
     JsonFileTelemetryRepository(
@@ -1245,7 +1248,7 @@ def web_test_current_run() -> dict:
         "test_run_id":
             WEB_TEST_RUN_ID,
         "build":
-            "web-test-alpha.99",
+            "web-test-alpha.100",
     }
 
 
@@ -1334,7 +1337,7 @@ def web_test_rc_candidate() -> dict:
     return build_rc_candidate_summary(
         version=VERSION,
         build=
-            "web-test-alpha.99",
+            "web-test-alpha.100",
         test_run_id=
             WEB_TEST_RUN_ID,
         operation_readiness=
@@ -1345,6 +1348,46 @@ def web_test_rc_candidate() -> dict:
             data_health,
         run_summary=
             run_summary,
+    )
+
+
+@app.get("/web-test/launch-readiness")
+def web_test_launch_readiness() -> dict:
+    player_persistence = (
+        player_data_persistence_health()
+    )
+    telemetry_persistence = (
+        telemetry_persistence_health()
+    )
+    manifest = build_manifest(
+        version=VERSION,
+        telemetry_service=
+            telemetry_service,
+        persistence_ready=bool(
+            player_persistence["ready"]
+        ),
+        telemetry_persistence_ready=bool(
+            telemetry_persistence[
+                "ready"
+            ]
+        ),
+        test_run_id=
+            WEB_TEST_RUN_ID,
+    )
+
+    return build_launch_snapshot(
+        version=VERSION,
+        build=
+            "web-test-alpha.100",
+        test_run_id=
+            WEB_TEST_RUN_ID,
+        manifest=manifest,
+        operation_readiness=
+            web_test_operation_readiness(),
+        rc_candidate=
+            web_test_rc_candidate(),
+        data_health=
+            web_test_data_health(),
     )
 
 

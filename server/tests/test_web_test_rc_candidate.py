@@ -5,8 +5,8 @@ from app.web_test_rc_candidate import (
 
 def test_rc_candidate_uses_technical_readiness_as_release_decision():
     result=build_rc_candidate_summary(
-        version="2.0.0-alpha.99",
-        build="web-test-alpha.99",
+        version="2.0.0-alpha.100",
+        build="web-test-alpha.100",
         test_run_id="run-a",
         operation_readiness={
             "ready":True,

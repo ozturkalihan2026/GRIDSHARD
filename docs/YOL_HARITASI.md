@@ -1,7 +1,7 @@
 # Project Relay 2.0 — YOL HARİTASI
 
-**Güncel Sürüm:** `2.0.0-alpha.99`  
-**Paket:** RC Aday Tarayıcı Durumu ve Gerçek Web Testine Çıkış İşareti  
+**Güncel Sürüm:** `2.0.0-alpha.100`  
+**Paket:** Web Test Çıkış Kilidi ve Operasyon Onay Snapshot'ı  
 **Kanonik Dosya:** `docs/YOL_HARITASI.md`
 
 > Bu dosya Project Relay 2.0 için tek kanonik geliştirme kaydıdır. Her paket tamamlandığında sürüm numarası artırılır; **Tamamlananlar** ve **Yapılacaklar** bu dosyada güncellenir. Sonraki geliştirme paketi bu dosya okunarak başlatılır.
@@ -383,9 +383,9 @@ Aşağıdaki alanlar ilk sürüm kapsamına dahil değildir ve mevcut yol harita
 
 ## Sıradaki Paket
 
-**`2.0.0-alpha.100 — Web Test Çıkış Kilidi ve Operasyon Onay Snapshot'ı`**
+**`2.0.0-alpha.101 — Tarayıcı Launch-Readiness Görünümü ve Oyna Öncesi Son Teknik Kontrol`**
 
-RC aday durumu tarayıcıda görünür. Sıradaki paket aktif test koşusu için tek bir operasyon onay snapshot'ı üretecek. Snapshot teknik readiness, RC aday kararı, build/test_run_id eşleşmesi ve data-health durumunu birleştirerek `launch_ready=true/false` döndürecek. Bu yeni bir oyuncu özelliği değildir; gerçek Web testine çıkış öncesi operasyon kilididir.
+Sunucu çıkış kilidi hazır. Sıradaki paket tarayıcıya `launch-readiness` görünümünü ekleyecek. Oyna butonu mevcut boot/participant gate'e ek olarak launch snapshot hazır değilse açılmayacak. Profil, İstatistikler ve Ayarlar erişilebilir kalacak; davranış KPI yetersizliği launch'ı bloke etmeyecek.
 
 
 ---
