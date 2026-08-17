@@ -1,7 +1,7 @@
 # Project Relay 2.0 — YOL HARİTASI
 
-**Güncel Sürüm:** `2.0.0-alpha.88`  
-**Paket:** Go/No-Go Özeti İçine Uçtan Uca Audit Huni Sinyalleri  
+**Güncel Sürüm:** `2.0.0-alpha.89`  
+**Paket:** İlk Gerçek Web Testi Ölçüm Oturumu Özeti ve Test Koşusu Kimliği  
 **Kanonik Dosya:** `docs/YOL_HARITASI.md`
 
 > Bu dosya Project Relay 2.0 için tek kanonik geliştirme kaydıdır. Her paket tamamlandığında sürüm numarası artırılır; **Tamamlananlar** ve **Yapılacaklar** bu dosyada güncellenir. Sonraki geliştirme paketi bu dosya okunarak başlatılır.
@@ -383,9 +383,9 @@ Aşağıdaki alanlar ilk sürüm kapsamına dahil değildir ve mevcut yol harita
 
 ## Sıradaki Paket
 
-**`2.0.0-alpha.89 — İlk Gerçek Web Testi Ölçüm Oturumu Özeti ve Test Koşusu Kimliği`**
+**`2.0.0-alpha.90 — Test Koşusu Kimliğinin Manifest / Readiness Zincirine Eklenmesi`**
 
-Teknik Go/No-Go ve uçtan uca huni sinyalleri hazır. Sıradaki paket aynı Web test dönemindeki olayları birbirine bağlamak için kişisel bilgi içermeyen bir `test_run_id` kavramı ekleyecek. Audit başlangıç/bind/finish olayları bu test koşusu kimliğiyle etiketlenecek ve operasyon raporu belirli test koşusuna göre özetlenebilecek. Oyuncu kimliği ve test_run_id ayrı kalacak.
+Test_run_id audit zincirinde kullanılıyor. Sıradaki paket aktif test koşusu kimliğini build manifest, operation-readiness ve Go/No-Go özetine de ekleyecek. Böylece tarayıcı ve operasyon raporları hangi test koşusuna ait olduklarını açıkça belirtecek; koşu kimliği release kararını tek başına bloke etmeyecek ancak boş/geçersiz kimlik release-check tarafından reddedilecek.
 
 
 ---

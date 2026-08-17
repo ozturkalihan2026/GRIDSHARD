@@ -62,6 +62,8 @@ def test_finish_records_minimal_completed_audit():
             audit_event_id,
         "technical_completed":
             True,
+        "test_run_id":
+            "web-test-alpha.89",
     }
 
 

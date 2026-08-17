@@ -68,6 +68,9 @@ from .web_test_operation_readiness import (
 from .web_test_go_no_go import (
     build_go_no_go,
 )
+from .web_test_run import (
+    build_test_run_summary,
+)
 
 
 app = FastAPI(
@@ -104,6 +107,11 @@ TELEMETRY_MAX_EVENTS = int(
         "50000",
     )
 )
+WEB_TEST_RUN_ID = os.environ.get(
+    "RELAY_WEB_TEST_RUN_ID",
+    "web-test-alpha.89",
+).strip() or "web-test-alpha.89"
+
 telemetry_repository = (
     JsonFileTelemetryRepository(
         TELEMETRY_PATH,
@@ -359,6 +367,8 @@ def record_web_test_session_start_audit(
                     ][
                         "retention_limit"
                     ],
+                "test_run_id":
+                    WEB_TEST_RUN_ID,
             },
         )
     )
@@ -369,6 +379,8 @@ def record_web_test_session_start_audit(
             not accepted,
         "audit_event_id":
             event_id,
+        "test_run_id":
+            WEB_TEST_RUN_ID,
     }
 
 
@@ -423,6 +435,14 @@ def bind_web_test_session_audit(
             metadata={
                 "audit_event_id":
                     request.audit_event_id,
+                "test_run_id":
+                    source.get(
+                        "metadata",
+                        {},
+                    ).get(
+                        "test_run_id",
+                        WEB_TEST_RUN_ID,
+                    ),
             },
         )
     )
@@ -495,6 +515,14 @@ def finish_web_test_session_audit(
                     request.audit_event_id,
                 "technical_completed":
                     True,
+                "test_run_id":
+                    bound.get(
+                        "metadata",
+                        {},
+                    ).get(
+                        "test_run_id",
+                        WEB_TEST_RUN_ID,
+                    ),
             },
         )
     )
@@ -1194,6 +1222,27 @@ def web_test_go_no_go() -> dict:
         operation_readiness=
             operation,
         kpis=kpis,
+    )
+
+
+@app.get("/web-test/test-run")
+def web_test_current_run() -> dict:
+    return {
+        "test_run_id":
+            WEB_TEST_RUN_ID,
+        "build":
+            "web-test-alpha.89",
+    }
+
+
+@app.get("/web-test/test-runs/{test_run_id}/summary")
+def web_test_run_summary(
+    test_run_id: str,
+) -> dict:
+    return build_test_run_summary(
+        telemetry_service=
+            telemetry_service,
+        test_run_id=test_run_id,
     )
 
 

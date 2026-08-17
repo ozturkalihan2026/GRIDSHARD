@@ -114,4 +114,7 @@ def test_bound_audit_contains_no_profile_or_battle_content():
 
     assert set(
         event["metadata"].keys()
-    )=={"audit_event_id"}
+    )=={
+        "audit_event_id",
+        "test_run_id",
+    }
