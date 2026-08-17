@@ -2373,6 +2373,23 @@
               || 0
             ) * 10000
           ) / 100,
+        auditSessionFinishes:
+          this.kpis.audit_session_finishes
+          || 0,
+        auditToFinishRatePercent:
+          Math.round(
+            Number(
+              this.kpis.audit_to_finish_rate
+              || 0
+            ) * 10000
+          ) / 100,
+        boundToFinishRatePercent:
+          Math.round(
+            Number(
+              this.kpis.bound_to_finish_rate
+              || 0
+            ) * 10000
+          ) / 100,
       };
     }
   }

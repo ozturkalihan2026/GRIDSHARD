@@ -280,6 +280,42 @@ class WebTestKpiService:
             else 0.0
         )
 
+        audit_finished_sources = {
+            str(
+                event["metadata"].get(
+                    "audit_event_id"
+                )
+            )
+            for event in events
+            if (
+                event["event_type"]
+                == "web_test_session_finished"
+                and event["metadata"].get(
+                    "audit_event_id"
+                )
+                and event["metadata"].get(
+                    "technical_completed"
+                )
+            )
+        }
+
+        finished_audit_count = len(
+            audit_started
+            & audit_finished_sources
+        )
+        audit_to_finish_rate = (
+            finished_audit_count
+            / len(audit_started)
+            if audit_started
+            else 0.0
+        )
+        bound_to_finish_rate = (
+            finished_audit_count
+            / bound_audit_count
+            if bound_audit_count
+            else 0.0
+        )
+
         return {
             "player_id": player_id,
             "game_opened": counts[
@@ -352,6 +388,17 @@ class WebTestKpiService:
             ),
             "audit_to_session_rate": round(
                 audit_to_session_rate,
+                6,
+            ),
+            "audit_session_finishes": (
+                finished_audit_count
+            ),
+            "audit_to_finish_rate": round(
+                audit_to_finish_rate,
+                6,
+            ),
+            "bound_to_finish_rate": round(
+                bound_to_finish_rate,
                 6,
             ),
         }

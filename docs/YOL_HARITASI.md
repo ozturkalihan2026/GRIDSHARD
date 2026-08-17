@@ -1,7 +1,7 @@
 # Project Relay 2.0 — YOL HARİTASI
 
-**Güncel Sürüm:** `2.0.0-alpha.86`  
-**Paket:** Web Test Oturum Bitişi Audit Kaydı ve Uçtan Uca Test Hunisi  
+**Güncel Sürüm:** `2.0.0-alpha.87`  
+**Paket:** Web Test Hunisi KPI: Başlangıç → Session → Tamamlanan Maç  
 **Kanonik Dosya:** `docs/YOL_HARITASI.md`
 
 > Bu dosya Project Relay 2.0 için tek kanonik geliştirme kaydıdır. Her paket tamamlandığında sürüm numarası artırılır; **Tamamlananlar** ve **Yapılacaklar** bu dosyada güncellenir. Sonraki geliştirme paketi bu dosya okunarak başlatılır.
@@ -383,9 +383,9 @@ Aşağıdaki alanlar ilk sürüm kapsamına dahil değildir ve mevcut yol harita
 
 ## Sıradaki Paket
 
-**`2.0.0-alpha.87 — Web Test Hunisi KPI: Başlangıç → Session → Tamamlanan Maç`**
+**`2.0.0-alpha.88 — Go/No-Go Özeti İçine Uçtan Uca Audit Huni Sinyalleri`**
 
-Uçtan uca audit zinciri hazır. Sıradaki paket audit başlangıç, session bağı ve finish olaylarından `audit_to_finish_rate` ile `bound_to_finish_rate` metriklerini çıkaracak. Böylece eşleştirme başlangıcından gerçek maçı tamamlamaya kadar teknik test hunisi ölçülebilecek.
+Başlangıç→session→finish teknik huni KPI'ları hazır. Sıradaki paket Go/No-Go davranış sinyallerine `audit_to_finish` ve `bound_to_finish` ölçümlerini de ekleyecek. Yetersiz örnek yine `insufficient_data`, yeterli örnek `observed` olacak; teknik release kararı yalnızca operasyon readiness üzerinden verilmeye devam edecek.
 
 
 ---
