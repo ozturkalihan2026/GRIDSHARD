@@ -1,7 +1,7 @@
 # Project Relay 2.0 — YOL HARİTASI
 
-**Güncel Sürüm:** `2.0.0-alpha.70`  
-**Paket:** Kalıcı Oyuncu Veri Dosyası Sağlık Kontrolü ve Kurtarma Güvencesi  
+**Güncel Sürüm:** `2.0.0-alpha.71`  
+**Paket:** Kalıcı Oyuncu Verisi Yedekleme ve Son Sağlam Snapshot Koruması  
 **Kanonik Dosya:** `docs/YOL_HARITASI.md`
 
 > Bu dosya Project Relay 2.0 için tek kanonik geliştirme kaydıdır. Her paket tamamlandığında sürüm numarası artırılır; **Tamamlananlar** ve **Yapılacaklar** bu dosyada güncellenir. Sonraki geliştirme paketi bu dosya okunarak başlatılır.
@@ -383,9 +383,9 @@ Aşağıdaki alanlar ilk sürüm kapsamına dahil değildir ve mevcut yol harita
 
 ## Sıradaki Paket
 
-**`2.0.0-alpha.71 — Kalıcı Oyuncu Verisi Yedekleme ve Son Sağlam Snapshot Koruması`**
+**`2.0.0-alpha.72 — Kontrollü Web Test Veri Kurtarma Endpoint'i ve Sonrası Health Doğrulaması`**
 
-Persistence health artık bozuk dosyayı tespit ediyor ve Oyna'yı güvenli biçimde bloke ediyor. Sıradaki paket her başarılı kalıcı yazımdan önce son sağlam veri dosyasını `.bak` olarak koruyacak. Ana JSON bozulursa sistem otomatik veri değiştirmeyecek; health cevabı kullanılabilir yedek olup olmadığını bildirecek ve kontrollü kurtarma işlemi için repository seviyesinde açık bir restore fonksiyonu hazırlanacak.
+Son sağlam `.bak` snapshot korunuyor. Sıradaki paket yalnızca Web test operasyonu için kontrollü veri kurtarma endpoint'i ekleyecek. Endpoint ancak ana persistence health bozuk ve yedek geçerliyse çalışacak; kurtarma sonrası health tekrar doğrulanacak. Normal oyuncu istemcisi bu endpoint'i otomatik çağırmayacak ve Oyna, health yeniden `ready` olmadan açılmayacak.
 
 
 ---

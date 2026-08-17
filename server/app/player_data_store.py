@@ -4,6 +4,7 @@ from dataclasses import dataclass
 from pathlib import Path
 import json
 import os
+import shutil
 from typing import Protocol
 
 from .player_profile import (
@@ -62,6 +63,13 @@ class JsonFilePlayerDataRepository:
     ):
         self.path = Path(path)
 
+    @property
+    def backup_path(self) -> Path:
+        return self.path.with_name(
+            self.path.name
+            + ".bak"
+        )
+
     def save(
         self,
         snapshot: PlayerDataSnapshot,
@@ -98,7 +106,96 @@ class JsonFilePlayerDataRepository:
             ),
         )
 
+    def backup_health(self) -> dict:
+        path = self.backup_path
+
+        if not path.exists():
+            return {
+                "available": False,
+                "ready": False,
+                "path": str(path),
+                "player_count": 0,
+                "error": None,
+            }
+
+        try:
+            raw = path.read_text(
+                encoding="utf-8"
+            )
+            payload = json.loads(
+                raw
+            )
+        except (
+            OSError,
+            json.JSONDecodeError,
+        ) as exc:
+            return {
+                "available": True,
+                "ready": False,
+                "path": str(path),
+                "player_count": 0,
+                "error":
+                    "Yedek oyuncu veri dosyası okunamadı.",
+            }
+
+        if not isinstance(
+            payload,
+            dict,
+        ):
+            return {
+                "available": True,
+                "ready": False,
+                "path": str(path),
+                "player_count": 0,
+                "error":
+                    "Yedek oyuncu veri dosyası nesne olmalıdır.",
+            }
+
+        return {
+            "available": True,
+            "ready": True,
+            "path": str(path),
+            "player_count": len(
+                payload
+            ),
+            "error": None,
+        }
+
+    def restore_backup(self) -> bool:
+        health = self.backup_health()
+
+        if not health["ready"]:
+            return False
+
+        try:
+            self.path.parent.mkdir(
+                parents=True,
+                exist_ok=True,
+            )
+            restore_temp = (
+                self.path.with_name(
+                    self.path.name
+                    + ".restore.tmp"
+                )
+            )
+            shutil.copy2(
+                self.backup_path,
+                restore_temp,
+            )
+            os.replace(
+                restore_temp,
+                self.path,
+            )
+        except OSError as exc:
+            raise PlayerDataStoreError(
+                "Kalıcı oyuncu veri yedeği geri yüklenemedi."
+            ) from exc
+
+        return True
+
     def health(self) -> dict:
+        backup = self.backup_health()
+
         if self.path.exists():
             try:
                 payload = self._read_all()
@@ -111,6 +208,7 @@ class JsonFilePlayerDataRepository:
                     ),
                     "player_count": 0,
                     "error": str(exc),
+                    "backup": backup,
                 }
 
             return {
@@ -123,6 +221,7 @@ class JsonFilePlayerDataRepository:
                     payload
                 ),
                 "error": None,
+                "backup": backup,
             }
 
         parent = self.path.parent
@@ -162,6 +261,7 @@ class JsonFilePlayerDataRepository:
                     if writable
                     else "Kalıcı oyuncu veri yolu yazılabilir değil."
                 ),
+            "backup": backup,
         }
 
     def delete(
@@ -218,6 +318,25 @@ class JsonFilePlayerDataRepository:
                 parents=True,
                 exist_ok=True,
             )
+
+            if self.path.exists():
+                # _write_all yalnızca _read_all başarıyla döndükten sonra
+                # çağrılır; bu nedenle mevcut dosya son sağlam snapshot'tır.
+                backup_temp = (
+                    self.backup_path
+                    .with_name(
+                        self.backup_path.name
+                        + ".tmp"
+                    )
+                )
+                shutil.copy2(
+                    self.path,
+                    backup_temp,
+                )
+                os.replace(
+                    backup_temp,
+                    self.backup_path,
+                )
 
             temp_path = (
                 self.path
