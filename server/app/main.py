@@ -764,6 +764,115 @@ def health() -> dict:
     }
 
 
+@app.get("/web-test/data-health")
+def web_test_data_health() -> dict:
+    player_data = (
+        player_data_persistence_health()
+    )
+    telemetry = (
+        telemetry_persistence_health()
+    )
+
+    player_backup = dict(
+        player_data.get(
+            "backup",
+            {},
+        )
+    )
+    telemetry_backup = dict(
+        telemetry.get(
+            "backup",
+            {},
+        )
+    )
+
+    return {
+        "ready": bool(
+            player_data.get(
+                "ready"
+            )
+            and telemetry.get(
+                "ready"
+            )
+        ),
+        "player_data": {
+            "state":
+                player_data.get(
+                    "state"
+                ),
+            "ready":
+                bool(
+                    player_data.get(
+                        "ready"
+                    )
+                ),
+            "player_count":
+                int(
+                    player_data.get(
+                        "player_count",
+                        0,
+                    )
+                ),
+            "backup_available":
+                bool(
+                    player_backup.get(
+                        "available"
+                    )
+                ),
+            "backup_ready":
+                bool(
+                    player_backup.get(
+                        "ready"
+                    )
+                ),
+        },
+        "telemetry": {
+            "state":
+                telemetry.get(
+                    "state"
+                ),
+            "ready":
+                bool(
+                    telemetry.get(
+                        "ready"
+                    )
+                ),
+            "event_count":
+                int(
+                    telemetry.get(
+                        "event_count",
+                        0,
+                    )
+                ),
+            "retention_limit":
+                int(
+                    telemetry.get(
+                        "retention_limit",
+                        TELEMETRY_MAX_EVENTS,
+                    )
+                ),
+            "retention_active":
+                bool(
+                    telemetry.get(
+                        "retention_active"
+                    )
+                ),
+            "backup_available":
+                bool(
+                    telemetry_backup.get(
+                        "available"
+                    )
+                ),
+            "backup_ready":
+                bool(
+                    telemetry_backup.get(
+                        "ready"
+                    )
+                ),
+        },
+    }
+
+
 @app.get("/web-test/status")
 def web_test_status() -> dict:
     player_persistence = (
