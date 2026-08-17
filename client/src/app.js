@@ -42,7 +42,7 @@
   const COMPETITIVE_STATUS = "M7 Simülasyon aktif";
   const BALANCE_STATUS = "Eşit modül + counter doğrulandı";
   const AI_STATUS = "Adaptif AI + rekabetçi denge doğrulandı";
-  const PVP_STATUS = "Gerçek sunucu sağlık kapısı aktif";
+  const PVP_STATUS = "Güvenli oturum tanılama snapshot aktif";
 
   const PORT_COUNT_BY_NAME = {
     "Çekirdek":4,
@@ -411,7 +411,7 @@
 
   telemetryDispatcher.trackGameOpened({
     platform: "web",
-    build: "2.0.0-alpha.60",
+    build: "2.0.0-alpha.61",
   });
 
   const postMatchSync =
@@ -766,6 +766,58 @@
     }
 
     return result;
+  }
+
+  const diagnosticSnapshot =
+    new RelayDiagnosticSnapshot({
+      version:
+        "2.0.0-alpha.61",
+      build:
+        "web-test-alpha.61",
+      bootGate:
+        serverBootGate,
+      connectionManager:
+        pvpConnection,
+      matchmakingState,
+      pvpState,
+      recoveryState:
+        playRecoveryState,
+      telemetryTransport,
+      releaseCheckState,
+    });
+
+  const diagnosticButton =
+    document.getElementById(
+      "diagnostic-snapshot-button"
+    );
+  const diagnosticOutput =
+    document.getElementById(
+      "diagnostic-snapshot-output"
+    );
+
+  function renderDiagnosticSnapshot() {
+    if (!diagnosticOutput) {
+      return null;
+    }
+
+    const text =
+      diagnosticSnapshot
+        .toJson();
+
+    diagnosticOutput.value =
+      text;
+    diagnosticOutput.hidden =
+      false;
+
+    return text;
+  }
+
+  if (diagnosticButton) {
+    diagnosticButton
+      .addEventListener(
+        "click",
+        renderDiagnosticSnapshot
+      );
   }
 
   function connectPvP(url) {

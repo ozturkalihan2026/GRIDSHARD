@@ -416,3 +416,16 @@ button, input { font: inherit; }
   display: grid;
   gap: 0.55rem;
 }
+
+
+.diagnostic-panel {
+  border: 1px solid currentColor;
+  border-radius: 0.75rem;
+  padding: 0.8rem;
+}
+
+#diagnostic-snapshot-output {
+  width: 100%;
+  min-height: 9rem;
+  margin-top: 0.6rem;
+}

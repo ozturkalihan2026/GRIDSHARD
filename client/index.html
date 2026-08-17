@@ -11,7 +11,7 @@
     <header class="battle-header">
       <div>
         <h1>Project Relay 2.0</h1>
-        <p>2.0.0-alpha.60 — Sunucu Sağlık Kapısı</p>
+        <p>2.0.0-alpha.61 — Güvenli Tanılama Snapshot</p>
       </div>
       <div class="battle-status-cluster">
         <div class="credit-indicator" id="credit-indicator">Devre Kredisi: 200 DK</div>
@@ -77,6 +77,15 @@
         </label>
         <button id="settings-save" type="button">Ayarları Kaydet</button>
       </div>
+    </section>
+
+    <section class="diagnostic-panel" data-screen-panel="play" hidden>
+      <div class="panel-title-row">
+        <h2>Web Test Tanılama</h2>
+        <span>Yalnızca teknik durum; profil/savaş içeriği içermez</span>
+      </div>
+      <button id="diagnostic-snapshot-button" type="button">Tanılama Özeti Oluştur</button>
+      <textarea id="diagnostic-snapshot-output" readonly hidden aria-label="Tanılama özeti"></textarea>
     </section>
 
     <section id="play-recovery-panel" class="play-recovery-panel" data-screen-panel="play" hidden>

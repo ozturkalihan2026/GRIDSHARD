@@ -2765,6 +2765,110 @@
   }
 
 
+
+  class RelayDiagnosticSnapshot {
+    constructor({
+      version,
+      build,
+      bootGate,
+      connectionManager,
+      matchmakingState,
+      pvpState,
+      recoveryState,
+      telemetryTransport,
+      releaseCheckState,
+    }) {
+      this.version = version;
+      this.build = build;
+      this.bootGate = bootGate;
+      this.connectionManager =
+        connectionManager;
+      this.matchmakingState =
+        matchmakingState;
+      this.pvpState = pvpState;
+      this.recoveryState =
+        recoveryState;
+      this.telemetryTransport =
+        telemetryTransport;
+      this.releaseCheckState =
+        releaseCheckState;
+    }
+
+    buildSnapshot() {
+      const release =
+        this.releaseCheckState
+          ?.viewModel?.()
+        || null;
+      const recovery =
+        this.recoveryState
+          ?.viewModel?.()
+        || {};
+
+      return {
+        schema_version: 1,
+        version: this.version,
+        build: this.build,
+        server_boot_status:
+          this.bootGate?.status
+          || "unknown",
+        websocket_status:
+          this.connectionManager
+            ?.status
+          || "unknown",
+        matchmaking_status:
+          this.matchmakingState
+            ?.matched
+            ? "matched"
+            : (
+                this.matchmakingState
+                  ?.queued
+                  ? "queued"
+                  : "idle"
+              ),
+        session_id:
+          this.pvpState
+            ?.sessionId
+          || null,
+        pvp_phase:
+          this.pvpState
+            ?.phase
+          || "unknown",
+        recovery_kind:
+          recovery.kind
+          || "none",
+        recovery_active:
+          Boolean(
+            recovery.active
+          ),
+        telemetry_pending_count:
+          this.telemetryTransport
+            ?.pending?.size
+          || 0,
+        telemetry_status:
+          this.telemetryTransport
+            ?.status
+          || "unknown",
+        release_failed_checks:
+          release
+            ?.failedChecks
+          ? [
+              ...release
+                .failedChecks
+            ]
+          : [],
+      };
+    }
+
+    toJson() {
+      return JSON.stringify(
+        this.buildSnapshot(),
+        null,
+        2
+      );
+    }
+  }
+
+
   const api = {
     RelayBattleClient,
     RelayPvPClientState,
@@ -2786,6 +2890,7 @@
     RelayReleaseCheckState,
     RelayPlayRecoveryState,
     RelayServerBootGate,
+    RelayDiagnosticSnapshot,
     BattlePoolSelection,
     APP_SCREEN,
     WS_CONNECTION_STATUS,
@@ -2825,6 +2930,7 @@
   global.RelayReleaseCheckState = RelayReleaseCheckState;
   global.RelayPlayRecoveryState = RelayPlayRecoveryState;
   global.RelayServerBootGate = RelayServerBootGate;
+  global.RelayDiagnosticSnapshot = RelayDiagnosticSnapshot;
   global.RelayServerBootStatus = SERVER_BOOT_STATUS;
   global.RelayPlayRecoveryKind = PLAY_RECOVERY_KIND;
   global.RelayTelemetryTransportStatus = TELEMETRY_TRANSPORT_STATUS;
