@@ -17,7 +17,7 @@ from .player_profile import PlayerProfileService
 from .telemetry import InMemoryTelemetryService
 
 
-WEB_TEST_BUILD = "web-test-alpha.66"
+WEB_TEST_BUILD = "web-test-alpha.67"
 
 RELEASE_CHECK_STEPS = (
     "health",

@@ -2133,6 +2133,64 @@
       );
     }
 
+    async saveDisplayName(displayName) {
+      const normalized =
+        String(
+          displayName || ""
+        ).trim();
+
+      if (!normalized) {
+        return {
+          ok: false,
+          reason:
+            "Görünen oyuncu adı boş olamaz.",
+        };
+      }
+
+      this.status.profile =
+        REMOTE_DATA_STATUS.LOADING;
+      this.errors.profile = null;
+
+      try {
+        const payload =
+          await this.requestJson(
+            `/profile/${encodeURIComponent(this.playerId)}/display-name`,
+            {
+              method: "PUT",
+              body: JSON.stringify({
+                display_name:
+                  normalized,
+              }),
+            }
+          );
+
+        this.profileState
+          .applyProfile(
+            payload
+          );
+        this.status.profile =
+          REMOTE_DATA_STATUS.READY;
+
+        return {
+          ok: true,
+          payload,
+        };
+      } catch (error) {
+        this.status.profile =
+          REMOTE_DATA_STATUS.ERROR;
+        this.errors.profile =
+          error instanceof Error
+            ? error.message
+            : String(error);
+
+        return {
+          ok: false,
+          reason:
+            this.errors.profile,
+        };
+      }
+    }
+
     async saveSettings(patch) {
       this.status.settings =
         REMOTE_DATA_STATUS.LOADING;

@@ -429,3 +429,10 @@ button, input { font: inherit; }
   min-height: 9rem;
   margin-top: 0.6rem;
 }
+
+
+.profile-name-form {
+  display: grid;
+  gap: 0.45rem;
+  max-width: 24rem;
+}

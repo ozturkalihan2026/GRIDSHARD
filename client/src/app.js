@@ -42,7 +42,7 @@
   const COMPETITIVE_STATUS = "M7 Simülasyon aktif";
   const BALANCE_STATUS = "Eşit modül + counter doğrulandı";
   const AI_STATUS = "Adaptif AI + rekabetçi denge doğrulandı";
-  const PVP_STATUS = "Birleşik Oyna hazırlık kapısı aktif";
+  const PVP_STATUS = "Profil görünen adı sunucu düzenleme aktif";
 
   const PORT_COUNT_BY_NAME = {
     "Çekirdek":4,
@@ -431,7 +431,7 @@
         webTestBuildState,
       releaseCheckState,
       expectedVersion:
-        "2.0.0-alpha.66",
+        "2.0.0-alpha.67",
       expectedProtocolVersion: 1,
     });
   const playReadinessGate =
@@ -460,7 +460,7 @@
 
   telemetryDispatcher.trackGameOpened({
     platform: "web",
-    build: "2.0.0-alpha.66",
+    build: "2.0.0-alpha.67",
   });
 
   const postMatchSync =
@@ -820,9 +820,9 @@
   const diagnosticSnapshot =
     new RelayDiagnosticSnapshot({
       version:
-        "2.0.0-alpha.66",
+        "2.0.0-alpha.67",
       build:
-        "web-test-alpha.66",
+        "web-test-alpha.67",
       bootGate:
         serverBootGate,
       connectionManager:
@@ -1496,10 +1496,52 @@ const SPECIAL_CELL_INFO = {
     }
 
     el.textContent =
-      `Seviye ${view.level} · `
+      `${view.displayName} · `
+      + `Seviye ${view.level} · `
       + `${view.leagueNameTr} · `
       + `${view.rating} Derece Puanı · `
       + `${view.experience} XP`;
+
+    const nameInput =
+      document.getElementById(
+        "profile-display-name"
+      );
+    if (nameInput) {
+      nameInput.value =
+        view.displayName;
+    }
+  }
+
+  async function saveProfileDisplayName() {
+    const input =
+      document.getElementById(
+        "profile-display-name"
+      );
+    const status =
+      document.getElementById(
+        "profile-name-save-status"
+      );
+
+    const result =
+      await accountDataLoader
+        .saveDisplayName(
+          input?.value
+        );
+
+    if (status) {
+      status.textContent =
+        result.ok
+          ? "Görünen ad kaydedildi"
+          : (
+              result.reason
+              || "Görünen ad kaydedilemedi"
+            );
+    }
+
+    renderProfileSummary();
+    renderRemoteDataStatus();
+
+    return result;
   }
 
   function renderStatisticsSummary() {
@@ -2179,6 +2221,18 @@ const SPECIAL_CELL_INFO = {
         }
       }
     );
+  }
+
+  const profileNameSaveButton =
+    document.getElementById(
+      "profile-display-name-save"
+    );
+  if (profileNameSaveButton) {
+    profileNameSaveButton
+      .addEventListener(
+        "click",
+        saveProfileDisplayName
+      );
   }
 
   const settingsSaveButton =

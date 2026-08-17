@@ -1,7 +1,7 @@
 # Project Relay 2.0 — YOL HARİTASI
 
-**Güncel Sürüm:** `2.0.0-alpha.66`  
-**Paket:** Katılımcı Bootstrap Sağlık Kapısı ve Oyna Hazırlık Birleştirmesi  
+**Güncel Sürüm:** `2.0.0-alpha.67`  
+**Paket:** Profil Görünen Adı ve Test Kimliğinin Ayrıştırılmış Düzenleme Akışı  
 **Kanonik Dosya:** `docs/YOL_HARITASI.md`
 
 > Bu dosya Project Relay 2.0 için tek kanonik geliştirme kaydıdır. Her paket tamamlandığında sürüm numarası artırılır; **Tamamlananlar** ve **Yapılacaklar** bu dosyada güncellenir. Sonraki geliştirme paketi bu dosya okunarak başlatılır.
@@ -383,9 +383,9 @@ Aşağıdaki alanlar ilk sürüm kapsamına dahil değildir ve mevcut yol harita
 
 ## Sıradaki Paket
 
-**`2.0.0-alpha.67 — Profil Görünen Adı ve Test Kimliğinin Ayrıştırılmış Düzenleme Akışı`**
+**`2.0.0-alpha.68 — Web Test Katılımcı Oturum Sürekliliği ve Yeniden Açılış Kontrolü`**
 
-Katılımcı teknik kimliği ve sunucu hesabı hazır. Sıradaki paket Profil ekranında görünen oyuncu adının düzenlenmesini gerçek sunucu Profil endpoint'ine bağlayacak. Teknik `wt-...` kimliği değiştirilemeyecek ve matchmaking kimliği olarak kalacak; oyuncunun görünen adı yalnızca Profil/arayüz alanında kullanılacak.
+Teknik kimlik ile görünen ad ayrıldı. Sıradaki paket aynı tarayıcı yeniden açıldığında katılımcı kimliği, Profil görünen adı, rating/XP, İstatistikler ve Ayarlar verisinin bootstrap üzerinden aynı hesaptan geri geldiğini uçtan uca doğrulayacak. Bu paket yeni özellik eklemek yerine gerçek Web testinde oturum sürekliliğini release-check seviyesine taşıyacak.
 
 
 ---
