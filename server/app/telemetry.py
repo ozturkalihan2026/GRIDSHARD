@@ -22,6 +22,7 @@ TELEMETRY_EVENT_TYPES = frozenset({
     "module_shelf_used",
     "booster_used",
     "rematch_requested",
+    "web_test_session_started",
 })
 
 

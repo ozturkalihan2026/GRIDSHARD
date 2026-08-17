@@ -42,7 +42,7 @@
   const COMPETITIVE_STATUS = "M7 Simülasyon aktif";
   const BALANCE_STATUS = "Eşit modül + counter doğrulandı";
   const AI_STATUS = "Adaptif AI + rekabetçi denge doğrulandı";
-  const PVP_STATUS = "Tarayıcı operasyon readiness kapısı aktif";
+  const PVP_STATUS = "Web test oturum audit kaydı aktif";
 
   const PORT_COUNT_BY_NAME = {
     "Çekirdek":4,
@@ -450,7 +450,7 @@
         webTestBuildState,
       releaseCheckState,
       expectedVersion:
-        "2.0.0-alpha.80",
+        "2.0.0-alpha.81",
       expectedProtocolVersion: 1,
     });
   const playReadinessGate =
@@ -480,7 +480,7 @@
 
   telemetryDispatcher.trackGameOpened({
     platform: "web",
-    build: "2.0.0-alpha.80",
+    build: "2.0.0-alpha.81",
   });
 
   const postMatchSync =
@@ -807,8 +807,48 @@
         },
     });
 
+  async function recordWebTestSessionAudit(
+    startedAtMs
+  ) {
+    try {
+      const response =
+        await fetch(
+          "/web-test/audit/session-start",
+          {
+            method: "POST",
+            headers: {
+              "content-type":
+                "application/json",
+            },
+            body: JSON.stringify({
+              player_id:
+                participantPlayerId,
+              matchmaking_started_at_ms:
+                startedAtMs,
+            }),
+          }
+        );
+
+      return {
+        ok: response.ok,
+      };
+    } catch (_error) {
+      return {
+        ok: false,
+      };
+    }
+  }
+
   async function startRealOnlineMatch() {
+    const matchmakingStartedAtMs =
+      Date.now();
+
     trackMatchmakingStart();
+
+    // Audit operasyon içindir; başarısızlığı eşleştirmeyi durdurmaz.
+    recordWebTestSessionAudit(
+      matchmakingStartedAtMs
+    );
 
     const result =
       await onlinePlay.start({
@@ -840,9 +880,9 @@
   const diagnosticSnapshot =
     new RelayDiagnosticSnapshot({
       version:
-        "2.0.0-alpha.80",
+        "2.0.0-alpha.81",
       build:
-        "web-test-alpha.80",
+        "web-test-alpha.81",
       bootGate:
         serverBootGate,
       connectionManager:

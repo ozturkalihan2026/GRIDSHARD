@@ -228,6 +228,11 @@ class MatchmakingJoinRequest(BaseModel):
     player_id: str
 
 
+class WebTestSessionAuditRequest(BaseModel):
+    player_id: str
+    matchmaking_started_at_ms: int
+
+
 class TelemetryEventRequest(BaseModel):
     event_id: str
     event_type: str
@@ -243,6 +248,115 @@ class PlayerSettingsRequest(BaseModel):
     vibration_enabled: bool | None = None
     graphics_quality: str | None = None
     language: str | None = None
+
+
+@app.post("/web-test/audit/session-start")
+def record_web_test_session_start_audit(
+    request: WebTestSessionAuditRequest,
+) -> dict:
+    player_persistence = (
+        player_data_persistence_health()
+    )
+    telemetry_persistence = (
+        telemetry_persistence_health()
+    )
+
+    manifest = build_manifest(
+        version=VERSION,
+        telemetry_service=telemetry_service,
+        persistence_ready=bool(
+            player_persistence["ready"]
+        ),
+        telemetry_persistence_ready=bool(
+            telemetry_persistence["ready"]
+        ),
+    )
+
+    data_health = web_test_data_health()
+    rc_report = build_rc_report(
+        version=VERSION,
+        telemetry_service=telemetry_service,
+        persistence_ready=bool(
+            player_persistence["ready"]
+        ),
+        telemetry_persistence_ready=bool(
+            telemetry_persistence["ready"]
+        ),
+    )
+    operation = build_operation_readiness(
+        manifest=manifest,
+        data_health=data_health,
+        rc_report=rc_report,
+    )
+
+    event_id = (
+        "web-test-audit-"
+        + request.player_id
+        + "-"
+        + str(
+            request.matchmaking_started_at_ms
+        )
+    )
+
+    accepted = telemetry_service.record(
+        TelemetryEvent(
+            event_id=event_id,
+            event_type=
+                "web_test_session_started",
+            timestamp_ms=
+                request.matchmaking_started_at_ms,
+            player_id=
+                request.player_id,
+            metadata={
+                "build":
+                    manifest[
+                        "web_test_build"
+                    ],
+                "server_version":
+                    manifest[
+                        "server_version"
+                    ],
+                "pvp_protocol_version":
+                    manifest[
+                        "pvp_protocol_version"
+                    ],
+                "operation_ready":
+                    operation[
+                        "ready"
+                    ],
+                "release_ready":
+                    manifest[
+                        "release_ready"
+                    ],
+                "player_data_ready":
+                    data_health[
+                        "player_data"
+                    ][
+                        "ready"
+                    ],
+                "telemetry_ready":
+                    data_health[
+                        "telemetry"
+                    ][
+                        "ready"
+                    ],
+                "retention_limit":
+                    data_health[
+                        "telemetry"
+                    ][
+                        "retention_limit"
+                    ],
+            },
+        )
+    )
+
+    return {
+        "accepted": accepted,
+        "duplicate":
+            not accepted,
+        "audit_event_id":
+            event_id,
+    }
 
 
 @app.post("/telemetry/events")
