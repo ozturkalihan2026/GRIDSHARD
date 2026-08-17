@@ -3368,11 +3368,61 @@
 
 
 
+
+  class RelayLaunchReadinessState {
+    constructor() {
+      this.value = null;
+      this.status = "unknown";
+    }
+
+    apply(value) {
+      this.value = {
+        ...(value || {}),
+      };
+      this.status =
+        this.value.launch_ready
+          ? "ready"
+          : "blocked";
+
+      return this.viewModel();
+    }
+
+    isReady() {
+      return (
+        this.status === "ready"
+      );
+    }
+
+    viewModel() {
+      return {
+        status:this.status,
+        ready:this.isReady(),
+        failedChecks:
+          Array.isArray(
+            this.value?.failed_checks
+          )
+            ? [...this.value.failed_checks]
+            : [],
+        testRunId:
+          this.value?.test_run_id
+          || null,
+        insufficientSignalCount:
+          Number(
+            this.value
+              ?.behavior_insufficient_signal_count
+            || 0
+          ),
+      };
+    }
+  }
+
+
   class RelayPlayReadinessGate {
     constructor({
       serverBootGate,
       participantBootstrap,
       participantContinuity = null,
+      launchReadinessState = null,
     }) {
       this.serverBootGate =
         serverBootGate;
@@ -3380,6 +3430,8 @@
         participantBootstrap;
       this.participantContinuity =
         participantContinuity;
+      this.launchReadinessState =
+        launchReadinessState;
     }
 
     canPlay() {
@@ -3388,6 +3440,11 @@
         || this.participantContinuity
           .isVerified();
 
+      const launchReady =
+        !this.launchReadinessState
+        || this.launchReadinessState
+          .isReady();
+
       return Boolean(
         this.serverBootGate
           ?.canPlay?.()
@@ -3395,7 +3452,8 @@
         this.participantBootstrap
           ?.status
         === "ready"
-      ) && continuityReady;
+      ) && continuityReady
+        && launchReady;
     }
 
     blockers() {
@@ -3430,6 +3488,16 @@
         );
       }
 
+      if (
+        this.launchReadinessState
+        && !this.launchReadinessState
+          .isReady()
+      ) {
+        blockers.push(
+          "launch"
+        );
+      }
+
       return blockers;
     }
 
@@ -3456,6 +3524,12 @@
         )
       ) {
         return "Oyna: Katılımcı kimliği doğrulanıyor";
+      }
+
+      if (
+        blockers.includes("launch")
+      ) {
+        return "Oyna: Web test çıkış onayı bekleniyor";
       }
 
       if (
@@ -3725,6 +3799,7 @@
     RelayWebTestGoNoGoState,
     RelayTestRunConsistencyState,
     RelayRcCandidateState,
+    RelayLaunchReadinessState,
     RelayTestParticipantIdentity,
     RelayParticipantBootstrap,
     RelayPlayReadinessGate,
@@ -3775,6 +3850,7 @@
   global.RelayWebTestGoNoGoState = RelayWebTestGoNoGoState;
   global.RelayTestRunConsistencyState = RelayTestRunConsistencyState;
   global.RelayRcCandidateState = RelayRcCandidateState;
+  global.RelayLaunchReadinessState = RelayLaunchReadinessState;
   global.RelayTestParticipantIdentity = RelayTestParticipantIdentity;
   global.RelayParticipantBootstrap = RelayParticipantBootstrap;
   global.RelayPlayReadinessGate = RelayPlayReadinessGate;

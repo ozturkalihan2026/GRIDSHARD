@@ -1,7 +1,7 @@
 # Project Relay 2.0 — YOL HARİTASI
 
-**Güncel Sürüm:** `2.0.0-alpha.100`  
-**Paket:** Web Test Çıkış Kilidi ve Operasyon Onay Snapshot'ı  
+**Güncel Sürüm:** `2.0.0-alpha.101`  
+**Paket:** Tarayıcı Launch-Readiness Görünümü ve Oyna Öncesi Son Teknik Kontrol  
 **Kanonik Dosya:** `docs/YOL_HARITASI.md`
 
 > Bu dosya Project Relay 2.0 için tek kanonik geliştirme kaydıdır. Her paket tamamlandığında sürüm numarası artırılır; **Tamamlananlar** ve **Yapılacaklar** bu dosyada güncellenir. Sonraki geliştirme paketi bu dosya okunarak başlatılır.
@@ -383,9 +383,9 @@ Aşağıdaki alanlar ilk sürüm kapsamına dahil değildir ve mevcut yol harita
 
 ## Sıradaki Paket
 
-**`2.0.0-alpha.101 — Tarayıcı Launch-Readiness Görünümü ve Oyna Öncesi Son Teknik Kontrol`**
+**`2.0.0-alpha.102 — Web Test Launch Attempt Audit ve Çıkış Kapısı İzlenebilirliği`**
 
-Sunucu çıkış kilidi hazır. Sıradaki paket tarayıcıya `launch-readiness` görünümünü ekleyecek. Oyna butonu mevcut boot/participant gate'e ek olarak launch snapshot hazır değilse açılmayacak. Profil, İstatistikler ve Ayarlar erişilebilir kalacak; davranış KPI yetersizliği launch'ı bloke etmeyecek.
+Tarayıcı artık launch-readiness hazır olmadan Oyna'yı açmıyor. Sıradaki paket gerçek Oyna giriş denemesinde minimal `web_test_launch_attempted` audit kaydı tutacak: test_run_id, launch_ready ve teknik failed_checks özeti. Oyuncu Profil bilgisi veya gameplay içeriği audit'e eklenmeyecek; audit hatası Oyna akışını durdurmayacak.
 
 
 ---

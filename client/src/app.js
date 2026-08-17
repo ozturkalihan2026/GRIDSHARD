@@ -42,7 +42,7 @@
   const COMPETITIVE_STATUS = "M7 Simülasyon aktif";
   const BALANCE_STATUS = "Eşit modül + counter doğrulandı";
   const AI_STATUS = "Adaptif AI + rekabetçi denge doğrulandı";
-  const PVP_STATUS = "Web test çıkış kilidi hazır";
+  const PVP_STATUS = "Tarayıcı launch-readiness kapısı aktif";
 
   const PORT_COUNT_BY_NAME = {
     "Çekirdek":4,
@@ -444,6 +444,9 @@
   const rcCandidateState =
     new RelayRcCandidateState();
 
+  const launchReadinessState =
+    new RelayLaunchReadinessState();
+
   const playRecoveryState =
     new RelayPlayRecoveryState();
 
@@ -459,7 +462,7 @@
         webTestBuildState,
       releaseCheckState,
       expectedVersion:
-        "2.0.0-alpha.100",
+        "2.0.0-alpha.101",
       expectedProtocolVersion: 1,
     });
   const playReadinessGate =
@@ -467,6 +470,7 @@
       serverBootGate,
       participantBootstrap,
       participantContinuity,
+      launchReadinessState,
     });
 
 
@@ -489,7 +493,7 @@
 
   telemetryDispatcher.trackGameOpened({
     platform: "web",
-    build: "2.0.0-alpha.100",
+    build: "2.0.0-alpha.101",
   });
 
   const postMatchSync =
@@ -1049,9 +1053,9 @@
   const diagnosticSnapshot =
     new RelayDiagnosticSnapshot({
       version:
-        "2.0.0-alpha.100",
+        "2.0.0-alpha.101",
       build:
-        "web-test-alpha.100",
+        "web-test-alpha.101",
       bootGate:
         serverBootGate,
       connectionManager:
@@ -1304,6 +1308,82 @@
     }
   }
 
+  async function loadLaunchReadiness() {
+    const el =
+      document.getElementById(
+        "launch-readiness-status"
+      );
+
+    try {
+      const response =
+        await fetch(
+          "/web-test/launch-readiness"
+        );
+
+      if (!response.ok) {
+        throw new Error(
+          "Web test çıkış onayı alınamadı."
+        );
+      }
+
+      const view =
+        launchReadinessState.apply(
+          await response.json()
+        );
+
+      if (el) {
+        el.textContent =
+          view.ready
+            ? `Çıkış Onayı: Hazır · ${view.testRunId || "-"}`
+            : (
+                "Çıkış Onayı: Hazır Değil"
+                + (
+                    view.failedChecks.length
+                      ? ` · ${view.failedChecks.join(", ")}`
+                      : ""
+                  )
+              );
+        el.dataset.ready =
+          String(
+            view.ready
+          );
+      }
+
+      renderParticipantBootstrapStatus();
+      renderServerBootStatus();
+
+      return {
+        ok:view.ready,
+        view,
+      };
+    } catch (error) {
+      launchReadinessState.apply({
+        launch_ready:false,
+        failed_checks:[
+          "launch_request",
+        ],
+      });
+
+      if (el) {
+        el.textContent =
+          "Çıkış Onayı: Durum alınamadı";
+        el.dataset.ready =
+          "false";
+      }
+
+      renderParticipantBootstrapStatus();
+      renderServerBootStatus();
+
+      return {
+        ok:false,
+        reason:
+          error instanceof Error
+            ? error.message
+            : String(error),
+      };
+    }
+  }
+
   async function loadRcCandidateStatus() {
     const el =
       document.getElementById(
@@ -1444,11 +1524,24 @@
     loadGoNoGoStatus();
     loadRcCandidateStatus();
 
+    const launch =
+      result.ok
+        ? await loadLaunchReadiness()
+        : {
+            ok:false,
+          };
+
     if (!result.ok) {
       showPlayError(
         "websocket",
         result.reason
         || "Sunucu Web test release-check hazır değil."
+      );
+    } else if (!launch.ok) {
+      showPlayError(
+        "websocket",
+        launch.reason
+        || "Web test çıkış onayı hazır değil."
       );
     } else if (
       playRecoveryState.kind
@@ -1457,7 +1550,16 @@
       clearPlayError();
     }
 
-    return result;
+    renderParticipantBootstrapStatus();
+    renderServerBootStatus();
+
+    return {
+      ...result,
+      launchReady:
+        Boolean(
+          launch.ok
+        ),
+    };
   }
 
   if (serverBootRetry) {
