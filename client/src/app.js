@@ -42,7 +42,7 @@
   const COMPETITIVE_STATUS = "M7 Simülasyon aktif";
   const BALANCE_STATUS = "Eşit modül + counter doğrulandı";
   const AI_STATUS = "Adaptif AI + rekabetçi denge doğrulandı";
-  const PVP_STATUS = "Gerçek Web test run-start kilidi hazır";
+  const PVP_STATUS = "Gerçek Web test aktif durum göstergesi hazır";
 
   const PORT_COUNT_BY_NAME = {
     "Çekirdek":4,
@@ -487,6 +487,9 @@
   const preflightState =
     new RelayPreflightState();
 
+  const webTestRunStatusState =
+    new RelayWebTestRunStatusState();
+
   const playRecoveryState =
     new RelayPlayRecoveryState();
 
@@ -502,7 +505,7 @@
         webTestBuildState,
       releaseCheckState,
       expectedVersion:
-        "2.0.0-alpha.112",
+        "2.0.0-alpha.113",
       expectedProtocolVersion: 1,
     });
   const playReadinessGate =
@@ -533,7 +536,7 @@
 
   telemetryDispatcher.trackGameOpened({
     platform: "web",
-    build: "2.0.0-alpha.112",
+    build: "2.0.0-alpha.113",
   });
 
   const postMatchSync =
@@ -1093,9 +1096,9 @@
   const diagnosticSnapshot =
     new RelayDiagnosticSnapshot({
       version:
-        "2.0.0-alpha.112",
+        "2.0.0-alpha.113",
       build:
-        "web-test-alpha.112",
+        "web-test-alpha.113",
       bootGate:
         serverBootGate,
       connectionManager:
@@ -1345,6 +1348,69 @@
     if (serverBootRetry) {
       serverBootRetry.hidden =
         serverBootGate.canPlay();
+    }
+  }
+
+  async function loadWebTestRunStatus() {
+    const el =
+      document.getElementById(
+        "web-test-run-status"
+      );
+
+    try {
+      const response =
+        await fetch(
+          "/web-test/test-run/status"
+        );
+
+      if (!response.ok) {
+        throw new Error(
+          "Web test run durumu alınamadı."
+        );
+      }
+
+      const view =
+        webTestRunStatusState.apply(
+          await response.json()
+        );
+
+      if (el) {
+        el.textContent =
+          `Gerçek Test: ${
+            view.started
+              ? "Başlatıldı"
+              : "Başlatılmadı"
+          }`
+          + (
+              view.testRunId
+                ? ` · ${view.testRunId}`
+                : ""
+            );
+        el.dataset.started =
+          String(
+            view.started
+          );
+      }
+
+      return {
+        ok:true,
+        view,
+      };
+    } catch (error) {
+      if (el) {
+        el.textContent =
+          "Gerçek Test: Durum alınamadı";
+        el.dataset.started =
+          "false";
+      }
+
+      return {
+        ok:false,
+        reason:
+          error instanceof Error
+            ? error.message
+            : String(error),
+      };
     }
   }
 
@@ -1693,6 +1759,7 @@
     loadRcCandidateStatus();
     loadFirstRunChecklist();
     loadPreflightStatus();
+    loadWebTestRunStatus();
 
     const launch =
       result.ok

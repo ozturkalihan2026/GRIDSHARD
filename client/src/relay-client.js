@@ -3870,6 +3870,41 @@
   }
 
 
+
+  class RelayWebTestRunStatusState {
+    constructor() {
+      this.value = null;
+    }
+
+    apply(value) {
+      if (!value) {
+        throw new Error(
+          "Web test run durumu gerekli."
+        );
+      }
+
+      this.value={...value};
+      return this.viewModel();
+    }
+
+    viewModel() {
+      if (!this.value) return null;
+
+      return {
+        started:Boolean(
+          this.value.started
+        ),
+        testRunId:
+          this.value.test_run_id
+          || null,
+        build:
+          this.value.build
+          || null,
+      };
+    }
+  }
+
+
   const api = {
     RelayBattleClient,
     RelayPvPClientState,
@@ -3899,6 +3934,7 @@
     RelayLaunchReadinessState,
     RelayFirstRunChecklistState,
     RelayPreflightState,
+    RelayWebTestRunStatusState,
     RelayTestParticipantIdentity,
     RelayParticipantBootstrap,
     RelayPlayReadinessGate,
@@ -3952,6 +3988,7 @@
   global.RelayLaunchReadinessState = RelayLaunchReadinessState;
   global.RelayFirstRunChecklistState = RelayFirstRunChecklistState;
   global.RelayPreflightState = RelayPreflightState;
+  global.RelayWebTestRunStatusState = RelayWebTestRunStatusState;
   global.RelayTestParticipantIdentity = RelayTestParticipantIdentity;
   global.RelayParticipantBootstrap = RelayParticipantBootstrap;
   global.RelayPlayReadinessGate = RelayPlayReadinessGate;
