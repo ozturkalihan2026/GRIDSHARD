@@ -42,7 +42,7 @@
   const COMPETITIVE_STATUS = "M7 Simülasyon aktif";
   const BALANCE_STATUS = "Eşit modül + counter doğrulandı";
   const AI_STATUS = "Adaptif AI + rekabetçi denge doğrulandı";
-  const PVP_STATUS = "Operasyon stabilite sinyali hazır";
+  const PVP_STATUS = "Operasyon stabilite tarayıcı görünümü aktif";
 
   const PORT_COUNT_BY_NAME = {
     "Çekirdek":4,
@@ -493,6 +493,9 @@
   const operationStatusState =
     new RelayOperationStatusState();
 
+  const operationStabilityState =
+    new RelayOperationStabilityState();
+
   const playRecoveryState =
     new RelayPlayRecoveryState();
 
@@ -508,7 +511,7 @@
         webTestBuildState,
       releaseCheckState,
       expectedVersion:
-        "2.0.0-alpha.123",
+        "2.0.0-alpha.124",
       expectedProtocolVersion: 1,
     });
   const playReadinessGate =
@@ -539,7 +542,7 @@
 
   telemetryDispatcher.trackGameOpened({
     platform: "web",
-    build: "2.0.0-alpha.123",
+    build: "2.0.0-alpha.124",
   });
 
   const postMatchSync =
@@ -1099,9 +1102,9 @@
   const diagnosticSnapshot =
     new RelayDiagnosticSnapshot({
       version:
-        "2.0.0-alpha.123",
+        "2.0.0-alpha.124",
       build:
-        "web-test-alpha.123",
+        "web-test-alpha.124",
       bootGate:
         serverBootGate,
       connectionManager:
@@ -1351,6 +1354,70 @@
     if (serverBootRetry) {
       serverBootRetry.hidden =
         serverBootGate.canPlay();
+    }
+  }
+
+  async function loadOperationStability() {
+    const el =
+      document.getElementById(
+        "operation-stability-status"
+      );
+
+    try {
+      const response =
+        await fetch(
+          "/web-test/operation-stability"
+        );
+
+      if (!response.ok) {
+        throw new Error(
+          "Operasyon stabilitesi alınamadı."
+        );
+      }
+
+      const view =
+        operationStabilityState.apply(
+          await response.json()
+        );
+
+      const labels = {
+        not_running:
+          "Test Çalışmıyor",
+        stable:
+          "Stabil",
+        degraded:
+          "Bozulmuş",
+      };
+
+      if (el) {
+        el.textContent =
+          `Stabilite: ${
+            labels[view.stability]
+            || view.stability
+          }`;
+        el.dataset.stability =
+          view.stability;
+      }
+
+      return {
+        ok:true,
+        view,
+      };
+    } catch (error) {
+      if (el) {
+        el.textContent =
+          "Stabilite: Alınamadı";
+        el.dataset.stability =
+          "unknown";
+      }
+
+      return {
+        ok:false,
+        reason:
+          error instanceof Error
+            ? error.message
+            : String(error),
+      };
     }
   }
 
@@ -1828,6 +1895,7 @@
     loadPreflightStatus();
     loadWebTestRunStatus();
     loadOperationStatus();
+    loadOperationStability();
 
     const launch =
       result.ok

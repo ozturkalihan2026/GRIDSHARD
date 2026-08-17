@@ -3940,6 +3940,44 @@
   }
 
 
+
+  class RelayOperationStabilityState {
+    constructor() {
+      this.value = null;
+    }
+
+    apply(value) {
+      if (!value) {
+        throw new Error(
+          "Operasyon stabilite özeti gerekli."
+        );
+      }
+      this.value={...value};
+      return this.viewModel();
+    }
+
+    viewModel() {
+      if (!this.value) return null;
+
+      return {
+        stability:
+          this.value.stability
+          || "not_running",
+        runningRate:
+          Number(
+            this.value.operation_running_rate
+            || 0
+          ),
+        regressions:
+          Number(
+            this.value.running_to_other_regressions
+            || 0
+          ),
+      };
+    }
+  }
+
+
   const api = {
     RelayBattleClient,
     RelayPvPClientState,
@@ -3971,6 +4009,7 @@
     RelayPreflightState,
     RelayWebTestRunStatusState,
     RelayOperationStatusState,
+    RelayOperationStabilityState,
     RelayTestParticipantIdentity,
     RelayParticipantBootstrap,
     RelayPlayReadinessGate,
@@ -4026,6 +4065,7 @@
   global.RelayPreflightState = RelayPreflightState;
   global.RelayWebTestRunStatusState = RelayWebTestRunStatusState;
   global.RelayOperationStatusState = RelayOperationStatusState;
+  global.RelayOperationStabilityState = RelayOperationStabilityState;
   global.RelayTestParticipantIdentity = RelayTestParticipantIdentity;
   global.RelayParticipantBootstrap = RelayParticipantBootstrap;
   global.RelayPlayReadinessGate = RelayPlayReadinessGate;
