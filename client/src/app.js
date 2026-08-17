@@ -42,7 +42,7 @@
   const COMPETITIVE_STATUS = "M7 Simülasyon aktif";
   const BALANCE_STATUS = "Eşit modül + counter doğrulandı";
   const AI_STATUS = "Adaptif AI + rekabetçi denge doğrulandı";
-  const PVP_STATUS = "İlk koşu operasyon checklist hazır";
+  const PVP_STATUS = "Checklist tarayıcı teknik görünümü aktif";
 
   const PORT_COUNT_BY_NAME = {
     "Çekirdek":4,
@@ -481,6 +481,9 @@
   const launchReadinessState =
     new RelayLaunchReadinessState();
 
+  const firstRunChecklistState =
+    new RelayFirstRunChecklistState();
+
   const playRecoveryState =
     new RelayPlayRecoveryState();
 
@@ -496,7 +499,7 @@
         webTestBuildState,
       releaseCheckState,
       expectedVersion:
-        "2.0.0-alpha.104",
+        "2.0.0-alpha.105",
       expectedProtocolVersion: 1,
     });
   const playReadinessGate =
@@ -527,7 +530,7 @@
 
   telemetryDispatcher.trackGameOpened({
     platform: "web",
-    build: "2.0.0-alpha.104",
+    build: "2.0.0-alpha.105",
   });
 
   const postMatchSync =
@@ -1087,9 +1090,9 @@
   const diagnosticSnapshot =
     new RelayDiagnosticSnapshot({
       version:
-        "2.0.0-alpha.104",
+        "2.0.0-alpha.105",
       build:
-        "web-test-alpha.104",
+        "web-test-alpha.105",
       bootGate:
         serverBootGate,
       connectionManager:
@@ -1342,6 +1345,70 @@
     }
   }
 
+  async function loadFirstRunChecklist() {
+    const el =
+      document.getElementById(
+        "first-run-checklist-status"
+      );
+
+    try {
+      const response =
+        await fetch(
+          "/web-test/first-run-checklist"
+        );
+
+      if (!response.ok) {
+        throw new Error(
+          "İlk koşu checklist alınamadı."
+        );
+      }
+
+      const view =
+        firstRunChecklistState.apply(
+          await response.json()
+        );
+
+      if (el) {
+        el.textContent =
+          `İlk Koşu: ${
+            view.ready
+              ? "Hazır"
+              : "Hazır Değil"
+          }`
+          + (
+              view.failedChecks.length
+                ? ` · ${view.failedChecks.join(", ")}`
+                : ""
+            )
+          + (
+              view.noteCount
+                ? ` · ${view.noteCount} operasyon notu`
+                : ""
+            );
+        el.dataset.ready =
+          String(view.ready);
+      }
+
+      return {
+        ok:true,
+        view,
+      };
+    } catch (error) {
+      if (el) {
+        el.textContent =
+          "İlk Koşu: Checklist alınamadı";
+        el.dataset.ready="false";
+      }
+      return {
+        ok:false,
+        reason:
+          error instanceof Error
+            ? error.message
+            : String(error),
+      };
+    }
+  }
+
   async function loadLaunchReadiness() {
     const el =
       document.getElementById(
@@ -1557,6 +1624,7 @@
     renderServerBootStatus();
     loadGoNoGoStatus();
     loadRcCandidateStatus();
+    loadFirstRunChecklist();
 
     const launch =
       result.ok

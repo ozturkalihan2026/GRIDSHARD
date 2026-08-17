@@ -3786,6 +3786,49 @@
   }
 
 
+
+  class RelayFirstRunChecklistState {
+    constructor() {
+      this.value = null;
+    }
+
+    apply(value) {
+      if (!value) {
+        throw new Error(
+          "İlk koşu checklist özeti gerekli."
+        );
+      }
+      this.value={...value};
+      return this.viewModel();
+    }
+
+    viewModel() {
+      if (!this.value) return null;
+
+      return {
+        ready:Boolean(
+          this.value.ready
+        ),
+        failedChecks:
+          Array.isArray(
+            this.value.failed_checks
+          )
+            ? [...this.value.failed_checks]
+            : [],
+        noteCount:
+          Array.isArray(
+            this.value.notes
+          )
+            ? this.value.notes.length
+            : 0,
+        testRunId:
+          this.value.test_run_id
+          || null,
+      };
+    }
+  }
+
+
   const api = {
     RelayBattleClient,
     RelayPvPClientState,
@@ -3813,6 +3856,7 @@
     RelayTestRunConsistencyState,
     RelayRcCandidateState,
     RelayLaunchReadinessState,
+    RelayFirstRunChecklistState,
     RelayTestParticipantIdentity,
     RelayParticipantBootstrap,
     RelayPlayReadinessGate,
@@ -3864,6 +3908,7 @@
   global.RelayTestRunConsistencyState = RelayTestRunConsistencyState;
   global.RelayRcCandidateState = RelayRcCandidateState;
   global.RelayLaunchReadinessState = RelayLaunchReadinessState;
+  global.RelayFirstRunChecklistState = RelayFirstRunChecklistState;
   global.RelayTestParticipantIdentity = RelayTestParticipantIdentity;
   global.RelayParticipantBootstrap = RelayParticipantBootstrap;
   global.RelayPlayReadinessGate = RelayPlayReadinessGate;

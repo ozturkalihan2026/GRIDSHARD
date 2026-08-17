@@ -9,9 +9,9 @@ def test_launch_readiness_endpoint():
         "/web-test/launch-readiness"
     ).json()
 
-    assert body["version"]=="2.0.0-alpha.104"
-    assert body["build"]=="web-test-alpha.104"
-    assert body["test_run_id"]=="web-test-alpha.104"
+    assert body["version"]=="2.0.0-alpha.105"
+    assert body["build"]=="web-test-alpha.105"
+    assert body["test_run_id"]=="web-test-alpha.105"
     assert "launch_ready" in body
     assert "checks" in body
     assert "failed_checks" in body
