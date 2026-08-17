@@ -1,7 +1,7 @@
 # Project Relay 2.0 — YOL HARİTASI
 
-**Güncel Sürüm:** `2.0.0-alpha.76`  
-**Paket:** Kontrollü Telemetri Kurtarma Endpoint'i ve KPI Yeniden Yükleme  
+**Güncel Sürüm:** `2.0.0-alpha.77`  
+**Paket:** Telemetri Dosya Boyutu Sınırı ve Güvenli Retention Politikası  
 **Kanonik Dosya:** `docs/YOL_HARITASI.md`
 
 > Bu dosya Project Relay 2.0 için tek kanonik geliştirme kaydıdır. Her paket tamamlandığında sürüm numarası artırılır; **Tamamlananlar** ve **Yapılacaklar** bu dosyada güncellenir. Sonraki geliştirme paketi bu dosya okunarak başlatılır.
@@ -383,9 +383,9 @@ Aşağıdaki alanlar ilk sürüm kapsamına dahil değildir ve mevcut yol harita
 
 ## Sıradaki Paket
 
-**`2.0.0-alpha.77 — Telemetri Dosya Boyutu Sınırı ve Güvenli Retention Politikası`**
+**`2.0.0-alpha.78 — Web Test Veri Durumu Operasyon Özeti ve Tek Health Snapshot`**
 
-Kalıcı telemetri restore zinciri hazır. Uzun Web testlerinde telemetri JSON'unun sınırsız büyümemesi için sıradaki paket maksimum olay sayısı temelli retention katmanı ekleyecek. En yeni olaylar korunacak, event-id deduplication geçerli pencere içinde devam edecek ve retention bilgisi health/RC raporunda görülebilecek. Varsayılan limit test ortamı için yüksek tutulacak.
+Oyuncu persistence ve telemetri persistence zincirleri ayrı ayrı sağlamlaştırıldı. Sıradaki paket operasyon açısından tek bir Web test data-health snapshot üretecek: oyuncu veri dosyası, oyuncu yedeği, telemetri dosyası, telemetri yedeği, retention durumu ve toplam event/oyuncu sayıları tek salt-okunur endpoint'te birleştirilecek. Normal istemciye yönetici işlemi eklenmeyecek.
 
 
 ---

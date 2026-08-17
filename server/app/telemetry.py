@@ -64,8 +64,17 @@ class JsonFileTelemetryRepository:
     def __init__(
         self,
         path: str | Path,
+        *,
+        max_events: int = 50000,
     ):
         self.path = Path(path)
+        if max_events < 1:
+            raise TelemetryError(
+                "Telemetri retention limiti en az 1 olmalıdır."
+            )
+        self.max_events = int(
+            max_events
+        )
 
     @property
     def backup_path(self) -> Path:
@@ -167,6 +176,12 @@ class JsonFileTelemetryRepository:
         self,
         events: list[TelemetryEvent],
     ) -> None:
+        retained = list(
+            events[
+                -self.max_events:
+            ]
+        )
+
         try:
             self.path.parent.mkdir(
                 parents=True,
@@ -204,7 +219,7 @@ class JsonFileTelemetryRepository:
                     [
                         event.to_dict()
                         for event
-                        in events
+                        in retained
                     ],
                     ensure_ascii=False,
                     indent=2,
@@ -324,6 +339,10 @@ class JsonFileTelemetryRepository:
                         self.path
                     ),
                     "event_count": 0,
+                    "retention_limit":
+                        self.max_events,
+                    "retention_active":
+                        False,
                     "error": str(exc),
                     "backup": backup,
                 }
@@ -337,6 +356,11 @@ class JsonFileTelemetryRepository:
                 "event_count": len(
                     events
                 ),
+                "retention_limit":
+                    self.max_events,
+                "retention_active":
+                    len(events)
+                    >= self.max_events,
                 "error": None,
                 "backup": backup,
             }
@@ -370,6 +394,10 @@ class JsonFileTelemetryRepository:
                 self.path
             ),
             "event_count": 0,
+            "retention_limit":
+                self.max_events,
+            "retention_active":
+                False,
             "error":
                 (
                     None
@@ -397,6 +425,26 @@ class InMemoryTelemetryService:
             if repository is not None
             else []
         )
+        max_events = (
+            repository.max_events
+            if repository is not None
+            and hasattr(
+                repository,
+                "max_events",
+            )
+            else None
+        )
+        if (
+            max_events is not None
+            and len(self._events)
+            > max_events
+        ):
+            self._events = (
+                self._events[
+                    -max_events:
+                ]
+            )
+
         self._event_ids: set[str] = {
             event.event_id
             for event in self._events
@@ -418,6 +466,25 @@ class InMemoryTelemetryService:
         )
         self._events.append(stored)
         self._event_ids.add(stored.event_id)
+
+        if (
+            self.repository is not None
+            and hasattr(
+                self.repository,
+                "max_events",
+            )
+            and len(self._events)
+            > self.repository.max_events
+        ):
+            self._events = (
+                self._events[
+                    -self.repository.max_events:
+                ]
+            )
+            self._event_ids = {
+                item.event_id
+                for item in self._events
+            }
 
         if self.repository is not None:
             self.repository.save(
@@ -596,6 +663,23 @@ class InMemoryTelemetryService:
         self._events = list(
             events
         )
+
+        if (
+            hasattr(
+                self.repository,
+                "max_events",
+            )
+            and len(self._events)
+            > self.repository.max_events
+        ):
+            self._events = (
+                self._events[
+                    -self.repository.max_events:
+                ]
+            )
+            self.repository.save(
+                self._events
+            )
         self._event_ids = {
             event.event_id
             for event in self._events

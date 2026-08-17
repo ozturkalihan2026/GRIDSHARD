@@ -92,9 +92,17 @@ TELEMETRY_PATH = Path(
         str(DEFAULT_TELEMETRY_PATH),
     )
 )
+TELEMETRY_MAX_EVENTS = int(
+    os.environ.get(
+        "RELAY_TELEMETRY_MAX_EVENTS",
+        "50000",
+    )
+)
 telemetry_repository = (
     JsonFileTelemetryRepository(
-        TELEMETRY_PATH
+        TELEMETRY_PATH,
+        max_events=
+            TELEMETRY_MAX_EVENTS,
     )
 )
 telemetry_service = InMemoryTelemetryService(
