@@ -1,7 +1,7 @@
 # Project Relay 2.0 — YOL HARİTASI
 
-**Güncel Sürüm:** `2.0.0-alpha.124`  
-**Paket:** Operasyon Stabilite Sinyalinin Tarayıcı Teknik Görünümüne Eklenmesi  
+**Güncel Sürüm:** `2.0.0-alpha.125`  
+**Paket:** Operasyon Stabilite Snapshot Audit Kaydı  
 **Kanonik Dosya:** `docs/YOL_HARITASI.md`
 
 > Bu dosya Project Relay 2.0 için tek kanonik geliştirme kaydıdır. Her paket tamamlandığında sürüm numarası artırılır; **Tamamlananlar** ve **Yapılacaklar** bu dosyada güncellenir. Sonraki geliştirme paketi bu dosya okunarak başlatılır.
@@ -383,9 +383,9 @@ Aşağıdaki alanlar ilk sürüm kapsamına dahil değildir ve mevcut yol harita
 
 ## Sıradaki Paket
 
-**`2.0.0-alpha.125 — Operasyon Stabilite Snapshot Audit Kaydı`**
+**`2.0.0-alpha.126 — Stabilite Snapshot KPI ve Stable Snapshot Oranı`**
 
-Stabilite sinyali tarayıcıda görünür. Sıradaki paket aktif test koşusunun stabilite snapshot'ını minimal audit kaydı olarak tutacak: test_run_id, stability, operation_running_rate ve running_to_other_regressions. Oyuncu veya gameplay içeriği kaydedilmeyecek.
+Stabilite snapshot audit hazır. Sıradaki paket toplam stabilite snapshot sayısını, `stable` snapshot sayısını ve `stability_stable_rate` metriğini agregat olarak hesaplayacak. Bu gözlemsel operasyon metriği launch kararını değiştirmeyecek.
 
 
 ---

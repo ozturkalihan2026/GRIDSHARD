@@ -3,8 +3,8 @@ from app.web_test_preflight import build_preflight_report
 
 def test_preflight_ready_requires_all_technical_snapshots():
     result=build_preflight_report(
-        version="2.0.0-alpha.124",
-        build="web-test-alpha.124",
+        version="2.0.0-alpha.125",
+        build="web-test-alpha.125",
         test_run_id="run",
         checklist={
             "ready":True,

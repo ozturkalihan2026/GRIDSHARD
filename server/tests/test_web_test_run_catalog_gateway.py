@@ -11,11 +11,11 @@ def test_run_catalog_endpoint():
         "/web-test/test-runs"
     ).json()
 
-    assert body["active_test_run_id"]=="web-test-alpha.124"
+    assert body["active_test_run_id"]=="web-test-alpha.125"
     assert body["run_count"]>=1
     assert any(
         item["active"]
         and item["test_run_id"]
-        == "web-test-alpha.124"
+        == "web-test-alpha.125"
         for item in body["runs"]
     )

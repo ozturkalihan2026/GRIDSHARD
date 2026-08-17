@@ -30,6 +30,7 @@ TELEMETRY_EVENT_TYPES = frozenset({
     "web_test_preflight_snapshot",
     "web_test_run_started",
     "web_test_operation_snapshot",
+    "web_test_stability_snapshot",
 })
 
 

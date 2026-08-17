@@ -4,20 +4,21 @@ from app.main import app, telemetry_service
 client=TestClient(app)
 
 
-def test_operation_snapshot_audit_is_minimal():
+def test_stability_snapshot_audit_is_minimal():
     telemetry_service.clear()
 
     response=client.post(
-        "/web-test/audit/operation-snapshot"
+        "/web-test/audit/stability-snapshot"
     )
 
     assert response.status_code==200
-    body=response.json()
-    assert body["test_run_id"]=="web-test-alpha.125"
+    assert response.json()[
+        "test_run_id"
+    ]=="web-test-alpha.125"
 
     events=telemetry_service.events(
         event_type=
-            "web_test_operation_snapshot",
+            "web_test_stability_snapshot",
     )
 
     assert len(events)==1
@@ -25,17 +26,16 @@ def test_operation_snapshot_audit_is_minimal():
 
     assert set(metadata.keys())=={
         "test_run_id",
-        "operational_state",
-        "preflight_ready",
-        "run_started",
-        "consistency_status",
+        "stability",
+        "operation_running_rate",
+        "running_to_other_regressions",
     }
 
     for forbidden in (
         "player_id",
         "profile",
-        "battle_pool",
         "modules",
+        "battle_pool",
         "settings",
     ):
         assert forbidden not in metadata
