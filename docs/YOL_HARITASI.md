@@ -1,7 +1,7 @@
 # Project Relay 2.0 — YOL HARİTASI
 
-**Güncel Sürüm:** `2.0.0-alpha.128`  
-**Paket:** Gerçek Web Testi Operasyon İzleme Özeti: Durum + Stabilite + Huni  
+**Güncel Sürüm:** `2.0.0-alpha.132`  
+**Paket:** Gerçek Web Testine Hazır Tek Sunucu Paketi  
 **Kanonik Dosya:** `docs/YOL_HARITASI.md`
 
 > Bu dosya Project Relay 2.0 için tek kanonik geliştirme kaydıdır. Her paket tamamlandığında sürüm numarası artırılır; **Tamamlananlar** ve **Yapılacaklar** bu dosyada güncellenir. Sonraki geliştirme paketi bu dosya okunarak başlatılır.
@@ -383,9 +383,9 @@ Aşağıdaki alanlar ilk sürüm kapsamına dahil değildir ve mevcut yol harita
 
 ## Sıradaki Paket
 
-**`2.0.0-alpha.129 — Operasyon İzleme Özetinin Tarayıcı Teknik Görünümüne Eklenmesi`**
+**Gerçek Kullanıcı Web Testi — Uygulamalı Test Koşusu**
 
-Birleşik operasyon izleme sözleşmesi sunucuda hazır. Sıradaki paket mevcut teknik durum alanında aktif testin operation state, stabilite ve audit huni tamamlanma oranını tek kompakt satırda gösterecek. Bu görünüm oyuncu ekranına yeni menü eklemeyecek ve Oyna kararını değiştirmeyecek.
+Kod tarafındaki ilk Web test hazırlığı tamamlandı. Bundan sonraki adım yeni geliştirme paketi değil; `BASLAT_WEB_TEST.bat` ile sunucuyu açıp tarayıcıdan gerçek kullanıcı testini yürütmek, test_run_id altında oluşan launch/audit/operation/stability verilerini gözlemlemek ve gerçek kullanım bulgularına göre sonraki geliştirme paketini belirlemektir.
 
 
 ---
@@ -453,6 +453,6 @@ Birleşik operasyon izleme sözleşmesi sunucuda hazır. Sıradaki paket mevcut 
 - [x] Ayarlar
 - [ ] Eğitim — **ilk Web test kapsamı dışında, bilinçli olarak ertelendi.**
 - [x] Telemetri
-- [x] Web test sürümü — **smoke-test ve sağlık sözleşmesi hazır; gerçek kullanıcı testi sonraki paketlerde yürütülecek.**
+- [x] Web test sürümü — **tek sunucu yerel çalıştırma, preflight, otomatik test-run başlatma ve gerçek kullanıcı testi operasyon izlemesi hazır.**
 
 ---

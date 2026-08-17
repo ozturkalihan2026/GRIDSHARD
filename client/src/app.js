@@ -42,7 +42,7 @@
   const COMPETITIVE_STATUS = "M7 Simülasyon aktif";
   const BALANCE_STATUS = "Eşit modül + counter doğrulandı";
   const AI_STATUS = "Adaptif AI + rekabetçi denge doğrulandı";
-  const PVP_STATUS = "Gerçek Web test operasyon izleme özeti hazır";
+  const PVP_STATUS = "Gerçek Web test yerel çalışma paketi hazır";
 
   const PORT_COUNT_BY_NAME = {
     "Çekirdek":4,
@@ -496,6 +496,9 @@
   const operationStabilityState =
     new RelayOperationStabilityState();
 
+  const monitoringState =
+    new RelayMonitoringState();
+
   const playRecoveryState =
     new RelayPlayRecoveryState();
 
@@ -511,7 +514,7 @@
         webTestBuildState,
       releaseCheckState,
       expectedVersion:
-        "2.0.0-alpha.128",
+        "2.0.0-alpha.132",
       expectedProtocolVersion: 1,
     });
   const playReadinessGate =
@@ -542,7 +545,7 @@
 
   telemetryDispatcher.trackGameOpened({
     platform: "web",
-    build: "2.0.0-alpha.128",
+    build: "2.0.0-alpha.132",
   });
 
   const postMatchSync =
@@ -1102,9 +1105,9 @@
   const diagnosticSnapshot =
     new RelayDiagnosticSnapshot({
       version:
-        "2.0.0-alpha.128",
+        "2.0.0-alpha.132",
       build:
-        "web-test-alpha.128",
+        "web-test-alpha.132",
       bootGate:
         serverBootGate,
       connectionManager:
@@ -1354,6 +1357,80 @@
     if (serverBootRetry) {
       serverBootRetry.hidden =
         serverBootGate.canPlay();
+    }
+  }
+
+  async function loadMonitoringSummary() {
+    const el =
+      document.getElementById(
+        "monitoring-summary-status"
+      );
+
+    try {
+      const response =
+        await fetch(
+          "/web-test/monitoring"
+        );
+
+      if (!response.ok) {
+        throw new Error(
+          "Operasyon izleme özeti alınamadı."
+        );
+      }
+
+      const view =
+        monitoringState.apply(
+          await response.json()
+        );
+
+      const operationLabels = {
+        not_ready:"Hazır Değil",
+        ready_not_started:
+          "Hazır, Başlatılmadı",
+        running:"Test Çalışıyor",
+      };
+      const stabilityLabels = {
+        not_running:"Çalışmıyor",
+        stable:"Stabil",
+        degraded:"Bozulmuş",
+      };
+
+      if (el) {
+        el.textContent =
+          `İzleme: ${
+            operationLabels[
+              view.operationState
+            ] || view.operationState
+          } · ${
+            stabilityLabels[
+              view.stabilityState
+            ] || view.stabilityState
+          } · Tamamlama %${
+            view.auditFinishRatePercent
+          }`;
+        el.dataset.state =
+          view.operationState;
+      }
+
+      return {
+        ok:true,
+        view,
+      };
+    } catch (error) {
+      if (el) {
+        el.textContent =
+          "İzleme: Alınamadı";
+        el.dataset.state =
+          "unknown";
+      }
+
+      return {
+        ok:false,
+        reason:
+          error instanceof Error
+            ? error.message
+            : String(error),
+      };
     }
   }
 
@@ -1877,6 +1954,87 @@
     }
   }
 
+  async function ensureWebTestRunStarted(
+    testRunId
+  ) {
+    if (!testRunId) {
+      return {
+        ok:false,
+        reason:
+          "Aktif test koşusu kimliği bulunamadı.",
+      };
+    }
+
+    const status =
+      await loadWebTestRunStatus();
+
+    if (
+      status.ok
+      && status.view
+        ?.started
+    ) {
+      return {
+        ok:true,
+        alreadyStarted:true,
+      };
+    }
+
+    try {
+      const response =
+        await fetch(
+          "/web-test/test-run/start",
+          {
+            method:"POST",
+            headers:{
+              "content-type":
+                "application/json",
+            },
+            body:JSON.stringify({
+              test_run_id:
+                testRunId,
+            }),
+          }
+        );
+
+      if (!response.ok) {
+        let detail =
+          "Gerçek Web test koşusu başlatılamadı.";
+
+        try {
+          const payload =
+            await response.json();
+          detail =
+            payload?.detail
+            || detail;
+        } catch (_error) {
+          // Yanıt gövdesi zorunlu değil.
+        }
+
+        throw new Error(
+          detail
+        );
+      }
+
+      await loadWebTestRunStatus();
+      await loadOperationStatus();
+      await loadOperationStability();
+      await loadMonitoringSummary();
+
+      return {
+        ok:true,
+        alreadyStarted:false,
+      };
+    } catch (error) {
+      return {
+        ok:false,
+        reason:
+          error instanceof Error
+            ? error.message
+            : String(error),
+      };
+    }
+  }
+
   async function checkServerReadiness() {
     renderServerBootStatus();
 
@@ -1889,13 +2047,17 @@
       await pending;
 
     renderServerBootStatus();
+
     loadGoNoGoStatus();
     loadRcCandidateStatus();
     loadFirstRunChecklist();
-    loadPreflightStatus();
-    loadWebTestRunStatus();
-    loadOperationStatus();
-    loadOperationStability();
+
+    const preflight =
+      result.ok
+        ? await loadPreflightStatus()
+        : {
+            ok:false,
+          };
 
     const launch =
       result.ok
@@ -1903,6 +2065,28 @@
         : {
             ok:false,
           };
+
+    let runStart = {
+      ok:false,
+    };
+
+    if (
+      result.ok
+      && launch.ok
+      && preflight.ok
+      && preflight.view
+        ?.ready
+    ) {
+      runStart =
+        await ensureWebTestRunStarted(
+          preflight.view.testRunId
+        );
+    }
+
+    await loadWebTestRunStatus();
+    await loadOperationStatus();
+    await loadOperationStability();
+    await loadMonitoringSummary();
 
     if (!result.ok) {
       showPlayError(
@@ -1915,6 +2099,17 @@
         "websocket",
         launch.reason
         || "Web test çıkış onayı hazır değil."
+      );
+    } else if (
+      preflight.ok
+      && preflight.view
+        ?.ready
+      && !runStart.ok
+    ) {
+      showPlayError(
+        "websocket",
+        runStart.reason
+        || "Gerçek Web test koşusu başlatılamadı."
       );
     } else if (
       playRecoveryState.kind
@@ -1931,6 +2126,15 @@
       launchReady:
         Boolean(
           launch.ok
+        ),
+      preflightReady:
+        Boolean(
+          preflight.view
+            ?.ready
+        ),
+      runStarted:
+        Boolean(
+          runStart.ok
         ),
     };
   }

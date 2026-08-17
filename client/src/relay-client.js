@@ -3978,6 +3978,55 @@
   }
 
 
+
+  class RelayMonitoringState {
+    constructor() {
+      this.value = null;
+    }
+
+    apply(value) {
+      if (!value) {
+        throw new Error(
+          "Operasyon izleme özeti gerekli."
+        );
+      }
+
+      this.value={...value};
+      return this.viewModel();
+    }
+
+    viewModel() {
+      if (!this.value) return null;
+
+      const finishRate =
+        Number(
+          this.value.funnel
+            ?.audit_to_finish_rate
+          || 0
+        );
+
+      return {
+        operationState:
+          this.value.operation
+            ?.state
+          || "not_ready",
+        stabilityState:
+          this.value.stability
+            ?.state
+          || "not_running",
+        auditFinishRatePercent:
+          Math.round(
+            finishRate
+            * 10000
+          ) / 100,
+        testRunId:
+          this.value.test_run_id
+          || null,
+      };
+    }
+  }
+
+
   const api = {
     RelayBattleClient,
     RelayPvPClientState,
@@ -4010,6 +4059,7 @@
     RelayWebTestRunStatusState,
     RelayOperationStatusState,
     RelayOperationStabilityState,
+    RelayMonitoringState,
     RelayTestParticipantIdentity,
     RelayParticipantBootstrap,
     RelayPlayReadinessGate,
@@ -4066,6 +4116,7 @@
   global.RelayWebTestRunStatusState = RelayWebTestRunStatusState;
   global.RelayOperationStatusState = RelayOperationStatusState;
   global.RelayOperationStabilityState = RelayOperationStabilityState;
+  global.RelayMonitoringState = RelayMonitoringState;
   global.RelayTestParticipantIdentity = RelayTestParticipantIdentity;
   global.RelayParticipantBootstrap = RelayParticipantBootstrap;
   global.RelayPlayReadinessGate = RelayPlayReadinessGate;
