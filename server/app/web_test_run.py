@@ -24,6 +24,33 @@ def build_test_run_summary(
         )
     ]
 
+    preflight_snapshot_events = [
+        event
+        for event in events
+        if event["event_type"]
+        == "web_test_preflight_snapshot"
+    ]
+    preflight_snapshots = len(
+        preflight_snapshot_events
+    )
+    preflight_ready_snapshots = sum(
+        1
+        for event
+        in preflight_snapshot_events
+        if event.get(
+            "metadata",
+            {},
+        ).get(
+            "preflight_ready"
+        )
+    )
+    preflight_ready_rate = (
+        preflight_ready_snapshots
+        / preflight_snapshots
+        if preflight_snapshots
+        else 0.0
+    )
+
     checklist_snapshot_events = [
         event
         for event in events
@@ -206,6 +233,14 @@ def build_test_run_summary(
         "test_run_id": test_run_id,
         "lifecycle_state":
             lifecycle_state,
+        "preflight_snapshots":
+            preflight_snapshots,
+        "preflight_ready_snapshots":
+            preflight_ready_snapshots,
+        "preflight_ready_rate": round(
+            preflight_ready_rate,
+            6,
+        ),
         "checklist_snapshots":
             checklist_snapshots,
         "checklist_ready_snapshots":
