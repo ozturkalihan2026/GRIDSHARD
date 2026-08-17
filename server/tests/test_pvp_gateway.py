@@ -56,7 +56,7 @@ def test_health_exposes_version():
 
     assert response.status_code == 200
     assert response.json()["status"] == "ok"
-    assert response.json()["version"] == "2.0.0-alpha.63"
+    assert response.json()["version"] == "2.0.0-alpha.64"
 
 
 def test_create_join_and_start_session():

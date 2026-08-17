@@ -42,7 +42,7 @@
   const COMPETITIVE_STATUS = "M7 Simülasyon aktif";
   const BALANCE_STATUS = "Eşit modül + counter doğrulandı";
   const AI_STATUS = "Adaptif AI + rekabetçi denge doğrulandı";
-  const PVP_STATUS = "Web Test RC birleşik rapor altyapısı aktif";
+  const PVP_STATUS = "Kalıcı Web test katılımcı kimliği aktif";
 
   const PORT_COUNT_BY_NAME = {
     "Çekirdek":4,
@@ -141,8 +141,13 @@
     },
   });
 
+  const participantIdentity =
+    new RelayTestParticipantIdentity();
+  const participantPlayerId =
+    participantIdentity.getOrCreate();
+
   const pvpState = new RelayPvPClientState({
-    playerId: "local-player",
+    playerId: participantPlayerId,
     sessionId: "local-preview",
     battleClient: client,
   });
@@ -150,7 +155,7 @@
 
   const profileState = new RelayProfileClientState();
   profileState.applyProfile({
-    player_id: "local-player",
+    player_id: participantPlayerId,
     display_name: "Oyuncu",
     level: 1,
     experience: 0,
@@ -165,7 +170,7 @@
   const statisticsState =
     new RelayStatisticsClientState();
   statisticsState.applyStatistics({
-    player_id: "local-player",
+    player_id: participantPlayerId,
     total_matches: 0,
     wins: 0,
     losses: 0,
@@ -181,7 +186,7 @@
   const settingsState =
     new RelaySettingsClientState();
   settingsState.applySettings({
-    player_id: "local-player",
+    player_id: participantPlayerId,
     sound_volume: 100,
     music_volume: 70,
     vibration_enabled: true,
@@ -384,19 +389,18 @@
   const releaseCheckState =
     new RelayReleaseCheckState();
 
+  const webTestBuildState =
+    new RelayWebTestBuildState();
+
   const serverBootGate =
     new RelayServerBootGate({
       healthState:
         webTestBuildState,
       releaseCheckState,
       expectedVersion:
-        "2.0.0-alpha.63",
+        "2.0.0-alpha.64",
       expectedProtocolVersion: 1,
     });
-
-
-  const webTestBuildState =
-    new RelayWebTestBuildState();
 
 
   const telemetryTransport =
@@ -407,7 +411,7 @@
 
   const telemetryDispatcher =
     new RelayTelemetryDispatcher({
-      playerId: "local-player",
+      playerId: participantPlayerId,
       sessionId: pvpState.sessionId,
       transport:
         (event) =>
@@ -417,7 +421,7 @@
 
   telemetryDispatcher.trackGameOpened({
     platform: "web",
-    build: "2.0.0-alpha.63",
+    build: "2.0.0-alpha.64",
   });
 
   const postMatchSync =
@@ -777,9 +781,9 @@
   const diagnosticSnapshot =
     new RelayDiagnosticSnapshot({
       version:
-        "2.0.0-alpha.63",
+        "2.0.0-alpha.64",
       build:
-        "web-test-alpha.63",
+        "web-test-alpha.64",
       bootGate:
         serverBootGate,
       connectionManager:
@@ -1352,6 +1356,30 @@ const SPECIAL_CELL_INFO = {
     resultEl.hidden = false;
     resultEl.textContent =
       `${outcome} · ${ratingText} · ${xpText}`;
+  }
+
+  function renderParticipantIdentity() {
+    const el =
+      document.getElementById(
+        "participant-id-summary"
+      );
+    if (!el) {
+      return;
+    }
+
+    const shortId =
+      participantPlayerId.length > 18
+        ? (
+            participantPlayerId
+              .slice(0, 10)
+            + "…"
+            + participantPlayerId
+              .slice(-6)
+          )
+        : participantPlayerId;
+
+    el.textContent =
+      `Web Test Kimliği: ${shortId}`;
   }
 
   function renderProfileSummary() {
@@ -2135,6 +2163,7 @@ const SPECIAL_CELL_INFO = {
   );
 
   renderBattlePoolSelection();
+  renderParticipantIdentity();
   renderBoosterOptions();
   createBoard();
   render();

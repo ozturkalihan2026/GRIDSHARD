@@ -402,61 +402,61 @@ function createClient() {
   const fs=require("fs");
   const src=fs.readFileSync("./src/app.js","utf8");
   assert.ok(src.includes("PVP_STATUS"));
-  assert.ok(src.includes("Web Test RC birleşik rapor altyapısı aktif"));
+  assert.ok(src.includes("Kalıcı Web test katılımcı kimliği aktif"));
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync("./src/app.js","utf8");
-  assert.ok(src.includes("Web Test RC birleşik rapor altyapısı aktif")); // alpha32->33 protocol status
+  assert.ok(src.includes("Kalıcı Web test katılımcı kimliği aktif")); // alpha32->33 protocol status
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync("./src/app.js","utf8");
-  assert.ok(src.includes("Web Test RC birleşik rapor altyapısı aktif")); // alpha33 protocol
+  assert.ok(src.includes("Kalıcı Web test katılımcı kimliği aktif")); // alpha33 protocol
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync("./src/app.js","utf8");
-  assert.ok(src.includes("Web Test RC birleşik rapor altyapısı aktif")); // alpha34 websocket
+  assert.ok(src.includes("Kalıcı Web test katılımcı kimliği aktif")); // alpha34 websocket
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync("./src/app.js","utf8");
-  assert.ok(src.includes("Web Test RC birleşik rapor altyapısı aktif")); // alpha35 gateway
+  assert.ok(src.includes("Kalıcı Web test katılımcı kimliği aktif")); // alpha35 gateway
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync("./src/app.js","utf8");
-  assert.ok(src.includes("Web Test RC birleşik rapor altyapısı aktif")); // alpha36 setup
+  assert.ok(src.includes("Kalıcı Web test katılımcı kimliği aktif")); // alpha36 setup
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync("./src/app.js","utf8");
-  assert.ok(src.includes("Web Test RC birleşik rapor altyapısı aktif")); // alpha37 lobby
+  assert.ok(src.includes("Kalıcı Web test katılımcı kimliği aktif")); // alpha37 lobby
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync("./src/app.js","utf8");
-  assert.ok(src.includes("Web Test RC birleşik rapor altyapısı aktif")); // alpha38 runner
+  assert.ok(src.includes("Kalıcı Web test katılımcı kimliği aktif")); // alpha38 runner
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync("./src/app.js","utf8");
-  assert.ok(src.includes("Web Test RC birleşik rapor altyapısı aktif")); // alpha39 heartbeat
+  assert.ok(src.includes("Kalıcı Web test katılımcı kimliği aktif")); // alpha39 heartbeat
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync("./src/app.js","utf8");
-  assert.ok(src.includes("Web Test RC birleşik rapor altyapısı aktif")); // alpha40 online pvp
+  assert.ok(src.includes("Kalıcı Web test katılımcı kimliği aktif")); // alpha40 online pvp
 }
 
 {
@@ -682,7 +682,7 @@ function createClient() {
 {
   const fs=require("fs");
   const src=fs.readFileSync("./src/app.js","utf8");
-  assert.ok(src.includes("Web Test RC birleşik rapor altyapısı aktif"));
+  assert.ok(src.includes("Kalıcı Web test katılımcı kimliği aktif"));
   assert.ok(src.includes("buildPvPCommandEnvelope"));
   assert.ok(src.includes("applyPvPServerEnvelope"));
 }
@@ -1504,10 +1504,10 @@ function createClient() {
 
   const result=state.applyHealth({
     status:"ok",
-    version:"2.0.0-alpha.63",
+    version:"2.0.0-alpha.64",
     web_test:{
       ready:true,
-      build:"web-test-alpha.63",
+      build:"web-test-alpha.64",
       release_checks:[
         "health",
         "matchmaking",
@@ -1551,7 +1551,7 @@ function createClient() {
 
   const result=state.applyHealth({
     status:"ok",
-    version:"2.0.0-alpha.63",
+    version:"2.0.0-alpha.64",
   });
 
   assert.strictEqual(
@@ -2322,7 +2322,7 @@ function createClient() {
   const html=fs.readFileSync("./index.html","utf8");
   assert.ok(
     html.includes(
-      "2.0.0-alpha.63"
+      "2.0.0-alpha.64"
     )
   );
   assert.ok(
@@ -2504,8 +2504,8 @@ function createClient() {
     new RelayReleaseCheckState();
 
   const view=state.apply({
-    version:"2.0.0-alpha.63",
-    build:"web-test-alpha.63",
+    version:"2.0.0-alpha.64",
+    build:"web-test-alpha.64",
     ready:true,
     checks:{
       health_ready:true,
@@ -2645,17 +2645,17 @@ function createClient() {
       healthState:health,
       releaseCheckState:release,
       expectedVersion:
-        "2.0.0-alpha.63",
+        "2.0.0-alpha.64",
       expectedProtocolVersion:1,
       requestJson:
         async (path) => {
           if (path==="/health") {
             return {
               status:"ok",
-              version:"2.0.0-alpha.63",
+              version:"2.0.0-alpha.64",
               web_test:{
                 ready:true,
-                build:"web-test-alpha.63",
+                build:"web-test-alpha.64",
                 release_checks:[],
                 capabilities:{},
               },
@@ -2666,8 +2666,8 @@ function createClient() {
             === "/web-test/release-check"
           ) {
             return {
-              version:"2.0.0-alpha.63",
-              build:"web-test-alpha.63",
+              version:"2.0.0-alpha.64",
+              build:"web-test-alpha.64",
               ready:true,
               checks:{
                 health_ready:true,
@@ -2682,7 +2682,7 @@ function createClient() {
 
           return {
             server_version:
-              "2.0.0-alpha.63",
+              "2.0.0-alpha.64",
             web_test_build:
               "web-test-alpha.62",
             pvp_protocol_version:1,
@@ -2735,8 +2735,8 @@ function createClient() {
 
   const snapshot=
     new RelayDiagnosticSnapshot({
-      version:"2.0.0-alpha.63",
-      build:"web-test-alpha.63",
+      version:"2.0.0-alpha.64",
+      build:"web-test-alpha.64",
       bootGate:{status:"ready"},
       connectionManager:{
         status:"open",
@@ -2820,16 +2820,16 @@ function createClient() {
       releaseCheckState:
         new RelayReleaseCheckState(),
       expectedVersion:
-        "2.0.0-alpha.63",
+        "2.0.0-alpha.64",
       expectedProtocolVersion:1,
       requestJson:
         async (path) => {
           if (path==="/health") {
             return {
-              version:"2.0.0-alpha.63",
+              version:"2.0.0-alpha.64",
               web_test:{
                 ready:true,
-                build:"web-test-alpha.63",
+                build:"web-test-alpha.64",
                 release_checks:[],
                 capabilities:{},
               },
@@ -2840,8 +2840,8 @@ function createClient() {
             === "/web-test/release-check"
           ) {
             return {
-              version:"2.0.0-alpha.63",
-              build:"web-test-alpha.63",
+              version:"2.0.0-alpha.64",
+              build:"web-test-alpha.64",
               ready:true,
               checks:{ok:true},
               menu_areas:[],
@@ -2887,8 +2887,8 @@ function createClient() {
     new RelayWebTestRcReportState();
 
   const view=state.apply({
-    version:"2.0.0-alpha.63",
-    build:"web-test-alpha.63",
+    version:"2.0.0-alpha.64",
+    build:"web-test-alpha.64",
     ready:true,
     critical_failures:[],
     kpis:{
@@ -2916,8 +2916,132 @@ function createClient() {
   );
 }
 
+{
+  const {
+    RelayTestParticipantIdentity,
+  } = require("../src/relay-client.js");
+
+  const values=new Map();
+  const storage={
+    getItem(key) {
+      return values.has(key)
+        ? values.get(key)
+        : null;
+    },
+    setItem(key,value) {
+      values.set(key,value);
+    },
+    removeItem(key) {
+      values.delete(key);
+    },
+  };
+
+  const first=
+    new RelayTestParticipantIdentity({
+      storage,
+      idFactory:
+        () => "ABCDEF-123456",
+    });
+  const firstId=
+    first.getOrCreate();
+
+  const reopened=
+    new RelayTestParticipantIdentity({
+      storage,
+      idFactory:
+        () => "OTHER-999999",
+    });
+
+  assert.strictEqual(
+    firstId,
+    "wt-abcdef-123456"
+  );
+  assert.strictEqual(
+    reopened.getOrCreate(),
+    firstId
+  );
+
+  first.reset();
+
+  const resetIdentity=
+    new RelayTestParticipantIdentity({
+      storage,
+      idFactory:
+        () => "NEW-654321",
+    });
+
+  assert.strictEqual(
+    resetIdentity.getOrCreate(),
+    "wt-new-654321"
+  );
+}
+
+{
+  const {
+    RelayTestParticipantIdentity,
+  } = require("../src/relay-client.js");
+
+  const a=
+    new RelayTestParticipantIdentity({
+      storage:{
+        getItem:() => null,
+        setItem() {},
+      },
+      idFactory:
+        () => "browser-a-123456",
+    });
+  const b=
+    new RelayTestParticipantIdentity({
+      storage:{
+        getItem:() => null,
+        setItem() {},
+      },
+      idFactory:
+        () => "browser-b-123456",
+    });
+
+  assert.notStrictEqual(
+    a.getOrCreate(),
+    b.getOrCreate()
+  );
+}
+
+{
+  const fs=require("fs");
+  const app=fs.readFileSync("./src/app.js","utf8");
+  const html=fs.readFileSync("./index.html","utf8");
+
+  assert.ok(
+    app.includes(
+      "RelayTestParticipantIdentity"
+    )
+  );
+  assert.ok(
+    app.includes(
+      "participantPlayerId"
+    )
+  );
+  assert.strictEqual(
+    app.includes(
+      'playerId: "local-player"'
+    ),
+    false
+  );
+  assert.strictEqual(
+    app.includes(
+      'player_id: "local-player"'
+    ),
+    false
+  );
+  assert.ok(
+    html.includes(
+      'id="participant-id-summary"'
+    )
+  );
+}
+
 Promise.all(asyncTests).then(() => {
-  console.log("105 client tests passed");
+  console.log("108 client tests passed");
 }).catch((error) => {
   console.error(error);
   process.exitCode = 1;

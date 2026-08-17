@@ -2982,6 +2982,159 @@
   }
 
 
+
+  class RelayTestParticipantIdentity {
+    constructor({
+      storage = null,
+      storageKey =
+        "project-relay.web-test.participant-id",
+      idFactory = null,
+    } = {}) {
+      this.storage =
+        storage
+        || (
+          typeof localStorage
+          !== "undefined"
+            ? localStorage
+            : null
+        );
+      this.storageKey =
+        storageKey;
+      this.idFactory =
+        idFactory
+        || (() => {
+          if (
+            typeof crypto
+            !== "undefined"
+            && typeof crypto.randomUUID
+            === "function"
+          ) {
+            return crypto.randomUUID();
+          }
+
+          return (
+            `${Date.now().toString(36)}-`
+            + `${Math.random()
+              .toString(36)
+              .slice(2, 12)}`
+          );
+        });
+      this.playerId = null;
+    }
+
+    getOrCreate() {
+      if (this.playerId) {
+        return this.playerId;
+      }
+
+      const stored =
+        this._readStored();
+      if (
+        this._isValid(stored)
+      ) {
+        this.playerId = stored;
+        return stored;
+      }
+
+      const rawId =
+        String(
+          this.idFactory()
+        )
+          .trim()
+          .toLowerCase();
+
+      const playerId =
+        `wt-${rawId}`
+          .replace(
+            /[^a-z0-9_-]/g,
+            "-"
+          )
+          .replace(
+            /-+/g,
+            "-"
+          )
+          .slice(0, 72);
+
+      if (!this._isValid(playerId)) {
+        throw new Error(
+          "Web test katılımcı kimliği üretilemedi."
+        );
+      }
+
+      this.playerId =
+        playerId;
+      this._writeStored(
+        playerId
+      );
+
+      return playerId;
+    }
+
+    reset() {
+      this.playerId = null;
+
+      if (
+        this.storage
+        && typeof this.storage
+          .removeItem
+          === "function"
+      ) {
+        this.storage.removeItem(
+          this.storageKey
+        );
+      }
+    }
+
+    _readStored() {
+      if (
+        !this.storage
+        || typeof this.storage
+          .getItem
+          !== "function"
+      ) {
+        return null;
+      }
+
+      try {
+        return this.storage
+          .getItem(
+            this.storageKey
+          );
+      } catch (_error) {
+        return null;
+      }
+    }
+
+    _writeStored(playerId) {
+      if (
+        !this.storage
+        || typeof this.storage
+          .setItem
+          !== "function"
+      ) {
+        return;
+      }
+
+      try {
+        this.storage.setItem(
+          this.storageKey,
+          playerId
+        );
+      } catch (_error) {
+        // Kimlik bellekte kullanılmaya devam eder.
+      }
+    }
+
+    _isValid(value) {
+      return (
+        typeof value === "string"
+        && /^wt-[a-z0-9_-]{6,69}$/
+          .test(value)
+      );
+    }
+  }
+
+
   const api = {
     RelayBattleClient,
     RelayPvPClientState,
@@ -3005,6 +3158,7 @@
     RelayServerBootGate,
     RelayDiagnosticSnapshot,
     RelayWebTestRcReportState,
+    RelayTestParticipantIdentity,
     BattlePoolSelection,
     APP_SCREEN,
     WS_CONNECTION_STATUS,
@@ -3046,6 +3200,7 @@
   global.RelayServerBootGate = RelayServerBootGate;
   global.RelayDiagnosticSnapshot = RelayDiagnosticSnapshot;
   global.RelayWebTestRcReportState = RelayWebTestRcReportState;
+  global.RelayTestParticipantIdentity = RelayTestParticipantIdentity;
   global.RelayServerBootStatus = SERVER_BOOT_STATUS;
   global.RelayPlayRecoveryKind = PLAY_RECOVERY_KIND;
   global.RelayTelemetryTransportStatus = TELEMETRY_TRANSPORT_STATUS;
