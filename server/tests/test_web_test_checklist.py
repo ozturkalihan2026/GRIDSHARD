@@ -3,8 +3,8 @@ from app.web_test_checklist import build_first_run_checklist
 
 def test_checklist_ready_when_all_technical_checks_pass():
     result=build_first_run_checklist(
-        version="2.0.0-alpha.117",
-        build="web-test-alpha.117",
+        version="2.0.0-alpha.118",
+        build="web-test-alpha.118",
         test_run_id="run-a",
         launch_readiness={
             "launch_ready":True,

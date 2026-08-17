@@ -42,7 +42,7 @@
   const COMPETITIVE_STATUS = "M7 Simülasyon aktif";
   const BALANCE_STATUS = "Eşit modül + counter doğrulandı";
   const AI_STATUS = "Adaptif AI + rekabetçi denge doğrulandı";
-  const PVP_STATUS = "Gerçek Web test operasyon durum özeti hazır";
+  const PVP_STATUS = "Operasyon durum tarayıcı görünümü aktif";
 
   const PORT_COUNT_BY_NAME = {
     "Çekirdek":4,
@@ -490,6 +490,9 @@
   const webTestRunStatusState =
     new RelayWebTestRunStatusState();
 
+  const operationStatusState =
+    new RelayOperationStatusState();
+
   const playRecoveryState =
     new RelayPlayRecoveryState();
 
@@ -505,7 +508,7 @@
         webTestBuildState,
       releaseCheckState,
       expectedVersion:
-        "2.0.0-alpha.117",
+        "2.0.0-alpha.118",
       expectedProtocolVersion: 1,
     });
   const playReadinessGate =
@@ -536,7 +539,7 @@
 
   telemetryDispatcher.trackGameOpened({
     platform: "web",
-    build: "2.0.0-alpha.117",
+    build: "2.0.0-alpha.118",
   });
 
   const postMatchSync =
@@ -1096,9 +1099,9 @@
   const diagnosticSnapshot =
     new RelayDiagnosticSnapshot({
       version:
-        "2.0.0-alpha.117",
+        "2.0.0-alpha.118",
       build:
-        "web-test-alpha.117",
+        "web-test-alpha.118",
       bootGate:
         serverBootGate,
       connectionManager:
@@ -1348,6 +1351,70 @@
     if (serverBootRetry) {
       serverBootRetry.hidden =
         serverBootGate.canPlay();
+    }
+  }
+
+  async function loadOperationStatus() {
+    const el =
+      document.getElementById(
+        "operation-status"
+      );
+
+    try {
+      const response =
+        await fetch(
+          "/web-test/operation-status"
+        );
+
+      if (!response.ok) {
+        throw new Error(
+          "Operasyon durumu alınamadı."
+        );
+      }
+
+      const view =
+        operationStatusState.apply(
+          await response.json()
+        );
+
+      const labels = {
+        not_ready:
+          "Hazır Değil",
+        ready_not_started:
+          "Hazır, Başlatılmadı",
+        running:
+          "Test Çalışıyor",
+      };
+
+      if (el) {
+        el.textContent =
+          `Operasyon Durumu: ${
+            labels[view.state]
+            || view.state
+          }`;
+        el.dataset.state =
+          view.state;
+      }
+
+      return {
+        ok:true,
+        view,
+      };
+    } catch (error) {
+      if (el) {
+        el.textContent =
+          "Operasyon Durumu: Alınamadı";
+        el.dataset.state =
+          "unknown";
+      }
+
+      return {
+        ok:false,
+        reason:
+          error instanceof Error
+            ? error.message
+            : String(error),
+      };
     }
   }
 
@@ -1760,6 +1827,7 @@
     loadFirstRunChecklist();
     loadPreflightStatus();
     loadWebTestRunStatus();
+    loadOperationStatus();
 
     const launch =
       result.ok
