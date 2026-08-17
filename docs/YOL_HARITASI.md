@@ -1,7 +1,7 @@
 # Project Relay 2.0 — YOL HARİTASI
 
-**Güncel Sürüm:** `2.0.0-alpha.102`  
-**Paket:** Web Test Launch Attempt Audit ve Çıkış Kapısı İzlenebilirliği  
+**Güncel Sürüm:** `2.0.0-alpha.103`  
+**Paket:** Launch Attempt KPI ve Gerçek Web Testi Çıkış Hunisi  
 **Kanonik Dosya:** `docs/YOL_HARITASI.md`
 
 > Bu dosya Project Relay 2.0 için tek kanonik geliştirme kaydıdır. Her paket tamamlandığında sürüm numarası artırılır; **Tamamlananlar** ve **Yapılacaklar** bu dosyada güncellenir. Sonraki geliştirme paketi bu dosya okunarak başlatılır.
@@ -383,9 +383,9 @@ Aşağıdaki alanlar ilk sürüm kapsamına dahil değildir ve mevcut yol harita
 
 ## Sıradaki Paket
 
-**`2.0.0-alpha.103 — Launch Attempt KPI ve Gerçek Web Testi Çıkış Hunisi`**
+**`2.0.0-alpha.104 — Gerçek Web Testi İlk Koşu Hazırlık Raporu ve Operasyon Checklist Snapshot'ı`**
 
-Launch attempt audit hazır. Sıradaki paket aktif test koşusunda toplam Oyna/launch denemesi, launch_ready olan deneme sayısı ve `launch_ready_rate` metriğini ekleyecek. Bu metrik RC/Go-No-Go davranış sinyali olarak izlenecek ancak teknik launch kilidini değiştirmeyecek.
+Launch kilidi, launch attempt audit ve çıkış hunisi KPI'sı hazır. Sıradaki paket gerçek kullanıcı testini başlatmadan önce tek bir operasyon checklist snapshot'ı oluşturacak: launch_ready, aktif test_run_id, persistence/yedek sağlığı, retention, RC candidate, audit zinciri ve davranış örnek durumları. Checklist yalnızca teknik operasyon raporu olacak; yeni oyuncu özelliği eklenmeyecek.
 
 
 ---

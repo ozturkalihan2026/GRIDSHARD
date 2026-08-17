@@ -2360,6 +2360,19 @@
           this.kpis.boosters_used,
         averageMatchDurationMs:
           this.kpis.average_match_duration_ms,
+        launchAttempts:
+          this.kpis.launch_attempts
+          || 0,
+        launchReadyAttempts:
+          this.kpis.launch_ready_attempts
+          || 0,
+        launchReadyRatePercent:
+          Math.round(
+            Number(
+              this.kpis.launch_ready_rate
+              || 0
+            ) * 10000
+          ) / 100,
         auditSessionStarts:
           this.kpis.audit_session_starts
           || 0,

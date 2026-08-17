@@ -402,61 +402,61 @@ function createClient() {
   const fs=require("fs");
   const src=fs.readFileSync("./src/app.js","utf8");
   assert.ok(src.includes("PVP_STATUS"));
-  assert.ok(src.includes("Web test launch-attempt audit aktif"));
+  assert.ok(src.includes("Launch attempt çıkış hunisi KPI aktif"));
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync("./src/app.js","utf8");
-  assert.ok(src.includes("Web test launch-attempt audit aktif")); // alpha32->33 protocol status
+  assert.ok(src.includes("Launch attempt çıkış hunisi KPI aktif")); // alpha32->33 protocol status
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync("./src/app.js","utf8");
-  assert.ok(src.includes("Web test launch-attempt audit aktif")); // alpha33 protocol
+  assert.ok(src.includes("Launch attempt çıkış hunisi KPI aktif")); // alpha33 protocol
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync("./src/app.js","utf8");
-  assert.ok(src.includes("Web test launch-attempt audit aktif")); // alpha34 websocket
+  assert.ok(src.includes("Launch attempt çıkış hunisi KPI aktif")); // alpha34 websocket
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync("./src/app.js","utf8");
-  assert.ok(src.includes("Web test launch-attempt audit aktif")); // alpha35 gateway
+  assert.ok(src.includes("Launch attempt çıkış hunisi KPI aktif")); // alpha35 gateway
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync("./src/app.js","utf8");
-  assert.ok(src.includes("Web test launch-attempt audit aktif")); // alpha36 setup
+  assert.ok(src.includes("Launch attempt çıkış hunisi KPI aktif")); // alpha36 setup
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync("./src/app.js","utf8");
-  assert.ok(src.includes("Web test launch-attempt audit aktif")); // alpha37 lobby
+  assert.ok(src.includes("Launch attempt çıkış hunisi KPI aktif")); // alpha37 lobby
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync("./src/app.js","utf8");
-  assert.ok(src.includes("Web test launch-attempt audit aktif")); // alpha38 runner
+  assert.ok(src.includes("Launch attempt çıkış hunisi KPI aktif")); // alpha38 runner
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync("./src/app.js","utf8");
-  assert.ok(src.includes("Web test launch-attempt audit aktif")); // alpha39 heartbeat
+  assert.ok(src.includes("Launch attempt çıkış hunisi KPI aktif")); // alpha39 heartbeat
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync("./src/app.js","utf8");
-  assert.ok(src.includes("Web test launch-attempt audit aktif")); // alpha40 online pvp
+  assert.ok(src.includes("Launch attempt çıkış hunisi KPI aktif")); // alpha40 online pvp
 }
 
 {
@@ -682,7 +682,7 @@ function createClient() {
 {
   const fs=require("fs");
   const src=fs.readFileSync("./src/app.js","utf8");
-  assert.ok(src.includes("Web test launch-attempt audit aktif"));
+  assert.ok(src.includes("Launch attempt çıkış hunisi KPI aktif"));
   assert.ok(src.includes("buildPvPCommandEnvelope"));
   assert.ok(src.includes("applyPvPServerEnvelope"));
 }
@@ -1504,10 +1504,10 @@ function createClient() {
 
   const result=state.applyHealth({
     status:"ok",
-    version:"2.0.0-alpha.102",
+    version:"2.0.0-alpha.103",
     web_test:{
       ready:true,
-      build:"web-test-alpha.102",
+      build:"web-test-alpha.103",
       release_checks:[
         "health",
         "matchmaking",
@@ -1551,7 +1551,7 @@ function createClient() {
 
   const result=state.applyHealth({
     status:"ok",
-    version:"2.0.0-alpha.102",
+    version:"2.0.0-alpha.103",
   });
 
   assert.strictEqual(
@@ -2289,6 +2289,9 @@ function createClient() {
     module_shelf_uses:20,
     boosters_used:8,
     average_match_duration_ms:110000,
+    launch_attempts:12,
+    launch_ready_attempts:9,
+    launch_ready_rate:0.75,
     audit_session_starts:10,
     audit_session_bounds:8,
     audit_to_session_rate:0.8,
@@ -2319,6 +2322,18 @@ function createClient() {
     110000
   );
   assert.strictEqual(
+    view.launchAttempts,
+    12
+  );
+  assert.strictEqual(
+    view.launchReadyAttempts,
+    9
+  );
+  assert.strictEqual(
+    view.launchReadyRatePercent,
+    75
+  );
+  assert.strictEqual(
     view.auditSessionStarts,
     10
   );
@@ -2337,7 +2352,7 @@ function createClient() {
   const html=fs.readFileSync("./index.html","utf8");
   assert.ok(
     html.includes(
-      "2.0.0-alpha.102"
+      "2.0.0-alpha.103"
     )
   );
   assert.ok(
@@ -2519,8 +2534,8 @@ function createClient() {
     new RelayReleaseCheckState();
 
   const view=state.apply({
-    version:"2.0.0-alpha.102",
-    build:"web-test-alpha.102",
+    version:"2.0.0-alpha.103",
+    build:"web-test-alpha.103",
     ready:true,
     checks:{
       health_ready:true,
@@ -2660,17 +2675,17 @@ function createClient() {
       healthState:health,
       releaseCheckState:release,
       expectedVersion:
-        "2.0.0-alpha.102",
+        "2.0.0-alpha.103",
       expectedProtocolVersion:1,
       requestJson:
         async (path) => {
           if (path==="/health") {
             return {
               status:"ok",
-              version:"2.0.0-alpha.102",
+              version:"2.0.0-alpha.103",
               web_test:{
                 ready:true,
-                build:"web-test-alpha.102",
+                build:"web-test-alpha.103",
                 release_checks:[],
                 capabilities:{},
               },
@@ -2681,8 +2696,8 @@ function createClient() {
             === "/web-test/release-check"
           ) {
             return {
-              version:"2.0.0-alpha.102",
-              build:"web-test-alpha.102",
+              version:"2.0.0-alpha.103",
+              build:"web-test-alpha.103",
               ready:true,
               checks:{
                 health_ready:true,
@@ -2714,7 +2729,7 @@ function createClient() {
 
           return {
             server_version:
-              "2.0.0-alpha.102",
+              "2.0.0-alpha.103",
             web_test_build:
               "web-test-alpha.62",
             pvp_protocol_version:1,
@@ -2767,8 +2782,8 @@ function createClient() {
 
   const snapshot=
     new RelayDiagnosticSnapshot({
-      version:"2.0.0-alpha.102",
-      build:"web-test-alpha.102",
+      version:"2.0.0-alpha.103",
+      build:"web-test-alpha.103",
       bootGate:{status:"ready"},
       connectionManager:{
         status:"open",
@@ -2852,16 +2867,16 @@ function createClient() {
       releaseCheckState:
         new RelayReleaseCheckState(),
       expectedVersion:
-        "2.0.0-alpha.102",
+        "2.0.0-alpha.103",
       expectedProtocolVersion:1,
       requestJson:
         async (path) => {
           if (path==="/health") {
             return {
-              version:"2.0.0-alpha.102",
+              version:"2.0.0-alpha.103",
               web_test:{
                 ready:true,
-                build:"web-test-alpha.102",
+                build:"web-test-alpha.103",
                 release_checks:[],
                 capabilities:{},
               },
@@ -2872,8 +2887,8 @@ function createClient() {
             === "/web-test/release-check"
           ) {
             return {
-              version:"2.0.0-alpha.102",
-              build:"web-test-alpha.102",
+              version:"2.0.0-alpha.103",
+              build:"web-test-alpha.103",
               ready:true,
               checks:{ok:true},
               menu_areas:[],
@@ -2936,8 +2951,8 @@ function createClient() {
     new RelayWebTestRcReportState();
 
   const view=state.apply({
-    version:"2.0.0-alpha.102",
-    build:"web-test-alpha.102",
+    version:"2.0.0-alpha.103",
+    build:"web-test-alpha.103",
     ready:true,
     critical_failures:[],
     kpis:{
@@ -3528,16 +3543,16 @@ function createClient() {
       releaseCheckState:
         new RelayReleaseCheckState(),
       expectedVersion:
-        "2.0.0-alpha.102",
+        "2.0.0-alpha.103",
       expectedProtocolVersion:1,
       requestJson:
         async (path) => {
           if (path==="/health") {
             return {
-              version:"2.0.0-alpha.102",
+              version:"2.0.0-alpha.103",
               web_test:{
                 ready:true,
-                build:"web-test-alpha.102",
+                build:"web-test-alpha.103",
                 release_checks:[],
                 capabilities:{},
               },
@@ -3548,8 +3563,8 @@ function createClient() {
             === "/web-test/release-check"
           ) {
             return {
-              version:"2.0.0-alpha.102",
-              build:"web-test-alpha.102",
+              version:"2.0.0-alpha.103",
+              build:"web-test-alpha.103",
               ready:true,
               checks:{ok:true},
               menu_areas:[],
@@ -3562,7 +3577,7 @@ function createClient() {
           ) {
             return {
               server_version:
-                "2.0.0-alpha.102",
+                "2.0.0-alpha.103",
               pvp_protocol_version:1,
               release_ready:true,
             };

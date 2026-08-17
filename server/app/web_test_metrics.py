@@ -245,6 +245,35 @@ class WebTestKpiService:
             else 0.0
         )
 
+        launch_attempt_events = [
+            event
+            for event in events
+            if (
+                event["event_type"]
+                == "web_test_launch_attempted"
+            )
+        ]
+        launch_attempts = len(
+            launch_attempt_events
+        )
+        launch_ready_attempts = sum(
+            1
+            for event
+            in launch_attempt_events
+            if event.get(
+                "metadata",
+                {},
+            ).get(
+                "launch_ready"
+            )
+        )
+        launch_ready_rate = (
+            launch_ready_attempts
+            / launch_attempts
+            if launch_attempts
+            else 0.0
+        )
+
         audit_started = {
             event["event_id"]
             for event in events
@@ -379,6 +408,14 @@ class WebTestKpiService:
             ],
             "average_match_duration_ms": (
                 average_match_duration_ms
+            ),
+            "launch_attempts":
+                launch_attempts,
+            "launch_ready_attempts":
+                launch_ready_attempts,
+            "launch_ready_rate": round(
+                launch_ready_rate,
+                6,
             ),
             "audit_session_starts": (
                 len(audit_started)

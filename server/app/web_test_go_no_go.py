@@ -39,6 +39,21 @@ def build_go_no_go(
     )
 
     behavior = {
+        "launch_ready": _behavior_signal(
+            value=float(
+                kpis.get(
+                    "launch_ready_rate",
+                    0.0,
+                )
+            ),
+            sample=int(
+                kpis.get(
+                    "launch_attempts",
+                    0,
+                )
+            ),
+            min_sample=min_sample,
+        ),
         "audit_to_session": _behavior_signal(
             value=float(
                 kpis.get(

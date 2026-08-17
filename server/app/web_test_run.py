@@ -24,6 +24,33 @@ def build_test_run_summary(
         )
     ]
 
+    launch_attempt_events = [
+        event
+        for event in events
+        if event["event_type"]
+        == "web_test_launch_attempted"
+    ]
+    launch_attempts = len(
+        launch_attempt_events
+    )
+    launch_ready_attempts = sum(
+        1
+        for event
+        in launch_attempt_events
+        if event.get(
+            "metadata",
+            {},
+        ).get(
+            "launch_ready"
+        )
+    )
+    launch_ready_rate = (
+        launch_ready_attempts
+        / launch_attempts
+        if launch_attempts
+        else 0.0
+    )
+
     started = [
         event
         for event in events
@@ -152,6 +179,14 @@ def build_test_run_summary(
         "test_run_id": test_run_id,
         "lifecycle_state":
             lifecycle_state,
+        "launch_attempts":
+            launch_attempts,
+        "launch_ready_attempts":
+            launch_ready_attempts,
+        "launch_ready_rate": round(
+            launch_ready_rate,
+            6,
+        ),
         "audit_session_starts":
             len(started_ids),
         "audit_session_bounds":
@@ -344,6 +379,18 @@ def build_test_run_catalog(
             "active":
                 run_id
                 == active_test_run_id,
+            "launch_attempts":
+                summary[
+                    "launch_attempts"
+                ],
+            "launch_ready_attempts":
+                summary[
+                    "launch_ready_attempts"
+                ],
+            "launch_ready_rate":
+                summary[
+                    "launch_ready_rate"
+                ],
             "audit_session_starts":
                 summary[
                     "audit_session_starts"
