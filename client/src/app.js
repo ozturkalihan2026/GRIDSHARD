@@ -520,7 +520,7 @@
         webTestBuildState,
       releaseCheckState,
       expectedVersion:
-        "2.0.0-beta.4.3",
+        "2.0.0-beta.4.2",
       expectedProtocolVersion: 1,
     });
   const playReadinessGate =
@@ -551,7 +551,7 @@
 
   telemetryDispatcher.trackGameOpened({
     platform: "web",
-    build: "2.0.0-beta.4.3",
+    build: "2.0.0-beta.4.2",
   });
 
   const postMatchSync =
@@ -1111,9 +1111,9 @@
   const diagnosticSnapshot =
     new RelayDiagnosticSnapshot({
       version:
-        "2.0.0-beta.4.3",
+        "2.0.0-beta.4.2",
       build:
-        "web-test-beta.4.3",
+        "web-test-beta.4.2",
       bootGate:
         serverBootGate,
       connectionManager:
