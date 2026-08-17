@@ -65,6 +65,9 @@ from .web_test_rc_report import (
 from .web_test_operation_readiness import (
     build_operation_readiness,
 )
+from .web_test_go_no_go import (
+    build_go_no_go,
+)
 
 
 app = FastAPI(
@@ -1098,6 +1101,22 @@ def web_test_operation_readiness() -> dict:
         manifest=manifest,
         data_health=data_health,
         rc_report=rc_report,
+    )
+
+
+@app.get("/web-test/go-no-go")
+def web_test_go_no_go() -> dict:
+    operation = (
+        web_test_operation_readiness()
+    )
+    kpis = (
+        web_test_kpi_service
+        .snapshot()
+    )
+    return build_go_no_go(
+        operation_readiness=
+            operation,
+        kpis=kpis,
     )
 
 
