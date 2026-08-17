@@ -41,21 +41,27 @@ def build_operation_status(
             ),
         "operational_state":
             (
-                "running"
-                if (
-                    run_status.get(
-                        "started"
-                    )
-                    and consistency.get(
-                        "consistent"
-                    )
+                "finished"
+                if run_status.get(
+                    "finished"
                 )
                 else (
-                    "ready_not_started"
-                    if preflight.get(
-                        "preflight_ready"
+                    "running"
+                    if (
+                        run_status.get(
+                            "started"
+                        )
+                        and consistency.get(
+                            "consistent"
+                        )
                     )
-                    else "not_ready"
+                    else (
+                        "ready_not_started"
+                        if preflight.get(
+                            "preflight_ready"
+                        )
+                        else "not_ready"
+                    )
                 )
             ),
         "failed_checks":

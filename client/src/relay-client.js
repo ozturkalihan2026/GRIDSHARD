@@ -3894,6 +3894,9 @@
         started:Boolean(
           this.value.started
         ),
+        finished:Boolean(
+          this.value.finished
+        ),
         testRunId:
           this.value.test_run_id
           || null,

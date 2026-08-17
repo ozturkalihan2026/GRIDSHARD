@@ -1,6 +1,6 @@
-# Gerçek Web Testi — Yerel Çalıştırma
+# Project Relay 2.0 Beta — Gerçek Web Testi
 
-Bu paket tek sunucu modeliyle hazırlanmıştır. FastAPI hem API/WebSocket uçlarını hem de `client/` Web arayüzünü aynı origin altında servis eder.
+Bu paket gerçek insan Web testini yürütmek ve teknik sonuçlarını toplamak için hazırlanmıştır.
 
 ## Windows
 
@@ -8,32 +8,30 @@ Proje klasöründe:
 
 `BASLAT_WEB_TEST.bat`
 
-İlk çalıştırmada `.venv` oluşturulur ve `server/requirements.txt` kurulur. Sonraki çalıştırmalarda mevcut sanal ortam kullanılır.
-
-Tarayıcı adresi:
+Tarayıcı:
 
 `http://127.0.0.1:8000/`
 
-## Test koşusunun başlaması
+## Test akışı
 
-Tarayıcı ilk teknik kontrolleri tamamlar. Preflight ve launch-readiness hazır olduğunda aktif `test_run_id` için `/web-test/test-run/start` idempotent olarak çağrılır. Aynı koşu ikinci kez başlatılırsa yeni run-start kaydı üretilmez.
+1. Sunucu ve istemci aynı origin altında açılır.
+2. Sağlık, preflight ve launch-readiness kontrolleri tamamlanır.
+3. Aktif test koşusu otomatik ve idempotent biçimde başlatılır.
+4. Test çalışırken her 10 saniyede agregat operasyon ve stabilite snapshot'ları alınır.
+5. Oyun normal biçimde kullanılır; savaş motoru hiçbir oyuncu müdahalesinde durmaz.
+6. Test tamamlandığında teknik durum alanındaki **Gerçek Test Koşusunu Bitir** düğmesine basılır.
+7. Son operasyon/stabilite snapshot'ları kaydedilir ve koşu kapatılır.
+8. `/web-test/test-run/report` test sonrası teknik raporu yayınlar.
 
-Teknik durum alanında en az şu göstergeler izlenebilir:
-
-- Sunucu / Oyna hazırlığı
-- Preflight
-- Gerçek Test: Başlatıldı
-- Operasyon Durumu
-- Stabilite
-- İzleme: operasyon + stabilite + audit tamamlanma oranı
-
-## Kapsam
-
-İlk gerçek Web testi kapsamındaki ana menü:
+## Ana menü kapsamı
 
 - Oyna
 - Profil
 - İstatistikler
 - Ayarlar
 
-Eğitim alanı bilinçli olarak bu test kapsamının dışındadır.
+Eğitim alanı bu Beta test kapsamı dışında kalmaya devam eder.
+
+## Önemli not
+
+Teknik rapor gerçek insan testinin tamamlandığını kendiliğinden iddia etmez. İnsan kullanıcı gözlemleri, kullanılabilirlik sorunları ve oyun dengesi geri bildirimleri ayrıca değerlendirilmelidir.

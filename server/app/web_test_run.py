@@ -169,6 +169,14 @@ def build_test_run_summary(
             == "web_test_run_started"
         )
     ]
+    run_finished_events = [
+        event
+        for event in events
+        if (
+            event["event_type"]
+            == "web_test_run_finished"
+        )
+    ]
     run_started = bool(
         run_started_events
     )
@@ -180,6 +188,19 @@ def build_test_run_summary(
             for event in run_started_events
         )
         if run_started_events
+        else None
+    )
+    run_finished = bool(
+        run_finished_events
+    )
+    run_finished_at_ms = (
+        max(
+            int(
+                event["timestamp_ms"]
+            )
+            for event in run_finished_events
+        )
+        if run_finished_events
         else None
     )
 
@@ -331,6 +352,10 @@ def build_test_run_summary(
             run_started,
         "run_started_at_ms":
             run_started_at_ms,
+        "run_finished":
+            run_finished,
+        "run_finished_at_ms":
+            run_finished_at_ms,
         "preflight_snapshots":
             preflight_snapshots,
         "preflight_ready_snapshots":
@@ -554,6 +579,14 @@ def build_test_run_catalog(
             "run_started_at_ms":
                 summary[
                     "run_started_at_ms"
+                ],
+            "run_finished":
+                summary[
+                    "run_finished"
+                ],
+            "run_finished_at_ms":
+                summary[
+                    "run_finished_at_ms"
                 ],
             "launch_attempts":
                 summary[

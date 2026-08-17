@@ -93,6 +93,9 @@ from .web_test_stability import (
 from .web_test_monitoring import (
     build_monitoring_summary,
 )
+from .web_test_post_run import (
+    build_post_run_report,
+)
 from .web_test_run import (
     build_operation_history_summary,
     build_operation_transition_summary,
@@ -146,8 +149,8 @@ TELEMETRY_MAX_EVENTS = int(
 )
 WEB_TEST_RUN_ID = os.environ.get(
     "RELAY_WEB_TEST_RUN_ID",
-    "web-test-alpha.132",
-).strip() or "web-test-alpha.132"
+    "web-test-beta.1",
+).strip() or "web-test-beta.1"
 
 telemetry_repository = (
     JsonFileTelemetryRepository(
@@ -297,6 +300,10 @@ class WebTestLaunchAttemptRequest(BaseModel):
 
 
 class WebTestRunStartRequest(BaseModel):
+    test_run_id: str
+
+
+class WebTestRunFinishRequest(BaseModel):
     test_run_id: str
 
 
@@ -862,7 +869,7 @@ def start_web_test_run(
                 "preflight_ready":
                     True,
                 "build":
-                    "web-test-alpha.132",
+                    "web-test-beta.1",
             },
         )
     )
@@ -876,7 +883,73 @@ def start_web_test_run(
         "test_run_id":
             WEB_TEST_RUN_ID,
         "build":
-            "web-test-alpha.132",
+            "web-test-beta.1",
+    }
+
+
+@app.post("/web-test/test-run/finish")
+def finish_web_test_run(
+    request: WebTestRunFinishRequest,
+) -> dict:
+    if (
+        request.test_run_id
+        != WEB_TEST_RUN_ID
+    ):
+        raise HTTPException(
+            status_code=409,
+            detail=(
+                "İstenen test koşusu aktif Web test koşusuyla eşleşmiyor."
+            ),
+        )
+
+    status = web_test_run_status()
+
+    if not status.get("started"):
+        raise HTTPException(
+            status_code=409,
+            detail=(
+                "Başlatılmamış Web test koşusu tamamlanamaz."
+            ),
+        )
+
+    # Final gözlem snapshot'larını koşu bitmeden kaydet.
+    record_web_test_operation_snapshot()
+    record_web_test_stability_snapshot()
+
+    event_id = (
+        "web-test-run-finished-"
+        + WEB_TEST_RUN_ID
+    )
+
+    accepted = telemetry_service.record(
+        TelemetryEvent(
+            event_id=event_id,
+            event_type=
+                "web_test_run_finished",
+            timestamp_ms=
+                int(
+                    time.time()
+                    * 1000
+                ),
+            metadata={
+                "test_run_id":
+                    WEB_TEST_RUN_ID,
+                "build":
+                    "web-test-beta.1",
+            },
+        )
+    )
+
+    return {
+        "finished":True,
+        "accepted":
+            accepted,
+        "duplicate":
+            not accepted,
+        "test_run_id":
+            WEB_TEST_RUN_ID,
+        "build":
+            "web-test-beta.1",
     }
 
 
@@ -1711,7 +1784,7 @@ def web_test_current_run() -> dict:
         "test_run_id":
             WEB_TEST_RUN_ID,
         "build":
-            "web-test-alpha.132",
+            "web-test-beta.1",
     }
 
 
@@ -1836,7 +1909,7 @@ def web_test_rc_candidate() -> dict:
     return build_rc_candidate_summary(
         version=VERSION,
         build=
-            "web-test-alpha.132",
+            "web-test-beta.1",
         test_run_id=
             WEB_TEST_RUN_ID,
         operation_readiness=
@@ -1877,7 +1950,7 @@ def web_test_launch_readiness() -> dict:
     return build_launch_snapshot(
         version=VERSION,
         build=
-            "web-test-alpha.132",
+            "web-test-beta.1",
         test_run_id=
             WEB_TEST_RUN_ID,
         manifest=manifest,
@@ -1913,7 +1986,7 @@ def web_test_first_run_checklist() -> dict:
     return build_first_run_checklist(
         version=VERSION,
         build=
-            "web-test-alpha.132",
+            "web-test-beta.1",
         test_run_id=
             WEB_TEST_RUN_ID,
         launch_readiness=
@@ -1941,7 +2014,7 @@ def web_test_preflight() -> dict:
     return build_preflight_report(
         version=VERSION,
         build=
-            "web-test-alpha.132",
+            "web-test-beta.1",
         test_run_id=
             WEB_TEST_RUN_ID,
         checklist=
@@ -1968,6 +2041,12 @@ def web_test_run_status() -> dict:
                 "web_test_run_started",
         )
     )
+    finished_events = (
+        telemetry_service.events(
+            event_type=
+                "web_test_run_finished",
+        )
+    )
 
     started = any(
         event.get(
@@ -1979,14 +2058,26 @@ def web_test_run_status() -> dict:
         == WEB_TEST_RUN_ID
         for event in started_events
     )
+    finished = any(
+        event.get(
+            "metadata",
+            {},
+        ).get(
+            "test_run_id"
+        )
+        == WEB_TEST_RUN_ID
+        for event in finished_events
+    )
 
     return {
         "test_run_id":
             WEB_TEST_RUN_ID,
         "build":
-            "web-test-alpha.132",
+            "web-test-beta.1",
         "started":
             started,
+        "finished":
+            finished,
     }
 
 
@@ -2007,7 +2098,7 @@ def web_test_operation_status() -> dict:
     return build_operation_status(
         version=VERSION,
         build=
-            "web-test-alpha.132",
+            "web-test-beta.1",
         test_run_id=
             WEB_TEST_RUN_ID,
         preflight=
@@ -2062,7 +2153,7 @@ def web_test_monitoring() -> dict:
     return build_monitoring_summary(
         version=VERSION,
         build=
-            "web-test-alpha.132",
+            "web-test-beta.1",
         test_run_id=
             WEB_TEST_RUN_ID,
         operation_status=
@@ -2074,6 +2165,53 @@ def web_test_monitoring() -> dict:
         kpis=
             web_test_kpi_service
             .snapshot(),
+    )
+
+
+@app.get("/web-test/test-run/report")
+def web_test_run_report() -> dict:
+    run_summary = (
+        build_test_run_summary(
+            telemetry_service=
+                telemetry_service,
+            test_run_id=
+                WEB_TEST_RUN_ID,
+        )
+    )
+
+    return build_post_run_report(
+        version=VERSION,
+        build=
+            "web-test-beta.1",
+        test_run_id=
+            WEB_TEST_RUN_ID,
+        run_summary=
+            run_summary,
+        monitoring=
+            web_test_monitoring(),
+        operation_history=
+            build_operation_history_summary(
+                telemetry_service=
+                    telemetry_service,
+                test_run_id=
+                    WEB_TEST_RUN_ID,
+            ),
+        operation_transitions=
+            build_operation_transition_summary(
+                telemetry_service=
+                    telemetry_service,
+                test_run_id=
+                    WEB_TEST_RUN_ID,
+            ),
+        stability_history=
+            build_stability_history_summary(
+                telemetry_service=
+                    telemetry_service,
+                test_run_id=
+                    WEB_TEST_RUN_ID,
+            ),
+        data_health=
+            web_test_data_health(),
     )
 
 

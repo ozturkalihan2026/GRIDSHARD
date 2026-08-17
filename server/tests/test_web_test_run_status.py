@@ -11,8 +11,9 @@ def test_run_status_false_before_start():
         "/web-test/test-run/status"
     ).json()
 
-    assert body["test_run_id"]=="web-test-alpha.132"
+    assert body["test_run_id"]=="web-test-beta.1"
     assert body["started"] is False
+    assert body["finished"] is False
 
 
 def test_run_status_true_after_start():
@@ -22,7 +23,7 @@ def test_run_status_true_after_start():
         "/web-test/test-run/start",
         json={
             "test_run_id":
-                "web-test-alpha.132",
+                "web-test-beta.1",
         },
     )
     assert response.status_code==200

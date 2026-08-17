@@ -1,7 +1,7 @@
 # Project Relay 2.0 — YOL HARİTASI
 
-**Güncel Sürüm:** `2.0.0-alpha.132`  
-**Paket:** Gerçek Web Testine Hazır Tek Sunucu Paketi  
+**Güncel Sürüm:** `2.0.0-beta.1`  
+**Paket:** Project Relay 2.0 Beta — Gerçek Web Testi Kapalı Döngüsü  
 **Kanonik Dosya:** `docs/YOL_HARITASI.md`
 
 > Bu dosya Project Relay 2.0 için tek kanonik geliştirme kaydıdır. Her paket tamamlandığında sürüm numarası artırılır; **Tamamlananlar** ve **Yapılacaklar** bu dosyada güncellenir. Sonraki geliştirme paketi bu dosya okunarak başlatılır.
@@ -381,11 +381,52 @@ Aşağıdaki alanlar ilk sürüm kapsamına dahil değildir ve mevcut yol harita
 
 ---
 
+
+### 2.0.0-alpha.133 — Otomatik Operasyon ve Stabilite Örnekleme
+- [x] Aktif gerçek test koşusunda 10 saniyelik gözlemsel sampling döngüsü eklendi.
+- [x] Operation snapshot ve stability snapshot periyodik olarak kaydediliyor.
+- [x] İzleme, operasyon ve stabilite görünümleri sampling sırasında yenileniyor.
+- [x] Sampling hataları oyuncu akışını veya savaşı durdurmuyor.
+
+### 2.0.0-alpha.134 — Gerçek Web Test Koşusunu Kontrollü Kapatma
+- [x] Yeni `web_test_run_finished` telemetri event tipi eklendi.
+- [x] `/web-test/test-run/finish` endpoint'i eklendi.
+- [x] Başlatılmamış koşu kapatılamıyor.
+- [x] Yanlış test_run_id reddediliyor.
+- [x] Kapatma idempotent.
+- [x] Koşu kapanmadan önce final operation/stability snapshot'ları alınıyor.
+- [x] Run-status artık started + finished durumlarını yayınlıyor.
+- [x] Operation-status bitmiş koşuyu `finished` olarak sınıflandırabiliyor.
+
+### 2.0.0-alpha.135 — Test Sonrası Teknik Rapor
+- [x] `build_post_run_report` servis katmanı eklendi.
+- [x] `/web-test/test-run/report` endpoint'i eklendi.
+- [x] Başlangıç/bitiş zamanı ve koşu süresi raporlanıyor.
+- [x] Monitoring, operation history, transition summary, stability history ve data-health tek raporda birleşiyor.
+- [x] Teknik rapor `human_test_completed=false` ile insan testinin ayrıca değerlendirilmesi gerektiğini açıkça belirtiyor.
+
+### 2.0.0-alpha.136 — Tarayıcı Test Kapatma ve Rapor Görünümü
+- [x] Teknik durum alanına `Gerçek Test Koşusunu Bitir` düğmesi eklendi.
+- [x] Test bitince sampling durduruluyor.
+- [x] Test sonrası rapor tarayıcıda kompakt özet olarak gösteriliyor.
+- [x] Ana menü kapsamına yeni alan eklenmedi.
+
+### 2.0.0-beta.1 — Project Relay 2.0 Beta — Gerçek Web Testi Kapalı Döngüsü
+- [x] Tek sunucudan istemci + API + WebSocket çalışma modeli korunuyor.
+- [x] Preflight sonrası otomatik test-run başlangıcı korunuyor.
+- [x] Gerçek test sırasında periyodik operasyon/stabilite sampling hazır.
+- [x] Test koşusu kontrollü ve idempotent biçimde kapatılabiliyor.
+- [x] Test sonrası teknik rapor üretilebiliyor.
+- [x] Windows ve Linux/macOS başlatıcıları Beta test_run_id kullanıyor.
+- [x] Gerçek Web testi rehberi Beta kapalı döngüsüne göre güncellendi.
+- [x] Ana menü yalnızca Oyna, Profil, İstatistikler ve Ayarlar.
+- [x] Eğitim Beta test kapsamı dışında tutuluyor.
+
 ## Sıradaki Paket
 
-**Gerçek Kullanıcı Web Testi — Uygulamalı Test Koşusu**
+**Beta Gerçek Kullanıcı Testi — İnsan Geri Bildirimi ve Denge Bulguları**
 
-Kod tarafındaki ilk Web test hazırlığı tamamlandı. Bundan sonraki adım yeni geliştirme paketi değil; `BASLAT_WEB_TEST.bat` ile sunucuyu açıp tarayıcıdan gerçek kullanıcı testini yürütmek, test_run_id altında oluşan launch/audit/operation/stability verilerini gözlemlemek ve gerçek kullanım bulgularına göre sonraki geliştirme paketini belirlemektir.
+`2.0.0-beta.1` ile teknik gerçek Web test döngüsü tamamlandı. Bundan sonraki büyük aşama kod tarafından otomatik kapatılamaz: gerçek oyuncularla Beta testinin yürütülmesi, kullanılabilirlik sorunlarının, savaş dengesi bulgularının, modül/booster tercih dağılımlarının ve bağlantı sorunlarının gözlemlenmesi gerekir. Bu bulgular bir sonraki geliştirme paketinin kapsamını belirleyecek.
 
 
 ---
@@ -453,6 +494,6 @@ Kod tarafındaki ilk Web test hazırlığı tamamlandı. Bundan sonraki adım ye
 - [x] Ayarlar
 - [ ] Eğitim — **ilk Web test kapsamı dışında, bilinçli olarak ertelendi.**
 - [x] Telemetri
-- [x] Web test sürümü — **tek sunucu yerel çalıştırma, preflight, otomatik test-run başlatma ve gerçek kullanıcı testi operasyon izlemesi hazır.**
+- [x] Web test sürümü — **Beta kapalı test döngüsü hazır: başlatma, periyodik izleme, kontrollü kapatma ve test sonrası teknik rapor.**
 
 ---

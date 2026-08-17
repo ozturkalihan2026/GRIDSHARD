@@ -13,7 +13,7 @@ def test_run_summary_reports_started_state_and_time():
             metadata={
                 "test_run_id":"r",
                 "preflight_ready":True,
-                "build":"web-test-alpha.132",
+                "build":"web-test-beta.1",
             },
         )
     )

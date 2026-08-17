@@ -42,7 +42,7 @@
   const COMPETITIVE_STATUS = "M7 Simülasyon aktif";
   const BALANCE_STATUS = "Eşit modül + counter doğrulandı";
   const AI_STATUS = "Adaptif AI + rekabetçi denge doğrulandı";
-  const PVP_STATUS = "Gerçek Web test yerel çalışma paketi hazır";
+  const PVP_STATUS = "Project Relay 2.0 Beta gerçek Web test döngüsü hazır";
 
   const PORT_COUNT_BY_NAME = {
     "Çekirdek":4,
@@ -514,7 +514,7 @@
         webTestBuildState,
       releaseCheckState,
       expectedVersion:
-        "2.0.0-alpha.132",
+        "2.0.0-beta.1",
       expectedProtocolVersion: 1,
     });
   const playReadinessGate =
@@ -545,7 +545,7 @@
 
   telemetryDispatcher.trackGameOpened({
     platform: "web",
-    build: "2.0.0-alpha.132",
+    build: "2.0.0-beta.1",
   });
 
   const postMatchSync =
@@ -1105,9 +1105,9 @@
   const diagnosticSnapshot =
     new RelayDiagnosticSnapshot({
       version:
-        "2.0.0-alpha.132",
+        "2.0.0-beta.1",
       build:
-        "web-test-alpha.132",
+        "web-test-beta.1",
       bootGate:
         serverBootGate,
       connectionManager:
@@ -1588,9 +1588,13 @@
       if (el) {
         el.textContent =
           `Gerçek Test: ${
-            view.started
-              ? "Başlatıldı"
-              : "Başlatılmadı"
+            view.finished
+              ? "Tamamlandı"
+              : (
+                  view.started
+                    ? "Başlatıldı"
+                    : "Başlatılmadı"
+                )
           }`
           + (
               view.testRunId
@@ -1954,6 +1958,182 @@
     }
   }
 
+  async function captureWebTestOperationalSnapshot() {
+    try {
+      await Promise.all([
+        fetch(
+          "/web-test/audit/operation-snapshot",
+          {
+            method:"POST",
+          }
+        ),
+        fetch(
+          "/web-test/audit/stability-snapshot",
+          {
+            method:"POST",
+          }
+        ),
+      ]);
+    } catch (_error) {
+      // Gözlemsel snapshot hatası oyuncu akışını durdurmaz.
+    }
+  }
+
+  function stopWebTestSampling() {
+    if (webTestSamplingTimer) {
+      clearInterval(
+        webTestSamplingTimer
+      );
+      webTestSamplingTimer =
+        null;
+    }
+  }
+
+  function startWebTestSampling(
+    testRunId
+  ) {
+    activeWebTestRunId =
+      testRunId;
+
+    stopWebTestSampling();
+    captureWebTestOperationalSnapshot();
+
+    webTestSamplingTimer =
+      setInterval(
+        () => {
+          captureWebTestOperationalSnapshot();
+          loadMonitoringSummary();
+          loadOperationStatus();
+          loadOperationStability();
+        },
+        10000
+      );
+  }
+
+  async function finishActiveWebTestRun() {
+    if (!activeWebTestRunId) {
+      return {
+        ok:false,
+        reason:
+          "Aktif test koşusu bulunamadı.",
+      };
+    }
+
+    try {
+      const response =
+        await fetch(
+          "/web-test/test-run/finish",
+          {
+            method:"POST",
+            headers:{
+              "content-type":
+                "application/json",
+            },
+            body:JSON.stringify({
+              test_run_id:
+                activeWebTestRunId,
+            }),
+          }
+        );
+
+      if (!response.ok) {
+        throw new Error(
+          "Gerçek Web test koşusu tamamlanamadı."
+        );
+      }
+
+      stopWebTestSampling();
+      await loadWebTestRunStatus();
+      await loadOperationStatus();
+      await loadOperationStability();
+      await loadMonitoringSummary();
+      await loadWebTestRunReport();
+
+      return {
+        ok:true,
+        payload:
+          await response.json(),
+      };
+    } catch (error) {
+      return {
+        ok:false,
+        reason:
+          error instanceof Error
+            ? error.message
+            : String(error),
+      };
+    }
+  }
+
+  async function loadWebTestRunReport() {
+    const el =
+      document.getElementById(
+        "web-test-run-report"
+      );
+
+    try {
+      const response =
+        await fetch(
+          "/web-test/test-run/report"
+        );
+
+      if (!response.ok) {
+        throw new Error(
+          "Test koşusu raporu alınamadı."
+        );
+      }
+
+      const payload =
+        await response.json();
+
+      if (el) {
+        const duration =
+          payload.run_duration_ms == null
+            ? "-"
+            : `${Math.round(
+                payload.run_duration_ms
+                / 1000
+              )} sn`;
+
+        el.textContent =
+          `Test Raporu: ${payload.status}`
+          + ` · Süre ${duration}`
+          + ` · Operasyon ${
+              payload.monitoring
+                ?.operation?.state
+              || "-"
+            }`
+          + ` · Stabilite ${
+              payload.monitoring
+                ?.stability?.state
+              || "-"
+            }`;
+        el.dataset.status =
+          payload.status;
+      }
+
+      return {
+        ok:true,
+        payload,
+      };
+    } catch (error) {
+      if (el) {
+        el.textContent =
+          "Test Raporu: Alınamadı";
+        el.dataset.status =
+          "error";
+      }
+
+      return {
+        ok:false,
+        reason:
+          error instanceof Error
+            ? error.message
+            : String(error),
+      };
+    }
+  }
+
   async function ensureWebTestRunStarted(
     testRunId
   ) {
@@ -1971,8 +2151,27 @@
     if (
       status.ok
       && status.view
+        ?.finished
+    ) {
+      activeWebTestRunId =
+        testRunId;
+      stopWebTestSampling();
+      await loadWebTestRunReport();
+      return {
+        ok:true,
+        alreadyStarted:true,
+        finished:true,
+      };
+    }
+
+    if (
+      status.ok
+      && status.view
         ?.started
     ) {
+      startWebTestSampling(
+        testRunId
+      );
       return {
         ok:true,
         alreadyStarted:true,
@@ -2019,6 +2218,9 @@
       await loadOperationStatus();
       await loadOperationStability();
       await loadMonitoringSummary();
+      startWebTestSampling(
+        testRunId
+      );
 
       return {
         ok:true,
@@ -2153,6 +2355,28 @@
       );
   }
 
+  const webTestFinishButton =
+    document.getElementById(
+      "web-test-finish-button"
+    );
+
+  if (webTestFinishButton) {
+    webTestFinishButton
+      .addEventListener(
+        "click",
+        async () => {
+          const result =
+            await finishActiveWebTestRun();
+
+          if (!result.ok) {
+            logClientMessage(
+              result.reason
+            );
+          }
+        }
+      );
+  }
+
   renderAppScreen();
   renderConnectionStatus(
     pvpConnection.status
@@ -2177,6 +2401,8 @@ const SPECIAL_CELL_INFO = {
   "3,3": { css: "signal-cell", label: "Sinyal Hücresi", bonus: "-%15 bekleme süresi" },
 };
   const startedAt = performance.now();
+  let webTestSamplingTimer = null;
+  let activeWebTestRunId = null;
   let previousCapacity = null;
   let mockServerCredits = 200;
   let mockServerPassiveSeconds = 0;
