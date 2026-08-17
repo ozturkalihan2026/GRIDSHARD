@@ -1,7 +1,7 @@
 # Project Relay 2.0 — YOL HARİTASI
 
-**Güncel Sürüm:** `2.0.0-alpha.97`  
-**Paket:** Test Koşusu Karşılaştırmasında Örnek Yeterliliği ve Güven Etiketi  
+**Güncel Sürüm:** `2.0.0-alpha.98`  
+**Paket:** İlk Gerçek Web Testi RC Aday Özeti  
 **Kanonik Dosya:** `docs/YOL_HARITASI.md`
 
 > Bu dosya Project Relay 2.0 için tek kanonik geliştirme kaydıdır. Her paket tamamlandığında sürüm numarası artırılır; **Tamamlananlar** ve **Yapılacaklar** bu dosyada güncellenir. Sonraki geliştirme paketi bu dosya okunarak başlatılır.
@@ -383,9 +383,9 @@ Aşağıdaki alanlar ilk sürüm kapsamına dahil değildir ve mevcut yol harita
 
 ## Sıradaki Paket
 
-**`2.0.0-alpha.98 — İlk Gerçek Web Testi RC Aday Özeti`**
+**`2.0.0-alpha.99 — RC Aday Tarayıcı Durumu ve Gerçek Web Testine Çıkış İşareti`**
 
-Koşu bazlı health, readiness, Go/No-Go, audit hunisi, zaman aralığı ve karşılaştırma altyapısı hazır. Sıradaki paket aktif test koşusu için tek bir salt-okunur RC aday özeti oluşturacak. Özet build/test_run_id, teknik GO/NO_GO, data health, koşu yaşam döngüsü, audit huni sayıları/oranları ve davranış örnek durumunu tek cevapta birleştirecek. Yeni oyun özelliği eklenmeyecek.
+Sunucuda tek RC aday özeti hazır. Sıradaki paket bu özeti mevcut teknik durum alanına bağlayacak. Tarayıcı `RC Adayı: Hazır / Hazır Değil`, aktif test_run_id ve davranış örnek yetersizliği sayısını gösterecek. Oyna karar otoritesi yine boot/operation readiness zincirinde kalacak; yeni menü veya gameplay alanı eklenmeyecek.
 
 
 ---

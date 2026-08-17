@@ -68,6 +68,9 @@ from .web_test_operation_readiness import (
 from .web_test_go_no_go import (
     build_go_no_go,
 )
+from .web_test_rc_candidate import (
+    build_rc_candidate_summary,
+)
 from .web_test_run import (
     build_test_run_catalog,
     build_test_run_go_no_go,
@@ -112,8 +115,8 @@ TELEMETRY_MAX_EVENTS = int(
 )
 WEB_TEST_RUN_ID = os.environ.get(
     "RELAY_WEB_TEST_RUN_ID",
-    "web-test-alpha.97",
-).strip() or "web-test-alpha.97"
+    "web-test-alpha.98",
+).strip() or "web-test-alpha.98"
 
 telemetry_repository = (
     JsonFileTelemetryRepository(
@@ -1242,7 +1245,7 @@ def web_test_current_run() -> dict:
         "test_run_id":
             WEB_TEST_RUN_ID,
         "build":
-            "web-test-alpha.97",
+            "web-test-alpha.98",
     }
 
 
@@ -1305,6 +1308,43 @@ def web_test_run_go_no_go(
                 test_run_id=
                     test_run_id,
             ),
+    )
+
+
+@app.get("/web-test/rc-candidate")
+def web_test_rc_candidate() -> dict:
+    operation = (
+        web_test_operation_readiness()
+    )
+    go_no_go = (
+        web_test_go_no_go()
+    )
+    data_health = (
+        web_test_data_health()
+    )
+    run_summary = (
+        build_test_run_summary(
+            telemetry_service=
+                telemetry_service,
+            test_run_id=
+                WEB_TEST_RUN_ID,
+        )
+    )
+
+    return build_rc_candidate_summary(
+        version=VERSION,
+        build=
+            "web-test-alpha.98",
+        test_run_id=
+            WEB_TEST_RUN_ID,
+        operation_readiness=
+            operation,
+        go_no_go=
+            go_no_go,
+        data_health=
+            data_health,
+        run_summary=
+            run_summary,
     )
 
 
