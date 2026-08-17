@@ -245,6 +245,35 @@ class WebTestKpiService:
             else 0.0
         )
 
+        checklist_snapshot_events = [
+            event
+            for event in events
+            if (
+                event["event_type"]
+                == "web_test_checklist_snapshot"
+            )
+        ]
+        checklist_snapshots = len(
+            checklist_snapshot_events
+        )
+        checklist_ready_snapshots = sum(
+            1
+            for event
+            in checklist_snapshot_events
+            if event.get(
+                "metadata",
+                {},
+            ).get(
+                "checklist_ready"
+            )
+        )
+        checklist_ready_rate = (
+            checklist_ready_snapshots
+            / checklist_snapshots
+            if checklist_snapshots
+            else 0.0
+        )
+
         launch_attempt_events = [
             event
             for event in events
@@ -408,6 +437,14 @@ class WebTestKpiService:
             ],
             "average_match_duration_ms": (
                 average_match_duration_ms
+            ),
+            "checklist_snapshots":
+                checklist_snapshots,
+            "checklist_ready_snapshots":
+                checklist_ready_snapshots,
+            "checklist_ready_rate": round(
+                checklist_ready_rate,
+                6,
             ),
             "launch_attempts":
                 launch_attempts,

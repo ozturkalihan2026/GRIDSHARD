@@ -24,6 +24,33 @@ def build_test_run_summary(
         )
     ]
 
+    checklist_snapshot_events = [
+        event
+        for event in events
+        if event["event_type"]
+        == "web_test_checklist_snapshot"
+    ]
+    checklist_snapshots = len(
+        checklist_snapshot_events
+    )
+    checklist_ready_snapshots = sum(
+        1
+        for event
+        in checklist_snapshot_events
+        if event.get(
+            "metadata",
+            {},
+        ).get(
+            "checklist_ready"
+        )
+    )
+    checklist_ready_rate = (
+        checklist_ready_snapshots
+        / checklist_snapshots
+        if checklist_snapshots
+        else 0.0
+    )
+
     launch_attempt_events = [
         event
         for event in events
@@ -179,6 +206,14 @@ def build_test_run_summary(
         "test_run_id": test_run_id,
         "lifecycle_state":
             lifecycle_state,
+        "checklist_snapshots":
+            checklist_snapshots,
+        "checklist_ready_snapshots":
+            checklist_ready_snapshots,
+        "checklist_ready_rate": round(
+            checklist_ready_rate,
+            6,
+        ),
         "launch_attempts":
             launch_attempts,
         "launch_ready_attempts":
