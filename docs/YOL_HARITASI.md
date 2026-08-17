@@ -1,7 +1,7 @@
 # Project Relay 2.0 — YOL HARİTASI
 
-**Güncel Sürüm:** `2.0.0-alpha.107`  
-**Paket:** Checklist Snapshot KPI ve Operasyon Hazır Olma Oranı  
+**Güncel Sürüm:** `2.0.0-alpha.108`  
+**Paket:** İlk Gerçek Web Testi Preflight Raporu  
 **Kanonik Dosya:** `docs/YOL_HARITASI.md`
 
 > Bu dosya Project Relay 2.0 için tek kanonik geliştirme kaydıdır. Her paket tamamlandığında sürüm numarası artırılır; **Tamamlananlar** ve **Yapılacaklar** bu dosyada güncellenir. Sonraki geliştirme paketi bu dosya okunarak başlatılır.
@@ -383,9 +383,9 @@ Aşağıdaki alanlar ilk sürüm kapsamına dahil değildir ve mevcut yol harita
 
 ## Sıradaki Paket
 
-**`2.0.0-alpha.108 — İlk Gerçek Web Testi Preflight Raporu`**
+**`2.0.0-alpha.109 — Preflight Tarayıcı Görünümü ve İlk Gerçek Kullanıcı Testi Başlangıç Kapısı`**
 
-Checklist ve launch zinciri ölçülebiliyor. Sıradaki paket aktif test koşusu için tek bir preflight raporu oluşturacak: checklist, launch-readiness, RC candidate, data health, audit huni ve operasyon KPI'ları tek salt-okunur cevapta birleştirilecek. Bu paket ilk gerçek Web testine çıkış öncesi operasyon paketinin kapanışı olacak.
+Birleşik preflight raporu hazır. Sıradaki paket preflight sonucunu mevcut teknik durum alanına taşıyacak ve gerçek kullanıcı testinin başlatılabilir olduğunu açıkça gösterecek. Oyna için teknik otorite mevcut launch/readiness zincirinde kalacak; preflight yalnızca son operasyon görünümü olacak.
 
 
 ---

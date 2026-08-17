@@ -77,6 +77,9 @@ from .web_test_launch import (
 from .web_test_checklist import (
     build_first_run_checklist,
 )
+from .web_test_preflight import (
+    build_preflight_report,
+)
 from .web_test_run import (
     build_test_run_catalog,
     build_test_run_go_no_go,
@@ -121,8 +124,8 @@ TELEMETRY_MAX_EVENTS = int(
 )
 WEB_TEST_RUN_ID = os.environ.get(
     "RELAY_WEB_TEST_RUN_ID",
-    "web-test-alpha.107",
-).strip() or "web-test-alpha.107"
+    "web-test-alpha.108",
+).strip() or "web-test-alpha.108"
 
 telemetry_repository = (
     JsonFileTelemetryRepository(
@@ -1398,7 +1401,7 @@ def web_test_current_run() -> dict:
         "test_run_id":
             WEB_TEST_RUN_ID,
         "build":
-            "web-test-alpha.107",
+            "web-test-alpha.108",
     }
 
 
@@ -1487,7 +1490,7 @@ def web_test_rc_candidate() -> dict:
     return build_rc_candidate_summary(
         version=VERSION,
         build=
-            "web-test-alpha.107",
+            "web-test-alpha.108",
         test_run_id=
             WEB_TEST_RUN_ID,
         operation_readiness=
@@ -1528,7 +1531,7 @@ def web_test_launch_readiness() -> dict:
     return build_launch_snapshot(
         version=VERSION,
         build=
-            "web-test-alpha.107",
+            "web-test-alpha.108",
         test_run_id=
             WEB_TEST_RUN_ID,
         manifest=manifest,
@@ -1564,7 +1567,7 @@ def web_test_first_run_checklist() -> dict:
     return build_first_run_checklist(
         version=VERSION,
         build=
-            "web-test-alpha.107",
+            "web-test-alpha.108",
         test_run_id=
             WEB_TEST_RUN_ID,
         launch_readiness=
@@ -1575,6 +1578,39 @@ def web_test_first_run_checklist() -> dict:
             rc_candidate,
         run_summary=
             run_summary,
+    )
+
+
+@app.get("/web-test/preflight")
+def web_test_preflight() -> dict:
+    run_summary = (
+        build_test_run_summary(
+            telemetry_service=
+                telemetry_service,
+            test_run_id=
+                WEB_TEST_RUN_ID,
+        )
+    )
+
+    return build_preflight_report(
+        version=VERSION,
+        build=
+            "web-test-alpha.108",
+        test_run_id=
+            WEB_TEST_RUN_ID,
+        checklist=
+            web_test_first_run_checklist(),
+        launch=
+            web_test_launch_readiness(),
+        rc_candidate=
+            web_test_rc_candidate(),
+        data_health=
+            web_test_data_health(),
+        run_summary=
+            run_summary,
+        kpis=
+            web_test_kpi_service
+            .snapshot(),
     )
 
 

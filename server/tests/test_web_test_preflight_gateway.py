@@ -4,24 +4,19 @@ from app.main import app
 client=TestClient(app)
 
 
-def test_rc_candidate_endpoint_is_single_aggregate_snapshot():
+def test_preflight_endpoint():
     body=client.get(
-        "/web-test/rc-candidate"
+        "/web-test/preflight"
     ).json()
 
     assert body["version"]=="2.0.0-alpha.108"
     assert body["build"]=="web-test-alpha.108"
     assert body["test_run_id"]=="web-test-alpha.108"
-    assert body["decision"] in {
-        "GO","NO_GO"
-    }
-    assert "technical" in body
+    assert "preflight_ready" in body
+    assert "checklist" in body
+    assert "launch" in body
+    assert "rc_candidate" in body
     assert "data_health" in body
     assert "test_run" in body
-    assert "behavior" in body
-    assert (
-        body["behavior"][
-            "blocks_release"
-        ]
-        is False
-    )
+    assert "operational_kpis" in body
+    assert body["behavior_blocks_preflight"] is False
