@@ -1,7 +1,7 @@
 # Project Relay 2.0 — YOL HARİTASI
 
-**Güncel Sürüm:** `2.0.0-alpha.64`  
-**Paket:** İlk Gerçek Web Testi İçin Oturum Kimliği ve Test Katılımcısı İzolasyonu  
+**Güncel Sürüm:** `2.0.0-alpha.65`  
+**Paket:** Test Katılımcısı Sunucu Bootstrap ve Tek İstekle Hesap Başlatma  
 **Kanonik Dosya:** `docs/YOL_HARITASI.md`
 
 > Bu dosya Project Relay 2.0 için tek kanonik geliştirme kaydıdır. Her paket tamamlandığında sürüm numarası artırılır; **Tamamlananlar** ve **Yapılacaklar** bu dosyada güncellenir. Sonraki geliştirme paketi bu dosya okunarak başlatılır.
@@ -383,9 +383,9 @@ Aşağıdaki alanlar ilk sürüm kapsamına dahil değildir ve mevcut yol harita
 
 ## Sıradaki Paket
 
-**`2.0.0-alpha.65 — Test Katılımcısı Sunucu Bootstrap ve Tek İstekle Hesap Başlatma`**
+**`2.0.0-alpha.66 — Katılımcı Bootstrap Sağlık Kapısı ve Oyna Hazırlık Birleştirmesi`**
 
-Tarayıcıya özel katılımcı kimliği hazır. Sıradaki paket bu kimliğin ilk açılışında Profil, İstatistikler ve Ayarlar verisini tek sunucu bootstrap çağrısıyla oluşturup/yükleyecek. Böylece ilk gerçek Web test kullanıcısının üç ayrı ekranı açmasını beklemeden sunucu hesabı hazırlanacak; bootstrap idempotent olacak ve mevcut oyuncu verisini sıfırlamayacak.
+Katılımcı hesabı artık tek çağrıda hazırlanıyor. Sıradaki paket Oyna butonunun yalnızca hem sunucu release-check hazır hem de katılımcı bootstrap başarılı olduğunda açılmasını sağlayacak. Bootstrap hata verirse Profil/İstatistikler/Ayarlar yerel fallback ile açılabilecek, Oyna ise kullanıcı tekrar deneyene kadar bloke kalacak.
 
 
 ---

@@ -42,7 +42,7 @@
   const COMPETITIVE_STATUS = "M7 Simülasyon aktif";
   const BALANCE_STATUS = "Eşit modül + counter doğrulandı";
   const AI_STATUS = "Adaptif AI + rekabetçi denge doğrulandı";
-  const PVP_STATUS = "Kalıcı Web test katılımcı kimliği aktif";
+  const PVP_STATUS = "Tek istek katılımcı bootstrap aktif";
 
   const PORT_COUNT_BY_NAME = {
     "Çekirdek":4,
@@ -193,6 +193,37 @@
     graphics_quality: "yuksek",
     language: "tr",
   });
+
+  const participantBootstrap =
+    new RelayParticipantBootstrap({
+      playerId:
+        participantPlayerId,
+      profileState,
+      statisticsState,
+      settingsState,
+    });
+
+  let participantBootstrapResult =
+    null;
+
+  async function bootstrapParticipant() {
+    const result =
+      await participantBootstrap
+        .load();
+
+    participantBootstrapResult =
+      result;
+
+    if (result.ok) {
+      renderProfileSummary();
+      renderStatisticsSummary();
+      renderSettingsForm();
+    }
+
+    renderParticipantBootstrapStatus();
+
+    return result;
+  }
 
   const accountDataLoader =
     new RelayAccountDataLoader({
@@ -398,7 +429,7 @@
         webTestBuildState,
       releaseCheckState,
       expectedVersion:
-        "2.0.0-alpha.64",
+        "2.0.0-alpha.65",
       expectedProtocolVersion: 1,
     });
 
@@ -421,7 +452,7 @@
 
   telemetryDispatcher.trackGameOpened({
     platform: "web",
-    build: "2.0.0-alpha.64",
+    build: "2.0.0-alpha.65",
   });
 
   const postMatchSync =
@@ -781,9 +812,9 @@
   const diagnosticSnapshot =
     new RelayDiagnosticSnapshot({
       version:
-        "2.0.0-alpha.64",
+        "2.0.0-alpha.65",
       build:
-        "web-test-alpha.64",
+        "web-test-alpha.65",
       bootGate:
         serverBootGate,
       connectionManager:
@@ -1356,6 +1387,33 @@ const SPECIAL_CELL_INFO = {
     resultEl.hidden = false;
     resultEl.textContent =
       `${outcome} · ${ratingText} · ${xpText}`;
+  }
+
+  function renderParticipantBootstrapStatus() {
+    const el =
+      document.getElementById(
+        "participant-bootstrap-status"
+      );
+    if (!el) {
+      return;
+    }
+
+    const labels = {
+      idle: "Hesap: Hazır değil",
+      loading:
+        "Hesap: Sunucuda hazırlanıyor",
+      ready: "Hesap: Hazır",
+      error:
+        "Hesap: Sunucu bağlantı hatası",
+    };
+
+    el.textContent =
+      labels[
+        participantBootstrap.status
+      ]
+      || participantBootstrap.status;
+    el.dataset.status =
+      participantBootstrap.status;
   }
 
   function renderParticipantIdentity() {
@@ -2164,6 +2222,8 @@ const SPECIAL_CELL_INFO = {
 
   renderBattlePoolSelection();
   renderParticipantIdentity();
+  renderParticipantBootstrapStatus();
+  bootstrapParticipant();
   renderBoosterOptions();
   createBoard();
   render();

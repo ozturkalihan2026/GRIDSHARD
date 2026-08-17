@@ -3135,6 +3135,117 @@
   }
 
 
+
+  const PARTICIPANT_BOOTSTRAP_STATUS =
+    Object.freeze({
+      IDLE: "idle",
+      LOADING: "loading",
+      READY: "ready",
+      ERROR: "error",
+    });
+
+  class RelayParticipantBootstrap {
+    constructor({
+      playerId,
+      profileState,
+      statisticsState,
+      settingsState,
+      requestJson = null,
+    }) {
+      this.playerId = playerId;
+      this.profileState = profileState;
+      this.statisticsState =
+        statisticsState;
+      this.settingsState =
+        settingsState;
+      this.requestJson =
+        requestJson
+        || (async (path, options = {}) => {
+          const response =
+            await fetch(
+              path,
+              {
+                method:
+                  options.method
+                  || "POST",
+                headers: {
+                  "content-type":
+                    "application/json",
+                },
+              }
+            );
+
+          if (!response.ok) {
+            throw new Error(
+              `Katılımcı bootstrap başarısız: ${response.status}`
+            );
+          }
+
+          return response.json();
+        });
+
+      this.status =
+        PARTICIPANT_BOOTSTRAP_STATUS.IDLE;
+      this.lastError = null;
+      this.payload = null;
+    }
+
+    async load() {
+      this.status =
+        PARTICIPANT_BOOTSTRAP_STATUS.LOADING;
+      this.lastError = null;
+
+      try {
+        const payload =
+          await this.requestJson(
+            `/participants/${encodeURIComponent(this.playerId)}/bootstrap`,
+            {
+              method: "POST",
+            }
+          );
+
+        this.profileState
+          .applyProfile(
+            payload.profile
+          );
+        this.statisticsState
+          .applyStatistics(
+            payload.statistics
+          );
+        this.settingsState
+          .applySettings(
+            payload.settings
+          );
+
+        this.payload = {
+          ...payload,
+        };
+        this.status =
+          PARTICIPANT_BOOTSTRAP_STATUS.READY;
+
+        return {
+          ok: true,
+          payload:
+            this.payload,
+        };
+      } catch (error) {
+        this.lastError =
+          error instanceof Error
+            ? error.message
+            : String(error);
+        this.status =
+          PARTICIPANT_BOOTSTRAP_STATUS.ERROR;
+
+        return {
+          ok: false,
+          reason:
+            this.lastError,
+        };
+      }
+    }
+  }
+
+
   const api = {
     RelayBattleClient,
     RelayPvPClientState,
@@ -3159,6 +3270,7 @@
     RelayDiagnosticSnapshot,
     RelayWebTestRcReportState,
     RelayTestParticipantIdentity,
+    RelayParticipantBootstrap,
     BattlePoolSelection,
     APP_SCREEN,
     WS_CONNECTION_STATUS,
@@ -3168,6 +3280,7 @@
     TELEMETRY_TRANSPORT_STATUS,
     PLAY_RECOVERY_KIND,
     SERVER_BOOT_STATUS,
+    PARTICIPANT_BOOTSTRAP_STATUS,
     PVP_PHASE,
     MODULE_STATUS,
     DRAG_KIND,
@@ -3201,6 +3314,8 @@
   global.RelayDiagnosticSnapshot = RelayDiagnosticSnapshot;
   global.RelayWebTestRcReportState = RelayWebTestRcReportState;
   global.RelayTestParticipantIdentity = RelayTestParticipantIdentity;
+  global.RelayParticipantBootstrap = RelayParticipantBootstrap;
+  global.RelayParticipantBootstrapStatus = PARTICIPANT_BOOTSTRAP_STATUS;
   global.RelayServerBootStatus = SERVER_BOOT_STATUS;
   global.RelayPlayRecoveryKind = PLAY_RECOVERY_KIND;
   global.RelayTelemetryTransportStatus = TELEMETRY_TRANSPORT_STATUS;

@@ -522,6 +522,39 @@ def get_statistics(
     )
 
 
+@app.post("/participants/{player_id}/bootstrap")
+def bootstrap_test_participant(
+    player_id: str,
+) -> dict:
+    profile = (
+        player_profile_service
+        .get_or_create(
+            player_id
+        )
+    )
+    statistics = (
+        player_statistics_service
+        .get_or_create(
+            player_id
+        )
+    )
+    settings = (
+        player_settings_service
+        .get_or_create(
+            player_id
+        )
+    )
+
+    return {
+        "player_id": player_id,
+        "profile": profile.to_view(),
+        "statistics":
+            statistics.to_view(),
+        "settings":
+            settings.to_view(),
+    }
+
+
 @app.get("/profile/{player_id}")
 def get_profile(
     player_id: str,

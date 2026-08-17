@@ -402,61 +402,61 @@ function createClient() {
   const fs=require("fs");
   const src=fs.readFileSync("./src/app.js","utf8");
   assert.ok(src.includes("PVP_STATUS"));
-  assert.ok(src.includes("Kalıcı Web test katılımcı kimliği aktif"));
+  assert.ok(src.includes("Tek istek katılımcı bootstrap aktif"));
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync("./src/app.js","utf8");
-  assert.ok(src.includes("Kalıcı Web test katılımcı kimliği aktif")); // alpha32->33 protocol status
+  assert.ok(src.includes("Tek istek katılımcı bootstrap aktif")); // alpha32->33 protocol status
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync("./src/app.js","utf8");
-  assert.ok(src.includes("Kalıcı Web test katılımcı kimliği aktif")); // alpha33 protocol
+  assert.ok(src.includes("Tek istek katılımcı bootstrap aktif")); // alpha33 protocol
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync("./src/app.js","utf8");
-  assert.ok(src.includes("Kalıcı Web test katılımcı kimliği aktif")); // alpha34 websocket
+  assert.ok(src.includes("Tek istek katılımcı bootstrap aktif")); // alpha34 websocket
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync("./src/app.js","utf8");
-  assert.ok(src.includes("Kalıcı Web test katılımcı kimliği aktif")); // alpha35 gateway
+  assert.ok(src.includes("Tek istek katılımcı bootstrap aktif")); // alpha35 gateway
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync("./src/app.js","utf8");
-  assert.ok(src.includes("Kalıcı Web test katılımcı kimliği aktif")); // alpha36 setup
+  assert.ok(src.includes("Tek istek katılımcı bootstrap aktif")); // alpha36 setup
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync("./src/app.js","utf8");
-  assert.ok(src.includes("Kalıcı Web test katılımcı kimliği aktif")); // alpha37 lobby
+  assert.ok(src.includes("Tek istek katılımcı bootstrap aktif")); // alpha37 lobby
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync("./src/app.js","utf8");
-  assert.ok(src.includes("Kalıcı Web test katılımcı kimliği aktif")); // alpha38 runner
+  assert.ok(src.includes("Tek istek katılımcı bootstrap aktif")); // alpha38 runner
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync("./src/app.js","utf8");
-  assert.ok(src.includes("Kalıcı Web test katılımcı kimliği aktif")); // alpha39 heartbeat
+  assert.ok(src.includes("Tek istek katılımcı bootstrap aktif")); // alpha39 heartbeat
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync("./src/app.js","utf8");
-  assert.ok(src.includes("Kalıcı Web test katılımcı kimliği aktif")); // alpha40 online pvp
+  assert.ok(src.includes("Tek istek katılımcı bootstrap aktif")); // alpha40 online pvp
 }
 
 {
@@ -682,7 +682,7 @@ function createClient() {
 {
   const fs=require("fs");
   const src=fs.readFileSync("./src/app.js","utf8");
-  assert.ok(src.includes("Kalıcı Web test katılımcı kimliği aktif"));
+  assert.ok(src.includes("Tek istek katılımcı bootstrap aktif"));
   assert.ok(src.includes("buildPvPCommandEnvelope"));
   assert.ok(src.includes("applyPvPServerEnvelope"));
 }
@@ -1504,10 +1504,10 @@ function createClient() {
 
   const result=state.applyHealth({
     status:"ok",
-    version:"2.0.0-alpha.64",
+    version:"2.0.0-alpha.65",
     web_test:{
       ready:true,
-      build:"web-test-alpha.64",
+      build:"web-test-alpha.65",
       release_checks:[
         "health",
         "matchmaking",
@@ -1551,7 +1551,7 @@ function createClient() {
 
   const result=state.applyHealth({
     status:"ok",
-    version:"2.0.0-alpha.64",
+    version:"2.0.0-alpha.65",
   });
 
   assert.strictEqual(
@@ -2322,7 +2322,7 @@ function createClient() {
   const html=fs.readFileSync("./index.html","utf8");
   assert.ok(
     html.includes(
-      "2.0.0-alpha.64"
+      "2.0.0-alpha.65"
     )
   );
   assert.ok(
@@ -2504,8 +2504,8 @@ function createClient() {
     new RelayReleaseCheckState();
 
   const view=state.apply({
-    version:"2.0.0-alpha.64",
-    build:"web-test-alpha.64",
+    version:"2.0.0-alpha.65",
+    build:"web-test-alpha.65",
     ready:true,
     checks:{
       health_ready:true,
@@ -2645,17 +2645,17 @@ function createClient() {
       healthState:health,
       releaseCheckState:release,
       expectedVersion:
-        "2.0.0-alpha.64",
+        "2.0.0-alpha.65",
       expectedProtocolVersion:1,
       requestJson:
         async (path) => {
           if (path==="/health") {
             return {
               status:"ok",
-              version:"2.0.0-alpha.64",
+              version:"2.0.0-alpha.65",
               web_test:{
                 ready:true,
-                build:"web-test-alpha.64",
+                build:"web-test-alpha.65",
                 release_checks:[],
                 capabilities:{},
               },
@@ -2666,8 +2666,8 @@ function createClient() {
             === "/web-test/release-check"
           ) {
             return {
-              version:"2.0.0-alpha.64",
-              build:"web-test-alpha.64",
+              version:"2.0.0-alpha.65",
+              build:"web-test-alpha.65",
               ready:true,
               checks:{
                 health_ready:true,
@@ -2682,7 +2682,7 @@ function createClient() {
 
           return {
             server_version:
-              "2.0.0-alpha.64",
+              "2.0.0-alpha.65",
             web_test_build:
               "web-test-alpha.62",
             pvp_protocol_version:1,
@@ -2735,8 +2735,8 @@ function createClient() {
 
   const snapshot=
     new RelayDiagnosticSnapshot({
-      version:"2.0.0-alpha.64",
-      build:"web-test-alpha.64",
+      version:"2.0.0-alpha.65",
+      build:"web-test-alpha.65",
       bootGate:{status:"ready"},
       connectionManager:{
         status:"open",
@@ -2820,16 +2820,16 @@ function createClient() {
       releaseCheckState:
         new RelayReleaseCheckState(),
       expectedVersion:
-        "2.0.0-alpha.64",
+        "2.0.0-alpha.65",
       expectedProtocolVersion:1,
       requestJson:
         async (path) => {
           if (path==="/health") {
             return {
-              version:"2.0.0-alpha.64",
+              version:"2.0.0-alpha.65",
               web_test:{
                 ready:true,
-                build:"web-test-alpha.64",
+                build:"web-test-alpha.65",
                 release_checks:[],
                 capabilities:{},
               },
@@ -2840,8 +2840,8 @@ function createClient() {
             === "/web-test/release-check"
           ) {
             return {
-              version:"2.0.0-alpha.64",
-              build:"web-test-alpha.64",
+              version:"2.0.0-alpha.65",
+              build:"web-test-alpha.65",
               ready:true,
               checks:{ok:true},
               menu_areas:[],
@@ -2887,8 +2887,8 @@ function createClient() {
     new RelayWebTestRcReportState();
 
   const view=state.apply({
-    version:"2.0.0-alpha.64",
-    build:"web-test-alpha.64",
+    version:"2.0.0-alpha.65",
+    build:"web-test-alpha.65",
     ready:true,
     critical_failures:[],
     kpis:{
@@ -3040,8 +3040,134 @@ function createClient() {
   );
 }
 
+{
+  const {
+    RelayParticipantBootstrap,
+    RelayProfileClientState,
+    RelayStatisticsClientState,
+    RelaySettingsClientState,
+    PARTICIPANT_BOOTSTRAP_STATUS,
+  } = require("../src/relay-client.js");
+
+  const profile=
+    new RelayProfileClientState();
+  const statistics=
+    new RelayStatisticsClientState();
+  const settings=
+    new RelaySettingsClientState();
+
+  const bootstrap=
+    new RelayParticipantBootstrap({
+      playerId:
+        "wt-test-123456",
+      profileState:profile,
+      statisticsState:statistics,
+      settingsState:settings,
+      requestJson:
+        async (path,options) => {
+          assert.strictEqual(
+            path,
+            "/participants/wt-test-123456/bootstrap"
+          );
+          assert.strictEqual(
+            options.method,
+            "POST"
+          );
+          return {
+            player_id:
+              "wt-test-123456",
+            profile:{
+              player_id:
+                "wt-test-123456",
+              display_name:"Oyuncu",
+              level:1,
+              experience:0,
+              experience_into_level:0,
+              experience_to_next_level:1000,
+              rating:1000,
+              league_name_tr:"Gümüş",
+              preferred_battle_pool_ids:[],
+            },
+            statistics:{
+              player_id:
+                "wt-test-123456",
+              total_matches:0,
+              wins:0,
+              losses:0,
+              draws:0,
+              win_rate:0,
+              average_match_duration_ms:0,
+              total_damage_dealt:0,
+              module_replacements:0,
+              boosters_used:0,
+              most_used_modules:[],
+            },
+            settings:{
+              player_id:
+                "wt-test-123456",
+              sound_volume:100,
+              music_volume:70,
+              vibration_enabled:true,
+              graphics_quality:"yuksek",
+              language:"tr",
+            },
+          };
+        },
+    });
+
+  asyncTests.push(
+    bootstrap.load()
+      .then((result) => {
+        assert.strictEqual(
+          result.ok,
+          true
+        );
+        assert.strictEqual(
+          bootstrap.status,
+          PARTICIPANT_BOOTSTRAP_STATUS.READY
+        );
+        assert.strictEqual(
+          profile.viewModel().rating,
+          1000
+        );
+        assert.strictEqual(
+          statistics.viewModel()
+            .totalMatches,
+          0
+        );
+        assert.strictEqual(
+          settings.viewModel()
+            .language,
+          "tr"
+        );
+      })
+  );
+}
+
+{
+  const fs=require("fs");
+  const app=fs.readFileSync("./src/app.js","utf8");
+  const html=fs.readFileSync("./index.html","utf8");
+
+  assert.ok(
+    app.includes(
+      "RelayParticipantBootstrap"
+    )
+  );
+  assert.ok(
+    app.includes(
+      "bootstrapParticipant"
+    )
+  );
+  assert.ok(
+    html.includes(
+      'id="participant-bootstrap-status"'
+    )
+  );
+}
+
 Promise.all(asyncTests).then(() => {
-  console.log("108 client tests passed");
+  console.log("110 client tests passed");
 }).catch((error) => {
   console.error(error);
   process.exitCode = 1;
