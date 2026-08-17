@@ -402,61 +402,61 @@ function createClient() {
   const fs=require("fs");
   const src=fs.readFileSync("./src/app.js","utf8");
   assert.ok(src.includes("PVP_STATUS"));
-  assert.ok(src.includes("Maç sonucu → Profil/İstatistik senkronizasyonu aktif"));
+  assert.ok(src.includes("Profil/İstatistik/Ayarlar gerçek sunucu yükleme aktif"));
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync("./src/app.js","utf8");
-  assert.ok(src.includes("Maç sonucu → Profil/İstatistik senkronizasyonu aktif")); // alpha32->33 protocol status
+  assert.ok(src.includes("Profil/İstatistik/Ayarlar gerçek sunucu yükleme aktif")); // alpha32->33 protocol status
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync("./src/app.js","utf8");
-  assert.ok(src.includes("Maç sonucu → Profil/İstatistik senkronizasyonu aktif")); // alpha33 protocol
+  assert.ok(src.includes("Profil/İstatistik/Ayarlar gerçek sunucu yükleme aktif")); // alpha33 protocol
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync("./src/app.js","utf8");
-  assert.ok(src.includes("Maç sonucu → Profil/İstatistik senkronizasyonu aktif")); // alpha34 websocket
+  assert.ok(src.includes("Profil/İstatistik/Ayarlar gerçek sunucu yükleme aktif")); // alpha34 websocket
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync("./src/app.js","utf8");
-  assert.ok(src.includes("Maç sonucu → Profil/İstatistik senkronizasyonu aktif")); // alpha35 gateway
+  assert.ok(src.includes("Profil/İstatistik/Ayarlar gerçek sunucu yükleme aktif")); // alpha35 gateway
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync("./src/app.js","utf8");
-  assert.ok(src.includes("Maç sonucu → Profil/İstatistik senkronizasyonu aktif")); // alpha36 setup
+  assert.ok(src.includes("Profil/İstatistik/Ayarlar gerçek sunucu yükleme aktif")); // alpha36 setup
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync("./src/app.js","utf8");
-  assert.ok(src.includes("Maç sonucu → Profil/İstatistik senkronizasyonu aktif")); // alpha37 lobby
+  assert.ok(src.includes("Profil/İstatistik/Ayarlar gerçek sunucu yükleme aktif")); // alpha37 lobby
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync("./src/app.js","utf8");
-  assert.ok(src.includes("Maç sonucu → Profil/İstatistik senkronizasyonu aktif")); // alpha38 runner
+  assert.ok(src.includes("Profil/İstatistik/Ayarlar gerçek sunucu yükleme aktif")); // alpha38 runner
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync("./src/app.js","utf8");
-  assert.ok(src.includes("Maç sonucu → Profil/İstatistik senkronizasyonu aktif")); // alpha39 heartbeat
+  assert.ok(src.includes("Profil/İstatistik/Ayarlar gerçek sunucu yükleme aktif")); // alpha39 heartbeat
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync("./src/app.js","utf8");
-  assert.ok(src.includes("Maç sonucu → Profil/İstatistik senkronizasyonu aktif")); // alpha40 online pvp
+  assert.ok(src.includes("Profil/İstatistik/Ayarlar gerçek sunucu yükleme aktif")); // alpha40 online pvp
 }
 
 {
@@ -682,7 +682,7 @@ function createClient() {
 {
   const fs=require("fs");
   const src=fs.readFileSync("./src/app.js","utf8");
-  assert.ok(src.includes("Maç sonucu → Profil/İstatistik senkronizasyonu aktif"));
+  assert.ok(src.includes("Profil/İstatistik/Ayarlar gerçek sunucu yükleme aktif"));
   assert.ok(src.includes("buildPvPCommandEnvelope"));
   assert.ok(src.includes("applyPvPServerEnvelope"));
 }
@@ -1504,10 +1504,10 @@ function createClient() {
 
   const result=state.applyHealth({
     status:"ok",
-    version:"2.0.0-alpha.53",
+    version:"2.0.0-alpha.54",
     web_test:{
       ready:true,
-      build:"web-test-alpha.53",
+      build:"web-test-alpha.54",
       release_checks:[
         "health",
         "matchmaking",
@@ -1551,7 +1551,7 @@ function createClient() {
 
   const result=state.applyHealth({
     status:"ok",
-    version:"2.0.0-alpha.53",
+    version:"2.0.0-alpha.54",
   });
 
   assert.strictEqual(
@@ -2081,8 +2081,195 @@ function createClient() {
   );
 }
 
+{
+  const {
+    RelayAccountDataLoader,
+    RelayProfileClientState,
+    RelayStatisticsClientState,
+    RelaySettingsClientState,
+    REMOTE_DATA_STATUS,
+  } = require("../src/relay-client.js");
+
+  const profile=
+    new RelayProfileClientState();
+  const statistics=
+    new RelayStatisticsClientState();
+  const settings=
+    new RelaySettingsClientState();
+
+  const loader=
+    new RelayAccountDataLoader({
+      playerId:"a",
+      profileState:profile,
+      statisticsState:statistics,
+      settingsState:settings,
+      requestJson:
+        async (path,options={}) => {
+          if (
+            path==="/profile/a"
+          ) {
+            return {
+              player_id:"a",
+              display_name:"Alihan",
+              level:2,
+              experience:1200,
+              experience_into_level:200,
+              experience_to_next_level:800,
+              rating:1110,
+              league_name_tr:"Altın",
+              preferred_battle_pool_ids:[],
+            };
+          }
+
+          if (
+            path==="/statistics/a"
+          ) {
+            return {
+              player_id:"a",
+              total_matches:4,
+              wins:2,
+              losses:1,
+              draws:1,
+              win_rate:0.5,
+              average_match_duration_ms:100000,
+              total_damage_dealt:1000,
+              module_replacements:4,
+              boosters_used:2,
+              most_used_modules:[],
+            };
+          }
+
+          if (
+            path==="/settings/a"
+            && !options.method
+          ) {
+            return {
+              player_id:"a",
+              sound_volume:80,
+              music_volume:50,
+              vibration_enabled:false,
+              graphics_quality:"orta",
+              language:"tr",
+            };
+          }
+
+          if (
+            path==="/settings/a"
+            && options.method==="PUT"
+          ) {
+            return {
+              player_id:"a",
+              sound_volume:25,
+              music_volume:10,
+              vibration_enabled:true,
+              graphics_quality:"dusuk",
+              language:"en",
+            };
+          }
+
+          throw new Error("unexpected path");
+        },
+    });
+
+  asyncTests.push(
+    loader.loadAll()
+      .then((result) => {
+        assert.strictEqual(
+          result.ok,
+          true
+        );
+        assert.strictEqual(
+          loader.status.profile,
+          REMOTE_DATA_STATUS.READY
+        );
+        assert.strictEqual(
+          profile.viewModel().rating,
+          1110
+        );
+        assert.strictEqual(
+          statistics.viewModel()
+            .totalMatches,
+          4
+        );
+        assert.strictEqual(
+          settings.viewModel()
+            .graphicsQuality,
+          "orta"
+        );
+
+        return loader.saveSettings({
+          sound_volume:25,
+        });
+      })
+      .then((result) => {
+        assert.strictEqual(
+          result.ok,
+          true
+        );
+        assert.strictEqual(
+          settings.viewModel()
+            .soundVolume,
+          25
+        );
+      })
+  );
+}
+
+{
+  const fs=require("fs");
+  const html=fs.readFileSync(
+    "./index.html",
+    "utf8"
+  );
+  const app=fs.readFileSync(
+    "./src/app.js",
+    "utf8"
+  );
+
+  assert.ok(
+    html.includes(
+      'id="profile-load-status"'
+    )
+  );
+  assert.ok(
+    html.includes(
+      'id="statistics-load-status"'
+    )
+  );
+  assert.ok(
+    html.includes(
+      'id="settings-load-status"'
+    )
+  );
+  assert.ok(
+    html.includes(
+      'id="settings-save"'
+    )
+  );
+  assert.ok(
+    app.includes(
+      ".loadProfile()"
+    )
+  );
+  assert.ok(
+    app.includes(
+      ".loadStatistics()"
+    )
+  );
+  assert.ok(
+    app.includes(
+      ".loadSettings()"
+    )
+  );
+  assert.ok(
+    app.includes(
+      "saveSettingsForm"
+    )
+  );
+}
+
 Promise.all(asyncTests).then(() => {
-  console.log("88 client tests passed");
+  console.log("90 client tests passed");
 }).catch((error) => {
   console.error(error);
   process.exitCode = 1;

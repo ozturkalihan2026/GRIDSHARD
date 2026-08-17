@@ -2038,6 +2038,201 @@
   }
 
 
+
+  const REMOTE_DATA_STATUS = Object.freeze({
+    IDLE: "idle",
+    LOADING: "loading",
+    READY: "ready",
+    ERROR: "error",
+  });
+
+  class RelayAccountDataLoader {
+    constructor({
+      playerId,
+      profileState,
+      statisticsState,
+      settingsState,
+      requestJson = null,
+    }) {
+      if (!playerId) {
+        throw new Error(
+          "Oyuncu verisi yüklemek için oyuncu kimliği zorunludur."
+        );
+      }
+
+      this.playerId = playerId;
+      this.profileState = profileState;
+      this.statisticsState = statisticsState;
+      this.settingsState = settingsState;
+      this.requestJson =
+        requestJson
+        || (async (path, options = {}) => {
+          const response = await fetch(
+            path,
+            {
+              ...options,
+              headers: {
+                "content-type":
+                  "application/json",
+                ...(options.headers || {}),
+              },
+            }
+          );
+
+          if (!response.ok) {
+            throw new Error(
+              `Oyuncu verisi isteği başarısız: ${response.status}`
+            );
+          }
+
+          return response.json();
+        });
+
+      this.status = {
+        profile:
+          REMOTE_DATA_STATUS.IDLE,
+        statistics:
+          REMOTE_DATA_STATUS.IDLE,
+        settings:
+          REMOTE_DATA_STATUS.IDLE,
+      };
+      this.errors = {
+        profile: null,
+        statistics: null,
+        settings: null,
+      };
+    }
+
+    async loadProfile() {
+      return this._load(
+        "profile",
+        `/profile/${encodeURIComponent(this.playerId)}`,
+        (payload) =>
+          this.profileState
+            .applyProfile(payload)
+      );
+    }
+
+    async loadStatistics() {
+      return this._load(
+        "statistics",
+        `/statistics/${encodeURIComponent(this.playerId)}`,
+        (payload) =>
+          this.statisticsState
+            .applyStatistics(payload)
+      );
+    }
+
+    async loadSettings() {
+      return this._load(
+        "settings",
+        `/settings/${encodeURIComponent(this.playerId)}`,
+        (payload) =>
+          this.settingsState
+            .applySettings(payload)
+      );
+    }
+
+    async saveSettings(patch) {
+      this.status.settings =
+        REMOTE_DATA_STATUS.LOADING;
+      this.errors.settings = null;
+
+      try {
+        const payload =
+          await this.requestJson(
+            `/settings/${encodeURIComponent(this.playerId)}`,
+            {
+              method: "PUT",
+              body: JSON.stringify(
+                patch
+              ),
+            }
+          );
+
+        this.settingsState
+          .applySettings(
+            payload
+          );
+        this.status.settings =
+          REMOTE_DATA_STATUS.READY;
+
+        return {
+          ok: true,
+          payload,
+        };
+      } catch (error) {
+        this.status.settings =
+          REMOTE_DATA_STATUS.ERROR;
+        this.errors.settings =
+          error instanceof Error
+            ? error.message
+            : String(error);
+
+        return {
+          ok: false,
+          reason:
+            this.errors.settings,
+        };
+      }
+    }
+
+    async loadAll() {
+      const results =
+        await Promise.all([
+          this.loadProfile(),
+          this.loadStatistics(),
+          this.loadSettings(),
+        ]);
+
+      return {
+        ok: results.every(
+          (result) => result.ok
+        ),
+        results,
+      };
+    }
+
+    async _load(
+      key,
+      path,
+      apply
+    ) {
+      this.status[key] =
+        REMOTE_DATA_STATUS.LOADING;
+      this.errors[key] = null;
+
+      try {
+        const payload =
+          await this.requestJson(
+            path
+          );
+        apply(payload);
+        this.status[key] =
+          REMOTE_DATA_STATUS.READY;
+
+        return {
+          ok: true,
+          payload,
+        };
+      } catch (error) {
+        this.status[key] =
+          REMOTE_DATA_STATUS.ERROR;
+        this.errors[key] =
+          error instanceof Error
+            ? error.message
+            : String(error);
+
+        return {
+          ok: false,
+          reason:
+            this.errors[key],
+        };
+      }
+    }
+  }
+
+
   const api = {
     RelayBattleClient,
     RelayPvPClientState,
@@ -2053,11 +2248,13 @@
     RelayWebTestBuildState,
     RelayOnlinePlayCoordinator,
     RelayPostMatchSync,
+    RelayAccountDataLoader,
     BattlePoolSelection,
     APP_SCREEN,
     WS_CONNECTION_STATUS,
     TELEMETRY_EVENT_TYPE,
     ONLINE_PLAY_STATUS,
+    REMOTE_DATA_STATUS,
     PVP_PHASE,
     MODULE_STATUS,
     DRAG_KIND,
@@ -2082,6 +2279,8 @@
   global.RelayWebTestBuildState = RelayWebTestBuildState;
   global.RelayOnlinePlayCoordinator = RelayOnlinePlayCoordinator;
   global.RelayPostMatchSync = RelayPostMatchSync;
+  global.RelayAccountDataLoader = RelayAccountDataLoader;
+  global.RelayRemoteDataStatus = REMOTE_DATA_STATUS;
   global.RelayOnlinePlayStatus = ONLINE_PLAY_STATUS;
   global.RelayTelemetryEventType = TELEMETRY_EVENT_TYPE;
   global.RelayAppScreen = APP_SCREEN;

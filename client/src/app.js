@@ -42,7 +42,7 @@
   const COMPETITIVE_STATUS = "M7 Simülasyon aktif";
   const BALANCE_STATUS = "Eşit modül + counter doğrulandı";
   const AI_STATUS = "Adaptif AI + rekabetçi denge doğrulandı";
-  const PVP_STATUS = "Maç sonucu → Profil/İstatistik senkronizasyonu aktif";
+  const PVP_STATUS = "Profil/İstatistik/Ayarlar gerçek sunucu yükleme aktif";
 
   const PORT_COUNT_BY_NAME = {
     "Çekirdek":4,
@@ -189,6 +189,15 @@
     language: "tr",
   });
 
+  const accountDataLoader =
+    new RelayAccountDataLoader({
+      playerId:
+        pvpState.playerId,
+      profileState,
+      statisticsState,
+      settingsState,
+    });
+
   const appRouter = new RelayAppRouter();
 
   function renderAppScreen() {
@@ -242,7 +251,37 @@
       logClientMessage(result.reason);
       return result;
     }
+
     renderAppScreen();
+
+    if (screen === "profile") {
+      accountDataLoader
+        .loadProfile()
+        .then(() => {
+          renderProfileSummary();
+          renderRemoteDataStatus();
+        });
+    } else if (
+      screen === "statistics"
+    ) {
+      accountDataLoader
+        .loadStatistics()
+        .then(() => {
+          renderStatisticsSummary();
+          renderRemoteDataStatus();
+        });
+    } else if (
+      screen === "settings"
+    ) {
+      accountDataLoader
+        .loadSettings()
+        .then(() => {
+          renderSettingsForm();
+          renderRemoteDataStatus();
+        });
+    }
+
+    renderRemoteDataStatus();
     return result;
   }
 
@@ -307,10 +346,10 @@
     new RelayWebTestBuildState();
   webTestBuildState.applyHealth({
     status: "ok",
-    version: "2.0.0-alpha.53",
+    version: "2.0.0-alpha.54",
     web_test: {
       ready: true,
-      build: "web-test-alpha.53",
+      build: "web-test-alpha.54",
       release_checks: [
         "health",
         "matchmaking",
@@ -340,7 +379,7 @@
 
   telemetryDispatcher.trackGameOpened({
     platform: "web",
-    build: "2.0.0-alpha.53",
+    build: "2.0.0-alpha.54",
   });
 
   const postMatchSync =
@@ -839,6 +878,147 @@ const SPECIAL_CELL_INFO = {
 
       board.appendChild(cell);
     }
+  }
+
+  function renderRemoteDataStatus() {
+    const mapping = {
+      profile:
+        document.getElementById(
+          "profile-load-status"
+        ),
+      statistics:
+        document.getElementById(
+          "statistics-load-status"
+        ),
+      settings:
+        document.getElementById(
+          "settings-load-status"
+        ),
+    };
+
+    const labels = {
+      idle: "Yerel önizleme",
+      loading: "Sunucudan yükleniyor...",
+      ready: "Sunucu verisi",
+      error: "Sunucu yükleme hatası",
+    };
+
+    for (
+      const [key, element]
+      of Object.entries(mapping)
+    ) {
+      if (!element) continue;
+
+      const status =
+        accountDataLoader
+          .status[key];
+
+      element.textContent =
+        labels[status] || status;
+      element.dataset.status =
+        status;
+    }
+  }
+
+  function renderSettingsForm() {
+    const view =
+      settingsState.viewModel();
+    if (!view) return;
+
+    const sound =
+      document.getElementById(
+        "settings-sound"
+      );
+    const music =
+      document.getElementById(
+        "settings-music"
+      );
+    const vibration =
+      document.getElementById(
+        "settings-vibration"
+      );
+    const graphics =
+      document.getElementById(
+        "settings-graphics"
+      );
+    const language =
+      document.getElementById(
+        "settings-language"
+      );
+
+    if (sound) {
+      sound.value =
+        view.soundVolume;
+    }
+    if (music) {
+      music.value =
+        view.musicVolume;
+    }
+    if (vibration) {
+      vibration.checked =
+        view.vibrationEnabled;
+    }
+    if (graphics) {
+      graphics.value =
+        view.graphicsQuality;
+    }
+    if (language) {
+      language.value =
+        view.language;
+    }
+  }
+
+  async function saveSettingsForm() {
+    const sound =
+      document.getElementById(
+        "settings-sound"
+      );
+    const music =
+      document.getElementById(
+        "settings-music"
+      );
+    const vibration =
+      document.getElementById(
+        "settings-vibration"
+      );
+    const graphics =
+      document.getElementById(
+        "settings-graphics"
+      );
+    const language =
+      document.getElementById(
+        "settings-language"
+      );
+
+    const result =
+      await accountDataLoader
+        .saveSettings({
+          sound_volume:
+            Number(sound?.value ?? 100),
+          music_volume:
+            Number(music?.value ?? 70),
+          vibration_enabled:
+            Boolean(
+              vibration?.checked
+            ),
+          graphics_quality:
+            graphics?.value
+            || "yuksek",
+          language:
+            language?.value
+            || "tr",
+        });
+
+    renderSettingsForm();
+    renderRemoteDataStatus();
+
+    if (!result.ok) {
+      logClientMessage(
+        result.reason
+      );
+    }
+
+    return result;
   }
 
   function renderPostMatchSummary() {
@@ -1530,6 +1710,17 @@ const SPECIAL_CELL_INFO = {
     }
 
     requestAnimationFrame(updateClock);
+  }
+
+  const settingsSaveButton =
+    document.getElementById(
+      "settings-save"
+    );
+  if (settingsSaveButton) {
+    settingsSaveButton.addEventListener(
+      "click",
+      saveSettingsForm
+    );
   }
 
   const rematchButton =

@@ -1,7 +1,7 @@
 # Project Relay 2.0 — YOL HARİTASI
 
-**Güncel Sürüm:** `2.0.0-alpha.53`  
-**Paket:** Gerçek Maç Sonucu → Profil / İstatistikler Senkronizasyonu  
+**Güncel Sürüm:** `2.0.0-alpha.54`  
+**Paket:** Profil / İstatistikler / Ayarlar Gerçek Sunucu Yükleme Akışı  
 **Kanonik Dosya:** `docs/YOL_HARITASI.md`
 
 > Bu dosya Project Relay 2.0 için tek kanonik geliştirme kaydıdır. Her paket tamamlandığında sürüm numarası artırılır; **Tamamlananlar** ve **Yapılacaklar** bu dosyada güncellenir. Sonraki geliştirme paketi bu dosya okunarak başlatılır.
@@ -380,9 +380,9 @@ Aşağıdaki alanlar ilk sürüm kapsamına dahil değildir ve mevcut yol harita
 
 ## Sıradaki Paket
 
-**`2.0.0-alpha.54 — Profil / İstatistikler / Ayarlar Gerçek Sunucu Yükleme Akışı`**
+**`2.0.0-alpha.55 — Web Test Telemetri KPI Özeti`**
 
-Maç sonu senkronizasyonu tamamlandı. Sıradaki paket yeni menü eklemeden ana menüden Profil, İstatistikler veya Ayarlar ekranı açıldığında ilgili veriyi gerçek sunucu endpoint'lerinden yükleyecek. İstemci başlangıçta gömülü örnek değerleri yalnızca fallback olarak kullanacak; ekran durumu loading/ready/error olarak izlenecek. Ayar değişiklikleri de mevcut PUT endpoint'ine bağlanacak.
+Gerçek hesap ekranları sunucuya bağlandı. Sıradaki paket yeni menü eklemeden mevcut telemetri olaylarından Web testinde izlenecek temel KPI'ları türetecek: tamamlanan maç sayısı/oranı için temel sayaçlar, tekrar maç isteği, modül değişimi, Devre Kredisi harcaması, Modül Rafı kullanımı, güçlendirici kullanımı ve ortalama maç süresi. KPI endpoint'i yalnızca test/ölçüm katmanı olacak ve savaş motoruna etki etmeyecek.
 
 
 ---
