@@ -3505,6 +3505,67 @@
   }
 
 
+
+  class RelayWebTestGoNoGoState {
+    constructor() {
+      this.value = null;
+    }
+
+    apply(value) {
+      if (!value) {
+        throw new Error(
+          "Web test Go/No-Go özeti gerekli."
+        );
+      }
+
+      this.value = {
+        ...value,
+        behavior_signals: {
+          ...(value.behavior_signals || {}),
+        },
+      };
+
+      return this.viewModel();
+    }
+
+    viewModel() {
+      if (!this.value) {
+        return null;
+      }
+
+      const signals =
+        this.value.behavior_signals
+        || {};
+      const insufficient =
+        Object.values(signals)
+          .filter(
+            (item) =>
+              item?.status
+              === "insufficient_data"
+          )
+          .length;
+
+      return {
+        decision:
+          this.value.decision
+          || "NO_GO",
+        technicalReady:
+          Boolean(
+            this.value.technical_ready
+          ),
+        insufficientSignalCount:
+          insufficient,
+        minimumBehaviorSample:
+          Number(
+            this.value
+              .minimum_behavior_sample
+            || 0
+          ),
+      };
+    }
+  }
+
+
   const api = {
     RelayBattleClient,
     RelayPvPClientState,
@@ -3528,6 +3589,7 @@
     RelayServerBootGate,
     RelayDiagnosticSnapshot,
     RelayWebTestRcReportState,
+    RelayWebTestGoNoGoState,
     RelayTestParticipantIdentity,
     RelayParticipantBootstrap,
     RelayPlayReadinessGate,
@@ -3575,6 +3637,7 @@
   global.RelayServerBootGate = RelayServerBootGate;
   global.RelayDiagnosticSnapshot = RelayDiagnosticSnapshot;
   global.RelayWebTestRcReportState = RelayWebTestRcReportState;
+  global.RelayWebTestGoNoGoState = RelayWebTestGoNoGoState;
   global.RelayTestParticipantIdentity = RelayTestParticipantIdentity;
   global.RelayParticipantBootstrap = RelayParticipantBootstrap;
   global.RelayPlayReadinessGate = RelayPlayReadinessGate;

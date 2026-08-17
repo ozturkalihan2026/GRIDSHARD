@@ -42,7 +42,7 @@
   const COMPETITIVE_STATUS = "M7 Simülasyon aktif";
   const BALANCE_STATUS = "Eşit modül + counter doğrulandı";
   const AI_STATUS = "Adaptif AI + rekabetçi denge doğrulandı";
-  const PVP_STATUS = "Web test Go/No-Go ölçüm özeti hazır";
+  const PVP_STATUS = "Go/No-Go teknik durum görünümü aktif";
 
   const PORT_COUNT_BY_NAME = {
     "Çekirdek":4,
@@ -435,6 +435,9 @@
   const webTestRcReportState =
     new RelayWebTestRcReportState();
 
+  const webTestGoNoGoState =
+    new RelayWebTestGoNoGoState();
+
   const playRecoveryState =
     new RelayPlayRecoveryState();
 
@@ -450,7 +453,7 @@
         webTestBuildState,
       releaseCheckState,
       expectedVersion:
-        "2.0.0-alpha.84",
+        "2.0.0-alpha.85",
       expectedProtocolVersion: 1,
     });
   const playReadinessGate =
@@ -480,7 +483,7 @@
 
   telemetryDispatcher.trackGameOpened({
     platform: "web",
-    build: "2.0.0-alpha.84",
+    build: "2.0.0-alpha.85",
   });
 
   const postMatchSync =
@@ -951,9 +954,9 @@
   const diagnosticSnapshot =
     new RelayDiagnosticSnapshot({
       version:
-        "2.0.0-alpha.84",
+        "2.0.0-alpha.85",
       build:
-        "web-test-alpha.84",
+        "web-test-alpha.85",
       bootGate:
         serverBootGate,
       connectionManager:
@@ -1179,6 +1182,63 @@
     }
   }
 
+  async function loadGoNoGoStatus() {
+    const el =
+      document.getElementById(
+        "go-no-go-status"
+      );
+
+    try {
+      const response =
+        await fetch(
+          "/web-test/go-no-go"
+        );
+
+      if (!response.ok) {
+        throw new Error(
+          "Go/No-Go özeti alınamadı."
+        );
+      }
+
+      const view =
+        webTestGoNoGoState.apply(
+          await response.json()
+        );
+
+      if (el) {
+        el.textContent =
+          `Web Test: ${view.decision}`
+          + (
+              view.insufficientSignalCount
+                ? ` · ${view.insufficientSignalCount} davranış sinyalinde yetersiz veri`
+                : " · davranış örnekleri gözlemlenebilir"
+            );
+        el.dataset.decision =
+          view.decision;
+      }
+
+      return {
+        ok: true,
+        view,
+      };
+    } catch (error) {
+      if (el) {
+        el.textContent =
+          "Web Test: Go/No-Go özeti alınamadı";
+        el.dataset.decision =
+          "UNKNOWN";
+      }
+
+      return {
+        ok: false,
+        reason:
+          error instanceof Error
+            ? error.message
+            : String(error),
+      };
+    }
+  }
+
   async function checkServerReadiness() {
     renderServerBootStatus();
 
@@ -1191,6 +1251,7 @@
       await pending;
 
     renderServerBootStatus();
+    loadGoNoGoStatus();
 
     if (!result.ok) {
       showPlayError(

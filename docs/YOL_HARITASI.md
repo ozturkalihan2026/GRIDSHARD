@@ -1,7 +1,7 @@
 # Project Relay 2.0 — YOL HARİTASI
 
-**Güncel Sürüm:** `2.0.0-alpha.84`  
-**Paket:** İlk Gerçek Web Testi İçin Ölçüm Eşiği ve Go/No-Go Özeti  
+**Güncel Sürüm:** `2.0.0-alpha.85`  
+**Paket:** Go/No-Go Tarayıcı Teknik Durum Görünümü  
 **Kanonik Dosya:** `docs/YOL_HARITASI.md`
 
 > Bu dosya Project Relay 2.0 için tek kanonik geliştirme kaydıdır. Her paket tamamlandığında sürüm numarası artırılır; **Tamamlananlar** ve **Yapılacaklar** bu dosyada güncellenir. Sonraki geliştirme paketi bu dosya okunarak başlatılır.
@@ -383,9 +383,9 @@ Aşağıdaki alanlar ilk sürüm kapsamına dahil değildir ve mevcut yol harita
 
 ## Sıradaki Paket
 
-**`2.0.0-alpha.85 — Go/No-Go Tarayıcı Teknik Durum Görünümü`**
+**`2.0.0-alpha.86 — Web Test Oturum Bitişi Audit Kaydı ve Uçtan Uca Test Hunisi`**
 
-Go/No-Go sunucu özeti hazır. Sıradaki paket normal oyuncu menüsünü büyütmeden bu özeti mevcut teknik durum alanına bağlayacak. Tarayıcı `GO`, `NO_GO` veya `insufficient_data` davranış sinyallerini gösterecek; karar yine boot gate ve operasyon readiness tarafından uygulanacak. Profil/İstatistikler/Ayarlar erişimi değişmeyecek.
+Başlangıç ve gerçek session bağı ölçülüyor. Sıradaki paket maç bittiğinde minimal `web_test_session_finished` audit olayı oluşturacak. Başlangıç audit_event_id, session_id, sonuç tamamlanma zamanı ve teknik tamamlanma durumu bağlanacak; skor, modül dizilimi veya savaş olay içeriği audit'e alınmayacak. Böylece başlangıç → session → tamamlanan maç hunisi kurulacak.
 
 
 ---
