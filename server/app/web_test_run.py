@@ -393,6 +393,7 @@ def compare_test_runs(
     telemetry_service: InMemoryTelemetryService,
     baseline_test_run_id: str,
     candidate_test_run_id: str,
+    minimum_sample: int = 10,
 ) -> dict[str, Any]:
     baseline = build_test_run_summary(
         telemetry_service=
@@ -451,7 +452,39 @@ def compare_test_runs(
                 ),
         }
 
+    baseline_sample = int(
+        baseline[
+            "audit_session_starts"
+        ]
+    )
+    candidate_sample = int(
+        candidate[
+            "audit_session_starts"
+        ]
+    )
+
+    sample_status = (
+        "comparable"
+        if (
+            baseline_sample
+            >= minimum_sample
+            and candidate_sample
+            >= minimum_sample
+        )
+        else "insufficient_data"
+    )
+
     return {
+        "comparison_status":
+            sample_status,
+        "minimum_sample":
+            minimum_sample,
+        "baseline_sample":
+            baseline_sample,
+        "candidate_sample":
+            candidate_sample,
+        "statistical_significance_claimed":
+            False,
         "baseline_test_run_id":
             baseline_test_run_id,
         "candidate_test_run_id":

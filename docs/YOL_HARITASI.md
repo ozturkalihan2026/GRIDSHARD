@@ -1,7 +1,7 @@
 # Project Relay 2.0 — YOL HARİTASI
 
-**Güncel Sürüm:** `2.0.0-alpha.96`  
-**Paket:** Test Koşuları Arası Teknik Huni Karşılaştırması  
+**Güncel Sürüm:** `2.0.0-alpha.97`  
+**Paket:** Test Koşusu Karşılaştırmasında Örnek Yeterliliği ve Güven Etiketi  
 **Kanonik Dosya:** `docs/YOL_HARITASI.md`
 
 > Bu dosya Project Relay 2.0 için tek kanonik geliştirme kaydıdır. Her paket tamamlandığında sürüm numarası artırılır; **Tamamlananlar** ve **Yapılacaklar** bu dosyada güncellenir. Sonraki geliştirme paketi bu dosya okunarak başlatılır.
@@ -383,9 +383,9 @@ Aşağıdaki alanlar ilk sürüm kapsamına dahil değildir ve mevcut yol harita
 
 ## Sıradaki Paket
 
-**`2.0.0-alpha.97 — Test Koşusu Karşılaştırmasında Örnek Yeterliliği ve Güven Etiketi`**
+**`2.0.0-alpha.98 — İlk Gerçek Web Testi RC Aday Özeti`**
 
-Koşular arası huni farkları hesaplanıyor. Sıradaki paket karşılaştırmaya örnek yeterliliği etiketi ekleyecek. Her iki koşuda minimum audit başlangıç sayısı sağlanmıyorsa `insufficient_data`, sağlanıyorsa `comparable` durumu dönecek. Bu istatistiksel anlamlılık iddiası olmayacak; yalnızca operasyonel örnek yeterliliği göstergesi olacak.
+Koşu bazlı health, readiness, Go/No-Go, audit hunisi, zaman aralığı ve karşılaştırma altyapısı hazır. Sıradaki paket aktif test koşusu için tek bir salt-okunur RC aday özeti oluşturacak. Özet build/test_run_id, teknik GO/NO_GO, data health, koşu yaşam döngüsü, audit huni sayıları/oranları ve davranış örnek durumunu tek cevapta birleştirecek. Yeni oyun özelliği eklenmeyecek.
 
 
 ---

@@ -112,8 +112,8 @@ TELEMETRY_MAX_EVENTS = int(
 )
 WEB_TEST_RUN_ID = os.environ.get(
     "RELAY_WEB_TEST_RUN_ID",
-    "web-test-alpha.96",
-).strip() or "web-test-alpha.96"
+    "web-test-alpha.97",
+).strip() or "web-test-alpha.97"
 
 telemetry_repository = (
     JsonFileTelemetryRepository(
@@ -1242,7 +1242,7 @@ def web_test_current_run() -> dict:
         "test_run_id":
             WEB_TEST_RUN_ID,
         "build":
-            "web-test-alpha.96",
+            "web-test-alpha.97",
     }
 
 
@@ -1250,6 +1250,7 @@ def web_test_current_run() -> dict:
 def web_test_compare_runs(
     baseline_test_run_id: str,
     candidate_test_run_id: str,
+    minimum_sample: int = 10,
 ) -> dict:
     return compare_test_runs(
         telemetry_service=
@@ -1258,6 +1259,11 @@ def web_test_compare_runs(
             baseline_test_run_id,
         candidate_test_run_id=
             candidate_test_run_id,
+        minimum_sample=
+            max(
+                1,
+                minimum_sample,
+            ),
     )
 
 
