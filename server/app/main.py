@@ -121,8 +121,8 @@ TELEMETRY_MAX_EVENTS = int(
 )
 WEB_TEST_RUN_ID = os.environ.get(
     "RELAY_WEB_TEST_RUN_ID",
-    "web-test-alpha.105",
-).strip() or "web-test-alpha.105"
+    "web-test-alpha.106",
+).strip() or "web-test-alpha.106"
 
 telemetry_repository = (
     JsonFileTelemetryRepository(
@@ -624,6 +624,80 @@ def record_web_test_launch_attempt(
             ),
         "test_run_id":
             WEB_TEST_RUN_ID,
+    }
+
+
+@app.post("/web-test/audit/checklist-snapshot")
+def record_web_test_checklist_snapshot() -> dict:
+    checklist = (
+        web_test_first_run_checklist()
+    )
+    timestamp_ms = int(
+        time.time()
+        * 1000
+    )
+    event_id = (
+        "web-test-checklist-"
+        + WEB_TEST_RUN_ID
+        + "-"
+        + str(timestamp_ms)
+    )
+
+    accepted = telemetry_service.record(
+        TelemetryEvent(
+            event_id=event_id,
+            event_type=
+                "web_test_checklist_snapshot",
+            timestamp_ms=
+                timestamp_ms,
+            metadata={
+                "test_run_id":
+                    WEB_TEST_RUN_ID,
+                "checklist_ready":
+                    bool(
+                        checklist[
+                            "ready"
+                        ]
+                    ),
+                "failed_checks":
+                    list(
+                        checklist[
+                            "failed_checks"
+                        ]
+                    ),
+                "note_count":
+                    len(
+                        checklist[
+                            "notes"
+                        ]
+                    ),
+            },
+        )
+    )
+
+    return {
+        "accepted":
+            accepted,
+        "test_run_id":
+            WEB_TEST_RUN_ID,
+        "checklist_ready":
+            bool(
+                checklist[
+                    "ready"
+                ]
+            ),
+        "failed_checks":
+            list(
+                checklist[
+                    "failed_checks"
+                ]
+            ),
+        "note_count":
+            len(
+                checklist[
+                    "notes"
+                ]
+            ),
     }
 
 
@@ -1324,7 +1398,7 @@ def web_test_current_run() -> dict:
         "test_run_id":
             WEB_TEST_RUN_ID,
         "build":
-            "web-test-alpha.105",
+            "web-test-alpha.106",
     }
 
 
@@ -1413,7 +1487,7 @@ def web_test_rc_candidate() -> dict:
     return build_rc_candidate_summary(
         version=VERSION,
         build=
-            "web-test-alpha.105",
+            "web-test-alpha.106",
         test_run_id=
             WEB_TEST_RUN_ID,
         operation_readiness=
@@ -1454,7 +1528,7 @@ def web_test_launch_readiness() -> dict:
     return build_launch_snapshot(
         version=VERSION,
         build=
-            "web-test-alpha.105",
+            "web-test-alpha.106",
         test_run_id=
             WEB_TEST_RUN_ID,
         manifest=manifest,
@@ -1490,7 +1564,7 @@ def web_test_first_run_checklist() -> dict:
     return build_first_run_checklist(
         version=VERSION,
         build=
-            "web-test-alpha.105",
+            "web-test-alpha.106",
         test_run_id=
             WEB_TEST_RUN_ID,
         launch_readiness=

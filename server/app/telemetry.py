@@ -26,6 +26,7 @@ TELEMETRY_EVENT_TYPES = frozenset({
     "web_test_session_bound",
     "web_test_session_finished",
     "web_test_launch_attempted",
+    "web_test_checklist_snapshot",
 })
 
 
