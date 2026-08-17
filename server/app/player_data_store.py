@@ -1,6 +1,9 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from pathlib import Path
+import json
+import os
 from typing import Protocol
 
 from .player_profile import (
@@ -50,6 +53,133 @@ class PlayerDataRepository(Protocol):
         self,
         player_id: str,
     ) -> bool: ...
+
+
+class JsonFilePlayerDataRepository:
+    def __init__(
+        self,
+        path: str | Path,
+    ):
+        self.path = Path(path)
+
+    def save(
+        self,
+        snapshot: PlayerDataSnapshot,
+    ) -> None:
+        payload = self._read_all()
+        payload[
+            snapshot.player_id
+        ] = snapshot.to_dict()
+        self._write_all(payload)
+
+    def load(
+        self,
+        player_id: str,
+    ) -> PlayerDataSnapshot | None:
+        payload = self._read_all()
+        data = payload.get(
+            player_id
+        )
+        if data is None:
+            return None
+
+        return PlayerDataSnapshot(
+            player_id=str(
+                data["player_id"]
+            ),
+            profile=dict(
+                data["profile"]
+            ),
+            statistics=dict(
+                data["statistics"]
+            ),
+            settings=dict(
+                data["settings"]
+            ),
+        )
+
+    def delete(
+        self,
+        player_id: str,
+    ) -> bool:
+        payload = self._read_all()
+        if player_id not in payload:
+            return False
+
+        payload.pop(
+            player_id,
+            None,
+        )
+        self._write_all(payload)
+        return True
+
+    def _read_all(self) -> dict:
+        if not self.path.exists():
+            return {}
+
+        try:
+            raw = self.path.read_text(
+                encoding="utf-8"
+            )
+            if not raw.strip():
+                return {}
+
+            data = json.loads(raw)
+        except (
+            OSError,
+            json.JSONDecodeError,
+        ) as exc:
+            raise PlayerDataStoreError(
+                "Kalıcı oyuncu veri dosyası okunamadı."
+            ) from exc
+
+        if not isinstance(
+            data,
+            dict,
+        ):
+            raise PlayerDataStoreError(
+                "Kalıcı oyuncu veri dosyası nesne olmalıdır."
+            )
+
+        return data
+
+    def _write_all(
+        self,
+        payload: dict,
+    ) -> None:
+        try:
+            self.path.parent.mkdir(
+                parents=True,
+                exist_ok=True,
+            )
+
+            temp_path = (
+                self.path
+                .with_name(
+                    self.path.name
+                    + ".tmp"
+                )
+            )
+
+            temp_path.write_text(
+                json.dumps(
+                    payload,
+                    ensure_ascii=False,
+                    indent=2,
+                    sort_keys=True,
+                )
+                + "\n",
+                encoding="utf-8",
+            )
+
+            os.replace(
+                temp_path,
+                self.path,
+            )
+        except OSError as exc:
+            raise PlayerDataStoreError(
+                "Kalıcı oyuncu veri dosyası yazılamadı."
+            ) from exc
 
 
 class InMemoryPlayerDataRepository:

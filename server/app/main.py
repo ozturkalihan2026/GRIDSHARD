@@ -2,6 +2,8 @@ from __future__ import annotations
 
 from uuid import uuid4
 import time
+import os
+from pathlib import Path
 
 from fastapi import FastAPI, HTTPException, Query, WebSocket
 from fastapi.websockets import WebSocketDisconnect
@@ -35,7 +37,7 @@ from .player_progression import (
     PlayerProgressionService,
 )
 from .player_data_store import (
-    InMemoryPlayerDataRepository,
+    JsonFilePlayerDataRepository,
     PlayerDataStoreError,
     PlayerDataStoreService,
 )
@@ -93,6 +95,11 @@ def process_completed_pvp_battle(state) -> None:
         state
     )
 
+    for player_id in state.players:
+        persist_player_data(
+            player_id
+        )
+
 pvp_tick_runner = PvPTickRunner(
     pvp_service,
     pvp_websocket_adapter,
@@ -101,7 +108,25 @@ pvp_tick_runner = PvPTickRunner(
     ),
 )
 player_settings_service = PlayerSettingsService()
-player_data_repository = InMemoryPlayerDataRepository()
+
+DEFAULT_PLAYER_DATA_PATH = (
+    Path(__file__).resolve()
+    .parent.parent
+    / "data"
+    / "web_test_players.json"
+)
+PLAYER_DATA_PATH = Path(
+    os.environ.get(
+        "RELAY_PLAYER_DATA_PATH",
+        str(DEFAULT_PLAYER_DATA_PATH),
+    )
+)
+
+player_data_repository = (
+    JsonFilePlayerDataRepository(
+        PLAYER_DATA_PATH
+    )
+)
 player_data_store_service = PlayerDataStoreService(
     profile_service=player_profile_service,
     statistics_service=player_statistics_service,
@@ -111,6 +136,14 @@ player_data_store_service = PlayerDataStoreService(
 matchmaking_service = MatchmakingService(
     now_func=time.monotonic
 )
+
+
+def persist_player_data(
+    player_id: str,
+) -> None:
+    player_data_store_service.save_player(
+        player_id
+    )
 
 
 class CreateSessionRequest(BaseModel):
@@ -447,6 +480,9 @@ def update_player_settings(
             detail=str(exc),
         ) from exc
 
+    persist_player_data(
+        player_id
+    )
     return settings.to_view()
 
 
@@ -526,6 +562,31 @@ def get_statistics(
 def bootstrap_test_participant(
     player_id: str,
 ) -> dict:
+    player_already_loaded = (
+        player_id
+        in player_profile_service._profiles
+        or player_id
+        in player_statistics_service._statistics
+        or player_id
+        in player_settings_service._settings
+    )
+
+    stored_snapshot = None
+
+    if not player_already_loaded:
+        stored_snapshot = (
+            player_data_repository
+            .load(player_id)
+        )
+
+        if stored_snapshot is not None:
+            (
+                player_data_store_service
+                .load_player(
+                    player_id
+                )
+            )
+
     profile = (
         player_profile_service
         .get_or_create(
@@ -544,6 +605,14 @@ def bootstrap_test_participant(
             player_id
         )
     )
+
+    if (
+        stored_snapshot is None
+        or player_already_loaded
+    ):
+        persist_player_data(
+            player_id
+        )
 
     return {
         "player_id": player_id,
@@ -586,6 +655,9 @@ def update_profile_display_name(
             status_code=422,
             detail=str(exc),
         ) from exc
+    persist_player_data(
+        player_id
+    )
     return profile.to_view()
 
 
@@ -607,6 +679,9 @@ def update_profile_battle_pool(
             status_code=422,
             detail=str(exc),
         ) from exc
+    persist_player_data(
+        player_id
+    )
     return profile.to_view()
 
 

@@ -131,7 +131,15 @@ def test_missing_snapshot_raises():
 
 
 def reset_gateway():
-    player_data_repository._snapshots.clear()
+    player_data_repository.path.unlink(
+        missing_ok=True
+    )
+    player_data_repository.path.with_name(
+        player_data_repository.path.name
+        + ".tmp"
+    ).unlink(
+        missing_ok=True
+    )
     player_profile_service._profiles.clear()
     player_statistics_service._statistics.clear()
     player_settings_service._settings.clear()

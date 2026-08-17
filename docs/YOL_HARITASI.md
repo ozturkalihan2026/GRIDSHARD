@@ -1,7 +1,7 @@
 # Project Relay 2.0 — YOL HARİTASI
 
-**Güncel Sürüm:** `2.0.0-alpha.68`  
-**Paket:** Web Test Katılımcı Oturum Sürekliliği ve Yeniden Açılış Kontrolü  
+**Güncel Sürüm:** `2.0.0-alpha.69`  
+**Paket:** Web Test Oyuncu Verisinin Sunucu Yeniden Başlatmalarına Karşı Kalıcılığı  
 **Kanonik Dosya:** `docs/YOL_HARITASI.md`
 
 > Bu dosya Project Relay 2.0 için tek kanonik geliştirme kaydıdır. Her paket tamamlandığında sürüm numarası artırılır; **Tamamlananlar** ve **Yapılacaklar** bu dosyada güncellenir. Sonraki geliştirme paketi bu dosya okunarak başlatılır.
@@ -383,9 +383,9 @@ Aşağıdaki alanlar ilk sürüm kapsamına dahil değildir ve mevcut yol harita
 
 ## Sıradaki Paket
 
-**`2.0.0-alpha.69 — Web Test Oyuncu Verisinin Sunucu Yeniden Başlatmalarına Karşı Kalıcılığı`**
+**`2.0.0-alpha.70 — Kalıcı Oyuncu Veri Dosyası Sağlık Kontrolü ve Kurtarma Güvencesi`**
 
-Tarayıcı yeniden açılışındaki hesap sürekliliği doğrulandı. Ancak mevcut Profil/İstatistik/Ayar servisleri süreç belleğinde tutulduğu için sunucu yeniden başlatılırsa gerçek Web test verisi kaybolabilir. Sıradaki paket test ortamı için dosya tabanlı kalıcı oyuncu veri adaptörü ekleyecek; mevcut repository sözleşmesi korunacak ve harici PostgreSQL zorunlu olmayacak.
+Oyuncu verisi artık sunucu yeniden başlatmalarında korunuyor. Sıradaki paket dosya bozulması veya yazma problemi halinde gerçek Web testini sessizce yanlış veriyle başlatmamak için persistence health bilgisini `/health`, manifest ve release-check zincirine ekleyecek. Kalıcı dosya okunamıyorsa Oyna bloke edilecek; Profil/İstatistikler/Ayarlar yerel fallback ile erişilebilir kalacak. Bozuk dosya otomatik olarak üzerine yazılmayacak.
 
 
 ---
