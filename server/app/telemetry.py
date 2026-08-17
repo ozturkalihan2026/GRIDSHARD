@@ -24,6 +24,7 @@ TELEMETRY_EVENT_TYPES = frozenset({
     "rematch_requested",
     "web_test_session_started",
     "web_test_session_bound",
+    "web_test_session_finished",
 })
 
 

@@ -241,6 +241,11 @@ class WebTestSessionAuditBindRequest(BaseModel):
     session_id: str
 
 
+class WebTestSessionAuditFinishRequest(BaseModel):
+    audit_event_id: str
+    session_id: str
+
+
 class TelemetryEventRequest(BaseModel):
     event_id: str
     event_type: str
@@ -428,6 +433,78 @@ def bind_web_test_session_audit(
             not accepted,
         "bound_event_id":
             bound_event_id,
+        "session_id":
+            request.session_id,
+    }
+
+
+@app.post("/web-test/audit/session-finish")
+def finish_web_test_session_audit(
+    request: WebTestSessionAuditFinishRequest,
+) -> dict:
+    bound = None
+
+    for event in telemetry_service.events(
+        event_type=
+            "web_test_session_bound",
+    ):
+        if (
+            event["metadata"].get(
+                "audit_event_id"
+            )
+            == request.audit_event_id
+            and event["session_id"]
+            == request.session_id
+        ):
+            bound = event
+            break
+
+    if bound is None:
+        raise HTTPException(
+            status_code=404,
+            detail=(
+                "Tamamlanacak Web test audit-session bağı bulunamadı."
+            ),
+        )
+
+    finished_event_id = (
+        request.audit_event_id
+        + "-finished-"
+        + request.session_id
+    )
+
+    accepted = telemetry_service.record(
+        TelemetryEvent(
+            event_id=
+                finished_event_id,
+            event_type=
+                "web_test_session_finished",
+            timestamp_ms=
+                int(
+                    time.time()
+                    * 1000
+                ),
+            player_id=
+                bound.get(
+                    "player_id"
+                ),
+            session_id=
+                request.session_id,
+            metadata={
+                "audit_event_id":
+                    request.audit_event_id,
+                "technical_completed":
+                    True,
+            },
+        )
+    )
+
+    return {
+        "accepted": accepted,
+        "duplicate":
+            not accepted,
+        "finished_event_id":
+            finished_event_id,
         "session_id":
             request.session_id,
     }

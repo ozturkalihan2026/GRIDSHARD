@@ -42,7 +42,7 @@
   const COMPETITIVE_STATUS = "M7 Simülasyon aktif";
   const BALANCE_STATUS = "Eşit modül + counter doğrulandı";
   const AI_STATUS = "Adaptif AI + rekabetçi denge doğrulandı";
-  const PVP_STATUS = "Go/No-Go teknik durum görünümü aktif";
+  const PVP_STATUS = "Web test uçtan uca audit hunisi aktif";
 
   const PORT_COUNT_BY_NAME = {
     "Çekirdek":4,
@@ -453,7 +453,7 @@
         webTestBuildState,
       releaseCheckState,
       expectedVersion:
-        "2.0.0-alpha.85",
+        "2.0.0-alpha.86",
       expectedProtocolVersion: 1,
     });
   const playReadinessGate =
@@ -483,7 +483,7 @@
 
   telemetryDispatcher.trackGameOpened({
     platform: "web",
-    build: "2.0.0-alpha.85",
+    build: "2.0.0-alpha.86",
   });
 
   const postMatchSync =
@@ -510,6 +510,10 @@
           "Maç sonucu için oturum kimliği bulunamadı.",
       };
     }
+
+    finishWebTestSessionAudit(
+      battleId
+    );
 
     if (
       postMatchSyncInFlight
@@ -810,6 +814,8 @@
         },
     });
 
+  let currentAuditEventId = null;
+
   async function recordWebTestSessionAudit(
     startedAtMs
   ) {
@@ -837,12 +843,22 @@
           ? await response.json()
           : null;
 
+      const auditEventId =
+        payload
+          ?.audit_event_id
+        || null;
+
+      if (
+        response.ok
+        && auditEventId
+      ) {
+        currentAuditEventId =
+          auditEventId;
+      }
+
       return {
         ok: response.ok,
-        auditEventId:
-          payload
-            ?.audit_event_id
-          || null,
+        auditEventId,
       };
     } catch (_error) {
       return {
@@ -877,6 +893,47 @@
             body: JSON.stringify({
               audit_event_id:
                 auditEventId,
+              session_id:
+                sessionId,
+            }),
+          }
+        );
+
+      return {
+        ok: response.ok,
+      };
+    } catch (_error) {
+      return {
+        ok: false,
+      };
+    }
+  }
+
+  async function finishWebTestSessionAudit(
+    sessionId
+  ) {
+    if (
+      !currentAuditEventId
+      || !sessionId
+    ) {
+      return {
+        ok: false,
+      };
+    }
+
+    try {
+      const response =
+        await fetch(
+          "/web-test/audit/session-finish",
+          {
+            method: "POST",
+            headers: {
+              "content-type":
+                "application/json",
+            },
+            body: JSON.stringify({
+              audit_event_id:
+                currentAuditEventId,
               session_id:
                 sessionId,
             }),
@@ -954,9 +1011,9 @@
   const diagnosticSnapshot =
     new RelayDiagnosticSnapshot({
       version:
-        "2.0.0-alpha.85",
+        "2.0.0-alpha.86",
       build:
-        "web-test-alpha.85",
+        "web-test-alpha.86",
       bootGate:
         serverBootGate,
       connectionManager:
