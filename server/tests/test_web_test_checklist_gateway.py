@@ -9,9 +9,9 @@ def test_first_run_checklist_endpoint():
         "/web-test/first-run-checklist"
     ).json()
 
-    assert body["version"]=="2.0.0-beta.4.1"
-    assert body["build"]=="web-test-beta.4.1"
-    assert body["test_run_id"]=="web-test-beta.4.1"
+    assert body["version"]=="2.0.0-beta.4.3"
+    assert body["build"]=="web-test-beta.4.3"
+    assert body["test_run_id"]=="web-test-beta.4.3"
     assert "ready" in body
     assert "persistence" in body
     assert "audit_chain" in body

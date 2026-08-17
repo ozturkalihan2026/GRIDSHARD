@@ -1,6 +1,6 @@
 # Project Relay 2.0 — YOL HARİTASI
 
-**Güncel Sürüm:** `2.0.0-beta.4.1`  
+**Güncel Sürüm:** `2.0.0-beta.4.3`  
 **Paket:** Project Relay 2.0 Beta — Bulgu Önceliklendirme ve İnceleme Adayları  
 **Kanonik Dosya:** `docs/YOL_HARITASI.md`
 
@@ -452,7 +452,7 @@ Aşağıdaki alanlar ilk sürüm kapsamına dahil değildir ve mevcut yol harita
 - [x] Teknik alanda Beta Bulguları durumu `veri bekleniyor / analiz hazır` olarak gösteriliyor.
 - [x] Ana menü kapsamı değişmedi; Eğitim hâlâ Beta kapsamı dışında.
 
-### 2.0.0-beta.4.1 — Project Relay 2.0 Beta — Bulgu Önceliklendirme ve İnceleme Adayları
+### 2.0.0-beta.4.3 — Project Relay 2.0 Beta — Bulgu Önceliklendirme ve İnceleme Adayları
 - [x] `build_review_candidates` insan inceleme adayları servis katmanı eklendi.
 - [x] `/web-test/review-candidates` salt-okunur endpoint'i eklendi.
 - [x] Gerçek geri bildirim yetersizken durum `waiting_for_real_data` ve aday listesi boş kalıyor.
@@ -466,9 +466,9 @@ Aşağıdaki alanlar ilk sürüm kapsamına dahil değildir ve mevcut yol harita
 
 ## Sıradaki Paket
 
-**Beta Gerçek Kullanıcı Testi — İlk Onaylı UX/Denge Düzeltmesi**
+**Beta UX Gerçek Kullanıcı Testi — Dört Ekranın Gerçek Tarayıcı Görüntülerine Göre İnce Ayarı**
 
-`2.0.0-beta.4.1` ile gerçek veri yeterli olduğunda düzeltme adayları yalnızca öneri seviyesinde önceliklendirilebilir. Sonraki kod değişikliği ancak gerçek Beta verisi oluşup `/web-test/review-candidates` sonucu `review_required` olduğunda ve hangi adayın uygulanacağı insan tarafından onaylandığında yapılmalıdır.
+`2.0.0-beta.4.3` ile kaynak koddan doğrulanabilen ortak UX sorunları temizlendi. Sonraki paket için gerçek tarayıcıda Oyna, Profil, İstatistikler ve Ayarlar ekranlarının ayrı ekran görüntüleri incelenecek; yalnızca görüntüyle doğrulanan taşma, boş alan, hiyerarşi veya kullanılabilirlik sorunları düzeltilecektir.
 
 
 ---

@@ -6,13 +6,13 @@ from app.web_test_operation_readiness import (
 def base_manifest():
     return {
         "server_version":
-            "2.0.0-beta.4.1",
+            "2.0.0-beta.4.3",
         "web_test_build":
-            "web-test-beta.4.1",
+            "web-test-beta.4.3",
         "pvp_protocol_version": 1,
         "release_ready": True,
         "test_run_id":
-            "web-test-beta.4.1",
+            "web-test-beta.4.3",
     }
 
 

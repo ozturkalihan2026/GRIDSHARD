@@ -256,8 +256,14 @@
 
   const appRouter = new RelayAppRouter();
 
+  document.body.dataset.appScreen =
+    appRouter.currentScreen;
+
   function renderAppScreen() {
     const current = appRouter.currentScreen;
+
+    document.body.dataset.appScreen =
+      current;
 
     for (
       const panel
@@ -514,7 +520,7 @@
         webTestBuildState,
       releaseCheckState,
       expectedVersion:
-        "2.0.0-beta.4.1",
+        "2.0.0-beta.4.3",
       expectedProtocolVersion: 1,
     });
   const playReadinessGate =
@@ -545,7 +551,7 @@
 
   telemetryDispatcher.trackGameOpened({
     platform: "web",
-    build: "2.0.0-beta.4.1",
+    build: "2.0.0-beta.4.3",
   });
 
   const postMatchSync =
@@ -1105,9 +1111,9 @@
   const diagnosticSnapshot =
     new RelayDiagnosticSnapshot({
       version:
-        "2.0.0-beta.4.1",
+        "2.0.0-beta.4.3",
       build:
-        "web-test-beta.4.1",
+        "web-test-beta.4.3",
       bootGate:
         serverBootGate,
       connectionManager:
