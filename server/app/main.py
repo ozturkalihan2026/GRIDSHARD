@@ -80,6 +80,9 @@ from .web_test_checklist import (
 from .web_test_preflight import (
     build_preflight_report,
 )
+from .web_test_run_consistency import (
+    build_run_started_consistency,
+)
 from .web_test_run import (
     build_test_run_catalog,
     build_test_run_go_no_go,
@@ -124,8 +127,8 @@ TELEMETRY_MAX_EVENTS = int(
 )
 WEB_TEST_RUN_ID = os.environ.get(
     "RELAY_WEB_TEST_RUN_ID",
-    "web-test-alpha.115",
-).strip() or "web-test-alpha.115"
+    "web-test-alpha.116",
+).strip() or "web-test-alpha.116"
 
 telemetry_repository = (
     JsonFileTelemetryRepository(
@@ -840,7 +843,7 @@ def start_web_test_run(
                 "preflight_ready":
                     True,
                 "build":
-                    "web-test-alpha.115",
+                    "web-test-alpha.116",
             },
         )
     )
@@ -854,7 +857,7 @@ def start_web_test_run(
         "test_run_id":
             WEB_TEST_RUN_ID,
         "build":
-            "web-test-alpha.115",
+            "web-test-alpha.116",
     }
 
 
@@ -1555,7 +1558,7 @@ def web_test_current_run() -> dict:
         "test_run_id":
             WEB_TEST_RUN_ID,
         "build":
-            "web-test-alpha.115",
+            "web-test-alpha.116",
     }
 
 
@@ -1644,7 +1647,7 @@ def web_test_rc_candidate() -> dict:
     return build_rc_candidate_summary(
         version=VERSION,
         build=
-            "web-test-alpha.115",
+            "web-test-alpha.116",
         test_run_id=
             WEB_TEST_RUN_ID,
         operation_readiness=
@@ -1685,7 +1688,7 @@ def web_test_launch_readiness() -> dict:
     return build_launch_snapshot(
         version=VERSION,
         build=
-            "web-test-alpha.115",
+            "web-test-alpha.116",
         test_run_id=
             WEB_TEST_RUN_ID,
         manifest=manifest,
@@ -1721,7 +1724,7 @@ def web_test_first_run_checklist() -> dict:
     return build_first_run_checklist(
         version=VERSION,
         build=
-            "web-test-alpha.115",
+            "web-test-alpha.116",
         test_run_id=
             WEB_TEST_RUN_ID,
         launch_readiness=
@@ -1749,7 +1752,7 @@ def web_test_preflight() -> dict:
     return build_preflight_report(
         version=VERSION,
         build=
-            "web-test-alpha.115",
+            "web-test-alpha.116",
         test_run_id=
             WEB_TEST_RUN_ID,
         checklist=
@@ -1792,10 +1795,22 @@ def web_test_run_status() -> dict:
         "test_run_id":
             WEB_TEST_RUN_ID,
         "build":
-            "web-test-alpha.115",
+            "web-test-alpha.116",
         "started":
             started,
     }
+
+
+@app.get("/web-test/test-run/consistency")
+def web_test_run_consistency() -> dict:
+    return build_run_started_consistency(
+        active_test_run_id=
+            WEB_TEST_RUN_ID,
+        run_status=
+            web_test_run_status(),
+        preflight=
+            web_test_preflight(),
+    )
 
 
 @app.get("/web-test/status")

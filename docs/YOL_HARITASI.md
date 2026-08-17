@@ -1,7 +1,7 @@
 # Project Relay 2.0 — YOL HARİTASI
 
-**Güncel Sürüm:** `2.0.0-alpha.115`  
-**Paket:** Run-Started Operasyon KPI ve Başlatılmış Koşu Sayacı  
+**Güncel Sürüm:** `2.0.0-alpha.116`  
+**Paket:** Gerçek Web Testi Run-Started Preflight Tutarlılık Kontrolü  
 **Kanonik Dosya:** `docs/YOL_HARITASI.md`
 
 > Bu dosya Project Relay 2.0 için tek kanonik geliştirme kaydıdır. Her paket tamamlandığında sürüm numarası artırılır; **Tamamlananlar** ve **Yapılacaklar** bu dosyada güncellenir. Sonraki geliştirme paketi bu dosya okunarak başlatılır.
@@ -383,9 +383,9 @@ Aşağıdaki alanlar ilk sürüm kapsamına dahil değildir ve mevcut yol harita
 
 ## Sıradaki Paket
 
-**`2.0.0-alpha.116 — Gerçek Web Testi Run-Started Preflight Tutarlılık Kontrolü`**
+**`2.0.0-alpha.117 — Gerçek Web Testi Operasyon Durum Özeti: Preflight + Run + Tutarlılık`**
 
-Run-start durumu ve KPI'ları görünür. Sıradaki paket başlatılmış bir aktif koşuda preflight raporunun aynı test_run_id ile tutarlı olduğunu doğrulayan salt-okunur bir operasyon kontrolü ekleyecek. Başlatılmamış koşu hata sayılmayacak; `not_started` durumu olarak raporlanacak.
+Run-started tutarlılık kontrolü hazır. Sıradaki paket aktif koşu için preflight, run-status ve run-consistency sonuçlarını tek salt-okunur operasyon özeti altında birleştirecek. Bu özet gerçek kullanıcı testi yürürken operasyon takibi için kullanılacak; oyuncu verisi içermeyecek.
 
 
 ---
