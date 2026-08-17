@@ -1,0 +1,62 @@
+from __future__ import annotations
+
+from typing import Any
+
+from .build_manifest import build_manifest
+from .release_check import build_release_check
+from .telemetry import InMemoryTelemetryService
+from .web_test_metrics import WebTestKpiService
+
+
+def build_rc_report(
+    *,
+    version: str,
+    telemetry_service: InMemoryTelemetryService,
+) -> dict[str, Any]:
+    manifest = build_manifest(
+        version=version,
+        telemetry_service=telemetry_service,
+    )
+    release = build_release_check(
+        version=version,
+        telemetry_service=telemetry_service,
+    )
+    kpis = WebTestKpiService(
+        telemetry_service
+    ).snapshot()
+
+    critical_failures = [
+        name
+        for name, ok
+        in release.checks.items()
+        if not ok
+    ]
+
+    return {
+        "version": version,
+        "build":
+            manifest["web_test_build"],
+        "ready":
+            (
+                release.ready
+                and manifest[
+                    "release_ready"
+                ]
+                and not critical_failures
+            ),
+        "critical_failures":
+            critical_failures,
+        "manifest": manifest,
+        "release_check":
+            release.to_dict(),
+        "kpis": kpis,
+        "scope": {
+            "menu_areas":
+                manifest[
+                    "menu_areas"
+                ],
+            "education_deferred":
+                "Eğitim"
+                in release.deferred_areas,
+        },
+    }

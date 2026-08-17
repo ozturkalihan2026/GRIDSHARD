@@ -1,7 +1,7 @@
 # Project Relay 2.0 — YOL HARİTASI
 
-**Güncel Sürüm:** `2.0.0-alpha.62`  
-**Paket:** Web Test Build Manifest ve Dağıtım Öncesi Sürüm Tutarlılığı  
+**Güncel Sürüm:** `2.0.0-alpha.63`  
+**Paket:** Web Test RC Oturum Özeti ve Sunucu Taraflı Test Raporu  
 **Kanonik Dosya:** `docs/YOL_HARITASI.md`
 
 > Bu dosya Project Relay 2.0 için tek kanonik geliştirme kaydıdır. Her paket tamamlandığında sürüm numarası artırılır; **Tamamlananlar** ve **Yapılacaklar** bu dosyada güncellenir. Sonraki geliştirme paketi bu dosya okunarak başlatılır.
@@ -383,9 +383,9 @@ Aşağıdaki alanlar ilk sürüm kapsamına dahil değildir ve mevcut yol harita
 
 ## Sıradaki Paket
 
-**`2.0.0-alpha.63 — Web Test RC Oturum Özeti ve Sunucu Taraflı Test Raporu`**
+**`2.0.0-alpha.64 — İlk Gerçek Web Testi İçin Oturum Kimliği ve Test Katılımcısı İzolasyonu`**
 
-Build manifest doğrulaması tamamlandı. Sıradaki paket mevcut telemetri/KPI verisini release-check ile birleştirerek tek bir Web test RC raporu endpoint'i hazırlayacak. Rapor build/health, toplam KPI özeti ve kritik başarısız kontrolleri içerecek; oyuncu bazlı kişisel içerik taşımayacak. Bu paket gerçek kullanıcı Web testi öncesindeki son ölçüm/operasyon paketi olacak.
+RC raporu hazır. Sıradaki paket gerçek kullanıcı Web testine geçişte tarayıcıdaki sabit `local-player` kimliğini kaldıracak. Test katılımcısı için kalıcı fakat kişisel bilgi içermeyen yerel oyuncu kimliği üretilecek; aynı tarayıcı yeniden açıldığında aynı kimlik kullanılacak ve farklı tarayıcılar birbirinden ayrılacak. Profil görünen adı ayrı kalacak.
 
 
 ---

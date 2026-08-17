@@ -56,6 +56,9 @@ from .release_check import (
 from .build_manifest import (
     build_manifest,
 )
+from .web_test_rc_report import (
+    build_rc_report,
+)
 
 
 app = FastAPI(
@@ -601,6 +604,14 @@ def web_test_release_check() -> dict:
 @app.get("/web-test/manifest")
 def web_test_manifest() -> dict:
     return build_manifest(
+        version=VERSION,
+        telemetry_service=telemetry_service,
+    )
+
+
+@app.get("/web-test/rc-report")
+def web_test_rc_report() -> dict:
+    return build_rc_report(
         version=VERSION,
         telemetry_service=telemetry_service,
     )

@@ -2915,6 +2915,73 @@
   }
 
 
+
+  class RelayWebTestRcReportState {
+    constructor() {
+      this.report = null;
+    }
+
+    apply(report) {
+      if (!report) {
+        throw new Error(
+          "Web test RC raporu gerekli."
+        );
+      }
+
+      this.report = {
+        ...report,
+        critical_failures: [
+          ...(report.critical_failures || []),
+        ],
+        kpis: {
+          ...(report.kpis || {}),
+        },
+      };
+
+      return this.viewModel();
+    }
+
+    viewModel() {
+      if (!this.report) {
+        return null;
+      }
+
+      return {
+        ready:
+          Boolean(
+            this.report.ready
+          ),
+        version:
+          this.report.version,
+        build:
+          this.report.build,
+        criticalFailures: [
+          ...this.report
+            .critical_failures,
+        ],
+        completedMatches:
+          Number(
+            this.report.kpis
+              ?.completed_matches
+            || 0
+          ),
+        secondMatchTransitionRate:
+          Number(
+            this.report.kpis
+              ?.second_match_transition_rate
+            || 0
+          ),
+        losingPlayerRematchRate:
+          Number(
+            this.report.kpis
+              ?.losing_player_rematch_rate
+            || 0
+          ),
+      };
+    }
+  }
+
+
   const api = {
     RelayBattleClient,
     RelayPvPClientState,
@@ -2937,6 +3004,7 @@
     RelayPlayRecoveryState,
     RelayServerBootGate,
     RelayDiagnosticSnapshot,
+    RelayWebTestRcReportState,
     BattlePoolSelection,
     APP_SCREEN,
     WS_CONNECTION_STATUS,
@@ -2977,6 +3045,7 @@
   global.RelayPlayRecoveryState = RelayPlayRecoveryState;
   global.RelayServerBootGate = RelayServerBootGate;
   global.RelayDiagnosticSnapshot = RelayDiagnosticSnapshot;
+  global.RelayWebTestRcReportState = RelayWebTestRcReportState;
   global.RelayServerBootStatus = SERVER_BOOT_STATUS;
   global.RelayPlayRecoveryKind = PLAY_RECOVERY_KIND;
   global.RelayTelemetryTransportStatus = TELEMETRY_TRANSPORT_STATUS;
