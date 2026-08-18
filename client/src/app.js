@@ -1,6 +1,34 @@
 (() => {
   "use strict";
 
+  const PORT_COUNT_BY_NAME = {
+    "Çekirdek":4,
+    "Jeneratör":3,
+    "Batarya":2,
+    "Dağıtıcı":3,
+    "Kapasitör":2,
+    "Lazer":1,
+    "Darbe Topu":1,
+    "Ray Topu":1,
+    "Füze Fırlatıcı":1,
+    "Dron Üssü":2,
+    "Ark Topu":1,
+    "Kalkan":2,
+    "Zırh":2,
+    "Yansıtıcı":2,
+    "Bariyer":2,
+    "Onarım Modülü":2,
+    "Soğutucu":2,
+    "Güçlendirici":2,
+    "Hedefleme Bilgisayarı":2,
+    "Aşırı Hızlandırıcı":2,
+    "EMP":1,
+    "Sinyal Bozucu":1,
+    "Virüs":1,
+    "Enerji Sömürücü":1,
+    "Kesici":1,
+  };
+
   const moduleDefinitions = [
     ["core-1","Çekirdek",300,0,"çekirdek","Ana hedef ve devre merkezi","active",{x:2,y:2}],
     ["generator-1","Jeneratör",150,0,"enerji","Ana enerji kaynağı","active",{x:2,y:3}],
@@ -38,39 +66,13 @@
   }));
 
   const commandLog = [];
-  const META_STATUS = "M1-M6 tamamlandı";
-  const COMPETITIVE_STATUS = "M7 Simülasyon aktif";
-  const BALANCE_STATUS = "Eşit modül + counter doğrulandı";
-  const AI_STATUS = "Adaptif AI + rekabetçi denge doğrulandı";
-  const PVP_STATUS = "Oynanabilir Beta · Tek Oyunculu + Online PvP";
+  const META_STATUS = "M1-M6 çekirdeği uygulandı";
+  const COMPETITIVE_STATUS = "M7 rekabetçi altyapı doğrulanıyor";
+  const BALANCE_STATUS = "Denge simülasyonu mevcut · geniş örnek bekliyor";
+  const AI_STATUS = "AI altyapısı mevcut · arketip testleri bekliyor";
+  const PVP_STATUS = "Beta.6 · Menü başlangıcı + QA zinciri düzeltildi";
 
-  const PORT_COUNT_BY_NAME = {
-    "Çekirdek":4,
-    "Jeneratör":3,
-    "Batarya":2,
-    "Dağıtıcı":3,
-    "Kapasitör":2,
-    "Lazer":1,
-    "Darbe Topu":1,
-    "Ray Topu":1,
-    "Füze Fırlatıcı":1,
-    "Dron Üssü":2,
-    "Ark Topu":1,
-    "Kalkan":2,
-    "Zırh":2,
-    "Yansıtıcı":2,
-    "Bariyer":2,
-    "Onarım Modülü":2,
-    "Soğutucu":2,
-    "Güçlendirici":2,
-    "Hedefleme Bilgisayarı":2,
-    "Aşırı Hızlandırıcı":2,
-    "EMP":1,
-    "Sinyal Bozucu":1,
-    "Virüs":1,
-    "Enerji Sömürücü":1,
-    "Kesici":1,
-  };
+
 
   const OPPOSITE = {
     up:"down",
@@ -527,7 +529,7 @@
         webTestBuildState,
       releaseCheckState,
       expectedVersion:
-        "2.0.0-beta.5",
+        "2.0.0-beta.6",
       expectedProtocolVersion: 1,
     });
   const playReadinessGate =
@@ -539,6 +541,11 @@
     });
 
 
+
+  const telemetryStatus =
+    document.getElementById(
+      "telemetry-send-status"
+    );
 
   const telemetryTransport =
     new RelayTelemetryHttpTransport({
@@ -558,7 +565,7 @@
 
   telemetryDispatcher.trackGameOpened({
     platform: "web",
-    build: "2.0.0-beta.5",
+    build: "2.0.0-beta.6",
   });
 
   const postMatchSync =
@@ -642,10 +649,6 @@
   const matchmakingCancel =
     document.getElementById(
       "matchmaking-cancel"
-    );
-  const telemetryStatus =
-    document.getElementById(
-      "telemetry-send-status"
     );
 
   function renderRecoveryState() {
@@ -1122,9 +1125,9 @@
   const diagnosticSnapshot =
     new RelayDiagnosticSnapshot({
       version:
-        "2.0.0-beta.5",
+        "2.0.0-beta.6",
       build:
-        "web-test-beta.5",
+        "web-test-beta.6",
       bootGate:
         serverBootGate,
       connectionManager:

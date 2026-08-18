@@ -1,3 +1,5 @@
+const path = require("path");
+const ROOT = path.join(__dirname, "..");
 const assert = require("assert");
 const asyncTests = [];
 const {
@@ -148,7 +150,7 @@ function createClient() {
 
 {
   const fs = require("fs");
-  const appSource = fs.readFileSync("./src/app.js", "utf8");
+  const appSource = fs.readFileSync(path.join(ROOT,"src/app.js"),"utf8");
   for (const name of ["Dağıtıcı", "Darbe Topu", "Zırh", "EMP"]) {
     assert.ok(appSource.includes(`"${name}"`));
   }
@@ -156,7 +158,7 @@ function createClient() {
 
 {
   const fs = require("fs");
-  const appSource = fs.readFileSync("./src/app.js", "utf8");
+  const appSource = fs.readFileSync(path.join(ROOT,"src/app.js"),"utf8");
   const instanceIds = [
     "core-1",
     "generator-1",
@@ -179,7 +181,7 @@ function createClient() {
 
 {
   const fs = require("fs");
-  const src = fs.readFileSync("./src/app.js","utf8");
+  const src = fs.readFileSync(path.join(ROOT,"src/app.js"),"utf8");
   for (const name of ["Kapasitör","Ray Topu","Yansıtıcı","Bariyer","Hedefleme Bilgisayarı","Sinyal Bozucu"]) {
     assert.ok(src.includes(`"${name}"`));
   }
@@ -188,7 +190,7 @@ function createClient() {
 
 {
   const fs=require("fs");
-  const src=fs.readFileSync("./src/app.js","utf8");
+  const src=fs.readFileSync(path.join(ROOT,"src/app.js"),"utf8");
   for (const name of ["Füze Fırlatıcı","Dron Üssü","Ark Topu","Aşırı Hızlandırıcı","Virüs","Enerji Sömürücü","Kesici"]) {
     assert.ok(src.includes(`"${name}"`));
   }
@@ -216,7 +218,7 @@ function createClient() {
 
 {
   const fs = require("fs");
-  const src = fs.readFileSync("./src/app.js", "utf8");
+  const src = fs.readFileSync(path.join(ROOT,"src/app.js"),"utf8");
   assert.ok(src.includes("const BOARD_CELLS"));
   assert.ok(src.includes('new Set(["2,1","3,2","2,3","1,2"])'));
   assert.ok(src.includes("core-cell"));
@@ -226,7 +228,7 @@ function createClient() {
 
 {
   const fs = require("fs");
-  const src = fs.readFileSync("./src/app.js", "utf8");
+  const src = fs.readFileSync(path.join(ROOT,"src/app.js"),"utf8");
   for (const label of [
     "Saldırı Hücresi",
     "Savunma Hücresi",
@@ -243,7 +245,7 @@ function createClient() {
 
 {
   const fs=require("fs");
-  const src=fs.readFileSync("./src/app.js","utf8");
+  const src=fs.readFileSync(path.join(ROOT,"src/app.js"),"utf8");
   for (const name of ["Aşırı Yük Çipi","Acil Onarım","Çift Port Adaptörü"]) assert.ok(src.includes(name));
   assert.ok(src.includes("apply_booster"));
   assert.ok(src.includes("Hedef modül seç"));
@@ -252,7 +254,7 @@ function createClient() {
 
 {
   const fs=require("fs");
-  const src=fs.readFileSync("./src/app.js","utf8");
+  const src=fs.readFileSync(path.join(ROOT,"src/app.js"),"utf8");
   assert.ok(src.includes("BOOSTER_FIRST_OFFER_MS = 85000"));
   assert.ok(src.includes("BOOSTER_OFFER_INTERVAL_MS = 10000"));
   assert.ok(src.includes("3 seçenekten 1'ini seç"));
@@ -262,7 +264,7 @@ function createClient() {
 
 {
   const fs = require("fs");
-  const src = fs.readFileSync("./src/app.js", "utf8");
+  const src = fs.readFileSync(path.join(ROOT,"src/app.js"),"utf8");
 
   assert.ok(src.includes("updateMockEnergy"));
   assert.ok(src.includes("ENERJİSİZ"));
@@ -272,7 +274,7 @@ function createClient() {
 
 {
   const fs = require("fs");
-  const src = fs.readFileSync("./src/app.js", "utf8");
+  const src = fs.readFileSync(path.join(ROOT,"src/app.js"),"utf8");
 
   assert.ok(src.includes("PORT_COUNT_BY_NAME"));
   assert.ok(src.includes("modulePorts"));
@@ -285,7 +287,7 @@ function createClient() {
 
 {
   const fs = require("fs");
-  const src = fs.readFileSync("./src/app.js", "utf8");
+  const src = fs.readFileSync(path.join(ROOT,"src/app.js"),"utf8");
 
   assert.ok(src.includes("updateMockCombat"));
   assert.ok(src.includes("attack_performed"));
@@ -296,7 +298,7 @@ function createClient() {
 
 {
   const fs=require("fs");
-  const src=fs.readFileSync("./src/app.js","utf8");
+  const src=fs.readFileSync(path.join(ROOT,"src/app.js"),"utf8");
   assert.ok(src.includes("Azaltılan"));
   assert.ok(src.includes("Savunma ${defense}"));
   assert.ok(src.includes("Yansıtılan hasar"));
@@ -304,7 +306,7 @@ function createClient() {
 
 {
   const fs=require("fs");
-  const src=fs.readFileSync("./src/app.js","utf8");
+  const src=fs.readFileSync(path.join(ROOT,"src/app.js"),"utf8");
   assert.ok(src.includes("supportLabelForModule"));
   assert.ok(src.includes("Cooldown -%15"));
   assert.ok(src.includes("Hasar +%20"));
@@ -313,7 +315,7 @@ function createClient() {
 
 {
   const fs=require("fs");
-  const src=fs.readFileSync("./src/app.js","utf8");
+  const src=fs.readFileSync(path.join(ROOT,"src/app.js"),"utf8");
   assert.ok(src.includes("heatStatusLabel"));
   assert.ok(src.includes("YÜKSEK ISI"));
   assert.ok(src.includes("KRİTİK ISI"));
@@ -324,7 +326,7 @@ function createClient() {
 
 {
   const fs=require("fs");
-  const src=fs.readFileSync("./src/app.js","utf8");
+  const src=fs.readFileSync(path.join(ROOT,"src/app.js"),"utf8");
   assert.ok(src.includes("sabotageLabelForModule"));
   assert.ok(src.includes("Enerji Kesme"));
   assert.ok(src.includes("Destek Susturma"));
@@ -337,7 +339,7 @@ function createClient() {
 
 {
   const fs=require("fs");
-  const src=fs.readFileSync("./src/app.js","utf8");
+  const src=fs.readFileSync(path.join(ROOT,"src/app.js"),"utf8");
   assert.ok(src.includes("Sabotaj direnci"));
   assert.ok(src.includes("Sabotaj engellendi"));
   assert.ok(src.includes("Sabotaj temizlendi"));
@@ -346,7 +348,7 @@ function createClient() {
 
 {
   const fs=require("fs");
-  const src=fs.readFileSync("./src/app.js","utf8");
+  const src=fs.readFileSync(path.join(ROOT,"src/app.js"),"utf8");
   assert.ok(src.includes("updateMockBattleResult"));
   assert.ok(src.includes("KAZANDIN"));
   assert.ok(src.includes("MAÇ BİTTİ"));
@@ -354,109 +356,109 @@ function createClient() {
 
 {
   const fs=require("fs");
-  const src=fs.readFileSync("./src/app.js","utf8");
+  const src=fs.readFileSync(path.join(ROOT,"src/app.js"),"utf8");
   assert.ok(src.includes("META_STATUS"));
-  assert.ok(src.includes("M1-M6 tamamlandı"));
+  assert.ok(src.includes("M1-M6 çekirdeği uygulandı"));
 }
 
 {
   const fs=require("fs");
-  const src=fs.readFileSync("./src/app.js","utf8");
+  const src=fs.readFileSync(path.join(ROOT,"src/app.js"),"utf8");
   assert.ok(src.includes("COMPETITIVE_STATUS"));
-  assert.ok(src.includes("M7 Simülasyon aktif"));
+  assert.ok(src.includes("M7 rekabetçi altyapı doğrulanıyor"));
 }
 
 {
   const fs=require("fs");
-  const src=fs.readFileSync("./src/app.js","utf8");
+  const src=fs.readFileSync(path.join(ROOT,"src/app.js"),"utf8");
   assert.ok(src.includes("BALANCE_STATUS"));
-  assert.ok(src.includes("Eşit modül + counter doğrulandı"));
+  assert.ok(src.includes("Denge simülasyonu mevcut · geniş örnek bekliyor"));
 }
 
 {
   const fs=require("fs");
-  const src=fs.readFileSync("./src/app.js","utf8");
+  const src=fs.readFileSync(path.join(ROOT,"src/app.js"),"utf8");
   assert.ok(src.includes("BALANCE_STATUS")); // alpha27 counter validation
 }
 
 {
   const fs=require("fs");
-  const src=fs.readFileSync("./src/app.js","utf8");
+  const src=fs.readFileSync(path.join(ROOT,"src/app.js"),"utf8");
   assert.ok(src.includes("AI_STATUS"));
-  assert.ok(src.includes("Adaptif AI + rekabetçi denge doğrulandı"));
+  assert.ok(src.includes("AI altyapısı mevcut · arketip testleri bekliyor"));
 }
 
 {
   const fs=require("fs");
-  const src=fs.readFileSync("./src/app.js","utf8");
+  const src=fs.readFileSync(path.join(ROOT,"src/app.js"),"utf8");
   assert.ok(src.includes("AI_STATUS")); // alpha29 AI commands
 }
 
 {
   const fs=require("fs");
-  const src=fs.readFileSync("./src/app.js","utf8");
-  assert.ok(src.includes("rekabetçi denge doğrulandı")); // alpha30 fairness
+  const src=fs.readFileSync(path.join(ROOT,"src/app.js"),"utf8");
+  assert.ok(src.includes("geniş örnek bekliyor")); // alpha30 fairness
 }
 
 {
   const fs=require("fs");
-  const src=fs.readFileSync("./src/app.js","utf8");
+  const src=fs.readFileSync(path.join(ROOT,"src/app.js"),"utf8");
   assert.ok(src.includes("PVP_STATUS"));
-  assert.ok(src.includes("Oynanabilir Beta · Tek Oyunculu + Online PvP"));
+  assert.ok(src.includes("Beta.6 · Menü başlangıcı + QA zinciri düzeltildi"));
 }
 
 {
   const fs=require("fs");
-  const src=fs.readFileSync("./src/app.js","utf8");
-  assert.ok(src.includes("Oynanabilir Beta · Tek Oyunculu + Online PvP")); // alpha32->33 protocol status
+  const src=fs.readFileSync(path.join(ROOT,"src/app.js"),"utf8");
+  assert.ok(src.includes("Beta.6 · Menü başlangıcı + QA zinciri düzeltildi")); // alpha32->33 protocol status
 }
 
 {
   const fs=require("fs");
-  const src=fs.readFileSync("./src/app.js","utf8");
-  assert.ok(src.includes("Oynanabilir Beta · Tek Oyunculu + Online PvP")); // alpha33 protocol
+  const src=fs.readFileSync(path.join(ROOT,"src/app.js"),"utf8");
+  assert.ok(src.includes("Beta.6 · Menü başlangıcı + QA zinciri düzeltildi")); // alpha33 protocol
 }
 
 {
   const fs=require("fs");
-  const src=fs.readFileSync("./src/app.js","utf8");
-  assert.ok(src.includes("Oynanabilir Beta · Tek Oyunculu + Online PvP")); // alpha34 websocket
+  const src=fs.readFileSync(path.join(ROOT,"src/app.js"),"utf8");
+  assert.ok(src.includes("Beta.6 · Menü başlangıcı + QA zinciri düzeltildi")); // alpha34 websocket
 }
 
 {
   const fs=require("fs");
-  const src=fs.readFileSync("./src/app.js","utf8");
-  assert.ok(src.includes("Oynanabilir Beta · Tek Oyunculu + Online PvP")); // alpha35 gateway
+  const src=fs.readFileSync(path.join(ROOT,"src/app.js"),"utf8");
+  assert.ok(src.includes("Beta.6 · Menü başlangıcı + QA zinciri düzeltildi")); // alpha35 gateway
 }
 
 {
   const fs=require("fs");
-  const src=fs.readFileSync("./src/app.js","utf8");
-  assert.ok(src.includes("Oynanabilir Beta · Tek Oyunculu + Online PvP")); // alpha36 setup
+  const src=fs.readFileSync(path.join(ROOT,"src/app.js"),"utf8");
+  assert.ok(src.includes("Beta.6 · Menü başlangıcı + QA zinciri düzeltildi")); // alpha36 setup
 }
 
 {
   const fs=require("fs");
-  const src=fs.readFileSync("./src/app.js","utf8");
-  assert.ok(src.includes("Oynanabilir Beta · Tek Oyunculu + Online PvP")); // alpha37 lobby
+  const src=fs.readFileSync(path.join(ROOT,"src/app.js"),"utf8");
+  assert.ok(src.includes("Beta.6 · Menü başlangıcı + QA zinciri düzeltildi")); // alpha37 lobby
 }
 
 {
   const fs=require("fs");
-  const src=fs.readFileSync("./src/app.js","utf8");
-  assert.ok(src.includes("Oynanabilir Beta · Tek Oyunculu + Online PvP")); // alpha38 runner
+  const src=fs.readFileSync(path.join(ROOT,"src/app.js"),"utf8");
+  assert.ok(src.includes("Beta.6 · Menü başlangıcı + QA zinciri düzeltildi")); // alpha38 runner
 }
 
 {
   const fs=require("fs");
-  const src=fs.readFileSync("./src/app.js","utf8");
-  assert.ok(src.includes("Oynanabilir Beta · Tek Oyunculu + Online PvP")); // alpha39 heartbeat
+  const src=fs.readFileSync(path.join(ROOT,"src/app.js"),"utf8");
+  assert.ok(src.includes("Beta.6 · Menü başlangıcı + QA zinciri düzeltildi")); // alpha39 heartbeat
 }
 
 {
   const fs=require("fs");
-  const src=fs.readFileSync("./src/app.js","utf8");
-  assert.ok(src.includes("Oynanabilir Beta · Tek Oyunculu + Online PvP")); // alpha40 online pvp
+  const src=fs.readFileSync(path.join(ROOT,"src/app.js"),"utf8");
+  assert.ok(src.includes("Beta.6 · Menü başlangıcı + QA zinciri düzeltildi")); // alpha40 online pvp
 }
 
 {
@@ -681,8 +683,8 @@ function createClient() {
 
 {
   const fs=require("fs");
-  const src=fs.readFileSync("./src/app.js","utf8");
-  assert.ok(src.includes("Oynanabilir Beta · Tek Oyunculu + Online PvP"));
+  const src=fs.readFileSync(path.join(ROOT,"src/app.js"),"utf8");
+  assert.ok(src.includes("Beta.6 · Menü başlangıcı + QA zinciri düzeltildi"));
   assert.ok(src.includes("buildPvPCommandEnvelope"));
   assert.ok(src.includes("applyPvPServerEnvelope"));
 }
@@ -739,7 +741,7 @@ function createClient() {
 
 {
   const fs=require("fs");
-  const html=fs.readFileSync("./index.html","utf8");
+  const html=fs.readFileSync(path.join(ROOT,"index.html"),"utf8");
   assert.ok(html.includes(">Oyna<"));
   assert.ok(html.includes(">Profil<"));
   assert.ok(html.includes(">İstatistikler<"));
@@ -787,7 +789,7 @@ function createClient() {
 
 {
   const fs=require("fs");
-  const html=fs.readFileSync("./index.html","utf8");
+  const html=fs.readFileSync(path.join(ROOT,"index.html"),"utf8");
   assert.ok(
     html.includes('id="statistics-summary-panel"')
   );
@@ -830,7 +832,7 @@ function createClient() {
 
 {
   const fs=require("fs");
-  const html=fs.readFileSync("./index.html","utf8");
+  const html=fs.readFileSync(path.join(ROOT,"index.html"),"utf8");
   assert.ok(
     html.includes('id="settings-summary-panel"')
   );
@@ -888,8 +890,8 @@ function createClient() {
 
 {
   const fs=require("fs");
-  const html=fs.readFileSync("./index.html","utf8");
-  const app=fs.readFileSync("./src/app.js","utf8");
+  const html=fs.readFileSync(path.join(ROOT,"index.html"),"utf8");
+  const app=fs.readFileSync(path.join(ROOT,"src/app.js"),"utf8");
 
   assert.ok(
     html.includes('id="main-menu-panel"')
@@ -1194,14 +1196,8 @@ function createClient() {
 
 {
   const fs=require("fs");
-  const app=fs.readFileSync(
-    "./src/app.js",
-    "utf8"
-  );
-  const html=fs.readFileSync(
-    "./index.html",
-    "utf8"
-  );
+  const app=fs.readFileSync(path.join(ROOT,"src/app.js"),"utf8");
+  const html=fs.readFileSync(path.join(ROOT,"index.html"),"utf8");
 
   assert.ok(
     app.includes(
@@ -1272,10 +1268,7 @@ function createClient() {
 
 {
   const fs=require("fs");
-  const html=fs.readFileSync(
-    "./index.html",
-    "utf8"
-  );
+  const html=fs.readFileSync(path.join(ROOT,"index.html"),"utf8");
   assert.ok(
     html.includes(
       'id="matchmaking-status"'
@@ -1320,10 +1313,7 @@ function createClient() {
 
 {
   const fs=require("fs");
-  const html=fs.readFileSync(
-    "./index.html",
-    "utf8"
-  );
+  const html=fs.readFileSync(path.join(ROOT,"index.html"),"utf8");
   assert.ok(
     html.includes(
       'id="profile-live-summary"'
@@ -1460,14 +1450,8 @@ function createClient() {
 
 {
   const fs=require("fs");
-  const app=fs.readFileSync(
-    "./src/app.js",
-    "utf8"
-  );
-  const html=fs.readFileSync(
-    "./index.html",
-    "utf8"
-  );
+  const app=fs.readFileSync(path.join(ROOT,"src/app.js"),"utf8");
+  const html=fs.readFileSync(path.join(ROOT,"index.html"),"utf8");
 
   assert.ok(
     app.includes(
@@ -1504,10 +1488,10 @@ function createClient() {
 
   const result=state.applyHealth({
     status:"ok",
-    version:"2.0.0-beta.5",
+    version:"2.0.0-beta.6",
     web_test:{
       ready:true,
-      build:"web-test-beta.5",
+      build:"web-test-beta.6",
       release_checks:[
         "health",
         "matchmaking",
@@ -1551,7 +1535,7 @@ function createClient() {
 
   const result=state.applyHealth({
     status:"ok",
-    version:"2.0.0-beta.5",
+    version:"2.0.0-beta.6",
   });
 
   assert.strictEqual(
@@ -1566,14 +1550,8 @@ function createClient() {
 
 {
   const fs=require("fs");
-  const html=fs.readFileSync(
-    "./index.html",
-    "utf8"
-  );
-  const app=fs.readFileSync(
-    "./src/app.js",
-    "utf8"
-  );
+  const html=fs.readFileSync(path.join(ROOT,"index.html"),"utf8");
+  const app=fs.readFileSync(path.join(ROOT,"src/app.js"),"utf8");
 
   assert.ok(
     html.includes(
@@ -1885,14 +1863,8 @@ function createClient() {
 
 {
   const fs=require("fs");
-  const app=fs.readFileSync(
-    "./src/app.js",
-    "utf8"
-  );
-  const html=fs.readFileSync(
-    "./index.html",
-    "utf8"
-  );
+  const app=fs.readFileSync(path.join(ROOT,"src/app.js"),"utf8");
+  const html=fs.readFileSync(path.join(ROOT,"index.html"),"utf8");
 
   assert.ok(
     app.includes(
@@ -2032,14 +2004,8 @@ function createClient() {
 
 {
   const fs=require("fs");
-  const app=fs.readFileSync(
-    "./src/app.js",
-    "utf8"
-  );
-  const html=fs.readFileSync(
-    "./index.html",
-    "utf8"
-  );
+  const app=fs.readFileSync(path.join(ROOT,"src/app.js"),"utf8");
+  const html=fs.readFileSync(path.join(ROOT,"index.html"),"utf8");
 
   assert.ok(
     app.includes(
@@ -2217,14 +2183,8 @@ function createClient() {
 
 {
   const fs=require("fs");
-  const html=fs.readFileSync(
-    "./index.html",
-    "utf8"
-  );
-  const app=fs.readFileSync(
-    "./src/app.js",
-    "utf8"
-  );
+  const html=fs.readFileSync(path.join(ROOT,"index.html"),"utf8");
+  const app=fs.readFileSync(path.join(ROOT,"src/app.js"),"utf8");
 
   assert.ok(
     html.includes(
@@ -2349,10 +2309,10 @@ function createClient() {
 
 {
   const fs=require("fs");
-  const html=fs.readFileSync("./index.html","utf8");
+  const html=fs.readFileSync(path.join(ROOT,"index.html"),"utf8");
   assert.ok(
     html.includes(
-      "2.0.0-beta.5"
+      "2.0.0-beta.6"
     )
   );
   assert.ok(
@@ -2504,10 +2464,7 @@ function createClient() {
 
 {
   const fs=require("fs");
-  const app=fs.readFileSync(
-    "./src/app.js",
-    "utf8"
-  );
+  const app=fs.readFileSync(path.join(ROOT,"src/app.js"),"utf8");
   assert.ok(
     app.includes(
       "RelayTelemetryHttpTransport"
@@ -2534,8 +2491,8 @@ function createClient() {
     new RelayReleaseCheckState();
 
   const view=state.apply({
-    version:"2.0.0-beta.5",
-    build:"web-test-beta.5",
+    version:"2.0.0-beta.6",
+    build:"web-test-beta.6",
     ready:true,
     checks:{
       health_ready:true,
@@ -2580,10 +2537,7 @@ function createClient() {
 
 {
   const fs=require("fs");
-  const html=fs.readFileSync(
-    "./index.html",
-    "utf8"
-  );
+  const html=fs.readFileSync(path.join(ROOT,"index.html"),"utf8");
   assert.ok(
     !html.includes(">Eğitim<")
   );
@@ -2646,8 +2600,8 @@ function createClient() {
 
 {
   const fs=require("fs");
-  const html=fs.readFileSync("./index.html","utf8");
-  const app=fs.readFileSync("./src/app.js","utf8");
+  const html=fs.readFileSync(path.join(ROOT,"index.html"),"utf8");
+  const app=fs.readFileSync(path.join(ROOT,"src/app.js"),"utf8");
 
   assert.ok(html.includes('id="play-recovery-panel"'));
   assert.ok(html.includes('id="play-recovery-retry"'));
@@ -2675,17 +2629,17 @@ function createClient() {
       healthState:health,
       releaseCheckState:release,
       expectedVersion:
-        "2.0.0-beta.5",
+        "2.0.0-beta.6",
       expectedProtocolVersion:1,
       requestJson:
         async (path) => {
           if (path==="/health") {
             return {
               status:"ok",
-              version:"2.0.0-beta.5",
+              version:"2.0.0-beta.6",
               web_test:{
                 ready:true,
-                build:"web-test-beta.5",
+                build:"web-test-beta.6",
                 release_checks:[],
                 capabilities:{},
               },
@@ -2696,8 +2650,8 @@ function createClient() {
             === "/web-test/release-check"
           ) {
             return {
-              version:"2.0.0-beta.5",
-              build:"web-test-beta.5",
+              version:"2.0.0-beta.6",
+              build:"web-test-beta.6",
               ready:true,
               checks:{
                 health_ready:true,
@@ -2729,7 +2683,7 @@ function createClient() {
 
           return {
             server_version:
-              "2.0.0-beta.5",
+              "2.0.0-beta.6",
             web_test_build:
               "web-test-alpha.62",
             pvp_protocol_version:1,
@@ -2765,8 +2719,8 @@ function createClient() {
 
 {
   const fs=require("fs");
-  const html=fs.readFileSync("./index.html","utf8");
-  const app=fs.readFileSync("./src/app.js","utf8");
+  const html=fs.readFileSync(path.join(ROOT,"index.html"),"utf8");
+  const app=fs.readFileSync(path.join(ROOT,"src/app.js"),"utf8");
 
   assert.ok(html.includes('id="server-boot-status"'));
   assert.ok(html.includes('id="server-boot-retry"'));
@@ -2782,8 +2736,8 @@ function createClient() {
 
   const snapshot=
     new RelayDiagnosticSnapshot({
-      version:"2.0.0-beta.5",
-      build:"web-test-beta.5",
+      version:"2.0.0-beta.6",
+      build:"web-test-beta.6",
       bootGate:{status:"ready"},
       connectionManager:{
         status:"open",
@@ -2843,8 +2797,8 @@ function createClient() {
 
 {
   const fs=require("fs");
-  const html=fs.readFileSync("./index.html","utf8");
-  const app=fs.readFileSync("./src/app.js","utf8");
+  const html=fs.readFileSync(path.join(ROOT,"index.html"),"utf8");
+  const app=fs.readFileSync(path.join(ROOT,"src/app.js"),"utf8");
 
   assert.ok(html.includes('id="diagnostic-snapshot-button"'));
   assert.ok(html.includes('id="diagnostic-snapshot-output"'));
@@ -2867,16 +2821,16 @@ function createClient() {
       releaseCheckState:
         new RelayReleaseCheckState(),
       expectedVersion:
-        "2.0.0-beta.5",
+        "2.0.0-beta.6",
       expectedProtocolVersion:1,
       requestJson:
         async (path) => {
           if (path==="/health") {
             return {
-              version:"2.0.0-beta.5",
+              version:"2.0.0-beta.6",
               web_test:{
                 ready:true,
-                build:"web-test-beta.5",
+                build:"web-test-beta.6",
                 release_checks:[],
                 capabilities:{},
               },
@@ -2887,8 +2841,8 @@ function createClient() {
             === "/web-test/release-check"
           ) {
             return {
-              version:"2.0.0-beta.5",
-              build:"web-test-beta.5",
+              version:"2.0.0-beta.6",
+              build:"web-test-beta.6",
               ready:true,
               checks:{ok:true},
               menu_areas:[],
@@ -2951,8 +2905,8 @@ function createClient() {
     new RelayWebTestRcReportState();
 
   const view=state.apply({
-    version:"2.0.0-beta.5",
-    build:"web-test-beta.5",
+    version:"2.0.0-beta.6",
+    build:"web-test-beta.6",
     ready:true,
     critical_failures:[],
     kpis:{
@@ -3072,8 +3026,8 @@ function createClient() {
 
 {
   const fs=require("fs");
-  const app=fs.readFileSync("./src/app.js","utf8");
-  const html=fs.readFileSync("./index.html","utf8");
+  const app=fs.readFileSync(path.join(ROOT,"src/app.js"),"utf8");
+  const html=fs.readFileSync(path.join(ROOT,"index.html"),"utf8");
 
   assert.ok(
     app.includes(
@@ -3210,8 +3164,8 @@ function createClient() {
 
 {
   const fs=require("fs");
-  const app=fs.readFileSync("./src/app.js","utf8");
-  const html=fs.readFileSync("./index.html","utf8");
+  const app=fs.readFileSync(path.join(ROOT,"src/app.js"),"utf8");
+  const html=fs.readFileSync(path.join(ROOT,"index.html"),"utf8");
 
   assert.ok(
     app.includes(
@@ -3300,8 +3254,8 @@ function createClient() {
 
 {
   const fs=require("fs");
-  const app=fs.readFileSync("./src/app.js","utf8");
-  const html=fs.readFileSync("./index.html","utf8");
+  const app=fs.readFileSync(path.join(ROOT,"src/app.js"),"utf8");
+  const html=fs.readFileSync(path.join(ROOT,"index.html"),"utf8");
 
   assert.ok(
     app.includes(
@@ -3402,8 +3356,8 @@ function createClient() {
 
 {
   const fs=require("fs");
-  const app=fs.readFileSync("./src/app.js","utf8");
-  const html=fs.readFileSync("./index.html","utf8");
+  const app=fs.readFileSync(path.join(ROOT,"src/app.js"),"utf8");
+  const html=fs.readFileSync(path.join(ROOT,"index.html"),"utf8");
 
   assert.ok(
     app.includes(
@@ -3478,8 +3432,8 @@ function createClient() {
 
 {
   const fs=require("fs");
-  const app=fs.readFileSync("./src/app.js","utf8");
-  const html=fs.readFileSync("./index.html","utf8");
+  const app=fs.readFileSync(path.join(ROOT,"src/app.js"),"utf8");
+  const html=fs.readFileSync(path.join(ROOT,"index.html"),"utf8");
 
   assert.ok(
     app.includes(
@@ -3500,10 +3454,7 @@ function createClient() {
 
 {
   const fs=require("fs");
-  const app=fs.readFileSync(
-    "./src/app.js",
-    "utf8"
-  );
+  const app=fs.readFileSync(path.join(ROOT,"src/app.js"),"utf8");
 
   assert.strictEqual(
     app.includes(
@@ -3515,10 +3466,7 @@ function createClient() {
 
 {
   const fs=require("fs");
-  const app=fs.readFileSync(
-    "./src/app.js",
-    "utf8"
-  );
+  const app=fs.readFileSync(path.join(ROOT,"src/app.js"),"utf8");
 
   assert.strictEqual(
     app.includes(
@@ -3543,16 +3491,16 @@ function createClient() {
       releaseCheckState:
         new RelayReleaseCheckState(),
       expectedVersion:
-        "2.0.0-beta.5",
+        "2.0.0-beta.6",
       expectedProtocolVersion:1,
       requestJson:
         async (path) => {
           if (path==="/health") {
             return {
-              version:"2.0.0-beta.5",
+              version:"2.0.0-beta.6",
               web_test:{
                 ready:true,
-                build:"web-test-beta.5",
+                build:"web-test-beta.6",
                 release_checks:[],
                 capabilities:{},
               },
@@ -3563,8 +3511,8 @@ function createClient() {
             === "/web-test/release-check"
           ) {
             return {
-              version:"2.0.0-beta.5",
-              build:"web-test-beta.5",
+              version:"2.0.0-beta.6",
+              build:"web-test-beta.6",
               ready:true,
               checks:{ok:true},
               menu_areas:[],
@@ -3577,7 +3525,7 @@ function createClient() {
           ) {
             return {
               server_version:
-                "2.0.0-beta.5",
+                "2.0.0-beta.6",
               pvp_protocol_version:1,
               release_ready:true,
             };
@@ -3615,10 +3563,7 @@ function createClient() {
 
 {
   const fs=require("fs");
-  const html=fs.readFileSync(
-    "./index.html",
-    "utf8"
-  );
+  const html=fs.readFileSync(path.join(ROOT,"index.html"),"utf8");
   assert.ok(
     html.includes(
       'id="operation-readiness-status"'
@@ -3628,10 +3573,7 @@ function createClient() {
 
 {
   const fs=require("fs");
-  const app=fs.readFileSync(
-    "./src/app.js",
-    "utf8"
-  );
+  const app=fs.readFileSync(path.join(ROOT,"src/app.js"),"utf8");
 
   assert.ok(
     app.includes(
@@ -3657,10 +3599,7 @@ function createClient() {
 
 {
   const fs=require("fs");
-  const app=fs.readFileSync(
-    "./src/app.js",
-    "utf8"
-  );
+  const app=fs.readFileSync(path.join(ROOT,"src/app.js"),"utf8");
 
   assert.ok(
     app.includes(
@@ -3723,8 +3662,8 @@ function createClient() {
 
 {
   const fs=require("fs");
-  const app=fs.readFileSync("./src/app.js","utf8");
-  const html=fs.readFileSync("./index.html","utf8");
+  const app=fs.readFileSync(path.join(ROOT,"src/app.js"),"utf8");
+  const html=fs.readFileSync(path.join(ROOT,"index.html"),"utf8");
 
   assert.ok(
     app.includes(
@@ -3740,7 +3679,7 @@ function createClient() {
 
 {
   const fs=require("fs");
-  const app=fs.readFileSync("./src/app.js","utf8");
+  const app=fs.readFileSync(path.join(ROOT,"src/app.js"),"utf8");
 
   assert.ok(
     app.includes(
@@ -3761,7 +3700,7 @@ function createClient() {
 
 {
   const fs=require("fs");
-  const app=fs.readFileSync("./src/app.js","utf8");
+  const app=fs.readFileSync(path.join(ROOT,"src/app.js"),"utf8");
 
   assert.ok(
     app.includes(
@@ -3815,8 +3754,8 @@ function createClient() {
 
 {
   const fs=require("fs");
-  const app=fs.readFileSync("./src/app.js","utf8");
-  const html=fs.readFileSync("./index.html","utf8");
+  const app=fs.readFileSync(path.join(ROOT,"src/app.js"),"utf8");
+  const html=fs.readFileSync(path.join(ROOT,"index.html"),"utf8");
 
   assert.ok(
     app.includes(
@@ -3866,8 +3805,8 @@ function createClient() {
 
 {
   const fs=require("fs");
-  const app=fs.readFileSync("./src/app.js","utf8");
-  const html=fs.readFileSync("./index.html","utf8");
+  const app=fs.readFileSync(path.join(ROOT,"src/app.js"),"utf8");
+  const html=fs.readFileSync(path.join(ROOT,"index.html"),"utf8");
 
   assert.ok(
     app.includes(
@@ -3929,8 +3868,8 @@ function createClient() {
 
 {
   const fs=require("fs");
-  const app=fs.readFileSync("./src/app.js","utf8");
-  const html=fs.readFileSync("./index.html","utf8");
+  const app=fs.readFileSync(path.join(ROOT,"src/app.js"),"utf8");
+  const html=fs.readFileSync(path.join(ROOT,"index.html"),"utf8");
 
   assert.ok(
     app.includes(
@@ -3951,7 +3890,7 @@ function createClient() {
 
 {
   const fs=require("fs");
-  const app=fs.readFileSync("./src/app.js","utf8");
+  const app=fs.readFileSync(path.join(ROOT,"src/app.js"),"utf8");
 
   assert.ok(
     app.includes(
@@ -3995,8 +3934,8 @@ function createClient() {
 
 {
   const fs=require("fs");
-  const app=fs.readFileSync("./src/app.js","utf8");
-  const html=fs.readFileSync("./index.html","utf8");
+  const app=fs.readFileSync(path.join(ROOT,"src/app.js"),"utf8");
+  const html=fs.readFileSync(path.join(ROOT,"index.html"),"utf8");
   assert.ok(
     app.includes(
       "loadFirstRunChecklist"
@@ -4039,8 +3978,8 @@ function createClient() {
 
 {
   const fs=require("fs");
-  const app=fs.readFileSync("./src/app.js","utf8");
-  const html=fs.readFileSync("./index.html","utf8");
+  const app=fs.readFileSync(path.join(ROOT,"src/app.js"),"utf8");
+  const html=fs.readFileSync(path.join(ROOT,"index.html"),"utf8");
 
   assert.ok(
     app.includes(
@@ -4070,7 +4009,7 @@ function createClient() {
   const view=state.apply({
     started:true,
     test_run_id:"run-113",
-    build:"web-test-beta.5",
+    build:"web-test-beta.6",
   });
 
   assert.strictEqual(
@@ -4085,8 +4024,8 @@ function createClient() {
 
 {
   const fs=require("fs");
-  const app=fs.readFileSync("./src/app.js","utf8");
-  const html=fs.readFileSync("./index.html","utf8");
+  const app=fs.readFileSync(path.join(ROOT,"src/app.js"),"utf8");
+  const html=fs.readFileSync(path.join(ROOT,"index.html"),"utf8");
 
   assert.ok(
     app.includes(
@@ -4126,8 +4065,8 @@ function createClient() {
 
 {
   const fs=require("fs");
-  const app=fs.readFileSync("./src/app.js","utf8");
-  const html=fs.readFileSync("./index.html","utf8");
+  const app=fs.readFileSync(path.join(ROOT,"src/app.js"),"utf8");
+  const html=fs.readFileSync(path.join(ROOT,"index.html"),"utf8");
 
   assert.ok(
     app.includes(
@@ -4171,8 +4110,8 @@ function createClient() {
 
 {
   const fs=require("fs");
-  const app=fs.readFileSync("./src/app.js","utf8");
-  const html=fs.readFileSync("./index.html","utf8");
+  const app=fs.readFileSync(path.join(ROOT,"src/app.js"),"utf8");
+  const html=fs.readFileSync(path.join(ROOT,"index.html"),"utf8");
 
   assert.ok(
     app.includes(
@@ -4228,8 +4167,8 @@ function createClient() {
 
 {
   const fs=require("fs");
-  const app=fs.readFileSync("./src/app.js","utf8");
-  const html=fs.readFileSync("./index.html","utf8");
+  const app=fs.readFileSync(path.join(ROOT,"src/app.js"),"utf8");
+  const html=fs.readFileSync(path.join(ROOT,"index.html"),"utf8");
 
   assert.ok(
     app.includes(
@@ -4265,7 +4204,7 @@ function createClient() {
     started:true,
     finished:true,
     test_run_id:"run-beta",
-    build:"web-test-beta.5",
+    build:"web-test-beta.6",
   });
 
   assert.strictEqual(
@@ -4280,8 +4219,8 @@ function createClient() {
 
 {
   const fs=require("fs");
-  const app=fs.readFileSync("./src/app.js","utf8");
-  const html=fs.readFileSync("./index.html","utf8");
+  const app=fs.readFileSync(path.join(ROOT,"src/app.js"),"utf8");
+  const html=fs.readFileSync(path.join(ROOT,"index.html"),"utf8");
 
   assert.ok(
     app.includes(
@@ -4317,8 +4256,8 @@ function createClient() {
 
 {
   const fs=require("fs");
-  const app=fs.readFileSync("./src/app.js","utf8");
-  const html=fs.readFileSync("./index.html","utf8");
+  const app=fs.readFileSync(path.join(ROOT,"src/app.js"),"utf8");
+  const html=fs.readFileSync(path.join(ROOT,"index.html"),"utf8");
 
   assert.ok(
     app.includes(
@@ -4349,8 +4288,8 @@ function createClient() {
 
 {
   const fs=require("fs");
-  const app=fs.readFileSync("./src/app.js","utf8");
-  const html=fs.readFileSync("./index.html","utf8");
+  const app=fs.readFileSync(path.join(ROOT,"src/app.js"),"utf8");
+  const html=fs.readFileSync(path.join(ROOT,"index.html"),"utf8");
 
   assert.ok(
     app.includes(
@@ -4376,8 +4315,8 @@ function createClient() {
 
 {
   const fs=require("fs");
-  const app=fs.readFileSync("./src/app.js","utf8");
-  const html=fs.readFileSync("./index.html","utf8");
+  const app=fs.readFileSync(path.join(ROOT,"src/app.js"),"utf8");
+  const html=fs.readFileSync(path.join(ROOT,"index.html"),"utf8");
 
   assert.ok(app.includes("loadReviewCandidates"));
   assert.ok(app.includes("/web-test/review-candidates"));
@@ -4387,9 +4326,9 @@ function createClient() {
 
 {
   const fs=require("fs");
-  const app=fs.readFileSync("./src/app.js","utf8");
-  const html=fs.readFileSync("./index.html","utf8");
-  const css=fs.readFileSync("./src/styles.css","utf8");
+  const app=fs.readFileSync(path.join(ROOT,"src/app.js"),"utf8");
+  const html=fs.readFileSync(path.join(ROOT,"index.html"),"utf8");
+  const css=fs.readFileSync(path.join(ROOT,"src/styles.css"),"utf8");
 
   assert.ok(app.includes("document.body.dataset.appScreen"));
   assert.ok(html.includes("menu-action-play"));
@@ -4401,8 +4340,8 @@ function createClient() {
 
 {
   const fs=require("fs");
-  const html=fs.readFileSync("./index.html","utf8");
-  const css=fs.readFileSync("./src/styles.css","utf8");
+  const html=fs.readFileSync(path.join(ROOT,"index.html"),"utf8");
+  const css=fs.readFileSync(path.join(ROOT,"src/styles.css"),"utf8");
   assert.ok(html.includes("Olay Günlüğü"));
   assert.ok(html.includes('<details class="diagnostic-panel play-technical-panel"'));
   assert.ok(html.includes("screen-subtitle"));
@@ -4413,9 +4352,9 @@ function createClient() {
 
 {
   const fs=require("fs");
-  const app=fs.readFileSync("./src/app.js","utf8");
-  const html=fs.readFileSync("./index.html","utf8");
-  const css=fs.readFileSync("./src/styles.css","utf8");
+  const app=fs.readFileSync(path.join(ROOT,"src/app.js"),"utf8");
+  const html=fs.readFileSync(path.join(ROOT,"index.html"),"utf8");
+  const css=fs.readFileSync(path.join(ROOT,"src/styles.css"),"utf8");
 
   assert.ok(html.includes('id="local-play-start"'));
   assert.ok(html.includes('id="online-play-prepare"'));

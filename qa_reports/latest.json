@@ -1,0 +1,125 @@
+{
+  "project": "Project Relay 2.0",
+  "version": "2.0.0-beta.6",
+  "generated_at_epoch": 1787037871,
+  "ok": true,
+  "steps": [
+    {
+      "name": "server_pytest",
+      "ok": true,
+      "returncode": 0,
+      "duration_s": 9.799,
+      "stdout": "........................................................................ [ 13%]\n........................................................................ [ 26%]\n........................................................................ [ 39%]\n........................................................................ [ 52%]\n........................................................................ [ 65%]\n........................................................................ [ 79%]\n........................................................................ [ 92%]\n..........................................                               [100%]\n546 passed in 5.67s\n",
+      "stderr": "",
+      "command": [
+        "/opt/pyvenv/bin/python",
+        "-m",
+        "pytest",
+        "-q"
+      ]
+    },
+    {
+      "name": "client_syntax_app",
+      "ok": true,
+      "returncode": 0,
+      "duration_s": 0.022,
+      "stdout": "",
+      "stderr": "",
+      "command": [
+        "node",
+        "--check",
+        "src/app.js"
+      ]
+    },
+    {
+      "name": "client_syntax_runtime",
+      "ok": true,
+      "returncode": 0,
+      "duration_s": 0.02,
+      "stdout": "",
+      "stderr": "",
+      "command": [
+        "node",
+        "--check",
+        "src/relay-client.js"
+      ]
+    },
+    {
+      "name": "client_unit_tests",
+      "ok": true,
+      "returncode": 0,
+      "duration_s": 0.072,
+      "stdout": "154 client tests passed\n",
+      "stderr": "",
+      "command": [
+        "node",
+        "tests/relay-client.test.js"
+      ]
+    },
+    {
+      "name": "client_startup_menu_test",
+      "ok": true,
+      "returncode": 0,
+      "duration_s": 0.052,
+      "stdout": "app startup + menu binding test passed\n",
+      "stderr": "",
+      "command": [
+        "node",
+        "tests/app-startup.test.js"
+      ]
+    },
+    {
+      "name": "uvicorn_http_smoke",
+      "ok": true,
+      "duration_s": 0.834,
+      "checks": [
+        {
+          "path": "/",
+          "status": 200,
+          "ok": true
+        },
+        {
+          "path": "/health",
+          "status": 200,
+          "ok": true
+        },
+        {
+          "path": "/favicon.ico",
+          "status": 200,
+          "ok": true
+        },
+        {
+          "path": "/src/app.js",
+          "status": 200,
+          "ok": true
+        },
+        {
+          "path": "/src/relay-client.js",
+          "status": 200,
+          "ok": true
+        },
+        {
+          "path": "/src/styles.css",
+          "status": 200,
+          "ok": true
+        },
+        {
+          "path": "/web-test/preflight",
+          "status": 200,
+          "ok": true
+        },
+        {
+          "path": "/web-test/launch-readiness",
+          "status": 200,
+          "ok": true
+        },
+        {
+          "path": "/web-test/operation-status",
+          "status": 200,
+          "ok": true
+        }
+      ]
+    }
+  ],
+  "note": "Playwright gerçek tarayıcı E2E testi bu zincire zorunlu eklenmedi; çalışma ortamı tarayıcı/localhost politikasına bağlıdır. Startup VM testi, menü handler bağlama hatalarını CI-benzeri biçimde yakalar."
+}

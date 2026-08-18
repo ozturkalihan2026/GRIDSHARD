@@ -9,9 +9,9 @@ def test_rc_candidate_endpoint_is_single_aggregate_snapshot():
         "/web-test/rc-candidate"
     ).json()
 
-    assert body["version"]=="2.0.0-beta.5"
-    assert body["build"]=="web-test-beta.5"
-    assert body["test_run_id"]=="web-test-beta.5"
+    assert body["version"]=="2.0.0-beta.6"
+    assert body["build"]=="web-test-beta.6"
+    assert body["test_run_id"]=="web-test-beta.6"
     assert body["decision"] in {
         "GO","NO_GO"
     }

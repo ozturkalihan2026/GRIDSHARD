@@ -1,0 +1,15 @@
+services:
+  relay-web:
+    build: .
+    ports:
+      - "8000:8000"
+    environment:
+      RELAY_WEB_TEST_RUN_ID: web-test-beta.6-docker
+      RELAY_TELEMETRY_MAX_EVENTS: "50000"
+    volumes:
+      - ./server/data:/app/server/data
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health', timeout=2)"]
+      interval: 5s
+      timeout: 3s
+      retries: 10

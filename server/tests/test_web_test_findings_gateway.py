@@ -12,7 +12,7 @@ def test_findings_endpoint_starts_as_insufficient_data():
         "/web-test/findings"
     ).json()
 
-    assert body["test_run_id"]=="web-test-beta.5"
+    assert body["test_run_id"]=="web-test-beta.6"
     assert body["status"]=="insufficient_data"
     assert body["feedback_count"]==0
     assert body["concerns"]==[]

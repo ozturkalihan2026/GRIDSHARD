@@ -1,352 +1,51 @@
 # Project Relay 2.0 — YOL HARİTASI
 
-**Güncel Sürüm:** `2.0.0-beta.5`  
-**Paket:** Project Relay 2.0 Beta — Oynanabilir Büyük Test Paketi  
+**Güncel Sürüm:** `2.0.0-beta.6`  
+**Paket:** Stabilizasyon, Kanonik Yol Haritası Yeniden Denetimi ve QA Zinciri  
 **Kanonik Dosya:** `docs/YOL_HARITASI.md`
 
-> Bu dosya Project Relay 2.0 için tek kanonik geliştirme kaydıdır. Her paket tamamlandığında sürüm numarası artırılır; **Tamamlananlar** ve **Yapılacaklar** bu dosyada güncellenir. Sonraki geliştirme paketi bu dosya okunarak başlatılır.
+> Bu dosya Project Relay 2.0 için tek kanonik geliştirme kaydıdır. Kaynak karar belgesi ile kod tabanı yeniden karşılaştırılmıştır. Buradaki `[x]`, `[~]`, `[ ]` işaretleri artık yalnızca kodda ve testlerde doğrulanabilen gerçek durumu gösterir.
+
+## Durum İşaretleri
+
+- `[x]` Uygulandı ve otomatik test/kod kanıtı mevcut.
+- `[~]` Altyapısı veya önemli bölümü uygulandı; gerçek kullanım, geniş ölçekli test ya da kalan alt parçalar var.
+- `[ ]` Henüz uygulanmadı.
 
 ---
 
-## Tamamlananlar — Kümülatif
-
-### Proje ve sürüm altyapısı
-
-- [x] Project Relay 2.0 için yeni sunucu proje iskeleti oluşturuldu.
-- [x] `server/app/` oyun uygulama yapısı oluşturuldu.
-- [x] `server/app/game/` savaş motoru paketi oluşturuldu.
-- [x] `server/tests/game/` temel savaş motoru test alanı oluşturuldu.
-- [x] Tek kanonik yol haritası olarak `docs/YOL_HARITASI.md` kullanımı başlatıldı.
-- [x] Sürüm bilgisi `server/app/version.py` içinde `2.0.0-alpha.1` olarak tanımlandı.
-- [x] `pytest` test yapılandırması eklendi.
-
-### Kesintisiz savaş durumu modeli
-
-- [x] Savaş durumları `WAITING`, `RUNNING`, `FINISHED` olarak tanımlandı.
-- [x] Savaş motorunda `PAUSED` durumu tanımlanmadı.
-- [x] `BattleState` temel savaş durumu modeli oluşturuldu.
-- [x] `BattleCommand` oyuncu komutu modeli oluşturuldu.
-- [x] `BattleEvent` savaş olayı modeli oluşturuldu.
-- [x] Savaş kimliği, tick sayısı, geçen süre ve olay kayıtları için temel alanlar oluşturuldu.
-
-### Gerçek zamanlı savaş motoru
-
-- [x] Savaş motoru `10 Hz` sabit tick hızıyla çalışacak şekilde kuruldu.
-- [x] Her tick `100 ms` savaş zamanını temsil edecek şekilde tanımlandı.
-- [x] Savaş başladıktan sonra `step()` çağrılarıyla zamanın kesintisiz ilerlemesi sağlandı.
-- [x] Savaş saati tick sayısından deterministik olarak hesaplanıyor.
-- [x] Oyuncu komutlarının savaş motorunu durdurmaması için komut kuyruğu oluşturuldu.
-- [x] Bekleyen komutların savaş akışı içinde işlenmesi için temel komut işleme hattı oluşturuldu.
-- [x] Komut işlenirken savaş durumunun `RUNNING` olarak kalması sağlandı.
-- [x] `battle_started`, `command_received` ve `battle_finished` temel olay kayıtları oluşturuldu.
-- [x] Savaş `FINISHED` durumuna geçtiğinde savaş saatinin ilerlemeyi bırakması sağlandı.
-
-### Gerçek zamanlı çalıştırıcı
-
-- [x] `asyncio` tabanlı `BattleRunner` oluşturuldu.
-- [x] Runner savaş `RUNNING` durumundayken motoru kesintisiz çalıştıracak şekilde kuruldu.
-- [x] Tick süresi için hedef zaman takibi eklendi.
-- [x] Tick işleme süresinin savaş zamanında sürekli kayma üretmesini azaltmak için hedef zaman bazlı bekleme kullanıldı.
-- [x] Motor geç kaldığında yapay ek bekleme eklenmemesi sağlandı.
-
-### Testler
-
-- [x] Savaşın `RUNNING` durumunda başladığı test edildi.
-- [x] `150 tick = 15.000 ms` olduğu test edildi.
-- [x] Tek oyuncu komutunun savaş saatini durdurmadığı test edildi.
-- [x] Çoklu oyuncu komutlarının savaş saatini durdurmadığı test edildi.
-- [x] Bitmiş savaşın artık ilerlemediği test edildi.
-- [x] Toplam **5 test başarılı**.
-
-
-### 2.0.0-alpha.6 — Devre Kredisi Motoru
-
-- [x] Devre Kredisi oyuncunun gerçek zamanlı maç kaynağı olarak motor modeline eklendi.
-- [x] Enerji ile Devre Kredisi ayrı sistemler olarak tutuldu; modülün depolanmış enerjisi kredi bakiyesinden bağımsızdır.
-- [x] Yapılandırılabilir başlangıç Devre Kredisi eklendi (`200 DK` alpha denge değeri).
-- [x] Yapılandırılabilir pasif Devre Kredisi geliri eklendi (`10 DK/sn` alpha denge değeri).
-- [x] Devre Kredisi savaş tick'leri boyunca anlık güncelleniyor.
-- [x] İlk 8 temel modül için alpha Devre Kredisi maliyetleri tanımlandı.
-- [x] Modül Rafı'ndan sahaya yerleştirme maliyeti motor tarafından otomatik düşülüyor.
-- [x] Aktif modülü rafa geri çekme ayrı bir satış işlemi oluşturmuyor; alpha.6'da maliyet/iade `0 DK`.
-- [x] Modül taşıma için yapılandırılabilir işlem maliyeti eklendi (`10 DK` alpha değeri).
-- [x] Modül değiştirmede sahaya giren modülün maliyeti motor tarafından otomatik uygulanıyor.
-- [x] Rezervdeki modül tekrar sahaya sürüklendiğinde yerleştirme maliyeti yeniden motor tarafından uygulanıyor.
-- [x] Modül döndürme alpha.6'da `0 DK`; motor ekonomik kuralı üzerinden geçiyor.
-- [x] İşlemin gerçekleştiği tick'teki güncel Devre Kredisi bakiyesi esas alınıyor.
-- [x] Kredi yetersizse komut savaş durmadan reddediliyor ve modül/konum durumu değiştirilmeden kalıyor.
-- [x] Başarısız değiştirme işleminin atomik kalması sağlandı; çıkan/giren modül durumu bozulmuyor.
-- [x] Kredi kazanımı için ileride savaş performansı kaynaklarına bağlanabilecek genel ödül kancası (`award_circuit_credits`) eklendi.
-- [x] Pasif kredi artışı olay günlüğünü her tick doldurmadan motor durumunda güncelleniyor.
-- [x] İstemcide `Devre Kredisi: ... DK` göstergesi eklendi.
-- [x] Modül kartlarında alpha Devre Kredisi maliyeti gösteriliyor.
-- [x] İstemci yalnızca sunucudan gelen ekonomi durumunu göstermeye uygun `applyServerEconomyState` arayüzüne sahip.
-- [x] Görsel demo katmanında yetersiz kredi için savaş durdurmayan kısa uyarı eklendi.
-- [x] Ayrı Satın Al / Sat / Değiştir / Onayla düğmeleri oluşturulmadı.
-- [x] Devre Kredisi ve otomatik modül maliyetleri için yeni sunucu testleri eklendi.
-- [x] İstemci Devre Kredisi durumunu doğrulayan yeni testler eklendi.
-- [x] Oyun tanıtımı amaçlı `README.md` dosyaları bu paket kapsamından çıkarıldı.
-
-### Sonraki Fazlar — Sabit Yol Haritası
-
-#### FAZ 0 — Proje Temeli: kalan işler
-
-- [ ] Temel istemci projesi oluşturulacak.
-- [ ] İlk kullanıcı arayüzü yalnızca `Oyna`, `Profil`, `İstatistikler`, `Ayarlar` kapsamıyla kurulacak.
-- [ ] Profil altında gerekli alt menüler oluşturulacak; kozmetik bölümü eklenmeyecek.
-
-#### FAZ 1 — Gerçek Zamanlı Savaş Motoru: tamamlanacak sunucu otoritesi
-
-- [ ] Sunucu otoriteli gerçek kural doğrulama katmanı modül, zaman, hücre, bağlantı ve ekonomi kurallarıyla genişletilecek.
-- [ ] İstemcinin yalnızca oyuncu niyetini/komutunu gönderdiği yapı kurulacak.
-- [ ] Gerçek savaş sonucunun yalnızca motor/sunucu tarafından belirlenmesi garanti altına alınacak.
-
-#### FAZ 2 — Dinamik Modül Sistemi
-
-- [x] Modül ekleme, çıkarma, değiştirme, taşıma ve döndürmenin sunucu motoru temeli gerçek savaş tick akışına bağlandı.
-- [x] İlk 8 temel modül tanımıyla dinamik modül motoru birim testlerinde doğrulandı.
-- [ ] 24 modüle geçmeden önce dinamik savaş yapısı test edilecek.
-
-#### FAZ 3 — Modül Rafı ve Sürükle-Bırak
-
-- [x] Modül Rafı savaş boyunca görünür olacak şekilde istemci temeli oluşturuldu; 18 modüllük tam Savaş Havuzu FAZ 9'da bağlanacak.
-- [x] Modül Rafı ilk 15 saniyede görünür fakat kilitli.
-- [x] 15. saniyede Modül Rafı istemci tarafında otomatik aktif oluyor.
-- [x] Raftan sahaya sürükle-bırak ile modül yerleştirme komutu üretimi hazırlandı.
-- [x] Sahadan rafa sürükle-bırak ile modül çıkarma komutu üretimi hazırlandı.
-- [x] Hücreler arasında sürükle-bırak ile modül taşıma komutu üretimi hazırlandı.
-- [x] Rezerv modülün aktif modül üzerine bırakılmasıyla değiştirme komutu üretimi hazırlandı.
-- [x] Ayrı `Satın Al`, `Sat`, `Değiştir`, `Onayla` düğmeleri oluşturulmadı.
-- [x] Modül Rafı savaş boyunca görünür kalıyor.
-- [ ] 18 modül için kompakt ve kaydırılabilir raf arayüzü oluşturulacak.
-
-#### FAZ 4 — Zaman Bazlı Aktif Modül Kapasitesi
-
-- [x] 0–15 sn başlangıç düzeni uygulanacak.
-- [x] 15–25 sn maksimum 4 aktif modül uygulanacak.
-- [x] 25–35 sn maksimum 5 aktif modül uygulanacak.
-- [x] 35–45 sn maksimum 6 aktif modül uygulanacak.
-- [x] 45–55 sn maksimum 7 aktif modül uygulanacak.
-- [x] 55–65 sn maksimum 8 aktif modül uygulanacak.
-- [x] 65–75 sn maksimum 9 aktif modül uygulanacak.
-- [x] 75–85 sn maksimum 10 aktif modül uygulanacak.
-- [x] 85 sn ve sonrasında maksimum 10 aktif modül korunacak.
-- [x] Kapasite sınırı gerçek savaş saatinden anlık hesaplanacak.
-- [x] Kapasite artışı oyuncuyu yeni modül koymaya zorlamayacak.
-- [x] Modül değişimi için yapay cooldown eklenmeyecek.
-
-#### FAZ 5 — Modül Durum Kalıcılığı
-
-- [x] Devreden çıkan modül Can değerini koruyor.
-- [x] Tekrar devreye alınan modül aynı Can değeriyle dönüyor.
-- [x] Isı rezervde aynen korunuyor; bu pakette pasif rezerv soğuması uygulanmıyor.
-- [x] Depolanmış enerji rezervde aynen korunuyor.
-- [x] Zayıflatmalar modüle bağlı kalıyor; süreli olanlar savaş saatiyle rezervde de sona eriyor.
-- [x] Kalıcı maç etkileri modüle bağlı kalıyor; süreli olanlar savaş saatiyle ilerliyor.
-- [x] Bekleme süreleri mutlak savaş saatine bağlı ve rezervde de ilerliyor.
-- [x] Geçici güçlendirici durumları rezervde kalıyor ancak süreleri savaş saatiyle işlemeye devam ediyor.
-- [x] Motor tarafında modül, çıkarma/değiştirme komutu uygulanana kadar Aktif durumda kalıyor; istemci sürükleme davranışı FAZ 3'te bağlanacak.
-
-#### FAZ 6 — Devre Kredisi Motoru
-
-- [x] Devre Kredisi gerçek zamanlı savaş kaynağı olarak oluşturuldu.
-- [x] Enerji ve Devre Kredisi tamamen ayrı sistemler olarak tutuluyor.
-- [x] Anlık Devre Kredisi değişimi destekleniyor.
-- [x] Pasif Devre Kredisi geliri eklendi.
-- [ ] Savaş performansı kaynaklı gerçek gelir kuralları saldırı/savunma motoru geliştikçe bağlanacak; genel kredi ödül kancası hazır.
-- [ ] Modül yok etme ve savunma başarısı gelirleri gerçek savaş/denge fazında belirlenecek.
-- [ ] Snowball etkisi otomatik savaş simülasyonu fazında ölçülüp dengelenecek.
-- [x] İlk 8 temel modül için alpha maliyetleri oluşturuldu.
-- [x] Modül komutu uygulandığı tick içinde güncel Devre Kredisi yeniden doğrulanıyor.
-- [x] Kredi yetersizse motor işlemi reddediyor; istemci savaş durmadan kısa uyarı gösterebiliyor.
-
-#### FAZ 7 — Otomatik Modül İşlem Ekonomisi
-
-- [x] Modül yerleştirme maliyeti motor tarafından otomatik hesaplanıyor.
-- [x] Modül çıkarma/rezerve alma ekonomik kuralı otomatik uygulanıyor; alpha.6 değeri 0 DK ve satış/iade yok.
-- [x] Modül değiştirme ekonomik kuralı otomatik uygulanıyor.
-- [x] Modül taşıma ekonomik kuralı otomatik uygulanıyor.
-- [x] Rezervden yeniden devreye alma ekonomik kuralı otomatik uygulanıyor.
-- [x] Kullanıcı ekonomik işlem türü seçmiyor; sürükle-bırak komutlarının maliyetini motor hesaplıyor.
-- [x] Devre Kredisi istemci arayüzünde savaş boyunca anlık gösteriliyor.
-
-#### FAZ 8 — 24 Modüllük Ekosistem
-
-- [ ] Modül sayısı önce 8'e, sonra 12'ye, 18'e ve yaklaşık 24'e genişletilecek. **12 modül aşaması tamamlandı; sırada 18 modül var.**
-- [ ] Enerji modülleri: Jeneratör, Batarya, Dağıtıcı, Kapasitör. **Jeneratör, Batarya ve Dağıtıcı mevcut; Kapasitör bekliyor.**
-- [ ] Saldırı modülleri: Lazer, Darbe Topu, Ray Topu, Füze Fırlatıcı, Dron Üssü, Ark Topu. **Lazer ve Darbe Topu mevcut.**
-- [ ] Savunma modülleri: Kalkan, Zırh, Yansıtıcı, Bariyer. **Kalkan ve Zırh mevcut.**
-- [ ] Destek modülleri: Onarım Modülü, Soğutucu, Güçlendirici, Hedefleme Bilgisayarı, Aşırı Hızlandırıcı.
-- [ ] Sabotaj modülleri: EMP, Sinyal Bozucu, Virüs, Enerji Sömürücü, Kesici. **EMP mevcut.**
-- [ ] Her modülün diğerlerinden farklı stratejik amacı olacak. **İlk 12 modül için stratejik rol metadatası oluşturuldu; 18/24 genişlemesi bekliyor.**
-- [ ] Modüller için Can, enerji, hasar/etki, port, maliyet ve karşı strateji verileri tanımlanacak. **İlk 12 modül için Can, kredi maliyeti, enerji, temel hasar/bekleme ve port tanım temeli hazır; gerçek karşı strateji/simülasyon bekliyor.**
-- [ ] Kullanıcıya görünen modül ve sistem adları Türkçe olacak.
-
-#### FAZ 9 — 18 Modüllük Savaş Havuzu
-
-- [ ] Oyuncu yaklaşık 24 global modülden 18 tanesini maç öncesinde seçecek.
-- [ ] `24 Global Modül → 18 Savaş Havuzu → Maksimum 10 Aktif Modül` kuralı uygulanacak.
-- [ ] Savaş Havuzu hazırlama akışı `Oyna`/`Profil` kapsamıyla uyumlu tasarlanacak.
-- [ ] Farklı saldırı, savunma, kontrol ve dengeli havuz stratejileri desteklenecek.
-
-#### FAZ 10 — Yeni Stratejik Savaş Alanı
-
-- [ ] Merkezde Çekirdek kimliği korunacak.
-- [ ] Yaklaşık 18–24 kullanılabilir yerleşim hücresi hazırlanacak.
-- [ ] Maksimum aktif modül sayısı 10 olarak kalacak.
-- [ ] Büyük alan daha fazla modül için değil, farklı geometri ve konumsal strateji için kullanılacak.
-- [ ] Jeneratör, enerji akışı ve port bağlantıları Project Relay kimliğinin temel parçası olarak korunacak.
-
-#### FAZ 11 — Özel Hücreler
-
-- [x] İlk savaş alanında 6 özel hücre tanımlandı.
-- [x] Saldırı Hücresi tasarlandı.
-- [x] Savunma Hücresi tasarlandı.
-- [x] Enerji Hücresi tasarlandı.
-- [x] Soğutma Hücresi tasarlandı.
-- [x] Onarım Hücresi tasarlandı.
-- [x] Sinyal Hücresi tasarlandı.
-- [ ] Bonusların ücretsiz güç olmaması için her özel hücreye konumsal/bağlantısal risk veya bedel eklenecek.
-
-#### FAZ 12 — Geçici Güçlendiriciler
-
-- [ ] Geçici güçlendirici sistemi oluşturulacak.
-- [ ] Güçlendirici savaş devam ederken seçilecek.
-- [ ] Oyuncu güçlendiricinin uygulanacağı modülü kendisi belirleyecek.
-- [ ] Aşırı Yük Çipi benzeri istatistik güçlendiricileri test edilecek.
-- [ ] Acil Onarım benzeri acil durum güçlendiricileri test edilecek.
-- [ ] Çift Port Adaptörü benzeri modül davranışını değiştiren güçlendiriciler önceliklendirilecek.
-- [ ] Güçlendirici seçimi hiçbir zaman savaşı durdurmayacak.
-
-#### FAZ 13 — 85+ Saniye Güçlendirici Döngüsü
-
-- [ ] 85. saniyede ilk güçlendirici seçimi açılacak.
-- [ ] 95, 105, 115, 125... saniyelerde seçim tekrar edecek.
-- [ ] Her seçimde 3 seçenek gösterilecek ve 1 tanesi seçilecek.
-- [ ] Seçilen güçlendirici için hedef modül belirlenecek.
-- [ ] Seçim arayüzü modal olmayacak.
-- [ ] Güçlendirici seçimi sırasında saldırılar, enerji, Can ve kredi akışı devam edecek.
-
-#### FAZ 14 — Yapay Zekâ ve Simülasyon
-
-- [ ] Otomatik savaş simülasyon altyapısı oluşturulacak.
-- [ ] 10.000 maçlık testler çalıştırılacak.
-- [ ] 50.000 maçlık testler çalıştırılacak.
-- [ ] 100.000+ maçlık testler destekleyecek.
-- [ ] Modül seçim oranı ölçülecek.
-- [ ] Modül kazanma oranı ölçülecek.
-- [ ] Devre Kredisi kullanımı ölçülecek.
-- [ ] Modül değiştirme sıklığı ölçülecek.
-- [ ] Güçlendirici tercihleri ölçülecek.
-- [ ] Özel hücre kullanımı ölçülecek.
-- [ ] Ortalama maç süresi ölçülecek.
-- [ ] Geri dönüş oranı ölçülecek.
-- [ ] İlk oyuncu avantajı ölçülecek.
-
-#### FAZ 15 — Savaş Okunabilirliği
-
-- [ ] İki oyuncuda toplam 20'ye kadar aktif modül varken ekranın okunabilirliği sağlanacak.
-- [ ] Enerjisiz modüller açıkça anlaşılacak.
-- [ ] Hasarlı modüller açıkça anlaşılacak.
-- [ ] Aktif güçlendiriciler açıkça anlaşılacak.
-- [ ] Özel hücre bonusları açıkça anlaşılacak.
-- [ ] Saldırı kaynağı ve hedefi açıkça anlaşılacak.
-- [ ] Savaş ekranında tam ekran/modal işlemlerden kaçınılacak.
-
-#### FAZ 16 — Yapay Zekâ Rakipler
-
-- [ ] Saldırgan yapay zekâ hazırlanacak.
-- [ ] Savunmacı yapay zekâ hazırlanacak.
-- [ ] Dengeli yapay zekâ hazırlanacak.
-- [ ] Sabotaj Odaklı yapay zekâ hazırlanacak.
-- [ ] Ekonomi Odaklı yapay zekâ hazırlanacak.
-
-#### FAZ 17 — Online PvP
-
-- [x] Gerçek oyuncular arasında online PvP oluşturuldu.
-- [x] Savaş zamanı sunucu tarafından yönetiliyor.
-- [x] Devre Kredisi sunucu tarafından yönetiliyor.
-- [x] Modüller ve Can değerleri sunucu tarafından yönetiliyor.
-- [x] Bağlantılar sunucu tarafından doğrulanıyor.
-- [x] Güçlendiriciler sunucu tarafından doğrulanıyor.
-- [x] Savaş sonucu sunucu tarafından belirleniyor.
-
-#### FAZ 18 — Eşleştirme
-
-- [x] Başlangıç derece puanı sistemi oluşturuldu; varsayılan değer 1000 DP.
-- [x] Derece yakınlığı ve bekleme süresi kontrollü genişleyen eşleştirme kuyruğuna bağlandı.
-- [x] Lig ve oyuncu deneyimi metadata olarak tutuluyor; ek filtre ihtiyacı sonraki denge verilerine göre değerlendirilecek.
-
-#### FAZ 19 — Profil
-
-- [x] Profil ana alanı hazırlandı.
-- [x] Profil alt bölümleri Genel, İlerleme ve Savaş Havuzu olarak hazırlandı.
-- [x] Profil gerçek sunucu verisine bağlandı.
-- [x] Kozmetik bölümü bu kapsamda oluşturulmadı.
-
-#### FAZ 20 — İstatistikler
-
-- [x] Toplam maç sayısı tutuluyor.
-- [x] Galibiyet sayısı tutuluyor.
-- [x] Mağlubiyet sayısı tutuluyor.
-- [x] Beraberlik sayısı tutuluyor.
-- [x] Galibiyet oranı hesaplanıyor.
-- [x] Ortalama maç süresi tutuluyor.
-- [x] En sık kullanılan modüller tutuluyor.
-- [x] Toplam verilen hasar tutuluyor.
-- [x] Modül değiştirme sayısı tutuluyor.
-- [x] Kullanılan güçlendiriciler takip ediliyor.
-- [x] İstatistikler gerçek sunucu verisine bağlandı.
-
-#### FAZ 21 — Ayarlar
-
-- [x] Ses ayarları hazırlandı.
-- [x] Müzik ayarları hazırlandı.
-- [x] Titreşim ayarları hazırlandı.
-- [x] Grafik ayarları hazırlandı.
-- [x] Dil ayarları hazırlandı.
-- [x] İlk sürüm için gerekli temel oyun tercihleri hazırlandı.
-
-#### FAZ 22 — Eğitim
-
-- [ ] Çekirdek öğretilecek.
-- [ ] Jeneratör öğretilecek.
-- [ ] Enerji bağlantısı öğretilecek.
-- [ ] Lazer öğretilecek.
-- [ ] Kalkan öğretilecek.
-- [ ] Modül Rafı öğretilecek.
-- [ ] 15. saniye sonrası modül yerleştirme öğretilecek.
-- [ ] Hasarlı modülü geri çekme öğretilecek.
-- [ ] Modülü tekrar devreye alma öğretilecek.
-- [ ] Devre Kredisi öğretilecek.
-- [ ] Özel hücreler öğretilecek.
-- [ ] Geçici güçlendiriciler öğretilecek.
-- [ ] Eğitim mümkün olduğunca oynanarak yapılacak.
-
-#### FAZ 23 — Web Test Sürümü
-
-- [x] Web test sürümü için sağlık, sürüm ve uçtan uca smoke-test sözleşmesi hazırlandı.
-- [ ] Eğitim tamamlama oranı ölçülecek.
-- [x] İlk maç/maç tamamlama için başlayan ve tamamlanan session sayaçları ile tamamlama oranı ölçülüyor.
-- [x] İkinci maça geçiş, ilk tamamlanmış maçtan sonraki yeni eşleştirme başlangıcı üzerinden ölçülüyor.
-- [x] Maç başına modül değişimi ölçülüyor.
-- [x] Devre Kredisi kullanımı ölçülüyor.
-- [x] Modül Rafı kullanımı ölçülüyor.
-- [x] Güçlendirici kullanımı ölçülüyor.
-- [x] Ortalama maç süresi ölçülüyor.
-- [x] Tekrar maç isteği sayısı ve tamamlanan maç başına oranı ölçülüyor.
-- [x] Kaybeden oyuncunun tekrar maç isteği oranı maç sonucu + tekrar maç sinyali üzerinden ölçülüyor.
-
-#### FAZ 24 — Android ve iOS
-
-- [ ] Web mekanikleri doğrulandıktan sonra Android sürümü değerlendirilecek.
-- [ ] Android sonrasında iOS sürümü değerlendirilecek.
+# 1. Değişmeyecek Tasarım Kararları
+
+Aşağıdaki kararlar sabittir ve bundan sonraki geliştirmeler bunları bozamaz:
+
+- [x] Savaş başladıktan sonra oyuncu müdahaleleri nedeniyle **hiçbir zaman durmayacak**.
+- [x] Motor sunucu otoriteli, gerçek zamanlı ve `10 Hz / 100 ms` sabit tick tabanlıdır.
+- [x] İstemci savaş gerçeğini belirlemez; yalnızca oyuncu niyetini/komutunu gönderir.
+- [x] Modül yönetiminin temel yöntemi sürükle-bıraktır.
+- [x] Ayrı `Satın Al / Sat / Değiştir / Onayla` savaş düğmeleri kullanılmaz.
+- [x] Devre Kredisi ile enerji birbirinden ayrı sistemlerdir.
+- [x] Modül müdahalesi ilk 15 saniye kilitlidir; savaş bu sırada akmaya devam eder.
+- [x] 15. saniyeden sonra modül değişikliklerinde yapay cooldown yoktur.
+- [x] Aktif modül kapasitesi zamanla `4 → 5 → 6 → 7 → 8 → 9 → 10` açılır.
+- [x] Devreden çıkarılan modül Can değerini korur; diğer maç içi durumlar da savaş saatiyle korunacak şekilde modellenmiştir.
+- [x] Sürüklenmekte olan aktif modül, bırakma komutu motor tarafından kabul edilene kadar savaşta kalır.
+- [x] 24 global seçenekten 18 modüllük Savaş Havuzu kullanılır; maksimum 10 aktif modül vardır.
+- [x] Çekirdek, Jeneratör, enerji akışı, port bağlantıları ve devre kurma Project Relay kimliğinin temelidir.
+- [x] Kullanıcıya görünen oyun/modül terimleri Türkçedir.
+- [x] Tek kanonik geliştirme kaydı bu dosyadır.
 
 ---
 
-## Şimdilik Kapsam Dışı — Yapılmayacak
+# 2. İlk Sürüm Kapsam Kilidi
 
-Aşağıdaki alanlar ilk sürüm kapsamına dahil değildir ve mevcut yol haritasının erken geliştirme paketlerinde üzerinde çalışılmayacaktır:
+## Şu anda geliştirilen ana alanlar
+
+- [x] Oyna
+- [x] Profil — temel gerekli alt veriler; kozmetik yok
+- [x] İstatistikler
+- [x] Ayarlar
+
+## İlk sürümde geliştirilmeyecek alanlar
 
 - [ ] Mağaza
 - [ ] Kozmetik ekranları
@@ -360,205 +59,475 @@ Aşağıdaki alanlar ilk sürüm kapsamına dahil değildir ve mevcut yol harita
 - [ ] Arkadaş sistemi
 - [ ] Diğer yan menüler
 
-> Bu liste “hemen yapılacak işler” değildir; bilinçli olarak **şimdilik kapsam dışı** bırakılmış alanları gösterir.
+## Eğitim kararı
+
+Kaynak yol haritasında ileriki bir `FAZ 22 — Eğitim` vardır; ancak ilk sürüm kapsam kararı yalnızca **Oyna / Profil / İstatistikler / Ayarlar** alanlarına zaman ayrılmasını söyler. Bu nedenle:
+
+- [ ] Eğitim henüz uygulanmayacak.
+- [x] Beta Web testi için Eğitim alanı bilinçli olarak kapsam dışında tutuluyor.
 
 ---
 
-## İlk Geliştirme Sırası — Durum
+# 3. Kaynak Yol Haritası ↔ Kod Tabanı Yeniden Denetimi
 
-1. [x] Proje iskeleti ve `YOL_HARITASI.md`
-2. [x] Kesintisiz çalışan gerçek zamanlı savaş motorunun ilk çekirdeği
-3. [x] Çekirdek + Jeneratör + 6–8 temel modül
-4. [x] Modül Rafı
-5. [x] Sürükle-bırak ile maç içi modül müdahalesi — **istemci komut üretimi tamamlandı; ekonomik doğrulama sonraki fazlarda eklenecek.**
-6. [x] 15. saniye sonrası müdahale açılması — **istemci kilidi tamamlandı; motor tarafı alpha.4 kapasite kuralıyla bağlanacak.**
-7. [x] 4 → 10 zaman bazlı aktif modül kapasitesi
-8. [x] Modül Can ve durum kalıcılığı — **Can, ısı, depolanmış enerji, zayıflatmalar, kalıcı etkiler, cooldown ve geçici güçlendirici durum kuralları tanımlandı.**
-9. [x] Gerçek zamanlı Devre Kredisi
-10. [x] Otomatik modül maliyetleri
+## FAZ 0 — Proje Temeli
 
-> Bu ilk on madde tamamlanmadan 24 modül, özel hücreler veya gelişmiş güçlendirici sistemine geçilmeyecektir.
+- [x] Sunucu yapısı mevcut.
+- [x] Savaş motoru paketi mevcut.
+- [x] Python test altyapısı mevcut.
+- [x] Web istemcisi mevcut.
+- [x] `docs/YOL_HARITASI.md` tek kanonik dosya olarak kullanılıyor.
+- [x] Beta.6 ile VS Code görevleri, Docker seçeneği ve tek komut QA zinciri eklendi.
+
+**Durum:** Tamamlandı.
+
+## FAZ 1 — Gerçek Zamanlı Savaş Motoru
+
+- [x] `10 Hz` sabit tick / `100 ms` zaman adımı.
+- [x] Komut kuyruğu.
+- [x] Savaşın oyuncu işlemleriyle pause edilmemesi.
+- [x] Sunucu otoriteli doğrulama.
+- [x] Zaman, hücre, bağlantı, aktif kapasite ve Devre Kredisi doğrulamaları motor tarafında.
+
+**Durum:** Tamamlandı.
+
+## FAZ 2 — Dinamik Modül Sistemi
+
+- [x] Modül ekleme.
+- [x] Modül çıkarma/rezerve alma.
+- [x] Modül değiştirme.
+- [x] Modül taşıma.
+- [x] Modül döndürme.
+- [x] İşlem motor tick akışında uygulanıyor.
+
+**Durum:** Motor tarafı tamamlandı; gerçek tarayıcı oynanış doğrulaması Beta.6 sonrası yeniden yapılacak.
+
+## FAZ 3 — Modül Rafı ve Sürükle-Bırak
+
+- [x] Savaş alanıyla aynı ekranda Modül Rafı yapısı var.
+- [x] İlk 15 saniye kilit kuralı var.
+- [x] Raftan sahaya sürükle-bırak komutu var.
+- [x] Sahadan rafa alma var.
+- [x] Hücreler arası taşıma var.
+- [x] Modül üzerine bırakıp değiştirme komutu var.
+- [x] Ayrı ekonomik onay düğmeleri yok.
+- [~] 18 modülün gerçek telefon/dar ekran kullanılabilirliği manuel UX testi bekliyor.
+
+**Durum:** İşlevsel altyapı tamam; kullanılabilirlik doğrulaması sürüyor.
+
+## FAZ 4 — Zaman Bazlı Aktif Modül Kapasitesi
+
+- [x] `0–15 sn`: başlangıç düzeni.
+- [x] `15–25 sn`: 4.
+- [x] `25–35 sn`: 5.
+- [x] `35–45 sn`: 6.
+- [x] `45–55 sn`: 7.
+- [x] `55–65 sn`: 8.
+- [x] `65–75 sn`: 9.
+- [x] `75 sn+`: 10.
+- [x] Kapasite artışı modül koymayı zorunlu kılmıyor.
+
+**Durum:** Tamamlandı.
+
+## FAZ 5 — Modül Durum Kalıcılığı
+
+- [x] Can kalıcılığı.
+- [x] Isı durumu modeli.
+- [x] Depolanmış enerji modeli.
+- [x] Süreli zayıflatma/etkiler savaş saati üzerinden ilerliyor.
+- [x] Bekleme süreleri savaş saatine bağlı.
+- [x] Geçici güçlendirici etkileri modül rezervdeyken savaş saatiyle ilerliyor.
+
+**Durum:** Temel kararlar uygulandı.
+
+## FAZ 6 — Devre Kredisi Motoru
+
+- [x] Enerjiden ayrı Devre Kredisi.
+- [x] Başlangıç kredisi ve pasif gelir.
+- [x] Gerçek zamanlı artış/azalış.
+- [x] Modül maliyetleri.
+- [x] Bırakma anındaki güncel krediyle doğrulama.
+- [x] Yetersiz kredi işlemi reddediyor ve savaş devam ediyor.
+- [~] Savaş performansı / modül yok etme / savunma başarısı gibi kredi gelirlerinin nihai denge kuralları henüz sabit değil.
+- [ ] Snowball / comeback ekonomisi geniş simülasyonla doğrulanmadı.
+
+**Durum:** Çekirdek ekonomi tamam; nihai denge gelir modeli bekliyor.
+
+## FAZ 7 — Otomatik Modül İşlem Ekonomisi
+
+- [x] Yerleştirme maliyeti motor tarafından uygulanıyor.
+- [x] Çıkarma/rezerve alma kuralı motor tarafından uygulanıyor.
+- [x] Değiştirme maliyeti motor tarafından uygulanıyor.
+- [x] Taşıma maliyeti motor tarafından uygulanıyor.
+- [x] Yeniden devreye alma maliyeti motor tarafından uygulanıyor.
+- [x] Kullanıcı ekonomik işlem türü seçmiyor.
+
+**Durum:** Tamamlandı.
+
+## FAZ 8 — 24 Modüllük Ekosistem
+
+Önceki `docs/YOL_HARITASI.md` bu fazı yanlışlıkla eksik gösteriyordu. Kod yeniden denetlendi:
+
+- [x] Oyuncu seçimine açık **24 modül** tanımlı (`Çekirdek` hariç).
+- [x] Enerji: Jeneratör, Batarya, Dağıtıcı, Kapasitör.
+- [x] Saldırı: Lazer, Darbe Topu, Ray Topu, Füze Fırlatıcı, Dron Üssü, Ark Topu.
+- [x] Savunma: Kalkan, Zırh, Yansıtıcı, Bariyer.
+- [x] Destek: Onarım Modülü, Soğutucu, Güçlendirici, Hedefleme Bilgisayarı, Aşırı Hızlandırıcı.
+- [x] Sabotaj: EMP, Sinyal Bozucu, Virüs, Enerji Sömürücü, Kesici.
+- [x] Can, maliyet, kategori, stratejik rol, port ve temel karşı/sinerji metadata'ları tanımlı.
+- [~] 24 modülün tüm davranışlarının rekabetçi denge kalitesi geniş ölçekli simülasyonla henüz doğrulanmadı.
+
+**Durum:** Katalog ve temel davranış ekosistemi tamam; meta dengesi bekliyor.
+
+## FAZ 9 — 18 Modüllük Savaş Havuzu
+
+- [x] `BATTLE_POOL_SIZE = 18` sunucuda uygulanmış durumda.
+- [x] İstemci 24 seçilebilir modülden 18 seçim yapabiliyor.
+- [x] Jeneratör zorunlu havuz elemanı olarak korunuyor.
+- [x] `24 → 18 → maksimum 10 aktif` zinciri kodda mevcut.
+- [~] Gerçek oyuncularla farklı havuz stratejilerinin denge testi bekliyor.
+
+**Durum:** Sistem tamam; meta testi bekliyor.
+
+## FAZ 10 — Yeni Stratejik Savaş Alanı
+
+- [x] Merkez Çekirdek korunuyor.
+- [x] 21 toplam hücreli, Çekirdek hariç **20 yerleştirilebilir konum** mevcut.
+- [x] Dört Jeneratör kapısı tanımlı.
+- [x] Maksimum aktif modül 10.
+- [x] Büyük alan konumsal strateji için kullanılıyor.
+
+**Durum:** Hedeflenen 18–24 hücre aralığı karşılandı.
+
+## FAZ 11 — Özel Hücreler
+
+- [x] 6 özel hücre mevcut: Saldırı, Savunma, Enerji, Soğutma, Onarım, Sinyal.
+- [x] Bonus metadata/effect değerleri motor tarafında tanımlı.
+- [~] Her özel hücrenin stratejik bedel/risk yarattığının denge testleri henüz tamamlanmadı.
+
+**Durum:** Mekanik tamam; risk/ödül dengesi bekliyor.
+
+## FAZ 12 — Geçici Güçlendiriciler
+
+- [x] Aşırı Yük Çipi.
+- [x] Acil Onarım.
+- [x] Çift Port Adaptörü.
+- [x] Oyuncu hedef modülü seçiyor.
+- [x] Seçim savaşı durdurmuyor.
+- [x] Küçük oyun içi seçim alanı kullanılıyor; tam ekran modal gerekmiyor.
+
+**Durum:** İlk üçlü sistem uygulandı.
+
+## FAZ 13 — 85+ Saniye Güçlendirici Döngüsü
+
+- [x] İlk teklif `85.000 ms`.
+- [x] Sonraki teklifler `10.000 ms` aralıkla.
+- [x] 3 seçenekten 1 seçim.
+- [x] Hedef modül seçimi.
+- [x] Savaş saati seçim sırasında devam ediyor.
+
+**Durum:** Tamamlandı.
+
+## FAZ 14 — Yapay Zekâ ve Simülasyon
+
+- [x] Otomatik savaş/simülasyon kod altyapısı mevcut.
+- [x] Adaptif simülasyon ve AI komut üretimi mevcut.
+- [ ] 10.000 maçlık resmi denge raporu henüz kanonik olarak çalıştırılıp kaydedilmedi.
+- [ ] 50.000 maçlık resmi denge raporu henüz yok.
+- [ ] 100.000+ maç benchmark'ı henüz yok.
+- [~] Modül/kredi/maç süresi gibi metrikleri ölçme altyapısı parça parça mevcut; tek büyük denge raporu eksik.
+
+**Durum:** Altyapı var; hedef ölçek doğrulanmadı. Önceki “M7 tamamlandı” işareti bu nedenle düzeltilmiştir.
+
+## FAZ 15 — Savaş Okunabilirliği
+
+- [x] Modül Can/enerji/durum bilgileri gösterilebiliyor.
+- [x] Olay Günlüğü mevcut.
+- [x] Özel hücreler görsel sınıflara sahip.
+- [~] 20 aktif modüllü gerçek PvP ekranında karmaşa/taşma testi tamamlanmadı.
+- [~] Saldırı kaynak/hedef efektlerinin gerçek tarayıcı okunabilirliği manuel test bekliyor.
+
+**Durum:** Kısmi.
+
+## FAZ 16 — Yapay Zekâ Rakipler
+
+- [x] AI savaş komutu altyapısı var.
+- [x] Tek oyunculu test için yerel AI akışı var.
+- [ ] Saldırgan arketip ayrı ürünleşmiş AI olarak tamamlanmadı.
+- [ ] Savunmacı arketip tamamlanmadı.
+- [ ] Dengeli arketip tamamlanmadı.
+- [ ] Sabotaj Odaklı arketip tamamlanmadı.
+- [ ] Ekonomi Odaklı arketip tamamlanmadı.
+
+**Durum:** Kısmi. Arketip sistemi yapılacak.
+
+## FAZ 17 — Online PvP
+
+- [x] Matchmaking endpoint'leri mevcut.
+- [x] PvP oturum/gateway yapısı mevcut.
+- [x] WebSocket bağlantı ve savaş durum protokolü mevcut.
+- [x] Sunucu savaş zamanı, modül, Can, ekonomi ve sonuç için otorite sahibidir.
+- [~] İki gerçek tarayıcı/iki gerçek oyuncu ile uzun süreli stabilite testi henüz kanonik olarak tamamlanmadı.
+
+**Durum:** Teknik altyapı tamam; gerçek çift istemci doğrulaması bekliyor.
+
+## FAZ 18 — Eşleştirme
+
+- [x] Temel derece/rating tabanlı eşleştirme mevcut.
+- [x] Rating farkı ve kabul penceresi altyapısı mevcut.
+- [~] Lig/performans/deneyim gibi ileri etkenler henüz gerekmiyor ve uygulanmadı.
+
+**Durum:** İlk sürüm hedefi tamam.
+
+## FAZ 19 — Profil
+
+- [x] Temel oyuncu profili mevcut.
+- [x] Görünen oyuncu adı ve ilerleme/savaş havuzu verileri destekleniyor.
+- [x] Kozmetik alanı eklenmedi.
+- [~] Gerçek kullanıcı UX ince ayarı devam ediyor.
+
+## FAZ 20 — İstatistikler
+
+- [x] Temel maç istatistikleri ve sunucu verisi mevcut.
+- [~] En sık kullanılan modüller, toplam hasar, değişim/booster kullanımının ürün ekranındaki nihai sunumu geliştirilmeye açık.
+
+## FAZ 21 — Ayarlar
+
+- [x] Ses.
+- [x] Müzik.
+- [x] Titreşim.
+- [x] Grafik kalitesi.
+- [x] Dil.
+
+**Durum:** İlk sürüm hedefi tamam.
+
+## FAZ 22 — Eğitim
+
+- [ ] Bilinçli olarak ertelendi. İlk sürüm kapsam kilidi nedeniyle şu anda geliştirilmeyecek.
+
+## FAZ 23 — Web Test Sürümü
+
+- [x] FastAPI aynı origin üzerinden Web istemcisini servis ediyor.
+- [x] Health / preflight / launch-readiness / operation monitoring altyapısı mevcut.
+- [x] Telemetri ve test-run audit altyapısı mevcut.
+- [x] Beta geri bildirim ve bulgu katmanları mevcut.
+- [x] Tek oyunculu oynanabilir test modu mevcut.
+- [x] **Beta.5'te ana menüyü tamamen kilitleyen gerçek JS başlangıç hatası Beta.6'da düzeltildi:** `PORT_COUNT_BY_NAME`, tanımlanmadan önce kullanılıyordu.
+- [x] İkinci başlangıç sırası riski düzeltildi: telemetri callback'i `telemetryStatus` tanımlanmadan tetiklenebiliyordu.
+- [x] Beta.6 ile gerçek `app.js` başlangıç yürütme testi eklendi; dört ana menünün click-handler bağlanması otomatik kontrol ediliyor.
+- [x] Tek komutla Python + JS + startup + gerçek Uvicorn HTTP smoke QA zinciri eklendi.
+- [~] Gerçek kullanıcı manuel oynanış testi Beta.6 ile yeniden başlatılacak.
+
+**Durum:** Stabilizasyon sonrası gerçek test için yeniden hazır.
+
+## FAZ 24 — Android ve iOS
+
+- [ ] Web mekanikleri ve PvP doğrulanmadan Android'e geçilmeyecek.
+- [ ] Android doğrulandıktan sonra iOS değerlendirilecek.
 
 ---
 
+# 4. Beta.5 Hatası — Kök Neden ve Düzeltme
 
-### 2.0.0-alpha.133 — Otomatik Operasyon ve Stabilite Örnekleme
-- [x] Aktif gerçek test koşusunda 10 saniyelik gözlemsel sampling döngüsü eklendi.
-- [x] Operation snapshot ve stability snapshot periyodik olarak kaydediliyor.
-- [x] İzleme, operasyon ve stabilite görünümleri sampling sırasında yenileniyor.
-- [x] Sampling hataları oyuncu akışını veya savaşı durdurmuyor.
+Kullanıcı testinde ana sayfa HTML/CSS olarak açıldı ancak **Oyna, Profil, İstatistikler ve Ayarlar dahil hiçbir menü tepki vermedi**.
 
-### 2.0.0-alpha.134 — Gerçek Web Test Koşusunu Kontrollü Kapatma
-- [x] Yeni `web_test_run_finished` telemetri event tipi eklendi.
-- [x] `/web-test/test-run/finish` endpoint'i eklendi.
-- [x] Başlatılmamış koşu kapatılamıyor.
-- [x] Yanlış test_run_id reddediliyor.
-- [x] Kapatma idempotent.
-- [x] Koşu kapanmadan önce final operation/stability snapshot'ları alınıyor.
-- [x] Run-status artık started + finished durumlarını yayınlıyor.
-- [x] Operation-status bitmiş koşuyu `finished` olarak sınıflandırabiliyor.
+Kök neden kod seviyesinde doğrulandı:
 
-### 2.0.0-alpha.135 — Test Sonrası Teknik Rapor
-- [x] `build_post_run_report` servis katmanı eklendi.
-- [x] `/web-test/test-run/report` endpoint'i eklendi.
-- [x] Başlangıç/bitiş zamanı ve koşu süresi raporlanıyor.
-- [x] Monitoring, operation history, transition summary, stability history ve data-health tek raporda birleşiyor.
-- [x] Teknik rapor `human_test_completed=false` ile insan testinin ayrıca değerlendirilmesi gerektiğini açıkça belirtiyor.
+1. `client/src/app.js` başlangıcında `moduleDefinitions.map(...)`, `PORT_COUNT_BY_NAME` sabiti oluşturulmadan önce ona erişiyordu.
+2. JavaScript `const` Temporal Dead Zone nedeniyle uygulama `ReferenceError` ile daha ilk yüklemede duruyordu.
+3. Menü event listener'ları dosyanın daha aşağısında olduğu için hiçbir click handler bağlanamıyordu.
+4. Var olan testler çoğunlukla kaynak metni ve `relay-client.js` sınıflarını kontrol ediyor, **gerçek `app.js` başlangıç yürütmesini test etmiyordu**.
+5. Ayrıca bazı client testleri yalnızca `client/` klasöründen çalıştırıldığında geçiyor; proje kökünden çalıştırıldığında göreli dosya yolları nedeniyle bozuluyordu.
 
-### 2.0.0-alpha.136 — Tarayıcı Test Kapatma ve Rapor Görünümü
-- [x] Teknik durum alanına `Gerçek Test Koşusunu Bitir` düğmesi eklendi.
-- [x] Test bitince sampling durduruluyor.
-- [x] Test sonrası rapor tarayıcıda kompakt özet olarak gösteriliyor.
-- [x] Ana menü kapsamına yeni alan eklenmedi.
+Beta.6 düzeltmeleri:
 
-### 2.0.0-beta.1 — Project Relay 2.0 Beta — Gerçek Web Testi Kapalı Döngüsü
-- [x] Tek sunucudan istemci + API + WebSocket çalışma modeli korunuyor.
-- [x] Preflight sonrası otomatik test-run başlangıcı korunuyor.
-- [x] Gerçek test sırasında periyodik operasyon/stabilite sampling hazır.
-- [x] Test koşusu kontrollü ve idempotent biçimde kapatılabiliyor.
-- [x] Test sonrası teknik rapor üretilebiliyor.
-- [x] Windows ve Linux/macOS başlatıcıları Beta test_run_id kullanıyor.
-- [x] Gerçek Web testi rehberi Beta kapalı döngüsüne göre güncellendi.
-- [x] Ana menü yalnızca Oyna, Profil, İstatistikler ve Ayarlar.
-- [x] Eğitim Beta test kapsamı dışında tutuluyor.
-
-### 2.0.0-beta.2 — Project Relay 2.0 Beta — İnsan Geri Bildirim Toplama Döngüsü
-- [x] Yeni `web_test_feedback_submitted` telemetri event tipi eklendi.
-- [x] `/web-test/feedback` geri bildirim endpoint'i eklendi.
-- [x] Geri bildirim yalnızca tamamlanmış aktif test_run_id için kabul ediliyor.
-- [x] Kullanılabilirlik, bağlantı deneyimi, savaş dengesi ve modül/güçlendirici dengesi 1–5 ölçeğinde doğrulanıyor.
-- [x] İsteğe bağlı kısa not 500 karakterle sınırlandı.
-- [x] Geri bildirim kaydına Profil adı veya oyuncu Profil içeriği eklenmiyor.
-- [x] `/web-test/feedback/summary` agregat geri bildirim özetini yayınlıyor.
-- [x] Ortalama puanlar, düşük puan sayıları ve not sayısı raporlanıyor.
-- [x] Test koşusu kapandıktan sonra teknik alanda geri bildirim formu açılıyor.
-- [x] Geri bildirim gönderildikten sonra agregat özet tarayıcıda yenileniyor.
-- [x] Ana menü yalnızca Oyna, Profil, İstatistikler ve Ayarlar olarak korunuyor.
-- [x] Eğitim Beta kapsamı dışında kalmaya devam ediyor.
-- [x] Gerçek insan geri bildirimi uydurulmadı; sistem yalnızca gerçek girdileri toplamak için hazırlandı.
-
-### 2.0.0-beta.3 — Project Relay 2.0 Beta — Geri Bildirim + Telemetri Bulgu Katmanı
-- [x] `build_beta_findings` analiz servis katmanı eklendi.
-- [x] `/web-test/findings` salt-okunur Beta bulgu endpoint'i eklendi.
-- [x] Geri bildirim aynı test_run_id koşusunun başlangıç/bitiş zaman penceresindeki teknik gameplay telemetrisiyle birlikte okunuyor.
-- [x] Tamamlanan maç sayısı session_id bazında tekilleştiriliyor.
-- [x] Modül değişimi, booster kullanımı, Modül Rafı kullanımı, Devre Kredisi harcaması ve rematch sinyalleri agregat bağlam olarak raporlanıyor.
-- [x] Minimum 3 gerçek geri bildirim olmadan sonuç `insufficient_data` kalıyor.
-- [x] Yetersiz veri varken sistem sahte problem/denge bulgusu üretmiyor.
-- [x] Yeterli örnekte ortalama 3 altı alanlar yüksek önem, düşük puan bulunan diğer alanlar izleme alanı olarak raporlanıyor.
-- [x] Savaş dengesi ve modül/güçlendirici dengesi için geri bildirim + teknik kullanım bağlamları ayrı yayınlanıyor.
-- [x] `automatic_balance_change=false`; hiçbir denge değeri otomatik değiştirilmiyor.
-- [x] `human_review_required=true`; gerçek oyuncu bulguları insan incelemesine bırakılıyor.
-- [x] Teknik alanda Beta Bulguları durumu `veri bekleniyor / analiz hazır` olarak gösteriliyor.
-- [x] Ana menü kapsamı değişmedi; Eğitim hâlâ Beta kapsamı dışında.
-
-### 2.0.0-beta.4.3 — Project Relay 2.0 Beta — Bulgu Önceliklendirme ve İnceleme Adayları
-- [x] `build_review_candidates` insan inceleme adayları servis katmanı eklendi.
-- [x] `/web-test/review-candidates` salt-okunur endpoint'i eklendi.
-- [x] Gerçek geri bildirim yetersizken durum `waiting_for_real_data` ve aday listesi boş kalıyor.
-- [x] Yeterli veri olduğunda yüksek önem alanları düşük puanlı izleme alanlarından önce sıralanıyor.
-- [x] Aynı önem düzeyinde daha düşük ortalama puan daha yüksek öncelik alıyor.
-- [x] Kullanılabilirlik, bağlantı, savaş dengesi ve modül/güçlendirici dengesi için ayrı teknik bağlamlar üretiliyor.
-- [x] `auto_apply=false`; hiçbir oyun/denge değeri otomatik değiştirilmiyor.
-- [x] `human_approval_required=true`; düzeltme kapsamı insan değerlendirmesine bırakılıyor.
-- [x] Teknik alanda aday sayısı ve ilk öncelik kompakt biçimde gösteriliyor.
-- [x] Ana menü kapsamı değişmedi; Eğitim Beta kapsamı dışında.
-
-### 2.0.0-beta.5 — Project Relay 2.0 Beta — Oynanabilir Büyük Test Paketi
-- [x] `docs/YOL_HARITASI.md` kanonik kaynak kabul edilerek dört ekran UX aşamasından gerçek oynanabilir test aşamasına ilerletildi.
-- [x] Oyna ekranına iki açık mod eklendi: `Tek Oyunculu Test Maçı` ve `Online PvP`.
-- [x] Tek Oyunculu Test Maçı tek bilgisayarda ikinci kullanıcı gerektirmeden anında başlatılabiliyor.
-- [x] Yerel maç başlangıcında savaş saati, Devre Kredisi, rakip canları, güçlendirici takvimi ve modül durumları temiz biçimde sıfırlanıyor.
-- [x] Çekirdek ve Jeneratör başlangıç devresinde hazır; diğer modüller Modül Rafında tutuluyor.
-- [x] Modül Rafı 15. saniyede açılıyor ve savaş hiçbir oyuncu müdahalesinde durmuyor.
-- [x] Sürükle-bırak ekleme / çıkarma / taşıma / değiştirme akışı yerel test maçında kullanılabiliyor.
-- [x] Devre Kredisi harcamaları ve pasif kredi kazanımı yerel test maçında çalışıyor.
-- [x] Oyuncu saldırı modülleri rakip modül → Jeneratör → Çekirdek hedef sırasını izliyor.
-- [x] Yerel AI karşı saldırı yapıyor; önce aktif normal modülleri, sonra Jeneratörü, son olarak Çekirdeği hedefliyor.
-- [x] Aktif Kalkan yerel AI hasarını azaltıyor.
-- [x] Oyuncu Çekirdeği sıfıra düşerse mağlubiyet, rakip Çekirdeği sıfıra düşerse galibiyet oluşuyor.
-- [x] Maç sonucu paneli yalnızca maç tamamlandığında görünür oluyor.
-- [x] `Tekrar Maç` düğmesi Tek Oyunculu modda yeni yerel maçı tamamen sıfırlıyor; Online modda mevcut rematch akışını koruyor.
-- [x] Güçlendirici takvimi ve hedef modül seçimi mevcut kesintisiz savaş sistemiyle korunuyor.
-- [x] Olay Günlüğü gerçek zamanlı yerel saldırı, hasar, modül ve savaş sonuçlarını gösterebiliyor.
-- [x] Beta/bağlantı teknik durumları oyun akışını kaplamaması için daraltılabilir teknik çekmeceye taşındı.
-- [x] Online PvP akışı korunarak Savaş Havuzu → matchmaking → WebSocket → server-authoritative savaş yolu ayrı mod olarak devam ediyor.
-- [x] Profil, İstatistikler ve Ayarlar ekranları korunuyor.
-- [x] Ana menü yalnızca Oyna, Profil, İstatistikler ve Ayarlar.
-- [x] Eğitim hâlâ ilk Beta oynanabilir test kapsamı dışında.
-
-## Sıradaki Paket
-
-**Beta Oynanabilir Test — Gerçek Oyun Geri Bildirimi ve Savaş Denge İncelemesi**
-
-`2.0.0-beta.5` artık tek bilgisayarda Tek Oyunculu Test Maçı başlatılarak gerçek oynanış akışının denenebildiği büyük pakettir. Sonraki aşama yeni sistem eklemekten önce bu paketin oynanması; Modül Rafı zamanlaması, Devre Kredisi ekonomisi, yerel AI baskısı, modül yerleşimi, savaş süresi, güçlendirici zamanlaması ve sonuç akışında görülen somut sorunların kaydedilmesidir. Online PvP de ikinci istemci bulunduğunda ayrıca test edilecektir.
-
+- [x] `PORT_COUNT_BY_NAME` tanımı `moduleDefinitions` oluşturulmadan önceye taşındı.
+- [x] Telemetri DOM referansı callback tetiklenmeden önce oluşturulacak sıraya taşındı.
+- [x] `client/tests/app-startup.test.js` eklendi.
+- [x] Startup testi gerçek `app.js` dosyasını VM ortamında yürütüyor ve dört menünün click handler'larını doğruluyor.
+- [x] Profil menüsünün router seviyesinde gerçekten açıldığı otomatik test ediliyor.
+- [x] Client test dosya yolları çalışma klasöründen bağımsız hale getirildi.
 
 ---
 
-## Ana Kilometre Taşları — Durum
+# 5. Geliştirme ve Test Ortamı — Beta.6
+
+## Zorunlu günlük kalite kapısı
+
+`TEST_ET.bat`
+
+tek komutta:
+
+1. tüm Python `pytest` testlerini,
+2. `app.js` sözdizimi kontrolünü,
+3. `relay-client.js` sözdizimi kontrolünü,
+4. client birim/regresyon testlerini,
+5. gerçek `app.js` startup + menü handler testini,
+6. gerçek Uvicorn süreci üzerinden HTTP smoke testini
+
+çalıştırır.
+
+Detaylı makine-okunur rapor:
+
+`qa_reports/latest.json`
+
+olarak üretilir.
+
+## Docker
+
+- [x] Opsiyonel `Dockerfile` eklendi.
+- [x] Opsiyonel `docker-compose.yml` eklendi.
+- [x] Healthcheck eklendi.
+- [x] Docker **zorunlu değil**; Windows'ta `.venv` ile geliştirme daha hızlı olabilir.
+
+## VS Code
+
+- [x] `.vscode/tasks.json`: Tam QA, sunucu, pytest, client test görevleri.
+- [x] `.vscode/settings.json`: pytest ve Python analiz ayarları.
+
+## Alembic
+
+- [ ] Şimdilik eklenmedi.
+
+**Gerekçe:** Mevcut Beta kalıcılık yapısı ilişkisel veritabanı migration'ı kullanmıyor. Kullanılmayan Alembic katmanı test hızını artırmaz. PostgreSQL/SQLAlchemy kalıcı veri katmanına geçildiğinde Alembic aynı geçiş paketinde kurulacak.
+
+---
+
+# 6. Ana Kilometre Taşları — Gerçek Durum
 
 ### M1 — Kesintisiz Savaş
-
-- [x] Savaş saati ve tick sistemi sürekli akıyor.
-- [x] Sabit tick çekirdeği çalışıyor.
-- [x] Kuyruğa alınan oyuncu komutları savaş saatini durdurmuyor.
-- [x] Gerçek modül komutları ve sunucu otoriteli doğrulamalar tamamlandı.
+- [x] Tamamlandı.
 
 ### M2 — Dinamik Devre
-
-- [x] Modül Rafı
-- [x] Sürükle-bırak
-- [x] Ekleme (motor)
-- [x] Çıkarma (motor)
-- [x] Değiştirme (motor)
-- [x] Taşıma (motor)
-- [x] Döndürme (motor)
-- [x] Can kalıcılığı
+- [x] Motor/istemci komut altyapısı tamamlandı.
+- [~] Gerçek kullanıcı sürükle-bırak testi Beta.6 ile yeniden doğrulanacak.
 
 ### M3 — Devre Ekonomisi
-
-- [x] Devre Kredisi
-- [x] Gerçek zamanlı kredi değişimi
-- [x] Otomatik maliyet hesabı
-- [x] Modül işlemleri
+- [x] Çekirdek ekonomi tamamlandı.
+- [~] Nihai savaş-performansı gelir dengesi bekliyor.
 
 ### M4 — 24 Modüllük Meta
-
-- [x] Yaklaşık 24 modül
-- [x] 18 modüllük Savaş Havuzu
-- [x] Karşı stratejiler
+- [x] 24 seçilebilir modül kataloğu mevcut.
+- [x] 18 Savaş Havuzu mevcut.
+- [~] Karşı strateji/meta dengesi geniş simülasyon ve gerçek oyuncu testi bekliyor.
 
 ### M5 — Stratejik Savaş Alanı
-
-- [x] Yeni alan
-- [x] Maksimum 10 aktif modül
-- [x] Özel hücreler
-- [x] Konumsal strateji
+- [x] 20 yerleştirilebilir konum.
+- [x] Maksimum 10 aktif modül.
+- [x] 6 özel hücre.
+- [~] Risk/ödül dengesi gerçek test bekliyor.
 
 ### M6 — Güçlendirici Savaşı
-
-- [x] 85+ saniye sistemi
-- [x] Her 10 saniyede seçim
-- [x] 3 seçenekten 1 seçim
-- [x] Hedef modül seçimi
-- [x] Savaş durmadan uygulama
+- [x] 85+ saniye döngüsü.
+- [x] 3 seçenekten 1 seçim.
+- [x] Hedef modül.
+- [x] Savaş durmadan uygulama.
 
 ### M7 — Rekabetçi Çekirdek
+- [~] Simülasyon altyapısı var; 10k/50k/100k raporları eksik.
+- [~] AI var; beş ayrı arketip eksik.
+- [~] Online PvP teknik olarak var; gerçek iki istemci stabilite testi eksik.
 
-- [x] Simülasyon
-- [x] Denge
-- [x] Yapay zekâ
-- [x] Online PvP
+**M7 henüz “stabil/tamamlandı” kabul edilmeyecek.**
 
 ### M8 — Project Relay 2.0 Beta
-
-- [x] Oyna
-- [x] Profil
-- [x] İstatistikler
-- [x] Ayarlar
-- [ ] Eğitim — **ilk Web test kapsamı dışında, bilinçli olarak ertelendi.**
-- [x] Telemetri
-- [x] Web test sürümü — **Beta kapalı test döngüsü hazır: başlatma, periyodik izleme, kontrollü kapatma ve test sonrası teknik rapor.**
+- [x] Oyna.
+- [x] Profil.
+- [x] İstatistikler.
+- [x] Ayarlar.
+- [x] Telemetri/Web test altyapısı.
+- [ ] Eğitim — ilk sürüm kapsamı nedeniyle bilinçli olarak ertelendi.
+- [~] Gerçek oynanabilir Web doğrulaması Beta.6 manuel testiyle devam edecek.
 
 ---
+
+# 7. Tamamlanan Son Paket
+
+## 2.0.0-beta.6 — Stabilizasyon + Kanonik Yol Haritası Denetimi + QA Zinciri
+
+- [x] Kaynak `Yol Haritası.txt`, mevcut kanonik yol haritası ve kod yeniden karşılaştırıldı.
+- [x] Eski yol haritasındaki 24 modül, 18 Savaş Havuzu, stratejik alan, güçlendirici ve PvP durumlarına ait eski/yanlış işaretlemeler gerçek koda göre düzeltildi.
+- [x] Beta.5 ana menü kilitlenmesinin kök nedeni bulundu ve düzeltildi.
+- [x] İkinci startup sırası/telemetri TDZ riski düzeltildi.
+- [x] Gerçek `app.js` başlangıç testi eklendi.
+- [x] Menü handler bağlama regresyon testi eklendi.
+- [x] Client testleri proje kökünden de çalışacak hale getirildi.
+- [x] Tek komut tam QA zinciri eklendi.
+- [x] JSON QA raporu eklendi.
+- [x] Opsiyonel Docker/Compose ortamı eklendi.
+- [x] VS Code test/çalıştırma görevleri eklendi.
+- [x] Alembic'in neden henüz gerekli olmadığı belgelenmiş durumda.
+
+---
+
+# 8. Yapılacaklar — Öncelik Sırası
+
+## P0 — Beta.6 Gerçek Manuel Oynanış Doğrulaması
+
+- [ ] `TEST_ET.bat` kullanıcının bilgisayarında başarıyla çalıştırılacak.
+- [ ] `BASLAT_WEB_TEST.bat` ile site açılacak.
+- [ ] Oyna menüsüne giriş doğrulanacak.
+- [ ] Profil menüsüne giriş doğrulanacak.
+- [ ] İstatistikler menüsüne giriş doğrulanacak.
+- [ ] Ayarlar menüsüne giriş doğrulanacak.
+- [ ] Tek Oyunculu Test Maçı başlatılacak.
+- [ ] 15. saniyede Modül Rafı açılışı gözlenecek.
+- [ ] Sürükle-bırak yerleştirme/çıkarma/değiştirme gerçek tarayıcıda denenecek.
+- [ ] Devre Kredisi değişimi gerçek oynanışta gözlenecek.
+- [ ] 85+ saniye güçlendirici döngüsü gerçek oynanışta gözlenecek.
+- [ ] Galibiyet/mağlubiyet ve Tekrar Maç akışı doğrulanacak.
+
+## P1 — Gerçek Tarayıcı E2E
+
+- [ ] Yerel geliştirme makinesinde Playwright/Chromium E2E kurulacak.
+- [ ] Ana Menü → dört ekran otomatik navigasyon testi yapılacak.
+- [ ] Tek Oyunculu Test Maçı başlatma testi yapılacak.
+- [ ] Tarayıcı `pageerror` ve `console.error` çıktıları test başarısızlığı sayılacak.
+
+> ChatGPT çalışma ortamındaki Chromium yerel sayfalara yönetici politikasıyla erişemediği için Playwright burada zorunlu QA kapısına eklenmedi. Startup VM testi bu boşluğu geçici olarak kapatır.
+
+## P2 — Online PvP Gerçek Çift İstemci Testi
+
+- [ ] İki tarayıcı/iki oyuncu eşleştirme testi.
+- [ ] Aynı savaş durumunun iki istemcide senkronizasyon testi.
+- [ ] Yeniden bağlanma testi.
+- [ ] Maç sonucu ve rematch testi.
+
+## P3 — Rekabetçi Denge
+
+- [ ] 10.000 otomatik maç raporu.
+- [ ] 50.000 otomatik maç raporu.
+- [ ] Gerekirse 100.000+ benchmark.
+- [ ] Modül seçim/kazanma oranları.
+- [ ] Devre Kredisi ve comeback/snowball analizi.
+- [ ] Özel hücre kullanım oranları.
+- [ ] Güçlendirici tercihleri.
+
+## P4 — AI Arketipleri
+
+- [ ] Saldırgan.
+- [ ] Savunmacı.
+- [ ] Dengeli.
+- [ ] Sabotaj Odaklı.
+- [ ] Ekonomi Odaklı.
+
+## P5 — Savaş Okunabilirliği
+
+- [ ] Gerçek 20 aktif modüllü PvP ekran testi.
+- [ ] Enerjisiz/hasarlı/güçlendirilmiş modül görsel ayrımı.
+- [ ] Saldırı kaynak/hedef okunabilirliği.
+- [ ] Dar ekran/telefon Modül Rafı testi.
+
+## Daha Sonra
+
+- [ ] Eğitim — ilk kapsam kilidi kaldırıldığında.
+- [ ] Android — Web savaş/PvP doğrulamasından sonra.
+- [ ] iOS — Android sonrası.
+
+---
+
+# 9. Sıradaki Paket
+
+**`2.0.0-beta.7 — Gerçek Tarayıcı Oynanış Hataları ve İlk Kullanıcı Test Düzeltmeleri`**
+
+Beta.6 önce kullanıcının bilgisayarında `TEST_ET.bat` ile doğrulanacak, ardından oyun gerçek tarayıcıda oynanacaktır. Beta.7 kapsamı varsayımla değil, bu gerçek testte görülen somut hata/UX/denge bulgularıyla belirlenecektir.
