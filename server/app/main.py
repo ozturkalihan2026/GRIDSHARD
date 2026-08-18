@@ -67,6 +67,10 @@ from .balance_simulation import (
     BalanceSimulationError,
     run_balance_simulation,
 )
+from .balance_regression import (
+    BalanceRegressionError,
+    run_balance_regression,
+)
 from .balance_change_drafts import (
     BalanceChangeDraftError,
     BalanceChangeDraftService,
@@ -439,6 +443,8 @@ class TelemetryEventRequest(BaseModel):
 class PlayerSettingsRequest(BaseModel):
     sound_volume: int | None = None
     music_volume: int | None = None
+    sound_muted: bool | None = None
+    music_muted: bool | None = None
     vibration_enabled: bool | None = None
     graphics_quality: str | None = None
     language: str | None = None
@@ -1606,6 +1612,160 @@ def simulate_balance_change(
     }
 
 
+@app.post("/telemetry/balance-change-regression")
+def regress_balance_change(
+    player_id:str,
+    request:BalanceSimulationRequest,
+)->dict:
+    plan=_balance_change_plan_for_player(
+        player_id
+    )
+    draft=(
+        balance_change_draft_service
+        .view(
+            player_id=player_id,
+            plan=plan,
+        )
+    )
+
+    if not draft.get(
+        "review_ready"
+    ):
+        raise HTTPException(
+            status_code=422,
+            detail="Battle-engine regresyonu yalnız review_ready gerçek maç raporunda çalıştırılabilir.",
+        )
+
+    item=next(
+        (
+            value
+            for value
+            in draft.get(
+                "items",
+                [],
+            )
+            if value.get("area")
+            == request.area
+        ),
+        None,
+    )
+    if item is None:
+        raise HTTPException(
+            status_code=404,
+            detail="Regresyonu çalıştırılacak denge taslağı bulunamadı.",
+        )
+
+    if item.get(
+        "simulation_status"
+    ) != "passed":
+        raise HTTPException(
+            status_code=422,
+            detail="Battle-engine regresyonundan önce izole simülasyon passed olmalıdır.",
+        )
+
+    if item.get(
+        "before_value"
+    ) is None or item.get(
+        "proposed_value"
+    ) is None:
+        raise HTTPException(
+            status_code=422,
+            detail="Regresyon için mevcut ve önerilen değer girilmelidir.",
+        )
+
+    try:
+        result=run_balance_regression(
+            area=request.area,
+            before_value=
+                item["before_value"],
+            proposed_value=
+                item["proposed_value"],
+        )
+    except BalanceRegressionError as exc:
+        updated=(
+            balance_change_draft_service
+            .update_item(
+                player_id=player_id,
+                plan=plan,
+                area=request.area,
+                before_value=
+                    item.get(
+                        "before_value"
+                    ),
+                proposed_value=
+                    item.get(
+                        "proposed_value"
+                    ),
+                approved=bool(
+                    item.get(
+                        "approved",
+                        False,
+                    )
+                ),
+                simulation_status=
+                    "passed",
+                regression_status=
+                    "failed",
+            )
+        )
+        return {
+            "ok":False,
+            "reason":str(exc),
+            "draft":updated,
+            "canonical_values_changed":
+                False,
+            "automatic_apply":False,
+        }
+
+    regression_status=(
+        "passed"
+        if result.get(
+            "status"
+        ) == "passed"
+        else "failed"
+    )
+
+    updated=(
+        balance_change_draft_service
+        .update_item(
+            player_id=player_id,
+            plan=plan,
+            area=request.area,
+            before_value=
+                item.get(
+                    "before_value"
+                ),
+            proposed_value=
+                item.get(
+                    "proposed_value"
+                ),
+            approved=bool(
+                item.get(
+                    "approved",
+                    False,
+                )
+            ),
+            simulation_status=
+                "passed",
+            regression_status=
+                regression_status,
+        )
+    )
+
+    return {
+        "ok":
+            regression_status
+            == "passed",
+        "regression":result,
+        "draft":updated,
+        "canonical_values_changed":
+            False,
+        "automatic_apply":False,
+        "apply_endpoint_available":
+            False,
+    }
+
+
 @app.delete("/telemetry/balance-change-draft")
 def clear_balance_change_draft(
     player_id:str,
@@ -1861,6 +2021,8 @@ def update_player_settings(
             player_id,
             sound_volume=request.sound_volume,
             music_volume=request.music_volume,
+            sound_muted=request.sound_muted,
+            music_muted=request.music_muted,
             vibration_enabled=(
                 request.vibration_enabled
             ),
@@ -2226,7 +2388,7 @@ def gridshard_identity() -> dict:
         "tagline_en":
             "Build the Circuit. Break the Core.",
         "identity_version":
-            "2.0.0-beta.15",
+            "2.0.0-beta.16",
         "palette":{
             "void_navy":"#070B14",
             "reactor_blue":"#0C1625",

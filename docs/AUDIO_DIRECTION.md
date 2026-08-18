@@ -157,3 +157,25 @@ Motif ailesi: `D – F – A – C – B`.
 - `core_hit.wav`
 
 Bu dosyalar kimlik prototipidir; final mix/master aşamasında ses kalitesi, stereo alan, limiter ve platform loudness değerleri ayrıca düzenlenecektir.
+
+
+---
+
+## 8. Beta.16 Runtime Mix / Settings
+
+GRIDSHARD audio prototipleri artık Ayarlar ekranındaki gerçek kullanıcı tercihlerine bağlıdır:
+
+- `Ses` slider → SFX gain,
+- `Müzik` slider → music gain,
+- `Sesi Sessize Al` → SFX mute,
+- `Müziği Sessize Al` → music mute.
+
+Bu tercihler oyuncu ayar verisine kalıcı olarak yazılır ve eski kayıtlarda alan yoksa `false` varsayımıyla geriye dönük yüklenir.
+
+Audio Director:
+- aktif müzik track seviyesini canlı günceller,
+- müzik mute olduğunda track'i durdurur,
+- mute kaldırıldığında mevcut state müziğini yeniden başlatabilir,
+- SFX mute durumunda gameplay olaylarını engellemeden cue çalmayı atlar.
+
+Beta.16 hâlâ prototip mix kullanır. Final loudness, stereo imaging ve mastering daha sonraki prodüksiyon aşamasıdır.

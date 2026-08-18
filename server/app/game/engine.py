@@ -82,13 +82,15 @@ BATTLE_TIME_LIMIT_MS = 180_000
 MODULE_INTERACTION_UNLOCK_MS = 15_000
 
 
-def max_active_modules_for_elapsed_ms(elapsed_ms: int) -> int | None:
+def max_active_modules_for_elapsed_ms(
+    elapsed_ms: int,
+    interaction_unlock_ms: int = MODULE_INTERACTION_UNLOCK_MS,
+) -> int | None:
     """
     Maç süresine göre aynı anda aktif olabilecek modül üst sınırını döndürür.
 
-    0–15 saniye başlangıç düzenidir; bu aralıkta dinamik modül yerleştirme
-    kapalı olduğundan None döner.
-
+    Varsayılan davranış:
+    0–15 saniye başlangıç düzenidir; dinamik modül yerleştirme kapalıdır.
     15–25 sn: 4
     25–35 sn: 5
     35–45 sn: 6
@@ -96,20 +98,26 @@ def max_active_modules_for_elapsed_ms(elapsed_ms: int) -> int | None:
     55–65 sn: 8
     65–75 sn: 9
     75 sn ve sonrası: 10
+
+    Beta.16 regresyon koşucusu için kilit zamanı izole olarak enjekte
+    edilebilir. Varsayılan 15 saniye değiştirilmemiştir.
     """
-    if elapsed_ms < MODULE_INTERACTION_UNLOCK_MS:
+    unlock_ms = max(0, int(interaction_unlock_ms))
+    if elapsed_ms < unlock_ms:
         return None
-    if elapsed_ms < 25_000:
+
+    elapsed_after_unlock = elapsed_ms - unlock_ms
+    if elapsed_after_unlock < 10_000:
         return 4
-    if elapsed_ms < 35_000:
+    if elapsed_after_unlock < 20_000:
         return 5
-    if elapsed_ms < 45_000:
+    if elapsed_after_unlock < 30_000:
         return 6
-    if elapsed_ms < 55_000:
+    if elapsed_after_unlock < 40_000:
         return 7
-    if elapsed_ms < 65_000:
+    if elapsed_after_unlock < 50_000:
         return 8
-    if elapsed_ms < 75_000:
+    if elapsed_after_unlock < 60_000:
         return 9
     return 10
 
@@ -124,9 +132,14 @@ class BattleEngine:
         self,
         state: BattleState,
         circuit_credit_config: CircuitCreditConfig = DEFAULT_CIRCUIT_CREDIT_CONFIG,
+        module_interaction_unlock_ms: int = MODULE_INTERACTION_UNLOCK_MS,
     ):
         self.state = state
         self.circuit_credit_config = circuit_credit_config
+        self.module_interaction_unlock_ms = max(
+            0,
+            int(module_interaction_unlock_ms),
+        )
         self.board = get_default_board()
         self._command_queue: Deque[BattleCommand] = deque()
 
@@ -376,7 +389,10 @@ class BattleEngine:
             player.total_circuit_credits_earned += amount
 
     def max_active_modules(self) -> int | None:
-        return max_active_modules_for_elapsed_ms(self.state.elapsed_ms)
+        return max_active_modules_for_elapsed_ms(
+            self.state.elapsed_ms,
+            self.module_interaction_unlock_ms,
+        )
 
     def active_module_count(self, player_id: str) -> int:
         player = self._require_player(player_id)
@@ -387,8 +403,11 @@ class BattleEngine:
         )
 
     def _ensure_module_interaction_unlocked(self) -> None:
-        if self.state.elapsed_ms < MODULE_INTERACTION_UNLOCK_MS:
-            remaining_ms = MODULE_INTERACTION_UNLOCK_MS - self.state.elapsed_ms
+        if self.state.elapsed_ms < self.module_interaction_unlock_ms:
+            remaining_ms = (
+                self.module_interaction_unlock_ms
+                - self.state.elapsed_ms
+            )
             raise CommandRejected(
                 f"Modül müdahalesi henüz açık değil. Kalan süre: {remaining_ms} ms."
             )

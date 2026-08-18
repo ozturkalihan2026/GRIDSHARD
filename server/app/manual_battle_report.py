@@ -5,6 +5,39 @@ from statistics import mean
 from typing import Any
 
 
+
+
+def _event_value(
+    event:Any,
+    key:str,
+    default:Any=None,
+)->Any:
+    if isinstance(event,dict):
+        return event.get(
+            key,
+            default,
+        )
+    return getattr(
+        event,
+        key,
+        default,
+    )
+
+
+def _event_metadata(
+    event:Any,
+)->dict:
+    value=_event_value(
+        event,
+        "metadata",
+        {},
+    )
+    return (
+        value
+        if isinstance(value,dict)
+        else {}
+    )
+
 GATE_LABELS = {
     "north":"Kuzey",
     "east":"Doğu",
@@ -27,7 +60,7 @@ def _average(
 ) -> float:
     values=[
         _safe_float(
-            event.metadata.get(key,0)
+            _event_metadata(event).get(key,0)
         )
         for event in events
     ]
@@ -48,13 +81,13 @@ def _generator_route_analysis(
 
     for event in moves:
         from_gate=str(
-            event.metadata.get(
+            _event_metadata(event).get(
                 "from_gate",
                 "unknown",
             )
         )
         to_gate=str(
-            event.metadata.get(
+            _event_metadata(event).get(
                 "to_gate",
                 "unknown",
             )
@@ -67,7 +100,7 @@ def _generator_route_analysis(
 
         special_power_total += (
             _safe_float(
-                event.metadata.get(
+                _event_metadata(event).get(
                     "powered_special_cell_count",
                     0,
                 )
@@ -75,7 +108,7 @@ def _generator_route_analysis(
         )
         connected_total += (
             _safe_float(
-                event.metadata.get(
+                _event_metadata(event).get(
                     "connected_module_count",
                     0,
                 )
@@ -150,7 +183,7 @@ def _build_review_candidates(
             1
             for event in completed
             if bool(
-                event.metadata.get(
+                _event_metadata(event).get(
                     "won",
                     False,
                 )
@@ -313,7 +346,7 @@ def build_manual_battle_report(
         for event in events
         if (
             player_id is None
-            or event.player_id
+            or _event_value(event,"player_id")
             == player_id
         )
     ]
@@ -321,13 +354,13 @@ def build_manual_battle_report(
     completed=[
         event
         for event in relevant
-        if event.event_type
+        if _event_value(event,"event_type")
         == "local_battle_completed"
     ]
     moves=[
         event
         for event in relevant
-        if event.event_type
+        if _event_value(event,"event_type")
         == "generator_gate_moved"
     ]
 
@@ -335,7 +368,7 @@ def build_manual_battle_report(
         1
         for event in completed
         if bool(
-            event.metadata.get(
+            _event_metadata(event).get(
                 "won",
                 False,
             )

@@ -1,7 +1,7 @@
 # GRIDSHARD 2.0 — YOL HARİTASI
 
-**Güncel Sürüm:** `2.0.0-beta.15`  
-**Paket:** Karar Tamamlama + Preset Kartları + Savaş Öncesi Loadout + Review-Ready Simülasyon Koşucusu  
+**Güncel Sürüm:** `2.0.0-beta.16`  
+**Paket:** Review-Ready BattleEngine Regresyonu + Audio Settings Entegrasyonu + Hızlı Loadout  
 **Kanonik Dosya:** `docs/YOL_HARITASI.md`
 
 > Bu dosya GRIDSHARD 2.0 için tek kanonik geliştirme kaydıdır. Kaynak karar belgesi ile kod tabanı yeniden karşılaştırılmıştır. Buradaki `[x]`, `[~]`, `[ ]` işaretleri artık yalnızca kodda ve testlerde doğrulanabilen gerçek durumu gösterir.
@@ -443,7 +443,7 @@ olarak üretilir.
 
 # 7. Tamamlanan Son Paket
 
-## 2.0.0-beta.15 — Stabilizasyon + Kanonik Yol Haritası Denetimi + QA Zinciri
+## 2.0.0-beta.16 — Stabilizasyon + Kanonik Yol Haritası Denetimi + QA Zinciri
 
 - [x] Kaynak `Yol Haritası.txt`, mevcut kanonik yol haritası ve kod yeniden karşılaştırıldı.
 - [x] Eski yol haritasındaki 24 modül, 18 Savaş Havuzu, stratejik alan, güçlendirici ve PvP durumlarına ait eski/yanlış işaretlemeler gerçek koda göre düzeltildi.
@@ -526,7 +526,7 @@ olarak üretilir.
 
 ---
 
-# 7.1 — 2.0.0-beta.15 Gerçek Kullanıcı Test Bulguları ve Düzeltmeleri
+# 7.1 — 2.0.0-beta.16 Gerçek Kullanıcı Test Bulguları ve Düzeltmeleri
 
 Bu paket Beta.6'nın gerçek Windows/PowerShell ve tarayıcı testi sonucunda oluşturuldu; varsayımsal UX çalışması değildir.
 
@@ -571,7 +571,7 @@ Bu paket Beta.6'nın gerçek Windows/PowerShell ve tarayıcı testi sonucunda ol
 
 ---
 
-# 7.2 — 2.0.0-beta.15 Yerel AI Oynanış Doğrulama Paketi
+# 7.2 — 2.0.0-beta.16 Yerel AI Oynanış Doğrulama Paketi
 
 Beta.8'de denge değerleri varsayımla değiştirilmedi. Amaç Beta.7'nin kullanıcıya açtığı oynanış zincirini otomatik testte daha ileri taşımak ve gerçek savaş ekranını okunabilir hale getirmektir.
 
@@ -596,7 +596,7 @@ Beta.8'de denge değerleri varsayımla değiştirilmedi. Amaç Beta.7'nin kullan
 
 ---
 
-# 7.3 — 2.0.0-beta.15 Oyna Erişimi ve Stratejik Modül Seçimi
+# 7.3 — 2.0.0-beta.16 Oyna Erişimi ve Stratejik Modül Seçimi
 
 Bu paket doğrudan gerçek kullanıcı geri bildirimine dayanır: Oyna butonunun pasif kalması ve Savaş Havuzu oluştururken modül mekaniklerinin karar vermeye yetmeyecek kadar az gösterilmesi.
 
@@ -624,7 +624,7 @@ Bu paket doğrudan gerçek kullanıcı geri bildirimine dayanır: Oyna butonunun
 
 ---
 
-# 7.4 — 2.0.0-beta.15 Oyun Lobisi, Kapılar Arası Jeneratör ve Etki Görselleştirmesi
+# 7.4 — 2.0.0-beta.16 Oyun Lobisi, Kapılar Arası Jeneratör ve Etki Görselleştirmesi
 
 ## Jeneratör
 - [x] Jeneratör başlangıçta Çekirdek kapılarından birinde yer alır.
@@ -647,7 +647,7 @@ Bu paket doğrudan gerçek kullanıcı geri bildirimine dayanır: Oyna butonunun
 
 ---
 
-# 7.5 — 2.0.0-beta.15 Manuel Savaş Telemetrisi ve Denge Hazırlığı
+# 7.5 — 2.0.0-beta.16 Manuel Savaş Telemetrisi ve Denge Hazırlığı
 
 - [x] Tek Oyunculu gerçek manuel maç başlangıç/bitiş telemetrisi eklendi.
 - [x] Maç süresi, sonuç, Devre Kredisi harcaması, modül müdahalesi, verilen/alınan hasar ve Kalkan azaltması ölçülüyor.
@@ -662,7 +662,7 @@ Bu paket doğrudan gerçek kullanıcı geri bildirimine dayanır: Oyna butonunun
 
 ---
 
-# 7.6 — 2.0.0-beta.15 Denge İnceleme Merkezi ve Jeneratör Rota Analizi
+# 7.6 — 2.0.0-beta.16 Denge İnceleme Merkezi ve Jeneratör Rota Analizi
 
 Bu paket Beta.11 telemetrisini karar destek katmanına taşır. Paket oluşturulurken kullanıcıdan üç yeni manuel maç verisi bulunmadığı için sayısal denge değiştirilmemiştir.
 
@@ -682,7 +682,7 @@ Bu paket Beta.11 telemetrisini karar destek katmanına taşır. Paket oluşturul
 
 ---
 
-# 7.7 — 2.0.0-beta.15 Hazır Savaş Havuzları, HP Görselleştirmesi ve Review-Ready Kapısı
+# 7.7 — 2.0.0-beta.16 Hazır Savaş Havuzları, HP Görselleştirmesi ve Review-Ready Kapısı
 
 ## Savaş Havuzu kullanılabilirliği
 - [x] Orta ayrıntı panelindeki büyük `Seç / Havuzdan Çıkar` düğmesi kaldırıldı.
@@ -719,7 +719,7 @@ Bu paket Beta.11 telemetrisini karar destek katmanına taşır. Paket oluşturul
 
 ---
 
-# 7.8 — 2.0.0-beta.15 GRIDSHARD Identity Foundation
+# 7.8 — 2.0.0-beta.16 GRIDSHARD Identity Foundation
 
 Beta.14'ten önce oyun kimliği sabitlenmiştir.
 
@@ -756,7 +756,7 @@ Beta.14'ten önce oyun kimliği sabitlenmiştir.
 
 ---
 
-# 7.9 — GRIDSHARD 2.0.0-beta.15 Hazır Havuz Yönetimi ve Denge Onay Akışı
+# 7.9 — GRIDSHARD 2.0.0-beta.16 Hazır Havuz Yönetimi ve Denge Onay Akışı
 
 ## Hazır Savaş Havuzu yönetimi
 - [x] Yüklenen hazır havuz `Aktif hazır havuz` olarak görünür.
@@ -790,7 +790,7 @@ Beta.14'ten önce oyun kimliği sabitlenmiştir.
 
 ---
 
-# 7.10 — GRIDSHARD 2.0.0-beta.15 Karar Tamamlama, Preset Kartları ve İzole Simülasyon
+# 7.10 — GRIDSHARD 2.0.0-beta.16 Karar Tamamlama, Preset Kartları ve İzole Simülasyon
 
 ## Karar metni denetimi
 - [x] `docs/KARAR_UYGULAMA_KONTROLU.md` oluşturuldu.
@@ -840,14 +840,61 @@ Beta.14'ten önce oyun kimliği sabitlenmiştir.
 
 ---
 
+# 7.11 — GRIDSHARD 2.0.0-beta.16 BattleEngine Regresyonu, Audio Settings ve Hızlı Loadout
+
+## Review-ready ikinci güvenlik koşucusu
+- [x] `balance_regression.py` eklendi.
+- [x] `/telemetry/balance-change-regression` endpoint'i eklendi.
+- [x] Regresyon yalnız gerçek manuel rapor `review_ready` olduğunda çalışır.
+- [x] Regresyondan önce taslak `simulation_status=passed` olmak zorundadır.
+- [x] Devre Kredisi before/proposed değerleri gerçek `BattleEngine + CircuitCreditConfig` ile çalıştırılır.
+- [x] Devre Kredisi regresyonunda tick akışı, pasif gelir, modül yerleştirme ve temel engine invariants kontrol edilir.
+- [x] Modül müdahale kilidi before/proposed değerleri gerçek BattleEngine instance'larında test edilir.
+- [x] `BattleEngine` modül müdahale kilidini izole test için constructor üzerinden alabilir; varsayılan 15 saniyelik kanonik davranış değişmemiştir.
+- [x] Kapasite zaman çizelgesi kilit anına göre göreli hale getirildi; varsayılan 15/25/35/... davranışı aynen korunuyor.
+- [x] Gerçek engine adapterı bulunmayan alan regression passed olamaz ve güvenlik amacıyla bloke edilir.
+- [x] `simulation_status=passed + regression_status=passed + manuel onay` yine yalnız `ready_for_apply` adayı üretir.
+- [x] Herhangi bir apply endpoint'i hâlâ bulunmaz.
+- [x] `canonical_values_changed=false`, `automatic_apply=false` korunur.
+- [x] Review-ready → simülasyon → gerçek BattleEngine regresyon zinciri gateway testinde doğrulandı.
+- [x] Telemetri API'sinin dict çıktısı ile manuel rapor arasında bulunan uyumluluk problemi giderildi.
+
+## GRIDSHARD Audio Settings gerçek runtime entegrasyonu
+- [x] Ayarlar ekranına `Sesi Sessize Al` eklendi.
+- [x] Ayarlar ekranına `Müziği Sessize Al` eklendi.
+- [x] Ses slider'ı gerçek SFX gain değerine bağlandı.
+- [x] Müzik slider'ı gerçek music gain değerine bağlandı.
+- [x] Slider ve mute kontrolleri canlı önizleme sağlar.
+- [x] `sound_muted` ve `music_muted` sunucu oyuncu ayarlarında kalıcıdır.
+- [x] Eski oyuncu veri kayıtları mute alanları olmadan geriye dönük yüklenebilir.
+- [x] Audio Director aktif track volume/mute durumunu runtime'da uygular.
+- [x] SFX mute gameplay eventlerini durdurmaz; yalnız ses cue'sunu atlar.
+
+## Savaş öncesi Hızlı Loadout
+- [x] Oyna ekranına `Hızlı Loadout` bölümü eklendi.
+- [x] Sunucunun favori + son kullanılan sıralamasındaki ilk üç hazır havuz burada gösterilir.
+- [x] Kartta preset adı, favori işareti, modül sayısı ve son kullanım bilgisi bulunur.
+- [x] Her hızlı karttan doğrudan `Tek Oyunculu` veya `PvP` hazırlığı seçilebilir.
+- [x] Hızlı seçim preset'i yükler, aktif loadout yapar ve normal 18/18 doğrulama akışını korur.
+- [x] Böylece oyuncu her maçta yeniden 18 modül seçmek zorunda kalmaz.
+
+## Denge durumu
+- [x] Bu geliştirme paketinde kanonik AI / DK / modül sayısal dengesi değiştirilmedi.
+- [x] Gerçek kullanıcı `review_ready` verisi oluşmadan değişiklik uygulanmayacaktır.
+
+---
+
 # 9. Sıradaki Paket
 
-**`GRIDSHARD 2.0.0-beta.16 — Review-Ready Regresyon Koşucusu + Audio Mix/Settings Entegrasyonu + Loadout Favori Akışı`**
+**`GRIDSHARD 2.0.0-beta.17 — Engine Regresyon Kapsamı + Audio Mix V2 + Savaş Öncesi Loadout Son Dokunuşları`**
 
-Beta.16 için:
-1. review-ready ve simülasyonu geçmiş manuel denge taslaklarını kanonik değerleri değiştirmeden gerçek battle-engine regresyon senaryolarında çalıştıran ikinci güvenlik koşucusu,
-2. GRIDSHARD müzik/SFX prototiplerinin Ayarlar menüsündeki müzik/ses seviyeleri ve mute seçenekleriyle gerçek runtime entegrasyonu,
-3. favori/son kullanılan loadout kartlarının Oyna ekranında daha hızlı savaş öncesi seçim akışına taşınması,
-4. gerçek manuel maç verisi oluştuysa denge taslak sonuçlarının değerlendirilmesi.
+Beta.17 hedefleri:
 
-Kanonik denge değerlerine otomatik apply yine yapılmayacaktır.
+1. Review adaylarının engine-addressable olanlarını genişleterek Jeneratör rotası / savunma kullanımı gibi alanlar için güvenli regresyon senaryoları oluşturmak; server-engine'e ait olmayan Yerel AI baskısını ayrı bir server-side test adapterına taşımak.
+2. GRIDSHARD özgün müzik ve SFX prototiplerinde seviye normalizasyonu, fade/crossfade, kritik çekirdek katmanı ve ayarlardan müzik/SFX önizleme butonları eklemek.
+3. Hızlı Loadout alanına favori filtreleme, son kullanılan rozeti ve aktif loadout'un daha belirgin savaş öncesi özeti eklemek.
+4. Gerçek manuel maç verisi `review_ready` olduysa yalnız simulation + regression passed adaylarını insan değerlendirmesine sunmak.
+
+Kural:
+- kanonik dengeye otomatik apply yapılmayacak,
+- uygulama kararı ayrı ve açık kullanıcı onayı olmadan devreye girmeyecektir.

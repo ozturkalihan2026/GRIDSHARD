@@ -14,7 +14,7 @@
     <header class="battle-header">
       <div>
         <h1>GRIDSHARD 2.0</h1>
-        <p>2.0.0-beta.15 — Gerçek Web Testi Hazır</p>
+        <p>2.0.0-beta.16 — Gerçek Web Testi Hazır</p>
       </div>
       <div class="battle-status-cluster">
         <div class="credit-indicator" id="credit-indicator">Devre Kredisi: 200 DK</div>
@@ -57,7 +57,7 @@
           </button>
           <div class="lobby-build-chip">
             <span>GÜNCEL YAPI</span>
-            <strong>2.0.0-beta.15</strong>
+            <strong>2.0.0-beta.16</strong>
           </div>
         </div>
       </div>
@@ -122,7 +122,9 @@
       </div>
       <div class="settings-form">
         <label>Ses <input id="settings-sound" type="range" min="0" max="100" value="100" /></label>
+        <label class="settings-toggle"><input id="settings-sound-muted" type="checkbox" /> Sesi Sessize Al</label>
         <label>Müzik <input id="settings-music" type="range" min="0" max="100" value="70" /></label>
+        <label class="settings-toggle"><input id="settings-music-muted" type="checkbox" /> Müziği Sessize Al</label>
         <label><input id="settings-vibration" type="checkbox" checked /> Titreşim</label>
         <label>Grafik
           <select id="settings-graphics">
@@ -153,6 +155,17 @@
         </div>
         <span id="play-mode-status">Mod seçimi bekleniyor</span>
       </div>
+      <section class="quick-loadout-panel">
+        <div class="quick-loadout-heading">
+          <div>
+            <strong>Hızlı Loadout</strong>
+            <span>Favori ve son kullanılan hazır havuzların.</span>
+          </div>
+          <span id="quick-loadout-status">Hazır havuzlar yükleniyor...</span>
+        </div>
+        <div id="quick-loadout-gallery" class="quick-loadout-gallery" aria-label="Hızlı hazır havuz seçimi"></div>
+      </section>
+
       <div class="play-mode-actions">
         <button id="local-play-start" type="button" class="play-mode-card primary">
           <strong>Tek Oyunculu Test Maçı</strong>

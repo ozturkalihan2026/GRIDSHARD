@@ -51,6 +51,33 @@ assert.strictEqual(
   false
 );
 
+
+
+const preferences=
+  director.setPreferences({
+    soundVolume:0.25,
+    musicVolume:0.35,
+    soundMuted:true,
+    musicMuted:true,
+  });
+
+assert.strictEqual(
+  preferences.soundMuted,
+  true
+);
+assert.strictEqual(
+  preferences.musicMuted,
+  true
+);
+assert.strictEqual(
+  preferences.soundVolume,
+  0.25
+);
+assert.strictEqual(
+  preferences.musicVolume,
+  0.35
+);
+
 console.log(
   "gridshard audio identity test passed"
 );

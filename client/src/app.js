@@ -226,6 +226,8 @@
     player_id: participantPlayerId,
     sound_volume: 100,
     music_volume: 70,
+    sound_muted: false,
+    music_muted: false,
     vibration_enabled: true,
     graphics_quality: "yuksek",
     language: "tr",
@@ -578,7 +580,7 @@
         webTestBuildState,
       releaseCheckState,
       expectedVersion:
-        "2.0.0-beta.15",
+        "2.0.0-beta.16",
       expectedProtocolVersion: 1,
     });
   const playReadinessGate =
@@ -614,7 +616,7 @@
 
   telemetryDispatcher.trackGameOpened({
     platform: "web",
-    build: "2.0.0-beta.15",
+    build: "2.0.0-beta.16",
   });
 
   const postMatchSync =
@@ -1174,7 +1176,7 @@
   const diagnosticSnapshot =
     new RelayDiagnosticSnapshot({
       version:
-        "2.0.0-beta.15",
+        "2.0.0-beta.16",
       build:
         "web-test-beta.13",
       bootGate:
@@ -1316,6 +1318,14 @@
   const presetDirtyEl =
     document.getElementById(
       "battle-pool-preset-dirty"
+    );
+  const quickLoadoutGalleryEl =
+    document.getElementById(
+      "quick-loadout-gallery"
+    );
+  const quickLoadoutStatusEl =
+    document.getElementById(
+      "quick-loadout-status"
     );
   const poolDetailNameEl =
     document.getElementById(
@@ -3340,6 +3350,35 @@ const SPECIAL_CELL_INFO = {
         );
       simulationResult.className=
         "balance-simulation-result";
+      const regress=
+        document.createElement(
+          "button"
+        );
+      regress.type="button";
+      regress.className=
+        "regression-button";
+      regress.textContent=
+        "Battle-Engine Regresyonunu Çalıştır";
+      regress.disabled=
+        item.simulation_status
+        !== "passed";
+
+      const regressionResult=
+        document.createElement(
+          "div"
+        );
+      regressionResult.className=
+        "balance-regression-result";
+      regressionResult.textContent=
+        item.regression_status
+        === "passed"
+          ? "Son battle-engine regresyonu başarılı. Kanonik değer değişmedi."
+          : (
+              item.regression_status
+              === "failed"
+                ? "Son battle-engine regresyonu başarısız veya bu alan engine adaptörüne bağlı değil."
+                : "Battle-engine regresyonu bekleniyor."
+            );
       simulationResult.textContent=
         item.simulation_status
         === "passed"
@@ -3473,6 +3512,51 @@ const SPECIAL_CELL_INFO = {
         }
       );
 
+      regress.addEventListener(
+        "click",
+        async () => {
+          const response=
+            await fetch(
+              `/telemetry/balance-change-regression?player_id=${encodeURIComponent(participantPlayerId)}`,
+              {
+                method:"POST",
+                headers:{
+                  "content-type":"application/json",
+                },
+                body:JSON.stringify({
+                  area:item.area,
+                }),
+              }
+            );
+
+          const payload=
+            await response.json();
+
+          if (
+            response.ok
+            && payload.ok
+          ) {
+            const scenarios=
+              payload.regression
+                ?.engine_scenarios
+              || [];
+            regressionResult.textContent=
+              `Battle-engine regresyonu geçti · ${scenarios.length} engine senaryosu doğrulandı · Kanonik değer değişmedi.`;
+          } else {
+            regressionResult.textContent=
+              payload.reason
+              || payload.detail
+              || "Battle-engine regresyonu başarısız.";
+          }
+
+          if (payload.draft) {
+            renderBalanceDraft(
+              payload.draft
+            );
+          }
+        }
+      );
+
       card.append(
         heading,
         reason,
@@ -3482,7 +3566,9 @@ const SPECIAL_CELL_INFO = {
         checks,
         save,
         simulate,
-        simulationResult
+        simulationResult,
+        regress,
+        regressionResult
       );
       list.appendChild(card);
     }
@@ -4662,6 +4748,139 @@ const SPECIAL_CELL_INFO = {
     }
   }
 
+  function renderQuickLoadoutGallery() {
+    if (!quickLoadoutGalleryEl) {
+      return;
+    }
+
+    quickLoadoutGalleryEl.innerHTML="";
+
+    const quickPresets=
+      battlePoolPresets
+        .slice(0,3);
+
+    if (!quickPresets.length) {
+      const empty=
+        document.createElement(
+          "p"
+        );
+      empty.className=
+        "quick-loadout-empty";
+      empty.textContent=
+        "Hazır havuz oluşturduğunda favorilerin ve son kullandıkların burada görünecek.";
+      quickLoadoutGalleryEl
+        .appendChild(
+          empty
+        );
+      if (quickLoadoutStatusEl) {
+        quickLoadoutStatusEl.textContent=
+          "Hazır loadout yok";
+      }
+      return;
+    }
+
+    if (quickLoadoutStatusEl) {
+      const favoriteCount=
+        quickPresets.filter(
+          (item)=>item.favorite
+        ).length;
+      quickLoadoutStatusEl.textContent=
+        favoriteCount
+          ? `${favoriteCount} favori · ${quickPresets.length} hızlı seçenek`
+          : `${quickPresets.length} son kullanılan seçenek`;
+    }
+
+    for (
+      const preset
+      of quickPresets
+    ) {
+      const card=
+        document.createElement(
+          "article"
+        );
+      card.className=
+        "quick-loadout-card";
+
+      const title=
+        document.createElement(
+          "strong"
+        );
+      title.textContent=
+        `${preset.favorite ? "★ " : ""}${preset.name}`;
+
+      const meta=
+        document.createElement(
+          "span"
+        );
+      meta.textContent=
+        `${preset.module_definition_ids.length} modül · ${presetLastUsedLabel(preset.last_used_at_ms)}`;
+
+      const actions=
+        document.createElement(
+          "div"
+        );
+      actions.className=
+        "quick-loadout-actions";
+
+      for (
+        const mode
+        of [
+          {
+            id:"local",
+            label:"Tek Oyunculu",
+          },
+          {
+            id:"online",
+            label:"PvP",
+          },
+        ]
+      ) {
+        const button=
+          document.createElement(
+            "button"
+          );
+        button.type="button";
+        button.textContent=
+          mode.label;
+        button.addEventListener(
+          "click",
+          async () => {
+            if (presetSelectEl) {
+              presetSelectEl.value=
+                preset.name;
+            }
+
+            await loadSelectedBattlePoolPreset(
+              preset.name
+            );
+
+            setActivePlayMode(
+              mode.id
+            );
+
+            if (presetStatusEl) {
+              presetStatusEl.textContent=
+                `${preset.name} hızlı loadout olarak yüklendi. Savaş Havuzunu doğrulayıp maça geçebilirsin.`;
+            }
+          }
+        );
+        actions.appendChild(
+          button
+        );
+      }
+
+      card.append(
+        title,
+        meta,
+        actions
+      );
+      quickLoadoutGalleryEl
+        .appendChild(
+          card
+        );
+    }
+  }
+
   function renderPresetOptions() {
     if (!presetSelectEl) return;
 
@@ -4701,6 +4920,7 @@ const SPECIAL_CELL_INFO = {
 
     renderActivePresetState();
     renderPresetGallery();
+    renderQuickLoadoutGallery();
   }
 
   async function loadBattlePoolPresets() {
@@ -5923,6 +6143,37 @@ const SPECIAL_CELL_INFO = {
       status;
   }
 
+  function applyAudioSettings(
+    view
+  ) {
+    if (
+      !gridshardAudioDirector
+      || !view
+    ) {
+      return;
+    }
+
+    gridshardAudioDirector
+      .setPreferences({
+        soundVolume:
+          Number(
+            view.soundVolume ?? 100
+          ) / 100,
+        musicVolume:
+          Number(
+            view.musicVolume ?? 70
+          ) / 100,
+        soundMuted:
+          Boolean(
+            view.soundMuted
+          ),
+        musicMuted:
+          Boolean(
+            view.musicMuted
+          ),
+      });
+  }
+
   function renderSettingsForm() {
     const view =
       settingsState.viewModel();
@@ -5935,6 +6186,14 @@ const SPECIAL_CELL_INFO = {
     const music =
       document.getElementById(
         "settings-music"
+      );
+    const soundMuted =
+      document.getElementById(
+        "settings-sound-muted"
+      );
+    const musicMuted =
+      document.getElementById(
+        "settings-music-muted"
       );
     const vibration =
       document.getElementById(
@@ -5957,6 +6216,18 @@ const SPECIAL_CELL_INFO = {
       music.value =
         view.musicVolume;
     }
+    if (soundMuted) {
+      soundMuted.checked =
+        Boolean(
+          view.soundMuted
+        );
+    }
+    if (musicMuted) {
+      musicMuted.checked =
+        Boolean(
+          view.musicMuted
+        );
+    }
     if (vibration) {
       vibration.checked =
         view.vibrationEnabled;
@@ -5973,6 +6244,9 @@ const SPECIAL_CELL_INFO = {
     applyLanguagePreference(
       view.language
     );
+    applyAudioSettings(
+      view
+    );
   }
 
   async function saveSettingsForm() {
@@ -5983,6 +6257,14 @@ const SPECIAL_CELL_INFO = {
     const music =
       document.getElementById(
         "settings-music"
+      );
+    const soundMuted =
+      document.getElementById(
+        "settings-sound-muted"
+      );
+    const musicMuted =
+      document.getElementById(
+        "settings-music-muted"
       );
     const vibration =
       document.getElementById(
@@ -6009,6 +6291,14 @@ const SPECIAL_CELL_INFO = {
             Number(sound?.value ?? 100),
           music_volume:
             Number(music?.value ?? 70),
+          sound_muted:
+            Boolean(
+              soundMuted?.checked
+            ),
+          music_muted:
+            Boolean(
+              musicMuted?.checked
+            ),
           vibration_enabled:
             Boolean(
               vibration?.checked
@@ -7346,6 +7636,72 @@ const SPECIAL_CELL_INFO = {
         "click",
         saveProfileDisplayName
       );
+  }
+
+  function previewAudioSettingsFromControls() {
+    const sound=
+      document.getElementById(
+        "settings-sound"
+      );
+    const music=
+      document.getElementById(
+        "settings-music"
+      );
+    const soundMuted=
+      document.getElementById(
+        "settings-sound-muted"
+      );
+    const musicMuted=
+      document.getElementById(
+        "settings-music-muted"
+      );
+
+    if (!gridshardAudioDirector) {
+      return;
+    }
+
+    gridshardAudioDirector
+      .setPreferences({
+        soundVolume:
+          Number(
+            sound?.value ?? 100
+          ) / 100,
+        musicVolume:
+          Number(
+            music?.value ?? 70
+          ) / 100,
+        soundMuted:
+          Boolean(
+            soundMuted?.checked
+          ),
+        musicMuted:
+          Boolean(
+            musicMuted?.checked
+          ),
+      });
+  }
+
+  for (
+    const controlId
+    of [
+      "settings-sound",
+      "settings-music",
+      "settings-sound-muted",
+      "settings-music-muted",
+    ]
+  ) {
+    const control=
+      document.getElementById(
+        controlId
+      );
+    if (control) {
+      control.addEventListener(
+        control.type === "range"
+          ? "input"
+          : "change",
+        previewAudioSettingsFromControls
+      );
+    }
   }
 
   const settingsSaveButton =

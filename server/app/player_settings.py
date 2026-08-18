@@ -18,6 +18,8 @@ class PlayerSettings:
     player_id: str
     sound_volume: int = 100
     music_volume: int = 70
+    sound_muted: bool = False
+    music_muted: bool = False
     vibration_enabled: bool = True
     graphics_quality: str = "yuksek"
     language: str = "tr"
@@ -27,6 +29,8 @@ class PlayerSettings:
             "player_id": self.player_id,
             "sound_volume": self.sound_volume,
             "music_volume": self.music_volume,
+            "sound_muted": self.sound_muted,
+            "music_muted": self.music_muted,
             "vibration_enabled": (
                 self.vibration_enabled
             ),
@@ -70,6 +74,8 @@ class PlayerSettingsService:
         *,
         sound_volume: int | None = None,
         music_volume: int | None = None,
+        sound_muted: bool | None = None,
+        music_muted: bool | None = None,
         vibration_enabled: bool | None = None,
         graphics_quality: str | None = None,
         language: str | None = None,
@@ -93,6 +99,26 @@ class PlayerSettingsService:
                     music_volume,
                 )
             )
+
+        if sound_muted is not None:
+            if not isinstance(
+                sound_muted,
+                bool,
+            ):
+                raise PlayerSettingsError(
+                    "Ses sessize alma tercihi boolean olmalıdır."
+                )
+            settings.sound_muted = sound_muted
+
+        if music_muted is not None:
+            if not isinstance(
+                music_muted,
+                bool,
+            ):
+                raise PlayerSettingsError(
+                    "Müzik sessize alma tercihi boolean olmalıdır."
+                )
+            settings.music_muted = music_muted
 
         if vibration_enabled is not None:
             if not isinstance(

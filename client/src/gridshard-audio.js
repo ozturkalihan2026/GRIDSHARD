@@ -77,9 +77,11 @@
       this.state = GRIDSHARD_AUDIO_STATES.MENU;
       this.enabled = true;
       this.sfxEnabled = true;
-      this.masterVolume = 0.8;
-      this.musicVolume = 0.42;
-      this.sfxVolume = 0.68;
+      this.musicMuted = false;
+      this.soundMuted = false;
+      this.masterVolume = 1.0;
+      this.musicVolume = 0.70;
+      this.sfxVolume = 1.0;
       this.currentTrack = null;
     }
 
@@ -104,6 +106,8 @@
     _startStateAsset(state) {
       if (
         !this.enabled
+        || this.musicMuted
+        || this.musicVolume <= 0
         || !this._canPlayAudio()
       ) {
         return;
@@ -195,6 +199,8 @@
       if (
         this.enabled
         && this.sfxEnabled
+        && !this.soundMuted
+        && this.sfxVolume > 0
         && this._canPlayAudio()
       ) {
         const audio =
@@ -228,6 +234,69 @@
         ok:true,
         name,
         ...cue,
+      };
+    }
+
+    setPreferences({
+      soundVolume = this.sfxVolume,
+      musicVolume = this.musicVolume,
+      soundMuted = this.soundMuted,
+      musicMuted = this.musicMuted,
+    } = {}) {
+      this.sfxVolume =
+        Math.max(
+          0,
+          Math.min(
+            1,
+            Number(soundVolume)
+          )
+        );
+      this.musicVolume =
+        Math.max(
+          0,
+          Math.min(
+            1,
+            Number(musicVolume)
+          )
+        );
+      this.soundMuted =
+        Boolean(soundMuted);
+      this.musicMuted =
+        Boolean(musicMuted);
+
+      if (this.currentTrack) {
+        if (
+          this.musicMuted
+          || this.musicVolume <= 0
+        ) {
+          this._stopCurrentTrack();
+        } else {
+          this.currentTrack.volume =
+            this.masterVolume
+            * this.musicVolume;
+        }
+      } else if (
+        !this.musicMuted
+        && this.musicVolume > 0
+      ) {
+        this._startStateAsset(
+          this.state
+        );
+      }
+
+      return this.preferences();
+    }
+
+    preferences() {
+      return {
+        soundVolume:
+          this.sfxVolume,
+        musicVolume:
+          this.musicVolume,
+        soundMuted:
+          this.soundMuted,
+        musicMuted:
+          this.musicMuted,
       };
     }
 

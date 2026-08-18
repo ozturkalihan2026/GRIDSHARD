@@ -853,6 +853,14 @@
           this.settings.sound_volume,
         musicVolume:
           this.settings.music_volume,
+        soundMuted:
+          Boolean(
+            this.settings.sound_muted
+          ),
+        musicMuted:
+          Boolean(
+            this.settings.music_muted
+          ),
         vibrationEnabled:
           this.settings.vibration_enabled,
         graphicsQuality:

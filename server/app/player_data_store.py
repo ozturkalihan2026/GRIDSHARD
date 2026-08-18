@@ -593,6 +593,18 @@ class PlayerDataStoreService:
             music_volume=int(
                 data["music_volume"]
             ),
+            sound_muted=bool(
+                data.get(
+                    "sound_muted",
+                    False,
+                )
+            ),
+            music_muted=bool(
+                data.get(
+                    "music_muted",
+                    False,
+                )
+            ),
             vibration_enabled=bool(
                 data[
                     "vibration_enabled"

@@ -4597,5 +4597,41 @@
     "player_id": null,
     "session_id": null,
     "timestamp_ms": 1787059246849
+  },
+  {
+    "event_id": "web-test-launch-wt-8288059b-9714-4817-ad64-397540b99b4e-1787060412727",
+    "event_type": "web_test_launch_attempted",
+    "metadata": {
+      "failed_checks": [],
+      "launch_ready": true,
+      "test_run_id": "web-test-beta.15-local"
+    },
+    "player_id": "wt-8288059b-9714-4817-ad64-397540b99b4e",
+    "session_id": null,
+    "timestamp_ms": 1787060412727
+  },
+  {
+    "event_id": "web-test-launch-wt-8288059b-9714-4817-ad64-397540b99b4e-1787060517074",
+    "event_type": "web_test_launch_attempted",
+    "metadata": {
+      "failed_checks": [],
+      "launch_ready": true,
+      "test_run_id": "web-test-beta.15-local"
+    },
+    "player_id": "wt-8288059b-9714-4817-ad64-397540b99b4e",
+    "session_id": null,
+    "timestamp_ms": 1787060517074
+  },
+  {
+    "event_id": "client-local_battle_started-11",
+    "event_type": "local_battle_started",
+    "metadata": {
+      "initial_credits": 200,
+      "initial_generator_gate": "south",
+      "selected_pool_size": 18
+    },
+    "player_id": "wt-8288059b-9714-4817-ad64-397540b99b4e",
+    "session_id": "local-preview",
+    "timestamp_ms": 1787060547247
   }
 ]

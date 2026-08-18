@@ -1,6 +1,6 @@
 # GRIDSHARD — Karar Uygulama Kontrolü
 
-**Kontrol paketi:** `2.0.0-beta.15`
+**Kontrol paketi:** `2.0.0-beta.16`
 
 Bu belge, daha önce alınan görsel kimlik / ekran / ses / isim kararlarının proje içindeki gerçek uygulama durumunu takip eder.
 
@@ -100,3 +100,15 @@ Bu belge, daha önce alınan görsel kimlik / ekran / ses / isim kararlarının 
 - [x] Regresyon `passed` olmadan `ready_for_apply` oluşmuyor.
 - [x] Otomatik apply endpoint'i yok.
 - [x] Kanonik denge değerleri bu pakette değiştirilmedi.
+
+
+## 11. Beta.16 güvenlik ve runtime entegrasyonu
+- [x] GRIDSHARD özgün müzik/SFX assetleri Ayarlar ekranındaki gerçek volume/mute tercihlerine bağlandı.
+- [x] Ses ve Müzik mute tercihleri sunucuda kalıcıdır.
+- [x] Favori / son kullanılan hazır havuzlar Oyna ekranındaki Hızlı Loadout bölümünde görünür.
+- [x] Hızlı Loadout kartından Tek Oyunculu veya PvP hazırlığına geçilebilir.
+- [x] Review-ready + simulation passed denge taslağı için ikinci güvenlik katmanı olan gerçek BattleEngine regresyon koşucusu eklendi.
+- [x] Devre Kredisi ve modül müdahale kilidi gerçek BattleEngine instance'larında before/proposed olarak karşılaştırılabilir.
+- [x] Engine adaptörü olmayan alan güvenlik amacıyla regression failed durumunda kalır.
+- [x] Regresyon koşucusu kanonik değerleri değiştirmez.
+- [x] Otomatik apply endpoint'i yoktur.

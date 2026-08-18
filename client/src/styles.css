@@ -2415,3 +2415,121 @@ body[data-app-screen="menu"] .main-menu-panel {
     opacity:.16;
   }
 }
+
+
+/* beta.16 — Audio Settings + Hızlı Loadout */
+.settings-form .settings-toggle {
+  display:flex;
+  align-items:center;
+  gap:8px;
+  min-height:38px;
+  padding:7px 9px;
+  border:1px solid rgba(41,71,102,.55);
+  border-radius:8px;
+  background:rgba(7,11,20,.48);
+}
+
+.quick-loadout-panel {
+  margin:12px 0 16px;
+  padding:12px;
+  border:1px solid rgba(54,217,255,.18);
+  border-radius:11px;
+  background:
+    linear-gradient(
+      145deg,
+      rgba(19,34,56,.88),
+      rgba(7,11,20,.82)
+    );
+}
+
+.quick-loadout-heading {
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:12px;
+  margin-bottom:9px;
+}
+
+.quick-loadout-heading > div {
+  display:grid;
+  gap:3px;
+}
+
+.quick-loadout-heading span,
+#quick-loadout-status {
+  color:var(--gs-signal-gray);
+  font-size:.74rem;
+}
+
+.quick-loadout-gallery {
+  display:grid;
+  grid-template-columns:repeat(
+    auto-fit,
+    minmax(190px,1fr)
+  );
+  gap:8px;
+}
+
+.quick-loadout-card {
+  display:grid;
+  gap:7px;
+  padding:10px;
+  border:1px solid rgba(41,71,102,.76);
+  border-radius:9px;
+  background:rgba(7,11,20,.55);
+}
+
+.quick-loadout-card > span {
+  color:var(--gs-signal-gray);
+  font-size:.72rem;
+}
+
+.quick-loadout-actions {
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:6px;
+}
+
+.quick-loadout-actions button:first-child {
+  border-color:rgba(244,200,90,.42);
+  color:var(--gs-reactor-gold);
+}
+
+.quick-loadout-actions button:last-child {
+  border-color:rgba(54,217,255,.34);
+  color:var(--gs-arc-cyan);
+}
+
+.quick-loadout-empty {
+  grid-column:1 / -1;
+  margin:0;
+  color:var(--gs-signal-gray);
+  font-size:.78rem;
+}
+
+.balance-draft-item .regression-button {
+  border-color:rgba(85,223,138,.38);
+  color:var(--gs-ion-green);
+}
+
+.balance-regression-result {
+  grid-column:1 / -1;
+  padding:8px;
+  border:1px solid rgba(85,223,138,.18);
+  border-radius:7px;
+  background:rgba(7,11,20,.55);
+  color:var(--gs-signal-gray);
+  font-size:.72rem;
+  line-height:1.45;
+}
+
+@media (max-width:720px) {
+  .quick-loadout-heading {
+    align-items:flex-start;
+    flex-direction:column;
+  }
+
+  .quick-loadout-actions {
+    grid-template-columns:1fr;
+  }
+}
