@@ -12,7 +12,7 @@
     <header class="battle-header">
       <div>
         <h1>Project Relay 2.0</h1>
-        <p>2.0.0-beta.4.3 — Gerçek Web Testi Hazır</p>
+        <p>2.0.0-beta.5 — Gerçek Web Testi Hazır</p>
       </div>
       <div class="battle-status-cluster">
         <div class="credit-indicator" id="credit-indicator">Devre Kredisi: 200 DK</div>
@@ -104,13 +104,34 @@
     </section>
 
 
-    <section id="play-recovery-panel" class="play-recovery-panel" data-screen-panel="play" hidden>
+
+    <section class="play-mode-panel" id="play-mode-panel" data-screen-panel="play" hidden>
+      <div class="panel-title-row">
+        <div>
+          <h2>Maç Modu</h2>
+          <p class="screen-subtitle">Tek bilgisayarda hemen dene veya gerçek Online PvP kuyruğuna gir.</p>
+        </div>
+        <span id="play-mode-status">Mod seçimi bekleniyor</span>
+      </div>
+      <div class="play-mode-actions">
+        <button id="local-play-start" type="button" class="play-mode-card primary">
+          <strong>Tek Oyunculu Test Maçı</strong>
+          <span>Yerel AI rakibine karşı savaşı hemen başlat. Modül Rafı, Devre Kredisi ve savaş akışını dene.</span>
+        </button>
+        <button id="online-play-prepare" type="button" class="play-mode-card">
+          <strong>Online PvP</strong>
+          <span>18 modüllük Savaş Havuzunu hazırla ve gerçek eşleştirme kuyruğuna katıl.</span>
+        </button>
+      </div>
+    </section>
+
+    <section id="play-recovery-panel" class="play-recovery-panel play-online-panel" data-screen-panel="play" hidden>
       <strong>Bağlantı / Oturum Durumu</strong>
       <span id="play-recovery-message"></span>
       <button id="play-recovery-retry" type="button">Yeniden Dene</button>
     </section>
 
-    <section class="battle-pool-panel" id="battle-pool-panel" data-screen-panel="play" hidden>
+    <section class="battle-pool-panel play-online-panel" id="battle-pool-panel" data-screen-panel="play" hidden>
       <div class="panel-title-row">
         <h2>Savaş Havuzu</h2>
         <span id="battle-pool-count">0 / 18</span>
@@ -121,7 +142,7 @@
         <button id="matchmaking-cancel" type="button">Eşleştirmeyi İptal Et</button>
     </section>
 
-    <section class="booster-panel" id="booster-panel" data-screen-panel="play" hidden>
+    <section class="booster-panel play-live-panel" id="booster-panel" data-screen-panel="play" hidden>
       <div class="panel-title-row">
         <h2>Geçici Güçlendiriciler</h2>
         <span id="booster-status">Seçim bekleniyor</span>
@@ -130,9 +151,14 @@
       <div id="booster-options" class="booster-options"></div>
     </section>
 
-    <section class="combat-summary-panel" data-screen-panel="play" hidden>
+    <section class="combat-summary-panel play-live-panel" data-screen-panel="play" hidden>
       <strong id="combat-summary">Rakip: 300/300 Çekirdek</strong>
-      <span id="pvp-flow-status">PvP: Lobi → Setup → Hazır → Savaş → Sonuç</span>
+      <span id="active-match-mode">Maç: Bekleniyor</span>
+      <span id="player-core-summary">Sen: Çekirdek 300/300 · Jeneratör 150/150</span>
+            <details class="technical-status-drawer">
+        <summary>Beta / Bağlantı Teknik Durumu</summary>
+        <div class="technical-status-content">
+<span id="pvp-flow-status">PvP: Lobi → Setup → Hazır → Savaş → Sonuç</span>
       <span id="pvp-connection-status" data-status="idle">Bağlantı: Hazır</span>
       <span id="matchmaking-status">Eşleştirme: Hazır · 1000 DP</span>
       <span id="web-test-status" data-status="idle">Web Test: Kontrol Bekliyor</span>
@@ -193,9 +219,11 @@
       <span id="beta-review-status">İnceleme Adayları: Veri bekleniyor</span>
       <button id="server-boot-retry" type="button">Sağlık Kontrolünü Yeniden Dene</button>
       <span id="telemetry-send-status" data-status="idle">Telemetri: Hazır</span>
-    </section>
+    </section>        </div>
+      </details>
 
-    <section class="battle-layout" data-screen-panel="play" hidden>
+
+    <section class="battle-layout play-live-panel" data-screen-panel="play" hidden>
       <section class="arena-panel">
         <div class="panel-title-row">
           <h2>Savaş Alanı</h2>
@@ -216,19 +244,17 @@
       </aside>
     </section>
 
-    <section class="post-match-panel" data-screen-panel="play" hidden>
+    <section class="post-match-panel play-result-panel" data-screen-panel="play" hidden>
       <div class="panel-title-row">
         <h2>Maç Sonucu</h2>
         <span id="battle-result-summary" hidden>Sonuç bekleniyor</span>
       </div>
-      <button id="rematch-button" type="button">
-        Tekrar Maç
-      </button>
+      <button id="rematch-button" type="button">Tekrar Maç</button>
     </section>
 
 
 
-    <details class="diagnostic-panel" data-screen-panel="play" hidden>
+    <details class="diagnostic-panel play-technical-panel" data-screen-panel="play" hidden>
       <summary>
         <strong>Teknik Tanılama</strong>
         <span>Yalnızca teknik durum</span>
@@ -239,7 +265,7 @@
         <textarea id="diagnostic-snapshot-output" readonly hidden aria-label="Tanılama özeti"></textarea>
       </div>
     </details>
-    <section class="event-panel" data-screen-panel="play" hidden>
+    <section class="event-panel play-live-panel" data-screen-panel="play" hidden>
       <h2>Olay Günlüğü</h2>
       <p>Savaş ve istemci komutları burada zaman sırasıyla gösterilir; savaş kararı sunucu otoritesindedir.</p>
       <pre id="event-log"></pre>

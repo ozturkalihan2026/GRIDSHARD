@@ -42,7 +42,7 @@
   const COMPETITIVE_STATUS = "M7 Simülasyon aktif";
   const BALANCE_STATUS = "Eşit modül + counter doğrulandı";
   const AI_STATUS = "Adaptif AI + rekabetçi denge doğrulandı";
-  const PVP_STATUS = "Beta bulgu ve inceleme adayları hazır";
+  const PVP_STATUS = "Oynanabilir Beta · Tek Oyunculu + Online PvP";
 
   const PORT_COUNT_BY_NAME = {
     "Çekirdek":4,
@@ -305,6 +305,13 @@
       label.textContent =
         names[current] || current;
     }
+
+    if (
+      current
+      === RelayAppScreen.PLAY
+    ) {
+      renderPlayModeUi();
+    }
   }
 
   async function recordLaunchAttemptAudit() {
@@ -520,7 +527,7 @@
         webTestBuildState,
       releaseCheckState,
       expectedVersion:
-        "2.0.0-beta.4.3",
+        "2.0.0-beta.5",
       expectedProtocolVersion: 1,
     });
   const playReadinessGate =
@@ -551,7 +558,7 @@
 
   telemetryDispatcher.trackGameOpened({
     platform: "web",
-    build: "2.0.0-beta.4.3",
+    build: "2.0.0-beta.5",
   });
 
   const postMatchSync =
@@ -861,6 +868,10 @@
 
     matchmakingStatusEl.dataset.status =
       status;
+
+    document.body.dataset.onlineStatus =
+      status;
+    renderPlayModeUi();
   }
 
   const onlinePlay =
@@ -1111,9 +1122,9 @@
   const diagnosticSnapshot =
     new RelayDiagnosticSnapshot({
       version:
-        "2.0.0-beta.4.3",
+        "2.0.0-beta.5",
       build:
-        "web-test-beta.4.3",
+        "web-test-beta.5",
       bootGate:
         serverBootGate,
       connectionManager:
@@ -2700,6 +2711,31 @@
   );
   checkServerReadiness();
 
+  const localPlayStartButton =
+    document.getElementById(
+      "local-play-start"
+    );
+  const onlinePlayPrepareButton =
+    document.getElementById(
+      "online-play-prepare"
+    );
+  const playModeStatusEl =
+    document.getElementById(
+      "play-mode-status"
+    );
+  const activeMatchModeEl =
+    document.getElementById(
+      "active-match-mode"
+    );
+  const playerCoreSummaryEl =
+    document.getElementById(
+      "player-core-summary"
+    );
+  const battleStateLabelEl =
+    document.getElementById(
+      "battle-state-label"
+    );
+
   const BOARD_CELLS = [
     [1,0],[2,0],[3,0],
     [0,1],[1,1],[2,1],[3,1],[4,1],
@@ -2717,7 +2753,11 @@ const SPECIAL_CELL_INFO = {
   "1,1": { css: "repair-cell", label: "Onarım Hücresi", bonus: "+%20 onarım" },
   "3,3": { css: "signal-cell", label: "Sinyal Hücresi", bonus: "-%15 bekleme süresi" },
 };
-  const startedAt = performance.now();
+  let battleStartedAt = performance.now();
+  let activePlayMode = "idle";
+  let localBattleFinished = false;
+  let localEnemyAttackSecond = -1;
+
   let webTestSamplingTimer = null;
   let activeWebTestRunId = null;
   let previousCapacity = null;
@@ -2727,6 +2767,454 @@ const SPECIAL_CELL_INFO = {
   let mockEnemyGeneratorHp = 150;
   let mockEnemyModuleHp = 140;
   let previousCombatSecond = -1;
+
+  function setActivePlayMode(mode) {
+    activePlayMode = mode;
+    document.body.dataset.playMode =
+      mode;
+
+    if (playModeStatusEl) {
+      const labels = {
+        idle:
+          "Mod seçimi bekleniyor",
+        local:
+          "Tek Oyunculu Test Maçı aktif",
+        online:
+          "Online PvP hazırlanıyor",
+      };
+      playModeStatusEl.textContent =
+        labels[mode] || mode;
+    }
+
+    renderPlayModeUi();
+  }
+
+  function renderPlayModeUi() {
+    if (
+      appRouter.currentScreen
+      !== RelayAppScreen.PLAY
+    ) {
+      return;
+    }
+
+    const idle =
+      activePlayMode === "idle";
+    const local =
+      activePlayMode === "local";
+    const online =
+      activePlayMode === "online";
+
+    const modePanel =
+      document.getElementById(
+        "play-mode-panel"
+      );
+    if (modePanel) {
+      modePanel.hidden = false;
+    }
+
+    for (
+      const panel
+      of document.querySelectorAll(
+        ".play-live-panel"
+      )
+    ) {
+      panel.hidden =
+        idle
+        || (
+          online
+          && document.body
+            .dataset.onlineStatus
+            !== "battle"
+        );
+    }
+
+    const onlinePanel =
+      document.getElementById(
+        "battle-pool-panel"
+      );
+    if (onlinePanel) {
+      onlinePanel.hidden =
+        !online;
+    }
+
+    const recoveryPanel =
+      document.getElementById(
+        "play-recovery-panel"
+      );
+    if (
+      recoveryPanel
+      && !online
+    ) {
+      recoveryPanel.hidden =
+        true;
+    }
+
+    const resultPanel =
+      document.querySelector(
+        ".play-result-panel"
+      );
+    if (resultPanel) {
+      resultPanel.hidden =
+        !(
+          local
+          && localBattleFinished
+        )
+        && !(
+          online
+          && pvpState.phase
+            === "finished"
+        );
+    }
+
+    const technicalPanel =
+      document.querySelector(
+        ".play-technical-panel"
+      );
+    if (technicalPanel) {
+      technicalPanel.hidden =
+        idle;
+    }
+  }
+
+  function resetLocalBattleState() {
+    pvpConnection.disconnect();
+
+    battleStartedAt =
+      performance.now();
+    localBattleFinished =
+      false;
+    localEnemyAttackSecond =
+      -1;
+    previousCombatSecond =
+      -1;
+    mockServerCredits =
+      200;
+    mockServerPassiveSeconds =
+      0;
+    mockEnemyCoreHp =
+      300;
+    mockEnemyGeneratorHp =
+      150;
+    mockEnemyModuleHp =
+      140;
+    nextBoosterOfferIndex =
+      0;
+    boosterOfferOpen =
+      false;
+    selectedBoosterId =
+      null;
+
+    client.applyServerEconomyState({
+      circuitCredits:200,
+    });
+    client.updateElapsedMs(0);
+
+    for (
+      const module
+      of client.modules.values()
+    ) {
+      const isCore =
+        module.instanceId
+        === "core-1";
+      const isGenerator =
+        module.instanceId
+        === "generator-1";
+
+      client.applyServerModuleState({
+        instanceId:
+          module.instanceId,
+        hp:
+          module.maxHp,
+        status:
+          (
+            isCore
+            || isGenerator
+          )
+            ? "active"
+            : "reserve",
+        position:
+          isCore
+            ? {x:2,y:2}
+            : (
+                isGenerator
+                  ? {x:2,y:3}
+                  : null
+              ),
+        direction:"up",
+        energyReceived:0,
+        isPowered:true,
+        storedEnergy:0,
+        heat:0,
+      });
+    }
+
+    commandLog.length = 0;
+
+    if (battleResultSummaryEl) {
+      battleResultSummaryEl.hidden =
+        true;
+      battleResultSummaryEl.textContent =
+        "Sonuç bekleniyor";
+    }
+
+    document.body.dataset.localFinished =
+      "false";
+
+    if (activeMatchModeEl) {
+      activeMatchModeEl.textContent =
+        "Maç: Tek Oyunculu · Yerel AI";
+    }
+    if (battleStateLabelEl) {
+      battleStateLabelEl.textContent =
+        "Savaş devam ediyor";
+    }
+    if (matchmakingStatusEl) {
+      matchmakingStatusEl.textContent =
+        "Rakip: Yerel AI";
+      matchmakingStatusEl.dataset.status =
+        "local";
+    }
+
+    boosterStatusEl.textContent =
+      "İlk güçlendirici 85. saniyede";
+    renderBoosterOptions();
+    render();
+    renderCredits();
+    renderCapacity();
+    renderPlayerCoreSummary();
+    renderLog();
+
+    logClientMessage(
+      "Tek Oyunculu Test Maçı başladı. Modül Rafı 15. saniyede açılır."
+    );
+  }
+
+  function startLocalPlayableMatch() {
+    setActivePlayMode(
+      "local"
+    );
+    resetLocalBattleState();
+    renderPlayModeUi();
+  }
+
+  function prepareOnlineMatch() {
+    setActivePlayMode(
+      "online"
+    );
+    document.body.dataset.onlineStatus =
+      "idle";
+
+    if (activeMatchModeEl) {
+      activeMatchModeEl.textContent =
+        "Maç: Online PvP";
+    }
+
+    renderBattlePoolSelection();
+    renderPlayModeUi();
+  }
+
+  function renderPlayerCoreSummary() {
+    if (!playerCoreSummaryEl) {
+      return;
+    }
+
+    const core =
+      client.modules.get(
+        "core-1"
+      );
+    const generator =
+      client.modules.get(
+        "generator-1"
+      );
+
+    playerCoreSummaryEl.textContent =
+      `Sen: Çekirdek ${
+        Math.max(
+          0,
+          Number(core?.hp || 0)
+        )
+      }/${core?.maxHp || 300}`
+      + ` · Jeneratör ${
+        Math.max(
+          0,
+          Number(
+            generator?.hp || 0
+          )
+        )
+      }/${generator?.maxHp || 150}`;
+  }
+
+  function finishLocalBattle({
+    won,
+  }) {
+    if (localBattleFinished) {
+      return;
+    }
+
+    localBattleFinished =
+      true;
+    document.body.dataset.localFinished =
+      "true";
+
+    if (battleResultSummaryEl) {
+      battleResultSummaryEl.hidden =
+        false;
+      battleResultSummaryEl.textContent =
+        won
+          ? "KAZANDIN · Rakip Çekirdek yok edildi"
+          : "KAYBETTİN · Çekirdeğin yok edildi";
+    }
+
+    if (battleStateLabelEl) {
+      battleStateLabelEl.textContent =
+        won
+          ? "Maç tamamlandı · Galibiyet"
+          : "Maç tamamlandı · Mağlubiyet";
+    }
+
+    commandLog.push({
+      atMs:client.elapsedMs,
+      kind:"battle_finished",
+      winnerPlayerId:
+        won
+          ? participantPlayerId
+          : "yerel-ai",
+      isDraw:false,
+    });
+    renderLog();
+    renderPlayModeUi();
+  }
+
+  function updateLocalEnemyCombat() {
+    if (
+      activePlayMode !== "local"
+      || localBattleFinished
+      || client.elapsedMs < 5000
+    ) {
+      return;
+    }
+
+    const attackSecond =
+      Math.floor(
+        client.elapsedMs
+        / 2000
+      );
+
+    if (
+      attackSecond
+      === localEnemyAttackSecond
+    ) {
+      return;
+    }
+
+    localEnemyAttackSecond =
+      attackSecond;
+
+    const activeTargets = [
+      ...client.modules.values(),
+    ]
+      .filter(
+        (module) =>
+          module.status === "active"
+          && ![
+            "core-1",
+            "generator-1",
+          ].includes(
+            module.instanceId
+          )
+          && Number(
+            module.hp || 0
+          ) > 0
+      )
+      .sort(
+        (a,b) =>
+          a.instanceId.localeCompare(
+            b.instanceId
+          )
+      );
+
+    let target =
+      activeTargets[0]
+      || (
+        Number(
+          client.modules.get(
+            "generator-1"
+          )?.hp || 0
+        ) > 0
+          ? client.modules.get(
+              "generator-1"
+            )
+          : client.modules.get(
+              "core-1"
+            )
+      );
+
+    if (
+      !target
+      || Number(
+        target.hp || 0
+      ) <= 0
+    ) {
+      return;
+    }
+
+    const shieldActive =
+      [...client.modules.values()]
+        .some(
+          (module) =>
+            module.instanceId
+            === "shield-1"
+            && module.status
+              === "active"
+            && Number(
+              module.hp || 0
+            ) > 0
+        );
+
+    const rawDamage = 8;
+    const damage =
+      shieldActive
+        ? 5
+        : rawDamage;
+    const newHp =
+      Math.max(
+        0,
+        Number(
+          target.hp || 0
+        )
+        - damage
+      );
+
+    client.applyServerModuleState({
+      instanceId:
+        target.instanceId,
+      hp:newHp,
+    });
+
+    commandLog.push({
+      atMs:client.elapsedMs,
+      kind:"module_damaged",
+      moduleName:
+        target.nameTr,
+      damage,
+      hp:newHp,
+      source:"Yerel AI",
+    });
+
+    if (
+      target.instanceId
+      === "core-1"
+      && newHp <= 0
+    ) {
+      finishLocalBattle({
+        won:false,
+      });
+    }
+
+    renderPlayerCoreSummary();
+    renderBoard();
+    renderLog();
+  }
 
   function renderBattlePoolSelection() {
     poolSelectionEl.innerHTML = "";
@@ -3606,14 +4094,36 @@ const SPECIAL_CELL_INFO = {
   }
 
   function updateMockBattleResult() {
-    if (mockEnemyCoreHp > 0) {
-      battleResultSummaryEl.textContent = "Maç sürüyor";
+    if (
+      activePlayMode !== "local"
+    ) {
       return;
     }
-    battleResultSummaryEl.textContent = "KAZANDIN · Rakip Çekirdek yok edildi";
+
+    if (mockEnemyCoreHp > 0) {
+      if (
+        battleResultSummaryEl
+        && !localBattleFinished
+      ) {
+        battleResultSummaryEl.textContent =
+          "Maç sürüyor";
+      }
+      return;
+    }
+
+    finishLocalBattle({
+      won:true,
+    });
   }
 
   function updateMockCombat() {
+    if (
+      activePlayMode !== "local"
+      || localBattleFinished
+    ) {
+      return;
+    }
+
     const currentSecond = Math.floor(client.elapsedMs / 1000);
     if (currentSecond === previousCombatSecond) return;
     previousCombatSecond = currentSecond;
@@ -3809,9 +4319,31 @@ const SPECIAL_CELL_INFO = {
   }
 
   function updateClock(now) {
-    const elapsedMs = now - startedAt;
-    client.updateElapsedMs(elapsedMs);
-    updateMockServerPassiveCredits(elapsedMs);
+    let elapsedMs =
+      client.elapsedMs;
+
+    if (
+      activePlayMode
+      === "local"
+    ) {
+      elapsedMs =
+        Math.max(
+          0,
+          now
+          - battleStartedAt
+        );
+      client.updateElapsedMs(
+        elapsedMs
+      );
+      updateMockServerPassiveCredits(
+        elapsedMs
+      );
+    } else if (
+      activePlayMode
+      === "idle"
+    ) {
+      elapsedMs = 0;
+    }
 
     const seconds = elapsedMs / 1000;
     const minutes = Math.floor(seconds / 60);
@@ -3821,9 +4353,17 @@ const SPECIAL_CELL_INFO = {
 
     renderLockState();
     renderCapacity();
-    updateMockEnergy();
-    updateMockCombat();
+    if (
+      activePlayMode
+      === "local"
+    ) {
+      updateMockEnergy();
+      updateMockCombat();
+      updateLocalEnemyCombat();
+    }
+
     renderCredits();
+    renderPlayerCoreSummary();
     updateBoosterOfferAvailability();
 
     if (Math.floor(elapsedMs / 250) !== Math.floor((elapsedMs - 16) / 250)) {
@@ -3832,6 +4372,22 @@ const SPECIAL_CELL_INFO = {
     }
 
     requestAnimationFrame(updateClock);
+  }
+
+  if (localPlayStartButton) {
+    localPlayStartButton
+      .addEventListener(
+        "click",
+        startLocalPlayableMatch
+      );
+  }
+
+  if (onlinePlayPrepareButton) {
+    onlinePlayPrepareButton
+      .addEventListener(
+        "click",
+        prepareOnlineMatch
+      );
   }
 
   if (matchmakingCancel) {
@@ -3922,6 +4478,14 @@ const SPECIAL_CELL_INFO = {
       async () => {
         trackRematchRequest();
 
+        if (
+          activePlayMode
+          === "local"
+        ) {
+          startLocalPlayableMatch();
+          return;
+        }
+
         postMatchSync.clear();
         pvpConnection.disconnect();
 
@@ -3941,6 +4505,9 @@ const SPECIAL_CELL_INFO = {
   poolConfirmEl.addEventListener(
     "click",
     async () => {
+      setActivePlayMode(
+        "online"
+      );
       if (
         !battlePoolSelection.isComplete()
       ) {
@@ -3982,6 +4549,9 @@ const SPECIAL_CELL_INFO = {
     }
   );
 
+  setActivePlayMode(
+    "idle"
+  );
   renderBattlePoolSelection();
   renderParticipantIdentity();
   renderParticipantBootstrapStatus();

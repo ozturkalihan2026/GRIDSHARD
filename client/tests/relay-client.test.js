@@ -402,61 +402,61 @@ function createClient() {
   const fs=require("fs");
   const src=fs.readFileSync("./src/app.js","utf8");
   assert.ok(src.includes("PVP_STATUS"));
-  assert.ok(src.includes("Beta bulgu ve inceleme adayları hazır"));
+  assert.ok(src.includes("Oynanabilir Beta · Tek Oyunculu + Online PvP"));
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync("./src/app.js","utf8");
-  assert.ok(src.includes("Beta bulgu ve inceleme adayları hazır")); // alpha32->33 protocol status
+  assert.ok(src.includes("Oynanabilir Beta · Tek Oyunculu + Online PvP")); // alpha32->33 protocol status
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync("./src/app.js","utf8");
-  assert.ok(src.includes("Beta bulgu ve inceleme adayları hazır")); // alpha33 protocol
+  assert.ok(src.includes("Oynanabilir Beta · Tek Oyunculu + Online PvP")); // alpha33 protocol
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync("./src/app.js","utf8");
-  assert.ok(src.includes("Beta bulgu ve inceleme adayları hazır")); // alpha34 websocket
+  assert.ok(src.includes("Oynanabilir Beta · Tek Oyunculu + Online PvP")); // alpha34 websocket
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync("./src/app.js","utf8");
-  assert.ok(src.includes("Beta bulgu ve inceleme adayları hazır")); // alpha35 gateway
+  assert.ok(src.includes("Oynanabilir Beta · Tek Oyunculu + Online PvP")); // alpha35 gateway
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync("./src/app.js","utf8");
-  assert.ok(src.includes("Beta bulgu ve inceleme adayları hazır")); // alpha36 setup
+  assert.ok(src.includes("Oynanabilir Beta · Tek Oyunculu + Online PvP")); // alpha36 setup
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync("./src/app.js","utf8");
-  assert.ok(src.includes("Beta bulgu ve inceleme adayları hazır")); // alpha37 lobby
+  assert.ok(src.includes("Oynanabilir Beta · Tek Oyunculu + Online PvP")); // alpha37 lobby
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync("./src/app.js","utf8");
-  assert.ok(src.includes("Beta bulgu ve inceleme adayları hazır")); // alpha38 runner
+  assert.ok(src.includes("Oynanabilir Beta · Tek Oyunculu + Online PvP")); // alpha38 runner
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync("./src/app.js","utf8");
-  assert.ok(src.includes("Beta bulgu ve inceleme adayları hazır")); // alpha39 heartbeat
+  assert.ok(src.includes("Oynanabilir Beta · Tek Oyunculu + Online PvP")); // alpha39 heartbeat
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync("./src/app.js","utf8");
-  assert.ok(src.includes("Beta bulgu ve inceleme adayları hazır")); // alpha40 online pvp
+  assert.ok(src.includes("Oynanabilir Beta · Tek Oyunculu + Online PvP")); // alpha40 online pvp
 }
 
 {
@@ -682,7 +682,7 @@ function createClient() {
 {
   const fs=require("fs");
   const src=fs.readFileSync("./src/app.js","utf8");
-  assert.ok(src.includes("Beta bulgu ve inceleme adayları hazır"));
+  assert.ok(src.includes("Oynanabilir Beta · Tek Oyunculu + Online PvP"));
   assert.ok(src.includes("buildPvPCommandEnvelope"));
   assert.ok(src.includes("applyPvPServerEnvelope"));
 }
@@ -1504,10 +1504,10 @@ function createClient() {
 
   const result=state.applyHealth({
     status:"ok",
-    version:"2.0.0-beta.4.3",
+    version:"2.0.0-beta.5",
     web_test:{
       ready:true,
-      build:"web-test-beta.4.3",
+      build:"web-test-beta.5",
       release_checks:[
         "health",
         "matchmaking",
@@ -1551,7 +1551,7 @@ function createClient() {
 
   const result=state.applyHealth({
     status:"ok",
-    version:"2.0.0-beta.4.3",
+    version:"2.0.0-beta.5",
   });
 
   assert.strictEqual(
@@ -2352,7 +2352,7 @@ function createClient() {
   const html=fs.readFileSync("./index.html","utf8");
   assert.ok(
     html.includes(
-      "2.0.0-beta.4.3"
+      "2.0.0-beta.5"
     )
   );
   assert.ok(
@@ -2534,8 +2534,8 @@ function createClient() {
     new RelayReleaseCheckState();
 
   const view=state.apply({
-    version:"2.0.0-beta.4.3",
-    build:"web-test-beta.4.3",
+    version:"2.0.0-beta.5",
+    build:"web-test-beta.5",
     ready:true,
     checks:{
       health_ready:true,
@@ -2675,17 +2675,17 @@ function createClient() {
       healthState:health,
       releaseCheckState:release,
       expectedVersion:
-        "2.0.0-beta.4.3",
+        "2.0.0-beta.5",
       expectedProtocolVersion:1,
       requestJson:
         async (path) => {
           if (path==="/health") {
             return {
               status:"ok",
-              version:"2.0.0-beta.4.3",
+              version:"2.0.0-beta.5",
               web_test:{
                 ready:true,
-                build:"web-test-beta.4.3",
+                build:"web-test-beta.5",
                 release_checks:[],
                 capabilities:{},
               },
@@ -2696,8 +2696,8 @@ function createClient() {
             === "/web-test/release-check"
           ) {
             return {
-              version:"2.0.0-beta.4.3",
-              build:"web-test-beta.4.3",
+              version:"2.0.0-beta.5",
+              build:"web-test-beta.5",
               ready:true,
               checks:{
                 health_ready:true,
@@ -2729,7 +2729,7 @@ function createClient() {
 
           return {
             server_version:
-              "2.0.0-beta.4.3",
+              "2.0.0-beta.5",
             web_test_build:
               "web-test-alpha.62",
             pvp_protocol_version:1,
@@ -2782,8 +2782,8 @@ function createClient() {
 
   const snapshot=
     new RelayDiagnosticSnapshot({
-      version:"2.0.0-beta.4.3",
-      build:"web-test-beta.4.3",
+      version:"2.0.0-beta.5",
+      build:"web-test-beta.5",
       bootGate:{status:"ready"},
       connectionManager:{
         status:"open",
@@ -2867,16 +2867,16 @@ function createClient() {
       releaseCheckState:
         new RelayReleaseCheckState(),
       expectedVersion:
-        "2.0.0-beta.4.3",
+        "2.0.0-beta.5",
       expectedProtocolVersion:1,
       requestJson:
         async (path) => {
           if (path==="/health") {
             return {
-              version:"2.0.0-beta.4.3",
+              version:"2.0.0-beta.5",
               web_test:{
                 ready:true,
-                build:"web-test-beta.4.3",
+                build:"web-test-beta.5",
                 release_checks:[],
                 capabilities:{},
               },
@@ -2887,8 +2887,8 @@ function createClient() {
             === "/web-test/release-check"
           ) {
             return {
-              version:"2.0.0-beta.4.3",
-              build:"web-test-beta.4.3",
+              version:"2.0.0-beta.5",
+              build:"web-test-beta.5",
               ready:true,
               checks:{ok:true},
               menu_areas:[],
@@ -2951,8 +2951,8 @@ function createClient() {
     new RelayWebTestRcReportState();
 
   const view=state.apply({
-    version:"2.0.0-beta.4.3",
-    build:"web-test-beta.4.3",
+    version:"2.0.0-beta.5",
+    build:"web-test-beta.5",
     ready:true,
     critical_failures:[],
     kpis:{
@@ -3543,16 +3543,16 @@ function createClient() {
       releaseCheckState:
         new RelayReleaseCheckState(),
       expectedVersion:
-        "2.0.0-beta.4.3",
+        "2.0.0-beta.5",
       expectedProtocolVersion:1,
       requestJson:
         async (path) => {
           if (path==="/health") {
             return {
-              version:"2.0.0-beta.4.3",
+              version:"2.0.0-beta.5",
               web_test:{
                 ready:true,
-                build:"web-test-beta.4.3",
+                build:"web-test-beta.5",
                 release_checks:[],
                 capabilities:{},
               },
@@ -3563,8 +3563,8 @@ function createClient() {
             === "/web-test/release-check"
           ) {
             return {
-              version:"2.0.0-beta.4.3",
-              build:"web-test-beta.4.3",
+              version:"2.0.0-beta.5",
+              build:"web-test-beta.5",
               ready:true,
               checks:{ok:true},
               menu_areas:[],
@@ -3577,7 +3577,7 @@ function createClient() {
           ) {
             return {
               server_version:
-                "2.0.0-beta.4.3",
+                "2.0.0-beta.5",
               pvp_protocol_version:1,
               release_ready:true,
             };
@@ -4070,7 +4070,7 @@ function createClient() {
   const view=state.apply({
     started:true,
     test_run_id:"run-113",
-    build:"web-test-beta.4.3",
+    build:"web-test-beta.5",
   });
 
   assert.strictEqual(
@@ -4265,7 +4265,7 @@ function createClient() {
     started:true,
     finished:true,
     test_run_id:"run-beta",
-    build:"web-test-beta.4.3",
+    build:"web-test-beta.5",
   });
 
   assert.strictEqual(
@@ -4404,15 +4404,32 @@ function createClient() {
   const html=fs.readFileSync("./index.html","utf8");
   const css=fs.readFileSync("./src/styles.css","utf8");
   assert.ok(html.includes("Olay Günlüğü"));
-  assert.ok(html.includes('<details class="diagnostic-panel"'));
+  assert.ok(html.includes('<details class="diagnostic-panel play-technical-panel"'));
   assert.ok(html.includes("screen-subtitle"));
   assert.ok(css.includes('body[data-app-screen="profile"] .battle-status-cluster'));
   assert.ok(css.includes("grid-template-columns:repeat(2,minmax(0,1fr))") || css.includes("grid-template-columns: repeat(2, minmax(0, 1fr))"));
   assert.ok(css.includes(".diagnostic-panel > summary"));
 }
 
+{
+  const fs=require("fs");
+  const app=fs.readFileSync("./src/app.js","utf8");
+  const html=fs.readFileSync("./index.html","utf8");
+  const css=fs.readFileSync("./src/styles.css","utf8");
+
+  assert.ok(html.includes('id="local-play-start"'));
+  assert.ok(html.includes('id="online-play-prepare"'));
+  assert.ok(app.includes("startLocalPlayableMatch"));
+  assert.ok(app.includes("resetLocalBattleState"));
+  assert.ok(app.includes("updateLocalEnemyCombat"));
+  assert.ok(app.includes("finishLocalBattle"));
+  assert.ok(app.includes('activePlayMode === "local"'));
+  assert.ok(css.includes('body[data-play-mode="idle"]'));
+  assert.ok(css.includes(".technical-status-drawer"));
+}
+
 Promise.all(asyncTests).then(() => {
-  console.log("153 client tests passed");
+  console.log("154 client tests passed");
 }).catch((error) => {
   console.error(error);
   process.exitCode = 1;

@@ -78,3 +78,24 @@ Bu katman hiçbir denge değerini otomatik değiştirmez. Bulgular insan incelem
 3. Aynı önem düzeyinde daha düşük ortalama puan
 
 Sistem hiçbir değişikliği otomatik uygulamaz. Her aday insan onayı gerektirir.
+
+
+## Oynanabilir Beta 5
+
+Sunucuyu açtıktan sonra ana menüden **Oyna** seç.
+
+### Tek bilgisayarda hızlı test
+
+1. **Tek Oyunculu Test Maçı** düğmesine bas.
+2. Savaş saati sıfırdan başlar.
+3. İlk 15 saniye başlangıç devresi çalışır; savaş durmaz.
+4. 15. saniyede Modül Rafı açılır.
+5. Modülleri rafa / savaş alanına sürükleyerek devreyi canlı değiştir.
+6. Devre Kredisi yeterliyse değişiklik otomatik uygulanır.
+7. Yerel AI sana saldırır; senin saldırı modüllerin de rakibe otomatik saldırır.
+8. Rakip Çekirdeği yok edilirse kazanırsın; kendi Çekirdeğin yok edilirse kaybedersin.
+9. **Tekrar Maç** ile maçı tamamen sıfırlayabilirsin.
+
+### Online PvP
+
+**Online PvP** seçeneği mevcut server-authoritative eşleştirme akışını korur. Gerçek eşleşme için ikinci bir oyuncu/istemci gerekir.

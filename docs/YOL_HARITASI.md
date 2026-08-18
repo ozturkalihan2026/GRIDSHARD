@@ -1,7 +1,7 @@
 # Project Relay 2.0 — YOL HARİTASI
 
-**Güncel Sürüm:** `2.0.0-beta.4.3`  
-**Paket:** Project Relay 2.0 Beta — Bulgu Önceliklendirme ve İnceleme Adayları  
+**Güncel Sürüm:** `2.0.0-beta.5`  
+**Paket:** Project Relay 2.0 Beta — Oynanabilir Büyük Test Paketi  
 **Kanonik Dosya:** `docs/YOL_HARITASI.md`
 
 > Bu dosya Project Relay 2.0 için tek kanonik geliştirme kaydıdır. Her paket tamamlandığında sürüm numarası artırılır; **Tamamlananlar** ve **Yapılacaklar** bu dosyada güncellenir. Sonraki geliştirme paketi bu dosya okunarak başlatılır.
@@ -464,11 +464,34 @@ Aşağıdaki alanlar ilk sürüm kapsamına dahil değildir ve mevcut yol harita
 - [x] Teknik alanda aday sayısı ve ilk öncelik kompakt biçimde gösteriliyor.
 - [x] Ana menü kapsamı değişmedi; Eğitim Beta kapsamı dışında.
 
+### 2.0.0-beta.5 — Project Relay 2.0 Beta — Oynanabilir Büyük Test Paketi
+- [x] `docs/YOL_HARITASI.md` kanonik kaynak kabul edilerek dört ekran UX aşamasından gerçek oynanabilir test aşamasına ilerletildi.
+- [x] Oyna ekranına iki açık mod eklendi: `Tek Oyunculu Test Maçı` ve `Online PvP`.
+- [x] Tek Oyunculu Test Maçı tek bilgisayarda ikinci kullanıcı gerektirmeden anında başlatılabiliyor.
+- [x] Yerel maç başlangıcında savaş saati, Devre Kredisi, rakip canları, güçlendirici takvimi ve modül durumları temiz biçimde sıfırlanıyor.
+- [x] Çekirdek ve Jeneratör başlangıç devresinde hazır; diğer modüller Modül Rafında tutuluyor.
+- [x] Modül Rafı 15. saniyede açılıyor ve savaş hiçbir oyuncu müdahalesinde durmuyor.
+- [x] Sürükle-bırak ekleme / çıkarma / taşıma / değiştirme akışı yerel test maçında kullanılabiliyor.
+- [x] Devre Kredisi harcamaları ve pasif kredi kazanımı yerel test maçında çalışıyor.
+- [x] Oyuncu saldırı modülleri rakip modül → Jeneratör → Çekirdek hedef sırasını izliyor.
+- [x] Yerel AI karşı saldırı yapıyor; önce aktif normal modülleri, sonra Jeneratörü, son olarak Çekirdeği hedefliyor.
+- [x] Aktif Kalkan yerel AI hasarını azaltıyor.
+- [x] Oyuncu Çekirdeği sıfıra düşerse mağlubiyet, rakip Çekirdeği sıfıra düşerse galibiyet oluşuyor.
+- [x] Maç sonucu paneli yalnızca maç tamamlandığında görünür oluyor.
+- [x] `Tekrar Maç` düğmesi Tek Oyunculu modda yeni yerel maçı tamamen sıfırlıyor; Online modda mevcut rematch akışını koruyor.
+- [x] Güçlendirici takvimi ve hedef modül seçimi mevcut kesintisiz savaş sistemiyle korunuyor.
+- [x] Olay Günlüğü gerçek zamanlı yerel saldırı, hasar, modül ve savaş sonuçlarını gösterebiliyor.
+- [x] Beta/bağlantı teknik durumları oyun akışını kaplamaması için daraltılabilir teknik çekmeceye taşındı.
+- [x] Online PvP akışı korunarak Savaş Havuzu → matchmaking → WebSocket → server-authoritative savaş yolu ayrı mod olarak devam ediyor.
+- [x] Profil, İstatistikler ve Ayarlar ekranları korunuyor.
+- [x] Ana menü yalnızca Oyna, Profil, İstatistikler ve Ayarlar.
+- [x] Eğitim hâlâ ilk Beta oynanabilir test kapsamı dışında.
+
 ## Sıradaki Paket
 
-**Beta UX Gerçek Kullanıcı Testi — Dört Ekranın Gerçek Tarayıcı Görüntülerine Göre İnce Ayarı**
+**Beta Oynanabilir Test — Gerçek Oyun Geri Bildirimi ve Savaş Denge İncelemesi**
 
-`2.0.0-beta.4.3` ile kaynak koddan doğrulanabilen ortak UX sorunları temizlendi. Sonraki paket için gerçek tarayıcıda Oyna, Profil, İstatistikler ve Ayarlar ekranlarının ayrı ekran görüntüleri incelenecek; yalnızca görüntüyle doğrulanan taşma, boş alan, hiyerarşi veya kullanılabilirlik sorunları düzeltilecektir.
+`2.0.0-beta.5` artık tek bilgisayarda Tek Oyunculu Test Maçı başlatılarak gerçek oynanış akışının denenebildiği büyük pakettir. Sonraki aşama yeni sistem eklemekten önce bu paketin oynanması; Modül Rafı zamanlaması, Devre Kredisi ekonomisi, yerel AI baskısı, modül yerleşimi, savaş süresi, güçlendirici zamanlaması ve sonuç akışında görülen somut sorunların kaydedilmesidir. Online PvP de ikinci istemci bulunduğunda ayrıca test edilecektir.
 
 
 ---

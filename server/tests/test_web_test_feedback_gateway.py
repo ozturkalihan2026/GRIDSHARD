@@ -10,7 +10,7 @@ def finish_run():
         "/web-test/test-run/start",
         json={
             "test_run_id":
-                "web-test-beta.4.3",
+                "web-test-beta.5",
         },
     )
     assert start.status_code==200
@@ -19,7 +19,7 @@ def finish_run():
         "/web-test/test-run/finish",
         json={
             "test_run_id":
-                "web-test-beta.4.3",
+                "web-test-beta.5",
         },
     )
     assert finish.status_code==200
@@ -32,7 +32,7 @@ def test_feedback_requires_finished_run():
         "/web-test/feedback",
         json={
             "test_run_id":
-                "web-test-beta.4.3",
+                "web-test-beta.5",
             "submitted_at_ms":1000,
             "usability":5,
             "connection":5,
@@ -53,7 +53,7 @@ def test_feedback_submission_and_summary():
         "/web-test/feedback",
         json={
             "test_run_id":
-                "web-test-beta.4.3",
+                "web-test-beta.5",
             "submitted_at_ms":2000,
             "usability":5,
             "connection":4,

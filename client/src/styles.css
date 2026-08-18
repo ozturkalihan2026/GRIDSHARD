@@ -605,3 +605,165 @@ body[data-app-screen="play"] .diagnostic-panel { margin-top:20px; border:1px sol
   .settings-form { grid-template-columns:1fr; }
   .settings-form button { grid-column:auto; }
 }
+
+
+/* beta.5 — Oynanabilir Beta */
+body[data-app-screen="play"] .battle-shell {
+  width: min(1440px, 96vw);
+}
+
+.play-mode-panel {
+  border: 1px solid #2b405e;
+  border-radius: 16px;
+  padding: 18px;
+  background:
+    linear-gradient(145deg, rgba(19,32,50,.98), rgba(13,22,35,.98));
+}
+
+.play-mode-actions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.play-mode-card {
+  min-height: 104px;
+  padding: 16px 18px;
+  border: 1px solid #3a5477;
+  border-radius: 12px;
+  background: #14243a;
+  color: #edf3ff;
+  display: grid;
+  gap: 7px;
+  text-align: left;
+  cursor: pointer;
+}
+
+.play-mode-card.primary {
+  border-color: #6f87aa;
+  background:
+    linear-gradient(145deg, #213b5b, #172b45);
+}
+
+.play-mode-card strong {
+  font-size: 1.05rem;
+}
+
+.play-mode-card span {
+  color: #a7b8cf;
+  line-height: 1.4;
+}
+
+.play-mode-card:hover,
+.play-mode-card:focus-visible {
+  border-color: #88a9d5;
+  transform: translateY(-1px);
+}
+
+body[data-play-mode="idle"] .play-online-panel,
+body[data-play-mode="idle"] .play-live-panel,
+body[data-play-mode="idle"] .play-result-panel,
+body[data-play-mode="idle"] .play-technical-panel {
+  display: none !important;
+}
+
+body[data-play-mode="local"] .play-online-panel {
+  display: none !important;
+}
+
+body[data-play-mode="local"][data-local-finished="false"]
+  .play-result-panel {
+  display: none !important;
+}
+
+body[data-play-mode="online"]:not([data-online-status="battle"])
+  .play-live-panel,
+body[data-play-mode="online"]:not([data-online-status="battle"])
+  .play-result-panel {
+  display: none !important;
+}
+
+.combat-summary-panel {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 18px;
+  align-items: center;
+  padding: 12px 14px;
+  border: 1px solid #2b405e;
+  border-radius: 12px;
+  background: #101b2b;
+}
+
+#combat-summary,
+#player-core-summary,
+#active-match-mode {
+  white-space: nowrap;
+}
+
+#active-match-mode {
+  color: #e4c978;
+  font-weight: 700;
+}
+
+.technical-status-drawer {
+  flex-basis: 100%;
+  margin-top: 3px;
+  border-top: 1px solid rgba(130,157,195,.16);
+  padding-top: 8px;
+}
+
+.technical-status-drawer > summary {
+  cursor: pointer;
+  color: #8fa3bd;
+  font-size: .85rem;
+}
+
+.technical-status-content {
+  display: grid;
+  gap: 5px;
+  margin-top: 10px;
+  color: #899bb3;
+  font-size: .8rem;
+}
+
+.battle-layout {
+  min-height: 560px;
+}
+
+.event-panel {
+  max-height: 220px;
+  overflow: auto;
+}
+
+#event-log {
+  max-height: 130px;
+  overflow: auto;
+  white-space: pre-wrap;
+}
+
+.play-result-panel {
+  border-color: #5c7191;
+  background:
+    linear-gradient(145deg, #172b44, #101b2b);
+}
+
+@media (max-width: 840px) {
+  .play-mode-actions {
+    grid-template-columns: 1fr;
+  }
+
+  .battle-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .module-shelf {
+    max-height: 320px;
+  }
+
+  #combat-summary,
+  #player-core-summary,
+  #active-match-mode {
+    white-space: normal;
+  }
+}

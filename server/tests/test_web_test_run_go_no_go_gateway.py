@@ -12,7 +12,7 @@ def test_run_specific_go_no_go_endpoint_marks_historical_run():
     ).json()
 
     assert body["test_run_id"]=="old-run"
-    assert body["active_test_run_id"]=="web-test-beta.4.3"
+    assert body["active_test_run_id"]=="web-test-beta.5"
     assert body["historical_run"] is True
     assert body["decision"] in {
         "GO","NO_GO"

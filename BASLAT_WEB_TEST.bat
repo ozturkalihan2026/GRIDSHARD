@@ -11,7 +11,7 @@ if not exist ".venv\Scripts\python.exe" (
   if errorlevel 1 exit /b 1
 )
 
-set RELAY_WEB_TEST_RUN_ID=web-test-beta.4.3-local
+set RELAY_WEB_TEST_RUN_ID=web-test-beta.5-local
 set RELAY_TELEMETRY_MAX_EVENTS=50000
 
 echo.
