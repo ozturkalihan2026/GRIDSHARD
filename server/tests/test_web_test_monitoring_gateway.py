@@ -9,9 +9,9 @@ def test_monitoring_endpoint():
         "/web-test/monitoring"
     ).json()
 
-    assert body["version"]=="2.0.0-beta.6"
-    assert body["build"]=="web-test-beta.6"
-    assert body["test_run_id"]=="web-test-beta.6"
+    assert body["version"]=="2.0.0-beta.13"
+    assert body["build"]=="web-test-beta.13"
+    assert body["test_run_id"]=="web-test-beta.13"
     assert "operation" in body
     assert "stability" in body
     assert "funnel" in body

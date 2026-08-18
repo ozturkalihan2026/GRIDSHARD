@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import time
+import threading
 from dataclasses import dataclass, field
 from pathlib import Path
 import json
@@ -22,6 +23,11 @@ TELEMETRY_EVENT_TYPES = frozenset({
     "module_shelf_used",
     "booster_used",
     "rematch_requested",
+    "local_battle_started",
+    "local_battle_completed",
+    "generator_gate_moved",
+    "local_ai_hit",
+    "local_player_attack",
     "web_test_session_started",
     "web_test_session_bound",
     "web_test_session_finished",
@@ -86,6 +92,71 @@ class JsonFileTelemetryRepository:
         self.max_events = int(
             max_events
         )
+        self._write_lock = (
+            threading.RLock()
+        )
+
+    def _temporary_path(
+        self,
+        base: Path,
+        label: str,
+    ) -> Path:
+        return base.with_name(
+            base.name
+            + "."
+            + label
+            + "."
+            + str(os.getpid())
+            + "."
+            + str(
+                threading.get_ident()
+            )
+            + ".tmp"
+        )
+
+    def _replace_with_retry(
+        self,
+        source: Path,
+        destination: Path,
+        *,
+        attempts: int = 8,
+    ) -> None:
+        last_error: OSError | None = None
+
+        for attempt in range(attempts):
+            try:
+                os.replace(
+                    source,
+                    destination,
+                )
+                return
+            except OSError as exc:
+                winerror = getattr(
+                    exc,
+                    "winerror",
+                    None,
+                )
+                if (
+                    not isinstance(
+                        exc,
+                        PermissionError,
+                    )
+                    and winerror
+                    not in {5,32}
+                ):
+                    raise
+
+                last_error = exc
+                if attempt >= attempts - 1:
+                    break
+
+                time.sleep(
+                    0.01
+                    * (attempt + 1)
+                )
+
+        if last_error is not None:
+            raise last_error
 
     @property
     def backup_path(self) -> Path:
@@ -193,61 +264,75 @@ class JsonFileTelemetryRepository:
             ]
         )
 
-        try:
-            self.path.parent.mkdir(
-                parents=True,
-                exist_ok=True,
-            )
+        with self._write_lock:
+            temp_path: Path | None = None
+            backup_temp: Path | None = None
 
-            if self.path.exists():
-                # Mevcut ana dosyayı yalnızca geçerli ise yedekle.
-                self.load()
-                backup_temp = (
-                    self.backup_path
-                    .with_name(
-                        self.backup_path.name
-                        + ".tmp"
+            try:
+                self.path.parent.mkdir(
+                    parents=True,
+                    exist_ok=True,
+                )
+
+                if self.path.exists():
+                    # Ana dosya geçerliyse yedek al.
+                    self.load()
+                    backup_temp = (
+                        self._temporary_path(
+                            self.backup_path,
+                            "backup",
+                        )
+                    )
+                    shutil.copyfile(
+                        self.path,
+                        backup_temp,
+                    )
+                    self._replace_with_retry(
+                        backup_temp,
+                        self.backup_path,
+                    )
+
+                temp_path = (
+                    self._temporary_path(
+                        self.path,
+                        "write",
                     )
                 )
-                shutil.copy2(
+                temp_path.write_text(
+                    json.dumps(
+                        [
+                            event.to_dict()
+                            for event
+                            in retained
+                        ],
+                        ensure_ascii=False,
+                        indent=2,
+                        sort_keys=True,
+                    )
+                    + "\n",
+                    encoding="utf-8",
+                )
+                self._replace_with_retry(
+                    temp_path,
                     self.path,
+                )
+            except OSError as exc:
+                raise TelemetryError(
+                    "Kalıcı telemetri dosyası yazılamadı."
+                ) from exc
+            finally:
+                for path in (
+                    temp_path,
                     backup_temp,
-                )
-                os.replace(
-                    backup_temp,
-                    self.backup_path,
-                )
-
-            temp_path = (
-                self.path.with_name(
-                    self.path.name
-                    + ".tmp"
-                )
-            )
-
-            temp_path.write_text(
-                json.dumps(
-                    [
-                        event.to_dict()
-                        for event
-                        in retained
-                    ],
-                    ensure_ascii=False,
-                    indent=2,
-                    sort_keys=True,
-                )
-                + "\n",
-                encoding="utf-8",
-            )
-
-            os.replace(
-                temp_path,
-                self.path,
-            )
-        except OSError as exc:
-            raise TelemetryError(
-                "Kalıcı telemetri dosyası yazılamadı."
-            ) from exc
+                ):
+                    if (
+                        path is not None
+                        and path.exists()
+                    ):
+                        try:
+                            path.unlink()
+                        except OSError:
+                            pass
 
     def backup_health(
         self,
@@ -317,18 +402,21 @@ class JsonFileTelemetryRepository:
                 parents=True,
                 exist_ok=True,
             )
-            temp = self.path.with_name(
-                self.path.name
-                + ".restore.tmp"
-            )
-            shutil.copy2(
-                self.backup_path,
-                temp,
-            )
-            os.replace(
-                temp,
-                self.path,
-            )
+            with self._write_lock:
+                temp = (
+                    self._temporary_path(
+                        self.path,
+                        "restore",
+                    )
+                )
+                shutil.copyfile(
+                    self.backup_path,
+                    temp,
+                )
+                self._replace_with_retry(
+                    temp,
+                    self.path,
+                )
         except OSError as exc:
             raise TelemetryError(
                 "Telemetri yedeği geri yüklenemedi."
@@ -460,49 +548,62 @@ class InMemoryTelemetryService:
             event.event_id
             for event in self._events
         }
+        self._lock = (
+            threading.RLock()
+        )
 
     def record(self, event: TelemetryEvent) -> bool:
         self._validate(event)
 
-        if event.event_id in self._event_ids:
-            return False
+        with self._lock:
+            if event.event_id in self._event_ids:
+                return False
 
-        stored = TelemetryEvent(
-            event_id=event.event_id,
-            event_type=event.event_type,
-            timestamp_ms=int(event.timestamp_ms),
-            player_id=event.player_id,
-            session_id=event.session_id,
-            metadata=dict(event.metadata),
-        )
-        self._events.append(stored)
-        self._event_ids.add(stored.event_id)
-
-        if (
-            self.repository is not None
-            and hasattr(
-                self.repository,
-                "max_events",
+            stored = TelemetryEvent(
+                event_id=event.event_id,
+                event_type=event.event_type,
+                timestamp_ms=int(
+                    event.timestamp_ms
+                ),
+                player_id=event.player_id,
+                session_id=event.session_id,
+                metadata=dict(
+                    event.metadata
+                ),
             )
-            and len(self._events)
-            > self.repository.max_events
-        ):
-            self._events = (
-                self._events[
-                    -self.repository.max_events:
-                ]
-            )
-            self._event_ids = {
-                item.event_id
-                for item in self._events
-            }
-
-        if self.repository is not None:
-            self.repository.save(
-                self._events
+            self._events.append(stored)
+            self._event_ids.add(
+                stored.event_id
             )
 
-        return True
+            if (
+                self.repository
+                is not None
+                and hasattr(
+                    self.repository,
+                    "max_events",
+                )
+                and len(self._events)
+                > self.repository.max_events
+            ):
+                self._events = (
+                    self._events[
+                        -self.repository.max_events:
+                    ]
+                )
+                self._event_ids = {
+                    item.event_id
+                    for item in self._events
+                }
+
+            if self.repository is not None:
+                self.repository.save(
+                    list(
+                        self._events
+                    )
+                )
+
+            return True
 
     def record_now(
         self,
@@ -531,7 +632,10 @@ class InMemoryTelemetryService:
         session_id: str | None = None,
         event_type: str | None = None,
     ) -> list[dict[str, Any]]:
-        result = self._events
+        with self._lock:
+            result = list(
+                self._events
+            )
 
         if player_id is not None:
             result = [

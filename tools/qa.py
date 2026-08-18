@@ -7,6 +7,7 @@ import subprocess
 import sys
 import time
 import urllib.request
+from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -45,10 +46,23 @@ def http_get(url: str, *, binary: bool = False):
         return response.status, body if binary else body.decode("utf-8")
 
 
+def http_post(url: str):
+    request = urllib.request.Request(
+        url,
+        data=b"",
+        method="POST",
+    )
+    with urllib.request.urlopen(
+        request,
+        timeout=5,
+    ) as response:
+        return response.status
+
+
 def smoke_server() -> dict:
     port = free_port()
     env = os.environ.copy()
-    env["RELAY_WEB_TEST_RUN_ID"] = "web-test-beta.6-qa"
+    env["RELAY_WEB_TEST_RUN_ID"] = "web-test-beta.13-qa"
     env["RELAY_TELEMETRY_PATH"] = str(ROOT / "server/data/qa_telemetry.json")
     env["RELAY_PLAYER_DATA_PATH"] = str(ROOT / "server/data/qa_players.json")
 
@@ -108,6 +122,46 @@ def smoke_server() -> dict:
                 for required in ("Oyna", "Profil", "İstatistikler", "Ayarlar"):
                     if required not in body:
                         raise RuntimeError(f"Ana sayfada menü eksik: {required}")
+
+        audit_urls = [
+            (
+                f"http://127.0.0.1:{port}"
+                + (
+                    "/web-test/audit/operation-snapshot"
+                    if index % 2 == 0
+                    else "/web-test/audit/stability-snapshot"
+                )
+            )
+            for index in range(24)
+        ]
+
+        with ThreadPoolExecutor(
+            max_workers=12
+        ) as executor:
+            audit_statuses = list(
+                executor.map(
+                    http_post,
+                    audit_urls,
+                )
+            )
+
+        if any(
+            status != 200
+            for status
+            in audit_statuses
+        ):
+            raise RuntimeError(
+                "Eşzamanlı telemetri audit smoke testinde 200 dışı yanıt oluştu."
+            )
+
+        checks.append({
+            "path":
+                "concurrent_audit_snapshots",
+            "status":200,
+            "ok":True,
+            "requests":
+                len(audit_statuses),
+        })
 
         return {
             "name": "uvicorn_http_smoke",
@@ -169,7 +223,7 @@ def main() -> int:
 
     report = {
         "project": "Project Relay 2.0",
-        "version": "2.0.0-beta.6",
+        "version": "2.0.0-beta.13",
         "generated_at_epoch": int(time.time()),
         "ok": all(step["ok"] for step in steps),
         "steps": steps,

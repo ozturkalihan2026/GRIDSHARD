@@ -12,7 +12,7 @@
     <header class="battle-header">
       <div>
         <h1>Project Relay 2.0</h1>
-        <p>2.0.0-beta.6 — Gerçek Web Testi Hazır</p>
+        <p>2.0.0-beta.13 — Gerçek Web Testi Hazır</p>
       </div>
       <div class="battle-status-cluster">
         <div class="credit-indicator" id="credit-indicator">Devre Kredisi: 200 DK</div>
@@ -22,29 +22,52 @@
     </header>
 
     <section id="main-menu-panel" class="main-menu-panel">
-      <div class="panel-title-row">
-        <h2>Ana Menü</h2>
-        <span id="current-screen-label">Ana Menü</span>
+      <div class="lobby-backdrop" aria-hidden="true">
+        <div class="lobby-core-orbit orbit-a"></div>
+        <div class="lobby-core-orbit orbit-b"></div>
+        <div class="lobby-core-mark">R</div>
       </div>
-      <p class="main-menu-lead">Devreni hazırla, savaş alanına gir ve ilerlemeni yönet.</p>
-      <nav class="main-scope-nav" aria-label="Ana Menü">
-        <button type="button" class="menu-action menu-action-play" data-open-screen="play">
-          <span class="menu-action-title">Oyna</span>
-          <span class="menu-action-copy">Savaşa gir ve devreni gerçek zamanlı yönet.</span>
-        </button>
-        <button type="button" class="menu-action" data-open-screen="profile">
-          <span class="menu-action-title">Profil</span>
-          <span class="menu-action-copy">İlerlemeni ve Savaş Havuzunu görüntüle.</span>
-        </button>
-        <button type="button" class="menu-action" data-open-screen="statistics">
-          <span class="menu-action-title">İstatistikler</span>
-          <span class="menu-action-copy">Maç ve performans özetini incele.</span>
-        </button>
-        <button type="button" class="menu-action" data-open-screen="settings">
-          <span class="menu-action-title">Ayarlar</span>
-          <span class="menu-action-copy">Ses, grafik, titreşim ve dil seçeneklerini düzenle.</span>
-        </button>
-      </nav>
+
+      <div class="lobby-main">
+        <span class="lobby-kicker">PROJECT RELAY // CIRCUIT ARENA</span>
+        <h2 id="main-menu-title">Devreni kur.<br />Savaş kesintisiz.</h2>
+        <p class="main-menu-lead">
+          18 modüllük savaş havuzunu hazırla, canlı savaş sırasında devreni değiştir ve rakip çekirdeği düşür.
+        </p>
+
+        <div class="lobby-play-row">
+          <button type="button" class="menu-action menu-action-play lobby-play-button" data-open-screen="play">
+            <span class="menu-action-title">Oyna</span>
+            <span class="menu-action-copy">Tek Oyunculu Test · Online PvP</span>
+          </button>
+          <div class="lobby-build-chip">
+            <span>GÜNCEL YAPI</span>
+            <strong>2.0.0-beta.13</strong>
+          </div>
+        </div>
+      </div>
+
+      <aside class="lobby-side-menu">
+        <div class="lobby-player-card">
+          <span class="player-card-label">OPERATÖR</span>
+          <strong>Oyuncu</strong>
+          <span>Gümüş · 1000 RP</span>
+        </div>
+        <nav class="main-scope-nav" aria-label="Ana Menü">
+          <button type="button" class="menu-action" data-open-screen="profile">
+            <span class="menu-action-index">01</span>
+            <span><span class="menu-action-title">Profil</span><span class="menu-action-copy">Kimlik, seviye ve savaş hazırlığı</span></span>
+          </button>
+          <button type="button" class="menu-action" data-open-screen="statistics">
+            <span class="menu-action-index">02</span>
+            <span><span class="menu-action-title">İstatistikler</span><span class="menu-action-copy">Maç ve performans geçmişi</span></span>
+          </button>
+          <button type="button" class="menu-action" data-open-screen="settings">
+            <span class="menu-action-index">03</span>
+            <span><span class="menu-action-title">Ayarlar</span><span class="menu-action-copy">Ses, grafik ve dil seçenekleri</span></span>
+          </button>
+        </nav>
+      </aside>
     </section>
 
     <button id="return-main-menu" type="button" hidden>
@@ -53,7 +76,7 @@
 
     <section class="profile-summary-panel" id="profile-summary-panel" data-screen-panel="profile" hidden>
       <div class="panel-title-row">
-        <div><h2>Profil</h2><p class="screen-subtitle">Oyuncu kimliği, ilerleme ve savaş hazırlığı.</p></div>
+        <div class="screen-heading-block"><span class="screen-kicker">OPERATÖR DOSYASI</span><h2>Profil</h2><p class="screen-subtitle">Oyuncu kimliği, ilerleme ve savaş hazırlığı.</p></div>
         <span>Genel · İlerleme · Savaş Havuzu · <strong id="profile-load-status" data-status="idle">Yerel önizleme</strong></span>
       </div>
       <p id="profile-live-summary">Oyuncu · Seviye 1 · Gümüş · 1000 Derece Puanı · 0 XP</p>
@@ -71,7 +94,7 @@
 
     <section class="statistics-summary-panel" id="statistics-summary-panel" data-screen-panel="statistics" hidden>
       <div class="panel-title-row">
-        <div><h2>İstatistikler</h2><p class="screen-subtitle">Maç geçmişinin temel performans özeti.</p></div>
+        <div class="screen-heading-block"><span class="screen-kicker">SAVAŞ KAYDI</span><h2>İstatistikler</h2><p class="screen-subtitle">Maç geçmişinin temel performans özeti.</p></div>
         <span>Sunucu otoriteli maç sonuçları · <strong id="statistics-load-status" data-status="idle">Yerel önizleme</strong></span>
       </div>
       <p id="statistics-live-summary">Maç 0 · Galibiyet 0 · Mağlubiyet 0 · Beraberlik 0 · Galibiyet %0</p>
@@ -79,7 +102,7 @@
 
     <section class="settings-summary-panel" id="settings-summary-panel" data-screen-panel="settings" hidden>
       <div class="panel-title-row">
-        <div><h2>Ayarlar</h2><p class="screen-subtitle">Oyun deneyimini cihazına göre düzenle.</p></div>
+        <div class="screen-heading-block"><span class="screen-kicker">SİSTEM KONFİGÜRASYONU</span><h2 id="settings-title">Ayarlar</h2><p class="screen-subtitle">Oyun deneyimini cihazına göre düzenle.</p></div>
         <span>Ses · Müzik · Titreşim · Grafik · Dil · <strong id="settings-load-status" data-status="idle">Yerel önizleme</strong></span>
       </div>
       <div class="settings-form">
@@ -100,6 +123,8 @@
           </select>
         </label>
         <button id="settings-save" type="button">Ayarları Kaydet</button>
+        <span id="settings-save-status" role="status">Henüz kaydedilmedi</span>
+        <span id="settings-persistence-status" role="status">Kalıcılık: Henüz doğrulanmadı</span>
       </div>
     </section>
 
@@ -108,7 +133,7 @@
     <section class="play-mode-panel" id="play-mode-panel" data-screen-panel="play" hidden>
       <div class="panel-title-row">
         <div>
-          <h2>Maç Modu</h2>
+          <h2 id="play-mode-title">Maç Modu</h2>
           <p class="screen-subtitle">Tek bilgisayarda hemen dene veya gerçek Online PvP kuyruğuna gir.</p>
         </div>
         <span id="play-mode-status">Mod seçimi bekleniyor</span>
@@ -131,15 +156,92 @@
       <button id="play-recovery-retry" type="button">Yeniden Dene</button>
     </section>
 
-    <section class="battle-pool-panel play-online-panel" id="battle-pool-panel" data-screen-panel="play" hidden>
+    <section class="battle-pool-panel play-setup-panel" id="battle-pool-panel" data-screen-panel="play" hidden>
       <div class="panel-title-row">
-        <h2>Savaş Havuzu</h2>
-        <span id="battle-pool-count">0 / 18</span>
+        <div>
+          <h2 id="battle-pool-title">Savaş Havuzu Oluştur</h2>
+          <p class="screen-subtitle">Soldan modülü incele, ortadaki ayrıntıdan seç ve sağdaki 18 modüllük havuzunu tamamla.</p>
+        </div>
+        <span id="battle-pool-count">1 / 18</span>
       </div>
-      <p>24 oyuncu modülünden maçta kullanacağın 18 modülü seç. Jeneratör başlangıç devresi için zorunludur.</p>
-      <div id="battle-pool-selection" class="battle-pool-selection"></div>
-      <button id="battle-pool-confirm" type="button" disabled>Savaş Havuzunu Onayla ve Eşleş</button>
+
+      <section class="battle-pool-preset-bar">
+        <div class="preset-load-group">
+          <label for="battle-pool-preset-select">Hazır Havuz</label>
+          <select id="battle-pool-preset-select">
+            <option value="">Hazır havuz seç...</option>
+          </select>
+          <button id="battle-pool-preset-load" type="button">Yükle</button>
+          <button id="battle-pool-preset-delete" type="button">Sil</button>
+        </div>
+        <div class="preset-save-group">
+          <label for="battle-pool-preset-name">Bu seçimi kaydet</label>
+          <input id="battle-pool-preset-name" type="text" maxlength="24" placeholder="Örn. Saldırı" />
+          <button id="battle-pool-preset-save" type="button">Hazır Havuz Kaydet</button>
+        </div>
+        <span id="battle-pool-preset-status" role="status">Kayıtlı havuzlar yükleniyor...</span>
+      </section>
+
+      <div class="battle-pool-builder">
+        <aside class="battle-pool-catalog-panel">
+          <h3>Global Modüller</h3>
+          <div id="battle-pool-selection" class="battle-pool-selection" aria-label="Global modül listesi"></div>
+        </aside>
+
+        <article class="battle-pool-detail-panel" id="battle-pool-detail">
+          <span id="battle-pool-detail-category" class="pool-detail-category">Enerji</span>
+          <h3 id="battle-pool-detail-name">Jeneratör</h3>
+          <p id="battle-pool-detail-role">Ana enerji kaynağı</p>
+          <dl class="pool-detail-properties">
+            <div><dt>Sınıf</dt><dd id="battle-pool-detail-class">Enerji</dd></div>
+            <div><dt>Can</dt><dd id="battle-pool-detail-hp">150</dd></div>
+            <div><dt>Devre Kredisi</dt><dd id="battle-pool-detail-cost">0 DK</dd></div>
+            <div><dt>Port</dt><dd id="battle-pool-detail-ports">3</dd></div>
+            <div><dt>Enerji Üretimi</dt><dd id="battle-pool-detail-energy-generation">8/sn</dd></div>
+            <div><dt>Enerji Tüketimi</dt><dd id="battle-pool-detail-energy-consumption">0/sn</dd></div>
+            <div><dt>Temel Hasar</dt><dd id="battle-pool-detail-damage">—</dd></div>
+            <div><dt>Bekleme</dt><dd id="battle-pool-detail-cooldown">—</dd></div>
+          </dl>
+
+          <section class="pool-detail-explanation">
+            <h4>Ne işe yarar?</h4>
+            <p id="battle-pool-detail-description" class="pool-detail-description">
+              Devrenin başlangıç enerji kaynağıdır. Çekirdek kapısında sabit başlar.
+            </p>
+            <ul id="battle-pool-detail-effects" class="pool-detail-effects"></ul>
+          </section>
+
+          <section class="pool-detail-matchups">
+            <div>
+              <h4>Güçlü Olduğu</h4>
+              <p id="battle-pool-detail-strong">—</p>
+            </div>
+            <div>
+              <h4>Zayıf Olduğu</h4>
+              <p id="battle-pool-detail-weak">—</p>
+            </div>
+            <div>
+              <h4>Uyumlu Olduğu</h4>
+              <p id="battle-pool-detail-synergy">—</p>
+            </div>
+          </section>
+
+          <p id="battle-pool-catalog-source" class="pool-catalog-source">
+            Sayısal değerler sunucu savaş motoru kataloğundan yükleniyor.
+          </p>
+        </article>
+
+        <aside class="battle-pool-selected-panel">
+          <h3>Seçilen Savaş Havuzu</h3>
+          <p>18 modül tamamlandığında eşleştirme açılır.</p>
+          <div id="battle-pool-selected" class="battle-pool-selected" aria-label="Seçilen Savaş Havuzu"></div>
+        </aside>
+      </div>
+
+      <div class="battle-pool-actions">
+        <button id="battle-pool-confirm" type="button" disabled>Eşleştir</button>
         <button id="matchmaking-cancel" type="button">Eşleştirmeyi İptal Et</button>
+      </div>
     </section>
 
     <section class="booster-panel play-live-panel" id="booster-panel" data-screen-panel="play" hidden>
@@ -223,6 +325,20 @@
       </details>
 
 
+    <section class="battle-legend play-live-panel" data-screen-panel="play" hidden>
+      <span><strong>Çekirdek</strong> sabit ana hedef</span>
+      <span><strong>Jeneratör</strong> sabit başlangıç enerji kaynağı</span>
+      <span><strong>Kapı</strong> çekirdeğe doğrudan bağlantı</span>
+      <span><strong>Özel Hücre</strong> hücre bonusu sağlar</span>
+    </section>
+
+    <section class="battle-fx-strip play-live-panel" data-screen-panel="play" hidden>
+      <div><span>Yerel AI Baskısı</span><strong>8 hasar / 2 sn</strong></div>
+      <div><span>Kalkan Etkisi</span><strong>%35 azaltma</strong></div>
+      <div><span>Modül Müdahalesi</span><strong>15. sn sonra</strong></div>
+      <div><span>Jeneratör</span><strong>Kapılar arasında taşınabilir</strong></div>
+    </section>
+
     <section class="battle-layout play-live-panel" data-screen-panel="play" hidden>
       <section class="arena-panel">
         <div class="panel-title-row">
@@ -248,6 +364,51 @@
       <div class="panel-title-row">
         <h2>Maç Sonucu</h2>
         <span id="battle-result-summary" hidden>Sonuç bekleniyor</span>
+      </div>
+      <div id="local-battle-report" class="local-battle-report" hidden>
+        <h3>Manuel Savaş Raporu</h3>
+        <div class="local-report-grid">
+          <div><span>Süre</span><strong id="local-report-duration">—</strong></div>
+          <div><span>Sonuç</span><strong id="local-report-result">—</strong></div>
+          <div><span>DK Harcama</span><strong id="local-report-credits">—</strong></div>
+          <div><span>Jeneratör Taşıma</span><strong id="local-report-generator-moves">—</strong></div>
+          <div><span>Verilen Hasar</span><strong id="local-report-damage-dealt">—</strong></div>
+          <div><span>Alınan Hasar</span><strong id="local-report-damage-received">—</strong></div>
+          <div><span>Kalkan Azaltması</span><strong id="local-report-shield">—</strong></div>
+          <div><span>Modül Müdahalesi</span><strong id="local-report-module-changes">—</strong></div>
+        </div>
+        <p id="local-report-balance-status">Denge değerlendirmesi için gerçek maç verisi toplanıyor.</p>
+
+        <section id="balance-review-panel" class="balance-review-panel">
+          <div class="panel-title-row">
+            <h4>Denge İnceleme Merkezi</h4>
+            <span id="balance-review-progress">0 / 3 gerçek maç</span>
+          </div>
+
+          <div class="balance-review-grid">
+            <div class="route-analysis-card">
+              <h5>Jeneratör Kapı Rotası</h5>
+              <div class="gate-usage-grid">
+                <div><span>Kuzey</span><strong id="gate-use-north">0</strong></div>
+                <div><span>Doğu</span><strong id="gate-use-east">0</strong></div>
+                <div><span>Güney</span><strong id="gate-use-south">0</strong></div>
+                <div><span>Batı</span><strong id="gate-use-west">0</strong></div>
+              </div>
+              <p id="generator-route-summary">Henüz kapı taşıma verisi yok.</p>
+            </div>
+
+            <div class="balance-candidate-card">
+              <h5>İnceleme Adayları</h5>
+              <ul id="balance-review-candidates">
+                <li>Gerçek maç verisi bekleniyor.</li>
+              </ul>
+            </div>
+          </div>
+
+          <p class="balance-safety-note">
+            Bu panel yalnız öneri üretir; AI, DK veya modül değerleri otomatik değiştirilmez.
+          </p>
+        </section>
       </div>
       <button id="rematch-button" type="button">Tekrar Maç</button>
     </section>

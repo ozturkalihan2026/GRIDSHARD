@@ -15,6 +15,9 @@ from .game.pvp_session import (
     PvPSessionService,
 )
 from .game.models import Direction
+from .game.catalog_view import (
+    build_module_catalog_view,
+)
 from .game.pvp_setup import InitialModulePlacement, PvPSetupPayload
 from .game.pvp_websocket import PvPWebSocketAdapter
 from .game.pvp_runner import PvPTickRunner
@@ -56,6 +59,14 @@ from .web_test_metrics import (
 )
 from .release_check import (
     build_release_check,
+)
+from .balance_change_plan import (
+    build_balance_change_plan,
+)
+from .battle_pool_presets import (
+    BattlePoolPresetError,
+    BattlePoolPresetService,
+    JsonBattlePoolPresetRepository,
 )
 from .build_manifest import (
     build_manifest,
@@ -106,6 +117,9 @@ from .web_test_findings import (
 )
 from .web_test_review import (
     build_review_candidates,
+)
+from .manual_battle_report import (
+    build_manual_battle_report,
 )
 from .web_test_run import (
     build_operation_history_summary,
@@ -160,8 +174,8 @@ TELEMETRY_MAX_EVENTS = int(
 )
 WEB_TEST_RUN_ID = os.environ.get(
     "RELAY_WEB_TEST_RUN_ID",
-    "web-test-beta.6",
-).strip() or "web-test-beta.6"
+    "web-test-beta.13",
+).strip() or "web-test-beta.13"
 
 telemetry_repository = (
     JsonFileTelemetryRepository(
@@ -220,6 +234,30 @@ player_data_repository = (
         PLAYER_DATA_PATH
     )
 )
+DEFAULT_BATTLE_POOL_PRESET_PATH = (
+    PLAYER_DATA_PATH.with_name(
+        "web_test_battle_pool_presets.json"
+    )
+)
+BATTLE_POOL_PRESET_PATH = Path(
+    os.environ.get(
+        "RELAY_BATTLE_POOL_PRESET_PATH",
+        str(
+            DEFAULT_BATTLE_POOL_PRESET_PATH
+        ),
+    )
+)
+battle_pool_preset_repository = (
+    JsonBattlePoolPresetRepository(
+        BATTLE_POOL_PRESET_PATH
+    )
+)
+battle_pool_preset_service = (
+    BattlePoolPresetService(
+        battle_pool_preset_repository
+    )
+)
+
 player_data_store_service = PlayerDataStoreService(
     profile_service=player_profile_service,
     statistics_service=player_statistics_service,
@@ -283,6 +321,11 @@ class ProfileNameRequest(BaseModel):
 
 
 class ProfileBattlePoolRequest(BaseModel):
+    battle_pool_ids: list[str]
+
+
+class BattlePoolPresetRequest(BaseModel):
+    name: str
     battle_pool_ids: list[str]
 
 
@@ -890,7 +933,7 @@ def start_web_test_run(
                 "preflight_ready":
                     True,
                 "build":
-                    "web-test-beta.6",
+                    "web-test-beta.13",
             },
         )
     )
@@ -904,7 +947,7 @@ def start_web_test_run(
         "test_run_id":
             WEB_TEST_RUN_ID,
         "build":
-            "web-test-beta.6",
+            "web-test-beta.13",
     }
 
 
@@ -956,7 +999,7 @@ def finish_web_test_run(
                 "test_run_id":
                     WEB_TEST_RUN_ID,
                 "build":
-                    "web-test-beta.6",
+                    "web-test-beta.13",
             },
         )
     )
@@ -970,7 +1013,7 @@ def finish_web_test_run(
         "test_run_id":
             WEB_TEST_RUN_ID,
         "build":
-            "web-test-beta.6",
+            "web-test-beta.13",
     }
 
 
@@ -1290,6 +1333,35 @@ def get_telemetry_events(
             event_type=event_type,
         )
     }
+
+
+@app.get("/telemetry/balance-change-plan")
+def balance_change_plan(
+    player_id:str|None=None,
+)->dict:
+    report=build_manual_battle_report(
+        events=telemetry_service.events(
+            player_id=player_id,
+        ),
+        player_id=player_id,
+        minimum_battles=3,
+    )
+    return build_balance_change_plan(
+        report
+    )
+
+
+@app.get("/telemetry/manual-battle-report")
+def manual_battle_report(
+    player_id: str | None = None,
+) -> dict:
+    return build_manual_battle_report(
+        events=telemetry_service.events(
+            player_id=player_id,
+        ),
+        player_id=player_id,
+        minimum_battles=3,
+    )
 
 
 @app.get("/telemetry/kpis")
@@ -1738,6 +1810,77 @@ def update_profile_battle_pool(
     return profile.to_view()
 
 
+@app.get("/profile/{player_id}/battle-pool-presets")
+def list_battle_pool_presets(
+    player_id:str,
+)->dict:
+    return {
+        "player_id":player_id,
+        "presets":
+            battle_pool_preset_service
+            .list(player_id),
+    }
+
+
+@app.put("/profile/{player_id}/battle-pool-presets")
+def save_battle_pool_preset(
+    player_id:str,
+    request:BattlePoolPresetRequest,
+)->dict:
+    try:
+        preset=(
+            battle_pool_preset_service
+            .save(
+                player_id,
+                name=request.name,
+                module_definition_ids=
+                    request.battle_pool_ids,
+            )
+        )
+    except (
+        BattlePoolPresetError,
+        ValueError,
+    ) as exc:
+        raise HTTPException(
+            status_code=422,
+            detail=str(exc),
+        ) from exc
+
+    return {
+        "player_id":player_id,
+        "preset":preset,
+        "presets":
+            battle_pool_preset_service
+            .list(player_id),
+    }
+
+
+@app.delete("/profile/{player_id}/battle-pool-presets/{preset_name}")
+def delete_battle_pool_preset(
+    player_id:str,
+    preset_name:str,
+)->dict:
+    deleted=(
+        battle_pool_preset_service
+        .delete(
+            player_id,
+            preset_name,
+        )
+    )
+    return {
+        "player_id":player_id,
+        "deleted":deleted,
+        "presets":
+            battle_pool_preset_service
+            .list(player_id),
+    }
+
+
+@app.get("/game/module-catalog")
+def game_module_catalog() -> dict:
+    return build_module_catalog_view()
+
+
 @app.get("/health")
 def health() -> dict:
     player_persistence = (
@@ -1950,7 +2093,7 @@ def web_test_current_run() -> dict:
         "test_run_id":
             WEB_TEST_RUN_ID,
         "build":
-            "web-test-beta.6",
+            "web-test-beta.13",
     }
 
 
@@ -2075,7 +2218,7 @@ def web_test_rc_candidate() -> dict:
     return build_rc_candidate_summary(
         version=VERSION,
         build=
-            "web-test-beta.6",
+            "web-test-beta.13",
         test_run_id=
             WEB_TEST_RUN_ID,
         operation_readiness=
@@ -2116,7 +2259,7 @@ def web_test_launch_readiness() -> dict:
     return build_launch_snapshot(
         version=VERSION,
         build=
-            "web-test-beta.6",
+            "web-test-beta.13",
         test_run_id=
             WEB_TEST_RUN_ID,
         manifest=manifest,
@@ -2152,7 +2295,7 @@ def web_test_first_run_checklist() -> dict:
     return build_first_run_checklist(
         version=VERSION,
         build=
-            "web-test-beta.6",
+            "web-test-beta.13",
         test_run_id=
             WEB_TEST_RUN_ID,
         launch_readiness=
@@ -2180,7 +2323,7 @@ def web_test_preflight() -> dict:
     return build_preflight_report(
         version=VERSION,
         build=
-            "web-test-beta.6",
+            "web-test-beta.13",
         test_run_id=
             WEB_TEST_RUN_ID,
         checklist=
@@ -2239,7 +2382,7 @@ def web_test_run_status() -> dict:
         "test_run_id":
             WEB_TEST_RUN_ID,
         "build":
-            "web-test-beta.6",
+            "web-test-beta.13",
         "started":
             started,
         "finished":
@@ -2264,7 +2407,7 @@ def web_test_operation_status() -> dict:
     return build_operation_status(
         version=VERSION,
         build=
-            "web-test-beta.6",
+            "web-test-beta.13",
         test_run_id=
             WEB_TEST_RUN_ID,
         preflight=
@@ -2319,7 +2462,7 @@ def web_test_monitoring() -> dict:
     return build_monitoring_summary(
         version=VERSION,
         build=
-            "web-test-beta.6",
+            "web-test-beta.13",
         test_run_id=
             WEB_TEST_RUN_ID,
         operation_status=
@@ -2348,7 +2491,7 @@ def web_test_run_report() -> dict:
     return build_post_run_report(
         version=VERSION,
         build=
-            "web-test-beta.6",
+            "web-test-beta.13",
         test_run_id=
             WEB_TEST_RUN_ID,
         run_summary=

@@ -1,7 +1,7 @@
 # Project Relay 2.0 — YOL HARİTASI
 
-**Güncel Sürüm:** `2.0.0-beta.6`  
-**Paket:** Stabilizasyon, Kanonik Yol Haritası Yeniden Denetimi ve QA Zinciri  
+**Güncel Sürüm:** `2.0.0-beta.13`  
+**Paket:** Hazır Savaş Havuzları + Hızlı Modül Seçimi + HP Görselleştirmesi + Review-Ready Denge Kapısı  
 **Kanonik Dosya:** `docs/YOL_HARITASI.md`
 
 > Bu dosya Project Relay 2.0 için tek kanonik geliştirme kaydıdır. Kaynak karar belgesi ile kod tabanı yeniden karşılaştırılmıştır. Buradaki `[x]`, `[~]`, `[ ]` işaretleri artık yalnızca kodda ve testlerde doğrulanabilen gerçek durumu gösterir.
@@ -443,7 +443,7 @@ olarak üretilir.
 
 # 7. Tamamlanan Son Paket
 
-## 2.0.0-beta.6 — Stabilizasyon + Kanonik Yol Haritası Denetimi + QA Zinciri
+## 2.0.0-beta.13 — Stabilizasyon + Kanonik Yol Haritası Denetimi + QA Zinciri
 
 - [x] Kaynak `Yol Haritası.txt`, mevcut kanonik yol haritası ve kod yeniden karşılaştırıldı.
 - [x] Eski yol haritasındaki 24 modül, 18 Savaş Havuzu, stratejik alan, güçlendirici ve PvP durumlarına ait eski/yanlış işaretlemeler gerçek koda göre düzeltildi.
@@ -526,8 +526,210 @@ olarak üretilir.
 
 ---
 
+# 7.1 — 2.0.0-beta.13 Gerçek Kullanıcı Test Bulguları ve Düzeltmeleri
+
+Bu paket Beta.6'nın gerçek Windows/PowerShell ve tarayıcı testi sonucunda oluşturuldu; varsayımsal UX çalışması değildir.
+
+## Doğrulanan kullanıcı test bulguları
+
+- [x] Ana sistem açıldı.
+- [x] Oyna, Profil, İstatistikler ve Ayarlar ekranları açıldı.
+- [x] Savaş Havuzu seçimi çalıştı.
+- [x] Online eşleştirme rakip olmadığı durumda doğru biçimde bekledi.
+- [x] Tek oyunculu testte yaklaşık 20 kullanılabilir hücreli savaş alanı görüntülendi.
+- [x] Jeneratör başlangıçta otomatik yerleştirildi.
+- [!] Jeneratör istemci yerel testinde sürüklenebiliyor/taşınabiliyordu; sabit başlangıç modülü kuralıyla çelişiyordu.
+- [!] Ayarlar PUT isteği sunucuda 200 dönmesine rağmen kullanıcıya görünür kaydetme sonucu/dil değişimi yansımıyordu.
+- [!] Windows üzerinde eşzamanlı operation/stability telemetri snapshot yazımları `.tmp/.bak.tmp` yarışına girerek WinError 5/32 ve HTTP 500 oluşturuyordu.
+- [!] Savaş Havuzu seçim ekranı stratejik karar vermek için yetersizdi; modül ayrıntısı ve seçilmiş havuz ayrımı yoktu.
+- [!] Tek oyunculu mod havuz oluşturma aşamasını atlayarak doğrudan yerel maça giriyordu; Online ve Yerel akış birbirinden gereksiz ayrışıyordu.
+
+## Tamamlanan Beta.7 düzeltmeleri
+
+- [x] Savaş Havuzu ekranı üç sütunlu oluşturucuya dönüştürüldü: kaydırılabilir Global Modül listesi → modül ayrıntısı → seçilen 18 modüllük havuz.
+- [x] Modül listesinde bir öğeye tıklamak artık doğrudan seçmek yerine ayrıntı panelini açıyor.
+- [x] Ayrıntı panelinde sınıf, Can, Devre Kredisi maliyeti, port sayısı, stratejik rol ve açıklama gösteriliyor.
+- [x] Ayrıntı panelinin altında `Seç / Havuzdan Çıkar` işlemi bulunuyor.
+- [x] Jeneratör zorunlu olarak seçili ve havuzdan çıkarılamıyor.
+- [x] Sağ panelde seçilmiş Savaş Havuzu ayrı ve okunabilir biçimde gösteriliyor.
+- [x] 18 modül tamamlanmadan Eşleştir düğmesi etkinleşmiyor.
+- [x] Tek Oyunculu Test Maçı da önce aynı 18 modüllük Savaş Havuzu oluşturucusunu kullanıyor.
+- [x] Tek oyunculu havuz tamamlanınca `AI ile Eşleştir ve Savaşa Başla` düğmesi yerel AI savaşına doğrudan geçiyor; gerçek oyuncu beklemiyor.
+- [x] Online PvP'de aynı havuz oluşturucu `Eşleştir` ile gerçek matchmaking kuyruğuna giriyor.
+- [x] Yerel savaşın Modül Rafı yalnızca seçilen 18 Savaş Havuzu modülünü gösteriyor.
+- [x] Çekirdek ve Jeneratör istemcide sabit modül olarak işaretlendi.
+- [x] Jeneratör drag işlemi istemcide reddediliyor; sunucudaki taşınamaz/çıkarılamaz kuralıyla istemci davranışı eşitlendi.
+- [x] Ayarlar ekranına kaydetme durumu eklendi.
+- [x] Dil kaydı başarıyla döndüğünde `document.lang` ve temel menü/ayar başlıkları anında güncelleniyor.
+- [x] Modül adları sabit tasarım kararı gereği Türkçe kalmaya devam ediyor.
+- [x] Kalıcı telemetri yazımı süreç içi kilit (`RLock`) ile seri hale getirildi.
+- [x] Telemetri geçici dosyaları PID + thread kimliği ile benzersiz hale getirildi.
+- [x] Windows WinError 5/32 için kısa süreli atomik replace retry mekanizması eklendi.
+- [x] Telemetri servisindeki event listesi eşzamanlı record çağrılarına karşı kilitlendi.
+- [x] 80 eşzamanlı kalıcı telemetri kaydı regresyon testi eklendi.
+- [x] `TEST_ET` QA smoke zinciri çalışan Uvicorn üzerinde 24 eşzamanlı operation/stability audit POST isteği yapacak şekilde güçlendirildi.
+
+---
+
+# 7.2 — 2.0.0-beta.13 Yerel AI Oynanış Doğrulama Paketi
+
+Beta.8'de denge değerleri varsayımla değiştirilmedi. Amaç Beta.7'nin kullanıcıya açtığı oynanış zincirini otomatik testte daha ileri taşımak ve gerçek savaş ekranını okunabilir hale getirmektir.
+
+## Tamamlananlar
+
+- [x] QA startup testi artık yalnız menü açılmasını değil `Oyna → Tek Oyunculu → 18 modüllük Savaş Havuzu → AI ile Eşleştir → yerel savaş` zincirini gerçek `app.js` üzerinde doğruluyor.
+- [x] 18 modül tamamlanmadan savaş başlatılamadığı otomatik testle korunuyor.
+- [x] Yerel AI savaşına geçildiğinde `localStatus=battle` oluşması test ediliyor.
+- [x] Oyna ekranı Online PvP operasyon kapısı hazır olmasa bile Tek Oyunculu Test Maçı için erişilebilir; Online PvP kendi girişinde readiness kontrolüyle korunuyor.
+- [x] Savaş alanına Çekirdek / Kapı / normal hücre açıklamaları eklendi.
+- [x] Özel hücrelerin mevcut bonus etiketleri korunuyor.
+- [x] Modül kartındaki uzun tek satır bilgi yığını HP / DK / Enerji rozetlerine ayrıldı.
+- [x] Enerjisiz modül uyarısı ayrı ve görünür durum rozeti oldu.
+- [x] Modülün stratejik rolü hover/title bilgisinde korunuyor.
+- [x] Çekirdek ve Jeneratörün sabit başlangıç modülü görünümü korunuyor.
+- [x] Savaş ekranına kısa Çekirdek / Jeneratör / Kapı / Özel Hücre açıklama şeridi eklendi.
+- [x] Ayarlar kaydından sonra istemci aynı ayarı sunucudan yeniden GET ederek kalıcılığı doğruluyor.
+- [x] Ayarlar ekranına `Kalıcılık: Sunucuda doğrulandı` / hata durumu eklendi.
+- [x] Sunucu testinde `PUT settings → servis belleğini temizle → participant bootstrap → kalıcı ayarın geri gelmesi` zinciri eklendi.
+- [x] Windows telemetri concurrency testi ve 24 eşzamanlı audit smoke testi korunuyor.
+- [x] AI saldırı/hasar ve Devre Kredisi denge değerleri gerçek manuel savaş verisi oluşmadan değiştirilmedi.
+
+---
+
+# 7.3 — 2.0.0-beta.13 Oyna Erişimi ve Stratejik Modül Seçimi
+
+Bu paket doğrudan gerçek kullanıcı geri bildirimine dayanır: Oyna butonunun pasif kalması ve Savaş Havuzu oluştururken modül mekaniklerinin karar vermeye yetmeyecek kadar az gösterilmesi.
+
+## Tamamlananlar
+
+- [x] Ana menüde `Oyna` butonu artık Web test / Online PvP readiness durumundan bağımsız olarak aktif kalır.
+- [x] Tek Oyunculu Test Maçı her durumda Oyna ekranından erişilebilir.
+- [x] Online PvP readiness kontrolü kaldırılmadı; yalnız `Online PvP` girişinde uygulanıyor.
+- [x] Sol Global Modül listesi Enerji → Saldırı → Savunma → Destek → Sabotaj sınıf sırasına göre gruplandı.
+- [x] Her sınıfın kendi başlığı ve kendi modül listesi bulunuyor.
+- [x] Sağdaki seçilmiş 18 modüllük Savaş Havuzu da aynı sınıf düzenine göre gruplandı.
+- [x] Sunucuya `/game/module-catalog` kanonik modül bilgi endpoint'i eklendi.
+- [x] Savaş Havuzu ayrıntı ekranındaki sayısal değerler artık `server/app/game/catalog.py` ve motor sabitlerinden üretiliyor; istemci tarafından tahmin edilmiyor.
+- [x] Ayrıntı paneline HP, DK, port, enerji üretimi, enerji tüketimi, temel hasar ve bekleme süresi eklendi.
+- [x] Her modül için `Ne işe yarar?` bölümü eklendi.
+- [x] Lazer / Darbe Topu / Ray Topu / Füze / Dron / Ark Topu gibi saldırı modüllerinde gerçek temel hasar ve saldırı aralığı gösteriliyor.
+- [x] Kalkan, Zırh, Yansıtıcı ve Bariyerin gerçek motor hasar azaltma oranları açıklanıyor.
+- [x] Onarım, Soğutucu, Güçlendirici, Hedefleme Bilgisayarı ve Aşırı Hızlandırıcı gerçek motor destek değerleriyle açıklanıyor.
+- [x] EMP, Sinyal Bozucu, Virüs, Enerji Sömürücü ve Kesici için gerçek etki süresi / hasar / üretim azaltma / hat kesme değerleri gösteriliyor.
+- [x] Batarya ve Kapasitörün gerçek depolama ve şarj/deşarj değerleri gösteriliyor.
+- [x] Dağıtıcının gerçek enerji dağıtım verimliliği gösteriliyor.
+- [x] Güçlü olduğu, zayıf olduğu ve sinerji kurduğu modüller Türkçe isimleriyle gösteriliyor.
+- [x] Motorun sayısal değer yayınlamadığı bir mekanik için istemci değer uydurmuyor; bu durum açıkça belirtiliyor.
+- [x] Otomatik startup testi Oyna butonunun pasif olmadığını ve sınıf-gruplu katalog üzerinden 18 modül seçilip yerel AI savaşına girilebildiğini doğruluyor.
+
+---
+
+# 7.4 — 2.0.0-beta.13 Oyun Lobisi, Kapılar Arası Jeneratör ve Etki Görselleştirmesi
+
+## Jeneratör
+- [x] Jeneratör başlangıçta Çekirdek kapılarından birinde yer alır.
+- [x] Savaş sırasında sürükle-bırak ile dört Çekirdek kapısı arasında taşınabilir.
+- [x] Normal/özel hücreye taşınamaz; rafa alınamaz; başka modülle replace edilemez.
+- [x] Sunucu motoru kuralı otoriter olarak doğrular.
+- [x] Bu sayede oyuncu farklı kapıya geçerek farklı dış hat/özel hücre rotaları kurabilir.
+
+## Menü / lobby
+- [x] Ana sayfa oyun lobisi kompozisyonuna geçirildi.
+- [x] Oyna ana CTA, Profil/İstatistikler/Ayarlar ikincil lobby navigasyonu oldu.
+- [x] Project Relay'e özgü çekirdek/devre görsel odağı CSS ile oluşturuldu; başka oyunun grafiği kopyalanmadı.
+- [x] Profil, İstatistikler ve Ayarlar aynı rekabetçi arayüz diline yaklaştırıldı.
+
+## Savaş etki görünürlüğü
+- [x] Yerel AI baskısı, Kalkan etkisi, raf açılışı ve Jeneratör kuralı savaş HUD şeridinde gösteriliyor.
+- [x] Hasar alan modülde kırmızı darbe animasyonu, Kalkan azaltmasında mavi savunma animasyonu var.
+- [x] Çekirdek kapıları GATE etiketiyle daha belirgin.
+- [x] Yeni gerçek denge verisi olmadığı için sayısal AI / Devre Kredisi dengesi değiştirilmedi.
+
+---
+
+# 7.5 — 2.0.0-beta.13 Manuel Savaş Telemetrisi ve Denge Hazırlığı
+
+- [x] Tek Oyunculu gerçek manuel maç başlangıç/bitiş telemetrisi eklendi.
+- [x] Maç süresi, sonuç, Devre Kredisi harcaması, modül müdahalesi, verilen/alınan hasar ve Kalkan azaltması ölçülüyor.
+- [x] Jeneratörün hangi kapıdan hangi kapıya taşındığı kaydediliyor.
+- [x] Jeneratör taşımasında bağlı modül sayısı ve enerjili özel hücre sayısı telemetriye yazılıyor.
+- [x] Maç sonucu ekranına Manuel Savaş Raporu eklendi.
+- [x] `/telemetry/manual-battle-report` gerçek maç örneklerini toplu raporluyor.
+- [x] İlk denge incelemesi için minimum 3 manuel maç eşiği konuldu.
+- [x] 3 maçtan önce rapor `insufficient_manual_battles`, sonrasında `review_ready` oluyor.
+- [x] Sistem sayısal dengeyi otomatik değiştirmiyor; `numeric_balance_changed=false`.
+- [x] Yeni gerçek manuel veri bulunmadığı için AI hasarı, DK ekonomisi ve taşıma maliyeti bu pakette değiştirilmedi.
+
+---
+
+# 7.6 — 2.0.0-beta.13 Denge İnceleme Merkezi ve Jeneratör Rota Analizi
+
+Bu paket Beta.11 telemetrisini karar destek katmanına taşır. Paket oluşturulurken kullanıcıdan üç yeni manuel maç verisi bulunmadığı için sayısal denge değiştirilmemiştir.
+
+- [x] Manuel savaş raporu artık `battles_remaining` sayısını yayınlıyor.
+- [x] Jeneratör için kapı ziyaretleri ve kapıdan-kapıya geçişler analiz ediliyor.
+- [x] En çok tercih edilen Jeneratör kapısı raporlanıyor.
+- [x] Jeneratör taşındıktan sonraki ortalama bağlı modül sayısı hesaplanıyor.
+- [x] Jeneratör taşındıktan sonraki ortalama enerjili özel hücre sayısı hesaplanıyor.
+- [x] Maç sonucu ekranına Denge İnceleme Merkezi eklendi.
+- [x] Kuzey / Doğu / Güney / Batı kapı kullanım sayaçları oyuncuya gösteriliyor.
+- [x] Gerçek maçlardan güvenli `review_candidates` üreten analiz katmanı eklendi.
+- [x] Kısa/uzun maç, aşırı yüksek/düşük galibiyet oranı, düşük DK kullanımı, düşük modül müdahalesi, etkisiz Jeneratör rotası ve kullanılmayan Kalkan gibi alanlar yalnız inceleme adayı olarak işaretlenebiliyor.
+- [x] Öneriler doğrudan denge değerlerini değiştirmiyor.
+- [x] Her öneride `automatic_change=false`; raporda `numeric_balance_changed=false`.
+- [x] Üç gerçek maç tamamlanmadan rapor yalnız veri toplamaya devam ediyor.
+- [x] Üç maçtan sonra `review_ready` olur fakat nihai değişiklik yine manuel değerlendirme gerektirir.
+
+---
+
+# 7.7 — 2.0.0-beta.13 Hazır Savaş Havuzları, HP Görselleştirmesi ve Review-Ready Kapısı
+
+## Savaş Havuzu kullanılabilirliği
+- [x] Orta ayrıntı panelindeki büyük `Seç / Havuzdan Çıkar` düğmesi kaldırıldı.
+- [x] Her Global Modül hücresine küçük `+ / ✓` seçim kontrolü eklendi.
+- [x] Modül hücresinin ana alanına tıklamak ayrıntıyı açar; küçük seçim kontrolü havuza ekler/çıkarır.
+- [x] Jeneratör zorunlu modül olarak seçili kalır ve çıkarılamaz.
+- [x] Sağdaki seçilmiş Savaş Havuzu sınıf bazlı görünümünü korur.
+
+## Hazır Savaş Havuzu preset sistemi
+- [x] Oyuncu tam 18 modüllük mevcut havuzuna isim verip kaydedebilir.
+- [x] Örn. `Saldırı`, `Savunma`, `Sabotaj` gibi oyuncu tanımlı isimler desteklenir.
+- [x] Kayıtlı hazır havuzlar oyuncu kimliğine göre kalıcı JSON deposunda tutulur.
+- [x] Oyuncu kayıtlı havuzu yüklediğinde 18 modül doğrudan sağdaki seçilmiş alana gelir.
+- [x] Hazır havuz yüklendikten sonra oyuncu istediği modülleri değiştirebilir.
+- [x] Hazır havuz silinebilir.
+- [x] Hazır havuz sunucu tarafında gerçek `validate_battle_pool` kuralından geçmeden kaydedilemez.
+- [x] CRUD ve kalıcılık regresyon testleri eklendi.
+
+## HP / Can görselleştirmesi
+- [x] Savaş alanındaki aktif modül kartlarına HP çubuğu eklendi.
+- [x] HP durumu sağlıklı → uyarı → kritik için yeşil / sarı / kırmızı görsel tona ilerler.
+- [x] Modül arka planına HP durumuna göre hafif renk tonu eklenir; bilgi okunabilirliği korunur.
+- [x] HP 0 olduğunda modül soluklaşır ve etkileşim dışı görünür.
+- [x] Global Modül ve seçilmiş havuz kartlarında modülün maksimum dayanıklılığı aynı HP görsel diliyle gösterilir.
+
+## Review-Ready denge uygulama kapısı
+- [x] `/telemetry/balance-change-plan` endpoint'i eklendi.
+- [x] Manuel savaş raporu `review_ready` olmadan değişiklik planı `blocked_waiting_for_review_ready` durumundadır.
+- [x] Review-ready olduğunda yalnız review/observe adaylarından manuel değişiklik planı satırları üretilir.
+- [x] Her değişiklik satırında önce/değişecek değer alanı başlangıçta boştur.
+- [x] Her satır `requires_manual_value=true`, `requires_simulation=true`, `requires_regression=true`, `approved=false` ile başlar.
+- [x] Sistem sayısal değer uygulamaz; `automatic_apply=false`, `numeric_balance_changed=false`.
+- [x] Gerçek üç maç verisi olmadan AI, DK veya modül dengesi değiştirilmedi.
+
+---
+
 # 9. Sıradaki Paket
 
-**`2.0.0-beta.7 — Gerçek Tarayıcı Oynanış Hataları ve İlk Kullanıcı Test Düzeltmeleri`**
+**`2.0.0-beta.14 — Hazır Havuz Yönetimi UX + Gerçek Review-Ready Denge Onay Akışı`**
 
-Beta.6 önce kullanıcının bilgisayarında `TEST_ET.bat` ile doğrulanacak, ardından oyun gerçek tarayıcıda oynanacaktır. Beta.7 kapsamı varsayımla değil, bu gerçek testte görülen somut hata/UX/denge bulgularıyla belirlenecektir.
+Beta.13 sonrası iki ayrı gerçek kullanım alanı test edilecektir:
+
+1. oyuncunun birkaç farklı hazır Savaş Havuzu oluşturup maçlar arasında hızlıca yüklemesi,
+2. en az 3 gerçek manuel maç sonrası Denge İnceleme Merkezi'nin `review_ready` olması.
+
+Beta.14'te:
+- hazır havuzların yeniden adlandırma / üzerine kaydetme / aktif preset işareti UX'i değerlendirilecek,
+- gerçek review-ready adayları için önce/sonra sayısal değerleri kullanıcı onayıyla girilen değişiklik taslağı hazırlanacak,
+- taslak önce simülasyon ve regresyon testinden geçecek,
+- sonuç başarılı olmadıkça kanonik denge değerleri değiştirilmeyecektir.

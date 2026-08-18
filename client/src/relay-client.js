@@ -88,6 +88,55 @@
       return { ok: true, selected: true };
     }
 
+    setSelection(moduleIds) {
+      const candidate=new Set(
+        moduleIds || []
+      );
+
+      for (
+        const requiredId
+        of this.requiredModuleIds
+      ) {
+        candidate.add(
+          requiredId
+        );
+      }
+
+      for (
+        const moduleId
+        of candidate
+      ) {
+        if (
+          !this.selectableModuleIds
+            .includes(moduleId)
+        ) {
+          return {
+            ok:false,
+            reason:
+              "Hazır havuz global oyuncu havuzunda bulunmayan modül içeriyor.",
+          };
+        }
+      }
+
+      if (
+        candidate.size
+        !== this.requiredSize
+      ) {
+        return {
+          ok:false,
+          reason:
+            `Hazır havuz tam ${this.requiredSize} modül içermelidir.`,
+        };
+      }
+
+      this.selected=candidate;
+      return {
+        ok:true,
+        selected:
+          this.selectedIds(),
+      };
+    }
+
     isComplete() {
       return this.selected.size === this.requiredSize;
     }
@@ -144,6 +193,17 @@
       }
 
       if (
+        module.status === MODULE_STATUS.ACTIVE
+        && module.movable === false
+      ) {
+        return {
+          ok:false,
+          reason:
+            `${module.nameTr} sabit başlangıç modülüdür ve taşınamaz.`,
+        };
+      }
+
+      if (
         module.status === MODULE_STATUS.RESERVE &&
         !this.isShelfUnlocked()
       ) {
@@ -171,6 +231,40 @@
       }
 
       const source = this.requireModule(this.dragState.moduleId);
+
+      if (
+        Array.isArray(source.allowedMovePositions)
+        && source.status === MODULE_STATUS.ACTIVE
+      ) {
+        const allowed =
+          source.allowedMovePositions.some(
+            (position) =>
+              position.x === targetX
+              && position.y === targetY
+          );
+
+        if (!allowed) {
+          this.dragState = null;
+          return {
+            ok:false,
+            reason:
+              `${source.nameTr} yalnızca dört Çekirdek kapısı arasında taşınabilir.`,
+          };
+        }
+
+        if (
+          targetModuleId
+          && targetModuleId !== source.instanceId
+        ) {
+          this.dragState = null;
+          return {
+            ok:false,
+            reason:
+              "Hedef Çekirdek kapısı dolu. Jeneratör başka modülle değiştirilemez.",
+          };
+        }
+      }
+
       let command;
 
       if (targetModuleId && targetModuleId !== source.instanceId) {
@@ -216,6 +310,16 @@
       }
 
       const module = this.requireModule(this.dragState.moduleId);
+
+      if (module.removable === false) {
+        this.dragState = null;
+        return {
+          ok:false,
+          reason:
+            `${module.nameTr} devreden çıkarılamaz.`,
+        };
+      }
+
       if (module.status !== MODULE_STATUS.ACTIVE) {
         this.dragState = null;
         return { ok: false, reason: "Yalnızca aktif modül rafa çekilebilir." };
@@ -1349,6 +1453,11 @@
     MODULE_SHELF_USED: "module_shelf_used",
     BOOSTER_USED: "booster_used",
     REMATCH_REQUESTED: "rematch_requested",
+    LOCAL_BATTLE_STARTED: "local_battle_started",
+    LOCAL_BATTLE_COMPLETED: "local_battle_completed",
+    GENERATOR_GATE_MOVED: "generator_gate_moved",
+    LOCAL_AI_HIT: "local_ai_hit",
+    LOCAL_PLAYER_ATTACK: "local_player_attack",
   });
 
   class RelayTelemetryDispatcher {
@@ -1446,6 +1555,41 @@
     trackMatchmakingStarted(metadata = {}) {
       return this.track(
         TELEMETRY_EVENT_TYPE.MATCHMAKING_STARTED,
+        metadata
+      );
+    }
+
+    trackLocalBattleStarted(metadata = {}) {
+      return this.track(
+        TELEMETRY_EVENT_TYPE.LOCAL_BATTLE_STARTED,
+        metadata
+      );
+    }
+
+    trackLocalBattleCompleted(metadata = {}) {
+      return this.track(
+        TELEMETRY_EVENT_TYPE.LOCAL_BATTLE_COMPLETED,
+        metadata
+      );
+    }
+
+    trackGeneratorGateMoved(metadata = {}) {
+      return this.track(
+        TELEMETRY_EVENT_TYPE.GENERATOR_GATE_MOVED,
+        metadata
+      );
+    }
+
+    trackLocalAiHit(metadata = {}) {
+      return this.track(
+        TELEMETRY_EVENT_TYPE.LOCAL_AI_HIT,
+        metadata
+      );
+    }
+
+    trackLocalPlayerAttack(metadata = {}) {
+      return this.track(
+        TELEMETRY_EVENT_TYPE.LOCAL_PLAYER_ATTACK,
         metadata
       );
     }

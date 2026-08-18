@@ -1432,6 +1432,16 @@ class BattleEngine:
 
         new_position = self._position_from_payload(payload)
         self._ensure_board_position_placeable(new_position)
+
+        if (
+            module.definition.id == "generator"
+            and new_position
+            not in self.board.generator_gate_positions
+        ):
+            raise CommandRejected(
+                "Jeneratör yalnızca dört Çekirdek kapısı arasında taşınabilir."
+            )
+
         self._ensure_position_available(
             player_id,
             new_position,
