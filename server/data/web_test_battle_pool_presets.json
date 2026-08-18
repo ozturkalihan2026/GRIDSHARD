@@ -1,0 +1,24 @@
+{
+  "wt-8288059b-9714-4817-ad64-397540b99b4e": {
+    "Dengeli": [
+      "generator",
+      "battery",
+      "capacitor",
+      "splitter",
+      "pulse_cannon",
+      "missile_launcher",
+      "drone_bay",
+      "laser",
+      "shield",
+      "reflector",
+      "barrier",
+      "overclock_unit",
+      "targeting_computer",
+      "repair",
+      "energy_leech",
+      "virus",
+      "jammer",
+      "amplifier"
+    ]
+  }
+}

@@ -8,7 +8,7 @@ def test_root_serves_project_relay_web_client():
     response=client.get("/")
 
     assert response.status_code==200
-    assert "Project Relay 2.0" in response.text
+    assert "GRIDSHARD 2.0" in response.text
     assert "Oyna" in response.text
     assert "Profil" in response.text
     assert "İstatistikler" in response.text

@@ -1,18 +1,20 @@
 <!doctype html>
 <html lang="tr">
 <head>
+    <meta name="theme-color" content="#070B14" />
+    <meta name="application-name" content="GRIDSHARD" />
   <link rel="icon" href="/favicon.ico" sizes="any">
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Project Relay 2.0 — Modül Rafı</title>
+  <title>GRIDSHARD — Devreni Kur. Çekirdeği Kır.</title>
   <link rel="stylesheet" href="./src/styles.css" />
 </head>
 <body>
   <main class="battle-shell">
     <header class="battle-header">
       <div>
-        <h1>Project Relay 2.0</h1>
-        <p>2.0.0-beta.13 — Gerçek Web Testi Hazır</p>
+        <h1>GRIDSHARD 2.0</h1>
+        <p>2.0.0-beta.13.5 — Gerçek Web Testi Hazır</p>
       </div>
       <div class="battle-status-cluster">
         <div class="credit-indicator" id="credit-indicator">Devre Kredisi: 200 DK</div>
@@ -25,14 +27,21 @@
       <div class="lobby-backdrop" aria-hidden="true">
         <div class="lobby-core-orbit orbit-a"></div>
         <div class="lobby-core-orbit orbit-b"></div>
-        <div class="lobby-core-mark">R</div>
+        <div class="lobby-core-mark shard-core-mark" aria-hidden="true">
+          <span class="shard-core-center"></span>
+          <span class="shard-core-gate gate-north"></span>
+          <span class="shard-core-gate gate-east"></span>
+          <span class="shard-core-gate gate-south"></span>
+          <span class="shard-core-gate gate-west"></span>
+          <span class="shard-core-crack"></span>
+        </div>
       </div>
 
       <div class="lobby-main">
-        <span class="lobby-kicker">PROJECT RELAY // CIRCUIT ARENA</span>
-        <h2 id="main-menu-title">Devreni kur.<br />Savaş kesintisiz.</h2>
+        <span class="lobby-kicker">GRIDSHARD // CORE ARENA</span>
+        <h2 id="main-menu-title">Devreni Kur.<br />Çekirdeği Kır.</h2>
         <p class="main-menu-lead">
-          18 modüllük savaş havuzunu hazırla, canlı savaş sırasında devreni değiştir ve rakip çekirdeği düşür.
+          18 modüllük savaş havuzunu hazırla. Devreni savaş sırasında değiştir. Rakip çekirdeği kır.
         </p>
 
         <div class="lobby-play-row">
@@ -42,7 +51,7 @@
           </button>
           <div class="lobby-build-chip">
             <span>GÜNCEL YAPI</span>
-            <strong>2.0.0-beta.13</strong>
+            <strong>2.0.0-beta.13.5</strong>
           </div>
         </div>
       </div>
@@ -434,6 +443,7 @@
   </main>
 
   <script src="./src/relay-client.js"></script>
+  <script src="./src/gridshard-audio.js"></script>
   <script src="./src/app.js"></script>
 </body>
 </html>

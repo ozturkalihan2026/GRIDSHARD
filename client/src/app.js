@@ -292,6 +292,8 @@
 
   const appRouter = new RelayAppRouter();
 
+  let gridshardAudioDirector = null;
+
   document.body.dataset.appScreen =
     appRouter.currentScreen;
 
@@ -340,6 +342,22 @@
       };
       label.textContent =
         names[current] || current;
+    }
+
+    if (
+      gridshardAudioDirector
+    ) {
+      if (current === RelayAppScreen.MENU) {
+        gridshardAudioDirector.setState(
+          "menu"
+        );
+      } else if (current === RelayAppScreen.PLAY) {
+        gridshardAudioDirector.setState(
+          activePlayMode === "idle"
+            ? "pool"
+            : "battle"
+        );
+      }
     }
 
     if (
@@ -558,7 +576,7 @@
         webTestBuildState,
       releaseCheckState,
       expectedVersion:
-        "2.0.0-beta.13",
+        "2.0.0-beta.13.5",
       expectedProtocolVersion: 1,
     });
   const playReadinessGate =
@@ -594,7 +612,7 @@
 
   telemetryDispatcher.trackGameOpened({
     platform: "web",
-    build: "2.0.0-beta.13",
+    build: "2.0.0-beta.13.5",
   });
 
   const postMatchSync =
@@ -1154,7 +1172,7 @@
   const diagnosticSnapshot =
     new RelayDiagnosticSnapshot({
       version:
-        "2.0.0-beta.13",
+        "2.0.0-beta.13.5",
       build:
         "web-test-beta.13",
       bootGate:
@@ -2885,6 +2903,11 @@ const SPECIAL_CELL_INFO = {
   "3,3": { css: "signal-cell", label: "Sinyal Hücresi", bonus: "-%15 bekleme süresi" },
 };
   let battleStartedAt = performance.now();
+  gridshardAudioDirector =
+    typeof GridshardAudioDirector === "function"
+      ? new GridshardAudioDirector()
+      : null;
+
   let activePlayMode = "idle";
   let localBattleStarted = false;
   let localBattleFinished = false;
@@ -2905,6 +2928,22 @@ const SPECIAL_CELL_INFO = {
     activePlayMode = mode;
     document.body.dataset.playMode =
       mode;
+
+    if (gridshardAudioDirector) {
+      gridshardAudioDirector.setState(
+        mode === "online"
+          ? "matchmaking"
+          : (
+              mode === "local"
+                ? (
+                    localBattleStarted
+                      ? "battle"
+                      : "pool"
+                  )
+                : "pool"
+            )
+      );
+    }
 
     if (playModeStatusEl) {
       const labels = {
@@ -3360,6 +3399,12 @@ const SPECIAL_CELL_INFO = {
 
     boosterStatusEl.textContent =
       "İlk güçlendirici 85. saniyede";
+    if (gridshardAudioDirector) {
+      gridshardAudioDirector.setState(
+        "battle"
+      );
+    }
+
     renderBoosterOptions();
     render();
     renderCredits();
@@ -3483,6 +3528,14 @@ const SPECIAL_CELL_INFO = {
       true;
     document.body.dataset.localFinished =
       "true";
+
+    if (gridshardAudioDirector) {
+      gridshardAudioDirector.setState(
+        won
+          ? "victory"
+          : "defeat"
+      );
+    }
 
     if (battleResultSummaryEl) {
       battleResultSummaryEl.hidden =

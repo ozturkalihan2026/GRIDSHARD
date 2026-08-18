@@ -222,8 +222,8 @@ def main() -> int:
         steps.append(smoke_server())
 
     report = {
-        "project": "Project Relay 2.0",
-        "version": "2.0.0-beta.13",
+        "project": "GRIDSHARD 2.0",
+        "version": "2.0.0-beta.13.5",
         "generated_at_epoch": int(time.time()),
         "ok": all(step["ok"] for step in steps),
         "steps": steps,
@@ -238,7 +238,7 @@ def main() -> int:
         encoding="utf-8",
     )
 
-    print("\nProject Relay QA")
+    print("\nGRIDSHARD QA")
     print("=" * 60)
     for step in steps:
         print(f"[{'OK' if step['ok'] else 'FAIL'}] {step['name']} ({step.get('duration_s', 0)} sn)")

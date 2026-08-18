@@ -1,4 +1,4 @@
-# Project Relay 2.0 Beta — Gerçek Web Testi
+# GRIDSHARD 2.0 Beta — Gerçek Web Testi
 
 Bu paket gerçek insan Web testini yürütmek ve teknik sonuçlarını toplamak için hazırlanmıştır.
 

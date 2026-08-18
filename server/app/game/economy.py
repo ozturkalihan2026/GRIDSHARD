@@ -4,7 +4,7 @@ from dataclasses import dataclass
 @dataclass(slots=True, frozen=True)
 class CircuitCreditConfig:
     """
-    Project Relay 2.0 için ilk Devre Kredisi denge değerleri.
+    GRIDSHARD 2.0 için ilk Devre Kredisi denge değerleri.
 
     Bunlar alpha denge değerleridir; simülasyon ve gerçek oyuncu testleriyle
     değiştirilebilir. Kullanıcıya ayrı satın alma/satma işlemi gösterilmez.

@@ -1,10 +1,10 @@
-# Project Relay 2.0 — YOL HARİTASI
+# GRIDSHARD 2.0 — YOL HARİTASI
 
-**Güncel Sürüm:** `2.0.0-beta.13`  
-**Paket:** Hazır Savaş Havuzları + Hızlı Modül Seçimi + HP Görselleştirmesi + Review-Ready Denge Kapısı  
+**Güncel Sürüm:** `2.0.0-beta.13.5`  
+**Paket:** GRIDSHARD Identity Foundation  
 **Kanonik Dosya:** `docs/YOL_HARITASI.md`
 
-> Bu dosya Project Relay 2.0 için tek kanonik geliştirme kaydıdır. Kaynak karar belgesi ile kod tabanı yeniden karşılaştırılmıştır. Buradaki `[x]`, `[~]`, `[ ]` işaretleri artık yalnızca kodda ve testlerde doğrulanabilen gerçek durumu gösterir.
+> Bu dosya GRIDSHARD 2.0 için tek kanonik geliştirme kaydıdır. Kaynak karar belgesi ile kod tabanı yeniden karşılaştırılmıştır. Buradaki `[x]`, `[~]`, `[ ]` işaretleri artık yalnızca kodda ve testlerde doğrulanabilen gerçek durumu gösterir.
 
 ## Durum İşaretleri
 
@@ -30,7 +30,7 @@ Aşağıdaki kararlar sabittir ve bundan sonraki geliştirmeler bunları bozamaz
 - [x] Devreden çıkarılan modül Can değerini korur; diğer maç içi durumlar da savaş saatiyle korunacak şekilde modellenmiştir.
 - [x] Sürüklenmekte olan aktif modül, bırakma komutu motor tarafından kabul edilene kadar savaşta kalır.
 - [x] 24 global seçenekten 18 modüllük Savaş Havuzu kullanılır; maksimum 10 aktif modül vardır.
-- [x] Çekirdek, Jeneratör, enerji akışı, port bağlantıları ve devre kurma Project Relay kimliğinin temelidir.
+- [x] Çekirdek, Jeneratör, enerji akışı, port bağlantıları ve devre kurma GRIDSHARD kimliğinin temelidir.
 - [x] Kullanıcıya görünen oyun/modül terimleri Türkçedir.
 - [x] Tek kanonik geliştirme kaydı bu dosyadır.
 
@@ -430,7 +430,7 @@ olarak üretilir.
 
 **M7 henüz “stabil/tamamlandı” kabul edilmeyecek.**
 
-### M8 — Project Relay 2.0 Beta
+### M8 — GRIDSHARD 2.0 Beta
 - [x] Oyna.
 - [x] Profil.
 - [x] İstatistikler.
@@ -443,7 +443,7 @@ olarak üretilir.
 
 # 7. Tamamlanan Son Paket
 
-## 2.0.0-beta.13 — Stabilizasyon + Kanonik Yol Haritası Denetimi + QA Zinciri
+## 2.0.0-beta.13.5 — Stabilizasyon + Kanonik Yol Haritası Denetimi + QA Zinciri
 
 - [x] Kaynak `Yol Haritası.txt`, mevcut kanonik yol haritası ve kod yeniden karşılaştırıldı.
 - [x] Eski yol haritasındaki 24 modül, 18 Savaş Havuzu, stratejik alan, güçlendirici ve PvP durumlarına ait eski/yanlış işaretlemeler gerçek koda göre düzeltildi.
@@ -526,7 +526,7 @@ olarak üretilir.
 
 ---
 
-# 7.1 — 2.0.0-beta.13 Gerçek Kullanıcı Test Bulguları ve Düzeltmeleri
+# 7.1 — 2.0.0-beta.13.5 Gerçek Kullanıcı Test Bulguları ve Düzeltmeleri
 
 Bu paket Beta.6'nın gerçek Windows/PowerShell ve tarayıcı testi sonucunda oluşturuldu; varsayımsal UX çalışması değildir.
 
@@ -571,7 +571,7 @@ Bu paket Beta.6'nın gerçek Windows/PowerShell ve tarayıcı testi sonucunda ol
 
 ---
 
-# 7.2 — 2.0.0-beta.13 Yerel AI Oynanış Doğrulama Paketi
+# 7.2 — 2.0.0-beta.13.5 Yerel AI Oynanış Doğrulama Paketi
 
 Beta.8'de denge değerleri varsayımla değiştirilmedi. Amaç Beta.7'nin kullanıcıya açtığı oynanış zincirini otomatik testte daha ileri taşımak ve gerçek savaş ekranını okunabilir hale getirmektir.
 
@@ -596,7 +596,7 @@ Beta.8'de denge değerleri varsayımla değiştirilmedi. Amaç Beta.7'nin kullan
 
 ---
 
-# 7.3 — 2.0.0-beta.13 Oyna Erişimi ve Stratejik Modül Seçimi
+# 7.3 — 2.0.0-beta.13.5 Oyna Erişimi ve Stratejik Modül Seçimi
 
 Bu paket doğrudan gerçek kullanıcı geri bildirimine dayanır: Oyna butonunun pasif kalması ve Savaş Havuzu oluştururken modül mekaniklerinin karar vermeye yetmeyecek kadar az gösterilmesi.
 
@@ -624,7 +624,7 @@ Bu paket doğrudan gerçek kullanıcı geri bildirimine dayanır: Oyna butonunun
 
 ---
 
-# 7.4 — 2.0.0-beta.13 Oyun Lobisi, Kapılar Arası Jeneratör ve Etki Görselleştirmesi
+# 7.4 — 2.0.0-beta.13.5 Oyun Lobisi, Kapılar Arası Jeneratör ve Etki Görselleştirmesi
 
 ## Jeneratör
 - [x] Jeneratör başlangıçta Çekirdek kapılarından birinde yer alır.
@@ -636,7 +636,7 @@ Bu paket doğrudan gerçek kullanıcı geri bildirimine dayanır: Oyna butonunun
 ## Menü / lobby
 - [x] Ana sayfa oyun lobisi kompozisyonuna geçirildi.
 - [x] Oyna ana CTA, Profil/İstatistikler/Ayarlar ikincil lobby navigasyonu oldu.
-- [x] Project Relay'e özgü çekirdek/devre görsel odağı CSS ile oluşturuldu; başka oyunun grafiği kopyalanmadı.
+- [x] GRIDSHARD'e özgü çekirdek/devre görsel odağı CSS ile oluşturuldu; başka oyunun grafiği kopyalanmadı.
 - [x] Profil, İstatistikler ve Ayarlar aynı rekabetçi arayüz diline yaklaştırıldı.
 
 ## Savaş etki görünürlüğü
@@ -647,7 +647,7 @@ Bu paket doğrudan gerçek kullanıcı geri bildirimine dayanır: Oyna butonunun
 
 ---
 
-# 7.5 — 2.0.0-beta.13 Manuel Savaş Telemetrisi ve Denge Hazırlığı
+# 7.5 — 2.0.0-beta.13.5 Manuel Savaş Telemetrisi ve Denge Hazırlığı
 
 - [x] Tek Oyunculu gerçek manuel maç başlangıç/bitiş telemetrisi eklendi.
 - [x] Maç süresi, sonuç, Devre Kredisi harcaması, modül müdahalesi, verilen/alınan hasar ve Kalkan azaltması ölçülüyor.
@@ -662,7 +662,7 @@ Bu paket doğrudan gerçek kullanıcı geri bildirimine dayanır: Oyna butonunun
 
 ---
 
-# 7.6 — 2.0.0-beta.13 Denge İnceleme Merkezi ve Jeneratör Rota Analizi
+# 7.6 — 2.0.0-beta.13.5 Denge İnceleme Merkezi ve Jeneratör Rota Analizi
 
 Bu paket Beta.11 telemetrisini karar destek katmanına taşır. Paket oluşturulurken kullanıcıdan üç yeni manuel maç verisi bulunmadığı için sayısal denge değiştirilmemiştir.
 
@@ -682,7 +682,7 @@ Bu paket Beta.11 telemetrisini karar destek katmanına taşır. Paket oluşturul
 
 ---
 
-# 7.7 — 2.0.0-beta.13 Hazır Savaş Havuzları, HP Görselleştirmesi ve Review-Ready Kapısı
+# 7.7 — 2.0.0-beta.13.5 Hazır Savaş Havuzları, HP Görselleştirmesi ve Review-Ready Kapısı
 
 ## Savaş Havuzu kullanılabilirliği
 - [x] Orta ayrıntı panelindeki büyük `Seç / Havuzdan Çıkar` düğmesi kaldırıldı.
@@ -719,17 +719,51 @@ Bu paket Beta.11 telemetrisini karar destek katmanına taşır. Paket oluşturul
 
 ---
 
+# 7.8 — 2.0.0-beta.13.5 GRIDSHARD Identity Foundation
+
+Beta.14'ten önce oyun kimliği sabitlenmiştir.
+
+## İsim / marka
+- [x] Kullanıcı-facing oyun adı `Project Relay` yerine `GRIDSHARD` oldu.
+- [x] Türkçe slogan `Devreni Kur. Çekirdeği Kır.` olarak sabitlendi.
+- [x] İngilizce slogan `Build the Circuit. Break the Core.` olarak dokümante edildi.
+- [x] Browser title, ana lobby ve server identity metadata GRIDSHARD kullanıyor.
+- [x] Dahili `Relay*` sınıf adları ve API route isimleri backward compatibility için bu pakette topluca rename edilmedi.
+
+## Görsel kimlik
+- [x] `docs/BRAND_IDENTITY.md` oluşturuldu.
+- [x] Merkezi GRIDSHARD CSS token sistemi eklendi.
+- [x] Void Navy / Reactor Blue / Alloy Navy / Circuit Steel taban yüzeyleri sabitlendi.
+- [x] Arc Cyan enerji, Reactor Gold seçim, Ion Green sağlık, Charge Amber uyarı, Overload Red kritik, Interference Violet sabotaj dili sabitlendi.
+- [x] Enerji / Saldırı / Savunma / Destek / Sabotaj sınıflarının renk rolleri sabitlendi.
+- [x] Ana lobby için özgün dört kapılı `Shard Core` CSS sembolü eklendi.
+- [x] Ana lobby slogan ve GRIDSHARD Core Arena kimliğine geçirildi.
+- [x] Profil, İstatistikler, Ayarlar, Savaş Havuzu ve Savaş panelleri ortak GRIDSHARD yüzey renklerine bağlandı.
+- [x] 1920×1080 ana tasarım hedefi; 1366×768–2560×1440 responsive aralık dokümante edildi ve yüksek çözünürlük media kuralları eklendi.
+
+## Ses / müzik kimliği
+- [x] `docs/AUDIO_DIRECTION.md` oluşturuldu.
+- [x] Menü `92–100 BPM`, havuz `105–112`, matchmaking `115–120`, savaş `126–132 BPM` yönü sabitlendi.
+- [x] 4–6 notalık ortak leitmotif prensibi dokümante edildi.
+- [x] Menü / Havuz / Matchmaking / Battle / Pressure / Critical Core / Victory / Defeat audio state modeli eklendi.
+- [x] `client/src/gridshard-audio.js` dinamik audio director temeli eklendi.
+- [x] Henüz stock veya lisansı belirsiz müzik dosyası eklenmedi; nihai müzikler özgün üretilecek.
+
+## Güvenli geçiş
+- [x] `/identity` endpoint'i GRIDSHARD marka, slogan ve palette metadata yayınlıyor.
+- [x] Existing gameplay / server-authoritative motor davranışı değiştirilmedi.
+- [x] Beta.14 bundan sonra GRIDSHARD adıyla devam edecek.
+
+---
+
 # 9. Sıradaki Paket
 
-**`2.0.0-beta.14 — Hazır Havuz Yönetimi UX + Gerçek Review-Ready Denge Onay Akışı`**
+**`GRIDSHARD 2.0.0-beta.14 — Hazır Havuz Yönetimi UX + Gerçek Review-Ready Denge Onay Akışı`**
 
-Beta.13 sonrası iki ayrı gerçek kullanım alanı test edilecektir:
+Beta.14 ve sonraki tüm kullanıcı-facing geliştirmeler GRIDSHARD kimliğiyle ilerleyecektir.
 
-1. oyuncunun birkaç farklı hazır Savaş Havuzu oluşturup maçlar arasında hızlıca yüklemesi,
-2. en az 3 gerçek manuel maç sonrası Denge İnceleme Merkezi'nin `review_ready` olması.
-
-Beta.14'te:
-- hazır havuzların yeniden adlandırma / üzerine kaydetme / aktif preset işareti UX'i değerlendirilecek,
-- gerçek review-ready adayları için önce/sonra sayısal değerleri kullanıcı onayıyla girilen değişiklik taslağı hazırlanacak,
-- taslak önce simülasyon ve regresyon testinden geçecek,
-- sonuç başarılı olmadıkça kanonik denge değerleri değiştirilmeyecektir.
+Beta.14:
+- hazır Savaş Havuzu yeniden adlandırma / üzerine kaydetme / aktif preset işareti UX'ini ilerletecek,
+- en az 3 gerçek manuel maç oluşmuşsa `review_ready` denge adaylarını manuel değişiklik planına dönüştürecek,
+- sayısal değişiklikler önce simülasyon ve regresyon testinden geçmeden uygulanmayacaktır,
+- BRAND_IDENTITY ve AUDIO_DIRECTION bu aşamadan sonra kanonik marka kaynakları olarak korunacaktır.

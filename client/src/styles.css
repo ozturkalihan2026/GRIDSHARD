@@ -1191,7 +1191,7 @@ body[data-play-mode="online"]:not([data-online-status="battle"])
 }
 
 
-/* beta.10 — Project Relay oyun lobisi */
+/* beta.10 — GRIDSHARD oyun lobisi */
 :root {
   --relay-bg:#070d17;
   --relay-panel:#0f1928;
@@ -1767,5 +1767,315 @@ body[data-app-screen="menu"] .main-scope-nav .menu-action:hover {
   .preset-load-group,
   .preset-save-group {
     grid-template-columns:1fr;
+  }
+}
+
+
+/* =========================================================
+   GRIDSHARD Identity Foundation — beta.13.5
+   ========================================================= */
+:root {
+  --gs-void-navy:#070B14;
+  --gs-reactor-blue:#0C1625;
+  --gs-alloy-navy:#132238;
+  --gs-circuit-steel:#294766;
+  --gs-arc-cyan:#36D9FF;
+  --gs-plasma-cyan:#67F4FF;
+  --gs-reactor-gold:#F4C85A;
+  --gs-ion-green:#55DF8A;
+  --gs-charge-amber:#F0B84B;
+  --gs-overload-red:#FF515A;
+  --gs-interference-violet:#A86BFF;
+  --gs-ice-white:#ECF5FF;
+  --gs-signal-gray:#8CA1B9;
+
+  --gs-energy:#36D9FF;
+  --gs-attack:#FF6156;
+  --gs-defense:#5EA9FF;
+  --gs-support:#55DF8A;
+  --gs-sabotage:#A86BFF;
+
+  --gs-design-width:1920;
+  --gs-design-height:1080;
+
+  --relay-bg:var(--gs-void-navy);
+  --relay-panel:var(--gs-alloy-navy);
+  --relay-line:rgba(41,71,102,.72);
+  --relay-text:var(--gs-ice-white);
+  --relay-muted:var(--gs-signal-gray);
+  --relay-accent:var(--gs-reactor-gold);
+  --relay-cyan:var(--gs-arc-cyan);
+}
+
+html {
+  color-scheme:dark;
+  background:var(--gs-void-navy);
+}
+
+body {
+  min-width:320px;
+  background:
+    radial-gradient(circle at 52% 17%, rgba(54,217,255,.105), transparent 34%),
+    radial-gradient(circle at 82% 70%, rgba(168,107,255,.045), transparent 28%),
+    linear-gradient(180deg,var(--gs-reactor-blue),var(--gs-void-navy) 70%);
+  color:var(--gs-ice-white);
+}
+
+::selection {
+  background:rgba(54,217,255,.28);
+  color:var(--gs-ice-white);
+}
+
+/* Class identity */
+.pool-category-group[data-category="enerji"] .pool-category-title,
+.pool-choice[data-category="Enerji"] .pool-choice-select {
+  color:var(--gs-energy);
+}
+
+.pool-category-group[data-category="saldırı"] .pool-category-title,
+.pool-choice[data-category="Saldırı"] .pool-choice-select {
+  color:var(--gs-attack);
+}
+
+.pool-category-group[data-category="savunma"] .pool-category-title,
+.pool-choice[data-category="Savunma"] .pool-choice-select {
+  color:var(--gs-defense);
+}
+
+.pool-category-group[data-category="destek"] .pool-category-title,
+.pool-choice[data-category="Destek"] .pool-choice-select {
+  color:var(--gs-support);
+}
+
+.pool-category-group[data-category="sabotaj"] .pool-category-title,
+.pool-choice[data-category="Sabotaj"] .pool-choice-select {
+  color:var(--gs-sabotage);
+}
+
+.module-card[data-category="enerji"] {
+  border-top-color:var(--gs-energy);
+}
+.module-card[data-category="saldırı"] {
+  border-top-color:var(--gs-attack);
+}
+.module-card[data-category="savunma"] {
+  border-top-color:var(--gs-defense);
+}
+.module-card[data-category="destek"] {
+  border-top-color:var(--gs-support);
+}
+.module-card[data-category="sabotaj"] {
+  border-top-color:var(--gs-sabotage);
+}
+
+/* GRIDSHARD logo / Shard Core */
+.shard-core-mark {
+  position:absolute;
+  left:57%;
+  top:48%;
+  width:260px;
+  height:260px;
+  transform:translate(-50%,-50%) rotate(-8deg);
+  border:0;
+  border-radius:50%;
+  background:
+    radial-gradient(circle,rgba(103,244,255,.14),rgba(54,217,255,.025) 46%,transparent 67%);
+  color:transparent;
+  box-shadow:
+    0 0 80px rgba(54,217,255,.12),
+    inset 0 0 46px rgba(54,217,255,.05);
+}
+
+.shard-core-center {
+  position:absolute;
+  left:50%;
+  top:50%;
+  width:96px;
+  height:96px;
+  transform:translate(-50%,-50%) rotate(45deg);
+  border:2px solid rgba(103,244,255,.72);
+  background:
+    linear-gradient(135deg,rgba(54,217,255,.18),rgba(12,22,37,.94));
+  box-shadow:
+    0 0 24px rgba(54,217,255,.2),
+    inset 0 0 18px rgba(103,244,255,.08);
+}
+
+.shard-core-gate {
+  position:absolute;
+  left:50%;
+  top:50%;
+  width:28px;
+  height:72px;
+  border:1px solid rgba(54,217,255,.56);
+  background:linear-gradient(180deg,rgba(54,217,255,.16),rgba(19,34,56,.88));
+  box-shadow:0 0 16px rgba(54,217,255,.08);
+}
+
+.shard-core-gate.gate-north {
+  transform:translate(-50%,-158px);
+}
+.shard-core-gate.gate-south {
+  transform:translate(-50%,86px);
+}
+.shard-core-gate.gate-east {
+  width:72px;
+  height:28px;
+  transform:translate(86px,-50%);
+}
+.shard-core-gate.gate-west {
+  width:72px;
+  height:28px;
+  transform:translate(-158px,-50%);
+}
+
+.shard-core-crack {
+  position:absolute;
+  left:50%;
+  top:50%;
+  width:5px;
+  height:136px;
+  transform:translate(-50%,-50%) rotate(28deg);
+  background:
+    linear-gradient(
+      180deg,
+      transparent,
+      var(--gs-reactor-gold) 18%,
+      var(--gs-plasma-cyan) 48%,
+      var(--gs-reactor-gold) 76%,
+      transparent
+    );
+  box-shadow:0 0 16px rgba(244,200,90,.42);
+  clip-path:polygon(38% 0,100% 17%,48% 45%,88% 64%,23% 100%,47% 68%,0 52%,53% 29%);
+}
+
+.gridshard-tagline {
+  display:block;
+  margin-top:6px;
+  color:var(--gs-reactor-gold);
+  font-size:.76rem;
+  font-weight:800;
+  letter-spacing:.09em;
+  text-transform:uppercase;
+}
+
+/* Core game CTA */
+.lobby-play-button {
+  background:
+    linear-gradient(120deg,var(--gs-reactor-gold),#FFE589);
+  border-color:rgba(244,200,90,.88);
+  box-shadow:
+    0 18px 50px rgba(244,200,90,.15),
+    0 0 0 1px rgba(255,255,255,.04) inset;
+}
+
+.lobby-play-button:hover,
+.lobby-play-button:focus-visible {
+  transform:translateY(-2px);
+  box-shadow:
+    0 21px 58px rgba(244,200,90,.23),
+    0 0 0 1px rgba(255,255,255,.08) inset;
+}
+
+/* Panels now share a single branded surface language */
+.profile-summary-panel,
+.statistics-summary-panel,
+.settings-summary-panel,
+.play-mode-panel,
+.battle-pool-panel,
+.booster-panel,
+.combat-summary-panel,
+.event-panel,
+.post-match-panel,
+.balance-review-panel {
+  border-color:rgba(41,71,102,.86);
+  background:
+    linear-gradient(145deg,rgba(19,34,56,.96),rgba(7,11,20,.94));
+}
+
+.screen-kicker,
+.lobby-kicker,
+.player-card-label {
+  color:var(--gs-arc-cyan);
+}
+
+.pool-detail-category,
+.pool-category-title,
+#local-report-balance-status {
+  color:var(--gs-reactor-gold);
+}
+
+/* Board identity */
+.board-cell {
+  border-color:rgba(41,71,102,.58);
+  background:
+    linear-gradient(145deg,rgba(12,22,37,.88),rgba(7,11,20,.92));
+}
+
+.board-cell:hover {
+  border-color:rgba(54,217,255,.42);
+}
+
+.board-cell.gate-cell {
+  border-color:rgba(244,200,90,.52);
+  box-shadow:
+    inset 0 0 19px rgba(244,200,90,.045),
+    0 0 0 1px rgba(244,200,90,.05);
+}
+
+/* HP identity */
+.hp-bar-fill {
+  background:
+    linear-gradient(
+      90deg,
+      var(--gs-overload-red) 0%,
+      var(--gs-charge-amber) 48%,
+      var(--gs-ion-green) 100%
+    );
+}
+
+.module-stat.warning {
+  color:var(--gs-overload-red);
+}
+
+/* Sabotage */
+.module-card.fx-sabotage {
+  outline-color:var(--gs-interference-violet);
+}
+
+/* Design baseline scaling */
+@media (min-width:1366px) {
+  .battle-shell {
+    width:min(96vw,1840px);
+  }
+}
+
+@media (min-width:1920px) {
+  body {
+    font-size:16px;
+  }
+
+  .battle-shell {
+    width:min(94vw,1840px);
+  }
+
+  body[data-app-screen="menu"] .main-menu-panel {
+    width:min(1220px,88vw);
+    min-height:680px;
+  }
+}
+
+@media (min-width:2560px) {
+  body {
+    font-size:18px;
+  }
+
+  .battle-shell {
+    width:min(90vw,2200px);
+  }
+
+  body[data-app-screen="menu"] .main-menu-panel {
+    width:min(1500px,84vw);
+    min-height:790px;
   }
 }

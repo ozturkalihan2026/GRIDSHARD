@@ -133,7 +133,7 @@ from .web_test_run import (
 
 
 app = FastAPI(
-    title="Project Relay PvP Gateway",
+    title="GRIDSHARD PvP Gateway",
     version=VERSION,
 )
 
@@ -1879,6 +1879,34 @@ def delete_battle_pool_preset(
 @app.get("/game/module-catalog")
 def game_module_catalog() -> dict:
     return build_module_catalog_view()
+
+
+@app.get("/identity")
+def gridshard_identity() -> dict:
+    return {
+        "name":"GRIDSHARD",
+        "tagline_tr":
+            "Devreni Kur. Çekirdeği Kır.",
+        "tagline_en":
+            "Build the Circuit. Break the Core.",
+        "identity_version":
+            "2.0.0-beta.13.5",
+        "palette":{
+            "void_navy":"#070B14",
+            "reactor_blue":"#0C1625",
+            "alloy_navy":"#132238",
+            "circuit_steel":"#294766",
+            "arc_cyan":"#36D9FF",
+            "plasma_cyan":"#67F4FF",
+            "reactor_gold":"#F4C85A",
+            "ion_green":"#55DF8A",
+            "charge_amber":"#F0B84B",
+            "overload_red":"#FF515A",
+            "interference_violet":"#A86BFF",
+            "ice_white":"#ECF5FF",
+            "signal_gray":"#8CA1B9",
+        },
+    }
 
 
 @app.get("/health")
