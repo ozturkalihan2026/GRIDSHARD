@@ -1,6 +1,6 @@
 # GRIDSHARD — Brand Identity Foundation
 
-**Identity package:** `2.0.0-beta.14`  
+**Identity package:** `2.0.0-beta.15`  
 **Game name:** `GRIDSHARD`  
 **Tagline (TR):** `Devreni Kur. Çekirdeği Kır.`  
 **Tagline (EN):** `Build the Circuit. Break the Core.`
@@ -116,7 +116,7 @@ Kullanıcıya görünen başlıklar:
 - Ayarlar
 
 Alt kimlik:
-- Profil → `Operatör Dosyası`
+- Profil → `Operatör Terminali`
 - İstatistikler → `Savaş Arşivi`
 - Ayarlar → `Sistem Konsolu`
 - Savaş Havuzu → `Loadout Grid`
@@ -149,3 +149,18 @@ Backward compatibility nedeniyle aşağıdaki dahili isimler bu foundation paket
 - kalıcı veri şemalarının güvenli olmayan alanları
 
 Dahili rename, ayrı migration paketi olmadan yapılmaz.
+
+
+---
+
+## 9. Beta.15 uygulama tamamlama
+
+Ana lobby kararı artık yalnız doküman değildir:
+
+- arka planda 5×4 = 20 hücreli silik arena geometrisi render edilir,
+- Shard Core ve grid pointer hareketine çok hafif parallax verir,
+- OYNA alt metni `Tek Oyunculu · Dereceli PvP`,
+- oyuncu kartında `Sezon / Lig / RP`,
+- alt ekran kimlikleri `Operatör Terminali / Savaş Arşivi / Sistem Konsolu`.
+
+Parallax dekoratiftir; savaş input'una veya mobil erişilebilirliğe bağımlılık oluşturmaz.

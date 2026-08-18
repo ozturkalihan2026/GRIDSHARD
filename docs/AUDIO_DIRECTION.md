@@ -45,7 +45,7 @@ Foundation motif tasarım kuralı:
 - zaferde açık harmonik,
 - mağlubiyette düşük oktav / kırılmış versiyon.
 
-**Not:** Bu dosya bestelenmiş ses dosyası içermez. Nihai motif özgün olarak üretilecek ve lisans zinciri proje içinde tutulacaktır.
+**Beta.15 durumu:** İlk özgün prosedürel prototip motif ve ses dosyaları artık `client/assets/audio/` altında bulunur. Final mix/master ve nihai beste revizyonları ileride yapılacaktır.
 
 ---
 
@@ -127,4 +127,33 @@ UI / istemci şu state adlarını kullanabilir:
 - `victory`
 - `defeat`
 
-Gerçek müzik dosyaları daha sonra `assets/audio/` altında özgün besteler olarak eklenir.
+Beta.15 itibarıyla özgün prosedürel prototipler `client/assets/audio/` altında eklenmiştir; final prodüksiyon sürümleri aynı state modelini koruyarak geliştirilecektir.
+
+
+---
+
+## 7. Beta.15 özgün prototip assetleri
+
+Bu pakette ilk özgün prosedürel GRIDSHARD audio dosyaları üretildi. Bunlar stock/üçüncü taraf ses değildir.
+
+### Müzik
+- `menu_pulse.wav` — 96 BPM yönü
+- `pool_pulse.wav` — 108 BPM yönü
+- `matchmaking_rise.wav` — 118 BPM yönü
+- `battle_pulse.wav` — 129 BPM yönü
+- `victory_sting.wav`
+- `defeat_sting.wav`
+
+Motif ailesi: `D – F – A – C – B`.
+
+### SFX
+- `port_connect.wav`
+- `energy_transfer.wav`
+- `laser_fire.wav`
+- `shield_hit.wav`
+- `emp.wav`
+- `virus_glitch.wav`
+- `generator_move.wav`
+- `core_hit.wav`
+
+Bu dosyalar kimlik prototipidir; final mix/master aşamasında ses kalitesi, stereo alan, limiter ve platform loudness değerleri ayrıca düzenlenecektir.

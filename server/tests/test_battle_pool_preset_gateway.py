@@ -98,3 +98,46 @@ def test_preset_rename_gateway():
     battle_pool_preset_repository.backup_path.unlink(
         missing_ok=True
     )
+
+
+def test_preset_meta_gateway():
+    player="preset-meta-gateway"
+    battle_pool_preset_repository.path.unlink(
+        missing_ok=True
+    )
+    battle_pool_preset_repository.backup_path.unlink(
+        missing_ok=True
+    )
+
+    ids=list(
+        default_battle_pool()
+        .module_definition_ids
+    )
+
+    created=client.put(
+        f"/profile/{player}/battle-pool-presets",
+        json={
+            "name":"Favori",
+            "battle_pool_ids":ids,
+        },
+    )
+    assert created.status_code==200
+
+    meta=client.patch(
+        f"/profile/{player}/battle-pool-presets/Favori/meta",
+        json={
+            "favorite":True,
+            "mark_used":True,
+        },
+    )
+    assert meta.status_code==200
+    preset=meta.json()["preset"]
+    assert preset["favorite"] is True
+    assert preset["last_used_at_ms"] is not None
+
+    battle_pool_preset_repository.path.unlink(
+        missing_ok=True
+    )
+    battle_pool_preset_repository.backup_path.unlink(
+        missing_ok=True
+    )

@@ -14,7 +14,7 @@
     <header class="battle-header">
       <div>
         <h1>GRIDSHARD 2.0</h1>
-        <p>2.0.0-beta.14 — Gerçek Web Testi Hazır</p>
+        <p>2.0.0-beta.15 — Gerçek Web Testi Hazır</p>
       </div>
       <div class="battle-status-cluster">
         <div class="credit-indicator" id="credit-indicator">Devre Kredisi: 200 DK</div>
@@ -25,6 +25,12 @@
 
     <section id="main-menu-panel" class="main-menu-panel">
       <div class="lobby-backdrop" aria-hidden="true">
+        <div class="lobby-board-grid" aria-hidden="true">
+          <span></span><span></span><span></span><span></span><span></span>
+          <span></span><span></span><span></span><span></span><span></span>
+          <span></span><span></span><span></span><span></span><span></span>
+          <span></span><span></span><span></span><span></span><span></span>
+        </div>
         <div class="lobby-core-orbit orbit-a"></div>
         <div class="lobby-core-orbit orbit-b"></div>
         <div class="lobby-core-mark shard-core-mark" aria-hidden="true">
@@ -47,11 +53,11 @@
         <div class="lobby-play-row">
           <button type="button" class="menu-action menu-action-play lobby-play-button" data-open-screen="play">
             <span class="menu-action-title">Oyna</span>
-            <span class="menu-action-copy">Tek Oyunculu Test · Online PvP</span>
+            <span class="menu-action-copy">Tek Oyunculu · Dereceli PvP</span>
           </button>
           <div class="lobby-build-chip">
             <span>GÜNCEL YAPI</span>
-            <strong>2.0.0-beta.14</strong>
+            <strong>2.0.0-beta.15</strong>
           </div>
         </div>
       </div>
@@ -60,7 +66,7 @@
         <div class="lobby-player-card">
           <span class="player-card-label">OPERATÖR</span>
           <strong>Oyuncu</strong>
-          <span>Gümüş · 1000 RP</span>
+          <span>Sezon: Kuruluş · Lig: Gümüş · 1000 RP</span>
         </div>
         <nav class="main-scope-nav" aria-label="Ana Menü">
           <button type="button" class="menu-action" data-open-screen="profile">
@@ -85,7 +91,7 @@
 
     <section class="profile-summary-panel" id="profile-summary-panel" data-screen-panel="profile" hidden>
       <div class="panel-title-row">
-        <div class="screen-heading-block"><span class="screen-kicker">OPERATÖR DOSYASI</span><h2>Profil</h2><p class="screen-subtitle">Oyuncu kimliği, ilerleme ve savaş hazırlığı.</p></div>
+        <div class="screen-heading-block"><span class="screen-kicker">OPERATÖR TERMİNALİ</span><h2>Profil</h2><p class="screen-subtitle">Oyuncu kimliği, ilerleme ve savaş hazırlığı.</p></div>
         <span>Genel · İlerleme · Savaş Havuzu · <strong id="profile-load-status" data-status="idle">Yerel önizleme</strong></span>
       </div>
       <p id="profile-live-summary">Oyuncu · Seviye 1 · Gümüş · 1000 Derece Puanı · 0 XP</p>
@@ -103,7 +109,7 @@
 
     <section class="statistics-summary-panel" id="statistics-summary-panel" data-screen-panel="statistics" hidden>
       <div class="panel-title-row">
-        <div class="screen-heading-block"><span class="screen-kicker">SAVAŞ KAYDI</span><h2>İstatistikler</h2><p class="screen-subtitle">Maç geçmişinin temel performans özeti.</p></div>
+        <div class="screen-heading-block"><span class="screen-kicker">SAVAŞ ARŞİVİ</span><h2>İstatistikler</h2><p class="screen-subtitle">Maç geçmişinin temel performans özeti.</p></div>
         <span>Sunucu otoriteli maç sonuçları · <strong id="statistics-load-status" data-status="idle">Yerel önizleme</strong></span>
       </div>
       <p id="statistics-live-summary">Maç 0 · Galibiyet 0 · Mağlubiyet 0 · Beraberlik 0 · Galibiyet %0</p>
@@ -111,7 +117,7 @@
 
     <section class="settings-summary-panel" id="settings-summary-panel" data-screen-panel="settings" hidden>
       <div class="panel-title-row">
-        <div class="screen-heading-block"><span class="screen-kicker">SİSTEM KONFİGÜRASYONU</span><h2 id="settings-title">Ayarlar</h2><p class="screen-subtitle">Oyun deneyimini cihazına göre düzenle.</p></div>
+        <div class="screen-heading-block"><span class="screen-kicker">SİSTEM KONSOLU</span><h2 id="settings-title">Ayarlar</h2><p class="screen-subtitle">Oyun deneyimini cihazına göre düzenle.</p></div>
         <span>Ses · Müzik · Titreşim · Grafik · Dil · <strong id="settings-load-status" data-status="idle">Yerel önizleme</strong></span>
       </div>
       <div class="settings-form">
@@ -175,27 +181,36 @@
       </div>
 
       <section class="battle-pool-preset-bar">
-        <div class="preset-load-group">
-          <label for="battle-pool-preset-select">Hazır Havuz</label>
-          <select id="battle-pool-preset-select">
-            <option value="">Hazır havuz seç...</option>
-          </select>
-          <button id="battle-pool-preset-load" type="button">Yükle</button>
-          <button id="battle-pool-preset-delete" type="button">Sil</button>
+        <div class="preset-gallery-heading">
+          <div>
+            <strong>Hazır Savaş Havuzları</strong>
+            <span>Favori veya son kullandığın loadout'u tek tıkla yükle.</span>
+          </div>
+          <button id="battle-pool-preset-new" type="button">Yeni Hazır Havuz</button>
         </div>
-        <div class="preset-save-group">
-          <label for="battle-pool-preset-name">Yeni / Güncel Havuz</label>
-          <input id="battle-pool-preset-name" type="text" maxlength="24" placeholder="Örn. Saldırı" />
-          <button id="battle-pool-preset-save" type="button">Hazır Havuz Kaydet</button>
-        </div>
-        <div class="preset-rename-group">
-          <label for="battle-pool-preset-rename">Yeniden Adlandır</label>
-          <input id="battle-pool-preset-rename" type="text" maxlength="24" placeholder="Yeni hazır havuz adı" />
-          <button id="battle-pool-preset-rename-button" type="button">Adı Değiştir</button>
-        </div>
-        <div class="preset-active-row">
-          <span id="battle-pool-active-preset" data-state="none">Aktif hazır havuz: Yok</span>
-          <span id="battle-pool-preset-dirty" data-dirty="false">Değişiklik yok</span>
+
+        <select id="battle-pool-preset-select" class="preset-compat-select" aria-hidden="true" tabindex="-1">
+          <option value="">Hazır havuz seç...</option>
+        </select>
+
+        <div id="battle-pool-preset-gallery" class="battle-pool-preset-gallery" aria-label="Hazır Savaş Havuzları"></div>
+
+        <div class="preset-management-grid">
+          <div class="preset-save-group">
+            <label for="battle-pool-preset-name">Yeni / Güncel Havuz</label>
+            <input id="battle-pool-preset-name" type="text" maxlength="24" placeholder="Örn. Saldırı" />
+            <button id="battle-pool-preset-save" type="button">Hazır Havuz Kaydet</button>
+          </div>
+          <div class="preset-rename-group">
+            <label for="battle-pool-preset-rename">Yeniden Adlandır</label>
+            <input id="battle-pool-preset-rename" type="text" maxlength="24" placeholder="Yeni hazır havuz adı" />
+            <button id="battle-pool-preset-rename-button" type="button">Adı Değiştir</button>
+          </div>
+          <div class="preset-active-row">
+            <span id="battle-pool-active-preset" data-state="none">Aktif hazır havuz: Yok</span>
+            <span id="battle-pool-preset-dirty" data-dirty="false">Serbest seçim</span>
+            <button id="battle-pool-preset-delete" type="button">Aktif Hazır Havuzu Sil</button>
+          </div>
         </div>
         <span id="battle-pool-preset-status" role="status">Kayıtlı havuzlar yükleniyor...</span>
       </section>

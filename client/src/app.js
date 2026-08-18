@@ -578,7 +578,7 @@
         webTestBuildState,
       releaseCheckState,
       expectedVersion:
-        "2.0.0-beta.14",
+        "2.0.0-beta.15",
       expectedProtocolVersion: 1,
     });
   const playReadinessGate =
@@ -614,7 +614,7 @@
 
   telemetryDispatcher.trackGameOpened({
     platform: "web",
-    build: "2.0.0-beta.14",
+    build: "2.0.0-beta.15",
   });
 
   const postMatchSync =
@@ -1174,7 +1174,7 @@
   const diagnosticSnapshot =
     new RelayDiagnosticSnapshot({
       version:
-        "2.0.0-beta.14",
+        "2.0.0-beta.15",
       build:
         "web-test-beta.13",
       bootGate:
@@ -1272,6 +1272,14 @@
   const presetSelectEl =
     document.getElementById(
       "battle-pool-preset-select"
+    );
+  const presetGalleryEl =
+    document.getElementById(
+      "battle-pool-preset-gallery"
+    );
+  const presetNewEl =
+    document.getElementById(
+      "battle-pool-preset-new"
     );
   const presetLoadEl =
     document.getElementById(
@@ -1400,6 +1408,64 @@
       () => openAppScreen(
         button.dataset.openScreen
       )
+    );
+  }
+
+  const lobbyPanel=
+    document.getElementById(
+      "main-menu-panel"
+    );
+
+  if (lobbyPanel) {
+    lobbyPanel.addEventListener(
+      "pointermove",
+      (event) => {
+        const rect=
+          lobbyPanel.getBoundingClientRect();
+        const x=
+          (
+            event.clientX
+            - rect.left
+          ) / Math.max(
+            1,
+            rect.width
+          );
+        const y=
+          (
+            event.clientY
+            - rect.top
+          ) / Math.max(
+            1,
+            rect.height
+          );
+
+        lobbyPanel.style.setProperty(
+          "--lobby-parallax-x",
+          `${(
+            x - .5
+          ) * 10}px`
+        );
+        lobbyPanel.style.setProperty(
+          "--lobby-parallax-y",
+          `${(
+            y - .5
+          ) * 8}px`
+        );
+      }
+    );
+
+    lobbyPanel.addEventListener(
+      "pointerleave",
+      () => {
+        lobbyPanel.style.setProperty(
+          "--lobby-parallax-x",
+          "0px"
+        );
+        lobbyPanel.style.setProperty(
+          "--lobby-parallax-y",
+          "0px"
+        );
+      }
     );
   }
 
@@ -2926,6 +2992,25 @@ const SPECIAL_CELL_INFO = {
       ? new GridshardAudioDirector()
       : null;
 
+  function triggerGridshardCue(
+    cueName
+  ) {
+    if (
+      gridshardAudioDirector
+      && typeof gridshardAudioDirector
+        .triggerCue === "function"
+    ) {
+      return gridshardAudioDirector
+        .triggerCue(
+          cueName
+        );
+    }
+    return {
+      ok:false,
+      reason:"Audio director hazır değil.",
+    };
+  }
+
   let activePlayMode = "idle";
   let localBattleStarted = false;
   let localBattleFinished = false;
@@ -3239,6 +3324,33 @@ const SPECIAL_CELL_INFO = {
       save.textContent=
         "Taslağı Kaydet";
 
+      const simulate=
+        document.createElement(
+          "button"
+        );
+      simulate.type="button";
+      simulate.className=
+        "simulate-button";
+      simulate.textContent=
+        "İzole Simülasyonu Çalıştır";
+
+      const simulationResult=
+        document.createElement(
+          "div"
+        );
+      simulationResult.className=
+        "balance-simulation-result";
+      simulationResult.textContent=
+        item.simulation_status
+        === "passed"
+          ? "Son izole simülasyon başarılı. Kanonik değer değişmedi."
+          : (
+              item.simulation_status
+              === "failed"
+                ? "Son izole simülasyon başarısız veya bu alan henüz desteklenmiyor."
+                : "Simülasyon bekleniyor."
+            );
+
       save.addEventListener(
         "click",
         async () => {
@@ -3275,6 +3387,92 @@ const SPECIAL_CELL_INFO = {
         }
       );
 
+      simulate.addEventListener(
+        "click",
+        async () => {
+          // Save current draft values first, then simulate stored proposal.
+          const saveResponse=
+            await fetch(
+              `/telemetry/balance-change-draft?player_id=${encodeURIComponent(participantPlayerId)}`,
+              {
+                method:"PUT",
+                headers:{
+                  "content-type":"application/json",
+                },
+                body:JSON.stringify({
+                  area:item.area,
+                  before_value:
+                    before.value || null,
+                  proposed_value:
+                    proposed.value || null,
+                  approved:
+                    approval.checked,
+                  simulation_status:
+                    "pending",
+                  regression_status:
+                    item.regression_status || "pending",
+                }),
+              }
+            );
+
+          if (!saveResponse.ok) {
+            simulationResult.textContent=
+              "Taslak kaydedilemedi; simülasyon çalıştırılmadı.";
+            return;
+          }
+
+          const response=
+            await fetch(
+              `/telemetry/balance-change-simulate?player_id=${encodeURIComponent(participantPlayerId)}`,
+              {
+                method:"POST",
+                headers:{
+                  "content-type":"application/json",
+                },
+                body:JSON.stringify({
+                  area:item.area,
+                }),
+              }
+            );
+
+          const payload=
+            await response.json();
+
+          if (
+            response.ok
+            && payload.ok
+          ) {
+            const beforeMetrics=
+              JSON.stringify(
+                payload.simulation
+                  ?.metrics_before
+                || {}
+              );
+            const proposedMetrics=
+              JSON.stringify(
+                payload.simulation
+                  ?.metrics_proposed
+                || {}
+              );
+            simulationResult.textContent=
+              `İzole simülasyon geçti · Önce ${beforeMetrics} · Öneri ${proposedMetrics} · Kanonik değer değişmedi.`;
+            renderBalanceDraft(
+              payload.draft
+            );
+          } else {
+            simulationResult.textContent=
+              payload.reason
+              || payload.detail
+              || "İzole simülasyon başarısız.";
+            if (payload.draft) {
+              renderBalanceDraft(
+                payload.draft
+              );
+            }
+          }
+        }
+      );
+
       card.append(
         heading,
         reason,
@@ -3282,7 +3480,9 @@ const SPECIAL_CELL_INFO = {
         proposed,
         approvalLabel,
         checks,
-        save
+        save,
+        simulate,
+        simulationResult
       );
       list.appendChild(card);
     }
@@ -3949,6 +4149,16 @@ const SPECIAL_CELL_INFO = {
         ? "shield"
         : "hit"
     );
+    triggerGridshardCue(
+      shieldActive
+        ? "shield_hit"
+        : (
+            target.instanceId
+            === "core-1"
+              ? "core_hit"
+              : "energy_transfer"
+          )
+    );
 
     if (localBattleMetrics) {
       localBattleMetrics.damage_received += damage;
@@ -4210,6 +4420,248 @@ const SPECIAL_CELL_INFO = {
     }
   }
 
+  function presetLastUsedLabel(
+    timestamp
+  ) {
+    if (!timestamp) {
+      return "Henüz kullanılmadı";
+    }
+
+    const elapsed=
+      Math.max(
+        0,
+        Date.now()
+        - Number(timestamp)
+      );
+    const minutes=
+      Math.floor(
+        elapsed / 60000
+      );
+
+    if (minutes < 1) {
+      return "Az önce kullanıldı";
+    }
+    if (minutes < 60) {
+      return `${minutes} dk önce`;
+    }
+
+    const hours=
+      Math.floor(
+        minutes / 60
+      );
+    if (hours < 24) {
+      return `${hours} sa önce`;
+    }
+
+    const days=
+      Math.floor(
+        hours / 24
+      );
+    return `${days} gün önce`;
+  }
+
+  async function updateBattlePoolPresetMeta(
+    name,
+    {
+      favorite=null,
+      markUsed=false,
+    }={}
+  ) {
+    const response=await fetch(
+      `/profile/${encodeURIComponent(participantPlayerId)}/battle-pool-presets/${encodeURIComponent(name)}/meta`,
+      {
+        method:"PATCH",
+        headers:{
+          "content-type":"application/json",
+        },
+        body:JSON.stringify({
+          favorite,
+          mark_used:markUsed,
+        }),
+      }
+    );
+
+    if (!response.ok) {
+      return {
+        ok:false,
+      };
+    }
+
+    const payload=
+      await response.json();
+    battlePoolPresets=
+      payload.presets || [];
+    renderPresetOptions();
+
+    return {
+      ok:true,
+      preset:payload.preset,
+    };
+  }
+
+  function renderPresetGallery() {
+    if (!presetGalleryEl) {
+      return;
+    }
+
+    presetGalleryEl.innerHTML="";
+
+    if (!battlePoolPresets.length) {
+      const empty=
+        document.createElement(
+          "p"
+        );
+      empty.className=
+        "preset-gallery-empty";
+      empty.textContent=
+        "Henüz hazır havuz yok. 18/18 seçim yaptıktan sonra ilk loadout'unu kaydet.";
+      presetGalleryEl.appendChild(
+        empty
+      );
+      return;
+    }
+
+    for (
+      const preset
+      of battlePoolPresets
+    ) {
+      const card=
+        document.createElement(
+          "article"
+        );
+      card.className=
+        "preset-card";
+      card.dataset.presetName=
+        preset.name;
+      card.dataset.active=
+        String(
+          preset.name
+          === activeBattlePoolPresetName
+        );
+
+      const top=
+        document.createElement(
+          "div"
+        );
+      top.className=
+        "preset-card-top";
+
+      const title=
+        document.createElement(
+          "strong"
+        );
+      title.textContent=
+        preset.name;
+
+      const favorite=
+        document.createElement(
+          "button"
+        );
+      favorite.type="button";
+      favorite.className=
+        "preset-favorite";
+      favorite.dataset.favorite=
+        String(
+          Boolean(
+            preset.favorite
+          )
+        );
+      favorite.textContent=
+        preset.favorite
+          ? "★"
+          : "☆";
+      favorite.title=
+        preset.favorite
+          ? "Favoriden çıkar"
+          : "Favoriye ekle";
+      favorite.addEventListener(
+        "click",
+        async (event) => {
+          event.stopPropagation();
+          await updateBattlePoolPresetMeta(
+            preset.name,
+            {
+              favorite:
+                !preset.favorite,
+            }
+          );
+        }
+      );
+
+      top.append(
+        title,
+        favorite
+      );
+
+      const meta=
+        document.createElement(
+          "span"
+        );
+      meta.className=
+        "preset-card-meta";
+      meta.textContent=
+        `${preset.module_definition_ids.length} modül · ${presetLastUsedLabel(preset.last_used_at_ms)}`;
+
+      const actions=
+        document.createElement(
+          "div"
+        );
+      actions.className=
+        "preset-card-actions";
+
+      const use=
+        document.createElement(
+          "button"
+        );
+      use.type="button";
+      use.textContent=
+        preset.name
+        === activeBattlePoolPresetName
+          ? "Aktif"
+          : "Yükle";
+      use.disabled=
+        preset.name
+        === activeBattlePoolPresetName;
+      use.addEventListener(
+        "click",
+        () => {
+          if (presetSelectEl) {
+            presetSelectEl.value=
+              preset.name;
+          }
+          loadSelectedBattlePoolPreset(
+            preset.name
+          );
+        }
+      );
+
+      actions.appendChild(use);
+
+      card.append(
+        top,
+        meta,
+        actions
+      );
+
+      card.addEventListener(
+        "dblclick",
+        () => {
+          if (presetSelectEl) {
+            presetSelectEl.value=
+              preset.name;
+          }
+          loadSelectedBattlePoolPreset(
+            preset.name
+          );
+        }
+      );
+
+      presetGalleryEl.appendChild(
+        card
+      );
+    }
+  }
+
   function renderPresetOptions() {
     if (!presetSelectEl) return;
 
@@ -4248,6 +4700,7 @@ const SPECIAL_CELL_INFO = {
     }
 
     renderActivePresetState();
+    renderPresetGallery();
   }
 
   async function loadBattlePoolPresets() {
@@ -4356,9 +4809,12 @@ const SPECIAL_CELL_INFO = {
     }
   }
 
-  function loadSelectedBattlePoolPreset() {
+  async function loadSelectedBattlePoolPreset(
+    explicitName=null
+  ) {
     const name=
-      presetSelectEl?.value;
+      explicitName
+      || presetSelectEl?.value;
     const preset=
       battlePoolPresets.find(
         (item)=>item.name===name
@@ -4388,6 +4844,14 @@ const SPECIAL_CELL_INFO = {
       name;
     activeBattlePoolPresetBaseline=
       [...preset.module_definition_ids];
+
+    await updateBattlePoolPresetMeta(
+      name,
+      {
+        markUsed:true,
+      }
+    );
+
     renderBattlePoolSelection();
     renderPresetOptions();
     if (presetStatusEl) {
@@ -4398,7 +4862,8 @@ const SPECIAL_CELL_INFO = {
 
   async function deleteSelectedBattlePoolPreset() {
     const name=
-      presetSelectEl?.value;
+      presetSelectEl?.value
+      || activeBattlePoolPresetName;
     if (!name) return;
 
     const response=await fetch(
@@ -4907,14 +5372,41 @@ const SPECIAL_CELL_INFO = {
           );
         selectMark.className=
           "pool-choice-select";
+        const required=
+          battlePoolSelection
+            .requiredModuleIds
+            .has(
+              module.instanceId
+            );
+
         selectMark.textContent=
-          selected
-            ? "✓"
-            : "+";
+          required
+            ? "◆"
+            : (
+                selected
+                  ? "−"
+                  : "+"
+              );
         selectMark.title=
-          selected
-            ? "Havuzdan çıkar"
-            : "Havuza seç";
+          required
+            ? "Zorunlu modül · çıkarılamaz"
+            : (
+                selected
+                  ? "Havuzdan çıkar"
+                  : "Havuza ekle"
+              );
+        selectMark.dataset.action=
+          required
+            ? "required"
+            : (
+                selected
+                  ? "remove"
+                  : "add"
+              );
+        selectMark.setAttribute(
+          "aria-disabled",
+          String(required)
+        );
 
         const catalog=
           catalogForModule(
@@ -4976,6 +5468,16 @@ const SPECIAL_CELL_INFO = {
           "click",
           (event) => {
             event.stopPropagation();
+
+            if (
+              selectMark.dataset.action
+              === "required"
+            ) {
+              logClientMessage(
+                "Jeneratör zorunlu Savaş Havuzu modülüdür ve çıkarılamaz."
+              );
+              return;
+            }
 
             const result=
               battlePoolSelection.toggle(
@@ -6111,6 +6613,9 @@ const SPECIAL_CELL_INFO = {
         status: "active",
         position: { x: command.payload.x, y: command.payload.y },
       });
+      triggerGridshardCue(
+        "port_connect"
+      );
     } else if (command.kind === "move_module") {
       const module = client.requireModule(command.payload.module_id);
       const previousPosition =
@@ -6152,6 +6657,9 @@ const SPECIAL_CELL_INFO = {
             connected_module_count:connected.size,
             powered_special_cell_count:poweredSpecialCount,
           });
+          triggerGridshardCue(
+            "generator_move"
+          );
         }
       }
     } else if (command.kind === "remove_module") {
@@ -6460,6 +6968,22 @@ const SPECIAL_CELL_INFO = {
       mockEnemyCoreHp = Math.max(0, mockEnemyCoreHp - finalDamage);
     }
 
+    triggerGridshardCue(
+      attacker.nameTr
+        .toLocaleLowerCase("tr")
+        .includes("lazer")
+        ? "laser_fire"
+        : "energy_transfer"
+    );
+    if (
+      targetName
+      === "Rakip Çekirdek"
+    ) {
+      triggerGridshardCue(
+        "core_hit"
+      );
+    }
+
     if (
       activePlayMode === "local"
       && localBattleMetrics
@@ -6669,6 +7193,30 @@ const SPECIAL_CELL_INFO = {
     }
 
     requestAnimationFrame(updateClock);
+  }
+
+  if (presetNewEl) {
+    presetNewEl.addEventListener(
+      "click",
+      () => {
+        activeBattlePoolPresetName=
+          null;
+        activeBattlePoolPresetBaseline=
+          [];
+        if (presetSelectEl) {
+          presetSelectEl.value="";
+        }
+        if (presetNameEl) {
+          presetNameEl.value="";
+          presetNameEl.focus();
+        }
+        renderPresetOptions();
+        if (presetStatusEl) {
+          presetStatusEl.textContent=
+            "Yeni hazır havuz için mevcut 18/18 seçimini isimlendirip kaydet.";
+        }
+      }
+    );
   }
 
   if (presetLoadEl) {

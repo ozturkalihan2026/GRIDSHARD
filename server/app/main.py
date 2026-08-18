@@ -63,6 +63,10 @@ from .release_check import (
 from .balance_change_plan import (
     build_balance_change_plan,
 )
+from .balance_simulation import (
+    BalanceSimulationError,
+    run_balance_simulation,
+)
 from .balance_change_drafts import (
     BalanceChangeDraftError,
     BalanceChangeDraftService,
@@ -363,6 +367,11 @@ class BattlePoolPresetRenameRequest(BaseModel):
     new_name: str
 
 
+class BattlePoolPresetMetaRequest(BaseModel):
+    favorite: bool | None = None
+    mark_used: bool = False
+
+
 class BalanceChangeDraftItemRequest(BaseModel):
     area: str
     before_value: float | int | str | None = None
@@ -370,6 +379,10 @@ class BalanceChangeDraftItemRequest(BaseModel):
     approved: bool = False
     simulation_status: str = "pending"
     regression_status: str = "pending"
+
+
+class BalanceSimulationRequest(BaseModel):
+    area: str
 
 
 class MatchmakingJoinRequest(BaseModel):
@@ -1453,6 +1466,146 @@ def update_balance_change_draft(
         ) from exc
 
 
+@app.post("/telemetry/balance-change-simulate")
+def simulate_balance_change(
+    player_id:str,
+    request:BalanceSimulationRequest,
+)->dict:
+    plan=_balance_change_plan_for_player(
+        player_id
+    )
+    draft=(
+        balance_change_draft_service
+        .view(
+            player_id=player_id,
+            plan=plan,
+        )
+    )
+
+    if not draft.get(
+        "review_ready"
+    ):
+        raise HTTPException(
+            status_code=422,
+            detail="İzole denge simülasyonu yalnız review_ready gerçek maç raporunda çalıştırılabilir.",
+        )
+
+    item=next(
+        (
+            value
+            for value
+            in draft.get(
+                "items",
+                [],
+            )
+            if value.get("area")
+            == request.area
+        ),
+        None,
+    )
+    if item is None:
+        raise HTTPException(
+            status_code=404,
+            detail="Simüle edilecek denge taslağı bulunamadı.",
+        )
+
+    if item.get(
+        "before_value"
+    ) is None or item.get(
+        "proposed_value"
+    ) is None:
+        raise HTTPException(
+            status_code=422,
+            detail="Simülasyon için mevcut ve önerilen değer girilmelidir.",
+        )
+
+    try:
+        result=run_balance_simulation(
+            area=request.area,
+            before_value=
+                item["before_value"],
+            proposed_value=
+                item["proposed_value"],
+        )
+    except BalanceSimulationError as exc:
+        # Unsupported/invalid simulation never changes canonical values.
+        updated=(
+            balance_change_draft_service
+            .update_item(
+                player_id=player_id,
+                plan=plan,
+                area=request.area,
+                before_value=
+                    item.get(
+                        "before_value"
+                    ),
+                proposed_value=
+                    item.get(
+                        "proposed_value"
+                    ),
+                approved=bool(
+                    item.get(
+                        "approved",
+                        False,
+                    )
+                ),
+                simulation_status=
+                    "failed",
+                regression_status=
+                    item.get(
+                        "regression_status",
+                        "pending",
+                    ),
+            )
+        )
+        return {
+            "ok":False,
+            "reason":str(exc),
+            "draft":updated,
+            "canonical_values_changed":
+                False,
+        }
+
+    updated=(
+        balance_change_draft_service
+        .update_item(
+            player_id=player_id,
+            plan=plan,
+            area=request.area,
+            before_value=
+                item.get(
+                    "before_value"
+                ),
+            proposed_value=
+                item.get(
+                    "proposed_value"
+                ),
+            approved=bool(
+                item.get(
+                    "approved",
+                    False,
+                )
+            ),
+            simulation_status=
+                "passed",
+            regression_status=
+                item.get(
+                    "regression_status",
+                    "pending",
+                ),
+        )
+    )
+
+    return {
+        "ok":True,
+        "simulation":result,
+        "draft":updated,
+        "canonical_values_changed":
+            False,
+        "automatic_apply":False,
+    }
+
+
 @app.delete("/telemetry/balance-change-draft")
 def clear_balance_change_draft(
     player_id:str,
@@ -2004,6 +2157,40 @@ def rename_battle_pool_preset(
     }
 
 
+@app.patch("/profile/{player_id}/battle-pool-presets/{preset_name}/meta")
+def update_battle_pool_preset_meta(
+    player_id:str,
+    preset_name:str,
+    request:BattlePoolPresetMetaRequest,
+)->dict:
+    try:
+        preset=(
+            battle_pool_preset_service
+            .update_meta(
+                player_id,
+                name=preset_name,
+                favorite=request.favorite,
+                mark_used=request.mark_used,
+            )
+        )
+    except (
+        BattlePoolPresetError,
+        ValueError,
+    ) as exc:
+        raise HTTPException(
+            status_code=422,
+            detail=str(exc),
+        ) from exc
+
+    return {
+        "player_id":player_id,
+        "preset":preset,
+        "presets":
+            battle_pool_preset_service
+            .list(player_id),
+    }
+
+
 @app.delete("/profile/{player_id}/battle-pool-presets/{preset_name}")
 def delete_battle_pool_preset(
     player_id:str,
@@ -2039,7 +2226,7 @@ def gridshard_identity() -> dict:
         "tagline_en":
             "Build the Circuit. Break the Core.",
         "identity_version":
-            "2.0.0-beta.14",
+            "2.0.0-beta.15",
         "palette":{
             "void_navy":"#070B14",
             "reactor_blue":"#0C1625",

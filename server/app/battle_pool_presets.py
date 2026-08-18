@@ -6,6 +6,7 @@ import json
 import os
 import re
 import shutil
+import time
 from threading import RLock
 
 from .game.battle_pool import (
@@ -24,6 +25,8 @@ class BattlePoolPresetError(ValueError):
 class BattlePoolPreset:
     name:str
     module_definition_ids:tuple[str,...]
+    favorite:bool=False
+    last_used_at_ms:int|None=None
 
     def to_view(self)->dict:
         return {
@@ -32,10 +35,26 @@ class BattlePoolPreset:
                 list(
                     self.module_definition_ids
                 ),
+            "favorite":self.favorite,
+            "last_used_at_ms":
+                self.last_used_at_ms,
         }
 
 
 class JsonBattlePoolPresetRepository:
+    """
+    New format per player:
+    {
+      "Saldırı": {
+        "module_definition_ids":[...],
+        "favorite":true,
+        "last_used_at_ms":123
+      }
+    }
+
+    Beta.13/Beta.14 list-only values are still accepted.
+    """
+
     def __init__(
         self,
         path:str|Path,
@@ -72,7 +91,6 @@ class JsonBattlePoolPresetRepository:
             raise BattlePoolPresetError(
                 "Hazır Savaş Havuzu veri kökü nesne olmalıdır."
             )
-
         return data
 
     def _write_all(
@@ -88,8 +106,7 @@ class JsonBattlePoolPresetRepository:
 
                 if self.path.exists():
                     backup_tmp=self.backup_path.with_name(
-                        self.backup_path.name
-                        + ".tmp"
+                        self.backup_path.name+".tmp"
                     )
                     shutil.copy2(
                         self.path,
@@ -121,6 +138,69 @@ class JsonBattlePoolPresetRepository:
                     "Hazır Savaş Havuzu verisi yazılamadı."
                 ) from exc
 
+    @staticmethod
+    def _normalize_entry(
+        name:str,
+        raw:object,
+    )->BattlePoolPreset|None:
+        if isinstance(raw,list):
+            return BattlePoolPreset(
+                name=name,
+                module_definition_ids=tuple(
+                    str(item)
+                    for item in raw
+                ),
+            )
+
+        if not isinstance(raw,dict):
+            return None
+
+        module_ids=raw.get(
+            "module_definition_ids",
+            [],
+        )
+        if not isinstance(module_ids,list):
+            return None
+
+        last_used=raw.get(
+            "last_used_at_ms"
+        )
+        if last_used is not None:
+            try:
+                last_used=int(last_used)
+            except (TypeError,ValueError):
+                last_used=None
+
+        return BattlePoolPreset(
+            name=name,
+            module_definition_ids=tuple(
+                str(item)
+                for item in module_ids
+            ),
+            favorite=bool(
+                raw.get(
+                    "favorite",
+                    False,
+                )
+            ),
+            last_used_at_ms=last_used,
+        )
+
+    @staticmethod
+    def _entry_payload(
+        preset:BattlePoolPreset,
+    )->dict:
+        return {
+            "module_definition_ids":
+                list(
+                    preset.module_definition_ids
+                ),
+            "favorite":
+                preset.favorite,
+            "last_used_at_ms":
+                preset.last_used_at_ms,
+        }
+
     def list_player(
         self,
         player_id:str,
@@ -134,24 +214,44 @@ class JsonBattlePoolPresetRepository:
             return []
 
         result=[]
-        for name,module_ids in raw.items():
-            if not isinstance(module_ids,list):
-                continue
-            result.append(
-                BattlePoolPreset(
-                    name=str(name),
-                    module_definition_ids=tuple(
-                        str(item)
-                        for item in module_ids
-                    ),
-                )
+        for name,value in raw.items():
+            preset=self._normalize_entry(
+                str(name),
+                value,
             )
+            if preset is not None:
+                result.append(
+                    preset
+                )
 
         result.sort(
-            key=lambda item:
-                item.name.casefold()
+            key=lambda item:(
+                not item.favorite,
+                -(
+                    item.last_used_at_ms
+                    or 0
+                ),
+                item.name.casefold(),
+            )
         )
         return result
+
+    def get(
+        self,
+        player_id:str,
+        name:str,
+    )->BattlePoolPreset|None:
+        payload=self._read_all()
+        player=payload.get(
+            player_id,
+            {},
+        )
+        if not isinstance(player,dict):
+            return None
+        return self._normalize_entry(
+            name,
+            player.get(name),
+        )
 
     def save(
         self,
@@ -167,8 +267,28 @@ class JsonBattlePoolPresetRepository:
                 )
                 or {}
             )
-            player[preset.name]=list(
-                preset.module_definition_ids
+
+            previous=self._normalize_entry(
+                preset.name,
+                player.get(
+                    preset.name
+                ),
+            )
+            if previous is not None:
+                preset=BattlePoolPreset(
+                    name=preset.name,
+                    module_definition_ids=
+                        preset.module_definition_ids,
+                    favorite=
+                        previous.favorite,
+                    last_used_at_ms=
+                        previous.last_used_at_ms,
+                )
+
+            player[preset.name]=(
+                self._entry_payload(
+                    preset
+                )
             )
             payload[player_id]=player
             self._write_all(payload)
@@ -189,8 +309,13 @@ class JsonBattlePoolPresetRepository:
                 )
                 or {}
             )
-
-            if old_name not in player:
+            old=self._normalize_entry(
+                old_name,
+                player.get(
+                    old_name
+                ),
+            )
+            if old is None:
                 raise BattlePoolPresetError(
                     "Yeniden adlandırılacak hazır Savaş Havuzu bulunamadı."
                 )
@@ -203,22 +328,76 @@ class JsonBattlePoolPresetRepository:
                     "Bu isimde başka bir hazır Savaş Havuzu zaten var."
                 )
 
-            module_ids=list(
-                player.pop(
-                    old_name
+            player.pop(
+                old_name,
+                None,
+            )
+            renamed=BattlePoolPreset(
+                name=new_name,
+                module_definition_ids=
+                    old.module_definition_ids,
+                favorite=old.favorite,
+                last_used_at_ms=
+                    old.last_used_at_ms,
+            )
+            player[new_name]=(
+                self._entry_payload(
+                    renamed
                 )
             )
-            player[new_name]=module_ids
             payload[player_id]=player
             self._write_all(payload)
+        return renamed
 
-        return BattlePoolPreset(
-            name=new_name,
-            module_definition_ids=tuple(
-                str(item)
-                for item in module_ids
-            ),
-        )
+    def update_meta(
+        self,
+        player_id:str,
+        name:str,
+        *,
+        favorite:bool|None=None,
+        mark_used:bool=False,
+    )->BattlePoolPreset:
+        with self._lock:
+            payload=self._read_all()
+            player=dict(
+                payload.get(
+                    player_id,
+                    {},
+                )
+                or {}
+            )
+            current=self._normalize_entry(
+                name,
+                player.get(name),
+            )
+            if current is None:
+                raise BattlePoolPresetError(
+                    "Hazır Savaş Havuzu bulunamadı."
+                )
+
+            updated=BattlePoolPreset(
+                name=current.name,
+                module_definition_ids=
+                    current.module_definition_ids,
+                favorite=(
+                    current.favorite
+                    if favorite is None
+                    else bool(favorite)
+                ),
+                last_used_at_ms=(
+                    int(time.time()*1000)
+                    if mark_used
+                    else current.last_used_at_ms
+                ),
+            )
+            player[name]=(
+                self._entry_payload(
+                    updated
+                )
+            )
+            payload[player_id]=player
+            self._write_all(payload)
+        return updated
 
     def delete(
         self,
@@ -314,17 +493,33 @@ class BattlePoolPresetService:
         old_name:str,
         new_name:str,
     )->dict:
-        old_clean=self._clean_name(
-            old_name
-        )
-        new_clean=self._clean_name(
-            new_name
-        )
         return (
             self.repository.rename(
                 player_id,
-                old_clean,
-                new_clean,
+                self._clean_name(
+                    old_name
+                ),
+                self._clean_name(
+                    new_name
+                ),
+            )
+            .to_view()
+        )
+
+    def update_meta(
+        self,
+        player_id:str,
+        *,
+        name:str,
+        favorite:bool|None=None,
+        mark_used:bool=False,
+    )->dict:
+        return (
+            self.repository.update_meta(
+                player_id,
+                self._clean_name(name),
+                favorite=favorite,
+                mark_used=mark_used,
             )
             .to_view()
         )
