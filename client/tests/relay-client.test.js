@@ -1488,7 +1488,7 @@ function createClient() {
 
   const result=state.applyHealth({
     status:"ok",
-    version:"2.0.0-beta.13.5",
+    version:"2.0.0-beta.14",
     web_test:{
       ready:true,
       build:"web-test-beta.13",
@@ -1535,7 +1535,7 @@ function createClient() {
 
   const result=state.applyHealth({
     status:"ok",
-    version:"2.0.0-beta.13.5",
+    version:"2.0.0-beta.14",
   });
 
   assert.strictEqual(
@@ -2317,7 +2317,7 @@ function createClient() {
   const html=fs.readFileSync(path.join(ROOT,"index.html"),"utf8");
   assert.ok(
     html.includes(
-      "2.0.0-beta.13.5"
+      "2.0.0-beta.14"
     )
   );
   assert.ok(
@@ -2496,7 +2496,7 @@ function createClient() {
     new RelayReleaseCheckState();
 
   const view=state.apply({
-    version:"2.0.0-beta.13.5",
+    version:"2.0.0-beta.14",
     build:"web-test-beta.13",
     ready:true,
     checks:{
@@ -2634,14 +2634,14 @@ function createClient() {
       healthState:health,
       releaseCheckState:release,
       expectedVersion:
-        "2.0.0-beta.13.5",
+        "2.0.0-beta.14",
       expectedProtocolVersion:1,
       requestJson:
         async (path) => {
           if (path==="/health") {
             return {
               status:"ok",
-              version:"2.0.0-beta.13.5",
+              version:"2.0.0-beta.14",
               web_test:{
                 ready:true,
                 build:"web-test-beta.13",
@@ -2655,7 +2655,7 @@ function createClient() {
             === "/web-test/release-check"
           ) {
             return {
-              version:"2.0.0-beta.13.5",
+              version:"2.0.0-beta.14",
               build:"web-test-beta.13",
               ready:true,
               checks:{
@@ -2688,7 +2688,7 @@ function createClient() {
 
           return {
             server_version:
-              "2.0.0-beta.13.5",
+              "2.0.0-beta.14",
             web_test_build:
               "web-test-alpha.62",
             pvp_protocol_version:1,
@@ -2741,7 +2741,7 @@ function createClient() {
 
   const snapshot=
     new RelayDiagnosticSnapshot({
-      version:"2.0.0-beta.13.5",
+      version:"2.0.0-beta.14",
       build:"web-test-beta.13",
       bootGate:{status:"ready"},
       connectionManager:{
@@ -2826,13 +2826,13 @@ function createClient() {
       releaseCheckState:
         new RelayReleaseCheckState(),
       expectedVersion:
-        "2.0.0-beta.13.5",
+        "2.0.0-beta.14",
       expectedProtocolVersion:1,
       requestJson:
         async (path) => {
           if (path==="/health") {
             return {
-              version:"2.0.0-beta.13.5",
+              version:"2.0.0-beta.14",
               web_test:{
                 ready:true,
                 build:"web-test-beta.13",
@@ -2846,7 +2846,7 @@ function createClient() {
             === "/web-test/release-check"
           ) {
             return {
-              version:"2.0.0-beta.13.5",
+              version:"2.0.0-beta.14",
               build:"web-test-beta.13",
               ready:true,
               checks:{ok:true},
@@ -2910,7 +2910,7 @@ function createClient() {
     new RelayWebTestRcReportState();
 
   const view=state.apply({
-    version:"2.0.0-beta.13.5",
+    version:"2.0.0-beta.14",
     build:"web-test-beta.13",
     ready:true,
     critical_failures:[],
@@ -3496,13 +3496,13 @@ function createClient() {
       releaseCheckState:
         new RelayReleaseCheckState(),
       expectedVersion:
-        "2.0.0-beta.13.5",
+        "2.0.0-beta.14",
       expectedProtocolVersion:1,
       requestJson:
         async (path) => {
           if (path==="/health") {
             return {
-              version:"2.0.0-beta.13.5",
+              version:"2.0.0-beta.14",
               web_test:{
                 ready:true,
                 build:"web-test-beta.13",
@@ -3516,7 +3516,7 @@ function createClient() {
             === "/web-test/release-check"
           ) {
             return {
-              version:"2.0.0-beta.13.5",
+              version:"2.0.0-beta.14",
               build:"web-test-beta.13",
               ready:true,
               checks:{ok:true},
@@ -3530,7 +3530,7 @@ function createClient() {
           ) {
             return {
               server_version:
-                "2.0.0-beta.13.5",
+                "2.0.0-beta.14",
               pvp_protocol_version:1,
               release_ready:true,
             };
@@ -4605,8 +4605,24 @@ function createClient() {
   assert.ok(app.includes("gridshardAudioDirector"));
 }
 
+{
+  const fs=require("fs");
+  const html=fs.readFileSync("./index.html","utf8");
+  const app=fs.readFileSync("./src/app.js","utf8");
+  const css=fs.readFileSync("./src/styles.css","utf8");
+
+  assert.ok(html.includes('id="battle-pool-preset-rename"'));
+  assert.ok(html.includes('id="battle-pool-active-preset"'));
+  assert.ok(html.includes('id="battle-pool-preset-dirty"'));
+  assert.ok(html.includes('id="balance-draft-items"'));
+  assert.ok(app.includes("renameSelectedBattlePoolPreset"));
+  assert.ok(app.includes("renderActivePresetState"));
+  assert.ok(app.includes("loadBalanceDraft"));
+  assert.ok(css.includes(".balance-draft-item"));
+}
+
 Promise.all(asyncTests).then(() => {
-  console.log("166 client tests passed");
+  console.log("167 client tests passed");
 }).catch((error) => {
   console.error(error);
   process.exitCode = 1;

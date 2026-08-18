@@ -14,7 +14,7 @@
     <header class="battle-header">
       <div>
         <h1>GRIDSHARD 2.0</h1>
-        <p>2.0.0-beta.13.5 — Gerçek Web Testi Hazır</p>
+        <p>2.0.0-beta.14 — Gerçek Web Testi Hazır</p>
       </div>
       <div class="battle-status-cluster">
         <div class="credit-indicator" id="credit-indicator">Devre Kredisi: 200 DK</div>
@@ -51,7 +51,7 @@
           </button>
           <div class="lobby-build-chip">
             <span>GÜNCEL YAPI</span>
-            <strong>2.0.0-beta.13.5</strong>
+            <strong>2.0.0-beta.14</strong>
           </div>
         </div>
       </div>
@@ -169,7 +169,7 @@
       <div class="panel-title-row">
         <div>
           <h2 id="battle-pool-title">Savaş Havuzu Oluştur</h2>
-          <p class="screen-subtitle">Soldan modülü incele, ortadaki ayrıntıdan seç ve sağdaki 18 modüllük havuzunu tamamla.</p>
+          <p class="screen-subtitle">Soldan modülü incele ve + / ✓ ile seç. Hazır havuz yükleyebilir, düzenleyebilir ve tekrar kaydedebilirsin.</p>
         </div>
         <span id="battle-pool-count">1 / 18</span>
       </div>
@@ -184,9 +184,18 @@
           <button id="battle-pool-preset-delete" type="button">Sil</button>
         </div>
         <div class="preset-save-group">
-          <label for="battle-pool-preset-name">Bu seçimi kaydet</label>
+          <label for="battle-pool-preset-name">Yeni / Güncel Havuz</label>
           <input id="battle-pool-preset-name" type="text" maxlength="24" placeholder="Örn. Saldırı" />
           <button id="battle-pool-preset-save" type="button">Hazır Havuz Kaydet</button>
+        </div>
+        <div class="preset-rename-group">
+          <label for="battle-pool-preset-rename">Yeniden Adlandır</label>
+          <input id="battle-pool-preset-rename" type="text" maxlength="24" placeholder="Yeni hazır havuz adı" />
+          <button id="battle-pool-preset-rename-button" type="button">Adı Değiştir</button>
+        </div>
+        <div class="preset-active-row">
+          <span id="battle-pool-active-preset" data-state="none">Aktif hazır havuz: Yok</span>
+          <span id="battle-pool-preset-dirty" data-dirty="false">Değişiklik yok</span>
         </div>
         <span id="battle-pool-preset-status" role="status">Kayıtlı havuzlar yükleniyor...</span>
       </section>
@@ -414,8 +423,22 @@
             </div>
           </div>
 
+          <section class="balance-draft-panel">
+            <div class="panel-title-row">
+              <h5>Manuel Değişiklik Taslağı</h5>
+              <span id="balance-draft-status">Review-ready bekleniyor</span>
+            </div>
+            <p class="balance-draft-copy">
+              Gerçek rapor review-ready olduğunda adaylar için önceki ve önerilen değer girilebilir. Bu ekran dengeyi uygulamaz.
+            </p>
+            <div id="balance-draft-items" class="balance-draft-items">
+              <p>Henüz düzenlenebilir denge adayı yok.</p>
+            </div>
+            <button id="balance-draft-refresh" type="button">Taslağı Yenile</button>
+          </section>
+
           <p class="balance-safety-note">
-            Bu panel yalnız öneri üretir; AI, DK veya modül değerleri otomatik değiştirilmez.
+            Denge değişiklikleri otomatik uygulanmaz. Simülasyon ve regresyon geçmeden hiçbir taslak uygulanabilir sayılmaz.
           </p>
         </section>
       </div>

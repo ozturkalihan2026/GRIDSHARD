@@ -146,6 +146,8 @@
   let focusedPoolModuleId =
     "generator-1";
   let battlePoolPresets = [];
+  let activeBattlePoolPresetName = null;
+  let activeBattlePoolPresetBaseline = [];
 
   const client = new RelayBattleClient({
     modules: moduleDefinitions,
@@ -576,7 +578,7 @@
         webTestBuildState,
       releaseCheckState,
       expectedVersion:
-        "2.0.0-beta.13.5",
+        "2.0.0-beta.14",
       expectedProtocolVersion: 1,
     });
   const playReadinessGate =
@@ -612,7 +614,7 @@
 
   telemetryDispatcher.trackGameOpened({
     platform: "web",
-    build: "2.0.0-beta.13.5",
+    build: "2.0.0-beta.14",
   });
 
   const postMatchSync =
@@ -1172,7 +1174,7 @@
   const diagnosticSnapshot =
     new RelayDiagnosticSnapshot({
       version:
-        "2.0.0-beta.13.5",
+        "2.0.0-beta.14",
       build:
         "web-test-beta.13",
       bootGate:
@@ -1290,6 +1292,22 @@
   const presetStatusEl =
     document.getElementById(
       "battle-pool-preset-status"
+    );
+  const presetRenameEl =
+    document.getElementById(
+      "battle-pool-preset-rename"
+    );
+  const presetRenameButtonEl =
+    document.getElementById(
+      "battle-pool-preset-rename-button"
+    );
+  const activePresetEl =
+    document.getElementById(
+      "battle-pool-active-preset"
+    );
+  const presetDirtyEl =
+    document.getElementById(
+      "battle-pool-preset-dirty"
     );
   const poolDetailNameEl =
     document.getElementById(
@@ -3100,6 +3118,209 @@ const SPECIAL_CELL_INFO = {
     return "unknown";
   }
 
+  function renderBalanceDraft(
+    draft
+  ) {
+    const status=
+      document.getElementById(
+        "balance-draft-status"
+      );
+    const list=
+      document.getElementById(
+        "balance-draft-items"
+      );
+
+    if (!status || !list) {
+      return;
+    }
+
+    status.textContent=
+      draft.review_ready
+        ? "Review-ready · Manuel taslak açık"
+        : "Review-ready bekleniyor";
+    status.dataset.ready=
+      String(
+        Boolean(
+          draft.review_ready
+        )
+      );
+
+    list.innerHTML="";
+
+    if (
+      !draft.review_ready
+      || !(draft.items || []).length
+    ) {
+      const p=
+        document.createElement("p");
+      p.textContent=
+        "Gerçek 3 maç review-ready olmadan sayısal değişiklik taslağı açılamaz.";
+      list.appendChild(p);
+      return;
+    }
+
+    for (
+      const item
+      of draft.items
+    ) {
+      const card=
+        document.createElement(
+          "article"
+        );
+      card.className=
+        "balance-draft-item";
+      card.dataset.area=
+        item.area;
+
+      const heading=
+        document.createElement(
+          "strong"
+        );
+      heading.textContent=
+        item.area;
+
+      const reason=
+        document.createElement(
+          "span"
+        );
+      reason.textContent=
+        item.reason || "";
+
+      const before=
+        document.createElement(
+          "input"
+        );
+      before.type="text";
+      before.placeholder=
+        "Mevcut değer";
+      before.value=
+        item.before_value ?? "";
+
+      const proposed=
+        document.createElement(
+          "input"
+        );
+      proposed.type="text";
+      proposed.placeholder=
+        "Önerilen değer";
+      proposed.value=
+        item.proposed_value ?? "";
+
+      const approvalLabel=
+        document.createElement(
+          "label"
+        );
+      const approval=
+        document.createElement(
+          "input"
+        );
+      approval.type="checkbox";
+      approval.checked=
+        Boolean(item.approved);
+      approvalLabel.append(
+        approval,
+        document.createTextNode(
+          " Manuel taslağı onayla"
+        )
+      );
+
+      const checks=
+        document.createElement(
+          "small"
+        );
+      checks.textContent=
+        `Simülasyon: ${item.simulation_status || "pending"} · Regresyon: ${item.regression_status || "pending"} · Uygulanabilir: ${item.ready_for_apply ? "Evet" : "Hayır"}`;
+
+      const save=
+        document.createElement(
+          "button"
+        );
+      save.type="button";
+      save.textContent=
+        "Taslağı Kaydet";
+
+      save.addEventListener(
+        "click",
+        async () => {
+          const response=await fetch(
+            `/telemetry/balance-change-draft?player_id=${encodeURIComponent(participantPlayerId)}`,
+            {
+              method:"PUT",
+              headers:{
+                "content-type":"application/json",
+              },
+              body:JSON.stringify({
+                area:item.area,
+                before_value:
+                  before.value || null,
+                proposed_value:
+                  proposed.value || null,
+                approved:
+                  approval.checked,
+                simulation_status:
+                  item.simulation_status || "pending",
+                regression_status:
+                  item.regression_status || "pending",
+              }),
+            }
+          );
+
+          if (response.ok) {
+            const updated=
+              await response.json();
+            renderBalanceDraft(
+              updated
+            );
+          }
+        }
+      );
+
+      card.append(
+        heading,
+        reason,
+        before,
+        proposed,
+        approvalLabel,
+        checks,
+        save
+      );
+      list.appendChild(card);
+    }
+  }
+
+  async function loadBalanceDraft() {
+    try {
+      const response=
+        await fetch(
+          `/telemetry/balance-change-draft?player_id=${encodeURIComponent(participantPlayerId)}`
+        );
+
+      if (!response.ok) {
+        throw new Error(
+          "Denge değişiklik taslağı alınamadı."
+        );
+      }
+
+      const draft=
+        await response.json();
+      renderBalanceDraft(
+        draft
+      );
+      return {
+        ok:true,
+        draft,
+      };
+    } catch (error) {
+      return {
+        ok:false,
+        reason:
+          error instanceof Error
+            ? error.message
+            : String(error),
+      };
+    }
+  }
+
   function renderCumulativeManualReport(
     report
   ) {
@@ -3231,6 +3452,7 @@ const SPECIAL_CELL_INFO = {
       renderCumulativeManualReport(
         report
       );
+      loadBalanceDraft();
 
       return {
         ok:true,
@@ -3895,6 +4117,99 @@ const SPECIAL_CELL_INFO = {
     return selectedBattlePoolDefinitionIds();
   }
 
+  function canonicalPoolIds(
+    ids
+  ) {
+    return [...(ids || [])]
+      .map(String)
+      .sort();
+  }
+
+  function selectedPoolMatchesBaseline() {
+    if (!activeBattlePoolPresetName) {
+      return false;
+    }
+
+    const current=
+      canonicalPoolIds(
+        selectedBattlePoolIdsForPreset()
+      );
+    const baseline=
+      canonicalPoolIds(
+        activeBattlePoolPresetBaseline
+      );
+
+    return (
+      current.length === baseline.length
+      && current.every(
+        (value,index)=>
+          value === baseline[index]
+      )
+    );
+  }
+
+  function renderActivePresetState() {
+    const hasActive=
+      Boolean(
+        activeBattlePoolPresetName
+      );
+    const clean=
+      hasActive
+      && selectedPoolMatchesBaseline();
+
+    if (activePresetEl) {
+      activePresetEl.textContent=
+        hasActive
+          ? `Aktif hazır havuz: ${activeBattlePoolPresetName}`
+          : "Aktif hazır havuz: Yok";
+      activePresetEl.dataset.state=
+        hasActive
+          ? "active"
+          : "none";
+    }
+
+    if (presetDirtyEl) {
+      presetDirtyEl.textContent=
+        !hasActive
+          ? "Serbest seçim"
+          : (
+              clean
+                ? "Kayıtla aynı"
+                : "Değiştirildi"
+            );
+      presetDirtyEl.dataset.dirty=
+        String(
+          hasActive
+          && !clean
+        );
+    }
+
+    if (
+      presetSaveEl
+      && hasActive
+    ) {
+      presetSaveEl.textContent=
+        clean
+          ? "Hazır Havuz Güncel"
+          : "Değişiklikleri Üzerine Kaydet";
+      presetSaveEl.disabled=
+        clean;
+    } else if (presetSaveEl) {
+      presetSaveEl.textContent=
+        "Hazır Havuz Kaydet";
+      presetSaveEl.disabled=false;
+    }
+
+    if (
+      presetNameEl
+      && hasActive
+      && !presetNameEl.value
+    ) {
+      presetNameEl.placeholder=
+        `Aktif: ${activeBattlePoolPresetName}`;
+    }
+  }
+
   function renderPresetOptions() {
     if (!presetSelectEl) return;
 
@@ -3913,7 +4228,12 @@ const SPECIAL_CELL_INFO = {
         );
       option.value=preset.name;
       option.textContent=
-        `${preset.name} · ${preset.module_definition_ids.length}`;
+        (
+          preset.name === activeBattlePoolPresetName
+            ? "★ "
+            : ""
+        )
+        + `${preset.name} · ${preset.module_definition_ids.length}`;
       presetSelectEl.appendChild(
         option
       );
@@ -3926,6 +4246,8 @@ const SPECIAL_CELL_INFO = {
     ) {
       presetSelectEl.value=current;
     }
+
+    renderActivePresetState();
   }
 
   async function loadBattlePoolPresets() {
@@ -3966,10 +4288,14 @@ const SPECIAL_CELL_INFO = {
   }
 
   async function saveCurrentBattlePoolPreset() {
-    const name=
+    const enteredName=
       String(
         presetNameEl?.value || ""
       ).trim();
+    const name=
+      enteredName
+      || activeBattlePoolPresetName
+      || "";
 
     if (
       !battlePoolSelection.isComplete()
@@ -4017,6 +4343,10 @@ const SPECIAL_CELL_INFO = {
       await response.json();
     battlePoolPresets=
       payload.presets || [];
+    activeBattlePoolPresetName=
+      name;
+    activeBattlePoolPresetBaseline=
+      [...selectedBattlePoolIdsForPreset()];
     renderPresetOptions();
     presetSelectEl.value=name;
     presetNameEl.value="";
@@ -4054,7 +4384,12 @@ const SPECIAL_CELL_INFO = {
       return;
     }
 
+    activeBattlePoolPresetName=
+      name;
+    activeBattlePoolPresetBaseline=
+      [...preset.module_definition_ids];
     renderBattlePoolSelection();
+    renderPresetOptions();
     if (presetStatusEl) {
       presetStatusEl.textContent=
         `${name} yüklendi; istersen modülleri değiştirebilirsin.`;
@@ -4085,11 +4420,93 @@ const SPECIAL_CELL_INFO = {
       await response.json();
     battlePoolPresets=
       payload.presets || [];
+
+    if (
+      activeBattlePoolPresetName
+      === name
+    ) {
+      activeBattlePoolPresetName=
+        null;
+      activeBattlePoolPresetBaseline=
+        [];
+    }
+
     renderPresetOptions();
 
     if (presetStatusEl) {
       presetStatusEl.textContent=
         `${name} silindi.`;
+    }
+  }
+
+  async function renameSelectedBattlePoolPreset() {
+    const oldName=
+      presetSelectEl?.value
+      || activeBattlePoolPresetName;
+    const newName=
+      String(
+        presetRenameEl?.value || ""
+      ).trim();
+
+    if (!oldName) {
+      if (presetStatusEl) {
+        presetStatusEl.textContent=
+          "Yeniden adlandırmak için hazır havuz seç.";
+      }
+      return;
+    }
+
+    if (!newName) {
+      if (presetStatusEl) {
+        presetStatusEl.textContent=
+          "Yeni hazır havuz adını yaz.";
+      }
+      return;
+    }
+
+    const response=await fetch(
+      `/profile/${encodeURIComponent(participantPlayerId)}/battle-pool-presets/rename`,
+      {
+        method:"PATCH",
+        headers:{
+          "content-type":"application/json",
+        },
+        body:JSON.stringify({
+          old_name:oldName,
+          new_name:newName,
+        }),
+      }
+    );
+
+    if (!response.ok) {
+      if (presetStatusEl) {
+        presetStatusEl.textContent=
+          "Hazır havuz yeniden adlandırılamadı.";
+      }
+      return;
+    }
+
+    const payload=
+      await response.json();
+    battlePoolPresets=
+      payload.presets || [];
+
+    if (
+      activeBattlePoolPresetName
+      === oldName
+    ) {
+      activeBattlePoolPresetName=
+        newName;
+    }
+
+    renderPresetOptions();
+    presetSelectEl.value=
+      newName;
+    presetRenameEl.value="";
+
+    if (presetStatusEl) {
+      presetStatusEl.textContent=
+        `${oldName} → ${newName} olarak değiştirildi.`;
     }
   }
 
@@ -4718,6 +5135,7 @@ const SPECIAL_CELL_INFO = {
     }
 
     renderBattlePoolDetail();
+    renderActivePresetState();
   }
 
   function boosterOfferDueAtMs(index) {
@@ -6274,6 +6692,28 @@ const SPECIAL_CELL_INFO = {
       "click",
       () => {
         deleteSelectedBattlePoolPreset();
+      }
+    );
+  }
+
+  if (presetRenameButtonEl) {
+    presetRenameButtonEl.addEventListener(
+      "click",
+      () => {
+        renameSelectedBattlePoolPreset();
+      }
+    );
+  }
+
+  const balanceDraftRefreshEl =
+    document.getElementById(
+      "balance-draft-refresh"
+    );
+  if (balanceDraftRefreshEl) {
+    balanceDraftRefreshEl.addEventListener(
+      "click",
+      () => {
+        loadBalanceDraft();
       }
     );
   }

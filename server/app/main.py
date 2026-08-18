@@ -63,6 +63,11 @@ from .release_check import (
 from .balance_change_plan import (
     build_balance_change_plan,
 )
+from .balance_change_drafts import (
+    BalanceChangeDraftError,
+    BalanceChangeDraftService,
+    JsonBalanceChangeDraftRepository,
+)
 from .battle_pool_presets import (
     BattlePoolPresetError,
     BattlePoolPresetService,
@@ -258,6 +263,30 @@ battle_pool_preset_service = (
     )
 )
 
+DEFAULT_BALANCE_CHANGE_DRAFT_PATH = (
+    PLAYER_DATA_PATH.with_name(
+        "web_test_balance_change_drafts.json"
+    )
+)
+BALANCE_CHANGE_DRAFT_PATH = Path(
+    os.environ.get(
+        "RELAY_BALANCE_CHANGE_DRAFT_PATH",
+        str(
+            DEFAULT_BALANCE_CHANGE_DRAFT_PATH
+        ),
+    )
+)
+balance_change_draft_repository = (
+    JsonBalanceChangeDraftRepository(
+        BALANCE_CHANGE_DRAFT_PATH
+    )
+)
+balance_change_draft_service = (
+    BalanceChangeDraftService(
+        balance_change_draft_repository
+    )
+)
+
 player_data_store_service = PlayerDataStoreService(
     profile_service=player_profile_service,
     statistics_service=player_statistics_service,
@@ -327,6 +356,20 @@ class ProfileBattlePoolRequest(BaseModel):
 class BattlePoolPresetRequest(BaseModel):
     name: str
     battle_pool_ids: list[str]
+
+
+class BattlePoolPresetRenameRequest(BaseModel):
+    old_name: str
+    new_name: str
+
+
+class BalanceChangeDraftItemRequest(BaseModel):
+    area: str
+    before_value: float | int | str | None = None
+    proposed_value: float | int | str | None = None
+    approved: bool = False
+    simulation_status: str = "pending"
+    regression_status: str = "pending"
 
 
 class MatchmakingJoinRequest(BaseModel):
@@ -1335,9 +1378,8 @@ def get_telemetry_events(
     }
 
 
-@app.get("/telemetry/balance-change-plan")
-def balance_change_plan(
-    player_id:str|None=None,
+def _balance_change_plan_for_player(
+    player_id:str|None,
 )->dict:
     report=build_manual_battle_report(
         events=telemetry_service.events(
@@ -1349,6 +1391,81 @@ def balance_change_plan(
     return build_balance_change_plan(
         report
     )
+
+
+@app.get("/telemetry/balance-change-plan")
+def balance_change_plan(
+    player_id:str|None=None,
+)->dict:
+    return _balance_change_plan_for_player(
+        player_id
+    )
+
+
+@app.get("/telemetry/balance-change-draft")
+def balance_change_draft(
+    player_id:str,
+)->dict:
+    plan=_balance_change_plan_for_player(
+        player_id
+    )
+    return (
+        balance_change_draft_service
+        .view(
+            player_id=player_id,
+            plan=plan,
+        )
+    )
+
+
+@app.put("/telemetry/balance-change-draft")
+def update_balance_change_draft(
+    player_id:str,
+    request:BalanceChangeDraftItemRequest,
+)->dict:
+    plan=_balance_change_plan_for_player(
+        player_id
+    )
+
+    try:
+        return (
+            balance_change_draft_service
+            .update_item(
+                player_id=player_id,
+                plan=plan,
+                area=request.area,
+                before_value=
+                    request.before_value,
+                proposed_value=
+                    request.proposed_value,
+                approved=
+                    request.approved,
+                simulation_status=
+                    request.simulation_status,
+                regression_status=
+                    request.regression_status,
+            )
+        )
+    except BalanceChangeDraftError as exc:
+        raise HTTPException(
+            status_code=422,
+            detail=str(exc),
+        ) from exc
+
+
+@app.delete("/telemetry/balance-change-draft")
+def clear_balance_change_draft(
+    player_id:str,
+)->dict:
+    balance_change_draft_service.clear(
+        player_id
+    )
+    return {
+        "player_id":player_id,
+        "cleared":True,
+        "automatic_apply":False,
+        "numeric_balance_changed":False,
+    }
 
 
 @app.get("/telemetry/manual-battle-report")
@@ -1855,6 +1972,38 @@ def save_battle_pool_preset(
     }
 
 
+@app.patch("/profile/{player_id}/battle-pool-presets/rename")
+def rename_battle_pool_preset(
+    player_id:str,
+    request:BattlePoolPresetRenameRequest,
+)->dict:
+    try:
+        preset=(
+            battle_pool_preset_service
+            .rename(
+                player_id,
+                old_name=request.old_name,
+                new_name=request.new_name,
+            )
+        )
+    except (
+        BattlePoolPresetError,
+        ValueError,
+    ) as exc:
+        raise HTTPException(
+            status_code=422,
+            detail=str(exc),
+        ) from exc
+
+    return {
+        "player_id":player_id,
+        "preset":preset,
+        "presets":
+            battle_pool_preset_service
+            .list(player_id),
+    }
+
+
 @app.delete("/profile/{player_id}/battle-pool-presets/{preset_name}")
 def delete_battle_pool_preset(
     player_id:str,
@@ -1890,7 +2039,7 @@ def gridshard_identity() -> dict:
         "tagline_en":
             "Build the Circuit. Break the Core.",
         "identity_version":
-            "2.0.0-beta.13.5",
+            "2.0.0-beta.14",
         "palette":{
             "void_navy":"#070B14",
             "reactor_blue":"#0C1625",

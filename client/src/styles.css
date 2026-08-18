@@ -2079,3 +2079,114 @@ body {
     min-height:790px;
   }
 }
+
+
+/* beta.14 — Hazır havuz yönetimi + review-ready manuel denge taslağı */
+.preset-rename-group {
+  display:grid;
+  grid-template-columns:auto 1fr auto;
+  gap:7px;
+  align-items:center;
+}
+
+.preset-active-row {
+  display:flex;
+  flex-wrap:wrap;
+  align-items:center;
+  gap:8px;
+}
+
+#battle-pool-active-preset,
+#battle-pool-preset-dirty {
+  display:inline-flex;
+  align-items:center;
+  min-height:28px;
+  padding:4px 8px;
+  border:1px solid rgba(41,71,102,.85);
+  border-radius:999px;
+  background:rgba(7,11,20,.62);
+  color:var(--gs-signal-gray);
+  font-size:.72rem;
+}
+
+#battle-pool-active-preset[data-state="active"] {
+  border-color:rgba(244,200,90,.48);
+  color:var(--gs-reactor-gold);
+}
+
+#battle-pool-preset-dirty[data-dirty="true"] {
+  border-color:rgba(240,184,75,.5);
+  color:var(--gs-charge-amber);
+}
+
+#battle-pool-preset-dirty[data-dirty="false"] {
+  color:var(--gs-ion-green);
+}
+
+.balance-draft-panel {
+  margin-top:12px;
+  padding:12px;
+  border:1px solid rgba(54,217,255,.19);
+  border-radius:10px;
+  background:rgba(7,11,20,.56);
+}
+
+.balance-draft-copy {
+  color:var(--gs-signal-gray);
+  font-size:.78rem;
+  line-height:1.45;
+}
+
+.balance-draft-items {
+  display:grid;
+  gap:8px;
+  margin:10px 0;
+}
+
+.balance-draft-item {
+  display:grid;
+  grid-template-columns:minmax(120px,.8fr) minmax(180px,1.4fr) minmax(110px,.7fr) minmax(110px,.7fr);
+  gap:7px 9px;
+  align-items:center;
+  padding:10px;
+  border:1px solid rgba(41,71,102,.72);
+  border-radius:8px;
+  background:var(--gs-reactor-blue);
+}
+
+.balance-draft-item > small,
+.balance-draft-item > label,
+.balance-draft-item > button {
+  grid-column:span 2;
+}
+
+.balance-draft-item input[type="text"] {
+  min-width:0;
+  min-height:36px;
+  border:1px solid var(--gs-circuit-steel);
+  border-radius:7px;
+  background:var(--gs-void-navy);
+  color:var(--gs-ice-white);
+  padding:6px 8px;
+}
+
+#balance-draft-status[data-ready="true"] {
+  color:var(--gs-ion-green);
+}
+
+#balance-draft-status[data-ready="false"] {
+  color:var(--gs-charge-amber);
+}
+
+@media (max-width:900px) {
+  .preset-rename-group,
+  .balance-draft-item {
+    grid-template-columns:1fr;
+  }
+
+  .balance-draft-item > small,
+  .balance-draft-item > label,
+  .balance-draft-item > button {
+    grid-column:auto;
+  }
+}

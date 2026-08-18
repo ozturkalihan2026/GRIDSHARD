@@ -53,3 +53,48 @@ def test_preset_crud_gateway():
     battle_pool_preset_repository.backup_path.unlink(
         missing_ok=True
     )
+
+
+def test_preset_rename_gateway():
+    player="preset-rename-gateway"
+    battle_pool_preset_repository.path.unlink(
+        missing_ok=True
+    )
+    battle_pool_preset_repository.backup_path.unlink(
+        missing_ok=True
+    )
+
+    ids=list(
+        default_battle_pool()
+        .module_definition_ids
+    )
+
+    created=client.put(
+        f"/profile/{player}/battle-pool-presets",
+        json={
+            "name":"Savunma",
+            "battle_pool_ids":ids,
+        },
+    )
+    assert created.status_code==200
+
+    renamed=client.patch(
+        f"/profile/{player}/battle-pool-presets/rename",
+        json={
+            "old_name":"Savunma",
+            "new_name":"Kale",
+        },
+    )
+    assert renamed.status_code==200
+    assert renamed.json()["preset"]["name"]=="Kale"
+    assert [
+        item["name"]
+        for item in renamed.json()["presets"]
+    ]==["Kale"]
+
+    battle_pool_preset_repository.path.unlink(
+        missing_ok=True
+    )
+    battle_pool_preset_repository.backup_path.unlink(
+        missing_ok=True
+    )

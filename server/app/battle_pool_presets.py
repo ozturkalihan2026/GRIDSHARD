@@ -174,6 +174,52 @@ class JsonBattlePoolPresetRepository:
             self._write_all(payload)
         return preset
 
+    def rename(
+        self,
+        player_id:str,
+        old_name:str,
+        new_name:str,
+    )->BattlePoolPreset:
+        with self._lock:
+            payload=self._read_all()
+            player=dict(
+                payload.get(
+                    player_id,
+                    {},
+                )
+                or {}
+            )
+
+            if old_name not in player:
+                raise BattlePoolPresetError(
+                    "Yeniden adlandırılacak hazır Savaş Havuzu bulunamadı."
+                )
+
+            if (
+                new_name != old_name
+                and new_name in player
+            ):
+                raise BattlePoolPresetError(
+                    "Bu isimde başka bir hazır Savaş Havuzu zaten var."
+                )
+
+            module_ids=list(
+                player.pop(
+                    old_name
+                )
+            )
+            player[new_name]=module_ids
+            payload[player_id]=player
+            self._write_all(payload)
+
+        return BattlePoolPreset(
+            name=new_name,
+            module_definition_ids=tuple(
+                str(item)
+                for item in module_ids
+            ),
+        )
+
     def delete(
         self,
         player_id:str,
@@ -260,6 +306,28 @@ class BattlePoolPresetService:
             player_id,
             preset,
         ).to_view()
+
+    def rename(
+        self,
+        player_id:str,
+        *,
+        old_name:str,
+        new_name:str,
+    )->dict:
+        old_clean=self._clean_name(
+            old_name
+        )
+        new_clean=self._clean_name(
+            new_name
+        )
+        return (
+            self.repository.rename(
+                player_id,
+                old_clean,
+                new_clean,
+            )
+            .to_view()
+        )
 
     def delete(
         self,
