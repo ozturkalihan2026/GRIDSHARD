@@ -1,6 +1,6 @@
 # GRIDSHARD — Karar Uygulama Kontrolü
 
-**Kontrol paketi:** `2.0.0-beta.20`
+**Kontrol paketi:** `2.0.0-beta.21`
 
 Bu belge, daha önce alınan görsel kimlik / ekran / ses / isim kararlarının proje içindeki gerçek uygulama durumunu takip eder.
 
@@ -166,4 +166,25 @@ Bu belge, daha önce alınan görsel kimlik / ekran / ses / isim kararlarının 
 - [x] Opsiyonel ffmpeg `ebur128` taraması gerçek LUFS/LRA/True Peak ölçümü yapabilir.
 - [x] ffmpeg/ebur128 yoksa LUFS uydurulmaz; rapor SKIPPED olur.
 - [x] Final mastering tamamlanmış sayılmaz.
+- [x] Otomatik denge apply yoktur.
+
+
+## 15. Beta.21 Windows E2E import / UX matrix / review decision
+- [x] Windows/Chrome Browser E2E kanıt ZIP veya klasörü içe aktarılabilir.
+- [x] İçe aktarım screenshot PNG imzasını doğrular.
+- [x] Zorunlu screenshot / console / network / checks artifactleri eksiksiz olmalıdır.
+- [x] Her artifact için SHA-256 kaydı üretilir.
+- [x] Browser checks'in tamamı `ok=true` olmalıdır.
+- [x] Console error veya HTTP 4xx/5xx bulunan paket `VERIFIED_PASSED` olamaz.
+- [x] SKIPPED kaynak sonuç PASSED'a dönüştürülmez.
+- [x] `qa_reports/latest.json` dış Windows E2E durumunu ayrı alanda gösterir.
+- [x] Windows E2E gerçek PASSED olduğunda taşınabilir kanıt ZIP'i üretilebilir.
+- [x] UX profili kategori bazlı matrix'e dönüştürüldü.
+- [x] Matrix her kategori için count, average/max frame gap ve average/max battle-clock delta tutar.
+- [x] UX matrix yalnız gerçek PASSED browser kanıtından ölçülmüş sayılır.
+- [x] Review durumları `Beklet / Reddet / İleride değerlendir` olarak yerel taslağa eklendi.
+- [x] Review durumu ve not yalnız localStorage'da tutulur.
+- [x] Review durumu canonical denge değişikliği değildir.
+- [x] BS.1770 ölçümü mastering hedefinden ayrı teknik referans olarak tutulur.
+- [x] Mastering target Beta.21'de seçilmemiştir.
 - [x] Otomatik denge apply yoktur.

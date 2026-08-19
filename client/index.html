@@ -14,7 +14,7 @@
     <header class="battle-header">
       <div>
         <h1>GRIDSHARD 2.0</h1>
-        <p>2.0.0-beta.20 — Gerçek Web Testi Hazır</p>
+        <p>2.0.0-beta.21 — Gerçek Web Testi Hazır</p>
       </div>
       <div class="battle-status-cluster">
         <div class="credit-indicator" id="credit-indicator">Devre Kredisi: 200 DK</div>
@@ -57,7 +57,7 @@
           </button>
           <div class="lobby-build-chip">
             <span>GÜNCEL YAPI</span>
-            <strong id="ui-build-version">2.0.0-beta.20</strong><small id="ui-build-run">manifest bekleniyor</small>
+            <strong id="ui-build-version">2.0.0-beta.21</strong><small id="ui-build-run">manifest bekleniyor</small>
           </div>
         </div>
       </div>
@@ -497,13 +497,21 @@
             </div>
 
             <div class="human-review-local-note">
+              <label for="human-review-decision-state">Yerel İnceleme Durumu</label>
+              <select id="human-review-decision-state">
+                <option value="none">Karar verilmedi</option>
+                <option value="hold">Beklet</option>
+                <option value="reject">Reddet</option>
+                <option value="revisit">İleride değerlendir</option>
+              </select>
+
               <label for="human-review-decision-note">Yerel Karar Notu</label>
-              <textarea id="human-review-decision-note" maxlength="1000" placeholder="Örn. Bu öneriyi saha verisi artana kadar beklet. Bu not yalnız bu tarayıcıda tutulur; dengeyi uygulamaz."></textarea>
+              <textarea id="human-review-decision-note" maxlength="1000" placeholder="Örn. Bu öneriyi saha verisi artana kadar beklet. Bu not ve durum yalnız bu tarayıcıda tutulur; dengeyi uygulamaz."></textarea>
               <div>
-                <button id="human-review-note-save" type="button">Karar Notunu Yerelde Kaydet</button>
-                <button id="human-review-note-clear" type="button">Notu Temizle</button>
+                <button id="human-review-note-save" type="button">Yerel İncelemeyi Kaydet</button>
+                <button id="human-review-note-clear" type="button">Yerel İncelemeyi Temizle</button>
               </div>
-              <span id="human-review-note-status">Yerel not yok</span>
+              <span id="human-review-note-status">Yerel inceleme kararı yok</span>
             </div>
 
             <button id="human-review-refresh" type="button">Değerlendirme Kuyruğunu Yenile</button>

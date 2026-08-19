@@ -1,5 +1,6 @@
 {
-  "version": "2.0.0-beta.20",
+  "version": "2.0.0-beta.21",
+  "source_status": "SKIPPED",
   "status": "SKIPPED",
   "passed": false,
   "skipped": true,
@@ -26,7 +27,8 @@
   "ux_timing": {
     "clock_progress_check": null,
     "final_metrics": null,
-    "category_counts": {}
+    "category_counts": {},
+    "interaction_matrix": {}
   },
   "checks": [],
   "automatic_pass_from_skip": false

@@ -1,0 +1,53 @@
+{
+  "version": "2.0.0-beta.21",
+  "status": "SKIPPED",
+  "source": "none",
+  "evidence_status": "NOT_AVAILABLE",
+  "categories": {
+    "module_place": {
+      "count": 0,
+      "average_frame_gap_ms": 0.0,
+      "max_frame_gap_ms": 0.0,
+      "average_clock_delta_ms": 0.0,
+      "max_clock_delta_ms": 0.0
+    },
+    "module_move": {
+      "count": 0,
+      "average_frame_gap_ms": 0.0,
+      "max_frame_gap_ms": 0.0,
+      "average_clock_delta_ms": 0.0,
+      "max_clock_delta_ms": 0.0
+    },
+    "generator_gate": {
+      "count": 0,
+      "average_frame_gap_ms": 0.0,
+      "max_frame_gap_ms": 0.0,
+      "average_clock_delta_ms": 0.0,
+      "max_clock_delta_ms": 0.0
+    },
+    "booster": {
+      "count": 0,
+      "average_frame_gap_ms": 0.0,
+      "max_frame_gap_ms": 0.0,
+      "average_clock_delta_ms": 0.0,
+      "max_clock_delta_ms": 0.0
+    },
+    "technical_drawer": {
+      "count": 0,
+      "average_frame_gap_ms": 0.0,
+      "max_frame_gap_ms": 0.0,
+      "average_clock_delta_ms": 0.0,
+      "max_clock_delta_ms": 0.0
+    },
+    "other_ui": {
+      "count": 0,
+      "average_frame_gap_ms": 0.0,
+      "max_frame_gap_ms": 0.0,
+      "average_clock_delta_ms": 0.0,
+      "max_clock_delta_ms": 0.0
+    }
+  },
+  "pause_violation_count": null,
+  "simulation_clock_paused_by_ui": false,
+  "note": "Gerçek PASSED browser kanıtı yok; kategori matrisi uydurulmadı."
+}

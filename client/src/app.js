@@ -91,7 +91,7 @@
   const COMPETITIVE_STATUS = "M7 rekabetçi altyapı doğrulanıyor";
   const BALANCE_STATUS = "Denge simülasyonu mevcut · geniş örnek bekliyor";
   const AI_STATUS = "AI altyapısı mevcut · arketip testleri bekliyor";
-  const PVP_STATUS = "GRIDSHARD Beta.20 · Windows E2E Kanıt Paketi + Savaş Etkileşim Profili + Review Konsolu V2";
+  const PVP_STATUS = "GRIDSHARD Beta.21 · Windows E2E İçe Aktarım + UX Etkileşim Matrisi + Review Karar Akışı";
 
 
 
@@ -591,7 +591,7 @@
         webTestBuildState,
       releaseCheckState,
       expectedVersion:
-        "2.0.0-beta.20",
+        "2.0.0-beta.21",
       expectedProtocolVersion: 1,
     });
   const playReadinessGate =
@@ -627,7 +627,7 @@
 
   telemetryDispatcher.trackGameOpened({
     platform: "web",
-    build: "2.0.0-beta.20",
+    build: "2.0.0-beta.21",
   });
 
   const postMatchSync =
@@ -1187,7 +1187,7 @@
   const diagnosticSnapshot =
     new RelayDiagnosticSnapshot({
       version:
-        "2.0.0-beta.20",
+        "2.0.0-beta.21",
       build:
         "web-test-beta.13",
       bootGate:
@@ -2992,7 +2992,7 @@
       if (versionEl) {
         versionEl.textContent=
           manifest.version
-          || "2.0.0-beta.20";
+          || "2.0.0-beta.21";
       }
       if (runEl) {
         runEl.textContent=
@@ -3131,6 +3131,43 @@ const SPECIAL_CELL_INFO = {
               ...localBattleMetrics
                 .ux_categories,
             },
+            ux_matrix:
+              Object.fromEntries(
+                Object.entries(
+                  localBattleMetrics
+                    .ux_matrix
+                ).map(
+                  ([category,value])=>[
+                    category,
+                    {
+                      count:
+                        value.count,
+                      average_frame_gap_ms:
+                        value.count
+                          ? Math.round(
+                              value.total_frame_gap_ms
+                              / value.count
+                            )
+                          : 0,
+                      max_frame_gap_ms:
+                        Math.round(
+                          value.max_frame_gap_ms
+                        ),
+                      average_clock_delta_ms:
+                        value.count
+                          ? Math.round(
+                              value.total_clock_delta_ms
+                              / value.count
+                            )
+                          : 0,
+                      max_clock_delta_ms:
+                        Math.round(
+                          value.max_clock_delta_ms
+                        ),
+                    },
+                  ]
+                )
+              ),
             finished:
               localBattleFinished,
           }
@@ -3209,12 +3246,78 @@ const SPECIAL_CELL_INFO = {
         .other_ui += 1;
     }
 
+    const elapsedNow=
+      Math.round(
+        client.elapsedMs
+      );
+    const frameNow=
+      (
+        typeof performance
+        !== "undefined"
+        && typeof performance.now
+        === "function"
+      )
+        ? performance.now()
+        : Date.now();
+    const frameGap=
+      lastBattleAnimationNow
+      === null
+        ? 0
+        : Math.max(
+            0,
+            frameNow
+            - lastBattleAnimationNow
+          );
+
+    const matrix=
+      localBattleMetrics
+        .ux_matrix[
+          category
+        ]
+      || localBattleMetrics
+        .ux_matrix
+        .other_ui;
+
+    const clockDelta=
+      matrix.last_elapsed_ms
+      === null
+        ? 0
+        : Math.max(
+            0,
+            elapsedNow
+            - matrix.last_elapsed_ms
+          );
+
+    matrix.count += 1;
+    matrix.total_frame_gap_ms +=
+      frameGap;
+    matrix.max_frame_gap_ms=
+      Math.max(
+        matrix.max_frame_gap_ms,
+        frameGap
+      );
+    matrix.total_clock_delta_ms +=
+      clockDelta;
+    matrix.max_clock_delta_ms=
+      Math.max(
+        matrix.max_clock_delta_ms,
+        clockDelta
+      );
+    matrix.last_elapsed_ms=
+      elapsedNow;
+
     const sample={
       kind:String(kind || "ui"),
       category,
       elapsed_ms:
+        elapsedNow,
+      frame_gap_ms:
         Math.round(
-          client.elapsedMs
+          frameGap
+        ),
+      battle_clock_delta_ms:
+        Math.round(
+          clockDelta
         ),
       at_epoch_ms:
         Date.now(),
@@ -3473,6 +3576,56 @@ const SPECIAL_CELL_INFO = {
         booster:0,
         technical_drawer:0,
         other_ui:0,
+      },
+      ux_matrix:{
+        module_place:{
+          count:0,
+          total_frame_gap_ms:0,
+          max_frame_gap_ms:0,
+          total_clock_delta_ms:0,
+          max_clock_delta_ms:0,
+          last_elapsed_ms:null,
+        },
+        module_move:{
+          count:0,
+          total_frame_gap_ms:0,
+          max_frame_gap_ms:0,
+          total_clock_delta_ms:0,
+          max_clock_delta_ms:0,
+          last_elapsed_ms:null,
+        },
+        generator_gate:{
+          count:0,
+          total_frame_gap_ms:0,
+          max_frame_gap_ms:0,
+          total_clock_delta_ms:0,
+          max_clock_delta_ms:0,
+          last_elapsed_ms:null,
+        },
+        booster:{
+          count:0,
+          total_frame_gap_ms:0,
+          max_frame_gap_ms:0,
+          total_clock_delta_ms:0,
+          max_clock_delta_ms:0,
+          last_elapsed_ms:null,
+        },
+        technical_drawer:{
+          count:0,
+          total_frame_gap_ms:0,
+          max_frame_gap_ms:0,
+          total_clock_delta_ms:0,
+          max_clock_delta_ms:0,
+          last_elapsed_ms:null,
+        },
+        other_ui:{
+          count:0,
+          total_frame_gap_ms:0,
+          max_frame_gap_ms:0,
+          total_clock_delta_ms:0,
+          max_clock_delta_ms:0,
+          last_elapsed_ms:null,
+        },
       },
     };
   }
@@ -4147,66 +4300,155 @@ const SPECIAL_CELL_INFO = {
     }
   }
 
-  const HUMAN_REVIEW_NOTE_KEY=
-    "gridshard.balance-review.local-note";
+const HUMAN_REVIEW_NOTE_KEY=
+  "gridshard.balance-review.local-draft";
 
-  function loadHumanReviewLocalNote() {
-    const field=
-      document.getElementById(
-        "human-review-decision-note"
-      );
-    const status=
-      document.getElementById(
-        "human-review-note-status"
-      );
-    if (!field) return;
+const HUMAN_REVIEW_STATE_LABELS={
+  none:"Karar verilmedi",
+  hold:"Beklet",
+  reject:"Reddet",
+  revisit:"İleride değerlendir",
+};
 
-    let value="";
-    try {
-      value=
-        localStorage.getItem(
-          HUMAN_REVIEW_NOTE_KEY
-        ) || "";
-    } catch (_error) {
-      value="";
+function readHumanReviewLocalDraft() {
+  try {
+    const raw=
+      localStorage.getItem(
+        HUMAN_REVIEW_NOTE_KEY
+      );
+    if (!raw) {
+      return {
+        state:"none",
+        note:"",
+        updated_at_ms:null,
+      };
     }
 
-    field.value=value;
+    const parsed=
+      JSON.parse(raw);
+
+    return {
+      state:
+        Object.prototype
+          .hasOwnProperty.call(
+            HUMAN_REVIEW_STATE_LABELS,
+            parsed?.state
+          )
+          ? parsed.state
+          : "none",
+      note:
+        String(
+          parsed?.note || ""
+        ),
+      updated_at_ms:
+        Number(
+          parsed?.updated_at_ms
+          || 0
+        )
+        || null,
+    };
+  } catch (_error) {
+    return {
+      state:"none",
+      note:"",
+      updated_at_ms:null,
+    };
+  }
+}
+
+function loadHumanReviewLocalNote() {
+  const field=
+    document.getElementById(
+      "human-review-decision-note"
+    );
+  const stateField=
+    document.getElementById(
+      "human-review-decision-state"
+    );
+  const status=
+    document.getElementById(
+      "human-review-note-status"
+    );
+
+  const draft=
+    readHumanReviewLocalDraft();
+
+  if (field) {
+    field.value=draft.note;
+  }
+  if (stateField) {
+    stateField.value=
+      draft.state;
+  }
+
+  if (status) {
+    const label=
+      HUMAN_REVIEW_STATE_LABELS[
+        draft.state
+      ];
+    status.textContent=
+      (
+        draft.state !== "none"
+        || draft.note
+      )
+        ? `${label} · yerel taslak · canonical dengeye uygulanmaz`
+        : "Yerel inceleme kararı yok";
+  }
+}
+
+function saveHumanReviewLocalNote() {
+  const field=
+    document.getElementById(
+      "human-review-decision-note"
+    );
+  const stateField=
+    document.getElementById(
+      "human-review-decision-state"
+    );
+  const status=
+    document.getElementById(
+      "human-review-note-status"
+    );
+
+  const state=
+    Object.prototype
+      .hasOwnProperty.call(
+        HUMAN_REVIEW_STATE_LABELS,
+        stateField?.value
+      )
+      ? stateField.value
+      : "none";
+
+  const draft={
+    state,
+    note:
+      field?.value.trim()
+      || "",
+    updated_at_ms:
+      Date.now(),
+    local_only:true,
+    canonical_balance_changed:
+      false,
+  };
+
+  try {
+    localStorage.setItem(
+      HUMAN_REVIEW_NOTE_KEY,
+      JSON.stringify(
+        draft
+      )
+    );
     if (status) {
       status.textContent=
-        value
-          ? "Yerel karar notu yüklendi · dengeyi uygulamaz"
-          : "Yerel not yok";
+        `${HUMAN_REVIEW_STATE_LABELS[state]} · yerel inceleme kaydedildi · sunucuya gönderilmedi`;
+    }
+  } catch (_error) {
+    if (status) {
+      status.textContent=
+        "Yerel inceleme kaydedilemedi";
     }
   }
-
-  function saveHumanReviewLocalNote() {
-    const field=
-      document.getElementById(
-        "human-review-decision-note"
-      );
-    const status=
-      document.getElementById(
-        "human-review-note-status"
-      );
-    if (!field) return;
-
-    try {
-      localStorage.setItem(
-        HUMAN_REVIEW_NOTE_KEY,
-        field.value.trim()
-      );
-      if (status) {
-        status.textContent=
-          "Yerel karar notu kaydedildi · sunucuya gönderilmedi";
-      }
-    } catch (_error) {
-      if (status) {
-        status.textContent=
-          "Yerel not kaydedilemedi";
-      }
-    }
-  }
+}
 
   async function loadHumanReviewQueue() {
     try {
@@ -4795,6 +5037,43 @@ const SPECIAL_CELL_INFO = {
             ...localBattleMetrics
               .ux_categories,
           },
+          ux_matrix:
+            Object.fromEntries(
+              Object.entries(
+                localBattleMetrics
+                  .ux_matrix
+              ).map(
+                ([category,value])=>[
+                  category,
+                  {
+                    count:
+                      value.count,
+                    average_frame_gap_ms:
+                      value.count
+                        ? Math.round(
+                            value.total_frame_gap_ms
+                            / value.count
+                          )
+                        : 0,
+                    max_frame_gap_ms:
+                      Math.round(
+                        value.max_frame_gap_ms
+                      ),
+                    average_clock_delta_ms:
+                      value.count
+                        ? Math.round(
+                            value.total_clock_delta_ms
+                            / value.count
+                          )
+                        : 0,
+                    max_clock_delta_ms:
+                      Math.round(
+                        value.max_clock_delta_ms
+                      ),
+                  },
+                ]
+              )
+            ),
           battle_elapsed_ms:
             Math.round(
               client.elapsedMs
@@ -8569,13 +8848,21 @@ const SPECIAL_CELL_INFO = {
         if (field) {
           field.value="";
         }
+        const stateField=
+          document.getElementById(
+            "human-review-decision-state"
+          );
+        if (stateField) {
+          stateField.value=
+            "none";
+        }
         const status=
           document.getElementById(
             "human-review-note-status"
           );
         if (status) {
           status.textContent=
-            "Yerel karar notu temizlendi";
+            "Yerel inceleme taslağı temizlendi";
         }
       }
     );

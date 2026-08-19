@@ -1,0 +1,12 @@
+{
+  "version": "2.0.0-beta.21",
+  "status": "UNDECIDED",
+  "mastering_target_selected": false,
+  "integrated_lufs_target": null,
+  "true_peak_target_dbtp": null,
+  "platform_profile": null,
+  "technical_reference": "docs/AUDIO_BS1770_SCAN.json",
+  "note": "Mevcut BS.1770 ölçümleri teknik referanstır. Final mastering hedefi ayrı bir insan kararı olarak seçilmeden asset gain/master değerleri bu rapora göre otomatik değiştirilmez.",
+  "automatic_mastering_apply": false,
+  "final_mastering_complete": false
+}

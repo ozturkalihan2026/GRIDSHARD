@@ -27,13 +27,13 @@ def main()->int:
     )
 
     if report.get("skipped"):
-        status="SKIPPED"
+        source_status="SKIPPED"
     elif report.get("ok") is True:
-        status="PASSED"
+        source_status="PASSED"
     elif report:
-        status="FAILED"
+        source_status="FAILED"
     else:
-        status="NOT_RUN"
+        source_status="NOT_RUN"
 
     checks=load_json(
         ARTIFACT_DIR/"checks.json",
@@ -92,9 +92,67 @@ def main()->int:
         else None
     )
 
+    evidence_complete=(
+        source_status=="PASSED"
+        and all(
+            screenshots.values()
+        )
+        and bool(checks)
+        and all(
+            item.get("ok")
+            is True
+            for item in checks
+        )
+        and (
+            ARTIFACT_DIR
+            / "console.json"
+        ).exists()
+        and (
+            ARTIFACT_DIR
+            / "network.json"
+        ).exists()
+        and sum(
+            1
+            for item
+            in console
+            if item.get("type")
+            == "error"
+        ) == 0
+        and sum(
+            1
+            for item
+            in network
+            if int(
+                item.get(
+                    "status",
+                    0,
+                )
+                or 0
+            ) >= 400
+        ) == 0
+    )
+
+    status=(
+        "SKIPPED"
+        if source_status
+        == "SKIPPED"
+        else (
+            "PASSED"
+            if evidence_complete
+            else (
+                "NOT_RUN"
+                if source_status
+                == "NOT_RUN"
+                else "FAILED"
+            )
+        )
+    )
+
     summary={
         "version":
-            "2.0.0-beta.20",
+            "2.0.0-beta.21",
+        "source_status":
+            source_status,
         "status":status,
         "passed":
             status=="PASSED",
@@ -111,13 +169,7 @@ def main()->int:
                 "browser"
             ),
         "evidence_complete":
-            (
-                status=="PASSED"
-                and all(
-                    screenshots.values()
-                )
-                and bool(checks)
-            ),
+            evidence_complete,
         "screenshots":
             screenshots,
         "console":{
@@ -169,6 +221,18 @@ def main()->int:
                 (
                     final_metrics.get(
                         "ux_categories",
+                        {},
+                    )
+                    if isinstance(
+                        final_metrics,
+                        dict,
+                    )
+                    else {}
+                ),
+            "interaction_matrix":
+                (
+                    final_metrics.get(
+                        "ux_matrix",
                         {},
                     )
                     if isinstance(

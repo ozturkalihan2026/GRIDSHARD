@@ -4990,5 +4990,164 @@
     "player_id": "wt-8288059b-9714-4817-ad64-397540b99b4e",
     "session_id": null,
     "timestamp_ms": 1787127522696
+  },
+  {
+    "event_id": "web-test-run-started-web-test-beta.20-local",
+    "event_type": "web_test_run_started",
+    "metadata": {
+      "build": "web-test-beta.13",
+      "preflight_ready": true,
+      "test_run_id": "web-test-beta.20-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1787137582061
+  },
+  {
+    "event_id": "web-test-launch-wt-8288059b-9714-4817-ad64-397540b99b4e-1787137584297",
+    "event_type": "web_test_launch_attempted",
+    "metadata": {
+      "failed_checks": [],
+      "launch_ready": true,
+      "test_run_id": "web-test-beta.20-local"
+    },
+    "player_id": "wt-8288059b-9714-4817-ad64-397540b99b4e",
+    "session_id": null,
+    "timestamp_ms": 1787137584297
+  },
+  {
+    "event_id": "web-test-operation-web-test-beta.20-local-1787137585370",
+    "event_type": "web_test_operation_snapshot",
+    "metadata": {
+      "consistency_status": "consistent",
+      "operational_state": "running",
+      "preflight_ready": true,
+      "run_started": true,
+      "test_run_id": "web-test-beta.20-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1787137585370
+  },
+  {
+    "event_id": "web-test-stability-web-test-beta.20-local-1787137585502",
+    "event_type": "web_test_stability_snapshot",
+    "metadata": {
+      "operation_running_rate": 0.0,
+      "running_to_other_regressions": 0,
+      "stability": "degraded",
+      "test_run_id": "web-test-beta.20-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1787137585502
+  },
+  {
+    "event_id": "web-test-stability-web-test-beta.20-local-1787137596642",
+    "event_type": "web_test_stability_snapshot",
+    "metadata": {
+      "operation_running_rate": 1.0,
+      "running_to_other_regressions": 0,
+      "stability": "stable",
+      "test_run_id": "web-test-beta.20-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1787137596642
+  },
+  {
+    "event_id": "web-test-operation-web-test-beta.20-local-1787137596800",
+    "event_type": "web_test_operation_snapshot",
+    "metadata": {
+      "consistency_status": "consistent",
+      "operational_state": "running",
+      "preflight_ready": true,
+      "run_started": true,
+      "test_run_id": "web-test-beta.20-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1787137596800
+  },
+  {
+    "event_id": "web-test-operation-web-test-beta.20-local-1787137606563",
+    "event_type": "web_test_operation_snapshot",
+    "metadata": {
+      "consistency_status": "consistent",
+      "operational_state": "running",
+      "preflight_ready": true,
+      "run_started": true,
+      "test_run_id": "web-test-beta.20-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1787137606563
+  },
+  {
+    "event_id": "web-test-stability-web-test-beta.20-local-1787137606688",
+    "event_type": "web_test_stability_snapshot",
+    "metadata": {
+      "operation_running_rate": 1.0,
+      "running_to_other_regressions": 0,
+      "stability": "stable",
+      "test_run_id": "web-test-beta.20-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1787137606688
+  },
+  {
+    "event_id": "web-test-stability-web-test-beta.20-local-1787137616393",
+    "event_type": "web_test_stability_snapshot",
+    "metadata": {
+      "operation_running_rate": 1.0,
+      "running_to_other_regressions": 0,
+      "stability": "stable",
+      "test_run_id": "web-test-beta.20-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1787137616393
+  },
+  {
+    "event_id": "web-test-operation-web-test-beta.20-local-1787137616443",
+    "event_type": "web_test_operation_snapshot",
+    "metadata": {
+      "consistency_status": "consistent",
+      "operational_state": "running",
+      "preflight_ready": true,
+      "run_started": true,
+      "test_run_id": "web-test-beta.20-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1787137616443
+  },
+  {
+    "event_id": "web-test-stability-web-test-beta.20-local-1787137625128",
+    "event_type": "web_test_stability_snapshot",
+    "metadata": {
+      "operation_running_rate": 1.0,
+      "running_to_other_regressions": 0,
+      "stability": "stable",
+      "test_run_id": "web-test-beta.20-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1787137625128
+  },
+  {
+    "event_id": "web-test-operation-web-test-beta.20-local-1787137625196",
+    "event_type": "web_test_operation_snapshot",
+    "metadata": {
+      "consistency_status": "consistent",
+      "operational_state": "running",
+      "preflight_ready": true,
+      "run_started": true,
+      "test_run_id": "web-test-beta.20-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1787137625196
   }
 ]

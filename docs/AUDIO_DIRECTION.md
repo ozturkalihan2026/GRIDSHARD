@@ -288,3 +288,27 @@ Kural:
 - `final_mastering_complete=false` korunur.
 
 Beta.20 geliştirme ortamında ffmpeg `ebur128` filtresi bulunduğu için gerçek ölçüm raporu üretilebildi. Bu sonuçlar mastering karar girdisidir; final master değildir.
+
+
+---
+
+## 13. Beta.21 Mastering Hedefi Ayrımı
+
+Gerçek BS.1770 / EBU R128 ölçümleri artık final mastering hedefinden açıkça ayrılmıştır.
+
+Yeni karar dosyası:
+
+- `docs/AUDIO_MASTERING_TARGET_DECISION.json`
+
+Beta.21 durumunda:
+
+- `mastering_target_selected=false`
+- Integrated LUFS hedefi seçilmedi.
+- True Peak hedefi seçilmedi.
+- Platform mastering profili seçilmedi.
+- Otomatik gain/master değişikliği yok.
+- `final_mastering_complete=false`.
+
+`AUDIO_BS1770_SCAN.json` yalnız teknik referanstır. Ölçülen LUFS değerleri, hedef LUFS değerleri değildir.
+
+Final mastering hedefi ancak ayrı insan kararıyla belirlenecektir.

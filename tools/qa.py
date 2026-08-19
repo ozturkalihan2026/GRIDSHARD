@@ -62,7 +62,7 @@ def http_post(url: str):
 def smoke_server() -> dict:
     port = free_port()
     env = os.environ.copy()
-    env["RELAY_WEB_TEST_RUN_ID"] = "web-test-beta.20-qa"
+    env["RELAY_WEB_TEST_RUN_ID"] = "web-test-beta.21-qa"
     env["RELAY_TELEMETRY_PATH"] = str(ROOT / "server/data/qa_telemetry.json")
     env["RELAY_PLAYER_DATA_PATH"] = str(ROOT / "server/data/qa_players.json")
     env["RELAY_BATTLE_POOL_PRESET_PATH"] = str(
@@ -300,17 +300,59 @@ def main() -> int:
         )
 
     if all(step["ok"] for step in steps):
+        steps.append(
+            run_step(
+                "ux_interaction_matrix",
+                [
+                    sys.executable,
+                    "tools/ux_interaction_matrix.py",
+                ],
+                cwd=ROOT,
+            )
+        )
+
+    if all(step["ok"] for step in steps):
         steps.append(smoke_server())
+
+    imported_windows_e2e_path=(
+        ROOT
+        / "qa_reports"
+        / "imported_browser_e2e.json"
+    )
+    if imported_windows_e2e_path.exists():
+        try:
+            imported_windows_e2e=json.loads(
+                imported_windows_e2e_path
+                .read_text(
+                    encoding="utf-8"
+                )
+            )
+        except Exception as exc:
+            imported_windows_e2e={
+                "status":"INVALID",
+                "verified_passed":False,
+                "reason":str(exc),
+            }
+    else:
+        imported_windows_e2e={
+            "status":"NOT_IMPORTED",
+            "verified_passed":False,
+            "reason":
+                "Gerçek Windows/Chrome E2E kanıt paketi henüz içe aktarılmadı.",
+        }
 
     report = {
         "project": "GRIDSHARD 2.0",
-        "version": "2.0.0-beta.20",
+        "version": "2.0.0-beta.21",
         "generated_at_epoch": int(time.time()),
         "ok": all(step["ok"] for step in steps),
         "steps": steps,
+        "external_windows_browser_e2e":
+            imported_windows_e2e,
         "note": (
             "Gerçek tarayıcı E2E ayrı tools/browser_e2e.py koşucusudur; "
-            "PASSED/SKIPPED/FAILED ayrımı browser_e2e_evidence_summary.json içinde korunur. "
+            "PASSED yalnız eksiksiz artifact + başarılı checks ile kabul edilir. "
+            "Windows kanıt içe aktarımı latest.json içinde ayrı external_windows_browser_e2e alanında raporlanır. "
             "Zorunlu QA: server, client, audio lifecycle, teknik raporlar, startup ve HTTP smoke."
         ),
     }

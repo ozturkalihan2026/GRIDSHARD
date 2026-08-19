@@ -1,10 +1,13 @@
 {
-  "version": "2.0.0-beta.20",
+  "version": "2.0.0-beta.21",
   "available": true,
   "status": "MEASURED",
   "tool": "/usr/bin/ffmpeg",
   "standard": "ffmpeg ebur128; EBU R128 / ITU-R BS.1770 family measurement",
   "note": "Bu ölçüm final mastering uygulandığı anlamına gelmez.",
+  "mastering_target_selected": false,
+  "mastering_target_reference": "docs/AUDIO_MASTERING_TARGET_DECISION.json",
+  "automatic_gain_change": false,
   "final_mastering_complete": false,
   "assets": [
     {

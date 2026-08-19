@@ -1,7 +1,7 @@
 # GRIDSHARD 2.0 — YOL HARİTASI
 
-**Güncel Sürüm:** `2.0.0-beta.20`  
-**Paket:** Windows Browser E2E Kanıt Paketi + Savaş Etkileşim Profili + Review Konsolu V2  
+**Güncel Sürüm:** `2.0.0-beta.21`  
+**Paket:** Gerçek Windows E2E Sonuç İçe Aktarımı + UX Etkileşim Matrisi + Denge Review Karar Akışı  
 **Kanonik Dosya:** `docs/YOL_HARITASI.md`
 
 > Bu dosya GRIDSHARD 2.0 için tek kanonik geliştirme kaydıdır. Kaynak karar belgesi ile kod tabanı yeniden karşılaştırılmıştır. Buradaki `[x]`, `[~]`, `[ ]` işaretleri artık yalnızca kodda ve testlerde doğrulanabilen gerçek durumu gösterir.
@@ -443,7 +443,7 @@ olarak üretilir.
 
 # 7. Tamamlanan Son Paket
 
-## 2.0.0-beta.20 — Stabilizasyon + Kanonik Yol Haritası Denetimi + QA Zinciri
+## 2.0.0-beta.21 — Stabilizasyon + Kanonik Yol Haritası Denetimi + QA Zinciri
 
 - [x] Kaynak `Yol Haritası.txt`, mevcut kanonik yol haritası ve kod yeniden karşılaştırıldı.
 - [x] Eski yol haritasındaki 24 modül, 18 Savaş Havuzu, stratejik alan, güçlendirici ve PvP durumlarına ait eski/yanlış işaretlemeler gerçek koda göre düzeltildi.
@@ -526,7 +526,7 @@ olarak üretilir.
 
 ---
 
-# 7.1 — 2.0.0-beta.20 Gerçek Kullanıcı Test Bulguları ve Düzeltmeleri
+# 7.1 — 2.0.0-beta.21 Gerçek Kullanıcı Test Bulguları ve Düzeltmeleri
 
 Bu paket Beta.6'nın gerçek Windows/PowerShell ve tarayıcı testi sonucunda oluşturuldu; varsayımsal UX çalışması değildir.
 
@@ -571,7 +571,7 @@ Bu paket Beta.6'nın gerçek Windows/PowerShell ve tarayıcı testi sonucunda ol
 
 ---
 
-# 7.2 — 2.0.0-beta.20 Yerel AI Oynanış Doğrulama Paketi
+# 7.2 — 2.0.0-beta.21 Yerel AI Oynanış Doğrulama Paketi
 
 Beta.8'de denge değerleri varsayımla değiştirilmedi. Amaç Beta.7'nin kullanıcıya açtığı oynanış zincirini otomatik testte daha ileri taşımak ve gerçek savaş ekranını okunabilir hale getirmektir.
 
@@ -596,7 +596,7 @@ Beta.8'de denge değerleri varsayımla değiştirilmedi. Amaç Beta.7'nin kullan
 
 ---
 
-# 7.3 — 2.0.0-beta.20 Oyna Erişimi ve Stratejik Modül Seçimi
+# 7.3 — 2.0.0-beta.21 Oyna Erişimi ve Stratejik Modül Seçimi
 
 Bu paket doğrudan gerçek kullanıcı geri bildirimine dayanır: Oyna butonunun pasif kalması ve Savaş Havuzu oluştururken modül mekaniklerinin karar vermeye yetmeyecek kadar az gösterilmesi.
 
@@ -624,7 +624,7 @@ Bu paket doğrudan gerçek kullanıcı geri bildirimine dayanır: Oyna butonunun
 
 ---
 
-# 7.4 — 2.0.0-beta.20 Oyun Lobisi, Kapılar Arası Jeneratör ve Etki Görselleştirmesi
+# 7.4 — 2.0.0-beta.21 Oyun Lobisi, Kapılar Arası Jeneratör ve Etki Görselleştirmesi
 
 ## Jeneratör
 - [x] Jeneratör başlangıçta Çekirdek kapılarından birinde yer alır.
@@ -647,7 +647,7 @@ Bu paket doğrudan gerçek kullanıcı geri bildirimine dayanır: Oyna butonunun
 
 ---
 
-# 7.5 — 2.0.0-beta.20 Manuel Savaş Telemetrisi ve Denge Hazırlığı
+# 7.5 — 2.0.0-beta.21 Manuel Savaş Telemetrisi ve Denge Hazırlığı
 
 - [x] Tek Oyunculu gerçek manuel maç başlangıç/bitiş telemetrisi eklendi.
 - [x] Maç süresi, sonuç, Devre Kredisi harcaması, modül müdahalesi, verilen/alınan hasar ve Kalkan azaltması ölçülüyor.
@@ -662,7 +662,7 @@ Bu paket doğrudan gerçek kullanıcı geri bildirimine dayanır: Oyna butonunun
 
 ---
 
-# 7.6 — 2.0.0-beta.20 Denge İnceleme Merkezi ve Jeneratör Rota Analizi
+# 7.6 — 2.0.0-beta.21 Denge İnceleme Merkezi ve Jeneratör Rota Analizi
 
 Bu paket Beta.11 telemetrisini karar destek katmanına taşır. Paket oluşturulurken kullanıcıdan üç yeni manuel maç verisi bulunmadığı için sayısal denge değiştirilmemiştir.
 
@@ -682,7 +682,7 @@ Bu paket Beta.11 telemetrisini karar destek katmanına taşır. Paket oluşturul
 
 ---
 
-# 7.7 — 2.0.0-beta.20 Hazır Savaş Havuzları, HP Görselleştirmesi ve Review-Ready Kapısı
+# 7.7 — 2.0.0-beta.21 Hazır Savaş Havuzları, HP Görselleştirmesi ve Review-Ready Kapısı
 
 ## Savaş Havuzu kullanılabilirliği
 - [x] Orta ayrıntı panelindeki büyük `Seç / Havuzdan Çıkar` düğmesi kaldırıldı.
@@ -719,7 +719,7 @@ Bu paket Beta.11 telemetrisini karar destek katmanına taşır. Paket oluşturul
 
 ---
 
-# 7.8 — 2.0.0-beta.20 GRIDSHARD Identity Foundation
+# 7.8 — 2.0.0-beta.21 GRIDSHARD Identity Foundation
 
 Beta.14'ten önce oyun kimliği sabitlenmiştir.
 
@@ -756,7 +756,7 @@ Beta.14'ten önce oyun kimliği sabitlenmiştir.
 
 ---
 
-# 7.9 — GRIDSHARD 2.0.0-beta.20 Hazır Havuz Yönetimi ve Denge Onay Akışı
+# 7.9 — GRIDSHARD 2.0.0-beta.21 Hazır Havuz Yönetimi ve Denge Onay Akışı
 
 ## Hazır Savaş Havuzu yönetimi
 - [x] Yüklenen hazır havuz `Aktif hazır havuz` olarak görünür.
@@ -790,7 +790,7 @@ Beta.14'ten önce oyun kimliği sabitlenmiştir.
 
 ---
 
-# 7.10 — GRIDSHARD 2.0.0-beta.20 Karar Tamamlama, Preset Kartları ve İzole Simülasyon
+# 7.10 — GRIDSHARD 2.0.0-beta.21 Karar Tamamlama, Preset Kartları ve İzole Simülasyon
 
 ## Karar metni denetimi
 - [x] `docs/KARAR_UYGULAMA_KONTROLU.md` oluşturuldu.
@@ -840,7 +840,7 @@ Beta.14'ten önce oyun kimliği sabitlenmiştir.
 
 ---
 
-# 7.11 — GRIDSHARD 2.0.0-beta.20 BattleEngine Regresyonu, Audio Settings ve Hızlı Loadout
+# 7.11 — GRIDSHARD 2.0.0-beta.21 BattleEngine Regresyonu, Audio Settings ve Hızlı Loadout
 
 ## Review-ready ikinci güvenlik koşucusu
 - [x] `balance_regression.py` eklendi.
@@ -884,7 +884,7 @@ Beta.14'ten önce oyun kimliği sabitlenmiştir.
 
 ---
 
-# 7.12 — GRIDSHARD 2.0.0-beta.20 Engine Regresyon Kapsamı, Audio Mix V2 ve Loadout Son Dokunuşları
+# 7.12 — GRIDSHARD 2.0.0-beta.21 Engine Regresyon Kapsamı, Audio Mix V2 ve Loadout Son Dokunuşları
 
 ## PowerShell hata düzeltmesi / kaynak bütünlüğü
 - [x] Kullanıcının iki PowerShell çıktısındaki ortak `manual-battle-report 500` hatası incelendi.
@@ -940,7 +940,7 @@ Beta.14'ten önce oyun kimliği sabitlenmiştir.
 
 ---
 
-# 7.13 — GRIDSHARD 2.0.0-beta.20 Cache Güvenliği, Browser E2E, Audio Mix V3 ve İnsan Review Konsolu
+# 7.13 — GRIDSHARD 2.0.0-beta.21 Cache Güvenliği, Browser E2E, Audio Mix V3 ve İnsan Review Konsolu
 
 ## Web test cache güvenliği
 - [x] `304 Not Modified` web test ortamında kaldırıldı.
@@ -976,7 +976,7 @@ Beta.14'ten önce oyun kimliği sabitlenmiştir.
 
 ---
 
-# 7.14 — GRIDSHARD 2.0.0-beta.20 Browser E2E Sertleştirme, Savaş UX Telemetrisi ve Audio Mastering Hazırlığı
+# 7.14 — GRIDSHARD 2.0.0-beta.21 Browser E2E Sertleştirme, Savaş UX Telemetrisi ve Audio Mastering Hazırlığı
 
 ## Browser E2E sertleştirme
 - [x] `tools/browser_e2e.py` artifact toplayacak şekilde genişletildi.
@@ -1027,7 +1027,7 @@ Beta.14'ten önce oyun kimliği sabitlenmiştir.
 
 ---
 
-# 7.15 — GRIDSHARD 2.0.0-beta.20 Windows Browser E2E Kanıt Paketi, Savaş Etkileşim Profili ve Review Konsolu V2
+# 7.15 — GRIDSHARD 2.0.0-beta.21 Windows Browser E2E Kanıt Paketi, Savaş Etkileşim Profili ve Review Konsolu V2
 
 ## Windows Browser E2E Kanıt Paketi
 - [x] `tools/browser_e2e_evidence.py` eklendi.
@@ -1079,19 +1079,96 @@ Beta.14'ten önce oyun kimliği sabitlenmiştir.
 
 ---
 
+# 7.16 — GRIDSHARD 2.0.0-beta.21 Gerçek Windows E2E İçe Aktarımı, UX Etkileşim Matrisi ve Review Karar Akışı
+
+## Gerçek Windows E2E sonuç içe aktarımı
+- [x] `tools/import_browser_e2e_evidence.py` eklendi.
+- [x] Kaynak klasör veya ZIP olabilir.
+- [x] `browser_e2e.json` zorunludur.
+- [x] `browser_e2e_artifacts/` zorunludur.
+- [x] Dört ekran görüntüsü zorunludur.
+- [x] `console.json`, `network.json`, `checks.json` zorunludur.
+- [x] PNG signature doğrulaması yapılır.
+- [x] Artifact SHA-256 hash manifesti oluşturulur.
+- [x] Tüm checks `ok=true` olmadan `VERIFIED_PASSED` oluşmaz.
+- [x] Console error varsa `VERIFIED_PASSED` oluşmaz.
+- [x] HTTP 4xx/5xx network cevabı varsa `VERIFIED_PASSED` oluşmaz.
+- [x] Kaynak `SKIPPED` ise import sonucu da `SKIPPED` kalır.
+- [x] `automatic_pass_from_skip=false`.
+- [x] Import sonucu `qa_reports/imported_browser_e2e.json`.
+- [x] `WINDOWS_E2E_KANIT_ICERI_AKTAR.bat` eklendi.
+- [x] `qa_reports/latest.json` varsa import sonucunu `external_windows_browser_e2e` alanında taşır.
+- [x] Import sonucu çekirdek server/client QA sonucunu sahte biçimde değiştirmez.
+
+## Taşınabilir Windows kanıt paketi
+- [x] `tools/export_browser_e2e_evidence.py` eklendi.
+- [x] Gerçek PASSED olmayan browser sonucu dışa aktarılamaz.
+- [x] SKIPPED browser sonucu PASSED kanıt ZIP'i oluşturamaz.
+- [x] Eksik artifact varsa export reddedilir.
+- [x] Windows E2E launcher başarılı test sonunda taşınabilir ZIP oluşturur.
+- [x] Çıktı: `qa_reports/gridshard-windows-browser-e2e-evidence.zip`.
+
+## UX Etkileşim Matrisi
+- [x] Her `battle_ui_interaction` örneğine kategori eklenir.
+- [x] Her örneğe interaction anındaki `frame_gap_ms` eklenir.
+- [x] Her örneğe aynı kategoride önceki interaction'a göre `battle_clock_delta_ms` eklenir.
+- [x] `module_place` matrix.
+- [x] `module_move` matrix.
+- [x] `generator_gate` matrix.
+- [x] `booster` matrix.
+- [x] `technical_drawer` matrix.
+- [x] `other_ui` matrix.
+- [x] Her kategori `count`.
+- [x] Her kategori `average_frame_gap_ms`.
+- [x] Her kategori `max_frame_gap_ms`.
+- [x] Her kategori `average_clock_delta_ms`.
+- [x] Her kategori `max_clock_delta_ms`.
+- [x] Matrix `window.__GRIDSHARD_BATTLE_UX` görünümüne eklenir.
+- [x] Matrix maç sonu `battle_ux_timing_summary` içine eklenir.
+- [x] `tools/ux_interaction_matrix.py` yalnız gerçek PASSED browser kanıtından rapor üretir.
+- [x] Gerçek PASSED kanıt yoksa matrix durumu `SKIPPED`; değer uydurulmaz.
+- [x] Çıktı: `qa_reports/ux_interaction_matrix.json`.
+
+## Denge Review karar akışı
+- [x] Yerel Review durum dropdown'u eklendi.
+- [x] `Karar verilmedi`.
+- [x] `Beklet`.
+- [x] `Reddet`.
+- [x] `İleride değerlendir`.
+- [x] Durum + kullanıcı notu tek local draft JSON olarak tutulur.
+- [x] Yerel draft `localStorage` içindedir.
+- [x] Yerel draft sunucuya gönderilmez.
+- [x] Yerel draft `canonical_balance_changed=false` olarak modellenir.
+- [x] Review kararı otomatik apply yapmaz.
+- [x] Kullanıcı yerel review taslağını temizleyebilir.
+
+## Audio teknik referans / mastering hedefi
+- [x] Gerçek BS.1770 ölçümleri korunur.
+- [x] `docs/AUDIO_MASTERING_TARGET_DECISION.json` eklendi.
+- [x] `mastering_target_selected=false`.
+- [x] Hedef Integrated LUFS seçilmedi.
+- [x] Hedef True Peak seçilmedi.
+- [x] Platform mastering profili seçilmedi.
+- [x] Ölçülen LUFS değerleri hedef değer olarak yorumlanmaz.
+- [x] Otomatik audio gain değişikliği yok.
+- [x] `final_mastering_complete=false`.
+
+---
+
 # 9. Sıradaki Paket
 
-**`GRIDSHARD 2.0.0-beta.21 — Gerçek Windows E2E Sonuç İçe Aktarımı + UX Etkileşim Matrisi + Denge Review Karar Akışı`**
+**`GRIDSHARD 2.0.0-beta.22 — Windows E2E Kanıt Geçmişi + UX Performans Eşikleri + Review Konsolu V3`**
 
-Beta.21 hedefleri:
+Beta.22 hedefleri:
 
-1. Kullanıcının Windows/Chrome üzerinde ürettiği gerçek Browser E2E kanıt paketini proje QA raporuna güvenli biçimde içe aktarmak ve artifact bütünlüğünü doğrulamak.
-2. Savaş UX kategorilerini etkileşim sayısı, etkileşim anındaki frame gap ve battle-clock ilerlemesi ile kategori bazlı matrise dönüştürmek.
-3. Review Konsolu'nda yerel kullanıcı karar notuna `beklet / reddet / ileride değerlendir` gibi yalnız inceleme statüleri eklemek; bunlar yine kanonik denge uygulaması yapmamalıdır.
-4. Gerçek BS.1770 loudness ölçümlerini final mastering hedefi belirlenmeden yalnız teknik referans olarak tutmak; mastering target seçimi ayrı karar olarak kalmalıdır.
-5. Browser E2E yalnız gerçek artifact seti eksiksiz ve checks başarılıysa PASSED kabul edilmelidir.
+1. Birden fazla gerçek Windows Browser E2E kanıt paketini tarih/run-id bazlı geçmiş olarak saklayıp son koşuyla önceki koşuları karşılaştırmak.
+2. UX matrix için platforma göre yalnız gözlem amaçlı performans eşikleri ve trend raporu oluşturmak; ölçüm verisi yoksa eşik sonucu uydurmamak.
+3. Review Konsolu V3'te yerel karar durumunu aday bazında tutmak; adaylar arasında `beklet / reddet / ileride değerlendir` kararlarının birbirine karışmasını engellemek.
+4. Audio mastering hedefi için yalnız karar seçeneklerini dokümante etmek; kullanıcı açıkça hedef seçmeden mastering target veya gain değişikliği uygulamamak.
+5. Gerçek Windows E2E import sonucu yalnız bütünlük doğrulamasını geçmişse geçmişe eklenmelidir.
 
 Kural:
 - otomatik denge apply yok,
-- review kararı ile canonical denge değişikliği birbirinden tamamen ayrıdır,
-- savaş simulation clock hiçbir UI etkileşiminde durdurulamaz.
+- review kararı canonical denge değişikliği değildir,
+- gerçek browser ölçümü olmadan UX performans sonucu PASS ilan edilmez,
+- mastering hedefi ayrı kullanıcı kararıdır.

@@ -2803,3 +2803,14 @@ body[data-app-screen="menu"] .main-menu-panel {
     grid-template-columns:1fr;
   }
 }
+
+
+/* beta.21 — Yerel review karar durumu */
+.human-review-local-note select {
+  min-height:38px;
+  border:1px solid rgba(41,71,102,.75);
+  border-radius:7px;
+  background:rgba(7,11,20,.72);
+  color:var(--gs-ice-white);
+  padding:6px 8px;
+}

@@ -91,7 +91,7 @@ def main()->int:
     if not ffmpeg:
         payload={
             "version":
-                "2.0.0-beta.20",
+                "2.0.0-beta.21",
             "available":False,
             "status":
                 "SKIPPED",
@@ -99,6 +99,12 @@ def main()->int:
                 "ffmpeg bulunamadı",
             "standard":
                 "EBU R128 / ITU-R BS.1770 compatible ffmpeg ebur128 filter",
+            "mastering_target_selected":
+                False,
+            "mastering_target_reference":
+                "docs/AUDIO_MASTERING_TARGET_DECISION.json",
+            "automatic_gain_change":
+                False,
             "final_mastering_complete":
                 False,
             "assets":[],
@@ -125,7 +131,7 @@ def main()->int:
         if not has_ebur128:
             payload={
                 "version":
-                    "2.0.0-beta.20",
+                    "2.0.0-beta.21",
                 "available":
                     False,
                 "status":
@@ -134,6 +140,12 @@ def main()->int:
                     "ffmpeg ebur128 filtresi yok",
                 "standard":
                     "EBU R128 / ITU-R BS.1770",
+                "mastering_target_selected":
+                    False,
+                "mastering_target_reference":
+                    "docs/AUDIO_MASTERING_TARGET_DECISION.json",
+                "automatic_gain_change":
+                    False,
                 "final_mastering_complete":
                     False,
                 "assets":[],
@@ -153,7 +165,7 @@ def main()->int:
             ]
             payload={
                 "version":
-                    "2.0.0-beta.20",
+                    "2.0.0-beta.21",
                 "available":True,
                 "status":
                     (
@@ -171,6 +183,12 @@ def main()->int:
                     "ffmpeg ebur128; EBU R128 / ITU-R BS.1770 family measurement",
                 "note":
                     "Bu ölçüm final mastering uygulandığı anlamına gelmez.",
+                "mastering_target_selected":
+                    False,
+                "mastering_target_reference":
+                    "docs/AUDIO_MASTERING_TARGET_DECISION.json",
+                "automatic_gain_change":
+                    False,
                 "final_mastering_complete":
                     False,
                 "assets":
