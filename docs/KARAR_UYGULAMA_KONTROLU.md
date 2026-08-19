@@ -1,6 +1,6 @@
 # GRIDSHARD — Karar Uygulama Kontrolü
 
-**Kontrol paketi:** `2.0.0-beta.19`
+**Kontrol paketi:** `2.0.0-beta.20`
 
 Bu belge, daha önce alınan görsel kimlik / ekran / ses / isim kararlarının proje içindeki gerçek uygulama durumunu takip eder.
 
@@ -150,4 +150,20 @@ Bu belge, daha önce alınan görsel kimlik / ekran / ses / isim kararlarının 
 - [x] Audio mastering hazırlık raporunda crest factor ve RMS proxy metrikleri bulunur.
 - [x] RMS proxy'nin LUFS olmadığı açıkça dokümante edildi.
 - [x] Critical Core layer low/medium/high pressure kademelerine ayrıldı.
+- [x] Otomatik denge apply yoktur.
+
+
+## 14. Beta.20 Windows E2E / UX profil / Review V2
+- [x] Browser E2E PASSED / SKIPPED / FAILED durumları tek kanıt özetinde kesin ayrılır.
+- [x] SKIPPED sonucu otomatik olarak PASSED sayılmaz.
+- [x] Screenshot / console / network / checks / UX timing kanıtları tek `browser_e2e_evidence_summary.json` raporunda birleştirilir.
+- [x] Windows `TARAYICI_E2E_TEST.bat` gerçek E2E ardından kanıt özetini otomatik üretir.
+- [x] Savaş UX kategorileri: `module_place`, `module_move`, `generator_gate`, `booster`, `technical_drawer`, `other_ui`.
+- [x] Her kategori toplamları `window.__GRIDSHARD_BATTLE_UX` ve maç sonu timing telemetrisinde görünür.
+- [x] Review Konsolu V2 simulation önce/öneri ve regression senaryo sayısını karşılaştırmalı gösterir.
+- [x] Kullanıcı karar notu yalnız `localStorage` içinde tutulur.
+- [x] Yerel karar notu sunucuya gönderilmez ve denge uygulamaz.
+- [x] Opsiyonel ffmpeg `ebur128` taraması gerçek LUFS/LRA/True Peak ölçümü yapabilir.
+- [x] ffmpeg/ebur128 yoksa LUFS uydurulmaz; rapor SKIPPED olur.
+- [x] Final mastering tamamlanmış sayılmaz.
 - [x] Otomatik denge apply yoktur.

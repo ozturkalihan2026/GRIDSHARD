@@ -1,0 +1,33 @@
+{
+  "version": "2.0.0-beta.20",
+  "status": "SKIPPED",
+  "passed": false,
+  "skipped": true,
+  "failed": false,
+  "reason": "Page.goto: net::ERR_BLOCKED_BY_ADMINISTRATOR at http://127.0.0.1:8878/?e2e=1\nCall log:\n  - navigating to \"http://127.0.0.1:8878/?e2e=1\", waiting until \"networkidle\"\n",
+  "browser": "/usr/bin/chromium",
+  "evidence_complete": false,
+  "screenshots": {
+    "01-main-menu.png": false,
+    "02-loadout-ready.png": false,
+    "03-battle-started.png": false,
+    "04-battle-result.png": false
+  },
+  "console": {
+    "artifact_exists": false,
+    "message_count": 0,
+    "error_count": 0
+  },
+  "network": {
+    "artifact_exists": false,
+    "response_count": 0,
+    "http_error_count": 0
+  },
+  "ux_timing": {
+    "clock_progress_check": null,
+    "final_metrics": null,
+    "category_counts": {}
+  },
+  "checks": [],
+  "automatic_pass_from_skip": false
+}

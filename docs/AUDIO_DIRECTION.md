@@ -263,3 +263,28 @@ Kritik Çekirdek pressure artık üç seviyeye ayrılır:
 - `high`
 
 Pressure yükseldikçe critical layer gain ve çok hafif playback-rate değişimi uygulanabilir. Amaç savaş baskısını artırmak; oynanış zamanlamasını değiştirmek değildir.
+
+
+---
+
+## 12. Beta.20 Opsiyonel BS.1770 / EBU R128 Tarama
+
+`tools/audio_lufs_scan.py` ortamda `ffmpeg` ve `ebur128` filtresi varsa gerçek loudness ölçümü çalıştırır.
+
+Üretilen rapor:
+
+- `docs/AUDIO_BS1770_SCAN.json`
+
+Rapor mümkünse şu metrikleri içerir:
+
+- Integrated loudness (LUFS),
+- Loudness Range (LU),
+- True Peak (dBFS).
+
+Kural:
+- araç yoksa durum `SKIPPED`,
+- LUFS değeri tahmin edilmez veya uydurulmaz,
+- ölçüm yapılmış olması final mastering tamamlandığı anlamına gelmez,
+- `final_mastering_complete=false` korunur.
+
+Beta.20 geliştirme ortamında ffmpeg `ebur128` filtresi bulunduğu için gerçek ölçüm raporu üretilebildi. Bu sonuçlar mastering karar girdisidir; final master değildir.

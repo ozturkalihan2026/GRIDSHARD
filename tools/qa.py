@@ -62,7 +62,7 @@ def http_post(url: str):
 def smoke_server() -> dict:
     port = free_port()
     env = os.environ.copy()
-    env["RELAY_WEB_TEST_RUN_ID"] = "web-test-beta.19-qa"
+    env["RELAY_WEB_TEST_RUN_ID"] = "web-test-beta.20-qa"
     env["RELAY_TELEMETRY_PATH"] = str(ROOT / "server/data/qa_telemetry.json")
     env["RELAY_PLAYER_DATA_PATH"] = str(ROOT / "server/data/qa_players.json")
     env["RELAY_BATTLE_POOL_PRESET_PATH"] = str(
@@ -276,18 +276,42 @@ def main() -> int:
     ]
 
     if all(step["ok"] for step in steps):
+        steps.append(
+            run_step(
+                "audio_bs1770_optional_scan",
+                [
+                    sys.executable,
+                    "tools/audio_lufs_scan.py",
+                ],
+                cwd=ROOT,
+            )
+        )
+
+    if all(step["ok"] for step in steps):
+        steps.append(
+            run_step(
+                "browser_e2e_evidence_summary",
+                [
+                    sys.executable,
+                    "tools/browser_e2e_evidence.py",
+                ],
+                cwd=ROOT,
+            )
+        )
+
+    if all(step["ok"] for step in steps):
         steps.append(smoke_server())
 
     report = {
         "project": "GRIDSHARD 2.0",
-        "version": "2.0.0-beta.19",
+        "version": "2.0.0-beta.20",
         "generated_at_epoch": int(time.time()),
         "ok": all(step["ok"] for step in steps),
         "steps": steps,
         "note": (
-            "Gerçek tarayıcı E2E ayrı tools/browser_e2e.py koşucusudur ve "
-            "qa_reports/browser_e2e.json üretir. Tarayıcı/localhost politikası uygun değilse "
-            "SKIPPED kalır. Zorunlu QA: server, client, audio lifecycle, startup ve HTTP smoke."
+            "Gerçek tarayıcı E2E ayrı tools/browser_e2e.py koşucusudur; "
+            "PASSED/SKIPPED/FAILED ayrımı browser_e2e_evidence_summary.json içinde korunur. "
+            "Zorunlu QA: server, client, audio lifecycle, teknik raporlar, startup ve HTTP smoke."
         ),
     }
     REPORT_PATH.write_text(

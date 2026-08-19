@@ -91,7 +91,7 @@
   const COMPETITIVE_STATUS = "M7 rekabetçi altyapı doğrulanıyor";
   const BALANCE_STATUS = "Denge simülasyonu mevcut · geniş örnek bekliyor";
   const AI_STATUS = "AI altyapısı mevcut · arketip testleri bekliyor";
-  const PVP_STATUS = "GRIDSHARD Beta.19 · Browser E2E + Savaş UX Telemetrisi + Audio Mastering Hazırlığı";
+  const PVP_STATUS = "GRIDSHARD Beta.20 · Windows E2E Kanıt Paketi + Savaş Etkileşim Profili + Review Konsolu V2";
 
 
 
@@ -591,7 +591,7 @@
         webTestBuildState,
       releaseCheckState,
       expectedVersion:
-        "2.0.0-beta.19",
+        "2.0.0-beta.20",
       expectedProtocolVersion: 1,
     });
   const playReadinessGate =
@@ -627,7 +627,7 @@
 
   telemetryDispatcher.trackGameOpened({
     platform: "web",
-    build: "2.0.0-beta.19",
+    build: "2.0.0-beta.20",
   });
 
   const postMatchSync =
@@ -1187,7 +1187,7 @@
   const diagnosticSnapshot =
     new RelayDiagnosticSnapshot({
       version:
-        "2.0.0-beta.19",
+        "2.0.0-beta.20",
       build:
         "web-test-beta.13",
       bootGate:
@@ -2992,7 +2992,7 @@
       if (versionEl) {
         versionEl.textContent=
           manifest.version
-          || "2.0.0-beta.19";
+          || "2.0.0-beta.20";
       }
       if (runEl) {
         runEl.textContent=
@@ -3127,14 +3127,52 @@ const SPECIAL_CELL_INFO = {
                 ...localBattleMetrics
                   .ui_interaction_samples,
               ],
+            ux_categories:{
+              ...localBattleMetrics
+                .ux_categories,
+            },
             finished:
               localBattleFinished,
           }
         : null;
   }
 
+  function classifyBattleUiInteraction(
+    kind,
+    explicitCategory=null
+  ) {
+    if (explicitCategory) {
+      return explicitCategory;
+    }
+
+    const value=
+      String(
+        kind || ""
+      ).toLocaleLowerCase("tr");
+
+    if (
+      value.includes("booster")
+      || value.includes("aşırı yük")
+      || value.includes("acil onarım")
+      || value.includes("çift port")
+    ) {
+      return "booster";
+    }
+
+    if (
+      value.includes("technical")
+      || value.includes("teknik")
+      || value.includes("tanılama")
+    ) {
+      return "technical_drawer";
+    }
+
+    return "other_ui";
+  }
+
   function trackBattleUiInteraction(
-    kind
+    kind,
+    explicitCategory=null
   ) {
     if (
       activePlayMode !== "local"
@@ -3145,11 +3183,35 @@ const SPECIAL_CELL_INFO = {
       return;
     }
 
+    const category=
+      classifyBattleUiInteraction(
+        kind,
+        explicitCategory
+      );
+
     localBattleMetrics
       .ui_interactions += 1;
 
+    if (
+      Object.prototype.hasOwnProperty.call(
+        localBattleMetrics
+          .ux_categories,
+        category
+      )
+    ) {
+      localBattleMetrics
+        .ux_categories[
+          category
+        ] += 1;
+    } else {
+      localBattleMetrics
+        .ux_categories
+        .other_ui += 1;
+    }
+
     const sample={
       kind:String(kind || "ui"),
+      category,
       elapsed_ms:
         Math.round(
           client.elapsedMs
@@ -3165,7 +3227,7 @@ const SPECIAL_CELL_INFO = {
     if (
       localBattleMetrics
         .ui_interaction_samples
-        .length > 24
+        .length > 32
     ) {
       localBattleMetrics
         .ui_interaction_samples
@@ -3223,7 +3285,12 @@ const SPECIAL_CELL_INFO = {
           || target.tagName;
 
         trackBattleUiInteraction(
+          label,
           label
+            ?.toLocaleLowerCase("tr")
+            .includes("teknik")
+            ? "technical_drawer"
+            : null
         );
       },
       true
@@ -3399,6 +3466,14 @@ const SPECIAL_CELL_INFO = {
       pause_violation_count:0,
       ui_interactions:0,
       ui_interaction_samples:[],
+      ux_categories:{
+        module_place:0,
+        module_move:0,
+        generator_gate:0,
+        booster:0,
+        technical_drawer:0,
+        other_ui:0,
+      },
     };
   }
 
@@ -3994,8 +4069,39 @@ const SPECIAL_CELL_INFO = {
             2
           );
 
+      const simulationBefore=
+        item.simulation
+          ?.metrics_before
+        || item.simulation
+          ?.before
+        || null;
+      const simulationProposed=
+        item.simulation
+          ?.metrics_proposed
+        || item.simulation
+          ?.proposed
+        || null;
+      const regressionScenarioCount=
+        Array.isArray(
+          item.regression
+            ?.engine_scenarios
+        )
+          ? item.regression
+              .engine_scenarios
+              .length
+          : (
+              item.regression
+              ? 1
+              : 0
+            );
+
       body.innerHTML=
-        `<p><strong>Gerekçe:</strong> ${item.reason || "—"}</p>`
+        `<div class="human-review-compare-grid">`
+        + `<div><span>Simulation Önce</span><strong>${simulationBefore ? safeJson(simulationBefore) : "—"}</strong></div>`
+        + `<div><span>Simulation Öneri</span><strong>${simulationProposed ? safeJson(simulationProposed) : "—"}</strong></div>`
+        + `<div><span>Regression</span><strong>${item.regression_status} · ${regressionScenarioCount} senaryo</strong></div>`
+        + `</div>`
+        + `<p><strong>Gerekçe:</strong> ${item.reason || "—"}</p>`
         + `<p><strong>Öneri:</strong> ${item.suggestion || "—"}</p>`
         + `<p><strong>Mevcut → Önerilen:</strong> ${item.before_value ?? "—"} → ${item.proposed_value ?? "—"}</p>`
         + `<p><strong>Simulation:</strong> ${item.simulation_status}</p>`
@@ -4038,6 +4144,67 @@ const SPECIAL_CELL_INFO = {
       return {
         ok:false,
       };
+    }
+  }
+
+  const HUMAN_REVIEW_NOTE_KEY=
+    "gridshard.balance-review.local-note";
+
+  function loadHumanReviewLocalNote() {
+    const field=
+      document.getElementById(
+        "human-review-decision-note"
+      );
+    const status=
+      document.getElementById(
+        "human-review-note-status"
+      );
+    if (!field) return;
+
+    let value="";
+    try {
+      value=
+        localStorage.getItem(
+          HUMAN_REVIEW_NOTE_KEY
+        ) || "";
+    } catch (_error) {
+      value="";
+    }
+
+    field.value=value;
+    if (status) {
+      status.textContent=
+        value
+          ? "Yerel karar notu yüklendi · dengeyi uygulamaz"
+          : "Yerel not yok";
+    }
+  }
+
+  function saveHumanReviewLocalNote() {
+    const field=
+      document.getElementById(
+        "human-review-decision-note"
+      );
+    const status=
+      document.getElementById(
+        "human-review-note-status"
+      );
+    if (!field) return;
+
+    try {
+      localStorage.setItem(
+        HUMAN_REVIEW_NOTE_KEY,
+        field.value.trim()
+      );
+      if (status) {
+        status.textContent=
+          "Yerel karar notu kaydedildi · sunucuya gönderilmedi";
+      }
+    } catch (_error) {
+      if (status) {
+        status.textContent=
+          "Yerel not kaydedilemedi";
+      }
     }
   }
 
@@ -4624,6 +4791,10 @@ const SPECIAL_CELL_INFO = {
           ui_interactions:
             localBattleMetrics
               .ui_interactions,
+          ux_categories:{
+            ...localBattleMetrics
+              .ux_categories,
+          },
           battle_elapsed_ms:
             Math.round(
               client.elapsedMs
@@ -6615,6 +6786,10 @@ const SPECIAL_CELL_INFO = {
       button.addEventListener("click", () => {
         if (!boosterOfferOpen) return;
         selectedBoosterId = booster.id;
+        trackBattleUiInteraction(
+          `booster_select:${booster.id}`,
+          "booster"
+        );
         boosterStatusEl.textContent = selectedBoosterId ? "Hedef modül seç" : "Seçim bekleniyor";
         renderBoosterOptions();
         renderBoard();
@@ -6631,6 +6806,10 @@ const SPECIAL_CELL_INFO = {
       logClientMessage(`${booster.nameTr}, ${module.nameTr} modülüne uygulanamaz.`);
       return true;
     }
+    trackBattleUiInteraction(
+      `booster_apply:${booster.id}`,
+      "booster"
+    );
     commandLog.push({
       atMs: client.elapsedMs,
       kind: "apply_booster",
@@ -7612,6 +7791,33 @@ const SPECIAL_CELL_INFO = {
 
     if (
       activePlayMode === "local"
+      && localBattleStarted
+      && !localBattleFinished
+    ) {
+      if (command.kind === "place_module") {
+        trackBattleUiInteraction(
+          command.kind,
+          "module_place"
+        );
+      } else if (
+        command.kind === "move_module"
+      ) {
+        const movedModule=
+          client.requireModule(
+            command.payload.module_id
+          );
+        trackBattleUiInteraction(
+          command.kind,
+          movedModule.instanceId
+          === "generator-1"
+            ? "generator_gate"
+            : "module_move"
+        );
+      }
+    }
+
+    if (
+      activePlayMode === "local"
       && localBattleMetrics
       && cost > 0
     ) {
@@ -8331,6 +8537,51 @@ const SPECIAL_CELL_INFO = {
       }
     );
   }
+
+  const humanReviewNoteSaveEl =
+    document.getElementById(
+      "human-review-note-save"
+    );
+  if (humanReviewNoteSaveEl) {
+    humanReviewNoteSaveEl.addEventListener(
+      "click",
+      saveHumanReviewLocalNote
+    );
+  }
+
+  const humanReviewNoteClearEl =
+    document.getElementById(
+      "human-review-note-clear"
+    );
+  if (humanReviewNoteClearEl) {
+    humanReviewNoteClearEl.addEventListener(
+      "click",
+      () => {
+        const field=
+          document.getElementById(
+            "human-review-decision-note"
+          );
+        try {
+          localStorage.removeItem(
+            HUMAN_REVIEW_NOTE_KEY
+          );
+        } catch (_error) {}
+        if (field) {
+          field.value="";
+        }
+        const status=
+          document.getElementById(
+            "human-review-note-status"
+          );
+        if (status) {
+          status.textContent=
+            "Yerel karar notu temizlendi";
+        }
+      }
+    );
+  }
+
+  loadHumanReviewLocalNote();
 
   const humanReviewRefreshEl =
     document.getElementById(

@@ -3,7 +3,7 @@ setlocal
 cd /d "%~dp0"
 
 echo ============================================================
-echo GRIDSHARD 2.0.0-beta.19 - Gercek Tarayici E2E
+echo GRIDSHARD 2.0.0-beta.20 - Gercek Tarayici E2E
 echo ============================================================
 
 if not exist ".venv\Scripts\python.exe" (
@@ -22,8 +22,11 @@ if errorlevel 1 (
 
 echo Tarayici E2E baslatiliyor...
 ".venv\Scripts\python.exe" tools\browser_e2e.py
+set E2E_RC=%errorlevel%
 
-if errorlevel 1 (
+".venv\Scripts\python.exe" tools\browser_e2e_evidence.py
+
+if not "%E2E_RC%"=="0" (
   echo.
   echo [BASARISIZ] Ayrintilar: qa_reports\browser_e2e.json
   echo Artifactler: qa_reports\browser_e2e_artifacts\
@@ -32,5 +35,6 @@ if errorlevel 1 (
 
 echo.
 echo [BASARILI] Rapor: qa_reports\browser_e2e.json
+echo Kanit Ozeti: qa_reports\browser_e2e_evidence_summary.json
 echo Artifactler: qa_reports\browser_e2e_artifacts\
 exit /b 0

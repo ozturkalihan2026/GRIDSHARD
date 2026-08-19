@@ -2741,3 +2741,65 @@ body[data-app-screen="menu"] .main-menu-panel {
   color:var(--gs-reactor-gold) !important;
   font-weight:800;
 }
+
+
+/* beta.20 — Review Konsolu V2 */
+.human-review-compare-grid {
+  display:grid;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:8px;
+}
+
+.human-review-compare-grid > div {
+  display:grid;
+  gap:5px;
+  padding:8px;
+  border:1px solid rgba(41,71,102,.65);
+  border-radius:7px;
+  background:rgba(12,22,37,.58);
+}
+
+.human-review-compare-grid span {
+  color:var(--gs-signal-gray);
+  font-size:.68rem;
+}
+
+.human-review-compare-grid strong {
+  max-height:120px;
+  overflow:auto;
+  white-space:pre-wrap;
+  color:var(--gs-ice-white);
+  font-size:.68rem;
+}
+
+.human-review-local-note {
+  display:grid;
+  gap:7px;
+  margin:10px 0;
+  padding:10px;
+  border:1px solid rgba(244,200,90,.24);
+  border-radius:8px;
+  background:rgba(7,11,20,.5);
+}
+
+.human-review-local-note textarea {
+  min-height:82px;
+  resize:vertical;
+}
+
+.human-review-local-note > div {
+  display:flex;
+  flex-wrap:wrap;
+  gap:7px;
+}
+
+.human-review-local-note span {
+  color:var(--gs-signal-gray);
+  font-size:.72rem;
+}
+
+@media (max-width:760px) {
+  .human-review-compare-grid {
+    grid-template-columns:1fr;
+  }
+}
