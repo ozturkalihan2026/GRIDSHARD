@@ -3,7 +3,7 @@ setlocal
 cd /d "%~dp0"
 
 echo ============================================================
-echo GRIDSHARD 2.0.0-beta.21 - Windows E2E Kanit Iceri Aktarim
+echo GRIDSHARD 2.0.0-beta.22 - Windows E2E Kanit Iceri Aktarim
 echo ============================================================
 
 if "%~1"=="" (
@@ -29,6 +29,10 @@ if not "%IMPORT_RC%"=="0" (
   echo [REDDEDILDI] Kanit paketi PASSED olarak kabul edilmedi.
   exit /b %IMPORT_RC%
 )
+
+".venv\Scripts\python.exe" tools\browser_e2e_history.py
+".venv\Scripts\python.exe" tools\ux_interaction_matrix.py
+".venv\Scripts\python.exe" tools\ux_performance_thresholds.py
 
 echo [TAMAMLANDI] Kanit paketi dogrulandi veya SKIPPED durumu korundu.
 exit /b 0

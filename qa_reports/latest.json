@@ -1,15 +1,15 @@
 {
   "project": "GRIDSHARD 2.0",
-  "version": "2.0.0-beta.21",
-  "generated_at_epoch": 1787138466,
+  "version": "2.0.0-beta.22",
+  "generated_at_epoch": 1787140446,
   "ok": true,
   "steps": [
     {
       "name": "release_guard",
       "ok": true,
       "returncode": 0,
-      "duration_s": 0.78,
-      "stdout": "[GRIDSHARD] Kaynak bütünlüğü doğrulandı: 2.0.0-beta.21 · dict telemetri uyumlu.\n",
+      "duration_s": 0.723,
+      "stdout": "[GRIDSHARD] Kaynak bütünlüğü doğrulandı: 2.0.0-beta.22 · dict telemetri uyumlu.\n",
       "stderr": "",
       "command": [
         "/opt/pyvenv/bin/python",
@@ -20,8 +20,8 @@
       "name": "server_pytest",
       "ok": true,
       "returncode": 0,
-      "duration_s": 14.859,
-      "stdout": "........................................................................ [ 11%]\n........................................................................ [ 23%]\n........................................................................ [ 34%]\n........................................................................ [ 46%]\n........................................................................ [ 58%]\n........................................................................ [ 69%]\n........................................................................ [ 81%]\n........................................................................ [ 93%]\n..........................................                               [100%]\n618 passed in 12.41s\n",
+      "duration_s": 12.308,
+      "stdout": "........................................................................ [ 11%]\n........................................................................ [ 23%]\n........................................................................ [ 34%]\n........................................................................ [ 46%]\n........................................................................ [ 58%]\n........................................................................ [ 69%]\n........................................................................ [ 81%]\n........................................................................ [ 92%]\n............................................                             [100%]\n620 passed in 10.11s\n",
       "stderr": "",
       "command": [
         "/opt/pyvenv/bin/python",
@@ -34,7 +34,7 @@
       "name": "client_syntax_app",
       "ok": true,
       "returncode": 0,
-      "duration_s": 0.054,
+      "duration_s": 0.028,
       "stdout": "",
       "stderr": "",
       "command": [
@@ -47,7 +47,7 @@
       "name": "client_syntax_runtime",
       "ok": true,
       "returncode": 0,
-      "duration_s": 0.022,
+      "duration_s": 0.021,
       "stdout": "",
       "stderr": "",
       "command": [
@@ -73,7 +73,7 @@
       "name": "client_audio_tests",
       "ok": true,
       "returncode": 0,
-      "duration_s": 0.027,
+      "duration_s": 0.023,
       "stdout": "gridshard audio identity test passed\n",
       "stderr": "",
       "command": [
@@ -85,7 +85,7 @@
       "name": "client_audio_browser_lifecycle",
       "ok": true,
       "returncode": 0,
-      "duration_s": 1.123,
+      "duration_s": 1.133,
       "stdout": "gridshard audio browser lifecycle test passed\n",
       "stderr": "",
       "command": [
@@ -97,8 +97,8 @@
       "name": "client_unit_tests",
       "ok": true,
       "returncode": 0,
-      "duration_s": 0.168,
-      "stdout": "174 client tests passed\n",
+      "duration_s": 0.175,
+      "stdout": "175 client tests passed\n",
       "stderr": "",
       "command": [
         "node",
@@ -109,8 +109,8 @@
       "name": "client_startup_menu_test",
       "ok": true,
       "returncode": 0,
-      "duration_s": 0.084,
-      "stdout": "app startup + menu + local playable flow test passed\n",
+      "duration_s": 0.076,
+      "stdout": "app startup + direct battle-area playable flow test passed\n",
       "stderr": "",
       "command": [
         "node",
@@ -121,7 +121,7 @@
       "name": "audio_bs1770_optional_scan",
       "ok": true,
       "returncode": 0,
-      "duration_s": 2.11,
+      "duration_s": 2.018,
       "stdout": "Audio BS.1770 scan: MEASURED\n",
       "stderr": "",
       "command": [
@@ -133,8 +133,8 @@
       "name": "browser_e2e_evidence_summary",
       "ok": true,
       "returncode": 0,
-      "duration_s": 0.72,
-      "stdout": "GRIDSHARD Browser E2E evidence: SKIPPED\nRapor: /mnt/data/gridshard-2.0.0-beta.21/qa_reports/browser_e2e_evidence_summary.json\n",
+      "duration_s": 0.763,
+      "stdout": "GRIDSHARD Browser E2E evidence: SKIPPED\nRapor: /mnt/data/gridshard-2.0.0-beta.22/qa_reports/browser_e2e_evidence_summary.json\n",
       "stderr": "",
       "command": [
         "/opt/pyvenv/bin/python",
@@ -142,10 +142,22 @@
       ]
     },
     {
+      "name": "browser_e2e_history",
+      "ok": true,
+      "returncode": 0,
+      "duration_s": 2.955,
+      "stdout": "Browser E2E history: SKIPPED\n",
+      "stderr": "",
+      "command": [
+        "/opt/pyvenv/bin/python",
+        "tools/browser_e2e_history.py"
+      ]
+    },
+    {
       "name": "ux_interaction_matrix",
       "ok": true,
       "returncode": 0,
-      "duration_s": 0.72,
+      "duration_s": 0.861,
       "stdout": "UX interaction matrix: SKIPPED\n",
       "stderr": "",
       "command": [
@@ -154,9 +166,21 @@
       ]
     },
     {
+      "name": "ux_performance_observation",
+      "ok": true,
+      "returncode": 0,
+      "duration_s": 0.87,
+      "stdout": "UX performance observation: NOT_MEASURED\n",
+      "stderr": "",
+      "command": [
+        "/opt/pyvenv/bin/python",
+        "tools/ux_performance_thresholds.py"
+      ]
+    },
+    {
       "name": "uvicorn_http_smoke",
       "ok": true,
-      "duration_s": 1.886,
+      "duration_s": 1.933,
       "checks": [
         {
           "path": "/",

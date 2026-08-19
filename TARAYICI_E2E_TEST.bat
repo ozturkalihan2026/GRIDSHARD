@@ -3,7 +3,7 @@ setlocal
 cd /d "%~dp0"
 
 echo ============================================================
-echo GRIDSHARD 2.0.0-beta.21 - Gercek Tarayici E2E
+echo GRIDSHARD 2.0.0-beta.22 - Gercek Tarayici E2E
 echo ============================================================
 
 if not exist ".venv\Scripts\python.exe" (

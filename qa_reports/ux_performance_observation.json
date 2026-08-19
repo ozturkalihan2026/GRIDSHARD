@@ -1,0 +1,19 @@
+{
+  "version": "2.0.0-beta.22",
+  "status": "NOT_MEASURED",
+  "performance_pass": null,
+  "reason": "Gerçek PASSED browser UX matrisi yok; performans sonucu üretilmedi.",
+  "observation_bands": {
+    "average_frame_gap_ms": {
+      "attention": 33,
+      "high_attention": 50
+    },
+    "max_frame_gap_ms": {
+      "attention": 100,
+      "high_attention": 250
+    },
+    "pause_violation_ms": 1000
+  },
+  "categories": {},
+  "trend": "NOT_AVAILABLE"
+}

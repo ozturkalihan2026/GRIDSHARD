@@ -1,5 +1,5 @@
 {
-  "version": "2.0.0-beta.21",
+  "version": "2.0.0-beta.22",
   "status": "pre-mastering-analysis",
   "method_notes": [
     "RMS loudness proxy is not LUFS and must not be reported as integrated LUFS.",

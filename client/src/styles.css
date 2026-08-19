@@ -2814,3 +2814,53 @@ body[data-app-screen="menu"] .main-menu-panel {
   color:var(--gs-ice-white);
   padding:6px 8px;
 }
+
+
+/* beta.22 — gerçek oynanabilir savaş alanına doğrudan giriş */
+.battle-entry-card {
+  border-color:rgba(85,223,138,.55) !important;
+  box-shadow:0 0 0 1px rgba(85,223,138,.08), inset 0 0 22px rgba(85,223,138,.045);
+}
+
+.battle-test-banner {
+  display:flex;
+  flex-wrap:wrap;
+  align-items:center;
+  justify-content:space-between;
+  gap:8px;
+  padding:9px 12px;
+  border:1px solid rgba(85,223,138,.34);
+  border-radius:9px;
+  background:rgba(12,35,28,.46);
+}
+
+.battle-test-banner strong {
+  color:var(--gs-ion-green);
+}
+
+.battle-test-banner span {
+  color:var(--gs-signal-gray);
+  font-size:.76rem;
+}
+
+
+/* beta.22 — aday bazlı yerel review kararı */
+.human-review-candidate-decision {
+  display:grid;
+  gap:6px;
+  margin-top:8px;
+  padding:9px;
+  border:1px solid rgba(244,200,90,.22);
+  border-radius:7px;
+  background:rgba(7,11,20,.46);
+}
+
+.human-review-candidate-decision select {
+  min-height:36px;
+}
+
+
+/* beta.22 — Review Konsolu V3 aday bazlı kararlar */
+.candidate-review-draft{display:grid;grid-template-columns:minmax(130px,.45fr) minmax(220px,1.4fr) auto;gap:7px;align-items:start;margin-top:6px;padding:9px;border:1px dashed rgba(244,200,90,.34);border-radius:8px;background:rgba(52,39,10,.14)}
+.candidate-review-draft select,.candidate-review-draft textarea{min-height:38px;border:1px solid rgba(41,71,102,.72);border-radius:7px;background:rgba(7,11,20,.72);color:var(--gs-ice-white);padding:6px 8px}
+.candidate-review-draft textarea{min-height:64px;resize:vertical}.candidate-review-draft span{grid-column:1/-1;color:var(--gs-signal-gray);font-size:.7rem}@media(max-width:860px){.candidate-review-draft{grid-template-columns:1fr}}

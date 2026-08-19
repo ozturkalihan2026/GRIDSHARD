@@ -91,7 +91,7 @@
   const COMPETITIVE_STATUS = "M7 rekabetçi altyapı doğrulanıyor";
   const BALANCE_STATUS = "Denge simülasyonu mevcut · geniş örnek bekliyor";
   const AI_STATUS = "AI altyapısı mevcut · arketip testleri bekliyor";
-  const PVP_STATUS = "GRIDSHARD Beta.21 · Windows E2E İçe Aktarım + UX Etkileşim Matrisi + Review Karar Akışı";
+  const PVP_STATUS = "GRIDSHARD Beta.22 · Manuel Savaş Alanı + E2E Geçmişi + UX Gözlemi + Review V3";
 
 
 
@@ -591,7 +591,7 @@
         webTestBuildState,
       releaseCheckState,
       expectedVersion:
-        "2.0.0-beta.21",
+        "2.0.0-beta.22",
       expectedProtocolVersion: 1,
     });
   const playReadinessGate =
@@ -627,7 +627,7 @@
 
   telemetryDispatcher.trackGameOpened({
     platform: "web",
-    build: "2.0.0-beta.21",
+    build: "2.0.0-beta.22",
   });
 
   const postMatchSync =
@@ -1187,7 +1187,7 @@
   const diagnosticSnapshot =
     new RelayDiagnosticSnapshot({
       version:
-        "2.0.0-beta.21",
+        "2.0.0-beta.22",
       build:
         "web-test-beta.13",
       bootGate:
@@ -2992,7 +2992,7 @@
       if (versionEl) {
         versionEl.textContent=
           manifest.version
-          || "2.0.0-beta.21";
+          || "2.0.0-beta.22";
       }
       if (runEl) {
         runEl.textContent=
@@ -4164,6 +4164,42 @@ const SPECIAL_CELL_INFO = {
     }
   }
 
+  const HUMAN_REVIEW_CANDIDATE_PREFIX=
+    "gridshard.balance-review.candidate.";
+
+  function humanReviewCandidateKey(area) {
+    return HUMAN_REVIEW_CANDIDATE_PREFIX + String(area || "unknown");
+  }
+
+  function readCandidateReviewDraft(area) {
+    try {
+      const raw=localStorage.getItem(humanReviewCandidateKey(area));
+      if (!raw) return {state:"none",note:""};
+      const parsed=JSON.parse(raw);
+      return {
+        state:Object.prototype.hasOwnProperty.call(HUMAN_REVIEW_STATE_LABELS,parsed?.state) ? parsed.state : "none",
+        note:String(parsed?.note || ""),
+      };
+    } catch (_error) {
+      return {state:"none",note:""};
+    }
+  }
+
+  function saveCandidateReviewDraft(area,state,note) {
+    const safeState=Object.prototype.hasOwnProperty.call(HUMAN_REVIEW_STATE_LABELS,state) ? state : "none";
+    const payload={
+      area:String(area),
+      state:safeState,
+      note:String(note || "").trim(),
+      updated_at_ms:Date.now(),
+      local_only:true,
+      canonical_balance_changed:false,
+      automatic_apply:false,
+    };
+    localStorage.setItem(humanReviewCandidateKey(area),JSON.stringify(payload));
+    return payload;
+  }
+
   function renderHumanReviewEvidenceDetails(
     payload
   ) {
@@ -4262,6 +4298,39 @@ const SPECIAL_CELL_INFO = {
         + `<p><strong>Regression:</strong> ${item.regression_status}</p>`
         + `<pre>${safeJson(item.regression)}</pre>`
         + `<p class="human-review-safety">Otomatik apply kapalı · insan kararı zorunlu</p>`;
+
+      const candidateDraft=readCandidateReviewDraft(item.area);
+      const decisionBox=document.createElement("div");
+      decisionBox.className="candidate-review-draft";
+      const decisionSelect=document.createElement("select");
+      for (const [value,label] of Object.entries(HUMAN_REVIEW_STATE_LABELS)) {
+        const option=document.createElement("option");
+        option.value=value;
+        option.textContent=label;
+        option.selected=candidateDraft.state===value;
+        decisionSelect.appendChild(option);
+      }
+      const noteField=document.createElement("textarea");
+      noteField.maxLength=600;
+      noteField.placeholder="Bu adaya özel yerel inceleme notu";
+      noteField.value=candidateDraft.note;
+      const saveButton=document.createElement("button");
+      saveButton.type="button";
+      saveButton.textContent="Bu Adayın Kararını Yerelde Kaydet";
+      const draftStatus=document.createElement("span");
+      draftStatus.textContent=(candidateDraft.state!=="none" || candidateDraft.note)
+        ? `${HUMAN_REVIEW_STATE_LABELS[candidateDraft.state]} · yalnız bu adaya ait yerel taslak`
+        : "Bu aday için yerel karar yok";
+      saveButton.addEventListener("click",()=>{
+        try {
+          const saved=saveCandidateReviewDraft(item.area,decisionSelect.value,noteField.value);
+          draftStatus.textContent=`${HUMAN_REVIEW_STATE_LABELS[saved.state]} · ${item.area} için kaydedildi · canonical denge değişmedi`;
+        } catch (_error) {
+          draftStatus.textContent="Aday kararı yerelde kaydedilemedi";
+        }
+      });
+      decisionBox.append(decisionSelect,noteField,saveButton,draftStatus);
+      body.appendChild(decisionBox);
 
       details.append(
         summary,
@@ -4832,6 +4901,119 @@ function saveHumanReviewLocalNote() {
 
     renderBattlePoolSelection();
     renderPlayModeUi();
+  }
+
+  function fillBattlePoolForQuickTest() {
+    const ids=[
+      "generator-1",
+      ...selectablePoolModules
+        .map(
+          (module)=>
+            module.instanceId
+        )
+        .filter(
+          (moduleId)=>
+            moduleId
+            !== "generator-1"
+        )
+        .slice(
+          0,
+          battlePoolSelection
+            .requiredSize
+          - 1
+        ),
+    ];
+
+    const result=
+      battlePoolSelection
+        .setSelection(
+          ids
+        );
+
+    if (!result.ok) {
+      logClientMessage(
+        result.reason
+        || "Hızlı test Savaş Havuzu hazırlanamadı."
+      );
+      return result;
+    }
+
+    activeBattlePoolPresetName=
+      null;
+    activeBattlePoolPresetBaseline=
+      battlePoolSelection
+        .selectedIds();
+
+    renderBattlePoolSelection();
+    renderPresetOptions();
+    renderActivePresetState();
+
+    return {
+      ok:true,
+      selected:
+        battlePoolSelection
+          .selectedIds(),
+    };
+  }
+
+  function startQuickLocalBattle() {
+    const prepared=
+      fillBattlePoolForQuickTest();
+
+    if (!prepared.ok) {
+      return prepared;
+    }
+
+    setActivePlayMode(
+      "local"
+    );
+
+    commandLog.push({
+      atMs:
+        client.elapsedMs,
+      kind:
+        "quick_test_battle_pool",
+      payload:{
+        module_instance_ids:
+          battlePoolSelection
+            .selectedIds(),
+        module_definition_ids:
+          selectedBattlePoolDefinitionIds(),
+      },
+    });
+
+    startLocalPlayableMatch();
+
+    const status=
+      document.getElementById(
+        "battle-entry-status"
+      );
+    if (status) {
+      status.textContent=
+        "Savaş alanına giriş başarılı · 18/18 test havuzu hazır · Yerel AI aktif";
+    }
+
+    telemetryDispatcher.track(
+      "battle_area_entered",
+      {
+        mode:
+          "quick_local_test",
+        pool_size:
+          battlePoolSelection
+            .selectedIds()
+            .length,
+        elapsed_ms:
+          client.elapsedMs,
+      }
+    );
+
+    logClientMessage(
+      "Beta.22 hızlı test: 18 modüllük havuz otomatik hazırlandı ve savaş alanı açıldı."
+    );
+
+    return {
+      ok:true,
+    };
   }
 
   function startLocalPlayableMatch() {
@@ -8896,6 +9078,19 @@ function saveHumanReviewLocalNote() {
     );
   }
 
+  const localBattleQuickStartButton=
+    document.getElementById(
+      "local-battle-quick-start"
+    );
+
+  if (localBattleQuickStartButton) {
+    localBattleQuickStartButton
+      .addEventListener(
+        "click",
+        startQuickLocalBattle
+      );
+  }
+
   if (localPlayStartButton) {
     localPlayStartButton
       .addEventListener(
@@ -9216,6 +9411,32 @@ function saveHumanReviewLocalNote() {
       }
     }
   );
+
+  if (
+    typeof window
+    !== "undefined"
+  ) {
+    window.__GRIDSHARD_TEST_API={
+      startQuickLocalBattle,
+      fillBattlePoolForQuickTest,
+      getBattleState:()=>({
+        mode:
+          activePlayMode,
+        started:
+          localBattleStarted,
+        finished:
+          localBattleFinished,
+        pool_size:
+          battlePoolSelection
+            .selectedIds()
+            .length,
+        local_status:
+          document.body
+            .dataset
+            .localStatus,
+      }),
+    };
+  }
 
   setActivePlayMode(
     "idle"

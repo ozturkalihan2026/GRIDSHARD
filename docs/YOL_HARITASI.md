@@ -1,7 +1,7 @@
 # GRIDSHARD 2.0 — YOL HARİTASI
 
-**Güncel Sürüm:** `2.0.0-beta.21`  
-**Paket:** Gerçek Windows E2E Sonuç İçe Aktarımı + UX Etkileşim Matrisi + Denge Review Karar Akışı  
+**Güncel Sürüm:** `2.0.0-beta.22`  
+**Paket:** Manuel Savaş Alanı Erişimi + Windows E2E Kanıt Geçmişi + UX Performans Gözlemi + Review Konsolu V3  
 **Kanonik Dosya:** `docs/YOL_HARITASI.md`
 
 > Bu dosya GRIDSHARD 2.0 için tek kanonik geliştirme kaydıdır. Kaynak karar belgesi ile kod tabanı yeniden karşılaştırılmıştır. Buradaki `[x]`, `[~]`, `[ ]` işaretleri artık yalnızca kodda ve testlerde doğrulanabilen gerçek durumu gösterir.
@@ -443,7 +443,7 @@ olarak üretilir.
 
 # 7. Tamamlanan Son Paket
 
-## 2.0.0-beta.21 — Stabilizasyon + Kanonik Yol Haritası Denetimi + QA Zinciri
+## 2.0.0-beta.22 — Stabilizasyon + Kanonik Yol Haritası Denetimi + QA Zinciri
 
 - [x] Kaynak `Yol Haritası.txt`, mevcut kanonik yol haritası ve kod yeniden karşılaştırıldı.
 - [x] Eski yol haritasındaki 24 modül, 18 Savaş Havuzu, stratejik alan, güçlendirici ve PvP durumlarına ait eski/yanlış işaretlemeler gerçek koda göre düzeltildi.
@@ -526,7 +526,7 @@ olarak üretilir.
 
 ---
 
-# 7.1 — 2.0.0-beta.21 Gerçek Kullanıcı Test Bulguları ve Düzeltmeleri
+# 7.1 — 2.0.0-beta.22 Gerçek Kullanıcı Test Bulguları ve Düzeltmeleri
 
 Bu paket Beta.6'nın gerçek Windows/PowerShell ve tarayıcı testi sonucunda oluşturuldu; varsayımsal UX çalışması değildir.
 
@@ -571,7 +571,7 @@ Bu paket Beta.6'nın gerçek Windows/PowerShell ve tarayıcı testi sonucunda ol
 
 ---
 
-# 7.2 — 2.0.0-beta.21 Yerel AI Oynanış Doğrulama Paketi
+# 7.2 — 2.0.0-beta.22 Yerel AI Oynanış Doğrulama Paketi
 
 Beta.8'de denge değerleri varsayımla değiştirilmedi. Amaç Beta.7'nin kullanıcıya açtığı oynanış zincirini otomatik testte daha ileri taşımak ve gerçek savaş ekranını okunabilir hale getirmektir.
 
@@ -596,7 +596,7 @@ Beta.8'de denge değerleri varsayımla değiştirilmedi. Amaç Beta.7'nin kullan
 
 ---
 
-# 7.3 — 2.0.0-beta.21 Oyna Erişimi ve Stratejik Modül Seçimi
+# 7.3 — 2.0.0-beta.22 Oyna Erişimi ve Stratejik Modül Seçimi
 
 Bu paket doğrudan gerçek kullanıcı geri bildirimine dayanır: Oyna butonunun pasif kalması ve Savaş Havuzu oluştururken modül mekaniklerinin karar vermeye yetmeyecek kadar az gösterilmesi.
 
@@ -624,7 +624,7 @@ Bu paket doğrudan gerçek kullanıcı geri bildirimine dayanır: Oyna butonunun
 
 ---
 
-# 7.4 — 2.0.0-beta.21 Oyun Lobisi, Kapılar Arası Jeneratör ve Etki Görselleştirmesi
+# 7.4 — 2.0.0-beta.22 Oyun Lobisi, Kapılar Arası Jeneratör ve Etki Görselleştirmesi
 
 ## Jeneratör
 - [x] Jeneratör başlangıçta Çekirdek kapılarından birinde yer alır.
@@ -647,7 +647,7 @@ Bu paket doğrudan gerçek kullanıcı geri bildirimine dayanır: Oyna butonunun
 
 ---
 
-# 7.5 — 2.0.0-beta.21 Manuel Savaş Telemetrisi ve Denge Hazırlığı
+# 7.5 — 2.0.0-beta.22 Manuel Savaş Telemetrisi ve Denge Hazırlığı
 
 - [x] Tek Oyunculu gerçek manuel maç başlangıç/bitiş telemetrisi eklendi.
 - [x] Maç süresi, sonuç, Devre Kredisi harcaması, modül müdahalesi, verilen/alınan hasar ve Kalkan azaltması ölçülüyor.
@@ -662,7 +662,7 @@ Bu paket doğrudan gerçek kullanıcı geri bildirimine dayanır: Oyna butonunun
 
 ---
 
-# 7.6 — 2.0.0-beta.21 Denge İnceleme Merkezi ve Jeneratör Rota Analizi
+# 7.6 — 2.0.0-beta.22 Denge İnceleme Merkezi ve Jeneratör Rota Analizi
 
 Bu paket Beta.11 telemetrisini karar destek katmanına taşır. Paket oluşturulurken kullanıcıdan üç yeni manuel maç verisi bulunmadığı için sayısal denge değiştirilmemiştir.
 
@@ -682,7 +682,7 @@ Bu paket Beta.11 telemetrisini karar destek katmanına taşır. Paket oluşturul
 
 ---
 
-# 7.7 — 2.0.0-beta.21 Hazır Savaş Havuzları, HP Görselleştirmesi ve Review-Ready Kapısı
+# 7.7 — 2.0.0-beta.22 Hazır Savaş Havuzları, HP Görselleştirmesi ve Review-Ready Kapısı
 
 ## Savaş Havuzu kullanılabilirliği
 - [x] Orta ayrıntı panelindeki büyük `Seç / Havuzdan Çıkar` düğmesi kaldırıldı.
@@ -719,7 +719,7 @@ Bu paket Beta.11 telemetrisini karar destek katmanına taşır. Paket oluşturul
 
 ---
 
-# 7.8 — 2.0.0-beta.21 GRIDSHARD Identity Foundation
+# 7.8 — 2.0.0-beta.22 GRIDSHARD Identity Foundation
 
 Beta.14'ten önce oyun kimliği sabitlenmiştir.
 
@@ -756,7 +756,7 @@ Beta.14'ten önce oyun kimliği sabitlenmiştir.
 
 ---
 
-# 7.9 — GRIDSHARD 2.0.0-beta.21 Hazır Havuz Yönetimi ve Denge Onay Akışı
+# 7.9 — GRIDSHARD 2.0.0-beta.22 Hazır Havuz Yönetimi ve Denge Onay Akışı
 
 ## Hazır Savaş Havuzu yönetimi
 - [x] Yüklenen hazır havuz `Aktif hazır havuz` olarak görünür.
@@ -790,7 +790,7 @@ Beta.14'ten önce oyun kimliği sabitlenmiştir.
 
 ---
 
-# 7.10 — GRIDSHARD 2.0.0-beta.21 Karar Tamamlama, Preset Kartları ve İzole Simülasyon
+# 7.10 — GRIDSHARD 2.0.0-beta.22 Karar Tamamlama, Preset Kartları ve İzole Simülasyon
 
 ## Karar metni denetimi
 - [x] `docs/KARAR_UYGULAMA_KONTROLU.md` oluşturuldu.
@@ -840,7 +840,7 @@ Beta.14'ten önce oyun kimliği sabitlenmiştir.
 
 ---
 
-# 7.11 — GRIDSHARD 2.0.0-beta.21 BattleEngine Regresyonu, Audio Settings ve Hızlı Loadout
+# 7.11 — GRIDSHARD 2.0.0-beta.22 BattleEngine Regresyonu, Audio Settings ve Hızlı Loadout
 
 ## Review-ready ikinci güvenlik koşucusu
 - [x] `balance_regression.py` eklendi.
@@ -884,7 +884,7 @@ Beta.14'ten önce oyun kimliği sabitlenmiştir.
 
 ---
 
-# 7.12 — GRIDSHARD 2.0.0-beta.21 Engine Regresyon Kapsamı, Audio Mix V2 ve Loadout Son Dokunuşları
+# 7.12 — GRIDSHARD 2.0.0-beta.22 Engine Regresyon Kapsamı, Audio Mix V2 ve Loadout Son Dokunuşları
 
 ## PowerShell hata düzeltmesi / kaynak bütünlüğü
 - [x] Kullanıcının iki PowerShell çıktısındaki ortak `manual-battle-report 500` hatası incelendi.
@@ -940,7 +940,7 @@ Beta.14'ten önce oyun kimliği sabitlenmiştir.
 
 ---
 
-# 7.13 — GRIDSHARD 2.0.0-beta.21 Cache Güvenliği, Browser E2E, Audio Mix V3 ve İnsan Review Konsolu
+# 7.13 — GRIDSHARD 2.0.0-beta.22 Cache Güvenliği, Browser E2E, Audio Mix V3 ve İnsan Review Konsolu
 
 ## Web test cache güvenliği
 - [x] `304 Not Modified` web test ortamında kaldırıldı.
@@ -976,7 +976,7 @@ Beta.14'ten önce oyun kimliği sabitlenmiştir.
 
 ---
 
-# 7.14 — GRIDSHARD 2.0.0-beta.21 Browser E2E Sertleştirme, Savaş UX Telemetrisi ve Audio Mastering Hazırlığı
+# 7.14 — GRIDSHARD 2.0.0-beta.22 Browser E2E Sertleştirme, Savaş UX Telemetrisi ve Audio Mastering Hazırlığı
 
 ## Browser E2E sertleştirme
 - [x] `tools/browser_e2e.py` artifact toplayacak şekilde genişletildi.
@@ -1027,7 +1027,7 @@ Beta.14'ten önce oyun kimliği sabitlenmiştir.
 
 ---
 
-# 7.15 — GRIDSHARD 2.0.0-beta.21 Windows Browser E2E Kanıt Paketi, Savaş Etkileşim Profili ve Review Konsolu V2
+# 7.15 — GRIDSHARD 2.0.0-beta.22 Windows Browser E2E Kanıt Paketi, Savaş Etkileşim Profili ve Review Konsolu V2
 
 ## Windows Browser E2E Kanıt Paketi
 - [x] `tools/browser_e2e_evidence.py` eklendi.
@@ -1079,7 +1079,7 @@ Beta.14'ten önce oyun kimliği sabitlenmiştir.
 
 ---
 
-# 7.16 — GRIDSHARD 2.0.0-beta.21 Gerçek Windows E2E İçe Aktarımı, UX Etkileşim Matrisi ve Review Karar Akışı
+# 7.16 — GRIDSHARD 2.0.0-beta.22 Gerçek Windows E2E İçe Aktarımı, UX Etkileşim Matrisi ve Review Karar Akışı
 
 ## Gerçek Windows E2E sonuç içe aktarımı
 - [x] `tools/import_browser_e2e_evidence.py` eklendi.
@@ -1155,20 +1155,55 @@ Beta.14'ten önce oyun kimliği sabitlenmiştir.
 
 ---
 
+# 7.17 — GRIDSHARD 2.0.0-beta.22 Manuel Savaş Alanı, Windows E2E Geçmişi, UX Gözlemi ve Review Konsolu V3
+
+## Manuel savaş alanı erişimi
+- [x] `Savaş Alanını Hemen Aç` hızlı yerel savaş girişi Oyna ekranında bulunur.
+- [x] Hızlı giriş 18/18 test savaş havuzunu otomatik doldurur.
+- [x] Hızlı giriş matchmaking beklemeden Yerel AI savaşını başlatır.
+- [x] Jeneratör zorunlu loadout modülüdür ve kapılar arasında taşınabilir.
+- [x] `HIZLI_SAVAS_TESTI.bat` ve `docs/MANUEL_SAVAS_TESTI.md` eklendi.
+- [x] Kanonik 15 sn Modül Rafı kilidi korunur.
+- [x] Startup testi gerçek app.js akışında `localStatus=battle` durumuna geçişi doğrular.
+
+## Windows E2E kanıt geçmişi
+- [x] `tools/browser_e2e_history.py` yalnız `VERIFIED_PASSED` importları geçmişe ekler.
+- [x] SKIPPED / REJECTED import geçmişe eklenmez.
+- [x] Artifact hashlerinden deterministik run-id üretilir.
+- [x] Duplicate kanıt tekrar history run oluşturmaz.
+- [x] Son ve önceki doğrulanmış koşu karşılaştırması tutulur.
+
+## UX performans gözlemi
+- [x] `tools/ux_performance_thresholds.py` gözlem bantlarını üretir.
+- [x] Gerçek MEASURED UX matrix yoksa `NOT_MEASURED` ve `performance_pass=null`.
+- [x] Gerçek browser ölçümü olmadan performans PASS/FAIL uydurulmaz.
+- [x] Ölçüm olduğunda kategori bazında OBSERVE / ATTENTION / HIGH_ATTENTION üretilir.
+
+## Review Konsolu V3
+- [x] Review kararları aday `area` değerine göre ayrı localStorage keylerinde tutulur.
+- [x] Beklet / Reddet / İleride değerlendir kararları adaylar arasında karışmaz.
+- [x] Aday kararı `local_only=true`, `canonical_balance_changed=false`, `automatic_apply=false`.
+
+## Audio mastering kararı
+- [x] Mastering hedefi seçilmedi.
+- [x] Üç karar profili yalnız seçenek olarak dokümante edildi.
+- [x] Kullanıcı açıkça hedef seçmeden LUFS / True Peak / gain değişikliği uygulanmaz.
+
+---
+
 # 9. Sıradaki Paket
 
-**`GRIDSHARD 2.0.0-beta.22 — Windows E2E Kanıt Geçmişi + UX Performans Eşikleri + Review Konsolu V3`**
+**`GRIDSHARD 2.0.0-beta.23 — Manuel Savaş Oynanış İncelemesi + İlk Gerçek UX Ölçümü + Savaş Alanı Görsel/Etki Revizyonu`**
 
-Beta.22 hedefleri:
+Beta.23 hedefleri:
 
-1. Birden fazla gerçek Windows Browser E2E kanıt paketini tarih/run-id bazlı geçmiş olarak saklayıp son koşuyla önceki koşuları karşılaştırmak.
-2. UX matrix için platforma göre yalnız gözlem amaçlı performans eşikleri ve trend raporu oluşturmak; ölçüm verisi yoksa eşik sonucu uydurmamak.
-3. Review Konsolu V3'te yerel karar durumunu aday bazında tutmak; adaylar arasında `beklet / reddet / ileride değerlendir` kararlarının birbirine karışmasını engellemek.
-4. Audio mastering hedefi için yalnız karar seçeneklerini dokümante etmek; kullanıcı açıkça hedef seçmeden mastering target veya gain değişikliği uygulamamak.
-5. Gerçek Windows E2E import sonucu yalnız bütünlük doğrulamasını geçmişse geçmişe eklenmelidir.
+1. Beta.22 ile kullanıcı tarafından gerçekten oynanan Yerel AI savaşının PowerShell, ekran görüntüsü ve kullanım geri bildirimlerini incelemek; savaş alanındaki erişim, yerleşim ve etkileşim problemlerini gerçek testten düzeltmek.
+2. Modül Rafı açıldıktan sonra modül yerleştirme, taşıma, Jeneratör kapı değişimi, booster ve saldırı görsel etkilerini manuel oynanış açısından değerlendirmek.
+3. Gerçek Windows Browser E2E kanıtı oluşursa history + UX matrix + observation zincirine eklemek ve ilk gerçek UX trend temelini oluşturmak.
+4. Savaş alanının boyutsal düzeni, rakip/oyuncu bilgi dengesi, Olay Günlüğü, HP/enerji okunabilirliği ve saldırı efektlerini ilk oynanış geri bildirimiyle revize etmek.
+5. Audio mastering hedefi yine ayrı kullanıcı kararı olarak kalır.
 
 Kural:
+- Beta.23'e geçmeden önce mümkünse Beta.22 ile en az bir gerçek Yerel AI savaşı manuel oynanmalıdır,
 - otomatik denge apply yok,
-- review kararı canonical denge değişikliği değildir,
-- gerçek browser ölçümü olmadan UX performans sonucu PASS ilan edilmez,
-- mastering hedefi ayrı kullanıcı kararıdır.
+- gerçek oynanış verisi olmadan görsel/UX sorunu uydurulmaz.

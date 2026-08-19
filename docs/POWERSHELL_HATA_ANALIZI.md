@@ -1,6 +1,6 @@
 # GRIDSHARD — PowerShell Hata Analizi
 
-**İncelenen paket sonrası hedef sürüm:** `2.0.0-beta.21`
+**İncelenen paket sonrası hedef sürüm:** `2.0.0-beta.22`
 
 ## Gözlenen hata
 
@@ -39,7 +39,7 @@ Beta.17 ile `tools/release_guard.py` eklendi.
 
 `BASLAT_WEB_TEST.bat` sunucu açılmadan önce otomatik olarak:
 
-1. çalışan sürümün `2.0.0-beta.21` olduğunu,
+1. çalışan sürümün `2.0.0-beta.22` olduğunu,
 2. `manual_battle_report.py` içinde eski `event.player_id` erişiminin bulunmadığını,
 3. dict biçimindeki gerçek telemetri probe'unun `build_manual_battle_report()` tarafından başarıyla işlendiğini
 

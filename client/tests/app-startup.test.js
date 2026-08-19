@@ -120,8 +120,7 @@ if (document.body.dataset.appScreen !== "profile") {
 }
 
 
-// Oyna → Tek Oyunculu → 18 modüllük havuz → AI savaşına giriş
-// gerçek app.js başlangıç zinciri üzerinde test edilir.
+// Beta.22: Oyna → Savaş Alanını Hemen Aç → gerçek yerel AI savaş alanı.
 const playButton = menuButtons.find((x) => x.dataset.openScreen === "play");
 playButton.disabled = false;
 playButton._listeners.click();
@@ -130,77 +129,30 @@ if (document.body.dataset.appScreen !== "play") {
   throw new Error(`Oyna menüsü açılmadı: ${document.body.dataset.appScreen}`);
 }
 
-const localStart = getElement("local-play-start");
-if (typeof localStart._listeners.click !== "function") {
-  throw new Error("Tek Oyunculu Test Maçı handler bağlanmadı.");
+const quickStart = getElement("local-battle-quick-start");
+if (typeof quickStart._listeners.click !== "function") {
+  throw new Error("Savaş Alanını Hemen Aç handler bağlanmadı.");
 }
-localStart._listeners.click();
+
+quickStart._listeners.click();
 
 if (document.body.dataset.playMode !== "local") {
-  throw new Error(`Yerel mod hazırlanmadı: ${document.body.dataset.playMode}`);
+  throw new Error(`Yerel savaş modu açılmadı: ${document.body.dataset.playMode}`);
 }
-
-const catalog = getElement("battle-pool-selection");
-const confirm = getElement("battle-pool-confirm");
-
-if (playButton.disabled) {
-  throw new Error("Oyna butonu readiness nedeniyle pasif kaldı.");
-}
-
-const catalogChoices = [];
-for (const group of catalog.children) {
-  const list = group.children?.[1];
-  if (!list) continue;
-  for (const choice of list.children || []) {
-    catalogChoices.push(choice);
-  }
-}
-
-if (catalogChoices.length < 18) {
-  throw new Error(`Global modül listesi eksik: ${catalogChoices.length}`);
-}
-
-// Jeneratör zaten zorunlu seçili. İlk jeneratör dışındaki 17 modülü seç.
-let selected = 1;
-for (const choice of catalogChoices) {
-  if (selected >= 18) break;
-  const choiceLabel =
-    choice.children?.[0]?.textContent
-    || choice.textContent;
-  if (choiceLabel === "Jeneratör") continue;
-
-  if (typeof choice._listeners.click !== "function") {
-    throw new Error(`Katalog modül handler yok: ${choice.textContent}`);
-  }
-  choice._listeners.click();
-
-  const selectMark =
-    choice.children?.[1];
-  if (
-    !selectMark
-    || typeof selectMark._listeners.click !== "function"
-  ) {
-    throw new Error("Modül hücresi seçim işareti handler bağlanmadı.");
-  }
-  selectMark._listeners.click({
-    stopPropagation() {},
-  });
-  selected += 1;
-}
-
-if (confirm.disabled) {
-  throw new Error("18 modül sonrası AI eşleştirme düğmesi etkinleşmedi.");
-}
-
-if (typeof confirm._listeners.click !== "function") {
-  throw new Error("Eşleştir handler bağlanmadı.");
-}
-
-confirm._listeners.click();
 
 if (document.body.dataset.localStatus !== "battle") {
-  throw new Error(`Yerel AI savaş alanına geçilmedi: ${document.body.dataset.localStatus}`);
+  throw new Error(`Savaş alanına doğrudan geçilemedi: ${document.body.dataset.localStatus}`);
 }
 
-console.log("app startup + menu + local playable flow test passed");
+const battleBoard = getElement("board");
+if (!battleBoard) {
+  throw new Error("Savaş alanı board elementi bulunamadı.");
+}
+
+const quickState = sandbox.window.__GRIDSHARD_TEST_API?.getBattleState?.();
+if (!quickState || quickState.pool_size !== 18 || quickState.started !== true) {
+  throw new Error(`Hızlı savaş durumu geçersiz: ${JSON.stringify(quickState)}`);
+}
+
+console.log("app startup + direct battle-area playable flow test passed");
 process.exit(0);

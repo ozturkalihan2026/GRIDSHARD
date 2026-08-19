@@ -14,7 +14,7 @@
     <header class="battle-header">
       <div>
         <h1>GRIDSHARD 2.0</h1>
-        <p>2.0.0-beta.21 — Gerçek Web Testi Hazır</p>
+        <p>2.0.0-beta.22 — Gerçek Web Testi Hazır</p>
       </div>
       <div class="battle-status-cluster">
         <div class="credit-indicator" id="credit-indicator">Devre Kredisi: 200 DK</div>
@@ -57,7 +57,7 @@
           </button>
           <div class="lobby-build-chip">
             <span>GÜNCEL YAPI</span>
-            <strong id="ui-build-version">2.0.0-beta.21</strong><small id="ui-build-run">manifest bekleniyor</small>
+            <strong id="ui-build-version">2.0.0-beta.22</strong><small id="ui-build-run">manifest bekleniyor</small>
           </div>
         </div>
       </div>
@@ -182,9 +182,13 @@
       </section>
 
       <div class="play-mode-actions">
-        <button id="local-play-start" type="button" class="play-mode-card primary">
-          <strong>Tek Oyunculu Test Maçı</strong>
-          <span>Yerel AI rakibine karşı savaşı hemen başlat. Modül Rafı, Devre Kredisi ve savaş akışını dene.</span>
+        <button id="local-battle-quick-start" type="button" class="play-mode-card primary battle-entry-card">
+          <strong>Savaş Alanını Hemen Aç</strong>
+          <span>Test için 18 modüllük havuzu otomatik doldurur ve doğrudan Yerel AI savaş alanına geçirir.</span>
+        </button>
+        <button id="local-play-start" type="button" class="play-mode-card">
+          <strong>Tek Oyunculu Test Maçı — Havuzu Hazırla</strong>
+          <span>18 modülü kendin seç, hazır havuzunu düzenle ve ardından savaş alanına geç.</span>
         </button>
         <button id="online-play-prepare" type="button" class="play-mode-card">
           <strong>Online PvP</strong>
@@ -398,6 +402,11 @@
       <div><span>Kalkan Etkisi</span><strong>%35 azaltma</strong></div>
       <div><span>Modül Müdahalesi</span><strong>15. sn sonra</strong></div>
       <div><span>Jeneratör</span><strong>Kapılar arasında taşınabilir</strong></div>
+    </section>
+
+    <section class="battle-test-banner play-live-panel" data-screen-panel="play" hidden>
+      <strong>Beta.22 Savaş Alanı Test Modu</strong>
+      <span id="battle-entry-status">Savaş alanına giriş başarılı · Yerel AI aktif · Modül Rafı 15. saniyede açılır</span>
     </section>
 
     <section class="battle-layout play-live-panel" data-screen-panel="play" hidden>
