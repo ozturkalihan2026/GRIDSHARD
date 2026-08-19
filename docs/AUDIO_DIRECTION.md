@@ -223,3 +223,12 @@ Sistem Konsolu içinde:
 butonları bulunur.
 
 Önizleme mevcut volume/mute tercihlerini kullanır; gameplay mantığını değiştirmez.
+
+
+---
+
+## 10. Beta.18 Audio Mix V3
+- Critical Core katmanı artık yalnız eşik aç/kapa değildir; Yerel AI hit yoğunluğuna göre gain artırabilir.
+- Pre-master tarama `AUDIO_LOUDNESS_REPORT.json` içinde peak/RMS olarak tutulur.
+- Bu rapor LUFS mastering yerine geçmez; final mastering öncesi teknik kontrol katmanıdır.
+- Browser lifecycle testi crossfade ve critical layer yaşam döngüsünü doğrular.

@@ -39,8 +39,10 @@
     "settings": {
       "graphics_quality": "yuksek",
       "language": "tr",
+      "music_muted": false,
       "music_volume": 70,
       "player_id": "wt-81aef76b-f7e7-498a-9c29-63cdf1fb9793",
+      "sound_muted": false,
       "sound_volume": 100,
       "vibration_enabled": true
     },

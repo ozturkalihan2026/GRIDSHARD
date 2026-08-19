@@ -26,11 +26,12 @@
   });
 
   const GRIDSHARD_AUDIO_MIX = Object.freeze({
-    version:"mix-v2",
+    version:"mix-v3",
     crossfadeMs:450,
     musicBaseGain:0.72,
     sfxBaseGain:0.86,
-    criticalLayerGain:0.34,
+    criticalLayerGain:0.28,
+    criticalLayerMaxGain:0.52,
     musicPeakDbfs:-6,
     sfxPeakDbfs:-3,
   });
@@ -493,6 +494,32 @@
       return this.triggerCue(
         cue
       );
+    }
+
+    setBattlePressure(value=0.5) {
+      const pressure=Math.max(
+        0,
+        Math.min(
+          1,
+          Number(value)
+        )
+      );
+      if (this.criticalLayerTrack) {
+        const minGain=
+          GRIDSHARD_AUDIO_MIX
+            .criticalLayerGain;
+        const maxGain=
+          GRIDSHARD_AUDIO_MIX
+            .criticalLayerMaxGain;
+        this.criticalLayerTrack.volume=
+          this._musicTargetVolume()
+          * (
+              minGain
+              + (maxGain-minGain)
+                * pressure
+            );
+      }
+      return pressure;
     }
 
     setPreferences({

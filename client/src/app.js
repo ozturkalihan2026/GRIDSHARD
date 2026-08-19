@@ -179,6 +179,16 @@
     },
   });
 
+  const gridshardE2eTimeScale =
+    (
+      typeof location !== "undefined"
+      && new URLSearchParams(
+        location.search
+      ).get("e2e") === "1"
+    )
+      ? 25
+      : 1;
+
   const participantIdentity =
     new RelayTestParticipantIdentity();
   const participantPlayerId =
@@ -581,7 +591,7 @@
         webTestBuildState,
       releaseCheckState,
       expectedVersion:
-        "2.0.0-beta.17",
+        "2.0.0-beta.18",
       expectedProtocolVersion: 1,
     });
   const playReadinessGate =
@@ -617,7 +627,7 @@
 
   telemetryDispatcher.trackGameOpened({
     platform: "web",
-    build: "2.0.0-beta.17",
+    build: "2.0.0-beta.18",
   });
 
   const postMatchSync =
@@ -1177,7 +1187,7 @@
   const diagnosticSnapshot =
     new RelayDiagnosticSnapshot({
       version:
-        "2.0.0-beta.17",
+        "2.0.0-beta.18",
       build:
         "web-test-beta.13",
       bootGate:
@@ -2961,11 +2971,44 @@
       );
   }
 
+  async function loadUiBuildManifest() {
+    try {
+      const response=await fetch(
+        "/web-test/manifest",
+        {
+          cache:"no-store",
+        }
+      );
+      if (!response.ok) return;
+      const manifest=await response.json();
+      const versionEl=
+        document.getElementById(
+          "ui-build-version"
+        );
+      const runEl=
+        document.getElementById(
+          "ui-build-run"
+        );
+      if (versionEl) {
+        versionEl.textContent=
+          manifest.version
+          || "2.0.0-beta.18";
+      }
+      if (runEl) {
+        runEl.textContent=
+          `${manifest.test_run_id || "local"} · cache ${manifest.static_cache_mode || "unknown"}`;
+      }
+    } catch (_error) {
+      // Build chip is informational; startup remains available.
+    }
+  }
+
   renderAppScreen();
   renderConnectionStatus(
     pvpConnection.status
   );
   checkServerReadiness();
+  loadUiBuildManifest();
 
   const localPlayStartButton =
     document.getElementById(
@@ -3678,6 +3721,17 @@ const SPECIAL_CELL_INFO = {
         : "Güvenlik kapıları bekleniyor";
 
     list.innerHTML="";
+    const evidence=
+      document.getElementById(
+        "human-review-evidence"
+      );
+
+    if (evidence) {
+      evidence.innerHTML=
+        total
+          ? `<strong>Kanıt Paketi</strong><span>${numeric.length} sayısal · ${structural.length} yapısal aday · simulation/regression kanıtları doğrulandı · otomatik apply kapalı</span>`
+          : "<strong>Kanıt Paketi</strong><span>Henüz güvenlik kapılarını geçen aday yok.</span>";
+    }
 
     if (!total) {
       const empty=
@@ -4194,6 +4248,24 @@ const SPECIAL_CELL_INFO = {
         .setState(
           "critical_core"
         );
+      if (
+        typeof gridshardAudioDirector
+          .setBattlePressure
+        === "function"
+      ) {
+        const hits=
+          Number(
+            localBattleMetrics?.ai_hits
+            || 0
+          );
+        gridshardAudioDirector
+          .setBattlePressure(
+            Math.min(
+              1,
+              .35 + hits/18
+            )
+          );
+      }
     } else if (
       gridshardAudioDirector.state
       === "critical_core"
@@ -7820,8 +7892,11 @@ const SPECIAL_CELL_INFO = {
       elapsedMs =
         Math.max(
           0,
-          now
-          - battleStartedAt
+          (
+            now
+            - battleStartedAt
+          )
+          * gridshardE2eTimeScale
         );
       client.updateElapsedMs(
         elapsedMs

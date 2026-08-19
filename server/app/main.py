@@ -7,7 +7,6 @@ from pathlib import Path
 
 from fastapi import FastAPI, Header, HTTPException, Query, WebSocket
 from fastapi.websockets import WebSocketDisconnect
-from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
 from .game.pvp_session import (
@@ -53,6 +52,9 @@ from .telemetry import (
 )
 from .web_test import (
     build_web_test_readiness,
+)
+from .web_test_static import (
+    NoCacheStaticFiles,
 )
 from .web_test_metrics import (
     WebTestKpiService,
@@ -2438,7 +2440,7 @@ def gridshard_identity() -> dict:
         "tagline_en":
             "Build the Circuit. Break the Core.",
         "identity_version":
-            "2.0.0-beta.17",
+            "2.0.0-beta.18",
         "palette":{
             "void_navy":"#070B14",
             "reactor_blue":"#0C1625",
@@ -3148,7 +3150,7 @@ def web_test_manifest() -> dict:
     telemetry_persistence = (
         telemetry_persistence_health()
     )
-    return build_manifest(
+    manifest=build_manifest(
         version=VERSION,
         telemetry_service=telemetry_service,
         persistence_ready=bool(
@@ -3160,6 +3162,11 @@ def web_test_manifest() -> dict:
         test_run_id=
             WEB_TEST_RUN_ID,
     )
+    manifest["version"]=VERSION
+    manifest["ui_build_label"]=f"GRIDSHARD {VERSION}"
+    manifest["static_cache_mode"]="no-store"
+    manifest["browser_e2e"]="optional-real-browser"
+    return manifest
 
 
 @app.get("/web-test/rc-report")
@@ -3596,7 +3603,7 @@ async def pvp_websocket(
 # Böylece gerçek Web testi için ayrı bir statik HTTP sunucusuna gerek kalmaz.
 app.mount(
     "/",
-    StaticFiles(
+    NoCacheStaticFiles(
         directory=str(
             CLIENT_DIR
         ),

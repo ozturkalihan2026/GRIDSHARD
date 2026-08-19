@@ -4,7 +4,7 @@ from pathlib import Path
 import sys
 
 ROOT=Path(__file__).resolve().parents[1]
-EXPECTED_VERSION="2.0.0-beta.17"
+EXPECTED_VERSION="2.0.0-beta.18"
 
 
 def fail(message:str)->None:
@@ -34,6 +34,16 @@ def main()->None:
     if VERSION != EXPECTED_VERSION:
         fail(
             f"Beklenen sürüm {EXPECTED_VERSION}, çalışan kaynak {VERSION}."
+        )
+
+    html=(
+        ROOT/"client/index.html"
+    ).read_text(
+        encoding="utf-8"
+    )
+    if EXPECTED_VERSION not in html:
+        fail(
+            "UI build etiketi sunucu sürümüyle eşleşmiyor."
         )
 
     source_path=(

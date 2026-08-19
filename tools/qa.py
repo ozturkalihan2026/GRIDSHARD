@@ -62,7 +62,7 @@ def http_post(url: str):
 def smoke_server() -> dict:
     port = free_port()
     env = os.environ.copy()
-    env["RELAY_WEB_TEST_RUN_ID"] = "web-test-beta.17-qa"
+    env["RELAY_WEB_TEST_RUN_ID"] = "web-test-beta.18-qa"
     env["RELAY_TELEMETRY_PATH"] = str(ROOT / "server/data/qa_telemetry.json")
     env["RELAY_PLAYER_DATA_PATH"] = str(ROOT / "server/data/qa_players.json")
     env["RELAY_BATTLE_POOL_PRESET_PATH"] = str(
@@ -259,6 +259,11 @@ def main() -> int:
             cwd=ROOT / "client",
         ),
         run_step(
+            "client_audio_browser_lifecycle",
+            ["node", "tests/gridshard-audio-browser-lifecycle.test.js"],
+            cwd=ROOT / "client",
+        ),
+        run_step(
             "client_unit_tests",
             ["node", "tests/relay-client.test.js"],
             cwd=ROOT / "client",
@@ -275,14 +280,14 @@ def main() -> int:
 
     report = {
         "project": "GRIDSHARD 2.0",
-        "version": "2.0.0-beta.17",
+        "version": "2.0.0-beta.18",
         "generated_at_epoch": int(time.time()),
         "ok": all(step["ok"] for step in steps),
         "steps": steps,
         "note": (
-            "Playwright gerçek tarayıcı E2E testi bu zincire zorunlu eklenmedi; "
-            "çalışma ortamı tarayıcı/localhost politikasına bağlıdır. Startup VM testi, "
-            "menü handler bağlama hatalarını CI-benzeri biçimde yakalar."
+            "Gerçek tarayıcı E2E ayrı tools/browser_e2e.py koşucusudur ve "
+            "qa_reports/browser_e2e.json üretir. Tarayıcı/localhost politikası uygun değilse "
+            "SKIPPED kalır. Zorunlu QA: server, client, audio lifecycle, startup ve HTTP smoke."
         ),
     }
     REPORT_PATH.write_text(

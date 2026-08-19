@@ -1,0 +1,127 @@
+{
+  "version": "2.0.0-beta.18",
+  "method": "prototype peak + RMS scan; not integrated LUFS",
+  "assets": [
+    {
+      "asset": "battle_pulse.wav",
+      "type": "music",
+      "peak_dbfs": -6.0,
+      "rms_dbfs": -20.73,
+      "duration_s": 8.0,
+      "final_mastering_required": true
+    },
+    {
+      "asset": "core_hit.wav",
+      "type": "sfx",
+      "peak_dbfs": -3.0,
+      "rms_dbfs": -15.04,
+      "duration_s": 0.85,
+      "final_mastering_required": true
+    },
+    {
+      "asset": "critical_core_layer.wav",
+      "type": "music",
+      "peak_dbfs": -6.0,
+      "rms_dbfs": -22.17,
+      "duration_s": 8.0,
+      "final_mastering_required": true
+    },
+    {
+      "asset": "defeat_sting.wav",
+      "type": "music",
+      "peak_dbfs": -6.0,
+      "rms_dbfs": -11.91,
+      "duration_s": 5.2,
+      "final_mastering_required": true
+    },
+    {
+      "asset": "emp.wav",
+      "type": "sfx",
+      "peak_dbfs": -3.0,
+      "rms_dbfs": -12.27,
+      "duration_s": 0.58,
+      "final_mastering_required": true
+    },
+    {
+      "asset": "energy_transfer.wav",
+      "type": "sfx",
+      "peak_dbfs": -3.0,
+      "rms_dbfs": -6.64,
+      "duration_s": 0.42,
+      "final_mastering_required": true
+    },
+    {
+      "asset": "generator_move.wav",
+      "type": "sfx",
+      "peak_dbfs": -3.0,
+      "rms_dbfs": -11.22,
+      "duration_s": 0.72,
+      "final_mastering_required": true
+    },
+    {
+      "asset": "laser_fire.wav",
+      "type": "sfx",
+      "peak_dbfs": -3.0,
+      "rms_dbfs": -11.88,
+      "duration_s": 0.62,
+      "final_mastering_required": true
+    },
+    {
+      "asset": "matchmaking_rise.wav",
+      "type": "music",
+      "peak_dbfs": -6.0,
+      "rms_dbfs": -20.16,
+      "duration_s": 6.0,
+      "final_mastering_required": true
+    },
+    {
+      "asset": "menu_pulse.wav",
+      "type": "music",
+      "peak_dbfs": -6.0,
+      "rms_dbfs": -19.4,
+      "duration_s": 8.0,
+      "final_mastering_required": true
+    },
+    {
+      "asset": "pool_pulse.wav",
+      "type": "music",
+      "peak_dbfs": -6.0,
+      "rms_dbfs": -19.58,
+      "duration_s": 8.0,
+      "final_mastering_required": true
+    },
+    {
+      "asset": "port_connect.wav",
+      "type": "sfx",
+      "peak_dbfs": -3.0,
+      "rms_dbfs": -17.63,
+      "duration_s": 0.55,
+      "final_mastering_required": true
+    },
+    {
+      "asset": "shield_hit.wav",
+      "type": "sfx",
+      "peak_dbfs": -3.0,
+      "rms_dbfs": -15.31,
+      "duration_s": 0.5,
+      "final_mastering_required": true
+    },
+    {
+      "asset": "victory_sting.wav",
+      "type": "music",
+      "peak_dbfs": -6.0,
+      "rms_dbfs": -11.91,
+      "duration_s": 5.2,
+      "final_mastering_required": true
+    },
+    {
+      "asset": "virus_glitch.wav",
+      "type": "sfx",
+      "peak_dbfs": -3.0,
+      "rms_dbfs": -16.7,
+      "duration_s": 0.65,
+      "final_mastering_required": true
+    }
+  ],
+  "final_mastering_required": true
+}

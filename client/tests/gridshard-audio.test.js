@@ -82,7 +82,7 @@ assert.strictEqual(
 
 assert.strictEqual(
   global.GRIDSHARD_AUDIO_MIX.version,
-  "mix-v2"
+  "mix-v3"
 );
 assert.strictEqual(
   global.GRIDSHARD_AUDIO_MIX.crossfadeMs,
