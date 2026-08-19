@@ -13,6 +13,7 @@ from urllib import request
 ROOT=Path(__file__).resolve().parents[1]
 SERVER=ROOT/"server"
 REPORT=ROOT/"qa_reports/browser_e2e.json"
+ARTIFACT_DIR=ROOT/"qa_reports/browser_e2e_artifacts"
 PORT=8878
 BASE=f"http://127.0.0.1:{PORT}"
 PLAYER="wt-beta18-e2e"
@@ -47,7 +48,36 @@ def wait_server()->None:
         time.sleep(.15)
     raise RuntimeError(f"Uvicorn E2E sunucusu hazır olmadı: {last}")
 
+def write_artifact(
+    name:str,
+    content:str,
+)->None:
+    ARTIFACT_DIR.mkdir(
+        parents=True,
+        exist_ok=True,
+    )
+    (ARTIFACT_DIR/name).write_text(
+        content,
+        encoding="utf-8",
+    )
+
+
+def reset_artifacts()->None:
+    if ARTIFACT_DIR.exists():
+        import shutil as _shutil
+        _shutil.rmtree(
+            ARTIFACT_DIR,
+            ignore_errors=True,
+        )
+    ARTIFACT_DIR.mkdir(
+        parents=True,
+        exist_ok=True,
+    )
+
+
 def main()->int:
+    reset_artifacts()
+
     parser=argparse.ArgumentParser()
     parser.add_argument("--optional",action="store_true")
     args=parser.parse_args()
@@ -77,7 +107,7 @@ def main()->int:
 
     env=os.environ.copy()
     env["PYTHONPATH"]=str(SERVER)
-    env["RELAY_WEB_TEST_RUN_ID"]="web-test-beta.18-browser-e2e"
+    env["RELAY_WEB_TEST_RUN_ID"]="web-test-beta.19-browser-e2e"
     env["RELAY_PLAYER_DATA_PATH"]=str(SERVER/"data/e2e_players.json")
     env["RELAY_TELEMETRY_PATH"]=str(SERVER/"data/e2e_telemetry.json")
     env["RELAY_BATTLE_POOL_PRESET_PATH"]=str(SERVER/"data/e2e_presets.json")
@@ -100,7 +130,9 @@ def main()->int:
     )
 
     console_errors=[]
+    console_messages=[]
     page_errors=[]
+    network_events=[]
     checks=[]
 
     try:
@@ -130,12 +162,39 @@ def main()->int:
             context=browser.new_context()
             page=context.new_page()
 
+            def on_console(msg):
+                console_messages.append({
+                    "type":msg.type,
+                    "text":msg.text,
+                })
+                if msg.type=="error":
+                    console_errors.append(
+                        msg.text
+                    )
+
+            def on_response(response):
+                network_events.append({
+                    "url":response.url,
+                    "status":response.status,
+                    "resource_type":
+                        response.request.resource_type,
+                })
+
             page.on(
                 "console",
-                lambda msg: console_errors.append(msg.text)
-                if msg.type=="error" else None,
+                on_console,
             )
-            page.on("pageerror",lambda exc: page_errors.append(str(exc)))
+            page.on(
+                "response",
+                on_response,
+            )
+            page.on(
+                "pageerror",
+                lambda exc:
+                    page_errors.append(
+                        str(exc)
+                    ),
+            )
 
             init_script=(
                 "localStorage.setItem("
@@ -163,6 +222,13 @@ def main()->int:
                 "cache_control":headers.get("cache-control"),
             })
 
+            page.screenshot(
+                path=str(
+                    ARTIFACT_DIR/"01-main-menu.png"
+                ),
+                full_page=True,
+            )
+
             page.locator("#main-menu-title").wait_for(state="visible")
             page.locator('[data-open-screen="play"]').click()
 
@@ -182,6 +248,12 @@ def main()->int:
                 "() => !document.querySelector('#battle-pool-confirm')?.disabled",
                 timeout=10_000,
             )
+            page.screenshot(
+                path=str(
+                    ARTIFACT_DIR/"02-loadout-ready.png"
+                ),
+                full_page=True,
+            )
             page.locator("#battle-pool-confirm").click()
 
             page.wait_for_function(
@@ -189,6 +261,72 @@ def main()->int:
                 timeout=10_000,
             )
             checks.append({"name":"local_battle_started","ok":True})
+
+            page.screenshot(
+                path=str(
+                    ARTIFACT_DIR/"03-battle-started.png"
+                ),
+                full_page=True,
+            )
+
+            before_ux=page.evaluate(
+                "() => window.__GRIDSHARD_BATTLE_UX"
+            )
+
+            # A real UI interaction during battle: open/close technical status drawer.
+            summary=page.locator(
+                ".technical-status-drawer summary"
+            ).first
+            if summary.count():
+                summary.click()
+                page.wait_for_timeout(180)
+                summary.click()
+            else:
+                page.locator(
+                    "#event-log"
+                ).click(
+                    position={
+                        "x":5,
+                        "y":5,
+                    }
+                )
+                page.wait_for_timeout(180)
+
+            after_ux=page.evaluate(
+                "() => window.__GRIDSHARD_BATTLE_UX"
+            )
+
+            ux_progress_ok=bool(
+                before_ux
+                and after_ux
+                and after_ux.get(
+                    "elapsed_ms",
+                    0,
+                )
+                > before_ux.get(
+                    "elapsed_ms",
+                    0,
+                )
+                and after_ux.get(
+                    "ui_interactions",
+                    0,
+                )
+                >= before_ux.get(
+                    "ui_interactions",
+                    0,
+                )
+            )
+
+            checks.append({
+                "name":
+                    "battle_ui_does_not_pause_tick",
+                "ok":
+                    ux_progress_ok,
+                "before":
+                    before_ux,
+                "after":
+                    after_ux,
+            })
 
             page.wait_for_function(
                 "() => document.body.dataset.localFinished === 'true'",
@@ -201,6 +339,31 @@ def main()->int:
                 "ok":"KAZANDIN" in result_text or "KAYBETTİN" in result_text,
                 "text":result_text,
             })
+
+            final_ux=page.evaluate(
+                "() => window.__GRIDSHARD_BATTLE_UX"
+            )
+            checks.append({
+                "name":
+                    "no_ui_pause_violation",
+                "ok":
+                    bool(
+                        final_ux
+                        and final_ux.get(
+                            "pause_violation_count",
+                            0,
+                        ) == 0
+                    ),
+                "metrics":
+                    final_ux,
+            })
+
+            page.screenshot(
+                path=str(
+                    ARTIFACT_DIR/"04-battle-result.png"
+                ),
+                full_page=True,
+            )
 
             deadline=time.time()+8
             manual=None
@@ -225,6 +388,31 @@ def main()->int:
             and not page_errors
             and not console_errors
         )
+        write_artifact(
+            "console.json",
+            json.dumps(
+                console_messages,
+                ensure_ascii=False,
+                indent=2,
+            )+"\n",
+        )
+        write_artifact(
+            "network.json",
+            json.dumps(
+                network_events,
+                ensure_ascii=False,
+                indent=2,
+            )+"\n",
+        )
+        write_artifact(
+            "checks.json",
+            json.dumps(
+                checks,
+                ensure_ascii=False,
+                indent=2,
+            )+"\n",
+        )
+
         report={
             "ok":ok,
             "skipped":False,
@@ -232,6 +420,17 @@ def main()->int:
             "checks":checks,
             "console_errors":console_errors,
             "page_errors":page_errors,
+            "artifact_dir":
+                str(
+                    ARTIFACT_DIR
+                ),
+            "artifact_files":[
+                path.name
+                for path
+                in sorted(
+                    ARTIFACT_DIR.iterdir()
+                )
+            ],
         }
         REPORT.parent.mkdir(parents=True,exist_ok=True)
         REPORT.write_text(
@@ -254,15 +453,30 @@ def main()->int:
                 parents=True,
                 exist_ok=True,
             )
+            skipped={
+                "ok":True,
+                "skipped":True,
+                "reason":str(exc),
+                "browser":
+                    chromium_path
+                    or "playwright-managed chromium",
+                "artifact_dir":
+                    str(
+                        ARTIFACT_DIR
+                    ),
+            }
+            write_artifact(
+                "environment.txt",
+                "Browser E2E SKIPPED\n"
+                + str(exc)
+                + "\n",
+            )
             REPORT.write_text(
-                json.dumps({
-                    "ok":True,
-                    "skipped":True,
-                    "reason":str(exc),
-                    "browser":
-                        chromium_path
-                        or "playwright-managed chromium",
-                },ensure_ascii=False,indent=2)+"\n",
+                json.dumps(
+                    skipped,
+                    ensure_ascii=False,
+                    indent=2,
+                )+"\n",
                 encoding="utf-8",
             )
             print(

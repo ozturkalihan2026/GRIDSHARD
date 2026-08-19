@@ -1818,6 +1818,166 @@ def balance_human_review(
     )
 
 
+@app.get("/telemetry/balance-human-review-evidence")
+def balance_human_review_evidence(
+    player_id:str,
+)->dict:
+    plan=_balance_change_plan_for_player(
+        player_id
+    )
+    draft=(
+        balance_change_draft_service
+        .view(
+            player_id=player_id,
+            plan=plan,
+        )
+    )
+    queue=build_human_review_queue(
+        draft
+    )
+
+    evidence=[]
+    for item in draft.get(
+        "items",
+        [],
+    ):
+        area=str(
+            item.get(
+                "area",
+                "",
+            )
+        )
+        human_ready=bool(
+            item.get(
+                "human_review_ready",
+                False,
+            )
+        )
+        if not human_ready:
+            continue
+
+        entry={
+            "area":area,
+            "reason":
+                item.get("reason"),
+            "suggestion":
+                item.get("suggestion"),
+            "before_value":
+                item.get(
+                    "before_value"
+                ),
+            "proposed_value":
+                item.get(
+                    "proposed_value"
+                ),
+            "approved":bool(
+                item.get(
+                    "approved",
+                    False,
+                )
+            ),
+            "simulation_status":
+                item.get(
+                    "simulation_status",
+                    "pending",
+                ),
+            "regression_status":
+                item.get(
+                    "regression_status",
+                    "pending",
+                ),
+            "numeric_change":
+                item.get(
+                    "proposed_value"
+                ) is not None,
+            "simulation":None,
+            "regression":None,
+            "errors":[],
+        }
+
+        if (
+            entry[
+                "simulation_status"
+            ] == "passed"
+            and entry[
+                "before_value"
+            ] is not None
+            and entry[
+                "proposed_value"
+            ] is not None
+        ):
+            try:
+                entry[
+                    "simulation"
+                ]=run_balance_simulation(
+                    area=area,
+                    before_value=
+                        entry[
+                            "before_value"
+                        ],
+                    proposed_value=
+                        entry[
+                            "proposed_value"
+                        ],
+                )
+            except BalanceSimulationError as exc:
+                entry[
+                    "errors"
+                ].append(
+                    f"simulation: {exc}"
+                )
+
+        if (
+            entry[
+                "regression_status"
+            ] == "passed"
+        ):
+            try:
+                entry[
+                    "regression"
+                ]=run_balance_regression(
+                    area=area,
+                    before_value=
+                        entry[
+                            "before_value"
+                        ],
+                    proposed_value=
+                        entry[
+                            "proposed_value"
+                        ],
+                )
+            except BalanceRegressionError as exc:
+                entry[
+                    "errors"
+                ].append(
+                    f"regression: {exc}"
+                )
+
+        evidence.append(entry)
+
+    return {
+        "player_id":player_id,
+        "review_ready":bool(
+            draft.get(
+                "review_ready"
+            )
+        ),
+        "candidate_count":
+            len(evidence),
+        "evidence":
+            evidence,
+        "human_decision_required":
+            True,
+        "automatic_apply":
+            False,
+        "apply_endpoint_available":
+            False,
+        "numeric_balance_changed":
+            False,
+        "queue":queue,
+    }
+
+
 @app.delete("/telemetry/balance-change-draft")
 def clear_balance_change_draft(
     player_id:str,
@@ -2440,7 +2600,7 @@ def gridshard_identity() -> dict:
         "tagline_en":
             "Build the Circuit. Break the Core.",
         "identity_version":
-            "2.0.0-beta.18",
+            "2.0.0-beta.19",
         "palette":{
             "void_navy":"#070B14",
             "reactor_blue":"#0C1625",

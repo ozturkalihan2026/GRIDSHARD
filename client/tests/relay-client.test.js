@@ -404,61 +404,61 @@ function createClient() {
   const fs=require("fs");
   const src=fs.readFileSync(path.join(ROOT,"src/app.js"),"utf8");
   assert.ok(src.includes("PVP_STATUS"));
-  assert.ok(src.includes("GRIDSHARD Beta.17 · Engine Regresyonu + Audio Mix V2 + Hızlı Loadout"));
+  assert.ok(src.includes("GRIDSHARD Beta.19 · Browser E2E + Savaş UX Telemetrisi + Audio Mastering Hazırlığı"));
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync(path.join(ROOT,"src/app.js"),"utf8");
-  assert.ok(src.includes("GRIDSHARD Beta.17 · Engine Regresyonu + Audio Mix V2 + Hızlı Loadout")); // alpha32->33 protocol status
+  assert.ok(src.includes("GRIDSHARD Beta.19 · Browser E2E + Savaş UX Telemetrisi + Audio Mastering Hazırlığı")); // alpha32->33 protocol status
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync(path.join(ROOT,"src/app.js"),"utf8");
-  assert.ok(src.includes("GRIDSHARD Beta.17 · Engine Regresyonu + Audio Mix V2 + Hızlı Loadout")); // alpha33 protocol
+  assert.ok(src.includes("GRIDSHARD Beta.19 · Browser E2E + Savaş UX Telemetrisi + Audio Mastering Hazırlığı")); // alpha33 protocol
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync(path.join(ROOT,"src/app.js"),"utf8");
-  assert.ok(src.includes("GRIDSHARD Beta.17 · Engine Regresyonu + Audio Mix V2 + Hızlı Loadout")); // alpha34 websocket
+  assert.ok(src.includes("GRIDSHARD Beta.19 · Browser E2E + Savaş UX Telemetrisi + Audio Mastering Hazırlığı")); // alpha34 websocket
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync(path.join(ROOT,"src/app.js"),"utf8");
-  assert.ok(src.includes("GRIDSHARD Beta.17 · Engine Regresyonu + Audio Mix V2 + Hızlı Loadout")); // alpha35 gateway
+  assert.ok(src.includes("GRIDSHARD Beta.19 · Browser E2E + Savaş UX Telemetrisi + Audio Mastering Hazırlığı")); // alpha35 gateway
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync(path.join(ROOT,"src/app.js"),"utf8");
-  assert.ok(src.includes("GRIDSHARD Beta.17 · Engine Regresyonu + Audio Mix V2 + Hızlı Loadout")); // alpha36 setup
+  assert.ok(src.includes("GRIDSHARD Beta.19 · Browser E2E + Savaş UX Telemetrisi + Audio Mastering Hazırlığı")); // alpha36 setup
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync(path.join(ROOT,"src/app.js"),"utf8");
-  assert.ok(src.includes("GRIDSHARD Beta.17 · Engine Regresyonu + Audio Mix V2 + Hızlı Loadout")); // alpha37 lobby
+  assert.ok(src.includes("GRIDSHARD Beta.19 · Browser E2E + Savaş UX Telemetrisi + Audio Mastering Hazırlığı")); // alpha37 lobby
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync(path.join(ROOT,"src/app.js"),"utf8");
-  assert.ok(src.includes("GRIDSHARD Beta.17 · Engine Regresyonu + Audio Mix V2 + Hızlı Loadout")); // alpha38 runner
+  assert.ok(src.includes("GRIDSHARD Beta.19 · Browser E2E + Savaş UX Telemetrisi + Audio Mastering Hazırlığı")); // alpha38 runner
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync(path.join(ROOT,"src/app.js"),"utf8");
-  assert.ok(src.includes("GRIDSHARD Beta.17 · Engine Regresyonu + Audio Mix V2 + Hızlı Loadout")); // alpha39 heartbeat
+  assert.ok(src.includes("GRIDSHARD Beta.19 · Browser E2E + Savaş UX Telemetrisi + Audio Mastering Hazırlığı")); // alpha39 heartbeat
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync(path.join(ROOT,"src/app.js"),"utf8");
-  assert.ok(src.includes("GRIDSHARD Beta.17 · Engine Regresyonu + Audio Mix V2 + Hızlı Loadout")); // alpha40 online pvp
+  assert.ok(src.includes("GRIDSHARD Beta.19 · Browser E2E + Savaş UX Telemetrisi + Audio Mastering Hazırlığı")); // alpha40 online pvp
 }
 
 {
@@ -684,7 +684,7 @@ function createClient() {
 {
   const fs=require("fs");
   const src=fs.readFileSync(path.join(ROOT,"src/app.js"),"utf8");
-  assert.ok(src.includes("GRIDSHARD Beta.17 · Engine Regresyonu + Audio Mix V2 + Hızlı Loadout"));
+  assert.ok(src.includes("GRIDSHARD Beta.19 · Browser E2E + Savaş UX Telemetrisi + Audio Mastering Hazırlığı"));
   assert.ok(src.includes("buildPvPCommandEnvelope"));
   assert.ok(src.includes("applyPvPServerEnvelope"));
 }
@@ -1488,7 +1488,7 @@ function createClient() {
 
   const result=state.applyHealth({
     status:"ok",
-    version:"2.0.0-beta.18",
+    version:"2.0.0-beta.19",
     web_test:{
       ready:true,
       build:"web-test-beta.13",
@@ -1535,7 +1535,7 @@ function createClient() {
 
   const result=state.applyHealth({
     status:"ok",
-    version:"2.0.0-beta.18",
+    version:"2.0.0-beta.19",
   });
 
   assert.strictEqual(
@@ -2317,7 +2317,7 @@ function createClient() {
   const html=fs.readFileSync(path.join(ROOT,"index.html"),"utf8");
   assert.ok(
     html.includes(
-      "2.0.0-beta.18"
+      "2.0.0-beta.19"
     )
   );
   assert.ok(
@@ -2496,7 +2496,7 @@ function createClient() {
     new RelayReleaseCheckState();
 
   const view=state.apply({
-    version:"2.0.0-beta.18",
+    version:"2.0.0-beta.19",
     build:"web-test-beta.13",
     ready:true,
     checks:{
@@ -2634,14 +2634,14 @@ function createClient() {
       healthState:health,
       releaseCheckState:release,
       expectedVersion:
-        "2.0.0-beta.18",
+        "2.0.0-beta.19",
       expectedProtocolVersion:1,
       requestJson:
         async (path) => {
           if (path==="/health") {
             return {
               status:"ok",
-              version:"2.0.0-beta.18",
+              version:"2.0.0-beta.19",
               web_test:{
                 ready:true,
                 build:"web-test-beta.13",
@@ -2655,7 +2655,7 @@ function createClient() {
             === "/web-test/release-check"
           ) {
             return {
-              version:"2.0.0-beta.18",
+              version:"2.0.0-beta.19",
               build:"web-test-beta.13",
               ready:true,
               checks:{
@@ -2688,7 +2688,7 @@ function createClient() {
 
           return {
             server_version:
-              "2.0.0-beta.18",
+              "2.0.0-beta.19",
             web_test_build:
               "web-test-alpha.62",
             pvp_protocol_version:1,
@@ -2741,7 +2741,7 @@ function createClient() {
 
   const snapshot=
     new RelayDiagnosticSnapshot({
-      version:"2.0.0-beta.18",
+      version:"2.0.0-beta.19",
       build:"web-test-beta.13",
       bootGate:{status:"ready"},
       connectionManager:{
@@ -2826,13 +2826,13 @@ function createClient() {
       releaseCheckState:
         new RelayReleaseCheckState(),
       expectedVersion:
-        "2.0.0-beta.18",
+        "2.0.0-beta.19",
       expectedProtocolVersion:1,
       requestJson:
         async (path) => {
           if (path==="/health") {
             return {
-              version:"2.0.0-beta.18",
+              version:"2.0.0-beta.19",
               web_test:{
                 ready:true,
                 build:"web-test-beta.13",
@@ -2846,7 +2846,7 @@ function createClient() {
             === "/web-test/release-check"
           ) {
             return {
-              version:"2.0.0-beta.18",
+              version:"2.0.0-beta.19",
               build:"web-test-beta.13",
               ready:true,
               checks:{ok:true},
@@ -2910,7 +2910,7 @@ function createClient() {
     new RelayWebTestRcReportState();
 
   const view=state.apply({
-    version:"2.0.0-beta.18",
+    version:"2.0.0-beta.19",
     build:"web-test-beta.13",
     ready:true,
     critical_failures:[],
@@ -3496,13 +3496,13 @@ function createClient() {
       releaseCheckState:
         new RelayReleaseCheckState(),
       expectedVersion:
-        "2.0.0-beta.18",
+        "2.0.0-beta.19",
       expectedProtocolVersion:1,
       requestJson:
         async (path) => {
           if (path==="/health") {
             return {
-              version:"2.0.0-beta.18",
+              version:"2.0.0-beta.19",
               web_test:{
                 ready:true,
                 build:"web-test-beta.13",
@@ -3516,7 +3516,7 @@ function createClient() {
             === "/web-test/release-check"
           ) {
             return {
-              version:"2.0.0-beta.18",
+              version:"2.0.0-beta.19",
               build:"web-test-beta.13",
               ready:true,
               checks:{ok:true},
@@ -3530,7 +3530,7 @@ function createClient() {
           ) {
             return {
               server_version:
-                "2.0.0-beta.18",
+                "2.0.0-beta.19",
               pvp_protocol_version:1,
               release_ready:true,
             };
@@ -4702,8 +4702,25 @@ function createClient() {
   assert.ok(audio.includes("criticalLayerMaxGain"));
 }
 
+{
+  const fs=require("fs");
+  const html=fs.readFileSync("./index.html","utf8");
+  const app=fs.readFileSync("./src/app.js","utf8");
+  const css=fs.readFileSync("./src/styles.css","utf8");
+  const audio=fs.readFileSync("./src/gridshard-audio.js","utf8");
+
+  assert.ok(html.includes('id="human-review-evidence-details"'));
+  assert.ok(app.includes("__GRIDSHARD_BATTLE_UX"));
+  assert.ok(app.includes("battle_ui_interaction"));
+  assert.ok(app.includes("battle_ux_timing_summary"));
+  assert.ok(app.includes("pause_violation_count"));
+  assert.ok(app.includes("/telemetry/balance-human-review-evidence"));
+  assert.ok(css.includes(".human-review-evidence-card"));
+  assert.ok(audio.includes('stage="high"') || audio.includes('"high"'));
+}
+
 Promise.all(asyncTests).then(() => {
-  console.log("171 client tests passed");
+  console.log("172 client tests passed");
 }).catch((error) => {
   console.error(error);
   process.exitCode = 1;

@@ -4952,5 +4952,31 @@
     "player_id": null,
     "session_id": null,
     "timestamp_ms": 1787121384034
+  },
+  {
+    "event_id": "web-test-operation-web-test-beta.17-local-1787121384079",
+    "event_type": "web_test_operation_snapshot",
+    "metadata": {
+      "consistency_status": "consistent",
+      "operational_state": "running",
+      "preflight_ready": true,
+      "run_started": true,
+      "test_run_id": "web-test-beta.17-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1787121384079
+  },
+  {
+    "event_id": "web-test-launch-wt-8288059b-9714-4817-ad64-397540b99b4e-1787125097657",
+    "event_type": "web_test_launch_attempted",
+    "metadata": {
+      "failed_checks": [],
+      "launch_ready": true,
+      "test_run_id": "web-test-beta.18-local"
+    },
+    "player_id": "wt-8288059b-9714-4817-ad64-397540b99b4e",
+    "session_id": null,
+    "timestamp_ms": 1787125097657
   }
 ]

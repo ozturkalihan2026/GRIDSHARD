@@ -52,7 +52,14 @@ assert.ok(director.criticalLayerTrack);
 
 const pressure =
   director.setBattlePressure(1);
-assert.strictEqual(pressure, 1);
+assert.strictEqual(
+  pressure.pressure,
+  1
+);
+assert.strictEqual(
+  pressure.stage,
+  "high"
+);
 
 setTimeout(() => {
   assert.strictEqual(menuTrack.paused, true);

@@ -232,3 +232,34 @@ butonları bulunur.
 - Pre-master tarama `AUDIO_LOUDNESS_REPORT.json` içinde peak/RMS olarak tutulur.
 - Bu rapor LUFS mastering yerine geçmez; final mastering öncesi teknik kontrol katmanıdır.
 - Browser lifecycle testi crossfade ve critical layer yaşam döngüsünü doğrular.
+
+
+---
+
+## 11. Beta.19 Mastering Hazırlığı
+
+Beta.19 final mastering değildir. Bu paket mastering öncesi teknik kanıt ve kontrol katmanını güçlendirir.
+
+### Yeni analiz
+`docs/AUDIO_MASTERING_PREP.json` her WAV asset için:
+
+- peak dBFS,
+- RMS loudness proxy dBFS,
+- crest factor,
+- normalize DC offset,
+- süre,
+- sample rate,
+- final LUFS ölçümü gereksinimi
+
+bilgilerini içerir.
+
+RMS değeri **LUFS değildir**. Final sürümde BS.1770 / EBU R128 uyumlu gerçek integrated loudness ölçümü ayrıca yapılacaktır.
+
+### Critical Core yoğunluk katmanları
+Kritik Çekirdek pressure artık üç seviyeye ayrılır:
+
+- `low`
+- `medium`
+- `high`
+
+Pressure yükseldikçe critical layer gain ve çok hafif playback-rate değişimi uygulanabilir. Amaç savaş baskısını artırmak; oynanış zamanlamasını değiştirmek değildir.

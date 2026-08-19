@@ -2690,3 +2690,54 @@ body[data-app-screen="menu"] .main-menu-panel {
     grid-template-columns:1fr;
   }
 }
+
+
+/* beta.19 — İnsan review kanıt kartları */
+.human-review-evidence-details {
+  display:grid;
+  gap:8px;
+  margin:10px 0;
+}
+
+.human-review-evidence-card {
+  border:1px solid rgba(54,217,255,.2);
+  border-radius:8px;
+  background:rgba(7,11,20,.5);
+  overflow:hidden;
+}
+
+.human-review-evidence-card > summary {
+  cursor:pointer;
+  padding:9px 11px;
+  color:var(--gs-arc-cyan);
+  font-weight:800;
+}
+
+.human-review-evidence-body {
+  display:grid;
+  gap:7px;
+  padding:0 11px 11px;
+}
+
+.human-review-evidence-body p {
+  margin:0;
+  color:var(--gs-signal-gray);
+}
+
+.human-review-evidence-body pre {
+  max-height:220px;
+  overflow:auto;
+  margin:0;
+  padding:8px;
+  border:1px solid rgba(41,71,102,.6);
+  border-radius:7px;
+  background:rgba(0,0,0,.2);
+  color:var(--gs-ice-white);
+  font-size:.68rem;
+  white-space:pre-wrap;
+}
+
+.human-review-safety {
+  color:var(--gs-reactor-gold) !important;
+  font-weight:800;
+}

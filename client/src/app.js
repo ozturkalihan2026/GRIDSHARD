@@ -91,7 +91,7 @@
   const COMPETITIVE_STATUS = "M7 rekabetçi altyapı doğrulanıyor";
   const BALANCE_STATUS = "Denge simülasyonu mevcut · geniş örnek bekliyor";
   const AI_STATUS = "AI altyapısı mevcut · arketip testleri bekliyor";
-  const PVP_STATUS = "GRIDSHARD Beta.17 · Engine Regresyonu + Audio Mix V2 + Hızlı Loadout";
+  const PVP_STATUS = "GRIDSHARD Beta.19 · Browser E2E + Savaş UX Telemetrisi + Audio Mastering Hazırlığı";
 
 
 
@@ -591,7 +591,7 @@
         webTestBuildState,
       releaseCheckState,
       expectedVersion:
-        "2.0.0-beta.18",
+        "2.0.0-beta.19",
       expectedProtocolVersion: 1,
     });
   const playReadinessGate =
@@ -627,7 +627,7 @@
 
   telemetryDispatcher.trackGameOpened({
     platform: "web",
-    build: "2.0.0-beta.18",
+    build: "2.0.0-beta.19",
   });
 
   const postMatchSync =
@@ -1187,7 +1187,7 @@
   const diagnosticSnapshot =
     new RelayDiagnosticSnapshot({
       version:
-        "2.0.0-beta.18",
+        "2.0.0-beta.19",
       build:
         "web-test-beta.13",
       bootGate:
@@ -2992,7 +2992,7 @@
       if (versionEl) {
         versionEl.textContent=
           manifest.version
-          || "2.0.0-beta.18";
+          || "2.0.0-beta.19";
       }
       if (runEl) {
         runEl.textContent=
@@ -3092,6 +3092,143 @@ const SPECIAL_CELL_INFO = {
   let mockEnemyGeneratorHp = 150;
   let mockEnemyModuleHp = 140;
   let previousCombatSecond = -1;
+  let lastBattleAnimationNow = null;
+  const BATTLE_PAUSE_GAP_THRESHOLD_MS = 1000;
+
+  function publishBattleUxMetrics() {
+    if (
+      typeof window === "undefined"
+    ) {
+      return;
+    }
+    window.__GRIDSHARD_BATTLE_UX =
+      localBattleMetrics
+        ? {
+            elapsed_ms:
+              Math.round(
+                client.elapsedMs
+              ),
+            frame_count:
+              localBattleMetrics
+                .frame_count,
+            max_frame_gap_ms:
+              Math.round(
+                localBattleMetrics
+                  .max_frame_gap_ms
+              ),
+            pause_violation_count:
+              localBattleMetrics
+                .pause_violation_count,
+            ui_interactions:
+              localBattleMetrics
+                .ui_interactions,
+            ui_interaction_samples:
+              [
+                ...localBattleMetrics
+                  .ui_interaction_samples,
+              ],
+            finished:
+              localBattleFinished,
+          }
+        : null;
+  }
+
+  function trackBattleUiInteraction(
+    kind
+  ) {
+    if (
+      activePlayMode !== "local"
+      || !localBattleStarted
+      || localBattleFinished
+      || !localBattleMetrics
+    ) {
+      return;
+    }
+
+    localBattleMetrics
+      .ui_interactions += 1;
+
+    const sample={
+      kind:String(kind || "ui"),
+      elapsed_ms:
+        Math.round(
+          client.elapsedMs
+        ),
+      at_epoch_ms:
+        Date.now(),
+    };
+
+    localBattleMetrics
+      .ui_interaction_samples
+      .push(sample);
+
+    if (
+      localBattleMetrics
+        .ui_interaction_samples
+        .length > 24
+    ) {
+      localBattleMetrics
+        .ui_interaction_samples
+        .shift();
+    }
+
+    telemetryDispatcher.track(
+      "battle_ui_interaction",
+      sample
+    );
+
+    publishBattleUxMetrics();
+  }
+
+
+  if (
+    typeof document.addEventListener
+    === "function"
+  ) {
+    document.addEventListener(
+      "click",
+      (event) => {
+        if (
+          activePlayMode !== "local"
+          || !localBattleStarted
+          || localBattleFinished
+        ) {
+          return;
+        }
+
+        const hasElement=
+          typeof Element
+          !== "undefined";
+        const target=
+          hasElement
+          && event.target
+          instanceof Element
+            ? event.target.closest(
+                "button,summary,[role=button],.module-card,.board-cell"
+              )
+            : null;
+
+        if (!target) {
+          return;
+        }
+
+        const label=
+          target.id
+          || target.getAttribute(
+            "data-module-id"
+          )
+          || target.textContent
+            ?.trim()
+            .slice(0,48)
+          || target.tagName;
+
+        trackBattleUiInteraction(
+          label
+        );
+      },
+      true
+    );
+  }
 
   function setActivePlayMode(mode) {
     activePlayMode = mode;
@@ -3257,6 +3394,11 @@ const SPECIAL_CELL_INFO = {
       module_changes:0,
       ai_hits:0,
       player_attacks:0,
+      frame_count:0,
+      max_frame_gap_ms:0,
+      pause_violation_count:0,
+      ui_interactions:0,
+      ui_interaction_samples:[],
     };
   }
 
@@ -3794,6 +3936,111 @@ const SPECIAL_CELL_INFO = {
     }
   }
 
+  function renderHumanReviewEvidenceDetails(
+    payload
+  ) {
+    const host=
+      document.getElementById(
+        "human-review-evidence-details"
+      );
+    if (!host) return;
+
+    host.innerHTML="";
+
+    const evidence=
+      payload?.evidence || [];
+
+    if (!evidence.length) {
+      const empty=
+        document.createElement(
+          "p"
+        );
+      empty.textContent=
+        "Simulation ve regression güvenlik kapılarını geçen ayrıntılı kanıt henüz yok.";
+      host.appendChild(empty);
+      return;
+    }
+
+    for (
+      const item
+      of evidence
+    ) {
+      const details=
+        document.createElement(
+          "details"
+        );
+      details.className=
+        "human-review-evidence-card";
+
+      const summary=
+        document.createElement(
+          "summary"
+        );
+      summary.textContent=
+        `${item.area} · ${item.numeric_change ? "Sayısal" : "Yapısal"} · ${item.regression_status}`;
+
+      const body=
+        document.createElement(
+          "div"
+        );
+      body.className=
+        "human-review-evidence-body";
+
+      const safeJson=
+        (value)=>
+          JSON.stringify(
+            value ?? null,
+            null,
+            2
+          );
+
+      body.innerHTML=
+        `<p><strong>Gerekçe:</strong> ${item.reason || "—"}</p>`
+        + `<p><strong>Öneri:</strong> ${item.suggestion || "—"}</p>`
+        + `<p><strong>Mevcut → Önerilen:</strong> ${item.before_value ?? "—"} → ${item.proposed_value ?? "—"}</p>`
+        + `<p><strong>Simulation:</strong> ${item.simulation_status}</p>`
+        + `<pre>${safeJson(item.simulation)}</pre>`
+        + `<p><strong>Regression:</strong> ${item.regression_status}</p>`
+        + `<pre>${safeJson(item.regression)}</pre>`
+        + `<p class="human-review-safety">Otomatik apply kapalı · insan kararı zorunlu</p>`;
+
+      details.append(
+        summary,
+        body
+      );
+      host.appendChild(
+        details
+      );
+    }
+  }
+
+  async function loadHumanReviewEvidence() {
+    try {
+      const response=
+        await fetch(
+          `/telemetry/balance-human-review-evidence?player_id=${encodeURIComponent(participantPlayerId)}`
+        );
+      if (!response.ok) {
+        return {
+          ok:false,
+        };
+      }
+      const payload=
+        await response.json();
+      renderHumanReviewEvidenceDetails(
+        payload
+      );
+      return {
+        ok:true,
+        payload,
+      };
+    } catch (_error) {
+      return {
+        ok:false,
+      };
+    }
+  }
+
   async function loadHumanReviewQueue() {
     try {
       const response=
@@ -3810,6 +4057,7 @@ const SPECIAL_CELL_INFO = {
       renderHumanReviewQueue(
         queue
       );
+      loadHumanReviewEvidence();
       return {
         ok:true,
         queue,
@@ -4035,6 +4283,8 @@ const SPECIAL_CELL_INFO = {
       createLocalBattleMetrics();
     previousCombatSecond =
       -1;
+    lastBattleAnimationNow =
+      null;
     mockServerCredits =
       200;
     mockServerPassiveSeconds =
@@ -4357,6 +4607,34 @@ const SPECIAL_CELL_INFO = {
           generator_gate_visits:
             {...localBattleMetrics.generator_gate_visits},
         });
+      telemetryDispatcher.track(
+        "battle_ux_timing_summary",
+        {
+          frame_count:
+            localBattleMetrics
+              .frame_count,
+          max_frame_gap_ms:
+            Math.round(
+              localBattleMetrics
+                .max_frame_gap_ms
+            ),
+          pause_violation_count:
+            localBattleMetrics
+              .pause_violation_count,
+          ui_interactions:
+            localBattleMetrics
+              .ui_interactions,
+          battle_elapsed_ms:
+            Math.round(
+              client.elapsedMs
+            ),
+          paused_by_ui:
+            localBattleMetrics
+              .pause_violation_count
+              > 0,
+        }
+      );
+      publishBattleUxMetrics();
     }
 
     commandLog.push({
@@ -7889,6 +8167,41 @@ const SPECIAL_CELL_INFO = {
       activePlayMode
       === "local"
     ) {
+      if (
+        localBattleStarted
+        && !localBattleFinished
+        && localBattleMetrics
+      ) {
+        if (
+          lastBattleAnimationNow
+          !== null
+        ) {
+          const frameGap=
+            Math.max(
+              0,
+              now
+              - lastBattleAnimationNow
+            );
+          localBattleMetrics
+            .frame_count += 1;
+          localBattleMetrics
+            .max_frame_gap_ms=
+              Math.max(
+                localBattleMetrics
+                  .max_frame_gap_ms,
+                frameGap
+              );
+          if (
+            frameGap
+            > BATTLE_PAUSE_GAP_THRESHOLD_MS
+          ) {
+            localBattleMetrics
+              .pause_violation_count += 1;
+          }
+        }
+        lastBattleAnimationNow=now;
+      }
+
       elapsedMs =
         Math.max(
           0,
@@ -7926,6 +8239,7 @@ const SPECIAL_CELL_INFO = {
       updateMockEnergy();
       updateMockCombat();
       updateLocalEnemyCombat();
+      publishBattleUxMetrics();
     }
 
     renderCredits();

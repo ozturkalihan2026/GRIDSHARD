@@ -1,6 +1,6 @@
 # GRIDSHARD — Karar Uygulama Kontrolü
 
-**Kontrol paketi:** `2.0.0-beta.18`
+**Kontrol paketi:** `2.0.0-beta.19`
 
 Bu belge, daha önce alınan görsel kimlik / ekran / ses / isim kararlarının proje içindeki gerçek uygulama durumunu takip eder.
 
@@ -132,3 +132,22 @@ Bu belge, daha önce alınan görsel kimlik / ekran / ses / isim kararlarının 
 - [x] Aktif loadout savaş öncesi 18/18 / değiştirildi / son kullanım özetiyle görünür.
 - [x] Yalnız güvenlik kapılarını geçen denge adayları `İnsan Değerlendirme Kuyruğu`nda listelenir.
 - [x] Otomatik denge apply yine yoktur.
+
+
+## 13. Beta.19 E2E / UX / mastering hazırlığı
+- [x] Windows için `TARAYICI_E2E_TEST.bat` eklendi.
+- [x] Browser E2E ana menü, hazır loadout, savaş başlangıcı ve sonuç ekranı screenshot artifactleri üretir.
+- [x] Browser console mesajları JSON artifact olarak saklanır.
+- [x] Browser network response listesi JSON artifact olarak saklanır.
+- [x] E2E kontrol sonuçları ayrı `checks.json` dosyasına yazılır.
+- [x] Browser ortamı engelliyse SKIPPED nedeni `environment.txt` ile artifact klasörüne yazılır.
+- [x] Yerel savaş requestAnimationFrame akışında frame count ve max frame gap ölçülür.
+- [x] UI click müdahaleleri savaş sırasında `battle_ui_interaction` telemetrisi üretir.
+- [x] Maç sonunda `battle_ux_timing_summary` telemetrisi üretilir.
+- [x] UI müdahalesi sırasında savaş zamanının ilerlemeye devam etmesi Browser E2E kontratına eklendi.
+- [x] İnsan Denge İnceleme Konsolu simulation/regression kanıtlarını açılır ayrıntı kartlarında gösterir.
+- [x] Kanıt endpoint'i tekrar simüle/regresyon eder fakat kanonik değeri değiştirmez.
+- [x] Audio mastering hazırlık raporunda crest factor ve RMS proxy metrikleri bulunur.
+- [x] RMS proxy'nin LUFS olmadığı açıkça dokümante edildi.
+- [x] Critical Core layer low/medium/high pressure kademelerine ayrıldı.
+- [x] Otomatik denge apply yoktur.

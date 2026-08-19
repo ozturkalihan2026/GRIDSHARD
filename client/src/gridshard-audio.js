@@ -504,22 +504,54 @@
           Number(value)
         )
       );
+
+      const stage=
+        pressure >= .72
+          ? "high"
+          : (
+              pressure >= .38
+                ? "medium"
+                : "low"
+            );
+
       if (this.criticalLayerTrack) {
-        const minGain=
-          GRIDSHARD_AUDIO_MIX
-            .criticalLayerGain;
-        const maxGain=
-          GRIDSHARD_AUDIO_MIX
-            .criticalLayerMaxGain;
+        const stageGain={
+          low:
+            GRIDSHARD_AUDIO_MIX
+              .criticalLayerGain,
+          medium:
+            (
+              GRIDSHARD_AUDIO_MIX
+                .criticalLayerGain
+              + GRIDSHARD_AUDIO_MIX
+                .criticalLayerMaxGain
+            ) / 2,
+          high:
+            GRIDSHARD_AUDIO_MIX
+              .criticalLayerMaxGain,
+        }[stage];
+
         this.criticalLayerTrack.volume=
           this._musicTargetVolume()
-          * (
-              minGain
-              + (maxGain-minGain)
-                * pressure
-            );
+          * stageGain;
+
+        if (
+          "playbackRate"
+          in this.criticalLayerTrack
+        ) {
+          this.criticalLayerTrack
+            .playbackRate={
+              low:.96,
+              medium:1.0,
+              high:1.06,
+            }[stage];
+        }
       }
-      return pressure;
+
+      return {
+        pressure,
+        stage,
+      };
     }
 
     setPreferences({
