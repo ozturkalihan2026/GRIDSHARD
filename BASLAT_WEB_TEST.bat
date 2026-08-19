@@ -11,8 +11,11 @@ if not exist ".venv\Scripts\python.exe" (
   if errorlevel 1 exit /b 1
 )
 
-set RELAY_WEB_TEST_RUN_ID=web-test-beta.16-local
+set RELAY_WEB_TEST_RUN_ID=web-test-beta.17-local
 set RELAY_TELEMETRY_MAX_EVENTS=50000
+
+".venv\Scripts\python.exe" tools\release_guard.py
+if errorlevel 1 exit /b 1
 
 echo.
 echo GRIDSHARD Web testi:

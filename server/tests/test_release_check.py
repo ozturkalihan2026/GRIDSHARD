@@ -17,7 +17,7 @@ def test_release_check_is_ready_for_current_scope():
     telemetry_service.clear()
 
     result=build_release_check(
-        version="2.0.0-beta.16",
+        version="2.0.0-beta.17",
         telemetry_service=telemetry_service,
     )
 
@@ -42,7 +42,7 @@ def test_release_check_endpoint_exposes_locked_menu_scope():
     assert response.status_code==200
     body=response.json()
 
-    assert body["version"]=="2.0.0-beta.16"
+    assert body["version"]=="2.0.0-beta.17"
     assert body["ready"] is True
     assert body["menu_areas"]==list(
         REQUIRED_MENU_AREAS

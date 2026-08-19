@@ -62,9 +62,15 @@ def http_post(url: str):
 def smoke_server() -> dict:
     port = free_port()
     env = os.environ.copy()
-    env["RELAY_WEB_TEST_RUN_ID"] = "web-test-beta.13-qa"
+    env["RELAY_WEB_TEST_RUN_ID"] = "web-test-beta.17-qa"
     env["RELAY_TELEMETRY_PATH"] = str(ROOT / "server/data/qa_telemetry.json")
     env["RELAY_PLAYER_DATA_PATH"] = str(ROOT / "server/data/qa_players.json")
+    env["RELAY_BATTLE_POOL_PRESET_PATH"] = str(
+        ROOT / "server/data/qa_battle_pool_presets.json"
+    )
+    env["RELAY_BALANCE_CHANGE_DRAFT_PATH"] = str(
+        ROOT / "server/data/qa_balance_change_drafts.json"
+    )
 
     proc = subprocess.Popen(
         [
@@ -163,6 +169,34 @@ def smoke_server() -> dict:
                 len(audit_statuses),
         })
 
+        status, body = http_get(
+            f"http://127.0.0.1:{port}"
+            "/telemetry/manual-battle-report"
+            "?player_id=qa-smoke"
+        )
+        if status != 200:
+            raise RuntimeError(
+                "Manuel savaş raporu smoke testi 200 dönmedi."
+            )
+        manual_report = json.loads(body)
+        checks.append({
+            "path":
+                "/telemetry/manual-battle-report"
+                "?player_id=qa-smoke",
+            "status":status,
+            "ok":
+                isinstance(
+                    manual_report,
+                    dict,
+                )
+                and "battle_count"
+                in manual_report,
+        })
+        if not checks[-1]["ok"]:
+            raise RuntimeError(
+                "Manuel savaş raporu smoke cevabı geçersiz."
+            )
+
         return {
             "name": "uvicorn_http_smoke",
             "ok": True,
@@ -192,6 +226,14 @@ def main() -> int:
     REPORT_DIR.mkdir(exist_ok=True)
     steps = [
         run_step(
+            "release_guard",
+            [
+                sys.executable,
+                "tools/release_guard.py",
+            ],
+            cwd=ROOT,
+        ),
+        run_step(
             "server_pytest",
             [sys.executable, "-m", "pytest", "-q"],
             cwd=ROOT / "server",
@@ -204,6 +246,16 @@ def main() -> int:
         run_step(
             "client_syntax_runtime",
             ["node", "--check", "src/relay-client.js"],
+            cwd=ROOT / "client",
+        ),
+        run_step(
+            "client_syntax_audio",
+            ["node", "--check", "src/gridshard-audio.js"],
+            cwd=ROOT / "client",
+        ),
+        run_step(
+            "client_audio_tests",
+            ["node", "tests/gridshard-audio.test.js"],
             cwd=ROOT / "client",
         ),
         run_step(
@@ -223,7 +275,7 @@ def main() -> int:
 
     report = {
         "project": "GRIDSHARD 2.0",
-        "version": "2.0.0-beta.16",
+        "version": "2.0.0-beta.17",
         "generated_at_epoch": int(time.time()),
         "ok": all(step["ok"] for step in steps),
         "steps": steps,

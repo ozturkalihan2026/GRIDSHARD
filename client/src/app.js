@@ -91,7 +91,7 @@
   const COMPETITIVE_STATUS = "M7 rekabetçi altyapı doğrulanıyor";
   const BALANCE_STATUS = "Denge simülasyonu mevcut · geniş örnek bekliyor";
   const AI_STATUS = "AI altyapısı mevcut · arketip testleri bekliyor";
-  const PVP_STATUS = "Beta.6 · Menü başlangıcı + QA zinciri düzeltildi";
+  const PVP_STATUS = "GRIDSHARD Beta.17 · Engine Regresyonu + Audio Mix V2 + Hızlı Loadout";
 
 
 
@@ -148,6 +148,7 @@
   let battlePoolPresets = [];
   let activeBattlePoolPresetName = null;
   let activeBattlePoolPresetBaseline = [];
+  let quickLoadoutFilter = "all";
 
   const client = new RelayBattleClient({
     modules: moduleDefinitions,
@@ -580,7 +581,7 @@
         webTestBuildState,
       releaseCheckState,
       expectedVersion:
-        "2.0.0-beta.16",
+        "2.0.0-beta.17",
       expectedProtocolVersion: 1,
     });
   const playReadinessGate =
@@ -616,7 +617,7 @@
 
   telemetryDispatcher.trackGameOpened({
     platform: "web",
-    build: "2.0.0-beta.16",
+    build: "2.0.0-beta.17",
   });
 
   const postMatchSync =
@@ -1176,7 +1177,7 @@
   const diagnosticSnapshot =
     new RelayDiagnosticSnapshot({
       version:
-        "2.0.0-beta.16",
+        "2.0.0-beta.17",
       build:
         "web-test-beta.13",
       bootGate:
@@ -1326,6 +1327,18 @@
   const quickLoadoutStatusEl =
     document.getElementById(
       "quick-loadout-status"
+    );
+  const quickLoadoutFilterAllEl =
+    document.getElementById(
+      "quick-loadout-filter-all"
+    );
+  const quickLoadoutFilterFavoritesEl =
+    document.getElementById(
+      "quick-loadout-filter-favorites"
+    );
+  const quickLoadoutActiveSummaryEl =
+    document.getElementById(
+      "quick-loadout-active-summary"
     );
   const poolDetailNameEl =
     document.getElementById(
@@ -3359,9 +3372,30 @@ const SPECIAL_CELL_INFO = {
         "regression-button";
       regress.textContent=
         "Battle-Engine Regresyonunu Çalıştır";
+      const structuralReview=
+        [
+          "generator_route",
+          "defense_usage",
+        ].includes(
+          item.area
+        );
+
       regress.disabled=
-        item.simulation_status
-        !== "passed";
+        structuralReview
+          ? false
+          : (
+              item.simulation_status
+              !== "passed"
+            );
+
+      if (structuralReview) {
+        regress.textContent=
+          "Yapısal Engine Regresyonunu Çalıştır";
+        before.disabled=true;
+        proposed.disabled=true;
+        approval.disabled=true;
+        simulate.disabled=true;
+      }
 
       const regressionResult=
         document.createElement(
@@ -3380,14 +3414,18 @@ const SPECIAL_CELL_INFO = {
                 : "Battle-engine regresyonu bekleniyor."
             );
       simulationResult.textContent=
-        item.simulation_status
-        === "passed"
-          ? "Son izole simülasyon başarılı. Kanonik değer değişmedi."
+        structuralReview
+          ? "Bu aday sayısal değişiklik değildir; yapısal BattleEngine regresyonu ile doğrulanır."
           : (
               item.simulation_status
-              === "failed"
-                ? "Son izole simülasyon başarısız veya bu alan henüz desteklenmiyor."
-                : "Simülasyon bekleniyor."
+              === "passed"
+                ? "Son izole simülasyon başarılı. Kanonik değer değişmedi."
+                : (
+                    item.simulation_status
+                    === "failed"
+                      ? "Son izole simülasyon başarısız veya bu alan henüz desteklenmiyor."
+                      : "Simülasyon bekleniyor."
+                  )
             );
 
       save.addEventListener(
@@ -3554,6 +3592,7 @@ const SPECIAL_CELL_INFO = {
               payload.draft
             );
           }
+          loadHumanReviewQueue();
         }
       );
 
@@ -3592,9 +3631,134 @@ const SPECIAL_CELL_INFO = {
       renderBalanceDraft(
         draft
       );
+      loadHumanReviewQueue();
       return {
         ok:true,
         draft,
+      };
+    } catch (error) {
+      return {
+        ok:false,
+        reason:
+          error instanceof Error
+            ? error.message
+            : String(error),
+      };
+    }
+  }
+
+  function renderHumanReviewQueue(
+    queue
+  ) {
+    const status=
+      document.getElementById(
+        "human-review-status"
+      );
+    const list=
+      document.getElementById(
+        "human-review-items"
+      );
+
+    if (!status || !list) {
+      return;
+    }
+
+    const numeric=
+      queue.numeric_candidates || [];
+    const structural=
+      queue.structural_candidates || [];
+    const total=
+      Number(
+        queue.candidate_count || 0
+      );
+
+    status.textContent=
+      total
+        ? `${total} aday insan değerlendirmesine hazır`
+        : "Güvenlik kapıları bekleniyor";
+
+    list.innerHTML="";
+
+    if (!total) {
+      const empty=
+        document.createElement(
+          "p"
+        );
+      empty.textContent=
+        "Yalnız simulation + regression geçen sayısal adaylar veya yapısal engine regresyonu geçen incelemeler burada görünür.";
+      list.appendChild(empty);
+      return;
+    }
+
+    for (
+      const item
+      of [
+        ...numeric,
+        ...structural,
+      ]
+    ) {
+      const card=
+        document.createElement(
+          "article"
+        );
+      card.className=
+        "human-review-item";
+      card.dataset.kind=
+        item.numeric_change
+          ? "numeric"
+          : "structural";
+
+      const title=
+        document.createElement(
+          "strong"
+        );
+      title.textContent=
+        item.area;
+
+      const detail=
+        document.createElement(
+          "span"
+        );
+      detail.textContent=
+        item.numeric_change
+          ? `Mevcut ${item.before_value} → Öneri ${item.proposed_value}`
+          : "Yapısal engine doğrulaması geçti · sayısal değişiklik yok";
+
+      const safety=
+        document.createElement(
+          "small"
+        );
+      safety.textContent=
+        "İnsan kararı zorunlu · otomatik uygulama kapalı";
+
+      card.append(
+        title,
+        detail,
+        safety
+      );
+      list.appendChild(card);
+    }
+  }
+
+  async function loadHumanReviewQueue() {
+    try {
+      const response=
+        await fetch(
+          `/telemetry/balance-human-review?player_id=${encodeURIComponent(participantPlayerId)}`
+        );
+      if (!response.ok) {
+        throw new Error(
+          "İnsan değerlendirme kuyruğu alınamadı."
+        );
+      }
+      const queue=
+        await response.json();
+      renderHumanReviewQueue(
+        queue
+      );
+      return {
+        ok:true,
+        queue,
       };
     } catch (error) {
       return {
@@ -3994,6 +4158,53 @@ const SPECIAL_CELL_INFO = {
     renderPlayModeUi();
   }
 
+  function syncCriticalCoreAudioState() {
+    if (
+      !gridshardAudioDirector
+      || activePlayMode !== "local"
+      || !localBattleStarted
+      || localBattleFinished
+    ) {
+      return;
+    }
+
+    const core=
+      client.modules.get(
+        "core-1"
+      );
+    if (!core) return;
+
+    const ratio=
+      Math.max(
+        0,
+        Number(core.hp || 0)
+      )
+      / Math.max(
+          1,
+          Number(
+            core.maxHp || 300
+          )
+        );
+
+    if (
+      ratio > 0
+      && ratio <= .33
+    ) {
+      gridshardAudioDirector
+        .setState(
+          "critical_core"
+        );
+    } else if (
+      gridshardAudioDirector.state
+      === "critical_core"
+    ) {
+      gridshardAudioDirector
+        .setState(
+          "battle"
+        );
+    }
+  }
+
   function renderPlayerCoreSummary() {
     if (!playerCoreSummaryEl) {
       return;
@@ -4023,6 +4234,8 @@ const SPECIAL_CELL_INFO = {
           )
         )
       }/${generator?.maxHp || 150}`;
+
+    syncCriticalCoreAudioState();
   }
 
   function finishLocalBattle({
@@ -4444,6 +4657,64 @@ const SPECIAL_CELL_INFO = {
     );
   }
 
+  function renderQuickLoadoutActiveSummary() {
+    if (!quickLoadoutActiveSummaryEl) {
+      return;
+    }
+
+    if (!activeBattlePoolPresetName) {
+      quickLoadoutActiveSummaryEl
+        .dataset.state="none";
+      quickLoadoutActiveSummaryEl
+        .innerHTML=
+          "<strong>Aktif loadout yok</strong>"
+          + "<span>Hazır havuz seçtiğinde savaş öncesi özet burada görünecek.</span>";
+      return;
+    }
+
+    const preset=
+      battlePoolPresets.find(
+        (item)=>
+          item.name
+          === activeBattlePoolPresetName
+      );
+    const clean=
+      selectedPoolMatchesBaseline();
+    const selectedCount=
+      battlePoolSelection
+        .selectedIds()
+        .length;
+    const ready=
+      battlePoolSelection
+        .isComplete();
+
+    quickLoadoutActiveSummaryEl
+      .dataset.state=
+        ready
+          ? (
+              clean
+                ? "ready"
+                : "modified"
+            )
+          : "incomplete";
+
+    const favorite=
+      preset?.favorite
+        ? "★ Favori · "
+        : "";
+    const freshness=
+      preset?.last_used_at_ms
+        ? presetLastUsedLabel(
+            preset.last_used_at_ms
+          )
+        : "Henüz kullanılmadı";
+
+    quickLoadoutActiveSummaryEl
+      .innerHTML=
+        `<strong>${favorite}${activeBattlePoolPresetName}</strong>`
+        + `<span>${selectedCount}/18 modül · ${clean ? "Kayıtla aynı" : "Değiştirildi"} · ${freshness}</span>`;
+  }
+
   function renderActivePresetState() {
     const hasActive=
       Boolean(
@@ -4504,6 +4775,8 @@ const SPECIAL_CELL_INFO = {
       presetNameEl.placeholder=
         `Aktif: ${activeBattlePoolPresetName}`;
     }
+
+    renderQuickLoadoutActiveSummary();
   }
 
   function presetLastUsedLabel(
@@ -4755,9 +5028,49 @@ const SPECIAL_CELL_INFO = {
 
     quickLoadoutGalleryEl.innerHTML="";
 
+    const lastUsedPreset=
+      [...battlePoolPresets]
+        .filter(
+          (item)=>
+            item.last_used_at_ms
+        )
+        .sort(
+          (a,b)=>
+            Number(
+              b.last_used_at_ms || 0
+            )
+            - Number(
+                a.last_used_at_ms || 0
+              )
+        )[0];
+
+    const source=
+      quickLoadoutFilter
+      === "favorites"
+        ? battlePoolPresets.filter(
+            (item)=>item.favorite
+          )
+        : battlePoolPresets;
+
     const quickPresets=
-      battlePoolPresets
-        .slice(0,3);
+      source.slice(0,4);
+
+    if (quickLoadoutFilterAllEl) {
+      quickLoadoutFilterAllEl
+        .dataset.active=
+          String(
+            quickLoadoutFilter
+            === "all"
+          );
+    }
+    if (quickLoadoutFilterFavoritesEl) {
+      quickLoadoutFilterFavoritesEl
+        .dataset.active=
+          String(
+            quickLoadoutFilter
+            === "favorites"
+          );
+    }
 
     if (!quickPresets.length) {
       const empty=
@@ -4767,7 +5080,10 @@ const SPECIAL_CELL_INFO = {
       empty.className=
         "quick-loadout-empty";
       empty.textContent=
-        "Hazır havuz oluşturduğunda favorilerin ve son kullandıkların burada görünecek.";
+        quickLoadoutFilter
+        === "favorites"
+          ? "Henüz favori hazır havuzun yok."
+          : "Hazır havuz oluşturduğunda favorilerin ve son kullandıkların burada görünecek.";
       quickLoadoutGalleryEl
         .appendChild(
           empty
@@ -4776,18 +5092,17 @@ const SPECIAL_CELL_INFO = {
         quickLoadoutStatusEl.textContent=
           "Hazır loadout yok";
       }
+      renderQuickLoadoutActiveSummary();
       return;
     }
 
     if (quickLoadoutStatusEl) {
       const favoriteCount=
-        quickPresets.filter(
+        battlePoolPresets.filter(
           (item)=>item.favorite
         ).length;
       quickLoadoutStatusEl.textContent=
-        favoriteCount
-          ? `${favoriteCount} favori · ${quickPresets.length} hızlı seçenek`
-          : `${quickPresets.length} son kullanılan seçenek`;
+        `${favoriteCount} favori · ${battlePoolPresets.length} kayıtlı havuz`;
     }
 
     for (
@@ -4800,13 +5115,74 @@ const SPECIAL_CELL_INFO = {
         );
       card.className=
         "quick-loadout-card";
+      card.dataset.active=
+        String(
+          preset.name
+          === activeBattlePoolPresetName
+        );
+
+      const badgeRow=
+        document.createElement(
+          "div"
+        );
+      badgeRow.className=
+        "quick-loadout-badges";
+
+      if (preset.favorite) {
+        const favoriteBadge=
+          document.createElement(
+            "span"
+          );
+        favoriteBadge.textContent=
+          "★ Favori";
+        favoriteBadge.dataset.kind=
+          "favorite";
+        badgeRow.appendChild(
+          favoriteBadge
+        );
+      }
+
+      if (
+        lastUsedPreset
+        && lastUsedPreset.name
+        === preset.name
+      ) {
+        const recentBadge=
+          document.createElement(
+            "span"
+          );
+        recentBadge.textContent=
+          "Son Kullanılan";
+        recentBadge.dataset.kind=
+          "recent";
+        badgeRow.appendChild(
+          recentBadge
+        );
+      }
+
+      if (
+        preset.name
+        === activeBattlePoolPresetName
+      ) {
+        const activeBadge=
+          document.createElement(
+            "span"
+          );
+        activeBadge.textContent=
+          "Aktif";
+        activeBadge.dataset.kind=
+          "active";
+        badgeRow.appendChild(
+          activeBadge
+        );
+      }
 
       const title=
         document.createElement(
           "strong"
         );
       title.textContent=
-        `${preset.favorite ? "★ " : ""}${preset.name}`;
+        preset.name;
 
       const meta=
         document.createElement(
@@ -4870,6 +5246,7 @@ const SPECIAL_CELL_INFO = {
       }
 
       card.append(
+        badgeRow,
         title,
         meta,
         actions
@@ -4879,7 +5256,10 @@ const SPECIAL_CELL_INFO = {
           card
         );
     }
+
+    renderQuickLoadoutActiveSummary();
   }
+
 
   function renderPresetOptions() {
     if (!presetSelectEl) return;
@@ -7485,6 +7865,26 @@ const SPECIAL_CELL_INFO = {
     requestAnimationFrame(updateClock);
   }
 
+  if (quickLoadoutFilterAllEl) {
+    quickLoadoutFilterAllEl.addEventListener(
+      "click",
+      () => {
+        quickLoadoutFilter="all";
+        renderQuickLoadoutGallery();
+      }
+    );
+  }
+
+  if (quickLoadoutFilterFavoritesEl) {
+    quickLoadoutFilterFavoritesEl.addEventListener(
+      "click",
+      () => {
+        quickLoadoutFilter="favorites";
+        renderQuickLoadoutGallery();
+      }
+    );
+  }
+
   if (presetNewEl) {
     presetNewEl.addEventListener(
       "click",
@@ -7539,6 +7939,19 @@ const SPECIAL_CELL_INFO = {
       "click",
       () => {
         renameSelectedBattlePoolPreset();
+      }
+    );
+  }
+
+  const humanReviewRefreshEl =
+    document.getElementById(
+      "human-review-refresh"
+    );
+  if (humanReviewRefreshEl) {
+    humanReviewRefreshEl.addEventListener(
+      "click",
+      () => {
+        loadHumanReviewQueue();
       }
     );
   }
@@ -7679,6 +8092,62 @@ const SPECIAL_CELL_INFO = {
             musicMuted?.checked
           ),
       });
+  }
+
+  const settingsPreviewMusicEl =
+    document.getElementById(
+      "settings-preview-music"
+    );
+  if (settingsPreviewMusicEl) {
+    settingsPreviewMusicEl.addEventListener(
+      "click",
+      () => {
+        previewAudioSettingsFromControls();
+        const result=
+          gridshardAudioDirector
+            ?.previewMusic(
+              "menu"
+            );
+        const status=
+          document.getElementById(
+            "settings-save-status"
+          );
+        if (status) {
+          status.textContent=
+            result?.ok
+              ? "GRIDSHARD müzik önizlemesi çalıyor"
+              : "Müzik önizlemesi kullanılamadı";
+        }
+      }
+    );
+  }
+
+  const settingsPreviewSfxEl =
+    document.getElementById(
+      "settings-preview-sfx"
+    );
+  if (settingsPreviewSfxEl) {
+    settingsPreviewSfxEl.addEventListener(
+      "click",
+      () => {
+        previewAudioSettingsFromControls();
+        const result=
+          gridshardAudioDirector
+            ?.previewSfx(
+              "core_hit"
+            );
+        const status=
+          document.getElementById(
+            "settings-save-status"
+          );
+        if (status) {
+          status.textContent=
+            result?.ok
+              ? "Çekirdek hasarı SFX önizlemesi çalındı"
+              : "SFX önizlemesi kullanılamadı";
+        }
+      }
+    );
   }
 
   for (

@@ -14,7 +14,7 @@
     <header class="battle-header">
       <div>
         <h1>GRIDSHARD 2.0</h1>
-        <p>2.0.0-beta.16 — Gerçek Web Testi Hazır</p>
+        <p>2.0.0-beta.17 — Gerçek Web Testi Hazır</p>
       </div>
       <div class="battle-status-cluster">
         <div class="credit-indicator" id="credit-indicator">Devre Kredisi: 200 DK</div>
@@ -57,7 +57,7 @@
           </button>
           <div class="lobby-build-chip">
             <span>GÜNCEL YAPI</span>
-            <strong>2.0.0-beta.16</strong>
+            <strong>2.0.0-beta.17</strong>
           </div>
         </div>
       </div>
@@ -139,6 +139,10 @@
             <option value="en">English</option>
           </select>
         </label>
+        <div class="audio-preview-actions">
+          <button id="settings-preview-music" type="button">Müziği Önizle</button>
+          <button id="settings-preview-sfx" type="button">SFX Önizle</button>
+        </div>
         <button id="settings-save" type="button">Ayarları Kaydet</button>
         <span id="settings-save-status" role="status">Henüz kaydedilmedi</span>
         <span id="settings-persistence-status" role="status">Kalıcılık: Henüz doğrulanmadı</span>
@@ -163,6 +167,17 @@
           </div>
           <span id="quick-loadout-status">Hazır havuzlar yükleniyor...</span>
         </div>
+
+        <div class="quick-loadout-toolbar" role="group" aria-label="Hızlı loadout filtresi">
+          <button id="quick-loadout-filter-all" type="button" data-active="true">Tümü</button>
+          <button id="quick-loadout-filter-favorites" type="button" data-active="false">Favoriler</button>
+        </div>
+
+        <div id="quick-loadout-active-summary" class="quick-loadout-active-summary" data-state="none">
+          <strong>Aktif loadout yok</strong>
+          <span>Hazır havuz seçtiğinde savaş öncesi özet burada görünecek.</span>
+        </div>
+
         <div id="quick-loadout-gallery" class="quick-loadout-gallery" aria-label="Hızlı hazır havuz seçimi"></div>
       </section>
 
@@ -188,7 +203,7 @@
       <div class="panel-title-row">
         <div>
           <h2 id="battle-pool-title">Savaş Havuzu Oluştur</h2>
-          <p class="screen-subtitle">Soldan modülü incele ve + / ✓ ile seç. Hazır havuz yükleyebilir, düzenleyebilir ve tekrar kaydedebilirsin.</p>
+          <p class="screen-subtitle">Soldan modülü incele. + ile ekle, − ile çıkar; ◆ Jeneratörün zorunlu ve kilitli olduğunu gösterir. Hazır havuz yükleyebilir, düzenleyebilir ve tekrar kaydedebilirsin.</p>
         </div>
         <span id="battle-pool-count">1 / 18</span>
       </div>
@@ -465,8 +480,19 @@
             <button id="balance-draft-refresh" type="button">Taslağı Yenile</button>
           </section>
 
+          <section class="human-review-panel">
+            <div class="panel-title-row">
+              <h5>İnsan Değerlendirme Kuyruğu</h5>
+              <span id="human-review-status">Güvenlik kapıları bekleniyor</span>
+            </div>
+            <div id="human-review-items" class="human-review-items">
+              <p>Simulation + regression geçen adaylar burada listelenecek.</p>
+            </div>
+            <button id="human-review-refresh" type="button">Değerlendirme Kuyruğunu Yenile</button>
+          </section>
+
           <p class="balance-safety-note">
-            Denge değişiklikleri otomatik uygulanmaz. Simülasyon ve regresyon geçmeden hiçbir taslak uygulanabilir sayılmaz.
+            Denge değişiklikleri otomatik uygulanmaz. Simülasyon ve regresyon geçmeden hiçbir taslak insan değerlendirmesine alınmaz.
           </p>
         </section>
       </div>

@@ -8,8 +8,10 @@ if [ ! -x ".venv/bin/python" ]; then
   .venv/bin/python -m pip install -r server/requirements.txt
 fi
 
-export RELAY_WEB_TEST_RUN_ID="web-test-beta.16-local"
+export RELAY_WEB_TEST_RUN_ID="web-test-beta.17-local"
 export RELAY_TELEMETRY_MAX_EVENTS="50000"
+
+.venv/bin/python tools/release_guard.py
 
 echo "GRIDSHARD Web testi: http://127.0.0.1:8000/"
 echo "Sunucuyu durdurmak için Ctrl+C kullan."

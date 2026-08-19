@@ -25,6 +25,16 @@
     defeat: { stingSeconds:[5,7], intensity:0.72 },
   });
 
+  const GRIDSHARD_AUDIO_MIX = Object.freeze({
+    version:"mix-v2",
+    crossfadeMs:450,
+    musicBaseGain:0.72,
+    sfxBaseGain:0.86,
+    criticalLayerGain:0.34,
+    musicPeakDbfs:-6,
+    sfxPeakDbfs:-3,
+  });
+
   const GRIDSHARD_MUSIC_ASSETS = Object.freeze({
     menu:"./assets/audio/menu_pulse.wav",
     pool:"./assets/audio/pool_pulse.wav",
@@ -36,6 +46,9 @@
     victory:"./assets/audio/victory_sting.wav",
     defeat:"./assets/audio/defeat_sting.wav",
   });
+
+  const GRIDSHARD_CRITICAL_LAYER =
+    "./assets/audio/critical_core_layer.wav";
 
   const GRIDSHARD_SFX_CUES = Object.freeze({
     port_connect:{
@@ -83,6 +96,8 @@
       this.musicVolume = 0.70;
       this.sfxVolume = 1.0;
       this.currentTrack = null;
+      this.criticalLayerTrack = null;
+      this._fadeTimers = new Set();
     }
 
     _canPlayAudio() {
@@ -92,107 +107,328 @@
       );
     }
 
-    _stopCurrentTrack() {
-      if (!this.currentTrack) return;
-      try {
-        this.currentTrack.pause();
-        this.currentTrack.currentTime = 0;
-      } catch (_) {
-        // Browser implementation detail; never block gameplay.
-      }
-      this.currentTrack = null;
+    _musicTargetVolume() {
+      return Math.max(
+        0,
+        Math.min(
+          1,
+          this.masterVolume
+          * this.musicVolume
+          * GRIDSHARD_AUDIO_MIX.musicBaseGain
+        )
+      );
     }
 
-    _startStateAsset(state) {
+    _sfxTargetVolume() {
+      return Math.max(
+        0,
+        Math.min(
+          1,
+          this.masterVolume
+          * this.sfxVolume
+          * GRIDSHARD_AUDIO_MIX.sfxBaseGain
+        )
+      );
+    }
+
+    _safePlay(audio) {
+      if (!audio) return;
+      const result=audio.play();
       if (
-        !this.enabled
-        || this.musicMuted
-        || this.musicVolume <= 0
-        || !this._canPlayAudio()
+        result
+        && typeof result.catch
+        === "function"
       ) {
-        return;
-      }
-
-      const asset =
-        GRIDSHARD_MUSIC_ASSETS[state];
-
-      if (!asset) {
-        return;
-      }
-
-      this._stopCurrentTrack();
-
-      const audio =
-        new global.Audio(asset);
-      audio.volume =
-        Math.max(
-          0,
-          Math.min(
-            1,
-            this.masterVolume
-            * this.musicVolume
-          )
-        );
-      audio.loop =
-        ![
-          GRIDSHARD_AUDIO_STATES.VICTORY,
-          GRIDSHARD_AUDIO_STATES.DEFEAT,
-          GRIDSHARD_AUDIO_STATES.MATCHMAKING,
-        ].includes(state);
-
-      this.currentTrack = audio;
-      const playPromise =
-        audio.play();
-
-      if (
-        playPromise
-        && typeof playPromise.catch
-          === "function"
-      ) {
-        playPromise.catch(
+        result.catch(
           () => {
-            // Autoplay policy can block audio before a user gesture.
+            // Browser autoplay policy never blocks gameplay.
           }
         );
       }
     }
 
+    _stopAudio(audio) {
+      if (!audio) return;
+      try {
+        audio.pause();
+        audio.currentTime=0;
+      } catch (_) {
+        // Browser implementation detail.
+      }
+    }
+
+    _fade(
+      audio,
+      from,
+      to,
+      durationMs,
+      onDone=null
+    ) {
+      if (!audio) {
+        if (onDone) onDone();
+        return;
+      }
+
+      audio.volume=Math.max(
+        0,
+        Math.min(1,from)
+      );
+
+      if (
+        durationMs <= 0
+        || typeof global.setInterval
+          !== "function"
+      ) {
+        audio.volume=Math.max(
+          0,
+          Math.min(1,to)
+        );
+        if (onDone) onDone();
+        return;
+      }
+
+      const started=Date.now();
+      const timer=global.setInterval(
+        () => {
+          const progress=Math.min(
+            1,
+            (
+              Date.now()-started
+            )/durationMs
+          );
+          audio.volume=
+            from
+            + (
+              to-from
+            )*progress;
+
+          if (progress>=1) {
+            global.clearInterval(
+              timer
+            );
+            this._fadeTimers.delete(
+              timer
+            );
+            if (onDone) onDone();
+          }
+        },
+        30
+      );
+      this._fadeTimers.add(timer);
+    }
+
+    _stopCriticalLayer({
+      fade=true,
+    }={}) {
+      const layer=
+        this.criticalLayerTrack;
+      if (!layer) return;
+
+      this.criticalLayerTrack=null;
+
+      const finish=()=>{
+        this._stopAudio(
+          layer
+        );
+      };
+
+      if (fade) {
+        this._fade(
+          layer,
+          Number(layer.volume || 0),
+          0,
+          GRIDSHARD_AUDIO_MIX.crossfadeMs,
+          finish
+        );
+      } else {
+        finish();
+      }
+    }
+
+    _startCriticalLayer() {
+      if (
+        !this.enabled
+        || this.musicMuted
+        || this.musicVolume<=0
+        || !this._canPlayAudio()
+      ) {
+        return;
+      }
+
+      if (this.criticalLayerTrack) {
+        return;
+      }
+
+      const layer=
+        new global.Audio(
+          GRIDSHARD_CRITICAL_LAYER
+        );
+      layer.loop=true;
+      layer.volume=0;
+      this.criticalLayerTrack=layer;
+      this._safePlay(layer);
+
+      this._fade(
+        layer,
+        0,
+        this._musicTargetVolume()
+          * GRIDSHARD_AUDIO_MIX
+            .criticalLayerGain,
+        GRIDSHARD_AUDIO_MIX
+          .crossfadeMs
+      );
+    }
+
+    _transitionToStateAsset(
+      state
+    ) {
+      if (
+        !this.enabled
+        || this.musicMuted
+        || this.musicVolume<=0
+        || !this._canPlayAudio()
+      ) {
+        return;
+      }
+
+      const asset=
+        GRIDSHARD_MUSIC_ASSETS[
+          state
+        ];
+      if (!asset) return;
+
+      const previous=
+        this.currentTrack;
+      const next=
+        new global.Audio(asset);
+
+      next.loop=
+        ![
+          GRIDSHARD_AUDIO_STATES
+            .VICTORY,
+          GRIDSHARD_AUDIO_STATES
+            .DEFEAT,
+          GRIDSHARD_AUDIO_STATES
+            .MATCHMAKING,
+        ].includes(state);
+
+      next.volume=0;
+      this.currentTrack=next;
+      this._safePlay(next);
+
+      this._fade(
+        next,
+        0,
+        this._musicTargetVolume(),
+        GRIDSHARD_AUDIO_MIX
+          .crossfadeMs
+      );
+
+      if (
+        previous
+        && previous!==next
+      ) {
+        this._fade(
+          previous,
+          Number(
+            previous.volume || 0
+          ),
+          0,
+          GRIDSHARD_AUDIO_MIX
+            .crossfadeMs,
+          ()=>{
+            this._stopAudio(
+              previous
+            );
+          }
+        );
+      }
+
+      if (
+        state
+        === GRIDSHARD_AUDIO_STATES
+          .CRITICAL_CORE
+      ) {
+        this._startCriticalLayer();
+      } else {
+        this._stopCriticalLayer();
+      }
+    }
+
+    _stopAllMusic() {
+      const current=
+        this.currentTrack;
+      this.currentTrack=null;
+      if (current) {
+        this._stopAudio(
+          current
+        );
+      }
+      this._stopCriticalLayer({
+        fade:false,
+      });
+    }
+
     setState(state) {
-      if (!Object.values(GRIDSHARD_AUDIO_STATES).includes(state)) {
+      if (
+        !Object.values(
+          GRIDSHARD_AUDIO_STATES
+        ).includes(state)
+      ) {
         return {
           ok:false,
-          reason:"Bilinmeyen GRIDSHARD audio state.",
+          reason:
+            "Bilinmeyen GRIDSHARD audio state.",
         };
       }
 
-      const changed =
-        this.state !== state;
-      this.state = state;
+      const changed=
+        this.state!==state;
+      this.state=state;
 
       if (changed) {
-        this._startStateAsset(
+        this._transitionToStateAsset(
           state
         );
+      } else if (
+        state
+        === GRIDSHARD_AUDIO_STATES
+          .CRITICAL_CORE
+      ) {
+        this._startCriticalLayer();
       }
 
       return {
         ok:true,
         state,
         asset:
-          GRIDSHARD_MUSIC_ASSETS[state],
+          GRIDSHARD_MUSIC_ASSETS[
+            state
+          ],
+        criticalLayer:
+          state
+          === GRIDSHARD_AUDIO_STATES
+            .CRITICAL_CORE
+            ? GRIDSHARD_CRITICAL_LAYER
+            : null,
         direction:
-          GRIDSHARD_AUDIO_DIRECTION[state],
+          GRIDSHARD_AUDIO_DIRECTION[
+            state
+          ],
+        mix:
+          GRIDSHARD_AUDIO_MIX,
       };
     }
 
     triggerCue(name) {
-      const cue =
+      const cue=
         GRIDSHARD_SFX_CUES[name];
 
       if (!cue) {
         return {
           ok:false,
-          reason:"Bilinmeyen GRIDSHARD ses efekti.",
+          reason:
+            "Bilinmeyen GRIDSHARD ses efekti.",
         };
       }
 
@@ -200,86 +436,116 @@
         this.enabled
         && this.sfxEnabled
         && !this.soundMuted
-        && this.sfxVolume > 0
+        && this.sfxVolume>0
         && this._canPlayAudio()
       ) {
-        const audio =
+        const audio=
           new global.Audio(
             cue.asset
           );
-        audio.volume =
-          Math.max(
-            0,
-            Math.min(
-              1,
-              this.masterVolume
-              * this.sfxVolume
-            )
-          );
-
-        const playPromise =
-          audio.play();
-        if (
-          playPromise
-          && typeof playPromise.catch
-            === "function"
-        ) {
-          playPromise.catch(
-            () => {}
-          );
-        }
+        audio.volume=
+          this._sfxTargetVolume();
+        this._safePlay(audio);
       }
 
       return {
         ok:true,
         name,
+        normalizedPeakDbfs:
+          GRIDSHARD_AUDIO_MIX
+            .sfxPeakDbfs,
         ...cue,
       };
     }
 
+    previewMusic(
+      state=GRIDSHARD_AUDIO_STATES.MENU
+    ) {
+      if (
+        !GRIDSHARD_MUSIC_ASSETS[
+          state
+        ]
+      ) {
+        return {
+          ok:false,
+          reason:
+            "Önizlenecek müzik state'i bulunamadı.",
+        };
+      }
+
+      this._transitionToStateAsset(
+        state
+      );
+
+      return {
+        ok:true,
+        state,
+        asset:
+          GRIDSHARD_MUSIC_ASSETS[
+            state
+          ],
+      };
+    }
+
+    previewSfx(
+      cue="core_hit"
+    ) {
+      return this.triggerCue(
+        cue
+      );
+    }
+
     setPreferences({
-      soundVolume = this.sfxVolume,
-      musicVolume = this.musicVolume,
-      soundMuted = this.soundMuted,
-      musicMuted = this.musicMuted,
-    } = {}) {
-      this.sfxVolume =
-        Math.max(
-          0,
-          Math.min(
-            1,
-            Number(soundVolume)
-          )
-        );
-      this.musicVolume =
-        Math.max(
-          0,
-          Math.min(
-            1,
-            Number(musicVolume)
-          )
-        );
-      this.soundMuted =
+      soundVolume =
+        this.sfxVolume,
+      musicVolume =
+        this.musicVolume,
+      soundMuted =
+        this.soundMuted,
+      musicMuted =
+        this.musicMuted,
+    }={}) {
+      this.sfxVolume=Math.max(
+        0,
+        Math.min(
+          1,
+          Number(soundVolume)
+        )
+      );
+      this.musicVolume=Math.max(
+        0,
+        Math.min(
+          1,
+          Number(musicVolume)
+        )
+      );
+      this.soundMuted=
         Boolean(soundMuted);
-      this.musicMuted =
+      this.musicMuted=
         Boolean(musicMuted);
 
-      if (this.currentTrack) {
-        if (
-          this.musicMuted
-          || this.musicVolume <= 0
-        ) {
-          this._stopCurrentTrack();
-        } else {
-          this.currentTrack.volume =
-            this.masterVolume
-            * this.musicVolume;
-        }
-      } else if (
-        !this.musicMuted
-        && this.musicVolume > 0
+      if (
+        this.musicMuted
+        || this.musicVolume<=0
       ) {
-        this._startStateAsset(
+        this._stopAllMusic();
+      } else if (
+        this.currentTrack
+      ) {
+        this.currentTrack.volume=
+          this._musicTargetVolume();
+
+        if (
+          this.criticalLayerTrack
+        ) {
+          this.criticalLayerTrack
+            .volume=
+              this._musicTargetVolume()
+              * GRIDSHARD_AUDIO_MIX
+                .criticalLayerGain;
+        }
+      } else {
+        this._transitionToStateAsset(
           this.state
         );
       }
@@ -297,41 +563,53 @@
           this.soundMuted,
         musicMuted:
           this.musicMuted,
+        mixVersion:
+          GRIDSHARD_AUDIO_MIX
+            .version,
       };
     }
 
     setMasterVolume(value) {
-      this.masterVolume =
-        Math.max(
-          0,
-          Math.min(
-            1,
-            Number(value)
-          )
-        );
+      this.masterVolume=Math.max(
+        0,
+        Math.min(
+          1,
+          Number(value)
+        )
+      );
 
       if (this.currentTrack) {
-        this.currentTrack.volume =
-          this.masterVolume
-          * this.musicVolume;
+        this.currentTrack.volume=
+          this._musicTargetVolume();
+      }
+      if (this.criticalLayerTrack) {
+        this.criticalLayerTrack
+          .volume=
+            this._musicTargetVolume()
+            * GRIDSHARD_AUDIO_MIX
+              .criticalLayerGain;
       }
 
       return this.masterVolume;
     }
   }
 
-  global.GRIDSHARD_AUDIO_STATES =
+  global.GRIDSHARD_AUDIO_STATES=
     GRIDSHARD_AUDIO_STATES;
-  global.GRIDSHARD_AUDIO_DIRECTION =
+  global.GRIDSHARD_AUDIO_DIRECTION=
     GRIDSHARD_AUDIO_DIRECTION;
-  global.GRIDSHARD_MUSIC_ASSETS =
+  global.GRIDSHARD_AUDIO_MIX=
+    GRIDSHARD_AUDIO_MIX;
+  global.GRIDSHARD_MUSIC_ASSETS=
     GRIDSHARD_MUSIC_ASSETS;
-  global.GRIDSHARD_SFX_CUES =
+  global.GRIDSHARD_CRITICAL_LAYER=
+    GRIDSHARD_CRITICAL_LAYER;
+  global.GRIDSHARD_SFX_CUES=
     GRIDSHARD_SFX_CUES;
-  global.GridshardAudioDirector =
+  global.GridshardAudioDirector=
     GridshardAudioDirector;
 })(
-  typeof window !== "undefined"
+  typeof window!=="undefined"
     ? window
     : globalThis
 );

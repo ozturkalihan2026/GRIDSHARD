@@ -14,7 +14,26 @@ from .game.engine import (
 from .game.models import (
     BattleCommand,
     BattleState,
+    Direction,
     ModuleStatus,
+    Position,
+)
+from .game.board import (
+    CORE_POSITION,
+    GENERATOR_GATE_POSITIONS,
+    SPECIAL_CELLS,
+)
+from .game.combat import (
+    resolve_attack,
+)
+from .game.topology import (
+    DIRECTION_VECTOR,
+    build_energy_topology,
+    module_port_directions,
+)
+from .local_ai_regression import (
+    LocalAiRegressionError,
+    run_local_ai_pressure_regression,
 )
 
 
@@ -415,38 +434,368 @@ def _regress_module_interaction(
     }
 
 
+
+def _new_rejection_since(
+    engine:BattleEngine,
+    start_index:int,
+)->bool:
+    return any(
+        event.type=="command_rejected"
+        for event
+        in engine.state.events[
+            start_index:
+        ]
+    )
+
+
+def _regress_generator_route()->dict:
+    engine=_engine_fixture()
+    _advance_to(
+        engine,
+        MODULE_INTERACTION_UNLOCK_MS,
+    )
+
+    player=engine.state.players[
+        "player-1"
+    ]
+    generator=player.modules[
+        "generator-1"
+    ]
+
+    snapshots=[]
+    for gate in (
+        GENERATOR_GATE_POSITIONS
+    ):
+        event_index=len(
+            engine.state.events
+        )
+        _command(
+            engine,
+            "move_module",
+            module_id="generator-1",
+            x=gate.x,
+            y=gate.y,
+        )
+
+        topology=build_energy_topology(
+            player,
+            CORE_POSITION,
+        )
+        pair=tuple(
+            sorted(
+                (
+                    "core-1",
+                    "generator-1",
+                )
+            )
+        )
+        core_connected=(
+            pair
+            in topology.connection_pairs
+        )
+
+        special_side_access=0
+        for direction in (
+            module_port_directions(
+                generator,
+                CORE_POSITION,
+            )
+        ):
+            dx,dy=DIRECTION_VECTOR[
+                direction
+            ]
+            position=Position(
+                gate.x+dx,
+                gate.y+dy,
+            )
+            if (
+                position
+                in SPECIAL_CELLS
+            ):
+                special_side_access+=1
+
+        snapshots.append({
+            "gate":{
+                "x":gate.x,
+                "y":gate.y,
+            },
+            "moved":
+                generator.position==gate,
+            "command_rejected":
+                _new_rejection_since(
+                    engine,
+                    event_index,
+                ),
+            "core_connected":
+                core_connected,
+            "special_side_access_count":
+                special_side_access,
+            "battle_running":
+                engine.state.status.value
+                == "running",
+        })
+
+    passed=all(
+        item["moved"]
+        and not item[
+            "command_rejected"
+        ]
+        and item[
+            "core_connected"
+        ]
+        and item[
+            "special_side_access_count"
+        ] >= 1
+        and item[
+            "battle_running"
+        ]
+        for item in snapshots
+    )
+
+    return {
+        "area":"generator_route",
+        "status":
+            "passed"
+            if passed
+            else "failed",
+        "adapter":
+            "battle_engine_structural",
+        "engine_scenarios":
+            snapshots,
+        "canonical_values_changed":
+            False,
+    }
+
+
+def _defense_engine_fixture()->BattleEngine:
+    engine=BattleEngine(
+        BattleState(
+            battle_id=
+                "defense-regression"
+        )
+    )
+
+    for player_id in (
+        "player-1",
+        "player-2",
+    ):
+        engine.add_player(
+            player_id
+        )
+
+    # Attacker: north generator + horizontal laser.
+    for instance_id,definition_id in (
+        ("core-a","core"),
+        ("generator-a","generator"),
+        ("laser-a","laser"),
+    ):
+        engine.grant_module(
+            "player-1",
+            instance_id,
+            definition_id,
+        )
+
+    engine.set_initial_active_module(
+        "player-1",
+        "core-a",
+        2,2,
+    )
+    engine.set_initial_active_module(
+        "player-1",
+        "generator-a",
+        2,1,
+    )
+    engine.set_initial_active_module(
+        "player-1",
+        "laser-a",
+        3,1,
+        direction=Direction.LEFT,
+    )
+
+    # Defender: south generator + horizontal shield.
+    for instance_id,definition_id in (
+        ("core-d","core"),
+        ("generator-d","generator"),
+        ("shield-d","shield"),
+    ):
+        engine.grant_module(
+            "player-2",
+            instance_id,
+            definition_id,
+        )
+
+    engine.set_initial_active_module(
+        "player-2",
+        "core-d",
+        2,2,
+    )
+    engine.set_initial_active_module(
+        "player-2",
+        "generator-d",
+        2,3,
+    )
+    engine.set_initial_active_module(
+        "player-2",
+        "shield-d",
+        3,3,
+        direction=Direction.LEFT,
+    )
+
+    engine.start()
+    engine.step()
+    return engine
+
+
+def _regress_defense_usage()->dict:
+    engine=_defense_engine_fixture()
+
+    attacker=(
+        engine.state.players[
+            "player-1"
+        ].modules[
+            "laser-a"
+        ]
+    )
+    shield=(
+        engine.state.players[
+            "player-2"
+        ].modules[
+            "shield-d"
+        ]
+    )
+
+    powered_resolution=resolve_attack(
+        "player-1",
+        attacker,
+        "player-2",
+        shield,
+    )
+
+    original_powered=shield.is_powered
+    shield.is_powered=False
+    unpowered_resolution=resolve_attack(
+        "player-1",
+        attacker,
+        "player-2",
+        shield,
+    )
+    shield.is_powered=original_powered
+
+    passed=bool(
+        original_powered
+        and powered_resolution
+            .reduced_damage > 0
+        and powered_resolution
+            .final_damage
+        < unpowered_resolution
+            .final_damage
+        and powered_resolution
+            .defense_type
+        == "Kalkan"
+    )
+
+    return {
+        "area":"defense_usage",
+        "status":
+            "passed"
+            if passed
+            else "failed",
+        "adapter":
+            "battle_engine_structural",
+        "engine_scenarios":[{
+            "shield_powered":
+                original_powered,
+            "powered_raw_damage":
+                powered_resolution
+                .raw_damage,
+            "powered_final_damage":
+                powered_resolution
+                .final_damage,
+            "powered_reduced_damage":
+                powered_resolution
+                .reduced_damage,
+            "unpowered_final_damage":
+                unpowered_resolution
+                .final_damage,
+            "defense_type":
+                powered_resolution
+                .defense_type,
+            "battle_running":
+                engine.state.status.value
+                == "running",
+        }],
+        "canonical_values_changed":
+            False,
+    }
+
+
+STRUCTURAL_REGRESSION_AREAS={
+    "generator_route",
+    "defense_usage",
+}
+
+
+def is_structural_regression_area(
+    area:str,
+)->bool:
+    return area in (
+        STRUCTURAL_REGRESSION_AREAS
+    )
+
+
 def run_balance_regression(
     *,
     area: str,
-    before_value: Any,
-    proposed_value: Any,
+    before_value: Any = None,
+    proposed_value: Any = None,
 ) -> dict:
-    before = _number(
-        before_value,
-        "Mevcut değer",
-    )
-    proposed = _number(
-        proposed_value,
-        "Önerilen değer",
-    )
-
-    adapters = {
-        "circuit_credit":
-            _regress_circuit_credit,
-        "module_interaction":
-            _regress_module_interaction,
-    }
-
-    adapter = adapters.get(area)
-    if adapter is None:
-        raise BalanceRegressionError(
-            "Bu alan henüz gerçek battle-engine regresyon adaptörüne bağlı değil. Değişiklik güvenlik amacıyla bloke edildi."
+    if area == "generator_route":
+        result=_regress_generator_route()
+    elif area == "defense_usage":
+        result=_regress_defense_usage()
+    elif area == "local_ai_pressure":
+        try:
+            result=(
+                run_local_ai_pressure_regression(
+                    before_value=
+                        before_value,
+                    proposed_value=
+                        proposed_value,
+                )
+            )
+        except LocalAiRegressionError as exc:
+            raise BalanceRegressionError(
+                str(exc)
+            ) from exc
+    else:
+        before = _number(
+            before_value,
+            "Mevcut değer",
+        )
+        proposed = _number(
+            proposed_value,
+            "Önerilen değer",
         )
 
-    result = adapter(
-        before,
-        proposed,
-    )
+        adapters = {
+            "circuit_credit":
+                _regress_circuit_credit,
+            "module_interaction":
+                _regress_module_interaction,
+        }
+
+        adapter = adapters.get(area)
+        if adapter is None:
+            raise BalanceRegressionError(
+                "Bu alan için güvenli regresyon adaptörü bulunmuyor. Değişiklik bloke edildi."
+            )
+
+        result = adapter(
+            before,
+            proposed,
+        )
+
     result["automatic_apply"] = False
     result["apply_endpoint_available"] = False
+    result["canonical_values_changed"] = False
     return result

@@ -69,12 +69,14 @@ from .balance_simulation import (
 )
 from .balance_regression import (
     BalanceRegressionError,
+    is_structural_regression_area,
     run_balance_regression,
 )
 from .balance_change_drafts import (
     BalanceChangeDraftError,
     BalanceChangeDraftService,
     JsonBalanceChangeDraftRepository,
+    build_human_review_queue,
 )
 from .battle_pool_presets import (
     BattlePoolPresetError,
@@ -1655,22 +1657,37 @@ def regress_balance_change(
             detail="Regresyonu çalıştırılacak denge taslağı bulunamadı.",
         )
 
-    if item.get(
-        "simulation_status"
-    ) != "passed":
+    structural=(
+        is_structural_regression_area(
+            request.area
+        )
+    )
+
+    if (
+        not structural
+        and item.get(
+            "simulation_status"
+        ) != "passed"
+    ):
         raise HTTPException(
             status_code=422,
-            detail="Battle-engine regresyonundan önce izole simülasyon passed olmalıdır.",
+            detail="Sayısal regresyondan önce izole simülasyon passed olmalıdır.",
         )
 
-    if item.get(
-        "before_value"
-    ) is None or item.get(
-        "proposed_value"
-    ) is None:
+    if (
+        not structural
+        and (
+            item.get(
+                "before_value"
+            ) is None
+            or item.get(
+                "proposed_value"
+            ) is None
+        )
+    ):
         raise HTTPException(
             status_code=422,
-            detail="Regresyon için mevcut ve önerilen değer girilmelidir.",
+            detail="Sayısal regresyon için mevcut ve önerilen değer girilmelidir.",
         )
 
     try:
@@ -1702,8 +1719,14 @@ def regress_balance_change(
                         False,
                     )
                 ),
-                simulation_status=
-                    "passed",
+                simulation_status=(
+                    item.get(
+                        "simulation_status",
+                        "pending",
+                    )
+                    if structural
+                    else "passed"
+                ),
                 regression_status=
                     "failed",
             )
@@ -1745,8 +1768,14 @@ def regress_balance_change(
                     False,
                 )
             ),
-            simulation_status=
-                "passed",
+            simulation_status=(
+                item.get(
+                    "simulation_status",
+                    "pending",
+                )
+                if structural
+                else "passed"
+            ),
             regression_status=
                 regression_status,
         )
@@ -1763,7 +1792,28 @@ def regress_balance_change(
         "automatic_apply":False,
         "apply_endpoint_available":
             False,
+        "structural_review":
+            structural,
     }
+
+
+@app.get("/telemetry/balance-human-review")
+def balance_human_review(
+    player_id:str,
+)->dict:
+    plan=_balance_change_plan_for_player(
+        player_id
+    )
+    draft=(
+        balance_change_draft_service
+        .view(
+            player_id=player_id,
+            plan=plan,
+        )
+    )
+    return build_human_review_queue(
+        draft
+    )
 
 
 @app.delete("/telemetry/balance-change-draft")
@@ -2388,7 +2438,7 @@ def gridshard_identity() -> dict:
         "tagline_en":
             "Build the Circuit. Break the Core.",
         "identity_version":
-            "2.0.0-beta.16",
+            "2.0.0-beta.17",
         "palette":{
             "void_navy":"#070B14",
             "reactor_blue":"#0C1625",

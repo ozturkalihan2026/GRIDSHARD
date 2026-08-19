@@ -59,12 +59,14 @@ def test_module_interaction_regression_uses_real_engine():
     ] is False
 
 
-def test_non_engine_area_is_blocked():
-    with pytest.raises(
-        BalanceRegressionError
-    ):
-        run_balance_regression(
-            area="local_ai_pressure",
-            before_value=8,
-            proposed_value=9,
-        )
+def test_local_ai_pressure_uses_separate_server_side_adapter():
+    result=run_balance_regression(
+        area="local_ai_pressure",
+        before_value=8,
+        proposed_value=9,
+    )
+
+    assert result["status"]=="passed"
+    assert result["adapter"]=="server_side_local_ai"
+    assert result["canonical_values_changed"] is False
+    assert result["automatic_apply"] is False

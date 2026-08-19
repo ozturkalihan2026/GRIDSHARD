@@ -78,6 +78,29 @@ assert.strictEqual(
   0.35
 );
 
+
+
+assert.strictEqual(
+  global.GRIDSHARD_AUDIO_MIX.version,
+  "mix-v2"
+);
+assert.strictEqual(
+  global.GRIDSHARD_AUDIO_MIX.crossfadeMs,
+  450
+);
+assert.ok(
+  global.GRIDSHARD_CRITICAL_LAYER
+    .includes("critical_core_layer.wav")
+);
+assert.strictEqual(
+  director.previewMusic("menu").ok,
+  true
+);
+assert.strictEqual(
+  director.previewSfx("core_hit").ok,
+  true
+);
+
 console.log(
   "gridshard audio identity test passed"
 );

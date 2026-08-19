@@ -179,3 +179,47 @@ Audio Director:
 - SFX mute durumunda gameplay olaylarını engellemeden cue çalmayı atlar.
 
 Beta.16 hâlâ prototip mix kullanır. Final loudness, stereo imaging ve mastering daha sonraki prodüksiyon aşamasıdır.
+
+
+---
+
+## 9. Beta.17 Audio Mix V2
+
+İlk prosedürel kimlik assetleri ikinci mix aşamasına taşındı.
+
+### Seviye normalizasyonu
+- Müzik assetleri hedef peak: `-6 dBFS`
+- SFX assetleri hedef peak: `-3 dBFS`
+- Runtime music base gain: `0.72`
+- Runtime SFX base gain: `0.86`
+
+Bu iki aşamalı yaklaşım asset dosyasındaki tepe seviyesini ve oyuncu volume slider'ından önceki runtime headroom'u ayrı tutar.
+
+### Crossfade
+Audio state değişimlerinde varsayılan `450 ms` crossfade kullanılır.
+
+Amaç:
+- Menü → Havuz
+- Havuz → Matchmaking
+- Matchmaking → Battle
+- Battle → Critical Core
+
+geçişlerinde ani track kesilmesini azaltmak.
+
+### Kritik Çekirdek katmanı
+`critical_core_layer.wav` eklendi.
+
+Oyuncu Çekirdeği `%33` veya altına düştüğünde:
+- normal battle pulse korunur,
+- üstüne düşük seviyeli heartbeat / electrical pressure katmanı eklenir.
+
+Çekirdek kritik durumdan çıkarsa katman fade-out olur. Maç bittiğinde victory/defeat state'i kritik katmanı kapatır.
+
+### Ayarlar önizleme
+Sistem Konsolu içinde:
+- `Müziği Önizle`
+- `SFX Önizle`
+
+butonları bulunur.
+
+Önizleme mevcut volume/mute tercihlerini kullanır; gameplay mantığını değiştirmez.

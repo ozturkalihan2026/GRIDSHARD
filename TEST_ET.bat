@@ -17,5 +17,8 @@ if errorlevel 1 (
   exit /b 1
 )
 
+".venv\Scripts\python.exe" tools\release_guard.py
+if errorlevel 1 exit /b 1
+
 ".venv\Scripts\python.exe" tools\qa.py
 exit /b %errorlevel%

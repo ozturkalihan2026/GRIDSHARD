@@ -218,6 +218,25 @@ class BalanceChangeDraftService:
                 and merged["proposed_value"]
                     is not None
             )
+            merged["human_review_ready"]=bool(
+                (
+                    merged["simulation_status"]
+                    == "passed"
+                    and merged["regression_status"]
+                    == "passed"
+                    and merged["approved"]
+                    and merged["proposed_value"]
+                    is not None
+                )
+                or (
+                    area in {
+                        "generator_route",
+                        "defense_usage",
+                    }
+                    and merged["regression_status"]
+                    == "passed"
+                )
+            )
             plan_items.append(
                 merged
             )
@@ -324,3 +343,111 @@ class BalanceChangeDraftService:
         self.repository.clear_player(
             player_id
         )
+
+
+
+def build_human_review_queue(
+    draft:dict,
+)->dict:
+    numeric=[]
+    structural=[]
+
+    for item in draft.get(
+        "items",
+        [],
+    ):
+        area=str(
+            item.get(
+                "area",
+                "",
+            )
+        )
+
+        if (
+            area in {
+                "generator_route",
+                "defense_usage",
+            }
+            and item.get(
+                "regression_status"
+            ) == "passed"
+        ):
+            structural.append({
+                "area":area,
+                "reason":
+                    item.get(
+                        "reason"
+                    ),
+                "suggestion":
+                    item.get(
+                        "suggestion"
+                    ),
+                "regression_status":
+                    "passed",
+                "numeric_change":
+                    False,
+                "human_review_ready":
+                    True,
+            })
+            continue
+
+        if (
+            item.get(
+                "approved"
+            )
+            and item.get(
+                "simulation_status"
+            ) == "passed"
+            and item.get(
+                "regression_status"
+            ) == "passed"
+            and item.get(
+                "proposed_value"
+            ) is not None
+        ):
+            numeric.append({
+                "area":area,
+                "reason":
+                    item.get(
+                        "reason"
+                    ),
+                "before_value":
+                    item.get(
+                        "before_value"
+                    ),
+                "proposed_value":
+                    item.get(
+                        "proposed_value"
+                    ),
+                "simulation_status":
+                    "passed",
+                "regression_status":
+                    "passed",
+                "numeric_change":
+                    True,
+                "human_review_ready":
+                    True,
+            })
+
+    return {
+        "review_ready":bool(
+            draft.get(
+                "review_ready"
+            )
+        ),
+        "numeric_candidates":
+            numeric,
+        "structural_candidates":
+            structural,
+        "candidate_count":
+            len(numeric)
+            + len(structural),
+        "human_decision_required":
+            True,
+        "automatic_apply":
+            False,
+        "apply_endpoint_available":
+            False,
+        "numeric_balance_changed":
+            False,
+    }

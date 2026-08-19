@@ -1,6 +1,6 @@
 # GRIDSHARD — Karar Uygulama Kontrolü
 
-**Kontrol paketi:** `2.0.0-beta.16`
+**Kontrol paketi:** `2.0.0-beta.17`
 
 Bu belge, daha önce alınan görsel kimlik / ekran / ses / isim kararlarının proje içindeki gerçek uygulama durumunu takip eder.
 
@@ -112,3 +112,23 @@ Bu belge, daha önce alınan görsel kimlik / ekran / ses / isim kararlarının 
 - [x] Engine adaptörü olmayan alan güvenlik amacıyla regression failed durumunda kalır.
 - [x] Regresyon koşucusu kanonik değerleri değiştirmez.
 - [x] Otomatik apply endpoint'i yoktur.
+
+
+## 12. Beta.17 kapsam tamamlama
+- [x] PowerShell'deki `manual-battle-report 500 / dict.player_id` hatası kök neden bazında doğrulandı.
+- [x] Teslim Beta.16 ZIP'inde düzeltmenin mevcut olduğu, çalıştırılan klasörün eski/karışık kaynak taşıdığı tespit edildi.
+- [x] `release_guard.py` ile karışık kaynak sunucu başlamadan bloke edilir.
+- [x] Canlı QA doğrudan manuel savaş raporu endpoint'ini test eder.
+- [x] Jeneratör dört kapı arasında gerçek BattleEngine komutlarıyla regresyon testine alınır.
+- [x] Her Jeneratör kapısında Core bağlantısı ve en az bir özel hücre yönü doğrulanır.
+- [x] Kalkanın powered durumda gerçek combat çözümünde hasar azaltması yapması yapısal regresyonla doğrulanır.
+- [x] Yerel AI baskısı server-engine'e zorla sokulmak yerine ayrı `server_side_local_ai` test adapterına taşındı.
+- [x] Audio assetleri müzik `-6 dBFS`, SFX `-3 dBFS` peak hedeflerine normalize edildi.
+- [x] `450 ms` music crossfade eklendi.
+- [x] `critical_core_layer.wav` ve `%33` Çekirdek eşiği runtime'a bağlandı.
+- [x] Ayarlarda müzik ve SFX önizleme butonları eklendi.
+- [x] Hızlı Loadout için Tümü / Favoriler filtresi eklendi.
+- [x] Son Kullanılan ve Aktif rozetleri eklendi.
+- [x] Aktif loadout savaş öncesi 18/18 / değiştirildi / son kullanım özetiyle görünür.
+- [x] Yalnız güvenlik kapılarını geçen denge adayları `İnsan Değerlendirme Kuyruğu`nda listelenir.
+- [x] Otomatik denge apply yine yoktur.
