@@ -1,6 +1,6 @@
 # GRIDSHARD — Karar Uygulama Kontrolü
 
-**Kontrol paketi:** `2.0.0-beta.22`
+**Kontrol paketi:** `2.0.0-beta.23`
 
 Bu belge, daha önce alınan görsel kimlik / ekran / ses / isim kararlarının proje içindeki gerçek uygulama durumunu takip eder.
 
@@ -198,3 +198,17 @@ Bu belge, daha önce alınan görsel kimlik / ekran / ses / isim kararlarının 
 - [x] Review V3 aday bazlı yerel karar taslakları.
 - [x] Mastering hedefi seçilmeden audio gain değişmez.
 - [x] Otomatik denge apply yok.
+
+
+## 17. Beta.23 gerçek arena / enerji / audio
+- [x] Ana menü marka ve indeks düzenlemeleri kullanıcı ekran görüntüsüne göre yapıldı.
+- [x] Ana menüde savaş HUD'ı yok; HUD yalnız savaşta sticky görünür.
+- [x] Oyuncu ve Yerel AI devresi aynı savaş ekranında görünür.
+- [x] Karşılıklı saldırı ve HP kaybı vardır; savaş otomatik olarak sonuçlanır.
+- [x] Sayaç ve 15 sn Modül Rafı açılması otomatik startup testinde doğrulanır.
+- [x] Jeneratör 8 → 11 Ü/sn rebalansı 43.795 tüketici kombinasyonu ve gerçek engine testleriyle değerlendirildi.
+- [x] 30 mirrored BattleEngine maçı: 0 timeout; 2 sonuçlandırılmış draw.
+- [x] Normal modül → Jeneratör → Çekirdek hedef önceliği korunuyor.
+- [x] Audio Mix V4 32 sn stereo loop assetleri ve 1200 ms crossfade kullanır.
+- [x] Final mastering tamamlanmış sayılmaz.
+- [x] Otomatik denge apply yoktur.

@@ -26,4 +26,4 @@ def test_generator_on_energy_cell_gets_bonus():
         Position(2, 2),
     )
 
-    assert round(result.generated, 6) == 0.92
+    assert round(result.generated, 6) == 1.265

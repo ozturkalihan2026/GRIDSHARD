@@ -11,19 +11,28 @@
 </head>
 <body>
   <main class="battle-shell">
-    <header class="battle-header">
-      <div>
-        <h1>GRIDSHARD 2.0</h1>
-        <p>2.0.0-beta.22 — Gerçek Web Testi Hazır</p>
+    <header class="battle-header" aria-label="Savaş üst bilgi barı">
+      <div class="battle-player-hud">
+        <strong id="battle-profile-name">Oyuncu</strong>
+        <span id="battle-match-label">Yerel AI</span>
       </div>
       <div class="battle-status-cluster">
         <div class="credit-indicator" id="credit-indicator">Devre Kredisi: 200 DK</div>
-        <div class="capacity-indicator" id="capacity-indicator">Aktif Modül: Başlangıç</div>
+        <div class="capacity-indicator battle-capacity-hidden" id="capacity-indicator">Aktif Modül: Başlangıç</div>
+        <button id="battle-settings-button" class="battle-settings-button" type="button" aria-label="Ayarlar" title="Ayarlar">⚙</button>
         <div class="battle-time" id="battle-time">00:00.0</div>
+      </div>
+      <div id="battle-hud-settings-panel" class="battle-hud-settings-panel">
+        <strong>Savaş Ayarları</strong>
+        <span>Ses ve müzik seviyeleri kayıtlı Ayarlar tercihlerinden gelir. Bu panel açıldığında savaş durmaz.</span>
       </div>
     </header>
 
     <section id="main-menu-panel" class="main-menu-panel">
+      <div class="main-menu-brand">
+        <h1>GRIDSHARD</h1>
+        <span>2.0.0-beta.23</span>
+      </div>
       <div class="lobby-backdrop" aria-hidden="true">
         <div class="lobby-board-grid" aria-hidden="true">
           <span></span><span></span><span></span><span></span><span></span>
@@ -45,7 +54,7 @@
 
       <div class="lobby-main">
         <span class="lobby-kicker">GRIDSHARD // CORE ARENA</span>
-        <h2 id="main-menu-title">Devreni Kur.<br />Çekirdeği Kır.</h2>
+        <h2 id="main-menu-title">GRIDSHARD</h2>
         <p class="main-menu-lead">
           18 modüllük savaş havuzunu hazırla. Devreni savaş sırasında değiştir. Rakip çekirdeği kır.
         </p>
@@ -57,7 +66,7 @@
           </button>
           <div class="lobby-build-chip">
             <span>GÜNCEL YAPI</span>
-            <strong id="ui-build-version">2.0.0-beta.22</strong><small id="ui-build-run">manifest bekleniyor</small>
+            <strong id="ui-build-version">2.0.0-beta.23</strong><small id="ui-build-run">manifest bekleniyor</small>
           </div>
         </div>
       </div>
@@ -70,15 +79,12 @@
         </div>
         <nav class="main-scope-nav" aria-label="Ana Menü">
           <button type="button" class="menu-action" data-open-screen="profile">
-            <span class="menu-action-index">01</span>
             <span><span class="menu-action-title">Profil</span><span class="menu-action-copy">Kimlik, seviye ve savaş hazırlığı</span></span>
           </button>
           <button type="button" class="menu-action" data-open-screen="statistics">
-            <span class="menu-action-index">02</span>
             <span><span class="menu-action-title">İstatistikler</span><span class="menu-action-copy">Maç ve performans geçmişi</span></span>
           </button>
           <button type="button" class="menu-action" data-open-screen="settings">
-            <span class="menu-action-index">03</span>
             <span><span class="menu-action-title">Ayarlar</span><span class="menu-action-copy">Ses, grafik ve dil seçenekleri</span></span>
           </button>
         </nav>
@@ -320,6 +326,7 @@
 
     <section class="combat-summary-panel play-live-panel" data-screen-panel="play" hidden>
       <strong id="combat-summary">Rakip: 300/300 Çekirdek</strong>
+      <span id="energy-summary">Enerji: 11.0 Ü / 0.0 T</span>
       <span id="active-match-mode">Maç: Bekleniyor</span>
       <span id="player-core-summary">Sen: Çekirdek 300/300 · Jeneratör 150/150</span>
             <details class="technical-status-drawer">
@@ -405,7 +412,7 @@
     </section>
 
     <section class="battle-test-banner play-live-panel" data-screen-panel="play" hidden>
-      <strong>Beta.22 Savaş Alanı Test Modu</strong>
+      <strong>Beta.23 Gerçek Yerel Savaş</strong>
       <span id="battle-entry-status">Savaş alanına giriş başarılı · Yerel AI aktif · Modül Rafı 15. saniyede açılır</span>
     </section>
 
@@ -415,7 +422,26 @@
           <h2>Savaş Alanı</h2>
           <span id="battle-state-label">Savaş devam ediyor</span>
         </div>
-        <div id="board" class="board" aria-label="Savaş Alanı"></div>
+
+        <div class="duel-arena">
+          <section class="duel-side duel-player-side">
+            <div class="duel-side-heading">
+              <strong>Senin Devren</strong>
+              <span id="player-board-status">Çekirdek 300/300</span>
+            </div>
+            <div id="board" class="board" aria-label="Oyuncu Savaş Alanı"></div>
+          </section>
+
+          <div class="duel-vs" aria-hidden="true">VS</div>
+
+          <section class="duel-side duel-enemy-side">
+            <div class="duel-side-heading">
+              <strong>Rakip Devresi · Yerel AI</strong>
+              <span id="enemy-board-status">Çekirdek 300/300</span>
+            </div>
+            <div id="enemy-board" class="board enemy-board" aria-label="Rakip Savaş Alanı"></div>
+          </section>
+        </div>
       </section>
 
       <aside class="shelf-panel">

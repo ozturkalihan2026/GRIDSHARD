@@ -23,11 +23,11 @@ def test_rc_report_combines_manifest_release_and_kpis():
     )
 
     report=build_rc_report(
-        version="2.0.0-beta.22",
+        version="2.0.0-beta.23",
         telemetry_service=telemetry_service,
     )
 
-    assert report["version"]=="2.0.0-beta.22"
+    assert report["version"]=="2.0.0-beta.23"
     assert report["build"]=="web-test-beta.13"
     assert report["ready"] is True
     assert report["critical_failures"]==[]
@@ -50,7 +50,7 @@ def test_rc_report_endpoint():
 
     assert response.status_code==200
     body=response.json()
-    assert body["version"]=="2.0.0-beta.22"
+    assert body["version"]=="2.0.0-beta.23"
     assert "kpis" in body
     assert "release_check" in body
     assert "manifest" in body

@@ -33,7 +33,7 @@ assert.strictEqual(
 
 assert.ok(
   global.GRIDSHARD_MUSIC_ASSETS.menu
-    .includes("menu_pulse.wav")
+    .includes("menu_pulse_v4.wav")
 );
 assert.ok(
   global.GRIDSHARD_SFX_CUES.core_hit
@@ -82,15 +82,15 @@ assert.strictEqual(
 
 assert.strictEqual(
   global.GRIDSHARD_AUDIO_MIX.version,
-  "mix-v3"
+  "mix-v4"
 );
 assert.strictEqual(
   global.GRIDSHARD_AUDIO_MIX.crossfadeMs,
-  450
+  1200
 );
 assert.ok(
   global.GRIDSHARD_CRITICAL_LAYER
-    .includes("critical_core_layer.wav")
+    .includes("critical_core_layer_v4.wav")
 );
 assert.strictEqual(
   director.previewMusic("menu").ok,

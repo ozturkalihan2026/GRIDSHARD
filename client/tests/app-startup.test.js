@@ -70,13 +70,15 @@ const document = {
   },
 };
 
+let rafCallback = null;
+
 const sandbox = {
   ...relayApi,
   RelayAppScreen: { MENU:"menu", PLAY:"play", PROFILE:"profile", STATISTICS:"statistics", SETTINGS:"settings" },
   document,
   console,
   performance: { now: () => 0 },
-  requestAnimationFrame: () => 0,
+  requestAnimationFrame: (callback) => { rafCallback = callback; return 1; },
   cancelAnimationFrame: () => {},
   setInterval: () => 0,
   clearInterval: () => {},
@@ -154,5 +156,35 @@ if (!quickState || quickState.pool_size !== 18 || quickState.started !== true) {
   throw new Error(`Hızlı savaş durumu geçersiz: ${JSON.stringify(quickState)}`);
 }
 
-console.log("app startup + direct battle-area playable flow test passed");
+if (typeof rafCallback !== "function") {
+  throw new Error("Savaş requestAnimationFrame döngüsü kurulmadı.");
+}
+
+// Saat ve 15. saniye raf kilidini gerçek updateClock üzerinden ilerlet.
+for (let ms = 1000; ms <= 16000; ms += 1000) {
+  const cb = rafCallback;
+  cb(ms);
+}
+
+if (getElement("battle-time").textContent === "00:00.0") {
+  throw new Error("Savaş sayacı ilerlemedi.");
+}
+if (getElement("shelf-lock-label").textContent !== "Aktif") {
+  throw new Error(`Modül Rafı 15. saniyede açılmadı: ${getElement("shelf-lock-label").textContent}`);
+}
+
+// Yerel savaşın karşılıklı hasarla gerçek sonuca ulaştığını doğrula.
+for (let ms = 17000; ms <= 120000 && document.body.dataset.localFinished !== "true"; ms += 1000) {
+  const cb = rafCallback;
+  cb(ms);
+}
+
+if (document.body.dataset.localFinished !== "true") {
+  throw new Error("Yerel AI savaşı 120 saniye içinde sonuca ulaşmadı.");
+}
+if (!getElement("enemy-board")) {
+  throw new Error("Rakip devresi render alanı bulunamadı.");
+}
+
+console.log("app startup + timer + shelf unlock + reciprocal local battle result test passed");
 process.exit(0);

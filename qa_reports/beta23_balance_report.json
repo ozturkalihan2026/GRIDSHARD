@@ -1,0 +1,393 @@
+{
+  "version": "2.0.0-beta.23",
+  "generator": {
+    "raw_generation_per_second": 11.0,
+    "base_usable_per_second": 9.9,
+    "splitter_usable_per_second": 10.78,
+    "energy_leech_base_usable_per_second": 6.93,
+    "energy_leech_splitter_usable_per_second": 7.545999999999999
+  },
+  "combination_scan": {
+    "consumer_count": 19,
+    "sizes_1_to_6": {
+      "1": {
+        "total": 19,
+        "base_supported": 19,
+        "splitter_supported": 19,
+        "leech_base_supported": 19,
+        "leech_splitter_supported": 19,
+        "max_demand": 6.0,
+        "min_demand": 1.0
+      },
+      "2": {
+        "total": 171,
+        "base_supported": 162,
+        "splitter_supported": 168,
+        "leech_base_supported": 102,
+        "leech_splitter_supported": 130,
+        "max_demand": 11.0,
+        "min_demand": 2.0
+      },
+      "3": {
+        "total": 969,
+        "base_supported": 566,
+        "splitter_supported": 702,
+        "leech_base_supported": 162,
+        "leech_splitter_supported": 276,
+        "max_demand": 16.0,
+        "min_demand": 3.0
+      },
+      "4": {
+        "total": 3876,
+        "base_supported": 742,
+        "splitter_supported": 1184,
+        "leech_base_supported": 69,
+        "leech_splitter_supported": 193,
+        "max_demand": 21.0,
+        "min_demand": 4.0
+      },
+      "5": {
+        "total": 11628,
+        "base_supported": 346,
+        "splitter_supported": 759,
+        "leech_base_supported": 4,
+        "leech_splitter_supported": 32,
+        "max_demand": 25.0,
+        "min_demand": 6.0
+      },
+      "6": {
+        "total": 27132,
+        "base_supported": 38,
+        "splitter_supported": 158,
+        "leech_base_supported": 0,
+        "leech_splitter_supported": 0,
+        "max_demand": 29.0,
+        "min_demand": 8.0
+      }
+    },
+    "combination_count": 43795,
+    "note": "Tüm enerji tüketen modüllerin 1-6 aktif tüketici kombinasyonları katalog değerleriyle tarandı."
+  },
+  "key_scenarios": {
+    "laser_plus_shield": {
+      "demand": 5,
+      "base_supported": true,
+      "splitter_supported": true
+    },
+    "laser_plus_pulse": {
+      "demand": 8,
+      "base_supported": true,
+      "splitter_supported": true
+    },
+    "laser_plus_pulse_plus_shield": {
+      "demand": 10,
+      "base_supported": false,
+      "splitter_supported": true
+    },
+    "pulse_plus_railgun": {
+      "demand": 11,
+      "base_supported": false,
+      "splitter_supported": false
+    },
+    "railgun_plus_missile_plus_shield": {
+      "demand": 13,
+      "base_supported": false,
+      "splitter_supported": false
+    }
+  },
+  "battle_regression": {
+    "layout_count": 6,
+    "match_count": 30,
+    "timeouts": 0,
+    "draws": 2,
+    "average_duration_ms": 52593.333333333336,
+    "wins_by_layout": {
+      "balanced": 8,
+      "offense": 4,
+      "defense": 6,
+      "sabotage": 0,
+      "battery_pulse": 2,
+      "armor_counter": 8
+    },
+    "all_matches_resolved": true,
+    "matches": [
+      {
+        "a": "balanced",
+        "b": "offense",
+        "winner": "balanced",
+        "draw": false,
+        "timed_out": false,
+        "elapsed_ms": 40600,
+        "finish_reason": "core_destroyed"
+      },
+      {
+        "a": "offense",
+        "b": "balanced",
+        "winner": "balanced",
+        "draw": false,
+        "timed_out": false,
+        "elapsed_ms": 40600,
+        "finish_reason": "core_destroyed"
+      },
+      {
+        "a": "balanced",
+        "b": "defense",
+        "winner": "balanced",
+        "draw": false,
+        "timed_out": false,
+        "elapsed_ms": 46900,
+        "finish_reason": "core_destroyed"
+      },
+      {
+        "a": "defense",
+        "b": "balanced",
+        "winner": "balanced",
+        "draw": false,
+        "timed_out": false,
+        "elapsed_ms": 46900,
+        "finish_reason": "core_destroyed"
+      },
+      {
+        "a": "balanced",
+        "b": "sabotage",
+        "winner": "balanced",
+        "draw": false,
+        "timed_out": false,
+        "elapsed_ms": 42100,
+        "finish_reason": "core_destroyed"
+      },
+      {
+        "a": "sabotage",
+        "b": "balanced",
+        "winner": "balanced",
+        "draw": false,
+        "timed_out": false,
+        "elapsed_ms": 42100,
+        "finish_reason": "core_destroyed"
+      },
+      {
+        "a": "balanced",
+        "b": "battery_pulse",
+        "winner": "balanced",
+        "draw": false,
+        "timed_out": false,
+        "elapsed_ms": 42100,
+        "finish_reason": "core_destroyed"
+      },
+      {
+        "a": "battery_pulse",
+        "b": "balanced",
+        "winner": "balanced",
+        "draw": false,
+        "timed_out": false,
+        "elapsed_ms": 42100,
+        "finish_reason": "core_destroyed"
+      },
+      {
+        "a": "balanced",
+        "b": "armor_counter",
+        "winner": null,
+        "draw": true,
+        "timed_out": false,
+        "elapsed_ms": 180000,
+        "finish_reason": "time_limit_draw"
+      },
+      {
+        "a": "armor_counter",
+        "b": "balanced",
+        "winner": null,
+        "draw": true,
+        "timed_out": false,
+        "elapsed_ms": 180000,
+        "finish_reason": "time_limit_draw"
+      },
+      {
+        "a": "offense",
+        "b": "defense",
+        "winner": "defense",
+        "draw": false,
+        "timed_out": false,
+        "elapsed_ms": 40600,
+        "finish_reason": "core_destroyed"
+      },
+      {
+        "a": "defense",
+        "b": "offense",
+        "winner": "defense",
+        "draw": false,
+        "timed_out": false,
+        "elapsed_ms": 40600,
+        "finish_reason": "core_destroyed"
+      },
+      {
+        "a": "offense",
+        "b": "sabotage",
+        "winner": "offense",
+        "draw": false,
+        "timed_out": false,
+        "elapsed_ms": 35100,
+        "finish_reason": "core_destroyed"
+      },
+      {
+        "a": "sabotage",
+        "b": "offense",
+        "winner": "offense",
+        "draw": false,
+        "timed_out": false,
+        "elapsed_ms": 35100,
+        "finish_reason": "core_destroyed"
+      },
+      {
+        "a": "offense",
+        "b": "battery_pulse",
+        "winner": "offense",
+        "draw": false,
+        "timed_out": false,
+        "elapsed_ms": 70500,
+        "finish_reason": "core_destroyed"
+      },
+      {
+        "a": "battery_pulse",
+        "b": "offense",
+        "winner": "offense",
+        "draw": false,
+        "timed_out": false,
+        "elapsed_ms": 70500,
+        "finish_reason": "core_destroyed"
+      },
+      {
+        "a": "offense",
+        "b": "armor_counter",
+        "winner": "armor_counter",
+        "draw": false,
+        "timed_out": false,
+        "elapsed_ms": 40600,
+        "finish_reason": "core_destroyed"
+      },
+      {
+        "a": "armor_counter",
+        "b": "offense",
+        "winner": "armor_counter",
+        "draw": false,
+        "timed_out": false,
+        "elapsed_ms": 40600,
+        "finish_reason": "core_destroyed"
+      },
+      {
+        "a": "defense",
+        "b": "sabotage",
+        "winner": "defense",
+        "draw": false,
+        "timed_out": false,
+        "elapsed_ms": 42100,
+        "finish_reason": "core_destroyed"
+      },
+      {
+        "a": "sabotage",
+        "b": "defense",
+        "winner": "defense",
+        "draw": false,
+        "timed_out": false,
+        "elapsed_ms": 42100,
+        "finish_reason": "core_destroyed"
+      },
+      {
+        "a": "defense",
+        "b": "battery_pulse",
+        "winner": "defense",
+        "draw": false,
+        "timed_out": false,
+        "elapsed_ms": 42100,
+        "finish_reason": "core_destroyed"
+      },
+      {
+        "a": "battery_pulse",
+        "b": "defense",
+        "winner": "defense",
+        "draw": false,
+        "timed_out": false,
+        "elapsed_ms": 42100,
+        "finish_reason": "core_destroyed"
+      },
+      {
+        "a": "defense",
+        "b": "armor_counter",
+        "winner": "armor_counter",
+        "draw": false,
+        "timed_out": false,
+        "elapsed_ms": 46900,
+        "finish_reason": "core_destroyed"
+      },
+      {
+        "a": "armor_counter",
+        "b": "defense",
+        "winner": "armor_counter",
+        "draw": false,
+        "timed_out": false,
+        "elapsed_ms": 46900,
+        "finish_reason": "core_destroyed"
+      },
+      {
+        "a": "sabotage",
+        "b": "battery_pulse",
+        "winner": "battery_pulse",
+        "draw": false,
+        "timed_out": false,
+        "elapsed_ms": 35100,
+        "finish_reason": "core_destroyed"
+      },
+      {
+        "a": "battery_pulse",
+        "b": "sabotage",
+        "winner": "battery_pulse",
+        "draw": false,
+        "timed_out": false,
+        "elapsed_ms": 35100,
+        "finish_reason": "core_destroyed"
+      },
+      {
+        "a": "sabotage",
+        "b": "armor_counter",
+        "winner": "armor_counter",
+        "draw": false,
+        "timed_out": false,
+        "elapsed_ms": 42100,
+        "finish_reason": "core_destroyed"
+      },
+      {
+        "a": "armor_counter",
+        "b": "sabotage",
+        "winner": "armor_counter",
+        "draw": false,
+        "timed_out": false,
+        "elapsed_ms": 42100,
+        "finish_reason": "core_destroyed"
+      },
+      {
+        "a": "battery_pulse",
+        "b": "armor_counter",
+        "winner": "armor_counter",
+        "draw": false,
+        "timed_out": false,
+        "elapsed_ms": 42100,
+        "finish_reason": "core_destroyed"
+      },
+      {
+        "a": "armor_counter",
+        "b": "battery_pulse",
+        "winner": "armor_counter",
+        "draw": false,
+        "timed_out": false,
+        "elapsed_ms": 42100,
+        "finish_reason": "core_destroyed"
+      }
+    ]
+  },
+  "decision": {
+    "generator_generation_changed_from": 8.0,
+    "generator_generation_changed_to": 11.0,
+    "reason": "8 Ü/sn iki orta-yüksek tüketiciyi bile sık sık enerjisiz bırakıyordu. 11 Ü/sn, temel dağıtımda 9.9 Ü/sn ile Lazer+Darbe ve benzeri aktif kombinasyonları beslerken Darbe+Ray gibi 11 Ü/sn sınıfında Batarya/Kapasitör ve Dağıtıcıyı hâlâ anlamlı kılıyor.",
+    "resource_constraint_preserved": true,
+    "automatic_apply": false
+  }
+}

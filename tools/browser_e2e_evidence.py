@@ -150,7 +150,7 @@ def main()->int:
 
     summary={
         "version":
-            "2.0.0-beta.22",
+            "2.0.0-beta.23",
         "source_status":
             source_status,
         "status":status,

@@ -1,31 +1,14 @@
-# GRIDSHARD Beta.22 — Manuel Savaş Testi
+# GRIDSHARD Beta.23 — Manuel Savaş Testi
 
-Beta.22'nin ana önceliği, eşleşme beklemeden savaş alanına gerçekten ulaşmaktır.
+1. `BASLAT_WEB_TEST.bat` veya `HIZLI_SAVAS_TESTI.bat` çalıştır.
+2. Ana Menü → **Oyna**.
+3. İstersen 18 modüllük havuzu seç; hızlı test için **Savaş Alanını Hemen Aç** kullanılabilir.
+4. Savaş sayfasında **Senin Devren** ve **Rakip Devresi · Yerel AI** birlikte görünmelidir.
+5. Üst HUD yalnız savaşta görünür; sayfa kaydırıldığında sabit kalmalıdır.
+6. Süre sayacı ilerlemelidir.
+7. Modül Rafı ilk 15 saniye kilitlidir; `15.0 sn` sonrasında otomatik **Aktif** olmalıdır.
+8. Oyuncu ve AI karşılıklı hasar üretmelidir. Olay Günlüğü ve HP barları değişmelidir.
+9. Rakibin normal modülleri bitmeden Jeneratör, Jeneratör bitmeden Çekirdek hedef olmamalıdır. Aynı sıra oyuncu tarafında da korunmalıdır.
+10. Maç 180 saniyelik kanonik sınır içinde sonuçlandırılmalıdır.
 
-## En kısa yol
-
-Windows'ta `HIZLI_SAVAS_TESTI.bat` çalıştır. Tarayıcı açıldığında:
-
-**Ana Menü → Oyna → Savaş Alanını Hemen Aç**
-
-butonuna bas.
-
-Bu akış 18/18 test savaş havuzunu otomatik doldurur ve Online PvP kuyruğuna girmeden Yerel AI savaşını başlatır.
-
-## Savaş ekranında beklenenler
-
-- `Maç: Tek Oyunculu · Yerel AI`
-- oyuncu Çekirdek ve Jeneratör bilgisi
-- rakip Çekirdek durumu
-- Devre Kredisi
-- savaş süresi
-- 15. saniyeden sonra açılan Modül Rafı
-- Jeneratörü kapılar arasında taşıma
-- güçlendiriciler
-- Olay Günlüğü
-- HP / enerji değişimleri
-- maç sonucu
-
-Kanonik 15 saniyelik modül müdahale kilidi korunur. Hızlı test başka oyuncu, matchmaking veya WebSocket eşleşmesi gerektirmez.
-
-Bu paketin ardından mümkünse en az bir Yerel AI savaşı oynayıp savaş alanının ekran görüntülerini ve PowerShell çıktısını paylaş. Beta.23 gerçek oynanış geri bildirimi üzerinden savaş alanı revizyonuna ayrılmıştır.
+Test sırasında ekran görüntüsü ve PowerShell çıktısı Beta.24 UX düzeltmelerinin ana girdisidir.

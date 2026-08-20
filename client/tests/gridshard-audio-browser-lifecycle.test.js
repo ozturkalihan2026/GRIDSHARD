@@ -30,7 +30,7 @@ const director = new global.GridshardAudioDirector();
 
 assert.strictEqual(
   global.GRIDSHARD_AUDIO_MIX.version,
-  "mix-v3"
+  "mix-v4"
 );
 
 assert.strictEqual(
@@ -78,5 +78,5 @@ setTimeout(() => {
     console.log(
       "gridshard audio browser lifecycle test passed"
     );
-  }, 550);
-}, 550);
+  }, 1350);
+}, 1350);

@@ -15,6 +15,10 @@ MUSIC={
     "victory_sting.wav",
     "defeat_sting.wav",
     "critical_core_layer.wav",
+    "menu_pulse_v4.wav",
+    "pool_pulse_v4.wav",
+    "battle_pulse_v4.wav",
+    "critical_core_layer_v4.wav",
 }
 
 

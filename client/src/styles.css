@@ -2864,3 +2864,135 @@ body[data-app-screen="menu"] .main-menu-panel {
 .candidate-review-draft{display:grid;grid-template-columns:minmax(130px,.45fr) minmax(220px,1.4fr) auto;gap:7px;align-items:start;margin-top:6px;padding:9px;border:1px dashed rgba(244,200,90,.34);border-radius:8px;background:rgba(52,39,10,.14)}
 .candidate-review-draft select,.candidate-review-draft textarea{min-height:38px;border:1px solid rgba(41,71,102,.72);border-radius:7px;background:rgba(7,11,20,.72);color:var(--gs-ice-white);padding:6px 8px}
 .candidate-review-draft textarea{min-height:64px;resize:vertical}.candidate-review-draft span{grid-column:1/-1;color:var(--gs-signal-gray);font-size:.7rem}@media(max-width:860px){.candidate-review-draft{grid-template-columns:1fr}}
+
+
+/* beta.23 — bağımsız savaş sayfası + sabit HUD + çift devre */
+.battle-header {
+  display:none;
+}
+
+body[data-app-screen="play"][data-play-mode="local"][data-local-status="battle"] .battle-header,
+body[data-app-screen="play"][data-play-mode="online"][data-online-status="battle"] .battle-header {
+  display:flex;
+  position:sticky;
+  top:0;
+  z-index:1000;
+  width:100%;
+  padding:10px 12px;
+  margin:0 0 10px;
+  border:1px solid rgba(54,217,255,.22);
+  border-radius:10px;
+  background:rgba(7,11,20,.96);
+  backdrop-filter:blur(12px);
+  box-shadow:0 8px 26px rgba(0,0,0,.28);
+}
+
+body[data-app-screen="play"][data-play-mode="local"][data-local-status="battle"] .battle-shell,
+body[data-app-screen="play"][data-play-mode="online"][data-online-status="battle"] .battle-shell {
+  width:min(1560px,99vw);
+  padding-top:6px;
+}
+
+body[data-app-screen="play"][data-play-mode="local"][data-local-status="battle"][data-local-finished="false"] #return-main-menu,
+body[data-app-screen="play"][data-play-mode="online"][data-online-status="battle"] #return-main-menu {
+  display:none !important;
+}
+
+.battle-player-hud {
+  display:grid;
+  gap:2px;
+}
+.battle-player-hud strong { color:var(--gs-ice-white,#edf3ff); }
+.battle-player-hud span { color:var(--gs-signal-gray,#9fb0c7); font-size:.72rem; }
+.battle-capacity-hidden { display:none !important; }
+.battle-settings-button {
+  min-width:42px;
+  min-height:42px;
+  border:1px solid #2c3b52;
+  border-radius:10px;
+  background:#111c2c;
+  color:#d7e4f7;
+  font-size:1.15rem;
+  cursor:pointer;
+}
+
+.main-menu-brand {
+  position:absolute;
+  top:-96px;
+  left:-252px;
+  display:grid;
+  gap:4px;
+}
+.main-menu-brand h1 {
+  margin:0;
+  font-size:1.55rem;
+  letter-spacing:.02em;
+}
+.main-menu-brand span { color:#91a8c6; font-size:.76rem; }
+body[data-app-screen="menu"] .main-menu-panel { position:relative; }
+
+.duel-arena {
+  display:grid;
+  grid-template-columns:minmax(0,1fr) 48px minmax(0,1fr);
+  gap:12px;
+  align-items:start;
+}
+.duel-side { min-width:0; }
+.duel-side-heading {
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:8px;
+  color:#dfe9f8;
+}
+.duel-side-heading span { color:#91a8c6; font-size:.72rem; }
+.duel-vs {
+  align-self:center;
+  justify-self:center;
+  font-weight:900;
+  color:#f4c85a;
+  letter-spacing:.08em;
+}
+.enemy-board {
+  opacity:.98;
+}
+.enemy-board-cell {
+  border-style:solid;
+  border-color:rgba(255,104,120,.22);
+}
+.enemy-module-card {
+  cursor:default;
+  border-color:rgba(255,104,120,.35);
+}
+
+body[data-app-screen="play"][data-play-mode="local"][data-local-status="battle"] #play-mode-panel,
+body[data-app-screen="play"][data-play-mode="local"][data-local-status="battle"] #battle-pool-panel {
+  display:none !important;
+}
+
+@media (max-width:1100px) {
+  .duel-arena { grid-template-columns:1fr; }
+  .duel-vs { padding:4px 0; }
+}
+
+.battle-hud-settings-panel {
+  display:none;
+  position:absolute;
+  right:58px;
+  top:60px;
+  width:min(320px,80vw);
+  padding:10px 12px;
+  border:1px solid rgba(54,217,255,.25);
+  border-radius:9px;
+  background:rgba(7,11,20,.98);
+  box-shadow:0 14px 32px rgba(0,0,0,.34);
+}
+body.battle-hud-settings-open .battle-hud-settings-panel {
+  display:grid;
+  gap:5px;
+}
+.battle-hud-settings-panel span {
+  color:#9fb0c7;
+  font-size:.74rem;
+  line-height:1.4;
+}

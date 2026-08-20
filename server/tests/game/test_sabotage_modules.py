@@ -147,7 +147,7 @@ def test_energy_leech_reduces_generator_output():
         - before
     )
 
-    assert round(generated, 6) == 0.56
+    assert round(generated, 6) == 0.77
 
 
 def test_disruptor_breaks_target_from_energy_topology():

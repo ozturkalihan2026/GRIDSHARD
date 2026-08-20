@@ -312,3 +312,19 @@ Beta.21 durumunda:
 `AUDIO_BS1770_SCAN.json` yalnız teknik referanstır. Ölçülen LUFS değerleri, hedef LUFS değerleri değildir.
 
 Final mastering hedefi ancak ayrı insan kararıyla belirlenecektir.
+
+
+---
+
+## 14. Beta.23 Audio Mix V4
+
+Kullanıcı testinde yaklaşık 10 saniyelik belirgin tekrar ve tek-enstrüman hissi raporlandı. Beta.23 bu geri bildirime göre yeni prototip set kullanır:
+
+- `menu_pulse_v4.wav` — 32 sn stereo,
+- `pool_pulse_v4.wav` — 32 sn stereo,
+- `battle_pulse_v4.wav` — 32 sn stereo,
+- `critical_core_layer_v4.wav` — 32 sn stereo.
+
+Katmanlar bass + pad + pulse + accent bileşenlerinden oluşur. BPM değerleri 32 saniyelik loop sınırına tam bar/beat çevrimleri gelecek şekilde seçildi; loop sonu ile başlangıç arasındaki örnek farkı otomatik testte düşük tutulur.
+
+Music state geçiş crossfade süresi `1200 ms` olmuştur. Amaç track değiştirme ve state geçişini daha az fark edilir yapmak; final mix/mastering değildir.

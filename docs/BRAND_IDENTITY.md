@@ -1,6 +1,6 @@
 # GRIDSHARD — Brand Identity Foundation
 
-**Identity package:** `2.0.0-beta.22`  
+**Identity package:** `2.0.0-beta.23`  
 **Game name:** `GRIDSHARD`  
 **Tagline (TR):** `Devreni Kur. Çekirdeği Kır.`  
 **Tagline (EN):** `Build the Circuit. Break the Core.`

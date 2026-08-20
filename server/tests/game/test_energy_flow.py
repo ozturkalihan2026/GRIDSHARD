@@ -52,7 +52,7 @@ def test_generator_produces_energy():
         Position(2, 2),
     )
 
-    assert round(result.generated, 6) == 0.8
+    assert round(result.generated, 6) == 1.1
 
 
 def test_disconnected_consumer_is_unpowered():

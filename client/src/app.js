@@ -91,7 +91,7 @@
   const COMPETITIVE_STATUS = "M7 rekabetçi altyapı doğrulanıyor";
   const BALANCE_STATUS = "Denge simülasyonu mevcut · geniş örnek bekliyor";
   const AI_STATUS = "AI altyapısı mevcut · arketip testleri bekliyor";
-  const PVP_STATUS = "GRIDSHARD Beta.22 · Manuel Savaş Alanı + E2E Geçmişi + UX Gözlemi + Review V3";
+  const PVP_STATUS = "GRIDSHARD Beta.23 · Gerçek Yerel Savaş + Sabit HUD + Enerji Dengesi + Audio V4";
 
 
 
@@ -591,7 +591,7 @@
         webTestBuildState,
       releaseCheckState,
       expectedVersion:
-        "2.0.0-beta.22",
+        "2.0.0-beta.23",
       expectedProtocolVersion: 1,
     });
   const playReadinessGate =
@@ -627,7 +627,7 @@
 
   telemetryDispatcher.trackGameOpened({
     platform: "web",
-    build: "2.0.0-beta.22",
+    build: "2.0.0-beta.23",
   });
 
   const postMatchSync =
@@ -1187,7 +1187,7 @@
   const diagnosticSnapshot =
     new RelayDiagnosticSnapshot({
       version:
-        "2.0.0-beta.22",
+        "2.0.0-beta.23",
       build:
         "web-test-beta.13",
       bootGate:
@@ -1264,10 +1264,14 @@
   }
 
   const board = document.getElementById("board");
+  const enemyBoard = document.getElementById("enemy-board");
+  const enemyBoardStatusEl = document.getElementById("enemy-board-status");
+  const playerBoardStatusEl = document.getElementById("player-board-status");
   const shelf = document.getElementById("module-shelf");
   const timeEl = document.getElementById("battle-time");
   const creditEl = document.getElementById("credit-indicator");
   const combatSummaryEl = document.getElementById("combat-summary");
+  const energySummaryEl = document.getElementById("energy-summary");
   const battleResultSummaryEl = document.getElementById("battle-result-summary");
   const capacityEl = document.getElementById("capacity-indicator");
   const lockLabel = document.getElementById("shelf-lock-label");
@@ -2992,7 +2996,7 @@
       if (versionEl) {
         versionEl.textContent=
           manifest.version
-          || "2.0.0-beta.22";
+          || "2.0.0-beta.23";
       }
       if (runEl) {
         runEl.textContent=
@@ -3034,6 +3038,35 @@
     document.getElementById(
       "battle-state-label"
     );
+  const battleSettingsButton =
+    document.getElementById(
+      "battle-settings-button"
+    );
+  const battleProfileNameEl =
+    document.getElementById(
+      "battle-profile-name"
+    );
+
+  if (battleSettingsButton) {
+    battleSettingsButton.addEventListener(
+      "click",
+      () => {
+        document.body.classList.toggle(
+          "battle-hud-settings-open"
+        );
+        trackBattleUiInteraction(
+          "battle_settings_gear",
+          "technical_drawer"
+        );
+        battleSettingsButton.title =
+          document.body.classList.contains(
+            "battle-hud-settings-open"
+          )
+            ? "Ayarlar açık · savaş devam ediyor"
+            : "Ayarlar";
+      }
+    );
+  }
 
   const BOARD_CELLS = [
     [1,0],[2,0],[3,0],
@@ -3091,7 +3124,22 @@ const SPECIAL_CELL_INFO = {
   let mockEnemyCoreHp = 300;
   let mockEnemyGeneratorHp = 150;
   let mockEnemyModuleHp = 140;
+  let mockEnemyModules = [];
+
+  function resetMockEnemyCircuit() {
+    mockEnemyModules = [
+      {id:"enemy-shield",name:"Kalkan",hp:140,maxHp:140,position:{x:1,y:1},kind:"defense"},
+      {id:"enemy-laser",name:"Lazer",hp:100,maxHp:100,position:{x:3,y:1},kind:"attack"},
+      {id:"enemy-battery",name:"Batarya",hp:120,maxHp:120,position:{x:2,y:0},kind:"energy"},
+    ];
+    mockEnemyModuleHp = mockEnemyModules.reduce((sum,module)=>sum+module.hp,0);
+  }
+
+  function enemyLivingModules() {
+    return mockEnemyModules.filter((module)=>Number(module.hp||0)>0);
+  }
   let previousCombatSecond = -1;
+  const mockAttackerLastAttack = new Map();
   let lastBattleAnimationNow = null;
   const BATTLE_PAUSE_GAP_THRESHOLD_MS = 1000;
 
@@ -3465,7 +3513,9 @@ const SPECIAL_CELL_INFO = {
         "play-mode-panel"
       );
     if (modePanel) {
-      modePanel.hidden = false;
+      modePanel.hidden =
+        localBattle
+        || onlineBattle;
     }
 
     const poolPanel =
@@ -4761,6 +4811,7 @@ function saveHumanReviewLocalNote() {
       createLocalBattleMetrics();
     previousCombatSecond =
       -1;
+    mockAttackerLastAttack.clear();
     lastBattleAnimationNow =
       null;
     mockServerCredits =
@@ -4772,7 +4823,8 @@ function saveHumanReviewLocalNote() {
     mockEnemyGeneratorHp =
       150;
     mockEnemyModuleHp =
-      140;
+      360;
+    resetMockEnemyCircuit();
     nextBoosterOfferIndex =
       0;
     boosterOfferOpen =
@@ -4795,6 +4847,25 @@ function saveHumanReviewLocalNote() {
       const isGenerator =
         module.instanceId
         === "generator-1";
+      const initialModulePositions = {
+        "laser-1":{position:{x:3,y:3},direction:"left"},
+        "pulse-cannon-1":{position:{x:1,y:3},direction:"right"},
+      };
+      const initialConfig =
+        initialModulePositions[
+          module.instanceId
+        ] || null;
+      const selectedForBattle =
+        battlePoolSelection.selected.has(
+          module.instanceId
+        );
+      const startActive =
+        isCore
+        || isGenerator
+        || Boolean(
+          initialConfig
+          && selectedForBattle
+        );
 
       client.applyServerModuleState({
         instanceId:
@@ -4802,10 +4873,7 @@ function saveHumanReviewLocalNote() {
         hp:
           module.maxHp,
         status:
-          (
-            isCore
-            || isGenerator
-          )
+          startActive
             ? "active"
             : "reserve",
         position:
@@ -4814,9 +4882,16 @@ function saveHumanReviewLocalNote() {
             : (
                 isGenerator
                   ? {x:2,y:3}
-                  : null
+                  : (
+                      initialConfig
+                        ? initialConfig.position
+                        : null
+                    )
               ),
-        direction:"up",
+        direction:
+          initialConfig
+            ? initialConfig.direction
+            : "up",
         energyReceived:0,
         isPowered:true,
         storedEnergy:0,
@@ -4859,6 +4934,8 @@ function saveHumanReviewLocalNote() {
       );
     }
 
+    createEnemyBoard();
+    renderEnemyBoard();
     renderBoosterOptions();
     render();
     renderCredits();
@@ -5008,7 +5085,7 @@ function saveHumanReviewLocalNote() {
     );
 
     logClientMessage(
-      "Beta.22 hızlı test: 18 modüllük havuz otomatik hazırlandı ve savaş alanı açıldı."
+      "Beta.23 hızlı test: 18 modüllük havuz otomatik hazırlandı, Yerel AI eşleşti ve çift devre savaş alanı açıldı."
     );
 
     return {
@@ -5147,6 +5224,11 @@ function saveHumanReviewLocalNote() {
           )
         )
       }/${generator?.maxHp || 150}`;
+
+    if (playerBoardStatusEl) {
+      playerBoardStatusEl.textContent=
+        `Çekirdek ${Math.max(0,Number(core?.hp||0))}/${core?.maxHp||300} · Jeneratör ${Math.max(0,Number(generator?.hp||0))}/${generator?.maxHp||150}`;
+    }
 
     syncCriticalCoreAudioState();
   }
@@ -7351,6 +7433,70 @@ function saveHumanReviewLocalNote() {
     }
   }
 
+  function createEnemyBoard() {
+    if (!enemyBoard) return;
+    enemyBoard.innerHTML = "";
+    for (const [x,y] of BOARD_CELLS) {
+      const cell=document.createElement("div");
+      cell.className="board-cell enemy-board-cell";
+      cell.dataset.x=String(x);
+      cell.dataset.y=String(y);
+      cell.style.gridColumn=String(x+1);
+      cell.style.gridRow=String(y+1);
+      const key=`${x},${y}`;
+      if (x===CORE_POSITION.x && y===CORE_POSITION.y) {
+        cell.classList.add("core-cell");
+        cell.dataset.cellLabel="Rakip Çekirdek";
+      } else if (GATE_KEYS.has(key)) {
+        cell.classList.add("gate-cell");
+        cell.dataset.cellLabel="Kapı";
+      } else if (SPECIAL_CELL_INFO[key]) {
+        cell.classList.add("special-cell",SPECIAL_CELL_INFO[key].css);
+        cell.dataset.specialLabel=SPECIAL_CELL_INFO[key].label;
+      }
+      enemyBoard.appendChild(cell);
+    }
+  }
+
+  function enemyCard(name,hp,maxHp,kind="module") {
+    const card=document.createElement("div");
+    card.className="module-card enemy-module-card";
+    card.dataset.category=kind;
+    const title=document.createElement("span");
+    title.className="name";
+    title.textContent=name;
+    const stats=document.createElement("span");
+    stats.className="module-stats";
+    const hpEl=document.createElement("span");
+    hpEl.className="module-stat hp";
+    hpEl.textContent=`HP ${Math.max(0,Math.round(hp))}/${maxHp}`;
+    stats.appendChild(hpEl);
+    card.append(title,stats);
+    appendHpBar(card,hp,maxHp);
+    return card;
+  }
+
+  function renderEnemyBoard() {
+    if (!enemyBoard) return;
+    for (const cell of enemyBoard.querySelectorAll(".board-cell")) {
+      cell.innerHTML="";
+    }
+    const place=(x,y,card)=>{
+      const cell=enemyBoard.querySelector(`.board-cell[data-x="${x}"][data-y="${y}"]`);
+      if (cell) cell.appendChild(card);
+    };
+    place(2,2,enemyCard("Çekirdek",mockEnemyCoreHp,300,"core"));
+    place(2,1,enemyCard("Jeneratör",mockEnemyGeneratorHp,150,"energy"));
+    for (const module of mockEnemyModules) {
+      if (module.hp<=0) continue;
+      place(module.position.x,module.position.y,enemyCard(module.name,module.hp,module.maxHp,module.kind));
+    }
+    mockEnemyModuleHp=enemyLivingModules().reduce((sum,module)=>sum+module.hp,0);
+    if (enemyBoardStatusEl) {
+      enemyBoardStatusEl.textContent=`Çekirdek ${Math.max(0,mockEnemyCoreHp)}/300 · Jeneratör ${Math.max(0,mockEnemyGeneratorHp)}/150 · Modül ${enemyLivingModules().length}`;
+    }
+  }
+
   function renderRemoteDataStatus() {
     const mapping = {
       profile:
@@ -7405,7 +7551,7 @@ function saveHumanReviewLocalNote() {
     const text = (
       normalized === "en"
       ? {
-          menu:"Main Menu",
+          menu:"GRIDSHARD",
           play:"Play",
           profile:"Profile",
           statistics:"Statistics",
@@ -7415,7 +7561,7 @@ function saveHumanReviewLocalNote() {
           battlePool:"Build Battle Pool",
         }
       : {
-          menu:"Ana Menü",
+          menu:"GRIDSHARD",
           play:"Oyna",
           profile:"Profil",
           statistics:"İstatistikler",
@@ -7901,6 +8047,10 @@ function saveHumanReviewLocalNote() {
       );
     if (nameInput) {
       nameInput.value =
+        view.displayName;
+    }
+    if (battleProfileNameEl) {
+      battleProfileNameEl.textContent =
         view.displayName;
     }
   }
@@ -8487,7 +8637,7 @@ function saveHumanReviewLocalNote() {
         (module) =>
           module.nameTr === "Jeneratör" &&
           connected.has(module.instanceId)
-      ).length * 8;
+      ).length * 11;
 
     const demandByName = {
       "Lazer": 3,
@@ -8602,103 +8752,210 @@ function saveHumanReviewLocalNote() {
       return;
     }
 
-    const currentSecond = Math.floor(client.elapsedMs / 1000);
-    if (currentSecond === previousCombatSecond) return;
-    previousCombatSecond = currentSecond;
-
-    const attackers = [...client.modules.values()]
-      .filter(
-        (module) =>
-          module.status === "active" &&
-          module.category === "saldırı" &&
-          module.isPowered
-      )
-      .sort((a, b) => a.instanceId.localeCompare(b.instanceId));
-
-    if (!attackers.length) return;
-
-    const attacker = attackers[0];
-    const damageByName = {
-      "Lazer": 12,
-      "Darbe Topu": 32,
-      "Ray Topu": 40,
-      "Füze Fırlatıcı": 28,
-      "Dron Üssü": 8,
-      "Ark Topu": 20,
-    };
-    const damage = damageByName[attacker.nameTr] || 0;
-    if (damage <= 0) return;
-
-    let targetName = "Rakip Modül";
-    if (mockEnemyModuleHp <= 0 && mockEnemyGeneratorHp > 0) {
-      targetName = "Rakip Jeneratör";
-    } else if (mockEnemyModuleHp <= 0 && mockEnemyGeneratorHp <= 0) {
-      targetName = "Rakip Çekirdek";
-    }
-
-    const rawDamage = damage;
-    let defenseType = "Yok";
-    let reducedDamage = 0;
-    let finalDamage = rawDamage;
-
-    if (targetName === "Rakip Modül") {
-      defenseType = "Kalkan";
-      finalDamage = Math.max(0, Math.round(rawDamage * 0.65));
-      reducedDamage = rawDamage - finalDamage;
-    }
-
-    if (targetName === "Rakip Modül") {
-      mockEnemyModuleHp = Math.max(0, mockEnemyModuleHp - finalDamage);
-    } else if (targetName === "Rakip Jeneratör") {
-      mockEnemyGeneratorHp = Math.max(0, mockEnemyGeneratorHp - finalDamage);
-    } else {
-      mockEnemyCoreHp = Math.max(0, mockEnemyCoreHp - finalDamage);
-    }
-
-    triggerGridshardCue(
-      attacker.nameTr
-        .toLocaleLowerCase("tr")
-        .includes("lazer")
-        ? "laser_fire"
-        : "energy_transfer"
-    );
-    if (
-      targetName
-      === "Rakip Çekirdek"
-    ) {
-      triggerGridshardCue(
-        "core_hit"
+    const currentSecond=
+      Math.floor(
+        client.elapsedMs / 1000
       );
-    }
-
     if (
-      activePlayMode === "local"
-      && localBattleMetrics
+      currentSecond
+      === previousCombatSecond
     ) {
-      localBattleMetrics.damage_dealt += finalDamage;
-      localBattleMetrics.player_attacks += 1;
-      telemetryDispatcher.trackLocalPlayerAttack({
-        attacker:attacker.nameTr,
-        target:targetName,
-        damage:finalDamage,
-        elapsed_ms:client.elapsedMs,
-      });
+      return;
+    }
+    previousCombatSecond=
+      currentSecond;
+
+    const attackers=[
+      ...client.modules.values(),
+    ]
+      .filter(
+        (module)=>
+          module.status === "active"
+          && module.category === "saldırı"
+          && module.isPowered
+          && Number(module.hp||0)>0
+      )
+      .sort(
+        (a,b)=>
+          a.instanceId.localeCompare(
+            b.instanceId
+          )
+      );
+
+    if (!attackers.length) {
+      return;
     }
 
-    commandLog.push({
-      atMs: client.elapsedMs,
-      kind: "attack_performed",
-      attacker: attacker.nameTr,
-      target: targetName,
-      rawDamage,
-      reducedDamage,
-      damage: finalDamage,
-      defenseType,
-    });
+    const damageByName={
+      "Lazer":12,
+      "Darbe Topu":32,
+      "Ray Topu":40,
+      "Füze Fırlatıcı":28,
+      "Dron Üssü":8,
+      "Ark Topu":20,
+    };
+    const cooldownSeconds={
+      "Lazer":1,
+      "Darbe Topu":3,
+      "Ray Topu":4,
+      "Füze Fırlatıcı":3,
+      "Dron Üssü":1,
+      "Ark Topu":2,
+    };
 
-    combatSummaryEl.textContent =
-      `Rakip: Modül ${mockEnemyModuleHp}/140 · Jeneratör ${mockEnemyGeneratorHp}/150 · Çekirdek ${mockEnemyCoreHp}/300`;
+    for (const attacker of attackers) {
+      const last=
+        mockAttackerLastAttack.get(
+          attacker.instanceId
+        );
+      const cooldown=
+        cooldownSeconds[
+          attacker.nameTr
+        ] || 2;
 
+      if (
+        last !== undefined
+        && currentSecond-last
+          < cooldown
+      ) {
+        continue;
+      }
+
+      const rawDamage=
+        damageByName[
+          attacker.nameTr
+        ] || 0;
+      if (rawDamage<=0) {
+        continue;
+      }
+
+      mockAttackerLastAttack.set(
+        attacker.instanceId,
+        currentSecond
+      );
+
+      const living=
+        enemyLivingModules();
+      const targetModule=
+        living[0] || null;
+
+      let targetName=
+        targetModule
+          ? `Rakip ${targetModule.name}`
+          : (
+              mockEnemyGeneratorHp>0
+                ? "Rakip Jeneratör"
+                : "Rakip Çekirdek"
+            );
+      let defenseType="Yok";
+      let reducedDamage=0;
+      let finalDamage=rawDamage;
+
+      if (
+        targetModule
+        && targetModule.name
+          === "Kalkan"
+      ) {
+        defenseType="Kalkan";
+        finalDamage=Math.max(
+          1,
+          Math.round(
+            rawDamage*0.65
+          )
+        );
+        reducedDamage=
+          rawDamage-finalDamage;
+      }
+
+      if (targetModule) {
+        targetModule.hp=Math.max(
+          0,
+          targetModule.hp
+          - finalDamage
+        );
+      } else if (
+        mockEnemyGeneratorHp>0
+      ) {
+        mockEnemyGeneratorHp=
+          Math.max(
+            0,
+            mockEnemyGeneratorHp
+            - finalDamage
+          );
+      } else {
+        mockEnemyCoreHp=
+          Math.max(
+            0,
+            mockEnemyCoreHp
+            - finalDamage
+          );
+      }
+
+      mockEnemyModuleHp=
+        enemyLivingModules()
+          .reduce(
+            (sum,module)=>
+              sum+module.hp,
+            0
+          );
+
+      triggerGridshardCue(
+        attacker.nameTr
+          .toLocaleLowerCase("tr")
+          .includes("lazer")
+          ? "laser_fire"
+          : "energy_transfer"
+      );
+      if (
+        targetName
+        === "Rakip Çekirdek"
+      ) {
+        triggerGridshardCue(
+          "core_hit"
+        );
+      }
+
+      if (localBattleMetrics) {
+        localBattleMetrics
+          .damage_dealt +=
+            finalDamage;
+        localBattleMetrics
+          .player_attacks += 1;
+        telemetryDispatcher
+          .trackLocalPlayerAttack({
+            attacker:
+              attacker.nameTr,
+            target:
+              targetName,
+            damage:
+              finalDamage,
+            elapsed_ms:
+              client.elapsedMs,
+          });
+      }
+
+      commandLog.push({
+        atMs:client.elapsedMs,
+        kind:
+          "attack_performed",
+        attacker:
+          attacker.nameTr,
+        target:targetName,
+        rawDamage,
+        reducedDamage,
+        damage:finalDamage,
+        defenseType,
+      });
+
+      if (mockEnemyCoreHp<=0) {
+        break;
+      }
+    }
+
+    combatSummaryEl.textContent=
+      `Rakip: Modül ${mockEnemyModuleHp} HP · Jeneratör ${mockEnemyGeneratorHp}/150 · Çekirdek ${mockEnemyCoreHp}/300`;
+
+    renderEnemyBoard();
     updateMockBattleResult();
     renderLog();
   }
@@ -8906,6 +9163,7 @@ function saveHumanReviewLocalNote() {
       updateMockEnergy();
       updateMockCombat();
       updateLocalEnemyCombat();
+      renderEnemyBoard();
       publishBattleUxMetrics();
     }
 

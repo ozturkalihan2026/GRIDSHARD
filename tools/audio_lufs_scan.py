@@ -91,7 +91,7 @@ def main()->int:
     if not ffmpeg:
         payload={
             "version":
-                "2.0.0-beta.22",
+                "2.0.0-beta.23",
             "available":False,
             "status":
                 "SKIPPED",
@@ -131,7 +131,7 @@ def main()->int:
         if not has_ebur128:
             payload={
                 "version":
-                    "2.0.0-beta.22",
+                    "2.0.0-beta.23",
                 "available":
                     False,
                 "status":
@@ -165,7 +165,7 @@ def main()->int:
             ]
             payload={
                 "version":
-                    "2.0.0-beta.22",
+                    "2.0.0-beta.23",
                 "available":True,
                 "status":
                     (

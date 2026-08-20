@@ -1712,5 +1712,3367 @@
     "player_id": null,
     "session_id": null,
     "timestamp_ms": 1787141351288
+  },
+  {
+    "event_id": "web-test-run-started-web-test-beta.23-local",
+    "event_type": "web_test_run_started",
+    "metadata": {
+      "build": "web-test-beta.13",
+      "preflight_ready": true,
+      "test_run_id": "web-test-beta.23-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1787216426643
+  },
+  {
+    "event_id": "web-test-stability-web-test-beta.23-local-1787216427552",
+    "event_type": "web_test_stability_snapshot",
+    "metadata": {
+      "operation_running_rate": 0.0,
+      "running_to_other_regressions": 0,
+      "stability": "degraded",
+      "test_run_id": "web-test-beta.23-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1787216427552
+  },
+  {
+    "event_id": "web-test-operation-web-test-beta.23-local-1787216427621",
+    "event_type": "web_test_operation_snapshot",
+    "metadata": {
+      "consistency_status": "consistent",
+      "operational_state": "running",
+      "preflight_ready": true,
+      "run_started": true,
+      "test_run_id": "web-test-beta.23-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1787216427621
+  },
+  {
+    "event_id": "web-test-operation-web-test-beta.23-local-1787216438345",
+    "event_type": "web_test_operation_snapshot",
+    "metadata": {
+      "consistency_status": "consistent",
+      "operational_state": "running",
+      "preflight_ready": true,
+      "run_started": true,
+      "test_run_id": "web-test-beta.23-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1787216438345
+  },
+  {
+    "event_id": "web-test-stability-web-test-beta.23-local-1787216438525",
+    "event_type": "web_test_stability_snapshot",
+    "metadata": {
+      "operation_running_rate": 1.0,
+      "running_to_other_regressions": 0,
+      "stability": "stable",
+      "test_run_id": "web-test-beta.23-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1787216438525
+  },
+  {
+    "event_id": "web-test-launch-wt-8288059b-9714-4817-ad64-397540b99b4e-1787216444979",
+    "event_type": "web_test_launch_attempted",
+    "metadata": {
+      "failed_checks": [],
+      "launch_ready": true,
+      "test_run_id": "web-test-beta.23-local"
+    },
+    "player_id": "wt-8288059b-9714-4817-ad64-397540b99b4e",
+    "session_id": null,
+    "timestamp_ms": 1787216444979
+  },
+  {
+    "event_id": "web-test-operation-web-test-beta.23-local-1787216448347",
+    "event_type": "web_test_operation_snapshot",
+    "metadata": {
+      "consistency_status": "consistent",
+      "operational_state": "running",
+      "preflight_ready": true,
+      "run_started": true,
+      "test_run_id": "web-test-beta.23-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1787216448347
+  },
+  {
+    "event_id": "web-test-stability-web-test-beta.23-local-1787216448367",
+    "event_type": "web_test_stability_snapshot",
+    "metadata": {
+      "operation_running_rate": 1.0,
+      "running_to_other_regressions": 0,
+      "stability": "stable",
+      "test_run_id": "web-test-beta.23-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1787216448367
+  },
+  {
+    "event_id": "web-test-stability-web-test-beta.23-local-1787216458141",
+    "event_type": "web_test_stability_snapshot",
+    "metadata": {
+      "operation_running_rate": 1.0,
+      "running_to_other_regressions": 0,
+      "stability": "stable",
+      "test_run_id": "web-test-beta.23-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1787216458141
+  },
+  {
+    "event_id": "client-local_player_attack-3",
+    "event_type": "local_player_attack",
+    "metadata": {
+      "attacker": "Lazer",
+      "damage": 8,
+      "elapsed_ms": 2.900000000001455,
+      "target": "Rakip Kalkan"
+    },
+    "player_id": "wt-8288059b-9714-4817-ad64-397540b99b4e",
+    "session_id": "local-preview",
+    "timestamp_ms": 1787216457253
+  },
+  {
+    "event_id": "client-local_player_attack-4",
+    "event_type": "local_player_attack",
+    "metadata": {
+      "attacker": "Darbe Topu",
+      "damage": 21,
+      "elapsed_ms": 2.900000000001455,
+      "target": "Rakip Kalkan"
+    },
+    "player_id": "wt-8288059b-9714-4817-ad64-397540b99b4e",
+    "session_id": "local-preview",
+    "timestamp_ms": 1787216457253
+  },
+  {
+    "event_id": "web-test-operation-web-test-beta.23-local-1787216458292",
+    "event_type": "web_test_operation_snapshot",
+    "metadata": {
+      "consistency_status": "consistent",
+      "operational_state": "running",
+      "preflight_ready": true,
+      "run_started": true,
+      "test_run_id": "web-test-beta.23-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1787216458292
+  },
+  {
+    "event_id": "client-local_player_attack-5",
+    "event_type": "local_player_attack",
+    "metadata": {
+      "attacker": "Lazer",
+      "damage": 8,
+      "elapsed_ms": 1003,
+      "target": "Rakip Kalkan"
+    },
+    "player_id": "wt-8288059b-9714-4817-ad64-397540b99b4e",
+    "session_id": "local-preview",
+    "timestamp_ms": 1787216458219
+  },
+  {
+    "event_id": "client-local_player_attack-6",
+    "event_type": "local_player_attack",
+    "metadata": {
+      "attacker": "Lazer",
+      "damage": 8,
+      "elapsed_ms": 2003.199999999997,
+      "target": "Rakip Kalkan"
+    },
+    "player_id": "wt-8288059b-9714-4817-ad64-397540b99b4e",
+    "session_id": "local-preview",
+    "timestamp_ms": 1787216459223
+  },
+  {
+    "event_id": "client-local_player_attack-7",
+    "event_type": "local_player_attack",
+    "metadata": {
+      "attacker": "Lazer",
+      "damage": 8,
+      "elapsed_ms": 3010,
+      "target": "Rakip Kalkan"
+    },
+    "player_id": "wt-8288059b-9714-4817-ad64-397540b99b4e",
+    "session_id": "local-preview",
+    "timestamp_ms": 1787216460228
+  },
+  {
+    "event_id": "client-local_player_attack-8",
+    "event_type": "local_player_attack",
+    "metadata": {
+      "attacker": "Darbe Topu",
+      "damage": 21,
+      "elapsed_ms": 3010,
+      "target": "Rakip Kalkan"
+    },
+    "player_id": "wt-8288059b-9714-4817-ad64-397540b99b4e",
+    "session_id": "local-preview",
+    "timestamp_ms": 1787216460229
+  },
+  {
+    "event_id": "client-local_player_attack-9",
+    "event_type": "local_player_attack",
+    "metadata": {
+      "attacker": "Lazer",
+      "damage": 8,
+      "elapsed_ms": 4003.0999999999985,
+      "target": "Rakip Kalkan"
+    },
+    "player_id": "wt-8288059b-9714-4817-ad64-397540b99b4e",
+    "session_id": "local-preview",
+    "timestamp_ms": 1787216461218
+  },
+  {
+    "event_id": "client-local_player_attack-10",
+    "event_type": "local_player_attack",
+    "metadata": {
+      "attacker": "Lazer",
+      "damage": 8,
+      "elapsed_ms": 5003.300000000003,
+      "target": "Rakip Kalkan"
+    },
+    "player_id": "wt-8288059b-9714-4817-ad64-397540b99b4e",
+    "session_id": "local-preview",
+    "timestamp_ms": 1787216462224
+  },
+  {
+    "event_id": "client-local_ai_hit-11",
+    "event_type": "local_ai_hit",
+    "metadata": {
+      "elapsed_ms": 5003.300000000003,
+      "final_damage": 8,
+      "module_id": "laser-1",
+      "raw_damage": 8,
+      "shield_active": false
+    },
+    "player_id": "wt-8288059b-9714-4817-ad64-397540b99b4e",
+    "session_id": "local-preview",
+    "timestamp_ms": 1787216462226
+  },
+  {
+    "event_id": "client-local_player_attack-12",
+    "event_type": "local_player_attack",
+    "metadata": {
+      "attacker": "Lazer",
+      "damage": 8,
+      "elapsed_ms": 6003.199999999997,
+      "target": "Rakip Kalkan"
+    },
+    "player_id": "wt-8288059b-9714-4817-ad64-397540b99b4e",
+    "session_id": "local-preview",
+    "timestamp_ms": 1787216463220
+  },
+  {
+    "event_id": "client-local_player_attack-13",
+    "event_type": "local_player_attack",
+    "metadata": {
+      "attacker": "Darbe Topu",
+      "damage": 21,
+      "elapsed_ms": 6003.199999999997,
+      "target": "Rakip Kalkan"
+    },
+    "player_id": "wt-8288059b-9714-4817-ad64-397540b99b4e",
+    "session_id": "local-preview",
+    "timestamp_ms": 1787216463221
+  },
+  {
+    "event_id": "client-local_ai_hit-14",
+    "event_type": "local_ai_hit",
+    "metadata": {
+      "elapsed_ms": 6003.199999999997,
+      "final_damage": 8,
+      "module_id": "laser-1",
+      "raw_damage": 8,
+      "shield_active": false
+    },
+    "player_id": "wt-8288059b-9714-4817-ad64-397540b99b4e",
+    "session_id": "local-preview",
+    "timestamp_ms": 1787216463223
+  },
+  {
+    "event_id": "client-local_player_attack-15",
+    "event_type": "local_player_attack",
+    "metadata": {
+      "attacker": "Lazer",
+      "damage": 8,
+      "elapsed_ms": 7009.699999999997,
+      "target": "Rakip Kalkan"
+    },
+    "player_id": "wt-8288059b-9714-4817-ad64-397540b99b4e",
+    "session_id": "local-preview",
+    "timestamp_ms": 1787216464224
+  },
+  {
+    "event_id": "client-local_player_attack-16",
+    "event_type": "local_player_attack",
+    "metadata": {
+      "attacker": "Lazer",
+      "damage": 8,
+      "elapsed_ms": 8010,
+      "target": "Rakip Kalkan"
+    },
+    "player_id": "wt-8288059b-9714-4817-ad64-397540b99b4e",
+    "session_id": "local-preview",
+    "timestamp_ms": 1787216465225
+  },
+  {
+    "event_id": "client-local_ai_hit-17",
+    "event_type": "local_ai_hit",
+    "metadata": {
+      "elapsed_ms": 8010,
+      "final_damage": 8,
+      "module_id": "laser-1",
+      "raw_damage": 8,
+      "shield_active": false
+    },
+    "player_id": "wt-8288059b-9714-4817-ad64-397540b99b4e",
+    "session_id": "local-preview",
+    "timestamp_ms": 1787216465229
+  },
+  {
+    "event_id": "client-local_player_attack-18",
+    "event_type": "local_player_attack",
+    "metadata": {
+      "attacker": "Lazer",
+      "damage": 8,
+      "elapsed_ms": 9009.800000000003,
+      "target": "Rakip Kalkan"
+    },
+    "player_id": "wt-8288059b-9714-4817-ad64-397540b99b4e",
+    "session_id": "local-preview",
+    "timestamp_ms": 1787216466226
+  },
+  {
+    "event_id": "client-local_player_attack-19",
+    "event_type": "local_player_attack",
+    "metadata": {
+      "attacker": "Darbe Topu",
+      "damage": 32,
+      "elapsed_ms": 9009.800000000003,
+      "target": "Rakip Lazer"
+    },
+    "player_id": "wt-8288059b-9714-4817-ad64-397540b99b4e",
+    "session_id": "local-preview",
+    "timestamp_ms": 1787216466227
+  },
+  {
+    "event_id": "client-local_player_attack-20",
+    "event_type": "local_player_attack",
+    "metadata": {
+      "attacker": "Lazer",
+      "damage": 12,
+      "elapsed_ms": 10002.800000000003,
+      "target": "Rakip Lazer"
+    },
+    "player_id": "wt-8288059b-9714-4817-ad64-397540b99b4e",
+    "session_id": "local-preview",
+    "timestamp_ms": 1787216467218
+  },
+  {
+    "event_id": "client-local_ai_hit-21",
+    "event_type": "local_ai_hit",
+    "metadata": {
+      "elapsed_ms": 10002.800000000003,
+      "final_damage": 8,
+      "module_id": "laser-1",
+      "raw_damage": 8,
+      "shield_active": false
+    },
+    "player_id": "wt-8288059b-9714-4817-ad64-397540b99b4e",
+    "session_id": "local-preview",
+    "timestamp_ms": 1787216467221
+  },
+  {
+    "event_id": "client-local_player_attack-22",
+    "event_type": "local_player_attack",
+    "metadata": {
+      "attacker": "Lazer",
+      "damage": 12,
+      "elapsed_ms": 11002.900000000001,
+      "target": "Rakip Lazer"
+    },
+    "player_id": "wt-8288059b-9714-4817-ad64-397540b99b4e",
+    "session_id": "local-preview",
+    "timestamp_ms": 1787216468218
+  },
+  {
+    "event_id": "web-test-operation-web-test-beta.23-local-1787216468970",
+    "event_type": "web_test_operation_snapshot",
+    "metadata": {
+      "consistency_status": "consistent",
+      "operational_state": "running",
+      "preflight_ready": true,
+      "run_started": true,
+      "test_run_id": "web-test-beta.23-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1787216468970
+  },
+  {
+    "event_id": "web-test-stability-web-test-beta.23-local-1787216469106",
+    "event_type": "web_test_stability_snapshot",
+    "metadata": {
+      "operation_running_rate": 1.0,
+      "running_to_other_regressions": 0,
+      "stability": "stable",
+      "test_run_id": "web-test-beta.23-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1787216469106
+  },
+  {
+    "event_id": "client-local_player_attack-23",
+    "event_type": "local_player_attack",
+    "metadata": {
+      "attacker": "Lazer",
+      "damage": 12,
+      "elapsed_ms": 12009.900000000001,
+      "target": "Rakip Lazer"
+    },
+    "player_id": "wt-8288059b-9714-4817-ad64-397540b99b4e",
+    "session_id": "local-preview",
+    "timestamp_ms": 1787216469227
+  },
+  {
+    "event_id": "client-local_player_attack-24",
+    "event_type": "local_player_attack",
+    "metadata": {
+      "attacker": "Darbe Topu",
+      "damage": 32,
+      "elapsed_ms": 12009.900000000001,
+      "target": "Rakip Lazer"
+    },
+    "player_id": "wt-8288059b-9714-4817-ad64-397540b99b4e",
+    "session_id": "local-preview",
+    "timestamp_ms": 1787216469227
+  },
+  {
+    "event_id": "client-local_ai_hit-25",
+    "event_type": "local_ai_hit",
+    "metadata": {
+      "elapsed_ms": 12009.900000000001,
+      "final_damage": 8,
+      "module_id": "laser-1",
+      "raw_damage": 8,
+      "shield_active": false
+    },
+    "player_id": "wt-8288059b-9714-4817-ad64-397540b99b4e",
+    "session_id": "local-preview",
+    "timestamp_ms": 1787216469230
+  },
+  {
+    "event_id": "client-local_player_attack-26",
+    "event_type": "local_player_attack",
+    "metadata": {
+      "attacker": "Lazer",
+      "damage": 12,
+      "elapsed_ms": 13003,
+      "target": "Rakip Batarya"
+    },
+    "player_id": "wt-8288059b-9714-4817-ad64-397540b99b4e",
+    "session_id": "local-preview",
+    "timestamp_ms": 1787216470219
+  },
+  {
+    "event_id": "client-local_player_attack-27",
+    "event_type": "local_player_attack",
+    "metadata": {
+      "attacker": "Lazer",
+      "damage": 12,
+      "elapsed_ms": 14009.800000000003,
+      "target": "Rakip Batarya"
+    },
+    "player_id": "wt-8288059b-9714-4817-ad64-397540b99b4e",
+    "session_id": "local-preview",
+    "timestamp_ms": 1787216471225
+  },
+  {
+    "event_id": "client-local_ai_hit-28",
+    "event_type": "local_ai_hit",
+    "metadata": {
+      "elapsed_ms": 14009.800000000003,
+      "final_damage": 8,
+      "module_id": "laser-1",
+      "raw_damage": 8,
+      "shield_active": false
+    },
+    "player_id": "wt-8288059b-9714-4817-ad64-397540b99b4e",
+    "session_id": "local-preview",
+    "timestamp_ms": 1787216471228
+  },
+  {
+    "event_id": "client-local_player_attack-29",
+    "event_type": "local_player_attack",
+    "metadata": {
+      "attacker": "Lazer",
+      "damage": 12,
+      "elapsed_ms": 15009.800000000003,
+      "target": "Rakip Batarya"
+    },
+    "player_id": "wt-8288059b-9714-4817-ad64-397540b99b4e",
+    "session_id": "local-preview",
+    "timestamp_ms": 1787216472225
+  },
+  {
+    "event_id": "client-local_player_attack-30",
+    "event_type": "local_player_attack",
+    "metadata": {
+      "attacker": "Darbe Topu",
+      "damage": 32,
+      "elapsed_ms": 15009.800000000003,
+      "target": "Rakip Batarya"
+    },
+    "player_id": "wt-8288059b-9714-4817-ad64-397540b99b4e",
+    "session_id": "local-preview",
+    "timestamp_ms": 1787216472226
+  },
+  {
+    "event_id": "client-local_player_attack-31",
+    "event_type": "local_player_attack",
+    "metadata": {
+      "attacker": "Lazer",
+      "damage": 12,
+      "elapsed_ms": 16002.599999999999,
+      "target": "Rakip Batarya"
+    },
+    "player_id": "wt-8288059b-9714-4817-ad64-397540b99b4e",
+    "session_id": "local-preview",
+    "timestamp_ms": 1787216473217
+  },
+  {
+    "event_id": "client-local_ai_hit-32",
+    "event_type": "local_ai_hit",
+    "metadata": {
+      "elapsed_ms": 16002.599999999999,
+      "final_damage": 8,
+      "module_id": "laser-1",
+      "raw_damage": 8,
+      "shield_active": false
+    },
+    "player_id": "wt-8288059b-9714-4817-ad64-397540b99b4e",
+    "session_id": "local-preview",
+    "timestamp_ms": 1787216473219
+  },
+  {
+    "event_id": "client-local_player_attack-33",
+    "event_type": "local_player_attack",
+    "metadata": {
+      "attacker": "Lazer",
+      "damage": 12,
+      "elapsed_ms": 17002.5,
+      "target": "Rakip Batarya"
+    },
+    "player_id": "wt-8288059b-9714-4817-ad64-397540b99b4e",
+    "session_id": "local-preview",
+    "timestamp_ms": 1787216474220
+  },
+  {
+    "event_id": "client-local_player_attack-34",
+    "event_type": "local_player_attack",
+    "metadata": {
+      "attacker": "Lazer",
+      "damage": 12,
+      "elapsed_ms": 18002.4,
+      "target": "Rakip Batarya"
+    },
+    "player_id": "wt-8288059b-9714-4817-ad64-397540b99b4e",
+    "session_id": "local-preview",
+    "timestamp_ms": 1787216475219
+  },
+  {
+    "event_id": "client-local_player_attack-35",
+    "event_type": "local_player_attack",
+    "metadata": {
+      "attacker": "Darbe Topu",
+      "damage": 32,
+      "elapsed_ms": 18002.4,
+      "target": "Rakip Batarya"
+    },
+    "player_id": "wt-8288059b-9714-4817-ad64-397540b99b4e",
+    "session_id": "local-preview",
+    "timestamp_ms": 1787216475220
+  },
+  {
+    "event_id": "client-local_ai_hit-36",
+    "event_type": "local_ai_hit",
+    "metadata": {
+      "elapsed_ms": 18002.4,
+      "final_damage": 8,
+      "module_id": "laser-1",
+      "raw_damage": 8,
+      "shield_active": false
+    },
+    "player_id": "wt-8288059b-9714-4817-ad64-397540b99b4e",
+    "session_id": "local-preview",
+    "timestamp_ms": 1787216475221
+  },
+  {
+    "event_id": "client-local_player_attack-37",
+    "event_type": "local_player_attack",
+    "metadata": {
+      "attacker": "Lazer",
+      "damage": 12,
+      "elapsed_ms": 19002.6,
+      "target": "Rakip Jeneratör"
+    },
+    "player_id": "wt-8288059b-9714-4817-ad64-397540b99b4e",
+    "session_id": "local-preview",
+    "timestamp_ms": 1787216476217
+  },
+  {
+    "event_id": "client-module_shelf_used-38",
+    "event_type": "module_shelf_used",
+    "metadata": {
+      "elapsed_ms": 19266.4,
+      "module_id": "repair-1"
+    },
+    "player_id": "wt-8288059b-9714-4817-ad64-397540b99b4e",
+    "session_id": "local-preview",
+    "timestamp_ms": 1787216476493
+  },
+  {
+    "event_id": "client-local_player_attack-39",
+    "event_type": "local_player_attack",
+    "metadata": {
+      "attacker": "Lazer",
+      "damage": 12,
+      "elapsed_ms": 20002.5,
+      "target": "Rakip Jeneratör"
+    },
+    "player_id": "wt-8288059b-9714-4817-ad64-397540b99b4e",
+    "session_id": "local-preview",
+    "timestamp_ms": 1787216477217
+  },
+  {
+    "event_id": "client-local_ai_hit-40",
+    "event_type": "local_ai_hit",
+    "metadata": {
+      "elapsed_ms": 20002.5,
+      "final_damage": 8,
+      "module_id": "laser-1",
+      "raw_damage": 8,
+      "shield_active": false
+    },
+    "player_id": "wt-8288059b-9714-4817-ad64-397540b99b4e",
+    "session_id": "local-preview",
+    "timestamp_ms": 1787216477221
+  },
+  {
+    "event_id": "client-circuit_credit_spent-41",
+    "event_type": "circuit_credit_spent",
+    "metadata": {
+      "amount": 80,
+      "command_kind": "place_module",
+      "elapsed_ms": 20252.5
+    },
+    "player_id": "wt-8288059b-9714-4817-ad64-397540b99b4e",
+    "session_id": "local-preview",
+    "timestamp_ms": 1787216477475
+  },
+  {
+    "event_id": "client-local_player_attack-42",
+    "event_type": "local_player_attack",
+    "metadata": {
+      "attacker": "Lazer",
+      "damage": 12,
+      "elapsed_ms": 21002.5,
+      "target": "Rakip Jeneratör"
+    },
+    "player_id": "wt-8288059b-9714-4817-ad64-397540b99b4e",
+    "session_id": "local-preview",
+    "timestamp_ms": 1787216478217
+  },
+  {
+    "event_id": "web-test-operation-web-test-beta.23-local-1787216478732",
+    "event_type": "web_test_operation_snapshot",
+    "metadata": {
+      "consistency_status": "consistent",
+      "operational_state": "running",
+      "preflight_ready": true,
+      "run_started": true,
+      "test_run_id": "web-test-beta.23-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1787216478732
+  },
+  {
+    "event_id": "web-test-stability-web-test-beta.23-local-1787216478747",
+    "event_type": "web_test_stability_snapshot",
+    "metadata": {
+      "operation_running_rate": 1.0,
+      "running_to_other_regressions": 0,
+      "stability": "stable",
+      "test_run_id": "web-test-beta.23-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1787216478747
+  },
+  {
+    "event_id": "client-local_player_attack-43",
+    "event_type": "local_player_attack",
+    "metadata": {
+      "attacker": "Darbe Topu",
+      "damage": 32,
+      "elapsed_ms": 21002.5,
+      "target": "Rakip Jeneratör"
+    },
+    "player_id": "wt-8288059b-9714-4817-ad64-397540b99b4e",
+    "session_id": "local-preview",
+    "timestamp_ms": 1787216478218
+  },
+  {
+    "event_id": "client-local_player_attack-44",
+    "event_type": "local_player_attack",
+    "metadata": {
+      "attacker": "Lazer",
+      "damage": 12,
+      "elapsed_ms": 22009.300000000003,
+      "target": "Rakip Jeneratör"
+    },
+    "player_id": "wt-8288059b-9714-4817-ad64-397540b99b4e",
+    "session_id": "local-preview",
+    "timestamp_ms": 1787216479224
+  },
+  {
+    "event_id": "client-local_ai_hit-45",
+    "event_type": "local_ai_hit",
+    "metadata": {
+      "elapsed_ms": 22009.300000000003,
+      "final_damage": 8,
+      "module_id": "laser-1",
+      "raw_damage": 8,
+      "shield_active": false
+    },
+    "player_id": "wt-8288059b-9714-4817-ad64-397540b99b4e",
+    "session_id": "local-preview",
+    "timestamp_ms": 1787216479226
+  },
+  {
+    "event_id": "client-local_player_attack-46",
+    "event_type": "local_player_attack",
+    "metadata": {
+      "attacker": "Lazer",
+      "damage": 12,
+      "elapsed_ms": 23002.4,
+      "target": "Rakip Jeneratör"
+    },
+    "player_id": "wt-8288059b-9714-4817-ad64-397540b99b4e",
+    "session_id": "local-preview",
+    "timestamp_ms": 1787216480217
+  },
+  {
+    "event_id": "client-local_player_attack-47",
+    "event_type": "local_player_attack",
+    "metadata": {
+      "attacker": "Lazer",
+      "damage": 12,
+      "elapsed_ms": 24002.4,
+      "target": "Rakip Jeneratör"
+    },
+    "player_id": "wt-8288059b-9714-4817-ad64-397540b99b4e",
+    "session_id": "local-preview",
+    "timestamp_ms": 1787216481217
+  },
+  {
+    "event_id": "client-local_player_attack-48",
+    "event_type": "local_player_attack",
+    "metadata": {
+      "attacker": "Darbe Topu",
+      "damage": 32,
+      "elapsed_ms": 24002.4,
+      "target": "Rakip Jeneratör"
+    },
+    "player_id": "wt-8288059b-9714-4817-ad64-397540b99b4e",
+    "session_id": "local-preview",
+    "timestamp_ms": 1787216481218
+  },
+  {
+    "event_id": "client-local_ai_hit-49",
+    "event_type": "local_ai_hit",
+    "metadata": {
+      "elapsed_ms": 24002.4,
+      "final_damage": 8,
+      "module_id": "laser-1",
+      "raw_damage": 8,
+      "shield_active": false
+    },
+    "player_id": "wt-8288059b-9714-4817-ad64-397540b99b4e",
+    "session_id": "local-preview",
+    "timestamp_ms": 1787216481219
+  },
+  {
+    "event_id": "client-local_player_attack-50",
+    "event_type": "local_player_attack",
+    "metadata": {
+      "attacker": "Lazer",
+      "damage": 12,
+      "elapsed_ms": 25002.300000000003,
+      "target": "Rakip Jeneratör"
+    },
+    "player_id": "wt-8288059b-9714-4817-ad64-397540b99b4e",
+    "session_id": "local-preview",
+    "timestamp_ms": 1787216482218
+  },
+  {
+    "event_id": "client-local_player_attack-51",
+    "event_type": "local_player_attack",
+    "metadata": {
+      "attacker": "Lazer",
+      "damage": 12,
+      "elapsed_ms": 26002.300000000003,
+      "target": "Rakip Jeneratör"
+    },
+    "player_id": "wt-8288059b-9714-4817-ad64-397540b99b4e",
+    "session_id": "local-preview",
+    "timestamp_ms": 1787216483217
+  },
+  {
+    "event_id": "client-local_ai_hit-52",
+    "event_type": "local_ai_hit",
+    "metadata": {
+      "elapsed_ms": 26002.300000000003,
+      "final_damage": 8,
+      "module_id": "laser-1",
+      "raw_damage": 8,
+      "shield_active": false
+    },
+    "player_id": "wt-8288059b-9714-4817-ad64-397540b99b4e",
+    "session_id": "local-preview",
+    "timestamp_ms": 1787216483219
+  },
+  {
+    "event_id": "client-local_player_attack-53",
+    "event_type": "local_player_attack",
+    "metadata": {
+      "attacker": "Lazer",
+      "damage": 12,
+      "elapsed_ms": 27002.4,
+      "target": "Rakip Çekirdek"
+    },
+    "player_id": "wt-8288059b-9714-4817-ad64-397540b99b4e",
+    "session_id": "local-preview",
+    "timestamp_ms": 1787216484217
+  },
+  {
+    "event_id": "client-local_player_attack-54",
+    "event_type": "local_player_attack",
+    "metadata": {
+      "attacker": "Darbe Topu",
+      "damage": 32,
+      "elapsed_ms": 27002.4,
+      "target": "Rakip Çekirdek"
+    },
+    "player_id": "wt-8288059b-9714-4817-ad64-397540b99b4e",
+    "session_id": "local-preview",
+    "timestamp_ms": 1787216484218
+  },
+  {
+    "event_id": "client-local_player_attack-55",
+    "event_type": "local_player_attack",
+    "metadata": {
+      "attacker": "Lazer",
+      "damage": 12,
+      "elapsed_ms": 28002.300000000003,
+      "target": "Rakip Çekirdek"
+    },
+    "player_id": "wt-8288059b-9714-4817-ad64-397540b99b4e",
+    "session_id": "local-preview",
+    "timestamp_ms": 1787216485217
+  },
+  {
+    "event_id": "client-local_ai_hit-56",
+    "event_type": "local_ai_hit",
+    "metadata": {
+      "elapsed_ms": 28002.300000000003,
+      "final_damage": 8,
+      "module_id": "laser-1",
+      "raw_damage": 8,
+      "shield_active": false
+    },
+    "player_id": "wt-8288059b-9714-4817-ad64-397540b99b4e",
+    "session_id": "local-preview",
+    "timestamp_ms": 1787216485219
+  },
+  {
+    "event_id": "client-local_player_attack-57",
+    "event_type": "local_player_attack",
+    "metadata": {
+      "attacker": "Darbe Topu",
+      "damage": 32,
+      "elapsed_ms": 30002.199999999997,
+      "target": "Rakip Çekirdek"
+    },
+    "player_id": "wt-8288059b-9714-4817-ad64-397540b99b4e",
+    "session_id": "local-preview",
+    "timestamp_ms": 1787216487219
+  },
+  {
+    "event_id": "web-test-operation-web-test-beta.23-local-1787216488787",
+    "event_type": "web_test_operation_snapshot",
+    "metadata": {
+      "consistency_status": "consistent",
+      "operational_state": "running",
+      "preflight_ready": true,
+      "run_started": true,
+      "test_run_id": "web-test-beta.23-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1787216488787
+  },
+  {
+    "event_id": "web-test-stability-web-test-beta.23-local-1787216488876",
+    "event_type": "web_test_stability_snapshot",
+    "metadata": {
+      "operation_running_rate": 1.0,
+      "running_to_other_regressions": 0,
+      "stability": "stable",
+      "test_run_id": "web-test-beta.23-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1787216488876
+  },
+  {
+    "event_id": "client-local_ai_hit-58",
+    "event_type": "local_ai_hit",
+    "metadata": {
+      "elapsed_ms": 30002.199999999997,
+      "final_damage": 8,
+      "module_id": "pulse-cannon-1",
+      "raw_damage": 8,
+      "shield_active": false
+    },
+    "player_id": "wt-8288059b-9714-4817-ad64-397540b99b4e",
+    "session_id": "local-preview",
+    "timestamp_ms": 1787216487222
+  },
+  {
+    "event_id": "client-local_ai_hit-59",
+    "event_type": "local_ai_hit",
+    "metadata": {
+      "elapsed_ms": 32002.1,
+      "final_damage": 8,
+      "module_id": "pulse-cannon-1",
+      "raw_damage": 8,
+      "shield_active": false
+    },
+    "player_id": "wt-8288059b-9714-4817-ad64-397540b99b4e",
+    "session_id": "local-preview",
+    "timestamp_ms": 1787216489218
+  },
+  {
+    "event_id": "client-local_player_attack-60",
+    "event_type": "local_player_attack",
+    "metadata": {
+      "attacker": "Darbe Topu",
+      "damage": 32,
+      "elapsed_ms": 33002.1,
+      "target": "Rakip Çekirdek"
+    },
+    "player_id": "wt-8288059b-9714-4817-ad64-397540b99b4e",
+    "session_id": "local-preview",
+    "timestamp_ms": 1787216490217
+  },
+  {
+    "event_id": "client-local_ai_hit-61",
+    "event_type": "local_ai_hit",
+    "metadata": {
+      "elapsed_ms": 34002.1,
+      "final_damage": 8,
+      "module_id": "pulse-cannon-1",
+      "raw_damage": 8,
+      "shield_active": false
+    },
+    "player_id": "wt-8288059b-9714-4817-ad64-397540b99b4e",
+    "session_id": "local-preview",
+    "timestamp_ms": 1787216491218
+  },
+  {
+    "event_id": "client-local_player_attack-62",
+    "event_type": "local_player_attack",
+    "metadata": {
+      "attacker": "Darbe Topu",
+      "damage": 32,
+      "elapsed_ms": 36001.899999999994,
+      "target": "Rakip Çekirdek"
+    },
+    "player_id": "wt-8288059b-9714-4817-ad64-397540b99b4e",
+    "session_id": "local-preview",
+    "timestamp_ms": 1787216493217
+  },
+  {
+    "event_id": "client-local_ai_hit-63",
+    "event_type": "local_ai_hit",
+    "metadata": {
+      "elapsed_ms": 36001.899999999994,
+      "final_damage": 8,
+      "module_id": "pulse-cannon-1",
+      "raw_damage": 8,
+      "shield_active": false
+    },
+    "player_id": "wt-8288059b-9714-4817-ad64-397540b99b4e",
+    "session_id": "local-preview",
+    "timestamp_ms": 1787216493219
+  },
+  {
+    "event_id": "client-local_ai_hit-64",
+    "event_type": "local_ai_hit",
+    "metadata": {
+      "elapsed_ms": 38002,
+      "final_damage": 8,
+      "module_id": "pulse-cannon-1",
+      "raw_damage": 8,
+      "shield_active": false
+    },
+    "player_id": "wt-8288059b-9714-4817-ad64-397540b99b4e",
+    "session_id": "local-preview",
+    "timestamp_ms": 1787216495218
+  },
+  {
+    "event_id": "client-local_player_attack-65",
+    "event_type": "local_player_attack",
+    "metadata": {
+      "attacker": "Darbe Topu",
+      "damage": 32,
+      "elapsed_ms": 39002,
+      "target": "Rakip Çekirdek"
+    },
+    "player_id": "wt-8288059b-9714-4817-ad64-397540b99b4e",
+    "session_id": "local-preview",
+    "timestamp_ms": 1787216496216
+  },
+  {
+    "event_id": "client-circuit_credit_spent-66",
+    "event_type": "circuit_credit_spent",
+    "metadata": {
+      "amount": 10,
+      "command_kind": "move_module",
+      "elapsed_ms": 39647.8
+    },
+    "player_id": "wt-8288059b-9714-4817-ad64-397540b99b4e",
+    "session_id": "local-preview",
+    "timestamp_ms": 1787216496865
+  },
+  {
+    "event_id": "client-local_ai_hit-67",
+    "event_type": "local_ai_hit",
+    "metadata": {
+      "elapsed_ms": 40002,
+      "final_damage": 8,
+      "module_id": "pulse-cannon-1",
+      "raw_damage": 8,
+      "shield_active": false
+    },
+    "player_id": "wt-8288059b-9714-4817-ad64-397540b99b4e",
+    "session_id": "local-preview",
+    "timestamp_ms": 1787216497218
+  },
+  {
+    "event_id": "client-circuit_credit_spent-68",
+    "event_type": "circuit_credit_spent",
+    "metadata": {
+      "amount": 10,
+      "command_kind": "move_module",
+      "elapsed_ms": 41154.7
+    },
+    "player_id": "wt-8288059b-9714-4817-ad64-397540b99b4e",
+    "session_id": "local-preview",
+    "timestamp_ms": 1787216498372
+  },
+  {
+    "event_id": "web-test-stability-web-test-beta.23-local-1787216498841",
+    "event_type": "web_test_stability_snapshot",
+    "metadata": {
+      "operation_running_rate": 1.0,
+      "running_to_other_regressions": 0,
+      "stability": "stable",
+      "test_run_id": "web-test-beta.23-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1787216498841
+  },
+  {
+    "event_id": "web-test-operation-web-test-beta.23-local-1787216498956",
+    "event_type": "web_test_operation_snapshot",
+    "metadata": {
+      "consistency_status": "consistent",
+      "operational_state": "running",
+      "preflight_ready": true,
+      "run_started": true,
+      "test_run_id": "web-test-beta.23-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1787216498956
+  },
+  {
+    "event_id": "client-local_player_attack-69",
+    "event_type": "local_player_attack",
+    "metadata": {
+      "attacker": "Darbe Topu",
+      "damage": 32,
+      "elapsed_ms": 42002,
+      "target": "Rakip Çekirdek"
+    },
+    "player_id": "wt-8288059b-9714-4817-ad64-397540b99b4e",
+    "session_id": "local-preview",
+    "timestamp_ms": 1787216499217
+  },
+  {
+    "event_id": "client-local_ai_hit-70",
+    "event_type": "local_ai_hit",
+    "metadata": {
+      "elapsed_ms": 42002,
+      "final_damage": 8,
+      "module_id": "pulse-cannon-1",
+      "raw_damage": 8,
+      "shield_active": false
+    },
+    "player_id": "wt-8288059b-9714-4817-ad64-397540b99b4e",
+    "session_id": "local-preview",
+    "timestamp_ms": 1787216499218
+  },
+  {
+    "event_id": "client-local_ai_hit-71",
+    "event_type": "local_ai_hit",
+    "metadata": {
+      "elapsed_ms": 44002,
+      "final_damage": 8,
+      "module_id": "pulse-cannon-1",
+      "raw_damage": 8,
+      "shield_active": false
+    },
+    "player_id": "wt-8288059b-9714-4817-ad64-397540b99b4e",
+    "session_id": "local-preview",
+    "timestamp_ms": 1787216501218
+  },
+  {
+    "event_id": "client-local_player_attack-72",
+    "event_type": "local_player_attack",
+    "metadata": {
+      "attacker": "Darbe Topu",
+      "damage": 32,
+      "elapsed_ms": 45002,
+      "target": "Rakip Çekirdek"
+    },
+    "player_id": "wt-8288059b-9714-4817-ad64-397540b99b4e",
+    "session_id": "local-preview",
+    "timestamp_ms": 1787216502217
+  },
+  {
+    "event_id": "client-local_ai_hit-73",
+    "event_type": "local_ai_hit",
+    "metadata": {
+      "elapsed_ms": 46001.8,
+      "final_damage": 8,
+      "module_id": "pulse-cannon-1",
+      "raw_damage": 8,
+      "shield_active": false
+    },
+    "player_id": "wt-8288059b-9714-4817-ad64-397540b99b4e",
+    "session_id": "local-preview",
+    "timestamp_ms": 1787216503219
+  },
+  {
+    "event_id": "client-local_player_attack-74",
+    "event_type": "local_player_attack",
+    "metadata": {
+      "attacker": "Darbe Topu",
+      "damage": 32,
+      "elapsed_ms": 48001.8,
+      "target": "Rakip Çekirdek"
+    },
+    "player_id": "wt-8288059b-9714-4817-ad64-397540b99b4e",
+    "session_id": "local-preview",
+    "timestamp_ms": 1787216505217
+  },
+  {
+    "event_id": "client-local_ai_hit-75",
+    "event_type": "local_ai_hit",
+    "metadata": {
+      "elapsed_ms": 48001.8,
+      "final_damage": 8,
+      "module_id": "pulse-cannon-1",
+      "raw_damage": 8,
+      "shield_active": false
+    },
+    "player_id": "wt-8288059b-9714-4817-ad64-397540b99b4e",
+    "session_id": "local-preview",
+    "timestamp_ms": 1787216505218
+  },
+  {
+    "event_id": "client-local_ai_hit-76",
+    "event_type": "local_ai_hit",
+    "metadata": {
+      "elapsed_ms": 50001.8,
+      "final_damage": 8,
+      "module_id": "pulse-cannon-1",
+      "raw_damage": 8,
+      "shield_active": false
+    },
+    "player_id": "wt-8288059b-9714-4817-ad64-397540b99b4e",
+    "session_id": "local-preview",
+    "timestamp_ms": 1787216507218
+  },
+  {
+    "event_id": "client-local_player_attack-77",
+    "event_type": "local_player_attack",
+    "metadata": {
+      "attacker": "Darbe Topu",
+      "damage": 32,
+      "elapsed_ms": 51001.7,
+      "target": "Rakip Çekirdek"
+    },
+    "player_id": "wt-8288059b-9714-4817-ad64-397540b99b4e",
+    "session_id": "local-preview",
+    "timestamp_ms": 1787216508216
+  },
+  {
+    "event_id": "web-test-stability-web-test-beta.23-local-1787216509058",
+    "event_type": "web_test_stability_snapshot",
+    "metadata": {
+      "operation_running_rate": 1.0,
+      "running_to_other_regressions": 0,
+      "stability": "stable",
+      "test_run_id": "web-test-beta.23-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1787216509058
+  },
+  {
+    "event_id": "web-test-operation-web-test-beta.23-local-1787216509176",
+    "event_type": "web_test_operation_snapshot",
+    "metadata": {
+      "consistency_status": "consistent",
+      "operational_state": "running",
+      "preflight_ready": true,
+      "run_started": true,
+      "test_run_id": "web-test-beta.23-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1787216509176
+  },
+  {
+    "event_id": "web-test-stability-web-test-beta.23-local-1787216518979",
+    "event_type": "web_test_stability_snapshot",
+    "metadata": {
+      "operation_running_rate": 1.0,
+      "running_to_other_regressions": 0,
+      "stability": "stable",
+      "test_run_id": "web-test-beta.23-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1787216518979
+  },
+  {
+    "event_id": "web-test-operation-web-test-beta.23-local-1787216519077",
+    "event_type": "web_test_operation_snapshot",
+    "metadata": {
+      "consistency_status": "consistent",
+      "operational_state": "running",
+      "preflight_ready": true,
+      "run_started": true,
+      "test_run_id": "web-test-beta.23-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1787216519077
+  },
+  {
+    "event_id": "web-test-stability-web-test-beta.23-local-1787216528822",
+    "event_type": "web_test_stability_snapshot",
+    "metadata": {
+      "operation_running_rate": 1.0,
+      "running_to_other_regressions": 0,
+      "stability": "stable",
+      "test_run_id": "web-test-beta.23-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1787216528822
+  },
+  {
+    "event_id": "web-test-operation-web-test-beta.23-local-1787216528955",
+    "event_type": "web_test_operation_snapshot",
+    "metadata": {
+      "consistency_status": "consistent",
+      "operational_state": "running",
+      "preflight_ready": true,
+      "run_started": true,
+      "test_run_id": "web-test-beta.23-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1787216528955
+  },
+  {
+    "event_id": "web-test-stability-web-test-beta.23-local-1787216538750",
+    "event_type": "web_test_stability_snapshot",
+    "metadata": {
+      "operation_running_rate": 1.0,
+      "running_to_other_regressions": 0,
+      "stability": "stable",
+      "test_run_id": "web-test-beta.23-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1787216538750
+  },
+  {
+    "event_id": "web-test-operation-web-test-beta.23-local-1787216538906",
+    "event_type": "web_test_operation_snapshot",
+    "metadata": {
+      "consistency_status": "consistent",
+      "operational_state": "running",
+      "preflight_ready": true,
+      "run_started": true,
+      "test_run_id": "web-test-beta.23-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1787216538906
+  },
+  {
+    "event_id": "web-test-operation-web-test-beta.23-local-1787216548842",
+    "event_type": "web_test_operation_snapshot",
+    "metadata": {
+      "consistency_status": "consistent",
+      "operational_state": "running",
+      "preflight_ready": true,
+      "run_started": true,
+      "test_run_id": "web-test-beta.23-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1787216548842
+  },
+  {
+    "event_id": "web-test-stability-web-test-beta.23-local-1787216548924",
+    "event_type": "web_test_stability_snapshot",
+    "metadata": {
+      "operation_running_rate": 1.0,
+      "running_to_other_regressions": 0,
+      "stability": "stable",
+      "test_run_id": "web-test-beta.23-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1787216548924
+  },
+  {
+    "event_id": "web-test-stability-web-test-beta.23-local-1787216559124",
+    "event_type": "web_test_stability_snapshot",
+    "metadata": {
+      "operation_running_rate": 1.0,
+      "running_to_other_regressions": 0,
+      "stability": "stable",
+      "test_run_id": "web-test-beta.23-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1787216559124
+  },
+  {
+    "event_id": "web-test-operation-web-test-beta.23-local-1787216559151",
+    "event_type": "web_test_operation_snapshot",
+    "metadata": {
+      "consistency_status": "consistent",
+      "operational_state": "running",
+      "preflight_ready": true,
+      "run_started": true,
+      "test_run_id": "web-test-beta.23-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1787216559151
+  },
+  {
+    "event_id": "web-test-operation-web-test-beta.23-local-1787216569095",
+    "event_type": "web_test_operation_snapshot",
+    "metadata": {
+      "consistency_status": "consistent",
+      "operational_state": "running",
+      "preflight_ready": true,
+      "run_started": true,
+      "test_run_id": "web-test-beta.23-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1787216569095
+  },
+  {
+    "event_id": "web-test-stability-web-test-beta.23-local-1787216569126",
+    "event_type": "web_test_stability_snapshot",
+    "metadata": {
+      "operation_running_rate": 1.0,
+      "running_to_other_regressions": 0,
+      "stability": "stable",
+      "test_run_id": "web-test-beta.23-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1787216569126
+  },
+  {
+    "event_id": "web-test-operation-web-test-beta.23-local-1787216578933",
+    "event_type": "web_test_operation_snapshot",
+    "metadata": {
+      "consistency_status": "consistent",
+      "operational_state": "running",
+      "preflight_ready": true,
+      "run_started": true,
+      "test_run_id": "web-test-beta.23-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1787216578933
+  },
+  {
+    "event_id": "web-test-stability-web-test-beta.23-local-1787216579026",
+    "event_type": "web_test_stability_snapshot",
+    "metadata": {
+      "operation_running_rate": 1.0,
+      "running_to_other_regressions": 0,
+      "stability": "stable",
+      "test_run_id": "web-test-beta.23-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1787216579026
+  },
+  {
+    "event_id": "web-test-operation-web-test-beta.23-local-1787216588854",
+    "event_type": "web_test_operation_snapshot",
+    "metadata": {
+      "consistency_status": "consistent",
+      "operational_state": "running",
+      "preflight_ready": true,
+      "run_started": true,
+      "test_run_id": "web-test-beta.23-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1787216588854
+  },
+  {
+    "event_id": "web-test-stability-web-test-beta.23-local-1787216588883",
+    "event_type": "web_test_stability_snapshot",
+    "metadata": {
+      "operation_running_rate": 1.0,
+      "running_to_other_regressions": 0,
+      "stability": "stable",
+      "test_run_id": "web-test-beta.23-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1787216588883
+  },
+  {
+    "event_id": "web-test-operation-web-test-beta.23-local-1787216598746",
+    "event_type": "web_test_operation_snapshot",
+    "metadata": {
+      "consistency_status": "consistent",
+      "operational_state": "running",
+      "preflight_ready": true,
+      "run_started": true,
+      "test_run_id": "web-test-beta.23-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1787216598746
+  },
+  {
+    "event_id": "web-test-stability-web-test-beta.23-local-1787216598854",
+    "event_type": "web_test_stability_snapshot",
+    "metadata": {
+      "operation_running_rate": 1.0,
+      "running_to_other_regressions": 0,
+      "stability": "stable",
+      "test_run_id": "web-test-beta.23-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1787216598854
+  },
+  {
+    "event_id": "web-test-operation-web-test-beta.23-local-1787216608703",
+    "event_type": "web_test_operation_snapshot",
+    "metadata": {
+      "consistency_status": "consistent",
+      "operational_state": "running",
+      "preflight_ready": true,
+      "run_started": true,
+      "test_run_id": "web-test-beta.23-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1787216608703
+  },
+  {
+    "event_id": "web-test-stability-web-test-beta.23-local-1787216608871",
+    "event_type": "web_test_stability_snapshot",
+    "metadata": {
+      "operation_running_rate": 1.0,
+      "running_to_other_regressions": 0,
+      "stability": "stable",
+      "test_run_id": "web-test-beta.23-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1787216608871
+  },
+  {
+    "event_id": "web-test-stability-web-test-beta.23-local-1787216618741",
+    "event_type": "web_test_stability_snapshot",
+    "metadata": {
+      "operation_running_rate": 1.0,
+      "running_to_other_regressions": 0,
+      "stability": "stable",
+      "test_run_id": "web-test-beta.23-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1787216618741
+  },
+  {
+    "event_id": "web-test-operation-web-test-beta.23-local-1787216618880",
+    "event_type": "web_test_operation_snapshot",
+    "metadata": {
+      "consistency_status": "consistent",
+      "operational_state": "running",
+      "preflight_ready": true,
+      "run_started": true,
+      "test_run_id": "web-test-beta.23-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1787216618880
+  },
+  {
+    "event_id": "web-test-operation-web-test-beta.23-local-1787216628913",
+    "event_type": "web_test_operation_snapshot",
+    "metadata": {
+      "consistency_status": "consistent",
+      "operational_state": "running",
+      "preflight_ready": true,
+      "run_started": true,
+      "test_run_id": "web-test-beta.23-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1787216628913
+  },
+  {
+    "event_id": "web-test-stability-web-test-beta.23-local-1787216629011",
+    "event_type": "web_test_stability_snapshot",
+    "metadata": {
+      "operation_running_rate": 1.0,
+      "running_to_other_regressions": 0,
+      "stability": "stable",
+      "test_run_id": "web-test-beta.23-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1787216629011
+  },
+  {
+    "event_id": "web-test-operation-web-test-beta.23-local-1787216638820",
+    "event_type": "web_test_operation_snapshot",
+    "metadata": {
+      "consistency_status": "consistent",
+      "operational_state": "running",
+      "preflight_ready": true,
+      "run_started": true,
+      "test_run_id": "web-test-beta.23-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1787216638820
+  },
+  {
+    "event_id": "web-test-stability-web-test-beta.23-local-1787216638946",
+    "event_type": "web_test_stability_snapshot",
+    "metadata": {
+      "operation_running_rate": 1.0,
+      "running_to_other_regressions": 0,
+      "stability": "stable",
+      "test_run_id": "web-test-beta.23-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1787216638946
+  },
+  {
+    "event_id": "web-test-operation-web-test-beta.23-local-1787216648823",
+    "event_type": "web_test_operation_snapshot",
+    "metadata": {
+      "consistency_status": "consistent",
+      "operational_state": "running",
+      "preflight_ready": true,
+      "run_started": true,
+      "test_run_id": "web-test-beta.23-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1787216648823
+  },
+  {
+    "event_id": "web-test-stability-web-test-beta.23-local-1787216648942",
+    "event_type": "web_test_stability_snapshot",
+    "metadata": {
+      "operation_running_rate": 1.0,
+      "running_to_other_regressions": 0,
+      "stability": "stable",
+      "test_run_id": "web-test-beta.23-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1787216648942
+  },
+  {
+    "event_id": "web-test-operation-web-test-beta.23-local-1787216658777",
+    "event_type": "web_test_operation_snapshot",
+    "metadata": {
+      "consistency_status": "consistent",
+      "operational_state": "running",
+      "preflight_ready": true,
+      "run_started": true,
+      "test_run_id": "web-test-beta.23-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1787216658777
+  },
+  {
+    "event_id": "web-test-stability-web-test-beta.23-local-1787216658941",
+    "event_type": "web_test_stability_snapshot",
+    "metadata": {
+      "operation_running_rate": 1.0,
+      "running_to_other_regressions": 0,
+      "stability": "stable",
+      "test_run_id": "web-test-beta.23-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1787216658941
+  },
+  {
+    "event_id": "web-test-operation-web-test-beta.23-local-1787216668826",
+    "event_type": "web_test_operation_snapshot",
+    "metadata": {
+      "consistency_status": "consistent",
+      "operational_state": "running",
+      "preflight_ready": true,
+      "run_started": true,
+      "test_run_id": "web-test-beta.23-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1787216668826
+  },
+  {
+    "event_id": "web-test-stability-web-test-beta.23-local-1787216668928",
+    "event_type": "web_test_stability_snapshot",
+    "metadata": {
+      "operation_running_rate": 1.0,
+      "running_to_other_regressions": 0,
+      "stability": "stable",
+      "test_run_id": "web-test-beta.23-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1787216668928
+  },
+  {
+    "event_id": "web-test-stability-web-test-beta.23-local-1787216678905",
+    "event_type": "web_test_stability_snapshot",
+    "metadata": {
+      "operation_running_rate": 1.0,
+      "running_to_other_regressions": 0,
+      "stability": "stable",
+      "test_run_id": "web-test-beta.23-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1787216678905
+  },
+  {
+    "event_id": "web-test-operation-web-test-beta.23-local-1787216679057",
+    "event_type": "web_test_operation_snapshot",
+    "metadata": {
+      "consistency_status": "consistent",
+      "operational_state": "running",
+      "preflight_ready": true,
+      "run_started": true,
+      "test_run_id": "web-test-beta.23-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1787216679057
+  },
+  {
+    "event_id": "web-test-launch-wt-8288059b-9714-4817-ad64-397540b99b4e-1787216685221",
+    "event_type": "web_test_launch_attempted",
+    "metadata": {
+      "failed_checks": [],
+      "launch_ready": true,
+      "test_run_id": "web-test-beta.23-local"
+    },
+    "player_id": "wt-8288059b-9714-4817-ad64-397540b99b4e",
+    "session_id": null,
+    "timestamp_ms": 1787216685221
+  },
+  {
+    "event_id": "web-test-operation-web-test-beta.23-local-1787216689138",
+    "event_type": "web_test_operation_snapshot",
+    "metadata": {
+      "consistency_status": "consistent",
+      "operational_state": "running",
+      "preflight_ready": true,
+      "run_started": true,
+      "test_run_id": "web-test-beta.23-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1787216689138
+  },
+  {
+    "event_id": "web-test-stability-web-test-beta.23-local-1787216689255",
+    "event_type": "web_test_stability_snapshot",
+    "metadata": {
+      "operation_running_rate": 1.0,
+      "running_to_other_regressions": 0,
+      "stability": "stable",
+      "test_run_id": "web-test-beta.23-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1787216689255
+  },
+  {
+    "event_id": "web-test-operation-web-test-beta.23-local-1787216698981",
+    "event_type": "web_test_operation_snapshot",
+    "metadata": {
+      "consistency_status": "consistent",
+      "operational_state": "running",
+      "preflight_ready": true,
+      "run_started": true,
+      "test_run_id": "web-test-beta.23-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1787216698981
+  },
+  {
+    "event_id": "web-test-stability-web-test-beta.23-local-1787216698999",
+    "event_type": "web_test_stability_snapshot",
+    "metadata": {
+      "operation_running_rate": 1.0,
+      "running_to_other_regressions": 0,
+      "stability": "stable",
+      "test_run_id": "web-test-beta.23-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1787216698999
+  },
+  {
+    "event_id": "web-test-operation-web-test-beta.23-local-1787216709539",
+    "event_type": "web_test_operation_snapshot",
+    "metadata": {
+      "consistency_status": "consistent",
+      "operational_state": "running",
+      "preflight_ready": true,
+      "run_started": true,
+      "test_run_id": "web-test-beta.23-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1787216709539
+  },
+  {
+    "event_id": "web-test-stability-web-test-beta.23-local-1787216709616",
+    "event_type": "web_test_stability_snapshot",
+    "metadata": {
+      "operation_running_rate": 1.0,
+      "running_to_other_regressions": 0,
+      "stability": "stable",
+      "test_run_id": "web-test-beta.23-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1787216709616
+  },
+  {
+    "event_id": "web-test-stability-web-test-beta.23-local-1787216718088",
+    "event_type": "web_test_stability_snapshot",
+    "metadata": {
+      "operation_running_rate": 1.0,
+      "running_to_other_regressions": 0,
+      "stability": "stable",
+      "test_run_id": "web-test-beta.23-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1787216718088
+  },
+  {
+    "event_id": "web-test-operation-web-test-beta.23-local-1787216718156",
+    "event_type": "web_test_operation_snapshot",
+    "metadata": {
+      "consistency_status": "consistent",
+      "operational_state": "running",
+      "preflight_ready": true,
+      "run_started": true,
+      "test_run_id": "web-test-beta.23-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1787216718156
+  },
+  {
+    "event_id": "web-test-operation-web-test-beta.23-local-1787216728069",
+    "event_type": "web_test_operation_snapshot",
+    "metadata": {
+      "consistency_status": "consistent",
+      "operational_state": "running",
+      "preflight_ready": true,
+      "run_started": true,
+      "test_run_id": "web-test-beta.23-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1787216728069
+  },
+  {
+    "event_id": "web-test-stability-web-test-beta.23-local-1787216728154",
+    "event_type": "web_test_stability_snapshot",
+    "metadata": {
+      "operation_running_rate": 1.0,
+      "running_to_other_regressions": 0,
+      "stability": "stable",
+      "test_run_id": "web-test-beta.23-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1787216728154
+  },
+  {
+    "event_id": "web-test-operation-web-test-beta.23-local-1787216738066",
+    "event_type": "web_test_operation_snapshot",
+    "metadata": {
+      "consistency_status": "consistent",
+      "operational_state": "running",
+      "preflight_ready": true,
+      "run_started": true,
+      "test_run_id": "web-test-beta.23-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1787216738066
+  },
+  {
+    "event_id": "web-test-stability-web-test-beta.23-local-1787216738079",
+    "event_type": "web_test_stability_snapshot",
+    "metadata": {
+      "operation_running_rate": 1.0,
+      "running_to_other_regressions": 0,
+      "stability": "stable",
+      "test_run_id": "web-test-beta.23-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1787216738079
+  },
+  {
+    "event_id": "web-test-stability-web-test-beta.23-local-1787216748120",
+    "event_type": "web_test_stability_snapshot",
+    "metadata": {
+      "operation_running_rate": 1.0,
+      "running_to_other_regressions": 0,
+      "stability": "stable",
+      "test_run_id": "web-test-beta.23-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1787216748120
+  },
+  {
+    "event_id": "web-test-operation-web-test-beta.23-local-1787216748206",
+    "event_type": "web_test_operation_snapshot",
+    "metadata": {
+      "consistency_status": "consistent",
+      "operational_state": "running",
+      "preflight_ready": true,
+      "run_started": true,
+      "test_run_id": "web-test-beta.23-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1787216748206
+  },
+  {
+    "event_id": "web-test-operation-web-test-beta.23-local-1787216758151",
+    "event_type": "web_test_operation_snapshot",
+    "metadata": {
+      "consistency_status": "consistent",
+      "operational_state": "running",
+      "preflight_ready": true,
+      "run_started": true,
+      "test_run_id": "web-test-beta.23-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1787216758151
+  },
+  {
+    "event_id": "web-test-stability-web-test-beta.23-local-1787216758205",
+    "event_type": "web_test_stability_snapshot",
+    "metadata": {
+      "operation_running_rate": 1.0,
+      "running_to_other_regressions": 0,
+      "stability": "stable",
+      "test_run_id": "web-test-beta.23-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1787216758205
+  },
+  {
+    "event_id": "web-test-stability-web-test-beta.23-local-1787216768102",
+    "event_type": "web_test_stability_snapshot",
+    "metadata": {
+      "operation_running_rate": 1.0,
+      "running_to_other_regressions": 0,
+      "stability": "stable",
+      "test_run_id": "web-test-beta.23-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1787216768102
+  },
+  {
+    "event_id": "web-test-operation-web-test-beta.23-local-1787216768114",
+    "event_type": "web_test_operation_snapshot",
+    "metadata": {
+      "consistency_status": "consistent",
+      "operational_state": "running",
+      "preflight_ready": true,
+      "run_started": true,
+      "test_run_id": "web-test-beta.23-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1787216768114
+  },
+  {
+    "event_id": "web-test-operation-web-test-beta.23-local-1787216778082",
+    "event_type": "web_test_operation_snapshot",
+    "metadata": {
+      "consistency_status": "consistent",
+      "operational_state": "running",
+      "preflight_ready": true,
+      "run_started": true,
+      "test_run_id": "web-test-beta.23-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1787216778082
+  },
+  {
+    "event_id": "web-test-stability-web-test-beta.23-local-1787216778097",
+    "event_type": "web_test_stability_snapshot",
+    "metadata": {
+      "operation_running_rate": 1.0,
+      "running_to_other_regressions": 0,
+      "stability": "stable",
+      "test_run_id": "web-test-beta.23-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1787216778097
+  },
+  {
+    "event_id": "web-test-launch-wt-8288059b-9714-4817-ad64-397540b99b4e-1787216788411",
+    "event_type": "web_test_launch_attempted",
+    "metadata": {
+      "failed_checks": [],
+      "launch_ready": true,
+      "test_run_id": "web-test-beta.23-local"
+    },
+    "player_id": "wt-8288059b-9714-4817-ad64-397540b99b4e",
+    "session_id": null,
+    "timestamp_ms": 1787216788411
+  },
+  {
+    "event_id": "web-test-operation-web-test-beta.23-local-1787216789407",
+    "event_type": "web_test_operation_snapshot",
+    "metadata": {
+      "consistency_status": "consistent",
+      "operational_state": "running",
+      "preflight_ready": true,
+      "run_started": true,
+      "test_run_id": "web-test-beta.23-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1787216789407
+  },
+  {
+    "event_id": "web-test-stability-web-test-beta.23-local-1787216789569",
+    "event_type": "web_test_stability_snapshot",
+    "metadata": {
+      "operation_running_rate": 1.0,
+      "running_to_other_regressions": 0,
+      "stability": "stable",
+      "test_run_id": "web-test-beta.23-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1787216789569
+  },
+  {
+    "event_id": "web-test-launch-wt-8288059b-9714-4817-ad64-397540b99b4e-1787216792846",
+    "event_type": "web_test_launch_attempted",
+    "metadata": {
+      "failed_checks": [],
+      "launch_ready": true,
+      "test_run_id": "web-test-beta.23-local"
+    },
+    "player_id": "wt-8288059b-9714-4817-ad64-397540b99b4e",
+    "session_id": null,
+    "timestamp_ms": 1787216792846
+  },
+  {
+    "event_id": "client-local_battle_completed-78",
+    "event_type": "local_battle_completed",
+    "metadata": {
+      "ai_hits": 24,
+      "credits_spent": 100,
+      "damage_dealt": 851,
+      "damage_received": 192,
+      "duration_ms": 51002,
+      "frame_count": 5549,
+      "generator_gate_visits": {
+        "east": 0,
+        "north": 0,
+        "south": 1,
+        "west": 0
+      },
+      "generator_moves": 0,
+      "max_frame_gap_ms": 125,
+      "module_changes": 3,
+      "pause_violation_count": 0,
+      "player_attacks": 47,
+      "shield_mitigated": 0,
+      "started_at_ms": 1787216457214,
+      "ui_interaction_samples": [
+        {
+          "at_epoch_ms": 1787216477475,
+          "battle_clock_delta_ms": 0,
+          "category": "module_place",
+          "elapsed_ms": 20253,
+          "frame_gap_ms": 9,
+          "kind": "place_module"
+        },
+        {
+          "at_epoch_ms": 1787216496865,
+          "battle_clock_delta_ms": 0,
+          "category": "module_move",
+          "elapsed_ms": 39648,
+          "frame_gap_ms": 4,
+          "kind": "move_module"
+        },
+        {
+          "at_epoch_ms": 1787216498372,
+          "battle_clock_delta_ms": 1507,
+          "category": "module_move",
+          "elapsed_ms": 41155,
+          "frame_gap_ms": 4,
+          "kind": "move_module"
+        }
+      ],
+      "ui_interactions": 3,
+      "ux_categories": {
+        "booster": 0,
+        "generator_gate": 0,
+        "module_move": 2,
+        "module_place": 1,
+        "other_ui": 0,
+        "technical_drawer": 0
+      },
+      "ux_matrix": {
+        "booster": {
+          "count": 0,
+          "last_elapsed_ms": null,
+          "max_clock_delta_ms": 0,
+          "max_frame_gap_ms": 0,
+          "total_clock_delta_ms": 0,
+          "total_frame_gap_ms": 0
+        },
+        "generator_gate": {
+          "count": 0,
+          "last_elapsed_ms": null,
+          "max_clock_delta_ms": 0,
+          "max_frame_gap_ms": 0,
+          "total_clock_delta_ms": 0,
+          "total_frame_gap_ms": 0
+        },
+        "module_move": {
+          "count": 2,
+          "last_elapsed_ms": 41155,
+          "max_clock_delta_ms": 1507,
+          "max_frame_gap_ms": 3.6999999999970896,
+          "total_clock_delta_ms": 1507,
+          "total_frame_gap_ms": 7.200000047683716
+        },
+        "module_place": {
+          "count": 1,
+          "last_elapsed_ms": 20253,
+          "max_clock_delta_ms": 0,
+          "max_frame_gap_ms": 8.700000047683716,
+          "total_clock_delta_ms": 0,
+          "total_frame_gap_ms": 8.700000047683716
+        },
+        "other_ui": {
+          "count": 0,
+          "last_elapsed_ms": null,
+          "max_clock_delta_ms": 0,
+          "max_frame_gap_ms": 0,
+          "total_clock_delta_ms": 0,
+          "total_frame_gap_ms": 0
+        },
+        "technical_drawer": {
+          "count": 0,
+          "last_elapsed_ms": null,
+          "max_clock_delta_ms": 0,
+          "max_frame_gap_ms": 0,
+          "total_clock_delta_ms": 0,
+          "total_frame_gap_ms": 0
+        }
+      },
+      "won": true
+    },
+    "player_id": "wt-8288059b-9714-4817-ad64-397540b99b4e",
+    "session_id": "local-preview",
+    "timestamp_ms": 1787216508218
+  },
+  {
+    "event_id": "client-rematch_requested-79",
+    "event_type": "rematch_requested",
+    "metadata": {
+      "previous_session_id": "local-preview"
+    },
+    "player_id": "wt-8288059b-9714-4817-ad64-397540b99b4e",
+    "session_id": "local-preview",
+    "timestamp_ms": 1787216795683
+  },
+  {
+    "event_id": "client-local_battle_started-80",
+    "event_type": "local_battle_started",
+    "metadata": {
+      "initial_credits": 200,
+      "initial_generator_gate": "south",
+      "selected_pool_size": 18
+    },
+    "player_id": "wt-8288059b-9714-4817-ad64-397540b99b4e",
+    "session_id": "local-preview",
+    "timestamp_ms": 1787216795692
+  },
+  {
+    "event_id": "client-local_player_attack-81",
+    "event_type": "local_player_attack",
+    "metadata": {
+      "attacker": "Lazer",
+      "damage": 8,
+      "elapsed_ms": 0,
+      "target": "Rakip Kalkan"
+    },
+    "player_id": "wt-8288059b-9714-4817-ad64-397540b99b4e",
+    "session_id": "local-preview",
+    "timestamp_ms": 1787216795701
+  },
+  {
+    "event_id": "client-local_player_attack-82",
+    "event_type": "local_player_attack",
+    "metadata": {
+      "attacker": "Darbe Topu",
+      "damage": 21,
+      "elapsed_ms": 0,
+      "target": "Rakip Kalkan"
+    },
+    "player_id": "wt-8288059b-9714-4817-ad64-397540b99b4e",
+    "session_id": "local-preview",
+    "timestamp_ms": 1787216795701
+  },
+  {
+    "event_id": "client-local_player_attack-83",
+    "event_type": "local_player_attack",
+    "metadata": {
+      "attacker": "Lazer",
+      "damage": 8,
+      "elapsed_ms": 1010.9000000476954,
+      "target": "Rakip Kalkan"
+    },
+    "player_id": "wt-8288059b-9714-4817-ad64-397540b99b4e",
+    "session_id": "local-preview",
+    "timestamp_ms": 1787216796703
+  },
+  {
+    "event_id": "client-local_player_attack-84",
+    "event_type": "local_player_attack",
+    "metadata": {
+      "attacker": "Lazer",
+      "damage": 8,
+      "elapsed_ms": 2004.100000047707,
+      "target": "Rakip Kalkan"
+    },
+    "player_id": "wt-8288059b-9714-4817-ad64-397540b99b4e",
+    "session_id": "local-preview",
+    "timestamp_ms": 1787216797698
+  },
+  {
+    "event_id": "client-local_player_attack-85",
+    "event_type": "local_player_attack",
+    "metadata": {
+      "attacker": "Lazer",
+      "damage": 8,
+      "elapsed_ms": 3003.8000000476604,
+      "target": "Rakip Kalkan"
+    },
+    "player_id": "wt-8288059b-9714-4817-ad64-397540b99b4e",
+    "session_id": "local-preview",
+    "timestamp_ms": 1787216798697
+  },
+  {
+    "event_id": "web-test-stability-web-test-beta.23-local-1787216799676",
+    "event_type": "web_test_stability_snapshot",
+    "metadata": {
+      "operation_running_rate": 1.0,
+      "running_to_other_regressions": 0,
+      "stability": "stable",
+      "test_run_id": "web-test-beta.23-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1787216799676
+  },
+  {
+    "event_id": "client-local_player_attack-86",
+    "event_type": "local_player_attack",
+    "metadata": {
+      "attacker": "Darbe Topu",
+      "damage": 21,
+      "elapsed_ms": 3003.8000000476604,
+      "target": "Rakip Kalkan"
+    },
+    "player_id": "wt-8288059b-9714-4817-ad64-397540b99b4e",
+    "session_id": "local-preview",
+    "timestamp_ms": 1787216798697
+  },
+  {
+    "event_id": "client-local_player_attack-87",
+    "event_type": "local_player_attack",
+    "metadata": {
+      "attacker": "Lazer",
+      "damage": 8,
+      "elapsed_ms": 4010.600000047707,
+      "target": "Rakip Kalkan"
+    },
+    "player_id": "wt-8288059b-9714-4817-ad64-397540b99b4e",
+    "session_id": "local-preview",
+    "timestamp_ms": 1787216799705
+  },
+  {
+    "event_id": "web-test-operation-web-test-beta.23-local-1787216799847",
+    "event_type": "web_test_operation_snapshot",
+    "metadata": {
+      "consistency_status": "consistent",
+      "operational_state": "running",
+      "preflight_ready": true,
+      "run_started": true,
+      "test_run_id": "web-test-beta.23-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1787216799847
+  },
+  {
+    "event_id": "client-local_player_attack-88",
+    "event_type": "local_player_attack",
+    "metadata": {
+      "attacker": "Lazer",
+      "damage": 8,
+      "elapsed_ms": 5004.000000047672,
+      "target": "Rakip Kalkan"
+    },
+    "player_id": "wt-8288059b-9714-4817-ad64-397540b99b4e",
+    "session_id": "local-preview",
+    "timestamp_ms": 1787216800698
+  },
+  {
+    "event_id": "client-local_ai_hit-89",
+    "event_type": "local_ai_hit",
+    "metadata": {
+      "elapsed_ms": 5004.000000047672,
+      "final_damage": 8,
+      "module_id": "laser-1",
+      "raw_damage": 8,
+      "shield_active": false
+    },
+    "player_id": "wt-8288059b-9714-4817-ad64-397540b99b4e",
+    "session_id": "local-preview",
+    "timestamp_ms": 1787216800700
+  },
+  {
+    "event_id": "client-local_player_attack-90",
+    "event_type": "local_player_attack",
+    "metadata": {
+      "attacker": "Lazer",
+      "damage": 8,
+      "elapsed_ms": 6017.30000004766,
+      "target": "Rakip Kalkan"
+    },
+    "player_id": "wt-8288059b-9714-4817-ad64-397540b99b4e",
+    "session_id": "local-preview",
+    "timestamp_ms": 1787216801708
+  },
+  {
+    "event_id": "client-local_player_attack-91",
+    "event_type": "local_player_attack",
+    "metadata": {
+      "attacker": "Darbe Topu",
+      "damage": 21,
+      "elapsed_ms": 6017.30000004766,
+      "target": "Rakip Kalkan"
+    },
+    "player_id": "wt-8288059b-9714-4817-ad64-397540b99b4e",
+    "session_id": "local-preview",
+    "timestamp_ms": 1787216801708
+  },
+  {
+    "event_id": "client-local_ai_hit-92",
+    "event_type": "local_ai_hit",
+    "metadata": {
+      "elapsed_ms": 6017.30000004766,
+      "final_damage": 8,
+      "module_id": "laser-1",
+      "raw_damage": 8,
+      "shield_active": false
+    },
+    "player_id": "wt-8288059b-9714-4817-ad64-397540b99b4e",
+    "session_id": "local-preview",
+    "timestamp_ms": 1787216801711
+  },
+  {
+    "event_id": "client-local_player_attack-93",
+    "event_type": "local_player_attack",
+    "metadata": {
+      "attacker": "Lazer",
+      "damage": 8,
+      "elapsed_ms": 7010.500000047672,
+      "target": "Rakip Kalkan"
+    },
+    "player_id": "wt-8288059b-9714-4817-ad64-397540b99b4e",
+    "session_id": "local-preview",
+    "timestamp_ms": 1787216802704
+  },
+  {
+    "event_id": "client-local_player_attack-94",
+    "event_type": "local_player_attack",
+    "metadata": {
+      "attacker": "Lazer",
+      "damage": 8,
+      "elapsed_ms": 8003.900000047695,
+      "target": "Rakip Kalkan"
+    },
+    "player_id": "wt-8288059b-9714-4817-ad64-397540b99b4e",
+    "session_id": "local-preview",
+    "timestamp_ms": 1787216803698
+  },
+  {
+    "event_id": "client-local_ai_hit-95",
+    "event_type": "local_ai_hit",
+    "metadata": {
+      "elapsed_ms": 8003.900000047695,
+      "final_damage": 8,
+      "module_id": "laser-1",
+      "raw_damage": 8,
+      "shield_active": false
+    },
+    "player_id": "wt-8288059b-9714-4817-ad64-397540b99b4e",
+    "session_id": "local-preview",
+    "timestamp_ms": 1787216803702
+  },
+  {
+    "event_id": "client-local_player_attack-96",
+    "event_type": "local_player_attack",
+    "metadata": {
+      "attacker": "Lazer",
+      "damage": 8,
+      "elapsed_ms": 9010.500000047672,
+      "target": "Rakip Kalkan"
+    },
+    "player_id": "wt-8288059b-9714-4817-ad64-397540b99b4e",
+    "session_id": "local-preview",
+    "timestamp_ms": 1787216804705
+  },
+  {
+    "event_id": "client-local_player_attack-97",
+    "event_type": "local_player_attack",
+    "metadata": {
+      "attacker": "Darbe Topu",
+      "damage": 32,
+      "elapsed_ms": 9010.500000047672,
+      "target": "Rakip Lazer"
+    },
+    "player_id": "wt-8288059b-9714-4817-ad64-397540b99b4e",
+    "session_id": "local-preview",
+    "timestamp_ms": 1787216804705
+  },
+  {
+    "event_id": "client-local_player_attack-98",
+    "event_type": "local_player_attack",
+    "metadata": {
+      "attacker": "Lazer",
+      "damage": 12,
+      "elapsed_ms": 10003.30000004766,
+      "target": "Rakip Lazer"
+    },
+    "player_id": "wt-8288059b-9714-4817-ad64-397540b99b4e",
+    "session_id": "local-preview",
+    "timestamp_ms": 1787216805697
+  },
+  {
+    "event_id": "client-local_ai_hit-99",
+    "event_type": "local_ai_hit",
+    "metadata": {
+      "elapsed_ms": 10003.30000004766,
+      "final_damage": 8,
+      "module_id": "laser-1",
+      "raw_damage": 8,
+      "shield_active": false
+    },
+    "player_id": "wt-8288059b-9714-4817-ad64-397540b99b4e",
+    "session_id": "local-preview",
+    "timestamp_ms": 1787216805699
+  },
+  {
+    "event_id": "client-local_player_attack-100",
+    "event_type": "local_player_attack",
+    "metadata": {
+      "attacker": "Lazer",
+      "damage": 12,
+      "elapsed_ms": 11003.500000047672,
+      "target": "Rakip Lazer"
+    },
+    "player_id": "wt-8288059b-9714-4817-ad64-397540b99b4e",
+    "session_id": "local-preview",
+    "timestamp_ms": 1787216806694
+  },
+  {
+    "event_id": "client-local_player_attack-101",
+    "event_type": "local_player_attack",
+    "metadata": {
+      "attacker": "Lazer",
+      "damage": 12,
+      "elapsed_ms": 12010.30000004766,
+      "target": "Rakip Lazer"
+    },
+    "player_id": "wt-8288059b-9714-4817-ad64-397540b99b4e",
+    "session_id": "local-preview",
+    "timestamp_ms": 1787216807705
+  },
+  {
+    "event_id": "client-local_player_attack-102",
+    "event_type": "local_player_attack",
+    "metadata": {
+      "attacker": "Darbe Topu",
+      "damage": 32,
+      "elapsed_ms": 12010.30000004766,
+      "target": "Rakip Lazer"
+    },
+    "player_id": "wt-8288059b-9714-4817-ad64-397540b99b4e",
+    "session_id": "local-preview",
+    "timestamp_ms": 1787216807706
+  },
+  {
+    "event_id": "client-local_ai_hit-103",
+    "event_type": "local_ai_hit",
+    "metadata": {
+      "elapsed_ms": 12010.30000004766,
+      "final_damage": 8,
+      "module_id": "laser-1",
+      "raw_damage": 8,
+      "shield_active": false
+    },
+    "player_id": "wt-8288059b-9714-4817-ad64-397540b99b4e",
+    "session_id": "local-preview",
+    "timestamp_ms": 1787216807708
+  },
+  {
+    "event_id": "client-local_player_attack-104",
+    "event_type": "local_player_attack",
+    "metadata": {
+      "attacker": "Lazer",
+      "damage": 12,
+      "elapsed_ms": 13010.80000004766,
+      "target": "Rakip Batarya"
+    },
+    "player_id": "wt-8288059b-9714-4817-ad64-397540b99b4e",
+    "session_id": "local-preview",
+    "timestamp_ms": 1787216808705
+  },
+  {
+    "event_id": "client-local_player_attack-105",
+    "event_type": "local_player_attack",
+    "metadata": {
+      "attacker": "Lazer",
+      "damage": 12,
+      "elapsed_ms": 14003.30000004766,
+      "target": "Rakip Batarya"
+    },
+    "player_id": "wt-8288059b-9714-4817-ad64-397540b99b4e",
+    "session_id": "local-preview",
+    "timestamp_ms": 1787216809694
+  },
+  {
+    "event_id": "web-test-stability-web-test-beta.23-local-1787216810224",
+    "event_type": "web_test_stability_snapshot",
+    "metadata": {
+      "operation_running_rate": 1.0,
+      "running_to_other_regressions": 0,
+      "stability": "stable",
+      "test_run_id": "web-test-beta.23-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1787216810224
+  },
+  {
+    "event_id": "web-test-operation-web-test-beta.23-local-1787216810285",
+    "event_type": "web_test_operation_snapshot",
+    "metadata": {
+      "consistency_status": "consistent",
+      "operational_state": "running",
+      "preflight_ready": true,
+      "run_started": true,
+      "test_run_id": "web-test-beta.23-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1787216810285
+  },
+  {
+    "event_id": "client-local_ai_hit-106",
+    "event_type": "local_ai_hit",
+    "metadata": {
+      "elapsed_ms": 14003.30000004766,
+      "final_damage": 8,
+      "module_id": "laser-1",
+      "raw_damage": 8,
+      "shield_active": false
+    },
+    "player_id": "wt-8288059b-9714-4817-ad64-397540b99b4e",
+    "session_id": "local-preview",
+    "timestamp_ms": 1787216809698
+  },
+  {
+    "event_id": "client-local_player_attack-107",
+    "event_type": "local_player_attack",
+    "metadata": {
+      "attacker": "Lazer",
+      "damage": 12,
+      "elapsed_ms": 15003.400000047695,
+      "target": "Rakip Batarya"
+    },
+    "player_id": "wt-8288059b-9714-4817-ad64-397540b99b4e",
+    "session_id": "local-preview",
+    "timestamp_ms": 1787216810697
+  },
+  {
+    "event_id": "client-local_player_attack-108",
+    "event_type": "local_player_attack",
+    "metadata": {
+      "attacker": "Darbe Topu",
+      "damage": 32,
+      "elapsed_ms": 15003.400000047695,
+      "target": "Rakip Batarya"
+    },
+    "player_id": "wt-8288059b-9714-4817-ad64-397540b99b4e",
+    "session_id": "local-preview",
+    "timestamp_ms": 1787216810698
+  },
+  {
+    "event_id": "client-local_player_attack-109",
+    "event_type": "local_player_attack",
+    "metadata": {
+      "attacker": "Lazer",
+      "damage": 12,
+      "elapsed_ms": 16003.30000004766,
+      "target": "Rakip Batarya"
+    },
+    "player_id": "wt-8288059b-9714-4817-ad64-397540b99b4e",
+    "session_id": "local-preview",
+    "timestamp_ms": 1787216811694
+  },
+  {
+    "event_id": "client-local_ai_hit-110",
+    "event_type": "local_ai_hit",
+    "metadata": {
+      "elapsed_ms": 16003.30000004766,
+      "final_damage": 8,
+      "module_id": "laser-1",
+      "raw_damage": 8,
+      "shield_active": false
+    },
+    "player_id": "wt-8288059b-9714-4817-ad64-397540b99b4e",
+    "session_id": "local-preview",
+    "timestamp_ms": 1787216811696
+  },
+  {
+    "event_id": "client-local_player_attack-111",
+    "event_type": "local_player_attack",
+    "metadata": {
+      "attacker": "Lazer",
+      "damage": 12,
+      "elapsed_ms": 17003.200000047684,
+      "target": "Rakip Batarya"
+    },
+    "player_id": "wt-8288059b-9714-4817-ad64-397540b99b4e",
+    "session_id": "local-preview",
+    "timestamp_ms": 1787216812694
+  },
+  {
+    "event_id": "client-local_player_attack-112",
+    "event_type": "local_player_attack",
+    "metadata": {
+      "attacker": "Lazer",
+      "damage": 12,
+      "elapsed_ms": 18003.30000004766,
+      "target": "Rakip Batarya"
+    },
+    "player_id": "wt-8288059b-9714-4817-ad64-397540b99b4e",
+    "session_id": "local-preview",
+    "timestamp_ms": 1787216813696
+  },
+  {
+    "event_id": "client-local_player_attack-113",
+    "event_type": "local_player_attack",
+    "metadata": {
+      "attacker": "Darbe Topu",
+      "damage": 32,
+      "elapsed_ms": 18003.30000004766,
+      "target": "Rakip Batarya"
+    },
+    "player_id": "wt-8288059b-9714-4817-ad64-397540b99b4e",
+    "session_id": "local-preview",
+    "timestamp_ms": 1787216813696
+  },
+  {
+    "event_id": "client-local_ai_hit-114",
+    "event_type": "local_ai_hit",
+    "metadata": {
+      "elapsed_ms": 18003.30000004766,
+      "final_damage": 8,
+      "module_id": "laser-1",
+      "raw_damage": 8,
+      "shield_active": false
+    },
+    "player_id": "wt-8288059b-9714-4817-ad64-397540b99b4e",
+    "session_id": "local-preview",
+    "timestamp_ms": 1787216813697
+  },
+  {
+    "event_id": "client-local_player_attack-115",
+    "event_type": "local_player_attack",
+    "metadata": {
+      "attacker": "Lazer",
+      "damage": 12,
+      "elapsed_ms": 19003.30000004766,
+      "target": "Rakip Jeneratör"
+    },
+    "player_id": "wt-8288059b-9714-4817-ad64-397540b99b4e",
+    "session_id": "local-preview",
+    "timestamp_ms": 1787216814694
+  },
+  {
+    "event_id": "client-local_player_attack-116",
+    "event_type": "local_player_attack",
+    "metadata": {
+      "attacker": "Lazer",
+      "damage": 12,
+      "elapsed_ms": 20003.30000004766,
+      "target": "Rakip Jeneratör"
+    },
+    "player_id": "wt-8288059b-9714-4817-ad64-397540b99b4e",
+    "session_id": "local-preview",
+    "timestamp_ms": 1787216815694
+  },
+  {
+    "event_id": "client-local_ai_hit-117",
+    "event_type": "local_ai_hit",
+    "metadata": {
+      "elapsed_ms": 20003.30000004766,
+      "final_damage": 8,
+      "module_id": "laser-1",
+      "raw_damage": 8,
+      "shield_active": false
+    },
+    "player_id": "wt-8288059b-9714-4817-ad64-397540b99b4e",
+    "session_id": "local-preview",
+    "timestamp_ms": 1787216815697
+  },
+  {
+    "event_id": "client-module_shelf_used-118",
+    "event_type": "module_shelf_used",
+    "metadata": {
+      "elapsed_ms": 20558.700000047684,
+      "module_id": "drone-bay-1"
+    },
+    "player_id": "wt-8288059b-9714-4817-ad64-397540b99b4e",
+    "session_id": "local-preview",
+    "timestamp_ms": 1787216816263
+  },
+  {
+    "event_id": "client-local_player_attack-119",
+    "event_type": "local_player_attack",
+    "metadata": {
+      "attacker": "Lazer",
+      "damage": 12,
+      "elapsed_ms": 21003.100000047707,
+      "target": "Rakip Jeneratör"
+    },
+    "player_id": "wt-8288059b-9714-4817-ad64-397540b99b4e",
+    "session_id": "local-preview",
+    "timestamp_ms": 1787216816693
+  },
+  {
+    "event_id": "client-local_player_attack-120",
+    "event_type": "local_player_attack",
+    "metadata": {
+      "attacker": "Darbe Topu",
+      "damage": 32,
+      "elapsed_ms": 21003.100000047707,
+      "target": "Rakip Jeneratör"
+    },
+    "player_id": "wt-8288059b-9714-4817-ad64-397540b99b4e",
+    "session_id": "local-preview",
+    "timestamp_ms": 1787216816694
+  },
+  {
+    "event_id": "client-local_player_attack-121",
+    "event_type": "local_player_attack",
+    "metadata": {
+      "attacker": "Lazer",
+      "damage": 12,
+      "elapsed_ms": 22003.200000047684,
+      "target": "Rakip Jeneratör"
+    },
+    "player_id": "wt-8288059b-9714-4817-ad64-397540b99b4e",
+    "session_id": "local-preview",
+    "timestamp_ms": 1787216817693
+  },
+  {
+    "event_id": "client-local_ai_hit-122",
+    "event_type": "local_ai_hit",
+    "metadata": {
+      "elapsed_ms": 22003.200000047684,
+      "final_damage": 8,
+      "module_id": "laser-1",
+      "raw_damage": 8,
+      "shield_active": false
+    },
+    "player_id": "wt-8288059b-9714-4817-ad64-397540b99b4e",
+    "session_id": "local-preview",
+    "timestamp_ms": 1787216817696
+  },
+  {
+    "event_id": "client-circuit_credit_spent-123",
+    "event_type": "circuit_credit_spent",
+    "metadata": {
+      "amount": 115,
+      "command_kind": "place_module",
+      "elapsed_ms": 22135.100000047707
+    },
+    "player_id": "wt-8288059b-9714-4817-ad64-397540b99b4e",
+    "session_id": "local-preview",
+    "timestamp_ms": 1787216817831
+  },
+  {
+    "event_id": "client-local_player_attack-124",
+    "event_type": "local_player_attack",
+    "metadata": {
+      "attacker": "Lazer",
+      "damage": 12,
+      "elapsed_ms": 23003.100000047707,
+      "target": "Rakip Jeneratör"
+    },
+    "player_id": "wt-8288059b-9714-4817-ad64-397540b99b4e",
+    "session_id": "local-preview",
+    "timestamp_ms": 1787216818694
+  },
+  {
+    "event_id": "web-test-stability-web-test-beta.23-local-1787216819659",
+    "event_type": "web_test_stability_snapshot",
+    "metadata": {
+      "operation_running_rate": 1.0,
+      "running_to_other_regressions": 0,
+      "stability": "stable",
+      "test_run_id": "web-test-beta.23-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1787216819659
+  },
+  {
+    "event_id": "client-local_player_attack-125",
+    "event_type": "local_player_attack",
+    "metadata": {
+      "attacker": "Lazer",
+      "damage": 12,
+      "elapsed_ms": 24003.100000047707,
+      "target": "Rakip Jeneratör"
+    },
+    "player_id": "wt-8288059b-9714-4817-ad64-397540b99b4e",
+    "session_id": "local-preview",
+    "timestamp_ms": 1787216819694
+  },
+  {
+    "event_id": "web-test-operation-web-test-beta.23-local-1787216819885",
+    "event_type": "web_test_operation_snapshot",
+    "metadata": {
+      "consistency_status": "consistent",
+      "operational_state": "running",
+      "preflight_ready": true,
+      "run_started": true,
+      "test_run_id": "web-test-beta.23-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1787216819885
+  },
+  {
+    "event_id": "client-local_player_attack-126",
+    "event_type": "local_player_attack",
+    "metadata": {
+      "attacker": "Darbe Topu",
+      "damage": 32,
+      "elapsed_ms": 24003.100000047707,
+      "target": "Rakip Jeneratör"
+    },
+    "player_id": "wt-8288059b-9714-4817-ad64-397540b99b4e",
+    "session_id": "local-preview",
+    "timestamp_ms": 1787216819695
+  },
+  {
+    "event_id": "client-local_ai_hit-127",
+    "event_type": "local_ai_hit",
+    "metadata": {
+      "elapsed_ms": 24003.100000047707,
+      "final_damage": 8,
+      "module_id": "drone-bay-1",
+      "raw_damage": 8,
+      "shield_active": false
+    },
+    "player_id": "wt-8288059b-9714-4817-ad64-397540b99b4e",
+    "session_id": "local-preview",
+    "timestamp_ms": 1787216819696
+  },
+  {
+    "event_id": "client-circuit_credit_spent-128",
+    "event_type": "circuit_credit_spent",
+    "metadata": {
+      "amount": 10,
+      "command_kind": "move_module",
+      "elapsed_ms": 24572.500000047672
+    },
+    "player_id": "wt-8288059b-9714-4817-ad64-397540b99b4e",
+    "session_id": "local-preview",
+    "timestamp_ms": 1787216820267
+  },
+  {
+    "event_id": "client-local_player_attack-129",
+    "event_type": "local_player_attack",
+    "metadata": {
+      "attacker": "Lazer",
+      "damage": 12,
+      "elapsed_ms": 25003.100000047707,
+      "target": "Rakip Jeneratör"
+    },
+    "player_id": "wt-8288059b-9714-4817-ad64-397540b99b4e",
+    "session_id": "local-preview",
+    "timestamp_ms": 1787216820694
+  },
+  {
+    "event_id": "client-local_player_attack-130",
+    "event_type": "local_player_attack",
+    "metadata": {
+      "attacker": "Lazer",
+      "damage": 12,
+      "elapsed_ms": 26003.000000047672,
+      "target": "Rakip Jeneratör"
+    },
+    "player_id": "wt-8288059b-9714-4817-ad64-397540b99b4e",
+    "session_id": "local-preview",
+    "timestamp_ms": 1787216821694
+  },
+  {
+    "event_id": "client-local_ai_hit-131",
+    "event_type": "local_ai_hit",
+    "metadata": {
+      "elapsed_ms": 26003.000000047672,
+      "final_damage": 8,
+      "module_id": "drone-bay-1",
+      "raw_damage": 8,
+      "shield_active": false
+    },
+    "player_id": "wt-8288059b-9714-4817-ad64-397540b99b4e",
+    "session_id": "local-preview",
+    "timestamp_ms": 1787216821696
+  },
+  {
+    "event_id": "client-circuit_credit_spent-132",
+    "event_type": "circuit_credit_spent",
+    "metadata": {
+      "amount": 10,
+      "command_kind": "move_module",
+      "elapsed_ms": 26482.200000047684
+    },
+    "player_id": "wt-8288059b-9714-4817-ad64-397540b99b4e",
+    "session_id": "local-preview",
+    "timestamp_ms": 1787216822176
+  },
+  {
+    "event_id": "client-local_player_attack-133",
+    "event_type": "local_player_attack",
+    "metadata": {
+      "attacker": "Lazer",
+      "damage": 12,
+      "elapsed_ms": 27003.100000047707,
+      "target": "Rakip Çekirdek"
+    },
+    "player_id": "wt-8288059b-9714-4817-ad64-397540b99b4e",
+    "session_id": "local-preview",
+    "timestamp_ms": 1787216822694
+  },
+  {
+    "event_id": "client-local_player_attack-134",
+    "event_type": "local_player_attack",
+    "metadata": {
+      "attacker": "Darbe Topu",
+      "damage": 32,
+      "elapsed_ms": 27003.100000047707,
+      "target": "Rakip Çekirdek"
+    },
+    "player_id": "wt-8288059b-9714-4817-ad64-397540b99b4e",
+    "session_id": "local-preview",
+    "timestamp_ms": 1787216822695
+  },
+  {
+    "event_id": "client-local_player_attack-135",
+    "event_type": "local_player_attack",
+    "metadata": {
+      "attacker": "Lazer",
+      "damage": 12,
+      "elapsed_ms": 28002.900000047695,
+      "target": "Rakip Çekirdek"
+    },
+    "player_id": "wt-8288059b-9714-4817-ad64-397540b99b4e",
+    "session_id": "local-preview",
+    "timestamp_ms": 1787216823694
+  },
+  {
+    "event_id": "client-local_ai_hit-136",
+    "event_type": "local_ai_hit",
+    "metadata": {
+      "elapsed_ms": 28002.900000047695,
+      "final_damage": 8,
+      "module_id": "drone-bay-1",
+      "raw_damage": 8,
+      "shield_active": false
+    },
+    "player_id": "wt-8288059b-9714-4817-ad64-397540b99b4e",
+    "session_id": "local-preview",
+    "timestamp_ms": 1787216823696
+  },
+  {
+    "event_id": "client-local_player_attack-137",
+    "event_type": "local_player_attack",
+    "metadata": {
+      "attacker": "Lazer",
+      "damage": 12,
+      "elapsed_ms": 29003.000000047672,
+      "target": "Rakip Çekirdek"
+    },
+    "player_id": "wt-8288059b-9714-4817-ad64-397540b99b4e",
+    "session_id": "local-preview",
+    "timestamp_ms": 1787216824694
+  },
+  {
+    "event_id": "client-local_player_attack-138",
+    "event_type": "local_player_attack",
+    "metadata": {
+      "attacker": "Lazer",
+      "damage": 12,
+      "elapsed_ms": 30002.900000047695,
+      "target": "Rakip Çekirdek"
+    },
+    "player_id": "wt-8288059b-9714-4817-ad64-397540b99b4e",
+    "session_id": "local-preview",
+    "timestamp_ms": 1787216825694
+  },
+  {
+    "event_id": "client-local_player_attack-139",
+    "event_type": "local_player_attack",
+    "metadata": {
+      "attacker": "Darbe Topu",
+      "damage": 32,
+      "elapsed_ms": 30002.900000047695,
+      "target": "Rakip Çekirdek"
+    },
+    "player_id": "wt-8288059b-9714-4817-ad64-397540b99b4e",
+    "session_id": "local-preview",
+    "timestamp_ms": 1787216825695
+  },
+  {
+    "event_id": "client-local_ai_hit-140",
+    "event_type": "local_ai_hit",
+    "metadata": {
+      "elapsed_ms": 30002.900000047695,
+      "final_damage": 8,
+      "module_id": "drone-bay-1",
+      "raw_damage": 8,
+      "shield_active": false
+    },
+    "player_id": "wt-8288059b-9714-4817-ad64-397540b99b4e",
+    "session_id": "local-preview",
+    "timestamp_ms": 1787216825696
+  },
+  {
+    "event_id": "client-local_player_attack-141",
+    "event_type": "local_player_attack",
+    "metadata": {
+      "attacker": "Lazer",
+      "damage": 12,
+      "elapsed_ms": 31002.900000047695,
+      "target": "Rakip Çekirdek"
+    },
+    "player_id": "wt-8288059b-9714-4817-ad64-397540b99b4e",
+    "session_id": "local-preview",
+    "timestamp_ms": 1787216826694
+  },
+  {
+    "event_id": "client-local_player_attack-142",
+    "event_type": "local_player_attack",
+    "metadata": {
+      "attacker": "Lazer",
+      "damage": 12,
+      "elapsed_ms": 32002.900000047695,
+      "target": "Rakip Çekirdek"
+    },
+    "player_id": "wt-8288059b-9714-4817-ad64-397540b99b4e",
+    "session_id": "local-preview",
+    "timestamp_ms": 1787216827694
+  },
+  {
+    "event_id": "client-local_ai_hit-143",
+    "event_type": "local_ai_hit",
+    "metadata": {
+      "elapsed_ms": 32002.900000047695,
+      "final_damage": 8,
+      "module_id": "drone-bay-1",
+      "raw_damage": 8,
+      "shield_active": false
+    },
+    "player_id": "wt-8288059b-9714-4817-ad64-397540b99b4e",
+    "session_id": "local-preview",
+    "timestamp_ms": 1787216827696
+  },
+  {
+    "event_id": "client-local_player_attack-144",
+    "event_type": "local_player_attack",
+    "metadata": {
+      "attacker": "Lazer",
+      "damage": 12,
+      "elapsed_ms": 33002.80000004766,
+      "target": "Rakip Çekirdek"
+    },
+    "player_id": "wt-8288059b-9714-4817-ad64-397540b99b4e",
+    "session_id": "local-preview",
+    "timestamp_ms": 1787216828694
+  },
+  {
+    "event_id": "client-local_player_attack-145",
+    "event_type": "local_player_attack",
+    "metadata": {
+      "attacker": "Darbe Topu",
+      "damage": 32,
+      "elapsed_ms": 33002.80000004766,
+      "target": "Rakip Çekirdek"
+    },
+    "player_id": "wt-8288059b-9714-4817-ad64-397540b99b4e",
+    "session_id": "local-preview",
+    "timestamp_ms": 1787216828695
+  },
+  {
+    "event_id": "client-module_shelf_used-146",
+    "event_type": "module_shelf_used",
+    "metadata": {
+      "elapsed_ms": 33266.80000004766,
+      "module_id": "shield-1"
+    },
+    "player_id": "wt-8288059b-9714-4817-ad64-397540b99b4e",
+    "session_id": "local-preview",
+    "timestamp_ms": 1787216828976
+  },
+  {
+    "event_id": "client-circuit_credit_spent-147",
+    "event_type": "circuit_credit_spent",
+    "metadata": {
+      "amount": 100,
+      "command_kind": "place_module",
+      "elapsed_ms": 33787.50000004767
+    },
+    "player_id": "wt-8288059b-9714-4817-ad64-397540b99b4e",
+    "session_id": "local-preview",
+    "timestamp_ms": 1787216829495
+  },
+  {
+    "event_id": "client-local_player_attack-148",
+    "event_type": "local_player_attack",
+    "metadata": {
+      "attacker": "Lazer",
+      "damage": 12,
+      "elapsed_ms": 34002.80000004766,
+      "target": "Rakip Çekirdek"
+    },
+    "player_id": "wt-8288059b-9714-4817-ad64-397540b99b4e",
+    "session_id": "local-preview",
+    "timestamp_ms": 1787216829697
+  },
+  {
+    "event_id": "web-test-stability-web-test-beta.23-local-1787216829832",
+    "event_type": "web_test_stability_snapshot",
+    "metadata": {
+      "operation_running_rate": 1.0,
+      "running_to_other_regressions": 0,
+      "stability": "stable",
+      "test_run_id": "web-test-beta.23-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1787216829832
+  },
+  {
+    "event_id": "web-test-operation-web-test-beta.23-local-1787216830030",
+    "event_type": "web_test_operation_snapshot",
+    "metadata": {
+      "consistency_status": "consistent",
+      "operational_state": "running",
+      "preflight_ready": true,
+      "run_started": true,
+      "test_run_id": "web-test-beta.23-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1787216830030
+  },
+  {
+    "event_id": "client-local_ai_hit-149",
+    "event_type": "local_ai_hit",
+    "metadata": {
+      "elapsed_ms": 34002.80000004766,
+      "final_damage": 5,
+      "module_id": "drone-bay-1",
+      "raw_damage": 8,
+      "shield_active": true
+    },
+    "player_id": "wt-8288059b-9714-4817-ad64-397540b99b4e",
+    "session_id": "local-preview",
+    "timestamp_ms": 1787216829699
+  },
+  {
+    "event_id": "client-local_player_attack-150",
+    "event_type": "local_player_attack",
+    "metadata": {
+      "attacker": "Lazer",
+      "damage": 12,
+      "elapsed_ms": 35002.80000004766,
+      "target": "Rakip Çekirdek"
+    },
+    "player_id": "wt-8288059b-9714-4817-ad64-397540b99b4e",
+    "session_id": "local-preview",
+    "timestamp_ms": 1787216830694
+  },
+  {
+    "event_id": "client-local_player_attack-151",
+    "event_type": "local_player_attack",
+    "metadata": {
+      "attacker": "Lazer",
+      "damage": 12,
+      "elapsed_ms": 36002.900000047695,
+      "target": "Rakip Çekirdek"
+    },
+    "player_id": "wt-8288059b-9714-4817-ad64-397540b99b4e",
+    "session_id": "local-preview",
+    "timestamp_ms": 1787216831695
+  },
+  {
+    "event_id": "client-local_player_attack-152",
+    "event_type": "local_player_attack",
+    "metadata": {
+      "attacker": "Darbe Topu",
+      "damage": 32,
+      "elapsed_ms": 36002.900000047695,
+      "target": "Rakip Çekirdek"
+    },
+    "player_id": "wt-8288059b-9714-4817-ad64-397540b99b4e",
+    "session_id": "local-preview",
+    "timestamp_ms": 1787216831695
+  },
+  {
+    "event_id": "client-local_ai_hit-153",
+    "event_type": "local_ai_hit",
+    "metadata": {
+      "elapsed_ms": 36002.900000047695,
+      "final_damage": 5,
+      "module_id": "drone-bay-1",
+      "raw_damage": 8,
+      "shield_active": true
+    },
+    "player_id": "wt-8288059b-9714-4817-ad64-397540b99b4e",
+    "session_id": "local-preview",
+    "timestamp_ms": 1787216831697
+  },
+  {
+    "event_id": "client-local_player_attack-154",
+    "event_type": "local_player_attack",
+    "metadata": {
+      "attacker": "Lazer",
+      "damage": 12,
+      "elapsed_ms": 37002.80000004766,
+      "target": "Rakip Çekirdek"
+    },
+    "player_id": "wt-8288059b-9714-4817-ad64-397540b99b4e",
+    "session_id": "local-preview",
+    "timestamp_ms": 1787216832694
+  },
+  {
+    "event_id": "client-local_player_attack-155",
+    "event_type": "local_player_attack",
+    "metadata": {
+      "attacker": "Lazer",
+      "damage": 12,
+      "elapsed_ms": 38002.80000004766,
+      "target": "Rakip Çekirdek"
+    },
+    "player_id": "wt-8288059b-9714-4817-ad64-397540b99b4e",
+    "session_id": "local-preview",
+    "timestamp_ms": 1787216833693
+  },
+  {
+    "event_id": "client-local_ai_hit-156",
+    "event_type": "local_ai_hit",
+    "metadata": {
+      "elapsed_ms": 38002.80000004766,
+      "final_damage": 5,
+      "module_id": "drone-bay-1",
+      "raw_damage": 8,
+      "shield_active": true
+    },
+    "player_id": "wt-8288059b-9714-4817-ad64-397540b99b4e",
+    "session_id": "local-preview",
+    "timestamp_ms": 1787216833696
+  },
+  {
+    "event_id": "client-local_player_attack-157",
+    "event_type": "local_player_attack",
+    "metadata": {
+      "attacker": "Lazer",
+      "damage": 12,
+      "elapsed_ms": 39002.700000047684,
+      "target": "Rakip Çekirdek"
+    },
+    "player_id": "wt-8288059b-9714-4817-ad64-397540b99b4e",
+    "session_id": "local-preview",
+    "timestamp_ms": 1787216834694
+  },
+  {
+    "event_id": "web-test-operation-web-test-beta.23-local-1787216839704",
+    "event_type": "web_test_operation_snapshot",
+    "metadata": {
+      "consistency_status": "consistent",
+      "operational_state": "running",
+      "preflight_ready": true,
+      "run_started": true,
+      "test_run_id": "web-test-beta.23-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1787216839704
+  },
+  {
+    "event_id": "web-test-stability-web-test-beta.23-local-1787216839907",
+    "event_type": "web_test_stability_snapshot",
+    "metadata": {
+      "operation_running_rate": 1.0,
+      "running_to_other_regressions": 0,
+      "stability": "stable",
+      "test_run_id": "web-test-beta.23-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1787216839907
+  },
+  {
+    "event_id": "web-test-operation-web-test-beta.23-local-1787216850029",
+    "event_type": "web_test_operation_snapshot",
+    "metadata": {
+      "consistency_status": "consistent",
+      "operational_state": "running",
+      "preflight_ready": true,
+      "run_started": true,
+      "test_run_id": "web-test-beta.23-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1787216850029
+  },
+  {
+    "event_id": "web-test-stability-web-test-beta.23-local-1787216850137",
+    "event_type": "web_test_stability_snapshot",
+    "metadata": {
+      "operation_running_rate": 1.0,
+      "running_to_other_regressions": 0,
+      "stability": "stable",
+      "test_run_id": "web-test-beta.23-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1787216850137
   }
 ]

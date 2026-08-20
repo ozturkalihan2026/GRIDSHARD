@@ -78,17 +78,13 @@ def test_energy_priority_is_role_based_not_instance_id():
     player = engine.add_player("p1")
     add(engine, "p1", "core", "core", 2, 2)
     add(engine, "p1", "gen", "generator", 2, 3)
-    add(
-        engine, "p1", "splitter",
-        "splitter", 2, 1, Direction.DOWN
-    )
     emp = add(
         engine, "p1", "a-emp",
-        "emp", 1, 1, Direction.RIGHT
+        "emp", 1, 3, Direction.RIGHT
     )
     railgun = add(
         engine, "p1", "z-railgun",
-        "railgun", 3, 1, Direction.LEFT
+        "railgun", 3, 3, Direction.LEFT
     )
 
     engine._process_energy_flow()
