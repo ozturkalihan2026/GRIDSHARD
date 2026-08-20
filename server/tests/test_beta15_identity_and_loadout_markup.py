@@ -11,8 +11,10 @@ def test_beta15_completes_gridshard_lobby_decisions():
     assert html.count(
         "<span></span>"
     ) >= 20
-    assert "Tek Oyunculu · Dereceli PvP" in html
-    assert "Sezon: Kuruluş" in html
+    assert '<span class="lobby-subtitle">CORE ARENA</span>' in html
+    assert "Tek Oyunculu · Dereceli PvP" not in html
+    assert 'id="lobby-player-name"' in html
+    assert 'id="lobby-player-details"' in html
     assert "Lig: Gümüş" in html
     assert "SAVAŞ ARŞİVİ" in html
     assert "SİSTEM KONSOLU" in html

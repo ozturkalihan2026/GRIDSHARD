@@ -1,7 +1,7 @@
 # GRIDSHARD 2.0 — YOL HARİTASI
 
-**Güncel Sürüm:** `2.0.0-beta.23`  
-**Paket:** Gerçek Yerel Karşılıklı Savaş + Bağımsız Arena + Enerji Rebalansı + Audio Mix V4  
+**Güncel Sürüm:** `2.0.0-beta.24`  
+**Paket:** Manuel Arena Geri Bildirimi + Yerel AI Sunucu Otoritesi Köprüsü + Tek Viewport UX + Savaş Efektleri V2  
 **Kanonik Dosya:** `docs/YOL_HARITASI.md`
 
 > Bu dosya GRIDSHARD 2.0 için tek kanonik geliştirme kaydıdır. Kaynak karar belgesi ile kod tabanı yeniden karşılaştırılmıştır. Buradaki `[x]`, `[~]`, `[ ]` işaretleri artık yalnızca kodda ve testlerde doğrulanabilen gerçek durumu gösterir.
@@ -1261,19 +1261,76 @@ Beta.14'ten önce oyun kimliği sabitlenmiştir.
 
 ---
 
-# 9. Sıradaki Paket
+# 9.19 — GRIDSHARD 2.0.0-beta.24 Manuel Arena Geri Bildirimi, Sunucu Otoriteli Yerel AI ve Tek Viewport UX
 
-**`GRIDSHARD 2.0.0-beta.24 — Manuel Arena Geri Bildirimi + Yerel AI Sunucu Otoritesi Köprüsü + Savaş Görsel Efektleri V2`**
+## Paket tabanı ve kapsam kararı
+- [x] `gridshard-2.0.0-beta.23.zip` mevcut bulundu ve Beta.24 doğrudan bu paket üzerine kuruldu.
+- [x] Beta.23 eksikliği için Beta.22 geri dönüşüne ihtiyaç kalmadı.
+- [x] Kullanıcı düzenleme belgesindeki maddeler bu kanonik dosyayla karşılaştırılarak Beta.24 kapsamına alındı.
 
-Beta.24 hedefleri:
+## Ana menü sadeleştirmesi
+- [x] Logonun üzerindeki `GRIDSHARD // CORE ARENA` satırı kaldırıldı.
+- [x] `CORE ARENA`, ana `GRIDSHARD` logosunun altında sağa hizalı alt başlık oldu.
+- [x] Çekirdek görseline yumuşak nefes alan glow animasyonu eklendi.
+- [x] Sabit `Operatör / Oyuncu` metinleri yerine gerçek oyuncu adı ve hesap ayrıntıları gösterilir.
+- [x] Oyna / Profil / İstatistikler / Ayarlar altındaki gereksiz açıklama yazıları kaldırıldı.
 
-1. Beta.23 ile kullanıcının gerçekten oynadığı çift-devre savaş ekranındaki boyut, okunabilirlik, modül taşıma ve saldırı hissi geri bildirimlerini uygulamak.
-2. Yerel AI savaşında şu anda istemci test akışında çalışan canlı görselleştirmeyi sunucu BattleEngine snapshot/command köprüsüne taşımak; savaş gerçeğini tamamen sunucu otoritesine bağlamak.
-3. Saldırı çizgileri, Kalkan darbesi, enerji akışı ve Çekirdek kritik durumunu çift devre arasında daha görünür hale getirmek.
-4. 15. saniye sonrası modül müdahalelerinde taşıma / Jeneratör kapı değişimi / rafa dönüş işlemlerini gerçek manuel maçta doğrulamak.
-5. Beta.23 enerji değerini gerçek manuel maç telemetrisiyle yeniden ölçmek; otomatik yeni denge değişikliği yapmamak.
+## Hazırlık ekranı ve havuzlar
+- [x] `Oyna` doğrudan savaşı başlatmaz; tek ekranlık hazırlık akışını açar.
+- [x] Hazırlık ekranı `Global Havuz / Modül Bilgisi / Savaş Havuzu` şeklinde üç kolonludur.
+- [x] Global Havuz ve Savaş Havuzu sınıf bazlı gruplandırılır.
+- [x] Savaş içi Modül Rafı sınıf bazlı gruplandırılır.
+- [x] Menü, profil, istatistikler, ayarlar, hazırlık ve savaş görünümleri tek viewport sınırına uyarlanır; yoğun içerik kendi panelinde kayar.
+
+## Savaş alanı okunabilirliği ve port etkileşimi
+- [x] Aktif savaş hücrelerinde kart taşması engellendi.
+- [x] Aktif devre modülleri yalnız simge ve Can barı ile gösterilir.
+- [x] Dolu hücrelerde `Kapı` etiketi gizlenir.
+- [x] Jeneratör port sayısı `3 → 4` oldu; dört ana yön kullanılabilir.
+- [x] İlk 15 saniyelik kanonik kilitten sonra modül tıklaması port yönünü döndürme komutu gönderir.
+- [x] Jeneratör kapı değişimi, normal modül taşıma ve rafa dönüş sunucu komut akışında korunur.
+- [x] Enerji akışı, saldırı çizgisi ve kritik Çekirdek baskısı görsel olarak belirginleştirildi.
+
+## Sunucu otoriteli Yerel AI köprüsü
+- [x] Yerel AI oturumu sunucudaki gerçek `PvpSessionService / BattleEngine` ile başlatılır.
+- [x] İstemci savaş durumu periyodik sunucu snapshot'larından güncellenir.
+- [x] Oyuncu taşıma, rafa alma, yerleştirme ve port döndürme niyetleri sunucuya komut olarak gönderilir.
+- [x] Sunucu ulaşılamazsa yalnız yerel geliştirme/test amacıyla açıkça işaretli istemci fallback'i korunur.
+- [x] Yerel AI maçları normal oyuncu istatistiğini veya dereceli sonucu değiştirmez.
+
+## Maç sonu ve ses
+- [x] Sonuç paneli açılır modal olarak gösterilir.
+- [x] Savaş analizi modal içinde açılır/kapanır ayrıntı kutusudur.
+- [x] Maç sonuçlandığında sayaç sabitlenir.
+- [x] Maç sonuçlandığında sürükle-bırak, port döndürme ve diğer modül hareketleri kapanır.
+- [x] Zafer ve mağlubiyet için ayrı müzik durumları çalışır.
+
+## Enerji / port doğrulaması ve test kapısı
+- [x] Jeneratör üretimi Beta.23'teki `11 Ü/sn` değerinde tutuldu; Beta.24'te otomatik sayısal enerji dengesi değişikliği yapılmadı.
+- [x] Onarım modülünün bağlıyken enerji aldığı motor testiyle doğrulandı.
+- [x] Dört portlu Jeneratör sunucu katalog ve snapshot testleriyle doğrulandı.
+- [x] Port döndürme, 15 saniye kilidi, savaş sonucu, sayaç donması ve maç sonu komut reddi gerçek istemci başlangıç testiyle doğrulandı.
+- [x] 1–6 enerji tüketicili `43.795` kombinasyon yeniden tarandı.
+- [x] 6 arketiple `30` mirrored BattleEngine maçı yeniden çalıştırıldı; timeout oluşmadı.
+- [x] Ayrıntılı çıktı: `qa_reports/beta24_energy_port_report.json`.
+- [x] Sunucu otomasyon paketi: `629` test başarılı.
+- [x] 1366×768 gerçek tarayıcı kontrolünde ana menü, üç kolonlu hazırlık ve savaş görünümü sayfa taşması olmadan tek viewport'a sığdı.
+- [x] Gerçek tarayıcı akışında Yerel AI otoritesi `server`, raf kilidi `Aktif`, port dönüşü `aşağı → sol`, sonuç modalı ve sabit kalan `01:06.0` savaş süresi doğrulandı.
+- [x] Tarayıcı yenilemelerindeki eşzamanlı oyuncu bootstrap kayıtları dosya kilidiyle seri hale getirildi; Windows geçici dosya çakışması için regresyon testi eklendi.
+
+---
+
+# 10. Sıradaki Paket
+
+**`GRIDSHARD 2.0.0-beta.25 — Canlı Telemetri Sertleştirmesi + Görsel Erişilebilirlik + Bağlantı Hata Akışı`**
+
+1. Gerçek kullanıcı maçlarından port döndürme, enerji yetersizliği ve raf kullanımı telemetrisini toplamak.
+2. Yerel AI snapshot bağlantı kopması / yeniden bağlanma akışını kullanıcıya görünür ve geri kazanılabilir yapmak.
+3. Savaş efektleri için renk körlüğü ve azaltılmış hareket profillerini genişletmek.
+4. Windows/Chrome kanıt paketini Beta.24 arayüzüyle yeniden üretip viewport matrisinde doğrulamak.
+5. Enerji sayısal dengesini yalnız ölçülen telemetri ve açık review kararıyla değerlendirmek.
 
 Kural:
 - savaş başladıktan sonra hiçbir UI etkileşimi simulation clock'u durduramaz,
-- online PvP ve Yerel AI için nihai savaş gerçeği sunucu otoriteli olmalıdır,
-- mastering hedefi ayrı kullanıcı kararıdır.
+- online PvP ve Yerel AI için nihai savaş gerçeği sunucu otoritelidir,
+- sayısal denge ve mastering hedefleri ayrı kullanıcı kararlarıdır.

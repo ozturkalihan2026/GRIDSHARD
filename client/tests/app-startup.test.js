@@ -130,6 +130,12 @@ playButton._listeners.click();
 if (document.body.dataset.appScreen !== "play") {
   throw new Error(`Oyna menüsü açılmadı: ${document.body.dataset.appScreen}`);
 }
+if (document.body.dataset.playMode !== "local") {
+  throw new Error(`Oyna doğrudan hazırlık modunu açmadı: ${document.body.dataset.playMode}`);
+}
+if (document.body.dataset.localStatus !== "setup") {
+  throw new Error(`Oyna hazırlık ekranına gitmedi: ${document.body.dataset.localStatus}`);
+}
 
 const quickStart = getElement("local-battle-quick-start");
 if (typeof quickStart._listeners.click !== "function") {
@@ -173,6 +179,20 @@ if (getElement("shelf-lock-label").textContent !== "Aktif") {
   throw new Error(`Modül Rafı 15. saniyede açılmadı: ${getElement("shelf-lock-label").textContent}`);
 }
 
+const beforeRotation = sandbox.window.__GRIDSHARD_TEST_API.getBattleState().directions["laser-1"];
+if (!sandbox.window.__GRIDSHARD_TEST_API.rotateModule("laser-1")) {
+  throw new Error("Aktif modül tıklama/port dönüş komutu üretmedi.");
+}
+const afterRotation = sandbox.window.__GRIDSHARD_TEST_API.getBattleState().directions["laser-1"];
+if (beforeRotation === afterRotation) {
+  throw new Error(`Port yönü değişmedi: ${beforeRotation}`);
+}
+// Savaş sonuç regresyonunu port bağlantısı değişikliğinden izole etmek için
+// üç ek dönüşle başlangıç yönüne dön.
+for (let i = 0; i < 3; i += 1) {
+  sandbox.window.__GRIDSHARD_TEST_API.rotateModule("laser-1");
+}
+
 // Yerel savaşın karşılıklı hasarla gerçek sonuca ulaştığını doğrula.
 for (let ms = 17000; ms <= 120000 && document.body.dataset.localFinished !== "true"; ms += 1000) {
   const cb = rafCallback;
@@ -186,5 +206,20 @@ if (!getElement("enemy-board")) {
   throw new Error("Rakip devresi render alanı bulunamadı.");
 }
 
-console.log("app startup + timer + shelf unlock + reciprocal local battle result test passed");
+const frozenState = sandbox.window.__GRIDSHARD_TEST_API.getBattleState();
+const frozenElapsed = frozenState.elapsed_ms;
+const frozenDirection = frozenState.directions["laser-1"];
+rafCallback(130000);
+const afterFinishState = sandbox.window.__GRIDSHARD_TEST_API.getBattleState();
+if (afterFinishState.elapsed_ms !== frozenElapsed) {
+  throw new Error(`Maç sonu sayaç donmadı: ${frozenElapsed} -> ${afterFinishState.elapsed_ms}`);
+}
+if (sandbox.window.__GRIDSHARD_TEST_API.rotateModule("laser-1")) {
+  throw new Error("Maç bittikten sonra port dönüşü kabul edildi.");
+}
+if (afterFinishState.directions["laser-1"] !== frozenDirection) {
+  throw new Error("Maç bittikten sonra modül yönü değişti.");
+}
+
+console.log("app startup + direct preparation + timer freeze + port rotation + reciprocal local battle result test passed");
 process.exit(0);

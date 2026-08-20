@@ -13,7 +13,11 @@ from .game.pvp_session import (
     PvPSessionError,
     PvPSessionService,
 )
-from .game.models import Direction
+from .game.models import BattleCommand, Direction
+from .game.catalog import (
+    BASIC_MODULE_DEFINITIONS,
+    PLAYER_SELECTABLE_MODULE_IDS,
+)
 from .game.catalog_view import (
     build_module_catalog_view,
 )
@@ -209,6 +213,12 @@ web_test_kpi_service = WebTestKpiService(
 )
 
 def process_completed_pvp_battle(state) -> None:
+    if state.battle_id.startswith("local-ai-"):
+        telemetry_service.ingest_finished_battle(
+            state
+        )
+        return
+
     player_statistics_service.process_finished_battle(
         state
     )
@@ -355,6 +365,17 @@ class SetupSessionRequest(BaseModel):
 class ReadySessionRequest(BaseModel):
     player_id: str
     ready: bool = True
+
+
+class LocalAiBattleStartRequest(BaseModel):
+    player_id: str
+    battle_pool_ids: list[str]
+
+
+class LocalAiBattleCommandRequest(BaseModel):
+    player_id: str
+    kind: str
+    payload: dict
 
 
 class ProfileNameRequest(BaseModel):
@@ -2600,7 +2621,7 @@ def gridshard_identity() -> dict:
         "tagline_en":
             "Build the Circuit. Break the Core.",
         "identity_version":
-            "2.0.0-beta.23",
+            "2.0.0-beta.24",
         "palette":{
             "void_navy":"#070B14",
             "reactor_blue":"#0C1625",
@@ -3528,6 +3549,268 @@ def restore_web_test_persistence_backup(
         "before": before,
         "after": after,
     }
+
+
+def _local_ai_battle_pool() -> tuple[str, ...]:
+    preferred = (
+        "generator",
+        "battery",
+        "splitter",
+        "capacitor",
+        "laser",
+        "pulse_cannon",
+        "railgun",
+        "missile_launcher",
+        "drone_bay",
+        "arc_cannon",
+        "shield",
+        "armor",
+        "reflector",
+        "barrier",
+        "repair",
+        "cooler",
+        "amplifier",
+        "targeting_computer",
+    )
+    return tuple(
+        module_id
+        for module_id in preferred
+        if module_id in PLAYER_SELECTABLE_MODULE_IDS
+    )
+
+
+def _local_player_initial_modules(
+    battle_pool_ids: list[str],
+) -> tuple[InitialModulePlacement, ...]:
+    attackers = [
+        definition_id
+        for definition_id in battle_pool_ids
+        if BASIC_MODULE_DEFINITIONS[
+            definition_id
+        ].category == "saldırı"
+    ]
+    if len(attackers) < 2:
+        raise PvPSessionError(
+            "Yerel AI savaşı için Savaş Havuzu en az iki saldırı modülü içermelidir."
+        )
+
+    left_attack, right_attack = attackers[:2]
+    return (
+        InitialModulePlacement(
+            instance_id="core-1",
+            definition_id="core",
+            x=2,
+            y=2,
+            direction=Direction.UP,
+        ),
+        InitialModulePlacement(
+            instance_id="generator-1",
+            definition_id="generator",
+            x=2,
+            y=3,
+            direction=Direction.UP,
+        ),
+        InitialModulePlacement(
+            instance_id=(
+                left_attack.replace("_", "-")
+                + "-1"
+            ),
+            definition_id=left_attack,
+            x=1,
+            y=3,
+            direction=Direction.RIGHT,
+        ),
+        InitialModulePlacement(
+            instance_id=(
+                right_attack.replace("_", "-")
+                + "-1"
+            ),
+            definition_id=right_attack,
+            x=3,
+            y=3,
+            direction=Direction.LEFT,
+        ),
+    )
+
+
+def _local_ai_initial_modules(
+    ai_player_id: str,
+) -> tuple[InitialModulePlacement, ...]:
+    return (
+        InitialModulePlacement(
+            instance_id=f"{ai_player_id}-core",
+            definition_id="core",
+            x=2,
+            y=2,
+            direction=Direction.UP,
+        ),
+        InitialModulePlacement(
+            instance_id=f"{ai_player_id}-generator",
+            definition_id="generator",
+            x=2,
+            y=1,
+            direction=Direction.DOWN,
+        ),
+        InitialModulePlacement(
+            instance_id=f"{ai_player_id}-shield",
+            definition_id="shield",
+            x=1,
+            y=1,
+            direction=Direction.RIGHT,
+        ),
+        InitialModulePlacement(
+            instance_id=f"{ai_player_id}-laser",
+            definition_id="laser",
+            x=3,
+            y=1,
+            direction=Direction.LEFT,
+        ),
+    )
+
+
+def _local_ai_snapshot_envelope(
+    session_id: str,
+    player_id: str,
+    cursor: int = 0,
+) -> dict:
+    snapshot = pvp_service.snapshot(
+        session_id,
+        player_id,
+    )
+    event_page = pvp_service.events_since(
+        session_id,
+        player_id,
+        cursor,
+    )
+    return {
+        "session_id": session_id,
+        "authority": "server_battle_engine",
+        "snapshot": snapshot,
+        "events": event_page["events"],
+        "event_cursor": event_page["cursor"],
+    }
+
+
+@app.post("/local-ai/sessions")
+async def create_local_ai_session(
+    request: LocalAiBattleStartRequest,
+) -> dict:
+    session_id = f"local-ai-{uuid4()}"
+    ai_player_id = f"{session_id}-opponent"
+    try:
+        pvp_service.create_session(
+            session_id,
+            setup_required=True,
+            auto_start_when_ready=False,
+        )
+        pvp_service.join(
+            session_id,
+            request.player_id,
+        )
+        pvp_service.join(
+            session_id,
+            ai_player_id,
+        )
+        pvp_service.submit_setup(
+            session_id,
+            request.player_id,
+            PvPSetupPayload(
+                battle_pool_ids=tuple(
+                    request.battle_pool_ids
+                ),
+                initial_modules=(
+                    _local_player_initial_modules(
+                        request.battle_pool_ids
+                    )
+                ),
+            ),
+        )
+        ai_pool = _local_ai_battle_pool()
+        pvp_service.submit_setup(
+            session_id,
+            ai_player_id,
+            PvPSetupPayload(
+                battle_pool_ids=ai_pool,
+                initial_modules=(
+                    _local_ai_initial_modules(
+                        ai_player_id
+                    )
+                ),
+            ),
+        )
+        pvp_service.set_ready(
+            session_id,
+            request.player_id,
+            True,
+        )
+        pvp_service.set_ready(
+            session_id,
+            ai_player_id,
+            True,
+        )
+        pvp_service.start(session_id)
+        await pvp_tick_runner.ensure_started(
+            session_id
+        )
+        return _local_ai_snapshot_envelope(
+            session_id,
+            request.player_id,
+        )
+    except (PvPSessionError, ValueError) as exc:
+        raise HTTPException(
+            status_code=422,
+            detail=str(exc),
+        ) from exc
+
+
+@app.post(
+    "/local-ai/sessions/{session_id}/commands"
+)
+def command_local_ai_session(
+    session_id: str,
+    request: LocalAiBattleCommandRequest,
+) -> dict:
+    try:
+        pvp_service.submit_command(
+            session_id,
+            request.player_id,
+            BattleCommand(
+                player_id=request.player_id,
+                kind=request.kind,
+                payload=request.payload,
+            ),
+        )
+    except PvPSessionError as exc:
+        raise HTTPException(
+            status_code=409,
+            detail=str(exc),
+        ) from exc
+    return {
+        "session_id": session_id,
+        "accepted": True,
+        "authority": "server_battle_engine",
+    }
+
+
+@app.get(
+    "/local-ai/sessions/{session_id}/snapshot"
+)
+def local_ai_session_snapshot(
+    session_id: str,
+    player_id: str = Query(min_length=1),
+    cursor: int = Query(default=0, ge=0),
+) -> dict:
+    try:
+        return _local_ai_snapshot_envelope(
+            session_id,
+            player_id,
+            cursor,
+        )
+    except PvPSessionError as exc:
+        raise HTTPException(
+            status_code=404,
+            detail=str(exc),
+        ) from exc
 
 
 @app.post("/pvp/sessions")

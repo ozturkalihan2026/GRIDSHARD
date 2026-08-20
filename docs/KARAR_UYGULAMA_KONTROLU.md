@@ -1,6 +1,6 @@
 # GRIDSHARD — Karar Uygulama Kontrolü
 
-**Kontrol paketi:** `2.0.0-beta.23`
+**Kontrol paketi:** `2.0.0-beta.24`
 
 Bu belge, daha önce alınan görsel kimlik / ekran / ses / isim kararlarının proje içindeki gerçek uygulama durumunu takip eder.
 

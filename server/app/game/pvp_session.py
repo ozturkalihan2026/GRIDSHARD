@@ -402,6 +402,7 @@ class PvPSessionService:
                     "instance_id": module.instance_id,
                     "definition_id": module.definition.id,
                     "name_tr": module.definition.name_tr,
+                    "category": module.definition.category,
                     "status": module.status.value,
                     "hp": module.hp,
                     "max_hp": module.definition.max_hp,
@@ -416,7 +417,10 @@ class PvPSessionService:
                         else None
                     ),
                     "direction": module.direction.value,
+                    "port_count": module.definition.port_count,
                     "is_powered": module.is_powered,
+                    "energy_received": module.energy_received_last_tick,
+                    "energy_required": module.energy_required_last_tick,
                     "heat": module.heat,
                 }
                 for module in sorted(

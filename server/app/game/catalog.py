@@ -6,7 +6,7 @@ BASIC_MODULE_DEFINITIONS: dict[str, ModuleDefinition] = {
         strategic_role="Ana hedef ve devre merkezi", description_tr="Devrenin ana merkezidir.", port_count=4,
         movable=False, removable=False, rotatable=False),
     "generator": ModuleDefinition(id="generator", name_tr="Jeneratör", category="enerji", max_hp=150, circuit_credit_cost=0,
-        strategic_role="Ana enerji kaynağı", description_tr="Devreye sürekli enerji sağlar. Savaş sırasında yalnızca dört Çekirdek kapısı arasında taşınabilir.", energy_generation=11.0, port_count=3,
+        strategic_role="Ana enerji kaynağı", description_tr="Devreye sürekli enerji sağlar. Savaş sırasında yalnızca dört Çekirdek kapısı arasında taşınabilir.", energy_generation=11.0, port_count=4,
         weak_against=("emp",), movable=True, removable=False, rotatable=False),
     "battery": ModuleDefinition(id="battery", name_tr="Batarya", category="enerji", max_hp=120, circuit_credit_cost=70,
         strategic_role="Enerji rezervi", description_tr="Ani yüklerde devreyi destekler.", port_count=2,

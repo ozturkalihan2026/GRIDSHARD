@@ -3,7 +3,7 @@
 
   const PORT_COUNT_BY_NAME = {
     "Çekirdek":4,
-    "Jeneratör":3,
+    "Jeneratör":4,
     "Batarya":2,
     "Dağıtıcı":3,
     "Kapasitör":2,
@@ -91,7 +91,7 @@
   const COMPETITIVE_STATUS = "M7 rekabetçi altyapı doğrulanıyor";
   const BALANCE_STATUS = "Denge simülasyonu mevcut · geniş örnek bekliyor";
   const AI_STATUS = "AI altyapısı mevcut · arketip testleri bekliyor";
-  const PVP_STATUS = "GRIDSHARD Beta.23 · Gerçek Yerel Savaş + Sabit HUD + Enerji Dengesi + Audio V4";
+  const PVP_STATUS = "GRIDSHARD Beta.24 · Sunucu Otoriteli Yerel Savaş + Tek Viewport UX + Savaş Efektleri V2";
 
 
 
@@ -170,6 +170,14 @@
       ) {
         pvpConnection.sendEnvelope(
           pvpEnvelope
+        );
+      } else if (
+        activePlayMode === "local"
+        && localServerAuthoritative
+        && localServerSessionId
+      ) {
+        sendLocalServerCommand(
+          command
         );
       } else {
         applyMockServerCommand(command);
@@ -439,6 +447,13 @@
 
     renderAppScreen();
 
+    if (screen === "play") {
+      // Beta.24: Oyna doğrudan üç kolonlu savaşa hazırlık ekranını açar.
+      // Yerel AI test modu başlangıç seçeneğidir; oyuncu aynı ekranda
+      // Online PvP hazırlığına geçebilir.
+      prepareLocalMatch();
+    }
+
     if (screen === "profile") {
       accountDataLoader
         .loadProfile()
@@ -591,7 +606,7 @@
         webTestBuildState,
       releaseCheckState,
       expectedVersion:
-        "2.0.0-beta.23",
+        "2.0.0-beta.24",
       expectedProtocolVersion: 1,
     });
   const playReadinessGate =
@@ -627,7 +642,7 @@
 
   telemetryDispatcher.trackGameOpened({
     platform: "web",
-    build: "2.0.0-beta.23",
+    build: "2.0.0-beta.24",
   });
 
   const postMatchSync =
@@ -1187,7 +1202,7 @@
   const diagnosticSnapshot =
     new RelayDiagnosticSnapshot({
       version:
-        "2.0.0-beta.23",
+        "2.0.0-beta.24",
       build:
         "web-test-beta.13",
       bootGate:
@@ -2996,7 +3011,7 @@
       if (versionEl) {
         versionEl.textContent=
           manifest.version
-          || "2.0.0-beta.23";
+          || "2.0.0-beta.24";
       }
       if (runEl) {
         runEl.textContent=
@@ -3115,6 +3130,11 @@ const SPECIAL_CELL_INFO = {
   let localBattleFinished = false;
   let localEnemyAttackSecond = -1;
   let localBattleMetrics = null;
+  let localServerSessionId = null;
+  let localServerSyncTimer = null;
+  let localServerAuthoritative = false;
+  let localServerEventCursor = 0;
+  let localServerLastSnapshotTick = -1;
 
   let webTestSamplingTimer = null;
   let activeWebTestRunId = null;
@@ -3453,6 +3473,23 @@ const SPECIAL_CELL_INFO = {
     document.body.dataset.playMode =
       mode;
 
+    const localPreparationButton=
+      document.getElementById(
+        "battle-prepare-local"
+      );
+    const onlinePreparationButton=
+      document.getElementById(
+        "battle-prepare-online"
+      );
+    if (localPreparationButton) {
+      localPreparationButton.dataset.active=
+        String(mode === "local");
+    }
+    if (onlinePreparationButton) {
+      onlinePreparationButton.dataset.active=
+        String(mode === "online");
+    }
+
     if (gridshardAudioDirector) {
       gridshardAudioDirector.setState(
         mode === "online"
@@ -3514,7 +3551,8 @@ const SPECIAL_CELL_INFO = {
       );
     if (modePanel) {
       modePanel.hidden =
-        localBattle
+        !idle
+        || localBattle
         || onlineBattle;
     }
 
@@ -4793,8 +4831,443 @@ function saveHumanReviewLocalNote() {
     }
   }
 
+  function stopLocalServerPolling() {
+    if (
+      localServerSyncTimer
+      !== null
+    ) {
+      window.clearInterval(
+        localServerSyncTimer
+      );
+      localServerSyncTimer=null;
+    }
+  }
+
+  function clientModuleForDefinitionId(
+    definitionId
+  ) {
+    return [
+      ...client.modules.values(),
+    ].find(
+      (module) =>
+        clientDefinitionId(
+          module.instanceId
+        ) === definitionId
+    ) || null;
+  }
+
+  function localServerClientModuleId(
+    serverModule
+  ) {
+    const exact=
+      client.modules.get(
+        serverModule?.instance_id
+      );
+    if (exact) {
+      return exact.instanceId;
+    }
+    return clientModuleForDefinitionId(
+      serverModule?.definition_id
+    )?.instanceId || null;
+  }
+
+  function processLocalServerEvents(
+    events,
+    snapshot
+  ) {
+    for (const event of events || []) {
+      if (
+        event?.type
+        !== "attack_performed"
+      ) {
+        continue;
+      }
+
+      const data=event.data || {};
+      const attackerIsPlayer=
+        data.attacker_player_id
+        === participantPlayerId;
+      const sourcePlayer=
+        snapshot.players?.[
+          data.attacker_player_id
+        ];
+      const targetPlayer=
+        snapshot.players?.[
+          data.target_player_id
+        ];
+      const sourceModule=
+        sourcePlayer?.modules?.find(
+          (module) =>
+            module.instance_id
+            === data.attacker_module_id
+        );
+      const targetModule=
+        targetPlayer?.modules?.find(
+          (module) =>
+            module.instance_id
+            === data.target_module_id
+        );
+      const enemyDomId=(module) =>
+        module?.definition_id
+        === "core"
+          ? "enemy-core"
+          : (
+              module?.definition_id
+              === "generator"
+                ? "enemy-generator"
+                : module?.instance_id
+            );
+
+      const sourceId=
+        attackerIsPlayer
+          ? localServerClientModuleId(
+              sourceModule
+            )
+          : enemyDomId(
+              sourceModule
+            );
+      const targetId=
+        attackerIsPlayer
+          ? enemyDomId(
+              targetModule
+            )
+          : localServerClientModuleId(
+              targetModule
+            );
+
+      emitDuelAttackEffect(
+        sourceId,
+        targetId,
+        attackerIsPlayer
+          ? (
+              data.defense_type
+              && data.defense_type
+              !== "none"
+                ? "shield"
+                : "attack"
+            )
+          : "enemy"
+      );
+
+      if (targetId) {
+        pulseBattleFx(
+          targetId,
+          data.defense_type
+          && data.defense_type
+          !== "none"
+            ? "shield"
+            : "hit"
+        );
+      }
+    }
+  }
+
+  function applyLocalServerSnapshotEnvelope(
+    envelope
+  ) {
+    const snapshot=
+      envelope?.snapshot
+      || envelope;
+    if (
+      !snapshot?.players
+      || !snapshot.players[
+        participantPlayerId
+      ]
+    ) {
+      return false;
+    }
+
+    const player=
+      snapshot.players[
+        participantPlayerId
+      ];
+    const enemy=Object.values(
+      snapshot.players
+    ).find(
+      (item) =>
+        item.player_id
+        !== participantPlayerId
+    );
+    if (!enemy) {
+      return false;
+    }
+
+    localServerAuthoritative=true;
+    document.body.dataset.battleAuthority=
+      "server";
+    localServerLastSnapshotTick=
+      Number(
+        snapshot.tick || 0
+      );
+    client.updateElapsedMs(
+      Number(
+        snapshot.elapsed_ms || 0
+      )
+    );
+    client.applyServerEconomyState({
+      circuitCredits:
+        Number(
+          player.circuit_credits || 0
+        ),
+    });
+
+    for (
+      const serverModule
+      of player.modules || []
+    ) {
+      const clientModuleId=
+        localServerClientModuleId(
+          serverModule
+        );
+      if (!clientModuleId) {
+        continue;
+      }
+      client.applyServerModuleState({
+        instanceId:clientModuleId,
+        hp:Number(serverModule.hp || 0),
+        status:serverModule.status,
+        position:
+          serverModule.x === null
+          || serverModule.y === null
+            ? null
+            : {
+                x:Number(serverModule.x),
+                y:Number(serverModule.y),
+              },
+        direction:
+          serverModule.direction
+          || "up",
+        isPowered:Boolean(
+          serverModule.is_powered
+        ),
+        energyReceived:Number(
+          serverModule.energy_received || 0
+        ),
+        energyRequired:Number(
+          serverModule.energy_required || 0
+        ),
+        heat:Number(
+          serverModule.heat || 0
+        ),
+      });
+    }
+
+    const enemyCore=
+      (enemy.modules || []).find(
+        (module) =>
+          module.definition_id
+          === "core"
+      );
+    const enemyGenerator=
+      (enemy.modules || []).find(
+        (module) =>
+          module.definition_id
+          === "generator"
+      );
+    mockEnemyCoreHp=Number(
+      enemyCore?.hp || 0
+    );
+    mockEnemyGeneratorHp=Number(
+      enemyGenerator?.hp || 0
+    );
+    mockEnemyModules=(
+      enemy.modules || []
+    )
+      .filter(
+        (module) =>
+          ![
+            "core",
+            "generator",
+          ].includes(
+            module.definition_id
+          )
+          && module.status
+            === "active"
+      )
+      .map(
+        (module) => ({
+          id:module.instance_id,
+          name:module.name_tr,
+          hp:Number(module.hp || 0),
+          maxHp:Number(
+            module.max_hp || 1
+          ),
+          position:{
+            x:Number(module.x),
+            y:Number(module.y),
+          },
+          kind:
+            module.category
+            || "module",
+        })
+      );
+    mockEnemyModuleHp=
+      enemyLivingModules().reduce(
+        (sum,module) =>
+          sum + module.hp,
+        0
+      );
+
+    render();
+    renderEnemyBoard();
+    renderCredits();
+    renderPlayerCoreSummary();
+    processLocalServerEvents(
+      envelope?.events || [],
+      snapshot
+    );
+    localServerEventCursor=
+      Number(
+        envelope?.event_cursor
+        ?? localServerEventCursor
+      );
+
+    if (
+      snapshot.status
+      === "finished"
+      && !localBattleFinished
+    ) {
+      finishLocalBattle({
+        won:
+          snapshot.winner_player_id
+          === participantPlayerId,
+      });
+    }
+
+    return true;
+  }
+
+  async function pollLocalServerBattle() {
+    if (
+      !localServerSessionId
+      || localBattleFinished
+    ) {
+      return;
+    }
+    try {
+      const response=await fetch(
+        `/local-ai/sessions/${encodeURIComponent(localServerSessionId)}/snapshot`
+        + `?player_id=${encodeURIComponent(participantPlayerId)}`
+        + `&cursor=${localServerEventCursor}`
+      );
+      if (!response.ok) {
+        return;
+      }
+      applyLocalServerSnapshotEnvelope(
+        await response.json()
+      );
+    } catch (_error) {
+      // Sunucu köprüsü açılamazsa mevcut çevrimdışı test savaşı kesilmez.
+    }
+  }
+
+  async function connectLocalServerBattle() {
+    try {
+      const response=await fetch(
+        "/local-ai/sessions",
+        {
+          method:"POST",
+          headers:{
+            "content-type":
+              "application/json",
+          },
+          body:JSON.stringify({
+            player_id:
+              participantPlayerId,
+            battle_pool_ids:
+              selectedBattlePoolDefinitionIds(),
+          }),
+        }
+      );
+      if (!response.ok) {
+        return false;
+      }
+      const payload=await response.json();
+      if (
+        !payload?.session_id
+        || !applyLocalServerSnapshotEnvelope(
+          payload
+        )
+      ) {
+        return false;
+      }
+
+      localServerSessionId=
+        payload.session_id;
+      telemetryDispatcher.setSession(
+        localServerSessionId
+      );
+      stopLocalServerPolling();
+      localServerSyncTimer=
+        window.setInterval(
+          pollLocalServerBattle,
+          250
+        );
+      logClientMessage(
+        "Yerel AI savaşı sunucu BattleEngine otoritesine bağlandı."
+      );
+      return true;
+    } catch (_error) {
+      document.body.dataset.battleAuthority=
+        "offline-fallback";
+      return false;
+    }
+  }
+
+  async function sendLocalServerCommand(
+    command
+  ) {
+    if (
+      !localServerSessionId
+      || localBattleFinished
+    ) {
+      return;
+    }
+    try {
+      const response=await fetch(
+        `/local-ai/sessions/${encodeURIComponent(localServerSessionId)}/commands`,
+        {
+          method:"POST",
+          headers:{
+            "content-type":
+              "application/json",
+          },
+          body:JSON.stringify({
+            player_id:
+              participantPlayerId,
+            kind:command.kind,
+            payload:command.payload,
+          }),
+        }
+      );
+      if (!response.ok) {
+        const detail=await response
+          .json()
+          .catch(() => ({}));
+        logClientMessage(
+          detail.detail
+          || "Sunucu savaş komutunu reddetti."
+        );
+        return;
+      }
+      await pollLocalServerBattle();
+    } catch (_error) {
+      logClientMessage(
+        "Sunucu savaş komutuna ulaşılamadı."
+      );
+    }
+  }
+
   function resetLocalBattleState() {
     pvpConnection.disconnect();
+
+    stopLocalServerPolling();
+    localServerSessionId=null;
+    localServerAuthoritative=false;
+    localServerEventCursor=0;
+    localServerLastSnapshotTick=-1;
+    document.body.dataset.battleAuthority=
+      "offline-fallback";
 
     localBattleStarted =
       true;
@@ -5085,7 +5558,7 @@ function saveHumanReviewLocalNote() {
     );
 
     logClientMessage(
-      "Beta.23 hızlı test: 18 modüllük havuz otomatik hazırlandı, Yerel AI eşleşti ve çift devre savaş alanı açıldı."
+      "Beta.24 hızlı test: 18 modüllük havuz otomatik hazırlandı, sunucu otoriteli Yerel AI eşleşti ve çift devre savaş alanı açıldı."
     );
 
     return {
@@ -5099,6 +5572,7 @@ function saveHumanReviewLocalNote() {
     );
     resetLocalBattleState();
     renderPlayModeUi();
+    connectLocalServerBattle();
   }
 
   function prepareOnlineMatch() {
@@ -5230,6 +5704,25 @@ function saveHumanReviewLocalNote() {
         `Çekirdek ${Math.max(0,Number(core?.hp||0))}/${core?.maxHp||300} · Jeneratör ${Math.max(0,Number(generator?.hp||0))}/${generator?.maxHp||150}`;
     }
 
+    const playerSide=
+      document.querySelector(
+        ".duel-player-side"
+      );
+    if (playerSide) {
+      playerSide.dataset.coreCritical=
+        String(
+          Number(core?.hp || 0) > 0
+          && Number(core?.hp || 0)
+            / Math.max(
+                1,
+                Number(
+                  core?.maxHp || 300
+                )
+              )
+            <= .33
+        );
+    }
+
     syncCriticalCoreAudioState();
   }
 
@@ -5244,6 +5737,7 @@ function saveHumanReviewLocalNote() {
       true;
     document.body.dataset.localFinished =
       "true";
+    stopLocalServerPolling();
 
     if (gridshardAudioDirector) {
       gridshardAudioDirector.setState(
@@ -5400,6 +5894,85 @@ function saveHumanReviewLocalNote() {
     );
   }
 
+  function emitDuelAttackEffect(
+    sourceModuleId,
+    targetModuleId,
+    kind="attack"
+  ) {
+    if (
+      !sourceModuleId
+      || !targetModuleId
+    ) {
+      return;
+    }
+    const layer=document.getElementById(
+      "battle-effect-layer"
+    );
+    const source=document.querySelector(
+      `[data-module-id="${sourceModuleId}"]`
+    );
+    const target=document.querySelector(
+      `[data-module-id="${targetModuleId}"]`
+    );
+    if (
+      !layer
+      || !source
+      || !target
+      || typeof layer.getBoundingClientRect
+        !== "function"
+      || typeof source.getBoundingClientRect
+        !== "function"
+      || typeof target.getBoundingClientRect
+        !== "function"
+    ) {
+      return;
+    }
+
+    const layerRect=
+      layer.getBoundingClientRect();
+    const sourceRect=
+      source.getBoundingClientRect();
+    const targetRect=
+      target.getBoundingClientRect();
+    const x1=
+      sourceRect.left
+      + sourceRect.width/2
+      - layerRect.left;
+    const y1=
+      sourceRect.top
+      + sourceRect.height/2
+      - layerRect.top;
+    const x2=
+      targetRect.left
+      + targetRect.width/2
+      - layerRect.left;
+    const y2=
+      targetRect.top
+      + targetRect.height/2
+      - layerRect.top;
+    const dx=x2-x1;
+    const dy=y2-y1;
+    const line=document.createElement(
+      "span"
+    );
+    line.className=
+      "duel-attack-line";
+    line.dataset.kind=kind;
+    line.style.left=`${x1}px`;
+    line.style.top=`${y1}px`;
+    line.style.width=
+      `${Math.hypot(dx,dy)}px`;
+    line.style.setProperty(
+      "--fx-angle",
+      `${Math.atan2(dy,dx)}rad`
+    );
+    layer.appendChild(line);
+    window.setTimeout(
+      () => line.remove(),
+      520
+    );
+  }
+
   function updateLocalEnemyCombat() {
     if (
       activePlayMode !== "local"
@@ -5505,6 +6078,12 @@ function saveHumanReviewLocalNote() {
         target.instanceId,
       hp:newHp,
     });
+
+    emitDuelAttackEffect(
+      "enemy-laser",
+      target.instanceId,
+      "enemy"
+    );
 
     pulseBattleFx(
       target.instanceId,
@@ -7377,6 +7956,8 @@ function saveHumanReviewLocalNote() {
       cell.className = "board-cell";
       cell.dataset.x = String(x);
       cell.dataset.y = String(y);
+      cell.dataset.occupied =
+        "false";
       cell.style.gridColumn = String(x + 1);
       cell.style.gridRow = String(y + 1);
 
@@ -7405,7 +7986,10 @@ function saveHumanReviewLocalNote() {
       }
 
       cell.addEventListener("dragover", (event) => {
-        if (cell.classList.contains("core-cell")) return;
+        if (
+          localBattleFinished
+          || cell.classList.contains("core-cell")
+        ) return;
         event.preventDefault();
         cell.classList.add("drag-over");
       });
@@ -7413,7 +7997,10 @@ function saveHumanReviewLocalNote() {
       cell.addEventListener("dragleave", () => cell.classList.remove("drag-over"));
 
       cell.addEventListener("drop", (event) => {
-        if (cell.classList.contains("core-cell")) return;
+        if (
+          localBattleFinished
+          || cell.classList.contains("core-cell")
+        ) return;
         event.preventDefault();
         cell.classList.remove("drag-over");
 
@@ -7441,6 +8028,7 @@ function saveHumanReviewLocalNote() {
       cell.className="board-cell enemy-board-cell";
       cell.dataset.x=String(x);
       cell.dataset.y=String(y);
+      cell.dataset.occupied="false";
       cell.style.gridColumn=String(x+1);
       cell.style.gridRow=String(y+1);
       const key=`${x},${y}`;
@@ -7458,20 +8046,24 @@ function saveHumanReviewLocalNote() {
     }
   }
 
-  function enemyCard(name,hp,maxHp,kind="module") {
+  function enemyCard(
+    moduleId,
+    name,
+    hp,
+    maxHp,
+    kind="module"
+  ) {
     const card=document.createElement("div");
     card.className="module-card enemy-module-card";
+    card.dataset.moduleId=moduleId;
     card.dataset.category=kind;
-    const title=document.createElement("span");
-    title.className="name";
-    title.textContent=name;
-    const stats=document.createElement("span");
-    stats.className="module-stats";
-    const hpEl=document.createElement("span");
-    hpEl.className="module-stat hp";
-    hpEl.textContent=`HP ${Math.max(0,Math.round(hp))}/${maxHp}`;
-    stats.appendChild(hpEl);
-    card.append(title,stats);
+    card.title=
+      `${name} · HP ${Math.max(0,Math.round(hp))}/${maxHp}`;
+    const icon=document.createElement("span");
+    icon.className="module-icon";
+    icon.textContent=moduleIconFor({nameTr:name});
+    icon.setAttribute("aria-label",name);
+    card.appendChild(icon);
     appendHpBar(card,hp,maxHp);
     return card;
   }
@@ -7480,16 +8072,20 @@ function saveHumanReviewLocalNote() {
     if (!enemyBoard) return;
     for (const cell of enemyBoard.querySelectorAll(".board-cell")) {
       cell.innerHTML="";
+      cell.dataset.occupied="false";
     }
     const place=(x,y,card)=>{
       const cell=enemyBoard.querySelector(`.board-cell[data-x="${x}"][data-y="${y}"]`);
-      if (cell) cell.appendChild(card);
+      if (cell) {
+        cell.dataset.occupied="true";
+        cell.appendChild(card);
+      }
     };
-    place(2,2,enemyCard("Çekirdek",mockEnemyCoreHp,300,"core"));
-    place(2,1,enemyCard("Jeneratör",mockEnemyGeneratorHp,150,"energy"));
+    place(2,2,enemyCard("enemy-core","Çekirdek",mockEnemyCoreHp,300,"core"));
+    place(2,1,enemyCard("enemy-generator","Jeneratör",mockEnemyGeneratorHp,150,"energy"));
     for (const module of mockEnemyModules) {
       if (module.hp<=0) continue;
-      place(module.position.x,module.position.y,enemyCard(module.name,module.hp,module.maxHp,module.kind));
+      place(module.position.x,module.position.y,enemyCard(module.id,module.name,module.hp,module.maxHp,module.kind));
     }
     mockEnemyModuleHp=enemyLivingModules().reduce((sum,module)=>sum+module.hp,0);
     if (enemyBoardStatusEl) {
@@ -8053,6 +8649,22 @@ function saveHumanReviewLocalNote() {
       battleProfileNameEl.textContent =
         view.displayName;
     }
+    const lobbyPlayerName=
+      document.getElementById(
+        "lobby-player-name"
+      );
+    const lobbyPlayerDetails=
+      document.getElementById(
+        "lobby-player-details"
+      );
+    if (lobbyPlayerName) {
+      lobbyPlayerName.textContent=
+        view.displayName;
+    }
+    if (lobbyPlayerDetails) {
+      lobbyPlayerDetails.textContent=
+        `Seviye ${view.level} · Lig: ${view.leagueNameTr} · ${view.rating} RP`;
+    }
   }
 
   async function saveProfileDisplayName() {
@@ -8115,31 +8727,78 @@ function saveHumanReviewLocalNote() {
 
   function renderShelf() {
     shelf.innerHTML = "";
-    const unlocked = client.isShelfUnlocked();
-
-    for (const module of client.modules.values()) {
-      if (module.status !== "reserve") continue;
-
-      if (
-        !battlePoolSelection
+    const unlocked =
+      client.isShelfUnlocked()
+      && !localBattleFinished;
+    const reserveModules=[
+      ...client.modules.values(),
+    ].filter(
+      (module) =>
+        module.status === "reserve"
+        && battlePoolSelection
           .selected
           .has(
             module.instanceId
           )
-      ) {
+    );
+
+    for (
+      const category
+      of POOL_CATEGORY_ORDER
+    ) {
+      const modules=
+        reserveModules.filter(
+          (module) =>
+            module.category
+            === category
+        );
+      if (!modules.length) {
         continue;
       }
 
-      const card = createModuleCard(module);
-      if (!unlocked) {
-        card.classList.add("locked");
+      const group=
+        document.createElement(
+          "section"
+        );
+      group.className=
+        "shelf-category-group";
+      group.dataset.category=
+        category;
+      const title=
+        document.createElement(
+          "strong"
+        );
+      title.className=
+        "shelf-category-title";
+      title.textContent=
+        poolCategoryLabel(
+          category
+        );
+      group.appendChild(title);
+
+      for (const module of modules) {
+        const card=
+          createModuleCard(module);
+        if (!unlocked) {
+          card.classList.add(
+            "locked"
+          );
+        }
+        group.appendChild(card);
       }
-      shelf.appendChild(card);
+      shelf.appendChild(group);
     }
 
-    shelf.addEventListener("dragover", (event) => event.preventDefault());
+    shelf.ondragover = (event) =>
+      event.preventDefault();
     shelf.ondrop = (event) => {
       event.preventDefault();
+      if (localBattleFinished) {
+        logClientMessage(
+          "Maç bittikten sonra modüller hareket ettirilemez."
+        );
+        return;
+      }
       const result = client.dropOnShelf();
       if (!result.ok) {
         logClientMessage(result.reason);
@@ -8150,6 +8809,8 @@ function saveHumanReviewLocalNote() {
   function renderBoard() {
     for (const cell of board.querySelectorAll(".board-cell")) {
       cell.innerHTML = "";
+      cell.dataset.occupied =
+        "false";
     }
 
     for (const module of client.modules.values()) {
@@ -8158,19 +8819,59 @@ function saveHumanReviewLocalNote() {
         `.board-cell[data-x="${module.position.x}"][data-y="${module.position.y}"]`;
       const cell = board.querySelector(selector);
       if (!cell) continue;
+      cell.dataset.occupied =
+        "true";
       cell.appendChild(createModuleCard(module));
     }
+  }
+
+  function moduleIconFor(module) {
+    const byName={
+      "Çekirdek":"◆",
+      "Jeneratör":"✦",
+      "Batarya":"▣",
+      "Dağıtıcı":"⑂",
+      "Kapasitör":"▤",
+      "Lazer":"↯",
+      "Darbe Topu":"◉",
+      "Ray Topu":"➤",
+      "Füze Fırlatıcı":"▲",
+      "Dron Üssü":"✣",
+      "Ark Topu":"ϟ",
+      "Kalkan":"⬡",
+      "Zırh":"▰",
+      "Yansıtıcı":"◇",
+      "Bariyer":"▥",
+      "Onarım Modülü":"✚",
+      "Soğutucu":"❄",
+      "Güçlendirici":"＋",
+      "Hedefleme Bilgisayarı":"⌖",
+      "Aşırı Hızlandırıcı":"≫",
+      "EMP":"⊘",
+      "Sinyal Bozucu":"≋",
+      "Virüs":"⌁",
+      "Enerji Sömürücü":"∿",
+      "Kesici":"╳",
+    };
+    return byName[module.nameTr]
+      || "●";
   }
 
   function createModuleCard(module) {
     const card = document.createElement("div");
     card.className = "module-card";
     card.draggable =
-      module.movable !== false;
+      !localBattleFinished
+      && module.movable !== false;
     card.dataset.moduleId =
       module.instanceId;
     card.dataset.category =
       module.category || "";
+    card.dataset.rotatable =
+      String(
+        module.status === "active"
+        && module.rotatable !== false
+      );
 
     if (
       module.movable === false
@@ -8184,7 +8885,27 @@ function saveHumanReviewLocalNote() {
       card.title =
         module.strategicRole
         || module.nameTr;
+      if (
+        module.status === "active"
+        && module.rotatable !== false
+      ) {
+        card.title +=
+          " · Port yönünü saat yönünde çevirmek için tıkla";
+      }
     }
+
+    const icon=
+      document.createElement(
+        "span"
+      );
+    icon.className=
+      "module-icon";
+    icon.textContent=
+      moduleIconFor(module);
+    icon.setAttribute(
+      "aria-label",
+      module.nameTr
+    );
 
     const name = document.createElement("span");
     name.className = "name";
@@ -8274,16 +8995,22 @@ function saveHumanReviewLocalNote() {
     meta.textContent =
       detailParts.join(" · ");
 
-    card.append(
-      name,
-      stats
-    );
+    card.appendChild(icon);
+    if (module.status !== "active") {
+      card.append(
+        name,
+        stats
+      );
+    }
     appendHpBar(
       card,
       module.hp,
       module.maxHp
     );
-    if (meta.textContent) {
+    if (
+      module.status !== "active"
+      && meta.textContent
+    ) {
       card.appendChild(meta);
     }
 
@@ -8308,6 +9035,18 @@ function saveHumanReviewLocalNote() {
     }
 
     if (
+      module.status === "active"
+      && module.isPowered
+      && Number(
+        module.energyReceived || 0
+      ) > 0
+    ) {
+      card.classList.add(
+        "energy-flowing"
+      );
+    }
+
+    if (
       selectedBoosterId
       && module.status === "active"
     ) {
@@ -8319,15 +9058,55 @@ function saveHumanReviewLocalNote() {
     card.addEventListener(
       "click",
       () => {
-        tryApplySelectedBooster(
-          module
-        );
+        if (
+          tryApplySelectedBooster(
+            module
+          )
+        ) {
+          return;
+        }
+        if (
+          localBattleFinished
+        ) {
+          logClientMessage(
+            "Maç bittikten sonra port yönleri değiştirilemez."
+          );
+          return;
+        }
+        if (
+          module.status
+          !== "active"
+          || module.rotatable
+            === false
+        ) {
+          return;
+        }
+        if (!client.isShelfUnlocked()) {
+          logClientMessage(
+            "Port dönüşü 15. saniyede açılır."
+          );
+          return;
+        }
+        client.emitCommand({
+          kind:"rotate_module",
+          payload:{
+            module_id:
+              module.instanceId,
+          },
+        });
       }
     );
 
     card.addEventListener(
       "dragstart",
       (event) => {
+        if (localBattleFinished) {
+          event.preventDefault();
+          logClientMessage(
+            "Maç bittikten sonra modüller hareket ettirilemez."
+          );
+          return;
+        }
         const result =
           client.beginDrag(
             module.instanceId
@@ -8377,6 +9156,13 @@ function saveHumanReviewLocalNote() {
   function applyMockServerCommand(command) {
     // Alpha.6: Bu katman yalnızca UI demosu için sahte sunucu cevabıdır.
     // Gerçek Devre Kredisi otoritesi Python savaş motorundadır.
+    if (localBattleFinished) {
+      logClientMessage(
+        "Maç tamamlandı; savaş komutları kilitli."
+      );
+      return;
+    }
+
     const moduleCost = (moduleId) =>
       client.requireModule(moduleId).circuitCreditCost || 0;
 
@@ -8387,6 +9173,8 @@ function saveHumanReviewLocalNote() {
       cost = 10;
     } else if (command.kind === "replace_module") {
       cost = moduleCost(command.payload.incoming_module_id);
+    } else if (command.kind === "rotate_module") {
+      cost = 0;
     }
 
     if (mockServerCredits < cost) {
@@ -8423,6 +9211,14 @@ function saveHumanReviewLocalNote() {
           === "generator-1"
             ? "generator_gate"
             : "module_move"
+        );
+      } else if (
+        command.kind
+        === "rotate_module"
+      ) {
+        trackBattleUiInteraction(
+          command.kind,
+          "module_move"
         );
       }
     }
@@ -8520,6 +9316,39 @@ function saveHumanReviewLocalNote() {
         status: "active",
         position,
       });
+    } else if (
+      command.kind
+      === "rotate_module"
+    ) {
+      const module=
+        client.requireModule(
+          command.payload.module_id
+        );
+      if (
+        module.rotatable
+        === false
+      ) {
+        logClientMessage(
+          `${module.nameTr} döndürülemez.`
+        );
+        return;
+      }
+      client.applyServerModuleState({
+        instanceId:
+          module.instanceId,
+        direction:
+          RIGHT_OF[
+            module.direction
+            || "up"
+          ],
+      });
+      if (localBattleMetrics) {
+        localBattleMetrics
+          .module_changes += 1;
+      }
+      triggerGridshardCue(
+        "port_connect"
+      );
     }
 
     if (
@@ -8891,6 +9720,23 @@ function saveHumanReviewLocalNote() {
           );
       }
 
+      const targetDomId=
+        targetModule
+          ? targetModule.id
+          : (
+              targetName
+              === "Rakip Jeneratör"
+                ? "enemy-generator"
+                : "enemy-core"
+            );
+      emitDuelAttackEffect(
+        attacker.instanceId,
+        targetDomId,
+        defenseType === "Kalkan"
+          ? "shield"
+          : "attack"
+      );
+
       mockEnemyModuleHp=
         enemyLivingModules()
           .reduce(
@@ -8997,6 +9843,16 @@ function saveHumanReviewLocalNote() {
   }
 
   function renderLockState() {
+    if (localBattleFinished) {
+      lockLabel.dataset.active =
+        "false";
+      lockLabel.textContent =
+        "Maç Bitti";
+      shelfHelp.textContent =
+        "Savaş tamamlandı; modül hareketleri ve port dönüşleri kilitlendi.";
+      return;
+    }
+
     const unlocked = client.isShelfUnlocked();
     lockLabel.dataset.active = String(unlocked);
     lockLabel.textContent = unlocked ? "Aktif" : "Kilitli";
@@ -9126,21 +9982,32 @@ function saveHumanReviewLocalNote() {
         lastBattleAnimationNow=now;
       }
 
-      elapsedMs =
-        Math.max(
-          0,
-          (
-            now
-            - battleStartedAt
-          )
-          * gridshardE2eTimeScale
+      if (
+        localBattleStarted
+        && !localBattleFinished
+        && !localServerAuthoritative
+      ) {
+        elapsedMs =
+          Math.max(
+            0,
+            (
+              now
+              - battleStartedAt
+            )
+            * gridshardE2eTimeScale
+          );
+        client.updateElapsedMs(
+          elapsedMs
         );
-      client.updateElapsedMs(
-        elapsedMs
-      );
-      updateMockServerPassiveCredits(
-        elapsedMs
-      );
+        updateMockServerPassiveCredits(
+          elapsedMs
+        );
+      } else {
+        // Sunucu otoritesinde snapshot zamanı kullanılır; sonuçtan sonra
+        // son değer korunarak sayaç kesin biçimde dondurulur.
+        elapsedMs=
+          client.elapsedMs;
+      }
     } else if (
       activePlayMode
       === "idle"
@@ -9159,17 +10026,22 @@ function saveHumanReviewLocalNote() {
     if (
       activePlayMode
       === "local"
+      && !localBattleFinished
     ) {
-      updateMockEnergy();
-      updateMockCombat();
-      updateLocalEnemyCombat();
+      if (!localServerAuthoritative) {
+        updateMockEnergy();
+        updateMockCombat();
+        updateLocalEnemyCombat();
+      }
       renderEnemyBoard();
       publishBattleUxMetrics();
     }
 
     renderCredits();
     renderPlayerCoreSummary();
-    updateBoosterOfferAvailability();
+    if (!localBattleFinished) {
+      updateBoosterOfferAvailability();
+    }
 
     if (Math.floor(elapsedMs / 250) !== Math.floor((elapsedMs - 16) / 250)) {
       renderShelf();
@@ -9359,6 +10231,29 @@ function saveHumanReviewLocalNote() {
 
   if (onlinePlayPrepareButton) {
     onlinePlayPrepareButton
+      .addEventListener(
+        "click",
+        prepareOnlineMatch
+      );
+  }
+
+  const battlePrepareLocalButton=
+    document.getElementById(
+      "battle-prepare-local"
+    );
+  const battlePrepareOnlineButton=
+    document.getElementById(
+      "battle-prepare-online"
+    );
+  if (battlePrepareLocalButton) {
+    battlePrepareLocalButton
+      .addEventListener(
+        "click",
+        prepareLocalMatch
+      );
+  }
+  if (battlePrepareOnlineButton) {
+    battlePrepareOnlineButton
       .addEventListener(
         "click",
         prepareOnlineMatch
@@ -9677,6 +10572,29 @@ function saveHumanReviewLocalNote() {
     window.__GRIDSHARD_TEST_API={
       startQuickLocalBattle,
       fillBattlePoolForQuickTest,
+      rotateModule:(moduleId) => {
+        const module=
+          client.requireModule(
+            moduleId
+          );
+        if (
+          localBattleFinished
+          || !client.isShelfUnlocked()
+          || module.status
+            !== "active"
+          || module.rotatable
+            === false
+        ) {
+          return false;
+        }
+        client.emitCommand({
+          kind:"rotate_module",
+          payload:{
+            module_id:moduleId,
+          },
+        });
+        return true;
+      },
       getBattleState:()=>({
         mode:
           activePlayMode,
@@ -9692,6 +10610,22 @@ function saveHumanReviewLocalNote() {
           document.body
             .dataset
             .localStatus,
+        elapsed_ms:
+          client.elapsedMs,
+        authority:
+          document.body
+            .dataset
+            .battleAuthority,
+        directions:
+          Object.fromEntries(
+            [...client.modules.values()]
+              .map(
+                (module) => [
+                  module.instanceId,
+                  module.direction,
+                ]
+              )
+          ),
       }),
     };
   }

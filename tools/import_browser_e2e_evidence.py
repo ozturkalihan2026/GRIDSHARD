@@ -268,7 +268,7 @@ def main()->int:
 
         payload={
             "version":
-                "2.0.0-beta.23",
+                "2.0.0-beta.24",
             "status":status,
             "verified_passed":
                 verified_passed,
@@ -343,7 +343,7 @@ def main()->int:
     except ImportErrorEvidence as exc:
         payload={
             "version":
-                "2.0.0-beta.23",
+                "2.0.0-beta.24",
             "status":
                 "REJECTED",
             "verified_passed":

@@ -11,7 +11,7 @@ def test_run_report_endpoint_is_available():
         "/web-test/test-run/report"
     ).json()
 
-    assert body["version"]=="2.0.0-beta.23"
+    assert body["version"]=="2.0.0-beta.24"
     assert body["build"]=="web-test-beta.13"
     assert body["test_run_id"]=="web-test-beta.13"
     assert body["status"]=="not_started"

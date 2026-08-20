@@ -404,61 +404,61 @@ function createClient() {
   const fs=require("fs");
   const src=fs.readFileSync(path.join(ROOT,"src/app.js"),"utf8");
   assert.ok(src.includes("PVP_STATUS"));
-  assert.ok(src.includes("GRIDSHARD Beta.23 · Gerçek Yerel Savaş + Sabit HUD + Enerji Dengesi + Audio V4"));
+  assert.ok(src.includes("GRIDSHARD Beta.24 · Sunucu Otoriteli Yerel Savaş + Tek Viewport UX + Savaş Efektleri V2"));
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync(path.join(ROOT,"src/app.js"),"utf8");
-  assert.ok(src.includes("GRIDSHARD Beta.23 · Gerçek Yerel Savaş + Sabit HUD + Enerji Dengesi + Audio V4")); // alpha32->33 protocol status
+  assert.ok(src.includes("GRIDSHARD Beta.24 · Sunucu Otoriteli Yerel Savaş + Tek Viewport UX + Savaş Efektleri V2")); // alpha32->33 protocol status
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync(path.join(ROOT,"src/app.js"),"utf8");
-  assert.ok(src.includes("GRIDSHARD Beta.23 · Gerçek Yerel Savaş + Sabit HUD + Enerji Dengesi + Audio V4")); // alpha33 protocol
+  assert.ok(src.includes("GRIDSHARD Beta.24 · Sunucu Otoriteli Yerel Savaş + Tek Viewport UX + Savaş Efektleri V2")); // alpha33 protocol
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync(path.join(ROOT,"src/app.js"),"utf8");
-  assert.ok(src.includes("GRIDSHARD Beta.23 · Gerçek Yerel Savaş + Sabit HUD + Enerji Dengesi + Audio V4")); // alpha34 websocket
+  assert.ok(src.includes("GRIDSHARD Beta.24 · Sunucu Otoriteli Yerel Savaş + Tek Viewport UX + Savaş Efektleri V2")); // alpha34 websocket
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync(path.join(ROOT,"src/app.js"),"utf8");
-  assert.ok(src.includes("GRIDSHARD Beta.23 · Gerçek Yerel Savaş + Sabit HUD + Enerji Dengesi + Audio V4")); // alpha35 gateway
+  assert.ok(src.includes("GRIDSHARD Beta.24 · Sunucu Otoriteli Yerel Savaş + Tek Viewport UX + Savaş Efektleri V2")); // alpha35 gateway
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync(path.join(ROOT,"src/app.js"),"utf8");
-  assert.ok(src.includes("GRIDSHARD Beta.23 · Gerçek Yerel Savaş + Sabit HUD + Enerji Dengesi + Audio V4")); // alpha36 setup
+  assert.ok(src.includes("GRIDSHARD Beta.24 · Sunucu Otoriteli Yerel Savaş + Tek Viewport UX + Savaş Efektleri V2")); // alpha36 setup
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync(path.join(ROOT,"src/app.js"),"utf8");
-  assert.ok(src.includes("GRIDSHARD Beta.23 · Gerçek Yerel Savaş + Sabit HUD + Enerji Dengesi + Audio V4")); // alpha37 lobby
+  assert.ok(src.includes("GRIDSHARD Beta.24 · Sunucu Otoriteli Yerel Savaş + Tek Viewport UX + Savaş Efektleri V2")); // alpha37 lobby
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync(path.join(ROOT,"src/app.js"),"utf8");
-  assert.ok(src.includes("GRIDSHARD Beta.23 · Gerçek Yerel Savaş + Sabit HUD + Enerji Dengesi + Audio V4")); // alpha38 runner
+  assert.ok(src.includes("GRIDSHARD Beta.24 · Sunucu Otoriteli Yerel Savaş + Tek Viewport UX + Savaş Efektleri V2")); // alpha38 runner
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync(path.join(ROOT,"src/app.js"),"utf8");
-  assert.ok(src.includes("GRIDSHARD Beta.23 · Gerçek Yerel Savaş + Sabit HUD + Enerji Dengesi + Audio V4")); // alpha39 heartbeat
+  assert.ok(src.includes("GRIDSHARD Beta.24 · Sunucu Otoriteli Yerel Savaş + Tek Viewport UX + Savaş Efektleri V2")); // alpha39 heartbeat
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync(path.join(ROOT,"src/app.js"),"utf8");
-  assert.ok(src.includes("GRIDSHARD Beta.23 · Gerçek Yerel Savaş + Sabit HUD + Enerji Dengesi + Audio V4")); // alpha40 online pvp
+  assert.ok(src.includes("GRIDSHARD Beta.24 · Sunucu Otoriteli Yerel Savaş + Tek Viewport UX + Savaş Efektleri V2")); // alpha40 online pvp
 }
 
 {
@@ -684,7 +684,7 @@ function createClient() {
 {
   const fs=require("fs");
   const src=fs.readFileSync(path.join(ROOT,"src/app.js"),"utf8");
-  assert.ok(src.includes("GRIDSHARD Beta.23 · Gerçek Yerel Savaş + Sabit HUD + Enerji Dengesi + Audio V4"));
+  assert.ok(src.includes("GRIDSHARD Beta.24 · Sunucu Otoriteli Yerel Savaş + Tek Viewport UX + Savaş Efektleri V2"));
   assert.ok(src.includes("buildPvPCommandEnvelope"));
   assert.ok(src.includes("applyPvPServerEnvelope"));
 }
@@ -1888,7 +1888,7 @@ function createClient() {
   );
   assert.ok(
     html.includes(
-      "Savaş Havuzu Oluştur"
+      "Savaş Havuzu"
     )
   );
   assert.ok(
@@ -2317,7 +2317,7 @@ function createClient() {
   const html=fs.readFileSync(path.join(ROOT,"index.html"),"utf8");
   assert.ok(
     html.includes(
-      "2.0.0-beta.23"
+      "2.0.0-beta.24"
     )
   );
   assert.ok(
@@ -4337,7 +4337,8 @@ function createClient() {
 
   assert.ok(app.includes("document.body.dataset.appScreen"));
   assert.ok(html.includes("menu-action-play"));
-  assert.ok(html.includes("main-menu-lead"));
+  assert.ok(!html.includes("main-menu-lead"));
+  assert.ok(html.includes("lobby-subtitle"));
   assert.ok(css.includes('body[data-app-screen="menu"] .battle-status-cluster'));
   assert.ok(css.includes("grid-template-columns: repeat(2, minmax(0, 1fr))"));
   assert.ok(!html.includes('data-open-screen="education"'));
@@ -4491,11 +4492,13 @@ function createClient() {
   const css=fs.readFileSync("./src/styles.css","utf8");
   const app=fs.readFileSync("./src/app.js","utf8");
 
-  assert.ok(html.includes("GRIDSHARD // CORE ARENA"));
+  assert.ok(!html.includes("GRIDSHARD // CORE ARENA"));
+  assert.ok(html.includes('<span class="lobby-subtitle">CORE ARENA</span>'));
   assert.ok(html.includes("Kapılar arasında taşınabilir"));
   assert.ok(css.includes(".lobby-core-orbit"));
   assert.ok(css.includes(".battle-fx-strip"));
   assert.ok(css.includes("@keyframes relay-hit"));
+  assert.ok(css.includes("@keyframes gs-core-breath"));
   assert.ok(app.includes("allowedMovePositions"));
 }
 
@@ -4595,7 +4598,7 @@ function createClient() {
   const css=fs.readFileSync("./src/styles.css","utf8");
   const app=fs.readFileSync("./src/app.js","utf8");
 
-  assert.ok(html.includes("GRIDSHARD // CORE ARENA"));
+  assert.ok(html.includes("CORE ARENA"));
   assert.ok(html.includes("Devreni Kur."));
   assert.ok(html.includes("Çekirdeği Kır."));
   assert.ok(html.includes("shard-core-mark"));
@@ -4629,8 +4632,9 @@ function createClient() {
   const audio=fs.readFileSync("./src/gridshard-audio.js","utf8");
 
   assert.ok(html.includes('id="battle-pool-preset-gallery"'));
-  assert.ok(html.includes("Tek Oyunculu · Dereceli PvP"));
-  assert.ok(html.includes("Sezon: Kuruluş"));
+  assert.ok(!html.includes("Tek Oyunculu · Dereceli PvP"));
+  assert.ok(html.includes('id="lobby-player-name"'));
+  assert.ok(html.includes('id="lobby-player-details"'));
   assert.ok(app.includes('"−"'));
   assert.ok(app.includes('dataset.action'));
   assert.ok(app.includes("renderPresetGallery"));

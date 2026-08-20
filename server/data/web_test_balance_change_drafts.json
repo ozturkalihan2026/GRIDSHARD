@@ -1,0 +1,30 @@
+{
+  "wt-8288059b-9714-4817-ad64-397540b99b4e": {
+    "items": [
+      {
+        "approved": false,
+        "area": "local_ai_pressure",
+        "before_value": null,
+        "proposed_value": null,
+        "regression_status": "pending",
+        "simulation_status": "pending"
+      },
+      {
+        "approved": false,
+        "area": "circuit_credit",
+        "before_value": null,
+        "proposed_value": null,
+        "regression_status": "pending",
+        "simulation_status": "pending"
+      },
+      {
+        "approved": false,
+        "area": "module_interaction",
+        "before_value": "0",
+        "proposed_value": "10",
+        "regression_status": "failed",
+        "simulation_status": "passed"
+      }
+    ]
+  }
+}

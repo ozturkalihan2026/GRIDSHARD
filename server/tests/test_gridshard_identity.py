@@ -19,7 +19,8 @@ def test_home_exposes_gridshard_identity():
     html=client.get("/").text
 
     assert "GRIDSHARD" in html
-    assert "GRIDSHARD // CORE ARENA" in html
+    assert "GRIDSHARD // CORE ARENA" not in html
+    assert '<span class="lobby-subtitle">CORE ARENA</span>' in html
     assert "Devreni Kur." in html
     assert "Çekirdeği Kır." in html
     assert "gridshard-audio.js" in html

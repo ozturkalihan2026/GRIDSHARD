@@ -31,7 +31,7 @@
     <section id="main-menu-panel" class="main-menu-panel">
       <div class="main-menu-brand">
         <h1>GRIDSHARD</h1>
-        <span>2.0.0-beta.23</span>
+        <span>2.0.0-beta.24</span>
       </div>
       <div class="lobby-backdrop" aria-hidden="true">
         <div class="lobby-board-grid" aria-hidden="true">
@@ -53,39 +53,34 @@
       </div>
 
       <div class="lobby-main">
-        <span class="lobby-kicker">GRIDSHARD // CORE ARENA</span>
         <h2 id="main-menu-title">GRIDSHARD</h2>
-        <p class="main-menu-lead">
-          18 modüllük savaş havuzunu hazırla. Devreni savaş sırasında değiştir. Rakip çekirdeği kır.
-        </p>
+        <span class="lobby-subtitle">CORE ARENA</span>
 
         <div class="lobby-play-row">
           <button type="button" class="menu-action menu-action-play lobby-play-button" data-open-screen="play">
             <span class="menu-action-title">Oyna</span>
-            <span class="menu-action-copy">Tek Oyunculu · Dereceli PvP</span>
           </button>
           <div class="lobby-build-chip">
             <span>GÜNCEL YAPI</span>
-            <strong id="ui-build-version">2.0.0-beta.23</strong><small id="ui-build-run">manifest bekleniyor</small>
+            <strong id="ui-build-version">2.0.0-beta.24</strong><small id="ui-build-run">manifest bekleniyor</small>
           </div>
         </div>
       </div>
 
       <aside class="lobby-side-menu">
         <div class="lobby-player-card">
-          <span class="player-card-label">OPERATÖR</span>
-          <strong>Oyuncu</strong>
-          <span>Sezon: Kuruluş · Lig: Gümüş · 1000 RP</span>
+          <strong id="lobby-player-name">Oyuncu</strong>
+          <span id="lobby-player-details">Seviye 1 · Lig: Gümüş · 1000 RP</span>
         </div>
         <nav class="main-scope-nav" aria-label="Ana Menü">
           <button type="button" class="menu-action" data-open-screen="profile">
-            <span><span class="menu-action-title">Profil</span><span class="menu-action-copy">Kimlik, seviye ve savaş hazırlığı</span></span>
+            <span class="menu-action-title">Profil</span>
           </button>
           <button type="button" class="menu-action" data-open-screen="statistics">
-            <span><span class="menu-action-title">İstatistikler</span><span class="menu-action-copy">Maç ve performans geçmişi</span></span>
+            <span class="menu-action-title">İstatistikler</span>
           </button>
           <button type="button" class="menu-action" data-open-screen="settings">
-            <span><span class="menu-action-title">Ayarlar</span><span class="menu-action-copy">Ses, grafik ve dil seçenekleri</span></span>
+            <span class="menu-action-title">Ayarlar</span>
           </button>
         </nav>
       </aside>
@@ -212,13 +207,20 @@
     <section class="battle-pool-panel play-setup-panel" id="battle-pool-panel" data-screen-panel="play" hidden>
       <div class="panel-title-row">
         <div>
-          <h2 id="battle-pool-title">Savaş Havuzu Oluştur</h2>
+          <h2 id="battle-pool-title">Savaşa Hazırlık</h2>
           <p class="screen-subtitle">Soldan modülü incele. + ile ekle, − ile çıkar; ◆ Jeneratörün zorunlu ve kilitli olduğunu gösterir. Hazır havuz yükleyebilir, düzenleyebilir ve tekrar kaydedebilirsin.</p>
         </div>
-        <span id="battle-pool-count">1 / 18</span>
+        <div class="battle-preparation-status">
+          <div class="battle-preparation-mode" role="group" aria-label="Hazırlık maç modu">
+            <button id="battle-prepare-local" type="button" data-active="true">Yerel AI Testi</button>
+            <button id="battle-prepare-online" type="button" data-active="false">Online PvP</button>
+          </div>
+          <span id="battle-pool-count">1 / 18</span>
+        </div>
       </div>
 
-      <section class="battle-pool-preset-bar">
+      <details class="battle-pool-preset-bar">
+        <summary>Hazır Savaş Havuzları ve kayıt yönetimi</summary>
         <div class="preset-gallery-heading">
           <div>
             <strong>Hazır Savaş Havuzları</strong>
@@ -251,7 +253,7 @@
           </div>
         </div>
         <span id="battle-pool-preset-status" role="status">Kayıtlı havuzlar yükleniyor...</span>
-      </section>
+      </details>
 
       <div class="battle-pool-builder">
         <aside class="battle-pool-catalog-panel">
@@ -267,8 +269,8 @@
             <div><dt>Sınıf</dt><dd id="battle-pool-detail-class">Enerji</dd></div>
             <div><dt>Can</dt><dd id="battle-pool-detail-hp">150</dd></div>
             <div><dt>Devre Kredisi</dt><dd id="battle-pool-detail-cost">0 DK</dd></div>
-            <div><dt>Port</dt><dd id="battle-pool-detail-ports">3</dd></div>
-            <div><dt>Enerji Üretimi</dt><dd id="battle-pool-detail-energy-generation">8/sn</dd></div>
+            <div><dt>Port</dt><dd id="battle-pool-detail-ports">4</dd></div>
+            <div><dt>Enerji Üretimi</dt><dd id="battle-pool-detail-energy-generation">11/sn</dd></div>
             <div><dt>Enerji Tüketimi</dt><dd id="battle-pool-detail-energy-consumption">0/sn</dd></div>
             <div><dt>Temel Hasar</dt><dd id="battle-pool-detail-damage">—</dd></div>
             <div><dt>Bekleme</dt><dd id="battle-pool-detail-cooldown">—</dd></div>
@@ -412,7 +414,7 @@
     </section>
 
     <section class="battle-test-banner play-live-panel" data-screen-panel="play" hidden>
-      <strong>Beta.23 Gerçek Yerel Savaş</strong>
+      <strong>Beta.24 Sunucu Otoriteli Yerel Savaş</strong>
       <span id="battle-entry-status">Savaş alanına giriş başarılı · Yerel AI aktif · Modül Rafı 15. saniyede açılır</span>
     </section>
 
@@ -423,7 +425,8 @@
           <span id="battle-state-label">Savaş devam ediyor</span>
         </div>
 
-        <div class="duel-arena">
+        <div class="duel-arena" id="duel-arena">
+          <div id="battle-effect-layer" class="battle-effect-layer" aria-hidden="true"></div>
           <section class="duel-side duel-player-side">
             <div class="duel-side-heading">
               <strong>Senin Devren</strong>
@@ -456,11 +459,13 @@
       </aside>
     </section>
 
-    <section class="post-match-panel play-result-panel" data-screen-panel="play" hidden>
+    <section class="post-match-panel play-result-panel" data-screen-panel="play" role="dialog" aria-label="Maç sonucu" hidden>
       <div class="panel-title-row">
         <h2>Maç Sonucu</h2>
         <span id="battle-result-summary" hidden>Sonuç bekleniyor</span>
       </div>
+      <details id="post-match-analysis" class="post-match-analysis">
+        <summary>Savaş Analizini Aç</summary>
       <div id="local-battle-report" class="local-battle-report" hidden>
         <h3>Manuel Savaş Raporu</h3>
         <div class="local-report-grid">
@@ -557,6 +562,7 @@
           </p>
         </section>
       </div>
+      </details>
       <button id="rematch-button" type="button">Tekrar Maç</button>
     </section>
 

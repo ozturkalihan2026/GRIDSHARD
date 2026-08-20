@@ -1,4 +1,5 @@
 import json
+from concurrent.futures import ThreadPoolExecutor
 
 from app.player_data_store import (
     JsonFilePlayerDataRepository,
@@ -153,3 +154,16 @@ def test_json_repository_delete_is_persistent(tmp_path):
     assert restarted.load(
         "wt-file-123456"
     ) is None
+
+
+def test_json_repository_serializes_concurrent_browser_bootstrap_saves(tmp_path):
+    path = tmp_path / "players.json"
+    repo = JsonFilePlayerDataRepository(path)
+    player_ids = [f"browser-player-{index}" for index in range(16)]
+
+    with ThreadPoolExecutor(max_workers=8) as executor:
+        list(executor.map(lambda player_id: repo.save(snapshot(player_id)), player_ids))
+
+    persisted = json.loads(path.read_text(encoding="utf-8"))
+    assert set(persisted) == set(player_ids)
+    assert not (tmp_path / "players.json.tmp").exists()

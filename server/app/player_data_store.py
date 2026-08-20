@@ -5,6 +5,7 @@ from pathlib import Path
 import json
 import os
 import shutil
+from threading import RLock
 from typing import Protocol
 
 from .player_profile import (
@@ -62,6 +63,7 @@ class JsonFilePlayerDataRepository:
         path: str | Path,
     ):
         self.path = Path(path)
+        self._lock = RLock()
 
     @property
     def backup_path(self) -> Path:
@@ -74,17 +76,19 @@ class JsonFilePlayerDataRepository:
         self,
         snapshot: PlayerDataSnapshot,
     ) -> None:
-        payload = self._read_all()
-        payload[
-            snapshot.player_id
-        ] = snapshot.to_dict()
-        self._write_all(payload)
+        with self._lock:
+            payload = self._read_all()
+            payload[
+                snapshot.player_id
+            ] = snapshot.to_dict()
+            self._write_all(payload)
 
     def load(
         self,
         player_id: str,
     ) -> PlayerDataSnapshot | None:
-        payload = self._read_all()
+        with self._lock:
+            payload = self._read_all()
         data = payload.get(
             player_id
         )
@@ -162,36 +166,37 @@ class JsonFilePlayerDataRepository:
         }
 
     def restore_backup(self) -> bool:
-        health = self.backup_health()
+        with self._lock:
+            health = self.backup_health()
 
-        if not health["ready"]:
-            return False
+            if not health["ready"]:
+                return False
 
-        try:
-            self.path.parent.mkdir(
-                parents=True,
-                exist_ok=True,
-            )
-            restore_temp = (
-                self.path.with_name(
-                    self.path.name
-                    + ".restore.tmp"
+            try:
+                self.path.parent.mkdir(
+                    parents=True,
+                    exist_ok=True,
                 )
-            )
-            shutil.copy2(
-                self.backup_path,
-                restore_temp,
-            )
-            os.replace(
-                restore_temp,
-                self.path,
-            )
-        except OSError as exc:
-            raise PlayerDataStoreError(
-                "Kalıcı oyuncu veri yedeği geri yüklenemedi."
-            ) from exc
+                restore_temp = (
+                    self.path.with_name(
+                        self.path.name
+                        + ".restore.tmp"
+                    )
+                )
+                shutil.copy2(
+                    self.backup_path,
+                    restore_temp,
+                )
+                os.replace(
+                    restore_temp,
+                    self.path,
+                )
+            except OSError as exc:
+                raise PlayerDataStoreError(
+                    "Kalıcı oyuncu veri yedeği geri yüklenemedi."
+                ) from exc
 
-        return True
+            return True
 
     def health(self) -> dict:
         backup = self.backup_health()
@@ -268,16 +273,17 @@ class JsonFilePlayerDataRepository:
         self,
         player_id: str,
     ) -> bool:
-        payload = self._read_all()
-        if player_id not in payload:
-            return False
+        with self._lock:
+            payload = self._read_all()
+            if player_id not in payload:
+                return False
 
-        payload.pop(
-            player_id,
-            None,
-        )
-        self._write_all(payload)
-        return True
+            payload.pop(
+                player_id,
+                None,
+            )
+            self._write_all(payload)
+            return True
 
     def _read_all(self) -> dict:
         if not self.path.exists():
