@@ -116,4 +116,13 @@ def test_terminal_snapshot_keeps_server_result():
 
     assert snap["status"]=="finished"
     assert snap["finish_reason"] is not None
-    assert snap["result_summary"]==session.engine.state.result_summary
+    assert (
+        snap["result_summary"]["a"]
+        == session.engine.state.result_summary["a"]
+    )
+    assert "circuit_credits" not in snap["result_summary"]["b"]
+    assert "forfeit_credit_penalty" not in snap["result_summary"]["b"]
+    assert (
+        snap["result_summary"]["b"]["core_hp"]
+        == session.engine.state.result_summary["b"]["core_hp"]
+    )

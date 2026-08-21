@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import asyncio
 import time
+from collections import deque
 from dataclasses import dataclass, field
 from typing import Any, Protocol
 
@@ -29,6 +30,7 @@ class PvPConnection:
     last_pushed_event_cursor: int = 0
     last_seen_at: float = 0.0
     last_rtt_ms: float | None = None
+    recent_message_times: deque[float] = field(default_factory=deque)
 
 
 @dataclass(slots=True)
@@ -69,6 +71,22 @@ class PvPConnectionRegistry:
             and connection.player_id == player_id
         )
 
+    def prune_disconnected(
+        self,
+        *,
+        now: float,
+        retention_seconds: float = 60.0,
+    ) -> int:
+        stale_ids = [
+            connection_id
+            for connection_id, connection in self.connections.items()
+            if not connection.connected
+            and now - connection.last_seen_at >= retention_seconds
+        ]
+        for connection_id in stale_ids:
+            self.connections.pop(connection_id, None)
+        return len(stale_ids)
+
 
 class PvPWebSocketAdapter:
     def __init__(
@@ -79,6 +97,7 @@ class PvPWebSocketAdapter:
         now_func=time.monotonic,
         silent_timeout_seconds: float = 12.0,
         grace_period_seconds: float = 0.0,
+        max_messages_per_second: int = 60,
     ):
         self.service = service
         self.handler = PvPProtocolHandler(service)
@@ -86,6 +105,7 @@ class PvPWebSocketAdapter:
         self.now_func = now_func
         self.silent_timeout_seconds = silent_timeout_seconds
         self.grace_period_seconds = grace_period_seconds
+        self.max_messages_per_second = max(1, int(max_messages_per_second))
         self.pending_disconnect_deadlines: dict[tuple[str,str],float] = {}
 
     async def connect(
@@ -129,6 +149,7 @@ class PvPWebSocketAdapter:
         close_code: int = 1000,
     ) -> None:
         connection = self.registry.unbind(connection_id)
+        connection.last_seen_at = self.now_func()
 
         # Aynı oyuncunun başka aktif bağlantısı yoksa slot disconnected olur.
         remaining = self.registry.active_for_player(
@@ -150,6 +171,7 @@ class PvPWebSocketAdapter:
         connection_id: str,
     ) -> None:
         connection = self.registry.unbind(connection_id)
+        connection.last_seen_at = self.now_func()
         remaining = self.registry.active_for_player(
             connection.session_id,
             connection.player_id,
@@ -208,6 +230,9 @@ class PvPWebSocketAdapter:
         return {
             "timed_out_connections":timed_out,
             "grace_expired_players":grace_expired,
+            "pruned_connections":self.registry.prune_disconnected(
+                now=now,
+            ),
         }
 
     async def handle_one(
@@ -220,35 +245,48 @@ class PvPWebSocketAdapter:
                 "Kapalı WebSocket bağlantısı mesaj işleyemez."
             )
 
-        try:
-            raw = await connection.socket.receive_json()
-            connection.messages_received += 1
+        # Taşıyıcı kapanışları burada protokol hatasına çevrilmemelidir. Starlette,
+        # kapanmış sokete tekrar send_json çağrılmasına izin vermez; hata üstteki
+        # bağlantı yaşam döngüsüne kadar yükseltilir.
+        raw = await connection.socket.receive_json()
+        connection.messages_received += 1
 
-            heartbeat_sent_at_ms=None
-            if (
-                isinstance(raw,dict)
-                and raw.get("type")=="heartbeat"
-                and isinstance(raw.get("payload"),dict)
-            ):
-                value=raw["payload"].get("sent_at_ms")
-                if isinstance(value,(int,float)):
-                    heartbeat_sent_at_ms=float(value)
-
-            self.mark_seen(
-                connection_id,
-                heartbeat_sent_at_ms=heartbeat_sent_at_ms,
-            )
-
-            response = self.handler.handle(
-                raw,
-                authenticated_player_id=connection.player_id,
-            )
-
-        except Exception as exc:
+        now = self.now_func()
+        cutoff = now - 1.0
+        while (
+            connection.recent_message_times
+            and connection.recent_message_times[0] <= cutoff
+        ):
+            connection.recent_message_times.popleft()
+        if len(connection.recent_message_times) >= self.max_messages_per_second:
             response = protocol_error_envelope(
-                str(exc),
-                code="transport_error",
+                "WebSocket mesaj hızı sınırı aşıldı.",
+                code="rate_limited",
             ).to_dict()
+            await connection.socket.send_json(response)
+            connection.messages_sent += 1
+            return response
+        connection.recent_message_times.append(now)
+
+        heartbeat_sent_at_ms=None
+        if (
+            isinstance(raw,dict)
+            and raw.get("type")=="heartbeat"
+            and isinstance(raw.get("payload"),dict)
+        ):
+            value=raw["payload"].get("sent_at_ms")
+            if isinstance(value,(int,float)):
+                heartbeat_sent_at_ms=float(value)
+
+        self.mark_seen(
+            connection_id,
+            heartbeat_sent_at_ms=heartbeat_sent_at_ms,
+        )
+
+        response = self.handler.handle(
+            raw,
+            authenticated_player_id=connection.player_id,
+        )
 
         await connection.socket.send_json(response)
         connection.messages_sent += 1

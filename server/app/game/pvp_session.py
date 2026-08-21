@@ -1,7 +1,10 @@
+from copy import deepcopy
 from dataclasses import dataclass, field
+import time
+from typing import Callable
 
 from .engine import BattleEngine
-from .models import BattleCommand, BattleState, BattleStatus
+from .models import BattleCommand, BattleState, BattleStatus, ModuleStatus
 from .pvp_setup import (
     PvPSetupPayload,
     PvPSetupValidationError,
@@ -10,6 +13,25 @@ from .pvp_setup import (
 
 
 MAX_PVP_PLAYERS = 2
+
+OWNER_ONLY_EVENT_TYPES = frozenset({
+    "battle_pool_set",
+    "circuit_credits_awarded",
+    "circuit_credits_spent",
+    "command_received",
+    "command_rejected",
+    "module_stored_energy_changed",
+    "booster_offer_created",
+    "booster_offer_consumed",
+    "booster_selected",
+})
+
+PRIVATE_RESULT_FIELDS = frozenset({
+    "circuit_credits",
+    "forfeit_credit_penalty",
+    "energy_generated_total",
+    "energy_consumed_total",
+})
 
 
 class PvPSessionError(ValueError):
@@ -34,6 +56,9 @@ class PvPSession:
     slots: dict[str, PvPPlayerSlot] = field(default_factory=dict)
     setup_required: bool = False
     auto_start_when_ready: bool = False
+    created_at: float = 0.0
+    last_activity_at: float = 0.0
+    finished_at: float | None = None
 
     @property
     def is_full(self) -> bool:
@@ -53,8 +78,19 @@ class PvPSession:
 
 
 class PvPSessionService:
-    def __init__(self):
+    def __init__(
+        self,
+        *,
+        now_func: Callable[[], float] = time.monotonic,
+        waiting_ttl_seconds: float = 180.0,
+        disconnected_ttl_seconds: float = 90.0,
+        finished_ttl_seconds: float = 300.0,
+    ):
         self._sessions: dict[str, PvPSession] = {}
+        self.now_func = now_func
+        self.waiting_ttl_seconds = waiting_ttl_seconds
+        self.disconnected_ttl_seconds = disconnected_ttl_seconds
+        self.finished_ttl_seconds = finished_ttl_seconds
 
     def create_session(
         self,
@@ -71,11 +107,14 @@ class PvPSessionService:
         engine = BattleEngine(
             BattleState(battle_id=session_id)
         )
+        now = self.now_func()
         session = PvPSession(
             session_id=session_id,
             engine=engine,
             setup_required=setup_required,
             auto_start_when_ready=auto_start_when_ready,
+            created_at=now,
+            last_activity_at=now,
         )
         self._sessions[session_id] = session
         return session
@@ -98,6 +137,7 @@ class PvPSessionService:
         if player_id in session.slots:
             slot = session.slots[player_id]
             slot.connected = True
+            self._touch(session)
             return slot
 
         if session.is_full:
@@ -112,6 +152,7 @@ class PvPSessionService:
         )
         session.slots[player_id] = slot
         session.engine.add_player(player_id)
+        self._touch(session)
         return slot
 
     def disconnect(
@@ -123,6 +164,7 @@ class PvPSessionService:
             player_id
         )
         slot.connected = False
+        self._touch(self.get_session(session_id))
 
     def submit_setup(
         self,
@@ -176,11 +218,12 @@ class PvPSessionService:
                 continue
             session.engine.grant_module(
                 player_id,
-                f"{player_id}-reserve-{definition_id}",
+                f"{definition_id.replace('_', '-')}-1",
                 definition_id,
             )
 
         slot.setup_submitted = True
+        self._touch(session)
 
     def set_ready(
         self,
@@ -200,6 +243,7 @@ class PvPSessionService:
                 "Oyuncu geçerli kurulum göndermeden hazır olamaz."
             )
         slot.ready = ready
+        self._touch(session)
 
         if (
             ready
@@ -256,6 +300,7 @@ class PvPSessionService:
                 )
 
         session.engine.start()
+        self._touch(session)
 
     def submit_command(
         self,
@@ -276,7 +321,11 @@ class PvPSessionService:
                 "Komut yalnızca çalışan PvP maçına gönderilebilir."
             )
 
-        session.engine.enqueue_command(command)
+        try:
+            session.engine.enqueue_command(command)
+        except ValueError as exc:
+            raise PvPSessionError(str(exc)) from exc
+        self._touch(session)
 
     def submit_sequenced_command(
         self,
@@ -319,6 +368,7 @@ class PvPSessionService:
             )
 
         slot.acknowledged_event_cursor = cursor
+        self._touch(session)
 
     def final_result_payload(
         self,
@@ -343,7 +393,10 @@ class PvPSessionService:
             "is_draw": state.is_draw,
             "finish_reason": state.finish_reason,
             "finished_at_ms": state.finished_at_ms,
-            "result_summary": state.result_summary,
+            "result_summary": self._result_summary_for_viewer(
+                state.result_summary,
+                viewer_player_id,
+            ),
         }
 
     def reconnect_payload(
@@ -354,6 +407,7 @@ class PvPSessionService:
         session = self.get_session(session_id)
         slot = session.slot_for(player_id)
         slot.connected = True
+        self._touch(session)
 
         snapshot = self.snapshot(
             session_id,
@@ -383,7 +437,10 @@ class PvPSessionService:
         }
 
     def step(self, session_id: str) -> None:
-        self.get_session(session_id).engine.step()
+        session = self.get_session(session_id)
+        session.engine.step()
+        if session.engine.state.status == BattleStatus.FINISHED and session.finished_at is None:
+            session.finished_at = self.now_func()
 
     def snapshot(
         self,
@@ -392,6 +449,7 @@ class PvPSessionService:
     ) -> dict:
         session = self.get_session(session_id)
         session.slot_for(viewer_player_id)
+        self._touch(session)
         state = session.engine.state
 
         players = {}
@@ -426,6 +484,10 @@ class PvPSessionService:
                 for module in sorted(
                     player.modules.values(),
                     key=lambda current: current.instance_id,
+                )
+                if (
+                    player_id == viewer_player_id
+                    or module.status != ModuleStatus.RESERVE
                 )
             ]
 
@@ -482,7 +544,10 @@ class PvPSessionService:
             "is_draw": state.is_draw,
             "finish_reason": state.finish_reason,
             "finished_at_ms": state.finished_at_ms,
-            "result_summary": state.result_summary,
+            "result_summary": self._result_summary_for_viewer(
+                state.result_summary,
+                viewer_player_id,
+            ),
             "players": players,
         }
 
@@ -494,6 +559,7 @@ class PvPSessionService:
     ) -> dict:
         session = self.get_session(session_id)
         session.slot_for(viewer_player_id)
+        self._touch(session)
 
         if cursor < 0:
             raise PvPSessionError(
@@ -506,11 +572,90 @@ class PvPSessionService:
             "cursor": len(events),
             "snapshot_revision": session.snapshot_revision,
             "events": [
-                {
-                    "type": event.type,
-                    "at_ms": event.at_ms,
-                    "data": event.data,
-                }
+                visible_event
                 for event in events[cursor:]
+                if (
+                    visible_event
+                    := self._event_for_viewer(
+                        event,
+                        viewer_player_id,
+                    )
+                ) is not None
             ],
         }
+
+    @staticmethod
+    def _result_summary_for_viewer(
+        result_summary: dict,
+        viewer_player_id: str,
+    ) -> dict:
+        sanitized = deepcopy(result_summary)
+        for player_id, summary in sanitized.items():
+            if player_id == viewer_player_id or not isinstance(summary, dict):
+                continue
+            for field_name in PRIVATE_RESULT_FIELDS:
+                summary.pop(field_name, None)
+        return sanitized
+
+    def _event_for_viewer(
+        self,
+        event,
+        viewer_player_id: str,
+    ) -> dict | None:
+        data = deepcopy(event.data)
+        owner_player_id = data.get("player_id")
+        if (
+            event.type in OWNER_ONLY_EVENT_TYPES
+            and owner_player_id != viewer_player_id
+        ):
+            return None
+
+        if event.type == "battle_forfeited" and owner_player_id != viewer_player_id:
+            for field_name in (
+                "earned_during_battle",
+                "credit_penalty",
+                "remaining_circuit_credits",
+            ):
+                data.pop(field_name, None)
+
+        if event.type == "battle_finished" and isinstance(data.get("summary"), dict):
+            data["summary"] = self._result_summary_for_viewer(
+                data["summary"],
+                viewer_player_id,
+            )
+
+        return {
+            "type": event.type,
+            "at_ms": event.at_ms,
+            "data": data,
+        }
+
+    def delete_session(self, session_id: str) -> bool:
+        return self._sessions.pop(session_id, None) is not None
+
+    def cleanup_expired_sessions(self) -> tuple[str, ...]:
+        now = self.now_func()
+        expired: list[str] = []
+        for session_id, session in tuple(self._sessions.items()):
+            status = session.engine.state.status
+            if status == BattleStatus.FINISHED:
+                finished_at = session.finished_at or session.last_activity_at
+                should_expire = now - finished_at >= self.finished_ttl_seconds
+            elif status == BattleStatus.WAITING:
+                should_expire = now - session.last_activity_at >= self.waiting_ttl_seconds
+            else:
+                any_connected = any(slot.connected for slot in session.slots.values())
+                should_expire = (
+                    not any_connected
+                    and now - session.last_activity_at >= self.disconnected_ttl_seconds
+                )
+            if should_expire:
+                self._sessions.pop(session_id, None)
+                expired.append(session_id)
+        return tuple(expired)
+
+    def active_session_ids(self) -> tuple[str, ...]:
+        return tuple(self._sessions)
+
+    def _touch(self, session: PvPSession) -> None:
+        session.last_activity_at = self.now_func()

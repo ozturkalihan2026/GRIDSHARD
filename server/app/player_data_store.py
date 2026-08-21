@@ -5,7 +5,8 @@ from pathlib import Path
 import json
 import os
 import shutil
-from threading import RLock
+from threading import RLock, get_ident
+import time
 from typing import Protocol
 
 from .player_profile import (
@@ -71,6 +72,38 @@ class JsonFilePlayerDataRepository:
             self.path.name
             + ".bak"
         )
+
+    def _temporary_path(
+        self,
+        base: Path,
+        label: str,
+    ) -> Path:
+        return base.with_name(
+            f"{base.name}.{label}.{os.getpid()}.{get_ident()}.tmp"
+        )
+
+    @staticmethod
+    def _replace_with_retry(
+        source: Path,
+        destination: Path,
+        *,
+        attempts: int = 8,
+    ) -> None:
+        last_error: OSError | None = None
+        for attempt in range(attempts):
+            try:
+                os.replace(source, destination)
+                return
+            except OSError as exc:
+                winerror = getattr(exc, "winerror", None)
+                if not isinstance(exc, PermissionError) and winerror not in {5, 32}:
+                    raise
+                last_error = exc
+                if attempt >= attempts - 1:
+                    break
+                time.sleep(0.01 * (attempt + 1))
+        if last_error is not None:
+            raise last_error
 
     def save(
         self,
@@ -329,26 +362,24 @@ class JsonFilePlayerDataRepository:
                 # _write_all yalnızca _read_all başarıyla döndükten sonra
                 # çağrılır; bu nedenle mevcut dosya son sağlam snapshot'tır.
                 backup_temp = (
-                    self.backup_path
-                    .with_name(
-                        self.backup_path.name
-                        + ".tmp"
+                    self._temporary_path(
+                        self.backup_path,
+                        "backup",
                     )
                 )
                 shutil.copy2(
                     self.path,
                     backup_temp,
                 )
-                os.replace(
+                self._replace_with_retry(
                     backup_temp,
                     self.backup_path,
                 )
 
             temp_path = (
-                self.path
-                .with_name(
-                    self.path.name
-                    + ".tmp"
+                self._temporary_path(
+                    self.path,
+                    "write",
                 )
             )
 
@@ -363,7 +394,7 @@ class JsonFilePlayerDataRepository:
                 encoding="utf-8",
             )
 
-            os.replace(
+            self._replace_with_retry(
                 temp_path,
                 self.path,
             )

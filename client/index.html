@@ -163,6 +163,7 @@
         </div>
         <span id="play-mode-status">Mod seçimi bekleniyor</span>
       </div>
+      <button id="tutorial-replay" type="button" class="tutorial-replay">Kısa Eğitimi Aç</button>
       <section class="quick-loadout-panel">
         <div class="quick-loadout-heading">
           <div>
@@ -421,6 +422,21 @@
       <span id="battle-entry-status">Savaş alanına giriş başarılı · Yerel AI aktif · Modül Rafı 15. saniyede açılır</span>
     </section>
 
+    <nav id="mobile-battle-tabs" class="mobile-battle-tabs play-live-panel" data-screen-panel="play" aria-label="Mobil savaş görünümü" hidden>
+      <button type="button" data-mobile-battle-panel="player" aria-controls="board" aria-pressed="true">Devrem</button>
+      <button type="button" data-mobile-battle-panel="enemy" aria-controls="enemy-board" aria-pressed="false">Rakip</button>
+      <button type="button" data-mobile-battle-panel="shelf" aria-controls="module-shelf" aria-pressed="false">Modül Rafı</button>
+    </nav>
+
+    <section id="mobile-placement-controls" class="mobile-placement-controls play-live-panel" data-screen-panel="play" aria-live="polite" hidden>
+      <strong id="mobile-selected-module">Yerleştirmek için bir modül seç</strong>
+      <div>
+        <button id="mobile-rotate-module" type="button" disabled>Döndür</button>
+        <button id="mobile-return-module" type="button" disabled>Rafa Al</button>
+        <button id="mobile-cancel-placement" type="button" disabled>Seçimi Kaldır</button>
+      </div>
+    </section>
+
     <section class="battle-layout play-live-panel" data-screen-panel="play" hidden>
       <section class="arena-panel">
         <div class="panel-title-row">
@@ -586,6 +602,23 @@
         <textarea id="diagnostic-snapshot-output" readonly hidden aria-label="Tanılama özeti"></textarea>
       </div>
     </details>
+
+    <section id="tutorial-overlay" class="tutorial-overlay" role="dialog" aria-modal="true" aria-labelledby="tutorial-title" data-active="false" hidden>
+      <div class="tutorial-card">
+        <div class="tutorial-heading">
+          <span data-tutorial-progress>1 / 3</span>
+          <button type="button" data-tutorial-skip aria-label="Eğitimi kapat">Atla</button>
+        </div>
+        <h2 id="tutorial-title" data-tutorial-title>Devreni kur</h2>
+        <p data-tutorial-body></p>
+        <span class="tutorial-status" data-tutorial-status role="status"></span>
+        <div class="tutorial-actions">
+          <button type="button" data-tutorial-back>Geri</button>
+          <button type="button" data-tutorial-action hidden>Uygula</button>
+          <button type="button" data-tutorial-next>İleri</button>
+        </div>
+      </div>
+    </section>
     <section class="event-panel play-live-panel" data-screen-panel="play" hidden>
       <h2>Olay Günlüğü</h2>
       <p>Savaş ve istemci komutları burada zaman sırasıyla gösterilir; savaş kararı sunucu otoritesindedir.</p>
@@ -593,7 +626,14 @@
     </section>
   </main>
 
+  <script src="./runtime-config.js"></script>
+  <script src="./src/auth-session.js"></script>
   <script src="./src/relay-client.js"></script>
+  <script src="./src/screens/screen-controller.js"></script>
+  <script src="./src/tutorial/tutorial-controller.js"></script>
+  <script src="./src/battle/board-view.js"></script>
+  <script src="./src/battle/module-card-view.js"></script>
+  <script src="./src/battle/mobile-controller.js"></script>
   <script src="./src/gridshard-audio.js"></script>
   <script src="./src/app.js"></script>
 </body>

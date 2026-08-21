@@ -106,6 +106,24 @@ sandbox.window = sandbox;
 sandbox.globalThis = sandbox;
 vm.createContext(sandbox);
 
+for (const relativePath of [
+  ["src", "screens", "screen-controller.js"],
+  ["src", "tutorial", "tutorial-controller.js"],
+  ["src", "battle", "board-view.js"],
+  ["src", "battle", "module-card-view.js"],
+]) {
+  const moduleSource = fs.readFileSync(
+    path.join(CLIENT_ROOT, ...relativePath),
+    "utf8"
+  );
+  vm.runInContext(moduleSource, sandbox, { filename: relativePath.at(-1) });
+}
+
+const mobileControllerSource = fs.readFileSync(
+  path.join(CLIENT_ROOT, "src", "battle", "mobile-controller.js"),
+  "utf8"
+);
+vm.runInContext(mobileControllerSource, sandbox, { filename: "mobile-controller.js" });
 const source = fs.readFileSync(path.join(CLIENT_ROOT, "src", "app.js"), "utf8");
 vm.runInContext(source, sandbox, { filename: "app.js" });
 

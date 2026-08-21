@@ -1,0 +1,49 @@
+{
+  "schema_version": 1,
+  "base_version": "2.0.0-beta.25",
+  "base_commit": "ecbd4a5fa04695914b0a40007862fadf195f4095",
+  "recorded_on": "2026-08-21",
+  "working_tree_committed": false,
+  "checks": {
+    "server_pytest": {
+      "status": "PASSED",
+      "passed": 651
+    },
+    "client_regression": {
+      "status": "PASSED",
+      "legacy_assertions": 175,
+      "node_test_files": 9
+    },
+    "desktop_two_client_pvp": {
+      "status": "PASSED",
+      "browser": "local Google Chrome",
+      "contexts": 2,
+      "physical_device": false
+    },
+    "android_chrome_emulation": {
+      "status": "PASSED",
+      "tests": [
+        "single_viewport_tap_place",
+        "starter_pool_interactive_tutorial"
+      ],
+      "physical_device": false
+    },
+    "iphone_safari_emulation": {
+      "status": "CI_CONFIGURED_NOT_RUN_LOCALLY",
+      "reason": "Yerel Playwright WebKit binary'si bu Windows ortamında kurulu değil."
+    },
+    "real_android_and_iphone": {
+      "status": "BLOCKED_EXTERNAL_CREDENTIALS",
+      "workflow": ".github/workflows/real-device-e2e.yml",
+      "reason": "BrowserStack kullanıcı adı ve erişim anahtarı sağlanmadı."
+    },
+    "store_distribution": {
+      "status": "BLOCKED_EXTERNAL_INPUTS",
+      "order": [
+        "android_closed_test",
+        "ios_testflight"
+      ],
+      "reason": "Kalıcı app id, HTTPS üretim backend'i, imza materyali, mağaza hesapları ve tester grupları sağlanmadı."
+    }
+  }
+}

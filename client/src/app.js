@@ -138,6 +138,28 @@
     "destek",
     "sabotaj",
   ];
+  const STARTER_BATTLE_POOL_PRESET = Object.freeze({
+    name: "Başlangıç Devresi",
+    module_definition_ids: Object.freeze([
+      "generator", "battery", "splitter", "capacitor",
+      "laser", "pulse_cannon", "railgun", "missile_launcher",
+      "drone_bay", "arc_cannon", "shield", "armor",
+      "reflector", "barrier", "repair", "cooler",
+      "amplifier", "targeting_computer",
+    ]),
+    favorite: true,
+    last_used_at_ms: null,
+    system: true,
+  });
+
+  function withStarterBattlePoolPresets(presets) {
+    return [
+      { ...STARTER_BATTLE_POOL_PRESET },
+      ...(presets || []).filter(
+        (preset) => preset.name !== STARTER_BATTLE_POOL_PRESET.name
+      ),
+    ];
+  }
   const battlePoolSelection = new BattlePoolSelection({
     selectableModuleIds: selectablePoolModules.map((module) => module.instanceId),
     requiredSize: 18,
@@ -145,7 +167,7 @@
   });
   let focusedPoolModuleId =
     "generator-1";
-  let battlePoolPresets = [];
+  let battlePoolPresets = withStarterBattlePoolPresets([]);
   let activeBattlePoolPresetName = null;
   let activeBattlePoolPresetBaseline = [];
   let quickLoadoutFilter = "all";
@@ -314,58 +336,19 @@
     });
 
   const appRouter = new RelayAppRouter();
+  const screenController = new GridshardScreenController({
+    router: appRouter,
+    screenEnum: RelayAppScreen,
+  });
 
   let gridshardAudioDirector = null;
+  let tutorialController = null;
 
   document.body.dataset.appScreen =
     appRouter.currentScreen;
 
   function renderAppScreen() {
-    const current = appRouter.currentScreen;
-
-    document.body.dataset.appScreen =
-      current;
-
-    for (
-      const panel
-      of document.querySelectorAll(
-        "[data-screen-panel]"
-      )
-    ) {
-      panel.hidden =
-        panel.dataset.screenPanel !== current;
-    }
-
-    const menu = document.getElementById(
-      "main-menu-panel"
-    );
-    if (menu) {
-      menu.hidden =
-        current !== RelayAppScreen.MENU;
-    }
-
-    const backButton = document.getElementById(
-      "return-main-menu"
-    );
-    if (backButton) {
-      backButton.hidden =
-        current === RelayAppScreen.MENU;
-    }
-
-    const label = document.getElementById(
-      "current-screen-label"
-    );
-    if (label) {
-      const names = {
-        menu: "Ana Menü",
-        play: "Oyna",
-        profile: "Profil",
-        statistics: "İstatistikler",
-        settings: "Ayarlar",
-      };
-      label.textContent =
-        names[current] || current;
-    }
+    const current = screenController.render();
 
     if (
       gridshardAudioDirector
@@ -452,6 +435,7 @@
       // Yerel AI test modu başlangıç seçeneğidir; oyuncu aynı ekranda
       // Online PvP hazırlığına geçebilir.
       prepareLocalMatch();
+      tutorialController?.maybeStart();
     }
 
     if (screen === "profile") {
@@ -951,6 +935,12 @@
 
     document.body.dataset.onlineStatus =
       status;
+    if (status === "battle") {
+      clearTapSelection({ rerender: false });
+      mobileBattleController.reset();
+      if (document.documentElement) document.documentElement.scrollTop = 0;
+      document.body.scrollTop = 0;
+    }
     renderPlayModeUi();
   }
 
@@ -1279,10 +1269,17 @@
   }
 
   const board = document.getElementById("board");
+  const battleBoardView = new GridshardBattleBoardView(board);
   const enemyBoard = document.getElementById("enemy-board");
   const enemyBoardStatusEl = document.getElementById("enemy-board-status");
   const playerBoardStatusEl = document.getElementById("player-board-status");
   const shelf = document.getElementById("module-shelf");
+  const mobileSelectedModuleEl = document.getElementById("mobile-selected-module");
+  const mobileRotateModuleEl = document.getElementById("mobile-rotate-module");
+  const mobileReturnModuleEl = document.getElementById("mobile-return-module");
+  const mobileCancelPlacementEl = document.getElementById("mobile-cancel-placement");
+  const mobileBattleController = new GridshardMobileBattleController();
+  let tapSelectedModuleId = null;
   const timeEl = document.getElementById("battle-time");
   const creditEl = document.getElementById("credit-indicator");
   const combatSummaryEl = document.getElementById("combat-summary");
@@ -1365,6 +1362,128 @@
     document.getElementById(
       "quick-loadout-filter-favorites"
     );
+
+  function isTapPlacementUi() {
+    return (
+      Number(globalThis.innerWidth || 0) <= 1100
+      || Boolean(globalThis.matchMedia?.("(pointer: coarse)").matches)
+    );
+  }
+
+  function selectedTapModule() {
+    return tapSelectedModuleId
+      ? client.modules.get(tapSelectedModuleId) || null
+      : null;
+  }
+
+  function updateMobilePlacementControls() {
+    const module = selectedTapModule();
+    if (mobileSelectedModuleEl) {
+      mobileSelectedModuleEl.textContent = module
+        ? `${module.nameTr} seçildi · hedef hücreye dokun`
+        : "Yerleştirmek için bir modül seç";
+    }
+    if (mobileRotateModuleEl) {
+      mobileRotateModuleEl.disabled = !(
+        module
+        && module.status === "active"
+        && module.rotatable !== false
+        && client.isShelfUnlocked()
+        && !localBattleFinished
+      );
+    }
+    if (mobileReturnModuleEl) {
+      mobileReturnModuleEl.disabled = !(
+        module
+        && module.status === "active"
+        && module.removable !== false
+        && client.isShelfUnlocked()
+        && !localBattleFinished
+      );
+    }
+    if (mobileCancelPlacementEl) {
+      mobileCancelPlacementEl.disabled = !module;
+    }
+    document.body.dataset.tapPlacement = module ? "selected" : "idle";
+  }
+
+  function clearTapSelection({ cancelDrag = true, rerender = true } = {}) {
+    tapSelectedModuleId = null;
+    if (cancelDrag) client.cancelDrag();
+    updateMobilePlacementControls();
+    if (rerender) {
+      renderShelf();
+      renderBoard();
+    }
+  }
+
+  function selectModuleForTap(module) {
+    if (!module || localBattleFinished) return false;
+    if (tapSelectedModuleId === module.instanceId) {
+      clearTapSelection();
+      return true;
+    }
+    const result = client.beginDrag(module.instanceId);
+    if (!result.ok) {
+      logClientMessage(result.reason);
+      return false;
+    }
+    tapSelectedModuleId = module.instanceId;
+    if (module.status === "reserve") {
+      telemetryDispatcher.trackModuleShelfUsed({
+        module_id: module.instanceId,
+        elapsed_ms: client.elapsedMs,
+      });
+      if (isTapPlacementUi()) mobileBattleController.show("player", { focus: false });
+    }
+    updateMobilePlacementControls();
+    renderShelf();
+    renderBoard();
+    trackBattleUiInteraction("tap_select_module", "module_place");
+    return true;
+  }
+
+  function placeTapSelectionOnCell(cell) {
+    if (!tapSelectedModuleId || localBattleFinished || cell.classList.contains("core-cell")) {
+      return false;
+    }
+    const targetCard = cell.querySelector(".module-card");
+    const result = client.dropOnCell(
+      Number(cell.dataset.x),
+      Number(cell.dataset.y),
+      targetCard?.dataset.moduleId || null
+    );
+    if (!result.ok) {
+      logClientMessage(result.reason);
+      return false;
+    }
+    clearTapSelection({ cancelDrag: false, rerender: false });
+    render();
+    return true;
+  }
+
+  mobileRotateModuleEl?.addEventListener("click", () => {
+    const module = selectedTapModule();
+    if (!module || mobileRotateModuleEl.disabled) return;
+    client.emitCommand({
+      kind: "rotate_module",
+      payload: { module_id: module.instanceId },
+    });
+    trackBattleUiInteraction("tap_rotate_module", "module_move");
+  });
+
+  mobileReturnModuleEl?.addEventListener("click", () => {
+    if (mobileReturnModuleEl.disabled) return;
+    const result = client.dropOnShelf();
+    if (!result.ok) {
+      logClientMessage(result.reason);
+      return;
+    }
+    clearTapSelection({ cancelDrag: false });
+    mobileBattleController.show("shelf", { focus: false });
+  });
+
+  mobileCancelPlacementEl?.addEventListener("click", () => clearTapSelection());
   const quickLoadoutActiveSummaryEl =
     document.getElementById(
       "quick-loadout-active-summary"
@@ -5308,6 +5427,11 @@ function saveHumanReviewLocalNote() {
       true;
     document.body.dataset.localStatus =
       "battle";
+    clearTapSelection({ rerender: false });
+    mobileBattleController.reset();
+    if (document.documentElement) document.documentElement.scrollTop = 0;
+    document.body.scrollTop = 0;
+    globalThis.scrollTo?.({ top: 0, left: 0, behavior: "instant" });
 
     battleStartedAt =
       performance.now();
@@ -5478,6 +5602,7 @@ function saveHumanReviewLocalNote() {
       false;
     document.body.dataset.localStatus =
       "setup";
+    clearTapSelection({ rerender: false });
     setActivePlayMode(
       "local"
     );
@@ -6504,6 +6629,9 @@ function saveHumanReviewLocalNote() {
     const clean=
       hasActive
       && selectedPoolMatchesBaseline();
+    const activePreset = battlePoolPresets.find(
+      (item) => item.name === activeBattlePoolPresetName
+    );
 
     if (activePresetEl) {
       activePresetEl.textContent=
@@ -6532,7 +6660,17 @@ function saveHumanReviewLocalNote() {
         );
     }
 
-    if (
+    if (presetDeleteEl) {
+      presetDeleteEl.disabled = Boolean(activePreset?.system);
+      presetDeleteEl.title = activePreset?.system
+        ? "Yerleşik başlangıç havuzu silinemez."
+        : "";
+    }
+
+    if (presetSaveEl && activePreset?.system) {
+      presetSaveEl.textContent = "Yerleşik Hazır Havuz";
+      presetSaveEl.disabled = true;
+    } else if (
       presetSaveEl
       && hasActive
     ) {
@@ -6607,6 +6745,17 @@ function saveHumanReviewLocalNote() {
       markUsed=false,
     }={}
   ) {
+    const existing = battlePoolPresets.find((preset) => preset.name === name);
+    if (existing?.system) {
+      battlePoolPresets = battlePoolPresets.map((preset) =>
+        preset.name === name
+          ? { ...preset, last_used_at_ms: markUsed ? Date.now() : preset.last_used_at_ms }
+          : preset
+      );
+      renderPresetOptions();
+      return { ok: true, preset: battlePoolPresets.find((preset) => preset.name === name) };
+    }
+
     const response=await fetch(
       `/profile/${encodeURIComponent(participantPlayerId)}/battle-pool-presets/${encodeURIComponent(name)}/meta`,
       {
@@ -6630,7 +6779,7 @@ function saveHumanReviewLocalNote() {
     const payload=
       await response.json();
     battlePoolPresets=
-      payload.presets || [];
+      withStarterBattlePoolPresets(payload.presets);
     renderPresetOptions();
 
     return {
@@ -6710,10 +6859,13 @@ function saveHumanReviewLocalNote() {
         preset.favorite
           ? "★"
           : "☆";
-      favorite.title=
-        preset.favorite
+        favorite.title=
+        preset.system
+          ? "Yerleşik başlangıç havuzu"
+          : preset.favorite
           ? "Favoriden çıkar"
           : "Favoriye ekle";
+      favorite.disabled = Boolean(preset.system);
       favorite.addEventListener(
         "click",
         async (event) => {
@@ -7096,7 +7248,7 @@ function saveHumanReviewLocalNote() {
       }
       const payload=await response.json();
       battlePoolPresets=
-        payload.presets || [];
+        withStarterBattlePoolPresets(payload.presets);
       renderPresetOptions();
 
       if (presetStatusEl) {
@@ -7176,7 +7328,7 @@ function saveHumanReviewLocalNote() {
     const payload=
       await response.json();
     battlePoolPresets=
-      payload.presets || [];
+      withStarterBattlePoolPresets(payload.presets);
     activeBattlePoolPresetName=
       name;
     activeBattlePoolPresetBaseline=
@@ -7246,6 +7398,13 @@ function saveHumanReviewLocalNote() {
       presetSelectEl?.value
       || activeBattlePoolPresetName;
     if (!name) return;
+    const selectedPreset = battlePoolPresets.find((preset) => preset.name === name);
+    if (selectedPreset?.system) {
+      if (presetStatusEl) {
+        presetStatusEl.textContent = "Yerleşik başlangıç havuzu silinemez.";
+      }
+      return;
+    }
 
     const response=await fetch(
       `/profile/${encodeURIComponent(participantPlayerId)}/battle-pool-presets/${encodeURIComponent(name)}`,
@@ -7265,7 +7424,7 @@ function saveHumanReviewLocalNote() {
     const payload=
       await response.json();
     battlePoolPresets=
-      payload.presets || [];
+      withStarterBattlePoolPresets(payload.presets);
 
     if (
       activeBattlePoolPresetName
@@ -7298,6 +7457,13 @@ function saveHumanReviewLocalNote() {
       if (presetStatusEl) {
         presetStatusEl.textContent=
           "Yeniden adlandırmak için hazır havuz seç.";
+      }
+      return;
+    }
+
+    if (battlePoolPresets.find((preset) => preset.name === oldName)?.system) {
+      if (presetStatusEl) {
+        presetStatusEl.textContent = "Yerleşik başlangıç havuzu yeniden adlandırılamaz.";
       }
       return;
     }
@@ -7335,7 +7501,7 @@ function saveHumanReviewLocalNote() {
     const payload=
       await response.json();
     battlePoolPresets=
-      payload.presets || [];
+      withStarterBattlePoolPresets(payload.presets);
 
     if (
       activeBattlePoolPresetName
@@ -8096,6 +8262,8 @@ function saveHumanReviewLocalNote() {
       cell.dataset.y = String(y);
       cell.dataset.occupied =
         "false";
+      cell.tabIndex = 0;
+      cell.setAttribute("role", "button");
       cell.style.gridColumn = String(x + 1);
       cell.style.gridRow = String(y + 1);
 
@@ -8152,6 +8320,17 @@ function saveHumanReviewLocalNote() {
         );
 
         if (!result.ok) logClientMessage(result.reason);
+      });
+
+      cell.addEventListener("click", () => {
+        placeTapSelectionOnCell(cell);
+      });
+
+      cell.addEventListener("keydown", (event) => {
+        if (event.key !== "Enter" && event.key !== " ") return;
+        if (!tapSelectedModuleId) return;
+        event.preventDefault();
+        placeTapSelectionOnCell(cell);
       });
 
       board.appendChild(cell);
@@ -8861,6 +9040,7 @@ function saveHumanReviewLocalNote() {
     renderShelf();
     renderBoard();
     renderLockState();
+    updateMobilePlacementControls();
   }
 
   function renderShelf() {
@@ -8945,54 +9125,18 @@ function saveHumanReviewLocalNote() {
   }
 
   function renderBoard() {
-    for (const cell of board.querySelectorAll(".board-cell")) {
-      cell.innerHTML = "";
-      cell.dataset.occupied =
-        "false";
-    }
-
-    for (const module of client.modules.values()) {
-      if (module.status !== "active" || !module.position) continue;
-      const selector =
-        `.board-cell[data-x="${module.position.x}"][data-y="${module.position.y}"]`;
-      const cell = board.querySelector(selector);
-      if (!cell) continue;
-      cell.dataset.occupied =
-        "true";
-      cell.appendChild(createModuleCard(module));
-    }
+    battleBoardView.render(
+      client.modules.values(),
+      {
+        selectedModuleId: tapSelectedModuleId,
+        battleFinished: localBattleFinished,
+        createModuleCard,
+      }
+    );
   }
 
   function moduleIconFor(module) {
-    const byName={
-      "Çekirdek":"◆",
-      "Jeneratör":"✦",
-      "Batarya":"▣",
-      "Dağıtıcı":"⑂",
-      "Kapasitör":"▤",
-      "Lazer":"↯",
-      "Darbe Topu":"◉",
-      "Ray Topu":"➤",
-      "Füze Fırlatıcı":"▲",
-      "Dron Üssü":"✣",
-      "Ark Topu":"ϟ",
-      "Kalkan":"⬡",
-      "Zırh":"▰",
-      "Yansıtıcı":"◇",
-      "Bariyer":"▥",
-      "Onarım Modülü":"✚",
-      "Soğutucu":"❄",
-      "Güçlendirici":"＋",
-      "Hedefleme Bilgisayarı":"⌖",
-      "Aşırı Hızlandırıcı":"≫",
-      "EMP":"⊘",
-      "Sinyal Bozucu":"≋",
-      "Virüs":"⌁",
-      "Enerji Sömürücü":"∿",
-      "Kesici":"╳",
-    };
-    return byName[module.nameTr]
-      || "●";
+    return GridshardModuleCardView.iconFor(module);
   }
 
   function createModuleCard(module) {
@@ -9010,6 +9154,17 @@ function saveHumanReviewLocalNote() {
         module.status === "active"
         && module.rotatable !== false
       );
+    card.setAttribute(
+      "aria-pressed",
+      String(tapSelectedModuleId === module.instanceId)
+    );
+    if (tapSelectedModuleId === module.instanceId) {
+      card.classList.add("tap-selected");
+    }
+    if (module.movable !== false) {
+      card.tabIndex = 0;
+      card.setAttribute("role", "button");
+    }
 
     if (
       module.movable === false
@@ -9195,12 +9350,23 @@ function saveHumanReviewLocalNote() {
 
     card.addEventListener(
       "click",
-      () => {
+      (event) => {
+        event.stopPropagation();
         if (
           tryApplySelectedBooster(
             module
           )
         ) {
+          return;
+        }
+        if (
+          module.movable !== false
+          && (
+            module.status === "reserve"
+            || isTapPlacementUi()
+          )
+        ) {
+          selectModuleForTap(module);
           return;
         }
         if (
@@ -9236,8 +9402,20 @@ function saveHumanReviewLocalNote() {
     );
 
     card.addEventListener(
+      "keydown",
+      (event) => {
+        if (event.key !== "Enter" && event.key !== " ") return;
+        event.preventDefault();
+        card.click();
+      }
+    );
+
+    card.addEventListener(
       "dragstart",
       (event) => {
+        if (tapSelectedModuleId) {
+          clearTapSelection({ rerender: false });
+        }
         if (localBattleFinished) {
           event.preventDefault();
           logClientMessage(
@@ -9996,7 +10174,7 @@ function saveHumanReviewLocalNote() {
     lockLabel.textContent = unlocked ? "Aktif" : "Kilitli";
 
     if (unlocked) {
-      shelfHelp.textContent = "Modülleri sürükleyerek savaş alanına müdahale edebilirsin.";
+      shelfHelp.textContent = "Modülü sürükle veya seçip hedef hücreye dokun.";
     } else {
       const remaining = Math.max(0, 15000 - client.elapsedMs);
       shelfHelp.textContent =
@@ -10795,6 +10973,51 @@ function saveHumanReviewLocalNote() {
       }),
     };
   }
+
+  tutorialController = new GridshardTutorialController({
+    root: document.getElementById("tutorial-overlay"),
+    storageKey: "gridshard.tutorial.v1",
+    steps: [
+      {
+        title: "Hazır devreyle başla",
+        body: "Dengeli 18 modüllük Başlangıç Devresi ilk maçın için hazır. Tek dokunuşla yükleyebilirsin.",
+        target: "#battle-pool-panel",
+        action: "load-starter-pool",
+        actionLabel: "Başlangıç Devresini Yükle",
+        hint: "Havuz 18/18 olduğunda savaş düğmesi açılır.",
+      },
+      {
+        title: "Sunucu otoriteli AI savaşını aç",
+        body: "Bu düğme havuzunu sunucuya gönderir ve ilk devreni savaş alanına yerleştirir.",
+        target: "#battle-pool-confirm",
+        action: "start-local-battle",
+        actionLabel: "AI Savaşını Başlat",
+        hint: "Çekirdek ve jeneratör sabittir; diğer modüller taşınabilir.",
+      },
+      {
+        title: "Dokun, sonra yerleştir",
+        body: "15. saniyede Modül Rafını aç. Bir modüle dokun, boş hücreyi seç; Döndür ve Rafa Al düğmeleriyle düzenle.",
+        target: "#mobile-battle-tabs",
+        hint: "Masaüstünde sürükle-bırak da kullanılmaya devam eder.",
+      },
+    ],
+    onAction: async (action) => {
+      if (action === "load-starter-pool") {
+        await loadSelectedBattlePoolPreset(STARTER_BATTLE_POOL_PRESET.name);
+        return battlePoolSelection.isComplete();
+      }
+      if (action === "start-local-battle") {
+        if (!battlePoolSelection.isComplete()) return false;
+        startLocalPlayableMatch();
+        return true;
+      }
+      return true;
+    },
+  });
+
+  document.getElementById("tutorial-replay")?.addEventListener("click", () => {
+    tutorialController.start({ force: true });
+  });
 
   setActivePlayMode(
     "idle"

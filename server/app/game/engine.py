@@ -77,6 +77,9 @@ from .models import (
 TICK_RATE = 10
 TICK_MS = 1000 // TICK_RATE
 BATTLE_TIME_LIMIT_MS = 180_000
+DEFAULT_MAX_PENDING_COMMANDS = 128
+DEFAULT_MAX_PENDING_COMMANDS_PER_PLAYER = 32
+DEFAULT_MAX_COMMANDS_PER_TICK = 32
 
 
 MODULE_INTERACTION_UNLOCK_MS = 15_000
@@ -133,6 +136,9 @@ class BattleEngine:
         state: BattleState,
         circuit_credit_config: CircuitCreditConfig = DEFAULT_CIRCUIT_CREDIT_CONFIG,
         module_interaction_unlock_ms: int = MODULE_INTERACTION_UNLOCK_MS,
+        max_pending_commands: int = DEFAULT_MAX_PENDING_COMMANDS,
+        max_pending_commands_per_player: int = DEFAULT_MAX_PENDING_COMMANDS_PER_PLAYER,
+        max_commands_per_tick: int = DEFAULT_MAX_COMMANDS_PER_TICK,
     ):
         self.state = state
         self.circuit_credit_config = circuit_credit_config
@@ -142,6 +148,12 @@ class BattleEngine:
         )
         self.board = get_default_board()
         self._command_queue: Deque[BattleCommand] = deque()
+        self.max_pending_commands = max(1, int(max_pending_commands))
+        self.max_pending_commands_per_player = max(
+            1,
+            int(max_pending_commands_per_player),
+        )
+        self.max_commands_per_tick = max(1, int(max_commands_per_tick))
 
         if circuit_credit_config.passive_credits_per_second % TICK_RATE != 0:
             raise ValueError(
@@ -271,7 +283,24 @@ class BattleEngine:
         Komut bir sonraki step() içinde, o anki gerçek savaş durumuna göre
         doğrulanır ve uygulanır.
         """
+        if len(self._command_queue) >= self.max_pending_commands:
+            raise CommandRejected(
+                "Savaş komut kuyruğu dolu; istemci daha sonra yeniden denemeli."
+            )
+        pending_for_player = sum(
+            1
+            for queued in self._command_queue
+            if queued.player_id == command.player_id
+        )
+        if pending_for_player >= self.max_pending_commands_per_player:
+            raise CommandRejected(
+                "Oyuncunun bekleyen komut sınırı aşıldı."
+            )
         self._command_queue.append(command)
+
+    @property
+    def pending_command_count(self) -> int:
+        return len(self._command_queue)
 
     def step(self) -> None:
         if self.state.status != BattleStatus.RUNNING:
@@ -1358,12 +1387,15 @@ class BattleEngine:
                     )
 
     def _process_commands(self) -> None:
+        processed = 0
         while (
             self._command_queue
             and self.state.status == BattleStatus.RUNNING
+            and processed < self.max_commands_per_tick
         ):
             command = self._command_queue.popleft()
             self._process_command(command)
+            processed += 1
         if self.state.status != BattleStatus.RUNNING:
             self._command_queue.clear()
 

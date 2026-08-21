@@ -167,6 +167,26 @@ def test_transport_identity_cannot_be_spoofed():
     asyncio.run(scenario())
 
 
+def test_transport_disconnect_is_not_sent_back_to_closed_socket():
+    async def scenario():
+        service = setup_service()
+        adapter = PvPWebSocketAdapter(service)
+        socket = FakeWebSocket()
+
+        await adapter.connect(
+            connection_id="c1",
+            session_id="match",
+            player_id="a",
+            socket=socket,
+        )
+
+        with pytest.raises(RuntimeError, match="fake socket empty"):
+            await adapter.handle_one("c1")
+        assert socket.sent == []
+
+    asyncio.run(scenario())
+
+
 def test_disconnect_marks_slot_disconnected_when_last_socket_closes():
     async def scenario():
         service = setup_service()

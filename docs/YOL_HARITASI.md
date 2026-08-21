@@ -61,10 +61,11 @@ Aşağıdaki kararlar sabittir ve bundan sonraki geliştirmeler bunları bozamaz
 
 ## Eğitim kararı
 
-Kaynak yol haritasında ileriki bir `FAZ 22 — Eğitim` vardır; ancak ilk sürüm kapsam kararı yalnızca **Oyna / Profil / İstatistikler / Ayarlar** alanlarına zaman ayrılmasını söyler. Bu nedenle:
+Beta.25 sonrası mobil hazırlık önceliği kapsamında eski erteleme kararı kaldırıldı:
 
-- [ ] Eğitim henüz uygulanmayacak.
-- [x] Beta Web testi için Eğitim alanı bilinçli olarak kapsam dışında tutuluyor.
+- [x] Dengeli 18 modüllük yerleşik `Başlangıç Devresi` eklendi.
+- [x] Hazır havuzu yükleten, sunucu otoriteli AI maçını başlatan ve dokun-seç/yerleştir kontrolünü anlatan üç adımlı eğitim eklendi.
+- [x] Eğitim ilk çalıştırmada açılır, atlanabilir ve Ayarlar ekranından yeniden başlatılabilir.
 
 ---
 
@@ -267,7 +268,8 @@ Kaynak yol haritasında ileriki bir `FAZ 22 — Eğitim` vardır; ancak ilk sür
 - [x] PvP oturum/gateway yapısı mevcut.
 - [x] WebSocket bağlantı ve savaş durum protokolü mevcut.
 - [x] Sunucu savaş zamanı, modül, Can, ekonomi ve sonuç için otorite sahibidir.
-- [~] İki gerçek tarayıcı/iki gerçek oyuncu ile uzun süreli stabilite testi henüz kanonik olarak tamamlanmadı.
+- [x] İki bağımsız gerçek Chromium bağlamıyla eşleştirme, WebSocket, hazır olma, savaş sonucu ve oyuncuya özel olay gizliliği E2E testi eklendi ve yerelde geçti.
+- [~] Uzun süreli fiziksel cihaz PvP soak testi henüz tamamlanmadı.
 
 **Durum:** Teknik altyapı tamam; gerçek çift istemci doğrulaması bekliyor.
 
@@ -303,7 +305,9 @@ Kaynak yol haritasında ileriki bir `FAZ 22 — Eğitim` vardır; ancak ilk sür
 
 ## FAZ 22 — Eğitim
 
-- [ ] Bilinçli olarak ertelendi. İlk sürüm kapsam kilidi nedeniyle şu anda geliştirilmeyecek.
+- [x] Üç adımlı ilk maç eğitimi uygulandı.
+- [x] Yerleşik 18 modüllük Başlangıç Devresi tek dokunuşla yükleniyor.
+- [x] Eğitim tamamlanma durumu cihazda tutuluyor ve Ayarlar'dan yeniden başlatılabiliyor.
 
 ## FAZ 23 — Web Test Sürümü
 
@@ -312,6 +316,10 @@ Kaynak yol haritasında ileriki bir `FAZ 22 — Eğitim` vardır; ancak ilk sür
 - [x] Telemetri ve test-run audit altyapısı mevcut.
 - [x] Beta geri bildirim ve bulgu katmanları mevcut.
 - [x] Tek oyunculu oynanabilir test modu mevcut.
+- [x] Kimlik doğrulama, oyuncuya özel olay/snapshot gizliliği ve WebSocket token doğrulaması eklendi.
+- [x] PostgreSQL + Redis üretim modu, oturum temizleme, rate limit ve komut backpressure eklendi.
+- [x] Desktop Chromium, Android Chrome emülasyonu ve iPhone Safari emülasyonu CI matrisine eklendi.
+- [x] Gerçek Android Chrome + iPhone Safari BrowserStack iş akışı ve kanıt şeması eklendi.
 - [x] **Beta.5'te ana menüyü tamamen kilitleyen gerçek JS başlangıç hatası Beta.6'da düzeltildi:** `PORT_COUNT_BY_NAME`, tanımlanmadan önce kullanılıyordu.
 - [x] İkinci başlangıç sırası riski düzeltildi: telemetri callback'i `telemetryStatus` tanımlanmadan tetiklenebiliyordu.
 - [x] Beta.6 ile gerçek `app.js` başlangıç yürütme testi eklendi; dört ana menünün click-handler bağlanması otomatik kontrol ediliyor.
@@ -322,8 +330,10 @@ Kaynak yol haritasında ileriki bir `FAZ 22 — Eğitim` vardır; ancak ilk sür
 
 ## FAZ 24 — Android ve iOS
 
-- [ ] Web mekanikleri ve PvP doğrulanmadan Android'e geçilmeyecek.
-- [ ] Android doğrulandıktan sonra iOS değerlendirilecek.
+- [x] Capacitor tabanlı mobil web paketleme altyapısı ve HTTPS backend runtime yapılandırması eklendi.
+- [x] Android kapalı testten önce gerçek Android cihaz kanıtını zorunlu kılan yayın kapısı eklendi.
+- [x] Android kapalı test kanıtı olmadan iOS/TestFlight kapısını açmayan sıra kilidi eklendi.
+- [~] Gerçek mağaza yüklemeleri; kalıcı bundle id, üretim HTTPS adresi, imza anahtarları, mağaza hesapları ve tester grupları sağlandığında yapılacak.
 
 ---
 
@@ -436,7 +446,7 @@ olarak üretilir.
 - [x] İstatistikler.
 - [x] Ayarlar.
 - [x] Telemetri/Web test altyapısı.
-- [ ] Eğitim — ilk sürüm kapsamı nedeniyle bilinçli olarak ertelendi.
+- [x] Kısa etkileşimli ilk maç eğitimi ve yerleşik başlangıç havuzu.
 - [~] Gerçek oynanabilir Web doğrulaması Beta.6 manuel testiyle devam edecek.
 
 ---
@@ -479,17 +489,17 @@ olarak üretilir.
 
 ## P1 — Gerçek Tarayıcı E2E
 
-- [ ] Yerel geliştirme makinesinde Playwright/Chromium E2E kurulacak.
+- [x] Yerel geliştirme makinesinde Playwright/Chromium E2E kuruldu.
 - [ ] Ana Menü → dört ekran otomatik navigasyon testi yapılacak.
-- [ ] Tek Oyunculu Test Maçı başlatma testi yapılacak.
-- [ ] Tarayıcı `pageerror` ve `console.error` çıktıları test başarısızlığı sayılacak.
+- [x] Tek Oyunculu Test Maçı ve dokun-seç/yerleştir testi eklendi.
+- [x] Tarayıcı `pageerror` çıktıları test başarısızlığı sayılıyor.
 
 > ChatGPT çalışma ortamındaki Chromium yerel sayfalara yönetici politikasıyla erişemediği için Playwright burada zorunlu QA kapısına eklenmedi. Startup VM testi bu boşluğu geçici olarak kapatır.
 
 ## P2 — Online PvP Gerçek Çift İstemci Testi
 
-- [ ] İki tarayıcı/iki oyuncu eşleştirme testi.
-- [ ] Aynı savaş durumunun iki istemcide senkronizasyon testi.
+- [x] İki bağımsız tarayıcı bağlamı/iki oyuncu eşleştirme testi.
+- [x] Aynı savaş durumunun iki istemcide senkronizasyon ve sonuç testi.
 - [ ] Yeniden bağlanma testi.
 - [ ] Maç sonucu ve rematch testi.
 
@@ -520,9 +530,9 @@ olarak üretilir.
 
 ## Daha Sonra
 
-- [ ] Eğitim — ilk kapsam kilidi kaldırıldığında.
-- [ ] Android — Web savaş/PvP doğrulamasından sonra.
-- [ ] iOS — Android sonrası.
+- [x] Eğitim ve başlangıç havuzu uygulandı.
+- [~] Android kapalı test altyapısı hazır; hesap, imzalı AAB, gerçek cihaz kanıtı ve tester grubu bekliyor.
+- [~] iOS/TestFlight altyapısı hazır; Android kapalı test kanıtı ve Apple imzalama ortamı bekliyor.
 
 ---
 
@@ -1375,6 +1385,31 @@ Beta.14'ten önce oyun kimliği sabitlenmiştir.
 - [x] `qa_reports/beta25_acceptance_report.json` kabul raporu eklendi.
 - [x] Tam Python + JavaScript + startup + HTTP smoke zinciri başarıyla çalıştırıldı; `qa_reports/latest.json` güncellendi.
 - [x] `1366×768` ve `1366×630` gerçek tarayıcı viewport kanıtı `qa_reports/beta25_browser_viewports.json` olarak kaydedildi.
+
+---
+
+# 9.21 — Beta.25 Sonrası Mobil Üretim Hazırlığı
+
+Kullanıcı tarafından belirlenen yedi adım sırasıyla işlendi:
+
+1. [x] HMAC erişim token'ı, cihaz kimliği, HTTP/WebSocket kimlik doğrulaması ve oyuncuya özel PvP olay/snapshot redaksiyonu eklendi.
+2. [x] Mobil savaş portre/yatay tek viewport düzene alındı; sürükle-bırak korunurken dokun-seç/yerleştir, döndür, rafa al ve seçim iptali eklendi.
+3. [x] PostgreSQL veri katmanı, Redis koordinasyonu, periyodik oturum temizleme, HTTP rate limit ve motor komut backpressure eklendi. Üretim modu bu bağımlılıklar olmadan başlamaz.
+4. [x] İki bağımsız istemcili PvP Playwright testi, Android Chrome/iPhone Safari emülasyon matrisi ve BrowserStack gerçek cihaz iş akışı eklendi.
+5. [x] İstemci ekran denetleyicisi ile savaş board/module/mobile bileşenleri ayrı dosyalara çıkarıldı.
+6. [x] Yerleşik Başlangıç Devresi ve üç adımlı etkileşimli eğitim eklendi.
+7. [x] Capacitor mobil paket katmanı, HTTPS API yönlendirmesi, CORS yapılandırması ve Android kapalı test → iOS/TestFlight sıra kapısı eklendi.
+
+Kanıt sınırı:
+
+- [x] Yerel gerçek Chromium çift istemci PvP testi geçti.
+- [x] Android Chrome emülasyonunda mobil savaş ve eğitim E2E kapsamı eklendi.
+- [~] Fiziksel Android/iPhone iş akışı kodda hazırdır; BrowserStack secrets olmadan kanıt üretmez.
+- [~] Mağaza yüklemesi kodla tamamlanmış sayılamaz; kalıcı app id, üretim HTTPS backend'i, imzalı AAB/IPA, geliştirici hesapları ve tester grupları dış girdidir.
+- [x] `tools/mobile_release_gate.py`, Android kapalı test kanıtı bulunmadan TestFlight adımını reddeder.
+- [x] Dürüst yerel/harici kanıt özeti `qa_reports/beta25_mobile_readiness_implementation.json` içinde kaydedildi.
+
+Ayrıntılı operasyon akışı: `docs/MOBILE_RELEASE_RUNBOOK.md`.
 
 ---
 

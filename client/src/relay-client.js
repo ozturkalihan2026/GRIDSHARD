@@ -1766,16 +1766,24 @@
             );
           }
 
+          const apiBase = globalThis.GridshardAuth?.apiBaseUrl
+            ? new URL(globalThis.GridshardAuth.apiBaseUrl)
+            : window.location;
           const scheme =
-            window.location.protocol
+            apiBase.protocol
             === "https:"
               ? "wss"
               : "ws";
 
           return (
-            `${scheme}://${window.location.host}`
+            `${scheme}://${apiBase.host}`
             + `/ws/pvp/${encodeURIComponent(sessionId)}`
             + `?player_id=${encodeURIComponent(this.playerId)}`
+            + `&access_token=${encodeURIComponent(
+              globalThis.GridshardAuth?.session
+                ?.accessTokenFor(this.playerId)
+              || ""
+            )}`
           );
         });
 

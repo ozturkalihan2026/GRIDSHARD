@@ -64,6 +64,10 @@ class PvPTickRunner:
         except asyncio.CancelledError:
             pass
 
+    async def stop_all(self) -> None:
+        for session_id in tuple(self._tasks):
+            await self.stop_session(session_id)
+
     async def run_single_tick(self,session_id: str) -> bool:
         session=self.service.get_session(session_id)
         if session.engine.state.status != BattleStatus.RUNNING:

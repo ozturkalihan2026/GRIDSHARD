@@ -1,5 +1,6 @@
 const path = require("path");
 const ROOT = path.join(__dirname, "..");
+process.chdir(ROOT);
 const assert = require("assert");
 const asyncTests = [];
 const {
@@ -4405,8 +4406,8 @@ function createClient() {
 
 {
   const fs=require("fs");
-  const html=fs.readFileSync("./index.html","utf8");
-  const app=fs.readFileSync("./src/app.js","utf8");
+  const html=fs.readFileSync(path.join(ROOT, "index.html"),"utf8");
+  const app=fs.readFileSync(path.join(ROOT, "src", "app.js"),"utf8");
 
   assert.ok(html.includes('class="battle-pool-builder"'));
   assert.ok(html.includes('id="battle-pool-detail"'));

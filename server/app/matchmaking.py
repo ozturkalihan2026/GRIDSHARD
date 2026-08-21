@@ -24,6 +24,7 @@ class MatchmakingPair:
     player_a_id: str
     player_b_id: str
     rating_difference: int
+    matched_at: float = 0.0
 
 
 class MatchmakingError(ValueError):
@@ -174,6 +175,7 @@ class MatchmakingService:
                 source.rating
                 - candidate.rating
             ),
+            matched_at=self.now_func(),
         )
 
         self._matches_by_player[
@@ -211,6 +213,38 @@ class MatchmakingService:
             pair.player_b_id,
             None,
         )
+
+    def cleanup_expired(
+        self,
+        *,
+        queue_ttl_seconds: float = 180.0,
+        match_ttl_seconds: float = 900.0,
+    ) -> dict[str, int]:
+        now = self.now_func()
+        expired_queue = [
+            player_id
+            for player_id, entry in self._queue.items()
+            if now - entry.joined_at >= queue_ttl_seconds
+        ]
+        for player_id in expired_queue:
+            self._queue.pop(player_id, None)
+
+        unique_pairs = {
+            pair.match_id: pair
+            for pair in self._matches_by_player.values()
+        }
+        expired_matches = [
+            pair
+            for pair in unique_pairs.values()
+            if now - pair.matched_at >= match_ttl_seconds
+        ]
+        for pair in expired_matches:
+            self.clear_match(pair.player_a_id)
+
+        return {
+            "queue_entries": len(expired_queue),
+            "matches": len(expired_matches),
+        }
 
     def queue_snapshot(
         self,

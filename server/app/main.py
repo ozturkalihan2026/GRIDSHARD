@@ -1,13 +1,32 @@
 from __future__ import annotations
 
 from uuid import uuid4
+import asyncio
+from contextlib import asynccontextmanager
+import hashlib
 import time
 import os
+import json
 from pathlib import Path
 
-from fastapi import FastAPI, Header, HTTPException, Query, WebSocket
+from fastapi import FastAPI, Header, HTTPException, Query, Request, WebSocket
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 from fastapi.websockets import WebSocketDisconnect
 from pydantic import BaseModel
+
+from .auth import (
+    AuthenticationError,
+    JsonIdentityRepository,
+    ParticipantAuthService,
+    load_or_create_signing_key,
+)
+from .postgres_repository import (
+    PostgresIdentityRepository,
+    PostgresPlayerDataRepository,
+    PostgresPool,
+)
+from .runtime_coordination import RuntimeCoordinator
 
 from .game.pvp_session import (
     PvPSessionError,
@@ -153,10 +172,244 @@ from .web_test_run import (
 )
 
 
+SERVER_DATA_DIR = (
+    Path(__file__).resolve()
+    .parent.parent
+    / "data"
+)
+RUNTIME_MODE = os.environ.get("GRIDSHARD_RUNTIME_MODE", "development").strip().lower()
+RUNTIME_STRICT = RUNTIME_MODE == "production"
+DATABASE_URL = os.environ.get("DATABASE_URL", "").strip() or None
+REDIS_URL = os.environ.get("REDIS_URL", "").strip() or None
+
+if RUNTIME_STRICT and not DATABASE_URL:
+    raise RuntimeError("Üretim modunda DATABASE_URL zorunludur.")
+if RUNTIME_STRICT and not REDIS_URL:
+    raise RuntimeError("Üretim modunda REDIS_URL zorunludur.")
+if RUNTIME_STRICT and not os.environ.get("GRIDSHARD_AUTH_SIGNING_KEY", "").strip():
+    raise RuntimeError("Üretim modunda GRIDSHARD_AUTH_SIGNING_KEY zorunludur.")
+
+postgres_pool = PostgresPool(DATABASE_URL) if DATABASE_URL else None
+runtime_coordinator = RuntimeCoordinator(
+    REDIS_URL,
+    strict=RUNTIME_STRICT,
+)
+
+
+async def _runtime_maintenance_loop() -> None:
+    while True:
+        await asyncio.sleep(5.0)
+        await pvp_websocket_adapter.sweep_connection_health()
+        expired_session_ids = pvp_service.cleanup_expired_sessions()
+        for session_id in expired_session_ids:
+            await pvp_tick_runner.stop_session(session_id)
+            await runtime_coordinator.delete_session(session_id)
+        matchmaking_service.cleanup_expired()
+        for session_id in pvp_service.active_session_ids():
+            await runtime_coordinator.touch_session(session_id, ttl_seconds=360)
+        await runtime_coordinator.local_limiter.cleanup()
+
+
+@asynccontextmanager
+async def application_lifespan(_app: FastAPI):
+    if postgres_pool is not None:
+        await asyncio.to_thread(postgres_pool.open)
+    await runtime_coordinator.open()
+    maintenance_task = asyncio.create_task(_runtime_maintenance_loop())
+    try:
+        yield
+    finally:
+        maintenance_task.cancel()
+        try:
+            await maintenance_task
+        except asyncio.CancelledError:
+            pass
+        await pvp_tick_runner.stop_all()
+        await runtime_coordinator.close()
+        if postgres_pool is not None:
+            await asyncio.to_thread(postgres_pool.close)
+
+
 app = FastAPI(
     title="GRIDSHARD PvP Gateway",
     version=VERSION,
+    lifespan=application_lifespan,
 )
+
+CORS_ORIGINS = tuple(
+    origin.strip()
+    for origin in os.environ.get("GRIDSHARD_CORS_ORIGINS", "").split(",")
+    if origin.strip()
+)
+if CORS_ORIGINS:
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=list(CORS_ORIGINS),
+        allow_credentials=False,
+        allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+        allow_headers=["Authorization", "Content-Type"],
+    )
+
+AUTH_IDENTITY_PATH = Path(
+    os.environ.get(
+        "GRIDSHARD_AUTH_IDENTITY_PATH",
+        str(SERVER_DATA_DIR / "player_identities.json"),
+    )
+)
+AUTH_KEY_PATH = Path(
+    os.environ.get(
+        "GRIDSHARD_AUTH_KEY_PATH",
+        str(SERVER_DATA_DIR / ".auth_signing_key"),
+    )
+)
+participant_auth_service = ParticipantAuthService(
+    (
+        PostgresIdentityRepository(postgres_pool)
+        if postgres_pool is not None
+        else JsonIdentityRepository(AUTH_IDENTITY_PATH)
+    ),
+    load_or_create_signing_key(AUTH_KEY_PATH),
+    access_token_ttl_seconds=int(
+        os.environ.get("GRIDSHARD_ACCESS_TOKEN_TTL_SECONDS", "3600")
+    ),
+)
+
+
+def auth_is_required() -> bool:
+    return os.environ.get("GRIDSHARD_AUTH_REQUIRED", "1").strip().lower() not in {
+        "0",
+        "false",
+        "no",
+        "off",
+    }
+
+
+PROTECTED_PLAYER_PREFIXES = (
+    "/participants/",
+    "/player-data/",
+    "/matchmaking",
+    "/settings/",
+    "/progression/",
+    "/post-match/",
+    "/statistics/",
+    "/profile/",
+    "/local-ai/",
+    "/pvp/",
+)
+
+
+def _path_claimed_player_id(path: str) -> str | None:
+    segments = [segment for segment in path.split("/") if segment]
+    if not segments:
+        return None
+    if segments[0] in {"participants", "player-data", "settings", "statistics", "profile"}:
+        return segments[1] if len(segments) > 1 else None
+    if segments[0] == "matchmaking" and len(segments) > 1 and segments[1] != "join":
+        return segments[1]
+    if segments[0] in {"progression", "post-match"} and len(segments) > 2:
+        return segments[-1]
+    return None
+
+
+@app.middleware("http")
+async def require_participant_authentication(request: Request, call_next):
+    path = request.url.path
+    protected = any(path.startswith(prefix) for prefix in PROTECTED_PLAYER_PREFIXES)
+    if not auth_is_required() or not protected or request.method == "OPTIONS":
+        return await call_next(request)
+
+    try:
+        token = participant_auth_service.bearer_token(
+            request.headers.get("authorization")
+        )
+        identity = participant_auth_service.verify_access_token(token)
+    except AuthenticationError as exc:
+        return JSONResponse(
+            status_code=401,
+            content={"detail": str(exc)},
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+
+    claimed_player_ids: set[str] = set()
+    path_player_id = _path_claimed_player_id(path)
+    if path_player_id:
+        claimed_player_ids.add(path_player_id)
+    query_player_id = request.query_params.get("player_id")
+    if query_player_id:
+        claimed_player_ids.add(query_player_id)
+    if request.method in {"POST", "PUT", "PATCH"}:
+        content_type = request.headers.get("content-type", "")
+        if "application/json" in content_type:
+            try:
+                raw_body = await request.body()
+                body = json.loads(raw_body) if raw_body else {}
+            except (json.JSONDecodeError, UnicodeDecodeError):
+                body = {}
+            if isinstance(body, dict) and isinstance(body.get("player_id"), str):
+                claimed_player_ids.add(body["player_id"])
+
+    if any(player_id != identity.player_id for player_id in claimed_player_ids):
+        return JSONResponse(
+            status_code=403,
+            content={"detail": "Başka bir oyuncu adına işlem yapılamaz."},
+        )
+
+    request.state.authenticated_player_id = identity.player_id
+    request.state.authenticated_token_id = identity.token_id
+    return await call_next(request)
+
+
+def _rate_limit_policy(path: str) -> tuple[str, int, int] | None:
+    if path == "/auth/session":
+        return ("auth", 10, 60)
+    if path.endswith("/commands") or path == "/matchmaking/join":
+        return ("commands", 30, 1)
+    if path.endswith("/snapshot"):
+        return ("snapshots", 30, 1)
+    if any(path.startswith(prefix) for prefix in PROTECTED_PLAYER_PREFIXES):
+        return ("player_api", 120, 60)
+    return None
+
+
+@app.middleware("http")
+async def apply_rate_limit(request: Request, call_next):
+    if os.environ.get("GRIDSHARD_RATE_LIMIT_REQUIRED", "1").strip().lower() in {
+        "0",
+        "false",
+        "no",
+        "off",
+    }:
+        return await call_next(request)
+    policy = _rate_limit_policy(request.url.path)
+    if policy is None or request.method == "OPTIONS":
+        return await call_next(request)
+    scope, limit, window_seconds = policy
+    authorization = request.headers.get("authorization", "")
+    identity_key = (
+        hashlib.sha256(authorization.encode("utf-8")).hexdigest()[:20]
+        if authorization
+        else (request.client.host if request.client else "unknown")
+    )
+    decision = await runtime_coordinator.rate_limit(
+        scope,
+        identity_key,
+        limit=limit,
+        window_seconds=window_seconds,
+    )
+    headers = {
+        "X-RateLimit-Limit": str(decision.limit),
+        "X-RateLimit-Remaining": str(decision.remaining),
+    }
+    if not decision.allowed:
+        headers["Retry-After"] = str(decision.retry_after_seconds)
+        return JSONResponse(
+            status_code=429,
+            content={"detail": "İstek hızı sınırı aşıldı; daha sonra yeniden deneyin."},
+            headers=headers,
+        )
+    response = await call_next(request)
+    response.headers.update(headers)
+    return response
 
 CLIENT_DIR = (
     Path(__file__).resolve()
@@ -257,7 +510,9 @@ PLAYER_DATA_PATH = Path(
 )
 
 player_data_repository = (
-    JsonFilePlayerDataRepository(
+    PostgresPlayerDataRepository(postgres_pool)
+    if postgres_pool is not None
+    else JsonFilePlayerDataRepository(
         PLAYER_DATA_PATH
     )
 )
@@ -418,6 +673,11 @@ class MatchmakingJoinRequest(BaseModel):
     player_id: str
 
 
+class AuthSessionRequest(BaseModel):
+    player_id: str
+    device_secret: str
+
+
 class WebTestSessionAuditRequest(BaseModel):
     player_id: str
     matchmaking_started_at_ms: int
@@ -473,6 +733,22 @@ class PlayerSettingsRequest(BaseModel):
     vibration_enabled: bool | None = None
     graphics_quality: str | None = None
     language: str | None = None
+
+
+@app.post("/auth/session")
+def create_participant_auth_session(
+    request: AuthSessionRequest,
+) -> dict:
+    try:
+        return participant_auth_service.register_or_login(
+            request.player_id,
+            request.device_secret,
+        )
+    except AuthenticationError as exc:
+        raise HTTPException(
+            status_code=401,
+            detail=str(exc),
+        ) from exc
 
 
 @app.post("/web-test/audit/session-start")
@@ -2641,13 +2917,14 @@ def gridshard_identity() -> dict:
 
 
 @app.get("/health")
-def health() -> dict:
+async def health() -> dict:
     player_persistence = (
         player_data_persistence_health()
     )
     telemetry_persistence = (
         telemetry_persistence_health()
     )
+    runtime_health = await runtime_coordinator.health()
     readiness = build_web_test_readiness(
         version=VERSION,
         telemetry_service=telemetry_service,
@@ -2676,6 +2953,19 @@ def health() -> dict:
                 player_persistence,
             "telemetry":
                 telemetry_persistence,
+        },
+        "runtime": {
+            "mode": RUNTIME_MODE,
+            "redis": runtime_health,
+            "database_backend": (
+                "postgresql" if postgres_pool is not None else "json"
+            ),
+            "active_pvp_sessions": len(pvp_service.active_session_ids()),
+            "active_websockets": sum(
+                1
+                for connection in pvp_websocket_adapter.registry.connections.values()
+                if connection.connected
+            ),
         },
         "web_test": readiness.to_dict(),
     }
@@ -3916,8 +4206,13 @@ async def ready_pvp_session(
 @app.post("/pvp/sessions/{session_id}/start")
 async def start_pvp_session(
     session_id: str,
+    request: Request,
 ) -> dict:
     try:
+        if auth_is_required():
+            pvp_service.get_session(session_id).slot_for(
+                request.state.authenticated_player_id
+            )
         pvp_service.start(session_id)
         session = pvp_service.get_session(
             session_id
@@ -3937,8 +4232,12 @@ async def start_pvp_session(
 
 
 @app.get("/pvp/sessions/{session_id}/lobby")
-def pvp_lobby(session_id: str) -> dict:
+def pvp_lobby(session_id: str, request: Request) -> dict:
     try:
+        if auth_is_required():
+            pvp_service.get_session(session_id).slot_for(
+                request.state.authenticated_player_id
+            )
         return pvp_service.lobby_snapshot(session_id)
     except PvPSessionError as exc:
         raise HTTPException(status_code=404,detail=str(exc)) from exc
@@ -3991,11 +4290,20 @@ async def pvp_websocket(
     websocket: WebSocket,
     session_id: str,
     player_id: str = Query(min_length=1),
+    access_token: str | None = Query(default=None),
 ):
     connection_id = str(uuid4())
     connected = False
 
     try:
+        if auth_is_required():
+            identity = participant_auth_service.verify_access_token(
+                access_token or ""
+            )
+            if identity.player_id != player_id:
+                raise AuthenticationError(
+                    "WebSocket oyuncu kimliği belirteçle eşleşmiyor."
+                )
         await pvp_websocket_adapter.connect(
             connection_id=connection_id,
             session_id=session_id,
@@ -4026,6 +4334,12 @@ async def pvp_websocket(
 
     except WebSocketDisconnect:
         pass
+    except AuthenticationError as exc:
+        if not connected:
+            await websocket.close(
+                code=4401,
+                reason=str(exc),
+            )
     except PvPSessionError as exc:
         if not connected:
             await websocket.close(
