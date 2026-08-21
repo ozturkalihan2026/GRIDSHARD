@@ -1,0 +1,4697 @@
+[
+  {
+    "event_id": "web-test-stability-web-test-beta.13-1787297692072",
+    "event_type": "web_test_stability_snapshot",
+    "metadata": {
+      "operation_running_rate": 0.0,
+      "running_to_other_regressions": 0,
+      "stability": "not_running",
+      "test_run_id": "web-test-beta.13"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1787297692072
+  },
+  {
+    "event_id": "client-game_opened-1",
+    "event_type": "game_opened",
+    "metadata": {
+      "build": "2.0.0-beta.24",
+      "platform": "web"
+    },
+    "player_id": "wt-1ea91c70-3294-4a53-ae9c-fe5748ca0b76",
+    "session_id": "local-preview",
+    "timestamp_ms": 1787297756886
+  },
+  {
+    "event_id": "web-test-run-started-web-test-beta.13",
+    "event_type": "web_test_run_started",
+    "metadata": {
+      "build": "web-test-beta.13",
+      "preflight_ready": true,
+      "test_run_id": "web-test-beta.13"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1787297757065
+  },
+  {
+    "event_id": "web-test-operation-web-test-beta.13-1787297757498",
+    "event_type": "web_test_operation_snapshot",
+    "metadata": {
+      "consistency_status": "consistent",
+      "operational_state": "running",
+      "preflight_ready": true,
+      "run_started": true,
+      "test_run_id": "web-test-beta.13"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1787297757498
+  },
+  {
+    "event_id": "web-test-stability-web-test-beta.13-1787297757503",
+    "event_type": "web_test_stability_snapshot",
+    "metadata": {
+      "operation_running_rate": 0.0,
+      "running_to_other_regressions": 0,
+      "stability": "degraded",
+      "test_run_id": "web-test-beta.13"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1787297757503
+  },
+  {
+    "event_id": "web-test-operation-web-test-beta.13-1787297767587",
+    "event_type": "web_test_operation_snapshot",
+    "metadata": {
+      "consistency_status": "consistent",
+      "operational_state": "running",
+      "preflight_ready": true,
+      "run_started": true,
+      "test_run_id": "web-test-beta.13"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1787297767587
+  },
+  {
+    "event_id": "web-test-stability-web-test-beta.13-1787297767593",
+    "event_type": "web_test_stability_snapshot",
+    "metadata": {
+      "operation_running_rate": 1.0,
+      "running_to_other_regressions": 0,
+      "stability": "stable",
+      "test_run_id": "web-test-beta.13"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1787297767593
+  },
+  {
+    "event_id": "web-test-stability-web-test-beta.13-1787297777590",
+    "event_type": "web_test_stability_snapshot",
+    "metadata": {
+      "operation_running_rate": 1.0,
+      "running_to_other_regressions": 0,
+      "stability": "stable",
+      "test_run_id": "web-test-beta.13"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1787297777590
+  },
+  {
+    "event_id": "web-test-operation-web-test-beta.13-1787297777640",
+    "event_type": "web_test_operation_snapshot",
+    "metadata": {
+      "consistency_status": "consistent",
+      "operational_state": "running",
+      "preflight_ready": true,
+      "run_started": true,
+      "test_run_id": "web-test-beta.13"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1787297777640
+  },
+  {
+    "event_id": "web-test-launch-wt-1ea91c70-3294-4a53-ae9c-fe5748ca0b76-1787297780508",
+    "event_type": "web_test_launch_attempted",
+    "metadata": {
+      "failed_checks": [],
+      "launch_ready": true,
+      "test_run_id": "web-test-beta.13"
+    },
+    "player_id": "wt-1ea91c70-3294-4a53-ae9c-fe5748ca0b76",
+    "session_id": null,
+    "timestamp_ms": 1787297780508
+  },
+  {
+    "event_id": "web-test-stability-web-test-beta.13-1787297787538",
+    "event_type": "web_test_stability_snapshot",
+    "metadata": {
+      "operation_running_rate": 1.0,
+      "running_to_other_regressions": 0,
+      "stability": "stable",
+      "test_run_id": "web-test-beta.13"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1787297787538
+  },
+  {
+    "event_id": "web-test-operation-web-test-beta.13-1787297787542",
+    "event_type": "web_test_operation_snapshot",
+    "metadata": {
+      "consistency_status": "consistent",
+      "operational_state": "running",
+      "preflight_ready": true,
+      "run_started": true,
+      "test_run_id": "web-test-beta.13"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1787297787542
+  },
+  {
+    "event_id": "web-test-stability-web-test-beta.13-1787297797439",
+    "event_type": "web_test_stability_snapshot",
+    "metadata": {
+      "operation_running_rate": 1.0,
+      "running_to_other_regressions": 0,
+      "stability": "stable",
+      "test_run_id": "web-test-beta.13"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1787297797439
+  },
+  {
+    "event_id": "web-test-operation-web-test-beta.13-1787297797455",
+    "event_type": "web_test_operation_snapshot",
+    "metadata": {
+      "consistency_status": "consistent",
+      "operational_state": "running",
+      "preflight_ready": true,
+      "run_started": true,
+      "test_run_id": "web-test-beta.13"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1787297797455
+  },
+  {
+    "event_id": "web-test-operation-web-test-beta.13-1787297807543",
+    "event_type": "web_test_operation_snapshot",
+    "metadata": {
+      "consistency_status": "consistent",
+      "operational_state": "running",
+      "preflight_ready": true,
+      "run_started": true,
+      "test_run_id": "web-test-beta.13"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1787297807543
+  },
+  {
+    "event_id": "web-test-stability-web-test-beta.13-1787297807585",
+    "event_type": "web_test_stability_snapshot",
+    "metadata": {
+      "operation_running_rate": 1.0,
+      "running_to_other_regressions": 0,
+      "stability": "stable",
+      "test_run_id": "web-test-beta.13"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1787297807585
+  },
+  {
+    "event_id": "web-test-operation-web-test-beta.13-1787297817536",
+    "event_type": "web_test_operation_snapshot",
+    "metadata": {
+      "consistency_status": "consistent",
+      "operational_state": "running",
+      "preflight_ready": true,
+      "run_started": true,
+      "test_run_id": "web-test-beta.13"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1787297817536
+  },
+  {
+    "event_id": "web-test-stability-web-test-beta.13-1787297817540",
+    "event_type": "web_test_stability_snapshot",
+    "metadata": {
+      "operation_running_rate": 1.0,
+      "running_to_other_regressions": 0,
+      "stability": "stable",
+      "test_run_id": "web-test-beta.13"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1787297817540
+  },
+  {
+    "event_id": "web-test-operation-web-test-beta.13-1787297827564",
+    "event_type": "web_test_operation_snapshot",
+    "metadata": {
+      "consistency_status": "consistent",
+      "operational_state": "running",
+      "preflight_ready": true,
+      "run_started": true,
+      "test_run_id": "web-test-beta.13"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1787297827564
+  },
+  {
+    "event_id": "web-test-stability-web-test-beta.13-1787297827616",
+    "event_type": "web_test_stability_snapshot",
+    "metadata": {
+      "operation_running_rate": 1.0,
+      "running_to_other_regressions": 0,
+      "stability": "stable",
+      "test_run_id": "web-test-beta.13"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1787297827616
+  },
+  {
+    "event_id": "client-local_battle_started-2",
+    "event_type": "local_battle_started",
+    "metadata": {
+      "initial_credits": 200,
+      "initial_generator_gate": "south",
+      "selected_pool_size": 18
+    },
+    "player_id": "wt-1ea91c70-3294-4a53-ae9c-fe5748ca0b76",
+    "session_id": "local-preview",
+    "timestamp_ms": 1787297836486
+  },
+  {
+    "event_id": "web-test-operation-web-test-beta.13-1787297837635",
+    "event_type": "web_test_operation_snapshot",
+    "metadata": {
+      "consistency_status": "consistent",
+      "operational_state": "running",
+      "preflight_ready": true,
+      "run_started": true,
+      "test_run_id": "web-test-beta.13"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1787297837635
+  },
+  {
+    "event_id": "web-test-stability-web-test-beta.13-1787297837710",
+    "event_type": "web_test_stability_snapshot",
+    "metadata": {
+      "operation_running_rate": 1.0,
+      "running_to_other_regressions": 0,
+      "stability": "stable",
+      "test_run_id": "web-test-beta.13"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1787297837710
+  },
+  {
+    "event_id": "web-test-operation-web-test-beta.13-1787297847610",
+    "event_type": "web_test_operation_snapshot",
+    "metadata": {
+      "consistency_status": "consistent",
+      "operational_state": "running",
+      "preflight_ready": true,
+      "run_started": true,
+      "test_run_id": "web-test-beta.13"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1787297847610
+  },
+  {
+    "event_id": "web-test-stability-web-test-beta.13-1787297847617",
+    "event_type": "web_test_stability_snapshot",
+    "metadata": {
+      "operation_running_rate": 1.0,
+      "running_to_other_regressions": 0,
+      "stability": "stable",
+      "test_run_id": "web-test-beta.13"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1787297847617
+  },
+  {
+    "event_id": "web-test-operation-web-test-beta.13-1787297857584",
+    "event_type": "web_test_operation_snapshot",
+    "metadata": {
+      "consistency_status": "consistent",
+      "operational_state": "running",
+      "preflight_ready": true,
+      "run_started": true,
+      "test_run_id": "web-test-beta.13"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1787297857584
+  },
+  {
+    "event_id": "web-test-stability-web-test-beta.13-1787297857662",
+    "event_type": "web_test_stability_snapshot",
+    "metadata": {
+      "operation_running_rate": 1.0,
+      "running_to_other_regressions": 0,
+      "stability": "stable",
+      "test_run_id": "web-test-beta.13"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1787297857662
+  },
+  {
+    "event_id": "web-test-operation-web-test-beta.13-1787297867613",
+    "event_type": "web_test_operation_snapshot",
+    "metadata": {
+      "consistency_status": "consistent",
+      "operational_state": "running",
+      "preflight_ready": true,
+      "run_started": true,
+      "test_run_id": "web-test-beta.13"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1787297867613
+  },
+  {
+    "event_id": "web-test-stability-web-test-beta.13-1787297867688",
+    "event_type": "web_test_stability_snapshot",
+    "metadata": {
+      "operation_running_rate": 1.0,
+      "running_to_other_regressions": 0,
+      "stability": "stable",
+      "test_run_id": "web-test-beta.13"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1787297867688
+  },
+  {
+    "event_id": "web-test-operation-web-test-beta.13-1787297877636",
+    "event_type": "web_test_operation_snapshot",
+    "metadata": {
+      "consistency_status": "consistent",
+      "operational_state": "running",
+      "preflight_ready": true,
+      "run_started": true,
+      "test_run_id": "web-test-beta.13"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1787297877636
+  },
+  {
+    "event_id": "web-test-stability-web-test-beta.13-1787297877710",
+    "event_type": "web_test_stability_snapshot",
+    "metadata": {
+      "operation_running_rate": 1.0,
+      "running_to_other_regressions": 0,
+      "stability": "stable",
+      "test_run_id": "web-test-beta.13"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1787297877710
+  },
+  {
+    "event_id": "web-test-operation-web-test-beta.13-1787297887825",
+    "event_type": "web_test_operation_snapshot",
+    "metadata": {
+      "consistency_status": "consistent",
+      "operational_state": "running",
+      "preflight_ready": true,
+      "run_started": true,
+      "test_run_id": "web-test-beta.13"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1787297887825
+  },
+  {
+    "event_id": "web-test-stability-web-test-beta.13-1787297887835",
+    "event_type": "web_test_stability_snapshot",
+    "metadata": {
+      "operation_running_rate": 1.0,
+      "running_to_other_regressions": 0,
+      "stability": "stable",
+      "test_run_id": "web-test-beta.13"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1787297887835
+  },
+  {
+    "event_id": "web-test-stability-web-test-beta.13-1787297897671",
+    "event_type": "web_test_stability_snapshot",
+    "metadata": {
+      "operation_running_rate": 1.0,
+      "running_to_other_regressions": 0,
+      "stability": "stable",
+      "test_run_id": "web-test-beta.13"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1787297897671
+  },
+  {
+    "event_id": "web-test-operation-web-test-beta.13-1787297897752",
+    "event_type": "web_test_operation_snapshot",
+    "metadata": {
+      "consistency_status": "consistent",
+      "operational_state": "running",
+      "preflight_ready": true,
+      "run_started": true,
+      "test_run_id": "web-test-beta.13"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1787297897752
+  },
+  {
+    "event_id": "web-test-operation-web-test-beta.13-1787297907656",
+    "event_type": "web_test_operation_snapshot",
+    "metadata": {
+      "consistency_status": "consistent",
+      "operational_state": "running",
+      "preflight_ready": true,
+      "run_started": true,
+      "test_run_id": "web-test-beta.13"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1787297907656
+  },
+  {
+    "event_id": "web-test-stability-web-test-beta.13-1787297907730",
+    "event_type": "web_test_stability_snapshot",
+    "metadata": {
+      "operation_running_rate": 1.0,
+      "running_to_other_regressions": 0,
+      "stability": "stable",
+      "test_run_id": "web-test-beta.13"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1787297907730
+  },
+  {
+    "event_id": "server:local-ai-86a827d1-d605-46dd-9d9a-12defdeaabe9:match_started:wt-1ea91c70-3294-4a53-ae9c-fe5748ca0b76",
+    "event_type": "match_started",
+    "metadata": {
+      "source": "battle_engine"
+    },
+    "player_id": "wt-1ea91c70-3294-4a53-ae9c-fe5748ca0b76",
+    "session_id": "local-ai-86a827d1-d605-46dd-9d9a-12defdeaabe9",
+    "timestamp_ms": 1787297909217
+  },
+  {
+    "event_id": "server:local-ai-86a827d1-d605-46dd-9d9a-12defdeaabe9:match_started:local-ai-86a827d1-d605-46dd-9d9a-12defdeaabe9-opponent",
+    "event_type": "match_started",
+    "metadata": {
+      "source": "battle_engine"
+    },
+    "player_id": "local-ai-86a827d1-d605-46dd-9d9a-12defdeaabe9-opponent",
+    "session_id": "local-ai-86a827d1-d605-46dd-9d9a-12defdeaabe9",
+    "timestamp_ms": 1787297909221
+  },
+  {
+    "event_id": "server:local-ai-86a827d1-d605-46dd-9d9a-12defdeaabe9:match_completed:wt-1ea91c70-3294-4a53-ae9c-fe5748ca0b76",
+    "event_type": "match_completed",
+    "metadata": {
+      "duration_ms": 68500,
+      "finish_reason": "core_destroyed",
+      "is_draw": false,
+      "winner_player_id": "wt-1ea91c70-3294-4a53-ae9c-fe5748ca0b76"
+    },
+    "player_id": "wt-1ea91c70-3294-4a53-ae9c-fe5748ca0b76",
+    "session_id": "local-ai-86a827d1-d605-46dd-9d9a-12defdeaabe9",
+    "timestamp_ms": 1787297909258
+  },
+  {
+    "event_id": "server:local-ai-86a827d1-d605-46dd-9d9a-12defdeaabe9:match_completed:local-ai-86a827d1-d605-46dd-9d9a-12defdeaabe9-opponent",
+    "event_type": "match_completed",
+    "metadata": {
+      "duration_ms": 68500,
+      "finish_reason": "core_destroyed",
+      "is_draw": false,
+      "winner_player_id": "wt-1ea91c70-3294-4a53-ae9c-fe5748ca0b76"
+    },
+    "player_id": "local-ai-86a827d1-d605-46dd-9d9a-12defdeaabe9-opponent",
+    "session_id": "local-ai-86a827d1-d605-46dd-9d9a-12defdeaabe9",
+    "timestamp_ms": 1787297909300
+  },
+  {
+    "event_id": "client-local_player_attack-3",
+    "event_type": "local_player_attack",
+    "metadata": {
+      "attacker": "Lazer",
+      "damage": 8,
+      "elapsed_ms": 0,
+      "target": "Rakip Kalkan"
+    },
+    "player_id": "wt-1ea91c70-3294-4a53-ae9c-fe5748ca0b76",
+    "session_id": "local-preview",
+    "timestamp_ms": 1787297836611
+  },
+  {
+    "event_id": "client-local_player_attack-4",
+    "event_type": "local_player_attack",
+    "metadata": {
+      "attacker": "Darbe Topu",
+      "damage": 21,
+      "elapsed_ms": 0,
+      "target": "Rakip Kalkan"
+    },
+    "player_id": "wt-1ea91c70-3294-4a53-ae9c-fe5748ca0b76",
+    "session_id": "local-preview",
+    "timestamp_ms": 1787297836612
+  },
+  {
+    "event_id": "client-local_battle_completed-5",
+    "event_type": "local_battle_completed",
+    "metadata": {
+      "ai_hits": 0,
+      "credits_spent": 0,
+      "damage_dealt": 29,
+      "damage_received": 0,
+      "duration_ms": 68500,
+      "frame_count": 4953,
+      "generator_gate_visits": {
+        "east": 0,
+        "north": 0,
+        "south": 1,
+        "west": 0
+      },
+      "generator_moves": 0,
+      "max_frame_gap_ms": 138.6999999999971,
+      "module_changes": 0,
+      "pause_violation_count": 0,
+      "player_attacks": 2,
+      "shield_mitigated": 0,
+      "started_at_ms": 1787297836483,
+      "ui_interaction_samples": [],
+      "ui_interactions": 0,
+      "ux_categories": {
+        "booster": 0,
+        "generator_gate": 0,
+        "module_move": 0,
+        "module_place": 0,
+        "other_ui": 0,
+        "technical_drawer": 0
+      },
+      "ux_matrix": {
+        "booster": {
+          "count": 0,
+          "last_elapsed_ms": null,
+          "max_clock_delta_ms": 0,
+          "max_frame_gap_ms": 0,
+          "total_clock_delta_ms": 0,
+          "total_frame_gap_ms": 0
+        },
+        "generator_gate": {
+          "count": 0,
+          "last_elapsed_ms": null,
+          "max_clock_delta_ms": 0,
+          "max_frame_gap_ms": 0,
+          "total_clock_delta_ms": 0,
+          "total_frame_gap_ms": 0
+        },
+        "module_move": {
+          "count": 0,
+          "last_elapsed_ms": null,
+          "max_clock_delta_ms": 0,
+          "max_frame_gap_ms": 0,
+          "total_clock_delta_ms": 0,
+          "total_frame_gap_ms": 0
+        },
+        "module_place": {
+          "count": 0,
+          "last_elapsed_ms": null,
+          "max_clock_delta_ms": 0,
+          "max_frame_gap_ms": 0,
+          "total_clock_delta_ms": 0,
+          "total_frame_gap_ms": 0
+        },
+        "other_ui": {
+          "count": 0,
+          "last_elapsed_ms": null,
+          "max_clock_delta_ms": 0,
+          "max_frame_gap_ms": 0,
+          "total_clock_delta_ms": 0,
+          "total_frame_gap_ms": 0
+        },
+        "technical_drawer": {
+          "count": 0,
+          "last_elapsed_ms": null,
+          "max_clock_delta_ms": 0,
+          "max_frame_gap_ms": 0,
+          "total_clock_delta_ms": 0,
+          "total_frame_gap_ms": 0
+        }
+      },
+      "won": true
+    },
+    "player_id": "wt-1ea91c70-3294-4a53-ae9c-fe5748ca0b76",
+    "session_id": "local-ai-86a827d1-d605-46dd-9d9a-12defdeaabe9",
+    "timestamp_ms": 1787297909421
+  },
+  {
+    "event_id": "web-test-operation-web-test-beta.13-1787297917807",
+    "event_type": "web_test_operation_snapshot",
+    "metadata": {
+      "consistency_status": "consistent",
+      "operational_state": "running",
+      "preflight_ready": true,
+      "run_started": true,
+      "test_run_id": "web-test-beta.13"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1787297917807
+  },
+  {
+    "event_id": "web-test-stability-web-test-beta.13-1787297917816",
+    "event_type": "web_test_stability_snapshot",
+    "metadata": {
+      "operation_running_rate": 1.0,
+      "running_to_other_regressions": 0,
+      "stability": "stable",
+      "test_run_id": "web-test-beta.13"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1787297917816
+  },
+  {
+    "event_id": "web-test-stability-web-test-beta.13-1787297927735",
+    "event_type": "web_test_stability_snapshot",
+    "metadata": {
+      "operation_running_rate": 1.0,
+      "running_to_other_regressions": 0,
+      "stability": "stable",
+      "test_run_id": "web-test-beta.13"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1787297927735
+  },
+  {
+    "event_id": "web-test-operation-web-test-beta.13-1787297927744",
+    "event_type": "web_test_operation_snapshot",
+    "metadata": {
+      "consistency_status": "consistent",
+      "operational_state": "running",
+      "preflight_ready": true,
+      "run_started": true,
+      "test_run_id": "web-test-beta.13"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1787297927744
+  },
+  {
+    "event_id": "web-test-operation-web-test-beta.13-1787297937779",
+    "event_type": "web_test_operation_snapshot",
+    "metadata": {
+      "consistency_status": "consistent",
+      "operational_state": "running",
+      "preflight_ready": true,
+      "run_started": true,
+      "test_run_id": "web-test-beta.13"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1787297937779
+  },
+  {
+    "event_id": "web-test-stability-web-test-beta.13-1787297937789",
+    "event_type": "web_test_stability_snapshot",
+    "metadata": {
+      "operation_running_rate": 1.0,
+      "running_to_other_regressions": 0,
+      "stability": "stable",
+      "test_run_id": "web-test-beta.13"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1787297937789
+  },
+  {
+    "event_id": "web-test-operation-web-test-beta.13-1787297947773",
+    "event_type": "web_test_operation_snapshot",
+    "metadata": {
+      "consistency_status": "consistent",
+      "operational_state": "running",
+      "preflight_ready": true,
+      "run_started": true,
+      "test_run_id": "web-test-beta.13"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1787297947773
+  },
+  {
+    "event_id": "web-test-stability-web-test-beta.13-1787297947838",
+    "event_type": "web_test_stability_snapshot",
+    "metadata": {
+      "operation_running_rate": 1.0,
+      "running_to_other_regressions": 0,
+      "stability": "stable",
+      "test_run_id": "web-test-beta.13"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1787297947838
+  },
+  {
+    "event_id": "web-test-stability-web-test-beta.13-1787297957927",
+    "event_type": "web_test_stability_snapshot",
+    "metadata": {
+      "operation_running_rate": 1.0,
+      "running_to_other_regressions": 0,
+      "stability": "stable",
+      "test_run_id": "web-test-beta.13"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1787297957927
+  },
+  {
+    "event_id": "web-test-operation-web-test-beta.13-1787297957944",
+    "event_type": "web_test_operation_snapshot",
+    "metadata": {
+      "consistency_status": "consistent",
+      "operational_state": "running",
+      "preflight_ready": true,
+      "run_started": true,
+      "test_run_id": "web-test-beta.13"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1787297957944
+  },
+  {
+    "event_id": "web-test-stability-web-test-beta.13-1787297967828",
+    "event_type": "web_test_stability_snapshot",
+    "metadata": {
+      "operation_running_rate": 1.0,
+      "running_to_other_regressions": 0,
+      "stability": "stable",
+      "test_run_id": "web-test-beta.13"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1787297967828
+  },
+  {
+    "event_id": "web-test-operation-web-test-beta.13-1787297967923",
+    "event_type": "web_test_operation_snapshot",
+    "metadata": {
+      "consistency_status": "consistent",
+      "operational_state": "running",
+      "preflight_ready": true,
+      "run_started": true,
+      "test_run_id": "web-test-beta.13"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1787297967923
+  },
+  {
+    "event_id": "web-test-stability-web-test-beta.13-1787297977754",
+    "event_type": "web_test_stability_snapshot",
+    "metadata": {
+      "operation_running_rate": 1.0,
+      "running_to_other_regressions": 0,
+      "stability": "stable",
+      "test_run_id": "web-test-beta.13"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1787297977754
+  },
+  {
+    "event_id": "web-test-operation-web-test-beta.13-1787297977847",
+    "event_type": "web_test_operation_snapshot",
+    "metadata": {
+      "consistency_status": "consistent",
+      "operational_state": "running",
+      "preflight_ready": true,
+      "run_started": true,
+      "test_run_id": "web-test-beta.13"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1787297977847
+  },
+  {
+    "event_id": "web-test-operation-web-test-beta.13-1787297987837",
+    "event_type": "web_test_operation_snapshot",
+    "metadata": {
+      "consistency_status": "consistent",
+      "operational_state": "running",
+      "preflight_ready": true,
+      "run_started": true,
+      "test_run_id": "web-test-beta.13"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1787297987837
+  },
+  {
+    "event_id": "web-test-stability-web-test-beta.13-1787297987847",
+    "event_type": "web_test_stability_snapshot",
+    "metadata": {
+      "operation_running_rate": 1.0,
+      "running_to_other_regressions": 0,
+      "stability": "stable",
+      "test_run_id": "web-test-beta.13"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1787297987847
+  },
+  {
+    "event_id": "web-test-operation-web-test-beta.13-1787297997846",
+    "event_type": "web_test_operation_snapshot",
+    "metadata": {
+      "consistency_status": "consistent",
+      "operational_state": "running",
+      "preflight_ready": true,
+      "run_started": true,
+      "test_run_id": "web-test-beta.13"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1787297997846
+  },
+  {
+    "event_id": "web-test-stability-web-test-beta.13-1787297997855",
+    "event_type": "web_test_stability_snapshot",
+    "metadata": {
+      "operation_running_rate": 1.0,
+      "running_to_other_regressions": 0,
+      "stability": "stable",
+      "test_run_id": "web-test-beta.13"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1787297997855
+  },
+  {
+    "event_id": "web-test-stability-web-test-beta.13-1787298007769",
+    "event_type": "web_test_stability_snapshot",
+    "metadata": {
+      "operation_running_rate": 1.0,
+      "running_to_other_regressions": 0,
+      "stability": "stable",
+      "test_run_id": "web-test-beta.13"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1787298007769
+  },
+  {
+    "event_id": "web-test-operation-web-test-beta.13-1787298007838",
+    "event_type": "web_test_operation_snapshot",
+    "metadata": {
+      "consistency_status": "consistent",
+      "operational_state": "running",
+      "preflight_ready": true,
+      "run_started": true,
+      "test_run_id": "web-test-beta.13"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1787298007838
+  },
+  {
+    "event_id": "web-test-launch-wt-81aef76b-f7e7-498a-9c29-63cdf1fb9793-1787310008447",
+    "event_type": "web_test_launch_attempted",
+    "metadata": {
+      "failed_checks": [],
+      "launch_ready": true,
+      "test_run_id": "web-test-beta.13"
+    },
+    "player_id": "wt-81aef76b-f7e7-498a-9c29-63cdf1fb9793",
+    "session_id": null,
+    "timestamp_ms": 1787310008447
+  },
+  {
+    "event_id": "client-local_player_attack-5",
+    "event_type": "local_player_attack",
+    "metadata": {
+      "attacker": "Lazer",
+      "damage": 8,
+      "elapsed_ms": 1002.6000000238419,
+      "target": "Rakip Kalkan"
+    },
+    "player_id": "wt-81aef76b-f7e7-498a-9c29-63cdf1fb9793",
+    "session_id": "local-preview",
+    "timestamp_ms": 1787310020971
+  },
+  {
+    "event_id": "client-local_player_attack-6",
+    "event_type": "local_player_attack",
+    "metadata": {
+      "attacker": "Lazer",
+      "damage": 8,
+      "elapsed_ms": 2002.7000000238404,
+      "target": "Rakip Kalkan"
+    },
+    "player_id": "wt-81aef76b-f7e7-498a-9c29-63cdf1fb9793",
+    "session_id": "local-preview",
+    "timestamp_ms": 1787310021974
+  },
+  {
+    "event_id": "client-local_player_attack-7",
+    "event_type": "local_player_attack",
+    "metadata": {
+      "attacker": "Lazer",
+      "damage": 8,
+      "elapsed_ms": 3002.600000023842,
+      "target": "Rakip Kalkan"
+    },
+    "player_id": "wt-81aef76b-f7e7-498a-9c29-63cdf1fb9793",
+    "session_id": "local-preview",
+    "timestamp_ms": 1787310022978
+  },
+  {
+    "event_id": "client-local_player_attack-8",
+    "event_type": "local_player_attack",
+    "metadata": {
+      "attacker": "Darbe Topu",
+      "damage": 21,
+      "elapsed_ms": 3002.600000023842,
+      "target": "Rakip Kalkan"
+    },
+    "player_id": "wt-81aef76b-f7e7-498a-9c29-63cdf1fb9793",
+    "session_id": "local-preview",
+    "timestamp_ms": 1787310022979
+  },
+  {
+    "event_id": "client-local_player_attack-9",
+    "event_type": "local_player_attack",
+    "metadata": {
+      "attacker": "Lazer",
+      "damage": 8,
+      "elapsed_ms": 4002.600000023842,
+      "target": "Rakip Kalkan"
+    },
+    "player_id": "wt-81aef76b-f7e7-498a-9c29-63cdf1fb9793",
+    "session_id": "local-preview",
+    "timestamp_ms": 1787310023972
+  },
+  {
+    "event_id": "client-local_player_attack-10",
+    "event_type": "local_player_attack",
+    "metadata": {
+      "attacker": "Lazer",
+      "damage": 8,
+      "elapsed_ms": 5002.500000023843,
+      "target": "Rakip Kalkan"
+    },
+    "player_id": "wt-81aef76b-f7e7-498a-9c29-63cdf1fb9793",
+    "session_id": "local-preview",
+    "timestamp_ms": 1787310024976
+  },
+  {
+    "event_id": "client-local_ai_hit-11",
+    "event_type": "local_ai_hit",
+    "metadata": {
+      "elapsed_ms": 5002.500000023843,
+      "final_damage": 8,
+      "module_id": "laser-1",
+      "raw_damage": 8,
+      "shield_active": false
+    },
+    "player_id": "wt-81aef76b-f7e7-498a-9c29-63cdf1fb9793",
+    "session_id": "local-preview",
+    "timestamp_ms": 1787310024980
+  },
+  {
+    "event_id": "client-local_player_attack-12",
+    "event_type": "local_player_attack",
+    "metadata": {
+      "attacker": "Lazer",
+      "damage": 8,
+      "elapsed_ms": 6002.500000023843,
+      "target": "Rakip Kalkan"
+    },
+    "player_id": "wt-81aef76b-f7e7-498a-9c29-63cdf1fb9793",
+    "session_id": "local-preview",
+    "timestamp_ms": 1787310025973
+  },
+  {
+    "event_id": "client-local_player_attack-13",
+    "event_type": "local_player_attack",
+    "metadata": {
+      "attacker": "Darbe Topu",
+      "damage": 21,
+      "elapsed_ms": 6002.500000023843,
+      "target": "Rakip Kalkan"
+    },
+    "player_id": "wt-81aef76b-f7e7-498a-9c29-63cdf1fb9793",
+    "session_id": "local-preview",
+    "timestamp_ms": 1787310025975
+  },
+  {
+    "event_id": "client-local_ai_hit-14",
+    "event_type": "local_ai_hit",
+    "metadata": {
+      "elapsed_ms": 6002.500000023843,
+      "final_damage": 8,
+      "module_id": "laser-1",
+      "raw_damage": 8,
+      "shield_active": false
+    },
+    "player_id": "wt-81aef76b-f7e7-498a-9c29-63cdf1fb9793",
+    "session_id": "local-preview",
+    "timestamp_ms": 1787310025977
+  },
+  {
+    "event_id": "client-local_player_attack-15",
+    "event_type": "local_player_attack",
+    "metadata": {
+      "attacker": "Lazer",
+      "damage": 8,
+      "elapsed_ms": 7009.400000023841,
+      "target": "Rakip Kalkan"
+    },
+    "player_id": "wt-81aef76b-f7e7-498a-9c29-63cdf1fb9793",
+    "session_id": "local-preview",
+    "timestamp_ms": 1787310026982
+  },
+  {
+    "event_id": "client-local_player_attack-16",
+    "event_type": "local_player_attack",
+    "metadata": {
+      "attacker": "Lazer",
+      "damage": 8,
+      "elapsed_ms": 8002.500000023843,
+      "target": "Rakip Kalkan"
+    },
+    "player_id": "wt-81aef76b-f7e7-498a-9c29-63cdf1fb9793",
+    "session_id": "local-preview",
+    "timestamp_ms": 1787310027970
+  },
+  {
+    "event_id": "client-local_ai_hit-17",
+    "event_type": "local_ai_hit",
+    "metadata": {
+      "elapsed_ms": 8002.500000023843,
+      "final_damage": 8,
+      "module_id": "laser-1",
+      "raw_damage": 8,
+      "shield_active": false
+    },
+    "player_id": "wt-81aef76b-f7e7-498a-9c29-63cdf1fb9793",
+    "session_id": "local-preview",
+    "timestamp_ms": 1787310027973
+  },
+  {
+    "event_id": "client-local_player_attack-18",
+    "event_type": "local_player_attack",
+    "metadata": {
+      "attacker": "Lazer",
+      "damage": 8,
+      "elapsed_ms": 9009.400000023841,
+      "target": "Rakip Kalkan"
+    },
+    "player_id": "wt-81aef76b-f7e7-498a-9c29-63cdf1fb9793",
+    "session_id": "local-preview",
+    "timestamp_ms": 1787310028979
+  },
+  {
+    "event_id": "client-local_player_attack-19",
+    "event_type": "local_player_attack",
+    "metadata": {
+      "attacker": "Darbe Topu",
+      "damage": 32,
+      "elapsed_ms": 9009.400000023841,
+      "target": "Rakip Lazer"
+    },
+    "player_id": "wt-81aef76b-f7e7-498a-9c29-63cdf1fb9793",
+    "session_id": "local-preview",
+    "timestamp_ms": 1787310028980
+  },
+  {
+    "event_id": "client-local_player_attack-20",
+    "event_type": "local_player_attack",
+    "metadata": {
+      "attacker": "Lazer",
+      "damage": 12,
+      "elapsed_ms": 10002.500000023843,
+      "target": "Rakip Lazer"
+    },
+    "player_id": "wt-81aef76b-f7e7-498a-9c29-63cdf1fb9793",
+    "session_id": "local-preview",
+    "timestamp_ms": 1787310029973
+  },
+  {
+    "event_id": "client-local_ai_hit-21",
+    "event_type": "local_ai_hit",
+    "metadata": {
+      "elapsed_ms": 10002.500000023843,
+      "final_damage": 8,
+      "module_id": "laser-1",
+      "raw_damage": 8,
+      "shield_active": false
+    },
+    "player_id": "wt-81aef76b-f7e7-498a-9c29-63cdf1fb9793",
+    "session_id": "local-preview",
+    "timestamp_ms": 1787310029976
+  },
+  {
+    "event_id": "client-local_player_attack-22",
+    "event_type": "local_player_attack",
+    "metadata": {
+      "attacker": "Lazer",
+      "damage": 12,
+      "elapsed_ms": 11002.400000023841,
+      "target": "Rakip Lazer"
+    },
+    "player_id": "wt-81aef76b-f7e7-498a-9c29-63cdf1fb9793",
+    "session_id": "local-preview",
+    "timestamp_ms": 1787310030970
+  },
+  {
+    "event_id": "client-local_player_attack-23",
+    "event_type": "local_player_attack",
+    "metadata": {
+      "attacker": "Lazer",
+      "damage": 12,
+      "elapsed_ms": 12002.300000023843,
+      "target": "Rakip Lazer"
+    },
+    "player_id": "wt-81aef76b-f7e7-498a-9c29-63cdf1fb9793",
+    "session_id": "local-preview",
+    "timestamp_ms": 1787310031976
+  },
+  {
+    "event_id": "client-local_player_attack-24",
+    "event_type": "local_player_attack",
+    "metadata": {
+      "attacker": "Darbe Topu",
+      "damage": 32,
+      "elapsed_ms": 12002.300000023843,
+      "target": "Rakip Lazer"
+    },
+    "player_id": "wt-81aef76b-f7e7-498a-9c29-63cdf1fb9793",
+    "session_id": "local-preview",
+    "timestamp_ms": 1787310031977
+  },
+  {
+    "event_id": "client-local_ai_hit-25",
+    "event_type": "local_ai_hit",
+    "metadata": {
+      "elapsed_ms": 12002.300000023843,
+      "final_damage": 8,
+      "module_id": "laser-1",
+      "raw_damage": 8,
+      "shield_active": false
+    },
+    "player_id": "wt-81aef76b-f7e7-498a-9c29-63cdf1fb9793",
+    "session_id": "local-preview",
+    "timestamp_ms": 1787310031979
+  },
+  {
+    "event_id": "client-local_player_attack-26",
+    "event_type": "local_player_attack",
+    "metadata": {
+      "attacker": "Lazer",
+      "damage": 12,
+      "elapsed_ms": 13009.300000023843,
+      "target": "Rakip Batarya"
+    },
+    "player_id": "wt-81aef76b-f7e7-498a-9c29-63cdf1fb9793",
+    "session_id": "local-preview",
+    "timestamp_ms": 1787310032977
+  },
+  {
+    "event_id": "client-local_player_attack-27",
+    "event_type": "local_player_attack",
+    "metadata": {
+      "attacker": "Lazer",
+      "damage": 12,
+      "elapsed_ms": 14009.300000023843,
+      "target": "Rakip Batarya"
+    },
+    "player_id": "wt-81aef76b-f7e7-498a-9c29-63cdf1fb9793",
+    "session_id": "local-preview",
+    "timestamp_ms": 1787310033978
+  },
+  {
+    "event_id": "client-local_ai_hit-28",
+    "event_type": "local_ai_hit",
+    "metadata": {
+      "elapsed_ms": 14009.300000023843,
+      "final_damage": 8,
+      "module_id": "laser-1",
+      "raw_damage": 8,
+      "shield_active": false
+    },
+    "player_id": "wt-81aef76b-f7e7-498a-9c29-63cdf1fb9793",
+    "session_id": "local-preview",
+    "timestamp_ms": 1787310033981
+  },
+  {
+    "event_id": "client-local_player_attack-29",
+    "event_type": "local_player_attack",
+    "metadata": {
+      "attacker": "Lazer",
+      "damage": 12,
+      "elapsed_ms": 15002.300000023843,
+      "target": "Rakip Batarya"
+    },
+    "player_id": "wt-81aef76b-f7e7-498a-9c29-63cdf1fb9793",
+    "session_id": "local-preview",
+    "timestamp_ms": 1787310034972
+  },
+  {
+    "event_id": "client-local_player_attack-30",
+    "event_type": "local_player_attack",
+    "metadata": {
+      "attacker": "Darbe Topu",
+      "damage": 32,
+      "elapsed_ms": 15002.300000023843,
+      "target": "Rakip Batarya"
+    },
+    "player_id": "wt-81aef76b-f7e7-498a-9c29-63cdf1fb9793",
+    "session_id": "local-preview",
+    "timestamp_ms": 1787310034973
+  },
+  {
+    "event_id": "client-local_player_attack-31",
+    "event_type": "local_player_attack",
+    "metadata": {
+      "attacker": "Lazer",
+      "damage": 12,
+      "elapsed_ms": 16009.20000002384,
+      "target": "Rakip Batarya"
+    },
+    "player_id": "wt-81aef76b-f7e7-498a-9c29-63cdf1fb9793",
+    "session_id": "local-preview",
+    "timestamp_ms": 1787310035977
+  },
+  {
+    "event_id": "client-local_ai_hit-32",
+    "event_type": "local_ai_hit",
+    "metadata": {
+      "elapsed_ms": 16009.20000002384,
+      "final_damage": 8,
+      "module_id": "laser-1",
+      "raw_damage": 8,
+      "shield_active": false
+    },
+    "player_id": "wt-81aef76b-f7e7-498a-9c29-63cdf1fb9793",
+    "session_id": "local-preview",
+    "timestamp_ms": 1787310035980
+  },
+  {
+    "event_id": "client-module_shelf_used-33",
+    "event_type": "module_shelf_used",
+    "metadata": {
+      "elapsed_ms": 16814.70000002384,
+      "module_id": "battery-1"
+    },
+    "player_id": "wt-81aef76b-f7e7-498a-9c29-63cdf1fb9793",
+    "session_id": "local-preview",
+    "timestamp_ms": 1787310036795
+  },
+  {
+    "event_id": "client-local_player_attack-34",
+    "event_type": "local_player_attack",
+    "metadata": {
+      "attacker": "Lazer",
+      "damage": 12,
+      "elapsed_ms": 17002.20000002384,
+      "target": "Rakip Batarya"
+    },
+    "player_id": "wt-81aef76b-f7e7-498a-9c29-63cdf1fb9793",
+    "session_id": "local-preview",
+    "timestamp_ms": 1787310036974
+  },
+  {
+    "event_id": "client-circuit_credit_spent-35",
+    "event_type": "circuit_credit_spent",
+    "metadata": {
+      "amount": 70,
+      "command_kind": "place_module",
+      "elapsed_ms": 17710.600000023842
+    },
+    "player_id": "wt-81aef76b-f7e7-498a-9c29-63cdf1fb9793",
+    "session_id": "local-preview",
+    "timestamp_ms": 1787310037694
+  },
+  {
+    "event_id": "client-local_player_attack-36",
+    "event_type": "local_player_attack",
+    "metadata": {
+      "attacker": "Lazer",
+      "damage": 12,
+      "elapsed_ms": 18002.300000023843,
+      "target": "Rakip Batarya"
+    },
+    "player_id": "wt-81aef76b-f7e7-498a-9c29-63cdf1fb9793",
+    "session_id": "local-preview",
+    "timestamp_ms": 1787310037970
+  },
+  {
+    "event_id": "client-local_player_attack-37",
+    "event_type": "local_player_attack",
+    "metadata": {
+      "attacker": "Darbe Topu",
+      "damage": 32,
+      "elapsed_ms": 18002.300000023843,
+      "target": "Rakip Batarya"
+    },
+    "player_id": "wt-81aef76b-f7e7-498a-9c29-63cdf1fb9793",
+    "session_id": "local-preview",
+    "timestamp_ms": 1787310037971
+  },
+  {
+    "event_id": "client-local_ai_hit-38",
+    "event_type": "local_ai_hit",
+    "metadata": {
+      "elapsed_ms": 18002.300000023843,
+      "final_damage": 8,
+      "module_id": "battery-1",
+      "raw_damage": 8,
+      "shield_active": false
+    },
+    "player_id": "wt-81aef76b-f7e7-498a-9c29-63cdf1fb9793",
+    "session_id": "local-preview",
+    "timestamp_ms": 1787310037973
+  },
+  {
+    "event_id": "client-local_player_attack-39",
+    "event_type": "local_player_attack",
+    "metadata": {
+      "attacker": "Lazer",
+      "damage": 12,
+      "elapsed_ms": 19002.20000002384,
+      "target": "Rakip Jeneratör"
+    },
+    "player_id": "wt-81aef76b-f7e7-498a-9c29-63cdf1fb9793",
+    "session_id": "local-preview",
+    "timestamp_ms": 1787310038970
+  },
+  {
+    "event_id": "client-local_player_attack-40",
+    "event_type": "local_player_attack",
+    "metadata": {
+      "attacker": "Lazer",
+      "damage": 12,
+      "elapsed_ms": 20009.100000023842,
+      "target": "Rakip Jeneratör"
+    },
+    "player_id": "wt-81aef76b-f7e7-498a-9c29-63cdf1fb9793",
+    "session_id": "local-preview",
+    "timestamp_ms": 1787310039976
+  },
+  {
+    "event_id": "client-local_ai_hit-41",
+    "event_type": "local_ai_hit",
+    "metadata": {
+      "elapsed_ms": 20009.100000023842,
+      "final_damage": 8,
+      "module_id": "battery-1",
+      "raw_damage": 8,
+      "shield_active": false
+    },
+    "player_id": "wt-81aef76b-f7e7-498a-9c29-63cdf1fb9793",
+    "session_id": "local-preview",
+    "timestamp_ms": 1787310039979
+  },
+  {
+    "event_id": "client-local_player_attack-42",
+    "event_type": "local_player_attack",
+    "metadata": {
+      "attacker": "Lazer",
+      "damage": 12,
+      "elapsed_ms": 21002.20000002384,
+      "target": "Rakip Jeneratör"
+    },
+    "player_id": "wt-81aef76b-f7e7-498a-9c29-63cdf1fb9793",
+    "session_id": "local-preview",
+    "timestamp_ms": 1787310040970
+  },
+  {
+    "event_id": "client-local_player_attack-43",
+    "event_type": "local_player_attack",
+    "metadata": {
+      "attacker": "Darbe Topu",
+      "damage": 32,
+      "elapsed_ms": 21002.20000002384,
+      "target": "Rakip Jeneratör"
+    },
+    "player_id": "wt-81aef76b-f7e7-498a-9c29-63cdf1fb9793",
+    "session_id": "local-preview",
+    "timestamp_ms": 1787310040971
+  },
+  {
+    "event_id": "client-local_player_attack-44",
+    "event_type": "local_player_attack",
+    "metadata": {
+      "attacker": "Lazer",
+      "damage": 12,
+      "elapsed_ms": 22002.000000023843,
+      "target": "Rakip Jeneratör"
+    },
+    "player_id": "wt-81aef76b-f7e7-498a-9c29-63cdf1fb9793",
+    "session_id": "local-preview",
+    "timestamp_ms": 1787310041971
+  },
+  {
+    "event_id": "client-local_ai_hit-45",
+    "event_type": "local_ai_hit",
+    "metadata": {
+      "elapsed_ms": 22002.000000023843,
+      "final_damage": 8,
+      "module_id": "battery-1",
+      "raw_damage": 8,
+      "shield_active": false
+    },
+    "player_id": "wt-81aef76b-f7e7-498a-9c29-63cdf1fb9793",
+    "session_id": "local-preview",
+    "timestamp_ms": 1787310041974
+  },
+  {
+    "event_id": "client-module_shelf_used-46",
+    "event_type": "module_shelf_used",
+    "metadata": {
+      "elapsed_ms": 22821.500000023843,
+      "module_id": "cooler-1"
+    },
+    "player_id": "wt-81aef76b-f7e7-498a-9c29-63cdf1fb9793",
+    "session_id": "local-preview",
+    "timestamp_ms": 1787310042804
+  },
+  {
+    "event_id": "client-local_player_attack-47",
+    "event_type": "local_player_attack",
+    "metadata": {
+      "attacker": "Lazer",
+      "damage": 12,
+      "elapsed_ms": 23002.000000023843,
+      "target": "Rakip Jeneratör"
+    },
+    "player_id": "wt-81aef76b-f7e7-498a-9c29-63cdf1fb9793",
+    "session_id": "local-preview",
+    "timestamp_ms": 1787310042975
+  },
+  {
+    "event_id": "client-circuit_credit_spent-48",
+    "event_type": "circuit_credit_spent",
+    "metadata": {
+      "amount": 65,
+      "command_kind": "place_module",
+      "elapsed_ms": 23814.600000023842
+    },
+    "player_id": "wt-81aef76b-f7e7-498a-9c29-63cdf1fb9793",
+    "session_id": "local-preview",
+    "timestamp_ms": 1787310043798
+  },
+  {
+    "event_id": "client-local_player_attack-49",
+    "event_type": "local_player_attack",
+    "metadata": {
+      "attacker": "Lazer",
+      "damage": 12,
+      "elapsed_ms": 24002.100000023842,
+      "target": "Rakip Jeneratör"
+    },
+    "player_id": "wt-81aef76b-f7e7-498a-9c29-63cdf1fb9793",
+    "session_id": "local-preview",
+    "timestamp_ms": 1787310043970
+  },
+  {
+    "event_id": "client-local_player_attack-50",
+    "event_type": "local_player_attack",
+    "metadata": {
+      "attacker": "Darbe Topu",
+      "damage": 32,
+      "elapsed_ms": 24002.100000023842,
+      "target": "Rakip Jeneratör"
+    },
+    "player_id": "wt-81aef76b-f7e7-498a-9c29-63cdf1fb9793",
+    "session_id": "local-preview",
+    "timestamp_ms": 1787310043971
+  },
+  {
+    "event_id": "client-local_ai_hit-51",
+    "event_type": "local_ai_hit",
+    "metadata": {
+      "elapsed_ms": 24002.100000023842,
+      "final_damage": 8,
+      "module_id": "battery-1",
+      "raw_damage": 8,
+      "shield_active": false
+    },
+    "player_id": "wt-81aef76b-f7e7-498a-9c29-63cdf1fb9793",
+    "session_id": "local-preview",
+    "timestamp_ms": 1787310043973
+  },
+  {
+    "event_id": "client-local_player_attack-52",
+    "event_type": "local_player_attack",
+    "metadata": {
+      "attacker": "Lazer",
+      "damage": 12,
+      "elapsed_ms": 25002.000000023843,
+      "target": "Rakip Jeneratör"
+    },
+    "player_id": "wt-81aef76b-f7e7-498a-9c29-63cdf1fb9793",
+    "session_id": "local-preview",
+    "timestamp_ms": 1787310044974
+  },
+  {
+    "event_id": "client-local_player_attack-53",
+    "event_type": "local_player_attack",
+    "metadata": {
+      "attacker": "Lazer",
+      "damage": 12,
+      "elapsed_ms": 26008.900000023845,
+      "target": "Rakip Jeneratör"
+    },
+    "player_id": "wt-81aef76b-f7e7-498a-9c29-63cdf1fb9793",
+    "session_id": "local-preview",
+    "timestamp_ms": 1787310045979
+  },
+  {
+    "event_id": "client-local_ai_hit-54",
+    "event_type": "local_ai_hit",
+    "metadata": {
+      "elapsed_ms": 26008.900000023845,
+      "final_damage": 8,
+      "module_id": "battery-1",
+      "raw_damage": 8,
+      "shield_active": false
+    },
+    "player_id": "wt-81aef76b-f7e7-498a-9c29-63cdf1fb9793",
+    "session_id": "local-preview",
+    "timestamp_ms": 1787310045982
+  },
+  {
+    "event_id": "client-local_player_attack-55",
+    "event_type": "local_player_attack",
+    "metadata": {
+      "attacker": "Lazer",
+      "damage": 12,
+      "elapsed_ms": 27008.900000023845,
+      "target": "Rakip Çekirdek"
+    },
+    "player_id": "wt-81aef76b-f7e7-498a-9c29-63cdf1fb9793",
+    "session_id": "local-preview",
+    "timestamp_ms": 1787310046980
+  },
+  {
+    "event_id": "client-local_player_attack-56",
+    "event_type": "local_player_attack",
+    "metadata": {
+      "attacker": "Darbe Topu",
+      "damage": 32,
+      "elapsed_ms": 27008.900000023845,
+      "target": "Rakip Çekirdek"
+    },
+    "player_id": "wt-81aef76b-f7e7-498a-9c29-63cdf1fb9793",
+    "session_id": "local-preview",
+    "timestamp_ms": 1787310046981
+  },
+  {
+    "event_id": "client-local_player_attack-57",
+    "event_type": "local_player_attack",
+    "metadata": {
+      "attacker": "Lazer",
+      "damage": 12,
+      "elapsed_ms": 28008.80000002384,
+      "target": "Rakip Çekirdek"
+    },
+    "player_id": "wt-81aef76b-f7e7-498a-9c29-63cdf1fb9793",
+    "session_id": "local-preview",
+    "timestamp_ms": 1787310047978
+  },
+  {
+    "event_id": "client-local_ai_hit-58",
+    "event_type": "local_ai_hit",
+    "metadata": {
+      "elapsed_ms": 28008.80000002384,
+      "final_damage": 8,
+      "module_id": "battery-1",
+      "raw_damage": 8,
+      "shield_active": false
+    },
+    "player_id": "wt-81aef76b-f7e7-498a-9c29-63cdf1fb9793",
+    "session_id": "local-preview",
+    "timestamp_ms": 1787310047981
+  },
+  {
+    "event_id": "client-local_player_attack-59",
+    "event_type": "local_player_attack",
+    "metadata": {
+      "attacker": "Lazer",
+      "damage": 12,
+      "elapsed_ms": 29001.80000002384,
+      "target": "Rakip Çekirdek"
+    },
+    "player_id": "wt-81aef76b-f7e7-498a-9c29-63cdf1fb9793",
+    "session_id": "local-preview",
+    "timestamp_ms": 1787310048974
+  },
+  {
+    "event_id": "client-module_shelf_used-60",
+    "event_type": "module_shelf_used",
+    "metadata": {
+      "elapsed_ms": 29967.000000023843,
+      "module_id": "splitter-1"
+    },
+    "player_id": "wt-81aef76b-f7e7-498a-9c29-63cdf1fb9793",
+    "session_id": "local-preview",
+    "timestamp_ms": 1787310049947
+  },
+  {
+    "event_id": "client-local_player_attack-61",
+    "event_type": "local_player_attack",
+    "metadata": {
+      "attacker": "Lazer",
+      "damage": 12,
+      "elapsed_ms": 30008.70000002384,
+      "target": "Rakip Çekirdek"
+    },
+    "player_id": "wt-81aef76b-f7e7-498a-9c29-63cdf1fb9793",
+    "session_id": "local-preview",
+    "timestamp_ms": 1787310049976
+  },
+  {
+    "event_id": "client-local_player_attack-62",
+    "event_type": "local_player_attack",
+    "metadata": {
+      "attacker": "Darbe Topu",
+      "damage": 32,
+      "elapsed_ms": 30008.70000002384,
+      "target": "Rakip Çekirdek"
+    },
+    "player_id": "wt-81aef76b-f7e7-498a-9c29-63cdf1fb9793",
+    "session_id": "local-preview",
+    "timestamp_ms": 1787310049976
+  },
+  {
+    "event_id": "client-local_ai_hit-63",
+    "event_type": "local_ai_hit",
+    "metadata": {
+      "elapsed_ms": 30008.70000002384,
+      "final_damage": 8,
+      "module_id": "battery-1",
+      "raw_damage": 8,
+      "shield_active": false
+    },
+    "player_id": "wt-81aef76b-f7e7-498a-9c29-63cdf1fb9793",
+    "session_id": "local-preview",
+    "timestamp_ms": 1787310049978
+  },
+  {
+    "event_id": "client-circuit_credit_spent-64",
+    "event_type": "circuit_credit_spent",
+    "metadata": {
+      "amount": 60,
+      "command_kind": "place_module",
+      "elapsed_ms": 30800.500000023843
+    },
+    "player_id": "wt-81aef76b-f7e7-498a-9c29-63cdf1fb9793",
+    "session_id": "local-preview",
+    "timestamp_ms": 1787310050775
+  },
+  {
+    "event_id": "client-local_player_attack-65",
+    "event_type": "local_player_attack",
+    "metadata": {
+      "attacker": "Lazer",
+      "damage": 12,
+      "elapsed_ms": 31008.900000023845,
+      "target": "Rakip Çekirdek"
+    },
+    "player_id": "wt-81aef76b-f7e7-498a-9c29-63cdf1fb9793",
+    "session_id": "local-preview",
+    "timestamp_ms": 1787310050979
+  },
+  {
+    "event_id": "client-local_player_attack-66",
+    "event_type": "local_player_attack",
+    "metadata": {
+      "attacker": "Lazer",
+      "damage": 12,
+      "elapsed_ms": 32008.70000002384,
+      "target": "Rakip Çekirdek"
+    },
+    "player_id": "wt-81aef76b-f7e7-498a-9c29-63cdf1fb9793",
+    "session_id": "local-preview",
+    "timestamp_ms": 1787310051976
+  },
+  {
+    "event_id": "client-local_ai_hit-67",
+    "event_type": "local_ai_hit",
+    "metadata": {
+      "elapsed_ms": 32008.70000002384,
+      "final_damage": 8,
+      "module_id": "battery-1",
+      "raw_damage": 8,
+      "shield_active": false
+    },
+    "player_id": "wt-81aef76b-f7e7-498a-9c29-63cdf1fb9793",
+    "session_id": "local-preview",
+    "timestamp_ms": 1787310051979
+  },
+  {
+    "event_id": "client-module_shelf_used-68",
+    "event_type": "module_shelf_used",
+    "metadata": {
+      "elapsed_ms": 32974.00000002384,
+      "module_id": "repair-1"
+    },
+    "player_id": "wt-81aef76b-f7e7-498a-9c29-63cdf1fb9793",
+    "session_id": "local-preview",
+    "timestamp_ms": 1787310052956
+  },
+  {
+    "event_id": "client-local_player_attack-69",
+    "event_type": "local_player_attack",
+    "metadata": {
+      "attacker": "Lazer",
+      "damage": 12,
+      "elapsed_ms": 33001.80000002384,
+      "target": "Rakip Çekirdek"
+    },
+    "player_id": "wt-81aef76b-f7e7-498a-9c29-63cdf1fb9793",
+    "session_id": "local-preview",
+    "timestamp_ms": 1787310052970
+  },
+  {
+    "event_id": "client-local_player_attack-70",
+    "event_type": "local_player_attack",
+    "metadata": {
+      "attacker": "Darbe Topu",
+      "damage": 32,
+      "elapsed_ms": 33001.80000002384,
+      "target": "Rakip Çekirdek"
+    },
+    "player_id": "wt-81aef76b-f7e7-498a-9c29-63cdf1fb9793",
+    "session_id": "local-preview",
+    "timestamp_ms": 1787310052970
+  },
+  {
+    "event_id": "client-circuit_credit_spent-71",
+    "event_type": "circuit_credit_spent",
+    "metadata": {
+      "amount": 80,
+      "command_kind": "place_module",
+      "elapsed_ms": 33654.60000002384
+    },
+    "player_id": "wt-81aef76b-f7e7-498a-9c29-63cdf1fb9793",
+    "session_id": "local-preview",
+    "timestamp_ms": 1787310053626
+  },
+  {
+    "event_id": "client-local_player_attack-72",
+    "event_type": "local_player_attack",
+    "metadata": {
+      "attacker": "Lazer",
+      "damage": 12,
+      "elapsed_ms": 34001.80000002384,
+      "target": "Rakip Çekirdek"
+    },
+    "player_id": "wt-81aef76b-f7e7-498a-9c29-63cdf1fb9793",
+    "session_id": "local-preview",
+    "timestamp_ms": 1787310053970
+  },
+  {
+    "event_id": "client-local_ai_hit-73",
+    "event_type": "local_ai_hit",
+    "metadata": {
+      "elapsed_ms": 34001.80000002384,
+      "final_damage": 8,
+      "module_id": "battery-1",
+      "raw_damage": 8,
+      "shield_active": false
+    },
+    "player_id": "wt-81aef76b-f7e7-498a-9c29-63cdf1fb9793",
+    "session_id": "local-preview",
+    "timestamp_ms": 1787310053972
+  },
+  {
+    "event_id": "client-local_player_attack-74",
+    "event_type": "local_player_attack",
+    "metadata": {
+      "attacker": "Lazer",
+      "damage": 12,
+      "elapsed_ms": 35001.80000002384,
+      "target": "Rakip Çekirdek"
+    },
+    "player_id": "wt-81aef76b-f7e7-498a-9c29-63cdf1fb9793",
+    "session_id": "local-preview",
+    "timestamp_ms": 1787310054970
+  },
+  {
+    "event_id": "client-local_player_attack-75",
+    "event_type": "local_player_attack",
+    "metadata": {
+      "attacker": "Lazer",
+      "damage": 12,
+      "elapsed_ms": 36008.70000002384,
+      "target": "Rakip Çekirdek"
+    },
+    "player_id": "wt-81aef76b-f7e7-498a-9c29-63cdf1fb9793",
+    "session_id": "local-preview",
+    "timestamp_ms": 1787310055977
+  },
+  {
+    "event_id": "client-local_player_attack-76",
+    "event_type": "local_player_attack",
+    "metadata": {
+      "attacker": "Darbe Topu",
+      "damage": 32,
+      "elapsed_ms": 36008.70000002384,
+      "target": "Rakip Çekirdek"
+    },
+    "player_id": "wt-81aef76b-f7e7-498a-9c29-63cdf1fb9793",
+    "session_id": "local-preview",
+    "timestamp_ms": 1787310055978
+  },
+  {
+    "event_id": "client-local_ai_hit-77",
+    "event_type": "local_ai_hit",
+    "metadata": {
+      "elapsed_ms": 36008.70000002384,
+      "final_damage": 8,
+      "module_id": "battery-1",
+      "raw_damage": 8,
+      "shield_active": false
+    },
+    "player_id": "wt-81aef76b-f7e7-498a-9c29-63cdf1fb9793",
+    "session_id": "local-preview",
+    "timestamp_ms": 1787310055980
+  },
+  {
+    "event_id": "client-local_player_attack-78",
+    "event_type": "local_player_attack",
+    "metadata": {
+      "attacker": "Lazer",
+      "damage": 12,
+      "elapsed_ms": 37008.60000002384,
+      "target": "Rakip Çekirdek"
+    },
+    "player_id": "wt-81aef76b-f7e7-498a-9c29-63cdf1fb9793",
+    "session_id": "local-preview",
+    "timestamp_ms": 1787310056978
+  },
+  {
+    "event_id": "client-local_player_attack-79",
+    "event_type": "local_player_attack",
+    "metadata": {
+      "attacker": "Lazer",
+      "damage": 12,
+      "elapsed_ms": 38008.60000002384,
+      "target": "Rakip Çekirdek"
+    },
+    "player_id": "wt-81aef76b-f7e7-498a-9c29-63cdf1fb9793",
+    "session_id": "local-preview",
+    "timestamp_ms": 1787310057978
+  },
+  {
+    "event_id": "client-local_ai_hit-80",
+    "event_type": "local_ai_hit",
+    "metadata": {
+      "elapsed_ms": 38008.60000002384,
+      "final_damage": 8,
+      "module_id": "battery-1",
+      "raw_damage": 8,
+      "shield_active": false
+    },
+    "player_id": "wt-81aef76b-f7e7-498a-9c29-63cdf1fb9793",
+    "session_id": "local-preview",
+    "timestamp_ms": 1787310057980
+  },
+  {
+    "event_id": "client-local_player_attack-81",
+    "event_type": "local_player_attack",
+    "metadata": {
+      "attacker": "Lazer",
+      "damage": 12,
+      "elapsed_ms": 39008.60000002384,
+      "target": "Rakip Çekirdek"
+    },
+    "player_id": "wt-81aef76b-f7e7-498a-9c29-63cdf1fb9793",
+    "session_id": "local-preview",
+    "timestamp_ms": 1787310058976
+  },
+  {
+    "event_id": "web-test-launch-wt-81aef76b-f7e7-498a-9c29-63cdf1fb9793-1787310117140",
+    "event_type": "web_test_launch_attempted",
+    "metadata": {
+      "failed_checks": [],
+      "launch_ready": true,
+      "test_run_id": "web-test-beta.13"
+    },
+    "player_id": "wt-81aef76b-f7e7-498a-9c29-63cdf1fb9793",
+    "session_id": null,
+    "timestamp_ms": 1787310117140
+  },
+  {
+    "event_id": "client-local_player_attack-82",
+    "event_type": "local_player_attack",
+    "metadata": {
+      "attacker": "Darbe Topu",
+      "damage": 32,
+      "elapsed_ms": 39008.60000002384,
+      "target": "Rakip Çekirdek"
+    },
+    "player_id": "wt-81aef76b-f7e7-498a-9c29-63cdf1fb9793",
+    "session_id": "local-preview",
+    "timestamp_ms": 1787310058977
+  },
+  {
+    "event_id": "client-local_battle_completed-83",
+    "event_type": "local_battle_completed",
+    "metadata": {
+      "ai_hits": 18,
+      "credits_spent": 275,
+      "damage_dealt": 855,
+      "damage_received": 144,
+      "duration_ms": 39009,
+      "forfeit_credit_penalty": 0,
+      "forfeited": false,
+      "frame_count": 2997,
+      "generator_gate_visits": {
+        "east": 0,
+        "north": 0,
+        "south": 1,
+        "west": 0
+      },
+      "generator_moves": 0,
+      "max_frame_gap_ms": 76.39999999999964,
+      "module_changes": 7,
+      "pause_violation_count": 0,
+      "player_attacks": 54,
+      "shield_mitigated": 0,
+      "started_at_ms": 1787310019965,
+      "ui_interaction_samples": [
+        {
+          "at_epoch_ms": 1787310024707,
+          "battle_clock_delta_ms": 0,
+          "category": "other_ui",
+          "elapsed_ms": 4718,
+          "frame_gap_ms": 24,
+          "kind": "Tamamla"
+        },
+        {
+          "at_epoch_ms": 1787310037694,
+          "battle_clock_delta_ms": 0,
+          "category": "module_place",
+          "elapsed_ms": 17711,
+          "frame_gap_ms": 18,
+          "kind": "place_module"
+        },
+        {
+          "at_epoch_ms": 1787310039182,
+          "battle_clock_delta_ms": 14493,
+          "category": "other_ui",
+          "elapsed_ms": 19211,
+          "frame_gap_ms": 7,
+          "kind": "battery-1"
+        },
+        {
+          "at_epoch_ms": 1787310039183,
+          "battle_clock_delta_ms": 0,
+          "category": "module_move",
+          "elapsed_ms": 19211,
+          "frame_gap_ms": 7,
+          "kind": "rotate_module"
+        },
+        {
+          "at_epoch_ms": 1787310043798,
+          "battle_clock_delta_ms": 6104,
+          "category": "module_place",
+          "elapsed_ms": 23815,
+          "frame_gap_ms": 18,
+          "kind": "place_module"
+        },
+        {
+          "at_epoch_ms": 1787310044662,
+          "battle_clock_delta_ms": 5472,
+          "category": "other_ui",
+          "elapsed_ms": 24683,
+          "frame_gap_ms": 15,
+          "kind": "cooler-1"
+        },
+        {
+          "at_epoch_ms": 1787310044662,
+          "battle_clock_delta_ms": 5472,
+          "category": "module_move",
+          "elapsed_ms": 24683,
+          "frame_gap_ms": 15,
+          "kind": "rotate_module"
+        },
+        {
+          "at_epoch_ms": 1787310050775,
+          "battle_clock_delta_ms": 6986,
+          "category": "module_place",
+          "elapsed_ms": 30801,
+          "frame_gap_ms": 9,
+          "kind": "place_module"
+        },
+        {
+          "at_epoch_ms": 1787310053626,
+          "battle_clock_delta_ms": 2854,
+          "category": "module_place",
+          "elapsed_ms": 33655,
+          "frame_gap_ms": 7,
+          "kind": "place_module"
+        },
+        {
+          "at_epoch_ms": 1787310054824,
+          "battle_clock_delta_ms": 10166,
+          "category": "other_ui",
+          "elapsed_ms": 34849,
+          "frame_gap_ms": 10,
+          "kind": "repair-1"
+        },
+        {
+          "at_epoch_ms": 1787310054824,
+          "battle_clock_delta_ms": 10166,
+          "category": "module_move",
+          "elapsed_ms": 34849,
+          "frame_gap_ms": 10,
+          "kind": "rotate_module"
+        }
+      ],
+      "ui_interactions": 11,
+      "ux_categories": {
+        "booster": 0,
+        "generator_gate": 0,
+        "module_move": 3,
+        "module_place": 4,
+        "other_ui": 4,
+        "technical_drawer": 0
+      },
+      "ux_matrix": {
+        "booster": {
+          "count": 0,
+          "last_elapsed_ms": null,
+          "max_clock_delta_ms": 0,
+          "max_frame_gap_ms": 0,
+          "total_clock_delta_ms": 0,
+          "total_frame_gap_ms": 0
+        },
+        "generator_gate": {
+          "count": 0,
+          "last_elapsed_ms": null,
+          "max_clock_delta_ms": 0,
+          "max_frame_gap_ms": 0,
+          "total_clock_delta_ms": 0,
+          "total_frame_gap_ms": 0
+        },
+        "module_move": {
+          "count": 3,
+          "last_elapsed_ms": 34849,
+          "max_clock_delta_ms": 10166,
+          "max_frame_gap_ms": 14.699999928474426,
+          "total_clock_delta_ms": 15638,
+          "total_frame_gap_ms": 31.89999983310554
+        },
+        "module_place": {
+          "count": 4,
+          "last_elapsed_ms": 33655,
+          "max_clock_delta_ms": 6986,
+          "max_frame_gap_ms": 18,
+          "total_clock_delta_ms": 15944,
+          "total_frame_gap_ms": 52.099999880789255
+        },
+        "other_ui": {
+          "count": 4,
+          "last_elapsed_ms": 34849,
+          "max_clock_delta_ms": 14493,
+          "max_frame_gap_ms": 24.49999995231701,
+          "total_clock_delta_ms": 30131,
+          "total_frame_gap_ms": 55.699999737738835
+        },
+        "technical_drawer": {
+          "count": 0,
+          "last_elapsed_ms": null,
+          "max_clock_delta_ms": 0,
+          "max_frame_gap_ms": 0,
+          "total_clock_delta_ms": 0,
+          "total_frame_gap_ms": 0
+        }
+      },
+      "won": true
+    },
+    "player_id": "wt-81aef76b-f7e7-498a-9c29-63cdf1fb9793",
+    "session_id": "local-preview",
+    "timestamp_ms": 1787310058978
+  },
+  {
+    "event_id": "client-local_battle_started-84",
+    "event_type": "local_battle_started",
+    "metadata": {
+      "initial_credits": 200,
+      "initial_generator_gate": "south",
+      "selected_pool_size": 18
+    },
+    "player_id": "wt-81aef76b-f7e7-498a-9c29-63cdf1fb9793",
+    "session_id": "local-preview",
+    "timestamp_ms": 1787310118887
+  },
+  {
+    "event_id": "client-local_player_attack-85",
+    "event_type": "local_player_attack",
+    "metadata": {
+      "attacker": "Lazer",
+      "damage": 8,
+      "elapsed_ms": 0,
+      "target": "Rakip Kalkan"
+    },
+    "player_id": "wt-81aef76b-f7e7-498a-9c29-63cdf1fb9793",
+    "session_id": "local-preview",
+    "timestamp_ms": 1787310118898
+  },
+  {
+    "event_id": "client-local_player_attack-86",
+    "event_type": "local_player_attack",
+    "metadata": {
+      "attacker": "Darbe Topu",
+      "damage": 21,
+      "elapsed_ms": 0,
+      "target": "Rakip Kalkan"
+    },
+    "player_id": "wt-81aef76b-f7e7-498a-9c29-63cdf1fb9793",
+    "session_id": "local-preview",
+    "timestamp_ms": 1787310118898
+  },
+  {
+    "event_id": "client-local_player_attack-87",
+    "event_type": "local_player_attack",
+    "metadata": {
+      "attacker": "Lazer",
+      "damage": 8,
+      "elapsed_ms": 1002.7000000953703,
+      "target": "Rakip Kalkan"
+    },
+    "player_id": "wt-81aef76b-f7e7-498a-9c29-63cdf1fb9793",
+    "session_id": "local-preview",
+    "timestamp_ms": 1787310119892
+  },
+  {
+    "event_id": "client-local_battle_completed-88",
+    "event_type": "local_battle_completed",
+    "metadata": {
+      "ai_hits": 0,
+      "credits_spent": 0,
+      "damage_dealt": 37,
+      "damage_received": 0,
+      "duration_ms": 1322,
+      "forfeit_credit_penalty": 10,
+      "forfeited": true,
+      "frame_count": 95,
+      "generator_gate_visits": {
+        "east": 0,
+        "north": 0,
+        "south": 1,
+        "west": 0
+      },
+      "generator_moves": 0,
+      "max_frame_gap_ms": 41.60000000000582,
+      "module_changes": 0,
+      "pause_violation_count": 0,
+      "player_attacks": 3,
+      "shield_mitigated": 0,
+      "started_at_ms": 1787310118886,
+      "ui_interaction_samples": [
+        {
+          "at_epoch_ms": 1787310120218,
+          "battle_clock_delta_ms": 0,
+          "category": "other_ui",
+          "elapsed_ms": 1322,
+          "frame_gap_ms": 10,
+          "kind": "battle-forfeit-button"
+        },
+        {
+          "at_epoch_ms": 1787310120219,
+          "battle_clock_delta_ms": 0,
+          "category": "other_ui",
+          "elapsed_ms": 1322,
+          "frame_gap_ms": 11,
+          "kind": "battle_forfeit"
+        }
+      ],
+      "ui_interactions": 2,
+      "ux_categories": {
+        "booster": 0,
+        "generator_gate": 0,
+        "module_move": 0,
+        "module_place": 0,
+        "other_ui": 2,
+        "technical_drawer": 0
+      },
+      "ux_matrix": {
+        "booster": {
+          "count": 0,
+          "last_elapsed_ms": null,
+          "max_clock_delta_ms": 0,
+          "max_frame_gap_ms": 0,
+          "total_clock_delta_ms": 0,
+          "total_frame_gap_ms": 0
+        },
+        "generator_gate": {
+          "count": 0,
+          "last_elapsed_ms": null,
+          "max_clock_delta_ms": 0,
+          "max_frame_gap_ms": 0,
+          "total_clock_delta_ms": 0,
+          "total_frame_gap_ms": 0
+        },
+        "module_move": {
+          "count": 0,
+          "last_elapsed_ms": null,
+          "max_clock_delta_ms": 0,
+          "max_frame_gap_ms": 0,
+          "total_clock_delta_ms": 0,
+          "total_frame_gap_ms": 0
+        },
+        "module_place": {
+          "count": 0,
+          "last_elapsed_ms": null,
+          "max_clock_delta_ms": 0,
+          "max_frame_gap_ms": 0,
+          "total_clock_delta_ms": 0,
+          "total_frame_gap_ms": 0
+        },
+        "other_ui": {
+          "count": 2,
+          "last_elapsed_ms": 1322,
+          "max_clock_delta_ms": 0,
+          "max_frame_gap_ms": 10.899999904635479,
+          "total_clock_delta_ms": 0,
+          "total_frame_gap_ms": 21.399999833112815
+        },
+        "technical_drawer": {
+          "count": 0,
+          "last_elapsed_ms": null,
+          "max_clock_delta_ms": 0,
+          "max_frame_gap_ms": 0,
+          "total_clock_delta_ms": 0,
+          "total_frame_gap_ms": 0
+        }
+      },
+      "won": false
+    },
+    "player_id": "wt-81aef76b-f7e7-498a-9c29-63cdf1fb9793",
+    "session_id": "local-preview",
+    "timestamp_ms": 1787310120219
+  },
+  {
+    "event_id": "web-test-launch-wt-81aef76b-f7e7-498a-9c29-63cdf1fb9793-1787310126178",
+    "event_type": "web_test_launch_attempted",
+    "metadata": {
+      "failed_checks": [],
+      "launch_ready": true,
+      "test_run_id": "web-test-beta.13"
+    },
+    "player_id": "wt-81aef76b-f7e7-498a-9c29-63cdf1fb9793",
+    "session_id": null,
+    "timestamp_ms": 1787310126178
+  },
+  {
+    "event_id": "client-local_battle_started-89",
+    "event_type": "local_battle_started",
+    "metadata": {
+      "initial_credits": 200,
+      "initial_generator_gate": "south",
+      "selected_pool_size": 18
+    },
+    "player_id": "wt-81aef76b-f7e7-498a-9c29-63cdf1fb9793",
+    "session_id": "local-preview",
+    "timestamp_ms": 1787310129861
+  },
+  {
+    "event_id": "client-local_player_attack-90",
+    "event_type": "local_player_attack",
+    "metadata": {
+      "attacker": "Lazer",
+      "damage": 8,
+      "elapsed_ms": 0,
+      "target": "Rakip Kalkan"
+    },
+    "player_id": "wt-81aef76b-f7e7-498a-9c29-63cdf1fb9793",
+    "session_id": "local-preview",
+    "timestamp_ms": 1787310129873
+  },
+  {
+    "event_id": "client-local_player_attack-91",
+    "event_type": "local_player_attack",
+    "metadata": {
+      "attacker": "Darbe Topu",
+      "damage": 21,
+      "elapsed_ms": 0,
+      "target": "Rakip Kalkan"
+    },
+    "player_id": "wt-81aef76b-f7e7-498a-9c29-63cdf1fb9793",
+    "session_id": "local-preview",
+    "timestamp_ms": 1787310129874
+  },
+  {
+    "event_id": "client-local_player_attack-92",
+    "event_type": "local_player_attack",
+    "metadata": {
+      "attacker": "Lazer",
+      "damage": 8,
+      "elapsed_ms": 1007.6000000476779,
+      "target": "Rakip Kalkan"
+    },
+    "player_id": "wt-81aef76b-f7e7-498a-9c29-63cdf1fb9793",
+    "session_id": "local-preview",
+    "timestamp_ms": 1787310130870
+  },
+  {
+    "event_id": "client-local_player_attack-93",
+    "event_type": "local_player_attack",
+    "metadata": {
+      "attacker": "Lazer",
+      "damage": 8,
+      "elapsed_ms": 2007.600000047678,
+      "target": "Rakip Kalkan"
+    },
+    "player_id": "wt-81aef76b-f7e7-498a-9c29-63cdf1fb9793",
+    "session_id": "local-preview",
+    "timestamp_ms": 1787310131872
+  },
+  {
+    "event_id": "client-local_player_attack-94",
+    "event_type": "local_player_attack",
+    "metadata": {
+      "attacker": "Lazer",
+      "damage": 8,
+      "elapsed_ms": 3000.600000047678,
+      "target": "Rakip Kalkan"
+    },
+    "player_id": "wt-81aef76b-f7e7-498a-9c29-63cdf1fb9793",
+    "session_id": "local-preview",
+    "timestamp_ms": 1787310132867
+  },
+  {
+    "event_id": "client-local_player_attack-95",
+    "event_type": "local_player_attack",
+    "metadata": {
+      "attacker": "Darbe Topu",
+      "damage": 21,
+      "elapsed_ms": 3000.600000047678,
+      "target": "Rakip Kalkan"
+    },
+    "player_id": "wt-81aef76b-f7e7-498a-9c29-63cdf1fb9793",
+    "session_id": "local-preview",
+    "timestamp_ms": 1787310132868
+  },
+  {
+    "event_id": "client-local_player_attack-96",
+    "event_type": "local_player_attack",
+    "metadata": {
+      "attacker": "Lazer",
+      "damage": 8,
+      "elapsed_ms": 4007.600000047678,
+      "target": "Rakip Kalkan"
+    },
+    "player_id": "wt-81aef76b-f7e7-498a-9c29-63cdf1fb9793",
+    "session_id": "local-preview",
+    "timestamp_ms": 1787310133875
+  },
+  {
+    "event_id": "client-local_player_attack-97",
+    "event_type": "local_player_attack",
+    "metadata": {
+      "attacker": "Lazer",
+      "damage": 8,
+      "elapsed_ms": 5007.500000047687,
+      "target": "Rakip Kalkan"
+    },
+    "player_id": "wt-81aef76b-f7e7-498a-9c29-63cdf1fb9793",
+    "session_id": "local-preview",
+    "timestamp_ms": 1787310134873
+  },
+  {
+    "event_id": "client-local_ai_hit-98",
+    "event_type": "local_ai_hit",
+    "metadata": {
+      "elapsed_ms": 5007.500000047687,
+      "final_damage": 8,
+      "module_id": "laser-1",
+      "raw_damage": 8,
+      "shield_active": false
+    },
+    "player_id": "wt-81aef76b-f7e7-498a-9c29-63cdf1fb9793",
+    "session_id": "local-preview",
+    "timestamp_ms": 1787310134876
+  },
+  {
+    "event_id": "client-local_player_attack-99",
+    "event_type": "local_player_attack",
+    "metadata": {
+      "attacker": "Lazer",
+      "damage": 8,
+      "elapsed_ms": 6000.500000047687,
+      "target": "Rakip Kalkan"
+    },
+    "player_id": "wt-81aef76b-f7e7-498a-9c29-63cdf1fb9793",
+    "session_id": "local-preview",
+    "timestamp_ms": 1787310135862
+  },
+  {
+    "event_id": "client-local_player_attack-100",
+    "event_type": "local_player_attack",
+    "metadata": {
+      "attacker": "Darbe Topu",
+      "damage": 21,
+      "elapsed_ms": 6000.500000047687,
+      "target": "Rakip Kalkan"
+    },
+    "player_id": "wt-81aef76b-f7e7-498a-9c29-63cdf1fb9793",
+    "session_id": "local-preview",
+    "timestamp_ms": 1787310135863
+  },
+  {
+    "event_id": "client-local_ai_hit-101",
+    "event_type": "local_ai_hit",
+    "metadata": {
+      "elapsed_ms": 6000.500000047687,
+      "final_damage": 8,
+      "module_id": "laser-1",
+      "raw_damage": 8,
+      "shield_active": false
+    },
+    "player_id": "wt-81aef76b-f7e7-498a-9c29-63cdf1fb9793",
+    "session_id": "local-preview",
+    "timestamp_ms": 1787310135866
+  },
+  {
+    "event_id": "client-local_player_attack-102",
+    "event_type": "local_player_attack",
+    "metadata": {
+      "attacker": "Lazer",
+      "damage": 8,
+      "elapsed_ms": 7007.400000047695,
+      "target": "Rakip Kalkan"
+    },
+    "player_id": "wt-81aef76b-f7e7-498a-9c29-63cdf1fb9793",
+    "session_id": "local-preview",
+    "timestamp_ms": 1787310136872
+  },
+  {
+    "event_id": "client-local_player_attack-103",
+    "event_type": "local_player_attack",
+    "metadata": {
+      "attacker": "Lazer",
+      "damage": 8,
+      "elapsed_ms": 8007.400000047695,
+      "target": "Rakip Kalkan"
+    },
+    "player_id": "wt-81aef76b-f7e7-498a-9c29-63cdf1fb9793",
+    "session_id": "local-preview",
+    "timestamp_ms": 1787310137871
+  },
+  {
+    "event_id": "client-local_ai_hit-104",
+    "event_type": "local_ai_hit",
+    "metadata": {
+      "elapsed_ms": 8007.400000047695,
+      "final_damage": 8,
+      "module_id": "laser-1",
+      "raw_damage": 8,
+      "shield_active": false
+    },
+    "player_id": "wt-81aef76b-f7e7-498a-9c29-63cdf1fb9793",
+    "session_id": "local-preview",
+    "timestamp_ms": 1787310137874
+  },
+  {
+    "event_id": "client-local_player_attack-105",
+    "event_type": "local_player_attack",
+    "metadata": {
+      "attacker": "Lazer",
+      "damage": 8,
+      "elapsed_ms": 9000.500000047672,
+      "target": "Rakip Kalkan"
+    },
+    "player_id": "wt-81aef76b-f7e7-498a-9c29-63cdf1fb9793",
+    "session_id": "local-preview",
+    "timestamp_ms": 1787310138868
+  },
+  {
+    "event_id": "client-local_player_attack-106",
+    "event_type": "local_player_attack",
+    "metadata": {
+      "attacker": "Darbe Topu",
+      "damage": 32,
+      "elapsed_ms": 9000.500000047672,
+      "target": "Rakip Lazer"
+    },
+    "player_id": "wt-81aef76b-f7e7-498a-9c29-63cdf1fb9793",
+    "session_id": "local-preview",
+    "timestamp_ms": 1787310138869
+  },
+  {
+    "event_id": "client-local_player_attack-107",
+    "event_type": "local_player_attack",
+    "metadata": {
+      "attacker": "Lazer",
+      "damage": 12,
+      "elapsed_ms": 10007.400000047695,
+      "target": "Rakip Lazer"
+    },
+    "player_id": "wt-81aef76b-f7e7-498a-9c29-63cdf1fb9793",
+    "session_id": "local-preview",
+    "timestamp_ms": 1787310139873
+  },
+  {
+    "event_id": "client-local_ai_hit-108",
+    "event_type": "local_ai_hit",
+    "metadata": {
+      "elapsed_ms": 10007.400000047695,
+      "final_damage": 8,
+      "module_id": "laser-1",
+      "raw_damage": 8,
+      "shield_active": false
+    },
+    "player_id": "wt-81aef76b-f7e7-498a-9c29-63cdf1fb9793",
+    "session_id": "local-preview",
+    "timestamp_ms": 1787310139876
+  },
+  {
+    "event_id": "client-local_player_attack-109",
+    "event_type": "local_player_attack",
+    "metadata": {
+      "attacker": "Lazer",
+      "damage": 12,
+      "elapsed_ms": 11000.30000004769,
+      "target": "Rakip Lazer"
+    },
+    "player_id": "wt-81aef76b-f7e7-498a-9c29-63cdf1fb9793",
+    "session_id": "local-preview",
+    "timestamp_ms": 1787310140865
+  },
+  {
+    "event_id": "client-local_player_attack-110",
+    "event_type": "local_player_attack",
+    "metadata": {
+      "attacker": "Lazer",
+      "damage": 12,
+      "elapsed_ms": 12007.200000047684,
+      "target": "Rakip Lazer"
+    },
+    "player_id": "wt-81aef76b-f7e7-498a-9c29-63cdf1fb9793",
+    "session_id": "local-preview",
+    "timestamp_ms": 1787310141872
+  },
+  {
+    "event_id": "client-local_player_attack-111",
+    "event_type": "local_player_attack",
+    "metadata": {
+      "attacker": "Darbe Topu",
+      "damage": 32,
+      "elapsed_ms": 12007.200000047684,
+      "target": "Rakip Lazer"
+    },
+    "player_id": "wt-81aef76b-f7e7-498a-9c29-63cdf1fb9793",
+    "session_id": "local-preview",
+    "timestamp_ms": 1787310141873
+  },
+  {
+    "event_id": "client-local_ai_hit-112",
+    "event_type": "local_ai_hit",
+    "metadata": {
+      "elapsed_ms": 12007.200000047684,
+      "final_damage": 8,
+      "module_id": "laser-1",
+      "raw_damage": 8,
+      "shield_active": false
+    },
+    "player_id": "wt-81aef76b-f7e7-498a-9c29-63cdf1fb9793",
+    "session_id": "local-preview",
+    "timestamp_ms": 1787310141875
+  },
+  {
+    "event_id": "client-local_player_attack-113",
+    "event_type": "local_player_attack",
+    "metadata": {
+      "attacker": "Lazer",
+      "damage": 12,
+      "elapsed_ms": 13000.200000047684,
+      "target": "Rakip Batarya"
+    },
+    "player_id": "wt-81aef76b-f7e7-498a-9c29-63cdf1fb9793",
+    "session_id": "local-preview",
+    "timestamp_ms": 1787310142868
+  },
+  {
+    "event_id": "client-local_player_attack-114",
+    "event_type": "local_player_attack",
+    "metadata": {
+      "attacker": "Lazer",
+      "damage": 12,
+      "elapsed_ms": 14000.100000047678,
+      "target": "Rakip Batarya"
+    },
+    "player_id": "wt-81aef76b-f7e7-498a-9c29-63cdf1fb9793",
+    "session_id": "local-preview",
+    "timestamp_ms": 1787310143864
+  },
+  {
+    "event_id": "client-local_ai_hit-115",
+    "event_type": "local_ai_hit",
+    "metadata": {
+      "elapsed_ms": 14000.100000047678,
+      "final_damage": 8,
+      "module_id": "laser-1",
+      "raw_damage": 8,
+      "shield_active": false
+    },
+    "player_id": "wt-81aef76b-f7e7-498a-9c29-63cdf1fb9793",
+    "session_id": "local-preview",
+    "timestamp_ms": 1787310143867
+  },
+  {
+    "event_id": "client-local_player_attack-116",
+    "event_type": "local_player_attack",
+    "metadata": {
+      "attacker": "Lazer",
+      "damage": 12,
+      "elapsed_ms": 15007.000000047672,
+      "target": "Rakip Batarya"
+    },
+    "player_id": "wt-81aef76b-f7e7-498a-9c29-63cdf1fb9793",
+    "session_id": "local-preview",
+    "timestamp_ms": 1787310144872
+  },
+  {
+    "event_id": "client-local_player_attack-117",
+    "event_type": "local_player_attack",
+    "metadata": {
+      "attacker": "Darbe Topu",
+      "damage": 32,
+      "elapsed_ms": 15007.000000047672,
+      "target": "Rakip Batarya"
+    },
+    "player_id": "wt-81aef76b-f7e7-498a-9c29-63cdf1fb9793",
+    "session_id": "local-preview",
+    "timestamp_ms": 1787310144874
+  },
+  {
+    "event_id": "client-local_player_attack-118",
+    "event_type": "local_player_attack",
+    "metadata": {
+      "attacker": "Lazer",
+      "damage": 12,
+      "elapsed_ms": 16000.000000047672,
+      "target": "Rakip Batarya"
+    },
+    "player_id": "wt-81aef76b-f7e7-498a-9c29-63cdf1fb9793",
+    "session_id": "local-preview",
+    "timestamp_ms": 1787310145867
+  },
+  {
+    "event_id": "client-local_ai_hit-119",
+    "event_type": "local_ai_hit",
+    "metadata": {
+      "elapsed_ms": 16000.000000047672,
+      "final_damage": 8,
+      "module_id": "laser-1",
+      "raw_damage": 8,
+      "shield_active": false
+    },
+    "player_id": "wt-81aef76b-f7e7-498a-9c29-63cdf1fb9793",
+    "session_id": "local-preview",
+    "timestamp_ms": 1787310145870
+  },
+  {
+    "event_id": "client-local_player_attack-120",
+    "event_type": "local_player_attack",
+    "metadata": {
+      "attacker": "Lazer",
+      "damage": 12,
+      "elapsed_ms": 17000.000000047672,
+      "target": "Rakip Batarya"
+    },
+    "player_id": "wt-81aef76b-f7e7-498a-9c29-63cdf1fb9793",
+    "session_id": "local-preview",
+    "timestamp_ms": 1787310146869
+  },
+  {
+    "event_id": "client-local_player_attack-121",
+    "event_type": "local_player_attack",
+    "metadata": {
+      "attacker": "Lazer",
+      "damage": 12,
+      "elapsed_ms": 18006.80000004769,
+      "target": "Rakip Batarya"
+    },
+    "player_id": "wt-81aef76b-f7e7-498a-9c29-63cdf1fb9793",
+    "session_id": "local-preview",
+    "timestamp_ms": 1787310147869
+  },
+  {
+    "event_id": "client-local_player_attack-122",
+    "event_type": "local_player_attack",
+    "metadata": {
+      "attacker": "Darbe Topu",
+      "damage": 32,
+      "elapsed_ms": 18006.80000004769,
+      "target": "Rakip Batarya"
+    },
+    "player_id": "wt-81aef76b-f7e7-498a-9c29-63cdf1fb9793",
+    "session_id": "local-preview",
+    "timestamp_ms": 1787310147870
+  },
+  {
+    "event_id": "client-local_ai_hit-123",
+    "event_type": "local_ai_hit",
+    "metadata": {
+      "elapsed_ms": 18006.80000004769,
+      "final_damage": 8,
+      "module_id": "laser-1",
+      "raw_damage": 8,
+      "shield_active": false
+    },
+    "player_id": "wt-81aef76b-f7e7-498a-9c29-63cdf1fb9793",
+    "session_id": "local-preview",
+    "timestamp_ms": 1787310147871
+  },
+  {
+    "event_id": "client-local_player_attack-124",
+    "event_type": "local_player_attack",
+    "metadata": {
+      "attacker": "Lazer",
+      "damage": 12,
+      "elapsed_ms": 19007.100000047678,
+      "target": "Rakip Jeneratör"
+    },
+    "player_id": "wt-81aef76b-f7e7-498a-9c29-63cdf1fb9793",
+    "session_id": "local-preview",
+    "timestamp_ms": 1787310148871
+  },
+  {
+    "event_id": "client-module_shelf_used-125",
+    "event_type": "module_shelf_used",
+    "metadata": {
+      "elapsed_ms": 19382.100000047678,
+      "module_id": "arc-cannon-1"
+    },
+    "player_id": "wt-81aef76b-f7e7-498a-9c29-63cdf1fb9793",
+    "session_id": "local-preview",
+    "timestamp_ms": 1787310149255
+  },
+  {
+    "event_id": "client-local_player_attack-126",
+    "event_type": "local_player_attack",
+    "metadata": {
+      "attacker": "Lazer",
+      "damage": 12,
+      "elapsed_ms": 20000.200000047684,
+      "target": "Rakip Jeneratör"
+    },
+    "player_id": "wt-81aef76b-f7e7-498a-9c29-63cdf1fb9793",
+    "session_id": "local-preview",
+    "timestamp_ms": 1787310149865
+  },
+  {
+    "event_id": "client-local_ai_hit-127",
+    "event_type": "local_ai_hit",
+    "metadata": {
+      "elapsed_ms": 20000.200000047684,
+      "final_damage": 8,
+      "module_id": "laser-1",
+      "raw_damage": 8,
+      "shield_active": false
+    },
+    "player_id": "wt-81aef76b-f7e7-498a-9c29-63cdf1fb9793",
+    "session_id": "local-preview",
+    "timestamp_ms": 1787310149868
+  },
+  {
+    "event_id": "client-circuit_credit_spent-128",
+    "event_type": "circuit_credit_spent",
+    "metadata": {
+      "amount": 130,
+      "command_kind": "place_module",
+      "elapsed_ms": 20104.400000047695
+    },
+    "player_id": "wt-81aef76b-f7e7-498a-9c29-63cdf1fb9793",
+    "session_id": "local-preview",
+    "timestamp_ms": 1787310149978
+  },
+  {
+    "event_id": "client-local_player_attack-129",
+    "event_type": "local_player_attack",
+    "metadata": {
+      "attacker": "Lazer",
+      "damage": 12,
+      "elapsed_ms": 21007.100000047678,
+      "target": "Rakip Jeneratör"
+    },
+    "player_id": "wt-81aef76b-f7e7-498a-9c29-63cdf1fb9793",
+    "session_id": "local-preview",
+    "timestamp_ms": 1787310150871
+  },
+  {
+    "event_id": "client-local_player_attack-130",
+    "event_type": "local_player_attack",
+    "metadata": {
+      "attacker": "Darbe Topu",
+      "damage": 32,
+      "elapsed_ms": 21007.100000047678,
+      "target": "Rakip Jeneratör"
+    },
+    "player_id": "wt-81aef76b-f7e7-498a-9c29-63cdf1fb9793",
+    "session_id": "local-preview",
+    "timestamp_ms": 1787310150872
+  },
+  {
+    "event_id": "client-local_player_attack-131",
+    "event_type": "local_player_attack",
+    "metadata": {
+      "attacker": "Lazer",
+      "damage": 12,
+      "elapsed_ms": 22007.000000047672,
+      "target": "Rakip Jeneratör"
+    },
+    "player_id": "wt-81aef76b-f7e7-498a-9c29-63cdf1fb9793",
+    "session_id": "local-preview",
+    "timestamp_ms": 1787310151872
+  },
+  {
+    "event_id": "client-local_ai_hit-132",
+    "event_type": "local_ai_hit",
+    "metadata": {
+      "elapsed_ms": 22007.000000047672,
+      "final_damage": 8,
+      "module_id": "arc-cannon-1",
+      "raw_damage": 8,
+      "shield_active": false
+    },
+    "player_id": "wt-81aef76b-f7e7-498a-9c29-63cdf1fb9793",
+    "session_id": "local-preview",
+    "timestamp_ms": 1787310151877
+  },
+  {
+    "event_id": "client-local_player_attack-133",
+    "event_type": "local_player_attack",
+    "metadata": {
+      "attacker": "Lazer",
+      "damage": 12,
+      "elapsed_ms": 23007.000000047672,
+      "target": "Rakip Jeneratör"
+    },
+    "player_id": "wt-81aef76b-f7e7-498a-9c29-63cdf1fb9793",
+    "session_id": "local-preview",
+    "timestamp_ms": 1787310152871
+  },
+  {
+    "event_id": "client-local_player_attack-134",
+    "event_type": "local_player_attack",
+    "metadata": {
+      "attacker": "Lazer",
+      "damage": 12,
+      "elapsed_ms": 24007.000000047672,
+      "target": "Rakip Jeneratör"
+    },
+    "player_id": "wt-81aef76b-f7e7-498a-9c29-63cdf1fb9793",
+    "session_id": "local-preview",
+    "timestamp_ms": 1787310153875
+  },
+  {
+    "event_id": "client-local_player_attack-135",
+    "event_type": "local_player_attack",
+    "metadata": {
+      "attacker": "Darbe Topu",
+      "damage": 32,
+      "elapsed_ms": 24007.000000047672,
+      "target": "Rakip Jeneratör"
+    },
+    "player_id": "wt-81aef76b-f7e7-498a-9c29-63cdf1fb9793",
+    "session_id": "local-preview",
+    "timestamp_ms": 1787310153876
+  },
+  {
+    "event_id": "client-local_ai_hit-136",
+    "event_type": "local_ai_hit",
+    "metadata": {
+      "elapsed_ms": 24007.000000047672,
+      "final_damage": 8,
+      "module_id": "arc-cannon-1",
+      "raw_damage": 8,
+      "shield_active": false
+    },
+    "player_id": "wt-81aef76b-f7e7-498a-9c29-63cdf1fb9793",
+    "session_id": "local-preview",
+    "timestamp_ms": 1787310153879
+  },
+  {
+    "event_id": "client-local_player_attack-137",
+    "event_type": "local_player_attack",
+    "metadata": {
+      "attacker": "Lazer",
+      "damage": 12,
+      "elapsed_ms": 25006.900000047695,
+      "target": "Rakip Jeneratör"
+    },
+    "player_id": "wt-81aef76b-f7e7-498a-9c29-63cdf1fb9793",
+    "session_id": "local-preview",
+    "timestamp_ms": 1787310154869
+  },
+  {
+    "event_id": "client-local_player_attack-138",
+    "event_type": "local_player_attack",
+    "metadata": {
+      "attacker": "Lazer",
+      "damage": 12,
+      "elapsed_ms": 26006.900000047695,
+      "target": "Rakip Jeneratör"
+    },
+    "player_id": "wt-81aef76b-f7e7-498a-9c29-63cdf1fb9793",
+    "session_id": "local-preview",
+    "timestamp_ms": 1787310155873
+  },
+  {
+    "event_id": "client-local_ai_hit-139",
+    "event_type": "local_ai_hit",
+    "metadata": {
+      "elapsed_ms": 26006.900000047695,
+      "final_damage": 8,
+      "module_id": "arc-cannon-1",
+      "raw_damage": 8,
+      "shield_active": false
+    },
+    "player_id": "wt-81aef76b-f7e7-498a-9c29-63cdf1fb9793",
+    "session_id": "local-preview",
+    "timestamp_ms": 1787310155878
+  },
+  {
+    "event_id": "client-local_player_attack-140",
+    "event_type": "local_player_attack",
+    "metadata": {
+      "attacker": "Lazer",
+      "damage": 12,
+      "elapsed_ms": 27000.000000047672,
+      "target": "Rakip Çekirdek"
+    },
+    "player_id": "wt-81aef76b-f7e7-498a-9c29-63cdf1fb9793",
+    "session_id": "local-preview",
+    "timestamp_ms": 1787310156864
+  },
+  {
+    "event_id": "client-local_player_attack-141",
+    "event_type": "local_player_attack",
+    "metadata": {
+      "attacker": "Darbe Topu",
+      "damage": 32,
+      "elapsed_ms": 27000.000000047672,
+      "target": "Rakip Çekirdek"
+    },
+    "player_id": "wt-81aef76b-f7e7-498a-9c29-63cdf1fb9793",
+    "session_id": "local-preview",
+    "timestamp_ms": 1787310156866
+  },
+  {
+    "event_id": "client-local_player_attack-142",
+    "event_type": "local_player_attack",
+    "metadata": {
+      "attacker": "Lazer",
+      "damage": 12,
+      "elapsed_ms": 28013.80000004769,
+      "target": "Rakip Çekirdek"
+    },
+    "player_id": "wt-81aef76b-f7e7-498a-9c29-63cdf1fb9793",
+    "session_id": "local-preview",
+    "timestamp_ms": 1787310157881
+  },
+  {
+    "event_id": "client-local_ai_hit-143",
+    "event_type": "local_ai_hit",
+    "metadata": {
+      "elapsed_ms": 28013.80000004769,
+      "final_damage": 8,
+      "module_id": "arc-cannon-1",
+      "raw_damage": 8,
+      "shield_active": false
+    },
+    "player_id": "wt-81aef76b-f7e7-498a-9c29-63cdf1fb9793",
+    "session_id": "local-preview",
+    "timestamp_ms": 1787310157884
+  },
+  {
+    "event_id": "client-local_player_attack-144",
+    "event_type": "local_player_attack",
+    "metadata": {
+      "attacker": "Lazer",
+      "damage": 12,
+      "elapsed_ms": 29013.80000004769,
+      "target": "Rakip Çekirdek"
+    },
+    "player_id": "wt-81aef76b-f7e7-498a-9c29-63cdf1fb9793",
+    "session_id": "local-preview",
+    "timestamp_ms": 1787310158878
+  },
+  {
+    "event_id": "client-local_player_attack-145",
+    "event_type": "local_player_attack",
+    "metadata": {
+      "attacker": "Lazer",
+      "damage": 12,
+      "elapsed_ms": 30006.80000004769,
+      "target": "Rakip Çekirdek"
+    },
+    "player_id": "wt-81aef76b-f7e7-498a-9c29-63cdf1fb9793",
+    "session_id": "local-preview",
+    "timestamp_ms": 1787310159870
+  },
+  {
+    "event_id": "client-local_player_attack-146",
+    "event_type": "local_player_attack",
+    "metadata": {
+      "attacker": "Darbe Topu",
+      "damage": 32,
+      "elapsed_ms": 30006.80000004769,
+      "target": "Rakip Çekirdek"
+    },
+    "player_id": "wt-81aef76b-f7e7-498a-9c29-63cdf1fb9793",
+    "session_id": "local-preview",
+    "timestamp_ms": 1787310159871
+  },
+  {
+    "event_id": "client-local_ai_hit-147",
+    "event_type": "local_ai_hit",
+    "metadata": {
+      "elapsed_ms": 30006.80000004769,
+      "final_damage": 8,
+      "module_id": "arc-cannon-1",
+      "raw_damage": 8,
+      "shield_active": false
+    },
+    "player_id": "wt-81aef76b-f7e7-498a-9c29-63cdf1fb9793",
+    "session_id": "local-preview",
+    "timestamp_ms": 1787310159872
+  },
+  {
+    "event_id": "client-local_player_attack-148",
+    "event_type": "local_player_attack",
+    "metadata": {
+      "attacker": "Lazer",
+      "damage": 12,
+      "elapsed_ms": 31006.700000047684,
+      "target": "Rakip Çekirdek"
+    },
+    "player_id": "wt-81aef76b-f7e7-498a-9c29-63cdf1fb9793",
+    "session_id": "local-preview",
+    "timestamp_ms": 1787310160875
+  },
+  {
+    "event_id": "client-local_player_attack-149",
+    "event_type": "local_player_attack",
+    "metadata": {
+      "attacker": "Lazer",
+      "damage": 12,
+      "elapsed_ms": 32006.80000004769,
+      "target": "Rakip Çekirdek"
+    },
+    "player_id": "wt-81aef76b-f7e7-498a-9c29-63cdf1fb9793",
+    "session_id": "local-preview",
+    "timestamp_ms": 1787310161871
+  },
+  {
+    "event_id": "client-local_ai_hit-150",
+    "event_type": "local_ai_hit",
+    "metadata": {
+      "elapsed_ms": 32006.80000004769,
+      "final_damage": 8,
+      "module_id": "arc-cannon-1",
+      "raw_damage": 8,
+      "shield_active": false
+    },
+    "player_id": "wt-81aef76b-f7e7-498a-9c29-63cdf1fb9793",
+    "session_id": "local-preview",
+    "timestamp_ms": 1787310161873
+  },
+  {
+    "event_id": "client-local_player_attack-151",
+    "event_type": "local_player_attack",
+    "metadata": {
+      "attacker": "Lazer",
+      "damage": 12,
+      "elapsed_ms": 33006.80000004769,
+      "target": "Rakip Çekirdek"
+    },
+    "player_id": "wt-81aef76b-f7e7-498a-9c29-63cdf1fb9793",
+    "session_id": "local-preview",
+    "timestamp_ms": 1787310162872
+  },
+  {
+    "event_id": "client-local_player_attack-152",
+    "event_type": "local_player_attack",
+    "metadata": {
+      "attacker": "Darbe Topu",
+      "damage": 32,
+      "elapsed_ms": 33006.80000004769,
+      "target": "Rakip Çekirdek"
+    },
+    "player_id": "wt-81aef76b-f7e7-498a-9c29-63cdf1fb9793",
+    "session_id": "local-preview",
+    "timestamp_ms": 1787310162874
+  },
+  {
+    "event_id": "client-local_player_attack-153",
+    "event_type": "local_player_attack",
+    "metadata": {
+      "attacker": "Lazer",
+      "damage": 12,
+      "elapsed_ms": 34006.700000047684,
+      "target": "Rakip Çekirdek"
+    },
+    "player_id": "wt-81aef76b-f7e7-498a-9c29-63cdf1fb9793",
+    "session_id": "local-preview",
+    "timestamp_ms": 1787310163868
+  },
+  {
+    "event_id": "client-local_ai_hit-154",
+    "event_type": "local_ai_hit",
+    "metadata": {
+      "elapsed_ms": 34006.700000047684,
+      "final_damage": 8,
+      "module_id": "arc-cannon-1",
+      "raw_damage": 8,
+      "shield_active": false
+    },
+    "player_id": "wt-81aef76b-f7e7-498a-9c29-63cdf1fb9793",
+    "session_id": "local-preview",
+    "timestamp_ms": 1787310163871
+  },
+  {
+    "event_id": "client-local_player_attack-155",
+    "event_type": "local_player_attack",
+    "metadata": {
+      "attacker": "Lazer",
+      "damage": 12,
+      "elapsed_ms": 35013.60000004768,
+      "target": "Rakip Çekirdek"
+    },
+    "player_id": "wt-81aef76b-f7e7-498a-9c29-63cdf1fb9793",
+    "session_id": "local-preview",
+    "timestamp_ms": 1787310164876
+  },
+  {
+    "event_id": "client-local_player_attack-156",
+    "event_type": "local_player_attack",
+    "metadata": {
+      "attacker": "Lazer",
+      "damage": 12,
+      "elapsed_ms": 36013.60000004768,
+      "target": "Rakip Çekirdek"
+    },
+    "player_id": "wt-81aef76b-f7e7-498a-9c29-63cdf1fb9793",
+    "session_id": "local-preview",
+    "timestamp_ms": 1787310165878
+  },
+  {
+    "event_id": "client-local_player_attack-157",
+    "event_type": "local_player_attack",
+    "metadata": {
+      "attacker": "Darbe Topu",
+      "damage": 32,
+      "elapsed_ms": 36013.60000004768,
+      "target": "Rakip Çekirdek"
+    },
+    "player_id": "wt-81aef76b-f7e7-498a-9c29-63cdf1fb9793",
+    "session_id": "local-preview",
+    "timestamp_ms": 1787310165879
+  },
+  {
+    "event_id": "client-local_ai_hit-158",
+    "event_type": "local_ai_hit",
+    "metadata": {
+      "elapsed_ms": 36013.60000004768,
+      "final_damage": 8,
+      "module_id": "arc-cannon-1",
+      "raw_damage": 8,
+      "shield_active": false
+    },
+    "player_id": "wt-81aef76b-f7e7-498a-9c29-63cdf1fb9793",
+    "session_id": "local-preview",
+    "timestamp_ms": 1787310165882
+  },
+  {
+    "event_id": "client-local_player_attack-159",
+    "event_type": "local_player_attack",
+    "metadata": {
+      "attacker": "Lazer",
+      "damage": 12,
+      "elapsed_ms": 37013.50000004767,
+      "target": "Rakip Çekirdek"
+    },
+    "player_id": "wt-81aef76b-f7e7-498a-9c29-63cdf1fb9793",
+    "session_id": "local-preview",
+    "timestamp_ms": 1787310166880
+  },
+  {
+    "event_id": "client-local_player_attack-160",
+    "event_type": "local_player_attack",
+    "metadata": {
+      "attacker": "Lazer",
+      "damage": 12,
+      "elapsed_ms": 38006.60000004768,
+      "target": "Rakip Çekirdek"
+    },
+    "player_id": "wt-81aef76b-f7e7-498a-9c29-63cdf1fb9793",
+    "session_id": "local-preview",
+    "timestamp_ms": 1787310167876
+  },
+  {
+    "event_id": "client-local_ai_hit-161",
+    "event_type": "local_ai_hit",
+    "metadata": {
+      "elapsed_ms": 38006.60000004768,
+      "final_damage": 8,
+      "module_id": "arc-cannon-1",
+      "raw_damage": 8,
+      "shield_active": false
+    },
+    "player_id": "wt-81aef76b-f7e7-498a-9c29-63cdf1fb9793",
+    "session_id": "local-preview",
+    "timestamp_ms": 1787310167878
+  },
+  {
+    "event_id": "client-local_player_attack-162",
+    "event_type": "local_player_attack",
+    "metadata": {
+      "attacker": "Lazer",
+      "damage": 12,
+      "elapsed_ms": 39006.60000004768,
+      "target": "Rakip Çekirdek"
+    },
+    "player_id": "wt-81aef76b-f7e7-498a-9c29-63cdf1fb9793",
+    "session_id": "local-preview",
+    "timestamp_ms": 1787310168873
+  },
+  {
+    "event_id": "web-test-launch-wt-8288059b-9714-4817-ad64-397540b99b4e-1787316424050",
+    "event_type": "web_test_launch_attempted",
+    "metadata": {
+      "failed_checks": [],
+      "launch_ready": true,
+      "test_run_id": "web-test-beta.13"
+    },
+    "player_id": "wt-8288059b-9714-4817-ad64-397540b99b4e",
+    "session_id": null,
+    "timestamp_ms": 1787316424050
+  },
+  {
+    "event_id": "web-test-run-started-web-test-beta.26-local",
+    "event_type": "web_test_run_started",
+    "metadata": {
+      "build": "web-test-beta.13",
+      "preflight_ready": true,
+      "test_run_id": "web-test-beta.26-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1787318466771
+  },
+  {
+    "event_id": "web-test-launch-wt-c6b71186-dcf0-4575-beea-a4fc5783f7e6-1787318467611",
+    "event_type": "web_test_launch_attempted",
+    "metadata": {
+      "failed_checks": [],
+      "launch_ready": true,
+      "test_run_id": "web-test-beta.26-local"
+    },
+    "player_id": "wt-c6b71186-dcf0-4575-beea-a4fc5783f7e6",
+    "session_id": null,
+    "timestamp_ms": 1787318467611
+  },
+  {
+    "event_id": "web-test-operation-web-test-beta.26-local-1787318469290",
+    "event_type": "web_test_operation_snapshot",
+    "metadata": {
+      "consistency_status": "consistent",
+      "operational_state": "running",
+      "preflight_ready": true,
+      "run_started": true,
+      "test_run_id": "web-test-beta.26-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1787318469290
+  },
+  {
+    "event_id": "web-test-stability-web-test-beta.26-local-1787318469378",
+    "event_type": "web_test_stability_snapshot",
+    "metadata": {
+      "operation_running_rate": 0.0,
+      "running_to_other_regressions": 0,
+      "stability": "degraded",
+      "test_run_id": "web-test-beta.26-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1787318469378
+  },
+  {
+    "event_id": "server:matchmaking:wt-c6b71186-dcf0-4575-beea-a4fc5783f7e6:777968468",
+    "event_type": "matchmaking_started",
+    "metadata": {
+      "league_name_tr": "Gümüş",
+      "level": 1,
+      "rating": 1000
+    },
+    "player_id": "wt-c6b71186-dcf0-4575-beea-a4fc5783f7e6",
+    "session_id": null,
+    "timestamp_ms": 1787318469754
+  },
+  {
+    "event_id": "client-matchmaking_started-2",
+    "event_type": "matchmaking_started",
+    "metadata": {
+      "rating": 1000
+    },
+    "player_id": "wt-c6b71186-dcf0-4575-beea-a4fc5783f7e6",
+    "session_id": "local-preview",
+    "timestamp_ms": 1787318469740
+  },
+  {
+    "event_id": "web-test-audit-wt-c6b71186-dcf0-4575-beea-a4fc5783f7e6-1787318469740",
+    "event_type": "web_test_session_started",
+    "metadata": {
+      "build": "web-test-beta.13",
+      "operation_ready": true,
+      "player_data_ready": true,
+      "pvp_protocol_version": 1,
+      "release_ready": true,
+      "retention_limit": 50000,
+      "server_version": "2.0.0-beta.26",
+      "telemetry_ready": true,
+      "test_run_id": "web-test-beta.26-local"
+    },
+    "player_id": "wt-c6b71186-dcf0-4575-beea-a4fc5783f7e6",
+    "session_id": null,
+    "timestamp_ms": 1787318469740
+  },
+  {
+    "event_id": "web-test-audit-wt-c6b71186-dcf0-4575-beea-a4fc5783f7e6-1787318469740-bound-local-preview",
+    "event_type": "web_test_session_bound",
+    "metadata": {
+      "audit_event_id": "web-test-audit-wt-c6b71186-dcf0-4575-beea-a4fc5783f7e6-1787318469740",
+      "test_run_id": "web-test-beta.26-local"
+    },
+    "player_id": "wt-c6b71186-dcf0-4575-beea-a4fc5783f7e6",
+    "session_id": "local-preview",
+    "timestamp_ms": 1787318469924
+  },
+  {
+    "event_id": "server:local-ai-match-71a2176ece73442797532a9e0c9d938e:matchmaking_ai_fallback:wt-c6b71186-dcf0-4575-beea-a4fc5783f7e6",
+    "event_type": "matchmaking_matched",
+    "metadata": {
+      "fallback_after_seconds": 10,
+      "opponent_type": "ai",
+      "rating_difference": 0
+    },
+    "player_id": "wt-c6b71186-dcf0-4575-beea-a4fc5783f7e6",
+    "session_id": "local-ai-match-71a2176ece73442797532a9e0c9d938e",
+    "timestamp_ms": 1787318479936
+  },
+  {
+    "event_id": "web-test-operation-web-test-beta.26-local-1787318480448",
+    "event_type": "web_test_operation_snapshot",
+    "metadata": {
+      "consistency_status": "consistent",
+      "operational_state": "running",
+      "preflight_ready": true,
+      "run_started": true,
+      "test_run_id": "web-test-beta.26-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1787318480448
+  },
+  {
+    "event_id": "web-test-stability-web-test-beta.26-local-1787318480584",
+    "event_type": "web_test_stability_snapshot",
+    "metadata": {
+      "operation_running_rate": 1.0,
+      "running_to_other_regressions": 0,
+      "stability": "stable",
+      "test_run_id": "web-test-beta.26-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1787318480584
+  },
+  {
+    "event_id": "web-test-operation-web-test-beta.26-local-1787318490344",
+    "event_type": "web_test_operation_snapshot",
+    "metadata": {
+      "consistency_status": "consistent",
+      "operational_state": "running",
+      "preflight_ready": true,
+      "run_started": true,
+      "test_run_id": "web-test-beta.26-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1787318490344
+  },
+  {
+    "event_id": "web-test-stability-web-test-beta.26-local-1787318490381",
+    "event_type": "web_test_stability_snapshot",
+    "metadata": {
+      "operation_running_rate": 1.0,
+      "running_to_other_regressions": 0,
+      "stability": "stable",
+      "test_run_id": "web-test-beta.26-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1787318490381
+  },
+  {
+    "event_id": "client-module_shelf_used-3",
+    "event_type": "module_shelf_used",
+    "metadata": {
+      "elapsed_ms": 16000,
+      "module_id": "shield-1"
+    },
+    "player_id": "wt-c6b71186-dcf0-4575-beea-a4fc5783f7e6",
+    "session_id": "local-ai-match-71a2176ece73442797532a9e0c9d938e",
+    "timestamp_ms": 1787318497905
+  },
+  {
+    "event_id": "web-test-operation-web-test-beta.26-local-1787318500341",
+    "event_type": "web_test_operation_snapshot",
+    "metadata": {
+      "consistency_status": "consistent",
+      "operational_state": "running",
+      "preflight_ready": true,
+      "run_started": true,
+      "test_run_id": "web-test-beta.26-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1787318500341
+  },
+  {
+    "event_id": "web-test-stability-web-test-beta.26-local-1787318500365",
+    "event_type": "web_test_stability_snapshot",
+    "metadata": {
+      "operation_running_rate": 1.0,
+      "running_to_other_regressions": 0,
+      "stability": "stable",
+      "test_run_id": "web-test-beta.26-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1787318500365
+  },
+  {
+    "event_id": "client-module_shelf_used-4",
+    "event_type": "module_shelf_used",
+    "metadata": {
+      "elapsed_ms": 26000,
+      "module_id": "shield-1"
+    },
+    "player_id": "wt-c6b71186-dcf0-4575-beea-a4fc5783f7e6",
+    "session_id": "local-ai-match-71a2176ece73442797532a9e0c9d938e",
+    "timestamp_ms": 1787318508508
+  },
+  {
+    "event_id": "web-test-operation-web-test-beta.26-local-1787318510428",
+    "event_type": "web_test_operation_snapshot",
+    "metadata": {
+      "consistency_status": "consistent",
+      "operational_state": "running",
+      "preflight_ready": true,
+      "run_started": true,
+      "test_run_id": "web-test-beta.26-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1787318510428
+  },
+  {
+    "event_id": "web-test-stability-web-test-beta.26-local-1787318510450",
+    "event_type": "web_test_stability_snapshot",
+    "metadata": {
+      "operation_running_rate": 1.0,
+      "running_to_other_regressions": 0,
+      "stability": "stable",
+      "test_run_id": "web-test-beta.26-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1787318510450
+  },
+  {
+    "event_id": "web-test-stability-web-test-beta.26-local-1787318520416",
+    "event_type": "web_test_stability_snapshot",
+    "metadata": {
+      "operation_running_rate": 1.0,
+      "running_to_other_regressions": 0,
+      "stability": "stable",
+      "test_run_id": "web-test-beta.26-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1787318520416
+  },
+  {
+    "event_id": "web-test-operation-web-test-beta.26-local-1787318520543",
+    "event_type": "web_test_operation_snapshot",
+    "metadata": {
+      "consistency_status": "consistent",
+      "operational_state": "running",
+      "preflight_ready": true,
+      "run_started": true,
+      "test_run_id": "web-test-beta.26-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1787318520543
+  },
+  {
+    "event_id": "client-module_shelf_used-5",
+    "event_type": "module_shelf_used",
+    "metadata": {
+      "elapsed_ms": 41000,
+      "module_id": "drone-bay-1"
+    },
+    "player_id": "wt-c6b71186-dcf0-4575-beea-a4fc5783f7e6",
+    "session_id": "local-ai-match-71a2176ece73442797532a9e0c9d938e",
+    "timestamp_ms": 1787318523771
+  },
+  {
+    "event_id": "web-test-stability-web-test-beta.26-local-1787318530430",
+    "event_type": "web_test_stability_snapshot",
+    "metadata": {
+      "operation_running_rate": 1.0,
+      "running_to_other_regressions": 0,
+      "stability": "stable",
+      "test_run_id": "web-test-beta.26-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1787318530430
+  },
+  {
+    "event_id": "web-test-operation-web-test-beta.26-local-1787318530617",
+    "event_type": "web_test_operation_snapshot",
+    "metadata": {
+      "consistency_status": "consistent",
+      "operational_state": "running",
+      "preflight_ready": true,
+      "run_started": true,
+      "test_run_id": "web-test-beta.26-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1787318530617
+  },
+  {
+    "event_id": "client-module_shelf_used-6",
+    "event_type": "module_shelf_used",
+    "metadata": {
+      "elapsed_ms": 53000,
+      "module_id": "battery-1"
+    },
+    "player_id": "wt-c6b71186-dcf0-4575-beea-a4fc5783f7e6",
+    "session_id": "local-ai-match-71a2176ece73442797532a9e0c9d938e",
+    "timestamp_ms": 1787318537094
+  },
+  {
+    "event_id": "web-test-stability-web-test-beta.26-local-1787318540528",
+    "event_type": "web_test_stability_snapshot",
+    "metadata": {
+      "operation_running_rate": 1.0,
+      "running_to_other_regressions": 0,
+      "stability": "stable",
+      "test_run_id": "web-test-beta.26-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1787318540528
+  },
+  {
+    "event_id": "web-test-operation-web-test-beta.26-local-1787318540645",
+    "event_type": "web_test_operation_snapshot",
+    "metadata": {
+      "consistency_status": "consistent",
+      "operational_state": "running",
+      "preflight_ready": true,
+      "run_started": true,
+      "test_run_id": "web-test-beta.26-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1787318540645
+  },
+  {
+    "event_id": "client-module_shelf_used-7",
+    "event_type": "module_shelf_used",
+    "metadata": {
+      "elapsed_ms": 59000,
+      "module_id": "armor-1"
+    },
+    "player_id": "wt-c6b71186-dcf0-4575-beea-a4fc5783f7e6",
+    "session_id": "local-ai-match-71a2176ece73442797532a9e0c9d938e",
+    "timestamp_ms": 1787318542998
+  },
+  {
+    "event_id": "server:local-ai-match-71a2176ece73442797532a9e0c9d938e:match_started:wt-c6b71186-dcf0-4575-beea-a4fc5783f7e6",
+    "event_type": "match_started",
+    "metadata": {
+      "source": "battle_engine"
+    },
+    "player_id": "wt-c6b71186-dcf0-4575-beea-a4fc5783f7e6",
+    "session_id": "local-ai-match-71a2176ece73442797532a9e0c9d938e",
+    "timestamp_ms": 1787318543994
+  },
+  {
+    "event_id": "server:local-ai-match-71a2176ece73442797532a9e0c9d938e:match_started:local-ai-match-71a2176ece73442797532a9e0c9d938e-opponent",
+    "event_type": "match_started",
+    "metadata": {
+      "source": "battle_engine"
+    },
+    "player_id": "local-ai-match-71a2176ece73442797532a9e0c9d938e-opponent",
+    "session_id": "local-ai-match-71a2176ece73442797532a9e0c9d938e",
+    "timestamp_ms": 1787318544035
+  },
+  {
+    "event_id": "server:local-ai-match-71a2176ece73442797532a9e0c9d938e:127:credit_spent",
+    "event_type": "circuit_credit_spent",
+    "metadata": {
+      "amount": 115,
+      "balance": 235,
+      "battle_elapsed_ms": 15000,
+      "reason": "modul_yerlestir:reflector"
+    },
+    "player_id": "local-ai-match-71a2176ece73442797532a9e0c9d938e-opponent",
+    "session_id": "local-ai-match-71a2176ece73442797532a9e0c9d938e",
+    "timestamp_ms": 1787318544079
+  },
+  {
+    "event_id": "server:local-ai-match-71a2176ece73442797532a9e0c9d938e:179:credit_spent",
+    "event_type": "circuit_credit_spent",
+    "metadata": {
+      "amount": 95,
+      "balance": 190,
+      "battle_elapsed_ms": 20000,
+      "reason": "modul_yerlestir:armor"
+    },
+    "player_id": "local-ai-match-71a2176ece73442797532a9e0c9d938e-opponent",
+    "session_id": "local-ai-match-71a2176ece73442797532a9e0c9d938e",
+    "timestamp_ms": 1787318544124
+  },
+  {
+    "event_id": "server:local-ai-match-71a2176ece73442797532a9e0c9d938e:237:credit_spent",
+    "event_type": "circuit_credit_spent",
+    "metadata": {
+      "amount": 100,
+      "balance": 375,
+      "battle_elapsed_ms": 27500,
+      "reason": "modul_yerlestir:shield"
+    },
+    "player_id": "wt-c6b71186-dcf0-4575-beea-a4fc5783f7e6",
+    "session_id": "local-ai-match-71a2176ece73442797532a9e0c9d938e",
+    "timestamp_ms": 1787318544159
+  },
+  {
+    "event_id": "server:local-ai-match-71a2176ece73442797532a9e0c9d938e:256:credit_spent",
+    "event_type": "circuit_credit_spent",
+    "metadata": {
+      "amount": 120,
+      "balance": 170,
+      "battle_elapsed_ms": 30000,
+      "reason": "modul_yerlestir:pulse_cannon"
+    },
+    "player_id": "local-ai-match-71a2176ece73442797532a9e0c9d938e-opponent",
+    "session_id": "local-ai-match-71a2176ece73442797532a9e0c9d938e",
+    "timestamp_ms": 1787318544202
+  },
+  {
+    "event_id": "server:local-ai-match-71a2176ece73442797532a9e0c9d938e:321:credit_spent",
+    "event_type": "circuit_credit_spent",
+    "metadata": {
+      "amount": 115,
+      "balance": 402,
+      "battle_elapsed_ms": 41700,
+      "reason": "modul_yerlestir:drone_bay"
+    },
+    "player_id": "wt-c6b71186-dcf0-4575-beea-a4fc5783f7e6",
+    "session_id": "local-ai-match-71a2176ece73442797532a9e0c9d938e",
+    "timestamp_ms": 1787318544246
+  },
+  {
+    "event_id": "server:local-ai-match-71a2176ece73442797532a9e0c9d938e:425:credit_spent",
+    "event_type": "circuit_credit_spent",
+    "metadata": {
+      "amount": 70,
+      "balance": 461,
+      "battle_elapsed_ms": 54600,
+      "reason": "modul_yerlestir:battery"
+    },
+    "player_id": "wt-c6b71186-dcf0-4575-beea-a4fc5783f7e6",
+    "session_id": "local-ai-match-71a2176ece73442797532a9e0c9d938e",
+    "timestamp_ms": 1787318544285
+  },
+  {
+    "event_id": "server:local-ai-match-71a2176ece73442797532a9e0c9d938e:463:credit_spent",
+    "event_type": "circuit_credit_spent",
+    "metadata": {
+      "amount": 95,
+      "balance": 417,
+      "battle_elapsed_ms": 59700,
+      "reason": "modul_yerlestir:armor"
+    },
+    "player_id": "wt-c6b71186-dcf0-4575-beea-a4fc5783f7e6",
+    "session_id": "local-ai-match-71a2176ece73442797532a9e0c9d938e",
+    "timestamp_ms": 1787318544330
+  },
+  {
+    "event_id": "server:local-ai-match-71a2176ece73442797532a9e0c9d938e:match_completed:wt-c6b71186-dcf0-4575-beea-a4fc5783f7e6",
+    "event_type": "match_completed",
+    "metadata": {
+      "duration_ms": 60100,
+      "finish_reason": "core_destroyed",
+      "is_draw": false,
+      "winner_player_id": "wt-c6b71186-dcf0-4575-beea-a4fc5783f7e6"
+    },
+    "player_id": "wt-c6b71186-dcf0-4575-beea-a4fc5783f7e6",
+    "session_id": "local-ai-match-71a2176ece73442797532a9e0c9d938e",
+    "timestamp_ms": 1787318544373
+  },
+  {
+    "event_id": "server:local-ai-match-71a2176ece73442797532a9e0c9d938e:match_completed:local-ai-match-71a2176ece73442797532a9e0c9d938e-opponent",
+    "event_type": "match_completed",
+    "metadata": {
+      "duration_ms": 60100,
+      "finish_reason": "core_destroyed",
+      "is_draw": false,
+      "winner_player_id": "wt-c6b71186-dcf0-4575-beea-a4fc5783f7e6"
+    },
+    "player_id": "local-ai-match-71a2176ece73442797532a9e0c9d938e-opponent",
+    "session_id": "local-ai-match-71a2176ece73442797532a9e0c9d938e",
+    "timestamp_ms": 1787318544417
+  },
+  {
+    "event_id": "web-test-operation-web-test-beta.26-local-1787318550500",
+    "event_type": "web_test_operation_snapshot",
+    "metadata": {
+      "consistency_status": "consistent",
+      "operational_state": "running",
+      "preflight_ready": true,
+      "run_started": true,
+      "test_run_id": "web-test-beta.26-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1787318550500
+  },
+  {
+    "event_id": "web-test-stability-web-test-beta.26-local-1787318550610",
+    "event_type": "web_test_stability_snapshot",
+    "metadata": {
+      "operation_running_rate": 1.0,
+      "running_to_other_regressions": 0,
+      "stability": "stable",
+      "test_run_id": "web-test-beta.26-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1787318550610
+  },
+  {
+    "event_id": "web-test-stability-web-test-beta.26-local-1787318559521",
+    "event_type": "web_test_stability_snapshot",
+    "metadata": {
+      "operation_running_rate": 1.0,
+      "running_to_other_regressions": 0,
+      "stability": "stable",
+      "test_run_id": "web-test-beta.26-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1787318559521
+  },
+  {
+    "event_id": "web-test-operation-web-test-beta.26-local-1787318559626",
+    "event_type": "web_test_operation_snapshot",
+    "metadata": {
+      "consistency_status": "consistent",
+      "operational_state": "running",
+      "preflight_ready": true,
+      "run_started": true,
+      "test_run_id": "web-test-beta.26-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1787318559626
+  },
+  {
+    "event_id": "web-test-stability-web-test-beta.26-local-1787318570268",
+    "event_type": "web_test_stability_snapshot",
+    "metadata": {
+      "operation_running_rate": 1.0,
+      "running_to_other_regressions": 0,
+      "stability": "stable",
+      "test_run_id": "web-test-beta.26-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1787318570268
+  },
+  {
+    "event_id": "web-test-operation-web-test-beta.26-local-1787318570431",
+    "event_type": "web_test_operation_snapshot",
+    "metadata": {
+      "consistency_status": "consistent",
+      "operational_state": "running",
+      "preflight_ready": true,
+      "run_started": true,
+      "test_run_id": "web-test-beta.26-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1787318570431
+  },
+  {
+    "event_id": "web-test-stability-web-test-beta.26-local-1787318580149",
+    "event_type": "web_test_stability_snapshot",
+    "metadata": {
+      "operation_running_rate": 1.0,
+      "running_to_other_regressions": 0,
+      "stability": "stable",
+      "test_run_id": "web-test-beta.26-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1787318580149
+  },
+  {
+    "event_id": "web-test-operation-web-test-beta.26-local-1787318580257",
+    "event_type": "web_test_operation_snapshot",
+    "metadata": {
+      "consistency_status": "consistent",
+      "operational_state": "running",
+      "preflight_ready": true,
+      "run_started": true,
+      "test_run_id": "web-test-beta.26-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1787318580257
+  },
+  {
+    "event_id": "web-test-operation-web-test-beta.26-local-1787318701534",
+    "event_type": "web_test_operation_snapshot",
+    "metadata": {
+      "consistency_status": "consistent",
+      "operational_state": "running",
+      "preflight_ready": true,
+      "run_started": true,
+      "test_run_id": "web-test-beta.26-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1787318701534
+  },
+  {
+    "event_id": "web-test-stability-web-test-beta.26-local-1787318701615",
+    "event_type": "web_test_stability_snapshot",
+    "metadata": {
+      "operation_running_rate": 1.0,
+      "running_to_other_regressions": 0,
+      "stability": "stable",
+      "test_run_id": "web-test-beta.26-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1787318701615
+  },
+  {
+    "event_id": "web-test-launch-wt-c6b71186-dcf0-4575-beea-a4fc5783f7e6-1787318707304",
+    "event_type": "web_test_launch_attempted",
+    "metadata": {
+      "failed_checks": [],
+      "launch_ready": true,
+      "test_run_id": "web-test-beta.26-local"
+    },
+    "player_id": "wt-c6b71186-dcf0-4575-beea-a4fc5783f7e6",
+    "session_id": null,
+    "timestamp_ms": 1787318707304
+  },
+  {
+    "event_id": "web-test-operation-web-test-beta.26-local-1787318713438",
+    "event_type": "web_test_operation_snapshot",
+    "metadata": {
+      "consistency_status": "consistent",
+      "operational_state": "running",
+      "preflight_ready": true,
+      "run_started": true,
+      "test_run_id": "web-test-beta.26-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1787318713438
+  },
+  {
+    "event_id": "web-test-stability-web-test-beta.26-local-1787318713546",
+    "event_type": "web_test_stability_snapshot",
+    "metadata": {
+      "operation_running_rate": 1.0,
+      "running_to_other_regressions": 0,
+      "stability": "stable",
+      "test_run_id": "web-test-beta.26-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1787318713546
+  },
+  {
+    "event_id": "web-test-operation-web-test-beta.26-local-1787318723212",
+    "event_type": "web_test_operation_snapshot",
+    "metadata": {
+      "consistency_status": "consistent",
+      "operational_state": "running",
+      "preflight_ready": true,
+      "run_started": true,
+      "test_run_id": "web-test-beta.26-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1787318723212
+  },
+  {
+    "event_id": "web-test-stability-web-test-beta.26-local-1787318723318",
+    "event_type": "web_test_stability_snapshot",
+    "metadata": {
+      "operation_running_rate": 1.0,
+      "running_to_other_regressions": 0,
+      "stability": "stable",
+      "test_run_id": "web-test-beta.26-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1787318723318
+  },
+  {
+    "event_id": "server:matchmaking:wt-c6b71186-dcf0-4575-beea-a4fc5783f7e6:778228890",
+    "event_type": "matchmaking_started",
+    "metadata": {
+      "league_name_tr": "Gümüş",
+      "level": 1,
+      "rating": 1000
+    },
+    "player_id": "wt-c6b71186-dcf0-4575-beea-a4fc5783f7e6",
+    "session_id": null,
+    "timestamp_ms": 1787318730189
+  },
+  {
+    "event_id": "web-test-audit-wt-c6b71186-dcf0-4575-beea-a4fc5783f7e6-1787318730177",
+    "event_type": "web_test_session_started",
+    "metadata": {
+      "build": "web-test-beta.13",
+      "operation_ready": true,
+      "player_data_ready": true,
+      "pvp_protocol_version": 1,
+      "release_ready": true,
+      "retention_limit": 50000,
+      "server_version": "2.0.0-beta.26",
+      "telemetry_ready": true,
+      "test_run_id": "web-test-beta.26-local"
+    },
+    "player_id": "wt-c6b71186-dcf0-4575-beea-a4fc5783f7e6",
+    "session_id": null,
+    "timestamp_ms": 1787318730177
+  },
+  {
+    "event_id": "web-test-audit-wt-c6b71186-dcf0-4575-beea-a4fc5783f7e6-1787318730177-bound-local-preview",
+    "event_type": "web_test_session_bound",
+    "metadata": {
+      "audit_event_id": "web-test-audit-wt-c6b71186-dcf0-4575-beea-a4fc5783f7e6-1787318730177",
+      "test_run_id": "web-test-beta.26-local"
+    },
+    "player_id": "wt-c6b71186-dcf0-4575-beea-a4fc5783f7e6",
+    "session_id": "local-preview",
+    "timestamp_ms": 1787318730326
+  },
+  {
+    "event_id": "web-test-operation-web-test-beta.26-local-1787318733251",
+    "event_type": "web_test_operation_snapshot",
+    "metadata": {
+      "consistency_status": "consistent",
+      "operational_state": "running",
+      "preflight_ready": true,
+      "run_started": true,
+      "test_run_id": "web-test-beta.26-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1787318733251
+  },
+  {
+    "event_id": "web-test-stability-web-test-beta.26-local-1787318733355",
+    "event_type": "web_test_stability_snapshot",
+    "metadata": {
+      "operation_running_rate": 1.0,
+      "running_to_other_regressions": 0,
+      "stability": "stable",
+      "test_run_id": "web-test-beta.26-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1787318733355
+  },
+  {
+    "event_id": "server:local-ai-match-486416c7954447f4ae13c05e6be1f8b0:matchmaking_ai_fallback:wt-c6b71186-dcf0-4575-beea-a4fc5783f7e6",
+    "event_type": "matchmaking_matched",
+    "metadata": {
+      "fallback_after_seconds": 10,
+      "opponent_type": "ai",
+      "rating_difference": 0
+    },
+    "player_id": "wt-c6b71186-dcf0-4575-beea-a4fc5783f7e6",
+    "session_id": "local-ai-match-486416c7954447f4ae13c05e6be1f8b0",
+    "timestamp_ms": 1787318740372
+  },
+  {
+    "event_id": "web-test-operation-web-test-beta.26-local-1787318743280",
+    "event_type": "web_test_operation_snapshot",
+    "metadata": {
+      "consistency_status": "consistent",
+      "operational_state": "running",
+      "preflight_ready": true,
+      "run_started": true,
+      "test_run_id": "web-test-beta.26-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1787318743280
+  },
+  {
+    "event_id": "web-test-stability-web-test-beta.26-local-1787318743408",
+    "event_type": "web_test_stability_snapshot",
+    "metadata": {
+      "operation_running_rate": 1.0,
+      "running_to_other_regressions": 0,
+      "stability": "stable",
+      "test_run_id": "web-test-beta.26-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1787318743408
+  },
+  {
+    "event_id": "web-test-operation-web-test-beta.26-local-1787318753121",
+    "event_type": "web_test_operation_snapshot",
+    "metadata": {
+      "consistency_status": "consistent",
+      "operational_state": "running",
+      "preflight_ready": true,
+      "run_started": true,
+      "test_run_id": "web-test-beta.26-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1787318753121
+  },
+  {
+    "event_id": "web-test-stability-web-test-beta.26-local-1787318753330",
+    "event_type": "web_test_stability_snapshot",
+    "metadata": {
+      "operation_running_rate": 1.0,
+      "running_to_other_regressions": 0,
+      "stability": "stable",
+      "test_run_id": "web-test-beta.26-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1787318753330
+  },
+  {
+    "event_id": "web-test-stability-web-test-beta.26-local-1787318763427",
+    "event_type": "web_test_stability_snapshot",
+    "metadata": {
+      "operation_running_rate": 1.0,
+      "running_to_other_regressions": 0,
+      "stability": "stable",
+      "test_run_id": "web-test-beta.26-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1787318763427
+  },
+  {
+    "event_id": "web-test-operation-web-test-beta.26-local-1787318763465",
+    "event_type": "web_test_operation_snapshot",
+    "metadata": {
+      "consistency_status": "consistent",
+      "operational_state": "running",
+      "preflight_ready": true,
+      "run_started": true,
+      "test_run_id": "web-test-beta.26-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1787318763465
+  },
+  {
+    "event_id": "web-test-stability-web-test-beta.26-local-1787318773473",
+    "event_type": "web_test_stability_snapshot",
+    "metadata": {
+      "operation_running_rate": 1.0,
+      "running_to_other_regressions": 0,
+      "stability": "stable",
+      "test_run_id": "web-test-beta.26-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1787318773473
+  },
+  {
+    "event_id": "web-test-operation-web-test-beta.26-local-1787318773555",
+    "event_type": "web_test_operation_snapshot",
+    "metadata": {
+      "consistency_status": "consistent",
+      "operational_state": "running",
+      "preflight_ready": true,
+      "run_started": true,
+      "test_run_id": "web-test-beta.26-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1787318773555
+  },
+  {
+    "event_id": "web-test-stability-web-test-beta.26-local-1787318783281",
+    "event_type": "web_test_stability_snapshot",
+    "metadata": {
+      "operation_running_rate": 1.0,
+      "running_to_other_regressions": 0,
+      "stability": "stable",
+      "test_run_id": "web-test-beta.26-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1787318783281
+  },
+  {
+    "event_id": "web-test-operation-web-test-beta.26-local-1787318783319",
+    "event_type": "web_test_operation_snapshot",
+    "metadata": {
+      "consistency_status": "consistent",
+      "operational_state": "running",
+      "preflight_ready": true,
+      "run_started": true,
+      "test_run_id": "web-test-beta.26-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1787318783319
+  },
+  {
+    "event_id": "web-test-stability-web-test-beta.26-local-1787318792872",
+    "event_type": "web_test_stability_snapshot",
+    "metadata": {
+      "operation_running_rate": 1.0,
+      "running_to_other_regressions": 0,
+      "stability": "stable",
+      "test_run_id": "web-test-beta.26-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1787318792872
+  },
+  {
+    "event_id": "web-test-operation-web-test-beta.26-local-1787318793011",
+    "event_type": "web_test_operation_snapshot",
+    "metadata": {
+      "consistency_status": "consistent",
+      "operational_state": "running",
+      "preflight_ready": true,
+      "run_started": true,
+      "test_run_id": "web-test-beta.26-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1787318793011
+  },
+  {
+    "event_id": "web-test-stability-web-test-beta.26-local-1787318802797",
+    "event_type": "web_test_stability_snapshot",
+    "metadata": {
+      "operation_running_rate": 1.0,
+      "running_to_other_regressions": 0,
+      "stability": "stable",
+      "test_run_id": "web-test-beta.26-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1787318802797
+  },
+  {
+    "event_id": "web-test-operation-web-test-beta.26-local-1787318802886",
+    "event_type": "web_test_operation_snapshot",
+    "metadata": {
+      "consistency_status": "consistent",
+      "operational_state": "running",
+      "preflight_ready": true,
+      "run_started": true,
+      "test_run_id": "web-test-beta.26-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1787318802886
+  },
+  {
+    "event_id": "web-test-operation-web-test-beta.26-local-1787318812900",
+    "event_type": "web_test_operation_snapshot",
+    "metadata": {
+      "consistency_status": "consistent",
+      "operational_state": "running",
+      "preflight_ready": true,
+      "run_started": true,
+      "test_run_id": "web-test-beta.26-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1787318812900
+  },
+  {
+    "event_id": "web-test-stability-web-test-beta.26-local-1787318813031",
+    "event_type": "web_test_stability_snapshot",
+    "metadata": {
+      "operation_running_rate": 1.0,
+      "running_to_other_regressions": 0,
+      "stability": "stable",
+      "test_run_id": "web-test-beta.26-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1787318813031
+  },
+  {
+    "event_id": "server:local-ai-match-486416c7954447f4ae13c05e6be1f8b0:match_started:wt-c6b71186-dcf0-4575-beea-a4fc5783f7e6",
+    "event_type": "match_started",
+    "metadata": {
+      "source": "battle_engine"
+    },
+    "player_id": "wt-c6b71186-dcf0-4575-beea-a4fc5783f7e6",
+    "session_id": "local-ai-match-486416c7954447f4ae13c05e6be1f8b0",
+    "timestamp_ms": 1787318815696
+  },
+  {
+    "event_id": "server:local-ai-match-486416c7954447f4ae13c05e6be1f8b0:match_started:local-ai-match-486416c7954447f4ae13c05e6be1f8b0-opponent",
+    "event_type": "match_started",
+    "metadata": {
+      "source": "battle_engine"
+    },
+    "player_id": "local-ai-match-486416c7954447f4ae13c05e6be1f8b0-opponent",
+    "session_id": "local-ai-match-486416c7954447f4ae13c05e6be1f8b0",
+    "timestamp_ms": 1787318815705
+  },
+  {
+    "event_id": "server:local-ai-match-486416c7954447f4ae13c05e6be1f8b0:98:credit_spent",
+    "event_type": "circuit_credit_spent",
+    "metadata": {
+      "amount": 120,
+      "balance": 230,
+      "battle_elapsed_ms": 15000,
+      "reason": "modul_yerlestir:pulse_cannon"
+    },
+    "player_id": "local-ai-match-486416c7954447f4ae13c05e6be1f8b0-opponent",
+    "session_id": "local-ai-match-486416c7954447f4ae13c05e6be1f8b0",
+    "timestamp_ms": 1787318815743
+  },
+  {
+    "event_id": "server:local-ai-match-486416c7954447f4ae13c05e6be1f8b0:111:credit_spent",
+    "event_type": "circuit_credit_spent",
+    "metadata": {
+      "amount": 70,
+      "balance": 307,
+      "battle_elapsed_ms": 17700,
+      "reason": "modul_yerlestir:battery"
+    },
+    "player_id": "wt-c6b71186-dcf0-4575-beea-a4fc5783f7e6",
+    "session_id": "local-ai-match-486416c7954447f4ae13c05e6be1f8b0",
+    "timestamp_ms": 1787318815775
+  },
+  {
+    "event_id": "server:local-ai-match-486416c7954447f4ae13c05e6be1f8b0:114:credit_spent",
+    "event_type": "circuit_credit_spent",
+    "metadata": {
+      "amount": 60,
+      "balance": 220,
+      "battle_elapsed_ms": 20000,
+      "reason": "modul_degistir:splitter"
+    },
+    "player_id": "local-ai-match-486416c7954447f4ae13c05e6be1f8b0-opponent",
+    "session_id": "local-ai-match-486416c7954447f4ae13c05e6be1f8b0",
+    "timestamp_ms": 1787318815802
+  },
+  {
+    "event_id": "server:local-ai-match-486416c7954447f4ae13c05e6be1f8b0:115:module_changed",
+    "event_type": "module_changed",
+    "metadata": {
+      "battle_elapsed_ms": 20000,
+      "incoming_module_id": "splitter-1",
+      "outgoing_module_id": "local-ai-match-486416c7954447f4ae13c05e6be1f8b0-opponent-shield"
+    },
+    "player_id": "local-ai-match-486416c7954447f4ae13c05e6be1f8b0-opponent",
+    "session_id": "local-ai-match-486416c7954447f4ae13c05e6be1f8b0",
+    "timestamp_ms": 1787318815847
+  },
+  {
+    "event_id": "server:local-ai-match-486416c7954447f4ae13c05e6be1f8b0:127:credit_spent",
+    "event_type": "circuit_credit_spent",
+    "metadata": {
+      "amount": 65,
+      "balance": 205,
+      "battle_elapsed_ms": 25000,
+      "reason": "modul_yerlestir:cooler"
+    },
+    "player_id": "local-ai-match-486416c7954447f4ae13c05e6be1f8b0-opponent",
+    "session_id": "local-ai-match-486416c7954447f4ae13c05e6be1f8b0",
+    "timestamp_ms": 1787318815875
+  },
+  {
+    "event_id": "server:local-ai-match-486416c7954447f4ae13c05e6be1f8b0:143:credit_spent",
+    "event_type": "circuit_credit_spent",
+    "metadata": {
+      "amount": 70,
+      "balance": 185,
+      "battle_elapsed_ms": 30000,
+      "reason": "modul_degistir:battery"
+    },
+    "player_id": "local-ai-match-486416c7954447f4ae13c05e6be1f8b0-opponent",
+    "session_id": "local-ai-match-486416c7954447f4ae13c05e6be1f8b0",
+    "timestamp_ms": 1787318815913
+  },
+  {
+    "event_id": "server:local-ai-match-486416c7954447f4ae13c05e6be1f8b0:144:module_changed",
+    "event_type": "module_changed",
+    "metadata": {
+      "battle_elapsed_ms": 30000,
+      "incoming_module_id": "battery-1",
+      "outgoing_module_id": "cooler-1"
+    },
+    "player_id": "local-ai-match-486416c7954447f4ae13c05e6be1f8b0-opponent",
+    "session_id": "local-ai-match-486416c7954447f4ae13c05e6be1f8b0",
+    "timestamp_ms": 1787318815949
+  },
+  {
+    "event_id": "server:local-ai-match-486416c7954447f4ae13c05e6be1f8b0:156:credit_spent",
+    "event_type": "circuit_credit_spent",
+    "metadata": {
+      "amount": 65,
+      "balance": 170,
+      "battle_elapsed_ms": 35000,
+      "reason": "modul_yerlestir:cooler"
+    },
+    "player_id": "local-ai-match-486416c7954447f4ae13c05e6be1f8b0-opponent",
+    "session_id": "local-ai-match-486416c7954447f4ae13c05e6be1f8b0",
+    "timestamp_ms": 1787318815975
+  },
+  {
+    "event_id": "server:local-ai-match-486416c7954447f4ae13c05e6be1f8b0:170:credit_spent",
+    "event_type": "circuit_credit_spent",
+    "metadata": {
+      "amount": 75,
+      "balance": 145,
+      "battle_elapsed_ms": 40000,
+      "reason": "modul_degistir:capacitor"
+    },
+    "player_id": "local-ai-match-486416c7954447f4ae13c05e6be1f8b0-opponent",
+    "session_id": "local-ai-match-486416c7954447f4ae13c05e6be1f8b0",
+    "timestamp_ms": 1787318816008
+  },
+  {
+    "event_id": "server:local-ai-match-486416c7954447f4ae13c05e6be1f8b0:171:module_changed",
+    "event_type": "module_changed",
+    "metadata": {
+      "battle_elapsed_ms": 40000,
+      "incoming_module_id": "capacitor-1",
+      "outgoing_module_id": "battery-1"
+    },
+    "player_id": "local-ai-match-486416c7954447f4ae13c05e6be1f8b0-opponent",
+    "session_id": "local-ai-match-486416c7954447f4ae13c05e6be1f8b0",
+    "timestamp_ms": 1787318816031
+  },
+  {
+    "event_id": "server:local-ai-match-486416c7954447f4ae13c05e6be1f8b0:183:credit_spent",
+    "event_type": "circuit_credit_spent",
+    "metadata": {
+      "amount": 70,
+      "balance": 125,
+      "battle_elapsed_ms": 45000,
+      "reason": "modul_yerlestir:battery"
+    },
+    "player_id": "local-ai-match-486416c7954447f4ae13c05e6be1f8b0-opponent",
+    "session_id": "local-ai-match-486416c7954447f4ae13c05e6be1f8b0",
+    "timestamp_ms": 1787318816069
+  },
+  {
+    "event_id": "server:local-ai-match-486416c7954447f4ae13c05e6be1f8b0:197:credit_spent",
+    "event_type": "circuit_credit_spent",
+    "metadata": {
+      "amount": 80,
+      "balance": 95,
+      "battle_elapsed_ms": 50000,
+      "reason": "modul_degistir:repair"
+    },
+    "player_id": "local-ai-match-486416c7954447f4ae13c05e6be1f8b0-opponent",
+    "session_id": "local-ai-match-486416c7954447f4ae13c05e6be1f8b0",
+    "timestamp_ms": 1787318816107
+  },
+  {
+    "event_id": "server:local-ai-match-486416c7954447f4ae13c05e6be1f8b0:198:module_changed",
+    "event_type": "module_changed",
+    "metadata": {
+      "battle_elapsed_ms": 50000,
+      "incoming_module_id": "repair-1",
+      "outgoing_module_id": "battery-1"
+    },
+    "player_id": "local-ai-match-486416c7954447f4ae13c05e6be1f8b0-opponent",
+    "session_id": "local-ai-match-486416c7954447f4ae13c05e6be1f8b0",
+    "timestamp_ms": 1787318816137
+  },
+  {
+    "event_id": "server:local-ai-match-486416c7954447f4ae13c05e6be1f8b0:210:credit_spent",
+    "event_type": "circuit_credit_spent",
+    "metadata": {
+      "amount": 70,
+      "balance": 75,
+      "battle_elapsed_ms": 55000,
+      "reason": "modul_yerlestir:battery"
+    },
+    "player_id": "local-ai-match-486416c7954447f4ae13c05e6be1f8b0-opponent",
+    "session_id": "local-ai-match-486416c7954447f4ae13c05e6be1f8b0",
+    "timestamp_ms": 1787318816167
+  },
+  {
+    "event_id": "server:local-ai-match-486416c7954447f4ae13c05e6be1f8b0:223:credit_spent",
+    "event_type": "circuit_credit_spent",
+    "metadata": {
+      "amount": 85,
+      "balance": 40,
+      "battle_elapsed_ms": 60000,
+      "reason": "modul_degistir:amplifier"
+    },
+    "player_id": "local-ai-match-486416c7954447f4ae13c05e6be1f8b0-opponent",
+    "session_id": "local-ai-match-486416c7954447f4ae13c05e6be1f8b0",
+    "timestamp_ms": 1787318816186
+  },
+  {
+    "event_id": "server:local-ai-match-486416c7954447f4ae13c05e6be1f8b0:224:module_changed",
+    "event_type": "module_changed",
+    "metadata": {
+      "battle_elapsed_ms": 60000,
+      "incoming_module_id": "amplifier-1",
+      "outgoing_module_id": "battery-1"
+    },
+    "player_id": "local-ai-match-486416c7954447f4ae13c05e6be1f8b0-opponent",
+    "session_id": "local-ai-match-486416c7954447f4ae13c05e6be1f8b0",
+    "timestamp_ms": 1787318816228
+  },
+  {
+    "event_id": "server:local-ai-match-486416c7954447f4ae13c05e6be1f8b0:236:credit_spent",
+    "event_type": "circuit_credit_spent",
+    "metadata": {
+      "amount": 70,
+      "balance": 20,
+      "battle_elapsed_ms": 65000,
+      "reason": "modul_yerlestir:battery"
+    },
+    "player_id": "local-ai-match-486416c7954447f4ae13c05e6be1f8b0-opponent",
+    "session_id": "local-ai-match-486416c7954447f4ae13c05e6be1f8b0",
+    "timestamp_ms": 1787318816255
+  },
+  {
+    "event_id": "server:local-ai-match-486416c7954447f4ae13c05e6be1f8b0:match_completed:wt-c6b71186-dcf0-4575-beea-a4fc5783f7e6",
+    "event_type": "match_completed",
+    "metadata": {
+      "duration_ms": 70100,
+      "finish_reason": "core_destroyed",
+      "is_draw": false,
+      "winner_player_id": "local-ai-match-486416c7954447f4ae13c05e6be1f8b0-opponent"
+    },
+    "player_id": "wt-c6b71186-dcf0-4575-beea-a4fc5783f7e6",
+    "session_id": "local-ai-match-486416c7954447f4ae13c05e6be1f8b0",
+    "timestamp_ms": 1787318816296
+  },
+  {
+    "event_id": "server:local-ai-match-486416c7954447f4ae13c05e6be1f8b0:match_completed:local-ai-match-486416c7954447f4ae13c05e6be1f8b0-opponent",
+    "event_type": "match_completed",
+    "metadata": {
+      "duration_ms": 70100,
+      "finish_reason": "core_destroyed",
+      "is_draw": false,
+      "winner_player_id": "local-ai-match-486416c7954447f4ae13c05e6be1f8b0-opponent"
+    },
+    "player_id": "local-ai-match-486416c7954447f4ae13c05e6be1f8b0-opponent",
+    "session_id": "local-ai-match-486416c7954447f4ae13c05e6be1f8b0",
+    "timestamp_ms": 1787318816332
+  },
+  {
+    "event_id": "web-test-operation-web-test-beta.26-local-1787318823396",
+    "event_type": "web_test_operation_snapshot",
+    "metadata": {
+      "consistency_status": "consistent",
+      "operational_state": "running",
+      "preflight_ready": true,
+      "run_started": true,
+      "test_run_id": "web-test-beta.26-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1787318823396
+  },
+  {
+    "event_id": "web-test-stability-web-test-beta.26-local-1787318823511",
+    "event_type": "web_test_stability_snapshot",
+    "metadata": {
+      "operation_running_rate": 1.0,
+      "running_to_other_regressions": 0,
+      "stability": "stable",
+      "test_run_id": "web-test-beta.26-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1787318823511
+  },
+  {
+    "event_id": "web-test-operation-web-test-beta.26-local-1787318833428",
+    "event_type": "web_test_operation_snapshot",
+    "metadata": {
+      "consistency_status": "consistent",
+      "operational_state": "running",
+      "preflight_ready": true,
+      "run_started": true,
+      "test_run_id": "web-test-beta.26-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1787318833428
+  },
+  {
+    "event_id": "web-test-stability-web-test-beta.26-local-1787318833604",
+    "event_type": "web_test_stability_snapshot",
+    "metadata": {
+      "operation_running_rate": 1.0,
+      "running_to_other_regressions": 0,
+      "stability": "stable",
+      "test_run_id": "web-test-beta.26-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1787318833604
+  },
+  {
+    "event_id": "web-test-stability-web-test-beta.26-local-1787318843737",
+    "event_type": "web_test_stability_snapshot",
+    "metadata": {
+      "operation_running_rate": 1.0,
+      "running_to_other_regressions": 0,
+      "stability": "stable",
+      "test_run_id": "web-test-beta.26-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1787318843737
+  },
+  {
+    "event_id": "web-test-operation-web-test-beta.26-local-1787318843852",
+    "event_type": "web_test_operation_snapshot",
+    "metadata": {
+      "consistency_status": "consistent",
+      "operational_state": "running",
+      "preflight_ready": true,
+      "run_started": true,
+      "test_run_id": "web-test-beta.26-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1787318843852
+  },
+  {
+    "event_id": "web-test-stability-web-test-beta.26-local-1787318853707",
+    "event_type": "web_test_stability_snapshot",
+    "metadata": {
+      "operation_running_rate": 1.0,
+      "running_to_other_regressions": 0,
+      "stability": "stable",
+      "test_run_id": "web-test-beta.26-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1787318853707
+  },
+  {
+    "event_id": "web-test-operation-web-test-beta.26-local-1787318853949",
+    "event_type": "web_test_operation_snapshot",
+    "metadata": {
+      "consistency_status": "consistent",
+      "operational_state": "running",
+      "preflight_ready": true,
+      "run_started": true,
+      "test_run_id": "web-test-beta.26-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1787318853949
+  },
+  {
+    "event_id": "web-test-operation-web-test-beta.26-local-1787318863870",
+    "event_type": "web_test_operation_snapshot",
+    "metadata": {
+      "consistency_status": "consistent",
+      "operational_state": "running",
+      "preflight_ready": true,
+      "run_started": true,
+      "test_run_id": "web-test-beta.26-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1787318863870
+  },
+  {
+    "event_id": "web-test-stability-web-test-beta.26-local-1787318863918",
+    "event_type": "web_test_stability_snapshot",
+    "metadata": {
+      "operation_running_rate": 1.0,
+      "running_to_other_regressions": 0,
+      "stability": "stable",
+      "test_run_id": "web-test-beta.26-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1787318863918
+  }
+]

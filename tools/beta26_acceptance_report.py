@@ -54,6 +54,7 @@ def main() -> int:
         encoding="utf-8"
     )
     launcher = (ROOT / "BASLAT_WEB_TEST.bat").read_text(encoding="utf-8")
+    quick_launcher = (ROOT / "HIZLI_SAVAS_TESTI.bat").read_text(encoding="utf-8")
 
     checks = {
         "version": VERSION == EXPECTED_VERSION and EXPECTED_VERSION in html,
@@ -84,6 +85,12 @@ def main() -> int:
         "web_launcher_hardened": (
             "GRIDSHARD_WEB_PORT" in launcher
             and "import fastapi,uvicorn,redis,psycopg_pool" in launcher
+        ),
+        "quick_launcher_version_guard": (
+            "GRIDSHARD_WEB_PORT" in quick_launcher
+            and "/health" in quick_launcher
+            and EXPECTED_VERSION in quick_launcher
+            and 'start "" "http://127.0.0.1:8000/"' not in quick_launcher
         ),
     }
     payload = {

@@ -1,0 +1,63 @@
+{
+  "wt-c6b71186-dcf0-4575-beea-a4fc5783f7e6": {
+    "player_id": "wt-c6b71186-dcf0-4575-beea-a4fc5783f7e6",
+    "profile": {
+      "display_name": "wt-c6b71186-dcf0-4575-beea-a4fc5783f7e6",
+      "experience": 0,
+      "experience_into_level": 0,
+      "experience_to_next_level": 1000,
+      "league_name_tr": "Gümüş",
+      "level": 1,
+      "player_id": "wt-c6b71186-dcf0-4575-beea-a4fc5783f7e6",
+      "preferred_battle_pool_ids": [
+        "generator",
+        "battery",
+        "splitter",
+        "capacitor",
+        "laser",
+        "pulse_cannon",
+        "railgun",
+        "shield",
+        "armor",
+        "reflector",
+        "barrier",
+        "repair",
+        "cooler",
+        "amplifier",
+        "targeting_computer",
+        "emp",
+        "jammer",
+        "missile_launcher"
+      ],
+      "profile_sections": [
+        "Genel",
+        "İlerleme",
+        "Savaş Havuzu"
+      ],
+      "rating": 1000
+    },
+    "settings": {
+      "graphics_quality": "yuksek",
+      "language": "tr",
+      "music_muted": false,
+      "music_volume": 70,
+      "player_id": "wt-c6b71186-dcf0-4575-beea-a4fc5783f7e6",
+      "sound_muted": false,
+      "sound_volume": 100,
+      "vibration_enabled": true
+    },
+    "statistics": {
+      "average_match_duration_ms": 0,
+      "boosters_used": 0,
+      "draws": 0,
+      "losses": 0,
+      "module_replacements": 0,
+      "most_used_modules": [],
+      "player_id": "wt-c6b71186-dcf0-4575-beea-a4fc5783f7e6",
+      "total_damage_dealt": 0,
+      "total_matches": 0,
+      "win_rate": 0.0,
+      "wins": 0
+    }
+  }
+}
