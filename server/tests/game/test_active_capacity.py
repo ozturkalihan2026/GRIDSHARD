@@ -73,7 +73,7 @@ def test_at_15_seconds_four_active_modules_are_allowed():
     advance_to(engine, 15_000)
 
     command(engine, "place_module", module_id="laser-1", x=3, y=3)
-    command(engine, "place_module", module_id="shield-1", x=4, y=3)
+    command(engine, "place_module", module_id="shield-1", x=3, y=2)
 
     assert engine.active_module_count("player-1") == 4
 
@@ -83,8 +83,8 @@ def test_fifth_active_module_is_rejected_before_25_seconds():
     advance_to(engine, 15_000)
 
     command(engine, "place_module", module_id="laser-1", x=3, y=3)
-    command(engine, "place_module", module_id="shield-1", x=4, y=3)
-    command(engine, "place_module", module_id="battery-1", x=3, y=4)
+    command(engine, "place_module", module_id="shield-1", x=3, y=2)
+    command(engine, "place_module", module_id="battery-1", x=1, y=2)
 
     battery = engine.state.players["player-1"].modules["battery-1"]
     assert battery.status == ModuleStatus.RESERVE
@@ -97,10 +97,10 @@ def test_fifth_active_module_is_allowed_at_25_seconds():
     advance_to(engine, 15_000)
 
     command(engine, "place_module", module_id="laser-1", x=3, y=3)
-    command(engine, "place_module", module_id="shield-1", x=4, y=3)
+    command(engine, "place_module", module_id="shield-1", x=3, y=2)
 
     advance_to(engine, 25_000)
-    command(engine, "place_module", module_id="battery-1", x=3, y=4)
+    command(engine, "place_module", module_id="battery-1", x=1, y=2)
 
     battery = engine.state.players["player-1"].modules["battery-1"]
     assert battery.status == ModuleStatus.ACTIVE
@@ -112,7 +112,7 @@ def test_replace_does_not_require_free_capacity():
     advance_to(engine, 15_000)
 
     command(engine, "place_module", module_id="laser-1", x=3, y=3)
-    command(engine, "place_module", module_id="shield-1", x=4, y=3)
+    command(engine, "place_module", module_id="shield-1", x=3, y=2)
 
     assert engine.active_module_count("player-1") == 4
 
@@ -132,7 +132,7 @@ def test_remove_is_allowed_when_at_capacity_and_reduces_count():
     advance_to(engine, 15_000)
 
     command(engine, "place_module", module_id="laser-1", x=3, y=3)
-    command(engine, "place_module", module_id="shield-1", x=4, y=3)
+    command(engine, "place_module", module_id="shield-1", x=3, y=2)
     assert engine.active_module_count("player-1") == 4
 
     command(engine, "remove_module", module_id="laser-1")

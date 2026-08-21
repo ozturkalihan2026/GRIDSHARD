@@ -11,8 +11,8 @@ def make_engine():
     e.set_initial_active_module("p1","generator-1",2,3)
     e.start()
     for _ in range(150): e.step()
-    e.enqueue_command(BattleCommand("p1","place_module",{"module_id":"laser-1","x":3,"y":1})); e.step()
-    e.enqueue_command(BattleCommand("p1","place_module",{"module_id":"shield-1","x":4,"y":3})); e.step()
+    e.enqueue_command(BattleCommand("p1","place_module",{"module_id":"laser-1","x":3,"y":3})); e.step()
+    e.enqueue_command(BattleCommand("p1","place_module",{"module_id":"shield-1","x":3,"y":2})); e.step()
     return e
 
 def advance(e,ms):

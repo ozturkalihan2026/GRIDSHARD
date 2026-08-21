@@ -1,3 +1,5 @@
+import pytest
+
 from app.game.engine import BattleEngine
 from app.game.models import BattleCommand, BattleState, ModuleStatus
 
@@ -42,7 +44,7 @@ def redeploy_laser(engine: BattleEngine) -> None:
         BattleCommand(
             player_id="player-1",
             kind="place_module",
-            payload={"module_id": "laser-1", "x": 4, "y": 3},
+            payload={"module_id": "laser-1", "x": 1, "y": 2},
         )
     )
     engine.step()
@@ -60,7 +62,7 @@ def test_heat_is_preserved_in_reserve_and_on_redeploy():
 
     redeploy_laser(engine)
     assert laser.status == ModuleStatus.ACTIVE
-    assert laser.heat == 72.5
+    assert laser.heat == pytest.approx(72.15)
 
 
 def test_stored_energy_is_preserved_in_reserve_and_on_redeploy():
@@ -222,7 +224,7 @@ def test_all_persistent_state_survives_remove_and_redeploy_without_reset():
     laser = engine.state.players["player-1"].modules["laser-1"]
 
     assert laser.hp == 63
-    assert laser.heat == 44.0
+    assert laser.heat == pytest.approx(43.65)
     assert laser.stored_energy == 9.5
     assert "calibration" in laser.persistent_effects
     assert "armor_break" in laser.debuffs

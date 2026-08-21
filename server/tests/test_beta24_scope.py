@@ -17,13 +17,15 @@ def test_beta24_menu_preparation_and_result_markup():
     assert '<span class="lobby-subtitle">CORE ARENA</span>' in html
     assert 'id="lobby-player-name"' in html
     assert 'id="lobby-player-details"' in html
-    assert 'id="battle-prepare-local"' in html
-    assert 'id="battle-prepare-online"' in html
+    assert 'id="battle-prepare-local"' not in html
+    assert 'id="battle-prepare-online"' not in html
+    assert 'id="battle-pool-preset-dialog"' in html
+    assert 'id="initial-module-picker"' in html
     assert '<h3>Global Modüller</h3>' in html
     assert '<h3>Seçilen Savaş Havuzu</h3>' in html
     assert 'class="post-match-analysis"' in html
     assert "Savaş Analizini Aç" in html
-    assert "Sunucu Otoriteli Yerel Savaş" in html
+    assert "10 sn sonra AI devralır" in html
 
 
 def test_generator_has_four_ports_and_powers_adjacent_repair_module():

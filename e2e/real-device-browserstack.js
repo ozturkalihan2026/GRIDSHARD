@@ -92,14 +92,17 @@ async function waitFor(driver, predicate, timeout = 20_000) {
     await playButton.click();
     await driver.wait(until.elementsLocated(By.css("#battle-pool-selection .pool-choice")), 20_000);
 
-    for (let index = 0; index < 17; index += 1) {
-      const additions = await driver.findElements(By.css("#battle-pool-selection .pool-choice-select[data-action=add]"));
-      assert.ok(additions.length > 0, "Havuza eklenecek modül bulunamadı.");
-      await additions[0].click();
-    }
+    await driver.findElement(By.css("#battle-pool-preset-open")).click();
+    await driver.wait(until.elementLocated(By.css('.preset-card[data-preset-name="Başlangıç Devresi"] button')), 20_000).click();
+    await waitFor(
+      driver,
+      "return /18\\s*\\/\\s*18/.test(document.querySelector('#battle-pool-count')?.textContent || '')"
+    );
+    await driver.findElement(By.css("#battle-pool-preset-close")).click();
     await driver.findElement(By.css("#battle-pool-confirm")).click();
 
-    await waitFor(driver, "return document.body.dataset.localStatus === 'battle'");
+    await waitFor(driver, "return document.body.dataset.onlineStatus === 'battle'");
+    await waitFor(driver, "return document.body.dataset.opponentType === 'ai'");
     const layout = await driver.executeScript(`
       const board = document.querySelector('#board').getBoundingClientRect();
       return {

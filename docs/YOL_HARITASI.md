@@ -1,7 +1,7 @@
 # GRIDSHARD 2.0 — YOL HARİTASI
 
-**Güncel Sürüm:** `2.0.0-beta.25`
-**Paket:** Shardglass Kimliği + Shard Pulse Müzik + Kısa Viewport Hazırlık UX + Sunucu Otoriteli Kaçış Cezası
+**Güncel Sürüm:** `2.0.0-beta.26`
+**Paket:** Canlı Telemetri Sertleştirmesi + Görsel Erişilebilirlik + Bağlantı Hata Akışı + Tek Eşleştirme/AI Devralma + Aktif Devre
 **Kanonik Dosya:** `docs/YOL_HARITASI.md`
 
 > Bu dosya GRIDSHARD 2.0 için tek kanonik geliştirme kaydıdır. Kaynak karar belgesi ile kod tabanı yeniden karşılaştırılmıştır. Buradaki `[x]`, `[~]`, `[ ]` işaretleri artık yalnızca kodda ve testlerde doğrulanabilen gerçek durumu gösterir.
@@ -27,6 +27,7 @@ Aşağıdaki kararlar sabittir ve bundan sonraki geliştirmeler bunları bozamaz
 - [x] Modül müdahalesi ilk 15 saniye kilitlidir; savaş bu sırada akmaya devam eder.
 - [x] 15. saniyeden sonra modül değişikliklerinde yapay cooldown yoktur.
 - [x] Aktif modül kapasitesi zamanla `4 → 5 → 6 → 7 → 8 → 9 → 10` açılır.
+- [x] Yasal dört modüllük başlangıçtan sonra her 10 saniyelik kapasite dilimi yalnız bir yeni aktif yuva açar; aktif modülün başka bir rezerv modülle değiştirilmesinde yapay sınır yoktur.
 - [x] Devreden çıkarılan modül Can değerini korur; diğer maç içi durumlar da savaş saatiyle korunacak şekilde modellenmiştir.
 - [x] Sürüklenmekte olan aktif modül, bırakma komutu motor tarafından kabul edilene kadar savaşta kalır.
 - [x] 24 global seçenekten 18 modüllük Savaş Havuzu kullanılır; maksimum 10 aktif modül vardır.
@@ -1413,15 +1414,29 @@ Ayrıntılı operasyon akışı: `docs/MOBILE_RELEASE_RUNBOOK.md`.
 
 ---
 
-# 10. Sıradaki Paket
+# 10. Güncel Paket
 
 **`GRIDSHARD 2.0.0-beta.26 — Canlı Telemetri Sertleştirmesi + Görsel Erişilebilirlik + Bağlantı Hata Akışı`**
 
-1. Gerçek kullanıcı maçlarından port döndürme, enerji yetersizliği, raf kullanımı ve kaçış telemetrisini toplamak.
-2. Yerel AI snapshot bağlantı kopması / yeniden bağlanma akışını kullanıcıya görünür ve geri kazanılabilir yapmak.
-3. Savaş efektleri için renk körlüğü ve azaltılmış hareket profillerini genişletmek.
-4. Windows/Chrome kanıt paketini Shardglass arayüzüyle çoklu viewport matrisinde yeniden üretmek.
-5. Enerji sayısal dengesini yalnız ölçülen telemetri ve açık review kararıyla değerlendirmek.
+Bu paket, başlıktaki telemetri/erişilebilirlik/bağlantı çalışmalarına ek olarak 21 Ağustos 2026 hazırlık ve savaş geri bildirimlerini içerir:
+
+1. [x] Hazırlık ekranındaki `Yerel AI Testi / Online PvP` ayrımı kaldırıldı; `Oyna` tek çevrimiçi hazırlık akışını açar.
+2. [x] İnsan rakip araması 10 saniye sürer; bulunamazsa sunucu normal iki oyunculu PvP oturumuna AI slotu bağlar. AI maçı istemci sahte savaşı değil aynı `BattleEngine` ve PvP protokolünü kullanır.
+3. [x] Canlı tick koşucusu işaretli AI oyuncular için 5 saniyelik karar aralığında gerçek `place_module / replace_module / booster` komutları üretir; AI ilk devresi de normal enerji ve saldırı simülasyonunda çalışır.
+4. [x] Hazır Savaş Havuzları küçük, yüksekliği kısıtlı şeritten geniş modal yönetim alanına taşındı.
+5. [x] Başlangıç devresi dört aktiftir: Çekirdek ve Jeneratör sistem tarafından sabitlenir, diğer iki modülü oyuncu 18'lik havuzundan seçer. Aynı seçim hem çevrimiçi hem sunucu AI maçına gönderilir.
+6. [x] `15–25: 4`, `25–35: 5`, `35–45: 6` kapasite çizelgesi sunucu ve istemci tarafında birlikte uygulanır. Bekleyen yerleştirme komutları istemcide kapasiteye dahil edilir; böylece aynı aralıkta sınırsız raf sürükleme kuyruğu oluşmaz.
+7. [x] Yeni yerleştirilen/değiştirilen modül çalışan enerji hattına otomatik yöneltilir. Enerji hattına port bağlantısı kurulamıyorsa sessizce etkisiz kalmak yerine komut açıklamalı olarak reddedilir.
+8. [x] Modül değişimi kapasiteyi artırmadığı için aynı zaman diliminde, Devre Kredisi yettiği sürece sınırsız kalır.
+9. [x] `BASLAT_WEB_TEST.bat` Python bulma, eksik bağımlılık tamamlama, sürüm bütünlüğü ve port çakışması tanısıyla sertleştirildi.
+10. [x] Beta.26 kabul raporu; tek eşleştirme, AI devralma, geniş havuz yöneticisi, başlangıç seçimi, kapasite/aktivasyon ve web başlatıcı kontrollerini kapsar.
+
+Doğrulama sınırı:
+
+- [x] Sunucu/istemci birim ve entegrasyon testleri bu kuralları kapsar.
+- [x] Yerel Windows üzerinde gerçek Chromium iki istemcili PvP; Android Chrome ve iPhone WebKit/Safari emülasyonunda mobil savaş + eğitim/AI devralma matrisi `5/5` geçti. Kanıt: `qa_reports/browser_e2e_evidence_summary.json`.
+- [ ] Fiziksel Android/iPhone ile başka makineden içe aktarılan harici Windows/Chrome kanıtı ayrıca üretilmelidir; emülasyon fiziksel cihaz kanıtı sayılmaz.
+- [ ] Gerçek kullanıcı telemetrisi oluşmadan sayısal enerji dengesi otomatik değiştirilmez.
 
 Kural:
 - savaş başladıktan sonra hiçbir UI etkileşimi simulation clock'u durduramaz,

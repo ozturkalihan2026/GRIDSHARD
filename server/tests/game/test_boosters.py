@@ -15,9 +15,9 @@ def build_engine():
     engine.start()
     for _ in range(150):
         engine.step()
-    engine.enqueue_command(BattleCommand("p1","place_module",{"module_id":"laser-1","x":3,"y":1}))
+    engine.enqueue_command(BattleCommand("p1","place_module",{"module_id":"laser-1","x":3,"y":3}))
     engine.step()
-    engine.enqueue_command(BattleCommand("p1","place_module",{"module_id":"shield-1","x":4,"y":3}))
+    engine.enqueue_command(BattleCommand("p1","place_module",{"module_id":"shield-1","x":3,"y":2}))
     engine.step()
     return engine
 

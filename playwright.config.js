@@ -10,7 +10,9 @@ module.exports = defineConfig({
   timeout: 60_000,
   expect: { timeout: 10_000 },
   fullyParallel: false,
-  workers: process.env.CI ? 1 : undefined,
+  // Aynı yerel IP'den çalışan E2E projeleri üretim rate-limit'ini birbirinin
+  // aleyhine tüketmemeli; CI ve geliştirici kanıtı aynı seri matrisi kullanır.
+  workers: 1,
   retries: process.env.CI ? 1 : 0,
   reporter: [
     ["line"],

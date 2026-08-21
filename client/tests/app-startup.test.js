@@ -140,7 +140,7 @@ if (document.body.dataset.appScreen !== "profile") {
 }
 
 
-// Beta.22: Oyna → Savaş Alanını Hemen Aç → gerçek yerel AI savaş alanı.
+// Beta.26: Oyna doğrudan tek çevrimiçi hazırlık akışını açar.
 const playButton = menuButtons.find((x) => x.dataset.openScreen === "play");
 playButton.disabled = false;
 playButton._listeners.click();
@@ -148,19 +148,16 @@ playButton._listeners.click();
 if (document.body.dataset.appScreen !== "play") {
   throw new Error(`Oyna menüsü açılmadı: ${document.body.dataset.appScreen}`);
 }
-if (document.body.dataset.playMode !== "local") {
+if (document.body.dataset.playMode !== "online") {
   throw new Error(`Oyna doğrudan hazırlık modunu açmadı: ${document.body.dataset.playMode}`);
 }
-if (document.body.dataset.localStatus !== "setup") {
-  throw new Error(`Oyna hazırlık ekranına gitmedi: ${document.body.dataset.localStatus}`);
+if (document.body.dataset.onlineStatus !== "idle") {
+  throw new Error(`Oyna çevrimiçi hazırlık ekranına gitmedi: ${document.body.dataset.onlineStatus}`);
 }
 
-const quickStart = getElement("local-battle-quick-start");
-if (typeof quickStart._listeners.click !== "function") {
-  throw new Error("Savaş Alanını Hemen Aç handler bağlanmadı.");
-}
-
-quickStart._listeners.click();
+// Ürün arayüzünde yerel mod seçimi yoktur; otomatik savaş regresyonu yalnız
+// test API'sindeki sunucu AI yardımcısıyla sürdürülür.
+sandbox.window.__GRIDSHARD_TEST_API.startQuickLocalBattle();
 
 if (document.body.dataset.playMode !== "local") {
   throw new Error(`Yerel savaş modu açılmadı: ${document.body.dataset.playMode}`);
@@ -248,7 +245,7 @@ if (document.body.dataset.localStatus !== "setup") {
   throw new Error(`Sonuçtan hazırlığa dönülmedi: ${document.body.dataset.localStatus}`);
 }
 
-quickStart._listeners.click();
+sandbox.window.__GRIDSHARD_TEST_API.startQuickLocalBattle();
 for (let ms = 1000; ms <= 5000; ms += 1000) {
   rafCallback(ms);
 }

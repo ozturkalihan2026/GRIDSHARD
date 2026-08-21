@@ -25,11 +25,32 @@ def test_packaged_browser_summary_does_not_claim_pass_without_complete_real_arti
             ]
             is True
         )
-        assert all(
-            summary[
-                "screenshots"
-            ].values()
+        playwright_matrix=(
+            summary.get(
+                "playwright_matrix",
+                {},
+            )
         )
+        if playwright_matrix.get(
+            "complete"
+        ):
+            assert (
+                playwright_matrix[
+                    "passed_by_project"
+                ]
+                == playwright_matrix[
+                    "expected_projects"
+                ]
+            )
+            assert playwright_matrix[
+                "test_count"
+            ]==5
+        else:
+            assert all(
+                summary[
+                    "screenshots"
+                ].values()
+            )
     elif summary[
         "status"
     ]=="SKIPPED":

@@ -127,12 +127,12 @@ def test_redeploy_module_returns_with_same_hp():
 
     engine.apply_damage("player-1", "laser-1", 57)
     run_command(engine, "remove_module", module_id="laser-1")
-    run_command(engine, "place_module", module_id="laser-1", x=4, y=3)
+    run_command(engine, "place_module", module_id="laser-1", x=1, y=2)
 
     laser = engine.state.players["player-1"].modules["laser-1"]
     assert laser.status == ModuleStatus.ACTIVE
     assert laser.hp == 43
-    assert (laser.position.x, laser.position.y) == (4, 3)
+    assert (laser.position.x, laser.position.y) == (1, 2)
 
 
 def test_move_module_changes_only_position():
@@ -179,10 +179,10 @@ def test_rotate_module_changes_direction():
     run_command(engine, "place_module", module_id="laser-1", x=3, y=3)
 
     laser = engine.state.players["player-1"].modules["laser-1"]
-    assert laser.direction == Direction.UP
+    assert laser.direction == Direction.LEFT
 
     run_command(engine, "rotate_module", module_id="laser-1")
-    assert laser.direction == Direction.RIGHT
+    assert laser.direction == Direction.UP
 
     run_command(
         engine,
@@ -190,7 +190,7 @@ def test_rotate_module_changes_direction():
         module_id="laser-1",
         clockwise=False,
     )
-    assert laser.direction == Direction.UP
+    assert laser.direction == Direction.LEFT
 
 
 def test_destroyed_module_cannot_be_redeployed():

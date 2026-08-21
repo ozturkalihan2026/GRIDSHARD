@@ -573,6 +573,7 @@ player_data_store_service = PlayerDataStoreService(
 matchmaking_service = MatchmakingService(
     now_func=time.monotonic
 )
+MATCHMAKING_AI_FALLBACK_SECONDS = 10
 
 
 def persist_player_data(
@@ -625,6 +626,7 @@ class ReadySessionRequest(BaseModel):
 class LocalAiBattleStartRequest(BaseModel):
     player_id: str
     battle_pool_ids: list[str]
+    initial_modules: list[InitialModuleRequest] | None = None
 
 
 class LocalAiBattleCommandRequest(BaseModel):
@@ -2392,6 +2394,7 @@ def matchmaking_join(
                 existing_match
                 .rating_difference
             ),
+            "opponent_type": existing_match.opponent_type,
         }
 
     profile = (
@@ -2482,6 +2485,7 @@ def matchmaking_join(
         "rating_difference": (
             match.rating_difference
         ),
+        "opponent_type": match.opponent_type,
     }
 
 
@@ -2503,10 +2507,19 @@ def matchmaking_cancel(
 def matchmaking_status(
     player_id: str,
 ) -> dict:
-    return (
-        matchmaking_service
-        .queue_snapshot(player_id)
-    )
+    snapshot = matchmaking_service.queue_snapshot(player_id)
+    if (
+        snapshot.get("queued")
+        and int(snapshot.get("waited_seconds", 0))
+        >= MATCHMAKING_AI_FALLBACK_SECONDS
+    ):
+        try:
+            pair = matchmaking_service.match_with_ai(player_id)
+            _create_matchmaking_ai_session(pair)
+            snapshot = matchmaking_service.queue_snapshot(player_id)
+        except (MatchmakingError, PvPSessionError, ValueError) as exc:
+            raise HTTPException(status_code=409, detail=str(exc)) from exc
+    return snapshot
 
 
 @app.get("/settings/{player_id}")
@@ -2897,7 +2910,7 @@ def gridshard_identity() -> dict:
         "tagline_en":
             "Build the Circuit. Break the Core.",
         "identity_version":
-            "2.0.0-beta.25",
+            "2.0.0-beta.26",
         "palette":{
             "void_navy":"#070B14",
             "reactor_blue":"#0C1625",
@@ -3871,20 +3884,29 @@ def _local_ai_battle_pool() -> tuple[str, ...]:
 
 def _local_player_initial_modules(
     battle_pool_ids: list[str],
+    selected_definition_ids: list[str] | tuple[str, ...] | None = None,
 ) -> tuple[InitialModulePlacement, ...]:
-    attackers = [
-        definition_id
-        for definition_id in battle_pool_ids
-        if BASIC_MODULE_DEFINITIONS[
+    player_choices = list(selected_definition_ids or ())
+    if not player_choices:
+        player_choices = [
             definition_id
-        ].category == "saldırı"
-    ]
-    if len(attackers) < 2:
+            for definition_id in battle_pool_ids
+            if BASIC_MODULE_DEFINITIONS[definition_id].category == "saldırı"
+        ][:2]
+    if (
+        len(player_choices) != 2
+        or len(set(player_choices)) != 2
+        or any(
+            definition_id in {"core", "generator"}
+            or definition_id not in battle_pool_ids
+            for definition_id in player_choices
+        )
+    ):
         raise PvPSessionError(
-            "Yerel AI savaşı için Savaş Havuzu en az iki saldırı modülü içermelidir."
+            "Başlangıç devresi için havuzdan iki farklı oyuncu modülü seçilmelidir."
         )
 
-    left_attack, right_attack = attackers[:2]
+    left_module, right_module = player_choices
     return (
         InitialModulePlacement(
             instance_id="core-1",
@@ -3902,20 +3924,20 @@ def _local_player_initial_modules(
         ),
         InitialModulePlacement(
             instance_id=(
-                left_attack.replace("_", "-")
+                left_module.replace("_", "-")
                 + "-1"
             ),
-            definition_id=left_attack,
+            definition_id=left_module,
             x=1,
             y=3,
             direction=Direction.RIGHT,
         ),
         InitialModulePlacement(
             instance_id=(
-                right_attack.replace("_", "-")
+                right_module.replace("_", "-")
                 + "-1"
             ),
-            definition_id=right_attack,
+            definition_id=right_module,
             x=3,
             y=3,
             direction=Direction.LEFT,
@@ -3981,6 +4003,47 @@ def _local_ai_snapshot_envelope(
     }
 
 
+def _create_matchmaking_ai_session(pair) -> None:
+    """İnsan kuyruğu zaman aşımında normal PvP protokolüne AI slotu ekler."""
+    try:
+        pvp_service.get_session(pair.match_id)
+        return
+    except PvPSessionError:
+        pass
+
+    pvp_service.create_session(
+        pair.match_id,
+        setup_required=True,
+        auto_start_when_ready=True,
+    )
+    pvp_service.join(pair.match_id, pair.player_a_id)
+    pvp_service.join(pair.match_id, pair.player_b_id)
+
+    ai_pool = _local_ai_battle_pool()
+    pvp_service.submit_setup(
+        pair.match_id,
+        pair.player_b_id,
+        PvPSetupPayload(
+            battle_pool_ids=ai_pool,
+            initial_modules=_local_ai_initial_modules(pair.player_b_id),
+        ),
+    )
+    pvp_service.set_ready(pair.match_id, pair.player_b_id, True)
+    pvp_service.mark_ai_player(pair.match_id, pair.player_b_id)
+
+    telemetry_service.record_now(
+        event_id=f"server:{pair.match_id}:matchmaking_ai_fallback:{pair.player_a_id}",
+        event_type="matchmaking_matched",
+        player_id=pair.player_a_id,
+        session_id=pair.match_id,
+        metadata={
+            "rating_difference": 0,
+            "opponent_type": "ai",
+            "fallback_after_seconds": MATCHMAKING_AI_FALLBACK_SECONDS,
+        },
+    )
+
+
 @app.post("/local-ai/sessions")
 async def create_local_ai_session(
     request: LocalAiBattleStartRequest,
@@ -4009,9 +4072,18 @@ async def create_local_ai_session(
                     request.battle_pool_ids
                 ),
                 initial_modules=(
-                    _local_player_initial_modules(
-                        request.battle_pool_ids
+                    tuple(
+                        InitialModulePlacement(
+                            instance_id=item.instance_id,
+                            definition_id=item.definition_id,
+                            x=item.x,
+                            y=item.y,
+                            direction=item.direction,
+                        )
+                        for item in request.initial_modules
                     )
+                    if request.initial_modules
+                    else _local_player_initial_modules(request.battle_pool_ids)
                 ),
             ),
         )
@@ -4037,6 +4109,10 @@ async def create_local_ai_session(
             session_id,
             ai_player_id,
             True,
+        )
+        pvp_service.mark_ai_player(
+            session_id,
+            ai_player_id,
         )
         pvp_service.start(session_id)
         await pvp_tick_runner.ensure_started(

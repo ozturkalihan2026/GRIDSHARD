@@ -1,15 +1,15 @@
 {
   "project": "GRIDSHARD 2.0",
-  "version": "2.0.0-beta.25",
-  "generated_at_epoch": 1787298798,
+  "version": "2.0.0-beta.26",
+  "generated_at_epoch": 1787315401,
   "ok": true,
   "steps": [
     {
       "name": "release_guard",
       "ok": true,
       "returncode": 0,
-      "duration_s": 0.188,
-      "stdout": "[GRIDSHARD] Kaynak bütünlüğü doğrulandı: 2.0.0-beta.25 · dict telemetri uyumlu.\n",
+      "duration_s": 0.097,
+      "stdout": "[GRIDSHARD] Kaynak bütünlüğü doğrulandı: 2.0.0-beta.26 · dict telemetri uyumlu.\n",
       "stderr": "",
       "command": [
         "C:\\Users\\SERVER\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\python\\python.exe",
@@ -20,8 +20,8 @@
       "name": "server_pytest",
       "ok": true,
       "returncode": 0,
-      "duration_s": 24.277,
-      "stdout": "........................................................................ [ 11%]\n........................................................................ [ 22%]\n........................................................................ [ 34%]\n........................................................................ [ 45%]\n........................................................................ [ 56%]\n........................................................................ [ 68%]\n........................................................................ [ 79%]\n........................................................................ [ 90%]\n...........................................................              [100%]\n635 passed in 22.05s\n",
+      "duration_s": 26.49,
+      "stdout": "........................................................................ [ 10%]\n........................................................................ [ 21%]\n........................................................................ [ 32%]\n........................................................................ [ 43%]\n........................................................................ [ 54%]\n........................................................................ [ 65%]\n........................................................................ [ 76%]\n........................................................................ [ 87%]\n........................................................................ [ 98%]\n........                                                                 [100%]\n656 passed in 25.45s\n",
       "stderr": "",
       "command": [
         "C:\\Users\\SERVER\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\python\\python.exe",
@@ -34,7 +34,7 @@
       "name": "client_syntax_app",
       "ok": true,
       "returncode": 0,
-      "duration_s": 0.121,
+      "duration_s": 0.077,
       "stdout": "",
       "stderr": "",
       "command": [
@@ -47,7 +47,7 @@
       "name": "client_syntax_runtime",
       "ok": true,
       "returncode": 0,
-      "duration_s": 0.107,
+      "duration_s": 0.072,
       "stdout": "",
       "stderr": "",
       "command": [
@@ -60,7 +60,7 @@
       "name": "client_syntax_audio",
       "ok": true,
       "returncode": 0,
-      "duration_s": 0.097,
+      "duration_s": 0.072,
       "stdout": "",
       "stderr": "",
       "command": [
@@ -73,7 +73,7 @@
       "name": "client_audio_tests",
       "ok": true,
       "returncode": 0,
-      "duration_s": 0.103,
+      "duration_s": 0.094,
       "stdout": "gridshard audio identity test passed\n",
       "stderr": "",
       "command": [
@@ -85,7 +85,7 @@
       "name": "client_audio_browser_lifecycle",
       "ok": true,
       "returncode": 0,
-      "duration_s": 2.818,
+      "duration_s": 2.824,
       "stdout": "gridshard audio browser lifecycle test passed\n",
       "stderr": "",
       "command": [
@@ -97,7 +97,7 @@
       "name": "client_unit_tests",
       "ok": true,
       "returncode": 0,
-      "duration_s": 0.323,
+      "duration_s": 0.207,
       "stdout": "175 client tests passed\n",
       "stderr": "",
       "command": [
@@ -109,7 +109,7 @@
       "name": "client_startup_menu_test",
       "ok": true,
       "returncode": 0,
-      "duration_s": 0.287,
+      "duration_s": 0.148,
       "stdout": "app startup + preparation return + forfeit penalty + timer freeze + reciprocal local battle test passed\n",
       "stderr": "",
       "command": [
@@ -121,7 +121,7 @@
       "name": "audio_bs1770_optional_scan",
       "ok": true,
       "returncode": 0,
-      "duration_s": 0.251,
+      "duration_s": 0.107,
       "stdout": "Audio BS.1770 scan: SKIPPED\n",
       "stderr": "",
       "command": [
@@ -133,8 +133,8 @@
       "name": "beta25_energy_port_regression",
       "ok": true,
       "returncode": 0,
-      "duration_s": 2.044,
-      "stdout": "Beta.24 energy/port report: C:\\Users\\SERVER\\.codex\\worktrees\\681e\\GRIDSHARD\\qa_reports\\beta24_energy_port_report.json\nmatches 30 timeouts 0 draws 2 avg_ms 52593.3\nenergy_combinations 43795 generator 11.0 ports 4\n",
+      "duration_s": 1.7,
+      "stdout": "Beta.24 energy/port report: D:\\Projects\\GRIDSHARD\\qa_reports\\beta24_energy_port_report.json\nmatches 30 timeouts 0 draws 2 avg_ms 52593.3\nenergy_combinations 43795 generator 11.0 ports 4\n",
       "stderr": "",
       "command": [
         "C:\\Users\\SERVER\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\python\\python.exe",
@@ -142,23 +142,23 @@
       ]
     },
     {
-      "name": "beta25_acceptance_report",
+      "name": "beta26_acceptance_report",
       "ok": true,
       "returncode": 0,
-      "duration_s": 0.167,
-      "stdout": "Beta.25 acceptance report: C:\\Users\\SERVER\\.codex\\worktrees\\681e\\GRIDSHARD\\qa_reports\\beta25_acceptance_report.json\n",
+      "duration_s": 0.115,
+      "stdout": "Beta.26 acceptance report: D:\\Projects\\GRIDSHARD\\qa_reports\\beta26_acceptance_report.json\n",
       "stderr": "",
       "command": [
         "C:\\Users\\SERVER\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\python\\python.exe",
-        "tools/beta25_acceptance_report.py"
+        "tools/beta26_acceptance_report.py"
       ]
     },
     {
       "name": "browser_e2e_evidence_summary",
       "ok": true,
       "returncode": 0,
-      "duration_s": 0.137,
-      "stdout": "GRIDSHARD Browser E2E evidence: SKIPPED\nRapor: C:\\Users\\SERVER\\.codex\\worktrees\\681e\\GRIDSHARD\\qa_reports\\browser_e2e_evidence_summary.json\n",
+      "duration_s": 0.109,
+      "stdout": "GRIDSHARD Browser E2E evidence: PASSED\nRapor: D:\\Projects\\GRIDSHARD\\qa_reports\\browser_e2e_evidence_summary.json\n",
       "stderr": "",
       "command": [
         "C:\\Users\\SERVER\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\python\\python.exe",
@@ -169,7 +169,7 @@
       "name": "browser_e2e_history",
       "ok": true,
       "returncode": 0,
-      "duration_s": 0.132,
+      "duration_s": 0.079,
       "stdout": "Browser E2E history: SKIPPED\n",
       "stderr": "",
       "command": [
@@ -181,7 +181,7 @@
       "name": "ux_interaction_matrix",
       "ok": true,
       "returncode": 0,
-      "duration_s": 0.108,
+      "duration_s": 0.09,
       "stdout": "UX interaction matrix: SKIPPED\n",
       "stderr": "",
       "command": [
@@ -193,7 +193,7 @@
       "name": "ux_performance_observation",
       "ok": true,
       "returncode": 0,
-      "duration_s": 0.111,
+      "duration_s": 0.092,
       "stdout": "UX performance observation: NOT_MEASURED\n",
       "stderr": "",
       "command": [
@@ -204,7 +204,7 @@
     {
       "name": "uvicorn_http_smoke",
       "ok": true,
-      "duration_s": 2.766,
+      "duration_s": 2.239,
       "checks": [
         {
           "path": "/",

@@ -3,7 +3,7 @@ setlocal
 cd /d "%~dp0"
 
 echo ============================================================
-echo GRIDSHARD 2.0.0-beta.25 - Windows E2E Kanit Iceri Aktarim
+echo GRIDSHARD 2.0.0-beta.26 - Windows E2E Kanit Iceri Aktarim
 echo ============================================================
 
 if "%~1"=="" (

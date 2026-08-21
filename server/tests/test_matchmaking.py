@@ -213,3 +213,38 @@ def test_gateway_cancel_removes_queue_entry():
 
     assert response.status_code==200
     assert response.json()["cancelled"] is True
+
+
+def test_gateway_assigns_server_ai_after_exactly_ten_seconds():
+    reset_gateway()
+    clock = Clock()
+    original_now = matchmaking_service.now_func
+    matchmaking_service.now_func = clock.now
+    try:
+        queued = client.post(
+            "/matchmaking/join",
+            json={"player_id": "fallback-player"},
+        )
+        assert queued.status_code == 200
+        assert queued.json()["matched"] is False
+
+        clock.advance(9.9)
+        waiting = client.get("/matchmaking/fallback-player").json()
+        assert waiting["queued"] is True
+        assert waiting["matched"] is False
+
+        clock.advance(0.1)
+        matched = client.get("/matchmaking/fallback-player")
+        assert matched.status_code == 200
+        body = matched.json()
+        assert body["matched"] is True
+        assert body["opponent_type"] == "ai"
+        assert body["session_id"].startswith("local-ai-match-")
+
+        session = pvp_service.get_session(body["session_id"])
+        assert len(session.ai_player_ids) == 1
+        ai_player_id = next(iter(session.ai_player_ids))
+        assert session.slots[ai_player_id].setup_submitted is True
+        assert session.slots[ai_player_id].ready is True
+    finally:
+        matchmaking_service.now_func = original_now

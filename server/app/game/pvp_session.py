@@ -59,6 +59,8 @@ class PvPSession:
     created_at: float = 0.0
     last_activity_at: float = 0.0
     finished_at: float | None = None
+    ai_player_ids: set[str] = field(default_factory=set)
+    ai_next_decision_at_ms: dict[str, int] = field(default_factory=dict)
 
     @property
     def is_full(self) -> bool:
@@ -165,6 +167,22 @@ class PvPSessionService:
         )
         slot.connected = False
         self._touch(self.get_session(session_id))
+
+    def mark_ai_player(
+        self,
+        session_id: str,
+        player_id: str,
+        *,
+        first_decision_at_ms: int = 15_000,
+    ) -> None:
+        session = self.get_session(session_id)
+        session.slot_for(player_id)
+        session.ai_player_ids.add(player_id)
+        session.ai_next_decision_at_ms[player_id] = max(
+            0,
+            int(first_decision_at_ms),
+        )
+        self._touch(session)
 
     def submit_setup(
         self,

@@ -32,7 +32,7 @@
     <section id="main-menu-panel" class="main-menu-panel">
       <div class="main-menu-brand">
         <h1>GRIDSHARD</h1>
-        <span>2.0.0-beta.25</span>
+        <span>2.0.0-beta.26</span>
       </div>
       <div class="lobby-backdrop" aria-hidden="true">
         <div class="lobby-board-grid" aria-hidden="true">
@@ -65,7 +65,7 @@
           </button>
           <div class="lobby-build-chip">
             <span>GÜNCEL YAPI</span>
-            <strong id="ui-build-version">2.0.0-beta.25</strong><small id="ui-build-run">manifest bekleniyor</small>
+            <strong id="ui-build-version">2.0.0-beta.26</strong><small id="ui-build-run">manifest bekleniyor</small>
           </div>
         </div>
       </div>
@@ -155,53 +155,6 @@
 
 
 
-    <section class="play-mode-panel" id="play-mode-panel" data-screen-panel="play" hidden>
-      <div class="panel-title-row">
-        <div>
-          <h2 id="play-mode-title">Maç Modu</h2>
-          <p class="screen-subtitle">Tek bilgisayarda hemen dene veya gerçek Online PvP kuyruğuna gir.</p>
-        </div>
-        <span id="play-mode-status">Mod seçimi bekleniyor</span>
-      </div>
-      <button id="tutorial-replay" type="button" class="tutorial-replay">Kısa Eğitimi Aç</button>
-      <section class="quick-loadout-panel">
-        <div class="quick-loadout-heading">
-          <div>
-            <strong>Hızlı Loadout</strong>
-            <span>Favori ve son kullanılan hazır havuzların.</span>
-          </div>
-          <span id="quick-loadout-status">Hazır havuzlar yükleniyor...</span>
-        </div>
-
-        <div class="quick-loadout-toolbar" role="group" aria-label="Hızlı loadout filtresi">
-          <button id="quick-loadout-filter-all" type="button" data-active="true">Tümü</button>
-          <button id="quick-loadout-filter-favorites" type="button" data-active="false">Favoriler</button>
-        </div>
-
-        <div id="quick-loadout-active-summary" class="quick-loadout-active-summary" data-state="none">
-          <strong>Aktif loadout yok</strong>
-          <span>Hazır havuz seçtiğinde savaş öncesi özet burada görünecek.</span>
-        </div>
-
-        <div id="quick-loadout-gallery" class="quick-loadout-gallery" aria-label="Hızlı hazır havuz seçimi"></div>
-      </section>
-
-      <div class="play-mode-actions">
-        <button id="local-battle-quick-start" type="button" class="play-mode-card primary battle-entry-card">
-          <strong>Savaş Alanını Hemen Aç</strong>
-          <span>Test için 18 modüllük havuzu otomatik doldurur ve doğrudan Yerel AI savaş alanına geçirir.</span>
-        </button>
-        <button id="local-play-start" type="button" class="play-mode-card">
-          <strong>Tek Oyunculu Test Maçı — Havuzu Hazırla</strong>
-          <span>18 modülü kendin seç, hazır havuzunu düzenle ve ardından savaş alanına geç.</span>
-        </button>
-        <button id="online-play-prepare" type="button" class="play-mode-card">
-          <strong>Online PvP</strong>
-          <span>18 modüllük Savaş Havuzunu hazırla ve gerçek eşleştirme kuyruğuna katıl.</span>
-        </button>
-      </div>
-    </section>
-
     <section id="play-recovery-panel" class="play-recovery-panel play-online-panel" data-screen-panel="play" hidden>
       <strong>Bağlantı / Oturum Durumu</strong>
       <span id="play-recovery-message"></span>
@@ -215,16 +168,21 @@
           <p class="screen-subtitle">Soldan modülü incele. + ile ekle, − ile çıkar; ◆ Jeneratörün zorunlu ve kilitli olduğunu gösterir. Hazır havuz yükleyebilir, düzenleyebilir ve tekrar kaydedebilirsin.</p>
         </div>
         <div class="battle-preparation-status">
-          <div class="battle-preparation-mode" role="group" aria-label="Hazırlık maç modu">
-            <button id="battle-prepare-local" type="button" data-active="true">Yerel AI Testi</button>
-            <button id="battle-prepare-online" type="button" data-active="false">Online PvP</button>
-          </div>
+          <button id="tutorial-replay" type="button" class="tutorial-replay">Kısa Eğitim</button>
+          <button id="battle-pool-preset-open" type="button" class="preset-manager-open">Hazır Havuzları Yönet</button>
           <span id="battle-pool-count">1 / 18</span>
         </div>
       </div>
 
-      <details class="battle-pool-preset-bar">
-        <summary>Hazır Savaş Havuzları ve kayıt yönetimi</summary>
+      <dialog id="battle-pool-preset-dialog" class="battle-pool-preset-dialog" aria-labelledby="preset-dialog-title">
+        <div class="preset-dialog-header">
+          <div>
+            <strong id="preset-dialog-title">Hazır Savaş Havuzları ve Kayıt Yönetimi</strong>
+            <span>Havuzlarını geniş çalışma alanında yükle, kaydet, yeniden adlandır veya sil.</span>
+          </div>
+          <button id="battle-pool-preset-close" type="button" aria-label="Hazır havuz yönetimini kapat">Kapat</button>
+        </div>
+        <div class="battle-pool-preset-bar">
         <div class="preset-gallery-heading">
           <div>
             <strong>Hazır Savaş Havuzları</strong>
@@ -257,7 +215,21 @@
           </div>
         </div>
         <span id="battle-pool-preset-status" role="status">Kayıtlı havuzlar yükleniyor...</span>
-      </details>
+        </div>
+      </dialog>
+
+      <section class="initial-circuit-picker" aria-labelledby="initial-circuit-title">
+        <div>
+          <strong id="initial-circuit-title">Başlangıç Devresi · 4 Aktif</strong>
+          <span>Çekirdek ve Jeneratör sabittir. Savaş Havuzundan diğer iki başlangıç modülünü seç.</span>
+        </div>
+        <div class="initial-fixed-modules" aria-label="Sabit başlangıç modülleri">
+          <span>Çekirdek · sabit</span>
+          <span>Jeneratör · sabit</span>
+        </div>
+        <div id="initial-module-picker" class="initial-module-picker" aria-label="Oyuncunun seçtiği başlangıç modülleri"></div>
+        <span id="initial-module-status" role="status">2 / 2 oyuncu modülü seçili</span>
+      </section>
 
       <div class="battle-pool-builder">
         <aside class="battle-pool-catalog-panel">
@@ -316,7 +288,7 @@
       </div>
 
       <div class="battle-pool-actions">
-        <button id="battle-pool-confirm" type="button" disabled>Eşleştir</button>
+        <button id="battle-pool-confirm" type="button" disabled>Eşleştir · 10 sn sonra AI devralır</button>
         <button id="matchmaking-cancel" type="button">Eşleştirmeyi İptal Et</button>
       </div>
     </section>
@@ -418,7 +390,7 @@
     </section>
 
     <section class="battle-test-banner play-live-panel" data-screen-panel="play" hidden>
-      <strong>Beta.25 Shardglass Kimliği · Sunucu Otoriteli Yerel Savaş</strong>
+      <strong>Beta.26 · Tek Eşleştirme · 10 sn AI Devralma · Sunucu Otoriteli Savaş</strong>
       <span id="battle-entry-status">Savaş alanına giriş başarılı · Yerel AI aktif · Modül Rafı 15. saniyede açılır</span>
     </section>
 

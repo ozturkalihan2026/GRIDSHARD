@@ -25,6 +25,7 @@ class MatchmakingPair:
     player_b_id: str
     rating_difference: int
     matched_at: float = 0.0
+    opponent_type: str = "human"
 
 
 class MatchmakingError(ValueError):
@@ -187,6 +188,34 @@ class MatchmakingService:
 
         return pair
 
+    def match_with_ai(
+        self,
+        player_id: str,
+    ) -> MatchmakingPair:
+        """10 saniyelik insan aramasından sonra kuyruğu AI rakiple kapatır."""
+        if player_id not in self._queue:
+            existing = self.matched_pair_for(player_id)
+            if existing is not None:
+                return existing
+            raise MatchmakingError(
+                "Oyuncu AI eşleştirmesi için kuyrukta değil."
+            )
+
+        source = self._queue.pop(player_id)
+        match_id = f"local-ai-match-{uuid4().hex}"
+        ai_player_id = f"{match_id}-opponent"
+        pair = MatchmakingPair(
+            match_id=match_id,
+            player_a_id=source.player_id,
+            player_b_id=ai_player_id,
+            rating_difference=0,
+            matched_at=self.now_func(),
+            opponent_type="ai",
+        )
+        self._matches_by_player[pair.player_a_id] = pair
+        self._matches_by_player[pair.player_b_id] = pair
+        return pair
+
     def matched_pair_for(
         self,
         player_id: str,
@@ -266,6 +295,7 @@ class MatchmakingService:
                 "rating_difference": (
                     pair.rating_difference
                 ),
+                "opponent_type": pair.opponent_type,
             }
 
         entry = self._queue.get(
@@ -280,7 +310,7 @@ class MatchmakingService:
 
         waited_seconds = max(
             0,
-            round(
+            int(
                 self.now_func()
                 - entry.joined_at
             ),

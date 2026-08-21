@@ -135,6 +135,40 @@ function createClient() {
 }
 
 {
+  const emitted = [];
+  const modules = [
+    "core", "generator", "laser", "pulse", "shield", "battery",
+  ].map((id, index) => ({
+    instanceId: `${id}-1`,
+    nameTr: id,
+    status: index < 4 ? MODULE_STATUS.ACTIVE : MODULE_STATUS.RESERVE,
+    position: index < 4 ? { x: index, y: 1 } : null,
+  }));
+  const battle = new RelayBattleClient({
+    modules,
+    unlockAtMs: 15000,
+    circuitCredits: 1000,
+    emitCommand(command) { emitted.push(command); },
+  });
+
+  battle.updateElapsedMs(15000);
+  assert.strictEqual(battle.beginDrag("shield-1").ok, true);
+  const blockedAtFour = battle.dropOnCell(4, 2);
+  assert.strictEqual(blockedAtFour.ok, false);
+  assert.ok(blockedAtFour.reason.includes("4/4"));
+
+  battle.updateElapsedMs(25000);
+  assert.strictEqual(battle.beginDrag("shield-1").ok, true);
+  assert.strictEqual(battle.dropOnCell(4, 2).ok, true);
+  assert.strictEqual(battle.pendingPlacementCount(), 1);
+  assert.strictEqual(battle.beginDrag("battery-1").ok, true);
+  const blockedPending = battle.dropOnCell(3, 2);
+  assert.strictEqual(blockedPending.ok, false);
+  assert.ok(blockedPending.reason.includes("5/5"));
+  assert.strictEqual(emitted.length, 1);
+}
+
+{
   const { client } = createClient();
   assert.strictEqual(client.circuitCredits, 200);
   client.applyServerEconomyState({ circuitCredits: 137 });
@@ -405,61 +439,61 @@ function createClient() {
   const fs=require("fs");
   const src=fs.readFileSync(path.join(ROOT,"src/app.js"),"utf8");
   assert.ok(src.includes("PVP_STATUS"));
-  assert.ok(src.includes("GRIDSHARD Beta.25 · Shardglass Kimliği + Kaçış Cezası + Tek Viewport UX"));
+  assert.ok(src.includes("GRIDSHARD Beta.26 · Tek Eşleştirme + AI Devralma + Aktif Devre UX"));
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync(path.join(ROOT,"src/app.js"),"utf8");
-  assert.ok(src.includes("GRIDSHARD Beta.25 · Shardglass Kimliği + Kaçış Cezası + Tek Viewport UX")); // alpha32->33 protocol status
+  assert.ok(src.includes("GRIDSHARD Beta.26 · Tek Eşleştirme + AI Devralma + Aktif Devre UX")); // alpha32->33 protocol status
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync(path.join(ROOT,"src/app.js"),"utf8");
-  assert.ok(src.includes("GRIDSHARD Beta.25 · Shardglass Kimliği + Kaçış Cezası + Tek Viewport UX")); // alpha33 protocol
+  assert.ok(src.includes("GRIDSHARD Beta.26 · Tek Eşleştirme + AI Devralma + Aktif Devre UX")); // alpha33 protocol
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync(path.join(ROOT,"src/app.js"),"utf8");
-  assert.ok(src.includes("GRIDSHARD Beta.25 · Shardglass Kimliği + Kaçış Cezası + Tek Viewport UX")); // alpha34 websocket
+  assert.ok(src.includes("GRIDSHARD Beta.26 · Tek Eşleştirme + AI Devralma + Aktif Devre UX")); // alpha34 websocket
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync(path.join(ROOT,"src/app.js"),"utf8");
-  assert.ok(src.includes("GRIDSHARD Beta.25 · Shardglass Kimliği + Kaçış Cezası + Tek Viewport UX")); // alpha35 gateway
+  assert.ok(src.includes("GRIDSHARD Beta.26 · Tek Eşleştirme + AI Devralma + Aktif Devre UX")); // alpha35 gateway
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync(path.join(ROOT,"src/app.js"),"utf8");
-  assert.ok(src.includes("GRIDSHARD Beta.25 · Shardglass Kimliği + Kaçış Cezası + Tek Viewport UX")); // alpha36 setup
+  assert.ok(src.includes("GRIDSHARD Beta.26 · Tek Eşleştirme + AI Devralma + Aktif Devre UX")); // alpha36 setup
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync(path.join(ROOT,"src/app.js"),"utf8");
-  assert.ok(src.includes("GRIDSHARD Beta.25 · Shardglass Kimliği + Kaçış Cezası + Tek Viewport UX")); // alpha37 lobby
+  assert.ok(src.includes("GRIDSHARD Beta.26 · Tek Eşleştirme + AI Devralma + Aktif Devre UX")); // alpha37 lobby
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync(path.join(ROOT,"src/app.js"),"utf8");
-  assert.ok(src.includes("GRIDSHARD Beta.25 · Shardglass Kimliği + Kaçış Cezası + Tek Viewport UX")); // alpha38 runner
+  assert.ok(src.includes("GRIDSHARD Beta.26 · Tek Eşleştirme + AI Devralma + Aktif Devre UX")); // alpha38 runner
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync(path.join(ROOT,"src/app.js"),"utf8");
-  assert.ok(src.includes("GRIDSHARD Beta.25 · Shardglass Kimliği + Kaçış Cezası + Tek Viewport UX")); // alpha39 heartbeat
+  assert.ok(src.includes("GRIDSHARD Beta.26 · Tek Eşleştirme + AI Devralma + Aktif Devre UX")); // alpha39 heartbeat
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync(path.join(ROOT,"src/app.js"),"utf8");
-  assert.ok(src.includes("GRIDSHARD Beta.25 · Shardglass Kimliği + Kaçış Cezası + Tek Viewport UX")); // alpha40 online pvp
+  assert.ok(src.includes("GRIDSHARD Beta.26 · Tek Eşleştirme + AI Devralma + Aktif Devre UX")); // alpha40 online pvp
 }
 
 {
@@ -685,7 +719,7 @@ function createClient() {
 {
   const fs=require("fs");
   const src=fs.readFileSync(path.join(ROOT,"src/app.js"),"utf8");
-  assert.ok(src.includes("GRIDSHARD Beta.25 · Shardglass Kimliği + Kaçış Cezası + Tek Viewport UX"));
+  assert.ok(src.includes("GRIDSHARD Beta.26 · Tek Eşleştirme + AI Devralma + Aktif Devre UX"));
   assert.ok(src.includes("buildPvPCommandEnvelope"));
   assert.ok(src.includes("applyPvPServerEnvelope"));
 }
@@ -2318,7 +2352,7 @@ function createClient() {
   const html=fs.readFileSync(path.join(ROOT,"index.html"),"utf8");
   assert.ok(
     html.includes(
-      "2.0.0-beta.25"
+      "2.0.0-beta.26"
     )
   );
   assert.ok(
@@ -4363,8 +4397,10 @@ function createClient() {
   const html=fs.readFileSync(path.join(ROOT,"index.html"),"utf8");
   const css=fs.readFileSync(path.join(ROOT,"src/styles.css"),"utf8");
 
-  assert.ok(html.includes('id="local-play-start"'));
-  assert.ok(html.includes('id="online-play-prepare"'));
+  assert.ok(!html.includes('id="local-play-start"'));
+  assert.ok(!html.includes('id="online-play-prepare"'));
+  assert.ok(html.includes('id="battle-pool-preset-dialog"'));
+  assert.ok(html.includes('id="initial-module-picker"'));
   assert.ok(app.includes("startLocalPlayableMatch"));
   assert.ok(app.includes("resetLocalBattleState"));
   assert.ok(app.includes("updateLocalEnemyCombat"));
@@ -4658,7 +4694,7 @@ function createClient() {
 
   assert.ok(html.includes('id="settings-sound-muted"'));
   assert.ok(html.includes('id="settings-music-muted"'));
-  assert.ok(html.includes('id="quick-loadout-gallery"'));
+  assert.ok(html.includes('id="battle-pool-preset-dialog"'));
   assert.ok(app.includes("renderQuickLoadoutGallery"));
   assert.ok(app.includes("previewAudioSettingsFromControls"));
   assert.ok(app.includes("/telemetry/balance-change-regression"));
@@ -4675,8 +4711,8 @@ function createClient() {
 
   assert.ok(html.includes('id="settings-preview-music"'));
   assert.ok(html.includes('id="settings-preview-sfx"'));
-  assert.ok(html.includes('id="quick-loadout-filter-favorites"'));
-  assert.ok(html.includes('id="quick-loadout-active-summary"'));
+  assert.ok(html.includes('id="battle-pool-preset-open"'));
+  assert.ok(html.includes('id="initial-module-picker"'));
   assert.ok(html.includes('id="human-review-items"'));
   assert.ok(app.includes("quickLoadoutFilter"));
   assert.ok(app.includes("renderQuickLoadoutActiveSummary"));
@@ -4763,7 +4799,7 @@ function createClient() {
   const fs=require("fs");
   const html=fs.readFileSync("./index.html","utf8");
   const app=fs.readFileSync("./src/app.js","utf8");
-  assert.ok(html.includes('id="local-battle-quick-start"'));
+  assert.ok(!html.includes('id="local-battle-quick-start"'));
   assert.ok(app.includes("startQuickLocalBattle"));
   assert.ok(app.includes("HUMAN_REVIEW_CANDIDATE_PREFIX"));
   assert.ok(app.includes("saveCandidateReviewDraft"));

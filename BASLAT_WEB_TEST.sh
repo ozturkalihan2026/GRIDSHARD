@@ -8,7 +8,7 @@ if [ ! -x ".venv/bin/python" ]; then
   .venv/bin/python -m pip install -r server/requirements.txt
 fi
 
-export RELAY_WEB_TEST_RUN_ID="web-test-beta.25-local"
+export RELAY_WEB_TEST_RUN_ID="web-test-beta.26-local"
 export RELAY_TELEMETRY_MAX_EVENTS="50000"
 
 .venv/bin/python tools/release_guard.py

@@ -3,6 +3,7 @@ import asyncio
 from dataclasses import dataclass
 from typing import Awaitable, Callable
 from .engine import TICK_MS
+from .ai import enqueue_ai_actions
 from .models import BattleStatus
 from .pvp_session import PvPSessionService
 from .pvp_websocket import PvPWebSocketAdapter
@@ -16,6 +17,7 @@ class RunnerStats:
     snapshot_broadcasts: int = 0
     match_finished_broadcasts: int = 0
     closed_connections: int = 0
+    ai_decisions: int = 0
 
 class PvPTickRunner:
     def __init__(
@@ -25,12 +27,14 @@ class PvPTickRunner:
         *,
         sleep_func: SleepFunc = asyncio.sleep,
         snapshot_every_ticks: int = 10,
+        ai_decision_interval_ms: int = 5_000,
         match_finished_callback=None,
     ):
         self.service=service
         self.websocket_adapter=websocket_adapter
         self.sleep_func=sleep_func
         self.snapshot_every_ticks=snapshot_every_ticks
+        self.ai_decision_interval_ms=max(1_000,int(ai_decision_interval_ms))
         self.match_finished_callback=match_finished_callback
         self.tick_interval_seconds=TICK_MS/1000.0
         self._tasks={}
@@ -72,8 +76,35 @@ class PvPTickRunner:
         session=self.service.get_session(session_id)
         if session.engine.state.status != BattleStatus.RUNNING:
             return False
-        self.service.step(session_id)
         stats=self.stats_for(session_id)
+        for ai_player_id in sorted(session.ai_player_ids):
+            next_decision_at=session.ai_next_decision_at_ms.get(
+                ai_player_id,
+                15_000,
+            )
+            if session.engine.state.elapsed_ms < next_decision_at:
+                continue
+            opponent_player_id=next(
+                (
+                    player_id
+                    for player_id in sorted(session.engine.state.players)
+                    if player_id != ai_player_id
+                ),
+                None,
+            )
+            if opponent_player_id is not None:
+                plan=enqueue_ai_actions(
+                    session.engine,
+                    ai_player_id,
+                    opponent_player_id,
+                )
+                if plan is not None:
+                    stats.ai_decisions+=1
+            session.ai_next_decision_at_ms[ai_player_id]=(
+                session.engine.state.elapsed_ms
+                + self.ai_decision_interval_ms
+            )
+        self.service.step(session_id)
         stats.ticks_executed+=1
         stats.live_event_broadcasts += await self.websocket_adapter.broadcast_live_events(session_id)
         if stats.ticks_executed % self.snapshot_every_ticks == 0:

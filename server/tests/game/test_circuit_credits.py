@@ -118,7 +118,7 @@ def test_redeploy_spends_deploy_cost_again_and_preserves_hp():
     command(engine, "remove_module", module_id="laser-1")
     before = engine.circuit_credits("player-1")
 
-    command(engine, "place_module", module_id="laser-1", x=4, y=3)
+    command(engine, "place_module", module_id="laser-1", x=1, y=2)
 
     laser = engine.state.players["player-1"].modules["laser-1"]
     assert laser.hp == 60

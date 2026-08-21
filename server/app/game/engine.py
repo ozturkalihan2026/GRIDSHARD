@@ -27,7 +27,11 @@ from .heat import (
     attack_heat_gain,
     heat_performance,
 )
-from .topology import build_energy_topology, module_port_directions
+from .topology import (
+    build_energy_topology,
+    module_port_directions,
+    modules_are_port_connected,
+)
 from .result import (
     build_player_summary,
     core_hp,
@@ -457,6 +461,62 @@ class BattleEngine:
             raise CommandRejected(
                 f"Aktif modül sınırına ulaşıldı: {active_count}/{limit}."
             )
+
+    def _connected_direction_for_placement(
+        self,
+        player_id: str,
+        module: BattleModule,
+        position: Position,
+        *,
+        exclude_module_id: str | None = None,
+    ) -> Direction | None:
+        """Yerleştirilen modülü çalışan enerji hattına otomatik yöneltir.
+
+        Bir modülün yalnızca ``ACTIVE`` durumuna geçirilmesi oynanışta yeterli
+        değildir; portu Jeneratörden erişilebilen devreye bağlanmadığında enerji
+        tüketen modül çalışmaz. Yerleştirme/değiştirme sırasında dört yönü
+        deterministik olarak deneyip gerçekten enerjili hatta bağlanan ilk yönü
+        seçiyoruz. Böylece istemci bir modülü devreye bırakıp sessizce çalışmayan
+        bir kart elde etmiyor.
+        """
+        player = self._require_player(player_id)
+        topology = self.energy_topology_for_player(player_id)
+        reachable_ids = set(topology.reachable_from_generator)
+        connected_candidates = [
+            current
+            for current in player.modules.values()
+            if current.instance_id != exclude_module_id
+            and current.instance_id in reachable_ids
+            and current.status == ModuleStatus.ACTIVE
+            and current.position is not None
+        ]
+
+        original_position = module.position
+        original_direction = module.direction
+        try:
+            module.position = position
+            for direction in (
+                original_direction,
+                Direction.UP,
+                Direction.RIGHT,
+                Direction.DOWN,
+                Direction.LEFT,
+            ):
+                module.direction = direction
+                if any(
+                    modules_are_port_connected(
+                        module,
+                        current,
+                        self.board.core_position,
+                    )
+                    for current in connected_candidates
+                ):
+                    return direction
+        finally:
+            module.position = original_position
+            module.direction = original_direction
+
+        return None
 
 
     def set_module_heat(
@@ -1485,6 +1545,17 @@ class BattleEngine:
         self._ensure_board_position_placeable(position)
         self._ensure_position_available(player_id, position)
 
+        connected_direction = self._connected_direction_for_placement(
+            player_id,
+            module,
+            position,
+        )
+        if connected_direction is None:
+            raise CommandRejected(
+                "Modül çalışan enerji hattına port bağlantısı kurmuyor. "
+                "Jeneratöre bağlı bir modülün yanındaki hücreyi seçin."
+            )
+
         self._spend_circuit_credits(
             player_id,
             module.definition.circuit_credit_cost,
@@ -1493,6 +1564,8 @@ class BattleEngine:
 
         module.status = ModuleStatus.ACTIVE
         module.position = position
+        module.direction = connected_direction
+        module.is_powered = False
 
         self._emit(
             "module_placed",
@@ -1580,6 +1653,17 @@ class BattleEngine:
 
         position = outgoing.position
 
+        connected_direction = self._connected_direction_for_placement(
+            player_id,
+            incoming,
+            position,
+            exclude_module_id=outgoing.instance_id,
+        )
+        if connected_direction is None:
+            raise CommandRejected(
+                "Gelen modül bu hücrede çalışan enerji hattına bağlanamıyor."
+            )
+
         self._spend_circuit_credits(
             player_id,
             incoming.definition.circuit_credit_cost,
@@ -1591,6 +1675,8 @@ class BattleEngine:
 
         incoming.status = ModuleStatus.ACTIVE
         incoming.position = position
+        incoming.direction = connected_direction
+        incoming.is_powered = False
 
         self._emit(
             "module_replaced",

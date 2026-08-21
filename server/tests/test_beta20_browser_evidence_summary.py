@@ -20,8 +20,21 @@ def test_browser_evidence_summary_never_turns_skipped_into_passed():
         if report_path.exists()
         else None
     )
+    playwright_path=(
+        ROOT
+        / "qa_reports"
+        / "playwright-results.json"
+    )
+    playwright_original=(
+        playwright_path.read_bytes()
+        if playwright_path.exists()
+        else None
+    )
 
     try:
+        playwright_path.unlink(
+            missing_ok=True
+        )
         report_path.parent.mkdir(
             parents=True,
             exist_ok=True,
@@ -74,4 +87,8 @@ def test_browser_evidence_summary_never_turns_skipped_into_passed():
             report_path.write_text(
                 original,
                 encoding="utf-8",
+            )
+        if playwright_original is not None:
+            playwright_path.write_bytes(
+                playwright_original
             )

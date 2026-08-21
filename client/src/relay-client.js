@@ -153,6 +153,7 @@
       this.elapsedMs = 0;
       this.circuitCredits = Math.max(0, Math.floor(circuitCredits));
       this.dragState = null;
+      this.pendingPlacementModuleIds = new Set();
       this.modules = new Map(
         modules.map((module) => [
           module.instanceId,
@@ -183,6 +184,14 @@
         if (module.status === MODULE_STATUS.ACTIVE) count += 1;
       }
       return count;
+    }
+
+    pendingPlacementCount() {
+      return this.pendingPlacementModuleIds.size;
+    }
+
+    clearPendingPlacements() {
+      this.pendingPlacementModuleIds.clear();
     }
 
     beginDrag(moduleId) {
@@ -280,6 +289,23 @@
           return { ok: false, reason: "Modül Rafı henüz kilitli." };
         }
 
+        const activeLimit = this.maxActiveModules();
+        const effectiveActiveCount =
+          this.activeModuleCount()
+          + this.pendingPlacementCount();
+        if (
+          activeLimit === null
+          || effectiveActiveCount >= activeLimit
+        ) {
+          this.dragState = null;
+          return {
+            ok: false,
+            reason:
+              `Aktif modül sınırına ulaşıldı: ${effectiveActiveCount}/${activeLimit ?? 0}. `
+              + "Sonraki kapasite yuvasını bekleyin veya aktif bir modülün üzerine bırakarak değiştirin.",
+          };
+        }
+
         command = {
           kind: "place_module",
           payload: {
@@ -288,6 +314,7 @@
             y: targetY,
           },
         };
+        this.pendingPlacementModuleIds.add(source.instanceId);
       } else {
         command = {
           kind: "move_module",
@@ -340,6 +367,9 @@
     applyServerModuleState(moduleState) {
       const module = this.requireModule(moduleState.instanceId);
       Object.assign(module, moduleState);
+      if (Object.prototype.hasOwnProperty.call(moduleState, "status")) {
+        this.pendingPlacementModuleIds.delete(moduleState.instanceId);
+      }
     }
 
     applyServerEconomyState({ circuitCredits }) {
@@ -1293,6 +1323,7 @@
       this.sessionId = null;
       this.players = [];
       this.ratingDifference = null;
+      this.opponentType = null;
       this.queue = null;
     }
 
@@ -1306,6 +1337,7 @@
         ];
         this.ratingDifference =
           response.rating_difference;
+        this.opponentType = response.opponent_type || "human";
         this.queue = null;
       } else {
         this.queued = true;
@@ -1329,6 +1361,8 @@
             status.players || [],
           rating_difference:
             status.rating_difference,
+          opponent_type:
+            status.opponent_type,
         });
       }
 
@@ -1354,6 +1388,8 @@
         players: [...this.players],
         ratingDifference:
           this.ratingDifference,
+        opponentType:
+          this.opponentType,
         queue: this.queue
           ? { ...this.queue }
           : null,
@@ -1975,6 +2011,8 @@
             response.players || [],
           rating_difference:
             response.rating_difference,
+          opponent_type:
+            response.opponent_type,
         });
 
       this.pvpState.bindSession(
@@ -2025,6 +2063,8 @@
         matched: true,
         sessionId,
         webSocketUrl: wsUrl,
+        opponentType:
+          response.opponent_type || "human",
       };
     }
 

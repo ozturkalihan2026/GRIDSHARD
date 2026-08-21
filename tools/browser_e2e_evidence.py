@@ -7,6 +7,12 @@ ROOT=Path(__file__).resolve().parents[1]
 REPORT=ROOT/"qa_reports/browser_e2e.json"
 ARTIFACT_DIR=ROOT/"qa_reports/browser_e2e_artifacts"
 OUTPUT=ROOT/"qa_reports/browser_e2e_evidence_summary.json"
+PLAYWRIGHT_REPORT=ROOT/"qa_reports/playwright-results.json"
+EXPECTED_PLAYWRIGHT_PROJECTS={
+    "desktop-chromium":1,
+    "android-chrome-emulated":2,
+    "iphone-safari-emulated":2,
+}
 
 
 def load_json(path:Path,default):
@@ -20,13 +26,80 @@ def load_json(path:Path,default):
         return default
 
 
+def playwright_matrix_summary()->dict:
+    report=load_json(
+        PLAYWRIGHT_REPORT,
+        {},
+    )
+    project_counts={
+        name:0
+        for name
+        in EXPECTED_PLAYWRIGHT_PROJECTS
+    }
+    tests=[]
+    for suite in report.get("suites",[]):
+        for spec in suite.get("specs",[]):
+            for test in spec.get("tests",[]):
+                project=test.get("projectName") or test.get("projectId")
+                passed=(
+                    test.get("status")=="expected"
+                    and any(
+                        result.get("status")=="passed"
+                        and not result.get("errors")
+                        for result in test.get("results",[])
+                    )
+                )
+                if passed and project in project_counts:
+                    project_counts[project]+=1
+                tests.append({
+                    "project":project,
+                    "file":spec.get("file"),
+                    "line":spec.get("line"),
+                    "passed":passed,
+                    "duration_ms":sum(
+                        int(result.get("duration",0) or 0)
+                        for result in test.get("results",[])
+                    ),
+                })
+
+    stats=report.get("stats",{})
+    complete=(
+        bool(report)
+        and not report.get("errors")
+        and int(stats.get("unexpected",0) or 0)==0
+        and int(stats.get("skipped",0) or 0)==0
+        and int(stats.get("expected",0) or 0)==sum(
+            EXPECTED_PLAYWRIGHT_PROJECTS.values()
+        )
+        and project_counts==EXPECTED_PLAYWRIGHT_PROJECTS
+        and all(item["passed"] for item in tests)
+    )
+    return {
+        "report_exists":PLAYWRIGHT_REPORT.exists(),
+        "complete":complete,
+        "status":"PASSED" if complete else ("FAILED" if report else "NOT_RUN"),
+        "expected_projects":EXPECTED_PLAYWRIGHT_PROJECTS,
+        "passed_by_project":project_counts,
+        "test_count":len(tests),
+        "duration_ms":round(float(stats.get("duration",0) or 0),3),
+        "started_at":stats.get("startTime"),
+        "tests":tests,
+    }
+
+
 def main()->int:
     report=load_json(
         REPORT,
         {},
     )
 
-    if report.get("skipped"):
+    playwright_matrix=playwright_matrix_summary()
+
+    if playwright_matrix["complete"]:
+        source_status="PASSED"
+    elif playwright_matrix["status"]=="FAILED":
+        source_status="FAILED"
+    elif report.get("skipped"):
         source_status="SKIPPED"
     elif report.get("ok") is True:
         source_status="PASSED"
@@ -92,7 +165,7 @@ def main()->int:
         else None
     )
 
-    evidence_complete=(
+    legacy_evidence_complete=(
         source_status=="PASSED"
         and all(
             screenshots.values()
@@ -131,6 +204,10 @@ def main()->int:
             ) >= 400
         ) == 0
     )
+    evidence_complete=(
+        playwright_matrix["complete"]
+        or legacy_evidence_complete
+    )
 
     status=(
         "SKIPPED"
@@ -150,7 +227,7 @@ def main()->int:
 
     summary={
         "version":
-            "2.0.0-beta.25",
+            "2.0.0-beta.26",
         "source_status":
             source_status,
         "status":status,
@@ -160,16 +237,31 @@ def main()->int:
             status=="SKIPPED",
         "failed":
             status=="FAILED",
-        "reason":
-            report.get(
-                "reason"
-            ),
-        "browser":
-            report.get(
-                "browser"
-            ),
+        "reason":(
+            "Playwright matrisi gerçek tarayıcı süreçlerinde tamamlandı."
+            if playwright_matrix["complete"]
+            else report.get("reason")
+        ),
+        "browser":(
+            list(EXPECTED_PLAYWRIGHT_PROJECTS)
+            if playwright_matrix["complete"]
+            else report.get("browser")
+        ),
         "evidence_complete":
             evidence_complete,
+        "playwright_matrix":playwright_matrix,
+        "legacy_browser_runner":{
+            "source_status":(
+                "SKIPPED"
+                if report.get("skipped")
+                else (
+                    "PASSED"
+                    if report.get("ok") is True
+                    else ("FAILED" if report else "NOT_RUN")
+                )
+            ),
+            "evidence_complete":legacy_evidence_complete,
+        },
         "screenshots":
             screenshots,
         "console":{

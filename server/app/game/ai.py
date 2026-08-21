@@ -595,18 +595,7 @@ def build_ai_action_plan(
             return None
 
         position, target_direction = placement
-        rotations = _clockwise_rotation_count(
-            incoming.direction,
-            target_direction,
-        )
-
-        required_credits = (
-            incoming.definition.circuit_credit_cost
-            + (
-                rotations
-                * engine.circuit_credit_config.rotate_cost
-            )
-        )
+        required_credits = incoming.definition.circuit_credit_cost
 
         if ai_player.circuit_credits < required_credits:
             return None
@@ -622,18 +611,6 @@ def build_ai_action_plan(
                 },
             )
         ]
-
-        for _ in range(rotations):
-            commands.append(
-                BattleCommand(
-                    ai_player_id,
-                    "rotate_module",
-                    {
-                        "module_id": incoming.instance_id,
-                        "clockwise": True,
-                    },
-                )
-            )
 
         return AIActionPlan(
             kind="place",
@@ -661,18 +638,7 @@ def build_ai_action_plan(
     if target_direction is None:
         return None
 
-    rotations = _clockwise_rotation_count(
-        incoming.direction,
-        target_direction,
-    )
-
-    required_credits = (
-        incoming.definition.circuit_credit_cost
-        + (
-            rotations
-            * engine.circuit_credit_config.rotate_cost
-        )
-    )
+    required_credits = incoming.definition.circuit_credit_cost
 
     if ai_player.circuit_credits < required_credits:
         return None
@@ -687,18 +653,6 @@ def build_ai_action_plan(
             },
         )
     ]
-
-    for _ in range(rotations):
-        commands.append(
-            BattleCommand(
-                ai_player_id,
-                "rotate_module",
-                {
-                    "module_id": incoming.instance_id,
-                    "clockwise": True,
-                },
-            )
-        )
 
     return AIActionPlan(
         kind="replace",

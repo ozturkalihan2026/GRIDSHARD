@@ -91,7 +91,7 @@
   const COMPETITIVE_STATUS = "M7 rekabetçi altyapı doğrulanıyor";
   const BALANCE_STATUS = "Denge simülasyonu mevcut · geniş örnek bekliyor";
   const AI_STATUS = "AI altyapısı mevcut · arketip testleri bekliyor";
-  const PVP_STATUS = "GRIDSHARD Beta.25 · Shardglass Kimliği + Kaçış Cezası + Tek Viewport UX";
+  const PVP_STATUS = "GRIDSHARD Beta.26 · Tek Eşleştirme + AI Devralma + Aktif Devre UX";
 
 
 
@@ -171,6 +171,10 @@
   let activeBattlePoolPresetName = null;
   let activeBattlePoolPresetBaseline = [];
   let quickLoadoutFilter = "all";
+  let initialBattleModuleIds = [
+    "laser-1",
+    "pulse-cannon-1",
+  ];
 
   const client = new RelayBattleClient({
     modules: moduleDefinitions,
@@ -419,22 +423,19 @@
       screen === "play"
       && !playReadinessGate.canPlay()
     ) {
-      // Tek Oyunculu Test Maçı, operasyon/online hazırlık kapıları
-      // tamamlanmasa bile Oyna ekranından erişilebilir kalır.
-      // Online PvP hazırlığı ayrıca kendi girişinde engellenir.
+      // Hazırlık ekranı her zaman açılır; bağlantı kapısı yalnız oyuncu
+      // Eşleştir dediğinde uygulanır.
       logClientMessage(
         playReadinessGate.labelTr()
-        + ". Tek Oyunculu Test Maçı kullanılabilir; Online PvP için hazırlık kontrolleri gerekir."
+        + ". Savaş Havuzunu hazırlayabilirsin; eşleştirme için bağlantı gerekir."
       );
     }
 
     renderAppScreen();
 
     if (screen === "play") {
-      // Beta.24: Oyna doğrudan üç kolonlu savaşa hazırlık ekranını açar.
-      // Yerel AI test modu başlangıç seçeneğidir; oyuncu aynı ekranda
-      // Online PvP hazırlığına geçebilir.
-      prepareLocalMatch();
+      // Beta.26: Oyna doğrudan tek çevrimiçi hazırlık ekranını açar.
+      prepareOnlineMatch();
       tutorialController?.maybeStart();
     }
 
@@ -590,7 +591,7 @@
         webTestBuildState,
       releaseCheckState,
       expectedVersion:
-        "2.0.0-beta.25",
+        "2.0.0-beta.26",
       expectedProtocolVersion: 1,
     });
   const playReadinessGate =
@@ -626,7 +627,7 @@
 
   telemetryDispatcher.trackGameOpened({
     platform: "web",
-    build: "2.0.0-beta.25",
+    build: "2.0.0-beta.26",
   });
 
   const postMatchSync =
@@ -804,10 +805,16 @@
           if (
             pvpState.phase
             === "battle"
+            && onlinePlay?.status
+              !== "battle"
           ) {
             onlinePlay
               ?.markBattleStarted();
           }
+
+          syncOnlineServerBattle(
+            _message
+          );
 
           if (
             _message?.type
@@ -840,18 +847,12 @@
   }
 
   function buildInitialOnlineSetup() {
-    const selectedModules =
-      battlePoolSelection
-        .selectedIds()
-        .filter(
-          (instanceId) =>
-            instanceId
-            !== "generator-1"
-        );
+    normalizeInitialBattleModuleIds();
+    const selectedModules = [...initialBattleModuleIds];
 
     if (selectedModules.length < 2) {
       throw new Error(
-        "Başlangıç devresi için Jeneratör dışında en az 2 modül seçilmelidir."
+        "Başlangıç devresi için Jeneratör ve Çekirdek dışında tam 2 modül seçilmelidir."
       );
     }
 
@@ -877,9 +878,9 @@
           clientDefinitionId(
             selectedModules[0]
           ),
-        x: 2,
-        y: 1,
-        direction: "down",
+        x: 1,
+        y: 3,
+        direction: "right",
       },
       {
         instanceId:
@@ -888,9 +889,9 @@
           clientDefinitionId(
             selectedModules[1]
           ),
-        x: 1,
-        y: 1,
-        direction: "right",
+        x: 3,
+        y: 3,
+        direction: "left",
       },
     ];
   }
@@ -927,7 +928,12 @@
     };
 
     matchmakingStatusEl.textContent =
-      labels[status]
+      (
+        matchmakingState.opponentType === "ai"
+        && ["matched", "connecting", "readying", "battle"].includes(status)
+          ? "Eşleştirme: 10 sn doldu · AI rakip devraldı"
+          : labels[status]
+      )
       || `Eşleştirme: ${status}`;
 
     matchmakingStatusEl.dataset.status =
@@ -935,6 +941,29 @@
 
     document.body.dataset.onlineStatus =
       status;
+    document.body.dataset.opponentType =
+      matchmakingState.opponentType || "unknown";
+    const battleMatchLabel = document.getElementById("battle-match-label");
+    if (battleMatchLabel) {
+      battleMatchLabel.textContent =
+        matchmakingState.opponentType === "ai"
+          ? "AI Rakip"
+          : "Çevrimiçi Rakip";
+    }
+    if (
+      activeMatchModeEl
+      && [
+        "matched",
+        "connecting",
+        "readying",
+        "battle",
+      ].includes(status)
+    ) {
+      activeMatchModeEl.textContent =
+        matchmakingState.opponentType === "ai"
+          ? "Maç: AI Rakip"
+          : "Maç: Çevrimiçi PvP";
+    }
     if (status === "battle") {
       clearTapSelection({ rerender: false });
       mobileBattleController.reset();
@@ -1132,6 +1161,12 @@
   }
 
   async function startRealOnlineMatch() {
+    if (!playReadinessGate.canPlay()) {
+      const reason = playReadinessGate.labelTr()
+        + ". Eşleştirme bağlantısı henüz hazır değil.";
+      showPlayError("matchmaking", reason);
+      return { ok:false, reason };
+    }
     const matchmakingStartedAtMs =
       Date.now();
 
@@ -1192,7 +1227,7 @@
   const diagnosticSnapshot =
     new RelayDiagnosticSnapshot({
       version:
-        "2.0.0-beta.25",
+        "2.0.0-beta.26",
       build:
         "web-test-beta.13",
       bootGate:
@@ -1438,7 +1473,7 @@
     }
     updateMobilePlacementControls();
     renderShelf();
-    renderBoard();
+    renderBoard({ force: true });
     trackBattleUiInteraction("tap_select_module", "module_place");
     return true;
   }
@@ -3130,7 +3165,7 @@
       if (versionEl) {
         versionEl.textContent=
           manifest.version
-          || "2.0.0-beta.25";
+          || "2.0.0-beta.26";
       }
       if (runEl) {
         runEl.textContent=
@@ -3266,10 +3301,18 @@ const SPECIAL_CELL_INFO = {
   let mockServerPassiveSeconds = 0;
   let mockEnemyCoreHp = 300;
   let mockEnemyGeneratorHp = 150;
+  let mockEnemyGeneratorPosition = {
+    x: 2,
+    y: 1,
+  };
   let mockEnemyModuleHp = 140;
   let mockEnemyModules = [];
 
   function resetMockEnemyCircuit() {
+    mockEnemyGeneratorPosition = {
+      x: 2,
+      y: 1,
+    };
     mockEnemyModules = [
       {id:"enemy-shield",name:"Kalkan",hp:140,maxHp:140,position:{x:1,y:1},kind:"defense"},
       {id:"enemy-laser",name:"Lazer",hp:100,maxHp:100,position:{x:3,y:1},kind:"attack"},
@@ -3720,12 +3763,12 @@ const SPECIAL_CELL_INFO = {
       document.getElementById(
         "play-recovery-panel"
       );
-    if (
-      recoveryPanel
-      && !online
-    ) {
+    if (recoveryPanel) {
       recoveryPanel.hidden =
-        true;
+        !online
+        || !playRecoveryState
+          .viewModel()
+          .active;
     }
 
     const cancel =
@@ -5102,6 +5145,140 @@ function saveHumanReviewLocalNote() {
     }
   }
 
+  function applyEnemyServerSnapshot(
+    snapshot
+  ) {
+    const enemy=Object.values(
+      snapshot?.players || {}
+    ).find(
+      (item) =>
+        item.player_id
+        !== participantPlayerId
+    );
+    if (!enemy) {
+      return false;
+    }
+
+    const enemyCore=
+      (enemy.modules || []).find(
+        (module) =>
+          module.definition_id
+          === "core"
+      );
+    const enemyGenerator=
+      (enemy.modules || []).find(
+        (module) =>
+          module.definition_id
+          === "generator"
+      );
+    mockEnemyCoreHp=Number(
+      enemyCore?.hp || 0
+    );
+    mockEnemyGeneratorHp=Number(
+      enemyGenerator?.hp || 0
+    );
+    if (
+      Number.isFinite(
+        Number(enemyGenerator?.x)
+      )
+      && Number.isFinite(
+        Number(enemyGenerator?.y)
+      )
+    ) {
+      mockEnemyGeneratorPosition={
+        x:Number(enemyGenerator.x),
+        y:Number(enemyGenerator.y),
+      };
+    }
+    mockEnemyModules=(
+      enemy.modules || []
+    )
+      .filter(
+        (module) =>
+          ![
+            "core",
+            "generator",
+          ].includes(
+            module.definition_id
+          )
+          && module.status
+            === "active"
+          && module.x !== null
+          && module.y !== null
+      )
+      .map(
+        (module) => ({
+          id:module.instance_id,
+          name:module.name_tr,
+          hp:Number(module.hp || 0),
+          maxHp:Number(
+            module.max_hp || 1
+          ),
+          position:{
+            x:Number(module.x),
+            y:Number(module.y),
+          },
+          kind:
+            module.category
+            || "module",
+        })
+      );
+    mockEnemyModuleHp=
+      enemyLivingModules().reduce(
+        (sum,module) =>
+          sum + module.hp,
+        0
+      );
+    return true;
+  }
+
+  function syncOnlineServerBattle(
+    message
+  ) {
+    if (
+      !message
+      || activePlayMode !== "online"
+    ) {
+      return false;
+    }
+
+    const payload=message.payload || {};
+    const snapshot=
+      message.type === "snapshot"
+        ? payload
+        : (
+            payload.snapshot
+            || pvpState.snapshot
+          );
+    if (
+      !snapshot?.players
+      || !applyEnemyServerSnapshot(
+        snapshot
+      )
+    ) {
+      return false;
+    }
+
+    localServerAuthoritative=true;
+    document.body.dataset.battleAuthority=
+      "server";
+    renderEnemyBoard();
+    renderCredits();
+    renderPlayerCoreSummary();
+
+    const events=
+      message.type === "events"
+      || message.type
+        === "reconnect_state"
+        ? payload.events || []
+        : [];
+    processLocalServerEvents(
+      events,
+      snapshot
+    );
+    return true;
+  }
+
   function applyLocalServerSnapshotEnvelope(
     envelope
   ) {
@@ -5198,61 +5375,9 @@ function saveHumanReviewLocalNote() {
       });
     }
 
-    const enemyCore=
-      (enemy.modules || []).find(
-        (module) =>
-          module.definition_id
-          === "core"
-      );
-    const enemyGenerator=
-      (enemy.modules || []).find(
-        (module) =>
-          module.definition_id
-          === "generator"
-      );
-    mockEnemyCoreHp=Number(
-      enemyCore?.hp || 0
+    applyEnemyServerSnapshot(
+      snapshot
     );
-    mockEnemyGeneratorHp=Number(
-      enemyGenerator?.hp || 0
-    );
-    mockEnemyModules=(
-      enemy.modules || []
-    )
-      .filter(
-        (module) =>
-          ![
-            "core",
-            "generator",
-          ].includes(
-            module.definition_id
-          )
-          && module.status
-            === "active"
-      )
-      .map(
-        (module) => ({
-          id:module.instance_id,
-          name:module.name_tr,
-          hp:Number(module.hp || 0),
-          maxHp:Number(
-            module.max_hp || 1
-          ),
-          position:{
-            x:Number(module.x),
-            y:Number(module.y),
-          },
-          kind:
-            module.category
-            || "module",
-        })
-      );
-    mockEnemyModuleHp=
-      enemyLivingModules().reduce(
-        (sum,module) =>
-          sum + module.hp,
-        0
-      );
 
     render();
     renderEnemyBoard();
@@ -5328,6 +5453,14 @@ function saveHumanReviewLocalNote() {
               participantPlayerId,
             battle_pool_ids:
               selectedBattlePoolDefinitionIds(),
+            initial_modules:
+              buildInitialOnlineSetup().map((module) => ({
+                instance_id:module.instanceId,
+                definition_id:module.definitionId,
+                x:module.x,
+                y:module.y,
+                direction:module.direction,
+              })),
           }),
         }
       );
@@ -5467,7 +5600,12 @@ function saveHumanReviewLocalNote() {
     client.applyServerEconomyState({
       circuitCredits:200,
     });
+    client.clearPendingPlacements();
     client.updateElapsedMs(0);
+
+    const initialSetupByInstanceId = new Map(
+      buildInitialOnlineSetup().map((item) => [item.instanceId, item])
+    );
 
     for (
       const module
@@ -5479,14 +5617,13 @@ function saveHumanReviewLocalNote() {
       const isGenerator =
         module.instanceId
         === "generator-1";
-      const initialModulePositions = {
-        "laser-1":{position:{x:3,y:3},direction:"left"},
-        "pulse-cannon-1":{position:{x:1,y:3},direction:"right"},
-      };
-      const initialConfig =
-        initialModulePositions[
-          module.instanceId
-        ] || null;
+      const initialSetup = initialSetupByInstanceId.get(module.instanceId);
+      const initialConfig = initialSetup
+        ? {
+            position:{x:initialSetup.x,y:initialSetup.y},
+            direction:initialSetup.direction,
+          }
+        : null;
       const selectedForBattle =
         battlePoolSelection.selected.has(
           module.instanceId
@@ -5721,7 +5858,7 @@ function saveHumanReviewLocalNote() {
     );
 
     logClientMessage(
-      "Beta.25 hızlı test: 18 modüllük havuz otomatik hazırlandı, sunucu otoriteli Yerel AI eşleşti ve çift devre savaş alanı açıldı."
+      "Beta.26 geliştirici testi: 18 modüllük havuz hazırlandı, sunucu AI oyuncusu eşleşti ve çift devre savaş alanı açıldı."
     );
 
     return {
@@ -5739,17 +5876,6 @@ function saveHumanReviewLocalNote() {
   }
 
   function prepareOnlineMatch() {
-    if (
-      !playReadinessGate.canPlay()
-    ) {
-      showPlayError(
-        "websocket",
-        playReadinessGate.labelTr()
-        + ". Online PvP için hazırlık kontrollerini yeniden dene."
-      );
-      return;
-    }
-
     localBattleStarted =
       false;
     setActivePlayMode(
@@ -7840,6 +7966,88 @@ function saveHumanReviewLocalNote() {
     };
   }
 
+  function availableInitialBattleModuleIds() {
+    return battlePoolSelection
+      .selectedIds()
+      .filter((instanceId) => instanceId !== "generator-1");
+  }
+
+  function normalizeInitialBattleModuleIds() {
+    const available = availableInitialBattleModuleIds();
+    const availableSet = new Set(available);
+    initialBattleModuleIds = initialBattleModuleIds
+      .filter((instanceId, index, ids) =>
+        availableSet.has(instanceId)
+        && ids.indexOf(instanceId) === index
+      )
+      .slice(0, 2);
+
+    const preferred = [
+      "laser-1",
+      "pulse-cannon-1",
+      ...available,
+    ];
+    for (const instanceId of preferred) {
+      if (
+        initialBattleModuleIds.length >= 2
+        || !availableSet.has(instanceId)
+        || initialBattleModuleIds.includes(instanceId)
+      ) {
+        continue;
+      }
+      initialBattleModuleIds.push(instanceId);
+    }
+    return [...initialBattleModuleIds];
+  }
+
+  function renderInitialModulePicker() {
+    const root = document.getElementById("initial-module-picker");
+    const status = document.getElementById("initial-module-status");
+    if (!root) return;
+
+    const available = availableInitialBattleModuleIds();
+    normalizeInitialBattleModuleIds();
+    root.innerHTML = "";
+
+    for (let slotIndex = 0; slotIndex < 2; slotIndex += 1) {
+      const label = document.createElement("label");
+      label.className = "initial-module-slot";
+      label.textContent = `Seçim ${slotIndex + 1}`;
+      const select = document.createElement("select");
+      select.className = "initial-module-choice";
+      select.dataset.slot = String(slotIndex);
+      select.disabled = available.length < 2;
+
+      for (const instanceId of available) {
+        const module = client.modules.get(instanceId);
+        if (!module) continue;
+        const option = document.createElement("option");
+        option.value = instanceId;
+        option.textContent = module.nameTr;
+        option.selected = initialBattleModuleIds[slotIndex] === instanceId;
+        option.disabled = initialBattleModuleIds.some(
+          (selectedId, index) => index !== slotIndex && selectedId === instanceId
+        );
+        select.appendChild(option);
+      }
+
+      select.addEventListener("change", () => {
+        initialBattleModuleIds[slotIndex] = select.value;
+        normalizeInitialBattleModuleIds();
+        renderInitialModulePicker();
+      });
+      label.appendChild(select);
+      root.appendChild(label);
+    }
+
+    if (status) {
+      status.textContent = initialBattleModuleIds.length === 2
+        ? "2 / 2 oyuncu modülü seçili · değişiklikler sınırsız"
+        : `${initialBattleModuleIds.length} / 2 · önce Savaş Havuzunu tamamla`;
+      status.dataset.ready = String(initialBattleModuleIds.length === 2);
+    }
+  }
+
   function renderBattlePoolSelection() {
     if (
       !poolSelectionEl
@@ -8150,6 +8358,8 @@ function saveHumanReviewLocalNote() {
     poolCountEl.textContent =
       `${battlePoolSelection.selected.size} / ${battlePoolSelection.requiredSize}`;
 
+    renderInitialModulePicker();
+
     poolConfirmEl.disabled =
       !battlePoolSelection
         .isComplete();
@@ -8175,7 +8385,7 @@ function saveHumanReviewLocalNote() {
         poolConfirmEl.textContent =
           battlePoolSelection
             .isComplete()
-            ? "Eşleştir"
+            ? "Eşleştir · 10 sn sonra AI devralır"
             : "18 Modülü Tamamla";
       }
     } else {
@@ -8399,7 +8609,11 @@ function saveHumanReviewLocalNote() {
       }
     };
     place(2,2,enemyCard("enemy-core","Çekirdek",mockEnemyCoreHp,300,"core"));
-    place(2,1,enemyCard("enemy-generator","Jeneratör",mockEnemyGeneratorHp,150,"energy"));
+    place(
+      mockEnemyGeneratorPosition.x,
+      mockEnemyGeneratorPosition.y,
+      enemyCard("enemy-generator","Jeneratör",mockEnemyGeneratorHp,150,"energy")
+    );
     for (const module of mockEnemyModules) {
       if (module.hp<=0) continue;
       place(module.position.x,module.position.y,enemyCard(module.id,module.name,module.hp,module.maxHp,module.kind));
@@ -9043,8 +9257,9 @@ function saveHumanReviewLocalNote() {
     updateMobilePlacementControls();
   }
 
+  let renderedShelfSignature = null;
+
   function renderShelf() {
-    shelf.innerHTML = "";
     const unlocked =
       client.isShelfUnlocked()
       && !localBattleFinished;
@@ -9059,6 +9274,28 @@ function saveHumanReviewLocalNote() {
             module.instanceId
           )
     );
+    const shelfSignature=JSON.stringify({
+      unlocked,
+      finished:localBattleFinished,
+      selected:tapSelectedModuleId,
+      modules:reserveModules.map(
+        (module) => [
+          module.instanceId,
+          module.hp,
+          module.maxHp,
+          module.category,
+        ]
+      ),
+    });
+    if (
+      shelfSignature
+      === renderedShelfSignature
+    ) {
+      return;
+    }
+    renderedShelfSignature=
+      shelfSignature;
+    shelf.innerHTML = "";
 
     for (
       const category
@@ -9124,7 +9361,15 @@ function saveHumanReviewLocalNote() {
     };
   }
 
-  function renderBoard() {
+  function renderBoard(
+    { force=false }={}
+  ) {
+    if (
+      !force
+      && client.dragState
+    ) {
+      return;
+    }
     battleBoardView.render(
       client.modules.values(),
       {
@@ -10498,6 +10743,28 @@ function saveHumanReviewLocalNote() {
 
   loadHumanReviewLocalNote();
 
+  const presetDialog = document.getElementById("battle-pool-preset-dialog");
+  document.getElementById("battle-pool-preset-open")?.addEventListener(
+    "click",
+    () => {
+      if (typeof presetDialog?.showModal === "function") {
+        presetDialog.showModal();
+      } else {
+        presetDialog?.setAttribute("open", "");
+      }
+    }
+  );
+  document.getElementById("battle-pool-preset-close")?.addEventListener(
+    "click",
+    () => {
+      if (typeof presetDialog?.close === "function") {
+        presetDialog.close();
+      } else {
+        presetDialog?.removeAttribute("open");
+      }
+    }
+  );
+
   const humanReviewRefreshEl =
     document.getElementById(
       "human-review-refresh"
@@ -10987,12 +11254,12 @@ function saveHumanReviewLocalNote() {
         hint: "Havuz 18/18 olduğunda savaş düğmesi açılır.",
       },
       {
-        title: "Sunucu otoriteli AI savaşını aç",
-        body: "Bu düğme havuzunu sunucuya gönderir ve ilk devreni savaş alanına yerleştirir.",
+        title: "Çevrimiçi eşleştirmeyi başlat",
+        body: "Önce çevrimiçi rakip aranır; 10 saniye içinde bulunamazsa sunucudaki AI oyuncu aynı maç protokolünü devralır.",
         target: "#battle-pool-confirm",
-        action: "start-local-battle",
-        actionLabel: "AI Savaşını Başlat",
-        hint: "Çekirdek ve jeneratör sabittir; diğer modüller taşınabilir.",
+        action: "start-matchmaking",
+        actionLabel: "Eşleştirmeyi Başlat",
+        hint: "Çekirdek ve jeneratör sabittir; diğer iki başlangıç modülünü sen seçersin.",
       },
       {
         title: "Dokun, sonra yerleştir",
@@ -11006,10 +11273,11 @@ function saveHumanReviewLocalNote() {
         await loadSelectedBattlePoolPreset(STARTER_BATTLE_POOL_PRESET.name);
         return battlePoolSelection.isComplete();
       }
-      if (action === "start-local-battle") {
+      if (action === "start-matchmaking") {
         if (!battlePoolSelection.isComplete()) return false;
-        startLocalPlayableMatch();
-        return true;
+        setActivePlayMode("online");
+        const result = await startRealOnlineMatch();
+        return Boolean(result.ok);
       }
       return true;
     },
@@ -11019,8 +11287,9 @@ function saveHumanReviewLocalNote() {
     tutorialController.start({ force: true });
   });
 
+  document.body.dataset.onlineStatus = "idle";
   setActivePlayMode(
-    "idle"
+    "online"
   );
   renderBattlePoolSelection();
   loadModuleCatalog();
