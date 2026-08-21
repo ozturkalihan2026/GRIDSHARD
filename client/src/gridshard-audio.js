@@ -26,7 +26,7 @@
   });
 
   const GRIDSHARD_AUDIO_MIX = Object.freeze({
-    version:"mix-v4",
+    version:"shardglass-mix-v5",
     crossfadeMs:1200,
     musicBaseGain:0.72,
     sfxBaseGain:0.86,
@@ -37,19 +37,19 @@
   });
 
   const GRIDSHARD_MUSIC_ASSETS = Object.freeze({
-    menu:"./assets/audio/menu_pulse_v4.wav",
-    pool:"./assets/audio/pool_pulse_v4.wav",
+    menu:"./assets/audio/menu_shardglass_v5.wav",
+    pool:"./assets/audio/pool_flux_v5.wav",
     matchmaking:"./assets/audio/matchmaking_rise.wav",
-    battle_intro:"./assets/audio/battle_pulse_v4.wav",
-    battle:"./assets/audio/battle_pulse_v4.wav",
-    battle_pressure:"./assets/audio/battle_pulse_v4.wav",
-    critical_core:"./assets/audio/battle_pulse_v4.wav",
+    battle_intro:"./assets/audio/battle_fracture_v5.wav",
+    battle:"./assets/audio/battle_fracture_v5.wav",
+    battle_pressure:"./assets/audio/battle_fracture_v5.wav",
+    critical_core:"./assets/audio/battle_fracture_v5.wav",
     victory:"./assets/audio/victory_sting.wav",
     defeat:"./assets/audio/defeat_sting.wav",
   });
 
   const GRIDSHARD_CRITICAL_LAYER =
-    "./assets/audio/critical_core_layer_v4.wav";
+    "./assets/audio/critical_shard_v5.wav";
 
   const GRIDSHARD_SFX_CUES = Object.freeze({
     port_connect:{

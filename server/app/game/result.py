@@ -13,6 +13,7 @@ class PlayerBattleSummary:
     hp_ratio: float
     damage_dealt: int
     circuit_credits: int
+    forfeit_credit_penalty: int
     energy_generated_total: float
     energy_consumed_total: float
 
@@ -96,6 +97,7 @@ def build_player_summary(
             events,
         ),
         circuit_credits=player.circuit_credits,
+        forfeit_credit_penalty=player.forfeit_credit_penalty,
         energy_generated_total=player.energy_generated_total,
         energy_consumed_total=player.energy_consumed_total,
     )
@@ -120,6 +122,7 @@ def summary_to_dict(summary: PlayerBattleSummary) -> dict:
         "hp_ratio": round(summary.hp_ratio, 6),
         "damage_dealt": summary.damage_dealt,
         "circuit_credits": summary.circuit_credits,
+        "forfeit_credit_penalty": summary.forfeit_credit_penalty,
         "energy_generated_total": round(
             summary.energy_generated_total,
             6,

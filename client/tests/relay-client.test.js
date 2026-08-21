@@ -404,61 +404,61 @@ function createClient() {
   const fs=require("fs");
   const src=fs.readFileSync(path.join(ROOT,"src/app.js"),"utf8");
   assert.ok(src.includes("PVP_STATUS"));
-  assert.ok(src.includes("GRIDSHARD Beta.24 · Sunucu Otoriteli Yerel Savaş + Tek Viewport UX + Savaş Efektleri V2"));
+  assert.ok(src.includes("GRIDSHARD Beta.25 · Shardglass Kimliği + Kaçış Cezası + Tek Viewport UX"));
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync(path.join(ROOT,"src/app.js"),"utf8");
-  assert.ok(src.includes("GRIDSHARD Beta.24 · Sunucu Otoriteli Yerel Savaş + Tek Viewport UX + Savaş Efektleri V2")); // alpha32->33 protocol status
+  assert.ok(src.includes("GRIDSHARD Beta.25 · Shardglass Kimliği + Kaçış Cezası + Tek Viewport UX")); // alpha32->33 protocol status
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync(path.join(ROOT,"src/app.js"),"utf8");
-  assert.ok(src.includes("GRIDSHARD Beta.24 · Sunucu Otoriteli Yerel Savaş + Tek Viewport UX + Savaş Efektleri V2")); // alpha33 protocol
+  assert.ok(src.includes("GRIDSHARD Beta.25 · Shardglass Kimliği + Kaçış Cezası + Tek Viewport UX")); // alpha33 protocol
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync(path.join(ROOT,"src/app.js"),"utf8");
-  assert.ok(src.includes("GRIDSHARD Beta.24 · Sunucu Otoriteli Yerel Savaş + Tek Viewport UX + Savaş Efektleri V2")); // alpha34 websocket
+  assert.ok(src.includes("GRIDSHARD Beta.25 · Shardglass Kimliği + Kaçış Cezası + Tek Viewport UX")); // alpha34 websocket
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync(path.join(ROOT,"src/app.js"),"utf8");
-  assert.ok(src.includes("GRIDSHARD Beta.24 · Sunucu Otoriteli Yerel Savaş + Tek Viewport UX + Savaş Efektleri V2")); // alpha35 gateway
+  assert.ok(src.includes("GRIDSHARD Beta.25 · Shardglass Kimliği + Kaçış Cezası + Tek Viewport UX")); // alpha35 gateway
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync(path.join(ROOT,"src/app.js"),"utf8");
-  assert.ok(src.includes("GRIDSHARD Beta.24 · Sunucu Otoriteli Yerel Savaş + Tek Viewport UX + Savaş Efektleri V2")); // alpha36 setup
+  assert.ok(src.includes("GRIDSHARD Beta.25 · Shardglass Kimliği + Kaçış Cezası + Tek Viewport UX")); // alpha36 setup
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync(path.join(ROOT,"src/app.js"),"utf8");
-  assert.ok(src.includes("GRIDSHARD Beta.24 · Sunucu Otoriteli Yerel Savaş + Tek Viewport UX + Savaş Efektleri V2")); // alpha37 lobby
+  assert.ok(src.includes("GRIDSHARD Beta.25 · Shardglass Kimliği + Kaçış Cezası + Tek Viewport UX")); // alpha37 lobby
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync(path.join(ROOT,"src/app.js"),"utf8");
-  assert.ok(src.includes("GRIDSHARD Beta.24 · Sunucu Otoriteli Yerel Savaş + Tek Viewport UX + Savaş Efektleri V2")); // alpha38 runner
+  assert.ok(src.includes("GRIDSHARD Beta.25 · Shardglass Kimliği + Kaçış Cezası + Tek Viewport UX")); // alpha38 runner
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync(path.join(ROOT,"src/app.js"),"utf8");
-  assert.ok(src.includes("GRIDSHARD Beta.24 · Sunucu Otoriteli Yerel Savaş + Tek Viewport UX + Savaş Efektleri V2")); // alpha39 heartbeat
+  assert.ok(src.includes("GRIDSHARD Beta.25 · Shardglass Kimliği + Kaçış Cezası + Tek Viewport UX")); // alpha39 heartbeat
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync(path.join(ROOT,"src/app.js"),"utf8");
-  assert.ok(src.includes("GRIDSHARD Beta.24 · Sunucu Otoriteli Yerel Savaş + Tek Viewport UX + Savaş Efektleri V2")); // alpha40 online pvp
+  assert.ok(src.includes("GRIDSHARD Beta.25 · Shardglass Kimliği + Kaçış Cezası + Tek Viewport UX")); // alpha40 online pvp
 }
 
 {
@@ -684,7 +684,7 @@ function createClient() {
 {
   const fs=require("fs");
   const src=fs.readFileSync(path.join(ROOT,"src/app.js"),"utf8");
-  assert.ok(src.includes("GRIDSHARD Beta.24 · Sunucu Otoriteli Yerel Savaş + Tek Viewport UX + Savaş Efektleri V2"));
+  assert.ok(src.includes("GRIDSHARD Beta.25 · Shardglass Kimliği + Kaçış Cezası + Tek Viewport UX"));
   assert.ok(src.includes("buildPvPCommandEnvelope"));
   assert.ok(src.includes("applyPvPServerEnvelope"));
 }
@@ -2317,7 +2317,7 @@ function createClient() {
   const html=fs.readFileSync(path.join(ROOT,"index.html"),"utf8");
   assert.ok(
     html.includes(
-      "2.0.0-beta.24"
+      "2.0.0-beta.25"
     )
   );
   assert.ok(
@@ -4687,7 +4687,7 @@ function createClient() {
   assert.ok(css.includes(".human-review-item"));
   assert.ok(audio.includes("GRIDSHARD_AUDIO_MIX"));
   assert.ok(audio.includes("crossfadeMs:1200"));
-  assert.ok(audio.includes("critical_core_layer_v4.wav"));
+  assert.ok(audio.includes("critical_shard_v5.wav"));
 }
 
 {
@@ -4702,7 +4702,7 @@ function createClient() {
   assert.ok(app.includes("gridshardE2eTimeScale"));
   assert.ok(app.includes("loadUiBuildManifest"));
   assert.ok(app.includes("setBattlePressure"));
-  assert.ok(audio.includes('version:"mix-v4"'));
+  assert.ok(audio.includes('version:"shardglass-mix-v5"'));
   assert.ok(audio.includes("criticalLayerMaxGain"));
 }
 

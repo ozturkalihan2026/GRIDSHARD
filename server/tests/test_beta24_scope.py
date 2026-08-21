@@ -23,7 +23,7 @@ def test_beta24_menu_preparation_and_result_markup():
     assert '<h3>Seçilen Savaş Havuzu</h3>' in html
     assert 'class="post-match-analysis"' in html
     assert "Savaş Analizini Aç" in html
-    assert "Beta.24 Sunucu Otoriteli Yerel Savaş" in html
+    assert "Sunucu Otoriteli Yerel Savaş" in html
 
 
 def test_generator_has_four_ports_and_powers_adjacent_repair_module():

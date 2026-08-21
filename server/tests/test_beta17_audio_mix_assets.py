@@ -19,6 +19,10 @@ MUSIC={
     "pool_pulse_v4.wav",
     "battle_pulse_v4.wav",
     "critical_core_layer_v4.wav",
+    "menu_shardglass_v5.wav",
+    "pool_flux_v5.wav",
+    "battle_fracture_v5.wav",
+    "critical_shard_v5.wav",
 }
 
 

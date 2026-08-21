@@ -91,7 +91,7 @@
   const COMPETITIVE_STATUS = "M7 rekabetçi altyapı doğrulanıyor";
   const BALANCE_STATUS = "Denge simülasyonu mevcut · geniş örnek bekliyor";
   const AI_STATUS = "AI altyapısı mevcut · arketip testleri bekliyor";
-  const PVP_STATUS = "GRIDSHARD Beta.24 · Sunucu Otoriteli Yerel Savaş + Tek Viewport UX + Savaş Efektleri V2";
+  const PVP_STATUS = "GRIDSHARD Beta.25 · Shardglass Kimliği + Kaçış Cezası + Tek Viewport UX";
 
 
 
@@ -606,7 +606,7 @@
         webTestBuildState,
       releaseCheckState,
       expectedVersion:
-        "2.0.0-beta.24",
+        "2.0.0-beta.25",
       expectedProtocolVersion: 1,
     });
   const playReadinessGate =
@@ -642,7 +642,7 @@
 
   telemetryDispatcher.trackGameOpened({
     platform: "web",
-    build: "2.0.0-beta.24",
+    build: "2.0.0-beta.25",
   });
 
   const postMatchSync =
@@ -1202,7 +1202,7 @@
   const diagnosticSnapshot =
     new RelayDiagnosticSnapshot({
       version:
-        "2.0.0-beta.24",
+        "2.0.0-beta.25",
       build:
         "web-test-beta.13",
       bootGate:
@@ -3011,7 +3011,7 @@
       if (versionEl) {
         versionEl.textContent=
           manifest.version
-          || "2.0.0-beta.24";
+          || "2.0.0-beta.25";
       }
       if (runEl) {
         runEl.textContent=
@@ -3060,6 +3060,10 @@
   const battleProfileNameEl =
     document.getElementById(
       "battle-profile-name"
+    );
+  const battleForfeitButton =
+    document.getElementById(
+      "battle-forfeit-button"
     );
 
   if (battleSettingsButton) {
@@ -3544,6 +3548,19 @@ const SPECIAL_CELL_INFO = {
     const localBattle =
       local
       && localBattleStarted;
+    const battleFinished =
+      (localBattle && localBattleFinished)
+      || (
+        onlineBattle
+        && pvpState.phase === "finished"
+      );
+
+    if (battleForfeitButton) {
+      battleForfeitButton.hidden =
+        !(localBattle || onlineBattle)
+        || battleFinished;
+      battleForfeitButton.disabled = false;
+    }
 
     const modePanel =
       document.getElementById(
@@ -3638,6 +3655,8 @@ const SPECIAL_CELL_INFO = {
       started_at_ms:Date.now(),
       duration_ms:0,
       won:false,
+      forfeited:false,
+      forfeit_credit_penalty:0,
       credits_spent:0,
       generator_moves:0,
       generator_gate_visits:{
@@ -4813,6 +4832,8 @@ function saveHumanReviewLocalNote() {
       localBattleMetrics.won ? "Galibiyet" : "Mağlubiyet");
     set("local-report-credits",
       `${localBattleMetrics.credits_spent} DK`);
+    set("local-report-forfeit-penalty",
+      `${localBattleMetrics.forfeit_credit_penalty || 0} DK`);
     set("local-report-generator-moves",
       localBattleMetrics.generator_moves);
     set("local-report-damage-dealt",
@@ -5010,6 +5031,12 @@ function saveHumanReviewLocalNote() {
           player.circuit_credits || 0
         ),
     });
+    if (localBattleMetrics) {
+      localBattleMetrics.forfeit_credit_penalty =
+        Number(
+          player.forfeit_credit_penalty || 0
+        );
+    }
 
     for (
       const serverModule
@@ -5131,6 +5158,12 @@ function saveHumanReviewLocalNote() {
         won:
           snapshot.winner_player_id
           === participantPlayerId,
+        finishReason:
+          snapshot.finish_reason || null,
+        forfeitPenalty:
+          Number(
+            player.forfeit_credit_penalty || 0
+          ),
       });
     }
 
@@ -5142,7 +5175,7 @@ function saveHumanReviewLocalNote() {
       !localServerSessionId
       || localBattleFinished
     ) {
-      return;
+      return false;
     }
     try {
       const response=await fetch(
@@ -5248,13 +5281,15 @@ function saveHumanReviewLocalNote() {
           detail.detail
           || "Sunucu savaş komutunu reddetti."
         );
-        return;
+        return false;
       }
       await pollLocalServerBattle();
+      return true;
     } catch (_error) {
       logClientMessage(
         "Sunucu savaş komutuna ulaşılamadı."
       );
+      return false;
     }
   }
 
@@ -5434,6 +5469,9 @@ function saveHumanReviewLocalNote() {
   }
 
   function prepareLocalMatch() {
+    stopLocalServerPolling();
+    localServerSessionId = null;
+    localServerAuthoritative = false;
     localBattleStarted =
       false;
     localBattleFinished =
@@ -5558,7 +5596,7 @@ function saveHumanReviewLocalNote() {
     );
 
     logClientMessage(
-      "Beta.24 hızlı test: 18 modüllük havuz otomatik hazırlandı, sunucu otoriteli Yerel AI eşleşti ve çift devre savaş alanı açıldı."
+      "Beta.25 hızlı test: 18 modüllük havuz otomatik hazırlandı, sunucu otoriteli Yerel AI eşleşti ve çift devre savaş alanı açıldı."
     );
 
     return {
@@ -5728,6 +5766,8 @@ function saveHumanReviewLocalNote() {
 
   function finishLocalBattle({
     won,
+    finishReason=null,
+    forfeitPenalty=0,
   }) {
     if (localBattleFinished) {
       return;
@@ -5751,22 +5791,37 @@ function saveHumanReviewLocalNote() {
       battleResultSummaryEl.hidden =
         false;
       battleResultSummaryEl.textContent =
-        won
-          ? "KAZANDIN · Rakip Çekirdek yok edildi"
-          : "KAYBETTİN · Çekirdeğin yok edildi";
+        finishReason === "player_forfeit"
+          ? `KAYBETTİN · Savaşı bıraktın · ${forfeitPenalty} DK ceza`
+          : (
+              won
+                ? "KAZANDIN · Rakip Çekirdek yok edildi"
+                : "KAYBETTİN · Çekirdeğin yok edildi"
+            );
     }
 
     if (battleStateLabelEl) {
       battleStateLabelEl.textContent =
-        won
-          ? "Maç tamamlandı · Galibiyet"
-          : "Maç tamamlandı · Mağlubiyet";
+        finishReason === "player_forfeit"
+          ? "Maç tamamlandı · Savaşı bıraktın"
+          : (
+              won
+                ? "Maç tamamlandı · Galibiyet"
+                : "Maç tamamlandı · Mağlubiyet"
+            );
     }
 
     if (localBattleMetrics) {
       localBattleMetrics.duration_ms =
         Math.max(0,Math.round(client.elapsedMs));
       localBattleMetrics.won = Boolean(won);
+      localBattleMetrics.forfeited =
+        finishReason === "player_forfeit";
+      localBattleMetrics.forfeit_credit_penalty =
+        Math.max(
+          0,
+          Number(forfeitPenalty || 0)
+        );
 
       telemetryDispatcher
         .trackLocalBattleCompleted({
@@ -5863,6 +5918,89 @@ function saveHumanReviewLocalNote() {
       350
     );
     renderPlayModeUi();
+  }
+
+  function forfeitOfflineLocalBattle() {
+    const earnedDuringBattle =
+      Math.max(
+        0,
+        Number(mockServerPassiveSeconds || 0)
+        * 10
+      );
+    const currentCredits =
+      Math.max(
+        0,
+        Number(client.circuitCredits || 0)
+      );
+    const penalty =
+      Math.min(
+        currentCredits,
+        earnedDuringBattle
+      );
+
+    client.applyServerEconomyState({
+      circuitCredits:
+        currentCredits - penalty,
+    });
+    commandLog.push({
+      atMs:client.elapsedMs,
+      kind:"battle_forfeited",
+      payload:{
+        credit_penalty:penalty,
+      },
+    });
+    finishLocalBattle({
+      won:false,
+      finishReason:"player_forfeit",
+      forfeitPenalty:penalty,
+    });
+  }
+
+  async function forfeitActiveBattle() {
+    if (
+      activePlayMode === "local"
+      && localBattleStarted
+      && !localBattleFinished
+    ) {
+      battleForfeitButton.disabled = true;
+      trackBattleUiInteraction(
+        "battle_forfeit",
+        "other_ui"
+      );
+      if (localServerSessionId) {
+        const accepted =
+          await sendLocalServerCommand({
+            kind:"forfeit_battle",
+            payload:{},
+          });
+        if (!accepted) {
+          battleForfeitButton.disabled = false;
+        }
+        return;
+      }
+      forfeitOfflineLocalBattle();
+      return;
+    }
+
+    if (
+      activePlayMode === "online"
+      && document.body.dataset.onlineStatus
+        === "battle"
+      && pvpState.phase !== "finished"
+    ) {
+      battleForfeitButton.disabled = true;
+      const result = sendPvPCommand({
+        kind:"forfeit_battle",
+        payload:{},
+      });
+      if (!result?.ok) {
+        battleForfeitButton.disabled = false;
+        logClientMessage(
+          result?.reason
+          || "Savaşı bırakma komutu gönderilemedi."
+        );
+      }
+    }
   }
 
   function pulseBattleFx(moduleId, kind="hit") {
@@ -10456,6 +10594,34 @@ function saveHumanReviewLocalNote() {
     settingsSaveButton.addEventListener(
       "click",
       saveSettingsForm
+    );
+  }
+
+  if (battleForfeitButton) {
+    battleForfeitButton.addEventListener(
+      "click",
+      forfeitActiveBattle
+    );
+  }
+
+  const returnPreparationButton =
+    document.getElementById(
+      "return-preparation-button"
+    );
+
+  if (returnPreparationButton) {
+    returnPreparationButton.addEventListener(
+      "click",
+      () => {
+        postMatchSync.clear();
+        if (activePlayMode === "local") {
+          prepareLocalMatch();
+        } else {
+          pvpConnection.disconnect();
+          prepareOnlineMatch();
+        }
+        renderPlayModeUi();
+      }
     );
   }
 

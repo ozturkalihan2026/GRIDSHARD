@@ -328,3 +328,27 @@ Kullanıcı testinde yaklaşık 10 saniyelik belirgin tekrar ve tek-enstrüman h
 Katmanlar bass + pad + pulse + accent bileşenlerinden oluşur. BPM değerleri 32 saniyelik loop sınırına tam bar/beat çevrimleri gelecek şekilde seçildi; loop sonu ile başlangıç arasındaki örnek farkı otomatik testte düşük tutulur.
 
 Music state geçiş crossfade süresi `1200 ms` olmuştur. Amaç track değiştirme ve state geçişini daha az fark edilir yapmak; final mix/mastering değildir.
+
+---
+
+## 15. Beta.25 Shard Pulse / Mix V5
+
+Beta.25, GRIDSHARD'a ait tekrar üretilebilir bir müzik imzasını çalışma zamanına bağlar:
+
+- ortak `3+3+2` kapı ritmi,
+- `D–A–C–F` Shard motifi,
+- obsidyen/mint Shardglass görsel kimliğiyle eşleşen camsı transient + manyetik bass,
+- menü, hazırlık, savaş ve kritik Çekirdek için ayrı 32 saniyelik stereo katman,
+- tüm ana müzik dosyalarında yaklaşık `-6 dBFS` peak headroom,
+- mevcut `1200 ms` crossfade korunur.
+
+V5 dosyaları:
+
+- `menu_shardglass_v5.wav`
+- `pool_flux_v5.wav`
+- `battle_fracture_v5.wav`
+- `critical_shard_v5.wav`
+
+Deterministik kaynak: `tools/generate_beta25_audio.py`.
+
+Bu aşama özgün kompozisyon/miks kimliği sağlar; hedef LUFS ve platform mastering kararı değildir.

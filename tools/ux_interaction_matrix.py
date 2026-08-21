@@ -197,7 +197,7 @@ def main()->int:
 
     payload={
         "version":
-            "2.0.0-beta.24",
+            "2.0.0-beta.25",
         "status":
             "MEASURED"
             if measured

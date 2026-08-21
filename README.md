@@ -23,4 +23,5 @@ Rakibin devresine göre savaş sırasında stratejisini değiştirebilir.
 GRIDSHARD'de savaş hiçbir zaman durmaz. Oyuncunun yaptığı bütün müdahaleler gerçek zamanlı savaş devam ederken gerçekleşir.
 
 Proje Hedefi
+
 GRIDSHARD'ın amacı; kolay anlaşılabilen ancak enerji yönetimi, modül kombinasyonları, konumlandırma, ekonomi ve anlık karşı hamleler sayesinde ustalaşması zaman alan rekabetçi bir PvP deneyimi oluşturmaktır.

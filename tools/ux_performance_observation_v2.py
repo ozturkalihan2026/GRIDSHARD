@@ -31,7 +31,7 @@ def main():
     history=load(HISTORY,{"runs":[]})
     if matrix.get("status")!="MEASURED":
         payload={
-            "version":"2.0.0-beta.24",
+            "version":"2.0.0-beta.25",
             "status":"NOT_MEASURED",
             "performance_pass":None,
             "history_run_count":len(history.get("runs",[])),
@@ -54,7 +54,7 @@ def main():
             }
         run_count=len(history.get("runs",[]))
         payload={
-            "version":"2.0.0-beta.24",
+            "version":"2.0.0-beta.25",
             "status":"OBSERVED",
             "performance_pass":None,
             "history_run_count":run_count,

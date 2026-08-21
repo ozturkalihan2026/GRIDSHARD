@@ -1,0 +1,73 @@
+{
+  "version": "2.0.0-beta.25",
+  "ok": true,
+  "checks": {
+    "version_label": true,
+    "wordmark_geometry": true,
+    "forfeit_control": true,
+    "preparation_return_control": true,
+    "preparation_action_pinned": true,
+    "shardglass_palette": true,
+    "audio_runtime_v5": true,
+    "audio_assets_v5": true,
+    "server_authoritative_forfeit": true
+  },
+  "forfeit": {
+    "ok": true,
+    "credit_penalty": 20,
+    "remaining_credits": 200,
+    "winner_player_id": "opponent",
+    "clock_frozen_on_tick": true
+  },
+  "required_viewports": [
+    {
+      "width": 1366,
+      "height": 768
+    },
+    {
+      "width": 1366,
+      "height": 630
+    }
+  ],
+  "browser_viewports_verified": true,
+  "browser_evidence": {
+    "version": "2.0.0-beta.25",
+    "browser": "Codex In-app Browser",
+    "real_browser": true,
+    "ok": true,
+    "viewports": {
+      "1366x768": {
+        "menu_no_page_overflow": true,
+        "core_center_delta_px": {
+          "x": 8e-06,
+          "y": 8e-06
+        },
+        "core_arena_within_gridshard_right_edge": true,
+        "preparation_match_visible": true,
+        "preparation_match_uncovered": true,
+        "preparation_actions_position": "sticky"
+      },
+      "1366x630": {
+        "no_page_overflow": true,
+        "preparation_match_visible": true,
+        "preparation_match_uncovered": true,
+        "preparation_actions_position": "sticky",
+        "match_button_bottom_px": 603.600025,
+        "viewport_bottom_px": 630
+      }
+    },
+    "battle": {
+      "authority": "server",
+      "forfeit_visible": true,
+      "forfeit_under_player_name": true,
+      "result_visible": true,
+      "forfeit_penalty": "175 DK",
+      "battle_time_frozen": true,
+      "return_preparation_visible": true,
+      "rematch_visible": true,
+      "returned_to_preparation_with_pool": "18 / 18"
+    },
+    "console_error_or_warning_count": 0
+  },
+  "browser_note": "1366×768 ve 1366×630 gerçek tarayıcı kontrolleri doğrulandı."
+}

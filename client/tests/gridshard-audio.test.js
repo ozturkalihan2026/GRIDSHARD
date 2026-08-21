@@ -33,7 +33,7 @@ assert.strictEqual(
 
 assert.ok(
   global.GRIDSHARD_MUSIC_ASSETS.menu
-    .includes("menu_pulse_v4.wav")
+    .includes("menu_shardglass_v5.wav")
 );
 assert.ok(
   global.GRIDSHARD_SFX_CUES.core_hit
@@ -82,7 +82,7 @@ assert.strictEqual(
 
 assert.strictEqual(
   global.GRIDSHARD_AUDIO_MIX.version,
-  "mix-v4"
+  "shardglass-mix-v5"
 );
 assert.strictEqual(
   global.GRIDSHARD_AUDIO_MIX.crossfadeMs,
@@ -90,7 +90,7 @@ assert.strictEqual(
 );
 assert.ok(
   global.GRIDSHARD_CRITICAL_LAYER
-    .includes("critical_core_layer_v4.wav")
+    .includes("critical_shard_v5.wav")
 );
 assert.strictEqual(
   director.previewMusic("menu").ok,

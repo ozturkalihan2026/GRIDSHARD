@@ -42,7 +42,7 @@ def test_release_check_endpoint_exposes_locked_menu_scope():
     assert response.status_code==200
     body=response.json()
 
-    assert body["version"]=="2.0.0-beta.24"
+    assert body["version"]=="2.0.0-beta.25"
     assert body["ready"] is True
     assert body["menu_areas"]==list(
         REQUIRED_MENU_AREAS

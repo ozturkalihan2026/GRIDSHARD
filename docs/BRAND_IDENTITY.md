@@ -1,6 +1,6 @@
 # GRIDSHARD — Brand Identity Foundation
 
-**Identity package:** `2.0.0-beta.24`  
+**Identity package:** `2.0.0-beta.25`
 **Game name:** `GRIDSHARD`  
 **Tagline (TR):** `Devreni Kur. Çekirdeği Kır.`  
 **Tagline (EN):** `Build the Circuit. Break the Core.`
@@ -19,7 +19,25 @@ Hedef duygu:
 - taktik laboratuvar,
 - kontrollü endüstriyel sertlik.
 
-GRIDSHARD; neon-cyberpunk kadar parlak ve renkli değildir, askeri arayüz kadar gri de değildir. Ana kimlik **Neon Industrial / Electric Arena** yaklaşımıdır.
+GRIDSHARD; neon-cyberpunk kadar parlak ve renkli değildir, askeri arayüz kadar gri de değildir. Beta.25 ile ana kimlik **Shardglass Relay** yaklaşımıdır: obsidyen cam yüzey, mint enerji akışı, dört kapılı geometri ve diyagonal kırık dikişi.
+
+### 1.1 Referans araştırması ve ayrışma kararı
+
+| Referans | Alınan ders | GRIDSHARD ayrışması |
+|---|---|---|
+| Backpack Battles | Hazırlıkta yerleşim kararını savaştan net ayırmak; otomatik savaş öncesi havuzu okunur tutmak | Çanta/fantezi estetiği yerine gerçek zamanlı devre, port ve enerji topolojisi |
+| FTL: Faster Than Light | Güç/alt sistem durumunu tek bakışta göstermek | Gemi kesiti yerine iki taraflı dört kapılı Çekirdek arenası ve savaş sırasında modül müdahalesi |
+| Into the Breach | Küçük gridde yüksek bilgi yoğunluğunu sade tehdit işaretleriyle taşımak | Tur bazlı tam bilgi yerine kesintisiz 10 Hz sunucu otoriteli savaş |
+| Opus Magnum | Bağlantı ve mekanik hareketi görsel dilin parçası yapmak | Alşimik makine yerine kırık cam röleleri, enerji portları ve sınıf renkleri |
+
+Resmî kaynaklar:
+
+- https://game.shochiku.co.jp/games/backpack-battles/
+- https://ftlgame.subsetgames.com/ftl.html
+- https://www.subsetgames.com/itb.html
+- https://www.zachtronics.com/opus-magnum/
+
+Karar: referansların hiçbir renk paleti, ekran kompozisyonu veya müzik teması kopyalanmaz. GRIDSHARD kimliği dört sabit imzayla tanınır: **Shard Core**, **mint flux**, **diyagonal kırık dikişi** ve **3+3+2 kapı ritmi**.
 
 ---
 
@@ -27,19 +45,21 @@ GRIDSHARD; neon-cyberpunk kadar parlak ve renkli değildir, askeri arayüz kadar
 
 | Token | Kullanım | HEX |
 |---|---|---|
-| `--gs-void-navy` | Ana arka plan | `#070B14` |
-| `--gs-reactor-blue` | İkinci arka plan | `#0C1625` |
-| `--gs-alloy-navy` | Panel yüzeyi | `#132238` |
-| `--gs-circuit-steel` | Çizgi / panel kenarı | `#294766` |
-| `--gs-arc-cyan` | Ana vurgu / enerji | `#36D9FF` |
-| `--gs-plasma-cyan` | Enerji parlama | `#67F4FF` |
-| `--gs-reactor-gold` | Seçim / önemli CTA | `#F4C85A` |
-| `--gs-ion-green` | Sağlık / pozitif | `#55DF8A` |
-| `--gs-charge-amber` | Uyarı | `#F0B84B` |
-| `--gs-overload-red` | Kritik / hasar | `#FF515A` |
-| `--gs-interference-violet` | Sabotaj | `#A86BFF` |
-| `--gs-ice-white` | Ana metin | `#ECF5FF` |
-| `--gs-signal-gray` | İkincil metin | `#8CA1B9` |
+| `--gs-void-navy` | Ana arka plan | `#050914` |
+| `--gs-reactor-blue` | İkinci arka plan | `#0A1530` |
+| `--gs-alloy-navy` | Panel yüzeyi | `#111D35` |
+| `--gs-circuit-steel` | Çizgi / panel kenarı | `#25395B` |
+| `--gs-arc-cyan` | Ana vurgu / mint enerji | `#35E5D2` |
+| `--gs-plasma-cyan` | Enerji parlama | `#79FFE9` |
+| `--gs-reactor-gold` | Seçim / önemli CTA | `#FFCC66` |
+| `--gs-ion-green` | Sağlık / pozitif | `#A8FF78` |
+| `--gs-charge-amber` | Uyarı | `#FFB84D` |
+| `--gs-overload-red` | Kritik / hasar | `#FF5F72` |
+| `--gs-interference-violet` | Sabotaj | `#B87CFF` |
+| `--gs-ice-white` | Ana metin | `#F3F7FF` |
+| `--gs-signal-gray` | İkincil metin | `#8FA3BF` |
+
+Renk dağılım hedefi: `%72` void/reactor arka plan, `%18` alloy panel, `%6` mint flux, `%3` semantik sınıf rengi, en fazla `%1` reactor-gold CTA.
 
 ---
 
@@ -82,6 +102,7 @@ Metin logosu:
 **Ana tasarım hedefi:** `1920×1080`
 
 Desteklenen responsive aralık:
+- zorunlu kısa masaüstü kabul görünümü: `1366×630`
 - minimum hedef: `1366×768`
 - ideal: `1920×1080`
 - yüksek çözünürlük: `2560×1440`
@@ -138,7 +159,28 @@ Animasyonlar 150–550 ms aralığında kısa tutulur. UI hareketi savaş okunab
 
 ---
 
-## 8. Dosya / kodlama ilkesi
+## 8. Özgün ses imzası — Shard Pulse
+
+Beta.25 müzik dili başka oyunların soundtrack düzenini kullanmaz. Ortak kimlik öğeleri:
+
+- `3+3+2` sekizlik kapı vurgusu,
+- `D–A–C–F` dört notalı Shard motifi,
+- manyetik alt bas, camsı kısa transient, dar bant elektrik rölesi,
+- menüden savaşa aynı motifin yoğunluk ve oktav değişimiyle dönüşmesi,
+- 1200 ms state crossfade; savaş hiçbir ses geçişinde durmaz.
+
+Çalışma zamanı katmanları:
+
+- `menu_shardglass_v5.wav` — 32 sn / 52 vuruş,
+- `pool_flux_v5.wav` — 32 sn / 60 vuruş,
+- `battle_fracture_v5.wav` — 32 sn / 68 vuruş,
+- `critical_shard_v5.wav` — kritik Çekirdek üst katmanı.
+
+Dosyalar deterministik olarak `tools/generate_beta25_audio.py` ile üretilebilir. Bu paket kimlik ve miks prototipidir; platform LUFS/True Peak hedefi ayrı insan kararı olmadan “final mastering” sayılmaz.
+
+---
+
+## 9. Dosya / kodlama ilkesi
 
 Yeni kullanıcı-facing marka alanlarında `GRIDSHARD` kullanılacaktır.
 
@@ -153,7 +195,7 @@ Dahili rename, ayrı migration paketi olmadan yapılmaz.
 
 ---
 
-## 9. Beta.15 uygulama tamamlama
+## 10. Beta.15 uygulama tamamlama
 
 Ana lobby kararı artık yalnız doküman değildir:
 

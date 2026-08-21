@@ -443,6 +443,8 @@ class PvPSessionService:
                 player_data.update(
                     {
                         "circuit_credits": player.circuit_credits,
+                        "total_circuit_credits_earned": player.total_circuit_credits_earned,
+                        "forfeit_credit_penalty": player.forfeit_credit_penalty,
                         "battle_pool_ids": (
                             list(player.battle_pool.module_definition_ids)
                             if player.battle_pool is not None

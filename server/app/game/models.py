@@ -160,6 +160,7 @@ class PlayerBattleState:
     circuit_credits: int = 0
     total_circuit_credits_earned: int = 0
     total_circuit_credits_spent: int = 0
+    forfeit_credit_penalty: int = 0
     battle_pool: BattlePool | None = None
     pending_booster_offer: BoosterOffer | None = None
     next_booster_offer_index: int = 0

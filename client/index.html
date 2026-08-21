@@ -15,6 +15,7 @@
       <div class="battle-player-hud">
         <strong id="battle-profile-name">Oyuncu</strong>
         <span id="battle-match-label">Yerel AI</span>
+        <button id="battle-forfeit-button" class="battle-forfeit-button" type="button" hidden>Savaşı Bırak</button>
       </div>
       <div class="battle-status-cluster">
         <div class="credit-indicator" id="credit-indicator">Devre Kredisi: 200 DK</div>
@@ -31,7 +32,7 @@
     <section id="main-menu-panel" class="main-menu-panel">
       <div class="main-menu-brand">
         <h1>GRIDSHARD</h1>
-        <span>2.0.0-beta.24</span>
+        <span>2.0.0-beta.25</span>
       </div>
       <div class="lobby-backdrop" aria-hidden="true">
         <div class="lobby-board-grid" aria-hidden="true">
@@ -53,8 +54,10 @@
       </div>
 
       <div class="lobby-main">
-        <h2 id="main-menu-title">GRIDSHARD</h2>
-        <span class="lobby-subtitle">CORE ARENA</span>
+        <div class="lobby-wordmark">
+          <h2 id="main-menu-title">GRIDSHARD</h2>
+          <span class="lobby-subtitle">CORE ARENA</span>
+        </div>
 
         <div class="lobby-play-row">
           <button type="button" class="menu-action menu-action-play lobby-play-button" data-open-screen="play">
@@ -62,7 +65,7 @@
           </button>
           <div class="lobby-build-chip">
             <span>GÜNCEL YAPI</span>
-            <strong id="ui-build-version">2.0.0-beta.24</strong><small id="ui-build-run">manifest bekleniyor</small>
+            <strong id="ui-build-version">2.0.0-beta.25</strong><small id="ui-build-run">manifest bekleniyor</small>
           </div>
         </div>
       </div>
@@ -414,7 +417,7 @@
     </section>
 
     <section class="battle-test-banner play-live-panel" data-screen-panel="play" hidden>
-      <strong>Beta.24 Sunucu Otoriteli Yerel Savaş</strong>
+      <strong>Beta.25 Shardglass Kimliği · Sunucu Otoriteli Yerel Savaş</strong>
       <span id="battle-entry-status">Savaş alanına giriş başarılı · Yerel AI aktif · Modül Rafı 15. saniyede açılır</span>
     </section>
 
@@ -472,6 +475,7 @@
           <div><span>Süre</span><strong id="local-report-duration">—</strong></div>
           <div><span>Sonuç</span><strong id="local-report-result">—</strong></div>
           <div><span>DK Harcama</span><strong id="local-report-credits">—</strong></div>
+          <div><span>Kaçış Cezası</span><strong id="local-report-forfeit-penalty">—</strong></div>
           <div><span>Jeneratör Taşıma</span><strong id="local-report-generator-moves">—</strong></div>
           <div><span>Verilen Hasar</span><strong id="local-report-damage-dealt">—</strong></div>
           <div><span>Alınan Hasar</span><strong id="local-report-damage-received">—</strong></div>
@@ -563,7 +567,10 @@
         </section>
       </div>
       </details>
-      <button id="rematch-button" type="button">Tekrar Maç</button>
+      <div class="post-match-actions">
+        <button id="return-preparation-button" type="button">Hazırlık Ekranına Dön</button>
+        <button id="rematch-button" type="button">Tekrar Maç</button>
+      </div>
     </section>
 
 

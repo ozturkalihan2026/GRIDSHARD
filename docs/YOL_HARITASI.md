@@ -1,7 +1,7 @@
 # GRIDSHARD 2.0 — YOL HARİTASI
 
-**Güncel Sürüm:** `2.0.0-beta.24`  
-**Paket:** Manuel Arena Geri Bildirimi + Yerel AI Sunucu Otoritesi Köprüsü + Tek Viewport UX + Savaş Efektleri V2  
+**Güncel Sürüm:** `2.0.0-beta.25`
+**Paket:** Shardglass Kimliği + Shard Pulse Müzik + Kısa Viewport Hazırlık UX + Sunucu Otoriteli Kaçış Cezası
 **Kanonik Dosya:** `docs/YOL_HARITASI.md`
 
 > Bu dosya GRIDSHARD 2.0 için tek kanonik geliştirme kaydıdır. Kaynak karar belgesi ile kod tabanı yeniden karşılaştırılmıştır. Buradaki `[x]`, `[~]`, `[ ]` işaretleri artık yalnızca kodda ve testlerde doğrulanabilen gerçek durumu gösterir.
@@ -1320,14 +1320,72 @@ Beta.14'ten önce oyun kimliği sabitlenmiştir.
 
 ---
 
+# 9.20 — GRIDSHARD 2.0.0-beta.25 Shardglass Kimliği, Shard Pulse, Kısa Viewport UX ve Savaşı Bırakma
+
+## Gereksinim ve referans araştırması
+- [x] `Öneri ve Düzenleme.docx` paragraf içeriği ve üç gömülü Beta.24 ekran görüntüsü gereksinim verisi olarak incelendi.
+- [x] Kanonik karar kaynağı bu `docs/YOL_HARITASI.md` dosyası olarak korundu.
+- [x] Backpack Battles, FTL, Into the Breach ve Opus Magnum resmî ürün sayfaları; hazırlık/savaş ayrımı, grid okunabilirliği, enerji sistemleri ve bağlantı estetiği açısından karşılaştırıldı.
+- [x] Referanslardan doğrudan tema/renk/müzik kopyalanmadı; ayrışma kararları `docs/BRAND_IDENTITY.md` içinde kaydedildi.
+
+## Shardglass görsel kimliği
+- [x] Kimlik adı `Shardglass Relay` olarak sabitlendi.
+- [x] Obsidyen cam yüzey, mint flux, diyagonal kırık dikişi ve reactor-gold CTA oranı tanımlandı.
+- [x] Modül sınıf renkleri semantik olarak korunurken ana enerji rengi `#35E5D2` mint flux'a taşındı.
+- [x] Panel köşe dili `3px / 18px` diyagonal Shardglass geometrisine bağlandı.
+- [x] Azaltılmış hareket tercihi mevcut kritik animasyonları durdurmaya devam eder.
+
+## Ana menü geometri düzeltmesi
+- [x] Shard Core merkezi ve yörüngeler aynı `top:50%` eksenine sabitlendi.
+- [x] Çekirdek pulse animasyonu `translate(-50%,-50%)` dönüşümünü bütün keyframe'lerde korur; merkez karesi aşağı kaymaz.
+- [x] `GRIDSHARD` ve `CORE ARENA` tek wordmark kutusuna alındı.
+- [x] `CORE ARENA` sağ kenarı wordmark genişliğiyle sınırlıdır; `GRIDSHARD` içindeki `D` harfini geçmez.
+
+## Hazırlık ekranı kısa viewport kabulü
+- [x] Hazırlık shell'i masaüstünde `100dvh` flex çalışma alanıdır.
+- [x] Üç kolon kendi içinde küçülür/kayar; sayfanın tamamı aşağı taşmaz.
+- [x] `Eşleştir` aksiyon satırı panel tabanına sticky olarak sabitlendi.
+- [x] Zorunlu gerçek tarayıcı hedefleri `1366×768` ve `1366×630` olarak belirlendi.
+
+## Savaşı bırakma ve ceza
+- [x] `Savaşı Bırak` oyuncu adının altında savaş HUD'ına eklendi.
+- [x] Komut Online PvP ve sunucu otoriteli Yerel AI için normal motor komut kuyruğundan `forfeit_battle` olarak ilerler.
+- [x] Bırakan oyuncu otomatik kaybeder; rakip kazanan olarak sonuç snapshot'ına yazılır.
+- [x] Ceza, `toplam kazanılan Devre Kredisi - başlangıç kredisi` ile hesaplanır.
+- [x] Mevcut bakiye cezadan düşükse bakiye sıfırda kalır; negatif kredi üretilmez.
+- [x] Kaçış komutunun kabul edildiği tick'ten sonra savaş, gelir ve saat ilerlemez.
+- [x] Kaçış cezası private snapshot, sonuç özeti, olay kaydı ve maç analizinde görünür/audit edilebilir.
+
+## Sonuç akışı
+- [x] `Hazırlık Ekranına Dön` sonuç analizinin altında eklendi; mevcut 18 modüllük seçim korunarak hazırlığa döner.
+- [x] `Tekrar Maç` doğrudan rematch davranışını korur.
+- [x] Yerel offline geliştirme fallback'i aynı kayıp/ceza davranışını simüle eder; ürün gerçeği sunucu otoritesi olarak kalır.
+
+## Özgün müzik kimliği
+- [x] `Shard Pulse` ses imzası `3+3+2` kapı ritmi ve `D–A–C–F` Shard motifiyle tanımlandı.
+- [x] Menü, hazırlık, savaş ve kritik Çekirdek için dört özgün 32 sn stereo V5 katmanı üretildi.
+- [x] Runtime `shardglass-mix-v5` dosyalarına bağlandı; 1200 ms crossfade korundu.
+- [x] Peak headroom ve loop seam otomatik testle doğrulanır.
+- [x] Final LUFS/True Peak mastering hedefi seçildi iddiası yoktur.
+
+## Beta.25 kalite kapısı
+- [x] Motor kaçış cezası, negatif olmayan bakiye, kazanan/kaybeden ve saat donması testleri eklendi.
+- [x] HTML/CSS/istemci handler ve sonuç→hazırlık regresyon testleri eklendi.
+- [x] Shardglass V5 ses dosyası/runtime testleri eklendi.
+- [x] `qa_reports/beta25_acceptance_report.json` kabul raporu eklendi.
+- [x] Tam Python + JavaScript + startup + HTTP smoke zinciri başarıyla çalıştırıldı; `qa_reports/latest.json` güncellendi.
+- [x] `1366×768` ve `1366×630` gerçek tarayıcı viewport kanıtı `qa_reports/beta25_browser_viewports.json` olarak kaydedildi.
+
+---
+
 # 10. Sıradaki Paket
 
-**`GRIDSHARD 2.0.0-beta.25 — Canlı Telemetri Sertleştirmesi + Görsel Erişilebilirlik + Bağlantı Hata Akışı`**
+**`GRIDSHARD 2.0.0-beta.26 — Canlı Telemetri Sertleştirmesi + Görsel Erişilebilirlik + Bağlantı Hata Akışı`**
 
-1. Gerçek kullanıcı maçlarından port döndürme, enerji yetersizliği ve raf kullanımı telemetrisini toplamak.
+1. Gerçek kullanıcı maçlarından port döndürme, enerji yetersizliği, raf kullanımı ve kaçış telemetrisini toplamak.
 2. Yerel AI snapshot bağlantı kopması / yeniden bağlanma akışını kullanıcıya görünür ve geri kazanılabilir yapmak.
 3. Savaş efektleri için renk körlüğü ve azaltılmış hareket profillerini genişletmek.
-4. Windows/Chrome kanıt paketini Beta.24 arayüzüyle yeniden üretip viewport matrisinde doğrulamak.
+4. Windows/Chrome kanıt paketini Shardglass arayüzüyle çoklu viewport matrisinde yeniden üretmek.
 5. Enerji sayısal dengesini yalnız ölçülen telemetri ve açık review kararıyla değerlendirmek.
 
 Kural:

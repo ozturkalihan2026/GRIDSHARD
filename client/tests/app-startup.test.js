@@ -221,5 +221,34 @@ if (afterFinishState.directions["laser-1"] !== frozenDirection) {
   throw new Error("Maç bittikten sonra modül yönü değişti.");
 }
 
-console.log("app startup + direct preparation + timer freeze + port rotation + reciprocal local battle result test passed");
+const returnPreparation = getElement("return-preparation-button");
+if (typeof returnPreparation._listeners.click !== "function") {
+  throw new Error("Hazırlık Ekranına Dön handler bağlanmadı.");
+}
+returnPreparation._listeners.click();
+if (document.body.dataset.localStatus !== "setup") {
+  throw new Error(`Sonuçtan hazırlığa dönülmedi: ${document.body.dataset.localStatus}`);
+}
+
+quickStart._listeners.click();
+for (let ms = 1000; ms <= 5000; ms += 1000) {
+  rafCallback(ms);
+}
+
+const forfeitButton = getElement("battle-forfeit-button");
+if (typeof forfeitButton._listeners.click !== "function") {
+  throw new Error("Savaşı Bırak handler bağlanmadı.");
+}
+forfeitButton._listeners.click();
+if (document.body.dataset.localFinished !== "true") {
+  throw new Error("Savaşı Bırak çevrimdışı geri dönüş savaşını sonuçlandırmadı.");
+}
+if (!getElement("battle-result-summary").textContent.includes("Savaşı bıraktın")) {
+  throw new Error(`Savaşı bırakma sonucu görünmedi: ${getElement("battle-result-summary").textContent}`);
+}
+if (getElement("local-report-forfeit-penalty").textContent === "0 DK") {
+  throw new Error("Savaşta kazanılan kredi için kaçış cezası uygulanmadı.");
+}
+
+console.log("app startup + preparation return + forfeit penalty + timer freeze + reciprocal local battle test passed");
 process.exit(0);

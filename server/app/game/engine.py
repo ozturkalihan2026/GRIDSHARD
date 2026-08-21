@@ -278,6 +278,10 @@ class BattleEngine:
             return
 
         self._process_commands()
+        if self.state.status != BattleStatus.RUNNING:
+            # A terminating command must freeze combat, income and the clock
+            # on the exact authoritative tick where it was accepted.
+            return
         self._simulate()
 
         self.state.tick += 1
@@ -1354,9 +1358,14 @@ class BattleEngine:
                     )
 
     def _process_commands(self) -> None:
-        while self._command_queue:
+        while (
+            self._command_queue
+            and self.state.status == BattleStatus.RUNNING
+        ):
             command = self._command_queue.popleft()
             self._process_command(command)
+        if self.state.status != BattleStatus.RUNNING:
+            self._command_queue.clear()
 
     def _process_command(self, command: BattleCommand) -> None:
         self._emit(
@@ -1377,6 +1386,7 @@ class BattleEngine:
                 "rotate_module": self._cmd_rotate_module,
                 "apply_booster": self._cmd_apply_booster,
                 "select_booster": self._cmd_select_booster,
+                "forfeit_battle": self._cmd_forfeit_battle,
             }
             handler = handlers.get(command.kind)
             if handler is None:
@@ -1393,6 +1403,42 @@ class BattleEngine:
                     "reason": str(exc),
                 },
             )
+
+    def _cmd_forfeit_battle(self, player_id: str, payload: dict) -> None:
+        player = self._require_player(player_id)
+        opponent_ids = [
+            opponent_id
+            for opponent_id in sorted(self.state.players)
+            if opponent_id != player_id
+        ]
+        if not opponent_ids:
+            raise CommandRejected("Savaşı bırakmak için etkin bir rakip gerekli.")
+
+        battle_earnings = max(
+            0,
+            player.total_circuit_credits_earned
+            - self.circuit_credit_config.starting_credits,
+        )
+        penalty = min(player.circuit_credits, battle_earnings)
+        player.circuit_credits -= penalty
+        player.forfeit_credit_penalty = penalty
+
+        self._emit(
+            "battle_forfeited",
+            {
+                "player_id": player_id,
+                "winner_player_id": opponent_ids[0],
+                "earned_during_battle": battle_earnings,
+                "credit_penalty": penalty,
+                "remaining_circuit_credits": player.circuit_credits,
+            },
+        )
+        self._finish_battle(
+            winner_player_id=opponent_ids[0],
+            loser_player_id=player_id,
+            is_draw=False,
+            reason="player_forfeit",
+        )
 
     def _cmd_place_module(self, player_id: str, payload: dict) -> None:
         self._ensure_active_capacity_for_new_module(player_id)
