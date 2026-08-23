@@ -8,8 +8,8 @@ client=TestClient(app)
 def test_beta26_single_matchmaking_entry_and_launcher_shipped():
     html=client.get('/').text
     assert 'id="local-battle-quick-start"' not in html
-    assert 'id="battle-pool-confirm"' in html
-    assert '10 sn sonra AI devralır' in html
+    assert 'id="battle-pool-confirm" type="button" disabled>Savaş</button>' in html
+    assert '10 sn AI Devralma' in html
     launcher=(ROOT/'HIZLI_SAVAS_TESTI.bat').read_text(encoding='utf-8')
     assert 'BASLAT_WEB_TEST.bat' in launcher
 

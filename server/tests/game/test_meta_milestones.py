@@ -31,12 +31,12 @@ def test_battle_pool_is_exactly_18_unique_modules():
 
 def test_capacity_schedule_reaches_10():
     assert max_active_modules_for_elapsed_ms(14_999) is None
-    assert max_active_modules_for_elapsed_ms(15_000) == 4
-    assert max_active_modules_for_elapsed_ms(25_000) == 5
-    assert max_active_modules_for_elapsed_ms(35_000) == 6
-    assert max_active_modules_for_elapsed_ms(45_000) == 7
-    assert max_active_modules_for_elapsed_ms(55_000) == 8
-    assert max_active_modules_for_elapsed_ms(65_000) == 9
+    assert max_active_modules_for_elapsed_ms(15_000) == 5
+    assert max_active_modules_for_elapsed_ms(25_000) == 6
+    assert max_active_modules_for_elapsed_ms(35_000) == 7
+    assert max_active_modules_for_elapsed_ms(45_000) == 8
+    assert max_active_modules_for_elapsed_ms(55_000) == 9
+    assert max_active_modules_for_elapsed_ms(65_000) == 10
     assert max_active_modules_for_elapsed_ms(75_000) == 10
     assert max_active_modules_for_elapsed_ms(200_000) == 10
 
@@ -59,14 +59,14 @@ def test_board_has_all_six_special_cell_types():
     } == types
 
 
-def test_booster_loop_matches_85_plus_rule():
-    assert BOOSTER_FIRST_OFFER_MS == 85_000
+def test_booster_loop_starts_ten_seconds_after_final_slot():
+    assert BOOSTER_FIRST_OFFER_MS == 75_000
     assert BOOSTER_OFFER_INTERVAL_MS == 10_000
     assert BOOSTER_OPTIONS_PER_OFFER == 3
     assert [
         booster_offer_due_at_ms(index)
         for index in range(4)
-    ] == [85_000, 95_000, 105_000, 115_000]
+    ] == [75_000, 85_000, 95_000, 105_000]
 
 
 def test_counter_strategy_metadata_is_broadly_configured():

@@ -117,12 +117,12 @@ function createClient() {
 
 {
   assert.strictEqual(maxActiveModulesForElapsedMs(14999), null);
-  assert.strictEqual(maxActiveModulesForElapsedMs(15000), 4);
-  assert.strictEqual(maxActiveModulesForElapsedMs(25000), 5);
-  assert.strictEqual(maxActiveModulesForElapsedMs(35000), 6);
-  assert.strictEqual(maxActiveModulesForElapsedMs(45000), 7);
-  assert.strictEqual(maxActiveModulesForElapsedMs(55000), 8);
-  assert.strictEqual(maxActiveModulesForElapsedMs(65000), 9);
+  assert.strictEqual(maxActiveModulesForElapsedMs(15000), 5);
+  assert.strictEqual(maxActiveModulesForElapsedMs(25000), 6);
+  assert.strictEqual(maxActiveModulesForElapsedMs(35000), 7);
+  assert.strictEqual(maxActiveModulesForElapsedMs(45000), 8);
+  assert.strictEqual(maxActiveModulesForElapsedMs(55000), 9);
+  assert.strictEqual(maxActiveModulesForElapsedMs(65000), 10);
   assert.strictEqual(maxActiveModulesForElapsedMs(75000), 10);
   assert.strictEqual(maxActiveModulesForElapsedMs(85000), 10);
 }
@@ -130,7 +130,7 @@ function createClient() {
 {
   const { client } = createClient();
   client.updateElapsedMs(25000);
-  assert.strictEqual(client.maxActiveModules(), 5);
+  assert.strictEqual(client.maxActiveModules(), 6);
   assert.strictEqual(client.activeModuleCount(), 1);
 }
 
@@ -153,19 +153,17 @@ function createClient() {
 
   battle.updateElapsedMs(15000);
   assert.strictEqual(battle.beginDrag("shield-1").ok, true);
-  const blockedAtFour = battle.dropOnCell(4, 2);
-  assert.strictEqual(blockedAtFour.ok, false);
-  assert.ok(blockedAtFour.reason.includes("4/4"));
-
-  battle.updateElapsedMs(25000);
-  assert.strictEqual(battle.beginDrag("shield-1").ok, true);
   assert.strictEqual(battle.dropOnCell(4, 2).ok, true);
   assert.strictEqual(battle.pendingPlacementCount(), 1);
   assert.strictEqual(battle.beginDrag("battery-1").ok, true);
   const blockedPending = battle.dropOnCell(3, 2);
   assert.strictEqual(blockedPending.ok, false);
   assert.ok(blockedPending.reason.includes("5/5"));
-  assert.strictEqual(emitted.length, 1);
+
+  battle.updateElapsedMs(25000);
+  assert.strictEqual(battle.beginDrag("battery-1").ok, true);
+  assert.strictEqual(battle.dropOnCell(3, 2).ok, true);
+  assert.strictEqual(emitted.length, 2);
 }
 
 {
@@ -290,7 +288,7 @@ function createClient() {
 {
   const fs=require("fs");
   const src=fs.readFileSync(path.join(ROOT,"src/app.js"),"utf8");
-  assert.ok(src.includes("BOOSTER_FIRST_OFFER_MS = 85000"));
+  assert.ok(src.includes("BOOSTER_FIRST_OFFER_MS = 75000"));
   assert.ok(src.includes("BOOSTER_OFFER_INTERVAL_MS = 10000"));
   assert.ok(src.includes("3 seçenekten 1'ini seç"));
   assert.ok(src.includes("nextBoosterOfferIndex += 1"));
@@ -329,6 +327,22 @@ function createClient() {
   assert.ok(src.includes("Rakip Jeneratör"));
   assert.ok(src.includes("Rakip Çekirdek"));
   assert.ok(src.includes("hasar"));
+}
+
+{
+  const fs = require("fs");
+  const appSrc = fs.readFileSync(path.join(ROOT,"src/app.js"),"utf8");
+  const cssSrc = fs.readFileSync(path.join(ROOT,"src/styles.css"),"utf8");
+  const htmlSrc = fs.readFileSync(path.join(ROOT,"index.html"),"utf8");
+
+  assert.ok(appSrc.includes("id:`enemy-${module.instance_id}`"));
+  assert.ok(appSrc.includes("? `enemy-${module.instance_id}`"));
+  assert.ok(appSrc.includes("data.attacker_player_id\n          === data.target_player_id"));
+  assert.ok(cssSrc.includes(
+    'body[data-app-screen="play"][data-play-mode="online"]:not([data-online-status="battle"])'
+  ));
+  assert.ok(htmlSrc.includes('id="battle-pool-confirm" type="button" disabled>Savaş</button>'));
+  assert.ok(!htmlSrc.includes('id="battle-pool-confirm" type="button" disabled>Eşleştir'));
 }
 
 {

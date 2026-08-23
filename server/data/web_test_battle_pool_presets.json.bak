@@ -1,0 +1,28 @@
+{
+  "wt-dbd4a70f-4d90-4b60-958a-18ca1e4eff82": {
+    "Dengeli": {
+      "favorite": false,
+      "last_used_at_ms": null,
+      "module_definition_ids": [
+        "generator",
+        "battery",
+        "splitter",
+        "capacitor",
+        "laser",
+        "pulse_cannon",
+        "missile_launcher",
+        "drone_bay",
+        "arc_cannon",
+        "shield",
+        "armor",
+        "reflector",
+        "repair",
+        "cooler",
+        "targeting_computer",
+        "amplifier",
+        "energy_leech",
+        "jammer"
+      ]
+    }
+  }
+}

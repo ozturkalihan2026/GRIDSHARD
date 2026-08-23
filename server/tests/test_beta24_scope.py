@@ -25,7 +25,8 @@ def test_beta24_menu_preparation_and_result_markup():
     assert '<h3>Seçilen Savaş Havuzu</h3>' in html
     assert 'class="post-match-analysis"' in html
     assert "Savaş Analizini Aç" in html
-    assert "10 sn sonra AI devralır" in html
+    assert 'id="battle-pool-confirm" type="button" disabled>Savaş</button>' in html
+    assert "10 sn AI Devralma" in html
 
 
 def test_generator_has_four_ports_and_powers_adjacent_repair_module():

@@ -115,7 +115,7 @@
     down:"left",
     left:"up",
   };
-  const BOOSTER_FIRST_OFFER_MS = 85000;
+  const BOOSTER_FIRST_OFFER_MS = 75000;
   const BOOSTER_OFFER_INTERVAL_MS = 10000;
   let nextBoosterOfferIndex = 0;
   let boosterOfferOpen = false;
@@ -167,6 +167,10 @@
   });
   let focusedPoolModuleId =
     "generator-1";
+  const collapsedPoolCategories = {
+    global:new Set(),
+    selected:new Set(),
+  };
   let battlePoolPresets = withStarterBattlePoolPresets([]);
   let activeBattlePoolPresetName = null;
   let activeBattlePoolPresetBaseline = [];
@@ -655,7 +659,7 @@
       };
     }
 
-    finishWebTestSessionAudit(
+    await finishWebTestSessionAudit(
       battleId
     );
 
@@ -989,10 +993,17 @@
             .setSession(
               sessionId
             );
+          if (currentAuditEventId) {
+            bindWebTestSessionAudit(
+              currentAuditEventId,
+              sessionId
+            );
+          }
         },
     });
 
   let currentAuditEventId = null;
+  let currentAuditSessionId = null;
   let currentTestRunId = null;
 
   async function recordWebTestSessionAudit(
@@ -1044,8 +1055,20 @@
       ) {
         currentAuditEventId =
           auditEventId;
+        currentAuditSessionId =
+          null;
         currentTestRunId =
           auditTestRunId;
+        if (
+          pvpState.sessionId
+          && pvpState.sessionId
+            !== "local-preview"
+        ) {
+          bindWebTestSessionAudit(
+            auditEventId,
+            pvpState.sessionId
+          );
+        }
       } else if (
         response.ok
         && auditEventId
@@ -1109,6 +1132,15 @@
           }
         );
 
+      if (
+        response.ok
+        && auditEventId
+          === currentAuditEventId
+      ) {
+        currentAuditSessionId =
+          sessionId;
+      }
+
       return {
         ok: response.ok,
       };
@@ -1129,6 +1161,22 @@
       return {
         ok: false,
       };
+    }
+
+    if (
+      currentAuditSessionId
+      !== sessionId
+    ) {
+      const binding =
+        await bindWebTestSessionAudit(
+          currentAuditEventId,
+          sessionId
+        );
+      if (!binding.ok) {
+        return {
+          ok: false,
+        };
+      }
     }
 
     try {
@@ -1173,6 +1221,8 @@
     trackMatchmakingStart();
 
     // Audit operasyon içindir; başarısızlığı eşleştirmeyi durdurmaz.
+    currentAuditEventId = null;
+    currentAuditSessionId = null;
     const auditPromise =
       recordWebTestSessionAudit(
         matchmakingStartedAtMs
@@ -1188,7 +1238,8 @@
 
     if (
       result.ok
-      && pvpState.sessionId
+      && result.matched
+      && result.sessionId
     ) {
       auditPromise.then(
         (audit) => {
@@ -1198,7 +1249,7 @@
           ) {
             bindWebTestSessionAudit(
               audit.auditEventId,
-              pvpState.sessionId
+              result.sessionId
             );
           }
         }
@@ -3314,15 +3365,64 @@ const SPECIAL_CELL_INFO = {
       y: 1,
     };
     mockEnemyModules = [
-      {id:"enemy-shield",name:"Kalkan",hp:140,maxHp:140,position:{x:1,y:1},kind:"defense"},
-      {id:"enemy-laser",name:"Lazer",hp:100,maxHp:100,position:{x:3,y:1},kind:"attack"},
-      {id:"enemy-battery",name:"Batarya",hp:120,maxHp:120,position:{x:2,y:0},kind:"energy"},
+      {id:"enemy-shield",definitionId:"shield",name:"Kalkan",hp:140,maxHp:140,position:{x:1,y:1},kind:"defense"},
+      {id:"enemy-laser",definitionId:"laser",name:"Lazer",hp:100,maxHp:100,position:{x:3,y:1},kind:"attack"},
+      {id:"enemy-battery",definitionId:"battery",name:"Batarya",hp:120,maxHp:120,position:{x:2,y:0},kind:"energy"},
     ];
     mockEnemyModuleHp = mockEnemyModules.reduce((sum,module)=>sum+module.hp,0);
   }
 
   function enemyLivingModules() {
     return mockEnemyModules.filter((module)=>Number(module.hp||0)>0);
+  }
+
+  const MOCK_TARGET_CATEGORY_PRIORITY = {
+    savunma:0,
+    defense:0,
+    sabotaj:1,
+    sabotage:1,
+    destek:2,
+    support:2,
+    enerji:3,
+    energy:3,
+    saldırı:4,
+    attack:4,
+  };
+
+  function mockTargetPriority(
+    module
+  ) {
+    return MOCK_TARGET_CATEGORY_PRIORITY[
+      module?.category
+      || module?.kind
+    ] ?? 99;
+  }
+
+  function selectMockEnemyTarget() {
+    return [...enemyLivingModules()]
+      .sort(
+        (a,b) =>
+          mockTargetPriority(a)
+          - mockTargetPriority(b)
+          || String(a.id).localeCompare(
+            String(b.id),
+            "tr"
+          )
+      )[0] || null;
+  }
+
+  function enemyHasLivingAttackModule() {
+    return enemyLivingModules()
+      .some(
+        (module) =>
+          [
+            "saldırı",
+            "attack",
+          ].includes(
+            module.category
+            || module.kind
+          )
+      );
   }
   let previousCombatSecond = -1;
   const mockAttackerLastAttack = new Map();
@@ -5090,6 +5190,15 @@ function saveHumanReviewLocalNote() {
             module.instance_id
             === data.target_module_id
         );
+      const defenseType=String(
+        data.defense_type || ""
+      ).trim().toLocaleLowerCase("tr");
+      const defended=
+        Boolean(defenseType)
+        && ![
+          "none",
+          "yok",
+        ].includes(defenseType);
       const enemyDomId=(module) =>
         module?.definition_id
         === "core"
@@ -5098,8 +5207,21 @@ function saveHumanReviewLocalNote() {
               module?.definition_id
               === "generator"
                 ? "enemy-generator"
-                : module?.instance_id
+                : (
+                    module?.instance_id
+                      ? `enemy-${module.instance_id}`
+                      : null
+                  )
             );
+
+      if (
+        !data.attacker_player_id
+        || !data.target_player_id
+        || data.attacker_player_id
+          === data.target_player_id
+      ) {
+        continue;
+      }
 
       const sourceId=
         attackerIsPlayer
@@ -5123,9 +5245,7 @@ function saveHumanReviewLocalNote() {
         targetId,
         attackerIsPlayer
           ? (
-              data.defense_type
-              && data.defense_type
-              !== "none"
+              defended
                 ? "shield"
                 : "attack"
             )
@@ -5135,11 +5255,28 @@ function saveHumanReviewLocalNote() {
       if (targetId) {
         pulseBattleFx(
           targetId,
-          data.defense_type
-          && data.defense_type
-          !== "none"
+          defended
             ? "shield"
             : "hit"
+        );
+      }
+
+      triggerGridshardCue(
+        sourceModule?.definition_id
+        === "laser"
+          ? "laser_fire"
+          : "energy_transfer"
+      );
+      if (defended) {
+        triggerGridshardCue(
+          "shield_hit"
+        );
+      } else if (
+        targetModule?.definition_id
+        === "core"
+      ) {
+        triggerGridshardCue(
+          "core_hit"
         );
       }
     }
@@ -5208,7 +5345,9 @@ function saveHumanReviewLocalNote() {
       )
       .map(
         (module) => ({
-          id:module.instance_id,
+          id:`enemy-${module.instance_id}`,
+          definitionId:
+            module.definition_id,
           name:module.name_tr,
           hp:Number(module.hp || 0),
           maxHp:Number(
@@ -5696,7 +5835,7 @@ function saveHumanReviewLocalNote() {
     }
 
     boosterStatusEl.textContent =
-      "İlk güçlendirici 85. saniyede";
+      "İlk güçlendirici 75. saniyede";
     if (gridshardAudioDirector) {
       gridshardAudioDirector.setState(
         "battle"
@@ -6371,6 +6510,10 @@ function saveHumanReviewLocalNote() {
       return;
     }
 
+    if (!enemyHasLivingAttackModule()) {
+      return;
+    }
+
     const attackSecond =
       Math.floor(
         client.elapsedMs
@@ -6405,7 +6548,9 @@ function saveHumanReviewLocalNote() {
       )
       .sort(
         (a,b) =>
-          a.instanceId.localeCompare(
+          mockTargetPriority(a)
+          - mockTargetPriority(b)
+          || a.instanceId.localeCompare(
             b.instanceId
           )
       );
@@ -6758,6 +6903,15 @@ function saveHumanReviewLocalNote() {
     const activePreset = battlePoolPresets.find(
       (item) => item.name === activeBattlePoolPresetName
     );
+    const enteredName=String(
+      presetNameEl?.value || ""
+    ).trim();
+    const creatingNamedPreset=
+      Boolean(enteredName)
+      && enteredName
+        !== activeBattlePoolPresetName;
+    const poolComplete=
+      battlePoolSelection.isComplete();
 
     if (activePresetEl) {
       activePresetEl.textContent=
@@ -6793,7 +6947,15 @@ function saveHumanReviewLocalNote() {
         : "";
     }
 
-    if (presetSaveEl && activePreset?.system) {
+    if (
+      presetSaveEl
+      && creatingNamedPreset
+    ) {
+      presetSaveEl.textContent =
+        "Yeni Hazır Havuzu Kaydet";
+      presetSaveEl.disabled =
+        !poolComplete;
+    } else if (presetSaveEl && activePreset?.system) {
       presetSaveEl.textContent = "Yerleşik Hazır Havuz";
       presetSaveEl.disabled = true;
     } else if (
@@ -6809,7 +6971,8 @@ function saveHumanReviewLocalNote() {
     } else if (presetSaveEl) {
       presetSaveEl.textContent=
         "Hazır Havuz Kaydet";
-      presetSaveEl.disabled=false;
+      presetSaveEl.disabled=
+        !poolComplete;
     }
 
     if (
@@ -7427,44 +7590,80 @@ function saveHumanReviewLocalNote() {
       return;
     }
 
-    const response=await fetch(
-      `/profile/${encodeURIComponent(participantPlayerId)}/battle-pool-presets`,
-      {
-        method:"PUT",
-        headers:{
-          "content-type":
-            "application/json",
-        },
-        body:JSON.stringify({
-          name,
-          battle_pool_ids:
-            selectedBattlePoolIdsForPreset(),
-        }),
-      }
-    );
+    try {
+      const response=await fetch(
+        `/profile/${encodeURIComponent(participantPlayerId)}/battle-pool-presets`,
+        {
+          method:"PUT",
+          headers:{
+            "content-type":
+              "application/json",
+          },
+          body:JSON.stringify({
+            name,
+            battle_pool_ids:
+              selectedBattlePoolIdsForPreset(),
+          }),
+        }
+      );
 
-    if (!response.ok) {
+      if (!response.ok) {
+        let detail="";
+        try {
+          detail=String(
+            (await response.json())
+              ?.detail || ""
+          );
+        } catch (_error) {
+          // Non-JSON server errors use the generic message below.
+        }
+        throw new Error(
+          detail
+          || "Sunucu kaydı kabul etmedi."
+        );
+      }
+
+      const payload=
+        await response.json();
+      const savedName=
+        payload?.preset?.name
+        || name;
+      battlePoolPresets=
+        withStarterBattlePoolPresets(payload.presets);
+      activeBattlePoolPresetName=
+        savedName;
+      activeBattlePoolPresetBaseline=
+        [...selectedBattlePoolIdsForPreset()];
+      renderPresetOptions();
+      if (presetSelectEl) {
+        presetSelectEl.value=
+          savedName;
+      }
+      if (presetNameEl) {
+        presetNameEl.value="";
+      }
+      renderActivePresetState();
       if (presetStatusEl) {
         presetStatusEl.textContent=
-          "Hazır havuz kaydedilemedi.";
+          `${savedName} kaydedildi.`;
       }
-      return;
-    }
-
-    const payload=
-      await response.json();
-    battlePoolPresets=
-      withStarterBattlePoolPresets(payload.presets);
-    activeBattlePoolPresetName=
-      name;
-    activeBattlePoolPresetBaseline=
-      [...selectedBattlePoolIdsForPreset()];
-    renderPresetOptions();
-    presetSelectEl.value=name;
-    presetNameEl.value="";
-    if (presetStatusEl) {
-      presetStatusEl.textContent=
-        `${name} kaydedildi.`;
+      return {
+        ok:true,
+        name:savedName,
+      };
+    } catch (error) {
+      const reason=
+        error instanceof Error
+          ? error.message
+          : String(error);
+      if (presetStatusEl) {
+        presetStatusEl.textContent=
+          `Hazır havuz kaydedilemedi: ${reason}`;
+      }
+      return {
+        ok:false,
+        reason,
+      };
     }
   }
 
@@ -7928,25 +8127,46 @@ function saveHumanReviewLocalNote() {
 
   function createPoolCategoryGroup(
     category,
-    title
+    title,
+    {
+      scope="global",
+      count=0,
+    }={}
   ) {
     const section =
       document.createElement(
-        "section"
+        "details"
       );
     section.className =
       "pool-category-group";
     section.dataset.category =
       category;
+    section.dataset.scope =
+      scope;
+    const collapsed =
+      collapsedPoolCategories[scope]
+      || collapsedPoolCategories.global;
+    section.open =
+      !collapsed.has(category);
+    section.addEventListener(
+      "toggle",
+      () => {
+        if (section.open) {
+          collapsed.delete(category);
+        } else {
+          collapsed.add(category);
+        }
+      }
+    );
 
     const heading =
       document.createElement(
-        "h4"
+        "summary"
       );
     heading.className =
       "pool-category-title";
     heading.textContent =
-      title;
+      `${title} · ${count}`;
 
     const list =
       document.createElement(
@@ -8089,7 +8309,11 @@ function saveHumanReviewLocalNote() {
           category,
           poolCategoryLabel(
             category
-          )
+          ),
+          {
+            scope:"global",
+            count:modules.length,
+          }
         );
 
       for (const module of modules) {
@@ -8139,7 +8363,7 @@ function saveHumanReviewLocalNote() {
             ? "◆"
             : (
                 selected
-                  ? "−"
+                  ? "✓"
                   : "+"
               );
         selectMark.title=
@@ -8147,7 +8371,7 @@ function saveHumanReviewLocalNote() {
             ? "Zorunlu modül · çıkarılamaz"
             : (
                 selected
-                  ? "Havuzdan çıkar"
+                  ? "Savaş Havuzuna eklendi"
                   : "Havuza ekle"
               );
         selectMark.dataset.action=
@@ -8155,12 +8379,15 @@ function saveHumanReviewLocalNote() {
             ? "required"
             : (
                 selected
-                  ? "remove"
+                  ? "selected"
                   : "add"
               );
         selectMark.setAttribute(
           "aria-disabled",
-          String(required)
+          String(
+            required
+            || selected
+          )
         );
 
         const catalog=
@@ -8234,6 +8461,16 @@ function saveHumanReviewLocalNote() {
               return;
             }
 
+            if (
+              selectMark.dataset.action
+              === "selected"
+            ) {
+              logClientMessage(
+                "Modülü sağdaki seçili Savaş Havuzunda − ile çıkarabilirsin."
+              );
+              return;
+            }
+
             const result=
               battlePoolSelection.toggle(
                 module.instanceId
@@ -8300,7 +8537,11 @@ function saveHumanReviewLocalNote() {
           category,
           poolCategoryLabel(
             category
-          )
+          ),
+          {
+            scope:"selected",
+            count:selectedModules.length,
+          }
         );
 
       for (
@@ -8321,8 +8562,37 @@ function saveHumanReviewLocalNote() {
           );
         chipName.textContent=
           module.nameTr;
-        chip.appendChild(
-          chipName
+        const required=
+          battlePoolSelection
+            .requiredModuleIds
+            .has(
+              module.instanceId
+            );
+        const removeMark=
+          document.createElement(
+            "span"
+          );
+        removeMark.className=
+          "pool-selected-remove";
+        removeMark.textContent=
+          required
+            ? "◆"
+            : "−";
+        removeMark.title=
+          required
+            ? "Zorunlu modül · çıkarılamaz"
+            : "Havuzdan çıkar";
+        removeMark.dataset.action=
+          required
+            ? "required"
+            : "remove";
+        removeMark.setAttribute(
+          "aria-disabled",
+          String(required)
+        );
+        chip.append(
+          chipName,
+          removeMark
         );
 
         const catalog=
@@ -8341,6 +8611,30 @@ function saveHumanReviewLocalNote() {
           "click",
           () => {
             focusedPoolModuleId =
+              module.instanceId;
+            renderBattlePoolSelection();
+          }
+        );
+        removeMark.addEventListener(
+          "click",
+          (event) => {
+            event.stopPropagation();
+            if (required) {
+              logClientMessage(
+                "Jeneratör zorunlu Savaş Havuzu modülüdür ve çıkarılamaz."
+              );
+              return;
+            }
+            const result=
+              battlePoolSelection.toggle(
+                module.instanceId
+              );
+            if (!result.ok) {
+              logClientMessage(
+                result.reason
+              );
+            }
+            focusedPoolModuleId=
               module.instanceId;
             renderBattlePoolSelection();
           }
@@ -8369,10 +8663,7 @@ function saveHumanReviewLocalNote() {
       === "local"
     ) {
       poolConfirmEl.textContent =
-        battlePoolSelection
-          .isComplete()
-          ? "AI ile Eşleştir ve Savaşa Başla"
-          : "18 Modülü Tamamla";
+        "Savaş";
     } else if (
       activePlayMode
       === "online"
@@ -8383,10 +8674,7 @@ function saveHumanReviewLocalNote() {
         !== "searching"
       ) {
         poolConfirmEl.textContent =
-          battlePoolSelection
-            .isComplete()
-            ? "Eşleştir · 10 sn sonra AI devralır"
-            : "18 Modülü Tamamla";
+          "Savaş";
       }
     } else {
       poolConfirmEl.textContent =
@@ -8597,6 +8885,9 @@ function saveHumanReviewLocalNote() {
 
   function renderEnemyBoard() {
     if (!enemyBoard) return;
+    if (!enemyBoard.children?.length) {
+      createEnemyBoard();
+    }
     for (const cell of enemyBoard.querySelectorAll(".board-cell")) {
       cell.innerHTML="";
       cell.dataset.occupied="false";
@@ -10224,10 +10515,8 @@ function saveHumanReviewLocalNote() {
         currentSecond
       );
 
-      const living=
-        enemyLivingModules();
       const targetModule=
-        living[0] || null;
+        selectMockEnemyTarget();
 
       let targetName=
         targetModule
@@ -10672,6 +10961,13 @@ function saveHumanReviewLocalNote() {
     );
   }
 
+  if (presetNameEl) {
+    presetNameEl.addEventListener(
+      "input",
+      renderActivePresetState
+    );
+  }
+
   if (presetDeleteEl) {
     presetDeleteEl.addEventListener(
       "click",
@@ -10850,7 +11146,7 @@ function saveHumanReviewLocalNote() {
         await onlinePlay.cancel();
         poolConfirmEl.disabled = false;
         poolConfirmEl.textContent =
-          "Savaş Havuzunu Onayla ve Eşleş";
+          "Savaş";
         clearPlayError();
         renderOnlinePlayStatus(
           "cancelled"
@@ -11140,7 +11436,7 @@ function saveHumanReviewLocalNote() {
         poolConfirmEl.disabled =
           true;
         poolConfirmEl.textContent =
-          "Yerel AI hazırlanıyor...";
+          "Savaş";
         startLocalPlayableMatch();
         return;
       }
@@ -11155,19 +11451,13 @@ function saveHumanReviewLocalNote() {
       poolConfirmEl.disabled =
         true;
       poolConfirmEl.textContent =
-        "Eşleştirme Başlatılıyor...";
+        "Savaş";
 
       const result =
         await startRealOnlineMatch();
 
       poolConfirmEl.textContent =
-        result.ok
-          ? (
-              result.matched
-                ? "Rakip Bulundu"
-                : "Rakip Aranıyor..."
-            )
-          : "Eşleştirmeyi Yeniden Dene";
+        "Savaş";
 
       if (!result.ok) {
         poolConfirmEl.disabled =
@@ -11254,11 +11544,11 @@ function saveHumanReviewLocalNote() {
         hint: "Havuz 18/18 olduğunda savaş düğmesi açılır.",
       },
       {
-        title: "Çevrimiçi eşleştirmeyi başlat",
+        title: "Savaşı başlat",
         body: "Önce çevrimiçi rakip aranır; 10 saniye içinde bulunamazsa sunucudaki AI oyuncu aynı maç protokolünü devralır.",
         target: "#battle-pool-confirm",
         action: "start-matchmaking",
-        actionLabel: "Eşleştirmeyi Başlat",
+        actionLabel: "Savaş",
         hint: "Çekirdek ve jeneratör sabittir; diğer iki başlangıç modülünü sen seçersin.",
       },
       {

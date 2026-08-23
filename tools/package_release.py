@@ -20,6 +20,7 @@ EXCLUDED_PREFIXES = (
 EXCLUDED_NAMES = {
     ARCHIVE.name,
     CHECKSUM.name,
+    "RELEASE_MANIFEST.json",
 }
 
 

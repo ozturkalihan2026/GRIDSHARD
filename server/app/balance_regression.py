@@ -414,7 +414,7 @@ def _regress_module_interaction(
         ]
         and snapshot[
             "active_capacity_at_unlock"
-        ] == 4
+        ] == 5
         and all(
             snapshot[
                 "invariants"

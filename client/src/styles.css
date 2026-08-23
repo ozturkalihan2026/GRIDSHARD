@@ -1095,6 +1095,30 @@ body[data-play-mode="online"]:not([data-online-status="battle"])
   gap: 6px;
 }
 
+.pool-category-group > summary {
+  list-style:none;
+  cursor:pointer;
+  user-select:none;
+}
+
+.pool-category-group > summary::-webkit-details-marker {
+  display:none;
+}
+
+.pool-category-group > summary::after {
+  content:"▾";
+  float:right;
+  transition:transform .18s ease;
+}
+
+.pool-category-group:not([open]) > summary::after {
+  transform:rotate(-90deg);
+}
+
+.pool-category-group:not([open]) > .pool-category-list {
+  display:none;
+}
+
 .pool-category-group + .pool-category-group {
   margin-top: 12px;
   padding-top: 10px;
@@ -1688,6 +1712,11 @@ body[data-app-screen="menu"] .main-scope-nav .menu-action:hover {
   color:#8cf0b0;
 }
 
+.pool-choice-select[data-action="selected"] {
+  cursor:default;
+  color:var(--gs-ion-green,#71e09c);
+}
+
 .hp-bar {
   position:relative;
   z-index:2;
@@ -1756,7 +1785,33 @@ body[data-app-screen="menu"] .main-scope-nav .menu-action:hover {
 
 .pool-selected-item {
   display:grid;
+  grid-template-columns:minmax(0,1fr) auto;
+  align-items:center;
   gap:5px;
+}
+
+.pool-selected-item .hp-bar {
+  grid-column:1 / -1;
+}
+
+.pool-selected-remove {
+  display:inline-grid;
+  place-items:center;
+  width:25px;
+  height:25px;
+  border:1px solid rgba(255,81,90,.45);
+  border-radius:7px;
+  background:rgba(86,25,31,.52);
+  color:var(--gs-overload-red,#ff515a);
+  font-size:1rem;
+  font-weight:900;
+}
+
+.pool-selected-remove[data-action="required"] {
+  cursor:not-allowed;
+  border-color:rgba(244,200,90,.46);
+  background:rgba(75,59,20,.38);
+  color:var(--gs-reactor-gold,#f4c85a);
 }
 
 @media (max-width:900px) {
@@ -3103,13 +3158,13 @@ body[data-app-screen="settings"] .battle-shell {
 }
 
 body[data-app-screen="play"][data-local-status="setup"],
-body[data-app-screen="play"][data-play-mode="online"][data-online-status="idle"] {
+body[data-app-screen="play"][data-play-mode="online"]:not([data-online-status="battle"]) {
   height:100dvh;
   overflow:hidden;
 }
 
 body[data-app-screen="play"][data-local-status="setup"] .battle-shell,
-body[data-app-screen="play"][data-play-mode="online"][data-online-status="idle"] .battle-shell {
+body[data-app-screen="play"][data-play-mode="online"]:not([data-online-status="battle"]) .battle-shell {
   width:min(1540px,98vw);
   height:100dvh;
   padding:10px 0;
@@ -3453,7 +3508,7 @@ body[data-local-finished="true"] .module-card {
 
 @media (max-width:820px) {
   body[data-app-screen="play"][data-local-status="setup"],
-  body[data-app-screen="play"][data-play-mode="online"][data-online-status="idle"] {
+  body[data-app-screen="play"][data-play-mode="online"]:not([data-online-status="battle"]) {
     height:auto;
     min-height:100dvh;
     overflow:auto;
@@ -4000,12 +4055,12 @@ body[data-app-screen="menu"] #main-menu-title {
 /* Preparation is a real one-viewport workspace: the return control takes
    its own row, the three columns shrink, and the primary action is pinned. */
 body[data-app-screen="play"][data-local-status="setup"],
-body[data-app-screen="play"][data-play-mode="online"][data-online-status="idle"] {
+body[data-app-screen="play"][data-play-mode="online"]:not([data-online-status="battle"]) {
   height:100dvh;
   overflow:hidden;
 }
 body[data-app-screen="play"][data-local-status="setup"] .battle-shell,
-body[data-app-screen="play"][data-play-mode="online"][data-online-status="idle"] .battle-shell {
+body[data-app-screen="play"][data-play-mode="online"]:not([data-online-status="battle"]) .battle-shell {
   display:flex;
   height:100dvh;
   min-height:0;
@@ -4072,12 +4127,12 @@ details.battle-pool-preset-bar { max-height:min(22dvh,170px); }
 
 @media (max-width:820px) {
   body[data-app-screen="play"][data-local-status="setup"],
-  body[data-app-screen="play"][data-play-mode="online"][data-online-status="idle"] {
+  body[data-app-screen="play"][data-play-mode="online"]:not([data-online-status="battle"]) {
     height:auto;
     overflow:auto;
   }
   body[data-app-screen="play"][data-local-status="setup"] .battle-shell,
-  body[data-app-screen="play"][data-play-mode="online"][data-online-status="idle"] .battle-shell {
+  body[data-app-screen="play"][data-play-mode="online"]:not([data-online-status="battle"]) .battle-shell {
     height:auto;
     min-height:100dvh;
     overflow:visible;

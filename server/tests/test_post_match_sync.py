@@ -1,6 +1,7 @@
 import asyncio
 
 from fastapi.testclient import TestClient
+import pytest
 
 from app.game.engine import BATTLE_TIME_LIMIT_MS
 from app.game.models import Direction
@@ -26,13 +27,22 @@ def reset():
     player_statistics_service._processed_battle_ids.clear()
 
 
-def test_post_match_endpoint_returns_progression_profile_and_statistics():
+@pytest.mark.parametrize(
+    "battle_id",
+    [
+        "post-match",
+        "local-ai-match-hotfix",
+    ],
+)
+def test_post_match_endpoint_returns_progression_profile_and_statistics(
+    battle_id,
+):
     async def scenario():
         reset()
-        session=pvp_service.create_session("post-match")
+        session=pvp_service.create_session(battle_id)
 
         for p in ("a","b"):
-            pvp_service.join("post-match",p)
+            pvp_service.join(battle_id,p)
             session.engine.grant_module(p,f"{p}-core","core")
             session.engine.grant_module(p,f"{p}-gen","generator")
             session.engine.set_initial_active_module(p,f"{p}-core",2,2)
@@ -40,16 +50,16 @@ def test_post_match_endpoint_returns_progression_profile_and_statistics():
                 p,f"{p}-gen",2,3,Direction.UP
             )
 
-        pvp_service.start("post-match")
+        pvp_service.start(battle_id)
         session.engine.state.elapsed_ms=BATTLE_TIME_LIMIT_MS-100
 
-        await pvp_tick_runner.run_single_tick("post-match")
+        await pvp_tick_runner.run_single_tick(battle_id)
 
-        response=client.get("/post-match/post-match/a")
+        response=client.get(f"/post-match/{battle_id}/a")
         assert response.status_code==200
 
         body=response.json()
-        assert body["battle_id"]=="post-match"
+        assert body["battle_id"]==battle_id
         assert body["player_id"]=="a"
         assert body["progression"]["xp_awarded"]==90
         assert body["profile"]["experience"]==90

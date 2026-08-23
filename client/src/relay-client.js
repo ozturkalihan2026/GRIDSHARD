@@ -10,12 +10,11 @@
 
   function maxActiveModulesForElapsedMs(elapsedMs) {
     if (elapsedMs < 15000) return null;
-    if (elapsedMs < 25000) return 4;
-    if (elapsedMs < 35000) return 5;
-    if (elapsedMs < 45000) return 6;
-    if (elapsedMs < 55000) return 7;
-    if (elapsedMs < 65000) return 8;
-    if (elapsedMs < 75000) return 9;
+    if (elapsedMs < 25000) return 5;
+    if (elapsedMs < 35000) return 6;
+    if (elapsedMs < 45000) return 7;
+    if (elapsedMs < 55000) return 8;
+    if (elapsedMs < 65000) return 9;
     return 10;
   }
 

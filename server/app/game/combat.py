@@ -6,6 +6,14 @@ from .models import BattleModule, ModuleStatus, PlayerBattleState
 
 ATTACK_COOLDOWN_ID = "attack"
 
+TARGET_CATEGORY_PRIORITY = {
+    "savunma": 0,
+    "sabotaj": 1,
+    "destek": 2,
+    "enerji": 3,
+    "saldırı": 4,
+}
+
 
 @dataclass(slots=True, frozen=True)
 class AttackResolution:
@@ -27,9 +35,17 @@ class AttackResolution:
 def is_attack_module(module: BattleModule) -> bool:
     return (
         module.status == ModuleStatus.ACTIVE
+        and module.hp > 0
         and module.definition.category == "saldırı"
         and module.definition.base_damage > 0
         and module.definition.cooldown_ms > 0
+    )
+
+
+def has_living_attack_module(player: PlayerBattleState) -> bool:
+    return any(
+        is_attack_module(module)
+        for module in player.modules.values()
     )
 
 
@@ -47,13 +63,25 @@ def selectable_targets(player: PlayerBattleState) -> list[BattleModule]:
         if module.definition.id not in {"generator", "core"}
     ]
     if normal_targets:
-        powered_barriers = [
-            module for module in normal_targets
-            if module.definition.id == "barrier" and module.is_powered
-        ]
-        if powered_barriers:
-            return sorted(powered_barriers, key=lambda module: module.instance_id)
-        return sorted(normal_targets, key=lambda module: module.instance_id)
+        return sorted(
+            normal_targets,
+            key=lambda module: (
+                TARGET_CATEGORY_PRIORITY.get(
+                    module.definition.category,
+                    len(TARGET_CATEGORY_PRIORITY),
+                ),
+                # Powered barriers retain their established precedence, but
+                # only inside the defense class selected by the canonical
+                # class order above.
+                0
+                if (
+                    module.definition.id == "barrier"
+                    and module.is_powered
+                )
+                else 1,
+                module.instance_id,
+            ),
+        )
 
     generator_targets = [
         module

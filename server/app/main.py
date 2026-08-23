@@ -420,8 +420,12 @@ CLIENT_DIR = (
 pvp_service = PvPSessionService()
 pvp_websocket_adapter = PvPWebSocketAdapter(
     pvp_service,
-    silent_timeout_seconds=12.0,
-    grace_period_seconds=15.0,
+    silent_timeout_seconds=float(
+        os.environ.get("GRIDSHARD_PVP_SILENT_TIMEOUT_SECONDS", "12")
+    ),
+    grace_period_seconds=float(
+        os.environ.get("GRIDSHARD_PVP_GRACE_PERIOD_SECONDS", "30")
+    ),
 )
 player_statistics_service = PlayerStatisticsService()
 player_profile_service = PlayerProfileService()
@@ -466,7 +470,13 @@ web_test_kpi_service = WebTestKpiService(
 )
 
 def process_completed_pvp_battle(state) -> None:
-    if state.battle_id.startswith("local-ai-"):
+    # /local-ai/sessions uses local-ai-<uuid> for isolated test battles.
+    # Matchmaking fallback uses local-ai-match-<uuid> and must complete the
+    # normal statistics/progression/post-match pipeline.
+    if (
+        state.battle_id.startswith("local-ai-")
+        and not state.battle_id.startswith("local-ai-match-")
+    ):
         telemetry_service.ingest_finished_battle(
             state
         )

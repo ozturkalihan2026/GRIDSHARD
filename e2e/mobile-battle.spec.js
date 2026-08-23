@@ -44,7 +44,7 @@ test("dokunmatik savaş görünümü tek ekrana sığar ve seç-yerleştir çal�
   const initialReserveCount = await reserveCards.count();
   expect(initialReserveCount).toBeGreaterThan(0);
 
-  await expect(page.locator("#capacity-indicator")).toContainText("/ 5", { timeout: 35_000 });
+  await expect(page.locator("#capacity-indicator")).toContainText("/ 5", { timeout: 20_000 });
   await expect(reserveCards.first()).not.toHaveClass(/locked/);
   // WebKit'in emüle edilen görsel viewport'u, ekranda görünen ilk raf kartını
   // layout viewport dışında sayabiliyor; olay hedefini doğrudan doğruluyoruz.
@@ -79,7 +79,7 @@ test("ilk maç eğitimi hazır havuzu yükler ve AI devralmalı eşleştirmeyi b
     { timeout: 20_000 }
   );
 
-  await tutorial.getByRole("button", { name: "Eşleştirmeyi Başlat" }).click();
+  await tutorial.getByRole("button", { name: "Savaş", exact: true }).click();
   await expect(page.locator("body")).toHaveAttribute("data-online-status", "battle", { timeout: 25_000 });
   await expect(page.locator("body")).toHaveAttribute("data-opponent-type", "ai");
   await expect(tutorial.locator("[data-tutorial-progress]")).toHaveText("3 / 3");

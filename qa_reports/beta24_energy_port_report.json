@@ -117,13 +117,13 @@
     "match_count": 30,
     "timeouts": 0,
     "draws": 2,
-    "average_duration_ms": 52593.333333333336,
+    "average_duration_ms": 55993.333333333336,
     "wins_by_layout": {
       "balanced": 8,
-      "offense": 4,
+      "offense": 2,
       "defense": 6,
       "sabotage": 0,
-      "battery_pulse": 2,
+      "battery_pulse": 4,
       "armor_counter": 8
     },
     "all_matches_resolved": true,
@@ -152,7 +152,7 @@
         "winner": "balanced",
         "draw": false,
         "timed_out": false,
-        "elapsed_ms": 46900,
+        "elapsed_ms": 46100,
         "finish_reason": "core_destroyed"
       },
       {
@@ -161,7 +161,7 @@
         "winner": "balanced",
         "draw": false,
         "timed_out": false,
-        "elapsed_ms": 46900,
+        "elapsed_ms": 46100,
         "finish_reason": "core_destroyed"
       },
       {
@@ -242,7 +242,7 @@
         "winner": "offense",
         "draw": false,
         "timed_out": false,
-        "elapsed_ms": 35100,
+        "elapsed_ms": 64100,
         "finish_reason": "core_destroyed"
       },
       {
@@ -251,25 +251,25 @@
         "winner": "offense",
         "draw": false,
         "timed_out": false,
-        "elapsed_ms": 35100,
+        "elapsed_ms": 64100,
         "finish_reason": "core_destroyed"
       },
       {
         "a": "offense",
         "b": "battery_pulse",
-        "winner": "offense",
+        "winner": "battery_pulse",
         "draw": false,
         "timed_out": false,
-        "elapsed_ms": 70500,
+        "elapsed_ms": 65100,
         "finish_reason": "core_destroyed"
       },
       {
         "a": "battery_pulse",
         "b": "offense",
-        "winner": "offense",
+        "winner": "battery_pulse",
         "draw": false,
         "timed_out": false,
-        "elapsed_ms": 70500,
+        "elapsed_ms": 65100,
         "finish_reason": "core_destroyed"
       },
       {
@@ -332,7 +332,7 @@
         "winner": "armor_counter",
         "draw": false,
         "timed_out": false,
-        "elapsed_ms": 46900,
+        "elapsed_ms": 46100,
         "finish_reason": "core_destroyed"
       },
       {
@@ -341,7 +341,7 @@
         "winner": "armor_counter",
         "draw": false,
         "timed_out": false,
-        "elapsed_ms": 46900,
+        "elapsed_ms": 46100,
         "finish_reason": "core_destroyed"
       },
       {
@@ -350,7 +350,7 @@
         "winner": "battery_pulse",
         "draw": false,
         "timed_out": false,
-        "elapsed_ms": 35100,
+        "elapsed_ms": 64100,
         "finish_reason": "core_destroyed"
       },
       {
@@ -359,7 +359,7 @@
         "winner": "battery_pulse",
         "draw": false,
         "timed_out": false,
-        "elapsed_ms": 35100,
+        "elapsed_ms": 64100,
         "finish_reason": "core_destroyed"
       },
       {

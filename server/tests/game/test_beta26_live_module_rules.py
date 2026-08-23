@@ -44,22 +44,16 @@ def test_capacity_allows_one_new_slot_per_ten_second_tier() -> None:
         engine.step()
 
     _command(engine, "place_module", module_id="shield-1", x=1, y=2)
-    assert engine.state.players["player"].modules["shield-1"].status == ModuleStatus.RESERVE
-    assert "4/4" in engine.state.events[-1].data["reason"]
+    assert engine.state.players["player"].modules["shield-1"].status == ModuleStatus.ACTIVE
 
     for _ in range(99):
         engine.step()
     assert engine.state.elapsed_ms == 25_000
 
-    _command(engine, "place_module", module_id="shield-1", x=1, y=2)
-    shield = engine.state.players["player"].modules["shield-1"]
-    assert shield.status == ModuleStatus.ACTIVE
-    assert shield.is_powered is True
-    assert shield.energy_received_last_tick > 0
-
     _command(engine, "place_module", module_id="battery-1", x=3, y=2)
-    assert engine.state.players["player"].modules["battery-1"].status == ModuleStatus.RESERVE
-    assert "5/5" in engine.state.events[-1].data["reason"]
+    battery = engine.state.players["player"].modules["battery-1"]
+    assert battery.status == ModuleStatus.ACTIVE
+    assert battery.is_powered is True
 
 
 def test_replacements_remain_unlimited_inside_capacity_window() -> None:

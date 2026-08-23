@@ -1,71 +1,31 @@
 {
   "version": "2.0.0-beta.26",
-  "source_status": "PASSED",
-  "status": "PASSED",
-  "passed": true,
-  "skipped": false,
+  "source_status": "SKIPPED",
+  "status": "SKIPPED",
+  "passed": false,
+  "skipped": true,
   "failed": false,
-  "reason": "Playwright matrisi gerçek tarayıcı süreçlerinde tamamlandı.",
-  "browser": [
-    "desktop-chromium",
-    "android-chrome-emulated",
-    "iphone-safari-emulated"
-  ],
-  "evidence_complete": true,
+  "reason": "test policy block",
+  "browser": null,
+  "evidence_complete": false,
   "playwright_matrix": {
-    "report_exists": true,
-    "complete": true,
-    "status": "PASSED",
+    "report_exists": false,
+    "complete": false,
+    "status": "NOT_RUN",
     "expected_projects": {
       "desktop-chromium": 1,
       "android-chrome-emulated": 2,
       "iphone-safari-emulated": 2
     },
     "passed_by_project": {
-      "desktop-chromium": 1,
-      "android-chrome-emulated": 2,
-      "iphone-safari-emulated": 2
+      "desktop-chromium": 0,
+      "android-chrome-emulated": 0,
+      "iphone-safari-emulated": 0
     },
-    "test_count": 5,
-    "duration_ms": 174655.753,
-    "started_at": "2026-08-21T12:24:00.373Z",
-    "tests": [
-      {
-        "project": "desktop-chromium",
-        "file": "two-client-pvp.spec.js",
-        "line": 11,
-        "passed": true,
-        "duration_ms": 8446
-      },
-      {
-        "project": "android-chrome-emulated",
-        "file": "mobile-battle.spec.js",
-        "line": 3,
-        "passed": true,
-        "duration_ms": 44839
-      },
-      {
-        "project": "android-chrome-emulated",
-        "file": "mobile-battle.spec.js",
-        "line": 66,
-        "passed": true,
-        "duration_ms": 21043
-      },
-      {
-        "project": "iphone-safari-emulated",
-        "file": "mobile-battle.spec.js",
-        "line": 3,
-        "passed": true,
-        "duration_ms": 62121
-      },
-      {
-        "project": "iphone-safari-emulated",
-        "file": "mobile-battle.spec.js",
-        "line": 66,
-        "passed": true,
-        "duration_ms": 28391
-      }
-    ]
+    "test_count": 0,
+    "duration_ms": 0.0,
+    "started_at": null,
+    "tests": []
   },
   "legacy_browser_runner": {
     "source_status": "SKIPPED",

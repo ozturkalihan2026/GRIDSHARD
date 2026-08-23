@@ -226,3 +226,49 @@ def test_deterministic_target_order_uses_instance_id():
     target = select_target(engine.state.players["p2"])
 
     assert target.instance_id == "p2-armor"
+
+
+def test_canonical_target_class_order_then_generator_and_core():
+    engine = two_player_engine()
+    targets = (
+        add(engine, "p2", "p2-sabotage", "emp", 0, 1),
+        add(engine, "p2", "p2-support", "repair", 1, 1),
+        add(engine, "p2", "p2-energy", "battery", 3, 2),
+        add(engine, "p2", "p2-attack", "pulse_cannon", 4, 2),
+    )
+
+    expected = [
+        "p2-shield",
+        "p2-sabotage",
+        "p2-support",
+        "p2-energy",
+        "p2-attack",
+        "p2-generator",
+        "p2-core",
+    ]
+
+    for instance_id in expected:
+        target = select_target(engine.state.players["p2"])
+        assert target is not None
+        assert target.instance_id == instance_id
+        engine.apply_damage("p2", instance_id, 999)
+
+    assert all(module.hp == 0 for module in targets)
+    assert select_target(engine.state.players["p2"]) is None
+
+
+def test_player_without_living_attack_module_deals_no_damage():
+    engine = two_player_engine()
+    engine.apply_damage("p1", "p1-laser", 999)
+    shield = engine.state.players["p2"].modules["p2-shield"]
+    before = shield.hp
+
+    engine._process_energy_flow()
+    engine._process_combat_actions()
+
+    assert shield.hp == before
+    assert not any(
+        event.type == "attack_performed"
+        and event.data["attacker_player_id"] == "p1"
+        for event in engine.state.events
+    )

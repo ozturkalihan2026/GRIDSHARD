@@ -12,6 +12,7 @@ from .economy import (
 )
 from .combat import (
     ATTACK_COOLDOWN_ID,
+    has_living_attack_module,
     is_attack_module,
     resolve_attack,
     select_target,
@@ -98,13 +99,12 @@ def max_active_modules_for_elapsed_ms(
 
     Varsayılan davranış:
     0–15 saniye başlangıç düzenidir; dinamik modül yerleştirme kapalıdır.
-    15–25 sn: 4
-    25–35 sn: 5
-    35–45 sn: 6
-    45–55 sn: 7
-    55–65 sn: 8
-    65–75 sn: 9
-    75 sn ve sonrası: 10
+    15–25 sn: 5
+    25–35 sn: 6
+    35–45 sn: 7
+    45–55 sn: 8
+    55–65 sn: 9
+    65 sn ve sonrası: 10
 
     Beta.16 regresyon koşucusu için kilit zamanı izole olarak enjekte
     edilebilir. Varsayılan 15 saniye değiştirilmemiştir.
@@ -114,19 +114,10 @@ def max_active_modules_for_elapsed_ms(
         return None
 
     elapsed_after_unlock = elapsed_ms - unlock_ms
-    if elapsed_after_unlock < 10_000:
-        return 4
-    if elapsed_after_unlock < 20_000:
-        return 5
-    if elapsed_after_unlock < 30_000:
-        return 6
-    if elapsed_after_unlock < 40_000:
-        return 7
-    if elapsed_after_unlock < 50_000:
-        return 8
-    if elapsed_after_unlock < 60_000:
-        return 9
-    return 10
+    return min(
+        10,
+        5 + elapsed_after_unlock // 10_000,
+    )
 
 
 
@@ -1076,6 +1067,10 @@ class BattleEngine:
 
         for attacker_player_id in player_ids:
             attacker_player = self.state.players[attacker_player_id]
+            if not has_living_attack_module(
+                attacker_player
+            ):
+                continue
             opponent_ids = [
                 player_id for player_id in player_ids
                 if player_id != attacker_player_id

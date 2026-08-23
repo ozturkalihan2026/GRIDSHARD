@@ -175,6 +175,11 @@ def test_ai_uses_replace_when_capacity_is_full():
         for module in ai_player.modules.values()
         if module.definition.id == "shield"
     )
+    battery = next(
+        module
+        for module in ai_player.modules.values()
+        if module.definition.id == "battery"
+    )
 
     splitter.status = ModuleStatus.ACTIVE
     splitter.position = type(engine.board.core_position)(x=2, y=1)
@@ -183,6 +188,10 @@ def test_ai_uses_replace_when_capacity_is_full():
     shield.status = ModuleStatus.ACTIVE
     shield.position = type(engine.board.core_position)(x=1, y=1)
     shield.direction = Direction.RIGHT
+
+    battery.status = ModuleStatus.ACTIVE
+    battery.position = type(engine.board.core_position)(x=3, y=1)
+    battery.direction = Direction.LEFT
 
     engine.state.elapsed_ms = 15_000
 

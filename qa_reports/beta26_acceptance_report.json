@@ -8,7 +8,8 @@
     "player_initial_module_choice": true,
     "capacity_and_activation": true,
     "live_ai_actions": true,
-    "web_launcher_hardened": true
+    "web_launcher_hardened": true,
+    "quick_launcher_version_guard": true
   },
   "package_scope": "Canlı Telemetri Sertleştirmesi + Görsel Erişilebilirlik + Bağlantı Hata Akışı + Tek Eşleştirme/AI Devralma + Aktif Devre"
 }

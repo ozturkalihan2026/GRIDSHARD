@@ -1,11 +1,11 @@
 {
   "project": "GRIDSHARD",
   "version": "2.0.0-beta.26",
-  "created_at": "2026-08-21T12:30:37.648018+00:00",
-  "source_commit": "c452cb299d492ad2d3808cfe3797b014af440e49",
+  "created_at": "2026-08-23T20:18:56.439350+00:00",
+  "source_commit": "f2553d00837365f15a96bff80c2e0e0b0a64e7ae",
   "working_tree_changes_included": true,
   "runtime_player_and_telemetry_data_included": false,
-  "file_count": 389,
+  "file_count": 390,
   "files": [
     ".dockerignore",
     ".env.example",
@@ -261,6 +261,7 @@
     "server/tests/test_beta24_scope.py",
     "server/tests/test_beta25_audio_identity.py",
     "server/tests/test_beta25_scope.py",
+    "server/tests/test_beta26_combat_pool_hotfix.py",
     "server/tests/test_beta7_user_flow_markup.py",
     "server/tests/test_beta9_pool_catalog_markup.py",
     "server/tests/test_build_manifest.py",
