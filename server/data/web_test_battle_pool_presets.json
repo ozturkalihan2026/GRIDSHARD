@@ -2,7 +2,7 @@
   "wt-dbd4a70f-4d90-4b60-958a-18ca1e4eff82": {
     "Dengeli": {
       "favorite": true,
-      "last_used_at_ms": null,
+      "last_used_at_ms": 1787522087359,
       "module_definition_ids": [
         "generator",
         "battery",

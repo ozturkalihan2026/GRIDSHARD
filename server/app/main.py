@@ -2720,6 +2720,25 @@ def get_post_match_sync(
         )
     )
     if progression is None:
+        # The terminal WebSocket result is authoritative. If persistence or
+        # telemetry failed in the runner callback, rebuild the idempotent
+        # post-match projections from the still-live finished session.
+        try:
+            session = pvp_service.get_session(battle_id)
+            if session.engine.state.status.value == "finished":
+                process_completed_pvp_battle(
+                    session.engine.state
+                )
+        except Exception:
+            pass
+        progression = (
+            player_progression_service
+            .player_result(
+                battle_id,
+                player_id,
+            )
+        )
+    if progression is None:
         raise HTTPException(
             status_code=404,
             detail="Maç sonu ilerleme sonucu bulunamadı.",

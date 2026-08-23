@@ -3957,6 +3957,265 @@ body[data-local-finished="true"] .module-card {
   }
 }
 
+/* Beta.26 distributed combat presentation — terminal result, readable
+   modules and a safe viewport floor. */
+#battle-pool-confirm[data-matchmaking="true"] {
+  min-width:180px;
+  border-color:rgba(121,255,233,.8);
+  background:linear-gradient(110deg,rgba(53,229,210,.28),rgba(184,124,255,.2));
+  box-shadow:0 0 24px rgba(53,229,210,.16),inset 0 0 18px rgba(53,229,210,.08);
+  color:var(--gs-ice-white,#f3f7ff);
+  animation:gs-matchmaking-button-pulse 1.35s ease-in-out infinite;
+}
+#battle-pool-confirm[data-matchmaking="true"]::after {
+  display:inline-block;
+  width:1.6em;
+  content:".";
+  text-align:left;
+  animation:gs-matchmaking-dots 1.15s steps(1,end) infinite;
+}
+@keyframes gs-matchmaking-dots {
+  0%,100% { content:"."; }
+  25%,75% { content:".."; }
+  50% { content:"..."; }
+}
+@keyframes gs-matchmaking-button-pulse {
+  0%,100% { filter:brightness(.92); transform:translateY(0); }
+  50% { filter:brightness(1.16); transform:translateY(-1px); }
+}
+
+body[data-app-screen="play"][data-local-status="battle"] .board-cell .module-card,
+body[data-app-screen="play"][data-online-status="battle"] .board-cell .module-card {
+  grid-template-rows:minmax(0,1fr) auto auto;
+  background:
+    linear-gradient(90deg,transparent 48%,rgba(121,255,233,.06) 49% 51%,transparent 52%),
+    linear-gradient(0deg,transparent 48%,rgba(121,255,233,.045) 49% 51%,transparent 52%),
+    radial-gradient(circle at 50% 42%,var(--hp-state-glow,rgba(53,229,210,.13)),transparent 64%),
+    rgba(14,27,45,.96);
+  box-shadow:
+    inset 0 0 0 1px rgba(143,163,191,.08),
+    inset 0 0 24px rgba(53,229,210,.045),
+    0 4px 14px rgba(0,0,0,.24);
+}
+body[data-app-screen="play"][data-local-status="battle"] .board-cell .module-card .name,
+body[data-app-screen="play"][data-online-status="battle"] .board-cell .module-card .name {
+  display:block;
+  max-width:100%;
+  color:rgba(243,247,255,.92);
+  font-size:clamp(.56rem,.72vw,.73rem);
+  font-weight:850;
+  line-height:1.05;
+  overflow:hidden;
+  text-align:center;
+  text-overflow:ellipsis;
+  text-shadow:0 1px 5px rgba(0,0,0,.9);
+  white-space:nowrap;
+}
+body[data-app-screen="play"][data-local-status="battle"] .board-cell .module-icon,
+body[data-app-screen="play"][data-online-status="battle"] .board-cell .module-icon {
+  align-self:end;
+  font-size:clamp(1.35rem,2.35vw,2.65rem);
+  filter:drop-shadow(0 0 8px currentColor);
+  transform:translateZ(0);
+}
+.module-card[data-category="energy"] .module-icon,
+.module-card[data-category="core"] .module-icon { color:var(--gs-arc-cyan,#36d9ff); }
+.module-card[data-category="attack"] .module-icon { color:var(--gs-overload-red,#ff5f72); }
+.module-card[data-category="defense"] .module-icon { color:#8cbcff; }
+body[data-app-screen="play"] .board-cell .hp-bar {
+  width:88%;
+  height:6px;
+  align-self:start;
+  box-shadow:0 0 8px rgba(121,255,233,.16);
+}
+
+.module-explosion {
+  position:absolute;
+  z-index:40;
+  width:0;
+  height:0;
+  pointer-events:none;
+}
+.module-explosion .explosion-flash {
+  position:absolute;
+  width:70px;
+  height:70px;
+  border-radius:50%;
+  background:radial-gradient(circle,#fff 0 8%,#ffdf70 16%,#ff6b4a 36%,rgba(184,124,255,.5) 52%,transparent 72%);
+  box-shadow:0 0 25px #fff,0 0 58px #ff7958,0 0 90px rgba(184,124,255,.7);
+  transform:translate(-50%,-50%) scale(.15);
+  animation:gs-module-explosion-flash .7s ease-out forwards;
+}
+.module-explosion .explosion-shockwave {
+  position:absolute;
+  width:26px;
+  height:26px;
+  border:3px solid rgba(255,224,128,.9);
+  border-radius:50%;
+  box-shadow:0 0 18px rgba(255,96,74,.8),inset 0 0 12px rgba(255,255,255,.7);
+  transform:translate(-50%,-50%) scale(.2);
+  animation:gs-explosion-shockwave .72s ease-out forwards;
+}
+.module-explosion i {
+  position:absolute;
+  width:8px;
+  height:3px;
+  border-radius:999px;
+  background:linear-gradient(90deg,#fff7bc,#ff874f 55%,rgba(184,124,255,.2));
+  box-shadow:0 0 8px #ff7858;
+  transform:translate(-50%,-50%) rotate(var(--particle-angle)) translateX(0);
+  transform-origin:0 50%;
+  animation:gs-explosion-particle .66s cubic-bezier(.12,.6,.22,1) forwards;
+}
+.module-explosion.core-explosion .explosion-flash {
+  width:150px;
+  height:150px;
+  animation-duration:1.15s;
+}
+.module-explosion.core-explosion .explosion-shockwave {
+  width:48px;
+  height:48px;
+  border-width:5px;
+  animation:gs-core-shockwave 1.15s ease-out forwards;
+}
+.module-explosion.core-explosion i {
+  width:14px;
+  height:5px;
+  animation-duration:1.05s;
+}
+@keyframes gs-module-explosion-flash {
+  0% { opacity:0; transform:translate(-50%,-50%) scale(.1); }
+  18% { opacity:1; transform:translate(-50%,-50%) scale(1.05); }
+  100% { opacity:0; transform:translate(-50%,-50%) scale(1.65); }
+}
+@keyframes gs-explosion-shockwave {
+  0% { opacity:1; transform:translate(-50%,-50%) scale(.2); }
+  100% { opacity:0; transform:translate(-50%,-50%) scale(4.5); }
+}
+@keyframes gs-core-shockwave {
+  0% { opacity:1; transform:translate(-50%,-50%) scale(.2); }
+  65% { opacity:.75; }
+  100% { opacity:0; transform:translate(-50%,-50%) scale(6.8); }
+}
+@keyframes gs-explosion-particle {
+  0% { opacity:1; transform:translate(-50%,-50%) rotate(var(--particle-angle)) translateX(0) scale(1); }
+  100% { opacity:0; transform:translate(-50%,-50%) rotate(var(--particle-angle)) translateX(var(--particle-distance)) scale(.35); }
+}
+.duel-arena.fx-module-impact { animation:gs-arena-impact .34s ease-out; }
+.duel-arena.fx-core-impact { animation:gs-core-impact .78s cubic-bezier(.22,.61,.36,1); }
+@keyframes gs-arena-impact {
+  0%,100% { transform:translate(0); }
+  28% { transform:translate(-3px,2px); }
+  56% { transform:translate(2px,-1px); }
+}
+@keyframes gs-core-impact {
+  0%,100% { transform:translate(0); filter:none; }
+  14% { transform:translate(-7px,3px); filter:brightness(1.4); }
+  30% { transform:translate(6px,-3px); }
+  48% { transform:translate(-4px,2px); }
+  68% { transform:translate(2px,-1px); filter:brightness(1); }
+}
+
+.battle-result-hero {
+  display:grid;
+  gap:7px;
+  padding:15px 17px;
+  border:1px solid rgba(143,163,191,.25);
+  border-radius:12px;
+  background:linear-gradient(120deg,rgba(143,163,191,.08),rgba(7,11,20,.88));
+  overflow:hidden;
+  position:relative;
+}
+.battle-result-hero::after {
+  content:"";
+  position:absolute;
+  inset:auto -12% -75% 38%;
+  height:180px;
+  border-radius:50%;
+  background:radial-gradient(circle,var(--result-glow,rgba(143,163,191,.2)),transparent 68%);
+  pointer-events:none;
+}
+.battle-result-hero[data-outcome="victory"] {
+  --result-glow:rgba(121,255,233,.48);
+  border-color:rgba(121,255,233,.52);
+  background:linear-gradient(120deg,rgba(53,229,210,.18),rgba(7,11,20,.94) 62%);
+}
+.battle-result-hero[data-outcome="defeat"] {
+  --result-glow:rgba(255,95,114,.44);
+  border-color:rgba(255,95,114,.5);
+  background:linear-gradient(120deg,rgba(255,95,114,.16),rgba(7,11,20,.94) 62%);
+}
+.battle-result-hero[data-outcome="draw"] {
+  --result-glow:rgba(255,204,102,.4);
+  border-color:rgba(255,204,102,.46);
+}
+.battle-result-kicker,
+#battle-result-outcome {
+  color:var(--gs-signal-gray,#8fa3bf);
+  font-size:.68rem;
+  font-weight:850;
+  letter-spacing:.13em;
+}
+#battle-result-title {
+  position:relative;
+  z-index:1;
+  color:var(--gs-ice-white,#f3f7ff);
+  font-size:clamp(1.75rem,4.5vw,3.2rem);
+  line-height:.95;
+  letter-spacing:.045em;
+  text-shadow:0 0 28px var(--result-glow,rgba(143,163,191,.3));
+}
+#battle-result-summary {
+  position:relative;
+  z-index:1;
+  color:rgba(243,247,255,.84);
+  font-size:.86rem;
+}
+.battle-analysis-summary {
+  display:grid;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:8px;
+  padding:12px;
+}
+.battle-analysis-summary[hidden] { display:none; }
+.battle-analysis-summary > div {
+  display:grid;
+  gap:4px;
+  min-width:0;
+  padding:10px;
+  border:1px solid rgba(121,255,233,.14);
+  border-radius:8px;
+  background:rgba(8,15,27,.72);
+}
+.battle-analysis-summary span {
+  color:var(--gs-signal-gray,#8fa3bf);
+  font-size:.66rem;
+  letter-spacing:.05em;
+  text-transform:uppercase;
+}
+.battle-analysis-summary strong {
+  color:var(--gs-ice-white,#f3f7ff);
+  font-size:.94rem;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+
+@media (max-width:700px) {
+  .battle-analysis-summary { grid-template-columns:repeat(2,minmax(0,1fr)); }
+  #battle-result-title { font-size:2rem; }
+}
+
+@media (prefers-reduced-motion:reduce) {
+  #battle-pool-confirm[data-matchmaking="true"],
+  #battle-pool-confirm[data-matchmaking="true"]::after,
+  .module-explosion *,
+  .duel-arena.fx-module-impact,
+  .duel-arena.fx-core-impact {
+    animation-duration:.01ms !important;
+    animation-iteration-count:1 !important;
+  }
+}
+
 /* =========================================================
    GRIDSHARD Beta.25 — Shardglass visual system
    Obsidian glass, mint flux and diagonal fracture seams create
@@ -4267,4 +4526,53 @@ details.battle-pool-preset-bar { max-height:min(22dvh,170px); }
 @media (max-width: 700px) {
   .tutorial-overlay { padding: 0.5rem; }
   .tutorial-card { padding: 0.85rem; border-radius: 0.85rem; }
+}
+
+/* Final battle viewport/readability overrides intentionally follow every
+   legacy Beta layer. Keep the fixed viewport sizing desktop-only so the
+   stacked mobile arena can continue to scroll naturally. */
+@media (min-width:1101px) {
+  body[data-app-screen="play"][data-local-status="battle"] main,
+  body[data-app-screen="play"][data-online-status="battle"] main {
+    padding-bottom:12px;
+  }
+  body[data-app-screen="play"][data-local-status="battle"] .battle-layout,
+  body[data-app-screen="play"][data-online-status="battle"] .battle-layout {
+    height:calc(100dvh - 104px);
+    margin-bottom:12px;
+  }
+}
+body[data-app-screen="play"][data-local-status="battle"] .board-cell .module-card,
+body[data-app-screen="play"][data-online-status="battle"] .board-cell .module-card {
+  grid-template-rows:minmax(0,1fr) auto auto;
+  background:
+    linear-gradient(90deg,transparent 48%,rgba(121,255,233,.06) 49% 51%,transparent 52%),
+    linear-gradient(0deg,transparent 48%,rgba(121,255,233,.045) 49% 51%,transparent 52%),
+    radial-gradient(circle at 50% 42%,var(--hp-state-glow,rgba(53,229,210,.13)),transparent 64%),
+    rgba(14,27,45,.96);
+}
+body[data-app-screen="play"][data-local-status="battle"] .board-cell .module-card .name,
+body[data-app-screen="play"][data-online-status="battle"] .board-cell .module-card .name {
+  display:block;
+  max-width:100%;
+  color:rgba(243,247,255,.92);
+  font-size:clamp(.56rem,.72vw,.73rem);
+  font-weight:850;
+  line-height:1.05;
+  overflow:hidden;
+  text-align:center;
+  text-overflow:ellipsis;
+  text-shadow:0 1px 5px rgba(0,0,0,.9);
+  white-space:nowrap;
+}
+body[data-app-screen="play"][data-local-status="battle"] .board-cell .module-icon,
+body[data-app-screen="play"][data-online-status="battle"] .board-cell .module-icon {
+  align-self:end;
+  font-size:clamp(1.35rem,2.35vw,2.65rem);
+  filter:drop-shadow(0 0 8px currentColor);
+}
+body[data-app-screen="play"] .board-cell .hp-bar {
+  width:88%;
+  height:6px;
+  align-self:start;
 }

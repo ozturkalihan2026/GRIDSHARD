@@ -451,13 +451,25 @@
     </section>
 
     <section class="post-match-panel play-result-panel" data-screen-panel="play" role="dialog" aria-label="Maç sonucu" hidden>
-      <div class="panel-title-row">
-        <h2>Maç Sonucu</h2>
+      <div id="battle-result-hero" class="battle-result-hero" data-outcome="pending">
+        <div class="panel-title-row">
+          <span class="battle-result-kicker">SAVAŞ TAMAMLANDI</span>
+          <span id="battle-result-outcome">Sonuç hazırlanıyor</span>
+        </div>
+        <strong id="battle-result-title">Maç Sonucu</strong>
         <span id="battle-result-summary" hidden>Sonuç bekleniyor</span>
       </div>
       <details id="post-match-analysis" class="post-match-analysis">
         <summary>Savaş Analizini Aç</summary>
-      <div id="local-battle-report" class="local-battle-report" hidden>
+        <div id="battle-analysis-summary" class="battle-analysis-summary" hidden>
+          <div><span>Süre</span><strong id="battle-analysis-duration">—</strong></div>
+          <div><span>Bitiş Nedeni</span><strong id="battle-analysis-reason">—</strong></div>
+          <div><span>Verilen Hasar</span><strong id="battle-analysis-damage">—</strong></div>
+          <div><span>Kalan Çekirdek</span><strong id="battle-analysis-core">—</strong></div>
+          <div><span>Ayakta Modül</span><strong id="battle-analysis-modules">—</strong></div>
+          <div><span>Kalan Toplam HP</span><strong id="battle-analysis-hp">—</strong></div>
+        </div>
+        <div id="local-battle-report" class="local-battle-report" hidden>
         <h3>Manuel Savaş Raporu</h3>
         <div class="local-report-grid">
           <div><span>Süre</span><strong id="local-report-duration">—</strong></div>

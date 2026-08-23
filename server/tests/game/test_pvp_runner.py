@@ -1,6 +1,7 @@
 import asyncio
 from app.game.battle_pool import validate_battle_pool
 from app.game.catalog import PLAYER_SELECTABLE_MODULE_IDS
+from app.game.engine import BATTLE_TIME_LIMIT_MS, TICK_MS
 from app.game.models import Direction,BattleStatus,ModuleStatus,Position
 from app.game.pvp_runner import PvPTickRunner
 from app.game.pvp_session import PvPSessionService
@@ -77,6 +78,38 @@ def test_runner_stops_when_match_finished():
         s,x=running_service(); r=PvPTickRunner(s,PvPWebSocketAdapter(s))
         x.engine.state.status=BattleStatus.FINISHED
         assert await r.run_ticks("match",5)==0
+    asyncio.run(scenario())
+
+
+def test_terminal_result_is_broadcast_even_if_projection_callback_fails():
+    async def scenario():
+        service, session = running_service()
+        adapter = PvPWebSocketAdapter(service)
+        socket = FakeSocket()
+        await adapter.connect(
+            connection_id="terminal",
+            session_id="match",
+            player_id="a",
+            socket=socket,
+        )
+
+        def failing_callback(_state):
+            raise RuntimeError("projection unavailable")
+
+        runner = PvPTickRunner(
+            service,
+            adapter,
+            match_finished_callback=failing_callback,
+        )
+        session.engine.state.tick = BATTLE_TIME_LIMIT_MS // TICK_MS - 1
+        session.engine.state.elapsed_ms = BATTLE_TIME_LIMIT_MS - TICK_MS
+
+        assert await runner.run_single_tick("match") is True
+        assert session.engine.state.status == BattleStatus.FINISHED
+        assert any(message["type"] == "match_finished" for message in socket.sent)
+        assert socket.closed is True
+        assert runner.stats_for("match").match_finished_callback_failures == 1
+
     asyncio.run(scenario())
 
 

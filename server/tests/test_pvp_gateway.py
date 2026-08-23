@@ -1,10 +1,13 @@
 from fastapi.testclient import TestClient
+import app.main as main_module
 
 from app.main import (
     app,
+    player_progression_service,
     pvp_service,
     pvp_websocket_adapter,
 )
+from app.game.models import Direction
 from app.game.pvp_session import PvPSessionService
 
 
@@ -57,6 +60,50 @@ def test_health_exposes_version():
     assert response.status_code == 200
     assert response.json()["status"] == "ok"
     assert response.json()["version"] == "2.0.0-beta.26"
+
+
+def test_post_match_lazily_recovers_a_finished_session(monkeypatch):
+    reset_gateway()
+    battle_id = "lazy-post-match"
+    players = ("lazy-a", "lazy-b")
+    session = pvp_service.create_session(battle_id)
+    for player_id in players:
+        pvp_service.join(battle_id, player_id)
+        session.engine.grant_module(player_id, f"{player_id}-core", "core")
+        session.engine.grant_module(player_id, f"{player_id}-gen", "generator")
+        session.engine.set_initial_active_module(
+            player_id,
+            f"{player_id}-core",
+            2,
+            2,
+        )
+        session.engine.set_initial_active_module(
+            player_id,
+            f"{player_id}-gen",
+            2,
+            3,
+            Direction.UP,
+        )
+    session.engine.start()
+    session.engine._finish_battle(
+        winner_player_id=players[0],
+        loser_player_id=players[1],
+        is_draw=False,
+        reason="core_destroyed",
+    )
+
+    monkeypatch.setattr(
+        main_module.telemetry_service,
+        "ingest_finished_battle",
+        lambda _state: None,
+    )
+    monkeypatch.setattr(main_module, "persist_player_data", lambda _player_id: None)
+
+    assert player_progression_service.player_result(battle_id, players[0]) is None
+    response = client.get(f"/post-match/{battle_id}/{players[0]}")
+
+    assert response.status_code == 200
+    assert response.json()["progression"]["player_id"] == players[0]
 
 
 def test_create_join_and_start_session():

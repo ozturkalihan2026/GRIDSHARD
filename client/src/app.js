@@ -644,6 +644,182 @@
     });
 
   let postMatchSyncInFlight = null;
+  let onlineFinishPresentedSessionId = null;
+
+  function finishReasonLabel(reason) {
+    const labels = {
+      core_destroyed: "Çekirdek yok edildi",
+      player_forfeit: "Savaştan çekilme",
+      time_limit_tiebreak: "Süre sonu üstünlüğü",
+      time_limit_draw: "Süre sonu beraberliği",
+      simultaneous_core_tiebreak: "Çifte çekirdek yıkımı",
+      simultaneous_core_draw: "Eşzamanlı çekirdek yıkımı",
+    };
+    return labels[reason] || "Savaş tamamlandı";
+  }
+
+  function onlineOutcome(result) {
+    if (result?.is_draw) return "draw";
+    return result?.winner_player_id === pvpState.playerId
+      ? "victory"
+      : "defeat";
+  }
+
+  function setBattleResultHero(outcome) {
+    const hero = document.getElementById("battle-result-hero");
+    const outcomeEl = document.getElementById("battle-result-outcome");
+    const titleEl = document.getElementById("battle-result-title");
+    const labels = {
+      victory: ["GALİBİYET", "DEVRE ÜSTÜNLÜĞÜ SENİN"],
+      defeat: ["MAĞLUBİYET", "DEVREN SAVAŞ DIŞI KALDI"],
+      draw: ["BERABERLİK", "İKİ DEVRE DE AYAKTA KALDI"],
+      pending: ["Maç Sonucu", "Sonuç hazırlanıyor"],
+    };
+    const [title, status] = labels[outcome] || labels.pending;
+    if (hero) hero.dataset.outcome = outcome;
+    if (titleEl) titleEl.textContent = title;
+    if (outcomeEl) outcomeEl.textContent = status;
+  }
+
+  function setAnalysisValue(id, value) {
+    const element = document.getElementById(id);
+    if (element) element.textContent = String(value);
+  }
+
+  function renderOnlineBattleAnalysis(result) {
+    const panel = document.getElementById("battle-analysis-summary");
+    if (!panel || !result) return;
+    const own = result.result_summary?.[pvpState.playerId] || {};
+    panel.hidden = false;
+    setAnalysisValue(
+      "battle-analysis-duration",
+      `${(Number(result.finished_at_ms || 0) / 1000).toFixed(1)} sn`
+    );
+    setAnalysisValue(
+      "battle-analysis-reason",
+      finishReasonLabel(result.finish_reason)
+    );
+    setAnalysisValue("battle-analysis-damage", Number(own.damage_dealt || 0));
+    setAnalysisValue("battle-analysis-core", `${Number(own.core_hp || 0)} HP`);
+    setAnalysisValue(
+      "battle-analysis-modules",
+      Number(own.living_module_count || 0)
+    );
+    setAnalysisValue(
+      "battle-analysis-hp",
+      `${Number(own.remaining_hp || 0)} / ${Number(own.total_max_hp || 0)}`
+    );
+  }
+
+  function renderLocalBattleAnalysis({ won, finishReason }) {
+    const panel = document.getElementById("battle-analysis-summary");
+    if (!panel || !localBattleMetrics) return;
+    const modules = [...client.modules.values()];
+    const core = client.modules.get("core-1");
+    const living = modules.filter(
+      (module) => module.status === "active" && Number(module.hp || 0) > 0
+    );
+    const remainingHp = modules.reduce(
+      (sum, module) => sum + Math.max(0, Number(module.hp || 0)),
+      0
+    );
+    const totalHp = modules.reduce(
+      (sum, module) => sum + Math.max(0, Number(module.maxHp || 0)),
+      0
+    );
+    panel.hidden = false;
+    setAnalysisValue(
+      "battle-analysis-duration",
+      `${(Number(localBattleMetrics.duration_ms || 0) / 1000).toFixed(1)} sn`
+    );
+    setAnalysisValue(
+      "battle-analysis-reason",
+      finishReasonLabel(finishReason || (won ? "core_destroyed" : null))
+    );
+    setAnalysisValue(
+      "battle-analysis-damage",
+      Number(localBattleMetrics.damage_dealt || 0)
+    );
+    setAnalysisValue("battle-analysis-core", `${Number(core?.hp || 0)} HP`);
+    setAnalysisValue("battle-analysis-modules", living.length);
+    setAnalysisValue("battle-analysis-hp", `${remainingHp} / ${totalHp}`);
+  }
+
+  function resetBattleResultPresentation() {
+    onlineFinishPresentedSessionId = null;
+    document.body.dataset.onlineFinished = "false";
+    setBattleResultHero("pending");
+    const resultEl = document.getElementById("battle-result-summary");
+    if (resultEl) {
+      resultEl.hidden = true;
+      resultEl.textContent = "Sonuç bekleniyor";
+    }
+    const analysis = document.getElementById("battle-analysis-summary");
+    if (analysis) analysis.hidden = true;
+    const details = document.getElementById("post-match-analysis");
+    if (details) details.open = false;
+  }
+
+  function presentOnlineMatchFinished() {
+    const result = pvpState.finalResult;
+    if (!result) return false;
+
+    const outcome = onlineOutcome(result);
+    const firstPresentation =
+      onlineFinishPresentedSessionId !== result.session_id;
+    onlineFinishPresentedSessionId = result.session_id;
+    document.body.dataset.onlineFinished = "true";
+    setBattleResultHero(outcome);
+
+    if (battleStateLabelEl) {
+      battleStateLabelEl.textContent =
+        `Maç tamamlandı · ${
+          outcome === "victory"
+            ? "Galibiyet"
+            : outcome === "defeat"
+              ? "Mağlubiyet"
+              : "Beraberlik"
+        }`;
+    }
+
+    if (firstPresentation) {
+      if (gridshardAudioDirector) {
+        gridshardAudioDirector.setState(
+          outcome === "victory"
+            ? "victory"
+            : outcome === "defeat"
+              ? "defeat"
+              : "pool"
+        );
+      }
+      if (result.finish_reason === "core_destroyed") {
+        const loser = pvpState.snapshot?.players?.[result.loser_player_id];
+        const destroyedCore = loser?.modules?.find(
+          (module) => module.definition_id === "core"
+        );
+        if (!emitServerModuleDestruction(result.loser_player_id, destroyedCore)) {
+          const destructionKey = destroyedCore?.instance_id
+            ? `${result.loser_player_id}:${destroyedCore.instance_id}`
+            : null;
+          if (!destructionKey || !destructionFxPlayed.has(destructionKey)) {
+            emitModuleExplosion(
+              result.loser_player_id === pvpState.playerId
+                ? "core-1"
+                : "enemy-core",
+              { core: true }
+            );
+          }
+        }
+      }
+    }
+
+    renderOnlineBattleAnalysis(result);
+    renderPostMatchSummary();
+    const details = document.getElementById("post-match-analysis");
+    if (details) details.open = true;
+    renderPlayModeUi();
+    return true;
+  }
 
   async function syncFinishedMatch() {
     const battleId =
@@ -658,6 +834,8 @@
           "Maç sonucu için oturum kimliği bulunamadı.",
       };
     }
+
+    presentOnlineMatchFinished();
 
     await finishWebTestSessionAudit(
       battleId
@@ -694,6 +872,9 @@
     }
 
     renderPostMatchSummary();
+    renderOnlineBattleAnalysis(
+      pvpState.finalResult
+    );
     renderProfileSummary();
     renderStatisticsSummary();
 
@@ -829,7 +1010,8 @@
               && pvpState.finalResult
             )
           ) {
-            syncFinishedMatch();
+            presentOnlineMatchFinished();
+            void syncFinishedMatch();
           }
 
           render();
@@ -947,6 +1129,32 @@
       status;
     document.body.dataset.opponentType =
       matchmakingState.opponentType || "unknown";
+
+    if (poolConfirmEl) {
+      const matching = status === "matchmaking";
+      poolConfirmEl.dataset.matchmaking =
+        String(matching);
+      if (matching) {
+        poolConfirmEl.disabled = true;
+        poolConfirmEl.textContent = "Eşleştiriliyor";
+      } else {
+        poolConfirmEl.dataset.matchmaking = "false";
+        if (["idle", "cancelled", "error"].includes(status)) {
+          poolConfirmEl.disabled = !battlePoolSelection.isComplete();
+          poolConfirmEl.textContent = "Savaş";
+        }
+      }
+    }
+
+    if (gridshardAudioDirector) {
+      if (status === "matchmaking") {
+        gridshardAudioDirector.setState("matchmaking");
+      } else if (["matched", "connecting", "readying"].includes(status)) {
+        gridshardAudioDirector.setState("battle_intro");
+      } else if (status === "battle") {
+        gridshardAudioDirector.setState("battle");
+      }
+    }
     const battleMatchLabel = document.getElementById("battle-match-label");
     if (battleMatchLabel) {
       battleMatchLabel.textContent =
@@ -969,6 +1177,9 @@
           : "Maç: Çevrimiçi PvP";
     }
     if (status === "battle") {
+      resetBattleResultPresentation();
+      destructionFxPlayed.clear();
+      snapshotModuleHp.clear();
       clearTapSelection({ rerender: false });
       mobileBattleController.reset();
       if (document.documentElement) document.documentElement.scrollTop = 0;
@@ -3344,6 +3555,8 @@ const SPECIAL_CELL_INFO = {
   let localServerAuthoritative = false;
   let localServerEventCursor = 0;
   let localServerLastSnapshotTick = -1;
+  const destructionFxPlayed = new Set();
+  const snapshotModuleHp = new Map();
 
   let webTestSamplingTimer = null;
   let activeWebTestRunId = null;
@@ -3804,9 +4017,14 @@ const SPECIAL_CELL_INFO = {
       activePlayMode === "online";
     const onlineBattle =
       online
-      && document.body
-        .dataset.onlineStatus
-        === "battle";
+      && (
+        document.body
+          .dataset.onlineStatus
+          === "battle"
+        || ["battle", "finished"].includes(
+          pvpState.phase
+        )
+      );
     const localBattle =
       local
       && localBattleStarted;
@@ -5154,11 +5372,74 @@ function saveHumanReviewLocalNote() {
     )?.instanceId || null;
   }
 
+  function serverModuleDomId(
+    playerId,
+    serverModule
+  ) {
+    if (!serverModule) return null;
+    if (playerId === participantPlayerId) {
+      return localServerClientModuleId(serverModule);
+    }
+    if (serverModule.definition_id === "core") {
+      return "enemy-core";
+    }
+    if (serverModule.definition_id === "generator") {
+      return "enemy-generator";
+    }
+    return serverModule.instance_id
+      ? `enemy-${serverModule.instance_id}`
+      : null;
+  }
+
+  function emitServerModuleDestruction(
+    playerId,
+    serverModule
+  ) {
+    if (!playerId || !serverModule?.instance_id) {
+      return false;
+    }
+    const key = `${playerId}:${serverModule.instance_id}`;
+    if (destructionFxPlayed.has(key)) {
+      return false;
+    }
+    destructionFxPlayed.add(key);
+    return emitModuleExplosion(
+      serverModuleDomId(playerId, serverModule),
+      { core: serverModule.definition_id === "core" }
+    );
+  }
+
+  function processSnapshotDestructionFx(snapshot) {
+    for (const player of Object.values(snapshot?.players || {})) {
+      for (const module of player.modules || []) {
+        const key = `${player.player_id}:${module.instance_id}`;
+        const hp = Number(module.hp || 0);
+        const previousHp = snapshotModuleHp.get(key);
+        if (previousHp > 0 && hp <= 0) {
+          emitServerModuleDestruction(player.player_id, module);
+        }
+        snapshotModuleHp.set(key, hp);
+      }
+    }
+  }
+
   function processLocalServerEvents(
     events,
     snapshot
   ) {
     for (const event of events || []) {
+      const data=event.data || {};
+      if (event?.type === "module_destroyed") {
+        const owner = snapshot.players?.[data.player_id];
+        const destroyedModule = owner?.modules?.find(
+          (module) => module.instance_id === data.module_id
+        );
+        emitServerModuleDestruction(
+          data.player_id,
+          destroyedModule
+        );
+        continue;
+      }
       if (
         event?.type
         !== "attack_performed"
@@ -5166,7 +5447,6 @@ function saveHumanReviewLocalNote() {
         continue;
       }
 
-      const data=event.data || {};
       const attackerIsPlayer=
         data.attacker_player_id
         === participantPlayerId;
@@ -5199,21 +5479,6 @@ function saveHumanReviewLocalNote() {
           "none",
           "yok",
         ].includes(defenseType);
-      const enemyDomId=(module) =>
-        module?.definition_id
-        === "core"
-          ? "enemy-core"
-          : (
-              module?.definition_id
-              === "generator"
-                ? "enemy-generator"
-                : (
-                    module?.instance_id
-                      ? `enemy-${module.instance_id}`
-                      : null
-                  )
-            );
-
       if (
         !data.attacker_player_id
         || !data.target_player_id
@@ -5228,12 +5493,14 @@ function saveHumanReviewLocalNote() {
           ? localServerClientModuleId(
               sourceModule
             )
-          : enemyDomId(
+          : serverModuleDomId(
+              data.attacker_player_id,
               sourceModule
             );
       const targetId=
         attackerIsPlayer
-          ? enemyDomId(
+          ? serverModuleDomId(
+              data.target_player_id,
               targetModule
             )
           : localServerClientModuleId(
@@ -5391,19 +5658,9 @@ function saveHumanReviewLocalNote() {
           );
     if (
       !snapshot?.players
-      || !applyEnemyServerSnapshot(
-        snapshot
-      )
     ) {
       return false;
     }
-
-    localServerAuthoritative=true;
-    document.body.dataset.battleAuthority=
-      "server";
-    renderEnemyBoard();
-    renderCredits();
-    renderPlayerCoreSummary();
 
     const events=
       message.type === "events"
@@ -5415,6 +5672,23 @@ function saveHumanReviewLocalNote() {
       events,
       snapshot
     );
+    processSnapshotDestructionFx(
+      snapshot
+    );
+    if (!applyEnemyServerSnapshot(snapshot)) {
+      return false;
+    }
+
+    localServerAuthoritative=true;
+    document.body.dataset.battleAuthority=
+      "server";
+    renderEnemyBoard();
+    renderCredits();
+    renderPlayerCoreSummary();
+
+    if (snapshot.status === "finished") {
+      presentOnlineMatchFinished();
+    }
     return true;
   }
 
@@ -5432,6 +5706,14 @@ function saveHumanReviewLocalNote() {
     ) {
       return false;
     }
+
+    processLocalServerEvents(
+      envelope?.events || [],
+      snapshot
+    );
+    processSnapshotDestructionFx(
+      snapshot
+    );
 
     const player=
       snapshot.players[
@@ -5522,10 +5804,6 @@ function saveHumanReviewLocalNote() {
     renderEnemyBoard();
     renderCredits();
     renderPlayerCoreSummary();
-    processLocalServerEvents(
-      envelope?.events || [],
-      snapshot
-    );
     localServerEventCursor=
       Number(
         envelope?.event_cursor
@@ -5808,13 +6086,9 @@ function saveHumanReviewLocalNote() {
     }
 
     commandLog.length = 0;
-
-    if (battleResultSummaryEl) {
-      battleResultSummaryEl.hidden =
-        true;
-      battleResultSummaryEl.textContent =
-        "Sonuç bekleniyor";
-    }
+    resetBattleResultPresentation();
+    destructionFxPlayed.clear();
+    snapshotModuleHp.clear();
 
     document.body.dataset.localFinished =
       "false";
@@ -6177,6 +6451,17 @@ function saveHumanReviewLocalNote() {
       );
     }
 
+    setBattleResultHero(
+      won ? "victory" : "defeat"
+    );
+
+    if (finishReason !== "player_forfeit") {
+      emitModuleExplosion(
+        won ? "enemy-core" : "core-1",
+        { core: true }
+      );
+    }
+
     if (battleResultSummaryEl) {
       battleResultSummaryEl.hidden =
         false;
@@ -6288,6 +6573,18 @@ function saveHumanReviewLocalNote() {
         }
       );
       publishBattleUxMetrics();
+    }
+
+    renderLocalBattleAnalysis({
+      won,
+      finishReason,
+    });
+    const analysisDetails =
+      document.getElementById(
+        "post-match-analysis"
+      );
+    if (analysisDetails) {
+      analysisDetails.open = true;
     }
 
     commandLog.push({
@@ -6499,6 +6796,83 @@ function saveHumanReviewLocalNote() {
       () => line.remove(),
       520
     );
+  }
+
+  function emitModuleExplosion(
+    moduleId,
+    { core=false }={}
+  ) {
+    const layer = document.getElementById(
+      "battle-effect-layer"
+    );
+    let target = document.querySelector(
+      `[data-module-id="${moduleId}"]`
+    );
+    if (!target && core) {
+      target = document.querySelector(
+        moduleId.startsWith("enemy-")
+          ? ".duel-enemy-side .core-cell"
+          : ".duel-player-side .core-cell"
+      );
+    }
+    if (
+      !layer
+      || !target
+      || typeof layer.getBoundingClientRect !== "function"
+      || typeof target.getBoundingClientRect !== "function"
+    ) {
+      return false;
+    }
+
+    const layerRect = layer.getBoundingClientRect();
+    const targetRect = target.getBoundingClientRect();
+    const effect = document.createElement("span");
+    effect.className = core
+      ? "module-explosion core-explosion"
+      : "module-explosion";
+    effect.style.left =
+      `${targetRect.left + targetRect.width / 2 - layerRect.left}px`;
+    effect.style.top =
+      `${targetRect.top + targetRect.height / 2 - layerRect.top}px`;
+
+    const flash = document.createElement("span");
+    flash.className = "explosion-flash";
+    effect.appendChild(flash);
+    const shockwave = document.createElement("span");
+    shockwave.className = "explosion-shockwave";
+    effect.appendChild(shockwave);
+
+    const particleCount = core ? 18 : 10;
+    for (let index = 0; index < particleCount; index += 1) {
+      const particle = document.createElement("i");
+      particle.style.setProperty(
+        "--particle-angle",
+        `${(360 / particleCount) * index + (index % 3) * 7}deg`
+      );
+      particle.style.setProperty(
+        "--particle-distance",
+        `${core ? 74 + (index % 4) * 13 : 34 + (index % 3) * 9}px`
+      );
+      particle.style.animationDelay = `${(index % 4) * 18}ms`;
+      effect.appendChild(particle);
+    }
+
+    layer.appendChild(effect);
+    const arena = document.getElementById("duel-arena");
+    if (arena) {
+      arena.classList.remove("fx-module-impact", "fx-core-impact");
+      void arena.offsetWidth;
+      arena.classList.add(core ? "fx-core-impact" : "fx-module-impact");
+    }
+    triggerGridshardCue(core ? "core_hit" : "energy_transfer");
+    window.setTimeout(
+      () => {
+        effect.remove();
+        arena?.classList.remove("fx-module-impact", "fx-core-impact");
+      },
+      core ? 1300 : 760
+    );
+    return true;
   }
 
   function updateLocalEnemyCombat() {
@@ -8662,21 +9036,29 @@ function saveHumanReviewLocalNote() {
       activePlayMode
       === "local"
     ) {
+      poolConfirmEl.dataset.matchmaking = "false";
       poolConfirmEl.textContent =
         "Savaş";
     } else if (
       activePlayMode
       === "online"
     ) {
-      if (
+      const isMatchmaking =
         document.body
           .dataset.onlineStatus
-        !== "searching"
-      ) {
+        === "matchmaking";
+      poolConfirmEl.dataset.matchmaking =
+        String(isMatchmaking);
+      if (isMatchmaking) {
+        poolConfirmEl.disabled = true;
+        poolConfirmEl.textContent =
+          "Eşleştiriliyor";
+      } else {
         poolConfirmEl.textContent =
           "Savaş";
       }
     } else {
+      poolConfirmEl.dataset.matchmaking = "false";
       poolConfirmEl.textContent =
         "Önce Maç Modu Seç";
     }
@@ -8879,6 +9261,10 @@ function saveHumanReviewLocalNote() {
     icon.textContent=moduleIconFor({nameTr:name});
     icon.setAttribute("aria-label",name);
     card.appendChild(icon);
+    const label=document.createElement("span");
+    label.className="name";
+    label.textContent=name;
+    card.appendChild(label);
     appendHpBar(card,hp,maxHp);
     return card;
   }
@@ -9329,15 +9715,16 @@ function saveHumanReviewLocalNote() {
     const progression =
       progressionState.viewModel();
 
-    let outcome =
+    setBattleResultHero(
       result.is_draw
-        ? "Beraberlik"
+        ? "draw"
         : (
             result.winner_player_id
               === pvpState.playerId
-              ? "Galibiyet"
-              : "Mağlubiyet"
-          );
+              ? "victory"
+              : "defeat"
+          )
+    );
 
     const ratingText =
       progression
@@ -9354,7 +9741,7 @@ function saveHumanReviewLocalNote() {
 
     resultEl.hidden = false;
     resultEl.textContent =
-      `${outcome} · ${ratingText} · ${xpText}`;
+      `${finishReasonLabel(result.finish_reason)} · ${ratingText} · ${xpText}`;
   }
 
   function renderParticipantBootstrapStatus() {
@@ -11450,14 +11837,24 @@ function saveHumanReviewLocalNote() {
 
       poolConfirmEl.disabled =
         true;
+      poolConfirmEl.dataset.matchmaking =
+        "true";
       poolConfirmEl.textContent =
-        "Savaş";
+        "Eşleştiriliyor";
 
       const result =
         await startRealOnlineMatch();
 
+      const stillMatching =
+        result.ok
+        && onlinePlay.status
+          === "matchmaking";
+      poolConfirmEl.dataset.matchmaking =
+        String(stillMatching);
       poolConfirmEl.textContent =
-        "Savaş";
+        stillMatching
+          ? "Eşleştiriliyor"
+          : "Savaş";
 
       if (!result.ok) {
         poolConfirmEl.disabled =

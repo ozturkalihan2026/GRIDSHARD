@@ -1200,6 +1200,15 @@
       socket.onclose = () => {
         this._clearHeartbeatTimer();
 
+        if (this.pvpState.phase === PVP_PHASE.FINISHED) {
+          this.socket = null;
+          this._clearReconnectTimer();
+          this._setStatus(
+            WS_CONNECTION_STATUS.CLOSED
+          );
+          return;
+        }
+
         if (this.manualClose) {
           this._setStatus(
             WS_CONNECTION_STATUS.CLOSED

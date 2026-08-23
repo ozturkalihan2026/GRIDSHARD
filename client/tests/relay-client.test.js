@@ -336,13 +336,20 @@ function createClient() {
   const htmlSrc = fs.readFileSync(path.join(ROOT,"index.html"),"utf8");
 
   assert.ok(appSrc.includes("id:`enemy-${module.instance_id}`"));
-  assert.ok(appSrc.includes("? `enemy-${module.instance_id}`"));
+  assert.ok(appSrc.includes("function serverModuleDomId"));
+  assert.ok(appSrc.includes("? `enemy-${serverModule.instance_id}`"));
   assert.ok(appSrc.includes("data.attacker_player_id\n          === data.target_player_id"));
   assert.ok(cssSrc.includes(
     'body[data-app-screen="play"][data-play-mode="online"]:not([data-online-status="battle"])'
   ));
   assert.ok(htmlSrc.includes('id="battle-pool-confirm" type="button" disabled>Savaş</button>'));
   assert.ok(!htmlSrc.includes('id="battle-pool-confirm" type="button" disabled>Eşleştir'));
+  assert.ok(appSrc.includes('poolConfirmEl.textContent = "Eşleştiriliyor"'));
+  assert.ok(appSrc.includes("presentOnlineMatchFinished"));
+  assert.ok(appSrc.includes("emitModuleExplosion"));
+  assert.ok(htmlSrc.includes('id="battle-analysis-summary"'));
+  assert.ok(cssSrc.includes(".core-explosion"));
+  assert.ok(cssSrc.includes('data-matchmaking="true"'));
 }
 
 {
@@ -1179,6 +1186,54 @@ function createClient() {
   assert.strictEqual(
     sockets.length,
     2
+  );
+}
+
+{
+  const {
+    RelayPvPClientState,
+    RelayWebSocketConnectionManager,
+    WS_CONNECTION_STATUS,
+  } = require("../src/relay-client.js");
+
+  const scheduled = [];
+  const socket = {
+    readyState: 1,
+    send() {},
+    close() {},
+  };
+  const pvp = new RelayPvPClientState({
+    playerId: "a",
+    sessionId: "finished-match",
+  });
+  const manager = new RelayWebSocketConnectionManager({
+    pvpState: pvp,
+    createWebSocket: () => socket,
+    setTimer(fn, ms) {
+      scheduled.push({ fn, ms });
+      return scheduled.length;
+    },
+    clearTimer() {},
+  });
+
+  manager.connect("ws://test");
+  pvp.applyServerEnvelope({
+    version: 1,
+    type: "match_finished",
+    payload: {
+      session_id: "finished-match",
+      status: "finished",
+      winner_player_id: "a",
+      is_draw: false,
+      result_summary: {},
+    },
+  });
+  socket.onclose({});
+
+  assert.strictEqual(manager.status, WS_CONNECTION_STATUS.CLOSED);
+  assert.strictEqual(
+    scheduled.filter((item) => item.ms >= 1000 && item.ms <= 8000).length,
+    0
   );
 }
 

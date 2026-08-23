@@ -18,6 +18,7 @@ class RunnerStats:
     match_finished_broadcasts: int = 0
     closed_connections: int = 0
     ai_decisions: int = 0
+    match_finished_callback_failures: int = 0
 
 class PvPTickRunner:
     def __init__(
@@ -112,9 +113,14 @@ class PvPTickRunner:
 
         if session.engine.state.status == BattleStatus.FINISHED:
             if self.match_finished_callback is not None:
-                self.match_finished_callback(
-                    session.engine.state
-                )
+                try:
+                    self.match_finished_callback(
+                        session.engine.state
+                    )
+                except Exception:
+                    # Statistics/persistence must never suppress the terminal
+                    # result envelope sent to both players.
+                    stats.match_finished_callback_failures += 1
 
             # Son savaş olayları gönderildikten sonra terminal sonuç ayrı zarfla yayınlanır.
             stats.match_finished_broadcasts += (

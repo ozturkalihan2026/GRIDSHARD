@@ -5,12 +5,14 @@ __pycache__/
 .pytest_cache/
 .coverage
 .vscode/
+.github/
 htmlcov/
 node_modules/
 .pnpm-store/
 .playwright-browsers/
 playwright-report/
 test-results/
+work/
 qa_reports/playwright-results.json
 qa_reports/e2e-server.pid.json
 dist/
