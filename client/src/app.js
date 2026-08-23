@@ -186,7 +186,9 @@
     circuitCredits: 200,
     emitCommand(command) {
       const pvpEnvelope =
-        buildPvPCommandEnvelope(command);
+        pvpState.sessionId
+          ? buildPvPCommandEnvelope(command)
+          : null;
 
       commandLog.push({
         atMs: client.elapsedMs,
@@ -197,6 +199,7 @@
       if (
         typeof pvpConnection !== "undefined"
         && pvpConnection.status === "open"
+        && pvpEnvelope
       ) {
         pvpConnection.sendEnvelope(
           pvpEnvelope
@@ -6291,6 +6294,10 @@ function saveHumanReviewLocalNote() {
   function prepareOnlineMatch() {
     localBattleStarted =
       false;
+    pvpState.reset();
+    onlinePlay.reset();
+    resetBattleResultPresentation();
+    clearPlayError();
     setActivePlayMode(
       "online"
     );
@@ -6300,6 +6307,12 @@ function saveHumanReviewLocalNote() {
     if (activeMatchModeEl) {
       activeMatchModeEl.textContent =
         "Maç: Online PvP";
+    }
+
+    if (gridshardAudioDirector) {
+      gridshardAudioDirector.setState(
+        "pool"
+      );
     }
 
     renderBattlePoolSelection();

@@ -21,13 +21,14 @@
     battle: { bpm:[126,132], intensity:0.75 },
     battle_pressure: { bpm:[126,132], intensity:0.88 },
     critical_core: { bpm:[126,132], intensity:1.00 },
-    victory: { stingSeconds:[5,7], intensity:0.90 },
+    victory: { bpm:[142,146], stingSeconds:[9,11], intensity:1.00 },
     defeat: { stingSeconds:[5,7], intensity:0.72 },
   });
 
   const GRIDSHARD_AUDIO_MIX = Object.freeze({
     version:"shardglass-mix-v5",
     crossfadeMs:1200,
+    resultCrossfadeMs:320,
     musicBaseGain:0.72,
     sfxBaseGain:0.86,
     criticalLayerGain:0.28,
@@ -302,6 +303,17 @@
         this.currentTrack;
       const next=
         new global.Audio(asset);
+      const transitionMs =
+        [
+          GRIDSHARD_AUDIO_STATES
+            .VICTORY,
+          GRIDSHARD_AUDIO_STATES
+            .DEFEAT,
+        ].includes(state)
+          ? GRIDSHARD_AUDIO_MIX
+            .resultCrossfadeMs
+          : GRIDSHARD_AUDIO_MIX
+            .crossfadeMs;
 
       next.loop=
         ![
@@ -321,8 +333,7 @@
         next,
         0,
         this._musicTargetVolume(),
-        GRIDSHARD_AUDIO_MIX
-          .crossfadeMs
+        transitionMs
       );
 
       if (
@@ -335,8 +346,7 @@
             previous.volume || 0
           ),
           0,
-          GRIDSHARD_AUDIO_MIX
-            .crossfadeMs,
+          transitionMs,
           ()=>{
             this._stopAudio(
               previous

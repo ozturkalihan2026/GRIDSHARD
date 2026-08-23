@@ -69,12 +69,23 @@ setTimeout(() => {
   );
 
   director.setState("victory");
+  const victoryTrack = director.currentTrack;
+  assert.ok(
+    victoryTrack.src.includes(
+      "victory_sting.wav"
+    )
+  );
+  assert.strictEqual(
+    victoryTrack.loop,
+    false
+  );
 
   setTimeout(() => {
     assert.strictEqual(
       director.criticalLayerTrack,
       null
     );
+    assert.ok(victoryTrack.volume > 0);
     console.log(
       "gridshard audio browser lifecycle test passed"
     );

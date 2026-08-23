@@ -346,6 +346,8 @@ function createClient() {
   assert.ok(!htmlSrc.includes('id="battle-pool-confirm" type="button" disabled>Eşleştir'));
   assert.ok(appSrc.includes('poolConfirmEl.textContent = "Eşleştiriliyor"'));
   assert.ok(appSrc.includes("presentOnlineMatchFinished"));
+  assert.ok(appSrc.includes("pvpState.reset();"));
+  assert.ok(appSrc.includes("onlinePlay.reset();"));
   assert.ok(appSrc.includes("emitModuleExplosion"));
   assert.ok(htmlSrc.includes('id="battle-analysis-summary"'));
   assert.ok(cssSrc.includes(".core-explosion"));
@@ -691,6 +693,11 @@ function createClient() {
   assert.strictEqual(pvp.phase, PVP_PHASE.FINISHED);
   assert.strictEqual(pvp.finalResult.winner_player_id, "a");
   assert.strictEqual(pvp.connected, false);
+
+  assert.strictEqual(pvp.reset(), PVP_PHASE.IDLE);
+  assert.strictEqual(pvp.sessionId, null);
+  assert.strictEqual(pvp.finalResult, null);
+  assert.strictEqual(pvp.snapshot, null);
 }
 
 {
@@ -1368,6 +1375,12 @@ function createClient() {
     state.ratingDifference,
     40
   );
+
+  state.reset();
+  assert.strictEqual(state.queued, false);
+  assert.strictEqual(state.matched, false);
+  assert.strictEqual(state.sessionId, null);
+  assert.deepStrictEqual(state.players, []);
 }
 
 {
@@ -1865,6 +1878,14 @@ function createClient() {
     assert.strictEqual(
       sent[2].url,
       "wss://node-b.example.test/mm-1"
+    );
+    assert.strictEqual(
+      coordinator.reset().status,
+      "idle"
+    );
+    assert.strictEqual(
+      matchmaking.matched,
+      false
     );
   }));
 }

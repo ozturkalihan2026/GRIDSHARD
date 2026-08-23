@@ -6941,5 +6941,1585 @@
     "player_id": null,
     "session_id": null,
     "timestamp_ms": 1787522525351
+  },
+  {
+    "event_id": "web-test-stability-web-test-beta.26-local-1787522525469",
+    "event_type": "web_test_stability_snapshot",
+    "metadata": {
+      "operation_running_rate": 1.0,
+      "running_to_other_regressions": 0,
+      "stability": "stable",
+      "test_run_id": "web-test-beta.26-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1787522525469
+  },
+  {
+    "event_id": "web-test-launch-wt-1561dea8-843f-4d64-ae50-173ff6e15d04-1787524201857",
+    "event_type": "web_test_launch_attempted",
+    "metadata": {
+      "failed_checks": [],
+      "launch_ready": true,
+      "test_run_id": "web-test-beta.26-local"
+    },
+    "player_id": "wt-1561dea8-843f-4d64-ae50-173ff6e15d04",
+    "session_id": null,
+    "timestamp_ms": 1787524201857
+  },
+  {
+    "event_id": "web-test-operation-web-test-beta.26-local-1787524203111",
+    "event_type": "web_test_operation_snapshot",
+    "metadata": {
+      "consistency_status": "consistent",
+      "operational_state": "running",
+      "preflight_ready": true,
+      "run_started": true,
+      "test_run_id": "web-test-beta.26-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1787524203111
+  },
+  {
+    "event_id": "web-test-stability-web-test-beta.26-local-1787524203133",
+    "event_type": "web_test_stability_snapshot",
+    "metadata": {
+      "operation_running_rate": 1.0,
+      "running_to_other_regressions": 0,
+      "stability": "stable",
+      "test_run_id": "web-test-beta.26-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1787524203133
+  },
+  {
+    "event_id": "server:matchmaking:wt-1561dea8-843f-4d64-ae50-173ff6e15d04:717867890",
+    "event_type": "matchmaking_started",
+    "metadata": {
+      "league_name_tr": "Gümüş",
+      "level": 1,
+      "rating": 1000
+    },
+    "player_id": "wt-1561dea8-843f-4d64-ae50-173ff6e15d04",
+    "session_id": null,
+    "timestamp_ms": 1787524205975
+  },
+  {
+    "event_id": "web-test-audit-wt-1561dea8-843f-4d64-ae50-173ff6e15d04-1787524205968",
+    "event_type": "web_test_session_started",
+    "metadata": {
+      "build": "web-test-beta.13",
+      "operation_ready": true,
+      "player_data_ready": true,
+      "pvp_protocol_version": 1,
+      "release_ready": true,
+      "retention_limit": 50000,
+      "server_version": "2.0.0-beta.26",
+      "telemetry_ready": true,
+      "test_run_id": "web-test-beta.26-local"
+    },
+    "player_id": "wt-1561dea8-843f-4d64-ae50-173ff6e15d04",
+    "session_id": null,
+    "timestamp_ms": 1787524205968
+  },
+  {
+    "event_id": "web-test-stability-web-test-beta.26-local-1787524213043",
+    "event_type": "web_test_stability_snapshot",
+    "metadata": {
+      "operation_running_rate": 1.0,
+      "running_to_other_regressions": 0,
+      "stability": "stable",
+      "test_run_id": "web-test-beta.26-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1787524213043
+  },
+  {
+    "event_id": "web-test-operation-web-test-beta.26-local-1787524213259",
+    "event_type": "web_test_operation_snapshot",
+    "metadata": {
+      "consistency_status": "consistent",
+      "operational_state": "running",
+      "preflight_ready": true,
+      "run_started": true,
+      "test_run_id": "web-test-beta.26-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1787524213259
+  },
+  {
+    "event_id": "server:local-ai-match-5ff1e15662d94c0681645e562c767c05:matchmaking_ai_fallback:wt-1561dea8-843f-4d64-ae50-173ff6e15d04",
+    "event_type": "matchmaking_matched",
+    "metadata": {
+      "fallback_after_seconds": 10,
+      "opponent_type": "ai",
+      "rating_difference": 0
+    },
+    "player_id": "wt-1561dea8-843f-4d64-ae50-173ff6e15d04",
+    "session_id": "local-ai-match-5ff1e15662d94c0681645e562c767c05",
+    "timestamp_ms": 1787524216111
+  },
+  {
+    "event_id": "web-test-audit-wt-1561dea8-843f-4d64-ae50-173ff6e15d04-1787524205968-bound-local-ai-match-5ff1e15662d94c0681645e562c767c05",
+    "event_type": "web_test_session_bound",
+    "metadata": {
+      "audit_event_id": "web-test-audit-wt-1561dea8-843f-4d64-ae50-173ff6e15d04-1787524205968",
+      "test_run_id": "web-test-beta.26-local"
+    },
+    "player_id": "wt-1561dea8-843f-4d64-ae50-173ff6e15d04",
+    "session_id": "local-ai-match-5ff1e15662d94c0681645e562c767c05",
+    "timestamp_ms": 1787524216132
+  },
+  {
+    "event_id": "web-test-stability-web-test-beta.26-local-1787524225244",
+    "event_type": "web_test_stability_snapshot",
+    "metadata": {
+      "operation_running_rate": 1.0,
+      "running_to_other_regressions": 0,
+      "stability": "stable",
+      "test_run_id": "web-test-beta.26-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1787524225244
+  },
+  {
+    "event_id": "web-test-operation-web-test-beta.26-local-1787524225322",
+    "event_type": "web_test_operation_snapshot",
+    "metadata": {
+      "consistency_status": "consistent",
+      "operational_state": "running",
+      "preflight_ready": true,
+      "run_started": true,
+      "test_run_id": "web-test-beta.26-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1787524225322
+  },
+  {
+    "event_id": "web-test-operation-web-test-beta.26-local-1787524235320",
+    "event_type": "web_test_operation_snapshot",
+    "metadata": {
+      "consistency_status": "consistent",
+      "operational_state": "running",
+      "preflight_ready": true,
+      "run_started": true,
+      "test_run_id": "web-test-beta.26-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1787524235320
+  },
+  {
+    "event_id": "web-test-stability-web-test-beta.26-local-1787524235473",
+    "event_type": "web_test_stability_snapshot",
+    "metadata": {
+      "operation_running_rate": 1.0,
+      "running_to_other_regressions": 0,
+      "stability": "stable",
+      "test_run_id": "web-test-beta.26-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1787524235473
+  },
+  {
+    "event_id": "web-test-operation-web-test-beta.26-local-1787524245292",
+    "event_type": "web_test_operation_snapshot",
+    "metadata": {
+      "consistency_status": "consistent",
+      "operational_state": "running",
+      "preflight_ready": true,
+      "run_started": true,
+      "test_run_id": "web-test-beta.26-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1787524245292
+  },
+  {
+    "event_id": "web-test-stability-web-test-beta.26-local-1787524245481",
+    "event_type": "web_test_stability_snapshot",
+    "metadata": {
+      "operation_running_rate": 1.0,
+      "running_to_other_regressions": 0,
+      "stability": "stable",
+      "test_run_id": "web-test-beta.26-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1787524245481
+  },
+  {
+    "event_id": "web-test-stability-web-test-beta.26-local-1787524255439",
+    "event_type": "web_test_stability_snapshot",
+    "metadata": {
+      "operation_running_rate": 1.0,
+      "running_to_other_regressions": 0,
+      "stability": "stable",
+      "test_run_id": "web-test-beta.26-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1787524255439
+  },
+  {
+    "event_id": "web-test-operation-web-test-beta.26-local-1787524255484",
+    "event_type": "web_test_operation_snapshot",
+    "metadata": {
+      "consistency_status": "consistent",
+      "operational_state": "running",
+      "preflight_ready": true,
+      "run_started": true,
+      "test_run_id": "web-test-beta.26-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1787524255484
+  },
+  {
+    "event_id": "web-test-operation-web-test-beta.26-local-1787524265455",
+    "event_type": "web_test_operation_snapshot",
+    "metadata": {
+      "consistency_status": "consistent",
+      "operational_state": "running",
+      "preflight_ready": true,
+      "run_started": true,
+      "test_run_id": "web-test-beta.26-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1787524265455
+  },
+  {
+    "event_id": "web-test-stability-web-test-beta.26-local-1787524265619",
+    "event_type": "web_test_stability_snapshot",
+    "metadata": {
+      "operation_running_rate": 1.0,
+      "running_to_other_regressions": 0,
+      "stability": "stable",
+      "test_run_id": "web-test-beta.26-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1787524265619
+  },
+  {
+    "event_id": "web-test-stability-web-test-beta.26-local-1787524275532",
+    "event_type": "web_test_stability_snapshot",
+    "metadata": {
+      "operation_running_rate": 1.0,
+      "running_to_other_regressions": 0,
+      "stability": "stable",
+      "test_run_id": "web-test-beta.26-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1787524275532
+  },
+  {
+    "event_id": "web-test-operation-web-test-beta.26-local-1787524275613",
+    "event_type": "web_test_operation_snapshot",
+    "metadata": {
+      "consistency_status": "consistent",
+      "operational_state": "running",
+      "preflight_ready": true,
+      "run_started": true,
+      "test_run_id": "web-test-beta.26-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1787524275613
+  },
+  {
+    "event_id": "server:local-ai-match-5ff1e15662d94c0681645e562c767c05:match_started:wt-1561dea8-843f-4d64-ae50-173ff6e15d04",
+    "event_type": "match_started",
+    "metadata": {
+      "source": "battle_engine"
+    },
+    "player_id": "wt-1561dea8-843f-4d64-ae50-173ff6e15d04",
+    "session_id": "local-ai-match-5ff1e15662d94c0681645e562c767c05",
+    "timestamp_ms": 1787524280713
+  },
+  {
+    "event_id": "server:local-ai-match-5ff1e15662d94c0681645e562c767c05:match_started:local-ai-match-5ff1e15662d94c0681645e562c767c05-opponent",
+    "event_type": "match_started",
+    "metadata": {
+      "source": "battle_engine"
+    },
+    "player_id": "local-ai-match-5ff1e15662d94c0681645e562c767c05-opponent",
+    "session_id": "local-ai-match-5ff1e15662d94c0681645e562c767c05",
+    "timestamp_ms": 1787524280745
+  },
+  {
+    "event_id": "server:local-ai-match-5ff1e15662d94c0681645e562c767c05:157:credit_spent",
+    "event_type": "circuit_credit_spent",
+    "metadata": {
+      "amount": 95,
+      "balance": 255,
+      "battle_elapsed_ms": 15000,
+      "reason": "modul_yerlestir:armor"
+    },
+    "player_id": "local-ai-match-5ff1e15662d94c0681645e562c767c05-opponent",
+    "session_id": "local-ai-match-5ff1e15662d94c0681645e562c767c05",
+    "timestamp_ms": 1787524280783
+  },
+  {
+    "event_id": "server:local-ai-match-5ff1e15662d94c0681645e562c767c05:196:credit_spent",
+    "event_type": "circuit_credit_spent",
+    "metadata": {
+      "amount": 100,
+      "balance": 297,
+      "battle_elapsed_ms": 19700,
+      "reason": "modul_yerlestir:shield"
+    },
+    "player_id": "wt-1561dea8-843f-4d64-ae50-173ff6e15d04",
+    "session_id": "local-ai-match-5ff1e15662d94c0681645e562c767c05",
+    "timestamp_ms": 1787524280844
+  },
+  {
+    "event_id": "server:local-ai-match-5ff1e15662d94c0681645e562c767c05:199:credit_spent",
+    "event_type": "circuit_credit_spent",
+    "metadata": {
+      "amount": 120,
+      "balance": 185,
+      "battle_elapsed_ms": 20000,
+      "reason": "modul_yerlestir:pulse_cannon"
+    },
+    "player_id": "local-ai-match-5ff1e15662d94c0681645e562c767c05-opponent",
+    "session_id": "local-ai-match-5ff1e15662d94c0681645e562c767c05",
+    "timestamp_ms": 1787524280903
+  },
+  {
+    "event_id": "server:local-ai-match-5ff1e15662d94c0681645e562c767c05:238:credit_spent",
+    "event_type": "circuit_credit_spent",
+    "metadata": {
+      "amount": 60,
+      "balance": 175,
+      "battle_elapsed_ms": 25000,
+      "reason": "modul_yerlestir:splitter"
+    },
+    "player_id": "local-ai-match-5ff1e15662d94c0681645e562c767c05-opponent",
+    "session_id": "local-ai-match-5ff1e15662d94c0681645e562c767c05",
+    "timestamp_ms": 1787524280966
+  },
+  {
+    "event_id": "server:local-ai-match-5ff1e15662d94c0681645e562c767c05:267:credit_spent",
+    "event_type": "circuit_credit_spent",
+    "metadata": {
+      "amount": 85,
+      "balance": 291,
+      "battle_elapsed_ms": 27600,
+      "reason": "modul_yerlestir:amplifier"
+    },
+    "player_id": "wt-1561dea8-843f-4d64-ae50-173ff6e15d04",
+    "session_id": "local-ai-match-5ff1e15662d94c0681645e562c767c05",
+    "timestamp_ms": 1787524281018
+  },
+  {
+    "event_id": "server:local-ai-match-5ff1e15662d94c0681645e562c767c05:280:credit_spent",
+    "event_type": "circuit_credit_spent",
+    "metadata": {
+      "amount": 65,
+      "balance": 160,
+      "battle_elapsed_ms": 30000,
+      "reason": "modul_degistir:cooler"
+    },
+    "player_id": "local-ai-match-5ff1e15662d94c0681645e562c767c05-opponent",
+    "session_id": "local-ai-match-5ff1e15662d94c0681645e562c767c05",
+    "timestamp_ms": 1787524281079
+  },
+  {
+    "event_id": "server:local-ai-match-5ff1e15662d94c0681645e562c767c05:281:module_changed",
+    "event_type": "module_changed",
+    "metadata": {
+      "battle_elapsed_ms": 30000,
+      "incoming_module_id": "cooler-1",
+      "outgoing_module_id": "armor-1"
+    },
+    "player_id": "local-ai-match-5ff1e15662d94c0681645e562c767c05-opponent",
+    "session_id": "local-ai-match-5ff1e15662d94c0681645e562c767c05",
+    "timestamp_ms": 1787524281140
+  },
+  {
+    "event_id": "server:local-ai-match-5ff1e15662d94c0681645e562c767c05:293:credit_spent",
+    "event_type": "circuit_credit_spent",
+    "metadata": {
+      "amount": 125,
+      "balance": 200,
+      "battle_elapsed_ms": 31000,
+      "reason": "modul_yerlestir:missile_launcher"
+    },
+    "player_id": "wt-1561dea8-843f-4d64-ae50-173ff6e15d04",
+    "session_id": "local-ai-match-5ff1e15662d94c0681645e562c767c05",
+    "timestamp_ms": 1787524281190
+  },
+  {
+    "event_id": "server:local-ai-match-5ff1e15662d94c0681645e562c767c05:334:credit_spent",
+    "event_type": "circuit_credit_spent",
+    "metadata": {
+      "amount": 70,
+      "balance": 140,
+      "battle_elapsed_ms": 35000,
+      "reason": "modul_yerlestir:battery"
+    },
+    "player_id": "local-ai-match-5ff1e15662d94c0681645e562c767c05-opponent",
+    "session_id": "local-ai-match-5ff1e15662d94c0681645e562c767c05",
+    "timestamp_ms": 1787524281261
+  },
+  {
+    "event_id": "server:local-ai-match-5ff1e15662d94c0681645e562c767c05:353:credit_spent",
+    "event_type": "circuit_credit_spent",
+    "metadata": {
+      "amount": 135,
+      "balance": 119,
+      "battle_elapsed_ms": 36400,
+      "reason": "modul_yerlestir:railgun"
+    },
+    "player_id": "wt-1561dea8-843f-4d64-ae50-173ff6e15d04",
+    "session_id": "local-ai-match-5ff1e15662d94c0681645e562c767c05",
+    "timestamp_ms": 1787524281303
+  },
+  {
+    "event_id": "server:local-ai-match-5ff1e15662d94c0681645e562c767c05:match_completed:wt-1561dea8-843f-4d64-ae50-173ff6e15d04",
+    "event_type": "match_completed",
+    "metadata": {
+      "duration_ms": 59100,
+      "finish_reason": "core_destroyed",
+      "is_draw": false,
+      "winner_player_id": "local-ai-match-5ff1e15662d94c0681645e562c767c05-opponent"
+    },
+    "player_id": "wt-1561dea8-843f-4d64-ae50-173ff6e15d04",
+    "session_id": "local-ai-match-5ff1e15662d94c0681645e562c767c05",
+    "timestamp_ms": 1787524281365
+  },
+  {
+    "event_id": "server:local-ai-match-5ff1e15662d94c0681645e562c767c05:match_completed:local-ai-match-5ff1e15662d94c0681645e562c767c05-opponent",
+    "event_type": "match_completed",
+    "metadata": {
+      "duration_ms": 59100,
+      "finish_reason": "core_destroyed",
+      "is_draw": false,
+      "winner_player_id": "local-ai-match-5ff1e15662d94c0681645e562c767c05-opponent"
+    },
+    "player_id": "local-ai-match-5ff1e15662d94c0681645e562c767c05-opponent",
+    "session_id": "local-ai-match-5ff1e15662d94c0681645e562c767c05",
+    "timestamp_ms": 1787524281428
+  },
+  {
+    "event_id": "web-test-audit-wt-1561dea8-843f-4d64-ae50-173ff6e15d04-1787524205968-finished-local-ai-match-5ff1e15662d94c0681645e562c767c05",
+    "event_type": "web_test_session_finished",
+    "metadata": {
+      "audit_event_id": "web-test-audit-wt-1561dea8-843f-4d64-ae50-173ff6e15d04-1787524205968",
+      "technical_completed": true,
+      "test_run_id": "web-test-beta.26-local"
+    },
+    "player_id": "wt-1561dea8-843f-4d64-ae50-173ff6e15d04",
+    "session_id": "local-ai-match-5ff1e15662d94c0681645e562c767c05",
+    "timestamp_ms": 1787524281553
+  },
+  {
+    "event_id": "web-test-stability-web-test-beta.26-local-1787524285794",
+    "event_type": "web_test_stability_snapshot",
+    "metadata": {
+      "operation_running_rate": 1.0,
+      "running_to_other_regressions": 0,
+      "stability": "stable",
+      "test_run_id": "web-test-beta.26-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1787524285794
+  },
+  {
+    "event_id": "web-test-operation-web-test-beta.26-local-1787524285962",
+    "event_type": "web_test_operation_snapshot",
+    "metadata": {
+      "consistency_status": "consistent",
+      "operational_state": "running",
+      "preflight_ready": true,
+      "run_started": true,
+      "test_run_id": "web-test-beta.26-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1787524285962
+  },
+  {
+    "event_id": "web-test-operation-web-test-beta.26-local-1787524295387",
+    "event_type": "web_test_operation_snapshot",
+    "metadata": {
+      "consistency_status": "consistent",
+      "operational_state": "running",
+      "preflight_ready": true,
+      "run_started": true,
+      "test_run_id": "web-test-beta.26-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1787524295387
+  },
+  {
+    "event_id": "web-test-stability-web-test-beta.26-local-1787524295444",
+    "event_type": "web_test_stability_snapshot",
+    "metadata": {
+      "operation_running_rate": 1.0,
+      "running_to_other_regressions": 0,
+      "stability": "stable",
+      "test_run_id": "web-test-beta.26-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1787524295444
+  },
+  {
+    "event_id": "web-test-operation-web-test-beta.26-local-1787524303754",
+    "event_type": "web_test_operation_snapshot",
+    "metadata": {
+      "consistency_status": "consistent",
+      "operational_state": "running",
+      "preflight_ready": true,
+      "run_started": true,
+      "test_run_id": "web-test-beta.26-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1787524303754
+  },
+  {
+    "event_id": "web-test-stability-web-test-beta.26-local-1787524303899",
+    "event_type": "web_test_stability_snapshot",
+    "metadata": {
+      "operation_running_rate": 1.0,
+      "running_to_other_regressions": 0,
+      "stability": "stable",
+      "test_run_id": "web-test-beta.26-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1787524303899
+  },
+  {
+    "event_id": "web-test-launch-wt-b7536124-b4a8-4596-8712-749509f6c90a-1787525675933",
+    "event_type": "web_test_launch_attempted",
+    "metadata": {
+      "failed_checks": [],
+      "launch_ready": true,
+      "test_run_id": "web-test-beta.26-local"
+    },
+    "player_id": "wt-b7536124-b4a8-4596-8712-749509f6c90a",
+    "session_id": null,
+    "timestamp_ms": 1787525675933
+  },
+  {
+    "event_id": "web-test-operation-web-test-beta.26-local-1787525677500",
+    "event_type": "web_test_operation_snapshot",
+    "metadata": {
+      "consistency_status": "consistent",
+      "operational_state": "running",
+      "preflight_ready": true,
+      "run_started": true,
+      "test_run_id": "web-test-beta.26-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1787525677500
+  },
+  {
+    "event_id": "web-test-stability-web-test-beta.26-local-1787525677537",
+    "event_type": "web_test_stability_snapshot",
+    "metadata": {
+      "operation_running_rate": 1.0,
+      "running_to_other_regressions": 0,
+      "stability": "stable",
+      "test_run_id": "web-test-beta.26-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1787525677537
+  },
+  {
+    "event_id": "server:matchmaking:wt-b7536124-b4a8-4596-8712-749509f6c90a:719347093",
+    "event_type": "matchmaking_started",
+    "metadata": {
+      "league_name_tr": "Gümüş",
+      "level": 1,
+      "rating": 1000
+    },
+    "player_id": "wt-b7536124-b4a8-4596-8712-749509f6c90a",
+    "session_id": null,
+    "timestamp_ms": 1787525685165
+  },
+  {
+    "event_id": "web-test-audit-wt-b7536124-b4a8-4596-8712-749509f6c90a-1787525685156",
+    "event_type": "web_test_session_started",
+    "metadata": {
+      "build": "web-test-beta.13",
+      "operation_ready": true,
+      "player_data_ready": true,
+      "pvp_protocol_version": 1,
+      "release_ready": true,
+      "retention_limit": 50000,
+      "server_version": "2.0.0-beta.26",
+      "telemetry_ready": true,
+      "test_run_id": "web-test-beta.26-local"
+    },
+    "player_id": "wt-b7536124-b4a8-4596-8712-749509f6c90a",
+    "session_id": null,
+    "timestamp_ms": 1787525685156
+  },
+  {
+    "event_id": "web-test-stability-web-test-beta.26-local-1787525688238",
+    "event_type": "web_test_stability_snapshot",
+    "metadata": {
+      "operation_running_rate": 1.0,
+      "running_to_other_regressions": 0,
+      "stability": "stable",
+      "test_run_id": "web-test-beta.26-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1787525688238
+  },
+  {
+    "event_id": "web-test-operation-web-test-beta.26-local-1787525688370",
+    "event_type": "web_test_operation_snapshot",
+    "metadata": {
+      "consistency_status": "consistent",
+      "operational_state": "running",
+      "preflight_ready": true,
+      "run_started": true,
+      "test_run_id": "web-test-beta.26-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1787525688370
+  },
+  {
+    "event_id": "server:local-ai-match-a329bd43715142c7bd803f6194430c5f:matchmaking_ai_fallback:wt-b7536124-b4a8-4596-8712-749509f6c90a",
+    "event_type": "matchmaking_matched",
+    "metadata": {
+      "fallback_after_seconds": 10,
+      "opponent_type": "ai",
+      "rating_difference": 0
+    },
+    "player_id": "wt-b7536124-b4a8-4596-8712-749509f6c90a",
+    "session_id": "local-ai-match-a329bd43715142c7bd803f6194430c5f",
+    "timestamp_ms": 1787525695355
+  },
+  {
+    "event_id": "web-test-audit-wt-b7536124-b4a8-4596-8712-749509f6c90a-1787525685156-bound-local-ai-match-a329bd43715142c7bd803f6194430c5f",
+    "event_type": "web_test_session_bound",
+    "metadata": {
+      "audit_event_id": "web-test-audit-wt-b7536124-b4a8-4596-8712-749509f6c90a-1787525685156",
+      "test_run_id": "web-test-beta.26-local"
+    },
+    "player_id": "wt-b7536124-b4a8-4596-8712-749509f6c90a",
+    "session_id": "local-ai-match-a329bd43715142c7bd803f6194430c5f",
+    "timestamp_ms": 1787525695388
+  },
+  {
+    "event_id": "web-test-stability-web-test-beta.26-local-1787525700001",
+    "event_type": "web_test_stability_snapshot",
+    "metadata": {
+      "operation_running_rate": 1.0,
+      "running_to_other_regressions": 0,
+      "stability": "stable",
+      "test_run_id": "web-test-beta.26-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1787525700001
+  },
+  {
+    "event_id": "web-test-operation-web-test-beta.26-local-1787525700053",
+    "event_type": "web_test_operation_snapshot",
+    "metadata": {
+      "consistency_status": "consistent",
+      "operational_state": "running",
+      "preflight_ready": true,
+      "run_started": true,
+      "test_run_id": "web-test-beta.26-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1787525700053
+  },
+  {
+    "event_id": "web-test-operation-web-test-beta.26-local-1787525709939",
+    "event_type": "web_test_operation_snapshot",
+    "metadata": {
+      "consistency_status": "consistent",
+      "operational_state": "running",
+      "preflight_ready": true,
+      "run_started": true,
+      "test_run_id": "web-test-beta.26-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1787525709939
+  },
+  {
+    "event_id": "web-test-stability-web-test-beta.26-local-1787525710110",
+    "event_type": "web_test_stability_snapshot",
+    "metadata": {
+      "operation_running_rate": 1.0,
+      "running_to_other_regressions": 0,
+      "stability": "stable",
+      "test_run_id": "web-test-beta.26-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1787525710110
+  },
+  {
+    "event_id": "web-test-operation-web-test-beta.26-local-1787525719917",
+    "event_type": "web_test_operation_snapshot",
+    "metadata": {
+      "consistency_status": "consistent",
+      "operational_state": "running",
+      "preflight_ready": true,
+      "run_started": true,
+      "test_run_id": "web-test-beta.26-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1787525719917
+  },
+  {
+    "event_id": "web-test-stability-web-test-beta.26-local-1787525719991",
+    "event_type": "web_test_stability_snapshot",
+    "metadata": {
+      "operation_running_rate": 1.0,
+      "running_to_other_regressions": 0,
+      "stability": "stable",
+      "test_run_id": "web-test-beta.26-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1787525719991
+  },
+  {
+    "event_id": "web-test-operation-web-test-beta.26-local-1787525730054",
+    "event_type": "web_test_operation_snapshot",
+    "metadata": {
+      "consistency_status": "consistent",
+      "operational_state": "running",
+      "preflight_ready": true,
+      "run_started": true,
+      "test_run_id": "web-test-beta.26-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1787525730054
+  },
+  {
+    "event_id": "web-test-stability-web-test-beta.26-local-1787525730109",
+    "event_type": "web_test_stability_snapshot",
+    "metadata": {
+      "operation_running_rate": 1.0,
+      "running_to_other_regressions": 0,
+      "stability": "stable",
+      "test_run_id": "web-test-beta.26-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1787525730109
+  },
+  {
+    "event_id": "web-test-operation-web-test-beta.26-local-1787525739682",
+    "event_type": "web_test_operation_snapshot",
+    "metadata": {
+      "consistency_status": "consistent",
+      "operational_state": "running",
+      "preflight_ready": true,
+      "run_started": true,
+      "test_run_id": "web-test-beta.26-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1787525739682
+  },
+  {
+    "event_id": "web-test-stability-web-test-beta.26-local-1787525739915",
+    "event_type": "web_test_stability_snapshot",
+    "metadata": {
+      "operation_running_rate": 1.0,
+      "running_to_other_regressions": 0,
+      "stability": "stable",
+      "test_run_id": "web-test-beta.26-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1787525739915
+  },
+  {
+    "event_id": "web-test-stability-web-test-beta.26-local-1787525749966",
+    "event_type": "web_test_stability_snapshot",
+    "metadata": {
+      "operation_running_rate": 1.0,
+      "running_to_other_regressions": 0,
+      "stability": "stable",
+      "test_run_id": "web-test-beta.26-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1787525749966
+  },
+  {
+    "event_id": "web-test-operation-web-test-beta.26-local-1787525750012",
+    "event_type": "web_test_operation_snapshot",
+    "metadata": {
+      "consistency_status": "consistent",
+      "operational_state": "running",
+      "preflight_ready": true,
+      "run_started": true,
+      "test_run_id": "web-test-beta.26-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1787525750012
+  },
+  {
+    "event_id": "web-test-stability-web-test-beta.26-local-1787525760013",
+    "event_type": "web_test_stability_snapshot",
+    "metadata": {
+      "operation_running_rate": 1.0,
+      "running_to_other_regressions": 0,
+      "stability": "stable",
+      "test_run_id": "web-test-beta.26-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1787525760013
+  },
+  {
+    "event_id": "web-test-operation-web-test-beta.26-local-1787525760081",
+    "event_type": "web_test_operation_snapshot",
+    "metadata": {
+      "consistency_status": "consistent",
+      "operational_state": "running",
+      "preflight_ready": true,
+      "run_started": true,
+      "test_run_id": "web-test-beta.26-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1787525760081
+  },
+  {
+    "event_id": "web-test-operation-web-test-beta.26-local-1787525770011",
+    "event_type": "web_test_operation_snapshot",
+    "metadata": {
+      "consistency_status": "consistent",
+      "operational_state": "running",
+      "preflight_ready": true,
+      "run_started": true,
+      "test_run_id": "web-test-beta.26-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1787525770011
+  },
+  {
+    "event_id": "web-test-stability-web-test-beta.26-local-1787525770084",
+    "event_type": "web_test_stability_snapshot",
+    "metadata": {
+      "operation_running_rate": 1.0,
+      "running_to_other_regressions": 0,
+      "stability": "stable",
+      "test_run_id": "web-test-beta.26-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1787525770084
+  },
+  {
+    "event_id": "client-module_shelf_used-16",
+    "event_type": "module_shelf_used",
+    "metadata": {
+      "elapsed_ms": 69000,
+      "module_id": "missile-launcher-1"
+    },
+    "player_id": "wt-b7536124-b4a8-4596-8712-749509f6c90a",
+    "session_id": "local-ai-match-a329bd43715142c7bd803f6194430c5f",
+    "timestamp_ms": 1787525772309
+  },
+  {
+    "event_id": "client-module_shelf_used-17",
+    "event_type": "module_shelf_used",
+    "metadata": {
+      "elapsed_ms": 74000,
+      "module_id": "missile-launcher-1"
+    },
+    "player_id": "wt-b7536124-b4a8-4596-8712-749509f6c90a",
+    "session_id": "local-ai-match-a329bd43715142c7bd803f6194430c5f",
+    "timestamp_ms": 1787525778031
+  },
+  {
+    "event_id": "client-module_shelf_used-18",
+    "event_type": "module_shelf_used",
+    "metadata": {
+      "elapsed_ms": 76000,
+      "module_id": "missile-launcher-1"
+    },
+    "player_id": "wt-b7536124-b4a8-4596-8712-749509f6c90a",
+    "session_id": "local-ai-match-a329bd43715142c7bd803f6194430c5f",
+    "timestamp_ms": 1787525779949
+  },
+  {
+    "event_id": "web-test-stability-web-test-beta.26-local-1787525780320",
+    "event_type": "web_test_stability_snapshot",
+    "metadata": {
+      "operation_running_rate": 1.0,
+      "running_to_other_regressions": 0,
+      "stability": "stable",
+      "test_run_id": "web-test-beta.26-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1787525780320
+  },
+  {
+    "event_id": "web-test-operation-web-test-beta.26-local-1787525780531",
+    "event_type": "web_test_operation_snapshot",
+    "metadata": {
+      "consistency_status": "consistent",
+      "operational_state": "running",
+      "preflight_ready": true,
+      "run_started": true,
+      "test_run_id": "web-test-beta.26-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1787525780531
+  },
+  {
+    "event_id": "web-test-operation-web-test-beta.26-local-1787525789897",
+    "event_type": "web_test_operation_snapshot",
+    "metadata": {
+      "consistency_status": "consistent",
+      "operational_state": "running",
+      "preflight_ready": true,
+      "run_started": true,
+      "test_run_id": "web-test-beta.26-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1787525789897
+  },
+  {
+    "event_id": "web-test-stability-web-test-beta.26-local-1787525790080",
+    "event_type": "web_test_stability_snapshot",
+    "metadata": {
+      "operation_running_rate": 1.0,
+      "running_to_other_regressions": 0,
+      "stability": "stable",
+      "test_run_id": "web-test-beta.26-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1787525790080
+  },
+  {
+    "event_id": "server:local-ai-match-a329bd43715142c7bd803f6194430c5f:match_started:wt-b7536124-b4a8-4596-8712-749509f6c90a",
+    "event_type": "match_started",
+    "metadata": {
+      "source": "battle_engine"
+    },
+    "player_id": "wt-b7536124-b4a8-4596-8712-749509f6c90a",
+    "session_id": "local-ai-match-a329bd43715142c7bd803f6194430c5f",
+    "timestamp_ms": 1787525797423
+  },
+  {
+    "event_id": "server:local-ai-match-a329bd43715142c7bd803f6194430c5f:match_started:local-ai-match-a329bd43715142c7bd803f6194430c5f-opponent",
+    "event_type": "match_started",
+    "metadata": {
+      "source": "battle_engine"
+    },
+    "player_id": "local-ai-match-a329bd43715142c7bd803f6194430c5f-opponent",
+    "session_id": "local-ai-match-a329bd43715142c7bd803f6194430c5f",
+    "timestamp_ms": 1787525797510
+  },
+  {
+    "event_id": "server:local-ai-match-a329bd43715142c7bd803f6194430c5f:154:credit_spent",
+    "event_type": "circuit_credit_spent",
+    "metadata": {
+      "amount": 115,
+      "balance": 235,
+      "battle_elapsed_ms": 15000,
+      "reason": "modul_yerlestir:reflector"
+    },
+    "player_id": "local-ai-match-a329bd43715142c7bd803f6194430c5f-opponent",
+    "session_id": "local-ai-match-a329bd43715142c7bd803f6194430c5f",
+    "timestamp_ms": 1787525797670
+  },
+  {
+    "event_id": "server:local-ai-match-a329bd43715142c7bd803f6194430c5f:177:credit_spent",
+    "event_type": "circuit_credit_spent",
+    "metadata": {
+      "amount": 70,
+      "balance": 291,
+      "battle_elapsed_ms": 16100,
+      "reason": "modul_yerlestir:battery"
+    },
+    "player_id": "wt-b7536124-b4a8-4596-8712-749509f6c90a",
+    "session_id": "local-ai-match-a329bd43715142c7bd803f6194430c5f",
+    "timestamp_ms": 1787525797723
+  },
+  {
+    "event_id": "server:local-ai-match-a329bd43715142c7bd803f6194430c5f:210:credit_spent",
+    "event_type": "circuit_credit_spent",
+    "metadata": {
+      "amount": 120,
+      "balance": 165,
+      "battle_elapsed_ms": 20000,
+      "reason": "modul_degistir:pulse_cannon"
+    },
+    "player_id": "local-ai-match-a329bd43715142c7bd803f6194430c5f-opponent",
+    "session_id": "local-ai-match-a329bd43715142c7bd803f6194430c5f",
+    "timestamp_ms": 1787525797781
+  },
+  {
+    "event_id": "server:local-ai-match-a329bd43715142c7bd803f6194430c5f:211:module_changed",
+    "event_type": "module_changed",
+    "metadata": {
+      "battle_elapsed_ms": 20000,
+      "incoming_module_id": "pulse-cannon-1",
+      "outgoing_module_id": "local-ai-match-a329bd43715142c7bd803f6194430c5f-opponent-laser"
+    },
+    "player_id": "local-ai-match-a329bd43715142c7bd803f6194430c5f-opponent",
+    "session_id": "local-ai-match-a329bd43715142c7bd803f6194430c5f",
+    "timestamp_ms": 1787525797838
+  },
+  {
+    "event_id": "server:local-ai-match-a329bd43715142c7bd803f6194430c5f:230:credit_spent",
+    "event_type": "circuit_credit_spent",
+    "metadata": {
+      "amount": 120,
+      "balance": 228,
+      "battle_elapsed_ms": 21800,
+      "reason": "modul_yerlestir:pulse_cannon"
+    },
+    "player_id": "wt-b7536124-b4a8-4596-8712-749509f6c90a",
+    "session_id": "local-ai-match-a329bd43715142c7bd803f6194430c5f",
+    "timestamp_ms": 1787525797890
+  },
+  {
+    "event_id": "server:local-ai-match-a329bd43715142c7bd803f6194430c5f:272:credit_spent",
+    "event_type": "circuit_credit_spent",
+    "metadata": {
+      "amount": 95,
+      "balance": 120,
+      "battle_elapsed_ms": 25000,
+      "reason": "modul_yerlestir:armor"
+    },
+    "player_id": "local-ai-match-a329bd43715142c7bd803f6194430c5f-opponent",
+    "session_id": "local-ai-match-a329bd43715142c7bd803f6194430c5f",
+    "timestamp_ms": 1787525797986
+  },
+  {
+    "event_id": "server:local-ai-match-a329bd43715142c7bd803f6194430c5f:351:credit_spent",
+    "event_type": "circuit_credit_spent",
+    "metadata": {
+      "amount": 60,
+      "balance": 264,
+      "battle_elapsed_ms": 31400,
+      "reason": "modul_yerlestir:splitter"
+    },
+    "player_id": "wt-b7536124-b4a8-4596-8712-749509f6c90a",
+    "session_id": "local-ai-match-a329bd43715142c7bd803f6194430c5f",
+    "timestamp_ms": 1787525798083
+  },
+  {
+    "event_id": "server:local-ai-match-a329bd43715142c7bd803f6194430c5f:411:credit_spent",
+    "event_type": "circuit_credit_spent",
+    "metadata": {
+      "amount": 130,
+      "balance": 90,
+      "battle_elapsed_ms": 35000,
+      "reason": "modul_yerlestir:arc_cannon"
+    },
+    "player_id": "local-ai-match-a329bd43715142c7bd803f6194430c5f-opponent",
+    "session_id": "local-ai-match-a329bd43715142c7bd803f6194430c5f",
+    "timestamp_ms": 1787525798130
+  },
+  {
+    "event_id": "server:local-ai-match-a329bd43715142c7bd803f6194430c5f:437:credit_spent",
+    "event_type": "circuit_credit_spent",
+    "metadata": {
+      "amount": 80,
+      "balance": 226,
+      "battle_elapsed_ms": 35600,
+      "reason": "modul_yerlestir:repair"
+    },
+    "player_id": "wt-b7536124-b4a8-4596-8712-749509f6c90a",
+    "session_id": "local-ai-match-a329bd43715142c7bd803f6194430c5f",
+    "timestamp_ms": 1787525798186
+  },
+  {
+    "event_id": "server:local-ai-match-a329bd43715142c7bd803f6194430c5f:558:credit_spent",
+    "event_type": "circuit_credit_spent",
+    "metadata": {
+      "amount": 10,
+      "balance": 255,
+      "battle_elapsed_ms": 39500,
+      "reason": "modul_tasi:pulse_cannon"
+    },
+    "player_id": "wt-b7536124-b4a8-4596-8712-749509f6c90a",
+    "session_id": "local-ai-match-a329bd43715142c7bd803f6194430c5f",
+    "timestamp_ms": 1787525798230
+  },
+  {
+    "event_id": "server:local-ai-match-a329bd43715142c7bd803f6194430c5f:580:credit_spent",
+    "event_type": "circuit_credit_spent",
+    "metadata": {
+      "amount": 125,
+      "balance": 15,
+      "battle_elapsed_ms": 40000,
+      "reason": "modul_yerlestir:missile_launcher"
+    },
+    "player_id": "local-ai-match-a329bd43715142c7bd803f6194430c5f-opponent",
+    "session_id": "local-ai-match-a329bd43715142c7bd803f6194430c5f",
+    "timestamp_ms": 1787525798276
+  },
+  {
+    "event_id": "server:local-ai-match-a329bd43715142c7bd803f6194430c5f:735:credit_spent",
+    "event_type": "circuit_credit_spent",
+    "metadata": {
+      "amount": 85,
+      "balance": 223,
+      "battle_elapsed_ms": 44800,
+      "reason": "modul_yerlestir:amplifier"
+    },
+    "player_id": "wt-b7536124-b4a8-4596-8712-749509f6c90a",
+    "session_id": "local-ai-match-a329bd43715142c7bd803f6194430c5f",
+    "timestamp_ms": 1787525798362
+  },
+  {
+    "event_id": "server:local-ai-match-a329bd43715142c7bd803f6194430c5f:742:credit_spent",
+    "event_type": "circuit_credit_spent",
+    "metadata": {
+      "amount": 60,
+      "balance": 5,
+      "battle_elapsed_ms": 45000,
+      "reason": "modul_yerlestir:splitter"
+    },
+    "player_id": "local-ai-match-a329bd43715142c7bd803f6194430c5f-opponent",
+    "session_id": "local-ai-match-a329bd43715142c7bd803f6194430c5f",
+    "timestamp_ms": 1787525798478
+  },
+  {
+    "event_id": "server:local-ai-match-a329bd43715142c7bd803f6194430c5f:784:credit_spent",
+    "event_type": "circuit_credit_spent",
+    "metadata": {
+      "amount": 95,
+      "balance": 149,
+      "battle_elapsed_ms": 46900,
+      "reason": "modul_yerlestir:armor"
+    },
+    "player_id": "wt-b7536124-b4a8-4596-8712-749509f6c90a",
+    "session_id": "local-ai-match-a329bd43715142c7bd803f6194430c5f",
+    "timestamp_ms": 1787525798550
+  },
+  {
+    "event_id": "server:local-ai-match-a329bd43715142c7bd803f6194430c5f:934:credit_spent",
+    "event_type": "circuit_credit_spent",
+    "metadata": {
+      "amount": 65,
+      "balance": 153,
+      "battle_elapsed_ms": 53800,
+      "reason": "modul_yerlestir:cooler"
+    },
+    "player_id": "wt-b7536124-b4a8-4596-8712-749509f6c90a",
+    "session_id": "local-ai-match-a329bd43715142c7bd803f6194430c5f",
+    "timestamp_ms": 1787525798598
+  },
+  {
+    "event_id": "server:local-ai-match-a329bd43715142c7bd803f6194430c5f:961:credit_spent",
+    "event_type": "circuit_credit_spent",
+    "metadata": {
+      "amount": 90,
+      "balance": 15,
+      "battle_elapsed_ms": 55000,
+      "reason": "modul_yerlestir:laser"
+    },
+    "player_id": "local-ai-match-a329bd43715142c7bd803f6194430c5f-opponent",
+    "session_id": "local-ai-match-a329bd43715142c7bd803f6194430c5f",
+    "timestamp_ms": 1787525798652
+  },
+  {
+    "event_id": "server:local-ai-match-a329bd43715142c7bd803f6194430c5f:985:credit_spent",
+    "event_type": "circuit_credit_spent",
+    "metadata": {
+      "amount": 105,
+      "balance": 79,
+      "battle_elapsed_ms": 56900,
+      "reason": "modul_yerlestir:barrier"
+    },
+    "player_id": "wt-b7536124-b4a8-4596-8712-749509f6c90a",
+    "session_id": "local-ai-match-a329bd43715142c7bd803f6194430c5f",
+    "timestamp_ms": 1787525798742
+  },
+  {
+    "event_id": "server:local-ai-match-a329bd43715142c7bd803f6194430c5f:1087:credit_spent",
+    "event_type": "circuit_credit_spent",
+    "metadata": {
+      "amount": 90,
+      "balance": 78,
+      "battle_elapsed_ms": 65800,
+      "reason": "modul_yerlestir:targeting_computer"
+    },
+    "player_id": "wt-b7536124-b4a8-4596-8712-749509f6c90a",
+    "session_id": "local-ai-match-a329bd43715142c7bd803f6194430c5f",
+    "timestamp_ms": 1787525798818
+  },
+  {
+    "event_id": "server:local-ai-match-a329bd43715142c7bd803f6194430c5f:1120:credit_spent",
+    "event_type": "circuit_credit_spent",
+    "metadata": {
+      "amount": 135,
+      "balance": 30,
+      "battle_elapsed_ms": 70000,
+      "reason": "modul_yerlestir:railgun"
+    },
+    "player_id": "local-ai-match-a329bd43715142c7bd803f6194430c5f-opponent",
+    "session_id": "local-ai-match-a329bd43715142c7bd803f6194430c5f",
+    "timestamp_ms": 1787525798952
+  },
+  {
+    "event_id": "server:local-ai-match-a329bd43715142c7bd803f6194430c5f:1174:booster_used",
+    "event_type": "booster_used",
+    "metadata": {
+      "battle_elapsed_ms": 75000,
+      "booster_id": "emergency_repair",
+      "target_module_id": "local-ai-match-a329bd43715142c7bd803f6194430c5f-opponent-generator"
+    },
+    "player_id": "local-ai-match-a329bd43715142c7bd803f6194430c5f-opponent",
+    "session_id": "local-ai-match-a329bd43715142c7bd803f6194430c5f",
+    "timestamp_ms": 1787525799069
+  },
+  {
+    "event_id": "server:local-ai-match-a329bd43715142c7bd803f6194430c5f:1188:credit_spent",
+    "event_type": "circuit_credit_spent",
+    "metadata": {
+      "amount": 125,
+      "balance": 65,
+      "battle_elapsed_ms": 77000,
+      "reason": "modul_yerlestir:missile_launcher"
+    },
+    "player_id": "wt-b7536124-b4a8-4596-8712-749509f6c90a",
+    "session_id": "local-ai-match-a329bd43715142c7bd803f6194430c5f",
+    "timestamp_ms": 1787525799158
+  },
+  {
+    "event_id": "server:local-ai-match-a329bd43715142c7bd803f6194430c5f:1332:booster_used",
+    "event_type": "booster_used",
+    "metadata": {
+      "battle_elapsed_ms": 85000,
+      "booster_id": "dual_port_adapter",
+      "target_module_id": "local-ai-match-a329bd43715142c7bd803f6194430c5f-opponent-core"
+    },
+    "player_id": "local-ai-match-a329bd43715142c7bd803f6194430c5f-opponent",
+    "session_id": "local-ai-match-a329bd43715142c7bd803f6194430c5f",
+    "timestamp_ms": 1787525799219
+  },
+  {
+    "event_id": "server:local-ai-match-a329bd43715142c7bd803f6194430c5f:1400:credit_spent",
+    "event_type": "circuit_credit_spent",
+    "metadata": {
+      "amount": 10,
+      "balance": 175,
+      "battle_elapsed_ms": 89000,
+      "reason": "modul_tasi:pulse_cannon"
+    },
+    "player_id": "wt-b7536124-b4a8-4596-8712-749509f6c90a",
+    "session_id": "local-ai-match-a329bd43715142c7bd803f6194430c5f",
+    "timestamp_ms": 1787525799318
+  },
+  {
+    "event_id": "server:local-ai-match-a329bd43715142c7bd803f6194430c5f:1447:credit_spent",
+    "event_type": "circuit_credit_spent",
+    "metadata": {
+      "amount": 10,
+      "balance": 189,
+      "battle_elapsed_ms": 91400,
+      "reason": "modul_tasi:pulse_cannon"
+    },
+    "player_id": "wt-b7536124-b4a8-4596-8712-749509f6c90a",
+    "session_id": "local-ai-match-a329bd43715142c7bd803f6194430c5f",
+    "timestamp_ms": 1787525799388
+  },
+  {
+    "event_id": "server:local-ai-match-a329bd43715142c7bd803f6194430c5f:match_completed:wt-b7536124-b4a8-4596-8712-749509f6c90a",
+    "event_type": "match_completed",
+    "metadata": {
+      "duration_ms": 92100,
+      "finish_reason": "core_destroyed",
+      "is_draw": false,
+      "winner_player_id": "wt-b7536124-b4a8-4596-8712-749509f6c90a"
+    },
+    "player_id": "wt-b7536124-b4a8-4596-8712-749509f6c90a",
+    "session_id": "local-ai-match-a329bd43715142c7bd803f6194430c5f",
+    "timestamp_ms": 1787525799458
+  },
+  {
+    "event_id": "server:local-ai-match-a329bd43715142c7bd803f6194430c5f:match_completed:local-ai-match-a329bd43715142c7bd803f6194430c5f-opponent",
+    "event_type": "match_completed",
+    "metadata": {
+      "duration_ms": 92100,
+      "finish_reason": "core_destroyed",
+      "is_draw": false,
+      "winner_player_id": "wt-b7536124-b4a8-4596-8712-749509f6c90a"
+    },
+    "player_id": "local-ai-match-a329bd43715142c7bd803f6194430c5f-opponent",
+    "session_id": "local-ai-match-a329bd43715142c7bd803f6194430c5f",
+    "timestamp_ms": 1787525799530
+  },
+  {
+    "event_id": "web-test-audit-wt-b7536124-b4a8-4596-8712-749509f6c90a-1787525685156-finished-local-ai-match-a329bd43715142c7bd803f6194430c5f",
+    "event_type": "web_test_session_finished",
+    "metadata": {
+      "audit_event_id": "web-test-audit-wt-b7536124-b4a8-4596-8712-749509f6c90a-1787525685156",
+      "technical_completed": true,
+      "test_run_id": "web-test-beta.26-local"
+    },
+    "player_id": "wt-b7536124-b4a8-4596-8712-749509f6c90a",
+    "session_id": "local-ai-match-a329bd43715142c7bd803f6194430c5f",
+    "timestamp_ms": 1787525799727
+  },
+  {
+    "event_id": "web-test-operation-web-test-beta.26-local-1787525801489",
+    "event_type": "web_test_operation_snapshot",
+    "metadata": {
+      "consistency_status": "consistent",
+      "operational_state": "running",
+      "preflight_ready": true,
+      "run_started": true,
+      "test_run_id": "web-test-beta.26-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1787525801489
+  },
+  {
+    "event_id": "web-test-stability-web-test-beta.26-local-1787525801647",
+    "event_type": "web_test_stability_snapshot",
+    "metadata": {
+      "operation_running_rate": 1.0,
+      "running_to_other_regressions": 0,
+      "stability": "stable",
+      "test_run_id": "web-test-beta.26-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1787525801647
+  },
+  {
+    "event_id": "web-test-operation-web-test-beta.26-local-1787525810219",
+    "event_type": "web_test_operation_snapshot",
+    "metadata": {
+      "consistency_status": "consistent",
+      "operational_state": "running",
+      "preflight_ready": true,
+      "run_started": true,
+      "test_run_id": "web-test-beta.26-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1787525810219
+  },
+  {
+    "event_id": "web-test-stability-web-test-beta.26-local-1787525810388",
+    "event_type": "web_test_stability_snapshot",
+    "metadata": {
+      "operation_running_rate": 1.0,
+      "running_to_other_regressions": 0,
+      "stability": "stable",
+      "test_run_id": "web-test-beta.26-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1787525810388
+  },
+  {
+    "event_id": "web-test-operation-web-test-beta.26-local-1787525817274",
+    "event_type": "web_test_operation_snapshot",
+    "metadata": {
+      "consistency_status": "consistent",
+      "operational_state": "running",
+      "preflight_ready": true,
+      "run_started": true,
+      "test_run_id": "web-test-beta.26-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1787525817274
+  },
+  {
+    "event_id": "web-test-operation-web-test-beta.26-local-1787525874495",
+    "event_type": "web_test_operation_snapshot",
+    "metadata": {
+      "consistency_status": "consistent",
+      "operational_state": "running",
+      "preflight_ready": true,
+      "run_started": true,
+      "test_run_id": "web-test-beta.26-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1787525874495
+  },
+  {
+    "event_id": "web-test-stability-web-test-beta.26-local-1787525874610",
+    "event_type": "web_test_stability_snapshot",
+    "metadata": {
+      "operation_running_rate": 1.0,
+      "running_to_other_regressions": 0,
+      "stability": "stable",
+      "test_run_id": "web-test-beta.26-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1787525874610
+  },
+  {
+    "event_id": "web-test-operation-web-test-beta.26-local-1787525885236",
+    "event_type": "web_test_operation_snapshot",
+    "metadata": {
+      "consistency_status": "consistent",
+      "operational_state": "running",
+      "preflight_ready": true,
+      "run_started": true,
+      "test_run_id": "web-test-beta.26-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1787525885236
+  },
+  {
+    "event_id": "web-test-stability-web-test-beta.26-local-1787525885325",
+    "event_type": "web_test_stability_snapshot",
+    "metadata": {
+      "operation_running_rate": 1.0,
+      "running_to_other_regressions": 0,
+      "stability": "stable",
+      "test_run_id": "web-test-beta.26-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1787525885325
+  },
+  {
+    "event_id": "web-test-stability-web-test-beta.26-local-1787525896514",
+    "event_type": "web_test_stability_snapshot",
+    "metadata": {
+      "operation_running_rate": 1.0,
+      "running_to_other_regressions": 0,
+      "stability": "stable",
+      "test_run_id": "web-test-beta.26-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1787525896514
+  },
+  {
+    "event_id": "web-test-operation-web-test-beta.26-local-1787525896610",
+    "event_type": "web_test_operation_snapshot",
+    "metadata": {
+      "consistency_status": "consistent",
+      "operational_state": "running",
+      "preflight_ready": true,
+      "run_started": true,
+      "test_run_id": "web-test-beta.26-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1787525896610
+  },
+  {
+    "event_id": "web-test-operation-web-test-beta.26-local-1787525905267",
+    "event_type": "web_test_operation_snapshot",
+    "metadata": {
+      "consistency_status": "consistent",
+      "operational_state": "running",
+      "preflight_ready": true,
+      "run_started": true,
+      "test_run_id": "web-test-beta.26-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1787525905267
+  },
+  {
+    "event_id": "web-test-stability-web-test-beta.26-local-1787525905297",
+    "event_type": "web_test_stability_snapshot",
+    "metadata": {
+      "operation_running_rate": 1.0,
+      "running_to_other_regressions": 0,
+      "stability": "stable",
+      "test_run_id": "web-test-beta.26-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1787525905297
+  },
+  {
+    "event_id": "web-test-launch-wt-b7536124-b4a8-4596-8712-749509f6c90a-1787525912001",
+    "event_type": "web_test_launch_attempted",
+    "metadata": {
+      "failed_checks": [],
+      "launch_ready": true,
+      "test_run_id": "web-test-beta.26-local"
+    },
+    "player_id": "wt-b7536124-b4a8-4596-8712-749509f6c90a",
+    "session_id": null,
+    "timestamp_ms": 1787525912001
+  },
+  {
+    "event_id": "web-test-stability-web-test-beta.26-local-1787525915216",
+    "event_type": "web_test_stability_snapshot",
+    "metadata": {
+      "operation_running_rate": 1.0,
+      "running_to_other_regressions": 0,
+      "stability": "stable",
+      "test_run_id": "web-test-beta.26-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1787525915216
+  },
+  {
+    "event_id": "web-test-operation-web-test-beta.26-local-1787525915356",
+    "event_type": "web_test_operation_snapshot",
+    "metadata": {
+      "consistency_status": "consistent",
+      "operational_state": "running",
+      "preflight_ready": true,
+      "run_started": true,
+      "test_run_id": "web-test-beta.26-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1787525915356
+  },
+  {
+    "event_id": "web-test-operation-web-test-beta.26-local-1787525926450",
+    "event_type": "web_test_operation_snapshot",
+    "metadata": {
+      "consistency_status": "consistent",
+      "operational_state": "running",
+      "preflight_ready": true,
+      "run_started": true,
+      "test_run_id": "web-test-beta.26-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1787525926450
   }
 ]

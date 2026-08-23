@@ -88,6 +88,14 @@ assert.strictEqual(
   global.GRIDSHARD_AUDIO_MIX.crossfadeMs,
   1200
 );
+assert.strictEqual(
+  global.GRIDSHARD_AUDIO_MIX.resultCrossfadeMs,
+  320
+);
+assert.deepStrictEqual(
+  global.GRIDSHARD_AUDIO_DIRECTION.victory.bpm,
+  [142,146]
+);
 assert.ok(
   global.GRIDSHARD_CRITICAL_LAYER
     .includes("critical_shard_v5.wav")

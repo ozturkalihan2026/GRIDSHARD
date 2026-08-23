@@ -439,6 +439,22 @@
       this.lastError = null;
     }
 
+    reset() {
+      this.sessionId = null;
+      this.phase = PVP_PHASE.IDLE;
+      this.connected = false;
+      this.requestSequence = 0;
+      this.commandSequence = 0;
+      this.eventCursor = 0;
+      this.snapshotRevision = 0;
+      this.lobby = null;
+      this.snapshot = null;
+      this.finalResult = null;
+      this.events = [];
+      this.lastError = null;
+      return this.phase;
+    }
+
     markConnected() {
       this.connected = true;
       if (this.phase === PVP_PHASE.RECONNECTING) {
@@ -1388,6 +1404,17 @@
       this.queue = null;
     }
 
+    reset() {
+      this.queued = false;
+      this.matched = false;
+      this.sessionId = null;
+      this.players = [];
+      this.ratingDifference = null;
+      this.opponentType = null;
+      this.queue = null;
+      return this.viewModel();
+    }
+
     viewModel() {
       return {
         queued: this.queued,
@@ -1990,6 +2017,20 @@
 
       return {
         ok: true,
+      };
+    }
+
+    reset() {
+      this._clearPoll();
+      this.pendingSetup = null;
+      this.lastError = null;
+      this.matchmakingState.reset();
+      this._setStatus(
+        ONLINE_PLAY_STATUS.IDLE
+      );
+      return {
+        ok: true,
+        status: this.status,
       };
     }
 
