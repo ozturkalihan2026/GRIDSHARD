@@ -1790,7 +1790,7 @@
 
       this.webSocketUrlFactory =
         webSocketUrlFactory
-        || ((sessionId) => {
+        || ((sessionId, websocketBaseUrl = null) => {
           if (
             typeof window
             === "undefined"
@@ -1801,17 +1801,23 @@
             );
           }
 
-          const apiBase = globalThis.GridshardAuth?.apiBaseUrl
-            ? new URL(globalThis.GridshardAuth.apiBaseUrl)
-            : window.location;
+          const apiBase = websocketBaseUrl
+            ? new URL(websocketBaseUrl, window.location.href)
+            : globalThis.GridshardAuth?.apiBaseUrl
+              ? new URL(globalThis.GridshardAuth.apiBaseUrl)
+              : window.location;
           const scheme =
-            apiBase.protocol
-            === "https:"
+            apiBase.protocol === "https:"
+            || apiBase.protocol === "wss:"
               ? "wss"
               : "ws";
 
+          const basePath = websocketBaseUrl
+            ? apiBase.pathname.replace(/\/$/, "")
+            : "";
+
           return (
-            `${scheme}://${apiBase.host}`
+            `${scheme}://${apiBase.host}${basePath}`
             + `/ws/pvp/${encodeURIComponent(sessionId)}`
             + `?player_id=${encodeURIComponent(this.playerId)}`
             + `&access_token=${encodeURIComponent(
@@ -2043,7 +2049,8 @@
 
       const wsUrl =
         this.webSocketUrlFactory(
-          sessionId
+          sessionId,
+          response.websocket_base_url || null
         );
 
       this._setStatus(

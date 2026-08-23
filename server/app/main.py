@@ -56,8 +56,11 @@ from .player_settings import (
     PlayerSettingsService,
 )
 from .matchmaking import (
+    MatchmakingEntry,
     MatchmakingError,
+    MatchmakingPair,
     MatchmakingService,
+    RedisMatchmakingService,
 )
 from .player_progression import (
     PlayerProgressionService,
@@ -204,7 +207,15 @@ async def _runtime_maintenance_loop() -> None:
         for session_id in expired_session_ids:
             await pvp_tick_runner.stop_session(session_id)
             await runtime_coordinator.delete_session(session_id)
-        matchmaking_service.cleanup_expired()
+        if runtime_coordinator.redis is None:
+            matchmaking_service.cleanup_expired()
+        else:
+            try:
+                await redis_matchmaking_service.cleanup_expired()
+            except Exception as exc:
+                runtime_coordinator.last_error = str(exc)
+                if RUNTIME_STRICT:
+                    raise
         for session_id in pvp_service.active_session_ids():
             await runtime_coordinator.touch_session(session_id, ttl_seconds=360)
         await runtime_coordinator.local_limiter.cleanup()
@@ -582,6 +593,20 @@ player_data_store_service = PlayerDataStoreService(
 )
 matchmaking_service = MatchmakingService(
     now_func=time.monotonic
+)
+MATCHMAKING_INSTANCE_ID = (
+    os.environ.get("GRIDSHARD_INSTANCE_ID", "").strip()
+    or f"gridshard-{uuid4().hex}"
+)
+MATCHMAKING_PUBLIC_WS_BASE_URL = os.environ.get(
+    "GRIDSHARD_PUBLIC_WS_BASE_URL",
+    "",
+).strip()
+redis_matchmaking_service = RedisMatchmakingService(
+    lambda: runtime_coordinator.redis,
+    namespace=runtime_coordinator.namespace,
+    instance_id=MATCHMAKING_INSTANCE_ID,
+    websocket_base_url=MATCHMAKING_PUBLIC_WS_BASE_URL,
 )
 MATCHMAKING_AI_FALLBACK_SECONDS = 10
 
@@ -2380,156 +2405,241 @@ def delete_player_data(
     }
 
 
-@app.post("/matchmaking/join")
-def matchmaking_join(
-    request: MatchmakingJoinRequest,
-) -> dict:
-    existing_match = (
-        matchmaking_service
-        .matched_pair_for(
-            request.player_id
+def _redis_matchmaking_enabled() -> bool:
+    return runtime_coordinator.redis is not None
+
+
+def _matchmaking_pair_response(pair: MatchmakingPair) -> dict:
+    return {
+        "matched": True,
+        "session_id": pair.match_id,
+        "players": [pair.player_a_id, pair.player_b_id],
+        "rating_difference": pair.rating_difference,
+        "opponent_type": pair.opponent_type,
+        "match_owner": pair.owner_instance_id or None,
+        "websocket_base_url": pair.websocket_base_url or None,
+    }
+
+
+async def _matchmaking_pair_for(player_id: str) -> MatchmakingPair | None:
+    if _redis_matchmaking_enabled():
+        return await redis_matchmaking_service.matched_pair_for(player_id)
+    return matchmaking_service.matched_pair_for(player_id)
+
+
+async def _matchmaking_enqueue(
+    player_id: str,
+    *,
+    rating: int,
+    league_name_tr: str,
+    level: int,
+) -> MatchmakingEntry | MatchmakingPair:
+    if _redis_matchmaking_enabled():
+        return await redis_matchmaking_service.enqueue(
+            player_id,
+            rating=rating,
+            league_name_tr=league_name_tr,
+            level=level,
         )
-    )
-    if existing_match is not None:
-        return {
-            "matched": True,
-            "session_id": (
-                existing_match.match_id
-            ),
-            "players": [
-                existing_match.player_a_id,
-                existing_match.player_b_id,
-            ],
-            "rating_difference": (
-                existing_match
-                .rating_difference
-            ),
-            "opponent_type": existing_match.opponent_type,
-        }
-
-    profile = (
-        player_profile_service
-        .get_or_create(
-            request.player_id
-        )
+    return matchmaking_service.enqueue(
+        player_id,
+        rating=rating,
+        league_name_tr=league_name_tr,
+        level=level,
     )
 
-    queue_entry = matchmaking_service.enqueue(
-        request.player_id,
-        rating=profile.rating,
-        league_name_tr=(
-            profile.league_name_tr
-        ),
-        level=profile.level,
-    )
 
-    telemetry_service.record_now(
-        event_id=(
-            f"server:matchmaking:"
-            f"{request.player_id}:"
-            f"{round(queue_entry.joined_at * 1000)}"
-        ),
-        event_type="matchmaking_started",
-        player_id=request.player_id,
-        metadata={
-            "rating": profile.rating,
-            "league_name_tr": profile.league_name_tr,
-            "level": profile.level,
-        },
-    )
+async def _matchmaking_try_match(player_id: str) -> MatchmakingPair | None:
+    if _redis_matchmaking_enabled():
+        return await redis_matchmaking_service.try_match(player_id)
+    return matchmaking_service.try_match(player_id)
 
-    match = matchmaking_service.try_match(
-        request.player_id
-    )
 
-    if match is None:
-        return {
-            "matched": False,
-            "queue": (
-                matchmaking_service
-                .queue_snapshot(
-                    request.player_id
-                )
-            ),
-        }
+async def _matchmaking_snapshot(player_id: str) -> dict:
+    if _redis_matchmaking_enabled():
+        return await redis_matchmaking_service.queue_snapshot(player_id)
+    return matchmaking_service.queue_snapshot(player_id)
+
+
+async def _matchmaking_match_with_ai(player_id: str) -> MatchmakingPair:
+    if _redis_matchmaking_enabled():
+        return await redis_matchmaking_service.match_with_ai(player_id)
+    return matchmaking_service.match_with_ai(player_id)
+
+
+async def _matchmaking_cancel_player(player_id: str) -> bool:
+    if _redis_matchmaking_enabled():
+        return await redis_matchmaking_service.cancel(player_id)
+    return matchmaking_service.cancel(player_id)
+
+
+def _ensure_human_match_session(pair: MatchmakingPair) -> None:
+    try:
+        pvp_service.get_session(pair.match_id)
+        return
+    except PvPSessionError:
+        pass
 
     session = pvp_service.create_session(
-        match.match_id,
+        pair.match_id,
         setup_required=True,
         auto_start_when_ready=True,
     )
-    pvp_service.join(
-        session.session_id,
-        match.player_a_id,
-    )
-    pvp_service.join(
-        session.session_id,
-        match.player_b_id,
-    )
+    pvp_service.join(session.session_id, pair.player_a_id)
+    pvp_service.join(session.session_id, pair.player_b_id)
 
-    for matched_player_id in (
-        match.player_a_id,
-        match.player_b_id,
+
+async def _provision_match_session(pair: MatchmakingPair) -> MatchmakingPair:
+    distributed = _redis_matchmaking_enabled()
+    if distributed and pair.ready:
+        return pair
+    if (
+        distributed
+        and pair.owner_instance_id != redis_matchmaking_service.instance_id
     ):
+        return pair
+
+    if pair.opponent_type == "ai":
+        _create_matchmaking_ai_session(pair)
+    else:
+        _ensure_human_match_session(pair)
+
+    if distributed:
+        pair = await redis_matchmaking_service.mark_ready(pair)
+        await runtime_coordinator.touch_session(
+            pair.match_id,
+            ttl_seconds=360,
+        )
+    return pair
+
+
+def _record_human_matchmaking_telemetry(pair: MatchmakingPair) -> None:
+    for matched_player_id in (pair.player_a_id, pair.player_b_id):
         telemetry_service.record_now(
             event_id=(
-                f"server:{session.session_id}:"
-                f"matchmaking_matched:"
-                f"{matched_player_id}"
+                f"server:{pair.match_id}:"
+                f"matchmaking_matched:{matched_player_id}"
             ),
             event_type="matchmaking_matched",
             player_id=matched_player_id,
-            session_id=session.session_id,
+            session_id=pair.match_id,
             metadata={
-                "rating_difference": match.rating_difference,
+                "rating_difference": pair.rating_difference,
+                "match_owner": pair.owner_instance_id or None,
             },
         )
 
-    return {
-        "matched": True,
-        "session_id": session.session_id,
-        "players": [
-            match.player_a_id,
-            match.player_b_id,
-        ],
-        "rating_difference": (
-            match.rating_difference
-        ),
-        "opponent_type": match.opponent_type,
-    }
+
+def _raise_matchmaking_backend_error(exc: Exception) -> None:
+    runtime_coordinator.last_error = str(exc)
+    raise HTTPException(
+        status_code=503,
+        detail="Dağıtık eşleştirme hizmetine şu anda ulaşılamıyor.",
+    ) from exc
+
+
+@app.post("/matchmaking/join")
+async def matchmaking_join(request: MatchmakingJoinRequest) -> dict:
+    try:
+        existing_match = await _matchmaking_pair_for(request.player_id)
+        if existing_match is not None:
+            existing_match = await _provision_match_session(existing_match)
+            if existing_match.ready:
+                return _matchmaking_pair_response(existing_match)
+            return {
+                "matched": False,
+                "queue": await _matchmaking_snapshot(request.player_id),
+            }
+
+        profile = player_profile_service.get_or_create(request.player_id)
+        queue_entry = await _matchmaking_enqueue(
+            request.player_id,
+            rating=profile.rating,
+            league_name_tr=profile.league_name_tr,
+            level=profile.level,
+        )
+        if isinstance(queue_entry, MatchmakingPair):
+            queue_entry = await _provision_match_session(queue_entry)
+            if queue_entry.ready:
+                return _matchmaking_pair_response(queue_entry)
+            return {
+                "matched": False,
+                "queue": await _matchmaking_snapshot(request.player_id),
+            }
+
+        telemetry_service.record_now(
+            event_id=(
+                f"server:matchmaking:{request.player_id}:"
+                f"{round(queue_entry.joined_at * 1000)}"
+            ),
+            event_type="matchmaking_started",
+            player_id=request.player_id,
+            metadata={
+                "rating": profile.rating,
+                "league_name_tr": profile.league_name_tr,
+                "level": profile.level,
+            },
+        )
+
+        match = await _matchmaking_try_match(request.player_id)
+        if match is None:
+            return {
+                "matched": False,
+                "queue": await _matchmaking_snapshot(request.player_id),
+            }
+
+        match = await _provision_match_session(match)
+        if not match.ready:
+            return {
+                "matched": False,
+                "queue": await _matchmaking_snapshot(request.player_id),
+            }
+        if match.opponent_type == "human":
+            _record_human_matchmaking_telemetry(match)
+        return _matchmaking_pair_response(match)
+    except (MatchmakingError, PvPSessionError, ValueError) as exc:
+        raise HTTPException(status_code=409, detail=str(exc)) from exc
+    except HTTPException:
+        raise
+    except Exception as exc:
+        if _redis_matchmaking_enabled():
+            _raise_matchmaking_backend_error(exc)
+        raise
 
 
 @app.delete("/matchmaking/{player_id}")
-def matchmaking_cancel(
-    player_id: str,
-) -> dict:
-    return {
-        "player_id": player_id,
-        "cancelled": (
-            matchmaking_service.cancel(
-                player_id
-            )
-        ),
-    }
+async def matchmaking_cancel(player_id: str) -> dict:
+    try:
+        cancelled = await _matchmaking_cancel_player(player_id)
+    except Exception as exc:
+        if _redis_matchmaking_enabled():
+            _raise_matchmaking_backend_error(exc)
+        raise
+    return {"player_id": player_id, "cancelled": cancelled}
 
 
 @app.get("/matchmaking/{player_id}")
-def matchmaking_status(
-    player_id: str,
-) -> dict:
-    snapshot = matchmaking_service.queue_snapshot(player_id)
-    if (
-        snapshot.get("queued")
-        and int(snapshot.get("waited_seconds", 0))
-        >= MATCHMAKING_AI_FALLBACK_SECONDS
-    ):
-        try:
-            pair = matchmaking_service.match_with_ai(player_id)
-            _create_matchmaking_ai_session(pair)
-            snapshot = matchmaking_service.queue_snapshot(player_id)
-        except (MatchmakingError, PvPSessionError, ValueError) as exc:
-            raise HTTPException(status_code=409, detail=str(exc)) from exc
-    return snapshot
+async def matchmaking_status(player_id: str) -> dict:
+    try:
+        snapshot = await _matchmaking_snapshot(player_id)
+        if (
+            snapshot.get("queued")
+            and not snapshot.get("provisioning")
+            and int(snapshot.get("waited_seconds", 0))
+            >= MATCHMAKING_AI_FALLBACK_SECONDS
+        ):
+            pair = await _matchmaking_match_with_ai(player_id)
+            pair = await _provision_match_session(pair)
+            snapshot = await _matchmaking_snapshot(player_id)
+        return snapshot
+    except (MatchmakingError, PvPSessionError, ValueError) as exc:
+        raise HTTPException(status_code=409, detail=str(exc)) from exc
+    except HTTPException:
+        raise
+    except Exception as exc:
+        if _redis_matchmaking_enabled():
+            _raise_matchmaking_backend_error(exc)
+        raise
 
 
 @app.get("/settings/{player_id}")
@@ -2980,6 +3090,17 @@ async def health() -> dict:
         "runtime": {
             "mode": RUNTIME_MODE,
             "redis": runtime_health,
+            "matchmaking": {
+                "backend": (
+                    "redis"
+                    if runtime_coordinator.redis is not None
+                    else "memory"
+                ),
+                "instance_id": MATCHMAKING_INSTANCE_ID,
+                "websocket_routing_configured": bool(
+                    MATCHMAKING_PUBLIC_WS_BASE_URL
+                ),
+            },
             "database_backend": (
                 "postgresql" if postgres_pool is not None else "json"
             ),

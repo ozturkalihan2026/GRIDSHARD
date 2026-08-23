@@ -1742,10 +1742,12 @@ function createClient() {
           session_id:"mm-1",
           players:["a","b"],
           rating_difference:15,
+          websocket_base_url:
+            "wss://node-b.example.test",
         }),
       webSocketUrlFactory:
-        (sessionId) =>
-          `ws://test/${sessionId}`,
+        (sessionId, websocketBaseUrl) =>
+          `${websocketBaseUrl}/${sessionId}`,
       setTimer() {
         return 1;
       },
@@ -1807,7 +1809,7 @@ function createClient() {
     );
     assert.strictEqual(
       sent[2].url,
-      "ws://test/mm-1"
+      "wss://node-b.example.test/mm-1"
     );
   }));
 }
