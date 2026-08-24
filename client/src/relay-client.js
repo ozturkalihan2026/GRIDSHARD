@@ -10,11 +10,11 @@
 
   function maxActiveModulesForElapsedMs(elapsedMs) {
     if (elapsedMs < 15000) return null;
-    if (elapsedMs < 25000) return 5;
-    if (elapsedMs < 35000) return 6;
-    if (elapsedMs < 45000) return 7;
-    if (elapsedMs < 55000) return 8;
-    if (elapsedMs < 65000) return 9;
+    if (elapsedMs < 30000) return 5;
+    if (elapsedMs < 45000) return 6;
+    if (elapsedMs < 60000) return 7;
+    if (elapsedMs < 75000) return 8;
+    if (elapsedMs < 90000) return 9;
     return 10;
   }
 
@@ -692,7 +692,10 @@
                 ? null
                 : { x: serverModule.x, y: serverModule.y },
             direction: serverModule.direction,
+            portCount: serverModule.port_count,
+            ports: serverModule.ports,
             isPowered: serverModule.is_powered,
+            powerReason: serverModule.power_reason,
             energyReceived:
               serverModule.energy_received,
             energyRequired:

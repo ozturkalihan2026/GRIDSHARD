@@ -118,18 +118,16 @@ function createClient() {
 {
   assert.strictEqual(maxActiveModulesForElapsedMs(14999), null);
   assert.strictEqual(maxActiveModulesForElapsedMs(15000), 5);
-  assert.strictEqual(maxActiveModulesForElapsedMs(25000), 6);
-  assert.strictEqual(maxActiveModulesForElapsedMs(35000), 7);
-  assert.strictEqual(maxActiveModulesForElapsedMs(45000), 8);
-  assert.strictEqual(maxActiveModulesForElapsedMs(55000), 9);
-  assert.strictEqual(maxActiveModulesForElapsedMs(65000), 10);
-  assert.strictEqual(maxActiveModulesForElapsedMs(75000), 10);
-  assert.strictEqual(maxActiveModulesForElapsedMs(85000), 10);
+  assert.strictEqual(maxActiveModulesForElapsedMs(30000), 6);
+  assert.strictEqual(maxActiveModulesForElapsedMs(45000), 7);
+  assert.strictEqual(maxActiveModulesForElapsedMs(60000), 8);
+  assert.strictEqual(maxActiveModulesForElapsedMs(75000), 9);
+  assert.strictEqual(maxActiveModulesForElapsedMs(90000), 10);
 }
 
 {
   const { client } = createClient();
-  client.updateElapsedMs(25000);
+  client.updateElapsedMs(30000);
   assert.strictEqual(client.maxActiveModules(), 6);
   assert.strictEqual(client.activeModuleCount(), 1);
 }
@@ -160,7 +158,7 @@ function createClient() {
   assert.strictEqual(blockedPending.ok, false);
   assert.ok(blockedPending.reason.includes("5/5"));
 
-  battle.updateElapsedMs(25000);
+  battle.updateElapsedMs(30000);
   assert.strictEqual(battle.beginDrag("battery-1").ok, true);
   assert.strictEqual(battle.dropOnCell(3, 2).ok, true);
   assert.strictEqual(emitted.length, 2);
@@ -288,8 +286,8 @@ function createClient() {
 {
   const fs=require("fs");
   const src=fs.readFileSync(path.join(ROOT,"src/app.js"),"utf8");
-  assert.ok(src.includes("BOOSTER_FIRST_OFFER_MS = 75000"));
-  assert.ok(src.includes("BOOSTER_OFFER_INTERVAL_MS = 10000"));
+  assert.ok(src.includes("BOOSTER_FIRST_OFFER_MS = 105000"));
+  assert.ok(src.includes("BOOSTER_OFFER_INTERVAL_MS = 30000"));
   assert.ok(src.includes("3 seçenekten 1'ini seç"));
   assert.ok(src.includes("nextBoosterOfferIndex += 1"));
 }
@@ -462,61 +460,61 @@ function createClient() {
   const fs=require("fs");
   const src=fs.readFileSync(path.join(ROOT,"src/app.js"),"utf8");
   assert.ok(src.includes("PVP_STATUS"));
-  assert.ok(src.includes("GRIDSHARD Beta.27 · Tek Eşleştirme + AI Devralma + Aktif Devre UX"));
+  assert.ok(src.includes("GRIDSHARD Beta.28 · Tek Eşleştirme + AI Devralma + Aktif Devre UX"));
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync(path.join(ROOT,"src/app.js"),"utf8");
-  assert.ok(src.includes("GRIDSHARD Beta.27 · Tek Eşleştirme + AI Devralma + Aktif Devre UX")); // alpha32->33 protocol status
+  assert.ok(src.includes("GRIDSHARD Beta.28 · Tek Eşleştirme + AI Devralma + Aktif Devre UX")); // alpha32->33 protocol status
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync(path.join(ROOT,"src/app.js"),"utf8");
-  assert.ok(src.includes("GRIDSHARD Beta.27 · Tek Eşleştirme + AI Devralma + Aktif Devre UX")); // alpha33 protocol
+  assert.ok(src.includes("GRIDSHARD Beta.28 · Tek Eşleştirme + AI Devralma + Aktif Devre UX")); // alpha33 protocol
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync(path.join(ROOT,"src/app.js"),"utf8");
-  assert.ok(src.includes("GRIDSHARD Beta.27 · Tek Eşleştirme + AI Devralma + Aktif Devre UX")); // alpha34 websocket
+  assert.ok(src.includes("GRIDSHARD Beta.28 · Tek Eşleştirme + AI Devralma + Aktif Devre UX")); // alpha34 websocket
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync(path.join(ROOT,"src/app.js"),"utf8");
-  assert.ok(src.includes("GRIDSHARD Beta.27 · Tek Eşleştirme + AI Devralma + Aktif Devre UX")); // alpha35 gateway
+  assert.ok(src.includes("GRIDSHARD Beta.28 · Tek Eşleştirme + AI Devralma + Aktif Devre UX")); // alpha35 gateway
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync(path.join(ROOT,"src/app.js"),"utf8");
-  assert.ok(src.includes("GRIDSHARD Beta.27 · Tek Eşleştirme + AI Devralma + Aktif Devre UX")); // alpha36 setup
+  assert.ok(src.includes("GRIDSHARD Beta.28 · Tek Eşleştirme + AI Devralma + Aktif Devre UX")); // alpha36 setup
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync(path.join(ROOT,"src/app.js"),"utf8");
-  assert.ok(src.includes("GRIDSHARD Beta.27 · Tek Eşleştirme + AI Devralma + Aktif Devre UX")); // alpha37 lobby
+  assert.ok(src.includes("GRIDSHARD Beta.28 · Tek Eşleştirme + AI Devralma + Aktif Devre UX")); // alpha37 lobby
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync(path.join(ROOT,"src/app.js"),"utf8");
-  assert.ok(src.includes("GRIDSHARD Beta.27 · Tek Eşleştirme + AI Devralma + Aktif Devre UX")); // alpha38 runner
+  assert.ok(src.includes("GRIDSHARD Beta.28 · Tek Eşleştirme + AI Devralma + Aktif Devre UX")); // alpha38 runner
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync(path.join(ROOT,"src/app.js"),"utf8");
-  assert.ok(src.includes("GRIDSHARD Beta.27 · Tek Eşleştirme + AI Devralma + Aktif Devre UX")); // alpha39 heartbeat
+  assert.ok(src.includes("GRIDSHARD Beta.28 · Tek Eşleştirme + AI Devralma + Aktif Devre UX")); // alpha39 heartbeat
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync(path.join(ROOT,"src/app.js"),"utf8");
-  assert.ok(src.includes("GRIDSHARD Beta.27 · Tek Eşleştirme + AI Devralma + Aktif Devre UX")); // alpha40 online pvp
+  assert.ok(src.includes("GRIDSHARD Beta.28 · Tek Eşleştirme + AI Devralma + Aktif Devre UX")); // alpha40 online pvp
 }
 
 {
@@ -747,7 +745,7 @@ function createClient() {
 {
   const fs=require("fs");
   const src=fs.readFileSync(path.join(ROOT,"src/app.js"),"utf8");
-  assert.ok(src.includes("GRIDSHARD Beta.27 · Tek Eşleştirme + AI Devralma + Aktif Devre UX"));
+  assert.ok(src.includes("GRIDSHARD Beta.28 · Tek Eşleştirme + AI Devralma + Aktif Devre UX"));
   assert.ok(src.includes("buildPvPCommandEnvelope"));
   assert.ok(src.includes("applyPvPServerEnvelope"));
 }
@@ -2444,7 +2442,7 @@ function createClient() {
   const html=fs.readFileSync(path.join(ROOT,"index.html"),"utf8");
   assert.ok(
     html.includes(
-      "2.0.0-beta.27"
+      "2.0.0-beta.28"
     )
   );
   assert.ok(
@@ -4831,7 +4829,7 @@ function createClient() {
   assert.ok(app.includes("gridshardE2eTimeScale"));
   assert.ok(app.includes("loadUiBuildManifest"));
   assert.ok(app.includes("setBattlePressure"));
-  assert.ok(audio.includes('version:"shardglass-mix-v5"'));
+  assert.ok(audio.includes('version:"shardglass-ensemble-v6"'));
   assert.ok(audio.includes("criticalLayerMaxGain"));
 }
 

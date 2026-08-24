@@ -1,0 +1,20 @@
+{
+  "version": "2.0.0-beta.28",
+  "ok": true,
+  "checks": {
+    "version_integrity": true,
+    "beta26_and_beta27_foundation_preserved": true,
+    "ghost_bridge_and_move_guard": true,
+    "server_power_truth_and_effective_ports": true,
+    "stable_energy_ui_and_tooltip": true,
+    "lower_pressure_pacing": true,
+    "ensemble_menu_music": true,
+    "english_menu_localization": true
+  },
+  "package_scope": "Enerji Motoru Doğruluğu · Sade Güç Durumu · 15 sn Karar Ritmi · 30 sn Güçlendirici Ritmi · Ensemble Menü Müziği · İngilizce Menü",
+  "external_evidence_not_claimed": [
+    "fiziksel Android/iPhone",
+    "gerçek kullanıcı telemetrisi",
+    "20 aktif modüllü uzun süreli gerçek PvP soak testi"
+  ]
+}

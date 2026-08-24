@@ -26,7 +26,7 @@
   });
 
   const GRIDSHARD_AUDIO_MIX = Object.freeze({
-    version:"shardglass-mix-v5",
+    version:"shardglass-ensemble-v6",
     crossfadeMs:1200,
     resultCrossfadeMs:320,
     musicBaseGain:0.72,
@@ -38,8 +38,8 @@
   });
 
   const GRIDSHARD_MUSIC_ASSETS = Object.freeze({
-    menu:"./assets/audio/menu_shardglass_v5.wav",
-    pool:"./assets/audio/pool_flux_v5.wav",
+    menu:"./assets/audio/menu_ensemble_v6.wav",
+    pool:"./assets/audio/pool_ensemble_v6.wav",
     matchmaking:"./assets/audio/matchmaking_rise.wav",
     battle_intro:"./assets/audio/battle_fracture_v5.wav",
     battle:"./assets/audio/battle_fracture_v5.wav",

@@ -33,7 +33,7 @@ assert.strictEqual(
 
 assert.ok(
   global.GRIDSHARD_MUSIC_ASSETS.menu
-    .includes("menu_shardglass_v5.wav")
+    .includes("menu_ensemble_v6.wav")
 );
 assert.ok(
   global.GRIDSHARD_SFX_CUES.core_hit
@@ -99,7 +99,7 @@ assert.strictEqual(
 
 assert.strictEqual(
   global.GRIDSHARD_AUDIO_MIX.version,
-  "shardglass-mix-v5"
+  "shardglass-ensemble-v6"
 );
 assert.strictEqual(
   global.GRIDSHARD_AUDIO_MIX.crossfadeMs,

@@ -91,7 +91,7 @@
   const COMPETITIVE_STATUS = "M7 rekabetçi altyapı doğrulanıyor";
   const BALANCE_STATUS = "Denge simülasyonu mevcut · geniş örnek bekliyor";
   const AI_STATUS = "AI altyapısı mevcut · arketip testleri bekliyor";
-  const PVP_STATUS = "GRIDSHARD Beta.27 · Tek Eşleştirme + AI Devralma + Aktif Devre UX";
+  const PVP_STATUS = "GRIDSHARD Beta.28 · Tek Eşleştirme + AI Devralma + Aktif Devre UX";
 
 
 
@@ -115,8 +115,8 @@
     down:"left",
     left:"up",
   };
-  const BOOSTER_FIRST_OFFER_MS = 75000;
-  const BOOSTER_OFFER_INTERVAL_MS = 10000;
+  const BOOSTER_FIRST_OFFER_MS = 105000;
+  const BOOSTER_OFFER_INTERVAL_MS = 30000;
   let nextBoosterOfferIndex = 0;
   let boosterOfferOpen = false;
 
@@ -598,7 +598,7 @@
         webTestBuildState,
       releaseCheckState,
       expectedVersion:
-        "2.0.0-beta.27",
+        "2.0.0-beta.28",
       expectedProtocolVersion: 1,
     });
   const playReadinessGate =
@@ -634,7 +634,7 @@
 
   telemetryDispatcher.trackGameOpened({
     platform: "web",
-    build: "2.0.0-beta.27",
+    build: "2.0.0-beta.28",
   });
 
   const postMatchSync =
@@ -1562,7 +1562,7 @@
   const diagnosticSnapshot =
     new RelayDiagnosticSnapshot({
       version:
-        "2.0.0-beta.27",
+        "2.0.0-beta.28",
       build:
         "web-test-beta.13",
       bootGate:
@@ -3500,7 +3500,7 @@
       if (versionEl) {
         versionEl.textContent=
           manifest.version
-          || "2.0.0-beta.27";
+          || "2.0.0-beta.28";
       }
       if (runEl) {
         runEl.textContent=
@@ -5659,6 +5659,14 @@ function saveHumanReviewLocalNote() {
       energyRequired:Number(
         enemyGenerator?.energy_required || 0
       ),
+      powerReason:
+        enemyGenerator?.power_reason,
+      portCount:Number(
+        enemyGenerator?.port_count || 4
+      ),
+      ports:Array.isArray(enemyGenerator?.ports)
+        ? enemyGenerator.ports
+        : undefined,
     };
     if (
       Number.isFinite(
@@ -5715,6 +5723,14 @@ function saveHumanReviewLocalNote() {
           energyRequired:Number(
             module.energy_required || 0
           ),
+          powerReason:
+            module.power_reason,
+          portCount:Number(
+            module.port_count || 1
+          ),
+          ports:Array.isArray(module.ports)
+            ? module.ports
+            : undefined,
         })
       );
     mockEnemyModuleHp=
@@ -5869,9 +5885,17 @@ function saveHumanReviewLocalNote() {
         direction:
           serverModule.direction
           || "up",
+        portCount:Number(
+          serverModule.port_count || 1
+        ),
+        ports:Array.isArray(serverModule.ports)
+          ? serverModule.ports
+          : undefined,
         isPowered:Boolean(
           serverModule.is_powered
         ),
+        powerReason:
+          serverModule.power_reason,
         energyReceived:Number(
           serverModule.energy_received || 0
         ),
@@ -6359,7 +6383,7 @@ function saveHumanReviewLocalNote() {
     );
 
     logClientMessage(
-      "Beta.27 geliştirici testi: 18 modüllük havuz hazırlandı, sunucu AI oyuncusu eşleşti ve canlı enerji/silah okunabilirliğiyle çift devre savaş alanı açıldı."
+      "Beta.28 geliştirici testi: 18 modüllük havuz hazırlandı, sunucu AI oyuncusu eşleşti ve canlı enerji/silah okunabilirliğiyle çift devre savaş alanı açıldı."
     );
 
     return {
@@ -8430,8 +8454,21 @@ function saveHumanReviewLocalNote() {
       destek:"Destek",
       sabotaj:"Sabotaj",
     };
-    return labels[category]
+    const value=labels[category]
       || category;
+    return globalThis.GridshardI18n
+      ?.translateText(
+        value,
+        document.documentElement.lang
+      ) || value;
+  }
+
+  function localizedUiText(value) {
+    return globalThis.GridshardI18n
+      ?.translateText(
+        String(value ?? ""),
+        document.documentElement.lang
+      ) || String(value ?? "");
   }
 
   function definitionIdFromInstanceId(
@@ -8589,7 +8626,7 @@ function saveHumanReviewLocalNote() {
         );
 
     poolDetailNameEl.textContent =
-      module.nameTr;
+      localizedUiText(module.nameTr);
     poolDetailCategoryEl.textContent =
       poolCategoryLabel(
         module.category
@@ -8644,13 +8681,17 @@ function saveHumanReviewLocalNote() {
     );
 
     poolDetailRoleEl.textContent =
-      catalog?.strategic_role
-      || module.strategicRole;
+      localizedUiText(
+        catalog?.strategic_role
+        || module.strategicRole
+      );
 
     poolDetailDescriptionEl.textContent =
-      catalog?.description_tr
-      || fallbackPoolModuleDescription(
-        module
+      localizedUiText(
+        catalog?.description_tr
+        || fallbackPoolModuleDescription(
+          module
+        )
       );
 
     if (poolDetailEffectsEl) {
@@ -8669,7 +8710,7 @@ function saveHumanReviewLocalNote() {
             "li"
           );
         li.textContent =
-          line;
+          localizedUiText(line);
         poolDetailEffectsEl.appendChild(
           li
         );
@@ -8679,20 +8720,20 @@ function saveHumanReviewLocalNote() {
     setTextOrDash(
       poolDetailStrongEl,
       catalog?.strong_against?.length
-        ? catalog.strong_against.join(", ")
-        : "Belirgin karşı üstünlük yok"
+        ? catalog.strong_against.map(localizedUiText).join(", ")
+        : localizedUiText("Belirgin karşı üstünlük yok")
     );
     setTextOrDash(
       poolDetailWeakEl,
       catalog?.weak_against?.length
-        ? catalog.weak_against.join(", ")
-        : "Belirgin zayıflık yok"
+        ? catalog.weak_against.map(localizedUiText).join(", ")
+        : localizedUiText("Belirgin zayıflık yok")
     );
     setTextOrDash(
       poolDetailSynergyEl,
       catalog?.synergy_with?.length
-        ? catalog.synergy_with.join(", ")
-        : "Tanımlı özel sinerji yok"
+        ? catalog.synergy_with.map(localizedUiText).join(", ")
+        : localizedUiText("Tanımlı özel sinerji yok")
     );
 
   }
@@ -8805,7 +8846,7 @@ function saveHumanReviewLocalNote() {
     for (let slotIndex = 0; slotIndex < 2; slotIndex += 1) {
       const label = document.createElement("label");
       label.className = "initial-module-slot";
-      label.textContent = `Seçim ${slotIndex + 1}`;
+      label.textContent = localizedUiText(`Seçim ${slotIndex + 1}`);
       const select = document.createElement("select");
       select.className = "initial-module-choice";
       select.dataset.slot = String(slotIndex);
@@ -8816,7 +8857,7 @@ function saveHumanReviewLocalNote() {
         if (!module) continue;
         const option = document.createElement("option");
         option.value = instanceId;
-        option.textContent = module.nameTr;
+        option.textContent = localizedUiText(module.nameTr);
         option.selected = initialBattleModuleIds[slotIndex] === instanceId;
         option.disabled = initialBattleModuleIds.some(
           (selectedId, index) => index !== slotIndex && selectedId === instanceId
@@ -8834,9 +8875,11 @@ function saveHumanReviewLocalNote() {
     }
 
     if (status) {
-      status.textContent = initialBattleModuleIds.length === 2
-        ? "2 / 2 oyuncu modülü seçili · değişiklikler sınırsız"
-        : `${initialBattleModuleIds.length} / 2 · önce Savaş Havuzunu tamamla`;
+      status.textContent = localizedUiText(
+        initialBattleModuleIds.length === 2
+          ? "2 / 2 oyuncu modülü seçili · değişiklikler sınırsız"
+          : `${initialBattleModuleIds.length} / 2 · önce Savaş Havuzunu tamamla`
+      );
       status.dataset.ready = String(initialBattleModuleIds.length === 2);
     }
   }
@@ -8916,7 +8959,7 @@ function saveHumanReviewLocalNote() {
         label.className=
           "pool-choice-name";
         label.textContent=
-          `${module.nameTr}`;
+          localizedUiText(module.nameTr);
 
         const selectMark=
           document.createElement(
@@ -8939,14 +8982,15 @@ function saveHumanReviewLocalNote() {
                   ? "✓"
                   : "+"
               );
-        selectMark.title=
+        selectMark.title=localizedUiText(
           required
             ? "Zorunlu modül · çıkarılamaz"
             : (
                 selected
                   ? "Savaş Havuzuna eklendi"
                   : "Havuza ekle"
-              );
+              )
+        );
         selectMark.dataset.action=
           required
             ? "required"
@@ -9006,8 +9050,9 @@ function saveHumanReviewLocalNote() {
           button.classList.add(
             "required"
           );
-          button.title =
-            "Başlangıç devresi için zorunlu";
+          button.title = localizedUiText(
+            "Başlangıç devresi için zorunlu"
+          );
         }
 
         button.addEventListener(
@@ -9134,7 +9179,7 @@ function saveHumanReviewLocalNote() {
             "span"
           );
         chipName.textContent=
-          module.nameTr;
+          localizedUiText(module.nameTr);
         const required=
           battlePoolSelection
             .requiredModuleIds
@@ -9151,10 +9196,11 @@ function saveHumanReviewLocalNote() {
           required
             ? "◆"
             : "−";
-        removeMark.title=
+        removeMark.title=localizedUiText(
           required
             ? "Zorunlu modül · çıkarılamaz"
-            : "Havuzdan çıkar";
+            : "Havuzdan çıkar"
+        );
         removeMark.dataset.action=
           required
             ? "required"
@@ -9449,6 +9495,7 @@ function saveHumanReviewLocalNote() {
       energyReceived=0,
       energyRequired=0,
       isSource=false,
+      powerReason=null,
     }={}
   ) {
     const received=Math.max(
@@ -9476,27 +9523,39 @@ function saveHumanReviewLocalNote() {
               : "passive"
           );
     if (!flowing) {
+      if (required <= 0) return false;
+      const english=
+        document.documentElement.lang === "en";
+      const reasons={
+        emp_disabled:english
+          ? "An EMP effect disabled this module's energy system."
+          : "EMP etkisi bu modülün enerji sistemini devre dışı bıraktı.",
+        line_disrupted:english
+          ? "A disruptor effect temporarily broke this module's energy line."
+          : "Kesici etkisi bu modülün enerji hattını geçici olarak kopardı.",
+        port_disconnected:english
+          ? "There is no reciprocal port chain from this module to the Generator."
+          : "Bu modülden Jeneratöre uzanan karşılıklı bir port zinciri yok.",
+        insufficient_supply:english
+          ? `The port chain is valid, but supply is insufficient. Required ${required.toFixed(1)} U, received ${received.toFixed(1)} U.`
+          : `Port zinciri geçerli ancak üretim yetersiz. İhtiyaç ${required.toFixed(1)} Ü, gelen ${received.toFixed(1)} Ü.`,
+      };
+      const message=reasons[powerReason]
+        || (english
+          ? "This module is not receiving usable energy. Check reciprocal ports and total generation."
+          : "Bu modül kullanılabilir enerji almıyor. Karşılıklı portları ve toplam üretimi kontrol edin.");
+      card.classList.add("energy-disconnected");
+      const tooltip=document.createElement("span");
+      tooltip.className="power-state-tooltip";
+      tooltip.textContent=message;
+      tooltip.setAttribute("role","tooltip");
+      card.appendChild(tooltip);
+      card.title=`${card.title ? `${card.title} · ` : ""}${message}`;
+      card.setAttribute("aria-label",message);
       return false;
     }
 
-    card.classList.add(
-      "energy-flowing"
-    );
-    const indicator=
-      document.createElement("span");
-    indicator.className=
-      "energy-flow-indicator";
-    indicator.setAttribute(
-      "aria-hidden",
-      "true"
-    );
-    for (let index=0;index<3;index+=1) {
-      const current=
-        document.createElement("i");
-      current.dataset.energyStep=
-        String(index);
-      indicator.appendChild(current);
-    }
+    card.classList.add("energy-flowing");
     const badge=
       document.createElement("span");
     badge.className="energy-flow-badge";
@@ -9508,7 +9567,7 @@ function saveHumanReviewLocalNote() {
     badge.textContent=isSource
       ? `KAYNAK ${energyValue} Ü`
       : `AKIŞ ${energyValue} Ü`;
-    card.append(indicator,badge);
+    card.appendChild(badge);
     return true;
   }
 
@@ -9734,6 +9793,9 @@ function saveHumanReviewLocalNote() {
           value;
       }
     }
+
+    globalThis.GridshardI18n
+      ?.apply(normalized);
   }
 
   function renderSettingsPersistenceStatus(
@@ -10564,6 +10626,8 @@ function saveHumanReviewLocalNote() {
             Number(module.energyRequired || 0),
           isSource:
             module.nameTr === "Jeneratör",
+          powerReason:
+            module.powerReason,
         }
       );
     }
@@ -10923,6 +10987,12 @@ function saveHumanReviewLocalNote() {
   }
 
   function modulePorts(module) {
+    if (
+      Array.isArray(module.ports)
+      && module.ports.length > 0
+    ) {
+      return [...module.ports];
+    }
     if (module.nameTr === "Çekirdek") {
       return ["up","right","down","left"];
     }

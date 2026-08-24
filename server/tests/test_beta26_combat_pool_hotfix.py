@@ -54,7 +54,7 @@ def test_beta26_port_guard_is_preserved_in_full_project():
         encoding="utf-8"
     )
 
-    assert "GRIDSHARD_EXPECTED_VERSION=2.0.0-beta.27" in launcher
+    assert "GRIDSHARD_EXPECTED_VERSION=2.0.0-beta.28" in launcher
     assert "for($p=8000;$p -le 8010;$p++)" in launcher
     assert "$r.version -eq '%GRIDSHARD_EXPECTED_VERSION%'" in launcher
     assert "Tarayici acilmadi" in launcher

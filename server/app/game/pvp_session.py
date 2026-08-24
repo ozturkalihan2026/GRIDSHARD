@@ -10,6 +10,7 @@ from .pvp_setup import (
     PvPSetupValidationError,
     validate_setup_payload,
 )
+from .topology import effective_port_count, module_port_directions
 
 
 MAX_PVP_PLAYERS = 2
@@ -473,8 +474,37 @@ class PvPSessionService:
         players = {}
         for player_id in sorted(state.players):
             player = state.players[player_id]
-            public_modules = [
-                {
+            topology = session.engine.energy_topology_for_player(player_id)
+            reachable_ids = set(topology.reachable_from_generator)
+            public_modules = []
+            for module in sorted(
+                player.modules.values(),
+                key=lambda current: current.instance_id,
+            ):
+                if (
+                    player_id != viewer_player_id
+                    and module.status == ModuleStatus.RESERVE
+                ):
+                    continue
+
+                required = module.energy_required_last_tick
+                received = module.energy_received_last_tick
+                if module.definition.energy_generation > 0:
+                    power_reason = "source"
+                elif module.definition.energy_consumption <= 0:
+                    power_reason = "passive"
+                elif "emp_disabled" in module.debuffs:
+                    power_reason = "emp_disabled"
+                elif "line_disrupted" in module.debuffs:
+                    power_reason = "line_disrupted"
+                elif module.instance_id not in reachable_ids:
+                    power_reason = "port_disconnected"
+                elif module.is_powered:
+                    power_reason = "powered"
+                else:
+                    power_reason = "insufficient_supply"
+
+                public_modules.append({
                     "instance_id": module.instance_id,
                     "definition_id": module.definition.id,
                     "name_tr": module.definition.name_tr,
@@ -493,21 +523,21 @@ class PvPSessionService:
                         else None
                     ),
                     "direction": module.direction.value,
-                    "port_count": module.definition.port_count,
+                    "port_count": effective_port_count(module),
+                    "ports": [
+                        direction.value
+                        for direction in module_port_directions(
+                            module,
+                            session.engine.board.core_position,
+                        )
+                    ],
                     "is_powered": module.is_powered,
-                    "energy_received": module.energy_received_last_tick,
-                    "energy_required": module.energy_required_last_tick,
+                    "power_reason": power_reason,
+                    "energy_received": received,
+                    "energy_required": required,
+                    "energy_shortfall": max(0.0, required - received),
                     "heat": module.heat,
-                }
-                for module in sorted(
-                    player.modules.values(),
-                    key=lambda current: current.instance_id,
-                )
-                if (
-                    player_id == viewer_player_id
-                    or module.status != ModuleStatus.RESERVE
-                )
-            ]
+                })
 
             player_data = {
                 "player_id": player_id,

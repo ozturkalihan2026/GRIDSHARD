@@ -9,7 +9,7 @@ from pathlib import Path
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "2.0.0-beta.27"
+VERSION = "2.0.0-beta.28"
 ARCHIVE = ROOT / f"GRIDSHARD-{VERSION}.zip"
 CHECKSUM = ROOT / f"GRIDSHARD-{VERSION}.zip.sha256"
 ARCHIVE_ROOT = f"GRIDSHARD-{VERSION}"

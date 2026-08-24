@@ -62,7 +62,7 @@ def http_post(url: str):
 def smoke_server() -> dict:
     port = free_port()
     env = os.environ.copy()
-    env["RELAY_WEB_TEST_RUN_ID"] = "web-test-beta.27-qa"
+    env["RELAY_WEB_TEST_RUN_ID"] = "web-test-beta.28-qa"
     env["RELAY_TELEMETRY_PATH"] = str(ROOT / "server/data/qa_telemetry.json")
     env["RELAY_PLAYER_DATA_PATH"] = str(ROOT / "server/data/qa_players.json")
     env["RELAY_BATTLE_POOL_PRESET_PATH"] = str(
@@ -112,6 +112,7 @@ def smoke_server() -> dict:
             "/favicon.ico",
             "/src/app.js",
             "/src/relay-client.js",
+            "/src/i18n.js",
             "/src/styles.css",
             "/web-test/preflight",
             "/web-test/launch-readiness",
@@ -235,7 +236,14 @@ def main() -> int:
         ),
         run_step(
             "server_pytest",
-            [sys.executable, "-m", "pytest", "-q"],
+            [
+                sys.executable,
+                "-m",
+                "pytest",
+                "-q",
+                "--basetemp",
+                str(ROOT / ".pytest_cache" / "qa"),
+            ],
             cwd=ROOT / "server",
         ),
         run_step(
@@ -254,6 +262,11 @@ def main() -> int:
             cwd=ROOT / "client",
         ),
         run_step(
+            "client_syntax_i18n",
+            ["node", "--check", "src/i18n.js"],
+            cwd=ROOT / "client",
+        ),
+        run_step(
             "client_audio_tests",
             ["node", "tests/gridshard-audio.test.js"],
             cwd=ROOT / "client",
@@ -269,8 +282,18 @@ def main() -> int:
             cwd=ROOT / "client",
         ),
         run_step(
+            "client_i18n_tests",
+            ["node", "tests/i18n.test.js"],
+            cwd=ROOT / "client",
+        ),
+        run_step(
             "client_startup_menu_test",
             ["node", "tests/app-startup.test.js"],
+            cwd=ROOT / "client",
+        ),
+        run_step(
+            "client_component_tests",
+            ["node", "--test", "tests/frontend-components.test.js"],
             cwd=ROOT / "client",
         ),
     ]
@@ -302,10 +325,10 @@ def main() -> int:
     if all(step["ok"] for step in steps):
         steps.append(
             run_step(
-                "beta27_acceptance_report",
+                "beta28_acceptance_report",
                 [
                     sys.executable,
-                    "tools/beta27_acceptance_report.py",
+                    "tools/beta28_acceptance_report.py",
                 ],
                 cwd=ROOT,
             )
@@ -391,7 +414,7 @@ def main() -> int:
 
     report = {
         "project": "GRIDSHARD 2.0",
-        "version": "2.0.0-beta.27",
+        "version": "2.0.0-beta.28",
         "generated_at_epoch": int(time.time()),
         "ok": all(step["ok"] for step in steps),
         "steps": steps,

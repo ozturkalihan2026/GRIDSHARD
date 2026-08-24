@@ -1,8 +1,8 @@
 from .boosters import BOOSTER_DEFINITIONS
 from .models import BoosterOffer
 
-BOOSTER_FIRST_OFFER_MS=75_000
-BOOSTER_OFFER_INTERVAL_MS=10_000
+BOOSTER_FIRST_OFFER_MS=105_000
+BOOSTER_OFFER_INTERVAL_MS=30_000
 BOOSTER_OPTIONS_PER_OFFER=3
 
 def booster_offer_due_at_ms(index:int)->int:

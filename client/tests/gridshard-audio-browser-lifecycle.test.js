@@ -30,7 +30,7 @@ const director = new global.GridshardAudioDirector();
 
 assert.strictEqual(
   global.GRIDSHARD_AUDIO_MIX.version,
-  "shardglass-mix-v5"
+  "shardglass-ensemble-v6"
 );
 
 assert.strictEqual(

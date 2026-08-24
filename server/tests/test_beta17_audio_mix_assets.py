@@ -23,6 +23,8 @@ MUSIC={
     "pool_flux_v5.wav",
     "battle_fracture_v5.wav",
     "critical_shard_v5.wav",
+    "menu_ensemble_v6.wav",
+    "pool_ensemble_v6.wav",
 }
 
 

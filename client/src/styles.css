@@ -3368,11 +3368,7 @@ body[data-app-screen="play"][data-online-status="battle"] .board-cell {
   box-shadow:inset 0 0 14px rgba(54,217,255,.22);
 }
 .module-card.energy-flowing .port-dot {
-  animation:gs-port-energy 1s ease-in-out infinite;
-}
-@keyframes gs-port-energy {
-  0%,100% { transform:scale(.82); opacity:.5; }
-  50% { transform:scale(1.35); opacity:1; box-shadow:0 0 9px currentColor; }
+  animation:none;
 }
 
 .module-shelf {
@@ -4578,45 +4574,15 @@ body[data-app-screen="play"] .board-cell .hp-bar {
 }
 
 /* =========================================================
-   GRIDSHARD Beta.27 — live energy and weapon readability
+   GRIDSHARD Beta.28 — stable energy state readability
    ========================================================= */
 .module-card.energy-flowing {
   isolation:isolate;
+  animation:gs-energy-presence 2.2s ease-in-out infinite;
   box-shadow:
-    inset 0 0 18px rgba(53,229,210,.28),
-    0 0 13px rgba(53,229,210,.2);
+    inset 0 0 15px rgba(53,229,210,.2),
+    0 0 9px rgba(53,229,210,.15);
 }
-.module-card.energy-flowing .module-icon {
-  animation:gs-powered-icon 1.35s ease-in-out infinite;
-}
-.energy-flow-indicator {
-  position:absolute;
-  inset:-2px;
-  z-index:4;
-  overflow:visible;
-  border:1px solid rgba(121,255,233,.48);
-  border-radius:9px;
-  box-shadow:
-    inset 0 0 9px rgba(53,229,210,.22),
-    0 0 9px rgba(53,229,210,.25);
-  pointer-events:none;
-}
-.energy-flow-indicator i {
-  position:absolute;
-  width:6px;
-  height:6px;
-  border-radius:50%;
-  background:#f3ffff;
-  box-shadow:
-    0 0 5px #fff,
-    0 0 12px #35e5d2,
-    0 0 20px rgba(121,255,233,.72);
-  offset-path:inset(2px round 7px);
-  offset-distance:0%;
-  animation:gs-energy-current 1.55s linear infinite;
-}
-.energy-flow-indicator i[data-energy-step="1"] { animation-delay:-.5s; }
-.energy-flow-indicator i[data-energy-step="2"] { animation-delay:-1s; }
 .energy-flow-badge {
   position:absolute;
   z-index:6;
@@ -4645,23 +4611,61 @@ body[data-app-screen="play"] .board-cell .hp-bar {
   top:3px;
   left:4px;
   padding:2px 4px;
-  border:1px solid rgba(255,184,77,.44);
+  border:1px solid rgba(255,92,105,.72);
   border-radius:4px;
   background:rgba(28,13,8,.88);
-  color:#ffca77;
+  color:#ff8b96;
   font-size:clamp(.39rem,.52vw,.52rem);
   font-weight:950;
   line-height:1;
   letter-spacing:.05em;
 }
-@keyframes gs-energy-current {
-  0% { offset-distance:0%; opacity:0; }
-  8%,88% { opacity:1; }
-  100% { offset-distance:100%; opacity:0; }
+.module-card.energy-disconnected {
+  border-color:rgba(255,74,92,.84) !important;
+  outline:1px solid rgba(255,74,92,.5);
+  background:
+    linear-gradient(rgba(93,10,22,.56),rgba(45,8,16,.68)),
+    #24101a !important;
+  box-shadow:
+    inset 0 0 18px rgba(255,45,67,.35),
+    0 0 10px rgba(255,45,67,.22);
 }
-@keyframes gs-powered-icon {
-  0%,100% { filter:drop-shadow(0 0 7px currentColor); }
-  50% { filter:drop-shadow(0 0 14px currentColor) brightness(1.25); }
+.power-state-tooltip {
+  position:absolute;
+  z-index:30;
+  left:50%;
+  bottom:calc(100% + 9px);
+  width:min(240px,75vw);
+  padding:7px 9px;
+  border:1px solid rgba(255,117,129,.72);
+  border-radius:7px;
+  background:rgba(17,5,11,.97);
+  color:#ffe9ec;
+  font-size:.68rem;
+  font-weight:700;
+  line-height:1.35;
+  text-align:left;
+  white-space:normal;
+  opacity:0;
+  pointer-events:none;
+  transform:translate(-50%,5px);
+  transition:opacity .14s ease,transform .14s ease;
+}
+.module-card.energy-disconnected:hover .power-state-tooltip,
+.module-card.energy-disconnected:focus .power-state-tooltip,
+.module-card.energy-disconnected:focus-within .power-state-tooltip {
+  opacity:1;
+  transform:translate(-50%,0);
+}
+@keyframes gs-energy-presence {
+  0%,100% {
+    filter:brightness(1);
+    box-shadow:inset 0 0 13px rgba(53,229,210,.17),0 0 7px rgba(53,229,210,.12);
+  }
+  50% {
+    filter:brightness(1.16);
+    box-shadow:inset 0 0 23px rgba(53,229,210,.38),0 0 16px rgba(53,229,210,.34);
+  }
 }
 
 .duel-attack-line,
@@ -4847,8 +4851,7 @@ body[data-app-screen="play"] .board-cell .hp-bar {
 }
 
 @media (prefers-reduced-motion:reduce) {
-  .energy-flow-indicator i,
-  .module-card.energy-flowing .module-icon,
+  .module-card.energy-flowing,
   .duel-shot-beam,
   .duel-shot-muzzle,
   .duel-shot-projectile,

@@ -156,6 +156,52 @@ def test_snapshot_is_viewer_scoped_and_deterministic():
     assert first["viewer_player_id"] == "alice"
 
 
+def test_snapshot_exposes_effective_ports_and_server_power_reason():
+    service, session = setup_service()
+    install_minimal_board(session, "alice")
+    laser = session.engine.grant_module(
+        "alice",
+        "alice-laser",
+        "laser",
+    )
+    session.engine.set_initial_active_module(
+        "alice",
+        laser.instance_id,
+        2,
+        1,
+        Direction.DOWN,
+    )
+    session.engine.add_temporary_booster_state(
+        "alice",
+        laser.instance_id,
+        "dual_port_adapter",
+        "Çift Port Adaptörü",
+        15_000,
+        {"extra_port_count": 1},
+    )
+
+    isolated = session.engine.grant_module(
+        "alice",
+        "alice-isolated",
+        "pulse_cannon",
+    )
+    session.engine.set_initial_active_module(
+        "alice",
+        isolated.instance_id,
+        0,
+        1,
+        Direction.UP,
+    )
+
+    modules = service.snapshot("pvp-1", "alice")["players"]["alice"]["modules"]
+    by_id = {module["instance_id"]: module for module in modules}
+
+    assert by_id["alice-laser"]["port_count"] == 2
+    assert set(by_id["alice-laser"]["ports"]) == {"up", "down"}
+    assert by_id["alice-laser"]["power_reason"] == "powered"
+    assert by_id["alice-isolated"]["power_reason"] == "port_disconnected"
+
+
 def test_events_since_uses_cursor():
     service, session = setup_service()
 

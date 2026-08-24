@@ -38,7 +38,7 @@ def _legal_four_module_start() -> BattleEngine:
     return engine
 
 
-def test_capacity_allows_one_new_slot_per_ten_second_tier() -> None:
+def test_capacity_allows_one_new_slot_per_fifteen_second_tier() -> None:
     engine = _legal_four_module_start()
     for _ in range(150):
         engine.step()
@@ -46,9 +46,9 @@ def test_capacity_allows_one_new_slot_per_ten_second_tier() -> None:
     _command(engine, "place_module", module_id="shield-1", x=1, y=2)
     assert engine.state.players["player"].modules["shield-1"].status == ModuleStatus.ACTIVE
 
-    for _ in range(99):
+    for _ in range(149):
         engine.step()
-    assert engine.state.elapsed_ms == 25_000
+    assert engine.state.elapsed_ms == 30_000
 
     _command(engine, "place_module", module_id="battery-1", x=3, y=2)
     battery = engine.state.players["player"].modules["battery-1"]

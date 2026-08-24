@@ -141,10 +141,10 @@ def test_move_module_changes_only_position():
     run_command(engine, "place_module", module_id="laser-1", x=3, y=3)
     engine.apply_damage("player-1", "laser-1", 10)
 
-    run_command(engine, "move_module", module_id="laser-1", x=3, y=4)
+    run_command(engine, "move_module", module_id="laser-1", x=1, y=3)
 
     laser = engine.state.players["player-1"].modules["laser-1"]
-    assert (laser.position.x, laser.position.y) == (3, 4)
+    assert (laser.position.x, laser.position.y) == (1, 3)
     assert laser.hp == 90
 
 

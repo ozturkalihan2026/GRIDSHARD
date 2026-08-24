@@ -48,9 +48,9 @@ def advance(engine,target):
 def test_default_capacity_schedule_opens_fifth_slot_at_unlock():
     assert max_active_modules_for_elapsed_ms(14_900) is None
     assert max_active_modules_for_elapsed_ms(15_000)==5
-    assert max_active_modules_for_elapsed_ms(24_900)==5
-    assert max_active_modules_for_elapsed_ms(25_000)==6
-    assert max_active_modules_for_elapsed_ms(75_000)==10
+    assert max_active_modules_for_elapsed_ms(29_900)==5
+    assert max_active_modules_for_elapsed_ms(30_000)==6
+    assert max_active_modules_for_elapsed_ms(90_000)==10
 
 
 def test_injected_unlock_moves_the_relative_capacity_schedule():
@@ -63,7 +63,7 @@ def test_injected_unlock_moves_the_relative_capacity_schedule():
         12_000,
     )==5
     assert max_active_modules_for_elapsed_ms(
-        22_000,
+        27_000,
         12_000,
     )==6
 

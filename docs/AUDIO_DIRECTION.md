@@ -352,3 +352,17 @@ V5 dosyaları:
 Deterministik kaynak: `tools/generate_beta25_audio.py`.
 
 Bu aşama özgün kompozisyon/miks kimliği sağlar; hedef LUFS ve platform mastering kararı değildir.
+
+---
+
+## 16. Beta.28 Menü Ensemble / Mix V6
+
+Kullanıcı denemesinde galibiyet müziğinin çok katmanlı düzenlemesi olumlu, menü ve hazırlık parçalarının tek vuruşlu hissi yetersiz bulundu. Beta.28 bu iki durumu V6 ensemble düzenlemelerine taşır:
+
+- `menu_ensemble_v6.wav` — 32 sn stereo,
+- `pool_ensemble_v6.wav` — 32 sn stereo,
+- chord pad, bass, reactor kick, clap, hi-hat, glass arpeggio ve synth lead katmanları,
+- yaklaşık `-6 dBFS` peak headroom ve test edilen loop sınırı,
+- savaş V5 katmanları, özgün ateş SFX'leri ve galibiyet/mağlubiyet parçaları korunur.
+
+Deterministik kaynak: `tools/generate_beta28_menu_audio.py`. Bu düzenleme de final LUFS/platform master kararı iddiası taşımaz.

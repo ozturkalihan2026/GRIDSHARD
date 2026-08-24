@@ -29,10 +29,12 @@ def test_server_power_truth_reaches_both_player_and_enemy_cards():
     assert "module.energy_received" in app
     assert "module.energy_required" in app
     assert "appendEnergyFlowIndicator" in app
-    assert '"energy-flow-indicator"' in app
     assert '"energy-flow-badge"' in app
     assert "received.toFixed(1)" in app
-    assert "@keyframes gs-energy-current" in css
+    assert "power-state-tooltip" in app
+    assert "powerReason" in app
+    assert "@keyframes gs-energy-presence" in css
+    assert "gs-energy-current" not in css
     assert '.module-card.energy-disconnected::after' in css
 
 

@@ -13,4 +13,4 @@ def test_beta23_menu_and_dual_battle_markup():
     assert 'id="enemy-board"' in html
     assert 'id="battle-settings-button"' in html
     assert 'id="battle-time"' in html
-    assert 'Beta.27 · 10 sn AI Devralma · Canlı Enerji Akışı · Hedefe Ulaşan Silah Efektleri · Özgün Ateş Sesleri' in html
+    assert 'Beta.28 · 10 sn AI Devralma · Sade Enerji Durumu · Doğrulanmış Port Motoru · Ensemble Menü Müziği' in html

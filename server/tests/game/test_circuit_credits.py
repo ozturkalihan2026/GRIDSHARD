@@ -132,7 +132,7 @@ def test_move_spends_configured_move_cost():
     command(engine, "place_module", module_id="laser-1", x=3, y=3)
     before = engine.circuit_credits("player-1")
 
-    command(engine, "move_module", module_id="laser-1", x=4, y=3)
+    command(engine, "move_module", module_id="laser-1", x=1, y=3)
 
     assert engine.circuit_credits("player-1") == before - 10 + 1
 

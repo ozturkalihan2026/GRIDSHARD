@@ -45,15 +45,14 @@ def test_capacity_schedule_boundaries():
     assert max_active_modules_for_elapsed_ms(0) is None
     assert max_active_modules_for_elapsed_ms(14_999) is None
     assert max_active_modules_for_elapsed_ms(15_000) == 5
-    assert max_active_modules_for_elapsed_ms(24_999) == 5
-    assert max_active_modules_for_elapsed_ms(25_000) == 6
-    assert max_active_modules_for_elapsed_ms(34_999) == 6
-    assert max_active_modules_for_elapsed_ms(35_000) == 7
-    assert max_active_modules_for_elapsed_ms(45_000) == 8
-    assert max_active_modules_for_elapsed_ms(55_000) == 9
-    assert max_active_modules_for_elapsed_ms(65_000) == 10
-    assert max_active_modules_for_elapsed_ms(75_000) == 10
-    assert max_active_modules_for_elapsed_ms(85_000) == 10
+    assert max_active_modules_for_elapsed_ms(29_999) == 5
+    assert max_active_modules_for_elapsed_ms(30_000) == 6
+    assert max_active_modules_for_elapsed_ms(44_999) == 6
+    assert max_active_modules_for_elapsed_ms(45_000) == 7
+    assert max_active_modules_for_elapsed_ms(60_000) == 8
+    assert max_active_modules_for_elapsed_ms(75_000) == 9
+    assert max_active_modules_for_elapsed_ms(90_000) == 10
+    assert max_active_modules_for_elapsed_ms(85_000) == 9
     assert max_active_modules_for_elapsed_ms(999_999) == 10
 
 
@@ -79,7 +78,7 @@ def test_at_15_seconds_five_active_modules_are_allowed():
     assert engine.active_module_count("player-1") == 5
 
 
-def test_sixth_active_module_is_rejected_before_25_seconds():
+def test_sixth_active_module_is_rejected_before_30_seconds():
     engine = create_engine()
     advance_to(engine, 15_000)
 
@@ -94,7 +93,7 @@ def test_sixth_active_module_is_rejected_before_25_seconds():
     assert engine.state.events[-1].type == "command_rejected"
 
 
-def test_sixth_active_module_is_allowed_at_25_seconds():
+def test_sixth_active_module_is_allowed_at_30_seconds():
     engine = create_engine()
     advance_to(engine, 15_000)
 
@@ -102,7 +101,7 @@ def test_sixth_active_module_is_allowed_at_25_seconds():
     command(engine, "place_module", module_id="shield-1", x=3, y=2)
     command(engine, "place_module", module_id="battery-1", x=1, y=2)
 
-    advance_to(engine, 25_000)
+    advance_to(engine, 30_000)
     command(engine, "place_module", module_id="amplifier-1", x=1, y=3)
 
     amplifier = engine.state.players["player-1"].modules["amplifier-1"]
@@ -145,11 +144,11 @@ def test_remove_is_allowed_when_at_capacity_and_reduces_count():
 
 def test_capacity_changes_do_not_pause_battle_clock():
     engine = create_engine()
-    advance_to(engine, 24_900)
+    advance_to(engine, 29_900)
     assert engine.max_active_modules() == 5
 
     engine.step()
 
-    assert engine.state.elapsed_ms == 25_000
+    assert engine.state.elapsed_ms == 30_000
     assert engine.max_active_modules() == 6
     assert engine.state.status.value == "running"

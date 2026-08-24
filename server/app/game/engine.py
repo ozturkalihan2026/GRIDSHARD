@@ -99,12 +99,12 @@ def max_active_modules_for_elapsed_ms(
 
     Varsayılan davranış:
     0–15 saniye başlangıç düzenidir; dinamik modül yerleştirme kapalıdır.
-    15–25 sn: 5
-    25–35 sn: 6
-    35–45 sn: 7
-    45–55 sn: 8
-    55–65 sn: 9
-    65 sn ve sonrası: 10
+    15–30 sn: 5
+    30–45 sn: 6
+    45–60 sn: 7
+    60–75 sn: 8
+    75–90 sn: 9
+    90 sn ve sonrası: 10
 
     Beta.16 regresyon koşucusu için kilit zamanı izole olarak enjekte
     edilebilir. Varsayılan 15 saniye değiştirilmemiştir.
@@ -116,7 +116,7 @@ def max_active_modules_for_elapsed_ms(
     elapsed_after_unlock = elapsed_ms - unlock_ms
     return min(
         10,
-        5 + elapsed_after_unlock // 10_000,
+        5 + elapsed_after_unlock // 15_000,
     )
 
 
@@ -471,7 +471,22 @@ class BattleEngine:
         bir kart elde etmiyor.
         """
         player = self._require_player(player_id)
-        topology = self.energy_topology_for_player(player_id)
+        # Taşıma/değiştirme doğrulamasında eski modül enerji topolojisinde
+        # tutulursa kendi arkasındaki kopuk adayı erişilebilir gösterebilir.
+        # Aday hattı, işlemden sonra gerçekten kalacak devre üzerinden kur.
+        excluded = (
+            player.modules.get(exclude_module_id)
+            if exclude_module_id is not None
+            else None
+        )
+        excluded_position = excluded.position if excluded is not None else None
+        try:
+            if excluded is not None:
+                excluded.position = None
+            topology = self.energy_topology_for_player(player_id)
+        finally:
+            if excluded is not None:
+                excluded.position = excluded_position
         reachable_ids = set(topology.reachable_from_generator)
         connected_candidates = [
             current
@@ -1613,6 +1628,20 @@ class BattleEngine:
             ignore_module_id=module.instance_id,
         )
 
+        connected_direction = module.direction
+        if module.definition.id != "generator":
+            connected_direction = self._connected_direction_for_placement(
+                player_id,
+                module,
+                new_position,
+                exclude_module_id=module.instance_id,
+            )
+            if connected_direction is None:
+                raise CommandRejected(
+                    "Modül bu hücrede Jeneratöre uzanan çalışan bir port "
+                    "zincirine bağlanamıyor."
+                )
+
         self._spend_circuit_credits(
             player_id,
             self.circuit_credit_config.move_cost,
@@ -1620,6 +1649,8 @@ class BattleEngine:
         )
 
         module.position = new_position
+        module.direction = connected_direction
+        module.is_powered = False
 
         self._emit(
             "module_moved",

@@ -107,7 +107,7 @@ def main()->int:
 
     env=os.environ.copy()
     env["PYTHONPATH"]=str(SERVER)
-    env["RELAY_WEB_TEST_RUN_ID"]="web-test-beta.27-browser-e2e"
+    env["RELAY_WEB_TEST_RUN_ID"]="web-test-beta.28-browser-e2e"
     env["RELAY_PLAYER_DATA_PATH"]=str(SERVER/"data/e2e_players.json")
     env["RELAY_TELEMETRY_PATH"]=str(SERVER/"data/e2e_telemetry.json")
     env["RELAY_BATTLE_POOL_PRESET_PATH"]=str(SERVER/"data/e2e_presets.json")

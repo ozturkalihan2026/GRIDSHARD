@@ -1,7 +1,7 @@
 # GRIDSHARD 2.0 — YOL HARİTASI
 
-**Güncel Sürüm:** `2.0.0-beta.27`
-**Paket:** Canlı Telemetri Sertleştirmesi + Görsel Erişilebilirlik + Bağlantı Hata Akışı + Tek Eşleştirme/AI Devralma + Aktif Devre
+**Güncel Sürüm:** `2.0.0-beta.28`
+**Paket:** Enerji Motoru Doğruluğu + Sade Güç Durumu + Dengeli Savaş Temposu + Tam Menü Yerelleştirmesi + Ensemble Müzik
 **Kanonik Dosya:** `docs/YOL_HARITASI.md`
 
 > Bu dosya GRIDSHARD 2.0 için tek kanonik geliştirme kaydıdır. Kaynak karar belgesi ile kod tabanı yeniden karşılaştırılmıştır. Buradaki `[x]`, `[~]`, `[ ]` işaretleri artık yalnızca kodda ve testlerde doğrulanabilen gerçek durumu gösterir.
@@ -27,12 +27,12 @@ Aşağıdaki kararlar sabittir ve bundan sonraki geliştirmeler bunları bozamaz
 - [x] Modül müdahalesi ilk 15 saniye kilitlidir; savaş bu sırada akmaya devam eder.
 - [x] 15. saniyeden sonra modül değişikliklerinde yapay cooldown yoktur.
 - [x] Aktif modül kapasitesi zamanla `4 → 5 → 6 → 7 → 8 → 9 → 10` açılır.
-- [x] Yasal dört modüllük başlangıçtan sonra her 10 saniyelik kapasite dilimi yalnız bir yeni aktif yuva açar; aktif modülün başka bir rezerv modülle değiştirilmesinde yapay sınır yoktur.
+- [x] Yasal dört modüllük başlangıçtan sonra 5. modül 15. saniyede, sonraki yuvalar 15 saniyelik aralıklarla açılır; aktif modülün başka bir rezerv modülle değiştirilmesinde yapay sınır yoktur.
 - [x] Devreden çıkarılan modül Can değerini korur; diğer maç içi durumlar da savaş saatiyle korunacak şekilde modellenmiştir.
 - [x] Sürüklenmekte olan aktif modül, bırakma komutu motor tarafından kabul edilene kadar savaşta kalır.
 - [x] 24 global seçenekten 18 modüllük Savaş Havuzu kullanılır; maksimum 10 aktif modül vardır.
 - [x] Çekirdek, Jeneratör, enerji akışı, port bağlantıları ve devre kurma GRIDSHARD kimliğinin temelidir.
-- [x] Kullanıcıya görünen oyun/modül terimleri Türkçedir.
+- [x] Varsayılan oyun dili Türkçedir; Ayarlardan İngilizce seçildiğinde menüler, durumlar ve modül adları İngilizce karşılıklarına çevrilir.
 - [x] Tek kanonik geliştirme kaydı bu dosyadır.
 
 ---
@@ -120,13 +120,13 @@ Beta.25 sonrası mobil hazırlık önceliği kapsamında eski erteleme kararı k
 ## FAZ 4 — Zaman Bazlı Aktif Modül Kapasitesi
 
 - [x] `0–15 sn`: başlangıç düzeni.
-- [x] `15–25 sn`: 4.
-- [x] `25–35 sn`: 5.
-- [x] `35–45 sn`: 6.
-- [x] `45–55 sn`: 7.
-- [x] `55–65 sn`: 8.
-- [x] `65–75 sn`: 9.
-- [x] `75 sn+`: 10.
+- [x] `0–15 sn`: yasal 4 modüllük başlangıç.
+- [x] `15–30 sn`: en fazla 5.
+- [x] `30–45 sn`: en fazla 6.
+- [x] `45–60 sn`: en fazla 7.
+- [x] `60–75 sn`: en fazla 8.
+- [x] `75–90 sn`: en fazla 9.
+- [x] `90 sn+`: en fazla 10.
 - [x] Kapasite artışı modül koymayı zorunlu kılmıyor.
 
 **Durum:** Tamamlandı.
@@ -1466,3 +1466,29 @@ Doğrulama sınırı:
 - [~] Gerçek 20 aktif modüllü uzun süreli PvP karmaşa/soak testi ayrıca genişletilecektir; mevcut tipik savaş yükü doğrulanmıştır.
 - [ ] Fiziksel Android/iPhone kanıtı harici cihaz ve hesap girdileri olmadan tamamlanmış sayılmaz.
 - [ ] Gerçek kullanıcı telemetrisi oluşmadan sayısal enerji dengesi otomatik değiştirilmez.
+
+---
+
+# 12. Güncel Paket — Beta.28
+
+**`GRIDSHARD 2.0.0-beta.28 — Enerji Motoru Doğruluğu · Dengeli Tempo · Ensemble Menü Kimliği`**
+
+Beta.28, önceki port guard ve sunucu otoriteli savaş temelini korurken kullanıcı denemesindeki enerji bağlantısı, görsel tempo, müzik ve dil bulgularını kaynakta çözer:
+
+1. [x] Taşıma/değiştirme doğrulamasındaki eski modülü enerji topolojisinde tutan “hayalet köprü” kaldırıldı. Modül yeni hücrede Jeneratöre gerçekten erişemiyorsa komut kredi harcanmadan reddedilir; erişebiliyorsa doğru porta otomatik yönelir.
+2. [x] Snapshot, tanımın sabit port sayısı yerine güçlendiriciler dahil gerçek port sayısını ve yönlerini gönderir. İstemci motorun gönderdiği portları kullanır.
+3. [x] Sunucu her aktif tüketici için `powered`, `port_disconnected`, `insufficient_supply`, `emp_disabled` veya `line_disrupted` enerji nedenini üretir.
+4. [x] Hareketli port/çevre akım taneleri kaldırıldı. Enerjili kart sabit konumda yumuşak parlama/sönme yapar; enerjisiz kart kırmızıya döner. Üzerine gelme/klavye odağı, enerjisizlik nedenini ve ihtiyaç/gelen enerji miktarını açıklar.
+5. [x] 5. modül 15. saniyede korunur; 6–10. yuvalar `30/45/60/75/90`. saniyelerde açılır. İlk güçlendirici 105. saniyede, sonraki teklifler 30 saniyede bir gelir ve bekleyen teklif yığılmaz.
+6. [x] Menü ve hazırlık müzikleri; pad, bass, reactor kick, clap, hi-hat, glass arpeggio ve synth lead katmanlı özgün 32 saniyelik stereo V6 ensemble düzenlemelere taşındı.
+7. [x] Türkçe varsayılan dil korunurken İngilizce menü, hazırlık, savaş, sonuç, durum ve modül terimleri için iki yönlü yerelleştirme katmanı eklendi; sonradan üretilen arayüz metinleri de seçili dile çevrilir.
+8. [x] Beta.27 saldırı mermisi/çarpma efektleri, altı ayrı ateş sesi, galibiyet kutlama müziği, Redis eşleştirme, post-match/analiz ve Beta.26 port guard korunur.
+
+Doğrulama sınırı:
+
+- [x] Hayalet köprü reddi, otomatik yön/enerji alma, gerçek port snapshot'ı, enerji nedeni, 15 saniyelik kapasite ritmi, 30 saniyelik güçlendirici ritmi, V6 ses dosyaları ve çeviri sözlüğü otomatik test kapsamındadır.
+- [x] Tam otomasyon `685` sunucu testi ile istemci, startup, bileşen, ses ve i18n testlerini geçti; tek-komut QA zincirindeki `20` adımın tamamı başarılıdır.
+- [x] Gerçek Chromium'da İngilizce ana menü/Ayarlar/hazırlık akışı ile canlı savaşta `0` hareketli enerji göstergesi, `none` port animasyonu ve sabit `gs-energy-presence` parlama durumu doğrulandı.
+- [~] 20 aktif modüllü uzun süreli PvP karmaşa/soak testi genişletilmeye devam edecektir.
+- [ ] Fiziksel Android/iPhone kanıtı harici cihaz ve hesap girdileri olmadan tamamlanmış sayılmaz.
+- [ ] Gerçek kullanıcı telemetrisi olmadan enerji üretim/tüketim sayıları otomatik değiştirilmez.

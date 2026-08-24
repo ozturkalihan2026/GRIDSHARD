@@ -102,8 +102,8 @@ def test_dynamic_place_accepts_valid_board_cell():
 
 def test_board_space_does_not_change_10_active_module_cap():
     engine = BattleEngine(BattleState(battle_id="cap"))
-    engine.state.elapsed_ms = 85_000
-    engine.state.tick = 850
+    engine.state.elapsed_ms = 90_000
+    engine.state.tick = 900
 
     assert len(engine.board.placeable_positions) == 20
     assert engine.max_active_modules() == 10
