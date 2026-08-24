@@ -203,7 +203,7 @@
     "Virüs":"Virus",
     "Enerji Sömürücü":"Energy Leech",
     "Kesici":"Disruptor",
-    "Beta.32 · 10 sn AI Devralma · Kesintisiz Müzik · 30 sn Güçlendirici · Dengeli AI · Sabit Savaş Rafı":"Beta.32 · 10 sec AI Takeover · Seamless Music · 30 sec Booster · Balanced AI · Fixed Battle Shelf",
+    "Beta.32 Fix.1 · 10 sn AI Devralma · Sabit Port/Simgeler · Belirgin Güçlendiriciler":"Beta.32 Fix.1 · 10 sec AI Takeover · Stable Ports/Icons · Prominent Boosters",
     "Savaş alanına giriş başarılı · Yerel AI aktif · Modül Rafı 15. saniyede açılır":"Battle arena entered · Local AI active · Module Shelf unlocks at 15 seconds",
     "Sunucudan yükleniyor...":"Loading from server...",
     "Sunucu verisi":"Server data",

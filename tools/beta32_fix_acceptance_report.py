@@ -19,8 +19,8 @@ from app.game.topology import build_energy_topology  # noqa: E402
 from app.version import VERSION  # noqa: E402
 
 
-EXPECTED_VERSION = "2.0.0-beta.32"
-OUTPUT = ROOT / "qa_reports" / "beta32_acceptance_report.json"
+EXPECTED_VERSION = "2.0.0-beta.32-fix.1"
+OUTPUT = ROOT / "qa_reports" / "beta32_fix_acceptance_report.json"
 MENU_TRACKS = ("menu_ensemble_v6.wav", "pool_ensemble_v6.wav")
 STEM_NAMES = tuple(
     f"battle_tension_v7_{index:02d}_{name}.wav"
@@ -175,12 +175,14 @@ def main() -> int:
         "visible_server_authoritative_booster_at_30_seconds": "BOOSTER_FIRST_OFFER_MS=30_000" in booster and 'kind:"select_booster"' in app and 'kind:"apply_booster"' in app and "pending_booster_offer" in app and "battle-booster-dock" in html,
         "battle_shelf_fits_short_viewport": "height:100dvh" in styles and "grid-template-rows:auto auto auto minmax(0,1fr)" in styles and "moduleShelfBottom" in e2e,
         "stronger_powered_module_pulse": "gs-energy-presence-v2" in styles and "brightness(1.34)" in styles and "gs-energy-aura-v2" in styles,
+        "port_and_icon_geometry_is_state_invariant": "GRIDSHARD Beta.32 Fix.1 — invariant card geometry" in styles and "> .port-dot" in styles and "position:absolute !important" in styles and "gs-card-impact-static" in styles and "gs-card-fire-static" in styles and "energyDelta" in e2e and "hitDelta" in e2e and "fireDelta" in e2e,
+        "booster_dock_is_prominent_and_stateful": 'data-state="locked"' in html and "boosterPanelEl.dataset.state" in app and '.battle-booster-dock[data-state="ready"]' in styles and "min-height:42px" in styles and "readyBooster.borderWidth" in e2e,
         "statistics_exclude_required_modules": 'frozenset({"core", "generator"})' in statistics and "HABIT_EXCLUDED_DEFINITION_IDS" in statistics and '["core", "generator"].includes' in app,
         "local_ai_attack_foundation_then_counter": "active_attack_count == 1" in ai and "attack_foundation" in ai,
         "offense_is_not_an_automatic_win": balance["ok"],
         "beta31_swap_and_seven_layers_preserved": swap["ok"] and layers["ok"] and 'kind: "swap_modules"' in relay,
         "beta30_session_resilience_preserved": soak["ok"],
-        "roadmap_truth_pass": "# 16. Güncel Paket — Beta.32" in roadmap and "yalnız `2/12` galibiyet" in roadmap,
+        "roadmap_truth_pass": "# 17. Beta.32 Fix.1" in roadmap and "Enerji, darbe ve ateş" in roadmap,
     }
     payload = {
         "version": EXPECTED_VERSION,
@@ -200,7 +202,7 @@ def main() -> int:
     }
     OUTPUT.parent.mkdir(exist_ok=True)
     OUTPUT.write_text(json.dumps(payload, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
-    print(f"Beta.32 acceptance report: {OUTPUT}")
+    print(f"Beta.32 Fix.1 acceptance report: {OUTPUT}")
     return 0 if payload["ok"] else 1
 
 

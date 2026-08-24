@@ -1,5 +1,5 @@
 {
-  "version": "2.0.0-beta.32",
+  "version": "2.0.0-beta.32-fix.1",
   "source_status": "PASSED",
   "status": "PASSED",
   "passed": true,
@@ -27,78 +27,78 @@
       "iphone-safari-emulated": 2
     },
     "test_count": 10,
-    "duration_ms": 217374.257,
-    "started_at": "2026-08-24T13:00:01.565Z",
+    "duration_ms": 236698.415,
+    "started_at": "2026-08-24T13:53:02.807Z",
     "tests": [
       {
         "project": "desktop-chromium",
         "file": "battle-density.spec.js",
         "line": 3,
         "passed": true,
-        "duration_ms": 15101
+        "duration_ms": 16147
       },
       {
         "project": "desktop-chromium",
         "file": "battle-module-swap.spec.js",
         "line": 4,
         "passed": true,
-        "duration_ms": 32405
+        "duration_ms": 33177
       },
       {
         "project": "desktop-chromium",
         "file": "beta32-booster-viewport.spec.js",
         "line": 4,
         "passed": true,
-        "duration_ms": 46214
+        "duration_ms": 46314
       },
       {
         "project": "desktop-chromium",
         "file": "menu-navigation.spec.js",
         "line": 3,
         "passed": true,
-        "duration_ms": 2160
+        "duration_ms": 2675
       },
       {
         "project": "desktop-chromium",
         "file": "two-client-pvp.spec.js",
         "line": 12,
         "passed": true,
-        "duration_ms": 5386
+        "duration_ms": 10597
       },
       {
         "project": "desktop-chromium",
         "file": "two-client-pvp.spec.js",
         "line": 70,
         "passed": true,
-        "duration_ms": 6585
+        "duration_ms": 12841
       },
       {
         "project": "android-chrome-emulated",
         "file": "mobile-battle.spec.js",
         "line": 3,
         "passed": true,
-        "duration_ms": 31125
+        "duration_ms": 30938
       },
       {
         "project": "android-chrome-emulated",
         "file": "mobile-battle.spec.js",
         "line": 66,
         "passed": true,
-        "duration_ms": 13102
+        "duration_ms": 12948
       },
       {
         "project": "iphone-safari-emulated",
         "file": "mobile-battle.spec.js",
         "line": 3,
         "passed": true,
-        "duration_ms": 40665
+        "duration_ms": 42319
       },
       {
         "project": "iphone-safari-emulated",
         "file": "mobile-battle.spec.js",
         "line": 66,
         "passed": true,
-        "duration_ms": 20404
+        "duration_ms": 22657
       }
     ]
   },

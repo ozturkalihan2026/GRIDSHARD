@@ -1,5 +1,5 @@
 {
-  "version": "2.0.0-beta.32",
+  "version": "2.0.0-beta.32-fix.1",
   "ok": true,
   "checks": {
     "version_integrity": true,
@@ -7,6 +7,8 @@
     "visible_server_authoritative_booster_at_30_seconds": true,
     "battle_shelf_fits_short_viewport": true,
     "stronger_powered_module_pulse": true,
+    "port_and_icon_geometry_is_state_invariant": true,
+    "booster_dock_is_prominent_and_stateful": true,
     "statistics_exclude_required_modules": true,
     "local_ai_attack_foundation_then_counter": true,
     "offense_is_not_an_automatic_win": true,

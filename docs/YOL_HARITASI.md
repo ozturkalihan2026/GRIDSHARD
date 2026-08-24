@@ -1,7 +1,7 @@
 # GRIDSHARD 2.0 — YOL HARİTASI
 
-**Güncel Sürüm:** `2.0.0-beta.32`
-**Paket:** Savaş İçi Modül Takası + Akıllı Otomatik Port + 7 Katmanlı Gerilim Müziği
+**Güncel Sürüm:** `2.0.0-beta.32-fix.1`
+**Paket:** Beta.32 Fix.1 — Sabit Port/Simgeler + Belirgin Güçlendiriciler
 **Kanonik Dosya:** `docs/YOL_HARITASI.md`
 
 > Bu dosya GRIDSHARD 2.0 için tek kanonik geliştirme kaydıdır. Kaynak karar belgesi ile kod tabanı yeniden karşılaştırılmıştır. Buradaki `[x]`, `[~]`, `[ ]` işaretleri artık yalnızca kodda ve testlerde doğrulanabilen gerçek durumu gösterir.
@@ -1594,3 +1594,23 @@ Doğrulama sınırı:
 - [x] Birleşik kalite kapısı `697/697` sunucu, `176/176` istemci ve `20/20` QA adımını geçti; gerçek tarayıcı matrisi masaüstü `6/6`, Android Chrome `2/2`, iPhone Safari/WebKit `2/2` olmak üzere `10/10` başarılıdır.
 - [ ] Fiziksel Android/iPhone uzun savaş ve kulaklık/hoparlör miks değerlendirmesi harici cihaz kanıtı olmadan tamamlanmış sayılmaz.
 - [ ] Gerçek oyuncu telemetrisi oluşmadan küresel hasar, Can veya enerji değerleri otomatik değiştirilmez.
+
+---
+
+# 17. Beta.32 Fix.1
+
+**`GRIDSHARD 2.0.0-beta.32-fix.1 — Sabit Port/Simgeler · Belirgin Güçlendiriciler`**
+
+Beta.32 Fix.1, Beta.32'nin motor, müzik, AI, güçlendirici zamanlaması ve viewport iyileştirmelerini koruyan hedefli bir savaş görünümü düzeltmesidir:
+
+1. [x] Enerji parlamasının doğrudan kart çocuklarına `position:relative` uygulaması kaldırıldı. Portlar enerji varken/yokken her zaman kart kenarına bağlı mutlak konumda kalır.
+2. [x] Üst/sağ/alt/sol port merkezleri kartın ilgili kenar orta noktasına `translate` tabanlı kesin koordinatla sabitlendi; güçlendiriciyle eklenen portlar da aynı geometriyi kullanır.
+3. [x] Modül simgesi tek ve sabit grid hücresine kilitlendi. Enerji rozeti, enerjisiz bilgi katmanı ve HP değişimi simgenin akış konumunu değiştirmez.
+4. [x] Hasar ve ateş animasyonlarındaki kartı ölçekleyen/yatay taşıyan dönüşümler kaldırıldı. Enerji, darbe ve ateş geri bildirimi artık yalnız parlaklık, doygunluk ve gölgeyle verilir; kart, simge ve port geometrisi hareket etmez.
+5. [x] Güçlendirici paneli ve seçenekleri büyütüldü. Kilitli durum daha okunur; teklif açıldığında altın çerçeve/gölge, `HAZIR` durumu ve tam opak büyük düğmeler; hedef seçiminde turkuaz seçili vurgusu gösterilir.
+6. [x] 1366×630 gerçek tarayıcı regresyonu enerji aç/kapat, hasar ve ateş anlarında kart/simge/port koordinat farkını en fazla `0,75 px` olarak doğrular; dört portun ilgili kenar merkezinde olduğunu ve güçlendirici düğmelerinin en az 40 px yüksekliğini denetler.
+
+Doğrulama sınırı:
+
+- [x] Beta.32 kabul kapıları ve önceki tüm motor testleri korunur.
+- [ ] Fiziksel cihaz piksel yoğunluğu ve tarayıcı ölçek ayarları harici cihaz kanıtı olmadan tamamlanmış sayılmaz.

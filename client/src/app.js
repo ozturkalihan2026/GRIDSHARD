@@ -91,7 +91,7 @@
   const COMPETITIVE_STATUS = "M7 rekabetçi altyapı doğrulanıyor";
   const BALANCE_STATUS = "Denge simülasyonu mevcut · geniş örnek bekliyor";
   const AI_STATUS = "AI altyapısı mevcut · arketip testleri bekliyor";
-  const PVP_STATUS = "GRIDSHARD Beta.32 · Kesintisiz Müzik + 30 sn Güçlendirici + Dengeli AI + Sabit Savaş Rafı";
+  const PVP_STATUS = "GRIDSHARD Beta.32 Fix.1 · Sabit Port + Sabit Simge + Belirgin Güçlendirici";
 
 
 
@@ -605,7 +605,7 @@
         webTestBuildState,
       releaseCheckState,
       expectedVersion:
-        "2.0.0-beta.32",
+        "2.0.0-beta.32-fix.1",
       expectedProtocolVersion: 1,
     });
   const playReadinessGate =
@@ -641,7 +641,7 @@
 
   telemetryDispatcher.trackGameOpened({
     platform: "web",
-    build: "2.0.0-beta.32",
+    build: "2.0.0-beta.32-fix.1",
   });
 
   const postMatchSync =
@@ -1578,7 +1578,7 @@
   const diagnosticSnapshot =
     new RelayDiagnosticSnapshot({
       version:
-        "2.0.0-beta.32",
+        "2.0.0-beta.32-fix.1",
       build:
         "web-test-beta.13",
       bootGate:
@@ -1677,6 +1677,7 @@
   const logEl = document.getElementById("event-log");
   const boosterOptionsEl = document.getElementById("booster-options");
   const boosterStatusEl = document.getElementById("booster-status");
+  const boosterPanelEl = document.getElementById("booster-panel");
   const poolSelectionEl = document.getElementById("battle-pool-selection");
   const poolCountEl = document.getElementById("battle-pool-count");
   const poolConfirmEl = document.getElementById("battle-pool-confirm");
@@ -3516,7 +3517,7 @@
       if (versionEl) {
         versionEl.textContent=
           manifest.version
-          || "2.0.0-beta.32";
+          || "2.0.0-beta.32-fix.1";
       }
       if (runEl) {
         runEl.textContent=
@@ -6409,7 +6410,7 @@ function saveHumanReviewLocalNote() {
     );
 
     logClientMessage(
-      "Beta.32 geliştirici testi: kesintisiz müzik, 30. saniye güçlendiricisi, dengeli AI ve viewport içinde kalan savaş rafı etkin."
+      "Beta.32 Fix.1 geliştirici testi: portlar ve simgeler enerji/darbe durumunda sabit; güçlendirici alanı belirgin."
     );
 
     return {
@@ -9411,7 +9412,7 @@ function saveHumanReviewLocalNote() {
     if (!boosterOfferOpen && client.elapsedMs >= dueAtMs) {
       boosterOfferOpen = true;
       selectedBoosterId = null;
-      boosterStatusEl.textContent = "3 seçenekten 1'ini seç";
+      boosterStatusEl.textContent = "HAZIR · 3 seçenekten 1'ini seç";
       renderBoosterOptions();
     } else if (!boosterOfferOpen) {
       const remainingSeconds = Math.max(
@@ -9441,7 +9442,7 @@ function saveHumanReviewLocalNote() {
       if (offerChanged) selectedBoosterId = null;
       boosterStatusEl.textContent = selectedBoosterId
         ? "Hedef modül seç"
-        : "3 seçenekten 1'ini seç";
+        : "HAZIR · 3 seçenekten 1'ini seç";
       renderBoosterOptions();
       return;
     }
@@ -9462,6 +9463,11 @@ function saveHumanReviewLocalNote() {
   }
 
   function renderBoosterOptions() {
+    if (boosterPanelEl) {
+      boosterPanelEl.dataset.state = !boosterOfferOpen
+        ? "locked"
+        : (selectedBoosterId ? "target" : "ready");
+    }
     boosterOptionsEl.innerHTML = "";
     for (const booster of BOOSTER_OPTIONS) {
       const button = document.createElement("button");
