@@ -1,0 +1,1292 @@
+[
+  {
+    "event_id": "client-game_opened-1",
+    "event_type": "game_opened",
+    "metadata": {
+      "build": "2.0.0-beta.32-fix.1",
+      "platform": "web"
+    },
+    "player_id": "wt-dbd4a70f-4d90-4b60-958a-18ca1e4eff82",
+    "session_id": "local-preview",
+    "timestamp_ms": 1787580041959
+  },
+  {
+    "event_id": "web-test-run-started-web-test-beta.31-local",
+    "event_type": "web_test_run_started",
+    "metadata": {
+      "build": "web-test-beta.13",
+      "preflight_ready": true,
+      "test_run_id": "web-test-beta.31-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1787580042091
+  },
+  {
+    "event_id": "web-test-stability-web-test-beta.31-local-1787580042864",
+    "event_type": "web_test_stability_snapshot",
+    "metadata": {
+      "operation_running_rate": 0.0,
+      "running_to_other_regressions": 0,
+      "stability": "degraded",
+      "test_run_id": "web-test-beta.31-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1787580042864
+  },
+  {
+    "event_id": "web-test-operation-web-test-beta.31-local-1787580042874",
+    "event_type": "web_test_operation_snapshot",
+    "metadata": {
+      "consistency_status": "consistent",
+      "operational_state": "running",
+      "preflight_ready": true,
+      "run_started": true,
+      "test_run_id": "web-test-beta.31-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1787580042874
+  },
+  {
+    "event_id": "web-test-operation-web-test-beta.31-local-1787580052991",
+    "event_type": "web_test_operation_snapshot",
+    "metadata": {
+      "consistency_status": "consistent",
+      "operational_state": "running",
+      "preflight_ready": true,
+      "run_started": true,
+      "test_run_id": "web-test-beta.31-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1787580052991
+  },
+  {
+    "event_id": "web-test-stability-web-test-beta.31-local-1787580052997",
+    "event_type": "web_test_stability_snapshot",
+    "metadata": {
+      "operation_running_rate": 1.0,
+      "running_to_other_regressions": 0,
+      "stability": "stable",
+      "test_run_id": "web-test-beta.31-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1787580052997
+  },
+  {
+    "event_id": "web-test-stability-web-test-beta.31-local-1787580062927",
+    "event_type": "web_test_stability_snapshot",
+    "metadata": {
+      "operation_running_rate": 1.0,
+      "running_to_other_regressions": 0,
+      "stability": "stable",
+      "test_run_id": "web-test-beta.31-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1787580062927
+  },
+  {
+    "event_id": "web-test-operation-web-test-beta.31-local-1787580062938",
+    "event_type": "web_test_operation_snapshot",
+    "metadata": {
+      "consistency_status": "consistent",
+      "operational_state": "running",
+      "preflight_ready": true,
+      "run_started": true,
+      "test_run_id": "web-test-beta.31-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1787580062938
+  },
+  {
+    "event_id": "web-test-operation-web-test-beta.31-local-1787580072922",
+    "event_type": "web_test_operation_snapshot",
+    "metadata": {
+      "consistency_status": "consistent",
+      "operational_state": "running",
+      "preflight_ready": true,
+      "run_started": true,
+      "test_run_id": "web-test-beta.31-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1787580072922
+  },
+  {
+    "event_id": "web-test-stability-web-test-beta.31-local-1787580072935",
+    "event_type": "web_test_stability_snapshot",
+    "metadata": {
+      "operation_running_rate": 1.0,
+      "running_to_other_regressions": 0,
+      "stability": "stable",
+      "test_run_id": "web-test-beta.31-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1787580072935
+  },
+  {
+    "event_id": "web-test-operation-web-test-beta.31-local-1787580082925",
+    "event_type": "web_test_operation_snapshot",
+    "metadata": {
+      "consistency_status": "consistent",
+      "operational_state": "running",
+      "preflight_ready": true,
+      "run_started": true,
+      "test_run_id": "web-test-beta.31-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1787580082925
+  },
+  {
+    "event_id": "web-test-stability-web-test-beta.31-local-1787580082934",
+    "event_type": "web_test_stability_snapshot",
+    "metadata": {
+      "operation_running_rate": 1.0,
+      "running_to_other_regressions": 0,
+      "stability": "stable",
+      "test_run_id": "web-test-beta.31-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1787580082934
+  },
+  {
+    "event_id": "web-test-operation-web-test-beta.31-local-1787580092920",
+    "event_type": "web_test_operation_snapshot",
+    "metadata": {
+      "consistency_status": "consistent",
+      "operational_state": "running",
+      "preflight_ready": true,
+      "run_started": true,
+      "test_run_id": "web-test-beta.31-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1787580092920
+  },
+  {
+    "event_id": "web-test-stability-web-test-beta.31-local-1787580092932",
+    "event_type": "web_test_stability_snapshot",
+    "metadata": {
+      "operation_running_rate": 1.0,
+      "running_to_other_regressions": 0,
+      "stability": "stable",
+      "test_run_id": "web-test-beta.31-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1787580092932
+  },
+  {
+    "event_id": "web-test-stability-web-test-beta.31-local-1787580103001",
+    "event_type": "web_test_stability_snapshot",
+    "metadata": {
+      "operation_running_rate": 1.0,
+      "running_to_other_regressions": 0,
+      "stability": "stable",
+      "test_run_id": "web-test-beta.31-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1787580103001
+  },
+  {
+    "event_id": "web-test-operation-web-test-beta.31-local-1787580103012",
+    "event_type": "web_test_operation_snapshot",
+    "metadata": {
+      "consistency_status": "consistent",
+      "operational_state": "running",
+      "preflight_ready": true,
+      "run_started": true,
+      "test_run_id": "web-test-beta.31-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1787580103012
+  },
+  {
+    "event_id": "web-test-launch-wt-dbd4a70f-4d90-4b60-958a-18ca1e4eff82-1787580111673",
+    "event_type": "web_test_launch_attempted",
+    "metadata": {
+      "failed_checks": [],
+      "launch_ready": true,
+      "test_run_id": "web-test-beta.31-local"
+    },
+    "player_id": "wt-dbd4a70f-4d90-4b60-958a-18ca1e4eff82",
+    "session_id": null,
+    "timestamp_ms": 1787580111673
+  },
+  {
+    "event_id": "web-test-operation-web-test-beta.31-local-1787580112860",
+    "event_type": "web_test_operation_snapshot",
+    "metadata": {
+      "consistency_status": "consistent",
+      "operational_state": "running",
+      "preflight_ready": true,
+      "run_started": true,
+      "test_run_id": "web-test-beta.31-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1787580112860
+  },
+  {
+    "event_id": "web-test-stability-web-test-beta.31-local-1787580112864",
+    "event_type": "web_test_stability_snapshot",
+    "metadata": {
+      "operation_running_rate": 1.0,
+      "running_to_other_regressions": 0,
+      "stability": "stable",
+      "test_run_id": "web-test-beta.31-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1787580112864
+  },
+  {
+    "event_id": "client-matchmaking_started-2",
+    "event_type": "matchmaking_started",
+    "metadata": {
+      "rating": 1000
+    },
+    "player_id": "wt-dbd4a70f-4d90-4b60-958a-18ca1e4eff82",
+    "session_id": "local-preview",
+    "timestamp_ms": 1787580120475
+  },
+  {
+    "event_id": "server:matchmaking:wt-dbd4a70f-4d90-4b60-958a-18ca1e4eff82:773781359",
+    "event_type": "matchmaking_started",
+    "metadata": {
+      "league_name_tr": "Gümüş",
+      "level": 1,
+      "rating": 1000
+    },
+    "player_id": "wt-dbd4a70f-4d90-4b60-958a-18ca1e4eff82",
+    "session_id": null,
+    "timestamp_ms": 1787580120486
+  },
+  {
+    "event_id": "web-test-audit-wt-dbd4a70f-4d90-4b60-958a-18ca1e4eff82-1787580120475",
+    "event_type": "web_test_session_started",
+    "metadata": {
+      "build": "web-test-beta.13",
+      "operation_ready": true,
+      "player_data_ready": true,
+      "pvp_protocol_version": 1,
+      "release_ready": true,
+      "retention_limit": 50000,
+      "server_version": "2.0.0-beta.32-fix.1",
+      "telemetry_ready": true,
+      "test_run_id": "web-test-beta.31-local"
+    },
+    "player_id": "wt-dbd4a70f-4d90-4b60-958a-18ca1e4eff82",
+    "session_id": null,
+    "timestamp_ms": 1787580120475
+  },
+  {
+    "event_id": "web-test-operation-web-test-beta.31-local-1787580122936",
+    "event_type": "web_test_operation_snapshot",
+    "metadata": {
+      "consistency_status": "consistent",
+      "operational_state": "running",
+      "preflight_ready": true,
+      "run_started": true,
+      "test_run_id": "web-test-beta.31-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1787580122936
+  },
+  {
+    "event_id": "web-test-stability-web-test-beta.31-local-1787580122940",
+    "event_type": "web_test_stability_snapshot",
+    "metadata": {
+      "operation_running_rate": 1.0,
+      "running_to_other_regressions": 0,
+      "stability": "stable",
+      "test_run_id": "web-test-beta.31-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1787580122940
+  },
+  {
+    "event_id": "server:local-ai-match-28fe3b38031d417d8f9ac186caf6858c:matchmaking_ai_fallback:wt-dbd4a70f-4d90-4b60-958a-18ca1e4eff82",
+    "event_type": "matchmaking_matched",
+    "metadata": {
+      "fallback_after_seconds": 10,
+      "opponent_type": "ai",
+      "rating_difference": 0
+    },
+    "player_id": "wt-dbd4a70f-4d90-4b60-958a-18ca1e4eff82",
+    "session_id": "local-ai-match-28fe3b38031d417d8f9ac186caf6858c",
+    "timestamp_ms": 1787580130598
+  },
+  {
+    "event_id": "web-test-audit-wt-dbd4a70f-4d90-4b60-958a-18ca1e4eff82-1787580120475-bound-local-ai-match-28fe3b38031d417d8f9ac186caf6858c",
+    "event_type": "web_test_session_bound",
+    "metadata": {
+      "audit_event_id": "web-test-audit-wt-dbd4a70f-4d90-4b60-958a-18ca1e4eff82-1787580120475",
+      "test_run_id": "web-test-beta.31-local"
+    },
+    "player_id": "wt-dbd4a70f-4d90-4b60-958a-18ca1e4eff82",
+    "session_id": "local-ai-match-28fe3b38031d417d8f9ac186caf6858c",
+    "timestamp_ms": 1787580130610
+  },
+  {
+    "event_id": "web-test-operation-web-test-beta.31-local-1787580133085",
+    "event_type": "web_test_operation_snapshot",
+    "metadata": {
+      "consistency_status": "consistent",
+      "operational_state": "running",
+      "preflight_ready": true,
+      "run_started": true,
+      "test_run_id": "web-test-beta.31-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1787580133085
+  },
+  {
+    "event_id": "web-test-stability-web-test-beta.31-local-1787580133096",
+    "event_type": "web_test_stability_snapshot",
+    "metadata": {
+      "operation_running_rate": 1.0,
+      "running_to_other_regressions": 0,
+      "stability": "stable",
+      "test_run_id": "web-test-beta.31-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1787580133096
+  },
+  {
+    "event_id": "web-test-operation-web-test-beta.31-local-1787580143084",
+    "event_type": "web_test_operation_snapshot",
+    "metadata": {
+      "consistency_status": "consistent",
+      "operational_state": "running",
+      "preflight_ready": true,
+      "run_started": true,
+      "test_run_id": "web-test-beta.31-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1787580143084
+  },
+  {
+    "event_id": "web-test-stability-web-test-beta.31-local-1787580143113",
+    "event_type": "web_test_stability_snapshot",
+    "metadata": {
+      "operation_running_rate": 1.0,
+      "running_to_other_regressions": 0,
+      "stability": "stable",
+      "test_run_id": "web-test-beta.31-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1787580143113
+  },
+  {
+    "event_id": "client-module_shelf_used-3",
+    "event_type": "module_shelf_used",
+    "metadata": {
+      "elapsed_ms": 15000,
+      "module_id": "armor-1"
+    },
+    "player_id": "wt-dbd4a70f-4d90-4b60-958a-18ca1e4eff82",
+    "session_id": "local-ai-match-28fe3b38031d417d8f9ac186caf6858c",
+    "timestamp_ms": 1787580147212
+  },
+  {
+    "event_id": "client-module_shelf_used-4",
+    "event_type": "module_shelf_used",
+    "metadata": {
+      "elapsed_ms": 20000,
+      "module_id": "drone-bay-1"
+    },
+    "player_id": "wt-dbd4a70f-4d90-4b60-958a-18ca1e4eff82",
+    "session_id": "local-ai-match-28fe3b38031d417d8f9ac186caf6858c",
+    "timestamp_ms": 1787580152647
+  },
+  {
+    "event_id": "web-test-stability-web-test-beta.31-local-1787580153173",
+    "event_type": "web_test_stability_snapshot",
+    "metadata": {
+      "operation_running_rate": 1.0,
+      "running_to_other_regressions": 0,
+      "stability": "stable",
+      "test_run_id": "web-test-beta.31-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1787580153173
+  },
+  {
+    "event_id": "web-test-operation-web-test-beta.31-local-1787580153185",
+    "event_type": "web_test_operation_snapshot",
+    "metadata": {
+      "consistency_status": "consistent",
+      "operational_state": "running",
+      "preflight_ready": true,
+      "run_started": true,
+      "test_run_id": "web-test-beta.31-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1787580153185
+  },
+  {
+    "event_id": "client-module_shelf_used-5",
+    "event_type": "module_shelf_used",
+    "metadata": {
+      "elapsed_ms": 29000,
+      "module_id": "battery-1"
+    },
+    "player_id": "wt-dbd4a70f-4d90-4b60-958a-18ca1e4eff82",
+    "session_id": "local-ai-match-28fe3b38031d417d8f9ac186caf6858c",
+    "timestamp_ms": 1787580161492
+  },
+  {
+    "event_id": "web-test-stability-web-test-beta.31-local-1787580163164",
+    "event_type": "web_test_stability_snapshot",
+    "metadata": {
+      "operation_running_rate": 1.0,
+      "running_to_other_regressions": 0,
+      "stability": "stable",
+      "test_run_id": "web-test-beta.31-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1787580163164
+  },
+  {
+    "event_id": "web-test-operation-web-test-beta.31-local-1787580163234",
+    "event_type": "web_test_operation_snapshot",
+    "metadata": {
+      "consistency_status": "consistent",
+      "operational_state": "running",
+      "preflight_ready": true,
+      "run_started": true,
+      "test_run_id": "web-test-beta.31-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1787580163234
+  },
+  {
+    "event_id": "client-module_shelf_used-6",
+    "event_type": "module_shelf_used",
+    "metadata": {
+      "elapsed_ms": 36000,
+      "module_id": "shield-1"
+    },
+    "player_id": "wt-dbd4a70f-4d90-4b60-958a-18ca1e4eff82",
+    "session_id": "local-ai-match-28fe3b38031d417d8f9ac186caf6858c",
+    "timestamp_ms": 1787580169708
+  },
+  {
+    "event_id": "client-module_shelf_used-7",
+    "event_type": "module_shelf_used",
+    "metadata": {
+      "elapsed_ms": 39000,
+      "module_id": "capacitor-1"
+    },
+    "player_id": "wt-dbd4a70f-4d90-4b60-958a-18ca1e4eff82",
+    "session_id": "local-ai-match-28fe3b38031d417d8f9ac186caf6858c",
+    "timestamp_ms": 1787580172341
+  },
+  {
+    "event_id": "web-test-stability-web-test-beta.31-local-1787580173180",
+    "event_type": "web_test_stability_snapshot",
+    "metadata": {
+      "operation_running_rate": 1.0,
+      "running_to_other_regressions": 0,
+      "stability": "stable",
+      "test_run_id": "web-test-beta.31-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1787580173180
+  },
+  {
+    "event_id": "web-test-operation-web-test-beta.31-local-1787580173191",
+    "event_type": "web_test_operation_snapshot",
+    "metadata": {
+      "consistency_status": "consistent",
+      "operational_state": "running",
+      "preflight_ready": true,
+      "run_started": true,
+      "test_run_id": "web-test-beta.31-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1787580173191
+  },
+  {
+    "event_id": "client-module_shelf_used-8",
+    "event_type": "module_shelf_used",
+    "metadata": {
+      "elapsed_ms": 47000,
+      "module_id": "arc-cannon-1"
+    },
+    "player_id": "wt-dbd4a70f-4d90-4b60-958a-18ca1e4eff82",
+    "session_id": "local-ai-match-28fe3b38031d417d8f9ac186caf6858c",
+    "timestamp_ms": 1787580181149
+  },
+  {
+    "event_id": "web-test-stability-web-test-beta.31-local-1787580183263",
+    "event_type": "web_test_stability_snapshot",
+    "metadata": {
+      "operation_running_rate": 1.0,
+      "running_to_other_regressions": 0,
+      "stability": "stable",
+      "test_run_id": "web-test-beta.31-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1787580183263
+  },
+  {
+    "event_id": "web-test-operation-web-test-beta.31-local-1787580183320",
+    "event_type": "web_test_operation_snapshot",
+    "metadata": {
+      "consistency_status": "consistent",
+      "operational_state": "running",
+      "preflight_ready": true,
+      "run_started": true,
+      "test_run_id": "web-test-beta.31-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1787580183320
+  },
+  {
+    "event_id": "web-test-operation-web-test-beta.31-local-1787580193120",
+    "event_type": "web_test_operation_snapshot",
+    "metadata": {
+      "consistency_status": "consistent",
+      "operational_state": "running",
+      "preflight_ready": true,
+      "run_started": true,
+      "test_run_id": "web-test-beta.31-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1787580193120
+  },
+  {
+    "event_id": "web-test-stability-web-test-beta.31-local-1787580193135",
+    "event_type": "web_test_stability_snapshot",
+    "metadata": {
+      "operation_running_rate": 1.0,
+      "running_to_other_regressions": 0,
+      "stability": "stable",
+      "test_run_id": "web-test-beta.31-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1787580193135
+  },
+  {
+    "event_id": "client-module_shelf_used-9",
+    "event_type": "module_shelf_used",
+    "metadata": {
+      "elapsed_ms": 61000,
+      "module_id": "shield-1"
+    },
+    "player_id": "wt-dbd4a70f-4d90-4b60-958a-18ca1e4eff82",
+    "session_id": "local-ai-match-28fe3b38031d417d8f9ac186caf6858c",
+    "timestamp_ms": 1787580195970
+  },
+  {
+    "event_id": "client-module_shelf_used-10",
+    "event_type": "module_shelf_used",
+    "metadata": {
+      "elapsed_ms": 64000,
+      "module_id": "reflector-1"
+    },
+    "player_id": "wt-dbd4a70f-4d90-4b60-958a-18ca1e4eff82",
+    "session_id": "local-ai-match-28fe3b38031d417d8f9ac186caf6858c",
+    "timestamp_ms": 1787580199552
+  },
+  {
+    "event_id": "client-module_shelf_used-11",
+    "event_type": "module_shelf_used",
+    "metadata": {
+      "elapsed_ms": 67000,
+      "module_id": "amplifier-1"
+    },
+    "player_id": "wt-dbd4a70f-4d90-4b60-958a-18ca1e4eff82",
+    "session_id": "local-ai-match-28fe3b38031d417d8f9ac186caf6858c",
+    "timestamp_ms": 1787580202702
+  },
+  {
+    "event_id": "web-test-operation-web-test-beta.31-local-1787580203253",
+    "event_type": "web_test_operation_snapshot",
+    "metadata": {
+      "consistency_status": "consistent",
+      "operational_state": "running",
+      "preflight_ready": true,
+      "run_started": true,
+      "test_run_id": "web-test-beta.31-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1787580203253
+  },
+  {
+    "event_id": "web-test-stability-web-test-beta.31-local-1787580203264",
+    "event_type": "web_test_stability_snapshot",
+    "metadata": {
+      "operation_running_rate": 1.0,
+      "running_to_other_regressions": 0,
+      "stability": "stable",
+      "test_run_id": "web-test-beta.31-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1787580203264
+  },
+  {
+    "event_id": "web-test-stability-web-test-beta.31-local-1787580213166",
+    "event_type": "web_test_stability_snapshot",
+    "metadata": {
+      "operation_running_rate": 1.0,
+      "running_to_other_regressions": 0,
+      "stability": "stable",
+      "test_run_id": "web-test-beta.31-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1787580213166
+  },
+  {
+    "event_id": "web-test-operation-web-test-beta.31-local-1787580213180",
+    "event_type": "web_test_operation_snapshot",
+    "metadata": {
+      "consistency_status": "consistent",
+      "operational_state": "running",
+      "preflight_ready": true,
+      "run_started": true,
+      "test_run_id": "web-test-beta.31-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1787580213180
+  },
+  {
+    "event_id": "web-test-operation-web-test-beta.31-local-1787580223181",
+    "event_type": "web_test_operation_snapshot",
+    "metadata": {
+      "consistency_status": "consistent",
+      "operational_state": "running",
+      "preflight_ready": true,
+      "run_started": true,
+      "test_run_id": "web-test-beta.31-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1787580223181
+  },
+  {
+    "event_id": "web-test-stability-web-test-beta.31-local-1787580223193",
+    "event_type": "web_test_stability_snapshot",
+    "metadata": {
+      "operation_running_rate": 1.0,
+      "running_to_other_regressions": 0,
+      "stability": "stable",
+      "test_run_id": "web-test-beta.31-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1787580223193
+  },
+  {
+    "event_id": "web-test-operation-web-test-beta.31-local-1787580233188",
+    "event_type": "web_test_operation_snapshot",
+    "metadata": {
+      "consistency_status": "consistent",
+      "operational_state": "running",
+      "preflight_ready": true,
+      "run_started": true,
+      "test_run_id": "web-test-beta.31-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1787580233188
+  },
+  {
+    "event_id": "web-test-stability-web-test-beta.31-local-1787580233279",
+    "event_type": "web_test_stability_snapshot",
+    "metadata": {
+      "operation_running_rate": 1.0,
+      "running_to_other_regressions": 0,
+      "stability": "stable",
+      "test_run_id": "web-test-beta.31-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1787580233279
+  },
+  {
+    "event_id": "server:local-ai-match-28fe3b38031d417d8f9ac186caf6858c:match_started:wt-dbd4a70f-4d90-4b60-958a-18ca1e4eff82",
+    "event_type": "match_started",
+    "metadata": {
+      "source": "battle_engine"
+    },
+    "player_id": "wt-dbd4a70f-4d90-4b60-958a-18ca1e4eff82",
+    "session_id": "local-ai-match-28fe3b38031d417d8f9ac186caf6858c",
+    "timestamp_ms": 1787580235738
+  },
+  {
+    "event_id": "server:local-ai-match-28fe3b38031d417d8f9ac186caf6858c:match_started:local-ai-match-28fe3b38031d417d8f9ac186caf6858c-opponent",
+    "event_type": "match_started",
+    "metadata": {
+      "source": "battle_engine"
+    },
+    "player_id": "local-ai-match-28fe3b38031d417d8f9ac186caf6858c-opponent",
+    "session_id": "local-ai-match-28fe3b38031d417d8f9ac186caf6858c",
+    "timestamp_ms": 1787580235746
+  },
+  {
+    "event_id": "server:local-ai-match-28fe3b38031d417d8f9ac186caf6858c:157:credit_spent",
+    "event_type": "circuit_credit_spent",
+    "metadata": {
+      "amount": 120,
+      "balance": 230,
+      "battle_elapsed_ms": 15000,
+      "reason": "modul_yerlestir:pulse_cannon"
+    },
+    "player_id": "local-ai-match-28fe3b38031d417d8f9ac186caf6858c-opponent",
+    "session_id": "local-ai-match-28fe3b38031d417d8f9ac186caf6858c",
+    "timestamp_ms": 1787580235791
+  },
+  {
+    "event_id": "server:local-ai-match-28fe3b38031d417d8f9ac186caf6858c:178:credit_spent",
+    "event_type": "circuit_credit_spent",
+    "metadata": {
+      "amount": 95,
+      "balance": 271,
+      "battle_elapsed_ms": 16600,
+      "reason": "modul_yerlestir:armor"
+    },
+    "player_id": "wt-dbd4a70f-4d90-4b60-958a-18ca1e4eff82",
+    "session_id": "local-ai-match-28fe3b38031d417d8f9ac186caf6858c",
+    "timestamp_ms": 1787580235821
+  },
+  {
+    "event_id": "server:local-ai-match-28fe3b38031d417d8f9ac186caf6858c:187:credit_spent",
+    "event_type": "circuit_credit_spent",
+    "metadata": {
+      "amount": 135,
+      "balance": 145,
+      "battle_elapsed_ms": 20000,
+      "reason": "modul_yerlestir:railgun"
+    },
+    "player_id": "local-ai-match-28fe3b38031d417d8f9ac186caf6858c-opponent",
+    "session_id": "local-ai-match-28fe3b38031d417d8f9ac186caf6858c",
+    "timestamp_ms": 1787580235863
+  },
+  {
+    "event_id": "server:local-ai-match-28fe3b38031d417d8f9ac186caf6858c:226:credit_spent",
+    "event_type": "circuit_credit_spent",
+    "metadata": {
+      "amount": 115,
+      "balance": 216,
+      "battle_elapsed_ms": 22600,
+      "reason": "modul_yerlestir:drone_bay"
+    },
+    "player_id": "wt-dbd4a70f-4d90-4b60-958a-18ca1e4eff82",
+    "session_id": "local-ai-match-28fe3b38031d417d8f9ac186caf6858c",
+    "timestamp_ms": 1787580235894
+  },
+  {
+    "event_id": "server:local-ai-match-28fe3b38031d417d8f9ac186caf6858c:357:credit_spent",
+    "event_type": "circuit_credit_spent",
+    "metadata": {
+      "amount": 70,
+      "balance": 219,
+      "battle_elapsed_ms": 29900,
+      "reason": "modul_yerlestir:battery"
+    },
+    "player_id": "wt-dbd4a70f-4d90-4b60-958a-18ca1e4eff82",
+    "session_id": "local-ai-match-28fe3b38031d417d8f9ac186caf6858c",
+    "timestamp_ms": 1787580235941
+  },
+  {
+    "event_id": "server:local-ai-match-28fe3b38031d417d8f9ac186caf6858c:365:booster_used",
+    "event_type": "booster_used",
+    "metadata": {
+      "battle_elapsed_ms": 30000,
+      "booster_id": "emergency_repair",
+      "target_module_id": "pulse-cannon-1"
+    },
+    "player_id": "local-ai-match-28fe3b38031d417d8f9ac186caf6858c-opponent",
+    "session_id": "local-ai-match-28fe3b38031d417d8f9ac186caf6858c",
+    "timestamp_ms": 1787580235973
+  },
+  {
+    "event_id": "server:local-ai-match-28fe3b38031d417d8f9ac186caf6858c:386:credit_spent",
+    "event_type": "circuit_credit_spent",
+    "metadata": {
+      "amount": 10,
+      "balance": 218,
+      "battle_elapsed_ms": 30800,
+      "reason": "modul_takas:battery:drone_bay"
+    },
+    "player_id": "wt-dbd4a70f-4d90-4b60-958a-18ca1e4eff82",
+    "session_id": "local-ai-match-28fe3b38031d417d8f9ac186caf6858c",
+    "timestamp_ms": 1787580236003
+  },
+  {
+    "event_id": "server:local-ai-match-28fe3b38031d417d8f9ac186caf6858c:517:credit_spent",
+    "event_type": "circuit_credit_spent",
+    "metadata": {
+      "amount": 75,
+      "balance": 232,
+      "battle_elapsed_ms": 39700,
+      "reason": "modul_yerlestir:capacitor"
+    },
+    "player_id": "wt-dbd4a70f-4d90-4b60-958a-18ca1e4eff82",
+    "session_id": "local-ai-match-28fe3b38031d417d8f9ac186caf6858c",
+    "timestamp_ms": 1787580236055
+  },
+  {
+    "event_id": "server:local-ai-match-28fe3b38031d417d8f9ac186caf6858c:590:credit_spent",
+    "event_type": "circuit_credit_spent",
+    "metadata": {
+      "amount": 130,
+      "balance": 186,
+      "battle_elapsed_ms": 48100,
+      "reason": "modul_yerlestir:arc_cannon"
+    },
+    "player_id": "wt-dbd4a70f-4d90-4b60-958a-18ca1e4eff82",
+    "session_id": "local-ai-match-28fe3b38031d417d8f9ac186caf6858c",
+    "timestamp_ms": 1787580236092
+  },
+  {
+    "event_id": "server:local-ai-match-28fe3b38031d417d8f9ac186caf6858c:614:credit_spent",
+    "event_type": "circuit_credit_spent",
+    "metadata": {
+      "amount": 10,
+      "balance": 191,
+      "battle_elapsed_ms": 49600,
+      "reason": "modul_tasi:drone_bay"
+    },
+    "player_id": "wt-dbd4a70f-4d90-4b60-958a-18ca1e4eff82",
+    "session_id": "local-ai-match-28fe3b38031d417d8f9ac186caf6858c",
+    "timestamp_ms": 1787580236135
+  },
+  {
+    "event_id": "server:local-ai-match-28fe3b38031d417d8f9ac186caf6858c:628:credit_spent",
+    "event_type": "circuit_credit_spent",
+    "metadata": {
+      "amount": 95,
+      "balance": 350,
+      "battle_elapsed_ms": 50000,
+      "reason": "modul_yerlestir:armor"
+    },
+    "player_id": "local-ai-match-28fe3b38031d417d8f9ac186caf6858c-opponent",
+    "session_id": "local-ai-match-28fe3b38031d417d8f9ac186caf6858c",
+    "timestamp_ms": 1787580236168
+  },
+  {
+    "event_id": "server:local-ai-match-28fe3b38031d417d8f9ac186caf6858c:714:booster_used",
+    "event_type": "booster_used",
+    "metadata": {
+      "battle_elapsed_ms": 60000,
+      "booster_id": "emergency_repair",
+      "target_module_id": "armor-1"
+    },
+    "player_id": "local-ai-match-28fe3b38031d417d8f9ac186caf6858c-opponent",
+    "session_id": "local-ai-match-28fe3b38031d417d8f9ac186caf6858c",
+    "timestamp_ms": 1787580236205
+  },
+  {
+    "event_id": "server:local-ai-match-28fe3b38031d417d8f9ac186caf6858c:742:credit_spent",
+    "event_type": "circuit_credit_spent",
+    "metadata": {
+      "amount": 100,
+      "balance": 222,
+      "battle_elapsed_ms": 62700,
+      "reason": "modul_yerlestir:shield"
+    },
+    "player_id": "wt-dbd4a70f-4d90-4b60-958a-18ca1e4eff82",
+    "session_id": "local-ai-match-28fe3b38031d417d8f9ac186caf6858c",
+    "timestamp_ms": 1787580236225
+  },
+  {
+    "event_id": "server:local-ai-match-28fe3b38031d417d8f9ac186caf6858c:765:credit_spent",
+    "event_type": "circuit_credit_spent",
+    "metadata": {
+      "amount": 115,
+      "balance": 133,
+      "battle_elapsed_ms": 65300,
+      "reason": "modul_yerlestir:reflector"
+    },
+    "player_id": "wt-dbd4a70f-4d90-4b60-958a-18ca1e4eff82",
+    "session_id": "local-ai-match-28fe3b38031d417d8f9ac186caf6858c",
+    "timestamp_ms": 1787580236269
+  },
+  {
+    "event_id": "server:local-ai-match-28fe3b38031d417d8f9ac186caf6858c:811:credit_spent",
+    "event_type": "circuit_credit_spent",
+    "metadata": {
+      "amount": 115,
+      "balance": 435,
+      "battle_elapsed_ms": 70000,
+      "reason": "modul_yerlestir:drone_bay"
+    },
+    "player_id": "local-ai-match-28fe3b38031d417d8f9ac186caf6858c-opponent",
+    "session_id": "local-ai-match-28fe3b38031d417d8f9ac186caf6858c",
+    "timestamp_ms": 1787580236305
+  },
+  {
+    "event_id": "server:local-ai-match-28fe3b38031d417d8f9ac186caf6858c:970:booster_used",
+    "event_type": "booster_used",
+    "metadata": {
+      "battle_elapsed_ms": 84100,
+      "booster_id": "emergency_repair",
+      "target_module_id": "generator-1"
+    },
+    "player_id": "wt-dbd4a70f-4d90-4b60-958a-18ca1e4eff82",
+    "session_id": "local-ai-match-28fe3b38031d417d8f9ac186caf6858c",
+    "timestamp_ms": 1787580236339
+  },
+  {
+    "event_id": "server:local-ai-match-28fe3b38031d417d8f9ac186caf6858c:1002:booster_used",
+    "event_type": "booster_used",
+    "metadata": {
+      "battle_elapsed_ms": 87400,
+      "booster_id": "dual_port_adapter",
+      "target_module_id": "reflector-1"
+    },
+    "player_id": "wt-dbd4a70f-4d90-4b60-958a-18ca1e4eff82",
+    "session_id": "local-ai-match-28fe3b38031d417d8f9ac186caf6858c",
+    "timestamp_ms": 1787580236375
+  },
+  {
+    "event_id": "server:local-ai-match-28fe3b38031d417d8f9ac186caf6858c:1034:booster_used",
+    "event_type": "booster_used",
+    "metadata": {
+      "battle_elapsed_ms": 90000,
+      "booster_id": "emergency_repair",
+      "target_module_id": "local-ai-match-28fe3b38031d417d8f9ac186caf6858c-opponent-core"
+    },
+    "player_id": "local-ai-match-28fe3b38031d417d8f9ac186caf6858c-opponent",
+    "session_id": "local-ai-match-28fe3b38031d417d8f9ac186caf6858c",
+    "timestamp_ms": 1787580236405
+  },
+  {
+    "event_id": "server:local-ai-match-28fe3b38031d417d8f9ac186caf6858c:1054:booster_used",
+    "event_type": "booster_used",
+    "metadata": {
+      "battle_elapsed_ms": 91900,
+      "booster_id": "emergency_repair",
+      "target_module_id": "reflector-1"
+    },
+    "player_id": "wt-dbd4a70f-4d90-4b60-958a-18ca1e4eff82",
+    "session_id": "local-ai-match-28fe3b38031d417d8f9ac186caf6858c",
+    "timestamp_ms": 1787580236439
+  },
+  {
+    "event_id": "server:local-ai-match-28fe3b38031d417d8f9ac186caf6858c:match_completed:wt-dbd4a70f-4d90-4b60-958a-18ca1e4eff82",
+    "event_type": "match_completed",
+    "metadata": {
+      "duration_ms": 98600,
+      "finish_reason": "core_destroyed",
+      "is_draw": false,
+      "winner_player_id": "wt-dbd4a70f-4d90-4b60-958a-18ca1e4eff82"
+    },
+    "player_id": "wt-dbd4a70f-4d90-4b60-958a-18ca1e4eff82",
+    "session_id": "local-ai-match-28fe3b38031d417d8f9ac186caf6858c",
+    "timestamp_ms": 1787580236473
+  },
+  {
+    "event_id": "server:local-ai-match-28fe3b38031d417d8f9ac186caf6858c:match_completed:local-ai-match-28fe3b38031d417d8f9ac186caf6858c-opponent",
+    "event_type": "match_completed",
+    "metadata": {
+      "duration_ms": 98600,
+      "finish_reason": "core_destroyed",
+      "is_draw": false,
+      "winner_player_id": "wt-dbd4a70f-4d90-4b60-958a-18ca1e4eff82"
+    },
+    "player_id": "local-ai-match-28fe3b38031d417d8f9ac186caf6858c-opponent",
+    "session_id": "local-ai-match-28fe3b38031d417d8f9ac186caf6858c",
+    "timestamp_ms": 1787580236515
+  },
+  {
+    "event_id": "web-test-audit-wt-dbd4a70f-4d90-4b60-958a-18ca1e4eff82-1787580120475-finished-local-ai-match-28fe3b38031d417d8f9ac186caf6858c",
+    "event_type": "web_test_session_finished",
+    "metadata": {
+      "audit_event_id": "web-test-audit-wt-dbd4a70f-4d90-4b60-958a-18ca1e4eff82-1787580120475",
+      "technical_completed": true,
+      "test_run_id": "web-test-beta.31-local"
+    },
+    "player_id": "wt-dbd4a70f-4d90-4b60-958a-18ca1e4eff82",
+    "session_id": "local-ai-match-28fe3b38031d417d8f9ac186caf6858c",
+    "timestamp_ms": 1787580236609
+  },
+  {
+    "event_id": "client-module_shelf_used-12",
+    "event_type": "module_shelf_used",
+    "metadata": {
+      "elapsed_ms": 98000,
+      "module_id": "missile-launcher-1"
+    },
+    "player_id": "wt-dbd4a70f-4d90-4b60-958a-18ca1e4eff82",
+    "session_id": "local-ai-match-28fe3b38031d417d8f9ac186caf6858c",
+    "timestamp_ms": 1787580236893
+  },
+  {
+    "event_id": "web-test-operation-web-test-beta.31-local-1787580243347",
+    "event_type": "web_test_operation_snapshot",
+    "metadata": {
+      "consistency_status": "consistent",
+      "operational_state": "running",
+      "preflight_ready": true,
+      "run_started": true,
+      "test_run_id": "web-test-beta.31-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1787580243347
+  },
+  {
+    "event_id": "web-test-stability-web-test-beta.31-local-1787580243355",
+    "event_type": "web_test_stability_snapshot",
+    "metadata": {
+      "operation_running_rate": 1.0,
+      "running_to_other_regressions": 0,
+      "stability": "stable",
+      "test_run_id": "web-test-beta.31-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1787580243355
+  },
+  {
+    "event_id": "client-matchmaking_started-13",
+    "event_type": "matchmaking_started",
+    "metadata": {
+      "rating": 1020
+    },
+    "player_id": "wt-dbd4a70f-4d90-4b60-958a-18ca1e4eff82",
+    "session_id": "local-ai-match-28fe3b38031d417d8f9ac186caf6858c",
+    "timestamp_ms": 1787580246421
+  },
+  {
+    "event_id": "server:matchmaking:wt-dbd4a70f-4d90-4b60-958a-18ca1e4eff82:773907296",
+    "event_type": "matchmaking_started",
+    "metadata": {
+      "league_name_tr": "Gümüş",
+      "level": 1,
+      "rating": 1020
+    },
+    "player_id": "wt-dbd4a70f-4d90-4b60-958a-18ca1e4eff82",
+    "session_id": null,
+    "timestamp_ms": 1787580246434
+  },
+  {
+    "event_id": "web-test-audit-wt-dbd4a70f-4d90-4b60-958a-18ca1e4eff82-1787580246421",
+    "event_type": "web_test_session_started",
+    "metadata": {
+      "build": "web-test-beta.13",
+      "operation_ready": true,
+      "player_data_ready": true,
+      "pvp_protocol_version": 1,
+      "release_ready": true,
+      "retention_limit": 50000,
+      "server_version": "2.0.0-beta.32-fix.1",
+      "telemetry_ready": true,
+      "test_run_id": "web-test-beta.31-local"
+    },
+    "player_id": "wt-dbd4a70f-4d90-4b60-958a-18ca1e4eff82",
+    "session_id": null,
+    "timestamp_ms": 1787580246421
+  },
+  {
+    "event_id": "web-test-operation-web-test-beta.31-local-1787580253210",
+    "event_type": "web_test_operation_snapshot",
+    "metadata": {
+      "consistency_status": "consistent",
+      "operational_state": "running",
+      "preflight_ready": true,
+      "run_started": true,
+      "test_run_id": "web-test-beta.31-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1787580253210
+  },
+  {
+    "event_id": "web-test-stability-web-test-beta.31-local-1787580253264",
+    "event_type": "web_test_stability_snapshot",
+    "metadata": {
+      "operation_running_rate": 1.0,
+      "running_to_other_regressions": 0,
+      "stability": "stable",
+      "test_run_id": "web-test-beta.31-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1787580253264
+  },
+  {
+    "event_id": "server:local-ai-match-a68c3255dc6c4f98bb73a2bcbfaf81e2:matchmaking_ai_fallback:wt-dbd4a70f-4d90-4b60-958a-18ca1e4eff82",
+    "event_type": "matchmaking_matched",
+    "metadata": {
+      "fallback_after_seconds": 10,
+      "opponent_type": "ai",
+      "rating_difference": 0
+    },
+    "player_id": "wt-dbd4a70f-4d90-4b60-958a-18ca1e4eff82",
+    "session_id": "local-ai-match-a68c3255dc6c4f98bb73a2bcbfaf81e2",
+    "timestamp_ms": 1787580256556
+  },
+  {
+    "event_id": "web-test-audit-wt-dbd4a70f-4d90-4b60-958a-18ca1e4eff82-1787580246421-bound-local-ai-match-a68c3255dc6c4f98bb73a2bcbfaf81e2",
+    "event_type": "web_test_session_bound",
+    "metadata": {
+      "audit_event_id": "web-test-audit-wt-dbd4a70f-4d90-4b60-958a-18ca1e4eff82-1787580246421",
+      "test_run_id": "web-test-beta.31-local"
+    },
+    "player_id": "wt-dbd4a70f-4d90-4b60-958a-18ca1e4eff82",
+    "session_id": "local-ai-match-a68c3255dc6c4f98bb73a2bcbfaf81e2",
+    "timestamp_ms": 1787580256570
+  },
+  {
+    "event_id": "web-test-operation-web-test-beta.31-local-1787580263507",
+    "event_type": "web_test_operation_snapshot",
+    "metadata": {
+      "consistency_status": "consistent",
+      "operational_state": "running",
+      "preflight_ready": true,
+      "run_started": true,
+      "test_run_id": "web-test-beta.31-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1787580263507
+  },
+  {
+    "event_id": "web-test-stability-web-test-beta.31-local-1787580263620",
+    "event_type": "web_test_stability_snapshot",
+    "metadata": {
+      "operation_running_rate": 1.0,
+      "running_to_other_regressions": 0,
+      "stability": "stable",
+      "test_run_id": "web-test-beta.31-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1787580263620
+  },
+  {
+    "event_id": "server:local-ai-match-a68c3255dc6c4f98bb73a2bcbfaf81e2:match_started:wt-dbd4a70f-4d90-4b60-958a-18ca1e4eff82",
+    "event_type": "match_started",
+    "metadata": {
+      "source": "battle_engine"
+    },
+    "player_id": "wt-dbd4a70f-4d90-4b60-958a-18ca1e4eff82",
+    "session_id": "local-ai-match-a68c3255dc6c4f98bb73a2bcbfaf81e2",
+    "timestamp_ms": 1787580264458
+  },
+  {
+    "event_id": "server:local-ai-match-a68c3255dc6c4f98bb73a2bcbfaf81e2:match_started:local-ai-match-a68c3255dc6c4f98bb73a2bcbfaf81e2-opponent",
+    "event_type": "match_started",
+    "metadata": {
+      "source": "battle_engine"
+    },
+    "player_id": "local-ai-match-a68c3255dc6c4f98bb73a2bcbfaf81e2-opponent",
+    "session_id": "local-ai-match-a68c3255dc6c4f98bb73a2bcbfaf81e2",
+    "timestamp_ms": 1787580264468
+  },
+  {
+    "event_id": "server:local-ai-match-a68c3255dc6c4f98bb73a2bcbfaf81e2:match_completed:wt-dbd4a70f-4d90-4b60-958a-18ca1e4eff82",
+    "event_type": "match_completed",
+    "metadata": {
+      "duration_ms": 7500,
+      "finish_reason": "player_forfeit",
+      "is_draw": false,
+      "winner_player_id": "local-ai-match-a68c3255dc6c4f98bb73a2bcbfaf81e2-opponent"
+    },
+    "player_id": "wt-dbd4a70f-4d90-4b60-958a-18ca1e4eff82",
+    "session_id": "local-ai-match-a68c3255dc6c4f98bb73a2bcbfaf81e2",
+    "timestamp_ms": 1787580264513
+  },
+  {
+    "event_id": "server:local-ai-match-a68c3255dc6c4f98bb73a2bcbfaf81e2:match_completed:local-ai-match-a68c3255dc6c4f98bb73a2bcbfaf81e2-opponent",
+    "event_type": "match_completed",
+    "metadata": {
+      "duration_ms": 7500,
+      "finish_reason": "player_forfeit",
+      "is_draw": false,
+      "winner_player_id": "local-ai-match-a68c3255dc6c4f98bb73a2bcbfaf81e2-opponent"
+    },
+    "player_id": "local-ai-match-a68c3255dc6c4f98bb73a2bcbfaf81e2-opponent",
+    "session_id": "local-ai-match-a68c3255dc6c4f98bb73a2bcbfaf81e2",
+    "timestamp_ms": 1787580264546
+  },
+  {
+    "event_id": "web-test-audit-wt-dbd4a70f-4d90-4b60-958a-18ca1e4eff82-1787580246421-finished-local-ai-match-a68c3255dc6c4f98bb73a2bcbfaf81e2",
+    "event_type": "web_test_session_finished",
+    "metadata": {
+      "audit_event_id": "web-test-audit-wt-dbd4a70f-4d90-4b60-958a-18ca1e4eff82-1787580246421",
+      "technical_completed": true,
+      "test_run_id": "web-test-beta.31-local"
+    },
+    "player_id": "wt-dbd4a70f-4d90-4b60-958a-18ca1e4eff82",
+    "session_id": "local-ai-match-a68c3255dc6c4f98bb73a2bcbfaf81e2",
+    "timestamp_ms": 1787580264636
+  },
+  {
+    "event_id": "web-test-operation-web-test-beta.31-local-1787580273674",
+    "event_type": "web_test_operation_snapshot",
+    "metadata": {
+      "consistency_status": "consistent",
+      "operational_state": "running",
+      "preflight_ready": true,
+      "run_started": true,
+      "test_run_id": "web-test-beta.31-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1787580273674
+  },
+  {
+    "event_id": "web-test-stability-web-test-beta.31-local-1787580273686",
+    "event_type": "web_test_stability_snapshot",
+    "metadata": {
+      "operation_running_rate": 1.0,
+      "running_to_other_regressions": 0,
+      "stability": "stable",
+      "test_run_id": "web-test-beta.31-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1787580273686
+  },
+  {
+    "event_id": "web-test-operation-web-test-beta.31-local-1787580283085",
+    "event_type": "web_test_operation_snapshot",
+    "metadata": {
+      "consistency_status": "consistent",
+      "operational_state": "running",
+      "preflight_ready": true,
+      "run_started": true,
+      "test_run_id": "web-test-beta.31-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1787580283085
+  }
+]
