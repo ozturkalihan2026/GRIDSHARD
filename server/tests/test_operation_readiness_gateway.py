@@ -11,7 +11,7 @@ def test_operation_readiness_endpoint():
         "/web-test/operation-readiness"
     ).json()
 
-    assert body["server_version"]=="2.0.0-beta.29"
+    assert body["server_version"]=="2.0.0-beta.31"
     assert body["web_test_build"]=="web-test-beta.13"
     assert body["pvp_protocol_version"]==1
     assert "checks" in body

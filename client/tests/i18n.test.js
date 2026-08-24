@@ -14,6 +14,14 @@ assert.strictEqual(
 assert.strictEqual(i18n.translateText("Enerji", "en"), "Energy");
 assert.strictEqual(i18n.translateText("Lazer", "en"), "Laser");
 assert.strictEqual(
+  i18n.translateText("En Çok Kullanılan Modüller", "en"),
+  "Most-Used Modules"
+);
+assert.strictEqual(
+  i18n.translateText("Henüz tamamlanmış maç verisi yok.", "en"),
+  "No completed match data yet."
+);
+assert.strictEqual(
   i18n.translateText(
     "Maç 3 · Galibiyet 2 · Mağlubiyet 1 · Beraberlik 0 · Galibiyet %67",
     "en"

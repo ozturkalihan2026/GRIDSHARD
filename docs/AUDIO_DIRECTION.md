@@ -366,3 +366,21 @@ Kullanıcı denemesinde galibiyet müziğinin çok katmanlı düzenlemesi olumlu
 - savaş V5 katmanları, özgün ateş SFX'leri ve galibiyet/mağlubiyet parçaları korunur.
 
 Deterministik kaynak: `tools/generate_beta28_menu_audio.py`. Bu düzenleme de final LUFS/platform master kararı iddiası taşımaz.
+
+---
+
+## 17. Beta.31 Yedi Katmanlı Savaş Gerilimi / Mix V7
+
+Savaş müziği artık tek stereo düzenleme yerine aynı `128 BPM / 32 sn` zaman tabanını paylaşan yedi özgün stem olarak çalar:
+
+- `battle_tension_v7_01_sub.wav` — düşük frekans omurgası,
+- `battle_tension_v7_02_pulse.wav` — kapılı reaktör darbesi,
+- `battle_tension_v7_03_percussion.wav` — kick, metal snare ve sayaç,
+- `battle_tension_v7_04_ostinato.wav` — minör onaltılık motor,
+- `battle_tension_v7_05_shards.wav` — camsı üst frekans karşı ritmi,
+- `battle_tension_v7_06_dissonance.wav` — minör ikili/triton gerilim yatağı,
+- `battle_tension_v7_07_pressure.wav` — kritik baskıda açılan siren ve kalp katmanı.
+
+Stem'ler ayrı ayrı düşük headroom seviyesinde tutulur; çalışma zamanı miksi savaş baskısına göre kazançlarını değiştirir. Bu yaklaşım yedi dosyanın toplamında güvenli boşluk bırakır, ancak final LUFS/True Peak mastering kararı değildir.
+
+Deterministik kaynak: `tools/generate_beta31_battle_audio.py`.

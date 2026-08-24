@@ -91,7 +91,7 @@
   const COMPETITIVE_STATUS = "M7 rekabetçi altyapı doğrulanıyor";
   const BALANCE_STATUS = "Denge simülasyonu mevcut · geniş örnek bekliyor";
   const AI_STATUS = "AI altyapısı mevcut · arketip testleri bekliyor";
-  const PVP_STATUS = "GRIDSHARD Beta.29 · Kompakt Simgeli Havuz + Ana Menü E2E + Temiz Paket";
+  const PVP_STATUS = "GRIDSHARD Beta.31 · Savaş İçi Modül Takası + Akıllı Port + 7 Katmanlı Gerilim Müziği";
 
 
 
@@ -598,7 +598,7 @@
         webTestBuildState,
       releaseCheckState,
       expectedVersion:
-        "2.0.0-beta.29",
+        "2.0.0-beta.31",
       expectedProtocolVersion: 1,
     });
   const playReadinessGate =
@@ -634,7 +634,7 @@
 
   telemetryDispatcher.trackGameOpened({
     platform: "web",
-    build: "2.0.0-beta.29",
+    build: "2.0.0-beta.31",
   });
 
   const postMatchSync =
@@ -1562,7 +1562,7 @@
   const diagnosticSnapshot =
     new RelayDiagnosticSnapshot({
       version:
-        "2.0.0-beta.29",
+        "2.0.0-beta.31",
       build:
         "web-test-beta.13",
       bootGate:
@@ -3500,7 +3500,7 @@
       if (versionEl) {
         versionEl.textContent=
           manifest.version
-          || "2.0.0-beta.29";
+          || "2.0.0-beta.31";
       }
       if (runEl) {
         runEl.textContent=
@@ -5512,6 +5512,23 @@ function saveHumanReviewLocalNote() {
   ) {
     for (const event of events || []) {
       const data=event.data || {};
+      if (
+        event?.type === "command_rejected"
+        && data.player_id === participantPlayerId
+      ) {
+        logClientMessage(
+          `Savaş komutu reddedildi: ${data.reason || "Bilinmeyen neden"}`
+        );
+        continue;
+      }
+      if (
+        event?.type === "modules_swapped"
+        && data.player_id === participantPlayerId
+      ) {
+        logClientMessage("İki aktif modül yer değiştirdi; portlar otomatik bağlandı.");
+        triggerGridshardCue("port_connect");
+        continue;
+      }
       if (event?.type === "module_destroyed") {
         const owner = snapshot.players?.[data.player_id];
         const destroyedModule = owner?.modules?.find(
@@ -6383,7 +6400,7 @@ function saveHumanReviewLocalNote() {
     );
 
     logClientMessage(
-      "Beta.29 geliştirici testi: kompakt simgeli 18 modüllük havuz hazırlandı, sunucu AI oyuncusu eşleşti ve canlı enerji/silah okunabilirliğiyle çift devre savaş alanı açıldı."
+      "Beta.31 geliştirici testi: 18 modüllük havuz ve sunucu AI savaşı hazır; aktif modül takası, akıllı port yönlendirme ve yedi katmanlı gerilim müziği etkin."
     );
 
     return {
@@ -10356,6 +10373,94 @@ function saveHumanReviewLocalNote() {
       + `Mağlubiyet ${view.losses} · `
       + `Beraberlik ${view.draws} · `
       + `Galibiyet %${view.winRatePercent}`;
+
+    const language =
+      document.documentElement.lang === "en"
+        ? "en-US"
+        : "tr-TR";
+    const number = (value) =>
+      Math.max(0, Number(value || 0))
+        .toLocaleString(language);
+    const duration = (value) => {
+      const seconds = Math.max(
+        0,
+        Math.round(Number(value || 0) / 1000)
+      );
+      if (seconds < 60) {
+        return `${seconds} ${localizedUiText("sn")}`;
+      }
+      const minutes = Math.floor(seconds / 60);
+      const remainder = seconds % 60;
+      return `${minutes} ${localizedUiText("dk")} ${remainder} ${localizedUiText("sn")}`;
+    };
+    const setValue = (id, value) => {
+      const target = document.getElementById(id);
+      if (target) target.textContent = String(value);
+    };
+
+    setValue("statistics-total-matches", number(view.totalMatches));
+    setValue(
+      "statistics-record",
+      `${number(view.wins)}G · ${number(view.losses)}M · ${number(view.draws)}B`
+    );
+    setValue("statistics-win-rate", `%${number(view.winRatePercent)}`);
+    setValue(
+      "statistics-average-duration",
+      duration(view.averageMatchDurationMs)
+    );
+    setValue("statistics-total-damage", number(view.totalDamageDealt));
+    setValue(
+      "statistics-module-replacements",
+      number(view.moduleReplacements)
+    );
+    setValue("statistics-boosters-used", number(view.boostersUsed));
+
+    const moduleList = document.getElementById(
+      "statistics-most-used-modules"
+    );
+    if (!moduleList) return;
+    moduleList.replaceChildren();
+
+    const usage = Array.isArray(view.mostUsedModules)
+      ? view.mostUsedModules.slice(0, 8)
+      : [];
+    if (!usage.length) {
+      const empty = document.createElement("p");
+      empty.className = "statistics-empty-state";
+      empty.textContent = localizedUiText(
+        "Henüz tamamlanmış maç verisi yok."
+      );
+      moduleList.appendChild(empty);
+      return;
+    }
+
+    for (const item of usage) {
+      const definitionId = String(item.definition_id || "");
+      const module = moduleDefinitions.find((candidate) =>
+        candidate.instanceId
+          .replace(/-1$/u, "")
+          .replace(/-/gu, "_") === definitionId
+      );
+      const card = document.createElement("article");
+      card.className = "statistics-module-card";
+      if (module?.category) card.dataset.category = module.category;
+
+      const icon = document.createElement("span");
+      icon.className = "statistics-module-icon";
+      icon.textContent = moduleIconFor(module || null);
+
+      const copy = document.createElement("span");
+      copy.className = "statistics-module-copy";
+      const name = document.createElement("strong");
+      name.textContent = localizedUiText(
+        module?.nameTr || definitionId || "Modül"
+      );
+      const count = document.createElement("small");
+      count.textContent = `${number(item.matches_used)} ${localizedUiText("maçta kullanıldı")}`;
+      copy.append(name, count);
+      card.append(icon, copy);
+      moduleList.appendChild(card);
+    }
   }
 
   function render() {
@@ -10366,6 +10471,7 @@ function saveHumanReviewLocalNote() {
   }
 
   let renderedShelfSignature = null;
+  let renderedBoardSignature = null;
 
   function renderShelf() {
     const unlocked =
@@ -10478,6 +10584,29 @@ function saveHumanReviewLocalNote() {
     ) {
       return;
     }
+    const boardSignature = JSON.stringify({
+      selectedModuleId:tapSelectedModuleId,
+      battleFinished:localBattleFinished,
+      selectedBoosterId,
+      modules:[...client.modules.values()].map(module => ({
+        id:module.instanceId,
+        status:module.status,
+        position:module.position,
+        direction:module.direction,
+        ports:module.ports,
+        hp:module.hp,
+        maxHp:module.maxHp,
+        heat:module.heat,
+        isPowered:module.isPowered,
+        energyReceived:module.energyReceived,
+        energyRequired:module.energyRequired,
+        powerReason:module.powerReason,
+      })),
+    });
+    if (!force && boardSignature === renderedBoardSignature) {
+      return;
+    }
+    renderedBoardSignature = boardSignature;
     battleBoardView.render(
       client.modules.values(),
       {
@@ -10843,6 +10972,8 @@ function saveHumanReviewLocalNote() {
       cost = moduleCost(command.payload.module_id);
     } else if (command.kind === "move_module") {
       cost = 10;
+    } else if (command.kind === "swap_modules") {
+      cost = 10;
     } else if (command.kind === "replace_module") {
       cost = moduleCost(command.payload.incoming_module_id);
     } else if (command.kind === "rotate_module") {
@@ -10872,6 +11003,7 @@ function saveHumanReviewLocalNote() {
         );
       } else if (
         command.kind === "move_module"
+        || command.kind === "swap_modules"
       ) {
         const movedModule=
           client.requireModule(
@@ -10879,7 +11011,8 @@ function saveHumanReviewLocalNote() {
           );
         trackBattleUiInteraction(
           command.kind,
-          movedModule.instanceId
+          command.kind === "move_module"
+          && movedModule.instanceId
           === "generator-1"
             ? "generator_gate"
             : "module_move"
@@ -10967,6 +11100,42 @@ function saveHumanReviewLocalNote() {
           );
         }
       }
+    } else if (command.kind === "swap_modules") {
+      const first = client.requireModule(
+        command.payload.module_id
+      );
+      const second = client.requireModule(
+        command.payload.target_module_id
+      );
+      const firstPosition = first.position
+        ? {...first.position}
+        : null;
+      const secondPosition = second.position
+        ? {...second.position}
+        : null;
+      if (!firstPosition || !secondPosition) {
+        logClientMessage(
+          "Yer değiştirilecek modüllerin konumu bulunamadı."
+        );
+        return;
+      }
+      client.applyServerModuleState({
+        instanceId:first.instanceId,
+        position:secondPosition,
+        ports:undefined,
+        isPowered:false,
+      });
+      client.applyServerModuleState({
+        instanceId:second.instanceId,
+        position:firstPosition,
+        ports:undefined,
+        isPowered:false,
+      });
+      autoOrientMockSwap(first, second);
+      if (localBattleMetrics) {
+        localBattleMetrics.module_changes += 1;
+      }
+      triggerGridshardCue("port_connect");
     } else if (command.kind === "remove_module") {
       const module = client.requireModule(command.payload.module_id);
       client.applyServerModuleState({
@@ -11131,6 +11300,60 @@ function saveHumanReviewLocalNote() {
     }
 
     return reachable;
+  }
+
+  function autoOrientMockSwap(first, second) {
+    const directions = ["up","right","down","left"];
+    const active = [...client.modules.values()].filter(
+      (module) => module.status === "active"
+    );
+    const originalFirst = first.direction || "up";
+    const originalSecond = second.direction || "up";
+    let best = null;
+
+    for (const firstDirection of directions) {
+      first.direction = firstDirection;
+      for (const secondDirection of directions) {
+        second.direction = secondDirection;
+        const reachable = connectedEnergyModuleIds(active);
+        if (
+          !reachable.has(first.instanceId)
+          || !reachable.has(second.instanceId)
+        ) {
+          continue;
+        }
+        let connectionCount = 0;
+        for (let index = 0; index < active.length; index += 1) {
+          for (let other = index + 1; other < active.length; other += 1) {
+            if (areConnected(active[index], active[other])) {
+              connectionCount += 1;
+            }
+          }
+        }
+        const score = [
+          reachable.size,
+          connectionCount,
+          Number(firstDirection === originalFirst)
+            + Number(secondDirection === originalSecond),
+        ];
+        if (
+          !best
+          || score.some((value, index) =>
+            value > best.score[index]
+            && score.slice(0, index).every(
+              (prefix, prefixIndex) => prefix === best.score[prefixIndex]
+            )
+          )
+        ) {
+          best = {score, firstDirection, secondDirection};
+        }
+      }
+    }
+
+    first.direction = best?.firstDirection || originalFirst;
+    second.direction = best?.secondDirection || originalSecond;
+    first.ports = undefined;
+    second.ports = undefined;
   }
 
   function updateMockEnergy() {

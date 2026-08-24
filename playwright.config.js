@@ -10,8 +10,9 @@ module.exports = defineConfig({
   timeout: 60_000,
   expect: { timeout: 10_000 },
   fullyParallel: false,
-  // Aynı yerel IP'den çalışan E2E projeleri üretim rate-limit'ini birbirinin
-  // aleyhine tüketmemeli; CI ve geliştirici kanıtı aynı seri matrisi kullanır.
+    // Aynı yerel IP'den çalışan E2E projeleri seri ilerler. HTTP rate-limit'in
+    // kendisi sunucu testlerinde doğrulanır; tarayıcı matrisi ortak IP kotasıyla
+    // ilgisiz kullanıcı akışlarını 429 ile kirletmemelidir.
   workers: 1,
   retries: process.env.CI ? 1 : 0,
   reporter: [
@@ -39,7 +40,7 @@ module.exports = defineConfig({
       ...process.env,
       GRIDSHARD_PYTHON: process.env.GRIDSHARD_PYTHON || bundledPython,
       GRIDSHARD_AUTH_REQUIRED: "1",
-      GRIDSHARD_RATE_LIMIT_REQUIRED: "1",
+      GRIDSHARD_RATE_LIMIT_REQUIRED: "0",
       GRIDSHARD_AUTH_SIGNING_KEY:
         process.env.GRIDSHARD_AUTH_SIGNING_KEY || "e2e-only-signing-key-change-in-production",
       RELAY_WEB_TEST_RUN_ID: "gridshard-playwright-e2e",
@@ -52,7 +53,7 @@ module.exports = defineConfig({
   projects: [
     {
       name: "desktop-chromium",
-      testMatch: /(two-client-pvp|menu-navigation)\.spec\.js/,
+      testMatch: /(two-client-pvp|menu-navigation|battle-density|battle-module-swap)\.spec\.js/,
       use: { ...devices["Desktop Chrome"], ...localChrome }
     },
     {

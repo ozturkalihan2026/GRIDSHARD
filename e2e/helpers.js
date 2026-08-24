@@ -51,7 +51,11 @@ async function createAuthenticatedClient(browser, baseURL, playerId) {
 
 async function api(client, method, path, body) {
   const result = await client.page.evaluate(async ({ method, path, body, token }) => {
-    const response = await fetch(path, {
+    // Uygulama fetch sarmalayıcısının URL'den farklı bir oyuncu kimliği
+    // çıkarsamasına izin vermeden, bu bağımsız tarayıcı bağlamının açıkça
+    // verilen token'ı ile sunucu protokolünü test et.
+    const request = globalThis.GridshardAuth?.originalFetch || globalThis.fetch;
+    const response = await request(path, {
       method,
       headers: {
         authorization: `Bearer ${token}`,
@@ -68,10 +72,17 @@ async function api(client, method, path, body) {
   return result.payload;
 }
 
-async function connectSocket(client, baseURL, sessionId) {
-  await client.page.evaluate(({ baseURL, sessionId, playerId, token }) => {
+async function connectSocket(client, baseURL, sessionId, { resetMessages = true } = {}) {
+  await client.page.evaluate(({ baseURL, sessionId, playerId, token, resetMessages }) => {
     const wsBase = baseURL.replace(/^http/, "ws");
-    window.__gridshardE2E = { messages: [], open: false, closed: false };
+    const previousMessages = Array.isArray(window.__gridshardE2E?.messages)
+      ? window.__gridshardE2E.messages
+      : [];
+    window.__gridshardE2E = {
+      messages: resetMessages ? [] : previousMessages,
+      open: false,
+      closed: false
+    };
     const socket = new WebSocket(
       `${wsBase}/ws/pvp/${encodeURIComponent(sessionId)}` +
       `?player_id=${encodeURIComponent(playerId)}&access_token=${encodeURIComponent(token)}`
@@ -82,11 +93,23 @@ async function connectSocket(client, baseURL, sessionId) {
     });
     socket.addEventListener("close", () => { window.__gridshardE2E.closed = true; });
     window.__gridshardE2ESocket = socket;
-  }, { baseURL, sessionId, playerId: client.playerId, token: client.token });
+  }, { baseURL, sessionId, playerId: client.playerId, token: client.token, resetMessages });
 
   await expect.poll(() => client.page.evaluate(() => window.__gridshardE2E.open)).toBe(true);
   await expect.poll(() => client.page.evaluate(() =>
     window.__gridshardE2E.messages.some(message => message.type === "reconnect_state")
+  )).toBe(true);
+}
+
+async function closeSocket(client, code = 4000, reason = "e2e-network-drop") {
+  await client.page.evaluate(({ code, reason }) => {
+    const socket = window.__gridshardE2ESocket;
+    if (socket && socket.readyState < WebSocket.CLOSING) {
+      socket.close(code, reason);
+    }
+  }, { code, reason });
+  await expect.poll(() => client.page.evaluate(() =>
+    window.__gridshardE2E?.closed === true
   )).toBe(true);
 }
 
@@ -109,5 +132,6 @@ module.exports = {
   createAuthenticatedClient,
   api,
   connectSocket,
+  closeSocket,
   sendSocket
 };

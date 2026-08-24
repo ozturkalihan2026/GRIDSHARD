@@ -1,31 +1,99 @@
 {
-  "version": "2.0.0-beta.29",
-  "source_status": "SKIPPED",
-  "status": "SKIPPED",
-  "passed": false,
-  "skipped": true,
+  "version": "2.0.0-beta.31",
+  "source_status": "PASSED",
+  "status": "PASSED",
+  "passed": true,
+  "skipped": false,
   "failed": false,
-  "reason": "Page.goto: net::ERR_BLOCKED_BY_ADMINISTRATOR at http://127.0.0.1:8878/?e2e=1\nCall log:\n  - navigating to \"http://127.0.0.1:8878/?e2e=1\", waiting until \"networkidle\"\n",
-  "browser": "/usr/bin/chromium",
-  "evidence_complete": false,
+  "reason": "Playwright matrisi gerçek tarayıcı süreçlerinde tamamlandı.",
+  "browser": [
+    "desktop-chromium",
+    "android-chrome-emulated",
+    "iphone-safari-emulated"
+  ],
+  "evidence_complete": true,
   "playwright_matrix": {
-    "report_exists": false,
-    "complete": false,
-    "status": "NOT_RUN",
+    "report_exists": true,
+    "complete": true,
+    "status": "PASSED",
     "expected_projects": {
-      "desktop-chromium": 1,
+      "desktop-chromium": 5,
       "android-chrome-emulated": 2,
       "iphone-safari-emulated": 2
     },
     "passed_by_project": {
-      "desktop-chromium": 0,
-      "android-chrome-emulated": 0,
-      "iphone-safari-emulated": 0
+      "desktop-chromium": 5,
+      "android-chrome-emulated": 2,
+      "iphone-safari-emulated": 2
     },
-    "test_count": 0,
-    "duration_ms": 0.0,
-    "started_at": null,
-    "tests": []
+    "test_count": 9,
+    "duration_ms": 195148.511,
+    "started_at": "2026-08-24T11:58:41.344Z",
+    "tests": [
+      {
+        "project": "desktop-chromium",
+        "file": "battle-density.spec.js",
+        "line": 3,
+        "passed": true,
+        "duration_ms": 14162
+      },
+      {
+        "project": "desktop-chromium",
+        "file": "battle-module-swap.spec.js",
+        "line": 4,
+        "passed": true,
+        "duration_ms": 33154
+      },
+      {
+        "project": "desktop-chromium",
+        "file": "menu-navigation.spec.js",
+        "line": 3,
+        "passed": true,
+        "duration_ms": 2600
+      },
+      {
+        "project": "desktop-chromium",
+        "file": "two-client-pvp.spec.js",
+        "line": 12,
+        "passed": true,
+        "duration_ms": 12825
+      },
+      {
+        "project": "desktop-chromium",
+        "file": "two-client-pvp.spec.js",
+        "line": 70,
+        "passed": true,
+        "duration_ms": 14514
+      },
+      {
+        "project": "android-chrome-emulated",
+        "file": "mobile-battle.spec.js",
+        "line": 3,
+        "passed": true,
+        "duration_ms": 33492
+      },
+      {
+        "project": "android-chrome-emulated",
+        "file": "mobile-battle.spec.js",
+        "line": 66,
+        "passed": true,
+        "duration_ms": 15885
+      },
+      {
+        "project": "iphone-safari-emulated",
+        "file": "mobile-battle.spec.js",
+        "line": 3,
+        "passed": true,
+        "duration_ms": 41135
+      },
+      {
+        "project": "iphone-safari-emulated",
+        "file": "mobile-battle.spec.js",
+        "line": 66,
+        "passed": true,
+        "duration_ms": 22698
+      }
+    ]
   },
   "legacy_browser_runner": {
     "source_status": "SKIPPED",

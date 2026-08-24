@@ -62,7 +62,7 @@ def http_post(url: str):
 def smoke_server() -> dict:
     port = free_port()
     env = os.environ.copy()
-    env["RELAY_WEB_TEST_RUN_ID"] = "web-test-beta.29-qa"
+    env["RELAY_WEB_TEST_RUN_ID"] = "web-test-beta.31-qa"
     env["RELAY_TELEMETRY_PATH"] = str(ROOT / "server/data/qa_telemetry.json")
     env["RELAY_PLAYER_DATA_PATH"] = str(ROOT / "server/data/qa_players.json")
     env["RELAY_BATTLE_POOL_PRESET_PATH"] = str(
@@ -225,6 +225,9 @@ def smoke_server() -> dict:
 
 def main() -> int:
     REPORT_DIR.mkdir(exist_ok=True)
+    # Temiz kaynak paketinde .pytest_cache bulunmaz. Pytest --basetemp hedefi
+    # alt klasörü oluşturabilir ancak Windows'ta eksik üst klasörü oluşturmaz.
+    (ROOT / ".pytest_cache").mkdir(exist_ok=True)
     steps = [
         run_step(
             "release_guard",
@@ -327,10 +330,10 @@ def main() -> int:
     if all(step["ok"] for step in steps):
         steps.append(
             run_step(
-                "beta29_acceptance_report",
+                "beta31_acceptance_report",
                 [
                     sys.executable,
-                    "tools/beta29_acceptance_report.py",
+                    "tools/beta31_acceptance_report.py",
                 ],
                 cwd=ROOT,
             )
@@ -416,7 +419,7 @@ def main() -> int:
 
     report = {
         "project": "GRIDSHARD 2.0",
-        "version": "2.0.0-beta.29",
+        "version": "2.0.0-beta.31",
         "generated_at_epoch": int(time.time()),
         "ok": all(step["ok"] for step in steps),
         "steps": steps,

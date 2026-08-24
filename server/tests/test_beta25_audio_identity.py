@@ -36,11 +36,12 @@ def test_beta25_audio_runtime_uses_shardglass_mix():
     source = (ROOT / "client" / "src" / "gridshard-audio.js").read_text(
         encoding="utf-8"
     )
-    assert 'version:"shardglass-ensemble-v6"' in source
+    assert 'version:"shardglass-seven-layer-v7"' in source
+    assert "GRIDSHARD_BATTLE_LAYERS" in source
     for name in (
         "menu_ensemble_v6.wav",
         "pool_ensemble_v6.wav",
-        "battle_fracture_v5.wav",
-        "critical_shard_v5.wav",
+        "battle_tension_v7_01_sub.wav",
+        "battle_tension_v7_07_pressure.wav",
     ):
         assert name in source

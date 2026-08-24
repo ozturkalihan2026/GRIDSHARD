@@ -178,6 +178,8 @@ Beta.25 müzik dili başka oyunların soundtrack düzenini kullanmaz. Ortak kiml
 
 Dosyalar deterministik olarak `tools/generate_beta25_audio.py` ile üretilebilir. Bu paket kimlik ve miks prototipidir; platform LUFS/True Peak hedefi ayrı insan kararı olmadan “final mastering” sayılmaz.
 
+Beta.31'de savaş kimliği aynı Shard Pulse ailesi içinde yedi eşzamanlı ve adaptif stem'e genişletildi. Güncel stem listesi ve miks davranışı `docs/AUDIO_DIRECTION.md` içindeki V7 bölümünde kanoniktir.
+
 ---
 
 ## 9. Dosya / kodlama ilkesi

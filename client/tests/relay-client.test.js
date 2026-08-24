@@ -77,6 +77,26 @@ function createClient() {
 {
   const { client, emitted } = createClient();
   client.updateElapsedMs(20000);
+  client.applyServerModuleState({
+    instanceId:"laser-1",
+    status:MODULE_STATUS.ACTIVE,
+    position:{x:3,y:2},
+  });
+  assert.strictEqual(client.beginDrag("laser-1").ok, true);
+  const result = client.dropOnCell(2, 2, "shield-1");
+  assert.strictEqual(result.ok, true);
+  assert.deepStrictEqual(emitted[0], {
+    kind:"swap_modules",
+    payload:{
+      module_id:"laser-1",
+      target_module_id:"shield-1",
+    },
+  });
+}
+
+{
+  const { client, emitted } = createClient();
+  client.updateElapsedMs(20000);
   assert.strictEqual(client.beginDrag("shield-1").ok, true);
   const result = client.dropOnCell(4, 4);
   assert.strictEqual(result.ok, true);
@@ -460,61 +480,61 @@ function createClient() {
   const fs=require("fs");
   const src=fs.readFileSync(path.join(ROOT,"src/app.js"),"utf8");
   assert.ok(src.includes("PVP_STATUS"));
-  assert.ok(src.includes("GRIDSHARD Beta.29 · Kompakt Simgeli Havuz + Ana Menü E2E + Temiz Paket"));
+  assert.ok(src.includes("GRIDSHARD Beta.31 · Savaş İçi Modül Takası + Akıllı Port + 7 Katmanlı Gerilim Müziği"));
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync(path.join(ROOT,"src/app.js"),"utf8");
-  assert.ok(src.includes("GRIDSHARD Beta.29 · Kompakt Simgeli Havuz + Ana Menü E2E + Temiz Paket")); // alpha32->33 protocol status
+  assert.ok(src.includes("GRIDSHARD Beta.31 · Savaş İçi Modül Takası + Akıllı Port + 7 Katmanlı Gerilim Müziği")); // alpha32->33 protocol status
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync(path.join(ROOT,"src/app.js"),"utf8");
-  assert.ok(src.includes("GRIDSHARD Beta.29 · Kompakt Simgeli Havuz + Ana Menü E2E + Temiz Paket")); // alpha33 protocol
+  assert.ok(src.includes("GRIDSHARD Beta.31 · Savaş İçi Modül Takası + Akıllı Port + 7 Katmanlı Gerilim Müziği")); // alpha33 protocol
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync(path.join(ROOT,"src/app.js"),"utf8");
-  assert.ok(src.includes("GRIDSHARD Beta.29 · Kompakt Simgeli Havuz + Ana Menü E2E + Temiz Paket")); // alpha34 websocket
+  assert.ok(src.includes("GRIDSHARD Beta.31 · Savaş İçi Modül Takası + Akıllı Port + 7 Katmanlı Gerilim Müziği")); // alpha34 websocket
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync(path.join(ROOT,"src/app.js"),"utf8");
-  assert.ok(src.includes("GRIDSHARD Beta.29 · Kompakt Simgeli Havuz + Ana Menü E2E + Temiz Paket")); // alpha35 gateway
+  assert.ok(src.includes("GRIDSHARD Beta.31 · Savaş İçi Modül Takası + Akıllı Port + 7 Katmanlı Gerilim Müziği")); // alpha35 gateway
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync(path.join(ROOT,"src/app.js"),"utf8");
-  assert.ok(src.includes("GRIDSHARD Beta.29 · Kompakt Simgeli Havuz + Ana Menü E2E + Temiz Paket")); // alpha36 setup
+  assert.ok(src.includes("GRIDSHARD Beta.31 · Savaş İçi Modül Takası + Akıllı Port + 7 Katmanlı Gerilim Müziği")); // alpha36 setup
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync(path.join(ROOT,"src/app.js"),"utf8");
-  assert.ok(src.includes("GRIDSHARD Beta.29 · Kompakt Simgeli Havuz + Ana Menü E2E + Temiz Paket")); // alpha37 lobby
+  assert.ok(src.includes("GRIDSHARD Beta.31 · Savaş İçi Modül Takası + Akıllı Port + 7 Katmanlı Gerilim Müziği")); // alpha37 lobby
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync(path.join(ROOT,"src/app.js"),"utf8");
-  assert.ok(src.includes("GRIDSHARD Beta.29 · Kompakt Simgeli Havuz + Ana Menü E2E + Temiz Paket")); // alpha38 runner
+  assert.ok(src.includes("GRIDSHARD Beta.31 · Savaş İçi Modül Takası + Akıllı Port + 7 Katmanlı Gerilim Müziği")); // alpha38 runner
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync(path.join(ROOT,"src/app.js"),"utf8");
-  assert.ok(src.includes("GRIDSHARD Beta.29 · Kompakt Simgeli Havuz + Ana Menü E2E + Temiz Paket")); // alpha39 heartbeat
+  assert.ok(src.includes("GRIDSHARD Beta.31 · Savaş İçi Modül Takası + Akıllı Port + 7 Katmanlı Gerilim Müziği")); // alpha39 heartbeat
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync(path.join(ROOT,"src/app.js"),"utf8");
-  assert.ok(src.includes("GRIDSHARD Beta.29 · Kompakt Simgeli Havuz + Ana Menü E2E + Temiz Paket")); // alpha40 online pvp
+  assert.ok(src.includes("GRIDSHARD Beta.31 · Savaş İçi Modül Takası + Akıllı Port + 7 Katmanlı Gerilim Müziği")); // alpha40 online pvp
 }
 
 {
@@ -745,7 +765,7 @@ function createClient() {
 {
   const fs=require("fs");
   const src=fs.readFileSync(path.join(ROOT,"src/app.js"),"utf8");
-  assert.ok(src.includes("GRIDSHARD Beta.29 · Kompakt Simgeli Havuz + Ana Menü E2E + Temiz Paket"));
+  assert.ok(src.includes("GRIDSHARD Beta.31 · Savaş İçi Modül Takası + Akıllı Port + 7 Katmanlı Gerilim Müziği"));
   assert.ok(src.includes("buildPvPCommandEnvelope"));
   assert.ok(src.includes("applyPvPServerEnvelope"));
 }
@@ -2442,7 +2462,7 @@ function createClient() {
   const html=fs.readFileSync(path.join(ROOT,"index.html"),"utf8");
   assert.ok(
     html.includes(
-      "2.0.0-beta.29"
+      "2.0.0-beta.31"
     )
   );
   assert.ok(
@@ -4818,7 +4838,8 @@ function createClient() {
   assert.ok(css.includes(".human-review-item"));
   assert.ok(audio.includes("GRIDSHARD_AUDIO_MIX"));
   assert.ok(audio.includes("crossfadeMs:1200"));
-  assert.ok(audio.includes("critical_shard_v5.wav"));
+  assert.ok(audio.includes("battle_tension_v7_07_pressure.wav"));
+  assert.ok(audio.includes("GRIDSHARD_BATTLE_LAYERS"));
 }
 
 {
@@ -4833,7 +4854,7 @@ function createClient() {
   assert.ok(app.includes("gridshardE2eTimeScale"));
   assert.ok(app.includes("loadUiBuildManifest"));
   assert.ok(app.includes("setBattlePressure"));
-  assert.ok(audio.includes('version:"shardglass-ensemble-v6"'));
+  assert.ok(audio.includes('version:"shardglass-seven-layer-v7"'));
   assert.ok(audio.includes("criticalLayerMaxGain"));
 }
 
@@ -4899,8 +4920,31 @@ function createClient() {
   assert.ok(app.includes("saveCandidateReviewDraft"));
 }
 
+{
+  const fs=require("fs");
+  const html=fs.readFileSync("./index.html","utf8");
+  const app=fs.readFileSync("./src/app.js","utf8");
+  const css=fs.readFileSync("./src/styles.css","utf8");
+
+  for (const id of [
+    "statistics-total-matches",
+    "statistics-win-rate",
+    "statistics-average-duration",
+    "statistics-total-damage",
+    "statistics-module-replacements",
+    "statistics-boosters-used",
+    "statistics-most-used-modules",
+  ]) {
+    assert.ok(html.includes(`id="${id}"`));
+  }
+  assert.ok(app.includes("view.mostUsedModules.slice(0, 8)"));
+  assert.ok(app.includes("statistics-module-card"));
+  assert.ok(css.includes(".statistics-metrics-grid"));
+  assert.ok(css.includes(".statistics-empty-state"));
+}
+
 Promise.all(asyncTests).then(() => {
-  console.log("175 client tests passed");
+  console.log("176 client tests passed");
 }).catch((error) => {
   console.error(error);
   process.exitCode = 1;

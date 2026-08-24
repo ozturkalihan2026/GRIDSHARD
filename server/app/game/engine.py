@@ -31,7 +31,6 @@ from .heat import (
 from .topology import (
     build_energy_topology,
     module_port_directions,
-    modules_are_port_connected,
 )
 from .result import (
     build_player_summary,
@@ -471,58 +470,52 @@ class BattleEngine:
         bir kart elde etmiyor.
         """
         player = self._require_player(player_id)
-        # Taşıma/değiştirme doğrulamasında eski modül enerji topolojisinde
-        # tutulursa kendi arkasındaki kopuk adayı erişilebilir gösterebilir.
-        # Aday hattı, işlemden sonra gerçekten kalacak devre üzerinden kur.
-        excluded = (
-            player.modules.get(exclude_module_id)
-            if exclude_module_id is not None
-            else None
-        )
-        excluded_position = excluded.position if excluded is not None else None
-        try:
-            if excluded is not None:
-                excluded.position = None
-            topology = self.energy_topology_for_player(player_id)
-        finally:
-            if excluded is not None:
-                excluded.position = excluded_position
-        reachable_ids = set(topology.reachable_from_generator)
-        connected_candidates = [
-            current
-            for current in player.modules.values()
-            if current.instance_id != exclude_module_id
-            and current.instance_id in reachable_ids
-            and current.status == ModuleStatus.ACTIVE
-            and current.position is not None
-        ]
-
+        excluded = player.modules.get(exclude_module_id)
         original_position = module.position
         original_direction = module.direction
+        original_status = module.status
+        excluded_position = (
+            excluded.position
+            if excluded is not None and excluded is not module
+            else None
+        )
+        directions = tuple(dict.fromkeys((
+            original_direction,
+            Direction.UP,
+            Direction.RIGHT,
+            Direction.DOWN,
+            Direction.LEFT,
+        )))
+        best: tuple[tuple[int, int, int], Direction] | None = None
         try:
+            if excluded is not None and excluded is not module:
+                excluded.position = None
+            module.status = ModuleStatus.ACTIVE
             module.position = position
-            for direction in (
-                original_direction,
-                Direction.UP,
-                Direction.RIGHT,
-                Direction.DOWN,
-                Direction.LEFT,
-            ):
+            for direction in directions:
                 module.direction = direction
-                if any(
-                    modules_are_port_connected(
-                        module,
-                        current,
-                        self.board.core_position,
-                    )
-                    for current in connected_candidates
-                ):
-                    return direction
+                topology = build_energy_topology(
+                    player,
+                    self.board.core_position,
+                )
+                reachable = set(topology.reachable_from_generator)
+                if module.instance_id not in reachable:
+                    continue
+                score = (
+                    len(reachable),
+                    len(topology.connection_pairs),
+                    int(direction == original_direction),
+                )
+                if best is None or score > best[0]:
+                    best = (score, direction)
         finally:
             module.position = original_position
             module.direction = original_direction
+            module.status = original_status
+            if excluded is not None and excluded is not module:
+                excluded.position = excluded_position
 
-        return None
+        return None if best is None else best[1]
 
 
     def set_module_heat(
@@ -1484,6 +1477,7 @@ class BattleEngine:
                 "place_module": self._cmd_place_module,
                 "remove_module": self._cmd_remove_module,
                 "move_module": self._cmd_move_module,
+                "swap_modules": self._cmd_swap_modules,
                 "replace_module": self._cmd_replace_module,
                 "rotate_module": self._cmd_rotate_module,
                 "apply_booster": self._cmd_apply_booster,
@@ -1655,6 +1649,124 @@ class BattleEngine:
         self._emit(
             "module_moved",
             self._module_event_data(player_id, module),
+        )
+
+    def _best_swap_directions(
+        self,
+        player_id: str,
+        first: BattleModule,
+        second: BattleModule,
+    ) -> tuple[Direction, Direction] | None:
+        """İki modülün takas sonrası en güçlü çalışan port düzenini seçer.
+
+        Dört yönün 16 kombinasyonu deterministik olarak sınanır. Her iki modülün
+        de Jeneratörden erişilebilir olması zorunludur; ardından erişilebilir
+        modül sayısı ve çalışan port çifti sayısı en yüksek düzen tercih edilir.
+        Eşitlikte mevcut yönleri koruyan kombinasyon kazanır.
+        """
+        player = self._require_player(player_id)
+        if first.position is None or second.position is None:
+            return None
+
+        first_position = first.position
+        second_position = second.position
+        first_direction = first.direction
+        second_direction = second.direction
+        directions = (Direction.UP, Direction.RIGHT, Direction.DOWN, Direction.LEFT)
+        best: tuple[tuple[int, int, int], Direction, Direction] | None = None
+
+        try:
+            first.position = second_position
+            second.position = first_position
+            for first_candidate in directions:
+                first.direction = first_candidate
+                for second_candidate in directions:
+                    second.direction = second_candidate
+                    topology = build_energy_topology(
+                        player,
+                        self.board.core_position,
+                    )
+                    reachable = set(topology.reachable_from_generator)
+                    if not {
+                        first.instance_id,
+                        second.instance_id,
+                    }.issubset(reachable):
+                        continue
+                    score = (
+                        len(reachable),
+                        len(topology.connection_pairs),
+                        int(first_candidate == first_direction)
+                        + int(second_candidate == second_direction),
+                    )
+                    if best is None or score > best[0]:
+                        best = (score, first_candidate, second_candidate)
+        finally:
+            first.position = first_position
+            second.position = second_position
+            first.direction = first_direction
+            second.direction = second_direction
+
+        if best is None:
+            return None
+        return best[1], best[2]
+
+    def _cmd_swap_modules(self, player_id: str, payload: dict) -> None:
+        """İki yaşayan aktif modülün konumunu tek, atomik hamlede değiştirir."""
+        self._ensure_module_interaction_unlocked()
+        first = self._require_active_module(player_id, payload["module_id"])
+        second = self._require_active_module(player_id, payload["target_module_id"])
+
+        if first.instance_id == second.instance_id:
+            raise CommandRejected("Bir modül kendi konumuyla değiştirilemez.")
+        if first.hp <= 0 or second.hp <= 0:
+            raise CommandRejected("Yok edilmiş modüller yer değiştiremez.")
+        if not first.definition.movable:
+            raise CommandRejected(f"{first.definition.name_tr} taşınamaz.")
+        if not second.definition.movable:
+            raise CommandRejected(f"{second.definition.name_tr} taşınamaz.")
+        if {
+            first.definition.id,
+            second.definition.id,
+        } & {"core", "generator"}:
+            raise CommandRejected(
+                "Çekirdek ve Jeneratör normal modül takasına dahil edilemez."
+            )
+        if first.position is None or second.position is None:
+            raise CommandRejected("Yer değiştirilecek modüllerin konumu bulunamadı.")
+
+        directions = self._best_swap_directions(
+            player_id,
+            first,
+            second,
+        )
+        if directions is None:
+            raise CommandRejected(
+                "Bu takas iki modülü birden çalışan Jeneratör hattına bağlayamıyor."
+            )
+
+        self._spend_circuit_credits(
+            player_id,
+            self.circuit_credit_config.move_cost,
+            reason=(
+                f"modul_takas:{first.definition.id}:{second.definition.id}"
+            ),
+        )
+
+        first_position = first.position
+        second_position = second.position
+        first.position = second_position
+        second.position = first_position
+        first.direction, second.direction = directions
+        first.is_powered = False
+        second.is_powered = False
+
+        self._emit(
+            "modules_swapped",
+            {
+                "player_id": player_id,
+                "first": self._module_event_data(player_id, first),
+                "second": self._module_event_data(player_id, second),
+            },
         )
 
     def _cmd_replace_module(self, player_id: str, payload: dict) -> None:

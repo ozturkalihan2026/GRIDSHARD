@@ -30,7 +30,7 @@ const director = new global.GridshardAudioDirector();
 
 assert.strictEqual(
   global.GRIDSHARD_AUDIO_MIX.version,
-  "shardglass-ensemble-v6"
+  "shardglass-seven-layer-v7"
 );
 
 assert.strictEqual(
@@ -46,6 +46,11 @@ director.setState("battle");
 const battleTrack = director.currentTrack;
 assert.ok(battleTrack);
 assert.notStrictEqual(battleTrack, menuTrack);
+assert.strictEqual(director.battleLayerTracks.length, 7);
+assert.strictEqual(
+  new Set(director.battleLayerTracks.map(track => track.src)).size,
+  7
+);
 
 director.setState("critical_core");
 assert.ok(director.criticalLayerTrack);
@@ -63,7 +68,8 @@ assert.strictEqual(
 
 setTimeout(() => {
   assert.strictEqual(menuTrack.paused, true);
-  assert.ok(battleTrack.volume >= 0);
+    assert.ok(battleTrack.volume >= 0);
+    assert.ok(director.battleLayerTracks.every(track => track.volume > 0));
   assert.ok(
     director.criticalLayerTrack.volume > 0
   );

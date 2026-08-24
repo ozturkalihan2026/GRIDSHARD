@@ -1,8 +1,8 @@
 {
-  "version": "2.0.0-beta.29",
+  "version": "2.0.0-beta.31",
   "status": "SKIPPED",
-  "source": "none",
-  "evidence_status": "NOT_AVAILABLE",
+  "source": "local_browser_e2e",
+  "evidence_status": "PASSED",
   "categories": {
     "module_place": {
       "count": 0,

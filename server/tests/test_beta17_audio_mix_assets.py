@@ -16,6 +16,13 @@ MUSIC={
     "menu_ensemble_v6.wav",
     "pool_ensemble_v6.wav",
 }
+SEVEN_LAYER_STEMS={
+    f"battle_tension_v7_{index:02d}_{name}.wav"
+    for index,name in enumerate(
+        ("sub","pulse","percussion","ostinato","shards","dissonance","pressure"),
+        start=1,
+    )
+}
 
 
 def peak_dbfs(path:Path)->float:
@@ -45,7 +52,12 @@ def test_audio_mix_v2_assets_are_normalized_with_headroom():
 
     for path in AUDIO.glob("*.wav"):
         db=peak_dbfs(path)
-        if path.name in MUSIC:
+        if path.name in SEVEN_LAYER_STEMS:
+            assert -21.0 <= db <= -10.0, (
+                path.name,
+                db,
+            )
+        elif path.name in MUSIC:
             assert -6.2 <= db <= -5.8, (
                 path.name,
                 db,

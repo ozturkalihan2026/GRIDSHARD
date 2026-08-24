@@ -44,7 +44,7 @@ if errorlevel 1 (
   )
 )
 
-set RELAY_WEB_TEST_RUN_ID=web-test-beta.29-local
+set RELAY_WEB_TEST_RUN_ID=web-test-beta.31-local
 set RELAY_TELEMETRY_MAX_EVENTS=50000
 
 rem Dogrudan cift tikla baslatildiginda da 8000-8010 arasinda ilk bos portu sec.

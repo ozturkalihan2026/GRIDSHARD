@@ -99,7 +99,12 @@ assert.strictEqual(
 
 assert.strictEqual(
   global.GRIDSHARD_AUDIO_MIX.version,
-  "shardglass-ensemble-v6"
+  "shardglass-seven-layer-v7"
+);
+assert.strictEqual(global.GRIDSHARD_BATTLE_LAYERS.length, 7);
+assert.strictEqual(
+  new Set(global.GRIDSHARD_BATTLE_LAYERS.map(layer => layer.asset)).size,
+  7
 );
 assert.strictEqual(
   global.GRIDSHARD_AUDIO_MIX.crossfadeMs,
@@ -115,7 +120,7 @@ assert.deepStrictEqual(
 );
 assert.ok(
   global.GRIDSHARD_CRITICAL_LAYER
-    .includes("critical_shard_v5.wav")
+    .includes("battle_tension_v7_07_pressure.wav")
 );
 assert.strictEqual(
   director.previewMusic("menu").ok,

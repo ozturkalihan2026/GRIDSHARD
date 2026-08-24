@@ -44,7 +44,7 @@ python tools/mobile_release_gate.py --stage android `
   "passed": true,
   "app_id": "com.sirket.gridshard",
   "commit_sha": "tam-git-sha",
-  "play_release_name": "2.0.0-beta.29",
+  "play_release_name": "2.0.0-beta.31",
   "completed_at": "ISO-8601"
 }
 ```

@@ -1,7 +1,7 @@
 # GRIDSHARD 2.0 — YOL HARİTASI
 
-**Güncel Sürüm:** `2.0.0-beta.29`
-**Paket:** Enerji Motoru Doğruluğu + Sade Güç Durumu + Dengeli Savaş Temposu + Tam Menü Yerelleştirmesi + Ensemble Müzik
+**Güncel Sürüm:** `2.0.0-beta.31`
+**Paket:** Savaş İçi Modül Takası + Akıllı Otomatik Port + 7 Katmanlı Gerilim Müziği
 **Kanonik Dosya:** `docs/YOL_HARITASI.md`
 
 > Bu dosya GRIDSHARD 2.0 için tek kanonik geliştirme kaydıdır. Kaynak karar belgesi ile kod tabanı yeniden karşılaştırılmıştır. Buradaki `[x]`, `[~]`, `[ ]` işaretleri artık yalnızca kodda ve testlerde doğrulanabilen gerçek durumu gösterir.
@@ -102,7 +102,7 @@ Beta.25 sonrası mobil hazırlık önceliği kapsamında eski erteleme kararı k
 - [x] Modül döndürme.
 - [x] İşlem motor tick akışında uygulanıyor.
 
-**Durum:** Motor tarafı tamamlandı; gerçek tarayıcı oynanış doğrulaması Beta.6 sonrası yeniden yapılacak.
+**Durum:** Motor tarafı tamamlandı; masaüstü ve mobil emülasyon tarayıcı matrisi sürüm bazında kanıtlanır.
 
 ## FAZ 3 — Modül Rafı ve Sürükle-Bırak
 
@@ -113,7 +113,8 @@ Beta.25 sonrası mobil hazırlık önceliği kapsamında eski erteleme kararı k
 - [x] Hücreler arası taşıma var.
 - [x] Modül üzerine bırakıp değiştirme komutu var.
 - [x] Ayrı ekonomik onay düğmeleri yok.
-- [~] 18 modülün gerçek telefon/dar ekran kullanılabilirliği manuel UX testi bekliyor.
+- [x] 18 modülün Android Chrome ve iPhone Safari emülasyonunda raf kullanılabilirliği otomatik test ediliyor.
+- [~] Fiziksel telefon UX kanıtı dış cihaz girdisi bekliyor.
 
 **Durum:** İşlevsel altyapı tamam; kullanılabilirlik doğrulaması sürüyor.
 
@@ -220,10 +221,10 @@ Beta.25 sonrası mobil hazırlık önceliği kapsamında eski erteleme kararı k
 
 **Durum:** İlk üçlü sistem uygulandı.
 
-## FAZ 13 — 85+ Saniye Güçlendirici Döngüsü
+## FAZ 13 — 105+ Saniye Güçlendirici Döngüsü
 
-- [x] İlk teklif `85.000 ms`.
-- [x] Sonraki teklifler `10.000 ms` aralıkla.
+- [x] İlk teklif `105.000 ms` — ilk 105 saniye temel devre mücadelesine ayrılır.
+- [x] Sonraki teklifler `30.000 ms` aralıkla — sonraki teklifler 30 saniye ritmini korur.
 - [x] 3 seçenekten 1 seçim.
 - [x] Hedef modül seçimi.
 - [x] Savaş saati seçim sırasında devam ediyor.
@@ -246,7 +247,8 @@ Beta.25 sonrası mobil hazırlık önceliği kapsamında eski erteleme kararı k
 - [x] Modül Can/enerji/durum bilgileri gösterilebiliyor.
 - [x] Olay Günlüğü mevcut.
 - [x] Özel hücreler görsel sınıflara sahip.
-- [~] 20 aktif modüllü gerçek PvP ekranında karmaşa/taşma testi tamamlanmadı.
+- [x] 10+10 aktif modül görünümü `1366×630`, `1366×768` ve `1920×1080` masaüstü viewportlarında kart/hücre ve sayfa taşması için otomatik test edilir.
+- [~] 20 aktif modüllü uzun süreli fiziksel cihaz PvP karmaşa/performans soak testi tamamlanmadı.
 - [x] Saldırı kaynak/hedef efektleri, hedef merkezine ulaşan silah profilleri ve her vuruşta ayrı çarpma geri bildirimiyle gerçek tarayıcıda doğrulandı.
 
 **Durum:** Kısmi.
@@ -269,10 +271,13 @@ Beta.25 sonrası mobil hazırlık önceliği kapsamında eski erteleme kararı k
 - [x] PvP oturum/gateway yapısı mevcut.
 - [x] WebSocket bağlantı ve savaş durum protokolü mevcut.
 - [x] Sunucu savaş zamanı, modül, Can, ekonomi ve sonuç için otorite sahibidir.
-- [x] İki bağımsız gerçek Chromium bağlamıyla eşleştirme, WebSocket, hazır olma, savaş sonucu ve oyuncuya özel olay gizliliği E2E testi eklendi ve yerelde geçti.
+- [x] İki bağımsız Chromium bağlamıyla eşleştirme, WebSocket, hazır olma, savaş sonucu ve oyuncuya özel olay gizliliği E2E testi mevcut.
+- [x] Aktif savaşta bağlantı kopması, `last_command_sequence` korunarak yeniden bağlanma ve savaşa devam etme E2E testi eklendi.
+- [x] Biten maçtan sonra iki oyuncunun yeni ve temiz bir oturumda yeniden eşleştiği rematch E2E testi eklendi.
+- [x] 50 ardışık bitmiş PvP oturumunun TTL temizliğiyle sızıntısız kaldırılması kabul kapısına bağlandı.
 - [~] Uzun süreli fiziksel cihaz PvP soak testi henüz tamamlanmadı.
 
-**Durum:** Teknik altyapı tamam; gerçek çift istemci doğrulaması bekliyor.
+**Durum:** Teknik altyapı ve tarayıcı senaryoları tamam; fiziksel cihaz uzun soak kanıtı bekliyor.
 
 ## FAZ 18 — Eşleştirme
 
@@ -292,7 +297,9 @@ Beta.25 sonrası mobil hazırlık önceliği kapsamında eski erteleme kararı k
 ## FAZ 20 — İstatistikler
 
 - [x] Temel maç istatistikleri ve sunucu verisi mevcut.
-- [~] En sık kullanılan modüller, toplam hasar, değişim/booster kullanımının ürün ekranındaki nihai sunumu geliştirilmeye açık.
+- [x] Toplam maç, galibiyet oranı, ortalama süre, toplam hasar, modül değişimi ve güçlendirici kullanımı kartlarla sunulur.
+- [x] En sık kullanılan sekiz modül kanonik simgesi ve kullanım sayısıyla gösterilir.
+- [x] Boş veri durumu ve dar ekran düzeni desteklenir.
 
 ## FAZ 21 — Ayarlar
 
@@ -325,7 +332,8 @@ Beta.25 sonrası mobil hazırlık önceliği kapsamında eski erteleme kararı k
 - [x] İkinci başlangıç sırası riski düzeltildi: telemetri callback'i `telemetryStatus` tanımlanmadan tetiklenebiliyordu.
 - [x] Beta.6 ile gerçek `app.js` başlangıç yürütme testi eklendi; dört ana menünün click-handler bağlanması otomatik kontrol ediliyor.
 - [x] Tek komutla Python + JS + startup + gerçek Uvicorn HTTP smoke QA zinciri eklendi.
-- [~] Gerçek kullanıcı manuel oynanış testi Beta.6 ile yeniden başlatılacak.
+- [x] Beta.23–29 kullanıcı geri bildirimleri ve tarayıcı bulguları kaynak paketlerine işlendi.
+- [~] Her yeni sürümün dış Windows/Chrome kanıtı ayrıca üretilip içe aktarılmalıdır.
 
 **Durum:** Stabilizasyon sonrası gerçek test için yeniden hazır.
 
@@ -396,11 +404,12 @@ olarak üretilir.
 - [x] `.vscode/tasks.json`: Tam QA, sunucu, pytest, client test görevleri.
 - [x] `.vscode/settings.json`: pytest ve Python analiz ayarları.
 
-## Alembic
+## Veritabanı Şema Geçişi
 
-- [ ] Şimdilik eklenmedi.
+- [x] PostgreSQL üretim deposu ve JSONB oyuncu verisi kalıcılığı mevcut.
+- [ ] Açık şema sürümü, ileri/geri geçiş ve yedekleme–geri yükleme prosedürü henüz ürünleştirilmedi.
 
-**Gerekçe:** Mevcut Beta kalıcılık yapısı ilişkisel veritabanı migration'ı kullanmıyor. Kullanılmayan Alembic katmanı test hızını artırmaz. PostgreSQL/SQLAlchemy kalıcı veri katmanına geçildiğinde Alembic aynı geçiş paketinde kurulacak.
+**Karar:** Alembic araç olarak zorunlu değildir; üretim yayını öncesinde kullanılan PostgreSQL deposuna uygun, test edilen bir migration ve rollback mekanizması zorunludur.
 
 ---
 
@@ -411,7 +420,7 @@ olarak üretilir.
 
 ### M2 — Dinamik Devre
 - [x] Motor/istemci komut altyapısı tamamlandı.
-- [~] Gerçek kullanıcı sürükle-bırak testi Beta.6 ile yeniden doğrulanacak.
+- [x] Sürükle-bırak ve mobil seç–yerleştir akışları otomatik tarayıcı kapsamındadır.
 
 ### M3 — Devre Ekonomisi
 - [x] Çekirdek ekonomi tamamlandı.
@@ -429,7 +438,7 @@ olarak üretilir.
 - [~] Risk/ödül dengesi gerçek test bekliyor.
 
 ### M6 — Güçlendirici Savaşı
-- [x] 85+ saniye döngüsü.
+- [x] 105 saniye ilk teklif + 30 saniye tekrar döngüsü.
 - [x] 3 seçenekten 1 seçim.
 - [x] Hedef modül.
 - [x] Savaş durmadan uygulama.
@@ -437,7 +446,8 @@ olarak üretilir.
 ### M7 — Rekabetçi Çekirdek
 - [~] Simülasyon altyapısı var; 10k/50k/100k raporları eksik.
 - [~] AI var; beş ayrı arketip eksik.
-- [~] Online PvP teknik olarak var; gerçek iki istemci stabilite testi eksik.
+- [x] Online PvP iki istemci sonuç, reconnect ve rematch senaryolarına sahiptir.
+- [~] Fiziksel cihaz ve uzun süreli dağıtık PvP soak kanıtı eksiktir.
 
 **M7 henüz “stabil/tamamlandı” kabul edilmeyecek.**
 
@@ -448,7 +458,7 @@ olarak üretilir.
 - [x] Ayarlar.
 - [x] Telemetri/Web test altyapısı.
 - [x] Kısa etkileşimli ilk maç eğitimi ve yerleşik başlangıç havuzu.
-- [~] Gerçek oynanabilir Web doğrulaması Beta.6 manuel testiyle devam edecek.
+- [~] Otomatik Web matrisi sürüm bazında çalıştırılır; fiziksel cihaz ve gerçek kullanıcı kanıtı ayrıca toplanır.
 
 ---
 
@@ -473,20 +483,13 @@ olarak üretilir.
 
 # 8. Yapılacaklar — Öncelik Sırası
 
-## P0 — Beta.6 Gerçek Manuel Oynanış Doğrulaması
+## P0 — Beta.30 Sürüm Kanıtı
 
-- [ ] `TEST_ET.bat` kullanıcının bilgisayarında başarıyla çalıştırılacak.
-- [ ] `BASLAT_WEB_TEST.bat` ile site açılacak.
-- [ ] Oyna menüsüne giriş doğrulanacak.
-- [ ] Profil menüsüne giriş doğrulanacak.
-- [ ] İstatistikler menüsüne giriş doğrulanacak.
-- [ ] Ayarlar menüsüne giriş doğrulanacak.
-- [ ] Tek Oyunculu Test Maçı başlatılacak.
-- [ ] 15. saniyede Modül Rafı açılışı gözlenecek.
-- [ ] Sürükle-bırak yerleştirme/çıkarma/değiştirme gerçek tarayıcıda denenecek.
-- [ ] Devre Kredisi değişimi gerçek oynanışta gözlenecek.
-- [ ] 85+ saniye güçlendirici döngüsü gerçek oynanışta gözlenecek.
-- [ ] Galibiyet/mağlubiyet ve Tekrar Maç akışı doğrulanacak.
+- [x] Tek-komut kaynak, sunucu, istemci, ses ve HTTP smoke kalite kapısı korunur.
+- [x] PvP reconnect, temiz rematch ve 50 oturumluk yaşam döngüsü testleri eklenir.
+- [x] Gelişmiş İstatistikler ekranı sunucu verileriyle doğrulanır.
+- [x] 10+10 aktif modül masaüstü viewport kapısı eklenir.
+- [x] Beta.30 gerçek Chrome/WebKit Playwright matrisi yerelde `8/8` geçti: masaüstü `4/4`, Android Chrome `2/2`, iPhone Safari/WebKit `2/2`.
 
 ## P1 — Gerçek Tarayıcı E2E
 
@@ -501,8 +504,8 @@ olarak üretilir.
 
 - [x] İki bağımsız tarayıcı bağlamı/iki oyuncu eşleştirme testi.
 - [x] Aynı savaş durumunun iki istemcide senkronizasyon ve sonuç testi.
-- [ ] Yeniden bağlanma testi.
-- [ ] Maç sonucu ve rematch testi.
+- [x] Yeniden bağlanma testi.
+- [x] Maç sonucu ve temiz rematch testi.
 
 ## P3 — Rekabetçi Denge
 
@@ -524,10 +527,12 @@ olarak üretilir.
 
 ## P5 — Savaş Okunabilirliği
 
-- [ ] Gerçek 20 aktif modüllü PvP ekran testi.
+- [x] 20 aktif modüllü PvP ekranının üç masaüstü viewportunda taşma testi.
+- [~] 20 aktif modüllü uzun fiziksel cihaz PvP performans/karmaşa soak testi.
 - [x] Enerji alan ve enerjisiz modüller canlı akış / `ENERJİ YOK` ayrımıyla görünür; hasar ve güçlendirme durumları mevcut kart katmanlarında korunur.
 - [x] Saldırı kaynağı, hedefe kadar ilerleyen atış ve hedef merkezindeki çarpma geri bildirimi ayrı okunur.
-- [ ] Dar ekran/telefon Modül Rafı testi.
+- [x] Android Chrome ve iPhone Safari emülasyonunda dar ekran/telefon Modül Rafı testi.
+- [~] Fiziksel Android/iPhone raf testi dış cihaz kanıtı bekliyor.
 
 ## Daha Sonra
 
@@ -1515,3 +1520,52 @@ Doğrulama sınırı:
 - [~] 20 aktif modüllü uzun süreli PvP karmaşa/soak testi genişletilmeye devam edecektir.
 - [ ] Fiziksel Android/iPhone kanıtı harici cihaz ve hesap girdileri olmadan tamamlanmış sayılmaz.
 - [ ] Gerçek kullanıcı telemetrisi olmadan sayısal enerji dengesi otomatik değiştirilmez.
+
+---
+
+# 14. Güncel Paket — Beta.30
+
+**`GRIDSHARD 2.0.0-beta.30 — PvP Dayanıklılığı · 10+10 Okunabilirlik · Gelişmiş İstatistikler · Kanonik Yol Haritası`**
+
+Beta.30, Beta.29'un temiz kaynak ve kompakt hazırlık temellerini koruyarak yayın öncesi güvenilirlik ve oyuncu geri bildirimi katmanını tamamlar:
+
+1. [x] Aktif PvP savaşında WebSocket kopması, yeniden bağlanma snapshot'ı, son komut sıra numarası ve kaldığı yerden devam gerçek iki tarayıcı senaryosuna bağlandı.
+2. [x] Maç sonucu sonrasında iki oyuncunun eski sonuç/kurulum durumunu taşımadan yeni oturum kimliğiyle yeniden eşleşmesi doğrulandı.
+3. [x] 50 ardışık PvP bitiş/TTL temizlik döngüsü sızıntısız oturum yaşam kapısına eklendi.
+4. [x] İki devrede 10'ar aktif modülün sunucu snapshot'ında görünmesi ve üç masaüstü viewportunda kart/hücre/sayfa taşması otomatik test edilir.
+5. [x] İstatistikler ekranı; maç kaydı, galibiyet oranı, ortalama süre, toplam hasar, modül değişimi, güçlendirici kullanımı ve simgeli en çok kullanılan modüllerle genişletildi.
+6. [x] Kanonik yol haritasındaki Beta.6 kontrol listesi, eski `85 + 10 sn` güçlendirici bilgisi, PvP/mobil doğrulama ve PostgreSQL migration durumu çalışan kaynaklarla eşleştirildi.
+7. [x] Beta.30 kabul raporu sürüm bütünlüğünü, özellik kaynaklarını, tarayıcı senaryolarını ve 50 oturumluk soak sonucunu tek makine-okunur raporda birleştirir.
+
+Doğrulama sınırı:
+
+- [x] Beta.30 Playwright matrisi gerçek Chrome/WebKit süreçlerinde `8/8` geçti ve makine-okunur kanıt raporuna bağlandı.
+- [ ] Fiziksel Android/iPhone kanıtı harici cihaz ve hesap girdileri olmadan tamamlanmış sayılmaz.
+- [ ] Gerçek kullanıcı telemetrisi olmadan sayısal enerji/kredi dengesi otomatik değiştirilmez.
+
+---
+
+# 15. Güncel Paket — Beta.31
+
+**`GRIDSHARD 2.0.0-beta.31 — Savaş İçi Modül Takası · Akıllı Port Yönlendirme · 7 Katmanlı Gerilim Müziği`**
+
+Beta.31, Beta.30'un PvP dayanıklılığı, 10+10 okunabilirliği, gelişmiş istatistikleri ve önceki tüm savaş/sonuç temellerini koruyarak savaş içi devre müdahalesini ve müzik yoğunluğunu geliştirir:
+
+1. [x] Oyuncunun bir aktif modülü başka bir aktif modülün üzerine bırakması, iki kartı rezerv durumuna geçirmeden konumlarını atomik olarak değiştirir.
+2. [x] Rezerv modülün aktif modül üzerine bırakılması önceki davranışı korur: gelen modül devreye alınır, çıkan modül Can değerini koruyarak rafa döner.
+3. [x] Çekirdek ve Jeneratör normal modül takasının dışındadır; sabit/özel konum kuralları istemci ve sunucuda birlikte korunur.
+4. [x] Takas sırasında iki modülün 16 yön kombinasyonu sunucuda sınanır; ikisini de Jeneratöre bağlayan, en çok modülü ve çalışan port çiftini koruyan düzen otomatik seçilir. Geçersiz takas kredi veya konum değişmeden reddedilir.
+5. [x] Normal yerleştirme, taşıma ve rezerv değişiminde de port seçimi yalnız ilk çalışan yönü değil, Jeneratörden erişilebilen en geniş devreyi koruyan yönü seçer.
+6. [x] Savaş alanındaki döndürülebilir aktif modüle tıklama, 15. saniyelik kanonik kilitten sonra saat yönünde port dönüş komutu gönderir; sürükleme takas davranışından ayrıdır.
+7. [x] Savaş müziği 128 BPM ve 32 saniyelik ortak döngüde yedi ayrı özgün stem'e ayrıldı: sub, reaktör pulse, endüstriyel perküsyon, ostinato, shard transient, disonans ve pressure.
+8. [x] Yedi stem savaş başlangıcında eşzamanlı başlar; savaş baskısı, kritik Çekirdek ve ses ayarları katman kazançlarını çalışma zamanında yönetir. Menü, hazırlık, galibiyet, mağlubiyet ve saldırı modülü SFX kimlikleri korunur.
+9. [x] Sunucu motor testi atomik takası/geri almayı ve Jeneratör erişimini; istemci testi komut ayrımını; gerçek masaüstü tarayıcı testi sürükle-takas ve tıkla-döndür akışını doğrular.
+
+Doğrulama sınırı:
+
+- [x] Yedi stem kaynak üreticisi ve WAV biçim/uzunluk/peak-headroom kontrolleri otomatik test kapsamındadır.
+- [x] Beta.30'un yeniden bağlanma, rematch, 50 oturumluk yaşam döngüsü ve 10+10 viewport kapıları korunur.
+- [x] Birleşik kalite kapısı `694/694` sunucu ve `176/176` istemci testini geçti.
+- [x] Gerçek Chrome/WebKit Playwright matrisi `9/9` geçti: masaüstü `5/5`, Android Chrome `2/2`, iPhone Safari/WebKit `2/2`.
+- [ ] Fiziksel Android/iPhone üzerinde uzun savaş ve kulaklık/hoparlör miks değerlendirmesi harici cihaz kanıtı olmadan tamamlanmış sayılmaz.
+- [ ] Final LUFS/True Peak mastering hedefi insan kararı olmadan tamamlanmış sayılmaz.

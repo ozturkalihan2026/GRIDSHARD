@@ -26,7 +26,7 @@
   });
 
   const GRIDSHARD_AUDIO_MIX = Object.freeze({
-    version:"shardglass-ensemble-v6",
+    version:"shardglass-seven-layer-v7",
     crossfadeMs:1200,
     resultCrossfadeMs:320,
     musicBaseGain:0.72,
@@ -41,16 +41,26 @@
     menu:"./assets/audio/menu_ensemble_v6.wav",
     pool:"./assets/audio/pool_ensemble_v6.wav",
     matchmaking:"./assets/audio/matchmaking_rise.wav",
-    battle_intro:"./assets/audio/battle_fracture_v5.wav",
-    battle:"./assets/audio/battle_fracture_v5.wav",
-    battle_pressure:"./assets/audio/battle_fracture_v5.wav",
-    critical_core:"./assets/audio/battle_fracture_v5.wav",
+    battle_intro:"./assets/audio/battle_tension_v7_01_sub.wav",
+    battle:"./assets/audio/battle_tension_v7_01_sub.wav",
+    battle_pressure:"./assets/audio/battle_tension_v7_01_sub.wav",
+    critical_core:"./assets/audio/battle_tension_v7_01_sub.wav",
     victory:"./assets/audio/victory_sting.wav",
     defeat:"./assets/audio/defeat_sting.wav",
   });
 
   const GRIDSHARD_CRITICAL_LAYER =
-    "./assets/audio/critical_shard_v5.wav";
+    "./assets/audio/battle_tension_v7_07_pressure.wav";
+
+  const GRIDSHARD_BATTLE_LAYERS = Object.freeze([
+    {id:"sub", asset:"./assets/audio/battle_tension_v7_01_sub.wav", baseGain:.36, pressureGain:.10},
+    {id:"pulse", asset:"./assets/audio/battle_tension_v7_02_pulse.wav", baseGain:.30, pressureGain:.14},
+    {id:"percussion", asset:"./assets/audio/battle_tension_v7_03_percussion.wav", baseGain:.27, pressureGain:.18},
+    {id:"ostinato", asset:"./assets/audio/battle_tension_v7_04_ostinato.wav", baseGain:.24, pressureGain:.20},
+    {id:"shards", asset:"./assets/audio/battle_tension_v7_05_shards.wav", baseGain:.16, pressureGain:.24},
+    {id:"dissonance", asset:"./assets/audio/battle_tension_v7_06_dissonance.wav", baseGain:.13, pressureGain:.27},
+    {id:"pressure", asset:"./assets/audio/battle_tension_v7_07_pressure.wav", baseGain:.06, pressureGain:.36},
+  ]);
 
   const GRIDSHARD_SFX_CUES = Object.freeze({
     port_connect:{
@@ -119,6 +129,8 @@
       this.sfxVolume = 1.0;
       this.currentTrack = null;
       this.criticalLayerTrack = null;
+      this.battleLayerTracks = [];
+      this.battlePressure = .32;
       this._fadeTimers = new Set();
     }
 
@@ -248,6 +260,10 @@
 
       this.criticalLayerTrack=null;
 
+      if (this.battleLayerTracks.includes(layer)) {
+        return;
+      }
+
       const finish=()=>{
         this._stopAudio(
           layer
@@ -277,7 +293,19 @@
         return;
       }
 
-      if (this.criticalLayerTrack) {
+      if (this.battleLayerTracks.length) {
+        this.criticalLayerTrack =
+          this.battleLayerTracks[
+            this.battleLayerTracks.length - 1
+          ];
+        this._applyBattleLayerMix(1);
+        return;
+      }
+
+      if (
+        this.criticalLayerTrack
+        && !this.battleLayerTracks.includes(this.criticalLayerTrack)
+      ) {
         return;
       }
 
@@ -301,6 +329,110 @@
       );
     }
 
+    _isLayeredBattleState(state) {
+      return [
+        GRIDSHARD_AUDIO_STATES.BATTLE_INTRO,
+        GRIDSHARD_AUDIO_STATES.BATTLE,
+        GRIDSHARD_AUDIO_STATES.BATTLE_PRESSURE,
+        GRIDSHARD_AUDIO_STATES.CRITICAL_CORE,
+      ].includes(state);
+    }
+
+    _battlePressureForState(state) {
+      if (state === GRIDSHARD_AUDIO_STATES.CRITICAL_CORE) return 1;
+      if (state === GRIDSHARD_AUDIO_STATES.BATTLE_PRESSURE) {
+        return Math.max(.72, this.battlePressure);
+      }
+      if (state === GRIDSHARD_AUDIO_STATES.BATTLE_INTRO) return .24;
+      return Math.max(.32, this.battlePressure);
+    }
+
+    _applyBattleLayerMix(pressure=this.battlePressure, {fade=false}={}) {
+      const normalized = Math.max(0, Math.min(1, Number(pressure)));
+      this.battlePressure = normalized;
+      for (let index = 0; index < this.battleLayerTracks.length; index += 1) {
+        const track = this.battleLayerTracks[index];
+        const layer = GRIDSHARD_BATTLE_LAYERS[index];
+        if (!track || !layer) continue;
+        const target = this._musicTargetVolume()
+          * (layer.baseGain + layer.pressureGain * normalized);
+        if (fade) {
+          this._fade(track, Number(track.volume || 0), target, 420);
+        } else {
+          track.volume = target;
+        }
+        if ("playbackRate" in track) track.playbackRate = 1;
+      }
+    }
+
+    _stopBattleLayers({fade=true}={}) {
+      const tracks = [...this.battleLayerTracks];
+      this.battleLayerTracks = [];
+      if (tracks.includes(this.currentTrack)) this.currentTrack = null;
+      if (tracks.includes(this.criticalLayerTrack)) this.criticalLayerTrack = null;
+      for (const track of tracks) {
+        if (fade) {
+          this._fade(
+            track,
+            Number(track.volume || 0),
+            0,
+            GRIDSHARD_AUDIO_MIX.crossfadeMs,
+            () => this._stopAudio(track)
+          );
+        } else {
+          this._stopAudio(track);
+        }
+      }
+    }
+
+    _transitionToBattleLayers(state) {
+      if (
+        !this.enabled
+        || this.musicMuted
+        || this.musicVolume <= 0
+        || !this._canPlayAudio()
+      ) return;
+
+      const pressure = this._battlePressureForState(state);
+      if (this.battleLayerTracks.length === GRIDSHARD_BATTLE_LAYERS.length) {
+        this.currentTrack = this.battleLayerTracks[0];
+        this.criticalLayerTrack =
+          state === GRIDSHARD_AUDIO_STATES.CRITICAL_CORE
+            ? this.battleLayerTracks[this.battleLayerTracks.length - 1]
+            : null;
+        this._applyBattleLayerMix(pressure, {fade:true});
+        return;
+      }
+
+      const previous = this.currentTrack;
+      this._stopCriticalLayer({fade:false});
+      this._stopBattleLayers({fade:false});
+      const tracks = GRIDSHARD_BATTLE_LAYERS.map(layer => {
+        const audio = new global.Audio(layer.asset);
+        audio.loop = true;
+        audio.volume = 0;
+        this._safePlay(audio);
+        return audio;
+      });
+      this.battleLayerTracks = tracks;
+      this.currentTrack = tracks[0] || null;
+      this.criticalLayerTrack =
+        state === GRIDSHARD_AUDIO_STATES.CRITICAL_CORE
+          ? tracks[tracks.length - 1] || null
+          : null;
+      this._applyBattleLayerMix(pressure, {fade:true});
+
+      if (previous && !tracks.includes(previous)) {
+        this._fade(
+          previous,
+          Number(previous.volume || 0),
+          0,
+          GRIDSHARD_AUDIO_MIX.crossfadeMs,
+          () => this._stopAudio(previous)
+        );
+      }
+    }
+
     _transitionToStateAsset(
       state
     ) {
@@ -313,6 +445,11 @@
         return;
       }
 
+      if (this._isLayeredBattleState(state)) {
+        this._transitionToBattleLayers(state);
+        return;
+      }
+
       const asset=
         GRIDSHARD_MUSIC_ASSETS[
           state
@@ -321,6 +458,10 @@
 
       const previous=
         this.currentTrack;
+      const leavingLayeredBattle = this.battleLayerTracks.length > 0;
+      if (leavingLayeredBattle) {
+        this._stopBattleLayers();
+      }
       const next=
         new global.Audio(asset);
       const transitionMs =
@@ -358,6 +499,7 @@
 
       if (
         previous
+        && !leavingLayeredBattle
         && previous!==next
       ) {
         this._fade(
@@ -395,6 +537,7 @@
           current
         );
       }
+      this._stopBattleLayers({fade:false});
       this._stopCriticalLayer({
         fade:false,
       });
@@ -544,7 +687,15 @@
                 : "low"
             );
 
-      if (this.criticalLayerTrack) {
+      this.battlePressure = pressure;
+      if (this.battleLayerTracks.length) {
+        this._applyBattleLayerMix(pressure);
+      }
+
+      if (
+        this.criticalLayerTrack
+        && !this.battleLayerTracks.includes(this.criticalLayerTrack)
+      ) {
         const stageGain={
           low:
             GRIDSHARD_AUDIO_MIX
@@ -619,6 +770,10 @@
       ) {
         this._stopAllMusic();
       } else if (
+        this.battleLayerTracks.length
+      ) {
+        this._applyBattleLayerMix(this.battlePressure);
+      } else if (
         this.currentTrack
       ) {
         this.currentTrack.volume=
@@ -671,7 +826,13 @@
         this.currentTrack.volume=
           this._musicTargetVolume();
       }
-      if (this.criticalLayerTrack) {
+      if (this.battleLayerTracks.length) {
+        this._applyBattleLayerMix(this.battlePressure);
+      }
+      if (
+        this.criticalLayerTrack
+        && !this.battleLayerTracks.includes(this.criticalLayerTrack)
+      ) {
         this.criticalLayerTrack
           .volume=
             this._musicTargetVolume()
@@ -693,6 +854,8 @@
     GRIDSHARD_MUSIC_ASSETS;
   global.GRIDSHARD_CRITICAL_LAYER=
     GRIDSHARD_CRITICAL_LAYER;
+  global.GRIDSHARD_BATTLE_LAYERS=
+    GRIDSHARD_BATTLE_LAYERS;
   global.GRIDSHARD_SFX_CUES=
     GRIDSHARD_SFX_CUES;
   global.GridshardAudioDirector=

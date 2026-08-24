@@ -275,7 +275,33 @@
 
       let command;
 
-      if (targetModuleId && targetModuleId !== source.instanceId) {
+      if (
+        targetModuleId
+        && targetModuleId !== source.instanceId
+        && source.status === MODULE_STATUS.ACTIVE
+      ) {
+        const target = this.requireModule(targetModuleId);
+        if (
+          target.status !== MODULE_STATUS.ACTIVE
+          || target.movable === false
+          || Array.isArray(target.allowedMovePositions)
+          || Array.isArray(source.allowedMovePositions)
+        ) {
+          this.dragState = null;
+          return {
+            ok:false,
+            reason:
+              "Çekirdek ve Jeneratör normal modül takasına dahil edilemez.",
+          };
+        }
+        command = {
+          kind: "swap_modules",
+          payload: {
+            module_id: source.instanceId,
+            target_module_id: targetModuleId,
+          },
+        };
+      } else if (targetModuleId && targetModuleId !== source.instanceId) {
         command = {
           kind: "replace_module",
           payload: {
