@@ -1,12 +1,12 @@
 {
-  "version": "2.0.0-beta.26",
+  "version": "2.0.0-beta.27",
   "source_status": "SKIPPED",
   "status": "SKIPPED",
   "passed": false,
   "skipped": true,
   "failed": false,
-  "reason": "test policy block",
-  "browser": null,
+  "reason": "Page.goto: net::ERR_BLOCKED_BY_ADMINISTRATOR at http://127.0.0.1:8878/?e2e=1\nCall log:\n  - navigating to \"http://127.0.0.1:8878/?e2e=1\", waiting until \"networkidle\"\n",
+  "browser": "/usr/bin/chromium",
   "evidence_complete": false,
   "playwright_matrix": {
     "report_exists": false,

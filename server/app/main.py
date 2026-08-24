@@ -508,6 +508,18 @@ def process_completed_pvp_battle(state) -> None:
             player_id
         )
 
+    player_ids=tuple(state.players)
+    if player_ids:
+        matchmaking_service.clear_match(
+            player_ids[0]
+        )
+        if _redis_matchmaking_enabled():
+            asyncio.get_running_loop().create_task(
+                redis_matchmaking_service.clear_match(
+                    player_ids[0]
+                )
+            )
+
 pvp_tick_runner = PvPTickRunner(
     pvp_service,
     pvp_websocket_adapter,
@@ -2473,6 +2485,29 @@ async def _matchmaking_cancel_player(player_id: str) -> bool:
     return matchmaking_service.cancel(player_id)
 
 
+async def _matchmaking_clear_match(player_id: str) -> bool:
+    if _redis_matchmaking_enabled():
+        return await redis_matchmaking_service.clear_match(player_id)
+    pair=matchmaking_service.matched_pair_for(player_id)
+    matchmaking_service.clear_match(player_id)
+    return pair is not None
+
+
+def _matchmaking_pair_is_stale(pair: MatchmakingPair) -> bool:
+    try:
+        session=pvp_service.get_session(pair.match_id)
+    except PvPSessionError:
+        if not pair.ready:
+            return False
+        if not _redis_matchmaking_enabled():
+            return True
+        return (
+            pair.owner_instance_id
+            == redis_matchmaking_service.instance_id
+        )
+    return session.engine.state.status.value == "finished"
+
+
 def _ensure_human_match_session(pair: MatchmakingPair) -> None:
     try:
         pvp_service.get_session(pair.match_id)
@@ -2542,6 +2577,12 @@ def _raise_matchmaking_backend_error(exc: Exception) -> None:
 async def matchmaking_join(request: MatchmakingJoinRequest) -> dict:
     try:
         existing_match = await _matchmaking_pair_for(request.player_id)
+        if (
+            existing_match is not None
+            and _matchmaking_pair_is_stale(existing_match)
+        ):
+            await _matchmaking_clear_match(request.player_id)
+            existing_match=None
         if existing_match is not None:
             existing_match = await _provision_match_session(existing_match)
             if existing_match.ready:
@@ -3049,7 +3090,7 @@ def gridshard_identity() -> dict:
         "tagline_en":
             "Build the Circuit. Break the Core.",
         "identity_version":
-            "2.0.0-beta.26",
+            "2.0.0-beta.27",
         "palette":{
             "void_navy":"#070B14",
             "reactor_blue":"#0C1625",

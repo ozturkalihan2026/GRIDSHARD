@@ -1,0 +1,20 @@
+{
+  "version": "2.0.0-beta.27",
+  "ok": true,
+  "checks": {
+    "version_integrity": true,
+    "beta26_combat_foundation_preserved": true,
+    "server_truth_energy_flow": true,
+    "target_reaching_weapon_fx": true,
+    "six_distinct_weapon_sounds": true,
+    "port_and_partial_venv_guard": true,
+    "reduced_motion_preserved": true
+  },
+  "package_scope": "P5 Savaş Okunabilirliği · Sunucu Gerçekliğinde Enerji Akışı · Hedefe Ulaşan Altı Silah Profili · Her Vuruşta Çarpma Geri Bildirimi · Altı Özgün Ateş Sesi",
+  "balance_changed": false,
+  "external_evidence_not_claimed": [
+    "fiziksel Android/iPhone",
+    "gerçek kullanıcı telemetrisi",
+    "20 aktif modüllü uzun süreli gerçek PvP soak testi"
+  ]
+}

@@ -693,6 +693,10 @@
                 : { x: serverModule.x, y: serverModule.y },
             direction: serverModule.direction,
             isPowered: serverModule.is_powered,
+            energyReceived:
+              serverModule.energy_received,
+            energyRequired:
+              serverModule.energy_required,
             heat: serverModule.heat,
           });
         }

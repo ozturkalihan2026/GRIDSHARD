@@ -91,7 +91,7 @@
   const COMPETITIVE_STATUS = "M7 rekabetçi altyapı doğrulanıyor";
   const BALANCE_STATUS = "Denge simülasyonu mevcut · geniş örnek bekliyor";
   const AI_STATUS = "AI altyapısı mevcut · arketip testleri bekliyor";
-  const PVP_STATUS = "GRIDSHARD Beta.26 · Tek Eşleştirme + AI Devralma + Aktif Devre UX";
+  const PVP_STATUS = "GRIDSHARD Beta.27 · Tek Eşleştirme + AI Devralma + Aktif Devre UX";
 
 
 
@@ -598,7 +598,7 @@
         webTestBuildState,
       releaseCheckState,
       expectedVersion:
-        "2.0.0-beta.26",
+        "2.0.0-beta.27",
       expectedProtocolVersion: 1,
     });
   const playReadinessGate =
@@ -634,7 +634,7 @@
 
   telemetryDispatcher.trackGameOpened({
     platform: "web",
-    build: "2.0.0-beta.26",
+    build: "2.0.0-beta.27",
   });
 
   const postMatchSync =
@@ -1027,6 +1027,76 @@
     return instanceId
       .replace(/-\d+$/, "")
       .replaceAll("-", "_");
+  }
+
+  const WEAPON_PRESENTATION = Object.freeze({
+    laser:{
+      cue:"laser_fire",
+      fx:"laser",
+      travelMs:260,
+    },
+    pulse_cannon:{
+      cue:"pulse_cannon_fire",
+      fx:"pulse",
+      travelMs:360,
+    },
+    railgun:{
+      cue:"railgun_fire",
+      fx:"railgun",
+      travelMs:220,
+    },
+    missile_launcher:{
+      cue:"missile_fire",
+      fx:"missile",
+      travelMs:520,
+    },
+    drone_bay:{
+      cue:"drone_fire",
+      fx:"drone",
+      travelMs:430,
+    },
+    arc_cannon:{
+      cue:"arc_cannon_fire",
+      fx:"arc",
+      travelMs:300,
+    },
+  });
+
+  function weaponPresentation(
+    definitionId
+  ) {
+    return WEAPON_PRESENTATION[
+      String(definitionId || "")
+        .trim()
+        .replaceAll("-", "_")
+    ] || WEAPON_PRESENTATION.laser;
+  }
+
+  function weaponCue(
+    definitionId
+  ) {
+    return weaponPresentation(
+      definitionId
+    ).cue;
+  }
+
+  function scheduleAttackImpactCue({
+    defended=false,
+    targetDefinitionId=null,
+    travelMs=0,
+  }={}) {
+    const cue=defended
+      ? "shield_hit"
+      : (
+          targetDefinitionId === "core"
+            ? "core_hit"
+            : null
+        );
+    if (!cue) return;
+    window.setTimeout(
+      () => triggerGridshardCue(cue),
+      Math.max(0,Number(travelMs || 0))
+    );
   }
 
   function selectedBattlePoolDefinitionIds() {
@@ -1492,7 +1562,7 @@
   const diagnosticSnapshot =
     new RelayDiagnosticSnapshot({
       version:
-        "2.0.0-beta.26",
+        "2.0.0-beta.27",
       build:
         "web-test-beta.13",
       bootGate:
@@ -3430,7 +3500,7 @@
       if (versionEl) {
         versionEl.textContent=
           manifest.version
-          || "2.0.0-beta.26";
+          || "2.0.0-beta.27";
       }
       if (runEl) {
         runEl.textContent=
@@ -3572,6 +3642,11 @@ const SPECIAL_CELL_INFO = {
     x: 2,
     y: 1,
   };
+  let mockEnemyGeneratorPower = {
+    isPowered:true,
+    energyReceived:11,
+    energyRequired:0,
+  };
   let mockEnemyModuleHp = 140;
   let mockEnemyModules = [];
 
@@ -3580,10 +3655,15 @@ const SPECIAL_CELL_INFO = {
       x: 2,
       y: 1,
     };
+    mockEnemyGeneratorPower = {
+      isPowered:true,
+      energyReceived:11,
+      energyRequired:0,
+    };
     mockEnemyModules = [
-      {id:"enemy-shield",definitionId:"shield",name:"Kalkan",hp:140,maxHp:140,position:{x:1,y:1},kind:"defense"},
-      {id:"enemy-laser",definitionId:"laser",name:"Lazer",hp:100,maxHp:100,position:{x:3,y:1},kind:"attack"},
-      {id:"enemy-battery",definitionId:"battery",name:"Batarya",hp:120,maxHp:120,position:{x:2,y:0},kind:"energy"},
+      {id:"enemy-shield",definitionId:"shield",name:"Kalkan",hp:140,maxHp:140,position:{x:1,y:1},kind:"defense",isPowered:true,energyReceived:2,energyRequired:2},
+      {id:"enemy-laser",definitionId:"laser",name:"Lazer",hp:100,maxHp:100,position:{x:3,y:1},kind:"attack",isPowered:true,energyReceived:3,energyRequired:3},
+      {id:"enemy-battery",definitionId:"battery",name:"Batarya",hp:120,maxHp:120,position:{x:2,y:0},kind:"energy",isPowered:true,energyReceived:0,energyRequired:0},
     ];
     mockEnemyModuleHp = mockEnemyModules.reduce((sum,module)=>sum+module.hp,0);
   }
@@ -5510,45 +5590,30 @@ function saveHumanReviewLocalNote() {
               targetModule
             );
 
-      emitDuelAttackEffect(
+      const travelMs=emitDuelAttackEffect(
         sourceId,
         targetId,
-        attackerIsPlayer
-          ? (
-              defended
-                ? "shield"
-                : "attack"
-            )
-          : "enemy"
+        defended
+          ? "shield"
+          : (
+              attackerIsPlayer
+                ? "attack"
+                : "enemy"
+            ),
+        sourceModule?.definition_id
       );
-
-      if (targetId) {
-        pulseBattleFx(
-          targetId,
-          defended
-            ? "shield"
-            : "hit"
-        );
-      }
 
       triggerGridshardCue(
-        sourceModule?.definition_id
-        === "laser"
-          ? "laser_fire"
-          : "energy_transfer"
+        weaponCue(
+          sourceModule?.definition_id
+        )
       );
-      if (defended) {
-        triggerGridshardCue(
-          "shield_hit"
-        );
-      } else if (
-        targetModule?.definition_id
-        === "core"
-      ) {
-        triggerGridshardCue(
-          "core_hit"
-        );
-      }
+      scheduleAttackImpactCue({
+        defended,
+        targetDefinitionId:
+          targetModule?.definition_id,
+        travelMs,
+      });
     }
   }
 
@@ -5584,6 +5649,17 @@ function saveHumanReviewLocalNote() {
     mockEnemyGeneratorHp=Number(
       enemyGenerator?.hp || 0
     );
+    mockEnemyGeneratorPower={
+      isPowered:Boolean(
+        enemyGenerator?.is_powered
+      ),
+      energyReceived:Number(
+        enemyGenerator?.energy_received || 0
+      ),
+      energyRequired:Number(
+        enemyGenerator?.energy_required || 0
+      ),
+    };
     if (
       Number.isFinite(
         Number(enemyGenerator?.x)
@@ -5630,6 +5706,15 @@ function saveHumanReviewLocalNote() {
           kind:
             module.category
             || "module",
+          isPowered:Boolean(
+            module.is_powered
+          ),
+          energyReceived:Number(
+            module.energy_received || 0
+          ),
+          energyRequired:Number(
+            module.energy_required || 0
+          ),
         })
       );
     mockEnemyModuleHp=
@@ -6274,7 +6359,7 @@ function saveHumanReviewLocalNote() {
     );
 
     logClientMessage(
-      "Beta.26 geliştirici testi: 18 modüllük havuz hazırlandı, sunucu AI oyuncusu eşleşti ve çift devre savaş alanı açıldı."
+      "Beta.27 geliştirici testi: 18 modüllük havuz hazırlandı, sunucu AI oyuncusu eşleşti ve canlı enerji/silah okunabilirliğiyle çift devre savaş alanı açıldı."
     );
 
     return {
@@ -6732,16 +6817,64 @@ function saveHumanReviewLocalNote() {
     );
   }
 
+  function emitDuelImpactEffect({
+    layer,
+    x,
+    y,
+    targetModuleId,
+    kind,
+    weapon,
+  }) {
+    const impact=
+      document.createElement("span");
+    impact.className="duel-hit-impact";
+    impact.dataset.kind=kind;
+    impact.dataset.weapon=weapon;
+    impact.dataset.targetModuleId=
+      targetModuleId;
+    impact.style.left=`${x}px`;
+    impact.style.top=`${y}px`;
+
+    const flash=
+      document.createElement("span");
+    flash.className="duel-impact-flash";
+    const ring=
+      document.createElement("span");
+    ring.className="duel-impact-ring";
+    impact.append(flash,ring);
+    for (let index=0;index<7;index+=1) {
+      const spark=
+        document.createElement("i");
+      spark.style.setProperty(
+        "--impact-angle",
+        `${index*(360/7)+(index%2)*11}deg`
+      );
+      impact.appendChild(spark);
+    }
+    layer.appendChild(impact);
+    pulseBattleFx(
+      targetModuleId,
+      kind === "shield"
+        ? "shield"
+        : "hit"
+    );
+    window.setTimeout(
+      () => impact.remove(),
+      760
+    );
+  }
+
   function emitDuelAttackEffect(
     sourceModuleId,
     targetModuleId,
-    kind="attack"
+    kind="attack",
+    definitionId="laser"
   ) {
     if (
       !sourceModuleId
       || !targetModuleId
     ) {
-      return;
+      return 0;
     }
     const layer=document.getElementById(
       "battle-effect-layer"
@@ -6763,7 +6896,7 @@ function saveHumanReviewLocalNote() {
       || typeof target.getBoundingClientRect
         !== "function"
     ) {
-      return;
+      return 0;
     }
 
     const layerRect=
@@ -6790,25 +6923,81 @@ function saveHumanReviewLocalNote() {
       - layerRect.top;
     const dx=x2-x1;
     const dy=y2-y1;
+    const distance=Math.hypot(dx,dy);
+    const presentation=
+      weaponPresentation(definitionId);
     const line=document.createElement(
       "span"
     );
     line.className=
       "duel-attack-line";
     line.dataset.kind=kind;
+    line.dataset.weapon=
+      presentation.fx;
     line.style.left=`${x1}px`;
     line.style.top=`${y1}px`;
-    line.style.width=
-      `${Math.hypot(dx,dy)}px`;
+    line.style.width=`${distance}px`;
     line.style.setProperty(
       "--fx-angle",
       `${Math.atan2(dy,dx)}rad`
     );
+    line.style.setProperty(
+      "--fx-distance",
+      `${distance}px`
+    );
+    line.style.setProperty(
+      "--fx-travel",
+      `${presentation.travelMs}ms`
+    );
+
+    const muzzle=
+      document.createElement("span");
+    muzzle.className="duel-shot-muzzle";
+    const beam=
+      document.createElement("span");
+    beam.className="duel-shot-beam";
+    line.append(muzzle,beam);
+    const projectileCount=
+      presentation.fx === "drone"
+        ? 3
+        : 1;
+    for (
+      let index=0;
+      index<projectileCount;
+      index+=1
+    ) {
+      const projectile=
+        document.createElement("span");
+      projectile.className=
+        "duel-shot-projectile";
+      projectile.dataset.projectileIndex=
+        String(index);
+      line.appendChild(projectile);
+    }
     layer.appendChild(line);
+
+    source.classList.remove("fx-fire");
+    void source.offsetWidth;
+    source.classList.add("fx-fire");
+    window.setTimeout(
+      () => {
+        source.classList.remove("fx-fire");
+        emitDuelImpactEffect({
+          layer,
+          x:x2,
+          y:y2,
+          targetModuleId,
+          kind,
+          weapon:presentation.fx,
+        });
+      },
+      presentation.travelMs
+    );
     window.setTimeout(
       () => line.remove(),
-      520
+      presentation.travelMs + 520
     );
+    return presentation.travelMs;
   }
 
   function emitModuleExplosion(
@@ -7000,28 +7189,25 @@ function saveHumanReviewLocalNote() {
       hp:newHp,
     });
 
-    emitDuelAttackEffect(
+    const travelMs=emitDuelAttackEffect(
       "enemy-laser",
-      target.instanceId,
-      "enemy"
-    );
-
-    pulseBattleFx(
       target.instanceId,
       shieldActive
         ? "shield"
-        : "hit"
+        : "enemy",
+      "laser"
     );
     triggerGridshardCue(
-      shieldActive
-        ? "shield_hit"
-        : (
-            target.instanceId
-            === "core-1"
-              ? "core_hit"
-              : "energy_transfer"
-          )
+      weaponCue("laser")
     );
+    scheduleAttackImpactCue({
+      defended:shieldActive,
+      targetDefinitionId:
+        clientDefinitionId(
+          target.instanceId
+        ),
+      travelMs,
+    });
 
     if (localBattleMetrics) {
       localBattleMetrics.damage_received += damage;
@@ -9256,12 +9442,83 @@ function saveHumanReviewLocalNote() {
     }
   }
 
+  function appendEnergyFlowIndicator(
+    card,
+    {
+      isPowered=false,
+      energyReceived=0,
+      energyRequired=0,
+      isSource=false,
+    }={}
+  ) {
+    const received=Math.max(
+      0,
+      Number(energyReceived || 0)
+    );
+    const required=Math.max(
+      0,
+      Number(energyRequired || 0)
+    );
+    const flowing=Boolean(
+      isSource
+      ? isPowered && received > 0
+      : isPowered
+        && required > 0
+        && received > 0
+    );
+
+    card.dataset.powerState=
+      flowing
+        ? "flowing"
+        : (
+            required > 0
+              ? "disconnected"
+              : "passive"
+          );
+    if (!flowing) {
+      return false;
+    }
+
+    card.classList.add(
+      "energy-flowing"
+    );
+    const indicator=
+      document.createElement("span");
+    indicator.className=
+      "energy-flow-indicator";
+    indicator.setAttribute(
+      "aria-hidden",
+      "true"
+    );
+    for (let index=0;index<3;index+=1) {
+      const current=
+        document.createElement("i");
+      current.dataset.energyStep=
+        String(index);
+      indicator.appendChild(current);
+    }
+    const badge=
+      document.createElement("span");
+    badge.className="energy-flow-badge";
+    const energyValue=(
+      received < 1
+        ? received.toFixed(1)
+        : received.toFixed(1).replace(/\.0$/u,"")
+    );
+    badge.textContent=isSource
+      ? `KAYNAK ${energyValue} Ü`
+      : `AKIŞ ${energyValue} Ü`;
+    card.append(indicator,badge);
+    return true;
+  }
+
   function enemyCard(
     moduleId,
     name,
     hp,
     maxHp,
-    kind="module"
+    kind="module",
+    power={}
   ) {
     const card=document.createElement("div");
     card.className="module-card enemy-module-card";
@@ -9279,6 +9536,23 @@ function saveHumanReviewLocalNote() {
     label.textContent=name;
     card.appendChild(label);
     appendHpBar(card,hp,maxHp);
+    const isSource=
+      moduleId === "enemy-generator";
+    appendEnergyFlowIndicator(
+      card,
+      {
+        ...power,
+        isSource,
+      }
+    );
+    if (
+      Number(power.energyRequired || 0) > 0
+      && !power.isPowered
+    ) {
+      card.classList.add(
+        "energy-disconnected"
+      );
+    }
     return card;
   }
 
@@ -9302,11 +9576,29 @@ function saveHumanReviewLocalNote() {
     place(
       mockEnemyGeneratorPosition.x,
       mockEnemyGeneratorPosition.y,
-      enemyCard("enemy-generator","Jeneratör",mockEnemyGeneratorHp,150,"energy")
+      enemyCard(
+        "enemy-generator",
+        "Jeneratör",
+        mockEnemyGeneratorHp,
+        150,
+        "energy",
+        mockEnemyGeneratorPower
+      )
     );
     for (const module of mockEnemyModules) {
       if (module.hp<=0) continue;
-      place(module.position.x,module.position.y,enemyCard(module.id,module.name,module.hp,module.maxHp,module.kind));
+      place(
+        module.position.x,
+        module.position.y,
+        enemyCard(
+          module.id,
+          module.name,
+          module.hp,
+          module.maxHp,
+          module.kind,
+          module
+        )
+      );
     }
     mockEnemyModuleHp=enemyLivingModules().reduce((sum,module)=>sum+module.hp,0);
     if (enemyBoardStatusEl) {
@@ -10224,12 +10516,9 @@ function saveHumanReviewLocalNote() {
     meta.textContent =
       detailParts.join(" · ");
 
-    card.appendChild(icon);
+    card.append(icon,name);
     if (module.status !== "active") {
-      card.append(
-        name,
-        stats
-      );
+      card.appendChild(stats);
     }
     appendHpBar(
       card,
@@ -10263,15 +10552,19 @@ function saveHumanReviewLocalNote() {
       );
     }
 
-    if (
-      module.status === "active"
-      && module.isPowered
-      && Number(
-        module.energyReceived || 0
-      ) > 0
-    ) {
-      card.classList.add(
-        "energy-flowing"
+    if (module.status === "active") {
+      appendEnergyFlowIndicator(
+        card,
+        {
+          isPowered:
+            Boolean(module.isPowered),
+          energyReceived:
+            Number(module.energyReceived || 0),
+          energyRequired:
+            Number(module.energyRequired || 0),
+          isSource:
+            module.nameTr === "Jeneratör",
+        }
       );
     }
 
@@ -10759,7 +11052,10 @@ function saveHumanReviewLocalNote() {
         module.energyReceived = 0;
         module.isPowered = false;
       } else if (demand <= 0) {
-        module.energyReceived = 0;
+        module.energyReceived =
+          module.nameTr === "Jeneratör"
+            ? generated
+            : 0;
         module.isPowered =
           connected.has(module.instanceId) ||
           module.nameTr === "Çekirdek";
@@ -10979,12 +11275,17 @@ function saveHumanReviewLocalNote() {
                 ? "enemy-generator"
                 : "enemy-core"
             );
-      emitDuelAttackEffect(
+      const attackerDefinitionId=
+        clientDefinitionId(
+          attacker.instanceId
+        );
+      const travelMs=emitDuelAttackEffect(
         attacker.instanceId,
         targetDomId,
         defenseType === "Kalkan"
           ? "shield"
-          : "attack"
+          : "attack",
+        attackerDefinitionId
       );
 
       mockEnemyModuleHp=
@@ -10996,20 +11297,19 @@ function saveHumanReviewLocalNote() {
           );
 
       triggerGridshardCue(
-        attacker.nameTr
-          .toLocaleLowerCase("tr")
-          .includes("lazer")
-          ? "laser_fire"
-          : "energy_transfer"
+        weaponCue(
+          attackerDefinitionId
+        )
       );
-      if (
-        targetName
-        === "Rakip Çekirdek"
-      ) {
-        triggerGridshardCue(
-          "core_hit"
-        );
-      }
+      scheduleAttackImpactCue({
+        defended:
+          defenseType === "Kalkan",
+        targetDefinitionId:
+          targetName === "Rakip Çekirdek"
+            ? "core"
+            : targetModule?.definitionId,
+        travelMs,
+      });
 
       if (localBattleMetrics) {
         localBattleMetrics
@@ -11790,6 +12090,9 @@ function saveHumanReviewLocalNote() {
 
         postMatchSync.clear();
         pvpConnection.disconnect();
+        pvpState.reset();
+        onlinePlay.reset();
+        resetBattleResultPresentation();
 
         const result =
           await startRealOnlineMatch();

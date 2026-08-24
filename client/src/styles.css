@@ -4576,3 +4576,285 @@ body[data-app-screen="play"] .board-cell .hp-bar {
   height:6px;
   align-self:start;
 }
+
+/* =========================================================
+   GRIDSHARD Beta.27 — live energy and weapon readability
+   ========================================================= */
+.module-card.energy-flowing {
+  isolation:isolate;
+  box-shadow:
+    inset 0 0 18px rgba(53,229,210,.28),
+    0 0 13px rgba(53,229,210,.2);
+}
+.module-card.energy-flowing .module-icon {
+  animation:gs-powered-icon 1.35s ease-in-out infinite;
+}
+.energy-flow-indicator {
+  position:absolute;
+  inset:-2px;
+  z-index:4;
+  overflow:visible;
+  border:1px solid rgba(121,255,233,.48);
+  border-radius:9px;
+  box-shadow:
+    inset 0 0 9px rgba(53,229,210,.22),
+    0 0 9px rgba(53,229,210,.25);
+  pointer-events:none;
+}
+.energy-flow-indicator i {
+  position:absolute;
+  width:6px;
+  height:6px;
+  border-radius:50%;
+  background:#f3ffff;
+  box-shadow:
+    0 0 5px #fff,
+    0 0 12px #35e5d2,
+    0 0 20px rgba(121,255,233,.72);
+  offset-path:inset(2px round 7px);
+  offset-distance:0%;
+  animation:gs-energy-current 1.55s linear infinite;
+}
+.energy-flow-indicator i[data-energy-step="1"] { animation-delay:-.5s; }
+.energy-flow-indicator i[data-energy-step="2"] { animation-delay:-1s; }
+.energy-flow-badge {
+  position:absolute;
+  z-index:6;
+  top:3px;
+  left:4px;
+  max-width:calc(100% - 8px);
+  padding:2px 4px;
+  border:1px solid rgba(121,255,233,.5);
+  border-radius:4px;
+  background:rgba(3,18,27,.88);
+  color:#aaffef;
+  font-size:clamp(.39rem,.52vw,.52rem);
+  font-weight:950;
+  line-height:1;
+  letter-spacing:.06em;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  text-shadow:0 0 7px #35e5d2;
+  white-space:nowrap;
+  pointer-events:none;
+}
+.module-card.energy-disconnected::after {
+  content:"ENERJİ YOK";
+  position:absolute;
+  z-index:6;
+  top:3px;
+  left:4px;
+  padding:2px 4px;
+  border:1px solid rgba(255,184,77,.44);
+  border-radius:4px;
+  background:rgba(28,13,8,.88);
+  color:#ffca77;
+  font-size:clamp(.39rem,.52vw,.52rem);
+  font-weight:950;
+  line-height:1;
+  letter-spacing:.05em;
+}
+@keyframes gs-energy-current {
+  0% { offset-distance:0%; opacity:0; }
+  8%,88% { opacity:1; }
+  100% { offset-distance:100%; opacity:0; }
+}
+@keyframes gs-powered-icon {
+  0%,100% { filter:drop-shadow(0 0 7px currentColor); }
+  50% { filter:drop-shadow(0 0 14px currentColor) brightness(1.25); }
+}
+
+.duel-attack-line,
+.duel-attack-line[data-kind="shield"] {
+  --shot-color:#79ffe9;
+  position:absolute;
+  height:0 !important;
+  overflow:visible;
+  transform:rotate(var(--fx-angle));
+  transform-origin:0 50%;
+  background:none;
+  box-shadow:none;
+  animation:none;
+}
+.duel-attack-line[data-kind="enemy"] {
+  --shot-color:#ff7081;
+}
+.duel-attack-line[data-weapon="pulse"] { --shot-color:#ffcc66; }
+.duel-attack-line[data-weapon="railgun"] { --shot-color:#b7d9ff; }
+.duel-attack-line[data-weapon="missile"] { --shot-color:#ff854d; }
+.duel-attack-line[data-weapon="drone"] { --shot-color:#a8ff78; }
+.duel-attack-line[data-weapon="arc"] { --shot-color:#c492ff; }
+.duel-shot-beam {
+  position:absolute;
+  left:0;
+  top:-1px;
+  width:100%;
+  height:2px;
+  border-radius:999px;
+  background:linear-gradient(90deg,var(--shot-color),rgba(255,255,255,.9),var(--shot-color));
+  box-shadow:0 0 9px var(--shot-color);
+  opacity:.42;
+  transform:scaleX(.02);
+  transform-origin:0 50%;
+  animation:gs-shot-beam var(--fx-travel) cubic-bezier(.12,.72,.24,1) forwards;
+}
+.duel-attack-line[data-weapon="laser"] .duel-shot-beam,
+.duel-attack-line[data-weapon="railgun"] .duel-shot-beam {
+  height:3px;
+  opacity:.92;
+}
+.duel-shot-muzzle {
+  position:absolute;
+  left:0;
+  top:0;
+  width:12px;
+  height:12px;
+  border:2px solid #fff;
+  border-radius:50%;
+  background:var(--shot-color);
+  box-shadow:0 0 8px #fff,0 0 19px var(--shot-color);
+  transform:translate(-50%,-50%) scale(.2);
+  animation:gs-shot-muzzle .28s ease-out forwards;
+}
+.duel-shot-projectile {
+  position:absolute;
+  left:0;
+  top:0;
+  z-index:2;
+  width:12px;
+  height:7px;
+  border:1px solid rgba(255,255,255,.9);
+  border-radius:999px;
+  background:#fff;
+  box-shadow:
+    -8px 0 12px var(--shot-color),
+    0 0 12px var(--shot-color);
+  transform:translate(-50%,-50%);
+  animation:gs-projectile-travel var(--fx-travel) linear forwards;
+}
+.duel-attack-line[data-weapon="pulse"] .duel-shot-projectile {
+  width:15px;
+  height:15px;
+  border:3px solid var(--shot-color);
+  background:radial-gradient(circle,#fff 0 25%,var(--shot-color) 45%,transparent 72%);
+}
+.duel-attack-line[data-weapon="railgun"] .duel-shot-projectile {
+  width:22px;
+  height:3px;
+  border-radius:0 999px 999px 0;
+}
+.duel-attack-line[data-weapon="missile"] .duel-shot-projectile {
+  width:19px;
+  height:8px;
+  border-radius:2px 9px 9px 2px;
+  background:linear-gradient(90deg,#ffb84d 0 22%,#eaf3ff 24% 100%);
+  box-shadow:-11px 0 13px #ff5f3a,0 0 10px var(--shot-color);
+}
+.duel-attack-line[data-weapon="drone"] .duel-shot-projectile {
+  width:9px;
+  height:5px;
+  background:var(--shot-color);
+}
+.duel-attack-line[data-weapon="drone"] .duel-shot-projectile[data-projectile-index="0"] { top:-8px; }
+.duel-attack-line[data-weapon="drone"] .duel-shot-projectile[data-projectile-index="2"] { top:8px; }
+.duel-attack-line[data-weapon="arc"] .duel-shot-projectile {
+  width:18px;
+  height:5px;
+  border:0;
+  border-radius:0;
+  background:linear-gradient(90deg,transparent 0 8%,#fff 9% 28%,var(--shot-color) 29% 52%,#fff 53% 75%,transparent 76%);
+  transform:translate(-50%,-50%) skewX(-28deg);
+}
+.module-card.fx-fire {
+  animation:gs-weapon-recoil .24s ease-out;
+}
+.duel-hit-impact {
+  --impact-color:#79ffe9;
+  position:absolute;
+  z-index:45;
+  width:0;
+  height:0;
+  pointer-events:none;
+}
+.duel-hit-impact[data-kind="enemy"] { --impact-color:#ff7081; }
+.duel-hit-impact[data-kind="shield"] { --impact-color:#74b7ff; }
+.duel-hit-impact[data-weapon="pulse"] { --impact-color:#ffcc66; }
+.duel-hit-impact[data-weapon="railgun"] { --impact-color:#d9ecff; }
+.duel-hit-impact[data-weapon="missile"] { --impact-color:#ff7547; }
+.duel-hit-impact[data-weapon="drone"] { --impact-color:#a8ff78; }
+.duel-hit-impact[data-weapon="arc"] { --impact-color:#c492ff; }
+.duel-impact-flash {
+  position:absolute;
+  width:46px;
+  height:46px;
+  border-radius:50%;
+  background:radial-gradient(circle,#fff 0 10%,var(--impact-color) 20% 43%,transparent 70%);
+  box-shadow:0 0 18px #fff,0 0 36px var(--impact-color);
+  transform:translate(-50%,-50%) scale(.12);
+  animation:gs-hit-flash .52s ease-out forwards;
+}
+.duel-impact-ring {
+  position:absolute;
+  width:20px;
+  height:20px;
+  border:3px solid var(--impact-color);
+  border-radius:50%;
+  box-shadow:0 0 14px var(--impact-color),inset 0 0 8px #fff;
+  transform:translate(-50%,-50%) scale(.25);
+  animation:gs-hit-ring .66s ease-out forwards;
+}
+.duel-hit-impact i {
+  position:absolute;
+  width:8px;
+  height:3px;
+  border-radius:999px;
+  background:linear-gradient(90deg,#fff,var(--impact-color));
+  box-shadow:0 0 7px var(--impact-color);
+  transform:translate(-50%,-50%) rotate(var(--impact-angle)) translateX(0);
+  animation:gs-hit-spark .58s cubic-bezier(.12,.66,.24,1) forwards;
+}
+@keyframes gs-shot-beam {
+  0% { transform:scaleX(.02); opacity:0; }
+  18% { opacity:1; }
+  100% { transform:scaleX(1); opacity:.12; }
+}
+@keyframes gs-shot-muzzle {
+  0% { opacity:0; transform:translate(-50%,-50%) scale(.15); }
+  35% { opacity:1; transform:translate(-50%,-50%) scale(1.35); }
+  100% { opacity:0; transform:translate(-50%,-50%) scale(.45); }
+}
+@keyframes gs-projectile-travel {
+  0% { opacity:0; transform:translate(-50%,-50%) scale(.55); }
+  8%,88% { opacity:1; }
+  100% { opacity:0; transform:translate(calc(var(--fx-distance) - 2px),-50%) scale(1.15); }
+}
+@keyframes gs-weapon-recoil {
+  0%,100% { transform:translateX(0); }
+  35% { transform:translateX(-4px) scale(1.035); filter:brightness(1.45); }
+}
+@keyframes gs-hit-flash {
+  0% { opacity:0; transform:translate(-50%,-50%) scale(.12); }
+  24% { opacity:1; transform:translate(-50%,-50%) scale(1.08); }
+  100% { opacity:0; transform:translate(-50%,-50%) scale(1.7); }
+}
+@keyframes gs-hit-ring {
+  0% { opacity:1; transform:translate(-50%,-50%) scale(.2); }
+  100% { opacity:0; transform:translate(-50%,-50%) scale(3.3); }
+}
+@keyframes gs-hit-spark {
+  0% { opacity:1; transform:translate(-50%,-50%) rotate(var(--impact-angle)) translateX(0); }
+  100% { opacity:0; transform:translate(-50%,-50%) rotate(var(--impact-angle)) translateX(35px); }
+}
+
+@media (prefers-reduced-motion:reduce) {
+  .energy-flow-indicator i,
+  .module-card.energy-flowing .module-icon,
+  .duel-shot-beam,
+  .duel-shot-muzzle,
+  .duel-shot-projectile,
+  .module-card.fx-fire,
+  .duel-hit-impact * {
+    animation-duration:.01ms !important;
+    animation-iteration-count:1 !important;
+  }
+}

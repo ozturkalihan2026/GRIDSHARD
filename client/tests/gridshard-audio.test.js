@@ -38,6 +38,23 @@ assert.ok(
 assert.ok(
   global.GRIDSHARD_SFX_CUES.core_hit
 );
+for (const cue of [
+  "laser_fire",
+  "pulse_cannon_fire",
+  "railgun_fire",
+  "missile_fire",
+  "drone_fire",
+  "arc_cannon_fire",
+]) {
+  assert.ok(
+    global.GRIDSHARD_SFX_CUES[cue],
+    `${cue} cue should exist`
+  );
+  assert.strictEqual(
+    director.triggerCue(cue).ok,
+    true
+  );
+}
 assert.strictEqual(
   director.triggerCue(
     "generator_move"

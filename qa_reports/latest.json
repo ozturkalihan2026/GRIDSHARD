@@ -1,18 +1,18 @@
 {
   "project": "GRIDSHARD 2.0",
-  "version": "2.0.0-beta.26",
-  "generated_at_epoch": 1787516087,
+  "version": "2.0.0-beta.27",
+  "generated_at_epoch": 1787528495,
   "ok": true,
   "steps": [
     {
       "name": "release_guard",
       "ok": true,
       "returncode": 0,
-      "duration_s": 0.086,
-      "stdout": "[GRIDSHARD] Kaynak bütünlüğü doğrulandı: 2.0.0-beta.26 · dict telemetri uyumlu.\n",
+      "duration_s": 0.14,
+      "stdout": "[GRIDSHARD] Kaynak bütünlüğü doğrulandı: 2.0.0-beta.27 · dict telemetri uyumlu.\n",
       "stderr": "",
       "command": [
-        "C:\\Users\\S-A\\Documents\\Codex\\2026-08-23\\referenced-chatgpt-conversation-this-is-an\\work\\GRIDSHARD-Beta26\\.venv\\Scripts\\python.exe",
+        "C:\\Users\\S-A\\AppData\\Local\\Temp\\gridshard-beta27-test-env\\Scripts\\python.exe",
         "tools/release_guard.py"
       ]
     },
@@ -20,11 +20,11 @@
       "name": "server_pytest",
       "ok": true,
       "returncode": 0,
-      "duration_s": 20.103,
-      "stdout": "........................................................................ [ 10%]\n........................................................................ [ 21%]\n........................................................................ [ 32%]\n........................................................................ [ 43%]\n........................................................................ [ 54%]\n........................................................................ [ 65%]\n........................................................................ [ 76%]\n........................................................................ [ 86%]\n........................................................................ [ 97%]\n...............                                                          [100%]\n663 passed in 19.43s\n",
+      "duration_s": 25.237,
+      "stdout": "........................................................................ [ 10%]\n........................................................................ [ 21%]\n........................................................................ [ 31%]\n........................................................................ [ 42%]\n........................................................................ [ 52%]\n........................................................................ [ 63%]\n........................................................................ [ 74%]\n........................................................................ [ 84%]\n........................................................................ [ 95%]\n................................                                         [100%]\n680 passed in 23.56s\n",
       "stderr": "",
       "command": [
-        "C:\\Users\\S-A\\Documents\\Codex\\2026-08-23\\referenced-chatgpt-conversation-this-is-an\\work\\GRIDSHARD-Beta26\\.venv\\Scripts\\python.exe",
+        "C:\\Users\\S-A\\AppData\\Local\\Temp\\gridshard-beta27-test-env\\Scripts\\python.exe",
         "-m",
         "pytest",
         "-q"
@@ -34,7 +34,7 @@
       "name": "client_syntax_app",
       "ok": true,
       "returncode": 0,
-      "duration_s": 0.063,
+      "duration_s": 0.094,
       "stdout": "",
       "stderr": "",
       "command": [
@@ -47,7 +47,7 @@
       "name": "client_syntax_runtime",
       "ok": true,
       "returncode": 0,
-      "duration_s": 0.05,
+      "duration_s": 0.073,
       "stdout": "",
       "stderr": "",
       "command": [
@@ -60,7 +60,7 @@
       "name": "client_syntax_audio",
       "ok": true,
       "returncode": 0,
-      "duration_s": 0.048,
+      "duration_s": 0.077,
       "stdout": "",
       "stderr": "",
       "command": [
@@ -73,7 +73,7 @@
       "name": "client_audio_tests",
       "ok": true,
       "returncode": 0,
-      "duration_s": 0.048,
+      "duration_s": 0.094,
       "stdout": "gridshard audio identity test passed\n",
       "stderr": "",
       "command": [
@@ -85,7 +85,7 @@
       "name": "client_audio_browser_lifecycle",
       "ok": true,
       "returncode": 0,
-      "duration_s": 2.776,
+      "duration_s": 2.815,
       "stdout": "gridshard audio browser lifecycle test passed\n",
       "stderr": "",
       "command": [
@@ -97,7 +97,7 @@
       "name": "client_unit_tests",
       "ok": true,
       "returncode": 0,
-      "duration_s": 0.202,
+      "duration_s": 0.342,
       "stdout": "175 client tests passed\n",
       "stderr": "",
       "command": [
@@ -109,7 +109,7 @@
       "name": "client_startup_menu_test",
       "ok": true,
       "returncode": 0,
-      "duration_s": 0.149,
+      "duration_s": 0.204,
       "stdout": "app startup + preparation return + forfeit penalty + timer freeze + reciprocal local battle test passed\n",
       "stderr": "",
       "command": [
@@ -121,11 +121,11 @@
       "name": "audio_bs1770_optional_scan",
       "ok": true,
       "returncode": 0,
-      "duration_s": 0.152,
+      "duration_s": 0.148,
       "stdout": "Audio BS.1770 scan: SKIPPED\n",
       "stderr": "",
       "command": [
-        "C:\\Users\\S-A\\Documents\\Codex\\2026-08-23\\referenced-chatgpt-conversation-this-is-an\\work\\GRIDSHARD-Beta26\\.venv\\Scripts\\python.exe",
+        "C:\\Users\\S-A\\AppData\\Local\\Temp\\gridshard-beta27-test-env\\Scripts\\python.exe",
         "tools/audio_lufs_scan.py"
       ]
     },
@@ -133,35 +133,35 @@
       "name": "beta25_energy_port_regression",
       "ok": true,
       "returncode": 0,
-      "duration_s": 1.551,
-      "stdout": "Beta.24 energy/port report: C:\\Users\\S-A\\Documents\\Codex\\2026-08-23\\referenced-chatgpt-conversation-this-is-an\\work\\GRIDSHARD-Beta26\\qa_reports\\beta24_energy_port_report.json\nmatches 30 timeouts 0 draws 2 avg_ms 55993.3\nenergy_combinations 43795 generator 11.0 ports 4\n",
+      "duration_s": 1.857,
+      "stdout": "Beta.24 energy/port report: D:\\Projects\\GRIDSHARD\\qa_reports\\beta24_energy_port_report.json\nmatches 30 timeouts 0 draws 2 avg_ms 55993.3\nenergy_combinations 43795 generator 11.0 ports 4\n",
       "stderr": "",
       "command": [
-        "C:\\Users\\S-A\\Documents\\Codex\\2026-08-23\\referenced-chatgpt-conversation-this-is-an\\work\\GRIDSHARD-Beta26\\.venv\\Scripts\\python.exe",
+        "C:\\Users\\S-A\\AppData\\Local\\Temp\\gridshard-beta27-test-env\\Scripts\\python.exe",
         "tools/beta24_energy_port_report.py"
       ]
     },
     {
-      "name": "beta26_acceptance_report",
+      "name": "beta27_acceptance_report",
       "ok": true,
       "returncode": 0,
-      "duration_s": 0.183,
-      "stdout": "Beta.26 acceptance report: C:\\Users\\S-A\\Documents\\Codex\\2026-08-23\\referenced-chatgpt-conversation-this-is-an\\work\\GRIDSHARD-Beta26\\qa_reports\\beta26_acceptance_report.json\n",
+      "duration_s": 0.203,
+      "stdout": "Beta.27 acceptance report: D:\\Projects\\GRIDSHARD\\qa_reports\\beta27_acceptance_report.json\n",
       "stderr": "",
       "command": [
-        "C:\\Users\\S-A\\Documents\\Codex\\2026-08-23\\referenced-chatgpt-conversation-this-is-an\\work\\GRIDSHARD-Beta26\\.venv\\Scripts\\python.exe",
-        "tools/beta26_acceptance_report.py"
+        "C:\\Users\\S-A\\AppData\\Local\\Temp\\gridshard-beta27-test-env\\Scripts\\python.exe",
+        "tools/beta27_acceptance_report.py"
       ]
     },
     {
       "name": "browser_e2e_evidence_summary",
       "ok": true,
       "returncode": 0,
-      "duration_s": 0.067,
-      "stdout": "GRIDSHARD Browser E2E evidence: SKIPPED\nRapor: C:\\Users\\S-A\\Documents\\Codex\\2026-08-23\\referenced-chatgpt-conversation-this-is-an\\work\\GRIDSHARD-Beta26\\qa_reports\\browser_e2e_evidence_summary.json\n",
+      "duration_s": 0.117,
+      "stdout": "GRIDSHARD Browser E2E evidence: SKIPPED\nRapor: D:\\Projects\\GRIDSHARD\\qa_reports\\browser_e2e_evidence_summary.json\n",
       "stderr": "",
       "command": [
-        "C:\\Users\\S-A\\Documents\\Codex\\2026-08-23\\referenced-chatgpt-conversation-this-is-an\\work\\GRIDSHARD-Beta26\\.venv\\Scripts\\python.exe",
+        "C:\\Users\\S-A\\AppData\\Local\\Temp\\gridshard-beta27-test-env\\Scripts\\python.exe",
         "tools/browser_e2e_evidence.py"
       ]
     },
@@ -169,11 +169,11 @@
       "name": "browser_e2e_history",
       "ok": true,
       "returncode": 0,
-      "duration_s": 0.106,
+      "duration_s": 0.129,
       "stdout": "Browser E2E history: SKIPPED\n",
       "stderr": "",
       "command": [
-        "C:\\Users\\S-A\\Documents\\Codex\\2026-08-23\\referenced-chatgpt-conversation-this-is-an\\work\\GRIDSHARD-Beta26\\.venv\\Scripts\\python.exe",
+        "C:\\Users\\S-A\\AppData\\Local\\Temp\\gridshard-beta27-test-env\\Scripts\\python.exe",
         "tools/browser_e2e_history.py"
       ]
     },
@@ -181,11 +181,11 @@
       "name": "ux_interaction_matrix",
       "ok": true,
       "returncode": 0,
-      "duration_s": 0.084,
+      "duration_s": 0.145,
       "stdout": "UX interaction matrix: SKIPPED\n",
       "stderr": "",
       "command": [
-        "C:\\Users\\S-A\\Documents\\Codex\\2026-08-23\\referenced-chatgpt-conversation-this-is-an\\work\\GRIDSHARD-Beta26\\.venv\\Scripts\\python.exe",
+        "C:\\Users\\S-A\\AppData\\Local\\Temp\\gridshard-beta27-test-env\\Scripts\\python.exe",
         "tools/ux_interaction_matrix.py"
       ]
     },
@@ -193,18 +193,18 @@
       "name": "ux_performance_observation",
       "ok": true,
       "returncode": 0,
-      "duration_s": 0.104,
+      "duration_s": 0.128,
       "stdout": "UX performance observation: NOT_MEASURED\n",
       "stderr": "",
       "command": [
-        "C:\\Users\\S-A\\Documents\\Codex\\2026-08-23\\referenced-chatgpt-conversation-this-is-an\\work\\GRIDSHARD-Beta26\\.venv\\Scripts\\python.exe",
+        "C:\\Users\\S-A\\AppData\\Local\\Temp\\gridshard-beta27-test-env\\Scripts\\python.exe",
         "tools/ux_performance_thresholds.py"
       ]
     },
     {
       "name": "uvicorn_http_smoke",
       "ok": true,
-      "duration_s": 2.055,
+      "duration_s": 2.818,
       "checks": [
         {
           "path": "/",

@@ -606,6 +606,31 @@ return removed
 """
 
 
+_REDIS_CLEAR_MATCH_LUA = _REDIS_CLEANUP_LUA + r"""
+local player_id = ARGV[1]
+local match_id = redis.call('HGET', KEYS[4], player_id)
+if not match_id then
+    return 0
+end
+
+local pair_raw = redis.call('HGET', KEYS[5], match_id)
+if pair_raw then
+    local pair = cjson.decode(pair_raw)
+    local mapped_a = redis.call('HGET', KEYS[4], pair.player_a_id)
+    if mapped_a == match_id then
+        redis.call('HDEL', KEYS[4], pair.player_a_id)
+    end
+    local mapped_b = redis.call('HGET', KEYS[4], pair.player_b_id)
+    if mapped_b == match_id then
+        redis.call('HDEL', KEYS[4], pair.player_b_id)
+    end
+end
+redis.call('HDEL', KEYS[5], match_id)
+redis.call('ZREM', KEYS[6], match_id)
+return 1
+"""
+
+
 _REDIS_MARK_READY_LUA = r"""
 local match_id = ARGV[1]
 local owner_instance_id = ARGV[2]
@@ -782,6 +807,10 @@ class RedisMatchmakingService:
 
     async def cancel(self, player_id: str) -> bool:
         removed = await self._eval(_REDIS_CANCEL_LUA, player_id)
+        return bool(int(removed))
+
+    async def clear_match(self, player_id: str) -> bool:
+        removed = await self._eval(_REDIS_CLEAR_MATCH_LUA, player_id)
         return bool(int(removed))
 
     async def cleanup_expired(self) -> dict[str, int]:

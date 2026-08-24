@@ -9,6 +9,7 @@ from app.main import (
 from app.matchmaking import (
     MatchmakingService,
 )
+from app.game.models import BattleStatus
 
 
 client=TestClient(app)
@@ -174,6 +175,32 @@ def test_gateway_matchmaking_creates_strict_pvp_session():
     )
     assert session.setup_required is True
     assert session.auto_start_when_ready is True
+
+
+def test_gateway_requeues_player_after_finished_match():
+    reset_gateway()
+    client.post(
+        "/matchmaking/join",
+        json={"player_id": "rematch-a"},
+    )
+    matched=client.post(
+        "/matchmaking/join",
+        json={"player_id": "rematch-b"},
+    ).json()
+    previous_session_id=matched["session_id"]
+    session=pvp_service.get_session(previous_session_id)
+    session.engine.state.status=BattleStatus.FINISHED
+
+    rematch=client.post(
+        "/matchmaking/join",
+        json={"player_id": "rematch-a"},
+    )
+
+    assert rematch.status_code==200
+    body=rematch.json()
+    assert body["matched"] is False
+    assert body["queue"]["queued"] is True
+    assert body["queue"].get("session_id") != previous_session_id
 
 
 def test_gateway_matchmaking_status_exposes_rating_metadata():

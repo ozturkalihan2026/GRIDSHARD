@@ -1,6 +1,6 @@
 # GRIDSHARD 2.0 — YOL HARİTASI
 
-**Güncel Sürüm:** `2.0.0-beta.26`
+**Güncel Sürüm:** `2.0.0-beta.27`
 **Paket:** Canlı Telemetri Sertleştirmesi + Görsel Erişilebilirlik + Bağlantı Hata Akışı + Tek Eşleştirme/AI Devralma + Aktif Devre
 **Kanonik Dosya:** `docs/YOL_HARITASI.md`
 
@@ -247,7 +247,7 @@ Beta.25 sonrası mobil hazırlık önceliği kapsamında eski erteleme kararı k
 - [x] Olay Günlüğü mevcut.
 - [x] Özel hücreler görsel sınıflara sahip.
 - [~] 20 aktif modüllü gerçek PvP ekranında karmaşa/taşma testi tamamlanmadı.
-- [~] Saldırı kaynak/hedef efektlerinin gerçek tarayıcı okunabilirliği manuel test bekliyor.
+- [x] Saldırı kaynak/hedef efektleri, hedef merkezine ulaşan silah profilleri ve her vuruşta ayrı çarpma geri bildirimiyle gerçek tarayıcıda doğrulandı.
 
 **Durum:** Kısmi.
 
@@ -525,8 +525,8 @@ olarak üretilir.
 ## P5 — Savaş Okunabilirliği
 
 - [ ] Gerçek 20 aktif modüllü PvP ekran testi.
-- [ ] Enerjisiz/hasarlı/güçlendirilmiş modül görsel ayrımı.
-- [ ] Saldırı kaynak/hedef okunabilirliği.
+- [x] Enerji alan ve enerjisiz modüller canlı akış / `ENERJİ YOK` ayrımıyla görünür; hasar ve güçlendirme durumları mevcut kart katmanlarında korunur.
+- [x] Saldırı kaynağı, hedefe kadar ilerleyen atış ve hedef merkezindeki çarpma geri bildirimi ayrı okunur.
 - [ ] Dar ekran/telefon Modül Rafı testi.
 
 ## Daha Sonra
@@ -1414,7 +1414,7 @@ Ayrıntılı operasyon akışı: `docs/MOBILE_RELEASE_RUNBOOK.md`.
 
 ---
 
-# 10. Güncel Paket
+# 10. Beta.26 Paketi
 
 **`GRIDSHARD 2.0.0-beta.26 — Canlı Telemetri Sertleştirmesi + Görsel Erişilebilirlik + Bağlantı Hata Akışı`**
 
@@ -1442,3 +1442,27 @@ Kural:
 - savaş başladıktan sonra hiçbir UI etkileşimi simulation clock'u durduramaz,
 - online PvP ve Yerel AI için nihai savaş gerçeği sunucu otoritelidir,
 - sayısal denge ve mastering hedefleri ayrı kullanıcı kararlarıdır.
+
+---
+
+# 11. Güncel Paket
+
+**`GRIDSHARD 2.0.0-beta.27 — P5 Savaş Okunabilirliği · Canlı Enerji Akışı · Silah Kimliği`**
+
+Beta.27, Beta.26'nın tek eşleştirme, sunucu AI devralma, combat/pool hotfix, Redis koordinasyonu, maç sonucu/analiz akışı ve port guard temellerini korur. Sayısal savaş veya enerji dengesi değiştirilmeden aşağıdaki okunabilirlik katmanı eklenmiştir:
+
+1. [x] Oyuncu ve rakip kartları, sunucunun `is_powered / energy_received / energy_required` snapshot gerçeğini kullanır; çevrimiçi oyuncu aktarımındaki eksik enerji alanları tamamlandı.
+2. [x] Enerji alan modüllerde hareketli mint akım taneleri, çevre hattı, güçlenen simge ve anlık `AKIŞ n Ü` rozeti görünür. Jeneratör `KAYNAK n Ü`, enerjisiz tüketici `ENERJİ YOK` olarak ayrılır.
+3. [x] Lazer, Darbe Topu, Ray Topu, Füze Fırlatıcı, Dron Üssü ve Ark Topu için ayrı renk, hız, mermi/ışın biçimi ve namlu geri bildirimi tanımlandı.
+4. [x] Her atış gerçek kaynak kartın merkezinden çıkar, hedef kartın hesaplanan merkezine kadar ilerler ve ulaşma anında ayrı flaş, halka, kıvılcım ile hedef kart darbesi üretir.
+5. [x] Altı saldırı modülü için birbirinden farklı, deterministik olarak yeniden üretilebilir özgün ateş sesleri eklendi; dosyalar `44.1 kHz`, kısa SFX ve yaklaşık `-3 dBFS` tepe hedefindedir.
+6. [x] Azaltılmış hareket tercihi enerji, mermi ve çarpma animasyonlarını da kapsar.
+7. [x] Yarım kalmış `.venv` klasörü artık yalnız `python.exe` varlığıyla hazır sayılmaz; `pyvenv.cfg` doğrulamasıyla başlatıcı akışı güvenli biçimde tamamlar.
+8. [x] Beta.27 kabul raporu sürüm bütünlüğü, Beta.26 savaş temelleri, enerji akışı, hedefe ulaşan efektler, altı ayrı ses, port/venv guard ve azaltılmış hareket kontrollerini kapsar.
+
+Doğrulama sınırı:
+
+- [x] Sunucu/istemci birim ve entegrasyon testleri ile gerçek masaüstü Chromium savaş akışı doğrulandı.
+- [~] Gerçek 20 aktif modüllü uzun süreli PvP karmaşa/soak testi ayrıca genişletilecektir; mevcut tipik savaş yükü doğrulanmıştır.
+- [ ] Fiziksel Android/iPhone kanıtı harici cihaz ve hesap girdileri olmadan tamamlanmış sayılmaz.
+- [ ] Gerçek kullanıcı telemetrisi oluşmadan sayısal enerji dengesi otomatik değiştirilmez.

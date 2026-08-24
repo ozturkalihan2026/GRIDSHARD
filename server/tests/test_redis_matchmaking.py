@@ -172,6 +172,26 @@ def test_all_redis_keys_share_one_cluster_hash_slot_tag():
         run(redis.aclose())
 
 
+def test_finished_match_can_be_cleared_from_every_redis_index():
+    async def scenario():
+        redis, node_a, node_b = services()
+        try:
+            await enqueue(node_a, "a", 1000)
+            await enqueue(node_b, "b", 1000)
+            pair = await node_b.try_match("b")
+            assert pair is not None
+
+            assert await node_a.clear_match("a") is True
+            assert await node_a.matched_pair_for("a") is None
+            assert await node_b.matched_pair_for("b") is None
+            assert await redis.hexists(node_a._keys[4], pair.match_id) == 0
+            assert await redis.zscore(node_a._keys[5], pair.match_id) is None
+        finally:
+            await redis.aclose()
+
+    run(scenario())
+
+
 def test_gateway_provisions_owner_session_and_returns_websocket_route():
     async def scenario():
         from app import main as gateway

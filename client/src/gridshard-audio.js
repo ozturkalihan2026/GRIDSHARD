@@ -63,7 +63,27 @@
     },
     laser_fire:{
       asset:"./assets/audio/laser_fire.wav",
-      identity:"kapasitör dolumu → sert elektrik boşalması",
+      identity:"ince kapasitör dolumu → keskin foton boşalması",
+    },
+    pulse_cannon_fire:{
+      asset:"./assets/audio/pulse_cannon_fire.wav",
+      identity:"çift plazma basıncı → tok darbe",
+    },
+    railgun_fire:{
+      asset:"./assets/audio/railgun_fire.wav",
+      identity:"manyetik ray yükselişi → metalik kırbaç",
+    },
+    missile_fire:{
+      asset:"./assets/audio/missile_fire.wav",
+      identity:"ateşleyici klik → roket motoru fırlayışı",
+    },
+    drone_fire:{
+      asset:"./assets/audio/drone_fire.wav",
+      identity:"üçlü mikro taret salvosu",
+    },
+    arc_cannon_fire:{
+      asset:"./assets/audio/arc_cannon_fire.wav",
+      identity:"iyon yükü → dallanan elektrik çatlağı",
     },
     shield_hit:{
       asset:"./assets/audio/shield_hit.wav",
