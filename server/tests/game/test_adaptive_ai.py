@@ -127,6 +127,31 @@ def test_ai_never_selects_active_duplicate_definition():
     assert candidate.module_definition_id != "laser"
 
 
+def test_ai_builds_two_attack_foundation_before_over_defending():
+    engine, ai, opponent = make_engine()
+    activate(engine, "ai", "ai-laser", "laser", 1, 1)
+    activate(engine, "opponent", "enemy-laser", "laser", 1, 1)
+    activate(engine, "opponent", "enemy-pulse", "pulse_cannon", 3, 1)
+
+    candidate = choose_counter_module(ai, opponent)
+
+    assert candidate is not None
+    assert candidate.module_definition_id == "pulse_cannon"
+
+
+def test_ai_uses_defensive_counter_after_attack_foundation_is_ready():
+    engine, ai, opponent = make_engine()
+    activate(engine, "ai", "ai-laser", "laser", 1, 1)
+    activate(engine, "ai", "ai-pulse", "pulse_cannon", 3, 1)
+    activate(engine, "opponent", "enemy-laser", "laser", 1, 1)
+    activate(engine, "opponent", "enemy-pulse", "pulse_cannon", 3, 1)
+
+    candidate = choose_counter_module(ai, opponent)
+
+    assert candidate is not None
+    assert candidate.module_definition_id == "reflector"
+
+
 def test_ai_respects_circuit_credit_budget():
     engine, ai, opponent = make_engine()
     ai.circuit_credits = 0

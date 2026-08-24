@@ -15,7 +15,7 @@
 
   const GRIDSHARD_AUDIO_DIRECTION = Object.freeze({
     menu: { bpm:[92,100], intensity:0.25 },
-    pool: { bpm:[105,112], intensity:0.35 },
+    pool: { bpm:[96,100], intensity:0.35 },
     matchmaking: { bpm:[115,120], intensity:0.50 },
     battle_intro: { bpm:[120,126], intensity:0.65 },
     battle: { bpm:[126,132], intensity:0.75 },
@@ -26,8 +26,9 @@
   });
 
   const GRIDSHARD_AUDIO_MIX = Object.freeze({
-    version:"shardglass-seven-layer-v7",
+    version:"shardglass-seamless-v8",
     crossfadeMs:1200,
+    menuPoolCrossfadeMs:480,
     resultCrossfadeMs:320,
     musicBaseGain:0.72,
     sfxBaseGain:0.86,
@@ -51,6 +52,8 @@
 
   const GRIDSHARD_CRITICAL_LAYER =
     "./assets/audio/battle_tension_v7_07_pressure.wav";
+
+  const GRIDSHARD_CONTINUOUS_LOOP_SECONDS = 32;
 
   const GRIDSHARD_BATTLE_LAYERS = Object.freeze([
     {id:"sub", asset:"./assets/audio/battle_tension_v7_01_sub.wav", baseGain:.36, pressureGain:.10},
@@ -132,6 +135,7 @@
       this.battleLayerTracks = [];
       this.battlePressure = .32;
       this._fadeTimers = new Set();
+      this._fadeTimerByAudio = new Map();
     }
 
     _canPlayAudio() {
@@ -183,6 +187,7 @@
 
     _stopAudio(audio) {
       if (!audio) return;
+      this._cancelFade(audio);
       try {
         audio.pause();
         audio.currentTime=0;
@@ -202,6 +207,8 @@
         if (onDone) onDone();
         return;
       }
+
+      this._cancelFade(audio);
 
       audio.volume=Math.max(
         0,
@@ -243,12 +250,16 @@
             this._fadeTimers.delete(
               timer
             );
+            if (this._fadeTimerByAudio.get(audio) === timer) {
+              this._fadeTimerByAudio.delete(audio);
+            }
             if (onDone) onDone();
           }
         },
         30
       );
       this._fadeTimers.add(timer);
+      this._fadeTimerByAudio.set(audio, timer);
     }
 
     _stopCriticalLayer({
@@ -365,6 +376,16 @@
       }
     }
 
+    _cancelFade(audio) {
+      const timer = this._fadeTimerByAudio.get(audio);
+      if (timer === undefined) return;
+      if (typeof global.clearInterval === "function") {
+        global.clearInterval(timer);
+      }
+      this._fadeTimers.delete(timer);
+      this._fadeTimerByAudio.delete(audio);
+    }
+
     _stopBattleLayers({fade=true}={}) {
       const tracks = [...this.battleLayerTracks];
       this.battleLayerTracks = [];
@@ -464,17 +485,36 @@
       }
       const next=
         new global.Audio(asset);
+      const previousState = previous?._gridshardState || null;
+      const phaseLockedTransition =
+        [GRIDSHARD_AUDIO_STATES.MENU, GRIDSHARD_AUDIO_STATES.POOL]
+          .includes(previousState)
+        && [GRIDSHARD_AUDIO_STATES.MENU, GRIDSHARD_AUDIO_STATES.POOL]
+          .includes(state);
       const transitionMs =
-        [
-          GRIDSHARD_AUDIO_STATES
-            .VICTORY,
-          GRIDSHARD_AUDIO_STATES
-            .DEFEAT,
-        ].includes(state)
-          ? GRIDSHARD_AUDIO_MIX
-            .resultCrossfadeMs
-          : GRIDSHARD_AUDIO_MIX
-            .crossfadeMs;
+        phaseLockedTransition
+          ? GRIDSHARD_AUDIO_MIX.menuPoolCrossfadeMs
+          : (
+              [
+                GRIDSHARD_AUDIO_STATES.VICTORY,
+                GRIDSHARD_AUDIO_STATES.DEFEAT,
+              ].includes(state)
+                ? GRIDSHARD_AUDIO_MIX.resultCrossfadeMs
+                : GRIDSHARD_AUDIO_MIX.crossfadeMs
+            );
+
+      next._gridshardState = state;
+      next._gridshardAsset = asset;
+      next.preload = "auto";
+      if (
+        phaseLockedTransition
+        && Number.isFinite(Number(previous?.currentTime))
+      ) {
+        next.currentTime = (
+          Math.max(0, Number(previous.currentTime))
+          % GRIDSHARD_CONTINUOUS_LOOP_SECONDS
+        );
+      }
 
       next.loop=
         ![
@@ -854,6 +894,8 @@
     GRIDSHARD_MUSIC_ASSETS;
   global.GRIDSHARD_CRITICAL_LAYER=
     GRIDSHARD_CRITICAL_LAYER;
+  global.GRIDSHARD_CONTINUOUS_LOOP_SECONDS=
+    GRIDSHARD_CONTINUOUS_LOOP_SECONDS;
   global.GRIDSHARD_BATTLE_LAYERS=
     GRIDSHARD_BATTLE_LAYERS;
   global.GRIDSHARD_SFX_CUES=

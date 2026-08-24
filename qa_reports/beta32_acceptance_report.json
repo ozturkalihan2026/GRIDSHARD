@@ -1,0 +1,95 @@
+{
+  "version": "2.0.0-beta.32",
+  "ok": true,
+  "checks": {
+    "version_integrity": true,
+    "seamless_phase_locked_menu_pool_audio": true,
+    "visible_server_authoritative_booster_at_30_seconds": true,
+    "battle_shelf_fits_short_viewport": true,
+    "stronger_powered_module_pulse": true,
+    "statistics_exclude_required_modules": true,
+    "local_ai_attack_foundation_then_counter": true,
+    "offense_is_not_an_automatic_win": true,
+    "beta31_swap_and_seven_layers_preserved": true,
+    "beta30_session_resilience_preserved": true,
+    "roadmap_truth_pass": true
+  },
+  "menu_pool_loop_probe": [
+    {
+      "file": "menu_ensemble_v6.wav",
+      "duration_seconds": 32.0,
+      "start_rms": 4880.89,
+      "end_rms": 1611.61,
+      "seam_delta": [
+        0,
+        0
+      ],
+      "ok": true
+    },
+    {
+      "file": "pool_ensemble_v6.wav",
+      "duration_seconds": 32.0,
+      "start_rms": 4971.54,
+      "end_rms": 1641.83,
+      "seam_delta": [
+        0,
+        0
+      ],
+      "ok": true
+    }
+  ],
+  "battle_audio_probe": {
+    "expected": 7,
+    "valid": 7,
+    "files": [
+      "battle_tension_v7_01_sub.wav",
+      "battle_tension_v7_02_pulse.wav",
+      "battle_tension_v7_03_percussion.wav",
+      "battle_tension_v7_04_ostinato.wav",
+      "battle_tension_v7_05_shards.wav",
+      "battle_tension_v7_06_dissonance.wav",
+      "battle_tension_v7_07_pressure.wav"
+    ],
+    "ok": true
+  },
+  "balance_probe": {
+    "match_count": 12,
+    "timeouts": 0,
+    "draws": 0,
+    "average_duration_ms": 45933.333333333336,
+    "wins_by_layout": {
+      "balanced": 6,
+      "offense": 2,
+      "defense": 4,
+      "sabotage": 0
+    },
+    "offense_auto_win": false,
+    "ok": true
+  },
+  "module_swap_probe": {
+    "ok": true,
+    "reachable": [
+      "core-1",
+      "generator-1",
+      "laser-1",
+      "shield-1"
+    ]
+  },
+  "pvp_session_soak": {
+    "requested_matches": 50,
+    "finished_matches": 50,
+    "expired_sessions": 50,
+    "active_after_cleanup": 0,
+    "ok": true
+  },
+  "browser_matrix_expected": {
+    "desktop-chromium": 6,
+    "android-chrome-emulated": 2,
+    "iphone-safari-emulated": 2
+  },
+  "external_evidence_not_claimed": [
+    "fiziksel Android/iPhone uzun savaş testi",
+    "kulaklık/hoparlör insan miks değerlendirmesi",
+    "gerçek oyuncu popülasyonu meta telemetrisi"
+  ]
+}

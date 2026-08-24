@@ -31,7 +31,7 @@ TRACKS = (
     ),
     EnsembleSpec(
         "pool_ensemble_v6.wav",
-        60,
+        52,
         0.88,
         (74, 81, 77, 84, 79, 86, 81, 77),
     ),
@@ -39,8 +39,8 @@ TRACKS = (
 
 # Original D-minor GRIDSHARD progression. Each menu state now uses a real
 # ensemble: chord pad, bass, reactor kick, clap, hi-hat, glass arpeggio and
-# a restrained brass/synth lead. The mix stays loop-safe and never relies on
-# copyrighted samples or third-party assets.
+# a restrained brass/synth lead. Beta.32 keeps Menu and Pool on one 32-second
+# tempo grid, so state changes can preserve phase without rhythm flamming.
 CHORDS = (
     (50, 53, 57),  # Dm
     (46, 50, 53),  # Bb
@@ -51,7 +51,10 @@ ARPEGGIO_STEPS = (0, 2, 1, 2, 0, 1, 2, 1)
 
 
 def midi_frequency(note: int) -> float:
-    return 440.0 * (2.0 ** ((note - 69) / 12.0))
+    frequency = 440.0 * (2.0 ** ((note - 69) / 12.0))
+    # Quantizing by less than 1/32 Hz makes every sustained oscillator close
+    # on the exact loop boundary without adding a silent fade at either edge.
+    return round(frequency * DURATION_SECONDS) / DURATION_SECONDS
 
 
 def oscillator(frequency: float, t: float, harmonics: int) -> float:
@@ -64,16 +67,6 @@ def oscillator(frequency: float, t: float, harmonics: int) -> float:
 def deterministic_noise(sample_index: int) -> float:
     value = math.sin(sample_index * 12.9898 + 38.117) * 43_758.5453
     return (value - math.floor(value)) * 2 - 1
-
-
-def edge_window(frame: int, frame_count: int) -> float:
-    edge_frames = int(SAMPLE_RATE * 0.016)
-    if frame < edge_frames:
-        return math.sin(frame / edge_frames * math.pi / 2) ** 2
-    remaining = frame_count - 1 - frame
-    if remaining < edge_frames:
-        return math.sin(remaining / edge_frames * math.pi / 2) ** 2
-    return 1.0
 
 
 def synthesize(spec: EnsembleSpec) -> array:
@@ -157,9 +150,21 @@ def synthesize(spec: EnsembleSpec) -> array:
         )
         stereo_motion = 0.075 * math.sin(2 * math.pi * t / (beat_seconds * 8))
         shimmer = glass_arpeggio * 0.17
-        window = edge_window(frame, frame_count)
-        samples.append((mono * (1 - stereo_motion) + shimmer) * window)
-        samples.append((mono * (1 + stereo_motion) - shimmer) * window)
+        # The downbeat itself is the seam. There is deliberately no fade to
+        # digital silence here; HTMLAudio loop playback therefore has no
+        # audible empty pocket between repetitions.
+        samples.append(mono * (1 - stereo_motion) + shimmer)
+        samples.append(mono * (1 + stereo_motion) - shimmer)
+
+    seam_frames = int(SAMPLE_RATE * 0.006)
+    frame_count = len(samples) // 2
+    for channel in (0, 1):
+        target = samples[channel]
+        for offset in range(seam_frames):
+            progress = (offset + 1) / seam_frames
+            smooth = progress * progress * (3 - 2 * progress)
+            index = (frame_count - seam_frames + offset) * 2 + channel
+            samples[index] = samples[index] * (1 - smooth) + target * smooth
 
     return samples
 
@@ -186,7 +191,7 @@ def main() -> None:
     for spec in TRACKS:
         output = AUDIO_DIR / spec.filename
         write_normalized(output, synthesize(spec))
-        print(f"[GRIDSHARD] Beta.28 ensemble üretildi: {output.name}")
+        print(f"[GRIDSHARD] Beta.32 dikişsiz ensemble üretildi: {output.name}")
 
 
 if __name__ == "__main__":

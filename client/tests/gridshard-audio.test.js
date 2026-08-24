@@ -99,7 +99,7 @@ assert.strictEqual(
 
 assert.strictEqual(
   global.GRIDSHARD_AUDIO_MIX.version,
-  "shardglass-seven-layer-v7"
+  "shardglass-seamless-v8"
 );
 assert.strictEqual(global.GRIDSHARD_BATTLE_LAYERS.length, 7);
 assert.strictEqual(
@@ -109,6 +109,10 @@ assert.strictEqual(
 assert.strictEqual(
   global.GRIDSHARD_AUDIO_MIX.crossfadeMs,
   1200
+);
+assert.strictEqual(
+  global.GRIDSHARD_AUDIO_MIX.menuPoolCrossfadeMs,
+  480
 );
 assert.strictEqual(
   global.GRIDSHARD_AUDIO_MIX.resultCrossfadeMs,

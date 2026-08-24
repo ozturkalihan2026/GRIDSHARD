@@ -10,7 +10,7 @@ def test_manifest_exposes_ui_build_and_cache_mode():
     )
     assert response.status_code==200
     body=response.json()
-    assert body["version"]=="2.0.0-beta.31"
-    assert body["ui_build_label"]=="GRIDSHARD 2.0.0-beta.31"
+    assert body["version"]=="2.0.0-beta.32"
+    assert body["ui_build_label"]=="GRIDSHARD 2.0.0-beta.32"
     assert body["static_cache_mode"]=="no-store"
     assert body["browser_e2e"]=="optional-real-browser"

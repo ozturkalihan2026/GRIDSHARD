@@ -25,6 +25,20 @@ def test_beta28_menu_ensemble_is_long_stereo_loop_with_headroom():
         assert -6.1 <= peak_dbfs <= -5.9
         assert abs(samples[-2] - samples[0]) < 500
         assert abs(samples[-1] - samples[1]) < 500
+        edge_sample_count = int(22_050 * 0.05) * 2
+        full_rms = math.sqrt(
+            sum(value * value for value in samples) / len(samples)
+        )
+        start_rms = math.sqrt(
+            sum(value * value for value in samples[:edge_sample_count])
+            / edge_sample_count
+        )
+        end_rms = math.sqrt(
+            sum(value * value for value in samples[-edge_sample_count:])
+            / edge_sample_count
+        )
+        assert start_rms > full_rms * 0.35
+        assert end_rms > full_rms * 0.35
 
 
 def test_beta28_generator_contains_a_real_multi_instrument_arrangement():
@@ -41,3 +55,5 @@ def test_beta28_generator_contains_a_real_multi_instrument_arrangement():
         "synth_lead",
     ):
         assert layer in source
+    assert "seam_frames" in source
+    assert "edge_window" not in source

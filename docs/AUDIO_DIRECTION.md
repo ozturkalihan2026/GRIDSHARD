@@ -384,3 +384,9 @@ Savaş müziği artık tek stereo düzenleme yerine aynı `128 BPM / 32 sn` zama
 Stem'ler ayrı ayrı düşük headroom seviyesinde tutulur; çalışma zamanı miksi savaş baskısına göre kazançlarını değiştirir. Bu yaklaşım yedi dosyanın toplamında güvenli boşluk bırakır, ancak final LUFS/True Peak mastering kararı değildir.
 
 Deterministik kaynak: `tools/generate_beta31_battle_audio.py`.
+
+## 18. Beta.32 Kesintisiz Menü / Hazırlık Döngüsü
+
+Ana Menü ile hazırlık ekranı artık aynı 32 saniyelik ve 52 BPM'lik zaman ızgarasını paylaşır. Ekran geçişi yeni parçayı eski parçanın fazından başlatır; böylece iki farklı ritim üst üste binip hızlanma veya takılma algısı üretmez. Çalışma zamanı aynı ses elemanı üzerindeki eski fade zamanlayıcısını yeni geçişten önce iptal eder.
+
+V6 WAV üretiminde başlangıç ve bitişi sessizliğe çeken pencere kaldırılmıştır. Frekanslar 32 saniyelik döngüye kuantalanır ve kısa dikiş bölgesi son örneği ilk örneğe taşır. Bu nedenle parçanın yeniden başlamasında dijital sessizlik boşluğu yoktur. Deterministik kaynak: `tools/generate_beta28_menu_audio.py`.

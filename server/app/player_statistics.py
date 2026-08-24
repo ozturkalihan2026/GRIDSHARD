@@ -3,6 +3,9 @@ from dataclasses import dataclass, field
 from .game.models import BattleState, BattleStatus
 
 
+HABIT_EXCLUDED_DEFINITION_IDS = frozenset({"core", "generator"})
+
+
 @dataclass(slots=True)
 class PlayerStatistics:
     player_id: str
@@ -35,7 +38,11 @@ class PlayerStatistics:
 
     def to_view(self) -> dict:
         most_used = sorted(
-            self.module_usage.items(),
+            (
+                item
+                for item in self.module_usage.items()
+                if item[0] not in HABIT_EXCLUDED_DEFINITION_IDS
+            ),
             key=lambda item: (
                 -item[1],
                 item[0],
@@ -219,6 +226,7 @@ class PlayerStatisticsService:
                     )
                 )
                 if definition_id:
-                    used.add(definition_id)
+                    if definition_id not in HABIT_EXCLUDED_DEFINITION_IDS:
+                        used.add(definition_id)
 
-        return used
+        return used - HABIT_EXCLUDED_DEFINITION_IDS

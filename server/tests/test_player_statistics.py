@@ -127,6 +127,22 @@ def test_statistics_view_has_requested_metrics():
     assert "module_replacements" in view
     assert "boosters_used" in view
     assert "most_used_modules" in view
+    assert view["most_used_modules"] == []
+
+
+def test_circuit_habit_excludes_fixed_core_and_generator_from_old_data():
+    stats = PlayerStatisticsService().get_or_create("legacy")
+    stats.module_usage.update({
+        "core": 9,
+        "generator": 9,
+        "laser": 3,
+        "shield": 2,
+    })
+
+    assert stats.to_view()["most_used_modules"] == [
+        {"definition_id": "laser", "matches_used": 3},
+        {"definition_id": "shield", "matches_used": 2},
+    ]
 
 
 def test_statistics_endpoint_returns_empty_default():

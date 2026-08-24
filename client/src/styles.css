@@ -3296,14 +3296,12 @@ body[data-app-screen="play"][data-local-status="battle"] .battle-fx-strip,
 body[data-app-screen="play"][data-local-status="battle"] .battle-test-banner,
 body[data-app-screen="play"][data-local-status="battle"] .event-panel,
 body[data-app-screen="play"][data-local-status="battle"] .diagnostic-panel,
-body[data-app-screen="play"][data-local-status="battle"] .booster-panel,
 body[data-app-screen="play"][data-local-status="battle"] .combat-summary-panel,
 body[data-app-screen="play"][data-online-status="battle"] .battle-legend,
 body[data-app-screen="play"][data-online-status="battle"] .battle-fx-strip,
 body[data-app-screen="play"][data-online-status="battle"] .battle-test-banner,
 body[data-app-screen="play"][data-online-status="battle"] .event-panel,
 body[data-app-screen="play"][data-online-status="battle"] .diagnostic-panel,
-body[data-app-screen="play"][data-online-status="battle"] .booster-panel,
 body[data-app-screen="play"][data-online-status="battle"] .combat-summary-panel {
   display:none !important;
 }
@@ -4999,5 +4997,137 @@ body[data-app-screen="play"] .board-cell .hp-bar {
   .duel-hit-impact * {
     animation-duration:.01ms !important;
     animation-iteration-count:1 !important;
+  }
+}
+
+/* =========================================================
+   GRIDSHARD Beta.32 — fixed battle viewport, compact booster dock
+   and unmistakable powered-module pulse
+   ========================================================= */
+@media (min-width:1101px) {
+  body[data-app-screen="play"][data-local-status="battle"] .battle-shell,
+  body[data-app-screen="play"][data-online-status="battle"] .battle-shell {
+    display:grid;
+    height:100dvh;
+    min-height:0;
+    padding:6px 0 max(10px,env(safe-area-inset-bottom));
+    grid-template-rows:auto minmax(0,1fr);
+    gap:10px;
+    overflow:hidden;
+  }
+  body[data-app-screen="play"][data-local-status="battle"] .battle-header,
+  body[data-app-screen="play"][data-online-status="battle"] .battle-header {
+    position:relative;
+    top:auto;
+    margin:0;
+  }
+  body[data-app-screen="play"][data-local-status="battle"] .battle-layout,
+  body[data-app-screen="play"][data-online-status="battle"] .battle-layout {
+    width:100%;
+    height:auto;
+    min-height:0;
+    margin:0;
+  }
+}
+
+@media (min-width:1101px) {
+  body[data-app-screen="play"][data-local-status="battle"] .shelf-panel,
+  body[data-app-screen="play"][data-online-status="battle"] .shelf-panel {
+    display:grid;
+    min-height:0;
+    grid-template-rows:auto auto auto minmax(0,1fr);
+    align-content:stretch;
+  }
+}
+
+.battle-booster-dock {
+  display:grid;
+  gap:5px;
+  min-height:0;
+  margin:0 0 7px;
+  padding:6px;
+  border-radius:8px;
+}
+.battle-booster-dock .panel-title-row { gap:5px; }
+.battle-booster-dock h3 {
+  margin:0;
+  font-size:.66rem;
+  letter-spacing:.06em;
+  text-transform:uppercase;
+}
+.battle-booster-dock #booster-status {
+  color:var(--gs-reactor-gold,#f4c85a);
+  font-size:.58rem;
+  font-weight:800;
+  text-align:right;
+}
+.battle-booster-dock .booster-options {
+  display:grid;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:4px;
+}
+.battle-booster-dock .booster-option {
+  min-width:0;
+  min-height:32px;
+  padding:4px;
+  border-radius:6px;
+  font-size:.56rem;
+  font-weight:800;
+  line-height:1.12;
+}
+.battle-booster-dock .booster-option:not(:disabled) {
+  border-color:rgba(244,200,90,.72);
+  box-shadow:0 0 11px rgba(244,200,90,.18);
+}
+
+@media (min-width:1101px) {
+  body[data-app-screen="play"][data-local-status="battle"] .module-shelf,
+  body[data-app-screen="play"][data-online-status="battle"] .module-shelf {
+    width:100%;
+    height:auto;
+    min-height:0;
+    max-height:none;
+    padding:0 4px max(8px,env(safe-area-inset-bottom)) 0;
+    overflow-y:auto;
+    overscroll-behavior:contain;
+  }
+}
+
+.module-card.energy-flowing {
+  animation:gs-energy-presence-v2 1.55s ease-in-out infinite;
+  border-color:rgba(121,255,233,.56);
+}
+.module-card.energy-flowing::before {
+  content:"";
+  position:absolute;
+  z-index:0;
+  inset:2px;
+  border:1px solid rgba(121,255,233,.5);
+  border-radius:inherit;
+  background:radial-gradient(circle at 50% 48%,rgba(121,255,233,.22),transparent 64%);
+  opacity:.28;
+  pointer-events:none;
+  animation:gs-energy-aura-v2 1.55s ease-in-out infinite;
+}
+.module-card.energy-flowing > * { position:relative; z-index:1; }
+@keyframes gs-energy-presence-v2 {
+  0%,100% {
+    filter:brightness(.98) saturate(1.02);
+    box-shadow:inset 0 0 14px rgba(53,229,210,.2),0 0 7px rgba(53,229,210,.14);
+  }
+  50% {
+    filter:brightness(1.34) saturate(1.22);
+    box-shadow:inset 0 0 30px rgba(121,255,233,.52),0 0 24px rgba(53,229,210,.5);
+  }
+}
+@keyframes gs-energy-aura-v2 {
+  0%,100% { opacity:.18; transform:scale(.97); }
+  50% { opacity:.82; transform:scale(1.015); }
+}
+
+@media (prefers-reduced-motion:reduce) {
+  .module-card.energy-flowing,
+  .module-card.energy-flowing::before {
+    animation:none !important;
   }
 }

@@ -32,7 +32,7 @@
     <section id="main-menu-panel" class="main-menu-panel">
       <div class="main-menu-brand">
         <h1>GRIDSHARD</h1>
-        <span>2.0.0-beta.31</span>
+        <span>2.0.0-beta.32</span>
       </div>
       <div class="lobby-backdrop" aria-hidden="true">
         <div class="lobby-board-grid" aria-hidden="true">
@@ -65,7 +65,7 @@
           </button>
           <div class="lobby-build-chip">
             <span>GÜNCEL YAPI</span>
-            <strong id="ui-build-version">2.0.0-beta.31</strong><small id="ui-build-run">manifest bekleniyor</small>
+            <strong id="ui-build-version">2.0.0-beta.32</strong><small id="ui-build-run">manifest bekleniyor</small>
           </div>
         </div>
       </div>
@@ -328,15 +328,6 @@
       </div>
     </section>
 
-    <section class="booster-panel play-live-panel" id="booster-panel" data-screen-panel="play" hidden>
-      <div class="panel-title-row">
-        <h2>Geçici Güçlendiriciler</h2>
-        <span id="booster-status">Seçim bekleniyor</span>
-      </div>
-      <p>Güçlendiriciyi seç, ardından aktif hedef modülü seç. Savaş durmaz.</p>
-      <div id="booster-options" class="booster-options"></div>
-    </section>
-
     <section class="combat-summary-panel play-live-panel" data-screen-panel="play" hidden>
       <strong id="combat-summary">Rakip: 300/300 Çekirdek</strong>
       <span id="energy-summary">Enerji: 11.0 Ü / 0.0 T</span>
@@ -425,7 +416,7 @@
     </section>
 
     <section class="battle-test-banner play-live-panel" data-screen-panel="play" hidden>
-      <strong>Beta.31 · 10 sn AI Devralma · Modül Takası · Akıllı Port · 7 Katmanlı Gerilim Müziği</strong>
+      <strong>Beta.32 · 10 sn AI Devralma · Kesintisiz Müzik · 30 sn Güçlendirici · Dengeli AI · Sabit Savaş Rafı</strong>
       <span id="battle-entry-status">Savaş alanına giriş başarılı · Yerel AI aktif · Modül Rafı 15. saniyede açılır</span>
     </section>
 
@@ -481,6 +472,13 @@
         <p class="shelf-help" id="shelf-help">
           Modül müdahalesi 15. saniyede açılır.
         </p>
+        <section class="booster-panel battle-booster-dock" id="booster-panel">
+          <div class="panel-title-row">
+            <h3>Güçlendiriciler</h3>
+            <span id="booster-status">İlk hak 30. saniyede</span>
+          </div>
+          <div id="booster-options" class="booster-options"></div>
+        </section>
         <div id="module-shelf" class="module-shelf" aria-label="Modül Rafı"></div>
       </aside>
     </section>

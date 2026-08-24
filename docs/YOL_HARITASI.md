@@ -1,6 +1,6 @@
 # GRIDSHARD 2.0 — YOL HARİTASI
 
-**Güncel Sürüm:** `2.0.0-beta.31`
+**Güncel Sürüm:** `2.0.0-beta.32`
 **Paket:** Savaş İçi Modül Takası + Akıllı Otomatik Port + 7 Katmanlı Gerilim Müziği
 **Kanonik Dosya:** `docs/YOL_HARITASI.md`
 
@@ -1569,3 +1569,28 @@ Doğrulama sınırı:
 - [x] Gerçek Chrome/WebKit Playwright matrisi `9/9` geçti: masaüstü `5/5`, Android Chrome `2/2`, iPhone Safari/WebKit `2/2`.
 - [ ] Fiziksel Android/iPhone üzerinde uzun savaş ve kulaklık/hoparlör miks değerlendirmesi harici cihaz kanıtı olmadan tamamlanmış sayılmaz.
 - [ ] Final LUFS/True Peak mastering hedefi insan kararı olmadan tamamlanmış sayılmaz.
+
+---
+
+# 16. Güncel Paket — Beta.32
+
+**`GRIDSHARD 2.0.0-beta.32 — Kesintisiz Müzik · Erişilebilir Güçlendirici · Dengeli Yerel AI · Sabit Savaş Rafı`**
+
+Beta.32, Beta.31'in atomik modül takası, akıllı port yönlendirme ve yedi katmanlı savaş müziğini korurken oyuncu denemesindeki ses geçişi, güçlendirici erişimi, savaş yerleşimi, enerji okunabilirliği ve istatistik bulgularını çözer:
+
+1. [x] Ana Menü ve hazırlık müzikleri aynı 32 saniyelik tempo/loop ızgarasına taşındı; ekran geçişinde çalan parça fazı korunur, yarışan ses fade zamanlayıcıları iptal edilir ve “plak takılması” benzeri üst üste binme engellenir.
+2. [x] Menü/hazırlık WAV üretimindeki sessiz başlangıç-bitiş penceresi kaldırıldı. Son örnek ilk örneğe dikişlenerek yeniden başlatmada duyulur boşluk bırakmayan gerçek sürekli döngü üretildi.
+3. [x] Güçlendirici paneli savaşta gizlenen bağımsız alandan modül rafının görünür üst bölümüne alındı. İlk teklif `30.` saniyede, devam teklifleri 30 saniyede bir açılır; seçim ve uygulama gerçek sunucu komutlarıyla işlenir.
+4. [x] Masaüstü savaş kabuğu viewport yüksekliğine kilitlendi; modül rafı kendi içinde kayar ve 1366×630 gibi kısa ekranlarda alt tarafı ekran dışına taşmaz.
+5. [x] Enerji alan modüllerin parlama/sönme genliği artırıldı; kırmızı enerjisiz durum ve açıklayıcı hover/odak bilgisi korunur. Hareketli port animasyonu geri getirilmedi.
+6. [x] İstatistiklerde zorunlu Çekirdek ve Jeneratör “Devre Alışkanlığı” listesinden hem yeni kayıt hem eski kalıcı veri gösteriminde çıkarıldı.
+7. [x] Yerel AI, tek saldırı modülünde savunmaya aşırı yığılmadan önce ikinci çalışan saldırı temelini kurar; sonrasında rakip tehdidine karşı savunma/sabotaj karşılıklarını kullanmaya devam eder.
+8. [x] Dört kanonik düzenin 12 maçlık aynalı motor taramasında tüm maçlar çözüldü; saldırı ağırlıklı düzen yalnız `2/12` galibiyet aldı. Bu nedenle genel hasar/HP sayılarına kanıtsız küresel müdahale yapılmadı; gözlenen kısa maçların ana nedeni zayıf yerel AI açılışı ve 105. saniyelik erişilemez güçlendirici zamanlaması olarak düzeltildi.
+
+Doğrulama sınırı:
+
+- [x] Sürüm bütünlüğü, loop dikişi, 30 saniyelik sunucu güçlendiricisi, gerçek booster komutları, istatistik filtresi, iki saldırılı AI temeli, enerji pulse CSS'i ve kısa viewport rafı otomatik kapsam altındadır.
+- [x] Beta.31'in modül takası, tıkla döndürme, akıllı port ve yedi senkron savaş müziği katmanı korunur.
+- [x] Birleşik kalite kapısı `697/697` sunucu, `176/176` istemci ve `20/20` QA adımını geçti; gerçek tarayıcı matrisi masaüstü `6/6`, Android Chrome `2/2`, iPhone Safari/WebKit `2/2` olmak üzere `10/10` başarılıdır.
+- [ ] Fiziksel Android/iPhone uzun savaş ve kulaklık/hoparlör miks değerlendirmesi harici cihaz kanıtı olmadan tamamlanmış sayılmaz.
+- [ ] Gerçek oyuncu telemetrisi oluşmadan küresel hasar, Can veya enerji değerleri otomatik değiştirilmez.

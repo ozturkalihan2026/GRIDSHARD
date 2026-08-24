@@ -167,6 +167,44 @@ def choose_counter_module(
     if not affordable:
         return None
 
+    active_attack_count = sum(
+        1
+        for module in ai_player.modules.values()
+        if module.status == ModuleStatus.ACTIVE
+        and module.hp > 0
+        and module.definition.category == "saldırı"
+    )
+    if active_attack_count == 1:
+        attack_foundation = [
+            candidate
+            for candidate in affordable
+            if get_module_definition(
+                candidate.module_definition_id
+            ).category == "saldırı"
+        ]
+        if attack_foundation:
+            def foundation_score(candidate: CounterCandidate) -> float:
+                definition = get_module_definition(
+                    candidate.module_definition_id
+                )
+                damage_per_second = (
+                    definition.base_damage
+                    / max(1, definition.cooldown_ms)
+                    * 1000
+                )
+                return damage_per_second * (
+                    1 + max(0, candidate.score) * 0.08
+                )
+
+            return sorted(
+                attack_foundation,
+                key=lambda candidate: (
+                    -foundation_score(candidate),
+                    candidate.credit_cost,
+                    candidate.module_definition_id,
+                ),
+            )[0]
+
     return sorted(
         affordable,
         key=lambda candidate: (

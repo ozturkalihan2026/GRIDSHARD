@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import os
+import shutil
 import socket
 import subprocess
 import sys
@@ -13,6 +14,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 REPORT_DIR = ROOT / "qa_reports"
 REPORT_PATH = REPORT_DIR / "latest.json"
+NODE_EXECUTABLE = os.environ.get("GRIDSHARD_NODE") or shutil.which("node") or "node"
 
 
 def run_step(name: str, command: list[str], *, cwd: Path) -> dict:
@@ -62,7 +64,7 @@ def http_post(url: str):
 def smoke_server() -> dict:
     port = free_port()
     env = os.environ.copy()
-    env["RELAY_WEB_TEST_RUN_ID"] = "web-test-beta.31-qa"
+    env["RELAY_WEB_TEST_RUN_ID"] = "web-test-beta.32-qa"
     env["RELAY_TELEMETRY_PATH"] = str(ROOT / "server/data/qa_telemetry.json")
     env["RELAY_PLAYER_DATA_PATH"] = str(ROOT / "server/data/qa_players.json")
     env["RELAY_BATTLE_POOL_PRESET_PATH"] = str(
@@ -253,52 +255,52 @@ def main() -> int:
         ),
         run_step(
             "client_syntax_app",
-            ["node", "--check", "src/app.js"],
+            [NODE_EXECUTABLE, "--check", "src/app.js"],
             cwd=ROOT / "client",
         ),
         run_step(
             "client_syntax_runtime",
-            ["node", "--check", "src/relay-client.js"],
+            [NODE_EXECUTABLE, "--check", "src/relay-client.js"],
             cwd=ROOT / "client",
         ),
         run_step(
             "client_syntax_audio",
-            ["node", "--check", "src/gridshard-audio.js"],
+            [NODE_EXECUTABLE, "--check", "src/gridshard-audio.js"],
             cwd=ROOT / "client",
         ),
         run_step(
             "client_syntax_i18n",
-            ["node", "--check", "src/i18n.js"],
+            [NODE_EXECUTABLE, "--check", "src/i18n.js"],
             cwd=ROOT / "client",
         ),
         run_step(
             "client_audio_tests",
-            ["node", "tests/gridshard-audio.test.js"],
+            [NODE_EXECUTABLE, "tests/gridshard-audio.test.js"],
             cwd=ROOT / "client",
         ),
         run_step(
             "client_audio_browser_lifecycle",
-            ["node", "tests/gridshard-audio-browser-lifecycle.test.js"],
+            [NODE_EXECUTABLE, "tests/gridshard-audio-browser-lifecycle.test.js"],
             cwd=ROOT / "client",
         ),
         run_step(
             "client_unit_tests",
-            ["node", "tests/relay-client.test.js"],
+            [NODE_EXECUTABLE, "tests/relay-client.test.js"],
             cwd=ROOT / "client",
         ),
         run_step(
             "client_i18n_tests",
-            ["node", "tests/i18n.test.js"],
+            [NODE_EXECUTABLE, "tests/i18n.test.js"],
             cwd=ROOT / "client",
         ),
         run_step(
             "client_startup_menu_test",
-            ["node", "tests/app-startup.test.js"],
+            [NODE_EXECUTABLE, "tests/app-startup.test.js"],
             cwd=ROOT / "client",
         ),
         run_step(
             "client_component_tests",
-            ["node", "--test", "tests/frontend-components.test.js"],
+            [NODE_EXECUTABLE, "--test", "tests/frontend-components.test.js"],
             cwd=ROOT / "client",
         ),
     ]
@@ -330,10 +332,10 @@ def main() -> int:
     if all(step["ok"] for step in steps):
         steps.append(
             run_step(
-                "beta31_acceptance_report",
+                "beta32_acceptance_report",
                 [
                     sys.executable,
-                    "tools/beta31_acceptance_report.py",
+                    "tools/beta32_acceptance_report.py",
                 ],
                 cwd=ROOT,
             )
@@ -419,7 +421,7 @@ def main() -> int:
 
     report = {
         "project": "GRIDSHARD 2.0",
-        "version": "2.0.0-beta.31",
+        "version": "2.0.0-beta.32",
         "generated_at_epoch": int(time.time()),
         "ok": all(step["ok"] for step in steps),
         "steps": steps,

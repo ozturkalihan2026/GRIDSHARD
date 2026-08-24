@@ -91,7 +91,7 @@
   const COMPETITIVE_STATUS = "M7 rekabetçi altyapı doğrulanıyor";
   const BALANCE_STATUS = "Denge simülasyonu mevcut · geniş örnek bekliyor";
   const AI_STATUS = "AI altyapısı mevcut · arketip testleri bekliyor";
-  const PVP_STATUS = "GRIDSHARD Beta.31 · Savaş İçi Modül Takası + Akıllı Port + 7 Katmanlı Gerilim Müziği";
+  const PVP_STATUS = "GRIDSHARD Beta.32 · Kesintisiz Müzik + 30 sn Güçlendirici + Dengeli AI + Sabit Savaş Rafı";
 
 
 
@@ -115,10 +115,11 @@
     down:"left",
     left:"up",
   };
-  const BOOSTER_FIRST_OFFER_MS = 105000;
+  const BOOSTER_FIRST_OFFER_MS = 30000;
   const BOOSTER_OFFER_INTERVAL_MS = 30000;
   let nextBoosterOfferIndex = 0;
   let boosterOfferOpen = false;
+  let serverBoosterOfferId = null;
 
   const BOOSTER_OPTIONS = [
     { id:"overcharge_chip", nameTr:"Aşırı Yük Çipi", descriptionTr:"+%25 saldırı · 15 sn", targetCategories:["saldırı"] },
@@ -358,24 +359,30 @@
   document.body.dataset.appScreen =
     appRouter.currentScreen;
 
+  function syncAudioStateForCurrentView() {
+    if (!gridshardAudioDirector) return;
+    if (appRouter.currentScreen === RelayAppScreen.MENU) {
+      gridshardAudioDirector.setState("menu");
+      return;
+    }
+    if (appRouter.currentScreen !== RelayAppScreen.PLAY) return;
+
+    const onlineStatus = document.body.dataset.onlineStatus || "idle";
+    const localStatus = document.body.dataset.localStatus || "setup";
+    if (onlineStatus === "battle" || localStatus === "battle") {
+      gridshardAudioDirector.setState("battle");
+    } else if (onlineStatus === "matchmaking") {
+      gridshardAudioDirector.setState("matchmaking");
+    } else if (["matched", "connecting", "readying"].includes(onlineStatus)) {
+      gridshardAudioDirector.setState("battle_intro");
+    } else {
+      gridshardAudioDirector.setState("pool");
+    }
+  }
+
   function renderAppScreen() {
     const current = screenController.render();
-
-    if (
-      gridshardAudioDirector
-    ) {
-      if (current === RelayAppScreen.MENU) {
-        gridshardAudioDirector.setState(
-          "menu"
-        );
-      } else if (current === RelayAppScreen.PLAY) {
-        gridshardAudioDirector.setState(
-          activePlayMode === "idle"
-            ? "pool"
-            : "battle"
-        );
-      }
-    }
+    syncAudioStateForCurrentView();
 
     if (
       current
@@ -598,7 +605,7 @@
         webTestBuildState,
       releaseCheckState,
       expectedVersion:
-        "2.0.0-beta.31",
+        "2.0.0-beta.32",
       expectedProtocolVersion: 1,
     });
   const playReadinessGate =
@@ -634,7 +641,7 @@
 
   telemetryDispatcher.trackGameOpened({
     platform: "web",
-    build: "2.0.0-beta.31",
+    build: "2.0.0-beta.32",
   });
 
   const postMatchSync =
@@ -1502,6 +1509,15 @@
     const matchmakingStartedAtMs =
       Date.now();
 
+    nextBoosterOfferIndex = 0;
+    boosterOfferOpen = false;
+    serverBoosterOfferId = null;
+    selectedBoosterId = null;
+    if (boosterStatusEl) {
+      boosterStatusEl.textContent = "İlk güçlendirici 30. saniyede";
+    }
+    renderBoosterOptions();
+
     trackMatchmakingStart();
 
     // Audit operasyon içindir; başarısızlığı eşleştirmeyi durdurmaz.
@@ -1562,7 +1578,7 @@
   const diagnosticSnapshot =
     new RelayDiagnosticSnapshot({
       version:
-        "2.0.0-beta.31",
+        "2.0.0-beta.32",
       build:
         "web-test-beta.13",
       bootGate:
@@ -3500,7 +3516,7 @@
       if (versionEl) {
         versionEl.textContent=
           manifest.version
-          || "2.0.0-beta.31";
+          || "2.0.0-beta.32";
       }
       if (runEl) {
         runEl.textContent=
@@ -4052,21 +4068,7 @@ const SPECIAL_CELL_INFO = {
         String(mode === "online");
     }
 
-    if (gridshardAudioDirector) {
-      gridshardAudioDirector.setState(
-        mode === "online"
-          ? "matchmaking"
-          : (
-              mode === "local"
-                ? (
-                    localBattleStarted
-                      ? "battle"
-                      : "pool"
-                  )
-                : "pool"
-            )
-      );
-    }
+    syncAudioStateForCurrentView();
 
     if (playModeStatusEl) {
       const labels = {
@@ -5783,6 +5785,10 @@ function saveHumanReviewLocalNote() {
       return false;
     }
 
+    syncBoosterOfferFromSnapshot(
+      snapshot.players[participantPlayerId]
+    );
+
     const events=
       message.type === "events"
       || message.type
@@ -5840,6 +5846,7 @@ function saveHumanReviewLocalNote() {
       snapshot.players[
         participantPlayerId
       ];
+    syncBoosterOfferFromSnapshot(player);
     const enemy=Object.values(
       snapshot.players
     ).find(
@@ -6140,6 +6147,8 @@ function saveHumanReviewLocalNote() {
       0;
     boosterOfferOpen =
       false;
+    serverBoosterOfferId =
+      null;
     selectedBoosterId =
       null;
 
@@ -6238,7 +6247,7 @@ function saveHumanReviewLocalNote() {
     }
 
     boosterStatusEl.textContent =
-      "İlk güçlendirici 75. saniyede";
+      "İlk güçlendirici 30. saniyede";
     if (gridshardAudioDirector) {
       gridshardAudioDirector.setState(
         "battle"
@@ -6400,7 +6409,7 @@ function saveHumanReviewLocalNote() {
     );
 
     logClientMessage(
-      "Beta.31 geliştirici testi: 18 modüllük havuz ve sunucu AI savaşı hazır; aktif modül takası, akıllı port yönlendirme ve yedi katmanlı gerilim müziği etkin."
+      "Beta.32 geliştirici testi: kesintisiz müzik, 30. saniye güçlendiricisi, dengeli AI ve viewport içinde kalan savaş rafı etkin."
     );
 
     return {
@@ -9397,10 +9406,57 @@ function saveHumanReviewLocalNote() {
   }
 
   function updateBoosterOfferAvailability() {
-    if (!boosterOfferOpen && client.elapsedMs >= boosterOfferDueAtMs(nextBoosterOfferIndex)) {
+    if (localServerAuthoritative) return;
+    const dueAtMs = boosterOfferDueAtMs(nextBoosterOfferIndex);
+    if (!boosterOfferOpen && client.elapsedMs >= dueAtMs) {
       boosterOfferOpen = true;
       selectedBoosterId = null;
       boosterStatusEl.textContent = "3 seçenekten 1'ini seç";
+      renderBoosterOptions();
+    } else if (!boosterOfferOpen) {
+      const remainingSeconds = Math.max(
+        0,
+        Math.ceil((dueAtMs - client.elapsedMs) / 1000)
+      );
+      boosterStatusEl.textContent = `${remainingSeconds} sn sonra açılır`;
+    }
+  }
+
+  function syncBoosterOfferFromSnapshot(player) {
+    const authoritativeOfferIndex = Number(
+      player?.next_booster_offer_index
+    );
+    if (
+      Number.isInteger(authoritativeOfferIndex)
+      && authoritativeOfferIndex >= 0
+    ) {
+      nextBoosterOfferIndex = authoritativeOfferIndex;
+    }
+    const offer = player?.pending_booster_offer || null;
+    if (offer) {
+      const offerId = String(offer.id || "");
+      const offerChanged = serverBoosterOfferId !== offerId;
+      serverBoosterOfferId = offerId;
+      boosterOfferOpen = true;
+      if (offerChanged) selectedBoosterId = null;
+      boosterStatusEl.textContent = selectedBoosterId
+        ? "Hedef modül seç"
+        : "3 seçenekten 1'ini seç";
+      renderBoosterOptions();
+      return;
+    }
+
+    const offerWasVisible =
+      serverBoosterOfferId !== null
+      || boosterOfferOpen;
+    serverBoosterOfferId = null;
+    boosterOfferOpen = false;
+    selectedBoosterId = null;
+    boosterStatusEl.textContent = `${Math.max(
+      0,
+      Math.ceil((boosterOfferDueAtMs(nextBoosterOfferIndex) - client.elapsedMs) / 1000)
+    )} sn sonra açılır`;
+    if (offerWasVisible) {
       renderBoosterOptions();
     }
   }
@@ -9411,7 +9467,8 @@ function saveHumanReviewLocalNote() {
       const button = document.createElement("button");
       button.type = "button";
       button.className = "booster-option";
-      button.textContent = `${booster.nameTr} · ${booster.descriptionTr}`;
+      button.textContent = booster.nameTr;
+      button.title = booster.descriptionTr;
       button.disabled = !boosterOfferOpen;
       if (selectedBoosterId === booster.id) button.classList.add("selected");
       button.addEventListener("click", () => {
@@ -9441,10 +9498,16 @@ function saveHumanReviewLocalNote() {
       `booster_apply:${booster.id}`,
       "booster"
     );
-    commandLog.push({
-      atMs: client.elapsedMs,
-      kind: "apply_booster",
-      payload: { booster_id: booster.id, target_module_id: module.instanceId },
+    client.emitCommand({
+      kind:"select_booster",
+      payload:{ booster_id:booster.id },
+    });
+    client.emitCommand({
+      kind:"apply_booster",
+      payload:{
+        booster_id:booster.id,
+        target_module_id:module.instanceId,
+      },
     });
     selectedBoosterId = null;
     boosterOfferOpen = false;
@@ -10422,7 +10485,11 @@ function saveHumanReviewLocalNote() {
     moduleList.replaceChildren();
 
     const usage = Array.isArray(view.mostUsedModules)
-      ? view.mostUsedModules.slice(0, 8)
+      ? view.mostUsedModules
+          .filter((item) => !["core", "generator"].includes(
+            String(item?.definition_id || "")
+          ))
+          .slice(0, 8)
       : [];
     if (!usage.length) {
       const empty = document.createElement("p");

@@ -59,13 +59,13 @@ def test_board_has_all_six_special_cell_types():
 
 
 def test_booster_loop_starts_after_final_slot_at_low_pressure_cadence():
-    assert BOOSTER_FIRST_OFFER_MS == 105_000
+    assert BOOSTER_FIRST_OFFER_MS == 30_000
     assert BOOSTER_OFFER_INTERVAL_MS == 30_000
     assert BOOSTER_OPTIONS_PER_OFFER == 3
     assert [
         booster_offer_due_at_ms(index)
         for index in range(4)
-    ] == [105_000, 135_000, 165_000, 195_000]
+    ] == [30_000, 60_000, 90_000, 120_000]
 
 
 def test_counter_strategy_metadata_is_broadly_configured():

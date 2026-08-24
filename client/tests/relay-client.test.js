@@ -306,7 +306,7 @@ function createClient() {
 {
   const fs=require("fs");
   const src=fs.readFileSync(path.join(ROOT,"src/app.js"),"utf8");
-  assert.ok(src.includes("BOOSTER_FIRST_OFFER_MS = 105000"));
+  assert.ok(src.includes("BOOSTER_FIRST_OFFER_MS = 30000"));
   assert.ok(src.includes("BOOSTER_OFFER_INTERVAL_MS = 30000"));
   assert.ok(src.includes("3 seçenekten 1'ini seç"));
   assert.ok(src.includes("nextBoosterOfferIndex += 1"));
@@ -480,61 +480,61 @@ function createClient() {
   const fs=require("fs");
   const src=fs.readFileSync(path.join(ROOT,"src/app.js"),"utf8");
   assert.ok(src.includes("PVP_STATUS"));
-  assert.ok(src.includes("GRIDSHARD Beta.31 · Savaş İçi Modül Takası + Akıllı Port + 7 Katmanlı Gerilim Müziği"));
+  assert.ok(src.includes("GRIDSHARD Beta.32 · Kesintisiz Müzik + 30 sn Güçlendirici + Dengeli AI + Sabit Savaş Rafı"));
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync(path.join(ROOT,"src/app.js"),"utf8");
-  assert.ok(src.includes("GRIDSHARD Beta.31 · Savaş İçi Modül Takası + Akıllı Port + 7 Katmanlı Gerilim Müziği")); // alpha32->33 protocol status
+  assert.ok(src.includes("GRIDSHARD Beta.32 · Kesintisiz Müzik + 30 sn Güçlendirici + Dengeli AI + Sabit Savaş Rafı")); // alpha32->33 protocol status
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync(path.join(ROOT,"src/app.js"),"utf8");
-  assert.ok(src.includes("GRIDSHARD Beta.31 · Savaş İçi Modül Takası + Akıllı Port + 7 Katmanlı Gerilim Müziği")); // alpha33 protocol
+  assert.ok(src.includes("GRIDSHARD Beta.32 · Kesintisiz Müzik + 30 sn Güçlendirici + Dengeli AI + Sabit Savaş Rafı")); // alpha33 protocol
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync(path.join(ROOT,"src/app.js"),"utf8");
-  assert.ok(src.includes("GRIDSHARD Beta.31 · Savaş İçi Modül Takası + Akıllı Port + 7 Katmanlı Gerilim Müziği")); // alpha34 websocket
+  assert.ok(src.includes("GRIDSHARD Beta.32 · Kesintisiz Müzik + 30 sn Güçlendirici + Dengeli AI + Sabit Savaş Rafı")); // alpha34 websocket
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync(path.join(ROOT,"src/app.js"),"utf8");
-  assert.ok(src.includes("GRIDSHARD Beta.31 · Savaş İçi Modül Takası + Akıllı Port + 7 Katmanlı Gerilim Müziği")); // alpha35 gateway
+  assert.ok(src.includes("GRIDSHARD Beta.32 · Kesintisiz Müzik + 30 sn Güçlendirici + Dengeli AI + Sabit Savaş Rafı")); // alpha35 gateway
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync(path.join(ROOT,"src/app.js"),"utf8");
-  assert.ok(src.includes("GRIDSHARD Beta.31 · Savaş İçi Modül Takası + Akıllı Port + 7 Katmanlı Gerilim Müziği")); // alpha36 setup
+  assert.ok(src.includes("GRIDSHARD Beta.32 · Kesintisiz Müzik + 30 sn Güçlendirici + Dengeli AI + Sabit Savaş Rafı")); // alpha36 setup
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync(path.join(ROOT,"src/app.js"),"utf8");
-  assert.ok(src.includes("GRIDSHARD Beta.31 · Savaş İçi Modül Takası + Akıllı Port + 7 Katmanlı Gerilim Müziği")); // alpha37 lobby
+  assert.ok(src.includes("GRIDSHARD Beta.32 · Kesintisiz Müzik + 30 sn Güçlendirici + Dengeli AI + Sabit Savaş Rafı")); // alpha37 lobby
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync(path.join(ROOT,"src/app.js"),"utf8");
-  assert.ok(src.includes("GRIDSHARD Beta.31 · Savaş İçi Modül Takası + Akıllı Port + 7 Katmanlı Gerilim Müziği")); // alpha38 runner
+  assert.ok(src.includes("GRIDSHARD Beta.32 · Kesintisiz Müzik + 30 sn Güçlendirici + Dengeli AI + Sabit Savaş Rafı")); // alpha38 runner
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync(path.join(ROOT,"src/app.js"),"utf8");
-  assert.ok(src.includes("GRIDSHARD Beta.31 · Savaş İçi Modül Takası + Akıllı Port + 7 Katmanlı Gerilim Müziği")); // alpha39 heartbeat
+  assert.ok(src.includes("GRIDSHARD Beta.32 · Kesintisiz Müzik + 30 sn Güçlendirici + Dengeli AI + Sabit Savaş Rafı")); // alpha39 heartbeat
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync(path.join(ROOT,"src/app.js"),"utf8");
-  assert.ok(src.includes("GRIDSHARD Beta.31 · Savaş İçi Modül Takası + Akıllı Port + 7 Katmanlı Gerilim Müziği")); // alpha40 online pvp
+  assert.ok(src.includes("GRIDSHARD Beta.32 · Kesintisiz Müzik + 30 sn Güçlendirici + Dengeli AI + Sabit Savaş Rafı")); // alpha40 online pvp
 }
 
 {
@@ -765,7 +765,7 @@ function createClient() {
 {
   const fs=require("fs");
   const src=fs.readFileSync(path.join(ROOT,"src/app.js"),"utf8");
-  assert.ok(src.includes("GRIDSHARD Beta.31 · Savaş İçi Modül Takası + Akıllı Port + 7 Katmanlı Gerilim Müziği"));
+  assert.ok(src.includes("GRIDSHARD Beta.32 · Kesintisiz Müzik + 30 sn Güçlendirici + Dengeli AI + Sabit Savaş Rafı"));
   assert.ok(src.includes("buildPvPCommandEnvelope"));
   assert.ok(src.includes("applyPvPServerEnvelope"));
 }
@@ -2462,7 +2462,7 @@ function createClient() {
   const html=fs.readFileSync(path.join(ROOT,"index.html"),"utf8");
   assert.ok(
     html.includes(
-      "2.0.0-beta.31"
+      "2.0.0-beta.32"
     )
   );
   assert.ok(
@@ -4854,7 +4854,9 @@ function createClient() {
   assert.ok(app.includes("gridshardE2eTimeScale"));
   assert.ok(app.includes("loadUiBuildManifest"));
   assert.ok(app.includes("setBattlePressure"));
-  assert.ok(audio.includes('version:"shardglass-seven-layer-v7"'));
+  assert.ok(audio.includes('version:"shardglass-seamless-v8"'));
+  assert.ok(audio.includes("menuPoolCrossfadeMs:480"));
+  assert.ok(audio.includes("phaseLockedTransition"));
   assert.ok(audio.includes("criticalLayerMaxGain"));
 }
 
@@ -4937,10 +4939,15 @@ function createClient() {
   ]) {
     assert.ok(html.includes(`id="${id}"`));
   }
-  assert.ok(app.includes("view.mostUsedModules.slice(0, 8)"));
+  assert.ok(app.includes('["core", "generator"].includes'));
+  assert.ok(app.includes(".slice(0, 8)"));
   assert.ok(app.includes("statistics-module-card"));
   assert.ok(css.includes(".statistics-metrics-grid"));
   assert.ok(css.includes(".statistics-empty-state"));
+  assert.ok(html.includes('class="booster-panel battle-booster-dock"'));
+  assert.ok(app.includes('kind:"select_booster"'));
+  assert.ok(app.includes('kind:"apply_booster"'));
+  assert.ok(css.includes("GRIDSHARD Beta.32 — fixed battle viewport"));
 }
 
 Promise.all(asyncTests).then(() => {

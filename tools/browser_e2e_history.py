@@ -19,11 +19,11 @@ def stable_run_id(payload):
 
 def main():
     current=load(IMPORTED,{})
-    history=load(HISTORY,{'version':'2.0.0-beta.31','runs':[]})
-    history['version']='2.0.0-beta.31'
+    history=load(HISTORY,{'version':'2.0.0-beta.32','runs':[]})
+    history['version']='2.0.0-beta.32'
     runs=history.setdefault('runs',[])
     if current.get('status')!='VERIFIED_PASSED' or current.get('verified_passed') is not True:
-        COMPARISON.write_text(json.dumps({'version':'2.0.0-beta.31','status':'SKIPPED','reason':'Bütünlük doğrulamasını geçmiş gerçek Windows E2E importu yok.','history_count':len(runs),'current_added':False,'automatic_pass':False},ensure_ascii=False,indent=2)+'\n',encoding='utf-8')
+        COMPARISON.write_text(json.dumps({'version':'2.0.0-beta.32','status':'SKIPPED','reason':'Bütünlük doğrulamasını geçmiş gerçek Windows E2E importu yok.','history_count':len(runs),'current_added':False,'automatic_pass':False},ensure_ascii=False,indent=2)+'\n',encoding='utf-8')
         print('Browser E2E history: SKIPPED'); return 0
     run_id=stable_run_id(current)
     existing=next((x for x in runs if x.get('run_id')==run_id),None)
@@ -33,7 +33,7 @@ def main():
     runs.sort(key=lambda x:x.get('recorded_at',''))
     HISTORY.write_text(json.dumps(history,ensure_ascii=False,indent=2)+'\n',encoding='utf-8')
     prev=runs[-2] if len(runs)>=2 else None
-    comparison={'version':'2.0.0-beta.31','status':'RECORDED','history_count':len(runs),'current_added':added,'current_run_id':run_id,'previous_run_id':prev.get('run_id') if prev else None,'same_browser_as_previous':(current.get('browser')==prev.get('browser')) if prev else None,'artifact_hashes_changed':(entry['artifact_sha256']!=prev.get('artifact_sha256',{})) if prev else None,'automatic_pass':False,'note':'Geçmiş yalnız VERIFIED_PASSED Windows browser importlarından oluşur.'}
+    comparison={'version':'2.0.0-beta.32','status':'RECORDED','history_count':len(runs),'current_added':added,'current_run_id':run_id,'previous_run_id':prev.get('run_id') if prev else None,'same_browser_as_previous':(current.get('browser')==prev.get('browser')) if prev else None,'artifact_hashes_changed':(entry['artifact_sha256']!=prev.get('artifact_sha256',{})) if prev else None,'automatic_pass':False,'note':'Geçmiş yalnız VERIFIED_PASSED Windows browser importlarından oluşur.'}
     COMPARISON.write_text(json.dumps(comparison,ensure_ascii=False,indent=2)+'\n',encoding='utf-8')
     print('Browser E2E history: RECORDED runs=',len(runs)); return 0
 if __name__=='__main__': raise SystemExit(main())

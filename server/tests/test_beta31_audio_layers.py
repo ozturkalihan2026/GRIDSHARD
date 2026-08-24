@@ -41,7 +41,7 @@ def test_beta31_runtime_starts_and_pressure_mixes_all_seven_stems():
     source = (ROOT / "client" / "src" / "gridshard-audio.js").read_text(
         encoding="utf-8"
     )
-    assert 'version:"shardglass-seven-layer-v7"' in source
+    assert 'version:"shardglass-seamless-v8"' in source
     assert "GRIDSHARD_BATTLE_LAYERS.length" in source
     assert "_applyBattleLayerMix" in source
     assert "_transitionToBattleLayers" in source
