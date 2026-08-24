@@ -91,7 +91,7 @@
   const COMPETITIVE_STATUS = "M7 rekabetçi altyapı doğrulanıyor";
   const BALANCE_STATUS = "Denge simülasyonu mevcut · geniş örnek bekliyor";
   const AI_STATUS = "AI altyapısı mevcut · arketip testleri bekliyor";
-  const PVP_STATUS = "GRIDSHARD Beta.28 · Tek Eşleştirme + AI Devralma + Aktif Devre UX";
+  const PVP_STATUS = "GRIDSHARD Beta.29 · Kompakt Simgeli Havuz + Ana Menü E2E + Temiz Paket";
 
 
 
@@ -598,7 +598,7 @@
         webTestBuildState,
       releaseCheckState,
       expectedVersion:
-        "2.0.0-beta.28",
+        "2.0.0-beta.29",
       expectedProtocolVersion: 1,
     });
   const playReadinessGate =
@@ -634,7 +634,7 @@
 
   telemetryDispatcher.trackGameOpened({
     platform: "web",
-    build: "2.0.0-beta.28",
+    build: "2.0.0-beta.29",
   });
 
   const postMatchSync =
@@ -1562,7 +1562,7 @@
   const diagnosticSnapshot =
     new RelayDiagnosticSnapshot({
       version:
-        "2.0.0-beta.28",
+        "2.0.0-beta.29",
       build:
         "web-test-beta.13",
       bootGate:
@@ -3500,7 +3500,7 @@
       if (versionEl) {
         versionEl.textContent=
           manifest.version
-          || "2.0.0-beta.28";
+          || "2.0.0-beta.29";
       }
       if (runEl) {
         runEl.textContent=
@@ -6383,7 +6383,7 @@ function saveHumanReviewLocalNote() {
     );
 
     logClientMessage(
-      "Beta.28 geliştirici testi: 18 modüllük havuz hazırlandı, sunucu AI oyuncusu eşleşti ve canlı enerji/silah okunabilirliğiyle çift devre savaş alanı açıldı."
+      "Beta.29 geliştirici testi: kompakt simgeli 18 modüllük havuz hazırlandı, sunucu AI oyuncusu eşleşti ve canlı enerji/silah okunabilirliğiyle çift devre savaş alanı açıldı."
     );
 
     return {
@@ -8940,7 +8940,7 @@ function saveHumanReviewLocalNote() {
         button.type =
           "button";
         button.className =
-          "pool-choice";
+          "pool-choice pool-module-card";
 
         const selected =
           battlePoolSelection
@@ -8952,6 +8952,19 @@ function saveHumanReviewLocalNote() {
           module.instanceId
           === focusedPoolModuleId;
 
+        const icon=
+          document.createElement(
+            "span"
+          );
+        icon.className=
+          "module-icon pool-module-icon";
+        icon.textContent=
+          moduleIconFor(module);
+        icon.setAttribute(
+          "aria-hidden",
+          "true"
+        );
+
         const label=
           document.createElement(
             "span"
@@ -8960,6 +8973,17 @@ function saveHumanReviewLocalNote() {
           "pool-choice-name";
         label.textContent=
           localizedUiText(module.nameTr);
+
+        const categoryLabel=
+          document.createElement(
+            "span"
+          );
+        categoryLabel.className=
+          "pool-module-category";
+        categoryLabel.textContent=
+          poolCategoryLabel(
+            module.category
+          );
 
         const selectMark=
           document.createElement(
@@ -9013,7 +9037,9 @@ function saveHumanReviewLocalNote() {
           );
 
         button.append(
+          icon,
           label,
+          categoryLabel,
           selectMark
         );
         appendHpBar(
@@ -9025,9 +9051,13 @@ function saveHumanReviewLocalNote() {
         );
 
         button.dataset.category =
-          poolCategoryLabel(
-            module.category
-          );
+          module.category;
+        button.setAttribute(
+          "aria-label",
+          `${localizedUiText(module.nameTr)} · ${poolCategoryLabel(module.category)}`
+        );
+        button.title =
+          `${localizedUiText(module.nameTr)} · ${poolCategoryLabel(module.category)}`;
 
         if (selected) {
           button.classList.add(
@@ -9050,9 +9080,8 @@ function saveHumanReviewLocalNote() {
           button.classList.add(
             "required"
           );
-          button.title = localizedUiText(
-            "Başlangıç devresi için zorunlu"
-          );
+          button.title =
+            `${localizedUiText(module.nameTr)} · ${localizedUiText("Başlangıç devresi için zorunlu")}`;
         }
 
         button.addEventListener(
@@ -9173,13 +9202,39 @@ function saveHumanReviewLocalNote() {
         chip.type =
           "button";
         chip.className =
-          "pool-selected-item";
+          "pool-selected-item pool-module-card";
+        chip.dataset.category =
+          module.category;
+        const chipIcon=
+          document.createElement(
+            "span"
+          );
+        chipIcon.className=
+          "module-icon pool-module-icon";
+        chipIcon.textContent=
+          moduleIconFor(module);
+        chipIcon.setAttribute(
+          "aria-hidden",
+          "true"
+        );
         const chipName=
           document.createElement(
             "span"
           );
+        chipName.className=
+          "pool-selected-name";
         chipName.textContent=
           localizedUiText(module.nameTr);
+        const chipCategory=
+          document.createElement(
+            "span"
+          );
+        chipCategory.className=
+          "pool-module-category";
+        chipCategory.textContent=
+          poolCategoryLabel(
+            module.category
+          );
         const required=
           battlePoolSelection
             .requiredModuleIds
@@ -9210,9 +9265,17 @@ function saveHumanReviewLocalNote() {
           String(required)
         );
         chip.append(
+          chipIcon,
           chipName,
+          chipCategory,
           removeMark
         );
+        chip.setAttribute(
+          "aria-label",
+          `${localizedUiText(module.nameTr)} · ${poolCategoryLabel(module.category)}`
+        );
+        chip.title =
+          `${localizedUiText(module.nameTr)} · ${poolCategoryLabel(module.category)}`;
 
         const catalog=
           catalogForModule(

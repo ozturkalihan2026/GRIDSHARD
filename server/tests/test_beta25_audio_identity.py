@@ -7,14 +7,12 @@ import wave
 ROOT = Path(__file__).resolve().parents[2]
 AUDIO = ROOT / "client" / "assets" / "audio"
 TRACKS = (
-    "menu_shardglass_v5.wav",
-    "pool_flux_v5.wav",
     "battle_fracture_v5.wav",
     "critical_shard_v5.wav",
 )
 
 
-def test_beta25_shardglass_tracks_are_original_long_stereo_loops():
+def test_shardglass_battle_tracks_are_original_long_stereo_loops():
     for name in TRACKS:
         path = AUDIO / name
         assert path.exists(), name

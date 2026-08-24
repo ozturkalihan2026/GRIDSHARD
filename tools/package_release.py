@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import argparse
+import fnmatch
 import hashlib
 import json
 import subprocess
@@ -9,19 +11,24 @@ from pathlib import Path
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "2.0.0-beta.28"
-ARCHIVE = ROOT / f"GRIDSHARD-{VERSION}.zip"
-CHECKSUM = ROOT / f"GRIDSHARD-{VERSION}.zip.sha256"
+VERSION = "2.0.0-beta.29"
 ARCHIVE_ROOT = f"GRIDSHARD-{VERSION}"
 
 EXCLUDED_PREFIXES = (
     "server/data/",
 )
-EXCLUDED_NAMES = {
-    ARCHIVE.name,
-    CHECKSUM.name,
-    "RELEASE_MANIFEST.json",
-}
+EXCLUDED_NAMES = {"RELEASE_MANIFEST.json"}
+GENERATED_ROOT_PATTERNS = (
+    "GRIDSHARD-*.zip",
+    "GRIDSHARD-*.zip.sha256",
+)
+
+
+def is_generated_root_artifact(normalized: str) -> bool:
+    return "/" not in normalized and any(
+        fnmatch.fnmatch(normalized, pattern)
+        for pattern in GENERATED_ROOT_PATTERNS
+    )
 
 
 def release_files() -> list[Path]:
@@ -43,6 +50,8 @@ def release_files() -> list[Path]:
         normalized = raw.replace("\\", "/")
         if normalized in EXCLUDED_NAMES:
             continue
+        if is_generated_root_artifact(normalized):
+            continue
         if normalized.startswith(EXCLUDED_PREFIXES):
             continue
         path = ROOT / normalized
@@ -59,7 +68,11 @@ def sha256(path: Path) -> str:
     return digest.hexdigest()
 
 
-def main() -> int:
+def main(output_dir: Path | None = None) -> int:
+    release_dir = (output_dir or ROOT).resolve()
+    release_dir.mkdir(parents=True, exist_ok=True)
+    archive = release_dir / f"GRIDSHARD-{VERSION}.zip"
+    checksum = release_dir / f"GRIDSHARD-{VERSION}.zip.sha256"
     files = release_files()
     commit = subprocess.check_output(
         ["git", "rev-parse", "HEAD"],
@@ -78,7 +91,7 @@ def main() -> int:
     }
 
     with zipfile.ZipFile(
-        ARCHIVE,
+        archive,
         "w",
         compression=zipfile.ZIP_DEFLATED,
         compresslevel=9,
@@ -91,13 +104,21 @@ def main() -> int:
             json.dumps(manifest, ensure_ascii=False, indent=2) + "\n",
         )
 
-    digest = sha256(ARCHIVE)
-    CHECKSUM.write_text(f"{digest}  {ARCHIVE.name}\n", encoding="ascii")
-    print(f"Paket: {ARCHIVE}")
+    digest = sha256(archive)
+    checksum.write_text(f"{digest}  {archive.name}\n", encoding="ascii")
+    print(f"Paket: {archive}")
     print(f"SHA-256: {digest}")
     print(f"Dosya: {len(files)} + RELEASE_MANIFEST.json")
     return 0
 
 
 if __name__ == "__main__":
-    raise SystemExit(main())
+    parser = argparse.ArgumentParser(description="GRIDSHARD tam kaynak paketini üretir.")
+    parser.add_argument(
+        "--output-dir",
+        type=Path,
+        default=ROOT,
+        help="ZIP ve SHA-256 dosyalarının yazılacağı klasör.",
+    )
+    args = parser.parse_args()
+    raise SystemExit(main(args.output_dir))

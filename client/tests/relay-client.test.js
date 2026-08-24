@@ -460,61 +460,61 @@ function createClient() {
   const fs=require("fs");
   const src=fs.readFileSync(path.join(ROOT,"src/app.js"),"utf8");
   assert.ok(src.includes("PVP_STATUS"));
-  assert.ok(src.includes("GRIDSHARD Beta.28 · Tek Eşleştirme + AI Devralma + Aktif Devre UX"));
+  assert.ok(src.includes("GRIDSHARD Beta.29 · Kompakt Simgeli Havuz + Ana Menü E2E + Temiz Paket"));
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync(path.join(ROOT,"src/app.js"),"utf8");
-  assert.ok(src.includes("GRIDSHARD Beta.28 · Tek Eşleştirme + AI Devralma + Aktif Devre UX")); // alpha32->33 protocol status
+  assert.ok(src.includes("GRIDSHARD Beta.29 · Kompakt Simgeli Havuz + Ana Menü E2E + Temiz Paket")); // alpha32->33 protocol status
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync(path.join(ROOT,"src/app.js"),"utf8");
-  assert.ok(src.includes("GRIDSHARD Beta.28 · Tek Eşleştirme + AI Devralma + Aktif Devre UX")); // alpha33 protocol
+  assert.ok(src.includes("GRIDSHARD Beta.29 · Kompakt Simgeli Havuz + Ana Menü E2E + Temiz Paket")); // alpha33 protocol
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync(path.join(ROOT,"src/app.js"),"utf8");
-  assert.ok(src.includes("GRIDSHARD Beta.28 · Tek Eşleştirme + AI Devralma + Aktif Devre UX")); // alpha34 websocket
+  assert.ok(src.includes("GRIDSHARD Beta.29 · Kompakt Simgeli Havuz + Ana Menü E2E + Temiz Paket")); // alpha34 websocket
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync(path.join(ROOT,"src/app.js"),"utf8");
-  assert.ok(src.includes("GRIDSHARD Beta.28 · Tek Eşleştirme + AI Devralma + Aktif Devre UX")); // alpha35 gateway
+  assert.ok(src.includes("GRIDSHARD Beta.29 · Kompakt Simgeli Havuz + Ana Menü E2E + Temiz Paket")); // alpha35 gateway
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync(path.join(ROOT,"src/app.js"),"utf8");
-  assert.ok(src.includes("GRIDSHARD Beta.28 · Tek Eşleştirme + AI Devralma + Aktif Devre UX")); // alpha36 setup
+  assert.ok(src.includes("GRIDSHARD Beta.29 · Kompakt Simgeli Havuz + Ana Menü E2E + Temiz Paket")); // alpha36 setup
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync(path.join(ROOT,"src/app.js"),"utf8");
-  assert.ok(src.includes("GRIDSHARD Beta.28 · Tek Eşleştirme + AI Devralma + Aktif Devre UX")); // alpha37 lobby
+  assert.ok(src.includes("GRIDSHARD Beta.29 · Kompakt Simgeli Havuz + Ana Menü E2E + Temiz Paket")); // alpha37 lobby
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync(path.join(ROOT,"src/app.js"),"utf8");
-  assert.ok(src.includes("GRIDSHARD Beta.28 · Tek Eşleştirme + AI Devralma + Aktif Devre UX")); // alpha38 runner
+  assert.ok(src.includes("GRIDSHARD Beta.29 · Kompakt Simgeli Havuz + Ana Menü E2E + Temiz Paket")); // alpha38 runner
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync(path.join(ROOT,"src/app.js"),"utf8");
-  assert.ok(src.includes("GRIDSHARD Beta.28 · Tek Eşleştirme + AI Devralma + Aktif Devre UX")); // alpha39 heartbeat
+  assert.ok(src.includes("GRIDSHARD Beta.29 · Kompakt Simgeli Havuz + Ana Menü E2E + Temiz Paket")); // alpha39 heartbeat
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync(path.join(ROOT,"src/app.js"),"utf8");
-  assert.ok(src.includes("GRIDSHARD Beta.28 · Tek Eşleştirme + AI Devralma + Aktif Devre UX")); // alpha40 online pvp
+  assert.ok(src.includes("GRIDSHARD Beta.29 · Kompakt Simgeli Havuz + Ana Menü E2E + Temiz Paket")); // alpha40 online pvp
 }
 
 {
@@ -745,7 +745,7 @@ function createClient() {
 {
   const fs=require("fs");
   const src=fs.readFileSync(path.join(ROOT,"src/app.js"),"utf8");
-  assert.ok(src.includes("GRIDSHARD Beta.28 · Tek Eşleştirme + AI Devralma + Aktif Devre UX"));
+  assert.ok(src.includes("GRIDSHARD Beta.29 · Kompakt Simgeli Havuz + Ana Menü E2E + Temiz Paket"));
   assert.ok(src.includes("buildPvPCommandEnvelope"));
   assert.ok(src.includes("applyPvPServerEnvelope"));
 }
@@ -2442,7 +2442,7 @@ function createClient() {
   const html=fs.readFileSync(path.join(ROOT,"index.html"),"utf8");
   assert.ok(
     html.includes(
-      "2.0.0-beta.28"
+      "2.0.0-beta.29"
     )
   );
   assert.ok(
@@ -4715,8 +4715,12 @@ function createClient() {
   assert.ok(app.includes("saveCurrentBattlePoolPreset"));
   assert.ok(app.includes("pool-choice-select"));
   assert.ok(app.includes("appendHpBar"));
+  assert.ok(app.includes("pool-module-icon"));
+  assert.ok(app.includes("moduleIconFor(module)"));
   assert.ok(css.includes(".hp-bar-fill"));
   assert.ok(css.includes('[data-hp-state="destroyed"]'));
+  assert.ok(css.includes(".battle-pool-selection .pool-category-list"));
+  assert.ok(css.includes("grid-template-columns:repeat(2,minmax(0,1fr))"));
 }
 
 {

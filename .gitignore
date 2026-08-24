@@ -17,6 +17,9 @@ qa_reports/playwright-results.json
 qa_reports/e2e-server.pid.json
 dist/
 build/
+GRIDSHARD-*.zip
+GRIDSHARD-*.zip.sha256
+RELEASE_MANIFEST.json
 .env
 *.db
 client/.dart_tool/

@@ -25,8 +25,6 @@ class TrackSpec:
 
 
 TRACKS = (
-    TrackSpec("menu_shardglass_v5.wav", 52, 0.46, 2, 5),
-    TrackSpec("pool_flux_v5.wav", 60, 0.60, 2, 5),
     TrackSpec("battle_fracture_v5.wav", 68, 0.82, 1, 5),
     TrackSpec("critical_shard_v5.wav", 68, 0.72, 2, 6, critical=True),
 )

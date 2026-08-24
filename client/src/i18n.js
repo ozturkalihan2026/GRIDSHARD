@@ -182,7 +182,7 @@
     "Virüs":"Virus",
     "Enerji Sömürücü":"Energy Leech",
     "Kesici":"Disruptor",
-    "Beta.28 · 10 sn AI Devralma · Sade Enerji Durumu · Doğrulanmış Port Motoru · Ensemble Menü Müziği":"Beta.28 · 10 sec AI Takeover · Clear Energy State · Verified Port Engine · Ensemble Menu Music",
+    "Beta.29 · 10 sn AI Devralma · Kompakt Simgeli Havuz · Dört Ekran E2E · Temiz Kaynak Paketi":"Beta.29 · 10 sec AI Takeover · Compact Icon Pool · Four-Screen E2E · Clean Source Package",
     "Savaş alanına giriş başarılı · Yerel AI aktif · Modül Rafı 15. saniyede açılır":"Battle arena entered · Local AI active · Module Shelf unlocks at 15 seconds",
     "Sunucudan yükleniyor...":"Loading from server...",
     "Sunucu verisi":"Server data",

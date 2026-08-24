@@ -62,7 +62,7 @@ def http_post(url: str):
 def smoke_server() -> dict:
     port = free_port()
     env = os.environ.copy()
-    env["RELAY_WEB_TEST_RUN_ID"] = "web-test-beta.28-qa"
+    env["RELAY_WEB_TEST_RUN_ID"] = "web-test-beta.29-qa"
     env["RELAY_TELEMETRY_PATH"] = str(ROOT / "server/data/qa_telemetry.json")
     env["RELAY_PLAYER_DATA_PATH"] = str(ROOT / "server/data/qa_players.json")
     env["RELAY_BATTLE_POOL_PRESET_PATH"] = str(
@@ -241,6 +241,8 @@ def main() -> int:
                 "-m",
                 "pytest",
                 "-q",
+                "-p",
+                "no:cacheprovider",
                 "--basetemp",
                 str(ROOT / ".pytest_cache" / "qa"),
             ],
@@ -325,10 +327,10 @@ def main() -> int:
     if all(step["ok"] for step in steps):
         steps.append(
             run_step(
-                "beta28_acceptance_report",
+                "beta29_acceptance_report",
                 [
                     sys.executable,
-                    "tools/beta28_acceptance_report.py",
+                    "tools/beta29_acceptance_report.py",
                 ],
                 cwd=ROOT,
             )
@@ -414,7 +416,7 @@ def main() -> int:
 
     report = {
         "project": "GRIDSHARD 2.0",
-        "version": "2.0.0-beta.28",
+        "version": "2.0.0-beta.29",
         "generated_at_epoch": int(time.time()),
         "ok": all(step["ok"] for step in steps),
         "steps": steps,

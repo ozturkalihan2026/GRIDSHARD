@@ -3,14 +3,14 @@ setlocal
 cd /d "%~dp0"
 chcp 65001 >nul
 
-set "GRIDSHARD_EXPECTED_VERSION=2.0.0-beta.28"
+set "GRIDSHARD_EXPECTED_VERSION=2.0.0-beta.29"
 
 echo ============================================================
 echo GRIDSHARD %GRIDSHARD_EXPECTED_VERSION% - HIZLI SAVAS TESTI
 echo ============================================================
 
 rem Kullanici port belirtmediyse 8000-8010 arasinda ilk bos portu sec.
-rem Boylece eski bir GRIDSHARD surumu 8000'de acik kalsa bile Beta.28 ona baglanmaz.
+rem Boylece eski bir GRIDSHARD surumu 8000'de acik kalsa bile Beta.29 ona baglanmaz.
 if not defined GRIDSHARD_WEB_PORT (
   for /f "usebackq delims=" %%P in (`powershell -NoProfile -ExecutionPolicy Bypass -Command "$selected=$null; for($p=8000;$p -le 8010;$p++){ $listener=$null; try { $listener=[System.Net.Sockets.TcpListener]::new([System.Net.IPAddress]::Loopback,$p); $listener.Start(); $listener.Stop(); $selected=$p; break } catch { if($listener){ try{$listener.Stop()}catch{} } } }; if($null -ne $selected){ Write-Output $selected }"`) do set "GRIDSHARD_WEB_PORT=%%P"
 )
@@ -21,10 +21,10 @@ if not defined GRIDSHARD_WEB_PORT (
   exit /b 1
 )
 
-echo [GRIDSHARD] Beta.28 test portu: %GRIDSHARD_WEB_PORT%
+echo [GRIDSHARD] Beta.29 test portu: %GRIDSHARD_WEB_PORT%
 start "GRIDSHARD Web Test Sunucusu" cmd /k call "%~dp0BASLAT_WEB_TEST.bat"
 
-rem Tarayiciyi yalnizca secilen port gercekten Beta.28 /health yaniti verirse ac.
+rem Tarayiciyi yalnizca secilen port gercekten Beta.29 /health yaniti verirse ac.
 powershell -NoProfile -ExecutionPolicy Bypass -Command "$url='http://127.0.0.1:%GRIDSHARD_WEB_PORT%/health'; for($i=0;$i -lt 120;$i++){ try { $r=Invoke-RestMethod -Uri $url -TimeoutSec 2; if($r.version -eq '%GRIDSHARD_EXPECTED_VERSION%'){ exit 0 }; if($r.version){ Write-Host ('[HATA] Beklenen %GRIDSHARD_EXPECTED_VERSION%, bulunan ' + $r.version); exit 2 } } catch {}; Start-Sleep -Milliseconds 500 }; exit 1"
 set "GRIDSHARD_HEALTH_EXIT=%ERRORLEVEL%"
 
@@ -40,7 +40,7 @@ if not "%GRIDSHARD_HEALTH_EXIT%"=="0" (
 )
 
 start "" "http://127.0.0.1:%GRIDSHARD_WEB_PORT%/"
-echo Tarayici dogrulanmis Beta.28 sunucusunda acildi: http://127.0.0.1:%GRIDSHARD_WEB_PORT%/
+echo Tarayici dogrulanmis Beta.29 sunucusunda acildi: http://127.0.0.1:%GRIDSHARD_WEB_PORT%/
 echo Ana Menu ^> Oyna ^> Hazir Havuzu Yukle ^> Eslestir yolunu kullan.
 echo 10 saniyede cevrimici rakip bulunamazsa sunucu AI oyuncusu devralir.
 exit /b 0

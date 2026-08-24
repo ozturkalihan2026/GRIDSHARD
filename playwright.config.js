@@ -52,7 +52,7 @@ module.exports = defineConfig({
   projects: [
     {
       name: "desktop-chromium",
-      testMatch: /two-client-pvp\.spec\.js/,
+      testMatch: /(two-client-pvp|menu-navigation)\.spec\.js/,
       use: { ...devices["Desktop Chrome"], ...localChrome }
     },
     {

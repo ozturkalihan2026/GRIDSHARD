@@ -1,6 +1,6 @@
 # GRIDSHARD 2.0 — YOL HARİTASI
 
-**Güncel Sürüm:** `2.0.0-beta.28`
+**Güncel Sürüm:** `2.0.0-beta.29`
 **Paket:** Enerji Motoru Doğruluğu + Sade Güç Durumu + Dengeli Savaş Temposu + Tam Menü Yerelleştirmesi + Ensemble Müzik
 **Kanonik Dosya:** `docs/YOL_HARITASI.md`
 
@@ -491,11 +491,11 @@ olarak üretilir.
 ## P1 — Gerçek Tarayıcı E2E
 
 - [x] Yerel geliştirme makinesinde Playwright/Chromium E2E kuruldu.
-- [ ] Ana Menü → dört ekran otomatik navigasyon testi yapılacak.
+- [x] Ana Menü → Oyna / Profil / İstatistikler / Ayarlar ve geri dönüş otomatik navigasyon testi tamamlandı.
 - [x] Tek Oyunculu Test Maçı ve dokun-seç/yerleştir testi eklendi.
 - [x] Tarayıcı `pageerror` çıktıları test başarısızlığı sayılıyor.
 
-> ChatGPT çalışma ortamındaki Chromium yerel sayfalara yönetici politikasıyla erişemediği için Playwright burada zorunlu QA kapısına eklenmedi. Startup VM testi bu boşluğu geçici olarak kapatır.
+> Masaüstü Chromium navigasyon senaryosu Playwright projesine ve gerçek tarayıcı doğrulamasına bağlandı. Mobil emülasyon ve çift istemci PvP testleri ayrı projelerde korunur.
 
 ## P2 — Online PvP Gerçek Çift İstemci Testi
 
@@ -1492,3 +1492,26 @@ Doğrulama sınırı:
 - [~] 20 aktif modüllü uzun süreli PvP karmaşa/soak testi genişletilmeye devam edecektir.
 - [ ] Fiziksel Android/iPhone kanıtı harici cihaz ve hesap girdileri olmadan tamamlanmış sayılmaz.
 - [ ] Gerçek kullanıcı telemetrisi olmadan enerji üretim/tüketim sayıları otomatik değiştirilmez.
+
+---
+
+# 13. Güncel Paket — Beta.29
+
+**`GRIDSHARD 2.0.0-beta.29 — Kompakt Simgeli Hazırlık · Yol Haritası E2E · Temiz Kaynak Paketi`**
+
+Beta.29, Beta.28 enerji motoru, tempo, çok katmanlı müzik, port guard, Redis eşleştirme, sonuç/analiz ve savaş FX temellerini koruyarak hazırlık okunabilirliğini ve sürüm hijyenini ilerletir:
+
+1. [x] Global Modüller ve Seçilen Savaş Havuzu, savaş alanıyla aynı kanonik modül simgesi sözlüğünü kullanır.
+2. [x] Her iki havuz kategori içinde iki sütunlu kompakt kartlara dönüştürüldü; isim, sınıf, HP çizgisi ve `+ / ✓ / ◆ / −` eylem dili korunur.
+3. [x] Dar ekranlarda kart düzeni kontrollü biçimde tek sütuna iner; açılır-kapanır sınıf yapısı ve klavye/erişilebilirlik adları korunur.
+4. [x] Yol haritasındaki Ana Menü → Oyna / Profil / İstatistikler / Ayarlar ve geri dönüş senaryosu masaüstü Chromium E2E kapsamına eklendi.
+5. [x] Çalışma zamanında referansı kalmayan 10 eski V1–V5 ses kopyası, eski sürüme bağlı dört kabul koşucusu, V4 ses testi ve kök üretim manifesti temizlendi; yaklaşık 18,36 MB gereksiz kaynak çıkarıldı.
+6. [x] Paketleyici tüm eski/kalan sürüm ZIP'lerini desenle dışlar ve `--output-dir` ile kaynak klasörünü kirletmeden teslim klasörüne paket üretebilir.
+7. [x] Beta.29 kabul kapısı kompakt simge kartlarını, dört ekran E2E kaynağını, temiz ses envanterini, sürüm bütünlüğünü ve önceki savaş temellerini birlikte denetler.
+
+Doğrulama sınırı:
+
+- [x] İstemci/sunucu otomasyonu, gerçek masaüstü Chromium hazırlık görünümü ve paket içeriği doğrulanır.
+- [~] 20 aktif modüllü uzun süreli PvP karmaşa/soak testi genişletilmeye devam edecektir.
+- [ ] Fiziksel Android/iPhone kanıtı harici cihaz ve hesap girdileri olmadan tamamlanmış sayılmaz.
+- [ ] Gerçek kullanıcı telemetrisi olmadan sayısal enerji dengesi otomatik değiştirilmez.

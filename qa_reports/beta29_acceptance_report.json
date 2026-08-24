@@ -1,0 +1,22 @@
+{
+  "version": "2.0.0-beta.29",
+  "ok": true,
+  "checks": {
+    "version_integrity": true,
+    "compact_battle_icon_cards": true,
+    "pool_interactions_preserved": true,
+    "roadmap_menu_navigation_e2e": true,
+    "clean_runtime_audio_inventory": true,
+    "clean_release_packager": true,
+    "combat_and_online_foundation_preserved": true
+  },
+  "runtime_audio_files": 20,
+  "audio_files_after_cleanup": 20,
+  "retired_audio_files_removed": 10,
+  "package_scope": "Kompakt Simgeli Hazırlık · Dört Ekran E2E · Temiz Ses Envanteri · Kaynak-Kirletmeyen Paketleme",
+  "external_evidence_not_claimed": [
+    "fiziksel Android/iPhone",
+    "gerçek kullanıcı telemetrisi",
+    "20 aktif modüllü uzun süreli gerçek PvP soak testi"
+  ]
+}
