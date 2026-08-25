@@ -16,6 +16,7 @@ def test_main_menu_and_shared_shell_keep_the_new_ux_scope():
     assert html.count('data-open-screen="statistics"')==1
     assert html.count('data-open-screen="settings"')==1
     assert "menu-action-play" in html
+    assert html.count('id="main-menu-title"')==1
     assert "GRIDSHARD // CORE ARENA" not in html
     assert '<span class="lobby-subtitle">CORE ARENA</span>' in html
     assert 'class="main-menu-lead"' not in html
@@ -31,6 +32,7 @@ def test_main_menu_and_shared_shell_keep_the_new_ux_scope():
     assert 'id="season-rewards-screen"' in html
     assert 'id="settings-about-title">Hakkında</h3>' in html
     assert 'id="lobby-circuit-credits"' in html
+    assert '<h2 id="battle-pool-title">Savaş Havuzu Oluştur</h2>' in html
     assert 'data-roadmap-feature="store" disabled aria-disabled="true"' in html
     assert 'data-roadmap-feature="tournament" disabled aria-disabled="true"' in html
     assert 'data-roadmap-feature="team" disabled aria-disabled="true"' in html

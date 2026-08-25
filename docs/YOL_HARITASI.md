@@ -1682,3 +1682,21 @@ Doğrulama:
 - [x] 1440×900 gerçek yerel tarayıcıda ana menü, görev, ödül, profil, ayarlar ve hazırlık geçişleri doğrulandı; tarayıcı konsolunda hata oluşmadı.
 - [x] Üst şerit ve Dock'un sabit kaldığı, seçili Dock başlığının büyüdüğü, Profil içinde görev/ödül içeriği kalmadığı ve hazırlık ekranında eski geri düğmesinin bulunmadığı doğrulandı.
 - [x] Aktif savaşta ortak lobi şeritlerini gizleyen savaş durumu seçicileri korunur.
+
+---
+
+# 21. Beta.33 Uyarlanabilir Lobi ve Hazırlık Yerleşimi
+
+Ekran görüntüsü geri bildirimlerine göre ortak kabuğun ikinci yerleşim geçişi tamamlandı:
+
+1. [x] Ana menüdeki `GRIDSHARD · CORE ARENA` başlığı merkezdeki Çekirdek görselini kapatmayacak biçimde üst ortaya taşındı ve boyutu dengelendi.
+2. [x] Hazırlık başlığı `Savaş Havuzu Oluştur` olarak ortalandı; uzun açıklama satırı kaldırıldı, eğitim/hazır havuz kontrolleri sağda korundu.
+3. [x] Masaüstü hazırlık alanı dört ergonomik sütuna ayrıldı: ince Başlangıç Devresi, Global Modüller, modül ayrıntısı ve Seçilen Savaş Havuzu. Başlangıç seçimleri dikey ve kompakt hale getirildi.
+4. [x] Ödül Yolu, üst şeritte zaten bulunan Akı Parçası tekrarını kaldıran 5×2 kompakt kart düzenine geçti; 10 kademe iç kaydırma olmadan tek görünümde gösterilir.
+5. [x] EV ekranı 1440 px ortak şeridini korur. Profil, Günlük Görevler, Ödül Yolu, İstatistikler ve Ayarlar şeridi 1180 px içerikle; hazırlık şeridi 1540 px çalışma alanıyla aynı kenarlara hizalanır.
+
+Doğrulama:
+
+- [x] 1720×850 görünümde dört hazırlık sütununun aynı satır/yükseklikte olduğu, panel `scrollHeight` değerinin taşmadığı ve şerit/panel kenarlarının birebir hizalandığı doğrulandı.
+- [x] Ödül Yolu 1720×850 ve 1440×720 görünümlerinde 10/10 kartı kaydırmasız gösterdi; 1440×720 hazırlık eylem satırı Dock'un üstünde kaldı.
+- [x] Gerçek yerel tarayıcı konsolunda hata veya uyarı oluşmadı.

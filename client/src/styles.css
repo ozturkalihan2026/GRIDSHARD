@@ -6287,3 +6287,277 @@ body[data-app-screen="play"]:not([data-local-status="battle"]):not([data-online-
   .settings-about-panel { grid-template-columns:1fr; }
   .engagement-summary-panel .season-reward-track { grid-template-columns:repeat(2,minmax(110px,1fr)); }
 }
+
+/* Beta.33 layout revision 2 — screenshot-led lobby, preparation and reward fit. */
+body[data-app-screen="menu"] .lobby-wordmark {
+  top:3%;
+  z-index:5;
+  width:max-content;
+  max-width:100%;
+  justify-items:center;
+}
+body[data-app-screen="menu"] #main-menu-title {
+  font-size:clamp(2.8rem,4.35vw,4.7rem);
+  line-height:.94;
+}
+body[data-app-screen="menu"] .lobby-wordmark .lobby-subtitle {
+  width:auto;
+  margin:7px 0 0;
+  color:#88f4e5;
+  font-size:.66rem;
+  letter-spacing:.34em;
+  text-align:center;
+}
+
+@media (min-width:681px) {
+  body[data-app-screen="profile"] .app-progress-ribbon,
+  body[data-app-screen="daily"] .app-progress-ribbon,
+  body[data-app-screen="rewards"] .app-progress-ribbon,
+  body[data-app-screen="statistics"] .app-progress-ribbon,
+  body[data-app-screen="settings"] .app-progress-ribbon {
+    width:min(1180px,94vw);
+  }
+  body[data-app-screen="play"]:not([data-local-status="battle"]):not([data-online-status="battle"]) .app-progress-ribbon {
+    width:min(1540px,98vw);
+  }
+}
+
+body[data-app-screen="play"]:not([data-local-status="battle"]):not([data-online-status="battle"]) .battle-pool-panel > .panel-title-row {
+  position:relative;
+  justify-content:center;
+  min-height:42px;
+  padding:0 min(23vw,330px);
+  text-align:center;
+}
+body[data-app-screen="play"]:not([data-local-status="battle"]):not([data-online-status="battle"]) .battle-pool-panel > .panel-title-row > div:first-child {
+  min-width:0;
+}
+body[data-app-screen="play"]:not([data-local-status="battle"]):not([data-online-status="battle"]) #battle-pool-title {
+  margin:0;
+  font-size:1.35rem;
+  letter-spacing:.015em;
+}
+body[data-app-screen="play"]:not([data-local-status="battle"]):not([data-online-status="battle"]) .battle-preparation-status {
+  position:absolute;
+  right:0;
+  top:50%;
+  gap:7px;
+  transform:translateY(-50%);
+}
+body[data-app-screen="play"]:not([data-local-status="battle"]):not([data-online-status="battle"]) .battle-preparation-status button {
+  min-height:32px;
+  padding:5px 9px;
+  font-size:.72rem;
+}
+
+@media (min-width:1101px) {
+  body[data-app-screen="play"]:not([data-local-status="battle"]):not([data-online-status="battle"]) .battle-pool-panel:not([hidden]) {
+    display:grid;
+    grid-template-columns:minmax(150px,.48fr) minmax(240px,.82fr) minmax(350px,1.28fr) minmax(250px,.88fr);
+    grid-template-rows:auto minmax(0,1fr) auto;
+    gap:8px 10px;
+  }
+  body[data-app-screen="play"]:not([data-local-status="battle"]):not([data-online-status="battle"]) .battle-pool-panel > .panel-title-row {
+    grid-column:1 / -1;
+    grid-row:1;
+  }
+  body[data-app-screen="play"]:not([data-local-status="battle"]):not([data-online-status="battle"]) .initial-circuit-picker {
+    grid-column:1;
+    grid-row:2;
+    display:flex;
+    min-width:0;
+    min-height:0;
+    margin:0;
+    padding:13px 10px 10px;
+    flex-direction:column;
+    align-items:stretch;
+    align-content:initial;
+    gap:9px;
+    overflow:hidden;
+  }
+  body[data-app-screen="play"]:not([data-local-status="battle"]):not([data-online-status="battle"]) .initial-circuit-picker::before {
+    position:static;
+    width:100%;
+    padding:3px 5px;
+    text-align:center;
+    line-height:1.25;
+  }
+  body[data-app-screen="play"]:not([data-local-status="battle"]):not([data-online-status="battle"]) .initial-circuit-picker > div:first-child > span {
+    display:none;
+  }
+  body[data-app-screen="play"]:not([data-local-status="battle"]):not([data-online-status="battle"]) #initial-circuit-title {
+    display:block;
+    font-size:.84rem;
+    line-height:1.25;
+    text-align:center;
+  }
+  body[data-app-screen="play"]:not([data-local-status="battle"]):not([data-online-status="battle"]) .initial-fixed-modules,
+  body[data-app-screen="play"]:not([data-local-status="battle"]):not([data-online-status="battle"]) .initial-module-picker {
+    display:grid;
+    grid-template-columns:1fr;
+    gap:7px;
+  }
+  body[data-app-screen="play"]:not([data-local-status="battle"]):not([data-online-status="battle"]) .initial-fixed-modules span,
+  body[data-app-screen="play"]:not([data-local-status="battle"]):not([data-online-status="battle"]) .initial-module-choice {
+    width:100%;
+    min-height:34px;
+    padding:5px 7px;
+    font-size:.68rem;
+  }
+  body[data-app-screen="play"]:not([data-local-status="battle"]):not([data-online-status="battle"]) .initial-module-slot {
+    display:grid;
+    gap:3px;
+    color:#9eb3ce;
+    font-size:.62rem;
+    text-align:left;
+  }
+  body[data-app-screen="play"]:not([data-local-status="battle"]):not([data-online-status="battle"]) #initial-module-status {
+    margin-top:auto;
+    font-size:.62rem;
+    line-height:1.35;
+    text-align:center;
+  }
+  body[data-app-screen="play"]:not([data-local-status="battle"]):not([data-online-status="battle"]) .battle-pool-builder {
+    display:contents;
+  }
+  body[data-app-screen="play"]:not([data-local-status="battle"]):not([data-online-status="battle"]) .battle-pool-catalog-panel {
+    grid-column:2;
+    grid-row:2;
+  }
+  body[data-app-screen="play"]:not([data-local-status="battle"]):not([data-online-status="battle"]) .battle-pool-detail-panel {
+    grid-column:3;
+    grid-row:2;
+  }
+  body[data-app-screen="play"]:not([data-local-status="battle"]):not([data-online-status="battle"]) .battle-pool-selected-panel {
+    grid-column:4;
+    grid-row:2;
+  }
+  body[data-app-screen="play"]:not([data-local-status="battle"]):not([data-online-status="battle"]) .battle-pool-catalog-panel,
+  body[data-app-screen="play"]:not([data-local-status="battle"]):not([data-online-status="battle"]) .battle-pool-detail-panel,
+  body[data-app-screen="play"]:not([data-local-status="battle"]):not([data-online-status="battle"]) .battle-pool-selected-panel {
+    min-height:0;
+    padding:10px;
+  }
+  body[data-app-screen="play"]:not([data-local-status="battle"]):not([data-online-status="battle"]) .battle-pool-catalog-panel h3,
+  body[data-app-screen="play"]:not([data-local-status="battle"]):not([data-online-status="battle"]) .battle-pool-selected-panel h3 {
+    margin:0 0 6px;
+    font-size:.94rem;
+  }
+  body[data-app-screen="play"]:not([data-local-status="battle"]):not([data-online-status="battle"]) .battle-pool-selected-panel > p {
+    margin:0 0 7px;
+    color:#9eb0c8;
+    font-size:.68rem;
+  }
+  body[data-app-screen="play"]:not([data-local-status="battle"]):not([data-online-status="battle"]) .pool-detail-properties {
+    gap:6px;
+    margin:9px 0;
+  }
+  body[data-app-screen="play"]:not([data-local-status="battle"]):not([data-online-status="battle"]) .pool-detail-properties > div {
+    padding:6px 8px;
+  }
+  body[data-app-screen="play"]:not([data-local-status="battle"]):not([data-online-status="battle"]) .battle-pool-actions {
+    grid-column:1 / -1;
+    grid-row:3;
+    min-height:42px;
+    padding:4px 6px;
+  }
+}
+
+body[data-app-screen="rewards"] .season-rewards-screen {
+  display:grid;
+  grid-template-rows:auto auto auto auto;
+  gap:7px;
+  height:auto;
+  max-height:100%;
+  padding:14px 16px;
+  overflow:hidden;
+}
+body[data-app-screen="rewards"] .season-rewards-screen .panel-title-row {
+  min-height:0;
+}
+body[data-app-screen="rewards"] .season-rewards-screen .screen-heading-block h2 {
+  margin:2px 0 0;
+  font-size:2rem;
+  line-height:1;
+}
+body[data-app-screen="rewards"] .season-rewards-screen .screen-subtitle {
+  margin:5px 0 0;
+  font-size:.72rem;
+}
+body[data-app-screen="rewards"] .season-rewards-screen .season-zero-currency {
+  display:none;
+}
+body[data-app-screen="rewards"] .season-rewards-screen .season-zero-progress-summary {
+  gap:3px;
+}
+body[data-app-screen="rewards"] .season-rewards-screen .season-progress-track {
+  height:10px;
+}
+body[data-app-screen="rewards"] .season-rewards-screen .season-reward-panel {
+  display:block;
+  min-height:0;
+  margin:0;
+  padding:10px;
+  overflow:hidden;
+}
+body[data-app-screen="rewards"] .season-rewards-screen .season-section-heading h3 {
+  margin:2px 0 0;
+  font-size:1rem;
+}
+body[data-app-screen="rewards"] .season-rewards-screen .season-reward-track {
+  display:grid;
+  grid-template-columns:repeat(5,minmax(0,1fr));
+  grid-template-rows:repeat(2,minmax(112px,auto));
+  gap:6px;
+  min-height:0;
+  height:auto;
+  margin-top:6px;
+  overflow:hidden;
+}
+body[data-app-screen="rewards"] .season-rewards-screen .season-reward-card {
+  min-height:0;
+  padding:7px 8px;
+  gap:3px;
+}
+body[data-app-screen="rewards"] .season-rewards-screen .season-reward-card > strong {
+  min-height:0;
+  font-size:.7rem;
+  line-height:1.3;
+}
+body[data-app-screen="rewards"] .season-rewards-screen .season-reward-card > small {
+  font-size:.64rem;
+}
+body[data-app-screen="rewards"] .season-rewards-screen .season-reward-card button {
+  min-height:28px;
+  margin-top:auto;
+  padding:4px 7px;
+  font-size:.7rem;
+}
+body[data-app-screen="rewards"] .season-rewards-screen .season-action-status {
+  font-size:.68rem;
+  line-height:1.2;
+}
+
+@media (max-width:1100px) {
+  body[data-app-screen="play"]:not([data-local-status="battle"]):not([data-online-status="battle"]) .battle-pool-panel > .panel-title-row {
+    justify-content:space-between;
+    padding:0;
+    text-align:left;
+  }
+  body[data-app-screen="play"]:not([data-local-status="battle"]):not([data-online-status="battle"]) .battle-preparation-status {
+    position:static;
+    transform:none;
+  }
+}
+
+@media (max-width:680px) {
+  body[data-app-screen="menu"] .lobby-wordmark { top:0; }
+  body[data-app-screen="menu"] #main-menu-title { font-size:2.45rem; }
+  body[data-app-screen="rewards"] .season-rewards-screen { overflow:auto; }
+  body[data-app-screen="rewards"] .season-rewards-screen .season-reward-track {
+    grid-template-columns:repeat(2,minmax(110px,1fr));
+    grid-template-rows:none;
+    height:auto;
+    overflow:visible;
+  }
+}

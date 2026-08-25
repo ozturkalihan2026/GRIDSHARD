@@ -139,6 +139,7 @@
     "Bağlantı / Oturum Durumu":"Connection / Session Status",
     "Yeniden Dene":"Retry",
     "Savaşa Hazırlık":"Battle Preparation",
+    "Savaş Havuzu Oluştur":"Build Battle Pool",
     "Sınıf başlıklarını açıp kapat. Soldan modülü incele. + ile ekle, − ile çıkar; ◆ Jeneratörün zorunlu ve kilitli olduğunu gösterir. Çıkarma işlemi seçili Savaş Havuzundaki − simgesinden yapılır.":"Expand or collapse class headings. Inspect a module on the left. Add with + and remove with −; ◆ marks the required, locked Generator. Remove modules from the selected Battle Pool with its − control.",
     "Kısa Eğitim":"Quick Tutorial",
     "Hazır Havuzları Yönet":"Manage Presets",
