@@ -37,16 +37,16 @@ DAILY_MISSIONS = (
 )
 
 SEASON_REWARD_TRACK = (
-    {"tier": 1, "required_xp": 100, "flux_shards": 25, "title_tr": None},
-    {"tier": 2, "required_xp": 250, "flux_shards": 30, "title_tr": "Devre Öncüsü"},
-    {"tier": 3, "required_xp": 400, "flux_shards": 35, "title_tr": None},
-    {"tier": 4, "required_xp": 575, "flux_shards": 40, "title_tr": None},
-    {"tier": 5, "required_xp": 750, "flux_shards": 50, "title_tr": "Kırık Avcısı"},
-    {"tier": 6, "required_xp": 950, "flux_shards": 55, "title_tr": None},
-    {"tier": 7, "required_xp": 1150, "flux_shards": 60, "title_tr": None},
-    {"tier": 8, "required_xp": 1375, "flux_shards": 70, "title_tr": "Çekirdek Muhafızı"},
-    {"tier": 9, "required_xp": 1600, "flux_shards": 80, "title_tr": None},
-    {"tier": 10, "required_xp": 1900, "flux_shards": 100, "title_tr": "GRIDSHARD"},
+    {"tier": 1, "required_xp": 100, "season_xp_reward": 25, "flux_shards": 25, "title_tr": None},
+    {"tier": 2, "required_xp": 250, "season_xp_reward": 30, "flux_shards": 30, "title_tr": "Devre Öncüsü"},
+    {"tier": 3, "required_xp": 400, "season_xp_reward": 35, "flux_shards": 35, "title_tr": None},
+    {"tier": 4, "required_xp": 575, "season_xp_reward": 40, "flux_shards": 40, "title_tr": None},
+    {"tier": 5, "required_xp": 750, "season_xp_reward": 50, "flux_shards": 50, "title_tr": "Kırık Avcısı"},
+    {"tier": 6, "required_xp": 950, "season_xp_reward": 55, "flux_shards": 55, "title_tr": None},
+    {"tier": 7, "required_xp": 1150, "season_xp_reward": 60, "flux_shards": 60, "title_tr": None},
+    {"tier": 8, "required_xp": 1375, "season_xp_reward": 70, "flux_shards": 70, "title_tr": "Çekirdek Muhafızı"},
+    {"tier": 9, "required_xp": 1600, "season_xp_reward": 80, "flux_shards": 80, "title_tr": None},
+    {"tier": 10, "required_xp": 1900, "season_xp_reward": 100, "flux_shards": 100, "title_tr": "GRIDSHARD"},
 )
 
 
@@ -383,6 +383,7 @@ class PlayerProfileService:
             raise PlayerProfileError("Bu kademe ödülü daha önce alındı.")
         if profile.season_xp < reward["required_xp"]:
             raise PlayerProfileError("Bu sezon kademesi henüz açılmadı.")
+        profile.season_xp += int(reward["season_xp_reward"])
         profile.flux_shards += int(reward["flux_shards"])
         profile.claimed_season_tiers = tuple(
             sorted({*profile.claimed_season_tiers, tier})

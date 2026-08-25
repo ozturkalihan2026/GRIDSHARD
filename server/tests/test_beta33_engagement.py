@@ -103,6 +103,7 @@ def test_season_tier_claim_unlocks_and_equips_title_once():
 
     profile = service.claim_season_tier("a", 2)
 
+    assert profile.season_xp == 280
     assert profile.flux_shards == 30
     assert profile.equipped_title == "Devre Öncüsü"
     assert "Devre Öncüsü" in profile.unlocked_titles
@@ -131,11 +132,31 @@ def test_engagement_roundtrip_preserves_claims_and_currency():
     store.load_player("a")
     restored = profiles.get("a")
 
-    assert restored.season_xp == 350
+    assert restored.season_xp == 380
     assert restored.flux_shards == 45
     assert restored.claimed_season_tiers == (2,)
     assert restored.claimed_daily_missions == ("deal_damage",)
     assert restored.equipped_title == "Devre Öncüsü"
+
+
+def test_reward_track_exposes_and_awards_controlled_season_xp():
+    service = PlayerProfileService()
+    before = service.record_battle_engagement(
+        "season-xp-reward",
+        season_xp_awarded=100,
+        damage_dealt=0,
+        circuit_actions=0,
+    )
+    tier_one = before.to_view()["engagement"]["reward_track"][0]
+
+    assert tier_one["season_xp_reward"] == 25
+    assert tier_one["claimable"] is True
+
+    after = service.claim_season_tier("season-xp-reward", 1)
+
+    assert after.season_xp == 125
+    assert after.claimed_season_tiers == (1,)
+    assert after.to_view()["engagement"]["current_tier"] == 1
 
 
 def test_engagement_claim_gateway_returns_and_persists_authoritative_profile():

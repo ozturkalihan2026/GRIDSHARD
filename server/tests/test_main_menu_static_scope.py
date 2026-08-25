@@ -18,3 +18,10 @@ def test_main_menu_keeps_only_locked_scope_and_new_ux_markup():
     assert '<span class="lobby-subtitle">CORE ARENA</span>' in html
     assert 'class="main-menu-lead"' not in html
     assert 'data-open-screen="education"' not in html
+    assert 'class="lobby-progress-ribbon"' in html
+    assert 'class="main-scope-nav lobby-bottom-dock"' in html
+    assert 'data-menu-focus="daily-missions"' in html
+    assert 'data-menu-focus="reward-track"' in html
+    assert 'data-roadmap-feature="store" disabled aria-disabled="true"' in html
+    assert 'data-roadmap-feature="tournament" disabled aria-disabled="true"' in html
+    assert 'data-roadmap-feature="team" disabled aria-disabled="true"' in html

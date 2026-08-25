@@ -836,7 +836,8 @@ function createClient() {
   assert.ok(html.includes(">Profil<"));
   assert.ok(html.includes(">İstatistikler<"));
   assert.ok(html.includes(">Ayarlar<"));
-  assert.ok(!html.includes(">Mağaza<"));
+  assert.ok(html.includes('data-roadmap-feature="store"'));
+  assert.ok(html.includes('data-roadmap-feature="store" disabled aria-disabled="true"'));
   assert.ok(!html.includes(">Kozmetik<"));
 }
 
@@ -929,7 +930,7 @@ function createClient() {
   assert.ok(
     html.includes("Ses · Müzik · Titreşim · Grafik · Dil")
   );
-  assert.ok(!html.includes(">Mağaza<"));
+  assert.ok(html.includes('data-roadmap-feature="store" disabled aria-disabled="true"'));
   assert.ok(!html.includes(">Sezon<"));
   assert.ok(!html.includes(">Battle Pass<"));
 }
@@ -2701,7 +2702,7 @@ function createClient() {
     !html.includes(">Eğitim<")
   );
   assert.ok(
-    !html.includes(">Mağaza<")
+    html.includes('data-roadmap-feature="store" disabled aria-disabled="true"')
   );
   assert.ok(
     !html.includes(">Kozmetik<")
@@ -4508,6 +4509,20 @@ function createClient() {
   assert.ok(css.includes('body[data-app-screen="profile"] .battle-status-cluster'));
   assert.ok(css.includes("grid-template-columns:repeat(2,minmax(0,1fr))") || css.includes("grid-template-columns: repeat(2, minmax(0, 1fr))"));
   assert.ok(css.includes(".diagnostic-panel > summary"));
+}
+
+{
+  const fs=require("fs");
+  const app=fs.readFileSync(path.join(ROOT,"src/app.js"),"utf8");
+  const html=fs.readFileSync(path.join(ROOT,"index.html"),"utf8");
+  const css=fs.readFileSync(path.join(ROOT,"src/styles.css"),"utf8");
+
+  assert.ok(css.includes(".initial-module-choice option"));
+  assert.ok(css.includes("color-scheme:dark"));
+  assert.ok(app.includes("+${reward.season_xp_reward || 0} SXP"));
+  assert.ok(app.includes('document.querySelectorAll(\n      "[data-menu-focus]"'));
+  assert.ok(html.includes('id="lobby-season-progress-fill"'));
+  assert.ok(html.includes('class="main-scope-nav lobby-bottom-dock"'));
 }
 
 {

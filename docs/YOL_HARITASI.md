@@ -1628,7 +1628,7 @@ Beta.33, Beta.32 Fix.1'in sabit port/simge geometrisi, belirgin güçlendiricile
 1. [x] Profil ilerlemesine `Sezon Sıfır · Çekirdek Uyanışı` eklendi. Normal maç XP'si aynı anda Sezon XP üretir; sonuç tek sefer işlenen mevcut maç-sonu hattından gelir.
 2. [x] 10 kademeli ücretsiz ödül yolu eklendi. Kademe eşiği, ödül alınabilirliği ve çift alma engeli sunucu tarafından doğrulanır.
 3. [x] `Savaş tamamla`, `hasar ver` ve `canlı devre hamlesi yap` hedefli üç günlük görev eklendi. İlerleme savaşın gerçek sonuç özeti ve motor olaylarından hesaplanır; istemci görev ilerlemesi yazamaz.
-4. [x] Görev/kademe ödülleri Akı Parçası ve profil unvanı kazandırır. Unvan ödülleri alınca otomatik kuşanılır ve ana menü oyuncu kartında görünür.
+4. [x] Görev/kademe ödülleri Sezon XP, Akı Parçası ve profil unvanı kazandırır. Unvan ödülleri alınca otomatik kuşanılır ve ana menü oyuncu kartında görünür.
 5. [x] Sezon XP, günlük ilerleme, alınan ödüller, Akı Parçası ve unvanlar mevcut JSON/PostgreSQL profil kaydında kalıcıdır; eski Beta.32 profilleri eksik alanları güvenli varsayılanlarla açar.
 6. [x] Profil ekranı görev merkezi, kademe ilerleme çubuğu ve yatay ödül yoluyla gerçek etkileşimli Sezon Sıfır merkezine dönüştürüldü; ücretli geçiş eklenmedi.
 7. [x] Öneri girdisindeki koyuluk bulgusuna karşı Corelight paleti eklendi: taktik koyu taban korunurken menü, hazırlık ve ilerleme ekranlarında daha canlı camgöbeği, indigo ve altın ışık alanları kullanılır.
@@ -1642,3 +1642,22 @@ Doğrulama sınırı ve açık ürün kararları:
 - [~] Akı Parçası bu pakette yalnız kazanılır ve kalıcıdır. Mağaza fiyatı veya ücretli ekonomi gerçek ürün kararı olmadan eklenmez.
 - [ ] Fiziksel Android/iPhone kanıtı harici cihaz ve hesap girdileri olmadan tamamlanmış sayılmaz.
 - [ ] Gerçek oyuncu telemetrisi oluşmadan savaş/enerji/kredi değerleri otomatik değiştirilmez.
+
+---
+
+# 19. Beta.33 Menü + SXP Düzeltmesi
+
+Beta.33 kapsamını ve sürüm kimliğini değiştirmeyen bu bakım paketi, oyuncu denemesinde görülen hazırlık kontrastı, ödül hesabı ve ekran derinliği sorunlarını kapatır:
+
+1. [x] Başlangıç modülü `Seçim 1 / Seçim 2` açılır listeleri koyu renk şemasına sabitlendi. Seçili seçenek koyu yazı/turkuaz zemin, diğer seçenekler açık yazı/koyu zemin kullanır; Windows Edge yerel seçenek penceresindeki beyaz üstüne beyaz metin ortadan kalkar.
+2. [x] Ödül yolundaki her kademe kontrollü bir SXP ödülü taşır. Kademe talebi SXP'yi sunucuda tek kez işler, kalıcı profile yazar ve istemci ödül kartında miktarı açıkça gösterir.
+3. [x] Ana menü, tasarım şablonundaki üst ilerleme hattı, iki taraflı etkinlik kartları, merkezî Oyna çağrısı ve alt gezinme dock'u GRIDSHARD Corelight kimliğine uyarlanarak yeniden kuruldu.
+4. [x] Günlük Görevler ve Ödül Yolu kartları doğrudan Profil içindeki ilgili alanı açar. Turnuva, Mağaza ve Takım gerçek işlev/ekonomi hazır olmadığı için yalnız `Yakında` durumunda ve etkileşimsizdir.
+5. [x] Profil, istatistik, ayarlar ve hazırlık yüzeylerine çok katmanlı gradyan, iç ışık, yükselti gölgesi ve daha belirgin kart ayrımı eklendi; savaş kartı geometrisi değiştirilmedi.
+6. [x] Kökteki eski üretilmiş `RELEASE_MANIFEST.json` kaldırıldı. Tam paketleyici manifesti ZIP içine yeniden üretmeye devam eder.
+
+Doğrulama:
+
+- [x] Birleşik kalite kapısı: `696 passed`, `1 skipped`; istemci `176/176`; ses, SXP kabul raporu, enerji/port regresyonu ve HTTP smoke adımları başarılı.
+- [x] Gerçek yerel tarayıcıda 1280×720 ana menü taşmadan doğrulandı; görev/ödül kısayolları ilgili Profil alanını açtı.
+- [x] 18/18 savaş havuzunda 17 seçenekli iki başlangıç kutusunda hesaplanan seçili ve normal seçenek kontrastları doğrulandı.

@@ -4,6 +4,7 @@
   "checks": {
     "version_integrity": true,
     "server_authoritative_season_and_daily_missions": true,
+    "season_tier_sxp_reward_is_authoritative": true,
     "engagement_persists_with_old_profile_defaults": true,
     "interactive_profile_hub": true,
     "corelight_identity_and_starting_choice_emphasis": true,
@@ -12,7 +13,7 @@
     "roadmap_truth_pass": true
   },
   "engagement_probe": {
-    "season_xp": 350,
+    "season_xp": 380,
     "flux_shards": 45,
     "equipped_title": "Devre Öncüsü",
     "duplicate_rejected": true,

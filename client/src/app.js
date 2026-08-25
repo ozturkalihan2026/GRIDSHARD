@@ -5495,6 +5495,29 @@ function saveHumanReviewLocalNote() {
     );
   }
 
+  for (
+    const button
+    of document.querySelectorAll(
+      "[data-menu-focus]"
+    )
+  ) {
+    button.addEventListener(
+      "click",
+      () => {
+        const sectionId = button.dataset.menuFocus === "reward-track"
+          ? "season-reward-panel"
+          : "daily-missions-panel";
+        openAppScreen("profile");
+        requestAnimationFrame(() => {
+          const section = document.getElementById(sectionId);
+          section?.scrollIntoView?.({ behavior: "smooth", block: "center" });
+          section?.classList?.add("menu-focus-pulse");
+          setTimeout(() => section?.classList?.remove("menu-focus-pulse"), 900);
+        });
+      }
+    );
+  }
+
   function processSnapshotDestructionFx(snapshot) {
     for (const player of Object.values(snapshot?.players || {})) {
       for (const module of player.modules || []) {
@@ -10412,11 +10435,40 @@ function saveHumanReviewLocalNote() {
       `Kademe ${engagement.current_tier || 0} / ${engagement.max_tier || 10}`
     );
     setText("season-progress-copy", `${progress} / ${required} Sezon XP`);
+    setText("lobby-season-tier", `Kademe ${engagement.current_tier || 0} / ${engagement.max_tier || 10}`);
+    setText("lobby-season-progress-copy", `${progress} / ${required} SXP`);
+    setText("lobby-flux-shards", engagement.flux_shards || 0);
+
+    const missionList = engagement.dailyMissions || [];
+    const claimableMissions = missionList.filter(
+      (mission) => mission.completed && !mission.claimed
+    ).length;
+    const activeMissions = missionList.filter((mission) => !mission.claimed).length;
+    setText(
+      "lobby-daily-summary",
+      claimableMissions > 0
+        ? `${claimableMissions} ödül alınmaya hazır`
+        : `${activeMissions} devre emri aktif`
+    );
+    const rewardList = engagement.rewardTrack || [];
+    const claimableRewards = rewardList.filter(
+      (reward) => reward.claimable && !reward.claimed
+    ).length;
+    setText(
+      "lobby-reward-summary",
+      claimableRewards > 0
+        ? `${claimableRewards} kademe ödülü hazır`
+        : `${engagement.max_tier || 10} ücretsiz kademe`
+    );
 
     const progressTrack = document.querySelector(".season-progress-track");
     const progressFill = document.getElementById("season-progress-fill");
     if (progressTrack) progressTrack.setAttribute("aria-valuenow", String(percentage));
     if (progressFill) progressFill.style.width = `${percentage}%`;
+    const lobbyProgressTrack = document.querySelector(".lobby-season-track");
+    const lobbyProgressFill = document.getElementById("lobby-season-progress-fill");
+    if (lobbyProgressTrack) lobbyProgressTrack.setAttribute("aria-valuenow", String(percentage));
+    if (lobbyProgressFill) lobbyProgressFill.style.width = `${percentage}%`;
 
     const missions = document.getElementById("daily-mission-list");
     if (missions) {
@@ -10465,11 +10517,14 @@ function saveHumanReviewLocalNote() {
         const tier = document.createElement("span");
         tier.textContent = `KADEME ${reward.tier}`;
         const prize = document.createElement("strong");
-        prize.textContent = reward.title_tr
-          ? `${reward.title_tr} + ${reward.flux_shards} Akı`
-          : `${reward.flux_shards} Akı Parçası`;
+        const prizeParts = [
+          reward.title_tr,
+          `+${reward.season_xp_reward || 0} SXP`,
+          `+${reward.flux_shards} Akı`,
+        ].filter(Boolean);
+        prize.textContent = prizeParts.join(" · ");
         const requirement = document.createElement("small");
-        requirement.textContent = `${reward.required_xp} SXP`;
+        requirement.textContent = `${reward.required_xp} SXP ile açılır`;
         const action = document.createElement("button");
         action.type = "button";
         action.dataset.tierClaim = String(reward.tier);

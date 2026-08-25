@@ -43,7 +43,7 @@ def engagement_probe() -> dict:
         "equipped_title": view["equipped_title"],
         "duplicate_rejected": duplicate_rejected,
         "ok": (
-            view["season_xp"] == 350
+            view["season_xp"] == 380
             and view["flux_shards"] == 45
             and view["equipped_title"] == "Devre Öncüsü"
             and duplicate_rejected
@@ -77,6 +77,11 @@ def main() -> int:
             and "claim_daily_mission_reward" in gateway
             and "claim_season_tier_reward" in gateway
             and probe["ok"]
+        ),
+        "season_tier_sxp_reward_is_authoritative": (
+            '"season_xp_reward": 25' in profile
+            and 'profile.season_xp += int(reward["season_xp_reward"])' in profile
+            and "+${reward.season_xp_reward || 0} SXP" in app
         ),
         "engagement_persists_with_old_profile_defaults": (
             'data.get("engagement") or {}' in persistence
