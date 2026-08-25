@@ -6,7 +6,7 @@
     "server_authoritative_season_and_daily_missions": true,
     "season_tier_sxp_reward_is_authoritative": true,
     "engagement_persists_with_old_profile_defaults": true,
-    "interactive_profile_hub": true,
+    "independent_engagement_pages": true,
     "corelight_identity_and_starting_choice_emphasis": true,
     "turkish_english_season_localization": true,
     "beta32_fix_geometry_preserved": true,

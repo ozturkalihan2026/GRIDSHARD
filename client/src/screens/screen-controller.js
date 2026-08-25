@@ -5,6 +5,8 @@
     menu: "Ana Menü",
     play: "Oyna",
     profile: "Profil",
+    daily: "Günlük Görevler",
+    rewards: "Ödül Yolu",
     statistics: "İstatistikler",
     settings: "Ayarlar"
   });
@@ -29,7 +31,14 @@
       if (menu) menu.hidden = current !== this.screenEnum.MENU;
 
       const backButton = this.document.getElementById("return-main-menu");
-      if (backButton) backButton.hidden = current === this.screenEnum.MENU;
+      if (backButton) backButton.hidden = true;
+
+      for (const button of this.document.querySelectorAll("[data-shell-screen]")) {
+        const active = button.dataset.shellScreen === current;
+        button.classList.toggle("is-active", active);
+        if (active) button.setAttribute("aria-current", "page");
+        else button.removeAttribute("aria-current");
+      }
 
       const label = this.document.getElementById("current-screen-label");
       if (label) label.textContent = this.labels[current] || current;

@@ -29,6 +29,34 @@
       </div>
     </header>
 
+    <section id="app-progress-ribbon" class="lobby-progress-ribbon app-progress-ribbon" aria-label="Oyuncu ve sezon ilerlemesi">
+      <div class="lobby-player-card">
+        <span class="lobby-ribbon-kicker">OPERATÖR</span>
+        <strong id="lobby-player-name">Oyuncu</strong>
+        <span id="lobby-player-details">Devre Çırağı · Seviye 1 · Lig: Gümüş · 1000 RP</span>
+      </div>
+      <div class="lobby-season-progress">
+        <div>
+          <span>İLERLEME HATTI</span>
+          <strong id="lobby-season-tier">Kademe 0 / 10</strong>
+        </div>
+        <div class="lobby-season-track" role="progressbar" aria-label="Sezon ilerlemesi" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+          <span id="lobby-season-progress-fill"></span>
+        </div>
+        <small id="lobby-season-progress-copy">0 / 100 SXP</small>
+      </div>
+      <div class="lobby-currency-cluster" aria-label="Oyuncu kaynakları">
+        <div class="lobby-currency-chip" title="Gelecek kozmetik ödülleri için birikir.">
+          <span>AKI PARÇASI</span>
+          <strong id="lobby-flux-shards">0</strong>
+        </div>
+        <div class="lobby-currency-chip lobby-credit-chip" title="Savaşta modül yerleştirmek için kullanılır.">
+          <span>DEVRE KREDİSİ</span>
+          <strong id="lobby-circuit-credits">200 DK</strong>
+        </div>
+      </div>
+    </section>
+
     <section id="main-menu-panel" class="main-menu-panel">
       <div class="main-menu-brand">
         <h1>GRIDSHARD</h1>
@@ -53,39 +81,16 @@
         </div>
       </div>
 
-      <section class="lobby-progress-ribbon" aria-label="Oyuncu ve sezon ilerlemesi">
-        <div class="lobby-player-card">
-          <span class="lobby-ribbon-kicker">OPERATÖR</span>
-          <strong id="lobby-player-name">Oyuncu</strong>
-          <span id="lobby-player-details">Devre Çırağı · Seviye 1 · Lig: Gümüş · 1000 RP</span>
-        </div>
-        <div class="lobby-season-progress">
-          <div>
-            <span>İLERLEME HATTI</span>
-            <strong id="lobby-season-tier">Kademe 0 / 10</strong>
-          </div>
-          <div class="lobby-season-track" role="progressbar" aria-label="Ana menü sezon ilerlemesi" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
-            <span id="lobby-season-progress-fill"></span>
-          </div>
-          <small id="lobby-season-progress-copy">0 / 100 SXP</small>
-        </div>
-        <div class="lobby-currency-chip" title="Gelecek kozmetik ödülleri için birikir.">
-          <span>AKI PARÇASI</span>
-          <strong id="lobby-flux-shards">0</strong>
-        </div>
-      </section>
-
       <div class="lobby-feature-grid">
         <div class="lobby-feature-column lobby-feature-column-left">
-          <button type="button" class="lobby-feature-card lobby-feature-card-live" data-menu-focus="daily-missions">
+          <button type="button" class="lobby-feature-card lobby-feature-card-live" data-open-screen="daily">
+            <span id="lobby-daily-notification" class="lobby-notification-dot" title="Alınabilir günlük görev ödülü" hidden></span>
             <span class="lobby-feature-icon" aria-hidden="true">✦</span>
             <span class="lobby-feature-copy"><small>GÜNLÜK DÖNGÜ</small><strong>Günlük Görevler</strong><span id="lobby-daily-summary">3 devre emri hazır</span></span>
-            <span class="lobby-feature-state">PROFİLDE AÇ</span>
           </button>
           <button type="button" class="lobby-feature-card lobby-feature-card-locked" data-roadmap-feature="tournament" disabled aria-disabled="true">
             <span class="lobby-feature-icon" aria-hidden="true">◇</span>
             <span class="lobby-feature-copy"><small>REKABET</small><strong>Turnuva</strong><span>Sezon sonrası açılacak</span></span>
-            <span class="lobby-feature-state">YAKINDA</span>
           </button>
         </div>
 
@@ -100,54 +105,47 @@
               <span class="menu-action-title">Oyna</span>
               <span class="lobby-play-copy">Devreni kur · çekirdeği kır</span>
             </button>
-            <div class="lobby-build-chip">
-              <span>GÜNCEL YAPI</span>
-              <strong id="ui-build-version">2.0.0-beta.33</strong><small id="ui-build-run">manifest bekleniyor</small>
-            </div>
           </div>
         </div>
 
         <div class="lobby-feature-column lobby-feature-column-right">
-          <button type="button" class="lobby-feature-card lobby-feature-card-live" data-menu-focus="reward-track">
+          <button type="button" class="lobby-feature-card lobby-feature-card-live" data-open-screen="rewards">
+            <span id="lobby-reward-notification" class="lobby-notification-dot" title="Alınabilir ödül yolu ödülü" hidden></span>
             <span class="lobby-feature-icon" aria-hidden="true">⬡</span>
             <span class="lobby-feature-copy"><small>SEZON SIFIR</small><strong>Ödül Yolu</strong><span id="lobby-reward-summary">10 ücretsiz kademe</span></span>
-            <span class="lobby-feature-state">ÖDÜLLERİ GÖR</span>
           </button>
           <button type="button" class="lobby-feature-card lobby-feature-card-locked" data-roadmap-feature="store" disabled aria-disabled="true">
             <span class="lobby-feature-icon" aria-hidden="true">⌁</span>
             <span class="lobby-feature-copy"><small>KOLEKSİYON</small><strong>Mağaza</strong><span>Ekonomi doğrulanınca açılacak</span></span>
-            <span class="lobby-feature-state">YAKINDA</span>
           </button>
         </div>
       </div>
 
-      <nav class="main-scope-nav lobby-bottom-dock" aria-label="Ana Menü">
-        <button type="button" class="menu-action" data-open-screen="profile">
-          <span class="lobby-dock-icon" aria-hidden="true">◉</span><span class="menu-action-title">Profil</span>
-        </button>
-        <button type="button" class="menu-action" data-open-screen="statistics">
-          <span class="lobby-dock-icon" aria-hidden="true">▥</span><span class="menu-action-title">İstatistikler</span>
-        </button>
-        <button type="button" class="menu-action lobby-dock-current" aria-current="page" disabled>
-          <span class="lobby-dock-icon lobby-dock-core" aria-hidden="true">◆</span><span class="menu-action-title">Ana Menü</span>
-        </button>
-        <button type="button" class="menu-action lobby-dock-locked" data-roadmap-feature="team" disabled aria-disabled="true">
-          <span class="lobby-dock-icon" aria-hidden="true">◈</span><span class="menu-action-title">Takım</span><small>Yakında</small>
-        </button>
-        <button type="button" class="menu-action" data-open-screen="settings">
-          <span class="lobby-dock-icon" aria-hidden="true">⚙</span><span class="menu-action-title">Ayarlar</span>
-        </button>
-      </nav>
     </section>
 
-    <button id="return-main-menu" type="button" hidden>
-      Ana Menüye Dön
-    </button>
+    <nav id="app-bottom-dock" class="main-scope-nav lobby-bottom-dock app-bottom-dock" aria-label="Ana gezinme">
+      <button type="button" class="menu-action" data-open-screen="profile" data-shell-screen="profile">
+        <svg class="lobby-dock-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="7.5" r="3.5"></circle><path d="M5 20c.5-4.2 3-6.4 7-6.4s6.5 2.2 7 6.4"></path></svg>
+        <span class="menu-action-title">Profil</span>
+      </button>
+      <button type="button" class="menu-action" data-open-screen="statistics" data-shell-screen="statistics">
+        <span class="lobby-dock-icon" aria-hidden="true">▥</span><span class="menu-action-title">İstatistikler</span>
+      </button>
+      <button type="button" class="menu-action is-active" data-open-screen="menu" data-shell-screen="menu" aria-current="page">
+        <span class="lobby-dock-icon lobby-dock-core" aria-hidden="true">◆</span><span class="menu-action-title">EV</span>
+      </button>
+      <button type="button" class="menu-action lobby-dock-locked" data-roadmap-feature="team" disabled aria-disabled="true">
+        <span class="lobby-dock-icon" aria-hidden="true">◈</span><span class="menu-action-title">Takım</span><small>Yakında</small>
+      </button>
+      <button type="button" class="menu-action" data-open-screen="settings" data-shell-screen="settings">
+        <span class="lobby-dock-icon" aria-hidden="true">⚙</span><span class="menu-action-title">Ayarlar</span>
+      </button>
+    </nav>
 
     <section class="profile-summary-panel" id="profile-summary-panel" data-screen-panel="profile" hidden>
       <div class="panel-title-row">
         <div class="screen-heading-block"><span class="screen-kicker">OPERATÖR TERMİNALİ</span><h2>Profil</h2><p class="screen-subtitle">Oyuncu kimliği, ilerleme ve savaş hazırlığı.</p></div>
-        <span>Genel · İlerleme · Sezon · Savaş Havuzu · <strong id="profile-load-status" data-status="idle">Yerel önizleme</strong></span>
+        <span>Genel · İlerleme · Savaş Havuzu · <strong id="profile-load-status" data-status="idle">Yerel önizleme</strong></span>
       </div>
       <p id="profile-live-summary">Oyuncu · Seviye 1 · Gümüş · 1000 Derece Puanı · 0 XP</p>
       <div class="profile-name-form">
@@ -156,49 +154,45 @@
         <button id="profile-display-name-save" type="button">Görünen Adı Kaydet</button>
         <span id="profile-name-save-status"></span>
       </div>
-      <section class="season-zero-hub" aria-labelledby="season-zero-title">
-        <header class="season-zero-heading">
-          <div>
-            <span class="screen-kicker">SEZON SIFIR · ÜCRETSİZ ÖDÜL YOLU</span>
-            <h3 id="season-zero-title">Çekirdek Uyanışı</h3>
-            <p>Savaş, canlı devre hamlesi ve günlük görevlerle Sezon XP kazan.</p>
-          </div>
-          <div class="season-zero-currency" title="Gelecek kozmetik ödülleri için birikir.">
-            <span>AKI PARÇASI</span><strong id="season-flux-shards">0</strong>
-          </div>
-        </header>
-        <div class="season-zero-progress-summary">
-          <div>
-            <span id="season-equipped-title">Devre Çırağı</span>
-            <strong id="season-tier-label">Kademe 0 / 10</strong>
-          </div>
-          <div class="season-progress-track" role="progressbar" aria-label="Sezon kademe ilerlemesi" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
-            <span id="season-progress-fill"></span>
-          </div>
-          <small id="season-progress-copy">0 / 100 Sezon XP</small>
-        </div>
-        <div class="season-zero-columns">
-          <section id="daily-missions-panel" class="daily-mission-panel" aria-labelledby="daily-mission-title">
-            <div class="season-section-heading">
-              <div><span class="screen-kicker">GÜNLÜK GÖREVLER</span><h4 id="daily-mission-title">Bugünün Devre Emirleri</h4></div>
-              <small>Her gün UTC 00:00'da yenilenir</small>
-            </div>
-            <div id="daily-mission-list" class="daily-mission-list"></div>
-          </section>
-          <section id="season-reward-panel" class="season-reward-panel" aria-labelledby="season-reward-title">
-            <div class="season-section-heading">
-              <div><span class="screen-kicker">ÖDÜL YOLU</span><h4 id="season-reward-title">10 Kademe</h4></div>
-              <small>Ücretli geçiş yok</small>
-            </div>
-            <div id="season-reward-track" class="season-reward-track"></div>
-          </section>
-        </div>
-        <p id="season-action-status" class="season-action-status" role="status">Tamamlanan görev ve kademelerin ödüllerini buradan al.</p>
-      </section>
       <p id="participant-id-summary">Web Test Kimliği hazırlanıyor…</p>
       <p id="participant-bootstrap-status" data-status="idle">Hesap: Hazır değil</p>
       <p id="participant-continuity-status" data-status="unknown">Oturum Sürekliliği: Kontrol bekliyor</p>
       <button id="participant-bootstrap-retry" type="button" hidden>Hesap Hazırlığını Yeniden Dene</button>
+    </section>
+
+    <section class="engagement-summary-panel daily-missions-screen" id="daily-missions-screen" data-screen-panel="daily" hidden>
+      <div class="panel-title-row">
+        <div class="screen-heading-block"><span class="screen-kicker">GÜNLÜK DÖNGÜ</span><h2>Günlük Görevler</h2><p class="screen-subtitle">Bugünün devre emirlerini tamamla, SXP ve Akı Parçası kazan.</p></div>
+        <span>Her gün UTC 00:00'da yenilenir · <strong id="daily-load-status" data-status="idle">Yerel önizleme</strong></span>
+      </div>
+      <section id="daily-missions-panel" class="daily-mission-panel" aria-labelledby="daily-mission-title">
+        <div class="season-section-heading">
+          <div><span class="screen-kicker">BUGÜN</span><h3 id="daily-mission-title">Bugünün Devre Emirleri</h3></div>
+          <small id="daily-mission-page-summary">3 görev aktif</small>
+        </div>
+        <div id="daily-mission-list" class="daily-mission-list"></div>
+      </section>
+      <p id="daily-action-status" class="season-action-status" role="status">Tamamlanan görevlerin ödüllerini buradan al.</p>
+    </section>
+
+    <section class="engagement-summary-panel season-rewards-screen" id="season-rewards-screen" data-screen-panel="rewards" hidden>
+      <div class="panel-title-row">
+        <div class="screen-heading-block"><span class="screen-kicker">SEZON SIFIR · ÜCRETSİZ ÖDÜL YOLU</span><h2>Ödül Yolu</h2><p class="screen-subtitle">Çekirdek Uyanışı boyunca kademeleri aç ve sunucu doğrulamalı ödüllerini al.</p></div>
+        <div class="season-zero-currency" title="Gelecek kozmetik ödülleri için birikir."><span>AKI PARÇASI</span><strong id="season-flux-shards">0</strong></div>
+      </div>
+      <div class="season-zero-progress-summary">
+        <div><span id="season-equipped-title">Devre Çırağı</span><strong id="season-tier-label">Kademe 0 / 10</strong></div>
+        <div class="season-progress-track" role="progressbar" aria-label="Sezon kademe ilerlemesi" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><span id="season-progress-fill"></span></div>
+        <small id="season-progress-copy">0 / 100 Sezon XP</small>
+      </div>
+      <section id="season-reward-panel" class="season-reward-panel" aria-labelledby="season-reward-title">
+        <div class="season-section-heading">
+          <div><span class="screen-kicker">10 KADEME</span><h3 id="season-reward-title">Sezon Ödülleri</h3></div>
+          <small>Ücretli geçiş yok</small>
+        </div>
+        <div id="season-reward-track" class="season-reward-track"></div>
+      </section>
+      <p id="season-action-status" class="season-action-status" role="status">Açılan kademelerin ödüllerini buradan al.</p>
     </section>
 
     <section class="statistics-summary-panel" id="statistics-summary-panel" data-screen-panel="statistics" hidden>
@@ -276,6 +270,17 @@
         <span id="settings-save-status" role="status">Henüz kaydedilmedi</span>
         <span id="settings-persistence-status" role="status">Kalıcılık: Henüz doğrulanmadı</span>
       </div>
+      <section class="settings-about-panel" aria-labelledby="settings-about-title">
+        <div>
+          <span class="screen-kicker">ÜRÜN BİLGİSİ</span>
+          <h3 id="settings-about-title">Hakkında</h3>
+          <p>GRIDSHARD · Devreni kur, çekirdeği kır.</p>
+        </div>
+        <dl>
+          <div><dt>Sürüm</dt><dd id="ui-build-version">2.0.0-beta.33</dd></div>
+          <div><dt>Yapı</dt><dd id="ui-build-run">manifest bekleniyor</dd></div>
+        </dl>
+      </section>
     </section>
 
 

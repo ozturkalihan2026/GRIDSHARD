@@ -988,7 +988,7 @@ function createClient() {
     html.includes('id="main-menu-panel"')
   );
   assert.ok(
-    html.includes('id="return-main-menu"')
+    !html.includes('id="return-main-menu"')
   );
   assert.ok(
     html.includes('data-screen-panel="play"')
@@ -1001,6 +1001,12 @@ function createClient() {
   );
   assert.ok(
     html.includes('data-screen-panel="settings"')
+  );
+  assert.ok(
+    html.includes('data-screen-panel="daily"')
+  );
+  assert.ok(
+    html.includes('data-screen-panel="rewards"')
   );
   assert.ok(
     app.includes("returnToMainMenu")
@@ -4520,9 +4526,13 @@ function createClient() {
   assert.ok(css.includes(".initial-module-choice option"));
   assert.ok(css.includes("color-scheme:dark"));
   assert.ok(app.includes("+${reward.season_xp_reward || 0} SXP"));
-  assert.ok(app.includes('document.querySelectorAll(\n      "[data-menu-focus]"'));
+  assert.ok(app.includes('"daily-action-status"'));
+  assert.ok(app.includes('"lobby-daily-notification"'));
+  assert.ok(app.includes('"lobby-reward-notification"'));
   assert.ok(html.includes('id="lobby-season-progress-fill"'));
-  assert.ok(html.includes('class="main-scope-nav lobby-bottom-dock"'));
+  assert.ok(html.includes('class="main-scope-nav lobby-bottom-dock app-bottom-dock"'));
+  assert.ok(html.includes('id="daily-missions-screen"'));
+  assert.ok(html.includes('id="season-rewards-screen"'));
 }
 
 {

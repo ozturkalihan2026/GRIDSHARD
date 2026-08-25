@@ -1661,3 +1661,24 @@ Doğrulama:
 - [x] Birleşik kalite kapısı: `696 passed`, `1 skipped`; istemci `176/176`; ses, SXP kabul raporu, enerji/port regresyonu ve HTTP smoke adımları başarılı.
 - [x] Gerçek yerel tarayıcıda 1280×720 ana menü taşmadan doğrulandı; görev/ödül kısayolları ilgili Profil alanını açtı.
 - [x] 18/18 savaş havuzunda 17 seçenekli iki başlangıç kutusunda hesaplanan seçili ve normal seçenek kontrastları doğrulandı.
+
+---
+
+# 20. Beta.33 Ortak Lobi Kabuğu + Bağımsız Bağlılık Ekranları
+
+Beta.33 sürüm kimliğini koruyan bu arayüz revizyonu, ana menü şablonunu tüm savaş dışı ekranlarda tutarlı bir gezinme kabuğuna dönüştürür:
+
+1. [x] Oyuncu/Sezon ilerleme şeridi ile alt Dock, aktif savaş hariç Ana Menü, Hazırlık, Profil, İstatistikler, Ayarlar, Günlük Görevler ve Ödül Yolu ekranlarında sabittir.
+2. [x] Dock'taki `Ana Menü` adı `EV` olarak değiştirildi. Profil klasik oyuncu simgesi kullanır; seçili Dock başlığı daha büyük ve yükseltilmiş görünür.
+3. [x] Sol üstteki tekrar eden `Ana Menüye Dön` düğmesi kaldırıldı; Dock başlıkları doğrudan ilgili ekranı açar.
+4. [x] Günlük Görevler ve Ödül Yolu Profil'den ayrılarak kendi yönlendirilen sayfalarına taşındı. Sunucu otoriteli ilerleme ve ödül alma davranışı korunur.
+5. [x] Ana menüdeki dört yan kart kompaktlaştırıldı; alt durum şeritleri ve `Profilde Aç / Ödülleri Gör` metinleri kaldırıldı. Alınabilir ödül olduğunda görev ve ödül kartlarında kırmızı bildirim noktası görünür.
+6. [x] `Oyna` düğmesi küçültülüp alt merkeze taşındı; merkezdeki Çekirdek ve ışık efektleri görünür bırakıldı.
+7. [x] Akı Parçası alanı daraltıldı ve yanına güncel Devre Kredisi eklendi. Ana menüdeki teknik yapı kutusu Ayarlar ekranının altındaki `Hakkında` bölümüne taşındı.
+8. [x] Yeni Türkçe/İngilizce kabuk, görev, ödül ve Hakkında metinleri iki yönlü yerelleştirme kapsamına alındı.
+
+Doğrulama:
+
+- [x] 1440×900 gerçek yerel tarayıcıda ana menü, görev, ödül, profil, ayarlar ve hazırlık geçişleri doğrulandı; tarayıcı konsolunda hata oluşmadı.
+- [x] Üst şerit ve Dock'un sabit kaldığı, seçili Dock başlığının büyüdüğü, Profil içinde görev/ödül içeriği kalmadığı ve hazırlık ekranında eski geri düğmesinin bulunmadığı doğrulandı.
+- [x] Aktif savaşta ortak lobi şeritlerini gizleyen savaş durumu seçicileri korunur.

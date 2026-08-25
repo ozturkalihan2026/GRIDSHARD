@@ -16,14 +16,20 @@ function load(relativePath, extra = {}) {
 
 test("screen controller ekran panellerini tek yerde yönetir", () => {
   const panels = ["play", "profile"].map(screen => ({ dataset: { screenPanel: screen }, hidden: false }));
+  const shellButtons = ["menu", "profile"].map(screen => ({
+    dataset: { shellScreen: screen },
+    attributes: {},
+    classList: { toggle(name, enabled) { this[name] = enabled; } },
+    setAttribute(name, value) { this.attributes[name] = value; },
+    removeAttribute(name) { delete this.attributes[name]; }
+  }));
   const elements = {
     "main-menu-panel": { hidden: false },
-    "return-main-menu": { hidden: false },
     "current-screen-label": { textContent: "" }
   };
   const document = {
     body: { dataset: {} },
-    querySelectorAll: () => panels,
+    querySelectorAll: selector => selector === "[data-shell-screen]" ? shellButtons : panels,
     getElementById: id => elements[id] || null
   };
   const sandbox = load(path.join("src", "screens", "screen-controller.js"), { document });
@@ -37,6 +43,9 @@ test("screen controller ekran panellerini tek yerde yönetir", () => {
   assert.equal(document.body.dataset.appScreen, "profile");
   assert.equal(panels[0].hidden, true);
   assert.equal(panels[1].hidden, false);
+  assert.equal(shellButtons[0].classList["is-active"], false);
+  assert.equal(shellButtons[1].classList["is-active"], true);
+  assert.equal(shellButtons[1].attributes["aria-current"], "page");
   assert.equal(elements["current-screen-label"].textContent, "Profil");
 });
 

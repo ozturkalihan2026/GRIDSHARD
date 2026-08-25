@@ -453,7 +453,7 @@
       tutorialController?.maybeStart();
     }
 
-    if (screen === "profile") {
+    if (["profile", "daily", "rewards"].includes(screen)) {
       accountDataLoader
         .loadProfile()
         .then(() => {
@@ -5495,29 +5495,6 @@ function saveHumanReviewLocalNote() {
     );
   }
 
-  for (
-    const button
-    of document.querySelectorAll(
-      "[data-menu-focus]"
-    )
-  ) {
-    button.addEventListener(
-      "click",
-      () => {
-        const sectionId = button.dataset.menuFocus === "reward-track"
-          ? "season-reward-panel"
-          : "daily-missions-panel";
-        openAppScreen("profile");
-        requestAnimationFrame(() => {
-          const section = document.getElementById(sectionId);
-          section?.scrollIntoView?.({ behavior: "smooth", block: "center" });
-          section?.classList?.add("menu-focus-pulse");
-          setTimeout(() => section?.classList?.remove("menu-focus-pulse"), 900);
-        });
-      }
-    );
-  }
-
   function processSnapshotDestructionFx(snapshot) {
     for (const player of Object.values(snapshot?.players || {})) {
       for (const module of player.modules || []) {
@@ -9875,6 +9852,13 @@ function saveHumanReviewLocalNote() {
       element.dataset.status =
         status;
     }
+
+    const dailyStatus = document.getElementById("daily-load-status");
+    if (dailyStatus) {
+      const status = accountDataLoader.status.profile;
+      dailyStatus.textContent = labels[status] || status;
+      dailyStatus.dataset.status = status;
+    }
   }
 
   function applyLanguagePreference(
@@ -10450,6 +10434,14 @@ function saveHumanReviewLocalNote() {
         ? `${claimableMissions} ödül alınmaya hazır`
         : `${activeMissions} devre emri aktif`
     );
+    setText(
+      "daily-mission-page-summary",
+      claimableMissions > 0
+        ? `${claimableMissions} ödül alınmaya hazır`
+        : `${activeMissions} görev aktif`
+    );
+    const dailyNotification = document.getElementById("lobby-daily-notification");
+    if (dailyNotification) dailyNotification.hidden = claimableMissions === 0;
     const rewardList = engagement.rewardTrack || [];
     const claimableRewards = rewardList.filter(
       (reward) => reward.claimable && !reward.claimed
@@ -10460,6 +10452,8 @@ function saveHumanReviewLocalNote() {
         ? `${claimableRewards} kademe ödülü hazır`
         : `${engagement.max_tier || 10} ücretsiz kademe`
     );
+    const rewardNotification = document.getElementById("lobby-reward-notification");
+    if (rewardNotification) rewardNotification.hidden = claimableRewards === 0;
 
     const progressTrack = document.querySelector(".season-progress-track");
     const progressFill = document.getElementById("season-progress-fill");
@@ -10543,7 +10537,9 @@ function saveHumanReviewLocalNote() {
   }
 
   async function claimEngagementReward(kind, id, button) {
-    const status = document.getElementById("season-action-status");
+    const status = document.getElementById(
+      kind === "missions" ? "daily-action-status" : "season-action-status"
+    );
     if (button) button.disabled = true;
     if (status) status.textContent = "Ödül sunucuda doğrulanıyor…";
     const result = await accountDataLoader.claimEngagementReward(kind, id);
@@ -11953,6 +11949,8 @@ function saveHumanReviewLocalNote() {
 
   function renderCredits() {
     creditEl.textContent = `Devre Kredisi: ${client.circuitCredits} DK`;
+    const lobbyCredits = document.getElementById("lobby-circuit-credits");
+    if (lobbyCredits) lobbyCredits.textContent = `${client.circuitCredits} DK`;
   }
 
   function flashInsufficientCredits() {

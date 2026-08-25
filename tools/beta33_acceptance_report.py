@@ -88,10 +88,13 @@ def main() -> int:
             and 'engagement.get("season_xp", 0)' in persistence
             and 'engagement.get("unlocked_titles", ["Devre Çırağı"])' in persistence
         ),
-        "interactive_profile_hub": (
-            "season-zero-hub" in html
+        "independent_engagement_pages": (
+            'data-screen-panel="daily"' in html
+            and 'data-screen-panel="rewards"' in html
             and "daily-mission-list" in html
             and "season-reward-track" in html
+            and 'data-open-screen="daily"' in html
+            and 'data-open-screen="rewards"' in html
             and "claimEngagementReward" in app
             and "dailyMissions" in relay
         ),

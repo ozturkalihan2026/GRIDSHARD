@@ -988,6 +988,8 @@
     MENU: "menu",
     PLAY: "play",
     PROFILE: "profile",
+    DAILY: "daily",
+    REWARDS: "rewards",
     STATISTICS: "statistics",
     SETTINGS: "settings",
   });

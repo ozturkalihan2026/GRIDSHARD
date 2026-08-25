@@ -5968,3 +5968,322 @@ body[data-app-screen="menu"] .lobby-bottom-dock .menu-action {
   body[data-app-screen="menu"] .main-menu-panel { width:100%;margin:0;border-radius:0;padding:12px; }
   body[data-app-screen="menu"] .lobby-feature-column { grid-template-columns:1fr; }
 }
+
+/* Beta.33 shell revision — fixed non-battle progression + navigation. */
+body[data-app-screen="daily"],
+body[data-app-screen="rewards"] {
+  background:
+    radial-gradient(circle at 78% 13%,rgba(78,140,255,.30),transparent 27rem),
+    radial-gradient(circle at 16% 78%,rgba(107,92,255,.22),transparent 30rem),
+    linear-gradient(135deg,rgba(72,244,224,.08),transparent 38%),
+    linear-gradient(180deg,#10234a 0%,#09152f 47%,#050914 100%);
+}
+
+.app-progress-ribbon {
+  position:fixed !important;
+  top:12px;
+  left:50%;
+  z-index:500;
+  width:min(1440px,calc(100vw - 32px));
+  min-height:78px;
+  transform:translateX(-50%);
+  grid-template-columns:minmax(190px,.65fr) minmax(330px,1.5fr) minmax(230px,.55fr);
+  gap:14px;
+  padding:10px 13px;
+  backdrop-filter:blur(18px);
+}
+.app-progress-ribbon .lobby-player-card {
+  min-width:0;
+  overflow:hidden;
+}
+.app-progress-ribbon #lobby-player-name,
+.app-progress-ribbon #lobby-player-details {
+  display:block;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+}
+.lobby-currency-cluster {
+  display:grid;
+  grid-template-columns:minmax(94px,.8fr) minmax(122px,1fr);
+  gap:8px;
+}
+.app-progress-ribbon .lobby-currency-chip {
+  min-width:0;
+  justify-items:end;
+  align-content:center;
+  padding:7px 9px;
+}
+.app-progress-ribbon .lobby-currency-chip strong { font-size:1.05rem; }
+.app-progress-ribbon .lobby-credit-chip {
+  border-color:rgba(78,140,255,.42);
+  background:linear-gradient(135deg,rgba(78,140,255,.18),rgba(72,244,224,.06));
+}
+.app-progress-ribbon .lobby-credit-chip span { color:#9fc8ff; }
+.app-progress-ribbon .lobby-credit-chip strong { color:#e9f4ff; }
+
+.app-bottom-dock,
+body[data-app-screen="menu"] .app-bottom-dock {
+  position:fixed !important;
+  left:50%;
+  bottom:12px;
+  z-index:500;
+  display:grid;
+  grid-template-columns:repeat(5,minmax(0,1fr));
+  gap:7px;
+  width:min(760px,calc(100vw - 28px));
+  margin:0;
+  padding:7px;
+  transform:translateX(-50%);
+  border:1px solid rgba(72,244,224,.28);
+  border-radius:17px;
+  background:linear-gradient(180deg,rgba(18,36,61,.94),rgba(6,14,29,.97));
+  box-shadow:0 18px 44px rgba(0,0,0,.40),inset 0 1px rgba(255,255,255,.07);
+  backdrop-filter:blur(18px);
+}
+.app-bottom-dock .menu-action,
+body[data-app-screen="menu"] .app-bottom-dock .menu-action {
+  display:grid;
+  grid-template-columns:1fr;
+  place-items:center;
+  gap:2px;
+  min-height:52px;
+  padding:5px 7px;
+  border:1px solid transparent;
+  border-radius:11px;
+  background:transparent;
+  box-shadow:none;
+  text-align:center;
+  transition:transform .16s ease,background .16s ease,border-color .16s ease;
+}
+.app-bottom-dock .menu-action-title,
+body[data-app-screen="menu"] .app-bottom-dock .menu-action-title {
+  font-size:.72rem;
+  transition:font-size .16s ease,color .16s ease;
+}
+.app-bottom-dock .lobby-dock-icon {
+  width:21px;
+  height:21px;
+  color:#a7bbd6;
+  fill:none;
+  stroke:currentColor;
+  stroke-width:1.7;
+}
+.app-bottom-dock .menu-action.is-active {
+  transform:translateY(-5px) scale(1.055);
+  border-color:rgba(255,213,106,.56);
+  background:linear-gradient(180deg,rgba(255,213,106,.20),rgba(78,140,255,.10));
+  box-shadow:0 8px 18px rgba(0,0,0,.28),0 0 18px rgba(255,213,106,.10);
+}
+.app-bottom-dock .menu-action.is-active .menu-action-title {
+  color:#ffe68e;
+  font-size:.88rem;
+}
+.app-bottom-dock .menu-action.is-active .lobby-dock-icon {
+  color:#ffe68e;
+  text-shadow:0 0 12px rgba(255,213,106,.62);
+}
+
+body[data-app-screen="play"][data-local-status="battle"] .app-progress-ribbon,
+body[data-app-screen="play"][data-online-status="battle"] .app-progress-ribbon,
+body[data-app-screen="play"][data-local-status="battle"] .app-bottom-dock,
+body[data-app-screen="play"][data-online-status="battle"] .app-bottom-dock {
+  display:none !important;
+}
+
+#return-main-menu { display:none !important; }
+
+body[data-app-screen="menu"] .main-menu-panel {
+  display:grid;
+  grid-template-columns:1fr;
+  grid-template-rows:1fr;
+  width:min(1440px,calc(100vw - 32px));
+  height:calc(100dvh - 206px);
+  min-height:520px;
+  margin:102px auto 92px;
+  padding:20px clamp(22px,3vw,44px);
+  overflow:hidden;
+}
+body[data-app-screen="menu"] .lobby-feature-grid {
+  grid-template-columns:minmax(205px,.62fr) minmax(380px,1.55fr) minmax(205px,.62fr);
+  gap:clamp(14px,2.2vw,30px);
+  height:100%;
+}
+body[data-app-screen="menu"] .lobby-feature-column { gap:10px; }
+body[data-app-screen="menu"] .lobby-feature-card {
+  grid-template-columns:42px minmax(0,1fr);
+  gap:10px;
+  min-height:82px;
+  padding:10px 11px;
+  border-radius:5px 16px 5px 16px;
+}
+body[data-app-screen="menu"] .lobby-feature-card::after { display:none; }
+body[data-app-screen="menu"] .lobby-feature-icon {
+  width:42px;
+  height:42px;
+  border-radius:13px;
+  font-size:1.2rem;
+}
+body[data-app-screen="menu"] .lobby-feature-copy { gap:2px; }
+body[data-app-screen="menu"] .lobby-feature-copy strong { font-size:.91rem; }
+body[data-app-screen="menu"] .lobby-feature-copy > span { font-size:.66rem; }
+body[data-app-screen="menu"] .lobby-feature-copy small { font-size:.52rem; }
+.lobby-notification-dot {
+  position:absolute;
+  top:8px;
+  right:9px;
+  z-index:4;
+  width:10px;
+  height:10px;
+  border:2px solid #111b31;
+  border-radius:50%;
+  background:#ff435e;
+  box-shadow:0 0 0 3px rgba(255,67,94,.12),0 0 14px rgba(255,67,94,.72);
+}
+.lobby-notification-dot[hidden] { display:none; }
+
+body[data-app-screen="menu"] .lobby-main {
+  position:relative;
+  align-self:stretch;
+  height:100%;
+  min-height:430px;
+  max-width:680px;
+}
+body[data-app-screen="menu"] .lobby-wordmark {
+  position:absolute;
+  top:17%;
+  left:50%;
+  width:100%;
+  margin:0;
+  transform:translateX(-50%);
+}
+body[data-app-screen="menu"] #main-menu-title { font-size:clamp(3.25rem,5.2vw,5.6rem); }
+body[data-app-screen="menu"] .lobby-play-row {
+  position:absolute;
+  left:50%;
+  bottom:7%;
+  display:block;
+  width:min(300px,72%);
+  margin:0;
+  transform:translateX(-50%);
+}
+body[data-app-screen="menu"] .lobby-play-button {
+  width:100%;
+  min-height:70px;
+  padding:12px 20px;
+  border-radius:7px 19px 7px 19px;
+  text-align:center;
+}
+body[data-app-screen="menu"] .lobby-play-button .menu-action-title { font-size:1.42rem; }
+body[data-app-screen="menu"] .lobby-play-copy { font-size:.62rem; }
+body[data-app-screen="menu"] .lobby-core-mark { left:50%;top:50%;width:310px;height:310px;opacity:.88; }
+body[data-app-screen="menu"] .lobby-core-orbit { left:50%;top:50%;opacity:.74; }
+body[data-app-screen="menu"] .lobby-board-grid { left:50%;top:52%;opacity:.30; }
+
+body[data-app-screen="profile"] .battle-shell,
+body[data-app-screen="daily"] .battle-shell,
+body[data-app-screen="rewards"] .battle-shell,
+body[data-app-screen="statistics"] .battle-shell,
+body[data-app-screen="settings"] .battle-shell {
+  width:min(1180px,94vw);
+  height:100dvh;
+  padding:104px 0 88px;
+  overflow:hidden;
+}
+.profile-summary-panel,
+.engagement-summary-panel,
+.statistics-summary-panel,
+.settings-summary-panel {
+  max-height:100%;
+  margin:0 auto;
+  padding:clamp(20px,2.6vw,30px);
+  overflow:auto;
+  border:1px solid rgba(72,244,224,.30);
+  border-radius:20px;
+  background:
+    radial-gradient(circle at 88% 6%,rgba(78,140,255,.20),transparent 25rem),
+    radial-gradient(circle at 8% 92%,rgba(107,92,255,.14),transparent 23rem),
+    linear-gradient(150deg,rgba(15,31,57,.98),rgba(6,14,29,.98) 58%,rgba(12,10,35,.98));
+  box-shadow:0 28px 70px rgba(0,0,0,.42),inset 0 1px rgba(255,255,255,.07);
+}
+.engagement-summary-panel .daily-mission-panel,
+.engagement-summary-panel .season-reward-panel {
+  margin-top:16px;
+  padding:16px;
+  border-radius:15px;
+}
+.engagement-summary-panel .daily-mission-list {
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:12px;
+}
+.engagement-summary-panel .daily-mission-card {
+  grid-template-columns:1fr;
+  align-content:space-between;
+  min-height:170px;
+  border-radius:12px;
+}
+.engagement-summary-panel .season-reward-track {
+  grid-template-columns:repeat(5,minmax(125px,1fr));
+  max-height:none;
+}
+.settings-about-panel {
+  display:grid;
+  grid-template-columns:minmax(0,1fr) minmax(280px,.8fr);
+  gap:20px;
+  margin-top:18px;
+  padding:18px;
+  border:1px solid rgba(72,244,224,.25);
+  border-radius:15px;
+  background:linear-gradient(135deg,rgba(72,244,224,.08),rgba(78,140,255,.10),rgba(8,16,34,.72));
+  box-shadow:inset 0 1px rgba(255,255,255,.05),0 12px 28px rgba(0,0,0,.18);
+}
+.settings-about-panel h3 { margin:4px 0 5px; }
+.settings-about-panel p { margin:0;color:#9eb2ce; }
+.settings-about-panel dl { display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:0; }
+.settings-about-panel dl > div { padding:10px;border:1px solid rgba(104,150,210,.24);border-radius:10px;background:rgba(5,13,28,.48); }
+.settings-about-panel dt { color:#8fa9c8;font-size:.65rem;text-transform:uppercase;letter-spacing:.08em; }
+.settings-about-panel dd { margin:4px 0 0;color:#f2f7ff;font-weight:800;overflow-wrap:anywhere; }
+
+body[data-app-screen="play"]:not([data-local-status="battle"]):not([data-online-status="battle"]) .battle-shell {
+  width:min(1540px,98vw);
+  height:100dvh;
+  padding:102px 0 86px;
+  overflow:hidden;
+}
+body[data-app-screen="play"]:not([data-local-status="battle"]):not([data-online-status="battle"]) .battle-pool-panel:not([hidden]) {
+  height:100%;
+  padding:11px 14px;
+}
+
+@media (max-width:980px) {
+  .app-progress-ribbon { grid-template-columns:minmax(0,1fr) minmax(210px,.65fr); }
+  .app-progress-ribbon .lobby-player-card { display:none; }
+  body[data-app-screen="menu"] .main-menu-panel { min-height:640px;height:auto;overflow:auto; }
+  body[data-app-screen="menu"] .lobby-feature-grid {
+    grid-template-columns:repeat(2,minmax(0,1fr));
+    grid-template-areas:"main main" "left right";
+  }
+  body[data-app-screen="menu"] .lobby-main { grid-area:main;min-height:390px; }
+  .lobby-feature-column-left { grid-area:left; }
+  .lobby-feature-column-right { grid-area:right; }
+  .engagement-summary-panel .daily-mission-list { grid-template-columns:1fr; }
+}
+
+@media (max-width:680px) {
+  .app-progress-ribbon { top:8px;width:calc(100vw - 16px);grid-template-columns:1fr;padding:8px; }
+  .app-progress-ribbon .lobby-season-progress { display:none; }
+  .lobby-currency-cluster { grid-template-columns:1fr 1fr; }
+  .app-bottom-dock,body[data-app-screen="menu"] .app-bottom-dock { bottom:7px;width:calc(100vw - 14px);gap:3px;padding:5px; }
+  .app-bottom-dock .menu-action-title,body[data-app-screen="menu"] .app-bottom-dock .menu-action-title { font-size:.58rem; }
+  .app-bottom-dock .menu-action.is-active .menu-action-title { font-size:.7rem; }
+  body[data-app-screen="menu"] .main-menu-panel { width:100%;margin:82px 0 76px;border-radius:0;padding:12px; }
+  body[data-app-screen="menu"] .lobby-feature-grid { grid-template-columns:1fr;grid-template-areas:"main" "left" "right"; }
+  body[data-app-screen="menu"] .lobby-feature-column { grid-template-columns:1fr 1fr; }
+  body[data-app-screen="profile"] .battle-shell,
+  body[data-app-screen="daily"] .battle-shell,
+  body[data-app-screen="rewards"] .battle-shell,
+  body[data-app-screen="statistics"] .battle-shell,
+  body[data-app-screen="settings"] .battle-shell { width:96vw;padding:82px 0 76px; }
+  .settings-about-panel { grid-template-columns:1fr; }
+  .engagement-summary-panel .season-reward-track { grid-template-columns:repeat(2,minmax(110px,1fr)); }
+}
