@@ -60,7 +60,7 @@
     <section id="main-menu-panel" class="main-menu-panel">
       <div class="main-menu-brand">
         <h1>GRIDSHARD</h1>
-        <span>2.0.0-beta.34</span>
+        <span>2.0.0-beta.35</span>
       </div>
       <div class="lobby-backdrop" aria-hidden="true">
         <div class="lobby-board-grid" aria-hidden="true">
@@ -126,19 +126,19 @@
     <nav id="app-bottom-dock" class="main-scope-nav lobby-bottom-dock app-bottom-dock" aria-label="Ana gezinme">
       <button type="button" class="menu-action" data-open-screen="profile" data-shell-screen="profile">
         <svg class="lobby-dock-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="7.5" r="3.5"></circle><path d="M5 20c.5-4.2 3-6.4 7-6.4s6.5 2.2 7 6.4"></path></svg>
-        <span class="menu-action-title">Profil</span>
+        <span class="menu-action-title">PROFİL</span>
       </button>
       <button type="button" class="menu-action" data-open-screen="statistics" data-shell-screen="statistics">
-        <span class="lobby-dock-icon" aria-hidden="true">▥</span><span class="menu-action-title">İstatistikler</span>
+        <span class="lobby-dock-icon" aria-hidden="true">▥</span><span class="menu-action-title">İSTATİSTİKLER</span>
       </button>
       <button type="button" class="menu-action is-active" data-open-screen="menu" data-shell-screen="menu" aria-current="page">
         <span class="lobby-dock-icon lobby-dock-core" aria-hidden="true">◆</span><span class="menu-action-title">EV</span>
       </button>
       <button type="button" class="menu-action lobby-dock-locked" data-roadmap-feature="team" disabled aria-disabled="true">
-        <span class="lobby-dock-icon" aria-hidden="true">◈</span><span class="menu-action-title">Takım</span><small>Yakında</small>
+        <span class="lobby-dock-icon" aria-hidden="true">◈</span><span class="menu-action-title">TAKIM</span><small>YAKINDA</small>
       </button>
       <button type="button" class="menu-action" data-open-screen="settings" data-shell-screen="settings">
-        <span class="lobby-dock-icon" aria-hidden="true">⚙</span><span class="menu-action-title">Ayarlar</span>
+        <span class="lobby-dock-icon" aria-hidden="true">⚙</span><span class="menu-action-title">AYARLAR</span>
       </button>
     </nav>
 
@@ -277,7 +277,7 @@
           <p>GRIDSHARD · Devreni kur, çekirdeği kır.</p>
         </div>
         <dl>
-          <div><dt>Sürüm</dt><dd id="ui-build-version">2.0.0-beta.34</dd></div>
+          <div><dt>Sürüm</dt><dd id="ui-build-version">2.0.0-beta.35</dd></div>
           <div><dt>Yapı</dt><dd id="ui-build-run">manifest bekleniyor</dd></div>
         </dl>
       </section>
@@ -515,7 +515,7 @@
     </section>
 
     <section class="battle-test-banner play-live-panel" data-screen-panel="play" hidden>
-      <strong>Beta.34 · 10 sn AI Devralma · Oyuncu Kontrollü Portlar · Kesintisiz Ses · Tam Dil Desteği</strong>
+      <strong>Beta.35 · Dereceli PvP · Derecesiz AI · 10 sn AI Devralma · Atomik Güçlendiriciler · Kademe Kutlaması</strong>
       <span id="battle-entry-status">Savaş alanına giriş başarılı · Yerel AI aktif · Modül Rafı 15. saniyede açılır</span>
     </section>
 
@@ -718,6 +718,15 @@
         <textarea id="diagnostic-snapshot-output" readonly hidden aria-label="Tanılama özeti"></textarea>
       </div>
     </details>
+
+    <section id="tier-celebration" class="tier-celebration" role="status" aria-live="polite" data-active="false" hidden>
+      <div class="tier-celebration-halo" aria-hidden="true"></div>
+      <div class="tier-celebration-card">
+        <span>İLERLEME HATTI YÜKSELDİ</span>
+        <strong id="tier-celebration-value">KADEME 1</strong>
+        <small>Yeni sezon ödülü açıldı</small>
+      </div>
+    </section>
 
     <section id="tutorial-overlay" class="tutorial-overlay" role="dialog" aria-modal="true" aria-labelledby="tutorial-title" data-active="false" hidden>
       <div class="tutorial-card">

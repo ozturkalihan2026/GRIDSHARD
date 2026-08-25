@@ -631,6 +631,15 @@ class PlayerDataStoreService:
                 data["boosters_used"]
             ),
             module_usage=usage,
+            match_type_records={
+                str(match_type): {
+                    str(key): int(value)
+                    for key, value in dict(record).items()
+                }
+                for match_type, record in dict(
+                    data.get("by_match_type") or {}
+                ).items()
+            },
         )
 
         self.statistics_service._statistics[

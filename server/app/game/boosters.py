@@ -1,4 +1,5 @@
-from .models import BoosterDefinition
+from .models import BattleModule, BoosterDefinition, ModuleStatus
+from .topology import effective_port_count
 
 BOOSTER_DEFINITIONS: dict[str, BoosterDefinition] = {
     "overcharge_chip": BoosterDefinition(
@@ -30,3 +31,30 @@ def get_booster_definition(booster_id: str) -> BoosterDefinition:
         return BOOSTER_DEFINITIONS[booster_id]
     except KeyError as exc:
         raise ValueError(f"Bilinmeyen güçlendirici: {booster_id}") from exc
+
+
+def booster_target_rejection_reason(
+    booster: BoosterDefinition,
+    module: BattleModule,
+) -> str | None:
+    """Teklif tüketilmeden önce sunucudaki kanonik hedef doğrulaması."""
+    if module.status != ModuleStatus.ACTIVE or module.hp <= 0:
+        return "Güçlendirici yalnızca yaşayan aktif bir modüle uygulanabilir."
+    if (
+        booster.target_categories
+        and module.definition.category not in booster.target_categories
+    ):
+        return f"{booster.name_tr}, {module.definition.name_tr} modülüne uygulanamaz."
+    if booster.id == "emergency_repair" and module.hp >= module.definition.max_hp:
+        return "Acil Onarım yalnızca hasar almış bir modüle uygulanabilir."
+    if booster.id == "dual_port_adapter" and effective_port_count(module) >= 4:
+        return "Çift Port Adaptörü dört portlu bir modüle uygulanamaz."
+    if (
+        booster.id == "overcharge_chip"
+        and (
+            module.definition.category != "saldırı"
+            or module.definition.base_damage <= 0
+        )
+    ):
+        return "Aşırı Yük Çipi yalnızca yaşayan bir saldırı modülüne uygulanabilir."
+    return None

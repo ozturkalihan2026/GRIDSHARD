@@ -8,6 +8,8 @@ DEFAULT_RATING = 1000
 XP_PER_LEVEL = 1000
 CURRENT_SEASON_ID = "core_awakening_s0"
 CURRENT_SEASON_NAME_TR = "Sezon Sıfır · Çekirdek Uyanışı"
+CURRENT_SEASON_STARTS_AT = "2026-08-01T00:00:00Z"
+CURRENT_SEASON_ENDS_AT = "2026-09-30T23:59:59Z"
 
 DAILY_MISSIONS = (
     {
@@ -153,6 +155,8 @@ class PlayerProfile:
         return {
             "season_id": CURRENT_SEASON_ID,
             "season_name_tr": CURRENT_SEASON_NAME_TR,
+            "season_starts_at": CURRENT_SEASON_STARTS_AT,
+            "season_ends_at": CURRENT_SEASON_ENDS_AT,
             "season_xp": self.season_xp,
             "current_tier": current_tier,
             "max_tier": len(SEASON_REWARD_TRACK),

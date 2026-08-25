@@ -118,6 +118,10 @@
       asset:"./assets/audio/core_hit.wav",
       identity:"derin bass transient + elektrik çatlağı",
     },
+    tier_up:{
+      asset:"./assets/audio/tier_up.wav",
+      identity:"parlak yükseliş + çok katmanlı kademe mührü",
+    },
   });
 
   class GridshardSeamlessLoopTrack {

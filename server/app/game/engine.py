@@ -4,7 +4,10 @@ from typing import Deque
 from .catalog import get_module_definition
 from .battle_pool import validate_battle_pool
 from .board import get_cell_effects, get_default_board
-from .boosters import get_booster_definition
+from .boosters import (
+    booster_target_rejection_reason,
+    get_booster_definition,
+)
 from .booster_schedule import booster_offer_due_at_ms, build_booster_offer
 from .economy import (
     CircuitCreditConfig,
@@ -1482,6 +1485,7 @@ class BattleEngine:
                 "rotate_module": self._cmd_rotate_module,
                 "apply_booster": self._cmd_apply_booster,
                 "select_booster": self._cmd_select_booster,
+                "use_booster": self._cmd_use_booster,
                 "forfeit_battle": self._cmd_forfeit_battle,
             }
             handler = handlers.get(command.kind)
@@ -1887,10 +1891,54 @@ class BattleEngine:
         booster = get_booster_definition(booster_id)
         module = self._require_active_module(player_id, target_module_id)
 
-        if booster.target_categories and module.definition.category not in booster.target_categories:
-            raise CommandRejected(
-                f"{booster.name_tr}, {module.definition.name_tr} modülüne uygulanamaz."
-            )
+        rejection_reason = booster_target_rejection_reason(booster, module)
+        if rejection_reason is not None:
+            raise CommandRejected(rejection_reason)
+
+        self._apply_booster_effect(player_id, booster, module)
+
+        if player.pending_booster_offer is not None:
+            self._consume_booster_offer(player_id, player.pending_booster_offer.id)
+
+    def _cmd_use_booster(self, player_id: str, payload: dict) -> None:
+        player = self._require_player(player_id)
+        offer_id = payload.get("offer_id")
+        booster_id = payload.get("booster_id")
+        target_module_id = payload.get("target_module_id")
+        if not offer_id or not booster_id or not target_module_id:
+            raise CommandRejected("Teklif, güçlendirici ve hedef modül bilgisi gerekli.")
+        if offer_id in player.consumed_booster_offer_ids:
+            raise CommandRejected("Bu güçlendirici teklifi daha önce kullanıldı.")
+
+        offer = player.pending_booster_offer
+        if offer is None or offer.id != offer_id:
+            raise CommandRejected("Aktif güçlendirici teklifi bulunamadı.")
+        if booster_id not in offer.booster_ids:
+            raise CommandRejected("Seçilen güçlendirici mevcut seçenekler arasında değil.")
+
+        booster = get_booster_definition(booster_id)
+        module = self._require_active_module(player_id, target_module_id)
+        rejection_reason = booster_target_rejection_reason(booster, module)
+        if rejection_reason is not None:
+            raise CommandRejected(rejection_reason)
+
+        self._apply_booster_effect(player_id, booster, module)
+        self._consume_booster_offer(player_id, offer_id)
+
+    def eligible_booster_target_ids(
+        self,
+        player_id: str,
+        booster_id: str,
+    ) -> list[str]:
+        player = self._require_player(player_id)
+        booster = get_booster_definition(booster_id)
+        return sorted(
+            module.instance_id
+            for module in player.modules.values()
+            if booster_target_rejection_reason(booster, module) is None
+        )
+
+    def _apply_booster_effect(self, player_id, booster, module) -> None:
 
         if booster.id == "emergency_repair":
             amount = int(module.definition.max_hp * float(booster.effect_data["instant_repair_ratio"]))
@@ -1916,15 +1964,16 @@ class BattleEngine:
                 "instant": False,
             })
 
-        if player.pending_booster_offer is not None:
-            offer_id = player.pending_booster_offer.id
-            player.pending_booster_offer = None
-            player.next_booster_offer_index += 1
-            self._emit("booster_offer_consumed", {
-                "player_id": player_id,
-                "offer_id": offer_id,
-                "next_offer_due_at_ms": booster_offer_due_at_ms(player.next_booster_offer_index),
-            })
+    def _consume_booster_offer(self, player_id: str, offer_id: str) -> None:
+        player = self._require_player(player_id)
+        player.consumed_booster_offer_ids.add(offer_id)
+        player.pending_booster_offer = None
+        player.next_booster_offer_index += 1
+        self._emit("booster_offer_consumed", {
+            "player_id": player_id,
+            "offer_id": offer_id,
+            "next_offer_due_at_ms": booster_offer_due_at_ms(player.next_booster_offer_index),
+        })
     def _update_booster_offers(self) -> None:
         # _simulate mevcut tick'in sonunda çalışacak durumu hazırlar.
         effective_elapsed_ms = self.state.elapsed_ms + TICK_MS

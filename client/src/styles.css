@@ -522,6 +522,62 @@ body[data-app-screen="play"] .battle-pool-panel:not([hidden]) {
   .menu-focus-pulse { animation:none; }
 }
 
+.tier-celebration {
+  position:fixed;
+  inset:0;
+  z-index:240;
+  display:grid;
+  place-items:center;
+  pointer-events:none;
+  background:radial-gradient(circle at center,rgba(64,237,255,.14),rgba(4,8,18,.08) 55%,transparent 76%);
+  opacity:0;
+  transition:opacity .24s ease;
+}
+.tier-celebration[data-active="true"] { opacity:1; }
+.tier-celebration-halo {
+  position:absolute;
+  width:min(58vw,620px);
+  aspect-ratio:1;
+  border:2px solid rgba(86,244,255,.62);
+  border-radius:50%;
+  box-shadow:0 0 42px rgba(73,235,255,.5),inset 0 0 60px rgba(255,222,105,.16);
+  animation:gs-tier-halo 1.35s cubic-bezier(.2,.7,.2,1) both;
+}
+.tier-celebration-card {
+  position:relative;
+  display:grid;
+  gap:9px;
+  min-width:min(82vw,430px);
+  padding:26px 34px;
+  text-align:center;
+  border:1px solid rgba(255,226,114,.78);
+  border-radius:18px;
+  background:linear-gradient(145deg,rgba(14,42,62,.96),rgba(9,17,35,.97));
+  box-shadow:0 0 34px rgba(72,235,255,.42),0 0 74px rgba(255,215,94,.26);
+  animation:gs-tier-card .72s cubic-bezier(.16,.82,.28,1.18) both;
+}
+.tier-celebration-card span { color:#6ef8ee;font-size:.72rem;font-weight:900;letter-spacing:.18em; }
+.tier-celebration-card strong { color:#ffe382;font-size:clamp(2.2rem,6vw,4.8rem);line-height:1;text-shadow:0 0 22px rgba(255,218,102,.72); }
+.tier-celebration-card small { color:#d9eaff;font-weight:700; }
+@keyframes gs-tier-halo {
+  from { opacity:0;transform:scale(.32) rotate(-16deg); }
+  45% { opacity:1; }
+  to { opacity:0;transform:scale(1.18) rotate(9deg); }
+}
+@keyframes gs-tier-card {
+  from { opacity:0;transform:translateY(28px) scale(.78); }
+  to { opacity:1;transform:translateY(0) scale(1); }
+}
+@media (prefers-reduced-motion:reduce) {
+  .tier-celebration-halo,
+  .tier-celebration-card {
+    animation:none !important;
+    transform:none !important;
+  }
+  .tier-celebration { transition:opacity .16s linear; }
+  .module-card.booster-target { animation:none !important; }
+}
+
 .initial-module-choice:focus,
 .initial-module-choice:hover {
   border-color:var(--gs-corelight-gold);
@@ -880,7 +936,19 @@ body[data-app-screen="play"] .battle-pool-panel:not([hidden]) {
 .booster-options { display:flex; gap:8px; flex-wrap:wrap; }
 .booster-option { border:1px solid #334967; border-radius:10px; background:#142136; color:inherit; padding:10px 12px; cursor:pointer; }
 .booster-option.selected { outline:2px solid rgba(126,229,166,.55); }
-.module-card.booster-target { outline:2px solid rgba(255,255,255,.35); }
+.module-card.booster-target {
+  z-index:12;
+  outline:3px solid rgba(255,225,106,.95);
+  filter:brightness(1.34) saturate(1.25);
+  box-shadow:0 0 14px rgba(255,225,106,.8),0 0 32px rgba(71,230,255,.55) !important;
+  animation:gs-booster-eligible-pulse .82s ease-in-out infinite alternate;
+}
+.module-card.booster-target-ineligible { filter:brightness(.38) saturate(.45);opacity:.62; }
+.module-card.booster-drop-ready { outline-color:#fff !important;filter:brightness(1.65) saturate(1.35); }
+@keyframes gs-booster-eligible-pulse {
+  from { box-shadow:0 0 10px rgba(255,225,106,.62),0 0 22px rgba(71,230,255,.34); }
+  to { box-shadow:0 0 22px rgba(255,225,106,1),0 0 46px rgba(71,230,255,.72); }
+}
 
 .booster-option:disabled { opacity:.4; cursor:not-allowed; }
 
@@ -4650,6 +4718,7 @@ body[data-app-screen="play"] .board-cell .hp-bar {
 }
 
 .module-explosion {
+  --explosion-color:#ff874f;
   position:absolute;
   z-index:40;
   width:0;
@@ -4661,32 +4730,38 @@ body[data-app-screen="play"] .board-cell .hp-bar {
   width:70px;
   height:70px;
   border-radius:50%;
-  background:radial-gradient(circle,#fff 0 8%,#ffdf70 16%,#ff6b4a 36%,rgba(184,124,255,.5) 52%,transparent 72%);
-  box-shadow:0 0 25px #fff,0 0 58px #ff7958,0 0 90px rgba(184,124,255,.7);
+  background:radial-gradient(circle,#fff 0 8%,#ffefab 16%,var(--explosion-color) 38%,rgba(184,124,255,.56) 55%,transparent 74%);
+  box-shadow:0 0 32px #fff,0 0 72px var(--explosion-color),0 0 105px rgba(184,124,255,.78);
   transform:translate(-50%,-50%) scale(.15);
-  animation:gs-module-explosion-flash .7s ease-out forwards;
+  animation:gs-module-explosion-flash .9s ease-out forwards;
 }
 .module-explosion .explosion-shockwave {
   position:absolute;
   width:26px;
   height:26px;
-  border:3px solid rgba(255,224,128,.9);
+  border:3px solid var(--explosion-color);
   border-radius:50%;
   box-shadow:0 0 18px rgba(255,96,74,.8),inset 0 0 12px rgba(255,255,255,.7);
   transform:translate(-50%,-50%) scale(.2);
-  animation:gs-explosion-shockwave .72s ease-out forwards;
+  animation:gs-explosion-shockwave .9s ease-out forwards;
 }
 .module-explosion i {
   position:absolute;
-  width:8px;
-  height:3px;
+  width:11px;
+  height:4px;
   border-radius:999px;
-  background:linear-gradient(90deg,#fff7bc,#ff874f 55%,rgba(184,124,255,.2));
-  box-shadow:0 0 8px #ff7858;
+  background:linear-gradient(90deg,#fff7bc,var(--explosion-color) 58%,rgba(184,124,255,.25));
+  box-shadow:0 0 11px var(--explosion-color);
   transform:translate(-50%,-50%) rotate(var(--particle-angle)) translateX(0);
   transform-origin:0 50%;
-  animation:gs-explosion-particle .66s cubic-bezier(.12,.6,.22,1) forwards;
+  animation:gs-explosion-particle .9s cubic-bezier(.12,.6,.22,1) forwards;
 }
+.module-explosion[data-category="attack"],.module-explosion[data-category="saldırı"] { --explosion-color:#ff5f72; }
+.module-explosion[data-category="defense"],.module-explosion[data-category="savunma"] { --explosion-color:#72b7ff; }
+.module-explosion[data-category="energy"],.module-explosion[data-category="enerji"] { --explosion-color:#41ffe0; }
+.module-explosion[data-category="support"],.module-explosion[data-category="destek"] { --explosion-color:#a8ff72; }
+.module-explosion[data-category="sabotage"],.module-explosion[data-category="sabotaj"] { --explosion-color:#c58aff; }
+.module-explosion[data-category="core"] { --explosion-color:#ffe06b; }
 .module-explosion.core-explosion .explosion-flash {
   width:150px;
   height:150px;
@@ -4697,6 +4772,11 @@ body[data-app-screen="play"] .board-cell .hp-bar {
   height:48px;
   border-width:5px;
   animation:gs-core-shockwave 1.15s ease-out forwards;
+}
+.module-explosion.core-explosion .explosion-shockwave-secondary {
+  border-color:#78f7ff;
+  animation-delay:.22s;
+  animation-duration:1.3s;
 }
 .module-explosion.core-explosion i {
   width:14px;
@@ -5513,18 +5593,18 @@ body[data-app-screen="play"] .board-cell .hp-bar {
 .duel-hit-impact[data-weapon="arc"] { --impact-color:#c492ff; }
 .duel-impact-flash {
   position:absolute;
-  width:46px;
-  height:46px;
+  width:58px;
+  height:58px;
   border-radius:50%;
   background:radial-gradient(circle,#fff 0 10%,var(--impact-color) 20% 43%,transparent 70%);
-  box-shadow:0 0 18px #fff,0 0 36px var(--impact-color);
+  box-shadow:0 0 24px #fff,0 0 48px var(--impact-color);
   transform:translate(-50%,-50%) scale(.12);
   animation:gs-hit-flash .52s ease-out forwards;
 }
 .duel-impact-ring {
   position:absolute;
-  width:20px;
-  height:20px;
+  width:26px;
+  height:26px;
   border:3px solid var(--impact-color);
   border-radius:50%;
   box-shadow:0 0 14px var(--impact-color),inset 0 0 8px #fff;
@@ -6058,6 +6138,7 @@ body[data-app-screen="menu"] .app-bottom-dock .menu-action {
 }
 .app-bottom-dock .menu-action-title,
 body[data-app-screen="menu"] .app-bottom-dock .menu-action-title {
+  text-transform:uppercase;
   font-size:.72rem;
   transition:font-size .16s ease,color .16s ease;
 }

@@ -25,6 +25,7 @@ OWNER_ONLY_EVENT_TYPES = frozenset({
     "booster_offer_created",
     "booster_offer_consumed",
     "booster_selected",
+    "booster_applied",
 })
 
 PRIVATE_RESULT_FIELDS = frozenset({
@@ -101,6 +102,9 @@ class PvPSessionService:
         *,
         setup_required: bool = False,
         auto_start_when_ready: bool = False,
+        match_type: str = "ranked_pvp",
+        season_id: str = "core_awakening_s0",
+        ranked_eligible: bool = True,
     ) -> PvPSession:
         if session_id in self._sessions:
             raise PvPSessionError(
@@ -108,7 +112,12 @@ class PvPSessionService:
             )
 
         engine = BattleEngine(
-            BattleState(battle_id=session_id)
+            BattleState(
+                battle_id=session_id,
+                match_type=match_type,
+                season_id=season_id,
+                ranked_eligible=ranked_eligible,
+            )
         )
         now = self.now_func()
         session = PvPSession(
@@ -155,6 +164,7 @@ class PvPSessionService:
         )
         session.slots[player_id] = slot
         session.engine.add_player(player_id)
+        session.engine.state.account_player_ids = tuple(sorted(session.slots))
         self._touch(session)
         return slot
 
@@ -179,6 +189,9 @@ class PvPSessionService:
         session = self.get_session(session_id)
         session.slot_for(player_id)
         session.ai_player_ids.add(player_id)
+        session.engine.state.account_player_ids = tuple(
+            sorted(set(session.slots) - session.ai_player_ids)
+        )
         session.ai_next_decision_at_ms[player_id] = max(
             0,
             int(first_decision_at_ms),
@@ -338,6 +351,11 @@ class PvPSessionService:
         if session.engine.state.status != BattleStatus.RUNNING:
             raise PvPSessionError(
                 "Komut yalnızca çalışan PvP maçına gönderilebilir."
+            )
+
+        if command.kind in {"select_booster", "apply_booster"}:
+            raise PvPSessionError(
+                "Eski iki aşamalı güçlendirici komutları kapalı; use_booster kullanılmalıdır."
             )
 
         try:
@@ -562,6 +580,7 @@ class PvPSessionService:
                         ),
                         "last_command_sequence": session.slots[player_id].last_command_sequence,
                         "acknowledged_event_cursor": session.slots[player_id].acknowledged_event_cursor,
+                        "next_booster_offer_index": player.next_booster_offer_index,
                         "pending_booster_offer": (
                             {
                                 "id": player.pending_booster_offer.id,
@@ -571,6 +590,13 @@ class PvPSessionService:
                                 "created_at_ms": (
                                     player.pending_booster_offer.created_at_ms
                                 ),
+                                "eligible_target_module_ids": {
+                                    booster_id: session.engine.eligible_booster_target_ids(
+                                        player_id,
+                                        booster_id,
+                                    )
+                                    for booster_id in player.pending_booster_offer.booster_ids
+                                },
                             }
                             if player.pending_booster_offer is not None
                             else None
@@ -582,6 +608,14 @@ class PvPSessionService:
 
         return {
             "session_id": session_id,
+            "match_type": state.match_type,
+            "match_label_tr": {
+                "ranked_pvp": "Dereceli PvP",
+                "unranked_ai": "Derecesiz AI",
+                "local_test": "Yerel Test",
+            }.get(state.match_type, state.match_type),
+            "season_id": state.season_id,
+            "ranked_eligible": state.ranked_eligible,
             "viewer_player_id": viewer_player_id,
             "status": state.status.value,
             "tick": state.tick,

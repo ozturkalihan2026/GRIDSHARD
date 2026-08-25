@@ -1,0 +1,19 @@
+{
+  "project": "GRIDSHARD",
+  "version": "2.0.0-beta.35",
+  "ok": true,
+  "checks": {
+    "version_identity": true,
+    "canonical_match_types": true,
+    "ai_unranked_provisioning": true,
+    "ranked_only_rating": true,
+    "segmented_statistics": true,
+    "atomic_booster_command": true,
+    "server_eligible_targets": true,
+    "ineffective_target_rejection": true,
+    "accessible_booster_interaction": true,
+    "tier_event_and_audio": true,
+    "stronger_combat_feedback": true,
+    "uppercase_and_reduced_motion": true
+  }
+}

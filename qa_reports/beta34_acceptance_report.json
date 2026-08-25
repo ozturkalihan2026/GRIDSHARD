@@ -1,6 +1,6 @@
 {
   "project": "GRIDSHARD",
-  "version": "2.0.0-beta.34",
+  "version": "2.0.0-beta.35",
   "ok": true,
   "checks": {
     "version_identity": true,

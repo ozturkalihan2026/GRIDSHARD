@@ -1,7 +1,7 @@
 # GRIDSHARD 2.0 — YOL HARİTASI
 
-**Güncel Sürüm:** `2.0.0-beta.34`
-**Paket:** Beta.34 — Oyuncu Kontrollü Portlar + Kesintisiz Ses + Tam Dil Desteği
+**Güncel Sürüm:** `2.0.0-beta.35`
+**Paket:** Beta.35 — Rekabet Bütünlüğü + Atomik Güçlendiriciler + Savaş Geri Bildirimi
 **Kanonik Dosya:** `docs/YOL_HARITASI.md`
 
 > Bu dosya GRIDSHARD 2.0 için tek kanonik geliştirme kaydıdır. Kaynak karar belgesi ile kod tabanı yeniden karşılaştırılmıştır. Buradaki `[x]`, `[~]`, `[ ]` işaretleri artık yalnızca kodda ve testlerde doğrulanabilen gerçek durumu gösterir.
@@ -223,9 +223,9 @@ Beta.25 sonrası mobil hazırlık önceliği kapsamında eski erteleme kararı k
 
 **Durum:** İlk üçlü sistem uygulandı.
 
-## FAZ 13 — 105+ Saniye Güçlendirici Döngüsü
+## FAZ 13 — 30 Saniyelik Güçlendirici Döngüsü
 
-- [x] İlk teklif `105.000 ms` — ilk 105 saniye temel devre mücadelesine ayrılır.
+- [x] İlk teklif `30.000 ms`; ortalama maç süresinde güçlendirici kararının gerçekten erişilebilir olması sağlanır.
 - [x] Sonraki teklifler `30.000 ms` aralıkla — sonraki teklifler 30 saniye ritmini korur.
 - [x] 3 seçenekten 1 seçim.
 - [x] Hedef modül seçimi.
@@ -440,7 +440,7 @@ olarak üretilir.
 - [~] Risk/ödül dengesi gerçek test bekliyor.
 
 ### M6 — Güçlendirici Savaşı
-- [x] 105 saniye ilk teklif + 30 saniye tekrar döngüsü.
+- [x] 30 saniye ilk teklif + 30 saniye tekrar döngüsü.
 - [x] 3 seçenekten 1 seçim.
 - [x] Hedef modül.
 - [x] Savaş durmadan uygulama.
@@ -1486,7 +1486,7 @@ Beta.28, önceki port guard ve sunucu otoriteli savaş temelini korurken kullan�
 2. [x] Snapshot, tanımın sabit port sayısı yerine güçlendiriciler dahil gerçek port sayısını ve yönlerini gönderir. İstemci motorun gönderdiği portları kullanır.
 3. [x] Sunucu her aktif tüketici için `powered`, `port_disconnected`, `insufficient_supply`, `emp_disabled` veya `line_disrupted` enerji nedenini üretir.
 4. [x] Hareketli port/çevre akım taneleri kaldırıldı. Enerjili kart sabit konumda yumuşak parlama/sönme yapar; enerjisiz kart kırmızıya döner. Üzerine gelme/klavye odağı, enerjisizlik nedenini ve ihtiyaç/gelen enerji miktarını açıklar.
-5. [x] 5. modül 15. saniyede korunur; 6–10. yuvalar `30/45/60/75/90`. saniyelerde açılır. İlk güçlendirici 105. saniyede, sonraki teklifler 30 saniyede bir gelir ve bekleyen teklif yığılmaz.
+5. [x] 5. modül 15. saniyede korunur; 6–10. yuvalar `30/45/60/75/90`. saniyelerde açılır. İlk güçlendirici 30. saniyede, sonraki teklifler 30 saniyede bir gelir ve bekleyen teklif yığılmaz.
 6. [x] Menü ve hazırlık müzikleri; pad, bass, reactor kick, clap, hi-hat, glass arpeggio ve synth lead katmanlı özgün 32 saniyelik stereo V6 ensemble düzenlemelere taşındı.
 7. [x] Türkçe varsayılan dil korunurken İngilizce menü, hazırlık, savaş, sonuç, durum ve modül terimleri için iki yönlü yerelleştirme katmanı eklendi; sonradan üretilen arayüz metinleri de seçili dile çevrilir.
 8. [x] Beta.27 saldırı mermisi/çarpma efektleri, altı ayrı ateş sesi, galibiyet kutlama müziği, Redis eşleştirme, post-match/analiz ve Beta.26 port guard korunur.
@@ -1722,3 +1722,31 @@ Doğrulama:
 
 - [x] Birleşik kalite kapısı Beta.34 kimliğiyle `705/705` sunucu testi, `176/176` istemci çekirdek testi ve yeni Web Audio/Beta.34 deneyim testleri dahil `23/23` QA adımını geçti.
 - [x] 1280×720 gerçek yerel tarayıcıda hazırlık paneli taşmadan sığdı; modül önizlemesinin port sayısı, anlık ve yeniden yüklemede kalıcı İngilizce geçişi, AI devralma sonrası raf sınıflarının daraltılması, raf portlarının gizlenmesi ve kredi/port bilgi katmanları doğrulandı.
+
+---
+
+# 23. Güncel Paket — Beta.35
+
+**`GRIDSHARD 2.0.0-beta.35 — Rekabet Bütünlüğü · Atomik Güçlendiriciler · Savaş Geri Bildirimi`**
+
+Beta.35, Beta.34'ün otomatik en iyi port yönünü ve oyuncu kontrollü dönüşünü korurken rekabet, güçlendirici güvenilirliği ve savaş geri bildirimini sunucu otoritesi altında netleştirir:
+
+1. [x] Maçlar `ranked_pvp`, `unranked_ai` ve `local_test` olarak kanonik biçimde ayrılır. Yalnız gerçek insan `ranked_pvp` maçı derece puanını ve ligi değiştirir.
+2. [x] 10 saniyelik AI devralması `Derecesiz AI` olarak sonuçlanır; derece puanı değişmez, kontrollü `%50` XP/SXP ve görev ilerlemesi verir. AI hesabı oyuncu istatistiğine veya kalıcı profile yazılmaz.
+3. [x] Yerel test oturumları hesap ilerlemesi ve istatistik dışında kalır. İstatistik görünümü dereceli PvP, derecesiz AI ve yerel test sayaçlarını ayrı alanlarda taşır.
+4. [x] Sezon temeline kanonik `season_id`, başlangıç/bitiş zamanı ve maç başına `ranked_eligible` kararı eklendi. Tam sezon sıfırlama/ödüllendirme politikası Beta.36 sonrası canlı operasyon işidir.
+5. [x] İki aşamalı güçlendirici ağ komutu yerine tek `use_booster(offer_id, booster_id, target_module_id)` komutu kullanılır. Komut sıra numarası ve tüketilen teklif kimliği tekrar uygulamayı engeller.
+6. [x] Sunucu her güçlendirici seçeneği için uygun hedef modül kimliklerini snapshot'ta gönderir. Uygun hedefler güçlü biçimde parlar, uygun olmayanlar karar sırasında kararır.
+7. [x] Tam canlı modüle Acil Onarım, dört portlu modüle Çift Port Adaptörü ve saldırı olmayan modüle Aşırı Yük uygulanamaz; geçersiz hedef teklif hakkını tüketmez.
+8. [x] Güçlendiriciler sürükle-bırakla uygulanabilir; tıkla-seç/tıkla-uygula ve klavye alternatifi aynı işlevi korur.
+9. [x] Sunucu onaylı kademe yükselme olayı maç sonucu ve ödül talebi yanıtına eklenir. Aynı olay yeniden yüklemede kutlamayı tekrarlamaz; yeni `tier_up` sesi ve kısa ilerleme katmanı bir kez oynar.
+10. [x] Modül patlamaları daha iri, parlak, sınıf renkli ve uzun ömürlüdür. Çekirdek patlaması daha büyük parçalar ve gecikmeli ikinci şok dalgası; her isabet daha görünür çarpma halkası/kıvılcım üretir.
+11. [x] Dock başlıkları büyük harfle gösterilir. Azaltılmış hareket tercihinde kademe kutlaması yalnız ışık/opaklıkla çalışır; sarsıntı, uçuş ve sürekli güçlendirici pulse'u kapatılır.
+
+Doğrulama hedefi:
+
+- [x] Birleşik kalite kapısı `711/711` sunucu, `176/176` istemci çekirdek testi ve Beta.35 kabul raporu dahil `25/25` QA adımını geçti.
+- [x] Atomik tüketim, tekrar koruması, etkisiz hedefte hakkın korunması, uygun hedef snapshot'ı, AI derece/ödül ayrımı ve istatistik segmentasyonu hedefli sunucu testleriyle kapsanır.
+- [x] İstemci kabul testi atomik komutu, üç etkileşim yolunu, hedef vurgusunu, kademe katmanını, sesi, ikinci çekirdek şok dalgasını ve azaltılmış hareket stilini doğrular.
+- [x] Gerçek yerel tarayıcıda yeni hesap 18/18 başlangıç havuzuyla açıldı; 10 saniyelik AI devralması, iki görünür devre, 30. saniye güçlendirici teklifi ve `Derecesiz AI · Derece puanı değişmedi` maç sonucu doğrulandı.
+- [~] Dereceli liderlik tablosu, sezon sonu ödülleri ve kalıcı rekabet geçmişi Beta.36–Beta.37 çalışma sırasındadır; Beta.35 bunların güvenilir maç türü temelini kurar.

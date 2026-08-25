@@ -91,7 +91,7 @@
   const COMPETITIVE_STATUS = "M7 rekabetçi altyapı doğrulanıyor";
   const BALANCE_STATUS = "Denge simülasyonu mevcut · geniş örnek bekliyor";
   const AI_STATUS = "AI altyapısı mevcut · arketip testleri bekliyor";
-  const PVP_STATUS = "GRIDSHARD Beta.34 · Oyuncu Kontrollü Portlar + Kesintisiz Ses + Tam Dil";
+  const PVP_STATUS = "GRIDSHARD Beta.35 · Rekabet Bütünlüğü + Atomik Güçlendiriciler";
 
 
 
@@ -120,6 +120,7 @@
   let nextBoosterOfferIndex = 0;
   let boosterOfferOpen = false;
   let serverBoosterOfferId = null;
+  let serverBoosterEligibleTargets = new Map();
 
   const BOOSTER_OPTIONS = [
     { id:"overcharge_chip", nameTr:"Aşırı Yük Çipi", descriptionTr:"+%25 saldırı · 15 sn", targetCategories:["saldırı"] },
@@ -166,6 +167,11 @@
     requiredSize: 18,
     requiredModuleIds: ["generator-1"],
   });
+  battlePoolSelection.setSelection(
+    definitionIdsToInstanceIds(
+      STARTER_BATTLE_POOL_PRESET.module_definition_ids
+    )
+  );
   let focusedPoolModuleId =
     "generator-1";
   const collapsedPoolCategories = {
@@ -314,6 +320,19 @@
       result;
 
     if (result.ok) {
+      const preferredPoolIds = definitionIdsToInstanceIds(
+        profileState.viewModel()?.battlePoolIds || []
+      );
+      const preferredPoolResult = battlePoolSelection.setSelection(
+        preferredPoolIds
+      );
+      if (!preferredPoolResult.ok) {
+        battlePoolSelection.setSelection(
+          definitionIdsToInstanceIds(
+            STARTER_BATTLE_POOL_PRESET.module_definition_ids
+          )
+        );
+      }
       const continuity =
         participantContinuity
           .verify(
@@ -607,7 +626,7 @@
         webTestBuildState,
       releaseCheckState,
       expectedVersion:
-        "2.0.0-beta.34",
+        "2.0.0-beta.35",
       expectedProtocolVersion: 1,
     });
   const playReadinessGate =
@@ -643,7 +662,7 @@
 
   telemetryDispatcher.trackGameOpened({
     platform: "web",
-    build: "2.0.0-beta.34",
+    build: "2.0.0-beta.35",
   });
 
   const postMatchSync =
@@ -776,6 +795,13 @@
     const result = pvpState.finalResult;
     if (!result) return false;
 
+    boosterOfferOpen = false;
+    selectedBoosterId = null;
+    serverBoosterOfferId = null;
+    serverBoosterEligibleTargets = new Map();
+    if (boosterStatusEl) boosterStatusEl.textContent = "Maç tamamlandı";
+    renderBoosterOptions();
+
     const outcome = onlineOutcome(result);
     const firstPresentation =
       onlineFinishPresentedSessionId !== result.session_id;
@@ -881,6 +907,12 @@
       === "post_match"
     ) {
       clearPlayError();
+    }
+
+    if (result.ok) {
+      presentTierCelebration(
+        result.payload?.progression?.tier_advanced
+      );
     }
 
     renderPostMatchSummary();
@@ -1512,6 +1544,7 @@
     nextBoosterOfferIndex = 0;
     boosterOfferOpen = false;
     serverBoosterOfferId = null;
+    serverBoosterEligibleTargets = new Map();
     selectedBoosterId = null;
     if (boosterStatusEl) {
       boosterStatusEl.textContent = "İlk güçlendirici 30. saniyede";
@@ -1578,7 +1611,7 @@
   const diagnosticSnapshot =
     new RelayDiagnosticSnapshot({
       version:
-        "2.0.0-beta.34",
+        "2.0.0-beta.35",
       build:
         "web-test-beta.13",
       bootGate:
@@ -3521,7 +3554,7 @@
       if (versionEl) {
         versionEl.textContent=
           manifest.version
-          || "2.0.0-beta.34";
+          || "2.0.0-beta.35";
       }
       if (runEl) {
         runEl.textContent=
@@ -3637,6 +3670,37 @@ const SPECIAL_CELL_INFO = {
       ok:false,
       reason:"Audio director hazır değil.",
     };
+  }
+
+  let tierCelebrationTimer = null;
+
+  function presentTierCelebration(event) {
+    if (!event?.event_id || !Number(event.tier_after)) return false;
+    const storageKey = `gridshard.tier-celebrated.${participantPlayerId}`;
+    try {
+      if (window.localStorage.getItem(storageKey) === event.event_id) {
+        return false;
+      }
+      window.localStorage.setItem(storageKey, event.event_id);
+    } catch (_) {
+      // Gizli/kapalı depolama kutlamayı engellemez; yalnız tekrar koruması devre dışı kalır.
+    }
+
+    const layer = document.getElementById("tier-celebration");
+    const tier = document.getElementById("tier-celebration-value");
+    if (!layer || !tier) return false;
+    tier.textContent = `KADEME ${Number(event.tier_after)}`;
+    layer.hidden = false;
+    layer.dataset.active = "true";
+    triggerGridshardCue("tier_up");
+    window.clearTimeout(tierCelebrationTimer);
+    tierCelebrationTimer = window.setTimeout(() => {
+      layer.dataset.active = "false";
+      window.setTimeout(() => {
+        if (layer.dataset.active === "false") layer.hidden = true;
+      }, 260);
+    }, 2400);
+    return true;
   }
 
   let activePlayMode = "idle";
@@ -6154,6 +6218,8 @@ function saveHumanReviewLocalNote() {
       false;
     serverBoosterOfferId =
       null;
+    serverBoosterEligibleTargets =
+      new Map();
     selectedBoosterId =
       null;
 
@@ -6897,12 +6963,12 @@ function saveHumanReviewLocalNote() {
       document.createElement("span");
     ring.className="duel-impact-ring";
     impact.append(flash,ring);
-    for (let index=0;index<7;index+=1) {
+    for (let index=0;index<10;index+=1) {
       const spark=
         document.createElement("i");
       spark.style.setProperty(
         "--impact-angle",
-        `${index*(360/7)+(index%2)*11}deg`
+        `${index*36+(index%2)*9}deg`
       );
       impact.appendChild(spark);
     }
@@ -6915,7 +6981,7 @@ function saveHumanReviewLocalNote() {
     );
     window.setTimeout(
       () => impact.remove(),
-      760
+      940
     );
   }
 
@@ -7087,6 +7153,9 @@ function saveHumanReviewLocalNote() {
     effect.className = core
       ? "module-explosion core-explosion"
       : "module-explosion";
+    effect.dataset.category = core
+      ? "core"
+      : String(target.dataset.category || "module");
     effect.style.left =
       `${targetRect.left + targetRect.width / 2 - layerRect.left}px`;
     effect.style.top =
@@ -7099,7 +7168,13 @@ function saveHumanReviewLocalNote() {
     shockwave.className = "explosion-shockwave";
     effect.appendChild(shockwave);
 
-    const particleCount = core ? 18 : 10;
+    if (core) {
+      const secondaryShockwave = document.createElement("span");
+      secondaryShockwave.className = "explosion-shockwave explosion-shockwave-secondary";
+      effect.appendChild(secondaryShockwave);
+    }
+
+    const particleCount = core ? 30 : 16;
     for (let index = 0; index < particleCount; index += 1) {
       const particle = document.createElement("i");
       particle.style.setProperty(
@@ -7108,7 +7183,7 @@ function saveHumanReviewLocalNote() {
       );
       particle.style.setProperty(
         "--particle-distance",
-        `${core ? 74 + (index % 4) * 13 : 34 + (index % 3) * 9}px`
+        `${core ? 88 + (index % 5) * 15 : 44 + (index % 4) * 10}px`
       );
       particle.style.animationDelay = `${(index % 4) * 18}ms`;
       effect.appendChild(particle);
@@ -7127,7 +7202,7 @@ function saveHumanReviewLocalNote() {
         effect.remove();
         arena?.classList.remove("fx-module-impact", "fx-core-impact");
       },
-      core ? 1300 : 760
+      core ? 1650 : 980
     );
     return true;
   }
@@ -9496,6 +9571,14 @@ function saveHumanReviewLocalNote() {
       const offerId = String(offer.id || "");
       const offerChanged = serverBoosterOfferId !== offerId;
       serverBoosterOfferId = offerId;
+      serverBoosterEligibleTargets = new Map(
+        Object.entries(offer.eligible_target_module_ids || {}).map(
+          ([boosterId, moduleIds]) => [
+            boosterId,
+            new Set((moduleIds || []).map(String)),
+          ]
+        )
+      );
       boosterOfferOpen = true;
       if (offerChanged) selectedBoosterId = null;
       boosterStatusEl.textContent = selectedBoosterId
@@ -9509,6 +9592,7 @@ function saveHumanReviewLocalNote() {
       serverBoosterOfferId !== null
       || boosterOfferOpen;
     serverBoosterOfferId = null;
+    serverBoosterEligibleTargets = new Map();
     boosterOfferOpen = false;
     selectedBoosterId = null;
     boosterStatusEl.textContent = `${Math.max(
@@ -9534,6 +9618,7 @@ function saveHumanReviewLocalNote() {
       button.textContent = booster.nameTr;
       button.title = booster.descriptionTr;
       button.disabled = !boosterOfferOpen;
+      button.draggable = boosterOfferOpen;
       if (selectedBoosterId === booster.id) button.classList.add("selected");
       button.addEventListener("click", () => {
         if (!boosterOfferOpen) return;
@@ -9546,16 +9631,52 @@ function saveHumanReviewLocalNote() {
         renderBoosterOptions();
         renderBoard();
       });
+      button.addEventListener("dragstart", (event) => {
+        if (!boosterOfferOpen) {
+          event.preventDefault();
+          return;
+        }
+        selectedBoosterId = booster.id;
+        event.dataTransfer?.setData(
+          "application/x-gridshard-booster",
+          booster.id
+        );
+        event.dataTransfer?.setData("text/plain", booster.id);
+        boosterStatusEl.textContent = "Uygun, parlayan modüle bırak";
+        renderBoosterOptions();
+        renderBoard();
+      });
       boosterOptionsEl.appendChild(button);
     }
+  }
+
+  function isBoosterTargetEligible(module, boosterId = selectedBoosterId) {
+    if (!module || !boosterId || module.status !== "active" || Number(module.hp) <= 0) {
+      return false;
+    }
+    if (serverBoosterEligibleTargets.has(boosterId)) {
+      return serverBoosterEligibleTargets.get(boosterId).has(String(module.instanceId));
+    }
+    const booster = BOOSTER_OPTIONS.find((item) => item.id === boosterId);
+    if (!booster) return false;
+    if (booster.targetCategories.length && !booster.targetCategories.includes(module.category)) {
+      return false;
+    }
+    if (boosterId === "emergency_repair" && Number(module.hp) >= Number(module.maxHp)) {
+      return false;
+    }
+    if (boosterId === "dual_port_adapter" && Number(module.portCount || 0) >= 4) {
+      return false;
+    }
+    return true;
   }
 
   function tryApplySelectedBooster(module) {
     if (!selectedBoosterId) return false;
     const booster = BOOSTER_OPTIONS.find(item => item.id === selectedBoosterId);
     if (!booster) return false;
-    if (booster.targetCategories.length && !booster.targetCategories.includes(module.category)) {
-      logClientMessage(`${booster.nameTr}, ${module.nameTr} modülüne uygulanamaz.`);
+    if (!isBoosterTargetEligible(module, booster.id)) {
+      logClientMessage(`${booster.nameTr}, bu modülde etkili olmayacağı için hak korunarak reddedildi.`);
       return true;
     }
     trackBattleUiInteraction(
@@ -9563,21 +9684,14 @@ function saveHumanReviewLocalNote() {
       "booster"
     );
     client.emitCommand({
-      kind:"select_booster",
-      payload:{ booster_id:booster.id },
-    });
-    client.emitCommand({
-      kind:"apply_booster",
+      kind:"use_booster",
       payload:{
+        offer_id:serverBoosterOfferId,
         booster_id:booster.id,
         target_module_id:module.instanceId,
       },
     });
-    selectedBoosterId = null;
-    boosterOfferOpen = false;
-    nextBoosterOfferIndex += 1;
-    boosterStatusEl.textContent =
-      `${((boosterOfferDueAtMs(nextBoosterOfferIndex) - client.elapsedMs) / 1000).toFixed(1)} sn sonra yeni hak`;
+    boosterStatusEl.textContent = "Sunucu hedefi doğruluyor…";
     renderLog();
     renderBoosterOptions();
     renderBoard();
@@ -10312,8 +10426,12 @@ function saveHumanReviewLocalNote() {
     const ratingText =
       progression
         ? (
-            `${progression.ratingDelta >= 0 ? "+" : ""}`
-            + `${progression.ratingDelta} DP`
+            progression.rankedEligible
+              ? (
+                  `${progression.ratingDelta >= 0 ? "+" : ""}`
+                  + `${progression.ratingDelta} DP`
+                )
+              : "Derece puanı değişmedi"
           )
         : "DP hesaplanıyor";
 
@@ -10324,7 +10442,7 @@ function saveHumanReviewLocalNote() {
 
     resultEl.hidden = false;
     resultEl.textContent =
-      `${finishReasonLabel(result.finish_reason)} · ${ratingText} · ${xpText}`;
+      `${progression?.matchLabelTr || "Maç"} · ${finishReasonLabel(result.finish_reason)} · ${ratingText} · ${xpText}`;
   }
 
   function renderParticipantBootstrapStatus() {
@@ -10603,6 +10721,9 @@ function saveHumanReviewLocalNote() {
     if (button) button.disabled = true;
     if (status) status.textContent = "Ödül sunucuda doğrulanıyor…";
     const result = await accountDataLoader.claimEngagementReward(kind, id);
+    if (result.ok) {
+      presentTierCelebration(result.payload?.tier_advanced);
+    }
     renderProfileSummary();
     renderRemoteDataStatus();
     if (status) {
@@ -11161,9 +11282,30 @@ function saveHumanReviewLocalNote() {
       && module.status === "active"
     ) {
       card.classList.add(
-        "booster-target"
+        isBoosterTargetEligible(module)
+          ? "booster-target"
+          : "booster-target-ineligible"
       );
     }
+
+    card.addEventListener("dragover", (event) => {
+      if (!selectedBoosterId) return;
+      event.preventDefault();
+      event.stopPropagation();
+      if (isBoosterTargetEligible(module)) {
+        card.classList.add("booster-drop-ready");
+      }
+    });
+    card.addEventListener("dragleave", () => {
+      card.classList.remove("booster-drop-ready");
+    });
+    card.addEventListener("drop", (event) => {
+      if (!selectedBoosterId) return;
+      event.preventDefault();
+      event.stopPropagation();
+      card.classList.remove("booster-drop-ready");
+      tryApplySelectedBooster(module);
+    });
 
     card.addEventListener(
       "click",

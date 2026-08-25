@@ -115,7 +115,7 @@ def main() -> int:
     } for match in report.matches]
 
     payload = {
-        "version": "2.0.0-beta.34",
+        "version": "2.0.0-beta.35",
         "generator": {
             "raw_generation_per_second": raw,
             "port_count": int(generator.port_count),

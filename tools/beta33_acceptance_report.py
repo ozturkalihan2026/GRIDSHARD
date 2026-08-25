@@ -12,7 +12,7 @@ from app.player_profile import PlayerProfileError, PlayerProfileService  # noqa:
 from app.version import VERSION  # noqa: E402
 
 
-EXPECTED_VERSION = "2.0.0-beta.34"
+EXPECTED_VERSION = "2.0.0-beta.35"
 OUTPUT = ROOT / "qa_reports" / "beta33_acceptance_report.json"
 
 

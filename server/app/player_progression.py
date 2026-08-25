@@ -11,6 +11,13 @@ DRAW_RATING_DELTA = 0
 WIN_XP = 120
 LOSS_XP = 70
 DRAW_XP = 90
+AI_REWARD_RATIO = 0.5
+
+MATCH_LABELS_TR = {
+    "ranked_pvp": "Dereceli PvP",
+    "unranked_ai": "Derecesiz AI",
+    "local_test": "Yerel Test",
+}
 
 
 @dataclass(slots=True, frozen=True)
@@ -24,6 +31,12 @@ class ProgressionResult:
     experience_after: int
     season_xp_awarded: int
     season_xp_after: int
+    match_type: str
+    match_label_tr: str
+    ranked_eligible: bool
+    tier_before: int
+    tier_after: int
+    tier_advanced: dict | None
 
     def to_dict(self) -> dict:
         return {
@@ -36,6 +49,12 @@ class ProgressionResult:
             "experience_after": self.experience_after,
             "season_xp_awarded": self.season_xp_awarded,
             "season_xp_after": self.season_xp_after,
+            "match_type": self.match_type,
+            "match_label_tr": self.match_label_tr,
+            "ranked_eligible": self.ranked_eligible,
+            "tier_before": self.tier_before,
+            "tier_after": self.tier_after,
+            "tier_advanced": self.tier_advanced,
         }
 
 
@@ -72,11 +91,17 @@ class PlayerProgressionService:
             ProgressionResult,
         ] = {}
 
-        for player_id in state.players:
+        account_player_ids = (
+            state.account_player_ids
+            if state.account_player_ids
+            else tuple(state.players)
+        )
+        for player_id in account_player_ids:
             profile = self.profile_service.get_or_create(
                 player_id
             )
             rating_before = profile.rating
+            tier_before = int(profile.engagement_view()["current_tier"])
 
             if state.is_draw:
                 rating_delta = DRAW_RATING_DELTA
@@ -87,6 +112,11 @@ class PlayerProgressionService:
             else:
                 rating_delta = LOSS_RATING_DELTA
                 xp_awarded = LOSS_XP
+
+            if not state.ranked_eligible:
+                rating_delta = 0
+            if state.match_type == "unranked_ai":
+                xp_awarded = max(1, round(xp_awarded * AI_REWARD_RATIO))
 
             rating_after = max(
                 0,
@@ -122,6 +152,19 @@ class PlayerProgressionService:
                 damage_dealt=int(summary.get("damage_dealt", 0)),
                 circuit_actions=circuit_actions,
             )
+            tier_after = int(updated.engagement_view()["current_tier"])
+            tier_advanced = (
+                {
+                    "event_id": (
+                        f"{state.battle_id}:{player_id}:tier:{tier_after}"
+                    ),
+                    "season_id": state.season_id,
+                    "tier_before": tier_before,
+                    "tier_after": tier_after,
+                }
+                if tier_after > tier_before
+                else None
+            )
 
             battle_results[player_id] = (
                 ProgressionResult(
@@ -139,6 +182,15 @@ class PlayerProgressionService:
                     ),
                     season_xp_awarded=xp_awarded,
                     season_xp_after=updated.season_xp,
+                    match_type=state.match_type,
+                    match_label_tr=MATCH_LABELS_TR.get(
+                        state.match_type,
+                        state.match_type,
+                    ),
+                    ranked_eligible=state.ranked_eligible,
+                    tier_before=tier_before,
+                    tier_after=tier_after,
+                    tier_advanced=tier_advanced,
                 )
             )
 

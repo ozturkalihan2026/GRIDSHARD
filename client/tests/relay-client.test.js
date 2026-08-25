@@ -298,7 +298,8 @@ function createClient() {
   const fs=require("fs");
   const src=fs.readFileSync(path.join(ROOT,"src/app.js"),"utf8");
   for (const name of ["Aşırı Yük Çipi","Acil Onarım","Çift Port Adaptörü"]) assert.ok(src.includes(name));
-  assert.ok(src.includes("apply_booster"));
+  assert.ok(src.includes("use_booster"));
+  assert.ok(src.includes("offer_id:serverBoosterOfferId"));
   assert.ok(src.includes("Hedef modül seç"));
 }
 
@@ -309,7 +310,7 @@ function createClient() {
   assert.ok(src.includes("BOOSTER_FIRST_OFFER_MS = 30000"));
   assert.ok(src.includes("BOOSTER_OFFER_INTERVAL_MS = 30000"));
   assert.ok(src.includes("3 seçenekten 1'ini seç"));
-  assert.ok(src.includes("nextBoosterOfferIndex += 1"));
+  assert.ok(src.includes("next_booster_offer_index"));
 }
 
 
@@ -480,61 +481,61 @@ function createClient() {
   const fs=require("fs");
   const src=fs.readFileSync(path.join(ROOT,"src/app.js"),"utf8");
   assert.ok(src.includes("PVP_STATUS"));
-  assert.ok(src.includes("GRIDSHARD Beta.34 · Oyuncu Kontrollü Portlar + Kesintisiz Ses + Tam Dil"));
+  assert.ok(src.includes("GRIDSHARD Beta.35 · Rekabet Bütünlüğü + Atomik Güçlendiriciler"));
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync(path.join(ROOT,"src/app.js"),"utf8");
-  assert.ok(src.includes("GRIDSHARD Beta.34 · Oyuncu Kontrollü Portlar + Kesintisiz Ses + Tam Dil")); // alpha32->33 protocol status
+  assert.ok(src.includes("GRIDSHARD Beta.35 · Rekabet Bütünlüğü + Atomik Güçlendiriciler")); // alpha32->33 protocol status
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync(path.join(ROOT,"src/app.js"),"utf8");
-  assert.ok(src.includes("GRIDSHARD Beta.34 · Oyuncu Kontrollü Portlar + Kesintisiz Ses + Tam Dil")); // alpha33 protocol
+  assert.ok(src.includes("GRIDSHARD Beta.35 · Rekabet Bütünlüğü + Atomik Güçlendiriciler")); // alpha33 protocol
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync(path.join(ROOT,"src/app.js"),"utf8");
-  assert.ok(src.includes("GRIDSHARD Beta.34 · Oyuncu Kontrollü Portlar + Kesintisiz Ses + Tam Dil")); // alpha34 websocket
+  assert.ok(src.includes("GRIDSHARD Beta.35 · Rekabet Bütünlüğü + Atomik Güçlendiriciler")); // alpha34 websocket
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync(path.join(ROOT,"src/app.js"),"utf8");
-  assert.ok(src.includes("GRIDSHARD Beta.34 · Oyuncu Kontrollü Portlar + Kesintisiz Ses + Tam Dil")); // alpha35 gateway
+  assert.ok(src.includes("GRIDSHARD Beta.35 · Rekabet Bütünlüğü + Atomik Güçlendiriciler")); // alpha35 gateway
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync(path.join(ROOT,"src/app.js"),"utf8");
-  assert.ok(src.includes("GRIDSHARD Beta.34 · Oyuncu Kontrollü Portlar + Kesintisiz Ses + Tam Dil")); // alpha36 setup
+  assert.ok(src.includes("GRIDSHARD Beta.35 · Rekabet Bütünlüğü + Atomik Güçlendiriciler")); // alpha36 setup
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync(path.join(ROOT,"src/app.js"),"utf8");
-  assert.ok(src.includes("GRIDSHARD Beta.34 · Oyuncu Kontrollü Portlar + Kesintisiz Ses + Tam Dil")); // alpha37 lobby
+  assert.ok(src.includes("GRIDSHARD Beta.35 · Rekabet Bütünlüğü + Atomik Güçlendiriciler")); // alpha37 lobby
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync(path.join(ROOT,"src/app.js"),"utf8");
-  assert.ok(src.includes("GRIDSHARD Beta.34 · Oyuncu Kontrollü Portlar + Kesintisiz Ses + Tam Dil")); // alpha38 runner
+  assert.ok(src.includes("GRIDSHARD Beta.35 · Rekabet Bütünlüğü + Atomik Güçlendiriciler")); // alpha38 runner
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync(path.join(ROOT,"src/app.js"),"utf8");
-  assert.ok(src.includes("GRIDSHARD Beta.34 · Oyuncu Kontrollü Portlar + Kesintisiz Ses + Tam Dil")); // alpha39 heartbeat
+  assert.ok(src.includes("GRIDSHARD Beta.35 · Rekabet Bütünlüğü + Atomik Güçlendiriciler")); // alpha39 heartbeat
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync(path.join(ROOT,"src/app.js"),"utf8");
-  assert.ok(src.includes("GRIDSHARD Beta.34 · Oyuncu Kontrollü Portlar + Kesintisiz Ses + Tam Dil")); // alpha40 online pvp
+  assert.ok(src.includes("GRIDSHARD Beta.35 · Rekabet Bütünlüğü + Atomik Güçlendiriciler")); // alpha40 online pvp
 }
 
 {
@@ -765,7 +766,7 @@ function createClient() {
 {
   const fs=require("fs");
   const src=fs.readFileSync(path.join(ROOT,"src/app.js"),"utf8");
-  assert.ok(src.includes("GRIDSHARD Beta.34 · Oyuncu Kontrollü Portlar + Kesintisiz Ses + Tam Dil"));
+  assert.ok(src.includes("GRIDSHARD Beta.35 · Rekabet Bütünlüğü + Atomik Güçlendiriciler"));
   assert.ok(src.includes("buildPvPCommandEnvelope"));
   assert.ok(src.includes("applyPvPServerEnvelope"));
 }
@@ -2478,7 +2479,7 @@ function createClient() {
   const html=fs.readFileSync(path.join(ROOT,"index.html"),"utf8");
   assert.ok(
     html.includes(
-      "2.0.0-beta.34"
+      "2.0.0-beta.35"
     )
   );
   assert.ok(
@@ -4979,8 +4980,8 @@ function createClient() {
   assert.ok(css.includes(".statistics-metrics-grid"));
   assert.ok(css.includes(".statistics-empty-state"));
   assert.ok(html.includes('class="booster-panel battle-booster-dock"'));
-  assert.ok(app.includes('kind:"select_booster"'));
-  assert.ok(app.includes('kind:"apply_booster"'));
+  assert.ok(app.includes('kind:"use_booster"'));
+  assert.ok(app.includes("serverBoosterEligibleTargets"));
   assert.ok(css.includes("GRIDSHARD Beta.32 — fixed battle viewport"));
   assert.ok(css.includes("GRIDSHARD Beta.32 Fix.1 — invariant card geometry"));
   assert.ok(css.includes("gs-card-impact-static"));

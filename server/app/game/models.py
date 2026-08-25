@@ -163,6 +163,7 @@ class PlayerBattleState:
     forfeit_credit_penalty: int = 0
     battle_pool: BattlePool | None = None
     pending_booster_offer: BoosterOffer | None = None
+    consumed_booster_offer_ids: set[str] = field(default_factory=set)
     next_booster_offer_index: int = 0
     energy_generated_total: float = 0.0
     energy_consumed_total: float = 0.0
@@ -172,6 +173,10 @@ class PlayerBattleState:
 @dataclass(slots=True)
 class BattleState:
     battle_id: str
+    match_type: str = "ranked_pvp"
+    season_id: str = "core_awakening_s0"
+    ranked_eligible: bool = True
+    account_player_ids: tuple[str, ...] = ()
     status: BattleStatus = BattleStatus.WAITING
     tick: int = 0
     elapsed_ms: int = 0

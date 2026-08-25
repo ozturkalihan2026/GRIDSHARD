@@ -1538,6 +1538,10 @@
           result.level_after,
         experienceAfter:
           result.experience_after,
+        matchType: result.match_type,
+        matchLabelTr: result.match_label_tr,
+        rankedEligible: Boolean(result.ranked_eligible),
+        tierAdvanced: result.tier_advanced || null,
       };
     }
   }

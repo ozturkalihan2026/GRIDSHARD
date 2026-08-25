@@ -11,7 +11,7 @@ from pathlib import Path
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "2.0.0-beta.34"
+VERSION = "2.0.0-beta.35"
 ARCHIVE_ROOT = f"GRIDSHARD-{VERSION}"
 
 EXCLUDED_PREFIXES = (

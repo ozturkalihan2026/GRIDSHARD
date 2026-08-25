@@ -45,6 +45,7 @@ from .game.pvp_websocket import PvPWebSocketAdapter
 from .game.pvp_runner import PvPTickRunner
 from .version import VERSION
 from .player_profile import (
+    CURRENT_SEASON_ID,
     PlayerProfileError,
     PlayerProfileService,
 )
@@ -484,10 +485,7 @@ def process_completed_pvp_battle(state) -> None:
     # /local-ai/sessions uses local-ai-<uuid> for isolated test battles.
     # Matchmaking fallback uses local-ai-match-<uuid> and must complete the
     # normal statistics/progression/post-match pipeline.
-    if (
-        state.battle_id.startswith("local-ai-")
-        and not state.battle_id.startswith("local-ai-match-")
-    ):
+    if state.match_type == "local_test":
         telemetry_service.ingest_finished_battle(
             state
         )
@@ -503,7 +501,12 @@ def process_completed_pvp_battle(state) -> None:
         state
     )
 
-    for player_id in state.players:
+    account_player_ids = (
+        state.account_player_ids
+        if state.account_player_ids
+        else tuple(state.players)
+    )
+    for player_id in account_player_ids:
         persist_player_data(
             player_id
         )
@@ -2788,6 +2791,9 @@ def get_post_match_sync(
     return {
         "battle_id": battle_id,
         "player_id": player_id,
+        "match_type": progression["match_type"],
+        "match_label_tr": progression["match_label_tr"],
+        "ranked_eligible": progression["ranked_eligible"],
         "progression": progression,
         "profile": (
             player_profile_service
@@ -2904,6 +2910,8 @@ def claim_daily_mission_reward(
     player_id: str,
     mission_id: str,
 ) -> dict:
+    before_profile = player_profile_service.get_or_create(player_id)
+    tier_before = int(before_profile.engagement_view()["current_tier"])
     try:
         profile = player_profile_service.claim_daily_mission(
             player_id,
@@ -2915,7 +2923,33 @@ def claim_daily_mission_reward(
             detail=str(exc),
         ) from exc
     persist_player_data(player_id)
-    return profile.to_view()
+    view = profile.to_view()
+    tier_after = int(view["engagement"]["current_tier"])
+    return {
+        **view,
+        "tier_advanced": _tier_advanced_payload(
+            player_id,
+            f"mission:{mission_id}",
+            tier_before,
+            tier_after,
+        ),
+    }
+
+
+def _tier_advanced_payload(
+    player_id: str,
+    source: str,
+    tier_before: int,
+    tier_after: int,
+) -> dict | None:
+    if tier_after <= tier_before:
+        return None
+    return {
+        "event_id": f"{CURRENT_SEASON_ID}:{player_id}:{source}:{tier_after}",
+        "season_id": CURRENT_SEASON_ID,
+        "tier_before": tier_before,
+        "tier_after": tier_after,
+    }
 
 
 @app.post("/profile/{player_id}/engagement/tiers/{tier}/claim")
@@ -2923,6 +2957,8 @@ def claim_season_tier_reward(
     player_id: str,
     tier: int,
 ) -> dict:
+    before_profile = player_profile_service.get_or_create(player_id)
+    tier_before = int(before_profile.engagement_view()["current_tier"])
     try:
         profile = player_profile_service.claim_season_tier(
             player_id,
@@ -2934,7 +2970,17 @@ def claim_season_tier_reward(
             detail=str(exc),
         ) from exc
     persist_player_data(player_id)
-    return profile.to_view()
+    view = profile.to_view()
+    tier_after = int(view["engagement"]["current_tier"])
+    return {
+        **view,
+        "tier_advanced": _tier_advanced_payload(
+            player_id,
+            f"reward:{tier}",
+            tier_before,
+            tier_after,
+        ),
+    }
 
 
 @app.put("/profile/{player_id}/display-name")
@@ -3128,7 +3174,7 @@ def gridshard_identity() -> dict:
         "tagline_en":
             "Build the Circuit. Break the Core.",
         "identity_version":
-            "2.0.0-beta.34",
+            "2.0.0-beta.35",
         "palette":{
             "void_navy":"#070B14",
             "reactor_blue":"#0C1625",
@@ -4244,6 +4290,9 @@ def _create_matchmaking_ai_session(pair) -> None:
         pair.match_id,
         setup_required=True,
         auto_start_when_ready=True,
+        match_type="unranked_ai",
+        season_id=CURRENT_SEASON_ID,
+        ranked_eligible=False,
     )
     pvp_service.join(pair.match_id, pair.player_a_id)
     pvp_service.join(pair.match_id, pair.player_b_id)
@@ -4284,6 +4333,9 @@ async def create_local_ai_session(
             session_id,
             setup_required=True,
             auto_start_when_ready=False,
+            match_type="local_test",
+            season_id=CURRENT_SEASON_ID,
+            ranked_eligible=False,
         )
         pvp_service.join(
             session_id,
@@ -4417,6 +4469,9 @@ def create_pvp_session(
             request.session_id,
             setup_required=True,
             auto_start_when_ready=request.auto_start_when_ready,
+            match_type="ranked_pvp",
+            season_id=CURRENT_SEASON_ID,
+            ranked_eligible=True,
         )
     except PvPSessionError as exc:
         raise HTTPException(

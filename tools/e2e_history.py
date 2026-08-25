@@ -38,11 +38,11 @@ def main()->int:
     history=load(
         HISTORY,
         {
-            "version":"2.0.0-beta.34",
+            "version":"2.0.0-beta.35",
             "runs":[],
         },
     )
-    history["version"]="2.0.0-beta.34"
+    history["version"]="2.0.0-beta.35"
 
     if not isinstance(imported,dict):
         history["last_action"]="NO_IMPORTED_EVIDENCE"

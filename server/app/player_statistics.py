@@ -20,6 +20,7 @@ class PlayerStatistics:
     module_usage: dict[str, int] = field(
         default_factory=dict
     )
+    match_type_records: dict[str, dict[str, int]] = field(default_factory=dict)
 
     @property
     def win_rate(self) -> float:
@@ -76,6 +77,19 @@ class PlayerStatistics:
                 }
                 for definition_id, count in most_used
             ],
+            "by_match_type": {
+                match_type: dict(record)
+                for match_type, record in sorted(self.match_type_records.items())
+            },
+            "ranked_matches": self.match_type_records.get(
+                "ranked_pvp", {}
+            ).get("matches", 0),
+            "unranked_ai_matches": self.match_type_records.get(
+                "unranked_ai", {}
+            ).get("matches", 0),
+            "local_test_matches": self.match_type_records.get(
+                "local_test", {}
+            ).get("matches", 0),
         }
 
 
@@ -118,19 +132,33 @@ class PlayerStatisticsService:
         if state.battle_id in self._processed_battle_ids:
             return False
 
-        for player_id, player in state.players.items():
+        account_player_ids = (
+            state.account_player_ids
+            if state.account_player_ids
+            else tuple(state.players)
+        )
+        for player_id in account_player_ids:
+            player = state.players[player_id]
             stats = self.get_or_create(
                 player_id
             )
 
             stats.total_matches += 1
+            match_record = stats.match_type_records.setdefault(
+                state.match_type,
+                {"matches": 0, "wins": 0, "losses": 0, "draws": 0},
+            )
+            match_record["matches"] += 1
 
             if state.is_draw:
                 stats.draws += 1
+                match_record["draws"] += 1
             elif state.winner_player_id == player_id:
                 stats.wins += 1
+                match_record["wins"] += 1
             else:
                 stats.losses += 1
+                match_record["losses"] += 1
 
             stats.total_match_duration_ms += int(
                 state.finished_at_ms
