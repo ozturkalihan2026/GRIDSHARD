@@ -480,61 +480,61 @@ function createClient() {
   const fs=require("fs");
   const src=fs.readFileSync(path.join(ROOT,"src/app.js"),"utf8");
   assert.ok(src.includes("PVP_STATUS"));
-  assert.ok(src.includes("GRIDSHARD Beta.33 · Sezon Sıfır + Günlük Görevler + Corelight Kimlik"));
+  assert.ok(src.includes("GRIDSHARD Beta.34 · Oyuncu Kontrollü Portlar + Kesintisiz Ses + Tam Dil"));
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync(path.join(ROOT,"src/app.js"),"utf8");
-  assert.ok(src.includes("GRIDSHARD Beta.33 · Sezon Sıfır + Günlük Görevler + Corelight Kimlik")); // alpha32->33 protocol status
+  assert.ok(src.includes("GRIDSHARD Beta.34 · Oyuncu Kontrollü Portlar + Kesintisiz Ses + Tam Dil")); // alpha32->33 protocol status
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync(path.join(ROOT,"src/app.js"),"utf8");
-  assert.ok(src.includes("GRIDSHARD Beta.33 · Sezon Sıfır + Günlük Görevler + Corelight Kimlik")); // alpha33 protocol
+  assert.ok(src.includes("GRIDSHARD Beta.34 · Oyuncu Kontrollü Portlar + Kesintisiz Ses + Tam Dil")); // alpha33 protocol
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync(path.join(ROOT,"src/app.js"),"utf8");
-  assert.ok(src.includes("GRIDSHARD Beta.33 · Sezon Sıfır + Günlük Görevler + Corelight Kimlik")); // alpha34 websocket
+  assert.ok(src.includes("GRIDSHARD Beta.34 · Oyuncu Kontrollü Portlar + Kesintisiz Ses + Tam Dil")); // alpha34 websocket
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync(path.join(ROOT,"src/app.js"),"utf8");
-  assert.ok(src.includes("GRIDSHARD Beta.33 · Sezon Sıfır + Günlük Görevler + Corelight Kimlik")); // alpha35 gateway
+  assert.ok(src.includes("GRIDSHARD Beta.34 · Oyuncu Kontrollü Portlar + Kesintisiz Ses + Tam Dil")); // alpha35 gateway
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync(path.join(ROOT,"src/app.js"),"utf8");
-  assert.ok(src.includes("GRIDSHARD Beta.33 · Sezon Sıfır + Günlük Görevler + Corelight Kimlik")); // alpha36 setup
+  assert.ok(src.includes("GRIDSHARD Beta.34 · Oyuncu Kontrollü Portlar + Kesintisiz Ses + Tam Dil")); // alpha36 setup
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync(path.join(ROOT,"src/app.js"),"utf8");
-  assert.ok(src.includes("GRIDSHARD Beta.33 · Sezon Sıfır + Günlük Görevler + Corelight Kimlik")); // alpha37 lobby
+  assert.ok(src.includes("GRIDSHARD Beta.34 · Oyuncu Kontrollü Portlar + Kesintisiz Ses + Tam Dil")); // alpha37 lobby
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync(path.join(ROOT,"src/app.js"),"utf8");
-  assert.ok(src.includes("GRIDSHARD Beta.33 · Sezon Sıfır + Günlük Görevler + Corelight Kimlik")); // alpha38 runner
+  assert.ok(src.includes("GRIDSHARD Beta.34 · Oyuncu Kontrollü Portlar + Kesintisiz Ses + Tam Dil")); // alpha38 runner
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync(path.join(ROOT,"src/app.js"),"utf8");
-  assert.ok(src.includes("GRIDSHARD Beta.33 · Sezon Sıfır + Günlük Görevler + Corelight Kimlik")); // alpha39 heartbeat
+  assert.ok(src.includes("GRIDSHARD Beta.34 · Oyuncu Kontrollü Portlar + Kesintisiz Ses + Tam Dil")); // alpha39 heartbeat
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync(path.join(ROOT,"src/app.js"),"utf8");
-  assert.ok(src.includes("GRIDSHARD Beta.33 · Sezon Sıfır + Günlük Görevler + Corelight Kimlik")); // alpha40 online pvp
+  assert.ok(src.includes("GRIDSHARD Beta.34 · Oyuncu Kontrollü Portlar + Kesintisiz Ses + Tam Dil")); // alpha40 online pvp
 }
 
 {
@@ -765,7 +765,7 @@ function createClient() {
 {
   const fs=require("fs");
   const src=fs.readFileSync(path.join(ROOT,"src/app.js"),"utf8");
-  assert.ok(src.includes("GRIDSHARD Beta.33 · Sezon Sıfır + Günlük Görevler + Corelight Kimlik"));
+  assert.ok(src.includes("GRIDSHARD Beta.34 · Oyuncu Kontrollü Portlar + Kesintisiz Ses + Tam Dil"));
   assert.ok(src.includes("buildPvPCommandEnvelope"));
   assert.ok(src.includes("applyPvPServerEnvelope"));
 }
@@ -2478,7 +2478,7 @@ function createClient() {
   const html=fs.readFileSync(path.join(ROOT,"index.html"),"utf8");
   assert.ok(
     html.includes(
-      "2.0.0-beta.33"
+      "2.0.0-beta.34"
     )
   );
   assert.ok(
@@ -4888,7 +4888,7 @@ function createClient() {
   assert.ok(app.includes("gridshardE2eTimeScale"));
   assert.ok(app.includes("loadUiBuildManifest"));
   assert.ok(app.includes("setBattlePressure"));
-  assert.ok(audio.includes('version:"shardglass-seamless-v8"'));
+  assert.ok(audio.includes('version:"shardglass-seamless-v9"'));
   assert.ok(audio.includes("menuPoolCrossfadeMs:480"));
   assert.ok(audio.includes("phaseLockedTransition"));
   assert.ok(audio.includes("criticalLayerMaxGain"));

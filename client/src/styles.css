@@ -6472,6 +6472,148 @@ body[data-app-screen="rewards"] .season-rewards-screen {
   padding:14px 16px;
   overflow:hidden;
 }
+
+/* Beta.34 — module topology preview and compact collapsible battle shelf. */
+.battle-pool-detail-panel {
+  position:relative;
+}
+.battle-pool-detail-panel > .pool-detail-category,
+.battle-pool-detail-panel > h3,
+.battle-pool-detail-panel > #battle-pool-detail-role {
+  max-width:calc(100% - 116px);
+}
+.pool-detail-module-preview {
+  position:absolute;
+  top:18px;
+  right:18px;
+  z-index:3;
+  width:96px;
+  height:96px;
+}
+.pool-detail-preview-card {
+  position:relative;
+  display:grid;
+  width:100%;
+  height:100%;
+  place-items:center;
+  border:1px solid rgba(83,219,255,.42);
+  border-radius:13px;
+  background:
+    radial-gradient(circle at 50% 42%,rgba(64,226,255,.19),transparent 48%),
+    linear-gradient(160deg,rgba(21,47,72,.96),rgba(6,13,25,.98));
+  box-shadow:
+    inset 0 0 18px rgba(75,214,255,.12),
+    0 0 18px rgba(43,191,255,.12);
+}
+.pool-detail-preview-icon {
+  width:auto;
+  height:auto;
+  color:var(--gs-energy);
+  font-size:2.25rem;
+  filter:drop-shadow(0 0 10px currentColor);
+}
+.pool-detail-preview-card[data-category="saldırı"] .pool-detail-preview-icon { color:var(--gs-attack); }
+.pool-detail-preview-card[data-category="savunma"] .pool-detail-preview-icon { color:var(--gs-defense); }
+.pool-detail-preview-card[data-category="destek"] .pool-detail-preview-icon { color:var(--gs-support); }
+.pool-detail-preview-card[data-category="sabotaj"] .pool-detail-preview-icon { color:var(--gs-sabotage); }
+.pool-detail-preview-port-label {
+  position:absolute;
+  right:5px;
+  bottom:4px;
+  left:5px;
+  color:#c7e8f8;
+  font-size:.55rem;
+  font-weight:800;
+  letter-spacing:.08em;
+  text-align:center;
+  text-transform:uppercase;
+}
+.pool-detail-preview-card > .port-dot {
+  position:absolute;
+  z-index:4;
+  display:block;
+  width:9px;
+  height:9px;
+  min-width:9px;
+  min-height:9px;
+  border:1px solid #d8f8ff;
+  border-radius:50%;
+  background:#8feeff;
+  box-shadow:0 0 9px rgba(103,233,255,.9);
+}
+.pool-detail-preview-card > .port-up { top:0;left:50%;transform:translate(-50%,-50%); }
+.pool-detail-preview-card > .port-right { top:50%;right:0;transform:translate(50%,-50%); }
+.pool-detail-preview-card > .port-down { bottom:0;left:50%;transform:translate(-50%,50%); }
+.pool-detail-preview-card > .port-left { top:50%;left:0;transform:translate(-50%,-50%); }
+
+.shelf-category-group {
+  display:block;
+}
+.shelf-category-title {
+  display:flex;
+  cursor:pointer;
+  list-style:none;
+  align-items:center;
+  justify-content:space-between;
+}
+.shelf-category-title::-webkit-details-marker { display:none; }
+.shelf-category-title::after {
+  content:"▾";
+  transition:transform .18s ease;
+}
+.shelf-category-group:not([open]) > .shelf-category-title::after {
+  transform:rotate(-90deg);
+}
+.shelf-category-list {
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:6px;
+  padding-top:6px;
+}
+.module-shelf .module-card {
+  position:relative;
+  overflow:visible;
+}
+.module-shelf .module-card > .port-dot {
+  display:none !important;
+}
+.shelf-module-tooltip {
+  position:absolute;
+  right:2px;
+  bottom:calc(100% + 7px);
+  left:2px;
+  z-index:30;
+  display:none;
+  padding:6px 7px;
+  border:1px solid rgba(77,218,255,.48);
+  border-radius:7px;
+  background:rgba(4,12,23,.98);
+  color:#dff7ff;
+  box-shadow:0 8px 20px rgba(0,0,0,.34);
+  font-size:.61rem;
+  font-weight:750;
+  line-height:1.3;
+  pointer-events:none;
+  text-align:center;
+}
+.module-shelf .module-card:hover > .shelf-module-tooltip,
+.module-shelf .module-card:focus-visible > .shelf-module-tooltip {
+  display:block;
+}
+
+@media (max-width:1100px) {
+  .pool-detail-module-preview {
+    top:12px;
+    right:12px;
+    width:78px;
+    height:78px;
+  }
+  .battle-pool-detail-panel > .pool-detail-category,
+  .battle-pool-detail-panel > h3,
+  .battle-pool-detail-panel > #battle-pool-detail-role {
+    max-width:calc(100% - 94px);
+  }
+}
 body[data-app-screen="rewards"] .season-rewards-screen .panel-title-row {
   min-height:0;
 }

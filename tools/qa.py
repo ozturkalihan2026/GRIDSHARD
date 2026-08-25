@@ -64,7 +64,7 @@ def http_post(url: str):
 def smoke_server() -> dict:
     port = free_port()
     env = os.environ.copy()
-    env["RELAY_WEB_TEST_RUN_ID"] = "web-test-beta.33-qa"
+    env["RELAY_WEB_TEST_RUN_ID"] = "web-test-beta.34-qa"
     env["RELAY_TELEMETRY_PATH"] = str(ROOT / "server/data/qa_telemetry.json")
     env["RELAY_PLAYER_DATA_PATH"] = str(ROOT / "server/data/qa_players.json")
     env["RELAY_BATTLE_POOL_PRESET_PATH"] = str(
@@ -284,6 +284,16 @@ def main() -> int:
             cwd=ROOT / "client",
         ),
         run_step(
+            "client_audio_webaudio_loop",
+            [NODE_EXECUTABLE, "tests/gridshard-audio-webaudio-loop.test.js"],
+            cwd=ROOT / "client",
+        ),
+        run_step(
+            "client_beta34_experience",
+            [NODE_EXECUTABLE, "tests/beta34-experience.test.js"],
+            cwd=ROOT / "client",
+        ),
+        run_step(
             "client_unit_tests",
             [NODE_EXECUTABLE, "tests/relay-client.test.js"],
             cwd=ROOT / "client",
@@ -336,6 +346,18 @@ def main() -> int:
                 [
                     sys.executable,
                     "tools/beta33_acceptance_report.py",
+                ],
+                cwd=ROOT,
+            )
+        )
+
+    if all(step["ok"] for step in steps):
+        steps.append(
+            run_step(
+                "beta34_acceptance_report",
+                [
+                    sys.executable,
+                    "tools/beta34_acceptance_report.py",
                 ],
                 cwd=ROOT,
             )
@@ -421,7 +443,7 @@ def main() -> int:
 
     report = {
         "project": "GRIDSHARD 2.0",
-        "version": "2.0.0-beta.33",
+        "version": "2.0.0-beta.34",
         "generated_at_epoch": int(time.time()),
         "ok": all(step["ok"] for step in steps),
         "steps": steps,

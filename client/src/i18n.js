@@ -19,6 +19,7 @@
     "Ana menü sezon ilerlemesi":"Main menu season progression",
     "OPERATÖR":"OPERATOR",
     "GÜNLÜK DÖNGÜ":"DAILY LOOP",
+    "SEZON SIFIR":"SEASON ZERO",
     "3 devre emri hazır":"3 circuit orders ready",
     "PROFİLDE AÇ":"OPEN IN PROFILE",
     "REKABET":"COMPETITION",
@@ -50,6 +51,7 @@
     "Çekirdek Muhafızı":"Core Guardian",
     "Sezon kademe ilerlemesi":"Season tier progress",
     "GÜNLÜK GÖREVLER":"DAILY MISSIONS",
+    "Günlük Görevler":"Daily Missions",
     "Bugünün Devre Emirleri":"Today's Circuit Orders",
     "Her gün UTC 00:00'da yenilenir":"Refreshes daily at 00:00 UTC",
     "Bugünün devre emirlerini tamamla, SXP ve Akı Parçası kazan.":"Complete today's circuit orders to earn SXP and Flux Shards.",
@@ -57,6 +59,7 @@
     "3 görev aktif":"3 missions active",
     "Tamamlanan görevlerin ödüllerini buradan al.":"Claim completed mission rewards here.",
     "ÖDÜL YOLU":"REWARD TRACK",
+    "Ödül Yolu":"Reward Track",
     "10 Kademe":"10 Tiers",
     "10 KADEME":"10 TIERS",
     "Ücretli geçiş yok":"No paid track",
@@ -176,6 +179,7 @@
     "Can":"Health",
     "Devre Kredisi":"Circuit Credits",
     "Port":"Port",
+    "Modül port önizlemesi":"Module port preview",
     "Enerji Üretimi":"Energy Generation",
     "Enerji Tüketimi":"Energy Consumption",
     "Temel Hasar":"Base Damage",
@@ -186,6 +190,7 @@
     "Uyumlu Olduğu":"Synergizes With",
     "Sayısal değerler sunucu savaş motoru kataloğundan yükleniyor.":"Numeric values are loading from the server battle-engine catalog.",
     "Savaş":"Battle",
+    "Eşleştiriliyor":"Matching",
     "Eşleştirmeyi İptal Et":"Cancel Matchmaking",
     "Geçici Güçlendiriciler":"Temporary Boosters",
     "Seçim bekleniyor":"Waiting for selection",
@@ -277,7 +282,7 @@
     "Virüs":"Virus",
     "Enerji Sömürücü":"Energy Leech",
     "Kesici":"Disruptor",
-    "Beta.33 · 10 sn AI Devralma · Sezon Sıfır · Günlük Görevler · Corelight Görsel Kimlik":"Beta.33 · 10 sec AI Takeover · Season Zero · Daily Missions · Corelight Visual Identity",
+    "Beta.34 · 10 sn AI Devralma · Oyuncu Kontrollü Portlar · Kesintisiz Ses · Tam Dil Desteği":"Beta.34 · 10 sec AI Takeover · Player-Controlled Ports · Seamless Audio · Full Language Support",
     "Savaş alanına giriş başarılı · Yerel AI aktif · Modül Rafı 15. saniyede açılır":"Battle arena entered · Local AI active · Module Shelf unlocks at 15 seconds",
     "Sunucudan yükleniyor...":"Loading from server...",
     "Sunucu verisi":"Server data",
@@ -359,6 +364,10 @@
         .replace(/^(Enerji|Saldırı|Savunma|Destek|Sabotaj) · (\d+) ▾$/u, (_, category, count) => `${EN[category] || category} · ${count} ▾`)
         .replace(/^(.+) \+ (Enerji|Saldırı|Savunma|Destek|Sabotaj)$/u, (_, name, category) => `${name} + ${EN[category] || category}`)
         .replace(/^(.+) ◆ (Enerji|Saldırı|Savunma|Destek|Sabotaj)$/u, (_, name, category) => `${name} ◆ ${EN[category] || category}`)
+        .replace(/^KAYNAK ([\d.]+) Ü$/u, "SOURCE $1 U")
+        .replace(/^AKIŞ ([\d.]+) Ü$/u, "FLOW $1 U")
+        .replace(/^ENERJİ YOK$/u, "NO ENERGY")
+        .replace(/^(\d+) devre emri aktif$/u, "$1 circuit orders active")
         .replace(/^Seviye (\d+) · Lig: ([^·]+) · (\d+) RP$/u, "Level $1 · League: $2 · $3 RP")
         .replace(/^(.+) · Seviye (\d+) · Lig: ([^·]+) · (\d+) RP$/u, (_, title, level, league, rating) => `${EN[title] || title} · Level ${level} · League: ${EN[league.trim()] || league.trim()} · ${rating} RP`)
         .replace(/^Kademe (\d+) \/ (\d+)$/u, "Tier $1 / $2")
@@ -382,6 +391,10 @@
       .replace(/^(Energy|Attack|Defense|Support|Sabotage) · (\d+) ▾$/u, (_, category, count) => `${TR[category] || category} · ${count} ▾`)
       .replace(/^(.+) \+ (Energy|Attack|Defense|Support|Sabotage)$/u, (_, name, category) => `${name} + ${TR[category] || category}`)
       .replace(/^(.+) ◆ (Energy|Attack|Defense|Support|Sabotage)$/u, (_, name, category) => `${name} ◆ ${TR[category] || category}`)
+      .replace(/^SOURCE ([\d.]+) U$/u, "KAYNAK $1 Ü")
+      .replace(/^FLOW ([\d.]+) U$/u, "AKIŞ $1 Ü")
+      .replace(/^NO ENERGY$/u, "ENERJİ YOK")
+      .replace(/^(\d+) circuit orders active$/u, "$1 devre emri aktif")
       .replace(/^Level (\d+) · League: ([^·]+) · (\d+) RP$/u, "Seviye $1 · Lig: $2 · $3 RP")
       .replace(/^(.+) · Level (\d+) · League: ([^·]+) · (\d+) RP$/u, (_, title, level, league, rating) => `${TR[title] || title} · Seviye ${level} · Lig: ${TR[league.trim()] || league.trim()} · ${rating} RP`)
       .replace(/^Tier (\d+) \/ (\d+)$/u, "Kademe $1 / $2")

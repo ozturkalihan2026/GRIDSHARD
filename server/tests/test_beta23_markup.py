@@ -13,4 +13,4 @@ def test_beta23_menu_and_dual_battle_markup():
     assert 'id="enemy-board"' in html
     assert 'id="battle-settings-button"' in html
     assert 'id="battle-time"' in html
-    assert 'Beta.33 · 10 sn AI Devralma · Sezon Sıfır · Günlük Görevler · Corelight Görsel Kimlik' in html
+    assert 'Beta.34 · 10 sn AI Devralma · Oyuncu Kontrollü Portlar · Kesintisiz Ses · Tam Dil Desteği' in html

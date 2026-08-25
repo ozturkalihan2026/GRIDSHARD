@@ -26,7 +26,7 @@
   });
 
   const GRIDSHARD_AUDIO_MIX = Object.freeze({
-    version:"shardglass-seamless-v8",
+    version:"shardglass-seamless-v9",
     crossfadeMs:1200,
     menuPoolCrossfadeMs:480,
     resultCrossfadeMs:320,
@@ -120,6 +120,134 @@
     },
   });
 
+  class GridshardSeamlessLoopTrack {
+    constructor(context, asset, bufferCache) {
+      this.context = context;
+      this.src = asset;
+      this._bufferCache = bufferCache;
+      this._buffer = null;
+      this._source = null;
+      this._offset = 0;
+      this._startedAt = 0;
+      this._volume = 0;
+      this._playbackRate = 1;
+      this._playToken = 0;
+      this.loop = true;
+      this.paused = true;
+      this.preload = "auto";
+      this._gain = context.createGain();
+      this._gain.gain.value = 0;
+      this._gain.connect(context.destination);
+    }
+
+    get volume() {
+      return this._volume;
+    }
+
+    set volume(value) {
+      this._volume = Math.max(0, Math.min(1, Number(value || 0)));
+      this._gain.gain.value = this._volume;
+    }
+
+    get playbackRate() {
+      return this._playbackRate;
+    }
+
+    set playbackRate(value) {
+      this._playbackRate = Math.max(.25, Math.min(4, Number(value || 1)));
+      if (this._source) {
+        this._source.playbackRate.value = this._playbackRate;
+      }
+    }
+
+    get currentTime() {
+      if (!this.paused && this._buffer) {
+        const elapsed = Math.max(0, this.context.currentTime - this._startedAt);
+        return (
+          this._offset
+          + elapsed * this._playbackRate
+        ) % this._buffer.duration;
+      }
+      return this._offset;
+    }
+
+    set currentTime(value) {
+      const next = Math.max(0, Number(value || 0));
+      this._offset = this._buffer?.duration
+        ? next % this._buffer.duration
+        : next;
+      if (!this.paused && this._buffer) {
+        this._startSource();
+      }
+    }
+
+    _loadBuffer() {
+      if (!this._bufferCache.has(this.src)) {
+        this._bufferCache.set(
+          this.src,
+          global.fetch(this.src)
+            .then((response) => {
+              if (!response.ok) {
+                throw new Error(`Music asset could not be loaded: ${this.src}`);
+              }
+              return response.arrayBuffer();
+            })
+            .then((bytes) => this.context.decodeAudioData(bytes))
+        );
+      }
+      return this._bufferCache.get(this.src);
+    }
+
+    _stopSource() {
+      const source = this._source;
+      this._source = null;
+      if (!source) return;
+      try {
+        source.stop();
+        source.disconnect();
+      } catch (_) {
+        // AudioBufferSourceNode may already be stopped by the browser.
+      }
+    }
+
+    _startSource() {
+      if (!this._buffer || this.paused) return;
+      this._stopSource();
+      const source = this.context.createBufferSource();
+      source.buffer = this._buffer;
+      source.loop = this.loop;
+      source.loopStart = 0;
+      source.loopEnd = this._buffer.duration;
+      source.playbackRate.value = this._playbackRate;
+      source.connect(this._gain);
+      this._startedAt = this.context.currentTime;
+      source.start(0, this._offset % this._buffer.duration);
+      this._source = source;
+    }
+
+    async play() {
+      this.paused = false;
+      const token = ++this._playToken;
+      if (this.context.state === "suspended") {
+        await this.context.resume();
+      }
+      const buffer = await this._loadBuffer();
+      if (this.paused || token !== this._playToken) return;
+      this._buffer = buffer;
+      this._offset %= buffer.duration;
+      this._startSource();
+    }
+
+    pause() {
+      if (!this.paused && this._buffer) {
+        this._offset = this.currentTime;
+      }
+      this.paused = true;
+      this._playToken += 1;
+      this._stopSource();
+    }
+  }
+
   class GridshardAudioDirector {
     constructor() {
       this.state = GRIDSHARD_AUDIO_STATES.MENU;
@@ -136,6 +264,29 @@
       this.battlePressure = .32;
       this._fadeTimers = new Set();
       this._fadeTimerByAudio = new Map();
+      this._musicContext = null;
+      this._musicBufferCache = new Map();
+    }
+
+    _createMusicTrack(asset, {seamless=false}={}) {
+      const AudioContextClass =
+        global.AudioContext
+        || global.webkitAudioContext;
+      if (
+        seamless
+        && typeof AudioContextClass === "function"
+        && typeof global.fetch === "function"
+      ) {
+        this._musicContext =
+          this._musicContext
+          || new AudioContextClass();
+        return new GridshardSeamlessLoopTrack(
+          this._musicContext,
+          asset,
+          this._musicBufferCache
+        );
+      }
+      return new global.Audio(asset);
     }
 
     _canPlayAudio() {
@@ -483,8 +634,16 @@
       if (leavingLayeredBattle) {
         this._stopBattleLayers();
       }
+      const seamlessState = [
+        GRIDSHARD_AUDIO_STATES.MENU,
+        GRIDSHARD_AUDIO_STATES.POOL,
+        GRIDSHARD_AUDIO_STATES.MATCHMAKING,
+      ].includes(state);
       const next=
-        new global.Audio(asset);
+        this._createMusicTrack(
+          asset,
+          {seamless:seamlessState}
+        );
       const previousState = previous?._gridshardState || null;
       const phaseLockedTransition =
         [GRIDSHARD_AUDIO_STATES.MENU, GRIDSHARD_AUDIO_STATES.POOL]
@@ -522,8 +681,6 @@
             .VICTORY,
           GRIDSHARD_AUDIO_STATES
             .DEFEAT,
-          GRIDSHARD_AUDIO_STATES
-            .MATCHMAKING,
         ].includes(state);
 
       next.volume=0;

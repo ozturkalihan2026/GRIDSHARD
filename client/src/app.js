@@ -91,7 +91,7 @@
   const COMPETITIVE_STATUS = "M7 rekabetçi altyapı doğrulanıyor";
   const BALANCE_STATUS = "Denge simülasyonu mevcut · geniş örnek bekliyor";
   const AI_STATUS = "AI altyapısı mevcut · arketip testleri bekliyor";
-  const PVP_STATUS = "GRIDSHARD Beta.33 · Sezon Sıfır + Günlük Görevler + Corelight Kimlik";
+  const PVP_STATUS = "GRIDSHARD Beta.34 · Oyuncu Kontrollü Portlar + Kesintisiz Ses + Tam Dil";
 
 
 
@@ -172,6 +172,7 @@
     global:new Set(),
     selected:new Set(),
   };
+  const collapsedShelfCategories = new Set();
   let battlePoolPresets = withStarterBattlePoolPresets([]);
   let activeBattlePoolPresetName = null;
   let activeBattlePoolPresetBaseline = [];
@@ -371,10 +372,11 @@
     const localStatus = document.body.dataset.localStatus || "setup";
     if (onlineStatus === "battle" || localStatus === "battle") {
       gridshardAudioDirector.setState("battle");
-    } else if (onlineStatus === "matchmaking") {
+    } else if (
+      ["matchmaking", "matched", "connecting", "readying"]
+        .includes(onlineStatus)
+    ) {
       gridshardAudioDirector.setState("matchmaking");
-    } else if (["matched", "connecting", "readying"].includes(onlineStatus)) {
-      gridshardAudioDirector.setState("battle_intro");
     } else {
       gridshardAudioDirector.setState("pool");
     }
@@ -605,7 +607,7 @@
         webTestBuildState,
       releaseCheckState,
       expectedVersion:
-        "2.0.0-beta.33",
+        "2.0.0-beta.34",
       expectedProtocolVersion: 1,
     });
   const playReadinessGate =
@@ -641,7 +643,7 @@
 
   telemetryDispatcher.trackGameOpened({
     platform: "web",
-    build: "2.0.0-beta.33",
+    build: "2.0.0-beta.34",
   });
 
   const postMatchSync =
@@ -1227,10 +1229,8 @@
     }
 
     if (gridshardAudioDirector) {
-      if (status === "matchmaking") {
+      if (["matchmaking", "matched", "connecting", "readying"].includes(status)) {
         gridshardAudioDirector.setState("matchmaking");
-      } else if (["matched", "connecting", "readying"].includes(status)) {
-        gridshardAudioDirector.setState("battle_intro");
       } else if (status === "battle") {
         gridshardAudioDirector.setState("battle");
       }
@@ -1578,7 +1578,7 @@
   const diagnosticSnapshot =
     new RelayDiagnosticSnapshot({
       version:
-        "2.0.0-beta.33",
+        "2.0.0-beta.34",
       build:
         "web-test-beta.13",
       bootGate:
@@ -1938,6 +1938,10 @@
   const poolDetailSynergyEl =
     document.getElementById(
       "battle-pool-detail-synergy"
+    );
+  const poolDetailPreviewEl =
+    document.getElementById(
+      "battle-pool-detail-preview"
     );
   const poolCatalogSourceEl =
     document.getElementById(
@@ -3517,7 +3521,7 @@
       if (versionEl) {
         versionEl.textContent=
           manifest.version
-          || "2.0.0-beta.33";
+          || "2.0.0-beta.34";
       }
       if (runEl) {
         runEl.textContent=
@@ -6410,7 +6414,7 @@ function saveHumanReviewLocalNote() {
     );
 
     logClientMessage(
-      "Beta.33 geliştirici testi: sezon ilerlemesi, günlük görevler ve Beta.32 Fix.1 savaş geometrisi aktif."
+      "Beta.34 geliştirici testi: oyuncu kontrollü portlar, kesintisiz ses ve anlık dil geçişi aktif."
     );
 
     return {
@@ -8670,6 +8674,11 @@ function saveHumanReviewLocalNote() {
     poolDetailPortsEl.textContent =
       `${catalog?.port_count ?? module.portCount}`;
 
+    renderBattlePoolModulePreview(
+      module,
+      catalog
+    );
+
     setTextOrDash(
       poolDetailEnergyGenerationEl,
       catalog
@@ -9423,6 +9432,55 @@ function saveHumanReviewLocalNote() {
     }
   }
 
+  function poolPreviewPortDirections(portCount) {
+    const count = Math.max(
+      0,
+      Math.min(4, Number(portCount || 0))
+    );
+    if (count === 1) return ["up"];
+    if (count === 2) return ["up", "down"];
+    if (count === 3) return ["up", "left", "right"];
+    if (count === 4) return ["up", "right", "down", "left"];
+    return [];
+  }
+
+  function renderBattlePoolModulePreview(module, catalog) {
+    if (!poolDetailPreviewEl) return;
+
+    poolDetailPreviewEl.innerHTML = "";
+    const portCount = Number(
+      catalog?.port_count
+      ?? module.portCount
+      ?? 0
+    );
+    const card = document.createElement("div");
+    card.className = "pool-detail-preview-card";
+    card.dataset.category = module.category || "";
+
+    const icon = document.createElement("span");
+    icon.className = "module-icon pool-detail-preview-icon";
+    icon.textContent = moduleIconFor(module);
+    icon.setAttribute("aria-hidden", "true");
+
+    const portLabel = document.createElement("small");
+    portLabel.className = "pool-detail-preview-port-label";
+    portLabel.textContent = `${portCount} ${localizedUiText("Port")}`;
+
+    card.append(icon, portLabel);
+    for (const side of poolPreviewPortDirections(portCount)) {
+      const port = document.createElement("span");
+      port.className = `port-dot port-${side}`;
+      port.setAttribute("aria-hidden", "true");
+      card.appendChild(port);
+    }
+
+    poolDetailPreviewEl.setAttribute(
+      "aria-label",
+      `${localizedUiText(module.nameTr)} · ${portCount} ${localizedUiText("Port")}`
+    );
+    poolDetailPreviewEl.appendChild(card);
+  }
+
   function syncBoosterOfferFromSnapshot(player) {
     const authoritativeOfferIndex = Number(
       player?.next_booster_offer_index
@@ -9713,9 +9771,11 @@ function saveHumanReviewLocalNote() {
         ? received.toFixed(1)
         : received.toFixed(1).replace(/\.0$/u,"")
     );
-    badge.textContent=isSource
-      ? `KAYNAK ${energyValue} Ü`
-      : `AKIŞ ${energyValue} Ü`;
+    badge.textContent=localizedUiText(
+      isSource
+        ? `KAYNAK ${energyValue} Ü`
+        : `AKIŞ ${energyValue} Ü`
+    );
     card.appendChild(badge);
     return true;
   }
@@ -10762,33 +10822,70 @@ function saveHumanReviewLocalNote() {
 
       const group=
         document.createElement(
-          "section"
+          "details"
         );
       group.className=
         "shelf-category-group";
       group.dataset.category=
         category;
+      group.open =
+        !collapsedShelfCategories
+          .has(category);
+      group.addEventListener(
+        "toggle",
+        () => {
+          if (group.open) {
+            collapsedShelfCategories
+              .delete(category);
+          } else {
+            collapsedShelfCategories
+              .add(category);
+          }
+        }
+      );
       const title=
         document.createElement(
-          "strong"
+          "summary"
         );
       title.className=
         "shelf-category-title";
       title.textContent=
-        poolCategoryLabel(
-          category
+        `${poolCategoryLabel(category)} · ${modules.length}`;
+      const list =
+        document.createElement(
+          "div"
         );
-      group.appendChild(title);
+      list.className =
+        "shelf-category-list";
+      group.append(title, list);
 
       for (const module of modules) {
         const card=
           createModuleCard(module);
+        const tooltip =
+          document.createElement(
+            "span"
+          );
+        tooltip.className =
+          "shelf-module-tooltip";
+        tooltip.textContent =
+          `${localizedUiText("Devre Kredisi")}: ${module.circuitCreditCost} DK · `
+          + `${localizedUiText("Port")}: ${module.portCount}`;
+        tooltip.setAttribute(
+          "role",
+          "tooltip"
+        );
+        card.appendChild(tooltip);
+        card.title =
+          `${localizedUiText(module.nameTr)} · `
+          + `${localizedUiText("Devre Kredisi")}: ${module.circuitCreditCost} DK · `
+          + `${localizedUiText("Port")}: ${module.portCount}`;
         if (!unlocked) {
           card.classList.add(
             "locked"
           );
         }
-        group.appendChild(card);
+        list.appendChild(card);
       }
       shelf.appendChild(group);
     }
@@ -11079,13 +11176,7 @@ function saveHumanReviewLocalNote() {
         ) {
           return;
         }
-        if (
-          module.movable !== false
-          && (
-            module.status === "reserve"
-            || isTapPlacementUi()
-          )
-        ) {
+        if (module.status === "reserve") {
           selectModuleForTap(module);
           return;
         }
@@ -11111,6 +11202,14 @@ function saveHumanReviewLocalNote() {
           );
           return;
         }
+        if (
+          isTapPlacementUi()
+          && tapSelectedModuleId
+            !== module.instanceId
+        ) {
+          selectModuleForTap(module);
+          return;
+        }
         client.emitCommand({
           kind:"rotate_module",
           payload:{
@@ -11118,6 +11217,10 @@ function saveHumanReviewLocalNote() {
               module.instanceId,
           },
         });
+        trackBattleUiInteraction(
+          "tap_rotate_module",
+          "module_move"
+        );
       }
     );
 
@@ -12642,6 +12745,33 @@ function saveHumanReviewLocalNote() {
     settingsSaveButton.addEventListener(
       "click",
       saveSettingsForm
+    );
+  }
+
+  const settingsLanguageEl =
+    document.getElementById(
+      "settings-language"
+    );
+  if (settingsLanguageEl) {
+    settingsLanguageEl.addEventListener(
+      "change",
+      async () => {
+        const languageValue =
+          settingsLanguageEl.value
+          === "en"
+            ? "en"
+            : "tr";
+        applyLanguagePreference(
+          languageValue
+        );
+        renderSettingsSaveStatus(
+          languageValue === "en"
+            ? "Language selected · saving automatically..."
+            : "Dil seçildi · otomatik kaydediliyor...",
+          "saving"
+        );
+        await saveSettingsForm();
+      }
     );
   }
 

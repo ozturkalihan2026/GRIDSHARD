@@ -1,7 +1,7 @@
 # GRIDSHARD 2.0 — YOL HARİTASI
 
-**Güncel Sürüm:** `2.0.0-beta.33`
-**Paket:** Beta.33 — Sezon Sıfır + Günlük Görevler + Corelight Görsel Kimlik
+**Güncel Sürüm:** `2.0.0-beta.34`
+**Paket:** Beta.34 — Oyuncu Kontrollü Portlar + Kesintisiz Ses + Tam Dil Desteği
 **Kanonik Dosya:** `docs/YOL_HARITASI.md`
 
 > Bu dosya GRIDSHARD 2.0 için tek kanonik geliştirme kaydıdır. Kaynak karar belgesi ile kod tabanı yeniden karşılaştırılmıştır. Buradaki `[x]`, `[~]`, `[ ]` işaretleri artık yalnızca kodda ve testlerde doğrulanabilen gerçek durumu gösterir.
@@ -1700,3 +1700,25 @@ Doğrulama:
 - [x] 1720×850 görünümde dört hazırlık sütununun aynı satır/yükseklikte olduğu, panel `scrollHeight` değerinin taşmadığı ve şerit/panel kenarlarının birebir hizalandığı doğrulandı.
 - [x] Ödül Yolu 1720×850 ve 1440×720 görünümlerinde 10/10 kartı kaydırmasız gösterdi; 1440×720 hazırlık eylem satırı Dock'un üstünde kaldı.
 - [x] Gerçek yerel tarayıcı konsolunda hata veya uyarı oluşmadı.
+
+---
+
+# 22. Güncel Paket — Beta.34
+
+**`GRIDSHARD 2.0.0-beta.34 — Oyuncu Kontrollü Portlar · Kesintisiz Ses · Tam Dil Desteği`**
+
+Beta.34, Beta.33'ün ortak lobi, Sezon Sıfır ve dört sütunlu hazırlık düzenini korurken oyuncu geri bildirimindeki dil, müzik ve devre okunabilirliği açıklarını kapatır:
+
+1. [x] Dil seçimi değiştirildiği anda tüm açık arayüze uygulanır ve ayrıca `Ayarları Kaydet` gerektirmeden sunucuya kalıcı olarak yazılır. Bir sonraki oturum kayıtlı dille açılır.
+2. [x] Başlık biçimli Günlük Görevler/Ödül Yolu metinleri ile dinamik `KAYNAK`, `AKIŞ` ve `ENERJİ YOK` savaş etiketleri iki yönlü Türkçe/İngilizce kapsama alındı.
+3. [x] Menü, hazırlık ve eşleştirme döngüleri desteklenen tarayıcılarda `AudioBufferSourceNode` tabanlı örnek-duyarlı döngüye taşındı; eski tarayıcılar güvenli HTML Audio yedeğini kullanır.
+4. [x] Savaş düğmesiyle başlayan eşleştirme müziği rakip arama, rakip bulundu, bağlanma ve hazır olma boyunca kesilmeden sürer; savaş müziğine yalnız gerçek savaş durumu açıldığında geçilir.
+5. [x] Hazırlık ayrıntı sütununa seçilen modülün savaş kartı simgesini, sınıf rengini ve gerçek 1/2/3/4 port geometrisini gösteren kompakt topoloji önizlemesi eklendi.
+6. [x] Savaş rafındaki dekoratif port noktaları gizlendi; modül üzerine gelindiğinde Devre Kredisi ve port sayısı gösterilir. Beş sınıf, seçimini koruyan açılır-kapanır başlıklara dönüştürüldü.
+7. [x] Motorun yerleştirme, taşıma, takas ve değiştirmedeki otomatik en iyi port yönü seçimi korundu. Oyuncu yön-duyarlı aktif modülü tıklayarak otomatik seçimi saat yönünde değiştirebilir; mobilde ilk dokunuş modülü seçer, sonraki dokunuşlar yönü döndürür.
+8. [x] Batarya iki zıt portlu düz enerji hattı kimliğini korur ve saldırı modülüne devam eden karşılıklı port zincirinde enerji depolayıp boşaltabilir; Dağıtıcı'nın üç kollu dallandırma rolü değiştirilmedi.
+
+Doğrulama:
+
+- [x] Birleşik kalite kapısı Beta.34 kimliğiyle `705/705` sunucu testi, `176/176` istemci çekirdek testi ve yeni Web Audio/Beta.34 deneyim testleri dahil `23/23` QA adımını geçti.
+- [x] 1280×720 gerçek yerel tarayıcıda hazırlık paneli taşmadan sığdı; modül önizlemesinin port sayısı, anlık ve yeniden yüklemede kalıcı İngilizce geçişi, AI devralma sonrası raf sınıflarının daraltılması, raf portlarının gizlenmesi ve kredi/port bilgi katmanları doğrulandı.

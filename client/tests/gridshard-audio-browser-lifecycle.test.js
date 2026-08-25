@@ -30,7 +30,7 @@ const director = new global.GridshardAudioDirector();
 
 assert.strictEqual(
   global.GRIDSHARD_AUDIO_MIX.version,
-  "shardglass-seamless-v8"
+  "shardglass-seamless-v9"
 );
 
 assert.strictEqual(
@@ -48,6 +48,10 @@ const poolTrack = director.currentTrack;
 assert.notStrictEqual(poolTrack, menuTrack);
 assert.strictEqual(poolTrack.currentTime, 17.25);
 assert.strictEqual(poolTrack.loop, true);
+
+director.setState("matchmaking");
+const matchmakingTrack = director.currentTrack;
+assert.strictEqual(matchmakingTrack.loop, true);
 
 director.setState("battle");
 const battleTrack = director.currentTrack;

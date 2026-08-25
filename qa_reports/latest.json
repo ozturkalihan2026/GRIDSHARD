@@ -1,15 +1,15 @@
 {
   "project": "GRIDSHARD 2.0",
-  "version": "2.0.0-beta.33",
-  "generated_at_epoch": 1787661746,
+  "version": "2.0.0-beta.34",
+  "generated_at_epoch": 1787676522,
   "ok": true,
   "steps": [
     {
       "name": "release_guard",
       "ok": true,
       "returncode": 0,
-      "duration_s": 0.088,
-      "stdout": "[GRIDSHARD] Kaynak bütünlüğü doğrulandı: 2.0.0-beta.33 · dict telemetri uyumlu.\n",
+      "duration_s": 0.27,
+      "stdout": "[GRIDSHARD] Kaynak bütünlüğü doğrulandı: 2.0.0-beta.34 · dict telemetri uyumlu.\n",
       "stderr": "",
       "command": [
         "D:\\Projects\\GRIDSHARD\\.venv\\Scripts\\python.exe",
@@ -20,8 +20,8 @@
       "name": "server_pytest",
       "ok": true,
       "returncode": 0,
-      "duration_s": 18.986,
-      "stdout": "........................................................................ [ 10%]\n........................................................................ [ 20%]\n........................................................................ [ 30%]\n........................................................................ [ 40%]\n........................................................................ [ 51%]\n........................................................................ [ 61%]\n........................................................................ [ 71%]\n........................................................................ [ 81%]\n........................................................................ [ 92%]\n........................................................                 [100%]\n704 passed in 17.94s\n",
+      "duration_s": 45.492,
+      "stdout": "........................................................................ [ 10%]\n........................................................................ [ 20%]\n........................................................................ [ 30%]\n........................................................................ [ 40%]\n........................................................................ [ 51%]\n........................................................................ [ 61%]\n........................................................................ [ 71%]\n........................................................................ [ 81%]\n........................................................................ [ 91%]\n.........................................................                [100%]\n705 passed in 42.56s\n",
       "stderr": "",
       "command": [
         "D:\\Projects\\GRIDSHARD\\.venv\\Scripts\\python.exe",
@@ -51,7 +51,7 @@
       "name": "client_syntax_runtime",
       "ok": true,
       "returncode": 0,
-      "duration_s": 0.06,
+      "duration_s": 0.044,
       "stdout": "",
       "stderr": "",
       "command": [
@@ -64,7 +64,7 @@
       "name": "client_syntax_audio",
       "ok": true,
       "returncode": 0,
-      "duration_s": 0.06,
+      "duration_s": 0.062,
       "stdout": "",
       "stderr": "",
       "command": [
@@ -77,7 +77,7 @@
       "name": "client_syntax_i18n",
       "ok": true,
       "returncode": 0,
-      "duration_s": 0.055,
+      "duration_s": 0.047,
       "stdout": "",
       "stderr": "",
       "command": [
@@ -90,7 +90,7 @@
       "name": "client_audio_tests",
       "ok": true,
       "returncode": 0,
-      "duration_s": 0.066,
+      "duration_s": 0.048,
       "stdout": "gridshard audio identity test passed\n",
       "stderr": "",
       "command": [
@@ -102,7 +102,7 @@
       "name": "client_audio_browser_lifecycle",
       "ok": true,
       "returncode": 0,
-      "duration_s": 2.764,
+      "duration_s": 2.775,
       "stdout": "gridshard audio browser lifecycle test passed\n",
       "stderr": "",
       "command": [
@@ -111,10 +111,34 @@
       ]
     },
     {
+      "name": "client_audio_webaudio_loop",
+      "ok": true,
+      "returncode": 0,
+      "duration_s": 1.425,
+      "stdout": "gridshard Web Audio seamless loop test passed\n",
+      "stderr": "",
+      "command": [
+        "C:\\Users\\S-A\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\node\\bin\\node.exe",
+        "tests/gridshard-audio-webaudio-loop.test.js"
+      ]
+    },
+    {
+      "name": "client_beta34_experience",
+      "ok": true,
+      "returncode": 0,
+      "duration_s": 0.196,
+      "stdout": "beta34 client experience test passed\n",
+      "stderr": "",
+      "command": [
+        "C:\\Users\\S-A\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\node\\bin\\node.exe",
+        "tests/beta34-experience.test.js"
+      ]
+    },
+    {
       "name": "client_unit_tests",
       "ok": true,
       "returncode": 0,
-      "duration_s": 0.228,
+      "duration_s": 0.972,
       "stdout": "176 client tests passed\n",
       "stderr": "",
       "command": [
@@ -126,7 +150,7 @@
       "name": "client_i18n_tests",
       "ok": true,
       "returncode": 0,
-      "duration_s": 0.057,
+      "duration_s": 0.198,
       "stdout": "gridshard i18n test passed\n",
       "stderr": "",
       "command": [
@@ -138,7 +162,7 @@
       "name": "client_startup_menu_test",
       "ok": true,
       "returncode": 0,
-      "duration_s": 0.133,
+      "duration_s": 0.398,
       "stdout": "app startup + preparation return + forfeit penalty + timer freeze + reciprocal local battle test passed\n",
       "stderr": "",
       "command": [
@@ -150,8 +174,8 @@
       "name": "client_component_tests",
       "ok": true,
       "returncode": 0,
-      "duration_s": 0.186,
-      "stdout": "âœ” screen controller ekran panellerini tek yerde yÃ¶netir (1.8027ms)\nâœ” battle board view yalnÄ±z aktif modÃ¼lleri hedef hÃ¼crelerine yerleÅŸtirir (2.8591ms)\nâœ” module card view bilinmeyen modÃ¼le gÃ¼venli simge verir (2.5928ms)\nâœ” tutorial controller etkileÅŸimli adÄ±mÄ± tamamlayÄ±p ilerler (2.5271ms)\nâœ” mobil runtime yapÄ±landÄ±rmasÄ± API isteklerini HTTPS backend'e yÃ¶nlendirir (22.9932ms)\nâ„¹ tests 5\nâ„¹ suites 0\nâ„¹ pass 5\nâ„¹ fail 0\nâ„¹ cancelled 0\nâ„¹ skipped 0\nâ„¹ todo 0\nâ„¹ duration_ms 120.9672\n",
+      "duration_s": 0.972,
+      "stdout": "âœ” screen controller ekran panellerini tek yerde yÃ¶netir (2.122ms)\nâœ” battle board view yalnÄ±z aktif modÃ¼lleri hedef hÃ¼crelerine yerleÅŸtirir (1.5908ms)\nâœ” module card view bilinmeyen modÃ¼le gÃ¼venli simge verir (1.4044ms)\nâœ” tutorial controller etkileÅŸimli adÄ±mÄ± tamamlayÄ±p ilerler (1.1697ms)\nâœ” mobil runtime yapÄ±landÄ±rmasÄ± API isteklerini HTTPS backend'e yÃ¶nlendirir (17.867ms)\nâ„¹ tests 5\nâ„¹ suites 0\nâ„¹ pass 5\nâ„¹ fail 0\nâ„¹ cancelled 0\nâ„¹ skipped 0\nâ„¹ todo 0\nâ„¹ duration_ms 227.3239\n",
       "stderr": "",
       "command": [
         "C:\\Users\\S-A\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\node\\bin\\node.exe",
@@ -163,7 +187,7 @@
       "name": "audio_bs1770_optional_scan",
       "ok": true,
       "returncode": 0,
-      "duration_s": 0.1,
+      "duration_s": 0.467,
       "stdout": "Audio BS.1770 scan: SKIPPED\n",
       "stderr": "",
       "command": [
@@ -175,7 +199,7 @@
       "name": "beta25_energy_port_regression",
       "ok": true,
       "returncode": 0,
-      "duration_s": 1.687,
+      "duration_s": 3.11,
       "stdout": "Beta.24 energy/port report: D:\\Projects\\GRIDSHARD\\qa_reports\\beta24_energy_port_report.json\nmatches 30 timeouts 0 draws 2 avg_ms 55993.3\nenergy_combinations 43795 generator 11.0 ports 4\n",
       "stderr": "",
       "command": [
@@ -187,7 +211,7 @@
       "name": "beta33_acceptance_report",
       "ok": true,
       "returncode": 0,
-      "duration_s": 0.273,
+      "duration_s": 0.417,
       "stdout": "Beta.33 acceptance report: D:\\Projects\\GRIDSHARD\\qa_reports\\beta33_acceptance_report.json\n",
       "stderr": "",
       "command": [
@@ -196,10 +220,22 @@
       ]
     },
     {
+      "name": "beta34_acceptance_report",
+      "ok": true,
+      "returncode": 0,
+      "duration_s": 0.256,
+      "stdout": "Beta.34 acceptance report: D:\\Projects\\GRIDSHARD\\qa_reports\\beta34_acceptance_report.json\n",
+      "stderr": "",
+      "command": [
+        "D:\\Projects\\GRIDSHARD\\.venv\\Scripts\\python.exe",
+        "tools/beta34_acceptance_report.py"
+      ]
+    },
+    {
       "name": "browser_e2e_evidence_summary",
       "ok": true,
       "returncode": 0,
-      "duration_s": 0.111,
+      "duration_s": 0.272,
       "stdout": "GRIDSHARD Browser E2E evidence: SKIPPED\nRapor: D:\\Projects\\GRIDSHARD\\qa_reports\\browser_e2e_evidence_summary.json\n",
       "stderr": "",
       "command": [
@@ -211,7 +247,7 @@
       "name": "browser_e2e_history",
       "ok": true,
       "returncode": 0,
-      "duration_s": 0.112,
+      "duration_s": 0.313,
       "stdout": "Browser E2E history: SKIPPED\n",
       "stderr": "",
       "command": [
@@ -223,7 +259,7 @@
       "name": "ux_interaction_matrix",
       "ok": true,
       "returncode": 0,
-      "duration_s": 0.129,
+      "duration_s": 0.305,
       "stdout": "UX interaction matrix: SKIPPED\n",
       "stderr": "",
       "command": [
@@ -235,7 +271,7 @@
       "name": "ux_performance_observation",
       "ok": true,
       "returncode": 0,
-      "duration_s": 0.097,
+      "duration_s": 0.325,
       "stdout": "UX performance observation: NOT_MEASURED\n",
       "stderr": "",
       "command": [
@@ -246,7 +282,7 @@
     {
       "name": "uvicorn_http_smoke",
       "ok": true,
-      "duration_s": 2.178,
+      "duration_s": 6.383,
       "checks": [
         {
           "path": "/",
