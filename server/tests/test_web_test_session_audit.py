@@ -37,7 +37,7 @@ def test_session_audit_records_minimal_operational_metadata():
     event=events[0]
     assert event["timestamp_ms"]==123456
     assert event["metadata"]["build"]=="web-test-beta.13"
-    assert event["metadata"]["server_version"]=="2.0.0-beta.32-fix.1"
+    assert event["metadata"]["server_version"]=="2.0.0-beta.33"
     assert event["metadata"]["pvp_protocol_version"]==1
     assert "operation_ready" in event["metadata"]
     assert "release_ready" in event["metadata"]

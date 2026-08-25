@@ -208,3 +208,25 @@ Ana lobby kararı artık yalnız doküman değildir:
 - alt ekran kimlikleri `Operatör Terminali / Savaş Arşivi / Sistem Konsolu`.
 
 Parallax dekoratiftir; savaş input'una veya mobil erişilebilirliğe bağımlılık oluşturmaz.
+
+---
+
+## 11. Beta.33 Corelight renk katmanı
+
+Oyuncu geri bildirimindeki “fazla koyu” bulgusu, Shardglass kimliğini terk ederek değil ışık hiyerarşisini genişleterek çözülür. Savaş alanının koyu taktik zemini korunur; menü, hazırlık ve ilerleme alanları daha canlı bir oyun kimliği taşır.
+
+Yeni vurgu skalası:
+
+- `Corelight Cyan #48F4E0` — ilerleme, enerji ve olumlu etkileşim,
+- `Corelight Blue #4E8CFF` — bilgi, kademe ve görev akışı,
+- `Corelight Indigo #6B5CFF` — sezon derinliği ve arka plan ışık alanı,
+- `Corelight Gold #FFD56A` — seçim kapısı ve alınabilir ödül,
+- `Corelight Coral #FF647C` — tehdit ve kritik hata.
+
+Kullanım ilkeleri:
+
+- koyu zemin tek başına geniş bir yüzeyi kaplamaz; en az iki düşük opaklıklı renk ışık alanıyla ayrıştırılır,
+- altın yalnız oyuncunun o anda karar vermesi veya ödül alması gereken noktada kullanılır,
+- sınıf renkleri ve savaş durumları korunur; Corelight sınıf ayrımının yerine geçmez,
+- parıltı geometriyi hareket ettirmez; Beta.32 Fix.1 port/simge sabitliği değişmez,
+- azaltılmış hareket tercihi altında renk ve kontrast bilgi taşımaya devam eder.

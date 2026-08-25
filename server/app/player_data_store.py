@@ -541,6 +541,7 @@ class PlayerDataStoreService:
         data: dict,
     ) -> None:
         player_id=data["player_id"]
+        engagement = dict(data.get("engagement") or {})
         profile=PlayerProfile(
             player_id=player_id,
             display_name=data[
@@ -556,6 +557,28 @@ class PlayerDataStoreService:
                     "preferred_battle_pool_ids"
                 ]
             ),
+            season_xp=int(engagement.get("season_xp", 0)),
+            flux_shards=int(engagement.get("flux_shards", 0)),
+            claimed_season_tiers=tuple(
+                int(value)
+                for value in engagement.get("claimed_season_tiers", [])
+            ),
+            daily_mission_day=str(engagement.get("daily_mission_day", "")),
+            daily_mission_progress={
+                str(item.get("id")): int(item.get("progress", 0))
+                for item in engagement.get("daily_missions", [])
+                if item.get("id")
+            },
+            claimed_daily_missions=tuple(
+                str(item.get("id"))
+                for item in engagement.get("daily_missions", [])
+                if item.get("id") and item.get("claimed")
+            ),
+            unlocked_titles=tuple(
+                str(value)
+                for value in engagement.get("unlocked_titles", ["Devre Çırağı"])
+            ),
+            equipped_title=str(engagement.get("equipped_title", "Devre Çırağı")),
         )
         self.profile_service._profiles[
             player_id

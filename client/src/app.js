@@ -91,7 +91,7 @@
   const COMPETITIVE_STATUS = "M7 rekabetçi altyapı doğrulanıyor";
   const BALANCE_STATUS = "Denge simülasyonu mevcut · geniş örnek bekliyor";
   const AI_STATUS = "AI altyapısı mevcut · arketip testleri bekliyor";
-  const PVP_STATUS = "GRIDSHARD Beta.32 Fix.1 · Sabit Port + Sabit Simge + Belirgin Güçlendirici";
+  const PVP_STATUS = "GRIDSHARD Beta.33 · Sezon Sıfır + Günlük Görevler + Corelight Kimlik";
 
 
 
@@ -605,7 +605,7 @@
         webTestBuildState,
       releaseCheckState,
       expectedVersion:
-        "2.0.0-beta.32-fix.1",
+        "2.0.0-beta.33",
       expectedProtocolVersion: 1,
     });
   const playReadinessGate =
@@ -641,7 +641,7 @@
 
   telemetryDispatcher.trackGameOpened({
     platform: "web",
-    build: "2.0.0-beta.32-fix.1",
+    build: "2.0.0-beta.33",
   });
 
   const postMatchSync =
@@ -1578,7 +1578,7 @@
   const diagnosticSnapshot =
     new RelayDiagnosticSnapshot({
       version:
-        "2.0.0-beta.32-fix.1",
+        "2.0.0-beta.33",
       build:
         "web-test-beta.13",
       bootGate:
@@ -3517,7 +3517,7 @@
       if (versionEl) {
         versionEl.textContent=
           manifest.version
-          || "2.0.0-beta.32-fix.1";
+          || "2.0.0-beta.33";
       }
       if (runEl) {
         runEl.textContent=
@@ -6410,7 +6410,7 @@ function saveHumanReviewLocalNote() {
     );
 
     logClientMessage(
-      "Beta.32 Fix.1 geliştirici testi: portlar ve simgeler enerji/darbe durumunda sabit; güçlendirici alanı belirgin."
+      "Beta.33 geliştirici testi: sezon ilerlemesi, günlük görevler ve Beta.32 Fix.1 savaş geometrisi aktif."
     );
 
     return {
@@ -10388,8 +10388,119 @@ function saveHumanReviewLocalNote() {
     }
     if (lobbyPlayerDetails) {
       lobbyPlayerDetails.textContent=
-        `Seviye ${view.level} · Lig: ${view.leagueNameTr} · ${view.rating} RP`;
+        `${view.engagement?.equipped_title || "Devre Çırağı"} · Seviye ${view.level} · Lig: ${view.leagueNameTr} · ${view.rating} RP`;
     }
+
+    renderEngagementSummary(view.engagement);
+  }
+
+  function renderEngagementSummary(engagement) {
+    if (!engagement) return;
+
+    const setText = (id, value) => {
+      const element = document.getElementById(id);
+      if (element) element.textContent = String(value);
+    };
+    const progress = Math.max(0, Number(engagement.tier_progress || 0));
+    const required = Math.max(1, Number(engagement.tier_progress_required || 1));
+    const percentage = Math.min(100, Math.round((progress / required) * 100));
+
+    setText("season-flux-shards", engagement.flux_shards || 0);
+    setText("season-equipped-title", engagement.equipped_title || "Devre Çırağı");
+    setText(
+      "season-tier-label",
+      `Kademe ${engagement.current_tier || 0} / ${engagement.max_tier || 10}`
+    );
+    setText("season-progress-copy", `${progress} / ${required} Sezon XP`);
+
+    const progressTrack = document.querySelector(".season-progress-track");
+    const progressFill = document.getElementById("season-progress-fill");
+    if (progressTrack) progressTrack.setAttribute("aria-valuenow", String(percentage));
+    if (progressFill) progressFill.style.width = `${percentage}%`;
+
+    const missions = document.getElementById("daily-mission-list");
+    if (missions) {
+      missions.replaceChildren();
+      for (const mission of engagement.dailyMissions || []) {
+        const card = document.createElement("article");
+        card.className = "daily-mission-card";
+        card.dataset.state = mission.claimed
+          ? "claimed"
+          : mission.completed
+            ? "claimable"
+            : "active";
+        const copy = document.createElement("div");
+        const name = document.createElement("strong");
+        name.textContent = mission.name_tr;
+        const description = document.createElement("span");
+        description.textContent = mission.description_tr;
+        const meter = document.createElement("small");
+        meter.textContent = `${mission.progress} / ${mission.target} · +${mission.season_xp_reward} SXP · +${mission.flux_shard_reward} Akı`;
+        copy.append(name, description, meter);
+        const action = document.createElement("button");
+        action.type = "button";
+        action.dataset.missionClaim = mission.id;
+        action.disabled = !mission.completed || mission.claimed;
+        action.textContent = mission.claimed
+          ? "Alındı"
+          : mission.completed
+            ? "Ödülü Al"
+            : "Devam Ediyor";
+        card.append(copy, action);
+        missions.appendChild(card);
+      }
+    }
+
+    const rewards = document.getElementById("season-reward-track");
+    if (rewards) {
+      rewards.replaceChildren();
+      for (const reward of engagement.rewardTrack || []) {
+        const card = document.createElement("article");
+        card.className = "season-reward-card";
+        card.dataset.state = reward.claimed
+          ? "claimed"
+          : reward.claimable
+            ? "claimable"
+            : "locked";
+        const tier = document.createElement("span");
+        tier.textContent = `KADEME ${reward.tier}`;
+        const prize = document.createElement("strong");
+        prize.textContent = reward.title_tr
+          ? `${reward.title_tr} + ${reward.flux_shards} Akı`
+          : `${reward.flux_shards} Akı Parçası`;
+        const requirement = document.createElement("small");
+        requirement.textContent = `${reward.required_xp} SXP`;
+        const action = document.createElement("button");
+        action.type = "button";
+        action.dataset.tierClaim = String(reward.tier);
+        action.disabled = !reward.claimable;
+        action.textContent = reward.claimed
+          ? "Alındı"
+          : reward.claimable
+            ? "Al"
+            : "Kilitli";
+        card.append(tier, prize, requirement, action);
+        rewards.appendChild(card);
+      }
+    }
+
+    globalThis.GridshardI18n?.apply(document.documentElement.lang || "tr");
+  }
+
+  async function claimEngagementReward(kind, id, button) {
+    const status = document.getElementById("season-action-status");
+    if (button) button.disabled = true;
+    if (status) status.textContent = "Ödül sunucuda doğrulanıyor…";
+    const result = await accountDataLoader.claimEngagementReward(kind, id);
+    renderProfileSummary();
+    renderRemoteDataStatus();
+    if (status) {
+      status.textContent = result.ok
+        ? "Ödül alındı ve profil hesabına kaydedildi."
+        : (result.reason || "Ödül alınamadı.");
+      status.dataset.status = result.ok ? "success" : "error";
+    }
+    return result;
   }
 
   async function saveProfileDisplayName() {
@@ -12333,6 +12444,20 @@ function saveHumanReviewLocalNote() {
         saveProfileDisplayName
       );
   }
+
+  const dailyMissionList = document.getElementById("daily-mission-list");
+  dailyMissionList?.addEventListener("click", (event) => {
+    const button = event.target.closest("[data-mission-claim]");
+    if (!button || button.disabled) return;
+    claimEngagementReward("missions", button.dataset.missionClaim, button);
+  });
+
+  const seasonRewardTrack = document.getElementById("season-reward-track");
+  seasonRewardTrack?.addEventListener("click", (event) => {
+    const button = event.target.closest("[data-tier-claim]");
+    if (!button || button.disabled) return;
+    claimEngagementReward("tiers", button.dataset.tierClaim, button);
+  });
 
   function previewAudioSettingsFromControls() {
     const sound=

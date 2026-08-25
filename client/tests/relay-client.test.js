@@ -480,61 +480,61 @@ function createClient() {
   const fs=require("fs");
   const src=fs.readFileSync(path.join(ROOT,"src/app.js"),"utf8");
   assert.ok(src.includes("PVP_STATUS"));
-  assert.ok(src.includes("GRIDSHARD Beta.32 Fix.1 · Sabit Port + Sabit Simge + Belirgin Güçlendirici"));
+  assert.ok(src.includes("GRIDSHARD Beta.33 · Sezon Sıfır + Günlük Görevler + Corelight Kimlik"));
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync(path.join(ROOT,"src/app.js"),"utf8");
-  assert.ok(src.includes("GRIDSHARD Beta.32 Fix.1 · Sabit Port + Sabit Simge + Belirgin Güçlendirici")); // alpha32->33 protocol status
+  assert.ok(src.includes("GRIDSHARD Beta.33 · Sezon Sıfır + Günlük Görevler + Corelight Kimlik")); // alpha32->33 protocol status
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync(path.join(ROOT,"src/app.js"),"utf8");
-  assert.ok(src.includes("GRIDSHARD Beta.32 Fix.1 · Sabit Port + Sabit Simge + Belirgin Güçlendirici")); // alpha33 protocol
+  assert.ok(src.includes("GRIDSHARD Beta.33 · Sezon Sıfır + Günlük Görevler + Corelight Kimlik")); // alpha33 protocol
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync(path.join(ROOT,"src/app.js"),"utf8");
-  assert.ok(src.includes("GRIDSHARD Beta.32 Fix.1 · Sabit Port + Sabit Simge + Belirgin Güçlendirici")); // alpha34 websocket
+  assert.ok(src.includes("GRIDSHARD Beta.33 · Sezon Sıfır + Günlük Görevler + Corelight Kimlik")); // alpha34 websocket
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync(path.join(ROOT,"src/app.js"),"utf8");
-  assert.ok(src.includes("GRIDSHARD Beta.32 Fix.1 · Sabit Port + Sabit Simge + Belirgin Güçlendirici")); // alpha35 gateway
+  assert.ok(src.includes("GRIDSHARD Beta.33 · Sezon Sıfır + Günlük Görevler + Corelight Kimlik")); // alpha35 gateway
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync(path.join(ROOT,"src/app.js"),"utf8");
-  assert.ok(src.includes("GRIDSHARD Beta.32 Fix.1 · Sabit Port + Sabit Simge + Belirgin Güçlendirici")); // alpha36 setup
+  assert.ok(src.includes("GRIDSHARD Beta.33 · Sezon Sıfır + Günlük Görevler + Corelight Kimlik")); // alpha36 setup
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync(path.join(ROOT,"src/app.js"),"utf8");
-  assert.ok(src.includes("GRIDSHARD Beta.32 Fix.1 · Sabit Port + Sabit Simge + Belirgin Güçlendirici")); // alpha37 lobby
+  assert.ok(src.includes("GRIDSHARD Beta.33 · Sezon Sıfır + Günlük Görevler + Corelight Kimlik")); // alpha37 lobby
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync(path.join(ROOT,"src/app.js"),"utf8");
-  assert.ok(src.includes("GRIDSHARD Beta.32 Fix.1 · Sabit Port + Sabit Simge + Belirgin Güçlendirici")); // alpha38 runner
+  assert.ok(src.includes("GRIDSHARD Beta.33 · Sezon Sıfır + Günlük Görevler + Corelight Kimlik")); // alpha38 runner
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync(path.join(ROOT,"src/app.js"),"utf8");
-  assert.ok(src.includes("GRIDSHARD Beta.32 Fix.1 · Sabit Port + Sabit Simge + Belirgin Güçlendirici")); // alpha39 heartbeat
+  assert.ok(src.includes("GRIDSHARD Beta.33 · Sezon Sıfır + Günlük Görevler + Corelight Kimlik")); // alpha39 heartbeat
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync(path.join(ROOT,"src/app.js"),"utf8");
-  assert.ok(src.includes("GRIDSHARD Beta.32 Fix.1 · Sabit Port + Sabit Simge + Belirgin Güçlendirici")); // alpha40 online pvp
+  assert.ok(src.includes("GRIDSHARD Beta.33 · Sezon Sıfır + Günlük Görevler + Corelight Kimlik")); // alpha40 online pvp
 }
 
 {
@@ -765,7 +765,7 @@ function createClient() {
 {
   const fs=require("fs");
   const src=fs.readFileSync(path.join(ROOT,"src/app.js"),"utf8");
-  assert.ok(src.includes("GRIDSHARD Beta.32 Fix.1 · Sabit Port + Sabit Simge + Belirgin Güçlendirici"));
+  assert.ok(src.includes("GRIDSHARD Beta.33 · Sezon Sıfır + Günlük Görevler + Corelight Kimlik"));
   assert.ok(src.includes("buildPvPCommandEnvelope"));
   assert.ok(src.includes("applyPvPServerEnvelope"));
 }
@@ -789,6 +789,13 @@ function createClient() {
       { length: 18 },
       (_, i) => `m${i}`
     ),
+    engagement: {
+      season_id: "core_awakening_s0",
+      current_tier: 2,
+      daily_missions: [{ id: "complete_battles", progress: 1 }],
+      reward_track: [{ tier: 1, claimed: true }],
+      unlocked_titles: ["Devre Çırağı"],
+    },
   });
 
   const view = state.viewModel();
@@ -797,6 +804,8 @@ function createClient() {
   assert.strictEqual(view.level, 3);
   assert.strictEqual(view.leagueNameTr, "Altın");
   assert.strictEqual(view.battlePoolIds.length, 18);
+  assert.strictEqual(view.engagement.current_tier, 2);
+  assert.strictEqual(view.engagement.dailyMissions.length, 1);
 }
 
 {
@@ -816,7 +825,7 @@ function createClient() {
   );
   assert.deepStrictEqual(
     state.allowedSections,
-    ["Genel", "İlerleme", "Savaş Havuzu"]
+    ["Genel", "İlerleme", "Sezon", "Savaş Havuzu"]
   );
 }
 
@@ -2462,7 +2471,7 @@ function createClient() {
   const html=fs.readFileSync(path.join(ROOT,"index.html"),"utf8");
   assert.ok(
     html.includes(
-      "2.0.0-beta.32-fix.1"
+      "2.0.0-beta.33"
     )
   );
   assert.ok(
@@ -4953,6 +4962,56 @@ function createClient() {
   assert.ok(css.includes("gs-card-fire-static"));
   assert.ok(css.includes('.battle-booster-dock[data-state="ready"]'));
   assert.ok(app.includes('boosterPanelEl.dataset.state'));
+}
+
+{
+  const {
+    RelayAccountDataLoader,
+    RelayProfileClientState,
+    RelayStatisticsClientState,
+    RelaySettingsClientState,
+  } = require("../src/relay-client.js");
+  const profile = new RelayProfileClientState();
+  const loader = new RelayAccountDataLoader({
+    playerId: "season-player",
+    profileState: profile,
+    statisticsState: new RelayStatisticsClientState(),
+    settingsState: new RelaySettingsClientState(),
+    requestJson: async (requestPath, options) => {
+      assert.strictEqual(
+        requestPath,
+        "/profile/season-player/engagement/tiers/2/claim"
+      );
+      assert.strictEqual(options.method, "POST");
+      return {
+        player_id: "season-player",
+        display_name: "Operator",
+        level: 1,
+        experience: 250,
+        experience_into_level: 250,
+        experience_to_next_level: 750,
+        rating: 1000,
+        league_name_tr: "Gümüş",
+        preferred_battle_pool_ids: [],
+        engagement: {
+          current_tier: 2,
+          equipped_title: "Devre Öncüsü",
+          daily_missions: [],
+          reward_track: [{ tier: 2, claimed: true }],
+          unlocked_titles: ["Devre Çırağı", "Devre Öncüsü"],
+        },
+      };
+    },
+  });
+  asyncTests.push(
+    loader.claimEngagementReward("tiers", 2).then((result) => {
+      assert.strictEqual(result.ok, true);
+      assert.strictEqual(
+        profile.viewModel().engagement.equipped_title,
+        "Devre Öncüsü"
+      );
+    })
+  );
 }
 
 Promise.all(asyncTests).then(() => {

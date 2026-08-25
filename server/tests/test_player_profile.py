@@ -33,6 +33,7 @@ def test_default_profile_has_progression_and_no_cosmetic_sections():
     assert view["profile_sections"] == [
         "Genel",
         "İlerleme",
+        "Sezon",
         "Savaş Havuzu",
     ]
     assert "Kozmetik" not in view["profile_sections"]

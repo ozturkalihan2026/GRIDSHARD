@@ -1,5 +1,5 @@
 {
-  "version": "2.0.0-beta.32-fix.1",
+  "version": "2.0.0-beta.33",
   "source_status": "PASSED",
   "status": "PASSED",
   "passed": true,
@@ -17,88 +17,95 @@
     "complete": true,
     "status": "PASSED",
     "expected_projects": {
-      "desktop-chromium": 6,
+      "desktop-chromium": 7,
       "android-chrome-emulated": 2,
       "iphone-safari-emulated": 2
     },
     "passed_by_project": {
-      "desktop-chromium": 6,
+      "desktop-chromium": 7,
       "android-chrome-emulated": 2,
       "iphone-safari-emulated": 2
     },
-    "test_count": 10,
-    "duration_ms": 236698.415,
-    "started_at": "2026-08-24T13:53:02.807Z",
+    "test_count": 11,
+    "duration_ms": 224470.813,
+    "started_at": "2026-08-25T07:28:04.750Z",
     "tests": [
       {
         "project": "desktop-chromium",
         "file": "battle-density.spec.js",
         "line": 3,
         "passed": true,
-        "duration_ms": 16147
+        "duration_ms": 14787
       },
       {
         "project": "desktop-chromium",
         "file": "battle-module-swap.spec.js",
         "line": 4,
         "passed": true,
-        "duration_ms": 33177
+        "duration_ms": 32444
       },
       {
         "project": "desktop-chromium",
         "file": "beta32-booster-viewport.spec.js",
         "line": 4,
         "passed": true,
-        "duration_ms": 46314
+        "duration_ms": 46402
+      },
+      {
+        "project": "desktop-chromium",
+        "file": "beta33-season.spec.js",
+        "line": 4,
+        "passed": true,
+        "duration_ms": 1741
       },
       {
         "project": "desktop-chromium",
         "file": "menu-navigation.spec.js",
         "line": 3,
         "passed": true,
-        "duration_ms": 2675
+        "duration_ms": 2158
       },
       {
         "project": "desktop-chromium",
         "file": "two-client-pvp.spec.js",
         "line": 12,
         "passed": true,
-        "duration_ms": 10597
+        "duration_ms": 5930
       },
       {
         "project": "desktop-chromium",
         "file": "two-client-pvp.spec.js",
         "line": 70,
         "passed": true,
-        "duration_ms": 12841
+        "duration_ms": 5886
       },
       {
         "project": "android-chrome-emulated",
         "file": "mobile-battle.spec.js",
         "line": 3,
         "passed": true,
-        "duration_ms": 30938
+        "duration_ms": 30091
       },
       {
         "project": "android-chrome-emulated",
         "file": "mobile-battle.spec.js",
         "line": 66,
         "passed": true,
-        "duration_ms": 12948
+        "duration_ms": 12428
       },
       {
         "project": "iphone-safari-emulated",
         "file": "mobile-battle.spec.js",
         "line": 3,
         "passed": true,
-        "duration_ms": 42319
+        "duration_ms": 45849
       },
       {
         "project": "iphone-safari-emulated",
         "file": "mobile-battle.spec.js",
         "line": 66,
         "passed": true,
-        "duration_ms": 22657
+        "duration_ms": 21427
       }
     ]
   },

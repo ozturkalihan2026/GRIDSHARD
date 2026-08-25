@@ -1,7 +1,7 @@
 # GRIDSHARD 2.0 — YOL HARİTASI
 
-**Güncel Sürüm:** `2.0.0-beta.32-fix.1`
-**Paket:** Beta.32 Fix.1 — Sabit Port/Simgeler + Belirgin Güçlendiriciler
+**Güncel Sürüm:** `2.0.0-beta.33`
+**Paket:** Beta.33 — Sezon Sıfır + Günlük Görevler + Corelight Görsel Kimlik
 **Kanonik Dosya:** `docs/YOL_HARITASI.md`
 
 > Bu dosya GRIDSHARD 2.0 için tek kanonik geliştirme kaydıdır. Kaynak karar belgesi ile kod tabanı yeniden karşılaştırılmıştır. Buradaki `[x]`, `[~]`, `[ ]` işaretleri artık yalnızca kodda ve testlerde doğrulanabilen gerçek durumu gösterir.
@@ -46,13 +46,15 @@ Aşağıdaki kararlar sabittir ve bundan sonraki geliştirmeler bunları bozamaz
 - [x] İstatistikler
 - [x] Ayarlar
 
-## İlk sürümde geliştirilmeyecek alanlar
+## İleri sürümlere bırakılan / kontrollü dikey dilimle açılan alanlar
+
+Beta.33 oyuncu bağlılığı kararıyla eski kapsam kilidi kontrollü biçimde daraltıldı. Ücretli ekonomi kurulmadan yalnız ücretsiz ve sunucu doğrulamalı bir sezon dikey dilimi açıldı:
 
 - [ ] Mağaza
-- [ ] Kozmetik ekranları
-- [ ] Sezon
-- [ ] Battle Pass
-- [ ] Görev merkezi
+- [~] Kozmetik ekranları — sezon unvanları profil kimliğinde görünür; ayrı koleksiyon/equip ekranı yok.
+- [~] Sezon — Sezon Sıfır ilerlemesi uygulanmıştır; gerçek takvim, içerik rotasyonu ve sezon sonu prosedürü bekliyor.
+- [~] Battle Pass — 10 kademeli ücretsiz ödül yolu uygulanmıştır; ücretli yol ve satın alma sistemi tasarım kararı olmadan eklenmez.
+- [~] Görev merkezi — üç sunucu doğrulamalı günlük görev uygulanmıştır; haftalık/uzun vadeli görev çeşitliliği bekliyor.
 - [ ] Etkinlik ekranı
 - [ ] Turnuva
 - [ ] Klan
@@ -1614,3 +1616,29 @@ Doğrulama sınırı:
 
 - [x] Beta.32 kabul kapıları ve önceki tüm motor testleri korunur.
 - [ ] Fiziksel cihaz piksel yoğunluğu ve tarayıcı ölçek ayarları harici cihaz kanıtı olmadan tamamlanmış sayılmaz.
+
+---
+
+# 18. Güncel Paket — Beta.33
+
+**`GRIDSHARD 2.0.0-beta.33 — Sezon Sıfır · Günlük Görevler · Corelight Görsel Kimlik`**
+
+Beta.33, Beta.32 Fix.1'in sabit port/simge geometrisi, belirgin güçlendiricileri ve önceki tüm sunucu otoriteli savaş temellerini korurken oyuncuya maçlar arasında anlamlı bir hedef veren ilk bağlılık döngüsünü açar:
+
+1. [x] Profil ilerlemesine `Sezon Sıfır · Çekirdek Uyanışı` eklendi. Normal maç XP'si aynı anda Sezon XP üretir; sonuç tek sefer işlenen mevcut maç-sonu hattından gelir.
+2. [x] 10 kademeli ücretsiz ödül yolu eklendi. Kademe eşiği, ödül alınabilirliği ve çift alma engeli sunucu tarafından doğrulanır.
+3. [x] `Savaş tamamla`, `hasar ver` ve `canlı devre hamlesi yap` hedefli üç günlük görev eklendi. İlerleme savaşın gerçek sonuç özeti ve motor olaylarından hesaplanır; istemci görev ilerlemesi yazamaz.
+4. [x] Görev/kademe ödülleri Akı Parçası ve profil unvanı kazandırır. Unvan ödülleri alınca otomatik kuşanılır ve ana menü oyuncu kartında görünür.
+5. [x] Sezon XP, günlük ilerleme, alınan ödüller, Akı Parçası ve unvanlar mevcut JSON/PostgreSQL profil kaydında kalıcıdır; eski Beta.32 profilleri eksik alanları güvenli varsayılanlarla açar.
+6. [x] Profil ekranı görev merkezi, kademe ilerleme çubuğu ve yatay ödül yoluyla gerçek etkileşimli Sezon Sıfır merkezine dönüştürüldü; ücretli geçiş eklenmedi.
+7. [x] Öneri girdisindeki koyuluk bulgusuna karşı Corelight paleti eklendi: taktik koyu taban korunurken menü, hazırlık ve ilerleme ekranlarında daha canlı camgöbeği, indigo ve altın ışık alanları kullanılır.
+8. [x] `Başlangıç Devresi · 4 Aktif` satırı altın çerçeve, strateji etiketi, yüksek kontrast ve daha büyük seçim kontrolleriyle hazırlık ekranının belirgin karar kapısı oldu.
+9. [x] Yeni statik ve dinamik sezon metinleri Türkçe/İngilizce yerelleştirme kapsamına alındı; azaltılmış hareket ve mevcut erişilebilirlik davranışları korunur.
+
+Doğrulama sınırı ve açık ürün kararları:
+
+- [x] Birleşik kalite kapısı `703/703` sunucu, `176/176` istemci ve `20/20` QA adımını geçti; gerçek tarayıcı matrisi masaüstü `7/7`, Android Chrome `2/2`, iPhone Safari/WebKit `2/2` olmak üzere `11/11` başarılıdır.
+- [~] Sezon/Battle Pass/Görev Merkezi ilk çalışan dikey dilime sahiptir; gerçek sezon takvimi, haftalık görevler, içerik rotasyonu ve canlı operasyon yönetimi sonraki paketlerin işidir.
+- [~] Akı Parçası bu pakette yalnız kazanılır ve kalıcıdır. Mağaza fiyatı veya ücretli ekonomi gerçek ürün kararı olmadan eklenmez.
+- [ ] Fiziksel Android/iPhone kanıtı harici cihaz ve hesap girdileri olmadan tamamlanmış sayılmaz.
+- [ ] Gerçek oyuncu telemetrisi oluşmadan savaş/enerji/kredi değerleri otomatik değiştirilmez.

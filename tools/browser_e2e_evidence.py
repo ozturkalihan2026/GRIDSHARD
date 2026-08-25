@@ -9,7 +9,7 @@ ARTIFACT_DIR=ROOT/"qa_reports/browser_e2e_artifacts"
 OUTPUT=ROOT/"qa_reports/browser_e2e_evidence_summary.json"
 PLAYWRIGHT_REPORT=ROOT/"qa_reports/playwright-results.json"
 EXPECTED_PLAYWRIGHT_PROJECTS={
-    "desktop-chromium":6,
+    "desktop-chromium":7,
     "android-chrome-emulated":2,
     "iphone-safari-emulated":2,
 }
@@ -227,7 +227,7 @@ def main()->int:
 
     summary={
         "version":
-            "2.0.0-beta.32-fix.1",
+            "2.0.0-beta.33",
         "source_status":
             source_status,
         "status":status,

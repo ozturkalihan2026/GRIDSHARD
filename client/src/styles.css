@@ -91,6 +91,259 @@ button, input { font: inherit; }
   background: #17273e;
 }
 
+/* =========================================================
+   GRIDSHARD Beta.33 — Corelight visual identity + Season Zero
+   Brighter cyan/indigo/gold light fields preserve the tactical dark base
+   while giving menu, preparation and progression screens a game-like pulse.
+   ========================================================= */
+:root {
+  --gs-corelight-cyan:#48F4E0;
+  --gs-corelight-blue:#4E8CFF;
+  --gs-corelight-indigo:#6B5CFF;
+  --gs-corelight-gold:#FFD56A;
+  --gs-corelight-coral:#FF647C;
+}
+
+body[data-app-screen="menu"],
+body[data-app-screen="profile"],
+body[data-app-screen="statistics"],
+body[data-app-screen="settings"],
+body[data-app-screen="play"]:not([data-local-status="battle"]):not([data-online-status="battle"]) {
+  background:
+    radial-gradient(circle at 78% 13%,rgba(78,140,255,.30),transparent 27rem),
+    radial-gradient(circle at 16% 78%,rgba(107,92,255,.22),transparent 30rem),
+    linear-gradient(135deg,rgba(72,244,224,.08),transparent 38%),
+    linear-gradient(180deg,#10234a 0%,#09152f 47%,#050914 100%);
+}
+
+body[data-app-screen="menu"] .main-menu-panel,
+.profile-summary-panel,
+body[data-app-screen="play"] .battle-pool-panel:not([hidden]) {
+  box-shadow:
+    0 28px 75px rgba(0,0,0,.42),
+    0 0 0 1px rgba(72,244,224,.08),
+    inset 0 1px rgba(255,255,255,.05);
+}
+
+body[data-app-screen="menu"] .main-menu-panel::after {
+  content:"";
+  position:absolute;
+  inset:0;
+  z-index:0;
+  pointer-events:none;
+  opacity:.72;
+  background:
+    linear-gradient(115deg,rgba(72,244,224,.11),transparent 28%),
+    linear-gradient(310deg,rgba(255,213,106,.08),transparent 32%);
+}
+
+body[data-app-screen="menu"] #main-menu-title {
+  color:#fff;
+  text-shadow:
+    0 0 22px rgba(72,244,224,.58),
+    0 0 62px rgba(78,140,255,.36);
+}
+
+.lobby-play-button {
+  background:linear-gradient(115deg,var(--gs-corelight-gold),#FFF2A8 48%,#FFB95C) !important;
+  box-shadow:0 12px 40px rgba(255,193,80,.28),inset 0 1px rgba(255,255,255,.7);
+}
+
+.lobby-player-card {
+  border-color:rgba(72,244,224,.40);
+  background:linear-gradient(125deg,rgba(72,244,224,.12),rgba(78,140,255,.14));
+}
+
+/* The two player-selected starting modules are now a clear pre-battle gate. */
+.initial-circuit-picker {
+  position:relative;
+  border:1px solid rgba(255,213,106,.72);
+  background:
+    linear-gradient(110deg,rgba(255,213,106,.18),rgba(72,244,224,.12) 58%,rgba(78,140,255,.13));
+  box-shadow:0 0 0 1px rgba(255,213,106,.10),0 8px 24px rgba(0,0,0,.22),inset 0 1px rgba(255,255,255,.07);
+}
+
+.initial-circuit-picker::before {
+  content:"BAŞLANGIÇ STRATEJİNİ SEÇ";
+  position:absolute;
+  top:-9px;
+  left:14px;
+  padding:2px 8px;
+  border:1px solid rgba(255,213,106,.55);
+  background:#172139;
+  color:var(--gs-corelight-gold);
+  font-size:.58rem;
+  font-weight:900;
+  letter-spacing:.12em;
+}
+
+#initial-circuit-title {
+  color:#fff4bd;
+  font-size:.9rem;
+  text-shadow:0 0 16px rgba(255,213,106,.30);
+}
+
+.initial-module-choice {
+  min-height:38px;
+  border-color:rgba(72,244,224,.44);
+  background:linear-gradient(120deg,rgba(72,244,224,.12),rgba(78,140,255,.10));
+}
+
+.initial-module-choice:focus,
+.initial-module-choice:hover {
+  border-color:var(--gs-corelight-gold);
+  box-shadow:0 0 18px rgba(255,213,106,.20);
+}
+
+.season-zero-hub {
+  display:grid;
+  gap:14px;
+  margin:18px 0;
+  padding:18px;
+  border:1px solid rgba(72,244,224,.38);
+  border-radius:4px 22px 4px 22px;
+  background:
+    radial-gradient(circle at 90% 0,rgba(78,140,255,.24),transparent 20rem),
+    linear-gradient(135deg,rgba(72,244,224,.09),rgba(8,16,36,.94) 42%,rgba(22,18,60,.94));
+  box-shadow:0 18px 50px rgba(0,0,0,.28),inset 0 1px rgba(255,255,255,.05);
+}
+
+.season-zero-heading,
+.season-section-heading,
+.season-zero-progress-summary > div:first-child {
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap:14px;
+}
+
+.season-zero-heading h3,
+.season-section-heading h4 {
+  margin:3px 0 0;
+}
+
+.season-zero-heading h3 {
+  color:#fff;
+  font-size:clamp(1.55rem,3vw,2.4rem);
+  text-shadow:0 0 24px rgba(72,244,224,.34);
+}
+
+.season-zero-heading p,
+.season-section-heading small {
+  color:#a9bbd8;
+}
+
+.season-zero-currency {
+  display:grid;
+  min-width:132px;
+  padding:10px 14px;
+  border:1px solid rgba(255,213,106,.46);
+  background:rgba(255,213,106,.10);
+  text-align:right;
+}
+
+.season-zero-currency span { color:#ffe69e;font-size:.64rem;font-weight:900;letter-spacing:.1em; }
+.season-zero-currency strong { color:#fff3c0;font-size:1.65rem; }
+
+.season-zero-progress-summary { display:grid;gap:7px; }
+#season-equipped-title { color:var(--gs-corelight-cyan);font-weight:900;letter-spacing:.04em; }
+#season-tier-label { color:#fff0a7; }
+.season-progress-track {
+  height:13px;
+  overflow:hidden;
+  border:1px solid rgba(72,244,224,.28);
+  background:rgba(3,8,20,.74);
+  box-shadow:inset 0 2px 8px rgba(0,0,0,.45);
+}
+.season-progress-track span {
+  display:block;
+  width:0;
+  height:100%;
+  background:linear-gradient(90deg,var(--gs-corelight-cyan),var(--gs-corelight-blue),var(--gs-corelight-gold));
+  box-shadow:0 0 16px rgba(72,244,224,.48);
+  transition:width .4s ease;
+}
+#season-progress-copy { color:#b7c7df; }
+
+.season-zero-columns {
+  display:grid;
+  grid-template-columns:minmax(320px,.9fr) minmax(420px,1.35fr);
+  gap:14px;
+}
+
+.daily-mission-panel,
+.season-reward-panel {
+  min-width:0;
+  padding:13px;
+  border:1px solid rgba(121,159,209,.20);
+  background:rgba(4,10,24,.50);
+}
+
+.daily-mission-list { display:grid;gap:8px;margin-top:10px; }
+.daily-mission-card {
+  display:grid;
+  grid-template-columns:minmax(0,1fr) auto;
+  align-items:center;
+  gap:10px;
+  padding:10px;
+  border-left:3px solid var(--gs-corelight-blue);
+  background:rgba(26,47,83,.58);
+}
+.daily-mission-card > div { display:grid;gap:3px;min-width:0; }
+.daily-mission-card span,.daily-mission-card small { color:#aebed5; }
+.daily-mission-card[data-state="claimable"] { border-color:var(--gs-corelight-gold);box-shadow:inset 0 0 18px rgba(255,213,106,.08); }
+.daily-mission-card[data-state="claimed"] { opacity:.66;border-color:var(--gs-corelight-cyan); }
+.daily-mission-card button,
+.season-reward-card button {
+  min-height:38px;
+  border:1px solid rgba(72,244,224,.55);
+  background:rgba(72,244,224,.14);
+  color:#eafffb;
+  font-weight:850;
+}
+.daily-mission-card button:disabled,
+.season-reward-card button:disabled { opacity:.46; }
+
+.season-reward-track {
+  display:grid;
+  grid-template-columns:repeat(5,minmax(112px,1fr));
+  gap:8px;
+  margin-top:10px;
+  max-height:260px;
+  overflow:auto;
+}
+.season-reward-card {
+  display:grid;
+  align-content:start;
+  gap:6px;
+  min-height:132px;
+  padding:10px;
+  border:1px solid rgba(78,140,255,.32);
+  background:linear-gradient(145deg,rgba(78,140,255,.14),rgba(10,17,36,.82));
+}
+.season-reward-card > span { color:#86b6ff;font-size:.6rem;font-weight:900;letter-spacing:.09em; }
+.season-reward-card > strong { min-height:38px;font-size:.78rem; }
+.season-reward-card > small { color:#a9bbd8; }
+.season-reward-card[data-state="claimable"] { border-color:var(--gs-corelight-gold);box-shadow:0 0 16px rgba(255,213,106,.15); }
+.season-reward-card[data-state="claimed"] { border-color:rgba(72,244,224,.48);background:rgba(72,244,224,.09); }
+.season-action-status { margin:0;color:#aebed5; }
+.season-action-status[data-status="success"] { color:#9fffe8; }
+.season-action-status[data-status="error"] { color:#ff9aaa; }
+
+@media (max-width:980px) {
+  .season-zero-columns { grid-template-columns:1fr; }
+  .season-reward-track { grid-template-columns:repeat(3,minmax(112px,1fr)); }
+}
+
+@media (max-width:620px) {
+  .season-zero-hub { padding:12px; }
+  .season-zero-heading { display:grid; }
+  .season-zero-currency { width:100%;text-align:left; }
+  .daily-mission-card { grid-template-columns:1fr; }
+  .season-reward-track { grid-template-columns:repeat(2,minmax(108px,1fr)); }
+  .initial-circuit-picker::before { position:static;grid-column:1/-1;width:max-content; }
+}
+
 .board-cell.drag-over[data-occupied="true"] {
   border-color:var(--gs-reactor-gold,#f4c85a);
   background:rgba(244,200,90,.14);
@@ -5290,4 +5543,21 @@ body[data-app-screen="play"] .module-card > .port-left {
   outline:3px solid rgba(121,255,233,.86);
   outline-offset:-2px;
   background:linear-gradient(180deg,rgba(35,91,84,.94),rgba(18,44,49,.98));
+}
+
+/* Beta.33 final cascade: preparation emphasis must win over legacy layers. */
+.lobby-player-card {
+  border-color:rgba(72,244,224,.40);
+  background:linear-gradient(125deg,rgba(72,244,224,.12),rgba(78,140,255,.14));
+}
+.initial-circuit-picker {
+  position:relative;
+  border:1px solid rgba(255,213,106,.72);
+  background:linear-gradient(110deg,rgba(255,213,106,.18),rgba(72,244,224,.12) 58%,rgba(78,140,255,.13));
+  box-shadow:0 0 0 1px rgba(255,213,106,.10),0 8px 24px rgba(0,0,0,.22),inset 0 1px rgba(255,255,255,.07);
+}
+.initial-module-choice {
+  min-height:38px;
+  border-color:rgba(72,244,224,.44);
+  background:linear-gradient(120deg,rgba(72,244,224,.12),rgba(78,140,255,.10));
 }

@@ -769,6 +769,7 @@
       this.allowedSections = [
         "Genel",
         "İlerleme",
+        "Sezon",
         "Savaş Havuzu",
       ];
     }
@@ -785,6 +786,20 @@
         preferred_battle_pool_ids: [
           ...(profile.preferred_battle_pool_ids || []),
         ],
+        engagement: profile.engagement
+          ? {
+              ...profile.engagement,
+              daily_missions: [
+                ...(profile.engagement.daily_missions || []),
+              ],
+              reward_track: [
+                ...(profile.engagement.reward_track || []),
+              ],
+              unlocked_titles: [
+                ...(profile.engagement.unlocked_titles || []),
+              ],
+            }
+          : null,
       };
 
       return this.profile;
@@ -819,6 +834,20 @@
         battlePoolIds: [
           ...this.profile.preferred_battle_pool_ids,
         ],
+        engagement: this.profile.engagement
+          ? {
+              ...this.profile.engagement,
+              dailyMissions: [
+                ...(this.profile.engagement.daily_missions || []),
+              ],
+              rewardTrack: [
+                ...(this.profile.engagement.reward_track || []),
+              ],
+              unlockedTitles: [
+                ...(this.profile.engagement.unlocked_titles || []),
+              ],
+            }
+          : null,
         activeSection: this.activeSection,
       };
     }
@@ -2476,6 +2505,40 @@
           ok: false,
           reason:
             this.errors.profile,
+        };
+      }
+    }
+
+    async claimEngagementReward(kind, id) {
+      if (![
+        "missions",
+        "tiers",
+      ].includes(kind)) {
+        return {
+          ok: false,
+          reason: "Bilinmeyen sezon ödülü.",
+        };
+      }
+
+      this.status.profile = REMOTE_DATA_STATUS.LOADING;
+      this.errors.profile = null;
+
+      try {
+        const payload = await this.requestJson(
+          `/profile/${encodeURIComponent(this.playerId)}/engagement/${kind}/${encodeURIComponent(id)}/claim`,
+          { method: "POST" }
+        );
+        this.profileState.applyProfile(payload);
+        this.status.profile = REMOTE_DATA_STATUS.READY;
+        return { ok: true, payload };
+      } catch (error) {
+        this.status.profile = REMOTE_DATA_STATUS.ERROR;
+        this.errors.profile = error instanceof Error
+          ? error.message
+          : String(error);
+        return {
+          ok: false,
+          reason: this.errors.profile,
         };
       }
     }

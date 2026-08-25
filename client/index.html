@@ -32,7 +32,7 @@
     <section id="main-menu-panel" class="main-menu-panel">
       <div class="main-menu-brand">
         <h1>GRIDSHARD</h1>
-        <span>2.0.0-beta.32-fix.1</span>
+        <span>2.0.0-beta.33</span>
       </div>
       <div class="lobby-backdrop" aria-hidden="true">
         <div class="lobby-board-grid" aria-hidden="true">
@@ -65,7 +65,7 @@
           </button>
           <div class="lobby-build-chip">
             <span>GÜNCEL YAPI</span>
-            <strong id="ui-build-version">2.0.0-beta.32-fix.1</strong><small id="ui-build-run">manifest bekleniyor</small>
+            <strong id="ui-build-version">2.0.0-beta.33</strong><small id="ui-build-run">manifest bekleniyor</small>
           </div>
         </div>
       </div>
@@ -96,7 +96,7 @@
     <section class="profile-summary-panel" id="profile-summary-panel" data-screen-panel="profile" hidden>
       <div class="panel-title-row">
         <div class="screen-heading-block"><span class="screen-kicker">OPERATÖR TERMİNALİ</span><h2>Profil</h2><p class="screen-subtitle">Oyuncu kimliği, ilerleme ve savaş hazırlığı.</p></div>
-        <span>Genel · İlerleme · Savaş Havuzu · <strong id="profile-load-status" data-status="idle">Yerel önizleme</strong></span>
+        <span>Genel · İlerleme · Sezon · Savaş Havuzu · <strong id="profile-load-status" data-status="idle">Yerel önizleme</strong></span>
       </div>
       <p id="profile-live-summary">Oyuncu · Seviye 1 · Gümüş · 1000 Derece Puanı · 0 XP</p>
       <div class="profile-name-form">
@@ -105,6 +105,45 @@
         <button id="profile-display-name-save" type="button">Görünen Adı Kaydet</button>
         <span id="profile-name-save-status"></span>
       </div>
+      <section class="season-zero-hub" aria-labelledby="season-zero-title">
+        <header class="season-zero-heading">
+          <div>
+            <span class="screen-kicker">SEZON SIFIR · ÜCRETSİZ ÖDÜL YOLU</span>
+            <h3 id="season-zero-title">Çekirdek Uyanışı</h3>
+            <p>Savaş, canlı devre hamlesi ve günlük görevlerle Sezon XP kazan.</p>
+          </div>
+          <div class="season-zero-currency" title="Gelecek kozmetik ödülleri için birikir.">
+            <span>AKI PARÇASI</span><strong id="season-flux-shards">0</strong>
+          </div>
+        </header>
+        <div class="season-zero-progress-summary">
+          <div>
+            <span id="season-equipped-title">Devre Çırağı</span>
+            <strong id="season-tier-label">Kademe 0 / 10</strong>
+          </div>
+          <div class="season-progress-track" role="progressbar" aria-label="Sezon kademe ilerlemesi" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+            <span id="season-progress-fill"></span>
+          </div>
+          <small id="season-progress-copy">0 / 100 Sezon XP</small>
+        </div>
+        <div class="season-zero-columns">
+          <section class="daily-mission-panel" aria-labelledby="daily-mission-title">
+            <div class="season-section-heading">
+              <div><span class="screen-kicker">GÜNLÜK GÖREVLER</span><h4 id="daily-mission-title">Bugünün Devre Emirleri</h4></div>
+              <small>Her gün UTC 00:00'da yenilenir</small>
+            </div>
+            <div id="daily-mission-list" class="daily-mission-list"></div>
+          </section>
+          <section class="season-reward-panel" aria-labelledby="season-reward-title">
+            <div class="season-section-heading">
+              <div><span class="screen-kicker">ÖDÜL YOLU</span><h4 id="season-reward-title">10 Kademe</h4></div>
+              <small>Ücretli geçiş yok</small>
+            </div>
+            <div id="season-reward-track" class="season-reward-track"></div>
+          </section>
+        </div>
+        <p id="season-action-status" class="season-action-status" role="status">Tamamlanan görev ve kademelerin ödüllerini buradan al.</p>
+      </section>
       <p id="participant-id-summary">Web Test Kimliği hazırlanıyor…</p>
       <p id="participant-bootstrap-status" data-status="idle">Hesap: Hazır değil</p>
       <p id="participant-continuity-status" data-status="unknown">Oturum Sürekliliği: Kontrol bekliyor</p>
@@ -416,7 +455,7 @@
     </section>
 
     <section class="battle-test-banner play-live-panel" data-screen-panel="play" hidden>
-      <strong>Beta.32 Fix.1 · 10 sn AI Devralma · Sabit Port/Simgeler · Belirgin Güçlendiriciler</strong>
+      <strong>Beta.33 · 10 sn AI Devralma · Sezon Sıfır · Günlük Görevler · Corelight Görsel Kimlik</strong>
       <span id="battle-entry-status">Savaş alanına giriş başarılı · Yerel AI aktif · Modül Rafı 15. saniyede açılır</span>
     </section>
 

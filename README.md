@@ -22,6 +22,8 @@ Rakibin devresine göre savaş sırasında stratejisini değiştirebilir.
 
 GRIDSHARD'de savaş hiçbir zaman durmaz. Oyuncunun yaptığı bütün müdahaleler gerçek zamanlı savaş devam ederken gerçekleşir.
 
+Beta.33 ile maçlar arası hedef döngüsü de oynanabilir durumdadır: Sezon Sıfır'ın 10 kademeli ücretsiz ödül yolu, üç günlük devre görevi, Akı Parçası ve profil unvanları sunucu otoriteli maç sonuçlarından ilerler ve oyuncu profiline kalıcı kaydedilir. Ücretli Battle Pass veya mağaza ekonomisi bu pakette yoktur.
+
 Dağıtık Eşleştirme
 
 `REDIS_URL` tanımlandığında eşleştirme kuyruğu Redis üzerinde çalışır. Oyuncu ekleme, en uygun rakibi seçme, kuyruktan iki oyuncuyu birlikte çıkarma, AI devralma, iptal ve süre aşımı temizliği atomik işlemlerdir. Birden fazla uygulama sunucusu aynı kuyruğu güvenle paylaşabilir; geliştirme ortamında Redis yoksa bellek içi eşleştirme korunur.

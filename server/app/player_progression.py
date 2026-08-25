@@ -22,6 +22,8 @@ class ProgressionResult:
     xp_awarded: int
     level_after: int
     experience_after: int
+    season_xp_awarded: int
+    season_xp_after: int
 
     def to_dict(self) -> dict:
         return {
@@ -32,6 +34,8 @@ class ProgressionResult:
             "xp_awarded": self.xp_awarded,
             "level_after": self.level_after,
             "experience_after": self.experience_after,
+            "season_xp_awarded": self.season_xp_awarded,
+            "season_xp_after": self.season_xp_after,
         }
 
 
@@ -100,6 +104,24 @@ class PlayerProgressionService:
                     xp_awarded,
                 )
             )
+            summary = state.result_summary.get(player_id, {})
+            circuit_actions = sum(
+                1
+                for event in state.events
+                if event.data.get("player_id") == player_id
+                and event.type in {
+                    "module_moved",
+                    "module_replaced",
+                    "modules_swapped",
+                    "module_rotated",
+                }
+            )
+            updated = self.profile_service.record_battle_engagement(
+                player_id,
+                season_xp_awarded=xp_awarded,
+                damage_dealt=int(summary.get("damage_dealt", 0)),
+                circuit_actions=circuit_actions,
+            )
 
             battle_results[player_id] = (
                 ProgressionResult(
@@ -115,6 +137,8 @@ class PlayerProgressionService:
                     experience_after=(
                         updated.experience
                     ),
+                    season_xp_awarded=xp_awarded,
+                    season_xp_after=updated.season_xp,
                 )
             )
 

@@ -2899,6 +2899,44 @@ def get_profile(
     return profile.to_view()
 
 
+@app.post("/profile/{player_id}/engagement/missions/{mission_id}/claim")
+def claim_daily_mission_reward(
+    player_id: str,
+    mission_id: str,
+) -> dict:
+    try:
+        profile = player_profile_service.claim_daily_mission(
+            player_id,
+            mission_id,
+        )
+    except PlayerProfileError as exc:
+        raise HTTPException(
+            status_code=422,
+            detail=str(exc),
+        ) from exc
+    persist_player_data(player_id)
+    return profile.to_view()
+
+
+@app.post("/profile/{player_id}/engagement/tiers/{tier}/claim")
+def claim_season_tier_reward(
+    player_id: str,
+    tier: int,
+) -> dict:
+    try:
+        profile = player_profile_service.claim_season_tier(
+            player_id,
+            tier,
+        )
+    except PlayerProfileError as exc:
+        raise HTTPException(
+            status_code=422,
+            detail=str(exc),
+        ) from exc
+    persist_player_data(player_id)
+    return profile.to_view()
+
+
 @app.put("/profile/{player_id}/display-name")
 def update_profile_display_name(
     player_id: str,
@@ -3090,7 +3128,7 @@ def gridshard_identity() -> dict:
         "tagline_en":
             "Build the Circuit. Break the Core.",
         "identity_version":
-            "2.0.0-beta.32-fix.1",
+            "2.0.0-beta.33",
         "palette":{
             "void_navy":"#070B14",
             "reactor_blue":"#0C1625",

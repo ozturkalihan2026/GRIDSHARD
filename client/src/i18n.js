@@ -12,7 +12,39 @@
     "Ayarlar":"Settings",
     "OPERATÖR TERMİNALİ":"OPERATOR TERMINAL",
     "Oyuncu kimliği, ilerleme ve savaş hazırlığı.":"Player identity, progression and battle readiness.",
-    "Genel · İlerleme · Savaş Havuzu ·":"Overview · Progression · Battle Pool ·",
+    "Genel · İlerleme · Sezon · Savaş Havuzu ·":"Overview · Progression · Season · Battle Pool ·",
+    "SEZON SIFIR · ÜCRETSİZ ÖDÜL YOLU":"SEASON ZERO · FREE REWARD TRACK",
+    "Çekirdek Uyanışı":"Core Awakening",
+    "Savaş, canlı devre hamlesi ve günlük görevlerle Sezon XP kazan.":"Earn Season XP through battles, live circuit actions, and daily missions.",
+    "AKI PARÇASI":"FLUX SHARDS",
+    "Gelecek kozmetik ödülleri için birikir.":"Saved for future cosmetic rewards.",
+    "Devre Çırağı":"Circuit Apprentice",
+    "Devre Öncüsü":"Circuit Vanguard",
+    "Kırık Avcısı":"Shard Hunter",
+    "Çekirdek Muhafızı":"Core Guardian",
+    "Sezon kademe ilerlemesi":"Season tier progress",
+    "GÜNLÜK GÖREVLER":"DAILY MISSIONS",
+    "Bugünün Devre Emirleri":"Today's Circuit Orders",
+    "Her gün UTC 00:00'da yenilenir":"Refreshes daily at 00:00 UTC",
+    "ÖDÜL YOLU":"REWARD TRACK",
+    "10 Kademe":"10 Tiers",
+    "Ücretli geçiş yok":"No paid track",
+    "Tamamlanan görev ve kademelerin ödüllerini buradan al.":"Claim completed mission and tier rewards here.",
+    "Devreyi Ateşle":"Power the Circuit",
+    "2 savaş tamamla.":"Complete 2 battles.",
+    "Çekirdeğe Baskı":"Core Pressure",
+    "Rakip devrelere toplam 1000 hasar ver.":"Deal 1000 total damage to opponent circuits.",
+    "Canlı Strateji":"Live Strategy",
+    "Savaşta 3 modül taşı, değiştir, takas et veya döndür.":"Move, replace, swap, or rotate modules 3 times in battle.",
+    "Ödülü Al":"Claim Reward",
+    "Alındı":"Claimed",
+    "Devam Ediyor":"In Progress",
+    "Al":"Claim",
+    "Kilitli":"Locked",
+    "Ödül sunucuda doğrulanıyor…":"Verifying reward on server…",
+    "Ödül alındı ve profil hesabına kaydedildi.":"Reward claimed and saved to your profile.",
+    "Ödül alınamadı.":"Reward could not be claimed.",
+    "BAŞLANGIÇ STRATEJİNİ SEÇ":"CHOOSE YOUR STARTING STRATEGY",
     "Yerel önizleme":"Local preview",
     "Görünen Oyuncu Adı":"Display Name",
     "Görünen Adı Kaydet":"Save Display Name",
@@ -203,7 +235,7 @@
     "Virüs":"Virus",
     "Enerji Sömürücü":"Energy Leech",
     "Kesici":"Disruptor",
-    "Beta.32 Fix.1 · 10 sn AI Devralma · Sabit Port/Simgeler · Belirgin Güçlendiriciler":"Beta.32 Fix.1 · 10 sec AI Takeover · Stable Ports/Icons · Prominent Boosters",
+    "Beta.33 · 10 sn AI Devralma · Sezon Sıfır · Günlük Görevler · Corelight Görsel Kimlik":"Beta.33 · 10 sec AI Takeover · Season Zero · Daily Missions · Corelight Visual Identity",
     "Savaş alanına giriş başarılı · Yerel AI aktif · Modül Rafı 15. saniyede açılır":"Battle arena entered · Local AI active · Module Shelf unlocks at 15 seconds",
     "Sunucudan yükleniyor...":"Loading from server...",
     "Sunucu verisi":"Server data",
@@ -286,6 +318,12 @@
         .replace(/^(.+) \+ (Enerji|Saldırı|Savunma|Destek|Sabotaj)$/u, (_, name, category) => `${name} + ${EN[category] || category}`)
         .replace(/^(.+) ◆ (Enerji|Saldırı|Savunma|Destek|Sabotaj)$/u, (_, name, category) => `${name} ◆ ${EN[category] || category}`)
         .replace(/^Seviye (\d+) · Lig: ([^·]+) · (\d+) RP$/u, "Level $1 · League: $2 · $3 RP")
+        .replace(/^(.+) · Seviye (\d+) · Lig: ([^·]+) · (\d+) RP$/u, (_, title, level, league, rating) => `${EN[title] || title} · Level ${level} · League: ${EN[league.trim()] || league.trim()} · ${rating} RP`)
+        .replace(/^Kademe (\d+) \/ (\d+)$/u, "Tier $1 / $2")
+        .replace(/^(\d+) \/ (\d+) Sezon XP$/u, "$1 / $2 Season XP")
+        .replace(/^KADEME (\d+)$/u, "TIER $1")
+        .replace(/Akı Parçası/gu, "Flux Shards")
+        .replace(/ Akı$/gu, " Flux")
         .replace(/^Maç (\d+) · Galibiyet (\d+) · Mağlubiyet (\d+) · Beraberlik (\d+) · Galibiyet %(\d+)$/u, "Matches $1 · Wins $2 · Losses $3 · Draws $4 · Win rate $5%")
         .replace(/^Devre Kredisi: (.+)$/u, "Circuit Credits: $1")
         .replace(/Çekirdek/gu, "Core")
@@ -303,6 +341,12 @@
       .replace(/^(.+) \+ (Energy|Attack|Defense|Support|Sabotage)$/u, (_, name, category) => `${name} + ${TR[category] || category}`)
       .replace(/^(.+) ◆ (Energy|Attack|Defense|Support|Sabotage)$/u, (_, name, category) => `${name} ◆ ${TR[category] || category}`)
       .replace(/^Level (\d+) · League: ([^·]+) · (\d+) RP$/u, "Seviye $1 · Lig: $2 · $3 RP")
+      .replace(/^(.+) · Level (\d+) · League: ([^·]+) · (\d+) RP$/u, (_, title, level, league, rating) => `${TR[title] || title} · Seviye ${level} · Lig: ${TR[league.trim()] || league.trim()} · ${rating} RP`)
+      .replace(/^Tier (\d+) \/ (\d+)$/u, "Kademe $1 / $2")
+      .replace(/^(\d+) \/ (\d+) Season XP$/u, "$1 / $2 Sezon XP")
+      .replace(/^TIER (\d+)$/u, "KADEME $1")
+      .replace(/Flux Shards/gu, "Akı Parçası")
+      .replace(/ Flux$/gu, " Akı")
       .replace(/^Matches (\d+) · Wins (\d+) · Losses (\d+) · Draws (\d+) · Win rate (\d+)%$/u, "Maç $1 · Galibiyet $2 · Mağlubiyet $3 · Beraberlik $4 · Galibiyet %$5")
       .replace(/^Circuit Credits: (.+)$/u, "Devre Kredisi: $1")
       .replace(/Core/gu, "Çekirdek")
