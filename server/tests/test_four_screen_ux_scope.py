@@ -14,7 +14,8 @@ def test_shared_shell_and_independent_engagement_pages_markup():
     assert 'data-open-screen="education"' not in html
     assert html.count('data-menu-focus=') == 0
     assert html.count('data-shell-screen=') == 4
-    assert html.count('data-roadmap-feature=') == 3
+    assert html.count('data-roadmap-feature=') == 2
+    assert html.count('data-open-screen="laboratory"') == 1
     assert "Olay Günlüğü" in html
     assert '<details class="diagnostic-panel play-technical-panel"' in html
     assert "screen-subtitle" in html

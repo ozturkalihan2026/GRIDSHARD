@@ -1,5 +1,5 @@
 {
-  "version": "2.0.0-beta.35",
+  "version": "2.0.0-beta.36",
   "status": "NOT_MEASURED",
   "performance_pass": null,
   "reason": "Gerçek PASSED browser UX matrisi yok; performans sonucu üretilmedi.",

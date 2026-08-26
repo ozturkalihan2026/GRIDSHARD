@@ -2,6 +2,7 @@ from collections import deque
 from typing import Deque
 
 from .catalog import get_module_definition
+from ..laboratory import calibrated_module_definition
 from .battle_pool import validate_battle_pool
 from .board import get_cell_effects, get_default_board
 from .boosters import (
@@ -211,10 +212,29 @@ class BattleEngine:
         if instance_id in player.modules:
             raise ValueError(f"Modül örneği zaten mevcut: {instance_id}")
 
+        base_definition = get_module_definition(definition_id)
+        calibration_level = int(
+            self.state.player_calibrations
+            .get(player_id, {})
+            .get(definition_id, 0)
+        )
+        calibration_applied = bool(
+            calibration_level > 0
+            and self.state.laboratory_effects_enabled
+            and not self.state.normalized
+            and not self.state.ranked_eligible
+        )
+        definition = (
+            calibrated_module_definition(base_definition, calibration_level)
+            if calibration_applied
+            else base_definition
+        )
         module = BattleModule.create(
             instance_id=instance_id,
-            definition=get_module_definition(definition_id),
+            definition=definition,
         )
+        module.calibration_level = calibration_level
+        module.calibration_applied = calibration_applied
         player.modules[instance_id] = module
         return module
 

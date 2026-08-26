@@ -29,7 +29,7 @@ def test_beta25_markup_exposes_required_battle_and_result_actions():
     css = client.get("/src/styles.css").text
     app_source = client.get("/src/app.js").text
 
-    assert "2.0.0-beta.35" in html
+    assert "2.0.0-beta.36" in html
     assert 'class="lobby-wordmark"' in html
     assert 'id="battle-forfeit-button"' in html
     assert "Savaşı Bırak" in html

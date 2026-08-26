@@ -1,7 +1,7 @@
 # GRIDSHARD 2.0 — YOL HARİTASI
 
-**Güncel Sürüm:** `2.0.0-beta.35`
-**Paket:** Beta.35 — Rekabet Bütünlüğü + Atomik Güçlendiriciler + Savaş Geri Bildirimi
+**Güncel Sürüm:** `2.0.0-beta.36`
+**Paket:** Beta.36 — Devre Laboratuvarı V1 + Rekabetçi Normalizasyon
 **Kanonik Dosya:** `docs/YOL_HARITASI.md`
 
 > Bu dosya GRIDSHARD 2.0 için tek kanonik geliştirme kaydıdır. Kaynak karar belgesi ile kod tabanı yeniden karşılaştırılmıştır. Buradaki `[x]`, `[~]`, `[ ]` işaretleri artık yalnızca kodda ve testlerde doğrulanabilen gerçek durumu gösterir.
@@ -1750,3 +1750,32 @@ Doğrulama hedefi:
 - [x] İstemci kabul testi atomik komutu, üç etkileşim yolunu, hedef vurgusunu, kademe katmanını, sesi, ikinci çekirdek şok dalgasını ve azaltılmış hareket stilini doğrular.
 - [x] Gerçek yerel tarayıcıda yeni hesap 18/18 başlangıç havuzuyla açıldı; 10 saniyelik AI devralması, iki görünür devre, 30. saniye güçlendirici teklifi ve `Derecesiz AI · Derece puanı değişmedi` maç sonucu doğrulandı.
 - [~] Dereceli liderlik tablosu, sezon sonu ödülleri ve kalıcı rekabet geçmişi Beta.36–Beta.37 çalışma sırasındadır; Beta.35 bunların güvenilir maç türü temelini kurar.
+
+---
+
+# 24. Güncel Paket — Beta.36
+
+**`GRIDSHARD 2.0.0-beta.36 — Devre Laboratuvarı V1 · Akı Ekonomisi · Rekabetçi Normalizasyon`**
+
+Beta.36, Beta.35'in maç türü bütünlüğü ve atomik sunucu komutlarını korurken oyuncunun sezon emeğini kalıcı fakat rekabeti bozmayan modül kişiselleştirmesine dönüştürür:
+
+1. [x] Ana menüdeki kilitli Mağaza kartı kaldırıldı; yerine çalışan ve kendi ekranına yönlenen `Devre Laboratuvarı` kartı eklendi.
+2. [x] Çekirdek dışındaki 24 modül sınıflarıyla kataloglanır. Her kart mevcut seviye, sonraki seviye, kategori etkisi ve gerçek motor değerleri için önce/sonra karşılaştırması sunar.
+3. [x] Laboratuvar ekonomisi sunucu otoritelidir. Kalibrasyon maliyetleri `25 → 75 → 150 Akı`, üst sınır 3 seviyedir; istemci bakiye veya seviye yazamaz.
+4. [x] Her yükseltme tek işlem kimliğiyle atomik işlenir. Aynı isteğin ağ tekrarında ikinci kez Akı harcanmaz; işlem makbuzu, seviye ve bakiye kalıcı profile yazılır.
+5. [x] Beta boyunca ücretsiz sıfırlama bütün kalibrasyonları kaldırır ve yatırılan Akıyı eksiksiz iade eder. Sıfırlama da tekrar korumalıdır ve Akı işlem geçmişine kaydolur.
+6. [x] İlk anlamlı harcama 25 Akıdır; Sezon Sıfır'ın ilk kademesi bunu tek başına karşılar. Ücretsiz 10 kademenin toplam 545 Akısı, iki modülü tam yükseltip üçüncü favoriye başlangıç yatırımı yapmaya yeter; bütün 24 modülü açamaz.
+7. [x] Eski profiller laboratuvar alanları olmadan güvenle açılır; modül seviyeleri, son 50 işlem, tekrar-koruma makbuzları ve sıfırlama sayısı JSON/PostgreSQL oyuncu snapshot hattında kalıcıdır.
+8. [x] Dereceli PvP oturumları çağıran yanlışlıkla aksi parametre verse bile sunucuda zorunlu `normalized=true` olur. Laboratuvar seviyesi snapshot'ta görülebilir fakat tanım değerlerine ve savaşa uygulanmaz.
+9. [x] Deneysel kalibrasyon etkileri yalnız `GRIDSHARD_EXPERIMENTAL_LAB_EFFECTS=1` bayrağı açık, derecesiz ve normalize edilmemiş oturumda çalışır. Saldırı, savunma, enerji, destek ve sabotaj kategorileri küçük kanonik verimlilik dönüşümleri kullanır.
+10. [x] Laboratuvar ekranında Akı bakiyesi, yatırılan toplam, 24 kompakt simgeli modül, seçili modül tezgâhı, önce/sonra değerleri, yükseltme eylemi ve kalıcı Akı işlem defteri tek çalışma alanında gösterilir.
+11. [x] Laboratuvarın statik ve dinamik temel metinleri Türkçe/İngilizce yerelleştirme kapsamına alındı; masaüstü, tablet ve mobil çalışma alanı kırılımları eklendi.
+
+Doğrulama:
+
+- [x] Birleşik kalite kapısı `719/719` sunucu, `176/176` istemci çekirdek testi ve Beta.36 kabul raporu dahil `27/27` QA adımını geçti.
+- [x] İlk maliyet, 24 modül kataloğu, üç seviye sınırı, yetersiz bakiye, çift harcama koruması, tam iade ve kalıcı profil round-trip hedefli sunucu testleriyle doğrulandı.
+- [x] Dereceli zorunlu normalizasyon ile bayrak kontrollü derecesiz deneysel etki aynı motor testi içinde karşılaştırıldı; snapshot uygulanan/uygulanmayan kalibrasyonu açıkça taşıyor.
+- [x] İstemci kabul testi aktif ana menü kartını, laboratuvar rotasını, API yükleyicisini, işlem defterini, karşılaştırma tezgâhını, responsive stilleri ve İngilizce karşılıkları doğruladı.
+- [x] Gerçek yerel tarayıcıda 24 modül kartı, modül seçimi ve tek çalışma alanına sığan laboratuvar görünümü doğrulandı; konsolda hata veya uyarı oluşmadı.
+- [ ] Dereceli liderlik tablosu, sezon sonu ödülleri ve kalıcı sezon arşivi Beta.37 canlı operasyon kapsamındadır; laboratuvar hiçbir aşamada bunların yerine derece gücü sağlamaz.

@@ -837,8 +837,8 @@ function createClient() {
   assert.ok(html.includes(">Profil<"));
   assert.ok(html.includes(">İstatistikler<"));
   assert.ok(html.includes(">Ayarlar<"));
-  assert.ok(html.includes('data-roadmap-feature="store"'));
-  assert.ok(html.includes('data-roadmap-feature="store" disabled aria-disabled="true"'));
+  assert.ok(html.includes('data-open-screen="laboratory"'));
+  assert.ok(html.includes('id="laboratory-screen"'));
   assert.ok(!html.includes(">Kozmetik<"));
 }
 
@@ -931,7 +931,7 @@ function createClient() {
   assert.ok(
     html.includes("Ses · Müzik · Titreşim · Grafik · Dil")
   );
-  assert.ok(html.includes('data-roadmap-feature="store" disabled aria-disabled="true"'));
+  assert.ok(html.includes('data-open-screen="laboratory"'));
   assert.ok(!html.includes(">Sezon<"));
   assert.ok(!html.includes(">Battle Pass<"));
 }
@@ -2479,7 +2479,7 @@ function createClient() {
   const html=fs.readFileSync(path.join(ROOT,"index.html"),"utf8");
   assert.ok(
     html.includes(
-      "2.0.0-beta.35"
+      "2.0.0-beta.36"
     )
   );
   assert.ok(
@@ -2709,7 +2709,7 @@ function createClient() {
     !html.includes(">Eğitim<")
   );
   assert.ok(
-    html.includes('data-roadmap-feature="store" disabled aria-disabled="true"')
+    html.includes('data-open-screen="laboratory"')
   );
   assert.ok(
     !html.includes(">Kozmetik<")

@@ -105,18 +105,28 @@ class PvPSessionService:
         match_type: str = "ranked_pvp",
         season_id: str = "core_awakening_s0",
         ranked_eligible: bool = True,
+        normalized: bool = True,
+        laboratory_effects_enabled: bool = False,
     ) -> PvPSession:
         if session_id in self._sessions:
             raise PvPSessionError(
                 "Aynı kimlikte PvP oturumu zaten mevcut."
             )
 
+        normalized = bool(normalized or ranked_eligible)
+        laboratory_effects_enabled = bool(
+            laboratory_effects_enabled
+            and not normalized
+            and not ranked_eligible
+        )
         engine = BattleEngine(
             BattleState(
                 battle_id=session_id,
                 match_type=match_type,
                 season_id=season_id,
                 ranked_eligible=ranked_eligible,
+                normalized=normalized,
+                laboratory_effects_enabled=laboratory_effects_enabled,
             )
         )
         now = self.now_func()
@@ -130,6 +140,25 @@ class PvPSessionService:
         )
         self._sessions[session_id] = session
         return session
+
+    def set_player_calibrations(
+        self,
+        session_id: str,
+        player_id: str,
+        levels: dict[str, int],
+    ) -> None:
+        session = self.get_session(session_id)
+        session.slot_for(player_id)
+        if session.engine.state.status != BattleStatus.WAITING:
+            raise PvPSessionError(
+                "Laboratuvar kalibrasyonları yalnız savaş başlamadan bağlanabilir."
+            )
+        session.engine.state.player_calibrations[player_id] = {
+            str(module_id): max(0, min(3, int(level)))
+            for module_id, level in levels.items()
+            if int(level) > 0
+        }
+        self._touch(session)
 
     def get_session(self, session_id: str) -> PvPSession:
         try:
@@ -555,6 +584,8 @@ class PvPSessionService:
                     "energy_required": required,
                     "energy_shortfall": max(0.0, required - received),
                     "heat": module.heat,
+                    "calibration_level": module.calibration_level,
+                    "calibration_applied": module.calibration_applied,
                 })
 
             player_data = {
@@ -616,6 +647,8 @@ class PvPSessionService:
             }.get(state.match_type, state.match_type),
             "season_id": state.season_id,
             "ranked_eligible": state.ranked_eligible,
+            "normalized": state.normalized,
+            "laboratory_effects_enabled": state.laboratory_effects_enabled,
             "viewer_player_id": viewer_player_id,
             "status": state.status.value,
             "tick": state.tick,

@@ -39,5 +39,5 @@ def test_manifest_endpoint():
 
     assert response.status_code==200
     body=response.json()
-    assert body["server_version"]=="2.0.0-beta.35"
+    assert body["server_version"]=="2.0.0-beta.36"
     assert body["pvp_protocol_version"]==1

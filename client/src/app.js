@@ -366,6 +366,7 @@
       statisticsState,
       settingsState,
     });
+  let selectedLaboratoryModuleId = "generator";
 
   const appRouter = new RelayAppRouter();
   const screenController = new GridshardScreenController({
@@ -478,6 +479,16 @@
       accountDataLoader
         .loadProfile()
         .then(() => {
+          renderProfileSummary();
+          renderRemoteDataStatus();
+        });
+    } else if (
+      screen === "laboratory"
+    ) {
+      accountDataLoader
+        .loadLaboratory()
+        .then(() => {
+          renderLaboratory();
           renderProfileSummary();
           renderRemoteDataStatus();
         });
@@ -626,7 +637,7 @@
         webTestBuildState,
       releaseCheckState,
       expectedVersion:
-        "2.0.0-beta.35",
+        "2.0.0-beta.36",
       expectedProtocolVersion: 1,
     });
   const playReadinessGate =
@@ -662,7 +673,7 @@
 
   telemetryDispatcher.trackGameOpened({
     platform: "web",
-    build: "2.0.0-beta.35",
+    build: "2.0.0-beta.36",
   });
 
   const postMatchSync =
@@ -1611,7 +1622,7 @@
   const diagnosticSnapshot =
     new RelayDiagnosticSnapshot({
       version:
-        "2.0.0-beta.35",
+        "2.0.0-beta.36",
       build:
         "web-test-beta.13",
       bootGate:
@@ -3554,7 +3565,7 @@
       if (versionEl) {
         versionEl.textContent=
           manifest.version
-          || "2.0.0-beta.35";
+          || "2.0.0-beta.36";
       }
       if (runEl) {
         runEl.textContent=
@@ -10002,6 +10013,10 @@ function saveHumanReviewLocalNote() {
         document.getElementById(
           "settings-load-status"
         ),
+      laboratory:
+        document.getElementById(
+          "laboratory-load-status"
+        ),
     };
 
     const labels = {
@@ -10712,6 +10727,210 @@ function saveHumanReviewLocalNote() {
     }
 
     globalThis.GridshardI18n?.apply(document.documentElement.lang || "tr");
+  }
+
+  function laboratoryRequestId(prefix) {
+    const suffix = globalThis.crypto?.randomUUID
+      ? globalThis.crypto.randomUUID()
+      : `${Date.now()}-${Math.random().toString(16).slice(2)}`;
+    return `${prefix}:${participantPlayerId}:${suffix}`;
+  }
+
+  function laboratoryStatSummary(stats) {
+    if (!stats) return "En yüksek kalibrasyon";
+    const parts = [];
+    if (Number(stats.base_damage) > 0) {
+      parts.push(`Hasar ${Number(stats.base_damage).toFixed(1)}`);
+    }
+    if (Number(stats.energy_generation) > 0) {
+      parts.push(`Üretim ${Number(stats.energy_generation).toFixed(1)}/sn`);
+    }
+    if (Number(stats.energy_consumption) > 0) {
+      parts.push(`Tüketim ${Number(stats.energy_consumption).toFixed(1)}/sn`);
+    }
+    if (Number(stats.cooldown_ms) > 0) {
+      parts.push(`Bekleme ${(Number(stats.cooldown_ms) / 1000).toFixed(1)} sn`);
+    }
+    parts.push(`Can ${Math.round(Number(stats.max_hp || 0))}`);
+    return parts.join(" · ");
+  }
+
+  function renderLaboratory() {
+    const view = accountDataLoader.laboratory;
+    if (!view) return;
+    const modules = Array.isArray(view.modules) ? view.modules : [];
+    let selected = modules.find(
+      (module) => module.id === selectedLaboratoryModuleId
+    );
+    if (!selected) {
+      selected = modules[0] || null;
+      selectedLaboratoryModuleId = selected?.id || "";
+    }
+
+    const setText = (id, value) => {
+      const element = document.getElementById(id);
+      if (element) element.textContent = String(value);
+    };
+    setText("laboratory-flux-balance", view.flux_shards || 0);
+    setText("laboratory-invested-flux", `Yatırım ${view.invested_flux || 0}`);
+    setText("lobby-flux-shards", view.flux_shards || 0);
+    setText(
+      "lobby-laboratory-summary",
+      Number(view.calibrated_module_count || 0) > 0
+        ? `${view.calibrated_module_count} modül kalibre edildi`
+        : "Akı ile favori modüllerini kalibre et"
+    );
+
+    const list = document.getElementById("laboratory-module-list");
+    if (list) {
+      list.replaceChildren();
+      const categories = ["enerji", "saldırı", "savunma", "destek", "sabotaj"];
+      for (const category of categories) {
+        const groupModules = modules.filter((module) => module.category === category);
+        if (!groupModules.length) continue;
+        const group = document.createElement("section");
+        group.className = "laboratory-category-group";
+        group.dataset.category = category;
+        const heading = document.createElement("strong");
+        heading.textContent = `${groupModules[0].category_label} · ${groupModules.length}`;
+        const grid = document.createElement("div");
+        for (const module of groupModules) {
+          const button = document.createElement("button");
+          button.type = "button";
+          button.dataset.laboratoryModule = module.id;
+          button.dataset.category = module.category;
+          button.className = "laboratory-module-card";
+          button.setAttribute(
+            "aria-pressed",
+            String(module.id === selectedLaboratoryModuleId)
+          );
+          if (module.id === selectedLaboratoryModuleId) {
+            button.classList.add("is-selected");
+          }
+          const icon = document.createElement("span");
+          icon.className = "laboratory-module-icon";
+          icon.textContent = moduleIconFor({ nameTr: module.name_tr });
+          const copy = document.createElement("span");
+          const name = document.createElement("strong");
+          name.textContent = module.name_tr;
+          const level = document.createElement("small");
+          level.textContent = `SV ${module.level} / ${module.max_level}`;
+          copy.append(name, level);
+          button.append(icon, copy);
+          grid.appendChild(button);
+        }
+        group.append(heading, grid);
+        list.appendChild(group);
+      }
+    }
+
+    if (selected) {
+      setText("laboratory-detail-icon", moduleIconFor({ nameTr: selected.name_tr }));
+      setText("laboratory-detail-category", String(selected.category_label || "").toUpperCase());
+      setText("laboratory-detail-name", selected.name_tr);
+      setText("laboratory-detail-role", selected.strategic_role);
+      setText("laboratory-detail-level", `SV ${selected.level} / ${selected.max_level}`);
+      setText("laboratory-detail-effect", selected.experimental_effect_tr);
+      setText(
+        "laboratory-current-efficiency",
+        `%${selected.current_stats?.efficiency_bonus_percent || 0}`
+      );
+      setText("laboratory-current-stats", laboratoryStatSummary(selected.current_stats));
+      setText(
+        "laboratory-next-efficiency",
+        selected.next_stats
+          ? `%${selected.next_stats.efficiency_bonus_percent}`
+          : "MAKS"
+      );
+      setText("laboratory-next-stats", laboratoryStatSummary(selected.next_stats));
+      const upgrade = document.getElementById("laboratory-upgrade-button");
+      if (upgrade) {
+        upgrade.dataset.moduleId = selected.id;
+        upgrade.disabled = !selected.can_upgrade;
+        upgrade.textContent = selected.next_cost == null
+          ? "En Yüksek Kalibrasyon"
+          : selected.can_upgrade
+            ? `${selected.next_cost} Akı ile Kalibre Et`
+            : `${selected.next_cost} Akı Gerekli`;
+      }
+    }
+
+    const history = document.getElementById("laboratory-transaction-list");
+    if (history) {
+      history.replaceChildren();
+      const transactions = Array.isArray(view.transactions) ? view.transactions : [];
+      if (!transactions.length) {
+        const empty = document.createElement("p");
+        empty.className = "laboratory-empty-state";
+        empty.textContent = "Henüz laboratuvar işlemi yok.";
+        history.appendChild(empty);
+      } else {
+        for (const transaction of transactions) {
+          const item = document.createElement("article");
+          item.dataset.kind = transaction.kind;
+          const copy = document.createElement("span");
+          const title = document.createElement("strong");
+          title.textContent = transaction.kind === "free_beta_reset"
+            ? "Ücretsiz Beta Sıfırlaması"
+            : `${transaction.module_name_tr} · SV ${transaction.level}`;
+          const date = document.createElement("small");
+          date.textContent = new Date(transaction.created_at).toLocaleString(
+            document.documentElement.lang === "en" ? "en-US" : "tr-TR"
+          );
+          copy.append(title, date);
+          const amount = document.createElement("strong");
+          amount.textContent = `${transaction.flux_delta > 0 ? "+" : ""}${transaction.flux_delta} Akı`;
+          item.append(copy, amount);
+          history.appendChild(item);
+        }
+      }
+    }
+
+    const reset = document.getElementById("laboratory-reset-button");
+    if (reset) reset.disabled = Number(view.invested_flux || 0) <= 0;
+    globalThis.GridshardI18n?.apply(document.documentElement.lang || "tr");
+  }
+
+  async function upgradeLaboratorySelection() {
+    const button = document.getElementById("laboratory-upgrade-button");
+    const status = document.getElementById("laboratory-action-status");
+    const moduleId = button?.dataset.moduleId;
+    if (!moduleId || button?.disabled) return;
+    button.disabled = true;
+    if (status) status.textContent = "Kalibrasyon sunucuda doğrulanıyor…";
+    const result = await accountDataLoader.upgradeLaboratoryModule(
+      moduleId,
+      laboratoryRequestId("upgrade")
+    );
+    renderLaboratory();
+    renderProfileSummary();
+    renderRemoteDataStatus();
+    if (status) {
+      status.textContent = result.ok
+        ? "Kalibrasyon tamamlandı ve Akı işlemi kalıcı olarak kaydedildi."
+        : (result.reason || "Kalibrasyon tamamlanamadı.");
+      status.dataset.status = result.ok ? "success" : "error";
+    }
+  }
+
+  async function resetLaboratorySelection() {
+    const reset = document.getElementById("laboratory-reset-button");
+    const status = document.getElementById("laboratory-action-status");
+    if (reset?.disabled) return;
+    reset.disabled = true;
+    if (status) status.textContent = "Akı iadesi sunucuda doğrulanıyor…";
+    const result = await accountDataLoader.resetLaboratory(
+      laboratoryRequestId("reset")
+    );
+    renderLaboratory();
+    renderProfileSummary();
+    renderRemoteDataStatus();
+    if (status) {
+      status.textContent = result.ok
+        ? `${result.payload.receipt.refund} Akı iade edildi; kalibrasyonlar sıfırlandı.`
+        : (result.reason || "Laboratuvar sıfırlanamadı.");
+      status.dataset.status = result.ok ? "success" : "error";
+    }
   }
 
   async function claimEngagementReward(kind, id, button) {
@@ -12756,6 +12975,19 @@ function saveHumanReviewLocalNote() {
     if (!button || button.disabled) return;
     claimEngagementReward("tiers", button.dataset.tierClaim, button);
   });
+
+  const laboratoryModuleList = document.getElementById("laboratory-module-list");
+  laboratoryModuleList?.addEventListener("click", (event) => {
+    const button = event.target.closest("[data-laboratory-module]");
+    if (!button) return;
+    selectedLaboratoryModuleId = button.dataset.laboratoryModule;
+    renderLaboratory();
+  });
+
+  document.getElementById("laboratory-upgrade-button")
+    ?.addEventListener("click", upgradeLaboratorySelection);
+  document.getElementById("laboratory-reset-button")
+    ?.addEventListener("click", resetLaboratorySelection);
 
   function previewAudioSettingsFromControls() {
     const sound=

@@ -112,6 +112,8 @@ class BattleModule:
     is_powered: bool = True
     energy_received_last_tick: float = 0.0
     energy_required_last_tick: float = 0.0
+    calibration_level: int = 0
+    calibration_applied: bool = False
 
     @classmethod
     def create(
@@ -177,6 +179,9 @@ class BattleState:
     season_id: str = "core_awakening_s0"
     ranked_eligible: bool = True
     account_player_ids: tuple[str, ...] = ()
+    normalized: bool = True
+    laboratory_effects_enabled: bool = False
+    player_calibrations: dict[str, dict[str, int]] = field(default_factory=dict)
     status: BattleStatus = BattleStatus.WAITING
     tick: int = 0
     elapsed_ms: int = 0

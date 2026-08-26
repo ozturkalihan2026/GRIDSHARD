@@ -156,7 +156,7 @@ def build_release_check(
         menu_areas=REQUIRED_MENU_AREAS,
         deferred_areas=(
             "Eğitim",
-            "Mağaza",
+            "Ücretli Mağaza",
             "Kozmetik",
             "Sezon",
             "Battle Pass",

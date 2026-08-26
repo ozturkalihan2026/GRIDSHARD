@@ -990,6 +990,7 @@
     PROFILE: "profile",
     DAILY: "daily",
     REWARDS: "rewards",
+    LABORATORY: "laboratory",
     STATISTICS: "statistics",
     SETTINGS: "settings",
   });
@@ -2388,6 +2389,7 @@
       this.profileState = profileState;
       this.statisticsState = statisticsState;
       this.settingsState = settingsState;
+      this.laboratory = null;
       this.requestJson =
         requestJson
         || (async (path, options = {}) => {
@@ -2419,11 +2421,14 @@
           REMOTE_DATA_STATUS.IDLE,
         settings:
           REMOTE_DATA_STATUS.IDLE,
+        laboratory:
+          REMOTE_DATA_STATUS.IDLE,
       };
       this.errors = {
         profile: null,
         statistics: null,
         settings: null,
+        laboratory: null,
       };
     }
 
@@ -2512,6 +2517,54 @@
           reason:
             this.errors.profile,
         };
+      }
+    }
+
+    async loadLaboratory() {
+      return this._load(
+        "laboratory",
+        `/profile/${encodeURIComponent(this.playerId)}/laboratory`,
+        (payload) => {
+          this.laboratory = payload;
+          return payload;
+        }
+      );
+    }
+
+    async upgradeLaboratoryModule(moduleDefinitionId, requestId) {
+      return this._laboratoryOperation(
+        `/profile/${encodeURIComponent(this.playerId)}/laboratory/${encodeURIComponent(moduleDefinitionId)}/upgrade`,
+        requestId
+      );
+    }
+
+    async resetLaboratory(requestId) {
+      return this._laboratoryOperation(
+        `/profile/${encodeURIComponent(this.playerId)}/laboratory/reset`,
+        requestId
+      );
+    }
+
+    async _laboratoryOperation(path, requestId) {
+      this.status.laboratory = REMOTE_DATA_STATUS.LOADING;
+      this.errors.laboratory = null;
+      try {
+        const payload = await this.requestJson(path, {
+          method: "POST",
+          body: JSON.stringify({ request_id: requestId }),
+        });
+        this.laboratory = payload.laboratory;
+        if (payload.profile) {
+          this.profileState.applyProfile(payload.profile);
+        }
+        this.status.laboratory = REMOTE_DATA_STATUS.READY;
+        return { ok: true, payload };
+      } catch (error) {
+        this.status.laboratory = REMOTE_DATA_STATUS.ERROR;
+        this.errors.laboratory = error instanceof Error
+          ? error.message
+          : String(error);
+        return { ok: false, reason: this.errors.laboratory };
       }
     }
 

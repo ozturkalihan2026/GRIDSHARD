@@ -42,7 +42,7 @@ def test_release_check_endpoint_exposes_locked_menu_scope():
     assert response.status_code==200
     body=response.json()
 
-    assert body["version"]=="2.0.0-beta.35"
+    assert body["version"]=="2.0.0-beta.36"
     assert body["ready"] is True
     assert body["menu_areas"]==list(
         REQUIRED_MENU_AREAS
@@ -58,6 +58,6 @@ def test_release_check_defers_out_of_scope_areas():
     ).json()
 
     assert "Eğitim" in body["deferred_areas"]
-    assert "Mağaza" in body["deferred_areas"]
+    assert "Ücretli Mağaza" in body["deferred_areas"]
     assert "Kozmetik" in body["deferred_areas"]
     assert "Sezon" in body["deferred_areas"]

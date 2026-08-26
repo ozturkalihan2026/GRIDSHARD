@@ -50,7 +50,7 @@ def test_rc_report_endpoint():
 
     assert response.status_code==200
     body=response.json()
-    assert body["version"]=="2.0.0-beta.35"
+    assert body["version"]=="2.0.0-beta.36"
     assert "kpis" in body
     assert "release_check" in body
     assert "manifest" in body

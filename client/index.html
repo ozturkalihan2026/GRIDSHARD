@@ -60,7 +60,7 @@
     <section id="main-menu-panel" class="main-menu-panel">
       <div class="main-menu-brand">
         <h1>GRIDSHARD</h1>
-        <span>2.0.0-beta.35</span>
+        <span>2.0.0-beta.36</span>
       </div>
       <div class="lobby-backdrop" aria-hidden="true">
         <div class="lobby-board-grid" aria-hidden="true">
@@ -114,9 +114,9 @@
             <span class="lobby-feature-icon" aria-hidden="true">⬡</span>
             <span class="lobby-feature-copy"><small>SEZON SIFIR</small><strong>Ödül Yolu</strong><span id="lobby-reward-summary">10 ücretsiz kademe</span></span>
           </button>
-          <button type="button" class="lobby-feature-card lobby-feature-card-locked" data-roadmap-feature="store" disabled aria-disabled="true">
+          <button type="button" class="lobby-feature-card lobby-feature-card-live" data-open-screen="laboratory">
             <span class="lobby-feature-icon" aria-hidden="true">⌁</span>
-            <span class="lobby-feature-copy"><small>KOLEKSİYON</small><strong>Mağaza</strong><span>Ekonomi doğrulanınca açılacak</span></span>
+            <span class="lobby-feature-copy"><small>DEVRE AR-GE</small><strong>Devre Laboratuvarı</strong><span id="lobby-laboratory-summary">Akı ile favori modüllerini kalibre et</span></span>
           </button>
         </div>
       </div>
@@ -193,6 +193,44 @@
         <div id="season-reward-track" class="season-reward-track"></div>
       </section>
       <p id="season-action-status" class="season-action-status" role="status">Açılan kademelerin ödüllerini buradan al.</p>
+    </section>
+
+    <section class="laboratory-screen" id="laboratory-screen" data-screen-panel="laboratory" hidden>
+      <div class="panel-title-row laboratory-title-row">
+        <div class="screen-heading-block"><span class="screen-kicker">DEVRE AR-GE · BETA PROGRAMI</span><h2>Devre Laboratuvarı</h2><p class="screen-subtitle">Akı Parçalarını favori modüllerinin deneysel kalibrasyonuna yatır.</p></div>
+        <div class="laboratory-wallet" aria-label="Laboratuvar Akı bakiyesi"><span>AKI BAKİYESİ</span><strong id="laboratory-flux-balance">0</strong><small id="laboratory-invested-flux">Yatırım 0</small></div>
+      </div>
+      <div class="laboratory-integrity-banner">
+        <span aria-hidden="true">◇</span>
+        <p><strong>Rekabet bütünlüğü korunur.</strong> Dereceli PvP daima <code>normalized=true</code> çalışır; kalibrasyon gücü dereceli savaş snapshot'ına uygulanmaz.</p>
+        <strong id="laboratory-load-status" data-status="idle">Yerel önizleme</strong>
+      </div>
+      <div class="laboratory-workbench">
+        <aside class="laboratory-catalog-panel">
+          <div class="laboratory-section-title"><div><span>KATALOG</span><strong>24 Modül</strong></div><small>Seviye 0–3</small></div>
+          <div id="laboratory-module-list" class="laboratory-module-list" aria-label="Laboratuvar modül kataloğu"></div>
+        </aside>
+        <article class="laboratory-detail-panel" id="laboratory-detail-panel">
+          <div class="laboratory-module-hero">
+            <span id="laboratory-detail-icon" class="laboratory-detail-icon" aria-hidden="true">✦</span>
+            <div><span id="laboratory-detail-category">ENERJİ</span><h3 id="laboratory-detail-name">Jeneratör</h3><p id="laboratory-detail-role">Ana enerji kaynağı</p></div>
+            <strong id="laboratory-detail-level">SV 0 / 3</strong>
+          </div>
+          <p id="laboratory-detail-effect" class="laboratory-detail-effect">Deneysel modda enerji verimliliği artar.</p>
+          <div class="laboratory-compare" aria-label="Kalibrasyon önce ve sonra karşılaştırması">
+            <div><span>MEVCUT</span><strong id="laboratory-current-efficiency">%0</strong><small id="laboratory-current-stats">Temel değerler</small></div>
+            <span class="laboratory-compare-arrow" aria-hidden="true">→</span>
+            <div><span>SONRAKİ</span><strong id="laboratory-next-efficiency">%2</strong><small id="laboratory-next-stats">Kategori verimliliği</small></div>
+          </div>
+          <button id="laboratory-upgrade-button" type="button" data-module-id="generator">25 Akı ile Kalibre Et</button>
+          <p id="laboratory-action-status" role="status">İlk anlamlı yükseltme 1. sezon kademesindeki 25 Akı ile açılır.</p>
+        </article>
+        <aside class="laboratory-history-panel">
+          <div class="laboratory-section-title"><div><span>KAYIT DEFTERİ</span><strong>Akı İşlemleri</strong></div><button id="laboratory-reset-button" type="button">Ücretsiz Sıfırla</button></div>
+          <p>Beta boyunca sıfırlama ücretsizdir ve yatırılan Akıyı iade eder.</p>
+          <div id="laboratory-transaction-list" class="laboratory-transaction-list"><p class="laboratory-empty-state">Henüz laboratuvar işlemi yok.</p></div>
+        </aside>
+      </div>
     </section>
 
     <section class="statistics-summary-panel" id="statistics-summary-panel" data-screen-panel="statistics" hidden>
@@ -277,7 +315,7 @@
           <p>GRIDSHARD · Devreni kur, çekirdeği kır.</p>
         </div>
         <dl>
-          <div><dt>Sürüm</dt><dd id="ui-build-version">2.0.0-beta.35</dd></div>
+          <div><dt>Sürüm</dt><dd id="ui-build-version">2.0.0-beta.36</dd></div>
           <div><dt>Yapı</dt><dd id="ui-build-run">manifest bekleniyor</dd></div>
         </dl>
       </section>

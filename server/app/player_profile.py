@@ -76,6 +76,10 @@ class PlayerProfile:
     claimed_daily_missions: tuple[str, ...] = ()
     unlocked_titles: tuple[str, ...] = ("Devre Çırağı",)
     equipped_title: str = "Devre Çırağı"
+    module_calibration_levels: dict[str, int] = field(default_factory=dict)
+    laboratory_transactions: list[dict] = field(default_factory=list)
+    laboratory_receipts: dict[str, dict] = field(default_factory=dict)
+    laboratory_reset_count: int = 0
 
     @property
     def league_name_tr(self) -> str:
@@ -118,6 +122,15 @@ class PlayerProfile:
                 "Savaş Havuzu",
             ],
             "engagement": self.engagement_view(),
+            "laboratory_summary": {
+                "calibrated_module_count": sum(
+                    1
+                    for level in self.module_calibration_levels.values()
+                    if int(level) > 0
+                ),
+                "reset_count": self.laboratory_reset_count,
+                "ranked_normalized": True,
+            },
         }
 
     def engagement_view(self) -> dict:

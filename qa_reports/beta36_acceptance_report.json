@@ -1,0 +1,17 @@
+{
+  "project": "GRIDSHARD",
+  "version": "2.0.0-beta.36",
+  "ok": true,
+  "checks": {
+    "version_identity": true,
+    "laboratory_catalog_and_economy": true,
+    "atomic_purchase_and_replay_protection": true,
+    "free_refund_reset": true,
+    "persistent_profile_state": true,
+    "ranked_normalization_guard": true,
+    "experimental_feature_flag": true,
+    "active_laboratory_ui": true,
+    "before_after_and_history": true,
+    "localized_and_responsive": true
+  }
+}

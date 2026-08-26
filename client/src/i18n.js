@@ -31,6 +31,31 @@
     "KOLEKSİYON":"COLLECTION",
     "Mağaza":"Store",
     "Ekonomi doğrulanınca açılacak":"Unlocks after economy validation",
+    "DEVRE AR-GE":"CIRCUIT R&D",
+    "Devre Laboratuvarı":"Circuit Laboratory",
+    "Akı ile favori modüllerini kalibre et":"Calibrate favorite modules with Flux",
+    "DEVRE AR-GE · BETA PROGRAMI":"CIRCUIT R&D · BETA PROGRAM",
+    "Akı Parçalarını favori modüllerinin deneysel kalibrasyonuna yatır.":"Invest Flux Shards in experimental calibration for your favorite modules.",
+    "AKI BAKİYESİ":"FLUX BALANCE",
+    "Rekabet bütünlüğü korunur.":"Competitive integrity is protected.",
+    "Dereceli PvP daima":"Ranked PvP always runs with",
+    "çalışır; kalibrasyon gücü dereceli savaş snapshot'ına uygulanmaz.":"; calibration power is not applied to ranked battle snapshots.",
+    "KATALOG":"CATALOG",
+    "24 Modül":"24 Modules",
+    "Seviye 0–3":"Levels 0–3",
+    "KAYIT DEFTERİ":"LEDGER",
+    "Akı İşlemleri":"Flux Transactions",
+    "Ücretsiz Sıfırla":"Free Reset",
+    "Beta boyunca sıfırlama ücretsizdir ve yatırılan Akıyı iade eder.":"Resets are free during Beta and refund invested Flux.",
+    "MEVCUT":"CURRENT",
+    "SONRAKİ":"NEXT",
+    "Temel değerler":"Base values",
+    "Kategori verimliliği":"Category efficiency",
+    "İlk anlamlı yükseltme 1. sezon kademesindeki 25 Akı ile açılır.":"The first meaningful upgrade unlocks with 25 Flux from season tier 1.",
+    "Henüz laboratuvar işlemi yok.":"No laboratory transactions yet.",
+    "En Yüksek Kalibrasyon":"Maximum Calibration",
+    "Ücretsiz Beta Sıfırlaması":"Free Beta Reset",
+    "Tüm kalibrasyonlar":"All calibrations",
     "Takım":"Team",
     "Yakında":"Coming soon",
     "Devreni kur · çekirdeği kır":"Build your circuit · break the core",
@@ -368,6 +393,11 @@
         .replace(/^AKIŞ ([\d.]+) Ü$/u, "FLOW $1 U")
         .replace(/^ENERJİ YOK$/u, "NO ENERGY")
         .replace(/^(\d+) devre emri aktif$/u, "$1 circuit orders active")
+        .replace(/^(\d+) modül kalibre edildi$/u, "$1 modules calibrated")
+        .replace(/^SV (\d+) \/ (\d+)$/u, "LV $1 / $2")
+        .replace(/^Yatırım (\d+)$/u, "Invested $1")
+        .replace(/^(\d+) Akı ile Kalibre Et$/u, "Calibrate for $1 Flux")
+        .replace(/^(\d+) Akı Gerekli$/u, "$1 Flux Required")
         .replace(/^Seviye (\d+) · Lig: ([^·]+) · (\d+) RP$/u, "Level $1 · League: $2 · $3 RP")
         .replace(/^(.+) · Seviye (\d+) · Lig: ([^·]+) · (\d+) RP$/u, (_, title, level, league, rating) => `${EN[title] || title} · Level ${level} · League: ${EN[league.trim()] || league.trim()} · ${rating} RP`)
         .replace(/^Kademe (\d+) \/ (\d+)$/u, "Tier $1 / $2")

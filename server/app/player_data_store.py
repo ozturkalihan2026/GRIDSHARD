@@ -494,9 +494,22 @@ class PlayerDataStoreService:
             .get_or_create(player_id)
         )
 
+        profile_data = profile.to_view()
+        profile_data["laboratory"] = {
+            "module_levels": dict(profile.module_calibration_levels),
+            "transactions": [
+                dict(item) for item in profile.laboratory_transactions
+            ],
+            "receipts": {
+                request_id: dict(receipt)
+                for request_id, receipt in profile.laboratory_receipts.items()
+            },
+            "reset_count": profile.laboratory_reset_count,
+        }
+
         return PlayerDataSnapshot(
             player_id=player_id,
-            profile=profile.to_view(),
+            profile=profile_data,
             statistics=statistics.to_view(),
             settings=settings.to_view(),
         )
@@ -579,6 +592,27 @@ class PlayerDataStoreService:
                 for value in engagement.get("unlocked_titles", ["Devre Çırağı"])
             ),
             equipped_title=str(engagement.get("equipped_title", "Devre Çırağı")),
+            module_calibration_levels={
+                str(module_id): int(level)
+                for module_id, level in dict(
+                    data.get("laboratory", {}).get("module_levels", {})
+                ).items()
+            },
+            laboratory_transactions=[
+                dict(item)
+                for item in data.get("laboratory", {}).get("transactions", [])
+                if isinstance(item, dict)
+            ],
+            laboratory_receipts={
+                str(request_id): dict(receipt)
+                for request_id, receipt in dict(
+                    data.get("laboratory", {}).get("receipts", {})
+                ).items()
+                if isinstance(receipt, dict)
+            },
+            laboratory_reset_count=int(
+                data.get("laboratory", {}).get("reset_count", 0)
+            ),
         )
         self.profile_service._profiles[
             player_id

@@ -49,6 +49,12 @@ from .player_profile import (
     PlayerProfileError,
     PlayerProfileService,
 )
+from .laboratory import (
+    LaboratoryError,
+    build_laboratory_view,
+    reset_calibrations,
+    upgrade_calibration,
+)
 from .player_statistics import (
     PlayerStatisticsService,
 )
@@ -624,6 +630,10 @@ redis_matchmaking_service = RedisMatchmakingService(
     websocket_base_url=MATCHMAKING_PUBLIC_WS_BASE_URL,
 )
 MATCHMAKING_AI_FALLBACK_SECONDS = 10
+EXPERIMENTAL_LAB_EFFECTS_ENABLED = os.environ.get(
+    "GRIDSHARD_EXPERIMENTAL_LAB_EFFECTS",
+    "0",
+).strip().lower() in {"1", "true", "yes", "on"}
 
 
 def persist_player_data(
@@ -631,6 +641,18 @@ def persist_player_data(
 ) -> None:
     player_data_store_service.save_player(
         player_id
+    )
+
+
+def attach_player_laboratory_to_session(
+    session_id: str,
+    player_id: str,
+) -> None:
+    profile = player_profile_service.get_or_create(player_id)
+    pvp_service.set_player_calibrations(
+        session_id,
+        player_id,
+        profile.module_calibration_levels,
     )
 
 
@@ -677,6 +699,7 @@ class LocalAiBattleStartRequest(BaseModel):
     player_id: str
     battle_pool_ids: list[str]
     initial_modules: list[InitialModuleRequest] | None = None
+    experimental_calibrations: bool = False
 
 
 class LocalAiBattleCommandRequest(BaseModel):
@@ -691,6 +714,10 @@ class ProfileNameRequest(BaseModel):
 
 class ProfileBattlePoolRequest(BaseModel):
     battle_pool_ids: list[str]
+
+
+class LaboratoryOperationRequest(BaseModel):
+    request_id: str
 
 
 class BattlePoolPresetRequest(BaseModel):
@@ -2525,6 +2552,8 @@ def _ensure_human_match_session(pair: MatchmakingPair) -> None:
     )
     pvp_service.join(session.session_id, pair.player_a_id)
     pvp_service.join(session.session_id, pair.player_b_id)
+    attach_player_laboratory_to_session(session.session_id, pair.player_a_id)
+    attach_player_laboratory_to_session(session.session_id, pair.player_b_id)
 
 
 async def _provision_match_session(pair: MatchmakingPair) -> MatchmakingPair:
@@ -2905,6 +2934,53 @@ def get_profile(
     return profile.to_view()
 
 
+@app.get("/profile/{player_id}/laboratory")
+def get_player_laboratory(player_id: str) -> dict:
+    profile = player_profile_service.get_or_create(player_id)
+    return build_laboratory_view(profile)
+
+
+@app.post("/profile/{player_id}/laboratory/{module_definition_id}/upgrade")
+def upgrade_player_laboratory_module(
+    player_id: str,
+    module_definition_id: str,
+    request: LaboratoryOperationRequest,
+) -> dict:
+    profile = player_profile_service.get_or_create(player_id)
+    try:
+        receipt = upgrade_calibration(
+            profile,
+            module_definition_id,
+            request.request_id,
+        )
+    except LaboratoryError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+    persist_player_data(player_id)
+    return {
+        "receipt": receipt,
+        "laboratory": build_laboratory_view(profile),
+        "profile": profile.to_view(),
+    }
+
+
+@app.post("/profile/{player_id}/laboratory/reset")
+def reset_player_laboratory(
+    player_id: str,
+    request: LaboratoryOperationRequest,
+) -> dict:
+    profile = player_profile_service.get_or_create(player_id)
+    try:
+        receipt = reset_calibrations(profile, request.request_id)
+    except LaboratoryError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+    persist_player_data(player_id)
+    return {
+        "receipt": receipt,
+        "laboratory": build_laboratory_view(profile),
+        "profile": profile.to_view(),
+    }
+
+
 @app.post("/profile/{player_id}/engagement/missions/{mission_id}/claim")
 def claim_daily_mission_reward(
     player_id: str,
@@ -3174,7 +3250,7 @@ def gridshard_identity() -> dict:
         "tagline_en":
             "Build the Circuit. Break the Core.",
         "identity_version":
-            "2.0.0-beta.35",
+            "2.0.0-beta.36",
         "palette":{
             "void_navy":"#070B14",
             "reactor_blue":"#0C1625",
@@ -4293,9 +4369,12 @@ def _create_matchmaking_ai_session(pair) -> None:
         match_type="unranked_ai",
         season_id=CURRENT_SEASON_ID,
         ranked_eligible=False,
+        normalized=not EXPERIMENTAL_LAB_EFFECTS_ENABLED,
+        laboratory_effects_enabled=EXPERIMENTAL_LAB_EFFECTS_ENABLED,
     )
     pvp_service.join(pair.match_id, pair.player_a_id)
     pvp_service.join(pair.match_id, pair.player_b_id)
+    attach_player_laboratory_to_session(pair.match_id, pair.player_a_id)
 
     ai_pool = _local_ai_battle_pool()
     pvp_service.submit_setup(
@@ -4329,6 +4408,10 @@ async def create_local_ai_session(
     session_id = f"local-ai-{uuid4()}"
     ai_player_id = f"{session_id}-opponent"
     try:
+        experimental_enabled = bool(
+            request.experimental_calibrations
+            and EXPERIMENTAL_LAB_EFFECTS_ENABLED
+        )
         pvp_service.create_session(
             session_id,
             setup_required=True,
@@ -4336,6 +4419,8 @@ async def create_local_ai_session(
             match_type="local_test",
             season_id=CURRENT_SEASON_ID,
             ranked_eligible=False,
+            normalized=not experimental_enabled,
+            laboratory_effects_enabled=experimental_enabled,
         )
         pvp_service.join(
             session_id,
@@ -4345,6 +4430,7 @@ async def create_local_ai_session(
             session_id,
             ai_player_id,
         )
+        attach_player_laboratory_to_session(session_id, request.player_id)
         pvp_service.submit_setup(
             session_id,
             request.player_id,
@@ -4493,6 +4579,10 @@ def join_pvp_session(
 ) -> dict:
     try:
         slot = pvp_service.join(
+            session_id,
+            request.player_id,
+        )
+        attach_player_laboratory_to_session(
             session_id,
             request.player_id,
         )
