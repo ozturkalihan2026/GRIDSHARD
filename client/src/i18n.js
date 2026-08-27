@@ -57,6 +57,7 @@
     "Ücretsiz Beta Sıfırlaması":"Free Beta Reset",
     "Tüm kalibrasyonlar":"All calibrations",
     "Takım":"Team",
+    "TAKIM":"TEAM",
     "Yakında":"Coming soon",
     "Devreni kur · çekirdeği kır":"Build your circuit · break the core",
     "OPERATÖR TERMİNALİ":"OPERATOR TERMINAL",
@@ -112,7 +113,14 @@
     "Görünen Adı Kaydet":"Save Display Name",
     "Web Test Kimliği hazırlanıyor…":"Preparing Web Test identity…",
     "Hesap: Hazır değil":"Account: Not ready",
+    "Hesap: Sunucuda hazırlanıyor":"Account: Preparing on server",
+    "Hesap: Hazır":"Account: Ready",
+    "Hesap: Sunucu bağlantı hatası":"Account: Server connection error",
     "Oturum Sürekliliği: Kontrol bekliyor":"Session continuity: Waiting for check",
+    "Oturum Sürekliliği: Doğrulandı":"Session continuity: Verified",
+    "Oturum Sürekliliği: Kimlik uyuşmazlığı":"Session continuity: Identity mismatch",
+    "Web Test Kimliği":"Web Test Identity",
+    "Derece Puanı":"Rating Points",
     "Hesap Hazırlığını Yeniden Dene":"Retry Account Setup",
     "SAVAŞ ARŞİVİ":"BATTLE ARCHIVE",
     "Maç geçmişinin temel performans özeti.":"Core performance summary of match history.",
@@ -171,6 +179,7 @@
     "Sınıf başlıklarını açıp kapat. Soldan modülü incele. + ile ekle, − ile çıkar; ◆ Jeneratörün zorunlu ve kilitli olduğunu gösterir. Çıkarma işlemi seçili Savaş Havuzundaki − simgesinden yapılır.":"Expand or collapse class headings. Inspect a module on the left. Add with + and remove with −; ◆ marks the required, locked Generator. Remove modules from the selected Battle Pool with its − control.",
     "Kısa Eğitim":"Quick Tutorial",
     "Hazır Havuzları Yönet":"Manage Presets",
+    "Başlangıç Devresi":"Starting Circuit",
     "Hazır Savaş Havuzları ve Kayıt Yönetimi":"Battle Pool Presets and Save Management",
     "Havuzlarını geniş çalışma alanında yükle, kaydet, yeniden adlandır veya sil.":"Load, save, rename or delete your pools in the expanded workspace.",
     "Hazır havuz yönetimini kapat":"Close preset management",
@@ -189,6 +198,32 @@
     "Serbest seçim":"Custom selection",
     "Aktif Hazır Havuzu Sil":"Delete Active Preset",
     "Kayıtlı havuzlar yükleniyor...":"Loading saved pools...",
+    "Henüz hazır havuz yok. 18/18 seçim yaptıktan sonra ilk loadout'unu kaydet.":"No presets yet. Complete an 18/18 selection to save your first loadout.",
+    "Yerleşik başlangıç havuzu":"Built-in Starting Circuit",
+    "Yerleşik başlangıç havuzu silinemez.":"The built-in Starting Circuit cannot be deleted.",
+    "Yerleşik başlangıç havuzu yeniden adlandırılamaz.":"The built-in Starting Circuit cannot be renamed.",
+    "Favoriden çıkar":"Remove from favorites",
+    "Favoriye ekle":"Add to favorites",
+    "Aktif":"Active",
+    "Yükle":"Load",
+    "Henüz kullanılmadı":"Never used",
+    "Az önce kullanıldı":"Used just now",
+    "Kayıtla aynı":"Matches saved preset",
+    "Değiştirildi":"Modified",
+    "Yeni Hazır Havuzu Kaydet":"Save New Preset",
+    "Yerleşik Hazır Havuz":"Built-in Preset",
+    "Hazır Havuz Güncel":"Preset Up to Date",
+    "Değişiklikleri Üzerine Kaydet":"Overwrite with Changes",
+    "Kaydetmek için havuz 18/18 olmalı.":"The pool must be 18/18 before saving.",
+    "Hazır havuza bir isim ver.":"Give the preset a name.",
+    "Hazır havuzlar alınamadı.":"Presets could not be retrieved.",
+    "Hazır havuzlar yüklenemedi.":"Presets could not be loaded.",
+    "Henüz kayıtlı hazır havuz yok.":"There are no saved presets yet.",
+    "Sunucu kaydı kabul etmedi.":"The server rejected the save.",
+    "Hazır havuz silinemedi.":"The preset could not be deleted.",
+    "Yeniden adlandırmak için hazır havuz seç.":"Select a preset to rename.",
+    "Yeni hazır havuz adını yaz.":"Enter the new preset name.",
+    "Hazır havuz yeniden adlandırılamadı.":"The preset could not be renamed.",
     "Başlangıç Devresi · 4 Aktif":"Starting Circuit · 4 Active",
     "Çekirdek ve Jeneratör sabittir. Savaş Havuzundan diğer iki başlangıç modülünü seç.":"Core and Generator are fixed. Choose the other two starting modules from the Battle Pool.",
     "Sabit başlangıç modülleri":"Fixed starting modules",
@@ -217,7 +252,14 @@
     "Savaş":"Battle",
     "Eşleştiriliyor":"Matching",
     "Eşleştirmeyi İptal Et":"Cancel Matchmaking",
+    "Eşleştirmeyi iptal et":"Cancel matchmaking",
+    "İptal Et":"Cancel",
+    "İptal ediliyor…":"Cancelling…",
+    "Önce Maç Modu Seç":"Choose a Match Mode First",
     "Geçici Güçlendiriciler":"Temporary Boosters",
+    "Güçlendiriciler":"Boosters",
+    "Modülü sürükle veya seçip hedef hücreye dokun.":"Drag a module or select it, then tap a target cell.",
+    "Maç sonucu":"Match result",
     "Seçim bekleniyor":"Waiting for selection",
     "Güçlendiriciyi seç, ardından aktif hedef modülü seç. Savaş durmaz.":"Choose a booster, then an active target module. The battle does not pause.",
     "Beta / Bağlantı Teknik Durumu":"Beta / Connection Technical Status",
@@ -234,6 +276,18 @@
     "Modül Rafı":"Module Shelf",
     "Kilitli":"Locked",
     "Modül müdahalesi 15. saniyede açılır.":"Module interaction unlocks at 15 seconds.",
+    "İlk güçlendirici 30. saniyede":"First booster at 30 seconds",
+    "HAZIR · 3 seçenekten 1'ini seç":"READY · Choose 1 of 3 options",
+    "Hedef modül seç":"Choose a target module",
+    "Uygun, parlayan modüle bırak":"Drop onto an eligible glowing module",
+    "Sunucu hedefi doğruluyor…":"Server is validating the target…",
+    "Maç tamamlandı":"Match complete",
+    "Aşırı Yük Çipi":"Overcharge Chip",
+    "Acil Onarım":"Emergency Repair",
+    "Çift Port Adaptörü":"Dual Port Adapter",
+    "+%25 saldırı · 15 sn":"+25% attack · 15 sec",
+    "%25 anlık onarım":"25% instant repair",
+    "+1 geçici port · 15 sn":"+1 temporary port · 15 sec",
     "Devrem":"My Circuit",
     "Rakip":"Opponent",
     "Mobil savaş görünümü":"Mobile battle view",
@@ -373,6 +427,16 @@
     "Maç tamamlandı · Savaşı bıraktın":"Match complete · You forfeited",
     "KAZANDIN · Rakip Çekirdek yok edildi":"YOU WON · Opponent Core destroyed",
     "KAYBETTİN · Çekirdeğin yok edildi":"YOU LOST · Your Core was destroyed",
+    "Galibiyet":"Victory",
+    "Mağlubiyet":"Defeat",
+    "Beraberlik":"Draw",
+    "Dereceli PvP":"Ranked PvP",
+    "Derecesiz AI":"Unranked AI",
+    "Yerel Test":"Local Test",
+    "Derece puanı değişmedi":"Rating unchanged",
+    "DP hesaplanıyor":"Calculating RP",
+    "XP hesaplanıyor":"Calculating XP",
+    "KAYBETTİN · Savaşı bıraktın":"YOU LOST · You forfeited",
   });
 
   const TR = Object.freeze(
@@ -386,6 +450,20 @@
   function translatePatterns(value, language) {
     if (language === "en") {
       return value
+        .replace(/^Devrede (\d+) · Boş Hak (\d+) · Sınır (\d+)\/10 · Yeni Hak (\d+) sn$/u, "On Circuit $1 · Open Slots $2 · Limit $3/10 · New Slot in $4 sec")
+        .replace(/^Devrede (\d+) · Boş Hak (\d+) · Üst Sınır (\d+)$/u, "On Circuit $1 · Open Slots $2 · Maximum $3")
+        .replace(/^Yeni modül hakkı açıldı · Sınır (\d+)\/10$/u, "New module slot unlocked · Limit $1/10")
+        .replace(/^(.+) · Seviye (\d+) · ([^·]+) · (\d+) Derece Puanı · (\d+) XP$/u, (_, name, level, league, rating, xp) => `${name} · Level ${level} · ${EN[league.trim()] || league.trim()} · ${rating} Rating Points · ${xp} XP`)
+        .replace(/^Web Test Kimliği: (.+)$/u, "Web Test Identity: $1")
+        .replace(/^(\d+) sn sonra açılır$/u, "Unlocks in $1 sec")
+        .replace(/^(\d+) hazır havuz kayıtlı$/u, "$1 presets saved")
+        .replace(/^(\d+) modül · (.+)$/u, (_, count, tail) => `${count} modules · ${EN[tail] || tail}`)
+        .replace(/^(.+) · (\d+) modül · (.+)$/u, (_, name, count, tail) => `${name} · ${count} modules · ${EN[tail] || tail}`)
+        .replace(/^(.+) kaydedildi\.$/u, "$1 saved.")
+        .replace(/^(.+) yüklendi; istersen modülleri değiştirebilirsin\.$/u, "$1 loaded; you can change its modules.")
+        .replace(/^(.+) silindi\.$/u, "$1 deleted.")
+        .replace(/^(.+) → (.+) olarak değiştirildi\.$/u, "$1 → renamed to $2.")
+        .replace(/^Aktif hazır havuz: (.+)$/u, "Active preset: $1")
         .replace(/^(Enerji|Saldırı|Savunma|Destek|Sabotaj) · (\d+) ▾$/u, (_, category, count) => `${EN[category] || category} · ${count} ▾`)
         .replace(/^(.+) \+ (Enerji|Saldırı|Savunma|Destek|Sabotaj)$/u, (_, name, category) => `${name} + ${EN[category] || category}`)
         .replace(/^(.+) ◆ (Enerji|Saldırı|Savunma|Destek|Sabotaj)$/u, (_, name, category) => `${name} ◆ ${EN[category] || category}`)
@@ -405,6 +483,12 @@
         .replace(/^KADEME (\d+)$/u, "TIER $1")
         .replace(/Akı Parçası/gu, "Flux Shards")
         .replace(/ Akı$/gu, " Flux")
+        .replace(/Dereceli PvP/gu, "Ranked PvP")
+        .replace(/Derecesiz AI/gu, "Unranked AI")
+        .replace(/Yerel Test/gu, "Local Test")
+        .replace(/Derece puanı değişmedi/gu, "Rating unchanged")
+        .replace(/Savaşı bıraktın/gu, "You forfeited")
+        .replace(/DK ceza/gu, "CC penalty")
         .replace(/^Maç (\d+) · Galibiyet (\d+) · Mağlubiyet (\d+) · Beraberlik (\d+) · Galibiyet %(\d+)$/u, "Matches $1 · Wins $2 · Losses $3 · Draws $4 · Win rate $5%")
         .replace(/^Devre Kredisi: (.+)$/u, "Circuit Credits: $1")
         .replace(/Çekirdek/gu, "Core")
@@ -418,6 +502,19 @@
         .replace(/([\d.]+) sn\b/gu, "$1 sec");
     }
     return value
+      .replace(/^On Circuit (\d+) · Open Slots (\d+) · Limit (\d+)\/10 · New Slot in (\d+) sec$/u, "Devrede $1 · Boş Hak $2 · Sınır $3/10 · Yeni Hak $4 sn")
+      .replace(/^On Circuit (\d+) · Open Slots (\d+) · Maximum (\d+)$/u, "Devrede $1 · Boş Hak $2 · Üst Sınır $3")
+      .replace(/^New module slot unlocked · Limit (\d+)\/10$/u, "Yeni modül hakkı açıldı · Sınır $1/10")
+      .replace(/^(.+) · Level (\d+) · ([^·]+) · (\d+) Rating Points · (\d+) XP$/u, (_, name, level, league, rating, xp) => `${name} · Seviye ${level} · ${TR[league.trim()] || league.trim()} · ${rating} Derece Puanı · ${xp} XP`)
+      .replace(/^Web Test Identity: (.+)$/u, "Web Test Kimliği: $1")
+      .replace(/^Unlocks in (\d+) sec$/u, "$1 sn sonra açılır")
+      .replace(/^(\d+) presets saved$/u, "$1 hazır havuz kayıtlı")
+      .replace(/^(\d+) modules · (.+)$/u, (_, count, tail) => `${count} modül · ${TR[tail] || tail}`)
+      .replace(/^(.+) saved\.$/u, "$1 kaydedildi.")
+      .replace(/^(.+) loaded; you can change its modules\.$/u, "$1 yüklendi; istersen modülleri değiştirebilirsin.")
+      .replace(/^(.+) deleted\.$/u, "$1 silindi.")
+      .replace(/^(.+) → renamed to (.+)\.$/u, "$1 → $2 olarak değiştirildi.")
+      .replace(/^Active preset: (.+)$/u, "Aktif hazır havuz: $1")
       .replace(/^(Energy|Attack|Defense|Support|Sabotage) · (\d+) ▾$/u, (_, category, count) => `${TR[category] || category} · ${count} ▾`)
       .replace(/^(.+) \+ (Energy|Attack|Defense|Support|Sabotage)$/u, (_, name, category) => `${name} + ${TR[category] || category}`)
       .replace(/^(.+) ◆ (Energy|Attack|Defense|Support|Sabotage)$/u, (_, name, category) => `${name} ◆ ${TR[category] || category}`)
@@ -432,6 +529,12 @@
       .replace(/^TIER (\d+)$/u, "KADEME $1")
       .replace(/Flux Shards/gu, "Akı Parçası")
       .replace(/ Flux$/gu, " Akı")
+      .replace(/Ranked PvP/gu, "Dereceli PvP")
+      .replace(/Unranked AI/gu, "Derecesiz AI")
+      .replace(/Local Test/gu, "Yerel Test")
+      .replace(/Rating unchanged/gu, "Derece puanı değişmedi")
+      .replace(/You forfeited/gu, "Savaşı bıraktın")
+      .replace(/CC penalty/gu, "DK ceza")
       .replace(/^Matches (\d+) · Wins (\d+) · Losses (\d+) · Draws (\d+) · Win rate (\d+)%$/u, "Maç $1 · Galibiyet $2 · Mağlubiyet $3 · Beraberlik $4 · Galibiyet %$5")
       .replace(/^Circuit Credits: (.+)$/u, "Devre Kredisi: $1")
       .replace(/Core/gu, "Çekirdek")

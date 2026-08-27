@@ -595,6 +595,9 @@ class PvPSessionService:
                 "setup_submitted": session.slots[player_id].setup_submitted,
                 "ready": session.slots[player_id].ready,
                 "modules": public_modules,
+                "module_capacity": session.engine.module_capacity_view(
+                    player_id
+                ),
             }
 
             # Ekonomi ve teklif gibi özel bilgiler yalnızca izleyenin kendisine açılır.

@@ -19,7 +19,7 @@ from app.game.topology import build_energy_topology  # noqa: E402
 from app.version import VERSION  # noqa: E402
 
 
-EXPECTED_VERSION = "2.0.0-beta.36"
+EXPECTED_VERSION = "2.0.0-beta.37"
 OUTPUT = ROOT / "qa_reports" / "beta32_fix_acceptance_report.json"
 MENU_TRACKS = ("menu_ensemble_v6.wav", "pool_ensemble_v6.wav")
 STEM_NAMES = tuple(

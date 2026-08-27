@@ -9,7 +9,8 @@ def test_beta26_single_matchmaking_entry_and_launcher_shipped():
     html=client.get('/').text
     assert 'id="local-battle-quick-start"' not in html
     assert 'id="battle-pool-confirm" type="button" disabled>Savaş</button>' in html
-    assert '10 sn AI Devralma' in html
+    app_js=client.get('/src/app.js').text
+    assert 'Eşleştirme: 10 sn doldu · AI rakip devraldı' in app_js
     launcher=(ROOT/'HIZLI_SAVAS_TESTI.bat').read_text(encoding='utf-8')
     assert 'BASLAT_WEB_TEST.bat' in launcher
 

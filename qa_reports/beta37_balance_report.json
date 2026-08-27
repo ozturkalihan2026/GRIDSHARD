@@ -1,0 +1,159 @@
+{
+  "version": "2.0.0-beta.37",
+  "method": {
+    "engine": "BattleEngine deterministic ordered archetype corpus",
+    "engine_corpus_matches_per_variant": 36,
+    "screening_trials_per_variant": 10000,
+    "finalist_trials_per_variant": 50000,
+    "sampling": "seeded bootstrap from real engine outcomes",
+    "canonical_values_mutated_during_study": false
+  },
+  "targets": {
+    "median_duration_seconds": [
+      75,
+      95
+    ],
+    "draw_rate_max": 0.02,
+    "booster_window_reached": "majority"
+  },
+  "screening": {
+    "baseline": {
+      "trials": 10000,
+      "average_duration_ms": 77180.61,
+      "median_duration_ms": 46100.0,
+      "p10_duration_ms": 40600,
+      "p90_duration_ms": 180000,
+      "draw_rate": 0.2254,
+      "timeout_rate": 0.0,
+      "booster_window_reached_rate": 1.0,
+      "average_energy_pressure_ratio": 0.352347,
+      "archetype_win_rates": {
+        "balanced": 0.665855,
+        "offense": 0.164802,
+        "defense": 0.495482,
+        "sabotage": 0.0,
+        "battery_pulse": 0.343137,
+        "armor_counter": 0.658043
+      },
+      "archetype_win_rate_spread": 0.665855,
+      "score": 144.9171
+    },
+    "damage_minus_5": {
+      "trials": 10000,
+      "average_duration_ms": 77281.31,
+      "median_duration_ms": 44200.0,
+      "p10_duration_ms": 42400,
+      "p90_duration_ms": 180000,
+      "draw_rate": 0.2238,
+      "timeout_rate": 0.0,
+      "booster_window_reached_rate": 1.0,
+      "average_energy_pressure_ratio": 0.364769,
+      "archetype_win_rates": {
+        "balanced": 0.650354,
+        "offense": 0.0,
+        "defense": 0.515578,
+        "sabotage": 0.160725,
+        "battery_pulse": 0.319542,
+        "armor_counter": 0.665801
+      },
+      "archetype_win_rate_spread": 0.665801,
+      "score": 146.01602
+    },
+    "defense_hp_plus_8": {
+      "trials": 10000,
+      "average_duration_ms": 76389.45,
+      "median_duration_ms": 47100.0,
+      "p10_duration_ms": 40600,
+      "p90_duration_ms": 180000,
+      "draw_rate": 0.2195,
+      "timeout_rate": 0.0,
+      "booster_window_reached_rate": 1.0,
+      "average_energy_pressure_ratio": 0.35968,
+      "archetype_win_rates": {
+        "balanced": 0.664565,
+        "offense": 0.160899,
+        "defense": 0.496738,
+        "sabotage": 0.0,
+        "battery_pulse": 0.337752,
+        "armor_counter": 0.67541
+      },
+      "archetype_win_rate_spread": 0.67541,
+      "score": 141.1582
+    },
+    "core_hp_plus_8": {
+      "trials": 10000,
+      "average_duration_ms": 77037.49,
+      "median_duration_ms": 47100.0,
+      "p10_duration_ms": 41500,
+      "p90_duration_ms": 180000,
+      "draw_rate": 0.2163,
+      "timeout_rate": 0.0,
+      "booster_window_reached_rate": 1.0,
+      "average_energy_pressure_ratio": 0.358331,
+      "archetype_win_rates": {
+        "balanced": 0.672574,
+        "offense": 0.183716,
+        "defense": 0.505035,
+        "sabotage": 0.0,
+        "battery_pulse": 0.344387,
+        "armor_counter": 0.675592
+      },
+      "archetype_win_rate_spread": 0.675592,
+      "score": 139.56184
+    }
+  },
+  "top_two": [
+    "core_hp_plus_8",
+    "defense_hp_plus_8"
+  ],
+  "finalists": {
+    "core_hp_plus_8": {
+      "trials": 50000,
+      "average_duration_ms": 77537.2,
+      "median_duration_ms": 47100.0,
+      "p10_duration_ms": 41500,
+      "p90_duration_ms": 180000,
+      "draw_rate": 0.2208,
+      "timeout_rate": 0.0,
+      "booster_window_reached_rate": 1.0,
+      "average_energy_pressure_ratio": 0.356473,
+      "archetype_win_rates": {
+        "balanced": 0.671526,
+        "offense": 0.169803,
+        "defense": 0.503228,
+        "sabotage": 0.0,
+        "battery_pulse": 0.338523,
+        "armor_counter": 0.661143
+      },
+      "archetype_win_rate_spread": 0.671526,
+      "score": 141.73052
+    },
+    "defense_hp_plus_8": {
+      "trials": 50000,
+      "average_duration_ms": 76147.342,
+      "median_duration_ms": 42100.0,
+      "p10_duration_ms": 40600,
+      "p90_duration_ms": 180000,
+      "draw_rate": 0.21758,
+      "timeout_rate": 0.0,
+      "booster_window_reached_rate": 1.0,
+      "average_energy_pressure_ratio": 0.360055,
+      "archetype_win_rates": {
+        "balanced": 0.675517,
+        "offense": 0.165009,
+        "defense": 0.492527,
+        "sabotage": 0.0,
+        "battery_pulse": 0.334406,
+        "armor_counter": 0.677652
+      },
+      "archetype_win_rate_spread": 0.677652,
+      "score": 145.24304
+    }
+  },
+  "decision": {
+    "best_candidate": "core_hp_plus_8",
+    "candidate_improves_median": true,
+    "canonical_change_applied": false,
+    "reason": "The simulation result is recorded for human review; canonical combat values remain unchanged until real-player telemetry confirms the candidate."
+  }
+}

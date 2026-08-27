@@ -50,6 +50,42 @@ CATEGORY_LABELS = {
     "çekirdek":"Çekirdek",
 }
 
+CATEGORY_LABELS_EN = {
+    "enerji": "Energy",
+    "saldırı": "Attack",
+    "savunma": "Defense",
+    "destek": "Support",
+    "sabotaj": "Sabotage",
+    "çekirdek": "Core",
+}
+
+MODULE_COPY_EN: dict[str, tuple[str, str]] = {
+    "generator": ("Primary energy source", "Continuously supplies energy and can move between the four Core gates."),
+    "battery": ("Energy reserve", "Supports the circuit during sudden demand spikes."),
+    "splitter": ("Energy-line branching", "Splits the energy line into multiple branches."),
+    "capacitor": ("Short burst discharge", "Provides immediate energy support during short demand peaks."),
+    "laser": ("Sustained single-target damage", "Deals steady damage to one target."),
+    "pulse_cannon": ("High burst damage", "Fires slower, powerful pulses."),
+    "railgun": ("High piercing damage", "Deals piercing damage against armored targets."),
+    "missile_launcher": ("Delayed area pressure", "Trades preparation time for heavy area pressure."),
+    "drone_bay": ("Distributed sustained pressure", "Wears down defenses with multiple small attacks."),
+    "arc_cannon": ("Chained multi-target damage", "Produces energy attacks that can jump between nearby targets."),
+    "shield": ("Active damage absorption", "Consumes energy to absorb part of incoming damage."),
+    "armor": ("Passive durability", "Provides durability without consuming energy."),
+    "reflector": ("Energy-attack reflection", "Redirects part of incoming energy-based damage."),
+    "barrier": ("Connection-line protection", "Protects critical connection points."),
+    "repair": ("Health repair", "Repairs damaged modules."),
+    "cooler": ("Heat control", "Reduces heat on connected modules."),
+    "amplifier": ("Attack-line amplification", "Increases the output of a connected attack module."),
+    "targeting_computer": ("Targeting support", "Improves target selection and attack efficiency."),
+    "overclock_unit": ("Performance at a heat cost", "Accelerates a connected module while increasing heat and energy load."),
+    "emp": ("Temporary system disruption", "Temporarily disrupts energy and support lines."),
+    "jammer": ("Support-line disruption", "Weakens targeting and support modules."),
+    "virus": ("Escalating system debuff", "Applies a weakening effect that grows across support and control lines."),
+    "energy_leech": ("Energy-economy pressure", "Weakens the opponent's energy generation and storage line."),
+    "disruptor": ("Temporary connection cut", "Temporarily disables a selected connection line."),
+}
+
 
 def _name(definition_id: str) -> str:
     definition = BASIC_MODULE_DEFINITIONS.get(
@@ -262,6 +298,60 @@ def _effect_lines(definition_id: str) -> list[str]:
     ]
 
 
+def _effect_lines_en(definition_id: str) -> list[str]:
+    definition = BASIC_MODULE_DEFINITIONS[definition_id]
+    if definition.category == "saldırı":
+        return [
+            f"Base damage per shot is {definition.base_damage:g}; base attack interval is {definition.cooldown_ms / 1000:g} sec.",
+            "Damage multiplier is 125% against strong targets and 80% against weak targets.",
+        ]
+    if definition_id == "generator":
+        return [
+            f"Generates {definition.energy_generation:g} energy per second and can move between all four Core gates.",
+            f"Energy Leech reduces base generation to {_percent(ENERGY_LEECH_GENERATION_MULTIPLIER)}%.",
+        ]
+    if definition_id == "battery":
+        return [
+            f"Stores {BATTERY_CAPACITY:g} energy; charges at {BATTERY_CHARGE_RATE_PER_SECOND:g}/sec and discharges at {BATTERY_DISCHARGE_RATE_PER_SECOND:g}/sec.",
+            "Helps power consumer modules during a temporary energy shortage.",
+        ]
+    if definition_id == "capacitor":
+        return [
+            f"Stores {CAPACITOR_CAPACITY:g} energy; charges at {CAPACITOR_CHARGE_RATE_PER_SECOND:g}/sec and discharges at {CAPACITOR_DISCHARGE_RATE_PER_SECOND:g}/sec.",
+            "Discharges before the Battery when the circuit lacks energy.",
+        ]
+    if definition_id == "splitter":
+        return [
+            f"Branches the energy line and raises distribution efficiency to {_percent(SPLITTER_DISTRIBUTION_EFFICIENCY)}% instead of {_percent(BASE_DISTRIBUTION_EFFICIENCY)}%.",
+        ]
+    if definition_id == "shield":
+        return ["Reduces incoming damage by 35% while powered.", f"Consumes {definition.energy_consumption:g} energy per second."]
+    if definition_id == "armor":
+        return ["Passively reduces incoming damage by 25%.", "Works without consuming energy."]
+    if definition_id == "reflector":
+        return ["Reduces incoming damage by 25% while powered.", "Reflects 20% of the last incoming damage to the attacker."]
+    if definition_id == "barrier":
+        return ["Reduces incoming damage by 20% while powered.", "Takes target priority and can shorten sabotage duration by 25%."]
+    if definition_id == "repair":
+        return [f"Restores {BASE_REPAIR_AMOUNT} HP with a base cooldown of {definition.cooldown_ms / 1000:g} sec.", "Can cleanse selected sabotage effects."]
+    if definition_id == "cooler":
+        return [f"Reduces target heat by {COOLER_HEAT_REDUCTION_PER_TICK:g} every 0.1 sec.", f"Removes {COOLER_DEBUFF_REDUCTION_MS_PER_TICK} ms from reducible debuffs per engine step."]
+    if definition_id == "amplifier":
+        return [f"Raises connected attack-line damage to {_percent(AMPLIFIER_DAMAGE_MULTIPLIER)}% (+{_percent(AMPLIFIER_DAMAGE_MULTIPLIER)-100}%)."]
+    if definition_id == "targeting_computer":
+        return [f"Reduces the supported attack module's cooldown to {_percent(TARGETING_COOLDOWN_MULTIPLIER)}%."]
+    if definition_id == "overclock_unit":
+        return [f"Raises damage to {_percent(OVERCLOCK_DAMAGE_MULTIPLIER)}% and reduces cooldown to {_percent(OVERCLOCK_COOLDOWN_MULTIPLIER)}%.", f"Adds {OVERCLOCK_HEAT_PER_TICK:g} heat per engine step."]
+    sabotage = {
+        "emp": [f"Disables the target system for {EMP_DURATION_MS / 1000:g} sec.", f"Base sabotage cooldown is {definition.cooldown_ms / 1000:g} sec."],
+        "jammer": [f"Disrupts a target support or control module for {JAMMER_DURATION_MS / 1000:g} sec.", f"Base sabotage cooldown is {definition.cooldown_ms / 1000:g} sec."],
+        "virus": [f"Lasts {VIRUS_DURATION_MS / 1000:g} sec and deals {VIRUS_TICK_DAMAGE} damage every {VIRUS_TICK_INTERVAL_MS / 1000:g} sec.", "Damage continues over time unless cleansed or resisted."],
+        "energy_leech": [f"Reduces target energy generation to {_percent(ENERGY_LEECH_GENERATION_MULTIPLIER)}% for {ENERGY_LEECH_DURATION_MS / 1000:g} sec."],
+        "disruptor": [f"Cuts the target connection line for {DISRUPTOR_DURATION_MS / 1000:g} sec, potentially leaving downstream modules without power."],
+    }
+    return sabotage.get(definition_id, ["No additional numeric effect is published for this module."])
+
+
 def build_module_catalog_view() -> dict:
     modules = []
 
@@ -280,13 +370,19 @@ def build_module_catalog_view() -> dict:
                     definition.category,
                     definition.category,
                 ),
+            "category_label_en": CATEGORY_LABELS_EN.get(
+                definition.category,
+                definition.category,
+            ),
             "max_hp":definition.max_hp,
             "circuit_credit_cost":
                 definition.circuit_credit_cost,
             "strategic_role":
                 definition.strategic_role,
+            "strategic_role_en": MODULE_COPY_EN[definition_id][0],
             "description_tr":
                 definition.description_tr,
+            "description_en": MODULE_COPY_EN[definition_id][1],
             "energy_generation":
                 definition.energy_generation,
             "energy_consumption":
@@ -313,6 +409,7 @@ def build_module_catalog_view() -> dict:
                 _effect_lines(
                     definition_id
                 ),
+            "effect_lines_en": _effect_lines_en(definition_id),
             "movable":definition.movable,
             "removable":definition.removable,
             "rotatable":definition.rotatable,
@@ -335,6 +432,7 @@ def build_module_catalog_view() -> dict:
             list(CATEGORY_ORDER),
         "category_labels":
             CATEGORY_LABELS,
+        "category_labels_en": CATEGORY_LABELS_EN,
         "modules":
             modules,
     }

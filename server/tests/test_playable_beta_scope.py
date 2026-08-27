@@ -12,7 +12,7 @@ def test_playable_beta_exposes_single_online_with_ai_fallback_mode():
     assert 'id="local-play-start"' not in html
     assert 'id="online-play-prepare"' not in html
     assert 'id="battle-pool-confirm" type="button" disabled>Savaş</button>' in html
-    assert "10 sn AI Devralma" in html
+    assert "Eşleştirme: 10 sn doldu · AI rakip devraldı" in client.get("/src/app.js").text
     assert "Başlangıç Devresi · 4 Aktif" in html
     assert 'data-open-screen="education"' not in html
     assert 'id="active-match-mode"' in html

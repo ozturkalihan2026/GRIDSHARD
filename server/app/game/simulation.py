@@ -1,8 +1,12 @@
 from dataclasses import dataclass
 from statistics import mean
+from typing import Callable
 
 from .engine import BattleEngine, TICK_MS
-from .models import BattleState, Direction
+from .models import BattleState, Direction, ModuleDefinition
+
+
+DefinitionTransform = Callable[[ModuleDefinition], ModuleDefinition]
 
 
 @dataclass(slots=True, frozen=True)
@@ -134,14 +138,18 @@ def _install_layout(
     engine: BattleEngine,
     player_id: str,
     layout: BattleLayoutSpec,
+    definition_transform: DefinitionTransform | None = None,
 ) -> None:
     for module in layout.modules:
         instance_id = f"{player_id}-{module.instance_suffix}"
-        engine.grant_module(
+        installed = engine.grant_module(
             player_id,
             instance_id,
             module.definition_id,
         )
+        if definition_transform is not None:
+            installed.definition = definition_transform(installed.definition)
+            installed.hp = installed.definition.max_hp
         engine.set_initial_active_module(
             player_id,
             instance_id,
@@ -156,6 +164,7 @@ def run_match(
     layout_b: BattleLayoutSpec,
     *,
     max_ticks: int = 1800,
+    definition_transform: DefinitionTransform | None = None,
 ) -> SimulatedMatchResult:
     engine = BattleEngine(
         BattleState(
@@ -164,8 +173,8 @@ def run_match(
     )
     engine.add_player("a")
     engine.add_player("b")
-    _install_layout(engine, "a", layout_a)
-    _install_layout(engine, "b", layout_b)
+    _install_layout(engine, "a", layout_a, definition_transform)
+    _install_layout(engine, "b", layout_b, definition_transform)
     engine.start()
 
     for _ in range(max_ticks):
@@ -210,10 +219,11 @@ def run_mirrored_pair(
     second: BattleLayoutSpec,
     *,
     max_ticks: int = 1800,
+    definition_transform: DefinitionTransform | None = None,
 ) -> tuple[SimulatedMatchResult, SimulatedMatchResult]:
     return (
-        run_match(first, second, max_ticks=max_ticks),
-        run_match(second, first, max_ticks=max_ticks),
+        run_match(first, second, max_ticks=max_ticks, definition_transform=definition_transform),
+        run_match(second, first, max_ticks=max_ticks, definition_transform=definition_transform),
     )
 
 
@@ -222,6 +232,7 @@ def run_round_robin(
     *,
     max_ticks: int = 1800,
     mirrored: bool = True,
+    definition_transform: DefinitionTransform | None = None,
 ) -> SimulationReport:
     matches: list[SimulatedMatchResult] = []
 
@@ -232,6 +243,7 @@ def run_round_robin(
                     first,
                     second,
                     max_ticks=max_ticks,
+                    definition_transform=definition_transform,
                 )
             )
             if mirrored:
@@ -240,6 +252,7 @@ def run_round_robin(
                         second,
                         first,
                         max_ticks=max_ticks,
+                        definition_transform=definition_transform,
                     )
                 )
 

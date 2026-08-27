@@ -1,0 +1,34 @@
+"use strict";
+
+const assert = require("assert");
+const fs = require("fs");
+
+const app = fs.readFileSync("./src/app.js", "utf8");
+const css = fs.readFileSync("./src/styles.css", "utf8");
+const html = fs.readFileSync("./index.html", "utf8");
+const i18n = fs.readFileSync("./src/i18n.js", "utf8");
+
+assert.ok(!html.includes('id="tutorial-replay"'));
+assert.ok(!html.includes('id="battle-pool-title"'));
+assert.ok(!html.includes('id="matchmaking-cancel"'));
+assert.ok(html.includes('class="initial-circuit-kicker"'));
+assert.ok(html.indexOf('id="battle-pool-preset-open"') > html.indexOf('class="initial-circuit-picker"'));
+assert.ok(html.includes('class="selected-pool-heading"'));
+assert.ok(html.includes('id="capacity-indicator" role="status"'));
+assert.ok(!html.includes('capacity-indicator battle-capacity-hidden'));
+assert.ok(html.includes("lobby-dock-trophy"));
+assert.ok(html.includes("dock-core-crack"));
+assert.ok(html.includes("lobby-feature-icon-daily"));
+assert.ok(html.includes("lobby-feature-icon-reward"));
+
+assert.ok(app.includes("function isOnlineMatchmakingCancelable"));
+assert.ok(app.includes('localizedUiText("İptal Et")'));
+assert.ok(app.includes("Devrede ${active} · Boş Hak ${available}"));
+assert.ok(app.includes("catalog?.effect_lines_en"));
+assert.ok(app.includes("booster.nameEn"));
+assert.ok(css.includes("GRIDSHARD Beta.37"));
+assert.ok(css.includes('#battle-pool-confirm[data-matchmaking="true"]'));
+assert.ok(i18n.includes('"TAKIM":"TEAM"'));
+assert.ok(i18n.includes('"Aşırı Yük Çipi":"Overcharge Chip"'));
+
+console.log("beta37 client experience test passed");

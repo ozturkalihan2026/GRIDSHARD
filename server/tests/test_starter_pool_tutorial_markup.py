@@ -23,7 +23,8 @@ def test_starter_pool_has_eighteen_valid_unique_module_ids():
 def test_short_tutorial_is_wired_before_app_startup():
     html = (ROOT / "client/index.html").read_text(encoding="utf-8")
     assert 'id="tutorial-overlay"' in html
-    assert 'id="tutorial-replay"' in html
+    assert 'id="tutorial-replay"' not in html
+    assert 'id="battle-pool-preset-open"' in html
     assert html.index("tutorial-controller.js") < html.index("app.js")
 
 

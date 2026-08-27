@@ -6,7 +6,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 OUTPUT = ROOT / "qa_reports" / "beta36_acceptance_report.json"
-EXPECTED_VERSION = "2.0.0-beta.36"
+EXPECTED_VERSION = "2.0.0-beta.37"
 
 
 def source(path: str) -> str:

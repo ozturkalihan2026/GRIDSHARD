@@ -19,7 +19,7 @@
       </div>
       <div class="battle-status-cluster">
         <div class="credit-indicator" id="credit-indicator">Devre Kredisi: 200 DK</div>
-        <div class="capacity-indicator battle-capacity-hidden" id="capacity-indicator">Aktif Modül: Başlangıç</div>
+        <div class="capacity-indicator" id="capacity-indicator" role="status" aria-live="polite">Devrede 4 · Boş Hak 0 · Yeni Hak 15 sn</div>
         <button id="battle-settings-button" class="battle-settings-button" type="button" aria-label="Ayarlar" title="Ayarlar">⚙</button>
         <div class="battle-time" id="battle-time">00:00.0</div>
       </div>
@@ -60,7 +60,7 @@
     <section id="main-menu-panel" class="main-menu-panel">
       <div class="main-menu-brand">
         <h1>GRIDSHARD</h1>
-        <span>2.0.0-beta.36</span>
+        <span>2.0.0-beta.37</span>
       </div>
       <div class="lobby-backdrop" aria-hidden="true">
         <div class="lobby-board-grid" aria-hidden="true">
@@ -85,7 +85,7 @@
         <div class="lobby-feature-column lobby-feature-column-left">
           <button type="button" class="lobby-feature-card lobby-feature-card-live" data-open-screen="daily">
             <span id="lobby-daily-notification" class="lobby-notification-dot" title="Alınabilir günlük görev ödülü" hidden></span>
-            <span class="lobby-feature-icon" aria-hidden="true">✦</span>
+            <span class="lobby-feature-icon lobby-feature-icon-daily" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M6 3v3M18 3v3M4 8h16M5 5h14a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2Z"/><path d="m12 11 1.2 2.4 2.7.4-2 1.9.5 2.7-2.4-1.3-2.4 1.3.5-2.7-2-1.9 2.7-.4Z"/></svg></span>
             <span class="lobby-feature-copy"><small>GÜNLÜK DÖNGÜ</small><strong>Günlük Görevler</strong><span id="lobby-daily-summary">3 devre emri hazır</span></span>
           </button>
           <button type="button" class="lobby-feature-card lobby-feature-card-locked" data-roadmap-feature="tournament" disabled aria-disabled="true">
@@ -111,7 +111,7 @@
         <div class="lobby-feature-column lobby-feature-column-right">
           <button type="button" class="lobby-feature-card lobby-feature-card-live" data-open-screen="rewards">
             <span id="lobby-reward-notification" class="lobby-notification-dot" title="Alınabilir ödül yolu ödülü" hidden></span>
-            <span class="lobby-feature-icon" aria-hidden="true">⬡</span>
+            <span class="lobby-feature-icon lobby-feature-icon-reward" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m12 2 7.8 4.5v9L12 20l-7.8-4.5v-9Z"/><path d="m8 8 4 2.4L16 8M12 10.4V16M6 6.8l6 3.6 6-3.6"/></svg></span>
             <span class="lobby-feature-copy"><small>SEZON SIFIR</small><strong>Ödül Yolu</strong><span id="lobby-reward-summary">10 ücretsiz kademe</span></span>
           </button>
           <button type="button" class="lobby-feature-card lobby-feature-card-live" data-open-screen="laboratory">
@@ -129,10 +129,10 @@
         <span class="menu-action-title">PROFİL</span>
       </button>
       <button type="button" class="menu-action" data-open-screen="statistics" data-shell-screen="statistics">
-        <span class="lobby-dock-icon" aria-hidden="true">▥</span><span class="menu-action-title">İSTATİSTİKLER</span>
+        <svg class="lobby-dock-icon lobby-dock-trophy" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 4h8v4c0 3-1.8 5-4 5s-4-2-4-5Z"/><path d="M8 6H4v1c0 3 1.7 5 5 5M16 6h4v1c0 3-1.7 5-5 5M12 13v4M8 21h8M9 17h6v4"/></svg><span class="menu-action-title">İSTATİSTİKLER</span>
       </button>
       <button type="button" class="menu-action is-active" data-open-screen="menu" data-shell-screen="menu" aria-current="page">
-        <span class="lobby-dock-icon lobby-dock-core" aria-hidden="true">◆</span><span class="menu-action-title">EV</span>
+        <svg class="lobby-dock-icon lobby-dock-core" viewBox="0 0 28 28" aria-hidden="true"><circle cx="14" cy="14" r="11"/><circle cx="14" cy="14" r="7"/><path d="m14 5 7 9-7 9-7-9Z"/><path class="dock-core-crack" d="m13 7 2 5-3 2 3 2-2 5"/></svg><span class="menu-action-title">EV</span>
       </button>
       <button type="button" class="menu-action lobby-dock-locked" data-roadmap-feature="team" disabled aria-disabled="true">
         <span class="lobby-dock-icon" aria-hidden="true">◈</span><span class="menu-action-title">TAKIM</span><small>YAKINDA</small>
@@ -315,7 +315,7 @@
           <p>GRIDSHARD · Devreni kur, çekirdeği kır.</p>
         </div>
         <dl>
-          <div><dt>Sürüm</dt><dd id="ui-build-version">2.0.0-beta.36</dd></div>
+          <div><dt>Sürüm</dt><dd id="ui-build-version">2.0.0-beta.37</dd></div>
           <div><dt>Yapı</dt><dd id="ui-build-run">manifest bekleniyor</dd></div>
         </dl>
       </section>
@@ -330,17 +330,6 @@
     </section>
 
     <section class="battle-pool-panel play-setup-panel" id="battle-pool-panel" data-screen-panel="play" hidden>
-      <div class="panel-title-row">
-        <div>
-          <h2 id="battle-pool-title">Savaş Havuzu Oluştur</h2>
-        </div>
-        <div class="battle-preparation-status">
-          <button id="tutorial-replay" type="button" class="tutorial-replay">Kısa Eğitim</button>
-          <button id="battle-pool-preset-open" type="button" class="preset-manager-open">Hazır Havuzları Yönet</button>
-          <span id="battle-pool-count">1 / 18</span>
-        </div>
-      </div>
-
       <dialog id="battle-pool-preset-dialog" class="battle-pool-preset-dialog" aria-labelledby="preset-dialog-title">
         <div class="preset-dialog-header">
           <div>
@@ -385,20 +374,21 @@
         </div>
       </dialog>
 
-      <section class="initial-circuit-picker" aria-labelledby="initial-circuit-title">
-        <div>
-          <strong id="initial-circuit-title">Başlangıç Devresi · 4 Aktif</strong>
-          <span>Çekirdek ve Jeneratör sabittir. Savaş Havuzundan diğer iki başlangıç modülünü seç.</span>
-        </div>
-        <div class="initial-fixed-modules" aria-label="Sabit başlangıç modülleri">
-          <span>Çekirdek · sabit</span>
-          <span>Jeneratör · sabit</span>
-        </div>
-        <div id="initial-module-picker" class="initial-module-picker" aria-label="Oyuncunun seçtiği başlangıç modülleri"></div>
-        <span id="initial-module-status" role="status">2 / 2 oyuncu modülü seçili</span>
-      </section>
-
       <div class="battle-pool-builder">
+        <section class="initial-circuit-picker" aria-labelledby="initial-circuit-title">
+          <div class="initial-circuit-heading">
+            <span class="initial-circuit-kicker">BAŞLANGIÇ STRATEJİNİ SEÇ</span>
+            <strong id="initial-circuit-title">Başlangıç Devresi · 4 Aktif</strong>
+          </div>
+          <div class="initial-fixed-modules" aria-label="Sabit başlangıç modülleri">
+            <span>Çekirdek · sabit</span>
+            <span>Jeneratör · sabit</span>
+          </div>
+          <div id="initial-module-picker" class="initial-module-picker" aria-label="Oyuncunun seçtiği başlangıç modülleri"></div>
+          <button id="battle-pool-preset-open" type="button" class="preset-manager-open">Hazır Havuzları Yönet</button>
+          <span id="initial-module-status" role="status">2 / 2 oyuncu modülü seçili</span>
+        </section>
+
         <aside class="battle-pool-catalog-panel">
           <h3>Global Modüller</h3>
           <div id="battle-pool-selection" class="battle-pool-selection" aria-label="Global modül listesi"></div>
@@ -453,7 +443,7 @@
         </article>
 
         <aside class="battle-pool-selected-panel">
-          <h3>Seçilen Savaş Havuzu</h3>
+          <div class="selected-pool-heading"><h3>Seçilen Savaş Havuzu</h3><strong id="battle-pool-count">1 / 18</strong></div>
           <p>18 modül tamamlandığında eşleştirme açılır.</p>
           <div id="battle-pool-selected" class="battle-pool-selected" aria-label="Seçilen Savaş Havuzu"></div>
         </aside>
@@ -461,7 +451,6 @@
 
       <div class="battle-pool-actions">
         <button id="battle-pool-confirm" type="button" disabled>Savaş</button>
-        <button id="matchmaking-cancel" type="button">Eşleştirmeyi İptal Et</button>
       </div>
     </section>
 
@@ -553,7 +542,7 @@
     </section>
 
     <section class="battle-test-banner play-live-panel" data-screen-panel="play" hidden>
-      <strong>Beta.35 · Dereceli PvP · Derecesiz AI · 10 sn AI Devralma · Atomik Güçlendiriciler · Kademe Kutlaması</strong>
+      <strong>Beta.37 · Dereceli PvP · Derecesiz AI · Tam Dil Desteği · Görünür Modül Hakları</strong>
       <span id="battle-entry-status">Savaş alanına giriş başarılı · Yerel AI aktif · Modül Rafı 15. saniyede açılır</span>
     </section>
 

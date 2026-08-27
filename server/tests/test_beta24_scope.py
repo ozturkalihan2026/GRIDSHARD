@@ -26,7 +26,7 @@ def test_beta24_menu_preparation_and_result_markup():
     assert 'class="post-match-analysis"' in html
     assert "Savaş Analizini Aç" in html
     assert 'id="battle-pool-confirm" type="button" disabled>Savaş</button>' in html
-    assert "10 sn AI Devralma" in html
+    assert "Eşleştirme: 10 sn doldu · AI rakip devraldı" in client.get("/src/app.js").text
 
 
 def test_generator_has_four_ports_and_powers_adjacent_repair_module():

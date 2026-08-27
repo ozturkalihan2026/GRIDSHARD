@@ -1,7 +1,7 @@
 # GRIDSHARD 2.0 — YOL HARİTASI
 
-**Güncel Sürüm:** `2.0.0-beta.36`
-**Paket:** Beta.36 — Devre Laboratuvarı V1 + Rekabetçi Normalizasyon
+**Güncel Sürüm:** `2.0.0-beta.37`
+**Paket:** Beta.37 — Tam Dil Desteği + Hazırlık Ergonomisi + Denge Kanıtı
 **Kanonik Dosya:** `docs/YOL_HARITASI.md`
 
 > Bu dosya GRIDSHARD 2.0 için tek kanonik geliştirme kaydıdır. Kaynak karar belgesi ile kod tabanı yeniden karşılaştırılmıştır. Buradaki `[x]`, `[~]`, `[ ]` işaretleri artık yalnızca kodda ve testlerde doğrulanabilen gerçek durumu gösterir.
@@ -237,12 +237,12 @@ Beta.25 sonrası mobil hazırlık önceliği kapsamında eski erteleme kararı k
 
 - [x] Otomatik savaş/simülasyon kod altyapısı mevcut.
 - [x] Adaptif simülasyon ve AI komut üretimi mevcut.
-- [ ] 10.000 maçlık resmi denge raporu henüz kanonik olarak çalıştırılıp kaydedilmedi.
-- [ ] 50.000 maçlık resmi denge raporu henüz yok.
-- [ ] 100.000+ maç benchmark'ı henüz yok.
-- [~] Modül/kredi/maç süresi gibi metrikleri ölçme altyapısı parça parça mevcut; tek büyük denge raporu eksik.
+- [x] Temel durum ve üç izole aday için 10.000'er örnekli resmi Beta.37 taraması kaydedildi.
+- [x] En iyi iki aday 50.000'er örnekli finalist turunda tekrar ölçüldü.
+- [x] Toplam 140.000 seeded örnek ve gerçek `BattleEngine` arketip sonuçlarından oluşan tekrar üretilebilir benchmark raporu üretildi.
+- [x] Süre dağılımı, arketip kazanma oranı, beraberlik, enerji baskısı ve güçlendirici penceresine erişim tek raporda ölçülüyor.
 
-**Durum:** Altyapı var; hedef ölçek doğrulanmadı. Önceki “M7 tamamlandı” işareti bu nedenle düzeltilmiştir.
+**Durum:** Beta.37 ölçek raporu tamamlandı. Adaylar ürün hedeflerinin tamamını geçmediği için kanonik sayısal denge otomatik değiştirilmedi.
 
 ## FAZ 15 — Savaş Okunabilirliği
 
@@ -1779,3 +1779,28 @@ Doğrulama:
 - [x] İstemci kabul testi aktif ana menü kartını, laboratuvar rotasını, API yükleyicisini, işlem defterini, karşılaştırma tezgâhını, responsive stilleri ve İngilizce karşılıkları doğruladı.
 - [x] Gerçek yerel tarayıcıda 24 modül kartı, modül seçimi ve tek çalışma alanına sığan laboratuvar görünümü doğrulandı; konsolda hata veya uyarı oluşmadı.
 - [ ] Dereceli liderlik tablosu, sezon sonu ödülleri ve kalıcı sezon arşivi Beta.37 canlı operasyon kapsamındadır; laboratuvar hiçbir aşamada bunların yerine derece gücü sağlamaz.
+
+---
+
+# 25. Güncel Paket — Beta.37
+
+**`GRIDSHARD 2.0.0-beta.37 — Tam Dil Desteği · Hazırlık Ergonomisi · Görünür Modül Hakları · Denge Kanıtı`**
+
+Beta.37, Beta.36 laboratuvarını ve dereceli normalizasyonu korurken kullanıcı denemesindeki hazırlık, dil ve savaş okunabilirliği açıklarını kapatır:
+
+1. [x] CSS içine gömülü Başlangıç Stratejisi başlığı gerçek DOM metnine taşındı; Türkçe/İngilizce geçişi artık bu alanı da kapsar.
+2. [x] 24 modül için stratejik rol, açıklama ve sayısal etki satırları sunucu kataloğunda ayrı İngilizce alanlarla yayınlanır; orta bilgi paneli dil değişiminde yeniden çizilir.
+3. [x] Profilin dinamik hesap/süreklilik/derece metinleri, hazır havuz yönetimi, güçlendirici seçenek ve durumları ile galibiyet/mağlubiyet/beraberlik sonuçları iki yönlü yerelleştirildi.
+4. [x] Hazırlık ekranındaki üst başlık barı ve Kısa Eğitim kaldırıldı. Başlangıç Devresi dördüncü bağımsız pencere görünümünü korur; Hazır Havuzları Yönet bu pencereye taşındı.
+5. [x] `18/18` sayacı Seçilen Savaş Havuzu başlığına alındı. Alt eylem barında yalnız ortalanmış tek düğme vardır; Savaş düğmesi eşleştirme sırasında aynı yerde `İptal Et` işlevine dönüşür.
+6. [x] Savaş HUD'ı `Devrede`, `Boş Hak`, anlık `Sınır` ve bir sonraki hakkın kalan süresini görünür gösterir. Aynı kapasite sunucu snapshot'ında yetkili veri olarak taşınır.
+7. [x] Dock İstatistikler simgesi kupa, EV simgesi ana menüdeki parçalı Çekirdek görselinin kompakt sürümü oldu. Günlük Görev ve Ödül Yolu kartları yeni SVG simgelerine geçti.
+8. [x] Temel durum, hasar `-%5`, savunma Canı `+%8` ve Çekirdek Canı `+%8` adayları 10.000'er örnekle tarandı; en iyi iki aday 50.000'er örnekle tekrarlandı.
+9. [x] Finalistlerin hiçbiri 75–95 saniye medyan ve <%2 beraberlik hedeflerini birlikte karşılamadı. Bu nedenle kanonik hasar/Can değerleri değiştirilmedi; `core_hp_plus_8` yalnız insan inceleme adayı olarak kaydedildi.
+10. [~] Dereceli liderlik tablosu, sezon sonu ödülleri ve kalıcı sezon arşivi Beta.38 canlı operasyon kapsamına taşındı.
+
+Doğrulama:
+
+- [x] Birleşik kalite kapısı `722/722` sunucu, `176/176` istemci çekirdek testi ve Beta.37 denge/kabul raporları dahil `30/30` QA adımını geçti.
+- [x] Gerçek yerel tarayıcıda Türkçe/İngilizce hazırlık, hazır havuz yönetimi, modül bilgi paneli, profil, güçlendirici alanı ve mağlubiyet sonuç penceresi doğrulandı.
+- [x] Hazırlık ekranı masaüstü görünümüne taşmadan sığdı; tek eylem düğmesinin `Savaş → İptal Et → Savaş` geçişi, ayrı iptal düğmesinin kaldırılması ve savaş HUD modül hakkı göstergesi canlı akışta doğrulandı.

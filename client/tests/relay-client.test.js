@@ -363,7 +363,8 @@ function createClient() {
   ));
   assert.ok(htmlSrc.includes('id="battle-pool-confirm" type="button" disabled>Savaş</button>'));
   assert.ok(!htmlSrc.includes('id="battle-pool-confirm" type="button" disabled>Eşleştir'));
-  assert.ok(appSrc.includes('poolConfirmEl.textContent = "Eşleştiriliyor"'));
+  assert.ok(appSrc.includes("function isOnlineMatchmakingCancelable"));
+  assert.ok(appSrc.includes('localizedUiText("İptal Et")'));
   assert.ok(appSrc.includes("presentOnlineMatchFinished"));
   assert.ok(appSrc.includes("pvpState.reset();"));
   assert.ok(appSrc.includes("onlinePlay.reset();"));
@@ -481,61 +482,61 @@ function createClient() {
   const fs=require("fs");
   const src=fs.readFileSync(path.join(ROOT,"src/app.js"),"utf8");
   assert.ok(src.includes("PVP_STATUS"));
-  assert.ok(src.includes("GRIDSHARD Beta.35 · Rekabet Bütünlüğü + Atomik Güçlendiriciler"));
+  assert.ok(src.includes("GRIDSHARD Beta.37 · Tam Dil Desteği + Görünür Modül Hakları"));
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync(path.join(ROOT,"src/app.js"),"utf8");
-  assert.ok(src.includes("GRIDSHARD Beta.35 · Rekabet Bütünlüğü + Atomik Güçlendiriciler")); // alpha32->33 protocol status
+  assert.ok(src.includes("GRIDSHARD Beta.37 · Tam Dil Desteği + Görünür Modül Hakları")); // alpha32->33 protocol status
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync(path.join(ROOT,"src/app.js"),"utf8");
-  assert.ok(src.includes("GRIDSHARD Beta.35 · Rekabet Bütünlüğü + Atomik Güçlendiriciler")); // alpha33 protocol
+  assert.ok(src.includes("GRIDSHARD Beta.37 · Tam Dil Desteği + Görünür Modül Hakları")); // alpha33 protocol
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync(path.join(ROOT,"src/app.js"),"utf8");
-  assert.ok(src.includes("GRIDSHARD Beta.35 · Rekabet Bütünlüğü + Atomik Güçlendiriciler")); // alpha34 websocket
+  assert.ok(src.includes("GRIDSHARD Beta.37 · Tam Dil Desteği + Görünür Modül Hakları")); // alpha34 websocket
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync(path.join(ROOT,"src/app.js"),"utf8");
-  assert.ok(src.includes("GRIDSHARD Beta.35 · Rekabet Bütünlüğü + Atomik Güçlendiriciler")); // alpha35 gateway
+  assert.ok(src.includes("GRIDSHARD Beta.37 · Tam Dil Desteği + Görünür Modül Hakları")); // alpha35 gateway
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync(path.join(ROOT,"src/app.js"),"utf8");
-  assert.ok(src.includes("GRIDSHARD Beta.35 · Rekabet Bütünlüğü + Atomik Güçlendiriciler")); // alpha36 setup
+  assert.ok(src.includes("GRIDSHARD Beta.37 · Tam Dil Desteği + Görünür Modül Hakları")); // alpha36 setup
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync(path.join(ROOT,"src/app.js"),"utf8");
-  assert.ok(src.includes("GRIDSHARD Beta.35 · Rekabet Bütünlüğü + Atomik Güçlendiriciler")); // alpha37 lobby
+  assert.ok(src.includes("GRIDSHARD Beta.37 · Tam Dil Desteği + Görünür Modül Hakları")); // alpha37 lobby
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync(path.join(ROOT,"src/app.js"),"utf8");
-  assert.ok(src.includes("GRIDSHARD Beta.35 · Rekabet Bütünlüğü + Atomik Güçlendiriciler")); // alpha38 runner
+  assert.ok(src.includes("GRIDSHARD Beta.37 · Tam Dil Desteği + Görünür Modül Hakları")); // alpha38 runner
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync(path.join(ROOT,"src/app.js"),"utf8");
-  assert.ok(src.includes("GRIDSHARD Beta.35 · Rekabet Bütünlüğü + Atomik Güçlendiriciler")); // alpha39 heartbeat
+  assert.ok(src.includes("GRIDSHARD Beta.37 · Tam Dil Desteği + Görünür Modül Hakları")); // alpha39 heartbeat
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync(path.join(ROOT,"src/app.js"),"utf8");
-  assert.ok(src.includes("GRIDSHARD Beta.35 · Rekabet Bütünlüğü + Atomik Güçlendiriciler")); // alpha40 online pvp
+  assert.ok(src.includes("GRIDSHARD Beta.37 · Tam Dil Desteği + Görünür Modül Hakları")); // alpha40 online pvp
 }
 
 {
@@ -766,7 +767,7 @@ function createClient() {
 {
   const fs=require("fs");
   const src=fs.readFileSync(path.join(ROOT,"src/app.js"),"utf8");
-  assert.ok(src.includes("GRIDSHARD Beta.35 · Rekabet Bütünlüğü + Atomik Güçlendiriciler"));
+  assert.ok(src.includes("GRIDSHARD Beta.37 · Tam Dil Desteği + Görünür Modül Hakları"));
   assert.ok(src.includes("buildPvPCommandEnvelope"));
   assert.ok(src.includes("applyPvPServerEnvelope"));
 }
@@ -2479,7 +2480,7 @@ function createClient() {
   const html=fs.readFileSync(path.join(ROOT,"index.html"),"utf8");
   assert.ok(
     html.includes(
-      "2.0.0-beta.36"
+      "2.0.0-beta.37"
     )
   );
   assert.ok(
@@ -2772,10 +2773,11 @@ function createClient() {
 
   assert.ok(html.includes('id="play-recovery-panel"'));
   assert.ok(html.includes('id="play-recovery-retry"'));
-  assert.ok(html.includes('id="matchmaking-cancel"'));
+  assert.ok(!html.includes('id="matchmaking-cancel"'));
   assert.ok(html.includes('id="telemetry-send-status"'));
   assert.ok(app.includes("showPlayError"));
-  assert.ok(app.includes("Eşleştirmeyi İptal Et") || html.includes("Eşleştirmeyi İptal Et"));
+  assert.ok(app.includes("isOnlineMatchmakingCancelable"));
+  assert.ok(app.includes("İptal Et"));
 }
 
 {

@@ -91,7 +91,7 @@
   const COMPETITIVE_STATUS = "M7 rekabetçi altyapı doğrulanıyor";
   const BALANCE_STATUS = "Denge simülasyonu mevcut · geniş örnek bekliyor";
   const AI_STATUS = "AI altyapısı mevcut · arketip testleri bekliyor";
-  const PVP_STATUS = "GRIDSHARD Beta.35 · Rekabet Bütünlüğü + Atomik Güçlendiriciler";
+  const PVP_STATUS = "GRIDSHARD Beta.37 · Tam Dil Desteği + Görünür Modül Hakları";
 
 
 
@@ -123,9 +123,9 @@
   let serverBoosterEligibleTargets = new Map();
 
   const BOOSTER_OPTIONS = [
-    { id:"overcharge_chip", nameTr:"Aşırı Yük Çipi", descriptionTr:"+%25 saldırı · 15 sn", targetCategories:["saldırı"] },
-    { id:"emergency_repair", nameTr:"Acil Onarım", descriptionTr:"%25 anlık onarım", targetCategories:[] },
-    { id:"dual_port_adapter", nameTr:"Çift Port Adaptörü", descriptionTr:"+1 geçici port · 15 sn", targetCategories:[] },
+    { id:"overcharge_chip", nameTr:"Aşırı Yük Çipi", nameEn:"Overcharge Chip", descriptionTr:"+%25 saldırı · 15 sn", descriptionEn:"+25% attack · 15 sec", targetCategories:["saldırı"] },
+    { id:"emergency_repair", nameTr:"Acil Onarım", nameEn:"Emergency Repair", descriptionTr:"%25 anlık onarım", descriptionEn:"25% instant repair", targetCategories:[] },
+    { id:"dual_port_adapter", nameTr:"Çift Port Adaptörü", nameEn:"Dual Port Adapter", descriptionTr:"+1 geçici port · 15 sn", descriptionEn:"+1 temporary port · 15 sec", targetCategories:[] },
   ];
   let selectedBoosterId = null;
   const selectablePoolModules = moduleDefinitions.filter(
@@ -637,7 +637,7 @@
         webTestBuildState,
       releaseCheckState,
       expectedVersion:
-        "2.0.0-beta.36",
+        "2.0.0-beta.37",
       expectedProtocolVersion: 1,
     });
   const playReadinessGate =
@@ -673,7 +673,7 @@
 
   telemetryDispatcher.trackGameOpened({
     platform: "web",
-    build: "2.0.0-beta.36",
+    build: "2.0.0-beta.37",
   });
 
   const postMatchSync =
@@ -697,7 +697,7 @@
       simultaneous_core_tiebreak: "Çifte çekirdek yıkımı",
       simultaneous_core_draw: "Eşzamanlı çekirdek yıkımı",
     };
-    return labels[reason] || "Savaş tamamlandı";
+    return localizedUiText(labels[reason] || "Savaş tamamlandı");
   }
 
   function onlineOutcome(result) {
@@ -719,8 +719,8 @@
     };
     const [title, status] = labels[outcome] || labels.pending;
     if (hero) hero.dataset.outcome = outcome;
-    if (titleEl) titleEl.textContent = title;
-    if (outcomeEl) outcomeEl.textContent = status;
+    if (titleEl) titleEl.textContent = localizedUiText(title);
+    if (outcomeEl) outcomeEl.textContent = localizedUiText(status);
   }
 
   function setAnalysisValue(id, value) {
@@ -810,7 +810,7 @@
     selectedBoosterId = null;
     serverBoosterOfferId = null;
     serverBoosterEligibleTargets = new Map();
-    if (boosterStatusEl) boosterStatusEl.textContent = "Maç tamamlandı";
+    if (boosterStatusEl) boosterStatusEl.textContent = localizedUiText("Maç tamamlandı");
     renderBoosterOptions();
 
     const outcome = onlineOutcome(result);
@@ -822,13 +822,13 @@
 
     if (battleStateLabelEl) {
       battleStateLabelEl.textContent =
-        `Maç tamamlandı · ${
+        localizedUiText(`Maç tamamlandı · ${
           outcome === "victory"
             ? "Galibiyet"
             : outcome === "defeat"
               ? "Mağlubiyet"
               : "Beraberlik"
-        }`;
+        }`);
     }
 
     if (firstPresentation) {
@@ -947,10 +947,6 @@
   const recoveryRetry =
     document.getElementById(
       "play-recovery-retry"
-    );
-  const matchmakingCancel =
-    document.getElementById(
-      "matchmaking-cancel"
     );
 
   function renderRecoveryState() {
@@ -1212,6 +1208,31 @@
       "matchmaking-status"
     );
 
+  function isOnlineMatchmakingCancelable(status = document.body.dataset.onlineStatus) {
+    return ["matchmaking", "matched", "connecting", "readying"].includes(
+      String(status || "")
+    );
+  }
+
+  function renderPoolPrimaryAction(status = document.body.dataset.onlineStatus) {
+    if (!poolConfirmEl) return;
+    const cancellable =
+      activePlayMode === "online"
+      && isOnlineMatchmakingCancelable(status);
+    poolConfirmEl.dataset.matchmaking = String(cancellable);
+    if (cancellable) {
+      poolConfirmEl.disabled = false;
+      poolConfirmEl.textContent = localizedUiText("İptal Et");
+      poolConfirmEl.setAttribute("aria-label", localizedUiText("Eşleştirmeyi iptal et"));
+      return;
+    }
+    poolConfirmEl.removeAttribute("aria-label");
+    if (["idle", "cancelled", "error", ""].includes(String(status || ""))) {
+      poolConfirmEl.disabled = !battlePoolSelection.isComplete();
+      poolConfirmEl.textContent = localizedUiText("Savaş");
+    }
+  }
+
   function renderOnlinePlayStatus(
     status
   ) {
@@ -1255,21 +1276,7 @@
     document.body.dataset.opponentType =
       matchmakingState.opponentType || "unknown";
 
-    if (poolConfirmEl) {
-      const matching = status === "matchmaking";
-      poolConfirmEl.dataset.matchmaking =
-        String(matching);
-      if (matching) {
-        poolConfirmEl.disabled = true;
-        poolConfirmEl.textContent = "Eşleştiriliyor";
-      } else {
-        poolConfirmEl.dataset.matchmaking = "false";
-        if (["idle", "cancelled", "error"].includes(status)) {
-          poolConfirmEl.disabled = !battlePoolSelection.isComplete();
-          poolConfirmEl.textContent = "Savaş";
-        }
-      }
-    }
+    renderPoolPrimaryAction(status);
 
     if (gridshardAudioDirector) {
       if (["matchmaking", "matched", "connecting", "readying"].includes(status)) {
@@ -1558,7 +1565,7 @@
     serverBoosterEligibleTargets = new Map();
     selectedBoosterId = null;
     if (boosterStatusEl) {
-      boosterStatusEl.textContent = "İlk güçlendirici 30. saniyede";
+      boosterStatusEl.textContent = localizedUiText("İlk güçlendirici 30. saniyede");
     }
     renderBoosterOptions();
 
@@ -1622,7 +1629,7 @@
   const diagnosticSnapshot =
     new RelayDiagnosticSnapshot({
       version:
-        "2.0.0-beta.36",
+        "2.0.0-beta.37",
       build:
         "web-test-beta.13",
       bootGate:
@@ -3565,7 +3572,7 @@
       if (versionEl) {
         versionEl.textContent=
           manifest.version
-          || "2.0.0-beta.36";
+          || "2.0.0-beta.37";
       }
       if (runEl) {
         runEl.textContent=
@@ -6695,25 +6702,27 @@ function saveHumanReviewLocalNote() {
     if (battleResultSummaryEl) {
       battleResultSummaryEl.hidden =
         false;
-      battleResultSummaryEl.textContent =
+      battleResultSummaryEl.textContent = localizedUiText(
         finishReason === "player_forfeit"
           ? `KAYBETTİN · Savaşı bıraktın · ${forfeitPenalty} DK ceza`
           : (
               won
                 ? "KAZANDIN · Rakip Çekirdek yok edildi"
                 : "KAYBETTİN · Çekirdeğin yok edildi"
-            );
+            )
+      );
     }
 
     if (battleStateLabelEl) {
-      battleStateLabelEl.textContent =
+      battleStateLabelEl.textContent = localizedUiText(
         finishReason === "player_forfeit"
           ? "Maç tamamlandı · Savaşı bıraktın"
           : (
               won
                 ? "Maç tamamlandı · Galibiyet"
                 : "Maç tamamlandı · Mağlubiyet"
-            );
+            )
+      );
     }
 
     if (localBattleMetrics) {
@@ -8728,6 +8737,7 @@ function saveHumanReviewLocalNote() {
       catalogForModule(
         module
       );
+    const englishCatalog = document.documentElement?.lang === "en";
 
     const selected =
       battlePoolSelection
@@ -8768,14 +8778,14 @@ function saveHumanReviewLocalNote() {
     setTextOrDash(
       poolDetailEnergyGenerationEl,
       catalog
-        ? `${catalog.energy_generation || 0}/sn`
-        : "Sunucu kataloğu bekleniyor"
+        ? `${catalog.energy_generation || 0}/${localizedUiText("sn")}`
+        : localizedUiText("Sunucu kataloğu bekleniyor")
     );
     setTextOrDash(
       poolDetailEnergyConsumptionEl,
       catalog
-        ? `${catalog.energy_consumption || 0}/sn`
-        : "Sunucu kataloğu bekleniyor"
+        ? `${catalog.energy_consumption || 0}/${localizedUiText("sn")}`
+        : localizedUiText("Sunucu kataloğu bekleniyor")
     );
     setTextOrDash(
       poolDetailDamageEl,
@@ -8783,9 +8793,9 @@ function saveHumanReviewLocalNote() {
         ? (
             catalog.base_damage > 0
               ? `${catalog.base_damage}`
-              : "Doğrudan hasar yok"
+              : localizedUiText("Doğrudan hasar yok")
           )
-        : "Sunucu kataloğu bekleniyor"
+        : localizedUiText("Sunucu kataloğu bekleniyor")
     );
     setTextOrDash(
       poolDetailCooldownEl,
@@ -8797,20 +8807,20 @@ function saveHumanReviewLocalNote() {
                     ? 0
                     : 1
                 )} sn`
-              : "Bekleme yok"
+              : localizedUiText("Bekleme yok")
           )
-        : "Sunucu kataloğu bekleniyor"
+        : localizedUiText("Sunucu kataloğu bekleniyor")
     );
 
     poolDetailRoleEl.textContent =
       localizedUiText(
-        catalog?.strategic_role
+        (englishCatalog ? catalog?.strategic_role_en : catalog?.strategic_role)
         || module.strategicRole
       );
 
     poolDetailDescriptionEl.textContent =
       localizedUiText(
-        catalog?.description_tr
+        (englishCatalog ? catalog?.description_en : catalog?.description_tr)
         || fallbackPoolModuleDescription(
           module
         )
@@ -8821,7 +8831,7 @@ function saveHumanReviewLocalNote() {
         "";
 
       const lines =
-        catalog?.effect_lines
+        (englishCatalog ? catalog?.effect_lines_en : catalog?.effect_lines)
         || [
           "Sayısal savaş etkileri sunucu kataloğu yüklendiğinde gösterilir.",
         ];
@@ -9468,29 +9478,16 @@ function saveHumanReviewLocalNote() {
     ) {
       poolConfirmEl.dataset.matchmaking = "false";
       poolConfirmEl.textContent =
-        "Savaş";
+        localizedUiText("Savaş");
     } else if (
       activePlayMode
       === "online"
     ) {
-      const isMatchmaking =
-        document.body
-          .dataset.onlineStatus
-        === "matchmaking";
-      poolConfirmEl.dataset.matchmaking =
-        String(isMatchmaking);
-      if (isMatchmaking) {
-        poolConfirmEl.disabled = true;
-        poolConfirmEl.textContent =
-          "Eşleştiriliyor";
-      } else {
-        poolConfirmEl.textContent =
-          "Savaş";
-      }
+      renderPoolPrimaryAction(document.body.dataset.onlineStatus);
     } else {
       poolConfirmEl.dataset.matchmaking = "false";
       poolConfirmEl.textContent =
-        "Önce Maç Modu Seç";
+        localizedUiText("Önce Maç Modu Seç");
     }
 
     renderBattlePoolDetail();
@@ -9507,14 +9504,14 @@ function saveHumanReviewLocalNote() {
     if (!boosterOfferOpen && client.elapsedMs >= dueAtMs) {
       boosterOfferOpen = true;
       selectedBoosterId = null;
-      boosterStatusEl.textContent = "HAZIR · 3 seçenekten 1'ini seç";
+      boosterStatusEl.textContent = localizedUiText("HAZIR · 3 seçenekten 1'ini seç");
       renderBoosterOptions();
     } else if (!boosterOfferOpen) {
       const remainingSeconds = Math.max(
         0,
         Math.ceil((dueAtMs - client.elapsedMs) / 1000)
       );
-      boosterStatusEl.textContent = `${remainingSeconds} sn sonra açılır`;
+      boosterStatusEl.textContent = localizedUiText(`${remainingSeconds} sn sonra açılır`);
     }
   }
 
@@ -9592,9 +9589,9 @@ function saveHumanReviewLocalNote() {
       );
       boosterOfferOpen = true;
       if (offerChanged) selectedBoosterId = null;
-      boosterStatusEl.textContent = selectedBoosterId
+      boosterStatusEl.textContent = localizedUiText(selectedBoosterId
         ? "Hedef modül seç"
-        : "HAZIR · 3 seçenekten 1'ini seç";
+        : "HAZIR · 3 seçenekten 1'ini seç");
       renderBoosterOptions();
       return;
     }
@@ -9606,10 +9603,10 @@ function saveHumanReviewLocalNote() {
     serverBoosterEligibleTargets = new Map();
     boosterOfferOpen = false;
     selectedBoosterId = null;
-    boosterStatusEl.textContent = `${Math.max(
+    boosterStatusEl.textContent = localizedUiText(`${Math.max(
       0,
       Math.ceil((boosterOfferDueAtMs(nextBoosterOfferIndex) - client.elapsedMs) / 1000)
-    )} sn sonra açılır`;
+    )} sn sonra açılır`);
     if (offerWasVisible) {
       renderBoosterOptions();
     }
@@ -9626,8 +9623,9 @@ function saveHumanReviewLocalNote() {
       const button = document.createElement("button");
       button.type = "button";
       button.className = "booster-option";
-      button.textContent = booster.nameTr;
-      button.title = booster.descriptionTr;
+      const boosterEnglish = document.documentElement?.lang === "en";
+      button.textContent = boosterEnglish ? booster.nameEn : booster.nameTr;
+      button.title = boosterEnglish ? booster.descriptionEn : booster.descriptionTr;
       button.disabled = !boosterOfferOpen;
       button.draggable = boosterOfferOpen;
       if (selectedBoosterId === booster.id) button.classList.add("selected");
@@ -9638,7 +9636,7 @@ function saveHumanReviewLocalNote() {
           `booster_select:${booster.id}`,
           "booster"
         );
-        boosterStatusEl.textContent = selectedBoosterId ? "Hedef modül seç" : "Seçim bekleniyor";
+        boosterStatusEl.textContent = localizedUiText(selectedBoosterId ? "Hedef modül seç" : "Seçim bekleniyor");
         renderBoosterOptions();
         renderBoard();
       });
@@ -9653,7 +9651,7 @@ function saveHumanReviewLocalNote() {
           booster.id
         );
         event.dataTransfer?.setData("text/plain", booster.id);
-        boosterStatusEl.textContent = "Uygun, parlayan modüle bırak";
+        boosterStatusEl.textContent = localizedUiText("Uygun, parlayan modüle bırak");
         renderBoosterOptions();
         renderBoard();
       });
@@ -9702,7 +9700,7 @@ function saveHumanReviewLocalNote() {
         target_module_id:module.instanceId,
       },
     });
-    boosterStatusEl.textContent = "Sunucu hedefi doğruluyor…";
+    boosterStatusEl.textContent = localizedUiText("Sunucu hedefi doğruluyor…");
     renderLog();
     renderBoosterOptions();
     renderBoard();
@@ -9728,24 +9726,24 @@ function saveHumanReviewLocalNote() {
       if (x === CORE_POSITION.x && y === CORE_POSITION.y) {
         cell.classList.add("core-cell");
         cell.dataset.cellLabel =
-          "Çekirdek";
+          localizedUiText("Çekirdek");
         cell.title =
           "Çekirdek: sabit ana hedef";
       } else if (GATE_KEYS.has(key)) {
         cell.classList.add("gate-cell");
         cell.dataset.cellLabel =
-          "Kapı";
+          localizedUiText("Kapı");
         cell.title =
           "Çekirdek Kapısı: başlangıç bağlantı noktası";
       } else if (SPECIAL_CELL_INFO[key]) {
         const special = SPECIAL_CELL_INFO[key];
         cell.classList.add("special-cell", special.css);
         cell.title = `${special.label}: ${special.bonus}`;
-        cell.dataset.specialLabel = special.label;
+        cell.dataset.specialLabel = localizedUiText(special.label);
         cell.dataset.specialBonus = special.bonus;
       } else {
         cell.dataset.cellLabel =
-          `Hücre ${x},${y}`;
+          localizedUiText(`Hücre ${x},${y}`);
       }
 
       cell.addEventListener("dragover", (event) => {
@@ -9808,13 +9806,13 @@ function saveHumanReviewLocalNote() {
       const key=`${x},${y}`;
       if (x===CORE_POSITION.x && y===CORE_POSITION.y) {
         cell.classList.add("core-cell");
-        cell.dataset.cellLabel="Rakip Çekirdek";
+        cell.dataset.cellLabel=localizedUiText("Rakip Çekirdek");
       } else if (GATE_KEYS.has(key)) {
         cell.classList.add("gate-cell");
-        cell.dataset.cellLabel="Kapı";
+        cell.dataset.cellLabel=localizedUiText("Kapı");
       } else if (SPECIAL_CELL_INFO[key]) {
         cell.classList.add("special-cell",SPECIAL_CELL_INFO[key].css);
-        cell.dataset.specialLabel=SPECIAL_CELL_INFO[key].label;
+        cell.dataset.specialLabel=localizedUiText(SPECIAL_CELL_INFO[key].label);
       }
       enemyBoard.appendChild(cell);
     }
@@ -10141,6 +10139,14 @@ function saveHumanReviewLocalNote() {
 
     globalThis.GridshardI18n
       ?.apply(normalized);
+
+    // Dynamic server-backed panels must be rebuilt so they can select the
+    // language-specific catalog payload instead of keeping stale text nodes.
+    renderBattlePoolSelection();
+    renderBattlePoolDetail();
+    renderBoosterOptions();
+    renderProfileSummary();
+    renderPostMatchSummary();
   }
 
   function renderSettingsPersistenceStatus(
@@ -10446,18 +10452,19 @@ function saveHumanReviewLocalNote() {
                   `${progression.ratingDelta >= 0 ? "+" : ""}`
                   + `${progression.ratingDelta} DP`
                 )
-              : "Derece puanı değişmedi"
+              : localizedUiText("Derece puanı değişmedi")
           )
-        : "DP hesaplanıyor";
+        : localizedUiText("DP hesaplanıyor");
 
     const xpText =
       progression
         ? `+${progression.xpAwarded} XP`
-        : "XP hesaplanıyor";
+        : localizedUiText("XP hesaplanıyor");
 
     resultEl.hidden = false;
-    resultEl.textContent =
-      `${progression?.matchLabelTr || "Maç"} · ${finishReasonLabel(result.finish_reason)} · ${ratingText} · ${xpText}`;
+    resultEl.textContent = localizedUiText(
+      `${progression?.matchLabelTr || "Maç"} · ${finishReasonLabel(result.finish_reason)} · ${ratingText} · ${xpText}`
+    );
   }
 
   function renderParticipantBootstrapStatus() {
@@ -10555,12 +10562,13 @@ function saveHumanReviewLocalNote() {
       return;
     }
 
-    el.textContent =
+    el.textContent = localizedUiText(
       `${view.displayName} · `
       + `Seviye ${view.level} · `
       + `${view.leagueNameTr} · `
       + `${view.rating} Derece Puanı · `
-      + `${view.experience} XP`;
+      + `${view.experience} XP`
+    );
 
     const nameInput =
       document.getElementById(
@@ -10587,8 +10595,9 @@ function saveHumanReviewLocalNote() {
         view.displayName;
     }
     if (lobbyPlayerDetails) {
-      lobbyPlayerDetails.textContent=
-        `${view.engagement?.equipped_title || "Devre Çırağı"} · Seviye ${view.level} · Lig: ${view.leagueNameTr} · ${view.rating} RP`;
+      lobbyPlayerDetails.textContent= localizedUiText(
+        `${view.engagement?.equipped_title || "Devre Çırağı"} · Seviye ${view.level} · Lig: ${view.leagueNameTr} · ${view.rating} RP`
+      );
     }
 
     renderEngagementSummary(view.engagement);
@@ -12428,19 +12437,33 @@ function saveHumanReviewLocalNote() {
   function renderCapacity() {
     const limit = client.maxActiveModules();
     const active = client.activeModuleCount();
+    const currentLimit = limit === null ? 4 : limit;
+    const available = Math.max(0, currentLimit - active);
+    const nextSlotAtMs = limit === null
+      ? 15000
+      : (limit < 10 ? 15000 + (limit - 4) * 15000 : null);
+    const nextSlotSeconds = nextSlotAtMs === null
+      ? null
+      : Math.max(0, Math.ceil((nextSlotAtMs - client.elapsedMs) / 1000));
 
     if (limit === null) {
-      capacityEl.textContent = `Aktif Modül: ${active} / Başlangıç`;
+      capacityEl.textContent = localizedUiText(
+        `Devrede ${active} · Boş Hak ${available} · Sınır ${currentLimit}/10 · Yeni Hak ${nextSlotSeconds} sn`
+      );
       capacityEl.classList.remove("capacity-opened");
-      previousCapacity = null;
+      previousCapacity = 4;
       return;
     }
 
-    capacityEl.textContent = `Aktif Modül: ${active} / ${limit}`;
+    capacityEl.textContent = localizedUiText(
+      nextSlotSeconds === null
+        ? `Devrede ${active} · Boş Hak ${available} · Üst Sınır ${limit}`
+        : `Devrede ${active} · Boş Hak ${available} · Sınır ${limit}/10 · Yeni Hak ${nextSlotSeconds} sn`
+    );
 
     if (previousCapacity !== null && limit > previousCapacity) {
       capacityEl.classList.add("capacity-opened");
-      logClientMessage(`Aktif modül kapasitesi ${limit} oldu.`);
+      logClientMessage(localizedUiText(`Yeni modül hakkı açıldı · Sınır ${limit}/10`));
       window.setTimeout(() => {
         capacityEl.classList.remove("capacity-opened");
       }, 900);
@@ -12465,7 +12488,7 @@ function saveHumanReviewLocalNote() {
     lockLabel.textContent = unlocked ? "Aktif" : "Kilitli";
 
     if (unlocked) {
-      shelfHelp.textContent = "Modülü sürükle veya seçip hedef hücreye dokun.";
+      shelfHelp.textContent = localizedUiText("Modülü sürükle veya seçip hedef hücreye dokun.");
     } else {
       const remaining = Math.max(0, 15000 - client.elapsedMs);
       shelfHelp.textContent =
@@ -12896,22 +12919,6 @@ function saveHumanReviewLocalNote() {
       );
   }
 
-  if (matchmakingCancel) {
-    matchmakingCancel.addEventListener(
-      "click",
-      async () => {
-        await onlinePlay.cancel();
-        poolConfirmEl.disabled = false;
-        poolConfirmEl.textContent =
-          "Savaş";
-        clearPlayError();
-        renderOnlinePlayStatus(
-          "cancelled"
-        );
-      }
-    );
-  }
-
   if (recoveryRetry) {
     recoveryRetry.addEventListener(
       "click",
@@ -13222,6 +13229,18 @@ function saveHumanReviewLocalNote() {
     "click",
     async () => {
       if (
+        activePlayMode === "online"
+        && isOnlineMatchmakingCancelable()
+      ) {
+        poolConfirmEl.disabled = true;
+        poolConfirmEl.textContent = localizedUiText("İptal ediliyor…");
+        await onlinePlay.cancel();
+        clearPlayError();
+        renderOnlinePlayStatus("cancelled");
+        return;
+      }
+
+      if (
         !battlePoolSelection
           .isComplete()
       ) {
@@ -13263,25 +13282,22 @@ function saveHumanReviewLocalNote() {
       }
 
       poolConfirmEl.disabled =
-        true;
+        false;
       poolConfirmEl.dataset.matchmaking =
         "true";
       poolConfirmEl.textContent =
-        "Eşleştiriliyor";
+        localizedUiText("İptal Et");
 
       const result =
         await startRealOnlineMatch();
 
-      const stillMatching =
-        result.ok
-        && onlinePlay.status
-          === "matchmaking";
+      const stillMatching = result.ok && isOnlineMatchmakingCancelable(onlinePlay.status);
       poolConfirmEl.dataset.matchmaking =
         String(stillMatching);
       poolConfirmEl.textContent =
         stillMatching
-          ? "Eşleştiriliyor"
-          : "Savaş";
+          ? localizedUiText("İptal Et")
+          : localizedUiText("Savaş");
 
       if (!result.ok) {
         poolConfirmEl.disabled =

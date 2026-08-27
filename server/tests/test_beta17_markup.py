@@ -13,5 +13,6 @@ def test_beta17_audio_preview_loadout_filter_and_human_review_markup():
     assert 'id="battle-pool-preset-dialog"' in html
     assert 'id="initial-module-picker"' in html
     assert 'id="human-review-items"' in html
-    assert '<h2 id="battle-pool-title">Savaş Havuzu Oluştur</h2>' in html
+    assert 'id="battle-pool-title"' not in html
+    assert 'class="initial-circuit-kicker">BAŞLANGIÇ STRATEJİNİ SEÇ</span>' in html
     assert "+ ile ekle, − ile çıkar" not in html

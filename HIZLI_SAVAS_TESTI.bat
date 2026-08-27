@@ -3,7 +3,7 @@ setlocal
 cd /d "%~dp0"
 chcp 65001 >nul
 
-set "GRIDSHARD_EXPECTED_VERSION=2.0.0-beta.36"
+set "GRIDSHARD_EXPECTED_VERSION=2.0.0-beta.37"
 
 echo ============================================================
 echo GRIDSHARD %GRIDSHARD_EXPECTED_VERSION% - HIZLI SAVAS TESTI

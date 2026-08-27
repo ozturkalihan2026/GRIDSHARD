@@ -221,6 +221,7 @@ class PlayerProfileService:
         player_id: str,
         *,
         display_name: str | None = None,
+        day_key: str | None = None,
     ) -> PlayerProfile:
         if not player_id:
             raise PlayerProfileError(
@@ -229,7 +230,7 @@ class PlayerProfileService:
 
         profile = self._profiles.get(player_id)
         if profile is not None:
-            self._sync_daily_missions(profile)
+            self._sync_daily_missions(profile, day_key)
             return profile
 
         profile = PlayerProfile(
@@ -241,7 +242,7 @@ class PlayerProfileService:
             ),
         )
         self._profiles[player_id] = profile
-        self._sync_daily_missions(profile)
+        self._sync_daily_missions(profile, day_key)
         return profile
 
     def get(self, player_id: str) -> PlayerProfile:
@@ -341,7 +342,7 @@ class PlayerProfileService:
         circuit_actions: int,
         day_key: str | None = None,
     ) -> PlayerProfile:
-        profile = self.get_or_create(player_id)
+        profile = self.get_or_create(player_id, day_key=day_key)
         self._sync_daily_missions(profile, day_key)
         profile.season_xp += max(0, int(season_xp_awarded))
         increments = {
@@ -365,7 +366,7 @@ class PlayerProfileService:
         *,
         day_key: str | None = None,
     ) -> PlayerProfile:
-        profile = self.get_or_create(player_id)
+        profile = self.get_or_create(player_id, day_key=day_key)
         self._sync_daily_missions(profile, day_key)
         mission = next(
             (item for item in DAILY_MISSIONS if item["id"] == mission_id),

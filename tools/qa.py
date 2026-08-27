@@ -304,6 +304,11 @@ def main() -> int:
             cwd=ROOT / "client",
         ),
         run_step(
+            "client_beta37_experience",
+            [NODE_EXECUTABLE, "tests/beta37-experience.test.js"],
+            cwd=ROOT / "client",
+        ),
+        run_step(
             "client_unit_tests",
             [NODE_EXECUTABLE, "tests/relay-client.test.js"],
             cwd=ROOT / "client",
@@ -400,6 +405,30 @@ def main() -> int:
     if all(step["ok"] for step in steps):
         steps.append(
             run_step(
+                "beta37_balance_report",
+                [
+                    sys.executable,
+                    "tools/beta37_balance_report.py",
+                ],
+                cwd=ROOT,
+            )
+        )
+
+    if all(step["ok"] for step in steps):
+        steps.append(
+            run_step(
+                "beta37_acceptance_report",
+                [
+                    sys.executable,
+                    "tools/beta37_acceptance_report.py",
+                ],
+                cwd=ROOT,
+            )
+        )
+
+    if all(step["ok"] for step in steps):
+        steps.append(
+            run_step(
                 "browser_e2e_evidence_summary",
                 [
                     sys.executable,
@@ -477,7 +506,7 @@ def main() -> int:
 
     report = {
         "project": "GRIDSHARD 2.0",
-        "version": "2.0.0-beta.36",
+        "version": "2.0.0-beta.37",
         "generated_at_epoch": int(time.time()),
         "ok": all(step["ok"] for step in steps),
         "steps": steps,

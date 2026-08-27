@@ -452,6 +452,32 @@ class BattleEngine:
             if module.status == ModuleStatus.ACTIVE
         )
 
+    def module_capacity_view(self, player_id: str) -> dict[str, int | None]:
+        """Return the authoritative, player-facing module capacity timeline."""
+        active_count = self.active_module_count(player_id)
+        unlocked_limit = self.max_active_modules()
+        active_limit = 4 if unlocked_limit is None else unlocked_limit
+        if unlocked_limit is None:
+            next_slot_at_ms: int | None = self.module_interaction_unlock_ms
+        elif unlocked_limit < 10:
+            next_slot_at_ms = (
+                self.module_interaction_unlock_ms
+                + (unlocked_limit - 4) * 15_000
+            )
+        else:
+            next_slot_at_ms = None
+        return {
+            "active_module_count": active_count,
+            "active_module_limit": active_limit,
+            "available_module_slots": max(0, active_limit - active_count),
+            "next_module_slot_at_ms": next_slot_at_ms,
+            "next_module_slot_in_ms": (
+                max(0, next_slot_at_ms - self.state.elapsed_ms)
+                if next_slot_at_ms is not None
+                else None
+            ),
+        }
+
     def _ensure_module_interaction_unlocked(self) -> None:
         if self.state.elapsed_ms < self.module_interaction_unlock_ms:
             remaining_ms = (

@@ -33,7 +33,8 @@ def test_main_menu_and_shared_shell_keep_the_new_ux_scope():
     assert 'id="season-rewards-screen"' in html
     assert 'id="settings-about-title">Hakkında</h3>' in html
     assert 'id="lobby-circuit-credits"' in html
-    assert '<h2 id="battle-pool-title">Savaş Havuzu Oluştur</h2>' in html
+    assert 'id="battle-pool-title"' not in html
+    assert 'id="battle-pool-count"' in html
     assert 'id="laboratory-screen"' in html
     assert 'data-roadmap-feature="store"' not in html
     assert 'data-roadmap-feature="tournament" disabled aria-disabled="true"' in html

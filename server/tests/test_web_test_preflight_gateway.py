@@ -9,7 +9,7 @@ def test_preflight_endpoint():
         "/web-test/preflight"
     ).json()
 
-    assert body["version"]=="2.0.0-beta.36"
+    assert body["version"]=="2.0.0-beta.37"
     assert body["build"]=="web-test-beta.13"
     assert body["test_run_id"]=="web-test-beta.13"
     assert "preflight_ready" in body
