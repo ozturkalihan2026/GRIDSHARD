@@ -19,7 +19,6 @@
       </div>
       <div class="battle-status-cluster">
         <div class="credit-indicator" id="credit-indicator">Devre Kredisi: 200 DK</div>
-        <div class="capacity-indicator" id="capacity-indicator" role="status" aria-live="polite">Devrede 4 · Boş Hak 0 · Yeni Hak 15 sn</div>
         <button id="battle-settings-button" class="battle-settings-button" type="button" aria-label="Ayarlar" title="Ayarlar">⚙</button>
         <div class="battle-time" id="battle-time">00:00.0</div>
       </div>
@@ -212,7 +211,7 @@
         </aside>
         <article class="laboratory-detail-panel" id="laboratory-detail-panel">
           <div class="laboratory-module-hero">
-            <span id="laboratory-detail-icon" class="laboratory-detail-icon" aria-hidden="true">✦</span>
+            <div id="laboratory-detail-icon" class="laboratory-detail-icon" aria-label="Jeneratör devre kartı önizlemesi"></div>
             <div><span id="laboratory-detail-category">ENERJİ</span><h3 id="laboratory-detail-name">Jeneratör</h3><p id="laboratory-detail-role">Ana enerji kaynağı</p></div>
             <strong id="laboratory-detail-level">SV 0 / 3</strong>
           </div>
@@ -376,17 +375,26 @@
 
       <div class="battle-pool-builder">
         <section class="initial-circuit-picker" aria-labelledby="initial-circuit-title">
-          <div class="initial-circuit-heading">
-            <span class="initial-circuit-kicker">BAŞLANGIÇ STRATEJİNİ SEÇ</span>
-            <strong id="initial-circuit-title">Başlangıç Devresi · 4 Aktif</strong>
-          </div>
-          <div class="initial-fixed-modules" aria-label="Sabit başlangıç modülleri">
-            <span>Çekirdek · sabit</span>
-            <span>Jeneratör · sabit</span>
-          </div>
-          <div id="initial-module-picker" class="initial-module-picker" aria-label="Oyuncunun seçtiği başlangıç modülleri"></div>
-          <button id="battle-pool-preset-open" type="button" class="preset-manager-open">Hazır Havuzları Yönet</button>
-          <span id="initial-module-status" role="status">2 / 2 oyuncu modülü seçili</span>
+          <section class="initial-strategy-panel">
+            <div class="initial-circuit-heading">
+              <span class="initial-circuit-kicker">BAŞLANGIÇ STRATEJİNİ SEÇ</span>
+              <strong id="initial-circuit-title">Başlangıç Devresi · 4 Aktif</strong>
+            </div>
+            <div class="initial-fixed-modules" aria-label="Sabit başlangıç modülleri">
+              <span>Çekirdek · sabit</span>
+              <span>Jeneratör · sabit</span>
+            </div>
+            <div id="initial-module-picker" class="initial-module-picker" aria-label="Oyuncunun seçtiği başlangıç modülleri"></div>
+            <span id="initial-module-status" role="status">2 / 2 oyuncu modülü seçili</span>
+          </section>
+          <section class="initial-preset-panel" aria-label="Sık kullanılan hazır havuzlar">
+            <button id="battle-pool-preset-open" type="button" class="preset-manager-open">Hazır Havuzları Yönet</button>
+            <div class="initial-preset-heading">
+              <strong>En Çok Kullanılanlar</strong>
+              <span>İlk 3 kayıtlı havuz</span>
+            </div>
+            <div id="initial-preset-shortcuts" class="initial-preset-shortcuts"></div>
+          </section>
         </section>
 
         <aside class="battle-pool-catalog-panel">
@@ -563,8 +571,7 @@
 
     <section class="battle-layout play-live-panel" data-screen-panel="play" hidden>
       <section class="arena-panel">
-        <div class="panel-title-row">
-          <h2>Savaş Alanı</h2>
+        <div class="panel-title-row arena-state-row">
           <span id="battle-state-label">Savaş devam ediyor</span>
         </div>
 
@@ -573,7 +580,7 @@
           <section class="duel-side duel-player-side">
             <div class="duel-side-heading">
               <strong>Senin Devren</strong>
-              <span id="player-board-status">Çekirdek 300/300</span>
+              <span id="player-board-status">Çekirdek 300/300 · Jeneratör 150/150</span>
             </div>
             <div id="board" class="board" aria-label="Oyuncu Savaş Alanı"></div>
           </section>
@@ -582,8 +589,8 @@
 
           <section class="duel-side duel-enemy-side">
             <div class="duel-side-heading">
-              <strong>Rakip Devresi · Yerel AI</strong>
-              <span id="enemy-board-status">Çekirdek 300/300</span>
+              <strong>Rakip Devresi</strong>
+              <span id="enemy-board-status">Çekirdek 300/300 · Jeneratör 150/150</span>
             </div>
             <div id="enemy-board" class="board enemy-board" aria-label="Rakip Savaş Alanı"></div>
           </section>
@@ -595,9 +602,7 @@
           <h2>Modül Rafı</h2>
           <span id="shelf-lock-label">Kilitli</span>
         </div>
-        <p class="shelf-help" id="shelf-help">
-          Modül müdahalesi 15. saniyede açılır.
-        </p>
+        <div class="capacity-indicator shelf-capacity-indicator" id="capacity-indicator" role="status" aria-live="polite">Devrede 4 · Boş Hak 0 · Sınır 4/10 · Yeni Hak 15 sn</div>
         <section class="booster-panel battle-booster-dock" id="booster-panel" data-state="locked">
           <div class="panel-title-row">
             <h3>Güçlendiriciler</h3>

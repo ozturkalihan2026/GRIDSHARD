@@ -7143,3 +7143,253 @@ body[data-app-screen="rewards"] .season-rewards-screen .season-action-status {
     overflow:visible;
   }
 }
+
+/* Beta.37 hotfix — compact starter presets + battle HUD cleanup. */
+.initial-preset-panel {
+  display:grid;
+  gap:7px;
+  margin-top:2px;
+  padding:8px;
+  border:1px solid rgba(72,244,224,.22);
+  border-radius:9px;
+  background:linear-gradient(145deg,rgba(11,30,49,.86),rgba(7,17,31,.94));
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.025);
+}
+.initial-preset-heading {
+  display:flex;
+  align-items:baseline;
+  justify-content:space-between;
+  gap:6px;
+}
+.initial-preset-heading strong {
+  color:#dffdf8;
+  font-size:.68rem;
+}
+.initial-preset-heading span {
+  color:#7690ad;
+  font-size:.56rem;
+}
+.initial-preset-shortcuts {
+  display:grid;
+  gap:6px;
+}
+.initial-preset-card {
+  display:grid;
+  grid-template-columns:minmax(0,1fr) auto;
+  align-items:center;
+  gap:7px;
+  min-width:0;
+  padding:6px 7px;
+  border:1px solid rgba(94,132,173,.22);
+  border-radius:7px;
+  background:rgba(12,27,45,.78);
+}
+.initial-preset-card[data-active="true"] {
+  border-color:rgba(72,244,224,.52);
+  background:linear-gradient(135deg,rgba(72,244,224,.11),rgba(78,140,255,.07));
+}
+.initial-preset-card > div {
+  display:grid;
+  min-width:0;
+  gap:2px;
+}
+.initial-preset-card strong,
+.initial-preset-card span {
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+}
+.initial-preset-card strong { color:#eef7ff;font-size:.64rem; }
+.initial-preset-card span { color:#7f96b1;font-size:.54rem; }
+.initial-preset-card button {
+  min-height:27px;
+  padding:3px 8px;
+  border-color:rgba(72,244,224,.34);
+  font-size:.58rem;
+}
+.initial-preset-empty {
+  margin:0;
+  color:#7f96b1;
+  font-size:.58rem;
+  text-align:center;
+}
+
+.arena-state-row {
+  min-height:24px;
+  justify-content:flex-end;
+}
+.duel-side-heading {
+  display:grid;
+  justify-items:center;
+  justify-content:stretch;
+  gap:3px;
+  margin-bottom:4px;
+  text-align:center;
+}
+.duel-side-heading strong {
+  width:100%;
+  font-size:.82rem;
+  line-height:1.2;
+}
+.duel-side-heading span {
+  width:100%;
+  font-size:.64rem;
+  line-height:1.2;
+}
+.shelf-capacity-indicator {
+  width:100%;
+  max-width:none;
+  margin:0 0 6px;
+  white-space:normal;
+  text-align:center;
+  line-height:1.3;
+}
+
+@media (min-width:1101px) {
+  body[data-app-screen="play"]:not([data-local-status="battle"]):not([data-online-status="battle"]) .initial-circuit-picker {
+    overflow:auto;
+  }
+  body[data-app-screen="play"]:not([data-local-status="battle"]):not([data-online-status="battle"]) #initial-module-status {
+    margin-top:0;
+  }
+}
+.initial-strategy-panel {
+  display:grid;
+  gap:8px;
+  padding:8px;
+  border:1px solid rgba(72,244,224,.22);
+  border-radius:9px;
+  background:linear-gradient(145deg,rgba(11,30,49,.86),rgba(7,17,31,.94));
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.025);
+}
+body[data-app-screen="play"]:not([data-local-status="battle"]):not([data-online-status="battle"]) .initial-circuit-picker > .initial-strategy-panel {
+  display:grid;
+}
+
+
+/* Beta.37 visual hotfix — split left starter area into two panel cells. */
+.initial-circuit-picker {
+  border:none;
+  background:transparent;
+  box-shadow:none;
+}
+.initial-strategy-panel,
+.initial-preset-panel {
+  min-width:0;
+  border:1px solid rgba(130,157,195,.22);
+  border-radius:13px;
+  background:rgba(9,17,28,.48);
+  box-shadow:none;
+}
+.initial-strategy-panel {
+  flex:0 0 auto;
+}
+.initial-preset-panel {
+  flex:1 1 0;
+  min-height:0;
+  margin-top:0;
+  align-content:start;
+}
+.initial-circuit-heading {
+  gap:7px;
+}
+.initial-circuit-kicker {
+  border-color:rgba(72,244,224,.32);
+  background:linear-gradient(135deg,rgba(72,244,224,.14),rgba(78,140,255,.08));
+  color:#8ef6ea;
+}
+#initial-circuit-title {
+  color:#eef7ff;
+  text-shadow:none;
+}
+.initial-preset-shortcuts {
+  align-content:start;
+}
+
+@media (min-width:1101px) {
+  body[data-app-screen="play"]:not([data-local-status="battle"]):not([data-online-status="battle"]) .initial-circuit-picker {
+    padding:0;
+    gap:10px;
+    overflow:visible;
+  }
+  body[data-app-screen="play"]:not([data-local-status="battle"]):not([data-online-status="battle"]) .initial-strategy-panel,
+  body[data-app-screen="play"]:not([data-local-status="battle"]):not([data-online-status="battle"]) .initial-preset-panel {
+    padding:10px;
+  }
+  body[data-app-screen="play"]:not([data-local-status="battle"]):not([data-online-status="battle"]) .initial-preset-panel {
+    min-height:0;
+  }
+}
+
+/* Beta.37 hotfix v3 — clean battle lifecycle, laboratory circuit preview, dock emphasis. */
+.laboratory-detail-icon {
+  width:78px;
+  height:78px;
+  border:0;
+  border-radius:0;
+  background:transparent;
+  color:inherit;
+  filter:none;
+  overflow:visible;
+}
+.laboratory-module-hero {
+  grid-template-columns:80px minmax(0,1fr) auto;
+}
+.laboratory-detail-icon .laboratory-board-preview {
+  width:74px;
+  height:74px;
+  border-radius:12px;
+}
+.laboratory-detail-icon .pool-detail-preview-icon {
+  font-size:1.9rem;
+}
+.laboratory-detail-icon .pool-detail-preview-port-label {
+  bottom:5px;
+  font-size:.48rem;
+}
+.laboratory-detail-icon .port-dot {
+  width:8px;
+  height:8px;
+  min-width:8px;
+  min-height:8px;
+}
+
+.app-bottom-dock .menu-action,
+body[data-app-screen="menu"] .app-bottom-dock .menu-action {
+  min-height:52px;
+  padding:3px 6px;
+  gap:1px;
+}
+.app-bottom-dock .lobby-dock-icon {
+  width:27px;
+  height:27px;
+  font-size:1.32rem;
+  transition:width .16s ease,height .16s ease,font-size .16s ease,color .16s ease,filter .16s ease;
+}
+.app-bottom-dock .menu-action-title,
+body[data-app-screen="menu"] .app-bottom-dock .menu-action-title {
+  font-size:.75rem;
+}
+.app-bottom-dock .menu-action.is-active {
+  transform:none;
+}
+.app-bottom-dock .menu-action.is-active .lobby-dock-icon {
+  width:32px;
+  height:32px;
+  font-size:1.55rem;
+  filter:drop-shadow(0 0 8px rgba(255,213,106,.52));
+}
+.app-bottom-dock .menu-action.is-active .menu-action-title {
+  font-size:.94rem;
+  font-weight:900;
+  line-height:1;
+}
+
+@media (max-width:680px) {
+  .laboratory-module-hero { grid-template-columns:66px minmax(0,1fr); }
+  .laboratory-detail-icon { width:64px;height:64px; }
+  .laboratory-detail-icon .laboratory-board-preview { width:60px;height:60px; }
+  .app-bottom-dock .lobby-dock-icon { width:24px;height:24px;font-size:1.18rem; }
+  .app-bottom-dock .menu-action.is-active .lobby-dock-icon { width:28px;height:28px;font-size:1.38rem; }
+  .app-bottom-dock .menu-action.is-active .menu-action-title { font-size:.76rem; }
+}

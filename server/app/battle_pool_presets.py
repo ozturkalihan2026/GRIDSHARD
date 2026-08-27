@@ -27,6 +27,7 @@ class BattlePoolPreset:
     module_definition_ids:tuple[str,...]
     favorite:bool=False
     last_used_at_ms:int|None=None
+    use_count:int=0
 
     def to_view(self)->dict:
         return {
@@ -38,6 +39,7 @@ class BattlePoolPreset:
             "favorite":self.favorite,
             "last_used_at_ms":
                 self.last_used_at_ms,
+            "use_count":self.use_count,
         }
 
 
@@ -184,6 +186,7 @@ class JsonBattlePoolPresetRepository:
                 )
             ),
             last_used_at_ms=last_used,
+            use_count=max(0,int(raw.get("use_count",0) or 0)),
         )
 
     @staticmethod
@@ -199,6 +202,7 @@ class JsonBattlePoolPresetRepository:
                 preset.favorite,
             "last_used_at_ms":
                 preset.last_used_at_ms,
+            "use_count":preset.use_count,
         }
 
     def list_player(
@@ -283,6 +287,7 @@ class JsonBattlePoolPresetRepository:
                         previous.favorite,
                     last_used_at_ms=
                         previous.last_used_at_ms,
+                    use_count=previous.use_count,
                 )
 
             player[preset.name]=(
@@ -339,6 +344,7 @@ class JsonBattlePoolPresetRepository:
                 favorite=old.favorite,
                 last_used_at_ms=
                     old.last_used_at_ms,
+                use_count=old.use_count,
             )
             player[new_name]=(
                 self._entry_payload(
@@ -388,6 +394,11 @@ class JsonBattlePoolPresetRepository:
                     int(time.time()*1000)
                     if mark_used
                     else current.last_used_at_ms
+                ),
+                use_count=(
+                    current.use_count + 1
+                    if mark_used
+                    else current.use_count
                 ),
             )
             player[name]=(

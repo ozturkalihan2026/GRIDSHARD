@@ -151,6 +151,7 @@
     ]),
     favorite: true,
     last_used_at_ms: null,
+    use_count: 0,
     system: true,
   });
 
@@ -1307,6 +1308,8 @@
           : "Maç: Çevrimiçi PvP";
     }
     if (status === "battle") {
+      resetBattleVisualSurface();
+      resetClientModulesForBattleStart();
       resetBattleResultPresentation();
       destructionFxPlayed.clear();
       snapshotModuleHp.clear();
@@ -1743,6 +1746,10 @@
   const presetGalleryEl =
     document.getElementById(
       "battle-pool-preset-gallery"
+    );
+  const initialPresetShortcutsEl =
+    document.getElementById(
+      "initial-preset-shortcuts"
     );
   const presetNewEl =
     document.getElementById(
@@ -3826,6 +3833,7 @@ const SPECIAL_CELL_INFO = {
   let previousCombatSecond = -1;
   const mockAttackerLastAttack = new Map();
   let lastBattleAnimationNow = null;
+  let battleVisualGeneration = 0;
   const BATTLE_PAUSE_GAP_THRESHOLD_MS = 1000;
 
   function publishBattleUxMetrics() {
@@ -5872,9 +5880,35 @@ function saveHumanReviewLocalNote() {
       return false;
     }
 
-    syncBoosterOfferFromSnapshot(
-      snapshot.players[participantPlayerId]
-    );
+    const ownPlayer = snapshot.players[participantPlayerId];
+    syncBoosterOfferFromSnapshot(ownPlayer);
+    if (ownPlayer) {
+      client.updateElapsedMs(Number(snapshot.elapsed_ms || 0));
+      client.applyServerEconomyState({
+        circuitCredits:Number(ownPlayer.circuit_credits || 0),
+      });
+      for (const serverModule of ownPlayer.modules || []) {
+        const clientModuleId = localServerClientModuleId(serverModule);
+        if (!clientModuleId) continue;
+        client.applyServerModuleState({
+          instanceId:clientModuleId,
+          hp:Number(serverModule.hp || 0),
+          status:serverModule.status,
+          position:
+            serverModule.x === null || serverModule.y === null
+              ? null
+              : {x:Number(serverModule.x), y:Number(serverModule.y)},
+          direction:serverModule.direction || "up",
+          portCount:Number(serverModule.port_count || 1),
+          ports:Array.isArray(serverModule.ports) ? serverModule.ports : undefined,
+          isPowered:Boolean(serverModule.is_powered),
+          powerReason:serverModule.power_reason,
+          energyReceived:Number(serverModule.energy_received || 0),
+          energyRequired:Number(serverModule.energy_required || 0),
+          heat:Number(serverModule.heat || 0),
+        });
+      }
+    }
 
     const events=
       message.type === "events"
@@ -6185,7 +6219,64 @@ function saveHumanReviewLocalNote() {
     }
   }
 
+  function clearBattleVisualElement(element) {
+    if (!element) return;
+    if (typeof element.replaceChildren === "function") {
+      element.replaceChildren();
+    } else {
+      element.innerHTML = "";
+    }
+  }
+
+  function resetBattleVisualSurface() {
+    battleVisualGeneration += 1;
+    client.cancelDrag?.();
+    client.clearPendingPlacements?.();
+    renderedShelfSignature = null;
+    renderedBoardSignature = null;
+    clearBattleVisualElement(document.getElementById("battle-effect-layer"));
+    createBoard();
+    createEnemyBoard();
+  }
+
+  function resetClientModulesForBattleStart() {
+    const initialSetupByInstanceId = new Map(
+      buildInitialOnlineSetup().map((item) => [item.instanceId, item])
+    );
+
+    for (const module of client.modules.values()) {
+      const isCore = module.instanceId === "core-1";
+      const isGenerator = module.instanceId === "generator-1";
+      const initialSetup = initialSetupByInstanceId.get(module.instanceId);
+      const initialConfig = initialSetup
+        ? {
+            position:{ x:initialSetup.x, y:initialSetup.y },
+            direction:initialSetup.direction,
+          }
+        : null;
+      const selectedForBattle = battlePoolSelection.selected.has(module.instanceId);
+      const startActive = isCore || isGenerator || Boolean(initialConfig && selectedForBattle);
+
+      client.applyServerModuleState({
+        instanceId:module.instanceId,
+        hp:module.maxHp,
+        status:startActive ? "active" : "reserve",
+        position:isCore
+          ? {x:2,y:2}
+          : isGenerator
+            ? {x:2,y:3}
+            : initialConfig?.position || null,
+        direction:initialConfig?.direction || "up",
+        energyReceived:0,
+        isPowered:true,
+        storedEnergy:0,
+        heat:0,
+      });
+    }
+  }
+
   function resetLocalBattleState() {
+    resetBattleVisualSurface();
     pvpConnection.disconnect();
 
     stopLocalServerPolling();
@@ -6247,70 +6338,7 @@ function saveHumanReviewLocalNote() {
     client.clearPendingPlacements();
     client.updateElapsedMs(0);
 
-    const initialSetupByInstanceId = new Map(
-      buildInitialOnlineSetup().map((item) => [item.instanceId, item])
-    );
-
-    for (
-      const module
-      of client.modules.values()
-    ) {
-      const isCore =
-        module.instanceId
-        === "core-1";
-      const isGenerator =
-        module.instanceId
-        === "generator-1";
-      const initialSetup = initialSetupByInstanceId.get(module.instanceId);
-      const initialConfig = initialSetup
-        ? {
-            position:{x:initialSetup.x,y:initialSetup.y},
-            direction:initialSetup.direction,
-          }
-        : null;
-      const selectedForBattle =
-        battlePoolSelection.selected.has(
-          module.instanceId
-        );
-      const startActive =
-        isCore
-        || isGenerator
-        || Boolean(
-          initialConfig
-          && selectedForBattle
-        );
-
-      client.applyServerModuleState({
-        instanceId:
-          module.instanceId,
-        hp:
-          module.maxHp,
-        status:
-          startActive
-            ? "active"
-            : "reserve",
-        position:
-          isCore
-            ? {x:2,y:2}
-            : (
-                isGenerator
-                  ? {x:2,y:3}
-                  : (
-                      initialConfig
-                        ? initialConfig.position
-                        : null
-                    )
-              ),
-        direction:
-          initialConfig
-            ? initialConfig.direction
-            : "up",
-        energyReceived:0,
-        isPowered:true,
-        storedEnergy:0,
-        heat:0,
-      });
-    }
+    resetClientModulesForBattleStart();
 
     commandLog.length = 0;
     resetBattleResultPresentation();
@@ -7020,12 +7048,19 @@ function saveHumanReviewLocalNote() {
     const layer=document.getElementById(
       "battle-effect-layer"
     );
-    const source=document.querySelector(
+    const sourceRoot = sourceModuleId.startsWith("enemy-")
+      ? document.getElementById("enemy-board")
+      : document.getElementById("board");
+    const targetRoot = targetModuleId.startsWith("enemy-")
+      ? document.getElementById("enemy-board")
+      : document.getElementById("board");
+    const source=sourceRoot?.querySelector(
       `[data-module-id="${sourceModuleId}"]`
     );
-    const target=document.querySelector(
+    const target=targetRoot?.querySelector(
       `[data-module-id="${targetModuleId}"]`
     );
+    const visualGeneration = battleVisualGeneration;
     if (
       !layer
       || !source
@@ -7122,6 +7157,10 @@ function saveHumanReviewLocalNote() {
     source.classList.add("fx-fire");
     window.setTimeout(
       () => {
+        if (visualGeneration !== battleVisualGeneration) {
+          line.remove();
+          return;
+        }
         source.classList.remove("fx-fire");
         emitDuelImpactEffect({
           layer,
@@ -7761,7 +7800,11 @@ function saveHumanReviewLocalNote() {
     if (existing?.system) {
       battlePoolPresets = battlePoolPresets.map((preset) =>
         preset.name === name
-          ? { ...preset, last_used_at_ms: markUsed ? Date.now() : preset.last_used_at_ms }
+          ? {
+              ...preset,
+              last_used_at_ms: markUsed ? Date.now() : preset.last_used_at_ms,
+              use_count: markUsed ? Number(preset.use_count || 0) + 1 : Number(preset.use_count || 0),
+            }
           : preset
       );
       renderPresetOptions();
@@ -7798,6 +7841,54 @@ function saveHumanReviewLocalNote() {
       ok:true,
       preset:payload.preset,
     };
+  }
+
+  function renderInitialPresetShortcuts() {
+    if (!initialPresetShortcutsEl) return;
+
+    initialPresetShortcutsEl.innerHTML = "";
+    const presets = [...battlePoolPresets]
+      .filter((preset) => !preset.system)
+      .sort((a,b) =>
+        Number(b.use_count || 0) - Number(a.use_count || 0)
+        || Number(b.last_used_at_ms || 0) - Number(a.last_used_at_ms || 0)
+        || String(a.name).localeCompare(String(b.name), "tr")
+      )
+      .slice(0,3);
+
+    if (!presets.length) {
+      const empty = document.createElement("p");
+      empty.className = "initial-preset-empty";
+      empty.textContent = "Henüz kayıtlı hazır havuz yok.";
+      initialPresetShortcutsEl.appendChild(empty);
+      return;
+    }
+
+    for (const preset of presets) {
+      const row = document.createElement("article");
+      row.className = "initial-preset-card";
+      row.dataset.active = String(preset.name === activeBattlePoolPresetName);
+
+      const text = document.createElement("div");
+      const title = document.createElement("strong");
+      title.textContent = preset.name;
+      const meta = document.createElement("span");
+      const count = Number(preset.use_count || 0);
+      meta.textContent = `${preset.module_definition_ids.length} modül · ${count} kullanım`;
+      text.append(title, meta);
+
+      const use = document.createElement("button");
+      use.type = "button";
+      use.textContent = preset.name === activeBattlePoolPresetName ? "Seçili" : "Seç";
+      use.disabled = preset.name === activeBattlePoolPresetName;
+      use.addEventListener("click", () => {
+        if (presetSelectEl) presetSelectEl.value = preset.name;
+        loadSelectedBattlePoolPreset(preset.name);
+      });
+
+      row.append(text, use);
+      initialPresetShortcutsEl.appendChild(row);
+    }
   }
 
   function renderPresetGallery() {
@@ -8245,6 +8336,7 @@ function saveHumanReviewLocalNote() {
 
     renderActivePresetState();
     renderPresetGallery();
+    renderInitialPresetShortcuts();
     renderQuickLoadoutGallery();
   }
 
@@ -9993,7 +10085,7 @@ function saveHumanReviewLocalNote() {
     }
     mockEnemyModuleHp=enemyLivingModules().reduce((sum,module)=>sum+module.hp,0);
     if (enemyBoardStatusEl) {
-      enemyBoardStatusEl.textContent=`Çekirdek ${Math.max(0,mockEnemyCoreHp)}/300 · Jeneratör ${Math.max(0,mockEnemyGeneratorHp)}/150 · Modül ${enemyLivingModules().length}`;
+      enemyBoardStatusEl.textContent=`Çekirdek ${Math.max(0,mockEnemyCoreHp)}/300 · Jeneratör ${Math.max(0,mockEnemyGeneratorHp)}/150`;
     }
   }
 
@@ -10745,6 +10837,43 @@ function saveHumanReviewLocalNote() {
     return `${prefix}:${participantPlayerId}:${suffix}`;
   }
 
+  function renderLaboratoryModulePreview(module) {
+    const host = document.getElementById("laboratory-detail-icon");
+    if (!host || !module) return;
+
+    host.replaceChildren();
+    const card = document.createElement("div");
+    card.className = "pool-detail-preview-card laboratory-board-preview";
+    card.dataset.category = module.category || "";
+
+    const icon = document.createElement("span");
+    icon.className = "module-icon pool-detail-preview-icon";
+    icon.textContent = moduleIconFor({ nameTr: module.name_tr });
+    icon.setAttribute("aria-hidden", "true");
+
+    const portCount = Math.max(
+      0,
+      Number(module.port_count ?? PORT_COUNT_BY_NAME[module.name_tr] ?? 1)
+    );
+    const portLabel = document.createElement("small");
+    portLabel.className = "pool-detail-preview-port-label";
+    portLabel.textContent = `${portCount} ${localizedUiText("Port")}`;
+
+    card.append(icon, portLabel);
+    for (const side of poolPreviewPortDirections(portCount)) {
+      const port = document.createElement("span");
+      port.className = `port-dot port-${side}`;
+      port.setAttribute("aria-hidden", "true");
+      card.appendChild(port);
+    }
+
+    host.setAttribute(
+      "aria-label",
+      `${localizedUiText(module.name_tr)} · ${portCount} ${localizedUiText("Port")} · devre kartı önizlemesi`
+    );
+    host.appendChild(card);
+  }
+
   function laboratoryStatSummary(stats) {
     if (!stats) return "En yüksek kalibrasyon";
     const parts = [];
@@ -10834,7 +10963,7 @@ function saveHumanReviewLocalNote() {
     }
 
     if (selected) {
-      setText("laboratory-detail-icon", moduleIconFor({ nameTr: selected.name_tr }));
+      renderLaboratoryModulePreview(selected);
       setText("laboratory-detail-category", String(selected.category_label || "").toUpperCase());
       setText("laboratory-detail-name", selected.name_tr);
       setText("laboratory-detail-role", selected.strategic_role);
@@ -12478,8 +12607,10 @@ function saveHumanReviewLocalNote() {
         "false";
       lockLabel.textContent =
         "Maç Bitti";
-      shelfHelp.textContent =
-        "Savaş tamamlandı; modül hareketleri ve port dönüşleri kilitlendi.";
+      if (shelfHelp) {
+        shelfHelp.textContent =
+          "Savaş tamamlandı; modül hareketleri ve port dönüşleri kilitlendi.";
+      }
       return;
     }
 
@@ -12488,11 +12619,15 @@ function saveHumanReviewLocalNote() {
     lockLabel.textContent = unlocked ? "Aktif" : "Kilitli";
 
     if (unlocked) {
-      shelfHelp.textContent = localizedUiText("Modülü sürükle veya seçip hedef hücreye dokun.");
+      if (shelfHelp) {
+        shelfHelp.textContent = localizedUiText("Modülü sürükle veya seçip hedef hücreye dokun.");
+      }
     } else {
       const remaining = Math.max(0, 15000 - client.elapsedMs);
-      shelfHelp.textContent =
-        `Modül müdahalesi ${(remaining / 1000).toFixed(1)} sn sonra açılacak.`;
+      if (shelfHelp) {
+        shelfHelp.textContent =
+          `Modül müdahalesi ${(remaining / 1000).toFixed(1)} sn sonra açılacak.`;
+      }
     }
   }
 

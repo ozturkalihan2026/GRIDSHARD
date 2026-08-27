@@ -1804,3 +1804,38 @@ Doğrulama:
 - [x] Birleşik kalite kapısı `722/722` sunucu, `176/176` istemci çekirdek testi ve Beta.37 denge/kabul raporları dahil `30/30` QA adımını geçti.
 - [x] Gerçek yerel tarayıcıda Türkçe/İngilizce hazırlık, hazır havuz yönetimi, modül bilgi paneli, profil, güçlendirici alanı ve mağlubiyet sonuç penceresi doğrulandı.
 - [x] Hazırlık ekranı masaüstü görünümüne taşmadan sığdı; tek eylem düğmesinin `Savaş → İptal Et → Savaş` geçişi, ayrı iptal düğmesinin kaldırılması ve savaş HUD modül hakkı göstergesi canlı akışta doğrulandı.
+
+---
+
+## Beta.37 Hotfix — Hazırlık Paneli · Savaş HUD · Hedefleme Hijyeni
+
+1. [x] Başlangıç Stratejisi alanı iki görsel hücreye ayrıldı. Üst hücre başlangıç devresi seçimini korur; alt hücre Hazır Havuzları Yönet eylemini ve kullanım sayısına göre ilk 3 kayıtlı havuzu `Seç` düğmeleriyle gösterir.
+2. [x] Hazır havuz metadata'sına geriye dönük uyumlu `use_count` eklendi. Havuz her gerçekten yüklendiğinde sayaç artar; ilk 3 sıralaması kullanım sayısı, son kullanım zamanı ve ad ile deterministik yapılır.
+3. [x] Savaş HUD modül hakkı bilgisi üst bardan Modül Rafı başlığının altına taşındı. Eski raf yardım satırı kaldırıldı.
+4. [x] `Savaş Alanı` başlığı kaldırıldı. `Senin Devren` ve `Rakip Devresi` başlıkları kendi devrelerinin üzerine ortalandı; hemen altında Çekirdek ve Jeneratör canları gösterilir.
+5. [x] Yeni yerel savaş açılmadan önce eski tahta ve efekt katmanı temizlenir. Görsel nesil kimliği sayesinde önceki savaşın gecikmeli mermi/çarpma zamanlayıcıları yeni savaşa sızamaz.
+6. [x] Saldırı efektlerinin kaynak ve hedef DOM araması artık yalnız ilgili savaş tahtası içinde yapılır. Modül Rafı ve sürükleme sırasında oluşan aynı `data-module-id` taşıyan öğeler görsel hedef olarak seçilemez.
+
+Hedefli doğrulama:
+
+- [x] İstemci test paketi: `176/176` çekirdek istemci testi geçti.
+- [x] Hazır havuz servis/gateway testleri: `7/7` geçti.
+- [x] `client/src/app.js` Node sözdizimi ve `server/app/battle_pool_presets.py` Python derleme kontrolü geçti.
+- [ ] Gerçek tarayıcıda görsel yerleşim ve yeni savaş geçişi kullanıcı kabul testi bekliyor.
+
+---
+
+## Beta.37 Hotfix V3 — Savaş Yaşam Döngüsü · Laboratuvar Modül Önizlemesi · Dock Vurgusu
+
+1. [x] Yeni savaş başlangıcında oyuncu ve rakip devre tahtaları artık yalnız içerik temizliğiyle bırakılmıyor; hücre yapıları baştan kuruluyor. Böylece önceki savaşta son taşınan/yerleştirilen modülün etkileşimsiz bir “hayalet” DOM kartı olarak yeni maça sızması engellendi.
+2. [x] Savaş geçişi aktif sürüklemeyi ve bekleyen yerleştirme durumlarını iptal eder, tahta/raf render imzalarını sıfırlar ve efekt katmanını yeni görsel nesil kimliğiyle temizler.
+3. [x] Yerel ve çevrimiçi savaş başlangıcı aynı istemci modül sıfırlama yolunu kullanır. Başlangıçta yalnız Çekirdek, Jeneratör ve seçilmiş iki başlangıç modülü aktif; diğer modüller rezerv durumuna döner.
+4. [x] Çevrimiçi sunucu snapshot'ındaki oyuncu modül durumu da savaş istemcisine uygulanır; önceki maçtan kalan istemci durumunun görsel olarak tekrar çizilmesi engellendi.
+5. [x] Devre Laboratuvarı seçili modül kahraman alanı, düz glif yerine savaş/havuz görsel diliyle uyumlu devre kartı önizlemesi kullanır. Modül kategorisi, simgesi ve gerçek port sayısı aynı kart üzerinde görünür.
+6. [x] Sabit alt Dock'un dış boyutu korunurken bütün simgeler hücre içinde büyütüldü. Aktif hücrede simge ve başlık ayrıca büyür; vurgu hücrenin dışına taşmadan uygulanır.
+
+Doğrulama:
+
+- [x] `client/src/app.js` Node sözdizimi kontrolü geçti.
+- [x] İstemci testleri `15/15` test dosyası PASS; çekirdek Relay istemci paketi `176/176` PASS.
+- [ ] Hayalet modül regresyonu için arka arkaya birkaç gerçek savaş ve Dock/Laboratuvar görsel kabulü kullanıcı tarayıcısında doğrulanacak.

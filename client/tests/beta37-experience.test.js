@@ -30,5 +30,11 @@ assert.ok(css.includes("GRIDSHARD Beta.37"));
 assert.ok(css.includes('#battle-pool-confirm[data-matchmaking="true"]'));
 assert.ok(i18n.includes('"TAKIM":"TEAM"'));
 assert.ok(i18n.includes('"Aşırı Yük Çipi":"Overcharge Chip"'));
+assert.ok(app.includes("function resetBattleVisualSurface"));
+assert.ok(app.includes("client.cancelDrag?.()"));
+assert.ok(app.includes("createBoard();"));
+assert.ok(app.includes("function renderLaboratoryModulePreview"));
+assert.ok(html.includes('id="laboratory-detail-icon" class="laboratory-detail-icon"'));
+assert.ok(css.includes("Beta.37 hotfix v3"));
 
 console.log("beta37 client experience test passed");
