@@ -37,6 +37,12 @@ from .game.catalog import (
     BASIC_MODULE_DEFINITIONS,
     PLAYER_SELECTABLE_MODULE_IDS,
 )
+from .game.ai_archetypes import (
+    AI_ARCHETYPE_IDS,
+    get_ai_archetype,
+    normalize_ai_archetype_id,
+    select_ai_archetype_for_key,
+)
 from .game.catalog_view import (
     build_module_catalog_view,
 )
@@ -700,6 +706,7 @@ class LocalAiBattleStartRequest(BaseModel):
     battle_pool_ids: list[str]
     initial_modules: list[InitialModuleRequest] | None = None
     experimental_calibrations: bool = False
+    ai_archetype: str = "balanced"
 
 
 class LocalAiBattleCommandRequest(BaseModel):
@@ -3241,6 +3248,26 @@ def game_module_catalog() -> dict:
     return build_module_catalog_view()
 
 
+@app.get("/game/ai-archetypes")
+def game_ai_archetypes() -> dict:
+    return {
+        "default": "balanced",
+        "archetypes": [
+            {
+                "id": archetype.id,
+                "name_tr": archetype.name_tr,
+                "name_en": archetype.name_en,
+                "description_tr": archetype.description_tr,
+                "description_en": archetype.description_en,
+                "battle_pool_ids": list(archetype.battle_pool_ids),
+                "initial_module_ids": list(archetype.initial_module_ids),
+                "expansion_module_ids": list(archetype.expansion_module_ids),
+            }
+            for archetype in (get_ai_archetype(item_id) for item_id in AI_ARCHETYPE_IDS)
+        ],
+    }
+
+
 @app.get("/identity")
 def gridshard_identity() -> dict:
     return {
@@ -3252,19 +3279,19 @@ def gridshard_identity() -> dict:
         "identity_version":
             "2.0.0-beta.37",
         "palette":{
-            "void_navy":"#070B14",
-            "reactor_blue":"#0C1625",
-            "alloy_navy":"#132238",
-            "circuit_steel":"#294766",
-            "arc_cyan":"#36D9FF",
-            "plasma_cyan":"#67F4FF",
-            "reactor_gold":"#F4C85A",
-            "ion_green":"#55DF8A",
-            "charge_amber":"#F0B84B",
-            "overload_red":"#FF515A",
-            "interference_violet":"#A86BFF",
-            "ice_white":"#ECF5FF",
-            "signal_gray":"#8CA1B9",
+            "void_navy":"#07142B",
+            "reactor_blue":"#0D2342",
+            "alloy_navy":"#12305A",
+            "circuit_steel":"#2F5B88",
+            "arc_cyan":"#48F4E0",
+            "plasma_cyan":"#82FFF1",
+            "reactor_gold":"#FFD56A",
+            "ion_green":"#9AF27A",
+            "charge_amber":"#FFB84D",
+            "overload_red":"#FF647C",
+            "interference_violet":"#B87CFF",
+            "ice_white":"#F5FAFF",
+            "signal_gray":"#B9CEE6",
         },
     }
 
@@ -4205,32 +4232,10 @@ def restore_web_test_persistence_backup(
     }
 
 
-def _local_ai_battle_pool() -> tuple[str, ...]:
-    preferred = (
-        "generator",
-        "battery",
-        "splitter",
-        "capacitor",
-        "laser",
-        "pulse_cannon",
-        "railgun",
-        "missile_launcher",
-        "drone_bay",
-        "arc_cannon",
-        "shield",
-        "armor",
-        "reflector",
-        "barrier",
-        "repair",
-        "cooler",
-        "amplifier",
-        "targeting_computer",
-    )
-    return tuple(
-        module_id
-        for module_id in preferred
-        if module_id in PLAYER_SELECTABLE_MODULE_IDS
-    )
+def _local_ai_battle_pool(
+    archetype_id: str = "balanced",
+) -> tuple[str, ...]:
+    return get_ai_archetype(archetype_id).battle_pool_ids
 
 
 def _local_player_initial_modules(
@@ -4298,7 +4303,10 @@ def _local_player_initial_modules(
 
 def _local_ai_initial_modules(
     ai_player_id: str,
+    archetype_id: str = "balanced",
 ) -> tuple[InitialModulePlacement, ...]:
+    archetype = get_ai_archetype(archetype_id)
+    left_definition, right_definition = archetype.initial_module_ids
     return (
         InitialModulePlacement(
             instance_id=f"{ai_player_id}-core",
@@ -4315,15 +4323,15 @@ def _local_ai_initial_modules(
             direction=Direction.DOWN,
         ),
         InitialModulePlacement(
-            instance_id=f"{ai_player_id}-shield",
-            definition_id="shield",
+            instance_id=f"{ai_player_id}-{left_definition}",
+            definition_id=left_definition,
             x=1,
             y=1,
             direction=Direction.RIGHT,
         ),
         InitialModulePlacement(
-            instance_id=f"{ai_player_id}-laser",
-            definition_id="laser",
+            instance_id=f"{ai_player_id}-{right_definition}",
+            definition_id=right_definition,
             x=3,
             y=1,
             direction=Direction.LEFT,
@@ -4345,9 +4353,20 @@ def _local_ai_snapshot_envelope(
         player_id,
         cursor,
     )
+    session = pvp_service.get_session(session_id)
+    ai_player_id = next(iter(sorted(session.ai_player_ids)), None)
+    archetype = get_ai_archetype(
+        session.ai_archetypes.get(ai_player_id, "balanced")
+        if ai_player_id is not None
+        else "balanced"
+    )
     return {
         "session_id": session_id,
         "authority": "server_battle_engine",
+        "ai_archetype": archetype.id,
+        "ai_archetype_name_tr": archetype.name_tr,
+        "ai_archetype_name_en": archetype.name_en,
+        "ai_archetype_description_tr": archetype.description_tr,
         "snapshot": snapshot,
         "events": event_page["events"],
         "event_cursor": event_page["cursor"],
@@ -4376,17 +4395,25 @@ def _create_matchmaking_ai_session(pair) -> None:
     pvp_service.join(pair.match_id, pair.player_b_id)
     attach_player_laboratory_to_session(pair.match_id, pair.player_a_id)
 
-    ai_pool = _local_ai_battle_pool()
+    ai_archetype = select_ai_archetype_for_key(pair.match_id)
+    ai_pool = _local_ai_battle_pool(ai_archetype.id)
     pvp_service.submit_setup(
         pair.match_id,
         pair.player_b_id,
         PvPSetupPayload(
             battle_pool_ids=ai_pool,
-            initial_modules=_local_ai_initial_modules(pair.player_b_id),
+            initial_modules=_local_ai_initial_modules(
+                pair.player_b_id,
+                ai_archetype.id,
+            ),
         ),
     )
     pvp_service.set_ready(pair.match_id, pair.player_b_id, True)
-    pvp_service.mark_ai_player(pair.match_id, pair.player_b_id)
+    pvp_service.mark_ai_player(
+        pair.match_id,
+        pair.player_b_id,
+        archetype_id=ai_archetype.id,
+    )
 
     telemetry_service.record_now(
         event_id=f"server:{pair.match_id}:matchmaking_ai_fallback:{pair.player_a_id}",
@@ -4397,6 +4424,7 @@ def _create_matchmaking_ai_session(pair) -> None:
             "rating_difference": 0,
             "opponent_type": "ai",
             "fallback_after_seconds": MATCHMAKING_AI_FALLBACK_SECONDS,
+            "ai_archetype": ai_archetype.id,
         },
     )
 
@@ -4408,6 +4436,7 @@ async def create_local_ai_session(
     session_id = f"local-ai-{uuid4()}"
     ai_player_id = f"{session_id}-opponent"
     try:
+        ai_archetype_id = normalize_ai_archetype_id(request.ai_archetype)
         experimental_enabled = bool(
             request.experimental_calibrations
             and EXPERIMENTAL_LAB_EFFECTS_ENABLED
@@ -4454,7 +4483,7 @@ async def create_local_ai_session(
                 ),
             ),
         )
-        ai_pool = _local_ai_battle_pool()
+        ai_pool = _local_ai_battle_pool(ai_archetype_id)
         pvp_service.submit_setup(
             session_id,
             ai_player_id,
@@ -4462,7 +4491,8 @@ async def create_local_ai_session(
                 battle_pool_ids=ai_pool,
                 initial_modules=(
                     _local_ai_initial_modules(
-                        ai_player_id
+                        ai_player_id,
+                        ai_archetype_id,
                     )
                 ),
             ),
@@ -4480,6 +4510,7 @@ async def create_local_ai_session(
         pvp_service.mark_ai_player(
             session_id,
             ai_player_id,
+            archetype_id=ai_archetype_id,
         )
         pvp_service.start(session_id)
         await pvp_tick_runner.ensure_started(

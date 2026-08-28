@@ -29,7 +29,7 @@ def test_schedule_boundaries():
 def test_offer_at_30():
     e=make_engine(); advance(e,30000)
     offer=e.state.players["p1"].pending_booster_offer
-    assert offer is not None and len(offer.booster_ids)==3
+    assert offer is not None and len(offer.booster_ids)==4
     assert offer.created_at_ms==30000
 
 def test_offer_wait_does_not_stack_or_pause():
@@ -70,3 +70,17 @@ def test_credit_flow_continues():
     before=e.circuit_credits("p1")
     for _ in range(20): e.step()
     assert e.circuit_credits("p1")>=before
+
+
+def test_offer_rotates_across_turns():
+    e=make_engine(); advance(e,30000)
+    first=e.state.players["p1"].pending_booster_offer.booster_ids
+    cmd(e,"select_booster",{"booster_id":first[0]})
+    # choose first eligible target depending on booster
+    target = "shield-1"
+    if first[0] == "overcharge_chip":
+        target = "laser-1"
+    cmd(e,"apply_booster",{"booster_id":first[0],"target_module_id":target})
+    advance(e,60000)
+    second=e.state.players["p1"].pending_booster_offer.booster_ids
+    assert second != first

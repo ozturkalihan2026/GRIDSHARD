@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="tr">
 <head>
-    <meta name="theme-color" content="#070B14" />
+    <meta name="theme-color" content="#07142B" />
     <meta name="application-name" content="GRIDSHARD" />
   <link rel="icon" href="/favicon.ico" sizes="any">
   <meta charset="utf-8" />
@@ -131,13 +131,18 @@
         <svg class="lobby-dock-icon lobby-dock-trophy" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 4h8v4c0 3-1.8 5-4 5s-4-2-4-5Z"/><path d="M8 6H4v1c0 3 1.7 5 5 5M16 6h4v1c0 3-1.7 5-5 5M12 13v4M8 21h8M9 17h6v4"/></svg><span class="menu-action-title">İSTATİSTİKLER</span>
       </button>
       <button type="button" class="menu-action is-active" data-open-screen="menu" data-shell-screen="menu" aria-current="page">
-        <svg class="lobby-dock-icon lobby-dock-core" viewBox="0 0 28 28" aria-hidden="true"><circle cx="14" cy="14" r="11"/><circle cx="14" cy="14" r="7"/><path d="m14 5 7 9-7 9-7-9Z"/><path class="dock-core-crack" d="m13 7 2 5-3 2 3 2-2 5"/></svg><span class="menu-action-title">EV</span>
+        <svg class="lobby-dock-icon lobby-dock-home" viewBox="0 0 28 28" aria-hidden="true">
+          <rect class="dock-home-shell" x="6" y="6" width="16" height="16" rx="4"/>
+          <path class="dock-home-gates" d="M14 2.8v5.1M14 20.1v5.1M2.8 14h5.1M20.1 14h5.1"/>
+          <path class="dock-home-core" d="m14 9.2 4.8 4.8-4.8 4.8-4.8-4.8Z"/>
+          <path class="dock-home-crack" d="m15.4 10.6-2.7 6.8"/>
+        </svg><span class="menu-action-title">EV</span>
       </button>
       <button type="button" class="menu-action lobby-dock-locked" data-roadmap-feature="team" disabled aria-disabled="true">
-        <span class="lobby-dock-icon" aria-hidden="true">◈</span><span class="menu-action-title">TAKIM</span><small>YAKINDA</small>
+        <svg class="lobby-dock-icon lobby-dock-team" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3.5 20.5 12 12 20.5 3.5 12Z"/><path d="M12 8.2 15.8 12 12 15.8 8.2 12Z"/></svg><span class="menu-action-title">TAKIM</span><small>YAKINDA</small>
       </button>
       <button type="button" class="menu-action" data-open-screen="settings" data-shell-screen="settings">
-        <span class="lobby-dock-icon" aria-hidden="true">⚙</span><span class="menu-action-title">AYARLAR</span>
+        <svg class="lobby-dock-icon lobby-dock-settings" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3.1"/><path d="M12 2.8v2.1M12 19.1v2.1M2.8 12h2.1M19.1 12h2.1M5.5 5.5 7 7M17 17l1.5 1.5M18.5 5.5 17 7M7 17l-1.5 1.5"/></svg><span class="menu-action-title">AYARLAR</span>
       </button>
     </nav>
 
@@ -303,7 +308,6 @@
           <button id="settings-preview-music" type="button">Müziği Önizle</button>
           <button id="settings-preview-sfx" type="button">SFX Önizle</button>
         </div>
-        <button id="settings-save" type="button">Ayarları Kaydet</button>
         <span id="settings-save-status" role="status">Henüz kaydedilmedi</span>
         <span id="settings-persistence-status" role="status">Kalıcılık: Henüz doğrulanmadı</span>
       </div>
@@ -458,6 +462,20 @@
       </div>
 
       <div class="battle-pool-actions">
+        <section id="ai-archetype-picker" class="ai-archetype-picker" aria-labelledby="ai-archetype-title">
+          <div class="ai-archetype-heading">
+            <span id="ai-archetype-title">AI RAKİBİ</span>
+            <strong id="ai-archetype-selected">Dengeli</strong>
+          </div>
+          <div class="ai-archetype-options" role="group" aria-label="Yapay zekâ arketipi">
+            <button type="button" data-ai-archetype="aggressive"><span aria-hidden="true">▲</span><strong>Saldırgan</strong></button>
+            <button type="button" data-ai-archetype="defensive"><span aria-hidden="true">⬡</span><strong>Savunmacı</strong></button>
+            <button type="button" data-ai-archetype="balanced" data-active="true"><span aria-hidden="true">◆</span><strong>Dengeli</strong></button>
+            <button type="button" data-ai-archetype="sabotage"><span aria-hidden="true">⌁</span><strong>Sabotaj</strong></button>
+            <button type="button" data-ai-archetype="economy"><span aria-hidden="true">⟐</span><strong>Ekonomi</strong></button>
+          </div>
+          <small id="ai-archetype-description">Rakibin devresine göre karşı modül seçer; saldırı ve savunmayı dengeler.</small>
+        </section>
         <button id="battle-pool-confirm" type="button" disabled>Savaş</button>
       </div>
     </section>
@@ -573,6 +591,7 @@
       <section class="arena-panel">
         <div class="panel-title-row arena-state-row">
           <span id="battle-state-label">Savaş devam ediyor</span>
+          <span id="battle-live-ticker" class="battle-live-ticker" data-kind="neutral" role="status" aria-live="polite">Canlı savaş geri bildirimi burada görünür.</span>
         </div>
 
         <div class="duel-arena" id="duel-arena">
@@ -645,6 +664,7 @@
           <div><span>Alınan Hasar</span><strong id="local-report-damage-received">—</strong></div>
           <div><span>Kalkan Azaltması</span><strong id="local-report-shield">—</strong></div>
           <div><span>Modül Müdahalesi</span><strong id="local-report-module-changes">—</strong></div>
+          <div><span>AI Arketipi</span><strong id="local-report-ai-archetype">—</strong></div>
         </div>
         <p id="local-report-balance-status">Denge değerlendirmesi için gerçek maç verisi toplanıyor.</p>
 

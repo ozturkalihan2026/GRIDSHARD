@@ -90,7 +90,7 @@
   const META_STATUS = "M1-M6 çekirdeği uygulandı";
   const COMPETITIVE_STATUS = "M7 rekabetçi altyapı doğrulanıyor";
   const BALANCE_STATUS = "Denge simülasyonu mevcut · geniş örnek bekliyor";
-  const AI_STATUS = "AI altyapısı mevcut · arketip testleri bekliyor";
+  const AI_STATUS = "5 AI arketipi aktif · oyuncu test telemetrisi toplanıyor";
   const PVP_STATUS = "GRIDSHARD Beta.37 · Tam Dil Desteği + Görünür Modül Hakları";
 
 
@@ -121,11 +121,15 @@
   let boosterOfferOpen = false;
   let serverBoosterOfferId = null;
   let serverBoosterEligibleTargets = new Map();
+  let activeBoosterOfferIds = new Set();
+  let activeDragGhostPreview = null;
 
   const BOOSTER_OPTIONS = [
     { id:"overcharge_chip", nameTr:"Aşırı Yük Çipi", nameEn:"Overcharge Chip", descriptionTr:"+%25 saldırı · 15 sn", descriptionEn:"+25% attack · 15 sec", targetCategories:["saldırı"] },
     { id:"emergency_repair", nameTr:"Acil Onarım", nameEn:"Emergency Repair", descriptionTr:"%25 anlık onarım", descriptionEn:"25% instant repair", targetCategories:[] },
     { id:"dual_port_adapter", nameTr:"Çift Port Adaptörü", nameEn:"Dual Port Adapter", descriptionTr:"+1 geçici port · 15 sn", descriptionEn:"+1 temporary port · 15 sec", targetCategories:[] },
+    { id:"cooling_burst", nameTr:"Soğutma Darbesi", nameEn:"Cooling Burst", descriptionTr:"Bir modülün ısısını sıfırlar", descriptionEn:"Resets a module's heat", targetCategories:[] },
+    { id:"signal_cleanser", nameTr:"Sinyal Temizleyici", nameEn:"Signal Cleanser", descriptionTr:"Bir modüldeki anlık sabotaj etkilerini temizler", descriptionEn:"Cleanses active sabotage effects on a module", targetCategories:[] },
   ];
   let selectedBoosterId = null;
   const selectablePoolModules = moduleDefinitions.filter(
@@ -3621,6 +3625,10 @@
     document.getElementById(
       "battle-state-label"
     );
+  const battleLiveTickerEl =
+    document.getElementById(
+      "battle-live-ticker"
+    );
   const battleSettingsButton =
     document.getElementById(
       "battle-settings-button"
@@ -3729,6 +3737,89 @@ const SPECIAL_CELL_INFO = {
   }
 
   let activePlayMode = "idle";
+  const AI_ARCHETYPE_UI = Object.freeze({
+    aggressive:{
+      name_tr:"Saldırgan", name_en:"Aggressive",
+      description_tr:"Erken hasar temposu kurar; saldırı modüllerini ve Aşırı Yük'ü öne alır.",
+      description_en:"Builds early damage pressure and prioritizes attack modules and Overcharge.",
+      plan_tr:"5. hak Dron Üssü · 6. hak Güçlendirici",
+      plan_en:"Slot 5 Drone Bay · Slot 6 Amplifier",
+    },
+    defensive:{
+      name_tr:"Savunmacı", name_en:"Defensive",
+      description_tr:"Çekirdeği ayakta tutar; savunma ve onarım katmanını saldırı baskısına göre büyütür.",
+      description_en:"Protects the core by layering defense and repair against incoming pressure.",
+      plan_tr:"5. hak Bariyer · 6. hak Onarım Modülü",
+      plan_en:"Slot 5 Barrier · Slot 6 Repair Module",
+    },
+    balanced:{
+      name_tr:"Dengeli", name_en:"Balanced",
+      description_tr:"Rakibin devresine göre karşı modül seçer; saldırı ve savunmayı dengeler.",
+      description_en:"Counters the opponent while balancing offense and defense.",
+      plan_tr:"5. hak Darbe Topu · 6. hak Onarım Modülü",
+      plan_en:"Slot 5 Pulse Cannon · Slot 6 Repair Module",
+    },
+    sabotage:{
+      name_tr:"Sabotaj Odaklı", name_en:"Sabotage",
+      description_tr:"Enerji ve destek hattını bozar; EMP, Kesici ve bozucu etkilerle tempo kırar.",
+      description_en:"Disrupts energy and support lines with EMP, Disruptor and control effects.",
+      plan_tr:"5. hak Sinyal Bozucu · 6. hak EMP",
+      plan_en:"Slot 5 Jammer · Slot 6 EMP",
+    },
+    economy:{
+      name_tr:"Ekonomi Odaklı", name_en:"Economy",
+      description_tr:"Önce enerji rezervi ve dağıtımı kurar; sonra yüksek maliyetli saldırılara geçer.",
+      description_en:"Builds energy reserve and distribution first, then transitions into expensive attacks.",
+      plan_tr:"5. hak Batarya · 6. hak Dağıtıcı",
+      plan_en:"Slot 5 Battery · Slot 6 Splitter",
+    },
+  });
+  let selectedAiArchetype = "balanced";
+  let activeLocalAiArchetype = "balanced";
+
+  function aiArchetypeInfo(archetypeId=selectedAiArchetype) {
+    return AI_ARCHETYPE_UI[archetypeId] || AI_ARCHETYPE_UI.balanced;
+  }
+
+  function aiArchetypeName(archetypeId=selectedAiArchetype) {
+    const info=aiArchetypeInfo(archetypeId);
+    return (document.documentElement?.lang || "tr") === "en"
+      ? info.name_en
+      : info.name_tr;
+  }
+
+  function renderAiArchetypePicker() {
+    const picker=document.getElementById("ai-archetype-picker");
+    if (!picker) return;
+    const info=aiArchetypeInfo(selectedAiArchetype);
+    const english=(document.documentElement?.lang || "tr") === "en";
+    const heading=document.getElementById("ai-archetype-title");
+    const selected=document.getElementById("ai-archetype-selected");
+    const description=document.getElementById("ai-archetype-description");
+    if (heading) heading.textContent=english ? "AI OPPONENT" : "AI RAKİBİ";
+    if (selected) selected.textContent=english ? info.name_en : info.name_tr;
+    if (description) {
+      const descriptionText = english ? info.description_en : info.description_tr;
+      const planText = english ? info.plan_en : info.plan_tr;
+      description.textContent = `${descriptionText} · ${planText}`;
+    }
+
+    for (const button of picker.querySelectorAll("[data-ai-archetype]")) {
+      const archetypeId=button.dataset.aiArchetype;
+      const buttonInfo=aiArchetypeInfo(archetypeId);
+      button.dataset.active=String(archetypeId === selectedAiArchetype);
+      button.setAttribute("aria-pressed",String(archetypeId === selectedAiArchetype));
+      const strong=button.querySelector("strong");
+      if (strong) strong.textContent=english ? buttonInfo.name_en : buttonInfo.name_tr;
+    }
+  }
+
+  function setSelectedAiArchetype(archetypeId) {
+    if (!Object.prototype.hasOwnProperty.call(AI_ARCHETYPE_UI,archetypeId)) return;
+    selectedAiArchetype=archetypeId;
+    renderAiArchetypePicker();
+  }
+
   let localBattleStarted = false;
   let localBattleFinished = false;
   let localEnemyAttackSecond = -1;
@@ -3740,6 +3831,9 @@ const SPECIAL_CELL_INFO = {
   let localServerLastSnapshotTick = -1;
   const destructionFxPlayed = new Set();
   const snapshotModuleHp = new Map();
+  const moduleAnchorRects = new Map();
+  const floatingFeedbackLive = new Map();
+  let battleLiveTickerTimer = null;
 
   let webTestSamplingTimer = null;
   let activeWebTestRunId = null;
@@ -4313,6 +4407,7 @@ const SPECIAL_CELL_INFO = {
   function createLocalBattleMetrics() {
     return {
       started_at_ms:Date.now(),
+      ai_archetype:selectedAiArchetype,
       duration_ms:0,
       won:false,
       forfeited:false,
@@ -5417,15 +5512,21 @@ function saveHumanReviewLocalNote() {
         "local-report-balance-status"
       );
     if (balanceStatus) {
+      const archetypeEntries=Object.entries(report.ai_archetypes || {});
+      const archetypeSummary=archetypeEntries.length
+        ? archetypeEntries
+            .map(([id,value]) => `${aiArchetypeName(id)} ${value.battle_count || 0}`)
+            .join(" · ")
+        : "Arketip verisi yok";
       if (
         report.status
         === "review_ready"
       ) {
         balanceStatus.textContent=
-          "İlk denge incelemesi için yeterli manuel örnek oluştu. Öneriler otomatik uygulanmaz.";
+          `İlk denge incelemesi için yeterli manuel örnek oluştu. ${archetypeSummary}. Öneriler otomatik uygulanmaz.`;
       } else {
         balanceStatus.textContent=
-          `Denge incelemesi için ${report.battles_remaining || 0} gerçek maç daha gerekli.`;
+          `Denge incelemesi için ${report.battles_remaining || 0} gerçek maç daha gerekli. ${archetypeSummary}.`;
       }
     }
   }
@@ -5504,6 +5605,8 @@ function saveHumanReviewLocalNote() {
       localBattleMetrics.shield_mitigated);
     set("local-report-module-changes",
       localBattleMetrics.module_changes);
+    set("local-report-ai-archetype",
+      aiArchetypeName(localBattleMetrics.ai_archetype || activeLocalAiArchetype));
 
     const status=document.getElementById("local-report-balance-status");
     if (status) {
@@ -5571,6 +5674,211 @@ function saveHumanReviewLocalNote() {
       : null;
   }
 
+  function findSnapshotModule(
+    snapshot,
+    playerId,
+    moduleId
+  ) {
+    const player = snapshot?.players?.[playerId];
+    return (player?.modules || []).find(
+      (module) => module.instance_id === moduleId
+    ) || null;
+  }
+
+  function recordModuleAnchor(
+    moduleId,
+    element
+  ) {
+    if (
+      !moduleId
+      || !element
+      || typeof element.getBoundingClientRect !== "function"
+    ) {
+      return;
+    }
+    const rect = element.getBoundingClientRect();
+    moduleAnchorRects.set(String(moduleId), {
+      left: rect.left,
+      top: rect.top,
+      width: rect.width,
+      height: rect.height,
+      capturedAt: Date.now(),
+    });
+  }
+
+  function resolveModuleAnchor(
+    moduleId,
+    { core=false }={}
+  ) {
+    let target = document.querySelector(
+      `[data-module-id="${moduleId}"]`
+    );
+    if (!target && core) {
+      target = document.querySelector(
+        String(moduleId || "").startsWith("enemy-")
+          ? ".duel-enemy-side .core-cell"
+          : ".duel-player-side .core-cell"
+      );
+    }
+    if (
+      target
+      && typeof target.getBoundingClientRect === "function"
+    ) {
+      recordModuleAnchor(moduleId, target);
+      return target.getBoundingClientRect();
+    }
+    return moduleAnchorRects.get(String(moduleId)) || null;
+  }
+
+  function setBattleLiveTicker(
+    message,
+    kind="neutral"
+  ) {
+    if (!battleLiveTickerEl || !message) {
+      return;
+    }
+    battleLiveTickerEl.textContent = message;
+    battleLiveTickerEl.dataset.kind = kind;
+    battleLiveTickerEl.classList.remove("pulse");
+    void battleLiveTickerEl.offsetWidth;
+    battleLiveTickerEl.classList.add("pulse");
+    window.clearTimeout(battleLiveTickerTimer);
+    battleLiveTickerTimer = window.setTimeout(() => {
+      battleLiveTickerEl.classList.remove("pulse");
+      if (!localBattleFinished) {
+        battleLiveTickerEl.textContent = "Devreler çalışıyor · etkiler modüllerin üzerinde görünür.";
+        battleLiveTickerEl.dataset.kind = "neutral";
+      }
+    }, 2100);
+  }
+
+  function parseFloatingFeedbackText(text) {
+    const match = String(text || "").trim().match(/^([+-]?)(\d+(?:[.,]\d+)?)\s+(.+)$/u);
+    if (!match) return null;
+    const sign = match[1] === "-" ? -1 : 1;
+    const numeric = Number(match[2].replace(",", "."));
+    if (!Number.isFinite(numeric)) return null;
+    return {
+      amount: sign * numeric,
+      suffix: match[3],
+    };
+  }
+
+  function formatFloatingFeedbackAmount(amount, suffix) {
+    const rounded = Math.round(Number(amount) * 10) / 10;
+    const prefix = rounded > 0 ? "+" : "";
+    return `${prefix}${Number.isInteger(rounded) ? rounded : rounded.toFixed(1)} ${suffix}`;
+  }
+
+  function emitFloatingBattleFeedback(
+    moduleId,
+    text,
+    variant="neutral",
+    { core=false }={}
+  ) {
+    const layer = document.getElementById(
+      "battle-effect-layer"
+    );
+    const anchor = resolveModuleAnchor(
+      moduleId,
+      { core }
+    );
+    if (
+      !layer
+      || !anchor
+      || typeof layer.getBoundingClientRect !== "function"
+      || !text
+    ) {
+      return false;
+    }
+
+    const layerRect = layer.getBoundingClientRect();
+    const key = `${moduleId}:${variant}`;
+    const parsed = parseFloatingFeedbackText(text);
+    const existing = floatingFeedbackLive.get(key);
+    const now = Date.now();
+
+    if (
+      existing
+      && existing.chip?.isConnected
+      && now - existing.updatedAt < 420
+    ) {
+      if (
+        parsed
+        && existing.suffix === parsed.suffix
+        && Number.isFinite(existing.amount)
+      ) {
+        existing.amount += parsed.amount;
+        existing.chip.textContent = formatFloatingFeedbackAmount(
+          existing.amount,
+          existing.suffix
+        );
+      } else {
+        existing.chip.textContent = text;
+        existing.amount = parsed?.amount ?? null;
+        existing.suffix = parsed?.suffix ?? null;
+      }
+      existing.updatedAt = now;
+      existing.chip.classList.remove("stacked");
+      void existing.chip.offsetWidth;
+      existing.chip.classList.add("stacked");
+      return true;
+    }
+
+    const chip = document.createElement("span");
+    chip.className = `battle-floating-feedback ${variant}`;
+    chip.textContent = text;
+    chip.style.left = `${anchor.left + anchor.width / 2 - layerRect.left}px`;
+    chip.style.top = `${anchor.top + Math.max(16, anchor.height * 0.28) - layerRect.top}px`;
+    layer.appendChild(chip);
+
+    const record = {
+      chip,
+      amount: parsed?.amount ?? null,
+      suffix: parsed?.suffix ?? null,
+      updatedAt: now,
+    };
+    floatingFeedbackLive.set(key, record);
+    window.setTimeout(() => {
+      chip.remove();
+      if (floatingFeedbackLive.get(key)?.chip === chip) {
+        floatingFeedbackLive.delete(key);
+      }
+    }, 1320);
+    return true;
+  }
+
+  function emitServerModuleFeedback(
+    snapshot,
+    playerId,
+    moduleId,
+    text,
+    variant="neutral"
+  ) {
+    const serverModule = findSnapshotModule(
+      snapshot,
+      playerId,
+      moduleId
+    );
+    if (!serverModule) {
+      return false;
+    }
+    const emitted = emitFloatingBattleFeedback(
+      serverModuleDomId(playerId, serverModule),
+      text,
+      variant,
+      { core: serverModule.definition_id === "core" }
+    );
+    if (emitted) {
+      const tickerKind = variant === "damage" ? "danger" : variant;
+      setBattleLiveTicker(
+        `${serverModule.name_tr || "Modül"} · ${text}`,
+        tickerKind
+      );
+    }
+    return emitted;
+  }
+
   function emitServerModuleDestruction(
     playerId,
     serverModule
@@ -5626,6 +5934,111 @@ function saveHumanReviewLocalNote() {
         triggerGridshardCue("port_connect");
         continue;
       }
+      if (event?.type === "module_damaged") {
+        emitServerModuleFeedback(
+          snapshot,
+          data.player_id,
+          data.module_id,
+          `-${Math.max(0, Math.round(Number(data.damage || 0)))} Can`,
+          "damage"
+        );
+        continue;
+      }
+      if (event?.type === "damage_reflected") {
+        emitServerModuleFeedback(
+          snapshot,
+          data.target_player_id,
+          data.target_module_id,
+          `-${Math.max(0, Math.round(Number(data.damage || 0)))} Yansıma`,
+          "reflect"
+        );
+        continue;
+      }
+      if (event?.type === "module_repaired") {
+        emitServerModuleFeedback(
+          snapshot,
+          data.target_player_id || data.player_id,
+          data.target_module_id,
+          `+${Math.max(0, Math.round(Number(data.repair || 0)))} Can`,
+          "heal"
+        );
+        continue;
+      }
+      if (event?.type === "module_cooled") {
+        const heatBefore = Number(data.heat_before || 0);
+        const heatAfter = Number(data.heat_after || 0);
+        const reduced = Math.max(0, Math.round((heatBefore - heatAfter) * 10) / 10);
+        emitServerModuleFeedback(
+          snapshot,
+          data.player_id,
+          data.target_module_id,
+          reduced > 0 ? `-${reduced} Isı` : "Isı Düştü",
+          "cool"
+        );
+        continue;
+      }
+      if (event?.type === "module_overclocked") {
+        emitServerModuleFeedback(
+          snapshot,
+          data.player_id,
+          data.target_module_id,
+          "+Atak Hızı",
+          "boost"
+        );
+        continue;
+      }
+      if (event?.type === "attack_support_applied") {
+        const supportBits = [];
+        if (Number(data.damage_multiplier || 1) > 1) {
+          supportBits.push(`+${Math.round((Number(data.damage_multiplier || 1) - 1) * 100)} Güç`);
+        }
+        if (Number(data.cooldown_multiplier || 1) < 1) {
+          supportBits.push(`+${Math.round((1 - Number(data.cooldown_multiplier || 1)) * 100)} Hız`);
+        }
+        if (data.targeting_active) {
+          supportBits.push("Hedef+");
+        }
+        if (data.overclock_active && supportBits.length === 0) {
+          supportBits.push("Destek");
+        }
+        if (supportBits.length > 0) {
+          emitServerModuleFeedback(
+            snapshot,
+            data.player_id,
+            data.module_id,
+            supportBits.join(" · "),
+            "boost"
+          );
+        }
+        continue;
+      }
+      if (event?.type === "booster_applied") {
+        let boosterText = "Güçlendirildi";
+        let boosterVariant = "boost";
+        if (data.booster_id === "emergency_repair") {
+          boosterVariant = "heal";
+          const repair = Math.max(0, Math.round(Number(data.hp_after || 0) - Number(data.hp_before || 0)));
+          boosterText = repair > 0 ? `+${repair} Can` : "Acil Onarım";
+        } else if (data.booster_id === "overcharge_chip") {
+          boosterText = "+25 Güç";
+        } else if (data.booster_id === "dual_port_adapter") {
+          boosterText = "+1 Port";
+        } else if (data.booster_id === "cooling_burst") {
+          boosterVariant = "cool";
+          boosterText = "Isı Sıfırlandı";
+        } else if (data.booster_id === "signal_cleanser") {
+          boosterVariant = "boost";
+          boosterText = "Sabotaj Temizlendi";
+        }
+        emitServerModuleFeedback(
+          snapshot,
+          data.player_id,
+          data.target_module_id,
+          boosterText,
+          boosterVariant
+        );
+        continue;
+      }
       if (event?.type === "module_destroyed") {
         const owner = snapshot.players?.[data.player_id];
         const destroyedModule = owner?.modules?.find(
@@ -5634,6 +6047,10 @@ function saveHumanReviewLocalNote() {
         emitServerModuleDestruction(
           data.player_id,
           destroyedModule
+        );
+        setBattleLiveTicker(
+          `${destroyedModule?.name_tr || "Modül"} devre dışı kaldı`,
+          "danger"
         );
         continue;
       }
@@ -5781,6 +6198,9 @@ function saveHumanReviewLocalNote() {
       ports:Array.isArray(enemyGenerator?.ports)
         ? enemyGenerator.ports
         : undefined,
+      heat:Number(enemyGenerator?.heat || 0),
+      debuffs:Array.isArray(enemyGenerator?.debuffs) ? enemyGenerator.debuffs : [],
+      temporaryBoosters:Array.isArray(enemyGenerator?.temporary_boosters) ? enemyGenerator.temporary_boosters : [],
     };
     if (
       Number.isFinite(
@@ -5845,6 +6265,9 @@ function saveHumanReviewLocalNote() {
           ports:Array.isArray(module.ports)
             ? module.ports
             : undefined,
+          heat:Number(module.heat || 0),
+          debuffs:Array.isArray(module.debuffs) ? module.debuffs : [],
+          temporaryBoosters:Array.isArray(module.temporary_boosters) ? module.temporary_boosters : [],
         })
       );
     mockEnemyModuleHp=
@@ -5906,6 +6329,8 @@ function saveHumanReviewLocalNote() {
           energyReceived:Number(serverModule.energy_received || 0),
           energyRequired:Number(serverModule.energy_required || 0),
           heat:Number(serverModule.heat || 0),
+          debuffs:Array.isArray(serverModule.debuffs) ? serverModule.debuffs : [],
+          temporaryBoosters:Array.isArray(serverModule.temporary_boosters) ? serverModule.temporary_boosters : [],
         });
       }
     }
@@ -5979,6 +6404,21 @@ function saveHumanReviewLocalNote() {
       return false;
     }
 
+    if (envelope?.ai_archetype && AI_ARCHETYPE_UI[envelope.ai_archetype]) {
+      activeLocalAiArchetype=envelope.ai_archetype;
+      selectedAiArchetype=envelope.ai_archetype;
+      renderAiArchetypePicker();
+      if (localBattleMetrics) localBattleMetrics.ai_archetype=activeLocalAiArchetype;
+      const label=aiArchetypeName(activeLocalAiArchetype);
+      if (activeMatchModeEl) activeMatchModeEl.textContent=`Maç: Tek Oyunculu · ${label} AI`;
+      if (matchmakingStatusEl) {
+        matchmakingStatusEl.textContent=`Rakip: ${label} AI`;
+        matchmakingStatusEl.dataset.status="local";
+      }
+      const battleMatchLabel=document.getElementById("battle-match-label");
+      if (battleMatchLabel) battleMatchLabel.textContent=`${label} AI`;
+    }
+
     localServerAuthoritative=true;
     document.body.dataset.battleAuthority=
       "server";
@@ -6050,6 +6490,12 @@ function saveHumanReviewLocalNote() {
         heat:Number(
           serverModule.heat || 0
         ),
+        debuffs:Array.isArray(serverModule.debuffs)
+          ? serverModule.debuffs
+          : [],
+        temporaryBoosters:Array.isArray(serverModule.temporary_boosters)
+          ? serverModule.temporary_boosters
+          : [],
       });
     }
 
@@ -6127,6 +6573,8 @@ function saveHumanReviewLocalNote() {
               participantPlayerId,
             battle_pool_ids:
               selectedBattlePoolDefinitionIds(),
+            ai_archetype:
+              selectedAiArchetype,
             initial_modules:
               buildInitialOnlineSetup().map((module) => ({
                 instance_id:module.instanceId,
@@ -6163,7 +6611,7 @@ function saveHumanReviewLocalNote() {
           250
         );
       logClientMessage(
-        "Yerel AI savaşı sunucu BattleEngine otoritesine bağlandı."
+        `${aiArchetypeName(activeLocalAiArchetype)} AI savaşı sunucu BattleEngine otoritesine bağlandı.`
       );
       return true;
     } catch (_error) {
@@ -6271,6 +6719,8 @@ function saveHumanReviewLocalNote() {
         isPowered:true,
         storedEnergy:0,
         heat:0,
+        debuffs:[],
+        temporaryBoosters:[],
       });
     }
   }
@@ -6344,13 +6794,24 @@ function saveHumanReviewLocalNote() {
     resetBattleResultPresentation();
     destructionFxPlayed.clear();
     snapshotModuleHp.clear();
+    moduleAnchorRects.clear();
+    for (const record of floatingFeedbackLive.values()) {
+      record.chip?.remove?.();
+    }
+    floatingFeedbackLive.clear();
+    setBattleLiveTicker(
+      `${aiArchetypeName(selectedAiArchetype)} AI · Kalkan + Lazer başlangıcı`,
+      "neutral"
+    );
 
     document.body.dataset.localFinished =
       "false";
 
+    activeLocalAiArchetype=selectedAiArchetype;
+    const aiLabel=aiArchetypeName(activeLocalAiArchetype);
     if (activeMatchModeEl) {
       activeMatchModeEl.textContent =
-        "Maç: Tek Oyunculu · Yerel AI";
+        `Maç: Tek Oyunculu · ${aiLabel} AI`;
     }
     if (battleStateLabelEl) {
       battleStateLabelEl.textContent =
@@ -6358,10 +6819,12 @@ function saveHumanReviewLocalNote() {
     }
     if (matchmakingStatusEl) {
       matchmakingStatusEl.textContent =
-        "Rakip: Yerel AI";
+        `Rakip: ${aiLabel} AI`;
       matchmakingStatusEl.dataset.status =
         "local";
     }
+    const battleMatchLabel=document.getElementById("battle-match-label");
+    if (battleMatchLabel) battleMatchLabel.textContent=`${aiLabel} AI`;
 
     boosterStatusEl.textContent =
       "İlk güçlendirici 30. saniyede";
@@ -6387,6 +6850,7 @@ function saveHumanReviewLocalNote() {
         initial_generator_gate:
           "south",
         initial_credits:200,
+        ai_archetype:selectedAiArchetype,
       });
 
     renderLocalBattleReport();
@@ -6411,6 +6875,7 @@ function saveHumanReviewLocalNote() {
     setActivePlayMode(
       "local"
     );
+    renderAiArchetypePicker();
 
     if (activeMatchModeEl) {
       activeMatchModeEl.textContent =
@@ -6508,7 +6973,7 @@ function saveHumanReviewLocalNote() {
       );
     if (status) {
       status.textContent=
-        "Savaş alanına giriş başarılı · 18/18 test havuzu hazır · Yerel AI aktif";
+        `Savaş alanına giriş başarılı · 18/18 test havuzu hazır · ${aiArchetypeName()} AI aktif`;
     }
 
     telemetryDispatcher.track(
@@ -6522,6 +6987,7 @@ function saveHumanReviewLocalNote() {
             .length,
         elapsed_ms:
           client.elapsedMs,
+        ai_archetype:selectedAiArchetype,
       }
     );
 
@@ -6704,6 +7170,10 @@ function saveHumanReviewLocalNote() {
 
     localBattleFinished =
       true;
+    setBattleLiveTicker(
+      won ? "Savaş tamamlandı · Galibiyet" : "Savaş tamamlandı · Mağlubiyet",
+      won ? "heal" : "danger"
+    );
     document.body.dataset.localFinished =
       "true";
     stopLocalServerPolling();
@@ -7187,27 +7657,19 @@ function saveHumanReviewLocalNote() {
     const layer = document.getElementById(
       "battle-effect-layer"
     );
-    let target = document.querySelector(
-      `[data-module-id="${moduleId}"]`
+    const targetRect = resolveModuleAnchor(
+      moduleId,
+      { core }
     );
-    if (!target && core) {
-      target = document.querySelector(
-        moduleId.startsWith("enemy-")
-          ? ".duel-enemy-side .core-cell"
-          : ".duel-player-side .core-cell"
-      );
-    }
     if (
       !layer
-      || !target
+      || !targetRect
       || typeof layer.getBoundingClientRect !== "function"
-      || typeof target.getBoundingClientRect !== "function"
     ) {
       return false;
     }
 
     const layerRect = layer.getBoundingClientRect();
-    const targetRect = target.getBoundingClientRect();
     const effect = document.createElement("span");
     effect.className = core
       ? "module-explosion core-explosion"
@@ -7377,6 +7839,16 @@ function saveHumanReviewLocalNote() {
         target.instanceId,
       hp:newHp,
     });
+    emitFloatingBattleFeedback(
+      target.instanceId,
+      `-${damage} Can`,
+      "damage",
+      { core: target.instanceId === "core-1" }
+    );
+    setBattleLiveTicker(
+      `${target.nameTr || "Modül"} · -${damage} Can`,
+      "danger"
+    );
 
     const travelMs=emitDuelAttackEffect(
       "enemy-laser",
@@ -9671,6 +10143,7 @@ function saveHumanReviewLocalNote() {
       const offerId = String(offer.id || "");
       const offerChanged = serverBoosterOfferId !== offerId;
       serverBoosterOfferId = offerId;
+      activeBoosterOfferIds = new Set((offer.booster_ids || []).map(String));
       serverBoosterEligibleTargets = new Map(
         Object.entries(offer.eligible_target_module_ids || {}).map(
           ([boosterId, moduleIds]) => [
@@ -9681,9 +10154,10 @@ function saveHumanReviewLocalNote() {
       );
       boosterOfferOpen = true;
       if (offerChanged) selectedBoosterId = null;
+      const optionCount = activeBoosterOfferIds.size || (offer.booster_ids || []).length || 0;
       boosterStatusEl.textContent = localizedUiText(selectedBoosterId
         ? "Hedef modül seç"
-        : "HAZIR · 3 seçenekten 1'ini seç");
+        : `HAZIR · ${optionCount} seçenekten 1'ini seç`);
       renderBoosterOptions();
       return;
     }
@@ -9693,6 +10167,7 @@ function saveHumanReviewLocalNote() {
       || boosterOfferOpen;
     serverBoosterOfferId = null;
     serverBoosterEligibleTargets = new Map();
+    activeBoosterOfferIds = new Set();
     boosterOfferOpen = false;
     selectedBoosterId = null;
     boosterStatusEl.textContent = localizedUiText(`${Math.max(
@@ -9711,18 +10186,22 @@ function saveHumanReviewLocalNote() {
         : (selectedBoosterId ? "target" : "ready");
     }
     boosterOptionsEl.innerHTML = "";
-    for (const booster of BOOSTER_OPTIONS) {
+    const visibleBoosters = boosterOfferOpen && activeBoosterOfferIds.size
+      ? BOOSTER_OPTIONS.filter((booster) => activeBoosterOfferIds.has(booster.id))
+      : BOOSTER_OPTIONS;
+    for (const booster of visibleBoosters) {
       const button = document.createElement("button");
       button.type = "button";
       button.className = "booster-option";
       const boosterEnglish = document.documentElement?.lang === "en";
       button.textContent = boosterEnglish ? booster.nameEn : booster.nameTr;
       button.title = boosterEnglish ? booster.descriptionEn : booster.descriptionTr;
-      button.disabled = !boosterOfferOpen;
-      button.draggable = boosterOfferOpen;
+      const isOfferChoice = !boosterOfferOpen || activeBoosterOfferIds.size === 0 || activeBoosterOfferIds.has(booster.id);
+      button.disabled = !boosterOfferOpen || !isOfferChoice;
+      button.draggable = boosterOfferOpen && isOfferChoice;
       if (selectedBoosterId === booster.id) button.classList.add("selected");
-      button.addEventListener("click", () => {
-        if (!boosterOfferOpen) return;
+      const pickBoosterForTargeting = () => {
+        if (!boosterOfferOpen || !isOfferChoice) return false;
         selectedBoosterId = booster.id;
         trackBattleUiInteraction(
           `booster_select:${booster.id}`,
@@ -9731,9 +10210,18 @@ function saveHumanReviewLocalNote() {
         boosterStatusEl.textContent = localizedUiText(selectedBoosterId ? "Hedef modül seç" : "Seçim bekleniyor");
         renderBoosterOptions();
         renderBoard();
+        return true;
+      };
+      button.addEventListener("click", () => {
+        pickBoosterForTargeting();
+      });
+      button.addEventListener("pointerdown", () => {
+        if (pickBoosterForTargeting()) {
+          boosterStatusEl.textContent = localizedUiText("Uygun, parlayan modüle bırak");
+        }
       });
       button.addEventListener("dragstart", (event) => {
-        if (!boosterOfferOpen) {
+        if (!boosterOfferOpen || !isOfferChoice) {
           event.preventDefault();
           return;
         }
@@ -9743,11 +10231,44 @@ function saveHumanReviewLocalNote() {
           booster.id
         );
         event.dataTransfer?.setData("text/plain", booster.id);
+        event.dataTransfer.effectAllowed = "move";
+        attachDragGhostPreview(event, {
+          title: boosterEnglish ? booster.nameEn : booster.nameTr,
+          subtitle: boosterEnglish ? booster.descriptionEn : booster.descriptionTr,
+          accentClass: `drag-ghost-preview--${booster.id}`
+        });
         boosterStatusEl.textContent = localizedUiText("Uygun, parlayan modüle bırak");
+      });
+      button.addEventListener("dragend", () => {
+        clearDragGhostPreview();
         renderBoosterOptions();
         renderBoard();
       });
       boosterOptionsEl.appendChild(button);
+    }
+  }
+
+  function updateShelfTooltipPlacement(
+    card,
+    tooltip
+  ) {
+    if (
+      !card
+      || !tooltip
+      || typeof card.getBoundingClientRect !== "function"
+      || typeof tooltip.getBoundingClientRect !== "function"
+    ) {
+      return;
+    }
+    tooltip.classList.remove("tooltip-below");
+    const shelf = card.closest(".module-shelf, .battle-pool-selected-list, .battle-pool-module-grid, .laboratory-module-list");
+    const cardRect = card.getBoundingClientRect();
+    const tooltipRect = tooltip.getBoundingClientRect();
+    const boundaryTop = shelf && typeof shelf.getBoundingClientRect === "function"
+      ? shelf.getBoundingClientRect().top + 8
+      : 8;
+    if (cardRect.top - tooltipRect.height < boundaryTop) {
+      tooltip.classList.add("tooltip-below");
     }
   }
 
@@ -9767,6 +10288,12 @@ function saveHumanReviewLocalNote() {
       return false;
     }
     if (boosterId === "dual_port_adapter" && Number(module.portCount || 0) >= 4) {
+      return false;
+    }
+    if (boosterId === "cooling_burst" && Number(module.heat || 0) <= 0) {
+      return false;
+    }
+    if (boosterId === "signal_cleanser" && (!Array.isArray(module.debuffs) || module.debuffs.length === 0)) {
       return false;
     }
     return true;
@@ -9995,6 +10522,69 @@ function saveHumanReviewLocalNote() {
     return true;
   }
 
+  function appendModuleLiveStatus(
+    card,
+    moduleLike
+  ) {
+    if (!card || !moduleLike) return;
+
+    const row = document.createElement("span");
+    row.className = "module-live-status-row";
+
+    const addBadge = (label, kind, title) => {
+      const badge = document.createElement("span");
+      badge.className = `module-live-status ${kind}`;
+      badge.textContent = label;
+      badge.title = title;
+      row.appendChild(badge);
+    };
+
+    const required = Number(moduleLike.energyRequired || 0);
+    const powered = Boolean(moduleLike.isPowered);
+    if (required > 0) {
+      addBadge(
+        powered ? "⚡" : "×",
+        powered ? "powered" : "unpowered",
+        powered ? "Enerji akışı aktif" : "Enerji bağlantısı yok"
+      );
+    }
+
+    const heat = Number(moduleLike.heat || 0);
+    if (heat >= 70) {
+      addBadge(
+        "♨",
+        heat >= 100 ? "heat-critical" : "heat-high",
+        `Isı ${Math.round(heat)}`
+      );
+    }
+
+    const boosters = Array.isArray(moduleLike.temporaryBoosters)
+      ? moduleLike.temporaryBoosters
+      : [];
+    if (boosters.length > 0) {
+      addBadge(
+        `✦${boosters.length > 1 ? boosters.length : ""}`,
+        "boosted",
+        `Aktif güçlendirici: ${boosters.join(", ")}`
+      );
+    }
+
+    const debuffs = Array.isArray(moduleLike.debuffs)
+      ? moduleLike.debuffs
+      : [];
+    if (debuffs.length > 0) {
+      addBadge(
+        `!${debuffs.length > 1 ? debuffs.length : ""}`,
+        "debuffed",
+        `Aktif olumsuz etki: ${debuffs.join(", ")}`
+      );
+    }
+
+    if (row.children.length > 0) {
+      card.appendChild(row);
+    }
+  }
+
   function enemyCard(
     moduleId,
     name,
@@ -10036,6 +10626,10 @@ function saveHumanReviewLocalNote() {
         "energy-disconnected"
       );
     }
+    appendModuleLiveStatus(card, power);
+    window.requestAnimationFrame(
+      () => recordModuleAnchor(moduleId, card)
+    );
     return card;
   }
 
@@ -10229,6 +10823,8 @@ function saveHumanReviewLocalNote() {
       }
     }
 
+    renderAiArchetypePicker();
+
     globalThis.GridshardI18n
       ?.apply(normalized);
 
@@ -10379,7 +10975,26 @@ function saveHumanReviewLocalNote() {
     );
   }
 
+  let settingsAutoSaveTimer = null;
+  function scheduleSettingsAutoSave(delayMs = 240) {
+    if (settingsAutoSaveTimer) {
+      clearTimeout(settingsAutoSaveTimer);
+    }
+    renderSettingsSaveStatus(
+      localizedUiText("Ayarlar otomatik kaydedilecek..."),
+      "saving"
+    );
+    settingsAutoSaveTimer = setTimeout(() => {
+      settingsAutoSaveTimer = null;
+      saveSettingsForm();
+    }, delayMs);
+  }
+
   async function saveSettingsForm() {
+    if (settingsAutoSaveTimer) {
+      clearTimeout(settingsAutoSaveTimer);
+      settingsAutoSaveTimer = null;
+    }
     const sound =
       document.getElementById(
         "settings-sound"
@@ -11411,6 +12026,8 @@ function saveHumanReviewLocalNote() {
         energyReceived:module.energyReceived,
         energyRequired:module.energyRequired,
         powerReason:module.powerReason,
+        debuffs:module.debuffs,
+        temporaryBoosters:module.temporaryBoosters,
       })),
     });
     if (!force && boardSignature === renderedBoardSignature) {
@@ -11425,6 +12042,41 @@ function saveHumanReviewLocalNote() {
         createModuleCard,
       }
     );
+  }
+
+  function clearDragGhostPreview() {
+    if (activeDragGhostPreview?.isConnected) {
+      activeDragGhostPreview.remove();
+    }
+    activeDragGhostPreview = null;
+  }
+
+  function attachDragGhostPreview(
+    event,
+    { title = "", subtitle = "", accentClass = "" } = {}
+  ) {
+    const transfer = event.dataTransfer;
+    if (!transfer) return;
+    clearDragGhostPreview();
+    const ghost = document.createElement("div");
+    ghost.className = `drag-ghost-preview ${accentClass}`.trim();
+    const heading = document.createElement("strong");
+    heading.textContent = title;
+    const detail = document.createElement("span");
+    detail.textContent = subtitle;
+    ghost.append(heading, detail);
+    ghost.style.position = "fixed";
+    ghost.style.left = "-9999px";
+    ghost.style.top = "-9999px";
+    document.body.appendChild(ghost);
+    activeDragGhostPreview = ghost;
+    const rect = ghost.getBoundingClientRect();
+    transfer.setDragImage(
+      ghost,
+      Math.max(16, Math.round(rect.width / 2)),
+      Math.max(16, Math.round(rect.height / 2))
+    );
+    window.setTimeout(clearDragGhostPreview, 0);
   }
 
   function moduleIconFor(module) {
@@ -11632,6 +12284,7 @@ function saveHumanReviewLocalNote() {
             module.powerReason,
         }
       );
+      appendModuleLiveStatus(card, module);
     }
 
     if (
@@ -11646,10 +12299,16 @@ function saveHumanReviewLocalNote() {
     }
 
     card.addEventListener("dragover", (event) => {
-      if (!selectedBoosterId) return;
+      const draggedBoosterId = event.dataTransfer?.getData("application/x-gridshard-booster")
+        || event.dataTransfer?.getData("text/plain")
+        || selectedBoosterId;
+      if (!draggedBoosterId) return;
+      if (draggedBoosterId !== selectedBoosterId) {
+        selectedBoosterId = draggedBoosterId;
+      }
       event.preventDefault();
       event.stopPropagation();
-      if (isBoosterTargetEligible(module)) {
+      if (isBoosterTargetEligible(module, draggedBoosterId)) {
         card.classList.add("booster-drop-ready");
       }
     });
@@ -11657,7 +12316,11 @@ function saveHumanReviewLocalNote() {
       card.classList.remove("booster-drop-ready");
     });
     card.addEventListener("drop", (event) => {
-      if (!selectedBoosterId) return;
+      const draggedBoosterId = event.dataTransfer?.getData("application/x-gridshard-booster")
+        || event.dataTransfer?.getData("text/plain")
+        || selectedBoosterId;
+      if (!draggedBoosterId) return;
+      selectedBoosterId = draggedBoosterId;
       event.preventDefault();
       event.stopPropagation();
       card.classList.remove("booster-drop-ready");
@@ -11778,16 +12441,27 @@ function saveHumanReviewLocalNote() {
             "text/plain",
             module.instanceId
           );
+        attachDragGhostPreview(event, {
+          title: module.nameTr,
+          subtitle: module.status === "reserve"
+            ? `${localizedUiText("Devre Kredisi")}: ${module.circuitCreditCost} DK · ${localizedUiText("Port")}: ${module.portCount}`
+            : `${localizedUiText("Can")}: ${module.hp}/${module.maxHp}`,
+          accentClass: `drag-ghost-preview--module drag-ghost-preview--${module.category || "neutral"}`
+        });
       }
     );
 
     card.addEventListener(
       "dragend",
       () => {
+        clearDragGhostPreview();
         client.cancelDrag();
       }
     );
 
+    window.requestAnimationFrame(
+      () => recordModuleAnchor(module.instanceId, card)
+    );
     return card;
   }
 
@@ -12472,6 +13146,16 @@ function saveHumanReviewLocalNote() {
         clientDefinitionId(
           attacker.instanceId
         );
+      emitFloatingBattleFeedback(
+        targetDomId,
+        `-${finalDamage} Can`,
+        "damage",
+        { core: targetDomId === "enemy-core" }
+      );
+      setBattleLiveTicker(
+        `${attacker.nameTr} → ${targetName} · ${finalDamage} hasar`,
+        "attack"
+      );
       const travelMs=emitDuelAttackEffect(
         attacker.instanceId,
         targetDomId,
@@ -12631,68 +13315,80 @@ function saveHumanReviewLocalNote() {
     }
   }
 
+  function formatBattleLogEntry(entry) {
+    if (!entry) return "";
+    if (entry.kind === "attack_performed") {
+      const reduced = Number(entry.reducedDamage ?? 0);
+      const defense = entry.defenseType ?? "Yok";
+      return `${entry.attacker} → ${entry.target} · Final ${entry.damage}${reduced > 0 ? ` · Azaltılan ${reduced}` : ""} · Savunma ${defense}`;
+    }
+    if (entry.kind === "damage_reflected") {
+      return `Yansıtılan hasar · ${entry.damage}`;
+    }
+    if (entry.kind === "module_repaired") {
+      return `Onarım · +${entry.repair} Can`;
+    }
+    if (entry.kind === "module_cooled") {
+      return `Soğutma · Isı ${Math.round(entry.heatBefore)} → ${Math.round(entry.heatAfter)}`;
+    }
+    if (entry.kind === "module_overclocked") {
+      return `Aşırı Hızlandırma · saldırı temposu arttı`;
+    }
+    if (entry.kind === "module_heat_changed") {
+      const before = Number(entry.heatBefore || 0);
+      const after = Number(entry.heatAfter || 0);
+      if (Math.abs(after - before) < 10) return "";
+      return `Isı · ${Math.round(before)} → ${Math.round(after)}`;
+    }
+    if (entry.kind === "module_overheated") {
+      return `AŞIRI YÜK · ${entry.selfDamage} öz hasar`;
+    }
+    if (entry.kind === "attack_skipped_overheated") {
+      return `Saldırı engellendi: kritik ısı`;
+    }
+    if (entry.kind === "sabotage_applied") {
+      return `Sabotaj uygulandı · ${entry.effectId || entry.effect_id}`;
+    }
+    if (entry.kind === "virus_damage") {
+      return `Virüs: ${entry.damage} hasar`;
+    }
+    if (entry.kind === "support_skipped_jammed") {
+      return `Destek engellendi · Sinyal Bozma`;
+    }
+    if (entry.kind === "sabotage_resisted") {
+      return `Sabotaj direnci çalıştı`;
+    }
+    if (entry.kind === "sabotage_blocked") {
+      return `Sabotaj engellendi`;
+    }
+    if (entry.kind === "sabotage_cleansed") {
+      return `Sabotaj temizlendi · ${entry.effectId || entry.effect_id}`;
+    }
+    if (entry.kind === "sabotage_duration_reduced") {
+      return `Sabotaj süresi azaltıldı`;
+    }
+    if (entry.kind === "battle_finished") {
+      if (entry.isDraw || entry.is_draw) return `MAÇ BİTTİ · Berabere`;
+      return `MAÇ BİTTİ · Kazanan ${entry.winnerPlayerId || entry.winner_player_id}`;
+    }
+    if (entry.kind === "module_damaged") {
+      return `${entry.moduleName || "Modül"} · -${entry.damage} Can`;
+    }
+    if (entry.kind === "client_notice") {
+      return `Bilgi · ${entry.payload?.message || ""}`;
+    }
+    if (entry.kind === "battle_forfeited") {
+      return `Savaş bırakıldı`;
+    }
+    return String(entry.kind || "Olay").replaceAll("_", " ");
+  }
+
   function renderLog() {
-    logEl.textContent = commandLog
-      .slice(-12)
-      .map((entry) => {
-        if (entry.kind === "attack_performed") {
-          const raw = entry.rawDamage ?? entry.damage;
-          const reduced = entry.reducedDamage ?? 0;
-          const defense = entry.defenseType ?? "Yok";
-          return `${entry.attacker} → ${entry.target}: Ham ${raw} · Azaltılan ${reduced} · Final ${entry.damage} · Savunma ${defense}`;
-        }
-        if (entry.kind === "damage_reflected") {
-          return `Yansıtılan hasar: ${entry.damage}`;
-        }
-        if (entry.kind === "module_repaired") {
-          return `Onarım: +${entry.repair} Can`;
-        }
-        if (entry.kind === "module_cooled") {
-          return `Soğutma: Isı ${entry.heatBefore} → ${entry.heatAfter}`;
-        }
-        if (entry.kind === "module_overclocked") {
-          return `Aşırı Hızlandırma: Isı ${entry.heatAfter}`;
-        }
-        if (entry.kind === "module_heat_changed") {
-          return `Isı: ${entry.heatBefore} → ${entry.heatAfter}`;
-        }
-        if (entry.kind === "module_overheated") {
-          return `AŞIRI YÜK: Isı ${entry.heat} · ${entry.selfDamage} öz hasar`;
-        }
-        if (entry.kind === "attack_skipped_overheated") {
-          return `Saldırı engellendi: kritik ısı`;
-        }
-        if (entry.kind === "sabotage_applied") {
-          return `Sabotaj: ${entry.effectId || entry.effect_id} · ${entry.durationMs || entry.duration_ms} ms`;
-        }
-        if (entry.kind === "virus_damage") {
-          return `Virüs: ${entry.damage} hasar`;
-        }
-        if (entry.kind === "support_skipped_jammed") {
-          return `Destek engellendi: Sinyal Bozma`;
-        }
-        if (entry.kind === "sabotage_resisted") {
-          return `Sabotaj direnci: ${entry.baseDurationMs || entry.base_duration_ms} ms → ${entry.effectiveDurationMs || entry.effective_duration_ms} ms`;
-        }
-        if (entry.kind === "sabotage_blocked") {
-          return `Sabotaj engellendi`;
-        }
-        if (entry.kind === "sabotage_cleansed") {
-          return `Sabotaj temizlendi: ${entry.effectId || entry.effect_id}`;
-        }
-        if (entry.kind === "sabotage_duration_reduced") {
-          return `Sabotaj süresi azaltıldı: -${entry.reductionMs || entry.reduction_ms} ms`;
-        }
-        if (entry.kind === "battle_finished") {
-          if (entry.isDraw || entry.is_draw) return `MAÇ BİTTİ: Berabere`;
-          return `MAÇ BİTTİ: Kazanan ${entry.winnerPlayerId || entry.winner_player_id}`;
-        }
-        if (entry.kind === "module_damaged") {
-          return `${entry.moduleName || "Modül"}: ${entry.damage} hasar · Can ${entry.hp}`;
-        }
-        return JSON.stringify(entry);
-      })
-      .join("\n");
+    const lines = commandLog
+      .map(formatBattleLogEntry)
+      .filter(Boolean)
+      .slice(-8);
+    logEl.textContent = lines.join("\n");
   }
 
   function logClientMessage(message) {
@@ -12989,6 +13685,16 @@ function saveHumanReviewLocalNote() {
     );
   }
 
+  for (const button of document.querySelectorAll("[data-ai-archetype]")) {
+    button.addEventListener("click",() => {
+      setSelectedAiArchetype(button.dataset.aiArchetype);
+      telemetryDispatcher.track("ai_archetype_selected",{
+        ai_archetype:selectedAiArchetype,
+      });
+    });
+  }
+  renderAiArchetypePicker();
+
   const balanceDraftRefreshEl =
     document.getElementById(
       "balance-draft-refresh"
@@ -13237,6 +13943,9 @@ function saveHumanReviewLocalNote() {
       "settings-music",
       "settings-sound-muted",
       "settings-music-muted",
+      "settings-vibration",
+      "settings-graphics",
+      "settings-language",
     ]
   ) {
     const control=
@@ -13244,11 +13953,15 @@ function saveHumanReviewLocalNote() {
         controlId
       );
     if (control) {
+      const eventName = control.type === "range" ? "input" : "change";
       control.addEventListener(
-        control.type === "range"
-          ? "input"
-          : "change",
-        previewAudioSettingsFromControls
+        eventName,
+        () => {
+          previewAudioSettingsFromControls();
+          if (controlId !== "settings-language") {
+            scheduleSettingsAutoSave(control.type === "range" ? 320 : 120);
+          }
+        }
       );
     }
   }
@@ -13258,10 +13971,7 @@ function saveHumanReviewLocalNote() {
       "settings-save"
     );
   if (settingsSaveButton) {
-    settingsSaveButton.addEventListener(
-      "click",
-      saveSettingsForm
-    );
+    settingsSaveButton.remove();
   }
 
   const settingsLanguageEl =

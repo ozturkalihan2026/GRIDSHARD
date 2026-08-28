@@ -463,7 +463,7 @@ function createClient() {
   const fs=require("fs");
   const src=fs.readFileSync(path.join(ROOT,"src/app.js"),"utf8");
   assert.ok(src.includes("AI_STATUS"));
-  assert.ok(src.includes("AI altyapısı mevcut · arketip testleri bekliyor"));
+  assert.ok(src.includes("5 AI arketipi aktif · oyuncu test telemetrisi toplanıyor"));
 }
 
 {

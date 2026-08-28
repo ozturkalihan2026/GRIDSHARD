@@ -4,6 +4,7 @@ import time
 from typing import Callable
 
 from .engine import BattleEngine
+from .ai_archetypes import normalize_ai_archetype_id
 from .models import BattleCommand, BattleState, BattleStatus, ModuleStatus
 from .pvp_setup import (
     PvPSetupPayload,
@@ -63,6 +64,7 @@ class PvPSession:
     finished_at: float | None = None
     ai_player_ids: set[str] = field(default_factory=set)
     ai_next_decision_at_ms: dict[str, int] = field(default_factory=dict)
+    ai_archetypes: dict[str, str] = field(default_factory=dict)
 
     @property
     def is_full(self) -> bool:
@@ -214,6 +216,7 @@ class PvPSessionService:
         player_id: str,
         *,
         first_decision_at_ms: int = 15_000,
+        archetype_id: str = "balanced",
     ) -> None:
         session = self.get_session(session_id)
         session.slot_for(player_id)
@@ -224,6 +227,9 @@ class PvPSessionService:
         session.ai_next_decision_at_ms[player_id] = max(
             0,
             int(first_decision_at_ms),
+        )
+        session.ai_archetypes[player_id] = normalize_ai_archetype_id(
+            archetype_id
         )
         self._touch(session)
 
@@ -584,6 +590,8 @@ class PvPSessionService:
                     "energy_required": required,
                     "energy_shortfall": max(0.0, required - received),
                     "heat": module.heat,
+                    "debuffs": sorted(module.debuffs),
+                    "temporary_boosters": sorted(module.temporary_boosters),
                     "calibration_level": module.calibration_level,
                     "calibration_applied": module.calibration_applied,
                 })

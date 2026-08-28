@@ -11,8 +11,8 @@ def test_identity_endpoint_exposes_gridshard_brand():
     body=response.json()
     assert body["name"]=="GRIDSHARD"
     assert body["tagline_tr"]=="Devreni Kur. Çekirdeği Kır."
-    assert body["palette"]["arc_cyan"]=="#36D9FF"
-    assert body["palette"]["reactor_gold"]=="#F4C85A"
+    assert body["palette"]["arc_cyan"]=="#48F4E0"
+    assert body["palette"]["reactor_gold"]=="#FFD56A"
 
 
 def test_home_exposes_gridshard_identity():

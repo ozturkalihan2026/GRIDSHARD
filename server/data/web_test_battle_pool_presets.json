@@ -1,31 +1,4 @@
 {
-  "wt-81aef76b-f7e7-498a-9c29-63cdf1fb9793": {
-    "Dengeli": {
-      "favorite": true,
-      "last_used_at_ms": null,
-      "module_definition_ids": [
-        "generator",
-        "battery",
-        "splitter",
-        "capacitor",
-        "laser",
-        "pulse_cannon",
-        "railgun",
-        "shield",
-        "armor",
-        "reflector",
-        "barrier",
-        "repair",
-        "cooler",
-        "amplifier",
-        "targeting_computer",
-        "emp",
-        "jammer",
-        "missile_launcher"
-      ],
-      "use_count": 0
-    }
-  },
   "wt-dbd4a70f-4d90-4b60-958a-18ca1e4eff82": {
     "Dengeli": {
       "favorite": true,

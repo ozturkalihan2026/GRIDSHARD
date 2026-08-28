@@ -1910,7 +1910,7 @@ class BattleEngine:
         if offer is None:
             raise CommandRejected("Aktif güçlendirici seçim hakkı yok.")
         if booster_id not in offer.booster_ids:
-            raise CommandRejected("Seçilen güçlendirici mevcut üç seçenek arasında değil.")
+            raise CommandRejected("Seçilen güçlendirici mevcut seçenekler arasında değil.")
         player.pending_booster_offer = type(offer)(
             id=offer.id,
             booster_ids=(booster_id,),
@@ -1997,6 +1997,34 @@ class BattleEngine:
                 "instant": True,
                 "hp_before": before,
                 "hp_after": module.hp,
+            })
+        elif booster.id == "cooling_burst":
+            before = module.heat
+            module.heat = 0.0
+            self._emit("booster_applied", {
+                "player_id": player_id,
+                "booster_id": booster.id,
+                "target_module_id": module.instance_id,
+                "instant": True,
+                "heat_before": before,
+                "heat_after": module.heat,
+            })
+            self._emit("module_heat_changed", {
+                "player_id": player_id,
+                "module_id": module.instance_id,
+                "heat_before": before,
+                "heat_after": module.heat,
+                "reason": "cooling_burst",
+            })
+        elif booster.id == "signal_cleanser":
+            removed_effect_ids = sorted(module.debuffs.keys())
+            module.debuffs.clear()
+            self._emit("booster_applied", {
+                "player_id": player_id,
+                "booster_id": booster.id,
+                "target_module_id": module.instance_id,
+                "instant": True,
+                "removed_effect_ids": removed_effect_ids,
             })
         else:
             self.add_temporary_booster_state(

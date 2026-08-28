@@ -4,55 +4,51 @@
     "profile": {
       "display_name": "wt-81aef76b-f7e7-498a-9c29-63cdf1fb9793",
       "engagement": {
-        "claimed_season_tiers": [
-          1,
-          2,
-          3
-        ],
-        "current_tier": 3,
-        "daily_mission_day": "2026-08-27",
+        "claimed_season_tiers": [],
+        "current_tier": 0,
+        "daily_mission_day": "2026-08-28",
         "daily_missions": [
           {
-            "claimed": true,
-            "completed": true,
+            "claimed": false,
+            "completed": false,
             "description_tr": "2 savaş tamamla.",
             "flux_shard_reward": 10,
             "id": "complete_battles",
             "name_tr": "Devreyi Ateşle",
-            "progress": 2,
+            "progress": 1,
             "season_xp_reward": 80,
             "target": 2
           },
           {
-            "claimed": true,
-            "completed": true,
+            "claimed": false,
+            "completed": false,
             "description_tr": "Rakip devrelere toplam 1000 hasar ver.",
             "flux_shard_reward": 15,
             "id": "deal_damage",
             "name_tr": "Çekirdeğe Baskı",
-            "progress": 1000,
+            "progress": 292,
             "season_xp_reward": 100,
             "target": 1000
           },
           {
-            "claimed": true,
-            "completed": true,
+            "claimed": false,
+            "completed": false,
             "description_tr": "Savaşta 3 modül taşı, değiştir, takas et veya döndür.",
             "flux_shard_reward": 15,
             "id": "circuit_actions",
             "name_tr": "Canlı Strateji",
-            "progress": 3,
+            "progress": 0,
             "season_xp_reward": 90,
             "target": 3
           }
         ],
-        "equipped_title": "Devre Öncüsü",
-        "flux_shards": 130,
+        "equipped_title": "Devre Çırağı",
+        "flux_shards": 0,
         "max_tier": 10,
         "reward_track": [
           {
             "claimable": false,
-            "claimed": true,
+            "claimed": false,
             "flux_shards": 25,
             "required_xp": 100,
             "season_xp_reward": 25,
@@ -61,7 +57,7 @@
           },
           {
             "claimable": false,
-            "claimed": true,
+            "claimed": false,
             "flux_shards": 30,
             "required_xp": 250,
             "season_xp_reward": 30,
@@ -70,7 +66,7 @@
           },
           {
             "claimable": false,
-            "claimed": true,
+            "claimed": false,
             "flux_shards": 35,
             "required_xp": 400,
             "season_xp_reward": 35,
@@ -145,17 +141,16 @@
         "season_id": "core_awakening_s0",
         "season_name_tr": "Sezon Sıfır · Çekirdek Uyanışı",
         "season_starts_at": "2026-08-01T00:00:00Z",
-        "season_xp": 515,
-        "tier_progress": 115,
-        "tier_progress_required": 175,
+        "season_xp": 35,
+        "tier_progress": 35,
+        "tier_progress_required": 100,
         "unlocked_titles": [
-          "Devre Çırağı",
-          "Devre Öncüsü"
+          "Devre Çırağı"
         ]
       },
-      "experience": 155,
-      "experience_into_level": 155,
-      "experience_to_next_level": 845,
+      "experience": 35,
+      "experience_into_level": 35,
+      "experience_to_next_level": 965,
       "laboratory": {
         "module_levels": {},
         "receipts": {},
@@ -209,14 +204,14 @@
       "vibration_enabled": true
     },
     "statistics": {
-      "average_match_duration_ms": 57133,
-      "boosters_used": 3,
+      "average_match_duration_ms": 47600,
+      "boosters_used": 0,
       "by_match_type": {
         "unranked_ai": {
           "draws": 0,
           "losses": 1,
-          "matches": 3,
-          "wins": 2
+          "matches": 1,
+          "wins": 0
         }
       },
       "draws": 0,
@@ -226,60 +221,20 @@
       "most_used_modules": [
         {
           "definition_id": "laser",
-          "matches_used": 3
-        },
-        {
-          "definition_id": "shield",
-          "matches_used": 3
-        },
-        {
-          "definition_id": "armor",
-          "matches_used": 2
-        },
-        {
-          "definition_id": "battery",
-          "matches_used": 2
-        },
-        {
-          "definition_id": "missile_launcher",
-          "matches_used": 2
+          "matches_used": 1
         },
         {
           "definition_id": "pulse_cannon",
-          "matches_used": 2
-        },
-        {
-          "definition_id": "railgun",
-          "matches_used": 2
-        },
-        {
-          "definition_id": "reflector",
-          "matches_used": 2
-        },
-        {
-          "definition_id": "capacitor",
-          "matches_used": 1
-        },
-        {
-          "definition_id": "jammer",
-          "matches_used": 1
-        },
-        {
-          "definition_id": "repair",
-          "matches_used": 1
-        },
-        {
-          "definition_id": "splitter",
           "matches_used": 1
         }
       ],
       "player_id": "wt-81aef76b-f7e7-498a-9c29-63cdf1fb9793",
       "ranked_matches": 0,
-      "total_damage_dealt": 2536,
-      "total_matches": 3,
-      "unranked_ai_matches": 3,
-      "win_rate": 0.666667,
-      "wins": 2
+      "total_damage_dealt": 292,
+      "total_matches": 1,
+      "unranked_ai_matches": 1,
+      "win_rate": 0.0,
+      "wins": 0
     }
   },
   "wt-dbd4a70f-4d90-4b60-958a-18ca1e4eff82": {

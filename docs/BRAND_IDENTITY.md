@@ -45,21 +45,21 @@ Karar: referansların hiçbir renk paleti, ekran kompozisyonu veya müzik temas�
 
 | Token | Kullanım | HEX |
 |---|---|---|
-| `--gs-void-navy` | Ana arka plan | `#050914` |
-| `--gs-reactor-blue` | İkinci arka plan | `#0A1530` |
-| `--gs-alloy-navy` | Panel yüzeyi | `#111D35` |
-| `--gs-circuit-steel` | Çizgi / panel kenarı | `#25395B` |
-| `--gs-arc-cyan` | Ana vurgu / mint enerji | `#35E5D2` |
-| `--gs-plasma-cyan` | Enerji parlama | `#79FFE9` |
-| `--gs-reactor-gold` | Seçim / önemli CTA | `#FFCC66` |
-| `--gs-ion-green` | Sağlık / pozitif | `#A8FF78` |
+| `--gs-void-navy` | En koyu arena / derinlik | `#07142B` |
+| `--gs-reactor-blue` | Ana shell arka planı | `#0D2342` |
+| `--gs-alloy-navy` | Panel yüzeyi | `#12305A` |
+| `--gs-circuit-steel` | Çizgi / panel kenarı | `#2F5B88` |
+| `--gs-arc-cyan` | Ana vurgu / mint enerji | `#48F4E0` |
+| `--gs-plasma-cyan` | Enerji parlama | `#82FFF1` |
+| `--gs-reactor-gold` | Seçim / önemli CTA | `#FFD56A` |
+| `--gs-ion-green` | Sağlık / pozitif | `#9AF27A` |
 | `--gs-charge-amber` | Uyarı | `#FFB84D` |
-| `--gs-overload-red` | Kritik / hasar | `#FF5F72` |
+| `--gs-overload-red` | Kritik / hasar | `#FF647C` |
 | `--gs-interference-violet` | Sabotaj | `#B87CFF` |
-| `--gs-ice-white` | Ana metin | `#F3F7FF` |
-| `--gs-signal-gray` | İkincil metin | `#8FA3BF` |
+| `--gs-ice-white` | Ana metin | `#F5FAFF` |
+| `--gs-signal-gray` | İkincil metin | `#B9CEE6` |
 
-Renk dağılım hedefi: `%72` void/reactor arka plan, `%18` alloy panel, `%6` mint flux, `%3` semantik sınıf rengi, en fazla `%1` reactor-gold CTA.
+Renk dağılım hedefi: canlı savaşta koyu yüzey oranı yüksek kalır; menü/hazırlık/ilerlemede `Reactor → Alloy` yüzeyleri daha fazla görünür. Altın yalnız karar/ödül, cyan enerji/etkileşim, sınıf renkleri ise sınıf ve savaş durumu için kullanılır.
 
 ---
 
@@ -230,3 +230,31 @@ Kullanım ilkeleri:
 - sınıf renkleri ve savaş durumları korunur; Corelight sınıf ayrımının yerine geçmez,
 - parıltı geometriyi hareket ettirmez; Beta.32 Fix.1 port/simge sabitliği değişmez,
 - azaltılmış hareket tercihi altında renk ve kontrast bilgi taşımaya devam eder.
+
+
+---
+
+## 12. Beta.37 Hotfix V4 — Corelight Arena v2
+
+Kullanıcı kabulündeki ikinci “fazla koyu / web paneli gibi” geri bildirimi üzerine shell katmanı bir seviye daha aydınlatıldı. Bu değişiklik savaş alanını parlaklaştırmaz; **canlı savaş koyu ve odaklı**, menü / laboratuvar / hazırlık / ilerleme ise daha doygun mavi yüzeyli ve daha oyunsu kalır.
+
+### 12.1 Araştırma temeli
+
+- Xbox Accessibility Guideline 102, standart boyuttaki önemli oyun metni ve görsel UI öğelerinde en az `4.5:1`, büyük öğelerde `3:1` kontrast önerir; HUD ve menü yüzeylerinde sınır/arka plan gibi ek ayrıştırıcılar kullanılmasını da önerir.
+- W3C WCAG 2.2 SC 1.4.3 aynı `4.5:1` / `3:1` eşiklerini temel alır; anlaşılması gerekli grafik ikonlar için W3C G207 `3:1` kontrastı hedefler.
+- Seçim/durum bilgisinde renk tek başına kullanılmaz. GRIDSHARD seçili durumlarda aynı anda çerçeve, ölçek, simge, onay işareti veya alt çizgi kullanır.
+
+Kaynaklar:
+- https://learn.microsoft.com/en-us/xbox/accessibility/xbox-accessibility-guidelines/102
+- https://www.w3.org/WAI/WCAG22/Understanding/contrast-minimum
+- https://www.w3.org/WAI/WCAG22/Techniques/general/G207
+
+### 12.2 Uygulama ilkeleri
+
+- `#07142B` artık her ekranın ana yüzeyi değildir; derinlik ve canlı arena için saklanır.
+- Shell yüzeyleri `#0D2342 → #12305A → #163A66` hiyerarşisiyle katmanlanır.
+- Ana metin `#F5FAFF`, ikincil metin `#B9CEE6` kullanır. `#12305A` panel üzerinde ölçülen yaklaşık kontrastlar sırasıyla `12.53:1` ve `8.17:1` olup 4.5:1 hedefinin belirgin biçimde üzerindedir.
+- Cyan ve Gold aksanlar hem kontrast hem rol üzerinden ayrılır; Gold karar/ödül, Cyan enerji/etkileşimdir.
+- Dock dış ölçüsü sabit kalır. Aktif hücre; daha büyük ikon + daha büyük metin + Gold çerçeve + alt çizgi kombinasyonuyla okunur.
+- EV simgesi jenerik ev yerine marka içi dört kapılı `Core Gate` geometrisine dönüştürülür; `EV` metni navigasyon anlamını açık tutar.
+- AI arketipi seçiminde sınıf rengi tek bilgi kanalı değildir; her arketip sembol ve ad taşır, aktif olan `✓` ile de işaretlenir.

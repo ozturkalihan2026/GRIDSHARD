@@ -259,13 +259,17 @@ Beta.25 sonrası mobil hazırlık önceliği kapsamında eski erteleme kararı k
 
 - [x] AI savaş komutu altyapısı var.
 - [x] Tek oyunculu test için yerel AI akışı var.
-- [ ] Saldırgan arketip ayrı ürünleşmiş AI olarak tamamlanmadı.
-- [ ] Savunmacı arketip tamamlanmadı.
-- [ ] Dengeli arketip tamamlanmadı.
-- [ ] Sabotaj Odaklı arketip tamamlanmadı.
-- [ ] Ekonomi Odaklı arketip tamamlanmadı.
+- [x] **Saldırgan**: erken hasar temposu, daha yüksek saldırı omurgası ve Aşırı Yük önceliği.
+- [x] **Savunmacı**: savunma/onarım tabanı ve düşük çekirdek riski odaklı karar ağırlıkları.
+- [x] **Dengeli**: mevcut karşı-modül davranışını koruyan referans profil.
+- [x] **Sabotaj Odaklı**: EMP/Sinyal Bozucu/Kesici ve rakip enerji-destek hattını bozma önceliği.
+- [x] **Ekonomi Odaklı**: enerji rezervi/dağıtımı kurup daha pahalı saldırıya geçiş önceliği.
+- [x] Beş profilin 18 modüllük kendi savaş havuzu, başlangıç modülleri, sınıf ağırlıkları ve güçlendirici önceliği sunucu tarafında kanoniktir.
+- [x] Yerel savaş hazırlığında AI arketipi oyuncu tarafından seçilebilir; 10 saniyelik PvP AI devralmasında arketip maç kimliğinden deterministik çeşitlendirilir.
+- [x] Yerel maç telemetrisi arketip kimliğini taşır; manuel savaş raporu galibiyet, süre, hasar ve modül hamlesini arketip bazında ayırır.
+- [~] Arketipler ürünleşti; gerçek oyuncu örnek sayısı büyüdükçe tercih/açık karşı-strateji dengesi ayrıca kalibre edilecek.
 
-**Durum:** Kısmi. Arketip sistemi yapılacak.
+**Durum:** Ürünleşmiş beş arketip tamamlandı; oyuncu telemetrisiyle meta kalibrasyonu sürüyor.
 
 ## FAZ 17 — Online PvP
 
@@ -446,12 +450,13 @@ olarak üretilir.
 - [x] Savaş durmadan uygulama.
 
 ### M7 — Rekabetçi Çekirdek
-- [~] Simülasyon altyapısı var; 10k/50k/100k raporları eksik.
-- [~] AI var; beş ayrı arketip eksik.
+- [x] Simülasyon altyapısı ve Beta.37 için toplam 140.000 seeded örnekli 10k/50k finalist zinciri mevcut.
+- [x] Beş ürünleşmiş AI arketipi yerel seçim ve PvP AI devralma hattına bağlıdır.
 - [x] Online PvP iki istemci sonuç, reconnect ve rematch senaryolarına sahiptir.
 - [~] Fiziksel cihaz ve uzun süreli dağıtık PvP soak kanıtı eksiktir.
+- [~] Modül seçim/kazanma, kredi snowball/comeback, özel hücre ve güçlendirici tercih telemetrisi gerçek oyuncu hacmiyle genişletilecek.
 
-**M7 henüz “stabil/tamamlandı” kabul edilmeyecek.**
+**M7 henüz “stabil/tamamlandı” kabul edilmeyecek; kalan ana kapı fiziksel soak + gerçek oyuncu meta telemetrisidir.**
 
 ### M8 — GRIDSHARD 2.0 Beta
 - [x] Oyna.
@@ -511,21 +516,23 @@ olarak üretilir.
 
 ## P3 — Rekabetçi Denge
 
-- [ ] 10.000 otomatik maç raporu.
-- [ ] 50.000 otomatik maç raporu.
-- [ ] Gerekirse 100.000+ benchmark.
-- [ ] Modül seçim/kazanma oranları.
+- [x] 10.000 otomatik maç tarama raporu.
+- [x] 50.000 otomatik finalist raporu.
+- [x] Gerekli ölçeği aşan toplam 140.000 seeded Beta.37 benchmark örneği.
+- [ ] Gerçek oyuncu modül seçim/kazanma oranları.
 - [ ] Devre Kredisi ve comeback/snowball analizi.
 - [ ] Özel hücre kullanım oranları.
 - [ ] Güçlendirici tercihleri.
+- [~] AI arketip bazlı maç/galibiyet/süre/hasar/modül hamlesi telemetrisi eklendi; örnek hacmi oyuncu testleriyle büyütülecek.
 
 ## P4 — AI Arketipleri
 
-- [ ] Saldırgan.
-- [ ] Savunmacı.
-- [ ] Dengeli.
-- [ ] Sabotaj Odaklı.
-- [ ] Ekonomi Odaklı.
+- [x] Saldırgan.
+- [x] Savunmacı.
+- [x] Dengeli.
+- [x] Sabotaj Odaklı.
+- [x] Ekonomi Odaklı.
+- [~] Arketipler arası matchup ve insan-vs-AI karşı strateji matrisi sürekli veri biriktiren denge çalışmasıdır.
 
 ## P5 — Savaş Okunabilirliği
 
@@ -1839,3 +1846,70 @@ Doğrulama:
 - [x] `client/src/app.js` Node sözdizimi kontrolü geçti.
 - [x] İstemci testleri `15/15` test dosyası PASS; çekirdek Relay istemci paketi `176/176` PASS.
 - [ ] Hayalet modül regresyonu için arka arkaya birkaç gerçek savaş ve Dock/Laboratuvar görsel kabulü kullanıcı tarayıcısında doğrulanacak.
+
+
+---
+
+## Beta.37 Hotfix V4 — Corelight Arena · Dock Core Gate · AI Arketipleri
+
+1. [x] Ana menü, profil, istatistik, ayarlar, laboratuvar ve savaş hazırlığının yüzeyleri bir kademe aydınlatıldı. Canlı savaş alanının taktik koyu zemini korunur; oyun kimliği menü/ilerleme katmanlarında cyan–mavi–altın ışık hiyerarşisiyle güçlendirilir.
+2. [x] Kanonik renk tokenları `Void #07142B`, `Reactor #0D2342`, `Alloy #12305A`, `Arc Cyan #48F4E0`, `Gold #FFD56A`, `Ice White #F5FAFF`, `Signal #B9CEE6` olarak kimlik endpoint'i ve CSS ile eşlendi.
+3. [x] Dock dış ölçüsü sabit tutuldu. EV hücresindeki jenerik ev şekli yerine GRIDSHARD dört kapılı `Core Gate` simgesi kullanılır; seçili hücre ikon, metin, çerçeve ve alt çizgiyle birlikte vurgulanır.
+4. [x] Beş sunucu otoriteli AI arketipi ürünleşti: Saldırgan, Savunmacı, Dengeli, Sabotaj Odaklı ve Ekonomi Odaklı.
+5. [x] Her AI arketipinin ayrı 18 modüllük savaş havuzu, iki başlangıç modülü, sınıf ağırlıkları, stratejik taban hedefleri ve güçlendirici önceliği vardır.
+6. [x] Tek Oyunculu Test hazırlığında arketip seçici eklendi. Seçili profil yalnız renkle değil sembol, metin, onay işareti ve çerçeveyle belirtilir.
+7. [x] PvP'de 10 saniyelik AI devralması maç kimliğine göre deterministik biçimde farklı arketipler kullanabilir; aynı sunucu komut kuyruğu ve savaş motoru korunur.
+8. [x] Yerel savaş telemetrisi ve manuel rapor, AI arketipini maç sayısı, galibiyet, süre, verilen/alınan hasar ve modül hamlesiyle ayrı toplar.
+9. [x] Yol haritasındaki 10k/50k simülasyon ve beş AI arketipi maddeleri gerçek Beta.37 durumuyla uzlaştırıldı; fiziksel cihaz soak, gerçek oyuncu meta telemetrisi ve canlı sezon operasyonu açık bırakıldı.
+10. [x] AI güçlendirici hattı eski `select_booster → apply_booster` çift komutundan çıkarılıp PvP ile aynı atomik `use_booster` komutuna geçirildi; hedef seçiminde sunucunun gerçek uygunluk filtresi kullanılır.
+11. [x] 5×5 sıralı arketip matrisi üçer tekrar ile `75` otomatik maçta yeniden çalıştırıldı. Medyan süre `77.6 sn`; Saldırgan `%50`, Savunmacı `%50`, Dengeli `%90`, Sabotaj `%30`, Ekonomi `%30` galibiyet oranı verdi. Bu veri arketip farkını kanıtlayan baseline olarak kaydedildi; tek başına sayısal denge değişikliği gerekçesi sayılmadı.
+12. [x] Corelight Arena v2 için otomatik kontrast smoke raporu eklendi; `Ice White`, `Signal`, `Arc Cyan` ve `Reactor Gold` ana yüzey kombinasyonlarının tamamı `4.5:1` eşiğini geçti (`qa_reports/beta37_corelight_contrast_report.json`).
+
+**Doğrulama:** istemci `15/15` test dosyası PASS; sunucu oyun motoru testleri `353/353` PASS. Ses dosyaları küçültülmüş paylaşım paketinden bilinçli çıkarıldığı için fiziksel WAV varlığına bağlı 7 eski ses testi bu hotfix paketinde çalıştırılmadı; ses dışı üst seviye sunucu testleri `349 PASS + 1 SKIP`.
+
+**Sonraki veri hedefi:** Her arketip için anlamlı sayıda insan-vs-AI maç biriktir; arketip bazında kazanma oranı, süre, hasar, modül değişimi ve oyuncunun hangi karşı-havuzlara yöneldiğini incele. Sayısal dengeyi yalnız bu veri ve simülasyon birlikte aynı sorunu gösterdiğinde değiştir.
+
+## Beta.37 Hotfix V5 — Savaş Geri Bildirimi · AI Sürekliliği · Ekran Ritim Düzeltmesi
+
+- [x] Savaş sırasında modül üstünde yükselip kaybolan görsel geri bildirimler eklendi: `-Can`, `+Can`, `+Güç`, `+Port`, `-Isı`, `Yansıma` gibi etkiler artık doğrudan modül üzerinde okunabiliyor.
+- [x] Sunucu olaylarından gelen `module_damaged`, `module_repaired`, `module_cooled`, `module_overclocked`, `attack_support_applied` ve `booster_applied` çıktıları istemci tarafında görselleştirildi.
+- [x] Modül patlaması efektleri son bilinen konumu kullanacak şekilde sağlamlaştırıldı; modül DOM'dan hızlı kalksa bile patlama/çarpma geri bildirimi kaybolmuyor.
+- [x] Modül rafı tooltip katmanı iyileştirildi; üst enerji grubundaki bilgi kartları artık güçlendirici alanının altında kaybolmuyor, gerekirse aşağı açılıyor.
+- [x] Profil / Günlük Görevler / Ödül Yolu / İstatistikler / Ayarlar / Laboratuvar ekranlarında üst ilerleme hattı ile alt dock arasında daha tutarlı yükseklik ritmi verildi.
+- [x] AI arketipleri başlangıçta `Kalkan + Lazer` açılışı yapacak şekilde hizalandı; boş aktif hak oluştuğunda AI erişebildiği ilk uygun modülle sahayı anında doldurmaya öncelik veriyor.
+- [x] Hedef yine savaş alanını her zaman dolu tutmak; böylece AI bir modül patladığında yalnızca yeni hak açılmasını bekleyen pasif davranış yerine kalan havuzundan aktif olarak takviye yapıyor.
+
+**Kalan İzleme:** Oyuncu tarafında gerçek maç telemetrisiyle görsel geri bildirim yoğunluğu ölçülecek; gerekirse aynı tik içinde biriken metinler için üst sınır / birleştirme kuralı eklenecek.
+
+
+## Beta.37 Hotfix V6 — Savaş Okunabilirliği · Dock Standardizasyonu · AI 5/6. Hak Planı
+
+1. [x] Aynı modül üzerinde kısa aralıkta üretilen savaş geri bildirimleri birleştirildi. Örneğin aynı anda gelen `-8 Can` olayları üst üste yığılmak yerine tek okunabilir değerde toplanır; görsel gürültü azaltılır.
+2. [x] Savaş alanı başlığına kompakt `Canlı Savaş` bilgi şeridi eklendi. Teknik Olay Günlüğü yerine oyuncu savaş sırasında son anlamlı etkiyi tek satırda görür; ayrıntılı günlük yine inceleme için korunur.
+3. [x] Aktif modüllere küçük durum rozetleri eklendi: enerji akışı, enerjisiz durum, yüksek/kritik ısı, aktif güçlendirici ve sabotaj/debuff durumları modül kartının sağ üstünde okunur.
+4. [x] Sunucu PvP snapshot'ı `debuffs` ve `temporary_boosters` durumlarını istemciye açar; yerel ve çevrimiçi savaşlar aynı mini durum göstergelerini kullanır.
+5. [x] Modül patlaması görseli daha belirgin flaş, şok dalgası ve ağır parçacıklarla güçlendirildi; devre dışı kalan modül artık yalnızca kaybolmaz.
+6. [x] Modül Rafı `normal / enerjisiz / güçlendirici hedefi / hedef dışı` durumlarında daha belirgin yüzey ve çerçeve ayrımı kullanır. Güçlendirici seçildiğinde hedeflenebilir modüller daha rahat ayırt edilir.
+7. [x] Profil, Günlük Görevler, Ödül Yolu, İstatistikler, Ayarlar ve Laboratuvar aynı `1320 px` ana kabuk, ortak üst/alt boşluk ve tam yükseklik panel ritmine bağlandı. Üst ilerleme hattı ile alt Dock arasındaki çerçeve artık ekranlar arasında değişmez.
+8. [x] Dock hücreleri tek ikon diline geçti; Takım ve Ayarlar için de aynı çizgi ağırlığında SVG kullanılır. Aktif hücre büyüyerek düzeni bozmak yerine çerçeve + alt ışık çizgisiyle seçilir.
+9. [x] Profil ekranı özet kartı ve kimlik alanları, İstatistik KPI hiyerarşisi, Ayarlar kart grupları ve Laboratuvar seçili modül sütunu görsel olarak güçlendirildi; boş/idarî panel hissi azaltıldı.
+10. [x] Savaş sonrası modal daha güçlü arka plan ayrımı, sonuç yüzeyi ve eylem hiyerarşisi kullanır; savaş alanından net biçimde kopar fakat mevcut sonuç/analiz akışını değiştirmez.
+11. [x] Tüm AI arketipleri `Kalkan + Lazer` açılışını korur. 5. ve 6. aktif hak için arketipe özel genişleme planı tanımlandı ve hazırlık ekranındaki arketip açıklamasında oyuncuya görünür hale getirildi.
+12. [x] AI boş aktif hak varken artık önce counter kararına bağlı kalmaz; erişilebilir ve karşılanabilir plan modülünü doğrudan yerleştirmeyi dener. Böylece patlayan modüller sonrası açık hakların boş kalması azaltılır.
+13. [x] Arketip 5/6. hak planları: Saldırgan `Dron Üssü → Güçlendirici`, Savunmacı `Bariyer → Onarım`, Dengeli `Darbe Topu → Onarım`, Sabotaj `Sinyal Bozucu → EMP`, Ekonomi `Batarya → Dağıtıcı`.
+
+**V6 doğrulama hedefi:** en az 5 farklı arketiple arka arkaya gerçek maç oynayıp 5. ve 6. hakkın dolma zamanı, boş hak süresi, güçlendirici hedefleme rahatlığı, patlama fark edilirliği ve savaş geri bildirim yoğunluğunu gözlemle. Gerekirse yalnız görsel yoğunluk eşikleri tekrar ayarlanacak; sayısal savaş dengesi bu hotfix kapsamında değiştirilmeyecek.
+
+
+## Beta.37 Hotfix V7 — Savaş Alanı Sıkılaştırma · Modül Rafı Kompaktlık · Güçlendirici DnD
+- Canlı savaş bilgi şeridi kaldırıldı; arena boşlukları savaş tahtalarına geri verildi.
+- Modül Rafı üst boşlukları azaltıldı, güçlendirici paneli sıkılaştırıldı, aynı anda daha fazla modül görünür oldu.
+- Güçlendiriciler için sürükle-bırak seçimi düzeltildi; pointerdown + drop akışı stabil hale getirildi.
+- Güçlendirici teklifi 4 seçenekli döner/rotasyonlu hale getirildi; iki yeni güçlendirici eklendi: Soğutma Darbesi, Sinyal Temizleyici.
+- Ayarlar ekranı otomatik kayda geçirildi; ayrı kaydet butonu kaldırıldı.
+
+
+## Beta.37 Hotfix V8 — Raf yoğunluğu · güçlendirici hayalet kartı · kare hücre ayarı
+- Modül Rafı başlık/kapasite/güçlendirici blokları yeniden sıkılaştırıldı; üst boşluklar azaltıldı.
+- Güçlendirici ve modül sürüklemede imleç altında hayalet kart/önizleme eklendi.
+- Savaş tahtasındaki kart ve hücre geometri oranı kareye yaklaştırıldı; modül simgeleri hücre boyutuna göre büyütüldü.

@@ -9,6 +9,7 @@ from app.game.engine import BattleEngine
 from app.game.models import (
     BattleState,
     BattleStatus,
+    BoosterOffer,
     Direction,
     ModuleStatus,
 )
@@ -220,3 +221,56 @@ def test_prepare_ai_reserves_only_before_match():
         raise AssertionError(
             "Maç başladıktan sonra rezerv hazırlama engellenmeliydi."
         )
+
+
+def test_ai_uses_atomic_booster_command_and_consumes_offer():
+    engine = setup_engine()
+    ai_player = engine.state.players["ai"]
+
+    shield = engine.grant_module(
+        "ai",
+        "ai-shield",
+        "shield",
+    )
+    shield.status = ModuleStatus.ACTIVE
+    shield.position = type(engine.board.core_position)(x=1, y=3)
+    shield.direction = Direction.RIGHT
+    shield.hp = 30
+
+    ai_player.pending_booster_offer = BoosterOffer(
+        id="ai-offer",
+        booster_ids=(
+            "overcharge_chip",
+            "emergency_repair",
+            "dual_port_adapter",
+        ),
+        created_at_ms=30_000,
+    )
+    engine.state.elapsed_ms = 30_000
+
+    plan = build_ai_action_plan(
+        engine,
+        "ai",
+        "opponent",
+    )
+
+    assert plan is not None
+    assert plan.kind == "booster"
+    assert len(plan.commands) == 1
+    assert plan.commands[0].kind == "use_booster"
+    assert plan.commands[0].payload == {
+        "offer_id": "ai-offer",
+        "booster_id": "emergency_repair",
+        "target_module_id": "ai-shield",
+    }
+
+    enqueue_ai_actions(
+        engine,
+        "ai",
+        "opponent",
+    )
+    engine.step()
+
+    assert ai_player.pending_booster_offer is None
+    assert "ai-offer" in ai_player.consumed_booster_offer_ids
+    assert shield.hp > 30

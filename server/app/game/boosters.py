@@ -24,6 +24,20 @@ BOOSTER_DEFINITIONS: dict[str, BoosterDefinition] = {
         duration_ms=15000,
         effect_data={"extra_port_count": 1},
     ),
+    "cooling_burst": BoosterDefinition(
+        id="cooling_burst",
+        name_tr="Soğutma Darbesi",
+        description_tr="Seçilen aktif modülün ısısını sıfırlar.",
+        duration_ms=0,
+        effect_data={"reset_heat": True},
+    ),
+    "signal_cleanser": BoosterDefinition(
+        id="signal_cleanser",
+        name_tr="Sinyal Temizleyici",
+        description_tr="Seçilen aktif modül üzerindeki geçici sabotaj etkilerini temizler.",
+        duration_ms=0,
+        effect_data={"cleanse_debuffs": True},
+    ),
 }
 
 def get_booster_definition(booster_id: str) -> BoosterDefinition:
@@ -47,6 +61,10 @@ def booster_target_rejection_reason(
         return f"{booster.name_tr}, {module.definition.name_tr} modülüne uygulanamaz."
     if booster.id == "emergency_repair" and module.hp >= module.definition.max_hp:
         return "Acil Onarım yalnızca hasar almış bir modüle uygulanabilir."
+    if booster.id == "cooling_burst" and module.heat <= 0:
+        return "Soğutma Darbesi yalnızca ısınmış bir modüle uygulanabilir."
+    if booster.id == "signal_cleanser" and len(module.debuffs) == 0:
+        return "Sinyal Temizleyici yalnızca sabotaj etkisi altındaki bir modüle uygulanabilir."
     if booster.id == "dual_port_adapter" and effective_port_count(module) >= 4:
         return "Çift Port Adaptörü dört portlu bir modüle uygulanamaz."
     if (

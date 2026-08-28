@@ -1,0 +1,133 @@
+{
+  "version": "2.0.0-beta.37-hotfix-v4",
+  "purpose": "Corelight Arena v2 palette contrast smoke audit.",
+  "reference_thresholds": {
+    "standard_game_ui_text": 4.5,
+    "large_text_or_essential_non_text": 3.0
+  },
+  "palette": {
+    "void": "#07142B",
+    "reactor": "#0D2342",
+    "alloy": "#12305A",
+    "surface_3": "#163A66",
+    "ice_white": "#F5FAFF",
+    "signal": "#B9CEE6",
+    "arc_cyan": "#48F4E0",
+    "reactor_gold": "#FFD56A"
+  },
+  "pairs": [
+    {
+      "foreground": "ice_white",
+      "background": "void",
+      "ratio": 17.48,
+      "wcag_aa_standard_text": true,
+      "wcag_large_or_non_text_3_to_1": true
+    },
+    {
+      "foreground": "signal",
+      "background": "void",
+      "ratio": 11.39,
+      "wcag_aa_standard_text": true,
+      "wcag_large_or_non_text_3_to_1": true
+    },
+    {
+      "foreground": "arc_cyan",
+      "background": "void",
+      "ratio": 13.37,
+      "wcag_aa_standard_text": true,
+      "wcag_large_or_non_text_3_to_1": true
+    },
+    {
+      "foreground": "reactor_gold",
+      "background": "void",
+      "ratio": 13.09,
+      "wcag_aa_standard_text": true,
+      "wcag_large_or_non_text_3_to_1": true
+    },
+    {
+      "foreground": "ice_white",
+      "background": "reactor",
+      "ratio": 14.97,
+      "wcag_aa_standard_text": true,
+      "wcag_large_or_non_text_3_to_1": true
+    },
+    {
+      "foreground": "signal",
+      "background": "reactor",
+      "ratio": 9.75,
+      "wcag_aa_standard_text": true,
+      "wcag_large_or_non_text_3_to_1": true
+    },
+    {
+      "foreground": "arc_cyan",
+      "background": "reactor",
+      "ratio": 11.44,
+      "wcag_aa_standard_text": true,
+      "wcag_large_or_non_text_3_to_1": true
+    },
+    {
+      "foreground": "reactor_gold",
+      "background": "reactor",
+      "ratio": 11.21,
+      "wcag_aa_standard_text": true,
+      "wcag_large_or_non_text_3_to_1": true
+    },
+    {
+      "foreground": "ice_white",
+      "background": "alloy",
+      "ratio": 12.53,
+      "wcag_aa_standard_text": true,
+      "wcag_large_or_non_text_3_to_1": true
+    },
+    {
+      "foreground": "signal",
+      "background": "alloy",
+      "ratio": 8.17,
+      "wcag_aa_standard_text": true,
+      "wcag_large_or_non_text_3_to_1": true
+    },
+    {
+      "foreground": "arc_cyan",
+      "background": "alloy",
+      "ratio": 9.58,
+      "wcag_aa_standard_text": true,
+      "wcag_large_or_non_text_3_to_1": true
+    },
+    {
+      "foreground": "reactor_gold",
+      "background": "alloy",
+      "ratio": 9.38,
+      "wcag_aa_standard_text": true,
+      "wcag_large_or_non_text_3_to_1": true
+    },
+    {
+      "foreground": "ice_white",
+      "background": "surface_3",
+      "ratio": 10.92,
+      "wcag_aa_standard_text": true,
+      "wcag_large_or_non_text_3_to_1": true
+    },
+    {
+      "foreground": "signal",
+      "background": "surface_3",
+      "ratio": 7.12,
+      "wcag_aa_standard_text": true,
+      "wcag_large_or_non_text_3_to_1": true
+    },
+    {
+      "foreground": "arc_cyan",
+      "background": "surface_3",
+      "ratio": 8.35,
+      "wcag_aa_standard_text": true,
+      "wcag_large_or_non_text_3_to_1": true
+    },
+    {
+      "foreground": "reactor_gold",
+      "background": "surface_3",
+      "ratio": 8.18,
+      "wcag_aa_standard_text": true,
+      "wcag_large_or_non_text_3_to_1": true
+    }
+  ],
+  "all_primary_pairs_pass_4_5": true
+}

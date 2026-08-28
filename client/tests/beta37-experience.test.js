@@ -17,7 +17,7 @@ assert.ok(html.includes('class="selected-pool-heading"'));
 assert.ok(html.includes('id="capacity-indicator" role="status"'));
 assert.ok(!html.includes('capacity-indicator battle-capacity-hidden'));
 assert.ok(html.includes("lobby-dock-trophy"));
-assert.ok(html.includes("dock-core-crack"));
+assert.ok(html.includes("dock-home-crack"));
 assert.ok(html.includes("lobby-feature-icon-daily"));
 assert.ok(html.includes("lobby-feature-icon-reward"));
 
@@ -36,5 +36,9 @@ assert.ok(app.includes("createBoard();"));
 assert.ok(app.includes("function renderLaboratoryModulePreview"));
 assert.ok(html.includes('id="laboratory-detail-icon" class="laboratory-detail-icon"'));
 assert.ok(css.includes("Beta.37 hotfix v3"));
+assert.ok(css.includes("Beta.37 hotfix v4"));
+assert.ok(html.includes('id="ai-archetype-picker"'));
+assert.ok(html.includes('lobby-dock-home'));
+assert.ok(app.includes("ai_archetype"));
 
 console.log("beta37 client experience test passed");

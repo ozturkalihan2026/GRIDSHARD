@@ -98,6 +98,7 @@ class PvPTickRunner:
                     session.engine,
                     ai_player_id,
                     opponent_player_id,
+                    session.ai_archetypes.get(ai_player_id, "balanced"),
                 )
                 if plan is not None:
                     stats.ai_decisions+=1

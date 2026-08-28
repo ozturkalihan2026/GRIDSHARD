@@ -5,8 +5,8 @@
   "passed": false,
   "skipped": true,
   "failed": false,
-  "reason": "Page.goto: net::ERR_BLOCKED_BY_ADMINISTRATOR at http://127.0.0.1:8878/?e2e=1\nCall log:\n  - navigating to \"http://127.0.0.1:8878/?e2e=1\", waiting until \"networkidle\"\n",
-  "browser": "/usr/bin/chromium",
+  "reason": "test policy block",
+  "browser": null,
   "evidence_complete": false,
   "playwright_matrix": {
     "report_exists": false,

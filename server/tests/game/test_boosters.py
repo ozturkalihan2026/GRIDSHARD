@@ -28,13 +28,15 @@ def apply_booster(engine, booster_id, target_module_id):
     }))
     engine.step()
 
-def test_three_boosters_exist():
-    assert set(BOOSTER_DEFINITIONS)=={"overcharge_chip","emergency_repair","dual_port_adapter"}
+def test_five_boosters_exist():
+    assert set(BOOSTER_DEFINITIONS)=={"overcharge_chip","emergency_repair","dual_port_adapter","cooling_burst","signal_cleanser"}
 
 def test_turkish_names():
     assert get_booster_definition("overcharge_chip").name_tr=="Aşırı Yük Çipi"
     assert get_booster_definition("emergency_repair").name_tr=="Acil Onarım"
     assert get_booster_definition("dual_port_adapter").name_tr=="Çift Port Adaptörü"
+    assert get_booster_definition("cooling_burst").name_tr=="Soğutma Darbesi"
+    assert get_booster_definition("signal_cleanser").name_tr=="Sinyal Temizleyici"
 
 def test_overcharge_attack_only():
     engine=build_engine()
@@ -92,3 +94,19 @@ def test_timed_booster_expires():
     for _ in range(151):
         engine.step()
     assert "dual_port_adapter" not in shield.temporary_boosters
+
+
+def test_cooling_burst_resets_heat():
+    engine=build_engine()
+    laser=engine.state.players["p1"].modules["laser-1"]
+    laser.heat=33
+    apply_booster(engine,"cooling_burst","laser-1")
+    assert laser.heat==0
+
+def test_signal_cleanser_removes_debuffs():
+    engine=build_engine()
+    shield=engine.state.players["p1"].modules["shield-1"]
+    engine.add_debuff("p1","shield-1","jammed","Jammed",1000,{"reason":"test"})
+    assert shield.debuffs
+    apply_booster(engine,"signal_cleanser","shield-1")
+    assert shield.debuffs=={}

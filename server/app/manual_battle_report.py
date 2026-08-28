@@ -335,6 +335,31 @@ def _build_review_candidates(
     return candidates
 
 
+
+
+def _ai_archetype_breakdown(completed: list[Any]) -> dict[str, dict]:
+    grouped: dict[str, list[Any]] = {}
+    for event in completed:
+        metadata = _event_metadata(event)
+        archetype = str(metadata.get("ai_archetype") or "legacy").strip() or "legacy"
+        grouped.setdefault(archetype, []).append(event)
+
+    result: dict[str, dict] = {}
+    for archetype, events in sorted(grouped.items()):
+        wins = sum(1 for event in events if bool(_event_metadata(event).get("won", False)))
+        count = len(events)
+        result[archetype] = {
+            "battle_count": count,
+            "wins": wins,
+            "losses": max(0, count - wins),
+            "win_rate": round((wins / count) * 100, 1) if count else 0.0,
+            "average_duration_ms": _average(events, "duration_ms"),
+            "average_damage_dealt": _average(events, "damage_dealt"),
+            "average_damage_received": _average(events, "damage_received"),
+            "average_module_changes": _average(events, "module_changes"),
+        }
+    return result
+
 def build_manual_battle_report(
     *,
     events: list[Any],
@@ -446,6 +471,8 @@ def build_manual_battle_report(
         },
         "generator_route":
             route,
+        "ai_archetypes":
+            _ai_archetype_breakdown(completed),
         "review_candidates":
             candidates,
         "balance_action":

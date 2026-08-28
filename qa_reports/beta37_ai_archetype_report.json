@@ -1,0 +1,3903 @@
+{
+  "version": "2.0.0-beta.37",
+  "purpose": "AI archetype diversity smoke/baseline; not a final balance proof.",
+  "trials_per_ordered_matchup": 3,
+  "summary": {
+    "battle_count": 75,
+    "draw_rate": 0.0,
+    "median_duration_ms": 77600,
+    "archetypes": {
+      "aggressive": {
+        "name_tr": "Saldırgan",
+        "appearances": 30,
+        "wins": 15,
+        "losses": 15,
+        "draws": 0,
+        "win_rate_excluding_draws": 0.5,
+        "draw_rate": 0.0,
+        "median_duration_ms": 48900,
+        "avg_damage_dealt": 630.2,
+        "avg_damage_received": 587.0,
+        "actions": {
+          "place": 75,
+          "booster": 30
+        }
+      },
+      "defensive": {
+        "name_tr": "Savunmacı",
+        "appearances": 30,
+        "wins": 15,
+        "losses": 15,
+        "draws": 0,
+        "win_rate_excluding_draws": 0.5,
+        "draw_rate": 0.0,
+        "median_duration_ms": 87850,
+        "avg_damage_dealt": 840.2,
+        "avg_damage_received": 984.7,
+        "actions": {
+          "place": 114,
+          "booster": 81,
+          "replace": 51
+        }
+      },
+      "balanced": {
+        "name_tr": "Dengeli",
+        "appearances": 30,
+        "wins": 27,
+        "losses": 3,
+        "draws": 0,
+        "win_rate_excluding_draws": 0.9,
+        "draw_rate": 0.0,
+        "median_duration_ms": 50200,
+        "avg_damage_dealt": 1117.3,
+        "avg_damage_received": 482.6,
+        "actions": {
+          "place": 165,
+          "replace": 57,
+          "booster": 48
+        }
+      },
+      "sabotage": {
+        "name_tr": "Sabotaj Odaklı",
+        "appearances": 30,
+        "wins": 9,
+        "losses": 21,
+        "draws": 0,
+        "win_rate_excluding_draws": 0.3,
+        "draw_rate": 0.0,
+        "median_duration_ms": 77200,
+        "avg_damage_dealt": 517.7,
+        "avg_damage_received": 760.7,
+        "actions": {
+          "place": 63,
+          "booster": 39
+        }
+      },
+      "economy": {
+        "name_tr": "Ekonomi Odaklı",
+        "appearances": 30,
+        "wins": 9,
+        "losses": 21,
+        "draws": 0,
+        "win_rate_excluding_draws": 0.3,
+        "draw_rate": 0.0,
+        "median_duration_ms": 77200,
+        "avg_damage_dealt": 513.7,
+        "avg_damage_received": 804.1,
+        "actions": {
+          "place": 72,
+          "booster": 42
+        }
+      }
+    },
+    "matchups": {
+      "aggressive_vs_aggressive": {
+        "trials": 3,
+        "a_wins": 0,
+        "b_wins": 3,
+        "draws": 0,
+        "median_duration_ms": 180000
+      },
+      "aggressive_vs_balanced": {
+        "trials": 3,
+        "a_wins": 0,
+        "b_wins": 3,
+        "draws": 0,
+        "median_duration_ms": 47600
+      },
+      "aggressive_vs_defensive": {
+        "trials": 3,
+        "a_wins": 0,
+        "b_wins": 3,
+        "draws": 0,
+        "median_duration_ms": 77600
+      },
+      "aggressive_vs_economy": {
+        "trials": 3,
+        "a_wins": 3,
+        "b_wins": 0,
+        "draws": 0,
+        "median_duration_ms": 39100
+      },
+      "aggressive_vs_sabotage": {
+        "trials": 3,
+        "a_wins": 3,
+        "b_wins": 0,
+        "draws": 0,
+        "median_duration_ms": 38100
+      },
+      "balanced_vs_aggressive": {
+        "trials": 3,
+        "a_wins": 3,
+        "b_wins": 0,
+        "draws": 0,
+        "median_duration_ms": 50200
+      },
+      "balanced_vs_balanced": {
+        "trials": 3,
+        "a_wins": 0,
+        "b_wins": 3,
+        "draws": 0,
+        "median_duration_ms": 104400
+      },
+      "balanced_vs_defensive": {
+        "trials": 3,
+        "a_wins": 3,
+        "b_wins": 0,
+        "draws": 0,
+        "median_duration_ms": 87600
+      },
+      "balanced_vs_economy": {
+        "trials": 3,
+        "a_wins": 3,
+        "b_wins": 0,
+        "draws": 0,
+        "median_duration_ms": 47600
+      },
+      "balanced_vs_sabotage": {
+        "trials": 3,
+        "a_wins": 3,
+        "b_wins": 0,
+        "draws": 0,
+        "median_duration_ms": 50200
+      },
+      "defensive_vs_aggressive": {
+        "trials": 3,
+        "a_wins": 3,
+        "b_wins": 0,
+        "draws": 0,
+        "median_duration_ms": 80100
+      },
+      "defensive_vs_balanced": {
+        "trials": 3,
+        "a_wins": 0,
+        "b_wins": 3,
+        "draws": 0,
+        "median_duration_ms": 75300
+      },
+      "defensive_vs_defensive": {
+        "trials": 3,
+        "a_wins": 3,
+        "b_wins": 0,
+        "draws": 0,
+        "median_duration_ms": 180000
+      },
+      "defensive_vs_economy": {
+        "trials": 3,
+        "a_wins": 3,
+        "b_wins": 0,
+        "draws": 0,
+        "median_duration_ms": 88100
+      },
+      "defensive_vs_sabotage": {
+        "trials": 3,
+        "a_wins": 0,
+        "b_wins": 3,
+        "draws": 0,
+        "median_duration_ms": 100100
+      },
+      "economy_vs_aggressive": {
+        "trials": 3,
+        "a_wins": 0,
+        "b_wins": 3,
+        "draws": 0,
+        "median_duration_ms": 37600
+      },
+      "economy_vs_balanced": {
+        "trials": 3,
+        "a_wins": 0,
+        "b_wins": 3,
+        "draws": 0,
+        "median_duration_ms": 45100
+      },
+      "economy_vs_defensive": {
+        "trials": 3,
+        "a_wins": 0,
+        "b_wins": 3,
+        "draws": 0,
+        "median_duration_ms": 89100
+      },
+      "economy_vs_economy": {
+        "trials": 3,
+        "a_wins": 0,
+        "b_wins": 3,
+        "draws": 0,
+        "median_duration_ms": 180000
+      },
+      "economy_vs_sabotage": {
+        "trials": 3,
+        "a_wins": 3,
+        "b_wins": 0,
+        "draws": 0,
+        "median_duration_ms": 81800
+      },
+      "sabotage_vs_aggressive": {
+        "trials": 3,
+        "a_wins": 0,
+        "b_wins": 3,
+        "draws": 0,
+        "median_duration_ms": 37600
+      },
+      "sabotage_vs_balanced": {
+        "trials": 3,
+        "a_wins": 0,
+        "b_wins": 3,
+        "draws": 0,
+        "median_duration_ms": 40100
+      },
+      "sabotage_vs_defensive": {
+        "trials": 3,
+        "a_wins": 3,
+        "b_wins": 0,
+        "draws": 0,
+        "median_duration_ms": 82600
+      },
+      "sabotage_vs_economy": {
+        "trials": 3,
+        "a_wins": 0,
+        "b_wins": 3,
+        "draws": 0,
+        "median_duration_ms": 72600
+      },
+      "sabotage_vs_sabotage": {
+        "trials": 3,
+        "a_wins": 0,
+        "b_wins": 3,
+        "draws": 0,
+        "median_duration_ms": 180000
+      }
+    }
+  },
+  "matches": [
+    {
+      "trial": 0,
+      "a": "aggressive",
+      "b": "aggressive",
+      "winner_player": "b",
+      "winner_archetype": "aggressive",
+      "draw": false,
+      "finish_reason": "time_limit_tiebreak",
+      "duration_ms": 180000,
+      "actions": {
+        "a": {
+          "place": 2
+        },
+        "b": {
+          "place": 2
+        }
+      },
+      "summary": {
+        "a": {
+          "player_id": "a",
+          "core_hp": 300,
+          "living_module_count": 2,
+          "remaining_hp": 1805,
+          "total_max_hp": 2225,
+          "hp_ratio": 0.811236,
+          "damage_dealt": 476,
+          "circuit_credits": 1745,
+          "forfeit_credit_penalty": 0,
+          "energy_generated_total": 1980.0,
+          "energy_consumed_total": 139.7
+        },
+        "b": {
+          "player_id": "b",
+          "core_hp": 300,
+          "living_module_count": 2,
+          "remaining_hp": 1805,
+          "total_max_hp": 2225,
+          "hp_ratio": 0.811236,
+          "damage_dealt": 496,
+          "circuit_credits": 1745,
+          "forfeit_credit_penalty": 0,
+          "energy_generated_total": 1980.0,
+          "energy_consumed_total": 139.7
+        }
+      }
+    },
+    {
+      "trial": 1,
+      "a": "aggressive",
+      "b": "aggressive",
+      "winner_player": "b",
+      "winner_archetype": "aggressive",
+      "draw": false,
+      "finish_reason": "time_limit_tiebreak",
+      "duration_ms": 180000,
+      "actions": {
+        "a": {
+          "place": 2
+        },
+        "b": {
+          "place": 2
+        }
+      },
+      "summary": {
+        "a": {
+          "player_id": "a",
+          "core_hp": 300,
+          "living_module_count": 2,
+          "remaining_hp": 1805,
+          "total_max_hp": 2225,
+          "hp_ratio": 0.811236,
+          "damage_dealt": 476,
+          "circuit_credits": 1745,
+          "forfeit_credit_penalty": 0,
+          "energy_generated_total": 1980.0,
+          "energy_consumed_total": 139.7
+        },
+        "b": {
+          "player_id": "b",
+          "core_hp": 300,
+          "living_module_count": 2,
+          "remaining_hp": 1805,
+          "total_max_hp": 2225,
+          "hp_ratio": 0.811236,
+          "damage_dealt": 496,
+          "circuit_credits": 1745,
+          "forfeit_credit_penalty": 0,
+          "energy_generated_total": 1980.0,
+          "energy_consumed_total": 139.7
+        }
+      }
+    },
+    {
+      "trial": 2,
+      "a": "aggressive",
+      "b": "aggressive",
+      "winner_player": "b",
+      "winner_archetype": "aggressive",
+      "draw": false,
+      "finish_reason": "time_limit_tiebreak",
+      "duration_ms": 180000,
+      "actions": {
+        "a": {
+          "place": 2
+        },
+        "b": {
+          "place": 2
+        }
+      },
+      "summary": {
+        "a": {
+          "player_id": "a",
+          "core_hp": 300,
+          "living_module_count": 2,
+          "remaining_hp": 1805,
+          "total_max_hp": 2225,
+          "hp_ratio": 0.811236,
+          "damage_dealt": 476,
+          "circuit_credits": 1745,
+          "forfeit_credit_penalty": 0,
+          "energy_generated_total": 1980.0,
+          "energy_consumed_total": 139.7
+        },
+        "b": {
+          "player_id": "b",
+          "core_hp": 300,
+          "living_module_count": 2,
+          "remaining_hp": 1805,
+          "total_max_hp": 2225,
+          "hp_ratio": 0.811236,
+          "damage_dealt": 496,
+          "circuit_credits": 1745,
+          "forfeit_credit_penalty": 0,
+          "energy_generated_total": 1980.0,
+          "energy_consumed_total": 139.7
+        }
+      }
+    },
+    {
+      "trial": 0,
+      "a": "aggressive",
+      "b": "defensive",
+      "winner_player": "b",
+      "winner_archetype": "defensive",
+      "draw": false,
+      "finish_reason": "core_destroyed",
+      "duration_ms": 77600,
+      "actions": {
+        "a": {
+          "place": 2,
+          "booster": 2
+        },
+        "b": {
+          "place": 2,
+          "booster": 2
+        }
+      },
+      "summary": {
+        "a": {
+          "player_id": "a",
+          "core_hp": 0,
+          "living_module_count": 0,
+          "remaining_hp": 1355,
+          "total_max_hp": 2225,
+          "hp_ratio": 0.608989,
+          "damage_dealt": 543,
+          "circuit_credits": 721,
+          "forfeit_credit_penalty": 0,
+          "energy_generated_total": 551.1,
+          "energy_consumed_total": 217.2
+        },
+        "b": {
+          "player_id": "b",
+          "core_hp": 300,
+          "living_module_count": 3,
+          "remaining_hp": 1793,
+          "total_max_hp": 2285,
+          "hp_ratio": 0.784683,
+          "damage_dealt": 1104,
+          "circuit_credits": 761,
+          "forfeit_credit_penalty": 0,
+          "energy_generated_total": 853.6,
+          "energy_consumed_total": 369.0
+        }
+      }
+    },
+    {
+      "trial": 1,
+      "a": "aggressive",
+      "b": "defensive",
+      "winner_player": "b",
+      "winner_archetype": "defensive",
+      "draw": false,
+      "finish_reason": "core_destroyed",
+      "duration_ms": 77600,
+      "actions": {
+        "a": {
+          "place": 2,
+          "booster": 2
+        },
+        "b": {
+          "place": 2,
+          "booster": 2
+        }
+      },
+      "summary": {
+        "a": {
+          "player_id": "a",
+          "core_hp": 0,
+          "living_module_count": 0,
+          "remaining_hp": 1355,
+          "total_max_hp": 2225,
+          "hp_ratio": 0.608989,
+          "damage_dealt": 543,
+          "circuit_credits": 721,
+          "forfeit_credit_penalty": 0,
+          "energy_generated_total": 551.1,
+          "energy_consumed_total": 217.2
+        },
+        "b": {
+          "player_id": "b",
+          "core_hp": 300,
+          "living_module_count": 3,
+          "remaining_hp": 1793,
+          "total_max_hp": 2285,
+          "hp_ratio": 0.784683,
+          "damage_dealt": 1104,
+          "circuit_credits": 761,
+          "forfeit_credit_penalty": 0,
+          "energy_generated_total": 853.6,
+          "energy_consumed_total": 369.0
+        }
+      }
+    },
+    {
+      "trial": 2,
+      "a": "aggressive",
+      "b": "defensive",
+      "winner_player": "b",
+      "winner_archetype": "defensive",
+      "draw": false,
+      "finish_reason": "core_destroyed",
+      "duration_ms": 77600,
+      "actions": {
+        "a": {
+          "place": 2,
+          "booster": 2
+        },
+        "b": {
+          "place": 2,
+          "booster": 2
+        }
+      },
+      "summary": {
+        "a": {
+          "player_id": "a",
+          "core_hp": 0,
+          "living_module_count": 0,
+          "remaining_hp": 1355,
+          "total_max_hp": 2225,
+          "hp_ratio": 0.608989,
+          "damage_dealt": 543,
+          "circuit_credits": 721,
+          "forfeit_credit_penalty": 0,
+          "energy_generated_total": 551.1,
+          "energy_consumed_total": 217.2
+        },
+        "b": {
+          "player_id": "b",
+          "core_hp": 300,
+          "living_module_count": 3,
+          "remaining_hp": 1793,
+          "total_max_hp": 2285,
+          "hp_ratio": 0.784683,
+          "damage_dealt": 1104,
+          "circuit_credits": 761,
+          "forfeit_credit_penalty": 0,
+          "energy_generated_total": 853.6,
+          "energy_consumed_total": 369.0
+        }
+      }
+    },
+    {
+      "trial": 0,
+      "a": "aggressive",
+      "b": "balanced",
+      "winner_player": "b",
+      "winner_archetype": "balanced",
+      "draw": false,
+      "finish_reason": "core_destroyed",
+      "duration_ms": 47600,
+      "actions": {
+        "a": {
+          "place": 4,
+          "booster": 1
+        },
+        "b": {
+          "place": 4,
+          "replace": 2,
+          "booster": 1
+        }
+      },
+      "summary": {
+        "a": {
+          "player_id": "a",
+          "core_hp": 0,
+          "living_module_count": 0,
+          "remaining_hp": 1355,
+          "total_max_hp": 2225,
+          "hp_ratio": 0.608989,
+          "damage_dealt": 317,
+          "circuit_credits": 421,
+          "forfeit_credit_penalty": 0,
+          "energy_generated_total": 358.6,
+          "energy_consumed_total": 137.2
+        },
+        "b": {
+          "player_id": "b",
+          "core_hp": 300,
+          "living_module_count": 7,
+          "remaining_hp": 2008,
+          "total_max_hp": 2295,
+          "hp_ratio": 0.874946,
+          "damage_dealt": 998,
+          "circuit_credits": 91,
+          "forfeit_credit_penalty": 0,
+          "energy_generated_total": 523.6,
+          "energy_consumed_total": 349.2
+        }
+      }
+    },
+    {
+      "trial": 1,
+      "a": "aggressive",
+      "b": "balanced",
+      "winner_player": "b",
+      "winner_archetype": "balanced",
+      "draw": false,
+      "finish_reason": "core_destroyed",
+      "duration_ms": 47600,
+      "actions": {
+        "a": {
+          "place": 4,
+          "booster": 1
+        },
+        "b": {
+          "place": 4,
+          "replace": 2,
+          "booster": 1
+        }
+      },
+      "summary": {
+        "a": {
+          "player_id": "a",
+          "core_hp": 0,
+          "living_module_count": 0,
+          "remaining_hp": 1355,
+          "total_max_hp": 2225,
+          "hp_ratio": 0.608989,
+          "damage_dealt": 317,
+          "circuit_credits": 421,
+          "forfeit_credit_penalty": 0,
+          "energy_generated_total": 358.6,
+          "energy_consumed_total": 137.2
+        },
+        "b": {
+          "player_id": "b",
+          "core_hp": 300,
+          "living_module_count": 7,
+          "remaining_hp": 2008,
+          "total_max_hp": 2295,
+          "hp_ratio": 0.874946,
+          "damage_dealt": 998,
+          "circuit_credits": 91,
+          "forfeit_credit_penalty": 0,
+          "energy_generated_total": 523.6,
+          "energy_consumed_total": 349.2
+        }
+      }
+    },
+    {
+      "trial": 2,
+      "a": "aggressive",
+      "b": "balanced",
+      "winner_player": "b",
+      "winner_archetype": "balanced",
+      "draw": false,
+      "finish_reason": "core_destroyed",
+      "duration_ms": 47600,
+      "actions": {
+        "a": {
+          "place": 4,
+          "booster": 1
+        },
+        "b": {
+          "place": 4,
+          "replace": 2,
+          "booster": 1
+        }
+      },
+      "summary": {
+        "a": {
+          "player_id": "a",
+          "core_hp": 0,
+          "living_module_count": 0,
+          "remaining_hp": 1355,
+          "total_max_hp": 2225,
+          "hp_ratio": 0.608989,
+          "damage_dealt": 317,
+          "circuit_credits": 421,
+          "forfeit_credit_penalty": 0,
+          "energy_generated_total": 358.6,
+          "energy_consumed_total": 137.2
+        },
+        "b": {
+          "player_id": "b",
+          "core_hp": 300,
+          "living_module_count": 7,
+          "remaining_hp": 2008,
+          "total_max_hp": 2295,
+          "hp_ratio": 0.874946,
+          "damage_dealt": 998,
+          "circuit_credits": 91,
+          "forfeit_credit_penalty": 0,
+          "energy_generated_total": 523.6,
+          "energy_consumed_total": 349.2
+        }
+      }
+    },
+    {
+      "trial": 0,
+      "a": "aggressive",
+      "b": "sabotage",
+      "winner_player": "a",
+      "winner_archetype": "aggressive",
+      "draw": false,
+      "finish_reason": "core_destroyed",
+      "duration_ms": 38100,
+      "actions": {
+        "a": {
+          "place": 2,
+          "booster": 1
+        },
+        "b": {
+          "place": 1,
+          "booster": 1
+        }
+      },
+      "summary": {
+        "a": {
+          "player_id": "a",
+          "core_hp": 300,
+          "living_module_count": 5,
+          "remaining_hp": 2041,
+          "total_max_hp": 2225,
+          "hp_ratio": 0.917303,
+          "damage_dealt": 866,
+          "circuit_credits": 326,
+          "forfeit_credit_penalty": 0,
+          "energy_generated_total": 419.1,
+          "energy_consumed_total": 266.2
+        },
+        "b": {
+          "player_id": "b",
+          "core_hp": 0,
+          "living_module_count": 0,
+          "remaining_hp": 1415,
+          "total_max_hp": 2165,
+          "hp_ratio": 0.65358,
+          "damage_dealt": 194,
+          "circuit_credits": 461,
+          "forfeit_credit_penalty": 0,
+          "energy_generated_total": 248.6,
+          "energy_consumed_total": 60.1
+        }
+      }
+    },
+    {
+      "trial": 1,
+      "a": "aggressive",
+      "b": "sabotage",
+      "winner_player": "a",
+      "winner_archetype": "aggressive",
+      "draw": false,
+      "finish_reason": "core_destroyed",
+      "duration_ms": 38100,
+      "actions": {
+        "a": {
+          "place": 2,
+          "booster": 1
+        },
+        "b": {
+          "place": 1,
+          "booster": 1
+        }
+      },
+      "summary": {
+        "a": {
+          "player_id": "a",
+          "core_hp": 300,
+          "living_module_count": 5,
+          "remaining_hp": 2041,
+          "total_max_hp": 2225,
+          "hp_ratio": 0.917303,
+          "damage_dealt": 866,
+          "circuit_credits": 326,
+          "forfeit_credit_penalty": 0,
+          "energy_generated_total": 419.1,
+          "energy_consumed_total": 266.2
+        },
+        "b": {
+          "player_id": "b",
+          "core_hp": 0,
+          "living_module_count": 0,
+          "remaining_hp": 1415,
+          "total_max_hp": 2165,
+          "hp_ratio": 0.65358,
+          "damage_dealt": 194,
+          "circuit_credits": 461,
+          "forfeit_credit_penalty": 0,
+          "energy_generated_total": 248.6,
+          "energy_consumed_total": 60.1
+        }
+      }
+    },
+    {
+      "trial": 2,
+      "a": "aggressive",
+      "b": "sabotage",
+      "winner_player": "a",
+      "winner_archetype": "aggressive",
+      "draw": false,
+      "finish_reason": "core_destroyed",
+      "duration_ms": 38100,
+      "actions": {
+        "a": {
+          "place": 2,
+          "booster": 1
+        },
+        "b": {
+          "place": 1,
+          "booster": 1
+        }
+      },
+      "summary": {
+        "a": {
+          "player_id": "a",
+          "core_hp": 300,
+          "living_module_count": 5,
+          "remaining_hp": 2041,
+          "total_max_hp": 2225,
+          "hp_ratio": 0.917303,
+          "damage_dealt": 866,
+          "circuit_credits": 326,
+          "forfeit_credit_penalty": 0,
+          "energy_generated_total": 419.1,
+          "energy_consumed_total": 266.2
+        },
+        "b": {
+          "player_id": "b",
+          "core_hp": 0,
+          "living_module_count": 0,
+          "remaining_hp": 1415,
+          "total_max_hp": 2165,
+          "hp_ratio": 0.65358,
+          "damage_dealt": 194,
+          "circuit_credits": 461,
+          "forfeit_credit_penalty": 0,
+          "energy_generated_total": 248.6,
+          "energy_consumed_total": 60.1
+        }
+      }
+    },
+    {
+      "trial": 0,
+      "a": "aggressive",
+      "b": "economy",
+      "winner_player": "a",
+      "winner_archetype": "aggressive",
+      "draw": false,
+      "finish_reason": "core_destroyed",
+      "duration_ms": 39100,
+      "actions": {
+        "a": {
+          "place": 2,
+          "booster": 1
+        },
+        "b": {
+          "place": 1,
+          "booster": 1
+        }
+      },
+      "summary": {
+        "a": {
+          "player_id": "a",
+          "core_hp": 300,
+          "living_module_count": 5,
+          "remaining_hp": 2029,
+          "total_max_hp": 2225,
+          "hp_ratio": 0.91191,
+          "damage_dealt": 888,
+          "circuit_credits": 336,
+          "forfeit_credit_penalty": 0,
+          "energy_generated_total": 430.1,
+          "energy_consumed_total": 274.2
+        },
+        "b": {
+          "player_id": "b",
+          "core_hp": 0,
+          "living_module_count": 0,
+          "remaining_hp": 1475,
+          "total_max_hp": 2260,
+          "hp_ratio": 0.652655,
+          "damage_dealt": 206,
+          "circuit_credits": 471,
+          "forfeit_credit_penalty": 0,
+          "energy_generated_total": 254.1,
+          "energy_consumed_total": 50.8
+        }
+      }
+    },
+    {
+      "trial": 1,
+      "a": "aggressive",
+      "b": "economy",
+      "winner_player": "a",
+      "winner_archetype": "aggressive",
+      "draw": false,
+      "finish_reason": "core_destroyed",
+      "duration_ms": 39100,
+      "actions": {
+        "a": {
+          "place": 2,
+          "booster": 1
+        },
+        "b": {
+          "place": 1,
+          "booster": 1
+        }
+      },
+      "summary": {
+        "a": {
+          "player_id": "a",
+          "core_hp": 300,
+          "living_module_count": 5,
+          "remaining_hp": 2029,
+          "total_max_hp": 2225,
+          "hp_ratio": 0.91191,
+          "damage_dealt": 888,
+          "circuit_credits": 336,
+          "forfeit_credit_penalty": 0,
+          "energy_generated_total": 430.1,
+          "energy_consumed_total": 274.2
+        },
+        "b": {
+          "player_id": "b",
+          "core_hp": 0,
+          "living_module_count": 0,
+          "remaining_hp": 1475,
+          "total_max_hp": 2260,
+          "hp_ratio": 0.652655,
+          "damage_dealt": 206,
+          "circuit_credits": 471,
+          "forfeit_credit_penalty": 0,
+          "energy_generated_total": 254.1,
+          "energy_consumed_total": 50.8
+        }
+      }
+    },
+    {
+      "trial": 2,
+      "a": "aggressive",
+      "b": "economy",
+      "winner_player": "a",
+      "winner_archetype": "aggressive",
+      "draw": false,
+      "finish_reason": "core_destroyed",
+      "duration_ms": 39100,
+      "actions": {
+        "a": {
+          "place": 2,
+          "booster": 1
+        },
+        "b": {
+          "place": 1,
+          "booster": 1
+        }
+      },
+      "summary": {
+        "a": {
+          "player_id": "a",
+          "core_hp": 300,
+          "living_module_count": 5,
+          "remaining_hp": 2029,
+          "total_max_hp": 2225,
+          "hp_ratio": 0.91191,
+          "damage_dealt": 888,
+          "circuit_credits": 336,
+          "forfeit_credit_penalty": 0,
+          "energy_generated_total": 430.1,
+          "energy_consumed_total": 274.2
+        },
+        "b": {
+          "player_id": "b",
+          "core_hp": 0,
+          "living_module_count": 0,
+          "remaining_hp": 1475,
+          "total_max_hp": 2260,
+          "hp_ratio": 0.652655,
+          "damage_dealt": 206,
+          "circuit_credits": 471,
+          "forfeit_credit_penalty": 0,
+          "energy_generated_total": 254.1,
+          "energy_consumed_total": 50.8
+        }
+      }
+    },
+    {
+      "trial": 0,
+      "a": "defensive",
+      "b": "aggressive",
+      "winner_player": "a",
+      "winner_archetype": "defensive",
+      "draw": false,
+      "finish_reason": "core_destroyed",
+      "duration_ms": 80100,
+      "actions": {
+        "a": {
+          "place": 2,
+          "booster": 2
+        },
+        "b": {
+          "place": 2,
+          "booster": 2
+        }
+      },
+      "summary": {
+        "a": {
+          "player_id": "a",
+          "core_hp": 300,
+          "living_module_count": 3,
+          "remaining_hp": 1811,
+          "total_max_hp": 2285,
+          "hp_ratio": 0.79256,
+          "damage_dealt": 1016,
+          "circuit_credits": 786,
+          "forfeit_credit_penalty": 0,
+          "energy_generated_total": 881.1,
+          "energy_consumed_total": 381.5
+        },
+        "b": {
+          "player_id": "b",
+          "core_hp": 0,
+          "living_module_count": 0,
+          "remaining_hp": 1355,
+          "total_max_hp": 2225,
+          "hp_ratio": 0.608989,
+          "damage_dealt": 569,
+          "circuit_credits": 746,
+          "forfeit_credit_penalty": 0,
+          "energy_generated_total": 551.1,
+          "energy_consumed_total": 217.2
+        }
+      }
+    },
+    {
+      "trial": 1,
+      "a": "defensive",
+      "b": "aggressive",
+      "winner_player": "a",
+      "winner_archetype": "defensive",
+      "draw": false,
+      "finish_reason": "core_destroyed",
+      "duration_ms": 80100,
+      "actions": {
+        "a": {
+          "place": 2,
+          "booster": 2
+        },
+        "b": {
+          "place": 2,
+          "booster": 2
+        }
+      },
+      "summary": {
+        "a": {
+          "player_id": "a",
+          "core_hp": 300,
+          "living_module_count": 3,
+          "remaining_hp": 1811,
+          "total_max_hp": 2285,
+          "hp_ratio": 0.79256,
+          "damage_dealt": 1016,
+          "circuit_credits": 786,
+          "forfeit_credit_penalty": 0,
+          "energy_generated_total": 881.1,
+          "energy_consumed_total": 381.5
+        },
+        "b": {
+          "player_id": "b",
+          "core_hp": 0,
+          "living_module_count": 0,
+          "remaining_hp": 1355,
+          "total_max_hp": 2225,
+          "hp_ratio": 0.608989,
+          "damage_dealt": 569,
+          "circuit_credits": 746,
+          "forfeit_credit_penalty": 0,
+          "energy_generated_total": 551.1,
+          "energy_consumed_total": 217.2
+        }
+      }
+    },
+    {
+      "trial": 2,
+      "a": "defensive",
+      "b": "aggressive",
+      "winner_player": "a",
+      "winner_archetype": "defensive",
+      "draw": false,
+      "finish_reason": "core_destroyed",
+      "duration_ms": 80100,
+      "actions": {
+        "a": {
+          "place": 2,
+          "booster": 2
+        },
+        "b": {
+          "place": 2,
+          "booster": 2
+        }
+      },
+      "summary": {
+        "a": {
+          "player_id": "a",
+          "core_hp": 300,
+          "living_module_count": 3,
+          "remaining_hp": 1811,
+          "total_max_hp": 2285,
+          "hp_ratio": 0.79256,
+          "damage_dealt": 1016,
+          "circuit_credits": 786,
+          "forfeit_credit_penalty": 0,
+          "energy_generated_total": 881.1,
+          "energy_consumed_total": 381.5
+        },
+        "b": {
+          "player_id": "b",
+          "core_hp": 0,
+          "living_module_count": 0,
+          "remaining_hp": 1355,
+          "total_max_hp": 2225,
+          "hp_ratio": 0.608989,
+          "damage_dealt": 569,
+          "circuit_credits": 746,
+          "forfeit_credit_penalty": 0,
+          "energy_generated_total": 551.1,
+          "energy_consumed_total": 217.2
+        }
+      }
+    },
+    {
+      "trial": 0,
+      "a": "defensive",
+      "b": "defensive",
+      "winner_player": "a",
+      "winner_archetype": "defensive",
+      "draw": false,
+      "finish_reason": "time_limit_tiebreak",
+      "duration_ms": 180000,
+      "actions": {
+        "a": {
+          "place": 8,
+          "replace": 6,
+          "booster": 5
+        },
+        "b": {
+          "place": 8,
+          "replace": 7,
+          "booster": 5
+        }
+      },
+      "summary": {
+        "a": {
+          "player_id": "a",
+          "core_hp": 300,
+          "living_module_count": 8,
+          "remaining_hp": 1658,
+          "total_max_hp": 2285,
+          "hp_ratio": 0.725602,
+          "damage_dealt": 1451,
+          "circuit_credits": 750,
+          "forfeit_credit_penalty": 0,
+          "energy_generated_total": 1980.0,
+          "energy_consumed_total": 1523.5
+        },
+        "b": {
+          "player_id": "b",
+          "core_hp": 300,
+          "living_module_count": 2,
+          "remaining_hp": 991,
+          "total_max_hp": 2285,
+          "hp_ratio": 0.433698,
+          "damage_dealt": 749,
+          "circuit_credits": 630,
+          "forfeit_credit_penalty": 0,
+          "energy_generated_total": 1980.0,
+          "energy_consumed_total": 1038.7
+        }
+      }
+    },
+    {
+      "trial": 1,
+      "a": "defensive",
+      "b": "defensive",
+      "winner_player": "a",
+      "winner_archetype": "defensive",
+      "draw": false,
+      "finish_reason": "time_limit_tiebreak",
+      "duration_ms": 180000,
+      "actions": {
+        "a": {
+          "place": 8,
+          "replace": 6,
+          "booster": 5
+        },
+        "b": {
+          "place": 8,
+          "replace": 7,
+          "booster": 5
+        }
+      },
+      "summary": {
+        "a": {
+          "player_id": "a",
+          "core_hp": 300,
+          "living_module_count": 8,
+          "remaining_hp": 1658,
+          "total_max_hp": 2285,
+          "hp_ratio": 0.725602,
+          "damage_dealt": 1451,
+          "circuit_credits": 750,
+          "forfeit_credit_penalty": 0,
+          "energy_generated_total": 1980.0,
+          "energy_consumed_total": 1523.5
+        },
+        "b": {
+          "player_id": "b",
+          "core_hp": 300,
+          "living_module_count": 2,
+          "remaining_hp": 991,
+          "total_max_hp": 2285,
+          "hp_ratio": 0.433698,
+          "damage_dealt": 749,
+          "circuit_credits": 630,
+          "forfeit_credit_penalty": 0,
+          "energy_generated_total": 1980.0,
+          "energy_consumed_total": 1038.7
+        }
+      }
+    },
+    {
+      "trial": 2,
+      "a": "defensive",
+      "b": "defensive",
+      "winner_player": "a",
+      "winner_archetype": "defensive",
+      "draw": false,
+      "finish_reason": "time_limit_tiebreak",
+      "duration_ms": 180000,
+      "actions": {
+        "a": {
+          "place": 8,
+          "replace": 6,
+          "booster": 5
+        },
+        "b": {
+          "place": 8,
+          "replace": 7,
+          "booster": 5
+        }
+      },
+      "summary": {
+        "a": {
+          "player_id": "a",
+          "core_hp": 300,
+          "living_module_count": 8,
+          "remaining_hp": 1658,
+          "total_max_hp": 2285,
+          "hp_ratio": 0.725602,
+          "damage_dealt": 1451,
+          "circuit_credits": 750,
+          "forfeit_credit_penalty": 0,
+          "energy_generated_total": 1980.0,
+          "energy_consumed_total": 1523.5
+        },
+        "b": {
+          "player_id": "b",
+          "core_hp": 300,
+          "living_module_count": 2,
+          "remaining_hp": 991,
+          "total_max_hp": 2285,
+          "hp_ratio": 0.433698,
+          "damage_dealt": 749,
+          "circuit_credits": 630,
+          "forfeit_credit_penalty": 0,
+          "energy_generated_total": 1980.0,
+          "energy_consumed_total": 1038.7
+        }
+      }
+    },
+    {
+      "trial": 0,
+      "a": "defensive",
+      "b": "balanced",
+      "winner_player": "b",
+      "winner_archetype": "balanced",
+      "draw": false,
+      "finish_reason": "core_destroyed",
+      "duration_ms": 75300,
+      "actions": {
+        "a": {
+          "place": 4,
+          "replace": 1,
+          "booster": 2
+        },
+        "b": {
+          "place": 7,
+          "replace": 1,
+          "booster": 2
+        }
+      },
+      "summary": {
+        "a": {
+          "player_id": "a",
+          "core_hp": 0,
+          "living_module_count": 0,
+          "remaining_hp": 1025,
+          "total_max_hp": 2285,
+          "hp_ratio": 0.448578,
+          "damage_dealt": 418,
+          "circuit_credits": 428,
+          "forfeit_credit_penalty": 0,
+          "energy_generated_total": 650.1,
+          "energy_consumed_total": 240.7
+        },
+        "b": {
+          "player_id": "b",
+          "core_hp": 300,
+          "living_module_count": 9,
+          "remaining_hp": 1946,
+          "total_max_hp": 2295,
+          "hp_ratio": 0.84793,
+          "damage_dealt": 1448,
+          "circuit_credits": 173,
+          "forfeit_credit_penalty": 0,
+          "energy_generated_total": 828.3,
+          "energy_consumed_total": 573.2
+        }
+      }
+    },
+    {
+      "trial": 1,
+      "a": "defensive",
+      "b": "balanced",
+      "winner_player": "b",
+      "winner_archetype": "balanced",
+      "draw": false,
+      "finish_reason": "core_destroyed",
+      "duration_ms": 75300,
+      "actions": {
+        "a": {
+          "place": 4,
+          "replace": 1,
+          "booster": 2
+        },
+        "b": {
+          "place": 7,
+          "replace": 1,
+          "booster": 2
+        }
+      },
+      "summary": {
+        "a": {
+          "player_id": "a",
+          "core_hp": 0,
+          "living_module_count": 0,
+          "remaining_hp": 1025,
+          "total_max_hp": 2285,
+          "hp_ratio": 0.448578,
+          "damage_dealt": 418,
+          "circuit_credits": 428,
+          "forfeit_credit_penalty": 0,
+          "energy_generated_total": 650.1,
+          "energy_consumed_total": 240.7
+        },
+        "b": {
+          "player_id": "b",
+          "core_hp": 300,
+          "living_module_count": 9,
+          "remaining_hp": 1946,
+          "total_max_hp": 2295,
+          "hp_ratio": 0.84793,
+          "damage_dealt": 1448,
+          "circuit_credits": 173,
+          "forfeit_credit_penalty": 0,
+          "energy_generated_total": 828.3,
+          "energy_consumed_total": 573.2
+        }
+      }
+    },
+    {
+      "trial": 2,
+      "a": "defensive",
+      "b": "balanced",
+      "winner_player": "b",
+      "winner_archetype": "balanced",
+      "draw": false,
+      "finish_reason": "core_destroyed",
+      "duration_ms": 75300,
+      "actions": {
+        "a": {
+          "place": 4,
+          "replace": 1,
+          "booster": 2
+        },
+        "b": {
+          "place": 7,
+          "replace": 1,
+          "booster": 2
+        }
+      },
+      "summary": {
+        "a": {
+          "player_id": "a",
+          "core_hp": 0,
+          "living_module_count": 0,
+          "remaining_hp": 1025,
+          "total_max_hp": 2285,
+          "hp_ratio": 0.448578,
+          "damage_dealt": 418,
+          "circuit_credits": 428,
+          "forfeit_credit_penalty": 0,
+          "energy_generated_total": 650.1,
+          "energy_consumed_total": 240.7
+        },
+        "b": {
+          "player_id": "b",
+          "core_hp": 300,
+          "living_module_count": 9,
+          "remaining_hp": 1946,
+          "total_max_hp": 2295,
+          "hp_ratio": 0.84793,
+          "damage_dealt": 1448,
+          "circuit_credits": 173,
+          "forfeit_credit_penalty": 0,
+          "energy_generated_total": 828.3,
+          "energy_consumed_total": 573.2
+        }
+      }
+    },
+    {
+      "trial": 0,
+      "a": "defensive",
+      "b": "sabotage",
+      "winner_player": "b",
+      "winner_archetype": "sabotage",
+      "draw": false,
+      "finish_reason": "core_destroyed",
+      "duration_ms": 100100,
+      "actions": {
+        "a": {
+          "place": 3,
+          "replace": 1,
+          "booster": 3
+        },
+        "b": {
+          "place": 4,
+          "booster": 3
+        }
+      },
+      "summary": {
+        "a": {
+          "player_id": "a",
+          "core_hp": 0,
+          "living_module_count": 0,
+          "remaining_hp": 1125,
+          "total_max_hp": 2285,
+          "hp_ratio": 0.492341,
+          "damage_dealt": 646,
+          "circuit_credits": 766,
+          "forfeit_credit_penalty": 0,
+          "energy_generated_total": 798.6,
+          "energy_consumed_total": 304.7
+        },
+        "b": {
+          "player_id": "b",
+          "core_hp": 300,
+          "living_module_count": 3,
+          "remaining_hp": 1603,
+          "total_max_hp": 2165,
+          "hp_ratio": 0.740416,
+          "damage_dealt": 1446,
+          "circuit_credits": 736,
+          "forfeit_credit_penalty": 0,
+          "energy_generated_total": 1101.1,
+          "energy_consumed_total": 625.5
+        }
+      }
+    },
+    {
+      "trial": 1,
+      "a": "defensive",
+      "b": "sabotage",
+      "winner_player": "b",
+      "winner_archetype": "sabotage",
+      "draw": false,
+      "finish_reason": "core_destroyed",
+      "duration_ms": 100100,
+      "actions": {
+        "a": {
+          "place": 3,
+          "replace": 1,
+          "booster": 3
+        },
+        "b": {
+          "place": 4,
+          "booster": 3
+        }
+      },
+      "summary": {
+        "a": {
+          "player_id": "a",
+          "core_hp": 0,
+          "living_module_count": 0,
+          "remaining_hp": 1125,
+          "total_max_hp": 2285,
+          "hp_ratio": 0.492341,
+          "damage_dealt": 646,
+          "circuit_credits": 766,
+          "forfeit_credit_penalty": 0,
+          "energy_generated_total": 798.6,
+          "energy_consumed_total": 304.7
+        },
+        "b": {
+          "player_id": "b",
+          "core_hp": 300,
+          "living_module_count": 3,
+          "remaining_hp": 1603,
+          "total_max_hp": 2165,
+          "hp_ratio": 0.740416,
+          "damage_dealt": 1446,
+          "circuit_credits": 736,
+          "forfeit_credit_penalty": 0,
+          "energy_generated_total": 1101.1,
+          "energy_consumed_total": 625.5
+        }
+      }
+    },
+    {
+      "trial": 2,
+      "a": "defensive",
+      "b": "sabotage",
+      "winner_player": "b",
+      "winner_archetype": "sabotage",
+      "draw": false,
+      "finish_reason": "core_destroyed",
+      "duration_ms": 100100,
+      "actions": {
+        "a": {
+          "place": 3,
+          "replace": 1,
+          "booster": 3
+        },
+        "b": {
+          "place": 4,
+          "booster": 3
+        }
+      },
+      "summary": {
+        "a": {
+          "player_id": "a",
+          "core_hp": 0,
+          "living_module_count": 0,
+          "remaining_hp": 1125,
+          "total_max_hp": 2285,
+          "hp_ratio": 0.492341,
+          "damage_dealt": 646,
+          "circuit_credits": 766,
+          "forfeit_credit_penalty": 0,
+          "energy_generated_total": 798.6,
+          "energy_consumed_total": 304.7
+        },
+        "b": {
+          "player_id": "b",
+          "core_hp": 300,
+          "living_module_count": 3,
+          "remaining_hp": 1603,
+          "total_max_hp": 2165,
+          "hp_ratio": 0.740416,
+          "damage_dealt": 1446,
+          "circuit_credits": 736,
+          "forfeit_credit_penalty": 0,
+          "energy_generated_total": 1101.1,
+          "energy_consumed_total": 625.5
+        }
+      }
+    },
+    {
+      "trial": 0,
+      "a": "defensive",
+      "b": "economy",
+      "winner_player": "a",
+      "winner_archetype": "defensive",
+      "draw": false,
+      "finish_reason": "core_destroyed",
+      "duration_ms": 88100,
+      "actions": {
+        "a": {
+          "place": 2,
+          "booster": 2
+        },
+        "b": {
+          "place": 3,
+          "booster": 2
+        }
+      },
+      "summary": {
+        "a": {
+          "player_id": "a",
+          "core_hp": 300,
+          "living_module_count": 4,
+          "remaining_hp": 1924,
+          "total_max_hp": 2285,
+          "hp_ratio": 0.842013,
+          "damage_dealt": 1082,
+          "circuit_credits": 871,
+          "forfeit_credit_penalty": 0,
+          "energy_generated_total": 969.1,
+          "energy_consumed_total": 445.7
+        },
+        "b": {
+          "player_id": "b",
+          "core_hp": 0,
+          "living_module_count": 0,
+          "remaining_hp": 1295,
+          "total_max_hp": 2260,
+          "hp_ratio": 0.573009,
+          "damage_dealt": 428,
+          "circuit_credits": 766,
+          "forfeit_credit_penalty": 0,
+          "energy_generated_total": 617.1,
+          "energy_consumed_total": 201.8
+        }
+      }
+    },
+    {
+      "trial": 1,
+      "a": "defensive",
+      "b": "economy",
+      "winner_player": "a",
+      "winner_archetype": "defensive",
+      "draw": false,
+      "finish_reason": "core_destroyed",
+      "duration_ms": 88100,
+      "actions": {
+        "a": {
+          "place": 2,
+          "booster": 2
+        },
+        "b": {
+          "place": 3,
+          "booster": 2
+        }
+      },
+      "summary": {
+        "a": {
+          "player_id": "a",
+          "core_hp": 300,
+          "living_module_count": 4,
+          "remaining_hp": 1924,
+          "total_max_hp": 2285,
+          "hp_ratio": 0.842013,
+          "damage_dealt": 1082,
+          "circuit_credits": 871,
+          "forfeit_credit_penalty": 0,
+          "energy_generated_total": 969.1,
+          "energy_consumed_total": 445.7
+        },
+        "b": {
+          "player_id": "b",
+          "core_hp": 0,
+          "living_module_count": 0,
+          "remaining_hp": 1295,
+          "total_max_hp": 2260,
+          "hp_ratio": 0.573009,
+          "damage_dealt": 428,
+          "circuit_credits": 766,
+          "forfeit_credit_penalty": 0,
+          "energy_generated_total": 617.1,
+          "energy_consumed_total": 201.8
+        }
+      }
+    },
+    {
+      "trial": 2,
+      "a": "defensive",
+      "b": "economy",
+      "winner_player": "a",
+      "winner_archetype": "defensive",
+      "draw": false,
+      "finish_reason": "core_destroyed",
+      "duration_ms": 88100,
+      "actions": {
+        "a": {
+          "place": 2,
+          "booster": 2
+        },
+        "b": {
+          "place": 3,
+          "booster": 2
+        }
+      },
+      "summary": {
+        "a": {
+          "player_id": "a",
+          "core_hp": 300,
+          "living_module_count": 4,
+          "remaining_hp": 1924,
+          "total_max_hp": 2285,
+          "hp_ratio": 0.842013,
+          "damage_dealt": 1082,
+          "circuit_credits": 871,
+          "forfeit_credit_penalty": 0,
+          "energy_generated_total": 969.1,
+          "energy_consumed_total": 445.7
+        },
+        "b": {
+          "player_id": "b",
+          "core_hp": 0,
+          "living_module_count": 0,
+          "remaining_hp": 1295,
+          "total_max_hp": 2260,
+          "hp_ratio": 0.573009,
+          "damage_dealt": 428,
+          "circuit_credits": 766,
+          "forfeit_credit_penalty": 0,
+          "energy_generated_total": 617.1,
+          "energy_consumed_total": 201.8
+        }
+      }
+    },
+    {
+      "trial": 0,
+      "a": "balanced",
+      "b": "aggressive",
+      "winner_player": "a",
+      "winner_archetype": "balanced",
+      "draw": false,
+      "finish_reason": "core_destroyed",
+      "duration_ms": 50200,
+      "actions": {
+        "a": {
+          "place": 4,
+          "replace": 3,
+          "booster": 1
+        },
+        "b": {
+          "place": 5,
+          "booster": 1
+        }
+      },
+      "summary": {
+        "a": {
+          "player_id": "a",
+          "core_hp": 300,
+          "living_module_count": 7,
+          "remaining_hp": 1996,
+          "total_max_hp": 2295,
+          "hp_ratio": 0.869717,
+          "damage_dealt": 1000,
+          "circuit_credits": 47,
+          "forfeit_credit_penalty": 0,
+          "energy_generated_total": 552.2,
+          "energy_consumed_total": 375.2
+        },
+        "b": {
+          "player_id": "b",
+          "core_hp": 0,
+          "living_module_count": 0,
+          "remaining_hp": 1355,
+          "total_max_hp": 2225,
+          "hp_ratio": 0.608989,
+          "damage_dealt": 329,
+          "circuit_credits": 447,
+          "forfeit_credit_penalty": 0,
+          "energy_generated_total": 364.1,
+          "energy_consumed_total": 137.2
+        }
+      }
+    },
+    {
+      "trial": 1,
+      "a": "balanced",
+      "b": "aggressive",
+      "winner_player": "a",
+      "winner_archetype": "balanced",
+      "draw": false,
+      "finish_reason": "core_destroyed",
+      "duration_ms": 50200,
+      "actions": {
+        "a": {
+          "place": 4,
+          "replace": 3,
+          "booster": 1
+        },
+        "b": {
+          "place": 5,
+          "booster": 1
+        }
+      },
+      "summary": {
+        "a": {
+          "player_id": "a",
+          "core_hp": 300,
+          "living_module_count": 7,
+          "remaining_hp": 1996,
+          "total_max_hp": 2295,
+          "hp_ratio": 0.869717,
+          "damage_dealt": 1000,
+          "circuit_credits": 47,
+          "forfeit_credit_penalty": 0,
+          "energy_generated_total": 552.2,
+          "energy_consumed_total": 375.2
+        },
+        "b": {
+          "player_id": "b",
+          "core_hp": 0,
+          "living_module_count": 0,
+          "remaining_hp": 1355,
+          "total_max_hp": 2225,
+          "hp_ratio": 0.608989,
+          "damage_dealt": 329,
+          "circuit_credits": 447,
+          "forfeit_credit_penalty": 0,
+          "energy_generated_total": 364.1,
+          "energy_consumed_total": 137.2
+        }
+      }
+    },
+    {
+      "trial": 2,
+      "a": "balanced",
+      "b": "aggressive",
+      "winner_player": "a",
+      "winner_archetype": "balanced",
+      "draw": false,
+      "finish_reason": "core_destroyed",
+      "duration_ms": 50200,
+      "actions": {
+        "a": {
+          "place": 4,
+          "replace": 3,
+          "booster": 1
+        },
+        "b": {
+          "place": 5,
+          "booster": 1
+        }
+      },
+      "summary": {
+        "a": {
+          "player_id": "a",
+          "core_hp": 300,
+          "living_module_count": 7,
+          "remaining_hp": 1996,
+          "total_max_hp": 2295,
+          "hp_ratio": 0.869717,
+          "damage_dealt": 1000,
+          "circuit_credits": 47,
+          "forfeit_credit_penalty": 0,
+          "energy_generated_total": 552.2,
+          "energy_consumed_total": 375.2
+        },
+        "b": {
+          "player_id": "b",
+          "core_hp": 0,
+          "living_module_count": 0,
+          "remaining_hp": 1355,
+          "total_max_hp": 2225,
+          "hp_ratio": 0.608989,
+          "damage_dealt": 329,
+          "circuit_credits": 447,
+          "forfeit_credit_penalty": 0,
+          "energy_generated_total": 364.1,
+          "energy_consumed_total": 137.2
+        }
+      }
+    },
+    {
+      "trial": 0,
+      "a": "balanced",
+      "b": "defensive",
+      "winner_player": "a",
+      "winner_archetype": "balanced",
+      "draw": false,
+      "finish_reason": "core_destroyed",
+      "duration_ms": 87600,
+      "actions": {
+        "a": {
+          "place": 6,
+          "replace": 4,
+          "booster": 2
+        },
+        "b": {
+          "place": 4,
+          "replace": 1,
+          "booster": 2
+        }
+      },
+      "summary": {
+        "a": {
+          "player_id": "a",
+          "core_hp": 300,
+          "living_module_count": 9,
+          "remaining_hp": 1973,
+          "total_max_hp": 2295,
+          "hp_ratio": 0.859695,
+          "damage_dealt": 1457,
+          "circuit_credits": 101,
+          "forfeit_credit_penalty": 0,
+          "energy_generated_total": 963.6,
+          "energy_consumed_total": 729.7
+        },
+        "b": {
+          "player_id": "b",
+          "core_hp": 0,
+          "living_module_count": 0,
+          "remaining_hp": 1025,
+          "total_max_hp": 2285,
+          "hp_ratio": 0.448578,
+          "damage_dealt": 362,
+          "circuit_credits": 551,
+          "forfeit_credit_penalty": 0,
+          "energy_generated_total": 826.1,
+          "energy_consumed_total": 210.8
+        }
+      }
+    },
+    {
+      "trial": 1,
+      "a": "balanced",
+      "b": "defensive",
+      "winner_player": "a",
+      "winner_archetype": "balanced",
+      "draw": false,
+      "finish_reason": "core_destroyed",
+      "duration_ms": 87600,
+      "actions": {
+        "a": {
+          "place": 6,
+          "replace": 4,
+          "booster": 2
+        },
+        "b": {
+          "place": 4,
+          "replace": 1,
+          "booster": 2
+        }
+      },
+      "summary": {
+        "a": {
+          "player_id": "a",
+          "core_hp": 300,
+          "living_module_count": 9,
+          "remaining_hp": 1973,
+          "total_max_hp": 2295,
+          "hp_ratio": 0.859695,
+          "damage_dealt": 1457,
+          "circuit_credits": 101,
+          "forfeit_credit_penalty": 0,
+          "energy_generated_total": 963.6,
+          "energy_consumed_total": 729.7
+        },
+        "b": {
+          "player_id": "b",
+          "core_hp": 0,
+          "living_module_count": 0,
+          "remaining_hp": 1025,
+          "total_max_hp": 2285,
+          "hp_ratio": 0.448578,
+          "damage_dealt": 362,
+          "circuit_credits": 551,
+          "forfeit_credit_penalty": 0,
+          "energy_generated_total": 826.1,
+          "energy_consumed_total": 210.8
+        }
+      }
+    },
+    {
+      "trial": 2,
+      "a": "balanced",
+      "b": "defensive",
+      "winner_player": "a",
+      "winner_archetype": "balanced",
+      "draw": false,
+      "finish_reason": "core_destroyed",
+      "duration_ms": 87600,
+      "actions": {
+        "a": {
+          "place": 6,
+          "replace": 4,
+          "booster": 2
+        },
+        "b": {
+          "place": 4,
+          "replace": 1,
+          "booster": 2
+        }
+      },
+      "summary": {
+        "a": {
+          "player_id": "a",
+          "core_hp": 300,
+          "living_module_count": 9,
+          "remaining_hp": 1973,
+          "total_max_hp": 2295,
+          "hp_ratio": 0.859695,
+          "damage_dealt": 1457,
+          "circuit_credits": 101,
+          "forfeit_credit_penalty": 0,
+          "energy_generated_total": 963.6,
+          "energy_consumed_total": 729.7
+        },
+        "b": {
+          "player_id": "b",
+          "core_hp": 0,
+          "living_module_count": 0,
+          "remaining_hp": 1025,
+          "total_max_hp": 2285,
+          "hp_ratio": 0.448578,
+          "damage_dealt": 362,
+          "circuit_credits": 551,
+          "forfeit_credit_penalty": 0,
+          "energy_generated_total": 826.1,
+          "energy_consumed_total": 210.8
+        }
+      }
+    },
+    {
+      "trial": 0,
+      "a": "balanced",
+      "b": "balanced",
+      "winner_player": "b",
+      "winner_archetype": "balanced",
+      "draw": false,
+      "finish_reason": "core_destroyed",
+      "duration_ms": 104400,
+      "actions": {
+        "a": {
+          "place": 9,
+          "booster": 3
+        },
+        "b": {
+          "place": 10,
+          "booster": 3
+        }
+      },
+      "summary": {
+        "a": {
+          "player_id": "a",
+          "core_hp": 0,
+          "living_module_count": 0,
+          "remaining_hp": 735,
+          "total_max_hp": 2295,
+          "hp_ratio": 0.320261,
+          "damage_dealt": 678,
+          "circuit_credits": 419,
+          "forfeit_credit_penalty": 0,
+          "energy_generated_total": 1018.6,
+          "energy_consumed_total": 317.9
+        },
+        "b": {
+          "player_id": "b",
+          "core_hp": 300,
+          "living_module_count": 10,
+          "remaining_hp": 1724,
+          "total_max_hp": 2295,
+          "hp_ratio": 0.751198,
+          "damage_dealt": 1776,
+          "circuit_credits": 309,
+          "forfeit_credit_penalty": 0,
+          "energy_generated_total": 1148.4,
+          "energy_consumed_total": 724.1
+        }
+      }
+    },
+    {
+      "trial": 1,
+      "a": "balanced",
+      "b": "balanced",
+      "winner_player": "b",
+      "winner_archetype": "balanced",
+      "draw": false,
+      "finish_reason": "core_destroyed",
+      "duration_ms": 104400,
+      "actions": {
+        "a": {
+          "place": 9,
+          "booster": 3
+        },
+        "b": {
+          "place": 10,
+          "booster": 3
+        }
+      },
+      "summary": {
+        "a": {
+          "player_id": "a",
+          "core_hp": 0,
+          "living_module_count": 0,
+          "remaining_hp": 735,
+          "total_max_hp": 2295,
+          "hp_ratio": 0.320261,
+          "damage_dealt": 678,
+          "circuit_credits": 419,
+          "forfeit_credit_penalty": 0,
+          "energy_generated_total": 1018.6,
+          "energy_consumed_total": 317.9
+        },
+        "b": {
+          "player_id": "b",
+          "core_hp": 300,
+          "living_module_count": 10,
+          "remaining_hp": 1724,
+          "total_max_hp": 2295,
+          "hp_ratio": 0.751198,
+          "damage_dealt": 1776,
+          "circuit_credits": 309,
+          "forfeit_credit_penalty": 0,
+          "energy_generated_total": 1148.4,
+          "energy_consumed_total": 724.1
+        }
+      }
+    },
+    {
+      "trial": 2,
+      "a": "balanced",
+      "b": "balanced",
+      "winner_player": "b",
+      "winner_archetype": "balanced",
+      "draw": false,
+      "finish_reason": "core_destroyed",
+      "duration_ms": 104400,
+      "actions": {
+        "a": {
+          "place": 9,
+          "booster": 3
+        },
+        "b": {
+          "place": 10,
+          "booster": 3
+        }
+      },
+      "summary": {
+        "a": {
+          "player_id": "a",
+          "core_hp": 0,
+          "living_module_count": 0,
+          "remaining_hp": 735,
+          "total_max_hp": 2295,
+          "hp_ratio": 0.320261,
+          "damage_dealt": 678,
+          "circuit_credits": 419,
+          "forfeit_credit_penalty": 0,
+          "energy_generated_total": 1018.6,
+          "energy_consumed_total": 317.9
+        },
+        "b": {
+          "player_id": "b",
+          "core_hp": 300,
+          "living_module_count": 10,
+          "remaining_hp": 1724,
+          "total_max_hp": 2295,
+          "hp_ratio": 0.751198,
+          "damage_dealt": 1776,
+          "circuit_credits": 309,
+          "forfeit_credit_penalty": 0,
+          "energy_generated_total": 1148.4,
+          "energy_consumed_total": 724.1
+        }
+      }
+    },
+    {
+      "trial": 0,
+      "a": "balanced",
+      "b": "sabotage",
+      "winner_player": "a",
+      "winner_archetype": "balanced",
+      "draw": false,
+      "finish_reason": "core_destroyed",
+      "duration_ms": 50200,
+      "actions": {
+        "a": {
+          "place": 4,
+          "replace": 3,
+          "booster": 1
+        },
+        "b": {
+          "place": 3,
+          "booster": 1
+        }
+      },
+      "summary": {
+        "a": {
+          "player_id": "a",
+          "core_hp": 300,
+          "living_module_count": 7,
+          "remaining_hp": 2096,
+          "total_max_hp": 2295,
+          "hp_ratio": 0.91329,
+          "damage_dealt": 876,
+          "circuit_credits": 47,
+          "forfeit_credit_penalty": 0,
+          "energy_generated_total": 552.2,
+          "energy_consumed_total": 387.0
+        },
+        "b": {
+          "player_id": "b",
+          "core_hp": 0,
+          "living_module_count": 0,
+          "remaining_hp": 1415,
+          "total_max_hp": 2165,
+          "hp_ratio": 0.65358,
+          "damage_dealt": 205,
+          "circuit_credits": 582,
+          "forfeit_credit_penalty": 0,
+          "energy_generated_total": 358.6,
+          "energy_consumed_total": 92.1
+        }
+      }
+    },
+    {
+      "trial": 1,
+      "a": "balanced",
+      "b": "sabotage",
+      "winner_player": "a",
+      "winner_archetype": "balanced",
+      "draw": false,
+      "finish_reason": "core_destroyed",
+      "duration_ms": 50200,
+      "actions": {
+        "a": {
+          "place": 4,
+          "replace": 3,
+          "booster": 1
+        },
+        "b": {
+          "place": 3,
+          "booster": 1
+        }
+      },
+      "summary": {
+        "a": {
+          "player_id": "a",
+          "core_hp": 300,
+          "living_module_count": 7,
+          "remaining_hp": 2096,
+          "total_max_hp": 2295,
+          "hp_ratio": 0.91329,
+          "damage_dealt": 876,
+          "circuit_credits": 47,
+          "forfeit_credit_penalty": 0,
+          "energy_generated_total": 552.2,
+          "energy_consumed_total": 387.0
+        },
+        "b": {
+          "player_id": "b",
+          "core_hp": 0,
+          "living_module_count": 0,
+          "remaining_hp": 1415,
+          "total_max_hp": 2165,
+          "hp_ratio": 0.65358,
+          "damage_dealt": 205,
+          "circuit_credits": 582,
+          "forfeit_credit_penalty": 0,
+          "energy_generated_total": 358.6,
+          "energy_consumed_total": 92.1
+        }
+      }
+    },
+    {
+      "trial": 2,
+      "a": "balanced",
+      "b": "sabotage",
+      "winner_player": "a",
+      "winner_archetype": "balanced",
+      "draw": false,
+      "finish_reason": "core_destroyed",
+      "duration_ms": 50200,
+      "actions": {
+        "a": {
+          "place": 4,
+          "replace": 3,
+          "booster": 1
+        },
+        "b": {
+          "place": 3,
+          "booster": 1
+        }
+      },
+      "summary": {
+        "a": {
+          "player_id": "a",
+          "core_hp": 300,
+          "living_module_count": 7,
+          "remaining_hp": 2096,
+          "total_max_hp": 2295,
+          "hp_ratio": 0.91329,
+          "damage_dealt": 876,
+          "circuit_credits": 47,
+          "forfeit_credit_penalty": 0,
+          "energy_generated_total": 552.2,
+          "energy_consumed_total": 387.0
+        },
+        "b": {
+          "player_id": "b",
+          "core_hp": 0,
+          "living_module_count": 0,
+          "remaining_hp": 1415,
+          "total_max_hp": 2165,
+          "hp_ratio": 0.65358,
+          "damage_dealt": 205,
+          "circuit_credits": 582,
+          "forfeit_credit_penalty": 0,
+          "energy_generated_total": 358.6,
+          "energy_consumed_total": 92.1
+        }
+      }
+    },
+    {
+      "trial": 0,
+      "a": "balanced",
+      "b": "economy",
+      "winner_player": "a",
+      "winner_archetype": "balanced",
+      "draw": false,
+      "finish_reason": "core_destroyed",
+      "duration_ms": 47600,
+      "actions": {
+        "a": {
+          "place": 4,
+          "replace": 2,
+          "booster": 1
+        },
+        "b": {
+          "place": 2,
+          "booster": 1
+        }
+      },
+      "summary": {
+        "a": {
+          "player_id": "a",
+          "core_hp": 300,
+          "living_module_count": 7,
+          "remaining_hp": 2020,
+          "total_max_hp": 2295,
+          "hp_ratio": 0.880174,
+          "damage_dealt": 984,
+          "circuit_credits": 91,
+          "forfeit_credit_penalty": 0,
+          "energy_generated_total": 523.6,
+          "energy_consumed_total": 351.0
+        },
+        "b": {
+          "player_id": "b",
+          "core_hp": 0,
+          "living_module_count": 0,
+          "remaining_hp": 1380,
+          "total_max_hp": 2260,
+          "hp_ratio": 0.610619,
+          "damage_dealt": 281,
+          "circuit_credits": 421,
+          "forfeit_credit_penalty": 0,
+          "energy_generated_total": 358.6,
+          "energy_consumed_total": 100.8
+        }
+      }
+    },
+    {
+      "trial": 1,
+      "a": "balanced",
+      "b": "economy",
+      "winner_player": "a",
+      "winner_archetype": "balanced",
+      "draw": false,
+      "finish_reason": "core_destroyed",
+      "duration_ms": 47600,
+      "actions": {
+        "a": {
+          "place": 4,
+          "replace": 2,
+          "booster": 1
+        },
+        "b": {
+          "place": 2,
+          "booster": 1
+        }
+      },
+      "summary": {
+        "a": {
+          "player_id": "a",
+          "core_hp": 300,
+          "living_module_count": 7,
+          "remaining_hp": 2020,
+          "total_max_hp": 2295,
+          "hp_ratio": 0.880174,
+          "damage_dealt": 984,
+          "circuit_credits": 91,
+          "forfeit_credit_penalty": 0,
+          "energy_generated_total": 523.6,
+          "energy_consumed_total": 351.0
+        },
+        "b": {
+          "player_id": "b",
+          "core_hp": 0,
+          "living_module_count": 0,
+          "remaining_hp": 1380,
+          "total_max_hp": 2260,
+          "hp_ratio": 0.610619,
+          "damage_dealt": 281,
+          "circuit_credits": 421,
+          "forfeit_credit_penalty": 0,
+          "energy_generated_total": 358.6,
+          "energy_consumed_total": 100.8
+        }
+      }
+    },
+    {
+      "trial": 2,
+      "a": "balanced",
+      "b": "economy",
+      "winner_player": "a",
+      "winner_archetype": "balanced",
+      "draw": false,
+      "finish_reason": "core_destroyed",
+      "duration_ms": 47600,
+      "actions": {
+        "a": {
+          "place": 4,
+          "replace": 2,
+          "booster": 1
+        },
+        "b": {
+          "place": 2,
+          "booster": 1
+        }
+      },
+      "summary": {
+        "a": {
+          "player_id": "a",
+          "core_hp": 300,
+          "living_module_count": 7,
+          "remaining_hp": 2020,
+          "total_max_hp": 2295,
+          "hp_ratio": 0.880174,
+          "damage_dealt": 984,
+          "circuit_credits": 91,
+          "forfeit_credit_penalty": 0,
+          "energy_generated_total": 523.6,
+          "energy_consumed_total": 351.0
+        },
+        "b": {
+          "player_id": "b",
+          "core_hp": 0,
+          "living_module_count": 0,
+          "remaining_hp": 1380,
+          "total_max_hp": 2260,
+          "hp_ratio": 0.610619,
+          "damage_dealt": 281,
+          "circuit_credits": 421,
+          "forfeit_credit_penalty": 0,
+          "energy_generated_total": 358.6,
+          "energy_consumed_total": 100.8
+        }
+      }
+    },
+    {
+      "trial": 0,
+      "a": "sabotage",
+      "b": "aggressive",
+      "winner_player": "b",
+      "winner_archetype": "aggressive",
+      "draw": false,
+      "finish_reason": "core_destroyed",
+      "duration_ms": 37600,
+      "actions": {
+        "a": {
+          "place": 1,
+          "booster": 1
+        },
+        "b": {
+          "place": 2,
+          "booster": 1
+        }
+      },
+      "summary": {
+        "a": {
+          "player_id": "a",
+          "core_hp": 0,
+          "living_module_count": 0,
+          "remaining_hp": 1415,
+          "total_max_hp": 2165,
+          "hp_ratio": 0.65358,
+          "damage_dealt": 184,
+          "circuit_credits": 456,
+          "forfeit_credit_penalty": 0,
+          "energy_generated_total": 248.6,
+          "energy_consumed_total": 55.1
+        },
+        "b": {
+          "player_id": "b",
+          "core_hp": 300,
+          "living_module_count": 5,
+          "remaining_hp": 2051,
+          "total_max_hp": 2225,
+          "hp_ratio": 0.921798,
+          "damage_dealt": 904,
+          "circuit_credits": 321,
+          "forfeit_credit_penalty": 0,
+          "energy_generated_total": 413.6,
+          "energy_consumed_total": 262.2
+        }
+      }
+    },
+    {
+      "trial": 1,
+      "a": "sabotage",
+      "b": "aggressive",
+      "winner_player": "b",
+      "winner_archetype": "aggressive",
+      "draw": false,
+      "finish_reason": "core_destroyed",
+      "duration_ms": 37600,
+      "actions": {
+        "a": {
+          "place": 1,
+          "booster": 1
+        },
+        "b": {
+          "place": 2,
+          "booster": 1
+        }
+      },
+      "summary": {
+        "a": {
+          "player_id": "a",
+          "core_hp": 0,
+          "living_module_count": 0,
+          "remaining_hp": 1415,
+          "total_max_hp": 2165,
+          "hp_ratio": 0.65358,
+          "damage_dealt": 184,
+          "circuit_credits": 456,
+          "forfeit_credit_penalty": 0,
+          "energy_generated_total": 248.6,
+          "energy_consumed_total": 55.1
+        },
+        "b": {
+          "player_id": "b",
+          "core_hp": 300,
+          "living_module_count": 5,
+          "remaining_hp": 2051,
+          "total_max_hp": 2225,
+          "hp_ratio": 0.921798,
+          "damage_dealt": 904,
+          "circuit_credits": 321,
+          "forfeit_credit_penalty": 0,
+          "energy_generated_total": 413.6,
+          "energy_consumed_total": 262.2
+        }
+      }
+    },
+    {
+      "trial": 2,
+      "a": "sabotage",
+      "b": "aggressive",
+      "winner_player": "b",
+      "winner_archetype": "aggressive",
+      "draw": false,
+      "finish_reason": "core_destroyed",
+      "duration_ms": 37600,
+      "actions": {
+        "a": {
+          "place": 1,
+          "booster": 1
+        },
+        "b": {
+          "place": 2,
+          "booster": 1
+        }
+      },
+      "summary": {
+        "a": {
+          "player_id": "a",
+          "core_hp": 0,
+          "living_module_count": 0,
+          "remaining_hp": 1415,
+          "total_max_hp": 2165,
+          "hp_ratio": 0.65358,
+          "damage_dealt": 184,
+          "circuit_credits": 456,
+          "forfeit_credit_penalty": 0,
+          "energy_generated_total": 248.6,
+          "energy_consumed_total": 55.1
+        },
+        "b": {
+          "player_id": "b",
+          "core_hp": 300,
+          "living_module_count": 5,
+          "remaining_hp": 2051,
+          "total_max_hp": 2225,
+          "hp_ratio": 0.921798,
+          "damage_dealt": 904,
+          "circuit_credits": 321,
+          "forfeit_credit_penalty": 0,
+          "energy_generated_total": 413.6,
+          "energy_consumed_total": 262.2
+        }
+      }
+    },
+    {
+      "trial": 0,
+      "a": "sabotage",
+      "b": "defensive",
+      "winner_player": "a",
+      "winner_archetype": "sabotage",
+      "draw": false,
+      "finish_reason": "core_destroyed",
+      "duration_ms": 82600,
+      "actions": {
+        "a": {
+          "place": 4,
+          "booster": 2
+        },
+        "b": {
+          "place": 3,
+          "replace": 1,
+          "booster": 2
+        }
+      },
+      "summary": {
+        "a": {
+          "player_id": "a",
+          "core_hp": 300,
+          "living_module_count": 5,
+          "remaining_hp": 1714,
+          "total_max_hp": 2165,
+          "hp_ratio": 0.791686,
+          "damage_dealt": 1342,
+          "circuit_credits": 561,
+          "forfeit_credit_penalty": 0,
+          "energy_generated_total": 908.6,
+          "energy_consumed_total": 658.0
+        },
+        "b": {
+          "player_id": "b",
+          "core_hp": 0,
+          "living_module_count": 0,
+          "remaining_hp": 1125,
+          "total_max_hp": 2285,
+          "hp_ratio": 0.492341,
+          "damage_dealt": 486,
+          "circuit_credits": 591,
+          "forfeit_credit_penalty": 0,
+          "energy_generated_total": 743.6,
+          "energy_consumed_total": 245.2
+        }
+      }
+    },
+    {
+      "trial": 1,
+      "a": "sabotage",
+      "b": "defensive",
+      "winner_player": "a",
+      "winner_archetype": "sabotage",
+      "draw": false,
+      "finish_reason": "core_destroyed",
+      "duration_ms": 82600,
+      "actions": {
+        "a": {
+          "place": 4,
+          "booster": 2
+        },
+        "b": {
+          "place": 3,
+          "replace": 1,
+          "booster": 2
+        }
+      },
+      "summary": {
+        "a": {
+          "player_id": "a",
+          "core_hp": 300,
+          "living_module_count": 5,
+          "remaining_hp": 1714,
+          "total_max_hp": 2165,
+          "hp_ratio": 0.791686,
+          "damage_dealt": 1342,
+          "circuit_credits": 561,
+          "forfeit_credit_penalty": 0,
+          "energy_generated_total": 908.6,
+          "energy_consumed_total": 658.0
+        },
+        "b": {
+          "player_id": "b",
+          "core_hp": 0,
+          "living_module_count": 0,
+          "remaining_hp": 1125,
+          "total_max_hp": 2285,
+          "hp_ratio": 0.492341,
+          "damage_dealt": 486,
+          "circuit_credits": 591,
+          "forfeit_credit_penalty": 0,
+          "energy_generated_total": 743.6,
+          "energy_consumed_total": 245.2
+        }
+      }
+    },
+    {
+      "trial": 2,
+      "a": "sabotage",
+      "b": "defensive",
+      "winner_player": "a",
+      "winner_archetype": "sabotage",
+      "draw": false,
+      "finish_reason": "core_destroyed",
+      "duration_ms": 82600,
+      "actions": {
+        "a": {
+          "place": 4,
+          "booster": 2
+        },
+        "b": {
+          "place": 3,
+          "replace": 1,
+          "booster": 2
+        }
+      },
+      "summary": {
+        "a": {
+          "player_id": "a",
+          "core_hp": 300,
+          "living_module_count": 5,
+          "remaining_hp": 1714,
+          "total_max_hp": 2165,
+          "hp_ratio": 0.791686,
+          "damage_dealt": 1342,
+          "circuit_credits": 561,
+          "forfeit_credit_penalty": 0,
+          "energy_generated_total": 908.6,
+          "energy_consumed_total": 658.0
+        },
+        "b": {
+          "player_id": "b",
+          "core_hp": 0,
+          "living_module_count": 0,
+          "remaining_hp": 1125,
+          "total_max_hp": 2285,
+          "hp_ratio": 0.492341,
+          "damage_dealt": 486,
+          "circuit_credits": 591,
+          "forfeit_credit_penalty": 0,
+          "energy_generated_total": 743.6,
+          "energy_consumed_total": 245.2
+        }
+      }
+    },
+    {
+      "trial": 0,
+      "a": "sabotage",
+      "b": "balanced",
+      "winner_player": "b",
+      "winner_archetype": "balanced",
+      "draw": false,
+      "finish_reason": "core_destroyed",
+      "duration_ms": 40100,
+      "actions": {
+        "a": {
+          "place": 2,
+          "booster": 1
+        },
+        "b": {
+          "place": 3,
+          "replace": 2,
+          "booster": 1
+        }
+      },
+      "summary": {
+        "a": {
+          "player_id": "a",
+          "core_hp": 0,
+          "living_module_count": 0,
+          "remaining_hp": 1415,
+          "total_max_hp": 2165,
+          "hp_ratio": 0.65358,
+          "damage_dealt": 192,
+          "circuit_credits": 481,
+          "forfeit_credit_penalty": 0,
+          "energy_generated_total": 298.1,
+          "energy_consumed_total": 92.1
+        },
+        "b": {
+          "player_id": "b",
+          "core_hp": 300,
+          "living_module_count": 6,
+          "remaining_hp": 2103,
+          "total_max_hp": 2295,
+          "hp_ratio": 0.91634,
+          "damage_dealt": 932,
+          "circuit_credits": 151,
+          "forfeit_credit_penalty": 0,
+          "energy_generated_total": 441.1,
+          "energy_consumed_total": 276.0
+        }
+      }
+    },
+    {
+      "trial": 1,
+      "a": "sabotage",
+      "b": "balanced",
+      "winner_player": "b",
+      "winner_archetype": "balanced",
+      "draw": false,
+      "finish_reason": "core_destroyed",
+      "duration_ms": 40100,
+      "actions": {
+        "a": {
+          "place": 2,
+          "booster": 1
+        },
+        "b": {
+          "place": 3,
+          "replace": 2,
+          "booster": 1
+        }
+      },
+      "summary": {
+        "a": {
+          "player_id": "a",
+          "core_hp": 0,
+          "living_module_count": 0,
+          "remaining_hp": 1415,
+          "total_max_hp": 2165,
+          "hp_ratio": 0.65358,
+          "damage_dealt": 192,
+          "circuit_credits": 481,
+          "forfeit_credit_penalty": 0,
+          "energy_generated_total": 298.1,
+          "energy_consumed_total": 92.1
+        },
+        "b": {
+          "player_id": "b",
+          "core_hp": 300,
+          "living_module_count": 6,
+          "remaining_hp": 2103,
+          "total_max_hp": 2295,
+          "hp_ratio": 0.91634,
+          "damage_dealt": 932,
+          "circuit_credits": 151,
+          "forfeit_credit_penalty": 0,
+          "energy_generated_total": 441.1,
+          "energy_consumed_total": 276.0
+        }
+      }
+    },
+    {
+      "trial": 2,
+      "a": "sabotage",
+      "b": "balanced",
+      "winner_player": "b",
+      "winner_archetype": "balanced",
+      "draw": false,
+      "finish_reason": "core_destroyed",
+      "duration_ms": 40100,
+      "actions": {
+        "a": {
+          "place": 2,
+          "booster": 1
+        },
+        "b": {
+          "place": 3,
+          "replace": 2,
+          "booster": 1
+        }
+      },
+      "summary": {
+        "a": {
+          "player_id": "a",
+          "core_hp": 0,
+          "living_module_count": 0,
+          "remaining_hp": 1415,
+          "total_max_hp": 2165,
+          "hp_ratio": 0.65358,
+          "damage_dealt": 192,
+          "circuit_credits": 481,
+          "forfeit_credit_penalty": 0,
+          "energy_generated_total": 298.1,
+          "energy_consumed_total": 92.1
+        },
+        "b": {
+          "player_id": "b",
+          "core_hp": 300,
+          "living_module_count": 6,
+          "remaining_hp": 2103,
+          "total_max_hp": 2295,
+          "hp_ratio": 0.91634,
+          "damage_dealt": 932,
+          "circuit_credits": 151,
+          "forfeit_credit_penalty": 0,
+          "energy_generated_total": 441.1,
+          "energy_consumed_total": 276.0
+        }
+      }
+    },
+    {
+      "trial": 0,
+      "a": "sabotage",
+      "b": "sabotage",
+      "winner_player": "b",
+      "winner_archetype": "sabotage",
+      "draw": false,
+      "finish_reason": "time_limit_tiebreak",
+      "duration_ms": 180000,
+      "actions": {
+        "a": {
+          "place": 1
+        },
+        "b": {
+          "place": 1
+        }
+      },
+      "summary": {
+        "a": {
+          "player_id": "a",
+          "core_hp": 300,
+          "living_module_count": 2,
+          "remaining_hp": 1865,
+          "total_max_hp": 2165,
+          "hp_ratio": 0.861432,
+          "damage_dealt": 352,
+          "circuit_credits": 1880,
+          "forfeit_credit_penalty": 0,
+          "energy_generated_total": 1980.0,
+          "energy_consumed_total": 117.1
+        },
+        "b": {
+          "player_id": "b",
+          "core_hp": 300,
+          "living_module_count": 2,
+          "remaining_hp": 1865,
+          "total_max_hp": 2165,
+          "hp_ratio": 0.861432,
+          "damage_dealt": 377,
+          "circuit_credits": 1880,
+          "forfeit_credit_penalty": 0,
+          "energy_generated_total": 1980.0,
+          "energy_consumed_total": 117.1
+        }
+      }
+    },
+    {
+      "trial": 1,
+      "a": "sabotage",
+      "b": "sabotage",
+      "winner_player": "b",
+      "winner_archetype": "sabotage",
+      "draw": false,
+      "finish_reason": "time_limit_tiebreak",
+      "duration_ms": 180000,
+      "actions": {
+        "a": {
+          "place": 1
+        },
+        "b": {
+          "place": 1
+        }
+      },
+      "summary": {
+        "a": {
+          "player_id": "a",
+          "core_hp": 300,
+          "living_module_count": 2,
+          "remaining_hp": 1865,
+          "total_max_hp": 2165,
+          "hp_ratio": 0.861432,
+          "damage_dealt": 352,
+          "circuit_credits": 1880,
+          "forfeit_credit_penalty": 0,
+          "energy_generated_total": 1980.0,
+          "energy_consumed_total": 117.1
+        },
+        "b": {
+          "player_id": "b",
+          "core_hp": 300,
+          "living_module_count": 2,
+          "remaining_hp": 1865,
+          "total_max_hp": 2165,
+          "hp_ratio": 0.861432,
+          "damage_dealt": 377,
+          "circuit_credits": 1880,
+          "forfeit_credit_penalty": 0,
+          "energy_generated_total": 1980.0,
+          "energy_consumed_total": 117.1
+        }
+      }
+    },
+    {
+      "trial": 2,
+      "a": "sabotage",
+      "b": "sabotage",
+      "winner_player": "b",
+      "winner_archetype": "sabotage",
+      "draw": false,
+      "finish_reason": "time_limit_tiebreak",
+      "duration_ms": 180000,
+      "actions": {
+        "a": {
+          "place": 1
+        },
+        "b": {
+          "place": 1
+        }
+      },
+      "summary": {
+        "a": {
+          "player_id": "a",
+          "core_hp": 300,
+          "living_module_count": 2,
+          "remaining_hp": 1865,
+          "total_max_hp": 2165,
+          "hp_ratio": 0.861432,
+          "damage_dealt": 352,
+          "circuit_credits": 1880,
+          "forfeit_credit_penalty": 0,
+          "energy_generated_total": 1980.0,
+          "energy_consumed_total": 117.1
+        },
+        "b": {
+          "player_id": "b",
+          "core_hp": 300,
+          "living_module_count": 2,
+          "remaining_hp": 1865,
+          "total_max_hp": 2165,
+          "hp_ratio": 0.861432,
+          "damage_dealt": 377,
+          "circuit_credits": 1880,
+          "forfeit_credit_penalty": 0,
+          "energy_generated_total": 1980.0,
+          "energy_consumed_total": 117.1
+        }
+      }
+    },
+    {
+      "trial": 0,
+      "a": "sabotage",
+      "b": "economy",
+      "winner_player": "b",
+      "winner_archetype": "economy",
+      "draw": false,
+      "finish_reason": "core_destroyed",
+      "duration_ms": 72600,
+      "actions": {
+        "a": {
+          "place": 2,
+          "booster": 2
+        },
+        "b": {
+          "place": 3,
+          "booster": 2
+        }
+      },
+      "summary": {
+        "a": {
+          "player_id": "a",
+          "core_hp": 0,
+          "living_module_count": 0,
+          "remaining_hp": 1315,
+          "total_max_hp": 2165,
+          "hp_ratio": 0.60739,
+          "damage_dealt": 427,
+          "circuit_credits": 676,
+          "forfeit_credit_penalty": 0,
+          "energy_generated_total": 496.1,
+          "energy_consumed_total": 142.6
+        },
+        "b": {
+          "player_id": "b",
+          "core_hp": 300,
+          "living_module_count": 4,
+          "remaining_hp": 1859,
+          "total_max_hp": 2260,
+          "hp_ratio": 0.822566,
+          "damage_dealt": 1080,
+          "circuit_credits": 611,
+          "forfeit_credit_penalty": 0,
+          "energy_generated_total": 798.6,
+          "energy_consumed_total": 333.3
+        }
+      }
+    },
+    {
+      "trial": 1,
+      "a": "sabotage",
+      "b": "economy",
+      "winner_player": "b",
+      "winner_archetype": "economy",
+      "draw": false,
+      "finish_reason": "core_destroyed",
+      "duration_ms": 72600,
+      "actions": {
+        "a": {
+          "place": 2,
+          "booster": 2
+        },
+        "b": {
+          "place": 3,
+          "booster": 2
+        }
+      },
+      "summary": {
+        "a": {
+          "player_id": "a",
+          "core_hp": 0,
+          "living_module_count": 0,
+          "remaining_hp": 1315,
+          "total_max_hp": 2165,
+          "hp_ratio": 0.60739,
+          "damage_dealt": 427,
+          "circuit_credits": 676,
+          "forfeit_credit_penalty": 0,
+          "energy_generated_total": 496.1,
+          "energy_consumed_total": 142.6
+        },
+        "b": {
+          "player_id": "b",
+          "core_hp": 300,
+          "living_module_count": 4,
+          "remaining_hp": 1859,
+          "total_max_hp": 2260,
+          "hp_ratio": 0.822566,
+          "damage_dealt": 1080,
+          "circuit_credits": 611,
+          "forfeit_credit_penalty": 0,
+          "energy_generated_total": 798.6,
+          "energy_consumed_total": 333.3
+        }
+      }
+    },
+    {
+      "trial": 2,
+      "a": "sabotage",
+      "b": "economy",
+      "winner_player": "b",
+      "winner_archetype": "economy",
+      "draw": false,
+      "finish_reason": "core_destroyed",
+      "duration_ms": 72600,
+      "actions": {
+        "a": {
+          "place": 2,
+          "booster": 2
+        },
+        "b": {
+          "place": 3,
+          "booster": 2
+        }
+      },
+      "summary": {
+        "a": {
+          "player_id": "a",
+          "core_hp": 0,
+          "living_module_count": 0,
+          "remaining_hp": 1315,
+          "total_max_hp": 2165,
+          "hp_ratio": 0.60739,
+          "damage_dealt": 427,
+          "circuit_credits": 676,
+          "forfeit_credit_penalty": 0,
+          "energy_generated_total": 496.1,
+          "energy_consumed_total": 142.6
+        },
+        "b": {
+          "player_id": "b",
+          "core_hp": 300,
+          "living_module_count": 4,
+          "remaining_hp": 1859,
+          "total_max_hp": 2260,
+          "hp_ratio": 0.822566,
+          "damage_dealt": 1080,
+          "circuit_credits": 611,
+          "forfeit_credit_penalty": 0,
+          "energy_generated_total": 798.6,
+          "energy_consumed_total": 333.3
+        }
+      }
+    },
+    {
+      "trial": 0,
+      "a": "economy",
+      "b": "aggressive",
+      "winner_player": "b",
+      "winner_archetype": "aggressive",
+      "draw": false,
+      "finish_reason": "core_destroyed",
+      "duration_ms": 37600,
+      "actions": {
+        "a": {
+          "place": 1,
+          "booster": 1
+        },
+        "b": {
+          "place": 2,
+          "booster": 1
+        }
+      },
+      "summary": {
+        "a": {
+          "player_id": "a",
+          "core_hp": 0,
+          "living_module_count": 0,
+          "remaining_hp": 1475,
+          "total_max_hp": 2260,
+          "hp_ratio": 0.652655,
+          "damage_dealt": 196,
+          "circuit_credits": 456,
+          "forfeit_credit_penalty": 0,
+          "energy_generated_total": 248.6,
+          "energy_consumed_total": 45.8
+        },
+        "b": {
+          "player_id": "b",
+          "core_hp": 300,
+          "living_module_count": 5,
+          "remaining_hp": 2039,
+          "total_max_hp": 2225,
+          "hp_ratio": 0.916404,
+          "damage_dealt": 914,
+          "circuit_credits": 321,
+          "forfeit_credit_penalty": 0,
+          "energy_generated_total": 413.6,
+          "energy_consumed_total": 262.2
+        }
+      }
+    },
+    {
+      "trial": 1,
+      "a": "economy",
+      "b": "aggressive",
+      "winner_player": "b",
+      "winner_archetype": "aggressive",
+      "draw": false,
+      "finish_reason": "core_destroyed",
+      "duration_ms": 37600,
+      "actions": {
+        "a": {
+          "place": 1,
+          "booster": 1
+        },
+        "b": {
+          "place": 2,
+          "booster": 1
+        }
+      },
+      "summary": {
+        "a": {
+          "player_id": "a",
+          "core_hp": 0,
+          "living_module_count": 0,
+          "remaining_hp": 1475,
+          "total_max_hp": 2260,
+          "hp_ratio": 0.652655,
+          "damage_dealt": 196,
+          "circuit_credits": 456,
+          "forfeit_credit_penalty": 0,
+          "energy_generated_total": 248.6,
+          "energy_consumed_total": 45.8
+        },
+        "b": {
+          "player_id": "b",
+          "core_hp": 300,
+          "living_module_count": 5,
+          "remaining_hp": 2039,
+          "total_max_hp": 2225,
+          "hp_ratio": 0.916404,
+          "damage_dealt": 914,
+          "circuit_credits": 321,
+          "forfeit_credit_penalty": 0,
+          "energy_generated_total": 413.6,
+          "energy_consumed_total": 262.2
+        }
+      }
+    },
+    {
+      "trial": 2,
+      "a": "economy",
+      "b": "aggressive",
+      "winner_player": "b",
+      "winner_archetype": "aggressive",
+      "draw": false,
+      "finish_reason": "core_destroyed",
+      "duration_ms": 37600,
+      "actions": {
+        "a": {
+          "place": 1,
+          "booster": 1
+        },
+        "b": {
+          "place": 2,
+          "booster": 1
+        }
+      },
+      "summary": {
+        "a": {
+          "player_id": "a",
+          "core_hp": 0,
+          "living_module_count": 0,
+          "remaining_hp": 1475,
+          "total_max_hp": 2260,
+          "hp_ratio": 0.652655,
+          "damage_dealt": 196,
+          "circuit_credits": 456,
+          "forfeit_credit_penalty": 0,
+          "energy_generated_total": 248.6,
+          "energy_consumed_total": 45.8
+        },
+        "b": {
+          "player_id": "b",
+          "core_hp": 300,
+          "living_module_count": 5,
+          "remaining_hp": 2039,
+          "total_max_hp": 2225,
+          "hp_ratio": 0.916404,
+          "damage_dealt": 914,
+          "circuit_credits": 321,
+          "forfeit_credit_penalty": 0,
+          "energy_generated_total": 413.6,
+          "energy_consumed_total": 262.2
+        }
+      }
+    },
+    {
+      "trial": 0,
+      "a": "economy",
+      "b": "defensive",
+      "winner_player": "b",
+      "winner_archetype": "defensive",
+      "draw": false,
+      "finish_reason": "core_destroyed",
+      "duration_ms": 89100,
+      "actions": {
+        "a": {
+          "place": 3,
+          "booster": 2
+        },
+        "b": {
+          "place": 2,
+          "booster": 2
+        }
+      },
+      "summary": {
+        "a": {
+          "player_id": "a",
+          "core_hp": 0,
+          "living_module_count": 0,
+          "remaining_hp": 1295,
+          "total_max_hp": 2260,
+          "hp_ratio": 0.573009,
+          "damage_dealt": 414,
+          "circuit_credits": 776,
+          "forfeit_credit_penalty": 0,
+          "energy_generated_total": 628.1,
+          "energy_consumed_total": 207.8
+        },
+        "b": {
+          "player_id": "b",
+          "core_hp": 300,
+          "living_module_count": 4,
+          "remaining_hp": 1927,
+          "total_max_hp": 2285,
+          "hp_ratio": 0.843326,
+          "damage_dealt": 1088,
+          "circuit_credits": 881,
+          "forfeit_credit_penalty": 0,
+          "energy_generated_total": 980.1,
+          "energy_consumed_total": 450.7
+        }
+      }
+    },
+    {
+      "trial": 1,
+      "a": "economy",
+      "b": "defensive",
+      "winner_player": "b",
+      "winner_archetype": "defensive",
+      "draw": false,
+      "finish_reason": "core_destroyed",
+      "duration_ms": 89100,
+      "actions": {
+        "a": {
+          "place": 3,
+          "booster": 2
+        },
+        "b": {
+          "place": 2,
+          "booster": 2
+        }
+      },
+      "summary": {
+        "a": {
+          "player_id": "a",
+          "core_hp": 0,
+          "living_module_count": 0,
+          "remaining_hp": 1295,
+          "total_max_hp": 2260,
+          "hp_ratio": 0.573009,
+          "damage_dealt": 414,
+          "circuit_credits": 776,
+          "forfeit_credit_penalty": 0,
+          "energy_generated_total": 628.1,
+          "energy_consumed_total": 207.8
+        },
+        "b": {
+          "player_id": "b",
+          "core_hp": 300,
+          "living_module_count": 4,
+          "remaining_hp": 1927,
+          "total_max_hp": 2285,
+          "hp_ratio": 0.843326,
+          "damage_dealt": 1088,
+          "circuit_credits": 881,
+          "forfeit_credit_penalty": 0,
+          "energy_generated_total": 980.1,
+          "energy_consumed_total": 450.7
+        }
+      }
+    },
+    {
+      "trial": 2,
+      "a": "economy",
+      "b": "defensive",
+      "winner_player": "b",
+      "winner_archetype": "defensive",
+      "draw": false,
+      "finish_reason": "core_destroyed",
+      "duration_ms": 89100,
+      "actions": {
+        "a": {
+          "place": 3,
+          "booster": 2
+        },
+        "b": {
+          "place": 2,
+          "booster": 2
+        }
+      },
+      "summary": {
+        "a": {
+          "player_id": "a",
+          "core_hp": 0,
+          "living_module_count": 0,
+          "remaining_hp": 1295,
+          "total_max_hp": 2260,
+          "hp_ratio": 0.573009,
+          "damage_dealt": 414,
+          "circuit_credits": 776,
+          "forfeit_credit_penalty": 0,
+          "energy_generated_total": 628.1,
+          "energy_consumed_total": 207.8
+        },
+        "b": {
+          "player_id": "b",
+          "core_hp": 300,
+          "living_module_count": 4,
+          "remaining_hp": 1927,
+          "total_max_hp": 2285,
+          "hp_ratio": 0.843326,
+          "damage_dealt": 1088,
+          "circuit_credits": 881,
+          "forfeit_credit_penalty": 0,
+          "energy_generated_total": 980.1,
+          "energy_consumed_total": 450.7
+        }
+      }
+    },
+    {
+      "trial": 0,
+      "a": "economy",
+      "b": "balanced",
+      "winner_player": "b",
+      "winner_archetype": "balanced",
+      "draw": false,
+      "finish_reason": "core_destroyed",
+      "duration_ms": 45100,
+      "actions": {
+        "a": {
+          "place": 2,
+          "booster": 1
+        },
+        "b": {
+          "place": 4,
+          "replace": 2,
+          "booster": 1
+        }
+      },
+      "summary": {
+        "a": {
+          "player_id": "a",
+          "core_hp": 0,
+          "living_module_count": 0,
+          "remaining_hp": 1380,
+          "total_max_hp": 2260,
+          "hp_ratio": 0.610619,
+          "damage_dealt": 268,
+          "circuit_credits": 396,
+          "forfeit_credit_penalty": 0,
+          "energy_generated_total": 358.6,
+          "energy_consumed_total": 100.8
+        },
+        "b": {
+          "player_id": "b",
+          "core_hp": 300,
+          "living_module_count": 7,
+          "remaining_hp": 2027,
+          "total_max_hp": 2295,
+          "hp_ratio": 0.883224,
+          "damage_dealt": 1024,
+          "circuit_credits": 66,
+          "forfeit_credit_penalty": 0,
+          "energy_generated_total": 496.1,
+          "energy_consumed_total": 326.0
+        }
+      }
+    },
+    {
+      "trial": 1,
+      "a": "economy",
+      "b": "balanced",
+      "winner_player": "b",
+      "winner_archetype": "balanced",
+      "draw": false,
+      "finish_reason": "core_destroyed",
+      "duration_ms": 45100,
+      "actions": {
+        "a": {
+          "place": 2,
+          "booster": 1
+        },
+        "b": {
+          "place": 4,
+          "replace": 2,
+          "booster": 1
+        }
+      },
+      "summary": {
+        "a": {
+          "player_id": "a",
+          "core_hp": 0,
+          "living_module_count": 0,
+          "remaining_hp": 1380,
+          "total_max_hp": 2260,
+          "hp_ratio": 0.610619,
+          "damage_dealt": 268,
+          "circuit_credits": 396,
+          "forfeit_credit_penalty": 0,
+          "energy_generated_total": 358.6,
+          "energy_consumed_total": 100.8
+        },
+        "b": {
+          "player_id": "b",
+          "core_hp": 300,
+          "living_module_count": 7,
+          "remaining_hp": 2027,
+          "total_max_hp": 2295,
+          "hp_ratio": 0.883224,
+          "damage_dealt": 1024,
+          "circuit_credits": 66,
+          "forfeit_credit_penalty": 0,
+          "energy_generated_total": 496.1,
+          "energy_consumed_total": 326.0
+        }
+      }
+    },
+    {
+      "trial": 2,
+      "a": "economy",
+      "b": "balanced",
+      "winner_player": "b",
+      "winner_archetype": "balanced",
+      "draw": false,
+      "finish_reason": "core_destroyed",
+      "duration_ms": 45100,
+      "actions": {
+        "a": {
+          "place": 2,
+          "booster": 1
+        },
+        "b": {
+          "place": 4,
+          "replace": 2,
+          "booster": 1
+        }
+      },
+      "summary": {
+        "a": {
+          "player_id": "a",
+          "core_hp": 0,
+          "living_module_count": 0,
+          "remaining_hp": 1380,
+          "total_max_hp": 2260,
+          "hp_ratio": 0.610619,
+          "damage_dealt": 268,
+          "circuit_credits": 396,
+          "forfeit_credit_penalty": 0,
+          "energy_generated_total": 358.6,
+          "energy_consumed_total": 100.8
+        },
+        "b": {
+          "player_id": "b",
+          "core_hp": 300,
+          "living_module_count": 7,
+          "remaining_hp": 2027,
+          "total_max_hp": 2295,
+          "hp_ratio": 0.883224,
+          "damage_dealt": 1024,
+          "circuit_credits": 66,
+          "forfeit_credit_penalty": 0,
+          "energy_generated_total": 496.1,
+          "energy_consumed_total": 326.0
+        }
+      }
+    },
+    {
+      "trial": 0,
+      "a": "economy",
+      "b": "sabotage",
+      "winner_player": "a",
+      "winner_archetype": "economy",
+      "draw": false,
+      "finish_reason": "core_destroyed",
+      "duration_ms": 81800,
+      "actions": {
+        "a": {
+          "place": 3,
+          "booster": 2
+        },
+        "b": {
+          "place": 2,
+          "booster": 2
+        }
+      },
+      "summary": {
+        "a": {
+          "player_id": "a",
+          "core_hp": 300,
+          "living_module_count": 3,
+          "remaining_hp": 1840,
+          "total_max_hp": 2260,
+          "hp_ratio": 0.814159,
+          "damage_dealt": 1088,
+          "circuit_credits": 703,
+          "forfeit_credit_penalty": 0,
+          "energy_generated_total": 899.8,
+          "energy_consumed_total": 427.4
+        },
+        "b": {
+          "player_id": "b",
+          "core_hp": 0,
+          "living_module_count": 0,
+          "remaining_hp": 1315,
+          "total_max_hp": 2165,
+          "hp_ratio": 0.60739,
+          "damage_dealt": 458,
+          "circuit_credits": 768,
+          "forfeit_credit_penalty": 0,
+          "energy_generated_total": 477.4,
+          "energy_consumed_total": 136.1
+        }
+      }
+    },
+    {
+      "trial": 1,
+      "a": "economy",
+      "b": "sabotage",
+      "winner_player": "a",
+      "winner_archetype": "economy",
+      "draw": false,
+      "finish_reason": "core_destroyed",
+      "duration_ms": 81800,
+      "actions": {
+        "a": {
+          "place": 3,
+          "booster": 2
+        },
+        "b": {
+          "place": 2,
+          "booster": 2
+        }
+      },
+      "summary": {
+        "a": {
+          "player_id": "a",
+          "core_hp": 300,
+          "living_module_count": 3,
+          "remaining_hp": 1840,
+          "total_max_hp": 2260,
+          "hp_ratio": 0.814159,
+          "damage_dealt": 1088,
+          "circuit_credits": 703,
+          "forfeit_credit_penalty": 0,
+          "energy_generated_total": 899.8,
+          "energy_consumed_total": 427.4
+        },
+        "b": {
+          "player_id": "b",
+          "core_hp": 0,
+          "living_module_count": 0,
+          "remaining_hp": 1315,
+          "total_max_hp": 2165,
+          "hp_ratio": 0.60739,
+          "damage_dealt": 458,
+          "circuit_credits": 768,
+          "forfeit_credit_penalty": 0,
+          "energy_generated_total": 477.4,
+          "energy_consumed_total": 136.1
+        }
+      }
+    },
+    {
+      "trial": 2,
+      "a": "economy",
+      "b": "sabotage",
+      "winner_player": "a",
+      "winner_archetype": "economy",
+      "draw": false,
+      "finish_reason": "core_destroyed",
+      "duration_ms": 81800,
+      "actions": {
+        "a": {
+          "place": 3,
+          "booster": 2
+        },
+        "b": {
+          "place": 2,
+          "booster": 2
+        }
+      },
+      "summary": {
+        "a": {
+          "player_id": "a",
+          "core_hp": 300,
+          "living_module_count": 3,
+          "remaining_hp": 1840,
+          "total_max_hp": 2260,
+          "hp_ratio": 0.814159,
+          "damage_dealt": 1088,
+          "circuit_credits": 703,
+          "forfeit_credit_penalty": 0,
+          "energy_generated_total": 899.8,
+          "energy_consumed_total": 427.4
+        },
+        "b": {
+          "player_id": "b",
+          "core_hp": 0,
+          "living_module_count": 0,
+          "remaining_hp": 1315,
+          "total_max_hp": 2165,
+          "hp_ratio": 0.60739,
+          "damage_dealt": 458,
+          "circuit_credits": 768,
+          "forfeit_credit_penalty": 0,
+          "energy_generated_total": 477.4,
+          "energy_consumed_total": 136.1
+        }
+      }
+    },
+    {
+      "trial": 0,
+      "a": "economy",
+      "b": "economy",
+      "winner_player": "b",
+      "winner_archetype": "economy",
+      "draw": false,
+      "finish_reason": "time_limit_tiebreak",
+      "duration_ms": 180000,
+      "actions": {
+        "a": {
+          "place": 3,
+          "booster": 1
+        },
+        "b": {
+          "place": 3,
+          "booster": 1
+        }
+      },
+      "summary": {
+        "a": {
+          "player_id": "a",
+          "core_hp": 300,
+          "living_module_count": 2,
+          "remaining_hp": 1745,
+          "total_max_hp": 2260,
+          "hp_ratio": 0.772124,
+          "damage_dealt": 568,
+          "circuit_credits": 1685,
+          "forfeit_credit_penalty": 0,
+          "energy_generated_total": 1980.0,
+          "energy_consumed_total": 172.3
+        },
+        "b": {
+          "player_id": "b",
+          "core_hp": 300,
+          "living_module_count": 2,
+          "remaining_hp": 1745,
+          "total_max_hp": 2260,
+          "hp_ratio": 0.772124,
+          "damage_dealt": 608,
+          "circuit_credits": 1685,
+          "forfeit_credit_penalty": 0,
+          "energy_generated_total": 1980.0,
+          "energy_consumed_total": 172.3
+        }
+      }
+    },
+    {
+      "trial": 1,
+      "a": "economy",
+      "b": "economy",
+      "winner_player": "b",
+      "winner_archetype": "economy",
+      "draw": false,
+      "finish_reason": "time_limit_tiebreak",
+      "duration_ms": 180000,
+      "actions": {
+        "a": {
+          "place": 3,
+          "booster": 1
+        },
+        "b": {
+          "place": 3,
+          "booster": 1
+        }
+      },
+      "summary": {
+        "a": {
+          "player_id": "a",
+          "core_hp": 300,
+          "living_module_count": 2,
+          "remaining_hp": 1745,
+          "total_max_hp": 2260,
+          "hp_ratio": 0.772124,
+          "damage_dealt": 568,
+          "circuit_credits": 1685,
+          "forfeit_credit_penalty": 0,
+          "energy_generated_total": 1980.0,
+          "energy_consumed_total": 172.3
+        },
+        "b": {
+          "player_id": "b",
+          "core_hp": 300,
+          "living_module_count": 2,
+          "remaining_hp": 1745,
+          "total_max_hp": 2260,
+          "hp_ratio": 0.772124,
+          "damage_dealt": 608,
+          "circuit_credits": 1685,
+          "forfeit_credit_penalty": 0,
+          "energy_generated_total": 1980.0,
+          "energy_consumed_total": 172.3
+        }
+      }
+    },
+    {
+      "trial": 2,
+      "a": "economy",
+      "b": "economy",
+      "winner_player": "b",
+      "winner_archetype": "economy",
+      "draw": false,
+      "finish_reason": "time_limit_tiebreak",
+      "duration_ms": 180000,
+      "actions": {
+        "a": {
+          "place": 3,
+          "booster": 1
+        },
+        "b": {
+          "place": 3,
+          "booster": 1
+        }
+      },
+      "summary": {
+        "a": {
+          "player_id": "a",
+          "core_hp": 300,
+          "living_module_count": 2,
+          "remaining_hp": 1745,
+          "total_max_hp": 2260,
+          "hp_ratio": 0.772124,
+          "damage_dealt": 568,
+          "circuit_credits": 1685,
+          "forfeit_credit_penalty": 0,
+          "energy_generated_total": 1980.0,
+          "energy_consumed_total": 172.3
+        },
+        "b": {
+          "player_id": "b",
+          "core_hp": 300,
+          "living_module_count": 2,
+          "remaining_hp": 1745,
+          "total_max_hp": 2260,
+          "hp_ratio": 0.772124,
+          "damage_dealt": 608,
+          "circuit_credits": 1685,
+          "forfeit_credit_penalty": 0,
+          "energy_generated_total": 1980.0,
+          "energy_consumed_total": 172.3
+        }
+      }
+    }
+  ]
+}
