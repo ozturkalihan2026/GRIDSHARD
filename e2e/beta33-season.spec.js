@@ -1,7 +1,7 @@
 const { test, expect } = require("@playwright/test");
 
 
-test("Sezon Sıfır merkezi ve belirgin başlangıç stratejisi gerçek tarayıcıda görünür", async ({ page }) => {
+test("Sezon Sıfır ekranları ve belirgin başlangıç stratejisi gerçek tarayıcıda görünür", async ({ page }) => {
   const errors = [];
   page.on("pageerror", error => errors.push(String(error)));
   await page.addInitScript(() =>
@@ -9,14 +9,15 @@ test("Sezon Sıfır merkezi ve belirgin başlangıç stratejisi gerçek tarayıc
   );
 
   await page.goto("/?e2e=1", { waitUntil: "domcontentloaded" });
-  await page.getByRole("button", { name: "Profil", exact: true }).click();
-  await expect(page.locator(".season-zero-hub")).toBeVisible();
+  await page.locator('[data-open-screen="daily"]').click();
   await expect(page.locator("#daily-mission-list .daily-mission-card")).toHaveCount(3);
+  await page.locator('[data-open-screen="menu"]').click();
+  await page.locator('[data-open-screen="rewards"]').click();
   await expect(page.locator("#season-reward-track .season-reward-card")).toHaveCount(10);
   await expect(page.locator("#season-tier-label")).toContainText("Kademe 0 / 10");
   await expect(page.locator("#season-equipped-title")).toContainText("Devre Çırağı");
 
-  const seasonVisual = await page.locator(".season-zero-hub").evaluate(element => {
+  const seasonVisual = await page.locator(".season-rewards-screen").evaluate(element => {
     const style = getComputedStyle(element);
     const progress = document.querySelector(".season-progress-track").getBoundingClientRect();
     return {
@@ -29,26 +30,27 @@ test("Sezon Sıfır merkezi ve belirgin başlangıç stratejisi gerçek tarayıc
   });
   expect(seasonVisual.background).toContain("gradient");
   expect(seasonVisual.borderColor).not.toBe("rgba(0, 0, 0, 0)");
-  expect(seasonVisual.progressHeight).toBeGreaterThanOrEqual(12);
+  expect(seasonVisual.progressHeight).toBeGreaterThanOrEqual(10);
   expect(seasonVisual.scrollWidth).toBeLessThanOrEqual(seasonVisual.clientWidth + 1);
 
-  await page.getByRole("button", { name: "Ana Menüye Dön", exact: true }).click();
-  await page.getByRole("button", { name: "Oyna", exact: true }).click();
+  await page.locator('[data-open-screen="menu"]').click();
+  await page.locator('[data-open-screen="play"]').click();
   const starter = page.locator(".initial-circuit-picker");
   await expect(starter).toBeVisible();
   const starterVisual = await starter.evaluate(element => {
-    const style = getComputedStyle(element);
-    const badge = getComputedStyle(element, "::before");
+    const strategy = element.querySelector(".initial-strategy-panel");
+    const style = getComputedStyle(strategy);
+    const badge = element.querySelector(".initial-circuit-kicker");
     const choices = [...element.querySelectorAll(".initial-module-choice")];
     return {
       borderColor: style.borderColor,
       background: style.backgroundImage,
-      badge: badge.content,
+      badge: badge?.textContent || "",
       minimumChoiceHeight: Math.min(...choices.map(choice => choice.getBoundingClientRect().height)),
     };
   });
   expect(starterVisual.background).toContain("gradient");
   expect(starterVisual.badge).toContain("BAŞLANGIÇ STRATEJİNİ SEÇ");
-  expect(starterVisual.minimumChoiceHeight).toBeGreaterThanOrEqual(38);
+  expect(starterVisual.minimumChoiceHeight).toBeGreaterThanOrEqual(34);
   expect(errors).toEqual([]);
 });

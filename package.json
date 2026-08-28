@@ -1,10 +1,10 @@
 {
   "name": "gridshard",
-  "version": "2.0.0-beta.37",
+  "version": "2.0.0-beta.38",
   "private": true,
   "packageManager": "pnpm@11.19.0",
   "scripts": {
-    "test:client": "node --test client/tests/*.test.js",
+    "test:client": "cd client && node --test tests/*.test.js",
     "build:mobile:web": "node tools/build-mobile-web.js",
     "mobile:add:android": "pnpm build:mobile:web && cap add android",
     "mobile:add:ios": "pnpm build:mobile:web && cap add ios",

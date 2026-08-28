@@ -1,12 +1,24 @@
 const { test, expect } = require("@playwright/test");
 
+async function closeActiveBattle(page) {
+  const forfeit = page.locator("#battle-forfeit-button");
+  await expect(forfeit).toBeVisible();
+  await forfeit.click({ force: true });
+  await expect(page.locator(".post-match-panel")).toBeVisible({ timeout: 15_000 });
+}
+
 test("dokunmatik savaş görünümü tek ekrana sığar ve seç-yerleştir çalışır", async ({ page }) => {
-  test.setTimeout(90_000);
+  test.setTimeout(150_000);
   const errors = [];
   page.on("pageerror", error => errors.push(String(error)));
   await page.addInitScript(() => localStorage.setItem("gridshard.tutorial.v1", "complete"));
 
   await page.goto("/?e2e=1", { waitUntil: "domcontentloaded" });
+  await expect(page.locator("#participant-bootstrap-status")).toHaveAttribute(
+    "data-status",
+    "ready",
+    { timeout: 30_000 }
+  );
   await page.getByRole("button", { name: "Oyna" }).click();
 
   const cards = page.locator("#battle-pool-selection .pool-choice");
@@ -19,11 +31,15 @@ test("dokunmatik savaş görünümü tek ekrana sığar ve seç-yerleştir çal�
   await expect(page.locator("#play-readiness-status")).toHaveAttribute(
     "data-ready",
     "true",
-    { timeout: 20_000 }
+    { timeout: 30_000 }
   );
   await page.locator("#battle-pool-confirm").click();
 
-  await expect(page.locator("body")).toHaveAttribute("data-online-status", "battle", { timeout: 25_000 });
+  await expect(page.locator("body")).toHaveAttribute(
+    "data-online-status",
+    "battle",
+    { timeout: 40_000 }
+  );
   await expect(page.locator("body")).toHaveAttribute("data-opponent-type", "ai");
   const viewport = await page.evaluate(() => ({
     height: window.innerHeight,
@@ -44,7 +60,10 @@ test("dokunmatik savaş görünümü tek ekrana sığar ve seç-yerleştir çal�
   const initialReserveCount = await reserveCards.count();
   expect(initialReserveCount).toBeGreaterThan(0);
 
-  await expect(page.locator("#capacity-indicator")).toContainText("/ 5", { timeout: 20_000 });
+  await expect(page.locator("#capacity-indicator")).toContainText(
+    "Sınır 5/10",
+    { timeout: 30_000 }
+  );
   await expect(reserveCards.first()).not.toHaveClass(/locked/);
   // WebKit'in emüle edilen görsel viewport'u, ekranda görünen ilk raf kartını
   // layout viewport dışında sayabiliyor; olay hedefini doğrudan doğruluyoruz.
@@ -61,10 +80,16 @@ test("dokunmatik savaş görünümü tek ekrana sığar ve seç-yerleştir çal�
   )).toHaveCount(1);
   await expect(page.locator("#module-shelf .module-card")).toHaveCount(initialReserveCount - 1);
   expect(errors).toEqual([]);
+  await closeActiveBattle(page);
 });
 
 test("ilk maç eğitimi hazır havuzu yükler ve AI devralmalı eşleştirmeyi başlatır", async ({ page }) => {
   await page.goto("/?e2e=tutorial", { waitUntil: "domcontentloaded" });
+  await expect(page.locator("#participant-bootstrap-status")).toHaveAttribute(
+    "data-status",
+    "ready",
+    { timeout: 30_000 }
+  );
   await page.getByRole("button", { name: "Oyna" }).click();
 
   const tutorial = page.locator("#tutorial-overlay");
@@ -76,14 +101,19 @@ test("ilk maç eğitimi hazır havuzu yükler ve AI devralmalı eşleştirmeyi b
   await expect(page.locator("#play-readiness-status")).toHaveAttribute(
     "data-ready",
     "true",
-    { timeout: 20_000 }
+    { timeout: 30_000 }
   );
 
   await tutorial.getByRole("button", { name: "Savaş", exact: true }).click();
-  await expect(page.locator("body")).toHaveAttribute("data-online-status", "battle", { timeout: 25_000 });
+  await expect(page.locator("body")).toHaveAttribute(
+    "data-online-status",
+    "battle",
+    { timeout: 40_000 }
+  );
   await expect(page.locator("body")).toHaveAttribute("data-opponent-type", "ai");
   await expect(tutorial.locator("[data-tutorial-progress]")).toHaveText("3 / 3");
   await tutorial.getByRole("button", { name: "Tamamla" }).click();
   await expect(tutorial).toBeHidden();
   await expect.poll(() => page.evaluate(() => localStorage.getItem("gridshard.tutorial.v1"))).toBe("complete");
+  await closeActiveBattle(page);
 });

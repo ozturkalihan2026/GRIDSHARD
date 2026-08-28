@@ -6,7 +6,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 OUTPUT = ROOT / "qa_reports" / "beta37_acceptance_report.json"
-EXPECTED_VERSION = "2.0.0-beta.37"
+EXPECTED_VERSION = "2.0.0-beta.38"
 
 
 def source(path: str) -> str:
@@ -67,7 +67,7 @@ def main() -> int:
         "requested_icons": contains(
             "client/index.html",
             "lobby-dock-trophy",
-            "dock-core-crack",
+            "dock-home-crack",
             "lobby-feature-icon-daily",
             "lobby-feature-icon-reward",
         ),

@@ -15,5 +15,6 @@ def test_beta7_battle_pool_builder_and_settings_status_exist():
     assert 'id="battle-pool-toggle-selected"' not in html
     assert 'id="battle-pool-preset-select"' in html
     assert 'id="battle-pool-confirm"' in html
-    assert 'id="settings-save-status"' in html
+    assert 'id="settings-save-status"' not in html
+    assert 'id="settings-persistence-status"' in html
     assert "BAŞLANGIÇ STRATEJİNİ SEÇ" in html

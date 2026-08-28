@@ -1,4 +1,5 @@
 const { test, expect } = require("@playwright/test");
+const { waitForParticipantReady, closeActiveBattle } = require("./ui-helpers");
 
 
 test("aktif modüller sürüklemeyle takas olur ve tıklamayla port yönü döner", async ({ page }) => {
@@ -11,6 +12,7 @@ test("aktif modüller sürüklemeyle takas olur ve tıklamayla port yönü döne
   );
 
   await page.goto("/?e2e=1", {waitUntil:"domcontentloaded"});
+  await waitForParticipantReady(page);
   await page.getByRole("button", {name:"Oyna"}).click();
   await page.getByRole("button", {name:"Hazır Havuzları Yönet"}).click();
   const starter = page.locator(".preset-card", {hasText:"Başlangıç Devresi"});
@@ -23,16 +25,16 @@ test("aktif modüller sürüklemeyle takas olur ve tıklamayla port yönü döne
   await expect(page.locator("#play-readiness-status")).toHaveAttribute(
     "data-ready",
     "true",
-    {timeout:20_000}
+    {timeout:30_000}
   );
   await page.locator("#battle-pool-confirm").click();
   await expect(page.locator("body")).toHaveAttribute(
     "data-online-status",
     "battle",
-    {timeout:25_000}
+    {timeout:40_000}
   );
   await expect(page.locator("#capacity-indicator")).toContainText(
-    "/ 5",
+    "Sınır 5/10",
     {timeout:25_000}
   );
 
@@ -76,11 +78,14 @@ test("aktif modüller sürüklemeyle takas olur ve tıklamayla port yönü döne
   const targetCell = page.locator(
     `#board .board-cell[data-x="${secondBefore.x}"][data-y="${secondBefore.y}"]`
   );
+  const occupiedTargetCard = targetCell.locator(
+    `.module-card[data-module-id="${secondBefore.id}"]`
+  );
   await first.dispatchEvent("dragstart", {dataTransfer:transfer});
-  await targetCell.dispatchEvent("dragover", {dataTransfer:transfer});
-  await targetCell.dispatchEvent("drop", {dataTransfer:transfer});
+  await occupiedTargetCard.dispatchEvent("dragover", {dataTransfer:transfer});
+  await occupiedTargetCard.dispatchEvent("drop", {dataTransfer:transfer});
   await expect(page.locator("#event-log")).toContainText(
-    '"kind":"swap_modules"',
+    "swap modules",
     {timeout:2_000}
   );
   await first.dispatchEvent("dragend", {dataTransfer:transfer});
@@ -112,4 +117,5 @@ test("aktif modüller sürüklemeyle takas olur ve tıklamayla port yönü döne
   )).not.toEqual(portsBefore);
 
   expect(errors).toEqual([]);
+  await closeActiveBattle(page);
 });

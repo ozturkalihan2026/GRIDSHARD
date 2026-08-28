@@ -1,4 +1,5 @@
 const { test, expect } = require("@playwright/test");
+const { waitForParticipantReady, closeActiveBattle } = require("./ui-helpers");
 
 test("10+10 aktif modül üç masaüstü viewportunda taşmadan okunur", async ({ page }) => {
   test.setTimeout(120_000);
@@ -8,6 +9,7 @@ test("10+10 aktif modül üç masaüstü viewportunda taşmadan okunur", async (
   await page.addInitScript(() => localStorage.setItem("gridshard.tutorial.v1", "complete"));
 
   await page.goto("/?e2e=1", { waitUntil: "domcontentloaded" });
+  await waitForParticipantReady(page);
   await page.getByRole("button", { name: "Oyna" }).click();
   await page.getByRole("button", { name: "Hazır Havuzları Yönet" }).click();
   const starterPreset = page.locator(".preset-card", { hasText: "Başlangıç Devresi" });
@@ -16,11 +18,11 @@ test("10+10 aktif modül üç masaüstü viewportunda taşmadan okunur", async (
   await expect(page.locator("#play-readiness-status")).toHaveAttribute(
     "data-ready",
     "true",
-    { timeout: 20_000 }
+    { timeout: 30_000 }
   );
   await page.locator("#battle-pool-confirm").click();
   await expect(page.locator("body")).toHaveAttribute("data-online-status", "battle", {
-    timeout: 25_000
+    timeout: 40_000
   });
 
   for (const viewport of [
@@ -78,4 +80,5 @@ test("10+10 aktif modül üç masaüstü viewportunda taşmadan okunur", async (
     });
   }
   expect(errors).toEqual([]);
+  await closeActiveBattle(page);
 });

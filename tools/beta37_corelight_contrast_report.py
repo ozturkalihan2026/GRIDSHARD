@@ -48,7 +48,7 @@ def main() -> int:
             })
 
     report = {
-        "version": "2.0.0-beta.37-hotfix-v4",
+        "version": "2.0.0-beta.38-hotfix-v4",
         "purpose": "Corelight Arena v2 palette contrast smoke audit.",
         "reference_thresholds": {
             "standard_game_ui_text": 4.5,

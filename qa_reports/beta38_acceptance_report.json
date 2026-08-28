@@ -1,0 +1,16 @@
+{
+  "project": "GRIDSHARD",
+  "version": "2.0.0-beta.38",
+  "ok": true,
+  "checks": {
+    "version_identity": true,
+    "three_rotating_boosters": true,
+    "booster_drag_isolated_from_module_drag": true,
+    "connected_circuit_board": true,
+    "centered_account_screen_headings": true,
+    "settings_auto_save_card_removed": true,
+    "occupied_cell_swap_regression": true,
+    "root_manifest_hygiene": true,
+    "qa_includes_beta38_regression": true
+  }
+}

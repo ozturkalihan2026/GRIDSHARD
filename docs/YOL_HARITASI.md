@@ -1,7 +1,7 @@
 # GRIDSHARD 2.0 — YOL HARİTASI
 
-**Güncel Sürüm:** `2.0.0-beta.37`
-**Paket:** Beta.37 — Tam Dil Desteği + Hazırlık Ergonomisi + Denge Kanıtı
+**Güncel Sürüm:** `2.0.0-beta.38`
+**Paket:** Beta.38 — Bitişik Devre + Kararlı Modül Etkileşimi + Üçlü Güçlendirici
 **Kanonik Dosya:** `docs/YOL_HARITASI.md`
 
 > Bu dosya GRIDSHARD 2.0 için tek kanonik geliştirme kaydıdır. Kaynak karar belgesi ile kod tabanı yeniden karşılaştırılmıştır. Buradaki `[x]`, `[~]`, `[ ]` işaretleri artık yalnızca kodda ve testlerde doğrulanabilen gerçek durumu gösterir.
@@ -1913,3 +1913,29 @@ Doğrulama:
 - Modül Rafı başlık/kapasite/güçlendirici blokları yeniden sıkılaştırıldı; üst boşluklar azaltıldı.
 - Güçlendirici ve modül sürüklemede imleç altında hayalet kart/önizleme eklendi.
 - Savaş tahtasındaki kart ve hücre geometri oranı kareye yaklaştırıldı; modül simgeleri hücre boyutuna göre büyütüldü.
+
+---
+
+# 26. Güncel Paket — Beta.38
+
+**`GRIDSHARD 2.0.0-beta.38 — Bitişik Devre · Kararlı Modül Etkileşimi · Üçlü Güçlendirici`**
+
+Beta.38, Beta.37 V7/V8 kozmetik katmanından sonra kullanıcı tarayıcısında doğrulanan savaş alanı etkileşim regresyonunu kapatan stabilizasyon ve yayın paketidir:
+
+1. [x] Güçlendirici sürükle-bırak verisi ayrı `application/x-gridshard-booster` türüne bağlandı. Modül sürüklemesindeki `text/plain` kimliği artık güçlendirici sanılmaz.
+2. [x] Dolu hücre üzerindeki modül kartı, modül sürükleme olayını yutmaz; olay hücreye ulaşır ve `swap_modules` / `replace_module` akışı yeniden çalışır.
+3. [x] Modül sürükleme başladığında bekleyen güçlendirici hedef seçimi ve soluk/hedef dışı kart sınıfları temizlenir.
+4. [x] V8 kareleştirme zorlaması geri alındı. Oyuncu ve rakip devreleri boşluksuz, bitişik hücre geometrisine döndü; modül kartları hücreyi tam doldurur.
+5. [x] Güçlendirici motoru beş tanımdan her tur dönen farklı üç seçenek üretir. Sunucu ve çevrimdışı fallback aynı `3 seçenekten 1` kuralını kullanır.
+6. [x] Profil, İstatistikler ve Ayarlar ekranlarının ana başlık blokları ortalandı.
+7. [x] Ayarlar otomatik kaydı korunurken ayrı Kaydet düğmesi ve otomatik kayıt bilgi kartı kaldırıldı. Kalıcılık doğrulama durumu korunur.
+8. [x] Kökteki eski `RELEASE_MANIFEST.json` kaldırıldı; paket manifesti yalnız ZIP içinde üretilir.
+9. [x] İstemci test komutu doğru çalışma klasörüne alındı; çoklu `requestAnimationFrame` kullanan savaş efektleri startup testinde gerçek tarayıcıya uygun biçimde modellenir.
+10. [x] Dolu hücre kartına doğrudan drag/drop uygulayan Playwright regresyonu ve Beta.38 statik kabul kapısı eklendi.
+
+Beta.38 yayın kanıtı:
+
+- [x] Kaynak sürüm kimliği, sunucu/istemci regresyonları ve kök manifest hijyeni otomatik kapıya bağlıdır.
+- [~] Yerel Chromium + Android Chrome + iPhone Safari emülasyon matrisi her yayın paketinde yeniden çalıştırılır.
+- [~] Fiziksel Android/iPhone kanıtı gerçek cihaz veya BrowserStack erişim anahtarları olmadan tamamlanmış sayılmaz; emülasyon fiziksel kanıt yerine yazılmaz.
+- [~] Dereceli liderlik tablosu, sezon sonu ödülleri ve kalıcı sezon arşivi ayrı canlı operasyon veri modeli gerektirir; savaş etkileşimi stabilizasyonuyla aynı riskli değişiklik setine karıştırılmamıştır.

@@ -70,7 +70,12 @@ const document = {
   },
 };
 
-let rafCallback = null;
+const rafCallbacks = [];
+const runAnimationFrame = (now) => {
+  const callbacks = rafCallbacks.splice(0, rafCallbacks.length);
+  for (const callback of callbacks) callback(now);
+  return callbacks.length;
+};
 
 const sandbox = {
   ...relayApi,
@@ -78,7 +83,7 @@ const sandbox = {
   document,
   console,
   performance: { now: () => 0 },
-  requestAnimationFrame: (callback) => { rafCallback = callback; return 1; },
+  requestAnimationFrame: (callback) => { rafCallbacks.push(callback); return rafCallbacks.length; },
   cancelAnimationFrame: () => {},
   setInterval: () => 0,
   clearInterval: () => {},
@@ -177,21 +182,23 @@ if (!quickState || quickState.pool_size !== 18 || quickState.started !== true) {
   throw new Error(`Hızlı savaş durumu geçersiz: ${JSON.stringify(quickState)}`);
 }
 
-if (typeof rafCallback !== "function") {
+if (rafCallbacks.length === 0) {
   throw new Error("Savaş requestAnimationFrame döngüsü kurulmadı.");
 }
 
 // Saat ve 15. saniye raf kilidini gerçek updateClock üzerinden ilerlet.
 for (let ms = 1000; ms <= 16000; ms += 1000) {
-  const cb = rafCallback;
-  cb(ms);
+  runAnimationFrame(ms);
 }
 
 if (getElement("battle-time").textContent === "00:00.0") {
   throw new Error("Savaş sayacı ilerlemedi.");
 }
 if (getElement("shelf-lock-label").textContent !== "Aktif") {
-  throw new Error(`Modül Rafı 15. saniyede açılmadı: ${getElement("shelf-lock-label").textContent}`);
+  throw new Error(
+    `Modül Rafı 15. saniyede açılmadı: ${getElement("shelf-lock-label").textContent}`
+    + ` · durum ${JSON.stringify(sandbox.window.__GRIDSHARD_TEST_API.getBattleState())}`
+  );
 }
 
 const beforeRotation = sandbox.window.__GRIDSHARD_TEST_API.getBattleState().directions["laser-1"];
@@ -210,8 +217,7 @@ for (let i = 0; i < 3; i += 1) {
 
 // Yerel savaşın karşılıklı hasarla gerçek sonuca ulaştığını doğrula.
 for (let ms = 17000; ms <= 120000 && document.body.dataset.localFinished !== "true"; ms += 1000) {
-  const cb = rafCallback;
-  cb(ms);
+  runAnimationFrame(ms);
 }
 
 if (document.body.dataset.localFinished !== "true") {
@@ -224,7 +230,7 @@ if (!getElement("enemy-board")) {
 const frozenState = sandbox.window.__GRIDSHARD_TEST_API.getBattleState();
 const frozenElapsed = frozenState.elapsed_ms;
 const frozenDirection = frozenState.directions["laser-1"];
-rafCallback(130000);
+runAnimationFrame(130000);
 const afterFinishState = sandbox.window.__GRIDSHARD_TEST_API.getBattleState();
 if (afterFinishState.elapsed_ms !== frozenElapsed) {
   throw new Error(`Maç sonu sayaç donmadı: ${frozenElapsed} -> ${afterFinishState.elapsed_ms}`);
@@ -247,7 +253,7 @@ if (document.body.dataset.localStatus !== "setup") {
 
 sandbox.window.__GRIDSHARD_TEST_API.startQuickLocalBattle();
 for (let ms = 1000; ms <= 5000; ms += 1000) {
-  rafCallback(ms);
+  runAnimationFrame(ms);
 }
 
 const forfeitButton = getElement("battle-forfeit-button");

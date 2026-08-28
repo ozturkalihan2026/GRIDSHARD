@@ -1,4 +1,4 @@
-from app.game.booster_schedule import BOOSTER_FIRST_OFFER_MS, BOOSTER_OFFER_INTERVAL_MS, booster_offer_due_at_ms
+from app.game.booster_schedule import BOOSTER_FIRST_OFFER_MS, BOOSTER_OFFER_INTERVAL_MS, BOOSTER_OPTIONS_PER_OFFER, booster_offer_due_at_ms
 from app.game.engine import BattleEngine
 from app.game.models import BattleCommand, BattleState
 
@@ -29,7 +29,8 @@ def test_schedule_boundaries():
 def test_offer_at_30():
     e=make_engine(); advance(e,30000)
     offer=e.state.players["p1"].pending_booster_offer
-    assert offer is not None and len(offer.booster_ids)==4
+    assert BOOSTER_OPTIONS_PER_OFFER==3
+    assert offer is not None and len(offer.booster_ids)==3
     assert offer.created_at_ms==30000
 
 def test_offer_wait_does_not_stack_or_pause():
@@ -84,3 +85,5 @@ def test_offer_rotates_across_turns():
     advance(e,60000)
     second=e.state.players["p1"].pending_booster_offer.booster_ids
     assert second != first
+    assert len(first)==len(second)==3
+    assert second[0]==first[1]

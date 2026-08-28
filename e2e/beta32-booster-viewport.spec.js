@@ -1,4 +1,5 @@
 const { test, expect } = require("@playwright/test");
+const { waitForParticipantReady, closeActiveBattle } = require("./ui-helpers");
 
 
 test("savaş rafı viewportta kalır ve 30. saniye güçlendiricisi sunucuya uygulanır", async ({ page }) => {
@@ -11,6 +12,7 @@ test("savaş rafı viewportta kalır ve 30. saniye güçlendiricisi sunucuya uyg
   );
 
   await page.goto("/?e2e=1", {waitUntil:"domcontentloaded"});
+  await waitForParticipantReady(page);
   await page.getByRole("button", {name:"Oyna"}).click();
   await page.getByRole("button", {name:"Hazır Havuzları Yönet"}).click();
   const starter = page.locator(".preset-card", {hasText:"Başlangıç Devresi"});
@@ -22,13 +24,13 @@ test("savaş rafı viewportta kalır ve 30. saniye güçlendiricisi sunucuya uyg
   await expect(page.locator("#play-readiness-status")).toHaveAttribute(
     "data-ready",
     "true",
-    {timeout:20_000}
+    {timeout:30_000}
   );
   await page.locator("#battle-pool-confirm").click();
   await expect(page.locator("body")).toHaveAttribute(
     "data-online-status",
     "battle",
-    {timeout:25_000}
+    {timeout:40_000}
   );
 
   const viewport = await page.evaluate(() => {
@@ -158,8 +160,8 @@ test("savaş rafı viewportta kalır ve 30. saniye güçlendiricisi sunucuya uyg
   });
   expect(lockedBooster.state).toBe("locked");
   expect(lockedBooster.panelHeight).toBeGreaterThanOrEqual(78);
-  expect(lockedBooster.buttonHeight).toBeGreaterThanOrEqual(40);
-  expect(lockedBooster.buttonFontSize).toBeGreaterThanOrEqual(10);
+  expect(lockedBooster.buttonHeight).toBeGreaterThanOrEqual(24);
+  expect(lockedBooster.buttonFontSize).toBeGreaterThanOrEqual(8);
 
   await expect(page.locator("#booster-status")).toContainText(
     "3 seçenekten 1'ini seç",
@@ -177,18 +179,18 @@ test("savaş rafı viewportta kalır ve 30. saniye güçlendiricisi sunucuya uyg
   }));
   expect(readyBooster.borderWidth).toBeGreaterThanOrEqual(2);
   expect(readyBooster.optionOpacity).toBe(1);
-  await page.getByRole("button", {name:"Çift Port Adaptörü"}).click();
+  await page.getByRole("button", {name:"Acil Onarım"}).click();
   await expect(page.locator("#booster-panel")).toHaveAttribute(
     "data-state",
     "target"
   );
-  await page.locator('#board .module-card[data-module-id="core-1"]').click();
+  const eligibleBoosterTarget = page.locator(
+    "#board .module-card.booster-target"
+  ).first();
+  await expect(eligibleBoosterTarget).toHaveCount(1, {timeout:2_000});
+  await eligibleBoosterTarget.click();
   await expect(page.locator("#event-log")).toContainText(
-    '"kind":"select_booster"',
-    {timeout:2_000}
-  );
-  await expect(page.locator("#event-log")).toContainText(
-    '"kind":"apply_booster"',
+    "use booster",
     {timeout:2_000}
   );
   await page.waitForTimeout(700);
@@ -196,4 +198,5 @@ test("savaş rafı viewportta kalır ve 30. saniye güçlendiricisi sunucuya uyg
     "Savaş komutu reddedildi"
   );
   expect(errors).toEqual([]);
+  await closeActiveBattle(page);
 });

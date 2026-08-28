@@ -3277,7 +3277,7 @@ def gridshard_identity() -> dict:
         "tagline_en":
             "Build the Circuit. Break the Core.",
         "identity_version":
-            "2.0.0-beta.37",
+            "2.0.0-beta.38",
         "palette":{
             "void_navy":"#07142B",
             "reactor_blue":"#0D2342",

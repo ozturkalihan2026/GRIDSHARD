@@ -88,6 +88,11 @@ async function waitFor(driver, predicate, timeout = 20_000) {
 
     await driver.get(`${baseURL}/?e2e=1`);
     await driver.executeScript("localStorage.setItem('gridshard.tutorial.v1', 'complete')");
+    await driver.navigate().refresh();
+    await waitFor(
+      driver,
+      "return document.querySelector('#participant-bootstrap-status')?.dataset.status === 'ready'",
+      30_000);
     const playButton = await driver.wait(until.elementLocated(By.css(".menu-action-play")), 20_000);
     await playButton.click();
     await driver.wait(until.elementsLocated(By.css("#battle-pool-selection .pool-choice")), 20_000);
@@ -101,7 +106,10 @@ async function waitFor(driver, predicate, timeout = 20_000) {
     await driver.findElement(By.css("#battle-pool-preset-close")).click();
     await driver.findElement(By.css("#battle-pool-confirm")).click();
 
-    await waitFor(driver, "return document.body.dataset.onlineStatus === 'battle'");
+    await waitFor(
+      driver,
+      "return document.body.dataset.onlineStatus === 'battle'",
+      40_000);
     await waitFor(driver, "return document.body.dataset.opponentType === 'ai'");
     const layout = await driver.executeScript(`
       const board = document.querySelector('#board').getBoundingClientRect();
@@ -120,7 +128,7 @@ async function waitFor(driver, predicate, timeout = 20_000) {
     await waitFor(driver, `
       const card = document.querySelector('#module-shelf .module-card');
       const capacity = document.querySelector('#capacity-indicator')?.textContent || '';
-      return card && !card.classList.contains('locked') && capacity.includes('/ 5');
+      return card && !card.classList.contains('locked') && capacity.includes('Sınır 5/10');
     `, 35_000);
     const before = (await driver.findElements(By.css("#module-shelf .module-card"))).length;
     await driver.findElement(By.css("#module-shelf .module-card")).click();
@@ -128,6 +136,11 @@ async function waitFor(driver, predicate, timeout = 20_000) {
     await driver.findElement(By.css('#board .tap-drop-target[data-x="2"][data-y="4"][data-occupied=false]')).click();
     await driver.wait(async () =>
       (await driver.findElements(By.css("#module-shelf .module-card"))).length === before - 1,
+    15_000);
+
+    await driver.findElement(By.css("#battle-forfeit-button")).click();
+    await driver.wait(until.elementIsVisible(
+      await driver.findElement(By.css(".post-match-panel"))),
     15_000);
 
     await driver.executeScript(`browserstack_executor: ${JSON.stringify({

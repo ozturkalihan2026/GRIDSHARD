@@ -91,7 +91,7 @@
   const COMPETITIVE_STATUS = "M7 rekabetçi altyapı doğrulanıyor";
   const BALANCE_STATUS = "Denge simülasyonu mevcut · geniş örnek bekliyor";
   const AI_STATUS = "5 AI arketipi aktif · oyuncu test telemetrisi toplanıyor";
-  const PVP_STATUS = "GRIDSHARD Beta.37 · Tam Dil Desteği + Görünür Modül Hakları";
+  const PVP_STATUS = "GRIDSHARD Beta.38 · Bitişik Devre + Kararlı Modül Etkileşimi + Üçlü Güçlendirici";
 
 
 
@@ -117,6 +117,8 @@
   };
   const BOOSTER_FIRST_OFFER_MS = 30000;
   const BOOSTER_OFFER_INTERVAL_MS = 30000;
+  const BOOSTER_OPTIONS_PER_OFFER = 3;
+  const BOOSTER_DRAG_TYPE = "application/x-gridshard-booster";
   let nextBoosterOfferIndex = 0;
   let boosterOfferOpen = false;
   let serverBoosterOfferId = null;
@@ -642,7 +644,7 @@
         webTestBuildState,
       releaseCheckState,
       expectedVersion:
-        "2.0.0-beta.37",
+        "2.0.0-beta.38",
       expectedProtocolVersion: 1,
     });
   const playReadinessGate =
@@ -678,7 +680,7 @@
 
   telemetryDispatcher.trackGameOpened({
     platform: "web",
-    build: "2.0.0-beta.37",
+    build: "2.0.0-beta.38",
   });
 
   const postMatchSync =
@@ -1636,7 +1638,7 @@
   const diagnosticSnapshot =
     new RelayDiagnosticSnapshot({
       version:
-        "2.0.0-beta.37",
+        "2.0.0-beta.38",
       build:
         "web-test-beta.13",
       bootGate:
@@ -3583,7 +3585,7 @@
       if (versionEl) {
         versionEl.textContent=
           manifest.version
-          || "2.0.0-beta.37";
+          || "2.0.0-beta.38";
       }
       if (runEl) {
         runEl.textContent=
@@ -7670,13 +7672,19 @@ function saveHumanReviewLocalNote() {
     }
 
     const layerRect = layer.getBoundingClientRect();
+    const targetRoot = moduleId.startsWith("enemy-")
+      ? document.getElementById("enemy-board")
+      : document.getElementById("board");
+    const targetElement = targetRoot?.querySelector(
+      `[data-module-id="${moduleId}"]`
+    );
     const effect = document.createElement("span");
     effect.className = core
       ? "module-explosion core-explosion"
       : "module-explosion";
     effect.dataset.category = core
       ? "core"
-      : String(target.dataset.category || "module");
+      : String(targetElement?.dataset.category || "module");
     effect.style.left =
       `${targetRect.left + targetRect.width / 2 - layerRect.left}px`;
     effect.style.top =
@@ -10062,12 +10070,19 @@ function saveHumanReviewLocalNote() {
     return BOOSTER_FIRST_OFFER_MS + index * BOOSTER_OFFER_INTERVAL_MS;
   }
 
+  function rotatingBoosterOfferIds(index) {
+    const offset = Math.max(0, Number(index) || 0) % BOOSTER_OPTIONS.length;
+    const rotated = BOOSTER_OPTIONS.slice(offset).concat(BOOSTER_OPTIONS.slice(0, offset));
+    return rotated.slice(0, BOOSTER_OPTIONS_PER_OFFER).map((booster) => booster.id);
+  }
+
   function updateBoosterOfferAvailability() {
     if (localServerAuthoritative) return;
     const dueAtMs = boosterOfferDueAtMs(nextBoosterOfferIndex);
     if (!boosterOfferOpen && client.elapsedMs >= dueAtMs) {
       boosterOfferOpen = true;
       selectedBoosterId = null;
+      activeBoosterOfferIds = new Set(rotatingBoosterOfferIds(nextBoosterOfferIndex));
       boosterStatusEl.textContent = localizedUiText("HAZIR · 3 seçenekten 1'ini seç");
       renderBoosterOptions();
     } else if (!boosterOfferOpen) {
@@ -10227,7 +10242,7 @@ function saveHumanReviewLocalNote() {
         }
         selectedBoosterId = booster.id;
         event.dataTransfer?.setData(
-          "application/x-gridshard-booster",
+          BOOSTER_DRAG_TYPE,
           booster.id
         );
         event.dataTransfer?.setData("text/plain", booster.id);
@@ -10297,6 +10312,34 @@ function saveHumanReviewLocalNote() {
       return false;
     }
     return true;
+  }
+
+  function draggedBoosterId(event) {
+    const transfer = event?.dataTransfer;
+    const transferTypes = Array.from(transfer?.types || []);
+    if (!transfer || !transferTypes.includes(BOOSTER_DRAG_TYPE)) return "";
+    const boosterId = transfer.getData(BOOSTER_DRAG_TYPE) || selectedBoosterId || "";
+    return BOOSTER_OPTIONS.some((booster) => booster.id === boosterId)
+      ? boosterId
+      : "";
+  }
+
+  function cancelBoosterTargetingForModuleDrag() {
+    if (!selectedBoosterId) return;
+    selectedBoosterId = null;
+    document.querySelectorAll(
+      ".module-card.booster-target, .module-card.booster-target-ineligible, .module-card.booster-drop-ready"
+    ).forEach((card) => card.classList.remove(
+      "booster-target",
+      "booster-target-ineligible",
+      "booster-drop-ready"
+    ));
+    if (boosterOfferOpen && boosterStatusEl) {
+      boosterStatusEl.textContent = localizedUiText(
+        `HAZIR · ${activeBoosterOfferIds.size || BOOSTER_OPTIONS_PER_OFFER} seçenekten 1'ini seç`
+      );
+    }
+    renderBoosterOptions();
   }
 
   function tryApplySelectedBooster(module) {
@@ -12299,16 +12342,14 @@ function saveHumanReviewLocalNote() {
     }
 
     card.addEventListener("dragover", (event) => {
-      const draggedBoosterId = event.dataTransfer?.getData("application/x-gridshard-booster")
-        || event.dataTransfer?.getData("text/plain")
-        || selectedBoosterId;
-      if (!draggedBoosterId) return;
-      if (draggedBoosterId !== selectedBoosterId) {
-        selectedBoosterId = draggedBoosterId;
+      const boosterId = draggedBoosterId(event);
+      if (!boosterId) return;
+      if (boosterId !== selectedBoosterId) {
+        selectedBoosterId = boosterId;
       }
       event.preventDefault();
       event.stopPropagation();
-      if (isBoosterTargetEligible(module, draggedBoosterId)) {
+      if (isBoosterTargetEligible(module, boosterId)) {
         card.classList.add("booster-drop-ready");
       }
     });
@@ -12316,11 +12357,9 @@ function saveHumanReviewLocalNote() {
       card.classList.remove("booster-drop-ready");
     });
     card.addEventListener("drop", (event) => {
-      const draggedBoosterId = event.dataTransfer?.getData("application/x-gridshard-booster")
-        || event.dataTransfer?.getData("text/plain")
-        || selectedBoosterId;
-      if (!draggedBoosterId) return;
-      selectedBoosterId = draggedBoosterId;
+      const boosterId = draggedBoosterId(event);
+      if (!boosterId) return;
+      selectedBoosterId = boosterId;
       event.preventDefault();
       event.stopPropagation();
       card.classList.remove("booster-drop-ready");
@@ -12398,6 +12437,7 @@ function saveHumanReviewLocalNote() {
     card.addEventListener(
       "dragstart",
       (event) => {
+        cancelBoosterTargetingForModuleDrag();
         if (tapSelectedModuleId) {
           clearTapSelection({ rerender: false });
         }
@@ -13964,14 +14004,6 @@ function saveHumanReviewLocalNote() {
         }
       );
     }
-  }
-
-  const settingsSaveButton =
-    document.getElementById(
-      "settings-save"
-    );
-  if (settingsSaveButton) {
-    settingsSaveButton.remove();
   }
 
   const settingsLanguageEl =

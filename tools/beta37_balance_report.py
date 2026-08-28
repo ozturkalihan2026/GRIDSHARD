@@ -24,7 +24,7 @@ from app.game.simulation import (
 )
 
 
-VERSION = "2.0.0-beta.37"
+VERSION = "2.0.0-beta.38"
 OUTPUT = ROOT / "qa_reports" / "beta37_balance_report.json"
 LAYOUTS = (
     BALANCED_LAYOUT,
