@@ -1,4 +1,5 @@
 from pathlib import Path
+import re
 
 from fastapi.testclient import TestClient
 
@@ -36,13 +37,13 @@ def test_pool_categories_plus_minus_and_save_recovery_are_wired():
     source = client.get("/src/app.js").text
     css = client.get("/src/styles.css").text
 
-    assert 'document.createElement(\n        "details"' in source
+    assert re.search(r'document\.createElement\(\s*"details"', source)
     assert 'scope:"global"' in source
     assert 'scope:"selected"' in source
-    assert 'selected\n                  ? "✓"\n                  : "+"' in source
+    assert re.search(r'selected\s*\?\s*"✓"\s*:\s*"\+"', source)
     assert 'removeMark.textContent=' in source
-    assert '? "◆"\n            : "−"' in source
-    assert 'presetNameEl.addEventListener(\n      "input"' in source
+    assert re.search(r'\?\s*"◆"\s*:\s*"−"', source)
+    assert re.search(r'presetNameEl\.addEventListener\(\s*"input"', source)
     assert '"Yeni Hazır Havuzu Kaydet"' in source
     assert "payload?.preset?.name" in source
     assert ".pool-category-group:not([open])" in css

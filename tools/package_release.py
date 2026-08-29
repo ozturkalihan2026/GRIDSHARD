@@ -12,7 +12,8 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 VERSION = "2.0.0-beta.38"
-ARCHIVE_ROOT = f"GRIDSHARD-{VERSION}"
+PACKAGE_LABEL = "fix"
+ARCHIVE_ROOT = f"GRIDSHARD-{VERSION}-{PACKAGE_LABEL}"
 
 EXCLUDED_PREFIXES = (
     "server/data/",
@@ -71,8 +72,8 @@ def sha256(path: Path) -> str:
 def main(output_dir: Path | None = None) -> int:
     release_dir = (output_dir or ROOT).resolve()
     release_dir.mkdir(parents=True, exist_ok=True)
-    archive = release_dir / f"GRIDSHARD-{VERSION}.zip"
-    checksum = release_dir / f"GRIDSHARD-{VERSION}.zip.sha256"
+    archive = release_dir / f"GRIDSHARD-{VERSION}-{PACKAGE_LABEL}.zip"
+    checksum = release_dir / f"GRIDSHARD-{VERSION}-{PACKAGE_LABEL}.zip.sha256"
     files = release_files()
     commit = subprocess.check_output(
         ["git", "rev-parse", "HEAD"],
@@ -82,6 +83,7 @@ def main(output_dir: Path | None = None) -> int:
     manifest = {
         "project": "GRIDSHARD",
         "version": VERSION,
+        "package_label": PACKAGE_LABEL,
         "created_at": datetime.now(timezone.utc).isoformat(),
         "source_commit": commit,
         "working_tree_changes_included": True,

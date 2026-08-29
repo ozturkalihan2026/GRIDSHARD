@@ -40,8 +40,8 @@ assert.strictEqual(
 assert.ok(app.includes('settingsLanguageEl.addEventListener('));
 assert.ok(app.includes('await saveSettingsForm();'));
 assert.ok(app.includes('const collapsedShelfCategories = new Set();'));
-assert.ok(app.includes('document.createElement(\n          "details"'));
-assert.ok(app.includes('trackBattleUiInteraction(\n          "tap_rotate_module"'));
+assert.ok(/document\.createElement\(\s*"details"\s*\)/u.test(app));
+assert.ok(/trackBattleUiInteraction\(\s*"tap_rotate_module"/u.test(app));
 
 assert.ok(html.includes('id="battle-pool-detail-preview"'));
 assert.ok(styles.includes('.pool-detail-preview-card > .port-dot'));

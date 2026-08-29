@@ -357,7 +357,7 @@ function createClient() {
   assert.ok(appSrc.includes("id:`enemy-${module.instance_id}`"));
   assert.ok(appSrc.includes("function serverModuleDomId"));
   assert.ok(appSrc.includes("? `enemy-${serverModule.instance_id}`"));
-  assert.ok(appSrc.includes("data.attacker_player_id\n          === data.target_player_id"));
+  assert.ok(/data\.attacker_player_id\s*===\s*data\.target_player_id/.test(appSrc));
   assert.ok(cssSrc.includes(
     'body[data-app-screen="play"][data-play-mode="online"]:not([data-online-status="battle"])'
   ));

@@ -461,6 +461,9 @@
       return value
         .replace(/^Devrede (\d+) · Boş Hak (\d+) · Sınır (\d+)\/10 · Yeni Hak (\d+) sn$/u, "On Circuit $1 · Open Slots $2 · Limit $3/10 · New Slot in $4 sec")
         .replace(/^Devrede (\d+) · Boş Hak (\d+) · Üst Sınır (\d+)$/u, "On Circuit $1 · Open Slots $2 · Maximum $3")
+        .replace(/^Yeni modül hakkı · (\d+) sn$/u, "New module slot · $1 sec")
+        .replace(/^Yerleştirme hakkı hazır · (\d+)$/u, "Placement slots ready · $1")
+        .replace(/^Tüm modül hakları açıldı$/u, "All module slots unlocked")
         .replace(/^Yeni modül hakkı açıldı · Sınır (\d+)\/10$/u, "New module slot unlocked · Limit $1/10")
         .replace(/^(.+) · Seviye (\d+) · ([^·]+) · (\d+) Derece Puanı · (\d+) XP$/u, (_, name, level, league, rating, xp) => `${name} · Level ${level} · ${EN[league.trim()] || league.trim()} · ${rating} Rating Points · ${xp} XP`)
         .replace(/^Web Test Kimliği: (.+)$/u, "Web Test Identity: $1")
@@ -513,6 +516,9 @@
     return value
       .replace(/^On Circuit (\d+) · Open Slots (\d+) · Limit (\d+)\/10 · New Slot in (\d+) sec$/u, "Devrede $1 · Boş Hak $2 · Sınır $3/10 · Yeni Hak $4 sn")
       .replace(/^On Circuit (\d+) · Open Slots (\d+) · Maximum (\d+)$/u, "Devrede $1 · Boş Hak $2 · Üst Sınır $3")
+      .replace(/^New module slot · (\d+) sec$/u, "Yeni modül hakkı · $1 sn")
+      .replace(/^Placement slots ready · (\d+)$/u, "Yerleştirme hakkı hazır · $1")
+      .replace(/^All module slots unlocked$/u, "Tüm modül hakları açıldı")
       .replace(/^New module slot unlocked · Limit (\d+)\/10$/u, "Yeni modül hakkı açıldı · Sınır $1/10")
       .replace(/^(.+) · Level (\d+) · ([^·]+) · (\d+) Rating Points · (\d+) XP$/u, (_, name, level, league, rating, xp) => `${name} · Seviye ${level} · ${TR[league.trim()] || league.trim()} · ${rating} Derece Puanı · ${xp} XP`)
       .replace(/^Web Test Identity: (.+)$/u, "Web Test Kimliği: $1")

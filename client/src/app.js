@@ -1290,6 +1290,8 @@
         gridshardAudioDirector.setState("matchmaking");
       } else if (status === "battle") {
         gridshardAudioDirector.setState("battle");
+      } else if (["idle", "cancelled", "error", ""].includes(String(status || ""))) {
+        gridshardAudioDirector.setState("pool");
       }
     }
     const battleMatchLabel = document.getElementById("battle-match-label");
@@ -5755,21 +5757,37 @@ function saveHumanReviewLocalNote() {
   }
 
   function parseFloatingFeedbackText(text) {
-    const match = String(text || "").trim().match(/^([+-]?)(\d+(?:[.,]\d+)?)\s+(.+)$/u);
+    const match = String(text || "").trim().match(/^([+-]?)(\d+(?:[.,]\d+)?)(%)?\s+(.+)$/u);
     if (!match) return null;
     const sign = match[1] === "-" ? -1 : 1;
     const numeric = Number(match[2].replace(",", "."));
     if (!Number.isFinite(numeric)) return null;
     return {
       amount: sign * numeric,
-      suffix: match[3],
+      explicitSign: Boolean(match[1]),
+      percent: Boolean(match[3]),
+      suffix: match[4],
     };
   }
 
-  function formatFloatingFeedbackAmount(amount, suffix) {
+  function formatFloatingFeedbackAmount(
+    amount,
+    suffix,
+    { explicitSign=true, percent=false }={}
+  ) {
     const rounded = Math.round(Number(amount) * 10) / 10;
-    const prefix = rounded > 0 ? "+" : "";
-    return `${prefix}${Number.isInteger(rounded) ? rounded : rounded.toFixed(1)} ${suffix}`;
+    const prefix = rounded > 0 && explicitSign ? "+" : "";
+    const unit = percent ? "%" : "";
+    return `${prefix}${Number.isInteger(rounded) ? rounded : rounded.toFixed(1)}${unit} ${suffix}`;
+  }
+
+  function updateFloatingFeedbackImportance(chip, amount) {
+    const magnitude = Math.abs(Number(amount || 0));
+    const scale = Math.min(1.48, 0.88 + Math.log10(magnitude + 1) * 0.28);
+    chip.style.setProperty("--feedback-scale", scale.toFixed(3));
+    chip.dataset.impact = magnitude >= 30
+      ? "large"
+      : (magnitude >= 10 ? "medium" : "small");
   }
 
   function emitFloatingBattleFeedback(
@@ -5795,8 +5813,11 @@ function saveHumanReviewLocalNote() {
     }
 
     const layerRect = layer.getBoundingClientRect();
-    const key = `${moduleId}:${variant}`;
     const parsed = parseFloatingFeedbackText(text);
+    const semanticKey = parsed
+      ? `${parsed.percent ? "percent" : "value"}:${parsed.suffix}`
+      : String(text);
+    const key = `${moduleId}:${variant}:${semanticKey}`;
     const existing = floatingFeedbackLive.get(key);
     const now = Date.now();
 
@@ -5813,12 +5834,20 @@ function saveHumanReviewLocalNote() {
         existing.amount += parsed.amount;
         existing.chip.textContent = formatFloatingFeedbackAmount(
           existing.amount,
-          existing.suffix
+          existing.suffix,
+          {
+            explicitSign: existing.explicitSign,
+            percent: existing.percent,
+          }
         );
+        updateFloatingFeedbackImportance(existing.chip, existing.amount);
       } else {
         existing.chip.textContent = text;
         existing.amount = parsed?.amount ?? null;
         existing.suffix = parsed?.suffix ?? null;
+        existing.explicitSign = parsed?.explicitSign ?? false;
+        existing.percent = parsed?.percent ?? false;
+        updateFloatingFeedbackImportance(existing.chip, parsed?.amount ?? 0);
       }
       existing.updatedAt = now;
       existing.chip.classList.remove("stacked");
@@ -5830,6 +5859,7 @@ function saveHumanReviewLocalNote() {
     const chip = document.createElement("span");
     chip.className = `battle-floating-feedback ${variant}`;
     chip.textContent = text;
+    updateFloatingFeedbackImportance(chip, parsed?.amount ?? 0);
     chip.style.left = `${anchor.left + anchor.width / 2 - layerRect.left}px`;
     chip.style.top = `${anchor.top + Math.max(16, anchor.height * 0.28) - layerRect.top}px`;
     layer.appendChild(chip);
@@ -5838,6 +5868,8 @@ function saveHumanReviewLocalNote() {
       chip,
       amount: parsed?.amount ?? null,
       suffix: parsed?.suffix ?? null,
+      explicitSign: parsed?.explicitSign ?? false,
+      percent: parsed?.percent ?? false,
       updatedAt: now,
     };
     floatingFeedbackLive.set(key, record);
@@ -5846,7 +5878,7 @@ function saveHumanReviewLocalNote() {
       if (floatingFeedbackLive.get(key)?.chip === chip) {
         floatingFeedbackLive.delete(key);
       }
-    }, 1320);
+    }, 1120);
     return true;
   }
 
@@ -5941,7 +5973,7 @@ function saveHumanReviewLocalNote() {
           snapshot,
           data.player_id,
           data.module_id,
-          `-${Math.max(0, Math.round(Number(data.damage || 0)))} Can`,
+          `-${Math.max(0, Math.round(Number(data.damage || 0)))} CAN · DARBE`,
           "damage"
         );
         continue;
@@ -5951,7 +5983,7 @@ function saveHumanReviewLocalNote() {
           snapshot,
           data.target_player_id,
           data.target_module_id,
-          `-${Math.max(0, Math.round(Number(data.damage || 0)))} Yansıma`,
+          `${Math.max(0, Math.round(Number(data.damage || 0)))} YANSITMA · YANSITICI`,
           "reflect"
         );
         continue;
@@ -5961,7 +5993,7 @@ function saveHumanReviewLocalNote() {
           snapshot,
           data.target_player_id || data.player_id,
           data.target_module_id,
-          `+${Math.max(0, Math.round(Number(data.repair || 0)))} Can`,
+          `+${Math.max(0, Math.round(Number(data.repair || 0)))} CAN · ONARIM`,
           "heal"
         );
         continue;
@@ -5974,7 +6006,7 @@ function saveHumanReviewLocalNote() {
           snapshot,
           data.player_id,
           data.target_module_id,
-          reduced > 0 ? `-${reduced} Isı` : "Isı Düştü",
+          reduced > 0 ? `-${reduced} ISI · SOĞUTUCU` : "ISI DÜŞTÜ · SOĞUTUCU",
           "cool"
         );
         continue;
@@ -5984,7 +6016,7 @@ function saveHumanReviewLocalNote() {
           snapshot,
           data.player_id,
           data.target_module_id,
-          "+Atak Hızı",
+          "+GÜÇ · GÜÇLENDİRİCİ",
           "boost"
         );
         continue;
@@ -5992,13 +6024,13 @@ function saveHumanReviewLocalNote() {
       if (event?.type === "attack_support_applied") {
         const supportBits = [];
         if (Number(data.damage_multiplier || 1) > 1) {
-          supportBits.push(`+${Math.round((Number(data.damage_multiplier || 1) - 1) * 100)} Güç`);
+          supportBits.push(`+${Math.round((Number(data.damage_multiplier || 1) - 1) * 100)}% GÜÇ`);
         }
         if (Number(data.cooldown_multiplier || 1) < 1) {
-          supportBits.push(`+${Math.round((1 - Number(data.cooldown_multiplier || 1)) * 100)} Hız`);
+          supportBits.push(`+${Math.round((1 - Number(data.cooldown_multiplier || 1)) * 100)}% HIZ`);
         }
         if (data.targeting_active) {
-          supportBits.push("Hedef+");
+          supportBits.push("+HEDEFLEME");
         }
         if (data.overclock_active && supportBits.length === 0) {
           supportBits.push("Destek");
@@ -6008,7 +6040,7 @@ function saveHumanReviewLocalNote() {
             snapshot,
             data.player_id,
             data.module_id,
-            supportBits.join(" · "),
+            `${supportBits.join(" · ")} · DESTEK`,
             "boost"
           );
         }
@@ -6020,17 +6052,17 @@ function saveHumanReviewLocalNote() {
         if (data.booster_id === "emergency_repair") {
           boosterVariant = "heal";
           const repair = Math.max(0, Math.round(Number(data.hp_after || 0) - Number(data.hp_before || 0)));
-          boosterText = repair > 0 ? `+${repair} Can` : "Acil Onarım";
+          boosterText = repair > 0 ? `+${repair} CAN · ACİL ONARIM` : "ACİL ONARIM";
         } else if (data.booster_id === "overcharge_chip") {
-          boosterText = "+25 Güç";
+          boosterText = "+25% GÜÇ · AŞIRI YÜK";
         } else if (data.booster_id === "dual_port_adapter") {
-          boosterText = "+1 Port";
+          boosterText = "+1 PORT · ADAPTÖR";
         } else if (data.booster_id === "cooling_burst") {
           boosterVariant = "cool";
-          boosterText = "Isı Sıfırlandı";
+          boosterText = "ISI SIFIRLANDI · SOĞUTMA";
         } else if (data.booster_id === "signal_cleanser") {
-          boosterVariant = "boost";
-          boosterText = "Sabotaj Temizlendi";
+          boosterVariant = "sabotage";
+          boosterText = "SABOTAJ TEMİZLENDİ";
         }
         emitServerModuleFeedback(
           snapshot,
@@ -6038,6 +6070,86 @@ function saveHumanReviewLocalNote() {
           data.target_module_id,
           boosterText,
           boosterVariant
+        );
+        continue;
+      }
+      if (event?.type === "sabotage_applied") {
+        const sabotageLabels = {
+          emp_disabled: "EMP · ENERJİ KESİLDİ",
+          support_jammed: "SİNYAL BOZULDU",
+          virus: "VİRÜS · SABOTAJ",
+          energy_leech: "ENERJİ SÖMÜRÜSÜ",
+          line_disrupted: "HAT KESİLDİ",
+        };
+        emitServerModuleFeedback(
+          snapshot,
+          data.target_player_id,
+          data.target_module_id,
+          sabotageLabels[data.effect_id] || "SABOTAJ",
+          "sabotage"
+        );
+        continue;
+      }
+      if (event?.type === "sabotage_blocked") {
+        emitServerModuleFeedback(
+          snapshot,
+          data.target_player_id,
+          data.target_module_id,
+          "SABOTAJ ENGELLENDİ · BARİYER",
+          "defense"
+        );
+        continue;
+      }
+      if (event?.type === "sabotage_cleansed") {
+        emitServerModuleFeedback(
+          snapshot,
+          data.player_id,
+          data.target_module_id,
+          "SABOTAJ TEMİZLENDİ · DESTEK",
+          data.cleanser === "cooler" ? "cool" : "heal"
+        );
+        continue;
+      }
+      if (event?.type === "sabotage_duration_reduced") {
+        const reductionSeconds = Math.max(0, Math.round(Number(data.reduction_ms || 0) / 100) / 10);
+        emitServerModuleFeedback(
+          snapshot,
+          data.player_id,
+          data.target_module_id,
+          reductionSeconds > 0
+            ? `-${reductionSeconds} sn SABOTAJ · SOĞUTUCU`
+            : "SABOTAJ AZALDI · SOĞUTUCU",
+          "sabotage"
+        );
+        continue;
+      }
+      if (event?.type === "attack_skipped_unpowered") {
+        emitServerModuleFeedback(
+          snapshot,
+          data.player_id,
+          data.module_id,
+          "ENERJİ KESİLDİ",
+          "sabotage"
+        );
+        continue;
+      }
+      if (event?.type === "support_skipped_jammed") {
+        emitServerModuleFeedback(
+          snapshot,
+          data.player_id,
+          data.module_id,
+          "SİNYAL BOZULDU · DESTEK DURDU",
+          "sabotage"
+        );
+        continue;
+      }
+      if (event?.type === "module_overheated" || event?.type === "attack_skipped_overheated") {
+        emitServerModuleFeedback(
+          snapshot,
+          data.player_id,
+          data.module_id,
+          "AŞIRI ISI!",
+          "warning"
         );
         continue;
       }
@@ -6102,6 +6214,17 @@ function saveHumanReviewLocalNote() {
           === data.target_player_id
       ) {
         continue;
+      }
+
+      const preventedDamage = Math.max(0, Math.round(Number(data.reduced_damage || 0)));
+      if (preventedDamage > 0) {
+        emitServerModuleFeedback(
+          snapshot,
+          data.target_player_id,
+          data.target_module_id,
+          `${preventedDamage} ENGELLENDİ · ${defenseType === "shield" || defenseType === "kalkan" ? "KALKAN" : "SAVUNMA"}`,
+          "defense"
+        );
       }
 
       const sourceId=
@@ -11904,10 +12027,28 @@ function saveHumanReviewLocalNote() {
   let renderedShelfSignature = null;
   let renderedBoardSignature = null;
 
+  function modulePlacementSlotState() {
+    const limit = client.maxActiveModules();
+    const currentLimit = limit === null ? 4 : limit;
+    const active = client.activeModuleCount();
+    const pending = client.pendingPlacementCount();
+    const available = Math.max(0, currentLimit - active - pending);
+    return {
+      limit,
+      currentLimit,
+      active,
+      pending,
+      available,
+      ready:
+        client.isShelfUnlocked()
+        && !localBattleFinished
+        && available > 0,
+    };
+  }
+
   function renderShelf() {
-    const unlocked =
-      client.isShelfUnlocked()
-      && !localBattleFinished;
+    const placement = modulePlacementSlotState();
+    const unlocked = placement.ready;
     const reserveModules=[
       ...client.modules.values(),
     ].filter(
@@ -11921,6 +12062,7 @@ function saveHumanReviewLocalNote() {
     );
     const shelfSignature=JSON.stringify({
       unlocked,
+      available:placement.available,
       finished:localBattleFinished,
       selected:tapSelectedModuleId,
       modules:reserveModules.map(
@@ -11941,6 +12083,8 @@ function saveHumanReviewLocalNote() {
     renderedShelfSignature=
       shelfSignature;
     shelf.innerHTML = "";
+    shelf.dataset.placementReady = String(placement.ready);
+    shelf.setAttribute("aria-disabled", String(!placement.ready));
 
     for (
       const category
@@ -12018,8 +12162,11 @@ function saveHumanReviewLocalNote() {
           + `${localizedUiText("Port")}: ${module.portCount}`;
         if (!unlocked) {
           card.classList.add(
-            "locked"
+            "locked",
+            "placement-locked"
           );
+          card.setAttribute("aria-disabled", "true");
+          card.draggable = false;
         }
         list.appendChild(card);
       }
@@ -12129,9 +12276,13 @@ function saveHumanReviewLocalNote() {
   function createModuleCard(module) {
     const card = document.createElement("div");
     card.className = "module-card";
+    const reservePlacementReady =
+      module.status !== "reserve"
+      || modulePlacementSlotState().ready;
     card.draggable =
       !localBattleFinished
-      && module.movable !== false;
+      && module.movable !== false
+      && reservePlacementReady;
     card.dataset.moduleId =
       module.instanceId;
     card.dataset.category =
@@ -12378,6 +12529,10 @@ function saveHumanReviewLocalNote() {
           return;
         }
         if (module.status === "reserve") {
+          if (!modulePlacementSlotState().ready) {
+            logClientMessage("Yeni modül yerleştirme hakkı için geri sayımı bekleyin.");
+            return;
+          }
           selectModuleForTap(module);
           return;
         }
@@ -12446,6 +12601,11 @@ function saveHumanReviewLocalNote() {
           logClientMessage(
             "Maç bittikten sonra modüller hareket ettirilemez."
           );
+          return;
+        }
+        if (module.status === "reserve" && !modulePlacementSlotState().ready) {
+          event.preventDefault();
+          logClientMessage("Yeni modül yerleştirme hakkı için geri sayımı bekleyin.");
           return;
         }
         const result =
@@ -13288,10 +13448,8 @@ function saveHumanReviewLocalNote() {
 
 
   function renderCapacity() {
-    const limit = client.maxActiveModules();
-    const active = client.activeModuleCount();
-    const currentLimit = limit === null ? 4 : limit;
-    const available = Math.max(0, currentLimit - active);
+    const placement = modulePlacementSlotState();
+    const { limit, currentLimit, available } = placement;
     const nextSlotAtMs = limit === null
       ? 15000
       : (limit < 10 ? 15000 + (limit - 4) * 15000 : null);
@@ -13301,18 +13459,26 @@ function saveHumanReviewLocalNote() {
 
     if (limit === null) {
       capacityEl.textContent = localizedUiText(
-        `Devrede ${active} · Boş Hak ${available} · Sınır ${currentLimit}/10 · Yeni Hak ${nextSlotSeconds} sn`
+        `Yeni modül hakkı · ${nextSlotSeconds} sn`
       );
+      capacityEl.dataset.state = "countdown";
       capacityEl.classList.remove("capacity-opened");
       previousCapacity = 4;
       return;
     }
 
     capacityEl.textContent = localizedUiText(
-      nextSlotSeconds === null
-        ? `Devrede ${active} · Boş Hak ${available} · Üst Sınır ${limit}`
-        : `Devrede ${active} · Boş Hak ${available} · Sınır ${limit}/10 · Yeni Hak ${nextSlotSeconds} sn`
+      available > 0
+        ? `Yerleştirme hakkı hazır · ${available}`
+        : (
+            nextSlotSeconds === null
+              ? "Tüm modül hakları açıldı"
+              : `Yeni modül hakkı · ${nextSlotSeconds} sn`
+          )
     );
+    capacityEl.dataset.state = available > 0
+      ? "ready"
+      : (nextSlotSeconds === null ? "complete" : "countdown");
 
     if (previousCapacity !== null && limit > previousCapacity) {
       capacityEl.classList.add("capacity-opened");
@@ -13338,20 +13504,23 @@ function saveHumanReviewLocalNote() {
       return;
     }
 
-    const unlocked = client.isShelfUnlocked();
+    const placement = modulePlacementSlotState();
+    const unlocked = placement.ready;
     lockLabel.dataset.active = String(unlocked);
-    lockLabel.textContent = unlocked ? "Aktif" : "Kilitli";
+    lockLabel.textContent = unlocked ? "Aktif" : "Beklemede";
 
     if (unlocked) {
       if (shelfHelp) {
         shelfHelp.textContent = localizedUiText("Modülü sürükle veya seçip hedef hücreye dokun.");
       }
-    } else {
+    } else if (!client.isShelfUnlocked()) {
       const remaining = Math.max(0, 15000 - client.elapsedMs);
       if (shelfHelp) {
         shelfHelp.textContent =
           `Modül müdahalesi ${(remaining / 1000).toFixed(1)} sn sonra açılacak.`;
       }
+    } else if (shelfHelp) {
+      shelfHelp.textContent = "Yeni modül yerleştirme hakkı için geri sayımı bekleyin.";
     }
   }
 
@@ -14190,6 +14359,10 @@ function saveHumanReviewLocalNote() {
     window.__GRIDSHARD_TEST_API={
       startQuickLocalBattle,
       fillBattlePoolForQuickTest,
+      getAudioState:() =>
+        gridshardAudioDirector
+          ?.state
+        || null,
       rotateModule:(moduleId) => {
         const module=
           client.requireModule(

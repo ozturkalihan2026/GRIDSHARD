@@ -20,6 +20,7 @@ def main() -> int:
     booster_schedule = source("server/app/game/booster_schedule.py")
     qa = source("tools/qa.py")
     module_swap_e2e = source("e2e/battle-module-swap.spec.js")
+    packager = source("tools/package_release.py")
     checks = {
         "version_identity": (
             source("server/app/version.py").strip() == f'VERSION = "{EXPECTED_VERSION}"'
@@ -62,8 +63,37 @@ def main() -> int:
             and "occupiedTargetCard.dispatchEvent(\"drop\"" in module_swap_e2e
         ),
         "root_manifest_hygiene": not (ROOT / "RELEASE_MANIFEST.json").exists(),
+        "stable_non_battle_content_cell": (
+            "Beta.38 Fix — one stable content cell" in css
+            and "--gs-fix-shell-top:110px" in css
+            and "--gs-fix-shell-bottom:88px" in css
+        ),
+        "dock_labels_only_on_active_item": (
+            ".app-bottom-dock .menu-action.is-active .menu-action-title" in css
+            and ".app-bottom-dock .menu-action > small" in css
+        ),
+        "matchmaking_cancel_restores_pool_music": (
+            '["idle", "cancelled", "error", ""]' in app
+            and 'gridshardAudioDirector.setState("pool")' in app
+        ),
+        "placement_right_controls_module_shelf": (
+            "function modulePlacementSlotState()" in app
+            and 'shelf.dataset.placementReady = String(placement.ready)' in app
+            and '"placement-locked"' in app
+            and "Yeni modül hakkı · 15 sn" in html
+        ),
+        "magnitude_aware_floating_combat_text": (
+            "updateFloatingFeedbackImportance" in app
+            and "CAN · ONARIM" in app
+            and "YANSITMA · YANSITICI" in app
+            and "EMP · ENERJİ KESİLDİ" in app
+            and "AŞIRI ISI!" in app
+            and '.battle-floating-feedback[data-impact="large"]' in css
+        ),
+        "fix_package_identity": 'PACKAGE_LABEL = "fix"' in packager,
         "qa_includes_beta38_regression": (
             '"client_beta38_regression"' in qa
+            and '"client_beta38_fix_regression"' in qa
             and "tools/beta38_acceptance_report.py" in qa
         ),
     }

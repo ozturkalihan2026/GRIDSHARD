@@ -11,6 +11,12 @@
     "settings_auto_save_card_removed": true,
     "occupied_cell_swap_regression": true,
     "root_manifest_hygiene": true,
+    "stable_non_battle_content_cell": true,
+    "dock_labels_only_on_active_item": true,
+    "matchmaking_cancel_restores_pool_music": true,
+    "placement_right_controls_module_shelf": true,
+    "magnitude_aware_floating_combat_text": true,
+    "fix_package_identity": true,
     "qa_includes_beta38_regression": true
   }
 }

@@ -9,7 +9,7 @@
     "complete_bilingual_module_catalog": true,
     "profile_booster_and_result_localization": true,
     "authoritative_module_capacity": true,
-    "visible_capacity_hud": true,
+    "capacity_readiness_hud": true,
     "requested_icons": true,
     "balance_screening": true
   }

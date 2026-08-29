@@ -314,6 +314,11 @@ def main() -> int:
             cwd=ROOT / "client",
         ),
         run_step(
+            "client_beta38_fix_regression",
+            [NODE_EXECUTABLE, "tests/beta38-fix-regression.test.js"],
+            cwd=ROOT / "client",
+        ),
+        run_step(
             "client_unit_tests",
             [NODE_EXECUTABLE, "tests/relay-client.test.js"],
             cwd=ROOT / "client",

@@ -59,10 +59,16 @@ def main() -> int:
             "server/app/game/pvp_session.py",
             '"module_capacity": session.engine.module_capacity_view',
         ),
-        "visible_capacity_hud": (
+        "capacity_readiness_hud": (
             'id="capacity-indicator" role="status"' in source("client/index.html")
             and "battle-capacity-hidden" not in source("client/index.html")
-            and contains("client/src/app.js", "Devrede ${active} · Boş Hak ${available}")
+            and contains(
+                "client/src/app.js",
+                "function modulePlacementSlotState()",
+                "Yerleştirme hakkı hazır",
+                "Yeni modül hakkı",
+            )
+            and "Devrede ${active} · Boş Hak ${available}" not in source("client/src/app.js")
         ),
         "requested_icons": contains(
             "client/index.html",

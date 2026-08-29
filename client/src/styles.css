@@ -8504,3 +8504,256 @@ body[data-app-screen="play"] .enemy-board-cell .module-card {
     overflow:auto;
   }
 }
+
+/* Beta.38 Fix — one stable content cell between progression ribbon and dock. */
+:root {
+  --gs-fix-shell-width:1440px;
+  --gs-fix-ribbon-top:12px;
+  --gs-fix-ribbon-height:86px;
+  --gs-fix-dock-bottom:12px;
+  --gs-fix-dock-height:64px;
+  --gs-fix-shell-top:110px;
+  --gs-fix-shell-bottom:88px;
+}
+
+body[data-app-screen="profile"],
+body[data-app-screen="daily"],
+body[data-app-screen="rewards"],
+body[data-app-screen="statistics"],
+body[data-app-screen="settings"],
+body[data-app-screen="laboratory"],
+body[data-app-screen="menu"],
+body[data-app-screen="play"]:not([data-local-status="battle"]):not([data-online-status="battle"]) {
+  height:100dvh;
+  overflow:hidden;
+}
+
+body[data-app-screen="profile"] .battle-shell,
+body[data-app-screen="daily"] .battle-shell,
+body[data-app-screen="rewards"] .battle-shell,
+body[data-app-screen="statistics"] .battle-shell,
+body[data-app-screen="settings"] .battle-shell,
+body[data-app-screen="laboratory"] .battle-shell,
+body[data-app-screen="play"]:not([data-local-status="battle"]):not([data-online-status="battle"]) .battle-shell {
+  width:min(var(--gs-fix-shell-width),calc(100vw - 32px));
+  height:100dvh;
+  padding:var(--gs-fix-shell-top) 0 var(--gs-fix-shell-bottom);
+  overflow:hidden;
+}
+
+.app-progress-ribbon {
+  top:var(--gs-fix-ribbon-top);
+  width:min(var(--gs-fix-shell-width),calc(100vw - 32px));
+  height:var(--gs-fix-ribbon-height);
+  min-height:var(--gs-fix-ribbon-height);
+  max-height:var(--gs-fix-ribbon-height);
+  overflow:hidden;
+}
+body[data-app-screen="menu"] .app-progress-ribbon,
+body[data-app-screen="profile"] .app-progress-ribbon,
+body[data-app-screen="daily"] .app-progress-ribbon,
+body[data-app-screen="rewards"] .app-progress-ribbon,
+body[data-app-screen="statistics"] .app-progress-ribbon,
+body[data-app-screen="settings"] .app-progress-ribbon,
+body[data-app-screen="laboratory"] .app-progress-ribbon,
+body[data-app-screen="play"]:not([data-local-status="battle"]):not([data-online-status="battle"]) .app-progress-ribbon {
+  width:min(var(--gs-fix-shell-width),calc(100vw - 32px));
+}
+
+body[data-app-screen="menu"] .battle-shell {
+  width:100%;
+  height:100dvh;
+  padding:0;
+  overflow:hidden;
+}
+body[data-app-screen="menu"] .main-menu-panel {
+  width:min(var(--gs-fix-shell-width),calc(100vw - 32px));
+  height:calc(100dvh - var(--gs-fix-shell-top) - var(--gs-fix-shell-bottom));
+  min-height:0;
+  margin:var(--gs-fix-shell-top) auto var(--gs-fix-shell-bottom);
+}
+
+.profile-summary-panel,
+.engagement-summary-panel,
+.statistics-summary-panel,
+.settings-summary-panel,
+.laboratory-screen,
+body[data-app-screen="play"]:not([data-local-status="battle"]):not([data-online-status="battle"]) .battle-pool-panel:not([hidden]) {
+  width:100%;
+  height:100%;
+  min-height:0;
+  max-height:none;
+  margin:0;
+  overflow:auto;
+  overscroll-behavior:contain;
+  scrollbar-gutter:stable;
+}
+
+.profile-summary-panel,
+.engagement-summary-panel,
+.statistics-summary-panel,
+.settings-summary-panel {
+  padding:24px clamp(20px,2.2vw,30px);
+}
+
+.profile-summary-panel > .panel-title-row,
+.engagement-summary-panel > .panel-title-row,
+.statistics-summary-panel > .panel-title-row,
+.settings-summary-panel > .panel-title-row,
+.laboratory-screen > .panel-title-row {
+  flex:0 0 auto;
+  min-height:94px;
+  margin:0;
+  padding:2px 0 14px;
+  overflow:visible;
+}
+body[data-app-screen="rewards"] .season-rewards-screen {
+  height:100%;
+  max-height:none;
+}
+body[data-app-screen="rewards"] .season-rewards-screen > .panel-title-row {
+  min-height:94px;
+}
+.screen-heading-block {
+  min-width:0;
+  padding-top:2px;
+}
+.screen-heading-block .screen-kicker,
+.screen-heading-block h2,
+.screen-heading-block .screen-subtitle {
+  position:static;
+  transform:none;
+}
+
+.app-bottom-dock,
+body[data-app-screen="menu"] .app-bottom-dock {
+  bottom:var(--gs-fix-dock-bottom);
+  width:min(700px,calc(100vw - 28px));
+  height:var(--gs-fix-dock-height);
+  min-height:var(--gs-fix-dock-height);
+  grid-template-columns:repeat(5,minmax(0,1fr));
+}
+.app-bottom-dock .menu-action,
+body[data-app-screen="menu"] .app-bottom-dock .menu-action {
+  min-height:50px;
+  grid-template-rows:1fr auto;
+}
+.app-bottom-dock .menu-action-title,
+.app-bottom-dock .menu-action > small,
+body[data-app-screen="menu"] .app-bottom-dock .menu-action-title,
+body[data-app-screen="menu"] .app-bottom-dock .menu-action > small {
+  display:none;
+}
+.app-bottom-dock .menu-action.is-active .menu-action-title,
+body[data-app-screen="menu"] .app-bottom-dock .menu-action.is-active .menu-action-title {
+  display:block;
+  line-height:1;
+}
+.app-bottom-dock .menu-action:not(.is-active) .lobby-dock-icon {
+  width:25px;
+  height:25px;
+}
+
+/* Placement rights now control the shelf, while active board modules stay interactive. */
+.module-shelf[data-placement-ready="false"] .module-card.placement-locked {
+  opacity:.38;
+  cursor:not-allowed;
+  filter:saturate(.22) brightness(.68);
+  transform:none !important;
+  box-shadow:none !important;
+}
+.module-shelf[data-placement-ready="true"] .module-card {
+  opacity:1;
+  filter:none;
+}
+.shelf-capacity-indicator[data-state="countdown"] {
+  color:#9cc5df;
+  text-align:center;
+}
+.shelf-capacity-indicator[data-state="ready"] {
+  border-color:rgba(154,242,122,.58);
+  color:#caffe0;
+  background:linear-gradient(90deg,rgba(86,198,111,.18),rgba(72,244,224,.10));
+  box-shadow:0 0 16px rgba(99,235,136,.10);
+  text-align:center;
+}
+
+/* Magnitude-aware, source-labelled floating combat text. */
+.battle-floating-feedback {
+  --feedback-scale:1;
+  max-width:210px;
+  padding:5px 9px;
+  font-size:.72rem;
+  line-height:1.05;
+  animation:gs-floating-battle-feedback 1.05s cubic-bezier(.19,.7,.21,1) forwards;
+}
+.battle-floating-feedback[data-impact="small"] { opacity:.92; }
+.battle-floating-feedback[data-impact="medium"] { border-width:2px; }
+.battle-floating-feedback[data-impact="large"] {
+  border-width:2px;
+  font-weight:950;
+  letter-spacing:.035em;
+}
+.battle-floating-feedback.energy,
+.battle-floating-feedback.cool {
+  color:#bffcff;
+  border-color:rgba(72,244,224,.58);
+  background:linear-gradient(180deg,rgba(6,48,56,.97),rgba(4,20,27,.94));
+  box-shadow:0 10px 24px rgba(0,0,0,.30),0 0 21px rgba(72,244,224,.24);
+}
+.battle-floating-feedback.defense {
+  color:#d7eaff;
+  border-color:rgba(92,163,255,.62);
+  background:linear-gradient(180deg,rgba(12,42,82,.97),rgba(5,18,39,.94));
+  box-shadow:0 10px 24px rgba(0,0,0,.30),0 0 22px rgba(92,163,255,.24);
+}
+.battle-floating-feedback.sabotage,
+.battle-floating-feedback.reflect {
+  color:#eadcff;
+  border-color:rgba(184,124,255,.64);
+  background:linear-gradient(180deg,rgba(48,20,78,.97),rgba(15,7,29,.94));
+  box-shadow:0 10px 24px rgba(0,0,0,.30),0 0 22px rgba(184,124,255,.26);
+}
+.battle-floating-feedback.warning {
+  color:#fff0b0;
+  border-color:rgba(255,145,72,.72);
+  background:linear-gradient(180deg,rgba(78,30,10,.97),rgba(31,9,6,.94));
+  box-shadow:0 10px 24px rgba(0,0,0,.30),0 0 24px rgba(255,99,75,.30);
+}
+@keyframes gs-floating-battle-feedback {
+  0% { opacity:0;transform:translate(-50%,-42%) scale(calc(var(--feedback-scale) * .78)); }
+  16% { opacity:1;transform:translate(-50%,-58%) scale(var(--feedback-scale)); }
+  72% { opacity:1;transform:translate(-50%,-92%) scale(var(--feedback-scale)); }
+  100% { opacity:0;transform:translate(-50%,-148%) scale(calc(var(--feedback-scale) * 1.03)); }
+}
+@keyframes gs-floating-feedback-stack {
+  0% { transform:translate(-50%,-58%) scale(calc(var(--feedback-scale) * .88)); }
+  55% { transform:translate(-50%,-68%) scale(calc(var(--feedback-scale) * 1.08)); }
+  100% { transform:translate(-50%,-62%) scale(var(--feedback-scale)); }
+}
+
+@media (prefers-reduced-motion:reduce) {
+  .battle-floating-feedback {
+    animation:gs-floating-battle-feedback-reduced .85s ease-out forwards;
+  }
+  @keyframes gs-floating-battle-feedback-reduced {
+    0% { opacity:0;transform:translate(-50%,-58%) scale(var(--feedback-scale)); }
+    20%,75% { opacity:1;transform:translate(-50%,-58%) scale(var(--feedback-scale)); }
+    100% { opacity:0;transform:translate(-50%,-58%) scale(var(--feedback-scale)); }
+  }
+}
+
+@media (max-width:900px) {
+  :root {
+    --gs-fix-ribbon-top:8px;
+    --gs-fix-ribbon-height:72px;
+    --gs-fix-dock-bottom:8px;
+    --gs-fix-dock-height:58px;
+    --gs-fix-shell-top:88px;
+    --gs-fix-shell-bottom:74px;
+  }
+  .profile-summary-panel,
+  .engagement-summary-panel,
+  .statistics-summary-panel,
+  .settings-summary-panel { padding:18px; }
+}

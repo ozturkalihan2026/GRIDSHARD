@@ -23,7 +23,8 @@ assert.ok(html.includes("lobby-feature-icon-reward"));
 
 assert.ok(app.includes("function isOnlineMatchmakingCancelable"));
 assert.ok(app.includes('localizedUiText("İptal Et")'));
-assert.ok(app.includes("Devrede ${active} · Boş Hak ${available}"));
+assert.ok(app.includes("Yeni modül hakkı · ${nextSlotSeconds} sn"));
+assert.ok(app.includes("Yerleştirme hakkı hazır · ${available}"));
 assert.ok(app.includes("catalog?.effect_lines_en"));
 assert.ok(app.includes("booster.nameEn"));
 assert.ok(css.includes("GRIDSHARD Beta.37"));

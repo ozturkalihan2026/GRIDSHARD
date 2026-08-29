@@ -1,8 +1,8 @@
 {
   "wt-dbd4a70f-4d90-4b60-958a-18ca1e4eff82": {
     "Dengeli": {
-      "favorite": false,
-      "last_used_at_ms": null,
+      "favorite": true,
+      "last_used_at_ms": 1788020432184,
       "module_definition_ids": [
         "generator",
         "battery",
@@ -22,7 +22,8 @@
         "energy_leech",
         "virus",
         "cooler"
-      ]
+      ],
+      "use_count": 1
     }
   }
 }
