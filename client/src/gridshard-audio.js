@@ -54,6 +54,7 @@
     "./assets/audio/battle_tension_v7_07_pressure.wav";
 
   const GRIDSHARD_CONTINUOUS_LOOP_SECONDS = 32;
+  const GRIDSHARD_BATTLE_MUSIC_ENABLED = false;
 
   const GRIDSHARD_BATTLE_LAYERS = Object.freeze([
     {id:"sub", asset:"./assets/audio/battle_tension_v7_01_sub.wav", baseGain:.36, pressureGain:.10},
@@ -117,6 +118,10 @@
     core_hit:{
       asset:"./assets/audio/core_hit.wav",
       identity:"derin bass transient + elektrik çatlağı",
+    },
+    module_hit:{
+      asset:"./assets/audio/energy_transfer.wav",
+      identity:"kısa gövde darbesi + elektrik boşalması",
     },
     tier_up:{
       asset:"./assets/audio/tier_up.wav",
@@ -270,27 +275,85 @@
       this._fadeTimerByAudio = new Map();
       this._musicContext = null;
       this._musicBufferCache = new Map();
+      this._sfxGainNode = null;
+      this._resultGainNode = null;
+      this._activeBufferSources = new Set();
+      this._resultBufferSource = null;
+      this._resultBufferOutcome = null;
+      this._resultPlaybackPromise = null;
+      this._pendingResultOutcome = null;
       this._pendingPlayback = new Map();
+      this._activeSfx = new Set();
+      this._preloadedAudio = new Map();
+      this._resultTrack = null;
       this._lastPlaybackError = null;
       this._unlockTarget = null;
       this._unlockHandler = null;
       this._gestureObserved = false;
+      this._preloadAudioAssets([
+        ...Object.values(GRIDSHARD_SFX_CUES).map((cue) => cue.asset),
+        GRIDSHARD_MUSIC_ASSETS.victory,
+        GRIDSHARD_MUSIC_ASSETS.defeat,
+      ]);
+      this._preloadAudioBuffers([
+        ...Object.values(GRIDSHARD_SFX_CUES).map((cue) => cue.asset),
+        GRIDSHARD_MUSIC_ASSETS.victory,
+        GRIDSHARD_MUSIC_ASSETS.defeat,
+      ]);
     }
 
-    _createMusicTrack(asset, {seamless=false}={}) {
+    _ensureAudioContext() {
+      if (this._musicContext) return this._musicContext;
       const AudioContextClass =
         global.AudioContext
         || global.webkitAudioContext;
+      if (typeof AudioContextClass !== "function") return null;
+      try {
+        this._musicContext = new AudioContextClass();
+        this._sfxGainNode = this._musicContext.createGain();
+        this._resultGainNode = this._musicContext.createGain();
+        this._sfxGainNode.connect(this._musicContext.destination);
+        this._resultGainNode.connect(this._musicContext.destination);
+        this._syncWebAudioVolumes();
+        this._musicContext.addEventListener?.(
+          "statechange",
+          ()=>this._publishPlaybackState()
+        );
+        this._publishPlaybackState();
+      } catch (error) {
+        this._musicContext = null;
+        this._sfxGainNode = null;
+        this._resultGainNode = null;
+        this._lastPlaybackError = {
+          name:String(error?.name || "AudioContextError"),
+          message:String(error?.message || error || "Audio context could not be created."),
+          src:"AudioContext",
+          at:Date.now(),
+        };
+      }
+      return this._musicContext;
+    }
+
+    _publishPlaybackState() {
+      const body=global.document?.body;
+      if (!body?.dataset) return;
+      body.dataset.audioContextState=
+        this._musicContext?.state || "unavailable";
+      body.dataset.audioResult=
+        this._resultBufferOutcome || "none";
+      body.dataset.audioActiveSources=
+        String(this._activeBufferSources.size);
+    }
+
+    _createMusicTrack(asset, {seamless=false}={}) {
+      const context = this._ensureAudioContext();
       if (
         seamless
-        && typeof AudioContextClass === "function"
+        && context
         && typeof global.fetch === "function"
       ) {
-        this._musicContext =
-          this._musicContext
-          || new AudioContextClass();
         return new GridshardSeamlessLoopTrack(
-          this._musicContext,
+          context,
           asset,
           this._musicBufferCache
         );
@@ -303,6 +366,176 @@
         typeof global.Audio
         === "function"
       );
+    }
+
+    _syncWebAudioVolumes() {
+      const context=this._musicContext;
+      if (!context) return;
+      const now=context.currentTime;
+      const setGain=(node,value)=>{
+        if (!node?.gain) return;
+        const normalized=Math.max(0,Math.min(1,Number(value || 0)));
+        if (typeof node.gain.setValueAtTime === "function") {
+          node.gain.setValueAtTime(normalized,now);
+        } else {
+          node.gain.value=normalized;
+        }
+      };
+      setGain(
+        this._sfxGainNode,
+        this.soundMuted || !this.sfxEnabled
+          ? 0
+          : this._sfxTargetVolume()
+      );
+      setGain(
+        this._resultGainNode,
+        this.musicMuted
+          ? 0
+          : this._musicTargetVolume()
+      );
+    }
+
+    _loadAudioBuffer(asset) {
+      const context=this._ensureAudioContext();
+      if (!context || typeof global.fetch !== "function") {
+        return Promise.reject(new Error("Web Audio is unavailable."));
+      }
+      if (!this._musicBufferCache.has(asset)) {
+        const pending=global.fetch(asset)
+          .then((response)=>{
+            if (!response.ok) {
+              throw new Error(`Audio asset could not be loaded: ${asset}`);
+            }
+            return response.arrayBuffer();
+          })
+          .then((bytes)=>context.decodeAudioData(bytes));
+        this._musicBufferCache.set(asset,pending);
+      }
+      return this._musicBufferCache.get(asset);
+    }
+
+    _preloadAudioBuffers(assets=[]) {
+      if (!this._ensureAudioContext()) return;
+      for (const asset of new Set(assets.filter(Boolean))) {
+        this._loadAudioBuffer(asset).catch((error)=>{
+          this._lastPlaybackError = {
+            name:String(error?.name || "AudioBufferError"),
+            message:String(error?.message || error || "Audio buffer could not be loaded."),
+            src:String(asset),
+            at:Date.now(),
+          };
+        });
+      }
+    }
+
+    async _resumeAudioContext() {
+      const context=this._ensureAudioContext();
+      if (!context) return false;
+      if (
+        context.state !== "running"
+        && context.state !== "closed"
+      ) {
+        try {
+          await context.resume();
+        } catch (error) {
+          this._lastPlaybackError = {
+            name:String(error?.name || "AudioContextError"),
+            message:String(error?.message || error || "Audio context could not resume."),
+            src:"AudioContext",
+            at:Date.now(),
+          };
+          return false;
+        }
+      }
+      this._publishPlaybackState();
+      return context.state === "running";
+    }
+
+    async _playAudioBuffer(asset,{channel="sfx",outcome=null}={}) {
+      const context=this._ensureAudioContext();
+      const destination=channel === "result"
+        ? this._resultGainNode
+        : this._sfxGainNode;
+      if (!context || !destination) return false;
+      try {
+        const buffer=await this._loadAudioBuffer(asset);
+        if (channel === "result" && this._resultBufferOutcome !== outcome) {
+          return false;
+        }
+        if (!await this._resumeAudioContext()) return false;
+        const source=context.createBufferSource();
+        source.buffer=buffer;
+        source.loop=false;
+        source.connect(destination);
+        this._activeBufferSources.add(source);
+        if (channel === "result") {
+          this._resultBufferSource=source;
+          this._pendingResultOutcome=null;
+        }
+        this._publishPlaybackState();
+        source.onended=()=>{
+          this._activeBufferSources.delete(source);
+          try { source.disconnect(); } catch (_) {}
+          if (this._resultBufferSource === source) {
+            this._resultBufferSource=null;
+            this._resultPlaybackPromise=null;
+          }
+          this._publishPlaybackState();
+        };
+        source.start(0);
+        this._lastPlaybackError=null;
+        return true;
+      } catch (error) {
+        this._lastPlaybackError = {
+          name:String(error?.name || "AudioBufferPlaybackError"),
+          message:String(error?.message || error || "Audio buffer could not play."),
+          src:String(asset),
+          at:Date.now(),
+        };
+        return false;
+      }
+    }
+
+    _preloadAudioAssets(assets=[]) {
+      if (!this._canPlayAudio()) return;
+      for (const asset of new Set(assets.filter(Boolean))) {
+        if (this._preloadedAudio.has(asset)) continue;
+        const audio=new global.Audio(asset);
+        audio.preload="auto";
+        this._preloadedAudio.set(asset,audio);
+        if (typeof audio.load === "function") {
+          try {
+            audio.load();
+          } catch (_) {
+            // Preload desteği olmayan ortamlarda normal oynatma yolu kullanılır.
+          }
+        }
+      }
+    }
+
+    _createPreloadedAudio(asset) {
+      const template=this._preloadedAudio.get(asset);
+      if (
+        template
+        && template.paused !== false
+        && !this._activeSfx.has(template)
+        && template!==this._resultTrack
+      ) {
+        try {
+          template.currentTime=0;
+        } catch (_) {
+          // Metadata henüz hazır değilse play() başlangıç konumunu belirler.
+        }
+        return template;
+      }
+      if (template && typeof template.cloneNode === "function") {
+        const clone=template.cloneNode(true);
+        clone.preload="auto";
+        return clone;
+      }
+      const audio=new global.Audio(asset);
+      audio.preload="auto";
+      return audio;
     }
 
     _musicTargetVolume() {
@@ -366,22 +599,13 @@
 
     async unlock() {
       this._gestureObserved = true;
-      if (this._musicContext?.state === "suspended") {
-        try {
-          await this._musicContext.resume();
-        } catch (error) {
-          this._lastPlaybackError = {
-            name:String(error?.name || "AudioContextError"),
-            message:String(error?.message || error || "Audio context could not resume."),
-            src:"AudioContext",
-            at:Date.now(),
-          };
-        }
-      }
+      const contextReady=await this._resumeAudioContext();
+      this._syncWebAudioVolumes();
       const candidates = new Set([
         ...this._pendingPlayback.keys(),
         ...[
           this.currentTrack,
+          this._resultTrack,
           this.criticalLayerTrack,
           ...this.battleLayerTracks,
         ].filter((audio) => audio && audio.paused !== false),
@@ -389,11 +613,35 @@
       const results = await Promise.all(
         [...candidates].map((audio) => this._safePlay(audio))
       );
+      if (
+        contextReady
+        && this._pendingResultOutcome
+        && this.state === this._pendingResultOutcome
+      ) {
+        this.playResultSting(this._pendingResultOutcome,{restart:true});
+      }
       return {
-        ok:results.every(Boolean),
+        ok:contextReady || results.every(Boolean),
         attempted:results.length,
         pending:this._pendingPlayback.size,
         state:this.state,
+      };
+    }
+
+    prepareBattlePlayback() {
+      this._gestureObserved=true;
+      const context=this._ensureAudioContext();
+      const resumePromise=this._resumeAudioContext();
+      this._preloadAudioBuffers([
+        ...Object.values(GRIDSHARD_SFX_CUES).map((cue)=>cue.asset),
+        GRIDSHARD_MUSIC_ASSETS.victory,
+        GRIDSHARD_MUSIC_ASSETS.defeat,
+      ]);
+      this._syncWebAudioVolumes();
+      return {
+        ok:Boolean(context),
+        contextState:context?.state || "unavailable",
+        ready:resumePromise,
       };
     }
 
@@ -406,6 +654,7 @@
       }
       this.unbindUserGestureUnlock();
       this._unlockHandler = () => {
+        this._ensureAudioContext();
         this.unlock();
       };
       this._unlockTarget = target;
@@ -437,8 +686,17 @@
         state:this.state,
         gestureObserved:this._gestureObserved,
         pending:this._pendingPlayback.size,
+        contextState:this._musicContext?.state || "unavailable",
+        decodedAssets:[...this._musicBufferCache.keys()].length,
+        activeSfx:this._activeBufferSources.size,
         currentAsset:String(
-          this.currentTrack?.src
+          (
+            this._resultBufferOutcome
+              ? GRIDSHARD_MUSIC_ASSETS[this._resultBufferOutcome]
+              : ""
+          )
+          || this._resultTrack?.src
+          || this.currentTrack?.src
           || this.currentTrack?._gridshardAsset
           || ""
         ),
@@ -730,6 +988,17 @@
         return;
       }
 
+      if (
+        this._isLayeredBattleState(state)
+        && !GRIDSHARD_BATTLE_MUSIC_ENABLED
+      ) {
+        this._stopAllMusic();
+        return;
+      }
+
+      this._stopResultTrack();
+      this._stopResultBuffer();
+
       if (this._isLayeredBattleState(state)) {
         this._transitionToBattleLayers(state);
         return;
@@ -796,16 +1065,24 @@
             .DEFEAT,
         ].includes(state);
 
-      next.volume=0;
+      const terminalState=[
+        GRIDSHARD_AUDIO_STATES.VICTORY,
+        GRIDSHARD_AUDIO_STATES.DEFEAT,
+      ].includes(state);
+      next.volume=terminalState
+        ? this._musicTargetVolume()
+        : 0;
       this.currentTrack=next;
       this._safePlay(next);
 
-      this._fade(
-        next,
-        0,
-        this._musicTargetVolume(),
-        transitionMs
-      );
+      if (!terminalState) {
+        this._fade(
+          next,
+          0,
+          this._musicTargetVolume(),
+          transitionMs
+        );
+      }
 
       if (
         previous
@@ -838,6 +1115,141 @@
       }
     }
 
+    ensureResultPlayback(outcome) {
+      if (
+        ![
+          GRIDSHARD_AUDIO_STATES.VICTORY,
+          GRIDSHARD_AUDIO_STATES.DEFEAT,
+        ].includes(outcome)
+      ) {
+        return Promise.resolve(false);
+      }
+      if (
+        !this.enabled
+        || this.musicMuted
+        || this.musicVolume<=0
+      ) {
+        return Promise.resolve(false);
+      }
+      if (
+        this._resultBufferOutcome===outcome
+        && this._resultBufferSource
+      ) {
+        return Promise.resolve(true);
+      }
+      if (
+        this._resultBufferOutcome===outcome
+        && this._resultPlaybackPromise
+      ) {
+        return this._resultPlaybackPromise;
+      }
+      return this.playResultSting(outcome,{restart:false});
+    }
+
+    _stopResultTrack() {
+      const track=this._resultTrack;
+      this._resultTrack=null;
+      if (this.currentTrack===track) this.currentTrack=null;
+      if (track) this._stopAudio(track);
+    }
+
+    _stopResultBuffer() {
+      const source=this._resultBufferSource;
+      this._resultBufferSource=null;
+      this._resultBufferOutcome=null;
+      this._resultPlaybackPromise=null;
+      this._pendingResultOutcome=null;
+      if (!source) {
+        this._publishPlaybackState();
+        return;
+      }
+      this._activeBufferSources.delete(source);
+      try {
+        source.onended=null;
+        source.stop();
+        source.disconnect();
+      } catch (_) {
+        // AudioBufferSourceNode may already have completed.
+      }
+      this._publishPlaybackState();
+    }
+
+    _playHtmlResultSting(outcome) {
+      if (!this._canPlayAudio()) return Promise.resolve(false);
+      this._stopResultTrack();
+      const asset=GRIDSHARD_MUSIC_ASSETS[outcome];
+      const track=this._createPreloadedAudio(asset);
+      track._gridshardState=outcome;
+      track._gridshardAsset=asset;
+      track.loop=false;
+      track.volume=this._musicTargetVolume();
+      this._resultTrack=track;
+      this.currentTrack=track;
+      this._pendingResultOutcome=null;
+      if (typeof track.addEventListener === "function") {
+        track.addEventListener("ended",()=>{
+          if (this._resultTrack===track) this._resultTrack=null;
+          if (this.currentTrack===track) this.currentTrack=null;
+        },{once:true});
+      }
+      return this._safePlay(track);
+    }
+
+    playResultSting(outcome,{restart=true}={}) {
+      if (
+        ![
+          GRIDSHARD_AUDIO_STATES.VICTORY,
+          GRIDSHARD_AUDIO_STATES.DEFEAT,
+        ].includes(outcome)
+        || !this.enabled
+        || this.musicMuted
+        || this.musicVolume<=0
+      ) {
+        return Promise.resolve(false);
+      }
+
+      if (
+        !restart
+        && this._resultBufferOutcome===outcome
+      ) {
+        if (this._resultBufferSource) return Promise.resolve(true);
+        if (this._resultPlaybackPromise) return this._resultPlaybackPromise;
+      }
+      if (
+        !restart
+        && this._resultTrack?._gridshardState===outcome
+      ) {
+        this._resultTrack.volume=this._musicTargetVolume();
+        return this._safePlay(this._resultTrack);
+      }
+
+      this._stopAllMusic();
+      const asset=GRIDSHARD_MUSIC_ASSETS[outcome];
+      if (this._ensureAudioContext()) {
+        this._resultBufferOutcome=outcome;
+        this._pendingResultOutcome=outcome;
+        this._publishPlaybackState();
+        const playback=this._playAudioBuffer(
+          asset,
+          {channel:"result",outcome}
+        ).then((played)=>{
+          if (played) return true;
+          if (
+            this.state!==outcome
+            || this._resultBufferOutcome!==outcome
+          ) {
+            return false;
+          }
+          return this._playHtmlResultSting(outcome);
+        });
+        this._resultPlaybackPromise=playback;
+        return playback;
+      }
+      this._resultBufferOutcome=outcome;
+      this._publishPlaybackState();
+      return this._playHtmlResultSting(outcome);
+    }
+
     _stopAllMusic() {
       const current=
         this.currentTrack;
@@ -851,6 +1263,8 @@
       this._stopCriticalLayer({
         fade:false,
       });
+      this._stopResultTrack();
+      this._stopResultBuffer();
     }
 
     setState(state) {
@@ -869,6 +1283,23 @@
       const changed=
         this.state!==state;
       this.state=state;
+
+      if (
+        [
+          GRIDSHARD_AUDIO_STATES.VICTORY,
+          GRIDSHARD_AUDIO_STATES.DEFEAT,
+        ].includes(state)
+      ) {
+        this.playResultSting(state,{restart:changed});
+        return {
+          ok:true,
+          state,
+          asset:GRIDSHARD_MUSIC_ASSETS[state],
+          criticalLayer:null,
+          direction:GRIDSHARD_AUDIO_DIRECTION[state],
+          mix:GRIDSHARD_AUDIO_MIX,
+        };
+      }
 
       if (changed || (!this.currentTrack && !this.battleLayerTracks.length)) {
         this._transitionToStateAsset(
@@ -904,15 +1335,54 @@
       };
     }
 
+    _playHtmlCue(cue) {
+      if (!cue || !this._canPlayAudio()) return Promise.resolve(false);
+      const audio=this._createPreloadedAudio(cue.asset);
+      audio.volume=this._sfxTargetVolume();
+      this._activeSfx.add(audio);
+      const release=()=>{
+        this._activeSfx.delete(audio);
+        if (typeof audio.removeEventListener === "function") {
+          audio.removeEventListener("ended",release);
+          audio.removeEventListener("error",release);
+        }
+      };
+      if (typeof audio.addEventListener === "function") {
+        audio.addEventListener("ended",release);
+        audio.addEventListener("error",release);
+      }
+      return this._safePlay(audio).then((played)=>{
+        if (!played && !this._pendingPlayback.has(audio)) release();
+        return played;
+      });
+    }
+
+    _stopActiveSfx() {
+      for (const source of [...this._activeBufferSources]) {
+        if (source === this._resultBufferSource) continue;
+        this._activeBufferSources.delete(source);
+        try {
+          source.onended=null;
+          source.stop();
+          source.disconnect();
+        } catch (_) {
+          // The short-lived source may already have completed.
+        }
+      }
+      for (const audio of [...this._activeSfx]) {
+        this._activeSfx.delete(audio);
+        this._stopAudio(audio);
+      }
+      this._publishPlaybackState();
+    }
+
     triggerCue(name) {
-      const cue=
-        GRIDSHARD_SFX_CUES[name];
+      const cue=GRIDSHARD_SFX_CUES[name];
 
       if (!cue) {
         return {
           ok:false,
-          reason:
-            "Bilinmeyen GRIDSHARD ses efekti.",
+          reason:"Bilinmeyen GRIDSHARD ses efekti.",
         };
       }
 
@@ -921,15 +1391,15 @@
         && this.sfxEnabled
         && !this.soundMuted
         && this.sfxVolume>0
-        && this._canPlayAudio()
       ) {
-        const audio=
-          new global.Audio(
-            cue.asset
-          );
-        audio.volume=
-          this._sfxTargetVolume();
-        this._safePlay(audio);
+        if (this._ensureAudioContext()) {
+          this._playAudioBuffer(cue.asset,{channel:"sfx"})
+            .then((played)=>{
+              if (!played) this._playHtmlCue(cue);
+            });
+        } else {
+          this._playHtmlCue(cue);
+        }
       }
 
       return {
@@ -1073,12 +1543,27 @@
         Boolean(soundMuted);
       this.musicMuted=
         Boolean(musicMuted);
+      this._syncWebAudioVolumes();
+
+      if (
+        this.soundMuted
+        || this.sfxVolume<=0
+      ) {
+        this._stopActiveSfx();
+      }
 
       if (
         this.musicMuted
         || this.musicVolume<=0
       ) {
         this._stopAllMusic();
+      } else if (
+        [
+          GRIDSHARD_AUDIO_STATES.VICTORY,
+          GRIDSHARD_AUDIO_STATES.DEFEAT,
+        ].includes(this.state)
+      ) {
+        this.playResultSting(this.state,{restart:true});
       } else if (
         this.battleLayerTracks.length
       ) {

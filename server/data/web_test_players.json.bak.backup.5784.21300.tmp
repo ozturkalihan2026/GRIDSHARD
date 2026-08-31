@@ -1,12 +1,12 @@
 {
-  "wt-67415ed9-1965-4a11-b220-75f4aa77993d": {
-    "player_id": "wt-67415ed9-1965-4a11-b220-75f4aa77993d",
+  "wt-1561dea8-843f-4d64-ae50-173ff6e15d04": {
+    "player_id": "wt-1561dea8-843f-4d64-ae50-173ff6e15d04",
     "profile": {
-      "display_name": "wt-67415ed9-1965-4a11-b220-75f4aa77993d",
+      "display_name": "Uç",
       "engagement": {
         "claimed_season_tiers": [],
         "current_tier": 0,
-        "daily_mission_day": "2026-08-31",
+        "daily_mission_day": "2026-08-29",
         "daily_missions": [
           {
             "claimed": false,
@@ -164,7 +164,7 @@
       },
       "league_name_tr": "Gümüş",
       "level": 1,
-      "player_id": "wt-67415ed9-1965-4a11-b220-75f4aa77993d",
+      "player_id": "wt-1561dea8-843f-4d64-ae50-173ff6e15d04",
       "preferred_battle_pool_ids": [
         "generator",
         "battery",
@@ -198,7 +198,7 @@
       "language": "tr",
       "music_muted": false,
       "music_volume": 70,
-      "player_id": "wt-67415ed9-1965-4a11-b220-75f4aa77993d",
+      "player_id": "wt-1561dea8-843f-4d64-ae50-173ff6e15d04",
       "sound_muted": false,
       "sound_volume": 100,
       "vibration_enabled": true
@@ -212,7 +212,7 @@
       "losses": 0,
       "module_replacements": 0,
       "most_used_modules": [],
-      "player_id": "wt-67415ed9-1965-4a11-b220-75f4aa77993d",
+      "player_id": "wt-1561dea8-843f-4d64-ae50-173ff6e15d04",
       "ranked_matches": 0,
       "total_damage_dealt": 0,
       "total_matches": 0,
@@ -508,19 +508,13 @@
           1,
           2,
           3,
-          4,
-          5,
-          6,
-          7,
-          8,
-          9,
-          10
+          4
         ],
-        "current_tier": 10,
-        "daily_mission_day": "2026-08-31",
+        "current_tier": 6,
+        "daily_mission_day": "2026-08-29",
         "daily_missions": [
           {
-            "claimed": true,
+            "claimed": false,
             "completed": true,
             "description_tr": "2 savaş tamamla.",
             "flux_shard_reward": 10,
@@ -553,8 +547,8 @@
             "target": 3
           }
         ],
-        "equipped_title": "GRIDSHARD",
-        "flux_shards": 640,
+        "equipped_title": "Devre Öncüsü",
+        "flux_shards": 185,
         "max_tier": 10,
         "reward_track": [
           {
@@ -594,8 +588,8 @@
             "title_tr": null
           },
           {
-            "claimable": false,
-            "claimed": true,
+            "claimable": true,
+            "claimed": false,
             "flux_shards": 50,
             "required_xp": 750,
             "season_xp_reward": 50,
@@ -603,8 +597,8 @@
             "title_tr": "Kırık Avcısı"
           },
           {
-            "claimable": false,
-            "claimed": true,
+            "claimable": true,
+            "claimed": false,
             "flux_shards": 55,
             "required_xp": 950,
             "season_xp_reward": 55,
@@ -613,7 +607,7 @@
           },
           {
             "claimable": false,
-            "claimed": true,
+            "claimed": false,
             "flux_shards": 60,
             "required_xp": 1150,
             "season_xp_reward": 60,
@@ -622,7 +616,7 @@
           },
           {
             "claimable": false,
-            "claimed": true,
+            "claimed": false,
             "flux_shards": 70,
             "required_xp": 1375,
             "season_xp_reward": 70,
@@ -631,7 +625,7 @@
           },
           {
             "claimable": false,
-            "claimed": true,
+            "claimed": false,
             "flux_shards": 80,
             "required_xp": 1600,
             "season_xp_reward": 80,
@@ -640,7 +634,7 @@
           },
           {
             "claimable": false,
-            "claimed": true,
+            "claimed": false,
             "flux_shards": 100,
             "required_xp": 1900,
             "season_xp_reward": 100,
@@ -652,20 +646,17 @@
         "season_id": "core_awakening_s0",
         "season_name_tr": "Sezon Sıfır · Çekirdek Uyanışı",
         "season_starts_at": "2026-08-01T00:00:00Z",
-        "season_xp": 2115,
-        "tier_progress": 1,
-        "tier_progress_required": 1,
+        "season_xp": 1060,
+        "tier_progress": 110,
+        "tier_progress_required": 200,
         "unlocked_titles": [
           "Devre Çırağı",
-          "Devre Öncüsü",
-          "Kırık Avcısı",
-          "Çekirdek Muhafızı",
-          "GRIDSHARD"
+          "Devre Öncüsü"
         ]
       },
-      "experience": 930,
-      "experience_into_level": 930,
-      "experience_to_next_level": 70,
+      "experience": 560,
+      "experience_into_level": 560,
+      "experience_to_next_level": 440,
       "laboratory": {
         "module_levels": {},
         "receipts": {},
@@ -719,88 +710,84 @@
       "vibration_enabled": true
     },
     "statistics": {
-      "average_match_duration_ms": 94755,
-      "boosters_used": 14,
+      "average_match_duration_ms": 93181,
+      "boosters_used": 3,
       "by_match_type": {
         "unranked_ai": {
           "draws": 0,
-          "losses": 6,
-          "matches": 18,
-          "wins": 12
+          "losses": 4,
+          "matches": 11,
+          "wins": 7
         }
       },
       "draws": 0,
       "local_test_matches": 0,
-      "losses": 6,
+      "losses": 4,
       "module_replacements": 9,
       "most_used_modules": [
         {
           "definition_id": "laser",
-          "matches_used": 18
+          "matches_used": 11
         },
         {
           "definition_id": "shield",
-          "matches_used": 17
+          "matches_used": 10
         },
         {
           "definition_id": "armor",
-          "matches_used": 15
-        },
-        {
-          "definition_id": "reflector",
-          "matches_used": 15
-        },
-        {
-          "definition_id": "barrier",
-          "matches_used": 14
-        },
-        {
-          "definition_id": "battery",
-          "matches_used": 14
-        },
-        {
-          "definition_id": "repair",
-          "matches_used": 14
+          "matches_used": 9
         },
         {
           "definition_id": "drone_bay",
-          "matches_used": 13
+          "matches_used": 9
+        },
+        {
+          "definition_id": "barrier",
+          "matches_used": 8
+        },
+        {
+          "definition_id": "battery",
+          "matches_used": 8
+        },
+        {
+          "definition_id": "reflector",
+          "matches_used": 8
+        },
+        {
+          "definition_id": "repair",
+          "matches_used": 8
         },
         {
           "definition_id": "capacitor",
-          "matches_used": 10
-        },
-        {
-          "definition_id": "pulse_cannon",
-          "matches_used": 10
-        },
-        {
-          "definition_id": "railgun",
-          "matches_used": 6
-        },
-        {
-          "definition_id": "arc_cannon",
           "matches_used": 5
         },
         {
           "definition_id": "energy_leech",
-          "matches_used": 5
-        },
-        {
-          "definition_id": "missile_launcher",
-          "matches_used": 5
-        },
-        {
-          "definition_id": "virus",
           "matches_used": 4
         },
         {
-          "definition_id": "amplifier",
+          "definition_id": "missile_launcher",
+          "matches_used": 4
+        },
+        {
+          "definition_id": "railgun",
+          "matches_used": 4
+        },
+        {
+          "definition_id": "arc_cannon",
           "matches_used": 3
         },
         {
-          "definition_id": "targeting_computer",
+          "definition_id": "pulse_cannon",
           "matches_used": 3
+        },
+        {
+          "definition_id": "virus",
+          "matches_used": 3
+        },
+        {
+          "definition_id": "amplifier",
+          "matches_used": 2
         },
         {
           "definition_id": "cooler",
@@ -813,15 +800,19 @@
         {
           "definition_id": "disruptor",
           "matches_used": 1
+        },
+        {
+          "definition_id": "targeting_computer",
+          "matches_used": 1
         }
       ],
       "player_id": "wt-dbd4a70f-4d90-4b60-958a-18ca1e4eff82",
       "ranked_matches": 0,
-      "total_damage_dealt": 24194,
-      "total_matches": 18,
-      "unranked_ai_matches": 18,
-      "win_rate": 0.666667,
-      "wins": 12
+      "total_damage_dealt": 13325,
+      "total_matches": 11,
+      "unranked_ai_matches": 11,
+      "win_rate": 0.636364,
+      "wins": 7
     }
   }
 }

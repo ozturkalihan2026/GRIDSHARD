@@ -153,6 +153,7 @@
           maxLanes:6,
         })
       : null;
+  const FLOATING_COMBAT_TEXT_ENABLED = false;
   const boosterTargetMode =
     typeof GridshardBoosterTargetMode === "function"
       ? new GridshardBoosterTargetMode()
@@ -544,10 +545,12 @@
       battleEventChannels.AUDIO_STATE,
       payload
     );
-    if (!battleEventBus && audioStateOwner) {
-      return audioStateOwner.handle(payload);
-    }
-    return emitted.results[0] || null;
+    const result=!battleEventBus && audioStateOwner
+      ? audioStateOwner.handle(payload)
+      : emitted.results[0] || null;
+    gridshardAudioDirector
+      ?.ensureResultPlayback?.(outcome);
+    return result;
   }
 
   function clearTerminalAudioState(reason="battle_reset") {
@@ -1304,9 +1307,8 @@
       : (
           targetDefinitionId === "core"
             ? "core_hit"
-            : null
+            : "module_hit"
         );
-    if (!cue) return;
     window.setTimeout(
       () => triggerGridshardCue(cue),
       Math.max(0,Number(travelMs || 0))
@@ -1425,6 +1427,10 @@
         "Eşleştirme: Bağlantı hatası",
     };
 
+    const battleJustStarted=
+      status === "battle"
+      && document.body.dataset.onlineStatus !== "battle";
+
     matchmakingStatusEl.textContent =
       (
         matchmakingState.opponentType === "ai"
@@ -1476,6 +1482,9 @@
       mobileBattleController.reset();
       if (document.documentElement) document.documentElement.scrollTop = 0;
       document.body.scrollTop = 0;
+      if (battleJustStarted) {
+        triggerGridshardCue("energy_transfer");
+      }
     }
     renderPlayModeUi();
   }
@@ -5969,6 +5978,9 @@ function saveHumanReviewLocalNote() {
     variant="neutral",
     { core=false }={}
   ) {
+    if (!FLOATING_COMBAT_TEXT_ENABLED) {
+      return false;
+    }
     const layer = document.getElementById(
       "battle-effect-layer"
     );
@@ -6092,20 +6104,33 @@ function saveHumanReviewLocalNote() {
     if (!serverModule) {
       return false;
     }
+    const moduleDomId=serverModuleDomId(playerId, serverModule);
+    const feedbackKind={
+      damage:"hit",
+      heal:"heal",
+      cool:"cool",
+      energy:"energy",
+      defense:"shield",
+      boost:"boost",
+      reflect:"reflect",
+      sabotage:"sabotage",
+      warning:"warning",
+    }[variant] || "status";
+    const pulsed=pulseBattleFx(moduleDomId,feedbackKind);
     const emitted = emitFloatingBattleFeedback(
-      serverModuleDomId(playerId, serverModule),
+      moduleDomId,
       text,
       variant,
       { core: serverModule.definition_id === "core" }
     );
-    if (emitted) {
+    if (pulsed || emitted) {
       const tickerKind = variant === "damage" ? "danger" : variant;
       setBattleLiveTicker(
         `${serverModule.name_tr || "Modül"} · ${text}`,
         tickerKind
       );
     }
-    return emitted;
+    return pulsed || emitted;
   }
 
   function emitServerModuleDestruction(
@@ -7151,6 +7176,7 @@ function saveHumanReviewLocalNote() {
       "İlk güçlendirici 30. saniyede";
     criticalCoreAudioRequested = false;
     requestOwnedAudioState("local_battle_started");
+    triggerGridshardCue("energy_transfer");
 
     createEnemyBoard();
     renderEnemyBoard();
@@ -7742,28 +7768,43 @@ function saveHumanReviewLocalNote() {
       document.querySelector(
         `[data-module-id="${moduleId}"]`
       );
-    if (!element) return;
+    if (!element) return false;
 
-    const className =
-      kind === "shield"
-        ? "fx-shield"
-        : (
-            kind === "sabotage"
-              ? "fx-sabotage"
-              : "fx-hit"
-          );
-
-    element.classList.remove(
+    const className={
+      hit:"fx-hit",
+      shield:"fx-shield",
+      sabotage:"fx-sabotage",
+      heal:"fx-feedback-heal",
+      cool:"fx-feedback-cool",
+      energy:"fx-feedback-energy",
+      boost:"fx-feedback-boost",
+      reflect:"fx-feedback-reflect",
+      warning:"fx-feedback-warning",
+      status:"fx-feedback-status",
+    }[kind] || "fx-feedback-status";
+    const feedbackClasses=[
       "fx-hit",
       "fx-shield",
-      "fx-sabotage"
+      "fx-sabotage",
+      "fx-feedback-heal",
+      "fx-feedback-cool",
+      "fx-feedback-energy",
+      "fx-feedback-boost",
+      "fx-feedback-reflect",
+      "fx-feedback-warning",
+      "fx-feedback-status",
+    ];
+
+    element.classList.remove(
+      ...feedbackClasses
     );
     void element.offsetWidth;
     element.classList.add(className);
     window.setTimeout(
       () => element.classList.remove(className),
-      520
+      720
     );
+    return true;
   }
 
   function emitDuelImpactEffect({
@@ -8048,7 +8089,6 @@ function saveHumanReviewLocalNote() {
     if (
       activePlayMode !== "local"
       || localBattleFinished
-      || client.elapsedMs < 5000
     ) {
       return;
     }
@@ -10584,7 +10624,7 @@ function saveHumanReviewLocalNote() {
       return;
     }
     tooltip.classList.remove("tooltip-below");
-    const shelf = card.closest(".module-shelf, .battle-pool-selected-list, .battle-pool-module-grid, .laboratory-module-list");
+    const shelf = card.closest(".module-shelf, .duel-arena, .battle-pool-selected-list, .battle-pool-module-grid, .laboratory-module-list");
     const cardRect = card.getBoundingClientRect();
     const tooltipRect = tooltip.getBoundingClientRect();
     const boundaryTop = shelf && typeof shelf.getBoundingClientRect === "function"
@@ -10868,6 +10908,9 @@ function saveHumanReviewLocalNote() {
       tooltip.textContent=message;
       tooltip.setAttribute("role","tooltip");
       card.appendChild(tooltip);
+      const placeTooltip=()=>updateShelfTooltipPlacement(card,tooltip);
+      card.addEventListener("pointerenter",placeTooltip);
+      card.addEventListener("focusin",placeTooltip);
       card.title=`${card.title ? `${card.title} · ` : ""}${message}`;
       card.setAttribute("aria-label",message);
       return false;
@@ -12359,6 +12402,9 @@ function saveHumanReviewLocalNote() {
           "tooltip"
         );
         card.appendChild(tooltip);
+        const placeTooltip=()=>updateShelfTooltipPlacement(card,tooltip);
+        card.addEventListener("pointerenter",placeTooltip);
+        card.addEventListener("focusin",placeTooltip);
         card.title =
           `${localizedUiText(module.nameTr)} · `
           + `${localizedUiText("Devre Kredisi")}: ${module.circuitCreditCost} DK · `
@@ -14436,6 +14482,8 @@ function saveHumanReviewLocalNote() {
     rematchButton.addEventListener(
       "click",
       async () => {
+        gridshardAudioDirector
+          ?.prepareBattlePlayback?.();
         trackRematchRequest();
 
         if (
@@ -14471,6 +14519,8 @@ function saveHumanReviewLocalNote() {
   poolConfirmEl.addEventListener(
     "click",
     async () => {
+      gridshardAudioDirector
+        ?.prepareBattlePlayback?.();
       if (
         activePlayMode === "online"
         && isOnlineMatchmakingCancelable()

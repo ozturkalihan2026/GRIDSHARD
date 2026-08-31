@@ -5661,6 +5661,13 @@ body[data-app-screen="play"] .board-cell .hp-bar {
   .duel-shot-muzzle,
   .duel-shot-projectile,
   .module-card.fx-fire,
+  .module-card.fx-feedback-heal,
+  .module-card.fx-feedback-cool,
+  .module-card.fx-feedback-energy,
+  .module-card.fx-feedback-boost,
+  .module-card.fx-feedback-reflect,
+  .module-card.fx-feedback-warning,
+  .module-card.fx-feedback-status,
   .duel-hit-impact * {
     animation-duration:.01ms !important;
     animation-iteration-count:1 !important;
@@ -5877,6 +5884,39 @@ body[data-app-screen="play"] .module-card > .port-left {
 }
 .module-card.fx-fire {
   animation:gs-card-fire-static .24s ease-out;
+}
+.module-card.fx-feedback-heal,
+.module-card.fx-feedback-cool,
+.module-card.fx-feedback-energy,
+.module-card.fx-feedback-boost,
+.module-card.fx-feedback-reflect,
+.module-card.fx-feedback-warning,
+.module-card.fx-feedback-status {
+  --grid-feedback-color:#d8ecff;
+  animation:gs-grid-module-feedback .7s ease-out;
+  z-index:48;
+}
+.module-card.fx-feedback-heal { --grid-feedback-color:#63e89a; }
+.module-card.fx-feedback-cool,
+.module-card.fx-feedback-energy { --grid-feedback-color:#43e6ff; }
+.module-card.fx-feedback-boost { --grid-feedback-color:#ffd768; }
+.module-card.fx-feedback-reflect { --grid-feedback-color:#b886ff; }
+.module-card.fx-feedback-warning { --grid-feedback-color:#ff9f43; }
+@keyframes gs-grid-module-feedback {
+  0%,100% {
+    outline-color:transparent;
+    box-shadow:0 0 0 0 transparent,inset 0 0 0 transparent;
+    filter:brightness(1) saturate(1);
+  }
+  34% {
+    outline:2px solid var(--grid-feedback-color);
+    outline-offset:-3px;
+    box-shadow:
+      0 0 0 4px color-mix(in srgb,var(--grid-feedback-color) 34%,transparent),
+      0 0 22px color-mix(in srgb,var(--grid-feedback-color) 72%,transparent),
+      inset 0 0 24px color-mix(in srgb,var(--grid-feedback-color) 35%,transparent);
+    filter:brightness(1.38) saturate(1.24);
+  }
 }
 @keyframes gs-card-impact-static {
   0%,100% {
@@ -8759,4 +8799,218 @@ body[data-app-screen="menu"] .app-bottom-dock .menu-action.is-active .menu-actio
   .engagement-summary-panel,
   .statistics-summary-panel,
   .settings-summary-panel { padding:18px; }
+}
+
+/* GRIDSHARD visual pass — display type, clean dock and neon circuit seals. */
+:root {
+  --gs-font-display:"Orbitron","Russo One","Bahnschrift SemiBold","Arial Black",sans-serif;
+  --gs-font-copy:"Rajdhani","Bahnschrift","Segoe UI",sans-serif;
+}
+
+body {
+  font-family:var(--gs-font-copy);
+  font-weight:500;
+}
+
+:is(
+  h1,h2,h3,h4,
+  .screen-heading-block .screen-kicker,
+  .menu-action-title,
+  .module-card .name,
+  .battle-time,
+  .capacity-indicator,
+  .credit-indicator,
+  .lobby-ribbon-kicker,
+  .app-progress-ribbon strong,
+  .battle-result-title,
+  .battle-result-outcome,
+  .stat-value
+) {
+  font-family:var(--gs-font-display);
+  font-weight:800;
+  letter-spacing:.045em;
+  text-shadow:
+    0 1px 0 rgba(232,250,255,.32),
+    0 2px 0 rgba(5,13,28,.92),
+    0 0 12px rgba(72,244,224,.18);
+}
+
+:is(
+  p,small,
+  .screen-subtitle,
+  .shelf-help,
+  .module-card .meta,
+  .module-detail-copy,
+  .battle-result-copy
+) {
+  font-family:var(--gs-font-copy);
+  letter-spacing:.012em;
+}
+
+/* The selected dock item keeps its name, but never draws an underline. */
+.app-bottom-dock .menu-action::after,
+.app-bottom-dock .menu-action.is-active::after,
+.app-bottom-dock .menu-action:hover::after,
+.app-bottom-dock .menu-action:focus-visible::after,
+body[data-app-screen="menu"] .app-bottom-dock .menu-action::after,
+body[data-app-screen="menu"] .app-bottom-dock .menu-action.is-active::after {
+  content:none !important;
+  display:none !important;
+  width:0 !important;
+  height:0 !important;
+  border:0 !important;
+  background:none !important;
+  box-shadow:none !important;
+}
+
+/* A 30-degree light axis suggests an isometric circuit plane without skewing hit targets. */
+body[data-app-screen="play"] .board-cell,
+body[data-app-screen="play"] .enemy-board-cell {
+  background-color:#0d1928;
+  background-image:
+    linear-gradient(30deg,rgba(91,233,224,.075) 0 1px,transparent 1px 52%),
+    linear-gradient(150deg,rgba(78,140,255,.06) 0 1px,transparent 1px 52%),
+    linear-gradient(180deg,rgba(17,37,59,.94),rgba(7,17,30,.98));
+  background-size:22px 38px,22px 38px,100% 100%;
+  box-shadow:
+    inset 1px 1px 0 rgba(180,244,255,.055),
+    inset -3px -4px 12px rgba(0,0,0,.28);
+}
+
+body[data-app-screen="play"] .board {
+  filter:drop-shadow(12px 14px 18px rgba(0,0,0,.18));
+}
+
+/* Special cells are floor seals whose glow and rune color identify their class. */
+.board-cell.special-cell {
+  --seal-rgb:72,244,224;
+  --seal-color:#48f4e0;
+  isolation:isolate;
+  border-color:rgba(var(--seal-rgb),.44);
+  background-image:
+    radial-gradient(circle at 50% 48%,rgba(var(--seal-rgb),.16),transparent 48%),
+    linear-gradient(30deg,rgba(var(--seal-rgb),.12) 0 1px,transparent 1px 52%),
+    linear-gradient(150deg,rgba(var(--seal-rgb),.08) 0 1px,transparent 1px 52%),
+    linear-gradient(180deg,rgba(17,37,59,.94),rgba(7,17,30,.98));
+  box-shadow:
+    inset 0 0 18px rgba(var(--seal-rgb),.12),
+    inset 0 0 0 1px rgba(var(--seal-rgb),.18),
+    0 0 12px rgba(var(--seal-rgb),.08);
+}
+
+.board-cell.attack-cell { --seal-rgb:255,95,114; --seal-color:#ff5f72; }
+.board-cell.defense-cell { --seal-rgb:92,163,255; --seal-color:#5ca3ff; }
+.board-cell.energy-cell { --seal-rgb:72,244,224; --seal-color:#48f4e0; }
+.board-cell.cooling-cell { --seal-rgb:103,220,255; --seal-color:#67dcff; }
+.board-cell.repair-cell { --seal-rgb:126,229,166; --seal-color:#7ee5a6; }
+.board-cell.signal-cell { --seal-rgb:184,124,255; --seal-color:#b87cff; }
+
+.board-cell.special-cell::before {
+  content:"";
+  position:absolute;
+  z-index:0;
+  top:24%;
+  left:28%;
+  width:44%;
+  aspect-ratio:1;
+  border:1px solid rgba(var(--seal-rgb),.76);
+  border-radius:18%;
+  background:
+    radial-gradient(circle,rgba(var(--seal-rgb),.36) 0 8%,transparent 9% 24%,rgba(var(--seal-rgb),.22) 25% 28%,transparent 29%),
+    repeating-conic-gradient(from 30deg,rgba(var(--seal-rgb),.28) 0 8deg,transparent 8deg 52deg);
+  box-shadow:
+    inset 0 0 10px rgba(var(--seal-rgb),.34),
+    0 0 8px rgba(var(--seal-rgb),.55),
+    0 0 22px rgba(var(--seal-rgb),.24);
+  transform:rotate(30deg) skew(-4deg,-4deg);
+  opacity:.78;
+  pointer-events:none;
+  animation:gs-special-seal-pulse 2.6s ease-in-out infinite alternate;
+}
+
+.board-cell.special-cell::after {
+  z-index:1;
+  color:var(--seal-color);
+  font-family:var(--gs-font-display);
+  font-weight:700;
+  letter-spacing:.055em;
+  text-shadow:0 0 5px rgba(var(--seal-rgb),.88),0 0 12px rgba(var(--seal-rgb),.46);
+}
+
+@keyframes gs-special-seal-pulse {
+  from { opacity:.58;filter:brightness(.86); }
+  to { opacity:.94;filter:brightness(1.24); }
+}
+
+@media (prefers-reduced-motion:reduce) {
+  .board-cell.special-cell::before { animation:none;opacity:.8; }
+}
+
+/* Floating combat text is disabled until a replacement feedback model is selected. */
+.battle-floating-feedback {
+  display:none !important;
+}
+
+/* Hovered modules and their explanations always sit above neighboring cards. */
+body[data-app-screen="play"] .board-cell:hover,
+body[data-app-screen="play"] .board-cell:focus-within,
+body[data-app-screen="play"] .enemy-board-cell:hover,
+body[data-app-screen="play"] .enemy-board-cell:focus-within {
+  z-index:320 !important;
+  overflow:visible !important;
+}
+
+body[data-app-screen="play"] .board-cell:hover > .module-card,
+body[data-app-screen="play"] .board-cell:focus-within > .module-card,
+body[data-app-screen="play"] .enemy-board-cell:hover > .module-card,
+body[data-app-screen="play"] .enemy-board-cell:focus-within > .module-card {
+  z-index:330 !important;
+}
+
+.power-state-tooltip,
+.shelf-module-tooltip {
+  z-index:420 !important;
+  display:block;
+  visibility:hidden;
+  opacity:0;
+  filter:none !important;
+}
+
+.power-state-tooltip.tooltip-below,
+.shelf-module-tooltip.tooltip-below {
+  top:calc(100% + 8px);
+  bottom:auto;
+}
+
+.module-card.energy-disconnected:hover > .power-state-tooltip,
+.module-card.energy-disconnected:focus > .power-state-tooltip,
+.module-card.energy-disconnected:focus-within > .power-state-tooltip,
+.module-shelf .module-card:hover > .shelf-module-tooltip,
+.module-shelf .module-card:focus-visible > .shelf-module-tooltip {
+  visibility:visible;
+  opacity:1;
+}
+
+.module-shelf .module-card:hover,
+.module-shelf .module-card:focus-visible {
+  z-index:400 !important;
+}
+
+.shelf-category-group:has(.module-card:hover),
+.shelf-category-group:has(.module-card:focus-visible) {
+  position:relative;
+  z-index:390;
+}
+
+.shelf-module-tooltip {
+  right:auto;
+  left:50%;
+  width:max-content;
+  max-width:min(230px,calc(100vw - 32px));
+  transform:translate(-50%,5px);
+}
+
+.module-shelf .module-card:hover > .shelf-module-tooltip,
+.module-shelf .module-card:focus-visible > .shelf-module-tooltip {
+  transform:translate(-50%,0);
 }
