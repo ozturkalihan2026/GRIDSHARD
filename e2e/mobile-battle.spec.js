@@ -1,4 +1,5 @@
 const { test, expect } = require("@playwright/test");
+const { waitForParticipantReady } = require("./ui-helpers");
 
 async function closeActiveBattle(page) {
   const forfeit = page.locator("#battle-forfeit-button");
@@ -14,11 +15,7 @@ test("dokunmatik savaş görünümü tek ekrana sığar ve seç-yerleştir çal�
   await page.addInitScript(() => localStorage.setItem("gridshard.tutorial.v1", "complete"));
 
   await page.goto("/?e2e=1", { waitUntil: "domcontentloaded" });
-  await expect(page.locator("#participant-bootstrap-status")).toHaveAttribute(
-    "data-status",
-    "ready",
-    { timeout: 30_000 }
-  );
+  await waitForParticipantReady(page);
   await page.getByRole("button", { name: "Oyna" }).click();
 
   const cards = page.locator("#battle-pool-selection .pool-choice");
@@ -60,8 +57,9 @@ test("dokunmatik savaş görünümü tek ekrana sığar ve seç-yerleştir çal�
   const initialReserveCount = await reserveCards.count();
   expect(initialReserveCount).toBeGreaterThan(0);
 
-  await expect(page.locator("#capacity-indicator")).toContainText(
-    "Sınır 5/10",
+  await expect(page.locator("#capacity-indicator")).toHaveAttribute(
+    "data-state",
+    "ready",
     { timeout: 30_000 }
   );
   await expect(reserveCards.first()).not.toHaveClass(/locked/);
@@ -85,11 +83,7 @@ test("dokunmatik savaş görünümü tek ekrana sığar ve seç-yerleştir çal�
 
 test("ilk maç eğitimi hazır havuzu yükler ve AI devralmalı eşleştirmeyi başlatır", async ({ page }) => {
   await page.goto("/?e2e=tutorial", { waitUntil: "domcontentloaded" });
-  await expect(page.locator("#participant-bootstrap-status")).toHaveAttribute(
-    "data-status",
-    "ready",
-    { timeout: 30_000 }
-  );
+  await waitForParticipantReady(page);
   await page.getByRole("button", { name: "Oyna" }).click();
 
   const tutorial = page.locator("#tutorial-overlay");

@@ -1,7 +1,7 @@
 # GRIDSHARD 2.0 — YOL HARİTASI
 
-**Güncel Sürüm:** `2.0.0-beta.38`
-**Paket:** Beta.38 — Bitişik Devre + Kararlı Modül Etkileşimi + Üçlü Güçlendirici
+**Güncel Sürüm:** `2.0.0-beta.38.1`
+**Paket:** Beta.38.1 — Savaş Olayları + Ses Kurtarma + Özgür Güçlendirici Hedefleme
 **Kanonik Dosya:** `docs/YOL_HARITASI.md`
 
 > Bu dosya GRIDSHARD 2.0 için tek kanonik geliştirme kaydıdır. Kaynak karar belgesi ile kod tabanı yeniden karşılaştırılmıştır. Buradaki `[x]`, `[~]`, `[ ]` işaretleri artık yalnızca kodda ve testlerde doğrulanabilen gerçek durumu gösterir.
@@ -1939,3 +1939,29 @@ Beta.38 yayın kanıtı:
 - [~] Yerel Chromium + Android Chrome + iPhone Safari emülasyon matrisi her yayın paketinde yeniden çalıştırılır.
 - [~] Fiziksel Android/iPhone kanıtı gerçek cihaz veya BrowserStack erişim anahtarları olmadan tamamlanmış sayılmaz; emülasyon fiziksel kanıt yerine yazılmaz.
 - [~] Dereceli liderlik tablosu, sezon sonu ödülleri ve kalıcı sezon arşivi ayrı canlı operasyon veri modeli gerektirir; savaş etkileşimi stabilizasyonuyla aynı riskli değişiklik setine karıştırılmamıştır.
+
+---
+
+# 27. Güncel Paket — Beta.38.1
+
+**`GRIDSHARD 2.0.0-beta.38.1 — Savaş Olayları · Ses Kurtarma · Özgür Güçlendirici Hedefleme`**
+
+Beta.38.1, Beta.38 sonrasında raporlanan savaş sunum ve giriş durumu regresyonlarını mevcut devre/modül sistemini yeniden tasarlamadan tek bir savaş olayları katmanında kapatan düzeltme paketidir:
+
+1. [x] `BATTLE EVENT BUS`, oyun etkisi, ses durumu ve güçlendirici hedefleme olaylarını birbirinden ayrılmış kanallarda toplar.
+2. [x] Aynı hedefte ve aynı anlamdaki FCT değerleri `900 ms` pencerede tek değerde birleşir; örneğin `+8`, `+5`, `+7 CAN · ONARIM` tek `+20 CAN · ONARIM` bildirimi olur.
+3. [x] Farklı eşzamanlı etkiler hedef başına ayrı görsel şeritlere dağıtılır; eski kayıt süresi dolduğunda veya şerit yeniden kullanıldığında DOM kaydı ve zamanlayıcısı birlikte temizlenir.
+4. [x] Menü, havuz, eşleştirme, savaş, kritik çekirdek, galibiyet ve mağlubiyet müziği tek `Audio State Owner` tarafından belirlenir; yerel ve çevrimiçi durum yazıcıları birbirinin sonucunu ezemez.
+5. [x] Tarayıcı otomatik oynatma engeli görünür bir durum olarak tutulur ve ilk kullanıcı hareketinde bekleyen müzik/SFX yeniden denenir.
+6. [x] Güçlendirici hedefleme modu ayrı bir duruma taşındı. Güçlendirici sürükle-bırak ile kullanılır; başka modüle normal tık, `Esc` veya boş savaş alanı hedeflemeyi iptal eder ve normal giriş akışını sürdürür.
+7. [x] Her teklifte beş güçlendiriciden dönen farklı üç seçenek kuralı korunur.
+8. [x] Birim regresyonları FCT toplama/şerit, ses sahipliği/otomatik oynatma kurtarma ve güçlendirici iptalini kapsar.
+9. [x] Playwright regresyonu gerçek tarayıcıda birleşmiş FCT metnini, ayrı etki şeridini, savaş ses durumunu ve normal tıkla güçlendirici iptalini doğrular.
+10. [x] Beta.38.1 kabul raporu, tam QA kapısı ve sürüm kontrollü yayın paketleyicisi eklendi.
+
+Beta.38.1 yayın kanıtı:
+
+- [x] Kaynak sürüm kimliği ve yeni mimari regresyonları otomatik QA kapısındadır.
+- [x] Codex uygulama içi gerçek tarayıcıda canlı savaş, FCT şeritleri, ses geçişleri, üçlü güçlendirici ve normal tıkla hedefleme iptali doğrulandı.
+- [x] Playwright matrisi masaüstü Chromium `8/8`, Android Chrome emülasyonu `2/2`, iPhone Safari emülasyonu `2/2` olmak üzere toplam `12/12` geçti.
+- [~] Fiziksel Android/iPhone kanıtı için bu çalışma ortamında gerçek cihaz veya BrowserStack erişim bilgisi bulunmuyor; emülasyon fiziksel kanıt olarak etiketlenmedi.

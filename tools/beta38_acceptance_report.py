@@ -6,7 +6,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 OUTPUT = ROOT / "qa_reports" / "beta38_acceptance_report.json"
-EXPECTED_VERSION = "2.0.0-beta.38"
+EXPECTED_VERSION = "2.0.0-beta.38.1"
 
 
 def source(path: str) -> str:
@@ -74,7 +74,8 @@ def main() -> int:
         ),
         "matchmaking_cancel_restores_pool_music": (
             '["idle", "cancelled", "error", ""]' in app
-            and 'gridshardAudioDirector.setState("pool")' in app
+            and 'requestOwnedAudioState("online_status_update")' in app
+            and "GridshardAudioStateOwner" in app
         ),
         "placement_right_controls_module_shelf": (
             "function modulePlacementSlotState()" in app

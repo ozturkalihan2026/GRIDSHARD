@@ -33,8 +33,9 @@ test("aktif modüller sürüklemeyle takas olur ve tıklamayla port yönü döne
     "battle",
     {timeout:40_000}
   );
-  await expect(page.locator("#capacity-indicator")).toContainText(
-    "Sınır 5/10",
+  await expect(page.locator("#capacity-indicator")).toHaveAttribute(
+    "data-state",
+    "ready",
     {timeout:25_000}
   );
 

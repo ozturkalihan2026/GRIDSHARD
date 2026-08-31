@@ -13,4 +13,4 @@ def test_beta23_menu_and_dual_battle_markup():
     assert 'id="enemy-board"' in html
     assert 'id="battle-settings-button"' in html
     assert 'id="battle-time"' in html
-    assert 'Beta.38 · Bitişik Devre · Kararlı Modül Etkileşimi · Üçlü Güçlendirici' in html
+    assert 'Beta.38.1 · Savaş Olayları · Ses Kurtarma · Özgür Güçlendirici Hedefleme' in html

@@ -53,7 +53,7 @@ module.exports = defineConfig({
   projects: [
     {
       name: "desktop-chromium",
-      testMatch: /(two-client-pvp|menu-navigation|battle-density|battle-module-swap|beta32-booster-viewport|beta33-season)\.spec\.js/,
+      testMatch: /(two-client-pvp|menu-navigation|battle-density|battle-module-swap|beta32-booster-viewport|beta33-season|beta381-battle-events)\.spec\.js/,
       use: { ...devices["Desktop Chrome"], ...localChrome }
     },
     {

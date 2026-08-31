@@ -91,7 +91,7 @@
   const COMPETITIVE_STATUS = "M7 rekabetçi altyapı doğrulanıyor";
   const BALANCE_STATUS = "Denge simülasyonu mevcut · geniş örnek bekliyor";
   const AI_STATUS = "5 AI arketipi aktif · oyuncu test telemetrisi toplanıyor";
-  const PVP_STATUS = "GRIDSHARD Beta.38 · Bitişik Devre + Kararlı Modül Etkileşimi + Üçlü Güçlendirici";
+  const PVP_STATUS = "GRIDSHARD Beta.38.1 · Savaş Olayları + Ses Kurtarma + Özgür Güçlendirici Hedefleme";
 
 
 
@@ -133,7 +133,101 @@
     { id:"cooling_burst", nameTr:"Soğutma Darbesi", nameEn:"Cooling Burst", descriptionTr:"Bir modülün ısısını sıfırlar", descriptionEn:"Resets a module's heat", targetCategories:[] },
     { id:"signal_cleanser", nameTr:"Sinyal Temizleyici", nameEn:"Signal Cleanser", descriptionTr:"Bir modüldeki anlık sabotaj etkilerini temizler", descriptionEn:"Cleanses active sabotage effects on a module", targetCategories:[] },
   ];
-  let selectedBoosterId = null;
+  const battleEventChannels =
+    typeof GRIDSHARD_BATTLE_EVENT_CHANNELS === "object"
+      ? GRIDSHARD_BATTLE_EVENT_CHANNELS
+      : {
+          GAME_EFFECT:"game_effect",
+          AUDIO_STATE:"audio_state",
+          BOOSTER_STATE:"booster_state",
+        };
+  const battleEventBus =
+    typeof GridshardBattleEventBus === "function"
+      ? new GridshardBattleEventBus()
+      : null;
+  const battleEffectAggregator =
+    typeof GridshardBattleEffectAggregator === "function"
+      ? new GridshardBattleEffectAggregator({
+          windowMs:900,
+          lifetimeMs:1200,
+          maxLanes:6,
+        })
+      : null;
+  const boosterTargetMode =
+    typeof GridshardBoosterTargetMode === "function"
+      ? new GridshardBoosterTargetMode()
+      : {
+          selectedBoosterId:null,
+          handle(event) {
+            const payload=event?.payload || event || {};
+            this.selectedBoosterId = payload.action === "select"
+              ? String(payload.boosterId || "") || null
+              : null;
+            return {
+              active:Boolean(this.selectedBoosterId),
+              selectedBoosterId:this.selectedBoosterId,
+            };
+          },
+          snapshot() {
+            return {
+              active:Boolean(this.selectedBoosterId),
+              selectedBoosterId:this.selectedBoosterId,
+            };
+          },
+        };
+
+  function emitBattleEvent(channel, payload={}) {
+    return battleEventBus
+      ? battleEventBus.emit(channel, payload)
+      : { event:{ channel, payload, occurredAt:Date.now() }, results:[] };
+  }
+
+  function selectBoosterTargetMode(boosterId, reason="booster_selected") {
+    const payload={
+      action:"select",
+      boosterId,
+      reason,
+    };
+    const emitted=emitBattleEvent(
+      battleEventChannels.BOOSTER_STATE,
+      payload
+    );
+    if (!battleEventBus) {
+      return boosterTargetMode.handle(payload);
+    }
+    return emitted.results[0] || boosterTargetMode.snapshot();
+  }
+
+  function clearBoosterTargetMode(reason="cancelled") {
+    const payload={
+      action:"cancel",
+      reason,
+    };
+    const emitted=emitBattleEvent(
+      battleEventChannels.BOOSTER_STATE,
+      payload
+    );
+    if (!battleEventBus) {
+      return boosterTargetMode.handle(payload);
+    }
+    return emitted.results[0] || boosterTargetMode.snapshot();
+  }
+
+  if (battleEventBus && battleEffectAggregator) {
+    battleEventBus.subscribe(
+      battleEventChannels.GAME_EFFECT,
+      (event) => battleEffectAggregator.ingest(
+        event.payload,
+        event.occurredAt
+      )
+    );
+  }
+  if (battleEventBus) {
+    battleEventBus.subscribe(
+      battleEventChannels.BOOSTER_STATE,
+      (event) => boosterTargetMode.handle(event)
+    );
+  }
   const selectablePoolModules = moduleDefinitions.filter(
     (module) => module.instanceId !== "core-1"
   );
@@ -383,30 +477,96 @@
 
   let gridshardAudioDirector = null;
   let tutorialController = null;
+  let criticalCoreAudioRequested = false;
+  const audioStateOwner =
+    typeof GridshardAudioStateOwner === "function"
+      ? new GridshardAudioStateOwner({
+          applyState:(state) => {
+            document.body.dataset.audioState = state;
+            return gridshardAudioDirector
+              ?.setState(state);
+          },
+        })
+      : null;
+
+  if (battleEventBus && audioStateOwner) {
+    battleEventBus.subscribe(
+      battleEventChannels.AUDIO_STATE,
+      (event) => audioStateOwner.handle(event)
+    );
+  }
 
   document.body.dataset.appScreen =
     appRouter.currentScreen;
 
-  function syncAudioStateForCurrentView() {
-    if (!gridshardAudioDirector) return;
-    if (appRouter.currentScreen === RelayAppScreen.MENU) {
-      gridshardAudioDirector.setState("menu");
-      return;
-    }
-    if (appRouter.currentScreen !== RelayAppScreen.PLAY) return;
+  function currentAudioStateContext(overrides={}) {
+    return {
+      screen:appRouter.currentScreen,
+      onlineStatus:
+        document.body.dataset.onlineStatus
+        || "idle",
+      localStatus:
+        document.body.dataset.localStatus
+        || "setup",
+      critical:criticalCoreAudioRequested,
+      ...overrides,
+    };
+  }
 
-    const onlineStatus = document.body.dataset.onlineStatus || "idle";
-    const localStatus = document.body.dataset.localStatus || "setup";
-    if (onlineStatus === "battle" || localStatus === "battle") {
-      gridshardAudioDirector.setState("battle");
-    } else if (
-      ["matchmaking", "matched", "connecting", "readying"]
-        .includes(onlineStatus)
-    ) {
-      gridshardAudioDirector.setState("matchmaking");
-    } else {
-      gridshardAudioDirector.setState("pool");
+  function requestOwnedAudioState(
+    reason="view_sync",
+    overrides={},
+    { force=false }={}
+  ) {
+    const payload={
+      action:"sync",
+      reason,
+      force,
+      context:currentAudioStateContext(overrides),
+    };
+    const emitted=emitBattleEvent(
+      battleEventChannels.AUDIO_STATE,
+      payload
+    );
+    if (!battleEventBus && audioStateOwner) {
+      return audioStateOwner.handle(payload);
     }
+    return emitted.results[0] || null;
+  }
+
+  function setTerminalAudioState(outcome, reason="battle_finished") {
+    const payload={
+      action:"terminal",
+      outcome,
+      reason,
+    };
+    const emitted=emitBattleEvent(
+      battleEventChannels.AUDIO_STATE,
+      payload
+    );
+    if (!battleEventBus && audioStateOwner) {
+      return audioStateOwner.handle(payload);
+    }
+    return emitted.results[0] || null;
+  }
+
+  function clearTerminalAudioState(reason="battle_reset") {
+    const payload={
+      action:"clear_terminal",
+      reason,
+    };
+    const emitted=emitBattleEvent(
+      battleEventChannels.AUDIO_STATE,
+      payload
+    );
+    if (!battleEventBus && audioStateOwner) {
+      return audioStateOwner.handle(payload);
+    }
+    return emitted.results[0] || null;
+  }
+
+  function syncAudioStateForCurrentView() {
+    return requestOwnedAudioState("view_sync");
   }
 
   function renderAppScreen() {
@@ -644,7 +804,7 @@
         webTestBuildState,
       releaseCheckState,
       expectedVersion:
-        "2.0.0-beta.38",
+        "2.0.0-beta.38.1",
       expectedProtocolVersion: 1,
     });
   const playReadinessGate =
@@ -680,7 +840,7 @@
 
   telemetryDispatcher.trackGameOpened({
     platform: "web",
-    build: "2.0.0-beta.38",
+    build: "2.0.0-beta.38.1",
   });
 
   const postMatchSync =
@@ -797,6 +957,8 @@
   function resetBattleResultPresentation() {
     onlineFinishPresentedSessionId = null;
     document.body.dataset.onlineFinished = "false";
+    criticalCoreAudioRequested = false;
+    clearTerminalAudioState("battle_result_reset");
     setBattleResultHero("pending");
     const resultEl = document.getElementById("battle-result-summary");
     if (resultEl) {
@@ -814,7 +976,7 @@
     if (!result) return false;
 
     boosterOfferOpen = false;
-    selectedBoosterId = null;
+    clearBoosterTargetMode("online_match_finished");
     serverBoosterOfferId = null;
     serverBoosterEligibleTargets = new Map();
     if (boosterStatusEl) boosterStatusEl.textContent = localizedUiText("Maç tamamlandı");
@@ -839,14 +1001,11 @@
     }
 
     if (firstPresentation) {
-      if (gridshardAudioDirector) {
-        gridshardAudioDirector.setState(
-          outcome === "victory"
-            ? "victory"
-            : outcome === "defeat"
-              ? "defeat"
-              : "pool"
-        );
+      if (["victory", "defeat"].includes(outcome)) {
+        setTerminalAudioState(outcome, "online_match_finished");
+      } else {
+        clearTerminalAudioState("online_match_draw");
+        requestOwnedAudioState("online_match_draw");
       }
       if (result.finish_reason === "core_destroyed") {
         const loser = pvpState.snapshot?.players?.[result.loser_player_id];
@@ -1285,15 +1444,7 @@
 
     renderPoolPrimaryAction(status);
 
-    if (gridshardAudioDirector) {
-      if (["matchmaking", "matched", "connecting", "readying"].includes(status)) {
-        gridshardAudioDirector.setState("matchmaking");
-      } else if (status === "battle") {
-        gridshardAudioDirector.setState("battle");
-      } else if (["idle", "cancelled", "error", ""].includes(String(status || ""))) {
-        gridshardAudioDirector.setState("pool");
-      }
-    }
+    requestOwnedAudioState("online_status_update");
     const battleMatchLabel = document.getElementById("battle-match-label");
     if (battleMatchLabel) {
       battleMatchLabel.textContent =
@@ -1574,7 +1725,7 @@
     boosterOfferOpen = false;
     serverBoosterOfferId = null;
     serverBoosterEligibleTargets = new Map();
-    selectedBoosterId = null;
+    clearBoosterTargetMode("online_match_reset");
     if (boosterStatusEl) {
       boosterStatusEl.textContent = localizedUiText("İlk güçlendirici 30. saniyede");
     }
@@ -1640,7 +1791,7 @@
   const diagnosticSnapshot =
     new RelayDiagnosticSnapshot({
       version:
-        "2.0.0-beta.38",
+        "2.0.0-beta.38.1",
       build:
         "web-test-beta.13",
       bootGate:
@@ -3587,7 +3738,7 @@
       if (versionEl) {
         versionEl.textContent=
           manifest.version
-          || "2.0.0-beta.38";
+          || "2.0.0-beta.38.1";
       }
       if (runEl) {
         runEl.textContent=
@@ -3689,6 +3840,8 @@ const SPECIAL_CELL_INFO = {
     typeof GridshardAudioDirector === "function"
       ? new GridshardAudioDirector()
       : null;
+  gridshardAudioDirector?.bindUserGestureUnlock?.(document);
+  requestOwnedAudioState("audio_director_ready", {}, { force:true });
 
   function triggerGridshardCue(
     cueName
@@ -5790,6 +5943,26 @@ function saveHumanReviewLocalNote() {
       : (magnitude >= 10 ? "medium" : "small");
   }
 
+  function removeFloatingFeedbackRecord(effectId) {
+    const record = floatingFeedbackLive.get(effectId);
+    if (!record) return false;
+    window.clearTimeout(record.removalTimer);
+    record.chip?.remove?.();
+    floatingFeedbackLive.delete(effectId);
+    battleEffectAggregator?.release?.(effectId);
+    return true;
+  }
+
+  function scheduleFloatingFeedbackRemoval(effectId, lifetimeMs=1240) {
+    const record = floatingFeedbackLive.get(effectId);
+    if (!record) return;
+    window.clearTimeout(record.removalTimer);
+    record.removalTimer = window.setTimeout(
+      () => removeFloatingFeedbackRecord(effectId),
+      lifetimeMs
+    );
+  }
+
   function emitFloatingBattleFeedback(
     moduleId,
     text,
@@ -5817,68 +5990,90 @@ function saveHumanReviewLocalNote() {
     const semanticKey = parsed
       ? `${parsed.percent ? "percent" : "value"}:${parsed.suffix}`
       : String(text);
-    const key = `${moduleId}:${variant}:${semanticKey}`;
-    const existing = floatingFeedbackLive.get(key);
-    const now = Date.now();
-
-    if (
-      existing
-      && existing.chip?.isConnected
-      && now - existing.updatedAt < 420
-    ) {
-      if (
-        parsed
-        && existing.suffix === parsed.suffix
-        && Number.isFinite(existing.amount)
-      ) {
-        existing.amount += parsed.amount;
-        existing.chip.textContent = formatFloatingFeedbackAmount(
-          existing.amount,
-          existing.suffix,
-          {
-            explicitSign: existing.explicitSign,
-            percent: existing.percent,
-          }
-        );
-        updateFloatingFeedbackImportance(existing.chip, existing.amount);
-      } else {
-        existing.chip.textContent = text;
-        existing.amount = parsed?.amount ?? null;
-        existing.suffix = parsed?.suffix ?? null;
-        existing.explicitSign = parsed?.explicitSign ?? false;
-        existing.percent = parsed?.percent ?? false;
-        updateFloatingFeedbackImportance(existing.chip, parsed?.amount ?? 0);
+    const eventResult = emitBattleEvent(
+      battleEventChannels.GAME_EFFECT,
+      {
+        targetId:moduleId,
+        variant,
+        semanticKey,
+        amount:parsed?.amount ?? null,
+        text,
+        metadata:{
+          suffix:parsed?.suffix ?? null,
+          explicitSign:parsed?.explicitSign ?? false,
+          percent:parsed?.percent ?? false,
+        },
       }
-      existing.updatedAt = now;
+    ).results[0] || {
+      id:`battle-effect-fallback-${Date.now()}`,
+      mode:"created",
+      lane:0,
+      amount:parsed?.amount ?? null,
+      text,
+      metadata:{
+        suffix:parsed?.suffix ?? null,
+        explicitSign:parsed?.explicitSign ?? false,
+        percent:parsed?.percent ?? false,
+      },
+      expiredRecordIds:[],
+      replacedRecordId:null,
+    };
+
+    for (const effectId of eventResult.expiredRecordIds || []) {
+      removeFloatingFeedbackRecord(effectId);
+    }
+    if (eventResult.replacedRecordId) {
+      removeFloatingFeedbackRecord(eventResult.replacedRecordId);
+    }
+
+    const existing = floatingFeedbackLive.get(eventResult.id);
+    if (existing?.chip?.isConnected) {
+      existing.chip.textContent = Number.isFinite(eventResult.amount)
+        ? formatFloatingFeedbackAmount(
+            eventResult.amount,
+            eventResult.metadata?.suffix || parsed?.suffix || "",
+            {
+              explicitSign:Boolean(eventResult.metadata?.explicitSign),
+              percent:Boolean(eventResult.metadata?.percent),
+            }
+          )
+        : eventResult.text;
+      updateFloatingFeedbackImportance(existing.chip, eventResult.amount ?? 0);
       existing.chip.classList.remove("stacked");
       void existing.chip.offsetWidth;
       existing.chip.classList.add("stacked");
+      scheduleFloatingFeedbackRemoval(eventResult.id);
       return true;
     }
 
     const chip = document.createElement("span");
     chip.className = `battle-floating-feedback ${variant}`;
-    chip.textContent = text;
-    updateFloatingFeedbackImportance(chip, parsed?.amount ?? 0);
+    chip.dataset.effectId = eventResult.id;
+    chip.dataset.lane = String(eventResult.lane || 0);
+    chip.style.setProperty(
+      "--feedback-lane-offset",
+      `${Math.max(0, Number(eventResult.lane || 0)) * 24}px`
+    );
+    chip.textContent = Number.isFinite(eventResult.amount)
+      ? formatFloatingFeedbackAmount(
+          eventResult.amount,
+          eventResult.metadata?.suffix || parsed?.suffix || "",
+          {
+            explicitSign:Boolean(eventResult.metadata?.explicitSign),
+            percent:Boolean(eventResult.metadata?.percent),
+          }
+        )
+      : eventResult.text;
+    updateFloatingFeedbackImportance(chip, eventResult.amount ?? 0);
     chip.style.left = `${anchor.left + anchor.width / 2 - layerRect.left}px`;
     chip.style.top = `${anchor.top + Math.max(16, anchor.height * 0.28) - layerRect.top}px`;
     layer.appendChild(chip);
 
-    const record = {
+    floatingFeedbackLive.set(eventResult.id, {
       chip,
-      amount: parsed?.amount ?? null,
-      suffix: parsed?.suffix ?? null,
-      explicitSign: parsed?.explicitSign ?? false,
-      percent: parsed?.percent ?? false,
-      updatedAt: now,
-    };
-    floatingFeedbackLive.set(key, record);
-    window.setTimeout(() => {
-      chip.remove();
-      if (floatingFeedbackLive.get(key)?.chip === chip) {
-        floatingFeedbackLive.delete(key);
-      }
-    }, 1120);
+      removalTimer:null,
+    });
+    scheduleFloatingFeedbackRemoval(eventResult.id);
     return true;
   }
 
@@ -6904,8 +7099,9 @@ function saveHumanReviewLocalNote() {
       null;
     serverBoosterEligibleTargets =
       new Map();
-    selectedBoosterId =
-      null;
+    clearBoosterTargetMode(
+      "local_match_reset"
+    );
 
     client.applyServerEconomyState({
       circuitCredits:200,
@@ -6920,10 +7116,10 @@ function saveHumanReviewLocalNote() {
     destructionFxPlayed.clear();
     snapshotModuleHp.clear();
     moduleAnchorRects.clear();
-    for (const record of floatingFeedbackLive.values()) {
-      record.chip?.remove?.();
+    for (const effectId of [...floatingFeedbackLive.keys()]) {
+      removeFloatingFeedbackRecord(effectId);
     }
-    floatingFeedbackLive.clear();
+    battleEffectAggregator?.clear?.();
     setBattleLiveTicker(
       `${aiArchetypeName(selectedAiArchetype)} AI · Kalkan + Lazer başlangıcı`,
       "neutral"
@@ -6953,11 +7149,8 @@ function saveHumanReviewLocalNote() {
 
     boosterStatusEl.textContent =
       "İlk güçlendirici 30. saniyede";
-    if (gridshardAudioDirector) {
-      gridshardAudioDirector.setState(
-        "battle"
-      );
-    }
+    criticalCoreAudioRequested = false;
+    requestOwnedAudioState("local_battle_started");
 
     createEnemyBoard();
     renderEnemyBoard();
@@ -7152,11 +7345,8 @@ function saveHumanReviewLocalNote() {
         "Maç: Online PvP";
     }
 
-    if (gridshardAudioDirector) {
-      gridshardAudioDirector.setState(
-        "pool"
-      );
-    }
+    criticalCoreAudioRequested = false;
+    requestOwnedAudioState("online_pool_prepared");
 
     renderBattlePoolSelection();
     renderPlayModeUi();
@@ -7169,6 +7359,10 @@ function saveHumanReviewLocalNote() {
       || !localBattleStarted
       || localBattleFinished
     ) {
+      if (criticalCoreAudioRequested) {
+        criticalCoreAudioRequested = false;
+        requestOwnedAudioState("critical_core_inactive");
+      }
       return;
     }
 
@@ -7194,10 +7388,8 @@ function saveHumanReviewLocalNote() {
       ratio > 0
       && ratio <= .33
     ) {
-      gridshardAudioDirector
-        .setState(
-          "critical_core"
-        );
+      criticalCoreAudioRequested = true;
+      requestOwnedAudioState("critical_core_entered");
       if (
         typeof gridshardAudioDirector
           .setBattlePressure
@@ -7216,14 +7408,9 @@ function saveHumanReviewLocalNote() {
             )
           );
       }
-    } else if (
-      gridshardAudioDirector.state
-      === "critical_core"
-    ) {
-      gridshardAudioDirector
-        .setState(
-          "battle"
-        );
+    } else if (criticalCoreAudioRequested) {
+      criticalCoreAudioRequested = false;
+      requestOwnedAudioState("critical_core_cleared");
     }
   }
 
@@ -7303,13 +7490,11 @@ function saveHumanReviewLocalNote() {
       "true";
     stopLocalServerPolling();
 
-    if (gridshardAudioDirector) {
-      gridshardAudioDirector.setState(
-        won
-          ? "victory"
-          : "defeat"
-      );
-    }
+    criticalCoreAudioRequested = false;
+    setTerminalAudioState(
+      won ? "victory" : "defeat",
+      "local_match_finished"
+    );
 
     setBattleResultHero(
       won ? "victory" : "defeat"
@@ -10204,7 +10389,7 @@ function saveHumanReviewLocalNote() {
     const dueAtMs = boosterOfferDueAtMs(nextBoosterOfferIndex);
     if (!boosterOfferOpen && client.elapsedMs >= dueAtMs) {
       boosterOfferOpen = true;
-      selectedBoosterId = null;
+      clearBoosterTargetMode("offer_opened");
       activeBoosterOfferIds = new Set(rotatingBoosterOfferIds(nextBoosterOfferIndex));
       boosterStatusEl.textContent = localizedUiText("HAZIR · 3 seçenekten 1'ini seç");
       renderBoosterOptions();
@@ -10291,9 +10476,9 @@ function saveHumanReviewLocalNote() {
         )
       );
       boosterOfferOpen = true;
-      if (offerChanged) selectedBoosterId = null;
+      if (offerChanged) clearBoosterTargetMode("offer_changed");
       const optionCount = activeBoosterOfferIds.size || (offer.booster_ids || []).length || 0;
-      boosterStatusEl.textContent = localizedUiText(selectedBoosterId
+      boosterStatusEl.textContent = localizedUiText(boosterTargetMode.selectedBoosterId
         ? "Hedef modül seç"
         : `HAZIR · ${optionCount} seçenekten 1'ini seç`);
       renderBoosterOptions();
@@ -10307,7 +10492,7 @@ function saveHumanReviewLocalNote() {
     serverBoosterEligibleTargets = new Map();
     activeBoosterOfferIds = new Set();
     boosterOfferOpen = false;
-    selectedBoosterId = null;
+    clearBoosterTargetMode("offer_closed");
     boosterStatusEl.textContent = localizedUiText(`${Math.max(
       0,
       Math.ceil((boosterOfferDueAtMs(nextBoosterOfferIndex) - client.elapsedMs) / 1000)
@@ -10321,7 +10506,7 @@ function saveHumanReviewLocalNote() {
     if (boosterPanelEl) {
       boosterPanelEl.dataset.state = !boosterOfferOpen
         ? "locked"
-        : (selectedBoosterId ? "target" : "ready");
+        : (boosterTargetMode.selectedBoosterId ? "target" : "ready");
     }
     boosterOptionsEl.innerHTML = "";
     const visibleBoosters = boosterOfferOpen && activeBoosterOfferIds.size
@@ -10337,15 +10522,15 @@ function saveHumanReviewLocalNote() {
       const isOfferChoice = !boosterOfferOpen || activeBoosterOfferIds.size === 0 || activeBoosterOfferIds.has(booster.id);
       button.disabled = !boosterOfferOpen || !isOfferChoice;
       button.draggable = boosterOfferOpen && isOfferChoice;
-      if (selectedBoosterId === booster.id) button.classList.add("selected");
+      if (boosterTargetMode.selectedBoosterId === booster.id) button.classList.add("selected");
       const pickBoosterForTargeting = () => {
         if (!boosterOfferOpen || !isOfferChoice) return false;
-        selectedBoosterId = booster.id;
+        selectBoosterTargetMode(booster.id, "booster_button");
         trackBattleUiInteraction(
           `booster_select:${booster.id}`,
           "booster"
         );
-        boosterStatusEl.textContent = localizedUiText(selectedBoosterId ? "Hedef modül seç" : "Seçim bekleniyor");
+        boosterStatusEl.textContent = localizedUiText(boosterTargetMode.selectedBoosterId ? "Hedef modül seç" : "Seçim bekleniyor");
         renderBoosterOptions();
         renderBoard();
         return true;
@@ -10363,7 +10548,7 @@ function saveHumanReviewLocalNote() {
           event.preventDefault();
           return;
         }
-        selectedBoosterId = booster.id;
+        selectBoosterTargetMode(booster.id, "booster_drag");
         event.dataTransfer?.setData(
           BOOSTER_DRAG_TYPE,
           booster.id
@@ -10410,7 +10595,7 @@ function saveHumanReviewLocalNote() {
     }
   }
 
-  function isBoosterTargetEligible(module, boosterId = selectedBoosterId) {
+  function isBoosterTargetEligible(module, boosterId = boosterTargetMode.selectedBoosterId) {
     if (!module || !boosterId || module.status !== "active" || Number(module.hp) <= 0) {
       return false;
     }
@@ -10441,15 +10626,15 @@ function saveHumanReviewLocalNote() {
     const transfer = event?.dataTransfer;
     const transferTypes = Array.from(transfer?.types || []);
     if (!transfer || !transferTypes.includes(BOOSTER_DRAG_TYPE)) return "";
-    const boosterId = transfer.getData(BOOSTER_DRAG_TYPE) || selectedBoosterId || "";
+    const boosterId = transfer.getData(BOOSTER_DRAG_TYPE) || boosterTargetMode.selectedBoosterId || "";
     return BOOSTER_OPTIONS.some((booster) => booster.id === boosterId)
       ? boosterId
       : "";
   }
 
-  function cancelBoosterTargetingForModuleDrag() {
-    if (!selectedBoosterId) return;
-    selectedBoosterId = null;
+  function cancelBoosterTargeting(reason="cancelled") {
+    if (!boosterTargetMode.selectedBoosterId) return;
+    clearBoosterTargetMode(reason);
     document.querySelectorAll(
       ".module-card.booster-target, .module-card.booster-target-ineligible, .module-card.booster-drop-ready"
     ).forEach((card) => card.classList.remove(
@@ -10463,11 +10648,16 @@ function saveHumanReviewLocalNote() {
       );
     }
     renderBoosterOptions();
+    return true;
+  }
+
+  function cancelBoosterTargetingForModuleDrag() {
+    return cancelBoosterTargeting("module_drag");
   }
 
   function tryApplySelectedBooster(module) {
-    if (!selectedBoosterId) return false;
-    const booster = BOOSTER_OPTIONS.find(item => item.id === selectedBoosterId);
+    if (!boosterTargetMode.selectedBoosterId) return false;
+    const booster = BOOSTER_OPTIONS.find(item => item.id === boosterTargetMode.selectedBoosterId);
     if (!booster) return false;
     if (!isBoosterTargetEligible(module, booster.id)) {
       logClientMessage(`${booster.nameTr}, bu modülde etkili olmayacağı için hak korunarak reddedildi.`);
@@ -10491,6 +10681,19 @@ function saveHumanReviewLocalNote() {
     renderBoard();
     return true;
   }
+
+  document.addEventListener?.("keydown", (event) => {
+    if (event.key !== "Escape") return;
+    if (!cancelBoosterTargeting("escape_key")) return;
+    event.preventDefault();
+  });
+
+  document.addEventListener?.("click", (event) => {
+    if (!boosterTargetMode.selectedBoosterId) return;
+    if (event.target.closest(".booster-option, .module-card")) return;
+    if (!event.target.closest(".battle-layout, .battle-shell, .play-live-panel")) return;
+    cancelBoosterTargeting("empty_battle_area");
+  });
 
   function createBoard() {
     board.innerHTML = "";
@@ -12202,7 +12405,7 @@ function saveHumanReviewLocalNote() {
     const boardSignature = JSON.stringify({
       selectedModuleId:tapSelectedModuleId,
       battleFinished:localBattleFinished,
-      selectedBoosterId,
+      selectedBoosterId:boosterTargetMode.selectedBoosterId,
       modules:[...client.modules.values()].map(module => ({
         id:module.instanceId,
         status:module.status,
@@ -12482,7 +12685,7 @@ function saveHumanReviewLocalNote() {
     }
 
     if (
-      selectedBoosterId
+      boosterTargetMode.selectedBoosterId
       && module.status === "active"
     ) {
       card.classList.add(
@@ -12495,8 +12698,8 @@ function saveHumanReviewLocalNote() {
     card.addEventListener("dragover", (event) => {
       const boosterId = draggedBoosterId(event);
       if (!boosterId) return;
-      if (boosterId !== selectedBoosterId) {
-        selectedBoosterId = boosterId;
+      if (boosterId !== boosterTargetMode.selectedBoosterId) {
+        selectBoosterTargetMode(boosterId, "booster_drag_over");
       }
       event.preventDefault();
       event.stopPropagation();
@@ -12510,7 +12713,7 @@ function saveHumanReviewLocalNote() {
     card.addEventListener("drop", (event) => {
       const boosterId = draggedBoosterId(event);
       if (!boosterId) return;
-      selectedBoosterId = boosterId;
+      selectBoosterTargetMode(boosterId, "booster_drop");
       event.preventDefault();
       event.stopPropagation();
       card.classList.remove("booster-drop-ready");
@@ -12521,13 +12724,7 @@ function saveHumanReviewLocalNote() {
       "click",
       (event) => {
         event.stopPropagation();
-        if (
-          tryApplySelectedBooster(
-            module
-          )
-        ) {
-          return;
-        }
+        cancelBoosterTargeting("normal_module_click");
         if (module.status === "reserve") {
           if (!modulePlacementSlotState().ready) {
             logClientMessage("Yeni modül yerleştirme hakkı için geri sayımı bekleyin.");
@@ -14360,9 +14557,34 @@ function saveHumanReviewLocalNote() {
       startQuickLocalBattle,
       fillBattlePoolForQuickTest,
       getAudioState:() =>
-        gridshardAudioDirector
-          ?.state
+        audioStateOwner
+          ?.currentState
         || null,
+      getAudioPlaybackStatus:() =>
+        gridshardAudioDirector
+          ?.playbackStatus?.()
+        || null,
+      getBattleEventState:() => ({
+        effects:battleEffectAggregator?.snapshot?.() || [],
+        booster:boosterTargetMode.snapshot?.() || null,
+        audio:{
+          state:audioStateOwner?.currentState || null,
+          terminalState:audioStateOwner?.terminalState || null,
+          revision:audioStateOwner?.revision || 0,
+        },
+      }),
+      emitFloatingFeedback:(moduleId, text, variant="neutral") =>
+        emitFloatingBattleFeedback(moduleId, text, variant),
+      selectBoosterForTest:(boosterId) => {
+        const known = BOOSTER_OPTIONS.some((booster) => booster.id === boosterId);
+        if (!known) return { ok:false, reason:"unknown_booster" };
+        boosterOfferOpen = true;
+        activeBoosterOfferIds = new Set([boosterId]);
+        selectBoosterTargetMode(boosterId, "test_api");
+        renderBoosterOptions();
+        renderBoard({ force:true });
+        return { ok:true, state:boosterTargetMode.snapshot?.() || null };
+      },
       rotateModule:(moduleId) => {
         const module=
           client.requireModule(

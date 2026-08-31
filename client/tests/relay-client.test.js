@@ -482,61 +482,61 @@ function createClient() {
   const fs=require("fs");
   const src=fs.readFileSync(path.join(ROOT,"src/app.js"),"utf8");
   assert.ok(src.includes("PVP_STATUS"));
-  assert.ok(src.includes("GRIDSHARD Beta.38 · Bitişik Devre + Kararlı Modül Etkileşimi + Üçlü Güçlendirici"));
+  assert.ok(src.includes("GRIDSHARD Beta.38.1 · Savaş Olayları + Ses Kurtarma + Özgür Güçlendirici Hedefleme"));
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync(path.join(ROOT,"src/app.js"),"utf8");
-  assert.ok(src.includes("GRIDSHARD Beta.38 · Bitişik Devre + Kararlı Modül Etkileşimi + Üçlü Güçlendirici")); // alpha32->33 protocol status
+  assert.ok(src.includes("GRIDSHARD Beta.38.1 · Savaş Olayları + Ses Kurtarma + Özgür Güçlendirici Hedefleme")); // alpha32->33 protocol status
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync(path.join(ROOT,"src/app.js"),"utf8");
-  assert.ok(src.includes("GRIDSHARD Beta.38 · Bitişik Devre + Kararlı Modül Etkileşimi + Üçlü Güçlendirici")); // alpha33 protocol
+  assert.ok(src.includes("GRIDSHARD Beta.38.1 · Savaş Olayları + Ses Kurtarma + Özgür Güçlendirici Hedefleme")); // alpha33 protocol
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync(path.join(ROOT,"src/app.js"),"utf8");
-  assert.ok(src.includes("GRIDSHARD Beta.38 · Bitişik Devre + Kararlı Modül Etkileşimi + Üçlü Güçlendirici")); // alpha34 websocket
+  assert.ok(src.includes("GRIDSHARD Beta.38.1 · Savaş Olayları + Ses Kurtarma + Özgür Güçlendirici Hedefleme")); // alpha34 websocket
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync(path.join(ROOT,"src/app.js"),"utf8");
-  assert.ok(src.includes("GRIDSHARD Beta.38 · Bitişik Devre + Kararlı Modül Etkileşimi + Üçlü Güçlendirici")); // alpha35 gateway
+  assert.ok(src.includes("GRIDSHARD Beta.38.1 · Savaş Olayları + Ses Kurtarma + Özgür Güçlendirici Hedefleme")); // alpha35 gateway
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync(path.join(ROOT,"src/app.js"),"utf8");
-  assert.ok(src.includes("GRIDSHARD Beta.38 · Bitişik Devre + Kararlı Modül Etkileşimi + Üçlü Güçlendirici")); // alpha36 setup
+  assert.ok(src.includes("GRIDSHARD Beta.38.1 · Savaş Olayları + Ses Kurtarma + Özgür Güçlendirici Hedefleme")); // alpha36 setup
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync(path.join(ROOT,"src/app.js"),"utf8");
-  assert.ok(src.includes("GRIDSHARD Beta.38 · Bitişik Devre + Kararlı Modül Etkileşimi + Üçlü Güçlendirici")); // alpha37 lobby
+  assert.ok(src.includes("GRIDSHARD Beta.38.1 · Savaş Olayları + Ses Kurtarma + Özgür Güçlendirici Hedefleme")); // alpha37 lobby
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync(path.join(ROOT,"src/app.js"),"utf8");
-  assert.ok(src.includes("GRIDSHARD Beta.38 · Bitişik Devre + Kararlı Modül Etkileşimi + Üçlü Güçlendirici")); // alpha38 runner
+  assert.ok(src.includes("GRIDSHARD Beta.38.1 · Savaş Olayları + Ses Kurtarma + Özgür Güçlendirici Hedefleme")); // alpha38 runner
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync(path.join(ROOT,"src/app.js"),"utf8");
-  assert.ok(src.includes("GRIDSHARD Beta.38 · Bitişik Devre + Kararlı Modül Etkileşimi + Üçlü Güçlendirici")); // alpha39 heartbeat
+  assert.ok(src.includes("GRIDSHARD Beta.38.1 · Savaş Olayları + Ses Kurtarma + Özgür Güçlendirici Hedefleme")); // alpha39 heartbeat
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync(path.join(ROOT,"src/app.js"),"utf8");
-  assert.ok(src.includes("GRIDSHARD Beta.38 · Bitişik Devre + Kararlı Modül Etkileşimi + Üçlü Güçlendirici")); // alpha40 online pvp
+  assert.ok(src.includes("GRIDSHARD Beta.38.1 · Savaş Olayları + Ses Kurtarma + Özgür Güçlendirici Hedefleme")); // alpha40 online pvp
 }
 
 {
@@ -767,7 +767,7 @@ function createClient() {
 {
   const fs=require("fs");
   const src=fs.readFileSync(path.join(ROOT,"src/app.js"),"utf8");
-  assert.ok(src.includes("GRIDSHARD Beta.38 · Bitişik Devre + Kararlı Modül Etkileşimi + Üçlü Güçlendirici"));
+  assert.ok(src.includes("GRIDSHARD Beta.38.1 · Savaş Olayları + Ses Kurtarma + Özgür Güçlendirici Hedefleme"));
   assert.ok(src.includes("buildPvPCommandEnvelope"));
   assert.ok(src.includes("applyPvPServerEnvelope"));
 }
@@ -2482,7 +2482,7 @@ function createClient() {
   const html=fs.readFileSync(path.join(ROOT,"index.html"),"utf8");
   assert.ok(
     html.includes(
-      "2.0.0-beta.38"
+      "2.0.0-beta.38.1"
     )
   );
   assert.ok(

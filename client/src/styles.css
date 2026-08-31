@@ -8111,12 +8111,13 @@ body[data-app-screen="menu"] .app-bottom-dock .menu-action-title {
 
 /* Floating feedback density control: stacked events reuse one chip. */
 .battle-floating-feedback.stacked {
-  animation:gs-floating-feedback-stack .32s ease-out;
+  animation:gs-floating-feedback-stack 1.2s cubic-bezier(.19,.7,.21,1) forwards;
 }
 @keyframes gs-floating-feedback-stack {
-  0% { transform:translate(-50%,-58%) scale(.90); }
-  55% { transform:translate(-50%,-68%) scale(1.08); }
-  100% { transform:translate(-50%,-62%) scale(1); }
+  0% { opacity:1;transform:translate(-50%,calc(-54% - var(--feedback-lane-offset,0px))) scale(.90); }
+  18% { opacity:1;transform:translate(-50%,calc(-68% - var(--feedback-lane-offset,0px))) scale(1.08); }
+  72% { opacity:1;transform:translate(-50%,calc(-96% - var(--feedback-lane-offset,0px))) scale(1); }
+  100% { opacity:0;transform:translate(-50%,calc(-148% - var(--feedback-lane-offset,0px))) scale(1.03); }
 }
 
 /* Make destruction unmistakable without obscuring the whole arena. */
@@ -8681,6 +8682,7 @@ body[data-app-screen="menu"] .app-bottom-dock .menu-action.is-active .menu-actio
 /* Magnitude-aware, source-labelled floating combat text. */
 .battle-floating-feedback {
   --feedback-scale:1;
+  --feedback-lane-offset:0px;
   max-width:210px;
   padding:5px 9px;
   font-size:.72rem;
@@ -8721,15 +8723,16 @@ body[data-app-screen="menu"] .app-bottom-dock .menu-action.is-active .menu-actio
   box-shadow:0 10px 24px rgba(0,0,0,.30),0 0 24px rgba(255,99,75,.30);
 }
 @keyframes gs-floating-battle-feedback {
-  0% { opacity:0;transform:translate(-50%,-42%) scale(calc(var(--feedback-scale) * .78)); }
-  16% { opacity:1;transform:translate(-50%,-58%) scale(var(--feedback-scale)); }
-  72% { opacity:1;transform:translate(-50%,-92%) scale(var(--feedback-scale)); }
-  100% { opacity:0;transform:translate(-50%,-148%) scale(calc(var(--feedback-scale) * 1.03)); }
+  0% { opacity:0;transform:translate(-50%,calc(-42% - var(--feedback-lane-offset))) scale(calc(var(--feedback-scale) * .78)); }
+  16% { opacity:1;transform:translate(-50%,calc(-58% - var(--feedback-lane-offset))) scale(var(--feedback-scale)); }
+  72% { opacity:1;transform:translate(-50%,calc(-92% - var(--feedback-lane-offset))) scale(var(--feedback-scale)); }
+  100% { opacity:0;transform:translate(-50%,calc(-148% - var(--feedback-lane-offset))) scale(calc(var(--feedback-scale) * 1.03)); }
 }
 @keyframes gs-floating-feedback-stack {
-  0% { transform:translate(-50%,-58%) scale(calc(var(--feedback-scale) * .88)); }
-  55% { transform:translate(-50%,-68%) scale(calc(var(--feedback-scale) * 1.08)); }
-  100% { transform:translate(-50%,-62%) scale(var(--feedback-scale)); }
+  0% { opacity:1;transform:translate(-50%,calc(-54% - var(--feedback-lane-offset))) scale(calc(var(--feedback-scale) * .88)); }
+  18% { opacity:1;transform:translate(-50%,calc(-68% - var(--feedback-lane-offset))) scale(calc(var(--feedback-scale) * 1.08)); }
+  72% { opacity:1;transform:translate(-50%,calc(-96% - var(--feedback-lane-offset))) scale(var(--feedback-scale)); }
+  100% { opacity:0;transform:translate(-50%,calc(-148% - var(--feedback-lane-offset))) scale(calc(var(--feedback-scale) * 1.03)); }
 }
 
 @media (prefers-reduced-motion:reduce) {
@@ -8737,9 +8740,9 @@ body[data-app-screen="menu"] .app-bottom-dock .menu-action.is-active .menu-actio
     animation:gs-floating-battle-feedback-reduced .85s ease-out forwards;
   }
   @keyframes gs-floating-battle-feedback-reduced {
-    0% { opacity:0;transform:translate(-50%,-58%) scale(var(--feedback-scale)); }
-    20%,75% { opacity:1;transform:translate(-50%,-58%) scale(var(--feedback-scale)); }
-    100% { opacity:0;transform:translate(-50%,-58%) scale(var(--feedback-scale)); }
+    0% { opacity:0;transform:translate(-50%,calc(-58% - var(--feedback-lane-offset))) scale(var(--feedback-scale)); }
+    20%,75% { opacity:1;transform:translate(-50%,calc(-58% - var(--feedback-lane-offset))) scale(var(--feedback-scale)); }
+    100% { opacity:0;transform:translate(-50%,calc(-58% - var(--feedback-lane-offset))) scale(var(--feedback-scale)); }
   }
 }
 

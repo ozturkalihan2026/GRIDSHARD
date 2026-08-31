@@ -270,6 +270,11 @@
       this._fadeTimerByAudio = new Map();
       this._musicContext = null;
       this._musicBufferCache = new Map();
+      this._pendingPlayback = new Map();
+      this._lastPlaybackError = null;
+      this._unlockTarget = null;
+      this._unlockHandler = null;
+      this._gestureObserved = false;
     }
 
     _createMusicTrack(asset, {seamless=false}={}) {
@@ -325,23 +330,127 @@
     }
 
     _safePlay(audio) {
-      if (!audio) return;
-      const result=audio.play();
-      if (
-        result
-        && typeof result.catch
-        === "function"
-      ) {
-        result.catch(
-          () => {
-            // Browser autoplay policy never blocks gameplay.
-          }
+      if (!audio || typeof audio.play !== "function") {
+        return Promise.resolve(false);
+      }
+      let result;
+      try {
+        result=audio.play();
+      } catch (error) {
+        this._recordPlaybackFailure(audio, error);
+        return Promise.resolve(false);
+      }
+      return Promise.resolve(result)
+        .then(() => {
+          this._pendingPlayback.delete(audio);
+          this._lastPlaybackError = null;
+          return true;
+        })
+        .catch((error) => {
+          this._recordPlaybackFailure(audio, error);
+          return false;
+        });
+    }
+
+    _recordPlaybackFailure(audio, error) {
+      const failure = {
+        name:String(error?.name || "PlaybackError"),
+        message:String(error?.message || error || "Audio playback failed."),
+        src:String(audio?.src || audio?._gridshardAsset || ""),
+        at:Date.now(),
+      };
+      this._pendingPlayback.set(audio, failure);
+      this._lastPlaybackError = failure;
+      return failure;
+    }
+
+    async unlock() {
+      this._gestureObserved = true;
+      if (this._musicContext?.state === "suspended") {
+        try {
+          await this._musicContext.resume();
+        } catch (error) {
+          this._lastPlaybackError = {
+            name:String(error?.name || "AudioContextError"),
+            message:String(error?.message || error || "Audio context could not resume."),
+            src:"AudioContext",
+            at:Date.now(),
+          };
+        }
+      }
+      const candidates = new Set([
+        ...this._pendingPlayback.keys(),
+        ...[
+          this.currentTrack,
+          this.criticalLayerTrack,
+          ...this.battleLayerTracks,
+        ].filter((audio) => audio && audio.paused !== false),
+      ]);
+      const results = await Promise.all(
+        [...candidates].map((audio) => this._safePlay(audio))
+      );
+      return {
+        ok:results.every(Boolean),
+        attempted:results.length,
+        pending:this._pendingPlayback.size,
+        state:this.state,
+      };
+    }
+
+    bindUserGestureUnlock(target=global.document) {
+      if (!target || typeof target.addEventListener !== "function") {
+        return { ok:false, reason:"Gesture target is unavailable." };
+      }
+      if (this._unlockTarget === target && this._unlockHandler) {
+        return { ok:true, bound:true };
+      }
+      this.unbindUserGestureUnlock();
+      this._unlockHandler = () => {
+        this.unlock();
+      };
+      this._unlockTarget = target;
+      for (const eventName of ["pointerdown", "keydown", "touchstart"]) {
+        target.addEventListener(eventName, this._unlockHandler, {
+          capture:true,
+          passive:true,
+        });
+      }
+      return { ok:true, bound:true };
+    }
+
+    unbindUserGestureUnlock() {
+      if (!this._unlockTarget || !this._unlockHandler) return false;
+      for (const eventName of ["pointerdown", "keydown", "touchstart"]) {
+        this._unlockTarget.removeEventListener(
+          eventName,
+          this._unlockHandler,
+          { capture:true }
         );
       }
+      this._unlockTarget = null;
+      this._unlockHandler = null;
+      return true;
+    }
+
+    playbackStatus() {
+      return {
+        state:this.state,
+        gestureObserved:this._gestureObserved,
+        pending:this._pendingPlayback.size,
+        currentAsset:String(
+          this.currentTrack?.src
+          || this.currentTrack?._gridshardAsset
+          || ""
+        ),
+        lastError:this._lastPlaybackError
+          ? { ...this._lastPlaybackError }
+          : null,
+      };
     }
 
     _stopAudio(audio) {
       if (!audio) return;
+      this._pendingPlayback.delete(audio);
       this._cancelFade(audio);
       try {
         audio.pause();
@@ -761,7 +870,7 @@
         this.state!==state;
       this.state=state;
 
-      if (changed) {
+      if (changed || (!this.currentTrack && !this.battleLayerTracks.length)) {
         this._transitionToStateAsset(
           state
         );

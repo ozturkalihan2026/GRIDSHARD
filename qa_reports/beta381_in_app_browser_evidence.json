@@ -1,0 +1,38 @@
+{
+  "project": "GRIDSHARD",
+  "version": "2.0.0-beta.38.1",
+  "generated_at": "2026-08-31T08:30:50Z",
+  "browser_surface": "Codex in-app browser",
+  "status": "PASSED",
+  "checks": {
+    "online_battle_started": true,
+    "battle_audio_state": "battle",
+    "defeat_audio_state": "defeat",
+    "return_to_pool_audio_state": "pool",
+    "simultaneous_fct_lanes": [
+      {
+        "lane": 0,
+        "text": "18 ENGELLENDİ · KALKAN"
+      },
+      {
+        "lane": 1,
+        "text": "-32 CAN · DARBE"
+      }
+    ],
+    "connected_board_gap": "0px",
+    "booster_offer_count": 3,
+    "booster_offer_labels": [
+      "Aşırı Yük Çipi",
+      "Acil Onarım",
+      "Çift Port Adaptörü"
+    ],
+    "booster_state_after_selection": "target",
+    "booster_state_after_normal_module_click": "ready",
+    "profile_heading_center_delta_px": -8,
+    "statistics_heading_center_delta_px": -8,
+    "settings_heading_center_delta_px": -8,
+    "settings_save_button_present": false,
+    "settings_auto_save_status_present": false,
+    "settings_persistence_status_present": true
+  }
+}

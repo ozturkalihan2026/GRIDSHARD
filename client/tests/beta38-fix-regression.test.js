@@ -13,7 +13,8 @@ assert.ok(css.includes(".menu-action:not(.is-active) .lobby-dock-icon"));
 assert.ok(html.includes('data-shell-screen="profile" aria-label="Profil"'));
 assert.ok(html.includes('data-shell-screen="settings" aria-label="Ayarlar"'));
 
-assert.ok(app.includes('gridshardAudioDirector.setState("pool")'));
+assert.ok(app.includes('requestOwnedAudioState("online_status_update")'));
+assert.ok(app.includes("GridshardAudioStateOwner"));
 assert.ok(app.includes('["idle", "cancelled", "error", ""]'));
 assert.ok(app.includes("getAudioState:() =>"));
 

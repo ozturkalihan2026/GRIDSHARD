@@ -11,7 +11,7 @@ from pathlib import Path
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "2.0.0-beta.38"
+VERSION = "2.0.0-beta.38.1"
 PACKAGE_LABEL = "fix"
 ARCHIVE_ROOT = f"GRIDSHARD-{VERSION}-{PACKAGE_LABEL}"
 

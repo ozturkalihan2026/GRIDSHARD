@@ -269,6 +269,11 @@ def main() -> int:
             cwd=ROOT / "client",
         ),
         run_step(
+            "client_syntax_battle_events",
+            [NODE_EXECUTABLE, "--check", "src/battle/battle-event-bus.js"],
+            cwd=ROOT / "client",
+        ),
+        run_step(
             "client_syntax_i18n",
             [NODE_EXECUTABLE, "--check", "src/i18n.js"],
             cwd=ROOT / "client",
@@ -286,6 +291,16 @@ def main() -> int:
         run_step(
             "client_audio_webaudio_loop",
             [NODE_EXECUTABLE, "tests/gridshard-audio-webaudio-loop.test.js"],
+            cwd=ROOT / "client",
+        ),
+        run_step(
+            "client_audio_unlock",
+            [NODE_EXECUTABLE, "--test", "tests/gridshard-audio-unlock.test.js"],
+            cwd=ROOT / "client",
+        ),
+        run_step(
+            "client_battle_event_bus",
+            [NODE_EXECUTABLE, "--test", "tests/battle-event-bus.test.js"],
             cwd=ROOT / "client",
         ),
         run_step(
@@ -316,6 +331,11 @@ def main() -> int:
         run_step(
             "client_beta38_fix_regression",
             [NODE_EXECUTABLE, "tests/beta38-fix-regression.test.js"],
+            cwd=ROOT / "client",
+        ),
+        run_step(
+            "client_beta381_regression",
+            [NODE_EXECUTABLE, "tests/beta381-regression.test.js"],
             cwd=ROOT / "client",
         ),
         run_step(
@@ -451,6 +471,18 @@ def main() -> int:
     if all(step["ok"] for step in steps):
         steps.append(
             run_step(
+                "beta381_acceptance_report",
+                [
+                    sys.executable,
+                    "tools/beta381_acceptance_report.py",
+                ],
+                cwd=ROOT,
+            )
+        )
+
+    if all(step["ok"] for step in steps):
+        steps.append(
+            run_step(
                 "browser_e2e_evidence_summary",
                 [
                     sys.executable,
@@ -528,7 +560,7 @@ def main() -> int:
 
     report = {
         "project": "GRIDSHARD 2.0",
-        "version": "2.0.0-beta.38",
+        "version": "2.0.0-beta.38.1",
         "generated_at_epoch": int(time.time()),
         "ok": all(step["ok"] for step in steps),
         "steps": steps,

@@ -18,7 +18,7 @@ from app.game.pvp_session import PvPSessionService
 from app.game.pvp_setup import InitialModulePlacement, PvPSetupPayload
 
 OUTPUT = ROOT / "qa_reports" / "beta37_ai_archetype_report.json"
-VERSION = "2.0.0-beta.38"
+VERSION = "2.0.0-beta.38.1"
 DECISION_INTERVAL_MS = 5_000
 FIRST_DECISION_MS = 15_000
 

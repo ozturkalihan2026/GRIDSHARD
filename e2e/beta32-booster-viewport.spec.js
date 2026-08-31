@@ -179,7 +179,9 @@ test("savaş rafı viewportta kalır ve 30. saniye güçlendiricisi sunucuya uyg
   }));
   expect(readyBooster.borderWidth).toBeGreaterThanOrEqual(2);
   expect(readyBooster.optionOpacity).toBe(1);
-  await page.getByRole("button", {name:"Acil Onarım"}).click();
+  const boosterButton = page.getByRole("button", {name:"Acil Onarım"});
+  const boosterTransfer = await page.evaluateHandle(() => new DataTransfer());
+  await boosterButton.dispatchEvent("dragstart", {dataTransfer:boosterTransfer});
   await expect(page.locator("#booster-panel")).toHaveAttribute(
     "data-state",
     "target"
@@ -188,7 +190,9 @@ test("savaş rafı viewportta kalır ve 30. saniye güçlendiricisi sunucuya uyg
     "#board .module-card.booster-target"
   ).first();
   await expect(eligibleBoosterTarget).toHaveCount(1, {timeout:2_000});
-  await eligibleBoosterTarget.click();
+  await eligibleBoosterTarget.dispatchEvent("dragover", {dataTransfer:boosterTransfer});
+  await eligibleBoosterTarget.dispatchEvent("drop", {dataTransfer:boosterTransfer});
+  await boosterButton.dispatchEvent("dragend", {dataTransfer:boosterTransfer});
   await expect(page.locator("#event-log")).toContainText(
     "use booster",
     {timeout:2_000}
