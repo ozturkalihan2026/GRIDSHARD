@@ -24090,5 +24090,3748 @@
     "player_id": null,
     "session_id": null,
     "timestamp_ms": 1788206434830
+  },
+  {
+    "event_id": "web-test-stability-web-test-beta.31-local-1788206435259",
+    "event_type": "web_test_stability_snapshot",
+    "metadata": {
+      "operation_running_rate": 1.0,
+      "running_to_other_regressions": 0,
+      "stability": "stable",
+      "test_run_id": "web-test-beta.31-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1788206435259
+  },
+  {
+    "event_id": "web-test-launch-wt-dbd4a70f-4d90-4b60-958a-18ca1e4eff82-1788214876405",
+    "event_type": "web_test_launch_attempted",
+    "metadata": {
+      "failed_checks": [],
+      "launch_ready": true,
+      "test_run_id": "web-test-beta.31-local"
+    },
+    "player_id": "wt-dbd4a70f-4d90-4b60-958a-18ca1e4eff82",
+    "session_id": null,
+    "timestamp_ms": 1788214876405
+  },
+  {
+    "event_id": "web-test-stability-web-test-beta.31-local-1788214879321",
+    "event_type": "web_test_stability_snapshot",
+    "metadata": {
+      "operation_running_rate": 1.0,
+      "running_to_other_regressions": 0,
+      "stability": "stable",
+      "test_run_id": "web-test-beta.31-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1788214879321
+  },
+  {
+    "event_id": "web-test-operation-web-test-beta.31-local-1788214879540",
+    "event_type": "web_test_operation_snapshot",
+    "metadata": {
+      "consistency_status": "consistent",
+      "operational_state": "running",
+      "preflight_ready": true,
+      "run_started": true,
+      "test_run_id": "web-test-beta.31-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1788214879540
+  },
+  {
+    "event_id": "web-test-operation-web-test-beta.31-local-1788214895316",
+    "event_type": "web_test_operation_snapshot",
+    "metadata": {
+      "consistency_status": "consistent",
+      "operational_state": "running",
+      "preflight_ready": true,
+      "run_started": true,
+      "test_run_id": "web-test-beta.31-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1788214895316
+  },
+  {
+    "event_id": "web-test-stability-web-test-beta.31-local-1788214895632",
+    "event_type": "web_test_stability_snapshot",
+    "metadata": {
+      "operation_running_rate": 1.0,
+      "running_to_other_regressions": 0,
+      "stability": "stable",
+      "test_run_id": "web-test-beta.31-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1788214895632
+  },
+  {
+    "event_id": "web-test-launch-wt-dbd4a70f-4d90-4b60-958a-18ca1e4eff82-1788214896595",
+    "event_type": "web_test_launch_attempted",
+    "metadata": {
+      "failed_checks": [],
+      "launch_ready": true,
+      "test_run_id": "web-test-beta.31-local"
+    },
+    "player_id": "wt-dbd4a70f-4d90-4b60-958a-18ca1e4eff82",
+    "session_id": null,
+    "timestamp_ms": 1788214896595
+  },
+  {
+    "event_id": "web-test-operation-web-test-beta.31-local-1788214909275",
+    "event_type": "web_test_operation_snapshot",
+    "metadata": {
+      "consistency_status": "consistent",
+      "operational_state": "running",
+      "preflight_ready": true,
+      "run_started": true,
+      "test_run_id": "web-test-beta.31-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1788214909275
+  },
+  {
+    "event_id": "web-test-stability-web-test-beta.31-local-1788214913879",
+    "event_type": "web_test_stability_snapshot",
+    "metadata": {
+      "operation_running_rate": 1.0,
+      "running_to_other_regressions": 0,
+      "stability": "stable",
+      "test_run_id": "web-test-beta.31-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1788214913879
+  },
+  {
+    "event_id": "server:matchmaking:wt-dbd4a70f-4d90-4b60-958a-18ca1e4eff82:138402375",
+    "event_type": "matchmaking_started",
+    "metadata": {
+      "league_name_tr": "Gümüş",
+      "level": 1,
+      "rating": 1000
+    },
+    "player_id": "wt-dbd4a70f-4d90-4b60-958a-18ca1e4eff82",
+    "session_id": null,
+    "timestamp_ms": 1788214914328
+  },
+  {
+    "event_id": "web-test-audit-wt-dbd4a70f-4d90-4b60-958a-18ca1e4eff82-1788214902750",
+    "event_type": "web_test_session_started",
+    "metadata": {
+      "build": "web-test-beta.13",
+      "operation_ready": true,
+      "player_data_ready": true,
+      "pvp_protocol_version": 1,
+      "release_ready": true,
+      "retention_limit": 50000,
+      "server_version": "2.0.0-beta.38.1",
+      "telemetry_ready": true,
+      "test_run_id": "web-test-beta.31-local"
+    },
+    "player_id": "wt-dbd4a70f-4d90-4b60-958a-18ca1e4eff82",
+    "session_id": null,
+    "timestamp_ms": 1788214902750
+  },
+  {
+    "event_id": "web-test-operation-web-test-beta.31-local-1788214926503",
+    "event_type": "web_test_operation_snapshot",
+    "metadata": {
+      "consistency_status": "consistent",
+      "operational_state": "running",
+      "preflight_ready": true,
+      "run_started": true,
+      "test_run_id": "web-test-beta.31-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1788214926503
+  },
+  {
+    "event_id": "web-test-stability-web-test-beta.31-local-1788214933832",
+    "event_type": "web_test_stability_snapshot",
+    "metadata": {
+      "operation_running_rate": 1.0,
+      "running_to_other_regressions": 0,
+      "stability": "stable",
+      "test_run_id": "web-test-beta.31-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1788214933832
+  },
+  {
+    "event_id": "web-test-stability-web-test-beta.31-local-1788214938415",
+    "event_type": "web_test_stability_snapshot",
+    "metadata": {
+      "operation_running_rate": 1.0,
+      "running_to_other_regressions": 0,
+      "stability": "stable",
+      "test_run_id": "web-test-beta.31-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1788214938415
+  },
+  {
+    "event_id": "server:local-ai-match-f2b49d788d264ef5b1d894d566255e92:matchmaking_ai_fallback:wt-dbd4a70f-4d90-4b60-958a-18ca1e4eff82",
+    "event_type": "matchmaking_matched",
+    "metadata": {
+      "ai_archetype": "economy",
+      "fallback_after_seconds": 10,
+      "opponent_type": "ai",
+      "rating_difference": 0
+    },
+    "player_id": "wt-dbd4a70f-4d90-4b60-958a-18ca1e4eff82",
+    "session_id": "local-ai-match-f2b49d788d264ef5b1d894d566255e92",
+    "timestamp_ms": 1788214938992
+  },
+  {
+    "event_id": "web-test-operation-web-test-beta.31-local-1788214939674",
+    "event_type": "web_test_operation_snapshot",
+    "metadata": {
+      "consistency_status": "consistent",
+      "operational_state": "running",
+      "preflight_ready": true,
+      "run_started": true,
+      "test_run_id": "web-test-beta.31-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1788214939674
+  },
+  {
+    "event_id": "web-test-operation-web-test-beta.31-local-1788214954521",
+    "event_type": "web_test_operation_snapshot",
+    "metadata": {
+      "consistency_status": "consistent",
+      "operational_state": "running",
+      "preflight_ready": true,
+      "run_started": true,
+      "test_run_id": "web-test-beta.31-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1788214954521
+  },
+  {
+    "event_id": "web-test-stability-web-test-beta.31-local-1788214958906",
+    "event_type": "web_test_stability_snapshot",
+    "metadata": {
+      "operation_running_rate": 1.0,
+      "running_to_other_regressions": 0,
+      "stability": "stable",
+      "test_run_id": "web-test-beta.31-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1788214958906
+  },
+  {
+    "event_id": "web-test-stability-web-test-beta.31-local-1788214961687",
+    "event_type": "web_test_stability_snapshot",
+    "metadata": {
+      "operation_running_rate": 1.0,
+      "running_to_other_regressions": 0,
+      "stability": "stable",
+      "test_run_id": "web-test-beta.31-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1788214961687
+  },
+  {
+    "event_id": "web-test-audit-wt-dbd4a70f-4d90-4b60-958a-18ca1e4eff82-1788214902750-bound-local-ai-match-f2b49d788d264ef5b1d894d566255e92",
+    "event_type": "web_test_session_bound",
+    "metadata": {
+      "audit_event_id": "web-test-audit-wt-dbd4a70f-4d90-4b60-958a-18ca1e4eff82-1788214902750",
+      "test_run_id": "web-test-beta.31-local"
+    },
+    "player_id": "wt-dbd4a70f-4d90-4b60-958a-18ca1e4eff82",
+    "session_id": "local-ai-match-f2b49d788d264ef5b1d894d566255e92",
+    "timestamp_ms": 1788214961873
+  },
+  {
+    "event_id": "web-test-operation-web-test-beta.31-local-1788214962023",
+    "event_type": "web_test_operation_snapshot",
+    "metadata": {
+      "consistency_status": "consistent",
+      "operational_state": "running",
+      "preflight_ready": true,
+      "run_started": true,
+      "test_run_id": "web-test-beta.31-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1788214962023
+  },
+  {
+    "event_id": "web-test-operation-web-test-beta.31-local-1788214971064",
+    "event_type": "web_test_operation_snapshot",
+    "metadata": {
+      "consistency_status": "consistent",
+      "operational_state": "running",
+      "preflight_ready": true,
+      "run_started": true,
+      "test_run_id": "web-test-beta.31-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1788214971064
+  },
+  {
+    "event_id": "web-test-stability-web-test-beta.31-local-1788214971943",
+    "event_type": "web_test_stability_snapshot",
+    "metadata": {
+      "operation_running_rate": 1.0,
+      "running_to_other_regressions": 0,
+      "stability": "stable",
+      "test_run_id": "web-test-beta.31-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1788214971943
+  },
+  {
+    "event_id": "web-test-operation-web-test-beta.31-local-1788214990522",
+    "event_type": "web_test_operation_snapshot",
+    "metadata": {
+      "consistency_status": "consistent",
+      "operational_state": "running",
+      "preflight_ready": true,
+      "run_started": true,
+      "test_run_id": "web-test-beta.31-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1788214990522
+  },
+  {
+    "event_id": "web-test-stability-web-test-beta.31-local-1788214993715",
+    "event_type": "web_test_stability_snapshot",
+    "metadata": {
+      "operation_running_rate": 1.0,
+      "running_to_other_regressions": 0,
+      "stability": "stable",
+      "test_run_id": "web-test-beta.31-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1788214993715
+  },
+  {
+    "event_id": "web-test-operation-web-test-beta.31-local-1788215012504",
+    "event_type": "web_test_operation_snapshot",
+    "metadata": {
+      "consistency_status": "consistent",
+      "operational_state": "running",
+      "preflight_ready": true,
+      "run_started": true,
+      "test_run_id": "web-test-beta.31-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1788215012504
+  },
+  {
+    "event_id": "web-test-stability-web-test-beta.31-local-1788215014403",
+    "event_type": "web_test_stability_snapshot",
+    "metadata": {
+      "operation_running_rate": 1.0,
+      "running_to_other_regressions": 0,
+      "stability": "stable",
+      "test_run_id": "web-test-beta.31-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1788215014403
+  },
+  {
+    "event_id": "web-test-operation-web-test-beta.31-local-1788215029144",
+    "event_type": "web_test_operation_snapshot",
+    "metadata": {
+      "consistency_status": "consistent",
+      "operational_state": "running",
+      "preflight_ready": true,
+      "run_started": true,
+      "test_run_id": "web-test-beta.31-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1788215029144
+  },
+  {
+    "event_id": "web-test-stability-web-test-beta.31-local-1788215045204",
+    "event_type": "web_test_stability_snapshot",
+    "metadata": {
+      "operation_running_rate": 1.0,
+      "running_to_other_regressions": 0,
+      "stability": "stable",
+      "test_run_id": "web-test-beta.31-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1788215045204
+  },
+  {
+    "event_id": "web-test-operation-web-test-beta.31-local-1788215049715",
+    "event_type": "web_test_operation_snapshot",
+    "metadata": {
+      "consistency_status": "consistent",
+      "operational_state": "running",
+      "preflight_ready": true,
+      "run_started": true,
+      "test_run_id": "web-test-beta.31-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1788215049715
+  },
+  {
+    "event_id": "web-test-stability-web-test-beta.31-local-1788215066325",
+    "event_type": "web_test_stability_snapshot",
+    "metadata": {
+      "operation_running_rate": 1.0,
+      "running_to_other_regressions": 0,
+      "stability": "stable",
+      "test_run_id": "web-test-beta.31-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1788215066325
+  },
+  {
+    "event_id": "web-test-operation-web-test-beta.31-local-1788215075043",
+    "event_type": "web_test_operation_snapshot",
+    "metadata": {
+      "consistency_status": "consistent",
+      "operational_state": "running",
+      "preflight_ready": true,
+      "run_started": true,
+      "test_run_id": "web-test-beta.31-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1788215075043
+  },
+  {
+    "event_id": "web-test-stability-web-test-beta.31-local-1788215077732",
+    "event_type": "web_test_stability_snapshot",
+    "metadata": {
+      "operation_running_rate": 1.0,
+      "running_to_other_regressions": 0,
+      "stability": "stable",
+      "test_run_id": "web-test-beta.31-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1788215077732
+  },
+  {
+    "event_id": "web-test-operation-web-test-beta.31-local-1788215089661",
+    "event_type": "web_test_operation_snapshot",
+    "metadata": {
+      "consistency_status": "consistent",
+      "operational_state": "running",
+      "preflight_ready": true,
+      "run_started": true,
+      "test_run_id": "web-test-beta.31-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1788215089661
+  },
+  {
+    "event_id": "server:local-ai-match-f2b49d788d264ef5b1d894d566255e92:match_started:wt-dbd4a70f-4d90-4b60-958a-18ca1e4eff82",
+    "event_type": "match_started",
+    "metadata": {
+      "source": "battle_engine"
+    },
+    "player_id": "wt-dbd4a70f-4d90-4b60-958a-18ca1e4eff82",
+    "session_id": "local-ai-match-f2b49d788d264ef5b1d894d566255e92",
+    "timestamp_ms": 1788215093973
+  },
+  {
+    "event_id": "server:local-ai-match-f2b49d788d264ef5b1d894d566255e92:match_started:local-ai-match-f2b49d788d264ef5b1d894d566255e92-opponent",
+    "event_type": "match_started",
+    "metadata": {
+      "source": "battle_engine"
+    },
+    "player_id": "local-ai-match-f2b49d788d264ef5b1d894d566255e92-opponent",
+    "session_id": "local-ai-match-f2b49d788d264ef5b1d894d566255e92",
+    "timestamp_ms": 1788215094349
+  },
+  {
+    "event_id": "server:local-ai-match-f2b49d788d264ef5b1d894d566255e92:154:credit_spent",
+    "event_type": "circuit_credit_spent",
+    "metadata": {
+      "amount": 70,
+      "balance": 280,
+      "battle_elapsed_ms": 15000,
+      "reason": "modul_yerlestir:battery"
+    },
+    "player_id": "local-ai-match-f2b49d788d264ef5b1d894d566255e92-opponent",
+    "session_id": "local-ai-match-f2b49d788d264ef5b1d894d566255e92",
+    "timestamp_ms": 1788215094504
+  },
+  {
+    "event_id": "web-test-stability-web-test-beta.31-local-1788215094525",
+    "event_type": "web_test_stability_snapshot",
+    "metadata": {
+      "operation_running_rate": 1.0,
+      "running_to_other_regressions": 0,
+      "stability": "stable",
+      "test_run_id": "web-test-beta.31-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1788215094525
+  },
+  {
+    "event_id": "server:local-ai-match-f2b49d788d264ef5b1d894d566255e92:207:credit_spent",
+    "event_type": "circuit_credit_spent",
+    "metadata": {
+      "amount": 120,
+      "balance": 210,
+      "battle_elapsed_ms": 20000,
+      "reason": "modul_degistir:pulse_cannon"
+    },
+    "player_id": "local-ai-match-f2b49d788d264ef5b1d894d566255e92-opponent",
+    "session_id": "local-ai-match-f2b49d788d264ef5b1d894d566255e92",
+    "timestamp_ms": 1788215094733
+  },
+  {
+    "event_id": "server:local-ai-match-f2b49d788d264ef5b1d894d566255e92:208:module_changed",
+    "event_type": "module_changed",
+    "metadata": {
+      "battle_elapsed_ms": 20000,
+      "incoming_module_id": "pulse-cannon-1",
+      "outgoing_module_id": "local-ai-match-f2b49d788d264ef5b1d894d566255e92-opponent-laser"
+    },
+    "player_id": "local-ai-match-f2b49d788d264ef5b1d894d566255e92-opponent",
+    "session_id": "local-ai-match-f2b49d788d264ef5b1d894d566255e92",
+    "timestamp_ms": 1788215095118
+  },
+  {
+    "event_id": "server:local-ai-match-f2b49d788d264ef5b1d894d566255e92:248:credit_spent",
+    "event_type": "circuit_credit_spent",
+    "metadata": {
+      "amount": 90,
+      "balance": 170,
+      "battle_elapsed_ms": 25000,
+      "reason": "modul_yerlestir:laser"
+    },
+    "player_id": "local-ai-match-f2b49d788d264ef5b1d894d566255e92-opponent",
+    "session_id": "local-ai-match-f2b49d788d264ef5b1d894d566255e92",
+    "timestamp_ms": 1788215095305
+  },
+  {
+    "event_id": "server:local-ai-match-f2b49d788d264ef5b1d894d566255e92:298:credit_spent",
+    "event_type": "circuit_credit_spent",
+    "metadata": {
+      "amount": 95,
+      "balance": 386,
+      "battle_elapsed_ms": 28100,
+      "reason": "modul_yerlestir:armor"
+    },
+    "player_id": "wt-dbd4a70f-4d90-4b60-958a-18ca1e4eff82",
+    "session_id": "local-ai-match-f2b49d788d264ef5b1d894d566255e92",
+    "timestamp_ms": 1788215095558
+  },
+  {
+    "event_id": "server:local-ai-match-f2b49d788d264ef5b1d894d566255e92:309:booster_used",
+    "event_type": "booster_used",
+    "metadata": {
+      "battle_elapsed_ms": 30000,
+      "booster_id": "dual_port_adapter",
+      "target_module_id": "local-ai-match-f2b49d788d264ef5b1d894d566255e92-opponent-laser"
+    },
+    "player_id": "local-ai-match-f2b49d788d264ef5b1d894d566255e92-opponent",
+    "session_id": "local-ai-match-f2b49d788d264ef5b1d894d566255e92",
+    "timestamp_ms": 1788215095783
+  },
+  {
+    "event_id": "server:local-ai-match-f2b49d788d264ef5b1d894d566255e92:322:credit_spent",
+    "event_type": "circuit_credit_spent",
+    "metadata": {
+      "amount": 105,
+      "balance": 305,
+      "battle_elapsed_ms": 30500,
+      "reason": "modul_yerlestir:barrier"
+    },
+    "player_id": "wt-dbd4a70f-4d90-4b60-958a-18ca1e4eff82",
+    "session_id": "local-ai-match-f2b49d788d264ef5b1d894d566255e92",
+    "timestamp_ms": 1788215095950
+  },
+  {
+    "event_id": "server:local-ai-match-f2b49d788d264ef5b1d894d566255e92:330:credit_spent",
+    "event_type": "circuit_credit_spent",
+    "metadata": {
+      "amount": 115,
+      "balance": 203,
+      "battle_elapsed_ms": 31800,
+      "reason": "modul_yerlestir:drone_bay"
+    },
+    "player_id": "wt-dbd4a70f-4d90-4b60-958a-18ca1e4eff82",
+    "session_id": "local-ai-match-f2b49d788d264ef5b1d894d566255e92",
+    "timestamp_ms": 1788215096256
+  },
+  {
+    "event_id": "server:local-ai-match-f2b49d788d264ef5b1d894d566255e92:373:credit_spent",
+    "event_type": "circuit_credit_spent",
+    "metadata": {
+      "amount": 120,
+      "balance": 113,
+      "battle_elapsed_ms": 34800,
+      "reason": "modul_yerlestir:energy_leech"
+    },
+    "player_id": "wt-dbd4a70f-4d90-4b60-958a-18ca1e4eff82",
+    "session_id": "local-ai-match-f2b49d788d264ef5b1d894d566255e92",
+    "timestamp_ms": 1788215096491
+  },
+  {
+    "event_id": "server:local-ai-match-f2b49d788d264ef5b1d894d566255e92:380:credit_spent",
+    "event_type": "circuit_credit_spent",
+    "metadata": {
+      "amount": 60,
+      "balance": 210,
+      "battle_elapsed_ms": 35000,
+      "reason": "modul_yerlestir:splitter"
+    },
+    "player_id": "local-ai-match-f2b49d788d264ef5b1d894d566255e92-opponent",
+    "session_id": "local-ai-match-f2b49d788d264ef5b1d894d566255e92",
+    "timestamp_ms": 1788215096677
+  },
+  {
+    "event_id": "server:local-ai-match-f2b49d788d264ef5b1d894d566255e92:433:booster_used",
+    "event_type": "booster_used",
+    "metadata": {
+      "battle_elapsed_ms": 38400,
+      "booster_id": "emergency_repair",
+      "target_module_id": "barrier-1"
+    },
+    "player_id": "wt-dbd4a70f-4d90-4b60-958a-18ca1e4eff82",
+    "session_id": "local-ai-match-f2b49d788d264ef5b1d894d566255e92",
+    "timestamp_ms": 1788215096842
+  },
+  {
+    "event_id": "server:local-ai-match-f2b49d788d264ef5b1d894d566255e92:460:credit_spent",
+    "event_type": "circuit_credit_spent",
+    "metadata": {
+      "amount": 75,
+      "balance": 185,
+      "battle_elapsed_ms": 40000,
+      "reason": "modul_yerlestir:capacitor"
+    },
+    "player_id": "local-ai-match-f2b49d788d264ef5b1d894d566255e92-opponent",
+    "session_id": "local-ai-match-f2b49d788d264ef5b1d894d566255e92",
+    "timestamp_ms": 1788215097062
+  },
+  {
+    "event_id": "server:local-ai-match-f2b49d788d264ef5b1d894d566255e92:535:credit_spent",
+    "event_type": "circuit_credit_spent",
+    "metadata": {
+      "amount": 120,
+      "balance": 90,
+      "battle_elapsed_ms": 44500,
+      "reason": "modul_yerlestir:pulse_cannon"
+    },
+    "player_id": "wt-dbd4a70f-4d90-4b60-958a-18ca1e4eff82",
+    "session_id": "local-ai-match-f2b49d788d264ef5b1d894d566255e92",
+    "timestamp_ms": 1788215097283
+  },
+  {
+    "event_id": "server:local-ai-match-f2b49d788d264ef5b1d894d566255e92:548:credit_spent",
+    "event_type": "circuit_credit_spent",
+    "metadata": {
+      "amount": 90,
+      "balance": 145,
+      "battle_elapsed_ms": 45000,
+      "reason": "modul_yerlestir:targeting_computer"
+    },
+    "player_id": "local-ai-match-f2b49d788d264ef5b1d894d566255e92-opponent",
+    "session_id": "local-ai-match-f2b49d788d264ef5b1d894d566255e92",
+    "timestamp_ms": 1788215097550
+  },
+  {
+    "event_id": "server:local-ai-match-f2b49d788d264ef5b1d894d566255e92:588:credit_spent",
+    "event_type": "circuit_credit_spent",
+    "metadata": {
+      "amount": 80,
+      "balance": 26,
+      "battle_elapsed_ms": 46100,
+      "reason": "modul_yerlestir:repair"
+    },
+    "player_id": "wt-dbd4a70f-4d90-4b60-958a-18ca1e4eff82",
+    "session_id": "local-ai-match-f2b49d788d264ef5b1d894d566255e92",
+    "timestamp_ms": 1788215097691
+  },
+  {
+    "event_id": "server:local-ai-match-f2b49d788d264ef5b1d894d566255e92:687:credit_spent",
+    "event_type": "circuit_credit_spent",
+    "metadata": {
+      "amount": 95,
+      "balance": 100,
+      "battle_elapsed_ms": 50000,
+      "reason": "modul_yerlestir:armor"
+    },
+    "player_id": "local-ai-match-f2b49d788d264ef5b1d894d566255e92-opponent",
+    "session_id": "local-ai-match-f2b49d788d264ef5b1d894d566255e92",
+    "timestamp_ms": 1788215097936
+  },
+  {
+    "event_id": "server:local-ai-match-f2b49d788d264ef5b1d894d566255e92:749:credit_spent",
+    "event_type": "circuit_credit_spent",
+    "metadata": {
+      "amount": 70,
+      "balance": 17,
+      "battle_elapsed_ms": 52200,
+      "reason": "modul_yerlestir:battery"
+    },
+    "player_id": "wt-dbd4a70f-4d90-4b60-958a-18ca1e4eff82",
+    "session_id": "local-ai-match-f2b49d788d264ef5b1d894d566255e92",
+    "timestamp_ms": 1788215098217
+  },
+  {
+    "event_id": "server:local-ai-match-f2b49d788d264ef5b1d894d566255e92:811:credit_spent",
+    "event_type": "circuit_credit_spent",
+    "metadata": {
+      "amount": 120,
+      "balance": 30,
+      "battle_elapsed_ms": 55000,
+      "reason": "modul_degistir:energy_leech"
+    },
+    "player_id": "local-ai-match-f2b49d788d264ef5b1d894d566255e92-opponent",
+    "session_id": "local-ai-match-f2b49d788d264ef5b1d894d566255e92",
+    "timestamp_ms": 1788215098373
+  },
+  {
+    "event_id": "server:local-ai-match-f2b49d788d264ef5b1d894d566255e92:812:module_changed",
+    "event_type": "module_changed",
+    "metadata": {
+      "battle_elapsed_ms": 55000,
+      "incoming_module_id": "energy-leech-1",
+      "outgoing_module_id": "local-ai-match-f2b49d788d264ef5b1d894d566255e92-opponent-laser"
+    },
+    "player_id": "local-ai-match-f2b49d788d264ef5b1d894d566255e92-opponent",
+    "session_id": "local-ai-match-f2b49d788d264ef5b1d894d566255e92",
+    "timestamp_ms": 1788215098637
+  },
+  {
+    "event_id": "server:local-ai-match-f2b49d788d264ef5b1d894d566255e92:879:booster_used",
+    "event_type": "booster_used",
+    "metadata": {
+      "battle_elapsed_ms": 60000,
+      "booster_id": "dual_port_adapter",
+      "target_module_id": "energy-leech-1"
+    },
+    "player_id": "local-ai-match-f2b49d788d264ef5b1d894d566255e92-opponent",
+    "session_id": "local-ai-match-f2b49d788d264ef5b1d894d566255e92",
+    "timestamp_ms": 1788215098938
+  },
+  {
+    "event_id": "server:local-ai-match-f2b49d788d264ef5b1d894d566255e92:919:credit_spent",
+    "event_type": "circuit_credit_spent",
+    "metadata": {
+      "amount": 115,
+      "balance": 12,
+      "battle_elapsed_ms": 63200,
+      "reason": "modul_yerlestir:reflector"
+    },
+    "player_id": "wt-dbd4a70f-4d90-4b60-958a-18ca1e4eff82",
+    "session_id": "local-ai-match-f2b49d788d264ef5b1d894d566255e92",
+    "timestamp_ms": 1788215099283
+  },
+  {
+    "event_id": "server:local-ai-match-f2b49d788d264ef5b1d894d566255e92:938:credit_spent",
+    "event_type": "circuit_credit_spent",
+    "metadata": {
+      "amount": 90,
+      "balance": 40,
+      "battle_elapsed_ms": 65000,
+      "reason": "modul_yerlestir:laser"
+    },
+    "player_id": "local-ai-match-f2b49d788d264ef5b1d894d566255e92-opponent",
+    "session_id": "local-ai-match-f2b49d788d264ef5b1d894d566255e92",
+    "timestamp_ms": 1788215099537
+  },
+  {
+    "event_id": "server:local-ai-match-f2b49d788d264ef5b1d894d566255e92:1029:credit_spent",
+    "event_type": "circuit_credit_spent",
+    "metadata": {
+      "amount": 65,
+      "balance": 25,
+      "battle_elapsed_ms": 70000,
+      "reason": "modul_yerlestir:cooler"
+    },
+    "player_id": "local-ai-match-f2b49d788d264ef5b1d894d566255e92-opponent",
+    "session_id": "local-ai-match-f2b49d788d264ef5b1d894d566255e92",
+    "timestamp_ms": 1788215099650
+  },
+  {
+    "event_id": "server:local-ai-match-f2b49d788d264ef5b1d894d566255e92:1164:credit_spent",
+    "event_type": "circuit_credit_spent",
+    "metadata": {
+      "amount": 130,
+      "balance": 36,
+      "battle_elapsed_ms": 78600,
+      "reason": "modul_yerlestir:arc_cannon"
+    },
+    "player_id": "wt-dbd4a70f-4d90-4b60-958a-18ca1e4eff82",
+    "session_id": "local-ai-match-f2b49d788d264ef5b1d894d566255e92",
+    "timestamp_ms": 1788215099767
+  },
+  {
+    "event_id": "server:local-ai-match-f2b49d788d264ef5b1d894d566255e92:1202:credit_spent",
+    "event_type": "circuit_credit_spent",
+    "metadata": {
+      "amount": 110,
+      "balance": 15,
+      "battle_elapsed_ms": 80000,
+      "reason": "modul_yerlestir:emp"
+    },
+    "player_id": "local-ai-match-f2b49d788d264ef5b1d894d566255e92-opponent",
+    "session_id": "local-ai-match-f2b49d788d264ef5b1d894d566255e92",
+    "timestamp_ms": 1788215100028
+  },
+  {
+    "event_id": "server:local-ai-match-f2b49d788d264ef5b1d894d566255e92:1388:credit_spent",
+    "event_type": "circuit_credit_spent",
+    "metadata": {
+      "amount": 115,
+      "balance": 26,
+      "battle_elapsed_ms": 89100,
+      "reason": "modul_yerlestir:virus"
+    },
+    "player_id": "wt-dbd4a70f-4d90-4b60-958a-18ca1e4eff82",
+    "session_id": "local-ai-match-f2b49d788d264ef5b1d894d566255e92",
+    "timestamp_ms": 1788215100384
+  },
+  {
+    "event_id": "server:local-ai-match-f2b49d788d264ef5b1d894d566255e92:1399:booster_used",
+    "event_type": "booster_used",
+    "metadata": {
+      "battle_elapsed_ms": 90000,
+      "booster_id": "dual_port_adapter",
+      "target_module_id": "local-ai-match-f2b49d788d264ef5b1d894d566255e92-opponent-laser"
+    },
+    "player_id": "local-ai-match-f2b49d788d264ef5b1d894d566255e92-opponent",
+    "session_id": "local-ai-match-f2b49d788d264ef5b1d894d566255e92",
+    "timestamp_ms": 1788215100607
+  },
+  {
+    "event_id": "server:local-ai-match-f2b49d788d264ef5b1d894d566255e92:1448:credit_spent",
+    "event_type": "circuit_credit_spent",
+    "metadata": {
+      "amount": 80,
+      "balance": 85,
+      "battle_elapsed_ms": 95000,
+      "reason": "modul_yerlestir:repair"
+    },
+    "player_id": "local-ai-match-f2b49d788d264ef5b1d894d566255e92-opponent",
+    "session_id": "local-ai-match-f2b49d788d264ef5b1d894d566255e92",
+    "timestamp_ms": 1788215100915
+  },
+  {
+    "event_id": "server:local-ai-match-f2b49d788d264ef5b1d894d566255e92:1493:credit_spent",
+    "event_type": "circuit_credit_spent",
+    "metadata": {
+      "amount": 85,
+      "balance": 50,
+      "battle_elapsed_ms": 100000,
+      "reason": "modul_yerlestir:amplifier"
+    },
+    "player_id": "local-ai-match-f2b49d788d264ef5b1d894d566255e92-opponent",
+    "session_id": "local-ai-match-f2b49d788d264ef5b1d894d566255e92",
+    "timestamp_ms": 1788215101035
+  },
+  {
+    "event_id": "server:local-ai-match-f2b49d788d264ef5b1d894d566255e92:1567:credit_spent",
+    "event_type": "circuit_credit_spent",
+    "metadata": {
+      "amount": 105,
+      "balance": 45,
+      "battle_elapsed_ms": 110000,
+      "reason": "modul_yerlestir:overclock_unit"
+    },
+    "player_id": "local-ai-match-f2b49d788d264ef5b1d894d566255e92-opponent",
+    "session_id": "local-ai-match-f2b49d788d264ef5b1d894d566255e92",
+    "timestamp_ms": 1788215101171
+  },
+  {
+    "event_id": "server:local-ai-match-f2b49d788d264ef5b1d894d566255e92:match_completed:wt-dbd4a70f-4d90-4b60-958a-18ca1e4eff82",
+    "event_type": "match_completed",
+    "metadata": {
+      "duration_ms": 111100,
+      "finish_reason": "core_destroyed",
+      "is_draw": false,
+      "winner_player_id": "local-ai-match-f2b49d788d264ef5b1d894d566255e92-opponent"
+    },
+    "player_id": "wt-dbd4a70f-4d90-4b60-958a-18ca1e4eff82",
+    "session_id": "local-ai-match-f2b49d788d264ef5b1d894d566255e92",
+    "timestamp_ms": 1788215101545
+  },
+  {
+    "event_id": "server:local-ai-match-f2b49d788d264ef5b1d894d566255e92:match_completed:local-ai-match-f2b49d788d264ef5b1d894d566255e92-opponent",
+    "event_type": "match_completed",
+    "metadata": {
+      "duration_ms": 111100,
+      "finish_reason": "core_destroyed",
+      "is_draw": false,
+      "winner_player_id": "local-ai-match-f2b49d788d264ef5b1d894d566255e92-opponent"
+    },
+    "player_id": "local-ai-match-f2b49d788d264ef5b1d894d566255e92-opponent",
+    "session_id": "local-ai-match-f2b49d788d264ef5b1d894d566255e92",
+    "timestamp_ms": 1788215101822
+  },
+  {
+    "event_id": "web-test-operation-web-test-beta.31-local-1788215118133",
+    "event_type": "web_test_operation_snapshot",
+    "metadata": {
+      "consistency_status": "consistent",
+      "operational_state": "running",
+      "preflight_ready": true,
+      "run_started": true,
+      "test_run_id": "web-test-beta.31-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1788215118133
+  },
+  {
+    "event_id": "web-test-stability-web-test-beta.31-local-1788215124317",
+    "event_type": "web_test_stability_snapshot",
+    "metadata": {
+      "operation_running_rate": 1.0,
+      "running_to_other_regressions": 0,
+      "stability": "stable",
+      "test_run_id": "web-test-beta.31-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1788215124317
+  },
+  {
+    "event_id": "web-test-operation-web-test-beta.31-local-1788215126310",
+    "event_type": "web_test_operation_snapshot",
+    "metadata": {
+      "consistency_status": "consistent",
+      "operational_state": "running",
+      "preflight_ready": true,
+      "run_started": true,
+      "test_run_id": "web-test-beta.31-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1788215126310
+  },
+  {
+    "event_id": "web-test-stability-web-test-beta.31-local-1788215131192",
+    "event_type": "web_test_stability_snapshot",
+    "metadata": {
+      "operation_running_rate": 1.0,
+      "running_to_other_regressions": 0,
+      "stability": "stable",
+      "test_run_id": "web-test-beta.31-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1788215131192
+  },
+  {
+    "event_id": "web-test-operation-web-test-beta.31-local-1788215142531",
+    "event_type": "web_test_operation_snapshot",
+    "metadata": {
+      "consistency_status": "consistent",
+      "operational_state": "running",
+      "preflight_ready": true,
+      "run_started": true,
+      "test_run_id": "web-test-beta.31-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1788215142531
+  },
+  {
+    "event_id": "web-test-launch-wt-dbd4a70f-4d90-4b60-958a-18ca1e4eff82-1788246727552",
+    "event_type": "web_test_launch_attempted",
+    "metadata": {
+      "failed_checks": [],
+      "launch_ready": true,
+      "test_run_id": "web-test-beta.31-local"
+    },
+    "player_id": "wt-dbd4a70f-4d90-4b60-958a-18ca1e4eff82",
+    "session_id": null,
+    "timestamp_ms": 1788246727552
+  },
+  {
+    "event_id": "server:matchmaking:wt-dbd4a70f-4d90-4b60-958a-18ca1e4eff82:170219265",
+    "event_type": "matchmaking_started",
+    "metadata": {
+      "league_name_tr": "Gümüş",
+      "level": 2,
+      "rating": 1000
+    },
+    "player_id": "wt-dbd4a70f-4d90-4b60-958a-18ca1e4eff82",
+    "session_id": null,
+    "timestamp_ms": 1788246731217
+  },
+  {
+    "event_id": "web-test-audit-wt-dbd4a70f-4d90-4b60-958a-18ca1e4eff82-1788246731103",
+    "event_type": "web_test_session_started",
+    "metadata": {
+      "build": "web-test-beta.13",
+      "operation_ready": true,
+      "player_data_ready": true,
+      "pvp_protocol_version": 1,
+      "release_ready": true,
+      "retention_limit": 50000,
+      "server_version": "2.0.0-beta.38.1",
+      "telemetry_ready": true,
+      "test_run_id": "web-test-beta.31-local"
+    },
+    "player_id": "wt-dbd4a70f-4d90-4b60-958a-18ca1e4eff82",
+    "session_id": null,
+    "timestamp_ms": 1788246731103
+  },
+  {
+    "event_id": "web-test-operation-web-test-beta.31-local-1788246741050",
+    "event_type": "web_test_operation_snapshot",
+    "metadata": {
+      "consistency_status": "consistent",
+      "operational_state": "running",
+      "preflight_ready": true,
+      "run_started": true,
+      "test_run_id": "web-test-beta.31-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1788246741050
+  },
+  {
+    "event_id": "web-test-stability-web-test-beta.31-local-1788246741444",
+    "event_type": "web_test_stability_snapshot",
+    "metadata": {
+      "operation_running_rate": 1.0,
+      "running_to_other_regressions": 0,
+      "stability": "stable",
+      "test_run_id": "web-test-beta.31-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1788246741444
+  },
+  {
+    "event_id": "server:local-ai-match-528018c1383d4ceaab906a8c25b909b0:matchmaking_ai_fallback:wt-dbd4a70f-4d90-4b60-958a-18ca1e4eff82",
+    "event_type": "matchmaking_matched",
+    "metadata": {
+      "ai_archetype": "balanced",
+      "fallback_after_seconds": 10,
+      "opponent_type": "ai",
+      "rating_difference": 0
+    },
+    "player_id": "wt-dbd4a70f-4d90-4b60-958a-18ca1e4eff82",
+    "session_id": "local-ai-match-528018c1383d4ceaab906a8c25b909b0",
+    "timestamp_ms": 1788246741485
+  },
+  {
+    "event_id": "web-test-audit-wt-dbd4a70f-4d90-4b60-958a-18ca1e4eff82-1788246731103-bound-local-ai-match-528018c1383d4ceaab906a8c25b909b0",
+    "event_type": "web_test_session_bound",
+    "metadata": {
+      "audit_event_id": "web-test-audit-wt-dbd4a70f-4d90-4b60-958a-18ca1e4eff82-1788246731103",
+      "test_run_id": "web-test-beta.31-local"
+    },
+    "player_id": "wt-dbd4a70f-4d90-4b60-958a-18ca1e4eff82",
+    "session_id": "local-ai-match-528018c1383d4ceaab906a8c25b909b0",
+    "timestamp_ms": 1788246741912
+  },
+  {
+    "event_id": "web-test-stability-web-test-beta.31-local-1788246758066",
+    "event_type": "web_test_stability_snapshot",
+    "metadata": {
+      "operation_running_rate": 1.0,
+      "running_to_other_regressions": 0,
+      "stability": "stable",
+      "test_run_id": "web-test-beta.31-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1788246758066
+  },
+  {
+    "event_id": "web-test-operation-web-test-beta.31-local-1788246758357",
+    "event_type": "web_test_operation_snapshot",
+    "metadata": {
+      "consistency_status": "consistent",
+      "operational_state": "running",
+      "preflight_ready": true,
+      "run_started": true,
+      "test_run_id": "web-test-beta.31-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1788246758357
+  },
+  {
+    "event_id": "web-test-operation-web-test-beta.31-local-1788246769644",
+    "event_type": "web_test_operation_snapshot",
+    "metadata": {
+      "consistency_status": "consistent",
+      "operational_state": "running",
+      "preflight_ready": true,
+      "run_started": true,
+      "test_run_id": "web-test-beta.31-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1788246769644
+  },
+  {
+    "event_id": "web-test-stability-web-test-beta.31-local-1788246778764",
+    "event_type": "web_test_stability_snapshot",
+    "metadata": {
+      "operation_running_rate": 1.0,
+      "running_to_other_regressions": 0,
+      "stability": "stable",
+      "test_run_id": "web-test-beta.31-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1788246778764
+  },
+  {
+    "event_id": "web-test-operation-web-test-beta.31-local-1788246780762",
+    "event_type": "web_test_operation_snapshot",
+    "metadata": {
+      "consistency_status": "consistent",
+      "operational_state": "running",
+      "preflight_ready": true,
+      "run_started": true,
+      "test_run_id": "web-test-beta.31-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1788246780762
+  },
+  {
+    "event_id": "web-test-stability-web-test-beta.31-local-1788246782055",
+    "event_type": "web_test_stability_snapshot",
+    "metadata": {
+      "operation_running_rate": 1.0,
+      "running_to_other_regressions": 0,
+      "stability": "stable",
+      "test_run_id": "web-test-beta.31-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1788246782055
+  },
+  {
+    "event_id": "web-test-operation-web-test-beta.31-local-1788246800954",
+    "event_type": "web_test_operation_snapshot",
+    "metadata": {
+      "consistency_status": "consistent",
+      "operational_state": "running",
+      "preflight_ready": true,
+      "run_started": true,
+      "test_run_id": "web-test-beta.31-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1788246800954
+  },
+  {
+    "event_id": "web-test-stability-web-test-beta.31-local-1788246801653",
+    "event_type": "web_test_stability_snapshot",
+    "metadata": {
+      "operation_running_rate": 1.0,
+      "running_to_other_regressions": 0,
+      "stability": "stable",
+      "test_run_id": "web-test-beta.31-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1788246801653
+  },
+  {
+    "event_id": "web-test-operation-web-test-beta.31-local-1788246807509",
+    "event_type": "web_test_operation_snapshot",
+    "metadata": {
+      "consistency_status": "consistent",
+      "operational_state": "running",
+      "preflight_ready": true,
+      "run_started": true,
+      "test_run_id": "web-test-beta.31-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1788246807509
+  },
+  {
+    "event_id": "web-test-stability-web-test-beta.31-local-1788246826677",
+    "event_type": "web_test_stability_snapshot",
+    "metadata": {
+      "operation_running_rate": 1.0,
+      "running_to_other_regressions": 0,
+      "stability": "stable",
+      "test_run_id": "web-test-beta.31-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1788246826677
+  },
+  {
+    "event_id": "web-test-launch-wt-dbd4a70f-4d90-4b60-958a-18ca1e4eff82-1788248190953",
+    "event_type": "web_test_launch_attempted",
+    "metadata": {
+      "failed_checks": [],
+      "launch_ready": true,
+      "test_run_id": "web-test-beta.31-local"
+    },
+    "player_id": "wt-dbd4a70f-4d90-4b60-958a-18ca1e4eff82",
+    "session_id": null,
+    "timestamp_ms": 1788248190953
+  },
+  {
+    "event_id": "server:matchmaking:wt-dbd4a70f-4d90-4b60-958a-18ca1e4eff82:171680687",
+    "event_type": "matchmaking_started",
+    "metadata": {
+      "league_name_tr": "Gümüş",
+      "level": 2,
+      "rating": 1000
+    },
+    "player_id": "wt-dbd4a70f-4d90-4b60-958a-18ca1e4eff82",
+    "session_id": null,
+    "timestamp_ms": 1788248192641
+  },
+  {
+    "event_id": "web-test-audit-wt-dbd4a70f-4d90-4b60-958a-18ca1e4eff82-1788248192535",
+    "event_type": "web_test_session_started",
+    "metadata": {
+      "build": "web-test-beta.13",
+      "operation_ready": true,
+      "player_data_ready": true,
+      "pvp_protocol_version": 1,
+      "release_ready": true,
+      "retention_limit": 50000,
+      "server_version": "2.0.0-beta.38.1",
+      "telemetry_ready": true,
+      "test_run_id": "web-test-beta.31-local"
+    },
+    "player_id": "wt-dbd4a70f-4d90-4b60-958a-18ca1e4eff82",
+    "session_id": null,
+    "timestamp_ms": 1788248192535
+  },
+  {
+    "event_id": "server:matchmaking:wt-dbd4a70f-4d90-4b60-958a-18ca1e4eff82:171684921",
+    "event_type": "matchmaking_started",
+    "metadata": {
+      "league_name_tr": "Gümüş",
+      "level": 2,
+      "rating": 1000
+    },
+    "player_id": "wt-dbd4a70f-4d90-4b60-958a-18ca1e4eff82",
+    "session_id": null,
+    "timestamp_ms": 1788248196872
+  },
+  {
+    "event_id": "web-test-audit-wt-dbd4a70f-4d90-4b60-958a-18ca1e4eff82-1788248196854",
+    "event_type": "web_test_session_started",
+    "metadata": {
+      "build": "web-test-beta.13",
+      "operation_ready": true,
+      "player_data_ready": true,
+      "pvp_protocol_version": 1,
+      "release_ready": true,
+      "retention_limit": 50000,
+      "server_version": "2.0.0-beta.38.1",
+      "telemetry_ready": true,
+      "test_run_id": "web-test-beta.31-local"
+    },
+    "player_id": "wt-dbd4a70f-4d90-4b60-958a-18ca1e4eff82",
+    "session_id": null,
+    "timestamp_ms": 1788248196854
+  },
+  {
+    "event_id": "web-test-stability-web-test-beta.31-local-1788248201738",
+    "event_type": "web_test_stability_snapshot",
+    "metadata": {
+      "operation_running_rate": 1.0,
+      "running_to_other_regressions": 0,
+      "stability": "stable",
+      "test_run_id": "web-test-beta.31-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1788248201738
+  },
+  {
+    "event_id": "web-test-operation-web-test-beta.31-local-1788248201865",
+    "event_type": "web_test_operation_snapshot",
+    "metadata": {
+      "consistency_status": "consistent",
+      "operational_state": "running",
+      "preflight_ready": true,
+      "run_started": true,
+      "test_run_id": "web-test-beta.31-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1788248201865
+  },
+  {
+    "event_id": "server:local-ai-match-0c75f7b5c99e4b9f99f1a92c6f19a04b:matchmaking_ai_fallback:wt-dbd4a70f-4d90-4b60-958a-18ca1e4eff82",
+    "event_type": "matchmaking_matched",
+    "metadata": {
+      "ai_archetype": "aggressive",
+      "fallback_after_seconds": 10,
+      "opponent_type": "ai",
+      "rating_difference": 0
+    },
+    "player_id": "wt-dbd4a70f-4d90-4b60-958a-18ca1e4eff82",
+    "session_id": "local-ai-match-0c75f7b5c99e4b9f99f1a92c6f19a04b",
+    "timestamp_ms": 1788248206915
+  },
+  {
+    "event_id": "web-test-audit-wt-dbd4a70f-4d90-4b60-958a-18ca1e4eff82-1788248196854-bound-local-ai-match-0c75f7b5c99e4b9f99f1a92c6f19a04b",
+    "event_type": "web_test_session_bound",
+    "metadata": {
+      "audit_event_id": "web-test-audit-wt-dbd4a70f-4d90-4b60-958a-18ca1e4eff82-1788248196854",
+      "test_run_id": "web-test-beta.31-local"
+    },
+    "player_id": "wt-dbd4a70f-4d90-4b60-958a-18ca1e4eff82",
+    "session_id": "local-ai-match-0c75f7b5c99e4b9f99f1a92c6f19a04b",
+    "timestamp_ms": 1788248207197
+  },
+  {
+    "event_id": "web-test-operation-web-test-beta.31-local-1788248220872",
+    "event_type": "web_test_operation_snapshot",
+    "metadata": {
+      "consistency_status": "consistent",
+      "operational_state": "running",
+      "preflight_ready": true,
+      "run_started": true,
+      "test_run_id": "web-test-beta.31-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1788248220872
+  },
+  {
+    "event_id": "web-test-stability-web-test-beta.31-local-1788248222226",
+    "event_type": "web_test_stability_snapshot",
+    "metadata": {
+      "operation_running_rate": 1.0,
+      "running_to_other_regressions": 0,
+      "stability": "stable",
+      "test_run_id": "web-test-beta.31-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1788248222226
+  },
+  {
+    "event_id": "web-test-operation-web-test-beta.31-local-1788248232138",
+    "event_type": "web_test_operation_snapshot",
+    "metadata": {
+      "consistency_status": "consistent",
+      "operational_state": "running",
+      "preflight_ready": true,
+      "run_started": true,
+      "test_run_id": "web-test-beta.31-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1788248232138
+  },
+  {
+    "event_id": "web-test-stability-web-test-beta.31-local-1788248240651",
+    "event_type": "web_test_stability_snapshot",
+    "metadata": {
+      "operation_running_rate": 1.0,
+      "running_to_other_regressions": 0,
+      "stability": "stable",
+      "test_run_id": "web-test-beta.31-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1788248240651
+  },
+  {
+    "event_id": "web-test-operation-web-test-beta.31-local-1788248243390",
+    "event_type": "web_test_operation_snapshot",
+    "metadata": {
+      "consistency_status": "consistent",
+      "operational_state": "running",
+      "preflight_ready": true,
+      "run_started": true,
+      "test_run_id": "web-test-beta.31-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1788248243390
+  },
+  {
+    "event_id": "web-test-stability-web-test-beta.31-local-1788248254585",
+    "event_type": "web_test_stability_snapshot",
+    "metadata": {
+      "operation_running_rate": 1.0,
+      "running_to_other_regressions": 0,
+      "stability": "stable",
+      "test_run_id": "web-test-beta.31-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1788248254585
+  },
+  {
+    "event_id": "web-test-operation-web-test-beta.31-local-1788248261451",
+    "event_type": "web_test_operation_snapshot",
+    "metadata": {
+      "consistency_status": "consistent",
+      "operational_state": "running",
+      "preflight_ready": true,
+      "run_started": true,
+      "test_run_id": "web-test-beta.31-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1788248261451
+  },
+  {
+    "event_id": "web-test-stability-web-test-beta.31-local-1788248262164",
+    "event_type": "web_test_stability_snapshot",
+    "metadata": {
+      "operation_running_rate": 1.0,
+      "running_to_other_regressions": 0,
+      "stability": "stable",
+      "test_run_id": "web-test-beta.31-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1788248262164
+  },
+  {
+    "event_id": "web-test-operation-web-test-beta.31-local-1788248284335",
+    "event_type": "web_test_operation_snapshot",
+    "metadata": {
+      "consistency_status": "consistent",
+      "operational_state": "running",
+      "preflight_ready": true,
+      "run_started": true,
+      "test_run_id": "web-test-beta.31-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1788248284335
+  },
+  {
+    "event_id": "web-test-stability-web-test-beta.31-local-1788248287725",
+    "event_type": "web_test_stability_snapshot",
+    "metadata": {
+      "operation_running_rate": 1.0,
+      "running_to_other_regressions": 0,
+      "stability": "stable",
+      "test_run_id": "web-test-beta.31-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1788248287725
+  },
+  {
+    "event_id": "web-test-operation-web-test-beta.31-local-1788248306721",
+    "event_type": "web_test_operation_snapshot",
+    "metadata": {
+      "consistency_status": "consistent",
+      "operational_state": "running",
+      "preflight_ready": true,
+      "run_started": true,
+      "test_run_id": "web-test-beta.31-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1788248306721
+  },
+  {
+    "event_id": "web-test-stability-web-test-beta.31-local-1788248311395",
+    "event_type": "web_test_stability_snapshot",
+    "metadata": {
+      "operation_running_rate": 1.0,
+      "running_to_other_regressions": 0,
+      "stability": "stable",
+      "test_run_id": "web-test-beta.31-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1788248311395
+  },
+  {
+    "event_id": "server:local-ai-match-0c75f7b5c99e4b9f99f1a92c6f19a04b:match_started:wt-dbd4a70f-4d90-4b60-958a-18ca1e4eff82",
+    "event_type": "match_started",
+    "metadata": {
+      "source": "battle_engine"
+    },
+    "player_id": "wt-dbd4a70f-4d90-4b60-958a-18ca1e4eff82",
+    "session_id": "local-ai-match-0c75f7b5c99e4b9f99f1a92c6f19a04b",
+    "timestamp_ms": 1788248317518
+  },
+  {
+    "event_id": "server:local-ai-match-0c75f7b5c99e4b9f99f1a92c6f19a04b:match_started:local-ai-match-0c75f7b5c99e4b9f99f1a92c6f19a04b-opponent",
+    "event_type": "match_started",
+    "metadata": {
+      "source": "battle_engine"
+    },
+    "player_id": "local-ai-match-0c75f7b5c99e4b9f99f1a92c6f19a04b-opponent",
+    "session_id": "local-ai-match-0c75f7b5c99e4b9f99f1a92c6f19a04b",
+    "timestamp_ms": 1788248317860
+  },
+  {
+    "event_id": "server:local-ai-match-0c75f7b5c99e4b9f99f1a92c6f19a04b:154:credit_spent",
+    "event_type": "circuit_credit_spent",
+    "metadata": {
+      "amount": 115,
+      "balance": 235,
+      "battle_elapsed_ms": 15000,
+      "reason": "modul_yerlestir:drone_bay"
+    },
+    "player_id": "local-ai-match-0c75f7b5c99e4b9f99f1a92c6f19a04b-opponent",
+    "session_id": "local-ai-match-0c75f7b5c99e4b9f99f1a92c6f19a04b",
+    "timestamp_ms": 1788248318043
+  },
+  {
+    "event_id": "server:local-ai-match-0c75f7b5c99e4b9f99f1a92c6f19a04b:207:credit_spent",
+    "event_type": "circuit_credit_spent",
+    "metadata": {
+      "amount": 95,
+      "balance": 283,
+      "battle_elapsed_ms": 17800,
+      "reason": "modul_yerlestir:armor"
+    },
+    "player_id": "wt-dbd4a70f-4d90-4b60-958a-18ca1e4eff82",
+    "session_id": "local-ai-match-0c75f7b5c99e4b9f99f1a92c6f19a04b",
+    "timestamp_ms": 1788248318332
+  },
+  {
+    "event_id": "server:local-ai-match-0c75f7b5c99e4b9f99f1a92c6f19a04b:240:credit_spent",
+    "event_type": "circuit_credit_spent",
+    "metadata": {
+      "amount": 135,
+      "balance": 150,
+      "battle_elapsed_ms": 20000,
+      "reason": "modul_degistir:railgun"
+    },
+    "player_id": "local-ai-match-0c75f7b5c99e4b9f99f1a92c6f19a04b-opponent",
+    "session_id": "local-ai-match-0c75f7b5c99e4b9f99f1a92c6f19a04b",
+    "timestamp_ms": 1788248318513
+  },
+  {
+    "event_id": "server:local-ai-match-0c75f7b5c99e4b9f99f1a92c6f19a04b:241:module_changed",
+    "event_type": "module_changed",
+    "metadata": {
+      "battle_elapsed_ms": 20000,
+      "incoming_module_id": "railgun-1",
+      "outgoing_module_id": "local-ai-match-0c75f7b5c99e4b9f99f1a92c6f19a04b-opponent-shield"
+    },
+    "player_id": "local-ai-match-0c75f7b5c99e4b9f99f1a92c6f19a04b-opponent",
+    "session_id": "local-ai-match-0c75f7b5c99e4b9f99f1a92c6f19a04b",
+    "timestamp_ms": 1788248318633
+  },
+  {
+    "event_id": "server:local-ai-match-0c75f7b5c99e4b9f99f1a92c6f19a04b:373:credit_spent",
+    "event_type": "circuit_credit_spent",
+    "metadata": {
+      "amount": 110,
+      "balance": 90,
+      "battle_elapsed_ms": 25000,
+      "reason": "modul_degistir:emp"
+    },
+    "player_id": "local-ai-match-0c75f7b5c99e4b9f99f1a92c6f19a04b-opponent",
+    "session_id": "local-ai-match-0c75f7b5c99e4b9f99f1a92c6f19a04b",
+    "timestamp_ms": 1788248318919
+  },
+  {
+    "event_id": "server:local-ai-match-0c75f7b5c99e4b9f99f1a92c6f19a04b:374:module_changed",
+    "event_type": "module_changed",
+    "metadata": {
+      "battle_elapsed_ms": 25000,
+      "incoming_module_id": "emp-1",
+      "outgoing_module_id": "drone-bay-1"
+    },
+    "player_id": "local-ai-match-0c75f7b5c99e4b9f99f1a92c6f19a04b-opponent",
+    "session_id": "local-ai-match-0c75f7b5c99e4b9f99f1a92c6f19a04b",
+    "timestamp_ms": 1788248319194
+  },
+  {
+    "event_id": "server:local-ai-match-0c75f7b5c99e4b9f99f1a92c6f19a04b:466:credit_spent",
+    "event_type": "circuit_credit_spent",
+    "metadata": {
+      "amount": 115,
+      "balance": 277,
+      "battle_elapsed_ms": 28700,
+      "reason": "modul_yerlestir:reflector"
+    },
+    "player_id": "wt-dbd4a70f-4d90-4b60-958a-18ca1e4eff82",
+    "session_id": "local-ai-match-0c75f7b5c99e4b9f99f1a92c6f19a04b",
+    "timestamp_ms": 1788248319699
+  },
+  {
+    "event_id": "server:local-ai-match-0c75f7b5c99e4b9f99f1a92c6f19a04b:497:booster_used",
+    "event_type": "booster_used",
+    "metadata": {
+      "battle_elapsed_ms": 30000,
+      "booster_id": "overcharge_chip",
+      "target_module_id": "railgun-1"
+    },
+    "player_id": "local-ai-match-0c75f7b5c99e4b9f99f1a92c6f19a04b-opponent",
+    "session_id": "local-ai-match-0c75f7b5c99e4b9f99f1a92c6f19a04b",
+    "timestamp_ms": 1788248319846
+  },
+  {
+    "event_id": "server:local-ai-match-0c75f7b5c99e4b9f99f1a92c6f19a04b:536:credit_spent",
+    "event_type": "circuit_credit_spent",
+    "metadata": {
+      "amount": 115,
+      "balance": 186,
+      "battle_elapsed_ms": 31100,
+      "reason": "modul_yerlestir:drone_bay"
+    },
+    "player_id": "wt-dbd4a70f-4d90-4b60-958a-18ca1e4eff82",
+    "session_id": "local-ai-match-0c75f7b5c99e4b9f99f1a92c6f19a04b",
+    "timestamp_ms": 1788248320055
+  },
+  {
+    "event_id": "server:local-ai-match-0c75f7b5c99e4b9f99f1a92c6f19a04b:568:credit_spent",
+    "event_type": "circuit_credit_spent",
+    "metadata": {
+      "amount": 80,
+      "balance": 122,
+      "battle_elapsed_ms": 32700,
+      "reason": "modul_yerlestir:repair"
+    },
+    "player_id": "wt-dbd4a70f-4d90-4b60-958a-18ca1e4eff82",
+    "session_id": "local-ai-match-0c75f7b5c99e4b9f99f1a92c6f19a04b",
+    "timestamp_ms": 1788248320182
+  },
+  {
+    "event_id": "server:local-ai-match-0c75f7b5c99e4b9f99f1a92c6f19a04b:618:credit_spent",
+    "event_type": "circuit_credit_spent",
+    "metadata": {
+      "amount": 100,
+      "balance": 90,
+      "battle_elapsed_ms": 35000,
+      "reason": "modul_yerlestir:shield"
+    },
+    "player_id": "local-ai-match-0c75f7b5c99e4b9f99f1a92c6f19a04b-opponent",
+    "session_id": "local-ai-match-0c75f7b5c99e4b9f99f1a92c6f19a04b",
+    "timestamp_ms": 1788248320408
+  },
+  {
+    "event_id": "server:local-ai-match-0c75f7b5c99e4b9f99f1a92c6f19a04b:647:booster_used",
+    "event_type": "booster_used",
+    "metadata": {
+      "battle_elapsed_ms": 36100,
+      "booster_id": "emergency_repair",
+      "target_module_id": "repair-1"
+    },
+    "player_id": "wt-dbd4a70f-4d90-4b60-958a-18ca1e4eff82",
+    "session_id": "local-ai-match-0c75f7b5c99e4b9f99f1a92c6f19a04b",
+    "timestamp_ms": 1788248320765
+  },
+  {
+    "event_id": "server:local-ai-match-0c75f7b5c99e4b9f99f1a92c6f19a04b:666:credit_spent",
+    "event_type": "circuit_credit_spent",
+    "metadata": {
+      "amount": 105,
+      "balance": 63,
+      "battle_elapsed_ms": 37300,
+      "reason": "modul_yerlestir:barrier"
+    },
+    "player_id": "wt-dbd4a70f-4d90-4b60-958a-18ca1e4eff82",
+    "session_id": "local-ai-match-0c75f7b5c99e4b9f99f1a92c6f19a04b",
+    "timestamp_ms": 1788248321022
+  },
+  {
+    "event_id": "server:local-ai-match-0c75f7b5c99e4b9f99f1a92c6f19a04b:700:credit_spent",
+    "event_type": "circuit_credit_spent",
+    "metadata": {
+      "amount": 115,
+      "balance": 25,
+      "battle_elapsed_ms": 40000,
+      "reason": "modul_yerlestir:drone_bay"
+    },
+    "player_id": "local-ai-match-0c75f7b5c99e4b9f99f1a92c6f19a04b-opponent",
+    "session_id": "local-ai-match-0c75f7b5c99e4b9f99f1a92c6f19a04b",
+    "timestamp_ms": 1788248321290
+  },
+  {
+    "event_id": "server:local-ai-match-0c75f7b5c99e4b9f99f1a92c6f19a04b:803:credit_spent",
+    "event_type": "circuit_credit_spent",
+    "metadata": {
+      "amount": 65,
+      "balance": 10,
+      "battle_elapsed_ms": 45000,
+      "reason": "modul_yerlestir:cooler"
+    },
+    "player_id": "local-ai-match-0c75f7b5c99e4b9f99f1a92c6f19a04b-opponent",
+    "session_id": "local-ai-match-0c75f7b5c99e4b9f99f1a92c6f19a04b",
+    "timestamp_ms": 1788248321453
+  },
+  {
+    "event_id": "server:local-ai-match-0c75f7b5c99e4b9f99f1a92c6f19a04b:818:credit_spent",
+    "event_type": "circuit_credit_spent",
+    "metadata": {
+      "amount": 120,
+      "balance": 29,
+      "battle_elapsed_ms": 45900,
+      "reason": "modul_yerlestir:pulse_cannon"
+    },
+    "player_id": "wt-dbd4a70f-4d90-4b60-958a-18ca1e4eff82",
+    "session_id": "local-ai-match-0c75f7b5c99e4b9f99f1a92c6f19a04b",
+    "timestamp_ms": 1788248321624
+  },
+  {
+    "event_id": "server:local-ai-match-0c75f7b5c99e4b9f99f1a92c6f19a04b:903:credit_spent",
+    "event_type": "circuit_credit_spent",
+    "metadata": {
+      "amount": 60,
+      "balance": 0,
+      "battle_elapsed_ms": 50000,
+      "reason": "modul_yerlestir:splitter"
+    },
+    "player_id": "local-ai-match-0c75f7b5c99e4b9f99f1a92c6f19a04b-opponent",
+    "session_id": "local-ai-match-0c75f7b5c99e4b9f99f1a92c6f19a04b",
+    "timestamp_ms": 1788248321964
+  },
+  {
+    "event_id": "server:local-ai-match-0c75f7b5c99e4b9f99f1a92c6f19a04b:1119:booster_used",
+    "event_type": "booster_used",
+    "metadata": {
+      "battle_elapsed_ms": 60000,
+      "booster_id": "emergency_repair",
+      "target_module_id": "local-ai-match-0c75f7b5c99e4b9f99f1a92c6f19a04b-opponent-generator"
+    },
+    "player_id": "local-ai-match-0c75f7b5c99e4b9f99f1a92c6f19a04b-opponent",
+    "session_id": "local-ai-match-0c75f7b5c99e4b9f99f1a92c6f19a04b",
+    "timestamp_ms": 1788248322358
+  },
+  {
+    "event_id": "server:local-ai-match-0c75f7b5c99e4b9f99f1a92c6f19a04b:1142:credit_spent",
+    "event_type": "circuit_credit_spent",
+    "metadata": {
+      "amount": 70,
+      "balance": 110,
+      "battle_elapsed_ms": 61000,
+      "reason": "modul_yerlestir:battery"
+    },
+    "player_id": "wt-dbd4a70f-4d90-4b60-958a-18ca1e4eff82",
+    "session_id": "local-ai-match-0c75f7b5c99e4b9f99f1a92c6f19a04b",
+    "timestamp_ms": 1788248322783
+  },
+  {
+    "event_id": "server:local-ai-match-0c75f7b5c99e4b9f99f1a92c6f19a04b:1263:credit_spent",
+    "event_type": "circuit_credit_spent",
+    "metadata": {
+      "amount": 10,
+      "balance": 155,
+      "battle_elapsed_ms": 66500,
+      "reason": "modul_takas:battery:repair"
+    },
+    "player_id": "wt-dbd4a70f-4d90-4b60-958a-18ca1e4eff82",
+    "session_id": "local-ai-match-0c75f7b5c99e4b9f99f1a92c6f19a04b",
+    "timestamp_ms": 1788248322901
+  },
+  {
+    "event_id": "server:local-ai-match-0c75f7b5c99e4b9f99f1a92c6f19a04b:match_completed:wt-dbd4a70f-4d90-4b60-958a-18ca1e4eff82",
+    "event_type": "match_completed",
+    "metadata": {
+      "duration_ms": 75100,
+      "finish_reason": "core_destroyed",
+      "is_draw": false,
+      "winner_player_id": "wt-dbd4a70f-4d90-4b60-958a-18ca1e4eff82"
+    },
+    "player_id": "wt-dbd4a70f-4d90-4b60-958a-18ca1e4eff82",
+    "session_id": "local-ai-match-0c75f7b5c99e4b9f99f1a92c6f19a04b",
+    "timestamp_ms": 1788248323009
+  },
+  {
+    "event_id": "server:local-ai-match-0c75f7b5c99e4b9f99f1a92c6f19a04b:match_completed:local-ai-match-0c75f7b5c99e4b9f99f1a92c6f19a04b-opponent",
+    "event_type": "match_completed",
+    "metadata": {
+      "duration_ms": 75100,
+      "finish_reason": "core_destroyed",
+      "is_draw": false,
+      "winner_player_id": "wt-dbd4a70f-4d90-4b60-958a-18ca1e4eff82"
+    },
+    "player_id": "local-ai-match-0c75f7b5c99e4b9f99f1a92c6f19a04b-opponent",
+    "session_id": "local-ai-match-0c75f7b5c99e4b9f99f1a92c6f19a04b",
+    "timestamp_ms": 1788248323186
+  },
+  {
+    "event_id": "web-test-operation-web-test-beta.31-local-1788248329622",
+    "event_type": "web_test_operation_snapshot",
+    "metadata": {
+      "consistency_status": "consistent",
+      "operational_state": "running",
+      "preflight_ready": true,
+      "run_started": true,
+      "test_run_id": "web-test-beta.31-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1788248329622
+  },
+  {
+    "event_id": "web-test-stability-web-test-beta.31-local-1788248332191",
+    "event_type": "web_test_stability_snapshot",
+    "metadata": {
+      "operation_running_rate": 1.0,
+      "running_to_other_regressions": 0,
+      "stability": "stable",
+      "test_run_id": "web-test-beta.31-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1788248332191
+  },
+  {
+    "event_id": "web-test-operation-web-test-beta.31-local-1788248352329",
+    "event_type": "web_test_operation_snapshot",
+    "metadata": {
+      "consistency_status": "consistent",
+      "operational_state": "running",
+      "preflight_ready": true,
+      "run_started": true,
+      "test_run_id": "web-test-beta.31-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1788248352329
+  },
+  {
+    "event_id": "web-test-stability-web-test-beta.31-local-1788248360624",
+    "event_type": "web_test_stability_snapshot",
+    "metadata": {
+      "operation_running_rate": 1.0,
+      "running_to_other_regressions": 0,
+      "stability": "stable",
+      "test_run_id": "web-test-beta.31-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1788248360624
+  },
+  {
+    "event_id": "web-test-operation-web-test-beta.31-local-1788248365663",
+    "event_type": "web_test_operation_snapshot",
+    "metadata": {
+      "consistency_status": "consistent",
+      "operational_state": "running",
+      "preflight_ready": true,
+      "run_started": true,
+      "test_run_id": "web-test-beta.31-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1788248365663
+  },
+  {
+    "event_id": "web-test-launch-wt-1561dea8-843f-4d64-ae50-173ff6e15d04-1788258229983",
+    "event_type": "web_test_launch_attempted",
+    "metadata": {
+      "failed_checks": [],
+      "launch_ready": true,
+      "test_run_id": "web-test-beta.31-local"
+    },
+    "player_id": "wt-1561dea8-843f-4d64-ae50-173ff6e15d04",
+    "session_id": null,
+    "timestamp_ms": 1788258229983
+  },
+  {
+    "event_id": "web-test-operation-web-test-beta.31-local-1788258240041",
+    "event_type": "web_test_operation_snapshot",
+    "metadata": {
+      "consistency_status": "consistent",
+      "operational_state": "running",
+      "preflight_ready": true,
+      "run_started": true,
+      "test_run_id": "web-test-beta.31-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1788258240041
+  },
+  {
+    "event_id": "web-test-stability-web-test-beta.31-local-1788258240294",
+    "event_type": "web_test_stability_snapshot",
+    "metadata": {
+      "operation_running_rate": 1.0,
+      "running_to_other_regressions": 0,
+      "stability": "stable",
+      "test_run_id": "web-test-beta.31-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1788258240294
+  },
+  {
+    "event_id": "web-test-launch-wt-1561dea8-843f-4d64-ae50-173ff6e15d04-1788258243654",
+    "event_type": "web_test_launch_attempted",
+    "metadata": {
+      "failed_checks": [],
+      "launch_ready": true,
+      "test_run_id": "web-test-beta.31-local"
+    },
+    "player_id": "wt-1561dea8-843f-4d64-ae50-173ff6e15d04",
+    "session_id": null,
+    "timestamp_ms": 1788258243654
+  },
+  {
+    "event_id": "web-test-launch-wt-1561dea8-843f-4d64-ae50-173ff6e15d04-1788258253099",
+    "event_type": "web_test_launch_attempted",
+    "metadata": {
+      "failed_checks": [],
+      "launch_ready": true,
+      "test_run_id": "web-test-beta.31-local"
+    },
+    "player_id": "wt-1561dea8-843f-4d64-ae50-173ff6e15d04",
+    "session_id": null,
+    "timestamp_ms": 1788258253099
+  },
+  {
+    "event_id": "server:matchmaking:wt-1561dea8-843f-4d64-ae50-173ff6e15d04:181743109",
+    "event_type": "matchmaking_started",
+    "metadata": {
+      "league_name_tr": "Gümüş",
+      "level": 1,
+      "rating": 1000
+    },
+    "player_id": "wt-1561dea8-843f-4d64-ae50-173ff6e15d04",
+    "session_id": null,
+    "timestamp_ms": 1788258255069
+  },
+  {
+    "event_id": "web-test-audit-wt-1561dea8-843f-4d64-ae50-173ff6e15d04-1788258254351",
+    "event_type": "web_test_session_started",
+    "metadata": {
+      "build": "web-test-beta.13",
+      "operation_ready": true,
+      "player_data_ready": true,
+      "pvp_protocol_version": 1,
+      "release_ready": true,
+      "retention_limit": 50000,
+      "server_version": "2.0.0-beta.38.1",
+      "telemetry_ready": true,
+      "test_run_id": "web-test-beta.31-local"
+    },
+    "player_id": "wt-1561dea8-843f-4d64-ae50-173ff6e15d04",
+    "session_id": null,
+    "timestamp_ms": 1788258254351
+  },
+  {
+    "event_id": "web-test-stability-web-test-beta.31-local-1788258256451",
+    "event_type": "web_test_stability_snapshot",
+    "metadata": {
+      "operation_running_rate": 1.0,
+      "running_to_other_regressions": 0,
+      "stability": "stable",
+      "test_run_id": "web-test-beta.31-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1788258256451
+  },
+  {
+    "event_id": "web-test-operation-web-test-beta.31-local-1788258257062",
+    "event_type": "web_test_operation_snapshot",
+    "metadata": {
+      "consistency_status": "consistent",
+      "operational_state": "running",
+      "preflight_ready": true,
+      "run_started": true,
+      "test_run_id": "web-test-beta.31-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1788258257062
+  },
+  {
+    "event_id": "server:local-ai-match-2701ba059cd341e58f219198d114ad1b:matchmaking_ai_fallback:wt-1561dea8-843f-4d64-ae50-173ff6e15d04",
+    "event_type": "matchmaking_matched",
+    "metadata": {
+      "ai_archetype": "economy",
+      "fallback_after_seconds": 10,
+      "opponent_type": "ai",
+      "rating_difference": 0
+    },
+    "player_id": "wt-1561dea8-843f-4d64-ae50-173ff6e15d04",
+    "session_id": "local-ai-match-2701ba059cd341e58f219198d114ad1b",
+    "timestamp_ms": 1788258265184
+  },
+  {
+    "event_id": "web-test-audit-wt-1561dea8-843f-4d64-ae50-173ff6e15d04-1788258254351-bound-local-ai-match-2701ba059cd341e58f219198d114ad1b",
+    "event_type": "web_test_session_bound",
+    "metadata": {
+      "audit_event_id": "web-test-audit-wt-1561dea8-843f-4d64-ae50-173ff6e15d04-1788258254351",
+      "test_run_id": "web-test-beta.31-local"
+    },
+    "player_id": "wt-1561dea8-843f-4d64-ae50-173ff6e15d04",
+    "session_id": "local-ai-match-2701ba059cd341e58f219198d114ad1b",
+    "timestamp_ms": 1788258265672
+  },
+  {
+    "event_id": "web-test-operation-web-test-beta.31-local-1788258277146",
+    "event_type": "web_test_operation_snapshot",
+    "metadata": {
+      "consistency_status": "consistent",
+      "operational_state": "running",
+      "preflight_ready": true,
+      "run_started": true,
+      "test_run_id": "web-test-beta.31-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1788258277146
+  },
+  {
+    "event_id": "web-test-stability-web-test-beta.31-local-1788258278234",
+    "event_type": "web_test_stability_snapshot",
+    "metadata": {
+      "operation_running_rate": 1.0,
+      "running_to_other_regressions": 0,
+      "stability": "stable",
+      "test_run_id": "web-test-beta.31-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1788258278234
+  },
+  {
+    "event_id": "web-test-launch-wt-1561dea8-843f-4d64-ae50-173ff6e15d04-1788262413156",
+    "event_type": "web_test_launch_attempted",
+    "metadata": {
+      "failed_checks": [],
+      "launch_ready": true,
+      "test_run_id": "web-test-beta.31-local"
+    },
+    "player_id": "wt-1561dea8-843f-4d64-ae50-173ff6e15d04",
+    "session_id": null,
+    "timestamp_ms": 1788262413156
+  },
+  {
+    "event_id": "server:matchmaking:wt-1561dea8-843f-4d64-ae50-173ff6e15d04:185904046",
+    "event_type": "matchmaking_started",
+    "metadata": {
+      "league_name_tr": "Gümüş",
+      "level": 1,
+      "rating": 1000
+    },
+    "player_id": "wt-1561dea8-843f-4d64-ae50-173ff6e15d04",
+    "session_id": null,
+    "timestamp_ms": 1788262416000
+  },
+  {
+    "event_id": "web-test-audit-wt-1561dea8-843f-4d64-ae50-173ff6e15d04-1788262415848",
+    "event_type": "web_test_session_started",
+    "metadata": {
+      "build": "web-test-beta.13",
+      "operation_ready": true,
+      "player_data_ready": true,
+      "pvp_protocol_version": 1,
+      "release_ready": true,
+      "retention_limit": 50000,
+      "server_version": "2.0.0-beta.38.1",
+      "telemetry_ready": true,
+      "test_run_id": "web-test-beta.31-local"
+    },
+    "player_id": "wt-1561dea8-843f-4d64-ae50-173ff6e15d04",
+    "session_id": null,
+    "timestamp_ms": 1788262415848
+  },
+  {
+    "event_id": "web-test-operation-web-test-beta.31-local-1788262424466",
+    "event_type": "web_test_operation_snapshot",
+    "metadata": {
+      "consistency_status": "consistent",
+      "operational_state": "running",
+      "preflight_ready": true,
+      "run_started": true,
+      "test_run_id": "web-test-beta.31-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1788262424466
+  },
+  {
+    "event_id": "web-test-stability-web-test-beta.31-local-1788262424650",
+    "event_type": "web_test_stability_snapshot",
+    "metadata": {
+      "operation_running_rate": 1.0,
+      "running_to_other_regressions": 0,
+      "stability": "stable",
+      "test_run_id": "web-test-beta.31-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1788262424650
+  },
+  {
+    "event_id": "server:local-ai-match-c822625776ab454db082422b7f5bb5db:matchmaking_ai_fallback:wt-1561dea8-843f-4d64-ae50-173ff6e15d04",
+    "event_type": "matchmaking_matched",
+    "metadata": {
+      "ai_archetype": "balanced",
+      "fallback_after_seconds": 10,
+      "opponent_type": "ai",
+      "rating_difference": 0
+    },
+    "player_id": "wt-1561dea8-843f-4d64-ae50-173ff6e15d04",
+    "session_id": "local-ai-match-c822625776ab454db082422b7f5bb5db",
+    "timestamp_ms": 1788262426928
+  },
+  {
+    "event_id": "web-test-audit-wt-1561dea8-843f-4d64-ae50-173ff6e15d04-1788262415848-bound-local-ai-match-c822625776ab454db082422b7f5bb5db",
+    "event_type": "web_test_session_bound",
+    "metadata": {
+      "audit_event_id": "web-test-audit-wt-1561dea8-843f-4d64-ae50-173ff6e15d04-1788262415848",
+      "test_run_id": "web-test-beta.31-local"
+    },
+    "player_id": "wt-1561dea8-843f-4d64-ae50-173ff6e15d04",
+    "session_id": "local-ai-match-c822625776ab454db082422b7f5bb5db",
+    "timestamp_ms": 1788262427286
+  },
+  {
+    "event_id": "web-test-operation-web-test-beta.31-local-1788262443742",
+    "event_type": "web_test_operation_snapshot",
+    "metadata": {
+      "consistency_status": "consistent",
+      "operational_state": "running",
+      "preflight_ready": true,
+      "run_started": true,
+      "test_run_id": "web-test-beta.31-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1788262443742
+  },
+  {
+    "event_id": "web-test-stability-web-test-beta.31-local-1788262444027",
+    "event_type": "web_test_stability_snapshot",
+    "metadata": {
+      "operation_running_rate": 1.0,
+      "running_to_other_regressions": 0,
+      "stability": "stable",
+      "test_run_id": "web-test-beta.31-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1788262444027
+  },
+  {
+    "event_id": "web-test-operation-web-test-beta.31-local-1788262455999",
+    "event_type": "web_test_operation_snapshot",
+    "metadata": {
+      "consistency_status": "consistent",
+      "operational_state": "running",
+      "preflight_ready": true,
+      "run_started": true,
+      "test_run_id": "web-test-beta.31-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1788262455999
+  },
+  {
+    "event_id": "web-test-stability-web-test-beta.31-local-1788262464712",
+    "event_type": "web_test_stability_snapshot",
+    "metadata": {
+      "operation_running_rate": 1.0,
+      "running_to_other_regressions": 0,
+      "stability": "stable",
+      "test_run_id": "web-test-beta.31-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1788262464712
+  },
+  {
+    "event_id": "web-test-operation-web-test-beta.31-local-1788262465698",
+    "event_type": "web_test_operation_snapshot",
+    "metadata": {
+      "consistency_status": "consistent",
+      "operational_state": "running",
+      "preflight_ready": true,
+      "run_started": true,
+      "test_run_id": "web-test-beta.31-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1788262465698
+  },
+  {
+    "event_id": "web-test-stability-web-test-beta.31-local-1788262476804",
+    "event_type": "web_test_stability_snapshot",
+    "metadata": {
+      "operation_running_rate": 1.0,
+      "running_to_other_regressions": 0,
+      "stability": "stable",
+      "test_run_id": "web-test-beta.31-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1788262476804
+  },
+  {
+    "event_id": "web-test-stability-web-test-beta.31-local-1788262485303",
+    "event_type": "web_test_stability_snapshot",
+    "metadata": {
+      "operation_running_rate": 1.0,
+      "running_to_other_regressions": 0,
+      "stability": "stable",
+      "test_run_id": "web-test-beta.31-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1788262485303
+  },
+  {
+    "event_id": "web-test-operation-web-test-beta.31-local-1788262485882",
+    "event_type": "web_test_operation_snapshot",
+    "metadata": {
+      "consistency_status": "consistent",
+      "operational_state": "running",
+      "preflight_ready": true,
+      "run_started": true,
+      "test_run_id": "web-test-beta.31-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1788262485882
+  },
+  {
+    "event_id": "web-test-operation-web-test-beta.31-local-1788262486930",
+    "event_type": "web_test_operation_snapshot",
+    "metadata": {
+      "consistency_status": "consistent",
+      "operational_state": "running",
+      "preflight_ready": true,
+      "run_started": true,
+      "test_run_id": "web-test-beta.31-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1788262486930
+  },
+  {
+    "event_id": "web-test-stability-web-test-beta.31-local-1788262497538",
+    "event_type": "web_test_stability_snapshot",
+    "metadata": {
+      "operation_running_rate": 1.0,
+      "running_to_other_regressions": 0,
+      "stability": "stable",
+      "test_run_id": "web-test-beta.31-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1788262497538
+  },
+  {
+    "event_id": "web-test-operation-web-test-beta.31-local-1788262526616",
+    "event_type": "web_test_operation_snapshot",
+    "metadata": {
+      "consistency_status": "consistent",
+      "operational_state": "running",
+      "preflight_ready": true,
+      "run_started": true,
+      "test_run_id": "web-test-beta.31-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1788262526616
+  },
+  {
+    "event_id": "web-test-stability-web-test-beta.31-local-1788262538208",
+    "event_type": "web_test_stability_snapshot",
+    "metadata": {
+      "operation_running_rate": 1.0,
+      "running_to_other_regressions": 0,
+      "stability": "stable",
+      "test_run_id": "web-test-beta.31-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1788262538208
+  },
+  {
+    "event_id": "web-test-operation-web-test-beta.31-local-1788262543418",
+    "event_type": "web_test_operation_snapshot",
+    "metadata": {
+      "consistency_status": "consistent",
+      "operational_state": "running",
+      "preflight_ready": true,
+      "run_started": true,
+      "test_run_id": "web-test-beta.31-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1788262543418
+  },
+  {
+    "event_id": "web-test-stability-web-test-beta.31-local-1788262559724",
+    "event_type": "web_test_stability_snapshot",
+    "metadata": {
+      "operation_running_rate": 1.0,
+      "running_to_other_regressions": 0,
+      "stability": "stable",
+      "test_run_id": "web-test-beta.31-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1788262559724
+  },
+  {
+    "event_id": "web-test-operation-web-test-beta.31-local-1788262564949",
+    "event_type": "web_test_operation_snapshot",
+    "metadata": {
+      "consistency_status": "consistent",
+      "operational_state": "running",
+      "preflight_ready": true,
+      "run_started": true,
+      "test_run_id": "web-test-beta.31-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1788262564949
+  },
+  {
+    "event_id": "web-test-stability-web-test-beta.31-local-1788262568278",
+    "event_type": "web_test_stability_snapshot",
+    "metadata": {
+      "operation_running_rate": 1.0,
+      "running_to_other_regressions": 0,
+      "stability": "stable",
+      "test_run_id": "web-test-beta.31-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1788262568278
+  },
+  {
+    "event_id": "web-test-operation-web-test-beta.31-local-1788262583616",
+    "event_type": "web_test_operation_snapshot",
+    "metadata": {
+      "consistency_status": "consistent",
+      "operational_state": "running",
+      "preflight_ready": true,
+      "run_started": true,
+      "test_run_id": "web-test-beta.31-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1788262583616
+  },
+  {
+    "event_id": "web-test-stability-web-test-beta.31-local-1788262584166",
+    "event_type": "web_test_stability_snapshot",
+    "metadata": {
+      "operation_running_rate": 1.0,
+      "running_to_other_regressions": 0,
+      "stability": "stable",
+      "test_run_id": "web-test-beta.31-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1788262584166
+  },
+  {
+    "event_id": "server:local-ai-match-c822625776ab454db082422b7f5bb5db:match_started:wt-1561dea8-843f-4d64-ae50-173ff6e15d04",
+    "event_type": "match_started",
+    "metadata": {
+      "source": "battle_engine"
+    },
+    "player_id": "wt-1561dea8-843f-4d64-ae50-173ff6e15d04",
+    "session_id": "local-ai-match-c822625776ab454db082422b7f5bb5db",
+    "timestamp_ms": 1788262601390
+  },
+  {
+    "event_id": "server:local-ai-match-c822625776ab454db082422b7f5bb5db:match_started:local-ai-match-c822625776ab454db082422b7f5bb5db-opponent",
+    "event_type": "match_started",
+    "metadata": {
+      "source": "battle_engine"
+    },
+    "player_id": "local-ai-match-c822625776ab454db082422b7f5bb5db-opponent",
+    "session_id": "local-ai-match-c822625776ab454db082422b7f5bb5db",
+    "timestamp_ms": 1788262602047
+  },
+  {
+    "event_id": "server:local-ai-match-c822625776ab454db082422b7f5bb5db:157:credit_spent",
+    "event_type": "circuit_credit_spent",
+    "metadata": {
+      "amount": 120,
+      "balance": 230,
+      "battle_elapsed_ms": 15000,
+      "reason": "modul_yerlestir:pulse_cannon"
+    },
+    "player_id": "local-ai-match-c822625776ab454db082422b7f5bb5db-opponent",
+    "session_id": "local-ai-match-c822625776ab454db082422b7f5bb5db",
+    "timestamp_ms": 1788262602228
+  },
+  {
+    "event_id": "server:local-ai-match-c822625776ab454db082422b7f5bb5db:178:credit_spent",
+    "event_type": "circuit_credit_spent",
+    "metadata": {
+      "amount": 70,
+      "balance": 302,
+      "battle_elapsed_ms": 17200,
+      "reason": "modul_yerlestir:battery"
+    },
+    "player_id": "wt-1561dea8-843f-4d64-ae50-173ff6e15d04",
+    "session_id": "local-ai-match-c822625776ab454db082422b7f5bb5db",
+    "timestamp_ms": 1788262602373
+  },
+  {
+    "event_id": "server:local-ai-match-c822625776ab454db082422b7f5bb5db:187:credit_spent",
+    "event_type": "circuit_credit_spent",
+    "metadata": {
+      "amount": 125,
+      "balance": 197,
+      "battle_elapsed_ms": 19200,
+      "reason": "modul_yerlestir:missile_launcher"
+    },
+    "player_id": "wt-1561dea8-843f-4d64-ae50-173ff6e15d04",
+    "session_id": "local-ai-match-c822625776ab454db082422b7f5bb5db",
+    "timestamp_ms": 1788262602561
+  },
+  {
+    "event_id": "server:local-ai-match-c822625776ab454db082422b7f5bb5db:195:credit_spent",
+    "event_type": "circuit_credit_spent",
+    "metadata": {
+      "amount": 80,
+      "balance": 200,
+      "battle_elapsed_ms": 20000,
+      "reason": "modul_yerlestir:repair"
+    },
+    "player_id": "local-ai-match-c822625776ab454db082422b7f5bb5db-opponent",
+    "session_id": "local-ai-match-c822625776ab454db082422b7f5bb5db",
+    "timestamp_ms": 1788262602827
+  },
+  {
+    "event_id": "server:local-ai-match-c822625776ab454db082422b7f5bb5db:213:credit_spent",
+    "event_type": "circuit_credit_spent",
+    "metadata": {
+      "amount": 115,
+      "balance": 120,
+      "battle_elapsed_ms": 23000,
+      "reason": "modul_yerlestir:reflector"
+    },
+    "player_id": "wt-1561dea8-843f-4d64-ae50-173ff6e15d04",
+    "session_id": "local-ai-match-c822625776ab454db082422b7f5bb5db",
+    "timestamp_ms": 1788262603115
+  },
+  {
+    "event_id": "server:local-ai-match-c822625776ab454db082422b7f5bb5db:216:credit_spent",
+    "event_type": "circuit_credit_spent",
+    "metadata": {
+      "amount": 95,
+      "balance": 155,
+      "battle_elapsed_ms": 25000,
+      "reason": "modul_yerlestir:armor"
+    },
+    "player_id": "local-ai-match-c822625776ab454db082422b7f5bb5db-opponent",
+    "session_id": "local-ai-match-c822625776ab454db082422b7f5bb5db",
+    "timestamp_ms": 1788262603322
+  },
+  {
+    "event_id": "server:local-ai-match-c822625776ab454db082422b7f5bb5db:252:booster_used",
+    "event_type": "booster_used",
+    "metadata": {
+      "battle_elapsed_ms": 30000,
+      "booster_id": "overcharge_chip",
+      "target_module_id": "pulse-cannon-1"
+    },
+    "player_id": "local-ai-match-c822625776ab454db082422b7f5bb5db-opponent",
+    "session_id": "local-ai-match-c822625776ab454db082422b7f5bb5db",
+    "timestamp_ms": 1788262603532
+  },
+  {
+    "event_id": "server:local-ai-match-c822625776ab454db082422b7f5bb5db:269:credit_spent",
+    "event_type": "circuit_credit_spent",
+    "metadata": {
+      "amount": 80,
+      "balance": 124,
+      "battle_elapsed_ms": 31400,
+      "reason": "modul_yerlestir:repair"
+    },
+    "player_id": "wt-1561dea8-843f-4d64-ae50-173ff6e15d04",
+    "session_id": "local-ai-match-c822625776ab454db082422b7f5bb5db",
+    "timestamp_ms": 1788262603806
+  },
+  {
+    "event_id": "server:local-ai-match-c822625776ab454db082422b7f5bb5db:289:credit_spent",
+    "event_type": "circuit_credit_spent",
+    "metadata": {
+      "amount": 90,
+      "balance": 165,
+      "battle_elapsed_ms": 35000,
+      "reason": "modul_yerlestir:targeting_computer"
+    },
+    "player_id": "local-ai-match-c822625776ab454db082422b7f5bb5db-opponent",
+    "session_id": "local-ai-match-c822625776ab454db082422b7f5bb5db",
+    "timestamp_ms": 1788262603980
+  },
+  {
+    "event_id": "server:local-ai-match-c822625776ab454db082422b7f5bb5db:313:booster_used",
+    "event_type": "booster_used",
+    "metadata": {
+      "battle_elapsed_ms": 39100,
+      "booster_id": "emergency_repair",
+      "target_module_id": "repair-1"
+    },
+    "player_id": "wt-1561dea8-843f-4d64-ae50-173ff6e15d04",
+    "session_id": "local-ai-match-c822625776ab454db082422b7f5bb5db",
+    "timestamp_ms": 1788262604116
+  },
+  {
+    "event_id": "server:local-ai-match-c822625776ab454db082422b7f5bb5db:318:credit_spent",
+    "event_type": "circuit_credit_spent",
+    "metadata": {
+      "amount": 125,
+      "balance": 90,
+      "battle_elapsed_ms": 40000,
+      "reason": "modul_degistir:missile_launcher"
+    },
+    "player_id": "local-ai-match-c822625776ab454db082422b7f5bb5db-opponent",
+    "session_id": "local-ai-match-c822625776ab454db082422b7f5bb5db",
+    "timestamp_ms": 1788262604366
+  },
+  {
+    "event_id": "server:local-ai-match-c822625776ab454db082422b7f5bb5db:319:module_changed",
+    "event_type": "module_changed",
+    "metadata": {
+      "battle_elapsed_ms": 40000,
+      "incoming_module_id": "missile-launcher-1",
+      "outgoing_module_id": "armor-1"
+    },
+    "player_id": "local-ai-match-c822625776ab454db082422b7f5bb5db-opponent",
+    "session_id": "local-ai-match-c822625776ab454db082422b7f5bb5db",
+    "timestamp_ms": 1788262604758
+  },
+  {
+    "event_id": "web-test-operation-web-test-beta.31-local-1788262604766",
+    "event_type": "web_test_operation_snapshot",
+    "metadata": {
+      "consistency_status": "consistent",
+      "operational_state": "running",
+      "preflight_ready": true,
+      "run_started": true,
+      "test_run_id": "web-test-beta.31-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1788262604766
+  },
+  {
+    "event_id": "server:local-ai-match-c822625776ab454db082422b7f5bb5db:349:credit_spent",
+    "event_type": "circuit_credit_spent",
+    "metadata": {
+      "amount": 100,
+      "balance": 126,
+      "battle_elapsed_ms": 41600,
+      "reason": "modul_yerlestir:shield"
+    },
+    "player_id": "wt-1561dea8-843f-4d64-ae50-173ff6e15d04",
+    "session_id": "local-ai-match-c822625776ab454db082422b7f5bb5db",
+    "timestamp_ms": 1788262605081
+  },
+  {
+    "event_id": "server:local-ai-match-c822625776ab454db082422b7f5bb5db:373:credit_spent",
+    "event_type": "circuit_credit_spent",
+    "metadata": {
+      "amount": 105,
+      "balance": 37,
+      "battle_elapsed_ms": 43200,
+      "reason": "modul_yerlestir:barrier"
+    },
+    "player_id": "wt-1561dea8-843f-4d64-ae50-173ff6e15d04",
+    "session_id": "local-ai-match-c822625776ab454db082422b7f5bb5db",
+    "timestamp_ms": 1788262605417
+  },
+  {
+    "event_id": "server:local-ai-match-c822625776ab454db082422b7f5bb5db:400:credit_spent",
+    "event_type": "circuit_credit_spent",
+    "metadata": {
+      "amount": 95,
+      "balance": 45,
+      "battle_elapsed_ms": 45000,
+      "reason": "modul_yerlestir:armor"
+    },
+    "player_id": "local-ai-match-c822625776ab454db082422b7f5bb5db-opponent",
+    "session_id": "local-ai-match-c822625776ab454db082422b7f5bb5db",
+    "timestamp_ms": 1788262605542
+  },
+  {
+    "event_id": "server:local-ai-match-c822625776ab454db082422b7f5bb5db:429:credit_spent",
+    "event_type": "circuit_credit_spent",
+    "metadata": {
+      "amount": 60,
+      "balance": 10,
+      "battle_elapsed_ms": 46500,
+      "reason": "modul_yerlestir:splitter"
+    },
+    "player_id": "wt-1561dea8-843f-4d64-ae50-173ff6e15d04",
+    "session_id": "local-ai-match-c822625776ab454db082422b7f5bb5db",
+    "timestamp_ms": 1788262605644
+  },
+  {
+    "event_id": "server:local-ai-match-c822625776ab454db082422b7f5bb5db:477:credit_spent",
+    "event_type": "circuit_credit_spent",
+    "metadata": {
+      "amount": 60,
+      "balance": 35,
+      "battle_elapsed_ms": 50000,
+      "reason": "modul_yerlestir:splitter"
+    },
+    "player_id": "local-ai-match-c822625776ab454db082422b7f5bb5db-opponent",
+    "session_id": "local-ai-match-c822625776ab454db082422b7f5bb5db",
+    "timestamp_ms": 1788262605776
+  },
+  {
+    "event_id": "server:local-ai-match-c822625776ab454db082422b7f5bb5db:507:credit_spent",
+    "event_type": "circuit_credit_spent",
+    "metadata": {
+      "amount": 65,
+      "balance": 20,
+      "battle_elapsed_ms": 55000,
+      "reason": "modul_degistir:cooler"
+    },
+    "player_id": "local-ai-match-c822625776ab454db082422b7f5bb5db-opponent",
+    "session_id": "local-ai-match-c822625776ab454db082422b7f5bb5db",
+    "timestamp_ms": 1788262606054
+  },
+  {
+    "event_id": "server:local-ai-match-c822625776ab454db082422b7f5bb5db:508:module_changed",
+    "event_type": "module_changed",
+    "metadata": {
+      "battle_elapsed_ms": 55000,
+      "incoming_module_id": "cooler-1",
+      "outgoing_module_id": "armor-1"
+    },
+    "player_id": "local-ai-match-c822625776ab454db082422b7f5bb5db-opponent",
+    "session_id": "local-ai-match-c822625776ab454db082422b7f5bb5db",
+    "timestamp_ms": 1788262606330
+  },
+  {
+    "event_id": "server:local-ai-match-c822625776ab454db082422b7f5bb5db:526:credit_spent",
+    "event_type": "circuit_credit_spent",
+    "metadata": {
+      "amount": 95,
+      "balance": 25,
+      "battle_elapsed_ms": 57500,
+      "reason": "modul_yerlestir:armor"
+    },
+    "player_id": "wt-1561dea8-843f-4d64-ae50-173ff6e15d04",
+    "session_id": "local-ai-match-c822625776ab454db082422b7f5bb5db",
+    "timestamp_ms": 1788262606506
+  },
+  {
+    "event_id": "server:local-ai-match-c822625776ab454db082422b7f5bb5db:546:booster_used",
+    "event_type": "booster_used",
+    "metadata": {
+      "battle_elapsed_ms": 60000,
+      "booster_id": "emergency_repair",
+      "target_module_id": "cooler-1"
+    },
+    "player_id": "local-ai-match-c822625776ab454db082422b7f5bb5db-opponent",
+    "session_id": "local-ai-match-c822625776ab454db082422b7f5bb5db",
+    "timestamp_ms": 1788262606608
+  },
+  {
+    "event_id": "web-test-stability-web-test-beta.31-local-1788262606616",
+    "event_type": "web_test_stability_snapshot",
+    "metadata": {
+      "operation_running_rate": 1.0,
+      "running_to_other_regressions": 0,
+      "stability": "stable",
+      "test_run_id": "web-test-beta.31-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1788262606616
+  },
+  {
+    "event_id": "server:local-ai-match-c822625776ab454db082422b7f5bb5db:584:credit_spent",
+    "event_type": "circuit_credit_spent",
+    "metadata": {
+      "amount": 95,
+      "balance": 25,
+      "battle_elapsed_ms": 65000,
+      "reason": "modul_yerlestir:armor"
+    },
+    "player_id": "local-ai-match-c822625776ab454db082422b7f5bb5db-opponent",
+    "session_id": "local-ai-match-c822625776ab454db082422b7f5bb5db",
+    "timestamp_ms": 1788262606764
+  },
+  {
+    "event_id": "server:local-ai-match-c822625776ab454db082422b7f5bb5db:612:credit_spent",
+    "event_type": "circuit_credit_spent",
+    "metadata": {
+      "amount": 135,
+      "balance": 9,
+      "battle_elapsed_ms": 69400,
+      "reason": "modul_yerlestir:railgun"
+    },
+    "player_id": "wt-1561dea8-843f-4d64-ae50-173ff6e15d04",
+    "session_id": "local-ai-match-c822625776ab454db082422b7f5bb5db",
+    "timestamp_ms": 1788262606978
+  },
+  {
+    "event_id": "server:local-ai-match-c822625776ab454db082422b7f5bb5db:620:credit_spent",
+    "event_type": "circuit_credit_spent",
+    "metadata": {
+      "amount": 70,
+      "balance": 5,
+      "battle_elapsed_ms": 70000,
+      "reason": "modul_yerlestir:battery"
+    },
+    "player_id": "local-ai-match-c822625776ab454db082422b7f5bb5db-opponent",
+    "session_id": "local-ai-match-c822625776ab454db082422b7f5bb5db",
+    "timestamp_ms": 1788262607147
+  },
+  {
+    "event_id": "server:local-ai-match-c822625776ab454db082422b7f5bb5db:763:credit_spent",
+    "event_type": "circuit_credit_spent",
+    "metadata": {
+      "amount": 75,
+      "balance": 30,
+      "battle_elapsed_ms": 80000,
+      "reason": "modul_yerlestir:capacitor"
+    },
+    "player_id": "local-ai-match-c822625776ab454db082422b7f5bb5db-opponent",
+    "session_id": "local-ai-match-c822625776ab454db082422b7f5bb5db",
+    "timestamp_ms": 1788262607436
+  },
+  {
+    "event_id": "server:local-ai-match-c822625776ab454db082422b7f5bb5db:887:booster_used",
+    "event_type": "booster_used",
+    "metadata": {
+      "battle_elapsed_ms": 90000,
+      "booster_id": "dual_port_adapter",
+      "target_module_id": "missile-launcher-1"
+    },
+    "player_id": "local-ai-match-c822625776ab454db082422b7f5bb5db-opponent",
+    "session_id": "local-ai-match-c822625776ab454db082422b7f5bb5db",
+    "timestamp_ms": 1788262607655
+  },
+  {
+    "event_id": "server:local-ai-match-c822625776ab454db082422b7f5bb5db:897:credit_spent",
+    "event_type": "circuit_credit_spent",
+    "metadata": {
+      "amount": 110,
+      "balance": 115,
+      "battle_elapsed_ms": 91000,
+      "reason": "modul_yerlestir:emp"
+    },
+    "player_id": "wt-1561dea8-843f-4d64-ae50-173ff6e15d04",
+    "session_id": "local-ai-match-c822625776ab454db082422b7f5bb5db",
+    "timestamp_ms": 1788262607809
+  },
+  {
+    "event_id": "server:local-ai-match-c822625776ab454db082422b7f5bb5db:915:credit_spent",
+    "event_type": "circuit_credit_spent",
+    "metadata": {
+      "amount": 100,
+      "balance": 39,
+      "battle_elapsed_ms": 93400,
+      "reason": "modul_yerlestir:jammer"
+    },
+    "player_id": "wt-1561dea8-843f-4d64-ae50-173ff6e15d04",
+    "session_id": "local-ai-match-c822625776ab454db082422b7f5bb5db",
+    "timestamp_ms": 1788262607961
+  },
+  {
+    "event_id": "server:local-ai-match-c822625776ab454db082422b7f5bb5db:922:credit_spent",
+    "event_type": "circuit_credit_spent",
+    "metadata": {
+      "amount": 105,
+      "balance": 75,
+      "battle_elapsed_ms": 95000,
+      "reason": "modul_yerlestir:barrier"
+    },
+    "player_id": "local-ai-match-c822625776ab454db082422b7f5bb5db-opponent",
+    "session_id": "local-ai-match-c822625776ab454db082422b7f5bb5db",
+    "timestamp_ms": 1788262608101
+  },
+  {
+    "event_id": "server:local-ai-match-c822625776ab454db082422b7f5bb5db:950:credit_spent",
+    "event_type": "circuit_credit_spent",
+    "metadata": {
+      "amount": 110,
+      "balance": 15,
+      "battle_elapsed_ms": 100000,
+      "reason": "modul_yerlestir:emp"
+    },
+    "player_id": "local-ai-match-c822625776ab454db082422b7f5bb5db-opponent",
+    "session_id": "local-ai-match-c822625776ab454db082422b7f5bb5db",
+    "timestamp_ms": 1788262608338
+  },
+  {
+    "event_id": "server:local-ai-match-c822625776ab454db082422b7f5bb5db:1093:credit_spent",
+    "event_type": "circuit_credit_spent",
+    "metadata": {
+      "amount": 85,
+      "balance": 30,
+      "battle_elapsed_ms": 110000,
+      "reason": "modul_yerlestir:amplifier"
+    },
+    "player_id": "local-ai-match-c822625776ab454db082422b7f5bb5db-opponent",
+    "session_id": "local-ai-match-c822625776ab454db082422b7f5bb5db",
+    "timestamp_ms": 1788262608545
+  },
+  {
+    "event_id": "server:local-ai-match-c822625776ab454db082422b7f5bb5db:1215:booster_used",
+    "event_type": "booster_used",
+    "metadata": {
+      "battle_elapsed_ms": 118400,
+      "booster_id": "emergency_repair",
+      "target_module_id": "core-1"
+    },
+    "player_id": "wt-1561dea8-843f-4d64-ae50-173ff6e15d04",
+    "session_id": "local-ai-match-c822625776ab454db082422b7f5bb5db",
+    "timestamp_ms": 1788262608759
+  },
+  {
+    "event_id": "server:local-ai-match-c822625776ab454db082422b7f5bb5db:1242:booster_used",
+    "event_type": "booster_used",
+    "metadata": {
+      "battle_elapsed_ms": 120000,
+      "booster_id": "overcharge_chip",
+      "target_module_id": "pulse-cannon-1"
+    },
+    "player_id": "local-ai-match-c822625776ab454db082422b7f5bb5db-opponent",
+    "session_id": "local-ai-match-c822625776ab454db082422b7f5bb5db",
+    "timestamp_ms": 1788262609021
+  },
+  {
+    "event_id": "server:local-ai-match-c822625776ab454db082422b7f5bb5db:match_completed:wt-1561dea8-843f-4d64-ae50-173ff6e15d04",
+    "event_type": "match_completed",
+    "metadata": {
+      "duration_ms": 122600,
+      "finish_reason": "core_destroyed",
+      "is_draw": false,
+      "winner_player_id": "local-ai-match-c822625776ab454db082422b7f5bb5db-opponent"
+    },
+    "player_id": "wt-1561dea8-843f-4d64-ae50-173ff6e15d04",
+    "session_id": "local-ai-match-c822625776ab454db082422b7f5bb5db",
+    "timestamp_ms": 1788262609189
+  },
+  {
+    "event_id": "server:local-ai-match-c822625776ab454db082422b7f5bb5db:match_completed:local-ai-match-c822625776ab454db082422b7f5bb5db-opponent",
+    "event_type": "match_completed",
+    "metadata": {
+      "duration_ms": 122600,
+      "finish_reason": "core_destroyed",
+      "is_draw": false,
+      "winner_player_id": "local-ai-match-c822625776ab454db082422b7f5bb5db-opponent"
+    },
+    "player_id": "local-ai-match-c822625776ab454db082422b7f5bb5db-opponent",
+    "session_id": "local-ai-match-c822625776ab454db082422b7f5bb5db",
+    "timestamp_ms": 1788262609313
+  },
+  {
+    "event_id": "web-test-launch-wt-1561dea8-843f-4d64-ae50-173ff6e15d04-1788263751375",
+    "event_type": "web_test_launch_attempted",
+    "metadata": {
+      "failed_checks": [],
+      "launch_ready": true,
+      "test_run_id": "web-test-beta.31-local"
+    },
+    "player_id": "wt-1561dea8-843f-4d64-ae50-173ff6e15d04",
+    "session_id": null,
+    "timestamp_ms": 1788263751375
+  },
+  {
+    "event_id": "server:matchmaking:wt-1561dea8-843f-4d64-ae50-173ff6e15d04:187243296",
+    "event_type": "matchmaking_started",
+    "metadata": {
+      "league_name_tr": "Gümüş",
+      "level": 1,
+      "rating": 1000
+    },
+    "player_id": "wt-1561dea8-843f-4d64-ae50-173ff6e15d04",
+    "session_id": null,
+    "timestamp_ms": 1788263755256
+  },
+  {
+    "event_id": "web-test-audit-wt-1561dea8-843f-4d64-ae50-173ff6e15d04-1788263755001",
+    "event_type": "web_test_session_started",
+    "metadata": {
+      "build": "web-test-beta.13",
+      "operation_ready": true,
+      "player_data_ready": true,
+      "pvp_protocol_version": 1,
+      "release_ready": true,
+      "retention_limit": 50000,
+      "server_version": "2.0.0-beta.38.1",
+      "telemetry_ready": true,
+      "test_run_id": "web-test-beta.31-local"
+    },
+    "player_id": "wt-1561dea8-843f-4d64-ae50-173ff6e15d04",
+    "session_id": null,
+    "timestamp_ms": 1788263755001
+  },
+  {
+    "event_id": "web-test-operation-web-test-beta.31-local-1788263771248",
+    "event_type": "web_test_operation_snapshot",
+    "metadata": {
+      "consistency_status": "consistent",
+      "operational_state": "running",
+      "preflight_ready": true,
+      "run_started": true,
+      "test_run_id": "web-test-beta.31-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1788263771248
+  },
+  {
+    "event_id": "web-test-stability-web-test-beta.31-local-1788263771606",
+    "event_type": "web_test_stability_snapshot",
+    "metadata": {
+      "operation_running_rate": 1.0,
+      "running_to_other_regressions": 0,
+      "stability": "stable",
+      "test_run_id": "web-test-beta.31-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1788263771606
+  },
+  {
+    "event_id": "server:local-ai-match-0a2ba046451444428493d98d44d93a2f:matchmaking_ai_fallback:wt-1561dea8-843f-4d64-ae50-173ff6e15d04",
+    "event_type": "matchmaking_matched",
+    "metadata": {
+      "ai_archetype": "balanced",
+      "fallback_after_seconds": 10,
+      "opponent_type": "ai",
+      "rating_difference": 0
+    },
+    "player_id": "wt-1561dea8-843f-4d64-ae50-173ff6e15d04",
+    "session_id": "local-ai-match-0a2ba046451444428493d98d44d93a2f",
+    "timestamp_ms": 1788263771648
+  },
+  {
+    "event_id": "web-test-audit-wt-1561dea8-843f-4d64-ae50-173ff6e15d04-1788263755001-bound-local-ai-match-0a2ba046451444428493d98d44d93a2f",
+    "event_type": "web_test_session_bound",
+    "metadata": {
+      "audit_event_id": "web-test-audit-wt-1561dea8-843f-4d64-ae50-173ff6e15d04-1788263755001",
+      "test_run_id": "web-test-beta.31-local"
+    },
+    "player_id": "wt-1561dea8-843f-4d64-ae50-173ff6e15d04",
+    "session_id": "local-ai-match-0a2ba046451444428493d98d44d93a2f",
+    "timestamp_ms": 1788263772192
+  },
+  {
+    "event_id": "web-test-operation-web-test-beta.31-local-1788263788380",
+    "event_type": "web_test_operation_snapshot",
+    "metadata": {
+      "consistency_status": "consistent",
+      "operational_state": "running",
+      "preflight_ready": true,
+      "run_started": true,
+      "test_run_id": "web-test-beta.31-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1788263788380
+  },
+  {
+    "event_id": "web-test-stability-web-test-beta.31-local-1788263788789",
+    "event_type": "web_test_stability_snapshot",
+    "metadata": {
+      "operation_running_rate": 1.0,
+      "running_to_other_regressions": 0,
+      "stability": "stable",
+      "test_run_id": "web-test-beta.31-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1788263788789
+  },
+  {
+    "event_id": "web-test-operation-web-test-beta.31-local-1788263796888",
+    "event_type": "web_test_operation_snapshot",
+    "metadata": {
+      "consistency_status": "consistent",
+      "operational_state": "running",
+      "preflight_ready": true,
+      "run_started": true,
+      "test_run_id": "web-test-beta.31-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1788263796888
+  },
+  {
+    "event_id": "web-test-operation-web-test-beta.31-local-1788263811861",
+    "event_type": "web_test_operation_snapshot",
+    "metadata": {
+      "consistency_status": "consistent",
+      "operational_state": "running",
+      "preflight_ready": true,
+      "run_started": true,
+      "test_run_id": "web-test-beta.31-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1788263811861
+  },
+  {
+    "event_id": "web-test-stability-web-test-beta.31-local-1788263812499",
+    "event_type": "web_test_stability_snapshot",
+    "metadata": {
+      "operation_running_rate": 1.0,
+      "running_to_other_regressions": 0,
+      "stability": "stable",
+      "test_run_id": "web-test-beta.31-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1788263812499
+  },
+  {
+    "event_id": "web-test-stability-web-test-beta.31-local-1788263815276",
+    "event_type": "web_test_stability_snapshot",
+    "metadata": {
+      "operation_running_rate": 1.0,
+      "running_to_other_regressions": 0,
+      "stability": "stable",
+      "test_run_id": "web-test-beta.31-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1788263815276
+  },
+  {
+    "event_id": "web-test-operation-web-test-beta.31-local-1788263833794",
+    "event_type": "web_test_operation_snapshot",
+    "metadata": {
+      "consistency_status": "consistent",
+      "operational_state": "running",
+      "preflight_ready": true,
+      "run_started": true,
+      "test_run_id": "web-test-beta.31-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1788263833794
+  },
+  {
+    "event_id": "web-test-stability-web-test-beta.31-local-1788263835679",
+    "event_type": "web_test_stability_snapshot",
+    "metadata": {
+      "operation_running_rate": 1.0,
+      "running_to_other_regressions": 0,
+      "stability": "stable",
+      "test_run_id": "web-test-beta.31-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1788263835679
+  },
+  {
+    "event_id": "web-test-operation-web-test-beta.31-local-1788263837058",
+    "event_type": "web_test_operation_snapshot",
+    "metadata": {
+      "consistency_status": "consistent",
+      "operational_state": "running",
+      "preflight_ready": true,
+      "run_started": true,
+      "test_run_id": "web-test-beta.31-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1788263837058
+  },
+  {
+    "event_id": "web-test-stability-web-test-beta.31-local-1788263838756",
+    "event_type": "web_test_stability_snapshot",
+    "metadata": {
+      "operation_running_rate": 1.0,
+      "running_to_other_regressions": 0,
+      "stability": "stable",
+      "test_run_id": "web-test-beta.31-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1788263838756
+  },
+  {
+    "event_id": "server:local-ai-match-0a2ba046451444428493d98d44d93a2f:match_started:wt-1561dea8-843f-4d64-ae50-173ff6e15d04",
+    "event_type": "match_started",
+    "metadata": {
+      "source": "battle_engine"
+    },
+    "player_id": "wt-1561dea8-843f-4d64-ae50-173ff6e15d04",
+    "session_id": "local-ai-match-0a2ba046451444428493d98d44d93a2f",
+    "timestamp_ms": 1788263839402
+  },
+  {
+    "event_id": "server:local-ai-match-0a2ba046451444428493d98d44d93a2f:match_started:local-ai-match-0a2ba046451444428493d98d44d93a2f-opponent",
+    "event_type": "match_started",
+    "metadata": {
+      "source": "battle_engine"
+    },
+    "player_id": "local-ai-match-0a2ba046451444428493d98d44d93a2f-opponent",
+    "session_id": "local-ai-match-0a2ba046451444428493d98d44d93a2f",
+    "timestamp_ms": 1788263839771
+  },
+  {
+    "event_id": "server:local-ai-match-0a2ba046451444428493d98d44d93a2f:159:credit_spent",
+    "event_type": "circuit_credit_spent",
+    "metadata": {
+      "amount": 120,
+      "balance": 230,
+      "battle_elapsed_ms": 15000,
+      "reason": "modul_yerlestir:pulse_cannon"
+    },
+    "player_id": "local-ai-match-0a2ba046451444428493d98d44d93a2f-opponent",
+    "session_id": "local-ai-match-0a2ba046451444428493d98d44d93a2f",
+    "timestamp_ms": 1788263840135
+  },
+  {
+    "event_id": "server:local-ai-match-0a2ba046451444428493d98d44d93a2f:179:credit_spent",
+    "event_type": "circuit_credit_spent",
+    "metadata": {
+      "amount": 115,
+      "balance": 243,
+      "battle_elapsed_ms": 15800,
+      "reason": "modul_yerlestir:reflector"
+    },
+    "player_id": "wt-1561dea8-843f-4d64-ae50-173ff6e15d04",
+    "session_id": "local-ai-match-0a2ba046451444428493d98d44d93a2f",
+    "timestamp_ms": 1788263840486
+  },
+  {
+    "event_id": "server:local-ai-match-0a2ba046451444428493d98d44d93a2f:193:credit_spent",
+    "event_type": "circuit_credit_spent",
+    "metadata": {
+      "amount": 80,
+      "balance": 200,
+      "battle_elapsed_ms": 20000,
+      "reason": "modul_yerlestir:repair"
+    },
+    "player_id": "local-ai-match-0a2ba046451444428493d98d44d93a2f-opponent",
+    "session_id": "local-ai-match-0a2ba046451444428493d98d44d93a2f",
+    "timestamp_ms": 1788263840790
+  },
+  {
+    "event_id": "server:local-ai-match-0a2ba046451444428493d98d44d93a2f:206:credit_spent",
+    "event_type": "circuit_credit_spent",
+    "metadata": {
+      "amount": 95,
+      "balance": 155,
+      "battle_elapsed_ms": 25000,
+      "reason": "modul_yerlestir:armor"
+    },
+    "player_id": "local-ai-match-0a2ba046451444428493d98d44d93a2f-opponent",
+    "session_id": "local-ai-match-0a2ba046451444428493d98d44d93a2f",
+    "timestamp_ms": 1788263841024
+  },
+  {
+    "event_id": "server:local-ai-match-0a2ba046451444428493d98d44d93a2f:222:booster_used",
+    "event_type": "booster_used",
+    "metadata": {
+      "battle_elapsed_ms": 30000,
+      "booster_id": "overcharge_chip",
+      "target_module_id": "pulse-cannon-1"
+    },
+    "player_id": "local-ai-match-0a2ba046451444428493d98d44d93a2f-opponent",
+    "session_id": "local-ai-match-0a2ba046451444428493d98d44d93a2f",
+    "timestamp_ms": 1788263841252
+  },
+  {
+    "event_id": "server:local-ai-match-0a2ba046451444428493d98d44d93a2f:236:credit_spent",
+    "event_type": "circuit_credit_spent",
+    "metadata": {
+      "amount": 90,
+      "balance": 165,
+      "battle_elapsed_ms": 35000,
+      "reason": "modul_yerlestir:targeting_computer"
+    },
+    "player_id": "local-ai-match-0a2ba046451444428493d98d44d93a2f-opponent",
+    "session_id": "local-ai-match-0a2ba046451444428493d98d44d93a2f",
+    "timestamp_ms": 1788263841422
+  },
+  {
+    "event_id": "server:local-ai-match-0a2ba046451444428493d98d44d93a2f:249:credit_spent",
+    "event_type": "circuit_credit_spent",
+    "metadata": {
+      "amount": 135,
+      "balance": 80,
+      "battle_elapsed_ms": 40000,
+      "reason": "modul_degistir:railgun"
+    },
+    "player_id": "local-ai-match-0a2ba046451444428493d98d44d93a2f-opponent",
+    "session_id": "local-ai-match-0a2ba046451444428493d98d44d93a2f",
+    "timestamp_ms": 1788263841554
+  },
+  {
+    "event_id": "server:local-ai-match-0a2ba046451444428493d98d44d93a2f:250:module_changed",
+    "event_type": "module_changed",
+    "metadata": {
+      "battle_elapsed_ms": 40000,
+      "incoming_module_id": "railgun-1",
+      "outgoing_module_id": "armor-1"
+    },
+    "player_id": "local-ai-match-0a2ba046451444428493d98d44d93a2f-opponent",
+    "session_id": "local-ai-match-0a2ba046451444428493d98d44d93a2f",
+    "timestamp_ms": 1788263841907
+  },
+  {
+    "event_id": "server:local-ai-match-0a2ba046451444428493d98d44d93a2f:312:credit_spent",
+    "event_type": "circuit_credit_spent",
+    "metadata": {
+      "amount": 95,
+      "balance": 35,
+      "battle_elapsed_ms": 45000,
+      "reason": "modul_yerlestir:armor"
+    },
+    "player_id": "local-ai-match-0a2ba046451444428493d98d44d93a2f-opponent",
+    "session_id": "local-ai-match-0a2ba046451444428493d98d44d93a2f",
+    "timestamp_ms": 1788263842171
+  },
+  {
+    "event_id": "server:local-ai-match-0a2ba046451444428493d98d44d93a2f:match_completed:wt-1561dea8-843f-4d64-ae50-173ff6e15d04",
+    "event_type": "match_completed",
+    "metadata": {
+      "duration_ms": 47600,
+      "finish_reason": "core_destroyed",
+      "is_draw": false,
+      "winner_player_id": "local-ai-match-0a2ba046451444428493d98d44d93a2f-opponent"
+    },
+    "player_id": "wt-1561dea8-843f-4d64-ae50-173ff6e15d04",
+    "session_id": "local-ai-match-0a2ba046451444428493d98d44d93a2f",
+    "timestamp_ms": 1788263842389
+  },
+  {
+    "event_id": "server:local-ai-match-0a2ba046451444428493d98d44d93a2f:match_completed:local-ai-match-0a2ba046451444428493d98d44d93a2f-opponent",
+    "event_type": "match_completed",
+    "metadata": {
+      "duration_ms": 47600,
+      "finish_reason": "core_destroyed",
+      "is_draw": false,
+      "winner_player_id": "local-ai-match-0a2ba046451444428493d98d44d93a2f-opponent"
+    },
+    "player_id": "local-ai-match-0a2ba046451444428493d98d44d93a2f-opponent",
+    "session_id": "local-ai-match-0a2ba046451444428493d98d44d93a2f",
+    "timestamp_ms": 1788263842548
+  },
+  {
+    "event_id": "web-test-operation-web-test-beta.31-local-1788263860128",
+    "event_type": "web_test_operation_snapshot",
+    "metadata": {
+      "consistency_status": "consistent",
+      "operational_state": "running",
+      "preflight_ready": true,
+      "run_started": true,
+      "test_run_id": "web-test-beta.31-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1788263860128
+  },
+  {
+    "event_id": "web-test-stability-web-test-beta.31-local-1788263872887",
+    "event_type": "web_test_stability_snapshot",
+    "metadata": {
+      "operation_running_rate": 1.0,
+      "running_to_other_regressions": 0,
+      "stability": "stable",
+      "test_run_id": "web-test-beta.31-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1788263872887
+  },
+  {
+    "event_id": "web-test-launch-wt-1561dea8-843f-4d64-ae50-173ff6e15d04-1788264117247",
+    "event_type": "web_test_launch_attempted",
+    "metadata": {
+      "failed_checks": [],
+      "launch_ready": true,
+      "test_run_id": "web-test-beta.31-local"
+    },
+    "player_id": "wt-1561dea8-843f-4d64-ae50-173ff6e15d04",
+    "session_id": null,
+    "timestamp_ms": 1788264117247
+  },
+  {
+    "event_id": "server:matchmaking:wt-1561dea8-843f-4d64-ae50-173ff6e15d04:187609718",
+    "event_type": "matchmaking_started",
+    "metadata": {
+      "league_name_tr": "Gümüş",
+      "level": 1,
+      "rating": 1000
+    },
+    "player_id": "wt-1561dea8-843f-4d64-ae50-173ff6e15d04",
+    "session_id": null,
+    "timestamp_ms": 1788264121671
+  },
+  {
+    "event_id": "web-test-audit-wt-1561dea8-843f-4d64-ae50-173ff6e15d04-1788264121419",
+    "event_type": "web_test_session_started",
+    "metadata": {
+      "build": "web-test-beta.13",
+      "operation_ready": true,
+      "player_data_ready": true,
+      "pvp_protocol_version": 1,
+      "release_ready": true,
+      "retention_limit": 50000,
+      "server_version": "2.0.0-beta.38.1",
+      "telemetry_ready": true,
+      "test_run_id": "web-test-beta.31-local"
+    },
+    "player_id": "wt-1561dea8-843f-4d64-ae50-173ff6e15d04",
+    "session_id": null,
+    "timestamp_ms": 1788264121419
+  },
+  {
+    "event_id": "web-test-operation-web-test-beta.31-local-1788264131274",
+    "event_type": "web_test_operation_snapshot",
+    "metadata": {
+      "consistency_status": "consistent",
+      "operational_state": "running",
+      "preflight_ready": true,
+      "run_started": true,
+      "test_run_id": "web-test-beta.31-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1788264131274
+  },
+  {
+    "event_id": "web-test-stability-web-test-beta.31-local-1788264131625",
+    "event_type": "web_test_stability_snapshot",
+    "metadata": {
+      "operation_running_rate": 1.0,
+      "running_to_other_regressions": 0,
+      "stability": "stable",
+      "test_run_id": "web-test-beta.31-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1788264131625
+  },
+  {
+    "event_id": "server:local-ai-match-86cee03bc5bf40c29b81bafb66eab1c2:matchmaking_ai_fallback:wt-1561dea8-843f-4d64-ae50-173ff6e15d04",
+    "event_type": "matchmaking_matched",
+    "metadata": {
+      "ai_archetype": "defensive",
+      "fallback_after_seconds": 10,
+      "opponent_type": "ai",
+      "rating_difference": 0
+    },
+    "player_id": "wt-1561dea8-843f-4d64-ae50-173ff6e15d04",
+    "session_id": "local-ai-match-86cee03bc5bf40c29b81bafb66eab1c2",
+    "timestamp_ms": 1788264132738
+  },
+  {
+    "event_id": "web-test-audit-wt-1561dea8-843f-4d64-ae50-173ff6e15d04-1788264121419-bound-local-ai-match-86cee03bc5bf40c29b81bafb66eab1c2",
+    "event_type": "web_test_session_bound",
+    "metadata": {
+      "audit_event_id": "web-test-audit-wt-1561dea8-843f-4d64-ae50-173ff6e15d04-1788264121419",
+      "test_run_id": "web-test-beta.31-local"
+    },
+    "player_id": "wt-1561dea8-843f-4d64-ae50-173ff6e15d04",
+    "session_id": "local-ai-match-86cee03bc5bf40c29b81bafb66eab1c2",
+    "timestamp_ms": 1788264133178
+  },
+  {
+    "event_id": "web-test-stability-web-test-beta.31-local-1788264150439",
+    "event_type": "web_test_stability_snapshot",
+    "metadata": {
+      "operation_running_rate": 1.0,
+      "running_to_other_regressions": 0,
+      "stability": "stable",
+      "test_run_id": "web-test-beta.31-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1788264150439
+  },
+  {
+    "event_id": "web-test-operation-web-test-beta.31-local-1788264151266",
+    "event_type": "web_test_operation_snapshot",
+    "metadata": {
+      "consistency_status": "consistent",
+      "operational_state": "running",
+      "preflight_ready": true,
+      "run_started": true,
+      "test_run_id": "web-test-beta.31-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1788264151266
+  },
+  {
+    "event_id": "web-test-operation-web-test-beta.31-local-1788264163900",
+    "event_type": "web_test_operation_snapshot",
+    "metadata": {
+      "consistency_status": "consistent",
+      "operational_state": "running",
+      "preflight_ready": true,
+      "run_started": true,
+      "test_run_id": "web-test-beta.31-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1788264163900
+  },
+  {
+    "event_id": "server:local-ai-match-86cee03bc5bf40c29b81bafb66eab1c2:match_started:wt-1561dea8-843f-4d64-ae50-173ff6e15d04",
+    "event_type": "match_started",
+    "metadata": {
+      "source": "battle_engine"
+    },
+    "player_id": "wt-1561dea8-843f-4d64-ae50-173ff6e15d04",
+    "session_id": "local-ai-match-86cee03bc5bf40c29b81bafb66eab1c2",
+    "timestamp_ms": 1788264166293
+  },
+  {
+    "event_id": "server:local-ai-match-86cee03bc5bf40c29b81bafb66eab1c2:match_started:local-ai-match-86cee03bc5bf40c29b81bafb66eab1c2-opponent",
+    "event_type": "match_started",
+    "metadata": {
+      "source": "battle_engine"
+    },
+    "player_id": "local-ai-match-86cee03bc5bf40c29b81bafb66eab1c2-opponent",
+    "session_id": "local-ai-match-86cee03bc5bf40c29b81bafb66eab1c2",
+    "timestamp_ms": 1788264166646
+  },
+  {
+    "event_id": "server:local-ai-match-86cee03bc5bf40c29b81bafb66eab1c2:157:credit_spent",
+    "event_type": "circuit_credit_spent",
+    "metadata": {
+      "amount": 105,
+      "balance": 245,
+      "battle_elapsed_ms": 15000,
+      "reason": "modul_yerlestir:barrier"
+    },
+    "player_id": "local-ai-match-86cee03bc5bf40c29b81bafb66eab1c2-opponent",
+    "session_id": "local-ai-match-86cee03bc5bf40c29b81bafb66eab1c2",
+    "timestamp_ms": 1788264166937
+  },
+  {
+    "event_id": "server:local-ai-match-86cee03bc5bf40c29b81bafb66eab1c2:196:credit_spent",
+    "event_type": "circuit_credit_spent",
+    "metadata": {
+      "amount": 80,
+      "balance": 215,
+      "battle_elapsed_ms": 20000,
+      "reason": "modul_yerlestir:repair"
+    },
+    "player_id": "local-ai-match-86cee03bc5bf40c29b81bafb66eab1c2-opponent",
+    "session_id": "local-ai-match-86cee03bc5bf40c29b81bafb66eab1c2",
+    "timestamp_ms": 1788264167406
+  },
+  {
+    "event_id": "server:local-ai-match-86cee03bc5bf40c29b81bafb66eab1c2:match_completed:wt-1561dea8-843f-4d64-ae50-173ff6e15d04",
+    "event_type": "match_completed",
+    "metadata": {
+      "duration_ms": 23800,
+      "finish_reason": "player_forfeit",
+      "is_draw": false,
+      "winner_player_id": "local-ai-match-86cee03bc5bf40c29b81bafb66eab1c2-opponent"
+    },
+    "player_id": "wt-1561dea8-843f-4d64-ae50-173ff6e15d04",
+    "session_id": "local-ai-match-86cee03bc5bf40c29b81bafb66eab1c2",
+    "timestamp_ms": 1788264167543
+  },
+  {
+    "event_id": "server:local-ai-match-86cee03bc5bf40c29b81bafb66eab1c2:match_completed:local-ai-match-86cee03bc5bf40c29b81bafb66eab1c2-opponent",
+    "event_type": "match_completed",
+    "metadata": {
+      "duration_ms": 23800,
+      "finish_reason": "player_forfeit",
+      "is_draw": false,
+      "winner_player_id": "local-ai-match-86cee03bc5bf40c29b81bafb66eab1c2-opponent"
+    },
+    "player_id": "local-ai-match-86cee03bc5bf40c29b81bafb66eab1c2-opponent",
+    "session_id": "local-ai-match-86cee03bc5bf40c29b81bafb66eab1c2",
+    "timestamp_ms": 1788264167827
+  },
+  {
+    "event_id": "web-test-stability-web-test-beta.31-local-1788264174192",
+    "event_type": "web_test_stability_snapshot",
+    "metadata": {
+      "operation_running_rate": 1.0,
+      "running_to_other_regressions": 0,
+      "stability": "stable",
+      "test_run_id": "web-test-beta.31-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1788264174192
+  },
+  {
+    "event_id": "web-test-operation-web-test-beta.31-local-1788264174824",
+    "event_type": "web_test_operation_snapshot",
+    "metadata": {
+      "consistency_status": "consistent",
+      "operational_state": "running",
+      "preflight_ready": true,
+      "run_started": true,
+      "test_run_id": "web-test-beta.31-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1788264174824
+  },
+  {
+    "event_id": "web-test-stability-web-test-beta.31-local-1788264175078",
+    "event_type": "web_test_stability_snapshot",
+    "metadata": {
+      "operation_running_rate": 1.0,
+      "running_to_other_regressions": 0,
+      "stability": "stable",
+      "test_run_id": "web-test-beta.31-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1788264175078
+  },
+  {
+    "event_id": "web-test-audit-wt-1561dea8-843f-4d64-ae50-173ff6e15d04-1788264121419-finished-local-ai-match-86cee03bc5bf40c29b81bafb66eab1c2",
+    "event_type": "web_test_session_finished",
+    "metadata": {
+      "audit_event_id": "web-test-audit-wt-1561dea8-843f-4d64-ae50-173ff6e15d04-1788264121419",
+      "technical_completed": true,
+      "test_run_id": "web-test-beta.31-local"
+    },
+    "player_id": "wt-1561dea8-843f-4d64-ae50-173ff6e15d04",
+    "session_id": "local-ai-match-86cee03bc5bf40c29b81bafb66eab1c2",
+    "timestamp_ms": 1788264176359
+  },
+  {
+    "event_id": "web-test-operation-web-test-beta.31-local-1788264185952",
+    "event_type": "web_test_operation_snapshot",
+    "metadata": {
+      "consistency_status": "consistent",
+      "operational_state": "running",
+      "preflight_ready": true,
+      "run_started": true,
+      "test_run_id": "web-test-beta.31-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1788264185952
+  },
+  {
+    "event_id": "web-test-stability-web-test-beta.31-local-1788264186195",
+    "event_type": "web_test_stability_snapshot",
+    "metadata": {
+      "operation_running_rate": 1.0,
+      "running_to_other_regressions": 0,
+      "stability": "stable",
+      "test_run_id": "web-test-beta.31-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1788264186195
+  },
+  {
+    "event_id": "web-test-operation-web-test-beta.31-local-1788264186434",
+    "event_type": "web_test_operation_snapshot",
+    "metadata": {
+      "consistency_status": "consistent",
+      "operational_state": "running",
+      "preflight_ready": true,
+      "run_started": true,
+      "test_run_id": "web-test-beta.31-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1788264186434
+  },
+  {
+    "event_id": "web-test-launch-wt-b7536124-b4a8-4596-8712-749509f6c90a-1788264489843",
+    "event_type": "web_test_launch_attempted",
+    "metadata": {
+      "failed_checks": [],
+      "launch_ready": true,
+      "test_run_id": "web-test-beta.31-local"
+    },
+    "player_id": "wt-b7536124-b4a8-4596-8712-749509f6c90a",
+    "session_id": null,
+    "timestamp_ms": 1788264489843
+  },
+  {
+    "event_id": "server:matchmaking:wt-b7536124-b4a8-4596-8712-749509f6c90a:187980890",
+    "event_type": "matchmaking_started",
+    "metadata": {
+      "league_name_tr": "Gümüş",
+      "level": 1,
+      "rating": 1000
+    },
+    "player_id": "wt-b7536124-b4a8-4596-8712-749509f6c90a",
+    "session_id": null,
+    "timestamp_ms": 1788264492847
+  },
+  {
+    "event_id": "web-test-audit-wt-b7536124-b4a8-4596-8712-749509f6c90a-1788264492663",
+    "event_type": "web_test_session_started",
+    "metadata": {
+      "build": "web-test-beta.13",
+      "operation_ready": true,
+      "player_data_ready": true,
+      "pvp_protocol_version": 1,
+      "release_ready": true,
+      "retention_limit": 50000,
+      "server_version": "2.0.0-beta.38.1",
+      "telemetry_ready": true,
+      "test_run_id": "web-test-beta.31-local"
+    },
+    "player_id": "wt-b7536124-b4a8-4596-8712-749509f6c90a",
+    "session_id": null,
+    "timestamp_ms": 1788264492663
+  },
+  {
+    "event_id": "web-test-operation-web-test-beta.31-local-1788264505756",
+    "event_type": "web_test_operation_snapshot",
+    "metadata": {
+      "consistency_status": "consistent",
+      "operational_state": "running",
+      "preflight_ready": true,
+      "run_started": true,
+      "test_run_id": "web-test-beta.31-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1788264505756
+  },
+  {
+    "event_id": "server:local-ai-match-4d9674f4157c424cb219c00acf1fdb30:matchmaking_ai_fallback:wt-b7536124-b4a8-4596-8712-749509f6c90a",
+    "event_type": "matchmaking_matched",
+    "metadata": {
+      "ai_archetype": "defensive",
+      "fallback_after_seconds": 10,
+      "opponent_type": "ai",
+      "rating_difference": 0
+    },
+    "player_id": "wt-b7536124-b4a8-4596-8712-749509f6c90a",
+    "session_id": "local-ai-match-4d9674f4157c424cb219c00acf1fdb30",
+    "timestamp_ms": 1788264506291
+  },
+  {
+    "event_id": "web-test-stability-web-test-beta.31-local-1788264506693",
+    "event_type": "web_test_stability_snapshot",
+    "metadata": {
+      "operation_running_rate": 1.0,
+      "running_to_other_regressions": 0,
+      "stability": "stable",
+      "test_run_id": "web-test-beta.31-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1788264506693
+  },
+  {
+    "event_id": "web-test-audit-wt-b7536124-b4a8-4596-8712-749509f6c90a-1788264492663-bound-local-ai-match-4d9674f4157c424cb219c00acf1fdb30",
+    "event_type": "web_test_session_bound",
+    "metadata": {
+      "audit_event_id": "web-test-audit-wt-b7536124-b4a8-4596-8712-749509f6c90a-1788264492663",
+      "test_run_id": "web-test-beta.31-local"
+    },
+    "player_id": "wt-b7536124-b4a8-4596-8712-749509f6c90a",
+    "session_id": "local-ai-match-4d9674f4157c424cb219c00acf1fdb30",
+    "timestamp_ms": 1788264507106
+  },
+  {
+    "event_id": "server:local-ai-match-4d9674f4157c424cb219c00acf1fdb30:match_started:wt-b7536124-b4a8-4596-8712-749509f6c90a",
+    "event_type": "match_started",
+    "metadata": {
+      "source": "battle_engine"
+    },
+    "player_id": "wt-b7536124-b4a8-4596-8712-749509f6c90a",
+    "session_id": "local-ai-match-4d9674f4157c424cb219c00acf1fdb30",
+    "timestamp_ms": 1788264510778
+  },
+  {
+    "event_id": "server:local-ai-match-4d9674f4157c424cb219c00acf1fdb30:match_started:local-ai-match-4d9674f4157c424cb219c00acf1fdb30-opponent",
+    "event_type": "match_started",
+    "metadata": {
+      "source": "battle_engine"
+    },
+    "player_id": "local-ai-match-4d9674f4157c424cb219c00acf1fdb30-opponent",
+    "session_id": "local-ai-match-4d9674f4157c424cb219c00acf1fdb30",
+    "timestamp_ms": 1788264511146
+  },
+  {
+    "event_id": "server:local-ai-match-4d9674f4157c424cb219c00acf1fdb30:match_completed:wt-b7536124-b4a8-4596-8712-749509f6c90a",
+    "event_type": "match_completed",
+    "metadata": {
+      "duration_ms": 2900,
+      "finish_reason": "player_forfeit",
+      "is_draw": false,
+      "winner_player_id": "local-ai-match-4d9674f4157c424cb219c00acf1fdb30-opponent"
+    },
+    "player_id": "wt-b7536124-b4a8-4596-8712-749509f6c90a",
+    "session_id": "local-ai-match-4d9674f4157c424cb219c00acf1fdb30",
+    "timestamp_ms": 1788264511380
+  },
+  {
+    "event_id": "server:local-ai-match-4d9674f4157c424cb219c00acf1fdb30:match_completed:local-ai-match-4d9674f4157c424cb219c00acf1fdb30-opponent",
+    "event_type": "match_completed",
+    "metadata": {
+      "duration_ms": 2900,
+      "finish_reason": "player_forfeit",
+      "is_draw": false,
+      "winner_player_id": "local-ai-match-4d9674f4157c424cb219c00acf1fdb30-opponent"
+    },
+    "player_id": "local-ai-match-4d9674f4157c424cb219c00acf1fdb30-opponent",
+    "session_id": "local-ai-match-4d9674f4157c424cb219c00acf1fdb30",
+    "timestamp_ms": 1788264511716
+  },
+  {
+    "event_id": "web-test-audit-wt-b7536124-b4a8-4596-8712-749509f6c90a-1788264492663-finished-local-ai-match-4d9674f4157c424cb219c00acf1fdb30",
+    "event_type": "web_test_session_finished",
+    "metadata": {
+      "audit_event_id": "web-test-audit-wt-b7536124-b4a8-4596-8712-749509f6c90a-1788264492663",
+      "technical_completed": true,
+      "test_run_id": "web-test-beta.31-local"
+    },
+    "player_id": "wt-b7536124-b4a8-4596-8712-749509f6c90a",
+    "session_id": "local-ai-match-4d9674f4157c424cb219c00acf1fdb30",
+    "timestamp_ms": 1788264512038
+  },
+  {
+    "event_id": "web-test-stability-web-test-beta.31-local-1788264524572",
+    "event_type": "web_test_stability_snapshot",
+    "metadata": {
+      "operation_running_rate": 1.0,
+      "running_to_other_regressions": 0,
+      "stability": "stable",
+      "test_run_id": "web-test-beta.31-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1788264524572
+  },
+  {
+    "event_id": "web-test-operation-web-test-beta.31-local-1788264526580",
+    "event_type": "web_test_operation_snapshot",
+    "metadata": {
+      "consistency_status": "consistent",
+      "operational_state": "running",
+      "preflight_ready": true,
+      "run_started": true,
+      "test_run_id": "web-test-beta.31-local"
+    },
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1788264526580
   }
 ]

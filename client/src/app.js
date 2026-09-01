@@ -986,6 +986,26 @@
     renderBoosterOptions();
 
     const outcome = onlineOutcome(result);
+    const ownResult =
+      result.result_summary?.[pvpState.playerId]
+      || null;
+    if (
+      ownResult
+      && Object.prototype.hasOwnProperty.call(
+        ownResult,
+        "circuit_credits"
+      )
+    ) {
+      const remainingCredits = Number(
+        ownResult.circuit_credits
+      );
+      if (Number.isFinite(remainingCredits)) {
+        client.applyServerEconomyState({
+          circuitCredits:remainingCredits,
+        });
+        renderCredits();
+      }
+    }
     const firstPresentation =
       onlineFinishPresentedSessionId !== result.session_id;
     onlineFinishPresentedSessionId = result.session_id;
@@ -6177,6 +6197,35 @@ function saveHumanReviewLocalNote() {
       ) {
         logClientMessage(
           `Savaş komutu reddedildi: ${data.reason || "Bilinmeyen neden"}`
+        );
+        continue;
+      }
+      if (
+        event?.type === "battle_forfeited"
+        && data.player_id === participantPlayerId
+      ) {
+        const penalty = Math.max(
+          0,
+          Number(data.credit_penalty || 0)
+        );
+        const remainingCredits = Math.max(
+          0,
+          Number(
+            data.remaining_circuit_credits
+            ?? client.circuitCredits
+          )
+        );
+        client.applyServerEconomyState({
+          circuitCredits:remainingCredits,
+        });
+        if (localBattleMetrics) {
+          localBattleMetrics.forfeit_credit_penalty =
+            penalty;
+        }
+        renderCredits();
+        setBattleLiveTicker(
+          `Savaştan çekilme · ${penalty} DK ceza`,
+          "danger"
         );
         continue;
       }
@@ -11580,9 +11629,25 @@ function saveHumanReviewLocalNote() {
         ? `+${progression.xpAwarded} XP`
         : localizedUiText("XP hesaplanıyor");
 
+    const ownResult =
+      result.result_summary?.[pvpState.playerId]
+      || {};
+    const viewerForfeited =
+      result.finish_reason === "player_forfeit"
+      && result.loser_player_id === pvpState.playerId;
+    const penaltyText = viewerForfeited
+      ? ` · ${Math.max(
+          0,
+          Number(
+            ownResult.forfeit_credit_penalty
+            || 0
+          )
+        )} DK ceza`
+      : "";
+
     resultEl.hidden = false;
     resultEl.textContent = localizedUiText(
-      `${progression?.matchLabelTr || "Maç"} · ${finishReasonLabel(result.finish_reason)} · ${ratingText} · ${xpText}`
+      `${progression?.matchLabelTr || "Maç"} · ${finishReasonLabel(result.finish_reason)}${penaltyText} · ${ratingText} · ${xpText}`
     );
   }
 
@@ -12770,7 +12835,10 @@ function saveHumanReviewLocalNote() {
       "click",
       (event) => {
         event.stopPropagation();
-        cancelBoosterTargeting("normal_module_click");
+        if (boosterTargetMode.selectedBoosterId) {
+          tryApplySelectedBooster(module);
+          return;
+        }
         if (module.status === "reserve") {
           if (!modulePlacementSlotState().ready) {
             logClientMessage("Yeni modül yerleştirme hakkı için geri sayımı bekleyin.");

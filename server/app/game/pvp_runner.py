@@ -113,17 +113,8 @@ class PvPTickRunner:
             stats.snapshot_broadcasts += await self.websocket_adapter.broadcast_snapshot(session_id)
 
         if session.engine.state.status == BattleStatus.FINISHED:
-            if self.match_finished_callback is not None:
-                try:
-                    self.match_finished_callback(
-                        session.engine.state
-                    )
-                except Exception:
-                    # Statistics/persistence must never suppress the terminal
-                    # result envelope sent to both players.
-                    stats.match_finished_callback_failures += 1
-
-            # Son savaş olayları gönderildikten sonra terminal sonuç ayrı zarfla yayınlanır.
+            # Son savaş olaylarının ardından terminal sonucu hemen gönder.
+            # İstatistik/ilerleme/telemetri kalıcılığı sonuç ekranını bekletmemeli.
             stats.match_finished_broadcasts += (
                 await self.websocket_adapter.broadcast_match_finished(
                     session_id
@@ -134,6 +125,16 @@ class PvPTickRunner:
                     session_id
                 )
             )
+
+            if self.match_finished_callback is not None:
+                try:
+                    self.match_finished_callback(
+                        session.engine.state
+                    )
+                except Exception:
+                    # Sonuç zarfı ve bağlantı kapanışı tamamlandı; projeksiyon
+                    # hatası yalnız kayda alınır ve oyuncu sonucunu etkilemez.
+                    stats.match_finished_callback_failures += 1
 
         return True
 
