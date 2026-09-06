@@ -8,9 +8,9 @@ TEN_MODULE_LAYOUT = (
     ("splitter", 2, 1),
     ("laser", 1, 1),
     ("battery", 1, 0),
-    ("capacitor", 2, 0),
-    ("shield", 3, 0),
-    ("repair", 0, 1),
+    ("capacitor", 3, 0),
+    ("shield", 4, 2),
+    ("repair", 0, 2),
     ("emp", 3, 1),
     ("arc_cannon", 4, 1),
 )

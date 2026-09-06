@@ -2,7 +2,7 @@ from dataclasses import dataclass
 
 from .board import get_cell_effects
 from .models import ModuleStatus, PlayerBattleState, Position
-from .topology import build_energy_topology
+from .topology import build_energy_topology, DISRUPTOR_DEBUFF_ID
 
 EMP_DEBUFF_ID = "emp_disabled"
 ENERGY_LEECH_DEBUFF_ID = "energy_leech"
@@ -75,233 +75,40 @@ def _discharge_rate_per_tick(module) -> float:
     return 0.0
 
 
-def process_energy_tick(
-    player: PlayerBattleState,
-    core_position: Position = Position(2, 2),
-) -> EnergyTickResult:
-    active = _active_modules(player)
-    topology = build_energy_topology(player, core_position)
-    reachable_ids = set(topology.reachable_from_generator)
-
-    generators = [
-        module
-        for module in active
-        if module.definition.energy_generation > 0
-        and module.instance_id in reachable_ids
-    ]
-    splitters = [
-        module
-        for module in active
-        if module.definition.id == "splitter"
-        and module.instance_id in reachable_ids
-        and EMP_DEBUFF_ID not in module.debuffs
-    ]
-    capacitors = [
-        module
-        for module in active
-        if module.definition.id == "capacitor"
-        and module.instance_id in reachable_ids
-        and EMP_DEBUFF_ID not in module.debuffs
-    ]
-    batteries = [
-        module
-        for module in active
-        if module.definition.id == "battery"
-        and module.instance_id in reachable_ids
-        and EMP_DEBUFF_ID not in module.debuffs
-    ]
-
-    # Kapasitör kısa süreli destek olarak Batarya'dan önce kullanılır.
-    storages = capacitors + batteries
-
-    generated = 0.0
-    for module in generators:
-        leech_effect = module.debuffs.get(
-            ENERGY_LEECH_DEBUFF_ID
-        )
-        generation_multiplier = 1.0
-        if leech_effect is not None:
-            base_penalty = (
-                1.0
-                - ENERGY_LEECH_GENERATION_MULTIPLIER
-            )
-            strength = float(
-                leech_effect.data.get(
-                    "effect_strength_multiplier",
-                    1.0,
-                )
-            )
-            generation_multiplier = (
-                1.0 - (base_penalty * strength)
-            )
-
-        amount = (
-            module.definition.energy_generation
-            * TICK_SECONDS
-            * _energy_multiplier(module)
-            * generation_multiplier
-        )
-        generated += amount
-        module.is_powered = True
-        module.energy_required_last_tick = 0.0
-        module.energy_received_last_tick = amount
-
-    distribution_efficiency = (
-        SPLITTER_DISTRIBUTION_EFFICIENCY
-        if splitters
-        else BASE_DISTRIBUTION_EFFICIENCY
-    )
-    distributed = generated * distribution_efficiency
-
-    for module in splitters + storages:
-        module.is_powered = True
-        module.energy_required_last_tick = 0.0
-        module.energy_received_last_tick = 0.0
-
-    emp_disabled = [
-        module
-        for module in active
-        if EMP_DEBUFF_ID in module.debuffs
-    ]
-    for module in emp_disabled:
-        module.is_powered = False
-        module.energy_received_last_tick = 0.0
-
-    consumers = [
-        module
-        for module in active
-        if module.definition.energy_consumption > 0
-        and module.definition.id
-        not in {"battery", "capacitor", "splitter"}
-        and EMP_DEBUFF_ID not in module.debuffs
-    ]
-
-    disconnected_consumers = [
-        module
-        for module in consumers
-        if module.instance_id not in reachable_ids
-    ]
-    consumers = [
-        module
-        for module in consumers
-        if module.instance_id in reachable_ids
-    ]
-
-    for module in disconnected_consumers:
-        module.energy_required_last_tick = (
-            module.definition.energy_consumption
-            * TICK_SECONDS
-            / _energy_multiplier(module)
-        )
-        module.energy_received_last_tick = 0.0
-        module.is_powered = False
-
-    for module in consumers:
-        module.energy_required_last_tick = (
-            module.definition.energy_consumption
-            * TICK_SECONDS
-            / _energy_multiplier(module)
-        )
-        module.energy_received_last_tick = 0.0
-        module.is_powered = False
-
-    available = distributed
-
-    total_demand = sum(
-        module.energy_required_last_tick
-        for module in consumers
-    )
-    shortfall = max(0.0, total_demand - available)
-
-    discharged = 0.0
-    for module in storages:
-        if shortfall <= 1e-12:
-            break
-
-        give = min(
-            module.stored_energy,
-            _discharge_rate_per_tick(module),
-            shortfall,
-        )
-        module.stored_energy -= give
-        available += give
-        discharged += give
-        shortfall -= give
-
-    consumed = 0.0
-    powered: list[str] = []
-    unpowered: list[str] = sorted(
-        module.instance_id
-        for module in disconnected_consumers
-    )
-
-    # Deterministik enerji önceliği.
-    category_priority = {
-        "saldırı": 0,
-        "savunma": 1,
-        "destek": 2,
-        "sabotaj": 3,
-        "enerji": 4,
-    }
-
-    def _consumer_priority(current):
-        position = current.position
-        return (
-            category_priority.get(current.definition.category, 9),
-            current.energy_required_last_tick,
-            position.y if position is not None else 99,
-            position.x if position is not None else 99,
-            current.definition.id,
-            current.instance_id,
-        )
-
-    for module in sorted(
-        consumers,
-        key=_consumer_priority,
-    ):
-        need = module.energy_required_last_tick
-
-        if available + 1e-12 >= need:
-            available -= need
-            consumed += need
-            module.energy_received_last_tick = need
-            module.is_powered = True
-            powered.append(module.instance_id)
-        else:
-            module.energy_received_last_tick = 0.0
-            module.is_powered = False
-            unpowered.append(module.instance_id)
-
-    stored = 0.0
-    for module in storages:
-        if available <= 1e-12:
-            break
-
-        capacity = _storage_capacity(module)
-        room = max(0.0, capacity - module.stored_energy)
-
-        charge = min(
-            room,
-            _charge_rate_per_tick(module),
-            available,
-        )
-        module.stored_energy += charge
-        available -= charge
-        stored += charge
-
-    wasted = max(0.0, available)
-
+def process_energy_tick(player: PlayerBattleState, core_position: Position = Position(2, 1)) -> EnergyTickResult:
+    active = [m for m in _active_modules(player) if m.hp > 0]
+    core = next((m for m in active if m.definition.id == "core"), None)
+    level = max(1, min(15, player.core_level))
+    production = 10.0 * 1.04 ** (level - 1) if core else 0.0
+    production *= 1 + .03 * sum(s.endswith("_energy") for s in player.core_skills)
+    capacity = 100.0 + 3 * (level - 1)
+    capacity += sum((25 if m.definition.id == "capacitor" else 30 if m.definition.id == "battery" else 0) * m.definition.effect_multiplier for m in active)
+    regulators = sum(m.definition.effect_multiplier for m in active if m.definition.id == "current_balancer" and EMP_DEBUFF_ID not in m.debuffs)
+    reduction = max(.65, .92 ** regulators)
+    demand = sum(m.definition.energy_consumption * reduction for m in active if m != core)
+    generated = production * TICK_SECONDS
+    required = demand * TICK_SECONDS
+    before = player.energy_stock
+    player.energy_stock = max(0.0, min(capacity, before + generated - required))
+    player.energy_load_ratio = demand / production if production else (2.0 if demand else 0.0)
+    load = player.energy_load_ratio if player.energy_stock <= 0 else min(1.0, player.energy_load_ratio)
+    speed, damage, support = (1., 1., 1.)
+    if load > 1.6: speed, support = .6, .75
+    elif load > 1.4: speed, damage = .7, .9
+    elif load > 1.2: speed, support = .8, .9
+    elif load > 1: speed = .9
+    player.energy_speed_multiplier, player.energy_damage_multiplier, player.energy_support_multiplier = speed, damage, support
+    for module in active:
+        module.is_powered = EMP_DEBUFF_ID not in module.debuffs and DISRUPTOR_DEBUFF_ID not in module.debuffs
+        module.energy_required_last_tick = module.definition.energy_consumption * reduction * TICK_SECONDS
+        module.energy_received_last_tick = module.energy_required_last_tick if module.is_powered else 0.0
+        if module == core:
+            module.energy_received_last_tick = generated
+    consumed = min(required, before + generated)
+    wasted = max(0.0, before + generated - required - capacity)
     player.energy_generated_total += generated
     player.energy_consumed_total += consumed
     player.energy_wasted_total += wasted
-
-    return EnergyTickResult(
-        generated=generated,
-        distributed=distributed,
-        consumed=consumed,
-        stored=stored,
-        discharged=discharged,
-        wasted=wasted,
-        powered_module_ids=tuple(powered),
-        unpowered_module_ids=tuple(unpowered),
-    )
+    return EnergyTickResult(generated, generated, consumed, player.energy_stock, max(0., before - player.energy_stock),
+                            wasted, tuple(m.instance_id for m in active if m.is_powered),
+                            tuple(m.instance_id for m in active if not m.is_powered))

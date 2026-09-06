@@ -71,6 +71,13 @@ class ModuleDefinition:
     category: str
     max_hp: int
     circuit_credit_cost: int = 0
+    current_cost: int = 0
+    behavior_id: str = ""
+    effect_multiplier: float = 1.0
+
+    @property
+    def mechanic_id(self) -> str:
+        return self.behavior_id or self.id
 
     # alpha.7 — rol ve savaş/enerji tanım temeli.
     # Bu alanlar henüz gerçek saldırı/enerji simülasyonu değildir;
@@ -160,6 +167,16 @@ class PlayerBattleState:
     player_id: str
     modules: dict[str, BattleModule] = field(default_factory=dict)
     circuit_credits: int = 0
+    current_regen_remainder_ms: int = 0
+    energy_stock: float = 100.0
+    energy_load_ratio: float = 0.0
+    energy_speed_multiplier: float = 1.0
+    energy_damage_multiplier: float = 1.0
+    energy_support_multiplier: float = 1.0
+    core_type: str = "core_resonance"
+    core_level: int = 1
+    core_skills: tuple[str, ...] = ()
+    discounted_deployments: int = 0
     total_circuit_credits_earned: int = 0
     total_circuit_credits_spent: int = 0
     forfeit_credit_penalty: int = 0
@@ -170,6 +187,11 @@ class PlayerBattleState:
     energy_generated_total: float = 0.0
     energy_consumed_total: float = 0.0
     energy_wasted_total: float = 0.0
+    cell_debris_until_ms: dict[str, int] = field(default_factory=dict)
+    core_power_charge: float = 0.0
+    core_power_ready_emitted: bool = False
+    core_power_uses: int = 0
+    consumed_core_power_request_ids: set[str] = field(default_factory=set)
 
 
 @dataclass(slots=True)
@@ -182,6 +204,10 @@ class BattleState:
     normalized: bool = True
     laboratory_effects_enabled: bool = False
     player_calibrations: dict[str, dict[str, int]] = field(default_factory=dict)
+    player_upgrade_levels: dict[str, dict[str, int]] = field(default_factory=dict)
+    player_module_talents: dict[str, dict[str, dict[str, str]]] = field(default_factory=dict)
+    player_unlocked_modules: dict[str, tuple[str, ...]] = field(default_factory=dict)
+    player_match_ratings: dict[str, int] = field(default_factory=dict)
     status: BattleStatus = BattleStatus.WAITING
     tick: int = 0
     elapsed_ms: int = 0

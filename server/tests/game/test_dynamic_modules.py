@@ -1,250 +1,80 @@
-from app.game.catalog import BASIC_MODULE_DEFINITIONS
+from app.game.battle_pool import default_battle_pool
 from app.game.engine import BattleEngine
-from app.game.models import (
-    BattleCommand,
-    BattleState,
-    Direction,
-    ModuleStatus,
-)
+from app.game.models import BattleCommand, BattleState, Direction, ModuleStatus
 
 
-def create_engine() -> BattleEngine:
-    state = BattleState(battle_id="dynamic-test")
-    engine = BattleEngine(state)
-    engine.add_player("player-1")
+def create_engine():
+    engine = BattleEngine(BattleState(battle_id="dynamic-test"))
+    engine.add_player("player")
+    engine.set_battle_pool("player", default_battle_pool().module_definition_ids)
+    engine.grant_module("player", "core", "core")
+    engine.grant_module("player", "generator", "generator")
+    engine.set_initial_active_module("player", "core", 2, 2)
+    engine.set_initial_active_module("player", "generator", 2, 3)
+    engine.state.players["player"].circuit_credits = 2_000
+    engine.start()
     return engine
 
 
-def grant_standard_modules(engine: BattleEngine) -> None:
-    engine.grant_module("player-1", "core-1", "core")
-    engine.grant_module("player-1", "generator-1", "generator")
-    engine.grant_module("player-1", "laser-1", "laser")
-    engine.grant_module("player-1", "shield-1", "shield")
-    engine.grant_module("player-1", "battery-1", "battery")
-
-
-def start_with_core_and_generator(engine: BattleEngine) -> None:
-    grant_standard_modules(engine)
-    engine.set_initial_active_module("player-1", "core-1", 2, 2)
-    engine.set_initial_active_module("player-1", "generator-1", 2, 3)
-    engine.start()
-
-    # alpha.4: dinamik modül müdahalesi 15. saniyede açılır.
-    for _ in range(150):
-        engine.step()
-
-
-def run_command(engine: BattleEngine, kind: str, **payload) -> None:
-    engine.enqueue_command(
-        BattleCommand(
-            player_id="player-1",
-            kind=kind,
-            payload=payload,
-        )
-    )
+def command(engine, kind, **payload):
+    engine.enqueue_command(BattleCommand("player", kind, payload))
     engine.step()
 
 
-def test_basic_catalog_uses_turkish_player_facing_names():
-    assert BASIC_MODULE_DEFINITIONS["core"].name_tr == "Çekirdek"
-    assert BASIC_MODULE_DEFINITIONS["generator"].name_tr == "Jeneratör"
-    assert BASIC_MODULE_DEFINITIONS["laser"].name_tr == "Lazer"
-    assert BASIC_MODULE_DEFINITIONS["repair"].name_tr == "Onarım Modülü"
+def deployed(engine, definition_id):
+    return [m for m in engine.state.players["player"].modules.values()
+            if m.definition.id == definition_id and m.status == ModuleStatus.ACTIVE]
 
 
-def test_place_module_while_battle_keeps_running():
+def test_deck_click_creates_a_new_active_instance_on_next_tick():
     engine = create_engine()
-    start_with_core_and_generator(engine)
-
-    run_command(engine, "place_module", module_id="laser-1", x=3, y=3)
-
-    laser = engine.state.players["player-1"].modules["laser-1"]
-    assert laser.status == ModuleStatus.ACTIVE
-    assert (laser.position.x, laser.position.y) == (3, 3)
-    assert engine.state.elapsed_ms == 15_100
-
-
-def test_command_is_not_applied_until_next_tick():
-    engine = create_engine()
-    start_with_core_and_generator(engine)
-
-    engine.enqueue_command(
-        BattleCommand(
-            player_id="player-1",
-            kind="place_module",
-            payload={"module_id": "laser-1", "x": 3, "y": 3},
-        )
-    )
-
-    laser = engine.state.players["player-1"].modules["laser-1"]
-    assert laser.status == ModuleStatus.RESERVE
-
+    engine.enqueue_command(BattleCommand("player", "deploy_module", {
+        "definition_id": "laser",
+    }))
+    assert deployed(engine, "laser") == []
     engine.step()
-    assert laser.status == ModuleStatus.ACTIVE
+    assert len(deployed(engine, "laser")) == 1
 
 
-def test_active_module_remains_in_battle_until_remove_command_is_processed():
+def test_same_card_can_create_multiple_distinct_instances():
     engine = create_engine()
-    start_with_core_and_generator(engine)
-    run_command(engine, "place_module", module_id="laser-1", x=3, y=3)
-
-    laser = engine.state.players["player-1"].modules["laser-1"]
-
-    engine.enqueue_command(
-        BattleCommand(
-            player_id="player-1",
-            kind="remove_module",
-            payload={"module_id": "laser-1"},
-        )
-    )
-
-    assert laser.status == ModuleStatus.ACTIVE
-    assert laser.position is not None
-
-    engine.step()
-
-    assert laser.status == ModuleStatus.RESERVE
-    assert laser.position is None
+    command(engine, "deploy_module", definition_id="laser")
+    command(engine, "deploy_module", definition_id="laser")
+    lasers = deployed(engine, "laser")
+    assert len(lasers) == 2
+    assert len({laser.instance_id for laser in lasers}) == 2
+    assert len({laser.position for laser in lasers}) == 2
 
 
-def test_remove_module_preserves_current_hp():
+def test_position_is_fixed_but_orientation_can_change():
     engine = create_engine()
-    start_with_core_and_generator(engine)
-    run_command(engine, "place_module", module_id="laser-1", x=3, y=3)
+    command(engine, "deploy_module", definition_id="laser")
+    laser = deployed(engine, "laser")[0]
+    position = laser.position
+    direction = laser.direction
+    command(engine, "move_module", module_id=laser.instance_id, x=0, y=0)
+    assert laser.position == position
+    command(engine, "rotate_module", module_id=laser.instance_id)
+    assert laser.position == position
+    assert laser.direction != direction
 
-    engine.apply_damage("player-1", "laser-1", 57)
-    run_command(engine, "remove_module", module_id="laser-1")
 
-    laser = engine.state.players["player-1"].modules["laser-1"]
-    assert laser.status == ModuleStatus.RESERVE
-    assert laser.hp == 43
-
-
-def test_redeploy_module_returns_with_same_hp():
+def test_destroyed_module_leaves_five_second_debris():
     engine = create_engine()
-    start_with_core_and_generator(engine)
-    run_command(engine, "place_module", module_id="laser-1", x=3, y=3)
-
-    engine.apply_damage("player-1", "laser-1", 57)
-    run_command(engine, "remove_module", module_id="laser-1")
-    run_command(engine, "place_module", module_id="laser-1", x=1, y=2)
-
-    laser = engine.state.players["player-1"].modules["laser-1"]
-    assert laser.status == ModuleStatus.ACTIVE
-    assert laser.hp == 43
-    assert (laser.position.x, laser.position.y) == (1, 2)
-
-
-def test_move_module_changes_only_position():
-    engine = create_engine()
-    start_with_core_and_generator(engine)
-    run_command(engine, "place_module", module_id="laser-1", x=3, y=3)
-    engine.apply_damage("player-1", "laser-1", 10)
-
-    run_command(engine, "move_module", module_id="laser-1", x=1, y=3)
-
-    laser = engine.state.players["player-1"].modules["laser-1"]
-    assert (laser.position.x, laser.position.y) == (1, 3)
-    assert laser.hp == 90
-
-
-def test_replace_module_keeps_outgoing_hp_in_reserve():
-    engine = create_engine()
-    start_with_core_and_generator(engine)
-    run_command(engine, "place_module", module_id="laser-1", x=3, y=3)
-    engine.apply_damage("player-1", "laser-1", 25)
-
-    run_command(
-        engine,
-        "replace_module",
-        outgoing_module_id="laser-1",
-        incoming_module_id="shield-1",
-    )
-
-    modules = engine.state.players["player-1"].modules
-    laser = modules["laser-1"]
-    shield = modules["shield-1"]
-
-    assert laser.status == ModuleStatus.RESERVE
-    assert laser.hp == 75
-    assert laser.position is None
-
-    assert shield.status == ModuleStatus.ACTIVE
-    assert (shield.position.x, shield.position.y) == (3, 3)
-
-
-def test_rotate_module_changes_direction():
-    engine = create_engine()
-    start_with_core_and_generator(engine)
-    run_command(engine, "place_module", module_id="laser-1", x=3, y=3)
-
-    laser = engine.state.players["player-1"].modules["laser-1"]
-    assert laser.direction == Direction.LEFT
-
-    run_command(engine, "rotate_module", module_id="laser-1")
-    assert laser.direction == Direction.UP
-
-    run_command(
-        engine,
-        "rotate_module",
-        module_id="laser-1",
-        clockwise=False,
-    )
-    assert laser.direction == Direction.LEFT
-
-
-def test_destroyed_module_cannot_be_redeployed():
-    engine = create_engine()
-    start_with_core_and_generator(engine)
-    run_command(engine, "place_module", module_id="laser-1", x=3, y=3)
-
-    engine.apply_damage("player-1", "laser-1", 100)
-
-    laser = engine.state.players["player-1"].modules["laser-1"]
+    command(engine, "deploy_module", definition_id="laser")
+    laser = deployed(engine, "laser")[0]
+    position = laser.position
+    engine.apply_damage("player", laser.instance_id, laser.hp)
     assert laser.status == ModuleStatus.DESTROYED
-    assert laser.hp == 0
-    assert laser.position is None
+    assert engine.cell_debris_view("player") == [{
+        "x": position.x,
+        "y": position.y,
+        "until_ms": engine.state.elapsed_ms + 5_000,
+        "remaining_ms": 5_000,
+    }]
 
-    run_command(engine, "place_module", module_id="laser-1", x=3, y=4)
 
-    assert laser.status == ModuleStatus.DESTROYED
+def test_legacy_cell_targeted_placement_is_rejected():
+    engine = create_engine()
+    command(engine, "place_module", module_id="missing", x=3, y=3)
     assert engine.state.events[-1].type == "command_rejected"
-
-
-def test_cannot_place_module_on_occupied_cell():
-    engine = create_engine()
-    start_with_core_and_generator(engine)
-
-    run_command(engine, "place_module", module_id="laser-1", x=3, y=3)
-    run_command(engine, "place_module", module_id="shield-1", x=3, y=3)
-
-    shield = engine.state.players["player-1"].modules["shield-1"]
-    assert shield.status == ModuleStatus.RESERVE
-    assert engine.state.events[-1].type == "command_rejected"
-
-
-def test_core_cannot_be_removed_or_moved():
-    engine = create_engine()
-    start_with_core_and_generator(engine)
-
-    core = engine.state.players["player-1"].modules["core-1"]
-
-    run_command(engine, "remove_module", module_id="core-1")
-    assert core.status == ModuleStatus.ACTIVE
-
-    run_command(engine, "move_module", module_id="core-1", x=1, y=1)
-    assert core.position.x == 2
-    assert core.position.y == 2
-
-
-def test_dynamic_commands_do_not_pause_battle_clock():
-    engine = create_engine()
-    start_with_core_and_generator(engine)
-
-    run_command(engine, "place_module", module_id="laser-1", x=3, y=3)
-    run_command(engine, "move_module", module_id="laser-1", x=4, y=3)
-    run_command(engine, "rotate_module", module_id="laser-1")
-    run_command(engine, "remove_module", module_id="laser-1")
-    run_command(engine, "place_module", module_id="shield-1", x=3, y=3)
-
-    assert engine.state.elapsed_ms == 15_500

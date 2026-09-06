@@ -1,154 +1,73 @@
-from app.game.engine import (
-    BattleEngine,
-    max_active_modules_for_elapsed_ms,
-)
-from app.game.models import BattleCommand, BattleState, ModuleStatus
+from app.game.battle_pool import default_battle_pool
+from app.game.engine import BattleEngine, max_active_modules_for_elapsed_ms
+from app.game.models import BattleCommand, BattleState
 
 
 def create_engine() -> BattleEngine:
     engine = BattleEngine(BattleState(battle_id="capacity-test"))
     engine.add_player("player-1")
-
+    engine.set_battle_pool("player-1", default_battle_pool().module_definition_ids)
     engine.grant_module("player-1", "core-1", "core")
     engine.grant_module("player-1", "generator-1", "generator")
-    engine.grant_module("player-1", "laser-1", "laser")
-    engine.grant_module("player-1", "shield-1", "shield")
-    engine.grant_module("player-1", "battery-1", "battery")
-    engine.grant_module("player-1", "amplifier-1", "amplifier")
-    engine.grant_module("player-1", "cooler-1", "cooler")
-    engine.grant_module("player-1", "repair-1", "repair")
-
     engine.set_initial_active_module("player-1", "core-1", 2, 2)
     engine.set_initial_active_module("player-1", "generator-1", 2, 3)
     engine.start()
     return engine
 
 
-def advance_to(engine: BattleEngine, elapsed_ms: int) -> None:
-    target_tick = elapsed_ms // 100
-    while engine.state.tick < target_tick:
-        engine.step()
-
-
 def command(engine: BattleEngine, kind: str, **payload) -> None:
-    engine.enqueue_command(
-        BattleCommand(
-            player_id="player-1",
-            kind=kind,
-            payload=payload,
-        )
-    )
+    engine.enqueue_command(BattleCommand("player-1", kind, payload))
     engine.step()
 
 
-def test_capacity_schedule_boundaries():
-    assert max_active_modules_for_elapsed_ms(0) is None
-    assert max_active_modules_for_elapsed_ms(14_999) is None
-    assert max_active_modules_for_elapsed_ms(15_000) == 5
-    assert max_active_modules_for_elapsed_ms(29_999) == 5
-    assert max_active_modules_for_elapsed_ms(30_000) == 6
-    assert max_active_modules_for_elapsed_ms(44_999) == 6
-    assert max_active_modules_for_elapsed_ms(45_000) == 7
-    assert max_active_modules_for_elapsed_ms(60_000) == 8
-    assert max_active_modules_for_elapsed_ms(75_000) == 9
-    assert max_active_modules_for_elapsed_ms(90_000) == 10
-    assert max_active_modules_for_elapsed_ms(85_000) == 9
-    assert max_active_modules_for_elapsed_ms(999_999) == 10
+def test_all_ten_slots_are_open_from_match_start():
+    for elapsed_ms in (0, 14_999, 15_000, 30_000, 999_999):
+        assert max_active_modules_for_elapsed_ms(elapsed_ms) == 10
+    view = create_engine().module_capacity_view("player-1")
+    assert view == {
+        "active_module_count": 2,
+        "active_module_limit": 10,
+        "available_module_slots": 8,
+        "next_module_slot_at_ms": None,
+        "next_module_slot_in_ms": None,
+    }
 
 
-def test_dynamic_place_is_rejected_before_15_seconds():
+def test_deploy_is_immediate_and_allows_duplicate_definitions():
     engine = create_engine()
-    advance_to(engine, 14_900)
+    engine.state.players["player-1"].circuit_credits = 1_000
+    command(engine, "deploy_module", definition_id="laser")
+    command(engine, "deploy_module", definition_id="laser")
+    lasers = [
+        module
+        for module in engine.state.players["player-1"].modules.values()
+        if module.definition.id == "laser"
+    ]
+    assert len(lasers) == 2
+    assert all(module.status.value == "active" for module in lasers)
+    assert len({module.position for module in lasers}) == 2
 
-    command(engine, "place_module", module_id="laser-1", x=3, y=3)
 
-    laser = engine.state.players["player-1"].modules["laser-1"]
-    assert laser.status == ModuleStatus.RESERVE
+def test_deploy_requires_deck_membership_and_credit():
+    engine = create_engine()
+    engine.state.players["player-1"].circuit_credits = 0
+    command(engine, "deploy_module", definition_id="laser")
+    assert engine.state.events[-1].type == "command_rejected"
+    engine.state.players["player-1"].circuit_credits = 1_000
+    command(engine, "deploy_module", definition_id="armor")
     assert engine.state.events[-1].type == "command_rejected"
 
 
-def test_at_15_seconds_five_active_modules_are_allowed():
+def test_deployed_module_position_cannot_change():
     engine = create_engine()
-    advance_to(engine, 15_000)
-
-    command(engine, "place_module", module_id="laser-1", x=3, y=3)
-    command(engine, "place_module", module_id="shield-1", x=3, y=2)
-    command(engine, "place_module", module_id="battery-1", x=1, y=2)
-
-    assert engine.active_module_count("player-1") == 5
-
-
-def test_sixth_active_module_is_rejected_before_30_seconds():
-    engine = create_engine()
-    advance_to(engine, 15_000)
-
-    command(engine, "place_module", module_id="laser-1", x=3, y=3)
-    command(engine, "place_module", module_id="shield-1", x=3, y=2)
-    command(engine, "place_module", module_id="battery-1", x=1, y=2)
-    command(engine, "place_module", module_id="amplifier-1", x=1, y=3)
-
-    amplifier = engine.state.players["player-1"].modules["amplifier-1"]
-    assert amplifier.status == ModuleStatus.RESERVE
-    assert engine.active_module_count("player-1") == 5
-    assert engine.state.events[-1].type == "command_rejected"
-
-
-def test_sixth_active_module_is_allowed_at_30_seconds():
-    engine = create_engine()
-    advance_to(engine, 15_000)
-
-    command(engine, "place_module", module_id="laser-1", x=3, y=3)
-    command(engine, "place_module", module_id="shield-1", x=3, y=2)
-    command(engine, "place_module", module_id="battery-1", x=1, y=2)
-
-    advance_to(engine, 30_000)
-    command(engine, "place_module", module_id="amplifier-1", x=1, y=3)
-
-    amplifier = engine.state.players["player-1"].modules["amplifier-1"]
-    assert amplifier.status == ModuleStatus.ACTIVE
-    assert engine.active_module_count("player-1") == 6
-
-
-def test_replace_does_not_require_free_capacity():
-    engine = create_engine()
-    advance_to(engine, 15_000)
-
-    command(engine, "place_module", module_id="laser-1", x=3, y=3)
-    command(engine, "place_module", module_id="shield-1", x=3, y=2)
-
-    assert engine.active_module_count("player-1") == 4
-
-    command(
-        engine,
-        "replace_module",
-        outgoing_module_id="laser-1",
-        incoming_module_id="battery-1",
+    engine.state.players["player-1"].circuit_credits = 1_000
+    command(engine, "deploy_module", definition_id="laser")
+    laser = next(
+        module
+        for module in engine.state.players["player-1"].modules.values()
+        if module.definition.id == "laser"
     )
-
-    assert engine.active_module_count("player-1") == 4
-    assert engine.state.players["player-1"].modules["battery-1"].status == ModuleStatus.ACTIVE
-
-
-def test_remove_is_allowed_when_at_capacity_and_reduces_count():
-    engine = create_engine()
-    advance_to(engine, 15_000)
-
-    command(engine, "place_module", module_id="laser-1", x=3, y=3)
-    command(engine, "place_module", module_id="shield-1", x=3, y=2)
-    assert engine.active_module_count("player-1") == 4
-
-    command(engine, "remove_module", module_id="laser-1")
-
-    assert engine.active_module_count("player-1") == 3
-
-
-def test_capacity_changes_do_not_pause_battle_clock():
-    engine = create_engine()
-    advance_to(engine, 29_900)
-    assert engine.max_active_modules() == 5
-
-    engine.step()
-
-    assert engine.state.elapsed_ms == 30_000
-    assert engine.max_active_modules() == 6
-    assert engine.state.status.value == "running"
+    original = laser.position
+    command(engine, "move_module", module_id=laser.instance_id, x=0, y=1)
+    assert laser.position == original
+    assert engine.state.events[-1].type == "command_rejected"

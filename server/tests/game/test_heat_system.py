@@ -35,12 +35,12 @@ def test_attack_generates_heat():
     e._process_combat_actions()
     assert laser.heat>before
 
-def test_cooling_cell_reduces_heat_generation():
+def test_former_cooling_cell_no_longer_grants_hidden_heat_bonus():
     e,laser,_=combat_engine()
     normal=attack_heat_gain(laser)
     laser.position=Position(0,2)
     cooled=attack_heat_gain(laser)
-    assert cooled<normal
+    assert cooled==normal
 
 def test_high_heat_penalizes_damage_and_cooldown():
     e,laser,_=combat_engine()
@@ -78,7 +78,7 @@ def test_passive_cooling_reduces_powered_heat():
     e._process_passive_heat()
     assert laser.heat<50
 
-def test_cooling_cell_passive_cooling_is_stronger():
+def test_former_cooling_cell_no_longer_changes_passive_cooling():
     e,laser,_=combat_engine()
     laser.heat=50
     e._process_passive_heat()
@@ -88,7 +88,7 @@ def test_cooling_cell_passive_cooling_is_stronger():
     laser.is_powered=True
     e._process_passive_heat()
     cooling_drop=50-laser.heat
-    assert cooling_drop>normal_drop
+    assert cooling_drop==normal_drop
 
 def test_unpowered_module_preserves_heat():
     e,laser,_=combat_engine()

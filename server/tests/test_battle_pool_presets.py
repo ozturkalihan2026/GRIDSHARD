@@ -28,7 +28,7 @@ def test_preset_save_load_delete_roundtrip(
         module_definition_ids=ids,
     )
     assert saved["name"]=="Saldırı"
-    assert len(saved["module_definition_ids"])==18
+    assert len(saved["module_definition_ids"])==6
 
     listed=service.list("p1")
     assert listed==[saved]

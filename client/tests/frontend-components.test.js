@@ -57,6 +57,7 @@ test("battle board view yalnız aktif modülleri hedef hücrelerine yerleştirir
       dataset: { occupied: "true" },
       classList: {
         contains: () => false,
+        remove(name) { delete this[name]; },
         toggle(name, enabled) { this[name] = enabled; }
       },
       children: [],
@@ -83,6 +84,57 @@ test("battle board view yalnız aktif modülleri hedef hücrelerine yerleştirir
   assert.equal(cells.get("0,0").dataset.occupied, "false");
   assert.equal(cells.get("1,1").dataset.occupied, "true");
   assert.deepEqual(cells.get("1,1").children, [{ id: "active" }]);
+});
+
+test("battle board view enkazlı hücreyi geri sayımla kilitli gösterir", () => {
+  const classState = new Set();
+  const cell = {
+    innerHTML: "",
+    dataset: { x: "1", y: "1", occupied: "false" },
+    classList: {
+      contains: name => classState.has(name),
+      add: name => classState.add(name),
+      remove: name => classState.delete(name),
+      toggle(name, enabled) {
+        if (enabled) classState.add(name);
+        else classState.delete(name);
+      }
+    },
+    children: [],
+    appendChild(child) { this.children.push(child); }
+  };
+  const board = {
+    querySelectorAll: () => [cell],
+    querySelector: () => cell
+  };
+  const document = {
+    createElement(tagName) {
+      return {
+        tagName,
+        className: "",
+        textContent: "",
+        children: [],
+        attributes: {},
+        setAttribute(name, value) { this.attributes[name] = value; },
+        append(...items) { this.children.push(...items); }
+      };
+    }
+  };
+  const sandbox = load(
+    path.join("src", "battle", "board-view.js"),
+    { document }
+  );
+  const view = new sandbox.GridshardBattleBoardView(board);
+
+  view.render([], {
+    cellDebris: [{ x: 1, y: 1, remaining_ms: 4_200 }],
+    debrisLabel: "Enkaz",
+    createModuleCard: () => ({})
+  });
+
+  assert.equal(cell.dataset.debris, "true");
+  assert.equal(classState.has("debris-cell"), true);
+  assert.equal(cell.children[0].children[1].textContent, "5 sn");
 });
 
 test("module card view bilinmeyen modüle güvenli simge verir", () => {
@@ -145,4 +197,18 @@ test("mobil runtime yapılandırması API isteklerini HTTPS backend'e yönlendir
   await sandbox.fetch("/health");
   assert.deepEqual(calls, ["https://api.gridshard.example/health"]);
   assert.equal(sandbox.GridshardAuth.apiBaseUrl, "https://api.gridshard.example");
+});
+
+test("Beta.42.3 ana ekran ve ilerleme yüzeyleri tek bakışta kullanılabilir", () => {
+  const html = fs.readFileSync(path.join(ROOT, "index.html"), "utf8");
+  const app = fs.readFileSync(path.join(ROOT, "src", "app.js"), "utf8");
+  const css = fs.readFileSync(path.join(ROOT, "src", "canon.css"), "utf8");
+
+  assert.equal(html.includes('id="modules-coin-balance"'), false);
+  assert.equal(html.includes('id="modules-flux-balance"'), false);
+  assert.equal(html.includes('id="module-detail-role"'), false);
+  assert.match(app, /kicker\.hidden = true/);
+  assert.match(app, /arena-path-stage\.is-current/);
+  assert.match(css, /\.home-arena-segments > i[\s\S]*grid-column:auto !important/);
+  assert.match(css, /\.module-detail-tab-content\[data-tab="talents"\][\s\S]*overflow:hidden !important/);
 });

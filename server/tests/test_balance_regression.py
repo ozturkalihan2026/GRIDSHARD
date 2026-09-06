@@ -52,7 +52,7 @@ def test_module_interaction_regression_uses_real_engine():
     assert result[
         "engine_scenarios"
     ][1][
-        "accepted_at_unlock"
+        "accepted_immediately"
     ] is True
     assert result[
         "canonical_values_changed"

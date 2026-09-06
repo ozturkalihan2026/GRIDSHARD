@@ -2,7 +2,11 @@
   "use strict";
 
   const DEFAULT_LABELS = Object.freeze({
-    menu: "Ana Menü",
+    menu: "Ev",
+    shop: "Mağaza",
+    modules: "Modüller",
+    team: "Takım",
+    events: "Etkinlik",
     play: "Oyna",
     profile: "Profil",
     daily: "Günlük Görevler",
@@ -21,6 +25,9 @@
 
     render() {
       const current = this.router.currentScreen;
+      const shellCurrent = ["daily", "rewards", "statistics"].includes(current)
+        ? "profile"
+        : current;
       this.document.body.dataset.appScreen = current;
 
       for (const panel of this.document.querySelectorAll("[data-screen-panel]")) {
@@ -34,10 +41,18 @@
       if (backButton) backButton.hidden = true;
 
       for (const button of this.document.querySelectorAll("[data-shell-screen]")) {
-        const active = button.dataset.shellScreen === current;
+        const active = button.dataset.shellScreen === shellCurrent;
         button.classList.toggle("is-active", active);
         if (active) button.setAttribute("aria-current", "page");
         else button.removeAttribute("aria-current");
+      }
+
+      const profileButton = this.document.getElementById("lobby-profile-button");
+      if (profileButton) {
+        const profileActive = ["profile", "daily", "rewards", "statistics"].includes(current);
+        profileButton.classList.toggle("is-active", profileActive);
+        if (profileActive) profileButton.setAttribute("aria-current", "page");
+        else profileButton.removeAttribute("aria-current");
       }
 
       const label = this.document.getElementById("current-screen-label");

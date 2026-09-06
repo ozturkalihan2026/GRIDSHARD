@@ -14,7 +14,7 @@ class AIArchetype:
     description_tr: str
     description_en: str
     battle_pool_ids: tuple[str, ...]
-    initial_module_ids: tuple[str, str]
+    initial_module_ids: tuple[str, ...] = ()
     expansion_module_ids: tuple[str, ...] = ()
     category_bias: tuple[tuple[str, int], ...] = ()
     attack_foundation_target: int = 2
@@ -38,13 +38,8 @@ BALANCED_AI = AIArchetype(
     description_tr="Rakibin devresine göre karşı modül seçer; saldırı ve savunmayı dengeler.",
     description_en="Counters the opponent while balancing offense and defense.",
     battle_pool_ids=(
-        "generator", "battery", "splitter", "capacitor",
-        "laser", "pulse_cannon", "railgun", "missile_launcher",
-        "shield", "armor", "reflector", "barrier",
-        "repair", "cooler", "amplifier", "targeting_computer",
-        "emp", "jammer",
+        "laser", "pulse_cannon", "shield", "armor", "repair", "targeting_computer",
     ),
-    initial_module_ids=("shield", "laser"),
     expansion_module_ids=("pulse_cannon", "repair", "armor", "targeting_computer"),
 )
 
@@ -55,13 +50,8 @@ AGGRESSIVE_AI = AIArchetype(
     description_tr="Erken hasar temposu kurar; saldırı modüllerini ve Aşırı Yük'ü öne alır.",
     description_en="Builds early damage pressure and prioritizes attack modules and Overcharge.",
     battle_pool_ids=(
-        "generator", "battery", "splitter", "capacitor",
-        "laser", "pulse_cannon", "railgun", "missile_launcher", "drone_bay", "arc_cannon",
-        "shield", "armor",
-        "repair", "cooler", "amplifier", "targeting_computer", "overclock_unit",
-        "emp",
+        "laser", "pulse_cannon", "drone_bay", "missile_launcher", "amplifier", "overclock_unit",
     ),
-    initial_module_ids=("shield", "laser"),
     expansion_module_ids=("drone_bay", "amplifier", "overclock_unit", "pulse_cannon"),
     category_bias=(("saldırı", 7), ("destek", 2), ("savunma", -1), ("enerji", -1)),
     attack_foundation_target=3,
@@ -75,13 +65,8 @@ DEFENSIVE_AI = AIArchetype(
     description_tr="Çekirdeği ayakta tutar; savunma ve onarım katmanını saldırı baskısına göre büyütür.",
     description_en="Protects the core by layering defense and repair against incoming pressure.",
     battle_pool_ids=(
-        "generator", "battery", "splitter", "capacitor",
-        "laser", "pulse_cannon", "drone_bay",
-        "shield", "armor", "reflector", "barrier",
-        "repair", "cooler", "amplifier", "targeting_computer", "overclock_unit",
-        "emp", "jammer",
+        "laser", "shield", "armor", "barrier", "repair", "cooler",
     ),
-    initial_module_ids=("shield", "laser"),
     expansion_module_ids=("barrier", "repair", "armor", "cooler"),
     category_bias=(("savunma", 7), ("destek", 4), ("enerji", 1), ("saldırı", -1)),
     attack_foundation_target=1,
@@ -96,13 +81,8 @@ SABOTAGE_AI = AIArchetype(
     description_tr="Enerji ve destek hattını bozar; EMP, Kesici ve bozucu etkilerle tempo kırar.",
     description_en="Disrupts energy and support lines with EMP, Disruptor and control effects.",
     battle_pool_ids=(
-        "generator", "battery", "splitter", "capacitor",
-        "laser", "pulse_cannon", "drone_bay", "arc_cannon",
-        "shield", "armor",
-        "repair", "cooler", "targeting_computer",
-        "emp", "jammer", "virus", "energy_leech", "disruptor",
+        "laser", "shield", "emp", "jammer", "virus", "disruptor",
     ),
-    initial_module_ids=("shield", "laser"),
     expansion_module_ids=("jammer", "emp", "disruptor", "virus"),
     category_bias=(("sabotaj", 8), ("saldırı", 2), ("destek", 1), ("savunma", -1)),
     attack_foundation_target=2,
@@ -117,14 +97,9 @@ ECONOMY_AI = AIArchetype(
     description_tr="Önce enerji rezervi ve dağıtımı kurar; sonra yüksek maliyetli saldırılara geçer.",
     description_en="Builds energy reserve and distribution first, then transitions into expensive attacks.",
     battle_pool_ids=(
-        "generator", "battery", "splitter", "capacitor",
-        "laser", "pulse_cannon", "railgun", "drone_bay",
-        "shield", "armor", "barrier",
-        "repair", "cooler", "amplifier", "targeting_computer", "overclock_unit",
-        "energy_leech", "emp",
+        "laser", "pulse_cannon", "battery", "capacitor", "shield", "targeting_computer",
     ),
-    initial_module_ids=("shield", "laser"),
-    expansion_module_ids=("battery", "splitter", "capacitor", "targeting_computer"),
+    expansion_module_ids=("battery", "capacitor", "targeting_computer", "shield"),
     category_bias=(("enerji", 8), ("saldırı", 2), ("destek", 2), ("savunma", 1)),
     attack_foundation_target=2,
     energy_floor=2,
@@ -142,6 +117,22 @@ AI_ARCHETYPES: dict[str, AIArchetype] = {
         ECONOMY_AI,
     )
 }
+
+from dataclasses import replace
+BOT_ARCHETYPE_IDS = {
+    "Dengeli": "balanced", "Hızlı Baskı": "fast_pressure", "Ağır Hasar": "heavy_damage",
+    "Savunma": "defensive", "Sürdürülebilirlik": "sustain", "Kontrol": "sabotage",
+    "Destek Zinciri": "support_chain", "Akım Ekonomisi": "economy", "Alan Hasarı": "area_damage", "Karşı Meta": "counter_meta",
+}
+for _id, _base, _name, _bias in (
+    ("fast_pressure", AGGRESSIVE_AI, "Hızlı Baskı", (("saldırı", 8), ("destek", 1))),
+    ("heavy_damage", AGGRESSIVE_AI, "Ağır Hasar", (("saldırı", 9), ("enerji", 3))),
+    ("sustain", DEFENSIVE_AI, "Sürdürülebilirlik", (("destek", 8), ("savunma", 3))),
+    ("support_chain", BALANCED_AI, "Destek Zinciri", (("destek", 9), ("saldırı", 3))),
+    ("area_damage", AGGRESSIVE_AI, "Alan Hasarı", (("saldırı", 7), ("sabotaj", 3))),
+    ("counter_meta", BALANCED_AI, "Karşı Meta", (("sabotaj", 4), ("savunma", 2))),
+):
+    AI_ARCHETYPES[_id] = replace(_base, id=_id, name_tr=_name, category_bias=_bias)
 
 AI_ARCHETYPE_IDS: tuple[str, ...] = tuple(AI_ARCHETYPES)
 
@@ -164,12 +155,12 @@ def select_ai_archetype_for_key(key: str) -> AIArchetype:
 def validate_ai_archetype_catalog() -> None:
     selectable = set(PLAYER_SELECTABLE_MODULE_IDS)
     for archetype in AI_ARCHETYPES.values():
-        if len(archetype.battle_pool_ids) != 18:
-            raise ValueError(f"{archetype.id} AI havuzu 18 modül içermelidir.")
-        if len(set(archetype.battle_pool_ids)) != 18:
+        if len(archetype.battle_pool_ids) != 6:
+            raise ValueError(f"{archetype.id} AI destesi 6 modül içermelidir.")
+        if len(set(archetype.battle_pool_ids)) != 6:
             raise ValueError(f"{archetype.id} AI havuzunda tekrar eden modül var.")
-        if "generator" not in archetype.battle_pool_ids:
-            raise ValueError(f"{archetype.id} AI havuzunda Jeneratör zorunludur.")
+        if {"core", "generator"} & set(archetype.battle_pool_ids):
+            raise ValueError(f"{archetype.id} AI destesine Çekirdek/Jeneratör eklenemez.")
         unknown = set(archetype.battle_pool_ids) - selectable
         if unknown:
             raise ValueError(f"{archetype.id} AI havuzunda bilinmeyen modül var: {sorted(unknown)}")

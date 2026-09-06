@@ -29,7 +29,7 @@ def test_default_profile_has_progression_and_no_cosmetic_sections():
     assert view["level"] == 1
     assert view["rating"] == 1000
     assert view["league_name_tr"] == "Gümüş"
-    assert len(view["preferred_battle_pool_ids"]) == 18
+    assert len(view["preferred_battle_pool_ids"]) == 6
     assert view["profile_sections"] == [
         "Genel",
         "İlerleme",
@@ -76,7 +76,7 @@ def test_profile_endpoint_creates_viewer_profile():
     body = response.json()
     assert body["player_id"] == "alihan"
     assert body["display_name"] == "alihan"
-    assert len(body["preferred_battle_pool_ids"]) == 18
+    assert len(body["preferred_battle_pool_ids"]) == 6
 
 
 def test_display_name_endpoint_validates_length():
@@ -90,7 +90,7 @@ def test_display_name_endpoint_validates_length():
     assert response.status_code == 422
 
 
-def test_profile_battle_pool_endpoint_uses_same_18_module_validation():
+def test_profile_battle_pool_endpoint_uses_same_6_card_validation():
     reset()
     pool = list(
         default_battle_pool().module_definition_ids

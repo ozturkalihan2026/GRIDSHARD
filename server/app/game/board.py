@@ -11,9 +11,7 @@ class BoardCellType(str, Enum):
     ATTACK = "attack"
     DEFENSE = "defense"
     ENERGY = "energy"
-    COOLING = "cooling"
     REPAIR = "repair"
-    SIGNAL = "signal"
 
 
 @dataclass(slots=True, frozen=True)
@@ -31,6 +29,8 @@ class BoardCell:
     cell_type: BoardCellType
     placeable: bool = True
     bonus: CellBonus | None = None
+    allowed_categories: tuple[str, ...] = ()
+    allowed_definition_ids: tuple[str, ...] = ()
 
 
 @dataclass(slots=True, frozen=True)
@@ -55,7 +55,7 @@ class BoardLayout:
         return tuple(cell.position for cell in self.cells if cell.placeable)
 
 
-CORE_POSITION = Position(2, 2)
+CORE_POSITION = Position(2, 1)
 GENERATOR_GATE_POSITIONS = (
     Position(2, 1),
     Position(3, 2),
@@ -84,13 +84,6 @@ ENERGY_BONUS = CellBonus(
     stat_key="energy_multiplier",
     multiplier=1.15,
 )
-COOLING_BONUS = CellBonus(
-    id="cooling_20",
-    name_tr="Soğutma Hücresi",
-    description_tr="Bu hücredeki modül için ısı oluşumunu %20 azaltmaya yönelik metadata sağlar.",
-    stat_key="heat_multiplier",
-    multiplier=0.80,
-)
 REPAIR_BONUS = CellBonus(
     id="repair_20",
     name_tr="Onarım Hücresi",
@@ -98,21 +91,34 @@ REPAIR_BONUS = CellBonus(
     stat_key="repair_multiplier",
     multiplier=1.20,
 )
-SIGNAL_BONUS = CellBonus(
-    id="signal_15",
-    name_tr="Sinyal Hücresi",
-    description_tr="Bu hücredeki sabotaj/destek etkileri için bekleme süresi azaltım metadata'sı sağlar.",
-    stat_key="cooldown_multiplier",
-    multiplier=0.85,
-)
-
-SPECIAL_CELLS: dict[Position, tuple[BoardCellType, CellBonus]] = {
-    Position(2, 0): (BoardCellType.ATTACK, ATTACK_BONUS),
-    Position(4, 2): (BoardCellType.DEFENSE, DEFENSE_BONUS),
-    Position(2, 4): (BoardCellType.ENERGY, ENERGY_BONUS),
-    Position(0, 2): (BoardCellType.COOLING, COOLING_BONUS),
-    Position(1, 1): (BoardCellType.REPAIR, REPAIR_BONUS),
-    Position(3, 3): (BoardCellType.SIGNAL, SIGNAL_BONUS),
+SPECIAL_CELLS: dict[
+    Position,
+    tuple[BoardCellType, CellBonus, tuple[str, ...], tuple[str, ...]],
+] = {
+    Position(2, 0): (
+        BoardCellType.ATTACK,
+        ATTACK_BONUS,
+        ("saldırı",),
+        (),
+    ),
+    Position(4, 2): (
+        BoardCellType.DEFENSE,
+        DEFENSE_BONUS,
+        ("savunma",),
+        (),
+    ),
+    Position(2, 4): (
+        BoardCellType.ENERGY,
+        ENERGY_BONUS,
+        ("enerji",),
+        (),
+    ),
+    Position(0, 2): (
+        BoardCellType.REPAIR,
+        REPAIR_BONUS,
+        (),
+        ("repair",),
+    ),
 }
 
 BOARD_POSITIONS = (
@@ -130,8 +136,17 @@ def _make_cell(position: Position) -> BoardCell:
     if position in GENERATOR_GATE_POSITIONS:
         return BoardCell(position, BoardCellType.GATE, placeable=True)
     if position in SPECIAL_CELLS:
-        cell_type, bonus = SPECIAL_CELLS[position]
-        return BoardCell(position, cell_type, placeable=True, bonus=bonus)
+        cell_type, bonus, allowed_categories, allowed_definition_ids = (
+            SPECIAL_CELLS[position]
+        )
+        return BoardCell(
+            position,
+            cell_type,
+            placeable=True,
+            bonus=bonus,
+            allowed_categories=allowed_categories,
+            allowed_definition_ids=allowed_definition_ids,
+        )
     return BoardCell(position, BoardCellType.NORMAL, placeable=True)
 
 
@@ -145,15 +160,23 @@ ALPHA11_BOARD = BoardLayout(
 
 
 def get_default_board() -> BoardLayout:
-    return ALPHA11_BOARD
+    return CANONICAL_BOARD
 
 
 def get_cell_effects(position: Position) -> dict[str, float]:
-    cell = ALPHA11_BOARD.get_cell(position)
+    cell = CANONICAL_BOARD.get_cell(position)
     if cell.bonus is None:
         return {}
     return {cell.bonus.stat_key: cell.bonus.multiplier}
 
 
 def special_cell_positions() -> tuple[Position, ...]:
-    return tuple(SPECIAL_CELLS.keys())
+    return ()
+
+
+CANONICAL_BOARD = BoardLayout(
+    id="gridshard_21", name_tr="Devre Tahtası", core_position=CORE_POSITION,
+    generator_gate_positions=(),
+    cells=tuple(BoardCell(Position(x, y), BoardCellType.CORE if (x, y) == (2, 1) else BoardCellType.NORMAL,
+                          placeable=(x, y) != (2, 1)) for y in range(3) for x in range(5)),
+)

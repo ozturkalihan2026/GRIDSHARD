@@ -1,3 +1,5 @@
+from concurrent.futures import ThreadPoolExecutor
+
 from app.player_data_store import (
     JsonFilePlayerDataRepository,
     PlayerDataSnapshot,
@@ -95,3 +97,23 @@ def test_restore_backup_returns_false_without_valid_backup(tmp_path):
     )
 
     assert repo.restore_backup() is False
+
+
+def test_health_reads_are_serialized_with_profile_writes(tmp_path):
+    path = tmp_path / "players.json"
+    repo = JsonFilePlayerDataRepository(path)
+    repo.save(snap(1000))
+    repo.save(snap(1200))
+
+    with ThreadPoolExecutor(max_workers=1) as executor:
+        with repo._lock:
+            backup_pending = executor.submit(repo.backup_health)
+            assert backup_pending.done() is False
+
+        assert backup_pending.result(timeout=1)["ready"] is True
+
+        with repo._lock:
+            health_pending = executor.submit(repo.health)
+            assert health_pending.done() is False
+
+        assert health_pending.result(timeout=1)["ready"] is True

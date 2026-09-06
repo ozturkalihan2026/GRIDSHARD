@@ -186,7 +186,7 @@ def test_disruptor_breaks_target_from_energy_topology():
     assert laser.is_powered is False
 
 
-def test_signal_cell_reduces_sabotage_cooldown():
+def test_former_signal_cell_no_longer_grants_hidden_cooldown_bonus():
     engine, sabotage = setup_engine(
         "jammer-1",
         "jammer",
@@ -196,7 +196,7 @@ def test_signal_cell_reduces_sabotage_cooldown():
     sabotage.position = Position(3, 3)
     signal = sabotage_cooldown_ms(sabotage)
 
-    assert signal < normal
+    assert signal == normal
 
 
 def test_unpowered_sabotage_does_not_fire():

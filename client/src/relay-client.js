@@ -9,13 +9,8 @@
 
 
   function maxActiveModulesForElapsedMs(elapsedMs) {
-    if (elapsedMs < 15000) return null;
-    if (elapsedMs < 30000) return 5;
-    if (elapsedMs < 45000) return 6;
-    if (elapsedMs < 60000) return 7;
-    if (elapsedMs < 75000) return 8;
-    if (elapsedMs < 90000) return 9;
-    return 10;
+    void elapsedMs;
+    return 15;
   }
 
   const DRAG_KIND = Object.freeze({
@@ -26,7 +21,7 @@
   class BattlePoolSelection {
     constructor({
       selectableModuleIds,
-      requiredSize = 18,
+      requiredSize = 6,
       requiredModuleIds = [],
     }) {
       this.selectableModuleIds = [...selectableModuleIds];
@@ -146,13 +141,14 @@
   }
 
   class RelayBattleClient {
-    constructor({ modules, unlockAtMs = 15000, circuitCredits = 0, emitCommand }) {
+    constructor({ modules, unlockAtMs = 0, circuitCredits = 0, emitCommand }) {
       this.unlockAtMs = unlockAtMs;
       this.emitCommand = emitCommand;
       this.elapsedMs = 0;
       this.circuitCredits = Math.max(0, Math.floor(circuitCredits));
       this.dragState = null;
       this.pendingPlacementModuleIds = new Set();
+      this.pendingDeployments = 0;
       this.modules = new Map(
         modules.map((module) => [
           module.instanceId,
@@ -186,11 +182,49 @@
     }
 
     pendingPlacementCount() {
-      return this.pendingPlacementModuleIds.size;
+      return this.pendingPlacementModuleIds.size + this.pendingDeployments;
     }
 
     clearPendingPlacements() {
       this.pendingPlacementModuleIds.clear();
+      this.pendingDeployments = 0;
+    }
+
+    deployDefinition(definitionId, circuitCreditCost = 0) {
+      const cleanDefinitionId = String(definitionId || "").trim();
+      if (!cleanDefinitionId) {
+        return { ok: false, reason: "Yerleştirilecek deste kartı seçilmedi." };
+      }
+      const activeCount = this.activeModuleCount() + this.pendingPlacementCount();
+      if (activeCount >= 15) {
+        return { ok: false, reason: `Devre dolu: ${activeCount}/15.` };
+      }
+      const cost = Math.max(1, Math.floor(Number(circuitCreditCost) || 0) - (this.currentDiscountRemaining > 0 ? 1 : 0));
+      if (this.circuitCredits < cost) {
+        return {
+          ok: false,
+          reason: `Yetersiz Akım: gerekli ${cost}, mevcut ${this.circuitCredits}.`,
+        };
+      }
+      const command = {
+        kind: "deploy_module",
+        payload: { definition_id: cleanDefinitionId },
+      };
+      this.pendingDeployments += 1;
+      this.emitCommand(command);
+      return { ok: true, command };
+    }
+
+    registerModule(module) {
+      if (!module?.instanceId) {
+        throw new Error("Modül örnek kimliği zorunludur.");
+      }
+      this.modules.set(module.instanceId, {
+        ...module,
+        status: module.status || MODULE_STATUS.RESERVE,
+        position: module.position || null,
+      });
+      return this.modules.get(module.instanceId);
     }
 
     beginDrag(moduleId) {
@@ -986,6 +1020,10 @@
 
   const APP_SCREEN = Object.freeze({
     MENU: "menu",
+    SHOP: "shop",
+    MODULES: "modules",
+    TEAM: "team",
+    EVENTS: "events",
     PLAY: "play",
     PROFILE: "profile",
     DAILY: "daily",
@@ -1221,6 +1259,7 @@
       this.socket = socket;
 
       socket.onopen = () => {
+        if (this.socket !== socket || this.manualClose) return;
         this.reconnectAttempts = 0;
         this.pvpState.markConnected();
         this._setStatus(WS_CONNECTION_STATUS.OPEN);
@@ -1236,6 +1275,7 @@
       };
 
       socket.onmessage = (event) => {
+        if (this.socket !== socket || this.manualClose) return;
         let message;
 
         try {
@@ -1271,6 +1311,7 @@
       };
 
       socket.onerror = () => {
+        if (this.socket !== socket) return;
         if (!this.manualClose) {
           this._setStatus(
             WS_CONNECTION_STATUS.ERROR
@@ -1279,6 +1320,7 @@
       };
 
       socket.onclose = () => {
+        if (this.socket !== socket) return;
         this._clearHeartbeatTimer();
 
         if (this.pvpState.phase === PVP_PHASE.FINISHED) {
@@ -1533,6 +1575,8 @@
           result.rating_after,
         ratingDelta:
           result.rating_delta,
+        circuitCreditsAwarded:
+          Number(result.circuit_credits_awarded || 0),
         xpAwarded:
           result.xp_awarded,
         levelAfter:
@@ -1874,9 +1918,13 @@
       this.requestJson =
         requestJson
         || (async (path, options = {}) => {
-          const response =
-            await fetch(path, {
+          const controller = new AbortController();
+          const timeout = setTimeout(() => controller.abort(), 30000);
+          try {
+            const response = await fetch(path, {
               ...options,
+              cache: "no-store",
+              signal: controller.signal,
               headers: {
                 "content-type":
                   "application/json",
@@ -1884,13 +1932,21 @@
               },
             });
 
-          if (!response.ok) {
-            throw new Error(
-              `Sunucu isteği başarısız: ${response.status}`
-            );
+            const payload = await response.json();
+            if (!response.ok) {
+              throw new Error(typeof payload.detail === "string" ? payload.detail : `Sunucu isteği başarısız: ${response.status}`);
+            }
+            return payload;
+          } catch (error) {
+            if (error.name === "AbortError") {
+              const timeoutError = new Error("Eşleştirme sunucusu hazırlanıyor; bağlantı sorgulanmaya devam ediyor.");
+              timeoutError.code = "matchmaking_request_timeout";
+              throw timeoutError;
+            }
+            throw error;
+          } finally {
+            clearTimeout(timeout);
           }
-
-          return response.json();
         });
 
       this.webSocketUrlFactory =
@@ -1936,8 +1992,11 @@
       this.status =
         ONLINE_PLAY_STATUS.IDLE;
       this.pollTimer = null;
+      this.readyTimer = null;
       this.pendingSetup = null;
       this.lastError = null;
+      this.attemptId = 0;
+      this.cancelRequest = null;
     }
 
     async start({
@@ -1946,22 +2005,28 @@
     }) {
       if (
         !Array.isArray(battlePoolIds)
-        || battlePoolIds.length !== 18
+        || battlePoolIds.length !== 6
       ) {
         throw new Error(
-          "Online maç için tam 18 modüllük Savaş Havuzu gerekli."
+          "Online maç için tam 6 kartlık deste gerekli."
         );
       }
 
       if (
         !Array.isArray(initialModules)
-        || initialModules.length !== 4
+        || initialModules.length !== 1
       ) {
         throw new Error(
-          "Online maç için tam 4 başlangıç modülü gerekli."
+          "Maç başlangıcında merkezde yalnız Çekirdek olmalı."
         );
       }
 
+      const attemptId = ++this.attemptId;
+      this._clearPoll();
+      this._clearReadyTimeout();
+      this.connectionManager.disconnect?.();
+      this.connectionManager.clearOutgoingQueue();
+      this.matchmakingState.reset();
       this.pendingSetup = {
         battlePoolIds: [
           ...battlePoolIds,
@@ -1975,11 +2040,17 @@
       };
 
       this.lastError = null;
-      this._setStatus(
-        ONLINE_PLAY_STATUS.MATCHMAKING
-      );
 
       try {
+        this._setStatus(ONLINE_PLAY_STATUS.MATCHMAKING);
+        // A new attempt may be requested immediately after the user cancels.
+        // Wait for that DELETE only inside the new attempt so the UI can return
+        // to its ready state at once without letting a late delete cancel it.
+        const pendingCancel = this.cancelRequest;
+        if (pendingCancel) {
+          await pendingCancel;
+          if (attemptId !== this.attemptId) return { ok: false, cancelled: true };
+        }
         const response =
           await this.requestJson(
             "/matchmaking/join",
@@ -1992,6 +2063,7 @@
             }
           );
 
+        if (attemptId !== this.attemptId) return { ok: false, cancelled: true };
         this.matchmakingState
           .applyJoinResponse(
             response
@@ -2010,6 +2082,15 @@
           matched: false,
         };
       } catch (error) {
+        if (attemptId !== this.attemptId) return { ok: false, cancelled: true };
+        if (error?.code === "matchmaking_request_timeout") {
+          // The server may have accepted the join and still be provisioning the
+          // AI battle. Keep the full-screen matching state and discover that
+          // session through the idempotent status endpoint.
+          this._setStatus(ONLINE_PLAY_STATUS.MATCHMAKING);
+          this._schedulePoll();
+          return { ok: true, matched: false, pending: true };
+        }
         this._fail(error);
         return {
           ok: false,
@@ -2031,12 +2112,14 @@
         };
       }
 
+      const attemptId = this.attemptId;
       try {
         const status =
           await this.requestJson(
             `/matchmaking/${encodeURIComponent(this.playerId)}`
           );
 
+        if (attemptId !== this.attemptId) return { ok: false, cancelled: true };
         this.matchmakingState
           .applyQueueStatus(
             status
@@ -2048,6 +2131,10 @@
           );
         }
 
+        if (!status.queued) {
+          throw new Error("Eşleştirme kuyruğu sona erdi. Savaş düğmesiyle tekrar deneyebilirsin.");
+        }
+        this._setStatus(ONLINE_PLAY_STATUS.MATCHMAKING);
         this._schedulePoll();
 
         return {
@@ -2055,6 +2142,12 @@
           matched: false,
         };
       } catch (error) {
+        if (attemptId !== this.attemptId) return { ok: false, cancelled: true };
+        if (error?.code === "matchmaking_request_timeout") {
+          this._setStatus(ONLINE_PLAY_STATUS.MATCHMAKING);
+          this._schedulePoll();
+          return { ok: true, matched: false, pending: true };
+        }
         this._fail(error);
         return {
           ok: false,
@@ -2065,24 +2158,25 @@
     }
 
     async cancel() {
+      this.attemptId += 1;
       this._clearPoll();
+      this._clearReadyTimeout();
+      this.connectionManager.disconnect?.();
+      this.connectionManager.clearOutgoingQueue();
+      this.matchmakingState.reset();
+      this.pendingSetup = null;
+      this._setStatus(ONLINE_PLAY_STATUS.CANCELLED);
 
-      try {
-        await this.requestJson(
+      const cancelRequest = Promise.resolve().then(() => this.requestJson(
           `/matchmaking/${encodeURIComponent(this.playerId)}`,
           {
             method: "DELETE",
           }
-        );
-      } catch (_error) {
-        // Kullanıcı iptali yerel akışı yine de durdurur.
-      }
-
-      this.matchmakingState.cancel();
-      this.pendingSetup = null;
-      this._setStatus(
-        ONLINE_PLAY_STATUS.CANCELLED
-      );
+        )).catch(() => null);
+      this.cancelRequest = cancelRequest;
+      cancelRequest.finally(() => {
+        if (this.cancelRequest === cancelRequest) this.cancelRequest = null;
+      });
 
       return {
         ok: true,
@@ -2090,7 +2184,11 @@
     }
 
     reset() {
+      this.attemptId += 1;
       this._clearPoll();
+      this._clearReadyTimeout();
+      this.connectionManager.disconnect?.();
+      this.connectionManager.clearOutgoingQueue();
       this.pendingSetup = null;
       this.lastError = null;
       this.matchmakingState.reset();
@@ -2104,9 +2202,16 @@
     }
 
     markBattleStarted() {
+      this._clearReadyTimeout();
       this._setStatus(
         ONLINE_PLAY_STATUS.BATTLE
       );
+    }
+
+    failSetup(error) {
+      if ([ONLINE_PLAY_STATUS.MATCHED, ONLINE_PLAY_STATUS.CONNECTING, ONLINE_PLAY_STATUS.READYING].includes(this.status)) {
+        this._fail(error);
+      }
     }
 
     _activateMatch(response) {
@@ -2127,6 +2232,8 @@
       }
 
       this._clearPoll();
+      // Queue setup only after the previous session's socket is closed.
+      this.connectionManager.disconnect?.();
       this.matchmakingState
         .applyJoinResponse({
           matched: true,
@@ -2182,6 +2289,11 @@
       this._setStatus(
         ONLINE_PLAY_STATUS.READYING
       );
+      this._clearReadyTimeout();
+      this.readyTimer = this.setTimer(() => {
+        this.readyTimer = null;
+        this.failSetup(new Error("Savaş bağlantısı zamanında kurulamadı. Savaş düğmesiyle tekrar deneyebilirsin."));
+      }, 15000);
 
       return {
         ok: true,
@@ -2228,8 +2340,19 @@
       }
     }
 
+    _clearReadyTimeout() {
+      if (this.readyTimer !== null) {
+        this.clearTimer(this.readyTimer);
+        this.readyTimer = null;
+      }
+    }
+
     _fail(error) {
+      this.attemptId += 1;
       this._clearPoll();
+      this._clearReadyTimeout();
+      this.connectionManager.disconnect?.();
+      this.connectionManager.clearOutgoingQueue();
       this.lastError =
         error instanceof Error
           ? error.message

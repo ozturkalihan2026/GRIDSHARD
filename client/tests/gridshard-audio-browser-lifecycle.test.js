@@ -55,16 +55,11 @@ assert.strictEqual(matchmakingTrack.loop, true);
 
 director.setState("battle");
 const battleTrack = director.currentTrack;
-assert.ok(battleTrack);
-assert.notStrictEqual(battleTrack, menuTrack);
-assert.strictEqual(director.battleLayerTracks.length, 7);
-assert.strictEqual(
-  new Set(director.battleLayerTracks.map(track => track.src)).size,
-  7
-);
+assert.strictEqual(battleTrack, null);
+assert.strictEqual(director.battleLayerTracks.length, 0);
 
 director.setState("critical_core");
-assert.ok(director.criticalLayerTrack);
+assert.strictEqual(director.criticalLayerTrack, null);
 
 const pressure =
   director.setBattlePressure(1);
@@ -80,11 +75,8 @@ assert.strictEqual(
 setTimeout(() => {
   assert.strictEqual(menuTrack.paused, true);
     assert.strictEqual(poolTrack.paused, true);
-    assert.ok(battleTrack.volume >= 0);
-    assert.ok(director.battleLayerTracks.every(track => track.volume > 0));
-  assert.ok(
-    director.criticalLayerTrack.volume > 0
-  );
+    assert.strictEqual(director.battleLayerTracks.length, 0);
+  assert.strictEqual(director.criticalLayerTrack, null);
 
   director.setState("victory");
   const victoryTrack = director.currentTrack;

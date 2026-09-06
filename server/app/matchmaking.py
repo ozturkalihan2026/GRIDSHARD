@@ -4,12 +4,13 @@ import json
 from dataclasses import dataclass
 from typing import Callable
 from uuid import uuid4
+from .arena_canon import rank_stage_for_rating
 
 
 BASE_RATING_WINDOW = 100
 RATING_WINDOW_EXPANSION = 50
-EXPANSION_INTERVAL_SECONDS = 10
-MAX_RATING_WINDOW = 400
+EXPANSION_INTERVAL_SECONDS = 8
+MAX_RATING_WINDOW = 250
 
 
 @dataclass(slots=True)
@@ -128,6 +129,8 @@ class MatchmakingService:
         for candidate in self._queue.values():
             if candidate.player_id == player_id:
                 continue
+            if rank_stage_for_rating(source.rating)["id"] != rank_stage_for_rating(candidate.rating)["id"]:
+                continue
 
             candidate_window = (
                 self.accepted_rating_window(
@@ -147,6 +150,7 @@ class MatchmakingService:
                 candidates.append(
                     (
                         difference,
+                        abs(source.level - candidate.level),
                         candidate.joined_at,
                         candidate.player_id,
                         candidate,
@@ -161,9 +165,10 @@ class MatchmakingService:
                 item[0],
                 item[1],
                 item[2],
+                item[3],
             )
         )
-        candidate = candidates[0][3]
+        candidate = candidates[0][4]
 
         self._queue.pop(
             source.player_id,
@@ -198,7 +203,7 @@ class MatchmakingService:
         self,
         player_id: str,
     ) -> MatchmakingPair:
-        """10 saniyelik insan aramasından sonra kuyruğu AI rakiple kapatır."""
+        """32 saniyelik pencere sonunda kuyruğu aynı kademe AI rakiple kapatır."""
         if player_id not in self._queue:
             existing = self.matched_pair_for(player_id)
             if existing is not None:
@@ -454,6 +459,10 @@ local function accepted_window(joined_at_ms)
     )
 end
 
+local function stage(rating)
+    if rating < 3600 then return math.floor(rating / 300) end
+    return 12 + math.min(10, math.floor((rating - 3600) / 200))
+end
 local source_window = accepted_window(source.joined_at_ms)
 local candidate_ids = redis.call(
     'ZRANGEBYSCORE',
@@ -463,6 +472,7 @@ local candidate_ids = redis.call(
 )
 local best = nil
 local best_difference = nil
+local best_level_difference = nil
 
 for _, candidate_id in ipairs(candidate_ids) do
     if candidate_id ~= player_id then
@@ -480,22 +490,31 @@ for _, candidate_id in ipairs(candidate_ids) do
             local candidate_window = accepted_window(
                 candidate.joined_at_ms
             )
+            local level_difference = math.abs((source.level or 1) - (candidate.level or 1))
             local is_better = best == nil
                 or difference < best_difference
                 or (
                     difference == best_difference
+                    and level_difference < best_level_difference
+                )
+                or (
+                    difference == best_difference
+                    and level_difference == best_level_difference
                     and candidate.joined_at_ms < best.joined_at_ms
                 )
                 or (
                     difference == best_difference
+                    and level_difference == best_level_difference
                     and candidate.joined_at_ms == best.joined_at_ms
                     and candidate.player_id < best.player_id
                 )
             if difference <= source_window
+                and stage(source.rating) == stage(candidate.rating)
                 and difference <= candidate_window
                 and is_better then
                 best = candidate
                 best_difference = difference
+                best_level_difference = level_difference
             end
         end
     end

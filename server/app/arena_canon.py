@@ -1,0 +1,111 @@
+"""GRIDSHARD 2.1 arena, trophy and bot data. No mutable player state here."""
+from pathlib import Path
+import hashlib
+import json
+
+DATA_DIR = Path(__file__).resolve().parent.parent / "data"
+CANON = json.loads((DATA_DIR / "arena_progression_v1.json").read_text(encoding="utf-8"))
+MODULES = {item["id"]: item for item in CANON["modules"]}
+
+
+def _normalized_arena_rewards() -> tuple[dict, ...]:
+    """Keep module unlocks on trophy thresholds and road rewards as pieces.
+
+    The original data used ``module_id`` reward nodes, which made the road look
+    as if a card had to be claimed after it had already unlocked.  The live
+    canon now converts those stops into targeted card pieces.  Values scale
+    gently by arena so early upgrades remain reachable while later levels
+    still require continued play.
+    """
+    arenas: list[dict] = []
+    for raw_arena in CANON["arenas"]:
+        arena_index = int(raw_arena["index"])
+        shard_amount = 2 + (arena_index * 2)  # Arena 1: 4, Arena 12: 26.
+        nodes: list[dict] = []
+        for raw_node in raw_arena["nodes"]:
+            node = {**raw_node, "rewards": dict(raw_node.get("rewards", {}))}
+            module_id = node["rewards"].pop("module_id", None)
+            if module_id:
+                node["rewards"].update({
+                    "module_shards": shard_amount,
+                    "module_shard_target": module_id,
+                })
+                module_name = MODULES.get(module_id, {}).get("name_tr", module_id)
+                node["description_tr"] = f"{module_name} · {shard_amount} Modül Parçası"
+            nodes.append(node)
+        arenas.append({**raw_arena, "nodes": nodes})
+    return tuple(arenas)
+
+
+ARENAS = _normalized_arena_rewards()
+BOTS = json.loads((DATA_DIR / "arena_bot_profiles_v1.json").read_text(encoding="utf-8"))["bots"]
+STARTER_IDS = tuple(item["id"] for item in CANON["modules"] if item["unlock_trophies"] == 0)
+TALENT_LEVELS = {"common": (5, 8, 11, 14), "rare": (6, 9, 12, 15),
+                 "epic": (7, 10, 13, 15), "legendary": (8, 11, 14, 15)}
+
+def module_talent_options(module_id: str) -> tuple[dict, ...]:
+    category = MODULES[module_id]["category"]
+    first = {"saldırı": "Hasar +%3", "savunma": "Savunma etkisi +%3", "destek": "Destek etkisi +%3",
+             "sabotaj": "Kontrol etkisi +%3", "sistem": "Sistem etkisi +%3"}[category]
+    power_description = {
+        "saldırı": "Bu modülün verdiği hasarı kalıcı olarak %3 artırır.",
+        "savunma": "Bu modülün savunma etkisini kalıcı olarak %3 artırır.",
+        "destek": "Bu modülün destek etkisini kalıcı olarak %3 artırır.",
+        "sabotaj": "Bu modülün kontrol etkisini kalıcı olarak %3 artırır.",
+        "sistem": "Bu modülün sistem etkisini kalıcı olarak %3 artırır.",
+    }[category]
+    return tuple({"tier": str(i), "level": level, "flux_cost": 15 * (i + 1),
+                  "choices": [
+                      {"id": "power", "name_tr": first, "description_tr": power_description},
+                      {"id": "resilience", "name_tr": "CAN +%5", "description_tr": "Bu modülün azami CAN değerini kalıcı olarak %5 artırır."},
+                  ]}
+                 for i, level in enumerate(TALENT_LEVELS[MODULES[module_id]["rarity"]]))
+LEAGUE_NAMES = ("Kıvılcım Ligi", "Voltaj Ligi", "Reaktör Ligi", "Kuantum Ligi", "Nexus Ligi",
+                "Şampiyonlar I", "Şampiyonlar II", "Şampiyonlar III", "Şampiyonlar IV", "Şampiyonlar V", "Efsanevi Lig")
+RANK_STAGES = tuple(
+    {"id": a["id"], "kind": "arena", "index": a["index"], "name_tr": a["name_tr"], "minimum_rating": a["minimum_rating"]}
+    for a in ARENAS
+) + tuple(
+    {"id": f"league_{i + 1}", "kind": "league", "index": i + 1, "name_tr": name, "minimum_rating": 3600 + i * 200}
+    for i, name in enumerate(LEAGUE_NAMES)
+)
+
+def rank_stage_for_rating(rating: int) -> dict:
+    rating = max(0, int(rating))
+    index = max(i for i, stage in enumerate(RANK_STAGES) if rating >= stage["minimum_rating"])
+    return {**RANK_STAGES[index], "rating": rating,
+            "next_stage": dict(RANK_STAGES[index + 1]) if index + 1 < len(RANK_STAGES) else None}
+
+def trophy_delta(player_rating: int, opponent_rating: int, score: float) -> int:
+    if score == 0.5:
+        return 0
+    correction = max(-8, min(8, int((opponent_rating - player_rating) / 100) * 2))
+    return (25 if score >= 1 else -20) + correction
+
+def unlocked_module_ids(rating: int) -> tuple[str, ...]:
+    return tuple(key for key, item in MODULES.items() if rating >= item["unlock_trophies"])
+
+def module_stats(definition, upgrade_level: int, talents: dict | None = None) -> dict:
+    # Legacy storage counts upgrades from zero; the user-facing level is 1..15.
+    level = max(0, min(14, int(upgrade_level)))
+    learned = (talents or {}).values()
+    power = 1 + .03 * sum(choice == "power" for choice in learned)
+    resilience = 1 + .05 * sum(choice == "resilience" for choice in learned)
+    return {"level": level + 1, "max_hp": round(definition.max_hp * 1.03 ** level * resilience),
+            "base_damage": round(definition.base_damage * 1.05 ** level * power, 2),
+            "cooldown_ms": round(definition.cooldown_ms * max(.88, .992 ** level)),
+            "effect_multiplier": (1.03 if definition.category == "sabotaj" else 1.035) ** level * power,
+            "energy_consumption": definition.energy_consumption}
+
+def select_bot(rating: int, session_id: str) -> dict:
+    stage = rank_stage_for_rating(rating)
+    arena = stage["index"] if stage["kind"] == "arena" else 12
+    profiles = [bot for bot in BOTS if bot["arena"] == arena]
+    # The supplied profiles remain unchanged. League matches reuse Arena 12
+    # identities/decks with a match-local trophy value in the player's league.
+    candidates = [bot for bot in profiles if abs(bot["rating"] - rating) <= 250] if arena == stage["index"] and stage["kind"] == "arena" else profiles
+    candidates = candidates or sorted(profiles, key=lambda bot: abs(bot["rating"] - rating))[:3]
+    roll = int(hashlib.sha256(session_id.encode()).hexdigest()[:12], 16)
+    selected = dict(candidates[roll % len(candidates)])
+    selected["match_rating"] = selected["rating"] if stage["kind"] == "arena" else rating
+    return selected

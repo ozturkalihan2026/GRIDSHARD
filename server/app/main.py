@@ -9,7 +9,7 @@ import os
 import json
 from pathlib import Path
 
-from fastapi import FastAPI, Header, HTTPException, Query, Request, WebSocket
+from fastapi import BackgroundTasks, FastAPI, Header, HTTPException, Query, Request, WebSocket
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from fastapi.websockets import WebSocketDisconnect
@@ -32,7 +32,7 @@ from .game.pvp_session import (
     PvPSessionError,
     PvPSessionService,
 )
-from .game.models import BattleCommand, Direction
+from .game.models import BattleCommand, BattleStatus, Direction
 from .game.catalog import (
     BASIC_MODULE_DEFINITIONS,
     PLAYER_SELECTABLE_MODULE_IDS,
@@ -60,6 +60,10 @@ from .laboratory import (
     build_laboratory_view,
     reset_calibrations,
     upgrade_calibration,
+)
+from .meta_progression import (
+    MetaProgressionError,
+    MetaProgressionService,
 )
 from .player_statistics import (
     PlayerStatisticsService,
@@ -453,8 +457,10 @@ pvp_websocket_adapter = PvPWebSocketAdapter(
 )
 player_statistics_service = PlayerStatisticsService()
 player_profile_service = PlayerProfileService()
+meta_progression_service = MetaProgressionService()
 player_progression_service = PlayerProgressionService(
-    player_profile_service
+    player_profile_service,
+    meta_progression_service,
 )
 DEFAULT_TELEMETRY_PATH = (
     Path(__file__).resolve()
@@ -635,7 +641,12 @@ redis_matchmaking_service = RedisMatchmakingService(
     instance_id=MATCHMAKING_INSTANCE_ID,
     websocket_base_url=MATCHMAKING_PUBLIC_WS_BASE_URL,
 )
-MATCHMAKING_AI_FALLBACK_SECONDS = 10
+MATCHMAKING_AI_FALLBACK_SECONDS = 32
+# Beta clients play server-controlled AI; live PvP can be explicitly enabled.
+MATCHMAKING_AI_ONLY = os.environ.get(
+    "GRIDSHARD_MATCHMAKING_AI_ONLY",
+    "1" if "beta" in VERSION.lower() else "0",
+).strip().lower() in {"1", "true", "yes", "on"}
 EXPERIMENTAL_LAB_EFFECTS_ENABLED = os.environ.get(
     "GRIDSHARD_EXPERIMENTAL_LAB_EFFECTS",
     "0",
@@ -655,6 +666,15 @@ def attach_player_laboratory_to_session(
     player_id: str,
 ) -> None:
     profile = player_profile_service.get_or_create(player_id)
+    session = pvp_service.get_session(session_id)
+    session.engine.state.player_upgrade_levels[player_id] = dict(profile.module_upgrade_levels)
+    session.engine.state.player_match_ratings[player_id] = profile.rating
+    session.engine.state.players[player_id].core_type = profile.selected_core_type
+    session.engine.state.players[player_id].core_level = 1 + profile.core_upgrade_levels.get(profile.selected_core_type, 0)
+    session.engine.state.players[player_id].core_skills = profile.core_skills.get(profile.selected_core_type, ())
+    session.engine.state.player_module_talents[player_id] = {k: dict(v) for k, v in profile.module_talents.items()}
+    from .arena_canon import unlocked_module_ids
+    session.engine.state.player_unlocked_modules[player_id] = unlocked_module_ids(max(profile.rating, profile.highest_rating))
     pvp_service.set_player_calibrations(
         session_id,
         player_id,
@@ -725,6 +745,14 @@ class ProfileBattlePoolRequest(BaseModel):
 
 class LaboratoryOperationRequest(BaseModel):
     request_id: str
+
+
+class MetaOperationRequest(BaseModel):
+    request_id: str
+
+
+class CoreSelectionRequest(BaseModel):
+    core_type_id: str
 
 
 class BattlePoolPresetRequest(BaseModel):
@@ -2506,8 +2534,12 @@ async def _matchmaking_try_match(player_id: str) -> MatchmakingPair | None:
 
 async def _matchmaking_snapshot(player_id: str) -> dict:
     if _redis_matchmaking_enabled():
-        return await redis_matchmaking_service.queue_snapshot(player_id)
-    return matchmaking_service.queue_snapshot(player_id)
+        snapshot = await redis_matchmaking_service.queue_snapshot(player_id)
+    else:
+        snapshot = matchmaking_service.queue_snapshot(player_id)
+    snapshot["ai_only"] = MATCHMAKING_AI_ONLY
+    snapshot["ai_fallback_after_seconds"] = MATCHMAKING_AI_FALLBACK_SECONDS
+    return snapshot
 
 
 async def _matchmaking_match_with_ai(player_id: str) -> MatchmakingPair:
@@ -2556,14 +2588,27 @@ def _ensure_human_match_session(pair: MatchmakingPair) -> None:
         pair.match_id,
         setup_required=True,
         auto_start_when_ready=True,
+        normalized=False,
+        laboratory_effects_enabled=False,
     )
-    pvp_service.join(session.session_id, pair.player_a_id)
-    pvp_service.join(session.session_id, pair.player_b_id)
+    pvp_service.join(
+        session.session_id,
+        pair.player_a_id,
+        display_name=player_profile_service.get_or_create(pair.player_a_id).display_name,
+    )
+    pvp_service.join(
+        session.session_id,
+        pair.player_b_id,
+        display_name=player_profile_service.get_or_create(pair.player_b_id).display_name,
+    )
     attach_player_laboratory_to_session(session.session_id, pair.player_a_id)
     attach_player_laboratory_to_session(session.session_id, pair.player_b_id)
 
 
-async def _provision_match_session(pair: MatchmakingPair) -> MatchmakingPair:
+async def _provision_match_session(
+    pair: MatchmakingPair,
+    background_tasks: BackgroundTasks | None = None,
+) -> MatchmakingPair:
     distributed = _redis_matchmaking_enabled()
     if distributed and pair.ready:
         return pair
@@ -2574,7 +2619,7 @@ async def _provision_match_session(pair: MatchmakingPair) -> MatchmakingPair:
         return pair
 
     if pair.opponent_type == "ai":
-        _create_matchmaking_ai_session(pair)
+        _create_matchmaking_ai_session(pair, background_tasks=background_tasks)
     else:
         _ensure_human_match_session(pair)
 
@@ -2613,7 +2658,10 @@ def _raise_matchmaking_backend_error(exc: Exception) -> None:
 
 
 @app.post("/matchmaking/join")
-async def matchmaking_join(request: MatchmakingJoinRequest) -> dict:
+async def matchmaking_join(
+    request: MatchmakingJoinRequest,
+    background_tasks: BackgroundTasks,
+) -> dict:
     try:
         existing_match = await _matchmaking_pair_for(request.player_id)
         if (
@@ -2623,7 +2671,10 @@ async def matchmaking_join(request: MatchmakingJoinRequest) -> dict:
             await _matchmaking_clear_match(request.player_id)
             existing_match=None
         if existing_match is not None:
-            existing_match = await _provision_match_session(existing_match)
+            existing_match = await _provision_match_session(
+                existing_match,
+                background_tasks,
+            )
             if existing_match.ready:
                 return _matchmaking_pair_response(existing_match)
             return {
@@ -2636,10 +2687,14 @@ async def matchmaking_join(request: MatchmakingJoinRequest) -> dict:
             request.player_id,
             rating=profile.rating,
             league_name_tr=profile.league_name_tr,
-            level=profile.level,
+            level=round((sum(1 + profile.module_upgrade_levels.get(mid, 0) for mid in profile.preferred_battle_pool_ids) / 6
+                         + 1 + profile.core_upgrade_levels.get(profile.selected_core_type, 0)) / 2),
         )
         if isinstance(queue_entry, MatchmakingPair):
-            queue_entry = await _provision_match_session(queue_entry)
+            queue_entry = await _provision_match_session(
+                queue_entry,
+                background_tasks,
+            )
             if queue_entry.ready:
                 return _matchmaking_pair_response(queue_entry)
             return {
@@ -2647,7 +2702,11 @@ async def matchmaking_join(request: MatchmakingJoinRequest) -> dict:
                 "queue": await _matchmaking_snapshot(request.player_id),
             }
 
-        telemetry_service.record_now(
+        # The JSON telemetry repository can be large during long beta runs.
+        # Recording it after the response keeps matchmaking off the disk-I/O
+        # critical path while preserving the same event.
+        background_tasks.add_task(
+            telemetry_service.record_now,
             event_id=(
                 f"server:matchmaking:{request.player_id}:"
                 f"{round(queue_entry.joined_at * 1000)}"
@@ -2661,14 +2720,20 @@ async def matchmaking_join(request: MatchmakingJoinRequest) -> dict:
             },
         )
 
-        match = await _matchmaking_try_match(request.player_id)
+        # Beta yayınına kadar oyuncu doğrudan kendi arena/kupa aralığındaki
+        # sunucu denetimli AI rakibe bağlanır; insan kuyruğu beklenmez.
+        match = (
+            await _matchmaking_match_with_ai(request.player_id)
+            if MATCHMAKING_AI_ONLY
+            else await _matchmaking_try_match(request.player_id)
+        )
         if match is None:
             return {
                 "matched": False,
                 "queue": await _matchmaking_snapshot(request.player_id),
             }
 
-        match = await _provision_match_session(match)
+        match = await _provision_match_session(match, background_tasks)
         if not match.ready:
             return {
                 "matched": False,
@@ -2691,6 +2756,17 @@ async def matchmaking_join(request: MatchmakingJoinRequest) -> dict:
 async def matchmaking_cancel(player_id: str) -> dict:
     try:
         cancelled = await _matchmaking_cancel_player(player_id)
+        pair = await _matchmaking_pair_for(player_id)
+        if pair is not None:
+            try:
+                session = pvp_service.get_session(pair.match_id)
+            except PvPSessionError:
+                session = None
+            if session is not None and session.engine.state.status == BattleStatus.WAITING:
+                # A found opponent is still cancellable until the battle starts.
+                await _matchmaking_clear_match(player_id)
+                pvp_service.delete_session(pair.match_id)
+                cancelled = True
     except Exception as exc:
         if _redis_matchmaking_enabled():
             _raise_matchmaking_backend_error(exc)
@@ -2699,17 +2775,33 @@ async def matchmaking_cancel(player_id: str) -> dict:
 
 
 @app.get("/matchmaking/{player_id}")
-async def matchmaking_status(player_id: str) -> dict:
+async def matchmaking_status(
+    player_id: str,
+    background_tasks: BackgroundTasks,
+) -> dict:
     try:
         snapshot = await _matchmaking_snapshot(player_id)
+        if snapshot.get("queued") and not snapshot.get("provisioning") and not MATCHMAKING_AI_ONLY:
+            pair = await _matchmaking_try_match(player_id)
+            if pair is not None:
+                await _provision_match_session(pair, background_tasks)
+                snapshot = await _matchmaking_snapshot(player_id)
+        if snapshot.get("provisioning"):
+            pair = await _matchmaking_pair_for(player_id)
+            if pair is not None:
+                await _provision_match_session(pair, background_tasks)
+                snapshot = await _matchmaking_snapshot(player_id)
         if (
             snapshot.get("queued")
             and not snapshot.get("provisioning")
-            and int(snapshot.get("waited_seconds", 0))
-            >= MATCHMAKING_AI_FALLBACK_SECONDS
+            and (
+                MATCHMAKING_AI_ONLY
+                or int(snapshot.get("waited_seconds", 0))
+                >= MATCHMAKING_AI_FALLBACK_SECONDS
+            )
         ):
             pair = await _matchmaking_match_with_ai(player_id)
-            pair = await _provision_match_session(pair)
+            pair = await _provision_match_session(pair, background_tasks)
             snapshot = await _matchmaking_snapshot(player_id)
         return snapshot
     except (MatchmakingError, PvPSessionError, ValueError) as exc:
@@ -2986,6 +3078,185 @@ def reset_player_laboratory(
         "laboratory": build_laboratory_view(profile),
         "profile": profile.to_view(),
     }
+
+
+@app.get("/profile/{player_id}/meta-progression")
+def get_player_meta_progression(player_id: str) -> dict:
+    profile = player_profile_service.get_or_create(player_id)
+    return meta_progression_service.view(profile)
+
+
+@app.post("/profile/{player_id}/meta-progression/arena/{node_id}/claim")
+def claim_player_arena_reward(player_id: str, node_id: str, request: MetaOperationRequest) -> dict:
+    profile = player_profile_service.get_or_create(player_id)
+    try:
+        receipt = meta_progression_service.claim_arena_reward(profile, node_id)
+    except MetaProgressionError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+    persist_player_data(player_id)
+    return {"receipt": receipt, "meta_progression": meta_progression_service.view(profile), "profile": profile.to_view()}
+
+
+@app.post(
+    "/profile/{player_id}/meta-progression/modules/{module_definition_id}/upgrade"
+)
+def upgrade_player_collection_module(
+    player_id: str,
+    module_definition_id: str,
+    request: MetaOperationRequest,
+) -> dict:
+    profile = player_profile_service.get_or_create(player_id)
+    try:
+        receipt = meta_progression_service.upgrade_module(
+            profile,
+            module_definition_id,
+            request.request_id,
+        )
+    except MetaProgressionError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+    persist_player_data(player_id)
+    return {
+        "receipt": receipt,
+        "meta_progression": meta_progression_service.view(profile),
+        "profile": profile.to_view(),
+    }
+
+
+@app.post(
+    "/profile/{player_id}/meta-progression/chests/gifts/{definition_id}/claim"
+)
+def claim_player_progression_gift_chest(
+    player_id: str,
+    definition_id: str,
+    request: MetaOperationRequest,
+) -> dict:
+    profile = player_profile_service.get_or_create(player_id)
+    try:
+        receipt = meta_progression_service.claim_gift_chest(
+            profile,
+            definition_id,
+            request.request_id,
+        )
+    except MetaProgressionError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+    persist_player_data(player_id)
+    return {
+        "receipt": receipt,
+        "meta_progression": meta_progression_service.view(profile),
+        "profile": profile.to_view(),
+    }
+
+
+@app.post(
+    "/profile/{player_id}/meta-progression/chests/{chest_id}/open"
+)
+def open_player_progression_chest(
+    player_id: str,
+    chest_id: str,
+    request: MetaOperationRequest,
+) -> dict:
+    profile = player_profile_service.get_or_create(player_id)
+    try:
+        receipt = meta_progression_service.open_chest(
+            profile,
+            chest_id,
+            request.request_id,
+        )
+    except MetaProgressionError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+    persist_player_data(player_id)
+    return {
+        "receipt": receipt,
+        "meta_progression": meta_progression_service.view(profile),
+        "profile": profile.to_view(),
+    }
+
+
+@app.post(
+    "/profile/{player_id}/meta-progression/shop/{offer_id}/purchase"
+)
+def purchase_player_daily_shop_offer(
+    player_id: str,
+    offer_id: str,
+    request: MetaOperationRequest,
+) -> dict:
+    profile = player_profile_service.get_or_create(player_id)
+    try:
+        receipt = meta_progression_service.purchase_daily_offer(
+            profile,
+            offer_id,
+            request.request_id,
+        )
+    except MetaProgressionError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+    persist_player_data(player_id)
+    return {
+        "receipt": receipt,
+        "meta_progression": meta_progression_service.view(profile),
+        "profile": profile.to_view(),
+    }
+
+
+@app.put("/profile/{player_id}/meta-progression/core")
+def select_player_core_type(
+    player_id: str,
+    request: CoreSelectionRequest,
+) -> dict:
+    profile = player_profile_service.get_or_create(player_id)
+    try:
+        meta_progression_service.select_core(profile, request.core_type_id)
+    except MetaProgressionError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+    persist_player_data(player_id)
+    return meta_progression_service.view(profile)
+
+
+@app.post(
+    "/profile/{player_id}/meta-progression/cores/{core_type_id}/skills/{skill_id}"
+)
+def unlock_player_core_skill(
+    player_id: str,
+    core_type_id: str,
+    skill_id: str,
+    request: MetaOperationRequest,
+) -> dict:
+    profile = player_profile_service.get_or_create(player_id)
+    try:
+        receipt = meta_progression_service.unlock_core_skill(
+            profile,
+            core_type_id,
+            skill_id,
+            request.request_id,
+        )
+    except MetaProgressionError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+    persist_player_data(player_id)
+    return {
+        "receipt": receipt,
+        "meta_progression": meta_progression_service.view(profile),
+    }
+
+
+@app.post("/profile/{player_id}/meta-progression/cores/{core_type_id}/upgrade")
+def upgrade_player_core(player_id: str, core_type_id: str, request: MetaOperationRequest) -> dict:
+    profile = player_profile_service.get_or_create(player_id)
+    try:
+        receipt = meta_progression_service.upgrade_core(profile, core_type_id, request.request_id)
+    except MetaProgressionError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+    persist_player_data(player_id)
+    return {"receipt": receipt, "meta_progression": meta_progression_service.view(profile), "profile": profile.to_view()}
+
+
+@app.post("/profile/{player_id}/meta-progression/modules/{module_id}/talents/{tier}/{choice}")
+def choose_player_module_talent(player_id: str, module_id: str, tier: str, choice: str, request: MetaOperationRequest) -> dict:
+    profile = player_profile_service.get_or_create(player_id)
+    try:
+        receipt = meta_progression_service.choose_module_talent(profile, module_id, tier, choice, request.request_id)
+    except MetaProgressionError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+    persist_player_data(player_id)
+    return {"receipt": receipt, "meta_progression": meta_progression_service.view(profile), "profile": profile.to_view()}
 
 
 @app.post("/profile/{player_id}/engagement/missions/{mission_id}/claim")
@@ -3277,7 +3548,7 @@ def gridshard_identity() -> dict:
         "tagline_en":
             "Build the Circuit. Break the Core.",
         "identity_version":
-            "2.0.0-beta.38.1",
+            VERSION,
         "palette":{
             "void_navy":"#07142B",
             "reactor_blue":"#0D2342",
@@ -4242,101 +4513,14 @@ def _local_player_initial_modules(
     battle_pool_ids: list[str],
     selected_definition_ids: list[str] | tuple[str, ...] | None = None,
 ) -> tuple[InitialModulePlacement, ...]:
-    player_choices = list(selected_definition_ids or ())
-    if not player_choices:
-        player_choices = [
-            definition_id
-            for definition_id in battle_pool_ids
-            if BASIC_MODULE_DEFINITIONS[definition_id].category == "saldırı"
-        ][:2]
-    if (
-        len(player_choices) != 2
-        or len(set(player_choices)) != 2
-        or any(
-            definition_id in {"core", "generator"}
-            or definition_id not in battle_pool_ids
-            for definition_id in player_choices
-        )
-    ):
-        raise PvPSessionError(
-            "Başlangıç devresi için havuzdan iki farklı oyuncu modülü seçilmelidir."
-        )
-
-    left_module, right_module = player_choices
-    return (
-        InitialModulePlacement(
-            instance_id="core-1",
-            definition_id="core",
-            x=2,
-            y=2,
-            direction=Direction.UP,
-        ),
-        InitialModulePlacement(
-            instance_id="generator-1",
-            definition_id="generator",
-            x=2,
-            y=3,
-            direction=Direction.UP,
-        ),
-        InitialModulePlacement(
-            instance_id=(
-                left_module.replace("_", "-")
-                + "-1"
-            ),
-            definition_id=left_module,
-            x=1,
-            y=3,
-            direction=Direction.RIGHT,
-        ),
-        InitialModulePlacement(
-            instance_id=(
-                right_module.replace("_", "-")
-                + "-1"
-            ),
-            definition_id=right_module,
-            x=3,
-            y=3,
-            direction=Direction.LEFT,
-        ),
-    )
+    return (InitialModulePlacement(instance_id="core-1", definition_id="core", x=2, y=1, direction=Direction.UP),)
 
 
 def _local_ai_initial_modules(
     ai_player_id: str,
     archetype_id: str = "balanced",
 ) -> tuple[InitialModulePlacement, ...]:
-    archetype = get_ai_archetype(archetype_id)
-    left_definition, right_definition = archetype.initial_module_ids
-    return (
-        InitialModulePlacement(
-            instance_id=f"{ai_player_id}-core",
-            definition_id="core",
-            x=2,
-            y=2,
-            direction=Direction.UP,
-        ),
-        InitialModulePlacement(
-            instance_id=f"{ai_player_id}-generator",
-            definition_id="generator",
-            x=2,
-            y=1,
-            direction=Direction.DOWN,
-        ),
-        InitialModulePlacement(
-            instance_id=f"{ai_player_id}-{left_definition}",
-            definition_id=left_definition,
-            x=1,
-            y=1,
-            direction=Direction.RIGHT,
-        ),
-        InitialModulePlacement(
-            instance_id=f"{ai_player_id}-{right_definition}",
-            definition_id=right_definition,
-            x=3,
-            y=1,
-            direction=Direction.LEFT,
-        ),
-    )
+    return (InitialModulePlacement(instance_id=f"{ai_player_id}-core", definition_id="core", x=2, y=1, direction=Direction.UP),)
 
 
 def _local_ai_snapshot_envelope(
@@ -4373,7 +4557,11 @@ def _local_ai_snapshot_envelope(
     }
 
 
-def _create_matchmaking_ai_session(pair) -> None:
+def _create_matchmaking_ai_session(
+    pair,
+    *,
+    background_tasks: BackgroundTasks | None = None,
+) -> None:
     """İnsan kuyruğu zaman aşımında normal PvP protokolüne AI slotu ekler."""
     try:
         pvp_service.get_session(pair.match_id)
@@ -4385,18 +4573,35 @@ def _create_matchmaking_ai_session(pair) -> None:
         pair.match_id,
         setup_required=True,
         auto_start_when_ready=True,
-        match_type="unranked_ai",
+        match_type="arena_ai",
         season_id=CURRENT_SEASON_ID,
         ranked_eligible=False,
-        normalized=not EXPERIMENTAL_LAB_EFFECTS_ENABLED,
-        laboratory_effects_enabled=EXPERIMENTAL_LAB_EFFECTS_ENABLED,
+        normalized=False,
+        laboratory_effects_enabled=False,
     )
-    pvp_service.join(pair.match_id, pair.player_a_id)
-    pvp_service.join(pair.match_id, pair.player_b_id)
+    pvp_service.join(
+        pair.match_id,
+        pair.player_a_id,
+        display_name=player_profile_service.get_or_create(pair.player_a_id).display_name,
+    )
+    from .arena_canon import select_bot
+    from .game.ai_archetypes import BOT_ARCHETYPE_IDS
+    profile = player_profile_service.get_or_create(pair.player_a_id)
+    bot = select_bot(profile.rating, pair.match_id)
+    pvp_service.join(pair.match_id, pair.player_b_id, display_name=bot["display_name"])
+    session = pvp_service.get_session(pair.match_id)
+    session.engine.state.player_match_ratings[pair.player_b_id] = bot["match_rating"]
+    session.engine.state.players[pair.player_b_id].core_type = bot["core_type"]
+    session.engine.state.players[pair.player_b_id].core_level = 1 + profile.core_upgrade_levels.get(profile.selected_core_type, 0)
+    session.engine.state.player_upgrade_levels[pair.player_b_id] = {
+        module_id: max(0, min(14, round(sum(profile.module_upgrade_levels.get(mid, 0) for mid in profile.preferred_battle_pool_ids) / 6)))
+        for module_id in bot["battle_pool_ids"]
+    }
+    session.ai_profile_options[pair.player_b_id] = bot
     attach_player_laboratory_to_session(pair.match_id, pair.player_a_id)
 
-    ai_archetype = select_ai_archetype_for_key(pair.match_id)
-    ai_pool = _local_ai_battle_pool(ai_archetype.id)
+    ai_archetype = get_ai_archetype(BOT_ARCHETYPE_IDS[bot["archetype_tr"]])
+    ai_pool = tuple(bot["battle_pool_ids"])
     pvp_service.submit_setup(
         pair.match_id,
         pair.player_b_id,
@@ -4415,18 +4620,22 @@ def _create_matchmaking_ai_session(pair) -> None:
         archetype_id=ai_archetype.id,
     )
 
-    telemetry_service.record_now(
-        event_id=f"server:{pair.match_id}:matchmaking_ai_fallback:{pair.player_a_id}",
-        event_type="matchmaking_matched",
-        player_id=pair.player_a_id,
-        session_id=pair.match_id,
-        metadata={
+    telemetry_call = {
+        "event_id": f"server:{pair.match_id}:matchmaking_ai_fallback:{pair.player_a_id}",
+        "event_type": "matchmaking_matched",
+        "player_id": pair.player_a_id,
+        "session_id": pair.match_id,
+        "metadata": {
             "rating_difference": 0,
             "opponent_type": "ai",
-            "fallback_after_seconds": MATCHMAKING_AI_FALLBACK_SECONDS,
+            "fallback_after_seconds": 0 if MATCHMAKING_AI_ONLY else MATCHMAKING_AI_FALLBACK_SECONDS,
             "ai_archetype": ai_archetype.id,
         },
-    )
+    }
+    if background_tasks is not None:
+        background_tasks.add_task(telemetry_service.record_now, **telemetry_call)
+    else:
+        telemetry_service.record_now(**telemetry_call)
 
 
 @app.post("/local-ai/sessions")
@@ -4454,6 +4663,7 @@ async def create_local_ai_session(
         pvp_service.join(
             session_id,
             request.player_id,
+            display_name=player_profile_service.get_or_create(request.player_id).display_name,
         )
         pvp_service.join(
             session_id,
@@ -4612,6 +4822,7 @@ def join_pvp_session(
         slot = pvp_service.join(
             session_id,
             request.player_id,
+            display_name=player_profile_service.get_or_create(request.player_id).display_name,
         )
         attach_player_laboratory_to_session(
             session_id,

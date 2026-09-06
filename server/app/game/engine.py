@@ -1,4 +1,5 @@
 from collections import deque
+import hashlib
 from typing import Deque
 
 from .catalog import get_module_definition
@@ -90,37 +91,22 @@ DEFAULT_MAX_PENDING_COMMANDS_PER_PLAYER = 32
 DEFAULT_MAX_COMMANDS_PER_TICK = 32
 
 
-MODULE_INTERACTION_UNLOCK_MS = 15_000
+MODULE_INTERACTION_UNLOCK_MS = 0
+MAX_ACTIVE_MODULES = 15  # Core + 14 deployable cells.
+BOOSTERS_ENABLED = False
+DESTROYED_CELL_DEBRIS_DURATION_MS = 3_000
+CORE_POWER_MAX_CHARGE = 100.0
+CORE_POWER_CHARGE_DURATION_MS = 35_000
+CORE_RESONANCE_REPAIR = 45
 
 
 def max_active_modules_for_elapsed_ms(
     elapsed_ms: int,
     interaction_unlock_ms: int = MODULE_INTERACTION_UNLOCK_MS,
 ) -> int | None:
-    """
-    Maç süresine göre aynı anda aktif olabilecek modül üst sınırını döndürür.
-
-    Varsayılan davranış:
-    0–15 saniye başlangıç düzenidir; dinamik modül yerleştirme kapalıdır.
-    15–30 sn: 5
-    30–45 sn: 6
-    45–60 sn: 7
-    60–75 sn: 8
-    75–90 sn: 9
-    90 sn ve sonrası: 10
-
-    Beta.16 regresyon koşucusu için kilit zamanı izole olarak enjekte
-    edilebilir. Varsayılan 15 saniye değiştirilmemiştir.
-    """
-    unlock_ms = max(0, int(interaction_unlock_ms))
-    if elapsed_ms < unlock_ms:
-        return None
-
-    elapsed_after_unlock = elapsed_ms - unlock_ms
-    return min(
-        10,
-        5 + elapsed_after_unlock // 15_000,
-    )
+    """Yeni deste akışında on yuva maçın ilk anından itibaren açıktır."""
+    del elapsed_ms, interaction_unlock_ms
+    return MAX_ACTIVE_MODULES
 
 
 
@@ -153,10 +139,8 @@ class BattleEngine:
         )
         self.max_commands_per_tick = max(1, int(max_commands_per_tick))
 
-        if circuit_credit_config.passive_credits_per_second % TICK_RATE != 0:
-            raise ValueError(
-                "passive_credits_per_second, TICK_RATE değerine tam bölünmelidir."
-            )
+        if circuit_credit_config.current_regen_interval_ms <= 0:
+            raise ValueError("Akım yenilenme aralığı pozitif olmalıdır.")
 
     def add_player(self, player_id: str) -> PlayerBattleState:
         if player_id in self.state.players:
@@ -202,7 +186,7 @@ class BattleEngine:
 
         if (
             player.battle_pool is not None
-            and definition_id != "core"
+            and definition_id not in {"core", "generator"}
             and not player.battle_pool.contains(definition_id)
         ):
             raise ValueError(
@@ -229,6 +213,12 @@ class BattleEngine:
             if calibration_applied
             else base_definition
         )
+        from dataclasses import replace
+        from ..arena_canon import module_stats
+        stats = module_stats(definition, self.state.player_upgrade_levels.get(player_id, {}).get(definition_id, 0),
+                             self.state.player_module_talents.get(player_id, {}).get(definition_id, {}))
+        definition = replace(definition, max_hp=stats["max_hp"], base_damage=stats["base_damage"],
+                             cooldown_ms=stats["cooldown_ms"], effect_multiplier=stats["effect_multiplier"])
         module = BattleModule.create(
             instance_id=instance_id,
             definition=definition,
@@ -263,6 +253,7 @@ class BattleEngine:
                 )
         else:
             self._ensure_board_position_placeable(position)
+            self._ensure_module_allowed_in_cell(module, position)
 
         if (
             module.definition.id == "generator"
@@ -338,37 +329,76 @@ class BattleEngine:
         player_id: str,
         instance_id: str,
         amount: int,
-    ) -> None:
+        *,
+        source_player_id: str | None = None,
+        source_module_id: str | None = None,
+    ) -> int:
         if amount < 0:
             raise ValueError("Hasar negatif olamaz.")
 
         module = self._require_module(player_id, instance_id)
 
         if module.status == ModuleStatus.DESTROYED:
-            return
+            return 0
 
-        module.hp = max(0, module.hp - amount)
+        shield = module.persistent_effects.get("core_guardian")
+        if shield is not None and shield.expires_at_ms > self.state.elapsed_ms:
+            absorbed = min(amount, int(shield.data.get("shield_hp", 0)))
+            shield.data["shield_hp"] = max(0, int(shield.data.get("shield_hp", 0)) - absorbed)
+            amount -= absorbed
+        applied_damage = min(module.hp, amount)
+        module.hp = max(0, module.hp - applied_damage)
 
         self._emit(
             "module_damaged",
             {
                 "player_id": player_id,
                 "module_id": instance_id,
-                "damage": amount,
+                "damage": applied_damage,
+                "attempted_damage": amount,
                 "hp": module.hp,
+                "source_player_id": source_player_id,
+                "source_module_id": source_module_id,
             },
         )
 
         if module.hp == 0:
+            destroyed_position = module.position
             module.status = ModuleStatus.DESTROYED
             module.position = None
+            debris_until_ms = None
+            if (
+                destroyed_position is not None
+                and module.definition.id != "core"
+            ):
+                debris_until_ms = (
+                    self.state.elapsed_ms
+                    + DESTROYED_CELL_DEBRIS_DURATION_MS
+                )
+                player = self._require_player(player_id)
+                player.cell_debris_until_ms[
+                    self._position_key(destroyed_position)
+                ] = debris_until_ms
             self._emit(
                 "module_destroyed",
                 {
                     "player_id": player_id,
                     "module_id": instance_id,
+                    "x": (
+                        destroyed_position.x
+                        if destroyed_position is not None
+                        else None
+                    ),
+                    "y": (
+                        destroyed_position.y
+                        if destroyed_position is not None
+                        else None
+                    ),
+                    "debris_until_ms": debris_until_ms,
                 },
             )
+
+        return applied_damage
 
 
     def award_circuit_credits(
@@ -383,6 +413,9 @@ class BattleEngine:
             return
 
         player = self._require_player(player_id)
+        amount = min(amount, max(0, self.circuit_credit_config.maximum_current - player.circuit_credits))
+        if not amount:
+            return
         player.circuit_credits += amount
         player.total_circuit_credits_earned += amount
         self._emit(
@@ -409,7 +442,7 @@ class BattleEngine:
         player = self._require_player(player_id)
         if player.circuit_credits < amount:
             raise CommandRejected(
-                f"Yetersiz Devre Kredisi: gerekli {amount} DK, mevcut {player.circuit_credits} DK."
+                f"Yetersiz Akım: gerekli {amount}, mevcut {player.circuit_credits}."
             )
 
         player.circuit_credits -= amount
@@ -428,15 +461,16 @@ class BattleEngine:
         return self._require_player(player_id).circuit_credits
 
     def _apply_passive_circuit_credit_income(self) -> None:
-        amount = self.circuit_credit_config.passive_credits_per_second // TICK_RATE
-        if amount <= 0:
-            return
-
-        # Pasif gelir her tick güncellenir fakat olay günlüğünü 10 Hz kredi
-        # kayıtlarıyla doldurmamak için burada ayrıca event üretilmez.
         for player in self.state.players.values():
-            player.circuit_credits += amount
-            player.total_circuit_credits_earned += amount
+            if player.circuit_credits >= self.circuit_credit_config.maximum_current:
+                player.current_regen_remainder_ms = 0
+                continue
+            player.current_regen_remainder_ms += TICK_MS
+            interval = self.circuit_credit_config.current_regen_interval_ms
+            amount, player.current_regen_remainder_ms = divmod(player.current_regen_remainder_ms, interval)
+            granted = min(amount, self.circuit_credit_config.maximum_current - player.circuit_credits)
+            player.circuit_credits += granted
+            player.total_circuit_credits_earned += granted
 
     def max_active_modules(self) -> int | None:
         return max_active_modules_for_elapsed_ms(
@@ -453,29 +487,15 @@ class BattleEngine:
         )
 
     def module_capacity_view(self, player_id: str) -> dict[str, int | None]:
-        """Return the authoritative, player-facing module capacity timeline."""
+        """Return the authoritative, timer-free module capacity view."""
         active_count = self.active_module_count(player_id)
-        unlocked_limit = self.max_active_modules()
-        active_limit = 4 if unlocked_limit is None else unlocked_limit
-        if unlocked_limit is None:
-            next_slot_at_ms: int | None = self.module_interaction_unlock_ms
-        elif unlocked_limit < 10:
-            next_slot_at_ms = (
-                self.module_interaction_unlock_ms
-                + (unlocked_limit - 4) * 15_000
-            )
-        else:
-            next_slot_at_ms = None
+        active_limit = MAX_ACTIVE_MODULES
         return {
             "active_module_count": active_count,
             "active_module_limit": active_limit,
             "available_module_slots": max(0, active_limit - active_count),
-            "next_module_slot_at_ms": next_slot_at_ms,
-            "next_module_slot_in_ms": (
-                max(0, next_slot_at_ms - self.state.elapsed_ms)
-                if next_slot_at_ms is not None
-                else None
-            ),
+            "next_module_slot_at_ms": None,
+            "next_module_slot_in_ms": None,
         }
 
     def _ensure_module_interaction_unlocked(self) -> None:
@@ -489,11 +509,7 @@ class BattleEngine:
             )
 
     def _ensure_active_capacity_for_new_module(self, player_id: str) -> None:
-        self._ensure_module_interaction_unlocked()
-
-        limit = self.max_active_modules()
-        if limit is None:
-            raise CommandRejected("Aktif modül kapasitesi henüz açılmadı.")
+        limit = MAX_ACTIVE_MODULES
 
         active_count = self.active_module_count(player_id)
         if active_count >= limit:
@@ -772,6 +788,8 @@ class BattleEngine:
                     player.player_id,
                     module.instance_id,
                     damage,
+                    source_player_id=effect.data.get("source_player_id"),
+                    source_module_id=effect.data.get("source_module_id"),
                 )
                 effect.data["next_tick_at_ms"] = (
                     self.state.elapsed_ms
@@ -959,7 +977,7 @@ class BattleEngine:
                     )
                     continue
 
-                if module.definition.id == "repair":
+                if module.definition.mechanic_id == "repair":
                     if not self.is_cooldown_ready(
                         player.player_id,
                         module.instance_id,
@@ -1001,7 +1019,7 @@ class BattleEngine:
                     if target is None:
                         continue
 
-                    amount = repair_amount(module)
+                    amount = max(1, round(repair_amount(module) * player.energy_support_multiplier))
                     before = target.hp
                     target.hp = min(
                         target.definition.max_hp,
@@ -1029,7 +1047,7 @@ class BattleEngine:
                         module.definition.cooldown_ms,
                     )
 
-                elif module.definition.id == "cooler":
+                elif module.definition.mechanic_id == "cooler":
                     for target, effect_id in cooler_reducible_debuff_targets(
                         player,
                         module,
@@ -1084,7 +1102,7 @@ class BattleEngine:
                         before = target.heat
                         target.heat = max(
                             0.0,
-                            target.heat - COOLER_HEAT_REDUCTION_PER_TICK,
+                            target.heat - COOLER_HEAT_REDUCTION_PER_TICK * module.definition.effect_multiplier * player.energy_support_multiplier,
                         )
                         if target.heat != before:
                             self._emit(
@@ -1098,7 +1116,7 @@ class BattleEngine:
                                 },
                             )
 
-                elif module.definition.id == "overclock_unit":
+                elif module.definition.mechanic_id == "overclock_unit":
                     for target in overclock_targets(
                         player,
                         module,
@@ -1191,7 +1209,9 @@ class BattleEngine:
                     support_damage_multiplier=(
                         support.damage_multiplier
                         * heat_state.damage_multiplier
+                        * attacker_player.energy_damage_multiplier
                     ),
+                    defense_effectiveness=target_player.energy_support_multiplier,
                 )
                 effective_cooldown_ms = max(
                     TICK_MS,
@@ -1200,6 +1220,7 @@ class BattleEngine:
                             attacker.definition.cooldown_ms
                             * support.cooldown_multiplier
                             * heat_state.cooldown_multiplier
+                            / attacker_player.energy_speed_multiplier
                         )
                     ),
                 )
@@ -1248,6 +1269,8 @@ class BattleEngine:
                 target_player_id,
                 target.instance_id,
                 resolution.final_damage,
+                source_player_id=attacker_player_id,
+                source_module_id=attacker.instance_id,
             )
 
             if resolution.reflected_damage > 0:
@@ -1265,6 +1288,8 @@ class BattleEngine:
                     attacker_player_id,
                     attacker.instance_id,
                     resolution.reflected_damage,
+                    source_player_id=target_player_id,
+                    source_module_id=target.instance_id,
                 )
 
             self.start_cooldown(
@@ -1341,6 +1366,7 @@ class BattleEngine:
             player_id: build_player_summary(
                 player,
                 self.state.events,
+                self.state.player_upgrade_levels.get(player_id, {}),
             )
             for player_id, player in self.state.players.items()
         }
@@ -1354,7 +1380,10 @@ class BattleEngine:
             self.state.elapsed_ms + TICK_MS
         )
         self.state.result_summary = {
-            player_id: summary_to_dict(summary)
+            player_id: {
+                **summary_to_dict(summary),
+                "core_power_uses": self.state.players[player_id].core_power_uses,
+            }
             for player_id, summary in summaries.items()
         }
 
@@ -1408,6 +1437,7 @@ class BattleEngine:
             player_id: build_player_summary(
                 self.state.players[player_id],
                 self.state.events,
+                self.state.player_upgrade_levels.get(player_id, {}),
             )
             for player_id in player_ids
         }
@@ -1523,15 +1553,17 @@ class BattleEngine:
 
         try:
             handlers = {
-                "place_module": self._cmd_place_module,
-                "remove_module": self._cmd_remove_module,
-                "move_module": self._cmd_move_module,
-                "swap_modules": self._cmd_swap_modules,
-                "replace_module": self._cmd_replace_module,
-                "rotate_module": self._cmd_rotate_module,
-                "apply_booster": self._cmd_apply_booster,
-                "select_booster": self._cmd_select_booster,
-                "use_booster": self._cmd_use_booster,
+                "deploy_module": self._cmd_deploy_module,
+                "place_module": self._cmd_reject_manual_placement,
+                "remove_module": self._cmd_reject_reposition,
+                "move_module": self._cmd_reject_reposition,
+                "swap_modules": self._cmd_reject_reposition,
+                "replace_module": self._cmd_reject_reposition,
+                "rotate_module": self._cmd_reject_reposition,
+                "apply_booster": self._cmd_reject_booster,
+                "select_booster": self._cmd_reject_booster,
+                "use_booster": self._cmd_reject_booster,
+                "use_core_power": self._cmd_use_core_power,
                 "forfeit_battle": self._cmd_forfeit_battle,
             }
             handler = handlers.get(command.kind)
@@ -1576,6 +1608,7 @@ class BattleEngine:
                 "winner_player_id": opponent_ids[0],
                 "earned_during_battle": battle_earnings,
                 "credit_penalty": penalty,
+                "resource": "current",
                 "remaining_circuit_credits": player.circuit_credits,
             },
         )
@@ -1586,7 +1619,189 @@ class BattleEngine:
             reason="player_forfeit",
         )
 
-    def _cmd_place_module(self, player_id: str, payload: dict) -> None:
+    def _cmd_reject_manual_placement(self, player_id: str, payload: dict) -> None:
+        del player_id, payload
+        raise CommandRejected(
+            "Hücre seçerek yerleştirme kapalıdır; destedeki karta tıklayın."
+        )
+
+    def _cmd_reject_reposition(self, player_id: str, payload: dict) -> None:
+        del player_id, payload
+        raise CommandRejected("Yerleştirilen modüllerin konumu değiştirilemez.")
+
+    def _cmd_reject_booster(self, player_id: str, payload: dict) -> None:
+        del player_id, payload
+        raise CommandRejected("Güçlendiriciler bu savaş kuralında kapalıdır.")
+
+    def _cmd_use_core_power(self, player_id: str, payload: dict) -> None:
+        player = self._require_player(player_id)
+        request_id = str(payload.get("request_id") or "").strip()
+        target_module_id = str(payload.get("target_module_id") or "").strip()
+        if not request_id:
+            raise CommandRejected("Çekirdek Gücü için istek kimliği gerekli.")
+        if request_id in player.consumed_core_power_request_ids:
+            self._emit(
+                "core_power_replayed",
+                {"player_id": player_id, "request_id": request_id},
+            )
+            return
+        if player.core_power_charge < CORE_POWER_MAX_CHARGE:
+            raise CommandRejected("Çekirdek Gücü henüz dolmadı.")
+
+        core = next(
+            (
+                module
+                for module in player.modules.values()
+                if module.definition.id == "core"
+            ),
+            None,
+        )
+        if core is None or core.status != ModuleStatus.ACTIVE:
+            raise CommandRejected("Etkin Çekirdek bulunamadı.")
+        if target_module_id and target_module_id != core.instance_id:
+            raise CommandRejected("Çekirdek gücü merkez Çekirdekten kullanılır.")
+        level = max(1, min(15, player.core_level))
+        allies = [m for m in player.modules.values() if m.status == ModuleStatus.ACTIVE and m.hp > 0]
+        power = player.core_type
+        repaired = 0
+        if power in {"core_resonance", "core_phoenix", "core_quantum"}:
+            if not any(m.hp < m.definition.max_hp for m in allies) and power != "core_quantum":
+                raise CommandRejected("Tüm devre tam canlı; dolum korunuyor.")
+            for module in allies:
+                heal = round((45 if module == core else 15) * 1.035 ** (level - 1)) if power == "core_resonance" else round(module.definition.max_hp * min(.30, .20 + .005 * (level - 1)))
+                actual = min(heal, module.definition.max_hp - module.hp)
+                module.hp += actual
+                repaired += actual
+                self._emit("module_repaired", {"player_id": player_id, "module_id": module.instance_id, "repair": actual, "hp": module.hp})
+        if power in {"core_guardian", "core_quantum"}:
+            for module in allies:
+                self.add_persistent_effect(player_id, module.instance_id, "core_guardian", "Çekirdek Kalkanı", 4000,
+                                           {"shield_hp": round(20 * 1.035 ** (level - 1))})
+        if power == "core_overdrive":
+            for module in allies:
+                self.add_persistent_effect(player_id, module.instance_id, "core_overdrive", "Aşırı Yük", 3000 + ((level - 1) // 3) * 100,
+                                           {"damage_multiplier": 1.25 + .01 * (level - 1)})
+        if power == "core_disruptor":
+            for enemy_id, enemy in self.state.players.items():
+                if enemy_id == player_id:
+                    continue
+                for module in enemy.modules.values():
+                    if module.status != ModuleStatus.ACTIVE or module.definition.id == "core":
+                        continue
+                    module.persistent_effects.pop("core_overdrive", None)
+                    if module.definition.category == "destek":
+                        self.add_debuff(enemy_id, module.instance_id, JAMMER_DEBUFF_ID, "Çekirdek Kesintisi", 2000 + (level - 1) * 50)
+        if power == "core_capacitor":
+            player.discounted_deployments = 2
+        player.core_power_charge = 0.0
+        player.core_power_ready_emitted = False
+        player.core_power_uses += 1
+        player.consumed_core_power_request_ids.add(request_id)
+        self._emit(
+            "core_power_used",
+            {
+                "player_id": player_id,
+                "request_id": request_id,
+                "power_id": player.core_type,
+                "target_module_id": core.instance_id,
+                "repair": repaired,
+                "affected_module_ids": [m.instance_id for m in allies],
+                "hp": core.hp,
+                "charge": 0,
+            },
+        )
+
+    def _next_deployed_instance_id(
+        self,
+        player_id: str,
+        definition_id: str,
+    ) -> str:
+        player = self._require_player(player_id)
+        serial = 1 + sum(
+            module.definition.id == definition_id
+            for module in player.modules.values()
+        )
+        safe_definition_id = definition_id.replace("_", "-")
+        candidate = f"{player_id}-{safe_definition_id}-{serial}"
+        while candidate in player.modules:
+            serial += 1
+            candidate = f"{player_id}-{safe_definition_id}-{serial}"
+        return candidate
+
+    def _deployment_candidates(
+        self,
+        player_id: str,
+        module: BattleModule,
+    ) -> list[tuple[Position, Direction]]:
+        candidates: list[tuple[Position, Direction]] = []
+        for position in self.board.placeable_positions:
+            try:
+                self._ensure_module_allowed_in_cell(module, position)
+                self._ensure_position_available(player_id, position)
+            except CommandRejected:
+                continue
+            candidates.append((position, Direction.UP))
+        return sorted(
+            candidates,
+            key=lambda item: (
+                item[0].y,
+                item[0].x,
+                item[1].value,
+            ),
+        )
+
+    def _cmd_deploy_module(self, player_id: str, payload: dict) -> None:
+        """Create a fresh deck-card instance and place it server-authoritatively."""
+        self._ensure_active_capacity_for_new_module(player_id)
+        definition_id = str(payload.get("definition_id") or "").strip()
+        player = self._require_player(player_id)
+        if not definition_id:
+            raise CommandRejected("Yerleştirilecek deste kartı gerekli.")
+        if player.battle_pool is None or not player.battle_pool.contains(definition_id):
+            raise CommandRejected("Seçilen modül oyuncunun altı kartlık destesinde değil.")
+
+        instance_id = self._next_deployed_instance_id(player_id, definition_id)
+        module = self.grant_module(player_id, instance_id, definition_id)
+        candidates = self._deployment_candidates(player_id, module)
+        if not candidates:
+            player.modules.pop(instance_id, None)
+            raise CommandRejected(
+                "Bu kart için enerjiye bağlı, uygun ve boş bir hücre bulunamadı."
+            )
+
+        seed = (
+            f"{self.state.battle_id}:{player_id}:{definition_id}:"
+            f"{instance_id}:{self.state.tick}"
+        )
+        digest = hashlib.sha256(seed.encode("utf-8")).digest()
+        position, direction = candidates[
+            int.from_bytes(digest[:8], "big") % len(candidates)
+        ]
+        try:
+            self._spend_circuit_credits(
+                player_id,
+                max(1, module.definition.current_cost - (1 if player.discounted_deployments else 0)),
+                reason=f"modul_uret:{module.definition.id}",
+            )
+        except CommandRejected:
+            player.modules.pop(instance_id, None)
+            raise
+
+        if player.discounted_deployments:
+            player.discounted_deployments -= 1
+        module.status = ModuleStatus.ACTIVE
+        module.position = position
+        module.direction = direction
+        module.is_powered = True
+        self._emit(
+            "module_placed",
+            {
+                **self._module_event_data(player_id, module),
+                "placement_mode": "server_random",
+            },
+        )
+
+    def _cmd_place_module_legacy(self, player_id: str, payload: dict) -> None:
         self._ensure_active_capacity_for_new_module(player_id)
         module = self._require_module(player_id, payload["module_id"])
 
@@ -1597,6 +1812,7 @@ class BattleEngine:
 
         position = self._position_from_payload(payload)
         self._ensure_board_position_placeable(position)
+        self._ensure_module_allowed_in_cell(module, position)
         self._ensure_position_available(player_id, position)
 
         connected_direction = self._connected_direction_for_placement(
@@ -1656,6 +1872,7 @@ class BattleEngine:
 
         new_position = self._position_from_payload(payload)
         self._ensure_board_position_placeable(new_position)
+        self._ensure_module_allowed_in_cell(module, new_position)
 
         if (
             module.definition.id == "generator"
@@ -1784,6 +2001,9 @@ class BattleEngine:
         if first.position is None or second.position is None:
             raise CommandRejected("Yer değiştirilecek modüllerin konumu bulunamadı.")
 
+        self._ensure_module_allowed_in_cell(first, second.position)
+        self._ensure_module_allowed_in_cell(second, first.position)
+
         directions = self._best_swap_directions(
             player_id,
             first,
@@ -1840,6 +2060,7 @@ class BattleEngine:
             raise CommandRejected("Değiştirilecek modülün konumu bulunamadı.")
 
         position = outgoing.position
+        self._ensure_module_allowed_in_cell(incoming, position)
 
         connected_direction = self._connected_direction_for_placement(
             player_id,
@@ -2049,6 +2270,10 @@ class BattleEngine:
             "next_offer_due_at_ms": booster_offer_due_at_ms(player.next_booster_offer_index),
         })
     def _update_booster_offers(self) -> None:
+        if not BOOSTERS_ENABLED:
+            for player in self.state.players.values():
+                player.pending_booster_offer = None
+            return
         # _simulate mevcut tick'in sonunda çalışacak durumu hazırlar.
         effective_elapsed_ms = self.state.elapsed_ms + TICK_MS
 
@@ -2082,6 +2307,7 @@ class BattleEngine:
         Devre Kredisi, enerji akışı ve gerçek saldırı/hasar döngüsü
         savaş durmadan aynı tick akışında ilerler.
         """
+        self._update_core_power_charge()
         self._update_booster_offers()
         self._apply_passive_circuit_credit_income()
         self._process_energy_flow()
@@ -2092,6 +2318,33 @@ class BattleEngine:
         self._process_passive_heat()
         self._expire_timed_module_state()
         self._evaluate_battle_end()
+
+    def _update_core_power_charge(self) -> None:
+        charge_per_tick = (
+            CORE_POWER_MAX_CHARGE
+            * TICK_MS
+            / CORE_POWER_CHARGE_DURATION_MS
+        )
+        for player in self.state.players.values():
+            if player.core_power_charge >= CORE_POWER_MAX_CHARGE:
+                continue
+            player.core_power_charge = min(
+                CORE_POWER_MAX_CHARGE,
+                player.core_power_charge + charge_per_tick * (1 + .03 * sum(s.endswith("_charge") for s in player.core_skills)),
+            )
+            if (
+                player.core_power_charge >= CORE_POWER_MAX_CHARGE
+                and not player.core_power_ready_emitted
+            ):
+                player.core_power_ready_emitted = True
+                self._emit(
+                    "core_power_ready",
+                    {
+                        "player_id": player.player_id,
+                        "power_id": player.core_type,
+                        "charge": 100,
+                    },
+                )
 
     def _require_player(self, player_id: str) -> PlayerBattleState:
         try:
@@ -2143,6 +2396,59 @@ class BattleEngine:
                 f"Hedef hücre modül yerleşimine kapalı: ({position.x}, {position.y})."
             )
 
+    def _ensure_module_allowed_in_cell(
+        self,
+        module: BattleModule,
+        position: Position,
+    ) -> None:
+        cell = self.board.get_cell(position)
+        if (
+            cell.allowed_definition_ids
+            and module.definition.id not in cell.allowed_definition_ids
+        ):
+            raise CommandRejected(
+                f"{cell.bonus.name_tr if cell.bonus else 'Özel hücre'} yalnızca "
+                "uygun özel modülü kabul eder."
+            )
+        if (
+            cell.allowed_categories
+            and module.definition.category not in cell.allowed_categories
+        ):
+            expected = ", ".join(cell.allowed_categories)
+            raise CommandRejected(
+                f"{cell.bonus.name_tr if cell.bonus else 'Özel hücre'} yalnızca "
+                f"{expected} sınıfı modülleri kabul eder."
+            )
+
+    @staticmethod
+    def _position_key(position: Position) -> str:
+        return f"{position.x},{position.y}"
+
+    @staticmethod
+    def _position_from_key(key: str) -> Position:
+        x_text, y_text = key.split(",", 1)
+        return Position(x=int(x_text), y=int(y_text))
+
+    def cell_debris_view(self, player_id: str) -> list[dict[str, int]]:
+        player = self._require_player(player_id)
+        active: list[dict[str, int]] = []
+        expired: list[str] = []
+        for key, until_ms in player.cell_debris_until_ms.items():
+            remaining_ms = int(until_ms) - self.state.elapsed_ms
+            if remaining_ms <= 0:
+                expired.append(key)
+                continue
+            position = self._position_from_key(key)
+            active.append({
+                "x": position.x,
+                "y": position.y,
+                "until_ms": int(until_ms),
+                "remaining_ms": remaining_ms,
+            })
+        for key in expired:
+            player.cell_debris_until_ms.pop(key, None)
+        return sorted(active, key=lambda item: (item["y"], item["x"]))
+
     def _ensure_position_available(
         self,
         player_id: str,
@@ -2150,6 +2456,21 @@ class BattleEngine:
         ignore_module_id: str | None = None,
     ) -> None:
         player = self._require_player(player_id)
+
+        debris = {
+            (item["x"], item["y"]): item
+            for item in self.cell_debris_view(player_id)
+        }
+        blocked = debris.get((position.x, position.y))
+        if blocked is not None:
+            remaining_seconds = max(
+                1,
+                (blocked["remaining_ms"] + 999) // 1000,
+            )
+            raise CommandRejected(
+                "Hedef hücrede enkaz var. "
+                f"{remaining_seconds} sn sonra yeniden kullanılabilir."
+            )
 
         for module in player.modules.values():
             if module.instance_id == ignore_module_id:
@@ -2194,18 +2515,15 @@ class BattleEngine:
             "is_powered": module.is_powered,
             "energy_received_last_tick": module.energy_received_last_tick,
             "energy_required_last_tick": module.energy_required_last_tick,
-            "ports": [
-                direction.value
-                for direction in module_port_directions(
-                    module,
-                    self.board.core_position,
-                )
-            ],
+            "ports": [],
             "debuffs": sorted(module.debuffs),
             "persistent_effects": sorted(module.persistent_effects),
             "cooldowns": sorted(module.cooldowns_ready_at_ms),
             "temporary_boosters": sorted(module.temporary_boosters),
-            "circuit_credit_cost": module.definition.circuit_credit_cost,
+            "circuit_credit_cost": module.definition.current_cost,
+            "current_cost": module.definition.current_cost,
+            "max_hp": module.definition.max_hp,
+            "base_damage": module.definition.base_damage,
             "cell_effects": (
                 get_cell_effects(module.position)
                 if module.position is not None

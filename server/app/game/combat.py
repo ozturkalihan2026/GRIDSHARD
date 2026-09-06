@@ -36,7 +36,7 @@ def is_attack_module(module: BattleModule) -> bool:
     return (
         module.status == ModuleStatus.ACTIVE
         and module.hp > 0
-        and module.definition.category == "saldırı"
+        and module.definition.category in {"saldırı", "sabotaj"}
         and module.definition.base_damage > 0
         and module.definition.cooldown_ms > 0
     )
@@ -60,7 +60,7 @@ def selectable_targets(player: PlayerBattleState) -> list[BattleModule]:
     normal_targets = [
         module
         for module in active
-        if module.definition.id not in {"generator", "core"}
+        if module.definition.mechanic_id not in {"generator", "core"}
     ]
     if normal_targets:
         return sorted(
@@ -75,7 +75,7 @@ def selectable_targets(player: PlayerBattleState) -> list[BattleModule]:
                 # class order above.
                 0
                 if (
-                    module.definition.id == "barrier"
+                    module.definition.mechanic_id == "barrier"
                     and module.is_powered
                 )
                 else 1,
@@ -86,7 +86,7 @@ def selectable_targets(player: PlayerBattleState) -> list[BattleModule]:
     generator_targets = [
         module
         for module in active
-        if module.definition.id == "generator"
+        if module.definition.mechanic_id == "generator"
     ]
     if generator_targets:
         return sorted(
@@ -97,7 +97,7 @@ def selectable_targets(player: PlayerBattleState) -> list[BattleModule]:
     core_targets = [
         module
         for module in active
-        if module.definition.id == "core"
+        if module.definition.mechanic_id == "core"
     ]
     return sorted(
         core_targets,
@@ -130,14 +130,17 @@ def attack_damage_multiplier(module: BattleModule) -> float:
             )
         )
 
+    core_effect = module.persistent_effects.get("core_overdrive")
+    if core_effect is not None:
+        multiplier *= float(core_effect.data.get("damage_multiplier", 1.0))
     return multiplier
 
 
 def counter_strategy_multiplier(attacker: BattleModule, target: BattleModule) -> float:
     multiplier = 1.0
-    if target.definition.id in attacker.definition.strong_against:
+    if target.definition.mechanic_id in attacker.definition.strong_against:
         multiplier *= 1.25
-    if target.definition.id in attacker.definition.weak_against:
+    if target.definition.mechanic_id in attacker.definition.weak_against:
         multiplier *= 0.80
     return multiplier
 
@@ -147,17 +150,17 @@ def defense_profile(target: BattleModule) -> tuple[str, float, float]:
     multiplier = 1.0
     reflection_ratio = 0.0
 
-    if target.definition.id == "shield" and target.is_powered:
+    if target.definition.mechanic_id == "shield" and target.is_powered:
         defense_type = "Kalkan"
         multiplier *= 0.65
-    elif target.definition.id == "armor":
+    elif target.definition.mechanic_id == "armor":
         defense_type = "Zırh"
         multiplier *= 0.75
-    elif target.definition.id == "reflector" and target.is_powered:
+    elif target.definition.mechanic_id == "reflector" and target.is_powered:
         defense_type = "Yansıtıcı"
         multiplier *= 0.75
         reflection_ratio = 0.20
-    elif target.definition.id == "barrier" and target.is_powered:
+    elif target.definition.mechanic_id == "barrier" and target.is_powered:
         defense_type = "Bariyer"
         multiplier *= 0.80
 
@@ -173,6 +176,10 @@ def defense_profile(target: BattleModule) -> tuple[str, float, float]:
                 else "Savunma Hücresi"
             )
 
+    effectiveness = target.definition.effect_multiplier
+    if multiplier < 1:
+        multiplier = max(.35, 1 - (1 - multiplier) * effectiveness)
+    reflection_ratio = min(.35, reflection_ratio * effectiveness)
     return defense_type, multiplier, reflection_ratio
 
 
@@ -182,6 +189,7 @@ def resolve_attack(
     target_player_id: str,
     target: BattleModule,
     support_damage_multiplier: float = 1.0,
+    defense_effectiveness: float = 1.0,
 ) -> AttackResolution:
     attack_multiplier = (
         attack_damage_multiplier(attacker)
@@ -195,6 +203,7 @@ def resolve_attack(
     )
 
     defense_type, defense_multiplier, reflection_ratio = defense_profile(target)
+    defense_multiplier = 1 - (1 - defense_multiplier) * defense_effectiveness
     final_damage = max(0, int(round(raw_damage * defense_multiplier)))
     reduced_damage = max(0, raw_damage - final_damage)
     reflected_damage = (

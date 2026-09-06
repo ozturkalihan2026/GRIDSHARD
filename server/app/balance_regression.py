@@ -7,6 +7,7 @@ from .game.economy import (
     CircuitCreditConfig,
     DEFAULT_CIRCUIT_CREDIT_CONFIG,
 )
+from .game.battle_pool import default_battle_pool
 from .game.engine import (
     BattleEngine,
     MODULE_INTERACTION_UNLOCK_MS,
@@ -92,6 +93,10 @@ def _engine_fixture(
         module_interaction_unlock_ms=unlock_ms,
     )
     engine.add_player("player-1")
+    engine.set_battle_pool(
+        "player-1",
+        default_battle_pool().module_definition_ids,
+    )
     engine.grant_module(
         "player-1", "core-1", "core"
     )
@@ -244,26 +249,19 @@ def _regress_circuit_credit(
             "player-1"
         )
 
-        _advance_to(
-            engine,
-            15_000,
-        )
         before_place = engine.circuit_credits(
             "player-1"
         )
         _command(
             engine,
-            "place_module",
-            module_id="laser-1",
-            x=3,
-            y=3,
+            "deploy_module",
+            definition_id="laser",
         )
-        laser = (
-            engine.state.players[
-                "player-1"
-            ].modules[
-                "laser-1"
-            ]
+        laser = next(
+            module
+            for module in engine.state.players["player-1"].modules.values()
+            if module.definition.id == "laser"
+            and module.status == ModuleStatus.ACTIVE
         )
 
         snapshots.append({
@@ -334,87 +332,41 @@ def _regress_module_interaction(
             invariant_engine
         )
 
-        before_engine = _engine_fixture(
+        deploy_engine = _engine_fixture(
             unlock_ms=unlock_ms
         )
-        before_target = max(
-            0,
-            unlock_ms - 100,
-        )
-        _advance_to(
-            before_engine,
-            before_target,
-        )
+        deploy_engine.state.players["player-1"].circuit_credits = 1_000
         _command(
-            before_engine,
-            "place_module",
-            module_id="laser-1",
-            x=3,
-            y=3,
+            deploy_engine,
+            "deploy_module",
+            definition_id="laser",
         )
-        rejected_before = _command_rejected(
-            before_engine
-        )
-        reserve_before = (
-            before_engine.state.players[
-                "player-1"
-            ].modules[
-                "laser-1"
-            ].status
-            == ModuleStatus.RESERVE
-        )
-
-        after_engine = _engine_fixture(
-            unlock_ms=unlock_ms
-        )
-        _advance_to(
-            after_engine,
-            unlock_ms,
-        )
-        _command(
-            after_engine,
-            "place_module",
-            module_id="laser-1",
-            x=3,
-            y=3,
-        )
-        accepted_after = (
-            after_engine.state.players[
-                "player-1"
-            ].modules[
-                "laser-1"
-            ].status
-            == ModuleStatus.ACTIVE
+        active_lasers = [
+            module
+            for module in deploy_engine.state.players["player-1"].modules.values()
+            if module.definition.id == "laser"
+            and module.status == ModuleStatus.ACTIVE
+        ]
+        accepted_immediately = (
+            len(active_lasers) == 1
+            and not _command_rejected(deploy_engine)
         )
 
         snapshots.append({
             "label": label,
             "unlock_ms": unlock_ms,
             "invariants": invariants,
-            "rejected_before_unlock":
-                rejected_before,
-            "reserve_before_unlock":
-                reserve_before,
-            "accepted_at_unlock":
-                accepted_after,
-            "active_capacity_at_unlock":
-                after_engine
+            "legacy_unlock_ignored": True,
+            "accepted_immediately": accepted_immediately,
+            "active_capacity_at_start":
+                deploy_engine
                 .max_active_modules(),
         })
 
     passed = all(
-        snapshot[
-            "rejected_before_unlock"
-        ]
-        and snapshot[
-            "reserve_before_unlock"
-        ]
-        and snapshot[
-            "accepted_at_unlock"
-        ]
-        and snapshot[
-            "active_capacity_at_unlock"
-        ] == 5
+        snapshot["legacy_unlock_ignored"]
+        and snapshot["accepted_immediately"]
+        and snapshot["active_capacity_at_start"] == 10
         and all(
             snapshot[
                 "invariants"
@@ -449,33 +401,25 @@ def _new_rejection_since(
 
 
 def _regress_generator_route()->dict:
-    engine=_engine_fixture()
-    _advance_to(
-        engine,
-        MODULE_INTERACTION_UNLOCK_MS,
-    )
-
-    player=engine.state.players[
-        "player-1"
-    ]
-    generator=player.modules[
-        "generator-1"
-    ]
-
     snapshots=[]
     for gate in (
         GENERATOR_GATE_POSITIONS
     ):
-        event_index=len(
-            engine.state.events
+        engine=BattleEngine(BattleState(battle_id="generator-route-regression"))
+        engine.add_player("player-1")
+        engine.set_battle_pool(
+            "player-1",
+            default_battle_pool().module_definition_ids,
         )
-        _command(
-            engine,
-            "move_module",
-            module_id="generator-1",
-            x=gate.x,
-            y=gate.y,
+        engine.grant_module("player-1", "core-1", "core")
+        engine.grant_module("player-1", "generator-1", "generator")
+        engine.set_initial_active_module("player-1", "core-1", 2, 2)
+        engine.set_initial_active_module(
+            "player-1", "generator-1", gate.x, gate.y
         )
+        engine.start()
+        player=engine.state.players["player-1"]
+        generator=player.modules["generator-1"]
 
         topology=build_energy_topology(
             player,
@@ -521,11 +465,7 @@ def _regress_generator_route()->dict:
             },
             "moved":
                 generator.position==gate,
-            "command_rejected":
-                _new_rejection_since(
-                    engine,
-                    event_index,
-                ),
+            "command_rejected": False,
             "core_connected":
                 core_connected,
             "special_side_access_count":

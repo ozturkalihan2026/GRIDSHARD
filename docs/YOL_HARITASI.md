@@ -1,7 +1,7 @@
-# GRIDSHARD 2.0 — YOL HARİTASI
+# GRIDSHARD 2.1 — YOL HARİTASI
 
-**Güncel Sürüm:** `2.0.0-beta.38.1`
-**Paket:** Beta.38.1 — Savaş Olayları + Ses Kurtarma + Özgür Güçlendirici Hedefleme
+**Güncel Sürüm:** `2.1.0-beta.42`
+**Paket:** Beta.42 — Kanonik Arena, Modül ve Ödül Geçişi
 **Kanonik Dosya:** `docs/YOL_HARITASI.md`
 
 > Bu dosya GRIDSHARD 2.0 için tek kanonik geliştirme kaydıdır. Kaynak karar belgesi ile kod tabanı yeniden karşılaştırılmıştır. Buradaki `[x]`, `[~]`, `[ ]` işaretleri artık yalnızca kodda ve testlerde doğrulanabilen gerçek durumu gösterir.
@@ -30,7 +30,7 @@ Aşağıdaki kararlar sabittir ve bundan sonraki geliştirmeler bunları bozamaz
 - [x] Yasal dört modüllük başlangıçtan sonra 5. modül 15. saniyede, sonraki yuvalar 15 saniyelik aralıklarla açılır; aktif modülün başka bir rezerv modülle değiştirilmesinde yapay sınır yoktur.
 - [x] Devreden çıkarılan modül Can değerini korur; diğer maç içi durumlar da savaş saatiyle korunacak şekilde modellenmiştir.
 - [x] Sürüklenmekte olan aktif modül, bırakma komutu motor tarafından kabul edilene kadar savaşta kalır.
-- [x] 24 global seçenekten 18 modüllük Savaş Havuzu kullanılır; maksimum 10 aktif modül vardır.
+- [x] 24 global seçenekten oyuncunun seçtiği 6 kartlık Savaş Destesi kullanılır. Çekirdek ve Jeneratör sistem tarafından sabit sağlanır; aynı karttan maç içinde birden fazla savaş örneği üretilebilir ve maksimum 10 aktif modül kararı korunur.
 - [x] Çekirdek, Jeneratör, enerji akışı, port bağlantıları ve devre kurma GRIDSHARD kimliğinin temelidir.
 - [x] Varsayılan oyun dili Türkçedir; Ayarlardan İngilizce seçildiğinde menüler, durumlar ve modül adları İngilizce karşılıklarına çevrilir.
 - [x] Tek kanonik geliştirme kaydı bu dosyadır.
@@ -186,7 +186,7 @@ Beta.25 sonrası mobil hazırlık önceliği kapsamında eski erteleme kararı k
 
 ## FAZ 9 — 18 Modüllük Savaş Havuzu
 
-- [x] `BATTLE_POOL_SIZE = 18` sunucuda uygulanmış durumda.
+- [x] `BATTLE_POOL_SIZE = 6` sunucuda uygulanmış durumda; Çekirdek ve Jeneratör deste dışında sabittir.
 - [x] İstemci 24 seçilebilir modülden 18 seçim yapabiliyor.
 - [x] Jeneratör zorunlu havuz elemanı olarak korunuyor.
 - [x] `24 → 18 → maksimum 10 aktif` zinciri kodda mevcut.
@@ -206,11 +206,12 @@ Beta.25 sonrası mobil hazırlık önceliği kapsamında eski erteleme kararı k
 
 ## FAZ 11 — Özel Hücreler
 
-- [x] 6 özel hücre mevcut: Saldırı, Savunma, Enerji, Soğutma, Onarım, Sinyal.
-- [x] Bonus metadata/effect değerleri motor tarafında tanımlı.
+- [x] Dört sınıf mührü mevcut: Saldırı, Savunma, Enerji ve Onarım.
+- [x] Saldırı/Savunma/Enerji mühürleri yalnız kendi sınıfını; Onarım mührü yalnız Onarım Modülünü kabul eder. Kural sunucu otoritelidir.
+- [x] Bonus metadata/effect değerleri motor tarafında tanımlı ve istemcide sınıf rengiyle gösterilir.
 - [~] Her özel hücrenin stratejik bedel/risk yarattığının denge testleri henüz tamamlanmadı.
 
-**Durum:** Mekanik tamam; risk/ödül dengesi bekliyor.
+**Durum:** Dört sınıf mührü mekaniği tamam; risk/ödül dengesi bekliyor.
 
 ## FAZ 12 — Geçici Güçlendiriciler
 
@@ -440,7 +441,7 @@ olarak üretilir.
 ### M5 — Stratejik Savaş Alanı
 - [x] 20 yerleştirilebilir konum.
 - [x] Maksimum 10 aktif modül.
-- [x] 6 özel hücre.
+- [x] 4 sınıf kısıtlı özel hücre.
 - [~] Risk/ödül dengesi gerçek test bekliyor.
 
 ### M6 — Güçlendirici Savaşı
@@ -1965,3 +1966,83 @@ Beta.38.1 yayın kanıtı:
 - [x] Codex uygulama içi gerçek tarayıcıda canlı savaş, FCT şeritleri, ses geçişleri, üçlü güçlendirici ve normal tıkla hedefleme iptali doğrulandı.
 - [x] Playwright matrisi masaüstü Chromium `8/8`, Android Chrome emülasyonu `2/2`, iPhone Safari emülasyonu `2/2` olmak üzere toplam `12/12` geçti.
 - [~] Fiziksel Android/iPhone kanıtı için bu çalışma ortamında gerçek cihaz veya BrowserStack erişim bilgisi bulunmuyor; emülasyon fiziksel kanıt olarak etiketlenmedi.
+
+---
+
+# 28. Mobil Ürün Yönü — Beta.39 Çalışma Planı
+
+**Kaynak değerlendirme:** `Oyun_Tasarim_Notlari.docx` içindeki öneriler mevcut sunucu otoritesi, enerji/port kimliği ve erişilebilir giriş yöntemleriyle karşılaştırıldı. Belge bir uygulama betiği olarak değil, yeni ürün yönü olarak ele alındı.
+
+## Beta.39A — Savaş Alanı Kuralları
+
+1. [x] Yıkılan Çekirdek dışı modülün son hücresi 5 saniye enkazla kapanır. Süre, sunucu savaş saatinden hesaplanır; istemci yalnız kalan süreyi gösterir.
+2. [x] Enkaz süresince yerleştirme ve taşıma sunucuda reddedilir. AI de yerleşim ararken enkazlı hücreyi seçmez.
+3. [x] Enkaz oyuncu ve rakip tahtasında geri sayımlı parçalı hücre görseliyle gösterilir; azaltılmış hareket tercihi animasyonu kapatır.
+4. [x] Altı bonus hücre yerine dört sınıf mührü kullanılır: Saldırı, Savunma, Enerji ve Onarım.
+5. [x] Mühürler yalnız doğru sınıf/tanımı kabul eder. Yanlış sürükle veya dokunma istemcide açıklanır; kanonik ret yine sunucudadır.
+
+## Beta.39B — 6 Kartlık Savaş Destesi ve Çoğaltılabilir Savaş Örnekleri
+
+1. [x] `6 modül türü → maç içinde aynı türden birden fazla örnek` üretim modeli kuruldu. Her başarılı kullanım yeni ve benzersiz bir savaş örneği oluşturur; deste kartı tüketilmez.
+2. [x] Çekirdek ve Jeneratör desteden çıkarılıp sistem tarafından sabit sağlandı; oyuncu 6 farklı savaş kartı seçer.
+3. [x] Raf yalnız seçili altı türü gösterir. Karta tıklama, sunucunun enerji bağlantısı ve özel hücre kurallarına uyan boş hücreler arasından tekrar üretilebilir rastgele seçim yapmasını ister. Yerleşen modüller taşınamaz; oyuncu yalnız port yönünü çevirebilir.
+4. [x] Eski 18'lik hazır havuzlar ve oyuncu kayıtları, geçerli ilk altı farklı kart korunup eksikler güvenli başlangıç kartlarıyla tamamlanarak 6 kartlık desteye dönüştürülür.
+5. [x] Yerleştirme hakkı geri sayımı kaldırıldı. On aktif modül kapasitesi maç başında açıktır; her kart yalnız kendi Devre Kredisi bedeli karşılandığında etkinleşir.
+6. [x] Güçlendirici teklifleri ve kullanımları savaş akışından kapatıldı; modül rafı yalnız deste kartlarına ayrıldı.
+7. [ ] Dağıtıcı dahil çıkarılması önerilen modüller yalnız kullanım telemetrisi, enerji topolojisi etkisi ve yerine gelecek modül tanımları hazırlandıktan sonra katalogdan kaldırılacak.
+
+## Beta.39C — Mobil Dikey Savaş ve Çekirdek Gücü
+
+1. [x] Savaş ekranı telefon dikey görünümünde üst rakip adı ve altı kartlık destesi, üst rakip devre, alt oyuncu devresi/oyuncu adı ve başparmak erişimli tek sıra Savaş Destesi düzenine geçti. Eski üst bilgi barı savaşta gizlendi; Devre Kredisi deste başlığına taşındı.
+2. [x] `use_core_power`, sunucu otoriteli 35 saniyelik dolum, yalnız kendi Çekirdeğini hedefleme, tam canlı hedefte dolumu koruma, atomik kullanım ve `request_id` tekrar korumasıyla eklendi. İlk Rezonans etkisi en fazla `45 CAN` onarır.
+3. [~] İlk çekirdek gücünün kullanım sayısı ve olayları snapshot/telemetri hattına açıldı; farklı çekirdek türleri dereceli savaşta güç üretmeden kataloglandı. İnsan-vs-AI kullanım oranı ve denge örneklemi gerçek oyuncu verisi biriktikçe tamamlanacak.
+
+## Beta.40+ — Meta İlerleme
+
+1. [x] 12 arena, 5 lig, 5 şampiyonlar ligi ve Efsanevi Lig sunucu tarafında tek kanonik kademe tablosu, etkin sezon kimliği, sezon sonuç arşivi ve yumuşak sıfırlama modeliyle kuruldu.
+2. [x] Modül nadirliği, arena kilidi ve en fazla 15 seviyelik para+modül parçası yükseltmeleri eklendi. İşlemler makbuzla tekrar korumalıdır; Akı Laboratuvarı bakiyesi değişmez ve dereceli savaş snapshot'ına güç uygulanmaz.
+3. [x] Rezonans, Muhafız, Aşırı Yük, Kesinti, Kapasitör, Anka ve Kuantum olmak üzere 7 çekirdek türü ve ön koşullu yetenek ağaçları kuruldu. Seçim/öğrenme kalıcıdır ancak `ranked_normalized=true` ve `competitive_power_enabled=false` kuralı korunur.
+4. [x] 3/8/24 saat sandıkları sunucu UTC saati, dört yuvalık kayıt, açık nadirlik olasılıkları, deterministik ödül makbuzu ve tekrar korumasıyla uygulandı. Dereceli galibiyet sandık üretir; dolu yuva güvenli biçimde yeni ödülü atlar.
+5. [x] Kupa hesabı rakip derecesine göre beklenen sonuçtan üretilir; galibiyet/mağlubiyet sınırları, 12 arenanın düşmeyi engelleyen tabanı ve sezon arşivi öncesi yumuşak sıfırlama birlikte uygulanır.
+
+Beta.40 sunucu yüzeyi:
+
+- `GET /profile/{player_id}/meta-progression`
+- `POST /profile/{player_id}/meta-progression/modules/{module_definition_id}/upgrade`
+- `POST /profile/{player_id}/meta-progression/chests/{chest_id}/open`
+- `POST /profile/{player_id}/meta-progression/shop/{offer_id}/purchase`
+- `PUT /profile/{player_id}/meta-progression/core`
+- `POST /profile/{player_id}/meta-progression/cores/{core_type_id}/skills/{skill_id}`
+
+## Beta.41 — Telefon Dikey Ürün Kabuğu · Mağaza · Modül Koleksiyonu
+
+1. [x] Savaş dışındaki bütün ekranlar en fazla `480 px` genişlikte, üst oyuncu/kaynak şeridi ile alt Dock arasında kalan tek kaydırılabilir telefon hücresine taşındı.
+2. [x] Alt Dock `Mağaza · Modüller · Ev · Takım · Etkinlik` sırasına geçti. Bütün simgeler görünür kalır; yalnız seçili hedefin adı açılır ve büyür, dekoratif alt çizgi kullanılmaz.
+3. [x] Ev ekranı oyuncu kaynaklarını, altı kartlık aktif desteyi, yedi hazır deste yuvasını ve doğrudan eşleştirmeyi başlatan Savaş düğmesini tek başparmak akışında toplar. Savaş geçişinde kısa devre eşleştirme animasyonu gösterilir.
+4. [x] Ortak modül kartı dili oluşturuldu. Deste, rakip deste önizlemesi, savaş rafı ve koleksiyonda aynı kare görsel ölçeği kullanılır; kart yüzünde isim yerine yalnız sınıf renkli modül simgesi bulunur.
+5. [x] Modüller ekranı `Tümü / Enerji / Saldırı / Savunma / Destek / Sabotaj` filtreleri, seviye ve parça ilerlemesi, seçili altılı deste, yedi hazır deste ve yuva bazlı değiştirme akışıyla kuruldu.
+6. [x] Modüle dokununca `Bilgi / Seç` hızlı eylemi; Bilgi ile aynı sayfa üzerinde genel bakış, istatistikler, yetenek ağacı ve modül özeti sekmelerini taşıyan ayrıntı penceresi açılır. Yükseltme mevcut para+modül parçası sunucu işlemine bağlıdır.
+7. [x] Mağaza ekranında savaşlardan kazanılan `3 / 8 / 24 saat` sandık yuvaları ile günlük Bronz, Gümüş ve Altın teklifler ayrıldı.
+8. [x] Günlük teklifler Devre Kredisi veya Akı harcar; Devre Kredisi, Akı, modül kartı parçası ve çekirdek parçası ödüllerini atomik, tekrar korumalı sunucu makbuzuyla verir. Satın alınan teklif UTC gün sonuna kadar yeniden alınamaz.
+9. [x] Rakip adı altındaki altı kart hücre ölçeğine büyütüldü; iki devre arasındaki dikey nefes alanı artırıldı. Oyuncu rafı yatay kaydırma olmadan altı eş ölçülü kartı tek sırada gösterir.
+
+**Açık izleme:** Telefonlarda gerçek görsel kabul, güvenli alan çentikleri, düşük ekran yüksekliğinde iki devre + raf dengesi ve günlük teklif ekonomi katsayıları kullanıcı testinden sonra sıkılaştırılacak.
+
+---
+
+# 29. Kanonik Ürün Geçişi — Beta.42 Uygulama Paketi
+
+**Kaynaklar:** `GRIDSHARD_2_1_KANONIK_TASARIM.md`, `ARENA_MODUL_ODUL_KANONU.md` ve `BOT_HAVUZU_120.md`. Bu bölüm, Beta.39–41'deki çelişen tarihsel kararların yerine GRIDSHARD 2.1 kanonunu uygular.
+
+1. [x] Savaş alanı 5×3 hücreye; Çekirdek sabit merkez `(2,1)` hücresine ve oyuncunun kullanabildiği 14 eşdeğer modül hücresine geçirildi. Port, yön, özel hücre, Jeneratör zorunluluğu ve taşıma savaş kuralından çıkarıldı.
+2. [x] Altı farklı kartlık deste korunurken aynı karttan sınırsız savaş örneği üretilebilen, sunucu otoriteli deterministik-rastgele yerleşim eklendi. Enkaz hücresi 3 saniye sonra yeniden açılır.
+3. [x] Maç içi yerleştirme kaynağı Akım; kalıcı yükseltme kaynağı Devre Kredisi olarak ayrıldı. Akım ilk V1 değeri 6/12, yenilenme hızı 2,5 saniyede +1 ve kart maliyetleri 2–5'tir.
+4. [x] Çekirdek üretimi, enerji deposu ve Enerji Baskısı ayrı savaş sistemi olarak kuruldu. Seviye, Sistem kartları ve seçilen Çekirdek yeteneği gerçek üretim/kapasite değerine uygulanır.
+5. [x] Kanondaki 36 modül, arena kilitleri, nadirlikler, CAN/hasar/Akım tabanları ve 2/4/8 ile başlayan 15 seviyelik parça tablosu tek veri kaynağına taşındı. Seviye ve uzmanlıklar arena savaş snapshot'ına uygulanır.
+6. [x] 12 Arena + lig basamakları, kupa artış/azalışı, girilmiş arena tabanı, yol ödülleri ve yumuşak sezon sıfırlaması bağlandı.
+7. [x] İnsan araması aynı kademede 0–7/8–15/16–23/24–31 saniye için ±100/150/200/250 kupa penceresi kullanır; 32. saniyede aynı kademeden AI rakiple devam eder. Yakın kupa eşitliğinde deste/Çekirdek gelişim seviyesi ikincil sinyaldir.
+8. [x] Kullanıcının verdiği 120 bot kimliği ve altı kartlık desteleri değişmeden alındı: arena başına 10 profil. Karar gecikmesi, kontrollü hata oranı ve arketip tercihi savaş AI'sına bağlandı.
+9. [x] 7 Çekirdek türü; gerçek aktif güç, Akı + türe özel Çekirdek Parçası yükseltmesi ve üç iki-yönlü uzmanlık eşiğiyle etkinleştirildi.
+10. [x] Arena ödülleri, 3/8/24 saatlik sandıklar ve günlük teklifler DK, Akı, kart parçası ve türe özel Çekirdek Parçası üretir. Harcama ve ödüller sunucu kilidi ve işlem makbuzuyla tekrar korumalıdır.
+11. [x] Kupa rekoru, galibiyet serisi, Akım tüketimi, yerleştirme, Çekirdek kullanımı, deste ve Çekirdek tercihleri kalıcı istatistik görünümüne eklendi.
+12. [~] Beta.42H denge kapısı açıktır. Başlangıç Akım, enerji baskısı, yükseltme maliyetleri, ödül hacmi ve Çekirdek güçleri uygulandı; oynanış testi ve geniş örnekli simülasyon yapılmadan nihai denge olarak işaretlenmeyecektir.

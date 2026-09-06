@@ -3,7 +3,7 @@ setlocal
 cd /d "%~dp0"
 chcp 65001 >nul
 
-set "GRIDSHARD_EXPECTED_VERSION=2.0.0-beta.38.1"
+set "GRIDSHARD_EXPECTED_VERSION=2.1.0-beta.42"
 
 echo ============================================================
 echo GRIDSHARD %GRIDSHARD_EXPECTED_VERSION% - HIZLI SAVAS TESTI
@@ -41,6 +41,6 @@ if not "%GRIDSHARD_HEALTH_EXIT%"=="0" (
 
 start "" "http://127.0.0.1:%GRIDSHARD_WEB_PORT%/"
 echo Tarayici dogrulanmis %GRIDSHARD_EXPECTED_VERSION% sunucusunda acildi: http://127.0.0.1:%GRIDSHARD_WEB_PORT%/
-echo Ana Menu ^> Oyna ^> Hazir Havuzu Yukle ^> Eslestir yolunu kullan.
-echo 10 saniyede cevrimici rakip bulunamazsa sunucu AI oyuncusu devralir.
+echo EV ^> SAVAS yolunu kullan.
+echo Beta surumunde arena ve kupa araligina uygun sunucu AI rakibi dogrudan atanir.
 exit /b 0

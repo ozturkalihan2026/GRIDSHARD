@@ -30,60 +30,23 @@
   };
 
   const moduleDefinitions = [
-    ["core-1","Çekirdek",300,0,"çekirdek","Ana hedef ve devre merkezi","active",{x:2,y:2}],
-    ["generator-1","Jeneratör",150,0,"enerji","Ana enerji kaynağı","active",{x:2,y:3}],
-    ["battery-1","Batarya",120,70,"enerji","Enerji rezervi","reserve",null],
-    ["splitter-1","Dağıtıcı",85,60,"enerji","Enerji hattını dallandırma","reserve",null],
-    ["capacitor-1","Kapasitör",90,75,"enerji","Kısa süreli güç boşaltımı","reserve",null],
-    ["laser-1","Lazer",100,90,"saldırı","Sürekli tek hedef hasarı","reserve",null],
-    ["pulse-cannon-1","Darbe Topu",115,120,"saldırı","Yüksek ani hasar","reserve",null],
-    ["railgun-1","Ray Topu",95,135,"saldırı","Yüksek delici hasar","reserve",null],
-    ["missile-launcher-1","Füze Fırlatıcı",105,125,"saldırı","Gecikmeli yüksek alan baskısı","reserve",null],
-    ["drone-bay-1","Dron Üssü",110,115,"saldırı","Dağıtık ve sürekli baskı","reserve",null],
-    ["arc-cannon-1","Ark Topu",100,130,"saldırı","Zincirleme çoklu hedef hasarı","reserve",null],
-    ["shield-1","Kalkan",140,100,"savunma","Aktif hasar emme","reserve",null],
-    ["armor-1","Zırh",180,95,"savunma","Pasif dayanıklılık","reserve",null],
-    ["reflector-1","Yansıtıcı",110,115,"savunma","Enerji saldırısını geri çevirme","reserve",null],
-    ["barrier-1","Bariyer",165,105,"savunma","Bağlantı hattını koruma","reserve",null],
-    ["repair-1","Onarım Modülü",100,80,"destek","Can onarımı","reserve",null],
-    ["cooler-1","Soğutucu",100,65,"destek","Isı kontrolü","reserve",null],
-    ["amplifier-1","Güçlendirici",90,85,"destek","Saldırı hattını güçlendirme","reserve",null],
-    ["targeting-computer-1","Hedefleme Bilgisayarı",85,90,"destek","Hedefleme desteği","reserve",null],
-    ["overclock-unit-1","Aşırı Hızlandırıcı",80,105,"destek","Yüksek performans ve ısı riski","reserve",null],
-    ["emp-1","EMP",80,110,"sabotaj","Geçici sistem bozma","reserve",null],
-    ["jammer-1","Sinyal Bozucu",85,100,"sabotaj","Destek hatlarını bozma","reserve",null],
-    ["virus-1","Virüs",70,115,"sabotaj","Zamanla yayılan sistem zayıflatması","reserve",null],
-    ["energy-leech-1","Enerji Sömürücü",75,120,"sabotaj","Enerji ekonomisini baskılama","reserve",null],
-    ["disruptor-1","Kesici",80,125,"sabotaj","Kritik bağlantıyı geçici kesme","reserve",null],
-  ].map(([instanceId,nameTr,hp,circuitCreditCost,category,strategicRole,status,position]) => ({
-    instanceId,nameTr,hp,maxHp:hp,circuitCreditCost,category,strategicRole,status,position,
-    energyRequired: 0,
-    energyReceived: 0,
-    isPowered: true,
-    storedEnergy: 0,
-    portCount: PORT_COUNT_BY_NAME[nameTr] || 1,
-    movable:
-      nameTr !== "Çekirdek",
-    removable:
-      ![
-        "Çekirdek",
-        "Jeneratör",
-      ].includes(nameTr),
-    allowedMovePositions:
-      nameTr === "Jeneratör"
-        ? [
-            {x:2,y:1},
-            {x:3,y:2},
-            {x:2,y:3},
-            {x:1,y:2},
-          ]
-        : null,
-    rotatable:
-      ![
-        "Çekirdek",
-        "Jeneratör",
-      ].includes(nameTr),
-    direction: "up",
+    { id: "core", name_tr: "Çekirdek", max_hp: 300, category: "çekirdek", current_cost: 0 },
+    // Retain only the legacy instance handle for old diagnostic views.
+    { id: "generator", name_tr: "Jeneratör", max_hp: 0, category: "enerji", current_cost: 0 },
+    ...(Array.isArray(globalThis.GRIDSHARD_CANON_MODULES)
+      ? globalThis.GRIDSHARD_CANON_MODULES
+      : []),
+  ].map(item => ({
+    instanceId: item.id.replaceAll("_", "-") + "-1", definitionId: item.id,
+    nameTr: item.name_tr, hp: item.max_hp, maxHp: item.max_hp,
+    circuitCreditCost: item.current_cost, currentCost: item.current_cost,
+    category: item.category === "sistem" ? "enerji" : item.category,
+    strategicRole: item.name_tr, rarity: item.rarity, unlockTrophies: item.unlock_trophies,
+    status: item.id === "core" ? "active" : item.id === "generator" ? "destroyed" : "reserve",
+    position: item.id === "core" ? {x: 2, y: 1} : null,
+    isDeckTemplate: !["core", "generator"].includes(item.id),
+    energyRequired: 0, energyReceived: 0, isPowered: true, storedEnergy: 0,
+    portCount: 0, movable: false, removable: false, rotatable: false, direction: "up",
   }));
 
   const commandLog = [];
@@ -91,7 +54,7 @@
   const COMPETITIVE_STATUS = "M7 rekabetçi altyapı doğrulanıyor";
   const BALANCE_STATUS = "Denge simülasyonu mevcut · geniş örnek bekliyor";
   const AI_STATUS = "5 AI arketipi aktif · oyuncu test telemetrisi toplanıyor";
-  const PVP_STATUS = "GRIDSHARD Beta.38.1 · Savaş Olayları + Ses Kurtarma + Özgür Güçlendirici Hedefleme";
+  const PVP_STATUS = "GRIDSHARD Beta.39 · 6 Kartlık Deste + Sunucu Yerleşimi";
 
 
 
@@ -230,7 +193,7 @@
     );
   }
   const selectablePoolModules = moduleDefinitions.filter(
-    (module) => module.instanceId !== "core-1"
+    (module) => !["core-1", "generator-1"].includes(module.instanceId)
   );
   const moduleCatalogById =
     new Map();
@@ -244,30 +207,75 @@
   const STARTER_BATTLE_POOL_PRESET = Object.freeze({
     name: "Başlangıç Devresi",
     module_definition_ids: Object.freeze([
-      "generator", "battery", "splitter", "capacitor",
-      "laser", "pulse_cannon", "railgun", "missile_launcher",
-      "drone_bay", "arc_cannon", "shield", "armor",
-      "reflector", "barrier", "repair", "cooler",
-      "amplifier", "targeting_computer",
+      "laser", "shield", "repair", "cooler", "battery", "amplifier",
     ]),
     favorite: true,
     last_used_at_ms: null,
     use_count: 0,
     system: true,
   });
+  const BUILT_IN_BATTLE_POOL_PRESETS = Object.freeze([
+    STARTER_BATTLE_POOL_PRESET,
+    { name:"Enerji Dalgası", module_definition_ids:["battery","splitter","capacitor","laser","shield","repair"] },
+    { name:"Kırmızı Hat", module_definition_ids:["battery","laser","pulse_cannon","missile_launcher","drone_bay","targeting_computer"] },
+    { name:"Mavi Duvar", module_definition_ids:["battery","shield","armor","reflector","barrier","repair"] },
+    { name:"Yeşil Ağ", module_definition_ids:["battery","laser","repair","cooler","amplifier","targeting_computer"] },
+    { name:"Mor Kesinti", module_definition_ids:["battery","laser","emp","jammer","virus","energy_leech"] },
+    { name:"Akış Ekonomisi", module_definition_ids:["splitter","capacitor","laser","shield","cooler","disruptor"] },
+  ].map((preset, index) => Object.freeze({
+    ...preset,
+    favorite: index === 0,
+    last_used_at_ms: null,
+    use_count: 0,
+    system: true,
+  })));
+
+  function normalizeDeckDefinitionIds(moduleIds) {
+    const selectable = new Set(
+      selectablePoolModules.map((module) => module.definitionId)
+    );
+    const normalized = [];
+    for (const moduleId of moduleIds || []) {
+      const clean = String(moduleId || "");
+      if (selectable.has(clean) && !normalized.includes(clean)) {
+        normalized.push(clean);
+      }
+      if (normalized.length >= 6) break;
+    }
+    for (const moduleId of STARTER_BATTLE_POOL_PRESET.module_definition_ids) {
+      if (normalized.length >= 6) break;
+      if (!normalized.includes(moduleId)) normalized.push(moduleId);
+    }
+    return normalized;
+  }
 
   function withStarterBattlePoolPresets(presets) {
+    const savedByName = new Map((presets || []).map((preset) => [preset.name, preset]));
     return [
-      { ...STARTER_BATTLE_POOL_PRESET },
+      ...BUILT_IN_BATTLE_POOL_PRESETS.map((preset) => ({
+        ...preset,
+        ...(savedByName.get(preset.name) || {}),
+        module_definition_ids: normalizeDeckDefinitionIds(
+          savedByName.get(preset.name)?.module_definition_ids || preset.module_definition_ids
+        ),
+        system: true,
+      })),
       ...(presets || []).filter(
-        (preset) => preset.name !== STARTER_BATTLE_POOL_PRESET.name
-      ),
+        (preset) => !BUILT_IN_BATTLE_POOL_PRESETS.some(
+          (builtIn) => builtIn.name === preset.name
+        )
+      ).map((preset) => ({
+        ...preset,
+        module_definition_ids: normalizeDeckDefinitionIds(
+          preset.module_definition_ids
+        ),
+      })),
     ];
   }
   const battlePoolSelection = new BattlePoolSelection({
     selectableModuleIds: selectablePoolModules.map((module) => module.instanceId),
-    requiredSize: 18,
-    requiredModuleIds: ["generator-1"],
+    requiredSize: 6,
+    requiredModuleIds: [],
   });
   battlePoolSelection.setSelection(
     definitionIdsToInstanceIds(
@@ -275,7 +283,7 @@
     )
   );
   let focusedPoolModuleId =
-    "generator-1";
+    "battery-1";
   const collapsedPoolCategories = {
     global:new Set(),
     selected:new Set(),
@@ -285,14 +293,11 @@
   let activeBattlePoolPresetName = null;
   let activeBattlePoolPresetBaseline = [];
   let quickLoadoutFilter = "all";
-  let initialBattleModuleIds = [
-    "laser-1",
-    "pulse-cannon-1",
-  ];
+  let initialBattleModuleIds = [];
 
   const client = new RelayBattleClient({
     modules: moduleDefinitions,
-    unlockAtMs: 15000,
+    unlockAtMs: 0,
     circuitCredits: 200,
     emitCommand(command) {
       const pvpEnvelope =
@@ -435,6 +440,7 @@
           )
         );
       }
+      syncDeckEditorFromSelection();
       const continuity =
         participantContinuity
           .verify(
@@ -452,6 +458,7 @@
       renderStatisticsSummary();
       renderSettingsForm();
       loadBattlePoolPresets();
+      loadMetaProgression();
     }
 
     renderParticipantBootstrapStatus();
@@ -469,6 +476,24 @@
       settingsState,
     });
   let selectedLaboratoryModuleId = "generator";
+  let metaProgressionState = null;
+  const pendingMetaRequests = new Map();
+  let activeModuleFilter = "all";
+  let selectedCollectionModuleId = "laser";
+  let pendingDeckModuleInstanceId = null;
+  let homeMatchmakingLaunchPending = false;
+  let homeMatchmakingCancelPending = false;
+  let deckEditRevision = 0;
+  let deckSaveQueue = Promise.resolve();
+  let deckEditorSlots = battlePoolSelection.selectedIds().slice(0, 6);
+  while (deckEditorSlots.length < 6) deckEditorSlots.push(null);
+
+  function syncDeckEditorFromSelection() {
+    deckEditRevision += 1;
+    deckEditorSlots = battlePoolSelection.selectedIds().slice(0, 6);
+    while (deckEditorSlots.length < 6) deckEditorSlots.push(null);
+    pendingDeckModuleInstanceId = null;
+  }
 
   const appRouter = new RelayAppRouter();
   const screenController = new GridshardScreenController({
@@ -575,6 +600,10 @@
   function renderAppScreen() {
     const current = screenController.render();
     syncAudioStateForCurrentView();
+    if (current !== RelayAppScreen.MODULES) {
+      document.getElementById("module-quick-actions")?.setAttribute("hidden", "");
+    }
+    renderMetaHubScreens();
 
     if (
       current
@@ -645,13 +674,17 @@
       tutorialController?.maybeStart();
     }
 
-    if (["profile", "daily", "rewards"].includes(screen)) {
+    if (["profile", "daily", "rewards", "shop", "modules", "events", "menu"].includes(screen)) {
       accountDataLoader
         .loadProfile()
         .then(() => {
           renderProfileSummary();
+          renderMetaHubScreens();
           renderRemoteDataStatus();
         });
+      if (["shop", "modules", "menu"].includes(screen)) {
+        loadMetaProgression();
+      }
     } else if (
       screen === "laboratory"
     ) {
@@ -685,6 +718,1026 @@
     renderRemoteDataStatus();
     return result;
   }
+
+  function fallbackMetaProgression() {
+    return {
+      unavailable: true,
+      flux_shards: profileState.viewModel()?.engagement?.fluxShards || 0,
+      circuit_credits: Number(profileState.profile?.meta_progression?.circuit_credits || 0),
+      core_shards: 0,
+      module_collection: selectablePoolModules.map((module) => ({
+        definition_id: module.definitionId,
+        name_tr: module.nameTr,
+        category: module.category,
+        rarity: module.rarity || "common",
+        unlocked: false,
+        level: 0,
+        shards: 0,
+        next_upgrade_cost: null,
+      })),
+      chests: { slots: [], definitions: [
+        { id: "field_3h", name_tr: "Bronz Sandık", visual_tier: "bronze", unlock_hours: 3 },
+        { id: "circuit_8h", name_tr: "Gümüş Sandık", visual_tier: "silver", unlock_hours: 8 },
+        { id: "core_24h", name_tr: "Altın Sandık", visual_tier: "gold", unlock_hours: 24 },
+        { id: "diamond_24h", name_tr: "Elmas Sandık", visual_tier: "diamond", unlock_hours: 24 },
+      ] },
+      shop: { day: "", offers: [
+        { id: "bronze_daily", name_tr: "Bronz Sandık", tier: "bronze", currency: "circuit_credits", cost: 120, purchased: false },
+        { id: "silver_daily", name_tr: "Gümüş Sandık", tier: "silver", currency: "circuit_credits", cost: 400, purchased: false },
+        { id: "gold_daily", name_tr: "Altın Sandık", tier: "gold", currency: "circuit_credits", cost: 900, purchased: false },
+      ] },
+    };
+  }
+
+  async function loadMetaProgression() {
+    try {
+      const response = await fetch(
+        `/profile/${encodeURIComponent(participantPlayerId)}/meta-progression`
+      );
+      if (!response.ok) throw new Error("Koleksiyon yüklenemedi.");
+      metaProgressionState = await response.json();
+    } catch (_error) {
+      metaProgressionState ||= fallbackMetaProgression();
+      for (const id of ["module-action-status", "shop-action-status"]) {
+        const status = document.getElementById(id);
+        if (status) status.textContent = "Hesap verileri yüklenemedi. Sunucu bağlantısını kontrol edip sayfayı yenile.";
+      }
+    }
+    renderMetaHubScreens();
+    return metaProgressionState;
+  }
+
+  function metaModuleDefinition(item) {
+    return moduleDefinitions.find(
+      (module) => module.definitionId === item?.definition_id
+    ) || null;
+  }
+
+  function unifiedModuleTile(item, { collection = false, selected = false } = {}) {
+    const definition = metaModuleDefinition(item) || item;
+    const tile = document.createElement("button");
+    tile.type = "button";
+    tile.className = `unified-module-tile${collection ? " collection-module-tile" : ""}`;
+    tile.dataset.category = item.category || definition.category || "";
+    tile.dataset.moduleDefinitionId = item.definition_id || definition.definitionId || "";
+    tile.dataset.selected = String(selected);
+    tile.setAttribute("aria-label", localizedUiText(item.name_tr || definition.nameTr || "Modül"));
+    tile.title = localizedUiText(item.name_tr || definition.nameTr || "Modül");
+    if (item.unlocked === false) {
+      tile.dataset.locked = "true";
+    }
+    const art = document.createElement("span");
+    art.className = "unified-module-art";
+    art.textContent = moduleIconFor({ nameTr: item.name_tr || definition.nameTr });
+    art.setAttribute("aria-hidden", "true");
+    tile.appendChild(art);
+    if (selected) {
+      const check = document.createElement("span");
+      check.className = "unified-module-selected";
+      check.textContent = "✓";
+      tile.appendChild(check);
+    }
+    if (collection) {
+      const level = Math.max(0, Number(item.level || 0)) + 1;
+      const required = Math.max(1, Number(item.next_upgrade_cost?.shards || 1));
+      const shards = Math.max(0, Number(item.shards || 0));
+      const footer = document.createElement("span");
+      footer.className = "unified-module-progress";
+      footer.innerHTML = `<strong>SV ${level}</strong><span>${level >= 15 ? "AZAMİ" : `${shards} / ${required}`}</span><i style="--module-progress:${level >= 15 ? 100 : Math.min(100, Math.round((shards / required) * 100))}%"></i>`;
+      tile.appendChild(footer);
+    }
+    return tile;
+  }
+
+  function selectedDeckMetaModules({ editable = false } = {}) {
+    const collection = metaProgressionState?.module_collection || fallbackMetaProgression().module_collection;
+    const byId = new Map(collection.map((item) => [item.definition_id, item]));
+    const ids = deckEditorSlots;
+    return ids.map((instanceId) => {
+      if (!instanceId) return null;
+      const definition = clientDefinitionId(instanceId);
+      return byId.get(definition) || {
+        definition_id: definition,
+        name_tr: client.modules.get(instanceId)?.nameTr || definition,
+        category: client.modules.get(instanceId)?.category || "",
+        unlocked: true,
+      };
+    });
+  }
+
+  function renderDeckStrip(host, { editable = false } = {}) {
+    if (!host) return;
+    host.replaceChildren();
+    selectedDeckMetaModules({ editable }).forEach((item, index) => {
+      if (!item) {
+        const empty = document.createElement("button");
+        empty.type = "button";
+        empty.className = "unified-module-tile module-deck-empty";
+        empty.dataset.deckIndex = String(index);
+        empty.setAttribute("aria-label", `${index + 1}. boş deste yuvası`);
+        empty.textContent = "+";
+        empty.disabled = true;
+        host.appendChild(empty);
+        return;
+      }
+      const tile = unifiedModuleTile(item, { selected: true });
+      tile.dataset.deckIndex = String(index);
+      tile.classList.toggle("is-replace-target", editable && Boolean(pendingDeckModuleInstanceId));
+      if (editable) {
+        tile.disabled = false;
+        tile.setAttribute("aria-label", `${localizedUiText(item.name_tr)} · ${pendingDeckModuleInstanceId ? "Yerine koy" : "Çıkar"}`);
+        const badge = tile.querySelector(".unified-module-selected");
+        if (badge) badge.textContent = pendingDeckModuleInstanceId ? "↔" : "−";
+        tile.addEventListener("click", async () => {
+          if (pendingDeckModuleInstanceId) {
+            deckEditorSlots[index] = pendingDeckModuleInstanceId;
+            pendingDeckModuleInstanceId = null;
+            await commitDeckEditorSlots();
+            return;
+          }
+          deckEditorSlots[index] = null;
+          await commitDeckEditorSlots();
+        });
+      } else {
+        tile.addEventListener("click", () => openAppScreen("modules"));
+      }
+      host.appendChild(tile);
+    });
+  }
+
+  function renderPresetStrip(host) {
+    if (!host) return;
+    host.replaceChildren();
+    for (let index = 0; index < 7; index += 1) {
+      const preset = battlePoolPresets[index];
+      const button = document.createElement("button");
+      button.type = "button";
+      button.textContent = String(index + 1);
+      button.title = preset?.name || `Hazır deste ${index + 1}`;
+      button.disabled = !preset;
+      button.classList.toggle("is-active", preset?.name === activeBattlePoolPresetName);
+      if (preset) {
+        button.addEventListener("click", async () => {
+          await loadSelectedBattlePoolPreset(preset.name);
+          renderMetaHubScreens();
+        });
+      }
+      host.appendChild(button);
+    }
+  }
+
+  function renderHomeHub() {
+    renderHomeCoreHero();
+    renderDeckStrip(document.getElementById("home-active-deck"));
+    renderPresetStrip(document.getElementById("home-preset-decks"));
+    renderHomeArena();
+    const battleButton = document.getElementById("home-battle-button");
+    if (battleButton) {
+      const locked = selectedDeckMetaModules().some(item => item?.unlocked === false);
+      battleButton.disabled = locked || deckEditorSlots.filter(Boolean).length !== 6
+        || homeMatchmakingLaunchPending || homeMatchmakingCancelPending
+        || isOnlineMatchmakingCancelable();
+      const copy = battleButton.querySelector("small");
+      if (copy && !homeMatchmakingLaunchPending && !isOnlineMatchmakingCancelable()) copy.textContent = locked ? "Destendeki kilitli kartları değiştir" : "Eşleştirmeyi başlat";
+    }
+  }
+
+  function arenaViewModel() {
+    const state = metaProgressionState || fallbackMetaProgression();
+    const profileRating = Number(profileState.profile?.rating || 0);
+    const fallbackFloor = Math.max(0, Math.floor(profileRating / 300) * 300);
+    const fallbackIndex = Math.floor(fallbackFloor / 300) + 1;
+    const rank = state.rank || {
+      kind: "arena",
+      index: fallbackIndex,
+      name_tr: `Arena ${fallbackIndex}`,
+      minimum_rating: fallbackFloor,
+      rating: profileRating,
+      next_stage: { name_tr: `Arena ${fallbackIndex + 1}`, minimum_rating: fallbackFloor + 300 },
+    };
+    const rating = Number(rank.rating ?? profileState.profile?.rating ?? 0);
+    const floor = Number(rank.minimum_rating || 0);
+    const ceiling = Number(rank.next_stage?.minimum_rating ?? Math.max(floor + 300, rating));
+    const progress = ceiling <= floor ? 100 : Math.max(0, Math.min(100, ((rating - floor) / (ceiling - floor)) * 100));
+    return { rank, rating, floor, ceiling, progress };
+  }
+
+  function resourceSymbolMarkup(kind) {
+    const symbols = {
+      flux_shards: '<span class="resource-symbol resource-symbol-flux" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m12 2 4 6 6 4-6 4-4 6-4-6-6-4 6-4Z"/><circle cx="12" cy="12" r="2.3"/></svg></span>',
+      circuit_credits: '<span class="resource-symbol resource-symbol-credit" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M7 12h3l2-4 2 8 2-4h2"/></svg></span>',
+      module_shards: '<span class="resource-symbol resource-symbol-module-shard" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m5 4 8 2 5 7-8 7-6-6Z"/><path d="m13 6-3 6 6 2"/></svg></span>',
+      core_shards: '<span class="resource-symbol resource-symbol-core-shard" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m12 3 7 4v10l-7 4-7-4V7Z"/><path d="m12 7 4 5-4 5-4-5Z"/></svg></span>',
+      chest: '<span class="resource-symbol resource-symbol-chest" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 9h16v11H4Z"/><path d="M3 5h18v5H3ZM12 9v11"/></svg></span>',
+    };
+    return symbols[kind] || '<span class="resource-symbol resource-symbol-module-shard" aria-hidden="true">◆</span>';
+  }
+
+  function renderArenaPath() {
+    const host = document.getElementById("arena-path");
+    if (!host) return;
+    host.replaceChildren();
+    const arenaPath = metaProgressionState?.arena_path || [];
+    const arenasByIndex = new Map(arenaPath.map((arena) => [Number(arena.index), arena]));
+    const stages = metaProgressionState?.rank_stages?.length
+      ? metaProgressionState.rank_stages
+      : arenaPath;
+    const currentStageId = metaProgressionState?.rank?.id;
+    const rewardIcon = (rewards = {}) => {
+      if (rewards.chest_id) return resourceSymbolMarkup("chest");
+      if (rewards.core_shards) return resourceSymbolMarkup("core_shards");
+      if (rewards.module_shards || rewards.module_id) return resourceSymbolMarkup("module_shards");
+      if (rewards.flux_shards) return resourceSymbolMarkup("flux_shards");
+      if (rewards.circuit_credits) return resourceSymbolMarkup("circuit_credits");
+      return resourceSymbolMarkup("module_shards");
+    };
+    for (const stage of stages) {
+      const arena = stage.kind === "arena" || !stage.kind
+        ? (arenasByIndex.get(Number(stage.index)) || stage)
+        : null;
+      const unlocked = arena ? Boolean(arena.unlocked) : Number(arenaViewModel().rating) >= Number(stage.minimum_rating || 0);
+      const section = document.createElement("section");
+      section.className = `arena-path-stage${unlocked ? " is-unlocked" : ""}${stage.kind === "league" ? " is-league" : ""}${stage.id === currentStageId ? " is-current" : ""}`;
+      const head = document.createElement("header");
+      head.className = "arena-path-stage-head";
+      const marker = document.createElement("span");
+      marker.className = "arena-path-marker";
+      marker.textContent = stage.kind === "league" ? "♛" : String(stage.index || "◇");
+      const copy = document.createElement("div");
+      copy.className = "arena-path-stage-copy";
+      const title = document.createElement("h3");
+      title.textContent = stage.kind === "league"
+        ? stage.name_tr
+        : `Arena ${stage.index}${stage.name_tr ? ` · ${stage.name_tr}` : ""}`;
+      const detail = document.createElement("p");
+      if (arena) {
+        const nodeCount = (arena.nodes || []).filter((node) => Object.keys(node.rewards || {}).length && Number(node.trophies) >= Number(stage.minimum_rating || 0)).length;
+        const coreCopy = arena.core_unlock ? " · Yeni çekirdek" : "";
+        detail.textContent = `${stage.minimum_rating || 0} Kupa · ${nodeCount} ödül durağı${coreCopy}`;
+      } else {
+        const next = stages[stages.indexOf(stage) + 1];
+        detail.textContent = next
+          ? `${stage.minimum_rating || 0}–${Number(next.minimum_rating) - 1} Kupa · Sezonluk rekabet ligi`
+          : `${stage.minimum_rating || 0}+ Kupa · Efsanevi rekabet ligi`;
+      }
+      copy.append(title, detail);
+      head.append(marker, copy);
+      section.appendChild(head);
+
+      if (arena) {
+        const unlocks = (metaProgressionState?.module_collection || [])
+          .filter((item) => Number(item.unlock_arena) === Number(stage.index));
+        if (unlocks.length) {
+          const unlockArea = document.createElement("div");
+          unlockArea.className = "arena-module-unlocks";
+          const label = document.createElement("span");
+          label.textContent = "BU ARENADA AÇILAN MODÜLLER";
+          const cards = document.createElement("div");
+          for (const item of unlocks) {
+            const card = document.createElement("button");
+            card.type = "button";
+            card.dataset.category = item.category || "";
+            card.title = localizedUiText(item.name_tr);
+            card.setAttribute("aria-label", localizedUiText(item.name_tr));
+            card.textContent = moduleIconFor({ nameTr: item.name_tr });
+            card.addEventListener("click", () => {
+              selectedCollectionModuleId = item.definition_id;
+              openModuleDetail();
+            });
+            cards.appendChild(card);
+          }
+          unlockArea.append(label, cards);
+          section.appendChild(unlockArea);
+        }
+
+        const nodes = (arena.nodes || []).filter((node) => Object.keys(node.rewards || {}).length && Number(node.trophies) >= Number(stage.minimum_rating || 0));
+        const road = document.createElement("div");
+        road.className = "arena-reward-road";
+        for (const node of nodes) {
+          const rewardDescription = localizedRewardDescription(node.description_tr);
+          const reward = document.createElement("button");
+          reward.type = "button";
+          reward.className = `arena-reward-node${node.claimed ? " is-claimed" : ""}${node.claimable ? " is-claimable" : ""}`;
+          reward.disabled = !node.claimable;
+          reward.innerHTML = `<span class="arena-reward-trophy">${Number(node.trophies)} 🏆</span><i aria-hidden="true">${rewardIcon(node.rewards)}</i><strong>${node.claimed ? "ALINDI" : rewardDescription}</strong>`;
+          if (node.claimable) reward.setAttribute("aria-label", `${rewardDescription} ödülünü al`);
+          reward.addEventListener("click", async () => {
+            reward.disabled = true;
+            const status = document.getElementById("arena-reward-status");
+            try {
+              await metaProgressionMutation(`/profile/${encodeURIComponent(participantPlayerId)}/meta-progression/arena/${encodeURIComponent(node.id)}/claim`);
+              if (status) status.textContent = `${rewardDescription} hesabına eklendi.`;
+              renderArenaPath();
+            } catch (error) {
+              if (status) status.textContent = error.message;
+              reward.disabled = false;
+            }
+          });
+          road.appendChild(reward);
+        }
+        section.appendChild(road);
+      } else {
+        const leagueRoad = document.createElement("div");
+        leagueRoad.className = "arena-league-road";
+        const next = stages[stages.indexOf(stage) + 1];
+        const end = Number(next?.minimum_rating || Number(stage.minimum_rating || 0) + 200);
+        for (let trophy = Number(stage.minimum_rating || 0) + 50; trophy <= end; trophy += 50) {
+          const stop = document.createElement("span");
+          stop.className = Number(arenaViewModel().rating) >= trophy ? "is-reached" : "";
+          stop.textContent = `${trophy} 🏆`;
+          leagueRoad.appendChild(stop);
+        }
+        section.appendChild(leagueRoad);
+      }
+      host.appendChild(section);
+    }
+    if (!host.childElementCount) host.textContent = "Devre Yolu yükleniyor…";
+  }
+
+  const CORE_GLYPHS = {core_resonance:"◈",core_guardian:"⬡",core_overdrive:"ϟ",core_disruptor:"⌁",core_capacitor:"▣",core_phoenix:"✹",core_quantum:"✧"};
+
+  function renderHomeCoreHero() {
+    const core = metaProgressionState?.cores?.types?.find((item) => item.selected)
+      || metaProgressionState?.cores?.types?.[0]
+      || null;
+    const button = document.getElementById("home-core-hero");
+    const glyph = document.getElementById("home-core-hero-glyph");
+    const name = document.getElementById("home-core-hero-name");
+    const level = document.getElementById("home-core-hero-level");
+    if (glyph) glyph.textContent = CORE_GLYPHS[core?.id] || "◈";
+    if (name) name.textContent = core?.name_tr || "Rezonans Çekirdeği";
+    if (level) level.textContent = `SEVİYE ${Number(core?.level || 1)}`;
+    if (button) {
+      button.dataset.coreType = core?.id || "core_resonance";
+      button.setAttribute("aria-label", `${core?.name_tr || "Çekirdek"} · Seviye ${Number(core?.level || 1)} · Çekirdek seçimini aç`);
+    }
+  }
+  function openCoreCollection() {
+    renderCoreCollection();
+    const dialog = document.getElementById("core-collection-dialog");
+    if (dialog && !dialog.open) dialog.showModal();
+  }
+
+  function renderCoreCollection() {
+    const host = document.getElementById("core-collection-list");
+    if (!host) return;
+    host.replaceChildren();
+    for (const core of metaProgressionState?.cores?.types || []) {
+      const card = document.createElement("article");
+      card.className = "core-collection-card";
+      const title = document.createElement("h3");
+      title.textContent = `${CORE_GLYPHS[core.id] || "◈"} ${core.name_tr} · SV ${core.level}`;
+      const copy = document.createElement("p");
+      copy.textContent = `${core.role_tr} Enerji: ${core.energy_per_second}/sn · Depo ${core.energy_capacity}. Arena ${core.unlock_arena}.`;
+      const pieces = document.createElement("p");
+      const cost = core.next_upgrade_cost;
+      pieces.textContent = `${core.shards} çekirdek parçası${core.legacy_shards ? ` + ${core.legacy_shards} eski ortak parça` : ""}${cost ? ` / ${cost.shards}` : " · AZAMİ"}`;
+      const select = document.createElement("button");
+      select.type = "button";
+      select.textContent = core.selected ? "SEÇİLDİ" : core.unlocked ? "SEÇ" : "KİLİTLİ";
+      select.disabled = !core.unlocked || core.selected;
+      select.addEventListener("click", async () => {
+        select.disabled = true;
+        try {
+          const response = await fetch(`/profile/${encodeURIComponent(participantPlayerId)}/meta-progression/core`, {method:"PUT", headers:{"content-type":"application/json"}, body:JSON.stringify({core_type_id:core.id})});
+          const payload = await response.json();
+          if (!response.ok) throw new Error(payload.detail || "Çekirdek seçilemedi.");
+          metaProgressionState = payload;
+          renderMetaHubScreens();
+          document.getElementById("core-action-status").textContent = "Çekirdek seçildi.";
+        } catch (error) { document.getElementById("core-action-status").textContent = error.message; select.disabled = false; }
+      });
+      const upgrade = document.createElement("button");
+      upgrade.type = "button";
+      upgrade.textContent = cost ? `YÜKSELT · ${cost.flux_shards} AKI` : "AZAMİ SEVİYE";
+      upgrade.disabled = !core.unlocked || !cost || core.shards + core.legacy_shards < cost.shards || metaProgressionState.flux_shards < cost.flux_shards;
+      const mutateCore = async (button, suffix) => {
+        button.disabled = true;
+        try {
+          await metaProgressionMutation(`/profile/${encodeURIComponent(participantPlayerId)}/meta-progression/cores/${core.id}/${suffix}`);
+          document.getElementById("core-action-status").textContent = "Çekirdek gelişimi kaydedildi.";
+        } catch (error) { document.getElementById("core-action-status").textContent = error.message; button.disabled = false; }
+      };
+      upgrade.addEventListener("click", () => mutateCore(upgrade, "upgrade"));
+      card.append(title, copy, pieces, select, upgrade);
+      for (const skill of core.skills || []) {
+        const button = document.createElement("button");
+        button.type = "button";
+        button.textContent = `SV ${skill.level} · ${skill.name_tr} · ${skill.learned ? "SEÇİLDİ" : skill.flux_cost + " Akı"}`;
+        button.disabled = !core.unlocked || skill.tier_selected || core.level < skill.level || metaProgressionState.flux_shards < skill.flux_cost;
+        button.addEventListener("click", () => mutateCore(button, `skills/${skill.id}`));
+        card.appendChild(button);
+      }
+      host.appendChild(card);
+    }
+  }
+
+  function renderHomeArena() {
+    const { rank, rating, floor, ceiling, progress } = arenaViewModel();
+    const setText = (id, value) => {
+      const element = document.getElementById(id);
+      if (element) element.textContent = String(value);
+    };
+    setText("home-arena-name", rank.kind === "league" ? rank.name_tr : `Arena ${rank.index || 1}`);
+    setText("home-arena-progress-copy", rank.next_stage ? `${rating - floor} / ${ceiling - floor} Kupa` : `${rating} Kupa`);
+    const arenaTitle = rank.name_tr && !/^Arena\s+\d+$/i.test(rank.name_tr)
+      ? `Arena ${rank.index || 1} · ${rank.name_tr}`
+      : `Arena ${rank.index || 1}`;
+    setText("arena-detail-title", rank.kind === "league" ? rank.name_tr : arenaTitle);
+    setText("arena-detail-rating", `${rating} Kupa`);
+    setText("arena-detail-range", rank.next_stage ? `${rating - floor} / ${ceiling - floor}` : "Azami aşama");
+    setText("arena-detail-next", rank.next_stage ? `Sonraki: ${rank.next_stage.name_tr} · ${ceiling} Kupa` : "Efsanevi yol tamamlandı");
+    renderArenaPath();
+    const segments = document.getElementById("home-arena-segments");
+    if (segments) {
+      segments.replaceChildren();
+      const arena = (metaProgressionState?.arena_path || []).find((item) => Number(item.index) === Number(rank.index));
+      const nodes = (arena?.nodes || []).filter((node) => Object.keys(node.rewards || {}).length && Number(node.trophies) >= floor);
+      const stops = nodes.length ? nodes : Array.from({ length: 4 }, (_, index) => ({ trophies: floor + ((ceiling - floor) / 4) * (index + 1) }));
+      stops.forEach((node, index) => {
+        const segment = document.createElement("i");
+        segment.className = rating >= Number(node.trophies) ? "is-complete" : (index === stops.findIndex((item) => rating < Number(item.trophies)) ? "is-current" : "");
+        segment.title = `${Number(node.trophies)} Kupa${node.description_tr ? ` · ${localizedRewardDescription(node.description_tr)}` : ""}`;
+        segments.appendChild(segment);
+      });
+    }
+  }
+
+  function showCollectionQuickActions(item, anchor) {
+    selectedCollectionModuleId = item.definition_id;
+    pendingDeckModuleInstanceId = null;
+    renderDeckStrip(document.getElementById("module-deck-strip"), { editable: true });
+    const panel = document.getElementById("module-quick-actions");
+    if (!panel) return;
+    const name = document.getElementById("module-quick-name");
+    const select = document.getElementById("module-quick-select");
+    if (name) name.textContent = localizedUiText(item.name_tr);
+    const selected = deckEditorSlots
+      .filter(Boolean)
+      .map(clientDefinitionId)
+      .includes(item.definition_id);
+    if (select) {
+      select.textContent = localizedUiText(selected ? "Çıkar" : "Seç");
+      select.disabled = item.unlocked === false && !selected;
+    }
+    panel.hidden = false;
+    panel.dataset.category = item.category || "";
+    for (const tile of document.querySelectorAll(".collection-module-tile")) {
+      tile.classList.toggle("is-focused", tile === anchor);
+    }
+    const screen = document.getElementById("modules-screen");
+    if (screen) {
+      const screenRect = screen.getBoundingClientRect();
+      const anchorRect = anchor.getBoundingClientRect();
+      const panelWidth = Math.max(anchorRect.width + 12, panel.offsetWidth || 0);
+      const proposedLeft = anchorRect.left - screenRect.left + screen.scrollLeft - ((panelWidth - anchorRect.width) / 2);
+      panel.style.left = `${Math.max(4, Math.min(screen.scrollWidth - panelWidth - 4, proposedLeft))}px`;
+      panel.style.top = `${anchorRect.bottom - screenRect.top + screen.scrollTop - 3}px`;
+    }
+  }
+
+  function renderModuleCollection() {
+    document.getElementById("module-quick-actions")?.setAttribute("hidden", "");
+    const state = metaProgressionState || fallbackMetaProgression();
+    const setText = (id, value) => {
+      const element = document.getElementById(id);
+      if (element) element.textContent = String(value);
+    };
+    setText("module-deck-count", `${deckEditorSlots.filter(Boolean).length} / 6`);
+    renderDeckStrip(document.getElementById("module-deck-strip"), { editable: true });
+    renderPresetStrip(document.getElementById("module-preset-strip"));
+    const host = document.getElementById("module-collection-grid");
+    if (!host) return;
+    host.replaceChildren();
+    const selected = new Set(deckEditorSlots.filter(Boolean).map(clientDefinitionId));
+    for (const item of state.module_collection || []) {
+      if (activeModuleFilter !== "all" && item.category !== activeModuleFilter) continue;
+      const tile = unifiedModuleTile(item, { collection: true, selected: selected.has(item.definition_id) });
+      tile.addEventListener("click", () => showCollectionQuickActions(item, tile));
+      host.appendChild(tile);
+    }
+  }
+
+  function chestTier(definition) {
+    return definition?.visual_tier
+      || ({field_3h:"bronze", circuit_8h:"silver", core_24h:"gold", diamond_24h:"diamond"})[definition?.id]
+      || definition?.tier
+      || "bronze";
+  }
+
+  function chestVisualMarkup(tier, { large = false } = {}) {
+    const safeTier = ["bronze", "silver", "gold", "diamond"].includes(tier) ? tier : "bronze";
+    return `<span class="chest-visual chest-visual-${safeTier}${large ? " chest-visual-large" : ""}" aria-hidden="true"><i></i><b></b><em>◆</em></span>`;
+  }
+
+  function renderShop() {
+    const state = metaProgressionState || fallbackMetaProgression();
+    const setText = (id, value) => {
+      const element = document.getElementById(id);
+      if (element) element.textContent = String(value);
+    };
+    setText("shop-flux-balance", `${state.flux_shards || 0} Akı`);
+    setText("shop-credit-balance", `${state.circuit_credits || 0} DK`);
+    const giftHost = document.getElementById("gift-chest-list");
+    if (giftHost) {
+      giftHost.replaceChildren();
+      const definitions = state.chests?.definitions || [];
+      // Every owned slot is rendered, including multiple chests of one type.
+      const entries = (state.chests?.slots || []).map(slot => ({slot, definition: definitions.find(d => d.id === slot.definition_id)}));
+      for (const definition of definitions) {
+        if (!entries.some(entry => entry.definition?.id === definition.id)) entries.push({definition, slot: null});
+      }
+      for (const {definition, slot} of entries) {
+        if (!definition) continue;
+        const card = document.createElement("article");
+        card.className = "shop-chest-card";
+        const tier = chestTier(definition);
+        card.dataset.tier = tier;
+        const ready = slot && new Date(slot.unlocks_at).getTime() <= Date.now();
+        const remainingMinutes = slot ? Math.max(0, Math.ceil((new Date(slot.unlocks_at).getTime() - Date.now()) / 60000)) : 0;
+        card.innerHTML = `${chestVisualMarkup(tier)}<strong>${definition.name_tr}</strong><small>${slot ? (ready ? "Açılmaya hazır" : `${Math.floor(remainingMinutes / 60)} sa ${remainingMinutes % 60} dk`) : `${definition.unlock_hours} saat`}</small>`;
+        const action = document.createElement("button");
+        action.type = "button";
+        action.textContent = slot
+          ? (ready ? "AÇ" : "SÜRE İŞLİYOR")
+          : (definition.claim_available === false ? "BUGÜN ALINDI" : "HEDİYEYİ AL");
+        action.disabled = Boolean(state.unavailable || (slot && !ready) || (!slot && definition.claim_available === false));
+        if (ready) action.addEventListener("click", () => openGiftChest(slot.chest_id));
+        else if (!slot && definition.claim_available !== false) {
+          action.addEventListener("click", () => claimGiftChest(definition.id));
+        }
+        card.appendChild(action);
+        giftHost.appendChild(card);
+      }
+    }
+    const offerHost = document.getElementById("daily-shop-offers");
+    if (offerHost) {
+      offerHost.replaceChildren();
+      for (const offer of state.shop?.offers || []) {
+        const card = document.createElement("article");
+        card.className = "daily-offer-card";
+        card.dataset.tier = offer.tier;
+        const currency = offer.currency === "flux_shards" ? "Akı" : "DK";
+        card.innerHTML = `${chestVisualMarkup(offer.tier)}<div><strong>${offer.name_tr}</strong><small>DK · Akı · Modül ve Çekirdek Parçası</small></div>`;
+        const action = document.createElement("button");
+        action.type = "button";
+        action.textContent = offer.purchased ? "ALINDI" : `${offer.cost} ${currency}`;
+        action.disabled = Boolean(state.unavailable || offer.purchased || Number(state[offer.currency] || 0) < offer.cost);
+        action.addEventListener("click", () => purchaseShopOffer(offer.id));
+        card.appendChild(action);
+        offerHost.appendChild(card);
+      }
+    }
+  }
+
+  async function metaProgressionMutation(url) {
+    let entry = pendingMetaRequests.get(url);
+    if (entry?.inFlight) throw new Error("Bu işlem sürüyor; lütfen bekle.");
+    if (!entry) {
+      entry = {requestId: laboratoryRequestId("meta"), inFlight: false};
+      pendingMetaRequests.set(url, entry);
+    }
+    entry.inFlight = true;
+    try {
+      let response;
+      try {
+        response = await fetch(url, {
+          method: "POST",
+          credentials: "same-origin",
+          cache: "no-store",
+          headers: { "content-type": "application/json", "accept": "application/json" },
+          body: JSON.stringify({ request_id: entry.requestId }),
+        });
+      } catch (_networkError) {
+        throw new Error("Sunucu bağlantısı kesildi. Beta.42 hızlı savaş başlatıcısını yeniden açıp işlemi tekrar dene.");
+      }
+      const rawBody = await response.text();
+      let payload = {};
+      try { payload = rawBody ? JSON.parse(rawBody) : {}; } catch (_parseError) { payload = {}; }
+      if (!response.ok) {
+        if (response.status >= 400 && response.status < 500) pendingMetaRequests.delete(url);
+        throw new Error(payload.detail || `Sunucu işlemi reddetti (${response.status}).`);
+      }
+      // Only a confirmed response ends this logical action. A network retry uses
+      // the same receipt id, so a lost response cannot purchase another level.
+      pendingMetaRequests.delete(url);
+      metaProgressionState = payload.meta_progression || payload;
+      if (payload.profile) profileState.applyProfile(payload.profile);
+      renderProfileSummary();
+      renderMetaHubScreens();
+      return payload;
+    } finally {
+      entry.inFlight = false;
+    }
+  }
+
+  function showChestReveal(receipt) {
+    if (!receipt) return;
+    const definition = metaProgressionState?.chests?.definitions?.find(
+      (item) => item.id === receipt.definition_id
+    );
+    const offer = metaProgressionState?.shop?.offers?.find(
+      (item) => item.id === receipt.offer_id
+    );
+    const tier = offer?.tier || chestTier(definition || { id: receipt.definition_id });
+    const rewards = receipt.rewards || {};
+    const module = metaProgressionState?.module_collection?.find(
+      (item) => item.definition_id === rewards.module_definition_id
+    );
+    const card = document.getElementById("chest-reveal-card");
+    const visual = document.getElementById("chest-reveal-visual");
+    const title = document.getElementById("chest-reveal-title");
+    const host = document.getElementById("chest-reveal-rewards");
+    const kicker = document.getElementById("chest-reveal-kicker");
+    const close = document.getElementById("chest-reveal-close");
+    if (card) { card.dataset.tier = tier; card.dataset.state = "revealed"; }
+    if (visual) visual.className = `chest-visual chest-visual-large chest-visual-${tier}`;
+    if (title) title.textContent = definition?.name_tr || offer?.name_tr || "Sandık";
+    if (kicker) { kicker.hidden = false; kicker.textContent = "ÖDÜLLER HESABA EKLENDİ"; }
+    if (close) { close.disabled = false; close.textContent = "DEVAM"; }
+    if (host) {
+      host.replaceChildren();
+      const rewardLines = [
+        ["DEVRE KREDİSİ", `+${rewards.circuit_credits || 0} DK`],
+        ["AKI", `+${rewards.flux_shards || 0}`],
+        [module?.name_tr || "MODÜL PARÇASI", `+${rewards.module_shards || 0}`],
+        ["ÇEKİRDEK PARÇASI", `+${rewards.core_shards || 0}`],
+      ];
+      for (const [label, value] of rewardLines) {
+        const row = document.createElement("div");
+        row.innerHTML = `<span>${label}</span><strong>${value}</strong>`;
+        host.appendChild(row);
+      }
+    }
+    const dialog = document.getElementById("chest-reveal-dialog");
+    if (dialog?.showModal && !dialog.open) dialog.showModal();
+    else dialog?.setAttribute("open", "");
+  }
+
+  function showChestOpening({ tier = "bronze", title = "Sandık" } = {}) {
+    const dialog = document.getElementById("chest-reveal-dialog");
+    const card = document.getElementById("chest-reveal-card");
+    const visual = document.getElementById("chest-reveal-visual");
+    const host = document.getElementById("chest-reveal-rewards");
+    const close = document.getElementById("chest-reveal-close");
+    if (card) { card.dataset.tier = tier; card.dataset.state = "opening"; }
+    if (visual) visual.className = `chest-visual chest-visual-large chest-visual-${tier}`;
+    const kicker = document.getElementById("chest-reveal-kicker");
+    if (kicker) { kicker.hidden = true; kicker.textContent = ""; }
+    const titleEl = document.getElementById("chest-reveal-title");
+    if (titleEl) titleEl.textContent = title;
+    if (host) host.innerHTML = '<div class="chest-opening-progress"><span>Ödüller profile kaydediliyor</span><strong>•••</strong></div>';
+    if (close) { close.disabled = true; close.textContent = "AÇILIYOR…"; }
+    if (dialog?.showModal && !dialog.open) dialog.showModal();
+    else dialog?.setAttribute("open", "");
+  }
+
+  function showChestFailure(error) {
+    const card = document.getElementById("chest-reveal-card");
+    const host = document.getElementById("chest-reveal-rewards");
+    const kicker = document.getElementById("chest-reveal-kicker");
+    const close = document.getElementById("chest-reveal-close");
+    if (card) card.dataset.state = "error";
+    if (kicker) { kicker.hidden = false; kicker.textContent = "SANDIK AÇILAMADI"; }
+    if (host) host.innerHTML = `<div><span>${error instanceof Error ? error.message : String(error)}</span></div>`;
+    if (close) { close.disabled = false; close.textContent = "DEVAM"; }
+  }
+
+  async function purchaseShopOffer(offerId) {
+    const status = document.getElementById("shop-action-status");
+    const offer = metaProgressionState?.shop?.offers?.find((item) => item.id === offerId);
+    showChestOpening({ tier: offer?.tier || "bronze", title: offer?.name_tr || "Sandık" });
+    try {
+      const payload = await metaProgressionMutation(
+        `/profile/${encodeURIComponent(participantPlayerId)}/meta-progression/shop/${encodeURIComponent(offerId)}/purchase`
+      );
+      const reward = payload.receipt?.rewards || {};
+      if (status) status.textContent = `Sandık açıldı: +${reward.circuit_credits || 0} DK · +${reward.flux_shards || 0} Akı · +${reward.module_shards || 0} modül parçası · +${reward.core_shards || 0} çekirdek parçası.`;
+      showChestReveal(payload.receipt);
+    } catch (error) {
+      if (status) status.textContent = error instanceof Error ? error.message : String(error);
+      showChestFailure(error);
+    }
+  }
+
+  async function openGiftChest(chestId) {
+    const status = document.getElementById("shop-action-status");
+    const chest = metaProgressionState?.chests?.slots?.find((item) => item.chest_id === chestId);
+    const definition = metaProgressionState?.chests?.definitions?.find((item) => item.id === chest?.definition_id);
+    showChestOpening({ tier: chestTier(definition || chest || {}), title: definition?.name_tr || chest?.name_tr || "Sandık" });
+    try {
+      const payload = await metaProgressionMutation(
+        `/profile/${encodeURIComponent(participantPlayerId)}/meta-progression/chests/${encodeURIComponent(chestId)}/open`
+      );
+      const reward = payload.receipt?.rewards || {};
+      if (status) status.textContent = `Hediye açıldı: +${reward.circuit_credits || 0} DK · +${reward.flux_shards || 0} Akı · +${reward.module_shards || 0} modül parçası · +${reward.core_shards || 0} çekirdek parçası.`;
+      showChestReveal(payload.receipt);
+    } catch (error) {
+      if (status) status.textContent = error instanceof Error ? error.message : String(error);
+      showChestFailure(error);
+    }
+  }
+
+  async function claimGiftChest(definitionId) {
+    const status = document.getElementById("shop-action-status");
+    try {
+      const payload = await metaProgressionMutation(
+        `/profile/${encodeURIComponent(participantPlayerId)}/meta-progression/chests/gifts/${encodeURIComponent(definitionId)}/claim`
+      );
+      const chest = payload.receipt?.chest || {};
+      if (status) status.textContent = `${chest.name_tr || "Hediye sandık"} alındı; açılma süresi başladı.`;
+    } catch (error) {
+      if (status) status.textContent = error instanceof Error ? error.message : String(error);
+    }
+  }
+
+  async function commitDeckEditorSlots() {
+    const status = document.getElementById("module-action-status");
+    const revision = ++deckEditRevision;
+    while (deckEditorSlots.length < 6) deckEditorSlots.push(null);
+    pendingDeckModuleInstanceId = null;
+    const ids = deckEditorSlots.filter(Boolean);
+    renderMetaHubScreens();
+    if (ids.length !== 6) {
+      if (status) status.textContent = `${ids.length} / 6 modül seçildi. İlk boş yuva yeni seçimle doldurulacak.`;
+      return { ok: true, pending: true };
+    }
+    const result = battlePoolSelection.setSelection(ids);
+    if (!result.ok) {
+      if (status) status.textContent = result.reason;
+      return result;
+    }
+    const presetName = activeBattlePoolPresetName;
+    const definitionIds = ids.map(clientDefinitionId);
+    const editedPreset = battlePoolPresets.find((preset) => preset.name === presetName);
+    if (editedPreset) editedPreset.module_definition_ids = [...definitionIds];
+    renderMetaHubScreens();
+    if (status) status.textContent = "Deste kaydediliyor…";
+    const save = async () => {
+      const response = await fetch(`/profile/${encodeURIComponent(participantPlayerId)}/battle-pool`, {
+        method: "PUT",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ battle_pool_ids: definitionIds }),
+      });
+      if (!response.ok) throw new Error("Deste sunucuya kaydedilemedi. Tekrar deneyebilirsin.");
+      const profile = await response.json();
+      if (presetName) {
+        const savedPreset = await fetch(`/profile/${encodeURIComponent(participantPlayerId)}/battle-pool-presets`, {
+          method: "PUT",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({ name: presetName, battle_pool_ids: definitionIds }),
+        });
+        if (!savedPreset.ok) throw new Error("Aktif deste kaydedildi ancak hazır deste kaydedilemedi. Tekrar deneyebilirsin.");
+      }
+      return profile;
+    };
+    // Save rapid edits in order so an older response cannot restore the old deck.
+    deckSaveQueue = deckSaveQueue.catch(() => {}).then(save);
+    try {
+      const profile = await deckSaveQueue;
+      if (revision !== deckEditRevision) return { ok: true };
+      profileState.applyProfile(profile);
+      if (presetName === activeBattlePoolPresetName) activeBattlePoolPresetBaseline = [...definitionIds];
+      if (status) status.textContent = "Aktif savaş destesi kaydedildi.";
+    } catch (error) {
+      if (revision !== deckEditRevision) return { ok: false };
+      if (status) status.textContent = error instanceof Error ? error.message : String(error);
+      renderBattlePoolSelection();
+      renderMetaHubScreens();
+      return { ok: false };
+    }
+    renderBattlePoolSelection();
+    renderMetaHubScreens();
+    return { ok: true };
+  }
+
+  async function selectCollectionModule() {
+    if (activeMetaModule()?.unlocked === false) return;
+    const instanceId = definitionIdsToInstanceIds([selectedCollectionModuleId])[0];
+    const status = document.getElementById("module-action-status");
+    if (!instanceId) {
+      if (status) status.textContent = "Bu modülün savaş kartı henüz yüklenmedi. Sayfayı yenileyip tekrar deneyebilirsin.";
+      return;
+    }
+    const existingIndex = deckEditorSlots.indexOf(instanceId);
+    if (existingIndex >= 0) {
+      deckEditorSlots[existingIndex] = null;
+      document.getElementById("module-quick-actions")?.setAttribute("hidden", "");
+      await commitDeckEditorSlots();
+      return;
+    }
+
+    // The editor is always a six-slot model. Older sessions can still contain
+    // a short array, so treat its end as the first empty slot as well.
+    while (deckEditorSlots.length < 6) deckEditorSlots.push(null);
+    const firstEmpty = deckEditorSlots.findIndex((slot) => !slot);
+    if (firstEmpty >= 0) {
+      deckEditorSlots[firstEmpty] = instanceId;
+      document.getElementById("module-quick-actions")?.setAttribute("hidden", "");
+      await commitDeckEditorSlots();
+      return;
+    }
+
+    pendingDeckModuleInstanceId = instanceId;
+    document.getElementById("module-quick-actions")?.setAttribute("hidden", "");
+    if (status) status.textContent = "Deste dolu. Yer değiştirmek istediğin deste kartına dokun.";
+    renderMetaHubScreens();
+    document.getElementById("module-deck-strip")?.scrollIntoView?.({ block: "nearest", behavior: "smooth" });
+  }
+
+  function activeMetaModule() {
+    return (metaProgressionState?.module_collection || fallbackMetaProgression().module_collection)
+      .find((item) => item.definition_id === selectedCollectionModuleId) || null;
+  }
+
+  function renderModuleDetailTab(tabName) {
+    const item = activeMetaModule();
+    const host = document.getElementById("module-detail-tab-content");
+    if (!item || !host) return;
+    host.replaceChildren();
+    host.dataset.tab = tabName;
+    const text = document.createElement("p");
+    text.className = "module-detail-tab-intro";
+    const stats = item.stats || {};
+    if (tabName === "stats") {
+      text.textContent = "Savaş değerleri, sınıf karşılıkları ve uyumlu modüller.";
+      const entries = [["Sınıf", poolCategoryLabel(item.category)], ["Nadirlik", moduleRarityLabel(item.rarity)], ["CAN", stats.max_hp], ["Hasar", stats.base_damage], ["Bekleme", `${Number(stats.cooldown_ms || 0) / 1000} sn`], ["Etki çarpanı", Number(stats.effect_multiplier || 0).toLocaleString("tr-TR", {maximumFractionDigits:2})], ["Enerji tüketimi", `${stats.energy_consumption || 0}/sn`], ["Akım maliyeti", item.current_cost]];
+      const list = document.createElement("dl");
+      for (const [label, rawValue] of entries) {
+        const row = document.createElement("div"), name = document.createElement("dt"), value = document.createElement("dd");
+        name.textContent = label;
+        value.textContent = String(rawValue ?? "—");
+        row.append(name, value); list.appendChild(row);
+      }
+      host.appendChild(list);
+      const moduleName = (id) => (metaProgressionState?.module_collection || []).find((module) => module.definition_id === id)?.name_tr || id;
+      const counters = document.createElement("div");
+      counters.className = "module-counter-grid";
+      for (const [label, ids, className] of [["GÜÇLÜ OLDUĞU", item.strong_against, "is-strong"], ["ZAYIF OLDUĞU", item.weak_against, "is-weak"], ["UYUMLU OLDUĞU", item.synergy_with, "is-synergy"]]) {
+        const card = document.createElement("section");
+        card.className = className;
+        const heading = document.createElement("strong");
+        heading.textContent = label;
+        const copy = document.createElement("span");
+        copy.textContent = ids?.length ? ids.map(moduleName).join(" · ") : "Özel karşılık yok";
+        card.append(heading, copy);
+        counters.appendChild(card);
+      }
+      host.appendChild(counters);
+    } else if (tabName === "talents") {
+      const selectedTalent = (item.talents || [])
+        .flatMap((node) => node.choices || [])
+        .find((choice) => (item.talents || []).some((node) => node.selected === choice.id));
+      text.textContent = selectedTalent?.description_tr || "Açıklamasını görmek için bir yeteneğe dokun.";
+      for (const node of item.talents || []) {
+        const row = document.createElement("section");
+        row.className = "module-talent-node";
+        row.dataset.selected = node.selected || "";
+        const heading = document.createElement("strong");
+        heading.textContent = `Seviye ${node.level} · ${node.flux_cost} Akı`;
+        const connector = document.createElement("span");
+        connector.className = "module-talent-connector";
+        connector.setAttribute("aria-hidden", "true");
+        const choices = document.createElement("div");
+        choices.className = "module-talent-choices";
+        row.append(heading, connector, choices);
+        node.choices.forEach((choice, choiceIndex) => {
+          const button = document.createElement("button");
+          button.type = "button";
+          const canChoose = item.unlocked
+            && !node.selected
+            && Number(item.level) + 1 >= node.level
+            && Number(metaProgressionState?.flux_shards || 0) >= node.flux_cost;
+          button.className = `${choiceIndex === 0 ? "is-left-choice" : "is-right-choice"}${node.selected === choice.id ? " is-selected" : ""}${canChoose ? "" : " is-unavailable"}`;
+          const choiceState = node.selected === choice.id
+            ? "SEÇİLDİ"
+            : node.selected ? "DİĞER DAL SEÇİLDİ"
+              : Number(item.level) + 1 < node.level ? `SV ${node.level} GEREKLİ`
+                : Number(metaProgressionState?.flux_shards || 0) < node.flux_cost ? `${node.flux_cost} AKI GEREKLİ`
+                  : "SEÇ";
+          button.innerHTML = `<strong>${choice.name_tr}</strong><small>${choiceState}</small>`;
+          button.dataset.selectable = String(canChoose);
+          button.setAttribute("aria-label", `${choice.name_tr} · ${choiceState} · Açıklamayı göster`);
+          button.title = choice.description_tr || choice.name_tr;
+          button.addEventListener("click", async () => {
+            text.textContent = choice.description_tr || choice.name_tr;
+            choices.querySelectorAll("button").forEach((candidate) => candidate.classList.toggle("is-previewed", candidate === button));
+            if (!canChoose) return;
+            button.disabled = true;
+            try {
+              await metaProgressionMutation(`/profile/${encodeURIComponent(participantPlayerId)}/meta-progression/modules/${item.definition_id}/talents/${node.tier}/${choice.id}`);
+              renderModuleDetailTab("talents");
+              document.getElementById("module-detail-status").textContent = "Uzmanlık kaydedildi.";
+            } catch (error) { document.getElementById("module-detail-status").textContent = error.message; button.disabled = false; }
+          });
+          choices.appendChild(button);
+        });
+        host.appendChild(row);
+      }
+    } else {
+      text.textContent = item.description_tr || item.strategic_role || item.name_tr;
+      const overview = document.createElement("div");
+      overview.className = "module-overview-grid";
+      for (const [label, rawValue] of [["SAVAŞ ROLÜ", item.strategic_role || "—"], ["SINIF", poolCategoryLabel(item.category)], ["AÇILIŞ", `Arena ${item.unlock_arena} · ${item.unlock_trophies} Kupa`], ["SONRAKİ SEVİYE", item.next_stats ? `CAN ${item.next_stats.max_hp} · HASAR ${item.next_stats.base_damage}` : "Azami seviye"]]) {
+        const card = document.createElement("div");
+        const name = document.createElement("span");
+        const value = document.createElement("strong");
+        name.textContent = label;
+        value.textContent = rawValue;
+        card.append(name, value);
+        overview.appendChild(card);
+      }
+      host.appendChild(overview);
+    }
+    host.prepend(text);
+  }
+
+  function openModuleDetail() {
+    const item = activeMetaModule();
+    const definition = metaModuleDefinition(item);
+    if (!item || !definition) return;
+    const setText = (id, value) => {
+      const element = document.getElementById(id);
+      if (element) element.textContent = String(value);
+    };
+    setText("module-detail-name", localizedUiText(item.name_tr));
+    setText("module-detail-rarity", moduleRarityLabel(item.rarity).toLocaleUpperCase("tr-TR"));
+    setText("module-detail-level", `SEVİYE ${Number(item.level || 0) + 1}`);
+    setText("module-detail-selected-state", deckEditorSlots.filter(Boolean).map(clientDefinitionId).includes(item.definition_id) ? "DESTEDE" : "DESTE DIŞI");
+    const cost = item.next_upgrade_cost;
+    const required = Number(cost?.shards || 1);
+    setText("module-detail-shards", cost ? `${item.shards || 0} / ${required}` : "AZAMİ SEVİYE");
+    const progress = document.getElementById("module-detail-progress");
+    if (progress) { progress.max = required; progress.value = cost ? Math.min(required, Number(item.shards || 0)) : required; }
+    const art = document.getElementById("module-detail-art");
+    if (art) {
+      art.dataset.category = item.category || "";
+      art.dataset.module = item.definition_id || "";
+      art.textContent = moduleIconFor(definition);
+      art.setAttribute("aria-label", `${localizedUiText(item.name_tr)} görseli`);
+    }
+    const stats = document.getElementById("module-detail-stats");
+    if (stats) stats.innerHTML = `<div><span>CAN</span><strong>${item.stats?.max_hp ?? definition.maxHp}</strong></div><div><span>AKIM</span><strong>ϟ ${item.current_cost ?? definition.circuitCreditCost}</strong></div><div><span>HASAR</span><strong>${item.stats?.base_damage || 0}</strong></div>`;
+    const upgrade = document.getElementById("module-detail-upgrade");
+    const reason = !item.unlocked ? `${item.unlock_trophies ?? 0} kupada açılır.` : !cost ? "Azami seviye." : Number(item.shards || 0) < required ? `Gerekli parça: ${item.shards || 0}/${required}` : Number(metaProgressionState?.circuit_credits || 0) < Number(cost.circuit_credits) ? `Gerekli Devre Kredisi: ${cost.circuit_credits}` : "";
+    if (upgrade) {
+      upgrade.disabled = Boolean(reason || metaProgressionState?.unavailable);
+      upgrade.textContent = cost ? `YÜKSELT · ${cost.circuit_credits} DK` : "AZAMİ SEVİYE";
+    }
+    setText("module-detail-status", reason);
+    for (const button of document.querySelectorAll("[data-module-detail-tab]")) button.classList.toggle("is-active", button.dataset.moduleDetailTab === "overview");
+    renderModuleDetailTab("overview");
+    const dialog = document.getElementById("module-detail-dialog");
+    if (dialog?.showModal && !dialog.open) dialog.showModal();
+  }
+
+  async function upgradeCollectionModule() {
+    const button = document.getElementById("module-detail-upgrade");
+    if (button?.disabled) return;
+    if (button) button.disabled = true;
+    const moduleId = selectedCollectionModuleId;
+    try {
+      await metaProgressionMutation(`/profile/${encodeURIComponent(participantPlayerId)}/meta-progression/modules/${encodeURIComponent(moduleId)}/upgrade`);
+      openModuleDetail();
+      document.getElementById("module-detail-status").textContent = "Modül seviyesi yükseltildi.";
+    } catch (error) {
+      if (button) button.disabled = false;
+      document.getElementById("module-detail-status").textContent = error.message;
+    }
+  }
+
+  function renderMetaHubScreens() {
+    renderHomeHub();
+    renderModuleCollection();
+    renderShop();
+    renderCoreCollection();
+    renderCanonStatistics();
+    const state = metaProgressionState;
+    if (state) {
+      const credits = document.getElementById("lobby-circuit-credits");
+      if (credits) credits.textContent = String(state.circuit_credits || 0);
+      const flux = document.getElementById("lobby-flux-shards");
+      if (flux) flux.textContent = String(state.flux_shards || 0);
+    }
+  }
+
+  document.querySelectorAll("[data-module-filter]").forEach((button) => {
+    button.addEventListener("click", () => {
+      activeModuleFilter = button.dataset.moduleFilter || "all";
+      document.querySelectorAll("[data-module-filter]").forEach((item) => item.classList.toggle("is-active", item === button));
+      renderModuleCollection();
+    });
+  });
+  document.getElementById("module-quick-info")?.addEventListener("click", openModuleDetail);
+  document.getElementById("module-quick-select")?.addEventListener("click", selectCollectionModule);
+  document.getElementById("module-detail-close")?.addEventListener("click", () => document.getElementById("module-detail-dialog")?.close());
+  document.getElementById("module-detail-upgrade")?.addEventListener("click", upgradeCollectionModule);
+  document.querySelectorAll("[data-module-detail-tab]").forEach((button) => {
+    button.addEventListener("click", () => {
+      document.querySelectorAll("[data-module-detail-tab]").forEach((item) => item.classList.toggle("is-active", item === button));
+      renderModuleDetailTab(button.dataset.moduleDetailTab || "overview");
+    });
+  });
 
   function returnToMainMenu() {
     const result = appRouter.goMenu();
@@ -807,7 +1860,7 @@
         webTestBuildState,
       releaseCheckState,
       expectedVersion:
-        "2.0.0-beta.38.1",
+        "2.1.0-beta.42",
       expectedProtocolVersion: 1,
     });
   const playReadinessGate =
@@ -843,7 +1896,7 @@
 
   telemetryDispatcher.trackGameOpened({
     platform: "web",
-    build: "2.0.0-beta.38.1",
+    build: "2.1.0-beta.42",
   });
 
   const postMatchSync =
@@ -882,7 +1935,7 @@
     const outcomeEl = document.getElementById("battle-result-outcome");
     const titleEl = document.getElementById("battle-result-title");
     const labels = {
-      victory: ["GALİBİYET", "DEVRE ÜSTÜNLÜĞÜ SENİN"],
+      victory: ["ZAFER", "DEVRE ÜSTÜNLÜĞÜ SENİN"],
       defeat: ["MAĞLUBİYET", "DEVREN SAVAŞ DIŞI KALDI"],
       draw: ["BERABERLİK", "İKİ DEVRE DE AYAKTA KALDI"],
       pending: ["Maç Sonucu", "Sonuç hazırlanıyor"],
@@ -893,9 +1946,128 @@
     if (outcomeEl) outcomeEl.textContent = localizedUiText(status);
   }
 
+  function showPostMatchStage(stage = "damage") {
+    const rewardsVisible = stage === "rewards";
+    const damage = document.getElementById("post-match-damage-stage");
+    const rewards = document.getElementById("post-match-reward-stage");
+    const continueButton = document.getElementById("post-match-continue");
+    const homeButton = document.getElementById("return-preparation-button");
+    const rematchButton = document.getElementById("rematch-button");
+    if (damage) damage.hidden = rewardsVisible;
+    if (rewards) rewards.hidden = !rewardsVisible;
+    if (continueButton) continueButton.hidden = rewardsVisible;
+    if (homeButton) homeButton.hidden = !rewardsVisible;
+    if (rematchButton) rematchButton.hidden = !rewardsVisible;
+  }
+
+  function renderPostMatchRewards() {
+    const result = pvpState.finalResult;
+    const progression = progressionState.viewModel();
+    const outcome = result ? onlineOutcome(result) : "pending";
+    const outcomeEl = document.getElementById("post-match-reward-outcome");
+    if (outcomeEl) {
+      outcomeEl.dataset.outcome = outcome;
+      outcomeEl.textContent = outcome === "victory" ? "ZAFER" : outcome === "defeat" ? "MAĞLUBİYET" : outcome === "draw" ? "BERABERLİK" : "SONUÇ";
+    }
+    const trophy = document.getElementById("post-match-trophy-reward");
+    const credits = document.getElementById("post-match-credit-reward");
+    if (trophy) trophy.textContent = progression
+      ? `${Number(progression.ratingDelta) >= 0 ? "+" : ""}${Number(progression.ratingDelta)} Kupa`
+      : "Hesaplanıyor";
+    if (credits) credits.textContent = progression
+      ? `+${Number(progression.circuitCreditsAwarded || 0)} DK`
+      : "Hesaplanıyor";
+    const chest = document.getElementById("post-match-chest-reward");
+    if (chest) {
+      const awarded = postMatchSync.lastPayload?.progression?.chest_awarded;
+      chest.hidden = !awarded;
+      chest.textContent = awarded ? `${awarded.name_tr || "Savaş sandığı"} sandık yuvasına eklendi.` : "";
+    }
+  }
+
   function setAnalysisValue(id, value) {
     const element = document.getElementById(id);
     if (element) element.textContent = String(value);
+  }
+
+  function renderPostMatchScoreboard(result) {
+    const host = document.getElementById("post-match-scoreboard");
+    if (!host || !result?.result_summary) return;
+    host.replaceChildren();
+    const playerIds = Object.keys(result.result_summary).sort((left, right) => {
+      if (left === result.winner_player_id) return -1;
+      if (right === result.winner_player_id) return 1;
+      return left.localeCompare(right);
+    });
+    for (const playerId of playerIds) {
+      const summary = result.result_summary[playerId] || {};
+      const player = result.players?.[playerId] || pvpState.snapshot?.players?.[playerId] || {};
+      const card = document.createElement("article");
+      const outcome = result.is_draw ? "draw" : playerId === result.winner_player_id ? "winner" : "loser";
+      card.className = `post-match-player-card is-${outcome}`;
+
+      const head = document.createElement("header");
+      const core = document.createElement("div");
+      core.className = "post-match-core-card";
+      const outcomeLabel = document.createElement("span");
+      outcomeLabel.textContent = result.is_draw ? "BERABERE" : outcome === "winner" ? "KAZANAN" : "KAYBEDEN";
+      const glyph = document.createElement("i");
+      const coreType = summary.core_type || player.core_type || "core_resonance";
+      glyph.textContent = CORE_GLYPHS[coreType] || "◈";
+      const coreCopy = document.createElement("div");
+      const coreName = (metaProgressionState?.cores?.types || []).find((item) => item.id === coreType)?.name_tr || "Çekirdek";
+      const playerName = player.display_name || (playerId === pvpState.playerId ? profileState.viewModel()?.displayName : null) || playerId;
+      const name = document.createElement("strong");
+      name.textContent = coreName;
+      const level = document.createElement("small");
+      level.textContent = `${playerName} · SV ${Number(summary.core_level || player.core_level || 1)}${playerId === pvpState.playerId ? " · SEN" : ""}`;
+      coreCopy.append(name, level);
+      core.append(outcomeLabel, glyph, coreCopy);
+
+      const total = document.createElement("div");
+      total.className = "post-match-total-damage";
+      const totalLabel = document.createElement("span");
+      totalLabel.textContent = "TOPLAM HASAR";
+      const totalValue = document.createElement("strong");
+      totalValue.textContent = Number(summary.damage_dealt || 0).toLocaleString("tr-TR");
+      total.append(totalLabel, totalValue);
+      head.append(core, total);
+      card.appendChild(head);
+
+      const rows = document.createElement("div");
+      rows.className = "post-match-module-damage";
+      const moduleDamage = Array.isArray(summary.damage_by_module) ? summary.damage_by_module : [];
+      const maximum = Math.max(1, ...moduleDamage.map((item) => Number(item.damage || 0)));
+      for (const item of moduleDamage) {
+        const row = document.createElement("div");
+        row.className = "post-match-damage-row";
+        const icon = document.createElement("span");
+        icon.className = "post-match-damage-icon";
+        icon.textContent = moduleIconFor({ nameTr: item.name_tr });
+        const copy = document.createElement("div");
+        const rowName = document.createElement("strong");
+        rowName.textContent = item.name_tr || item.definition_id;
+        const levelCopy = document.createElement("small");
+        levelCopy.textContent = `SV ${Number(item.level || 1)}`;
+        const track = document.createElement("i");
+        const fill = document.createElement("b");
+        fill.style.width = `${Math.max(0, Math.min(100, Number(item.damage || 0) / maximum * 100))}%`;
+        track.appendChild(fill);
+        copy.append(rowName, levelCopy, track);
+        const damage = document.createElement("em");
+        damage.textContent = Number(item.damage || 0).toLocaleString("tr-TR");
+        row.append(icon, copy, damage);
+        rows.appendChild(row);
+      }
+      if (!moduleDamage.length) {
+        const empty = document.createElement("p");
+        empty.textContent = "Bu oyuncu için modül hasar kaydı bulunmuyor.";
+        rows.appendChild(empty);
+      }
+      card.appendChild(rows);
+      host.appendChild(card);
+    }
+    host.hidden = !host.childElementCount;
   }
 
   function renderOnlineBattleAnalysis(result) {
@@ -921,6 +2093,7 @@
       "battle-analysis-hp",
       `${Number(own.remaining_hp || 0)} / ${Number(own.total_max_hp || 0)}`
     );
+    renderPostMatchScoreboard(result);
   }
 
   function renderLocalBattleAnalysis({ won, finishReason }) {
@@ -970,8 +2143,15 @@
     }
     const analysis = document.getElementById("battle-analysis-summary");
     if (analysis) analysis.hidden = true;
+    const scoreboard = document.getElementById("post-match-scoreboard");
+    if (scoreboard) {
+      scoreboard.hidden = true;
+      scoreboard.replaceChildren();
+    }
     const details = document.getElementById("post-match-analysis");
     if (details) details.open = false;
+    showPostMatchStage("damage");
+    renderPostMatchRewards();
   }
 
   function presentOnlineMatchFinished() {
@@ -1011,6 +2191,7 @@
     onlineFinishPresentedSessionId = result.session_id;
     document.body.dataset.onlineFinished = "true";
     setBattleResultHero(outcome);
+    showPostMatchStage("damage");
 
     if (battleStateLabelEl) {
       battleStateLabelEl.textContent =
@@ -1110,12 +2291,14 @@
     }
 
     if (result.ok) {
+      await loadMetaProgression();
       presentTierCelebration(
         result.payload?.progression?.tier_advanced
       );
     }
 
     renderPostMatchSummary();
+    renderPostMatchRewards();
     renderOnlineBattleAnalysis(
       pvpState.finalResult
     );
@@ -1225,6 +2408,10 @@
             logClientMessage(
               result.reason
             );
+            if (pvpState.phase === "error") {
+              onlinePlay?.failSetup(new Error(result.reason));
+              return;
+            }
           }
 
           if (
@@ -1342,51 +2529,13 @@
   }
 
   function buildInitialOnlineSetup() {
-    normalizeInitialBattleModuleIds();
-    const selectedModules = [...initialBattleModuleIds];
-
-    if (selectedModules.length < 2) {
-      throw new Error(
-        "Başlangıç devresi için Jeneratör ve Çekirdek dışında tam 2 modül seçilmelidir."
-      );
-    }
-
     return [
       {
         instanceId: "core-1",
         definitionId: "core",
         x: 2,
-        y: 2,
+        y: 1,
         direction: "up",
-      },
-      {
-        instanceId: "generator-1",
-        definitionId: "generator",
-        x: 2,
-        y: 3,
-        direction: "up",
-      },
-      {
-        instanceId:
-          selectedModules[0],
-        definitionId:
-          clientDefinitionId(
-            selectedModules[0]
-          ),
-        x: 1,
-        y: 3,
-        direction: "right",
-      },
-      {
-        instanceId:
-          selectedModules[1],
-        definitionId:
-          clientDefinitionId(
-            selectedModules[1]
-          ),
-        x: 3,
-        y: 3,
-        direction: "left",
       },
     ];
   }
@@ -1395,6 +2544,30 @@
     document.getElementById(
       "matchmaking-status"
     );
+
+  function renderHomeMatchmakingOverlay(status) {
+    const overlay = document.getElementById("home-matchmaking-overlay");
+    if (!overlay) return;
+    const active = ["matchmaking", "matched", "connecting", "readying", "error"].includes(String(status || ""));
+    overlay.hidden = !active;
+    document.body.dataset.homeMatchmaking = String(active);
+    for (const panel of document.querySelectorAll("[data-screen-panel], #app-progress-ribbon, #app-bottom-dock")) {
+      panel.inert = active;
+    }
+    const title = document.getElementById("home-matchmaking-title");
+    const copy = document.getElementById("home-matchmaking-copy");
+    if (title) title.textContent = status === "error"
+      ? "EŞLEŞTİRME BAĞLANTISI KESİLDİ"
+      : status === "matchmaking" ? "EŞLEŞTİRİLİYOR" : "RAKİP BULUNDU";
+    if (copy) {
+      copy.hidden = status !== "error";
+      copy.textContent = status === "error"
+        ? (onlinePlay?.lastError || "Bağlantı kurulamadı.")
+        : "";
+    }
+    const action = document.getElementById("home-matchmaking-cancel");
+    if (action && !homeMatchmakingCancelPending) action.textContent = status === "error" ? "ANA EKRANA DÖN" : "İPTAL ET";
+  }
 
   function isOnlineMatchmakingCancelable(status = document.body.dataset.onlineStatus) {
     return ["matchmaking", "matched", "connecting", "readying"].includes(
@@ -1455,7 +2628,7 @@
       (
         matchmakingState.opponentType === "ai"
         && ["matched", "connecting", "readying", "battle"].includes(status)
-          ? "Eşleştirme: 10 sn doldu · AI rakip devraldı"
+          ? "Eşleştirme: arena rakibi bulundu"
           : labels[status]
       )
       || `Eşleştirme: ${status}`;
@@ -1469,8 +2642,12 @@
       matchmakingState.opponentType || "unknown";
 
     renderPoolPrimaryAction(status);
+    renderHomeMatchmakingOverlay(status);
 
-    requestOwnedAudioState("online_status_update");
+    if (status === "error") {
+      const homeCopy = document.querySelector("#home-battle-button small");
+      if (homeCopy) homeCopy.textContent = onlinePlay.lastError || "Eşleştirme başlatılamadı. Tekrar deneyebilirsin.";
+    }
     const battleMatchLabel = document.getElementById("battle-match-label");
     if (battleMatchLabel) {
       battleMatchLabel.textContent =
@@ -1493,6 +2670,10 @@
           : "Maç: Çevrimiçi PvP";
     }
     if (status === "battle") {
+      if (appRouter.currentScreen !== RelayAppScreen.PLAY) {
+        appRouter.go(RelayAppScreen.PLAY);
+        screenController.render();
+      }
       resetBattleVisualSurface();
       resetClientModulesForBattleStart();
       resetBattleResultPresentation();
@@ -1507,6 +2688,8 @@
       }
     }
     renderPlayModeUi();
+    renderHomeHub();
+    requestOwnedAudioState("online_status_update");
   }
 
   const onlinePlay =
@@ -1741,12 +2924,6 @@
   }
 
   async function startRealOnlineMatch() {
-    if (!playReadinessGate.canPlay()) {
-      const reason = playReadinessGate.labelTr()
-        + ". Eşleştirme bağlantısı henüz hazır değil.";
-      showPlayError("matchmaking", reason);
-      return { ok:false, reason };
-    }
     const matchmakingStartedAtMs =
       Date.now();
 
@@ -1777,6 +2954,8 @@
         initialModules:
           buildInitialOnlineSetup(),
       });
+
+    if (result.cancelled) return result;
 
     if (
       result.ok
@@ -1820,7 +2999,7 @@
   const diagnosticSnapshot =
     new RelayDiagnosticSnapshot({
       version:
-        "2.0.0-beta.38.1",
+        "2.1.0-beta.42",
       build:
         "web-test-beta.13",
       bootGate:
@@ -1901,6 +3080,12 @@
   const enemyBoard = document.getElementById("enemy-board");
   const enemyBoardStatusEl = document.getElementById("enemy-board-status");
   const playerBoardStatusEl = document.getElementById("player-board-status");
+  const enemyBattleNameEl = document.getElementById("enemy-battle-name");
+  const enemyDeckPreviewEl = document.getElementById("enemy-deck-preview");
+  const playerBattleNameEl = document.getElementById("player-battle-name");
+  const shelfCreditIndicatorEl = document.getElementById("shelf-credit-indicator");
+  const corePowerButtonEl = document.getElementById("core-power-button");
+  const corePowerChargeEl = document.getElementById("core-power-charge");
   const shelf = document.getElementById("module-shelf");
   const mobileSelectedModuleEl = document.getElementById("mobile-selected-module");
   const mobileRotateModuleEl = document.getElementById("mobile-rotate-module");
@@ -1908,6 +3093,9 @@
   const mobileCancelPlacementEl = document.getElementById("mobile-cancel-placement");
   const mobileBattleController = new GridshardMobileBattleController();
   let tapSelectedModuleId = null;
+  let corePowerCharge = 0;
+  let corePowerReady = false;
+  let corePowerTargeting = false;
   const timeEl = document.getElementById("battle-time");
   const creditEl = document.getElementById("credit-indicator");
   const combatSummaryEl = document.getElementById("combat-summary");
@@ -1931,6 +3119,83 @@
     document.getElementById(
       "battle-pool-preset-select"
     );
+
+  function renderCorePowerControl() {
+    if (!corePowerButtonEl) return;
+    const charge=Math.max(0,Math.min(100,Math.round(corePowerCharge)));
+    corePowerButtonEl.style.setProperty("--core-charge",`${charge}%`);
+    corePowerButtonEl.dataset.ready=String(corePowerReady);
+    const selectedCore = metaProgressionState?.cores?.selected_core_type || "core_resonance";
+    const glyph = CORE_GLYPHS[selectedCore] || "◈";
+    const buttonArt = corePowerButtonEl.querySelector(".core-power-glyph");
+    if (buttonArt) buttonArt.textContent = glyph;
+    const coreCard = document.getElementById("core-1");
+    if (coreCard) {
+      coreCard.style.setProperty("--core-charge", `${charge}%`);
+      coreCard.classList.toggle("core-power-ready", corePowerReady);
+      coreCard.classList.add("core-charge-card");
+      coreCard.setAttribute("aria-label", `Çekirdek gücü · ${corePowerReady ? "Hazır" : "%" + charge}`);
+      const icon = coreCard.querySelector(".module-icon");
+      if (icon) icon.textContent = glyph;
+    }
+    corePowerButtonEl.dataset.targeting=String(corePowerTargeting);
+    corePowerButtonEl.disabled=localBattleFinished || !corePowerReady;
+    corePowerButtonEl.setAttribute("aria-pressed",String(corePowerTargeting));
+    corePowerButtonEl.title=corePowerReady
+      ? (corePowerTargeting
+          ? "Çekirdek gücünü kullan"
+          : "Çekirdek gücü hazır")
+      : `Çekirdek gücü doluyor · %${charge}`;
+    if (corePowerChargeEl) {
+      corePowerChargeEl.textContent=corePowerReady ? "HAZIR" : `%${charge}`;
+    }
+  }
+
+  function syncCorePowerFromSnapshot(player) {
+    client.currentDiscountRemaining = Number(player?.discounted_deployments || 0);
+    client.energyLoadRatio = Number(player?.energy_load_ratio || 0);
+    client.energyStock = Number(player?.energy_stock || 0);
+    document.getElementById("board")?.classList.toggle("energy-strain", client.energyLoadRatio > 1.2 && client.energyStock <= 0);
+    const summary = document.getElementById("player-core-summary");
+    if (summary) summary.title = `Enerji yükü %${Math.round(client.energyLoadRatio * 100)} · Depo ${client.energyStock}`;
+    const power=player?.core_power;
+    if (!power) return;
+    corePowerCharge=Number(power.charge || 0);
+    corePowerReady=Boolean(power.ready);
+    if (!corePowerReady) corePowerTargeting=false;
+    renderCorePowerControl();
+  }
+
+  function corePowerRequestId() {
+    if (globalThis.crypto?.randomUUID) {
+      return globalThis.crypto.randomUUID();
+    }
+    return `core-${participantPlayerId}-${Date.now()}-${Math.random().toString(16).slice(2)}`;
+  }
+
+  function useCorePowerOn(module) {
+    if (!corePowerReady || localBattleFinished) return false;
+    if (module?.nameTr !== "Çekirdek") {
+      logClientMessage("Çekirdek Rezonansı için kendi Çekirdeğine dokun.");
+      return true;
+    }
+    client.emitCommand({
+      kind:"use_core_power",
+      payload:{
+        request_id:corePowerRequestId(),
+        target_module_id:module.instanceId,
+      },
+    });
+    corePowerTargeting=false;
+    renderCorePowerControl();
+    renderBoard({force:true});
+    return true;
+  }
+
+  corePowerButtonEl?.addEventListener("click", () => {
+    if (!corePowerReady || localBattleFinished) return;
+    useCorePowerOn(client.modules.get("core-1"));
+  });
   const presetGalleryEl =
     document.getElementById(
       "battle-pool-preset-gallery"
@@ -2080,6 +3345,12 @@
     if (!tapSelectedModuleId || localBattleFinished || cell.classList.contains("core-cell")) {
       return false;
     }
+    const selectedModule = client.requireModule(tapSelectedModuleId);
+    const rejection = cellPlacementRejection(cell, selectedModule);
+    if (rejection) {
+      logClientMessage(rejection);
+      return false;
+    }
     const targetCard = cell.querySelector(".module-card");
     const result = client.dropOnCell(
       Number(cell.dataset.x),
@@ -2093,6 +3364,31 @@
     clearTapSelection({ cancelDrag: false, rerender: false });
     render();
     return true;
+  }
+
+  function cellPlacementRejection(cell, module) {
+    if (cell?.dataset?.debris === "true") {
+      return "Bu hücredeki enkaz temizlenene kadar modül yerleştirilemez.";
+    }
+    const special = SPECIAL_CELL_INFO[
+      `${cell?.dataset?.x},${cell?.dataset?.y}`
+    ];
+    if (!special || !module) return null;
+    const definitionId = String(
+      module.definitionId
+      || module.definition_id
+      || module.instanceId
+      || ""
+    )
+      .replace(/-\d+$/u, "")
+      .replace(/-/gu, "_");
+    if (special.definitionId && definitionId !== special.definitionId) {
+      return `${localizedUiText(special.label)} yalnızca ${localizedUiText("Onarım Modülü")} kabul eder.`;
+    }
+    if (special.category && module.category !== special.category) {
+      return `${localizedUiText(special.label)} yalnızca ${localizedUiText(special.category)} sınıfını kabul eder.`;
+    }
+    return null;
   }
 
   mobileRotateModuleEl?.addEventListener("click", () => {
@@ -3767,7 +5063,7 @@
       if (versionEl) {
         versionEl.textContent=
           manifest.version
-          || "2.0.0-beta.38.1";
+          || "2.1.0-beta.42";
       }
       if (runEl) {
         runEl.textContent=
@@ -3847,23 +5143,10 @@
     );
   }
 
-  const BOARD_CELLS = [
-    [1,0],[2,0],[3,0],
-    [0,1],[1,1],[2,1],[3,1],[4,1],
-    [0,2],[1,2],[2,2],[3,2],[4,2],
-    [0,3],[1,3],[2,3],[3,3],[4,3],
-    [1,4],[2,4],[3,4],
-  ];
-  const CORE_POSITION = { x: 2, y: 2 };
-  const GATE_KEYS = new Set(["2,1","3,2","2,3","1,2"]);
-const SPECIAL_CELL_INFO = {
-  "2,0": { css: "attack-cell", label: "Saldırı Hücresi", bonus: "+%15 saldırı" },
-  "4,2": { css: "defense-cell", label: "Savunma Hücresi", bonus: "+%15 dayanıklılık" },
-  "2,4": { css: "energy-cell", label: "Enerji Hücresi", bonus: "+%15 enerji etkinliği" },
-  "0,2": { css: "cooling-cell", label: "Soğutma Hücresi", bonus: "-%20 ısı oluşumu" },
-  "1,1": { css: "repair-cell", label: "Onarım Hücresi", bonus: "+%20 onarım" },
-  "3,3": { css: "signal-cell", label: "Sinyal Hücresi", bonus: "-%15 bekleme süresi" },
-};
+  const BOARD_CELLS = Array.from({length: 15}, (_, i) => [i % 5, Math.floor(i / 5)]);
+  const CORE_POSITION = { x: 2, y: 1 };
+  const GATE_KEYS = new Set();
+  const SPECIAL_CELL_INFO = {};
   let battleStartedAt = performance.now();
   gridshardAudioDirector =
     typeof GridshardAudioDirector === "function"
@@ -4039,6 +5322,13 @@ const SPECIAL_CELL_INFO = {
   };
   let mockEnemyModuleHp = 140;
   let mockEnemyModules = [];
+  let enemyBattlePlayerId = null;
+  let enemyBattleDisplayName = "";
+  let enemyBattlePoolDefinitionIds = [
+    ...STARTER_BATTLE_POOL_PRESET.module_definition_ids,
+  ];
+  let playerCellDebris = [];
+  let enemyCellDebris = [];
 
   function resetMockEnemyCircuit() {
     mockEnemyGeneratorPosition = {
@@ -4053,7 +5343,7 @@ const SPECIAL_CELL_INFO = {
     mockEnemyModules = [
       {id:"enemy-shield",definitionId:"shield",name:"Kalkan",hp:140,maxHp:140,position:{x:1,y:1},kind:"defense",isPowered:true,energyReceived:2,energyRequired:2},
       {id:"enemy-laser",definitionId:"laser",name:"Lazer",hp:100,maxHp:100,position:{x:3,y:1},kind:"attack",isPowered:true,energyReceived:3,energyRequired:3},
-      {id:"enemy-battery",definitionId:"battery",name:"Batarya",hp:120,maxHp:120,position:{x:2,y:0},kind:"energy",isPowered:true,energyReceived:0,energyRequired:0},
+      {id:"enemy-battery",definitionId:"battery",name:"Batarya",hp:120,maxHp:120,position:{x:3,y:0},kind:"energy",isPowered:true,energyReceived:0,energyRequired:0},
     ];
     mockEnemyModuleHp = mockEnemyModules.reduce((sum,module)=>sum+module.hp,0);
   }
@@ -5778,9 +7068,9 @@ function saveHumanReviewLocalNote() {
     set("local-report-result",
       localBattleMetrics.won ? "Galibiyet" : "Mağlubiyet");
     set("local-report-credits",
-      `${localBattleMetrics.credits_spent} DK`);
+      `${localBattleMetrics.credits_spent} Akım`);
     set("local-report-forfeit-penalty",
-      `${localBattleMetrics.forfeit_credit_penalty || 0} DK`);
+      `${localBattleMetrics.forfeit_credit_penalty || 0} Akım`);
     set("local-report-generator-moves",
       localBattleMetrics.generator_moves);
     set("local-report-damage-dealt",
@@ -5820,25 +7110,42 @@ function saveHumanReviewLocalNote() {
       ...client.modules.values(),
     ].find(
       (module) =>
-        clientDefinitionId(
-          module.instanceId
-        ) === definitionId
+        (module.definitionId || clientDefinitionId(module.instanceId))
+          === definitionId
     ) || null;
+  }
+
+  function ensureClientModuleForServer(serverModule) {
+    if (!serverModule?.instance_id) return null;
+    const exact = client.modules.get(serverModule.instance_id);
+    if (exact) return exact;
+    if (serverModule.definition_id === "core") {
+      return client.modules.get("core-1") || null;
+    }
+    if (serverModule.definition_id === "generator") {
+      return client.modules.get("generator-1") || null;
+    }
+    const template = clientModuleForDefinitionId(serverModule.definition_id);
+    if (!template) return null;
+    return client.registerModule({
+      ...template,
+      instanceId:String(serverModule.instance_id),
+      definitionId:String(serverModule.definition_id),
+      isDeckTemplate:false,
+      hp:Number(serverModule.hp ?? template.maxHp),
+      maxHp:Number(serverModule.max_hp ?? template.maxHp),
+      status:serverModule.status || "active",
+      position:
+        serverModule.x === null || serverModule.y === null
+          ? null
+          : {x:Number(serverModule.x), y:Number(serverModule.y)},
+    });
   }
 
   function localServerClientModuleId(
     serverModule
   ) {
-    const exact=
-      client.modules.get(
-        serverModule?.instance_id
-      );
-    if (exact) {
-      return exact.instanceId;
-    }
-    return clientModuleForDefinitionId(
-      serverModule?.definition_id
-    )?.instanceId || null;
+    return ensureClientModuleForServer(serverModule)?.instanceId || null;
   }
 
   function serverModuleDomId(
@@ -6224,7 +7531,7 @@ function saveHumanReviewLocalNote() {
         }
         renderCredits();
         setBattleLiveTicker(
-          `Savaştan çekilme · ${penalty} DK ceza`,
+          `Savaştan çekilme · ${penalty} Akım silindi`,
           "danger"
         );
         continue;
@@ -6235,6 +7542,37 @@ function saveHumanReviewLocalNote() {
       ) {
         logClientMessage("İki aktif modül yer değiştirdi; portlar otomatik bağlandı.");
         triggerGridshardCue("port_connect");
+        continue;
+      }
+      if (
+        event?.type === "core_power_ready"
+        && data.player_id === participantPlayerId
+      ) {
+        corePowerCharge=100;
+        corePowerReady=true;
+        renderCorePowerControl();
+        triggerGridshardCue("energy_transfer");
+        setBattleLiveTicker("Çekirdek gücü hazır", "boost");
+        continue;
+      }
+      if (event?.type === "core_power_used") {
+        const waveBoard = data.player_id === participantPlayerId ? board : enemyBoard;
+        waveBoard?.classList.add("core-wave");
+        window.setTimeout(() => waveBoard?.classList.remove("core-wave"), 850);
+        emitServerModuleFeedback(
+          snapshot,
+          data.player_id,
+          data.target_module_id,
+          "ÇEKİRDEK GÜCÜ",
+          data.power_id === "core_disruptor" ? "sabotage" : data.power_id === "core_overdrive" ? "boost" : data.power_id === "core_guardian" ? "shield" : "heal"
+        );
+        if (data.player_id === participantPlayerId) {
+          corePowerCharge=0;
+          corePowerReady=false;
+          corePowerTargeting=false;
+          renderCorePowerControl();
+        }
+        triggerGridshardCue("shield_activate");
         continue;
       }
       if (event?.type === "module_damaged") {
@@ -6555,6 +7893,23 @@ function saveHumanReviewLocalNote() {
     if (!enemy) {
       return false;
     }
+    enemyBattlePlayerId = String(
+      enemy.player_id || ""
+    ) || null;
+    enemyBattleDisplayName = String(
+      enemy.display_name || ""
+    ).trim();
+    if (
+      Array.isArray(enemy.battle_pool_ids)
+      && enemy.battle_pool_ids.length
+    ) {
+      enemyBattlePoolDefinitionIds = [
+        ...enemy.battle_pool_ids,
+      ].slice(0,6);
+    }
+    enemyCellDebris = Array.isArray(enemy.cell_debris)
+      ? enemy.cell_debris
+      : [];
 
     const enemyCore=
       (enemy.modules || []).find(
@@ -6589,6 +7944,9 @@ function saveHumanReviewLocalNote() {
       portCount:Number(
         enemyGenerator?.port_count || 4
       ),
+      direction:
+        enemyGenerator?.direction
+        || "up",
       ports:Array.isArray(enemyGenerator?.ports)
         ? enemyGenerator.ports
         : undefined,
@@ -6656,6 +8014,9 @@ function saveHumanReviewLocalNote() {
           portCount:Number(
             module.port_count || 1
           ),
+          direction:
+            module.direction
+            || "up",
           ports:Array.isArray(module.ports)
             ? module.ports
             : undefined,
@@ -6699,7 +8060,11 @@ function saveHumanReviewLocalNote() {
 
     const ownPlayer = snapshot.players[participantPlayerId];
     syncBoosterOfferFromSnapshot(ownPlayer);
+    syncCorePowerFromSnapshot(ownPlayer);
     if (ownPlayer) {
+      playerCellDebris = Array.isArray(ownPlayer.cell_debris)
+        ? ownPlayer.cell_debris
+        : [];
       client.updateElapsedMs(Number(snapshot.elapsed_ms || 0));
       client.applyServerEconomyState({
         circuitCredits:Number(ownPlayer.circuit_credits || 0),
@@ -6727,6 +8092,7 @@ function saveHumanReviewLocalNote() {
           temporaryBoosters:Array.isArray(serverModule.temporary_boosters) ? serverModule.temporary_boosters : [],
         });
       }
+      client.clearPendingPlacements();
     }
 
     const events=
@@ -6786,7 +8152,11 @@ function saveHumanReviewLocalNote() {
       snapshot.players[
         participantPlayerId
       ];
+    playerCellDebris = Array.isArray(player.cell_debris)
+      ? player.cell_debris
+      : [];
     syncBoosterOfferFromSnapshot(player);
+    syncCorePowerFromSnapshot(player);
     const enemy=Object.values(
       snapshot.players
     ).find(
@@ -6891,7 +8261,9 @@ function saveHumanReviewLocalNote() {
           ? serverModule.temporary_boosters
           : [],
       });
+
     }
+    client.clearPendingPlacements();
 
     applyEnemyServerSnapshot(
       snapshot
@@ -7076,12 +8448,26 @@ function saveHumanReviewLocalNote() {
     client.clearPendingPlacements?.();
     renderedShelfSignature = null;
     renderedBoardSignature = null;
+    playerCellDebris = [];
+    enemyCellDebris = [];
+    corePowerCharge = 0;
+    corePowerReady = false;
+    corePowerTargeting = false;
+    renderCorePowerControl();
     clearBattleVisualElement(document.getElementById("battle-effect-layer"));
     createBoard();
     createEnemyBoard();
   }
 
   function resetClientModulesForBattleStart() {
+    for (const [instanceId, module] of client.modules) {
+      if (
+        !module.isDeckTemplate
+        && !["core-1", "generator-1"].includes(instanceId)
+      ) {
+        client.modules.delete(instanceId);
+      }
+    }
     const initialSetupByInstanceId = new Map(
       buildInitialOnlineSetup().map((item) => [item.instanceId, item])
     );
@@ -7096,18 +8482,15 @@ function saveHumanReviewLocalNote() {
             direction:initialSetup.direction,
           }
         : null;
-      const selectedForBattle = battlePoolSelection.selected.has(module.instanceId);
-      const startActive = isCore || isGenerator || Boolean(initialConfig && selectedForBattle);
+      const startActive = isCore;
 
       client.applyServerModuleState({
         instanceId:module.instanceId,
         hp:module.maxHp,
         status:startActive ? "active" : "reserve",
         position:isCore
-          ? {x:2,y:2}
-          : isGenerator
-            ? {x:2,y:3}
-            : initialConfig?.position || null,
+          ? {x:2,y:1}
+          : initialConfig?.position || null,
         direction:initialConfig?.direction || "up",
         energyReceived:0,
         isPowered:true,
@@ -7221,15 +8604,13 @@ function saveHumanReviewLocalNote() {
     const battleMatchLabel=document.getElementById("battle-match-label");
     if (battleMatchLabel) battleMatchLabel.textContent=`${aiLabel} AI`;
 
-    boosterStatusEl.textContent =
-      "İlk güçlendirici 30. saniyede";
+    if (boosterStatusEl) boosterStatusEl.textContent = "Kapalı";
     criticalCoreAudioRequested = false;
     requestOwnedAudioState("local_battle_started");
     triggerGridshardCue("energy_transfer");
 
     createEnemyBoard();
     renderEnemyBoard();
-    renderBoosterOptions();
     render();
     renderCredits();
     renderCapacity();
@@ -7250,7 +8631,7 @@ function saveHumanReviewLocalNote() {
     loadCumulativeManualReport();
 
     logClientMessage(
-      "Tek Oyunculu Test Maçı başladı. Modül Rafı 15. saniyede açılır."
+      "Tek Oyunculu Test Maçı başladı. Altı kartlık deste Devre Kredisine göre kullanıma hazır."
     );
   }
 
@@ -7281,22 +8662,15 @@ function saveHumanReviewLocalNote() {
 
   function fillBattlePoolForQuickTest() {
     const ids=[
-      "generator-1",
       ...selectablePoolModules
         .map(
           (module)=>
             module.instanceId
         )
-        .filter(
-          (moduleId)=>
-            moduleId
-            !== "generator-1"
-        )
         .slice(
           0,
           battlePoolSelection
             .requiredSize
-          - 1
         ),
     ];
 
@@ -7366,7 +8740,7 @@ function saveHumanReviewLocalNote() {
       );
     if (status) {
       status.textContent=
-        `Savaş alanına giriş başarılı · 18/18 test havuzu hazır · ${aiArchetypeName()} AI aktif`;
+        `Savaş alanına giriş başarılı · 6/6 deste hazır · ${aiArchetypeName()} AI aktif`;
     }
 
     telemetryDispatcher.track(
@@ -7509,19 +8883,11 @@ function saveHumanReviewLocalNote() {
           0,
           Number(core?.hp || 0)
         )
-      }/${core?.maxHp || 300}`
-      + ` · Jeneratör ${
-        Math.max(
-          0,
-          Number(
-            generator?.hp || 0
-          )
-        )
-      }/${generator?.maxHp || 150}`;
+      }/${core?.maxHp || 300}`;
 
     if (playerBoardStatusEl) {
       playerBoardStatusEl.textContent=
-        `Çekirdek ${Math.max(0,Number(core?.hp||0))}/${core?.maxHp||300} · Jeneratör ${Math.max(0,Number(generator?.hp||0))}/${generator?.maxHp||150}`;
+        `Çekirdek ${Math.max(0,Number(core?.hp||0))}/${core?.maxHp||300} · Enerji %${Math.round(Number(client.energyLoadRatio || 0) * 100)}`;
     }
 
     const playerSide=
@@ -7587,7 +8953,7 @@ function saveHumanReviewLocalNote() {
         false;
       battleResultSummaryEl.textContent = localizedUiText(
         finishReason === "player_forfeit"
-          ? `KAYBETTİN · Savaşı bıraktın · ${forfeitPenalty} DK ceza`
+          ? `KAYBETTİN · Savaşı bıraktın · ${forfeitPenalty} Akım silindi`
           : (
               won
                 ? "KAZANDIN · Rakip Çekirdek yok edildi"
@@ -8528,7 +9894,7 @@ function saveHumanReviewLocalNote() {
     quickLoadoutActiveSummaryEl
       .innerHTML=
         `<strong>${favorite}${activeBattlePoolPresetName}</strong>`
-        + `<span>${selectedCount}/18 modül · ${clean ? "Kayıtla aynı" : "Değiştirildi"} · ${freshness}</span>`;
+        + `<span>${selectedCount}/6 kart · ${clean ? "Kayıtla aynı" : "Değiştirildi"} · ${freshness}</span>`;
   }
 
   function renderActivePresetState() {
@@ -8783,7 +10149,7 @@ function saveHumanReviewLocalNote() {
       empty.className=
         "preset-gallery-empty";
       empty.textContent=
-        "Henüz hazır havuz yok. 18/18 seçim yaptıktan sonra ilk loadout'unu kaydet.";
+        "Henüz hazır deste yok. 6/6 seçim yaptıktan sonra ilk desteni kaydet.";
       presetGalleryEl.appendChild(
         empty
       );
@@ -9215,6 +10581,7 @@ function saveHumanReviewLocalNote() {
     renderPresetGallery();
     renderInitialPresetShortcuts();
     renderQuickLoadoutGallery();
+    renderMetaHubScreens();
   }
 
   async function loadBattlePoolPresets() {
@@ -9269,7 +10636,7 @@ function saveHumanReviewLocalNote() {
     ) {
       if (presetStatusEl) {
         presetStatusEl.textContent=
-          "Kaydetmek için havuz 18/18 olmalı.";
+          "Kaydetmek için deste 6/6 olmalı.";
       }
       return;
     }
@@ -9394,6 +10761,7 @@ function saveHumanReviewLocalNote() {
       name;
     activeBattlePoolPresetBaseline=
       [...preset.module_definition_ids];
+    syncDeckEditorFromSelection();
 
     await updateBattlePoolPresetMeta(
       name,
@@ -9543,7 +10911,8 @@ function saveHumanReviewLocalNote() {
     category
   ) {
     const labels = {
-      enerji:"Enerji",
+      enerji:"Sistem",
+      sistem:"Sistem",
       saldırı:"Saldırı",
       savunma:"Savunma",
       destek:"Destek",
@@ -9668,16 +11037,14 @@ function saveHumanReviewLocalNote() {
       === "generator-1"
     ) {
       return (
-        "Devrenin başlangıç enerji kaynağıdır. "
-        + "Bir Çekirdek kapısında başlar; savaş sırasında dört Çekirdek kapısı arasında taşınabilir fakat rafa alınamaz."
+        "Devrenin sabit başlangıç enerji kaynağıdır. Çekirdek tüm aktif hücrelere otomatik enerji iletir."
       );
     }
 
     return (
       `${module.strategicRole}. `
-      + `${module.portCount} bağlantı portu bulunur; `
       + `Canı ${module.maxHp}, savaş içi yerleştirme maliyeti `
-      + `${module.circuitCreditCost} DK'dır.`
+      + `${module.circuitCreditCost} Akım'dır.`
     );
   }
 
@@ -9735,9 +11102,8 @@ function saveHumanReviewLocalNote() {
     poolDetailHpEl.textContent =
       `${catalog?.max_hp ?? module.maxHp}`;
     poolDetailCostEl.textContent =
-      `${catalog?.circuit_credit_cost ?? module.circuitCreditCost} DK`;
-    poolDetailPortsEl.textContent =
-      `${catalog?.port_count ?? module.portCount}`;
+      `${catalog?.circuit_credit_cost ?? module.circuitCreditCost} Akım`;
+    if (poolDetailPortsEl) poolDetailPortsEl.textContent = "0";
 
     renderBattlePoolModulePreview(
       module,
@@ -9902,37 +11268,29 @@ function saveHumanReviewLocalNote() {
   }
 
   function availableInitialBattleModuleIds() {
-    return battlePoolSelection
-      .selectedIds()
-      .filter((instanceId) => instanceId !== "generator-1");
+    return [];
+  }
+
+  function moduleRarityLabel(rarity) {
+    return ({
+      common: "Yaygın",
+      rare: "Nadir",
+      epic: "Epik",
+      legendary: "Efsanevi",
+    })[String(rarity || "").toLowerCase()] || "Yaygın";
+  }
+
+  function localizedRewardDescription(value) {
+    return String(value || "")
+      .replace(/\blegendary\b/gi, "Efsanevi")
+      .replace(/\bcommon\b/gi, "Yaygın")
+      .replace(/\brare\b/gi, "Nadir")
+      .replace(/\bepic\b/gi, "Epik");
   }
 
   function normalizeInitialBattleModuleIds() {
-    const available = availableInitialBattleModuleIds();
-    const availableSet = new Set(available);
-    initialBattleModuleIds = initialBattleModuleIds
-      .filter((instanceId, index, ids) =>
-        availableSet.has(instanceId)
-        && ids.indexOf(instanceId) === index
-      )
-      .slice(0, 2);
-
-    const preferred = [
-      "laser-1",
-      "pulse-cannon-1",
-      ...available,
-    ];
-    for (const instanceId of preferred) {
-      if (
-        initialBattleModuleIds.length >= 2
-        || !availableSet.has(instanceId)
-        || initialBattleModuleIds.includes(instanceId)
-      ) {
-        continue;
-      }
-      initialBattleModuleIds.push(instanceId);
-    }
-    return [...initialBattleModuleIds];
+    initialBattleModuleIds = [];
+    return [];
   }
 
   function renderInitialModulePicker() {
@@ -9940,48 +11298,12 @@ function saveHumanReviewLocalNote() {
     const status = document.getElementById("initial-module-status");
     if (!root) return;
 
-    const available = availableInitialBattleModuleIds();
-    normalizeInitialBattleModuleIds();
     root.innerHTML = "";
-
-    for (let slotIndex = 0; slotIndex < 2; slotIndex += 1) {
-      const label = document.createElement("label");
-      label.className = "initial-module-slot";
-      label.textContent = localizedUiText(`Seçim ${slotIndex + 1}`);
-      const select = document.createElement("select");
-      select.className = "initial-module-choice";
-      select.dataset.slot = String(slotIndex);
-      select.disabled = available.length < 2;
-
-      for (const instanceId of available) {
-        const module = client.modules.get(instanceId);
-        if (!module) continue;
-        const option = document.createElement("option");
-        option.value = instanceId;
-        option.textContent = localizedUiText(module.nameTr);
-        option.selected = initialBattleModuleIds[slotIndex] === instanceId;
-        option.disabled = initialBattleModuleIds.some(
-          (selectedId, index) => index !== slotIndex && selectedId === instanceId
-        );
-        select.appendChild(option);
-      }
-
-      select.addEventListener("change", () => {
-        initialBattleModuleIds[slotIndex] = select.value;
-        normalizeInitialBattleModuleIds();
-        renderInitialModulePicker();
-      });
-      label.appendChild(select);
-      root.appendChild(label);
-    }
+    root.hidden = true;
 
     if (status) {
-      status.textContent = localizedUiText(
-        initialBattleModuleIds.length === 2
-          ? "2 / 2 oyuncu modülü seçili · değişiklikler sınırsız"
-          : `${initialBattleModuleIds.length} / 2 · önce Savaş Havuzunu tamamla`
-      );
-      status.dataset.ready = String(initialBattleModuleIds.length === 2);
+      status.textContent = localizedUiText("Çekirdek ve Jeneratör sabit başlar");
+      status.dataset.ready = "true";
     }
   }
 
@@ -10507,11 +11829,6 @@ function saveHumanReviewLocalNote() {
     if (!poolDetailPreviewEl) return;
 
     poolDetailPreviewEl.innerHTML = "";
-    const portCount = Number(
-      catalog?.port_count
-      ?? module.portCount
-      ?? 0
-    );
     const card = document.createElement("div");
     card.className = "pool-detail-preview-card";
     card.dataset.category = module.category || "";
@@ -10521,21 +11838,11 @@ function saveHumanReviewLocalNote() {
     icon.textContent = moduleIconFor(module);
     icon.setAttribute("aria-hidden", "true");
 
-    const portLabel = document.createElement("small");
-    portLabel.className = "pool-detail-preview-port-label";
-    portLabel.textContent = `${portCount} ${localizedUiText("Port")}`;
-
-    card.append(icon, portLabel);
-    for (const side of poolPreviewPortDirections(portCount)) {
-      const port = document.createElement("span");
-      port.className = `port-dot port-${side}`;
-      port.setAttribute("aria-hidden", "true");
-      card.appendChild(port);
-    }
+    card.append(icon);
 
     poolDetailPreviewEl.setAttribute(
       "aria-label",
-      `${localizedUiText(module.nameTr)} · ${portCount} ${localizedUiText("Port")}`
+      `${localizedUiText(module.nameTr)} · ${localizedUiText("Modül önizlemesi")}`
     );
     poolDetailPreviewEl.appendChild(card);
   }
@@ -10784,6 +12091,143 @@ function saveHumanReviewLocalNote() {
     cancelBoosterTargeting("empty_battle_area");
   });
 
+  const CIRCUIT_CABLE_DIRECTIONS = [
+    { dx:1, dy:0 },
+    { dx:0, dy:1 },
+  ];
+
+  function cablePositionKey(position) {
+    return `${Number(position?.x)},${Number(position?.y)}`;
+  }
+
+  function circuitModuleIdentity(module, fallback="module") {
+    return String(
+      module?.instanceId
+      || module?.id
+      || `${fallback}-${cablePositionKey(module?.position)}`
+    );
+  }
+
+  function ensureBoardCableLayer(boardElement) {
+    if (!boardElement) return null;
+    let layer=boardElement.querySelector(":scope > .board-cable-layer");
+    if (layer) return layer;
+    layer=document.createElementNS("http://www.w3.org/2000/svg","svg");
+    layer.classList.add("board-cable-layer");
+    layer.setAttribute("viewBox","0 0 500 300");
+    layer.setAttribute("preserveAspectRatio","none");
+    layer.setAttribute("aria-hidden","true");
+    boardElement.prepend(layer);
+    return layer;
+  }
+
+  function createCircuitCableLine(layer, first, second, className) {
+    const line=document.createElementNS("http://www.w3.org/2000/svg","line");
+    line.classList.add(...className.split(" ").filter(Boolean));
+    line.setAttribute("x1",String((first.x * 100) + 50));
+    line.setAttribute("y1",String((first.y * 100) + 50));
+    line.setAttribute("x2",String((second.x * 100) + 50));
+    line.setAttribute("y2",String((second.y * 100) + 50));
+    layer.appendChild(line);
+    return line;
+  }
+
+  function circuitEnergyDistances(modules) {
+    const active=modules.filter(
+      (module) =>
+        module?.position
+        && module.status !== "destroyed"
+        && Number(module.hp ?? 1) > 0
+    );
+    const distances=new Map();
+    const queue=[];
+    for (const module of active) {
+      if ((module.nameTr || module.name) !== "Jeneratör") continue;
+      const id=circuitModuleIdentity(module,"generator");
+      distances.set(id,0);
+      queue.push(module);
+    }
+    while (queue.length) {
+      const current=queue.shift();
+      const currentId=circuitModuleIdentity(current);
+      for (const candidate of active) {
+        const candidateId=circuitModuleIdentity(candidate);
+        if (distances.has(candidateId)) continue;
+        if (!areConnected(current,candidate)) continue;
+        distances.set(candidateId,(distances.get(currentId) || 0) + 1);
+        queue.push(candidate);
+      }
+    }
+    return distances;
+  }
+
+  function renderBoardCables(boardElement, moduleIterable=[]) {
+    const layer = ensureBoardCableLayer(boardElement);
+    if (!layer) return;
+    layer.replaceChildren();
+    const modules = [...moduleIterable];
+    const liveCore = modules.some(m => (m.definitionId === "core" || m.nameTr === "Çekirdek") && Number(m.hp) > 0);
+    const cells = new Set(BOARD_CELLS.map(([x,y]) => `${x},${y}`));
+    for (const [x,y] of BOARD_CELLS) {
+      const first = {x,y};
+      for (const {dx,dy} of CIRCUIT_CABLE_DIRECTIONS) {
+        const second = {x:x+dx,y:y+dy};
+        if (!cells.has(cablePositionKey(second))) continue;
+        createCircuitCableLine(layer, first, second, "circuit-cable-base");
+        if (liveCore) {
+          const distance = p => Math.abs(p.x-2)+Math.abs(p.y-1);
+          const outward = distance(first) <= distance(second);
+          createCircuitCableLine(layer, outward ? first : second, outward ? second : first, "circuit-cable-current");
+        }
+      }
+    }
+    if (boardElement === board) renderCorePowerControl();
+  }
+
+  function playerCircuitCableModules() {
+    return [...client.modules.values()].filter(
+      (module) => module.status === "active" && module.position
+    );
+  }
+
+  function enemyCircuitCableModules() {
+    const core={
+      instanceId:"enemy-core",
+      nameTr:"Çekirdek",
+      hp:mockEnemyCoreHp,
+      status:"active",
+      position:{x:2,y:1},
+      portCount:4,
+      ports:["up","right","down","left"],
+      isPowered:mockEnemyCoreHp > 0,
+    };
+    const generator={
+      instanceId:"enemy-generator",
+      nameTr:"Jeneratör",
+      hp:mockEnemyGeneratorHp,
+      status:"active",
+      position:{...mockEnemyGeneratorPosition},
+      portCount:4,
+      direction:mockEnemyGeneratorPower.direction || "up",
+      ports:mockEnemyGeneratorPower.ports,
+      isPowered:Boolean(mockEnemyGeneratorPower.isPowered),
+    };
+    const deployed=mockEnemyModules.map((module) => {
+      const definition=moduleDefinitions.find(
+        (candidate) => candidate.definitionId === module.definitionId
+      );
+      return {
+        ...module,
+        instanceId:module.id,
+        nameTr:module.name,
+        status:"active",
+        direction:module.direction || definition?.direction || "up",
+        portCount:Number(module.portCount || definition?.portCount || 1),
+      };
+    });
+    return [core,...deployed];
+  }
+
   function createBoard() {
     board.innerHTML = "";
 
@@ -10827,6 +12271,7 @@ function saveHumanReviewLocalNote() {
         if (
           localBattleFinished
           || cell.classList.contains("core-cell")
+          || cell.dataset.debris === "true"
         ) return;
         event.preventDefault();
         cell.classList.add("drag-over");
@@ -10841,6 +12286,17 @@ function saveHumanReviewLocalNote() {
         ) return;
         event.preventDefault();
         cell.classList.remove("drag-over");
+
+        const sourceModuleId = client.dragState?.moduleId;
+        const sourceModule = sourceModuleId
+          ? client.requireModule(sourceModuleId)
+          : null;
+        const rejection = cellPlacementRejection(cell, sourceModule);
+        if (rejection) {
+          logClientMessage(rejection);
+          client.cancelDrag();
+          return;
+        }
 
         const targetCard = cell.querySelector(".module-card");
         const targetModuleId = targetCard?.dataset.moduleId || null;
@@ -10867,6 +12323,7 @@ function saveHumanReviewLocalNote() {
 
       board.appendChild(cell);
     }
+    ensureBoardCableLayer(board);
   }
 
   function createEnemyBoard() {
@@ -10893,6 +12350,7 @@ function saveHumanReviewLocalNote() {
       }
       enemyBoard.appendChild(cell);
     }
+    ensureBoardCableLayer(enemyBoard);
   }
 
   function appendEnergyFlowIndicator(
@@ -10941,16 +12399,16 @@ function saveHumanReviewLocalNote() {
           ? "A disruptor effect temporarily broke this module's energy line."
           : "Kesici etkisi bu modülün enerji hattını geçici olarak kopardı.",
         port_disconnected:english
-          ? "There is no reciprocal port chain from this module to the Generator."
-          : "Bu modülden Jeneratöre uzanan karşılıklı bir port zinciri yok.",
+          ? "This module is not active in the Core energy network."
+          : "Bu modül Çekirdek enerji ağında etkin değil.",
         insufficient_supply:english
-          ? `The port chain is valid, but supply is insufficient. Required ${required.toFixed(1)} U, received ${received.toFixed(1)} U.`
-          : `Port zinciri geçerli ancak üretim yetersiz. İhtiyaç ${required.toFixed(1)} Ü, gelen ${received.toFixed(1)} Ü.`,
+          ? `Core energy demand: ${required.toFixed(1)} U, received: ${received.toFixed(1)} U.`
+          : `Çekirdek enerji ihtiyacı: ${required.toFixed(1)} Ü, gelen: ${received.toFixed(1)} Ü.`,
       };
       const message=reasons[powerReason]
         || (english
-          ? "This module is not receiving usable energy. Check reciprocal ports and total generation."
-          : "Bu modül kullanılabilir enerji almıyor. Karşılıklı portları ve toplam üretimi kontrol edin.");
+          ? "This module is disabled. Check sabotage effects and Core energy pressure."
+          : "Bu modül devre dışı. Sabotaj etkilerini ve Çekirdek enerji baskısını kontrol edin.");
       card.classList.add("energy-disconnected");
       const tooltip=document.createElement("span");
       tooltip.className="power-state-tooltip";
@@ -11102,7 +12560,10 @@ function saveHumanReviewLocalNote() {
     for (const cell of enemyBoard.querySelectorAll(".board-cell")) {
       cell.innerHTML="";
       cell.dataset.occupied="false";
+      cell.dataset.debris="false";
+      cell.classList.remove("debris-cell");
     }
+    appendCellDebris(enemyBoard, enemyCellDebris);
     const place=(x,y,card)=>{
       const cell=enemyBoard.querySelector(`.board-cell[data-x="${x}"][data-y="${y}"]`);
       if (cell) {
@@ -11110,19 +12571,7 @@ function saveHumanReviewLocalNote() {
         cell.appendChild(card);
       }
     };
-    place(2,2,enemyCard("enemy-core","Çekirdek",mockEnemyCoreHp,300,"core"));
-    place(
-      mockEnemyGeneratorPosition.x,
-      mockEnemyGeneratorPosition.y,
-      enemyCard(
-        "enemy-generator",
-        "Jeneratör",
-        mockEnemyGeneratorHp,
-        150,
-        "energy",
-        mockEnemyGeneratorPower
-      )
-    );
+    place(2,1,enemyCard("enemy-core","Çekirdek",mockEnemyCoreHp,300,"core"));
     for (const module of mockEnemyModules) {
       if (module.hp<=0) continue;
       place(
@@ -11140,7 +12589,94 @@ function saveHumanReviewLocalNote() {
     }
     mockEnemyModuleHp=enemyLivingModules().reduce((sum,module)=>sum+module.hp,0);
     if (enemyBoardStatusEl) {
-      enemyBoardStatusEl.textContent=`Çekirdek ${Math.max(0,mockEnemyCoreHp)}/300 · Jeneratör ${Math.max(0,mockEnemyGeneratorHp)}/150`;
+      enemyBoardStatusEl.textContent=`Çekirdek ${Math.max(0,mockEnemyCoreHp)}/300`;
+    }
+    renderBattleIdentityPanels();
+    renderBoardCables(
+      enemyBoard,
+      enemyCircuitCableModules()
+    );
+  }
+
+  function opponentBattleDisplayName() {
+    if (enemyBattleDisplayName) return enemyBattleDisplayName;
+    if (
+      activePlayMode === "local"
+      || matchmakingState.opponentType === "ai"
+      || String(enemyBattlePlayerId || "").includes("ai-")
+    ) {
+      return `${aiArchetypeName(activeLocalAiArchetype)} AI`;
+    }
+    if (enemyBattleDisplayName) return enemyBattleDisplayName;
+    if (!enemyBattlePlayerId) return localizedUiText("Rakip Oyuncu");
+    const clean=String(enemyBattlePlayerId);
+    const short=clean.length > 18
+      ? `${clean.slice(0,8)}…${clean.slice(-5)}`
+      : clean;
+    return short;
+  }
+
+  function renderBattleIdentityPanels() {
+    const playerName=
+      profileState.viewModel()?.displayName
+      || "Oyuncu";
+    if (playerBattleNameEl) {
+      playerBattleNameEl.textContent=playerName;
+    }
+    if (enemyBattleNameEl) {
+      enemyBattleNameEl.textContent=opponentBattleDisplayName();
+    }
+    if (!enemyDeckPreviewEl) return;
+    enemyDeckPreviewEl.replaceChildren();
+    const label=document.createElement("span");
+    label.className="enemy-deck-label";
+    label.textContent=localizedUiText("Deste");
+    enemyDeckPreviewEl.appendChild(label);
+    const ids=(enemyBattlePoolDefinitionIds.length
+      ? enemyBattlePoolDefinitionIds
+      : STARTER_BATTLE_POOL_PRESET.module_definition_ids
+    ).slice(0,6);
+    for (const definitionId of ids) {
+      const module=moduleDefinitions.find(
+        (candidate) => candidate.definitionId === definitionId
+      );
+      if (!module) continue;
+      const card=document.createElement("span");
+      card.className="enemy-deck-card";
+      card.dataset.category=module.category || "";
+      card.textContent=moduleIconFor(module);
+      card.title=localizedUiText(module.nameTr);
+      card.setAttribute("aria-label",localizedUiText(module.nameTr));
+      enemyDeckPreviewEl.appendChild(card);
+    }
+  }
+
+  function appendCellDebris(boardElement, debrisItems) {
+    for (const debris of debrisItems || []) {
+      const cell = boardElement.querySelector(
+        `.board-cell[data-x="${Number(debris.x)}"][data-y="${Number(debris.y)}"]`
+      );
+      if (!cell) continue;
+      const seconds = Math.max(
+        1,
+        Math.ceil(Number(debris.remaining_ms || 0) / 1000)
+      );
+      cell.dataset.debris = "true";
+      cell.classList.add("debris-cell");
+      const marker = document.createElement("span");
+      marker.className = "cell-debris";
+      marker.setAttribute("role", "status");
+      marker.setAttribute(
+        "aria-label",
+        `${localizedUiText("Enkaz")}: ${seconds}`
+      );
+      const shards = document.createElement("span");
+      shards.className = "cell-debris-shards";
+      shards.setAttribute("aria-hidden", "true");
+      const countdown = document.createElement("strong");
+      countdown.textContent = `${seconds} sn`;
+      marker.append(shards, countdown);
+      cell.appendChild(marker);
     }
   }
 
@@ -11642,13 +13178,14 @@ function saveHumanReviewLocalNote() {
             ownResult.forfeit_credit_penalty
             || 0
           )
-        )} DK ceza`
+        )} Akım silindi`
       : "";
 
     resultEl.hidden = false;
     resultEl.textContent = localizedUiText(
       `${progression?.matchLabelTr || "Maç"} · ${finishReasonLabel(result.finish_reason)}${penaltyText} · ${ratingText} · ${xpText}`
     );
+    renderPostMatchRewards();
   }
 
   function renderParticipantBootstrapStatus() {
@@ -11766,6 +13303,7 @@ function saveHumanReviewLocalNote() {
       battleProfileNameEl.textContent =
         view.displayName;
     }
+    renderBattleIdentityPanels();
     const lobbyPlayerName=
       document.getElementById(
         "lobby-player-name"
@@ -11780,7 +13318,7 @@ function saveHumanReviewLocalNote() {
     }
     if (lobbyPlayerDetails) {
       lobbyPlayerDetails.textContent= localizedUiText(
-        `${view.engagement?.equipped_title || "Devre Çırağı"} · Seviye ${view.level} · Lig: ${view.leagueNameTr} · ${view.rating} RP`
+        `${view.engagement?.equipped_title || "Devre Çırağı"} · Seviye ${view.level} · 🏆 ${view.rating}`
       );
     }
 
@@ -11943,25 +13481,11 @@ function saveHumanReviewLocalNote() {
     icon.textContent = moduleIconFor({ nameTr: module.name_tr });
     icon.setAttribute("aria-hidden", "true");
 
-    const portCount = Math.max(
-      0,
-      Number(module.port_count ?? PORT_COUNT_BY_NAME[module.name_tr] ?? 1)
-    );
-    const portLabel = document.createElement("small");
-    portLabel.className = "pool-detail-preview-port-label";
-    portLabel.textContent = `${portCount} ${localizedUiText("Port")}`;
-
-    card.append(icon, portLabel);
-    for (const side of poolPreviewPortDirections(portCount)) {
-      const port = document.createElement("span");
-      port.className = `port-dot port-${side}`;
-      port.setAttribute("aria-hidden", "true");
-      card.appendChild(port);
-    }
+    card.append(icon);
 
     host.setAttribute(
       "aria-label",
-      `${localizedUiText(module.name_tr)} · ${portCount} ${localizedUiText("Port")} · devre kartı önizlemesi`
+      `${localizedUiText(module.name_tr)} · devre kartı önizlemesi`
     );
     host.appendChild(card);
   }
@@ -12216,7 +13740,22 @@ function saveHumanReviewLocalNote() {
     return result;
   }
 
+  function renderCanonStatistics() {
+    const stats = metaProgressionState?.statistics;
+    const summary = document.getElementById("statistics-live-summary");
+    if (!stats || !summary) return;
+    let host = document.getElementById("statistics-canon");
+    if (!host) { host = document.createElement("div"); host.id = "statistics-canon"; host.className = "statistics-canon"; summary.after(host); }
+    host.replaceChildren();
+    const matches = Math.max(1, Number(stats.matches || 0));
+    const entries = [["Kupa / En yüksek", `${stats.current_trophies} / ${stats.highest_trophies}`], ["Arena / Lig", stats.rank], ["En uzun galibiyet serisi", stats.longest_streak || 0], ["Maç başı yerleştirme", ((stats.deployments || 0)/matches).toFixed(1)], ["Toplam / Ortalama Akım", `${stats.current_spent || 0} / ${((stats.current_spent || 0)/matches).toFixed(1)}`], ["Çekirdek gücü kullanımı", stats.core_power_uses || 0], ["En yüksek maç hasarı", stats.peak_damage || 0], ["Açılan modül", `${stats.unlocked_modules} / 36`], ["Yükseltilen modül", stats.upgraded_modules], ["En yüksek modül seviyesi", stats.highest_module_level], ["Açılan çekirdek", `${stats.unlocked_cores} / 7`], ["Açılan sandık", stats.opened_chests]];
+    for (const [id, count] of Object.entries(stats.cores || {})) entries.push([metaProgressionState.cores?.types.find(c => c.id === id)?.name_tr || id, `%${Math.round(count / matches * 100)}`]);
+    for (const [i, deck] of (stats.most_used_decks || []).entries()) entries.push([`${i+1}. En çok kullanılan deste · ${deck.matches} maç`, deck.module_ids.map(id => moduleDefinitions.find(m => m.definitionId === id)?.nameTr || id).join(" · ")]);
+    for (const [name, value] of entries) { const card=document.createElement("div"), label=document.createElement("small"), number=document.createElement("strong"); label.textContent=name; number.textContent=String(value ?? 0); card.append(label,number); host.appendChild(card); }
+  }
+
   function renderStatisticsSummary() {
+    renderCanonStatistics();
     const el =
       document.getElementById(
         "statistics-live-summary"
@@ -12339,11 +13878,12 @@ function saveHumanReviewLocalNote() {
   let renderedBoardSignature = null;
 
   function modulePlacementSlotState() {
-    const limit = client.maxActiveModules();
-    const currentLimit = limit === null ? 4 : limit;
+    const limit = 15;
+    const currentLimit = 15;
     const active = client.activeModuleCount();
     const pending = client.pendingPlacementCount();
-    const available = Math.max(0, currentLimit - active - pending);
+    const debrisCount = playerCellDebris.filter(d => Number(d.expires_at_ms ?? d.until_ms ?? 0) > client.elapsedMs).length;
+    const available = Math.max(0, currentLimit - active - pending - debrisCount);
     return {
       limit,
       currentLimit,
@@ -12351,157 +13891,90 @@ function saveHumanReviewLocalNote() {
       pending,
       available,
       ready:
-        client.isShelfUnlocked()
-        && !localBattleFinished
+        !localBattleFinished
         && available > 0,
     };
   }
 
+  function deployDeckModule(module) {
+    const result = client.deployDefinition(
+      module.definitionId || clientDefinitionId(module.instanceId),
+      module.circuitCreditCost
+    );
+    if (!result.ok) {
+      logClientMessage(result.reason);
+      if (String(result.reason).includes("Akım")) {
+        flashInsufficientCredits();
+      }
+      renderShelf();
+      return false;
+    }
+    trackBattleUiInteraction("deploy_module", "module_place");
+    logClientMessage(
+      `${localizedUiText(module.nameTr)} için sunucu uygun hücreyi seçiyor.`
+    );
+    renderShelf();
+    return true;
+  }
+
+  function createDeckModuleCard(module, enabled) {
+    const card = document.createElement("button");
+    card.type = "button";
+    card.className = "module-card deck-module-card";
+    card.dataset.moduleId = module.instanceId;
+    card.dataset.category = module.category || "";
+    card.disabled = !enabled;
+    card.setAttribute("aria-disabled", String(!enabled));
+    card.title = enabled
+      ? `${localizedUiText(module.nameTr)} · ${module.circuitCreditCost} Akım · Tıkla ve yerleştir`
+      : `${localizedUiText(module.nameTr)} · ${module.circuitCreditCost} Akım · Yetersiz Akım veya devre dolu`;
+
+    const icon = document.createElement("span");
+    icon.className = "module-icon";
+    icon.textContent = moduleIconFor(module);
+    const name = document.createElement("span");
+    name.className = "name";
+    name.textContent = localizedUiText(module.nameTr);
+    const stats = document.createElement("span");
+    stats.className = "module-stats";
+    const cost = document.createElement("span");
+    cost.className = "module-stat credit";
+    cost.textContent = `${module.circuitCreditCost} Akım`;
+    stats.append(cost);
+    card.append(icon, name, stats);
+    const currentBadge = document.createElement("span");
+    currentBadge.className = "current-cost-badge";
+    currentBadge.textContent = `ϟ ${module.circuitCreditCost}`;
+    card.appendChild(currentBadge);
+    appendHpBar(card, module.maxHp, module.maxHp);
+    card.addEventListener("click", () => deployDeckModule(module));
+    return card;
+  }
+
   function renderShelf() {
     const placement = modulePlacementSlotState();
-    const unlocked = placement.ready;
-    const reserveModules=[
-      ...client.modules.values(),
-    ].filter(
-      (module) =>
-        module.status === "reserve"
-        && battlePoolSelection
-          .selected
-          .has(
-            module.instanceId
-          )
-    );
-    const shelfSignature=JSON.stringify({
-      unlocked,
-      available:placement.available,
-      finished:localBattleFinished,
-      selected:tapSelectedModuleId,
-      modules:reserveModules.map(
-        (module) => [
-          module.instanceId,
-          module.hp,
-          module.maxHp,
-          module.category,
-        ]
-      ),
-    });
-    if (
-      shelfSignature
-      === renderedShelfSignature
-    ) {
-      return;
+    const deckModules = battlePoolSelection.selectedIds().map(id => client.modules.get(id)).filter(Boolean);
+    const discounted = Number(client.currentDiscountRemaining || 0) > 0;
+    const costFor = m => Math.max(1, Number(m.currentCost ?? m.circuitCreditCost) - (discounted ? 1 : 0));
+    const signature = JSON.stringify([placement.ready, client.circuitCredits, discounted, deckModules.map(m => m.instanceId)]);
+    if (signature === renderedShelfSignature) return;
+    renderedShelfSignature = signature;
+    shelf.replaceChildren();
+    const anyAffordable = placement.ready && deckModules.some(m => costFor(m) <= client.circuitCredits);
+    shelf.dataset.placementReady = String(anyAffordable);
+    shelf.setAttribute("aria-disabled", String(!anyAffordable));
+    for (const module of deckModules) {
+      const cost = costFor(module);
+      const enabled = placement.ready && client.circuitCredits >= cost;
+      const card = createDeckModuleCard(module, enabled);
+      card.title = `${localizedUiText(module.nameTr)} · ${cost} Akım`;
+      const badge = card.querySelector(".current-cost-badge");
+      if (badge) badge.textContent = `ϟ ${cost}`;
+      if (!enabled) card.classList.add("locked", "placement-locked");
+      shelf.appendChild(card);
     }
-    renderedShelfSignature=
-      shelfSignature;
-    shelf.innerHTML = "";
-    shelf.dataset.placementReady = String(placement.ready);
-    shelf.setAttribute("aria-disabled", String(!placement.ready));
-
-    for (
-      const category
-      of POOL_CATEGORY_ORDER
-    ) {
-      const modules=
-        reserveModules.filter(
-          (module) =>
-            module.category
-            === category
-        );
-      if (!modules.length) {
-        continue;
-      }
-
-      const group=
-        document.createElement(
-          "details"
-        );
-      group.className=
-        "shelf-category-group";
-      group.dataset.category=
-        category;
-      group.open =
-        !collapsedShelfCategories
-          .has(category);
-      group.addEventListener(
-        "toggle",
-        () => {
-          if (group.open) {
-            collapsedShelfCategories
-              .delete(category);
-          } else {
-            collapsedShelfCategories
-              .add(category);
-          }
-        }
-      );
-      const title=
-        document.createElement(
-          "summary"
-        );
-      title.className=
-        "shelf-category-title";
-      title.textContent=
-        `${poolCategoryLabel(category)} · ${modules.length}`;
-      const list =
-        document.createElement(
-          "div"
-        );
-      list.className =
-        "shelf-category-list";
-      group.append(title, list);
-
-      for (const module of modules) {
-        const card=
-          createModuleCard(module);
-        const tooltip =
-          document.createElement(
-            "span"
-          );
-        tooltip.className =
-          "shelf-module-tooltip";
-        tooltip.textContent =
-          `${localizedUiText("Devre Kredisi")}: ${module.circuitCreditCost} DK · `
-          + `${localizedUiText("Port")}: ${module.portCount}`;
-        tooltip.setAttribute(
-          "role",
-          "tooltip"
-        );
-        card.appendChild(tooltip);
-        const placeTooltip=()=>updateShelfTooltipPlacement(card,tooltip);
-        card.addEventListener("pointerenter",placeTooltip);
-        card.addEventListener("focusin",placeTooltip);
-        card.title =
-          `${localizedUiText(module.nameTr)} · `
-          + `${localizedUiText("Devre Kredisi")}: ${module.circuitCreditCost} DK · `
-          + `${localizedUiText("Port")}: ${module.portCount}`;
-        if (!unlocked) {
-          card.classList.add(
-            "locked",
-            "placement-locked"
-          );
-          card.setAttribute("aria-disabled", "true");
-          card.draggable = false;
-        }
-        list.appendChild(card);
-      }
-      shelf.appendChild(group);
-    }
-
-    shelf.ondragover = (event) =>
-      event.preventDefault();
-    shelf.ondrop = (event) => {
-      event.preventDefault();
-      if (localBattleFinished) {
-        logClientMessage(
-          "Maç bittikten sonra modüller hareket ettirilemez."
-        );
-        return;
-      }
-      const result = client.dropOnShelf();
-      if (!result.ok) {
-        logClientMessage(result.reason);
-      }
-    };
+    shelf.ondragover = null;
+    shelf.ondrop = null;
   }
 
   function renderBoard(
@@ -12517,6 +13990,8 @@ function saveHumanReviewLocalNote() {
       selectedModuleId:tapSelectedModuleId,
       battleFinished:localBattleFinished,
       selectedBoosterId:boosterTargetMode.selectedBoosterId,
+      corePowerTargeting,
+      cellDebris:playerCellDebris,
       modules:[...client.modules.values()].map(module => ({
         id:module.instanceId,
         status:module.status,
@@ -12544,7 +14019,13 @@ function saveHumanReviewLocalNote() {
         selectedModuleId: tapSelectedModuleId,
         battleFinished: localBattleFinished,
         createModuleCard,
+        cellDebris: playerCellDebris,
+        debrisLabel: localizedUiText("Enkaz"),
       }
+    );
+    renderBoardCables(
+      board,
+      playerCircuitCableModules()
     );
   }
 
@@ -12593,10 +14074,7 @@ function saveHumanReviewLocalNote() {
     const reservePlacementReady =
       module.status !== "reserve"
       || modulePlacementSlotState().ready;
-    card.draggable =
-      !localBattleFinished
-      && module.movable !== false
-      && reservePlacementReady;
+    card.draggable = false;
     card.dataset.moduleId =
       module.instanceId;
     card.dataset.category =
@@ -12616,6 +14094,12 @@ function saveHumanReviewLocalNote() {
     if (module.movable !== false) {
       card.tabIndex = 0;
       card.setAttribute("role", "button");
+    }
+    if (module.nameTr === "Çekirdek" && corePowerTargeting) {
+      card.classList.add("core-power-target");
+      card.tabIndex=0;
+      card.setAttribute("role","button");
+      card.title="Çekirdek Rezonansını kullan";
     }
 
     if (
@@ -12756,16 +14240,6 @@ function saveHumanReviewLocalNote() {
       card.appendChild(meta);
     }
 
-    for (const side of modulePorts(module)) {
-      const port =
-        document.createElement("span");
-      port.className =
-        `port-dot port-${side}`;
-      port.title =
-        `Port: ${side}`;
-      card.appendChild(port);
-    }
-
     if (
       module.status === "active"
       && !module.isPowered
@@ -12835,6 +14309,10 @@ function saveHumanReviewLocalNote() {
       "click",
       (event) => {
         event.stopPropagation();
+        if (module.definitionId === "core" && corePowerReady) {
+          useCorePowerOn(module);
+          return;
+        }
         if (boosterTargetMode.selectedBoosterId) {
           tryApplySelectedBooster(module);
           return;
@@ -12955,7 +14433,7 @@ function saveHumanReviewLocalNote() {
         attachDragGhostPreview(event, {
           title: module.nameTr,
           subtitle: module.status === "reserve"
-            ? `${localizedUiText("Devre Kredisi")}: ${module.circuitCreditCost} DK · ${localizedUiText("Port")}: ${module.portCount}`
+            ? `${localizedUiText("Akım")}: ${module.circuitCreditCost}`
             : `${localizedUiText("Can")}: ${module.hp}/${module.maxHp}`,
           accentClass: `drag-ghost-preview--module drag-ghost-preview--${module.category || "neutral"}`
         });
@@ -12978,7 +14456,7 @@ function saveHumanReviewLocalNote() {
 
   function applyMockServerCommand(command) {
     // Alpha.6: Bu katman yalnızca UI demosu için sahte sunucu cevabıdır.
-    // Gerçek Devre Kredisi otoritesi Python savaş motorundadır.
+    // Gerçek savaş içi Akım otoritesi Python savaş motorundadır.
     if (localBattleFinished) {
       logClientMessage(
         "Maç tamamlandı; savaş komutları kilitli."
@@ -12986,11 +14464,42 @@ function saveHumanReviewLocalNote() {
       return;
     }
 
+    if (command.kind === "use_core_power") {
+      const core=client.modules.get("core-1");
+      if (!corePowerReady || !core || core.hp >= core.maxHp) {
+        logClientMessage(
+          !corePowerReady
+            ? "Çekirdek Gücü henüz dolmadı."
+            : "Çekirdek zaten tam canlı; dolum korunuyor."
+        );
+        return;
+      }
+      core.hp=Math.min(core.maxHp,core.hp + 45);
+      corePowerCharge=0;
+      corePowerReady=false;
+      corePowerTargeting=false;
+      triggerGridshardCue("shield_activate");
+      logClientMessage("Çekirdek Rezonansı kullanıldı · +45 CAN sınırı.");
+      renderCorePowerControl();
+      renderBoard({force:true});
+      return;
+    }
+
     const moduleCost = (moduleId) =>
       client.requireModule(moduleId).circuitCreditCost || 0;
+    const deployTemplate = command.kind === "deploy_module"
+      ? clientModuleForDefinitionId(command.payload.definition_id)
+      : null;
 
     let cost = 0;
-    if (command.kind === "place_module") {
+    if (command.kind === "deploy_module") {
+      if (!deployTemplate) {
+        logClientMessage("Deste kartı istemcide bulunamadı.");
+        client.clearPendingPlacements();
+        return;
+      }
+      cost = Number(deployTemplate.circuitCreditCost || 0);
+    } else if (command.kind === "place_module") {
       cost = moduleCost(command.payload.module_id);
     } else if (command.kind === "move_module") {
       cost = 10;
@@ -13004,7 +14513,7 @@ function saveHumanReviewLocalNote() {
 
     if (mockServerCredits < cost) {
       logClientMessage(
-        `Yetersiz Devre Kredisi: gerekli ${cost} DK, mevcut ${mockServerCredits} DK.`
+        `Yetersiz Akım: gerekli ${cost}, mevcut ${mockServerCredits}.`
       );
       flashInsufficientCredits();
       return;
@@ -13066,7 +14575,64 @@ function saveHumanReviewLocalNote() {
       );
     }
 
-    if (command.kind === "place_module") {
+    if (command.kind === "deploy_module") {
+      const occupied = new Set(
+        [...client.modules.values()]
+          .filter((module) => module.status === "active" && module.position)
+          .map((module) => `${module.position.x},${module.position.y}`)
+      );
+      const candidates = BOARD_CELLS.filter(([x, y]) => {
+        const key = `${x},${y}`;
+        if (key === "2,2" || occupied.has(key)) return false;
+        const special = SPECIAL_CELL_INFO[key];
+        if (special?.definitionId && special.definitionId !== deployTemplate.definitionId) return false;
+        if (special?.category && special.category !== deployTemplate.category) return false;
+        const cell = board.querySelector(`[data-x="${x}"][data-y="${y}"]`);
+        return cell?.dataset.debris !== "true";
+      });
+      const validPlacements = [];
+      for (const [x, y] of candidates) {
+        for (const direction of ["up", "right", "down", "left"]) {
+          const probe = {
+            ...deployTemplate,
+            instanceId:"mock-deployment-probe",
+            status:"active",
+            position:{x, y},
+            direction,
+          };
+          const active = [...client.modules.values()]
+            .filter((module) => module.status === "active")
+            .concat(probe);
+          if (connectedEnergyModuleIds(active).has(probe.instanceId)) {
+            validPlacements.push({x, y, direction});
+          }
+        }
+      }
+      const selected = validPlacements.length
+        ? validPlacements[Math.floor(Math.random() * validPlacements.length)]
+        : null;
+      if (!selected) {
+        mockServerCredits += cost;
+        client.applyServerEconomyState({ circuitCredits:mockServerCredits });
+        client.clearPendingPlacements();
+        logClientMessage("Bu kart için enerjiye bağlı uygun boş hücre bulunamadı.");
+        render();
+        renderCredits();
+        return;
+      }
+      const instanceId = `mock-${deployTemplate.definitionId}-${Date.now()}`;
+      client.registerModule({
+        ...deployTemplate,
+        instanceId,
+        isDeckTemplate:false,
+        status:"active",
+        position:{x:selected.x, y:selected.y},
+        direction:selected.direction,
+        hp:deployTemplate.maxHp,
+      });
+      client.clearPendingPlacements();
+      triggerGridshardCue("port_connect");
+    } else if (command.kind === "place_module") {
       const module = client.requireModule(command.payload.module_id);
       client.applyServerModuleState({
         instanceId: module.instanceId,
@@ -13218,6 +14784,7 @@ function saveHumanReviewLocalNote() {
       activePlayMode === "local"
       && localBattleMetrics
       && [
+        "deploy_module",
         "place_module",
         "remove_module",
         "replace_module",
@@ -13745,9 +15312,14 @@ function saveHumanReviewLocalNote() {
   }
 
   function renderCredits() {
-    creditEl.textContent = `Devre Kredisi: ${client.circuitCredits} DK`;
+    const battleValue = document.getElementById("credit-indicator-value");
+    if (battleValue) battleValue.textContent = `Akım: ${client.circuitCredits} / 12`;
+    if (shelfCreditIndicatorEl) {
+      const value = document.getElementById("shelf-credit-value");
+      if (value) value.textContent = `${client.circuitCredits} / 12`;
+    }
     const lobbyCredits = document.getElementById("lobby-circuit-credits");
-    if (lobbyCredits) lobbyCredits.textContent = `${client.circuitCredits} DK`;
+    if (lobbyCredits) lobbyCredits.textContent = String(metaProgressionState?.circuit_credits ?? 0);
   }
 
   function flashInsufficientCredits() {
@@ -13760,46 +15332,12 @@ function saveHumanReviewLocalNote() {
 
   function renderCapacity() {
     const placement = modulePlacementSlotState();
-    const { limit, currentLimit, available } = placement;
-    const nextSlotAtMs = limit === null
-      ? 15000
-      : (limit < 10 ? 15000 + (limit - 4) * 15000 : null);
-    const nextSlotSeconds = nextSlotAtMs === null
-      ? null
-      : Math.max(0, Math.ceil((nextSlotAtMs - client.elapsedMs) / 1000));
-
-    if (limit === null) {
-      capacityEl.textContent = localizedUiText(
-        `Yeni modül hakkı · ${nextSlotSeconds} sn`
-      );
-      capacityEl.dataset.state = "countdown";
-      capacityEl.classList.remove("capacity-opened");
-      previousCapacity = 4;
-      return;
-    }
-
     capacityEl.textContent = localizedUiText(
-      available > 0
-        ? `Yerleştirme hakkı hazır · ${available}`
-        : (
-            nextSlotSeconds === null
-              ? "Tüm modül hakları açıldı"
-              : `Yeni modül hakkı · ${nextSlotSeconds} sn`
-          )
+      `Devrede ${placement.active} / ${placement.currentLimit}`
     );
-    capacityEl.dataset.state = available > 0
-      ? "ready"
-      : (nextSlotSeconds === null ? "complete" : "countdown");
-
-    if (previousCapacity !== null && limit > previousCapacity) {
-      capacityEl.classList.add("capacity-opened");
-      logClientMessage(localizedUiText(`Yeni modül hakkı açıldı · Sınır ${limit}/10`));
-      window.setTimeout(() => {
-        capacityEl.classList.remove("capacity-opened");
-      }, 900);
-    }
-
-    previousCapacity = limit;
+    capacityEl.dataset.state = placement.available > 0 ? "ready" : "complete";
+    capacityEl.classList.remove("capacity-opened");
+    previousCapacity = placement.currentLimit;
   }
 
   function renderLockState() {
@@ -13816,22 +15354,22 @@ function saveHumanReviewLocalNote() {
     }
 
     const placement = modulePlacementSlotState();
-    const unlocked = placement.ready;
+    const affordable = battlePoolSelection.selectedIds().some((instanceId) => {
+      const module = client.modules.get(instanceId);
+      return module && client.circuitCredits >= Number(module.circuitCreditCost || 0);
+    });
+    const unlocked = placement.ready && affordable;
     lockLabel.dataset.active = String(unlocked);
     lockLabel.textContent = unlocked ? "Aktif" : "Beklemede";
 
     if (unlocked) {
       if (shelfHelp) {
-        shelfHelp.textContent = localizedUiText("Modülü sürükle veya seçip hedef hücreye dokun.");
-      }
-    } else if (!client.isShelfUnlocked()) {
-      const remaining = Math.max(0, 15000 - client.elapsedMs);
-      if (shelfHelp) {
-        shelfHelp.textContent =
-          `Modül müdahalesi ${(remaining / 1000).toFixed(1)} sn sonra açılacak.`;
+        shelfHelp.textContent = localizedUiText("Deste kartına tıkla; sunucu uygun hücreye otomatik yerleştirsin.");
       }
     } else if (shelfHelp) {
-      shelfHelp.textContent = "Yeni modül yerleştirme hakkı için geri sayımı bekleyin.";
+      shelfHelp.textContent = placement.available <= 0
+        ? "Devre dolu; boş hücre açılınca yerleştirebilirsin."
+        : "Akım yenileniyor: 2,5 saniyede +1.";
     }
   }
 
@@ -13983,6 +15521,9 @@ function saveHumanReviewLocalNote() {
         updateMockServerPassiveCredits(
           elapsedMs
         );
+        corePowerCharge=Math.min(100,(elapsedMs / 35000) * 100);
+        corePowerReady=corePowerCharge >= 100;
+        renderCorePowerControl();
       } else {
         // Sunucu otoritesinde snapshot zamanı kullanılır; sonuçtan sonra
         // son değer korunarak sayaç kesin biçimde dondurulur.
@@ -14020,10 +15561,6 @@ function saveHumanReviewLocalNote() {
 
     renderCredits();
     renderPlayerCoreSummary();
-    if (!localBattleFinished) {
-      updateBoosterOfferAvailability();
-    }
-
     if (Math.floor(elapsedMs / 250) !== Math.floor((elapsedMs - 16) / 250)) {
       renderShelf();
       renderBoard();
@@ -14070,7 +15607,7 @@ function saveHumanReviewLocalNote() {
         renderPresetOptions();
         if (presetStatusEl) {
           presetStatusEl.textContent=
-            "Yeni hazır havuz için mevcut 18/18 seçimini isimlendirip kaydet.";
+            "Yeni hazır deste için mevcut 6/6 seçimini isimlendirip kaydet.";
         }
       }
     );
@@ -14530,16 +16067,23 @@ function saveHumanReviewLocalNote() {
       "click",
       () => {
         postMatchSync.clear();
-        if (activePlayMode === "local") {
-          prepareLocalMatch();
-        } else {
-          pvpConnection.disconnect();
-          prepareOnlineMatch();
-        }
+        pvpConnection.disconnect();
+        pvpState.reset();
+        onlinePlay.reset();
+        resetBattleResultPresentation();
+        returnToMainMenu();
         renderPlayModeUi();
       }
     );
   }
+
+  document.getElementById("post-match-continue")?.addEventListener(
+    "click",
+    () => {
+      renderPostMatchRewards();
+      showPostMatchStage("rewards");
+    }
+  );
 
   const rematchButton =
     document.getElementById(
@@ -14667,6 +16211,91 @@ function saveHumanReviewLocalNote() {
     }
   );
 
+  document.getElementById("home-battle-button")?.addEventListener(
+    "click",
+    async () => {
+      if (deckEditorSlots.filter(Boolean).length !== 6 || homeMatchmakingLaunchPending || homeMatchmakingCancelPending || isOnlineMatchmakingCancelable()) return;
+      homeMatchmakingLaunchPending = true;
+      try {
+        gridshardAudioDirector?.prepareBattlePlayback?.();
+        prepareOnlineMatch();
+        const result = await startRealOnlineMatch();
+        if (!result.ok && !result.cancelled) {
+          renderHomeMatchmakingOverlay("error");
+          const copy = document.querySelector("#home-battle-button small");
+          if (copy) copy.textContent = result.reason || "Eşleştirme başlatılamadı";
+        }
+      } catch (error) {
+        onlinePlay.reset();
+        onlinePlay.lastError = error instanceof Error ? error.message : String(error);
+        renderHomeMatchmakingOverlay("error");
+        const copy = document.querySelector("#home-battle-button small");
+        if (copy) copy.textContent = error.message || "Eşleştirme başlatılamadı";
+      } finally {
+        homeMatchmakingLaunchPending = false;
+        renderHomeHub();
+      }
+    }
+  );
+
+  document.getElementById("home-matchmaking-cancel")?.addEventListener("click", async () => {
+    const button = document.getElementById("home-matchmaking-cancel");
+    if (document.body.dataset.onlineStatus === "error") {
+      onlinePlay.reset();
+      clearPlayError();
+      renderHomeMatchmakingOverlay("idle");
+      const copy = document.querySelector("#home-battle-button small");
+      if (copy) copy.textContent = "Eşleştirmeyi başlat";
+      renderHomeHub();
+      return;
+    }
+    homeMatchmakingCancelPending = true;
+    if (button) { button.disabled = true; button.textContent = "İPTAL EDİLİYOR…"; }
+    await onlinePlay.cancel();
+    // İptal yerelde anlıktır. Önceki /join isteği ağda sürse bile yeni
+    // SAVAŞ dokunuşunu kilitlememeli; koordinatör yeni başlangıcı sunucu
+    // iptal isteğinin arkasında güvenle sıraya alır.
+    homeMatchmakingLaunchPending = false;
+    onlinePlay.reset();
+    clearPlayError();
+    renderOnlinePlayStatus("idle");
+    if (button) { button.disabled = false; button.textContent = "İPTAL ET"; }
+    homeMatchmakingCancelPending = false;
+    const copy = document.querySelector("#home-battle-button small");
+    if (copy) copy.textContent = "Eşleştirmeyi başlat";
+    renderHomeHub();
+  });
+
+  const arenaDetailDialog = document.getElementById("arena-detail-dialog");
+  document.getElementById("home-arena-card")?.addEventListener("click", () => {
+    renderHomeArena();
+    if (arenaDetailDialog?.showModal && !arenaDetailDialog.open) arenaDetailDialog.showModal();
+    else arenaDetailDialog?.setAttribute("open", "");
+    if (arenaDetailDialog) arenaDetailDialog.scrollTop = 0;
+    const path = document.getElementById("arena-path");
+    requestAnimationFrame(() => {
+      const current = path?.querySelector(".arena-path-stage.is-current");
+      if (!path || !current) return;
+      path.scrollTop = Math.max(0, current.offsetHeight >= path.clientHeight
+        ? current.offsetTop
+        : current.offsetTop - ((path.clientHeight - current.offsetHeight) / 2));
+    });
+  });
+  document.getElementById("arena-detail-close")?.addEventListener("click", () => {
+    if (arenaDetailDialog?.close) arenaDetailDialog.close();
+    else arenaDetailDialog?.removeAttribute("open");
+  });
+  document.getElementById("arena-leaderboard-button")?.addEventListener("click", () => {
+    const status = document.getElementById("arena-reward-status");
+    if (status) status.textContent = "Lider Panosu bir sonraki içerik adımında doldurulacak.";
+  });
+  document.getElementById("home-core-hero")?.addEventListener("click", openCoreCollection);
+  document.getElementById("chest-reveal-close")?.addEventListener("click", () => {
+    const dialog = document.getElementById("chest-reveal-dialog");
+    if (dialog?.close) dialog.close();
+    else dialog?.removeAttribute("open");
+  });
+
   if (
     typeof window
     !== "undefined"
@@ -14702,6 +16331,10 @@ function saveHumanReviewLocalNote() {
         renderBoosterOptions();
         renderBoard({ force:true });
         return { ok:true, state:boosterTargetMode.snapshot?.() || null };
+      },
+      deployModule:(definitionId) => {
+        const module = clientModuleForDefinitionId(definitionId);
+        return Boolean(module && deployDeckModule(module));
       },
       rotateModule:(moduleId) => {
         const module=
@@ -14757,6 +16390,9 @@ function saveHumanReviewLocalNote() {
                 ]
               )
           ),
+        active_module_ids:[...client.modules.values()]
+          .filter((module) => module.status === "active")
+          .map((module) => module.instanceId),
       }),
     };
   }
@@ -14767,15 +16403,15 @@ function saveHumanReviewLocalNote() {
     steps: [
       {
         title: "Hazır devreyle başla",
-        body: "Dengeli 18 modüllük Başlangıç Devresi ilk maçın için hazır. Tek dokunuşla yükleyebilirsin.",
+        body: "Dengeli 6 kartlık Başlangıç Destesi ilk maçın için hazır. Tek dokunuşla yükleyebilirsin.",
         target: "#battle-pool-panel",
         action: "load-starter-pool",
         actionLabel: "Başlangıç Devresini Yükle",
-        hint: "Havuz 18/18 olduğunda savaş düğmesi açılır.",
+        hint: "Deste 6/6 olduğunda savaş düğmesi açılır.",
       },
       {
         title: "Savaşı başlat",
-        body: "Önce çevrimiçi rakip aranır; 10 saniye içinde bulunamazsa sunucudaki AI oyuncu aynı maç protokolünü devralır.",
+        body: "Beta boyunca Arena/Lig ve kupa aralığına uygun sunucu AI rakibi doğrudan atanır.",
         target: "#battle-pool-confirm",
         action: "start-matchmaking",
         actionLabel: "Savaş",
@@ -14783,7 +16419,7 @@ function saveHumanReviewLocalNote() {
       },
       {
         title: "Dokun, sonra yerleştir",
-        body: "15. saniyede Modül Rafını aç. Bir modüle dokun, boş hücreyi seç; Döndür ve Rafa Al düğmeleriyle düzenle.",
+        body: "Savaşta altı karttan birine dokun. Yeterli Devre Kredin varsa sunucu yeni örneği uygun hücreye yerleştirir.",
         target: "#mobile-battle-tabs",
         hint: "Masaüstünde sürükle-bırak da kullanılmaya devam eder.",
       },

@@ -1,5 +1,6 @@
 import pytest
 
+from app.game.battle_pool import default_battle_pool
 from app.game.board import get_default_board
 from app.game.engine import BattleEngine
 from app.game.models import BattleCommand, BattleState, ModuleStatus, Position
@@ -8,6 +9,7 @@ from app.game.models import BattleCommand, BattleState, ModuleStatus, Position
 def make_engine():
     engine = BattleEngine(BattleState(battle_id="board"))
     engine.add_player("p1")
+    engine.set_battle_pool("p1", default_battle_pool().module_definition_ids)
     engine.grant_module("p1", "core-1", "core")
     engine.grant_module("p1", "generator-1", "generator")
     engine.grant_module("p1", "laser-1", "laser")
@@ -81,7 +83,7 @@ def test_dynamic_place_rejects_outside_board():
     assert engine.state.events[-1].type == "command_rejected"
 
 
-def test_dynamic_place_accepts_valid_board_cell():
+def test_deck_deploy_selects_a_valid_board_cell():
     engine = make_engine()
     engine.set_initial_active_module("p1", "core-1", 2, 2)
     engine.set_initial_active_module("p1", "generator-1", 2, 3)
@@ -90,14 +92,17 @@ def test_dynamic_place_accepts_valid_board_cell():
 
     engine.enqueue_command(BattleCommand(
         player_id="p1",
-        kind="place_module",
-        payload={"module_id": "laser-1", "x": 3, "y": 3},
+        kind="deploy_module",
+        payload={"definition_id": "laser"},
     ))
     engine.step()
 
-    laser = engine.state.players["p1"].modules["laser-1"]
+    laser = next(
+        module for module in engine.state.players["p1"].modules.values()
+        if module.definition.id == "laser" and module.status == ModuleStatus.ACTIVE
+    )
     assert laser.status == ModuleStatus.ACTIVE
-    assert laser.position == Position(3, 3)
+    assert laser.position in engine.board.placeable_positions
 
 
 def test_board_space_does_not_change_10_active_module_cap():

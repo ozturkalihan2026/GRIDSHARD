@@ -4,7 +4,7 @@ from datetime import datetime, timezone
 from .game.battle_pool import default_battle_pool, validate_battle_pool
 
 
-DEFAULT_RATING = 1000
+DEFAULT_RATING = 0
 XP_PER_LEVEL = 1000
 CURRENT_SEASON_ID = "core_awakening_s0"
 CURRENT_SEASON_NAME_TR = "Sezon Sıfır · Çekirdek Uyanışı"
@@ -31,7 +31,7 @@ DAILY_MISSIONS = (
     {
         "id": "circuit_actions",
         "name_tr": "Canlı Strateji",
-        "description_tr": "Savaşta 3 modül taşı, değiştir, takas et veya döndür.",
+        "description_tr": "Savaşta 3 modül yerleştir.",
         "target": 3,
         "season_xp_reward": 90,
         "flux_shard_reward": 15,
@@ -63,6 +63,9 @@ class PlayerProfile:
     level: int = 1
     experience: int = 0
     rating: int = DEFAULT_RATING
+    highest_rating: int = 0
+    arena_reward_claims: tuple[str, ...] = ()
+    progression_version: int = 2
     preferred_battle_pool_ids: tuple[str, ...] = field(
         default_factory=lambda: (
             default_battle_pool().module_definition_ids
@@ -80,19 +83,39 @@ class PlayerProfile:
     laboratory_transactions: list[dict] = field(default_factory=list)
     laboratory_receipts: dict[str, dict] = field(default_factory=dict)
     laboratory_reset_count: int = 0
+    active_meta_season_id: str = CURRENT_SEASON_ID
+    season_archives: list[dict] = field(default_factory=list)
+    coins: int = 0  # Legacy wallet; migrated into circuit_credits on restore.
+    circuit_credits: int = 350
+    core_shards: int = 0
+    core_shards_by_type: dict[str, int] = field(default_factory=dict)
+    core_upgrade_levels: dict[str, int] = field(default_factory=dict)
+    module_talents: dict[str, dict[str, str]] = field(default_factory=dict)
+    lifetime_stats: dict = field(default_factory=dict)
+    module_shards: dict[str, int] = field(
+        default_factory=lambda: {
+            module_id: 40
+            for module_id in default_battle_pool().module_definition_ids
+        }
+    )
+    module_upgrade_levels: dict[str, int] = field(default_factory=dict)
+    module_upgrade_receipts: dict[str, dict] = field(default_factory=dict)
+    chest_slots: list[dict] = field(default_factory=list)
+    chest_receipts: dict[str, dict] = field(default_factory=dict)
+    gift_chest_claim_receipts: dict[str, dict] = field(default_factory=dict)
+    shop_purchase_day: str = ""
+    shop_purchased_offer_ids: tuple[str, ...] = ()
+    shop_receipts: dict[str, dict] = field(default_factory=dict)
+    unlocked_core_types: tuple[str, ...] = ("core_resonance",)
+    selected_core_type: str = "core_resonance"
+    core_skill_points: int = 1
+    core_skills: dict[str, tuple[str, ...]] = field(default_factory=dict)
+    core_receipts: dict[str, dict] = field(default_factory=dict)
 
     @property
     def league_name_tr(self) -> str:
-        rating = self.rating
-        if rating < 900:
-            return "Bronz"
-        if rating < 1100:
-            return "Gümüş"
-        if rating < 1300:
-            return "Altın"
-        if rating < 1500:
-            return "Platin"
-        return "Elmas"
+        from .arena_canon import rank_stage_for_rating
+        return rank_stage_for_rating(self.rating)["name_tr"]
 
     @property
     def experience_into_level(self) -> int:
@@ -103,6 +126,8 @@ class PlayerProfile:
         return XP_PER_LEVEL - self.experience_into_level
 
     def to_view(self) -> dict:
+        from .meta_progression import rank_stage_for_rating
+
         return {
             "player_id": self.player_id,
             "display_name": self.display_name,
@@ -111,6 +136,7 @@ class PlayerProfile:
             "experience_into_level": self.experience_into_level,
             "experience_to_next_level": self.experience_to_next_level,
             "rating": self.rating,
+            "highest_rating": max(self.rating, self.highest_rating),
             "league_name_tr": self.league_name_tr,
             "preferred_battle_pool_ids": list(
                 self.preferred_battle_pool_ids
@@ -129,6 +155,23 @@ class PlayerProfile:
                     if int(level) > 0
                 ),
                 "reset_count": self.laboratory_reset_count,
+                "ranked_normalized": True,
+            },
+            "meta_progression_summary": {
+                "season_id": self.active_meta_season_id,
+                "rank": rank_stage_for_rating(self.rating),
+                "coins": self.coins,
+                "circuit_credits": self.circuit_credits,
+                "core_shards": self.core_shards,
+                "upgraded_module_count": sum(
+                    1
+                    for level in self.module_upgrade_levels.values()
+                    if int(level) > 0
+                ),
+                "chest_slot_count": len(self.chest_slots),
+                "selected_core_type": self.selected_core_type,
+                "core_skill_points": self.core_skill_points,
+                "season_archive_count": len(self.season_archives),
                 "ranked_normalized": True,
             },
         }
@@ -316,6 +359,7 @@ class PlayerProfileService:
 
         profile = self.get_or_create(player_id)
         profile.rating = int(rating)
+        profile.highest_rating = max(profile.highest_rating, profile.rating)
         return profile
 
     def _sync_daily_missions(

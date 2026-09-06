@@ -64,8 +64,8 @@ def test_win_loss_rating_and_xp():
     a=profiles.get("a")
     b=profiles.get("b")
 
-    assert a.rating==1020
-    assert b.rating==980
+    assert a.rating==1016
+    assert b.rating==984
     assert a.experience==WIN_XP
     assert b.experience==LOSS_XP
 
@@ -100,7 +100,7 @@ def test_same_battle_cannot_award_twice():
         state
     ) is False
 
-    assert profiles.get("a").rating==1020
+    assert profiles.get("a").rating==1016
     assert profiles.get("a").experience==WIN_XP
 
 
@@ -143,6 +143,8 @@ def test_progression_result_records_before_after():
     )
 
     assert result["rating_before"]==1000
-    assert result["rating_after"]==1020
-    assert result["rating_delta"]==20
+    assert result["rating_after"]==1016
+    assert result["rating_delta"]==16
+    assert result["rank_before"]["id"]=="arena_4"
+    assert result["rank_after"]["id"]=="arena_4"
     assert result["xp_awarded"]==WIN_XP

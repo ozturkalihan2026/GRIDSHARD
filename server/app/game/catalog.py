@@ -1,3 +1,5 @@
+from dataclasses import replace
+from ..arena_canon import MODULES
 from .models import ModuleDefinition
 
 
@@ -129,9 +131,46 @@ BASIC_MODULE_DEFINITIONS: dict[str, ModuleDefinition] = {
 ),
 }
 
-PLAYER_SELECTABLE_MODULE_IDS: tuple[str, ...] = tuple(
-    module_id for module_id in BASIC_MODULE_DEFINITIONS if module_id != "core"
-)
+# New cards reuse explicit V1 mechanics, retaining their own identity and stats.
+CANON_MECHANICS = {
+    "current_balancer": "battery", "plasma_mortar": "missile_launcher",
+    "guardian_dome": "shield", "nano_medic": "repair", "quantum_repeater": "laser",
+    "chrono_relay": "overclock_unit", "ion_spear": "railgun", "phase_armor": "armor",
+    "swarm_fabricator": "drone_bay", "precision_matrix": "targeting_computer",
+    "quantum_cannon": "pulse_cannon", "phoenix_repair": "repair", "prism_shield": "shield",
+    "singularity_projector": "disruptor", "omega_amplifier": "amplifier",
+}
+SYSTEM_COPY = {
+    "battery": ("Enerji rezervi", "Devrenin enerji kapasitesini 30 artırır; üretimi artırmaz."),
+    "capacitor": ("Genişletilmiş enerji deposu", "Enerji kapasitesini 25 artırır; saniyede 1 enerji tüketir."),
+    "current_balancer": ("Devre verimliliği", "Tüm modüllerin enerji tüketimini %8 azaltır. Çoklu kopyalar azalan verimle en fazla %35 azaltım sağlar."),
+}
+for _module_id, _spec in MODULES.items():
+    _base = BASIC_MODULE_DEFINITIONS[CANON_MECHANICS.get(_module_id, _module_id)]
+    _role, _description = SYSTEM_COPY.get(_module_id, (_base.strategic_role, _base.description_tr))
+    BASIC_MODULE_DEFINITIONS[_module_id] = replace(
+        _base, id=_module_id, name_tr=_spec["name_tr"],
+        max_hp=_spec["max_hp"], base_damage=_spec["base_damage"],
+        behavior_id=CANON_MECHANICS.get(_module_id, _module_id),
+        current_cost=_spec["current_cost"],
+        category="enerji" if _spec["category"] == "sistem" else _spec["category"],
+        port_count=0,
+        movable=False, removable=False, rotatable=False,
+        strategic_role=_role,
+        description_tr=_description.replace("Bağlı", "Komşu").replace("bağlı", "komşu"),
+        strong_against=tuple(key for key in _base.strong_against if key in MODULES),
+        weak_against=tuple(key for key in _base.weak_against if key in MODULES),
+        synergy_with=tuple(key for key in _base.synergy_with if key in MODULES),
+        energy_consumption=(
+            {"battery": 0., "capacitor": 1., "current_balancer": 1.}.get(_module_id, 1.)
+            if _spec["category"] == "sistem" else
+            (2.5 if _spec["current_cost"] == 2 else 4. if _spec["current_cost"] == 3 else 7. if _spec["current_cost"] == 4 else 9.)
+            if _spec["category"] == "saldırı" else
+            min(4., max(2., float(_spec["current_cost"])))
+        ),
+    )
+
+PLAYER_SELECTABLE_MODULE_IDS: tuple[str, ...] = tuple(MODULES)
 
 def get_module_definition(definition_id: str) -> ModuleDefinition:
     try:

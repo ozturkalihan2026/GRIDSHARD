@@ -1,10 +1,11 @@
 from __future__ import annotations
 import asyncio
+import hashlib
 from dataclasses import dataclass
 from typing import Awaitable, Callable
 from .engine import TICK_MS
 from .ai import enqueue_ai_actions
-from .models import BattleStatus
+from .models import BattleStatus, BattleCommand, ModuleStatus
 from .pvp_session import PvPSessionService
 from .pvp_websocket import PvPWebSocketAdapter
 
@@ -81,7 +82,7 @@ class PvPTickRunner:
         for ai_player_id in sorted(session.ai_player_ids):
             next_decision_at=session.ai_next_decision_at_ms.get(
                 ai_player_id,
-                15_000,
+                0,
             )
             if session.engine.state.elapsed_ms < next_decision_at:
                 continue
@@ -93,7 +94,14 @@ class PvPTickRunner:
                 ),
                 None,
             )
-            if opponent_player_id is not None:
+            options = session.ai_profile_options.get(ai_player_id, {})
+            roll = int(hashlib.sha256(f"{session_id}:{ai_player_id}:{session.engine.state.tick}".encode()).hexdigest()[:8], 16) / 0xFFFFFFFF
+            if opponent_player_id is not None and roll >= float(options.get("mistake_rate", 0)):
+                ai = session.engine.state.players[ai_player_id]
+                living = [m for m in ai.modules.values() if m.status == ModuleStatus.ACTIVE]
+                if ai.core_power_charge >= 100 and (ai.core_type not in {"core_resonance", "core_phoenix"} or any(m.hp < m.definition.max_hp for m in living)):
+                    session.engine.enqueue_command(BattleCommand(player_id=ai_player_id, kind="use_core_power",
+                        payload={"request_id": f"{session_id}:{ai_player_id}:core:{session.engine.state.tick}"}))
                 plan=enqueue_ai_actions(
                     session.engine,
                     ai_player_id,
@@ -104,7 +112,7 @@ class PvPTickRunner:
                     stats.ai_decisions+=1
             session.ai_next_decision_at_ms[ai_player_id]=(
                 session.engine.state.elapsed_ms
-                + self.ai_decision_interval_ms
+                + int(options.get("decision_delay_ms", self.ai_decision_interval_ms))
             )
         self.service.step(session_id)
         stats.ticks_executed+=1

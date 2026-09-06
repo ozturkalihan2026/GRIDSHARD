@@ -136,19 +136,20 @@ function createClient() {
 
 
 {
-  assert.strictEqual(maxActiveModulesForElapsedMs(14999), null);
-  assert.strictEqual(maxActiveModulesForElapsedMs(15000), 5);
-  assert.strictEqual(maxActiveModulesForElapsedMs(30000), 6);
-  assert.strictEqual(maxActiveModulesForElapsedMs(45000), 7);
-  assert.strictEqual(maxActiveModulesForElapsedMs(60000), 8);
-  assert.strictEqual(maxActiveModulesForElapsedMs(75000), 9);
+  assert.strictEqual(maxActiveModulesForElapsedMs(0), 10);
+  assert.strictEqual(maxActiveModulesForElapsedMs(14999), 10);
+  assert.strictEqual(maxActiveModulesForElapsedMs(15000), 10);
+  assert.strictEqual(maxActiveModulesForElapsedMs(30000), 10);
+  assert.strictEqual(maxActiveModulesForElapsedMs(45000), 10);
+  assert.strictEqual(maxActiveModulesForElapsedMs(60000), 10);
+  assert.strictEqual(maxActiveModulesForElapsedMs(75000), 10);
   assert.strictEqual(maxActiveModulesForElapsedMs(90000), 10);
 }
 
 {
   const { client } = createClient();
   client.updateElapsedMs(30000);
-  assert.strictEqual(client.maxActiveModules(), 6);
+  assert.strictEqual(client.maxActiveModules(), 10);
   assert.strictEqual(client.activeModuleCount(), 1);
 }
 
@@ -169,19 +170,16 @@ function createClient() {
     emitCommand(command) { emitted.push(command); },
   });
 
-  battle.updateElapsedMs(15000);
-  assert.strictEqual(battle.beginDrag("shield-1").ok, true);
-  assert.strictEqual(battle.dropOnCell(4, 2).ok, true);
-  assert.strictEqual(battle.pendingPlacementCount(), 1);
-  assert.strictEqual(battle.beginDrag("battery-1").ok, true);
-  const blockedPending = battle.dropOnCell(3, 2);
+  battle.updateElapsedMs(0);
+  for (let index = 0; index < 6; index += 1) {
+    assert.strictEqual(battle.deployDefinition("shield", 0).ok, true);
+  }
+  assert.strictEqual(battle.pendingPlacementCount(), 6);
+  const blockedPending = battle.deployDefinition("shield", 0);
   assert.strictEqual(blockedPending.ok, false);
-  assert.ok(blockedPending.reason.includes("5/5"));
-
-  battle.updateElapsedMs(30000);
-  assert.strictEqual(battle.beginDrag("battery-1").ok, true);
-  assert.strictEqual(battle.dropOnCell(3, 2).ok, true);
-  assert.strictEqual(emitted.length, 2);
+  assert.ok(blockedPending.reason.includes("10/10"));
+  assert.strictEqual(emitted.length, 6);
+  assert.strictEqual(emitted[0].kind, "deploy_module");
 }
 
 {
@@ -250,16 +248,16 @@ function createClient() {
 
 {
   const selectable = Array.from({ length: 24 }, (_, i) => `mod-${i + 1}`);
-  const pool = new BattlePoolSelection({ selectableModuleIds: selectable, requiredSize: 18 });
-  for (const id of selectable.slice(0, 18)) assert.strictEqual(pool.toggle(id).ok, true);
+  const pool = new BattlePoolSelection({ selectableModuleIds: selectable, requiredSize: 6 });
+  for (const id of selectable.slice(0, 6)) assert.strictEqual(pool.toggle(id).ok, true);
   assert.strictEqual(pool.isComplete(), true);
-  assert.strictEqual(pool.selectedIds().length, 18);
+  assert.strictEqual(pool.selectedIds().length, 6);
 }
 {
   const selectable = Array.from({ length: 24 }, (_, i) => `mod-${i + 1}`);
-  const pool = new BattlePoolSelection({ selectableModuleIds: selectable, requiredSize: 18 });
-  for (const id of selectable.slice(0, 18)) pool.toggle(id);
-  assert.strictEqual(pool.toggle(selectable[18]).ok, false);
+  const pool = new BattlePoolSelection({ selectableModuleIds: selectable, requiredSize: 6 });
+  for (const id of selectable.slice(0, 6)) pool.toggle(id);
+  assert.strictEqual(pool.toggle(selectable[6]).ok, false);
 }
 {
   const pool = new BattlePoolSelection({ selectableModuleIds: ["a","b"], requiredSize: 1 });
@@ -284,23 +282,22 @@ function createClient() {
     "Saldırı Hücresi",
     "Savunma Hücresi",
     "Enerji Hücresi",
-    "Soğutma Hücresi",
     "Onarım Hücresi",
-    "Sinyal Hücresi",
   ]) {
     assert.ok(src.includes(label));
   }
   assert.ok(src.includes("SPECIAL_CELL_INFO"));
+  assert.ok(src.includes("cellPlacementRejection"));
+  assert.ok(src.includes("playerCellDebris"));
 }
 
 
 {
   const fs=require("fs");
   const src=fs.readFileSync(path.join(ROOT,"src/app.js"),"utf8");
-  for (const name of ["Aşırı Yük Çipi","Acil Onarım","Çift Port Adaptörü"]) assert.ok(src.includes(name));
-  assert.ok(src.includes("use_booster"));
-  assert.ok(src.includes("offer_id:serverBoosterOfferId"));
-  assert.ok(src.includes("Hedef modül seç"));
+  assert.ok(src.includes("deployDefinition"));
+  assert.ok(src.includes('"deploy_module"'));
+  assert.ok(src.includes("createDeckModuleCard"));
 }
 
 
@@ -482,61 +479,61 @@ function createClient() {
   const fs=require("fs");
   const src=fs.readFileSync(path.join(ROOT,"src/app.js"),"utf8");
   assert.ok(src.includes("PVP_STATUS"));
-  assert.ok(src.includes("GRIDSHARD Beta.38.1 · Savaş Olayları + Ses Kurtarma + Özgür Güçlendirici Hedefleme"));
+  assert.ok(src.includes("GRIDSHARD Beta.39 · 6 Kartlık Deste + Sunucu Yerleşimi"));
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync(path.join(ROOT,"src/app.js"),"utf8");
-  assert.ok(src.includes("GRIDSHARD Beta.38.1 · Savaş Olayları + Ses Kurtarma + Özgür Güçlendirici Hedefleme")); // alpha32->33 protocol status
+  assert.ok(src.includes("GRIDSHARD Beta.39 · 6 Kartlık Deste + Sunucu Yerleşimi")); // alpha32->33 protocol status
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync(path.join(ROOT,"src/app.js"),"utf8");
-  assert.ok(src.includes("GRIDSHARD Beta.38.1 · Savaş Olayları + Ses Kurtarma + Özgür Güçlendirici Hedefleme")); // alpha33 protocol
+  assert.ok(src.includes("GRIDSHARD Beta.39 · 6 Kartlık Deste + Sunucu Yerleşimi")); // alpha33 protocol
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync(path.join(ROOT,"src/app.js"),"utf8");
-  assert.ok(src.includes("GRIDSHARD Beta.38.1 · Savaş Olayları + Ses Kurtarma + Özgür Güçlendirici Hedefleme")); // alpha34 websocket
+  assert.ok(src.includes("GRIDSHARD Beta.39 · 6 Kartlık Deste + Sunucu Yerleşimi")); // alpha34 websocket
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync(path.join(ROOT,"src/app.js"),"utf8");
-  assert.ok(src.includes("GRIDSHARD Beta.38.1 · Savaş Olayları + Ses Kurtarma + Özgür Güçlendirici Hedefleme")); // alpha35 gateway
+  assert.ok(src.includes("GRIDSHARD Beta.39 · 6 Kartlık Deste + Sunucu Yerleşimi")); // alpha35 gateway
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync(path.join(ROOT,"src/app.js"),"utf8");
-  assert.ok(src.includes("GRIDSHARD Beta.38.1 · Savaş Olayları + Ses Kurtarma + Özgür Güçlendirici Hedefleme")); // alpha36 setup
+  assert.ok(src.includes("GRIDSHARD Beta.39 · 6 Kartlık Deste + Sunucu Yerleşimi")); // alpha36 setup
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync(path.join(ROOT,"src/app.js"),"utf8");
-  assert.ok(src.includes("GRIDSHARD Beta.38.1 · Savaş Olayları + Ses Kurtarma + Özgür Güçlendirici Hedefleme")); // alpha37 lobby
+  assert.ok(src.includes("GRIDSHARD Beta.39 · 6 Kartlık Deste + Sunucu Yerleşimi")); // alpha37 lobby
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync(path.join(ROOT,"src/app.js"),"utf8");
-  assert.ok(src.includes("GRIDSHARD Beta.38.1 · Savaş Olayları + Ses Kurtarma + Özgür Güçlendirici Hedefleme")); // alpha38 runner
+  assert.ok(src.includes("GRIDSHARD Beta.39 · 6 Kartlık Deste + Sunucu Yerleşimi")); // alpha38 runner
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync(path.join(ROOT,"src/app.js"),"utf8");
-  assert.ok(src.includes("GRIDSHARD Beta.38.1 · Savaş Olayları + Ses Kurtarma + Özgür Güçlendirici Hedefleme")); // alpha39 heartbeat
+  assert.ok(src.includes("GRIDSHARD Beta.39 · 6 Kartlık Deste + Sunucu Yerleşimi")); // alpha39 heartbeat
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync(path.join(ROOT,"src/app.js"),"utf8");
-  assert.ok(src.includes("GRIDSHARD Beta.38.1 · Savaş Olayları + Ses Kurtarma + Özgür Güçlendirici Hedefleme")); // alpha40 online pvp
+  assert.ok(src.includes("GRIDSHARD Beta.39 · 6 Kartlık Deste + Sunucu Yerleşimi")); // alpha40 online pvp
 }
 
 {
@@ -767,7 +764,7 @@ function createClient() {
 {
   const fs=require("fs");
   const src=fs.readFileSync(path.join(ROOT,"src/app.js"),"utf8");
-  assert.ok(src.includes("GRIDSHARD Beta.38.1 · Savaş Olayları + Ses Kurtarma + Özgür Güçlendirici Hedefleme"));
+  assert.ok(src.includes("GRIDSHARD Beta.39 · 6 Kartlık Deste + Sunucu Yerleşimi"));
   assert.ok(src.includes("buildPvPCommandEnvelope"));
   assert.ok(src.includes("applyPvPServerEnvelope"));
 }
@@ -1861,7 +1858,7 @@ function createClient() {
   asyncTests.push(coordinator.start({
     battlePoolIds:
       Array.from(
-        {length:18},
+        {length:6},
         (_,i) => `m${i}`
       ),
     initialModules:[
@@ -1870,24 +1867,6 @@ function createClient() {
         definitionId:"core",
         x:2,y:2,
         direction:"up",
-      },
-      {
-        instanceId:"generator-1",
-        definitionId:"generator",
-        x:2,y:3,
-        direction:"up",
-      },
-      {
-        instanceId:"laser-1",
-        definitionId:"laser",
-        x:2,y:1,
-        direction:"down",
-      },
-      {
-        instanceId:"shield-1",
-        definitionId:"shield",
-        x:1,y:1,
-        direction:"right",
       },
     ],
   }).then((result) => {
@@ -1991,14 +1970,11 @@ function createClient() {
   asyncTests.push(coordinator.start({
     battlePoolIds:
       Array.from(
-        {length:18},
+        {length:6},
         (_,i) => `m${i}`
       ),
     initialModules:[
       {instanceId:"c",definitionId:"core",x:2,y:2},
-      {instanceId:"g",definitionId:"generator",x:2,y:3},
-      {instanceId:"l",definitionId:"laser",x:2,y:1},
-      {instanceId:"s",definitionId:"shield",x:1,y:1},
     ],
   }).then(async (first) => {
     assert.strictEqual(
@@ -2022,6 +1998,61 @@ function createClient() {
       "mm-polled"
     );
   }));
+}
+
+{
+  const {
+    RelayPvPClientState,
+    RelayMatchmakingClientState,
+    RelayOnlinePlayCoordinator,
+  } = require("../src/relay-client.js");
+
+  let releaseDelete;
+  const calls=[];
+  const coordinator = new RelayOnlinePlayCoordinator({
+    playerId:"cancel-retry-player",
+    pvpState:new RelayPvPClientState({playerId:"cancel-retry-player"}),
+    matchmakingState:new RelayMatchmakingClientState(),
+    connectionManager:{
+      disconnect(){},
+      clearOutgoingQueue(){},
+      sendSetup(){},
+      sendReady(){},
+      connect(){},
+    },
+    requestJson:async (requestPath, options={}) => {
+      calls.push({requestPath,method:options.method || "GET"});
+      if (options.method === "DELETE") {
+        return new Promise((resolve) => { releaseDelete=resolve; });
+      }
+      return {matched:false,queue:{queued:true,matched:false}};
+    },
+    setTimer(){ return 1; },
+    clearTimer(){},
+  });
+
+  asyncTests.push((async () => {
+    const cancelled = await coordinator.cancel();
+    assert.strictEqual(cancelled.ok,true);
+    assert.strictEqual(coordinator.status,"cancelled");
+
+    let restarted=false;
+    const restart=coordinator.start({
+      battlePoolIds:Array.from({length:6},(_,index) => `m${index}`),
+      initialModules:[{instanceId:"core",definitionId:"core",x:2,y:1}],
+    }).then((result) => {
+      restarted=true;
+      return result;
+    });
+
+    await Promise.resolve();
+    assert.strictEqual(restarted,false);
+    assert.strictEqual(calls.filter((call) => call.requestPath === "/matchmaking/join").length,0);
+    releaseDelete({ok:true});
+    const result=await restart;
+    assert.strictEqual(result.ok,true);
+    assert.strictEqual(calls.filter((call) => call.requestPath === "/matchmaking/join").length,1);
+  })());
 }
 
 {
@@ -2105,6 +2136,7 @@ function createClient() {
               rating_before:1000,
               rating_after:1020,
               rating_delta:20,
+              circuit_credits_awarded:50,
               xp_awarded:120,
               level_after:1,
               experience_after:120,
@@ -2148,6 +2180,11 @@ function createClient() {
           progression.viewModel()
             .ratingDelta,
           20
+        );
+        assert.strictEqual(
+          progression.viewModel()
+            .circuitCreditsAwarded,
+          50
         );
         assert.strictEqual(
           profile.viewModel().rating,
@@ -2724,7 +2761,7 @@ function createClient() {
   );
   assert.ok(
     html.includes(
-      'data-open-screen="profile"'
+      'data-open-screen="modules"'
     )
   );
   assert.ok(
@@ -2734,7 +2771,7 @@ function createClient() {
   );
   assert.ok(
     html.includes(
-      'data-open-screen="settings"'
+      'data-open-screen="events"'
     )
   );
 }
@@ -4750,16 +4787,16 @@ function createClient() {
   const ids=Array.from({length:24},(_,i)=>`m-${i}`);
   const selection=new BattlePoolSelection({
     selectableModuleIds:ids,
-    requiredSize:18,
+    requiredSize:6,
     requiredModuleIds:["m-0"],
   });
 
-  const preset=ids.slice(0,18);
+  const preset=ids.slice(0,6);
   const loaded=selection.setSelection(preset);
   assert.strictEqual(loaded.ok,true);
   assert.strictEqual(selection.isComplete(),true);
 
-  const invalid=selection.setSelection(ids.slice(0,17));
+  const invalid=selection.setSelection(ids.slice(0,5));
   assert.strictEqual(invalid.ok,false);
 }
 
@@ -4985,8 +5022,9 @@ function createClient() {
   assert.ok(css.includes(".statistics-metrics-grid"));
   assert.ok(css.includes(".statistics-empty-state"));
   assert.ok(html.includes('class="booster-panel battle-booster-dock"'));
-  assert.ok(app.includes('kind:"use_booster"'));
-  assert.ok(app.includes("serverBoosterEligibleTargets"));
+  assert.ok(css.includes('#booster-panel'));
+  assert.ok(app.includes('"deploy_module"'));
+  assert.ok(app.includes("createDeckModuleCard"));
   assert.ok(css.includes("GRIDSHARD Beta.32 — fixed battle viewport"));
   assert.ok(css.includes("GRIDSHARD Beta.32 Fix.1 — invariant card geometry"));
   assert.ok(css.includes("gs-card-impact-static"));

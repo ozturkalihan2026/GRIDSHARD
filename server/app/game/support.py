@@ -46,20 +46,17 @@ def _neighbors(module, topology, player):
 def attack_support_modifiers(player, attack_module, core_position):
     topology=build_energy_topology(player,core_position)
     neighbors=_neighbors(attack_module,topology,player)
-    amp=any(m.definition.id=="amplifier" and m.is_powered for m in neighbors)
-    targeting=any(m.definition.id=="targeting_computer" and m.is_powered for m in neighbors)
-    overclock=any(m.definition.id=="overclock_unit" and m.is_powered for m in neighbors)
-    damage=1.0
-    cooldown=1.0
-    if amp: damage*=AMPLIFIER_DAMAGE_MULTIPLIER
-    if targeting: cooldown*=TARGETING_COOLDOWN_MULTIPLIER
-    if overclock:
-        damage*=OVERCLOCK_DAMAGE_MULTIPLIER
-        cooldown*=OVERCLOCK_COOLDOWN_MULTIPLIER
-    return AttackSupportModifiers(damage,cooldown,amp,targeting,overclock)
+    def strength(mechanic):
+        return max((m.definition.effect_multiplier for m in neighbors
+                    if m.definition.mechanic_id == mechanic and m.is_powered
+                    and JAMMER_DEBUFF_ID not in m.debuffs), default=0.) * player.energy_support_multiplier
+    amp, targeting, overclock = strength("amplifier"), strength("targeting_computer"), strength("overclock_unit")
+    damage = (1 + .15 * amp) * (1 + .20 * overclock)
+    cooldown = max(.65, 1 - .15 * targeting) * max(.65, 1 - .20 * overclock)
+    return AttackSupportModifiers(damage,cooldown,bool(amp),bool(targeting),bool(overclock))
 
 def repair_amount(repair_module):
-    multiplier=1.0
+    multiplier=repair_module.definition.effect_multiplier
     if repair_module.position is not None:
         multiplier*=float(
             get_cell_effects(repair_module.position).get("repair_multiplier",1.0)

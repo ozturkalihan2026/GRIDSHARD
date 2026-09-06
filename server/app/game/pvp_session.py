@@ -27,6 +27,8 @@ OWNER_ONLY_EVENT_TYPES = frozenset({
     "booster_offer_consumed",
     "booster_selected",
     "booster_applied",
+    "core_power_ready",
+    "core_power_replayed",
 })
 
 PRIVATE_RESULT_FIELDS = frozenset({
@@ -45,6 +47,7 @@ class PvPSessionError(ValueError):
 class PvPPlayerSlot:
     player_id: str
     slot_index: int
+    display_name: str = ""
     connected: bool = True
     last_command_sequence: int = 0
     acknowledged_event_cursor: int = 0
@@ -65,6 +68,7 @@ class PvPSession:
     ai_player_ids: set[str] = field(default_factory=set)
     ai_next_decision_at_ms: dict[str, int] = field(default_factory=dict)
     ai_archetypes: dict[str, str] = field(default_factory=dict)
+    ai_profile_options: dict[str, dict] = field(default_factory=dict)
 
     @property
     def is_full(self) -> bool:
@@ -115,7 +119,7 @@ class PvPSessionService:
                 "Aynı kimlikte PvP oturumu zaten mevcut."
             )
 
-        normalized = bool(normalized or ranked_eligible)
+        normalized = bool(normalized)
         laboratory_effects_enabled = bool(
             laboratory_effects_enabled
             and not normalized
@@ -174,12 +178,16 @@ class PvPSessionService:
         self,
         session_id: str,
         player_id: str,
+        *,
+        display_name: str | None = None,
     ) -> PvPPlayerSlot:
         session = self.get_session(session_id)
 
         if player_id in session.slots:
             slot = session.slots[player_id]
             slot.connected = True
+            if display_name:
+                slot.display_name = str(display_name).strip()[:24]
             self._touch(session)
             return slot
 
@@ -191,6 +199,7 @@ class PvPSessionService:
         slot = PvPPlayerSlot(
             player_id=player_id,
             slot_index=len(session.slots),
+            display_name=(str(display_name).strip()[:24] if display_name else player_id),
             connected=True,
         )
         session.slots[player_id] = slot
@@ -215,7 +224,7 @@ class PvPSessionService:
         session_id: str,
         player_id: str,
         *,
-        first_decision_at_ms: int = 15_000,
+        first_decision_at_ms: int = 0,
         archetype_id: str = "balanced",
     ) -> None:
         session = self.get_session(session_id)
@@ -253,6 +262,9 @@ class PvPSessionService:
             raise PvPSessionError(str(exc)) from exc
 
         player = session.engine.state.players[player_id]
+        unlocked = session.engine.state.player_unlocked_modules.get(player_id)
+        if unlocked is not None and any(module_id not in unlocked for module_id in payload.battle_pool_ids):
+            raise PvPSessionError("Destede henüz açılmamış kart var. Modüller ekranından açık kartları seçin.")
         player.modules.clear()
         player.battle_pool = None
         slot.ready = False
@@ -274,19 +286,6 @@ class PvPSessionService:
                 placement.x,
                 placement.y,
                 placement.direction,
-            )
-
-        active_definitions = {
-            placement.definition_id
-            for placement in payload.initial_modules
-        }
-        for definition_id in payload.battle_pool_ids:
-            if definition_id in active_definitions:
-                continue
-            session.engine.grant_module(
-                player_id,
-                f"{definition_id.replace('_', '-')}-1",
-                definition_id,
             )
 
         slot.setup_submitted = True
@@ -465,6 +464,14 @@ class PvPSessionService:
             "is_draw": state.is_draw,
             "finish_reason": state.finish_reason,
             "finished_at_ms": state.finished_at_ms,
+            "players": {
+                player_id: {
+                    "display_name": slot.display_name or player_id,
+                    "core_type": state.players[player_id].core_type,
+                    "core_level": state.players[player_id].core_level,
+                }
+                for player_id, slot in session.slots.items()
+            },
             "result_summary": self._result_summary_for_viewer(
                 state.result_summary,
                 viewer_player_id,
@@ -542,7 +549,7 @@ class PvPSessionService:
 
                 required = module.energy_required_last_tick
                 received = module.energy_received_last_tick
-                if module.definition.energy_generation > 0:
+                if module.definition.id == "core":
                     power_reason = "source"
                 elif module.definition.energy_consumption <= 0:
                     power_reason = "passive"
@@ -576,14 +583,10 @@ class PvPSessionService:
                         else None
                     ),
                     "direction": module.direction.value,
-                    "port_count": effective_port_count(module),
-                    "ports": [
-                        direction.value
-                        for direction in module_port_directions(
-                            module,
-                            session.engine.board.core_position,
-                        )
-                    ],
+                    "port_count": 0,
+                    "ports": [],
+                    "current_cost": module.definition.current_cost,
+                    "level": 1 + state.player_upgrade_levels.get(player_id, {}).get(module.definition.id, 0),
                     "is_powered": module.is_powered,
                     "power_reason": power_reason,
                     "energy_received": received,
@@ -598,14 +601,24 @@ class PvPSessionService:
 
             player_data = {
                 "player_id": player_id,
+                "display_name": session.slots[player_id].display_name or player_id,
+                "rating": state.player_match_ratings.get(player_id, 0),
+                "is_bot": player_id in session.ai_player_ids,
+                "core_type": player.core_type,
                 "slot_index": session.slots[player_id].slot_index,
                 "connected": session.slots[player_id].connected,
                 "setup_submitted": session.slots[player_id].setup_submitted,
                 "ready": session.slots[player_id].ready,
                 "modules": public_modules,
+                "battle_pool_ids": (
+                    list(player.battle_pool.module_definition_ids)
+                    if player.battle_pool is not None
+                    else None
+                ),
                 "module_capacity": session.engine.module_capacity_view(
                     player_id
                 ),
+                "cell_debris": session.engine.cell_debris_view(player_id),
             }
 
             # Ekonomi ve teklif gibi özel bilgiler yalnızca izleyenin kendisine açılır.
@@ -613,13 +626,21 @@ class PvPSessionService:
                 player_data.update(
                     {
                         "circuit_credits": player.circuit_credits,
+                        "current": player.circuit_credits,
+                        "discounted_deployments": player.discounted_deployments,
+                        "current_cap": session.engine.circuit_credit_config.maximum_current,
+                        "current_regen_ms": session.engine.circuit_credit_config.current_regen_interval_ms - player.current_regen_remainder_ms,
+                        "energy_load_ratio": player.energy_load_ratio,
+                        "energy_stock": round(player.energy_stock, 1),
                         "total_circuit_credits_earned": player.total_circuit_credits_earned,
                         "forfeit_credit_penalty": player.forfeit_credit_penalty,
-                        "battle_pool_ids": (
-                            list(player.battle_pool.module_definition_ids)
-                            if player.battle_pool is not None
-                            else None
-                        ),
+                        "core_power": {
+                            "id": player.core_type,
+                            "charge": round(player.core_power_charge, 2),
+                            "max_charge": 100,
+                            "ready": player.core_power_charge >= 100,
+                            "uses": player.core_power_uses,
+                        },
                         "last_command_sequence": session.slots[player_id].last_command_sequence,
                         "acknowledged_event_cursor": session.slots[player_id].acknowledged_event_cursor,
                         "next_booster_offer_index": player.next_booster_offer_index,
@@ -652,6 +673,7 @@ class PvPSessionService:
             "session_id": session_id,
             "match_type": state.match_type,
             "match_label_tr": {
+                "arena_ai": "Arena Savaşı",
                 "ranked_pvp": "Dereceli PvP",
                 "unranked_ai": "Derecesiz AI",
                 "local_test": "Yerel Test",
@@ -736,6 +758,9 @@ class PvPSessionService:
         ):
             return None
 
+        if event.type == "core_power_used" and owner_player_id != viewer_player_id:
+            data.pop("request_id", None)
+            data.pop("charge", None)
         if event.type == "battle_forfeited" and owner_player_id != viewer_player_id:
             for field_name in (
                 "earned_during_battle",

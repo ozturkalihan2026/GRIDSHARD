@@ -22,12 +22,10 @@ assert.ok(audio.includes("bindUserGestureUnlock"));
 assert.ok(audio.includes("playbackStatus()"));
 
 assert.ok(events.includes("class GridshardBoosterTargetMode"));
-assert.ok(app.includes('cancelBoosterTargeting("normal_module_click")'));
-assert.ok(app.includes('cancelBoosterTargeting("escape_key")'));
-assert.ok(app.includes('cancelBoosterTargeting("empty_battle_area")'));
-assert.ok(app.includes("tryApplySelectedBooster(module)"));
-
-assert.ok(app.includes("BOOSTER_OPTIONS_PER_OFFER = 3"));
+assert.ok(css.includes("#booster-panel"));
+assert.ok(css.includes("display:none !important"));
+assert.ok(app.includes("function deployDeckModule"));
+assert.ok(app.includes("client.deployDefinition"));
 assert.ok(app.includes("getBattleEventState:() =>"));
 
 console.log("beta38.1 battle event regression test passed");

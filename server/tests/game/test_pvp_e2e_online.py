@@ -28,8 +28,6 @@ def payload(p):
         initial_modules=(
             InitialModulePlacement(f"{p}-core","core",2,2),
             InitialModulePlacement(f"{p}-gen","generator",2,3,Direction.UP),
-            InitialModulePlacement(f"{p}-split","splitter",2,1,Direction.DOWN),
-            InitialModulePlacement(f"{p}-laser","laser",1,1,Direction.RIGHT),
         ),
     )
 

@@ -1,4 +1,5 @@
 from pathlib import Path
+import json
 
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -29,12 +30,15 @@ def test_preparation_pool_cards_share_the_battle_icon_language():
     assert '.pool-module-card[data-category="saldırı"]' in css
 
 
-def test_beta29_repository_has_no_retired_runtime_audio_or_root_manifest():
+def test_beta29_repository_has_no_retired_runtime_audio_and_manifest_is_not_self_packaged():
     audio_dir = ROOT / "client" / "assets" / "audio"
     actual = {path.name for path in audio_dir.glob("*.wav")}
 
     assert not (actual & RETIRED_AUDIO)
-    assert not (ROOT / "RELEASE_MANIFEST.json").exists()
+    manifest_path = ROOT / "RELEASE_MANIFEST.json"
+    if manifest_path.exists():
+        manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+        assert "RELEASE_MANIFEST.json" not in manifest.get("files", [])
 
 
 def test_release_packager_excludes_every_root_release_artifact():

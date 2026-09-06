@@ -70,7 +70,7 @@ def _active_targets(player: PlayerBattleState) -> list[BattleModule]:
             for module in player.modules.values()
             if module.status == ModuleStatus.ACTIVE
             and module.hp > 0
-            and module.definition.id != "core"
+            and module.definition.mechanic_id != "core"
         ),
         key=lambda module: module.instance_id,
     )
@@ -87,7 +87,7 @@ def select_sabotage_target(
     preferred = [
         module
         for module in targets
-        if module.definition.id
+        if module.definition.mechanic_id
         in sabotage_module.definition.strong_against
     ]
     if preferred:
@@ -96,7 +96,7 @@ def select_sabotage_target(
     non_barriers = [
         module
         for module in targets
-        if module.definition.id != "barrier"
+        if module.definition.mechanic_id != "barrier"
     ]
     if non_barriers:
         return non_barriers[0]
@@ -115,7 +115,7 @@ def plan_sabotage(
     if target is None:
         return None
 
-    definition_id = sabotage_module.definition.id
+    definition_id = sabotage_module.definition.mechanic_id
 
     if definition_id == "emp":
         return SabotagePlan(
@@ -165,15 +165,15 @@ def sabotage_resistance(
     target: BattleModule,
     target_player: PlayerBattleState,
 ) -> SabotageResistance:
-    duration_multiplier = 1.0
+    duration_multiplier = sabotage_module.definition.effect_multiplier
     effect_strength_multiplier = 1.0
     reasons: list[str] = []
 
-    if target.definition.id in sabotage_module.definition.strong_against:
+    if target.definition.mechanic_id in sabotage_module.definition.strong_against:
         duration_multiplier *= STRONG_AGAINST_DURATION_MULTIPLIER
         reasons.append("güçlü-karşılaşma")
 
-    if target.definition.id in sabotage_module.definition.weak_against:
+    if target.definition.mechanic_id in sabotage_module.definition.weak_against:
         duration_multiplier *= WEAK_AGAINST_DURATION_MULTIPLIER
         reasons.append("zayıf-karşılaşma")
 
@@ -181,7 +181,7 @@ def sabotage_resistance(
         module
         for module in target_player.modules.values()
         if module.status == ModuleStatus.ACTIVE
-        and module.definition.id == "barrier"
+        and module.definition.mechanic_id == "barrier"
         and module.is_powered
         and module.hp > 0
     ]
@@ -191,8 +191,8 @@ def sabotage_resistance(
         reasons.append("enerjili-bariyer")
 
     if (
-        sabotage_module.definition.id == "disruptor"
-        and target.definition.id == "armor"
+        sabotage_module.definition.mechanic_id == "disruptor"
+        and target.definition.mechanic_id == "armor"
     ):
         duration_multiplier *= ARMOR_DISRUPTOR_DURATION_MULTIPLIER
         reasons.append("zırh-hat-direnci")
@@ -200,15 +200,15 @@ def sabotage_resistance(
     # Sabotajın doğrudan enerjili Bariyere yönelmesi ve sabotajın
     # Bariyere karşı zayıf olması durumunda etki tamamen engellenir.
     blocked = (
-        target.definition.id == "barrier"
+        target.definition.mechanic_id == "barrier"
         and target.is_powered
-        and target.definition.id in sabotage_module.definition.weak_against
+        and target.definition.mechanic_id in sabotage_module.definition.weak_against
     )
 
     if blocked:
         reasons.append("bariyer-tam-engelleme")
 
-    if sabotage_module.definition.id == "energy_leech":
+    if sabotage_module.definition.mechanic_id == "energy_leech":
         # Bariyer Enerji Sömürücü şiddetini de azaltır.
         if powered_barriers:
             effect_strength_multiplier *= 0.85

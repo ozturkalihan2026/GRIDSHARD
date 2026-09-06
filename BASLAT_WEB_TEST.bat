@@ -8,8 +8,8 @@ if defined GRIDSHARD_PYTHON_EXE if not exist "%GRIDSHARD_PYTHON_EXE%" (
   goto :fatal
 )
 
-rem Yarım kalmış bir sanal ortamda python.exe bulunup pyvenv.cfg bulunmayabilir.
-rem Böyle bir klasörü hazır kabul etme; venv komutunun güvenle tamamlamasına izin ver.
+rem Yarim kalmis bir sanal ortamda python.exe bulunup pyvenv.cfg bulunmayabilir.
+rem Boyle bir klasoru hazir kabul etme; venv komutunun guvenle tamamlamasina izin ver.
 if not defined GRIDSHARD_PYTHON_EXE if exist ".venv\Scripts\python.exe" if exist ".venv\pyvenv.cfg" set "GRIDSHARD_PYTHON_EXE=%~dp0.venv\Scripts\python.exe"
 
 if not defined GRIDSHARD_PYTHON_EXE (
@@ -44,8 +44,9 @@ if errorlevel 1 (
   )
 )
 
-set RELAY_WEB_TEST_RUN_ID=web-test-beta.31-local
+set RELAY_WEB_TEST_RUN_ID=web-test-beta.42-local
 set RELAY_TELEMETRY_MAX_EVENTS=50000
+set GRIDSHARD_MATCHMAKING_AI_ONLY=1
 
 rem Dogrudan cift tikla baslatildiginda da 8000-8010 arasinda ilk bos portu sec.
 rem HIZLI_SAVAS_TESTI bir port belirlediyse o deger aynen korunur.

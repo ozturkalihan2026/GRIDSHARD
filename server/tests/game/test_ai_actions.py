@@ -1,276 +1,72 @@
-from app.game.ai import (
-    build_ai_action_plan,
-    enqueue_ai_actions,
-    prepare_ai_reserve_modules,
-)
-from app.game.battle_pool import validate_battle_pool
-from app.game.catalog import PLAYER_SELECTABLE_MODULE_IDS
+from app.game.ai import build_ai_action_plan, enqueue_ai_actions
+from app.game.ai_archetypes import get_ai_archetype
 from app.game.engine import BattleEngine
-from app.game.models import (
-    BattleState,
-    BattleStatus,
-    BoosterOffer,
-    Direction,
-    ModuleStatus,
-)
+from app.game.models import BattleCommand, BattleState, Direction
 
 
-def setup_engine():
-    engine = BattleEngine(
-        BattleState(battle_id="ai-actions")
-    )
-
-    ai = engine.add_player("ai")
-    opponent = engine.add_player("opponent")
-
-    ai.battle_pool = validate_battle_pool(
-        PLAYER_SELECTABLE_MODULE_IDS[:18]
-    )
-    ai.circuit_credits = 1000
-
-    # AI çekirdeği + jeneratörü.
-    engine.grant_module(
-        "ai",
-        "ai-core",
-        "core",
-    )
-    engine.grant_module(
-        "ai",
-        "ai-generator",
-        "generator",
-    )
-
-    engine.set_initial_active_module(
-        "ai",
-        "ai-core",
-        2,
-        2,
-    )
-    engine.set_initial_active_module(
-        "ai",
-        "ai-generator",
-        2,
-        3,
-    )
-
-    # Rakip çekirdeği + jeneratörü + zırh tehdidi.
-    engine.grant_module(
-        "opponent",
-        "op-core",
-        "core",
-    )
-    engine.grant_module(
-        "opponent",
-        "op-generator",
-        "generator",
-    )
-    engine.grant_module(
-        "opponent",
-        "op-armor",
-        "armor",
-    )
-
-    engine.set_initial_active_module(
-        "opponent",
-        "op-core",
-        2,
-        2,
-    )
-    engine.set_initial_active_module(
-        "opponent",
-        "op-generator",
-        2,
-        3,
-    )
-    engine.set_initial_active_module(
-        "opponent",
-        "op-armor",
-        2,
-        1,
-        Direction.DOWN,
-    )
-
-    prepare_ai_reserve_modules(
-        engine,
-        "ai",
-    )
-
+def setup_engine(archetype_id="balanced") -> BattleEngine:
+    engine = BattleEngine(BattleState(battle_id="ai-actions"))
+    for player_id, gate_y, direction in (
+        ("ai", 3, Direction.UP),
+        ("opponent", 1, Direction.DOWN),
+    ):
+        engine.add_player(player_id)
+        deck = (
+            get_ai_archetype(archetype_id).battle_pool_ids
+            if player_id == "ai"
+            else get_ai_archetype("balanced").battle_pool_ids
+        )
+        engine.set_battle_pool(player_id, deck)
+        engine.grant_module(player_id, f"{player_id}-core", "core")
+        engine.set_initial_active_module(
+            player_id, f"{player_id}-core", 2, 2, Direction.UP
+        )
+        engine.grant_module(player_id, f"{player_id}-gen", "generator")
+        engine.set_initial_active_module(
+            player_id, f"{player_id}-gen", 2, gate_y, direction
+        )
     engine.start()
-
     return engine
 
 
-def test_ai_does_not_intervene_before_15_seconds():
+def test_ai_can_choose_a_deck_card_from_first_tick():
     engine = setup_engine()
-    engine.state.elapsed_ms = 14_900
-
-    assert build_ai_action_plan(
-        engine,
-        "ai",
-        "opponent",
-    ) is None
-
-
-def test_ai_builds_real_place_commands_after_unlock():
-    engine = setup_engine()
-    engine.state.elapsed_ms = 15_000
-
-    plan = build_ai_action_plan(
-        engine,
-        "ai",
-        "opponent",
+    plan = build_ai_action_plan(engine, "ai", "opponent")
+    assert plan is not None
+    assert plan.kind == "deploy"
+    assert plan.commands[0].kind == "deploy_module"
+    assert plan.commands[0].payload["definition_id"] in (
+        engine.state.players["ai"].battle_pool.module_definition_ids
     )
 
-    assert plan is not None
-    assert plan.kind == "place"
-    assert plan.commands[0].kind == "place_module"
 
-
-def test_ai_commands_are_processed_by_real_engine_queue():
+def test_ai_deploy_command_is_processed_by_real_engine():
     engine = setup_engine()
-    engine.state.elapsed_ms = 15_000
-    engine.state.tick = 150
-
-    plan = enqueue_ai_actions(
-        engine,
-        "ai",
-        "opponent",
-    )
-
+    plan = enqueue_ai_actions(engine, "ai", "opponent")
     assert plan is not None
-
     engine.step()
-
-    active_definitions = {
-        module.definition.id
+    active = [
+        module
         for module in engine.state.players["ai"].modules.values()
-        if module.status == ModuleStatus.ACTIVE
-    }
+        if module.status.value == "active"
+    ]
+    assert len(active) == 3
+    assert any(module.definition.id not in {"core", "generator"} for module in active)
 
-    assert len(active_definitions) >= 3
 
-
-def test_ai_respects_credit_budget_before_enqueue():
+def test_ai_waits_when_no_card_is_affordable():
     engine = setup_engine()
-    engine.state.elapsed_ms = 15_000
     engine.state.players["ai"].circuit_credits = 0
-
-    assert enqueue_ai_actions(
-        engine,
-        "ai",
-        "opponent",
-    ) is None
+    assert build_ai_action_plan(engine, "ai", "opponent") is None
 
 
-def test_ai_uses_replace_when_capacity_is_full():
+def test_ai_does_not_use_boosters_when_feature_is_disabled():
     engine = setup_engine()
-    ai_player = engine.state.players["ai"]
-
-    splitter = next(
-        module
-        for module in ai_player.modules.values()
-        if module.definition.id == "splitter"
-    )
-    shield = next(
-        module
-        for module in ai_player.modules.values()
-        if module.definition.id == "shield"
-    )
-    battery = next(
-        module
-        for module in ai_player.modules.values()
-        if module.definition.id == "battery"
-    )
-
-    splitter.status = ModuleStatus.ACTIVE
-    splitter.position = type(engine.board.core_position)(x=2, y=1)
-    splitter.direction = Direction.DOWN
-
-    shield.status = ModuleStatus.ACTIVE
-    shield.position = type(engine.board.core_position)(x=1, y=1)
-    shield.direction = Direction.RIGHT
-
-    battery.status = ModuleStatus.ACTIVE
-    battery.position = type(engine.board.core_position)(x=3, y=1)
-    battery.direction = Direction.LEFT
-
-    engine.state.elapsed_ms = 15_000
-
-    plan = build_ai_action_plan(
-        engine,
+    engine.enqueue_command(BattleCommand(
         "ai",
-        "opponent",
-    )
-
-    assert plan is not None
-    assert plan.kind == "replace"
-    assert plan.commands[0].kind == "replace_module"
-
-
-def test_prepare_ai_reserves_only_before_match():
-    engine = setup_engine()
-
-    try:
-        prepare_ai_reserve_modules(
-            engine,
-            "ai",
-        )
-    except ValueError:
-        pass
-    else:
-        raise AssertionError(
-            "Maç başladıktan sonra rezerv hazırlama engellenmeliydi."
-        )
-
-
-def test_ai_uses_atomic_booster_command_and_consumes_offer():
-    engine = setup_engine()
-    ai_player = engine.state.players["ai"]
-
-    shield = engine.grant_module(
-        "ai",
-        "ai-shield",
-        "shield",
-    )
-    shield.status = ModuleStatus.ACTIVE
-    shield.position = type(engine.board.core_position)(x=1, y=3)
-    shield.direction = Direction.RIGHT
-    shield.hp = 30
-
-    ai_player.pending_booster_offer = BoosterOffer(
-        id="ai-offer",
-        booster_ids=(
-            "overcharge_chip",
-            "emergency_repair",
-            "dual_port_adapter",
-        ),
-        created_at_ms=30_000,
-    )
-    engine.state.elapsed_ms = 30_000
-
-    plan = build_ai_action_plan(
-        engine,
-        "ai",
-        "opponent",
-    )
-
-    assert plan is not None
-    assert plan.kind == "booster"
-    assert len(plan.commands) == 1
-    assert plan.commands[0].kind == "use_booster"
-    assert plan.commands[0].payload == {
-        "offer_id": "ai-offer",
-        "booster_id": "emergency_repair",
-        "target_module_id": "ai-shield",
-    }
-
-    enqueue_ai_actions(
-        engine,
-        "ai",
-        "opponent",
-    )
+        "use_booster",
+        {"offer_id": "x", "booster_id": "x", "target_module_id": "ai-core"},
+    ))
     engine.step()
-
-    assert ai_player.pending_booster_offer is None
-    assert "ai-offer" in ai_player.consumed_booster_offer_ids
-    assert shield.hp > 30
+    assert engine.state.events[-1].type == "command_rejected"
+    assert "kapalı" in engine.state.events[-1].data["reason"]

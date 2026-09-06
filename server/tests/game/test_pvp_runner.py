@@ -1,6 +1,5 @@
 import asyncio
-from app.game.battle_pool import validate_battle_pool
-from app.game.catalog import PLAYER_SELECTABLE_MODULE_IDS
+from app.game.battle_pool import default_battle_pool
 from app.game.engine import BATTLE_TIME_LIMIT_MS, TICK_MS
 from app.game.models import Direction,BattleStatus,ModuleStatus,Position
 from app.game.pvp_runner import PvPTickRunner
@@ -119,26 +118,8 @@ def test_runner_executes_marked_ai_player_decisions():
         engine = session.engine
         ai = engine.state.players["b"]
         opponent = engine.state.players["a"]
-        ai.battle_pool = validate_battle_pool(PLAYER_SELECTABLE_MODULE_IDS[:18])
+        ai.battle_pool = default_battle_pool()
         ai.circuit_credits = 1000
-
-        for instance_id, definition_id, position, direction in (
-            ("b-shield", "shield", Position(1, 3), Direction.RIGHT),
-            ("b-laser", "laser", Position(3, 3), Direction.LEFT),
-        ):
-            module = engine.grant_module("b", instance_id, definition_id)
-            module.status = ModuleStatus.ACTIVE
-            module.position = position
-            module.direction = direction
-
-        existing = {module.definition.id for module in ai.modules.values()}
-        for definition_id in ai.battle_pool.module_definition_ids:
-            if definition_id not in existing:
-                engine.grant_module(
-                    "b",
-                    f"b-reserve-{definition_id}",
-                    definition_id,
-                )
 
         armor = engine.grant_module("a", "a-armor", "armor")
         armor.status = ModuleStatus.ACTIVE
@@ -146,23 +127,19 @@ def test_runner_executes_marked_ai_player_decisions():
         armor.direction = Direction.RIGHT
         opponent.circuit_credits = 1000
 
-        service.mark_ai_player("match", "b", first_decision_at_ms=15_000)
-        engine.state.tick = 150
-        engine.state.elapsed_ms = 15_000
-        before = {
-            module.definition.id
+        service.mark_ai_player("match", "b", first_decision_at_ms=0)
+        before = sum(
+            module.status == ModuleStatus.ACTIVE
             for module in ai.modules.values()
-            if module.status == ModuleStatus.ACTIVE
-        }
+        )
 
         runner = PvPTickRunner(service, PvPWebSocketAdapter(service))
         assert await runner.run_single_tick("match") is True
-        after = {
-            module.definition.id
+        after = sum(
+            module.status == ModuleStatus.ACTIVE
             for module in ai.modules.values()
-            if module.status == ModuleStatus.ACTIVE
-        }
+        )
         assert runner.stats_for("match").ai_decisions == 1
-        assert after != before
+        assert after == before + 1
 
     asyncio.run(scenario())

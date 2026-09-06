@@ -220,12 +220,13 @@
       if (screen === "play" && this.terminalState) {
         return this.terminalState;
       }
-      if (screen !== "play") return "menu";
-      if (context.critical && battleActive) return "critical_core";
-      if (battleActive) return "battle";
+      // Home now owns the queue screen, before the router enters the arena.
       if (["matchmaking", "matched", "connecting", "readying"].includes(onlineStatus)) {
         return "matchmaking";
       }
+      if (screen !== "play") return "menu";
+      if (context.critical && battleActive) return "critical_core";
+      if (battleActive) return "battle";
       return "pool";
     }
 

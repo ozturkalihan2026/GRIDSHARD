@@ -18,8 +18,6 @@ def setup_body(player):
         "initial_modules":[
             {"instance_id":f"{player}-core","definition_id":"core","x":2,"y":2,"direction":"up"},
             {"instance_id":f"{player}-gen","definition_id":"generator","x":2,"y":3,"direction":"up"},
-            {"instance_id":f"{player}-splitter","definition_id":"splitter","x":2,"y":1,"direction":"down"},
-            {"instance_id":f"{player}-laser","definition_id":"laser","x":1,"y":1,"direction":"right"},
         ],
     }
 

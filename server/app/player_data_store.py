@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from pathlib import Path
+from contextlib import contextmanager
 import json
 import os
 import shutil
@@ -9,7 +10,9 @@ from threading import RLock, get_ident
 import time
 from typing import Protocol
 
+from .game.battle_pool import default_battle_pool, migrate_battle_pool
 from .player_profile import (
+    CURRENT_SEASON_ID,
     PlayerProfile,
     PlayerProfileService,
 )
@@ -82,6 +85,45 @@ class JsonFilePlayerDataRepository:
             f"{base.name}.{label}.{os.getpid()}.{get_ident()}.tmp"
         )
 
+    @property
+    def write_lock_path(self) -> Path:
+        return self.path.with_name(self.path.name + ".lock")
+
+    @contextmanager
+    def _interprocess_write_lock(self):
+        """Serialize the read/modify/write cycle across test-server processes."""
+        self.path.parent.mkdir(parents=True, exist_ok=True)
+        deadline = time.monotonic() + 5.0
+        descriptor: int | None = None
+        while descriptor is None:
+            try:
+                descriptor = os.open(
+                    self.write_lock_path,
+                    os.O_CREAT | os.O_EXCL | os.O_WRONLY,
+                )
+                os.write(descriptor, f"{os.getpid()}\n".encode("ascii"))
+            except FileExistsError:
+                try:
+                    stale = time.time() - self.write_lock_path.stat().st_mtime > 30
+                    if stale:
+                        self.write_lock_path.unlink(missing_ok=True)
+                        continue
+                except OSError:
+                    pass
+                if time.monotonic() >= deadline:
+                    raise PlayerDataStoreError(
+                        "Kalıcı oyuncu verisi başka bir sunucu işlemi tarafından kullanılıyor."
+                    )
+                time.sleep(0.01)
+        try:
+            yield
+        finally:
+            os.close(descriptor)
+            try:
+                self.write_lock_path.unlink(missing_ok=True)
+            except OSError:
+                pass
+
     @staticmethod
     def _replace_with_retry(
         source: Path,
@@ -110,11 +152,12 @@ class JsonFilePlayerDataRepository:
         snapshot: PlayerDataSnapshot,
     ) -> None:
         with self._lock:
-            payload = self._read_all()
-            payload[
-                snapshot.player_id
-            ] = snapshot.to_dict()
-            self._write_all(payload)
+            with self._interprocess_write_lock():
+                payload = self._read_all()
+                payload[
+                    snapshot.player_id
+                ] = snapshot.to_dict()
+                self._write_all(payload)
 
     def load(
         self,
@@ -144,6 +187,13 @@ class JsonFilePlayerDataRepository:
         )
 
     def backup_health(self) -> dict:
+        # Windows does not allow the atomic backup replacement while another
+        # thread has the old .bak file open.  The web-test health endpoints are
+        # polled frequently, so serialize that read with profile writes too.
+        with self._lock:
+            return self._backup_health_unlocked()
+
+    def _backup_health_unlocked(self) -> dict:
         path = self.backup_path
 
         if not path.exists():
@@ -200,39 +250,46 @@ class JsonFilePlayerDataRepository:
 
     def restore_backup(self) -> bool:
         with self._lock:
-            health = self.backup_health()
+            with self._interprocess_write_lock():
+                health = self.backup_health()
 
-            if not health["ready"]:
-                return False
+                if not health["ready"]:
+                    return False
 
-            try:
-                self.path.parent.mkdir(
-                    parents=True,
-                    exist_ok=True,
-                )
-                restore_temp = (
-                    self.path.with_name(
-                        self.path.name
-                        + ".restore.tmp"
+                try:
+                    self.path.parent.mkdir(
+                        parents=True,
+                        exist_ok=True,
                     )
-                )
-                shutil.copy2(
-                    self.backup_path,
-                    restore_temp,
-                )
-                os.replace(
-                    restore_temp,
-                    self.path,
-                )
-            except OSError as exc:
-                raise PlayerDataStoreError(
-                    "Kalıcı oyuncu veri yedeği geri yüklenemedi."
-                ) from exc
+                    restore_temp = (
+                        self.path.with_name(
+                            self.path.name
+                            + ".restore.tmp"
+                        )
+                    )
+                    shutil.copy2(
+                        self.backup_path,
+                        restore_temp,
+                    )
+                    os.replace(
+                        restore_temp,
+                        self.path,
+                    )
+                except OSError as exc:
+                    raise PlayerDataStoreError(
+                        "Kalıcı oyuncu veri yedeği geri yüklenemedi."
+                    ) from exc
 
-            return True
+                return True
 
     def health(self) -> dict:
-        backup = self.backup_health()
+        # Keep both the main snapshot and its backup closed while save() does
+        # the atomic Windows replacements.
+        with self._lock:
+            return self._health_unlocked()
+
+    def _health_unlocked(self) -> dict:
+        backup = self._backup_health_unlocked()
 
         if self.path.exists():
             try:
@@ -307,16 +364,17 @@ class JsonFilePlayerDataRepository:
         player_id: str,
     ) -> bool:
         with self._lock:
-            payload = self._read_all()
-            if player_id not in payload:
-                return False
+            with self._interprocess_write_lock():
+                payload = self._read_all()
+                if player_id not in payload:
+                    return False
 
-            payload.pop(
-                player_id,
-                None,
-            )
-            self._write_all(payload)
-            return True
+                payload.pop(
+                    player_id,
+                    None,
+                )
+                self._write_all(payload)
+                return True
 
     def _read_all(self) -> dict:
         if not self.path.exists():
@@ -387,8 +445,8 @@ class JsonFilePlayerDataRepository:
                 json.dumps(
                     payload,
                     ensure_ascii=False,
-                    indent=2,
                     sort_keys=True,
+                    separators=(",", ":"),
                 )
                 + "\n",
                 encoding="utf-8",
@@ -506,6 +564,52 @@ class PlayerDataStoreService:
             },
             "reset_count": profile.laboratory_reset_count,
         }
+        profile_data["meta_progression_state"] = {
+            "progression_version": profile.progression_version,
+            "highest_rating": max(profile.rating, profile.highest_rating),
+            "arena_reward_claims": list(profile.arena_reward_claims),
+            "active_season_id": profile.active_meta_season_id,
+            "season_archives": [dict(item) for item in profile.season_archives],
+            "coins": profile.coins,
+            "circuit_credits": profile.circuit_credits,
+            "core_shards": profile.core_shards,
+            "core_shards_by_type": dict(profile.core_shards_by_type),
+            "core_upgrade_levels": dict(profile.core_upgrade_levels),
+            "module_talents": dict(profile.module_talents),
+            "lifetime_stats": dict(profile.lifetime_stats),
+            "module_shards": dict(profile.module_shards),
+            "module_upgrade_levels": dict(profile.module_upgrade_levels),
+            "module_upgrade_receipts": {
+                request_id: dict(receipt)
+                for request_id, receipt in profile.module_upgrade_receipts.items()
+            },
+            "chest_slots": [dict(item) for item in profile.chest_slots],
+            "chest_receipts": {
+                request_id: dict(receipt)
+                for request_id, receipt in profile.chest_receipts.items()
+            },
+            "gift_chest_claim_receipts": {
+                request_id: dict(receipt)
+                for request_id, receipt in profile.gift_chest_claim_receipts.items()
+            },
+            "shop_purchase_day": profile.shop_purchase_day,
+            "shop_purchased_offer_ids": list(profile.shop_purchased_offer_ids),
+            "shop_receipts": {
+                request_id: dict(receipt)
+                for request_id, receipt in profile.shop_receipts.items()
+            },
+            "unlocked_core_types": list(profile.unlocked_core_types),
+            "selected_core_type": profile.selected_core_type,
+            "core_skill_points": profile.core_skill_points,
+            "core_skills": {
+                core_type_id: list(skill_ids)
+                for core_type_id, skill_ids in profile.core_skills.items()
+            },
+            "core_receipts": {
+                request_id: dict(receipt)
+                for request_id, receipt in profile.core_receipts.items()
+            },
+        }
 
         return PlayerDataSnapshot(
             player_id=player_id,
@@ -555,6 +659,11 @@ class PlayerDataStoreService:
     ) -> None:
         player_id=data["player_id"]
         engagement = dict(data.get("engagement") or {})
+        meta = dict(data.get("meta_progression_state") or {})
+        default_shards = {
+            module_id: 40
+            for module_id in default_battle_pool().module_definition_ids
+        }
         profile=PlayerProfile(
             player_id=player_id,
             display_name=data[
@@ -565,10 +674,10 @@ class PlayerDataStoreService:
                 data["experience"]
             ),
             rating=int(data["rating"]),
-            preferred_battle_pool_ids=tuple(
-                data[
-                    "preferred_battle_pool_ids"
-                ]
+            preferred_battle_pool_ids=(
+                migrate_battle_pool(
+                    data.get("preferred_battle_pool_ids")
+                ).module_definition_ids
             ),
             season_xp=int(engagement.get("season_xp", 0)),
             flux_shards=int(engagement.get("flux_shards", 0)),
@@ -613,6 +722,90 @@ class PlayerDataStoreService:
             laboratory_reset_count=int(
                 data.get("laboratory", {}).get("reset_count", 0)
             ),
+            active_meta_season_id=str(
+                meta.get("active_season_id", CURRENT_SEASON_ID)
+            ),
+            season_archives=[
+                dict(item)
+                for item in meta.get("season_archives", [])
+                if isinstance(item, dict)
+            ],
+            coins=0,
+            progression_version=2,
+            highest_rating=max(int(data["rating"]), int(meta.get("highest_rating", 0))),
+            arena_reward_claims=tuple(meta.get("arena_reward_claims", ())),
+            circuit_credits=int(meta.get("circuit_credits", 350)) + (
+                max(0, int(meta.get("coins", 600))) if int(meta.get("progression_version", 1)) < 2 else 0
+            ),
+            core_shards=int(meta.get("core_shards", 0)),
+            core_shards_by_type={str(k): max(0, int(v)) for k, v in meta.get("core_shards_by_type", {}).items()},
+            core_upgrade_levels={str(k): max(0, min(14, int(v))) for k, v in meta.get("core_upgrade_levels", {}).items()},
+            module_talents={str(k): dict(v) for k, v in meta.get("module_talents", {}).items()},
+            lifetime_stats=dict(meta.get("lifetime_stats", {})),
+            module_shards={
+                str(module_id): int(amount)
+                for module_id, amount in dict(
+                    meta.get("module_shards", default_shards)
+                ).items()
+            },
+            module_upgrade_levels={
+                str(module_id): max(0, min(14, int(level)))
+                for module_id, level in dict(
+                    meta.get("module_upgrade_levels", {})
+                ).items()
+            },
+            module_upgrade_receipts={
+                str(request_id): dict(receipt)
+                for request_id, receipt in dict(
+                    meta.get("module_upgrade_receipts", {})
+                ).items()
+                if isinstance(receipt, dict)
+            },
+            chest_slots=[
+                dict(item)
+                for item in meta.get("chest_slots", [])
+                if isinstance(item, dict)
+            ],
+            chest_receipts={
+                str(request_id): dict(receipt)
+                for request_id, receipt in dict(
+                    meta.get("chest_receipts", {})
+                ).items()
+                if isinstance(receipt, dict)
+            },
+            gift_chest_claim_receipts={
+                str(request_id): dict(receipt)
+                for request_id, receipt in dict(
+                    meta.get("gift_chest_claim_receipts", {})
+                ).items()
+                if isinstance(receipt, dict)
+            },
+            shop_purchase_day=str(meta.get("shop_purchase_day", "")),
+            shop_purchased_offer_ids=tuple(
+                str(value) for value in meta.get("shop_purchased_offer_ids", [])
+            ),
+            shop_receipts={
+                str(request_id): dict(receipt)
+                for request_id, receipt in dict(meta.get("shop_receipts", {})).items()
+                if isinstance(receipt, dict)
+            },
+            unlocked_core_types=tuple(
+                str(value)
+                for value in meta.get("unlocked_core_types", ["core_resonance"])
+            ),
+            selected_core_type=str(
+                meta.get("selected_core_type", "core_resonance")
+            ),
+            core_skill_points=int(meta.get("core_skill_points", 1)),
+            core_skills={
+                str(core_type_id): tuple(str(value) for value in skill_ids)
+                for core_type_id, skill_ids in dict(meta.get("core_skills", {})).items()
+            },
+            core_receipts={
+                str(request_id): dict(receipt)
+                for request_id, receipt in dict(meta.get("core_receipts", {})).items()
+                if isinstance(receipt, dict)
+            },
         )
         self.profile_service._profiles[
             player_id

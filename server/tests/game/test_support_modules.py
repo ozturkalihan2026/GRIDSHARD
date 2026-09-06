@@ -32,17 +32,17 @@ def powered_support_line(engine, support_id, support_def, target_id, target_def)
     engine._process_energy_flow()
     return support,target
 
-def test_repair_heals_connected_damaged_module_with_cell_bonus():
+def test_repair_heals_connected_damaged_module():
     e=make_engine()
     repair,shield=powered_support_line(e,"repair","repair","shield","shield")
     shield.hp=40
     e._process_support_actions()
     assert repair.is_powered is True
-    assert shield.hp==58
+    assert shield.hp==55
 
 def test_repair_cell_bonus_is_real():
     e=make_engine()
-    repair=add(e,"p1","repair","repair",1,1,Direction.RIGHT)
+    repair=add(e,"p1","repair","repair",0,2,Direction.RIGHT)
     assert repair_amount(repair)==18
 
 def test_unpowered_repair_does_nothing():

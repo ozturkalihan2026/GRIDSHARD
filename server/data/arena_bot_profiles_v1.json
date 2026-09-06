@@ -1,0 +1,2165 @@
+{
+  "version": 1,
+  "bots": [
+    {
+      "arena": 1,
+      "id": "bot_a01_01",
+      "display_name": "MertNova",
+      "archetype_tr": "Dengeli",
+      "rating": 70,
+      "core_type": "core_resonance",
+      "battle_pool_ids": [
+        "pulse_cannon",
+        "shield",
+        "repair",
+        "emp",
+        "battery",
+        "laser"
+      ],
+      "decision_delay_ms": 900,
+      "mistake_rate": 0.05
+    },
+    {
+      "arena": 1,
+      "id": "bot_a01_02",
+      "display_name": "ElifNova",
+      "archetype_tr": "Hızlı Baskı",
+      "rating": 87,
+      "core_type": "core_resonance",
+      "battle_pool_ids": [
+        "laser",
+        "repair",
+        "battery",
+        "pulse_cannon",
+        "emp",
+        "cooler"
+      ],
+      "decision_delay_ms": 1010,
+      "mistake_rate": 0.07500000000000001
+    },
+    {
+      "arena": 1,
+      "id": "bot_a01_03",
+      "display_name": "BoraNova",
+      "archetype_tr": "Ağır Hasar",
+      "rating": 104,
+      "core_type": "core_resonance",
+      "battle_pool_ids": [
+        "pulse_cannon",
+        "laser",
+        "amplifier",
+        "emp",
+        "armor",
+        "repair"
+      ],
+      "decision_delay_ms": 1120,
+      "mistake_rate": 0.1
+    },
+    {
+      "arena": 1,
+      "id": "bot_a01_04",
+      "display_name": "NisaNova",
+      "archetype_tr": "Savunma",
+      "rating": 121,
+      "core_type": "core_resonance",
+      "battle_pool_ids": [
+        "shield",
+        "amplifier",
+        "armor",
+        "pulse_cannon",
+        "battery",
+        "repair"
+      ],
+      "decision_delay_ms": 1230,
+      "mistake_rate": 0.125
+    },
+    {
+      "arena": 1,
+      "id": "bot_a01_05",
+      "display_name": "OzanNova",
+      "archetype_tr": "Sürdürülebilirlik",
+      "rating": 138,
+      "core_type": "core_resonance",
+      "battle_pool_ids": [
+        "amplifier",
+        "shield",
+        "battery",
+        "laser",
+        "cooler",
+        "repair"
+      ],
+      "decision_delay_ms": 1340,
+      "mistake_rate": 0.15000000000000002
+    },
+    {
+      "arena": 1,
+      "id": "bot_a01_06",
+      "display_name": "DerinNova",
+      "archetype_tr": "Kontrol",
+      "rating": 155,
+      "core_type": "core_resonance",
+      "battle_pool_ids": [
+        "emp",
+        "laser",
+        "repair",
+        "shield",
+        "pulse_cannon",
+        "cooler"
+      ],
+      "decision_delay_ms": 1450,
+      "mistake_rate": 0.05
+    },
+    {
+      "arena": 1,
+      "id": "bot_a01_07",
+      "display_name": "EgeNova",
+      "archetype_tr": "Destek Zinciri",
+      "rating": 172,
+      "core_type": "core_resonance",
+      "battle_pool_ids": [
+        "cooler",
+        "repair",
+        "pulse_cannon",
+        "shield",
+        "battery",
+        "amplifier"
+      ],
+      "decision_delay_ms": 1560,
+      "mistake_rate": 0.07500000000000001
+    },
+    {
+      "arena": 1,
+      "id": "bot_a01_08",
+      "display_name": "LinaNova",
+      "archetype_tr": "Akım Ekonomisi",
+      "rating": 189,
+      "core_type": "core_resonance",
+      "battle_pool_ids": [
+        "battery",
+        "pulse_cannon",
+        "cooler",
+        "shield",
+        "laser",
+        "amplifier"
+      ],
+      "decision_delay_ms": 1670,
+      "mistake_rate": 0.1
+    },
+    {
+      "arena": 1,
+      "id": "bot_a01_09",
+      "display_name": "ArdaNova",
+      "archetype_tr": "Alan Hasarı",
+      "rating": 206,
+      "core_type": "core_resonance",
+      "battle_pool_ids": [
+        "pulse_cannon",
+        "laser",
+        "emp",
+        "repair",
+        "armor",
+        "amplifier"
+      ],
+      "decision_delay_ms": 1780,
+      "mistake_rate": 0.125
+    },
+    {
+      "arena": 1,
+      "id": "bot_a01_10",
+      "display_name": "DuruNova",
+      "archetype_tr": "Karşı Meta",
+      "rating": 223,
+      "core_type": "core_resonance",
+      "battle_pool_ids": [
+        "emp",
+        "armor",
+        "laser",
+        "cooler",
+        "battery",
+        "shield"
+      ],
+      "decision_delay_ms": 1890,
+      "mistake_rate": 0.15000000000000002
+    },
+    {
+      "arena": 2,
+      "id": "bot_a02_01",
+      "display_name": "EmirNova",
+      "archetype_tr": "Dengeli",
+      "rating": 370,
+      "core_type": "core_resonance",
+      "battle_pool_ids": [
+        "missile_launcher",
+        "armor",
+        "repair",
+        "emp",
+        "battery",
+        "pulse_cannon"
+      ],
+      "decision_delay_ms": 900,
+      "mistake_rate": 0.05
+    },
+    {
+      "arena": 2,
+      "id": "bot_a02_02",
+      "display_name": "AdaNova",
+      "archetype_tr": "Hızlı Baskı",
+      "rating": 387,
+      "core_type": "core_resonance",
+      "battle_pool_ids": [
+        "laser",
+        "repair",
+        "battery",
+        "pulse_cannon",
+        "emp",
+        "missile_launcher"
+      ],
+      "decision_delay_ms": 1010,
+      "mistake_rate": 0.07500000000000001
+    },
+    {
+      "arena": 2,
+      "id": "bot_a02_03",
+      "display_name": "CanNova",
+      "archetype_tr": "Ağır Hasar",
+      "rating": 404,
+      "core_type": "core_resonance",
+      "battle_pool_ids": [
+        "pulse_cannon",
+        "missile_launcher",
+        "amplifier",
+        "emp",
+        "shield",
+        "laser"
+      ],
+      "decision_delay_ms": 1120,
+      "mistake_rate": 0.1
+    },
+    {
+      "arena": 2,
+      "id": "bot_a02_04",
+      "display_name": "MinaNova",
+      "archetype_tr": "Savunma",
+      "rating": 421,
+      "core_type": "core_resonance",
+      "battle_pool_ids": [
+        "armor",
+        "amplifier",
+        "shield",
+        "missile_launcher",
+        "battery",
+        "targeting_computer"
+      ],
+      "decision_delay_ms": 1230,
+      "mistake_rate": 0.125
+    },
+    {
+      "arena": 2,
+      "id": "bot_a02_05",
+      "display_name": "KaanNova",
+      "archetype_tr": "Sürdürülebilirlik",
+      "rating": 438,
+      "core_type": "core_resonance",
+      "battle_pool_ids": [
+        "amplifier",
+        "armor",
+        "battery",
+        "laser",
+        "cooler",
+        "targeting_computer"
+      ],
+      "decision_delay_ms": 1340,
+      "mistake_rate": 0.15000000000000002
+    },
+    {
+      "arena": 2,
+      "id": "bot_a02_06",
+      "display_name": "İlayNova",
+      "archetype_tr": "Kontrol",
+      "rating": 455,
+      "core_type": "core_resonance",
+      "battle_pool_ids": [
+        "emp",
+        "laser",
+        "amplifier",
+        "armor",
+        "pulse_cannon",
+        "repair"
+      ],
+      "decision_delay_ms": 1450,
+      "mistake_rate": 0.05
+    },
+    {
+      "arena": 2,
+      "id": "bot_a02_07",
+      "display_name": "DenizNova",
+      "archetype_tr": "Destek Zinciri",
+      "rating": 472,
+      "core_type": "core_resonance",
+      "battle_pool_ids": [
+        "repair",
+        "cooler",
+        "pulse_cannon",
+        "armor",
+        "battery",
+        "targeting_computer"
+      ],
+      "decision_delay_ms": 1560,
+      "mistake_rate": 0.07500000000000001
+    },
+    {
+      "arena": 2,
+      "id": "bot_a02_08",
+      "display_name": "SelinNova",
+      "archetype_tr": "Akım Ekonomisi",
+      "rating": 489,
+      "core_type": "core_resonance",
+      "battle_pool_ids": [
+        "battery",
+        "pulse_cannon",
+        "targeting_computer",
+        "armor",
+        "missile_launcher",
+        "cooler"
+      ],
+      "decision_delay_ms": 1670,
+      "mistake_rate": 0.1
+    },
+    {
+      "arena": 2,
+      "id": "bot_a02_09",
+      "display_name": "BaranNova",
+      "archetype_tr": "Alan Hasarı",
+      "rating": 506,
+      "core_type": "core_resonance",
+      "battle_pool_ids": [
+        "pulse_cannon",
+        "missile_launcher",
+        "emp",
+        "cooler",
+        "shield",
+        "laser"
+      ],
+      "decision_delay_ms": 1780,
+      "mistake_rate": 0.125
+    },
+    {
+      "arena": 2,
+      "id": "bot_a02_10",
+      "display_name": "AsyaNova",
+      "archetype_tr": "Karşı Meta",
+      "rating": 523,
+      "core_type": "core_resonance",
+      "battle_pool_ids": [
+        "emp",
+        "shield",
+        "pulse_cannon",
+        "amplifier",
+        "battery",
+        "armor"
+      ],
+      "decision_delay_ms": 1890,
+      "mistake_rate": 0.15000000000000002
+    },
+    {
+      "arena": 3,
+      "id": "bot_a03_01",
+      "display_name": "KeremNova",
+      "archetype_tr": "Dengeli",
+      "rating": 670,
+      "core_type": "core_guardian",
+      "battle_pool_ids": [
+        "arc_cannon",
+        "armor",
+        "cooler",
+        "emp",
+        "capacitor",
+        "missile_launcher"
+      ],
+      "decision_delay_ms": 900,
+      "mistake_rate": 0.05
+    },
+    {
+      "arena": 3,
+      "id": "bot_a03_02",
+      "display_name": "EceNova",
+      "archetype_tr": "Hızlı Baskı",
+      "rating": 687,
+      "core_type": "core_resonance",
+      "battle_pool_ids": [
+        "laser",
+        "cooler",
+        "battery",
+        "missile_launcher",
+        "emp",
+        "arc_cannon"
+      ],
+      "decision_delay_ms": 1010,
+      "mistake_rate": 0.07500000000000001
+    },
+    {
+      "arena": 3,
+      "id": "bot_a03_03",
+      "display_name": "TunaNova",
+      "archetype_tr": "Ağır Hasar",
+      "rating": 704,
+      "core_type": "core_guardian",
+      "battle_pool_ids": [
+        "pulse_cannon",
+        "laser",
+        "targeting_computer",
+        "emp",
+        "shield",
+        "missile_launcher"
+      ],
+      "decision_delay_ms": 1120,
+      "mistake_rate": 0.1
+    },
+    {
+      "arena": 3,
+      "id": "bot_a03_04",
+      "display_name": "LaraNova",
+      "archetype_tr": "Savunma",
+      "rating": 721,
+      "core_type": "core_resonance",
+      "battle_pool_ids": [
+        "shield",
+        "targeting_computer",
+        "armor",
+        "pulse_cannon",
+        "battery",
+        "barrier"
+      ],
+      "decision_delay_ms": 1230,
+      "mistake_rate": 0.125
+    },
+    {
+      "arena": 3,
+      "id": "bot_a03_05",
+      "display_name": "YiğitNova",
+      "archetype_tr": "Sürdürülebilirlik",
+      "rating": 738,
+      "core_type": "core_guardian",
+      "battle_pool_ids": [
+        "targeting_computer",
+        "barrier",
+        "capacitor",
+        "missile_launcher",
+        "amplifier",
+        "repair"
+      ],
+      "decision_delay_ms": 1340,
+      "mistake_rate": 0.15000000000000002
+    },
+    {
+      "arena": 3,
+      "id": "bot_a03_06",
+      "display_name": "NehirNova",
+      "archetype_tr": "Kontrol",
+      "rating": 755,
+      "core_type": "core_resonance",
+      "battle_pool_ids": [
+        "emp",
+        "missile_launcher",
+        "targeting_computer",
+        "shield",
+        "laser",
+        "cooler"
+      ],
+      "decision_delay_ms": 1450,
+      "mistake_rate": 0.05
+    },
+    {
+      "arena": 3,
+      "id": "bot_a03_07",
+      "display_name": "UmutNova",
+      "archetype_tr": "Destek Zinciri",
+      "rating": 772,
+      "core_type": "core_guardian",
+      "battle_pool_ids": [
+        "cooler",
+        "amplifier",
+        "arc_cannon",
+        "shield",
+        "capacitor",
+        "repair"
+      ],
+      "decision_delay_ms": 1560,
+      "mistake_rate": 0.07500000000000001
+    },
+    {
+      "arena": 3,
+      "id": "bot_a03_08",
+      "display_name": "MayaNova",
+      "archetype_tr": "Akım Ekonomisi",
+      "rating": 789,
+      "core_type": "core_resonance",
+      "battle_pool_ids": [
+        "battery",
+        "arc_cannon",
+        "repair",
+        "capacitor",
+        "barrier",
+        "pulse_cannon"
+      ],
+      "decision_delay_ms": 1670,
+      "mistake_rate": 0.1
+    },
+    {
+      "arena": 3,
+      "id": "bot_a03_09",
+      "display_name": "AtlasNova",
+      "archetype_tr": "Alan Hasarı",
+      "rating": 806,
+      "core_type": "core_guardian",
+      "battle_pool_ids": [
+        "arc_cannon",
+        "laser",
+        "emp",
+        "amplifier",
+        "shield",
+        "pulse_cannon"
+      ],
+      "decision_delay_ms": 1780,
+      "mistake_rate": 0.125
+    },
+    {
+      "arena": 3,
+      "id": "bot_a03_10",
+      "display_name": "ZeynepNova",
+      "archetype_tr": "Karşı Meta",
+      "rating": 823,
+      "core_type": "core_resonance",
+      "battle_pool_ids": [
+        "emp",
+        "armor",
+        "missile_launcher",
+        "targeting_computer",
+        "battery",
+        "shield"
+      ],
+      "decision_delay_ms": 1890,
+      "mistake_rate": 0.15000000000000002
+    },
+    {
+      "arena": 4,
+      "id": "bot_a04_01",
+      "display_name": "BerkNova",
+      "archetype_tr": "Dengeli",
+      "rating": 970,
+      "core_type": "core_resonance",
+      "battle_pool_ids": [
+        "drone_bay",
+        "barrier",
+        "amplifier",
+        "jammer",
+        "battery",
+        "pulse_cannon"
+      ],
+      "decision_delay_ms": 900,
+      "mistake_rate": 0.05
+    },
+    {
+      "arena": 4,
+      "id": "bot_a04_02",
+      "display_name": "SudeNova",
+      "archetype_tr": "Hızlı Baskı",
+      "rating": 987,
+      "core_type": "core_guardian",
+      "battle_pool_ids": [
+        "laser",
+        "amplifier",
+        "capacitor",
+        "pulse_cannon",
+        "jammer",
+        "arc_cannon"
+      ],
+      "decision_delay_ms": 1010,
+      "mistake_rate": 0.07500000000000001
+    },
+    {
+      "arena": 4,
+      "id": "bot_a04_03",
+      "display_name": "OnurNova",
+      "archetype_tr": "Ağır Hasar",
+      "rating": 1004,
+      "core_type": "core_resonance",
+      "battle_pool_ids": [
+        "pulse_cannon",
+        "drone_bay",
+        "repair",
+        "jammer",
+        "armor",
+        "arc_cannon"
+      ],
+      "decision_delay_ms": 1120,
+      "mistake_rate": 0.1
+    },
+    {
+      "arena": 4,
+      "id": "bot_a04_04",
+      "display_name": "İremNova",
+      "archetype_tr": "Savunma",
+      "rating": 1021,
+      "core_type": "core_guardian",
+      "battle_pool_ids": [
+        "armor",
+        "repair",
+        "barrier",
+        "laser",
+        "capacitor",
+        "shield"
+      ],
+      "decision_delay_ms": 1230,
+      "mistake_rate": 0.125
+    },
+    {
+      "arena": 4,
+      "id": "bot_a04_05",
+      "display_name": "DorukNova",
+      "archetype_tr": "Sürdürülebilirlik",
+      "rating": 1038,
+      "core_type": "core_resonance",
+      "battle_pool_ids": [
+        "repair",
+        "shield",
+        "battery",
+        "pulse_cannon",
+        "cooler",
+        "targeting_computer"
+      ],
+      "decision_delay_ms": 1340,
+      "mistake_rate": 0.15000000000000002
+    },
+    {
+      "arena": 4,
+      "id": "bot_a04_06",
+      "display_name": "AlinNova",
+      "archetype_tr": "Kontrol",
+      "rating": 1055,
+      "core_type": "core_guardian",
+      "battle_pool_ids": [
+        "jammer",
+        "emp",
+        "pulse_cannon",
+        "repair",
+        "armor",
+        "laser"
+      ],
+      "decision_delay_ms": 1450,
+      "mistake_rate": 0.05
+    },
+    {
+      "arena": 4,
+      "id": "bot_a04_07",
+      "display_name": "MertcanNova",
+      "archetype_tr": "Destek Zinciri",
+      "rating": 1072,
+      "core_type": "core_resonance",
+      "battle_pool_ids": [
+        "amplifier",
+        "targeting_computer",
+        "missile_launcher",
+        "armor",
+        "battery",
+        "cooler"
+      ],
+      "decision_delay_ms": 1560,
+      "mistake_rate": 0.07500000000000001
+    },
+    {
+      "arena": 4,
+      "id": "bot_a04_08",
+      "display_name": "CerenNova",
+      "archetype_tr": "Akım Ekonomisi",
+      "rating": 1089,
+      "core_type": "core_guardian",
+      "battle_pool_ids": [
+        "capacitor",
+        "missile_launcher",
+        "cooler",
+        "battery",
+        "shield",
+        "pulse_cannon"
+      ],
+      "decision_delay_ms": 1670,
+      "mistake_rate": 0.1
+    },
+    {
+      "arena": 4,
+      "id": "bot_a04_09",
+      "display_name": "RüzgarNova",
+      "archetype_tr": "Alan Hasarı",
+      "rating": 1106,
+      "core_type": "core_resonance",
+      "battle_pool_ids": [
+        "missile_launcher",
+        "pulse_cannon",
+        "emp",
+        "targeting_computer",
+        "armor",
+        "drone_bay"
+      ],
+      "decision_delay_ms": 1780,
+      "mistake_rate": 0.125
+    },
+    {
+      "arena": 4,
+      "id": "bot_a04_10",
+      "display_name": "MelisNova",
+      "archetype_tr": "Karşı Meta",
+      "rating": 1123,
+      "core_type": "core_guardian",
+      "battle_pool_ids": [
+        "jammer",
+        "barrier",
+        "laser",
+        "repair",
+        "capacitor",
+        "emp"
+      ],
+      "decision_delay_ms": 1890,
+      "mistake_rate": 0.15000000000000002
+    },
+    {
+      "arena": 5,
+      "id": "bot_a05_01",
+      "display_name": "MertVolt",
+      "archetype_tr": "Dengeli",
+      "rating": 1270,
+      "core_type": "core_overdrive",
+      "battle_pool_ids": [
+        "railgun",
+        "barrier",
+        "targeting_computer",
+        "emp",
+        "battery",
+        "laser"
+      ],
+      "decision_delay_ms": 900,
+      "mistake_rate": 0.05
+    },
+    {
+      "arena": 5,
+      "id": "bot_a05_02",
+      "display_name": "ElifVolt",
+      "archetype_tr": "Hızlı Baskı",
+      "rating": 1287,
+      "core_type": "core_resonance",
+      "battle_pool_ids": [
+        "laser",
+        "targeting_computer",
+        "current_balancer",
+        "railgun",
+        "emp",
+        "drone_bay"
+      ],
+      "decision_delay_ms": 1010,
+      "mistake_rate": 0.07500000000000001
+    },
+    {
+      "arena": 5,
+      "id": "bot_a05_03",
+      "display_name": "BoraVolt",
+      "archetype_tr": "Ağır Hasar",
+      "rating": 1304,
+      "core_type": "core_guardian",
+      "battle_pool_ids": [
+        "pulse_cannon",
+        "drone_bay",
+        "cooler",
+        "emp",
+        "reflector",
+        "laser"
+      ],
+      "decision_delay_ms": 1120,
+      "mistake_rate": 0.1
+    },
+    {
+      "arena": 5,
+      "id": "bot_a05_04",
+      "display_name": "NisaVolt",
+      "archetype_tr": "Savunma",
+      "rating": 1321,
+      "core_type": "core_overdrive",
+      "battle_pool_ids": [
+        "shield",
+        "cooler",
+        "barrier",
+        "railgun",
+        "battery",
+        "reflector"
+      ],
+      "decision_delay_ms": 1230,
+      "mistake_rate": 0.125
+    },
+    {
+      "arena": 5,
+      "id": "bot_a05_05",
+      "display_name": "OzanVolt",
+      "archetype_tr": "Sürdürülebilirlik",
+      "rating": 1338,
+      "core_type": "core_resonance",
+      "battle_pool_ids": [
+        "cooler",
+        "barrier",
+        "current_balancer",
+        "laser",
+        "amplifier",
+        "repair"
+      ],
+      "decision_delay_ms": 1340,
+      "mistake_rate": 0.15000000000000002
+    },
+    {
+      "arena": 5,
+      "id": "bot_a05_06",
+      "display_name": "DerinVolt",
+      "archetype_tr": "Kontrol",
+      "rating": 1355,
+      "core_type": "core_guardian",
+      "battle_pool_ids": [
+        "emp",
+        "jammer",
+        "laser",
+        "cooler",
+        "barrier",
+        "arc_cannon"
+      ],
+      "decision_delay_ms": 1450,
+      "mistake_rate": 0.05
+    },
+    {
+      "arena": 5,
+      "id": "bot_a05_07",
+      "display_name": "EgeVolt",
+      "archetype_tr": "Destek Zinciri",
+      "rating": 1372,
+      "core_type": "core_overdrive",
+      "battle_pool_ids": [
+        "targeting_computer",
+        "repair",
+        "pulse_cannon",
+        "barrier",
+        "battery",
+        "cooler"
+      ],
+      "decision_delay_ms": 1560,
+      "mistake_rate": 0.07500000000000001
+    },
+    {
+      "arena": 5,
+      "id": "bot_a05_08",
+      "display_name": "LinaVolt",
+      "archetype_tr": "Akım Ekonomisi",
+      "rating": 1389,
+      "core_type": "core_resonance",
+      "battle_pool_ids": [
+        "battery",
+        "pulse_cannon",
+        "amplifier",
+        "current_balancer",
+        "shield",
+        "capacitor"
+      ],
+      "decision_delay_ms": 1670,
+      "mistake_rate": 0.1
+    },
+    {
+      "arena": 5,
+      "id": "bot_a05_09",
+      "display_name": "ArdaVolt",
+      "archetype_tr": "Alan Hasarı",
+      "rating": 1406,
+      "core_type": "core_guardian",
+      "battle_pool_ids": [
+        "pulse_cannon",
+        "railgun",
+        "jammer",
+        "repair",
+        "armor",
+        "arc_cannon"
+      ],
+      "decision_delay_ms": 1780,
+      "mistake_rate": 0.125
+    },
+    {
+      "arena": 5,
+      "id": "bot_a05_10",
+      "display_name": "DuruVolt",
+      "archetype_tr": "Karşı Meta",
+      "rating": 1423,
+      "core_type": "core_overdrive",
+      "battle_pool_ids": [
+        "emp",
+        "reflector",
+        "drone_bay",
+        "cooler",
+        "battery",
+        "jammer"
+      ],
+      "decision_delay_ms": 1890,
+      "mistake_rate": 0.15000000000000002
+    },
+    {
+      "arena": 6,
+      "id": "bot_a06_01",
+      "display_name": "EmirVolt",
+      "archetype_tr": "Dengeli",
+      "rating": 1570,
+      "core_type": "core_resonance",
+      "battle_pool_ids": [
+        "laser",
+        "reflector",
+        "targeting_computer",
+        "emp",
+        "capacitor",
+        "missile_launcher"
+      ],
+      "decision_delay_ms": 900,
+      "mistake_rate": 0.05
+    },
+    {
+      "arena": 6,
+      "id": "bot_a06_02",
+      "display_name": "AdaVolt",
+      "archetype_tr": "Hızlı Baskı",
+      "rating": 1587,
+      "core_type": "core_guardian",
+      "battle_pool_ids": [
+        "pulse_cannon",
+        "targeting_computer",
+        "battery",
+        "laser",
+        "virus",
+        "missile_launcher"
+      ],
+      "decision_delay_ms": 1010,
+      "mistake_rate": 0.07500000000000001
+    },
+    {
+      "arena": 6,
+      "id": "bot_a06_03",
+      "display_name": "CanVolt",
+      "archetype_tr": "Ağır Hasar",
+      "rating": 1604,
+      "core_type": "core_overdrive",
+      "battle_pool_ids": [
+        "missile_launcher",
+        "railgun",
+        "repair",
+        "virus",
+        "shield",
+        "pulse_cannon"
+      ],
+      "decision_delay_ms": 1120,
+      "mistake_rate": 0.1
+    },
+    {
+      "arena": 6,
+      "id": "bot_a06_04",
+      "display_name": "MinaVolt",
+      "archetype_tr": "Savunma",
+      "rating": 1621,
+      "core_type": "core_resonance",
+      "battle_pool_ids": [
+        "armor",
+        "repair",
+        "reflector",
+        "laser",
+        "capacitor",
+        "shield"
+      ],
+      "decision_delay_ms": 1230,
+      "mistake_rate": 0.125
+    },
+    {
+      "arena": 6,
+      "id": "bot_a06_05",
+      "display_name": "KaanVolt",
+      "archetype_tr": "Sürdürülebilirlik",
+      "rating": 1638,
+      "core_type": "core_guardian",
+      "battle_pool_ids": [
+        "repair",
+        "reflector",
+        "battery",
+        "pulse_cannon",
+        "targeting_computer",
+        "cooler"
+      ],
+      "decision_delay_ms": 1340,
+      "mistake_rate": 0.15000000000000002
+    },
+    {
+      "arena": 6,
+      "id": "bot_a06_06",
+      "display_name": "İlayVolt",
+      "archetype_tr": "Kontrol",
+      "rating": 1655,
+      "core_type": "core_overdrive",
+      "battle_pool_ids": [
+        "virus",
+        "emp",
+        "pulse_cannon",
+        "overclock_unit",
+        "reflector",
+        "jammer"
+      ],
+      "decision_delay_ms": 1450,
+      "mistake_rate": 0.05
+    },
+    {
+      "arena": 6,
+      "id": "bot_a06_07",
+      "display_name": "DenizVolt",
+      "archetype_tr": "Destek Zinciri",
+      "rating": 1672,
+      "core_type": "core_resonance",
+      "battle_pool_ids": [
+        "amplifier",
+        "cooler",
+        "missile_launcher",
+        "reflector",
+        "capacitor",
+        "overclock_unit"
+      ],
+      "decision_delay_ms": 1560,
+      "mistake_rate": 0.07500000000000001
+    },
+    {
+      "arena": 6,
+      "id": "bot_a06_08",
+      "display_name": "SelinVolt",
+      "archetype_tr": "Akım Ekonomisi",
+      "rating": 1689,
+      "core_type": "core_guardian",
+      "battle_pool_ids": [
+        "capacitor",
+        "missile_launcher",
+        "repair",
+        "battery",
+        "armor",
+        "current_balancer"
+      ],
+      "decision_delay_ms": 1670,
+      "mistake_rate": 0.1
+    },
+    {
+      "arena": 6,
+      "id": "bot_a06_09",
+      "display_name": "BaranVolt",
+      "archetype_tr": "Alan Hasarı",
+      "rating": 1706,
+      "core_type": "core_overdrive",
+      "battle_pool_ids": [
+        "missile_launcher",
+        "laser",
+        "jammer",
+        "amplifier",
+        "barrier",
+        "railgun"
+      ],
+      "decision_delay_ms": 1780,
+      "mistake_rate": 0.125
+    },
+    {
+      "arena": 6,
+      "id": "bot_a06_10",
+      "display_name": "AsyaVolt",
+      "archetype_tr": "Karşı Meta",
+      "rating": 1723,
+      "core_type": "core_resonance",
+      "battle_pool_ids": [
+        "emp",
+        "shield",
+        "railgun",
+        "targeting_computer",
+        "capacitor",
+        "jammer"
+      ],
+      "decision_delay_ms": 1890,
+      "mistake_rate": 0.15000000000000002
+    },
+    {
+      "arena": 7,
+      "id": "bot_a07_01",
+      "display_name": "KeremVolt",
+      "archetype_tr": "Dengeli",
+      "rating": 1870,
+      "core_type": "core_disruptor",
+      "battle_pool_ids": [
+        "laser",
+        "reflector",
+        "targeting_computer",
+        "jammer",
+        "current_balancer",
+        "pulse_cannon"
+      ],
+      "decision_delay_ms": 900,
+      "mistake_rate": 0.05
+    },
+    {
+      "arena": 7,
+      "id": "bot_a07_02",
+      "display_name": "EceVolt",
+      "archetype_tr": "Hızlı Baskı",
+      "rating": 1887,
+      "core_type": "core_resonance",
+      "battle_pool_ids": [
+        "pulse_cannon",
+        "targeting_computer",
+        "capacitor",
+        "plasma_mortar",
+        "emp",
+        "drone_bay"
+      ],
+      "decision_delay_ms": 1010,
+      "mistake_rate": 0.07500000000000001
+    },
+    {
+      "arena": 7,
+      "id": "bot_a07_03",
+      "display_name": "TunaVolt",
+      "archetype_tr": "Ağır Hasar",
+      "rating": 1904,
+      "core_type": "core_guardian",
+      "battle_pool_ids": [
+        "missile_launcher",
+        "railgun",
+        "nano_medic",
+        "emp",
+        "reflector",
+        "plasma_mortar"
+      ],
+      "decision_delay_ms": 1120,
+      "mistake_rate": 0.1
+    },
+    {
+      "arena": 7,
+      "id": "bot_a07_04",
+      "display_name": "LaraVolt",
+      "archetype_tr": "Savunma",
+      "rating": 1921,
+      "core_type": "core_overdrive",
+      "battle_pool_ids": [
+        "shield",
+        "nano_medic",
+        "armor",
+        "plasma_mortar",
+        "current_balancer",
+        "barrier"
+      ],
+      "decision_delay_ms": 1230,
+      "mistake_rate": 0.125
+    },
+    {
+      "arena": 7,
+      "id": "bot_a07_05",
+      "display_name": "YiğitVolt",
+      "archetype_tr": "Sürdürülebilirlik",
+      "rating": 1938,
+      "core_type": "core_disruptor",
+      "battle_pool_ids": [
+        "nano_medic",
+        "barrier",
+        "capacitor",
+        "laser",
+        "repair",
+        "cooler"
+      ],
+      "decision_delay_ms": 1340,
+      "mistake_rate": 0.15000000000000002
+    },
+    {
+      "arena": 7,
+      "id": "bot_a07_06",
+      "display_name": "NehirVolt",
+      "archetype_tr": "Kontrol",
+      "rating": 1955,
+      "core_type": "core_resonance",
+      "battle_pool_ids": [
+        "emp",
+        "virus",
+        "laser",
+        "targeting_computer",
+        "armor",
+        "jammer"
+      ],
+      "decision_delay_ms": 1450,
+      "mistake_rate": 0.05
+    },
+    {
+      "arena": 7,
+      "id": "bot_a07_07",
+      "display_name": "UmutVolt",
+      "archetype_tr": "Destek Zinciri",
+      "rating": 1972,
+      "core_type": "core_guardian",
+      "battle_pool_ids": [
+        "cooler",
+        "nano_medic",
+        "pulse_cannon",
+        "armor",
+        "current_balancer",
+        "targeting_computer"
+      ],
+      "decision_delay_ms": 1560,
+      "mistake_rate": 0.07500000000000001
+    },
+    {
+      "arena": 7,
+      "id": "bot_a07_08",
+      "display_name": "MayaVolt",
+      "archetype_tr": "Akım Ekonomisi",
+      "rating": 1989,
+      "core_type": "core_overdrive",
+      "battle_pool_ids": [
+        "current_balancer",
+        "pulse_cannon",
+        "overclock_unit",
+        "capacitor",
+        "reflector",
+        "battery"
+      ],
+      "decision_delay_ms": 1670,
+      "mistake_rate": 0.1
+    },
+    {
+      "arena": 7,
+      "id": "bot_a07_09",
+      "display_name": "AtlasVolt",
+      "archetype_tr": "Alan Hasarı",
+      "rating": 2006,
+      "core_type": "core_disruptor",
+      "battle_pool_ids": [
+        "pulse_cannon",
+        "railgun",
+        "virus",
+        "repair",
+        "guardian_dome",
+        "laser"
+      ],
+      "decision_delay_ms": 1780,
+      "mistake_rate": 0.125
+    },
+    {
+      "arena": 7,
+      "id": "bot_a07_10",
+      "display_name": "ZeynepVolt",
+      "archetype_tr": "Karşı Meta",
+      "rating": 2023,
+      "core_type": "core_resonance",
+      "battle_pool_ids": [
+        "jammer",
+        "barrier",
+        "drone_bay",
+        "cooler",
+        "current_balancer",
+        "virus"
+      ],
+      "decision_delay_ms": 1890,
+      "mistake_rate": 0.15000000000000002
+    },
+    {
+      "arena": 8,
+      "id": "bot_a08_01",
+      "display_name": "BerkVolt",
+      "archetype_tr": "Dengeli",
+      "rating": 2170,
+      "core_type": "core_resonance",
+      "battle_pool_ids": [
+        "laser",
+        "guardian_dome",
+        "targeting_computer",
+        "virus",
+        "battery",
+        "quantum_repeater"
+      ],
+      "decision_delay_ms": 900,
+      "mistake_rate": 0.05
+    },
+    {
+      "arena": 8,
+      "id": "bot_a08_02",
+      "display_name": "SudeVolt",
+      "archetype_tr": "Hızlı Baskı",
+      "rating": 2187,
+      "core_type": "core_guardian",
+      "battle_pool_ids": [
+        "pulse_cannon",
+        "targeting_computer",
+        "current_balancer",
+        "plasma_mortar",
+        "jammer",
+        "arc_cannon"
+      ],
+      "decision_delay_ms": 1010,
+      "mistake_rate": 0.07500000000000001
+    },
+    {
+      "arena": 8,
+      "id": "bot_a08_03",
+      "display_name": "OnurVolt",
+      "archetype_tr": "Ağır Hasar",
+      "rating": 2204,
+      "core_type": "core_overdrive",
+      "battle_pool_ids": [
+        "missile_launcher",
+        "railgun",
+        "nano_medic",
+        "jammer",
+        "guardian_dome",
+        "drone_bay"
+      ],
+      "decision_delay_ms": 1120,
+      "mistake_rate": 0.1
+    },
+    {
+      "arena": 8,
+      "id": "bot_a08_04",
+      "display_name": "İremVolt",
+      "archetype_tr": "Savunma",
+      "rating": 2221,
+      "core_type": "core_disruptor",
+      "battle_pool_ids": [
+        "armor",
+        "nano_medic",
+        "barrier",
+        "plasma_mortar",
+        "battery",
+        "reflector"
+      ],
+      "decision_delay_ms": 1230,
+      "mistake_rate": 0.125
+    },
+    {
+      "arena": 8,
+      "id": "bot_a08_05",
+      "display_name": "DorukVolt",
+      "archetype_tr": "Sürdürülebilirlik",
+      "rating": 2238,
+      "core_type": "core_resonance",
+      "battle_pool_ids": [
+        "nano_medic",
+        "reflector",
+        "current_balancer",
+        "quantum_repeater",
+        "overclock_unit",
+        "amplifier"
+      ],
+      "decision_delay_ms": 1340,
+      "mistake_rate": 0.15000000000000002
+    },
+    {
+      "arena": 8,
+      "id": "bot_a08_06",
+      "display_name": "AlinVolt",
+      "archetype_tr": "Kontrol",
+      "rating": 2255,
+      "core_type": "core_guardian",
+      "battle_pool_ids": [
+        "jammer",
+        "emp",
+        "quantum_repeater",
+        "amplifier",
+        "barrier",
+        "virus"
+      ],
+      "decision_delay_ms": 1450,
+      "mistake_rate": 0.05
+    },
+    {
+      "arena": 8,
+      "id": "bot_a08_07",
+      "display_name": "MertcanVolt",
+      "archetype_tr": "Destek Zinciri",
+      "rating": 2272,
+      "core_type": "core_overdrive",
+      "battle_pool_ids": [
+        "repair",
+        "overclock_unit",
+        "laser",
+        "barrier",
+        "battery",
+        "chrono_relay"
+      ],
+      "decision_delay_ms": 1560,
+      "mistake_rate": 0.07500000000000001
+    },
+    {
+      "arena": 8,
+      "id": "bot_a08_08",
+      "display_name": "CerenVolt",
+      "archetype_tr": "Akım Ekonomisi",
+      "rating": 2289,
+      "core_type": "core_disruptor",
+      "battle_pool_ids": [
+        "battery",
+        "laser",
+        "targeting_computer",
+        "capacitor",
+        "guardian_dome",
+        "current_balancer"
+      ],
+      "decision_delay_ms": 1670,
+      "mistake_rate": 0.1
+    },
+    {
+      "arena": 8,
+      "id": "bot_a08_09",
+      "display_name": "RüzgarVolt",
+      "archetype_tr": "Alan Hasarı",
+      "rating": 2306,
+      "core_type": "core_resonance",
+      "battle_pool_ids": [
+        "laser",
+        "drone_bay",
+        "emp",
+        "nano_medic",
+        "shield",
+        "railgun"
+      ],
+      "decision_delay_ms": 1780,
+      "mistake_rate": 0.125
+    },
+    {
+      "arena": 8,
+      "id": "bot_a08_10",
+      "display_name": "MelisVolt",
+      "archetype_tr": "Karşı Meta",
+      "rating": 2323,
+      "core_type": "core_guardian",
+      "battle_pool_ids": [
+        "virus",
+        "reflector",
+        "arc_cannon",
+        "chrono_relay",
+        "battery",
+        "emp"
+      ],
+      "decision_delay_ms": 1890,
+      "mistake_rate": 0.15000000000000002
+    },
+    {
+      "arena": 9,
+      "id": "bot_a09_01",
+      "display_name": "MertArc",
+      "archetype_tr": "Dengeli",
+      "rating": 2470,
+      "core_type": "core_capacitor",
+      "battle_pool_ids": [
+        "swarm_fabricator",
+        "guardian_dome",
+        "overclock_unit",
+        "emp",
+        "capacitor",
+        "railgun"
+      ],
+      "decision_delay_ms": 900,
+      "mistake_rate": 0.05
+    },
+    {
+      "arena": 9,
+      "id": "bot_a09_02",
+      "display_name": "ElifArc",
+      "archetype_tr": "Hızlı Baskı",
+      "rating": 2487,
+      "core_type": "core_resonance",
+      "battle_pool_ids": [
+        "laser",
+        "overclock_unit",
+        "battery",
+        "railgun",
+        "virus",
+        "swarm_fabricator"
+      ],
+      "decision_delay_ms": 1010,
+      "mistake_rate": 0.07500000000000001
+    },
+    {
+      "arena": 9,
+      "id": "bot_a09_03",
+      "display_name": "BoraArc",
+      "archetype_tr": "Ağır Hasar",
+      "rating": 2504,
+      "core_type": "core_guardian",
+      "battle_pool_ids": [
+        "pulse_cannon",
+        "drone_bay",
+        "chrono_relay",
+        "virus",
+        "reflector",
+        "laser"
+      ],
+      "decision_delay_ms": 1120,
+      "mistake_rate": 0.1
+    },
+    {
+      "arena": 9,
+      "id": "bot_a09_04",
+      "display_name": "NisaArc",
+      "archetype_tr": "Savunma",
+      "rating": 2521,
+      "core_type": "core_overdrive",
+      "battle_pool_ids": [
+        "shield",
+        "chrono_relay",
+        "phase_armor",
+        "railgun",
+        "capacitor",
+        "barrier"
+      ],
+      "decision_delay_ms": 1230,
+      "mistake_rate": 0.125
+    },
+    {
+      "arena": 9,
+      "id": "bot_a09_05",
+      "display_name": "OzanArc",
+      "archetype_tr": "Sürdürülebilirlik",
+      "rating": 2538,
+      "core_type": "core_disruptor",
+      "battle_pool_ids": [
+        "chrono_relay",
+        "barrier",
+        "battery",
+        "plasma_mortar",
+        "nano_medic",
+        "targeting_computer"
+      ],
+      "decision_delay_ms": 1340,
+      "mistake_rate": 0.15000000000000002
+    },
+    {
+      "arena": 9,
+      "id": "bot_a09_06",
+      "display_name": "DerinArc",
+      "archetype_tr": "Kontrol",
+      "rating": 2555,
+      "core_type": "core_capacitor",
+      "battle_pool_ids": [
+        "virus",
+        "jammer",
+        "plasma_mortar",
+        "targeting_computer",
+        "shield",
+        "emp"
+      ],
+      "decision_delay_ms": 1450,
+      "mistake_rate": 0.05
+    },
+    {
+      "arena": 9,
+      "id": "bot_a09_07",
+      "display_name": "EgeArc",
+      "archetype_tr": "Destek Zinciri",
+      "rating": 2572,
+      "core_type": "core_resonance",
+      "battle_pool_ids": [
+        "cooler",
+        "nano_medic",
+        "quantum_repeater",
+        "shield",
+        "capacitor",
+        "repair"
+      ],
+      "decision_delay_ms": 1560,
+      "mistake_rate": 0.07500000000000001
+    },
+    {
+      "arena": 9,
+      "id": "bot_a09_08",
+      "display_name": "LinaArc",
+      "archetype_tr": "Akım Ekonomisi",
+      "rating": 2589,
+      "core_type": "core_guardian",
+      "battle_pool_ids": [
+        "capacitor",
+        "quantum_repeater",
+        "overclock_unit",
+        "current_balancer",
+        "barrier",
+        "battery"
+      ],
+      "decision_delay_ms": 1670,
+      "mistake_rate": 0.1
+    },
+    {
+      "arena": 9,
+      "id": "bot_a09_09",
+      "display_name": "ArdaArc",
+      "archetype_tr": "Alan Hasarı",
+      "rating": 2606,
+      "core_type": "core_overdrive",
+      "battle_pool_ids": [
+        "quantum_repeater",
+        "laser",
+        "jammer",
+        "chrono_relay",
+        "reflector",
+        "ion_spear"
+      ],
+      "decision_delay_ms": 1780,
+      "mistake_rate": 0.125
+    },
+    {
+      "arena": 9,
+      "id": "bot_a09_10",
+      "display_name": "DuruArc",
+      "archetype_tr": "Karşı Meta",
+      "rating": 2623,
+      "core_type": "core_disruptor",
+      "battle_pool_ids": [
+        "emp",
+        "armor",
+        "laser",
+        "repair",
+        "capacitor",
+        "virus"
+      ],
+      "decision_delay_ms": 1890,
+      "mistake_rate": 0.15000000000000002
+    },
+    {
+      "arena": 10,
+      "id": "bot_a10_01",
+      "display_name": "EmirArc",
+      "archetype_tr": "Dengeli",
+      "rating": 2770,
+      "core_type": "core_resonance",
+      "battle_pool_ids": [
+        "laser",
+        "phase_armor",
+        "overclock_unit",
+        "jammer",
+        "current_balancer",
+        "quantum_repeater"
+      ],
+      "decision_delay_ms": 900,
+      "mistake_rate": 0.05
+    },
+    {
+      "arena": 10,
+      "id": "bot_a10_02",
+      "display_name": "AdaArc",
+      "archetype_tr": "Hızlı Baskı",
+      "rating": 2787,
+      "core_type": "core_guardian",
+      "battle_pool_ids": [
+        "pulse_cannon",
+        "overclock_unit",
+        "capacitor",
+        "plasma_mortar",
+        "disruptor",
+        "laser"
+      ],
+      "decision_delay_ms": 1010,
+      "mistake_rate": 0.07500000000000001
+    },
+    {
+      "arena": 10,
+      "id": "bot_a10_03",
+      "display_name": "CanArc",
+      "archetype_tr": "Ağır Hasar",
+      "rating": 2804,
+      "core_type": "core_overdrive",
+      "battle_pool_ids": [
+        "missile_launcher",
+        "railgun",
+        "chrono_relay",
+        "disruptor",
+        "guardian_dome",
+        "pulse_cannon"
+      ],
+      "decision_delay_ms": 1120,
+      "mistake_rate": 0.1
+    },
+    {
+      "arena": 10,
+      "id": "bot_a10_04",
+      "display_name": "MinaArc",
+      "archetype_tr": "Savunma",
+      "rating": 2821,
+      "core_type": "core_disruptor",
+      "battle_pool_ids": [
+        "armor",
+        "chrono_relay",
+        "shield",
+        "plasma_mortar",
+        "current_balancer",
+        "guardian_dome"
+      ],
+      "decision_delay_ms": 1230,
+      "mistake_rate": 0.125
+    },
+    {
+      "arena": 10,
+      "id": "bot_a10_05",
+      "display_name": "KaanArc",
+      "archetype_tr": "Sürdürülebilirlik",
+      "rating": 2838,
+      "core_type": "core_capacitor",
+      "battle_pool_ids": [
+        "chrono_relay",
+        "reflector",
+        "capacitor",
+        "quantum_repeater",
+        "overclock_unit",
+        "cooler"
+      ],
+      "decision_delay_ms": 1340,
+      "mistake_rate": 0.15000000000000002
+    },
+    {
+      "arena": 10,
+      "id": "bot_a10_06",
+      "display_name": "İlayArc",
+      "archetype_tr": "Kontrol",
+      "rating": 2855,
+      "core_type": "core_resonance",
+      "battle_pool_ids": [
+        "disruptor",
+        "jammer",
+        "quantum_repeater",
+        "amplifier",
+        "armor",
+        "emp"
+      ],
+      "decision_delay_ms": 1450,
+      "mistake_rate": 0.05
+    },
+    {
+      "arena": 10,
+      "id": "bot_a10_07",
+      "display_name": "DenizArc",
+      "archetype_tr": "Destek Zinciri",
+      "rating": 2872,
+      "core_type": "core_guardian",
+      "battle_pool_ids": [
+        "repair",
+        "overclock_unit",
+        "ion_spear",
+        "armor",
+        "current_balancer",
+        "nano_medic"
+      ],
+      "decision_delay_ms": 1560,
+      "mistake_rate": 0.07500000000000001
+    },
+    {
+      "arena": 10,
+      "id": "bot_a10_08",
+      "display_name": "SelinArc",
+      "archetype_tr": "Akım Ekonomisi",
+      "rating": 2889,
+      "core_type": "core_overdrive",
+      "battle_pool_ids": [
+        "current_balancer",
+        "ion_spear",
+        "targeting_computer",
+        "battery",
+        "reflector",
+        "capacitor"
+      ],
+      "decision_delay_ms": 1670,
+      "mistake_rate": 0.1
+    },
+    {
+      "arena": 10,
+      "id": "bot_a10_09",
+      "display_name": "BaranArc",
+      "archetype_tr": "Alan Hasarı",
+      "rating": 2906,
+      "core_type": "core_disruptor",
+      "battle_pool_ids": [
+        "ion_spear",
+        "pulse_cannon",
+        "emp",
+        "nano_medic",
+        "guardian_dome",
+        "swarm_fabricator"
+      ],
+      "decision_delay_ms": 1780,
+      "mistake_rate": 0.125
+    },
+    {
+      "arena": 10,
+      "id": "bot_a10_10",
+      "display_name": "AsyaArc",
+      "archetype_tr": "Karşı Meta",
+      "rating": 2923,
+      "core_type": "core_capacitor",
+      "battle_pool_ids": [
+        "disruptor",
+        "barrier",
+        "pulse_cannon",
+        "chrono_relay",
+        "current_balancer",
+        "emp"
+      ],
+      "decision_delay_ms": 1890,
+      "mistake_rate": 0.15000000000000002
+    },
+    {
+      "arena": 11,
+      "id": "bot_a11_01",
+      "display_name": "KeremArc",
+      "archetype_tr": "Dengeli",
+      "rating": 3070,
+      "core_type": "core_phoenix",
+      "battle_pool_ids": [
+        "laser",
+        "phase_armor",
+        "overclock_unit",
+        "virus",
+        "battery",
+        "quantum_repeater"
+      ],
+      "decision_delay_ms": 900,
+      "mistake_rate": 0.05
+    },
+    {
+      "arena": 11,
+      "id": "bot_a11_02",
+      "display_name": "EceArc",
+      "archetype_tr": "Hızlı Baskı",
+      "rating": 3087,
+      "core_type": "core_resonance",
+      "battle_pool_ids": [
+        "pulse_cannon",
+        "overclock_unit",
+        "current_balancer",
+        "plasma_mortar",
+        "emp",
+        "quantum_cannon"
+      ],
+      "decision_delay_ms": 1010,
+      "mistake_rate": 0.07500000000000001
+    },
+    {
+      "arena": 11,
+      "id": "bot_a11_03",
+      "display_name": "TunaArc",
+      "archetype_tr": "Ağır Hasar",
+      "rating": 3104,
+      "core_type": "core_guardian",
+      "battle_pool_ids": [
+        "missile_launcher",
+        "railgun",
+        "chrono_relay",
+        "emp",
+        "reflector",
+        "laser"
+      ],
+      "decision_delay_ms": 1120,
+      "mistake_rate": 0.1
+    },
+    {
+      "arena": 11,
+      "id": "bot_a11_04",
+      "display_name": "LaraArc",
+      "archetype_tr": "Savunma",
+      "rating": 3121,
+      "core_type": "core_overdrive",
+      "battle_pool_ids": [
+        "shield",
+        "chrono_relay",
+        "phase_armor",
+        "plasma_mortar",
+        "battery",
+        "prism_shield"
+      ],
+      "decision_delay_ms": 1230,
+      "mistake_rate": 0.125
+    },
+    {
+      "arena": 11,
+      "id": "bot_a11_05",
+      "display_name": "YiğitArc",
+      "archetype_tr": "Sürdürülebilirlik",
+      "rating": 3138,
+      "core_type": "core_disruptor",
+      "battle_pool_ids": [
+        "chrono_relay",
+        "barrier",
+        "current_balancer",
+        "quantum_repeater",
+        "targeting_computer",
+        "phoenix_repair"
+      ],
+      "decision_delay_ms": 1340,
+      "mistake_rate": 0.15000000000000002
+    },
+    {
+      "arena": 11,
+      "id": "bot_a11_06",
+      "display_name": "NehirArc",
+      "archetype_tr": "Kontrol",
+      "rating": 3155,
+      "core_type": "core_capacitor",
+      "battle_pool_ids": [
+        "emp",
+        "disruptor",
+        "quantum_repeater",
+        "cooler",
+        "prism_shield",
+        "virus"
+      ],
+      "decision_delay_ms": 1450,
+      "mistake_rate": 0.05
+    },
+    {
+      "arena": 11,
+      "id": "bot_a11_07",
+      "display_name": "UmutArc",
+      "archetype_tr": "Destek Zinciri",
+      "rating": 3172,
+      "core_type": "core_phoenix",
+      "battle_pool_ids": [
+        "phoenix_repair",
+        "amplifier",
+        "ion_spear",
+        "prism_shield",
+        "battery",
+        "cooler"
+      ],
+      "decision_delay_ms": 1560,
+      "mistake_rate": 0.07500000000000001
+    },
+    {
+      "arena": 11,
+      "id": "bot_a11_08",
+      "display_name": "MayaArc",
+      "archetype_tr": "Akım Ekonomisi",
+      "rating": 3189,
+      "core_type": "core_resonance",
+      "battle_pool_ids": [
+        "battery",
+        "ion_spear",
+        "amplifier",
+        "current_balancer",
+        "armor",
+        "capacitor"
+      ],
+      "decision_delay_ms": 1670,
+      "mistake_rate": 0.1
+    },
+    {
+      "arena": 11,
+      "id": "bot_a11_09",
+      "display_name": "AtlasArc",
+      "archetype_tr": "Alan Hasarı",
+      "rating": 3206,
+      "core_type": "core_guardian",
+      "battle_pool_ids": [
+        "ion_spear",
+        "laser",
+        "jammer",
+        "overclock_unit",
+        "barrier",
+        "quantum_repeater"
+      ],
+      "decision_delay_ms": 1780,
+      "mistake_rate": 0.125
+    },
+    {
+      "arena": 11,
+      "id": "bot_a11_10",
+      "display_name": "ZeynepArc",
+      "archetype_tr": "Karşı Meta",
+      "rating": 3223,
+      "core_type": "core_overdrive",
+      "battle_pool_ids": [
+        "emp",
+        "shield",
+        "laser",
+        "nano_medic",
+        "battery",
+        "virus"
+      ],
+      "decision_delay_ms": 1890,
+      "mistake_rate": 0.15000000000000002
+    },
+    {
+      "arena": 12,
+      "id": "bot_a12_01",
+      "display_name": "BerkArc",
+      "archetype_tr": "Dengeli",
+      "rating": 3370,
+      "core_type": "core_phoenix",
+      "battle_pool_ids": [
+        "pulse_cannon",
+        "prism_shield",
+        "overclock_unit",
+        "emp",
+        "capacitor",
+        "ion_spear"
+      ],
+      "decision_delay_ms": 900,
+      "mistake_rate": 0.05
+    },
+    {
+      "arena": 12,
+      "id": "bot_a12_02",
+      "display_name": "SudeArc",
+      "archetype_tr": "Hızlı Baskı",
+      "rating": 3387,
+      "core_type": "core_quantum",
+      "battle_pool_ids": [
+        "missile_launcher",
+        "overclock_unit",
+        "battery",
+        "quantum_repeater",
+        "virus",
+        "laser"
+      ],
+      "decision_delay_ms": 1010,
+      "mistake_rate": 0.07500000000000001
+    },
+    {
+      "arena": 12,
+      "id": "bot_a12_03",
+      "display_name": "OnurArc",
+      "archetype_tr": "Ağır Hasar",
+      "rating": 3404,
+      "core_type": "core_resonance",
+      "battle_pool_ids": [
+        "arc_cannon",
+        "plasma_mortar",
+        "chrono_relay",
+        "virus",
+        "guardian_dome",
+        "pulse_cannon"
+      ],
+      "decision_delay_ms": 1120,
+      "mistake_rate": 0.1
+    },
+    {
+      "arena": 12,
+      "id": "bot_a12_04",
+      "display_name": "İremArc",
+      "archetype_tr": "Savunma",
+      "rating": 3421,
+      "core_type": "core_guardian",
+      "battle_pool_ids": [
+        "armor",
+        "chrono_relay",
+        "prism_shield",
+        "quantum_repeater",
+        "capacitor",
+        "shield"
+      ],
+      "decision_delay_ms": 1230,
+      "mistake_rate": 0.125
+    },
+    {
+      "arena": 12,
+      "id": "bot_a12_05",
+      "display_name": "DorukArc",
+      "archetype_tr": "Sürdürülebilirlik",
+      "rating": 3438,
+      "core_type": "core_overdrive",
+      "battle_pool_ids": [
+        "chrono_relay",
+        "reflector",
+        "battery",
+        "ion_spear",
+        "amplifier",
+        "precision_matrix"
+      ],
+      "decision_delay_ms": 1340,
+      "mistake_rate": 0.15000000000000002
+    },
+    {
+      "arena": 12,
+      "id": "bot_a12_06",
+      "display_name": "AlinArc",
+      "archetype_tr": "Kontrol",
+      "rating": 3455,
+      "core_type": "core_disruptor",
+      "battle_pool_ids": [
+        "virus",
+        "disruptor",
+        "ion_spear",
+        "repair",
+        "shield",
+        "jammer"
+      ],
+      "decision_delay_ms": 1450,
+      "mistake_rate": 0.05
+    },
+    {
+      "arena": 12,
+      "id": "bot_a12_07",
+      "display_name": "MertcanArc",
+      "archetype_tr": "Destek Zinciri",
+      "rating": 3472,
+      "core_type": "core_capacitor",
+      "battle_pool_ids": [
+        "phoenix_repair",
+        "cooler",
+        "swarm_fabricator",
+        "shield",
+        "capacitor",
+        "omega_amplifier"
+      ],
+      "decision_delay_ms": 1560,
+      "mistake_rate": 0.07500000000000001
+    },
+    {
+      "arena": 12,
+      "id": "bot_a12_08",
+      "display_name": "CerenArc",
+      "archetype_tr": "Akım Ekonomisi",
+      "rating": 3489,
+      "core_type": "core_phoenix",
+      "battle_pool_ids": [
+        "capacitor",
+        "swarm_fabricator",
+        "cooler",
+        "battery",
+        "barrier",
+        "current_balancer"
+      ],
+      "decision_delay_ms": 1670,
+      "mistake_rate": 0.1
+    },
+    {
+      "arena": 12,
+      "id": "bot_a12_09",
+      "display_name": "RüzgarArc",
+      "archetype_tr": "Alan Hasarı",
+      "rating": 3506,
+      "core_type": "core_quantum",
+      "battle_pool_ids": [
+        "swarm_fabricator",
+        "pulse_cannon",
+        "virus",
+        "targeting_computer",
+        "reflector",
+        "ion_spear"
+      ],
+      "decision_delay_ms": 1780,
+      "mistake_rate": 0.125
+    },
+    {
+      "arena": 12,
+      "id": "bot_a12_10",
+      "display_name": "MelisArc",
+      "archetype_tr": "Karşı Meta",
+      "rating": 3523,
+      "core_type": "core_resonance",
+      "battle_pool_ids": [
+        "jammer",
+        "armor",
+        "pulse_cannon",
+        "overclock_unit",
+        "capacitor",
+        "disruptor"
+      ],
+      "decision_delay_ms": 1890,
+      "mistake_rate": 0.15000000000000002
+    }
+  ]
+}

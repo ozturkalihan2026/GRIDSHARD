@@ -2,7 +2,7 @@ from dataclasses import dataclass
 from .battle_pool import BattlePoolValidationError, validate_battle_pool
 from .models import Direction
 
-INITIAL_ACTIVE_MODULE_COUNT = 4
+INITIAL_ACTIVE_MODULE_COUNT = 1
 
 @dataclass(slots=True, frozen=True)
 class InitialModulePlacement:
@@ -42,13 +42,14 @@ def validate_setup_payload(payload: PvPSetupPayload) -> None:
         raise PvPSetupValidationError(
             "Başlangıç devresinde tam bir Çekirdek bulunmalıdır."
         )
-    if definition_ids.count("generator") != 1:
-        raise PvPSetupValidationError(
-            "Başlangıç devresinde tam bir Jeneratör bulunmalıdır."
-        )
-
     for definition_id in definition_ids:
-        if definition_id != "core" and not pool.contains(definition_id):
+        if definition_id != "core":
             raise PvPSetupValidationError(
-                f"Başlangıç modülü Savaş Havuzu'nda değil: {definition_id}"
+                "Başlangıç devresinde yalnızca Çekirdek bulunabilir: "
+                f"{definition_id}"
             )
+    from .board import get_default_board
+    core = payload.initial_modules[0]
+    position = get_default_board().core_position
+    if (core.x, core.y) != (position.x, position.y):
+        raise PvPSetupValidationError("Çekirdek 2. satır 3. hücrede olmalıdır.")

@@ -4,7 +4,7 @@ from pathlib import Path
 import sys
 
 ROOT=Path(__file__).resolve().parents[1]
-EXPECTED_VERSION="2.0.0-beta.38.1"
+EXPECTED_VERSION="2.1.0-beta.42"
 
 
 def fail(message:str)->None:

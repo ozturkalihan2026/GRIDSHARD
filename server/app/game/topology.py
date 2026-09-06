@@ -145,65 +145,10 @@ def modules_are_port_connected(
     )
 
 
-def build_energy_topology(
-    player: PlayerBattleState,
-    core_position: Position,
-) -> EnergyTopology:
-    active = [
-        module
-        for module in player.modules.values()
-        if module.status == ModuleStatus.ACTIVE
-        and module.position is not None
-        and DISRUPTOR_DEBUFF_ID not in module.debuffs
-    ]
-
-    adjacency_lists = {
-        module.instance_id: []
-        for module in active
-    }
-    pairs = []
-
-    for index, first in enumerate(active):
-        for second in active[index + 1:]:
-            if not modules_are_port_connected(
-                first,
-                second,
-                core_position,
-            ):
-                continue
-
-            adjacency_lists[first.instance_id].append(second.instance_id)
-            adjacency_lists[second.instance_id].append(first.instance_id)
-            pairs.append(
-                tuple(sorted((first.instance_id, second.instance_id)))
-            )
-
-    source_ids = sorted(
-        module.instance_id
-        for module in active
-        if module.definition.energy_generation > 0
-    )
-
-    reachable = set(source_ids)
-    queue = deque(source_ids)
-
-    while queue:
-        current = queue.popleft()
-
-        for neighbor in sorted(adjacency_lists.get(current, ())):
-            if neighbor in reachable:
-                continue
-
-            reachable.add(neighbor)
-            queue.append(neighbor)
-
-    adjacency = {
-        module_id: tuple(sorted(neighbors))
-        for module_id, neighbors in adjacency_lists.items()
-    }
-
-    return EnergyTopology(
-        adjacency=adjacency,
-        reachable_from_generator=tuple(sorted(reachable)),
-        connection_pairs=tuple(sorted(set(pairs))),
-    )
+def build_energy_topology(player: PlayerBattleState, core_position: Position) -> EnergyTopology:
+    # Buried board cables supply every occupied cell; ports never gate power.
+    active = [m for m in player.modules.values() if m.status == ModuleStatus.ACTIVE and m.position is not None and m.hp > 0]
+    adjacency = {m.instance_id: tuple(sorted(n.instance_id for n in active if n.instance_id != m.instance_id and
+                 abs(m.position.x - n.position.x) + abs(m.position.y - n.position.y) == 1)) for m in active}
+    pairs = tuple(sorted({tuple(sorted((key, neighbor))) for key, values in adjacency.items() for neighbor in values}))
+    return EnergyTopology(adjacency, tuple(sorted(m.instance_id for m in active)), pairs)

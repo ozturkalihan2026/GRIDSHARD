@@ -12,6 +12,9 @@ class PlayerBattleSummary:
     total_max_hp: int
     hp_ratio: float
     damage_dealt: int
+    damage_by_module: tuple[dict, ...]
+    core_type: str
+    core_level: int
     circuit_credits: int
     forfeit_credit_penalty: int
     energy_generated_total: float
@@ -29,39 +32,51 @@ def core_hp(player: PlayerBattleState) -> int:
     return max(0, cores[0].hp)
 
 
-def damage_dealt_from_events(
-    player_id: str,
+def damage_by_module_from_events(
+    player: PlayerBattleState,
     events: list[BattleEvent],
-) -> int:
-    total = 0
+    upgrade_levels: dict[str, int] | None = None,
+) -> tuple[dict, ...]:
+    upgrade_levels = upgrade_levels or {}
+    damage: dict[str, int] = {}
+
+    if player.battle_pool is not None:
+        for definition_id in player.battle_pool.module_definition_ids:
+            damage.setdefault(definition_id, 0)
 
     for event in events:
         data = event.data
+        if event.type != "module_damaged":
+            continue
+        if data.get("source_player_id") != player.player_id:
+            continue
+        if data.get("player_id") == player.player_id:
+            continue
+        source = player.modules.get(str(data.get("source_module_id", "")))
+        if source is None:
+            continue
+        definition_id = source.definition.id
+        damage[definition_id] = damage.get(definition_id, 0) + int(data.get("damage", 0))
 
-        if (
-            event.type == "attack_performed"
-            and data.get("attacker_player_id") == player_id
-        ):
-            total += int(data.get("damage", 0))
-
-        elif (
-            event.type == "damage_reflected"
-            and data.get("source_player_id") == player_id
-        ):
-            total += int(data.get("damage", 0))
-
-        elif (
-            event.type == "virus_damage"
-            and data.get("source_player_id") == player_id
-        ):
-            total += int(data.get("damage", 0))
-
-    return total
+    rows = []
+    for definition_id, amount in damage.items():
+        module = next((item for item in player.modules.values() if item.definition.id == definition_id), None)
+        if module is None:
+            continue
+        rows.append({
+            "definition_id": definition_id,
+            "name_tr": module.definition.name_tr,
+            "damage": amount,
+            "level": 1 + int(upgrade_levels.get(definition_id, 0)),
+        })
+    rows.sort(key=lambda row: (-row["damage"], row["name_tr"]))
+    return tuple(rows)
 
 
 def build_player_summary(
     player: PlayerBattleState,
     events: list[BattleEvent],
+    upgrade_levels: dict[str, int] | None = None,
 ) -> PlayerBattleSummary:
     modules = list(player.modules.values())
 
@@ -85,6 +100,7 @@ def build_player_summary(
         else 0.0
     )
 
+    module_damage = damage_by_module_from_events(player, events, upgrade_levels)
     return PlayerBattleSummary(
         player_id=player.player_id,
         core_hp=core_hp(player),
@@ -92,10 +108,10 @@ def build_player_summary(
         remaining_hp=remaining_hp,
         total_max_hp=total_max_hp,
         hp_ratio=hp_ratio,
-        damage_dealt=damage_dealt_from_events(
-            player.player_id,
-            events,
-        ),
+        damage_dealt=sum(row["damage"] for row in module_damage),
+        damage_by_module=module_damage,
+        core_type=player.core_type,
+        core_level=player.core_level,
         circuit_credits=player.circuit_credits,
         forfeit_credit_penalty=player.forfeit_credit_penalty,
         energy_generated_total=player.energy_generated_total,
@@ -121,6 +137,9 @@ def summary_to_dict(summary: PlayerBattleSummary) -> dict:
         "total_max_hp": summary.total_max_hp,
         "hp_ratio": round(summary.hp_ratio, 6),
         "damage_dealt": summary.damage_dealt,
+        "damage_by_module": [dict(row) for row in summary.damage_by_module],
+        "core_type": summary.core_type,
+        "core_level": summary.core_level,
         "circuit_credits": summary.circuit_credits,
         "forfeit_credit_penalty": summary.forfeit_credit_penalty,
         "energy_generated_total": round(

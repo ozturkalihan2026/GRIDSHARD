@@ -21,7 +21,7 @@ class FakeElement {
     this.checked = false;
     this.className = "";
     this.children = [];
-    this.style = {};
+    this.style = { setProperty(name, value) { this[name] = value; } };
     this._listeners = {};
     this.classList = {
       add() {}, remove() {}, toggle() {}, contains() { return false; },
@@ -30,6 +30,8 @@ class FakeElement {
   addEventListener(type, callback) { this._listeners[type] = callback; }
   appendChild(child) { this.children.push(child); return child; }
   append(...items) { this.children.push(...items); }
+  prepend(...items) { this.children.unshift(...items); }
+  replaceChildren(...items) { this.children = [...items]; }
   removeChild(child) { this.children = this.children.filter((x) => x !== child); }
   querySelector() { return null; }
   querySelectorAll() { return []; }
@@ -56,6 +58,7 @@ const document = {
   body: getElement("body"),
   getElementById: getElement,
   createElement: (tag) => new FakeElement(tag),
+  createElementNS: (_namespace, tag) => new FakeElement(tag),
   querySelector(selector) {
     if (selector === '[data-open-screen="play"]') return menuButtons[0];
     if (selector === ".play-result-panel") return getElement("result-panel");
@@ -178,7 +181,7 @@ if (!battleBoard) {
 }
 
 const quickState = sandbox.window.__GRIDSHARD_TEST_API?.getBattleState?.();
-if (!quickState || quickState.pool_size !== 18 || quickState.started !== true) {
+if (!quickState || quickState.pool_size !== 6 || quickState.started !== true) {
   throw new Error(`Hızlı savaş durumu geçersiz: ${JSON.stringify(quickState)}`);
 }
 
@@ -186,7 +189,7 @@ if (rafCallbacks.length === 0) {
   throw new Error("Savaş requestAnimationFrame döngüsü kurulmadı.");
 }
 
-// Saat ve 15. saniye raf kilidini gerçek updateClock üzerinden ilerlet.
+// Saat ilerlerken krediye bağlı raf durumu korunmalı; yerleştirme sayacı yoktur.
 for (let ms = 1000; ms <= 16000; ms += 1000) {
   runAnimationFrame(ms);
 }
@@ -201,27 +204,34 @@ if (getElement("shelf-lock-label").textContent !== "Aktif") {
   );
 }
 
-const beforeRotation = sandbox.window.__GRIDSHARD_TEST_API.getBattleState().directions["laser-1"];
-if (!sandbox.window.__GRIDSHARD_TEST_API.rotateModule("laser-1")) {
+if (!sandbox.window.__GRIDSHARD_TEST_API.deployModule("laser")) {
+  throw new Error("Krediye bağlı deste kartı yerleştirilemedi.");
+}
+const deployedLaserId = sandbox.window.__GRIDSHARD_TEST_API
+  .getBattleState().active_module_ids.find((moduleId) => moduleId.startsWith("mock-laser-"));
+if (!deployedLaserId) {
+  throw new Error("Sunucu yerleşimli Lazer örneği bulunamadı.");
+}
+const beforeRotation = sandbox.window.__GRIDSHARD_TEST_API.getBattleState().directions[deployedLaserId];
+if (!sandbox.window.__GRIDSHARD_TEST_API.rotateModule(deployedLaserId)) {
   throw new Error("Aktif modül tıklama/port dönüş komutu üretmedi.");
 }
-const afterRotation = sandbox.window.__GRIDSHARD_TEST_API.getBattleState().directions["laser-1"];
+const afterRotation = sandbox.window.__GRIDSHARD_TEST_API.getBattleState().directions[deployedLaserId];
 if (beforeRotation === afterRotation) {
   throw new Error(`Port yönü değişmedi: ${beforeRotation}`);
 }
 // Savaş sonuç regresyonunu port bağlantısı değişikliğinden izole etmek için
 // üç ek dönüşle başlangıç yönüne dön.
 for (let i = 0; i < 3; i += 1) {
-  sandbox.window.__GRIDSHARD_TEST_API.rotateModule("laser-1");
+  sandbox.window.__GRIDSHARD_TEST_API.rotateModule(deployedLaserId);
 }
 
-// Yerel savaşın karşılıklı hasarla gerçek sonuca ulaştığını doğrula.
-for (let ms = 17000; ms <= 120000 && document.body.dataset.localFinished !== "true"; ms += 1000) {
-  runAnimationFrame(ms);
-}
-
+// Çevrimdışı UI yedeğinde rakip deste üretimi yoktur; sonuç ve sayaç donmasını
+// kullanıcı çekilmesiyle doğrula. Gerçek AI akışı sunucu E2E testindedir.
+const firstForfeitButton = getElement("battle-forfeit-button");
+firstForfeitButton._listeners.click();
 if (document.body.dataset.localFinished !== "true") {
-  throw new Error("Yerel AI savaşı 120 saniye içinde sonuca ulaşmadı.");
+  throw new Error("Çevrimdışı savaş çekilme sonucuna ulaşmadı.");
 }
 if (!getElement("enemy-board")) {
   throw new Error("Rakip devresi render alanı bulunamadı.");
@@ -229,16 +239,16 @@ if (!getElement("enemy-board")) {
 
 const frozenState = sandbox.window.__GRIDSHARD_TEST_API.getBattleState();
 const frozenElapsed = frozenState.elapsed_ms;
-const frozenDirection = frozenState.directions["laser-1"];
+const frozenDirection = frozenState.directions[deployedLaserId];
 runAnimationFrame(130000);
 const afterFinishState = sandbox.window.__GRIDSHARD_TEST_API.getBattleState();
 if (afterFinishState.elapsed_ms !== frozenElapsed) {
   throw new Error(`Maç sonu sayaç donmadı: ${frozenElapsed} -> ${afterFinishState.elapsed_ms}`);
 }
-if (sandbox.window.__GRIDSHARD_TEST_API.rotateModule("laser-1")) {
+if (sandbox.window.__GRIDSHARD_TEST_API.rotateModule(deployedLaserId)) {
   throw new Error("Maç bittikten sonra port dönüşü kabul edildi.");
 }
-if (afterFinishState.directions["laser-1"] !== frozenDirection) {
+if (afterFinishState.directions[deployedLaserId] !== frozenDirection) {
   throw new Error("Maç bittikten sonra modül yönü değişti.");
 }
 

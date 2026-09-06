@@ -1,8 +1,7 @@
 from dataclasses import dataclass
 
-from .ai import enqueue_ai_actions, prepare_ai_reserve_modules
-from .battle_pool import validate_battle_pool
-from .catalog import PLAYER_SELECTABLE_MODULE_IDS
+from .ai import enqueue_ai_actions
+from .battle_pool import default_battle_pool
 from .engine import BattleEngine
 from .models import BattleState, Direction
 
@@ -19,7 +18,7 @@ class AdaptiveMatchResult:
 
 def build_symmetric_ai_engine() -> BattleEngine:
     engine = BattleEngine(BattleState(battle_id="adaptive-ai"))
-    pool = validate_battle_pool(PLAYER_SELECTABLE_MODULE_IDS[:18])
+    pool = default_battle_pool()
 
     for player_id in ("a", "b"):
         player = engine.add_player(player_id)
@@ -27,15 +26,12 @@ def build_symmetric_ai_engine() -> BattleEngine:
         initial = (
             (f"{player_id}-core", "core", 2, 2, Direction.UP),
             (f"{player_id}-gen", "generator", 2, 3, Direction.UP),
-            (f"{player_id}-splitter", "splitter", 2, 1, Direction.DOWN),
-            (f"{player_id}-laser", "laser", 1, 1, Direction.RIGHT),
         )
         for instance_id, definition_id, x, y, direction in initial:
             engine.grant_module(player_id, instance_id, definition_id)
             engine.set_initial_active_module(
                 player_id, instance_id, x, y, direction
             )
-        prepare_ai_reserve_modules(engine, player_id)
 
     engine.start()
     return engine
@@ -54,8 +50,7 @@ def run_symmetric_ai_match(
             break
 
         if (
-            engine.state.elapsed_ms >= 15_000
-            and engine.state.elapsed_ms % decision_interval_ms == 0
+            engine.state.elapsed_ms % decision_interval_ms == 0
         ):
             for player_id, opponent_id in (("a", "b"), ("b", "a")):
                 plan = enqueue_ai_actions(

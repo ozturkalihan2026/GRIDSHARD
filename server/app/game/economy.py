@@ -10,8 +10,11 @@ class CircuitCreditConfig:
     değiştirilebilir. Kullanıcıya ayrı satın alma/satma işlemi gösterilmez.
     """
 
-    starting_credits: int = 200
-    passive_credits_per_second: int = 10
+    # Internal credit fields now carry match-only Akım, never the account wallet.
+    starting_credits: int = 6
+    passive_credits_per_second: float = 0.4
+    maximum_current: int = 12
+    current_regen_interval_ms: int = 2500
     move_cost: int = 10
     rotate_cost: int = 0
     remove_cost: int = 0

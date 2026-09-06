@@ -1,6 +1,7 @@
 from fastapi.testclient import TestClient
 
 from app.game.catalog import BASIC_MODULE_DEFINITIONS
+from app.game.battle_pool import default_battle_pool
 from app.game.engine import BattleEngine
 from app.game.models import BattleState, Direction
 from app.game.topology import module_port_directions
@@ -22,7 +23,7 @@ def test_beta24_menu_preparation_and_result_markup():
     assert 'id="battle-pool-preset-dialog"' in html
     assert 'id="initial-module-picker"' in html
     assert '<h3>Global Modüller</h3>' in html
-    assert '<h3>Seçilen Savaş Havuzu</h3>' in html
+    assert '<h3>Seçilen Deste</h3>' in html
     assert 'class="post-match-analysis"' in html
     assert "Savaş Analizini Aç" in html
     assert 'id="battle-pool-confirm" type="button" disabled>Savaş</button>' in html
@@ -66,26 +67,7 @@ def test_generator_has_four_ports_and_powers_adjacent_repair_module():
 
 
 def test_local_ai_gateway_returns_server_authoritative_dual_snapshot():
-    battle_pool = [
-        "generator",
-        "battery",
-        "splitter",
-        "capacitor",
-        "laser",
-        "pulse_cannon",
-        "railgun",
-        "missile_launcher",
-        "drone_bay",
-        "arc_cannon",
-        "shield",
-        "armor",
-        "reflector",
-        "barrier",
-        "repair",
-        "cooler",
-        "amplifier",
-        "targeting_computer",
-    ]
+    battle_pool = list(default_battle_pool().module_definition_ids)
     response = client.post(
         "/local-ai/sessions",
         json={

@@ -14,7 +14,7 @@ assert.ok(css.includes('.battle-live-ticker'));
 assert.ok(css.includes('.module-live-status-row'));
 assert.ok(css.includes('--gs-shell-width-v6:1320px'));
 assert.ok(html.includes('id="battle-live-ticker"'));
-assert.ok(html.includes('lobby-dock-settings'));
+assert.ok(html.includes('data-shell-screen="events"'));
 assert.ok(html.includes('lobby-dock-team'));
 
 console.log('beta37 hotfix v6 client test passed');

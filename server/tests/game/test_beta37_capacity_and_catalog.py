@@ -4,7 +4,7 @@ from app.game.models import BattleState
 from app.game.pvp_session import PvPSessionService
 
 
-def test_capacity_view_exposes_slots_and_next_unlock() -> None:
+def test_capacity_view_exposes_ten_immediate_slots_without_timer() -> None:
     engine = BattleEngine(BattleState(battle_id="beta37-capacity"))
     engine.add_player("player")
     positions = ((2, 2), (2, 3), (1, 3), (3, 3))
@@ -16,19 +16,19 @@ def test_capacity_view_exposes_slots_and_next_unlock() -> None:
 
     assert engine.module_capacity_view("player") == {
         "active_module_count": 4,
-        "active_module_limit": 4,
-        "available_module_slots": 0,
-        "next_module_slot_at_ms": 15_000,
-        "next_module_slot_in_ms": 15_000,
+        "active_module_limit": 10,
+        "available_module_slots": 6,
+        "next_module_slot_at_ms": None,
+        "next_module_slot_in_ms": None,
     }
 
     engine.state.elapsed_ms = 30_000
     assert engine.module_capacity_view("player") == {
         "active_module_count": 4,
-        "active_module_limit": 6,
-        "available_module_slots": 2,
-        "next_module_slot_at_ms": 45_000,
-        "next_module_slot_in_ms": 15_000,
+        "active_module_limit": 10,
+        "available_module_slots": 6,
+        "next_module_slot_at_ms": None,
+        "next_module_slot_in_ms": None,
     }
 
 
@@ -41,8 +41,8 @@ def test_pvp_snapshot_publishes_authoritative_capacity() -> None:
     capacity = service.snapshot(session.session_id, "a")["players"]["a"][
         "module_capacity"
     ]
-    assert capacity["active_module_limit"] == 4
-    assert capacity["next_module_slot_in_ms"] == 15_000
+    assert capacity["active_module_limit"] == 10
+    assert capacity["next_module_slot_in_ms"] is None
 
 
 def test_catalog_has_complete_english_copy_for_all_24_modules() -> None:

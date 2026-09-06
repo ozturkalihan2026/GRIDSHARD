@@ -11,6 +11,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600;700;800;900&amp;family=Rajdhani:wght@400;500;600;700&amp;display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="./src/styles.css" />
+  <link rel="stylesheet" href="./src/canon.css" />
 </head>
 <body>
   <main class="battle-shell">
@@ -21,7 +22,7 @@
         <button id="battle-forfeit-button" class="battle-forfeit-button" type="button" hidden>Savaşı Bırak</button>
       </div>
       <div class="battle-status-cluster">
-        <div class="credit-indicator" id="credit-indicator">Devre Kredisi: 200 DK</div>
+        <div class="credit-indicator resource-value" id="credit-indicator"><i class="resource-symbol resource-symbol-current" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M13.5 2 5 13h6l-1 9 9-12h-6Z"/></svg></i><span id="credit-indicator-value">Akım: 6 / 12</span></div>
         <button id="battle-settings-button" class="battle-settings-button" type="button" aria-label="Ayarlar" title="Ayarlar">⚙</button>
         <div class="battle-time" id="battle-time">00:00.0</div>
       </div>
@@ -32,10 +33,13 @@
     </header>
 
     <section id="app-progress-ribbon" class="lobby-progress-ribbon app-progress-ribbon" aria-label="Oyuncu ve sezon ilerlemesi">
+      <button id="lobby-profile-button" class="lobby-profile-button" type="button" data-open-screen="profile" aria-label="Profili aç" title="Profil">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4.5 21c.7-5 3.2-7.5 7.5-7.5s6.8 2.5 7.5 7.5"/></svg>
+      </button>
       <div class="lobby-player-card">
         <span class="lobby-ribbon-kicker">OPERATÖR</span>
         <strong id="lobby-player-name">Oyuncu</strong>
-        <span id="lobby-player-details">Devre Çırağı · Seviye 1 · Lig: Gümüş · 1000 RP</span>
+        <span id="lobby-player-details">Devre Çırağı · Seviye 1 · 🏆 1000</span>
       </div>
       <div class="lobby-season-progress">
         <div>
@@ -48,13 +52,15 @@
         <small id="lobby-season-progress-copy">0 / 100 SXP</small>
       </div>
       <div class="lobby-currency-cluster" aria-label="Oyuncu kaynakları">
-        <div class="lobby-currency-chip" title="Gelecek kozmetik ödülleri için birikir.">
-          <span>AKI PARÇASI</span>
+        <div class="lobby-currency-chip" title="Akı" aria-label="Akı">
+          <i class="resource-symbol resource-symbol-flux" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m12 2 4 6 6 4-6 4-4 6-4-6-6-4 6-4Z"/><circle cx="12" cy="12" r="2.3"/></svg></i>
+          <span>AKI</span>
           <strong id="lobby-flux-shards">0</strong>
         </div>
-        <div class="lobby-currency-chip lobby-credit-chip" title="Savaşta modül yerleştirmek için kullanılır.">
+        <div class="lobby-currency-chip lobby-credit-chip" title="Devre Kredisi" aria-label="Devre Kredisi">
+          <i class="resource-symbol resource-symbol-credit" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M7 12h3l2-4 2 8 2-4h2"/></svg></i>
           <span>DEVRE KREDİSİ</span>
-          <strong id="lobby-circuit-credits">200 DK</strong>
+          <strong id="lobby-circuit-credits">200</strong>
         </div>
       </div>
     </section>
@@ -62,7 +68,7 @@
     <section id="main-menu-panel" class="main-menu-panel">
       <div class="main-menu-brand">
         <h1>GRIDSHARD</h1>
-        <span>2.0.0-beta.38.1</span>
+        <span>2.1.0-beta.42</span>
       </div>
       <div class="lobby-backdrop" aria-hidden="true">
         <div class="lobby-board-grid" aria-hidden="true">
@@ -123,15 +129,70 @@
         </div>
       </div>
 
+      <section class="mobile-home-hub" aria-label="Savaş merkezi">
+        <button id="home-arena-card" type="button" class="home-arena-card" aria-haspopup="dialog" aria-controls="arena-detail-dialog">
+          <svg class="home-arena-emblem" viewBox="0 0 48 48" aria-hidden="true">
+            <path d="M9 35l7-8-3-6 9-9 6 5 8-8" />
+            <circle cx="9" cy="35" r="3" /><circle cx="22" cy="12" r="3" /><circle cx="36" cy="9" r="3" />
+          </svg>
+          <span class="home-arena-copy"><small>DEVRE YOLU</small><strong id="home-arena-name">Arena 1</strong><em id="home-arena-progress-copy">0 / 300 Kupa</em></span>
+          <span id="home-arena-segments" class="home-arena-segments" aria-label="Arena ödül ilerlemesi"></span>
+          <span class="home-arena-chevron" aria-hidden="true">›</span>
+        </button>
+        <article class="home-loadout-card">
+          <button id="home-core-hero" class="home-core-hero" type="button" aria-haspopup="dialog" aria-controls="core-collection-dialog">
+            <span id="home-core-hero-glyph" class="home-core-hero-glyph" aria-hidden="true">◈</span>
+            <span class="home-core-hero-copy"><small>AKTİF ÇEKİRDEK</small><strong id="home-core-hero-name">Rezonans Çekirdeği</strong><em id="home-core-hero-level">SEVİYE 1</em></span>
+          </button>
+          <div class="home-loadout-front">
+            <div class="home-deck-heading">
+              <div>
+                <span>AKTİF SAVAŞ DESTESİ</span>
+                <strong>6 Modül · 7 Hazır Deste</strong>
+              </div>
+              <button type="button" data-open-screen="modules">DÜZENLE</button>
+            </div>
+            <div id="home-active-deck" class="home-active-deck" aria-label="Aktif altı modüllük deste"></div>
+            <div id="home-preset-decks" class="home-preset-decks" aria-label="Hazır savaş desteleri"></div>
+          </div>
+        </article>
+        <button id="home-battle-button" type="button" class="home-battle-button">
+          <span>SAVAŞ</span>
+          <small>Eşleştirmeyi başlat</small>
+        </button>
+      </section>
+
     </section>
 
+    <div id="home-matchmaking-overlay" class="home-matchmaking-overlay" hidden role="status" aria-live="polite">
+      <div class="home-matchmaking-core" aria-hidden="true"><span></span><i></i><b></b></div>
+      <strong id="home-matchmaking-title">EŞLEŞTİRİLİYOR</strong>
+      <span id="home-matchmaking-copy">Uygun rakip aranıyor…</span>
+      <button id="home-matchmaking-cancel" type="button">İPTAL ET</button>
+    </div>
+
+    <dialog id="arena-detail-dialog" class="arena-detail-dialog" aria-labelledby="arena-detail-title">
+      <header class="arena-road-header">
+        <span class="screen-kicker">DEVRE YOLU</span>
+        <h2 id="arena-detail-title">Arena 1</h2>
+        <p id="arena-detail-rating">0 Kupa</p>
+        <p id="arena-detail-next">Sonraki: Arena 2</p>
+      </header>
+      <p id="arena-reward-status" role="status" aria-live="polite"></p>
+      <div id="arena-path" class="arena-path"></div>
+      <footer class="arena-path-footer">
+        <button id="arena-detail-close" class="arena-detail-back-button" type="button" aria-label="Ev ekranına dön">←</button>
+        <button id="arena-leaderboard-button" class="arena-leaderboard-button" type="button">♛ LİDER PANOSU</button>
+      </footer>
+    </dialog>
+
     <nav id="app-bottom-dock" class="main-scope-nav lobby-bottom-dock app-bottom-dock" aria-label="Ana gezinme">
-      <button type="button" class="menu-action" data-open-screen="profile" data-shell-screen="profile" aria-label="Profil" title="Profil">
-        <svg class="lobby-dock-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="7.5" r="3.5"></circle><path d="M5 20c.5-4.2 3-6.4 7-6.4s6.5 2.2 7 6.4"></path></svg>
-        <span class="menu-action-title">PROFİL</span>
+      <button type="button" class="menu-action" data-open-screen="shop" data-shell-screen="shop" aria-label="Mağaza" title="Mağaza">
+        <svg class="lobby-dock-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9h16l-1 11H5L4 9Z"/><path d="M7 9V6a5 5 0 0 1 10 0v3M9 13h6"/></svg>
+        <span class="menu-action-title">MAĞAZA</span>
       </button>
-      <button type="button" class="menu-action" data-open-screen="statistics" data-shell-screen="statistics" aria-label="İstatistikler" title="İstatistikler">
-        <svg class="lobby-dock-icon lobby-dock-trophy" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 4h8v4c0 3-1.8 5-4 5s-4-2-4-5Z"/><path d="M8 6H4v1c0 3 1.7 5 5 5M16 6h4v1c0 3-1.7 5-5 5M12 13v4M8 21h8M9 17h6v4"/></svg><span class="menu-action-title">İSTATİSTİKLER</span>
+      <button type="button" class="menu-action" data-open-screen="modules" data-shell-screen="modules" aria-label="Modüller" title="Modüller">
+        <svg class="lobby-dock-icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg><span class="menu-action-title">MODÜLLER</span>
       </button>
       <button type="button" class="menu-action is-active" data-open-screen="menu" data-shell-screen="menu" aria-label="Ev" title="Ev" aria-current="page">
         <svg class="lobby-dock-icon lobby-dock-home" viewBox="0 0 28 28" aria-hidden="true">
@@ -141,13 +202,104 @@
           <path class="dock-home-crack" d="m15.4 10.6-2.7 6.8"/>
         </svg><span class="menu-action-title">EV</span>
       </button>
-      <button type="button" class="menu-action lobby-dock-locked" data-roadmap-feature="team" disabled aria-disabled="true" aria-label="Takım · Yakında" title="Takım · Yakında">
-        <svg class="lobby-dock-icon lobby-dock-team" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3.5 20.5 12 12 20.5 3.5 12Z"/><path d="M12 8.2 15.8 12 12 15.8 8.2 12Z"/></svg><span class="menu-action-title">TAKIM</span><small>YAKINDA</small>
+      <button type="button" class="menu-action" data-open-screen="team" data-shell-screen="team" aria-label="Takım" title="Takım">
+        <svg class="lobby-dock-icon lobby-dock-team" viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="8" r="3"/><circle cx="17" cy="9" r="2.5"/><path d="M3 20c.5-4 2.5-6 6-6s5.5 2 6 6M14 15c3.6-.8 6.1 1 7 5"/></svg><span class="menu-action-title">TAKIM</span>
       </button>
-      <button type="button" class="menu-action" data-open-screen="settings" data-shell-screen="settings" aria-label="Ayarlar" title="Ayarlar">
-        <svg class="lobby-dock-icon lobby-dock-settings" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3.1"/><path d="M12 2.8v2.1M12 19.1v2.1M2.8 12h2.1M19.1 12h2.1M5.5 5.5 7 7M17 17l1.5 1.5M18.5 5.5 17 7M7 17l-1.5 1.5"/></svg><span class="menu-action-title">AYARLAR</span>
+      <button type="button" class="menu-action" data-open-screen="events" data-shell-screen="events" aria-label="Etkinlik" title="Etkinlik">
+        <svg class="lobby-dock-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3v3M18 3v3M4 8h16M5 5h14a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2Z"/><path d="m12 11 1.2 2.4 2.7.4-2 1.9.5 2.7-2.4-1.3-2.4 1.3.5-2.7-2-1.9 2.7-.4Z"/></svg><span class="menu-action-title">ETKİNLİK</span>
       </button>
     </nav>
+
+    <section id="shop-screen" class="mobile-hub-screen shop-screen" data-screen-panel="shop" hidden>
+      <header class="mobile-screen-heading">
+        <div><span>DEVRE PAZARI</span><h2>Mağaza</h2></div>
+        <div class="mobile-wallet"><strong id="shop-flux-balance">0 Akı</strong><strong id="shop-credit-balance">350 DK</strong></div>
+      </header>
+      <section class="shop-section" aria-labelledby="gift-chest-title">
+        <div class="mobile-section-heading"><div><span>ÜCRETSİZ KAZANIM</span><h3 id="gift-chest-title">Hediye Sandıklar</h3></div><small>Savaşlardan kazanılır</small></div>
+        <div id="gift-chest-list" class="gift-chest-list"></div>
+      </section>
+      <section class="shop-section" aria-labelledby="daily-offer-title">
+        <div class="mobile-section-heading"><div><span>HER GÜN YENİLENİR</span><h3 id="daily-offer-title">Günlük Özel Teklifler</h3></div><small id="shop-reset-copy">UTC 00:00</small></div>
+        <div id="daily-shop-offers" class="daily-shop-offers"></div>
+      </section>
+      <p id="shop-action-status" class="mobile-action-status" role="status">Sandık ödülleri sunucu tarafından belirlenir.</p>
+    </section>
+
+    <dialog id="chest-reveal-dialog" class="chest-reveal-dialog" aria-labelledby="chest-reveal-title">
+      <div id="chest-reveal-card" class="chest-reveal-card" data-tier="bronze">
+        <span id="chest-reveal-kicker" class="chest-reveal-kicker">SANDIK AÇILDI</span>
+        <div id="chest-reveal-visual" class="chest-visual chest-visual-large chest-visual-bronze" aria-hidden="true"><i></i><b></b><em>◆</em></div>
+        <h2 id="chest-reveal-title">Bronz Sandık</h2>
+        <div id="chest-reveal-rewards" class="chest-reveal-rewards"></div>
+        <button id="chest-reveal-close" type="button">DEVAM</button>
+      </div>
+    </dialog>
+
+    <section id="modules-screen" class="mobile-hub-screen modules-screen" data-screen-panel="modules" hidden>
+      <header class="mobile-screen-heading">
+        <div><span>KOLEKSİYON VE DESTE</span><h2>Modüller</h2></div>
+      </header>
+      <section class="module-deck-editor" aria-labelledby="module-deck-title">
+        <div class="mobile-section-heading"><div><span>AKTİF</span><h3 id="module-deck-title">Savaş Destesi</h3></div><small id="module-deck-count">6 / 6</small></div>
+        <div id="module-deck-strip" class="module-deck-strip"></div>
+        <div id="module-preset-strip" class="module-preset-strip" aria-label="Yedi hazır deste"></div>
+        <p id="module-action-status" class="mobile-action-status" role="status">Seç ile ilk boş yere ekle. Desteden çıkarmak için kartına dokun.</p>
+      </section>
+      <nav id="module-category-tabs" class="module-category-tabs" aria-label="Modül sınıfları">
+        <button type="button" data-module-filter="all" class="is-active">Tümü</button>
+        <button type="button" data-module-filter="sistem">Sistem</button>
+        <button type="button" data-module-filter="saldırı">Saldırı</button>
+        <button type="button" data-module-filter="savunma">Savunma</button>
+        <button type="button" data-module-filter="destek">Destek</button>
+        <button type="button" data-module-filter="sabotaj">Sabotaj</button>
+      </nav>
+      <div id="module-collection-grid" class="module-collection-grid" aria-live="polite"></div>
+      <div id="module-quick-actions" class="module-quick-actions" hidden>
+        <strong id="module-quick-name">Modül</strong>
+        <button id="module-quick-info" type="button">Bilgi</button>
+        <button id="module-quick-select" type="button">Seç</button>
+      </div>
+    </section>
+
+    <section id="team-screen" class="mobile-hub-screen simple-hub-screen" data-screen-panel="team" hidden>
+      <header class="mobile-screen-heading"><div><span>SOSYAL DEVRE</span><h2>Takım</h2></div></header>
+      <article class="coming-soon-card"><span>◇</span><h3>Takım merkezi hazırlanıyor</h3><p>Dostlarınla deste paylaşımı ve takım görevleri sonraki aşamada burada açılacak.</p></article>
+    </section>
+
+    <section id="events-screen" class="mobile-hub-screen events-screen" data-screen-panel="events" hidden>
+      <header class="mobile-screen-heading"><div><span>CANLI PROGRAM</span><h2>Etkinlik</h2></div></header>
+      <div class="event-hub-grid">
+        <button type="button" disabled><span>YAKINDA</span><strong>Devre Turnuvası</strong><small>Sezonluk rekabet etkinliği hazırlanıyor</small></button>
+        <button type="button" disabled><span>YAKINDA</span><strong>Takım Baskını</strong><small>Ortak çekirdek savaşları burada açılacak</small></button>
+      </div>
+    </section>
+
+    <dialog id="core-collection-dialog" class="module-detail-dialog" aria-label="Çekirdekler">
+      <button class="module-detail-close" type="button" onclick="this.closest('dialog').close()" aria-label="Kapat">×</button>
+      <h2>Çekirdekler</h2><p id="core-action-status" role="status"></p><div id="core-collection-list"></div>
+    </dialog>
+    <dialog id="module-detail-dialog" class="module-detail-dialog" aria-labelledby="module-detail-name">
+      <button id="module-detail-close" class="module-detail-close" type="button" aria-label="Kapat">×</button>
+      <header class="module-detail-hero">
+        <div id="module-detail-art" class="module-detail-art"></div>
+        <div class="module-detail-title"><h2 id="module-detail-name">Modül</h2><span id="module-detail-rarity">SIRADAN</span></div>
+      </header>
+      <div class="module-detail-level-row">
+        <strong id="module-detail-level">SEVİYE 1</strong>
+        <span id="module-detail-selected-state">DESTEDE</span>
+        <div><span id="module-detail-shards">0 / 20</span><progress id="module-detail-progress" value="0" max="20"></progress></div>
+      </div>
+      <div class="module-detail-stats" id="module-detail-stats"></div>
+      <button id="module-detail-upgrade" type="button">Yükselt</button>
+      <p id="module-detail-status" role="status" aria-live="polite"></p>
+      <section id="module-detail-tab-content" class="module-detail-tab-content"></section>
+      <nav class="module-detail-tabs" aria-label="Modül bilgi başlıkları">
+        <button type="button" data-module-detail-tab="overview" class="is-active" aria-label="Genel"><span>◉</span><small>GENEL</small></button>
+        <button type="button" data-module-detail-tab="stats" aria-label="İstatistikler"><span>▥</span><small>İSTATİSTİK</small></button>
+        <button type="button" data-module-detail-tab="talents" aria-label="Yetenek ağacı"><span>✦</span><small>YETENEKLER</small></button>
+      </nav>
+    </dialog>
 
     <section class="profile-summary-panel" id="profile-summary-panel" data-screen-panel="profile" hidden>
       <div class="panel-title-row">
@@ -155,6 +307,11 @@
         <span>Genel · İlerleme · Savaş Havuzu · <strong id="profile-load-status" data-status="idle">Yerel önizleme</strong></span>
       </div>
       <p id="profile-live-summary">Oyuncu · Seviye 1 · Gümüş · 1000 Derece Puanı · 0 XP</p>
+      <nav class="profile-hub-links" aria-label="Profil bölümleri">
+        <button type="button" data-open-screen="daily"><span>GÜNLÜK</span><strong>Günlük Ödüller</strong><small>Görevlerini tamamla ve ödüllerini al</small></button>
+        <button type="button" data-open-screen="rewards"><span>SEZON</span><strong>Ödül Yolu</strong><small>Kademe ilerlemeni ve açılan ödülleri gör</small></button>
+        <button type="button" data-open-screen="statistics"><span>ARŞİV</span><strong>İstatistikler</strong><small>Savaş performansını ve kullanımını incele</small></button>
+      </nav>
       <div class="profile-name-form">
         <label for="profile-display-name">Görünen Oyuncu Adı</label>
         <input id="profile-display-name" type="text" maxlength="32" value="Oyuncu" autocomplete="off" />
@@ -320,7 +477,7 @@
           <p>GRIDSHARD · Devreni kur, çekirdeği kır.</p>
         </div>
         <dl>
-          <div><dt>Sürüm</dt><dd id="ui-build-version">2.0.0-beta.38.1</dd></div>
+          <div><dt>Sürüm</dt><dd id="ui-build-version">2.1.0-beta.42</dd></div>
           <div><dt>Yapı</dt><dd id="ui-build-run">manifest bekleniyor</dd></div>
         </dl>
       </section>
@@ -384,14 +541,14 @@
           <section class="initial-strategy-panel">
             <div class="initial-circuit-heading">
               <span class="initial-circuit-kicker">BAŞLANGIÇ STRATEJİNİ SEÇ</span>
-              <strong id="initial-circuit-title">Başlangıç Devresi · 4 Aktif</strong>
+              <strong id="initial-circuit-title">Başlangıç Devresi · 2 Sabit</strong>
             </div>
             <div class="initial-fixed-modules" aria-label="Sabit başlangıç modülleri">
               <span>Çekirdek · sabit</span>
               <span>Jeneratör · sabit</span>
             </div>
-            <div id="initial-module-picker" class="initial-module-picker" aria-label="Oyuncunun seçtiği başlangıç modülleri"></div>
-            <span id="initial-module-status" role="status">2 / 2 oyuncu modülü seçili</span>
+            <div id="initial-module-picker" class="initial-module-picker" hidden></div>
+            <span id="initial-module-status" role="status">Çekirdek ve Jeneratör sabit başlar</span>
           </section>
           <section class="initial-preset-panel" aria-label="Sık kullanılan hazır havuzlar">
             <button id="battle-pool-preset-open" type="button" class="preset-manager-open">Hazır Havuzları Yönet</button>
@@ -409,19 +566,19 @@
         </aside>
 
         <article class="battle-pool-detail-panel" id="battle-pool-detail">
-          <span id="battle-pool-detail-category" class="pool-detail-category">Enerji</span>
+          <span id="battle-pool-detail-category" class="pool-detail-category">Sistem</span>
           <h3 id="battle-pool-detail-name">Jeneratör</h3>
           <p id="battle-pool-detail-role">Ana enerji kaynağı</p>
           <div
             id="battle-pool-detail-preview"
             class="pool-detail-module-preview"
-            aria-label="Modül port önizlemesi"
+            aria-label="Modül önizlemesi"
           ></div>
           <dl class="pool-detail-properties">
-            <div><dt>Sınıf</dt><dd id="battle-pool-detail-class">Enerji</dd></div>
+            <div><dt>Sınıf</dt><dd id="battle-pool-detail-class">Sistem</dd></div>
             <div><dt>Can</dt><dd id="battle-pool-detail-hp">150</dd></div>
-            <div><dt>Devre Kredisi</dt><dd id="battle-pool-detail-cost">0 DK</dd></div>
-            <div><dt>Port</dt><dd id="battle-pool-detail-ports">4</dd></div>
+            <div><dt>Akım</dt><dd id="battle-pool-detail-cost">2</dd></div>
+            <div hidden><dt>Port</dt><dd id="battle-pool-detail-ports">0</dd></div>
             <div><dt>Enerji Üretimi</dt><dd id="battle-pool-detail-energy-generation">11/sn</dd></div>
             <div><dt>Enerji Tüketimi</dt><dd id="battle-pool-detail-energy-consumption">0/sn</dd></div>
             <div><dt>Temel Hasar</dt><dd id="battle-pool-detail-damage">—</dd></div>
@@ -457,8 +614,8 @@
         </article>
 
         <aside class="battle-pool-selected-panel">
-          <div class="selected-pool-heading"><h3>Seçilen Savaş Havuzu</h3><strong id="battle-pool-count">1 / 18</strong></div>
-          <p>18 modül tamamlandığında eşleştirme açılır.</p>
+          <div class="selected-pool-heading"><h3>Seçilen Deste</h3><strong id="battle-pool-count">0 / 6</strong></div>
+          <p>6 farklı kart seç. Savaşta her kartı birden fazla kez üretebilirsin.</p>
           <div id="battle-pool-selected" class="battle-pool-selected" aria-label="Seçilen Savaş Havuzu"></div>
         </aside>
       </div>
@@ -570,8 +727,8 @@
     </section>
 
     <section class="battle-test-banner play-live-panel" data-screen-panel="play" hidden>
-      <strong>Beta.38.1 · Savaş Olayları · Ses Kurtarma · Özgür Güçlendirici Hedefleme</strong>
-      <span id="battle-entry-status">Savaş alanına giriş başarılı · Yerel AI aktif · Modül Rafı 15. saniyede açılır</span>
+      <strong>Beta.39 · 6 Kartlık Deste · Sunucu Yerleşimi</strong>
+      <span id="battle-entry-status">Savaş alanına giriş başarılı · Deste Devre Kredisine göre aktif</span>
     </section>
 
     <nav id="mobile-battle-tabs" class="mobile-battle-tabs play-live-panel" data-screen-panel="play" aria-label="Mobil savaş görünümü" hidden>
@@ -596,34 +753,36 @@
           <span id="battle-live-ticker" class="battle-live-ticker" data-kind="neutral" role="status" aria-live="polite">Canlı savaş geri bildirimi burada görünür.</span>
         </div>
 
-        <div class="duel-arena" id="duel-arena">
+        <div class="duel-arena vertical-circuit-arena" id="duel-arena">
           <div id="battle-effect-layer" class="battle-effect-layer" aria-hidden="true"></div>
-          <section class="duel-side duel-player-side">
-            <div class="duel-side-heading">
-              <strong>Senin Devren</strong>
-              <span id="player-board-status">Çekirdek 300/300 · Jeneratör 150/150</span>
+          <section class="duel-side duel-enemy-side">
+            <div class="duel-side-heading duel-enemy-identity">
+              <strong id="enemy-battle-name">AI Rakip</strong>
+              <div id="enemy-deck-preview" class="enemy-deck-preview" aria-label="Rakip destesi"></div>
+              <span id="enemy-board-status" class="board-vitals" hidden>Çekirdek 300/300 · Jeneratör 150/150</span>
             </div>
-            <div id="board" class="board" aria-label="Oyuncu Savaş Alanı"></div>
+            <div id="enemy-board" class="board enemy-board" aria-label="Rakip Savaş Alanı"></div>
           </section>
 
           <div class="duel-vs" aria-hidden="true">VS</div>
 
-          <section class="duel-side duel-enemy-side">
-            <div class="duel-side-heading">
-              <strong>Rakip Devresi</strong>
-              <span id="enemy-board-status">Çekirdek 300/300 · Jeneratör 150/150</span>
+          <section class="duel-side duel-player-side">
+            <div id="board" class="board" aria-label="Oyuncu Savaş Alanı"></div>
+            <div class="duel-side-heading duel-player-identity">
+              <strong id="player-battle-name">Oyuncu</strong>
+              <span id="player-board-status" class="board-vitals" hidden>Çekirdek 300/300 · Jeneratör 150/150</span>
             </div>
-            <div id="enemy-board" class="board enemy-board" aria-label="Rakip Savaş Alanı"></div>
           </section>
         </div>
       </section>
 
       <aside class="shelf-panel">
         <div class="panel-title-row">
-          <h2>Modül Rafı</h2>
+          <h2>Akım</h2>
+          <strong id="shelf-credit-indicator" class="resource-value resource-value-current"><i class="resource-symbol resource-symbol-current" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M13.5 2 5 13h6l-1 9 9-12h-6Z"/></svg></i><span id="shelf-credit-value">6 / 12</span></strong>
           <span id="shelf-lock-label">Kilitli</span>
         </div>
-        <div class="capacity-indicator shelf-capacity-indicator" id="capacity-indicator" role="status" aria-live="polite">Yeni modül hakkı · 15 sn</div>
+        <div class="capacity-indicator shelf-capacity-indicator" id="capacity-indicator" role="status" aria-live="polite">Devrede 2 / 10</div>
         <section class="booster-panel battle-booster-dock" id="booster-panel" data-state="locked">
           <div class="panel-title-row">
             <h3>Güçlendiriciler</h3>
@@ -632,10 +791,15 @@
           <div id="booster-options" class="booster-options"></div>
         </section>
         <div id="module-shelf" class="module-shelf" aria-label="Modül Rafı"></div>
+        <button id="core-power-button" class="core-power-button" type="button" aria-pressed="false" disabled>
+          <span class="core-power-glyph" aria-hidden="true">◈</span>
+          <small id="core-power-charge">0%</small>
+        </button>
       </aside>
     </section>
 
     <section class="post-match-panel play-result-panel" data-screen-panel="play" role="dialog" aria-label="Maç sonucu" hidden>
+      <div id="post-match-damage-stage" class="post-match-stage post-match-damage-stage">
       <div id="battle-result-hero" class="battle-result-hero" data-outcome="pending">
         <div class="panel-title-row">
           <span class="battle-result-kicker">SAVAŞ TAMAMLANDI</span>
@@ -644,7 +808,8 @@
         <strong id="battle-result-title">Maç Sonucu</strong>
         <span id="battle-result-summary" hidden>Sonuç bekleniyor</span>
       </div>
-      <details id="post-match-analysis" class="post-match-analysis">
+      <section id="post-match-scoreboard" class="post-match-scoreboard" aria-label="Oyuncuların modül hasarı" hidden></section>
+      <details id="post-match-analysis" class="post-match-analysis" hidden>
         <summary>Savaş Analizini Aç</summary>
         <div id="battle-analysis-summary" class="battle-analysis-summary" hidden>
           <div><span>Süre</span><strong id="battle-analysis-duration">—</strong></div>
@@ -753,9 +918,29 @@
         </section>
       </div>
       </details>
+      </div>
+      <section id="post-match-reward-stage" class="post-match-stage post-match-reward-stage" aria-label="Maç ödülleri" hidden>
+        <span id="post-match-reward-outcome" class="post-match-reward-outcome">ZAFER</span>
+        <h2>SAVAŞ ÖDÜLLERİ</h2>
+        <p>Ödüller hesabına işlendi.</p>
+        <div class="post-match-reward-list">
+          <article>
+            <i class="resource-symbol resource-symbol-trophy" aria-hidden="true">♛</i>
+            <span>KUPA</span>
+            <strong id="post-match-trophy-reward">Hesaplanıyor</strong>
+          </article>
+          <article>
+            <i class="resource-symbol resource-symbol-credit" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M7 12h3l2-4 2 8 2-4h2"/></svg></i>
+            <span>DEVRE KREDİSİ</span>
+            <strong id="post-match-credit-reward">Hesaplanıyor</strong>
+          </article>
+        </div>
+        <p id="post-match-chest-reward" class="post-match-chest-reward" hidden></p>
+      </section>
       <div class="post-match-actions">
-        <button id="return-preparation-button" type="button">Hazırlık Ekranına Dön</button>
-        <button id="rematch-button" type="button">Tekrar Maç</button>
+        <button id="post-match-continue" type="button">DEVAM</button>
+        <button id="return-preparation-button" type="button" hidden>EV'E DÖN</button>
+        <button id="rematch-button" type="button" hidden>TEKRAR SAVAŞ</button>
       </div>
     </section>
 
@@ -816,6 +1001,7 @@
   <script src="./src/battle/battle-event-bus.js"></script>
   <script src="./src/gridshard-audio.js"></script>
   <script src="./src/i18n.js"></script>
+  <script src="./src/canon-data.js"></script>
   <script src="./src/app.js"></script>
 </body>
 </html>

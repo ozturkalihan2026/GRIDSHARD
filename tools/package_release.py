@@ -11,8 +11,8 @@ from pathlib import Path
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "2.0.0-beta.38.1"
-PACKAGE_LABEL = "fix"
+VERSION = "2.1.0-beta.42"
+PACKAGE_LABEL = "canon"
 ARCHIVE_ROOT = f"GRIDSHARD-{VERSION}-{PACKAGE_LABEL}"
 
 EXCLUDED_PREFIXES = (

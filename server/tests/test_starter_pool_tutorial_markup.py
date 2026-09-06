@@ -4,20 +4,19 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[2]
 
 
-def test_starter_pool_has_eighteen_valid_unique_module_ids():
+def test_starter_deck_has_six_valid_unique_module_ids():
     source = (ROOT / "client/src/app.js").read_text(encoding="utf-8")
     start = source.index("const STARTER_BATTLE_POOL_PRESET")
     end = source.index("function withStarterBattlePoolPresets", start)
     block = source[start:end]
 
     expected = {
-        "generator", "battery", "splitter", "capacitor", "laser",
-        "pulse_cannon", "railgun", "missile_launcher", "drone_bay",
-        "arc_cannon", "shield", "armor", "reflector", "barrier",
-        "repair", "cooler", "amplifier", "targeting_computer",
+        "battery", "laser", "pulse_cannon",
+        "shield", "repair", "targeting_computer",
     }
     assert all(f'"{module_id}"' in block for module_id in expected)
-    assert block.count('"') >= len(expected) * 2
+    assert '"generator"' not in block
+    assert '"core"' not in block
 
 
 def test_short_tutorial_is_wired_before_app_startup():

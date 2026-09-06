@@ -42,7 +42,7 @@ CATEGORY_ORDER = (
 )
 
 CATEGORY_LABELS = {
-    "enerji":"Enerji",
+    "enerji":"Sistem",
     "saldırı":"Saldırı",
     "savunma":"Savunma",
     "destek":"Destek",
@@ -51,7 +51,7 @@ CATEGORY_LABELS = {
 }
 
 CATEGORY_LABELS_EN = {
-    "enerji": "Energy",
+    "enerji": "System",
     "saldırı": "Attack",
     "savunma": "Defense",
     "destek": "Support",
@@ -61,9 +61,10 @@ CATEGORY_LABELS_EN = {
 
 MODULE_COPY_EN: dict[str, tuple[str, str]] = {
     "generator": ("Primary energy source", "Continuously supplies energy and can move between the four Core gates."),
-    "battery": ("Energy reserve", "Supports the circuit during sudden demand spikes."),
+    "battery": ("Energy reserve", "Adds 30 energy capacity without increasing production."),
     "splitter": ("Energy-line branching", "Splits the energy line into multiple branches."),
-    "capacitor": ("Short burst discharge", "Provides immediate energy support during short demand peaks."),
+    "capacitor": ("Expanded energy storage", "Adds 25 energy capacity and consumes 1 energy per second."),
+    "current_balancer": ("Circuit efficiency", "Reduces module energy consumption by 8%; repeated copies have diminishing returns, capped at 35%."),
     "laser": ("Sustained single-target damage", "Deals steady damage to one target."),
     "pulse_cannon": ("High burst damage", "Fires slower, powerful pulses."),
     "railgun": ("High piercing damage", "Deals piercing damage against armored targets."),
@@ -71,7 +72,7 @@ MODULE_COPY_EN: dict[str, tuple[str, str]] = {
     "drone_bay": ("Distributed sustained pressure", "Wears down defenses with multiple small attacks."),
     "arc_cannon": ("Chained multi-target damage", "Produces energy attacks that can jump between nearby targets."),
     "shield": ("Active damage absorption", "Consumes energy to absorb part of incoming damage."),
-    "armor": ("Passive durability", "Provides durability without consuming energy."),
+    "armor": ("Durability", "Reduces incoming damage while contributing to the circuit's energy demand."),
     "reflector": ("Energy-attack reflection", "Redirects part of incoming energy-based damage."),
     "barrier": ("Connection-line protection", "Protects critical connection points."),
     "repair": ("Health repair", "Repairs damaged modules."),
@@ -110,6 +111,9 @@ def _effect_lines(definition_id: str) -> list[str]:
     definition = BASIC_MODULE_DEFINITIONS[
         definition_id
     ]
+    if definition_id in {"battery", "capacitor", "current_balancer"}:
+        return [definition.description_tr]
+    definition_id = definition.mechanic_id
 
     if definition.category == "saldırı":
         return [
@@ -300,6 +304,9 @@ def _effect_lines(definition_id: str) -> list[str]:
 
 def _effect_lines_en(definition_id: str) -> list[str]:
     definition = BASIC_MODULE_DEFINITIONS[definition_id]
+    if definition_id in {"battery", "capacitor", "current_balancer"}:
+        return [MODULE_COPY_EN[definition_id][1]]
+    definition_id = definition.mechanic_id
     if definition.category == "saldırı":
         return [
             f"Base damage per shot is {definition.base_damage:g}; base attack interval is {definition.cooldown_ms / 1000:g} sec.",
@@ -327,7 +334,7 @@ def _effect_lines_en(definition_id: str) -> list[str]:
     if definition_id == "shield":
         return ["Reduces incoming damage by 35% while powered.", f"Consumes {definition.energy_consumption:g} energy per second."]
     if definition_id == "armor":
-        return ["Passively reduces incoming damage by 25%.", "Works without consuming energy."]
+        return ["Reduces incoming damage by 25%.", f"Energy demand: {definition.energy_consumption:g}/sec."]
     if definition_id == "reflector":
         return ["Reduces incoming damage by 25% while powered.", "Reflects 20% of the last incoming damage to the attacker."]
     if definition_id == "barrier":
@@ -347,7 +354,7 @@ def _effect_lines_en(definition_id: str) -> list[str]:
         "jammer": [f"Disrupts a target support or control module for {JAMMER_DURATION_MS / 1000:g} sec.", f"Base sabotage cooldown is {definition.cooldown_ms / 1000:g} sec."],
         "virus": [f"Lasts {VIRUS_DURATION_MS / 1000:g} sec and deals {VIRUS_TICK_DAMAGE} damage every {VIRUS_TICK_INTERVAL_MS / 1000:g} sec.", "Damage continues over time unless cleansed or resisted."],
         "energy_leech": [f"Reduces target energy generation to {_percent(ENERGY_LEECH_GENERATION_MULTIPLIER)}% for {ENERGY_LEECH_DURATION_MS / 1000:g} sec."],
-        "disruptor": [f"Cuts the target connection line for {DISRUPTOR_DURATION_MS / 1000:g} sec, potentially leaving downstream modules without power."],
+        "disruptor": [f"Disables the target for {DISRUPTOR_DURATION_MS / 1000:g} sec; other cells keep receiving energy."],
     }
     return sabotage.get(definition_id, ["No additional numeric effect is published for this module."])
 
@@ -358,7 +365,7 @@ def build_module_catalog_view() -> dict:
     for definition_id,definition in (
         BASIC_MODULE_DEFINITIONS.items()
     ):
-        if definition_id == "core":
+        if definition_id in {"core", "generator", "splitter", "energy_leech"}:
             continue
 
         modules.append({
@@ -376,13 +383,14 @@ def build_module_catalog_view() -> dict:
             ),
             "max_hp":definition.max_hp,
             "circuit_credit_cost":
-                definition.circuit_credit_cost,
+                definition.current_cost,
+            "current_cost": definition.current_cost,
             "strategic_role":
                 definition.strategic_role,
-            "strategic_role_en": MODULE_COPY_EN[definition_id][0],
+            "strategic_role_en": MODULE_COPY_EN.get(definition.id, MODULE_COPY_EN.get(definition.mechanic_id, (definition.strategic_role, definition.description_tr)))[0],
             "description_tr":
                 definition.description_tr,
-            "description_en": MODULE_COPY_EN[definition_id][1],
+            "description_en": MODULE_COPY_EN.get(definition.id, MODULE_COPY_EN.get(definition.mechanic_id, (definition.strategic_role, definition.description_tr)))[1],
             "energy_generation":
                 definition.energy_generation,
             "energy_consumption":
@@ -407,9 +415,9 @@ def build_module_catalog_view() -> dict:
             ],
             "effect_lines":
                 _effect_lines(
-                    definition_id
+                    definition.id
                 ),
-            "effect_lines_en": _effect_lines_en(definition_id),
+            "effect_lines_en": _effect_lines_en(definition.id),
             "movable":definition.movable,
             "removable":definition.removable,
             "rotatable":definition.rotatable,

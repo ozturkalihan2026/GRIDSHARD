@@ -265,19 +265,5 @@ class WebTestSmokeRunner:
                     3,
                     Direction.UP,
                 ),
-                InitialModulePlacement(
-                    f"{player_id}-split",
-                    "splitter",
-                    2,
-                    1,
-                    Direction.DOWN,
-                ),
-                InitialModulePlacement(
-                    f"{player_id}-laser",
-                    "laser",
-                    1,
-                    1,
-                    Direction.RIGHT,
-                ),
             ),
         )

@@ -10,6 +10,7 @@ import time
 from threading import RLock
 
 from .game.battle_pool import (
+    migrate_battle_pool,
     validate_battle_pool,
 )
 
@@ -469,7 +470,15 @@ class BattlePoolPresetService:
         player_id:str,
     )->list[dict]:
         return [
-            item.to_view()
+            BattlePoolPreset(
+                name=item.name,
+                module_definition_ids=migrate_battle_pool(
+                    item.module_definition_ids
+                ).module_definition_ids,
+                favorite=item.favorite,
+                last_used_at_ms=item.last_used_at_ms,
+                use_count=item.use_count,
+            ).to_view()
             for item
             in self.repository.list_player(
                 player_id
