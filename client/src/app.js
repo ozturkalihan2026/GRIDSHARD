@@ -46,7 +46,11 @@
     position: item.id === "core" ? {x: 2, y: 1} : null,
     isDeckTemplate: !["core", "generator"].includes(item.id),
     energyRequired: 0, energyReceived: 0, isPowered: true, storedEnergy: 0,
-    portCount: 0, movable: false, removable: false, rotatable: false, direction: "up",
+    portCount: PORT_COUNT_BY_NAME[item.name_tr] || 1,
+    movable: item.id !== "core",
+    removable: !["core", "generator"].includes(item.id),
+    rotatable: !["core", "generator"].includes(item.id),
+    direction: "up",
   }));
 
   const commandLog = [];
@@ -480,6 +484,10 @@
   const pendingMetaRequests = new Map();
   let activeModuleFilter = "all";
   let selectedCollectionModuleId = "laser";
+  let activeCardPage = "modules";
+  let selectedCollectionCoreId = "core_resonance";
+  let activeLeaderboardTab = "trophies";
+  let leaderboardPayload = null;
   let pendingDeckModuleInstanceId = null;
   let homeMatchmakingLaunchPending = false;
   let homeMatchmakingCancelPending = false;
@@ -602,6 +610,7 @@
     syncAudioStateForCurrentView();
     if (current !== RelayAppScreen.MODULES) {
       document.getElementById("module-quick-actions")?.setAttribute("hidden", "");
+      document.getElementById("core-quick-actions")?.setAttribute("hidden", "");
     }
     renderMetaHubScreens();
 
@@ -756,6 +765,10 @@
       );
       if (!response.ok) throw new Error("Koleksiyon yüklenemedi.");
       metaProgressionState = await response.json();
+      const repair = repairBattleDeckAgainstCollection();
+      if (repair.changed) {
+        await persistBattlePoolDefinitionIds(repair.definitionIds);
+      }
     } catch (_error) {
       metaProgressionState ||= fallbackMetaProgression();
       for (const id of ["module-action-status", "shop-action-status"]) {
@@ -765,6 +778,47 @@
     }
     renderMetaHubScreens();
     return metaProgressionState;
+  }
+
+  function repairBattleDeckAgainstCollection() {
+    const collection = metaProgressionState?.module_collection || [];
+    const unlockedIds = collection
+      .filter((item) => item.unlocked !== false)
+      .map((item) => item.definition_id);
+    if (unlockedIds.length < 6) {
+      return { changed: false, definitionIds: selectedBattlePoolDefinitionIds() };
+    }
+    const unlocked = new Set(unlockedIds);
+    const current = deckEditorSlots.filter(Boolean).map(clientDefinitionId);
+    const repaired = [];
+    for (const definitionId of [
+      ...current,
+      ...STARTER_BATTLE_POOL_PRESET.module_definition_ids,
+      ...unlockedIds,
+    ]) {
+      if (unlocked.has(definitionId) && !repaired.includes(definitionId)) repaired.push(definitionId);
+      if (repaired.length === 6) break;
+    }
+    const changed = current.length !== 6 || repaired.some((id, index) => id !== current[index]);
+    if (changed) {
+      deckEditorSlots = definitionIdsToInstanceIds(repaired);
+      battlePoolSelection.setSelection(deckEditorSlots);
+      if (profileState.profile) profileState.profile.preferred_battle_pool_ids = [...repaired];
+      deckEditRevision += 1;
+    }
+    return { changed, definitionIds: repaired };
+  }
+
+  async function persistBattlePoolDefinitionIds(definitionIds) {
+    const response = await fetch(`/profile/${encodeURIComponent(participantPlayerId)}/battle-pool`, {
+      method: "PUT",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ battle_pool_ids: definitionIds }),
+    });
+    if (!response.ok) throw new Error("Savaş destesi geçerli kartlarla yenilenemedi.");
+    const profile = await response.json();
+    profileState.applyProfile(profile);
+    return profile;
   }
 
   function metaModuleDefinition(item) {
@@ -893,12 +947,15 @@
     renderHomeArena();
     const battleButton = document.getElementById("home-battle-button");
     if (battleButton) {
-      const locked = selectedDeckMetaModules().some(item => item?.unlocked === false);
-      battleButton.disabled = locked || deckEditorSlots.filter(Boolean).length !== 6
+      battleButton.disabled = deckEditorSlots.filter(Boolean).length !== 6
         || homeMatchmakingLaunchPending || homeMatchmakingCancelPending
         || isOnlineMatchmakingCancelable();
       const copy = battleButton.querySelector("small");
-      if (copy && !homeMatchmakingLaunchPending && !isOnlineMatchmakingCancelable()) copy.textContent = locked ? "Destendeki kilitli kartları değiştir" : "Eşleştirmeyi başlat";
+      if (copy && !homeMatchmakingLaunchPending && !isOnlineMatchmakingCancelable()) {
+        copy.textContent = deckEditorSlots.filter(Boolean).length === 6
+          ? "Eşleştirmeyi başlat"
+          : "Altı kartlık desteni tamamla";
+      }
     }
   }
 
@@ -1073,63 +1130,244 @@
     }
   }
   function openCoreCollection() {
-    renderCoreCollection();
-    const dialog = document.getElementById("core-collection-dialog");
-    if (dialog && !dialog.open) dialog.showModal();
+    setCardCollectionPage("cores");
+    openAppScreen("modules");
+  }
+
+  function setCardCollectionPage(page) {
+    activeCardPage = page === "cores" ? "cores" : "modules";
+    for (const panel of document.querySelectorAll("[data-card-page-panel]")) {
+      const active = panel.dataset.cardPagePanel === activeCardPage;
+      panel.hidden = !active;
+      panel.classList.toggle("is-active", active);
+    }
+    for (const button of document.querySelectorAll("[data-card-page]")) {
+      const active = button.dataset.cardPage === activeCardPage;
+      button.classList.toggle("is-active", active);
+      if (active) button.setAttribute("aria-current", "page");
+      else button.removeAttribute("aria-current");
+    }
+    document.getElementById("module-quick-actions")?.setAttribute("hidden", "");
+    document.getElementById("core-quick-actions")?.setAttribute("hidden", "");
+    if (activeCardPage === "cores") renderCoreCollection();
+    else renderModuleCollection();
+  }
+
+  function activeMetaCore() {
+    return (metaProgressionState?.cores?.types || [])
+      .find((item) => item.id === selectedCollectionCoreId) || null;
+  }
+
+  function coreCollectionTile(core, { selected = false, active = false } = {}) {
+    const tile = document.createElement("button");
+    tile.type = "button";
+    tile.className = `core-collection-tile${active ? " active-core-tile" : ""}`;
+    tile.dataset.coreType = core.id;
+    tile.dataset.selected = String(selected);
+    tile.dataset.locked = String(!core.unlocked);
+    tile.setAttribute("aria-label", `${core.name_tr} · Seviye ${core.level}${core.selected ? " · seçili" : ""}`);
+    const glyph = document.createElement("span");
+    glyph.className = "core-collection-glyph";
+    glyph.textContent = CORE_GLYPHS[core.id] || "◈";
+    glyph.setAttribute("aria-hidden", "true");
+    const copy = document.createElement("span");
+    copy.className = "core-collection-copy";
+    copy.innerHTML = `<strong>${core.name_tr}</strong><small>${core.unlocked ? `SV ${core.level}` : `ARENA ${core.unlock_arena}`}</small>`;
+    const progress = document.createElement("i");
+    const required = Number(core.next_upgrade_cost?.shards || 1);
+    const owned = Number(core.shards || 0) + Number(core.legacy_shards || 0);
+    progress.style.setProperty("--core-progress", `${core.next_upgrade_cost ? Math.min(100, Math.round(owned / required * 100)) : 100}%`);
+    tile.append(glyph, copy, progress);
+    if (core.selected) {
+      const check = document.createElement("b");
+      check.textContent = "✓";
+      tile.appendChild(check);
+    }
+    return tile;
+  }
+
+  function positionQuickActions(panel, anchor, screen) {
+    if (!panel || !anchor || !screen) return;
+    const screenRect = screen.getBoundingClientRect();
+    const anchorRect = anchor.getBoundingClientRect();
+    const panelWidth = Math.max(anchorRect.width + 12, panel.offsetWidth || 0);
+    const proposedLeft = anchorRect.left - screenRect.left + screen.scrollLeft - ((panelWidth - anchorRect.width) / 2);
+    panel.style.left = `${Math.max(4, Math.min(screen.scrollWidth - panelWidth - 4, proposedLeft))}px`;
+    panel.style.top = `${anchorRect.bottom - screenRect.top + screen.scrollTop - 3}px`;
+  }
+
+  function showCoreQuickActions(core, anchor) {
+    selectedCollectionCoreId = core.id;
+    const panel = document.getElementById("core-quick-actions");
+    if (!panel) return;
+    const name = document.getElementById("core-quick-name");
+    const select = document.getElementById("core-quick-select");
+    if (name) name.textContent = core.name_tr;
+    if (select) {
+      select.textContent = core.selected ? "Seçildi" : core.unlocked ? "Seç" : "Kilitli";
+      select.disabled = !core.unlocked || core.selected;
+    }
+    panel.hidden = false;
+    for (const tile of document.querySelectorAll(".core-collection-tile")) {
+      tile.classList.toggle("is-focused", tile === anchor);
+    }
+    positionQuickActions(panel, anchor, document.getElementById("modules-screen"));
   }
 
   function renderCoreCollection() {
     const host = document.getElementById("core-collection-list");
     if (!host) return;
     host.replaceChildren();
-    for (const core of metaProgressionState?.cores?.types || []) {
-      const card = document.createElement("article");
-      card.className = "core-collection-card";
-      const title = document.createElement("h3");
-      title.textContent = `${CORE_GLYPHS[core.id] || "◈"} ${core.name_tr} · SV ${core.level}`;
-      const copy = document.createElement("p");
-      copy.textContent = `${core.role_tr} Enerji: ${core.energy_per_second}/sn · Depo ${core.energy_capacity}. Arena ${core.unlock_arena}.`;
-      const pieces = document.createElement("p");
-      const cost = core.next_upgrade_cost;
-      pieces.textContent = `${core.shards} çekirdek parçası${core.legacy_shards ? ` + ${core.legacy_shards} eski ortak parça` : ""}${cost ? ` / ${cost.shards}` : " · AZAMİ"}`;
-      const select = document.createElement("button");
-      select.type = "button";
-      select.textContent = core.selected ? "SEÇİLDİ" : core.unlocked ? "SEÇ" : "KİLİTLİ";
-      select.disabled = !core.unlocked || core.selected;
-      select.addEventListener("click", async () => {
-        select.disabled = true;
-        try {
-          const response = await fetch(`/profile/${encodeURIComponent(participantPlayerId)}/meta-progression/core`, {method:"PUT", headers:{"content-type":"application/json"}, body:JSON.stringify({core_type_id:core.id})});
-          const payload = await response.json();
-          if (!response.ok) throw new Error(payload.detail || "Çekirdek seçilemedi.");
-          metaProgressionState = payload;
-          renderMetaHubScreens();
-          document.getElementById("core-action-status").textContent = "Çekirdek seçildi.";
-        } catch (error) { document.getElementById("core-action-status").textContent = error.message; select.disabled = false; }
+    const cores = metaProgressionState?.cores?.types || [];
+    const selected = cores.find((item) => item.selected) || cores[0];
+    const activeHost = document.getElementById("active-core-card");
+    if (activeHost) {
+      activeHost.replaceChildren();
+      if (selected) {
+        const tile = coreCollectionTile(selected, { selected: true, active: true });
+        tile.addEventListener("click", () => {
+          selectedCollectionCoreId = selected.id;
+          openCoreDetail();
+        });
+        activeHost.appendChild(tile);
+      }
+    }
+    const count = document.getElementById("core-collection-count");
+    if (count) count.textContent = `${cores.filter((core) => core.unlocked).length} / ${cores.length || 7}`;
+    for (const core of cores) {
+      const tile = coreCollectionTile(core, { selected: core.selected });
+      tile.addEventListener("click", () => showCoreQuickActions(core, tile));
+      host.appendChild(tile);
+    }
+  }
+
+  async function selectCollectionCore() {
+    const core = activeMetaCore();
+    if (!core?.unlocked || core.selected) return { ok: false };
+    const button = document.getElementById("core-quick-select");
+    if (button) button.disabled = true;
+    try {
+      const response = await fetch(`/profile/${encodeURIComponent(participantPlayerId)}/meta-progression/core`, {
+        method: "PUT",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ core_type_id: core.id }),
       });
-      const upgrade = document.createElement("button");
-      upgrade.type = "button";
-      upgrade.textContent = cost ? `YÜKSELT · ${cost.flux_shards} AKI` : "AZAMİ SEVİYE";
-      upgrade.disabled = !core.unlocked || !cost || core.shards + core.legacy_shards < cost.shards || metaProgressionState.flux_shards < cost.flux_shards;
-      const mutateCore = async (button, suffix) => {
-        button.disabled = true;
-        try {
-          await metaProgressionMutation(`/profile/${encodeURIComponent(participantPlayerId)}/meta-progression/cores/${core.id}/${suffix}`);
-          document.getElementById("core-action-status").textContent = "Çekirdek gelişimi kaydedildi.";
-        } catch (error) { document.getElementById("core-action-status").textContent = error.message; button.disabled = false; }
-      };
-      upgrade.addEventListener("click", () => mutateCore(upgrade, "upgrade"));
-      card.append(title, copy, pieces, select, upgrade);
+      const payload = await response.json();
+      if (!response.ok) throw new Error(payload.detail || "Çekirdek seçilemedi.");
+      metaProgressionState = payload;
+      renderMetaHubScreens();
+      document.getElementById("core-quick-actions")?.setAttribute("hidden", "");
+      const status = document.getElementById("core-action-status");
+      if (status) status.textContent = `${core.name_tr} savaş çekirdeği olarak seçildi.`;
+      return { ok: true };
+    } catch (error) {
+      const status = document.getElementById("core-action-status");
+      if (status) status.textContent = error instanceof Error ? error.message : String(error);
+      if (button) button.disabled = false;
+      return { ok: false };
+    }
+  }
+
+  async function mutateSelectedCore(suffix) {
+    const core = activeMetaCore();
+    if (!core) return;
+    await metaProgressionMutation(`/profile/${encodeURIComponent(participantPlayerId)}/meta-progression/cores/${core.id}/${suffix}`);
+    selectedCollectionCoreId = core.id;
+    openCoreDetail();
+  }
+
+  function renderCoreDetailTab(tabName) {
+    const core = activeMetaCore();
+    const host = document.getElementById("core-detail-tab-content");
+    if (!core || !host) return;
+    host.replaceChildren();
+    host.dataset.tab = tabName;
+    const intro = document.createElement("p");
+    intro.className = "module-detail-tab-intro";
+    if (tabName === "stats") {
+      intro.textContent = "Çekirdeğin savaş alanına sağladığı kalıcı enerji ve dayanıklılık değerleri.";
+      const list = document.createElement("dl");
+      for (const [label, value] of [
+        ["Savaş rolü", core.role_tr],
+        ["Enerji üretimi", `${core.energy_per_second}/sn`],
+        ["Enerji deposu", core.energy_capacity],
+        ["Seviye", `${core.level} / 15`],
+      ]) {
+        const row = document.createElement("div");
+        row.innerHTML = `<dt>${label}</dt><dd>${value}</dd>`;
+        list.appendChild(row);
+      }
+      host.appendChild(list);
+    } else if (tabName === "skills") {
+      intro.textContent = "Her eşikte tek bir çekirdek yeteneği seçilebilir.";
+      const tree = document.createElement("div");
+      tree.className = "core-skill-tree";
       for (const skill of core.skills || []) {
         const button = document.createElement("button");
         button.type = "button";
-        button.textContent = `SV ${skill.level} · ${skill.name_tr} · ${skill.learned ? "SEÇİLDİ" : skill.flux_cost + " Akı"}`;
-        button.disabled = !core.unlocked || skill.tier_selected || core.level < skill.level || metaProgressionState.flux_shards < skill.flux_cost;
-        button.addEventListener("click", () => mutateCore(button, `skills/${skill.id}`));
-        card.appendChild(button);
+        button.className = skill.learned ? "is-selected" : "";
+        const state = skill.learned ? "SEÇİLDİ" : skill.tier_selected ? "DİĞER DAL SEÇİLDİ" : core.level < skill.level ? `SV ${skill.level} GEREKLİ` : `${skill.flux_cost} AKI`;
+        button.innerHTML = `<strong>${skill.name_tr}</strong><small>SV ${skill.level} · ${state}</small>`;
+        button.disabled = !core.unlocked || skill.learned || skill.tier_selected || core.level < skill.level || Number(metaProgressionState?.flux_shards || 0) < Number(skill.flux_cost || 0);
+        button.addEventListener("click", async () => {
+          button.disabled = true;
+          try { await mutateSelectedCore(`skills/${skill.id}`); }
+          catch (error) { document.getElementById("core-detail-status").textContent = error.message; button.disabled = false; }
+        });
+        tree.appendChild(button);
       }
-      host.appendChild(card);
+      host.appendChild(tree);
+    } else {
+      intro.textContent = core.role_tr;
+      const overview = document.createElement("div");
+      overview.className = "module-overview-grid";
+      for (const [label, value] of [
+        ["SAVAŞ ROLÜ", core.role_tr],
+        ["AÇILIŞ", `Arena ${core.unlock_arena}`],
+        ["ENERJİ", `${core.energy_per_second}/sn`],
+        ["SONRAKİ SEVİYE", core.next_upgrade_cost ? `${core.next_upgrade_cost.shards} parça · ${core.next_upgrade_cost.flux_shards} Akı` : "Azami seviye"],
+      ]) {
+        const card = document.createElement("div");
+        card.innerHTML = `<span>${label}</span><strong>${value}</strong>`;
+        overview.appendChild(card);
+      }
+      host.appendChild(overview);
     }
+    host.prepend(intro);
+  }
+
+  function openCoreDetail() {
+    const core = activeMetaCore()
+      || metaProgressionState?.cores?.types?.find((item) => item.selected)
+      || metaProgressionState?.cores?.types?.[0];
+    if (!core) return;
+    selectedCollectionCoreId = core.id;
+    const setText = (id, value) => { const target = document.getElementById(id); if (target) target.textContent = String(value); };
+    setText("core-detail-name", core.name_tr);
+    setText("core-detail-role", String(core.role_tr || "ÇEKİRDEK").toLocaleUpperCase("tr-TR"));
+    setText("core-detail-level", `SEVİYE ${core.level}`);
+    setText("core-detail-selected-state", core.selected ? "SEÇİLDİ" : core.unlocked ? "HAZIR" : "KİLİTLİ");
+    const cost = core.next_upgrade_cost;
+    const required = Number(cost?.shards || 1);
+    const owned = Number(core.shards || 0) + Number(core.legacy_shards || 0);
+    setText("core-detail-shards", cost ? `${owned} / ${required}` : "AZAMİ SEVİYE");
+    const progress = document.getElementById("core-detail-progress");
+    if (progress) { progress.max = required; progress.value = cost ? Math.min(required, owned) : required; }
+    const art = document.getElementById("core-detail-art");
+    if (art) { art.textContent = CORE_GLYPHS[core.id] || "◈"; art.dataset.coreType = core.id; }
+    const stats = document.getElementById("core-detail-stats");
+    if (stats) stats.innerHTML = `<div><span>ENERJİ</span><strong>${core.energy_per_second}/sn</strong></div><div><span>DEPO</span><strong>${core.energy_capacity}</strong></div><div><span>YETENEK</span><strong>${(core.skills || []).filter((skill) => skill.learned).length}</strong></div>`;
+    const select = document.getElementById("core-detail-select");
+    if (select) { select.disabled = !core.unlocked || core.selected; select.textContent = core.selected ? "SEÇİLDİ" : core.unlocked ? "SEÇ" : "KİLİTLİ"; }
+    const upgrade = document.getElementById("core-detail-upgrade");
+    const canUpgrade = core.unlocked && cost && owned >= Number(cost.shards) && Number(metaProgressionState?.flux_shards || 0) >= Number(cost.flux_shards);
+    if (upgrade) { upgrade.disabled = !canUpgrade; upgrade.textContent = cost ? `YÜKSELT · ${cost.flux_shards} AKI` : "AZAMİ SEVİYE"; }
+    setText("core-detail-status", !core.unlocked ? `Arena ${core.unlock_arena} seviyesinde açılır.` : cost && !canUpgrade ? `${cost.shards} parça ve ${cost.flux_shards} Akı gerekli.` : "");
+    for (const button of document.querySelectorAll("[data-core-detail-tab]")) button.classList.toggle("is-active", button.dataset.coreDetailTab === "overview");
+    renderCoreDetailTab("overview");
+    const dialog = document.getElementById("core-detail-dialog");
+    if (dialog?.showModal && !dialog.open) dialog.showModal();
+    else dialog?.setAttribute("open", "");
   }
 
   function renderHomeArena() {
@@ -1309,7 +1547,7 @@
           body: JSON.stringify({ request_id: entry.requestId }),
         });
       } catch (_networkError) {
-        throw new Error("Sunucu bağlantısı kesildi. Beta.42 hızlı savaş başlatıcısını yeniden açıp işlemi tekrar dene.");
+        throw new Error("Sunucu bağlantısı kesildi. Beta.43 hızlı savaş başlatıcısını yeniden açıp işlemi tekrar dene.");
       }
       const rawBody = await response.text();
       let payload = {};
@@ -1712,6 +1950,7 @@
     renderShop();
     renderCoreCollection();
     renderCanonStatistics();
+    renderProfileHighlights();
     const state = metaProgressionState;
     if (state) {
       const credits = document.getElementById("lobby-circuit-credits");
@@ -1728,8 +1967,31 @@
       renderModuleCollection();
     });
   });
+  document.querySelectorAll("[data-card-page]").forEach((button) => {
+    button.addEventListener("click", () => setCardCollectionPage(button.dataset.cardPage));
+  });
   document.getElementById("module-quick-info")?.addEventListener("click", openModuleDetail);
   document.getElementById("module-quick-select")?.addEventListener("click", selectCollectionModule);
+  document.getElementById("core-quick-info")?.addEventListener("click", openCoreDetail);
+  document.getElementById("core-quick-select")?.addEventListener("click", selectCollectionCore);
+  document.getElementById("core-detail-close")?.addEventListener("click", () => document.getElementById("core-detail-dialog")?.close());
+  document.getElementById("core-detail-select")?.addEventListener("click", async () => {
+    const result = await selectCollectionCore();
+    if (result.ok) openCoreDetail();
+  });
+  document.getElementById("core-detail-upgrade")?.addEventListener("click", async () => {
+    const button = document.getElementById("core-detail-upgrade");
+    if (button?.disabled) return;
+    if (button) button.disabled = true;
+    try { await mutateSelectedCore("upgrade"); }
+    catch (error) { document.getElementById("core-detail-status").textContent = error.message; if (button) button.disabled = false; }
+  });
+  document.querySelectorAll("[data-core-detail-tab]").forEach((button) => {
+    button.addEventListener("click", () => {
+      document.querySelectorAll("[data-core-detail-tab]").forEach((item) => item.classList.toggle("is-active", item === button));
+      renderCoreDetailTab(button.dataset.coreDetailTab || "overview");
+    });
+  });
   document.getElementById("module-detail-close")?.addEventListener("click", () => document.getElementById("module-detail-dialog")?.close());
   document.getElementById("module-detail-upgrade")?.addEventListener("click", upgradeCollectionModule);
   document.querySelectorAll("[data-module-detail-tab]").forEach((button) => {
@@ -1860,7 +2122,7 @@
         webTestBuildState,
       releaseCheckState,
       expectedVersion:
-        "2.1.0-beta.42",
+        "2.1.0-beta.43",
       expectedProtocolVersion: 1,
     });
   const playReadinessGate =
@@ -1896,7 +2158,7 @@
 
   telemetryDispatcher.trackGameOpened({
     platform: "web",
-    build: "2.1.0-beta.42",
+    build: "2.1.0-beta.43",
   });
 
   const postMatchSync =
@@ -2999,7 +3261,7 @@
   const diagnosticSnapshot =
     new RelayDiagnosticSnapshot({
       version:
-        "2.1.0-beta.42",
+        "2.1.0-beta.43",
       build:
         "web-test-beta.13",
       bootGate:
@@ -5063,7 +5325,7 @@
       if (versionEl) {
         versionEl.textContent=
           manifest.version
-          || "2.1.0-beta.42";
+          || "2.1.0-beta.43";
       }
       if (runEl) {
         runEl.textContent=
@@ -12168,6 +12430,29 @@ function saveHumanReviewLocalNote() {
     const modules = [...moduleIterable];
     const liveCore = modules.some(m => (m.definitionId === "core" || m.nameTr === "Çekirdek") && Number(m.hp) > 0);
     const cells = new Set(BOARD_CELLS.map(([x,y]) => `${x},${y}`));
+
+    // Keep the cell itself aware of the incoming current.  This lets the
+    // cable layer stay underneath the card while the cell edge still pulses
+    // when a powered module is attached to that part of the circuit.
+    const fedCells = new Set(
+      modules
+        .filter((module) =>
+          module?.position
+          && module.status !== "destroyed"
+          && Number(module.hp ?? 1) > 0
+          && (module.definitionId === "core"
+            || module.nameTr === "Çekirdek"
+            || module.isPowered !== false)
+        )
+        .map((module) => cablePositionKey(module.position))
+    );
+    for (const cell of boardElement.querySelectorAll(".board-cell")) {
+      const key = `${cell.dataset.x},${cell.dataset.y}`;
+      const fed = liveCore && fedCells.has(key);
+      cell.classList.toggle("energy-fed-cell", fed);
+      cell.dataset.energyFed = String(fed);
+    }
+
     for (const [x,y] of BOARD_CELLS) {
       const first = {x,y};
       for (const {dx,dy} of CIRCUIT_CABLE_DIRECTIONS) {
@@ -13322,7 +13607,104 @@ function saveHumanReviewLocalNote() {
       );
     }
 
+    renderProfileHighlights();
     renderEngagementSummary(view.engagement);
+  }
+
+  function deckDisplayName(deck) {
+    if (!deck?.module_ids?.length) return "Henüz maç yok";
+    return deck.module_ids
+      .map((id) => moduleDefinitions.find((module) => module.definitionId === id)?.nameTr || id)
+      .join(" · ");
+  }
+
+  function renderProfileHighlights() {
+    const view = profileState.viewModel();
+    const highest = document.getElementById("profile-highest-trophies");
+    if (highest && view) highest.textContent = `${view.highestRating || view.rating || 0} Kupa`;
+    const favoriteDeck = document.getElementById("profile-most-used-deck");
+    const deck = metaProgressionState?.statistics?.most_used_decks?.[0];
+    if (favoriteDeck) {
+      favoriteDeck.textContent = deck
+        ? `${deckDisplayName(deck)} · ${deck.matches} maç`
+        : "Henüz maç yok";
+    }
+  }
+
+  function renderLeaderboard() {
+    const host = document.getElementById("leaderboard-list");
+    const status = document.getElementById("leaderboard-status");
+    const season = document.getElementById("leaderboard-season-label");
+    if (!host) return;
+    host.replaceChildren();
+    if (season && leaderboardPayload?.season) {
+      season.textContent = `${leaderboardPayload.season.name_tr} · ${leaderboardPayload.season.starts_at.slice(0, 10)} — ${leaderboardPayload.season.ends_at.slice(0, 10)}`;
+    }
+    const rows = leaderboardPayload?.[activeLeaderboardTab] || [];
+    const labels = {
+      trophies: "Sezon Kupası",
+      core_damage: "Toplam Çekirdek Hasarı",
+      teams: "Takım Kupası",
+    };
+    if (status) status.textContent = rows.length ? `${labels[activeLeaderboardTab]} · ilk ${rows.length}` : "Bu sıralamada henüz kayıt yok.";
+    if (!rows.length) {
+      const empty = document.createElement("li");
+      empty.className = "leaderboard-empty";
+      empty.textContent = "İlk tamamlanan savaşla bu liste oluşacak.";
+      host.appendChild(empty);
+      return;
+    }
+    for (const row of rows) {
+      const item = document.createElement("li");
+      item.className = "leaderboard-row";
+      if (row.player_id === participantPlayerId) item.classList.add("is-current-player");
+      const rank = document.createElement("strong");
+      rank.className = "leaderboard-rank";
+      rank.textContent = String(row.position);
+      const identity = document.createElement("div");
+      identity.className = "leaderboard-identity";
+      const name = row.team_name || row.display_name || "Oyuncu";
+      const detail = activeLeaderboardTab === "teams"
+        ? `${row.member_count} üye`
+        : row.rank_name_tr || "Arena";
+      const nameNode = document.createElement("strong");
+      nameNode.textContent = name;
+      const detailNode = document.createElement("small");
+      detailNode.textContent = detail;
+      identity.append(nameNode, detailNode);
+      const score = document.createElement("strong");
+      score.className = "leaderboard-score";
+      score.textContent = activeLeaderboardTab === "core_damage"
+        ? `${Number(row.value || 0).toLocaleString("tr-TR")} HASAR`
+        : `${Number(row.value || 0).toLocaleString("tr-TR")} KUPA`;
+      item.append(rank, identity, score);
+      host.appendChild(item);
+    }
+  }
+
+  async function loadLeaderboard() {
+    const status = document.getElementById("leaderboard-status");
+    if (status) status.textContent = "Sıralama yükleniyor…";
+    try {
+      const response = await fetch("/leaderboards", { cache: "no-store" });
+      const payload = await response.json();
+      if (!response.ok) throw new Error(payload.detail || "Lider panosu yüklenemedi.");
+      leaderboardPayload = payload;
+      renderLeaderboard();
+      return { ok: true };
+    } catch (error) {
+      if (status) status.textContent = error instanceof Error ? error.message : String(error);
+      return { ok: false };
+    }
+  }
+
+  function openLeaderboard() {
+    const arena = document.getElementById("arena-detail-dialog");
+    if (arena?.open && arena.close) arena.close();
+    const dialog = document.getElementById("leaderboard-dialog");
+    if (dialog?.showModal && !dialog.open) dialog.showModal();
+    else dialog?.setAttribute("open", "");
+    loadLeaderboard();
   }
 
   function renderEngagementSummary(engagement) {
@@ -13336,6 +13718,8 @@ function saveHumanReviewLocalNote() {
     const required = Math.max(1, Number(engagement.tier_progress_required || 1));
     const percentage = Math.min(100, Math.round((progress / required) * 100));
 
+    setText("season-rewards-kicker", `${String(engagement.season_name_tr || "AYLIK SEZON").toLocaleUpperCase("tr-TR")} · ÜCRETSİZ ÖDÜL YOLU`);
+    setText("season-rewards-subtitle", `${engagement.season_name_tr || "Bu sezon"} boyunca kademeleri aç ve sunucu doğrulamalı ödüllerini al.`);
     setText("season-flux-shards", engagement.flux_shards || 0);
     setText("season-equipped-title", engagement.equipped_title || "Devre Çırağı");
     setText(
@@ -13750,7 +14134,6 @@ function saveHumanReviewLocalNote() {
     const matches = Math.max(1, Number(stats.matches || 0));
     const entries = [["Kupa / En yüksek", `${stats.current_trophies} / ${stats.highest_trophies}`], ["Arena / Lig", stats.rank], ["En uzun galibiyet serisi", stats.longest_streak || 0], ["Maç başı yerleştirme", ((stats.deployments || 0)/matches).toFixed(1)], ["Toplam / Ortalama Akım", `${stats.current_spent || 0} / ${((stats.current_spent || 0)/matches).toFixed(1)}`], ["Çekirdek gücü kullanımı", stats.core_power_uses || 0], ["En yüksek maç hasarı", stats.peak_damage || 0], ["Açılan modül", `${stats.unlocked_modules} / 36`], ["Yükseltilen modül", stats.upgraded_modules], ["En yüksek modül seviyesi", stats.highest_module_level], ["Açılan çekirdek", `${stats.unlocked_cores} / 7`], ["Açılan sandık", stats.opened_chests]];
     for (const [id, count] of Object.entries(stats.cores || {})) entries.push([metaProgressionState.cores?.types.find(c => c.id === id)?.name_tr || id, `%${Math.round(count / matches * 100)}`]);
-    for (const [i, deck] of (stats.most_used_decks || []).entries()) entries.push([`${i+1}. En çok kullanılan deste · ${deck.matches} maç`, deck.module_ids.map(id => moduleDefinitions.find(m => m.definitionId === id)?.nameTr || id).join(" · ")]);
     for (const [name, value] of entries) { const card=document.createElement("div"), label=document.createElement("small"), number=document.createElement("strong"); label.textContent=name; number.textContent=String(value ?? 0); card.append(label,number); host.appendChild(card); }
   }
 
@@ -13815,55 +14198,37 @@ function saveHumanReviewLocalNote() {
     );
     setValue("statistics-boosters-used", number(view.boostersUsed));
 
-    const moduleList = document.getElementById(
-      "statistics-most-used-modules"
-    );
-    if (!moduleList) return;
-    moduleList.replaceChildren();
-
-    const usage = Array.isArray(view.mostUsedModules)
-      ? view.mostUsedModules
-          .filter((item) => !["core", "generator"].includes(
-            String(item?.definition_id || "")
-          ))
-          .slice(0, 8)
-      : [];
-    if (!usage.length) {
+    const deckList = document.getElementById("statistics-most-used-decks");
+    if (!deckList) return;
+    deckList.replaceChildren();
+    const decks = metaProgressionState?.statistics?.most_used_decks || [];
+    if (!decks.length) {
       const empty = document.createElement("p");
       empty.className = "statistics-empty-state";
       empty.textContent = localizedUiText(
         "Henüz tamamlanmış maç verisi yok."
       );
-      moduleList.appendChild(empty);
+      deckList.appendChild(empty);
       return;
     }
-
-    for (const item of usage) {
-      const definitionId = String(item.definition_id || "");
-      const module = moduleDefinitions.find((candidate) =>
-        candidate.instanceId
-          .replace(/-1$/u, "")
-          .replace(/-/gu, "_") === definitionId
-      );
+    for (const [index, deck] of decks.entries()) {
       const card = document.createElement("article");
-      card.className = "statistics-module-card";
-      if (module?.category) card.dataset.category = module.category;
-
-      const icon = document.createElement("span");
-      icon.className = "statistics-module-icon";
-      icon.textContent = moduleIconFor(module || null);
-
-      const copy = document.createElement("span");
-      copy.className = "statistics-module-copy";
-      const name = document.createElement("strong");
-      name.textContent = localizedUiText(
-        module?.nameTr || definitionId || "Modül"
-      );
-      const count = document.createElement("small");
-      count.textContent = `${number(item.matches_used)} ${localizedUiText("maçta kullanıldı")}`;
-      copy.append(name, count);
-      card.append(icon, copy);
-      moduleList.appendChild(card);
+      card.className = "statistics-deck-card";
+      const heading = document.createElement("div");
+      heading.innerHTML = `<strong>${index + 1}. DESTE</strong><small>${number(deck.matches)} maç</small>`;
+      const strip = document.createElement("div");
+      strip.className = "statistics-deck-strip";
+      for (const definitionId of deck.module_ids || []) {
+        const module = moduleDefinitions.find((candidate) => candidate.definitionId === definitionId);
+        const tile = document.createElement("span");
+        tile.className = "statistics-deck-module";
+        tile.dataset.category = module?.category || "";
+        tile.textContent = moduleIconFor(module || null);
+        tile.title = localizedUiText(module?.nameTr || definitionId);
+        strip.appendChild(tile);
+      }
+      card.append(heading, strip);
+      deckList.appendChild(card);
     }
   }
 
@@ -14583,7 +14948,7 @@ function saveHumanReviewLocalNote() {
       );
       const candidates = BOARD_CELLS.filter(([x, y]) => {
         const key = `${x},${y}`;
-        if (key === "2,2" || occupied.has(key)) return false;
+        if (key === "2,1" || occupied.has(key)) return false;
         const special = SPECIAL_CELL_INFO[key];
         if (special?.definitionId && special.definitionId !== deployTemplate.definitionId) return false;
         if (special?.category && special.category !== deployTemplate.category) return false;
@@ -14868,27 +15233,10 @@ function saveHumanReviewLocalNote() {
   }
 
   function connectedEnergyModuleIds(active) {
-    const sources = active.filter(
-      (module) => module.nameTr === "Jeneratör"
-    );
-    const reachable = new Set(
-      sources.map((module) => module.instanceId)
-    );
-    const queue = [...sources];
-
-    while (queue.length) {
-      const current = queue.shift();
-
-      for (const candidate of active) {
-        if (reachable.has(candidate.instanceId)) continue;
-        if (!areConnected(current, candidate)) continue;
-
-        reachable.add(candidate.instanceId);
-        queue.push(candidate);
-      }
-    }
-
-    return reachable;
+    // Beta.43 devre tahtasında enerji gömülü hat üzerinden her dolu hücreye
+    // ulaşır. Portlar görsel bağlantıyı ve yön tercihini anlatır; modülü
+    // güçsüz bırakıp sürükle/bırak ya da değişimi engellemez.
+    return new Set(active.map((module) => module.instanceId));
   }
 
   function autoOrientMockSwap(first, second) {
@@ -14951,12 +15299,9 @@ function saveHumanReviewLocalNote() {
     );
     const connected = connectedEnergyModuleIds(active);
 
-    const generated =
-      active.filter(
-        (module) =>
-          module.nameTr === "Jeneratör" &&
-          connected.has(module.instanceId)
-      ).length * 11;
+    const generated = active.some(
+      (module) => module.nameTr === "Çekirdek"
+    ) ? 10 : 0;
 
     const demandByName = {
       "Lazer": 3,
@@ -16214,11 +16559,21 @@ function saveHumanReviewLocalNote() {
   document.getElementById("home-battle-button")?.addEventListener(
     "click",
     async () => {
-      if (deckEditorSlots.filter(Boolean).length !== 6 || homeMatchmakingLaunchPending || homeMatchmakingCancelPending || isOnlineMatchmakingCancelable()) return;
+      if (homeMatchmakingLaunchPending || homeMatchmakingCancelPending || isOnlineMatchmakingCancelable()) return;
       homeMatchmakingLaunchPending = true;
       try {
+        const repair = repairBattleDeckAgainstCollection();
+        if (repair.definitionIds.length !== 6) {
+          throw new Error("Savaş için altı kartlık geçerli bir deste gerekli.");
+        }
+        if (repair.changed) await persistBattlePoolDefinitionIds(repair.definitionIds);
         gridshardAudioDirector?.prepareBattlePlayback?.();
         prepareOnlineMatch();
+        requestOwnedAudioState(
+          "home_matchmaking_started",
+          { onlineStatus: "matchmaking" },
+          { force: true }
+        );
         const result = await startRealOnlineMatch();
         if (!result.ok && !result.cancelled) {
           renderHomeMatchmakingOverlay("error");
@@ -16286,8 +16641,21 @@ function saveHumanReviewLocalNote() {
     else arenaDetailDialog?.removeAttribute("open");
   });
   document.getElementById("arena-leaderboard-button")?.addEventListener("click", () => {
-    const status = document.getElementById("arena-reward-status");
-    if (status) status.textContent = "Lider Panosu bir sonraki içerik adımında doldurulacak.";
+    openLeaderboard();
+  });
+  document.getElementById("leaderboard-back")?.addEventListener("click", () => {
+    const leaderboard = document.getElementById("leaderboard-dialog");
+    if (leaderboard?.close) leaderboard.close();
+    else leaderboard?.removeAttribute("open");
+    if (arenaDetailDialog?.showModal && !arenaDetailDialog.open) arenaDetailDialog.showModal();
+    else arenaDetailDialog?.setAttribute("open", "");
+  });
+  document.querySelectorAll("[data-leaderboard-tab]").forEach((button) => {
+    button.addEventListener("click", () => {
+      activeLeaderboardTab = button.dataset.leaderboardTab || "trophies";
+      document.querySelectorAll("[data-leaderboard-tab]").forEach((item) => item.classList.toggle("is-active", item === button));
+      renderLeaderboard();
+    });
   });
   document.getElementById("home-core-hero")?.addEventListener("click", openCoreCollection);
   document.getElementById("chest-reveal-close")?.addEventListener("click", () => {

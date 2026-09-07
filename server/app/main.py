@@ -51,9 +51,9 @@ from .game.pvp_websocket import PvPWebSocketAdapter
 from .game.pvp_runner import PvPTickRunner
 from .version import VERSION
 from .player_profile import (
-    CURRENT_SEASON_ID,
     PlayerProfileError,
     PlayerProfileService,
+    monthly_season_descriptor,
 )
 from .laboratory import (
     LaboratoryError,
@@ -65,6 +65,7 @@ from .meta_progression import (
     MetaProgressionError,
     MetaProgressionService,
 )
+from .arena_canon import rank_stage_for_rating
 from .player_statistics import (
     PlayerStatisticsService,
 )
@@ -2951,6 +2952,103 @@ def get_statistics(
     )
 
 
+def _leaderboard_profile_rows() -> list[dict]:
+    """Merge persisted players with authoritative profiles already in memory."""
+    players: dict[str, dict] = {}
+    current_season = monthly_season_descriptor()
+
+    for snapshot in player_data_repository.list_snapshots():
+        profile = dict(snapshot.profile)
+        meta = dict(profile.get("meta_progression_state") or {})
+        rating = max(0, int(profile.get("rating", 0)))
+        if meta.get("active_season_id") != current_season["id"] and rating >= 3600:
+            rating = 3600
+        players[snapshot.player_id] = {
+            "player_id": snapshot.player_id,
+            "display_name": str(profile.get("display_name") or snapshot.player_id),
+            "rating": rating,
+            "core_damage": max(
+                0,
+                int(dict(meta.get("lifetime_stats") or {}).get("core_damage_dealt", 0)),
+            ),
+            "team_id": profile.get("team_id"),
+            "team_name": profile.get("team_name"),
+        }
+
+    for player_id in list(player_profile_service._profiles):
+        profile = player_profile_service.get_or_create(player_id)
+        players[player_id] = {
+            "player_id": player_id,
+            "display_name": profile.display_name,
+            "rating": max(0, int(profile.rating)),
+            "core_damage": max(0, int(profile.lifetime_stats.get("core_damage_dealt", 0))),
+            "team_id": profile.team_id,
+            "team_name": profile.team_name,
+        }
+    return list(players.values())
+
+
+def _ranked_player_rows(players: list[dict], value_key: str) -> list[dict]:
+    ordered = sorted(
+        players,
+        key=lambda row: (
+            -int(row[value_key]),
+            row["display_name"].casefold(),
+            row["player_id"],
+        ),
+    )[:100]
+    return [
+        {
+            "position": index,
+            "player_id": row["player_id"],
+            "display_name": row["display_name"],
+            "rank_name_tr": rank_stage_for_rating(row["rating"])["name_tr"],
+            "value": int(row[value_key]),
+        }
+        for index, row in enumerate(ordered, start=1)
+    ]
+
+
+@app.get("/leaderboards")
+def get_leaderboards() -> dict:
+    players = _leaderboard_profile_rows()
+    teams: dict[str, dict] = {}
+    for player in players:
+        team_id = str(player.get("team_id") or "").strip()
+        team_name = str(player.get("team_name") or "").strip()
+        if not team_id or not team_name:
+            continue
+        team = teams.setdefault(
+            team_id,
+            {
+                "team_id": team_id,
+                "team_name": team_name,
+                "member_count": 0,
+                "value": 0,
+            },
+        )
+        team["member_count"] += 1
+        team["value"] += int(player["rating"])
+
+    ordered_teams = sorted(
+        teams.values(),
+        key=lambda row: (
+            -row["value"],
+            row["team_name"].casefold(),
+            row["team_id"],
+        ),
+    )[:100]
+    return {
+        "season": monthly_season_descriptor(),
+        "trophies": _ranked_player_rows(players, "rating"),
+        "core_damage": _ranked_player_rows(players, "core_damage"),
+        "teams": [
+            {**row, "position": index}
+            for index, row in enumerate(ordered_teams, start=1)
+        ],
+    }
+
+
 @app.post("/participants/{player_id}/bootstrap")
 def bootstrap_test_participant(
     player_id: str,
@@ -2999,13 +3097,11 @@ def bootstrap_test_participant(
         )
     )
 
-    if (
-        stored_snapshot is None
-        or player_already_loaded
-    ):
-        persist_player_data(
-            player_id
-        )
+    # Restoring an existing account can apply the calendar-month season
+    # rollover, so the normalized state must also be persisted.
+    persist_player_data(
+        player_id
+    )
 
     return {
         "player_id": player_id,
@@ -3299,8 +3395,8 @@ def _tier_advanced_payload(
     if tier_after <= tier_before:
         return None
     return {
-        "event_id": f"{CURRENT_SEASON_ID}:{player_id}:{source}:{tier_after}",
-        "season_id": CURRENT_SEASON_ID,
+        "event_id": f"{monthly_season_descriptor()['id']}:{player_id}:{source}:{tier_after}",
+        "season_id": monthly_season_descriptor()["id"],
         "tier_before": tier_before,
         "tier_after": tier_after,
     }
@@ -4574,7 +4670,7 @@ def _create_matchmaking_ai_session(
         setup_required=True,
         auto_start_when_ready=True,
         match_type="arena_ai",
-        season_id=CURRENT_SEASON_ID,
+        season_id=monthly_season_descriptor()["id"],
         ranked_eligible=False,
         normalized=False,
         laboratory_effects_enabled=False,
@@ -4655,7 +4751,7 @@ async def create_local_ai_session(
             setup_required=True,
             auto_start_when_ready=False,
             match_type="local_test",
-            season_id=CURRENT_SEASON_ID,
+            season_id=monthly_season_descriptor()["id"],
             ranked_eligible=False,
             normalized=not experimental_enabled,
             laboratory_effects_enabled=experimental_enabled,
@@ -4797,7 +4893,7 @@ def create_pvp_session(
             setup_required=True,
             auto_start_when_ready=request.auto_start_when_ready,
             match_type="ranked_pvp",
-            season_id=CURRENT_SEASON_ID,
+            season_id=monthly_season_descriptor()["id"],
             ranked_eligible=True,
         )
     except PvPSessionError as exc:

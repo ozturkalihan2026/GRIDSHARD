@@ -1,7 +1,7 @@
 # GRIDSHARD 2.1 — YOL HARİTASI
 
-**Güncel Sürüm:** `2.1.0-beta.42`
-**Paket:** Beta.42 — Kanonik Arena, Modül ve Ödül Geçişi
+**Güncel Sürüm:** `2.1.0-beta.43`
+**Paket:** Beta.43 — Kartlar, Aylık Sezon ve Lider Panosu
 **Kanonik Dosya:** `docs/YOL_HARITASI.md`
 
 > Bu dosya GRIDSHARD 2.0 için tek kanonik geliştirme kaydıdır. Kaynak karar belgesi ile kod tabanı yeniden karşılaştırılmıştır. Buradaki `[x]`, `[~]`, `[ ]` işaretleri artık yalnızca kodda ve testlerde doğrulanabilen gerçek durumu gösterir.

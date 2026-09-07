@@ -28,6 +28,6 @@ assert.ok(css.includes(".settings-summary-panel > .panel-title-row"));
 
 assert.ok(!html.includes('id="settings-save"'));
 assert.ok(!html.includes('id="settings-save-status"'));
-assert.ok(html.includes('id="settings-persistence-status"'));
+assert.ok(!html.includes('id="settings-persistence-status"'));
 
 console.log("beta38 circuit interaction regression test passed");

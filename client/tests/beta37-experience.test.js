@@ -26,7 +26,7 @@ assert.ok(app.includes("function isOnlineMatchmakingCancelable"));
 assert.ok(app.includes('localizedUiText("İptal Et")'));
 assert.ok(app.includes("function deployDeckModule"));
 assert.ok(app.includes('"deploy_module"'));
-assert.ok(app.includes("const limit = 10"));
+assert.ok(app.includes("const limit = 15"));
 assert.ok(app.includes("catalog?.effect_lines_en"));
 assert.ok(css.includes("#booster-panel"));
 assert.ok(css.includes("GRIDSHARD Beta.37"));

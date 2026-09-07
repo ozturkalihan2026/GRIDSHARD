@@ -1,15 +1,54 @@
 from dataclasses import dataclass, field
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 
 from .game.battle_pool import default_battle_pool, validate_battle_pool
 
 
 DEFAULT_RATING = 0
 XP_PER_LEVEL = 1000
-CURRENT_SEASON_ID = "core_awakening_s0"
-CURRENT_SEASON_NAME_TR = "Sezon Sıfır · Çekirdek Uyanışı"
-CURRENT_SEASON_STARTS_AT = "2026-08-01T00:00:00Z"
-CURRENT_SEASON_ENDS_AT = "2026-09-30T23:59:59Z"
+TURKISH_MONTH_NAMES = (
+    "",
+    "Ocak",
+    "Şubat",
+    "Mart",
+    "Nisan",
+    "Mayıs",
+    "Haziran",
+    "Temmuz",
+    "Ağustos",
+    "Eylül",
+    "Ekim",
+    "Kasım",
+    "Aralık",
+)
+
+
+def _iso_utc(moment: datetime) -> str:
+    return moment.astimezone(timezone.utc).isoformat().replace("+00:00", "Z")
+
+
+def monthly_season_descriptor(moment: datetime | None = None) -> dict:
+    """Return the UTC calendar-month season containing ``moment``."""
+    current = (moment or datetime.now(timezone.utc)).astimezone(timezone.utc)
+    starts_at = datetime(current.year, current.month, 1, tzinfo=timezone.utc)
+    if current.month == 12:
+        next_starts_at = datetime(current.year + 1, 1, 1, tzinfo=timezone.utc)
+    else:
+        next_starts_at = datetime(current.year, current.month + 1, 1, tzinfo=timezone.utc)
+    ends_at = next_starts_at - timedelta(seconds=1)
+    return {
+        "id": f"gridshard_{current.year}_{current.month:02d}",
+        "name_tr": f"{TURKISH_MONTH_NAMES[current.month]} {current.year} Sezonu",
+        "starts_at": _iso_utc(starts_at),
+        "ends_at": _iso_utc(ends_at),
+    }
+
+
+_CURRENT_SEASON = monthly_season_descriptor()
+CURRENT_SEASON_ID = _CURRENT_SEASON["id"]
+CURRENT_SEASON_NAME_TR = _CURRENT_SEASON["name_tr"]
+CURRENT_SEASON_STARTS_AT = _CURRENT_SEASON["starts_at"]
+CURRENT_SEASON_ENDS_AT = _CURRENT_SEASON["ends_at"]
 
 DAILY_MISSIONS = (
     {
@@ -52,8 +91,8 @@ SEASON_REWARD_TRACK = (
 )
 
 
-def utc_day_key() -> str:
-    return datetime.now(timezone.utc).date().isoformat()
+def utc_day_key(moment: datetime | None = None) -> str:
+    return (moment or datetime.now(timezone.utc)).astimezone(timezone.utc).date().isoformat()
 
 
 @dataclass(slots=True)
@@ -64,6 +103,8 @@ class PlayerProfile:
     experience: int = 0
     rating: int = DEFAULT_RATING
     highest_rating: int = 0
+    team_id: str | None = None
+    team_name: str | None = None
     arena_reward_claims: tuple[str, ...] = ()
     progression_version: int = 2
     preferred_battle_pool_ids: tuple[str, ...] = field(
@@ -137,6 +178,8 @@ class PlayerProfile:
             "experience_to_next_level": self.experience_to_next_level,
             "rating": self.rating,
             "highest_rating": max(self.rating, self.highest_rating),
+            "team_id": self.team_id,
+            "team_name": self.team_name,
             "league_name_tr": self.league_name_tr,
             "preferred_battle_pool_ids": list(
                 self.preferred_battle_pool_ids
@@ -177,6 +220,7 @@ class PlayerProfile:
         }
 
     def engagement_view(self) -> dict:
+        season = monthly_season_descriptor()
         claimed_tiers = set(self.claimed_season_tiers)
         claimed_missions = set(self.claimed_daily_missions)
         completed_tiers = [
@@ -209,10 +253,10 @@ class PlayerProfile:
             progress = min(span, max(0, self.season_xp - previous_required))
 
         return {
-            "season_id": CURRENT_SEASON_ID,
-            "season_name_tr": CURRENT_SEASON_NAME_TR,
-            "season_starts_at": CURRENT_SEASON_STARTS_AT,
-            "season_ends_at": CURRENT_SEASON_ENDS_AT,
+            "season_id": season["id"],
+            "season_name_tr": season["name_tr"],
+            "season_starts_at": season["starts_at"],
+            "season_ends_at": season["ends_at"],
             "season_xp": self.season_xp,
             "current_tier": current_tier,
             "max_tier": len(SEASON_REWARD_TRACK),
@@ -256,8 +300,9 @@ class PlayerProfileError(ValueError):
 
 
 class PlayerProfileService:
-    def __init__(self):
+    def __init__(self, now_func=None):
         self._profiles: dict[str, PlayerProfile] = {}
+        self._now_func = now_func or (lambda: datetime.now(timezone.utc))
 
     def get_or_create(
         self,
@@ -273,6 +318,7 @@ class PlayerProfileService:
 
         profile = self._profiles.get(player_id)
         if profile is not None:
+            self._sync_monthly_season(profile)
             self._sync_daily_missions(profile, day_key)
             return profile
 
@@ -283,10 +329,26 @@ class PlayerProfileService:
                 if display_name
                 else player_id
             ),
+            active_meta_season_id=monthly_season_descriptor(self._now_func())["id"],
         )
         self._profiles[player_id] = profile
+        self._sync_monthly_season(profile)
         self._sync_daily_missions(profile, day_key)
         return profile
+
+    def _sync_monthly_season(self, profile: PlayerProfile) -> bool:
+        season = monthly_season_descriptor(self._now_func())
+        if profile.active_meta_season_id == season["id"]:
+            return False
+
+        from .meta_progression import archive_and_soft_reset_season
+
+        archive_and_soft_reset_season(
+            profile,
+            season["id"],
+            archived_at=season["starts_at"],
+        )
+        return True
 
     def get(self, player_id: str) -> PlayerProfile:
         try:
@@ -367,7 +429,7 @@ class PlayerProfileService:
         profile: PlayerProfile,
         day_key: str | None = None,
     ) -> None:
-        current_day = day_key or utc_day_key()
+        current_day = day_key or utc_day_key(self._now_func())
         if profile.daily_mission_day == current_day:
             return
         profile.daily_mission_day = current_day

@@ -354,7 +354,7 @@ class MetaProgressionService:
             "statistics": {
                 **profile.lifetime_stats,
                 "current_trophies": profile.rating,
-                "highest_trophies": profile.highest_rating,
+                "highest_trophies": max(profile.rating, profile.highest_rating),
                 "rank": current_rank["name_tr"],
                 "unlocked_modules": len(unlocked_module_ids(profile.highest_rating)),
                 "upgraded_modules": sum(v > 0 for v in profile.module_upgrade_levels.values()),
@@ -843,9 +843,9 @@ def archive_and_soft_reset_season(profile, next_season_id: str, archived_at: str
         "archived_at": archived_at or iso_utc(utc_now()),
     }
     profile.season_archives.append(archive)
-    # Arena progress is permanent; only league trophies are softened.
+    # Arena progress is permanent. League players return to League 1.
     if profile.rating >= 3600:
-        profile.rating = 3600 + round((profile.rating - 3600) * .5)
+        profile.rating = 3600
     profile.season_xp = 0
     profile.claimed_season_tiers = ()
     profile.active_meta_season_id = next_season_id

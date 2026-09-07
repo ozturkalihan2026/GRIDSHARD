@@ -136,20 +136,20 @@ function createClient() {
 
 
 {
-  assert.strictEqual(maxActiveModulesForElapsedMs(0), 10);
-  assert.strictEqual(maxActiveModulesForElapsedMs(14999), 10);
-  assert.strictEqual(maxActiveModulesForElapsedMs(15000), 10);
-  assert.strictEqual(maxActiveModulesForElapsedMs(30000), 10);
-  assert.strictEqual(maxActiveModulesForElapsedMs(45000), 10);
-  assert.strictEqual(maxActiveModulesForElapsedMs(60000), 10);
-  assert.strictEqual(maxActiveModulesForElapsedMs(75000), 10);
-  assert.strictEqual(maxActiveModulesForElapsedMs(90000), 10);
+  assert.strictEqual(maxActiveModulesForElapsedMs(0), 15);
+  assert.strictEqual(maxActiveModulesForElapsedMs(14999), 15);
+  assert.strictEqual(maxActiveModulesForElapsedMs(15000), 15);
+  assert.strictEqual(maxActiveModulesForElapsedMs(30000), 15);
+  assert.strictEqual(maxActiveModulesForElapsedMs(45000), 15);
+  assert.strictEqual(maxActiveModulesForElapsedMs(60000), 15);
+  assert.strictEqual(maxActiveModulesForElapsedMs(75000), 15);
+  assert.strictEqual(maxActiveModulesForElapsedMs(90000), 15);
 }
 
 {
   const { client } = createClient();
   client.updateElapsedMs(30000);
-  assert.strictEqual(client.maxActiveModules(), 10);
+  assert.strictEqual(client.maxActiveModules(), 15);
   assert.strictEqual(client.activeModuleCount(), 1);
 }
 
@@ -171,14 +171,14 @@ function createClient() {
   });
 
   battle.updateElapsedMs(0);
-  for (let index = 0; index < 6; index += 1) {
+  for (let index = 0; index < 11; index += 1) {
     assert.strictEqual(battle.deployDefinition("shield", 0).ok, true);
   }
-  assert.strictEqual(battle.pendingPlacementCount(), 6);
+  assert.strictEqual(battle.pendingPlacementCount(), 11);
   const blockedPending = battle.deployDefinition("shield", 0);
   assert.strictEqual(blockedPending.ok, false);
-  assert.ok(blockedPending.reason.includes("10/10"));
-  assert.strictEqual(emitted.length, 6);
+  assert.ok(blockedPending.reason.includes("15/15"));
+  assert.strictEqual(emitted.length, 11);
   assert.strictEqual(emitted[0].kind, "deploy_module");
 }
 
@@ -207,23 +207,20 @@ function createClient() {
 
 {
   const fs = require("fs");
-  const appSource = fs.readFileSync(path.join(ROOT,"src/app.js"),"utf8");
-  const instanceIds = [
-    "core-1",
-    "generator-1",
-    "laser-1",
-    "shield-1",
-    "battery-1",
-    "amplifier-1",
-    "cooler-1",
-    "repair-1",
-    "splitter-1",
-    "pulse-cannon-1",
-    "armor-1",
-    "emp-1",
+  const canonSource = fs.readFileSync(path.join(ROOT,"src/canon-data.js"),"utf8");
+  const definitionIds = [
+    "laser",
+    "shield",
+    "battery",
+    "amplifier",
+    "cooler",
+    "repair",
+    "pulse_cannon",
+    "armor",
+    "emp",
   ];
-  for (const instanceId of instanceIds) {
-    assert.ok(appSource.includes(`"${instanceId}"`));
+  for (const definitionId of definitionIds) {
+    assert.ok(canonSource.includes(`"id": "${definitionId}"`));
   }
 }
 
@@ -268,25 +265,17 @@ function createClient() {
 {
   const fs = require("fs");
   const src = fs.readFileSync(path.join(ROOT,"src/app.js"),"utf8");
-  assert.ok(src.includes("const BOARD_CELLS"));
-  assert.ok(src.includes('new Set(["2,1","3,2","2,3","1,2"])'));
+  assert.ok(src.includes("Array.from({length: 15}"));
+  assert.ok(src.includes("const GATE_KEYS = new Set()"));
+  assert.ok(src.includes("const SPECIAL_CELL_INFO = {}"));
   assert.ok(src.includes("core-cell"));
-  assert.ok(src.includes("gate-cell"));
 }
 
 
 {
   const fs = require("fs");
   const src = fs.readFileSync(path.join(ROOT,"src/app.js"),"utf8");
-  for (const label of [
-    "Saldırı Hücresi",
-    "Savunma Hücresi",
-    "Enerji Hücresi",
-    "Onarım Hücresi",
-  ]) {
-    assert.ok(src.includes(label));
-  }
-  assert.ok(src.includes("SPECIAL_CELL_INFO"));
+  assert.ok(src.includes("const SPECIAL_CELL_INFO = {}"));
   assert.ok(src.includes("cellPlacementRejection"));
   assert.ok(src.includes("playerCellDebris"));
 }
@@ -329,7 +318,6 @@ function createClient() {
   assert.ok(src.includes("modulePorts"));
   assert.ok(src.includes("areConnected"));
   assert.ok(src.includes("connectedEnergyModuleIds"));
-  assert.ok(src.includes("port-dot"));
   assert.ok(src.includes("energy-disconnected"));
 }
 
@@ -2412,7 +2400,7 @@ function createClient() {
     )
   );
   assert.ok(!html.includes('id="settings-save-status"'));
-  assert.ok(html.includes('id="settings-persistence-status"'));
+  assert.ok(!html.includes('id="settings-persistence-status"'));
   assert.ok(
     app.includes(
       ".loadProfile()"
@@ -2519,7 +2507,7 @@ function createClient() {
   const html=fs.readFileSync(path.join(ROOT,"index.html"),"utf8");
   assert.ok(
     html.includes(
-      "2.0.0-beta.38.1"
+      "2.1.0-beta.43"
     )
   );
   assert.ok(
@@ -4637,7 +4625,7 @@ function createClient() {
   assert.ok(!html.includes('id="battle-pool-toggle-selected"'));
   assert.ok(html.includes('id="battle-pool-preset-select"'));
   assert.ok(!html.includes('id="settings-save-status"'));
-  assert.ok(html.includes('id="settings-persistence-status"'));
+  assert.ok(!html.includes('id="settings-persistence-status"'));
 
   assert.ok(app.includes("prepareLocalMatch"));
   assert.ok(app.includes("pool-choice-select"));
@@ -4652,7 +4640,7 @@ function createClient() {
   const css=fs.readFileSync("./src/styles.css","utf8");
 
   assert.ok(html.includes('class="battle-legend play-live-panel"'));
-  assert.ok(html.includes('id="settings-persistence-status"'));
+  assert.ok(!html.includes('id="settings-persistence-status"'));
   assert.ok(app.includes("renderSettingsPersistenceStatus"));
   assert.ok(app.includes("Kalıcılık: Sunucuda doğrulandı"));
   assert.ok(app.includes('cell.dataset.cellLabel'));
@@ -4718,12 +4706,12 @@ function createClient() {
 
   assert.ok(!html.includes("GRIDSHARD // CORE ARENA"));
   assert.ok(html.includes('<span class="lobby-subtitle">CORE ARENA</span>'));
-  assert.ok(html.includes("Kapılar arasında taşınabilir"));
+  assert.ok(html.includes("Kablodan modül hücresine"));
   assert.ok(css.includes(".lobby-core-orbit"));
   assert.ok(css.includes(".battle-fx-strip"));
   assert.ok(css.includes("@keyframes relay-hit"));
   assert.ok(css.includes("@keyframes gs-core-breath"));
-  assert.ok(app.includes("allowedMovePositions"));
+  assert.ok(app.includes("BOARD_CELLS"));
 }
 
 {
@@ -5012,13 +5000,13 @@ function createClient() {
     "statistics-total-damage",
     "statistics-module-replacements",
     "statistics-boosters-used",
-    "statistics-most-used-modules",
+    "statistics-most-used-decks",
   ]) {
     assert.ok(html.includes(`id="${id}"`));
   }
   assert.ok(app.includes('["core", "generator"].includes'));
-  assert.ok(app.includes(".slice(0, 8)"));
-  assert.ok(app.includes("statistics-module-card"));
+  assert.ok(app.includes("most_used_decks"));
+  assert.ok(app.includes("statistics-deck-card"));
   assert.ok(css.includes(".statistics-metrics-grid"));
   assert.ok(css.includes(".statistics-empty-state"));
   assert.ok(html.includes('class="booster-panel battle-booster-dock"'));

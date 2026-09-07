@@ -11,7 +11,7 @@ assert.ok(css.includes("--gs-fix-shell-top:110px"));
 assert.ok(css.includes(".menu-action.is-active .menu-action-title"));
 assert.ok(css.includes(".menu-action:not(.is-active) .lobby-dock-icon"));
 assert.ok(html.includes('data-shell-screen="shop" aria-label="Mağaza"'));
-assert.ok(html.includes('data-shell-screen="modules" aria-label="Modüller"'));
+assert.ok(html.includes('data-shell-screen="modules" aria-label="Kartlar"'));
 assert.ok(html.includes('data-shell-screen="events" aria-label="Etkinlik"'));
 
 assert.ok(app.includes('requestOwnedAudioState("online_status_update")'));
@@ -33,7 +33,7 @@ assert.ok(app.includes("AŞIRI ISI!"));
 assert.ok(css.includes('.battle-floating-feedback.sabotage'));
 assert.ok(css.includes('[data-impact="large"]'));
 
-assert.ok(packager.includes('PACKAGE_LABEL = "fix"'));
+assert.ok(packager.includes('PACKAGE_LABEL = "cards-season"'));
 if (fs.existsSync("../RELEASE_MANIFEST.json")) {
   const manifest = JSON.parse(fs.readFileSync("../RELEASE_MANIFEST.json", "utf8"));
   assert.ok(!manifest.files.includes("RELEASE_MANIFEST.json"));

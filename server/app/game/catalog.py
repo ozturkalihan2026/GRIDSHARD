@@ -154,8 +154,12 @@ for _module_id, _spec in MODULES.items():
         behavior_id=CANON_MECHANICS.get(_module_id, _module_id),
         current_cost=_spec["current_cost"],
         category="enerji" if _spec["category"] == "sistem" else _spec["category"],
-        port_count=0,
-        movable=False, removable=False, rotatable=False,
+        # Cards are intentionally repositionable during a battle.  The
+        # previous normalized catalog set these to false while the old
+        # generator-gated board was being retired, which made every card look
+        # inert to the drag/drop, swap and replace commands.
+        port_count=_base.port_count,
+        movable=True, removable=True, rotatable=True,
         strategic_role=_role,
         description_tr=_description.replace("Bağlı", "Komşu").replace("bağlı", "komşu"),
         strong_against=tuple(key for key in _base.strong_against if key in MODULES),

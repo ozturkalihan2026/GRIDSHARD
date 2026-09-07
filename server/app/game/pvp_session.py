@@ -583,8 +583,14 @@ class PvPSessionService:
                         else None
                     ),
                     "direction": module.direction.value,
-                    "port_count": 0,
-                    "ports": [],
+                    "port_count": effective_port_count(module),
+                    "ports": [
+                        direction.value
+                        for direction in module_port_directions(
+                            module,
+                            session.engine.board.core_position,
+                        )
+                    ],
                     "current_cost": module.definition.current_cost,
                     "level": 1 + state.player_upgrade_levels.get(player_id, {}).get(module.definition.id, 0),
                     "is_powered": module.is_powered,

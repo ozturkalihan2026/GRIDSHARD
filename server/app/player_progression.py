@@ -231,6 +231,25 @@ class PlayerProgressionService:
             stats["current_streak"] = stats.get("current_streak", 0) + 1 if won else 0
             stats["longest_streak"] = max(stats.get("longest_streak", 0), stats["current_streak"])
             stats["peak_damage"] = max(stats.get("peak_damage", 0), int(summary.get("damage_dealt", 0)))
+            core_damage = 0
+            for event in state.events:
+                data = event.data
+                if event.type != "module_damaged":
+                    continue
+                if data.get("source_player_id") != player_id:
+                    continue
+                target_player_id = str(data.get("player_id", ""))
+                if not target_player_id or target_player_id == player_id:
+                    continue
+                target_player = state.players.get(target_player_id)
+                target_module = (
+                    target_player.modules.get(str(data.get("module_id", "")))
+                    if target_player is not None
+                    else None
+                )
+                if target_module is not None and target_module.definition.id == "core":
+                    core_damage += max(0, int(data.get("damage", 0)))
+            stats["core_damage_dealt"] = stats.get("core_damage_dealt", 0) + core_damage
             stats["current_spent"] = stats.get("current_spent", 0) + player.total_circuit_credits_spent
             stats["core_power_uses"] = stats.get("core_power_uses", 0) + player.core_power_uses
             stats["deployments"] = stats.get("deployments", 0) + sum(1 for m in player.modules.values() if m.definition.id != "core" and m.status.value in {"active", "destroyed"})

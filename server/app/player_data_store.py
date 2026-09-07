@@ -55,6 +55,8 @@ class PlayerDataRepository(Protocol):
         player_id: str,
     ) -> PlayerDataSnapshot | None: ...
 
+    def list_snapshots(self) -> list[PlayerDataSnapshot]: ...
+
     def delete(
         self,
         player_id: str,
@@ -185,6 +187,24 @@ class JsonFilePlayerDataRepository:
                 data["settings"]
             ),
         )
+
+    def list_snapshots(self) -> list[PlayerDataSnapshot]:
+        with self._lock:
+            payload = self._read_all()
+        snapshots: list[PlayerDataSnapshot] = []
+        for data in payload.values():
+            if not isinstance(data, dict):
+                continue
+            try:
+                snapshots.append(PlayerDataSnapshot(
+                    player_id=str(data["player_id"]),
+                    profile=dict(data["profile"]),
+                    statistics=dict(data["statistics"]),
+                    settings=dict(data["settings"]),
+                ))
+            except (KeyError, TypeError, ValueError):
+                continue
+        return snapshots
 
     def backup_health(self) -> dict:
         # Windows does not allow the atomic backup replacement while another
@@ -503,6 +523,17 @@ class InMemoryPlayerDataRepository:
             settings=dict(snapshot.settings),
         )
 
+    def list_snapshots(self) -> list[PlayerDataSnapshot]:
+        return [
+            PlayerDataSnapshot(
+                player_id=snapshot.player_id,
+                profile=dict(snapshot.profile),
+                statistics=dict(snapshot.statistics),
+                settings=dict(snapshot.settings),
+            )
+            for snapshot in self._snapshots.values()
+        ]
+
     def delete(
         self,
         player_id: str,
@@ -669,6 +700,8 @@ class PlayerDataStoreService:
             display_name=data[
                 "display_name"
             ],
+            team_id=(str(data["team_id"]) if data.get("team_id") else None),
+            team_name=(str(data["team_name"]) if data.get("team_name") else None),
             level=int(data["level"]),
             experience=int(
                 data["experience"]

@@ -17,6 +17,7 @@
     "/auth/",
     ...PROTECTED_PREFIXES,
     "/health",
+    "/leaderboards",
     "/game/",
     "/telemetry/",
     "/web-test/",

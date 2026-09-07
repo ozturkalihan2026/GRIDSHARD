@@ -195,7 +195,11 @@ test("mobil runtime yapılandırması API isteklerini HTTPS backend'e yönlendir
   });
 
   await sandbox.fetch("/health");
-  assert.deepEqual(calls, ["https://api.gridshard.example/health"]);
+  await sandbox.fetch("/leaderboards");
+  assert.deepEqual(calls, [
+    "https://api.gridshard.example/health",
+    "https://api.gridshard.example/leaderboards"
+  ]);
   assert.equal(sandbox.GridshardAuth.apiBaseUrl, "https://api.gridshard.example");
 });
 
@@ -211,4 +215,31 @@ test("Beta.42.3 ana ekran ve ilerleme yüzeyleri tek bakışta kullanılabilir",
   assert.match(app, /arena-path-stage\.is-current/);
   assert.match(css, /\.home-arena-segments > i[\s\S]*grid-column:auto !important/);
   assert.match(css, /\.module-detail-tab-content\[data-tab="talents"\][\s\S]*overflow:hidden !important/);
+});
+
+test("Beta.43 kartlar, çekirdek ayrıntısı ve lider panosu akışlarını sunar", () => {
+  const html = fs.readFileSync(path.join(ROOT, "index.html"), "utf8");
+  const app = fs.readFileSync(path.join(ROOT, "src", "app.js"), "utf8");
+  const css = fs.readFileSync(path.join(ROOT, "src", "canon.css"), "utf8");
+
+  assert.match(html, />KARTLAR</);
+  assert.match(html, /data-card-page="modules"/);
+  assert.match(html, /data-card-page="cores"/);
+  assert.match(html, /id="core-detail-dialog"/);
+  assert.match(html, /data-core-detail-tab="overview"/);
+  assert.match(html, /data-core-detail-tab="stats"/);
+  assert.match(html, /data-core-detail-tab="skills"/);
+  assert.match(html, /data-leaderboard-tab="trophies"/);
+  assert.match(html, /data-leaderboard-tab="core_damage"/);
+  assert.match(html, /data-leaderboard-tab="teams"/);
+  assert.equal(html.includes('id="settings-persistence-status"'), false);
+  assert.match(app, /repairBattleDeckAgainstCollection/);
+  assert.match(app, /onlineStatus:\s*"matchmaking"/);
+  assert.match(app, /renderBoardCables/);
+  assert.match(app, /energy-fed-cell/);
+  assert.match(css, /\.module-detail-art[\s\S]*place-items:center/);
+  assert.match(css, /\.vertical-circuit-arena \.board[\s\S]*gap: 0 !important/);
+  assert.match(css, /\.board-cable-layer[\s\S]*z-index:3 !important/);
+  assert.match(css, /\.circuit-cable-current[\s\S]*animation:gs-circuit-current-travel/);
+  assert.match(css, /\.home-core-hero-copy[\s\S]*top:7px !important/);
 });

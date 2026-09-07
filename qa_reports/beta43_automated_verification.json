@@ -1,0 +1,46 @@
+{
+  "project": "GRIDSHARD",
+  "version": "2.1.0-beta.43",
+  "status": "AUTOMATED_PASS_BROWSER_REVIEW_PENDING",
+  "passed": true,
+  "browser_review": {
+    "status": "PENDING_USER_REVIEW",
+    "owner": "user",
+    "note": "Desktop/mobile browser visuals, drag-and-drop and matchmaking sound will be checked manually by the user."
+  },
+  "checks": [
+    {
+      "name": "client_node_test",
+      "status": "PASSED",
+      "test_files": 30,
+      "assertions": 176
+    },
+    {
+      "name": "beta43_server_regressions",
+      "status": "PASSED",
+      "tests": 10,
+      "scope": [
+        "monthly season rollover",
+        "arena and league reset rules",
+        "highest trophies preservation",
+        "three-choice rotating boosters",
+        "authoritative core damage",
+        "trophy/core-damage/team leaderboards",
+        "canonical board drop/move/swap/replace commands",
+        "engine-side three-choice booster offers",
+        "AI matchmaking readiness"
+      ]
+    },
+    {
+      "name": "syntax_and_release_guard",
+      "status": "PASSED",
+      "checks": [
+        "Python compileall",
+        "Node syntax checks",
+        "release_guard.py",
+        "git diff --check"
+      ]
+    }
+  ],
+  "legacy_fixture_note": "Older Beta 38 unit fixtures still encode the retired 21-cell generator-gate board and are not acceptance criteria for the current 15-cell core-powered board."
+}

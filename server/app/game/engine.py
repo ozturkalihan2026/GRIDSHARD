@@ -35,6 +35,7 @@ from .heat import (
 )
 from .topology import (
     build_energy_topology,
+    effective_port_count,
     module_port_directions,
 )
 from .result import (
@@ -93,7 +94,10 @@ DEFAULT_MAX_COMMANDS_PER_TICK = 32
 
 MODULE_INTERACTION_UNLOCK_MS = 0
 MAX_ACTIVE_MODULES = 15  # Core + 14 deployable cells.
-BOOSTERS_ENABLED = False
+# Beta 43 exposes the rotating three-choice booster offer in live matches.
+# Keeping this switch authoritative on the engine prevents the client-only
+# preview from getting out of sync with an online battle.
+BOOSTERS_ENABLED = True
 DESTROYED_CELL_DEBRIS_DURATION_MS = 3_000
 CORE_POWER_MAX_CHARGE = 100.0
 CORE_POWER_CHARGE_DURATION_MS = 35_000
@@ -1554,15 +1558,15 @@ class BattleEngine:
         try:
             handlers = {
                 "deploy_module": self._cmd_deploy_module,
-                "place_module": self._cmd_reject_manual_placement,
-                "remove_module": self._cmd_reject_reposition,
-                "move_module": self._cmd_reject_reposition,
-                "swap_modules": self._cmd_reject_reposition,
-                "replace_module": self._cmd_reject_reposition,
-                "rotate_module": self._cmd_reject_reposition,
-                "apply_booster": self._cmd_reject_booster,
-                "select_booster": self._cmd_reject_booster,
-                "use_booster": self._cmd_reject_booster,
+                "place_module": self._cmd_place_module_legacy,
+                "remove_module": self._cmd_remove_module,
+                "move_module": self._cmd_move_module,
+                "swap_modules": self._cmd_swap_modules,
+                "replace_module": self._cmd_replace_module,
+                "rotate_module": self._cmd_rotate_module,
+                "apply_booster": self._cmd_apply_booster,
+                "select_booster": self._cmd_select_booster,
+                "use_booster": self._cmd_use_booster,
                 "use_core_power": self._cmd_use_core_power,
                 "forfeit_battle": self._cmd_forfeit_battle,
             }
@@ -1815,17 +1819,6 @@ class BattleEngine:
         self._ensure_module_allowed_in_cell(module, position)
         self._ensure_position_available(player_id, position)
 
-        connected_direction = self._connected_direction_for_placement(
-            player_id,
-            module,
-            position,
-        )
-        if connected_direction is None:
-            raise CommandRejected(
-                "Modül çalışan enerji hattına port bağlantısı kurmuyor. "
-                "Jeneratöre bağlı bir modülün yanındaki hücreyi seçin."
-            )
-
         self._spend_circuit_credits(
             player_id,
             module.definition.circuit_credit_cost,
@@ -1834,7 +1827,9 @@ class BattleEngine:
 
         module.status = ModuleStatus.ACTIVE
         module.position = position
-        module.direction = connected_direction
+        # Beta 43 uses the board's embedded cable network.  Port orientation
+        # remains visual/module metadata and must not block a valid drop.
+        module.direction = module.direction or Direction.UP
         module.is_powered = False
 
         self._emit(
@@ -1876,8 +1871,8 @@ class BattleEngine:
 
         if (
             module.definition.id == "generator"
-            and new_position
-            not in self.board.generator_gate_positions
+            and self.board.generator_gate_positions
+            and new_position not in self.board.generator_gate_positions
         ):
             raise CommandRejected(
                 "Jeneratör yalnızca dört Çekirdek kapısı arasında taşınabilir."
@@ -1889,20 +1884,6 @@ class BattleEngine:
             ignore_module_id=module.instance_id,
         )
 
-        connected_direction = module.direction
-        if module.definition.id != "generator":
-            connected_direction = self._connected_direction_for_placement(
-                player_id,
-                module,
-                new_position,
-                exclude_module_id=module.instance_id,
-            )
-            if connected_direction is None:
-                raise CommandRejected(
-                    "Modül bu hücrede Jeneratöre uzanan çalışan bir port "
-                    "zincirine bağlanamıyor."
-                )
-
         self._spend_circuit_credits(
             player_id,
             self.circuit_credit_config.move_cost,
@@ -1910,7 +1891,9 @@ class BattleEngine:
         )
 
         module.position = new_position
-        module.direction = connected_direction
+        # Movement is a board-cell operation; orientation is retained unless
+        # the player explicitly rotates the module afterwards.
+        module.direction = module.direction or Direction.UP
         module.is_powered = False
 
         self._emit(
@@ -2010,9 +1993,7 @@ class BattleEngine:
             second,
         )
         if directions is None:
-            raise CommandRejected(
-                "Bu takas iki modülü birden çalışan Jeneratör hattına bağlayamıyor."
-            )
+            raise CommandRejected("Bu takas için iki geçerli modül konumu gerekli.")
 
         self._spend_circuit_credits(
             player_id,
@@ -2062,17 +2043,6 @@ class BattleEngine:
         position = outgoing.position
         self._ensure_module_allowed_in_cell(incoming, position)
 
-        connected_direction = self._connected_direction_for_placement(
-            player_id,
-            incoming,
-            position,
-            exclude_module_id=outgoing.instance_id,
-        )
-        if connected_direction is None:
-            raise CommandRejected(
-                "Gelen modül bu hücrede çalışan enerji hattına bağlanamıyor."
-            )
-
         self._spend_circuit_credits(
             player_id,
             incoming.definition.circuit_credit_cost,
@@ -2084,7 +2054,7 @@ class BattleEngine:
 
         incoming.status = ModuleStatus.ACTIVE
         incoming.position = position
-        incoming.direction = connected_direction
+        incoming.direction = outgoing.direction or incoming.direction or Direction.UP
         incoming.is_powered = False
 
         self._emit(
@@ -2515,7 +2485,14 @@ class BattleEngine:
             "is_powered": module.is_powered,
             "energy_received_last_tick": module.energy_received_last_tick,
             "energy_required_last_tick": module.energy_required_last_tick,
-            "ports": [],
+            "port_count": effective_port_count(module),
+            "ports": [
+                direction.value
+                for direction in module_port_directions(
+                    module,
+                    self.board.core_position,
+                )
+            ],
             "debuffs": sorted(module.debuffs),
             "persistent_effects": sorted(module.persistent_effects),
             "cooldowns": sorted(module.cooldowns_ready_at_ms),

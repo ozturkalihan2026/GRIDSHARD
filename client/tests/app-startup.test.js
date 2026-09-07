@@ -132,6 +132,11 @@ const mobileControllerSource = fs.readFileSync(
   "utf8"
 );
 vm.runInContext(mobileControllerSource, sandbox, { filename: "mobile-controller.js" });
+const canonDataSource = fs.readFileSync(
+  path.join(CLIENT_ROOT, "src", "canon-data.js"),
+  "utf8"
+);
+vm.runInContext(canonDataSource, sandbox, { filename: "canon-data.js" });
 const source = fs.readFileSync(path.join(CLIENT_ROOT, "src", "app.js"), "utf8");
 vm.runInContext(source, sandbox, { filename: "app.js" });
 
@@ -257,8 +262,8 @@ if (typeof returnPreparation._listeners.click !== "function") {
   throw new Error("Hazırlık Ekranına Dön handler bağlanmadı.");
 }
 returnPreparation._listeners.click();
-if (document.body.dataset.localStatus !== "setup") {
-  throw new Error(`Sonuçtan hazırlığa dönülmedi: ${document.body.dataset.localStatus}`);
+if (document.body.dataset.appScreen !== "menu") {
+  throw new Error(`Sonuçtan ana ekrana dönülmedi: ${document.body.dataset.appScreen}`);
 }
 
 sandbox.window.__GRIDSHARD_TEST_API.startQuickLocalBattle();

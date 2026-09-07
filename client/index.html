@@ -68,7 +68,7 @@
     <section id="main-menu-panel" class="main-menu-panel">
       <div class="main-menu-brand">
         <h1>GRIDSHARD</h1>
-        <span>2.1.0-beta.42</span>
+        <span>2.1.0-beta.43</span>
       </div>
       <div class="lobby-backdrop" aria-hidden="true">
         <div class="lobby-board-grid" aria-hidden="true">
@@ -186,13 +186,29 @@
       </footer>
     </dialog>
 
+    <dialog id="leaderboard-dialog" class="leaderboard-dialog" aria-labelledby="leaderboard-title">
+      <header class="leaderboard-header">
+        <span class="screen-kicker">SEZONLUK REKABET</span>
+        <h2 id="leaderboard-title">Lider Panosu</h2>
+        <p id="leaderboard-season-label">Bu ayın sıralaması</p>
+      </header>
+      <p id="leaderboard-status" class="leaderboard-status" role="status" aria-live="polite">Sıralama yükleniyor…</p>
+      <ol id="leaderboard-list" class="leaderboard-list" aria-label="Oyuncu sıralaması"></ol>
+      <nav class="leaderboard-tabs" aria-label="Lider panosu bölümleri">
+        <button id="leaderboard-back" type="button" aria-label="Devre Yoluna dön" title="Geri">←</button>
+        <button type="button" data-leaderboard-tab="trophies" class="is-active"><span>🏆</span><small>KUPA</small></button>
+        <button type="button" data-leaderboard-tab="core_damage"><span>◈</span><small>ÇEKİRDEK</small></button>
+        <button type="button" data-leaderboard-tab="teams"><span>♟</span><small>TAKIM</small></button>
+      </nav>
+    </dialog>
+
     <nav id="app-bottom-dock" class="main-scope-nav lobby-bottom-dock app-bottom-dock" aria-label="Ana gezinme">
       <button type="button" class="menu-action" data-open-screen="shop" data-shell-screen="shop" aria-label="Mağaza" title="Mağaza">
         <svg class="lobby-dock-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9h16l-1 11H5L4 9Z"/><path d="M7 9V6a5 5 0 0 1 10 0v3M9 13h6"/></svg>
         <span class="menu-action-title">MAĞAZA</span>
       </button>
-      <button type="button" class="menu-action" data-open-screen="modules" data-shell-screen="modules" aria-label="Modüller" title="Modüller">
-        <svg class="lobby-dock-icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg><span class="menu-action-title">MODÜLLER</span>
+      <button type="button" class="menu-action" data-open-screen="modules" data-shell-screen="modules" aria-label="Kartlar" title="Kartlar">
+        <svg class="lobby-dock-icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg><span class="menu-action-title">KARTLAR</span>
       </button>
       <button type="button" class="menu-action is-active" data-open-screen="menu" data-shell-screen="menu" aria-label="Ev" title="Ev" aria-current="page">
         <svg class="lobby-dock-icon lobby-dock-home" viewBox="0 0 28 28" aria-hidden="true">
@@ -238,28 +254,48 @@
 
     <section id="modules-screen" class="mobile-hub-screen modules-screen" data-screen-panel="modules" hidden>
       <header class="mobile-screen-heading">
-        <div><span>KOLEKSİYON VE DESTE</span><h2>Modüller</h2></div>
+        <div><span>KOLEKSİYON VE DESTE</span><h2>KARTLAR</h2></div>
       </header>
-      <section class="module-deck-editor" aria-labelledby="module-deck-title">
-        <div class="mobile-section-heading"><div><span>AKTİF</span><h3 id="module-deck-title">Savaş Destesi</h3></div><small id="module-deck-count">6 / 6</small></div>
-        <div id="module-deck-strip" class="module-deck-strip"></div>
-        <div id="module-preset-strip" class="module-preset-strip" aria-label="Yedi hazır deste"></div>
-        <p id="module-action-status" class="mobile-action-status" role="status">Seç ile ilk boş yere ekle. Desteden çıkarmak için kartına dokun.</p>
-      </section>
-      <nav id="module-category-tabs" class="module-category-tabs" aria-label="Modül sınıfları">
-        <button type="button" data-module-filter="all" class="is-active">Tümü</button>
-        <button type="button" data-module-filter="sistem">Sistem</button>
-        <button type="button" data-module-filter="saldırı">Saldırı</button>
-        <button type="button" data-module-filter="savunma">Savunma</button>
-        <button type="button" data-module-filter="destek">Destek</button>
-        <button type="button" data-module-filter="sabotaj">Sabotaj</button>
-      </nav>
-      <div id="module-collection-grid" class="module-collection-grid" aria-live="polite"></div>
-      <div id="module-quick-actions" class="module-quick-actions" hidden>
-        <strong id="module-quick-name">Modül</strong>
-        <button id="module-quick-info" type="button">Bilgi</button>
-        <button id="module-quick-select" type="button">Seç</button>
+      <div class="cards-page is-active" data-card-page-panel="modules">
+        <section class="module-deck-editor" aria-labelledby="module-deck-title">
+          <div class="mobile-section-heading"><div><span>AKTİF</span><h3 id="module-deck-title">Savaş Destesi</h3></div><small id="module-deck-count">6 / 6</small></div>
+          <div id="module-deck-strip" class="module-deck-strip"></div>
+          <div id="module-preset-strip" class="module-preset-strip" aria-label="Yedi hazır deste"></div>
+          <p id="module-action-status" class="mobile-action-status" role="status">Seç ile ilk boş yere ekle. Desteden çıkarmak için kartına dokun.</p>
+        </section>
+        <nav id="module-category-tabs" class="module-category-tabs" aria-label="Modül sınıfları">
+          <button type="button" data-module-filter="all" class="is-active">Tümü</button>
+          <button type="button" data-module-filter="sistem">Sistem</button>
+          <button type="button" data-module-filter="saldırı">Saldırı</button>
+          <button type="button" data-module-filter="savunma">Savunma</button>
+          <button type="button" data-module-filter="destek">Destek</button>
+          <button type="button" data-module-filter="sabotaj">Sabotaj</button>
+        </nav>
+        <div id="module-collection-grid" class="module-collection-grid" aria-live="polite"></div>
+        <div id="module-quick-actions" class="module-quick-actions" hidden>
+          <strong id="module-quick-name">Modül</strong>
+          <button id="module-quick-info" type="button">Bilgi</button>
+          <button id="module-quick-select" type="button">Seç</button>
+        </div>
       </div>
+      <div class="cards-page" data-card-page-panel="cores" hidden>
+        <section class="core-deck-editor" aria-labelledby="active-core-title">
+          <div class="mobile-section-heading"><div><span>AKTİF</span><h3 id="active-core-title">Savaş Çekirdeği</h3></div><small>1 / 1</small></div>
+          <div id="active-core-card" class="active-core-card"></div>
+          <p id="core-action-status" class="mobile-action-status" role="status">Bir çekirdek kartına dokun; seç veya bilgilerini incele.</p>
+        </section>
+        <div class="mobile-section-heading core-collection-heading"><div><span>ÇEKİRDEK KOLEKSİYONU</span><h3>Çekirdekler</h3></div><small id="core-collection-count">1 / 7</small></div>
+        <div id="core-collection-list" class="core-collection-grid" aria-live="polite"></div>
+        <div id="core-quick-actions" class="module-quick-actions core-quick-actions" hidden>
+          <strong id="core-quick-name">Çekirdek</strong>
+          <button id="core-quick-info" type="button">Bilgi</button>
+          <button id="core-quick-select" type="button">Seç</button>
+        </div>
+      </div>
+      <nav class="cards-page-tabs" aria-label="Kart koleksiyonu bölümleri">
+        <button type="button" data-card-page="modules" class="is-active"><span>▦</span><strong>MODÜLLER</strong></button>
+        <button type="button" data-card-page="cores"><span>◈</span><strong>ÇEKİRDEK</strong></button>
+      </nav>
     </section>
 
     <section id="team-screen" class="mobile-hub-screen simple-hub-screen" data-screen-panel="team" hidden>
@@ -275,9 +311,26 @@
       </div>
     </section>
 
-    <dialog id="core-collection-dialog" class="module-detail-dialog" aria-label="Çekirdekler">
-      <button class="module-detail-close" type="button" onclick="this.closest('dialog').close()" aria-label="Kapat">×</button>
-      <h2>Çekirdekler</h2><p id="core-action-status" role="status"></p><div id="core-collection-list"></div>
+    <dialog id="core-detail-dialog" class="module-detail-dialog core-detail-dialog" aria-labelledby="core-detail-name">
+      <button id="core-detail-close" class="module-detail-close" type="button" aria-label="Kapat">×</button>
+      <header class="module-detail-hero core-detail-hero">
+        <div id="core-detail-art" class="module-detail-art core-detail-art"></div>
+        <div class="module-detail-title"><h2 id="core-detail-name">Çekirdek</h2><span id="core-detail-role">REZONANS</span></div>
+      </header>
+      <div class="module-detail-level-row">
+        <strong id="core-detail-level">SEVİYE 1</strong>
+        <span id="core-detail-selected-state">SEÇİLDİ</span>
+        <div><span id="core-detail-shards">0 / 2</span><progress id="core-detail-progress" value="0" max="2"></progress></div>
+      </div>
+      <div class="module-detail-stats" id="core-detail-stats"></div>
+      <div class="core-detail-actions"><button id="core-detail-select" type="button">SEÇ</button><button id="core-detail-upgrade" type="button">YÜKSELT</button></div>
+      <p id="core-detail-status" role="status" aria-live="polite"></p>
+      <section id="core-detail-tab-content" class="module-detail-tab-content"></section>
+      <nav class="module-detail-tabs core-detail-tabs" aria-label="Çekirdek bilgi başlıkları">
+        <button type="button" data-core-detail-tab="overview" class="is-active" aria-label="Genel"><span>◉</span><small>GENEL</small></button>
+        <button type="button" data-core-detail-tab="stats" aria-label="İstatistikler"><span>▥</span><small>İSTATİSTİK</small></button>
+        <button type="button" data-core-detail-tab="skills" aria-label="Yetenekler"><span>✦</span><small>YETENEKLER</small></button>
+      </nav>
     </dialog>
     <dialog id="module-detail-dialog" class="module-detail-dialog" aria-labelledby="module-detail-name">
       <button id="module-detail-close" class="module-detail-close" type="button" aria-label="Kapat">×</button>
@@ -307,6 +360,10 @@
         <span>Genel · İlerleme · Savaş Havuzu · <strong id="profile-load-status" data-status="idle">Yerel önizleme</strong></span>
       </div>
       <p id="profile-live-summary">Oyuncu · Seviye 1 · Gümüş · 1000 Derece Puanı · 0 XP</p>
+      <div class="profile-highlights" aria-label="Profil rekorları">
+        <article><span>🏆</span><div><small>TÜM ZAMANLAR</small><strong id="profile-highest-trophies">0 Kupa</strong></div></article>
+        <article><span>▦</span><div><small>EN ÇOK KULLANILAN DESTE</small><strong id="profile-most-used-deck">Henüz maç yok</strong></div></article>
+      </div>
       <nav class="profile-hub-links" aria-label="Profil bölümleri">
         <button type="button" data-open-screen="daily"><span>GÜNLÜK</span><strong>Günlük Ödüller</strong><small>Görevlerini tamamla ve ödüllerini al</small></button>
         <button type="button" data-open-screen="rewards"><span>SEZON</span><strong>Ödül Yolu</strong><small>Kademe ilerlemeni ve açılan ödülleri gör</small></button>
@@ -341,7 +398,7 @@
 
     <section class="engagement-summary-panel season-rewards-screen" id="season-rewards-screen" data-screen-panel="rewards" hidden>
       <div class="panel-title-row">
-        <div class="screen-heading-block"><span class="screen-kicker">SEZON SIFIR · ÜCRETSİZ ÖDÜL YOLU</span><h2>Ödül Yolu</h2><p class="screen-subtitle">Çekirdek Uyanışı boyunca kademeleri aç ve sunucu doğrulamalı ödüllerini al.</p></div>
+        <div class="screen-heading-block"><span id="season-rewards-kicker" class="screen-kicker">AYLIK SEZON · ÜCRETSİZ ÖDÜL YOLU</span><h2>Ödül Yolu</h2><p id="season-rewards-subtitle" class="screen-subtitle">Bu ay boyunca kademeleri aç ve sunucu doğrulamalı ödüllerini al.</p></div>
         <div class="season-zero-currency" title="Gelecek kozmetik ödülleri için birikir."><span>AKI PARÇASI</span><strong id="season-flux-shards">0</strong></div>
       </div>
       <div class="season-zero-progress-summary">
@@ -399,7 +456,7 @@
 
     <section class="statistics-summary-panel" id="statistics-summary-panel" data-screen-panel="statistics" hidden>
       <div class="panel-title-row">
-        <div class="screen-heading-block"><span class="screen-kicker">SAVAŞ ARŞİVİ</span><h2>İstatistikler</h2><p class="screen-subtitle">Savaş geçmişin, kaynak kullanımın ve en sık kullandığın modüller.</p></div>
+        <div class="screen-heading-block"><span class="screen-kicker">SAVAŞ ARŞİVİ</span><h2>İstatistikler</h2><p class="screen-subtitle">Savaş geçmişin, kaynak kullanımın ve en sık kullandığın desteler.</p></div>
         <span>Sunucu otoriteli maç sonuçları · <strong id="statistics-load-status" data-status="idle">Yerel önizleme</strong></span>
       </div>
       <p id="statistics-live-summary">Maç 0 · Galibiyet 0 · Mağlubiyet 0 · Beraberlik 0 · Galibiyet %0</p>
@@ -431,10 +488,10 @@
       </div>
       <section class="statistics-module-usage" aria-labelledby="statistics-module-usage-title">
         <div class="statistics-section-heading">
-          <div><span class="screen-kicker">DEVRE ALIŞKANLIĞI</span><h3 id="statistics-module-usage-title">En Çok Kullanılan Modüller</h3></div>
-          <small>Maçta en az bir kez aktif olan modüller</small>
+          <div><span class="screen-kicker">DEVRE ALIŞKANLIĞI</span><h3 id="statistics-module-usage-title">En Çok Kullanılan Desteler</h3></div>
+          <small>Tamamlanan maçlarda kullanılan altı kartlık dizilimler</small>
         </div>
-        <div id="statistics-most-used-modules" class="statistics-module-list">
+        <div id="statistics-most-used-decks" class="statistics-deck-list">
           <p class="statistics-empty-state">Henüz tamamlanmış maç verisi yok.</p>
         </div>
       </section>
@@ -468,7 +525,6 @@
           <button id="settings-preview-music" type="button">Müziği Önizle</button>
           <button id="settings-preview-sfx" type="button">SFX Önizle</button>
         </div>
-        <span id="settings-persistence-status" role="status">Kalıcılık: Henüz doğrulanmadı</span>
       </div>
       <section class="settings-about-panel" aria-labelledby="settings-about-title">
         <div>
@@ -477,7 +533,7 @@
           <p>GRIDSHARD · Devreni kur, çekirdeği kır.</p>
         </div>
         <dl>
-          <div><dt>Sürüm</dt><dd id="ui-build-version">2.1.0-beta.42</dd></div>
+          <div><dt>Sürüm</dt><dd id="ui-build-version">2.1.0-beta.43</dd></div>
           <div><dt>Yapı</dt><dd id="ui-build-run">manifest bekleniyor</dd></div>
         </dl>
       </section>
@@ -714,8 +770,8 @@
 
     <section class="battle-legend play-live-panel" data-screen-panel="play" hidden>
       <span><strong>Çekirdek</strong> sabit ana hedef</span>
-      <span><strong>Jeneratör</strong> sabit başlangıç enerji kaynağı</span>
-      <span><strong>Kapı</strong> çekirdeğe doğrudan bağlantı</span>
+      <span><strong>Kablo</strong> bitişik hücreleri birbirine bağlar</span>
+      <span><strong>Akım</strong> kablodan modül hücrelerine akar</span>
       <span><strong>Özel Hücre</strong> hücre bonusu sağlar</span>
     </section>
 
@@ -723,7 +779,7 @@
       <div><span>Yerel AI Baskısı</span><strong>8 hasar / 2 sn</strong></div>
       <div><span>Kalkan Etkisi</span><strong>%35 azaltma</strong></div>
       <div><span>Modül Müdahalesi</span><strong>15. sn sonra</strong></div>
-      <div><span>Jeneratör</span><strong>Kapılar arasında taşınabilir</strong></div>
+      <div><span>Akım animasyonu</span><strong>Kablodan modül hücresine</strong></div>
     </section>
 
     <section class="battle-test-banner play-live-panel" data-screen-panel="play" hidden>

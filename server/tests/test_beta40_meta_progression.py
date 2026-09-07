@@ -106,18 +106,20 @@ def test_core_tree_is_normalized_and_season_result_is_archived_before_soft_reset
     profile = PlayerProfileService().get_or_create("player")
     profile.rating = 5600
     profile.core_skill_points = 3
+    profile.flux_shards = 100
+    profile.core_upgrade_levels["core_quantum"] = 4
     service = MetaProgressionService()
     service.select_core(profile, "core_quantum")
     receipt = service.unlock_core_skill(
         profile,
         "core_quantum",
-        "phase_seed",
+        "0_energy",
         "skill-1",
     )
     view = service.view(profile)
 
-    assert receipt["ranked_normalized"] is True
-    assert view["cores"]["competitive_power_enabled"] is False
+    assert receipt["skill_id"] == "0_energy"
+    assert view["cores"]["competitive_power_enabled"] is True
     assert view["cores"]["selected_core_type"] == "core_quantum"
 
     archive = archive_and_soft_reset_season(
@@ -126,7 +128,7 @@ def test_core_tree_is_normalized_and_season_result_is_archived_before_soft_reset
         archived_at="2026-10-01T00:00:00Z",
     )
     assert archive["final_rating"] == 5600
-    assert profile.rating == 3300
+    assert profile.rating == 3600
     assert profile.active_meta_season_id == "core_awakening_s1"
     assert len(profile.season_archives) == 1
 

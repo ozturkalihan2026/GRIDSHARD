@@ -864,6 +864,10 @@
         experienceToNextLevel:
           this.profile.experience_to_next_level,
         rating: this.profile.rating,
+        highestRating: Math.max(
+          Number(this.profile.rating || 0),
+          Number(this.profile.highest_rating || 0)
+        ),
         leagueNameTr: this.profile.league_name_tr,
         battlePoolIds: [
           ...this.profile.preferred_battle_pool_ids,

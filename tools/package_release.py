@@ -11,12 +11,17 @@ from pathlib import Path
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "2.1.0-beta.42"
-PACKAGE_LABEL = "canon"
+VERSION = "2.1.0-beta.43"
+PACKAGE_LABEL = "cards-season"
 ARCHIVE_ROOT = f"GRIDSHARD-{VERSION}-{PACKAGE_LABEL}"
 
-EXCLUDED_PREFIXES = (
-    "server/data/",
+EXCLUDED_RUNTIME_PATTERNS = (
+    "server/data/.auth_signing_key",
+    "server/data/player_identities.json",
+    "server/data/web_test_players.json*",
+    "server/data/web_test_telemetry.json*",
+    "server/data/web_test_battle_pool_presets.json*",
+    "server/data/web_test_balance_change_drafts.json*",
 )
 EXCLUDED_NAMES = {"RELEASE_MANIFEST.json"}
 GENERATED_ROOT_PATTERNS = (
@@ -53,7 +58,7 @@ def release_files() -> list[Path]:
             continue
         if is_generated_root_artifact(normalized):
             continue
-        if normalized.startswith(EXCLUDED_PREFIXES):
+        if any(fnmatch.fnmatch(normalized, pattern) for pattern in EXCLUDED_RUNTIME_PATTERNS):
             continue
         path = ROOT / normalized
         if path.is_file():

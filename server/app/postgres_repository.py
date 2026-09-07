@@ -153,6 +153,28 @@ class PostgresPlayerDataRepository:
             settings=dict(row[3]),
         )
 
+    def list_snapshots(self) -> list[PlayerDataSnapshot]:
+        try:
+            with self.database.connection() as connection:
+                rows = connection.execute(
+                    """
+                    SELECT player_id, profile, statistics, settings
+                    FROM player_data
+                    ORDER BY updated_at DESC
+                    """
+                ).fetchall()
+        except Exception as exc:
+            raise PlayerDataStoreError("PostgreSQL oyuncu verileri okunamadı.") from exc
+        return [
+            PlayerDataSnapshot(
+                player_id=str(row[0]),
+                profile=dict(row[1]),
+                statistics=dict(row[2]),
+                settings=dict(row[3]),
+            )
+            for row in rows
+        ]
+
     def delete(self, player_id: str) -> bool:
         try:
             with self.database.connection() as connection:
