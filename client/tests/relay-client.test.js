@@ -1413,7 +1413,7 @@ function createClient() {
     )
   );
   assert.ok(
-    html.includes("1000 DP")
+    html.includes("Arena 1")
   );
 }
 

@@ -62,11 +62,55 @@ def module_talent_options(module_id: str) -> tuple[dict, ...]:
                  for i, level in enumerate(TALENT_LEVELS[MODULES[module_id]["rarity"]]))
 LEAGUE_NAMES = ("Kıvılcım Ligi", "Voltaj Ligi", "Reaktör Ligi", "Kuantum Ligi", "Nexus Ligi",
                 "Şampiyonlar I", "Şampiyonlar II", "Şampiyonlar III", "Şampiyonlar IV", "Şampiyonlar V", "Efsanevi Lig")
+
+
+def _league_reward_nodes(league_index: int, minimum_rating: int) -> tuple[dict, ...]:
+    """Return the three persistent reward stops inside every league stage."""
+    credit_reward = 100 + ((league_index - 1) * 15)
+    module_reward = 8 + (league_index - 1)
+    flux_reward = 6 + ((league_index - 1) // 2)
+    return (
+        {
+            "id": f"league_{league_index}_{minimum_rating + 50}",
+            "trophies": minimum_rating + 50,
+            "description_tr": f"{credit_reward} Devre Kredisi",
+            "rewards": {"circuit_credits": credit_reward},
+        },
+        {
+            "id": f"league_{league_index}_{minimum_rating + 100}",
+            "trophies": minimum_rating + 100,
+            "description_tr": f"{module_reward} Modül Parçası",
+            "rewards": {"module_shards": module_reward},
+        },
+        {
+            "id": f"league_{league_index}_{minimum_rating + 150}",
+            "trophies": minimum_rating + 150,
+            "description_tr": f"{flux_reward} Akı",
+            "rewards": {"flux_shards": flux_reward},
+        },
+    )
+
+
+def _league_stage_identity(league_index: int) -> tuple[str, str]:
+    if league_index <= 5:
+        return f"league_{league_index}", "league"
+    if league_index <= 10:
+        return f"champions_{league_index - 5}", "champions_league"
+    return "legendary", "legendary_league"
+
+
 RANK_STAGES = tuple(
     {"id": a["id"], "kind": "arena", "index": a["index"], "name_tr": a["name_tr"], "minimum_rating": a["minimum_rating"]}
     for a in ARENAS
 ) + tuple(
-    {"id": f"league_{i + 1}", "kind": "league", "index": i + 1, "name_tr": name, "minimum_rating": 3600 + i * 200}
+    {
+        "id": _league_stage_identity(i + 1)[0],
+        "kind": _league_stage_identity(i + 1)[1],
+        "index": i + 1,
+        "name_tr": name,
+        "minimum_rating": 3600 + i * 200,
+        "nodes": _league_reward_nodes(i + 1, 3600 + i * 200),
+    }
     for i, name in enumerate(LEAGUE_NAMES)
 )
 

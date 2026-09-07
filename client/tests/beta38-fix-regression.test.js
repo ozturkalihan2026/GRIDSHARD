@@ -19,7 +19,7 @@ assert.ok(app.includes("GridshardAudioStateOwner"));
 assert.ok(app.includes('["idle", "cancelled", "error", ""]'));
 assert.ok(app.includes("getAudioState:() =>"));
 
-assert.ok(html.includes("Devrede 2 / 10"));
+assert.ok(!html.includes('id="capacity-indicator"'));
 assert.ok(app.includes("function modulePlacementSlotState()"));
 assert.ok(app.includes('shelf.dataset.placementReady = String(anyAffordable)'));
 assert.ok(app.includes("client.circuitCredits >= Number(module.circuitCreditCost"));

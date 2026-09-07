@@ -1,12 +1,14 @@
 from datetime import datetime, timezone
 
 from app import main as gateway
+from app.game.battle_pool import default_battle_pool
 from app.game.engine import BattleEngine
 from app.game.booster_schedule import build_booster_offer
 from app.game.models import BattleCommand, BattleEvent, BattleState, BattleStatus, ModuleStatus, Position
 from app.player_data_store import InMemoryPlayerDataRepository
 from app.player_profile import PlayerProfileService, monthly_season_descriptor
 from app.player_progression import PlayerProgressionService
+from app.meta_progression import MetaProgressionService, RANK_STAGES
 
 
 def test_calendar_month_rollover_preserves_arena_and_resets_league_to_first_level():
@@ -51,6 +53,28 @@ def test_every_booster_offer_has_three_rotating_choices():
     assert all(len(offer.booster_ids) == 3 for offer in offers)
     assert all(len(set(offer.booster_ids)) == 3 for offer in offers)
     assert all(current.booster_ids != following.booster_ids for current, following in zip(offers, offers[1:]))
+
+
+def test_every_league_stage_has_three_claimable_intermediate_rewards():
+    league_stages = [stage for stage in RANK_STAGES if stage["kind"] != "arena"]
+    assert len(league_stages) == 11
+    assert all(len(stage["nodes"]) == 3 for stage in league_stages)
+
+    profiles = PlayerProfileService()
+    profile = profiles.get_or_create("league-reward-player")
+    profile.rating = 3650
+    profile.highest_rating = 3650
+    service = MetaProgressionService()
+    view = service.view(profile)
+    first_stage = next(stage for stage in view["rank_stages"] if stage["id"] == "league_1")
+    first_node = first_stage["nodes"][0]
+
+    assert first_node["claimable"] is True
+    before = profile.circuit_credits
+    receipt = service.claim_arena_reward(profile, first_node["id"])
+    assert receipt["node_id"] == first_node["id"]
+    assert profile.circuit_credits > before
+    assert service.view(profile)["rank_stages"][12]["nodes"][0]["claimed"] is True
 
 
 def test_core_damage_is_recorded_from_authoritative_damage_events():
@@ -111,6 +135,46 @@ def test_leaderboards_rank_players_core_damage_and_team_trophy_totals(monkeypatc
     assert payload["teams"][0]["value"] == 2400
 
 
+def test_shop_claim_and_purchase_are_persisted_before_response(monkeypatch):
+    repository = InMemoryPlayerDataRepository()
+    monkeypatch.setattr(gateway, "player_data_repository", repository)
+    monkeypatch.setattr(gateway.player_data_store_service, "repository", repository)
+    player_id = "beta43-shop-persistence"
+    gateway.player_profile_service._profiles.pop(player_id, None)
+    gateway.player_statistics_service._statistics.pop(player_id, None)
+    gateway.player_settings_service._settings.pop(player_id, None)
+
+    try:
+        gift = gateway.claim_player_progression_gift_chest(
+            player_id,
+            "field_3h",
+            gateway.MetaOperationRequest(request_id="gift-persist-once"),
+        )
+        purchase = gateway.purchase_player_daily_shop_offer(
+            player_id,
+            "bronze_daily",
+            gateway.MetaOperationRequest(request_id="shop-persist-once"),
+        )
+
+        assert gift["receipt"]["chest"]["chest_id"]
+        assert purchase["receipt"]["rewards"]["module_shards"] > 0
+        assert repository.load(player_id) is not None
+
+        gateway.player_profile_service._profiles.pop(player_id, None)
+        gateway.player_statistics_service._statistics.pop(player_id, None)
+        gateway.player_settings_service._settings.pop(player_id, None)
+        gateway.player_data_store_service.load_player(player_id)
+        restored = gateway.player_profile_service.get(player_id)
+
+        assert restored.gift_chest_claim_receipts["gift-persist-once"]["chest"]["chest_id"]
+        assert restored.shop_receipts["shop-persist-once"]["offer_id"] == "bronze_daily"
+        assert "bronze_daily" in restored.shop_purchased_offer_ids
+    finally:
+        gateway.player_profile_service._profiles.pop(player_id, None)
+        gateway.player_statistics_service._statistics.pop(player_id, None)
+        gateway.player_settings_service._settings.pop(player_id, None)
+
+
 def _interactive_canonical_engine() -> BattleEngine:
     engine = BattleEngine(BattleState(battle_id="beta43-interactions"))
     engine.add_player("p1")
@@ -168,6 +232,30 @@ def test_canonical_board_allows_drop_move_swap_and_replace_commands():
     assert battery.status is ModuleStatus.ACTIVE
     assert battery.position == Position(0, 1)
     assert not any(event.type == "command_rejected" for event in engine.state.events)
+
+
+def test_canonical_board_capacity_is_core_plus_fourteen_module_cells():
+    engine = _interactive_canonical_engine()
+    player = engine.state.players["p1"]
+    player.battle_pool = default_battle_pool()
+    player.circuit_credits = 10_000
+
+    for _index in range(14):
+        _run_command(engine, "deploy_module", definition_id="laser")
+
+    active = [module for module in player.modules.values() if module.status is ModuleStatus.ACTIVE]
+    occupied = {
+        (module.position.x, module.position.y)
+        for module in active
+        if module.position is not None
+    }
+    assert len(active) == 15
+    assert len(occupied) == 15
+
+    module_count = len(player.modules)
+    _run_command(engine, "deploy_module", definition_id="laser")
+    assert len(player.modules) == module_count
+    assert engine.state.events[-1].type == "command_rejected"
 
 
 def test_engine_emits_three_booster_offer_options_when_due():

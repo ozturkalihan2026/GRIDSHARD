@@ -1593,6 +1593,10 @@
         tierAdvanced: result.tier_advanced || null,
       };
     }
+
+    clear() {
+      this.lastResult = null;
+    }
   }
 
 

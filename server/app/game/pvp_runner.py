@@ -121,8 +121,20 @@ class PvPTickRunner:
             stats.snapshot_broadcasts += await self.websocket_adapter.broadcast_snapshot(session_id)
 
         if session.engine.state.status == BattleStatus.FINISHED:
-            # Son savaş olaylarının ardından terminal sonucu hemen gönder.
-            # İstatistik/ilerleme/telemetri kalıcılığı sonuç ekranını bekletmemeli.
+            # Match projections must be durable before the terminal envelope is
+            # visible.  Otherwise the client can ask for /post-match in the
+            # small window between the result broadcast and persistence and
+            # remain on a pending reward state.
+            if self.match_finished_callback is not None:
+                try:
+                    self.match_finished_callback(
+                        session.engine.state
+                    )
+                except Exception:
+                    # Projection failure is recorded, but the terminal result
+                    # is still delivered so the battle itself never hangs.
+                    stats.match_finished_callback_failures += 1
+
             stats.match_finished_broadcasts += (
                 await self.websocket_adapter.broadcast_match_finished(
                     session_id
@@ -133,16 +145,6 @@ class PvPTickRunner:
                     session_id
                 )
             )
-
-            if self.match_finished_callback is not None:
-                try:
-                    self.match_finished_callback(
-                        session.engine.state
-                    )
-                except Exception:
-                    # Sonuç zarfı ve bağlantı kapanışı tamamlandı; projeksiyon
-                    # hatası yalnız kayda alınır ve oyuncu sonucunu etkilemez.
-                    stats.match_finished_callback_failures += 1
 
         return True
 

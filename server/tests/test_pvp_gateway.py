@@ -7,7 +7,6 @@ from app.main import (
     pvp_service,
     pvp_websocket_adapter,
 )
-from app.game.models import Direction
 from app.game.pvp_session import PvPSessionService
 
 
@@ -41,8 +40,7 @@ def valid_setup_body(player):
         "player_id": player,
         "battle_pool_ids": list(default_battle_pool().module_definition_ids),
         "initial_modules": [
-            {"instance_id": f"{player}-core", "definition_id": "core", "x": 2, "y": 2, "direction": "up"},
-            {"instance_id": f"{player}-gen", "definition_id": "generator", "x": 2, "y": 3, "direction": "up"},
+            {"instance_id": f"{player}-core", "definition_id": "core", "x": 2, "y": 1, "direction": "up"},
         ],
     }
 
@@ -57,7 +55,7 @@ def test_health_exposes_version():
 
     assert response.status_code == 200
     assert response.json()["status"] == "ok"
-    assert response.json()["version"] == "2.0.0-beta.38.1"
+    assert response.json()["version"] == "2.1.0-beta.43"
 
 
 def test_post_match_lazily_recovers_a_finished_session(monkeypatch):
@@ -68,19 +66,11 @@ def test_post_match_lazily_recovers_a_finished_session(monkeypatch):
     for player_id in players:
         pvp_service.join(battle_id, player_id)
         session.engine.grant_module(player_id, f"{player_id}-core", "core")
-        session.engine.grant_module(player_id, f"{player_id}-gen", "generator")
         session.engine.set_initial_active_module(
             player_id,
             f"{player_id}-core",
             2,
-            2,
-        )
-        session.engine.set_initial_active_module(
-            player_id,
-            f"{player_id}-gen",
-            2,
-            3,
-            Direction.UP,
+            1,
         )
     session.engine.start()
     session.engine._finish_battle(

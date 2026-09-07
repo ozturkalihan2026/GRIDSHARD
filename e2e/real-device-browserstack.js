@@ -127,13 +127,13 @@ async function waitFor(driver, predicate, timeout = 20_000) {
     await driver.findElement(By.css("[data-mobile-battle-panel=shelf]")).click();
     await waitFor(driver, `
       const card = document.querySelector('#module-shelf .module-card');
-      const capacity = document.querySelector('#capacity-indicator')?.textContent || '';
-      return card && !card.classList.contains('locked') && capacity.includes('Sınır 5/10');
+      const shelf = document.querySelector('#module-shelf');
+      return card && !card.classList.contains('locked') && shelf?.dataset.placementReady === 'true';
     `, 35_000);
     const before = (await driver.findElements(By.css("#module-shelf .module-card"))).length;
     await driver.findElement(By.css("#module-shelf .module-card")).click();
     await waitFor(driver, "return document.body.dataset.mobileBattlePanel === 'player'");
-    await driver.findElement(By.css('#board .tap-drop-target[data-x="2"][data-y="4"][data-occupied=false]')).click();
+    await driver.findElement(By.css('#board .tap-drop-target[data-occupied=false]')).click();
     await driver.wait(async () =>
       (await driver.findElements(By.css("#module-shelf .module-card"))).length === before - 1,
     15_000);

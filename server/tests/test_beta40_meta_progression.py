@@ -20,7 +20,7 @@ def test_rank_model_contains_all_planned_stages_and_arena_floor():
     assert len([item for item in RANK_STAGES if item["kind"] == "champions_league"]) == 5
     assert len([item for item in RANK_STAGES if item["kind"] == "legendary_league"]) == 1
     assert rank_stage_for_rating(5600)["id"] == "legendary"
-    assert arena_floor_for_rating(3700) == 3300
+    assert arena_floor_for_rating(3700) == 3600
 
 
 def test_trophy_delta_uses_opponent_strength_and_respects_direction():
@@ -46,7 +46,7 @@ def test_module_upgrade_is_separate_from_flux_and_idempotent():
     assert profile.coins == coins_after_first
     assert profile.module_shards["laser"] == shards_after_first
     assert profile.flux_shards == flux_before
-    assert first["ranked_normalized"] is True
+    assert first["ranked_normalized"] is False
 
 
 def test_server_timed_chest_has_public_odds_and_replay_safe_receipt():
@@ -143,7 +143,6 @@ def test_meta_progression_roundtrips_through_player_data_store():
         repository=repository,
     )
     profile = profiles.get_or_create("player")
-    profile.coins = 321
     profile.circuit_credits = 777
     profile.core_shards = 9
     profile.module_shards["laser"] = 77
@@ -161,7 +160,7 @@ def test_meta_progression_roundtrips_through_player_data_store():
     store.load_player("player")
     restored = profiles.get("player")
 
-    assert restored.coins == 321
+    assert restored.coins == 0
     assert restored.circuit_credits == 777
     assert restored.core_shards == 9
     assert restored.module_shards["laser"] == 77

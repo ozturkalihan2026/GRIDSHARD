@@ -20,9 +20,7 @@ def running_service():
     for p in ("a","b"):
         service.join("match",p)
         session.engine.grant_module(p,f"{p}-core","core")
-        session.engine.grant_module(p,f"{p}-gen","generator")
-        session.engine.set_initial_active_module(p,f"{p}-core",2,2)
-        session.engine.set_initial_active_module(p,f"{p}-gen",2,3,Direction.UP)
+        session.engine.set_initial_active_module(p,f"{p}-core",2,1)
     service.start("match")
     return service,session
 
@@ -123,7 +121,7 @@ def test_runner_executes_marked_ai_player_decisions():
 
         armor = engine.grant_module("a", "a-armor", "armor")
         armor.status = ModuleStatus.ACTIVE
-        armor.position = Position(1, 3)
+        armor.position = Position(1, 2)
         armor.direction = Direction.RIGHT
         opponent.circuit_credits = 1000
 

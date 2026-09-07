@@ -3,7 +3,6 @@ import asyncio
 from fastapi.testclient import TestClient
 
 from app.game.engine import BATTLE_TIME_LIMIT_MS
-from app.game.models import Direction
 from app.main import (
     app,
     player_profile_service,
@@ -44,23 +43,11 @@ def test_runner_finish_updates_profile_and_progression_endpoint():
                 f"{p}-core",
                 "core",
             )
-            session.engine.grant_module(
-                p,
-                f"{p}-gen",
-                "generator",
-            )
             session.engine.set_initial_active_module(
                 p,
                 f"{p}-core",
                 2,
-                2,
-            )
-            session.engine.set_initial_active_module(
-                p,
-                f"{p}-gen",
-                2,
-                3,
-                Direction.UP,
+                1,
             )
 
         pvp_service.start("ranked")
@@ -83,6 +70,6 @@ def test_runner_finish_updates_profile_and_progression_endpoint():
         ).json()
 
         assert profile["experience"]==90
-        assert profile["rating"]==1000
+        assert profile["rating"]==0
 
     asyncio.run(scenario())

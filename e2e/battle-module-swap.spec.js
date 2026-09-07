@@ -33,15 +33,15 @@ test("aktif modüller sürüklemeyle takas olur ve tıklamayla port yönü döne
     "battle",
     {timeout:40_000}
   );
-  await expect(page.locator("#capacity-indicator")).toHaveAttribute(
-    "data-state",
-    "ready",
+  await expect(page.locator("#module-shelf")).toHaveAttribute(
+    "data-placement-ready",
+    "true",
     {timeout:25_000}
   );
 
   const energyCell = page.locator(
-    '#board .board-cell[data-x="2"][data-y="4"]'
-  );
+    '#board .board-cell[data-occupied="false"]'
+  ).first();
   await page.locator(
     '#module-shelf .module-card[data-module-id="shield-1"]'
   ).click();
@@ -51,8 +51,7 @@ test("aktif modüller sürüklemeyle takas olur ve tıklamayla port yönü döne
   )).toHaveCount(1, {timeout:3_000});
 
   const openBranch = page.locator(
-    '#board .board-cell[data-x="1"][data-y="3"][data-occupied="false"], '
-    + '#board .board-cell[data-x="3"][data-y="3"][data-occupied="false"]'
+    '#board .board-cell[data-occupied="false"]'
   ).first();
   await expect(openBranch).toHaveCount(1);
   await page.locator(

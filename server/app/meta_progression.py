@@ -300,7 +300,15 @@ class MetaProgressionService:
 
     def claim_arena_reward(self, profile, node_id: str) -> dict:
         with self._lock:
-            node = next((node for arena in ARENAS for node in arena["nodes"] if node["id"] == node_id), None)
+            node = next(
+                (
+                    node
+                    for stage in (*ARENAS, *RANK_STAGES)
+                    for node in stage.get("nodes", ())
+                    if node["id"] == node_id
+                ),
+                None,
+            )
             if node is None:
                 raise MetaProgressionError("Arena ödülü bulunamadı.")
             if node_id in profile.arena_reward_claims:
@@ -365,7 +373,23 @@ class MetaProgressionService:
             },
             "season_id": profile.active_meta_season_id,
             "rank": current_rank,
-            "rank_stages": [dict(item) for item in RANK_STAGES],
+            "rank_stages": [
+                {
+                    **stage,
+                    "nodes": [
+                        {
+                            **node,
+                            "claimed": node["id"] in profile.arena_reward_claims,
+                            "claimable": (
+                                max(profile.rating, profile.highest_rating) >= node["trophies"]
+                                and node["id"] not in profile.arena_reward_claims
+                            ),
+                        }
+                        for node in stage.get("nodes", ())
+                    ],
+                }
+                for stage in RANK_STAGES
+            ],
             "arena_floor": arena_floor_for_rating(profile.rating),
             "coins": profile.circuit_credits,  # compatibility only
             "arena_path": self.arena_path(profile),

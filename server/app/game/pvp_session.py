@@ -467,6 +467,7 @@ class PvPSessionService:
             "players": {
                 player_id: {
                     "display_name": slot.display_name or player_id,
+                    "rating": int(state.player_match_ratings.get(player_id, 0)),
                     "core_type": state.players[player_id].core_type,
                     "core_level": state.players[player_id].core_level,
                 }

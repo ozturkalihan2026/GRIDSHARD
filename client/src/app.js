@@ -369,8 +369,8 @@
     experience: 0,
     experience_into_level: 0,
     experience_to_next_level: 1000,
-    rating: 1000,
-    league_name_tr: "Gümüş",
+    rating: 0,
+    league_name_tr: "Arena 1",
     preferred_battle_pool_ids:
       battlePoolSelection.selectedIds(),
   });
@@ -417,6 +417,7 @@
       profileState,
       statisticsState,
       settingsState,
+      requestJson: requestJsonWithDeadline,
     });
 
   let participantBootstrapResult =
@@ -478,8 +479,9 @@
       profileState,
       statisticsState,
       settingsState,
+      requestJson: requestJsonWithDeadline,
     });
-  let selectedLaboratoryModuleId = "generator";
+  let selectedLaboratoryModuleId = "laser";
   let metaProgressionState = null;
   const pendingMetaRequests = new Map();
   let activeModuleFilter = "all";
@@ -495,6 +497,56 @@
   let deckSaveQueue = Promise.resolve();
   let deckEditorSlots = battlePoolSelection.selectedIds().slice(0, 6);
   while (deckEditorSlots.length < 6) deckEditorSlots.push(null);
+
+  async function fetchWithDeadline(input, init = {}, timeoutMs = 8000) {
+    const controller = new AbortController();
+    let timedOut = false;
+    const timer = window.setTimeout(() => {
+      timedOut = true;
+      controller.abort();
+    }, timeoutMs);
+    try {
+      return await fetch(input, { ...init, signal: controller.signal });
+    } catch (error) {
+      if (!timedOut) throw error;
+      const timeoutError = new Error(
+        "Sunucu yanıt süresini aştı. İşlemi yeniden deneyebilirsin."
+      );
+      timeoutError.code = "request_timeout";
+      throw timeoutError;
+    } finally {
+      window.clearTimeout(timer);
+    }
+  }
+
+  async function requestJsonWithDeadline(path, options = {}, timeoutMs = 8000) {
+    const response = await fetchWithDeadline(
+      path,
+      {
+        cache: "no-store",
+        ...options,
+        headers: {
+          "content-type": "application/json",
+          "accept": "application/json",
+          ...(options.headers || {}),
+        },
+      },
+      timeoutMs
+    );
+    const rawBody = await response.text();
+    let payload = {};
+    try {
+      payload = rawBody ? JSON.parse(rawBody) : {};
+    } catch (_parseError) {
+      throw new Error("Sunucu okunamayan bir yanıt gönderdi.");
+    }
+    if (!response.ok) {
+      throw new Error(
+        payload.detail || `Sunucu işlemi reddetti (${response.status}).`
+      );
+    }
+    return payload;
+  }
 
   function syncDeckEditorFromSelection() {
     deckEditRevision += 1;
@@ -760,8 +812,9 @@
 
   async function loadMetaProgression() {
     try {
-      const response = await fetch(
-        `/profile/${encodeURIComponent(participantPlayerId)}/meta-progression`
+      const response = await fetchWithDeadline(
+        `/profile/${encodeURIComponent(participantPlayerId)}/meta-progression`,
+        { cache: "no-store" }
       );
       if (!response.ok) throw new Error("Koleksiyon yüklenemedi.");
       metaProgressionState = await response.json();
@@ -810,13 +863,10 @@
   }
 
   async function persistBattlePoolDefinitionIds(definitionIds) {
-    const response = await fetch(`/profile/${encodeURIComponent(participantPlayerId)}/battle-pool`, {
+    const profile = await requestJsonWithDeadline(`/profile/${encodeURIComponent(participantPlayerId)}/battle-pool`, {
       method: "PUT",
-      headers: { "content-type": "application/json" },
       body: JSON.stringify({ battle_pool_ids: definitionIds }),
     });
-    if (!response.ok) throw new Error("Savaş destesi geçerli kartlarla yenilenemedi.");
-    const profile = await response.json();
     profileState.applyProfile(profile);
     return profile;
   }
@@ -1009,21 +1059,22 @@
       return resourceSymbolMarkup("module_shards");
     };
     for (const stage of stages) {
+      const isLeagueStage = stage.kind && stage.kind !== "arena";
       const arena = stage.kind === "arena" || !stage.kind
         ? (arenasByIndex.get(Number(stage.index)) || stage)
         : null;
       const unlocked = arena ? Boolean(arena.unlocked) : Number(arenaViewModel().rating) >= Number(stage.minimum_rating || 0);
       const section = document.createElement("section");
-      section.className = `arena-path-stage${unlocked ? " is-unlocked" : ""}${stage.kind === "league" ? " is-league" : ""}${stage.id === currentStageId ? " is-current" : ""}`;
+      section.className = `arena-path-stage${unlocked ? " is-unlocked" : ""}${isLeagueStage ? " is-league" : ""}${stage.id === currentStageId ? " is-current" : ""}`;
       const head = document.createElement("header");
       head.className = "arena-path-stage-head";
       const marker = document.createElement("span");
       marker.className = "arena-path-marker";
-      marker.textContent = stage.kind === "league" ? "♛" : String(stage.index || "◇");
+      marker.textContent = isLeagueStage ? "♛" : String(stage.index || "◇");
       const copy = document.createElement("div");
       copy.className = "arena-path-stage-copy";
       const title = document.createElement("h3");
-      title.textContent = stage.kind === "league"
+      title.textContent = isLeagueStage
         ? stage.name_tr
         : `Arena ${stage.index}${stage.name_tr ? ` · ${stage.name_tr}` : ""}`;
       const detail = document.createElement("p");
@@ -1095,14 +1146,28 @@
         section.appendChild(road);
       } else {
         const leagueRoad = document.createElement("div");
-        leagueRoad.className = "arena-league-road";
-        const next = stages[stages.indexOf(stage) + 1];
-        const end = Number(next?.minimum_rating || Number(stage.minimum_rating || 0) + 200);
-        for (let trophy = Number(stage.minimum_rating || 0) + 50; trophy <= end; trophy += 50) {
-          const stop = document.createElement("span");
-          stop.className = Number(arenaViewModel().rating) >= trophy ? "is-reached" : "";
-          stop.textContent = `${trophy} 🏆`;
-          leagueRoad.appendChild(stop);
+        leagueRoad.className = "arena-reward-road arena-league-reward-road";
+        for (const node of stage.nodes || []) {
+          const rewardDescription = localizedRewardDescription(node.description_tr);
+          const reward = document.createElement("button");
+          reward.type = "button";
+          reward.className = `arena-reward-node${node.claimed ? " is-claimed" : ""}${node.claimable ? " is-claimable" : ""}`;
+          reward.disabled = !node.claimable;
+          reward.innerHTML = `<span class="arena-reward-trophy">${Number(node.trophies)} 🏆</span><i aria-hidden="true">${rewardIcon(node.rewards)}</i><strong>${node.claimed ? "ALINDI" : rewardDescription}</strong>`;
+          if (node.claimable) reward.setAttribute("aria-label", `${rewardDescription} ödülünü al`);
+          reward.addEventListener("click", async () => {
+            reward.disabled = true;
+            const status = document.getElementById("arena-reward-status");
+            try {
+              await metaProgressionMutation(`/profile/${encodeURIComponent(participantPlayerId)}/meta-progression/arena/${encodeURIComponent(node.id)}/claim`);
+              if (status) status.textContent = `${rewardDescription} hesabına eklendi.`;
+              renderArenaPath();
+            } catch (error) {
+              if (status) status.textContent = error.message;
+              reward.disabled = false;
+            }
+          });
+          leagueRoad.appendChild(reward);
         }
         section.appendChild(leagueRoad);
       }
@@ -1247,13 +1312,10 @@
     const button = document.getElementById("core-quick-select");
     if (button) button.disabled = true;
     try {
-      const response = await fetch(`/profile/${encodeURIComponent(participantPlayerId)}/meta-progression/core`, {
+      const payload = await requestJsonWithDeadline(`/profile/${encodeURIComponent(participantPlayerId)}/meta-progression/core`, {
         method: "PUT",
-        headers: { "content-type": "application/json" },
         body: JSON.stringify({ core_type_id: core.id }),
       });
-      const payload = await response.json();
-      if (!response.ok) throw new Error(payload.detail || "Çekirdek seçilemedi.");
       metaProgressionState = payload;
       renderMetaHubScreens();
       document.getElementById("core-quick-actions")?.setAttribute("hidden", "");
@@ -1376,12 +1438,12 @@
       const element = document.getElementById(id);
       if (element) element.textContent = String(value);
     };
-    setText("home-arena-name", rank.kind === "league" ? rank.name_tr : `Arena ${rank.index || 1}`);
+    setText("home-arena-name", rank.kind !== "arena" ? rank.name_tr : `Arena ${rank.index || 1}`);
     setText("home-arena-progress-copy", rank.next_stage ? `${rating - floor} / ${ceiling - floor} Kupa` : `${rating} Kupa`);
     const arenaTitle = rank.name_tr && !/^Arena\s+\d+$/i.test(rank.name_tr)
       ? `Arena ${rank.index || 1} · ${rank.name_tr}`
       : `Arena ${rank.index || 1}`;
-    setText("arena-detail-title", rank.kind === "league" ? rank.name_tr : arenaTitle);
+    setText("arena-detail-title", rank.kind !== "arena" ? rank.name_tr : arenaTitle);
     setText("arena-detail-rating", `${rating} Kupa`);
     setText("arena-detail-range", rank.next_stage ? `${rating - floor} / ${ceiling - floor}` : "Azami aşama");
     setText("arena-detail-next", rank.next_stage ? `Sonraki: ${rank.next_stage.name_tr} · ${ceiling} Kupa` : "Efsanevi yol tamamlandı");
@@ -1389,8 +1451,15 @@
     const segments = document.getElementById("home-arena-segments");
     if (segments) {
       segments.replaceChildren();
-      const arena = (metaProgressionState?.arena_path || []).find((item) => Number(item.index) === Number(rank.index));
-      const nodes = (arena?.nodes || []).filter((node) => Object.keys(node.rewards || {}).length && Number(node.trophies) >= floor);
+      const arena = rank.kind === "arena"
+        ? (metaProgressionState?.arena_path || []).find((item) => Number(item.index) === Number(rank.index))
+        : null;
+      const league = rank.kind !== "arena"
+        ? (metaProgressionState?.rank_stages || []).find((item) => item.id === rank.id)
+        : null;
+      const nodes = (arena?.nodes || league?.nodes || []).filter(
+        (node) => Object.keys(node.rewards || {}).length && Number(node.trophies) >= floor
+      );
       const stops = nodes.length ? nodes : Array.from({ length: 4 }, (_, index) => ({ trophies: floor + ((ceiling - floor) / 4) * (index + 1) }));
       stops.forEach((node, index) => {
         const segment = document.createElement("i");
@@ -1539,15 +1608,19 @@
     try {
       let response;
       try {
-        response = await fetch(url, {
+        response = await fetchWithDeadline(url, {
           method: "POST",
           credentials: "same-origin",
           cache: "no-store",
           headers: { "content-type": "application/json", "accept": "application/json" },
           body: JSON.stringify({ request_id: entry.requestId }),
-        });
+        }, 10000);
       } catch (_networkError) {
-        throw new Error("Sunucu bağlantısı kesildi. Beta.43 hızlı savaş başlatıcısını yeniden açıp işlemi tekrar dene.");
+        throw new Error(
+          _networkError?.code === "request_timeout"
+            ? _networkError.message
+            : "Sunucu bağlantısı kesildi. İşlemi yeniden deneyebilirsin."
+        );
       }
       const rawBody = await response.text();
       let payload = {};
@@ -1641,6 +1714,32 @@
     if (close) { close.disabled = false; close.textContent = "DEVAM"; }
   }
 
+  function showClaimedChest(receipt) {
+    const chest = receipt?.chest || {};
+    const definition = metaProgressionState?.chests?.definitions?.find(
+      (item) => item.id === chest.definition_id
+    );
+    const tier = chestTier(definition || chest);
+    const card = document.getElementById("chest-reveal-card");
+    const visual = document.getElementById("chest-reveal-visual");
+    const title = document.getElementById("chest-reveal-title");
+    const kicker = document.getElementById("chest-reveal-kicker");
+    const host = document.getElementById("chest-reveal-rewards");
+    const close = document.getElementById("chest-reveal-close");
+    if (card) { card.dataset.tier = tier; card.dataset.state = "revealed"; }
+    if (visual) visual.className = `chest-visual chest-visual-large chest-visual-${tier}`;
+    if (title) title.textContent = chest.name_tr || definition?.name_tr || "Hediye Sandık";
+    if (kicker) { kicker.hidden = false; kicker.textContent = "SANDIK YUVAYA EKLENDİ"; }
+    if (host) {
+      const unlocksAt = chest.unlocks_at ? new Date(chest.unlocks_at) : null;
+      const unlockLabel = unlocksAt && Number.isFinite(unlocksAt.getTime())
+        ? unlocksAt.toLocaleString("tr-TR", { hour: "2-digit", minute: "2-digit" })
+        : "Sayaç tamamlandığında";
+      host.innerHTML = `<div><span>AÇILMA ZAMANI</span><strong>${unlockLabel}</strong></div><div><span>DURUM</span><strong>ÖDÜL KAYDEDİLDİ</strong></div>`;
+    }
+    if (close) { close.disabled = false; close.textContent = "DEVAM"; }
+  }
+
   async function purchaseShopOffer(offerId) {
     const status = document.getElementById("shop-action-status");
     const offer = metaProgressionState?.shop?.offers?.find((item) => item.id === offerId);
@@ -1678,14 +1777,23 @@
 
   async function claimGiftChest(definitionId) {
     const status = document.getElementById("shop-action-status");
+    const definition = metaProgressionState?.chests?.definitions?.find(
+      (item) => item.id === definitionId
+    );
+    showChestOpening({
+      tier: chestTier(definition || { id: definitionId }),
+      title: definition?.name_tr || "Hediye Sandık",
+    });
     try {
       const payload = await metaProgressionMutation(
         `/profile/${encodeURIComponent(participantPlayerId)}/meta-progression/chests/gifts/${encodeURIComponent(definitionId)}/claim`
       );
       const chest = payload.receipt?.chest || {};
       if (status) status.textContent = `${chest.name_tr || "Hediye sandık"} alındı; açılma süresi başladı.`;
+      showClaimedChest(payload.receipt);
     } catch (error) {
       if (status) status.textContent = error instanceof Error ? error.message : String(error);
+      showChestFailure(error);
     }
   }
 
@@ -1712,20 +1820,15 @@
     renderMetaHubScreens();
     if (status) status.textContent = "Deste kaydediliyor…";
     const save = async () => {
-      const response = await fetch(`/profile/${encodeURIComponent(participantPlayerId)}/battle-pool`, {
+      const profile = await requestJsonWithDeadline(`/profile/${encodeURIComponent(participantPlayerId)}/battle-pool`, {
         method: "PUT",
-        headers: { "content-type": "application/json" },
         body: JSON.stringify({ battle_pool_ids: definitionIds }),
       });
-      if (!response.ok) throw new Error("Deste sunucuya kaydedilemedi. Tekrar deneyebilirsin.");
-      const profile = await response.json();
       if (presetName) {
-        const savedPreset = await fetch(`/profile/${encodeURIComponent(participantPlayerId)}/battle-pool-presets`, {
+        await requestJsonWithDeadline(`/profile/${encodeURIComponent(participantPlayerId)}/battle-pool-presets`, {
           method: "PUT",
-          headers: { "content-type": "application/json" },
           body: JSON.stringify({ name: presetName, battle_pool_ids: definitionIds }),
         });
-        if (!savedPreset.ok) throw new Error("Aktif deste kaydedildi ancak hazır deste kaydedilemedi. Tekrar deneyebilirsin.");
       }
       return profile;
     };
@@ -2168,6 +2271,35 @@
       profileState,
       statisticsState,
       progressionState,
+      requestJson:
+        async (path) => {
+          let lastError = null;
+          for (let attempt = 0; attempt < 4; attempt += 1) {
+            try {
+              const response = await fetchWithDeadline(
+                path,
+                { cache: "no-store" },
+                6000
+              );
+              const payload = await response.json();
+              if (!response.ok) {
+                throw new Error(
+                  payload.detail
+                  || `Maç sonucu kaydı alınamadı (${response.status}).`
+                );
+              }
+              return payload;
+            } catch (error) {
+              lastError = error;
+              if (attempt < 3) {
+                await new Promise((resolve) => {
+                  window.setTimeout(resolve, 180 * (attempt + 1));
+                });
+              }
+            }
+          }
+          throw lastError || new Error("Maç sonucu kaydı alınamadı.");
+        },
     });
 
   let postMatchSyncInFlight = null;
@@ -2190,6 +2322,12 @@
     return result?.winner_player_id === pvpState.playerId
       ? "victory"
       : "defeat";
+  }
+
+  function activeFinalBattleResult() {
+    return activePlayMode === "local"
+      ? localServerFinalResult
+      : pvpState.finalResult;
   }
 
   function setBattleResultHero(outcome) {
@@ -2223,9 +2361,17 @@
   }
 
   function renderPostMatchRewards() {
-    const result = pvpState.finalResult;
+    const result = activeFinalBattleResult();
     const progression = progressionState.viewModel();
-    const outcome = result ? onlineOutcome(result) : "pending";
+    const outcome = result
+      ? (
+          result.is_draw
+            ? "draw"
+            : result.winner_player_id === participantPlayerId
+              ? "victory"
+              : "defeat"
+        )
+      : localBattleOutcome;
     const outcomeEl = document.getElementById("post-match-reward-outcome");
     if (outcomeEl) {
       outcomeEl.dataset.outcome = outcome;
@@ -2233,12 +2379,29 @@
     }
     const trophy = document.getElementById("post-match-trophy-reward");
     const credits = document.getElementById("post-match-credit-reward");
+    const localTest = activePlayMode === "local"
+      && (!result || result.match_type === "local_test");
+    const pendingLabel = postMatchSync.lastError
+      ? "Yüklenemedi · Tekrar dene"
+      : "Kaydediliyor…";
     if (trophy) trophy.textContent = progression
       ? `${Number(progression.ratingDelta) >= 0 ? "+" : ""}${Number(progression.ratingDelta)} Kupa`
-      : "Hesaplanıyor";
+      : localTest ? "0 Kupa · Test maçı" : pendingLabel;
     if (credits) credits.textContent = progression
       ? `+${Number(progression.circuitCreditsAwarded || 0)} DK`
-      : "Hesaplanıyor";
+      : localTest ? "+0 DK · Test maçı" : pendingLabel;
+    const persistence = document.getElementById("post-match-persistence-status");
+    if (persistence) {
+      persistence.textContent = progression
+        ? "Ödüller hesabına işlendi."
+        : localTest
+          ? "Yerel test maçı hesap ilerlemesini değiştirmez."
+          : postMatchSync.lastError
+            ? "Ödül kaydı yüklenemedi. Bağlantıyı yenileyip tekrar dene."
+            : "Ödüller sunucuya kaydediliyor…";
+    }
+    const retry = document.getElementById("post-match-sync-retry");
+    if (retry) retry.hidden = localTest || !postMatchSync.lastError;
     const chest = document.getElementById("post-match-chest-reward");
     if (chest) {
       const awarded = postMatchSync.lastPayload?.progression?.chest_awarded;
@@ -2269,32 +2432,49 @@
       card.className = `post-match-player-card is-${outcome}`;
 
       const head = document.createElement("header");
+      const outcomeLabel = document.createElement("span");
+      outcomeLabel.className = "post-match-player-outcome";
+      outcomeLabel.textContent = result.is_draw ? "BERABERE" : outcome === "winner" ? "ZAFER" : "MAĞLUBİYET";
+      const playerName = player.display_name
+        || (playerId === participantPlayerId ? profileState.viewModel()?.displayName : null)
+        || playerId;
+      const playerLabel = document.createElement("strong");
+      playerLabel.textContent = `${playerName}${playerId === participantPlayerId ? " · SEN" : ""}`;
+      head.append(outcomeLabel, playerLabel);
+      card.appendChild(head);
+
+      const body = document.createElement("div");
+      body.className = "post-match-player-body";
       const core = document.createElement("div");
       core.className = "post-match-core-card";
-      const outcomeLabel = document.createElement("span");
-      outcomeLabel.textContent = result.is_draw ? "BERABERE" : outcome === "winner" ? "KAZANAN" : "KAYBEDEN";
       const glyph = document.createElement("i");
       const coreType = summary.core_type || player.core_type || "core_resonance";
       glyph.textContent = CORE_GLYPHS[coreType] || "◈";
       const coreCopy = document.createElement("div");
       const coreName = (metaProgressionState?.cores?.types || []).find((item) => item.id === coreType)?.name_tr || "Çekirdek";
-      const playerName = player.display_name || (playerId === pvpState.playerId ? profileState.viewModel()?.displayName : null) || playerId;
       const name = document.createElement("strong");
       name.textContent = coreName;
       const level = document.createElement("small");
-      level.textContent = `${playerName} · SV ${Number(summary.core_level || player.core_level || 1)}${playerId === pvpState.playerId ? " · SEN" : ""}`;
-      coreCopy.append(name, level);
-      core.append(outcomeLabel, glyph, coreCopy);
+      level.textContent = `SEVİYE ${Number(summary.core_level || player.core_level || 1)}`;
+      const trophy = document.createElement("b");
+      const progression = progressionState.viewModel();
+      const rating = playerId === participantPlayerId && progression
+        ? progression.ratingAfter
+        : Number(player.rating ?? (playerId === participantPlayerId ? profileState.viewModel()?.rating : 0) ?? 0);
+      trophy.textContent = `🏆 ${Number(rating || 0).toLocaleString("tr-TR")}`;
+      coreCopy.append(name, level, trophy);
+      core.append(glyph, coreCopy);
 
+      const damageColumn = document.createElement("div");
+      damageColumn.className = "post-match-damage-column";
       const total = document.createElement("div");
       total.className = "post-match-total-damage";
       const totalLabel = document.createElement("span");
-      totalLabel.textContent = "TOPLAM HASAR";
+      totalLabel.textContent = "VERİLEN TOPLAM HASAR";
       const totalValue = document.createElement("strong");
       totalValue.textContent = Number(summary.damage_dealt || 0).toLocaleString("tr-TR");
       total.append(totalLabel, totalValue);
-      head.append(core, total);
-      card.appendChild(head);
+      damageColumn.appendChild(total);
 
       const rows = document.createElement("div");
       rows.className = "post-match-module-damage";
@@ -2326,7 +2506,9 @@
         empty.textContent = "Bu oyuncu için modül hasar kaydı bulunmuyor.";
         rows.appendChild(empty);
       }
-      card.appendChild(rows);
+      damageColumn.appendChild(rows);
+      body.append(core, damageColumn);
+      card.appendChild(body);
       host.appendChild(card);
     }
     host.hidden = !host.childElementCount;
@@ -2390,10 +2572,14 @@
     setAnalysisValue("battle-analysis-core", `${Number(core?.hp || 0)} HP`);
     setAnalysisValue("battle-analysis-modules", living.length);
     setAnalysisValue("battle-analysis-hp", `${remainingHp} / ${totalHp}`);
+    if (localServerFinalResult) {
+      renderPostMatchScoreboard(localServerFinalResult);
+    }
   }
 
   function resetBattleResultPresentation() {
     onlineFinishPresentedSessionId = null;
+    progressionState.clear?.();
     document.body.dataset.onlineFinished = "false";
     criticalCoreAudioRequested = false;
     clearTerminalAudioState("battle_result_reset");
@@ -2518,7 +2704,9 @@
 
     presentOnlineMatchFinished();
 
-    await finishWebTestSessionAudit(
+    // QA telemetry is ancillary.  It must never hold the player-facing reward
+    // projection behind a second network request.
+    void finishWebTestSessionAudit(
       battleId
     );
 
@@ -2535,6 +2723,8 @@
         postMatchSyncInFlight =
           null;
       });
+
+    renderPostMatchRewards();
 
     const result =
       await postMatchSyncInFlight;
@@ -2553,10 +2743,19 @@
     }
 
     if (result.ok) {
-      await loadMetaProgression();
       presentTierCelebration(
         result.payload?.progression?.tier_advanced
       );
+      renderPostMatchSummary();
+      renderPostMatchRewards();
+      renderOnlineBattleAnalysis(
+        pvpState.finalResult
+      );
+      void loadMetaProgression().then(() => {
+        renderPostMatchScoreboard(
+          pvpState.finalResult
+        );
+      });
     }
 
     renderPostMatchSummary();
@@ -2865,7 +3064,7 @@
 
     const labels = {
       idle:
-        "Eşleştirme: Hazır · 1000 DP",
+        "Eşleştirme: Hazır · Arena 1",
       matchmaking:
         "Eşleştirme: Rakip aranıyor",
       matched:
@@ -2962,6 +3161,7 @@
       matchmakingState,
       connectionManager:
         pvpConnection,
+      requestJson: requestJsonWithDeadline,
       onStatusChange:
         renderOnlinePlayStatus,
       onSessionBound:
@@ -5560,6 +5760,8 @@
   let localServerAuthoritative = false;
   let localServerEventCursor = 0;
   let localServerLastSnapshotTick = -1;
+  let localServerFinalResult = null;
+  let localBattleOutcome = "pending";
   const destructionFxPlayed = new Set();
   const snapshotModuleHp = new Map();
   const moduleAnchorRects = new Map();
@@ -6159,6 +6361,7 @@
         west:0,
       },
       damage_dealt:0,
+      damage_by_module:{},
       damage_received:0,
       shield_mitigated:0,
       module_changes:0,
@@ -7183,13 +7386,13 @@ function saveHumanReviewLocalNote() {
     if (routeSummary) {
       if ((route.move_count || 0) <= 0) {
         routeSummary.textContent=
-          "Henüz Jeneratör kapı taşıma verisi yok.";
+        "Henüz devre kablosu değişimi kaydedilmedi.";
       } else {
         routeSummary.textContent=
-          `Toplam ${route.move_count} taşıma`
-          + ` · Tercih ${route.preferred_gate_label || "-"}`
-          + ` · Taşıma sonrası bağlı modül ort. ${route.average_connected_modules_after_move || 0}`
-          + ` · Enerjili özel hücre ort. ${route.average_powered_special_cells_after_move || 0}`;
+          `Toplam ${route.move_count} bağlantı değişimi`
+          + ` · Tercih edilen hat ${route.preferred_gate_label || "-"}`
+          + ` · Değişim sonrası bağlı modül ort. ${route.average_connected_modules_after_move || 0}`
+          + ` · Enerjili hücre ort. ${route.average_powered_special_cells_after_move || 0}`;
       }
     }
 
@@ -8546,6 +8749,11 @@ function saveHumanReviewLocalNote() {
       === "finished"
       && !localBattleFinished
     ) {
+      localServerFinalResult = {
+        ...snapshot,
+        session_id: snapshot.session_id || localServerSessionId,
+        viewer_player_id: participantPlayerId,
+      };
       finishLocalBattle({
         won:
           snapshot.winner_player_id
@@ -8570,10 +8778,12 @@ function saveHumanReviewLocalNote() {
       return false;
     }
     try {
-      const response=await fetch(
+      const response=await fetchWithDeadline(
         `/local-ai/sessions/${encodeURIComponent(localServerSessionId)}/snapshot`
         + `?player_id=${encodeURIComponent(participantPlayerId)}`
-        + `&cursor=${localServerEventCursor}`
+        + `&cursor=${localServerEventCursor}`,
+        { cache:"no-store" },
+        5000
       );
       if (!response.ok) {
         return;
@@ -8588,7 +8798,7 @@ function saveHumanReviewLocalNote() {
 
   async function connectLocalServerBattle() {
     try {
-      const response=await fetch(
+      const response=await fetchWithDeadline(
         "/local-ai/sessions",
         {
           method:"POST",
@@ -8612,7 +8822,8 @@ function saveHumanReviewLocalNote() {
                 direction:module.direction,
               })),
           }),
-        }
+        },
+        8000
       );
       if (!response.ok) {
         return false;
@@ -8659,7 +8870,7 @@ function saveHumanReviewLocalNote() {
       return;
     }
     try {
-      const response=await fetch(
+      const response=await fetchWithDeadline(
         `/local-ai/sessions/${encodeURIComponent(localServerSessionId)}/commands`,
         {
           method:"POST",
@@ -8673,7 +8884,8 @@ function saveHumanReviewLocalNote() {
             kind:command.kind,
             payload:command.payload,
           }),
-        }
+        },
+        5000
       );
       if (!response.ok) {
         const detail=await response
@@ -8773,6 +8985,8 @@ function saveHumanReviewLocalNote() {
     localServerAuthoritative=false;
     localServerEventCursor=0;
     localServerLastSnapshotTick=-1;
+    localServerFinalResult=null;
+    localBattleOutcome="pending";
     document.body.dataset.battleAuthority=
       "offline-fallback";
 
@@ -9174,6 +9388,66 @@ function saveHumanReviewLocalNote() {
     syncCriticalCoreAudioState();
   }
 
+  function buildOfflineLocalBattleResult(won, finishReason) {
+    const damageRows = (definitionIds, damageByDefinition = {}) =>
+      definitionIds.slice(0, 6).map((definitionId) => {
+        const definition = moduleDefinitions.find(
+          (item) => item.definitionId === definitionId
+        );
+        return {
+          definition_id:definitionId,
+          name_tr:definition?.nameTr || definitionId,
+          level:1,
+          damage:Number(damageByDefinition[definitionId] || 0),
+        };
+      }).sort((left, right) => right.damage - left.damage);
+    const enemyDamage = Math.max(0, Number(localBattleMetrics?.damage_received || 0));
+    const enemyDamageMap = enemyBattlePoolDefinitionIds.includes("laser")
+      ? {laser:enemyDamage}
+      : {[enemyBattlePoolDefinitionIds[0]]:enemyDamage};
+    return {
+      session_id:localServerSessionId || `offline-${Date.now()}`,
+      match_type:"local_test",
+      viewer_player_id:participantPlayerId,
+      winner_player_id:won ? participantPlayerId : "yerel-ai",
+      loser_player_id:won ? "yerel-ai" : participantPlayerId,
+      is_draw:false,
+      finish_reason:finishReason || "core_destroyed",
+      finished_at_ms:Math.round(client.elapsedMs),
+      players:{
+        [participantPlayerId]:{
+          display_name:profileState.viewModel()?.displayName || "Oyuncu",
+          rating:Number(profileState.viewModel()?.rating || 0),
+          core_type:metaProgressionState?.cores?.selected_core_type || "core_resonance",
+          core_level:1,
+        },
+        "yerel-ai":{
+          display_name:`${aiArchetypeName(activeLocalAiArchetype)} AI`,
+          rating:Number(profileState.viewModel()?.rating || 0),
+          core_type:"core_resonance",
+          core_level:1,
+        },
+      },
+      result_summary:{
+        [participantPlayerId]:{
+          damage_dealt:Number(localBattleMetrics?.damage_dealt || 0),
+          damage_by_module:damageRows(
+            selectedBattlePoolDefinitionIds(),
+            localBattleMetrics?.damage_by_module || {}
+          ),
+          core_type:metaProgressionState?.cores?.selected_core_type || "core_resonance",
+          core_level:1,
+        },
+        "yerel-ai":{
+          damage_dealt:enemyDamage,
+          damage_by_module:damageRows(enemyBattlePoolDefinitionIds, enemyDamageMap),
+          core_type:"core_resonance",
+          core_level:1,
+        },
+      },
+    };
+  }
+
   function finishLocalBattle({
     won,
     finishReason=null,
@@ -9185,6 +9459,11 @@ function saveHumanReviewLocalNote() {
 
     localBattleFinished =
       true;
+    localBattleOutcome = won ? "victory" : "defeat";
+    localServerFinalResult ||= buildOfflineLocalBattleResult(
+      won,
+      finishReason
+    );
     setBattleLiveTicker(
       won ? "Savaş tamamlandı · Galibiyet" : "Savaş tamamlandı · Mağlubiyet",
       won ? "heal" : "danger"
@@ -9329,6 +9608,10 @@ function saveHumanReviewLocalNote() {
       won,
       finishReason,
     });
+    if (localServerFinalResult) {
+      renderPostMatchScoreboard(localServerFinalResult);
+    }
+    renderPostMatchRewards();
     const analysisDetails =
       document.getElementById(
         "post-match-analysis"
@@ -10848,15 +11131,9 @@ function saveHumanReviewLocalNote() {
 
   async function loadBattlePoolPresets() {
     try {
-      const response=await fetch(
+      const payload=await requestJsonWithDeadline(
         `/profile/${encodeURIComponent(participantPlayerId)}/battle-pool-presets`
       );
-      if (!response.ok) {
-        throw new Error(
-          "Hazır havuzlar alınamadı."
-        );
-      }
-      const payload=await response.json();
       battlePoolPresets=
         withStarterBattlePoolPresets(payload.presets);
       renderPresetOptions();
@@ -11564,7 +11841,7 @@ function saveHumanReviewLocalNote() {
     root.hidden = true;
 
     if (status) {
-      status.textContent = localizedUiText("Çekirdek ve Jeneratör sabit başlar");
+      status.textContent = localizedUiText("Çekirdek sabit başlar; diğer modüller boş hücrelere yerleşir");
       status.dataset.ready = "true";
     }
   }
@@ -11788,7 +12065,7 @@ function saveHumanReviewLocalNote() {
               === "required"
             ) {
               logClientMessage(
-                "Jeneratör zorunlu Savaş Havuzu modülüdür ve çıkarılamaz."
+                "Çekirdek sabittir; diğer modüller Savaş Havuzundan seçilebilir."
               );
               return;
             }
@@ -11988,7 +12265,7 @@ function saveHumanReviewLocalNote() {
             event.stopPropagation();
             if (required) {
               logClientMessage(
-                "Jeneratör zorunlu Savaş Havuzu modülüdür ve çıkarılamaz."
+                "Çekirdek sabittir; diğer modüller Savaş Havuzundan seçilebilir."
               );
               return;
             }
@@ -12362,14 +12639,6 @@ function saveHumanReviewLocalNote() {
     return `${Number(position?.x)},${Number(position?.y)}`;
   }
 
-  function circuitModuleIdentity(module, fallback="module") {
-    return String(
-      module?.instanceId
-      || module?.id
-      || `${fallback}-${cablePositionKey(module?.position)}`
-    );
-  }
-
   function ensureBoardCableLayer(boardElement) {
     if (!boardElement) return null;
     let layer=boardElement.querySelector(":scope > .board-cable-layer");
@@ -12384,43 +12653,41 @@ function saveHumanReviewLocalNote() {
   }
 
   function createCircuitCableLine(layer, first, second, className) {
+    const boardElement = layer.parentElement;
+    const firstCell = boardElement?.querySelector(
+      `.board-cell[data-x="${first.x}"][data-y="${first.y}"]`
+    );
+    const secondCell = boardElement?.querySelector(
+      `.board-cell[data-x="${second.x}"][data-y="${second.y}"]`
+    );
+    if (!boardElement || !firstCell || !secondCell) return null;
+    const width = Math.max(1, boardElement.clientWidth);
+    const height = Math.max(1, boardElement.clientHeight);
+    layer.setAttribute("viewBox", `0 0 ${width} ${height}`);
+    const firstCenter = {
+      x:firstCell.offsetLeft + (firstCell.offsetWidth / 2),
+      y:firstCell.offsetTop + (firstCell.offsetHeight / 2),
+    };
+    const secondCenter = {
+      x:secondCell.offsetLeft + (secondCell.offsetWidth / 2),
+      y:secondCell.offsetTop + (secondCell.offsetHeight / 2),
+    };
+    const horizontal = first.y === second.y;
+    const forward = horizontal ? second.x > first.x : second.y > first.y;
+    const start = horizontal
+      ? { x:firstCell.offsetLeft + (forward ? firstCell.offsetWidth : 0), y:firstCenter.y }
+      : { x:firstCenter.x, y:firstCell.offsetTop + (forward ? firstCell.offsetHeight : 0) };
+    const end = horizontal
+      ? { x:secondCell.offsetLeft + (forward ? 0 : secondCell.offsetWidth), y:secondCenter.y }
+      : { x:secondCenter.x, y:secondCell.offsetTop + (forward ? 0 : secondCell.offsetHeight) };
     const line=document.createElementNS("http://www.w3.org/2000/svg","line");
     line.classList.add(...className.split(" ").filter(Boolean));
-    line.setAttribute("x1",String((first.x * 100) + 50));
-    line.setAttribute("y1",String((first.y * 100) + 50));
-    line.setAttribute("x2",String((second.x * 100) + 50));
-    line.setAttribute("y2",String((second.y * 100) + 50));
+    line.setAttribute("x1",String(start.x));
+    line.setAttribute("y1",String(start.y));
+    line.setAttribute("x2",String(end.x));
+    line.setAttribute("y2",String(end.y));
     layer.appendChild(line);
     return line;
-  }
-
-  function circuitEnergyDistances(modules) {
-    const active=modules.filter(
-      (module) =>
-        module?.position
-        && module.status !== "destroyed"
-        && Number(module.hp ?? 1) > 0
-    );
-    const distances=new Map();
-    const queue=[];
-    for (const module of active) {
-      if ((module.nameTr || module.name) !== "Jeneratör") continue;
-      const id=circuitModuleIdentity(module,"generator");
-      distances.set(id,0);
-      queue.push(module);
-    }
-    while (queue.length) {
-      const current=queue.shift();
-      const currentId=circuitModuleIdentity(current);
-      for (const candidate of active) {
-        const candidateId=circuitModuleIdentity(candidate);
-        if (distances.has(candidateId)) continue;
-        if (!areConnected(current,candidate)) continue;
-        distances.set(candidateId,(distances.get(currentId) || 0) + 1);
-        queue.push(candidate);
-      }
-    }
-    return distances;
   }
 
   function renderBoardCables(boardElement, moduleIterable=[]) {
@@ -12446,6 +12713,23 @@ function saveHumanReviewLocalNote() {
         )
         .map((module) => cablePositionKey(module.position))
     );
+    const energizedEdges = new Set();
+    if (liveCore) {
+      for (const module of modules) {
+        if (!module?.position || !fedCells.has(cablePositionKey(module.position))) continue;
+        let cursor = {x:2,y:1};
+        while (cursor.x !== Number(module.position.x)) {
+          const next = {x:cursor.x + Math.sign(Number(module.position.x) - cursor.x),y:cursor.y};
+          energizedEdges.add(`${cablePositionKey(cursor)}>${cablePositionKey(next)}`);
+          cursor = next;
+        }
+        while (cursor.y !== Number(module.position.y)) {
+          const next = {x:cursor.x,y:cursor.y + Math.sign(Number(module.position.y) - cursor.y)};
+          energizedEdges.add(`${cablePositionKey(cursor)}>${cablePositionKey(next)}`);
+          cursor = next;
+        }
+      }
+    }
     for (const cell of boardElement.querySelectorAll(".board-cell")) {
       const key = `${cell.dataset.x},${cell.dataset.y}`;
       const fed = liveCore && fedCells.has(key);
@@ -12459,10 +12743,12 @@ function saveHumanReviewLocalNote() {
         const second = {x:x+dx,y:y+dy};
         if (!cells.has(cablePositionKey(second))) continue;
         createCircuitCableLine(layer, first, second, "circuit-cable-base");
-        if (liveCore) {
-          const distance = p => Math.abs(p.x-2)+Math.abs(p.y-1);
-          const outward = distance(first) <= distance(second);
-          createCircuitCableLine(layer, outward ? first : second, outward ? second : first, "circuit-cable-current");
+        const forwardKey = `${cablePositionKey(first)}>${cablePositionKey(second)}`;
+        const reverseKey = `${cablePositionKey(second)}>${cablePositionKey(first)}`;
+        if (energizedEdges.has(forwardKey)) {
+          createCircuitCableLine(layer, first, second, "circuit-cable-current");
+        } else if (energizedEdges.has(reverseKey)) {
+          createCircuitCableLine(layer, second, first, "circuit-cable-current");
         }
       }
     }
@@ -12485,17 +12771,6 @@ function saveHumanReviewLocalNote() {
       portCount:4,
       ports:["up","right","down","left"],
       isPowered:mockEnemyCoreHp > 0,
-    };
-    const generator={
-      instanceId:"enemy-generator",
-      nameTr:"Jeneratör",
-      hp:mockEnemyGeneratorHp,
-      status:"active",
-      position:{...mockEnemyGeneratorPosition},
-      portCount:4,
-      direction:mockEnemyGeneratorPower.direction || "up",
-      ports:mockEnemyGeneratorPower.ports,
-      isPowered:Boolean(mockEnemyGeneratorPower.isPowered),
     };
     const deployed=mockEnemyModules.map((module) => {
       const definition=moduleDefinitions.find(
@@ -13433,22 +13708,14 @@ function saveHumanReviewLocalNote() {
           )
     );
 
-    const ratingText =
-      progression
-        ? (
-            progression.rankedEligible
-              ? (
-                  `${progression.ratingDelta >= 0 ? "+" : ""}`
-                  + `${progression.ratingDelta} DP`
-                )
-              : localizedUiText("Derece puanı değişmedi")
-          )
-        : localizedUiText("DP hesaplanıyor");
-
-    const xpText =
-      progression
-        ? `+${progression.xpAwarded} XP`
-        : localizedUiText("XP hesaplanıyor");
+    const rewardSummary = progression
+      ? [
+          progression.rankedEligible
+            ? `${progression.ratingDelta >= 0 ? "+" : ""}${progression.ratingDelta} Kupa`
+            : localizedUiText("Kupa değişmedi"),
+          `+${progression.xpAwarded} XP`,
+        ]
+      : [];
 
     const ownResult =
       result.result_summary?.[pvpState.playerId]
@@ -13468,7 +13735,10 @@ function saveHumanReviewLocalNote() {
 
     resultEl.hidden = false;
     resultEl.textContent = localizedUiText(
-      `${progression?.matchLabelTr || "Maç"} · ${finishReasonLabel(result.finish_reason)}${penaltyText} · ${ratingText} · ${xpText}`
+      [
+        `${progression?.matchLabelTr || "Maç"} · ${finishReasonLabel(result.finish_reason)}${penaltyText}`,
+        ...rewardSummary,
+      ].join(" · ")
     );
     renderPostMatchRewards();
   }
@@ -13572,7 +13842,7 @@ function saveHumanReviewLocalNote() {
       `${view.displayName} · `
       + `Seviye ${view.level} · `
       + `${view.leagueNameTr} · `
-      + `${view.rating} Derece Puanı · `
+      + `${view.rating} Kupa · `
       + `${view.experience} XP`
     );
 
@@ -13686,7 +13956,11 @@ function saveHumanReviewLocalNote() {
     const status = document.getElementById("leaderboard-status");
     if (status) status.textContent = "Sıralama yükleniyor…";
     try {
-      const response = await fetch("/leaderboards", { cache: "no-store" });
+      const response = await fetchWithDeadline(
+        "/leaderboards",
+        { cache: "no-store" },
+        8000
+      );
       const payload = await response.json();
       if (!response.ok) throw new Error(payload.detail || "Lider panosu yüklenemedi.");
       leaderboardPayload = payload;
@@ -14626,7 +14900,7 @@ function saveHumanReviewLocalNote() {
           energyRequired:
             Number(module.energyRequired || 0),
           isSource:
-            module.nameTr === "Jeneratör",
+            module.nameTr === "Çekirdek",
           powerReason:
             module.powerReason,
         }
@@ -15613,8 +15887,11 @@ function saveHumanReviewLocalNote() {
 
       if (localBattleMetrics) {
         localBattleMetrics
-          .damage_dealt +=
+      .damage_dealt +=
             finalDamage;
+        localBattleMetrics.damage_by_module[attackerDefinitionId] =
+          Number(localBattleMetrics.damage_by_module[attackerDefinitionId] || 0)
+          + finalDamage;
         localBattleMetrics
           .player_attacks += 1;
         telemetryDispatcher
@@ -15649,7 +15926,7 @@ function saveHumanReviewLocalNote() {
     }
 
     combatSummaryEl.textContent=
-      `Rakip: Modül ${mockEnemyModuleHp} HP · Jeneratör ${mockEnemyGeneratorHp}/150 · Çekirdek ${mockEnemyCoreHp}/300`;
+      `Rakip: Modül ${mockEnemyModuleHp} HP · Çekirdek ${mockEnemyCoreHp}/300`;
 
     renderEnemyBoard();
     updateMockBattleResult();
@@ -15676,6 +15953,7 @@ function saveHumanReviewLocalNote() {
 
 
   function renderCapacity() {
+    if (!capacityEl) return;
     const placement = modulePlacementSlotState();
     capacityEl.textContent = localizedUiText(
       `Devrede ${placement.active} / ${placement.currentLimit}`
@@ -16430,6 +16708,18 @@ function saveHumanReviewLocalNote() {
     }
   );
 
+  document.getElementById("post-match-sync-retry")?.addEventListener(
+    "click",
+    async (event) => {
+      const retryButton = event.currentTarget;
+      retryButton.disabled = true;
+      postMatchSync.clear();
+      renderPostMatchRewards();
+      await syncFinishedMatch();
+      retryButton.disabled = false;
+    }
+  );
+
   const rematchButton =
     document.getElementById(
       "rematch-button"
@@ -16783,7 +17073,7 @@ function saveHumanReviewLocalNote() {
         target: "#battle-pool-confirm",
         action: "start-matchmaking",
         actionLabel: "Savaş",
-        hint: "Çekirdek ve jeneratör sabittir; diğer iki başlangıç modülünü sen seçersin.",
+        hint: "Çekirdek sabit enerji kaynağıdır; altı kartlık havuzu sen seçersin.",
       },
       {
         title: "Dokun, sonra yerleştir",

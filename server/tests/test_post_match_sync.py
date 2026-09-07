@@ -4,7 +4,6 @@ from fastapi.testclient import TestClient
 import pytest
 
 from app.game.engine import BATTLE_TIME_LIMIT_MS
-from app.game.models import Direction
 from app.main import (
     app,
     player_profile_service,
@@ -44,11 +43,7 @@ def test_post_match_endpoint_returns_progression_profile_and_statistics(
         for p in ("a","b"):
             pvp_service.join(battle_id,p)
             session.engine.grant_module(p,f"{p}-core","core")
-            session.engine.grant_module(p,f"{p}-gen","generator")
-            session.engine.set_initial_active_module(p,f"{p}-core",2,2)
-            session.engine.set_initial_active_module(
-                p,f"{p}-gen",2,3,Direction.UP
-            )
+            session.engine.set_initial_active_module(p,f"{p}-core",2,1)
 
         pvp_service.start(battle_id)
         session.engine.state.elapsed_ms=BATTLE_TIME_LIMIT_MS-100
@@ -63,7 +58,7 @@ def test_post_match_endpoint_returns_progression_profile_and_statistics(
         assert body["player_id"]=="a"
         assert body["progression"]["xp_awarded"]==90
         assert body["profile"]["experience"]==90
-        assert body["profile"]["rating"]==1000
+        assert body["profile"]["rating"]==0
         assert body["statistics"]["total_matches"]==1
         assert body["statistics"]["draws"]==1
 

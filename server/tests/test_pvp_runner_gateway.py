@@ -1,5 +1,4 @@
 import asyncio
-from app.game.models import Direction
 from app.game.pvp_runner import PvPTickRunner
 from app.game.pvp_session import PvPSessionService
 from app.game.pvp_websocket import PvPWebSocketAdapter
@@ -10,9 +9,7 @@ def test_ensure_started_is_idempotent():
         for p in ("a","b"):
             s.join("m",p)
             x.engine.grant_module(p,f"{p}-core","core")
-            x.engine.grant_module(p,f"{p}-gen","generator")
-            x.engine.set_initial_active_module(p,f"{p}-core",2,2)
-            x.engine.set_initial_active_module(p,f"{p}-gen",2,3,Direction.UP)
+            x.engine.set_initial_active_module(p,f"{p}-core",2,1)
         s.start("m")
         async def controlled_sleep(_): await asyncio.sleep(0)
         r=PvPTickRunner(s,PvPWebSocketAdapter(s),sleep_func=controlled_sleep)

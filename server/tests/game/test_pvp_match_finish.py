@@ -1,7 +1,6 @@
 import asyncio
 
 from app.game.engine import BATTLE_TIME_LIMIT_MS
-from app.game.models import Direction
 from app.game.pvp_runner import PvPTickRunner
 from app.game.pvp_session import (
     PvPSessionError,
@@ -29,12 +28,8 @@ def running_match():
     for p in ("a","b"):
         service.join("m",p)
         session.engine.grant_module(p,f"{p}-core","core")
-        session.engine.grant_module(p,f"{p}-gen","generator")
         session.engine.set_initial_active_module(
-            p,f"{p}-core",2,2
-        )
-        session.engine.set_initial_active_module(
-            p,f"{p}-gen",2,3,Direction.UP
+            p,f"{p}-core",2,1
         )
     service.start("m")
     return service,session
@@ -88,6 +83,40 @@ def test_runner_broadcasts_final_result_and_closes_connections():
         stats=runner.stats_for("m")
         assert stats.match_finished_broadcasts==2
         assert stats.closed_connections==2
+
+    asyncio.run(scenario())
+
+
+def test_runner_persists_finished_projection_before_terminal_result():
+    async def scenario():
+        service, session = running_match()
+        adapter = PvPWebSocketAdapter(service)
+        order = []
+
+        class OrderedSocket(FakeSocket):
+            async def send_json(self, data):
+                if data.get("type") == "match_finished":
+                    order.append("result")
+                await super().send_json(data)
+
+        socket = OrderedSocket()
+        await adapter.connect(
+            connection_id="ordered",
+            session_id="m",
+            player_id="a",
+            socket=socket,
+        )
+        session.engine.state.elapsed_ms = BATTLE_TIME_LIMIT_MS - 100
+        runner = PvPTickRunner(
+            service,
+            adapter,
+            snapshot_every_ticks=1000,
+            match_finished_callback=lambda _state: order.append("persisted"),
+        )
+
+        await runner.run_single_tick("m")
+
+        assert order == ["persisted", "result"]
 
     asyncio.run(scenario())
 

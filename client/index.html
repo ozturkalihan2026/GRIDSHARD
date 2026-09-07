@@ -39,7 +39,7 @@
       <div class="lobby-player-card">
         <span class="lobby-ribbon-kicker">OPERATÖR</span>
         <strong id="lobby-player-name">Oyuncu</strong>
-        <span id="lobby-player-details">Devre Çırağı · Seviye 1 · 🏆 1000</span>
+        <span id="lobby-player-details">Devre Çırağı · Seviye 1 · 🏆 0</span>
       </div>
       <div class="lobby-season-progress">
         <div>
@@ -359,7 +359,7 @@
         <div class="screen-heading-block"><span class="screen-kicker">OPERATÖR TERMİNALİ</span><h2>Profil</h2><p class="screen-subtitle">Oyuncu kimliği, ilerleme ve savaş hazırlığı.</p></div>
         <span>Genel · İlerleme · Savaş Havuzu · <strong id="profile-load-status" data-status="idle">Yerel önizleme</strong></span>
       </div>
-      <p id="profile-live-summary">Oyuncu · Seviye 1 · Gümüş · 1000 Derece Puanı · 0 XP</p>
+      <p id="profile-live-summary">Oyuncu · Seviye 1 · Arena 1 · 0 Kupa · 0 XP</p>
       <div class="profile-highlights" aria-label="Profil rekorları">
         <article><span>🏆</span><div><small>TÜM ZAMANLAR</small><strong id="profile-highest-trophies">0 Kupa</strong></div></article>
         <article><span>▦</span><div><small>EN ÇOK KULLANILAN DESTE</small><strong id="profile-most-used-deck">Henüz maç yok</strong></div></article>
@@ -428,13 +428,13 @@
       </div>
       <div class="laboratory-workbench">
         <aside class="laboratory-catalog-panel">
-          <div class="laboratory-section-title"><div><span>KATALOG</span><strong>24 Modül</strong></div><small>Seviye 0–3</small></div>
+          <div class="laboratory-section-title"><div><span>KATALOG</span><strong>36 Modül</strong></div><small>Seviye 0–3</small></div>
           <div id="laboratory-module-list" class="laboratory-module-list" aria-label="Laboratuvar modül kataloğu"></div>
         </aside>
         <article class="laboratory-detail-panel" id="laboratory-detail-panel">
           <div class="laboratory-module-hero">
-            <div id="laboratory-detail-icon" class="laboratory-detail-icon" aria-label="Jeneratör devre kartı önizlemesi"></div>
-            <div><span id="laboratory-detail-category">ENERJİ</span><h3 id="laboratory-detail-name">Jeneratör</h3><p id="laboratory-detail-role">Ana enerji kaynağı</p></div>
+            <div id="laboratory-detail-icon" class="laboratory-detail-icon" aria-label="Lazer devre kartı önizlemesi"></div>
+            <div><span id="laboratory-detail-category">SALDIRI</span><h3 id="laboratory-detail-name">Lazer</h3><p id="laboratory-detail-role">Sürekli tek hedef hasarı</p></div>
             <strong id="laboratory-detail-level">SV 0 / 3</strong>
           </div>
           <p id="laboratory-detail-effect" class="laboratory-detail-effect">Deneysel modda enerji verimliliği artar.</p>
@@ -597,14 +597,13 @@
           <section class="initial-strategy-panel">
             <div class="initial-circuit-heading">
               <span class="initial-circuit-kicker">BAŞLANGIÇ STRATEJİNİ SEÇ</span>
-              <strong id="initial-circuit-title">Başlangıç Devresi · 2 Sabit</strong>
+              <strong id="initial-circuit-title">Başlangıç Devresi · 1 Sabit</strong>
             </div>
             <div class="initial-fixed-modules" aria-label="Sabit başlangıç modülleri">
-              <span>Çekirdek · sabit</span>
-              <span>Jeneratör · sabit</span>
+              <span>Çekirdek · sabit enerji kaynağı</span>
             </div>
             <div id="initial-module-picker" class="initial-module-picker" hidden></div>
-            <span id="initial-module-status" role="status">Çekirdek ve Jeneratör sabit başlar</span>
+            <span id="initial-module-status" role="status">Çekirdek sabit başlar; diğer modüller boş hücrelere yerleşir</span>
           </section>
           <section class="initial-preset-panel" aria-label="Sık kullanılan hazır havuzlar">
             <button id="battle-pool-preset-open" type="button" class="preset-manager-open">Hazır Havuzları Yönet</button>
@@ -623,8 +622,8 @@
 
         <article class="battle-pool-detail-panel" id="battle-pool-detail">
           <span id="battle-pool-detail-category" class="pool-detail-category">Sistem</span>
-          <h3 id="battle-pool-detail-name">Jeneratör</h3>
-          <p id="battle-pool-detail-role">Ana enerji kaynağı</p>
+          <h3 id="battle-pool-detail-name">Batarya</h3>
+          <p id="battle-pool-detail-role">Enerji rezervi</p>
           <div
             id="battle-pool-detail-preview"
             class="pool-detail-module-preview"
@@ -644,7 +643,7 @@
           <section class="pool-detail-explanation">
             <h4>Ne işe yarar?</h4>
             <p id="battle-pool-detail-description" class="pool-detail-description">
-              Devrenin başlangıç enerji kaynağıdır. Çekirdek kapısında sabit başlar.
+              Enerji kapasitesini artırır ve ani yüklerde devreyi destekler.
             </p>
             <ul id="battle-pool-detail-effects" class="pool-detail-effects"></ul>
           </section>
@@ -699,13 +698,13 @@
       <strong id="combat-summary">Rakip: 300/300 Çekirdek</strong>
       <span id="energy-summary">Enerji: 11.0 Ü / 0.0 T</span>
       <span id="active-match-mode">Maç: Bekleniyor</span>
-      <span id="player-core-summary">Sen: Çekirdek 300/300 · Jeneratör 150/150</span>
+      <span id="player-core-summary">Sen: Çekirdek 300/300</span>
             <details class="technical-status-drawer">
         <summary>Beta / Bağlantı Teknik Durumu</summary>
         <div class="technical-status-content">
 <span id="pvp-flow-status">PvP: Lobi → Setup → Hazır → Savaş → Sonuç</span>
       <span id="pvp-connection-status" data-status="idle">Bağlantı: Hazır</span>
-      <span id="matchmaking-status">Eşleştirme: Hazır · 1000 DP</span>
+      <span id="matchmaking-status">Eşleştirme: Hazır · Arena 1</span>
       <span id="web-test-status" data-status="idle">Web Test: Kontrol Bekliyor</span>
       <span id="server-boot-status" data-status="idle">Sunucu: Kontrol bekliyor</span>
       <span id="play-readiness-status" data-ready="false">Oyna: Sunucu ve hesap hazırlanıyor</span>
@@ -815,7 +814,7 @@
             <div class="duel-side-heading duel-enemy-identity">
               <strong id="enemy-battle-name">AI Rakip</strong>
               <div id="enemy-deck-preview" class="enemy-deck-preview" aria-label="Rakip destesi"></div>
-              <span id="enemy-board-status" class="board-vitals" hidden>Çekirdek 300/300 · Jeneratör 150/150</span>
+              <span id="enemy-board-status" class="board-vitals" hidden>Çekirdek 300/300</span>
             </div>
             <div id="enemy-board" class="board enemy-board" aria-label="Rakip Savaş Alanı"></div>
           </section>
@@ -826,7 +825,7 @@
             <div id="board" class="board" aria-label="Oyuncu Savaş Alanı"></div>
             <div class="duel-side-heading duel-player-identity">
               <strong id="player-battle-name">Oyuncu</strong>
-              <span id="player-board-status" class="board-vitals" hidden>Çekirdek 300/300 · Jeneratör 150/150</span>
+              <span id="player-board-status" class="board-vitals" hidden>Çekirdek 300/300</span>
             </div>
           </section>
         </div>
@@ -838,7 +837,6 @@
           <strong id="shelf-credit-indicator" class="resource-value resource-value-current"><i class="resource-symbol resource-symbol-current" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M13.5 2 5 13h6l-1 9 9-12h-6Z"/></svg></i><span id="shelf-credit-value">6 / 12</span></strong>
           <span id="shelf-lock-label">Kilitli</span>
         </div>
-        <div class="capacity-indicator shelf-capacity-indicator" id="capacity-indicator" role="status" aria-live="polite">Devrede 2 / 10</div>
         <section class="booster-panel battle-booster-dock" id="booster-panel" data-state="locked">
           <div class="panel-title-row">
             <h3>Güçlendiriciler</h3>
@@ -882,7 +880,7 @@
           <div><span>Sonuç</span><strong id="local-report-result">—</strong></div>
           <div><span>DK Harcama</span><strong id="local-report-credits">—</strong></div>
           <div><span>Kaçış Cezası</span><strong id="local-report-forfeit-penalty">—</strong></div>
-          <div><span>Jeneratör Taşıma</span><strong id="local-report-generator-moves">—</strong></div>
+          <div><span>Devre Bağlantısı Değişimi</span><strong id="local-report-generator-moves">—</strong></div>
           <div><span>Verilen Hasar</span><strong id="local-report-damage-dealt">—</strong></div>
           <div><span>Alınan Hasar</span><strong id="local-report-damage-received">—</strong></div>
           <div><span>Kalkan Azaltması</span><strong id="local-report-shield">—</strong></div>
@@ -899,7 +897,7 @@
 
           <div class="balance-review-grid">
             <div class="route-analysis-card">
-              <h5>Jeneratör Kapı Rotası</h5>
+              <h5>Kablo Ağı Sağlığı</h5>
               <div class="gate-usage-grid">
                 <div><span>Kuzey</span><strong id="gate-use-north">0</strong></div>
                 <div><span>Doğu</span><strong id="gate-use-east">0</strong></div>
@@ -978,20 +976,21 @@
       <section id="post-match-reward-stage" class="post-match-stage post-match-reward-stage" aria-label="Maç ödülleri" hidden>
         <span id="post-match-reward-outcome" class="post-match-reward-outcome">ZAFER</span>
         <h2>SAVAŞ ÖDÜLLERİ</h2>
-        <p>Ödüller hesabına işlendi.</p>
+        <p id="post-match-persistence-status">Ödüller sunucuya kaydediliyor…</p>
         <div class="post-match-reward-list">
           <article>
             <i class="resource-symbol resource-symbol-trophy" aria-hidden="true">♛</i>
             <span>KUPA</span>
-            <strong id="post-match-trophy-reward">Hesaplanıyor</strong>
+            <strong id="post-match-trophy-reward">Kaydediliyor…</strong>
           </article>
           <article>
             <i class="resource-symbol resource-symbol-credit" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M7 12h3l2-4 2 8 2-4h2"/></svg></i>
             <span>DEVRE KREDİSİ</span>
-            <strong id="post-match-credit-reward">Hesaplanıyor</strong>
+            <strong id="post-match-credit-reward">Kaydediliyor…</strong>
           </article>
         </div>
         <p id="post-match-chest-reward" class="post-match-chest-reward" hidden></p>
+        <button id="post-match-sync-retry" type="button" hidden>ÖDÜLLERİ YENİDEN YÜKLE</button>
       </section>
       <div class="post-match-actions">
         <button id="post-match-continue" type="button">DEVAM</button>

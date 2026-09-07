@@ -238,8 +238,9 @@ test("Beta.43 kartlar, çekirdek ayrıntısı ve lider panosu akışlarını sun
   assert.match(app, /renderBoardCables/);
   assert.match(app, /energy-fed-cell/);
   assert.match(css, /\.module-detail-art[\s\S]*place-items:center/);
-  assert.match(css, /\.vertical-circuit-arena \.board[\s\S]*gap: 0 !important/);
-  assert.match(css, /\.board-cable-layer[\s\S]*z-index:3 !important/);
+  assert.match(css, /\.vertical-circuit-arena \.board[\s\S]*gap: 8px !important/);
+  assert.match(css, /\.board-cable-layer[\s\S]*z-index:2 !important/);
+  assert.match(css, /\.board-cell > \.module-card[\s\S]*z-index:4 !important/);
   assert.match(css, /\.circuit-cable-current[\s\S]*animation:gs-circuit-current-travel/);
   assert.match(css, /\.home-core-hero-copy[\s\S]*top:7px !important/);
 });

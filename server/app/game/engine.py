@@ -1977,9 +1977,9 @@ class BattleEngine:
         if {
             first.definition.id,
             second.definition.id,
-        } & {"core", "generator"}:
+        } & {"core"}:
             raise CommandRejected(
-                "Çekirdek ve Jeneratör normal modül takasına dahil edilemez."
+                "Çekirdek normal modül takasına dahil edilemez."
             )
         if first.position is None or second.position is None:
             raise CommandRejected("Yer değiştirilecek modüllerin konumu bulunamadı.")

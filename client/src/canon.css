@@ -22,7 +22,7 @@ body[data-app-screen="play"][data-online-status="battle"] .vertical-circuit-aren
   height: calc(var(--gs-battle-card-size) * 3 + 16px) !important;
   grid-template-columns: repeat(5, var(--gs-battle-card-size)) !important;
   grid-template-rows: repeat(3, var(--gs-battle-card-size)) !important;
-  gap: 0 !important;
+  gap: 8px !important;
   transform: none !important;
   padding: 0 !important;
 }
@@ -883,6 +883,7 @@ body[data-home-matchmaking="true"] .play-online-panel { visibility:hidden !impor
 .post-match-reward-list span { color:#91aac0;font:800 .5rem var(--gs-font-display);letter-spacing:.08em; }
 .post-match-reward-list strong { color:#fff0a0;font:900 .8rem var(--gs-font-display); }
 .post-match-chest-reward { width:min(430px,100%);padding:10px;border:1px solid #ffe070;border-radius:10px;color:#ffe998 !important;background:rgba(255,214,73,.08); }
+#post-match-sync-retry { width:min(430px,100%);min-height:42px;border:1px solid #ffcf68;color:#fff0a5;background:#3c2b18;font:900 .58rem var(--gs-font-display); }
 .post-match-actions { grid-template-columns:repeat(2,minmax(0,1fr)) !important; }
 #post-match-continue { grid-column:1/-1;min-height:48px;border:1px solid #ffe47d;color:#141927;background:linear-gradient(135deg,#ffe879,#ffb64f);font:900 .72rem var(--gs-font-display); }
 
@@ -1246,10 +1247,10 @@ body:not([data-app-screen="play"]) .app-progress-ribbon .lobby-currency-chip > s
    sits above cell paint but below the draggable cards, so current pulses are
    visible in the network without intercepting pointer/drop events. */
 body[data-app-screen="play"] .vertical-circuit-arena .board-cable-layer {
-  z-index:3 !important;
+  z-index:2 !important;
 }
 body[data-app-screen="play"] .vertical-circuit-arena .board-cell {
-  z-index:auto !important;
+  z-index:1 !important;
 }
 body[data-app-screen="play"] .vertical-circuit-arena .board-cell > .module-card {
   position:relative;
@@ -1263,8 +1264,8 @@ body[data-app-screen="play"] .vertical-circuit-arena .circuit-cable-base {
 body[data-app-screen="play"] .vertical-circuit-arena .circuit-cable-current {
   stroke:#7ffff0 !important;
   stroke-width:3.5 !important;
-  stroke-dasharray:8 16 !important;
-  animation:gs-circuit-current-travel .72s linear infinite !important;
+  stroke-dasharray:3 5 !important;
+  animation:gs-circuit-current-travel .46s linear infinite !important;
 }
 body[data-app-screen="play"] .vertical-circuit-arena .board-cell.energy-fed-cell {
   box-shadow:
@@ -1284,4 +1285,148 @@ body[data-app-screen="play"] .vertical-circuit-arena .board-cell.energy-fed-cell
   body[data-app-screen="play"] .vertical-circuit-arena .board-cell.energy-fed-cell {
     animation:none !important;
   }
+}
+
+/* Beta.43.1: separated 5x3 cells, centred combat chrome and a compact
+   post-match damage sheet. */
+body[data-app-screen="play"] .vertical-circuit-arena .duel-side,
+body[data-app-screen="play"] .vertical-circuit-arena .duel-side-heading,
+body[data-app-screen="play"] .vertical-circuit-arena .board {
+  justify-self:center !important;
+}
+body[data-app-screen="play"] .vertical-circuit-arena .duel-side-heading {
+  justify-items:center !important;
+  text-align:center !important;
+}
+body[data-app-screen="play"] .vertical-circuit-arena .duel-enemy-identity strong {
+  width:100%;
+  text-align:center;
+}
+body[data-app-screen="play"] .enemy-deck-preview {
+  justify-content:center !important;
+}
+body[data-app-screen="play"] .module-shelf {
+  grid-template-columns:repeat(6,minmax(0,1fr)) !important;
+  justify-content:stretch !important;
+  width:100% !important;
+}
+body[data-app-screen="play"] .module-shelf .module-card {
+  width:min(100%,var(--gs-battle-card-size)) !important;
+  min-width:0 !important;
+  max-width:var(--gs-battle-card-size) !important;
+  height:auto !important;
+  max-height:var(--gs-battle-card-size) !important;
+  justify-self:center !important;
+}
+
+.play-result-panel:not([hidden]) {
+  width:min(440px,calc(100vw - 12px)) !important;
+  max-height:calc(100dvh - 16px) !important;
+  padding:10px !important;
+}
+.post-match-damage-stage { gap:7px !important; }
+.post-match-damage-stage .battle-result-hero {
+  min-height:72px !important;
+  padding:9px 12px !important;
+}
+.post-match-scoreboard { gap:7px !important; }
+.post-match-player-card { border-radius:13px !important; }
+.post-match-player-card > header {
+  min-height:32px;
+  padding:6px 9px !important;
+  display:flex !important;
+  justify-content:space-between;
+  gap:8px;
+}
+.post-match-player-card > header > strong {
+  overflow:hidden;
+  color:#edf7ff;
+  font:800 .56rem var(--gs-font-display);
+  text-overflow:ellipsis;
+  white-space:nowrap;
+}
+.post-match-player-outcome {
+  color:#ffdf72;
+  font:900 .55rem var(--gs-font-display);
+  letter-spacing:.1em;
+}
+.post-match-player-card.is-loser .post-match-player-outcome { color:#ff8295; }
+.post-match-player-body {
+  padding:8px;
+  display:grid;
+  grid-template-columns:92px minmax(0,1fr);
+  align-items:center;
+  gap:8px;
+}
+.post-match-core-card {
+  display:grid !important;
+  grid-template-columns:1fr !important;
+  justify-items:center;
+  align-content:center;
+  gap:5px !important;
+  text-align:center;
+}
+.post-match-core-card > i {
+  width:66px !important;
+  height:66px !important;
+  border-radius:17px !important;
+  font-size:2rem !important;
+}
+.post-match-core-card > div { min-width:0; }
+.post-match-core-card strong,
+.post-match-core-card small,
+.post-match-core-card b { display:block; }
+.post-match-core-card strong { font:800 .5rem var(--gs-font-display) !important; }
+.post-match-core-card small { margin-top:2px !important;font-size:.46rem !important; }
+.post-match-core-card b { margin-top:5px;color:#ffe078;font:900 .58rem var(--gs-font-display); }
+.post-match-damage-column { min-width:0; }
+.post-match-total-damage {
+  padding:0 2px 5px;
+  display:flex;
+  align-items:end;
+  justify-content:space-between;
+  gap:8px;
+  text-align:left !important;
+}
+.post-match-total-damage strong { margin:0 !important;font-size:.78rem !important; }
+.post-match-module-damage { padding:0 !important;gap:4px !important; }
+.post-match-damage-row {
+  grid-template-columns:28px minmax(0,1fr) 46px !important;
+  gap:5px !important;
+}
+.post-match-damage-icon { width:27px !important;height:27px !important;border-radius:6px !important;font-size:.8rem !important; }
+.post-match-damage-row strong { font-size:.48rem !important; }
+.post-match-damage-row small { font-size:.41rem !important; }
+.post-match-damage-row i { height:6px !important; }
+.post-match-damage-row em { min-width:42px !important;font-size:.5rem !important; }
+.arena-league-reward-road { margin-top:13px !important; }
+
+/* Keep the account section titles centred after the portrait-shell rules. */
+body[data-app-screen="profile"] .profile-summary-panel > .panel-title-row,
+body[data-app-screen="statistics"] .statistics-summary-panel > .panel-title-row,
+body[data-app-screen="settings"] .settings-summary-panel > .panel-title-row {
+  display:grid !important;
+  grid-template-columns:minmax(0,1fr) !important;
+  justify-items:center !important;
+  text-align:center !important;
+}
+body[data-app-screen="profile"] .profile-summary-panel > .panel-title-row > .screen-heading-block,
+body[data-app-screen="statistics"] .statistics-summary-panel > .panel-title-row > .screen-heading-block,
+body[data-app-screen="settings"] .settings-summary-panel > .panel-title-row > .screen-heading-block {
+  width:100%;
+  justify-items:center;
+  text-align:center;
+}
+body[data-app-screen="profile"] .profile-summary-panel > .panel-title-row > span,
+body[data-app-screen="statistics"] .statistics-summary-panel > .panel-title-row > span,
+body[data-app-screen="settings"] .settings-summary-panel > .panel-title-row > span {
+  justify-self:center !important;
+  text-align:center !important;
+}
+
+@media (max-height:700px) {
+  .post-match-player-body { grid-template-columns:78px minmax(0,1fr);padding:6px; }
+  .post-match-core-card > i { width:54px !important;height:54px !important;font-size:1.6rem !important; }
+  .post-match-damage-row { grid-template-columns:24px minmax(0,1fr) 42px !important; }
+  .post-match-damage-icon { width:23px !important;height:23px !important; }
 }

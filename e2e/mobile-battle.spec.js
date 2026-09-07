@@ -57,9 +57,9 @@ test("dokunmatik savaş görünümü tek ekrana sığar ve seç-yerleştir çal�
   const initialReserveCount = await reserveCards.count();
   expect(initialReserveCount).toBeGreaterThan(0);
 
-  await expect(page.locator("#capacity-indicator")).toHaveAttribute(
-    "data-state",
-    "ready",
+  await expect(page.locator("#module-shelf")).toHaveAttribute(
+    "data-placement-ready",
+    "true",
     { timeout: 30_000 }
   );
   await expect(reserveCards.first()).not.toHaveClass(/locked/);
@@ -69,7 +69,7 @@ test("dokunmatik savaş görünümü tek ekrana sığar ve seç-yerleştir çal�
   await expect(page.locator("body")).toHaveAttribute("data-mobile-battle-panel", "player");
   const dropTargets = page.locator("#board .tap-drop-target[data-occupied=false]");
   await expect.poll(() => dropTargets.count()).toBeGreaterThan(0);
-  const target = page.locator('#board .tap-drop-target[data-x="2"][data-y="4"][data-occupied=false]');
+  const target = dropTargets.first();
   await expect(target).toHaveCount(1);
   const coordinates = await target.evaluate(cell => ({ x: cell.dataset.x, y: cell.dataset.y }));
   await target.click();

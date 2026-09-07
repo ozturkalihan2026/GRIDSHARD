@@ -36,7 +36,7 @@ def match_circuit_credit_reward(
     if match_type == "local_test":
         return 0
     stage_index = int(rank.get("index", 1))
-    if rank.get("kind") == "league":
+    if rank.get("kind") != "arena":
         stage_index += 12
     victory_reward = min(100, 35 + max(0, stage_index - 1) * 5)
     reward = (
