@@ -490,6 +490,16 @@
   let selectedCollectionCoreId = "core_resonance";
   let activeLeaderboardTab = "trophies";
   let leaderboardPayload = null;
+  const PROFILE_AVATARS = Object.freeze([
+    { id: "default", nameTr: "Devre Operatörü", glyph: "◇" },
+    { id: "circuit_scout", nameTr: "Devre Kaşifi", glyph: "⌁" },
+    { id: "core_guardian", nameTr: "Çekirdek Muhafızı", glyph: "⬡" },
+  ]);
+  const PROFILE_AVATAR_FRAMES = Object.freeze([
+    { id: "none", nameTr: "Standart" },
+    { id: "neon_cyan", nameTr: "Neon Akım" },
+    { id: "season_gold", nameTr: "Sezon Ustası" },
+  ]);
   let pendingDeckModuleInstanceId = null;
   let homeMatchmakingLaunchPending = false;
   let homeMatchmakingCancelPending = false;
@@ -498,7 +508,10 @@
   let deckEditorSlots = battlePoolSelection.selectedIds().slice(0, 6);
   while (deckEditorSlots.length < 6) deckEditorSlots.push(null);
 
-  async function fetchWithDeadline(input, init = {}, timeoutMs = 8000) {
+  // Mutations may briefly contend with the JSON persistence lock. Every
+  // mutation carries an idempotent receipt id, so keep the request alive
+  // while the server completes instead of surfacing a false timeout.
+  async function fetchWithDeadline(input, init = {}, timeoutMs = 30000) {
     const controller = new AbortController();
     let timedOut = false;
     const timer = window.setTimeout(() => {
@@ -519,7 +532,7 @@
     }
   }
 
-  async function requestJsonWithDeadline(path, options = {}, timeoutMs = 8000) {
+  async function requestJsonWithDeadline(path, options = {}, timeoutMs = 30000) {
     const response = await fetchWithDeadline(
       path,
       {
@@ -735,7 +748,7 @@
       tutorialController?.maybeStart();
     }
 
-    if (["profile", "daily", "rewards", "shop", "modules", "events", "menu"].includes(screen)) {
+    if (["profile", "daily", "daily-rewards", "rewards", "shop", "modules", "events", "menu"].includes(screen)) {
       accountDataLoader
         .loadProfile()
         .then(() => {
@@ -797,10 +810,10 @@
         next_upgrade_cost: null,
       })),
       chests: { slots: [], definitions: [
-        { id: "field_3h", name_tr: "Bronz Sandık", visual_tier: "bronze", unlock_hours: 3 },
-        { id: "circuit_8h", name_tr: "Gümüş Sandık", visual_tier: "silver", unlock_hours: 8 },
-        { id: "core_24h", name_tr: "Altın Sandık", visual_tier: "gold", unlock_hours: 24 },
-        { id: "diamond_24h", name_tr: "Elmas Sandık", visual_tier: "diamond", unlock_hours: 24 },
+        { id: "field_3h", name_tr: "Bronz Sandık", visual_tier: "bronze", unlock_hours: 0, open_seconds: 1, claim_cooldown_hours: 3, claim_available: true, claim_remaining_seconds: 0 },
+        { id: "circuit_8h", name_tr: "Gümüş Sandık", visual_tier: "silver", unlock_hours: 0, open_seconds: 1, claim_cooldown_hours: 8, claim_available: true, claim_remaining_seconds: 0 },
+        { id: "core_24h", name_tr: "Altın Sandık", visual_tier: "gold", unlock_hours: 0, open_seconds: 1, claim_cooldown_hours: 16, claim_available: true, claim_remaining_seconds: 0 },
+        { id: "diamond_24h", name_tr: "Elmas Sandık", visual_tier: "diamond", unlock_hours: 0, open_seconds: 1, claim_cooldown_hours: 24, claim_available: true, claim_remaining_seconds: 0 },
       ] },
       shop: { day: "", offers: [
         { id: "bronze_daily", name_tr: "Bronz Sandık", tier: "bronze", currency: "circuit_credits", cost: 120, purchased: false },
@@ -973,11 +986,14 @@
     if (!host) return;
     host.replaceChildren();
     for (let index = 0; index < 7; index += 1) {
-      const preset = battlePoolPresets[index];
+      // Only the first preset is provisioned by the canon.  The remaining
+      // tabs stay visible as empty slots so a later deck editor can populate
+      // them without silently shipping seven pre-filled decks.
+      const preset = index === 0 ? battlePoolPresets[0] : null;
       const button = document.createElement("button");
       button.type = "button";
       button.textContent = String(index + 1);
-      button.title = preset?.name || `Hazır deste ${index + 1}`;
+      button.title = preset?.name || `Boş deste ${index + 1}`;
       button.disabled = !preset;
       button.classList.toggle("is-active", preset?.name === activeBattlePoolPresetName);
       if (preset) {
@@ -1560,15 +1576,24 @@
         card.className = "shop-chest-card";
         const tier = chestTier(definition);
         card.dataset.tier = tier;
-        const ready = slot && new Date(slot.unlocks_at).getTime() <= Date.now();
-        const remainingMinutes = slot ? Math.max(0, Math.ceil((new Date(slot.unlocks_at).getTime() - Date.now()) / 60000)) : 0;
-        card.innerHTML = `${chestVisualMarkup(tier)}<strong>${definition.name_tr}</strong><small>${slot ? (ready ? "Açılmaya hazır" : `${Math.floor(remainingMinutes / 60)} sa ${remainingMinutes % 60} dk`) : `${definition.unlock_hours} saat`}</small>`;
+        const ready = Boolean(slot);
+        const remaining = Math.max(0, Number(definition.claim_remaining_seconds || 0));
+        card.dataset.definitionId = definition.id;
+        card.dataset.claimRemaining = String(remaining);
+        if (slot?.chest_id) card.dataset.chestId = slot.chest_id;
+        card.innerHTML = `${chestVisualMarkup(tier)}<strong>${definition.name_tr}</strong>`;
+        if (!slot && remaining > 0) {
+          const countdown = document.createElement("small");
+          countdown.className = "chest-countdown";
+          countdown.textContent = "Yenilenmesine " + formatChestCountdown(remaining);
+          card.appendChild(countdown);
+        }
         const action = document.createElement("button");
         action.type = "button";
         action.textContent = slot
-          ? (ready ? "AÇ" : "SÜRE İŞLİYOR")
-          : (definition.claim_available === false ? "BUGÜN ALINDI" : "HEDİYEYİ AL");
-        action.disabled = Boolean(state.unavailable || (slot && !ready) || (!slot && definition.claim_available === false));
+          ? "AÇ"
+          : (remaining > 0 ? formatChestCountdown(remaining) : "HEDİYEYİ AÇ");
+        action.disabled = Boolean(state.unavailable || (!slot && definition.claim_available === false));
         if (ready) action.addEventListener("click", () => openGiftChest(slot.chest_id));
         else if (!slot && definition.claim_available !== false) {
           action.addEventListener("click", () => claimGiftChest(definition.id));
@@ -1584,17 +1609,53 @@
         const card = document.createElement("article");
         card.className = "daily-offer-card";
         card.dataset.tier = offer.tier;
+        card.dataset.offerId = offer.id;
         const currency = offer.currency === "flux_shards" ? "Akı" : "DK";
-        card.innerHTML = `${chestVisualMarkup(offer.tier)}<div><strong>${offer.name_tr}</strong><small>DK · Akı · Modül ve Çekirdek Parçası</small></div>`;
+        card.innerHTML = `${chestVisualMarkup(offer.tier)}<div><strong>${offer.name_tr}</strong></div>`;
         const action = document.createElement("button");
         action.type = "button";
         action.textContent = offer.purchased ? "ALINDI" : `${offer.cost} ${currency}`;
         action.disabled = Boolean(state.unavailable || offer.purchased || Number(state[offer.currency] || 0) < offer.cost);
         action.addEventListener("click", () => purchaseShopOffer(offer.id));
         card.appendChild(action);
-        offerHost.appendChild(card);
+       offerHost.appendChild(card);
+     }
+   }
+    ensureShopCountdownTimer();
+ }
+
+ function formatChestCountdown(seconds) {
+    const total = Math.max(0, Math.ceil(Number(seconds) || 0));
+    const hours = Math.floor(total / 3600);
+    const minutes = Math.floor((total % 3600) / 60);
+    const secs = total % 60;
+    if (hours) return `${hours}s ${String(minutes).padStart(2, "0")}dk`;
+    if (minutes) return `${minutes}dk ${String(secs).padStart(2, "0")}sn`;
+    return `${secs}sn`;
+  }
+
+  let shopCountdownTimer = null;
+  function ensureShopCountdownTimer() {
+    if (shopCountdownTimer) return;
+    shopCountdownTimer = window.setInterval(() => {
+      if (document.body.dataset.appScreen !== "shop") return;
+      let becameAvailable = false;
+      for (const card of document.querySelectorAll("[data-definition-id][data-claim-remaining]")) {
+        const previous = Math.max(0, Number(card.dataset.claimRemaining || 0));
+        const next = Math.max(0, previous - 1);
+        card.dataset.claimRemaining = String(next);
+        const countdown = card.querySelector(".chest-countdown");
+        const button = card.querySelector("button");
+        if (countdown) countdown.textContent = "Yenilenmesine " + formatChestCountdown(next);
+        if (button && next === 0 && previous > 0) becameAvailable = true;
+        if (button && next === 0 && !metaProgressionState?.unavailable) {
+          button.disabled = false;
+          button.textContent = "HEDİYEYİ AÇ";
+          countdown?.remove();
+        }
       }
-    }
+      if (becameAvailable) loadMetaProgression();
+    }, 1000);
   }
 
   async function metaProgressionMutation(url) {
@@ -1614,7 +1675,7 @@
           cache: "no-store",
           headers: { "content-type": "application/json", "accept": "application/json" },
           body: JSON.stringify({ request_id: entry.requestId }),
-        }, 10000);
+        }, 30000);
       } catch (_networkError) {
         throw new Error(
           _networkError?.code === "request_timeout"
@@ -1673,7 +1734,7 @@
         ["AKI", `+${rewards.flux_shards || 0}`],
         [module?.name_tr || "MODÜL PARÇASI", `+${rewards.module_shards || 0}`],
         ["ÇEKİRDEK PARÇASI", `+${rewards.core_shards || 0}`],
-      ];
+      ].filter(([, value]) => !/^\+0(?:\s|$)/.test(value));
       for (const [label, value] of rewardLines) {
         const row = document.createElement("div");
         row.innerHTML = `<span>${label}</span><strong>${value}</strong>`;
@@ -1697,10 +1758,19 @@
     if (kicker) { kicker.hidden = true; kicker.textContent = ""; }
     const titleEl = document.getElementById("chest-reveal-title");
     if (titleEl) titleEl.textContent = title;
-    if (host) host.innerHTML = '<div class="chest-opening-progress"><span>Ödüller profile kaydediliyor</span><strong>•••</strong></div>';
+    // Opening is visual-only; reward details appear after the server confirms
+    // the receipt, without exposing timing/status metadata to the player.
+    if (host) host.innerHTML = '<div class="chest-opening-progress" aria-label="Sandık açılıyor"><strong>•••</strong></div>';
     if (close) { close.disabled = true; close.textContent = "AÇILIYOR…"; }
     if (dialog?.showModal && !dialog.open) dialog.showModal();
     else dialog?.setAttribute("open", "");
+    return Date.now();
+  }
+
+  async function waitForChestOpening(startedAt, minimumMs = 900) {
+    const remaining = Math.max(0, minimumMs - (Date.now() - Number(startedAt || 0)));
+    if (!remaining) return;
+    await new Promise((resolve) => setTimeout(resolve, remaining));
   }
 
   function showChestFailure(error) {
@@ -1714,7 +1784,23 @@
     if (close) { close.disabled = false; close.textContent = "DEVAM"; }
   }
 
+  function restoreShopAction({ chestId = null, definitionId = null, offerId = null } = {}) {
+    let card = null;
+    if (chestId) card = [...document.querySelectorAll("[data-chest-id]")]
+      .find((item) => item.dataset.chestId === String(chestId));
+    if (!card && definitionId) card = [...document.querySelectorAll("[data-definition-id]")]
+      .find((item) => item.dataset.definitionId === String(definitionId));
+    if (!card && offerId) card = [...document.querySelectorAll("[data-offer-id]")]
+      .find((item) => item.dataset.offerId === String(offerId));
+    const button = card?.querySelector("button");
+    if (button) button.disabled = false;
+  }
+
   function showClaimedChest(receipt) {
+    if (receipt?.rewards) {
+      showChestReveal(receipt);
+      return;
+    }
     const chest = receipt?.chest || {};
     const definition = metaProgressionState?.chests?.definitions?.find(
       (item) => item.id === chest.definition_id
@@ -1731,11 +1817,7 @@
     if (title) title.textContent = chest.name_tr || definition?.name_tr || "Hediye Sandık";
     if (kicker) { kicker.hidden = false; kicker.textContent = "SANDIK YUVAYA EKLENDİ"; }
     if (host) {
-      const unlocksAt = chest.unlocks_at ? new Date(chest.unlocks_at) : null;
-      const unlockLabel = unlocksAt && Number.isFinite(unlocksAt.getTime())
-        ? unlocksAt.toLocaleString("tr-TR", { hour: "2-digit", minute: "2-digit" })
-        : "Sayaç tamamlandığında";
-      host.innerHTML = `<div><span>AÇILMA ZAMANI</span><strong>${unlockLabel}</strong></div><div><span>DURUM</span><strong>ÖDÜL KAYDEDİLDİ</strong></div>`;
+      host.innerHTML = "<div><span>SANDIK</span><strong>Açılmaya hazır</strong></div>";
     }
     if (close) { close.disabled = false; close.textContent = "DEVAM"; }
   }
@@ -1743,16 +1825,18 @@
   async function purchaseShopOffer(offerId) {
     const status = document.getElementById("shop-action-status");
     const offer = metaProgressionState?.shop?.offers?.find((item) => item.id === offerId);
-    showChestOpening({ tier: offer?.tier || "bronze", title: offer?.name_tr || "Sandık" });
+    const openingStartedAt = showChestOpening({ tier: offer?.tier || "bronze", title: offer?.name_tr || "Sandık" });
     try {
       const payload = await metaProgressionMutation(
         `/profile/${encodeURIComponent(participantPlayerId)}/meta-progression/shop/${encodeURIComponent(offerId)}/purchase`
       );
       const reward = payload.receipt?.rewards || {};
       if (status) status.textContent = `Sandık açıldı: +${reward.circuit_credits || 0} DK · +${reward.flux_shards || 0} Akı · +${reward.module_shards || 0} modül parçası · +${reward.core_shards || 0} çekirdek parçası.`;
+      await waitForChestOpening(openingStartedAt);
       showChestReveal(payload.receipt);
     } catch (error) {
       if (status) status.textContent = error instanceof Error ? error.message : String(error);
+      restoreShopAction({ offerId });
       showChestFailure(error);
     }
   }
@@ -1761,16 +1845,18 @@
     const status = document.getElementById("shop-action-status");
     const chest = metaProgressionState?.chests?.slots?.find((item) => item.chest_id === chestId);
     const definition = metaProgressionState?.chests?.definitions?.find((item) => item.id === chest?.definition_id);
-    showChestOpening({ tier: chestTier(definition || chest || {}), title: definition?.name_tr || chest?.name_tr || "Sandık" });
+    const openingStartedAt = showChestOpening({ tier: chestTier(definition || chest || {}), title: definition?.name_tr || chest?.name_tr || "Sandık" });
     try {
       const payload = await metaProgressionMutation(
         `/profile/${encodeURIComponent(participantPlayerId)}/meta-progression/chests/${encodeURIComponent(chestId)}/open`
       );
       const reward = payload.receipt?.rewards || {};
       if (status) status.textContent = `Hediye açıldı: +${reward.circuit_credits || 0} DK · +${reward.flux_shards || 0} Akı · +${reward.module_shards || 0} modül parçası · +${reward.core_shards || 0} çekirdek parçası.`;
+      await waitForChestOpening(openingStartedAt);
       showChestReveal(payload.receipt);
     } catch (error) {
       if (status) status.textContent = error instanceof Error ? error.message : String(error);
+      restoreShopAction({ chestId });
       showChestFailure(error);
     }
   }
@@ -1780,7 +1866,7 @@
     const definition = metaProgressionState?.chests?.definitions?.find(
       (item) => item.id === definitionId
     );
-    showChestOpening({
+    const openingStartedAt = showChestOpening({
       tier: chestTier(definition || { id: definitionId }),
       title: definition?.name_tr || "Hediye Sandık",
     });
@@ -1788,11 +1874,13 @@
       const payload = await metaProgressionMutation(
         `/profile/${encodeURIComponent(participantPlayerId)}/meta-progression/chests/gifts/${encodeURIComponent(definitionId)}/claim`
       );
-      const chest = payload.receipt?.chest || {};
-      if (status) status.textContent = `${chest.name_tr || "Hediye sandık"} alındı; açılma süresi başladı.`;
-      showClaimedChest(payload.receipt);
+      const reward = payload.receipt?.rewards || {};
+      if (status) status.textContent = `Hediye açıldı: +${reward.circuit_credits || 0} DK · +${reward.flux_shards || 0} Akı · +${reward.module_shards || 0} modül parçası.`;
+      await waitForChestOpening(openingStartedAt);
+      showChestReveal(payload.receipt);
     } catch (error) {
       if (status) status.textContent = error instanceof Error ? error.message : String(error);
+      restoreShopAction({ definitionId });
       showChestFailure(error);
     }
   }
@@ -2279,7 +2367,7 @@
               const response = await fetchWithDeadline(
                 path,
                 { cache: "no-store" },
-                6000
+                30000
               );
               const payload = await response.json();
               if (!response.ok) {
@@ -13838,13 +13926,60 @@ function saveHumanReviewLocalNote() {
       return;
     }
 
-    el.textContent = localizedUiText(
-      `${view.displayName} · `
-      + `Seviye ${view.level} · `
-      + `${view.leagueNameTr} · `
-      + `${view.rating} Kupa · `
-      + `${view.experience} XP`
+    const statistics = statisticsState.viewModel();
+    const wins = Math.max(0, Number(statistics?.wins || 0));
+    const stages = view.operatorTitleProgression?.stages || [];
+    const achievedStages = stages.filter(
+      (stage) => view.rating >= Number(stage.required_trophies || 0)
+        && wins >= Number(stage.required_wins || 0)
     );
+    const activeTitle = achievedStages.at(-1)?.title_tr
+      || view.operatorTitle
+      || "Devre Çırağı";
+    const nextTitle = stages[achievedStages.length] || null;
+    el.textContent = localizedUiText(
+      `${view.displayName} · ${activeTitle} · ${view.leagueNameTr} · ${view.rating} Kupa`
+    );
+
+    const setText = (id, value) => {
+      const target = document.getElementById(id);
+      if (target) target.textContent = String(value);
+    };
+    setText("profile-player-name", view.displayName);
+    setText("profile-current-trophies", `${view.rating} Kupa`);
+    setText("profile-operator-title", activeTitle);
+    setText(
+      "profile-title-progress",
+      nextTitle
+        ? `${nextTitle.title_tr}: ${nextTitle.required_trophies} kupa + ${nextTitle.required_wins} galibiyet`
+        : "En yüksek operatör ününe ulaştın."
+    );
+    setText("profile-clan-title", view.teamName || "Klana dahil değil");
+    setText(
+      "profile-clan-copy",
+      view.teamName
+        ? `Takım kimliği: ${view.teamId || "—"}`
+        : "Bir takıma katıldığında takım bilgilerin burada görünecek."
+    );
+
+    const engagement = view.engagement || {};
+    const seasonSummary = view.seasonSummary || {};
+    const archives = metaProgressionState?.season_archives || [];
+    const previous = seasonSummary.previous || archives.at(-1) || null;
+    const best = seasonSummary.best || archives.reduce(
+      (current, item) => Number(item?.final_rating || 0) > Number(current?.final_rating || 0) ? item : current,
+      null
+    );
+    const seasonEndsAt = new Date(engagement.season_ends_at || 0).getTime();
+    const remainingMs = Math.max(0, seasonEndsAt - Date.now());
+    const remainingDays = Math.floor(remainingMs / 86400000);
+    const remainingHours = Math.floor((remainingMs % 86400000) / 3600000);
+    setText("profile-current-season-name", engagement.season_name_tr || "Güncel Sezon");
+    setText("profile-season-countdown", Number.isFinite(seasonEndsAt) && seasonEndsAt > 0 ? `${remainingDays} gün ${remainingHours} sa kaldı` : "Sezon süresi hazırlanıyor");
+    setText("profile-season-trophies", view.rating || 0);
+    setText("profile-season-league", view.leagueNameTr || "Arena 1");
+    setText("profile-last-season-trophies", previous ? Number(previous.final_rating || 0).toLocaleString("tr-TR") : "—");
+    setText("profile-best-season-trophies", best ? Number(best.final_rating || 0).toLocaleString("tr-TR") : "—");
 
     const nameInput =
       document.getElementById(
@@ -13873,11 +14008,12 @@ function saveHumanReviewLocalNote() {
     }
     if (lobbyPlayerDetails) {
       lobbyPlayerDetails.textContent= localizedUiText(
-        `${view.engagement?.equipped_title || "Devre Çırağı"} · Seviye ${view.level} · 🏆 ${view.rating}`
+        `${activeTitle} · 🏆 ${view.rating}`
       );
     }
 
     renderProfileHighlights();
+    renderAvatarCustomization(activeTitle);
     renderEngagementSummary(view.engagement);
   }
 
@@ -13891,13 +14027,113 @@ function saveHumanReviewLocalNote() {
   function renderProfileHighlights() {
     const view = profileState.viewModel();
     const highest = document.getElementById("profile-highest-trophies");
-    if (highest && view) highest.textContent = `${view.highestRating || view.rating || 0} Kupa`;
-    const favoriteDeck = document.getElementById("profile-most-used-deck");
+    if (highest && view) highest.textContent = String(view.highestRating || view.rating || 0);
+    const deckHost = document.getElementById("profile-most-used-deck");
     const deck = metaProgressionState?.statistics?.most_used_decks?.[0];
-    if (favoriteDeck) {
-      favoriteDeck.textContent = deck
-        ? `${deckDisplayName(deck)} · ${deck.matches} maç`
-        : "Henüz maç yok";
+    if (deckHost) {
+      deckHost.replaceChildren();
+      const ids = deck?.module_ids?.length ? deck.module_ids : view?.battlePoolIds || [];
+      for (const definitionId of ids.slice(0, 6)) {
+        const module = moduleDefinitions.find((candidate) => candidate.definitionId === definitionId);
+        const tile = document.createElement("span");
+        tile.className = "profile-deck-module";
+        tile.dataset.category = module?.category || "";
+        tile.textContent = moduleIconFor(module || null);
+        tile.title = localizedUiText(module?.nameTr || definitionId);
+        deckHost.appendChild(tile);
+      }
+      const matchCount = document.createElement("small");
+      matchCount.textContent = deck ? `${deck.matches} maçta kullanıldı` : "Aktif savaş destesi";
+      deckHost.appendChild(matchCount);
+    }
+    const coreHost = document.getElementById("profile-featured-core");
+    if (coreHost) {
+      const core = metaProgressionState?.cores?.types?.find((item) => item.selected)
+        || metaProgressionState?.cores?.types?.[0];
+      const icon = coreHost.querySelector("span");
+      const label = coreHost.querySelector("small");
+      if (icon) icon.textContent = "◇";
+      if (label) label.textContent = core?.name_tr || "Rezonans Çekirdeği";
+    }
+  }
+
+  function applyAvatarVisual(element, avatarId, frameId) {
+    if (!element) return;
+    const avatar = PROFILE_AVATARS.find((item) => item.id === avatarId) || PROFILE_AVATARS[0];
+    element.dataset.avatar = avatar.id;
+    element.dataset.frame = frameId || "none";
+    element.textContent = avatar.glyph;
+  }
+
+  async function selectProfileCosmetic(kind, id) {
+    const status = document.getElementById("avatar-action-status");
+    if (status) status.textContent = "Seçim kaydediliyor…";
+    try {
+      const current = profileState.viewModel()?.cosmetics || {};
+      const payload = await requestJsonWithDeadline(
+        `/profile/${encodeURIComponent(participantPlayerId)}/cosmetics`,
+        {
+          method: "PUT",
+          body: JSON.stringify({
+            avatar_id: kind === "avatar" ? id : current.selected_avatar_id,
+            avatar_frame_id: kind === "frame" ? id : current.selected_avatar_frame_id,
+          }),
+        }
+      );
+      profileState.applyProfile(payload);
+      renderProfileSummary();
+      if (status) status.textContent = "Avatar görünümü hesabına kaydedildi.";
+      return { ok: true };
+    } catch (error) {
+      if (status) status.textContent = error instanceof Error ? error.message : String(error);
+      return { ok: false };
+    }
+  }
+
+  function renderAvatarCustomization(activeTitle = null) {
+    const view = profileState.viewModel();
+    if (!view) return;
+    const cosmetics = view.cosmetics || {};
+    const avatarId = cosmetics.selected_avatar_id || "default";
+    const frameId = cosmetics.selected_avatar_frame_id || "none";
+    applyAvatarVisual(document.getElementById("profile-avatar"), avatarId, frameId);
+    applyAvatarVisual(document.getElementById("avatar-preview"), avatarId, frameId);
+    const profileName = document.getElementById("avatar-preview-name");
+    const profileTitle = document.getElementById("avatar-preview-title");
+    if (profileName) profileName.textContent = view.displayName;
+    if (profileTitle) profileTitle.textContent = activeTitle || view.operatorTitle || "Devre Çırağı";
+
+    const avatarHost = document.getElementById("avatar-choice-list");
+    if (avatarHost) {
+      avatarHost.replaceChildren();
+      const unlocked = new Set(cosmetics.unlockedAvatarIds || ["default"]);
+      for (const avatar of PROFILE_AVATARS) {
+        const button = document.createElement("button");
+        button.type = "button";
+        button.dataset.avatarId = avatar.id;
+        button.dataset.state = !unlocked.has(avatar.id) ? "locked" : avatar.id === avatarId ? "selected" : "available";
+        button.disabled = !unlocked.has(avatar.id);
+        button.innerHTML = `<span>${avatar.glyph}</span><strong>${avatar.nameTr}</strong><small>${unlocked.has(avatar.id) ? (avatar.id === avatarId ? "SEÇİLİ" : "SEÇ") : "SEZON YOLUNDA"}</small>`;
+        button.addEventListener("click", () => selectProfileCosmetic("avatar", avatar.id));
+        avatarHost.appendChild(button);
+      }
+    }
+
+    const frameHost = document.getElementById("avatar-frame-choice-list");
+    if (frameHost) {
+      frameHost.replaceChildren();
+      const unlocked = new Set(cosmetics.unlockedAvatarFrameIds || ["none"]);
+      for (const frame of PROFILE_AVATAR_FRAMES) {
+        const button = document.createElement("button");
+        button.type = "button";
+        button.dataset.frameId = frame.id;
+        button.dataset.frame = frame.id;
+        button.dataset.state = !unlocked.has(frame.id) ? "locked" : frame.id === frameId ? "selected" : "available";
+        button.disabled = !unlocked.has(frame.id);
+        button.innerHTML = `<span>◇</span><strong>${frame.nameTr}</strong><small>${unlocked.has(frame.id) ? (frame.id === frameId ? "SEÇİLİ" : "SEÇ") : "SEZON YOLUNDA"}</small>`;
+        button.addEventListener("click", () => selectProfileCosmetic("frame", frame.id));
+        frameHost.appendChild(button);
+      }
     }
   }
 
@@ -13991,29 +14227,37 @@ function saveHumanReviewLocalNote() {
     const progress = Math.max(0, Number(engagement.tier_progress || 0));
     const required = Math.max(1, Number(engagement.tier_progress_required || 1));
     const percentage = Math.min(100, Math.round((progress / required) * 100));
+    const rewardList = engagement.rewardTrack || [];
+    const nextReward = rewardList.find(
+      (reward) => Number(engagement.season_xp || 0) < Number(reward.required_xp || 0)
+    );
 
-    setText("season-rewards-kicker", `${String(engagement.season_name_tr || "AYLIK SEZON").toLocaleUpperCase("tr-TR")} · ÜCRETSİZ ÖDÜL YOLU`);
+    setText("season-rewards-kicker", "SEZON ÖDÜLLERİ");
     setText("season-rewards-subtitle", `${engagement.season_name_tr || "Bu sezon"} boyunca kademeleri aç ve sunucu doğrulamalı ödüllerini al.`);
+    setText("season-rewards-name", engagement.season_name_tr || "Sezon Ödülleri");
     setText("season-flux-shards", engagement.flux_shards || 0);
     setText("season-equipped-title", engagement.equipped_title || "Devre Çırağı");
     setText(
       "season-tier-label",
-      `Kademe ${engagement.current_tier || 0} / ${engagement.max_tier || 10}`
+      `Kademe ${engagement.current_tier || 0} / ${engagement.max_tier || 40}`
     );
-    setText("season-progress-copy", `${progress} / ${required} Sezon XP`);
-    setText("lobby-season-tier", `Kademe ${engagement.current_tier || 0} / ${engagement.max_tier || 10}`);
-    setText("lobby-season-progress-copy", `${progress} / ${required} SXP`);
+    const seasonXp = Number(engagement.season_xp || 0);
+    setText("season-progress-copy", nextReward ? `${Math.max(0, Number(nextReward.required_xp || 0) - seasonXp)} SXP kaldı` : "Sezon yolu tamamlandı");
+    setText("lobby-season-tier", `Kademe ${engagement.current_tier || 0} / ${engagement.max_tier || 40}`);
+    setText("lobby-season-progress-copy", nextReward ? `${Math.max(0, Number(nextReward.required_xp || 0) - seasonXp)} SXP kaldı` : "Sezon yolu tamamlandı");
     setText("lobby-flux-shards", engagement.flux_shards || 0);
 
     const missionList = engagement.dailyMissions || [];
+    const loginRewards = engagement.daily_login?.rewards || [];
+    const claimableLoginRewards = loginRewards.filter((reward) => reward.claimable).length;
     const claimableMissions = missionList.filter(
       (mission) => mission.completed && !mission.claimed
     ).length;
     const activeMissions = missionList.filter((mission) => !mission.claimed).length;
     setText(
       "lobby-daily-summary",
-      claimableMissions > 0
-        ? `${claimableMissions} ödül alınmaya hazır`
+      claimableMissions + claimableLoginRewards > 0
+        ? `${claimableMissions + claimableLoginRewards} ödül alınmaya hazır`
         : `${activeMissions} devre emri aktif`
     );
     setText(
@@ -14023,8 +14267,7 @@ function saveHumanReviewLocalNote() {
         : `${activeMissions} görev aktif`
     );
     const dailyNotification = document.getElementById("lobby-daily-notification");
-    if (dailyNotification) dailyNotification.hidden = claimableMissions === 0;
-    const rewardList = engagement.rewardTrack || [];
+    if (dailyNotification) dailyNotification.hidden = claimableMissions + claimableLoginRewards === 0;
     const claimableRewards = rewardList.filter(
       (reward) => reward.claimable && !reward.claimed
     ).length;
@@ -14032,7 +14275,7 @@ function saveHumanReviewLocalNote() {
       "lobby-reward-summary",
       claimableRewards > 0
         ? `${claimableRewards} kademe ödülü hazır`
-        : `${engagement.max_tier || 10} ücretsiz kademe`
+        : `${engagement.max_tier || 40} ücretsiz kademe`
     );
     const rewardNotification = document.getElementById("lobby-reward-notification");
     if (rewardNotification) rewardNotification.hidden = claimableRewards === 0;
@@ -14045,6 +14288,47 @@ function saveHumanReviewLocalNote() {
     const lobbyProgressFill = document.getElementById("lobby-season-progress-fill");
     if (lobbyProgressTrack) lobbyProgressTrack.setAttribute("aria-valuenow", String(percentage));
     if (lobbyProgressFill) lobbyProgressFill.style.width = `${percentage}%`;
+
+    const loginTrack = document.getElementById("monthly-login-track");
+    setText(
+      "monthly-login-summary",
+      claimableLoginRewards
+        ? "Bugünün ödülü hazır"
+        : `${engagement.daily_login?.claimed_days?.length || 0} gün alındı`
+    );
+    if (loginTrack) {
+      loginTrack.replaceChildren();
+      const today = Number(engagement.daily_login?.today || 1);
+      for (const reward of loginRewards) {
+        const card = document.createElement("article");
+        card.className = "monthly-login-card";
+        card.dataset.state = reward.claimed
+          ? "claimed"
+          : reward.claimable
+            ? "claimable"
+            : Number(reward.day) < today
+              ? "missed"
+              : "locked";
+        card.dataset.major = String(Boolean(reward.is_major));
+        const day = document.createElement("strong");
+        day.textContent = `${reward.day}. GÜN`;
+        const prize = document.createElement("small");
+        prize.textContent = `+${reward.circuit_credits} DK · +${reward.flux_shards} Akı · +${reward.module_shards} Kart`;
+        const action = document.createElement("button");
+        action.type = "button";
+        action.dataset.loginClaim = String(reward.day);
+        action.disabled = !reward.claimable;
+        action.textContent = reward.claimed
+          ? "ALINDI"
+          : reward.claimable
+            ? "AL"
+            : Number(reward.day) < today
+              ? "KAÇIRILDI"
+              : "KİLİTLİ";
+        card.append(day, prize, action);
+        loginTrack.appendChild(card);
+      }
+    }
 
     const missions = document.getElementById("daily-mission-list");
     if (missions) {
@@ -14085,6 +14369,7 @@ function saveHumanReviewLocalNote() {
       for (const reward of engagement.rewardTrack || []) {
         const card = document.createElement("article");
         card.className = "season-reward-card";
+        card.dataset.major = String(Boolean(reward.is_major));
         card.dataset.state = reward.claimed
           ? "claimed"
           : reward.claimable
@@ -14094,9 +14379,13 @@ function saveHumanReviewLocalNote() {
         tier.textContent = `KADEME ${reward.tier}`;
         const prize = document.createElement("strong");
         const prizeParts = [
-          reward.title_tr,
-          `+${reward.season_xp_reward || 0} SXP`,
-          `+${reward.flux_shards} Akı`,
+          reward.reward_label_tr,
+          Number(reward.circuit_credits || 0) > 0 ? `+${reward.circuit_credits} DK` : null,
+          Number(reward.flux_shards || 0) > 0 ? `+${reward.flux_shards} Akı` : null,
+          Number(reward.module_shards || 0) > 0 ? `+${reward.module_shards} Kart Parçası` : null,
+          Number(reward.core_shards || 0) > 0 ? `+${reward.core_shards} Çekirdek Parçası` : null,
+          reward.avatar_id ? "Avatar" : null,
+          reward.avatar_frame_id ? "Avatar Çerçevesi" : null,
         ].filter(Boolean);
         prize.textContent = prizeParts.join(" · ");
         const requirement = document.createElement("small");
@@ -14347,13 +14636,37 @@ function saveHumanReviewLocalNote() {
 
   async function claimEngagementReward(kind, id, button) {
     const status = document.getElementById(
-      kind === "missions" ? "daily-action-status" : "season-action-status"
+      kind === "tiers" ? "season-action-status" : "daily-action-status"
     );
+    const selectedReward = kind === "tiers"
+      ? profileState.viewModel()?.engagement?.rewardTrack?.find(
+          (reward) => String(reward.tier) === String(id)
+        )
+      : null;
+    const chestOpeningStartedAt = selectedReward?.chest_tier
+      ? showChestOpening({
+          tier: selectedReward.chest_tier,
+          title: `Kademe ${selectedReward.tier} Sandığı`,
+        })
+      : null;
     if (button) button.disabled = true;
-    if (status) status.textContent = "Ödül sunucuda doğrulanıyor…";
-    const result = await accountDataLoader.claimEngagementReward(kind, id);
+    if (status) status.textContent = "Ödül alınıyor…";
+    const seasonId = profileState.viewModel()?.engagement?.season_id || "current";
+    const requestId = `engagement:${participantPlayerId}:${seasonId}:${kind}:${id}`;
+    const result = await accountDataLoader.claimEngagementReward(kind, id, requestId);
+    // A failed request must remain retryable.  The deterministic request id
+    // makes a retry safe even when the server committed the reward before a
+    // network response was lost.
+    if (!result.ok && button) button.disabled = false;
     if (result.ok) {
       presentTierCelebration(result.payload?.tier_advanced);
+      await loadMetaProgression();
+      if (result.payload?.season_chest_receipt) {
+        await waitForChestOpening(chestOpeningStartedAt);
+        showChestReveal(result.payload.season_chest_receipt);
+      }
+    } else if (chestOpeningStartedAt) {
+      showChestFailure(result.reason || "Sezon sandığı açılamadı.");
     }
     renderProfileSummary();
     renderRemoteDataStatus();
@@ -16497,6 +16810,13 @@ function saveHumanReviewLocalNote() {
     claimEngagementReward("missions", button.dataset.missionClaim, button);
   });
 
+  const monthlyLoginTrack = document.getElementById("monthly-login-track");
+  monthlyLoginTrack?.addEventListener("click", (event) => {
+    const button = event.target.closest("[data-login-claim]");
+    if (!button || button.disabled) return;
+    claimEngagementReward("login", button.dataset.loginClaim, button);
+  });
+
   const seasonRewardTrack = document.getElementById("season-reward-track");
   seasonRewardTrack?.addEventListener("click", (event) => {
     const button = event.target.closest("[data-tier-claim]");
@@ -16931,6 +17251,9 @@ function saveHumanReviewLocalNote() {
     else arenaDetailDialog?.removeAttribute("open");
   });
   document.getElementById("arena-leaderboard-button")?.addEventListener("click", () => {
+    openLeaderboard();
+  });
+  document.getElementById("profile-open-leaderboard")?.addEventListener("click", () => {
     openLeaderboard();
   });
   document.getElementById("leaderboard-back")?.addEventListener("click", () => {

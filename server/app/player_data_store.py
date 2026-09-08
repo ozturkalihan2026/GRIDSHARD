@@ -729,11 +729,45 @@ class PlayerDataStoreService:
                 for item in engagement.get("daily_missions", [])
                 if item.get("id") and item.get("claimed")
             ),
+            monthly_login_month=str(
+                dict(engagement.get("daily_login") or {}).get("month", "")
+            ),
+            claimed_monthly_login_days=tuple(
+                int(value)
+                for value in dict(engagement.get("daily_login") or {}).get(
+                    "claimed_days", []
+                )
+            ),
+            engagement_claim_receipts={
+                str(request_id): dict(receipt)
+                for request_id, receipt in dict(
+                    engagement.get("claim_receipts", {})
+                ).items()
+                if isinstance(receipt, dict)
+            },
             unlocked_titles=tuple(
                 str(value)
                 for value in engagement.get("unlocked_titles", ["Devre Çırağı"])
             ),
             equipped_title=str(engagement.get("equipped_title", "Devre Çırağı")),
+            unlocked_avatar_ids=tuple(
+                str(value)
+                for value in dict(data.get("cosmetics") or {}).get(
+                    "unlocked_avatar_ids", ["default"]
+                )
+            ),
+            selected_avatar_id=str(
+                dict(data.get("cosmetics") or {}).get("selected_avatar_id", "default")
+            ),
+            unlocked_avatar_frame_ids=tuple(
+                str(value)
+                for value in dict(data.get("cosmetics") or {}).get(
+                    "unlocked_avatar_frame_ids", ["none"]
+                )
+            ),
+            selected_avatar_frame_id=str(
+                dict(data.get("cosmetics") or {}).get("selected_avatar_frame_id", "none")
+            ),
             module_calibration_levels={
                 str(module_id): int(level)
                 for module_id, level in dict(

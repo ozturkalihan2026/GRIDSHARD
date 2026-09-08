@@ -39,17 +39,17 @@
       <div class="lobby-player-card">
         <span class="lobby-ribbon-kicker">OPERATÖR</span>
         <strong id="lobby-player-name">Oyuncu</strong>
-        <span id="lobby-player-details">Devre Çırağı · Seviye 1 · 🏆 0</span>
+        <span id="lobby-player-details">Devre Çırağı · 🏆 0</span>
       </div>
       <div class="lobby-season-progress">
         <div>
           <span>İLERLEME HATTI</span>
-          <strong id="lobby-season-tier">Kademe 0 / 10</strong>
+          <strong id="lobby-season-tier">Kademe 0 / 40</strong>
         </div>
         <div class="lobby-season-track" role="progressbar" aria-label="Sezon ilerlemesi" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
           <span id="lobby-season-progress-fill"></span>
         </div>
-        <small id="lobby-season-progress-copy">0 / 100 SXP</small>
+        <small id="lobby-season-progress-copy">0 / 10 SXP</small>
       </div>
       <div class="lobby-currency-cluster" aria-label="Oyuncu kaynakları">
         <div class="lobby-currency-chip" title="Akı" aria-label="Akı">
@@ -145,13 +145,6 @@
             <span class="home-core-hero-copy"><small>AKTİF ÇEKİRDEK</small><strong id="home-core-hero-name">Rezonans Çekirdeği</strong><em id="home-core-hero-level">SEVİYE 1</em></span>
           </button>
           <div class="home-loadout-front">
-            <div class="home-deck-heading">
-              <div>
-                <span>AKTİF SAVAŞ DESTESİ</span>
-                <strong>6 Modül · 7 Hazır Deste</strong>
-              </div>
-              <button type="button" data-open-screen="modules">DÜZENLE</button>
-            </div>
             <div id="home-active-deck" class="home-active-deck" aria-label="Aktif altı modüllük deste"></div>
             <div id="home-preset-decks" class="home-preset-decks" aria-label="Hazır savaş desteleri"></div>
           </div>
@@ -232,7 +225,7 @@
         <div class="mobile-wallet"><strong id="shop-flux-balance">0 Akı</strong><strong id="shop-credit-balance">350 DK</strong></div>
       </header>
       <section class="shop-section" aria-labelledby="gift-chest-title">
-        <div class="mobile-section-heading"><div><span>ÜCRETSİZ KAZANIM</span><h3 id="gift-chest-title">Hediye Sandıklar</h3></div><small>Savaşlardan kazanılır</small></div>
+        <div class="mobile-section-heading"><div><span>ÜCRETSİZ KAZANIM</span><h3 id="gift-chest-title">Hediye Sandıklar</h3></div><small>3–24 saatte yenilenir</small></div>
         <div id="gift-chest-list" class="gift-chest-list"></div>
       </section>
       <section class="shop-section" aria-labelledby="daily-offer-title">
@@ -244,8 +237,8 @@
 
     <dialog id="chest-reveal-dialog" class="chest-reveal-dialog" aria-labelledby="chest-reveal-title">
       <div id="chest-reveal-card" class="chest-reveal-card" data-tier="bronze">
-        <span id="chest-reveal-kicker" class="chest-reveal-kicker">SANDIK AÇILDI</span>
         <div id="chest-reveal-visual" class="chest-visual chest-visual-large chest-visual-bronze" aria-hidden="true"><i></i><b></b><em>◆</em></div>
+        <span id="chest-reveal-kicker" class="chest-reveal-kicker">SANDIK AÇILDI</span>
         <h2 id="chest-reveal-title">Bronz Sandık</h2>
         <div id="chest-reveal-rewards" class="chest-reveal-rewards"></div>
         <button id="chest-reveal-close" type="button">DEVAM</button>
@@ -356,36 +349,80 @@
 
     <section class="profile-summary-panel" id="profile-summary-panel" data-screen-panel="profile" hidden>
       <div class="panel-title-row">
-        <div class="screen-heading-block"><span class="screen-kicker">OPERATÖR TERMİNALİ</span><h2>Profil</h2><p class="screen-subtitle">Oyuncu kimliği, ilerleme ve savaş hazırlığı.</p></div>
-        <span>Genel · İlerleme · Savaş Havuzu · <strong id="profile-load-status" data-status="idle">Yerel önizleme</strong></span>
+        <div class="screen-heading-block"><span class="screen-kicker">OPERATÖR TERMİNALİ</span><h2>Profil</h2><p class="screen-subtitle">Kimliğin, savaş düzenin ve sezon geçmişin.</p></div>
+        <span><strong id="profile-load-status" data-status="idle">Yerel önizleme</strong></span>
       </div>
-      <p id="profile-live-summary">Oyuncu · Seviye 1 · Arena 1 · 0 Kupa · 0 XP</p>
-      <div class="profile-highlights" aria-label="Profil rekorları">
-        <article><span>🏆</span><div><small>TÜM ZAMANLAR</small><strong id="profile-highest-trophies">0 Kupa</strong></div></article>
-        <article><span>▦</span><div><small>EN ÇOK KULLANILAN DESTE</small><strong id="profile-most-used-deck">Henüz maç yok</strong></div></article>
-      </div>
-      <nav class="profile-hub-links" aria-label="Profil bölümleri">
-        <button type="button" data-open-screen="daily"><span>GÜNLÜK</span><strong>Günlük Ödüller</strong><small>Görevlerini tamamla ve ödüllerini al</small></button>
-        <button type="button" data-open-screen="rewards"><span>SEZON</span><strong>Ödül Yolu</strong><small>Kademe ilerlemeni ve açılan ödülleri gör</small></button>
-        <button type="button" data-open-screen="statistics"><span>ARŞİV</span><strong>İstatistikler</strong><small>Savaş performansını ve kullanımını incele</small></button>
-      </nav>
-      <div class="profile-name-form">
-        <label for="profile-display-name">Görünen Oyuncu Adı</label>
-        <input id="profile-display-name" type="text" maxlength="32" value="Oyuncu" autocomplete="off" />
-        <button id="profile-display-name-save" type="button">Görünen Adı Kaydet</button>
-        <span id="profile-name-save-status"></span>
-      </div>
-      <p id="participant-id-summary">Web Test Kimliği hazırlanıyor…</p>
-      <p id="participant-bootstrap-status" data-status="idle">Hesap: Hazır değil</p>
-      <p id="participant-continuity-status" data-status="unknown">Oturum Sürekliliği: Kontrol bekliyor</p>
-      <button id="participant-bootstrap-retry" type="button" hidden>Hesap Hazırlığını Yeniden Dene</button>
+      <article class="profile-identity-card">
+        <button class="profile-avatar-button" type="button" data-open-screen="avatar" aria-label="Avatarı ve çerçeveyi değiştir">
+          <span id="profile-avatar" class="profile-avatar" data-avatar="default" data-frame="none" aria-hidden="true">◇</span>
+        </button>
+        <div><strong id="profile-player-name">Oyuncu</strong><span id="profile-operator-title">Devre Çırağı</span><small id="profile-title-progress">Yeni ün için savaşlara katıl.</small></div>
+        <strong id="profile-current-trophies">0 Kupa</strong>
+      </article>
+      <p id="profile-live-summary" class="profile-accessible-summary">Oyuncu · Devre Çırağı · Arena 1 · 0 Kupa</p>
+      <section class="profile-deck-showcase" aria-labelledby="profile-deck-title">
+        <div class="profile-section-heading"><span>DEVRE ALIŞKANLIĞI</span><h3 id="profile-deck-title">En Çok Kullanılan Deste</h3></div>
+        <div class="profile-deck-visual">
+          <div id="profile-featured-core" class="profile-featured-core"><span>◇</span><small>Rezonans Çekirdeği</small></div>
+          <div id="profile-most-used-deck" class="profile-featured-modules" aria-label="En çok kullanılan deste"><small>Henüz tamamlanmış maç yok.</small></div>
+        </div>
+      </section>
+      <section class="profile-clan-card" aria-labelledby="profile-clan-title"><span>KLAN BİLGİSİ</span><strong id="profile-clan-title">Klana dahil değil</strong><small id="profile-clan-copy">Bir takıma katıldığında takım bilgilerin burada görünecek.</small></section>
+      <section class="profile-season-history" aria-labelledby="profile-season-title">
+        <div class="profile-section-heading"><span>SEZONLAR</span><h3 id="profile-season-title">Sezon Geçmişi</h3></div>
+        <article class="profile-current-season"><div><span id="profile-current-season-name">Güncel Sezon</span><strong id="profile-season-countdown">—</strong></div><div><small>KUPA</small><strong id="profile-season-trophies">0</strong></div><div><small>MEVCUT LİG</small><strong id="profile-season-league">Arena 1</strong></div></article>
+        <div class="profile-past-seasons"><article><small>SON SEZON</small><strong id="profile-last-season-trophies">—</strong><span>Kupa</span></article><article><small>EN İYİ SEZON</small><strong id="profile-best-season-trophies">—</strong><span>Kupa</span></article><article><small>TÜM ZAMANLAR</small><strong id="profile-highest-trophies">0</strong><span>Kupa</span></article></div>
+      </section>
+      <section class="profile-inline-statistics" aria-labelledby="profile-inline-statistics-title">
+        <span data-open-screen="statistics" hidden aria-hidden="true"></span>
+        <span id="participant-id-summary" hidden aria-hidden="true">Web Test Kimliği</span>
+        <span id="participant-bootstrap-status" hidden aria-hidden="true">Hesap</span>
+        <span id="participant-continuity-status" hidden aria-hidden="true">Oturum</span>
+        <button id="participant-bootstrap-retry" hidden aria-hidden="true" type="button">Yeniden Dene</button>
+        <div class="profile-section-heading"><span>SAVAŞ ARŞİVİ</span><h3 id="profile-inline-statistics-title">İstatistikler</h3></div>
+        <p id="statistics-live-summary">Maç 0 · Galibiyet 0 · Mağlubiyet 0 · Beraberlik 0 · Galibiyet %0</p>
+        <div class="statistics-metrics-grid" id="statistics-metrics-grid" aria-label="Savaş istatistikleri">
+          <article class="statistics-metric-card statistics-metric-card-primary"><span>Toplam Maç</span><strong id="statistics-total-matches">0</strong><small id="statistics-record">0G · 0M · 0B</small></article>
+          <article class="statistics-metric-card"><span>Galibiyet Oranı</span><strong id="statistics-win-rate">%0</strong><small>Sunucu onaylı sonuçlar</small></article>
+          <article class="statistics-metric-card"><span>Ortalama Savaş</span><strong id="statistics-average-duration">0 sn</strong><small>Tamamlanan maç süresi</small></article>
+          <article class="statistics-metric-card"><span>Toplam Hasar</span><strong id="statistics-total-damage">0</strong><small>Rakip devrelere verilen</small></article>
+        </div>
+        <section class="statistics-module-usage" aria-labelledby="profile-statistics-decks-title">
+          <div class="statistics-section-heading"><div><span class="screen-kicker">DEVRE ALIŞKANLIĞI</span><h3 id="profile-statistics-decks-title">En Çok Kullanılan Desteler</h3></div><small>Tamamlanan maçlarda kullanılan dizilimler</small></div>
+          <div id="statistics-most-used-decks" class="statistics-deck-list"><p class="statistics-empty-state">Henüz tamamlanmış maç verisi yok.</p></div>
+        </section>
+      </section>
+      <nav class="profile-terminal-tabs" aria-label="Operatör terminali bölümleri"><button type="button" class="is-active" data-open-screen="profile">PROFİL</button><button type="button" data-open-screen="avatar">AVATAR</button><button type="button" data-open-screen="daily">ÖDÜLLER</button><button type="button" data-open-screen="settings">AYARLAR</button></nav>
     </section>
 
-    <section class="engagement-summary-panel daily-missions-screen" id="daily-missions-screen" data-screen-panel="daily" hidden>
+    <section class="profile-summary-panel avatar-customization-screen" id="avatar-customization-screen" data-screen-panel="avatar" hidden>
+      <div class="panel-title-row"><div class="screen-heading-block"><span class="screen-kicker">OPERATÖR TERMİNALİ</span><h2>Avatar</h2><p class="screen-subtitle">Açtığın avatarı ve profil çerçevesini seç.</p></div></div>
+      <div class="avatar-live-preview"><span id="avatar-preview" class="profile-avatar" data-avatar="default" data-frame="none" aria-hidden="true">◇</span><div><strong id="avatar-preview-name">Oyuncu</strong><small id="avatar-preview-title">Devre Çırağı</small></div></div>
+      <section class="avatar-picker-section"><div class="profile-section-heading"><span>KİMLİK</span><h3>Avatarlar</h3></div><div id="avatar-choice-list" class="avatar-choice-list"></div></section>
+      <section class="avatar-picker-section"><div class="profile-section-heading"><span>ÇERÇEVE</span><h3>Avatar Çerçeveleri</h3></div><div id="avatar-frame-choice-list" class="avatar-choice-list"></div></section>
+      <p id="avatar-action-status" class="season-action-status" role="status">Seçimler hesabına anında kaydedilir.</p>
+      <nav class="profile-terminal-tabs" aria-label="Operatör terminali bölümleri"><button type="button" data-open-screen="profile">PROFİL</button><button type="button" class="is-active" data-open-screen="avatar">AVATAR</button><button type="button" data-open-screen="daily">ÖDÜLLER</button><button type="button" data-open-screen="settings">AYARLAR</button></nav>
+    </section>
+
+    <section class="engagement-summary-panel rewards-hub-screen" id="rewards-hub-screen" data-screen-panel="daily" hidden>
+      <div class="panel-title-row"><div class="screen-heading-block"><span class="screen-kicker">OPERATÖR TERMİNALİ</span><h2>Ödüller</h2><p class="screen-subtitle">Günlük ve sezon ödüllerini ayrı ekranlarda takip et.</p></div></div>
+      <div class="rewards-hub-links" aria-label="Ödül bölümleri">
+        <button type="button" data-open-screen="daily-rewards"><span>GÜNLÜK ÖDÜLLER</span><strong>Giriş ve devre emirleri</strong><small>Her gün yenilenir</small></button>
+        <button type="button" data-open-screen="rewards"><span>SEZON ÖDÜLLERİ</span><strong>Ücretsiz ödül yolu</strong><small>SXP ile kademeleri aç</small></button>
+      </div>
+      <span hidden aria-hidden="true">40 KADEMELİ SEZON YOLUNU AÇ</span>
+      <nav class="profile-terminal-tabs" aria-label="Operatör terminali bölümleri"><button type="button" data-open-screen="profile">PROFİL</button><button type="button" data-open-screen="avatar">AVATAR</button><button type="button" class="is-active" data-open-screen="daily">ÖDÜLLER</button><button type="button" data-open-screen="settings">AYARLAR</button></nav>
+    </section>
+
+    <section class="engagement-summary-panel daily-missions-screen" id="daily-missions-screen" data-screen-panel="daily-rewards" hidden>
       <div class="panel-title-row">
-        <div class="screen-heading-block"><span class="screen-kicker">GÜNLÜK DÖNGÜ</span><h2>Günlük Görevler</h2><p class="screen-subtitle">Bugünün devre emirlerini tamamla, SXP ve Akı Parçası kazan.</p></div>
+        <div class="screen-heading-block"><span class="screen-kicker">AYLIK GİRİŞ · GÜNLÜK DÖNGÜ</span><h2>Ödüller</h2><p class="screen-subtitle">Giriş ödülünü al; devre emirleriyle SXP kazan.</p></div>
         <span>Her gün UTC 00:00'da yenilenir · <strong id="daily-load-status" data-status="idle">Yerel önizleme</strong></span>
       </div>
+      <section class="monthly-login-panel" aria-labelledby="monthly-login-title">
+        <div class="season-section-heading"><div><span class="screen-kicker">BU AY</span><h3 id="monthly-login-title">Günlük Giriş Ödülleri</h3></div><small id="monthly-login-summary">Bugünün ödülü hazırlanıyor</small></div>
+        <div id="monthly-login-track" class="monthly-login-track"></div>
+      </section>
       <section id="daily-missions-panel" class="daily-mission-panel" aria-labelledby="daily-mission-title">
         <div class="season-section-heading">
           <div><span class="screen-kicker">BUGÜN</span><h3 id="daily-mission-title">Bugünün Devre Emirleri</h3></div>
@@ -394,26 +431,30 @@
         <div id="daily-mission-list" class="daily-mission-list"></div>
       </section>
       <p id="daily-action-status" class="season-action-status" role="status">Tamamlanan görevlerin ödüllerini buradan al.</p>
+      <button type="button" class="reward-back-link" data-open-screen="daily">← ÖDÜL BÖLÜMLERİ</button>
+      <nav class="profile-terminal-tabs" aria-label="Operatör terminali bölümleri"><button type="button" data-open-screen="profile">PROFİL</button><button type="button" data-open-screen="avatar">AVATAR</button><button type="button" class="is-active" data-open-screen="daily">ÖDÜLLER</button><button type="button" data-open-screen="settings">AYARLAR</button></nav>
     </section>
 
     <section class="engagement-summary-panel season-rewards-screen" id="season-rewards-screen" data-screen-panel="rewards" hidden>
       <div class="panel-title-row">
-        <div class="screen-heading-block"><span id="season-rewards-kicker" class="screen-kicker">AYLIK SEZON · ÜCRETSİZ ÖDÜL YOLU</span><h2>Ödül Yolu</h2><p id="season-rewards-subtitle" class="screen-subtitle">Bu ay boyunca kademeleri aç ve sunucu doğrulamalı ödüllerini al.</p></div>
+        <div class="screen-heading-block"><span id="season-rewards-kicker" class="screen-kicker">SEZON</span><h2 id="season-rewards-name">Sezon Ödülleri</h2><p id="season-rewards-subtitle" class="screen-subtitle">Ücretsiz ödül yolu</p></div>
         <div class="season-zero-currency" title="Gelecek kozmetik ödülleri için birikir."><span>AKI PARÇASI</span><strong id="season-flux-shards">0</strong></div>
       </div>
       <div class="season-zero-progress-summary">
-        <div><span id="season-equipped-title">Devre Çırağı</span><strong id="season-tier-label">Kademe 0 / 10</strong></div>
+        <div><span id="season-equipped-title">Devre Çırağı</span><strong id="season-tier-label">Kademe 0 / 40</strong></div>
         <div class="season-progress-track" role="progressbar" aria-label="Sezon kademe ilerlemesi" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><span id="season-progress-fill"></span></div>
-        <small id="season-progress-copy">0 / 100 Sezon XP</small>
+        <small id="season-progress-copy">0 / 10 SXP</small>
       </div>
       <section id="season-reward-panel" class="season-reward-panel" aria-labelledby="season-reward-title">
         <div class="season-section-heading">
-          <div><span class="screen-kicker">10 KADEME</span><h3 id="season-reward-title">Sezon Ödülleri</h3></div>
+          <div><span class="screen-kicker">40 KADEME · HER 10 KADEMEDE BÜYÜK ÖDÜL</span><h3 id="season-reward-title">Sezon Ödülleri</h3></div>
           <small>Ücretli geçiş yok</small>
         </div>
         <div id="season-reward-track" class="season-reward-track"></div>
       </section>
       <p id="season-action-status" class="season-action-status" role="status">Açılan kademelerin ödüllerini buradan al.</p>
+      <button type="button" class="reward-back-link" data-open-screen="daily">← ÖDÜL BÖLÜMLERİ</button>
+      <nav class="profile-terminal-tabs" aria-label="Operatör terminali bölümleri"><button type="button" data-open-screen="profile">PROFİL</button><button type="button" data-open-screen="avatar">AVATAR</button><button type="button" class="is-active" data-open-screen="daily">ÖDÜLLER</button><button type="button" data-open-screen="settings">AYARLAR</button></nav>
     </section>
 
     <section class="laboratory-screen" id="laboratory-screen" data-screen-panel="laboratory" hidden>
@@ -477,14 +518,6 @@
           <span>Toplam Hasar</span><strong id="statistics-total-damage">0</strong>
           <small>Rakip devrelere verilen</small>
         </article>
-        <article class="statistics-metric-card">
-          <span>Modül Değişimi</span><strong id="statistics-module-replacements">0</strong>
-          <small>Savaş içi devre hamlesi</small>
-        </article>
-        <article class="statistics-metric-card">
-          <span>Güçlendirici Kullanımı</span><strong id="statistics-boosters-used">0</strong>
-          <small>Aktifleştirilen geçici etki</small>
-        </article>
       </div>
       <section class="statistics-module-usage" aria-labelledby="statistics-module-usage-title">
         <div class="statistics-section-heading">
@@ -501,6 +534,12 @@
       <div class="panel-title-row">
         <div class="screen-heading-block"><span class="screen-kicker">SİSTEM KONSOLU</span><h2 id="settings-title">Ayarlar</h2><p class="screen-subtitle">Oyun deneyimini cihazına göre düzenle.</p></div>
         <span>Ses · Müzik · Titreşim · Grafik · Dil · <strong id="settings-load-status" data-status="idle">Yerel önizleme</strong></span>
+      </div>
+      <div class="profile-name-form">
+        <label for="profile-display-name">Görünen Oyuncu Adı</label>
+        <input id="profile-display-name" type="text" maxlength="24" value="Oyuncu" autocomplete="off" />
+        <button id="profile-display-name-save" type="button">Görünen Adı Değiştir</button>
+        <span id="profile-name-save-status"></span>
       </div>
       <div class="settings-form">
         <label>Ses <input id="settings-sound" type="range" min="0" max="100" value="100" /></label>
@@ -537,6 +576,7 @@
           <div><dt>Yapı</dt><dd id="ui-build-run">manifest bekleniyor</dd></div>
         </dl>
       </section>
+      <nav class="profile-terminal-tabs" aria-label="Operatör terminali bölümleri"><button type="button" data-open-screen="profile">PROFİL</button><button type="button" data-open-screen="avatar">AVATAR</button><button type="button" data-open-screen="daily">ÖDÜLLER</button><button type="button" class="is-active" data-open-screen="settings">AYARLAR</button></nav>
     </section>
 
 
@@ -771,7 +811,6 @@
       <span><strong>Çekirdek</strong> sabit ana hedef</span>
       <span><strong>Kablo</strong> bitişik hücreleri birbirine bağlar</span>
       <span><strong>Akım</strong> kablodan modül hücrelerine akar</span>
-      <span><strong>Özel Hücre</strong> hücre bonusu sağlar</span>
     </section>
 
     <section class="battle-fx-strip play-live-panel" data-screen-panel="play" hidden>

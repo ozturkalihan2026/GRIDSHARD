@@ -131,7 +131,9 @@ CHEST_DEFINITIONS: dict[str, dict] = {
         "id": "field_3h",
         "name_tr": "Bronz Sandık",
         "visual_tier": "bronze",
-        "unlock_hours": 3,
+        "unlock_hours": 0,
+        "claim_cooldown_hours": 3,
+        "open_seconds": 1,
         "coins": (90, 140),
         "shards": (12, 22),
         "rarity_odds": {
@@ -145,7 +147,9 @@ CHEST_DEFINITIONS: dict[str, dict] = {
         "id": "circuit_8h",
         "name_tr": "Gümüş Sandık",
         "visual_tier": "silver",
-        "unlock_hours": 8,
+        "unlock_hours": 0,
+        "claim_cooldown_hours": 8,
+        "open_seconds": 1,
         "coins": (220, 340),
         "shards": (24, 42),
         "rarity_odds": {
@@ -159,7 +163,9 @@ CHEST_DEFINITIONS: dict[str, dict] = {
         "id": "core_24h",
         "name_tr": "Altın Sandık",
         "visual_tier": "gold",
-        "unlock_hours": 24,
+        "unlock_hours": 0,
+        "claim_cooldown_hours": 16,
+        "open_seconds": 1,
         "coins": (550, 850),
         "shards": (55, 90),
         "rarity_odds": {
@@ -173,7 +179,9 @@ CHEST_DEFINITIONS: dict[str, dict] = {
         "id": "diamond_24h",
         "name_tr": "Elmas Sandık",
         "visual_tier": "diamond",
-        "unlock_hours": 24,
+        "unlock_hours": 0,
+        "claim_cooldown_hours": 24,
+        "open_seconds": 1,
         "coins": (950, 1350),
         "shards": (90, 140),
         "rarity_odds": {
@@ -347,12 +355,8 @@ class MetaProgressionService:
     def view(self, profile) -> dict:
         current_rank = rank_stage_for_rating(profile.rating)
         profile.highest_rating = max(profile.highest_rating, profile.rating)
-        shop_day = self._now_func().date().isoformat()
-        claimed_gifts_today = {
-            str(receipt.get("definition_id"))
-            for receipt in profile.gift_chest_claim_receipts.values()
-            if str(receipt.get("claim_day")) == shop_day
-        }
+        now = self._now_func()
+        shop_day = now.date().isoformat()
         purchased = (
             set(profile.shop_purchased_offer_ids)
             if profile.shop_purchase_day == shop_day
@@ -404,18 +408,10 @@ class MetaProgressionService:
             "chests": {
                 "slots": [dict(item) for item in profile.chest_slots],
                 "definitions": [
-                    {
-                        **definition,
-                        "rarity_odds": dict(definition["rarity_odds"]),
-                        "claim_available": definition["id"] not in claimed_gifts_today
-                        and not any(
-                            item.get("definition_id") == definition["id"]
-                            for item in profile.chest_slots
-                        ),
-                    }
+                    self._gift_chest_definition_view(profile, definition, now)
                     for definition in CHEST_DEFINITIONS.values()
                 ],
-                "server_time": iso_utc(self._now_func()),
+                "server_time": iso_utc(now),
             },
             "shop": {
                 "day": shop_day,
@@ -450,6 +446,45 @@ class MetaProgressionService:
                 "laboratory": "flux_shards",
                 "ranked_normalized": False,
             },
+        }
+
+    def _gift_chest_definition_view(self, profile, definition: dict, now: datetime) -> dict:
+        """Expose a deterministic server countdown for each free chest.
+
+        Gift chests are opened immediately, so the only gate is the per-tier
+        claim cooldown.  Keeping the timestamp in the API lets the client
+        render a countdown without relying on a local clock or a stale daily
+        reset flag.
+        """
+        latest = max(
+            (
+                receipt
+                for receipt in profile.gift_chest_claim_receipts.values()
+                if str(receipt.get("definition_id")) == str(definition["id"])
+                and receipt.get("claimed_at")
+            ),
+            key=lambda receipt: receipt.get("claimed_at", ""),
+            default=None,
+        )
+        cooldown = timedelta(hours=float(definition.get("claim_cooldown_hours", 0)))
+        next_claim_at = None
+        remaining = 0
+        if latest is not None:
+            try:
+                next_moment = parse_utc(str(latest["claimed_at"])) + cooldown
+                if next_moment > now:
+                    next_claim_at = iso_utc(next_moment)
+                    remaining = max(1, int((next_moment - now).total_seconds()))
+            except (KeyError, TypeError, ValueError):
+                # A legacy receipt without a parseable timestamp is treated as
+                # available instead of wedging the shop forever.
+                pass
+        return {
+            **definition,
+            "rarity_odds": dict(definition["rarity_odds"]),
+            "claim_available": remaining <= 0,
+            "next_claim_at": next_claim_at,
+            "claim_remaining_seconds": remaining,
         }
 
     def _module_view(self, profile, module_id: str, current_rank: dict) -> dict:
@@ -601,7 +636,46 @@ class MetaProgressionService:
         with self._lock:
             return self._claim_gift_chest(profile, definition_id, request_id)
 
-    def _claim_gift_chest(self, profile, definition_id: str, request_id: str) -> dict:
+    def claim_and_open_gift_chest(
+        self,
+        profile,
+        definition_id: str,
+        request_id: str,
+    ) -> dict:
+        """Claim a timed shop gift and apply its rewards in one operation.
+
+        Gift chests are not inventory chests: the player opens them from the
+        shop and sees the reward immediately.  The transient chest therefore
+        may pass through a full battle-chest inventory, and the deterministic
+        request ids make a retry return the same reward instead of rolling or
+        crediting it twice.
+        """
+        with self._lock:
+            claim_receipt = self._claim_gift_chest(
+                profile,
+                definition_id,
+                request_id,
+                allow_transient_slot=True,
+            )
+            chest = dict(claim_receipt.get("chest") or {})
+            receipt = self._open_chest(
+                profile,
+                str(chest["chest_id"]),
+                f"{request_id}:instant-open",
+            )
+            receipt["chest"] = chest
+            receipt["claim_day"] = claim_receipt.get("claim_day")
+            receipt["claimed_at"] = claim_receipt.get("claimed_at")
+            return receipt
+
+    def _claim_gift_chest(
+        self,
+        profile,
+        definition_id: str,
+        request_id: str,
+        *,
+        allow_transient_slot: bool = False,
+    ) -> dict:
         request_id = request_id.strip()
         if not request_id:
             raise MetaProgressionError("Sandık talep kimliği zorunludur.")
@@ -615,20 +689,29 @@ class MetaProgressionService:
             raise MetaProgressionError("Hediye sandık türü bulunamadı.")
         now = self._now_func()
         claim_day = now.date().isoformat()
-        previous = next(
+        previous = max(
             (
                 receipt
                 for receipt in profile.gift_chest_claim_receipts.values()
-                if receipt.get("definition_id") == definition_id
-                and receipt.get("claim_day") == claim_day
+                if str(receipt.get("definition_id")) == definition_id
+                and receipt.get("claimed_at")
             ),
-            None,
+            key=lambda receipt: receipt.get("claimed_at", ""),
+            default=None,
         )
         if previous is not None:
-            return dict(previous)
-        if any(item.get("definition_id") == definition_id for item in profile.chest_slots):
-            raise MetaProgressionError("Bu sandığın açılma süresi zaten işliyor.")
-        if len(profile.chest_slots) >= 4:
+            try:
+                next_claim_at = parse_utc(str(previous["claimed_at"])) + timedelta(
+                    hours=float(definition.get("claim_cooldown_hours", 0))
+                )
+            except (KeyError, TypeError, ValueError):
+                next_claim_at = now
+            if next_claim_at > now:
+                remaining = max(1, int((next_claim_at - now).total_seconds()))
+                raise MetaProgressionError(
+                    f"Bu sandık {remaining} saniye sonra yeniden açılabilir."
+                )
+        if len(profile.chest_slots) >= 4 and not allow_transient_slot:
             raise MetaProgressionError("Sandık yuvaları dolu.")
         chest = {
             "chest_id": f"gift-{uuid4().hex}",
@@ -653,6 +736,42 @@ class MetaProgressionService:
     def award_battle_chest(self, profile, battle_id: str, won: bool) -> dict | None:
         with self._lock:
             return self._award_battle_chest(profile, battle_id, won)
+
+    def award_instant_chest(
+        self,
+        profile,
+        definition_id: str,
+        source_id: str,
+        request_id: str,
+    ) -> dict:
+        """Create and open a non-slot reward chest in one persisted operation."""
+        with self._lock:
+            request_id = request_id.strip()
+            if not request_id:
+                raise MetaProgressionError("Sandık talep kimliği zorunludur.")
+            previous = profile.chest_receipts.get(request_id)
+            if previous is not None:
+                if previous.get("source_id") != source_id:
+                    raise MetaProgressionError("Talep kimliği farklı bir sandığa ait.")
+                return dict(previous)
+            definition = CHEST_DEFINITIONS.get(definition_id)
+            if definition is None:
+                raise MetaProgressionError("Ödül sandığı türü bulunamadı.")
+            awarded_at = self._now_func()
+            chest = {
+                "chest_id": f"instant-{uuid4().hex}",
+                "definition_id": definition_id,
+                "name_tr": definition["name_tr"],
+                "source_battle_id": None,
+                "source": source_id,
+                "awarded_at": iso_utc(awarded_at),
+                "unlocks_at": iso_utc(awarded_at),
+            }
+            profile.chest_slots.append(chest)
+            receipt = self._open_chest(profile, chest["chest_id"], request_id)
+            receipt["source_id"] = source_id
+            profile.chest_receipts[request_id] = dict(receipt)
+            return receipt
 
     def _award_battle_chest(self, profile, battle_id: str, won: bool) -> dict | None:
         if any(r.get("source_battle_id") == battle_id for r in profile.chest_receipts.values()):
@@ -701,8 +820,6 @@ class MetaProgressionService:
         if chest is None:
             raise MetaProgressionError("Sandık bulunamadı veya daha önce açıldı.")
         now = self._now_func()
-        if now < parse_utc(str(chest["unlocks_at"])):
-            raise MetaProgressionError("Sandık henüz açılmaya hazır değil.")
         definition = CHEST_DEFINITIONS[str(chest["definition_id"])]
         seed = f"{profile.player_id}:{chest_id}"
         coins = _hash_range(f"{seed}:coins", *definition["coins"])
@@ -724,7 +841,11 @@ class MetaProgressionService:
         shards = _hash_range(f"{seed}:shards", *definition["shards"])
         profile.circuit_credits += coins
         flux = _hash_range(f"{seed}:flux", 3, max(5, definition["unlock_hours"] * 2))
-        core_pieces = _hash_range(f"{seed}:core", 1, 4) if definition["unlock_hours"] >= 8 else 0
+        core_pieces = (
+            _hash_range(f"{seed}:core", 1, 4)
+            if definition["id"] in {"circuit_8h", "core_24h", "diamond_24h"}
+            else 0
+        )
         core_type = self.award_core_pieces(profile, core_pieces, seed)
         profile.flux_shards += flux
         profile.module_shards[module_id] = int(profile.module_shards.get(module_id, 0)) + shards

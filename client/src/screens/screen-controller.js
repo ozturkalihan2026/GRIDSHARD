@@ -9,7 +9,9 @@
     events: "Etkinlik",
     play: "Oyna",
     profile: "Profil",
-    daily: "Günlük Görevler",
+    avatar: "Avatar",
+    daily: "Ödüller",
+    "daily-rewards": "Günlük Ödüller",
     rewards: "Ödül Yolu",
     statistics: "İstatistikler",
     settings: "Ayarlar"
@@ -25,7 +27,7 @@
 
     render() {
       const current = this.router.currentScreen;
-      const shellCurrent = ["daily", "rewards", "statistics"].includes(current)
+      const shellCurrent = ["avatar", "daily", "daily-rewards", "rewards", "statistics"].includes(current)
         ? "profile"
         : current;
       this.document.body.dataset.appScreen = current;
@@ -49,7 +51,7 @@
 
       const profileButton = this.document.getElementById("lobby-profile-button");
       if (profileButton) {
-        const profileActive = ["profile", "daily", "rewards", "statistics"].includes(current);
+        const profileActive = ["profile", "avatar", "daily", "daily-rewards", "rewards", "statistics"].includes(current);
         profileButton.classList.toggle("is-active", profileActive);
         if (profileActive) profileButton.setAttribute("aria-current", "page");
         else profileButton.removeAttribute("aria-current");

@@ -1901,6 +1901,48 @@ function createClient() {
   } = require("../src/relay-client.js");
 
   const scheduled=[];
+  const requestTimeout = new Error("İstek zaman aşımına uğradı.");
+  requestTimeout.code="request_timeout";
+  const coordinator = new RelayOnlinePlayCoordinator({
+    playerId:"timeout-recovery-player",
+    pvpState:new RelayPvPClientState({playerId:"timeout-recovery-player"}),
+    matchmakingState:new RelayMatchmakingClientState(),
+    connectionManager:{
+      disconnect(){},
+      clearOutgoingQueue(){},
+      sendSetup(){},
+      sendReady(){},
+      connect(){},
+    },
+    requestJson:async () => {
+      throw requestTimeout;
+    },
+    setTimer(fn,ms) {
+      scheduled.push({fn,ms});
+      return scheduled.length;
+    },
+    clearTimer(){},
+  });
+
+  asyncTests.push(coordinator.start({
+    battlePoolIds:Array.from({length:6},(_,index) => `m${index}`),
+    initialModules:[{instanceId:"core",definitionId:"core",x:2,y:1}],
+  }).then((result) => {
+    assert.deepStrictEqual(result,{ok:true,matched:false,pending:true});
+    assert.strictEqual(coordinator.status,"matchmaking");
+    assert.strictEqual(scheduled.length,1);
+    assert.strictEqual(scheduled[0].ms,1000);
+  }));
+}
+
+{
+  const {
+    RelayPvPClientState,
+    RelayMatchmakingClientState,
+    RelayOnlinePlayCoordinator,
+  } = require("../src/relay-client.js");
+
+  const scheduled=[];
   const pvp =
     new RelayPvPClientState({
       playerId:"a",
@@ -4555,7 +4597,8 @@ function createClient() {
 
   assert.ok(css.includes(".initial-module-choice option"));
   assert.ok(css.includes("color-scheme:dark"));
-  assert.ok(app.includes("+${reward.season_xp_reward || 0} SXP"));
+  assert.ok(!app.includes("+${reward.season_xp_reward || 0} SXP"));
+  assert.ok(app.includes("reward.required_xp"));
   assert.ok(app.includes('"daily-action-status"'));
   assert.ok(app.includes('"lobby-daily-notification"'));
   assert.ok(app.includes('"lobby-reward-notification"'));
@@ -4998,12 +5041,12 @@ function createClient() {
     "statistics-win-rate",
     "statistics-average-duration",
     "statistics-total-damage",
-    "statistics-module-replacements",
-    "statistics-boosters-used",
     "statistics-most-used-decks",
   ]) {
     assert.ok(html.includes(`id="${id}"`));
   }
+  assert.ok(!html.includes('id="statistics-module-replacements"'));
+  assert.ok(!html.includes('id="statistics-boosters-used"'));
   assert.ok(app.includes('["core", "generator"].includes'));
   assert.ok(app.includes("most_used_decks"));
   assert.ok(app.includes("statistics-deck-card"));

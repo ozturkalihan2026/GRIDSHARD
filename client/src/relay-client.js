@@ -832,8 +832,29 @@
               unlocked_titles: [
                 ...(profile.engagement.unlocked_titles || []),
               ],
+              daily_login: profile.engagement.daily_login
+                ? {
+                    ...profile.engagement.daily_login,
+                    claimed_days: [
+                      ...(profile.engagement.daily_login.claimed_days || []),
+                    ],
+                    rewards: [
+                      ...(profile.engagement.daily_login.rewards || []),
+                    ],
+                  }
+                : null,
             }
           : null,
+        cosmetics: {
+          selected_avatar_id: "default",
+          selected_avatar_frame_id: "none",
+          unlocked_avatar_ids: ["default"],
+          unlocked_avatar_frame_ids: ["none"],
+          ...(profile.cosmetics || {}),
+        },
+        season_summary: {
+          ...(profile.season_summary || {}),
+        },
       };
 
       return this.profile;
@@ -864,11 +885,27 @@
         experienceToNextLevel:
           this.profile.experience_to_next_level,
         rating: this.profile.rating,
+        teamId: this.profile.team_id || null,
+        teamName: this.profile.team_name || null,
         highestRating: Math.max(
           Number(this.profile.rating || 0),
           Number(this.profile.highest_rating || 0)
         ),
         leagueNameTr: this.profile.league_name_tr,
+        operatorTitle: this.profile.operator_title || "Devre Çırağı",
+        operatorTitleProgression: this.profile.operator_title_progression || null,
+        cosmetics: {
+          ...this.profile.cosmetics,
+          unlockedAvatarIds: [
+            ...(this.profile.cosmetics?.unlocked_avatar_ids || ["default"]),
+          ],
+          unlockedAvatarFrameIds: [
+            ...(this.profile.cosmetics?.unlocked_avatar_frame_ids || ["none"]),
+          ],
+        },
+        seasonSummary: {
+          ...this.profile.season_summary,
+        },
         battlePoolIds: [
           ...this.profile.preferred_battle_pool_ids,
         ],
@@ -1030,7 +1067,9 @@
     EVENTS: "events",
     PLAY: "play",
     PROFILE: "profile",
+    AVATAR: "avatar",
     DAILY: "daily",
+    DAILY_REWARDS: "daily-rewards",
     REWARDS: "rewards",
     LABORATORY: "laboratory",
     STATISTICS: "statistics",
@@ -2091,7 +2130,7 @@
         };
       } catch (error) {
         if (attemptId !== this.attemptId) return { ok: false, cancelled: true };
-        if (error?.code === "matchmaking_request_timeout") {
+        if (["matchmaking_request_timeout", "request_timeout"].includes(error?.code)) {
           // The server may have accepted the join and still be provisioning the
           // AI battle. Keep the full-screen matching state and discover that
           // session through the idempotent status endpoint.
@@ -2151,7 +2190,7 @@
         };
       } catch (error) {
         if (attemptId !== this.attemptId) return { ok: false, cancelled: true };
-        if (error?.code === "matchmaking_request_timeout") {
+        if (["matchmaking_request_timeout", "request_timeout"].includes(error?.code)) {
           this._setStatus(ONLINE_PLAY_STATUS.MATCHMAKING);
           this._schedulePoll();
           return { ok: true, matched: false, pending: true };
@@ -2699,8 +2738,9 @@
       }
     }
 
-    async claimEngagementReward(kind, id) {
+    async claimEngagementReward(kind, id, requestId = null) {
       if (![
+        "login",
         "missions",
         "tiers",
       ].includes(kind)) {
@@ -2716,7 +2756,12 @@
       try {
         const payload = await this.requestJson(
           `/profile/${encodeURIComponent(this.playerId)}/engagement/${kind}/${encodeURIComponent(id)}/claim`,
-          { method: "POST" }
+          {
+            method: "POST",
+            ...(requestId
+              ? { body: JSON.stringify({ request_id: requestId }) }
+              : {}),
+          }
         );
         this.profileState.applyProfile(payload);
         this.status.profile = REMOTE_DATA_STATUS.READY;

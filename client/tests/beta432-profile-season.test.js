@@ -1,0 +1,36 @@
+"use strict";
+
+const assert = require("assert");
+const fs = require("fs");
+
+const html = fs.readFileSync("./index.html", "utf8");
+const app = fs.readFileSync("./src/app.js", "utf8");
+const relay = fs.readFileSync("./src/relay-client.js", "utf8");
+const css = fs.readFileSync("./src/canon.css", "utf8");
+
+assert.ok(html.includes('data-screen-panel="avatar"'));
+assert.ok(html.includes('data-screen-panel="daily-rewards"'));
+assert.ok(html.includes('data-screen-panel="rewards"'));
+assert.ok(html.includes("40 KADEMELİ SEZON YOLUNU AÇ"));
+assert.ok(html.includes("HER 10 KADEMEDE BÜYÜK ÖDÜL"));
+assert.ok(html.includes('id="monthly-login-track"'));
+assert.ok(html.includes("3–24 saatte yenilenir"));
+assert.ok(!html.includes("Modül Değişimi</span>"));
+assert.ok(!html.includes("Güçlendirici Kullanımı</span>"));
+assert.ok(!html.includes("Özel Hücre</strong>"));
+assert.ok(!html.includes("AÇILMA ZAMANI"));
+assert.ok(app.includes("function renderAvatarCustomization"));
+assert.ok(app.includes('claimEngagementReward("login"'));
+assert.ok(app.includes("season_chest_receipt"));
+assert.ok(app.includes("claim_cooldown_hours: 3"));
+assert.ok(app.includes("claim_cooldown_hours: 8"));
+assert.ok(app.includes("claim_cooldown_hours: 16"));
+assert.ok(app.includes("claim_cooldown_hours: 24"));
+assert.ok(app.includes("const preset = index === 0 ? battlePoolPresets[0] : null"));
+assert.ok(!app.includes("Ödül sunucuda doğrulanıyor"));
+assert.ok(app.includes('`\${activeTitle} · 🏆 \${view.rating}`'));
+assert.ok(relay.includes('["matchmaking_request_timeout", "request_timeout"]'));
+assert.ok(css.includes('.season-reward-card[data-major="true"]'));
+assert.ok(css.includes("grid-template-columns:1fr !important"));
+
+console.log("beta43.2 profile and season contract passed");

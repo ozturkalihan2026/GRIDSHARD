@@ -228,6 +228,12 @@ class PlayerProgressionService:
             updated.circuit_credits += circuit_credits_awarded
             stats = updated.lifetime_stats
             stats["matches"] = stats.get("matches", 0) + 1
+            if state.is_draw:
+                stats["draws"] = stats.get("draws", 0) + 1
+            elif won:
+                stats["wins"] = stats.get("wins", 0) + 1
+            else:
+                stats["losses"] = stats.get("losses", 0) + 1
             stats["current_streak"] = stats.get("current_streak", 0) + 1 if won else 0
             stats["longest_streak"] = max(stats.get("longest_streak", 0), stats["current_streak"])
             stats["peak_damage"] = max(stats.get("peak_damage", 0), int(summary.get("damage_dealt", 0)))

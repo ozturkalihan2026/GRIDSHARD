@@ -1,4 +1,5 @@
 from dataclasses import dataclass, field
+from calendar import monthrange
 from datetime import datetime, timedelta, timezone
 
 from .game.battle_pool import default_battle_pool, validate_battle_pool
@@ -77,17 +78,123 @@ DAILY_MISSIONS = (
     },
 )
 
-SEASON_REWARD_TRACK = (
-    {"tier": 1, "required_xp": 100, "season_xp_reward": 25, "flux_shards": 25, "title_tr": None},
-    {"tier": 2, "required_xp": 250, "season_xp_reward": 30, "flux_shards": 30, "title_tr": "Devre Öncüsü"},
-    {"tier": 3, "required_xp": 400, "season_xp_reward": 35, "flux_shards": 35, "title_tr": None},
-    {"tier": 4, "required_xp": 575, "season_xp_reward": 40, "flux_shards": 40, "title_tr": None},
-    {"tier": 5, "required_xp": 750, "season_xp_reward": 50, "flux_shards": 50, "title_tr": "Kırık Avcısı"},
-    {"tier": 6, "required_xp": 950, "season_xp_reward": 55, "flux_shards": 55, "title_tr": None},
-    {"tier": 7, "required_xp": 1150, "season_xp_reward": 60, "flux_shards": 60, "title_tr": None},
-    {"tier": 8, "required_xp": 1375, "season_xp_reward": 70, "flux_shards": 70, "title_tr": "Çekirdek Muhafızı"},
-    {"tier": 9, "required_xp": 1600, "season_xp_reward": 80, "flux_shards": 80, "title_tr": None},
-    {"tier": 10, "required_xp": 1900, "season_xp_reward": 100, "flux_shards": 100, "title_tr": "GRIDSHARD"},
+OPERATOR_TITLE_STAGES = (
+    {"title_tr": "Devre Çırağı", "required_trophies": 0, "required_wins": 0},
+    {"title_tr": "Devre Teknisyeni", "required_trophies": 300, "required_wins": 3},
+    {"title_tr": "İletken Ustası", "required_trophies": 900, "required_wins": 10},
+    {"title_tr": "Çekirdek Muhafızı", "required_trophies": 1800, "required_wins": 25},
+    {"title_tr": "Arena Mimarı", "required_trophies": 3000, "required_wins": 50},
+    {"title_tr": "GRIDSHARD Efsanesi", "required_trophies": 4200, "required_wins": 100},
+)
+
+
+def operator_title_progression(rating: int, wins: int) -> dict:
+    """Resolve the permanent operator title from trophies and verified wins."""
+    trophies = max(0, int(rating))
+    victories = max(0, int(wins))
+    unlocked = [
+        stage
+        for stage in OPERATOR_TITLE_STAGES
+        if trophies >= stage["required_trophies"]
+        and victories >= stage["required_wins"]
+    ]
+    current = unlocked[-1]
+    current_index = OPERATOR_TITLE_STAGES.index(current)
+    next_stage = (
+        OPERATOR_TITLE_STAGES[current_index + 1]
+        if current_index + 1 < len(OPERATOR_TITLE_STAGES)
+        else None
+    )
+    return {
+        "current": dict(current),
+        "next": dict(next_stage) if next_stage else None,
+        "stages": [dict(stage) for stage in OPERATOR_TITLE_STAGES],
+    }
+
+
+def _season_reward_for_tier(tier: int) -> dict:
+    # The road is intentionally transparent: tier 2 opens at 30 SXP, tier 3 at
+    # 50 SXP, then each next tier adds another 20 SXP. Every tenth tier is a
+    # visibly larger, cosmetic-bearing reward.
+    required_xp = 10 + ((tier - 1) * 20)
+    reward = {
+        "tier": tier,
+        "required_xp": required_xp,
+        "season_xp_reward": 0,
+        "circuit_credits": 0,
+        "flux_shards": 0,
+        "module_shards": 0,
+        "core_shards": 0,
+        "chest_tier": None,
+        "avatar_id": None,
+        "avatar_frame_id": None,
+        "title_tr": None,
+        "is_major": tier % 10 == 0,
+    }
+    if tier % 10 == 0:
+        major_index = tier // 10
+        reward.update(
+            circuit_credits=250 + (major_index * 100),
+            flux_shards=25 + (major_index * 10),
+            module_shards=20 + (major_index * 5),
+            core_shards=major_index * 2,
+            chest_tier="diamond" if tier == 40 else "gold",
+        )
+        if tier == 10:
+            reward["avatar_id"] = "circuit_scout"
+        elif tier == 20:
+            reward["avatar_frame_id"] = "neon_cyan"
+        elif tier == 30:
+            reward["avatar_id"] = "core_guardian"
+        elif tier == 40:
+            reward["avatar_frame_id"] = "season_gold"
+    elif tier % 5 == 0:
+        reward.update(
+            circuit_credits=100 + (tier * 4),
+            flux_shards=10 + tier,
+            module_shards=10 + (tier // 2),
+            core_shards=1,
+            chest_tier="silver",
+        )
+    elif tier % 3 == 0:
+        reward.update(module_shards=8 + tier, flux_shards=5)
+    elif tier % 2 == 0:
+        reward.update(circuit_credits=50 + (tier * 5), flux_shards=4)
+    else:
+        reward.update(circuit_credits=35 + (tier * 5), module_shards=5 + tier)
+
+    reward["reward_label_tr"] = (
+        f"Büyük {reward['chest_tier'].title()} Sandık + Kozmetik"
+        if reward["is_major"]
+        else "Anında Sandık Ödülü"
+        if reward["chest_tier"]
+        else "Modül Parçası ve Akı"
+        if reward["module_shards"]
+        else "Devre Kredisi ve Akı"
+    )
+    return reward
+
+
+SEASON_REWARD_TRACK = tuple(
+    _season_reward_for_tier(tier)
+    for tier in range(1, 41)
+)
+
+
+def _monthly_login_reward(day: int) -> dict:
+    weekly_bonus = day % 7 == 0
+    return {
+        "day": day,
+        "circuit_credits": (120 + (day * 5)) if weekly_bonus else (35 + (day * 3)),
+        "flux_shards": (10 + (day // 7)) if weekly_bonus else (2 + (day % 4)),
+        "module_shards": (14 + day) if weekly_bonus else (3 + (day % 5)),
+        "is_major": weekly_bonus,
+    }
+
+
+MONTHLY_LOGIN_REWARDS = tuple(
+    _monthly_login_reward(day)
+    for day in range(1, 32)
 )
 
 
@@ -118,8 +225,19 @@ class PlayerProfile:
     daily_mission_day: str = ""
     daily_mission_progress: dict[str, int] = field(default_factory=dict)
     claimed_daily_missions: tuple[str, ...] = ()
+    monthly_login_month: str = ""
+    monthly_login_today: int = 1
+    monthly_login_day_count: int = 31
+    claimed_monthly_login_days: tuple[int, ...] = ()
+    # Idempotency receipts for reward buttons.  A lost HTTP response must not
+    # turn a successful claim into a permanent "doğrulanıyor"/duplicate error.
+    engagement_claim_receipts: dict[str, dict] = field(default_factory=dict)
     unlocked_titles: tuple[str, ...] = ("Devre Çırağı",)
     equipped_title: str = "Devre Çırağı"
+    unlocked_avatar_ids: tuple[str, ...] = ("default",)
+    selected_avatar_id: str = "default"
+    unlocked_avatar_frame_ids: tuple[str, ...] = ("none",)
+    selected_avatar_frame_id: str = "none"
     module_calibration_levels: dict[str, int] = field(default_factory=dict)
     laboratory_transactions: list[dict] = field(default_factory=list)
     laboratory_receipts: dict[str, dict] = field(default_factory=dict)
@@ -169,6 +287,19 @@ class PlayerProfile:
     def to_view(self) -> dict:
         from .meta_progression import rank_stage_for_rating
 
+        title_progression = operator_title_progression(
+            self.rating,
+            int(self.lifetime_stats.get("wins", 0)),
+        )
+        current_title = title_progression["current"]["title_tr"]
+        archives = [dict(item) for item in self.season_archives]
+        previous_season = archives[-1] if archives else None
+        best_season = max(
+            archives,
+            key=lambda item: int(item.get("final_rating", 0)),
+            default=None,
+        )
+
         return {
             "player_id": self.player_id,
             "display_name": self.display_name,
@@ -181,6 +312,20 @@ class PlayerProfile:
             "team_id": self.team_id,
             "team_name": self.team_name,
             "league_name_tr": self.league_name_tr,
+            "operator_title": current_title,
+            "operator_title_progression": title_progression,
+            "cosmetics": {
+                "selected_avatar_id": self.selected_avatar_id,
+                "selected_avatar_frame_id": self.selected_avatar_frame_id,
+                "unlocked_avatar_ids": list(self.unlocked_avatar_ids),
+                "unlocked_avatar_frame_ids": list(self.unlocked_avatar_frame_ids),
+            },
+            "season_summary": {
+                "current_rating": self.rating,
+                "current_league_name_tr": self.league_name_tr,
+                "previous": previous_season,
+                "best": best_season,
+            },
             "preferred_battle_pool_ids": list(
                 self.preferred_battle_pool_ids
             ),
@@ -264,7 +409,10 @@ class PlayerProfile:
             "tier_progress_required": span,
             "flux_shards": self.flux_shards,
             "claimed_season_tiers": list(self.claimed_season_tiers),
-            "equipped_title": self.equipped_title,
+            "equipped_title": operator_title_progression(
+                self.rating,
+                int(self.lifetime_stats.get("wins", 0)),
+            )["current"]["title_tr"],
             "unlocked_titles": list(self.unlocked_titles),
             "daily_mission_day": self.daily_mission_day,
             "daily_missions": [
@@ -281,6 +429,27 @@ class PlayerProfile:
                 }
                 for mission in DAILY_MISSIONS
             ],
+            "daily_login": {
+                "month": self.monthly_login_month,
+                "today": self.monthly_login_today,
+                "day_count": self.monthly_login_day_count,
+                "claimed_days": list(self.claimed_monthly_login_days),
+                "rewards": [
+                    {
+                        **reward,
+                        "claimed": reward["day"] in self.claimed_monthly_login_days,
+                        "claimable": (
+                            reward["day"] == self.monthly_login_today
+                            and reward["day"] not in self.claimed_monthly_login_days
+                        ),
+                    }
+                    for reward in MONTHLY_LOGIN_REWARDS[:self.monthly_login_day_count]
+                ],
+            },
+            "claim_receipts": {
+                request_id: dict(receipt)
+                for request_id, receipt in self.engagement_claim_receipts.items()
+            },
             "reward_track": [
                 {
                     **reward,
@@ -320,6 +489,7 @@ class PlayerProfileService:
         if profile is not None:
             self._sync_monthly_season(profile)
             self._sync_daily_missions(profile, day_key)
+            self._sync_monthly_login(profile)
             return profile
 
         profile = PlayerProfile(
@@ -334,6 +504,7 @@ class PlayerProfileService:
         self._profiles[player_id] = profile
         self._sync_monthly_season(profile)
         self._sync_daily_missions(profile, day_key)
+        self._sync_monthly_login(profile)
         return profile
 
     def _sync_monthly_season(self, profile: PlayerProfile) -> bool:
@@ -392,6 +563,26 @@ class PlayerProfileService:
         )
         return profile
 
+    def set_cosmetics(
+        self,
+        player_id: str,
+        *,
+        avatar_id: str | None = None,
+        avatar_frame_id: str | None = None,
+    ) -> PlayerProfile:
+        profile = self.get_or_create(player_id)
+        if avatar_id is not None:
+            clean_avatar = avatar_id.strip()
+            if clean_avatar not in profile.unlocked_avatar_ids:
+                raise PlayerProfileError("Bu avatar henüz açılmadı.")
+            profile.selected_avatar_id = clean_avatar
+        if avatar_frame_id is not None:
+            clean_frame = avatar_frame_id.strip()
+            if clean_frame not in profile.unlocked_avatar_frame_ids:
+                raise PlayerProfileError("Bu avatar çerçevesi henüz açılmadı.")
+            profile.selected_avatar_frame_id = clean_frame
+        return profile
+
     def add_experience(
         self,
         player_id: str,
@@ -439,6 +630,45 @@ class PlayerProfileService:
         }
         profile.claimed_daily_missions = ()
 
+    def _sync_monthly_login(self, profile: PlayerProfile) -> None:
+        now = self._now_func().astimezone(timezone.utc)
+        month_key = f"{now.year:04d}-{now.month:02d}"
+        if profile.monthly_login_month != month_key:
+            profile.monthly_login_month = month_key
+            profile.claimed_monthly_login_days = ()
+        profile.monthly_login_today = now.day
+        profile.monthly_login_day_count = monthrange(now.year, now.month)[1]
+
+    def claim_monthly_login(self, player_id: str, day: int, request_id: str | None = None) -> dict:
+        profile = self.get_or_create(player_id)
+        if request_id and request_id in profile.engagement_claim_receipts:
+            return dict(profile.engagement_claim_receipts[request_id])
+        self._sync_monthly_login(profile)
+        if day != profile.monthly_login_today:
+            raise PlayerProfileError("Yalnız bugünün giriş ödülü alınabilir.")
+        if day in profile.claimed_monthly_login_days:
+            raise PlayerProfileError("Bugünün giriş ödülü daha önce alındı.")
+        reward = MONTHLY_LOGIN_REWARDS[day - 1]
+        pool = profile.preferred_battle_pool_ids or default_battle_pool().module_definition_ids
+        module_id = pool[(sum(ord(char) for char in profile.player_id) + day) % len(pool)]
+        profile.circuit_credits += int(reward["circuit_credits"])
+        profile.flux_shards += int(reward["flux_shards"])
+        profile.module_shards[module_id] = (
+            int(profile.module_shards.get(module_id, 0))
+            + int(reward["module_shards"])
+        )
+        profile.claimed_monthly_login_days = tuple(
+            sorted({*profile.claimed_monthly_login_days, day})
+        )
+        receipt = {
+            **reward,
+            "month": profile.monthly_login_month,
+            "module_definition_id": module_id,
+        }
+        if request_id:
+            profile.engagement_claim_receipts[request_id] = dict(receipt)
+        return receipt
+
     def record_battle_engagement(
         self,
         player_id: str,
@@ -471,8 +701,11 @@ class PlayerProfileService:
         mission_id: str,
         *,
         day_key: str | None = None,
+        request_id: str | None = None,
     ) -> PlayerProfile:
         profile = self.get_or_create(player_id, day_key=day_key)
+        if request_id and request_id in profile.engagement_claim_receipts:
+            return profile
         self._sync_daily_missions(profile, day_key)
         mission = next(
             (item for item in DAILY_MISSIONS if item["id"] == mission_id),
@@ -489,14 +722,23 @@ class PlayerProfileService:
         profile.claimed_daily_missions = tuple(
             sorted({*profile.claimed_daily_missions, mission_id})
         )
+        if request_id:
+            profile.engagement_claim_receipts[request_id] = {
+                "kind": "missions",
+                "mission_id": mission_id,
+                "day": profile.daily_mission_day,
+            }
         return profile
 
     def claim_season_tier(
         self,
         player_id: str,
         tier: int,
+        request_id: str | None = None,
     ) -> PlayerProfile:
         profile = self.get_or_create(player_id)
+        if request_id and request_id in profile.engagement_claim_receipts:
+            return profile
         reward = next(
             (item for item in SEASON_REWARD_TRACK if item["tier"] == tier),
             None,
@@ -507,11 +749,33 @@ class PlayerProfileService:
             raise PlayerProfileError("Bu kademe ödülü daha önce alındı.")
         if profile.season_xp < reward["required_xp"]:
             raise PlayerProfileError("Bu sezon kademesi henüz açılmadı.")
-        profile.season_xp += int(reward["season_xp_reward"])
+        profile.circuit_credits += int(reward.get("circuit_credits", 0))
         profile.flux_shards += int(reward["flux_shards"])
+        profile.core_shards += int(reward.get("core_shards", 0))
+        module_shards = int(reward.get("module_shards", 0))
+        if module_shards:
+            pool = profile.preferred_battle_pool_ids or default_battle_pool().module_definition_ids
+            module_id = pool[(tier - 1) % len(pool)]
+            profile.module_shards[module_id] = int(profile.module_shards.get(module_id, 0)) + module_shards
         profile.claimed_season_tiers = tuple(
             sorted({*profile.claimed_season_tiers, tier})
         )
+        if request_id:
+            profile.engagement_claim_receipts[request_id] = {
+                "kind": "tiers",
+                "tier": tier,
+                "season_id": profile.active_meta_season_id,
+            }
+        avatar_id = reward.get("avatar_id")
+        if avatar_id:
+            profile.unlocked_avatar_ids = tuple(
+                dict.fromkeys((*profile.unlocked_avatar_ids, avatar_id))
+            )
+        avatar_frame_id = reward.get("avatar_frame_id")
+        if avatar_frame_id:
+            profile.unlocked_avatar_frame_ids = tuple(
+                dict.fromkeys((*profile.unlocked_avatar_frame_ids, avatar_frame_id))
+            )
         title = reward.get("title_tr")
         if title:
             profile.unlocked_titles = tuple(

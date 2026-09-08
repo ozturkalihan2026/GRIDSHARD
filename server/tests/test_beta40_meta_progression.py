@@ -68,21 +68,25 @@ def test_server_timed_chest_has_public_odds_and_replay_safe_receipt():
     assert profile.chest_slots == []
 
 
-def test_daily_gift_chest_can_be_claimed_once_and_starts_server_timer():
-    now = datetime(2026, 9, 3, tzinfo=timezone.utc)
-    service = MetaProgressionService(now_func=lambda: now)
+def test_gift_chest_uses_its_server_cooldown_and_reopens_after_expiry():
+    clock = {"now": datetime(2026, 9, 3, tzinfo=timezone.utc)}
+    service = MetaProgressionService(now_func=lambda: clock["now"])
     profile = PlayerProfileService().get_or_create("gift-player")
 
     first = service.claim_gift_chest(profile, "field_3h", "gift-1")
-    replay = service.claim_gift_chest(profile, "field_3h", "gift-2")
+    replay = service.claim_gift_chest(profile, "field_3h", "gift-1")
     view = service.view(profile)
 
     assert first == replay
     assert len(profile.chest_slots) == 1
-    assert profile.chest_slots[0]["unlocks_at"] == "2026-09-03T03:00:00Z"
+    assert profile.chest_slots[0]["unlocks_at"] == "2026-09-03T00:00:00Z"
     assert next(
         item for item in view["chests"]["definitions"] if item["id"] == "field_3h"
     )["claim_available"] is False
+
+    clock["now"] += timedelta(hours=3, seconds=1)
+    second = service.claim_gift_chest(profile, "field_3h", "gift-2")
+    assert second["request_id"] == "gift-2"
 
 
 def test_daily_shop_offer_spends_one_currency_and_awards_all_reward_families():

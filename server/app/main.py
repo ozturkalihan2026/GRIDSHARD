@@ -53,6 +53,7 @@ from .version import VERSION
 from .player_profile import (
     PlayerProfileError,
     PlayerProfileService,
+    SEASON_REWARD_TRACK,
     monthly_season_descriptor,
 )
 from .laboratory import (
@@ -742,6 +743,11 @@ class ProfileNameRequest(BaseModel):
 
 class ProfileBattlePoolRequest(BaseModel):
     battle_pool_ids: list[str]
+
+
+class ProfileCosmeticsRequest(BaseModel):
+    avatar_id: str | None = None
+    avatar_frame_id: str | None = None
 
 
 class LaboratoryOperationRequest(BaseModel):
@@ -3090,6 +3096,14 @@ def bootstrap_test_participant(
             player_id
         )
     )
+    # Older saved profiles kept verified results only in the statistics
+    # snapshot. Promote those totals once so trophy + win based operator titles
+    # remain correct after upgrading an existing account.
+    for result_key in ("wins", "losses", "draws"):
+        profile.lifetime_stats[result_key] = max(
+            int(profile.lifetime_stats.get(result_key, 0)),
+            int(getattr(statistics, result_key, 0)),
+        )
     settings = (
         player_settings_service
         .get_or_create(
@@ -3228,7 +3242,7 @@ def claim_player_progression_gift_chest(
 ) -> dict:
     profile = player_profile_service.get_or_create(player_id)
     try:
-        receipt = meta_progression_service.claim_gift_chest(
+        receipt = meta_progression_service.claim_and_open_gift_chest(
             profile,
             definition_id,
             request.request_id,
@@ -3359,6 +3373,7 @@ def choose_player_module_talent(player_id: str, module_id: str, tier: str, choic
 def claim_daily_mission_reward(
     player_id: str,
     mission_id: str,
+    request: MetaOperationRequest | None = None,
 ) -> dict:
     before_profile = player_profile_service.get_or_create(player_id)
     tier_before = int(before_profile.engagement_view()["current_tier"])
@@ -3366,6 +3381,7 @@ def claim_daily_mission_reward(
         profile = player_profile_service.claim_daily_mission(
             player_id,
             mission_id,
+            request_id=request.request_id if request else None,
         )
     except PlayerProfileError as exc:
         raise HTTPException(
@@ -3383,6 +3399,28 @@ def claim_daily_mission_reward(
             tier_before,
             tier_after,
         ),
+    }
+
+
+@app.post("/profile/{player_id}/engagement/login/{day}/claim")
+def claim_monthly_login_reward(
+    player_id: str,
+    day: int,
+    request: MetaOperationRequest | None = None,
+) -> dict:
+    try:
+        receipt = player_profile_service.claim_monthly_login(
+            player_id,
+            day,
+            request_id=request.request_id if request else None,
+        )
+    except PlayerProfileError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+    profile = player_profile_service.get_or_create(player_id)
+    persist_player_data(player_id)
+    return {
+        **profile.to_view(),
+        "daily_login_receipt": receipt,
     }
 
 
@@ -3406,24 +3444,53 @@ def _tier_advanced_payload(
 def claim_season_tier_reward(
     player_id: str,
     tier: int,
+    request: MetaOperationRequest | None = None,
 ) -> dict:
     before_profile = player_profile_service.get_or_create(player_id)
     tier_before = int(before_profile.engagement_view()["current_tier"])
+    engagement_request_id = request.request_id if request else None
+    replayed = bool(
+        engagement_request_id
+        and engagement_request_id in before_profile.engagement_claim_receipts
+    )
     try:
         profile = player_profile_service.claim_season_tier(
             player_id,
             tier,
+            request_id=engagement_request_id,
         )
     except PlayerProfileError as exc:
         raise HTTPException(
             status_code=422,
             detail=str(exc),
         ) from exc
+    reward = next(
+        (item for item in SEASON_REWARD_TRACK if int(item["tier"]) == tier),
+        None,
+    )
+    chest_receipt = None
+    chest_definition_ids = {
+        "bronze": "field_3h",
+        "silver": "circuit_8h",
+        "gold": "core_24h",
+        "diamond": "diamond_24h",
+    }
+    chest_request_id = f"season-tier:{profile.player_id}:{profile.active_meta_season_id}:{tier}"
+    if reward and reward.get("chest_tier") and replayed:
+        chest_receipt = profile.chest_receipts.get(chest_request_id)
+    elif reward and reward.get("chest_tier"):
+        chest_receipt = meta_progression_service.award_instant_chest(
+            profile,
+            chest_definition_ids[str(reward["chest_tier"])],
+            f"season-tier:{profile.active_meta_season_id}:{tier}",
+            chest_request_id,
+        )
     persist_player_data(player_id)
     view = profile.to_view()
     tier_after = int(view["engagement"]["current_tier"])
     return {
         **view,
+        "season_chest_receipt": chest_receipt,
         "tier_advanced": _tier_advanced_payload(
             player_id,
             f"reward:{tier}",
@@ -3475,6 +3542,23 @@ def update_profile_battle_pool(
     persist_player_data(
         player_id
     )
+    return profile.to_view()
+
+
+@app.put("/profile/{player_id}/cosmetics")
+def update_profile_cosmetics(
+    player_id: str,
+    request: ProfileCosmeticsRequest,
+) -> dict:
+    try:
+        profile = player_profile_service.set_cosmetics(
+            player_id,
+            avatar_id=request.avatar_id,
+            avatar_frame_id=request.avatar_frame_id,
+        )
+    except PlayerProfileError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+    persist_player_data(player_id)
     return profile.to_view()
 
 

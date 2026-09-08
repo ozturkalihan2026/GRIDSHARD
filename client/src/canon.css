@@ -895,6 +895,43 @@ body[data-home-matchmaking="true"] .play-online-panel { visibility:hidden !impor
   .home-loadout-front { padding-top:11px !important; }
 }
 
+/* Current product pass: compact home deck, reward hub, and server countdowns. */
+.home-loadout-front { padding:8px 8px 6px !important; gap:5px !important; }
+.home-active-deck { margin-top:24px; }
+.home-preset-decks { margin-top:0; }
+.home-preset-decks button:disabled { opacity:.28; border-style:dashed; }
+.home-core-hero-copy { top:48px !important; }
+.chest-countdown { color:#ffe17a !important; font:800 .42rem var(--gs-font-display); letter-spacing:.04em; }
+.shop-chest-card > button:disabled { color:#8fa4b8; border-color:#38536d; background:#10263d; }
+.rewards-hub-links { display:grid; gap:12px; margin:auto 0; }
+.rewards-hub-links button { min-height:112px; padding:18px; display:grid; gap:6px; justify-items:start; text-align:left; border:1px solid rgba(89,226,216,.35); border-radius:16px; background:linear-gradient(135deg,#163d5c,#0a1c35); color:#f3fbff; box-shadow:0 8px 22px rgba(0,0,0,.2); }
+.rewards-hub-links button:nth-child(2) { border-color:rgba(255,220,102,.48); background:linear-gradient(135deg,#443d28,#151c35); }
+.rewards-hub-links span { color:#62f4df; font:900 .56rem var(--gs-font-display); letter-spacing:.12em; }
+.rewards-hub-links button:nth-child(2) span { color:#ffe177; }
+.rewards-hub-links strong { font:900 1rem var(--gs-font-display); }
+.rewards-hub-links small { color:#9eb4c7; font-size:.58rem; }
+.reward-back-link { width:max-content; padding:8px 12px; border:1px solid #3b7893; border-radius:9px; background:#123552; color:#dffcff; font:800 .5rem var(--gs-font-display); }
+.profile-inline-statistics { display:grid; gap:9px; padding:10px; border:1px solid rgba(92,171,210,.24); border-radius:12px; background:rgba(4,18,37,.6); }
+.profile-inline-statistics #statistics-live-summary { margin:0; color:#8fa9bd; font-size:.5rem; text-align:center; }
+.profile-inline-statistics .statistics-metrics-grid { margin:0; }
+#statistics-summary-panel { display:none !important; }
+body[data-app-screen="daily-rewards"] .monthly-login-track { max-height:none; grid-template-columns:repeat(2,minmax(0,1fr)); overflow:visible; gap:9px; }
+body[data-app-screen="daily-rewards"] .monthly-login-card { min-height:84px; padding:11px 8px; gap:7px; border-radius:12px; }
+body[data-app-screen="daily-rewards"] .monthly-login-card > strong { font-size:.58rem; }
+body[data-app-screen="daily-rewards"] .monthly-login-card > small { font-size:.48rem; }
+body[data-app-screen="rewards"] .season-rewards-screen .season-reward-track { display:grid !important; grid-template-columns:1fr !important; grid-auto-rows:max-content !important; max-height:none !important; height:auto !important; overflow:visible !important; gap:10px; }
+body[data-app-screen="rewards"] .season-rewards-screen .season-reward-card { min-height:94px; padding:13px 14px; grid-template-columns:auto 1fr auto; grid-template-areas:"tier prize action" "tier requirement action"; align-items:center; text-align:left; }
+body[data-app-screen="rewards"] .season-reward-card > span { grid-area:tier; }
+body[data-app-screen="rewards"] .season-reward-card > strong { grid-area:prize; }
+body[data-app-screen="rewards"] .season-reward-card > small { grid-area:requirement; }
+body[data-app-screen="rewards"] .season-reward-card > button { grid-area:action; min-width:62px; }
+body[data-app-screen="rewards"] #season-rewards-kicker { color:#62f4df; }
+body[data-app-screen="rewards"] #season-rewards-subtitle { display:none; }
+@media(max-width:420px) {
+  body[data-app-screen="daily-rewards"] .monthly-login-track { grid-template-columns:1fr; }
+  body[data-app-screen="rewards"] .season-rewards-screen .season-reward-card { grid-template-columns:1fr auto; grid-template-areas:"tier action" "prize action" "requirement action"; }
+}
+
 /* Beta.42.3: current feedback pass. */
 .resource-symbol-module-shard { color:#68dff3;background:#11344a; }
 .resource-symbol-core-shard { color:#72f3e1;background:#103f48; }
@@ -1429,4 +1466,236 @@ body[data-app-screen="settings"] .settings-summary-panel > .panel-title-row > sp
   .post-match-core-card > i { width:54px !important;height:54px !important;font-size:1.6rem !important; }
   .post-match-damage-row { grid-template-columns:24px minmax(0,1fr) 42px !important; }
   .post-match-damage-icon { width:23px !important;height:23px !important; }
+}
+
+/* Beta.43.2 — operator terminal, 40-step free season road and instant chests. */
+body[data-app-screen="avatar"] .battle-shell {
+  width:min(100vw,var(--gs-phone-width,480px)) !important;
+  max-width:var(--gs-phone-width,480px) !important;
+  height:100dvh !important;
+  padding:88px 0 74px !important;
+  overflow:hidden !important;
+}
+
+.profile-summary-panel,
+.avatar-customization-screen {
+  padding:18px !important;
+  gap:11px !important;
+}
+
+.profile-summary-panel::after { display:none !important;content:none !important; }
+.profile-accessible-summary {
+  position:absolute !important;
+  width:1px !important;
+  height:1px !important;
+  padding:0 !important;
+  margin:-1px !important;
+  overflow:hidden !important;
+  clip:rect(0,0,0,0) !important;
+  white-space:nowrap !important;
+  border:0 !important;
+}
+
+.profile-identity-card {
+  padding:11px 12px;
+  display:grid;
+  grid-template-columns:auto minmax(0,1fr) auto;
+  align-items:center;
+  gap:11px;
+  border:1px solid rgba(83,235,222,.43);
+  border-radius:12px;
+  background:linear-gradient(135deg,rgba(24,67,91,.88),rgba(8,27,51,.96));
+  box-shadow:inset 0 1px rgba(255,255,255,.05),0 10px 26px rgba(0,0,0,.2);
+}
+.profile-avatar-button { padding:0;border:0;background:transparent;cursor:pointer; }
+.profile-avatar {
+  position:relative;
+  width:54px;
+  height:54px;
+  display:grid;
+  place-items:center;
+  border:2px solid #82f3e4;
+  border-radius:50%;
+  color:#dffff9;
+  background:radial-gradient(circle at 40% 32%,#236d7c,#0a223d 62%,#050d1b);
+  box-shadow:0 0 18px rgba(65,235,222,.25),inset 0 0 12px rgba(65,235,222,.18);
+  font:900 1.65rem var(--gs-font-display);
+}
+.profile-avatar[data-avatar="circuit_scout"] { color:#ffe57e;background:radial-gradient(circle at 40% 32%,#617638,#183142 62%,#07111e); }
+.profile-avatar[data-avatar="core_guardian"] { color:#c8bbff;background:radial-gradient(circle at 40% 32%,#51458d,#172a4d 62%,#07111e); }
+.profile-avatar[data-frame="neon_cyan"] { border-color:#46fff0;box-shadow:0 0 0 3px #0d5d68,0 0 22px #42e9df; }
+.profile-avatar[data-frame="season_gold"] { border-color:#ffe06b;box-shadow:0 0 0 3px #82691d,0 0 24px #ffd85d; }
+.profile-identity-card > div { min-width:0;display:grid;gap:2px; }
+.profile-identity-card > div > strong { overflow:hidden;color:#f7fbff;font:900 .9rem var(--gs-font-display);text-overflow:ellipsis;white-space:nowrap; }
+.profile-identity-card > div > span { color:#67f3df;font:800 .56rem var(--gs-font-display); }
+.profile-identity-card > div > small { color:#8fa9c0;font-size:.52rem; }
+.profile-identity-card > strong { color:#ffe279;font:900 .7rem var(--gs-font-display);white-space:nowrap; }
+
+.profile-section-heading { display:grid;justify-items:center;gap:2px;text-align:center; }
+.profile-section-heading > span,.profile-clan-card > span { color:#58eadb;font:800 .43rem var(--gs-font-display);letter-spacing:.12em; }
+.profile-section-heading h3 { margin:0;color:#f4f8ff;font:900 .72rem var(--gs-font-display); }
+.profile-deck-showcase,.profile-season-history,.avatar-picker-section {
+  padding:10px;
+  display:grid;
+  gap:9px;
+  border:1px solid rgba(92,171,210,.24);
+  border-radius:12px;
+  background:rgba(4,18,37,.6);
+}
+.profile-deck-visual { display:grid;grid-template-columns:62px minmax(0,1fr);align-items:center;gap:8px; }
+.profile-featured-core { height:62px;display:grid;place-items:center;align-content:center;gap:3px;border:1px solid #ffe06d;border-radius:12px;background:linear-gradient(145deg,#173a55,#0a1d35); }
+.profile-featured-core span { color:#71fff0;font-size:1.3rem; }
+.profile-featured-core small { max-width:58px;overflow:hidden;color:#b7cadb;font-size:.38rem;text-align:center;text-overflow:ellipsis;white-space:nowrap; }
+.profile-featured-modules { min-width:0;display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:4px; }
+.profile-featured-modules > small { grid-column:1/-1;color:#8099b0;font-size:.48rem;text-align:center; }
+.profile-deck-module { aspect-ratio:1;display:grid;place-items:center;border:1px solid #31506e;border-radius:8px;background:#102942;color:#eafaff;font-size:1rem; }
+.profile-deck-module[data-category="saldırı"] { border-color:#b54d6d;color:#ff7898; }
+.profile-deck-module[data-category="savunma"] { border-color:#587fc8;color:#8bb7ff; }
+.profile-deck-module[data-category="destek"] { border-color:#58a35e;color:#95ef91; }
+.profile-deck-module[data-category="enerji"] { border-color:#34a9a8;color:#6ff8eb; }
+.profile-deck-module[data-category="sabotaj"] { border-color:#815eb4;color:#c99aff; }
+
+.profile-clan-card { padding:10px 12px;display:grid;grid-template-columns:auto 1fr;gap:3px 10px;border:1px solid rgba(92,171,210,.24);border-radius:11px;background:#102942; }
+.profile-clan-card strong { color:#eff7ff;font:800 .62rem var(--gs-font-display);text-align:right; }
+.profile-clan-card small { grid-column:1/-1;color:#849db4;font-size:.48rem;text-align:center; }
+.profile-current-season { padding:10px;display:grid;grid-template-columns:1.4fr .65fr 1fr;gap:7px;border:1px solid rgba(255,221,105,.35);border-radius:11px;background:linear-gradient(135deg,rgba(78,65,31,.26),rgba(13,34,55,.8)); }
+.profile-current-season > div { min-width:0;display:grid;gap:2px; }
+.profile-current-season span,.profile-current-season small { color:#94adc3;font-size:.43rem; }
+.profile-current-season strong { overflow:hidden;color:#f5f8ff;font:800 .57rem var(--gs-font-display);text-overflow:ellipsis;white-space:nowrap; }
+.profile-past-seasons { display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px; }
+.profile-past-seasons article { padding:8px;display:grid;justify-items:center;border:1px solid rgba(91,158,198,.2);border-radius:9px;background:#0d233b; }
+.profile-past-seasons small,.profile-past-seasons span { color:#8ba4ba;font-size:.39rem; }
+.profile-past-seasons strong { color:#ffe177;font:900 .75rem var(--gs-font-display); }
+.profile-secondary-actions { display:grid;grid-template-columns:1fr 1fr;gap:8px; }
+.profile-secondary-actions button,.profile-season-road-link { padding:9px;border:1px solid #3a7291;border-radius:9px;background:#123552;color:#dbfaff;font:800 .52rem var(--gs-font-display); }
+.profile-account-health { display:flex;flex-wrap:wrap;justify-content:center;gap:4px 10px;color:#68839b;font-size:.4rem; }
+.profile-account-health button { padding:2px 6px;border:1px solid #48627d;border-radius:5px;background:#112740;color:#fff; }
+
+.profile-terminal-tabs {
+  position:sticky;
+  z-index:8;
+  bottom:-18px;
+  margin:auto -18px -18px;
+  padding:7px 8px max(7px,env(safe-area-inset-bottom));
+  display:grid;
+  grid-template-columns:repeat(4,minmax(0,1fr));
+  gap:5px;
+  border-top:1px solid rgba(80,210,210,.28);
+  background:rgba(4,17,34,.97);
+  backdrop-filter:blur(8px);
+}
+.profile-terminal-tabs button { min-height:38px;border:1px solid transparent;border-radius:8px;background:transparent;color:#9bb2c8;font:800 .48rem var(--gs-font-display); }
+.profile-terminal-tabs button.is-active { border-color:#55e9d9;color:#6affeb;background:rgba(62,221,207,.1); }
+
+.monthly-login-panel {
+  padding:10px;
+  display:grid;
+  gap:8px;
+  border:1px solid rgba(92,171,210,.24);
+  border-radius:12px;
+  background:rgba(4,18,37,.62);
+}
+.monthly-login-track {
+  max-height:210px;
+  padding-right:3px;
+  display:grid;
+  grid-template-columns:repeat(5,minmax(0,1fr));
+  gap:5px;
+  overflow-y:auto;
+  scrollbar-gutter:stable;
+}
+.monthly-login-card {
+  min-width:0;
+  padding:7px 4px;
+  display:grid;
+  justify-items:center;
+  gap:4px;
+  border:1px solid #304f6c;
+  border-radius:8px;
+  background:#0d2741;
+  text-align:center;
+}
+.monthly-login-card > strong { color:#eefaff;font:800 .45rem var(--gs-font-display); }
+.monthly-login-card > small { color:#91a9bd;font-size:.37rem;line-height:1.25; }
+.monthly-login-card > button { width:100%;padding:5px 2px;border:1px solid #3b7893;border-radius:6px;background:#12405a;color:#eaffff;font:800 .38rem var(--gs-font-display); }
+.monthly-login-card[data-state="claimable"] { border-color:#ffe06d;box-shadow:0 0 12px rgba(255,224,109,.16); }
+.monthly-login-card[data-state="claimed"] { border-color:#55dfcb;opacity:.68; }
+.monthly-login-card[data-state="missed"],.monthly-login-card[data-state="locked"] { opacity:.42; }
+.monthly-login-card[data-major="true"] { background:linear-gradient(145deg,rgba(119,89,24,.4),#0d2741); }
+
+.avatar-live-preview { padding:18px;display:flex;align-items:center;justify-content:center;gap:13px;border:1px solid rgba(84,232,217,.3);border-radius:14px;background:radial-gradient(circle at 50% 25%,rgba(38,118,140,.28),rgba(7,24,45,.9)); }
+.avatar-live-preview .profile-avatar { width:76px;height:76px;font-size:2.2rem; }
+.avatar-live-preview > div { display:grid;gap:4px; }
+.avatar-live-preview strong { font:900 .85rem var(--gs-font-display); }
+.avatar-live-preview small { color:#61eedc;font:800 .55rem var(--gs-font-display); }
+.avatar-choice-list { display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px; }
+.avatar-choice-list button { min-width:0;padding:9px 5px;display:grid;justify-items:center;gap:4px;border:1px solid #355875;border-radius:10px;background:#0d2741;color:#dff7ff; }
+.avatar-choice-list button > span { width:38px;height:38px;display:grid;place-items:center;border:2px solid #59dbc9;border-radius:50%;font-size:1.15rem; }
+.avatar-choice-list button strong { max-width:100%;overflow:hidden;font:800 .47rem var(--gs-font-display);text-overflow:ellipsis;white-space:nowrap; }
+.avatar-choice-list button small { color:#8ca8bd;font-size:.38rem; }
+.avatar-choice-list button[data-state="selected"] { border-color:#ffe06d;box-shadow:0 0 13px rgba(255,218,91,.14); }
+.avatar-choice-list button[data-state="locked"] { filter:grayscale(.9);opacity:.45; }
+.avatar-choice-list button[data-frame="neon_cyan"] > span { border-color:#49fff0;box-shadow:0 0 10px #46dace; }
+.avatar-choice-list button[data-frame="season_gold"] > span { border-color:#ffe06d;box-shadow:0 0 10px #d6ad36; }
+
+body[data-app-screen="rewards"] .season-rewards-screen .season-reward-track {
+  grid-template-columns:repeat(4,minmax(0,1fr)) !important;
+  grid-template-rows:none !important;
+  max-height:440px !important;
+  height:auto !important;
+  overflow-y:auto !important;
+  scrollbar-gutter:stable;
+}
+.season-reward-card[data-major="true"] { border-color:#ffe06d !important;background:linear-gradient(145deg,rgba(124,94,27,.36),rgba(14,31,55,.95)) !important;box-shadow:0 0 16px rgba(255,217,91,.12) !important; }
+.statistics-metrics-grid { grid-template-columns:repeat(2,minmax(0,1fr)) !important; }
+
+.chest-reveal-card { gap:10px !important; }
+.chest-reveal-card .chest-visual-large { position:relative;z-index:1;margin:4px 0 8px; }
+.chest-reveal-kicker,.chest-reveal-card h2 { position:relative;z-index:2;text-align:center; }
+
+@media(max-width:420px) {
+  .profile-identity-card { grid-template-columns:auto minmax(0,1fr); }
+  .profile-identity-card > strong { grid-column:2; }
+  .profile-current-season { grid-template-columns:1fr 1fr; }
+  .profile-current-season > div:first-child { grid-column:1/-1; }
+  body[data-app-screen="rewards"] .season-rewards-screen .season-reward-track { grid-template-columns:repeat(2,minmax(0,1fr)) !important; }
+  .monthly-login-track { grid-template-columns:repeat(4,minmax(0,1fr)); }
+}
+
+/* Final reward-road layout: one readable vertical path on every viewport.
+   This comes last so the legacy compact-grid rules cannot re-collapse it. */
+body[data-app-screen="rewards"] .season-rewards-screen {
+  overflow:auto !important;
+}
+body[data-app-screen="rewards"] .season-rewards-screen .season-reward-panel {
+  overflow:visible !important;
+}
+body[data-app-screen="rewards"] .season-rewards-screen .season-reward-track {
+  display:grid !important;
+  grid-template-columns:1fr !important;
+  grid-template-rows:none !important;
+  grid-auto-rows:max-content !important;
+  max-height:none !important;
+  height:auto !important;
+  overflow:visible !important;
+  gap:10px !important;
+}
+body[data-app-screen="rewards"] .season-rewards-screen .season-reward-card {
+  min-height:94px !important;
+  padding:13px 14px !important;
+  grid-template-columns:auto minmax(0,1fr) auto !important;
+  grid-template-areas:"tier prize action" "tier requirement action" !important;
+  align-items:center;
+  text-align:left;
+}
+body[data-app-screen="rewards"] .season-rewards-screen .season-reward-card > span { grid-area:tier; }
+body[data-app-screen="rewards"] .season-rewards-screen .season-reward-card > strong { grid-area:prize; }
+body[data-app-screen="rewards"] .season-rewards-screen .season-reward-card > small { grid-area:requirement; }
+body[data-app-screen="rewards"] .season-rewards-screen .season-reward-card > button { grid-area:action; min-width:62px; }
+
+@media(max-width:420px) {
+  body[data-app-screen="rewards"] .season-rewards-screen .season-reward-card {
+    grid-template-columns:1fr auto !important;
+    grid-template-areas:"tier action" "prize action" "requirement action" !important;
+  }
 }
