@@ -44,7 +44,7 @@ if errorlevel 1 (
   )
 )
 
-set RELAY_WEB_TEST_RUN_ID=web-test-beta.42-local
+set RELAY_WEB_TEST_RUN_ID=web-test-beta.43-local
 set RELAY_TELEMETRY_MAX_EVENTS=50000
 set GRIDSHARD_MATCHMAKING_AI_ONLY=1
 

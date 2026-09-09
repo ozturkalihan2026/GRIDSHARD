@@ -1,6 +1,5 @@
 from dataclasses import dataclass
 from .battle_pool import BattlePoolValidationError, validate_battle_pool
-from .models import Direction
 
 INITIAL_ACTIVE_MODULE_COUNT = 1
 
@@ -10,7 +9,6 @@ class InitialModulePlacement:
     definition_id: str
     x: int
     y: int
-    direction: Direction = Direction.UP
 
 @dataclass(slots=True, frozen=True)
 class PvPSetupPayload:

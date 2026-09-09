@@ -1,5 +1,6 @@
 from fastapi.testclient import TestClient
 
+from app import main as gateway
 from app.game.engine import BattleEngine
 from app.game.models import BattleState, BattleStatus
 from app.main import (
@@ -121,6 +122,29 @@ def test_finished_battle_generates_verified_telemetry():
     assert "booster_used" in types
 
 
+def test_finished_battle_persists_its_event_batch_once():
+    class CountingRepository:
+        max_events = 50000
+
+        def __init__(self):
+            self.save_calls = 0
+
+        def load(self):
+            return []
+
+        def save(self, _events):
+            self.save_calls += 1
+
+        def clear(self):
+            pass
+
+    repository = CountingRepository()
+    service = InMemoryTelemetryService(repository=repository)
+
+    assert service.ingest_finished_battle(synthetic_finished_battle()) == 7
+    assert repository.save_calls == 1
+
+
 def reset_gateway():
     telemetry_service.clear()
     matchmaking_service._queue.clear()
@@ -147,8 +171,9 @@ def test_telemetry_endpoint_deduplicates():
     assert second.json()["duplicate"] is True
 
 
-def test_matchmaking_records_start_and_match():
+def test_matchmaking_records_start_and_match(monkeypatch):
     reset_gateway()
+    monkeypatch.setattr(gateway, "MATCHMAKING_AI_ONLY", False)
 
     first = client.post("/matchmaking/join", json={"player_id": "a"})
     second = client.post("/matchmaking/join", json={"player_id": "b"})

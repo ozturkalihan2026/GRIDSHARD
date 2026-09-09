@@ -93,6 +93,8 @@
     "Tüm kalibrasyonlar":"All calibrations",
     "Takım":"Team",
     "TAKIM":"TEAM",
+    "TAKIM BİLGİSİ":"TEAM INFO",
+    "Takıma dahil değil":"Not in a team",
     "Yakında":"Coming soon",
     "Devreni kur · çekirdeği kır":"Build your circuit · break the core",
     "OPERATÖR TERMİNALİ":"OPERATOR TERMINAL",
@@ -101,7 +103,7 @@
     "Genel · İlerleme · Savaş Havuzu ·":"Overview · Progression · Battle Pool ·",
     "SEZON SIFIR · ÜCRETSİZ ÖDÜL YOLU":"SEASON ZERO · FREE REWARD TRACK",
     "Çekirdek Uyanışı":"Core Awakening",
-    "Savaş, canlı devre hamlesi ve günlük görevlerle Sezon XP kazan.":"Earn Season XP through battles, live circuit actions, and daily missions.",
+    "Savaş, canlı devre hamlesi ve günlük görevlerle Deneyim kazan.":"Earn Experience through battles, live circuit actions, and daily missions.",
     "AKI PARÇASI":"FLUX SHARDS",
     "Gelecek kozmetik ödülleri için birikir.":"Saved for future cosmetic rewards.",
     "DEVRE KREDİSİ":"CIRCUIT CREDITS",
@@ -115,7 +117,7 @@
     "Günlük Görevler":"Daily Missions",
     "Bugünün Devre Emirleri":"Today's Circuit Orders",
     "Her gün UTC 00:00'da yenilenir":"Refreshes daily at 00:00 UTC",
-    "Bugünün devre emirlerini tamamla, SXP ve Akı Parçası kazan.":"Complete today's circuit orders to earn SXP and Flux Shards.",
+    "Bugünün devre emirlerini tamamla, Deneyim ve Akı Parçası kazan.":"Complete today's circuit orders to earn Experience and Flux Shards.",
     "BUGÜN":"TODAY",
     "3 görev aktif":"3 missions active",
     "Tamamlanan görevlerin ödüllerini buradan al.":"Claim completed mission rewards here.",
@@ -140,7 +142,6 @@
     "Al":"Claim",
     "Kilitli":"Locked",
     "Ödül sunucuda doğrulanıyor…":"Verifying reward on server…",
-    "Ödül alındı ve profil hesabına kaydedildi.":"Reward claimed and saved to your profile.",
     "Ödül alınamadı.":"Reward could not be claimed.",
     "BAŞLANGIÇ STRATEJİNİ SEÇ":"CHOOSE YOUR STARTING STRATEGY",
     "Yerel önizleme":"Local preview",
@@ -290,7 +291,6 @@
     "Sınıf":"Class",
     "Can":"Health",
     "Devre Kredisi":"Circuit Credits",
-    "Port":"Port",
     "Modül port önizlemesi":"Module port preview",
     "Enerji Üretimi":"Energy Generation",
     "Enerji Tüketimi":"Energy Consumption",
@@ -340,15 +340,12 @@
     "Maç tamamlandı":"Match complete",
     "Aşırı Yük Çipi":"Overcharge Chip",
     "Acil Onarım":"Emergency Repair",
-    "Çift Port Adaptörü":"Dual Port Adapter",
     "+%25 saldırı · 15 sn":"+25% attack · 15 sec",
     "%25 anlık onarım":"25% instant repair",
-    "+1 geçici port · 15 sn":"+1 temporary port · 15 sec",
     "Devrem":"My Circuit",
     "Rakip":"Opponent",
     "Mobil savaş görünümü":"Mobile battle view",
     "Yerleştirmek için bir modül seç":"Select a module to place",
-    "Döndür":"Rotate",
     "Rafa Al":"Return to Shelf",
     "Seçimi Kaldır":"Clear Selection",
     "Çekirdek":"Core",
@@ -417,7 +414,6 @@
     "Virüs":"Virus",
     "Enerji Sömürücü":"Energy Leech",
     "Kesici":"Disruptor",
-    "Beta.34 · 10 sn AI Devralma · Oyuncu Kontrollü Portlar · Kesintisiz Ses · Tam Dil Desteği":"Beta.34 · 10 sec AI Takeover · Player-Controlled Ports · Seamless Audio · Full Language Support",
     "Savaş alanına giriş başarılı · Yerel AI aktif · Modül Rafı 15. saniyede açılır":"Battle arena entered · Local AI active · Module Shelf unlocks at 15 seconds",
     "Sunucudan yükleniyor...":"Loading from server...",
     "Sunucu verisi":"Server data",
@@ -451,7 +447,6 @@
     "Önce çevrimiçi rakip aranır; 10 saniye içinde bulunamazsa sunucudaki AI oyuncu aynı maç protokolünü devralır.":"An online opponent is searched first. If none is found within 10 seconds, the server AI takes over through the same match protocol.",
     "Çekirdek ve jeneratör sabittir; diğer iki başlangıç modülünü sen seçersin.":"Core and Generator are fixed; you choose the other two starting modules.",
     "Dokun, sonra yerleştir":"Tap, then place",
-    "15. saniyede Modül Rafını aç. Bir modüle dokun, boş hücreyi seç; Döndür ve Rafa Al düğmeleriyle düzenle.":"Open the Module Shelf at 15 seconds. Tap a module, choose an empty cell, then use Rotate and Return to Shelf to adjust it.",
     "Masaüstünde sürükle-bırak da kullanılmaya devam eder.":"Drag and drop remains available on desktop.",
     "Tamamla":"Finish",
     "Uygulanıyor...":"Applying...",
@@ -490,7 +485,7 @@
     "Yerel Test":"Local Test",
     "Derece puanı değişmedi":"Rating unchanged",
     "DP hesaplanıyor":"Calculating RP",
-    "XP hesaplanıyor":"Calculating XP",
+    "Deneyim hesaplanıyor":"Calculating Experience",
     "KAYBETTİN · Savaşı bıraktın":"YOU LOST · You forfeited",
   });
 
@@ -537,7 +532,7 @@
         .replace(/^Seviye (\d+) · Lig: ([^·]+) · (\d+) RP$/u, "Level $1 · League: $2 · $3 RP")
         .replace(/^(.+) · Seviye (\d+) · Lig: ([^·]+) · (\d+) RP$/u, (_, title, level, league, rating) => `${EN[title] || title} · Level ${level} · League: ${EN[league.trim()] || league.trim()} · ${rating} RP`)
         .replace(/^Kademe (\d+) \/ (\d+)$/u, "Tier $1 / $2")
-        .replace(/^(\d+) \/ (\d+) Sezon XP$/u, "$1 / $2 Season XP")
+        .replace(/^(\d+) \/ (\d+) Deneyim$/u, "$1 / $2 Experience")
         .replace(/^KADEME (\d+)$/u, "TIER $1")
         .replace(/Akı Parçası/gu, "Flux Shards")
         .replace(/ Akı$/gu, " Flux")
@@ -586,7 +581,7 @@
       .replace(/^Level (\d+) · League: ([^·]+) · (\d+) RP$/u, "Seviye $1 · Lig: $2 · $3 RP")
       .replace(/^(.+) · Level (\d+) · League: ([^·]+) · (\d+) RP$/u, (_, title, level, league, rating) => `${TR[title] || title} · Seviye ${level} · Lig: ${TR[league.trim()] || league.trim()} · ${rating} RP`)
       .replace(/^Tier (\d+) \/ (\d+)$/u, "Kademe $1 / $2")
-      .replace(/^(\d+) \/ (\d+) Season XP$/u, "$1 / $2 Sezon XP")
+      .replace(/^(\d+) \/ (\d+) Experience$/u, "$1 / $2 Deneyim")
       .replace(/^TIER (\d+)$/u, "KADEME $1")
       .replace(/Flux Shards/gu, "Akı Parçası")
       .replace(/ Flux$/gu, " Akı")

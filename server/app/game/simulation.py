@@ -3,7 +3,7 @@ from statistics import mean
 from typing import Callable
 
 from .engine import BattleEngine, TICK_MS
-from .models import BattleState, Direction, ModuleDefinition
+from .models import BattleState, ModuleDefinition
 
 
 DefinitionTransform = Callable[[ModuleDefinition], ModuleDefinition]
@@ -15,7 +15,6 @@ class LayoutModule:
     definition_id: str
     x: int
     y: int
-    direction: Direction = Direction.UP
 
 
 @dataclass(slots=True, frozen=True)
@@ -51,12 +50,12 @@ BALANCED_LAYOUT = BattleLayoutSpec(
     id="balanced",
     name_tr="Dengeli Devre",
     modules=(
-        LayoutModule("core", "core", 2, 2),
-        LayoutModule("gen", "generator", 2, 3),
-        LayoutModule("splitter", "splitter", 2, 1, Direction.DOWN),
-        LayoutModule("armor", "armor", 1, 1, Direction.RIGHT),
-        LayoutModule("drone", "drone_bay", 3, 1, Direction.LEFT),
-        LayoutModule("laser", "laser", 4, 1, Direction.LEFT),
+        LayoutModule("core", "core", 2, 1),
+        LayoutModule("splitter", "splitter", 2, 0),
+        LayoutModule("armor", "armor", 1, 1),
+        LayoutModule("drone", "drone_bay", 3, 1),
+        LayoutModule("laser", "laser", 4, 1),
+        LayoutModule("repair", "repair", 1, 0),
     ),
 )
 
@@ -64,12 +63,12 @@ OFFENSE_LAYOUT = BattleLayoutSpec(
     id="offense",
     name_tr="Saldırı Devresi",
     modules=(
-        LayoutModule("core", "core", 2, 2),
-        LayoutModule("gen", "generator", 2, 3),
-        LayoutModule("splitter", "splitter", 2, 1, Direction.DOWN),
-        LayoutModule("amp", "amplifier", 1, 1, Direction.RIGHT),
-        LayoutModule("laser", "laser", 0, 1, Direction.RIGHT),
-        LayoutModule("rail", "railgun", 3, 1, Direction.LEFT),
+        LayoutModule("core", "core", 2, 1),
+        LayoutModule("splitter", "splitter", 2, 0),
+        LayoutModule("amp", "amplifier", 1, 1),
+        LayoutModule("laser", "laser", 0, 1),
+        LayoutModule("rail", "railgun", 3, 1),
+        LayoutModule("battery", "battery", 1, 0),
     ),
 )
 
@@ -77,12 +76,12 @@ DEFENSE_LAYOUT = BattleLayoutSpec(
     id="defense",
     name_tr="Savunma Devresi",
     modules=(
-        LayoutModule("core", "core", 2, 2),
-        LayoutModule("gen", "generator", 2, 3),
-        LayoutModule("splitter", "splitter", 2, 1, Direction.DOWN),
-        LayoutModule("barrier", "barrier", 1, 1, Direction.RIGHT),
-        LayoutModule("drone", "drone_bay", 3, 1, Direction.LEFT),
-        LayoutModule("laser", "laser", 4, 1, Direction.LEFT),
+        LayoutModule("core", "core", 2, 1),
+        LayoutModule("splitter", "splitter", 2, 0),
+        LayoutModule("barrier", "barrier", 1, 1),
+        LayoutModule("drone", "drone_bay", 3, 1),
+        LayoutModule("laser", "laser", 4, 1),
+        LayoutModule("repair", "repair", 1, 0),
     ),
 )
 
@@ -90,12 +89,12 @@ SABOTAGE_LAYOUT = BattleLayoutSpec(
     id="sabotage",
     name_tr="Sabotaj Devresi",
     modules=(
-        LayoutModule("core", "core", 2, 2),
-        LayoutModule("gen", "generator", 2, 3),
-        LayoutModule("splitter", "splitter", 2, 1, Direction.DOWN),
-        LayoutModule("jammer", "jammer", 1, 1, Direction.RIGHT),
-        LayoutModule("drone", "drone_bay", 3, 1, Direction.LEFT),
-        LayoutModule("laser", "laser", 4, 1, Direction.LEFT),
+        LayoutModule("core", "core", 2, 1),
+        LayoutModule("splitter", "splitter", 2, 0),
+        LayoutModule("jammer", "jammer", 1, 1),
+        LayoutModule("drone", "drone_bay", 3, 1),
+        LayoutModule("laser", "laser", 4, 1),
+        LayoutModule("emp", "emp", 1, 0),
     ),
 )
 
@@ -103,12 +102,12 @@ BATTERY_PULSE_LAYOUT = BattleLayoutSpec(
     id="battery_pulse",
     name_tr="Batarya Darbe Devresi",
     modules=(
-        LayoutModule("core", "core", 2, 2),
-        LayoutModule("gen", "generator", 2, 3),
-        LayoutModule("splitter", "splitter", 2, 1, Direction.DOWN),
-        LayoutModule("battery", "battery", 1, 1, Direction.RIGHT),
-        LayoutModule("pulse", "pulse_cannon", 0, 1, Direction.RIGHT),
-        LayoutModule("laser", "laser", 3, 1, Direction.LEFT),
+        LayoutModule("core", "core", 2, 1),
+        LayoutModule("splitter", "splitter", 2, 0),
+        LayoutModule("battery", "battery", 1, 1),
+        LayoutModule("pulse", "pulse_cannon", 0, 1),
+        LayoutModule("laser", "laser", 3, 1),
+        LayoutModule("capacitor", "capacitor", 1, 0),
     ),
 )
 
@@ -116,12 +115,12 @@ ARMOR_COUNTER_LAYOUT = BattleLayoutSpec(
     id="armor_counter",
     name_tr="Zırh Karşı Devresi",
     modules=(
-        LayoutModule("core", "core", 2, 2),
-        LayoutModule("gen", "generator", 2, 3),
-        LayoutModule("splitter", "splitter", 2, 1, Direction.DOWN),
-        LayoutModule("armor", "armor", 1, 1, Direction.RIGHT),
-        LayoutModule("drone", "drone_bay", 3, 1, Direction.LEFT),
-        LayoutModule("laser", "laser", 4, 1, Direction.LEFT),
+        LayoutModule("core", "core", 2, 1),
+        LayoutModule("splitter", "splitter", 2, 0),
+        LayoutModule("armor", "armor", 1, 1),
+        LayoutModule("drone", "drone_bay", 3, 1),
+        LayoutModule("laser", "laser", 4, 1),
+        LayoutModule("repair", "repair", 1, 0),
     ),
 )
 
@@ -155,7 +154,6 @@ def _install_layout(
             instance_id,
             module.x,
             module.y,
-            module.direction,
         )
 
 

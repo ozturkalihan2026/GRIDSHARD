@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from typing import Any
 
-from .models import BattleCommand, Direction
+from .models import BattleCommand
 from .pvp_setup import InitialModulePlacement, PvPSetupPayload
 
 PVP_PROTOCOL_VERSION = 1
@@ -132,10 +132,6 @@ def setup_payload_from_envelope(envelope: ClientEnvelope) -> PvPSetupPayload:
     for item in modules:
         if not isinstance(item,dict):
             raise PvPProtocolError("Başlangıç modülü nesne olmalıdır.")
-        try:
-            direction=Direction(item.get("direction","up"))
-        except ValueError as exc:
-            raise PvPProtocolError("Geçersiz modül yönü.") from exc
         instance_id=item.get("instance_id")
         definition_id=item.get("definition_id")
         x=item.get("x")
@@ -152,7 +148,6 @@ def setup_payload_from_envelope(envelope: ClientEnvelope) -> PvPSetupPayload:
                 definition_id=definition_id,
                 x=x,
                 y=y,
-                direction=direction,
             )
         )
     return PvPSetupPayload(

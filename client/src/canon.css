@@ -28,9 +28,6 @@ body[data-app-screen="play"][data-online-status="battle"] .vertical-circuit-aren
 }
 body[data-app-screen="play"] .board-cell::before,
 body[data-app-screen="play"] .board-cell::after,
-body[data-app-screen="play"] .port-dot,
-body[data-app-screen="play"] .module-port,
-body[data-app-screen="play"] .module-port-dot,
 body[data-app-screen="play"] .power-state-chip { display:none !important; }
 .arena-detail-dialog { width:min(440px,94vw); max-height:88dvh; overflow-y:auto; overscroll-behavior:contain; }
 .arena-path { display:grid; gap:18px; padding:8px 0 16px; }
@@ -899,12 +896,19 @@ body[data-home-matchmaking="true"] .play-online-panel { visibility:hidden !impor
 .home-loadout-front { padding:8px 8px 6px !important; gap:5px !important; }
 .home-active-deck { margin-top:24px; }
 .home-preset-decks { margin-top:0; }
-.home-preset-decks button:disabled { opacity:.28; border-style:dashed; }
+.home-preset-decks button.is-empty,
+.module-preset-strip button.is-empty {
+  opacity:1;
+  border-style:dashed;
+  border-color:rgba(102,232,218,.55);
+  color:#65e8da;
+  background:rgba(11,35,54,.92);
+}
 .home-core-hero-copy { top:48px !important; }
 .chest-countdown { color:#ffe17a !important; font:800 .42rem var(--gs-font-display); letter-spacing:.04em; }
 .shop-chest-card > button:disabled { color:#8fa4b8; border-color:#38536d; background:#10263d; }
 .rewards-hub-links { display:grid; gap:12px; margin:auto 0; }
-.rewards-hub-links button { min-height:112px; padding:18px; display:grid; gap:6px; justify-items:start; text-align:left; border:1px solid rgba(89,226,216,.35); border-radius:16px; background:linear-gradient(135deg,#163d5c,#0a1c35); color:#f3fbff; box-shadow:0 8px 22px rgba(0,0,0,.2); }
+.rewards-hub-links button { min-height:96px; padding:18px; display:grid; place-items:center; text-align:center; border:1px solid rgba(89,226,216,.35); border-radius:16px; background:linear-gradient(135deg,#163d5c,#0a1c35); color:#f3fbff; box-shadow:0 8px 22px rgba(0,0,0,.2); }
 .rewards-hub-links button:nth-child(2) { border-color:rgba(255,220,102,.48); background:linear-gradient(135deg,#443d28,#151c35); }
 .rewards-hub-links span { color:#62f4df; font:900 .56rem var(--gs-font-display); letter-spacing:.12em; }
 .rewards-hub-links button:nth-child(2) span { color:#ffe177; }
@@ -1666,6 +1670,14 @@ body[data-app-screen="rewards"] .season-rewards-screen .season-reward-track {
    This comes last so the legacy compact-grid rules cannot re-collapse it. */
 body[data-app-screen="rewards"] .season-rewards-screen {
   overflow:auto !important;
+  padding-bottom:84px !important;
+}
+body[data-app-screen="rewards"] #app-bottom-dock {
+  position:fixed !important;
+  left:50% !important;
+  bottom:max(5px,env(safe-area-inset-bottom)) !important;
+  transform:translateX(-50%) !important;
+  margin:0 !important;
 }
 body[data-app-screen="rewards"] .season-rewards-screen .season-reward-panel {
   overflow:visible !important;
@@ -1698,4 +1710,198 @@ body[data-app-screen="rewards"] .season-rewards-screen .season-reward-card > but
     grid-template-columns:1fr auto !important;
     grid-template-areas:"tier action" "prize action" "requirement action" !important;
   }
+}
+
+/* September 2026 product pass: clean rewards, full core art and port-free battle. */
+.lobby-profile-button { padding:0 !important;overflow:visible; }
+.lobby-profile-button .profile-avatar {
+  width:100%;
+  height:100%;
+  border-width:1px;
+  font-size:1.05rem;
+  box-shadow:inset 0 0 10px rgba(65,235,222,.18);
+}
+
+.active-core-card { min-height:152px; }
+.core-collection-tile.active-core-tile {
+  width:100%;
+  min-height:150px;
+  padding:12px 16px 10px;
+  grid-template-rows:minmax(0,1fr) auto 5px;
+  background:
+    radial-gradient(circle at 50% 43%,color-mix(in srgb,var(--core-accent) 32%,transparent),transparent 48%),
+    linear-gradient(155deg,#163652,#071528);
+}
+.active-core-tile .core-collection-glyph { font-size:5rem;opacity:.56; }
+.active-core-tile .core-collection-copy strong { font-size:.62rem; }
+.active-core-tile .core-collection-copy small { font-size:.49rem; }
+.core-quick-actions { min-width:96px;max-width:132px; }
+#core-action-status:empty,
+#arena-reward-status:empty,
+#shop-action-status:empty,
+#daily-action-status:empty,
+#season-action-status:empty,
+#avatar-action-status:empty { display:none !important;min-height:0 !important;margin:0 !important;padding:0 !important; }
+
+.profile-deck-visual {
+  position:relative;
+  min-height:178px;
+  display:grid;
+  grid-template-columns:1fr;
+  align-items:end;
+  overflow:hidden;
+  border:1px solid rgba(92,220,211,.22);
+  border-radius:12px;
+  background:radial-gradient(circle at 50% 30%,rgba(71,242,222,.2),transparent 52%),#07182d;
+}
+.profile-featured-core {
+  position:absolute;
+  inset:0;
+  z-index:1;
+  height:auto;
+  padding:12px 12px 72px;
+  display:grid;
+  place-items:center;
+  align-content:center;
+  border:0;
+  border-radius:0;
+  background:transparent;
+}
+.profile-featured-core > .profile-featured-core-glyph {
+  position:absolute;
+  top:30px;
+  color:#71fff0;
+  font-size:5.4rem;
+  line-height:.8;
+  opacity:.42;
+  filter:drop-shadow(0 0 18px currentColor);
+  transform:rotate(45deg);
+}
+.profile-featured-core > .profile-featured-core-copy {
+  position:absolute;
+  z-index:3;
+  top:8px;
+  left:0;
+  right:0;
+  display:grid;
+  justify-items:center;
+  gap:1px;
+  color:inherit;
+  font-size:inherit;
+  opacity:1;
+  text-shadow:0 2px 8px #020817;
+}
+.profile-featured-core-copy small { color:#62f2df;font:800 .43rem var(--gs-font-display);letter-spacing:.13em; }
+.profile-featured-core-copy strong { color:#effcff;font:900 .58rem var(--gs-font-display); }
+.profile-featured-core-copy em { color:#ffe381;font:800 .43rem var(--gs-font-display);font-style:normal; }
+.profile-featured-modules {
+  position:relative;
+  z-index:3;
+  padding:88px 8px 9px;
+  background:linear-gradient(180deg,transparent,rgba(5,16,34,.84) 42%,rgba(5,16,34,.98) 68%);
+}
+.profile-inline-statistics .statistics-module-usage { display:none !important; }
+
+.post-match-reward-list { grid-template-columns:repeat(3,minmax(0,1fr)); }
+.post-match-reward-list article { min-height:112px;padding:11px 5px; }
+.resource-symbol-experience {
+  color:#79e9ff;
+  background:radial-gradient(circle,#264e72,#08172d 72%);
+  border:1px solid #68dff2;
+  box-shadow:0 0 18px rgba(87,224,250,.35);
+}
+.resource-symbol-experience svg { width:70%;fill:none;stroke:currentColor;stroke-width:1.7; }
+.resource-symbol-module-card {
+  font:900 1.05rem var(--gs-font-display);
+  border-radius:8px;
+  background:linear-gradient(150deg,color-mix(in srgb,currentColor 20%,#10253d),#071528 72%);
+  box-shadow:inset 0 0 10px color-mix(in srgb,currentColor 25%,transparent),0 0 10px color-mix(in srgb,currentColor 22%,transparent);
+}
+.resource-symbol-module-card[data-category="saldırı"] { color:#ff718a; }
+.resource-symbol-module-card[data-category="savunma"] { color:#82b8ff; }
+.resource-symbol-module-card[data-category="destek"] { color:#96ed88; }
+.resource-symbol-module-card[data-category="sistem"],
+.resource-symbol-module-card[data-category="enerji"] { color:#62eee0; }
+.resource-symbol-module-card[data-category="sabotaj"] { color:#c88cff; }
+
+body[data-app-screen="rewards"] .season-rewards-screen {
+  display:grid !important;
+  grid-template-rows:auto auto minmax(0,1fr) auto auto;
+  gap:9px;
+  overflow:hidden !important;
+  padding-bottom:12px !important;
+}
+body[data-app-screen="rewards"] .season-rewards-screen .season-reward-panel {
+  min-height:0;
+  overflow-y:auto !important;
+  overscroll-behavior:contain;
+  scrollbar-gutter:stable;
+}
+body[data-app-screen="rewards"] .season-rewards-screen .season-reward-track { overflow:visible !important; }
+body[data-app-screen="rewards"] .season-rewards-screen > .reward-back-link {
+  position:relative;
+  z-index:4;
+  margin:0;
+  flex:none;
+}
+body[data-app-screen="rewards"] .season-rewards-screen > .profile-terminal-tabs {
+  display:grid !important;
+}
+
+.post-match-reward-stage .post-match-reward-outcome,
+.post-match-reward-stage > h2 {
+  transform:translateY(-10px);
+}
+.post-match-reward-stage > h2 { margin-bottom:8px; }
+.post-match-actions { grid-template-columns:1fr !important; }
+#post-match-continue { width:100%;grid-column:1 !important; }
+
+/* Devre Yolu yalnız orta içerikte kayar; iki ana gezinme eylemi her zaman
+   ekranın alt kenarında kalır. Bu son kural eski tam-sayfa dialog
+   uyumluluk katmanlarının footer'ı tekrar akışa sokmasını da engeller. */
+.arena-detail-dialog[open] {
+  display:grid !important;
+  grid-template-rows:auto auto minmax(0,1fr) auto !important;
+  overflow:hidden !important;
+}
+.arena-detail-dialog[open] > .arena-path {
+  min-height:0 !important;
+  overflow-x:hidden !important;
+  overflow-y:auto !important;
+}
+.arena-detail-dialog[open] > .arena-path-footer {
+  position:sticky !important;
+  z-index:50;
+  right:0;
+  bottom:0;
+  left:0;
+  min-height:64px;
+  display:grid !important;
+  visibility:visible !important;
+  opacity:1 !important;
+  flex:none;
+  background:#07182c !important;
+  box-shadow:0 -12px 28px rgba(3,12,27,.82);
+}
+.arena-detail-dialog[open] > .arena-path-footer > button {
+  display:grid !important;
+  place-items:center;
+  visibility:visible !important;
+}
+
+body[data-app-screen="play"] .vertical-circuit-arena .duel-side {
+  width:100% !important;
+  margin:0 !important;
+  transform:none !important;
+  justify-items:center !important;
+}
+body[data-app-screen="play"] .vertical-circuit-arena .board {
+  margin-inline:auto !important;
+  place-self:center !important;
+}
+body[data-app-screen="play"] .module-shelf .module-card .hp-bar { display:none !important; }
+body[data-app-screen="play"] .module-shelf .module-card .current-cost-badge {
+  inset:auto 3px 3px auto;
+  display:block !important;
+  font-size:.6rem;
 }

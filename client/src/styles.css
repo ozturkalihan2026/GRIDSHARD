@@ -975,36 +975,6 @@ body[data-app-screen="play"] .battle-pool-panel:not([hidden]) {
   position: relative;
 }
 
-.port-dot {
-  position: absolute;
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-  background: currentColor;
-  opacity: .85;
-  pointer-events: none;
-}
-
-.port-up {
-  top: -4px;
-  left: calc(50% - 3px);
-}
-
-.port-right {
-  right: -4px;
-  top: calc(50% - 3px);
-}
-
-.port-down {
-  bottom: -4px;
-  left: calc(50% - 3px);
-}
-
-.port-left {
-  left: -4px;
-  top: calc(50% - 3px);
-}
-
 .module-card.energy-disconnected {
   outline: 2px dashed rgba(255,255,255,.35);
 }
@@ -4068,8 +4038,6 @@ body[data-app-screen="play"][data-online-status="battle"] .board-cell {
 .module-card[data-category="savunma"] .module-icon { color:#8cbcff; }
 .module-card[data-category="destek"] .module-icon { color:var(--gs-ion-green,#63d58a); }
 .module-card[data-category="sabotaj"] .module-icon { color:var(--gs-interference-violet,#af75ff); }
-.module-card[data-rotatable="true"] { cursor:pointer; }
-
 .board-cell .hp-bar {
   width:82%;
   height:5px;
@@ -4078,10 +4046,6 @@ body[data-app-screen="play"][data-online-status="battle"] .board-cell {
 .module-card.energy-flowing {
   box-shadow:inset 0 0 14px rgba(54,217,255,.22);
 }
-.module-card.energy-flowing .port-dot {
-  animation:none;
-}
-
 .module-shelf {
   display:flex;
   min-height:0;
@@ -4235,7 +4199,6 @@ body[data-local-finished="true"] .module-card {
   .lobby-core-mark,
   .lobby-core-orbit,
   .shard-core-center,
-  .module-card.energy-flowing .port-dot,
   .duel-player-side[data-core-critical="true"] {
     animation:none !important;
   }
@@ -5807,10 +5770,6 @@ body[data-app-screen="play"] .board-cell .hp-bar {
 .module-card.energy-flowing > .hp-bar {
   z-index:1;
 }
-.module-card.energy-flowing > .port-dot {
-  position:absolute;
-  z-index:12;
-}
 @keyframes gs-energy-presence-v2 {
   0%,100% {
     filter:brightness(.98) saturate(1.02);
@@ -5857,47 +5816,6 @@ body[data-app-screen="play"] .board-cell .module-card > .hp-bar {
   grid-column:1;
   justify-self:center;
 }
-body[data-app-screen="play"] .module-card > .port-dot {
-  position:absolute !important;
-  z-index:12;
-  display:block;
-  width:8px;
-  height:8px;
-  min-width:8px;
-  min-height:8px;
-  margin:0 !important;
-  padding:0 !important;
-  flex:none;
-}
-body[data-app-screen="play"] .module-card > .port-up {
-  top:-1px !important;
-  right:auto !important;
-  bottom:auto !important;
-  left:50% !important;
-  transform:translate(-50%,-50%) !important;
-}
-body[data-app-screen="play"] .module-card > .port-right {
-  top:50% !important;
-  right:-1px !important;
-  bottom:auto !important;
-  left:auto !important;
-  transform:translate(50%,-50%) !important;
-}
-body[data-app-screen="play"] .module-card > .port-down {
-  top:auto !important;
-  right:auto !important;
-  bottom:-1px !important;
-  left:50% !important;
-  transform:translate(-50%,50%) !important;
-}
-body[data-app-screen="play"] .module-card > .port-left {
-  top:50% !important;
-  right:auto !important;
-  bottom:auto !important;
-  left:-1px !important;
-  transform:translate(-50%,-50%) !important;
-}
-
 .module-card.fx-hit {
   animation:gs-card-impact-static .5s ease-out;
 }
@@ -7018,36 +6936,6 @@ body[data-app-screen="rewards"] .season-rewards-screen {
 .pool-detail-preview-card[data-category="savunma"] .pool-detail-preview-icon { color:var(--gs-defense); }
 .pool-detail-preview-card[data-category="destek"] .pool-detail-preview-icon { color:var(--gs-support); }
 .pool-detail-preview-card[data-category="sabotaj"] .pool-detail-preview-icon { color:var(--gs-sabotage); }
-.pool-detail-preview-port-label {
-  position:absolute;
-  right:5px;
-  bottom:4px;
-  left:5px;
-  color:#c7e8f8;
-  font-size:.55rem;
-  font-weight:800;
-  letter-spacing:.08em;
-  text-align:center;
-  text-transform:uppercase;
-}
-.pool-detail-preview-card > .port-dot {
-  position:absolute;
-  z-index:4;
-  display:block;
-  width:9px;
-  height:9px;
-  min-width:9px;
-  min-height:9px;
-  border:1px solid #d8f8ff;
-  border-radius:50%;
-  background:#8feeff;
-  box-shadow:0 0 9px rgba(103,233,255,.9);
-}
-.pool-detail-preview-card > .port-up { top:0;left:50%;transform:translate(-50%,-50%); }
-.pool-detail-preview-card > .port-right { top:50%;right:0;transform:translate(50%,-50%); }
-.pool-detail-preview-card > .port-down { bottom:0;left:50%;transform:translate(-50%,50%); }
-.pool-detail-preview-card > .port-left { top:50%;left:0;transform:translate(-50%,-50%); }
-
 .shelf-category-group {
   display:block;
 }
@@ -7075,9 +6963,6 @@ body[data-app-screen="rewards"] .season-rewards-screen {
 .module-shelf .module-card {
   position:relative;
   overflow:visible;
-}
-.module-shelf .module-card > .port-dot {
-  display:none !important;
 }
 .shelf-module-tooltip {
   position:absolute;
@@ -7405,17 +7290,6 @@ body[data-app-screen="play"]:not([data-local-status="battle"]):not([data-online-
 .laboratory-detail-icon .pool-detail-preview-icon {
   font-size:1.9rem;
 }
-.laboratory-detail-icon .pool-detail-preview-port-label {
-  bottom:5px;
-  font-size:.48rem;
-}
-.laboratory-detail-icon .port-dot {
-  width:8px;
-  height:8px;
-  min-width:8px;
-  min-height:8px;
-}
-
 .app-bottom-dock .menu-action,
 body[data-app-screen="menu"] .app-bottom-dock .menu-action {
   min-height:52px;
@@ -8488,7 +8362,6 @@ body[data-app-screen="play"] .enemy-board-cell .hp-bar {
 }
 .drag-ghost-preview--overcharge_chip { border-color:rgba(255,215,99,.62); box-shadow:0 16px 36px rgba(0,0,0,.42),0 0 18px rgba(255,214,112,.18); }
 .drag-ghost-preview--emergency_repair { border-color:rgba(121,233,168,.62); }
-.drag-ghost-preview--dual_port_adapter { border-color:rgba(102,202,255,.58); }
 .drag-ghost-preview--cooling_burst { border-color:rgba(111,235,255,.62); }
 .drag-ghost-preview--signal_cleanser { border-color:rgba(193,133,255,.62); }
 .drag-ghost-preview--module.drag-ghost-preview--enerji { border-color:rgba(82,220,255,.56); }
@@ -9244,13 +9117,6 @@ body[data-app-screen="play"] .vertical-circuit-arena .enemy-board-cell {
 body[data-app-screen="play"] .vertical-circuit-arena .board-cell.core-cell {
   border-color:rgba(255,225,126,.72);
   box-shadow:inset 0 0 18px rgba(255,215,105,.10),0 0 9px rgba(255,215,105,.12);
-}
-
-/* Ports remain in the battle engine, but cards no longer draw port dots. */
-body[data-app-screen="play"] .module-card .port-dot,
-body[data-app-screen="play"] .module-card .module-port,
-body[data-app-screen="play"] .module-card [data-port-direction] {
-  display:none !important;
 }
 
 body[data-app-screen="play"][data-local-status="battle"] .shelf-panel,

@@ -62,7 +62,7 @@ CATEGORY_LABELS_EN = {
 MODULE_COPY_EN: dict[str, tuple[str, str]] = {
     "generator": ("Primary energy source", "Continuously supplies energy and can move between the four Core gates."),
     "battery": ("Energy reserve", "Adds 30 energy capacity without increasing production."),
-    "splitter": ("Energy-line branching", "Splits the energy line into multiple branches."),
+    "splitter": ("Energy distribution", "Improves the embedded grid's energy efficiency."),
     "capacitor": ("Expanded energy storage", "Adds 25 energy capacity and consumes 1 energy per second."),
     "current_balancer": ("Circuit efficiency", "Reduces module energy consumption by 8%; repeated copies have diminishing returns, capped at 35%."),
     "laser": ("Sustained single-target damage", "Deals steady damage to one target."),
@@ -76,8 +76,8 @@ MODULE_COPY_EN: dict[str, tuple[str, str]] = {
     "reflector": ("Energy-attack reflection", "Redirects part of incoming energy-based damage."),
     "barrier": ("Connection-line protection", "Protects critical connection points."),
     "repair": ("Health repair", "Repairs damaged modules."),
-    "cooler": ("Heat control", "Reduces heat on connected modules."),
-    "amplifier": ("Attack-line amplification", "Increases the output of a connected attack module."),
+    "cooler": ("Heat control", "Reduces heat on nearby modules."),
+    "amplifier": ("Attack-line amplification", "Increases the output of a nearby attack module."),
     "targeting_computer": ("Targeting support", "Improves target selection and attack efficiency."),
     "overclock_unit": ("Performance at a heat cost", "Accelerates a connected module while increasing heat and energy load."),
     "emp": ("Temporary system disruption", "Temporarily disrupts energy and support lines."),
@@ -162,7 +162,7 @@ def _effect_lines(definition_id: str) -> list[str]:
     if definition_id == "splitter":
         return [
             (
-                "Enerji hattını dallandırır ve devrede en az bir Dağıtıcı varsa "
+                "Gömülü devre ağını güçlendirir ve devrede en az bir Dağıtıcı varsa "
                 f"dağıtım verimliliğini %{_percent(SPLITTER_DISTRIBUTION_EFFICIENCY)} yapar "
                 f"(normal %{_percent(BASE_DISTRIBUTION_EFFICIENCY)})."
             ),
@@ -217,7 +217,7 @@ def _effect_lines(definition_id: str) -> list[str]:
     if definition_id == "amplifier":
         return [
             (
-                "Bağlı saldırı hattının hasarını "
+                "Yakındaki saldırı modüllerinin hasarını "
                 f"%{_percent(AMPLIFIER_DAMAGE_MULTIPLIER)} seviyesine çıkarır "
                 f"(+%{_percent(AMPLIFIER_DAMAGE_MULTIPLIER)-100})."
             ),
@@ -329,7 +329,7 @@ def _effect_lines_en(definition_id: str) -> list[str]:
         ]
     if definition_id == "splitter":
         return [
-            f"Branches the energy line and raises distribution efficiency to {_percent(SPLITTER_DISTRIBUTION_EFFICIENCY)}% instead of {_percent(BASE_DISTRIBUTION_EFFICIENCY)}%.",
+            f"Raises the embedded grid's distribution efficiency to {_percent(SPLITTER_DISTRIBUTION_EFFICIENCY)}% instead of {_percent(BASE_DISTRIBUTION_EFFICIENCY)}%.",
         ]
     if definition_id == "shield":
         return ["Reduces incoming damage by 35% while powered.", f"Consumes {definition.energy_consumption:g} energy per second."]
@@ -344,7 +344,7 @@ def _effect_lines_en(definition_id: str) -> list[str]:
     if definition_id == "cooler":
         return [f"Reduces target heat by {COOLER_HEAT_REDUCTION_PER_TICK:g} every 0.1 sec.", f"Removes {COOLER_DEBUFF_REDUCTION_MS_PER_TICK} ms from reducible debuffs per engine step."]
     if definition_id == "amplifier":
-        return [f"Raises connected attack-line damage to {_percent(AMPLIFIER_DAMAGE_MULTIPLIER)}% (+{_percent(AMPLIFIER_DAMAGE_MULTIPLIER)-100}%)."]
+        return [f"Raises nearby attack-module damage to {_percent(AMPLIFIER_DAMAGE_MULTIPLIER)}% (+{_percent(AMPLIFIER_DAMAGE_MULTIPLIER)-100}%)."]
     if definition_id == "targeting_computer":
         return [f"Reduces the supported attack module's cooldown to {_percent(TARGETING_COOLDOWN_MULTIPLIER)}%."]
     if definition_id == "overclock_unit":
@@ -399,8 +399,6 @@ def build_module_catalog_view() -> dict:
                 definition.base_damage,
             "cooldown_ms":
                 definition.cooldown_ms,
-            "port_count":
-                definition.port_count,
             "strong_against":[
                 _name(item)
                 for item in definition.strong_against
@@ -420,7 +418,6 @@ def build_module_catalog_view() -> dict:
             "effect_lines_en": _effect_lines_en(definition.id),
             "movable":definition.movable,
             "removable":definition.removable,
-            "rotatable":definition.rotatable,
         })
 
     modules.sort(

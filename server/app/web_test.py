@@ -5,7 +5,6 @@ from typing import Any
 
 from .game.battle_pool import default_battle_pool
 from .game.engine import BATTLE_TIME_LIMIT_MS
-from .game.models import Direction
 from .game.pvp_runner import PvPTickRunner
 from .game.pvp_session import PvPSessionService
 from .game.pvp_setup import (
@@ -256,14 +255,7 @@ class WebTestSmokeRunner:
                     f"{player_id}-core",
                     "core",
                     2,
-                    2,
-                ),
-                InitialModulePlacement(
-                    f"{player_id}-gen",
-                    "generator",
-                    2,
-                    3,
-                    Direction.UP,
+                    1,
                 ),
             ),
         )

@@ -207,7 +207,6 @@ class PlayerProgressionService:
                     "module_moved",
                     "module_replaced",
                     "modules_swapped",
-                    "module_rotated",
                 }
             )
             updated = self.profile_service.record_battle_engagement(

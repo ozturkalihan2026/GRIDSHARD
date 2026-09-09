@@ -3,7 +3,7 @@ from dataclasses import dataclass
 from .ai import enqueue_ai_actions
 from .battle_pool import default_battle_pool
 from .engine import BattleEngine
-from .models import BattleState, Direction
+from .models import BattleState
 
 
 @dataclass(slots=True, frozen=True)
@@ -24,13 +24,12 @@ def build_symmetric_ai_engine() -> BattleEngine:
         player = engine.add_player(player_id)
         player.battle_pool = pool
         initial = (
-            (f"{player_id}-core", "core", 2, 2, Direction.UP),
-            (f"{player_id}-gen", "generator", 2, 3, Direction.UP),
+            (f"{player_id}-core", "core", 2, 1),
         )
-        for instance_id, definition_id, x, y, direction in initial:
+        for instance_id, definition_id, x, y in initial:
             engine.grant_module(player_id, instance_id, definition_id)
             engine.set_initial_active_module(
-                player_id, instance_id, x, y, direction
+                player_id, instance_id, x, y
             )
 
     engine.start()

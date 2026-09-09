@@ -29,6 +29,12 @@ require("../src/gridshard-audio.js");
 const director = new global.GridshardAudioDirector();
 
 assert.strictEqual(
+  FakeAudio.instances.length,
+  0,
+  "Ses efektleri oyuncu kullanmadan topluca yüklenmemeli"
+);
+
+assert.strictEqual(
   global.GRIDSHARD_AUDIO_MIX.version,
   "shardglass-seamless-v9"
 );

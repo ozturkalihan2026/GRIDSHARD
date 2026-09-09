@@ -14,10 +14,15 @@ from app.player_settings import PlayerSettingsService
 from app.player_statistics import PlayerStatisticsService
 
 
-def test_free_season_road_has_40_steps_and_requested_sxp_curve():
+def test_free_season_road_has_40_steps_and_full_month_experience_curve():
     assert len(SEASON_REWARD_TRACK) == 40
-    assert SEASON_REWARD_TRACK[1]["required_xp"] == 30
-    assert SEASON_REWARD_TRACK[2]["required_xp"] == 50
+    assert SEASON_REWARD_TRACK[0]["required_xp"] == 150
+    assert SEASON_REWARD_TRACK[9]["required_xp"] == 1860
+    assert SEASON_REWARD_TRACK[-1]["required_xp"] == 12240
+    assert all(
+        current["required_xp"] < following["required_xp"]
+        for current, following in zip(SEASON_REWARD_TRACK, SEASON_REWARD_TRACK[1:])
+    )
     assert [item["tier"] for item in SEASON_REWARD_TRACK if item["is_major"]] == [10, 20, 30, 40]
     assert all(item["season_xp_reward"] == 0 for item in SEASON_REWARD_TRACK)
 
@@ -26,7 +31,7 @@ def test_season_claim_spends_no_sxp_and_unlocks_major_cosmetic():
     service = PlayerProfileService()
     profile = service.record_battle_engagement(
         "season-player",
-        season_xp_awarded=190,
+        season_xp_awarded=SEASON_REWARD_TRACK[9]["required_xp"],
         damage_dealt=0,
         circuit_actions=0,
     )
@@ -34,7 +39,7 @@ def test_season_claim_spends_no_sxp_and_unlocks_major_cosmetic():
 
     claimed = service.claim_season_tier("season-player", 10)
 
-    assert claimed.season_xp == 190
+    assert claimed.season_xp == SEASON_REWARD_TRACK[9]["required_xp"]
     assert claimed.circuit_credits > credits_before
     assert "circuit_scout" in claimed.unlocked_avatar_ids
 
@@ -231,7 +236,7 @@ def test_season_chest_tier_opens_real_chest_and_persists_reward(monkeypatch):
     gateway.player_statistics_service._statistics.pop(player_id, None)
     gateway.player_settings_service._settings.pop(player_id, None)
     profile = gateway.player_profile_service.get_or_create(player_id)
-    profile.season_xp = 190
+    profile.season_xp = SEASON_REWARD_TRACK[9]["required_xp"]
     client = TestClient(gateway.app)
 
     response = client.post(f"/profile/{player_id}/engagement/tiers/10/claim")

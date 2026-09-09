@@ -41,11 +41,10 @@ assert.ok(app.includes('settingsLanguageEl.addEventListener('));
 assert.ok(app.includes('await saveSettingsForm();'));
 assert.ok(app.includes('const collapsedShelfCategories = new Set();'));
 assert.ok(/document\.createElement\(\s*"details"\s*\)/u.test(app));
-assert.ok(/trackBattleUiInteraction\(\s*"tap_rotate_module"/u.test(app));
+assert.ok(!app.includes('"rotate_module"'));
 
 assert.ok(html.includes('id="battle-pool-detail-preview"'));
-assert.ok(styles.includes('.pool-detail-preview-card > .port-dot'));
-assert.ok(styles.includes('.module-shelf .module-card > .port-dot'));
+assert.ok(!audio.includes("port_connect"));
 assert.ok(styles.includes('.shelf-module-tooltip'));
 
 assert.ok(audio.includes("class GridshardSeamlessLoopTrack"));

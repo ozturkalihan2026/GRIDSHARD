@@ -217,18 +217,11 @@ const deployedLaserId = sandbox.window.__GRIDSHARD_TEST_API
 if (!deployedLaserId) {
   throw new Error("Sunucu yerleşimli Lazer örneği bulunamadı.");
 }
-const beforeRotation = sandbox.window.__GRIDSHARD_TEST_API.getBattleState().directions[deployedLaserId];
-if (!sandbox.window.__GRIDSHARD_TEST_API.rotateModule(deployedLaserId)) {
-  throw new Error("Aktif modül tıklama/port dönüş komutu üretmedi.");
+if ("rotateModule" in sandbox.window.__GRIDSHARD_TEST_API) {
+  throw new Error("Eski modül döndürme komutu test API'sinde kaldı.");
 }
-const afterRotation = sandbox.window.__GRIDSHARD_TEST_API.getBattleState().directions[deployedLaserId];
-if (beforeRotation === afterRotation) {
-  throw new Error(`Port yönü değişmedi: ${beforeRotation}`);
-}
-// Savaş sonuç regresyonunu port bağlantısı değişikliğinden izole etmek için
-// üç ek dönüşle başlangıç yönüne dön.
-for (let i = 0; i < 3; i += 1) {
-  sandbox.window.__GRIDSHARD_TEST_API.rotateModule(deployedLaserId);
+if ("directions" in sandbox.window.__GRIDSHARD_TEST_API.getBattleState()) {
+  throw new Error("Eski port yönleri savaş durumunda kaldı.");
 }
 
 // Çevrimdışı UI yedeğinde rakip deste üretimi yoktur; sonuç ve sayaç donmasını
@@ -244,26 +237,23 @@ if (!getElement("enemy-board")) {
 
 const frozenState = sandbox.window.__GRIDSHARD_TEST_API.getBattleState();
 const frozenElapsed = frozenState.elapsed_ms;
-const frozenDirection = frozenState.directions[deployedLaserId];
 runAnimationFrame(130000);
 const afterFinishState = sandbox.window.__GRIDSHARD_TEST_API.getBattleState();
 if (afterFinishState.elapsed_ms !== frozenElapsed) {
   throw new Error(`Maç sonu sayaç donmadı: ${frozenElapsed} -> ${afterFinishState.elapsed_ms}`);
 }
-if (sandbox.window.__GRIDSHARD_TEST_API.rotateModule(deployedLaserId)) {
-  throw new Error("Maç bittikten sonra port dönüşü kabul edildi.");
-}
-if (afterFinishState.directions[deployedLaserId] !== frozenDirection) {
-  throw new Error("Maç bittikten sonra modül yönü değişti.");
-}
 
-const returnPreparation = getElement("return-preparation-button");
-if (typeof returnPreparation._listeners.click !== "function") {
-  throw new Error("Hazırlık Ekranına Dön handler bağlanmadı.");
+const postMatchContinue = getElement("post-match-continue");
+if (typeof postMatchContinue._listeners.click !== "function") {
+  throw new Error("Maç sonu Devam handler bağlanmadı.");
 }
-returnPreparation._listeners.click();
+postMatchContinue._listeners.click({ currentTarget: postMatchContinue });
+if (postMatchContinue.dataset.postMatchStage !== "rewards") {
+  throw new Error("İlk Devam ödül aşamasını açmadı.");
+}
+postMatchContinue._listeners.click({ currentTarget: postMatchContinue });
 if (document.body.dataset.appScreen !== "menu") {
-  throw new Error(`Sonuçtan ana ekrana dönülmedi: ${document.body.dataset.appScreen}`);
+  throw new Error(`İkinci Devam ile EV ekranına dönülmedi: ${document.body.dataset.appScreen}`);
 }
 
 sandbox.window.__GRIDSHARD_TEST_API.startQuickLocalBattle();
@@ -286,5 +276,5 @@ if (getElement("local-report-forfeit-penalty").textContent === "0 DK") {
   throw new Error("Savaşta kazanılan kredi için kaçış cezası uygulanmadı.");
 }
 
-console.log("app startup + preparation return + forfeit penalty + timer freeze + reciprocal local battle test passed");
+console.log("app startup + two-step result return + forfeit penalty + timer freeze + reciprocal local battle test passed");
 process.exit(0);

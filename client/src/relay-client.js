@@ -566,7 +566,6 @@
           definition_id: module.definitionId,
           x: module.x,
           y: module.y,
-          direction: module.direction || "up",
         })),
       });
     }
@@ -751,9 +750,6 @@
               serverModule.x === null || serverModule.y === null
                 ? null
                 : { x: serverModule.x, y: serverModule.y },
-            direction: serverModule.direction,
-            portCount: serverModule.port_count,
-            ports: serverModule.ports,
             isPowered: serverModule.is_powered,
             powerReason: serverModule.power_reason,
             energyReceived:
@@ -3354,6 +3350,7 @@
       releaseCheckState,
       expectedVersion = null,
       expectedProtocolVersion = 1,
+      operationalChecks = true,
       requestJson = null,
     }) {
       this.healthState = healthState;
@@ -3363,6 +3360,8 @@
         expectedVersion;
       this.expectedProtocolVersion =
         expectedProtocolVersion;
+      this.operationalChecks =
+        operationalChecks !== false;
       this.manifest = null;
       this.operationReadiness = null;
       this.requestJson =
@@ -3408,9 +3407,16 @@
           this.requestJson(
             "/web-test/manifest"
           ),
-          this.requestJson(
-            "/web-test/operation-readiness"
-          ),
+          this.operationalChecks
+            ? this.requestJson(
+                "/web-test/operation-readiness"
+              )
+            : Promise.resolve({
+                ready:true,
+                checks:{},
+                warnings:[],
+                skipped:true,
+              }),
         ]);
 
         this.health = health;

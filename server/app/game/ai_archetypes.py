@@ -24,7 +24,7 @@ class AIArchetype:
     booster_priority: tuple[str, ...] = (
         "emergency_repair",
         "overcharge_chip",
-        "dual_port_adapter",
+        "cooling_burst",
     )
 
     def bias_for(self, category: str) -> int:
@@ -55,7 +55,7 @@ AGGRESSIVE_AI = AIArchetype(
     expansion_module_ids=("drone_bay", "amplifier", "overclock_unit", "pulse_cannon"),
     category_bias=(("saldırı", 7), ("destek", 2), ("savunma", -1), ("enerji", -1)),
     attack_foundation_target=3,
-    booster_priority=("overcharge_chip", "emergency_repair", "dual_port_adapter"),
+    booster_priority=("overcharge_chip", "emergency_repair", "cooling_burst"),
 )
 
 DEFENSIVE_AI = AIArchetype(
@@ -71,7 +71,7 @@ DEFENSIVE_AI = AIArchetype(
     category_bias=(("savunma", 7), ("destek", 4), ("enerji", 1), ("saldırı", -1)),
     attack_foundation_target=1,
     defense_floor=2,
-    booster_priority=("emergency_repair", "dual_port_adapter", "overcharge_chip"),
+    booster_priority=("emergency_repair", "cooling_burst", "overcharge_chip"),
 )
 
 SABOTAGE_AI = AIArchetype(
@@ -87,7 +87,7 @@ SABOTAGE_AI = AIArchetype(
     category_bias=(("sabotaj", 8), ("saldırı", 2), ("destek", 1), ("savunma", -1)),
     attack_foundation_target=2,
     sabotage_floor=2,
-    booster_priority=("dual_port_adapter", "emergency_repair", "overcharge_chip"),
+    booster_priority=("signal_cleanser", "emergency_repair", "overcharge_chip"),
 )
 
 ECONOMY_AI = AIArchetype(
@@ -103,7 +103,7 @@ ECONOMY_AI = AIArchetype(
     category_bias=(("enerji", 8), ("saldırı", 2), ("destek", 2), ("savunma", 1)),
     attack_foundation_target=2,
     energy_floor=2,
-    booster_priority=("dual_port_adapter", "emergency_repair", "overcharge_chip"),
+    booster_priority=("cooling_burst", "emergency_repair", "overcharge_chip"),
 )
 
 

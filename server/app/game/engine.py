@@ -33,11 +33,7 @@ from .heat import (
     attack_heat_gain,
     heat_performance,
 )
-from .topology import (
-    build_energy_topology,
-    effective_port_count,
-    module_port_directions,
-)
+from .topology import build_energy_topology
 from .result import (
     build_player_summary,
     core_hp,
@@ -76,7 +72,6 @@ from .models import (
     BattleModule,
     BattleState,
     BattleStatus,
-    Direction,
     ModuleStatus,
     PlayerBattleState,
     Position,
@@ -238,7 +233,6 @@ class BattleEngine:
         instance_id: str,
         x: int,
         y: int,
-        direction: Direction = Direction.UP,
     ) -> None:
         """
         Maç başlamadan önce Çekirdek/Jeneratör gibi başlangıç modüllerini
@@ -259,19 +253,10 @@ class BattleEngine:
             self._ensure_board_position_placeable(position)
             self._ensure_module_allowed_in_cell(module, position)
 
-        if (
-            module.definition.id == "generator"
-            and position not in self.board.generator_gate_positions
-        ):
-            raise ValueError(
-                "Jeneratör yalnızca Çekirdek kapılarından birine yerleştirilebilir."
-            )
-
         self._ensure_position_available(player_id, position)
 
         module.status = ModuleStatus.ACTIVE
         module.position = position
-        module.direction = direction
 
     def start(self) -> None:
         if self.state.status != BattleStatus.WAITING:
@@ -520,72 +505,6 @@ class BattleEngine:
             raise CommandRejected(
                 f"Aktif modül sınırına ulaşıldı: {active_count}/{limit}."
             )
-
-    def _connected_direction_for_placement(
-        self,
-        player_id: str,
-        module: BattleModule,
-        position: Position,
-        *,
-        exclude_module_id: str | None = None,
-    ) -> Direction | None:
-        """Yerleştirilen modülü çalışan enerji hattına otomatik yöneltir.
-
-        Bir modülün yalnızca ``ACTIVE`` durumuna geçirilmesi oynanışta yeterli
-        değildir; portu Jeneratörden erişilebilen devreye bağlanmadığında enerji
-        tüketen modül çalışmaz. Yerleştirme/değiştirme sırasında dört yönü
-        deterministik olarak deneyip gerçekten enerjili hatta bağlanan ilk yönü
-        seçiyoruz. Böylece istemci bir modülü devreye bırakıp sessizce çalışmayan
-        bir kart elde etmiyor.
-        """
-        player = self._require_player(player_id)
-        excluded = player.modules.get(exclude_module_id)
-        original_position = module.position
-        original_direction = module.direction
-        original_status = module.status
-        excluded_position = (
-            excluded.position
-            if excluded is not None and excluded is not module
-            else None
-        )
-        directions = tuple(dict.fromkeys((
-            original_direction,
-            Direction.UP,
-            Direction.RIGHT,
-            Direction.DOWN,
-            Direction.LEFT,
-        )))
-        best: tuple[tuple[int, int, int], Direction] | None = None
-        try:
-            if excluded is not None and excluded is not module:
-                excluded.position = None
-            module.status = ModuleStatus.ACTIVE
-            module.position = position
-            for direction in directions:
-                module.direction = direction
-                topology = build_energy_topology(
-                    player,
-                    self.board.core_position,
-                )
-                reachable = set(topology.reachable_from_generator)
-                if module.instance_id not in reachable:
-                    continue
-                score = (
-                    len(reachable),
-                    len(topology.connection_pairs),
-                    int(direction == original_direction),
-                )
-                if best is None or score > best[0]:
-                    best = (score, direction)
-        finally:
-            module.position = original_position
-            module.direction = original_direction
-            module.status = original_status
-            if excluded is not None and excluded is not module:
-                excluded.position = excluded_position
-
-        return None if best is None else best[1]
-
 
     def set_module_heat(
         self,
@@ -1563,7 +1482,6 @@ class BattleEngine:
                 "move_module": self._cmd_move_module,
                 "swap_modules": self._cmd_swap_modules,
                 "replace_module": self._cmd_replace_module,
-                "rotate_module": self._cmd_rotate_module,
                 "apply_booster": self._cmd_apply_booster,
                 "select_booster": self._cmd_select_booster,
                 "use_booster": self._cmd_use_booster,
@@ -1736,22 +1654,18 @@ class BattleEngine:
         self,
         player_id: str,
         module: BattleModule,
-    ) -> list[tuple[Position, Direction]]:
-        candidates: list[tuple[Position, Direction]] = []
+    ) -> list[Position]:
+        candidates: list[Position] = []
         for position in self.board.placeable_positions:
             try:
                 self._ensure_module_allowed_in_cell(module, position)
                 self._ensure_position_available(player_id, position)
             except CommandRejected:
                 continue
-            candidates.append((position, Direction.UP))
+            candidates.append(position)
         return sorted(
             candidates,
-            key=lambda item: (
-                item[0].y,
-                item[0].x,
-                item[1].value,
-            ),
+            key=lambda item: (item.y, item.x),
         )
 
     def _cmd_deploy_module(self, player_id: str, payload: dict) -> None:
@@ -1770,7 +1684,7 @@ class BattleEngine:
         if not candidates:
             player.modules.pop(instance_id, None)
             raise CommandRejected(
-                "Bu kart için enerjiye bağlı, uygun ve boş bir hücre bulunamadı."
+                "Bu kart için uygun ve boş bir hücre bulunamadı."
             )
 
         seed = (
@@ -1778,7 +1692,7 @@ class BattleEngine:
             f"{instance_id}:{self.state.tick}"
         )
         digest = hashlib.sha256(seed.encode("utf-8")).digest()
-        position, direction = candidates[
+        position = candidates[
             int.from_bytes(digest[:8], "big") % len(candidates)
         ]
         try:
@@ -1795,7 +1709,6 @@ class BattleEngine:
             player.discounted_deployments -= 1
         module.status = ModuleStatus.ACTIVE
         module.position = position
-        module.direction = direction
         module.is_powered = True
         self._emit(
             "module_placed",
@@ -1827,9 +1740,7 @@ class BattleEngine:
 
         module.status = ModuleStatus.ACTIVE
         module.position = position
-        # Beta 43 uses the board's embedded cable network.  Port orientation
-        # remains visual/module metadata and must not block a valid drop.
-        module.direction = module.direction or Direction.UP
+        # Every occupied cell is supplied by the board's embedded cable layer.
         module.is_powered = False
 
         self._emit(
@@ -1869,15 +1780,6 @@ class BattleEngine:
         self._ensure_board_position_placeable(new_position)
         self._ensure_module_allowed_in_cell(module, new_position)
 
-        if (
-            module.definition.id == "generator"
-            and self.board.generator_gate_positions
-            and new_position not in self.board.generator_gate_positions
-        ):
-            raise CommandRejected(
-                "Jeneratör yalnızca dört Çekirdek kapısı arasında taşınabilir."
-            )
-
         self._ensure_position_available(
             player_id,
             new_position,
@@ -1891,74 +1793,12 @@ class BattleEngine:
         )
 
         module.position = new_position
-        # Movement is a board-cell operation; orientation is retained unless
-        # the player explicitly rotates the module afterwards.
-        module.direction = module.direction or Direction.UP
         module.is_powered = False
 
         self._emit(
             "module_moved",
             self._module_event_data(player_id, module),
         )
-
-    def _best_swap_directions(
-        self,
-        player_id: str,
-        first: BattleModule,
-        second: BattleModule,
-    ) -> tuple[Direction, Direction] | None:
-        """İki modülün takas sonrası en güçlü çalışan port düzenini seçer.
-
-        Dört yönün 16 kombinasyonu deterministik olarak sınanır. Her iki modülün
-        de Jeneratörden erişilebilir olması zorunludur; ardından erişilebilir
-        modül sayısı ve çalışan port çifti sayısı en yüksek düzen tercih edilir.
-        Eşitlikte mevcut yönleri koruyan kombinasyon kazanır.
-        """
-        player = self._require_player(player_id)
-        if first.position is None or second.position is None:
-            return None
-
-        first_position = first.position
-        second_position = second.position
-        first_direction = first.direction
-        second_direction = second.direction
-        directions = (Direction.UP, Direction.RIGHT, Direction.DOWN, Direction.LEFT)
-        best: tuple[tuple[int, int, int], Direction, Direction] | None = None
-
-        try:
-            first.position = second_position
-            second.position = first_position
-            for first_candidate in directions:
-                first.direction = first_candidate
-                for second_candidate in directions:
-                    second.direction = second_candidate
-                    topology = build_energy_topology(
-                        player,
-                        self.board.core_position,
-                    )
-                    reachable = set(topology.reachable_from_generator)
-                    if not {
-                        first.instance_id,
-                        second.instance_id,
-                    }.issubset(reachable):
-                        continue
-                    score = (
-                        len(reachable),
-                        len(topology.connection_pairs),
-                        int(first_candidate == first_direction)
-                        + int(second_candidate == second_direction),
-                    )
-                    if best is None or score > best[0]:
-                        best = (score, first_candidate, second_candidate)
-        finally:
-            first.position = first_position
-            second.position = second_position
-            first.direction = first_direction
-            second.direction = second_direction
-
-        if best is None:
-            return None
-        return best[1], best[2]
 
     def _cmd_swap_modules(self, player_id: str, payload: dict) -> None:
         """İki yaşayan aktif modülün konumunu tek, atomik hamlede değiştirir."""
@@ -1987,14 +1827,6 @@ class BattleEngine:
         self._ensure_module_allowed_in_cell(first, second.position)
         self._ensure_module_allowed_in_cell(second, first.position)
 
-        directions = self._best_swap_directions(
-            player_id,
-            first,
-            second,
-        )
-        if directions is None:
-            raise CommandRejected("Bu takas için iki geçerli modül konumu gerekli.")
-
         self._spend_circuit_credits(
             player_id,
             self.circuit_credit_config.move_cost,
@@ -2007,7 +1839,6 @@ class BattleEngine:
         second_position = second.position
         first.position = second_position
         second.position = first_position
-        first.direction, second.direction = directions
         first.is_powered = False
         second.is_powered = False
 
@@ -2054,7 +1885,6 @@ class BattleEngine:
 
         incoming.status = ModuleStatus.ACTIVE
         incoming.position = position
-        incoming.direction = outgoing.direction or incoming.direction or Direction.UP
         incoming.is_powered = False
 
         self._emit(
@@ -2068,30 +1898,6 @@ class BattleEngine:
                 "x": position.x,
                 "y": position.y,
             },
-        )
-
-    def _cmd_rotate_module(self, player_id: str, payload: dict) -> None:
-        self._ensure_module_interaction_unlocked()
-        module = self._require_active_module(player_id, payload["module_id"])
-
-        if not module.definition.rotatable:
-            raise CommandRejected(f"{module.definition.name_tr} döndürülemez.")
-
-        self._spend_circuit_credits(
-            player_id,
-            self.circuit_credit_config.rotate_cost,
-            reason=f"modul_dondur:{module.definition.id}",
-        )
-
-        clockwise = payload.get("clockwise", True)
-        if clockwise:
-            module.direction = module.direction.rotate_clockwise()
-        else:
-            module.direction = module.direction.rotate_counterclockwise()
-
-        self._emit(
-            "module_rotated",
-            self._module_event_data(player_id, module),
         )
 
     def _cmd_select_booster(self, player_id: str, payload: dict) -> None:
@@ -2474,7 +2280,6 @@ class BattleEngine:
             "name_tr": module.definition.name_tr,
             "status": module.status.value,
             "hp": module.hp,
-            "direction": module.direction.value,
             "heat": module.heat,
             "heat_state": (
                 "critical" if module.heat >= 100
@@ -2485,14 +2290,6 @@ class BattleEngine:
             "is_powered": module.is_powered,
             "energy_received_last_tick": module.energy_received_last_tick,
             "energy_required_last_tick": module.energy_required_last_tick,
-            "port_count": effective_port_count(module),
-            "ports": [
-                direction.value
-                for direction in module_port_directions(
-                    module,
-                    self.board.core_position,
-                )
-            ],
             "debuffs": sorted(module.debuffs),
             "persistent_effects": sorted(module.persistent_effects),
             "cooldowns": sorted(module.cooldowns_ready_at_ms),

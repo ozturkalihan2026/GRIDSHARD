@@ -15,21 +15,6 @@ class ModuleStatus(str, Enum):
     DESTROYED = "destroyed"
 
 
-class Direction(str, Enum):
-    UP = "up"
-    RIGHT = "right"
-    DOWN = "down"
-    LEFT = "left"
-
-    def rotate_clockwise(self) -> "Direction":
-        order = (Direction.UP, Direction.RIGHT, Direction.DOWN, Direction.LEFT)
-        return order[(order.index(self) + 1) % len(order)]
-
-    def rotate_counterclockwise(self) -> "Direction":
-        order = (Direction.UP, Direction.LEFT, Direction.DOWN, Direction.RIGHT)
-        return order[(order.index(self) + 1) % len(order)]
-
-
 @dataclass(slots=True, frozen=True)
 class Position:
     x: int
@@ -88,15 +73,12 @@ class ModuleDefinition:
     energy_consumption: float = 0.0
     base_damage: float = 0.0
     cooldown_ms: int = 0
-    port_count: int = 1
-
     strong_against: tuple[str, ...] = ()
     weak_against: tuple[str, ...] = ()
     synergy_with: tuple[str, ...] = ()
 
     movable: bool = True
     removable: bool = True
-    rotatable: bool = True
 
 
 @dataclass(slots=True)
@@ -106,8 +88,6 @@ class BattleModule:
     hp: int
     status: ModuleStatus = ModuleStatus.RESERVE
     position: Position | None = None
-    direction: Direction = Direction.UP
-
     # alpha.5 — maç içi durum kalıcılığı
     heat: float = 0.0
     stored_energy: float = 0.0

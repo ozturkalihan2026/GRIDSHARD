@@ -67,10 +67,6 @@
   ]);
 
   const GRIDSHARD_SFX_CUES = Object.freeze({
-    port_connect:{
-      asset:"./assets/audio/port_connect.wav",
-      identity:"mekanik klik → elektrik kilidi → enerji pulse",
-    },
     energy_transfer:{
       asset:"./assets/audio/energy_transfer.wav",
       identity:"kısa dijital akım",
@@ -290,16 +286,6 @@
       this._unlockTarget = null;
       this._unlockHandler = null;
       this._gestureObserved = false;
-      this._preloadAudioAssets([
-        ...Object.values(GRIDSHARD_SFX_CUES).map((cue) => cue.asset),
-        GRIDSHARD_MUSIC_ASSETS.victory,
-        GRIDSHARD_MUSIC_ASSETS.defeat,
-      ]);
-      this._preloadAudioBuffers([
-        ...Object.values(GRIDSHARD_SFX_CUES).map((cue) => cue.asset),
-        GRIDSHARD_MUSIC_ASSETS.victory,
-        GRIDSHARD_MUSIC_ASSETS.defeat,
-      ]);
     }
 
     _ensureAudioContext() {
@@ -530,11 +516,11 @@
       }
       if (template && typeof template.cloneNode === "function") {
         const clone=template.cloneNode(true);
-        clone.preload="auto";
+        clone.preload="none";
         return clone;
       }
       const audio=new global.Audio(asset);
-      audio.preload="auto";
+      audio.preload="none";
       return audio;
     }
 
@@ -632,11 +618,6 @@
       this._gestureObserved=true;
       const context=this._ensureAudioContext();
       const resumePromise=this._resumeAudioContext();
-      this._preloadAudioBuffers([
-        ...Object.values(GRIDSHARD_SFX_CUES).map((cue)=>cue.asset),
-        GRIDSHARD_MUSIC_ASSETS.victory,
-        GRIDSHARD_MUSIC_ASSETS.defeat,
-      ]);
       this._syncWebAudioVolumes();
       return {
         ok:Boolean(context),

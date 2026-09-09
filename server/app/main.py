@@ -32,7 +32,7 @@ from .game.pvp_session import (
     PvPSessionError,
     PvPSessionService,
 )
-from .game.models import BattleCommand, BattleStatus, Direction
+from .game.models import BattleCommand, BattleStatus
 from .game.catalog import (
     BASIC_MODULE_DEFINITIONS,
     PLAYER_SELECTABLE_MODULE_IDS,
@@ -711,7 +711,6 @@ class InitialModuleRequest(BaseModel):
     definition_id: str
     x: int
     y: int
-    direction: Direction = Direction.UP
 
 class SetupSessionRequest(BaseModel):
     player_id: str
@@ -4693,14 +4692,14 @@ def _local_player_initial_modules(
     battle_pool_ids: list[str],
     selected_definition_ids: list[str] | tuple[str, ...] | None = None,
 ) -> tuple[InitialModulePlacement, ...]:
-    return (InitialModulePlacement(instance_id="core-1", definition_id="core", x=2, y=1, direction=Direction.UP),)
+    return (InitialModulePlacement(instance_id="core-1", definition_id="core", x=2, y=1),)
 
 
 def _local_ai_initial_modules(
     ai_player_id: str,
     archetype_id: str = "balanced",
 ) -> tuple[InitialModulePlacement, ...]:
-    return (InitialModulePlacement(instance_id=f"{ai_player_id}-core", definition_id="core", x=2, y=1, direction=Direction.UP),)
+    return (InitialModulePlacement(instance_id=f"{ai_player_id}-core", definition_id="core", x=2, y=1),)
 
 
 def _local_ai_snapshot_envelope(
@@ -4864,7 +4863,6 @@ async def create_local_ai_session(
                             definition_id=item.definition_id,
                             x=item.x,
                             y=item.y,
-                            direction=item.direction,
                         )
                         for item in request.initial_modules
                     )
@@ -5039,7 +5037,6 @@ def setup_pvp_session(
                         definition_id=item.definition_id,
                         x=item.x,
                         y=item.y,
-                        direction=item.direction,
                     )
                     for item in request.initial_modules
                 ),

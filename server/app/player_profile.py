@@ -57,7 +57,7 @@ DAILY_MISSIONS = (
         "name_tr": "Devreyi Ateşle",
         "description_tr": "2 savaş tamamla.",
         "target": 2,
-        "season_xp_reward": 80,
+        "season_xp_reward": 20,
         "flux_shard_reward": 10,
     },
     {
@@ -65,7 +65,7 @@ DAILY_MISSIONS = (
         "name_tr": "Çekirdeğe Baskı",
         "description_tr": "Rakip devrelere toplam 1000 hasar ver.",
         "target": 1000,
-        "season_xp_reward": 100,
+        "season_xp_reward": 25,
         "flux_shard_reward": 15,
     },
     {
@@ -73,7 +73,7 @@ DAILY_MISSIONS = (
         "name_tr": "Canlı Strateji",
         "description_tr": "Savaşta 3 modül yerleştir.",
         "target": 3,
-        "season_xp_reward": 90,
+        "season_xp_reward": 25,
         "flux_shard_reward": 15,
     },
 )
@@ -113,10 +113,10 @@ def operator_title_progression(rating: int, wins: int) -> dict:
 
 
 def _season_reward_for_tier(tier: int) -> dict:
-    # The road is intentionally transparent: tier 2 opens at 30 SXP, tier 3 at
-    # 50 SXP, then each next tier adds another 20 SXP. Every tenth tier is a
-    # visibly larger, cosmetic-bearing reward.
-    required_xp = 10 + ((tier - 1) * 20)
+    # A full calendar-month path: three battles plus completed daily orders
+    # unlock the final tier close to month end instead of exhausting the path
+    # in the first few play sessions.
+    required_xp = (tier * 150) + ((tier * (tier - 1) // 2) * 8)
     reward = {
         "tier": tier,
         "required_xp": required_xp,
@@ -136,7 +136,7 @@ def _season_reward_for_tier(tier: int) -> dict:
         reward.update(
             circuit_credits=250 + (major_index * 100),
             flux_shards=25 + (major_index * 10),
-            module_shards=20 + (major_index * 5),
+            module_shards=10 + (major_index * 3),
             core_shards=major_index * 2,
             chest_tier="diamond" if tier == 40 else "gold",
         )
@@ -152,16 +152,16 @@ def _season_reward_for_tier(tier: int) -> dict:
         reward.update(
             circuit_credits=100 + (tier * 4),
             flux_shards=10 + tier,
-            module_shards=10 + (tier // 2),
+            module_shards=5 + (tier // 5),
             core_shards=1,
             chest_tier="silver",
         )
     elif tier % 3 == 0:
-        reward.update(module_shards=8 + tier, flux_shards=5)
+        reward.update(module_shards=3 + (tier // 6), flux_shards=5)
     elif tier % 2 == 0:
         reward.update(circuit_credits=50 + (tier * 5), flux_shards=4)
     else:
-        reward.update(circuit_credits=35 + (tier * 5), module_shards=5 + tier)
+        reward.update(circuit_credits=35 + (tier * 5), module_shards=2 + (tier // 8))
 
     reward["reward_label_tr"] = (
         f"Büyük {reward['chest_tier'].title()} Sandık + Kozmetik"

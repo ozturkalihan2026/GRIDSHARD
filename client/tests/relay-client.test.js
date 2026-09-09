@@ -199,8 +199,8 @@ function createClient() {
 
 {
   const fs = require("fs");
-  const appSource = fs.readFileSync(path.join(ROOT,"src/app.js"),"utf8");
-  for (const name of ["Dağıtıcı", "Darbe Topu", "Zırh", "EMP"]) {
+  const appSource = fs.readFileSync(path.join(ROOT,"src/canon-data.js"),"utf8");
+  for (const name of ["Güçlendirici", "Darbe Topu", "Zırh", "EMP"]) {
     assert.ok(appSource.includes(`"${name}"`));
   }
 }
@@ -227,7 +227,7 @@ function createClient() {
 
 {
   const fs = require("fs");
-  const src = fs.readFileSync(path.join(ROOT,"src/app.js"),"utf8");
+  const src = fs.readFileSync(path.join(ROOT,"src/canon-data.js"),"utf8");
   for (const name of ["Kapasitör","Ray Topu","Yansıtıcı","Bariyer","Hedefleme Bilgisayarı","Sinyal Bozucu"]) {
     assert.ok(src.includes(`"${name}"`));
   }
@@ -314,10 +314,11 @@ function createClient() {
   const fs = require("fs");
   const src = fs.readFileSync(path.join(ROOT,"src/app.js"),"utf8");
 
-  assert.ok(src.includes("PORT_COUNT_BY_NAME"));
-  assert.ok(src.includes("modulePorts"));
-  assert.ok(src.includes("areConnected"));
+  assert.ok(!src.includes("PORT_COUNT_BY_NAME"));
+  assert.ok(!src.includes("modulePorts"));
+  assert.ok(!src.includes("areConnected"));
   assert.ok(src.includes("connectedEnergyModuleIds"));
+  assert.ok(src.includes("return new Set(active.map((module) => module.instanceId))"));
   assert.ok(src.includes("energy-disconnected"));
 }
 
@@ -2267,16 +2268,9 @@ function createClient() {
       'id="battle-result-summary"'
     )
   );
-  assert.ok(
-    html.includes(
-      'id="rematch-button"'
-    )
-  );
-  assert.ok(
-    html.includes(
-      'id="rematch-button"'
-    )
-  );
+  assert.ok(html.includes('id="post-match-continue"'));
+  assert.ok(!html.includes('id="rematch-button"'));
+  assert.ok(!html.includes('id="return-preparation-button"'));
   assert.ok(
     !html.includes(">Eğitim<")
   );

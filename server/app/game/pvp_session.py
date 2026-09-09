@@ -11,7 +11,6 @@ from .pvp_setup import (
     PvPSetupValidationError,
     validate_setup_payload,
 )
-from .topology import effective_port_count, module_port_directions
 
 
 MAX_PVP_PLAYERS = 2
@@ -285,7 +284,6 @@ class PvPSessionService:
                 placement.instance_id,
                 placement.x,
                 placement.y,
-                placement.direction,
             )
 
         slot.setup_submitted = True
@@ -559,7 +557,7 @@ class PvPSessionService:
                 elif "line_disrupted" in module.debuffs:
                     power_reason = "line_disrupted"
                 elif module.instance_id not in reachable_ids:
-                    power_reason = "port_disconnected"
+                    power_reason = "board_disconnected"
                 elif module.is_powered:
                     power_reason = "powered"
                 else:
@@ -583,15 +581,6 @@ class PvPSessionService:
                         if module.position is not None
                         else None
                     ),
-                    "direction": module.direction.value,
-                    "port_count": effective_port_count(module),
-                    "ports": [
-                        direction.value
-                        for direction in module_port_directions(
-                            module,
-                            session.engine.board.core_position,
-                        )
-                    ],
                     "current_cost": module.definition.current_cost,
                     "level": 1 + state.player_upgrade_levels.get(player_id, {}).get(module.definition.id, 0),
                     "is_powered": module.is_powered,

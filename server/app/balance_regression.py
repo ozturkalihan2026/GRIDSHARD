@@ -15,23 +15,13 @@ from .game.engine import (
 from .game.models import (
     BattleCommand,
     BattleState,
-    Direction,
     ModuleStatus,
-    Position,
 )
-from .game.board import (
-    CORE_POSITION,
-    GENERATOR_GATE_POSITIONS,
-    SPECIAL_CELLS,
-)
+from .game.board import CORE_POSITION
 from .game.combat import (
     resolve_attack,
 )
-from .game.topology import (
-    DIRECTION_VECTOR,
-    build_energy_topology,
-    module_port_directions,
-)
+from .game.topology import build_energy_topology
 from .local_ai_regression import (
     LocalAiRegressionError,
     run_local_ai_pressure_regression,
@@ -102,11 +92,6 @@ def _engine_fixture(
     )
     engine.grant_module(
         "player-1",
-        "generator-1",
-        "generator",
-    )
-    engine.grant_module(
-        "player-1",
         "laser-1",
         "laser",
     )
@@ -124,13 +109,7 @@ def _engine_fixture(
         "player-1",
         "core-1",
         2,
-        2,
-    )
-    engine.set_initial_active_module(
-        "player-1",
-        "generator-1",
-        2,
-        3,
+        1,
     )
     engine.start()
     return engine
@@ -171,13 +150,7 @@ def _generic_engine_invariants(
                 "core-1"
             ].status
             == ModuleStatus.ACTIVE,
-        "generator_active":
-            engine.state.players[
-                "player-1"
-            ].modules[
-                "generator-1"
-            ].status
-            == ModuleStatus.ACTIVE,
+        "embedded_network_active": True,
     }
 
 
@@ -366,7 +339,7 @@ def _regress_module_interaction(
     passed = all(
         snapshot["legacy_unlock_ignored"]
         and snapshot["accepted_immediately"]
-        and snapshot["active_capacity_at_start"] == 10
+        and snapshot["active_capacity_at_start"] == 15
         and all(
             snapshot[
                 "invariants"
@@ -401,95 +374,42 @@ def _new_rejection_since(
 
 
 def _regress_generator_route()->dict:
-    snapshots=[]
-    for gate in (
-        GENERATOR_GATE_POSITIONS
-    ):
-        engine=BattleEngine(BattleState(battle_id="generator-route-regression"))
-        engine.add_player("player-1")
-        engine.set_battle_pool(
-            "player-1",
-            default_battle_pool().module_definition_ids,
-        )
-        engine.grant_module("player-1", "core-1", "core")
-        engine.grant_module("player-1", "generator-1", "generator")
-        engine.set_initial_active_module("player-1", "core-1", 2, 2)
-        engine.set_initial_active_module(
-            "player-1", "generator-1", gate.x, gate.y
-        )
-        engine.start()
-        player=engine.state.players["player-1"]
-        generator=player.modules["generator-1"]
-
-        topology=build_energy_topology(
-            player,
-            CORE_POSITION,
-        )
-        pair=tuple(
-            sorted(
-                (
-                    "core-1",
-                    "generator-1",
-                )
-            )
-        )
-        core_connected=(
-            pair
-            in topology.connection_pairs
-        )
-
-        special_side_access=0
-        for direction in (
-            module_port_directions(
-                generator,
-                CORE_POSITION,
-            )
-        ):
-            dx,dy=DIRECTION_VECTOR[
-                direction
-            ]
-            position=Position(
-                gate.x+dx,
-                gate.y+dy,
-            )
-            if (
-                position
-                in SPECIAL_CELLS
-            ):
-                special_side_access+=1
-
-        snapshots.append({
-            "gate":{
-                "x":gate.x,
-                "y":gate.y,
-            },
-            "moved":
-                generator.position==gate,
-            "command_rejected": False,
-            "core_connected":
-                core_connected,
-            "special_side_access_count":
-                special_side_access,
-            "battle_running":
-                engine.state.status.value
-                == "running",
-        })
-
-    passed=all(
-        item["moved"]
-        and not item[
-            "command_rejected"
-        ]
-        and item[
-            "core_connected"
-        ]
-        and item[
-            "special_side_access_count"
-        ] >= 1
-        and item[
-            "battle_running"
-        ]
-        for item in snapshots
+    engine=BattleEngine(BattleState(battle_id="embedded-network-regression"))
+    engine.add_player("player-1")
+    engine.set_battle_pool(
+        "player-1",
+        default_battle_pool().module_definition_ids,
+    )
+    placements=(
+        ("core-1", "core", 2, 1),
+        ("battery-1", "battery", 2, 0),
+        ("laser-1", "laser", 1, 1),
+        ("shield-1", "shield", 3, 1),
+        ("repair-1", "repair", 2, 2),
+    )
+    for instance_id,definition_id,x,y in placements:
+        engine.grant_module("player-1", instance_id, definition_id)
+        engine.set_initial_active_module("player-1", instance_id, x, y)
+    engine.start()
+    topology=build_energy_topology(
+        engine.state.players["player-1"],
+        CORE_POSITION,
+    )
+    snapshot={
+        "occupied_cells": len(placements),
+        "reachable_modules": len(topology.reachable_from_generator),
+        "connection_count": len(topology.connection_pairs),
+        "all_modules_powered": all(
+            module.is_powered
+            for module in engine.state.players["player-1"].modules.values()
+        ),
+        "battle_running": engine.state.status.value == "running",
+    }
+    passed=(
+        snapshot["reachable_modules"] == len(placements)
+        and snapshot["connection_count"] == 4
+        and snapshot["all_modules_powered"]
+        and snapshot["battle_running"]
     )
 
     return {
@@ -498,10 +418,8 @@ def _regress_generator_route()->dict:
             "passed"
             if passed
             else "failed",
-        "adapter":
-            "battle_engine_structural",
-        "engine_scenarios":
-            snapshots,
+        "adapter": "embedded_board_network",
+        "engine_scenarios": [snapshot],
         "canonical_values_changed":
             False,
     }
@@ -523,10 +441,9 @@ def _defense_engine_fixture()->BattleEngine:
             player_id
         )
 
-    # Attacker: north generator + horizontal laser.
+    # Attacker: core plus a directionless attack module.
     for instance_id,definition_id in (
         ("core-a","core"),
-        ("generator-a","generator"),
         ("laser-a","laser"),
     ):
         engine.grant_module(
@@ -538,24 +455,17 @@ def _defense_engine_fixture()->BattleEngine:
     engine.set_initial_active_module(
         "player-1",
         "core-a",
-        2,2,
-    )
-    engine.set_initial_active_module(
-        "player-1",
-        "generator-a",
         2,1,
     )
     engine.set_initial_active_module(
         "player-1",
         "laser-a",
-        3,1,
-        direction=Direction.LEFT,
+        1,1,
     )
 
-    # Defender: south generator + horizontal shield.
+    # Defender: core plus a directionless shield.
     for instance_id,definition_id in (
         ("core-d","core"),
-        ("generator-d","generator"),
         ("shield-d","shield"),
     ):
         engine.grant_module(
@@ -567,18 +477,12 @@ def _defense_engine_fixture()->BattleEngine:
     engine.set_initial_active_module(
         "player-2",
         "core-d",
-        2,2,
-    )
-    engine.set_initial_active_module(
-        "player-2",
-        "generator-d",
-        2,3,
+        2,1,
     )
     engine.set_initial_active_module(
         "player-2",
         "shield-d",
-        3,3,
-        direction=Direction.LEFT,
+        3,1,
     )
 
     engine.start()

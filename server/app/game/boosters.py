@@ -1,5 +1,4 @@
 from .models import BattleModule, BoosterDefinition, ModuleStatus
-from .topology import effective_port_count
 
 BOOSTER_DEFINITIONS: dict[str, BoosterDefinition] = {
     "overcharge_chip": BoosterDefinition(
@@ -16,13 +15,6 @@ BOOSTER_DEFINITIONS: dict[str, BoosterDefinition] = {
         description_tr="Seçilen aktif modülü anlık olarak onarır.",
         duration_ms=0,
         effect_data={"instant_repair_ratio": 0.25},
-    ),
-    "dual_port_adapter": BoosterDefinition(
-        id="dual_port_adapter",
-        name_tr="Çift Port Adaptörü",
-        description_tr="Seçilen modüle geçici ek port sağlar.",
-        duration_ms=15000,
-        effect_data={"extra_port_count": 1},
     ),
     "cooling_burst": BoosterDefinition(
         id="cooling_burst",
@@ -65,8 +57,6 @@ def booster_target_rejection_reason(
         return "Soğutma Darbesi yalnızca ısınmış bir modüle uygulanabilir."
     if booster.id == "signal_cleanser" and len(module.debuffs) == 0:
         return "Sinyal Temizleyici yalnızca sabotaj etkisi altındaki bir modüle uygulanabilir."
-    if booster.id == "dual_port_adapter" and effective_port_count(module) >= 4:
-        return "Çift Port Adaptörü dört portlu bir modüle uygulanamaz."
     if (
         booster.id == "overcharge_chip"
         and (

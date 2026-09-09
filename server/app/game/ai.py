@@ -473,15 +473,23 @@ def choose_booster(
                     ),
                 )[0]
                 return booster_id, target.instance_id
-        if booster_id == "dual_port_adapter":
+        if booster_id == "cooling_burst":
             candidates = eligible_targets(booster_id, active)
             if candidates:
                 target = sorted(
                     candidates,
                     key=lambda module: (
-                        module.definition.port_count,
+                        -module.heat,
                         module.instance_id,
                     ),
+                )[0]
+                return booster_id, target.instance_id
+        if booster_id == "signal_cleanser":
+            candidates = eligible_targets(booster_id, active)
+            if candidates:
+                target = sorted(
+                    candidates,
+                    key=lambda module: (-len(module.debuffs), module.instance_id),
                 )[0]
                 return booster_id, target.instance_id
 
@@ -537,20 +545,6 @@ class AIActionPlan:
     reason_tr: str
 
 
-def _clockwise_rotation_count(
-    current_direction,
-    target_direction,
-) -> int:
-    count = 0
-    direction = current_direction
-
-    while direction != target_direction and count < 4:
-        direction = direction.rotate_clockwise()
-        count += 1
-
-    return count
-
-
 def _reserve_module_for_definition(
     ai_player,
     definition_id,
@@ -600,126 +594,6 @@ def prepare_ai_reserve_modules(
             f"{player_id}-reserve-{definition_id}",
             definition_id,
         )
-
-
-def _find_connected_placement(
-    engine,
-    player,
-    module,
-):
-    from .models import Direction
-    from .topology import modules_are_port_connected
-
-    active = [
-        current
-        for current in player.modules.values()
-        if current.status == ModuleStatus.ACTIVE
-        and current.position is not None
-    ]
-
-    occupied = {
-        current.position
-        for current in active
-        if current.position is not None
-    }
-
-    debris_positions = {
-        (item["x"], item["y"])
-        for item in engine.cell_debris_view(player.player_id)
-    }
-    positions = sorted(
-        (
-            position
-            for position in engine.board.placeable_positions
-            if position not in occupied
-            and (position.x, position.y) not in debris_positions
-            and _cell_accepts_module(engine, module, position)
-        ),
-        key=lambda position: (
-            position.y,
-            position.x,
-        ),
-    )
-
-    directions = (
-        Direction.UP,
-        Direction.RIGHT,
-        Direction.DOWN,
-        Direction.LEFT,
-    )
-
-    original_position = module.position
-    original_direction = module.direction
-
-    try:
-        for position in positions:
-            for direction in directions:
-                module.position = position
-                module.direction = direction
-
-                if any(
-                    modules_are_port_connected(
-                        module,
-                        current,
-                        engine.board.core_position,
-                    )
-                    for current in active
-                ):
-                    return position, direction
-    finally:
-        module.position = original_position
-        module.direction = original_direction
-
-    return None
-
-
-def _find_direction_at_position(
-    engine,
-    player,
-    module,
-    position,
-    *,
-    exclude_instance_id: str | None = None,
-):
-    from .models import Direction
-    from .topology import modules_are_port_connected
-
-    if not _cell_accepts_module(engine, module, position):
-        return None
-
-    active = [
-        current
-        for current in player.modules.values()
-        if current.status == ModuleStatus.ACTIVE
-        and current.position is not None
-        and current.instance_id != exclude_instance_id
-    ]
-
-    original_position = module.position
-    original_direction = module.direction
-    try:
-        for direction in (
-            Direction.UP,
-            Direction.RIGHT,
-            Direction.DOWN,
-            Direction.LEFT,
-        ):
-            module.position = position
-            module.direction = direction
-            if any(
-                modules_are_port_connected(
-                    module,
-                    current,
-                    engine.board.core_position,
-                )
-                for current in active
-            ):
-                return direction
-    finally:
-        module.position = original_position
-        module.direction = original_direction
-
-    return None
 
 
 def _cell_accepts_module(engine, module, position) -> bool:

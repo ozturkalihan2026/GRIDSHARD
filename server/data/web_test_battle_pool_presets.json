@@ -1,29 +1,30 @@
 {
   "wt-dbd4a70f-4d90-4b60-958a-18ca1e4eff82": {
+    "Başlangıç Devresi": {
+      "favorite": false,
+      "last_used_at_ms": null,
+      "module_definition_ids": [
+        "laser",
+        "shield",
+        "repair",
+        "pulse_cannon",
+        "battery",
+        "amplifier"
+      ],
+      "use_count": 0
+    },
     "Dengeli": {
       "favorite": true,
-      "last_used_at_ms": 1788248196087,
+      "last_used_at_ms": 1788947950175,
       "module_definition_ids": [
-        "generator",
-        "battery",
-        "splitter",
-        "capacitor",
-        "laser",
-        "pulse_cannon",
-        "drone_bay",
-        "arc_cannon",
         "shield",
-        "armor",
-        "reflector",
-        "barrier",
         "repair",
-        "amplifier",
-        "targeting_computer",
-        "energy_leech",
-        "virus",
+        "battery",
+        "pulse_cannon",
+        "laser",
         "cooler"
       ],
-      "use_count": 10
+      "use_count": 17
     }
   }
 }

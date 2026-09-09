@@ -135,7 +135,7 @@ CHEST_DEFINITIONS: dict[str, dict] = {
         "claim_cooldown_hours": 3,
         "open_seconds": 1,
         "coins": (90, 140),
-        "shards": (12, 22),
+        "shards": (2, 4),
         "rarity_odds": {
             "common": 0.70,
             "rare": 0.24,
@@ -151,7 +151,7 @@ CHEST_DEFINITIONS: dict[str, dict] = {
         "claim_cooldown_hours": 8,
         "open_seconds": 1,
         "coins": (220, 340),
-        "shards": (24, 42),
+        "shards": (4, 7),
         "rarity_odds": {
             "common": 0.55,
             "rare": 0.32,
@@ -167,7 +167,7 @@ CHEST_DEFINITIONS: dict[str, dict] = {
         "claim_cooldown_hours": 16,
         "open_seconds": 1,
         "coins": (550, 850),
-        "shards": (55, 90),
+        "shards": (7, 11),
         "rarity_odds": {
             "common": 0.35,
             "rare": 0.40,
@@ -183,7 +183,7 @@ CHEST_DEFINITIONS: dict[str, dict] = {
         "claim_cooldown_hours": 24,
         "open_seconds": 1,
         "coins": (950, 1350),
-        "shards": (90, 140),
+        "shards": (10, 16),
         "rarity_odds": {
             "common": 0.18,
             "rare": 0.37,
@@ -202,7 +202,7 @@ DAILY_SHOP_OFFERS: tuple[dict, ...] = (
         "cost": 120,
         "circuit_credits": (35, 65),
         "flux_shards": (2, 5),
-        "module_shards": (8, 14),
+        "module_shards": (1, 3),
         "core_shards": (0, 1),
         "rarity_odds": {"common": 0.82, "rare": 0.17, "epic": 0.01},
     },
@@ -214,7 +214,7 @@ DAILY_SHOP_OFFERS: tuple[dict, ...] = (
         "cost": 400,
         "circuit_credits": (80, 125),
         "flux_shards": (5, 10),
-        "module_shards": (18, 30),
+        "module_shards": (3, 5),
         "core_shards": (1, 3),
         "rarity_odds": {"common": 0.48, "rare": 0.43, "epic": 0.085, "legendary": 0.005},
     },
@@ -226,7 +226,7 @@ DAILY_SHOP_OFFERS: tuple[dict, ...] = (
         "cost": 900,
         "circuit_credits": (170, 260),
         "flux_shards": (10, 20),
-        "module_shards": (36, 58),
+        "module_shards": (5, 8),
         "core_shards": (3, 6),
         "rarity_odds": {"common": 0.18, "rare": 0.47, "epic": 0.31, "legendary": 0.04},
     },
@@ -253,10 +253,13 @@ def module_upgrade_cost(module_definition_id: str, current_level: int) -> dict:
     rarity = MODULE_RARITY.get(module_definition_id, "common")
     next_level = max(0, int(current_level)) + 1
     multiplier = RARITY_COST_MULTIPLIER[rarity]
+    credit_curve = (100, 220, 380, 600, 900, 1300, 1800, 2400, 3150, 4050, 5150, 6500, 8100, 10000)
+    shard_curve = (2, 4, 8, 14, 22, 32, 44, 58, 74, 92, 112, 136, 164, 200)
+    index = min(13, next_level - 1)
     return {
         "next_level": next_level,
-        "circuit_credits": round(100 * next_level * multiplier),
-        "shards": (2, 4, 8, 12, 20, 30, 45, 65, 90, 120, 160, 210, 270, 340)[min(13, next_level - 1)],
+        "circuit_credits": round(credit_curve[index] * multiplier),
+        "shards": shard_curve[index],
     }
 
 

@@ -204,8 +204,9 @@ def test_canonical_board_allows_drop_move_swap_and_replace_commands():
     assert laser.position == Position(1, 1)
     placement_event = engine.state.events[-1]
     assert placement_event.type == "module_placed"
-    assert placement_event.data["port_count"] == 1
-    assert placement_event.data["ports"]
+    assert "port_count" not in placement_event.data
+    assert "ports" not in placement_event.data
+    assert "direction" not in placement_event.data
 
     _run_command(engine, "move_module", module_id="laser-1", x=0, y=1)
     assert laser.position == Position(0, 1)

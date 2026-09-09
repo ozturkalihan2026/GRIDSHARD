@@ -553,28 +553,47 @@ class InMemoryTelemetryService:
         )
 
     def record(self, event: TelemetryEvent) -> bool:
-        self._validate(event)
+        return bool(
+            self.record_many([event])
+        )
+
+    def record_many(
+        self,
+        events: list[TelemetryEvent],
+    ) -> int:
+        """Record a logical batch with at most one repository rewrite.
+
+        Battle completion can produce several verified events at once.  The
+        JSON repository is intentionally atomic, so persisting every item
+        separately needlessly copied and rewrote the complete beta history
+        several times on the match-result critical path.
+        """
+        for event in events:
+            self._validate(event)
 
         with self._lock:
-            if event.event_id in self._event_ids:
-                return False
+            stored_events: list[TelemetryEvent] = []
+            for event in events:
+                if event.event_id in self._event_ids:
+                    continue
 
-            stored = TelemetryEvent(
-                event_id=event.event_id,
-                event_type=event.event_type,
-                timestamp_ms=int(
-                    event.timestamp_ms
-                ),
-                player_id=event.player_id,
-                session_id=event.session_id,
-                metadata=dict(
-                    event.metadata
-                ),
-            )
-            self._events.append(stored)
-            self._event_ids.add(
-                stored.event_id
-            )
+                stored = TelemetryEvent(
+                    event_id=event.event_id,
+                    event_type=event.event_type,
+                    timestamp_ms=int(
+                        event.timestamp_ms
+                    ),
+                    player_id=event.player_id,
+                    session_id=event.session_id,
+                    metadata=dict(
+                        event.metadata
+                    ),
+                )
+                self._events.append(stored)
+                self._event_ids.add(
+                    stored.event_id
+                )
+                stored_events.append(stored)
 
             if (
                 self.repository
@@ -596,14 +615,17 @@ class InMemoryTelemetryService:
                     for item in self._events
                 }
 
-            if self.repository is not None:
+            if (
+                stored_events
+                and self.repository is not None
+            ):
                 self.repository.save(
                     list(
                         self._events
                     )
                 )
 
-            return True
+            return len(stored_events)
 
     def record_now(
         self,
@@ -690,61 +712,77 @@ class InMemoryTelemetryService:
                 "Yalnızca tamamlanmış savaş telemetriye aktarılabilir."
             )
 
-        recorded = 0
         battle_id = state.battle_id
+        pending: list[TelemetryEvent] = []
+
+        def queue_event(
+            *,
+            event_id: str,
+            event_type: str,
+            player_id: str | None,
+            metadata: dict[str, Any],
+        ) -> None:
+            pending.append(
+                TelemetryEvent(
+                    event_id=event_id,
+                    event_type=event_type,
+                    timestamp_ms=round(
+                        self.now_func() * 1000
+                    ),
+                    player_id=player_id,
+                    session_id=battle_id,
+                    metadata=metadata,
+                )
+            )
 
         if any(event.type == "battle_started" for event in state.events):
             for player_id in state.players:
-                recorded += int(self.record_now(
+                queue_event(
                     event_id=f"server:{battle_id}:match_started:{player_id}",
                     event_type="match_started",
                     player_id=player_id,
-                    session_id=battle_id,
                     metadata={"source": "battle_engine"},
-                ))
+                )
 
         for index, event in enumerate(state.events):
             player_id = event.data.get("player_id")
 
             if event.type == "module_replaced":
-                recorded += int(self.record_now(
+                queue_event(
                     event_id=f"server:{battle_id}:{index}:module_changed",
                     event_type="module_changed",
                     player_id=player_id,
-                    session_id=battle_id,
                     metadata={
                         "outgoing_module_id": event.data.get("outgoing_module_id"),
                         "incoming_module_id": event.data.get("incoming_module_id"),
                         "battle_elapsed_ms": event.at_ms,
                     },
-                ))
+                )
 
             elif event.type == "circuit_credits_spent":
-                recorded += int(self.record_now(
+                queue_event(
                     event_id=f"server:{battle_id}:{index}:credit_spent",
                     event_type="circuit_credit_spent",
                     player_id=player_id,
-                    session_id=battle_id,
                     metadata={
                         "amount": int(event.data.get("amount", 0)),
                         "reason": event.data.get("reason"),
                         "balance": event.data.get("balance"),
                         "battle_elapsed_ms": event.at_ms,
                     },
-                ))
+                )
 
             elif event.type == "booster_applied":
-                recorded += int(self.record_now(
+                queue_event(
                     event_id=f"server:{battle_id}:{index}:booster_used",
                     event_type="booster_used",
                     player_id=player_id,
-                    session_id=battle_id,
                     metadata={
                         "booster_id": event.data.get("booster_id"),
                         "target_module_id": event.data.get("target_module_id"),
                         "battle_elapsed_ms": event.at_ms,
                     },
-                ))
+                )
 
         duration_ms = (
             state.finished_at_ms
@@ -753,20 +791,19 @@ class InMemoryTelemetryService:
         )
 
         for player_id in state.players:
-            recorded += int(self.record_now(
+            queue_event(
                 event_id=f"server:{battle_id}:match_completed:{player_id}",
                 event_type="match_completed",
                 player_id=player_id,
-                session_id=battle_id,
                 metadata={
                     "winner_player_id": state.winner_player_id,
                     "is_draw": state.is_draw,
                     "finish_reason": state.finish_reason,
                     "duration_ms": duration_ms,
                 },
-            ))
+            )
 
-        return recorded
+        return self.record_many(pending)
 
     def reload_from_repository(self) -> int:
         if self.repository is None:
