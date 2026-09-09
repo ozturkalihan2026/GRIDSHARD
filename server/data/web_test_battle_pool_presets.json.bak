@@ -15,7 +15,7 @@
     },
     "Dengeli": {
       "favorite": true,
-      "last_used_at_ms": 1788947943439,
+      "last_used_at_ms": 1788983658223,
       "module_definition_ids": [
         "shield",
         "repair",
@@ -24,7 +24,7 @@
         "laser",
         "cooler"
       ],
-      "use_count": 16
+      "use_count": 18
     }
   }
 }

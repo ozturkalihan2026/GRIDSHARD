@@ -48604,5 +48604,661 @@
     "player_id": "local-ai-match-7757dc2291bc464abf4d57ca316216b2-opponent",
     "session_id": "local-ai-match-7757dc2291bc464abf4d57ca316216b2",
     "timestamp_ms": 1788950835741
+  },
+  {
+    "event_id": "server:matchmaking:wt-dbd4a70f-4d90-4b60-958a-18ca1e4eff82:6178484",
+    "event_type": "matchmaking_started",
+    "metadata": {
+      "league_name_tr": "Başlangıç Devresi",
+      "level": 1,
+      "rating": 43
+    },
+    "player_id": "wt-dbd4a70f-4d90-4b60-958a-18ca1e4eff82",
+    "session_id": null,
+    "timestamp_ms": 1788983724441
+  },
+  {
+    "event_id": "server:local-ai-match-b95b620e61a24c3ebcf065a1b81e9464:matchmaking_ai_fallback:wt-dbd4a70f-4d90-4b60-958a-18ca1e4eff82",
+    "event_type": "matchmaking_matched",
+    "metadata": {
+      "ai_archetype": "defensive",
+      "fallback_after_seconds": 0,
+      "opponent_type": "ai",
+      "rating_difference": 0
+    },
+    "player_id": "wt-dbd4a70f-4d90-4b60-958a-18ca1e4eff82",
+    "session_id": "local-ai-match-b95b620e61a24c3ebcf065a1b81e9464",
+    "timestamp_ms": 1788983724652
+  },
+  {
+    "event_id": "server:local-ai-match-b95b620e61a24c3ebcf065a1b81e9464:match_started:wt-dbd4a70f-4d90-4b60-958a-18ca1e4eff82",
+    "event_type": "match_started",
+    "metadata": {
+      "source": "battle_engine"
+    },
+    "player_id": "wt-dbd4a70f-4d90-4b60-958a-18ca1e4eff82",
+    "session_id": "local-ai-match-b95b620e61a24c3ebcf065a1b81e9464",
+    "timestamp_ms": 1788983857013
+  },
+  {
+    "event_id": "server:local-ai-match-b95b620e61a24c3ebcf065a1b81e9464:match_started:local-ai-match-b95b620e61a24c3ebcf065a1b81e9464-opponent",
+    "event_type": "match_started",
+    "metadata": {
+      "source": "battle_engine"
+    },
+    "player_id": "local-ai-match-b95b620e61a24c3ebcf065a1b81e9464-opponent",
+    "session_id": "local-ai-match-b95b620e61a24c3ebcf065a1b81e9464",
+    "timestamp_ms": 1788983857013
+  },
+  {
+    "event_id": "server:local-ai-match-b95b620e61a24c3ebcf065a1b81e9464:4:credit_spent",
+    "event_type": "circuit_credit_spent",
+    "metadata": {
+      "amount": 3,
+      "balance": 3,
+      "battle_elapsed_ms": 0,
+      "reason": "modul_uret:pulse_cannon"
+    },
+    "player_id": "local-ai-match-b95b620e61a24c3ebcf065a1b81e9464-opponent",
+    "session_id": "local-ai-match-b95b620e61a24c3ebcf065a1b81e9464",
+    "timestamp_ms": 1788983857013
+  },
+  {
+    "event_id": "server:local-ai-match-b95b620e61a24c3ebcf065a1b81e9464:12:credit_spent",
+    "event_type": "circuit_credit_spent",
+    "metadata": {
+      "amount": 2,
+      "balance": 1,
+      "battle_elapsed_ms": 1300,
+      "reason": "modul_uret:armor"
+    },
+    "player_id": "local-ai-match-b95b620e61a24c3ebcf065a1b81e9464-opponent",
+    "session_id": "local-ai-match-b95b620e61a24c3ebcf065a1b81e9464",
+    "timestamp_ms": 1788983857013
+  },
+  {
+    "event_id": "server:local-ai-match-b95b620e61a24c3ebcf065a1b81e9464:15:credit_spent",
+    "event_type": "circuit_credit_spent",
+    "metadata": {
+      "amount": 2,
+      "balance": 4,
+      "battle_elapsed_ms": 1800,
+      "reason": "modul_uret:laser"
+    },
+    "player_id": "wt-dbd4a70f-4d90-4b60-958a-18ca1e4eff82",
+    "session_id": "local-ai-match-b95b620e61a24c3ebcf065a1b81e9464",
+    "timestamp_ms": 1788983857013
+  },
+  {
+    "event_id": "server:local-ai-match-b95b620e61a24c3ebcf065a1b81e9464:23:credit_spent",
+    "event_type": "circuit_credit_spent",
+    "metadata": {
+      "amount": 3,
+      "balance": 1,
+      "battle_elapsed_ms": 2400,
+      "reason": "modul_uret:shield"
+    },
+    "player_id": "wt-dbd4a70f-4d90-4b60-958a-18ca1e4eff82",
+    "session_id": "local-ai-match-b95b620e61a24c3ebcf065a1b81e9464",
+    "timestamp_ms": 1788983857013
+  },
+  {
+    "event_id": "server:local-ai-match-b95b620e61a24c3ebcf065a1b81e9464:31:credit_spent",
+    "event_type": "circuit_credit_spent",
+    "metadata": {
+      "amount": 2,
+      "balance": 0,
+      "battle_elapsed_ms": 2600,
+      "reason": "modul_uret:armor"
+    },
+    "player_id": "local-ai-match-b95b620e61a24c3ebcf065a1b81e9464-opponent",
+    "session_id": "local-ai-match-b95b620e61a24c3ebcf065a1b81e9464",
+    "timestamp_ms": 1788983857013
+  },
+  {
+    "event_id": "server:local-ai-match-b95b620e61a24c3ebcf065a1b81e9464:54:credit_spent",
+    "event_type": "circuit_credit_spent",
+    "metadata": {
+      "amount": 3,
+      "balance": 0,
+      "battle_elapsed_ms": 5400,
+      "reason": "modul_uret:pulse_cannon"
+    },
+    "player_id": "wt-dbd4a70f-4d90-4b60-958a-18ca1e4eff82",
+    "session_id": "local-ai-match-b95b620e61a24c3ebcf065a1b81e9464",
+    "timestamp_ms": 1788983857013
+  },
+  {
+    "event_id": "server:local-ai-match-b95b620e61a24c3ebcf065a1b81e9464:77:credit_spent",
+    "event_type": "circuit_credit_spent",
+    "metadata": {
+      "amount": 2,
+      "balance": 0,
+      "battle_elapsed_ms": 7800,
+      "reason": "modul_uret:armor"
+    },
+    "player_id": "local-ai-match-b95b620e61a24c3ebcf065a1b81e9464-opponent",
+    "session_id": "local-ai-match-b95b620e61a24c3ebcf065a1b81e9464",
+    "timestamp_ms": 1788983857013
+  },
+  {
+    "event_id": "server:local-ai-match-b95b620e61a24c3ebcf065a1b81e9464:105:credit_spent",
+    "event_type": "circuit_credit_spent",
+    "metadata": {
+      "amount": 2,
+      "balance": 0,
+      "battle_elapsed_ms": 10400,
+      "reason": "modul_uret:repair"
+    },
+    "player_id": "wt-dbd4a70f-4d90-4b60-958a-18ca1e4eff82",
+    "session_id": "local-ai-match-b95b620e61a24c3ebcf065a1b81e9464",
+    "timestamp_ms": 1788983857013
+  },
+  {
+    "event_id": "server:local-ai-match-b95b620e61a24c3ebcf065a1b81e9464:143:credit_spent",
+    "event_type": "circuit_credit_spent",
+    "metadata": {
+      "amount": 2,
+      "balance": 0,
+      "battle_elapsed_ms": 13000,
+      "reason": "modul_uret:armor"
+    },
+    "player_id": "local-ai-match-b95b620e61a24c3ebcf065a1b81e9464-opponent",
+    "session_id": "local-ai-match-b95b620e61a24c3ebcf065a1b81e9464",
+    "timestamp_ms": 1788983857013
+  },
+  {
+    "event_id": "server:local-ai-match-b95b620e61a24c3ebcf065a1b81e9464:168:credit_spent",
+    "event_type": "circuit_credit_spent",
+    "metadata": {
+      "amount": 2,
+      "balance": 0,
+      "battle_elapsed_ms": 15600,
+      "reason": "modul_uret:laser"
+    },
+    "player_id": "wt-dbd4a70f-4d90-4b60-958a-18ca1e4eff82",
+    "session_id": "local-ai-match-b95b620e61a24c3ebcf065a1b81e9464",
+    "timestamp_ms": 1788983857013
+  },
+  {
+    "event_id": "server:local-ai-match-b95b620e61a24c3ebcf065a1b81e9464:213:credit_spent",
+    "event_type": "circuit_credit_spent",
+    "metadata": {
+      "amount": 2,
+      "balance": 0,
+      "battle_elapsed_ms": 18200,
+      "reason": "modul_uret:repair"
+    },
+    "player_id": "local-ai-match-b95b620e61a24c3ebcf065a1b81e9464-opponent",
+    "session_id": "local-ai-match-b95b620e61a24c3ebcf065a1b81e9464",
+    "timestamp_ms": 1788983857013
+  },
+  {
+    "event_id": "server:local-ai-match-b95b620e61a24c3ebcf065a1b81e9464:259:credit_spent",
+    "event_type": "circuit_credit_spent",
+    "metadata": {
+      "amount": 2,
+      "balance": 0,
+      "battle_elapsed_ms": 20900,
+      "reason": "modul_uret:laser"
+    },
+    "player_id": "wt-dbd4a70f-4d90-4b60-958a-18ca1e4eff82",
+    "session_id": "local-ai-match-b95b620e61a24c3ebcf065a1b81e9464",
+    "timestamp_ms": 1788983857013
+  },
+  {
+    "event_id": "server:local-ai-match-b95b620e61a24c3ebcf065a1b81e9464:309:credit_spent",
+    "event_type": "circuit_credit_spent",
+    "metadata": {
+      "amount": 2,
+      "balance": 0,
+      "battle_elapsed_ms": 23400,
+      "reason": "modul_uret:armor"
+    },
+    "player_id": "local-ai-match-b95b620e61a24c3ebcf065a1b81e9464-opponent",
+    "session_id": "local-ai-match-b95b620e61a24c3ebcf065a1b81e9464",
+    "timestamp_ms": 1788983857013
+  },
+  {
+    "event_id": "server:local-ai-match-b95b620e61a24c3ebcf065a1b81e9464:415:credit_spent",
+    "event_type": "circuit_credit_spent",
+    "metadata": {
+      "amount": 3,
+      "balance": 0,
+      "battle_elapsed_ms": 28400,
+      "reason": "modul_uret:shield"
+    },
+    "player_id": "wt-dbd4a70f-4d90-4b60-958a-18ca1e4eff82",
+    "session_id": "local-ai-match-b95b620e61a24c3ebcf065a1b81e9464",
+    "timestamp_ms": 1788983857013
+  },
+  {
+    "event_id": "server:local-ai-match-b95b620e61a24c3ebcf065a1b81e9464:418:credit_spent",
+    "event_type": "circuit_credit_spent",
+    "metadata": {
+      "amount": 2,
+      "balance": 0,
+      "battle_elapsed_ms": 28600,
+      "reason": "modul_uret:armor"
+    },
+    "player_id": "local-ai-match-b95b620e61a24c3ebcf065a1b81e9464-opponent",
+    "session_id": "local-ai-match-b95b620e61a24c3ebcf065a1b81e9464",
+    "timestamp_ms": 1788983857013
+  },
+  {
+    "event_id": "server:local-ai-match-b95b620e61a24c3ebcf065a1b81e9464:499:credit_spent",
+    "event_type": "circuit_credit_spent",
+    "metadata": {
+      "amount": 2,
+      "balance": 0,
+      "battle_elapsed_ms": 32500,
+      "reason": "modul_uret:armor"
+    },
+    "player_id": "local-ai-match-b95b620e61a24c3ebcf065a1b81e9464-opponent",
+    "session_id": "local-ai-match-b95b620e61a24c3ebcf065a1b81e9464",
+    "timestamp_ms": 1788983857013
+  },
+  {
+    "event_id": "server:local-ai-match-b95b620e61a24c3ebcf065a1b81e9464:527:credit_spent",
+    "event_type": "circuit_credit_spent",
+    "metadata": {
+      "amount": 2,
+      "balance": 0,
+      "battle_elapsed_ms": 33500,
+      "reason": "modul_uret:battery"
+    },
+    "player_id": "wt-dbd4a70f-4d90-4b60-958a-18ca1e4eff82",
+    "session_id": "local-ai-match-b95b620e61a24c3ebcf065a1b81e9464",
+    "timestamp_ms": 1788983857013
+  },
+  {
+    "event_id": "server:local-ai-match-b95b620e61a24c3ebcf065a1b81e9464:629:credit_spent",
+    "event_type": "circuit_credit_spent",
+    "metadata": {
+      "amount": 2,
+      "balance": 0,
+      "battle_elapsed_ms": 37700,
+      "reason": "modul_uret:armor"
+    },
+    "player_id": "local-ai-match-b95b620e61a24c3ebcf065a1b81e9464-opponent",
+    "session_id": "local-ai-match-b95b620e61a24c3ebcf065a1b81e9464",
+    "timestamp_ms": 1788983857013
+  },
+  {
+    "event_id": "server:local-ai-match-b95b620e61a24c3ebcf065a1b81e9464:647:credit_spent",
+    "event_type": "circuit_credit_spent",
+    "metadata": {
+      "amount": 2,
+      "balance": 0,
+      "battle_elapsed_ms": 38500,
+      "reason": "modul_uret:laser"
+    },
+    "player_id": "wt-dbd4a70f-4d90-4b60-958a-18ca1e4eff82",
+    "session_id": "local-ai-match-b95b620e61a24c3ebcf065a1b81e9464",
+    "timestamp_ms": 1788983857013
+  },
+  {
+    "event_id": "server:local-ai-match-b95b620e61a24c3ebcf065a1b81e9464:762:credit_spent",
+    "event_type": "circuit_credit_spent",
+    "metadata": {
+      "amount": 2,
+      "balance": 0,
+      "battle_elapsed_ms": 42900,
+      "reason": "modul_uret:armor"
+    },
+    "player_id": "local-ai-match-b95b620e61a24c3ebcf065a1b81e9464-opponent",
+    "session_id": "local-ai-match-b95b620e61a24c3ebcf065a1b81e9464",
+    "timestamp_ms": 1788983857013
+  },
+  {
+    "event_id": "server:local-ai-match-b95b620e61a24c3ebcf065a1b81e9464:849:credit_spent",
+    "event_type": "circuit_credit_spent",
+    "metadata": {
+      "amount": 3,
+      "balance": 0,
+      "battle_elapsed_ms": 46000,
+      "reason": "modul_uret:pulse_cannon"
+    },
+    "player_id": "wt-dbd4a70f-4d90-4b60-958a-18ca1e4eff82",
+    "session_id": "local-ai-match-b95b620e61a24c3ebcf065a1b81e9464",
+    "timestamp_ms": 1788983857013
+  },
+  {
+    "event_id": "server:local-ai-match-b95b620e61a24c3ebcf065a1b81e9464:913:credit_spent",
+    "event_type": "circuit_credit_spent",
+    "metadata": {
+      "amount": 2,
+      "balance": 0,
+      "battle_elapsed_ms": 48100,
+      "reason": "modul_uret:armor"
+    },
+    "player_id": "local-ai-match-b95b620e61a24c3ebcf065a1b81e9464-opponent",
+    "session_id": "local-ai-match-b95b620e61a24c3ebcf065a1b81e9464",
+    "timestamp_ms": 1788983857013
+  },
+  {
+    "event_id": "server:local-ai-match-b95b620e61a24c3ebcf065a1b81e9464:1016:credit_spent",
+    "event_type": "circuit_credit_spent",
+    "metadata": {
+      "amount": 3,
+      "balance": 0,
+      "battle_elapsed_ms": 53300,
+      "reason": "modul_uret:shield"
+    },
+    "player_id": "wt-dbd4a70f-4d90-4b60-958a-18ca1e4eff82",
+    "session_id": "local-ai-match-b95b620e61a24c3ebcf065a1b81e9464",
+    "timestamp_ms": 1788983857013
+  },
+  {
+    "event_id": "server:local-ai-match-b95b620e61a24c3ebcf065a1b81e9464:1019:credit_spent",
+    "event_type": "circuit_credit_spent",
+    "metadata": {
+      "amount": 2,
+      "balance": 0,
+      "battle_elapsed_ms": 53300,
+      "reason": "modul_uret:armor"
+    },
+    "player_id": "local-ai-match-b95b620e61a24c3ebcf065a1b81e9464-opponent",
+    "session_id": "local-ai-match-b95b620e61a24c3ebcf065a1b81e9464",
+    "timestamp_ms": 1788983857013
+  },
+  {
+    "event_id": "server:local-ai-match-b95b620e61a24c3ebcf065a1b81e9464:1108:credit_spent",
+    "event_type": "circuit_credit_spent",
+    "metadata": {
+      "amount": 2,
+      "balance": 0,
+      "battle_elapsed_ms": 58500,
+      "reason": "modul_uret:armor"
+    },
+    "player_id": "local-ai-match-b95b620e61a24c3ebcf065a1b81e9464-opponent",
+    "session_id": "local-ai-match-b95b620e61a24c3ebcf065a1b81e9464",
+    "timestamp_ms": 1788983857013
+  },
+  {
+    "event_id": "server:local-ai-match-b95b620e61a24c3ebcf065a1b81e9464:1149:credit_spent",
+    "event_type": "circuit_credit_spent",
+    "metadata": {
+      "amount": 3,
+      "balance": 0,
+      "battle_elapsed_ms": 60400,
+      "reason": "modul_uret:shield"
+    },
+    "player_id": "wt-dbd4a70f-4d90-4b60-958a-18ca1e4eff82",
+    "session_id": "local-ai-match-b95b620e61a24c3ebcf065a1b81e9464",
+    "timestamp_ms": 1788983857013
+  },
+  {
+    "event_id": "server:local-ai-match-b95b620e61a24c3ebcf065a1b81e9464:1214:credit_spent",
+    "event_type": "circuit_credit_spent",
+    "metadata": {
+      "amount": 2,
+      "balance": 0,
+      "battle_elapsed_ms": 63700,
+      "reason": "modul_uret:armor"
+    },
+    "player_id": "local-ai-match-b95b620e61a24c3ebcf065a1b81e9464-opponent",
+    "session_id": "local-ai-match-b95b620e61a24c3ebcf065a1b81e9464",
+    "timestamp_ms": 1788983857013
+  },
+  {
+    "event_id": "server:local-ai-match-b95b620e61a24c3ebcf065a1b81e9464:1242:credit_spent",
+    "event_type": "circuit_credit_spent",
+    "metadata": {
+      "amount": 2,
+      "balance": 0,
+      "battle_elapsed_ms": 65100,
+      "reason": "modul_uret:repair"
+    },
+    "player_id": "wt-dbd4a70f-4d90-4b60-958a-18ca1e4eff82",
+    "session_id": "local-ai-match-b95b620e61a24c3ebcf065a1b81e9464",
+    "timestamp_ms": 1788983857013
+  },
+  {
+    "event_id": "server:local-ai-match-b95b620e61a24c3ebcf065a1b81e9464:1289:credit_spent",
+    "event_type": "circuit_credit_spent",
+    "metadata": {
+      "amount": 2,
+      "balance": 0,
+      "battle_elapsed_ms": 67600,
+      "reason": "modul_uret:armor"
+    },
+    "player_id": "local-ai-match-b95b620e61a24c3ebcf065a1b81e9464-opponent",
+    "session_id": "local-ai-match-b95b620e61a24c3ebcf065a1b81e9464",
+    "timestamp_ms": 1788983857013
+  },
+  {
+    "event_id": "server:local-ai-match-b95b620e61a24c3ebcf065a1b81e9464:1382:credit_spent",
+    "event_type": "circuit_credit_spent",
+    "metadata": {
+      "amount": 2,
+      "balance": 0,
+      "battle_elapsed_ms": 71800,
+      "reason": "modul_uret:laser"
+    },
+    "player_id": "wt-dbd4a70f-4d90-4b60-958a-18ca1e4eff82",
+    "session_id": "local-ai-match-b95b620e61a24c3ebcf065a1b81e9464",
+    "timestamp_ms": 1788983857013
+  },
+  {
+    "event_id": "server:local-ai-match-b95b620e61a24c3ebcf065a1b81e9464:1410:credit_spent",
+    "event_type": "circuit_credit_spent",
+    "metadata": {
+      "amount": 2,
+      "balance": 0,
+      "battle_elapsed_ms": 72800,
+      "reason": "modul_uret:armor"
+    },
+    "player_id": "local-ai-match-b95b620e61a24c3ebcf065a1b81e9464-opponent",
+    "session_id": "local-ai-match-b95b620e61a24c3ebcf065a1b81e9464",
+    "timestamp_ms": 1788983857013
+  },
+  {
+    "event_id": "server:local-ai-match-b95b620e61a24c3ebcf065a1b81e9464:1515:credit_spent",
+    "event_type": "circuit_credit_spent",
+    "metadata": {
+      "amount": 2,
+      "balance": 0,
+      "battle_elapsed_ms": 77000,
+      "reason": "modul_uret:laser"
+    },
+    "player_id": "wt-dbd4a70f-4d90-4b60-958a-18ca1e4eff82",
+    "session_id": "local-ai-match-b95b620e61a24c3ebcf065a1b81e9464",
+    "timestamp_ms": 1788983857013
+  },
+  {
+    "event_id": "server:local-ai-match-b95b620e61a24c3ebcf065a1b81e9464:1543:credit_spent",
+    "event_type": "circuit_credit_spent",
+    "metadata": {
+      "amount": 2,
+      "balance": 0,
+      "battle_elapsed_ms": 78000,
+      "reason": "modul_uret:armor"
+    },
+    "player_id": "local-ai-match-b95b620e61a24c3ebcf065a1b81e9464-opponent",
+    "session_id": "local-ai-match-b95b620e61a24c3ebcf065a1b81e9464",
+    "timestamp_ms": 1788983857013
+  },
+  {
+    "event_id": "server:local-ai-match-b95b620e61a24c3ebcf065a1b81e9464:1666:credit_spent",
+    "event_type": "circuit_credit_spent",
+    "metadata": {
+      "amount": 2,
+      "balance": 0,
+      "battle_elapsed_ms": 83200,
+      "reason": "modul_uret:armor"
+    },
+    "player_id": "local-ai-match-b95b620e61a24c3ebcf065a1b81e9464-opponent",
+    "session_id": "local-ai-match-b95b620e61a24c3ebcf065a1b81e9464",
+    "timestamp_ms": 1788983857013
+  },
+  {
+    "event_id": "server:local-ai-match-b95b620e61a24c3ebcf065a1b81e9464:1691:credit_spent",
+    "event_type": "circuit_credit_spent",
+    "metadata": {
+      "amount": 3,
+      "balance": 0,
+      "battle_elapsed_ms": 84000,
+      "reason": "modul_uret:shield"
+    },
+    "player_id": "wt-dbd4a70f-4d90-4b60-958a-18ca1e4eff82",
+    "session_id": "local-ai-match-b95b620e61a24c3ebcf065a1b81e9464",
+    "timestamp_ms": 1788983857013
+  },
+  {
+    "event_id": "server:local-ai-match-b95b620e61a24c3ebcf065a1b81e9464:1794:credit_spent",
+    "event_type": "circuit_credit_spent",
+    "metadata": {
+      "amount": 2,
+      "balance": 0,
+      "battle_elapsed_ms": 88400,
+      "reason": "modul_uret:armor"
+    },
+    "player_id": "local-ai-match-b95b620e61a24c3ebcf065a1b81e9464-opponent",
+    "session_id": "local-ai-match-b95b620e61a24c3ebcf065a1b81e9464",
+    "timestamp_ms": 1788983857013
+  },
+  {
+    "event_id": "server:local-ai-match-b95b620e61a24c3ebcf065a1b81e9464:1887:credit_spent",
+    "event_type": "circuit_credit_spent",
+    "metadata": {
+      "amount": 2,
+      "balance": 1,
+      "battle_elapsed_ms": 92300,
+      "reason": "modul_uret:battery"
+    },
+    "player_id": "wt-dbd4a70f-4d90-4b60-958a-18ca1e4eff82",
+    "session_id": "local-ai-match-b95b620e61a24c3ebcf065a1b81e9464",
+    "timestamp_ms": 1788983857013
+  },
+  {
+    "event_id": "server:local-ai-match-b95b620e61a24c3ebcf065a1b81e9464:1920:credit_spent",
+    "event_type": "circuit_credit_spent",
+    "metadata": {
+      "amount": 2,
+      "balance": 0,
+      "battle_elapsed_ms": 93600,
+      "reason": "modul_uret:armor"
+    },
+    "player_id": "local-ai-match-b95b620e61a24c3ebcf065a1b81e9464-opponent",
+    "session_id": "local-ai-match-b95b620e61a24c3ebcf065a1b81e9464",
+    "timestamp_ms": 1788983857013
+  },
+  {
+    "event_id": "server:local-ai-match-b95b620e61a24c3ebcf065a1b81e9464:2022:credit_spent",
+    "event_type": "circuit_credit_spent",
+    "metadata": {
+      "amount": 2,
+      "balance": 2,
+      "battle_elapsed_ms": 97500,
+      "reason": "modul_uret:laser"
+    },
+    "player_id": "wt-dbd4a70f-4d90-4b60-958a-18ca1e4eff82",
+    "session_id": "local-ai-match-b95b620e61a24c3ebcf065a1b81e9464",
+    "timestamp_ms": 1788983857013
+  },
+  {
+    "event_id": "server:local-ai-match-b95b620e61a24c3ebcf065a1b81e9464:2025:credit_spent",
+    "event_type": "circuit_credit_spent",
+    "metadata": {
+      "amount": 2,
+      "balance": 0,
+      "battle_elapsed_ms": 97500,
+      "reason": "modul_uret:armor"
+    },
+    "player_id": "local-ai-match-b95b620e61a24c3ebcf065a1b81e9464-opponent",
+    "session_id": "local-ai-match-b95b620e61a24c3ebcf065a1b81e9464",
+    "timestamp_ms": 1788983857013
+  },
+  {
+    "event_id": "server:local-ai-match-b95b620e61a24c3ebcf065a1b81e9464:2176:credit_spent",
+    "event_type": "circuit_credit_spent",
+    "metadata": {
+      "amount": 3,
+      "balance": 1,
+      "battle_elapsed_ms": 103300,
+      "reason": "modul_uret:shield"
+    },
+    "player_id": "wt-dbd4a70f-4d90-4b60-958a-18ca1e4eff82",
+    "session_id": "local-ai-match-b95b620e61a24c3ebcf065a1b81e9464",
+    "timestamp_ms": 1788983857013
+  },
+  {
+    "event_id": "server:local-ai-match-b95b620e61a24c3ebcf065a1b81e9464:2190:credit_spent",
+    "event_type": "circuit_credit_spent",
+    "metadata": {
+      "amount": 2,
+      "balance": 0,
+      "battle_elapsed_ms": 104000,
+      "reason": "modul_uret:armor"
+    },
+    "player_id": "local-ai-match-b95b620e61a24c3ebcf065a1b81e9464-opponent",
+    "session_id": "local-ai-match-b95b620e61a24c3ebcf065a1b81e9464",
+    "timestamp_ms": 1788983857013
+  },
+  {
+    "event_id": "server:local-ai-match-b95b620e61a24c3ebcf065a1b81e9464:2310:credit_spent",
+    "event_type": "circuit_credit_spent",
+    "metadata": {
+      "amount": 2,
+      "balance": 0,
+      "battle_elapsed_ms": 107900,
+      "reason": "modul_uret:armor"
+    },
+    "player_id": "local-ai-match-b95b620e61a24c3ebcf065a1b81e9464-opponent",
+    "session_id": "local-ai-match-b95b620e61a24c3ebcf065a1b81e9464",
+    "timestamp_ms": 1788983857013
+  },
+  {
+    "event_id": "server:local-ai-match-b95b620e61a24c3ebcf065a1b81e9464:2437:credit_spent",
+    "event_type": "circuit_credit_spent",
+    "metadata": {
+      "amount": 2,
+      "balance": 0,
+      "battle_elapsed_ms": 113100,
+      "reason": "modul_uret:armor"
+    },
+    "player_id": "local-ai-match-b95b620e61a24c3ebcf065a1b81e9464-opponent",
+    "session_id": "local-ai-match-b95b620e61a24c3ebcf065a1b81e9464",
+    "timestamp_ms": 1788983857013
+  },
+  {
+    "event_id": "server:local-ai-match-b95b620e61a24c3ebcf065a1b81e9464:2566:credit_spent",
+    "event_type": "circuit_credit_spent",
+    "metadata": {
+      "amount": 2,
+      "balance": 0,
+      "battle_elapsed_ms": 118300,
+      "reason": "modul_uret:armor"
+    },
+    "player_id": "local-ai-match-b95b620e61a24c3ebcf065a1b81e9464-opponent",
+    "session_id": "local-ai-match-b95b620e61a24c3ebcf065a1b81e9464",
+    "timestamp_ms": 1788983857013
+  },
+  {
+    "event_id": "server:local-ai-match-b95b620e61a24c3ebcf065a1b81e9464:match_completed:wt-dbd4a70f-4d90-4b60-958a-18ca1e4eff82",
+    "event_type": "match_completed",
+    "metadata": {
+      "duration_ms": 122100,
+      "finish_reason": "core_destroyed",
+      "is_draw": false,
+      "winner_player_id": "wt-dbd4a70f-4d90-4b60-958a-18ca1e4eff82"
+    },
+    "player_id": "wt-dbd4a70f-4d90-4b60-958a-18ca1e4eff82",
+    "session_id": "local-ai-match-b95b620e61a24c3ebcf065a1b81e9464",
+    "timestamp_ms": 1788983857013
+  },
+  {
+    "event_id": "server:local-ai-match-b95b620e61a24c3ebcf065a1b81e9464:match_completed:local-ai-match-b95b620e61a24c3ebcf065a1b81e9464-opponent",
+    "event_type": "match_completed",
+    "metadata": {
+      "duration_ms": 122100,
+      "finish_reason": "core_destroyed",
+      "is_draw": false,
+      "winner_player_id": "wt-dbd4a70f-4d90-4b60-958a-18ca1e4eff82"
+    },
+    "player_id": "local-ai-match-b95b620e61a24c3ebcf065a1b81e9464-opponent",
+    "session_id": "local-ai-match-b95b620e61a24c3ebcf065a1b81e9464",
+    "timestamp_ms": 1788983857013
   }
 ]
