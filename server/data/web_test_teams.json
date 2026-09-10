@@ -37,6 +37,28 @@
         "replayed": false,
         "team_id": "team-82e527da447d"
       }
+    },
+    "team:module-request:wt-81aef76b-f7e7-498a-9c29-63cdf1fb9793:1789043590185:b25114c8c6c83": {
+      "created_at": "2026-09-10T12:33:10.195027+00:00",
+      "fingerprint": "e896b41f29ff58106acc86b77018f07f484b05a08260337a62796b6ca52067f0",
+      "result": {
+        "module_request": {
+          "created_at": "2026-09-10T12:33:10.195027+00:00",
+          "donated_amount": 0,
+          "donors": {},
+          "fulfilled": false,
+          "module_id": "laser",
+          "rarity": "common",
+          "request_id": "module-request-ab477ad332384704b491bf819aad8a15",
+          "requested_amount": 12,
+          "requester_id": "wt-81aef76b-f7e7-498a-9c29-63cdf1fb9793",
+          "week_key": "2026-W37"
+        },
+        "replayed": false,
+        "team_id": "team-82e527da447d",
+        "weekly_limit": 4,
+        "weekly_used": 1
+      }
     }
   },
   "teams": {
@@ -57,7 +79,20 @@
           "visibility": "visible"
         }
       ],
-      "module_requests": [],
+      "module_requests": [
+        {
+          "created_at": "2026-09-10T12:33:10.195027+00:00",
+          "donated_amount": 0,
+          "donors": {},
+          "fulfilled": false,
+          "module_id": "laser",
+          "rarity": "common",
+          "request_id": "module-request-ab477ad332384704b491bf819aad8a15",
+          "requested_amount": 12,
+          "requester_id": "wt-81aef76b-f7e7-498a-9c29-63cdf1fb9793",
+          "week_key": "2026-W37"
+        }
+      ],
       "name": "Kesici",
       "owner_id": "wt-81aef76b-f7e7-498a-9c29-63cdf1fb9793",
       "team_id": "team-82e527da447d",

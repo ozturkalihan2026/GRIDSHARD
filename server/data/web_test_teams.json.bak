@@ -20,6 +20,23 @@
         },
         "team_id": "team-82e527da447d"
       }
+    },
+    "team:message:wt-81aef76b-f7e7-498a-9c29-63cdf1fb9793:1789040850855:5623ba0039c0b": {
+      "created_at": "2026-09-10T11:47:30.873889+00:00",
+      "fingerprint": "04fcb5dca27de5161133eb07833ac0be72c54e0f20ba687392a1b5a997b015a7",
+      "result": {
+        "message": {
+          "author_id": "wt-81aef76b-f7e7-498a-9c29-63cdf1fb9793",
+          "created_at": "2026-09-10T11:47:30.873889+00:00",
+          "message_id": "message-751143d81b6d43cda6fe1322fee1d546",
+          "moderation_status": "pending",
+          "reports": [],
+          "text": "dsfsaddfa",
+          "visibility": "visible"
+        },
+        "replayed": false,
+        "team_id": "team-82e527da447d"
+      }
     }
   },
   "teams": {
@@ -29,7 +46,17 @@
         "wt-81aef76b-f7e7-498a-9c29-63cdf1fb9793"
       ],
       "member_limit": 30,
-      "messages": [],
+      "messages": [
+        {
+          "author_id": "wt-81aef76b-f7e7-498a-9c29-63cdf1fb9793",
+          "created_at": "2026-09-10T11:47:30.873889+00:00",
+          "message_id": "message-751143d81b6d43cda6fe1322fee1d546",
+          "moderation_status": "pending",
+          "reports": [],
+          "text": "dsfsaddfa",
+          "visibility": "visible"
+        }
+      ],
       "module_requests": [],
       "name": "Kesici",
       "owner_id": "wt-81aef76b-f7e7-498a-9c29-63cdf1fb9793",
