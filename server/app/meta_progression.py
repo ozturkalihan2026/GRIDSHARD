@@ -7,6 +7,7 @@ from typing import Callable
 from uuid import uuid4
 
 from .game.catalog import BASIC_MODULE_DEFINITIONS
+from .game.catalog_view import build_module_catalog_view
 from .player_profile import CURRENT_SEASON_ID
 
 
@@ -15,11 +16,17 @@ class MetaProgressionError(ValueError):
 
 
 from .arena_canon import (
-    ARENAS, MODULES, RANK_STAGES, rank_stage_for_rating, trophy_delta, module_stats, unlocked_module_ids, module_talent_options,
+    ARENAS, MODULES, RANK_STAGES, rank_stage_for_rating, trophy_delta,
+    module_stats, unlocked_module_ids, unlocked_reward_module_ids,
+    module_talent_options,
 )
 from threading import RLock
 
 MODULE_RARITY = {key: item["rarity"] for key, item in MODULES.items()}
+MODULE_EFFECT_LINES = {
+    item["id"]: tuple(item.get("effect_lines", ()))
+    for item in build_module_catalog_view()["modules"]
+}
 RARITY_UNLOCK_ARENA = {"common": 1, "rare": 1, "epic": 5, "legendary": 9}
 
 RARITY_COST_MULTIPLIER = {
@@ -283,13 +290,46 @@ def _rarity_from_roll(odds: dict[str, float], roll: float) -> str:
     return "common"
 
 
-def _module_ids_for_rarity(rarity: str, max_arena: int = 12) -> list[str]:
+def _module_ids_for_rarity(rarity: str, eligible_ids) -> list[str]:
     return [
         module_id
-        for module_id in MODULES
+        for module_id in eligible_ids
         if MODULE_RARITY.get(module_id, "common") == rarity
-        and MODULES[module_id]["unlock_arena"] <= max_arena
     ]
+
+
+def _select_reward_module(
+    profile,
+    seed: str,
+    *,
+    rarity: str | None = None,
+    preferred_ids=(),
+) -> tuple[str, str]:
+    """Select one reward module without ever leaving the peak unlock pool."""
+    eligible = unlocked_reward_module_ids(
+        profile.rating,
+        profile.highest_rating,
+        preferred_ids,
+    )
+    candidates = _module_ids_for_rarity(rarity, eligible) if rarity else list(eligible)
+    if not candidates:
+        candidates = list(eligible)
+    module_id = candidates[_hash_range(seed, 0, len(candidates) - 1)]
+    return module_id, MODULE_RARITY.get(module_id, "common")
+
+
+def unlocked_core_type_ids(profile) -> tuple[str, ...]:
+    peak = max(int(profile.highest_rating), int(profile.rating))
+    return tuple(
+        core["id"]
+        for core in CORE_TYPES
+        if peak >= (int(core["unlock_arena"]) - 1) * 300
+    )
+
+
+def core_reward_type_id(profile, seed: str) -> str:
+    unlocked = unlocked_core_type_ids(profile)
+    return unlocked[_hash_range(f"{seed}:core-type", 0, len(unlocked) - 1)]
 
 
 class MetaProgressionService:
@@ -303,11 +343,27 @@ class MetaProgressionService:
         return [
             {**arena, "unlocked": peak >= arena["minimum_rating"],
              "core_unlock": {key: value for key, value in core_unlocks[arena["index"]].items() if key != "skills"} if arena["index"] in core_unlocks else None,
-             "nodes": [{**node, "claimed": node["id"] in profile.arena_reward_claims,
+             "nodes": [{**node, "rewards": self._arena_reward_preview(profile, node),
+                        "claimed": node["id"] in profile.arena_reward_claims,
                         "claimable": peak >= node["trophies"] and node["id"] not in profile.arena_reward_claims}
                        for node in arena["nodes"]]}
             for arena in ARENAS
         ]
+
+    def _arena_reward_preview(self, profile, node: dict) -> dict:
+        rewards = dict(node.get("rewards", {}))
+        shard_count = int(rewards.get("module_shards", 0))
+        if shard_count:
+            module_id = rewards.get("module_shard_target")
+            if not module_id:
+                module_id, _ = _select_reward_module(
+                    profile,
+                    f"{profile.player_id}:{node['id']}:module",
+                )
+            rewards["module_definition_id"] = module_id
+        if int(rewards.get("core_shards", 0)):
+            rewards["core_type_id"] = core_reward_type_id(profile, node["id"])
+        return rewards
 
     def claim_arena_reward(self, profile, node_id: str) -> dict:
         with self._lock:
@@ -326,10 +382,11 @@ class MetaProgressionService:
                 return {"node_id": node_id, "replayed": True}
             if max(profile.rating, profile.highest_rating) < node["trophies"]:
                 raise MetaProgressionError("Bu ödülün kupa eşiğine henüz ulaşmadın.")
-            rewards = node["rewards"]
+            rewards = dict(node["rewards"])
             profile.circuit_credits += rewards.get("circuit_credits", 0)
             profile.flux_shards += rewards.get("flux_shards", 0)
-            self.award_core_pieces(profile, rewards.get("core_shards", 0), node_id)
+            core_count = int(rewards.get("core_shards", 0))
+            core_type_id = self.award_core_pieces(profile, core_count, node_id)
             shard_rewards = {}
             shard_target = rewards.get("module_shard_target") or rewards.get("module_id")
             if shard_target:
@@ -338,13 +395,20 @@ class MetaProgressionService:
                     if rewards.get("module_shard_target")
                     else 2
                 )
-            unlocked = unlocked_module_ids(max(profile.rating, profile.highest_rating))
             generic_shard_count = 0 if rewards.get("module_shard_target") else int(rewards.get("module_shards", 0))
-            for index in range(generic_shard_count):
-                module_id = unlocked[_hash_range(f"{profile.player_id}:{node_id}:{index}", 0, len(unlocked) - 1)]
-                shard_rewards[module_id] = shard_rewards.get(module_id, 0) + 1
+            if generic_shard_count:
+                module_id, _ = _select_reward_module(
+                    profile,
+                    f"{profile.player_id}:{node_id}:module",
+                )
+                shard_rewards[module_id] = generic_shard_count
             for module_id, amount in shard_rewards.items():
                 profile.module_shards[module_id] = profile.module_shards.get(module_id, 0) + amount
+            module_definition_id = next(iter(shard_rewards), None)
+            if module_definition_id:
+                rewards["module_definition_id"] = module_definition_id
+            if core_type_id:
+                rewards["core_type_id"] = core_type_id
             if rewards.get("chest_id"):
                 definition = CHEST_DEFINITIONS[rewards["chest_id"]]
                 now = self._now_func()
@@ -353,7 +417,13 @@ class MetaProgressionService:
                     "overflow": len(profile.chest_slots) >= 4,
                     "awarded_at": iso_utc(now), "unlocks_at": iso_utc(now + timedelta(hours=definition["unlock_hours"]))})
             profile.arena_reward_claims = (*profile.arena_reward_claims, node_id)
-            return {"node_id": node_id, "rewards": rewards, "module_shards": shard_rewards}
+            return {
+                "node_id": node_id,
+                "rewards": rewards,
+                "module_shards": shard_rewards,
+                "module_definition_id": module_definition_id,
+                "core_type_id": core_type_id,
+            }
 
     def view(self, profile) -> dict:
         current_rank = rank_stage_for_rating(profile.rating)
@@ -386,6 +456,7 @@ class MetaProgressionService:
                     "nodes": [
                         {
                             **node,
+                            "rewards": self._arena_reward_preview(profile, node),
                             "claimed": node["id"] in profile.arena_reward_claims,
                             "claimable": (
                                 max(profile.rating, profile.highest_rating) >= node["trophies"]
@@ -410,6 +481,7 @@ class MetaProgressionService:
             ],
             "chests": {
                 "slots": [dict(item) for item in profile.chest_slots],
+                "inventory": self._owned_chest_inventory_view(profile, now),
                 "definitions": [
                     self._gift_chest_definition_view(profile, definition, now)
                     for definition in CHEST_DEFINITIONS.values()
@@ -450,6 +522,39 @@ class MetaProgressionService:
                 "ranked_normalized": False,
             },
         }
+
+    def _owned_chest_inventory_view(self, profile, now: datetime) -> list[dict]:
+        inventory: list[dict] = []
+        for definition in CHEST_DEFINITIONS.values():
+            owned = [
+                chest
+                for chest in profile.chest_slots
+                if str(chest.get("definition_id")) == str(definition["id"])
+            ]
+            openable = []
+            locked_until: list[datetime] = []
+            for chest in owned:
+                try:
+                    unlocks_at = parse_utc(str(chest.get("unlocks_at", "")))
+                except (TypeError, ValueError):
+                    # Old entries without a valid timer remain usable.
+                    unlocks_at = now
+                if unlocks_at <= now:
+                    openable.append(chest)
+                else:
+                    locked_until.append(unlocks_at)
+            inventory.append({
+                "definition_id": definition["id"],
+                "name_tr": definition["name_tr"],
+                "visual_tier": definition["visual_tier"],
+                "count": len(owned),
+                "openable_count": len(openable),
+                "locked_count": len(owned) - len(openable),
+                "next_unlock_at": (
+                    iso_utc(min(locked_until)) if locked_until else None
+                ),
+            })
+        return inventory
 
     def _gift_chest_definition_view(self, profile, definition: dict, now: datetime) -> dict:
         """Expose a deterministic server countdown for each free chest.
@@ -515,6 +620,7 @@ class MetaProgressionService:
             "current_cost": MODULES[module_id]["current_cost"],
             "description_tr": definition.description_tr,
             "strategic_role": definition.strategic_role,
+            "effect_lines": list(MODULE_EFFECT_LINES.get(module_id, ())),
             "strong_against": list(definition.strong_against),
             "weak_against": list(definition.weak_against),
             "synergy_with": list(definition.synergy_with),
@@ -810,6 +916,82 @@ class MetaProgressionService:
         with self._lock:
             return self._open_chest(profile, chest_id, request_id)
 
+    def open_all_available_chests(
+        self,
+        profile,
+        definition_id: str,
+        request_id: str,
+    ) -> dict:
+        with self._lock:
+            clean_request_id = request_id.strip()
+            if not clean_request_id:
+                raise MetaProgressionError("Toplu sandık talep kimliği zorunludur.")
+            if definition_id not in CHEST_DEFINITIONS:
+                raise MetaProgressionError("Sandık türü bulunamadı.")
+            previous = profile.chest_batch_receipts.get(clean_request_id)
+            if previous is not None:
+                if previous.get("definition_id") != definition_id:
+                    raise MetaProgressionError("Talep kimliği farklı bir sandık türüne ait.")
+                return dict(previous)
+
+            child_prefix = f"{clean_request_id}:"
+            receipts = [
+                dict(receipt)
+                for child_request_id, receipt in profile.chest_receipts.items()
+                if child_request_id.startswith(child_prefix)
+                and receipt.get("definition_id") == definition_id
+            ]
+            now = self._now_func()
+            candidates = []
+            for chest in profile.chest_slots:
+                if str(chest.get("definition_id")) != definition_id:
+                    continue
+                try:
+                    unlocks_at = parse_utc(str(chest.get("unlocks_at", "")))
+                except (TypeError, ValueError):
+                    unlocks_at = now
+                if unlocks_at <= now:
+                    candidates.append(chest)
+            candidates.sort(
+                key=lambda chest: (
+                    str(chest.get("awarded_at", "")),
+                    str(chest.get("chest_id", "")),
+                )
+            )
+
+            errors = []
+            for chest in candidates:
+                chest_id = str(chest.get("chest_id", ""))
+                child_request_id = f"{clean_request_id}:{chest_id}"
+                try:
+                    receipt = self._open_chest(
+                        profile,
+                        chest_id,
+                        child_request_id,
+                    )
+                except (MetaProgressionError, KeyError, TypeError, ValueError) as exc:
+                    errors.append({"chest_id": chest_id, "detail": str(exc)})
+                    continue
+                receipts.append(dict(receipt))
+
+            remaining_count = sum(
+                1
+                for chest in profile.chest_slots
+                if str(chest.get("definition_id")) == definition_id
+            )
+            batch_receipt = {
+                "request_id": clean_request_id,
+                "definition_id": definition_id,
+                "opened_at": iso_utc(now),
+                "opened_count": len(receipts),
+                "remaining_count": remaining_count,
+                "receipts": receipts,
+                "errors": errors,
+                "partial": bool(errors),
+            }
+            profile.chest_batch_receipts[clean_request_id] = dict(batch_receipt)
+            return batch_receipt
+
     def _open_chest(self, profile, chest_id: str, request_id: str) -> dict:
         request_id = request_id.strip()
         if not request_id:
@@ -827,20 +1009,11 @@ class MetaProgressionService:
         seed = f"{profile.player_id}:{chest_id}"
         coins = _hash_range(f"{seed}:coins", *definition["coins"])
         rarity = _rarity_from_roll(definition["rarity_odds"], _hash_unit(f"{seed}:rarity"))
-        rank = rank_stage_for_rating(profile.rating)
-        current_arena = int(rank["index"]) if rank["kind"] == "arena" else 12
-        candidates = _module_ids_for_rarity(rarity, current_arena)
-        if not candidates:
-            rarity = next(
-                (
-                    fallback
-                    for fallback in ("epic", "rare", "common")
-                    if _module_ids_for_rarity(fallback, current_arena)
-                ),
-                "common",
-            )
-            candidates = _module_ids_for_rarity(rarity, current_arena)
-        module_id = candidates[_hash_range(f"{seed}:module", 0, len(candidates) - 1)]
+        module_id, rarity = _select_reward_module(
+            profile,
+            f"{seed}:module",
+            rarity=rarity,
+        )
         shards = _hash_range(f"{seed}:shards", *definition["shards"])
         profile.circuit_credits += coins
         flux = _hash_range(f"{seed}:flux", 3, max(5, definition["unlock_hours"] * 2))
@@ -901,14 +1074,12 @@ class MetaProgressionService:
             raise MetaProgressionError("Bu sandık için kaynak yetersiz.")
 
         seed = f"{profile.player_id}:{shop_day}:{offer_id}"
-        rank = rank_stage_for_rating(profile.rating)
-        current_arena = int(rank["index"]) if rank["kind"] == "arena" else 12
         rarity = _rarity_from_roll(offer["rarity_odds"], _hash_unit(f"{seed}:rarity"))
-        candidates = _module_ids_for_rarity(rarity, current_arena)
-        if not candidates:
-            rarity = "common"
-            candidates = _module_ids_for_rarity(rarity, current_arena)
-        module_id = candidates[_hash_range(f"{seed}:module", 0, len(candidates) - 1)]
+        module_id, rarity = _select_reward_module(
+            profile,
+            f"{seed}:module",
+            rarity=rarity,
+        )
         rewards = {
             "circuit_credits": _hash_range(f"{seed}:credits", *offer["circuit_credits"]),
             "flux_shards": _hash_range(f"{seed}:flux", *offer["flux_shards"]),
@@ -948,9 +1119,11 @@ class MetaProgressionService:
         profile.unlocked_core_types = tuple(dict.fromkeys((*profile.unlocked_core_types, core_type_id)))
         profile.selected_core_type = core_type_id
 
-    def award_core_pieces(self, profile, count: int, seed: str) -> str:
-        unlocked = [c["id"] for c in CORE_TYPES if max(profile.highest_rating, profile.rating) >= (c["unlock_arena"] - 1) * 300]
-        core_id = unlocked[_hash_range(seed + ":core-type", 0, len(unlocked) - 1)]
+    def award_core_pieces(self, profile, count: int, seed: str) -> str | None:
+        count = max(0, int(count))
+        if count == 0:
+            return None
+        core_id = core_reward_type_id(profile, seed)
         profile.core_shards_by_type[core_id] = profile.core_shards_by_type.get(core_id, 0) + count
         return core_id
 

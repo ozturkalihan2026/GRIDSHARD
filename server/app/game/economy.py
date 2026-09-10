@@ -16,7 +16,6 @@ class CircuitCreditConfig:
     maximum_current: int = 12
     current_regen_interval_ms: int = 2500
     move_cost: int = 10
-    rotate_cost: int = 0
     remove_cost: int = 0
 
 

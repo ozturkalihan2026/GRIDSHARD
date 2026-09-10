@@ -11,7 +11,7 @@ const launcher = fs.readFileSync("../BASLAT_WEB_TEST.bat", "utf8");
 
 assert.ok(app.includes("operationalDiagnosticsEnabled"));
 assert.ok(app.includes("operationalChecks: operationalDiagnosticsEnabled"));
-assert.ok(app.includes("operationalDiagnosticsEnabled\n          ? null"));
+assert.match(app, /operationalDiagnosticsEnabled\s*\? null/);
 assert.ok(app.includes("diagnosticsSkipped:true"));
 assert.ok(app.includes("function requestCanRetry"));
 assert.ok(app.includes("body: JSON.stringify({ request_id: entry.requestId })"));
@@ -20,7 +20,7 @@ assert.ok(app.includes("const preset = battlePoolPresets[index] || null"));
 assert.ok(app.includes("function beginEmptyBattlePoolPreset"));
 assert.ok(app.includes("deckEditorSlots = Array(6).fill(null)"));
 assert.ok(app.includes("saved.presetPayload?.presets"));
-assert.ok(app.includes("await persistBattlePoolDefinitionIds(\n        preset.module_definition_ids"));
+assert.match(app, /await persistBattlePoolDefinitionIds\(\s*preset\.module_definition_ids/);
 assert.ok(app.includes("result?.manifest || null"));
 assert.ok(relay.includes("operationalChecks = true"));
 assert.ok(audio.includes('audio.preload="none"'));

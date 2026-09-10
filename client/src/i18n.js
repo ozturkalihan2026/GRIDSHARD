@@ -135,7 +135,6 @@
     "Çekirdeğe Baskı":"Core Pressure",
     "Rakip devrelere toplam 1000 hasar ver.":"Deal 1000 total damage to opponent circuits.",
     "Canlı Strateji":"Live Strategy",
-    "Savaşta 3 modül taşı, değiştir, takas et veya döndür.":"Move, replace, swap, or rotate modules 3 times in battle.",
     "Ödülü Al":"Claim Reward",
     "Alındı":"Claimed",
     "Devam Ediyor":"In Progress",

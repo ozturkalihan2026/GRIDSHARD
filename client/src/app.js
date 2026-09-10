@@ -25,7 +25,8 @@
     nameTr: item.name_tr, hp: item.max_hp, maxHp: item.max_hp,
     circuitCreditCost: item.current_cost, currentCost: item.current_cost,
     category: item.category === "sistem" ? "enerji" : item.category,
-    strategicRole: item.name_tr, rarity: item.rarity, unlockTrophies: item.unlock_trophies,
+    strategicRole: item.name_tr, rarity: item.rarity,
+    unlockTrophies: Math.max(0, (Number(item.unlock_arena || 1) - 1) * 300),
     status: item.id === "core" ? "active" : item.id === "generator" ? "destroyed" : "reserve",
     position: item.id === "core" ? {x: 2, y: 1} : null,
     isDeckTemplate: !["core", "generator"].includes(item.id),
@@ -446,6 +447,8 @@
   let selectedCollectionCoreId = "core_resonance";
   let activeLeaderboardTab = "trophies";
   let leaderboardPayload = null;
+  let teamState = null;
+  let activeTeamTab = "overview";
   const PROFILE_AVATARS = Object.freeze([
     { id: "default", nameTr: "Devre Operatörü", glyph: "◇" },
     { id: "circuit_scout", nameTr: "Devre Kaşifi", glyph: "⌁" },
@@ -739,17 +742,19 @@
       tutorialController?.maybeStart();
     }
 
-    if (["profile", "daily", "daily-rewards", "rewards", "shop", "modules", "events", "menu"].includes(screen)) {
+    if (["profile", "avatar", "daily", "daily-rewards", "rewards", "shop", "modules", "team", "events", "menu"].includes(screen)) {
       accountDataLoader
         .loadProfile()
+        .then(() => markScreenNotificationsSeen(screen))
         .then(() => {
           renderProfileSummary();
           renderMetaHubScreens();
           renderRemoteDataStatus();
         });
-      if (["shop", "modules", "menu"].includes(screen)) {
+      if (["shop", "modules", "team", "menu"].includes(screen)) {
         loadMetaProgression();
       }
+      if (screen === "team") loadTeamView();
     } else if (
       screen === "laboratory"
     ) {
@@ -784,6 +789,32 @@
     return result;
   }
 
+  async function markScreenNotificationsSeen(screen) {
+    const section = ({
+      avatar: "avatar",
+      "daily-rewards": "daily",
+      rewards: "season",
+    })[screen];
+    if (!section) return { ok: true, skipped: true };
+    try {
+      const profile = await requestJsonWithDeadline(
+        `/profile/${encodeURIComponent(participantPlayerId)}/notifications/${encodeURIComponent(section)}/seen`,
+        {
+          method: "POST",
+          credentials: "same-origin",
+          headers: { "accept": "application/json" },
+        },
+        12000
+      );
+      profileState.applyProfile(profile);
+      return { ok: true };
+    } catch (_error) {
+      // A failed acknowledgement intentionally leaves the dot visible. The
+      // server remains the source of truth and a refresh cannot clear it.
+      return { ok: false };
+    }
+  }
+
   function fallbackMetaProgression() {
     return {
       unavailable: true,
@@ -805,7 +836,7 @@
         { id: "circuit_8h", name_tr: "Gümüş Sandık", visual_tier: "silver", unlock_hours: 0, open_seconds: 1, claim_cooldown_hours: 8, claim_available: true, claim_remaining_seconds: 0 },
         { id: "core_24h", name_tr: "Altın Sandık", visual_tier: "gold", unlock_hours: 0, open_seconds: 1, claim_cooldown_hours: 16, claim_available: true, claim_remaining_seconds: 0 },
         { id: "diamond_24h", name_tr: "Elmas Sandık", visual_tier: "diamond", unlock_hours: 0, open_seconds: 1, claim_cooldown_hours: 24, claim_available: true, claim_remaining_seconds: 0 },
-      ] },
+      ], inventory: [] },
       shop: { day: "", offers: [
         { id: "bronze_daily", name_tr: "Bronz Sandık", tier: "bronze", currency: "circuit_credits", cost: 120, purchased: false },
         { id: "silver_daily", name_tr: "Gümüş Sandık", tier: "silver", currency: "circuit_credits", cost: 400, purchased: false },
@@ -1094,6 +1125,96 @@
     return `<span class="resource-symbol resource-symbol-module-card" data-category="${module.category || ""}" aria-hidden="true">${moduleIconFor(module)}</span>`;
   }
 
+  function moduleRewardIdentity(rewards = {}) {
+    const definitionId = String(
+      rewards.module_definition_id
+      || rewards.module_shard_target
+      || rewards.module_id
+      || ""
+    );
+    const collectionItem = metaProgressionState?.module_collection?.find(
+      (item) => item.definition_id === definitionId
+    );
+    const definition = moduleDefinitions.find(
+      (item) => item.definitionId === definitionId
+    );
+    return {
+      id: definitionId,
+      nameTr: collectionItem?.name_tr || definition?.nameTr || "Modül",
+      category: collectionItem?.category || definition?.category || "",
+      glyph: moduleIconFor(definition || { nameTr: collectionItem?.name_tr || "Modül" }),
+    };
+  }
+
+  function coreRewardIdentity(rewards = {}) {
+    const requestedCoreId = String(rewards.core_type_id || "core_resonance");
+    const coreId = CORE_VISUALS[requestedCoreId]
+      ? requestedCoreId
+      : "core_resonance";
+    const core = metaProgressionState?.cores?.types?.find(
+      (item) => item.id === coreId
+    );
+    const visual = CORE_VISUALS[coreId] || CORE_VISUALS.core_resonance;
+    return {
+      id: coreId,
+      nameTr: core?.name_tr || visual.nameTr || "Çekirdek",
+      glyph: visual.glyph,
+    };
+  }
+
+  function createRewardResourceIcon(kind, rewards = {}) {
+    if (kind === "module_shards") {
+      const identity = moduleRewardIdentity(rewards);
+      const icon = document.createElement("span");
+      icon.className = "resource-symbol resource-symbol-module-card";
+      icon.dataset.category = identity.category;
+      icon.setAttribute("aria-hidden", "true");
+      icon.textContent = identity.glyph;
+      return icon;
+    }
+    if (kind === "core_shards") {
+      const identity = coreRewardIdentity(rewards);
+      const icon = document.createElement("span");
+      icon.className = "resource-symbol resource-symbol-core-card";
+      icon.setAttribute("aria-hidden", "true");
+      icon.textContent = identity.glyph;
+      applyCoreVisualIdentity(icon, identity.id);
+      return icon;
+    }
+    const template = document.createElement("template");
+    template.innerHTML = resourceSymbolMarkup(kind);
+    return template.content.firstElementChild;
+  }
+
+  function rewardRowDefinitions(rewards = {}) {
+    const module = moduleRewardIdentity(rewards);
+    const core = coreRewardIdentity(rewards);
+    return [
+      { kind:"circuit_credits", amount:Number(rewards.circuit_credits || 0), label:"Devre Kredisi", suffix:" DK" },
+      { kind:"flux_shards", amount:Number(rewards.flux_shards || 0), label:"Akı", suffix:"" },
+      { kind:"module_shards", amount:Number(rewards.module_shards || 0), label:`${module.nameTr} Parçası`, suffix:"" },
+      { kind:"core_shards", amount:Number(rewards.core_shards || 0), label:`${core.nameTr} Parçası`, suffix:"" },
+    ].filter((item) => item.amount > 0);
+  }
+
+  function createRewardRows(rewards = {}, { compact = false } = {}) {
+    const list = document.createElement("div");
+    list.className = `reward-resource-list${compact ? " is-compact" : ""}`;
+    for (const item of rewardRowDefinitions(rewards)) {
+      const row = document.createElement("div");
+      row.className = "reward-resource-row";
+      row.dataset.rewardKind = item.kind;
+      const icon = createRewardResourceIcon(item.kind, rewards);
+      const label = document.createElement("span");
+      label.textContent = item.label;
+      const value = document.createElement("strong");
+      value.textContent = `+${item.amount}${item.suffix}`;
+      row.append(icon, label, value);
+      list.appendChild(row);
+    }
+    return list;
+  }
+
   function renderArenaPath() {
     const host = document.getElementById("arena-path");
     if (!host) return;
@@ -1106,7 +1227,11 @@
     const currentStageId = metaProgressionState?.rank?.id;
     const rewardIcon = (rewards = {}) => {
       if (rewards.chest_id) return resourceSymbolMarkup("chest");
-      if (rewards.core_shards) return resourceSymbolMarkup("core_shards");
+      if (rewards.core_shards) {
+        const identity = coreRewardIdentity(rewards);
+        const visual = CORE_VISUALS[identity.id] || CORE_VISUALS.core_resonance;
+        return `<span class="resource-symbol resource-symbol-core-card" data-core-type="${identity.id}" style="--core-accent:${visual.accent}" aria-hidden="true">${visual.glyph}</span>`;
+      }
       if (rewards.module_shards || rewards.module_id || rewards.module_shard_target) return moduleShardSymbolMarkup(rewards);
       if (rewards.flux_shards) return resourceSymbolMarkup("flux_shards");
       if (rewards.circuit_credits) return resourceSymbolMarkup("circuit_credits");
@@ -1230,7 +1355,28 @@
     if (!host.childElementCount) host.textContent = "Devre Yolu yükleniyor…";
   }
 
-  const CORE_GLYPHS = {core_resonance:"◈",core_guardian:"⬡",core_overdrive:"ϟ",core_disruptor:"⌁",core_capacitor:"▣",core_phoenix:"✹",core_quantum:"✧"};
+  const CORE_VISUALS = Object.freeze({
+    core_resonance: Object.freeze({ nameTr:"Rezonans Çekirdeği", glyph:"◈", accent:"#56f1df" }),
+    core_guardian: Object.freeze({ nameTr:"Muhafız Çekirdeği", glyph:"⬡", accent:"#79b6ff" }),
+    core_overdrive: Object.freeze({ nameTr:"Aşırı Yük Çekirdeği", glyph:"ϟ", accent:"#ff6e82" }),
+    core_disruptor: Object.freeze({ nameTr:"Kesinti Çekirdeği", glyph:"⌁", accent:"#bf7dff" }),
+    core_capacitor: Object.freeze({ nameTr:"Kapasitör Çekirdeği", glyph:"▣", accent:"#62e4ff" }),
+    core_phoenix: Object.freeze({ nameTr:"Anka Çekirdeği", glyph:"✹", accent:"#ffb85e" }),
+    core_quantum: Object.freeze({ nameTr:"Kuantum Çekirdeği", glyph:"✧", accent:"#f28cff" }),
+  });
+  const CORE_GLYPHS = Object.freeze(Object.fromEntries(
+    Object.entries(CORE_VISUALS).map(([coreId, visual]) => [coreId, visual.glyph])
+  ));
+
+  function applyCoreVisualIdentity(element, coreId) {
+    const normalizedId = CORE_VISUALS[coreId] ? coreId : "core_resonance";
+    const visual = CORE_VISUALS[normalizedId];
+    if (element) {
+      element.dataset.coreType = normalizedId;
+      element.style.setProperty("--core-accent", visual.accent);
+    }
+    return visual;
+  }
 
   function renderHomeCoreHero() {
     const core = metaProgressionState?.cores?.types?.find((item) => item.selected)
@@ -1240,11 +1386,12 @@
     const glyph = document.getElementById("home-core-hero-glyph");
     const name = document.getElementById("home-core-hero-name");
     const level = document.getElementById("home-core-hero-level");
-    if (glyph) glyph.textContent = CORE_GLYPHS[core?.id] || "◈";
+    const coreId = core?.id || "core_resonance";
+    const visual = applyCoreVisualIdentity(button, coreId);
+    if (glyph) glyph.textContent = visual.glyph;
     if (name) name.textContent = core?.name_tr || "Rezonans Çekirdeği";
     if (level) level.textContent = `SEVİYE ${Number(core?.level || 1)}`;
     if (button) {
-      button.dataset.coreType = core?.id || "core_resonance";
       button.setAttribute("aria-label", `${core?.name_tr || "Çekirdek"} · Seviye ${Number(core?.level || 1)} · Çekirdek seçimini aç`);
     }
   }
@@ -1285,9 +1432,10 @@
     tile.dataset.selected = String(selected);
     tile.dataset.locked = String(!core.unlocked);
     tile.setAttribute("aria-label", `${core.name_tr} · Seviye ${core.level}${core.selected ? " · seçili" : ""}`);
+    const visual = applyCoreVisualIdentity(tile, core.id);
     const glyph = document.createElement("span");
     glyph.className = "core-collection-glyph";
-    glyph.textContent = CORE_GLYPHS[core.id] || "◈";
+    glyph.textContent = visual.glyph;
     glyph.setAttribute("aria-hidden", "true");
     const copy = document.createElement("span");
     copy.className = "core-collection-copy";
@@ -1460,6 +1608,8 @@
       || metaProgressionState?.cores?.types?.[0];
     if (!core) return;
     selectedCollectionCoreId = core.id;
+    const dialog = document.getElementById("core-detail-dialog");
+    const visual = applyCoreVisualIdentity(dialog, core.id);
     const setText = (id, value) => { const target = document.getElementById(id); if (target) target.textContent = String(value); };
     setText("core-detail-name", core.name_tr);
     setText("core-detail-level", `SEVİYE ${core.level}`);
@@ -1471,7 +1621,7 @@
     const progress = document.getElementById("core-detail-progress");
     if (progress) { progress.max = required; progress.value = cost ? Math.min(required, owned) : required; }
     const art = document.getElementById("core-detail-art");
-    if (art) { art.textContent = CORE_GLYPHS[core.id] || "◈"; art.dataset.coreType = core.id; }
+    if (art) { art.textContent = visual.glyph; applyCoreVisualIdentity(art, core.id); }
     const stats = document.getElementById("core-detail-stats");
     if (stats) stats.innerHTML = `<div><span>ENERJİ</span><strong>${core.energy_per_second}/sn</strong></div><div><span>DEPO</span><strong>${core.energy_capacity}</strong></div><div><span>YETENEK</span><strong>${(core.skills || []).filter((skill) => skill.learned).length}</strong></div>`;
     const select = document.getElementById("core-detail-select");
@@ -1482,7 +1632,6 @@
     setText("core-detail-status", !core.unlocked ? `Arena ${core.unlock_arena} seviyesinde açılır.` : cost && !canUpgrade ? `${cost.shards} parça ve ${cost.flux_shards} Akı gerekli.` : "");
     for (const button of document.querySelectorAll("[data-core-detail-tab]")) button.classList.toggle("is-active", button.dataset.coreDetailTab === "overview");
     renderCoreDetailTab("overview");
-    const dialog = document.getElementById("core-detail-dialog");
     if (dialog?.showModal && !dialog.open) dialog.showModal();
     else dialog?.setAttribute("open", "");
   }
@@ -1604,24 +1753,32 @@
     if (giftHost) {
       giftHost.replaceChildren();
       const definitions = state.chests?.definitions || [];
-      // Every owned slot is rendered, including multiple chests of one type.
-      const entries = (state.chests?.slots || []).map(slot => ({slot, definition: definitions.find(d => d.id === slot.definition_id)}));
+      const inventory = state.chests?.inventory || [];
+      const slots = state.chests?.slots || [];
       for (const definition of definitions) {
-        if (!entries.some(entry => entry.definition?.id === definition.id)) entries.push({definition, slot: null});
-      }
-      for (const {definition, slot} of entries) {
-        if (!definition) continue;
+        const owned = inventory.find(
+          (item) => item.definition_id === definition.id
+        ) || {
+          count: slots.filter((slot) => slot.definition_id === definition.id).length,
+          openable_count: slots.filter((slot) => slot.definition_id === definition.id).length,
+          locked_count: 0,
+        };
+        const ownedCount = Math.max(0, Number(owned.count || 0));
+        const openableCount = Math.max(0, Number(owned.openable_count || 0));
         const card = document.createElement("article");
         card.className = "shop-chest-card";
         const tier = chestTier(definition);
         card.dataset.tier = tier;
-        const ready = Boolean(slot);
         const remaining = Math.max(0, Number(definition.claim_remaining_seconds || 0));
         card.dataset.definitionId = definition.id;
-        card.dataset.claimRemaining = String(remaining);
-        if (slot?.chest_id) card.dataset.chestId = slot.chest_id;
-        card.innerHTML = `${chestVisualMarkup(tier)}<strong>${definition.name_tr}</strong>`;
-        if (!slot && remaining > 0) {
+        if (ownedCount === 0) card.dataset.claimRemaining = String(remaining);
+        card.innerHTML = `${chestVisualMarkup(tier)}<strong>${definition.name_tr} x${ownedCount}</strong>`;
+        if (ownedCount > 0) {
+          const inventoryStatus = document.createElement("small");
+          inventoryStatus.className = "chest-inventory-status";
+          inventoryStatus.textContent = `${openableCount} / ${ownedCount} açılabilir`;
+          card.appendChild(inventoryStatus);
+        } else if (remaining > 0) {
           const countdown = document.createElement("small");
           countdown.className = "chest-countdown";
           countdown.textContent = "Yenilenmesine " + formatChestCountdown(remaining);
@@ -1629,12 +1786,17 @@
         }
         const action = document.createElement("button");
         action.type = "button";
-        action.textContent = slot
-          ? "AÇ"
+        action.textContent = ownedCount > 0
+          ? "HEPSİNİ AÇ"
           : (remaining > 0 ? formatChestCountdown(remaining) : "HEDİYEYİ AÇ");
-        action.disabled = Boolean(state.unavailable || (!slot && definition.claim_available === false));
-        if (ready) action.addEventListener("click", () => openGiftChest(slot.chest_id));
-        else if (!slot && definition.claim_available !== false) {
+        action.disabled = Boolean(
+          state.unavailable
+          || (ownedCount > 0 && openableCount === 0)
+          || (ownedCount === 0 && definition.claim_available === false)
+        );
+        if (ownedCount > 0) {
+          action.addEventListener("click", () => openAllAvailableChests(definition.id));
+        } else if (definition.claim_available !== false) {
           action.addEventListener("click", () => claimGiftChest(definition.id));
         }
         card.appendChild(action);
@@ -1748,9 +1910,6 @@
     );
     const tier = offer?.tier || chestTier(definition || { id: receipt.definition_id });
     const rewards = receipt.rewards || {};
-    const module = metaProgressionState?.module_collection?.find(
-      (item) => item.definition_id === rewards.module_definition_id
-    );
     const card = document.getElementById("chest-reveal-card");
     const visual = document.getElementById("chest-reveal-visual");
     const title = document.getElementById("chest-reveal-title");
@@ -1764,18 +1923,46 @@
     if (close) { close.disabled = false; close.textContent = "DEVAM"; }
     if (host) {
       host.replaceChildren();
-      const rewardLines = [
-        ["DEVRE KREDİSİ", `+${rewards.circuit_credits || 0} DK`],
-        ["AKI", `+${rewards.flux_shards || 0}`],
-        [module?.name_tr || "MODÜL PARÇASI", `+${rewards.module_shards || 0}`],
-        ["ÇEKİRDEK PARÇASI", `+${rewards.core_shards || 0}`],
-      ].filter(([, value]) => !/^\+0(?:\s|$)/.test(value));
-      for (const [label, value] of rewardLines) {
-        const row = document.createElement("div");
-        row.innerHTML = `<span>${label}</span><strong>${value}</strong>`;
-        host.appendChild(row);
-      }
+      host.appendChild(createRewardRows(rewards));
     }
+    const dialog = document.getElementById("chest-reveal-dialog");
+    if (dialog?.showModal && !dialog.open) dialog.showModal();
+    else dialog?.setAttribute("open", "");
+  }
+
+  function showBulkChestReveal(batchReceipt) {
+    const receipts = batchReceipt?.receipts || [];
+    const definition = metaProgressionState?.chests?.definitions?.find(
+      (item) => item.id === batchReceipt?.definition_id
+    );
+    const tier = chestTier(definition || { id: batchReceipt?.definition_id });
+    const card = document.getElementById("chest-reveal-card");
+    const visual = document.getElementById("chest-reveal-visual");
+    const title = document.getElementById("chest-reveal-title");
+    const host = document.getElementById("chest-reveal-rewards");
+    const kicker = document.getElementById("chest-reveal-kicker");
+    const close = document.getElementById("chest-reveal-close");
+    if (card) { card.dataset.tier = tier; card.dataset.state = "revealed"; }
+    if (visual) visual.className = `chest-visual chest-visual-large chest-visual-${tier}`;
+    if (title) title.textContent = `${definition?.name_tr || "Sandık"} · ${receipts.length} açıldı`;
+    if (kicker) {
+      kicker.hidden = false;
+      kicker.textContent = batchReceipt?.partial
+        ? `${receipts.length} AÇILDI · ${batchReceipt.remaining_count || 0} KALDI`
+        : "TÜM AÇILABİLİR SANDIKLAR AÇILDI";
+    }
+    if (host) {
+      host.replaceChildren();
+      receipts.forEach((receipt, index) => {
+        const section = document.createElement("section");
+        section.className = "bulk-chest-reward";
+        const label = document.createElement("small");
+        label.textContent = `${index + 1}. SANDIK`;
+        section.append(label, createRewardRows(receipt.rewards || {}));
+        host.appendChild(section);
+      });
+    }
+    if (close) { close.disabled = false; close.textContent = "DEVAM"; }
     const dialog = document.getElementById("chest-reveal-dialog");
     if (dialog?.showModal && !dialog.open) dialog.showModal();
     else dialog?.setAttribute("open", "");
@@ -1881,6 +2068,30 @@
     } catch (error) {
       if (status) status.textContent = error instanceof Error ? error.message : String(error);
       restoreShopAction({ chestId });
+      showChestFailure(error);
+    }
+  }
+
+  async function openAllAvailableChests(definitionId) {
+    const status = document.getElementById("shop-action-status");
+    const definition = metaProgressionState?.chests?.definitions?.find(
+      (item) => item.id === definitionId
+    );
+    showChestOpening({
+      tier: chestTier(definition || { id: definitionId }),
+      title: `${definition?.name_tr || "Sandık"} sandıkları`,
+    });
+    try {
+      const payload = await metaProgressionMutation(
+        `/profile/${encodeURIComponent(participantPlayerId)}/meta-progression/chests/${encodeURIComponent(definitionId)}/open-all`
+      );
+      if (status) status.textContent = payload.receipt?.partial
+        ? "Açılabilen sandıklar işlendi; açılamayan sandıklar envanterde korundu."
+        : "";
+      showBulkChestReveal(payload.receipt);
+    } catch (error) {
+      if (status) status.textContent = error instanceof Error ? error.message : String(error);
+      restoreShopAction({ definitionId });
       showChestFailure(error);
     }
   }
@@ -2007,6 +2218,26 @@
       .find((item) => item.definition_id === selectedCollectionModuleId) || null;
   }
 
+  function createModuleEffectList(effectLines = []) {
+    const section = document.createElement("section");
+    section.className = "module-effect-panel";
+    const heading = document.createElement("strong");
+    heading.textContent = "GERÇEK SAVAŞ ETKİLERİ";
+    const list = document.createElement("ul");
+    for (const effectLine of effectLines) {
+      const item = document.createElement("li");
+      item.textContent = localizedUiText(effectLine);
+      list.appendChild(item);
+    }
+    if (!list.childElementCount) {
+      const item = document.createElement("li");
+      item.textContent = "Bu modülün ek sayısal etkisi yok.";
+      list.appendChild(item);
+    }
+    section.append(heading, list);
+    return section;
+  }
+
   function renderModuleDetailTab(tabName) {
     const item = activeMetaModule();
     const host = document.getElementById("module-detail-tab-content");
@@ -2027,6 +2258,7 @@
         row.append(name, value); list.appendChild(row);
       }
       host.appendChild(list);
+      host.appendChild(createModuleEffectList(item.effect_lines));
       const moduleName = (id) => (metaProgressionState?.module_collection || []).find((module) => module.definition_id === id)?.name_tr || id;
       const counters = document.createElement("div");
       counters.className = "module-counter-grid";
@@ -2105,6 +2337,7 @@
         overview.appendChild(card);
       }
       host.appendChild(overview);
+      host.appendChild(createModuleEffectList(item.effect_lines));
     }
     host.prepend(text);
   }
@@ -2163,6 +2396,273 @@
     }
   }
 
+  function setTeamActionStatus(message = "", state = "") {
+    const status = document.getElementById("team-action-status");
+    if (!status) return;
+    status.textContent = String(message || "");
+    status.dataset.state = state;
+  }
+
+  function teamRequestId(kind) {
+    return `team:${kind}:${participantPlayerId}:${Date.now()}:${Math.random().toString(16).slice(2)}`;
+  }
+
+  async function loadTeamView() {
+    const connection = document.getElementById("team-connection-state");
+    if (connection) connection.textContent = "Yükleniyor…";
+    try {
+      teamState = await requestJsonWithDeadline(
+        `/teams/player/${encodeURIComponent(participantPlayerId)}`,
+        { cache: "no-store" },
+        10000
+      );
+      if (connection) connection.textContent = teamState.joined ? "BAĞLI" : "TAKIM YOK";
+      setTeamActionStatus("");
+      renderTeamHub();
+      return { ok:true, state:teamState };
+    } catch (error) {
+      if (connection) connection.textContent = "BAĞLANTI HATASI";
+      setTeamActionStatus(error instanceof Error ? error.message : String(error), "error");
+      return { ok:false, error };
+    }
+  }
+
+  async function mutateTeam(path, body, pendingMessage = "İşleniyor…") {
+    setTeamActionStatus(pendingMessage, "pending");
+    try {
+      teamState = await requestJsonWithDeadline(
+        path,
+        {
+          method:"POST",
+          body:JSON.stringify({
+            player_id:participantPlayerId,
+            request_id:teamRequestId(body.requestKind || "action"),
+            ...body,
+            requestKind:undefined,
+          }),
+        },
+        30000
+      );
+      setTeamActionStatus("");
+      renderTeamHub();
+      accountDataLoader.loadProfile().then(renderProfileSummary);
+      return { ok:true, state:teamState };
+    } catch (error) {
+      setTeamActionStatus(error instanceof Error ? error.message : String(error), "error");
+      return { ok:false, error };
+    }
+  }
+
+  function createTeamMemberRow(member, index, { compact = false } = {}) {
+    const row = document.createElement(compact ? "div" : "li");
+    row.className = compact ? "team-member-row is-compact" : "team-member-row";
+    const rank = document.createElement("strong");
+    rank.className = "team-member-rank";
+    rank.textContent = String(index + 1);
+    const identity = document.createElement("div");
+    const name = document.createElement("strong");
+    name.textContent = member.display_name || "Oyuncu";
+    const meta = document.createElement("small");
+    meta.textContent = `${member.role === "owner" ? "LİDER · " : ""}${member.online ? "ÇEVRİMİÇİ" : "ÇEVRİMDIŞI"}`;
+    identity.append(name, meta);
+    const trophies = document.createElement("strong");
+    trophies.className = "team-member-trophies";
+    trophies.textContent = `${Number(member.trophies || 0).toLocaleString("tr-TR")} KUPA`;
+    row.append(rank, identity, trophies);
+    return row;
+  }
+
+  function renderTeamHub() {
+    const onboarding = document.getElementById("team-onboarding");
+    const hub = document.getElementById("team-hub");
+    if (!onboarding || !hub || !teamState) return;
+    onboarding.hidden = Boolean(teamState.joined);
+    hub.hidden = !teamState.joined;
+
+    if (!teamState.joined) {
+      const select = document.getElementById("team-join-select");
+      if (select) {
+        select.replaceChildren();
+        const teams = teamState.available_teams || [];
+        const placeholder = document.createElement("option");
+        placeholder.value = "";
+        placeholder.textContent = teams.length ? "Takım seç" : "Açık takım yok";
+        select.appendChild(placeholder);
+        for (const team of teams) {
+          const option = document.createElement("option");
+          option.value = team.team_id;
+          option.textContent = `${team.name} · ${team.member_count}/${team.member_limit} · ${Number(team.total_trophies || 0).toLocaleString("tr-TR")} kupa`;
+          select.appendChild(option);
+        }
+      }
+      return;
+    }
+
+    const setText = (id, value) => {
+      const element = document.getElementById(id);
+      if (element) element.textContent = String(value);
+    };
+    setText("team-name", teamState.name || "Takım");
+    setText("team-member-count", `${teamState.member_count || 0} / ${teamState.member_limit || 30} ÜYE`);
+    setText("team-total-trophies", `${Number(teamState.total_trophies || 0).toLocaleString("tr-TR")} KUPA`);
+
+    for (const button of document.querySelectorAll("[data-team-tab]")) {
+      button.classList.toggle("is-active", button.dataset.teamTab === activeTeamTab);
+    }
+    for (const panel of document.querySelectorAll("[data-team-panel]")) {
+      const active = panel.dataset.teamPanel === activeTeamTab;
+      panel.classList.toggle("is-active", active);
+      panel.hidden = !active;
+    }
+
+    const members = teamState.members || [];
+    const overview = document.getElementById("team-overview-members");
+    if (overview) {
+      overview.replaceChildren();
+      members.slice(0, 3).forEach((member, index) => {
+        overview.appendChild(createTeamMemberRow(member, index, { compact:true }));
+      });
+    }
+    const memberList = document.getElementById("team-member-list");
+    if (memberList) {
+      memberList.replaceChildren();
+      members.forEach((member, index) => memberList.appendChild(createTeamMemberRow(member, index)));
+    }
+
+    const moduleSelect = document.getElementById("team-module-request-select");
+    if (moduleSelect) {
+      const previous = moduleSelect.value;
+      moduleSelect.replaceChildren();
+      const placeholder = document.createElement("option");
+      placeholder.value = "";
+      placeholder.textContent = "Açılmış modül seç";
+      moduleSelect.appendChild(placeholder);
+      const modules = (metaProgressionState?.module_collection || [])
+        .filter((module) => module.unlocked !== false)
+        .sort((left, right) => String(left.name_tr).localeCompare(String(right.name_tr), "tr"));
+      for (const module of modules) {
+        const option = document.createElement("option");
+        option.value = module.definition_id;
+        option.textContent = `${module.name_tr} · ${module.rarity || "common"}`;
+        moduleSelect.appendChild(option);
+      }
+      if ([...moduleSelect.options].some((option) => option.value === previous)) moduleSelect.value = previous;
+    }
+
+    const requestList = document.getElementById("team-request-list");
+    if (requestList) {
+      requestList.replaceChildren();
+      const requests = teamState.module_requests || [];
+      if (!requests.length) {
+        const empty = document.createElement("p");
+        empty.className = "team-empty-state";
+        empty.textContent = "Henüz modül parçası isteği yok.";
+        requestList.appendChild(empty);
+      }
+      for (const request of requests) {
+        const card = document.createElement("article");
+        card.className = "team-request-card";
+        card.dataset.rarity = request.rarity || "common";
+        const copy = document.createElement("div");
+        const name = document.createElement("strong");
+        name.textContent = request.module_name_tr || "Modül";
+        const meta = document.createElement("small");
+        meta.textContent = `${request.requester_name || "Oyuncu"} · ${request.donated_amount || 0}/${request.requested_amount || 0} parça`;
+        copy.append(name, meta);
+        const action = document.createElement("button");
+        action.type = "button";
+        action.textContent = request.fulfilled ? "TAMAMLANDI" : request.is_own ? "SENİN İSTEĞİN" : "1 BAĞIŞLA";
+        action.disabled = Boolean(request.fulfilled || request.is_own);
+        if (!action.disabled) {
+          action.addEventListener("click", () => mutateTeam(
+            `/teams/${encodeURIComponent(teamState.team_id)}/module-requests/${encodeURIComponent(request.request_id)}/donate`,
+            { requestKind:"donate" },
+            "Modül parçası aktarılıyor…"
+          ));
+        }
+        card.append(copy, action);
+        requestList.appendChild(card);
+      }
+    }
+
+    const messageList = document.getElementById("team-message-list");
+    if (messageList) {
+      messageList.replaceChildren();
+      const messages = teamState.messages || [];
+      if (!messages.length) {
+        const empty = document.createElement("p");
+        empty.className = "team-empty-state";
+        empty.textContent = "Takım sohbetini başlatabilirsin.";
+        messageList.appendChild(empty);
+      }
+      for (const message of messages) {
+        const row = document.createElement("article");
+        row.className = `team-message${message.is_own ? " is-own" : ""}`;
+        const author = document.createElement("strong");
+        author.textContent = message.author_name || "Oyuncu";
+        const text = document.createElement("p");
+        text.textContent = message.text || "";
+        row.append(author, text);
+        messageList.appendChild(row);
+      }
+      messageList.scrollTop = messageList.scrollHeight;
+    }
+
+    const opponent = document.getElementById("team-training-opponent");
+    if (opponent) {
+      const previous = opponent.value;
+      opponent.replaceChildren();
+      const options = teamState.online_opponents || [];
+      const placeholder = document.createElement("option");
+      placeholder.value = "";
+      placeholder.textContent = options.length ? "Çevrimiçi üye seç" : "Çevrimiçi üye yok";
+      opponent.appendChild(placeholder);
+      for (const member of options) {
+        const option = document.createElement("option");
+        option.value = member.player_id;
+        option.textContent = member.display_name;
+        opponent.appendChild(option);
+      }
+      if ([...opponent.options].some((option) => option.value === previous)) opponent.value = previous;
+    }
+
+    const trainingList = document.getElementById("team-training-list");
+    if (trainingList) {
+      trainingList.replaceChildren();
+      const challenges = teamState.training_challenges || [];
+      if (!challenges.length) {
+        const empty = document.createElement("p");
+        empty.className = "team-empty-state";
+        empty.textContent = "Bekleyen antrenman daveti yok.";
+        trainingList.appendChild(empty);
+      }
+      for (const challenge of challenges) {
+        const card = document.createElement("article");
+        card.className = "team-training-card";
+        const copy = document.createElement("div");
+        const title = document.createElement("strong");
+        title.textContent = `${challenge.challenger_name} → ${challenge.opponent_name}`;
+        const meta = document.createElement("small");
+        meta.textContent = challenge.status === "pending" ? "DAVET BEKLİYOR · ÖDÜLSÜZ" : "KABUL EDİLDİ · ÖDÜLSÜZ";
+        copy.append(title, meta);
+        if (challenge.can_accept) {
+          const accept = document.createElement("button");
+          accept.type = "button";
+          accept.textContent = "KABUL ET";
+          accept.addEventListener("click", () => mutateTeam(
+            `/teams/${encodeURIComponent(teamState.team_id)}/training-challenges/${encodeURIComponent(challenge.challenge_id)}/accept`,
+            { requestKind:"training-accept" },
+            "Antrenman daveti kabul ediliyor…"
+          ));
+          card.append(copy, accept);
+        } else {
+          card.appendChild(copy);
+        }
+        trainingList.appendChild(card);
+      }
+    }
+  }
+
   function renderMetaHubScreens() {
     renderHomeHub();
     renderModuleCollection();
@@ -2170,6 +2670,7 @@
     renderCoreCollection();
     renderCanonStatistics();
     renderProfileHighlights();
+    renderTeamHub();
     const state = metaProgressionState;
     if (state) {
       const credits = document.getElementById("lobby-circuit-credits");
@@ -2178,6 +2679,81 @@
       if (flux) flux.textContent = String(state.flux_shards || 0);
     }
   }
+
+  document.querySelectorAll("[data-team-tab]").forEach((button) => {
+    button.addEventListener("click", () => {
+      activeTeamTab = button.dataset.teamTab || "overview";
+      renderTeamHub();
+    });
+  });
+  document.getElementById("team-create-button")?.addEventListener("click", async () => {
+    const input = document.getElementById("team-create-name");
+    const name = input?.value?.trim() || "";
+    if (!name) {
+      setTeamActionStatus("Takım adı gerekli.", "error");
+      return;
+    }
+    const result = await mutateTeam(
+      "/teams",
+      { name, requestKind:"create" },
+      "Takım oluşturuluyor…"
+    );
+    if (result.ok && input) input.value = "";
+  });
+  document.getElementById("team-join-button")?.addEventListener("click", () => {
+    const teamId = document.getElementById("team-join-select")?.value || "";
+    if (!teamId) {
+      setTeamActionStatus("Katılmak için bir takım seç.", "error");
+      return;
+    }
+    mutateTeam(
+      `/teams/${encodeURIComponent(teamId)}/join`,
+      { requestKind:"join" },
+      "Takıma katılım doğrulanıyor…"
+    );
+  });
+  document.getElementById("team-module-request-button")?.addEventListener("click", () => {
+    const moduleId = document.getElementById("team-module-request-select")?.value || "";
+    if (!moduleId || !teamState?.team_id) {
+      setTeamActionStatus("İstemek için açılmış bir modül seç.", "error");
+      return;
+    }
+    mutateTeam(
+      `/teams/${encodeURIComponent(teamState.team_id)}/module-requests`,
+      { module_id:moduleId, requestKind:"module-request" },
+      "Modül isteği oluşturuluyor…"
+    );
+  });
+  async function sendTeamMessage() {
+    const input = document.getElementById("team-message-input");
+    const message = input?.value?.trim() || "";
+    if (!message || !teamState?.team_id) return;
+    const result = await mutateTeam(
+      `/teams/${encodeURIComponent(teamState.team_id)}/messages`,
+      { message, requestKind:"message" },
+      "Mesaj gönderiliyor…"
+    );
+    if (result.ok && input) input.value = "";
+  }
+  document.getElementById("team-message-send")?.addEventListener("click", sendTeamMessage);
+  document.getElementById("team-message-input")?.addEventListener("keydown", (event) => {
+    if (event.key === "Enter" && !event.shiftKey) {
+      event.preventDefault();
+      sendTeamMessage();
+    }
+  });
+  document.getElementById("team-training-send")?.addEventListener("click", () => {
+    const opponentId = document.getElementById("team-training-opponent")?.value || "";
+    if (!opponentId || !teamState?.team_id) {
+      setTeamActionStatus("Antrenman için çevrimiçi bir üye seç.", "error");
+      return;
+    }
+    mutateTeam(
+      `/teams/${encodeURIComponent(teamState.team_id)}/training-challenges`,
+      { opponent_id:opponentId, requestKind:"training" },
+      "Antrenman daveti gönderiliyor…"
+    );
+  });
 
   document.querySelectorAll("[data-module-filter]").forEach((button) => {
     button.addEventListener("click", () => {
@@ -2558,7 +3134,8 @@
       core.className = "post-match-core-card";
       const glyph = document.createElement("i");
       const coreType = summary.core_type || player.core_type || "core_resonance";
-      glyph.textContent = CORE_GLYPHS[coreType] || "◈";
+      const coreVisual = applyCoreVisualIdentity(core, coreType);
+      glyph.textContent = coreVisual.glyph;
       const coreCopy = document.createElement("div");
       const coreName = (metaProgressionState?.cores?.types || []).find((item) => item.id === coreType)?.name_tr || "Çekirdek";
       const name = document.createElement("strong");
@@ -3698,11 +4275,13 @@
     corePowerButtonEl.style.setProperty("--core-charge",`${charge}%`);
     corePowerButtonEl.dataset.ready=String(corePowerReady);
     const selectedCore = metaProgressionState?.cores?.selected_core_type || "core_resonance";
-    const glyph = CORE_GLYPHS[selectedCore] || "◈";
+    const coreVisual = applyCoreVisualIdentity(corePowerButtonEl, selectedCore);
+    const glyph = coreVisual.glyph;
     const buttonArt = corePowerButtonEl.querySelector(".core-power-glyph");
     if (buttonArt) buttonArt.textContent = glyph;
     const coreCard = document.getElementById("core-1");
     if (coreCard) {
+      applyCoreVisualIdentity(coreCard, selectedCore);
       coreCard.style.setProperty("--core-charge", `${charge}%`);
       coreCard.classList.toggle("core-power-ready", corePowerReady);
       coreCard.classList.add("core-charge-card");
@@ -3710,6 +4289,7 @@
       const icon = coreCard.querySelector(".module-icon");
       if (icon) icon.textContent = glyph;
     }
+    applyCoreVisualIdentity(board, selectedCore);
     corePowerButtonEl.dataset.targeting=String(corePowerTargeting);
     corePowerButtonEl.disabled=localBattleFinished || !corePowerReady;
     corePowerButtonEl.setAttribute("aria-pressed",String(corePowerTargeting));
@@ -14014,10 +14594,11 @@ function saveHumanReviewLocalNote() {
     if (coreHost) {
       const core = metaProgressionState?.cores?.types?.find((item) => item.selected)
         || metaProgressionState?.cores?.types?.[0];
+      const visual = applyCoreVisualIdentity(coreHost, core?.id || "core_resonance");
       const icon = document.getElementById("profile-featured-core-glyph");
       const label = document.getElementById("profile-featured-core-name");
       const level = document.getElementById("profile-featured-core-level");
-      if (icon) icon.textContent = CORE_GLYPHS[core?.id] || "◈";
+      if (icon) icon.textContent = visual.glyph;
       if (label) label.textContent = core?.name_tr || "Rezonans Çekirdeği";
       if (level) level.textContent = `SEVİYE ${Number(core?.level || 1)}`;
     }
@@ -14220,6 +14801,9 @@ function saveHumanReviewLocalNote() {
     const claimableMissions = missionList.filter(
       (mission) => mission.completed && !mission.claimed
     ).length;
+    const notifications = engagement.notifications || {};
+    const dailyHasNotification = notifications.daily
+      ?? (claimableMissions + claimableLoginRewards > 0);
     const activeMissions = missionList.filter((mission) => !mission.claimed).length;
     setText(
       "lobby-daily-summary",
@@ -14234,10 +14818,12 @@ function saveHumanReviewLocalNote() {
         : `${activeMissions} görev aktif`
     );
     const dailyNotification = document.getElementById("lobby-daily-notification");
-    if (dailyNotification) dailyNotification.hidden = claimableMissions + claimableLoginRewards === 0;
+    if (dailyNotification) dailyNotification.hidden = !dailyHasNotification;
     const claimableRewards = rewardList.filter(
       (reward) => reward.claimable && !reward.claimed
     ).length;
+    const seasonHasNotification = notifications.season
+      ?? (claimableRewards > 0);
     setText(
       "lobby-reward-summary",
       claimableRewards > 0
@@ -14245,7 +14831,24 @@ function saveHumanReviewLocalNote() {
         : `${engagement.max_tier || 40} ücretsiz kademe`
     );
     const rewardNotification = document.getElementById("lobby-reward-notification");
-    if (rewardNotification) rewardNotification.hidden = claimableRewards === 0;
+    if (rewardNotification) rewardNotification.hidden = !seasonHasNotification;
+
+    const notificationByScreen = {
+      profile: notifications.profile ?? (dailyHasNotification || seasonHasNotification),
+      avatar: Boolean(notifications.avatar),
+      daily: notifications.rewards ?? (dailyHasNotification || seasonHasNotification),
+      "daily-rewards": Boolean(dailyHasNotification),
+      rewards: Boolean(seasonHasNotification),
+    };
+    for (const button of document.querySelectorAll("[data-open-screen]")) {
+      const target = button.dataset.openScreen;
+      if (!(target in notificationByScreen)) continue;
+      const hasOwnLobbyDot = Boolean(button.querySelector(".lobby-notification-dot"));
+      button.classList.toggle(
+        "has-persistent-notification",
+        Boolean(notificationByScreen[target]) && !hasOwnLobbyDot
+      );
+    }
 
     const progressTrack = document.querySelector(".season-progress-track");
     const progressFill = document.getElementById("season-progress-fill");
@@ -14279,8 +14882,7 @@ function saveHumanReviewLocalNote() {
         card.dataset.major = String(Boolean(reward.is_major));
         const day = document.createElement("strong");
         day.textContent = `${reward.day}. GÜN`;
-        const prize = document.createElement("small");
-        prize.textContent = `+${reward.circuit_credits} DK · +${reward.flux_shards} Akı · +${reward.module_shards} Kart`;
+        const prize = createRewardRows(reward, { compact:true });
         const action = document.createElement("button");
         action.type = "button";
         action.dataset.loginClaim = String(reward.day);
@@ -14344,17 +14946,16 @@ function saveHumanReviewLocalNote() {
             : "locked";
         const tier = document.createElement("span");
         tier.textContent = `KADEME ${reward.tier}`;
-        const prize = document.createElement("strong");
+        const prize = document.createElement("div");
+        prize.className = "season-reward-prize";
+        const rewardLabel = document.createElement("strong");
         const prizeParts = [
           reward.reward_label_tr,
-          Number(reward.circuit_credits || 0) > 0 ? `+${reward.circuit_credits} DK` : null,
-          Number(reward.flux_shards || 0) > 0 ? `+${reward.flux_shards} Akı` : null,
-          Number(reward.module_shards || 0) > 0 ? `+${reward.module_shards} Kart Parçası` : null,
-          Number(reward.core_shards || 0) > 0 ? `+${reward.core_shards} Çekirdek Parçası` : null,
           reward.avatar_id ? "Avatar" : null,
           reward.avatar_frame_id ? "Avatar Çerçevesi" : null,
         ].filter(Boolean);
-        prize.textContent = prizeParts.join(" · ");
+        rewardLabel.textContent = prizeParts.join(" · ");
+        prize.append(rewardLabel, createRewardRows(reward, { compact:true }));
         const requirement = document.createElement("small");
         requirement.textContent = `${reward.required_xp} Deneyim ile açılır`;
         const action = document.createElement("button");

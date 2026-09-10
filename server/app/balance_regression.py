@@ -185,10 +185,6 @@ def _regress_circuit_credit(
                     DEFAULT_CIRCUIT_CREDIT_CONFIG
                     .move_cost
                 ),
-                rotate_cost=(
-                    DEFAULT_CIRCUIT_CREDIT_CONFIG
-                    .rotate_cost
-                ),
                 remove_cost=(
                     DEFAULT_CIRCUIT_CREDIT_CONFIG
                     .remove_cost

@@ -619,6 +619,10 @@ class PlayerDataStoreService:
                 request_id: dict(receipt)
                 for request_id, receipt in profile.chest_receipts.items()
             },
+            "chest_batch_receipts": {
+                request_id: dict(receipt)
+                for request_id, receipt in profile.chest_batch_receipts.items()
+            },
             "gift_chest_claim_receipts": {
                 request_id: dict(receipt)
                 for request_id, receipt in profile.gift_chest_claim_receipts.items()
@@ -732,6 +736,12 @@ class PlayerDataStoreService:
             monthly_login_month=str(
                 dict(engagement.get("daily_login") or {}).get("month", "")
             ),
+            monthly_login_today=int(
+                dict(engagement.get("daily_login") or {}).get("today", 1)
+            ),
+            monthly_login_day_count=int(
+                dict(engagement.get("daily_login") or {}).get("day_count", 31)
+            ),
             claimed_monthly_login_days=tuple(
                 int(value)
                 for value in dict(engagement.get("daily_login") or {}).get(
@@ -745,6 +755,10 @@ class PlayerDataStoreService:
                 ).items()
                 if isinstance(receipt, dict)
             },
+            seen_notification_keys=tuple(
+                str(value)
+                for value in engagement.get("seen_notification_keys", [])
+            ),
             unlocked_titles=tuple(
                 str(value)
                 for value in engagement.get("unlocked_titles", ["Devre Çırağı"])
@@ -837,6 +851,13 @@ class PlayerDataStoreService:
                 str(request_id): dict(receipt)
                 for request_id, receipt in dict(
                     meta.get("chest_receipts", {})
+                ).items()
+                if isinstance(receipt, dict)
+            },
+            chest_batch_receipts={
+                str(request_id): dict(receipt)
+                for request_id, receipt in dict(
+                    meta.get("chest_batch_receipts", {})
                 ).items()
                 if isinstance(receipt, dict)
             },

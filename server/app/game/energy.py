@@ -93,7 +93,10 @@ def process_energy_tick(player: PlayerBattleState, core_position: Position = Pos
     player.energy_load_ratio = demand / production if production else (2.0 if demand else 0.0)
     load = player.energy_load_ratio if player.energy_stock <= 0 else min(1.0, player.energy_load_ratio)
     speed, damage, support = (1., 1., 1.)
-    if load > 1.6: speed, support = .6, .75
+    # Severe overload must not restore full damage after the 1.4 threshold.
+    # Attack-heavy boards were bypassing the intended energy trade-off by
+    # crossing into this branch, where only speed/support used to be reduced.
+    if load > 1.6: speed, damage, support = .6, .75, .75
     elif load > 1.4: speed, damage = .7, .9
     elif load > 1.2: speed, support = .8, .9
     elif load > 1: speed = .9

@@ -1,0 +1,2319 @@
+{
+  "version": "2.1.0-beta.43-checkpoint",
+  "generated_at": "2026-09-10T12:01:06.555206Z",
+  "source": {
+    "canonical_modules": "server/app/arena_canon.py",
+    "engine_catalog": "server/app/game/catalog.py + catalog_view.py",
+    "bot_profiles": "server/data/arena_bot_profiles_v1.json"
+  },
+  "coverage": {
+    "module_count": 36,
+    "bot_count": 120,
+    "modules_seen_in_bot_decks": 35,
+    "modules_missing_from_bot_decks": [
+      "singularity_projector"
+    ],
+    "levels_audited": [
+      1,
+      8,
+      15
+    ]
+  },
+  "module_matrix": [
+    {
+      "definition_id": "laser",
+      "name_tr": "Lazer",
+      "category": "saldırı",
+      "rarity": "common",
+      "unlock_arena": 1,
+      "unlock_trophies": 0,
+      "current_cost": 2,
+      "levels": {
+        "1": {
+          "level": 1,
+          "max_hp": 100,
+          "base_damage": 12.0,
+          "cooldown_ms": 1000,
+          "effect_multiplier": 1.0,
+          "energy_consumption": 2.5
+        },
+        "8": {
+          "level": 8,
+          "max_hp": 123,
+          "base_damage": 16.89,
+          "cooldown_ms": 945,
+          "effect_multiplier": 1.2722792627665729,
+          "energy_consumption": 2.5
+        },
+        "15": {
+          "level": 15,
+          "max_hp": 151,
+          "base_damage": 23.76,
+          "cooldown_ms": 894,
+          "effect_multiplier": 1.6186945224658544,
+          "energy_consumption": 2.5
+        }
+      },
+      "effect_lines": [
+        "Her atışın temel hasarı 12. Temel saldırı aralığı 1 sn.",
+        "Güçlü hedeflerde hasar çarpanı %125, zayıf olduğu hedeflerde %80 uygulanır."
+      ],
+      "bot_deck_appearances": 49,
+      "bot_archetypes": [
+        "Akım Ekonomisi",
+        "Alan Hasarı",
+        "Ağır Hasar",
+        "Dengeli",
+        "Destek Zinciri",
+        "Hızlı Baskı",
+        "Karşı Meta",
+        "Kontrol",
+        "Savunma",
+        "Sürdürülebilirlik"
+      ]
+    },
+    {
+      "definition_id": "shield",
+      "name_tr": "Kalkan",
+      "category": "savunma",
+      "rarity": "common",
+      "unlock_arena": 1,
+      "unlock_trophies": 0,
+      "current_cost": 3,
+      "levels": {
+        "1": {
+          "level": 1,
+          "max_hp": 150,
+          "base_damage": 0.0,
+          "cooldown_ms": 0,
+          "effect_multiplier": 1.0,
+          "energy_consumption": 3.0
+        },
+        "8": {
+          "level": 8,
+          "max_hp": 184,
+          "base_damage": 0.0,
+          "cooldown_ms": 0,
+          "effect_multiplier": 1.2722792627665729,
+          "energy_consumption": 3.0
+        },
+        "15": {
+          "level": 15,
+          "max_hp": 227,
+          "base_damage": 0.0,
+          "cooldown_ms": 0,
+          "effect_multiplier": 1.6186945224658544,
+          "energy_consumption": 3.0
+        }
+      },
+      "effect_lines": [
+        "Enerjiliyken kendisine gelen hasarı %35 azaltır; %65 hasar geçirir.",
+        "Saniyede 3 enerji tüketir."
+      ],
+      "bot_deck_appearances": 36,
+      "bot_archetypes": [
+        "Akım Ekonomisi",
+        "Alan Hasarı",
+        "Ağır Hasar",
+        "Dengeli",
+        "Destek Zinciri",
+        "Karşı Meta",
+        "Kontrol",
+        "Savunma",
+        "Sürdürülebilirlik"
+      ]
+    },
+    {
+      "definition_id": "repair",
+      "name_tr": "Onarım Modülü",
+      "category": "destek",
+      "rarity": "common",
+      "unlock_arena": 1,
+      "unlock_trophies": 0,
+      "current_cost": 2,
+      "levels": {
+        "1": {
+          "level": 1,
+          "max_hp": 100,
+          "base_damage": 0.0,
+          "cooldown_ms": 2000,
+          "effect_multiplier": 1.0,
+          "energy_consumption": 2.0
+        },
+        "8": {
+          "level": 8,
+          "max_hp": 123,
+          "base_damage": 0.0,
+          "cooldown_ms": 1891,
+          "effect_multiplier": 1.2722792627665729,
+          "energy_consumption": 2.0
+        },
+        "15": {
+          "level": 15,
+          "max_hp": 151,
+          "base_damage": 0.0,
+          "cooldown_ms": 1787,
+          "effect_multiplier": 1.6186945224658544,
+          "energy_consumption": 2.0
+        }
+      },
+      "effect_lines": [
+        "Temel onarım eyleminde 15 HP geri kazandırır; temel bekleme süresi 2 sn.",
+        "Belirli sabotaj etkilerini temizleyebilir."
+      ],
+      "bot_deck_appearances": 34,
+      "bot_archetypes": [
+        "Akım Ekonomisi",
+        "Alan Hasarı",
+        "Ağır Hasar",
+        "Dengeli",
+        "Destek Zinciri",
+        "Hızlı Baskı",
+        "Karşı Meta",
+        "Kontrol",
+        "Savunma",
+        "Sürdürülebilirlik"
+      ]
+    },
+    {
+      "definition_id": "cooler",
+      "name_tr": "Soğutucu",
+      "category": "destek",
+      "rarity": "common",
+      "unlock_arena": 1,
+      "unlock_trophies": 0,
+      "current_cost": 2,
+      "levels": {
+        "1": {
+          "level": 1,
+          "max_hp": 100,
+          "base_damage": 0.0,
+          "cooldown_ms": 0,
+          "effect_multiplier": 1.0,
+          "energy_consumption": 2.0
+        },
+        "8": {
+          "level": 8,
+          "max_hp": 123,
+          "base_damage": 0.0,
+          "cooldown_ms": 0,
+          "effect_multiplier": 1.2722792627665729,
+          "energy_consumption": 2.0
+        },
+        "15": {
+          "level": 15,
+          "max_hp": 151,
+          "base_damage": 0.0,
+          "cooldown_ms": 0,
+          "effect_multiplier": 1.6186945224658544,
+          "energy_consumption": 2.0
+        }
+      },
+      "effect_lines": [
+        "Her 0,1 sn motor adımında hedef ısıyı 2 azaltır.",
+        "Azaltılabilir debuff sürelerinden motor adımı başına 500 ms düşürür."
+      ],
+      "bot_deck_appearances": 34,
+      "bot_archetypes": [
+        "Akım Ekonomisi",
+        "Alan Hasarı",
+        "Ağır Hasar",
+        "Dengeli",
+        "Destek Zinciri",
+        "Hızlı Baskı",
+        "Karşı Meta",
+        "Kontrol",
+        "Savunma",
+        "Sürdürülebilirlik"
+      ]
+    },
+    {
+      "definition_id": "battery",
+      "name_tr": "Batarya",
+      "category": "sistem",
+      "rarity": "common",
+      "unlock_arena": 1,
+      "unlock_trophies": 0,
+      "current_cost": 2,
+      "levels": {
+        "1": {
+          "level": 1,
+          "max_hp": 120,
+          "base_damage": 0.0,
+          "cooldown_ms": 0,
+          "effect_multiplier": 1.0,
+          "energy_consumption": 0.0
+        },
+        "8": {
+          "level": 8,
+          "max_hp": 148,
+          "base_damage": 0.0,
+          "cooldown_ms": 0,
+          "effect_multiplier": 1.2722792627665729,
+          "energy_consumption": 0.0
+        },
+        "15": {
+          "level": 15,
+          "max_hp": 182,
+          "base_damage": 0.0,
+          "cooldown_ms": 0,
+          "effect_multiplier": 1.6186945224658544,
+          "energy_consumption": 0.0
+        }
+      },
+      "effect_lines": [
+        "Devrenin enerji kapasitesini 30 artırır; üretimi artırmaz."
+      ],
+      "bot_deck_appearances": 48,
+      "bot_archetypes": [
+        "Akım Ekonomisi",
+        "Dengeli",
+        "Destek Zinciri",
+        "Hızlı Baskı",
+        "Karşı Meta",
+        "Savunma",
+        "Sürdürülebilirlik"
+      ]
+    },
+    {
+      "definition_id": "amplifier",
+      "name_tr": "Güçlendirici",
+      "category": "destek",
+      "rarity": "rare",
+      "unlock_arena": 1,
+      "unlock_trophies": 0,
+      "current_cost": 3,
+      "levels": {
+        "1": {
+          "level": 1,
+          "max_hp": 90,
+          "base_damage": 0.0,
+          "cooldown_ms": 0,
+          "effect_multiplier": 1.0,
+          "energy_consumption": 3.0
+        },
+        "8": {
+          "level": 8,
+          "max_hp": 111,
+          "base_damage": 0.0,
+          "cooldown_ms": 0,
+          "effect_multiplier": 1.2722792627665729,
+          "energy_consumption": 3.0
+        },
+        "15": {
+          "level": 15,
+          "max_hp": 136,
+          "base_damage": 0.0,
+          "cooldown_ms": 0,
+          "effect_multiplier": 1.6186945224658544,
+          "energy_consumption": 3.0
+        }
+      },
+      "effect_lines": [
+        "Yakındaki saldırı modüllerinin hasarını %115 seviyesine çıkarır (+%15)."
+      ],
+      "bot_deck_appearances": 27,
+      "bot_archetypes": [
+        "Akım Ekonomisi",
+        "Alan Hasarı",
+        "Ağır Hasar",
+        "Dengeli",
+        "Destek Zinciri",
+        "Hızlı Baskı",
+        "Karşı Meta",
+        "Kontrol",
+        "Savunma",
+        "Sürdürülebilirlik"
+      ]
+    },
+    {
+      "definition_id": "pulse_cannon",
+      "name_tr": "Darbe Topu",
+      "category": "saldırı",
+      "rarity": "rare",
+      "unlock_arena": 1,
+      "unlock_trophies": 0,
+      "current_cost": 3,
+      "levels": {
+        "1": {
+          "level": 1,
+          "max_hp": 115,
+          "base_damage": 32.0,
+          "cooldown_ms": 2500,
+          "effect_multiplier": 1.0,
+          "energy_consumption": 4.0
+        },
+        "8": {
+          "level": 8,
+          "max_hp": 141,
+          "base_damage": 45.03,
+          "cooldown_ms": 2363,
+          "effect_multiplier": 1.2722792627665729,
+          "energy_consumption": 4.0
+        },
+        "15": {
+          "level": 15,
+          "max_hp": 174,
+          "base_damage": 63.36,
+          "cooldown_ms": 2234,
+          "effect_multiplier": 1.6186945224658544,
+          "energy_consumption": 4.0
+        }
+      },
+      "effect_lines": [
+        "Her atışın temel hasarı 32. Temel saldırı aralığı 2.5 sn.",
+        "Güçlü hedeflerde hasar çarpanı %125, zayıf olduğu hedeflerde %80 uygulanır."
+      ],
+      "bot_deck_appearances": 51,
+      "bot_archetypes": [
+        "Akım Ekonomisi",
+        "Alan Hasarı",
+        "Ağır Hasar",
+        "Dengeli",
+        "Destek Zinciri",
+        "Hızlı Baskı",
+        "Karşı Meta",
+        "Kontrol",
+        "Savunma",
+        "Sürdürülebilirlik"
+      ]
+    },
+    {
+      "definition_id": "armor",
+      "name_tr": "Zırh",
+      "category": "savunma",
+      "rarity": "common",
+      "unlock_arena": 1,
+      "unlock_trophies": 0,
+      "current_cost": 2,
+      "levels": {
+        "1": {
+          "level": 1,
+          "max_hp": 180,
+          "base_damage": 0.0,
+          "cooldown_ms": 0,
+          "effect_multiplier": 1.0,
+          "energy_consumption": 2.0
+        },
+        "8": {
+          "level": 8,
+          "max_hp": 221,
+          "base_damage": 0.0,
+          "cooldown_ms": 0,
+          "effect_multiplier": 1.2722792627665729,
+          "energy_consumption": 2.0
+        },
+        "15": {
+          "level": 15,
+          "max_hp": 272,
+          "base_damage": 0.0,
+          "cooldown_ms": 0,
+          "effect_multiplier": 1.6186945224658544,
+          "energy_consumption": 2.0
+        }
+      },
+      "effect_lines": [
+        "Pasif savunmadır; kendisine gelen hasarı %25 azaltır.",
+        "Enerji tüketmeden çalışır."
+      ],
+      "bot_deck_appearances": 33,
+      "bot_archetypes": [
+        "Akım Ekonomisi",
+        "Alan Hasarı",
+        "Ağır Hasar",
+        "Dengeli",
+        "Destek Zinciri",
+        "Karşı Meta",
+        "Kontrol",
+        "Savunma",
+        "Sürdürülebilirlik"
+      ]
+    },
+    {
+      "definition_id": "emp",
+      "name_tr": "EMP",
+      "category": "sabotaj",
+      "rarity": "rare",
+      "unlock_arena": 1,
+      "unlock_trophies": 0,
+      "current_cost": 3,
+      "levels": {
+        "1": {
+          "level": 1,
+          "max_hp": 80,
+          "base_damage": 0.0,
+          "cooldown_ms": 6000,
+          "effect_multiplier": 1.0,
+          "energy_consumption": 3.0
+        },
+        "8": {
+          "level": 8,
+          "max_hp": 98,
+          "base_damage": 0.0,
+          "cooldown_ms": 5672,
+          "effect_multiplier": 1.2298738654248702,
+          "energy_consumption": 3.0
+        },
+        "15": {
+          "level": 15,
+          "max_hp": 121,
+          "base_damage": 0.0,
+          "cooldown_ms": 5362,
+          "effect_multiplier": 1.512589724855112,
+          "energy_consumption": 3.0
+        }
+      },
+      "effect_lines": [
+        "Hedef sistemi 2.5 sn devre dışı bırakır.",
+        "Temel sabotaj bekleme süresi 6 sn."
+      ],
+      "bot_deck_appearances": 46,
+      "bot_archetypes": [
+        "Alan Hasarı",
+        "Ağır Hasar",
+        "Dengeli",
+        "Hızlı Baskı",
+        "Karşı Meta",
+        "Kontrol"
+      ]
+    },
+    {
+      "definition_id": "missile_launcher",
+      "name_tr": "Füze Fırlatıcı",
+      "category": "saldırı",
+      "rarity": "rare",
+      "unlock_arena": 2,
+      "unlock_trophies": 300,
+      "current_cost": 3,
+      "levels": {
+        "1": {
+          "level": 1,
+          "max_hp": 105,
+          "base_damage": 28.0,
+          "cooldown_ms": 3000,
+          "effect_multiplier": 1.0,
+          "energy_consumption": 4.0
+        },
+        "8": {
+          "level": 8,
+          "max_hp": 129,
+          "base_damage": 39.4,
+          "cooldown_ms": 2836,
+          "effect_multiplier": 1.2722792627665729,
+          "energy_consumption": 4.0
+        },
+        "15": {
+          "level": 15,
+          "max_hp": 159,
+          "base_damage": 55.44,
+          "cooldown_ms": 2681,
+          "effect_multiplier": 1.6186945224658544,
+          "energy_consumption": 4.0
+        }
+      },
+      "effect_lines": [
+        "Her atışın temel hasarı 28. Temel saldırı aralığı 3 sn.",
+        "Güçlü hedeflerde hasar çarpanı %125, zayıf olduğu hedeflerde %80 uygulanır."
+      ],
+      "bot_deck_appearances": 26,
+      "bot_archetypes": [
+        "Akım Ekonomisi",
+        "Alan Hasarı",
+        "Ağır Hasar",
+        "Dengeli",
+        "Destek Zinciri",
+        "Hızlı Baskı",
+        "Karşı Meta",
+        "Kontrol",
+        "Savunma",
+        "Sürdürülebilirlik"
+      ]
+    },
+    {
+      "definition_id": "targeting_computer",
+      "name_tr": "Hedefleme Bilgisayarı",
+      "category": "destek",
+      "rarity": "rare",
+      "unlock_arena": 2,
+      "unlock_trophies": 300,
+      "current_cost": 3,
+      "levels": {
+        "1": {
+          "level": 1,
+          "max_hp": 85,
+          "base_damage": 0.0,
+          "cooldown_ms": 0,
+          "effect_multiplier": 1.0,
+          "energy_consumption": 3.0
+        },
+        "8": {
+          "level": 8,
+          "max_hp": 105,
+          "base_damage": 0.0,
+          "cooldown_ms": 0,
+          "effect_multiplier": 1.2722792627665729,
+          "energy_consumption": 3.0
+        },
+        "15": {
+          "level": 15,
+          "max_hp": 129,
+          "base_damage": 0.0,
+          "cooldown_ms": 0,
+          "effect_multiplier": 1.6186945224658544,
+          "energy_consumption": 3.0
+        }
+      },
+      "effect_lines": [
+        "Desteklediği saldırı modülünün bekleme süresini %85 seviyesine indirir (yaklaşık %15 daha hızlı)."
+      ],
+      "bot_deck_appearances": 31,
+      "bot_archetypes": [
+        "Akım Ekonomisi",
+        "Alan Hasarı",
+        "Ağır Hasar",
+        "Dengeli",
+        "Destek Zinciri",
+        "Hızlı Baskı",
+        "Karşı Meta",
+        "Kontrol",
+        "Savunma",
+        "Sürdürülebilirlik"
+      ]
+    },
+    {
+      "definition_id": "arc_cannon",
+      "name_tr": "Ark Topu",
+      "category": "saldırı",
+      "rarity": "rare",
+      "unlock_arena": 3,
+      "unlock_trophies": 600,
+      "current_cost": 4,
+      "levels": {
+        "1": {
+          "level": 1,
+          "max_hp": 100,
+          "base_damage": 20.0,
+          "cooldown_ms": 1800,
+          "effect_multiplier": 1.0,
+          "energy_consumption": 7.0
+        },
+        "8": {
+          "level": 8,
+          "max_hp": 123,
+          "base_damage": 28.14,
+          "cooldown_ms": 1702,
+          "effect_multiplier": 1.2722792627665729,
+          "energy_consumption": 7.0
+        },
+        "15": {
+          "level": 15,
+          "max_hp": 151,
+          "base_damage": 39.6,
+          "cooldown_ms": 1609,
+          "effect_multiplier": 1.6186945224658544,
+          "energy_consumption": 7.0
+        }
+      },
+      "effect_lines": [
+        "Her atışın temel hasarı 20. Temel saldırı aralığı 1.8 sn.",
+        "Güçlü hedeflerde hasar çarpanı %125, zayıf olduğu hedeflerde %80 uygulanır."
+      ],
+      "bot_deck_appearances": 12,
+      "bot_archetypes": [
+        "Akım Ekonomisi",
+        "Alan Hasarı",
+        "Ağır Hasar",
+        "Dengeli",
+        "Destek Zinciri",
+        "Hızlı Baskı",
+        "Karşı Meta",
+        "Kontrol"
+      ]
+    },
+    {
+      "definition_id": "barrier",
+      "name_tr": "Bariyer",
+      "category": "savunma",
+      "rarity": "rare",
+      "unlock_arena": 3,
+      "unlock_trophies": 600,
+      "current_cost": 3,
+      "levels": {
+        "1": {
+          "level": 1,
+          "max_hp": 165,
+          "base_damage": 0.0,
+          "cooldown_ms": 0,
+          "effect_multiplier": 1.0,
+          "energy_consumption": 3.0
+        },
+        "8": {
+          "level": 8,
+          "max_hp": 203,
+          "base_damage": 0.0,
+          "cooldown_ms": 0,
+          "effect_multiplier": 1.2722792627665729,
+          "energy_consumption": 3.0
+        },
+        "15": {
+          "level": 15,
+          "max_hp": 250,
+          "base_damage": 0.0,
+          "cooldown_ms": 0,
+          "effect_multiplier": 1.6186945224658544,
+          "energy_consumption": 3.0
+        }
+      },
+      "effect_lines": [
+        "Enerjiliyken kendisine gelen hasarı %20 azaltır.",
+        "Aktif normal hedefler varken saldırılarda öncelikli hedef olur.",
+        "Enerjili Bariyer sabotaj sürelerini ayrıca %25 kısaltabilir."
+      ],
+      "bot_deck_appearances": 25,
+      "bot_archetypes": [
+        "Akım Ekonomisi",
+        "Alan Hasarı",
+        "Dengeli",
+        "Destek Zinciri",
+        "Karşı Meta",
+        "Kontrol",
+        "Savunma",
+        "Sürdürülebilirlik"
+      ]
+    },
+    {
+      "definition_id": "capacitor",
+      "name_tr": "Kapasitör",
+      "category": "sistem",
+      "rarity": "rare",
+      "unlock_arena": 3,
+      "unlock_trophies": 600,
+      "current_cost": 2,
+      "levels": {
+        "1": {
+          "level": 1,
+          "max_hp": 90,
+          "base_damage": 0.0,
+          "cooldown_ms": 2500,
+          "effect_multiplier": 1.0,
+          "energy_consumption": 1.0
+        },
+        "8": {
+          "level": 8,
+          "max_hp": 111,
+          "base_damage": 0.0,
+          "cooldown_ms": 2363,
+          "effect_multiplier": 1.2722792627665729,
+          "energy_consumption": 1.0
+        },
+        "15": {
+          "level": 15,
+          "max_hp": 136,
+          "base_damage": 0.0,
+          "cooldown_ms": 2234,
+          "effect_multiplier": 1.6186945224658544,
+          "energy_consumption": 1.0
+        }
+      },
+      "effect_lines": [
+        "Enerji kapasitesini 25 artırır; saniyede 1 enerji tüketir."
+      ],
+      "bot_deck_appearances": 32,
+      "bot_archetypes": [
+        "Akım Ekonomisi",
+        "Dengeli",
+        "Destek Zinciri",
+        "Hızlı Baskı",
+        "Karşı Meta",
+        "Savunma",
+        "Sürdürülebilirlik"
+      ]
+    },
+    {
+      "definition_id": "drone_bay",
+      "name_tr": "Dron Üssü",
+      "category": "saldırı",
+      "rarity": "rare",
+      "unlock_arena": 4,
+      "unlock_trophies": 900,
+      "current_cost": 3,
+      "levels": {
+        "1": {
+          "level": 1,
+          "max_hp": 110,
+          "base_damage": 8.0,
+          "cooldown_ms": 900,
+          "effect_multiplier": 1.0,
+          "energy_consumption": 4.0
+        },
+        "8": {
+          "level": 8,
+          "max_hp": 135,
+          "base_damage": 11.26,
+          "cooldown_ms": 851,
+          "effect_multiplier": 1.2722792627665729,
+          "energy_consumption": 4.0
+        },
+        "15": {
+          "level": 15,
+          "max_hp": 166,
+          "base_damage": 15.84,
+          "cooldown_ms": 804,
+          "effect_multiplier": 1.6186945224658544,
+          "energy_consumption": 4.0
+        }
+      },
+      "effect_lines": [
+        "Her atışın temel hasarı 8. Temel saldırı aralığı 0.9 sn.",
+        "Güçlü hedeflerde hasar çarpanı %125, zayıf olduğu hedeflerde %80 uygulanır."
+      ],
+      "bot_deck_appearances": 11,
+      "bot_archetypes": [
+        "Alan Hasarı",
+        "Ağır Hasar",
+        "Dengeli",
+        "Hızlı Baskı",
+        "Karşı Meta"
+      ]
+    },
+    {
+      "definition_id": "jammer",
+      "name_tr": "Sinyal Bozucu",
+      "category": "sabotaj",
+      "rarity": "rare",
+      "unlock_arena": 4,
+      "unlock_trophies": 900,
+      "current_cost": 3,
+      "levels": {
+        "1": {
+          "level": 1,
+          "max_hp": 85,
+          "base_damage": 0.0,
+          "cooldown_ms": 5000,
+          "effect_multiplier": 1.0,
+          "energy_consumption": 3.0
+        },
+        "8": {
+          "level": 8,
+          "max_hp": 105,
+          "base_damage": 0.0,
+          "cooldown_ms": 4727,
+          "effect_multiplier": 1.2298738654248702,
+          "energy_consumption": 3.0
+        },
+        "15": {
+          "level": 15,
+          "max_hp": 129,
+          "base_damage": 0.0,
+          "cooldown_ms": 4468,
+          "effect_multiplier": 1.512589724855112,
+          "energy_consumption": 3.0
+        }
+      },
+      "effect_lines": [
+        "Hedef destek/kontrol modülünü 4 sn bozar.",
+        "Temel sabotaj bekleme süresi 5 sn."
+      ],
+      "bot_deck_appearances": 24,
+      "bot_archetypes": [
+        "Alan Hasarı",
+        "Ağır Hasar",
+        "Dengeli",
+        "Hızlı Baskı",
+        "Karşı Meta",
+        "Kontrol"
+      ]
+    },
+    {
+      "definition_id": "railgun",
+      "name_tr": "Ray Topu",
+      "category": "saldırı",
+      "rarity": "epic",
+      "unlock_arena": 5,
+      "unlock_trophies": 1200,
+      "current_cost": 4,
+      "levels": {
+        "1": {
+          "level": 1,
+          "max_hp": 95,
+          "base_damage": 40.0,
+          "cooldown_ms": 3200,
+          "effect_multiplier": 1.0,
+          "energy_consumption": 7.0
+        },
+        "8": {
+          "level": 8,
+          "max_hp": 117,
+          "base_damage": 56.28,
+          "cooldown_ms": 3025,
+          "effect_multiplier": 1.2722792627665729,
+          "energy_consumption": 7.0
+        },
+        "15": {
+          "level": 15,
+          "max_hp": 144,
+          "base_damage": 79.2,
+          "cooldown_ms": 2860,
+          "effect_multiplier": 1.6186945224658544,
+          "energy_consumption": 7.0
+        }
+      },
+      "effect_lines": [
+        "Her atışın temel hasarı 40. Temel saldırı aralığı 3.2 sn.",
+        "Güçlü hedeflerde hasar çarpanı %125, zayıf olduğu hedeflerde %80 uygulanır."
+      ],
+      "bot_deck_appearances": 16,
+      "bot_archetypes": [
+        "Alan Hasarı",
+        "Ağır Hasar",
+        "Dengeli",
+        "Hızlı Baskı",
+        "Karşı Meta",
+        "Savunma"
+      ]
+    },
+    {
+      "definition_id": "reflector",
+      "name_tr": "Yansıtıcı",
+      "category": "savunma",
+      "rarity": "epic",
+      "unlock_arena": 5,
+      "unlock_trophies": 1200,
+      "current_cost": 4,
+      "levels": {
+        "1": {
+          "level": 1,
+          "max_hp": 110,
+          "base_damage": 0.0,
+          "cooldown_ms": 1800,
+          "effect_multiplier": 1.0,
+          "energy_consumption": 4.0
+        },
+        "8": {
+          "level": 8,
+          "max_hp": 135,
+          "base_damage": 0.0,
+          "cooldown_ms": 1702,
+          "effect_multiplier": 1.2722792627665729,
+          "energy_consumption": 4.0
+        },
+        "15": {
+          "level": 15,
+          "max_hp": 166,
+          "base_damage": 0.0,
+          "cooldown_ms": 1609,
+          "effect_multiplier": 1.6186945224658544,
+          "energy_consumption": 4.0
+        }
+      },
+      "effect_lines": [
+        "Enerjiliyken kendisine gelen hasarı %25 azaltır.",
+        "Aldığı son hasarın %20'sini saldırana geri yansıtır."
+      ],
+      "bot_deck_appearances": 21,
+      "bot_archetypes": [
+        "Akım Ekonomisi",
+        "Alan Hasarı",
+        "Ağır Hasar",
+        "Dengeli",
+        "Destek Zinciri",
+        "Karşı Meta",
+        "Kontrol",
+        "Savunma",
+        "Sürdürülebilirlik"
+      ]
+    },
+    {
+      "definition_id": "current_balancer",
+      "name_tr": "Akım Dengeleyici",
+      "category": "sistem",
+      "rarity": "rare",
+      "unlock_arena": 5,
+      "unlock_trophies": 1200,
+      "current_cost": 3,
+      "levels": {
+        "1": {
+          "level": 1,
+          "max_hp": 100,
+          "base_damage": 0.0,
+          "cooldown_ms": 0,
+          "effect_multiplier": 1.0,
+          "energy_consumption": 1.0
+        },
+        "8": {
+          "level": 8,
+          "max_hp": 123,
+          "base_damage": 0.0,
+          "cooldown_ms": 0,
+          "effect_multiplier": 1.2722792627665729,
+          "energy_consumption": 1.0
+        },
+        "15": {
+          "level": 15,
+          "max_hp": 151,
+          "base_damage": 0.0,
+          "cooldown_ms": 0,
+          "effect_multiplier": 1.6186945224658544,
+          "energy_consumption": 1.0
+        }
+      },
+      "effect_lines": [
+        "Tüm modüllerin enerji tüketimini %8 azaltır. Çoklu kopyalar azalan verimle en fazla %35 azaltım sağlar."
+      ],
+      "bot_deck_appearances": 22,
+      "bot_archetypes": [
+        "Akım Ekonomisi",
+        "Dengeli",
+        "Destek Zinciri",
+        "Hızlı Baskı",
+        "Karşı Meta",
+        "Savunma",
+        "Sürdürülebilirlik"
+      ]
+    },
+    {
+      "definition_id": "virus",
+      "name_tr": "Virüs",
+      "category": "sabotaj",
+      "rarity": "epic",
+      "unlock_arena": 6,
+      "unlock_trophies": 1500,
+      "current_cost": 4,
+      "levels": {
+        "1": {
+          "level": 1,
+          "max_hp": 70,
+          "base_damage": 0.0,
+          "cooldown_ms": 7000,
+          "effect_multiplier": 1.0,
+          "energy_consumption": 4.0
+        },
+        "8": {
+          "level": 8,
+          "max_hp": 86,
+          "base_damage": 0.0,
+          "cooldown_ms": 6617,
+          "effect_multiplier": 1.2298738654248702,
+          "energy_consumption": 4.0
+        },
+        "15": {
+          "level": 15,
+          "max_hp": 106,
+          "base_damage": 0.0,
+          "cooldown_ms": 6255,
+          "effect_multiplier": 1.512589724855112,
+          "energy_consumption": 4.0
+        }
+      },
+      "effect_lines": [
+        "6 sn sürer; her 1 sn'de 4 hasar verir.",
+        "Direnç uygulanmazsa teorik temel toplamı 24 hasardır."
+      ],
+      "bot_deck_appearances": 20,
+      "bot_archetypes": [
+        "Alan Hasarı",
+        "Ağır Hasar",
+        "Dengeli",
+        "Hızlı Baskı",
+        "Karşı Meta",
+        "Kontrol"
+      ]
+    },
+    {
+      "definition_id": "overclock_unit",
+      "name_tr": "Aşırı Hızlandırıcı",
+      "category": "destek",
+      "rarity": "epic",
+      "unlock_arena": 6,
+      "unlock_trophies": 1500,
+      "current_cost": 4,
+      "levels": {
+        "1": {
+          "level": 1,
+          "max_hp": 80,
+          "base_damage": 0.0,
+          "cooldown_ms": 0,
+          "effect_multiplier": 1.0,
+          "energy_consumption": 4.0
+        },
+        "8": {
+          "level": 8,
+          "max_hp": 98,
+          "base_damage": 0.0,
+          "cooldown_ms": 0,
+          "effect_multiplier": 1.2722792627665729,
+          "energy_consumption": 4.0
+        },
+        "15": {
+          "level": 15,
+          "max_hp": 121,
+          "base_damage": 0.0,
+          "cooldown_ms": 0,
+          "effect_multiplier": 1.6186945224658544,
+          "energy_consumption": 4.0
+        }
+      },
+      "effect_lines": [
+        "Hasarı %120 seviyesine çıkarır ve bekleme süresini %80 seviyesine indirir.",
+        "Karşılığında motor adımı başına 1 ısı ekler."
+      ],
+      "bot_deck_appearances": 18,
+      "bot_archetypes": [
+        "Akım Ekonomisi",
+        "Alan Hasarı",
+        "Dengeli",
+        "Destek Zinciri",
+        "Hızlı Baskı",
+        "Karşı Meta",
+        "Kontrol",
+        "Sürdürülebilirlik"
+      ]
+    },
+    {
+      "definition_id": "plasma_mortar",
+      "name_tr": "Plazma Havanı",
+      "category": "saldırı",
+      "rarity": "epic",
+      "unlock_arena": 7,
+      "unlock_trophies": 1800,
+      "current_cost": 4,
+      "levels": {
+        "1": {
+          "level": 1,
+          "max_hp": 100,
+          "base_damage": 30.0,
+          "cooldown_ms": 3000,
+          "effect_multiplier": 1.0,
+          "energy_consumption": 7.0
+        },
+        "8": {
+          "level": 8,
+          "max_hp": 123,
+          "base_damage": 42.21,
+          "cooldown_ms": 2836,
+          "effect_multiplier": 1.2722792627665729,
+          "energy_consumption": 7.0
+        },
+        "15": {
+          "level": 15,
+          "max_hp": 151,
+          "base_damage": 59.4,
+          "cooldown_ms": 2681,
+          "effect_multiplier": 1.6186945224658544,
+          "energy_consumption": 7.0
+        }
+      },
+      "effect_lines": [
+        "Her atışın temel hasarı 30. Temel saldırı aralığı 3 sn.",
+        "Güçlü hedeflerde hasar çarpanı %125, zayıf olduğu hedeflerde %80 uygulanır."
+      ],
+      "bot_deck_appearances": 12,
+      "bot_archetypes": [
+        "Ağır Hasar",
+        "Hızlı Baskı",
+        "Kontrol",
+        "Savunma",
+        "Sürdürülebilirlik"
+      ]
+    },
+    {
+      "definition_id": "guardian_dome",
+      "name_tr": "Muhafız Kubbesi",
+      "category": "savunma",
+      "rarity": "epic",
+      "unlock_arena": 7,
+      "unlock_trophies": 1800,
+      "current_cost": 4,
+      "levels": {
+        "1": {
+          "level": 1,
+          "max_hp": 155,
+          "base_damage": 0.0,
+          "cooldown_ms": 0,
+          "effect_multiplier": 1.0,
+          "energy_consumption": 4.0
+        },
+        "8": {
+          "level": 8,
+          "max_hp": 191,
+          "base_damage": 0.0,
+          "cooldown_ms": 0,
+          "effect_multiplier": 1.2722792627665729,
+          "energy_consumption": 4.0
+        },
+        "15": {
+          "level": 15,
+          "max_hp": 234,
+          "base_damage": 0.0,
+          "cooldown_ms": 0,
+          "effect_multiplier": 1.6186945224658544,
+          "energy_consumption": 4.0
+        }
+      },
+      "effect_lines": [
+        "Enerjiliyken kendisine gelen hasarı %35 azaltır; %65 hasar geçirir.",
+        "Saniyede 4 enerji tüketir."
+      ],
+      "bot_deck_appearances": 9,
+      "bot_archetypes": [
+        "Akım Ekonomisi",
+        "Alan Hasarı",
+        "Ağır Hasar",
+        "Dengeli",
+        "Savunma"
+      ]
+    },
+    {
+      "definition_id": "nano_medic",
+      "name_tr": "Nano Sağlıkçı",
+      "category": "destek",
+      "rarity": "rare",
+      "unlock_arena": 7,
+      "unlock_trophies": 1800,
+      "current_cost": 3,
+      "levels": {
+        "1": {
+          "level": 1,
+          "max_hp": 95,
+          "base_damage": 0.0,
+          "cooldown_ms": 2000,
+          "effect_multiplier": 1.0,
+          "energy_consumption": 3.0
+        },
+        "8": {
+          "level": 8,
+          "max_hp": 117,
+          "base_damage": 0.0,
+          "cooldown_ms": 1891,
+          "effect_multiplier": 1.2722792627665729,
+          "energy_consumption": 3.0
+        },
+        "15": {
+          "level": 15,
+          "max_hp": 144,
+          "base_damage": 0.0,
+          "cooldown_ms": 1787,
+          "effect_multiplier": 1.6186945224658544,
+          "energy_consumption": 3.0
+        }
+      },
+      "effect_lines": [
+        "Temel onarım eyleminde 15 HP geri kazandırır; temel bekleme süresi 2 sn.",
+        "Belirli sabotaj etkilerini temizleyebilir."
+      ],
+      "bot_deck_appearances": 13,
+      "bot_archetypes": [
+        "Alan Hasarı",
+        "Ağır Hasar",
+        "Destek Zinciri",
+        "Karşı Meta",
+        "Savunma",
+        "Sürdürülebilirlik"
+      ]
+    },
+    {
+      "definition_id": "quantum_repeater",
+      "name_tr": "Kuantum Tekrarlayıcı",
+      "category": "saldırı",
+      "rarity": "epic",
+      "unlock_arena": 8,
+      "unlock_trophies": 2100,
+      "current_cost": 4,
+      "levels": {
+        "1": {
+          "level": 1,
+          "max_hp": 92,
+          "base_damage": 24.0,
+          "cooldown_ms": 1000,
+          "effect_multiplier": 1.0,
+          "energy_consumption": 7.0
+        },
+        "8": {
+          "level": 8,
+          "max_hp": 113,
+          "base_damage": 33.77,
+          "cooldown_ms": 945,
+          "effect_multiplier": 1.2722792627665729,
+          "energy_consumption": 7.0
+        },
+        "15": {
+          "level": 15,
+          "max_hp": 139,
+          "base_damage": 47.52,
+          "cooldown_ms": 894,
+          "effect_multiplier": 1.6186945224658544,
+          "energy_consumption": 7.0
+        }
+      },
+      "effect_lines": [
+        "Her atışın temel hasarı 24. Temel saldırı aralığı 1 sn.",
+        "Güçlü hedeflerde hasar çarpanı %125, zayıf olduğu hedeflerde %80 uygulanır."
+      ],
+      "bot_deck_appearances": 15,
+      "bot_archetypes": [
+        "Akım Ekonomisi",
+        "Alan Hasarı",
+        "Dengeli",
+        "Destek Zinciri",
+        "Hızlı Baskı",
+        "Kontrol",
+        "Savunma",
+        "Sürdürülebilirlik"
+      ]
+    },
+    {
+      "definition_id": "chrono_relay",
+      "name_tr": "Krono Rölesi",
+      "category": "destek",
+      "rarity": "epic",
+      "unlock_arena": 8,
+      "unlock_trophies": 2100,
+      "current_cost": 4,
+      "levels": {
+        "1": {
+          "level": 1,
+          "max_hp": 88,
+          "base_damage": 0.0,
+          "cooldown_ms": 0,
+          "effect_multiplier": 1.0,
+          "energy_consumption": 4.0
+        },
+        "8": {
+          "level": 8,
+          "max_hp": 108,
+          "base_damage": 0.0,
+          "cooldown_ms": 0,
+          "effect_multiplier": 1.2722792627665729,
+          "energy_consumption": 4.0
+        },
+        "15": {
+          "level": 15,
+          "max_hp": 133,
+          "base_damage": 0.0,
+          "cooldown_ms": 0,
+          "effect_multiplier": 1.6186945224658544,
+          "energy_consumption": 4.0
+        }
+      },
+      "effect_lines": [
+        "Hasarı %120 seviyesine çıkarır ve bekleme süresini %80 seviyesine indirir.",
+        "Karşılığında motor adımı başına 1 ısı ekler."
+      ],
+      "bot_deck_appearances": 16,
+      "bot_archetypes": [
+        "Alan Hasarı",
+        "Ağır Hasar",
+        "Destek Zinciri",
+        "Karşı Meta",
+        "Savunma",
+        "Sürdürülebilirlik"
+      ]
+    },
+    {
+      "definition_id": "ion_spear",
+      "name_tr": "İyon Mızrağı",
+      "category": "saldırı",
+      "rarity": "legendary",
+      "unlock_arena": 9,
+      "unlock_trophies": 2400,
+      "current_cost": 5,
+      "levels": {
+        "1": {
+          "level": 1,
+          "max_hp": 100,
+          "base_damage": 48.0,
+          "cooldown_ms": 3200,
+          "effect_multiplier": 1.0,
+          "energy_consumption": 9.0
+        },
+        "8": {
+          "level": 8,
+          "max_hp": 123,
+          "base_damage": 67.54,
+          "cooldown_ms": 3025,
+          "effect_multiplier": 1.2722792627665729,
+          "energy_consumption": 9.0
+        },
+        "15": {
+          "level": 15,
+          "max_hp": 151,
+          "base_damage": 95.04,
+          "cooldown_ms": 2860,
+          "effect_multiplier": 1.6186945224658544,
+          "energy_consumption": 9.0
+        }
+      },
+      "effect_lines": [
+        "Her atışın temel hasarı 48. Temel saldırı aralığı 3.2 sn.",
+        "Güçlü hedeflerde hasar çarpanı %125, zayıf olduğu hedeflerde %80 uygulanır."
+      ],
+      "bot_deck_appearances": 11,
+      "bot_archetypes": [
+        "Akım Ekonomisi",
+        "Alan Hasarı",
+        "Dengeli",
+        "Destek Zinciri",
+        "Kontrol",
+        "Sürdürülebilirlik"
+      ]
+    },
+    {
+      "definition_id": "phase_armor",
+      "name_tr": "Faz Zırhı",
+      "category": "savunma",
+      "rarity": "epic",
+      "unlock_arena": 9,
+      "unlock_trophies": 2400,
+      "current_cost": 4,
+      "levels": {
+        "1": {
+          "level": 1,
+          "max_hp": 150,
+          "base_damage": 0.0,
+          "cooldown_ms": 0,
+          "effect_multiplier": 1.0,
+          "energy_consumption": 4.0
+        },
+        "8": {
+          "level": 8,
+          "max_hp": 184,
+          "base_damage": 0.0,
+          "cooldown_ms": 0,
+          "effect_multiplier": 1.2722792627665729,
+          "energy_consumption": 4.0
+        },
+        "15": {
+          "level": 15,
+          "max_hp": 227,
+          "base_damage": 0.0,
+          "cooldown_ms": 0,
+          "effect_multiplier": 1.6186945224658544,
+          "energy_consumption": 4.0
+        }
+      },
+      "effect_lines": [
+        "Pasif savunmadır; kendisine gelen hasarı %25 azaltır.",
+        "Enerji tüketmeden çalışır."
+      ],
+      "bot_deck_appearances": 4,
+      "bot_archetypes": [
+        "Dengeli",
+        "Savunma"
+      ]
+    },
+    {
+      "definition_id": "swarm_fabricator",
+      "name_tr": "Sürü Fabrikatörü",
+      "category": "saldırı",
+      "rarity": "epic",
+      "unlock_arena": 9,
+      "unlock_trophies": 2400,
+      "current_cost": 4,
+      "levels": {
+        "1": {
+          "level": 1,
+          "max_hp": 105,
+          "base_damage": 6.0,
+          "cooldown_ms": 900,
+          "effect_multiplier": 1.0,
+          "energy_consumption": 7.0
+        },
+        "8": {
+          "level": 8,
+          "max_hp": 129,
+          "base_damage": 8.44,
+          "cooldown_ms": 851,
+          "effect_multiplier": 1.2722792627665729,
+          "energy_consumption": 7.0
+        },
+        "15": {
+          "level": 15,
+          "max_hp": 159,
+          "base_damage": 11.88,
+          "cooldown_ms": 804,
+          "effect_multiplier": 1.6186945224658544,
+          "energy_consumption": 7.0
+        }
+      },
+      "effect_lines": [
+        "Her atışın temel hasarı 6. Temel saldırı aralığı 0.9 sn.",
+        "Güçlü hedeflerde hasar çarpanı %125, zayıf olduğu hedeflerde %80 uygulanır."
+      ],
+      "bot_deck_appearances": 6,
+      "bot_archetypes": [
+        "Akım Ekonomisi",
+        "Alan Hasarı",
+        "Dengeli",
+        "Destek Zinciri",
+        "Hızlı Baskı"
+      ]
+    },
+    {
+      "definition_id": "disruptor",
+      "name_tr": "Kesici",
+      "category": "sabotaj",
+      "rarity": "legendary",
+      "unlock_arena": 10,
+      "unlock_trophies": 2700,
+      "current_cost": 5,
+      "levels": {
+        "1": {
+          "level": 1,
+          "max_hp": 80,
+          "base_damage": 0.0,
+          "cooldown_ms": 6500,
+          "effect_multiplier": 1.0,
+          "energy_consumption": 4.0
+        },
+        "8": {
+          "level": 8,
+          "max_hp": 98,
+          "base_damage": 0.0,
+          "cooldown_ms": 6145,
+          "effect_multiplier": 1.2298738654248702,
+          "energy_consumption": 4.0
+        },
+        "15": {
+          "level": 15,
+          "max_hp": 121,
+          "base_damage": 0.0,
+          "cooldown_ms": 5809,
+          "effect_multiplier": 1.512589724855112,
+          "energy_consumption": 4.0
+        }
+      },
+      "effect_lines": [
+        "Hedef bağlantı hattını 3.5 sn keser; bu hat üzerinden beslenen modüller enerjisiz kalabilir."
+      ],
+      "bot_deck_appearances": 7,
+      "bot_archetypes": [
+        "Ağır Hasar",
+        "Hızlı Baskı",
+        "Karşı Meta",
+        "Kontrol"
+      ]
+    },
+    {
+      "definition_id": "precision_matrix",
+      "name_tr": "Hassasiyet Matrisi",
+      "category": "destek",
+      "rarity": "epic",
+      "unlock_arena": 10,
+      "unlock_trophies": 2700,
+      "current_cost": 4,
+      "levels": {
+        "1": {
+          "level": 1,
+          "max_hp": 90,
+          "base_damage": 0.0,
+          "cooldown_ms": 0,
+          "effect_multiplier": 1.0,
+          "energy_consumption": 4.0
+        },
+        "8": {
+          "level": 8,
+          "max_hp": 111,
+          "base_damage": 0.0,
+          "cooldown_ms": 0,
+          "effect_multiplier": 1.2722792627665729,
+          "energy_consumption": 4.0
+        },
+        "15": {
+          "level": 15,
+          "max_hp": 136,
+          "base_damage": 0.0,
+          "cooldown_ms": 0,
+          "effect_multiplier": 1.6186945224658544,
+          "energy_consumption": 4.0
+        }
+      },
+      "effect_lines": [
+        "Desteklediği saldırı modülünün bekleme süresini %85 seviyesine indirir (yaklaşık %15 daha hızlı)."
+      ],
+      "bot_deck_appearances": 1,
+      "bot_archetypes": [
+        "Sürdürülebilirlik"
+      ]
+    },
+    {
+      "definition_id": "quantum_cannon",
+      "name_tr": "Kuantum Topu",
+      "category": "saldırı",
+      "rarity": "legendary",
+      "unlock_arena": 11,
+      "unlock_trophies": 3000,
+      "current_cost": 5,
+      "levels": {
+        "1": {
+          "level": 1,
+          "max_hp": 105,
+          "base_damage": 58.0,
+          "cooldown_ms": 2500,
+          "effect_multiplier": 1.0,
+          "energy_consumption": 9.0
+        },
+        "8": {
+          "level": 8,
+          "max_hp": 129,
+          "base_damage": 81.61,
+          "cooldown_ms": 2363,
+          "effect_multiplier": 1.2722792627665729,
+          "energy_consumption": 9.0
+        },
+        "15": {
+          "level": 15,
+          "max_hp": 159,
+          "base_damage": 114.84,
+          "cooldown_ms": 2234,
+          "effect_multiplier": 1.6186945224658544,
+          "energy_consumption": 9.0
+        }
+      },
+      "effect_lines": [
+        "Her atışın temel hasarı 58. Temel saldırı aralığı 2.5 sn.",
+        "Güçlü hedeflerde hasar çarpanı %125, zayıf olduğu hedeflerde %80 uygulanır."
+      ],
+      "bot_deck_appearances": 1,
+      "bot_archetypes": [
+        "Hızlı Baskı"
+      ]
+    },
+    {
+      "definition_id": "phoenix_repair",
+      "name_tr": "Anka Onarım",
+      "category": "destek",
+      "rarity": "legendary",
+      "unlock_arena": 11,
+      "unlock_trophies": 3000,
+      "current_cost": 5,
+      "levels": {
+        "1": {
+          "level": 1,
+          "max_hp": 100,
+          "base_damage": 0.0,
+          "cooldown_ms": 2000,
+          "effect_multiplier": 1.0,
+          "energy_consumption": 4.0
+        },
+        "8": {
+          "level": 8,
+          "max_hp": 123,
+          "base_damage": 0.0,
+          "cooldown_ms": 1891,
+          "effect_multiplier": 1.2722792627665729,
+          "energy_consumption": 4.0
+        },
+        "15": {
+          "level": 15,
+          "max_hp": 151,
+          "base_damage": 0.0,
+          "cooldown_ms": 1787,
+          "effect_multiplier": 1.6186945224658544,
+          "energy_consumption": 4.0
+        }
+      },
+      "effect_lines": [
+        "Temel onarım eyleminde 15 HP geri kazandırır; temel bekleme süresi 2 sn.",
+        "Belirli sabotaj etkilerini temizleyebilir."
+      ],
+      "bot_deck_appearances": 3,
+      "bot_archetypes": [
+        "Destek Zinciri",
+        "Sürdürülebilirlik"
+      ]
+    },
+    {
+      "definition_id": "prism_shield",
+      "name_tr": "Prizma Kalkanı",
+      "category": "savunma",
+      "rarity": "legendary",
+      "unlock_arena": 11,
+      "unlock_trophies": 3000,
+      "current_cost": 5,
+      "levels": {
+        "1": {
+          "level": 1,
+          "max_hp": 165,
+          "base_damage": 0.0,
+          "cooldown_ms": 0,
+          "effect_multiplier": 1.0,
+          "energy_consumption": 4.0
+        },
+        "8": {
+          "level": 8,
+          "max_hp": 203,
+          "base_damage": 0.0,
+          "cooldown_ms": 0,
+          "effect_multiplier": 1.2722792627665729,
+          "energy_consumption": 4.0
+        },
+        "15": {
+          "level": 15,
+          "max_hp": 250,
+          "base_damage": 0.0,
+          "cooldown_ms": 0,
+          "effect_multiplier": 1.6186945224658544,
+          "energy_consumption": 4.0
+        }
+      },
+      "effect_lines": [
+        "Enerjiliyken kendisine gelen hasarı %35 azaltır; %65 hasar geçirir.",
+        "Saniyede 4 enerji tüketir."
+      ],
+      "bot_deck_appearances": 5,
+      "bot_archetypes": [
+        "Dengeli",
+        "Destek Zinciri",
+        "Kontrol",
+        "Savunma"
+      ]
+    },
+    {
+      "definition_id": "singularity_projector",
+      "name_tr": "Tekillik Projektörü",
+      "category": "sabotaj",
+      "rarity": "legendary",
+      "unlock_arena": 12,
+      "unlock_trophies": 3300,
+      "current_cost": 5,
+      "levels": {
+        "1": {
+          "level": 1,
+          "max_hp": 90,
+          "base_damage": 25.0,
+          "cooldown_ms": 6500,
+          "effect_multiplier": 1.0,
+          "energy_consumption": 4.0
+        },
+        "8": {
+          "level": 8,
+          "max_hp": 111,
+          "base_damage": 35.18,
+          "cooldown_ms": 6145,
+          "effect_multiplier": 1.2298738654248702,
+          "energy_consumption": 4.0
+        },
+        "15": {
+          "level": 15,
+          "max_hp": 136,
+          "base_damage": 49.5,
+          "cooldown_ms": 5809,
+          "effect_multiplier": 1.512589724855112,
+          "energy_consumption": 4.0
+        }
+      },
+      "effect_lines": [
+        "Hedef bağlantı hattını 3.5 sn keser; bu hat üzerinden beslenen modüller enerjisiz kalabilir."
+      ],
+      "bot_deck_appearances": 0,
+      "bot_archetypes": []
+    },
+    {
+      "definition_id": "omega_amplifier",
+      "name_tr": "Omega Güçlendirici",
+      "category": "destek",
+      "rarity": "legendary",
+      "unlock_arena": 12,
+      "unlock_trophies": 3300,
+      "current_cost": 5,
+      "levels": {
+        "1": {
+          "level": 1,
+          "max_hp": 95,
+          "base_damage": 0.0,
+          "cooldown_ms": 0,
+          "effect_multiplier": 1.0,
+          "energy_consumption": 4.0
+        },
+        "8": {
+          "level": 8,
+          "max_hp": 117,
+          "base_damage": 0.0,
+          "cooldown_ms": 0,
+          "effect_multiplier": 1.2722792627665729,
+          "energy_consumption": 4.0
+        },
+        "15": {
+          "level": 15,
+          "max_hp": 144,
+          "base_damage": 0.0,
+          "cooldown_ms": 0,
+          "effect_multiplier": 1.6186945224658544,
+          "energy_consumption": 4.0
+        }
+      },
+      "effect_lines": [
+        "Yakındaki saldırı modüllerinin hasarını %115 seviyesine çıkarır (+%15)."
+      ],
+      "bot_deck_appearances": 1,
+      "bot_archetypes": [
+        "Destek Zinciri"
+      ]
+    }
+  ],
+  "simulation": {
+    "method": {
+      "matchups": "Each of 120 canonical arena bots faces two same-arena peers from both sides.",
+      "core": "Common base core; this matrix isolates module deck composition.",
+      "module_levels": "Base combat level in matches; levels 1/8/15 are audited separately in module_matrix.",
+      "automatic_balance_changes": false,
+      "synthetic_topology": "Support and system modules are placed adjacent to the modules they affect."
+    },
+    "matches": 360,
+    "average_duration_ms": 63775.833,
+    "median_duration_ms": 55400.0,
+    "timeout_rate": 0.0,
+    "draw_rate": 0.0,
+    "archetypes": {
+      "Akım Ekonomisi": {
+        "appearances": 72,
+        "wins": 18,
+        "draws": 0,
+        "win_rate": 0.25
+      },
+      "Alan Hasarı": {
+        "appearances": 72,
+        "wins": 68,
+        "draws": 0,
+        "win_rate": 0.944444
+      },
+      "Ağır Hasar": {
+        "appearances": 72,
+        "wins": 58,
+        "draws": 0,
+        "win_rate": 0.805556
+      },
+      "Dengeli": {
+        "appearances": 72,
+        "wins": 54,
+        "draws": 0,
+        "win_rate": 0.75
+      },
+      "Destek Zinciri": {
+        "appearances": 72,
+        "wins": 10,
+        "draws": 0,
+        "win_rate": 0.138889
+      },
+      "Hızlı Baskı": {
+        "appearances": 72,
+        "wins": 42,
+        "draws": 0,
+        "win_rate": 0.583333
+      },
+      "Karşı Meta": {
+        "appearances": 72,
+        "wins": 8,
+        "draws": 0,
+        "win_rate": 0.111111
+      },
+      "Kontrol": {
+        "appearances": 72,
+        "wins": 42,
+        "draws": 0,
+        "win_rate": 0.583333
+      },
+      "Savunma": {
+        "appearances": 72,
+        "wins": 18,
+        "draws": 0,
+        "win_rate": 0.25
+      },
+      "Sürdürülebilirlik": {
+        "appearances": 72,
+        "wins": 42,
+        "draws": 0,
+        "win_rate": 0.583333
+      }
+    },
+    "attack_stack_buckets": {
+      "mixed_2_3_attack": {
+        "appearances": 342,
+        "wins": 252,
+        "win_rate": 0.736842
+      },
+      "utility_0_1_attack": {
+        "appearances": 378,
+        "wins": 108,
+        "win_rate": 0.285714
+      }
+    },
+    "synthetic_archetype_comparison": {
+      "matches": 30,
+      "timeout_rate": 0.0,
+      "layouts": {
+        "attack_heavy": {
+          "module_ids": [
+            "laser",
+            "pulse_cannon",
+            "drone_bay",
+            "missile_launcher",
+            "railgun",
+            "arc_cannon"
+          ],
+          "category_counts": {
+            "saldırı": 6
+          },
+          "appearances": 10,
+          "wins": 6,
+          "draws": 0,
+          "win_rate": 0.6
+        },
+        "balanced": {
+          "module_ids": [
+            "laser",
+            "pulse_cannon",
+            "shield",
+            "battery",
+            "repair",
+            "emp"
+          ],
+          "category_counts": {
+            "saldırı": 2,
+            "savunma": 1,
+            "sistem": 1,
+            "destek": 1,
+            "sabotaj": 1
+          },
+          "appearances": 10,
+          "wins": 8,
+          "draws": 0,
+          "win_rate": 0.8
+        },
+        "defense": {
+          "module_ids": [
+            "laser",
+            "shield",
+            "armor",
+            "barrier",
+            "guardian_dome",
+            "repair"
+          ],
+          "category_counts": {
+            "saldırı": 1,
+            "savunma": 4,
+            "destek": 1
+          },
+          "appearances": 10,
+          "wins": 6,
+          "draws": 0,
+          "win_rate": 0.6
+        },
+        "energy_system": {
+          "module_ids": [
+            "laser",
+            "pulse_cannon",
+            "battery",
+            "capacitor",
+            "current_balancer",
+            "targeting_computer"
+          ],
+          "category_counts": {
+            "saldırı": 2,
+            "sistem": 3,
+            "destek": 1
+          },
+          "appearances": 10,
+          "wins": 0,
+          "draws": 0,
+          "win_rate": 0.0
+        },
+        "support": {
+          "module_ids": [
+            "laser",
+            "pulse_cannon",
+            "repair",
+            "cooler",
+            "targeting_computer",
+            "amplifier"
+          ],
+          "category_counts": {
+            "saldırı": 2,
+            "destek": 4
+          },
+          "appearances": 10,
+          "wins": 2,
+          "draws": 0,
+          "win_rate": 0.2
+        },
+        "sabotage": {
+          "module_ids": [
+            "laser",
+            "pulse_cannon",
+            "shield",
+            "emp",
+            "jammer",
+            "virus"
+          ],
+          "category_counts": {
+            "saldırı": 2,
+            "savunma": 1,
+            "sabotaj": 3
+          },
+          "appearances": 10,
+          "wins": 8,
+          "draws": 0,
+          "win_rate": 0.8
+        }
+      },
+      "candidate_screening": {
+        "attack_damage_minus_5": {
+          "automatic_apply": false,
+          "win_rates": {
+            "attack_heavy": 0.6,
+            "balanced": 0.6,
+            "defense": 0.6,
+            "energy_system": 0.0,
+            "support": 0.2,
+            "sabotage": 1.0
+          },
+          "win_rate_spread": 1.0
+        },
+        "attack_damage_minus_7_5": {
+          "automatic_apply": false,
+          "win_rates": {
+            "attack_heavy": 0.4,
+            "balanced": 0.8,
+            "defense": 0.6,
+            "energy_system": 0.0,
+            "support": 0.2,
+            "sabotage": 1.0
+          },
+          "win_rate_spread": 1.0
+        },
+        "attack_damage_minus_10": {
+          "automatic_apply": false,
+          "win_rates": {
+            "attack_heavy": 0.4,
+            "balanced": 1.0,
+            "defense": 0.6,
+            "energy_system": 0.0,
+            "support": 0.2,
+            "sabotage": 0.8
+          },
+          "win_rate_spread": 1.0
+        },
+        "support_cooldown_minus_15": {
+          "automatic_apply": false,
+          "win_rates": {
+            "attack_heavy": 0.6,
+            "balanced": 0.8,
+            "defense": 0.6,
+            "energy_system": 0.0,
+            "support": 0.2,
+            "sabotage": 0.8
+          },
+          "win_rate_spread": 0.8
+        },
+        "mixed_role_rebalance": {
+          "automatic_apply": false,
+          "win_rates": {
+            "attack_heavy": 0.4,
+            "balanced": 1.0,
+            "defense": 0.6,
+            "energy_system": 0.0,
+            "support": 0.2,
+            "sabotage": 0.8
+          },
+          "win_rate_spread": 1.0
+        },
+        "attack_energy_pressure": {
+          "automatic_apply": false,
+          "win_rates": {
+            "attack_heavy": 0.6,
+            "balanced": 0.8,
+            "defense": 0.6,
+            "energy_system": 0.0,
+            "support": 0.2,
+            "sabotage": 0.8
+          },
+          "win_rate_spread": 0.8
+        },
+        "support_effect_plus_25": {
+          "automatic_apply": false,
+          "win_rates": {
+            "attack_heavy": 0.6,
+            "balanced": 0.8,
+            "defense": 0.6,
+            "energy_system": 0.0,
+            "support": 0.2,
+            "sabotage": 0.8
+          },
+          "win_rate_spread": 0.8
+        },
+        "role_cost_rebalance": {
+          "automatic_apply": false,
+          "win_rates": {
+            "attack_heavy": 0.2,
+            "balanced": 1.0,
+            "defense": 0.6,
+            "energy_system": 0.2,
+            "support": 0.2,
+            "sabotage": 0.8
+          },
+          "win_rate_spread": 0.8
+        }
+      }
+    },
+    "candidate_bot_screening": {
+      "candidate": "attack_damage_minus_7_5",
+      "automatic_apply": false,
+      "matches": 360,
+      "attack_stack_buckets": {
+        "mixed_2_3_attack": {
+          "appearances": 342,
+          "wins": 254,
+          "win_rate": 0.74269
+        },
+        "utility_0_1_attack": {
+          "appearances": 378,
+          "wins": 106,
+          "win_rate": 0.280423
+        }
+      },
+      "archetypes": {
+        "Akım Ekonomisi": {
+          "appearances": 72,
+          "wins": 18,
+          "win_rate": 0.25
+        },
+        "Alan Hasarı": {
+          "appearances": 72,
+          "wins": 68,
+          "win_rate": 0.944444
+        },
+        "Ağır Hasar": {
+          "appearances": 72,
+          "wins": 60,
+          "win_rate": 0.833333
+        },
+        "Dengeli": {
+          "appearances": 72,
+          "wins": 58,
+          "win_rate": 0.805556
+        },
+        "Destek Zinciri": {
+          "appearances": 72,
+          "wins": 10,
+          "win_rate": 0.138889
+        },
+        "Hızlı Baskı": {
+          "appearances": 72,
+          "wins": 38,
+          "win_rate": 0.527778
+        },
+        "Karşı Meta": {
+          "appearances": 72,
+          "wins": 6,
+          "win_rate": 0.083333
+        },
+        "Kontrol": {
+          "appearances": 72,
+          "wins": 42,
+          "win_rate": 0.583333
+        },
+        "Savunma": {
+          "appearances": 72,
+          "wins": 20,
+          "win_rate": 0.277778
+        },
+        "Sürdürülebilirlik": {
+          "appearances": 72,
+          "wins": 40,
+          "win_rate": 0.555556
+        }
+      }
+    },
+    "module_deck_performance": {
+      "amplifier": {
+        "appearances": 162,
+        "wins_in_deck": 74,
+        "deck_win_rate": 0.45679
+      },
+      "arc_cannon": {
+        "appearances": 72,
+        "wins_in_deck": 36,
+        "deck_win_rate": 0.5
+      },
+      "armor": {
+        "appearances": 198,
+        "wins_in_deck": 80,
+        "deck_win_rate": 0.40404
+      },
+      "barrier": {
+        "appearances": 150,
+        "wins_in_deck": 60,
+        "deck_win_rate": 0.4
+      },
+      "battery": {
+        "appearances": 288,
+        "wins_in_deck": 94,
+        "deck_win_rate": 0.326389
+      },
+      "capacitor": {
+        "appearances": 192,
+        "wins_in_deck": 70,
+        "deck_win_rate": 0.364583
+      },
+      "chrono_relay": {
+        "appearances": 96,
+        "wins_in_deck": 46,
+        "deck_win_rate": 0.479167
+      },
+      "cooler": {
+        "appearances": 204,
+        "wins_in_deck": 82,
+        "deck_win_rate": 0.401961
+      },
+      "current_balancer": {
+        "appearances": 132,
+        "wins_in_deck": 52,
+        "deck_win_rate": 0.393939
+      },
+      "disruptor": {
+        "appearances": 42,
+        "wins_in_deck": 18,
+        "deck_win_rate": 0.428571
+      },
+      "drone_bay": {
+        "appearances": 66,
+        "wins_in_deck": 40,
+        "deck_win_rate": 0.606061
+      },
+      "emp": {
+        "appearances": 276,
+        "wins_in_deck": 158,
+        "deck_win_rate": 0.572464
+      },
+      "guardian_dome": {
+        "appearances": 54,
+        "wins_in_deck": 38,
+        "deck_win_rate": 0.703704
+      },
+      "ion_spear": {
+        "appearances": 66,
+        "wins_in_deck": 36,
+        "deck_win_rate": 0.545455
+      },
+      "jammer": {
+        "appearances": 144,
+        "wins_in_deck": 80,
+        "deck_win_rate": 0.555556
+      },
+      "laser": {
+        "appearances": 294,
+        "wins_in_deck": 206,
+        "deck_win_rate": 0.70068
+      },
+      "missile_launcher": {
+        "appearances": 156,
+        "wins_in_deck": 94,
+        "deck_win_rate": 0.602564
+      },
+      "nano_medic": {
+        "appearances": 78,
+        "wins_in_deck": 38,
+        "deck_win_rate": 0.487179
+      },
+      "omega_amplifier": {
+        "appearances": 6,
+        "wins_in_deck": 0,
+        "deck_win_rate": 0.0
+      },
+      "overclock_unit": {
+        "appearances": 108,
+        "wins_in_deck": 44,
+        "deck_win_rate": 0.407407
+      },
+      "phase_armor": {
+        "appearances": 24,
+        "wins_in_deck": 14,
+        "deck_win_rate": 0.583333
+      },
+      "phoenix_repair": {
+        "appearances": 18,
+        "wins_in_deck": 6,
+        "deck_win_rate": 0.333333
+      },
+      "plasma_mortar": {
+        "appearances": 72,
+        "wins_in_deck": 22,
+        "deck_win_rate": 0.305556
+      },
+      "precision_matrix": {
+        "appearances": 6,
+        "wins_in_deck": 2,
+        "deck_win_rate": 0.333333
+      },
+      "prism_shield": {
+        "appearances": 30,
+        "wins_in_deck": 12,
+        "deck_win_rate": 0.4
+      },
+      "pulse_cannon": {
+        "appearances": 306,
+        "wins_in_deck": 182,
+        "deck_win_rate": 0.594771
+      },
+      "quantum_cannon": {
+        "appearances": 6,
+        "wins_in_deck": 4,
+        "deck_win_rate": 0.666667
+      },
+      "quantum_repeater": {
+        "appearances": 90,
+        "wins_in_deck": 68,
+        "deck_win_rate": 0.755556
+      },
+      "railgun": {
+        "appearances": 96,
+        "wins_in_deck": 62,
+        "deck_win_rate": 0.645833
+      },
+      "reflector": {
+        "appearances": 126,
+        "wins_in_deck": 56,
+        "deck_win_rate": 0.444444
+      },
+      "repair": {
+        "appearances": 204,
+        "wins_in_deck": 114,
+        "deck_win_rate": 0.558824
+      },
+      "shield": {
+        "appearances": 216,
+        "wins_in_deck": 96,
+        "deck_win_rate": 0.444444
+      },
+      "swarm_fabricator": {
+        "appearances": 36,
+        "wins_in_deck": 16,
+        "deck_win_rate": 0.444444
+      },
+      "targeting_computer": {
+        "appearances": 186,
+        "wins_in_deck": 90,
+        "deck_win_rate": 0.483871
+      },
+      "virus": {
+        "appearances": 120,
+        "wins_in_deck": 70,
+        "deck_win_rate": 0.583333
+      }
+    },
+    "cooler_review": {
+      "appearances": 204,
+      "wins_in_deck": 82,
+      "deck_win_rate": 0.401961,
+      "non_cooler_deck_win_rate": 0.53876,
+      "decision": "keep_current_role_pending_real_player_telemetry"
+    }
+  },
+  "decision": {
+    "numeric_balance_changed": true,
+    "severe_energy_overload": "At load ratios above 1.6, damage now remains penalized at 75% instead of incorrectly returning to 100%.",
+    "cooler": "No automatic +5% fire-rate change; preserve the current heat/control role until real-player telemetry is sufficient.",
+    "attack_stacking": "Do not ban attack-heavy decks; use the measured bucket rates as a telemetry baseline.",
+    "human_review_required": true
+  }
+}

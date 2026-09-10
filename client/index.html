@@ -291,9 +291,58 @@
       </nav>
     </section>
 
-    <section id="team-screen" class="mobile-hub-screen simple-hub-screen" data-screen-panel="team" hidden>
-      <header class="mobile-screen-heading"><div><span>SOSYAL DEVRE</span><h2>Takım</h2></div></header>
-      <article class="coming-soon-card"><span>◇</span><h3>Takım merkezi hazırlanıyor</h3><p>Dostlarınla deste paylaşımı ve takım görevleri sonraki aşamada burada açılacak.</p></article>
+    <section id="team-screen" class="mobile-hub-screen team-screen" data-screen-panel="team" hidden>
+      <header class="mobile-screen-heading"><div><span>SOSYAL DEVRE</span><h2>Takım</h2></div><small id="team-connection-state">Yükleniyor…</small></header>
+      <p id="team-action-status" class="mobile-action-status team-action-status" role="status" aria-live="polite"></p>
+      <section id="team-onboarding" class="team-onboarding">
+        <article class="team-action-card">
+          <span>YENİ TAKIM</span><h3>Takım oluştur</h3>
+          <label>Takım adı<input id="team-create-name" maxlength="24" autocomplete="off" placeholder="Takım adı"></label>
+          <button id="team-create-button" type="button">OLUŞTUR</button>
+        </article>
+        <article class="team-action-card">
+          <span>MEVCUT TAKIM</span><h3>Takıma katıl</h3>
+          <label>Takım<select id="team-join-select"><option value="">Açık takım yok</option></select></label>
+          <button id="team-join-button" type="button">KATIL</button>
+        </article>
+      </section>
+      <section id="team-hub" class="team-hub" hidden>
+        <header class="team-identity-card">
+          <div><span>TAKIM MERKEZİ</span><h3 id="team-name">Takım</h3></div>
+          <div class="team-summary-metrics"><strong id="team-member-count">0 / 30 ÜYE</strong><strong id="team-total-trophies">0 KUPA</strong></div>
+        </header>
+        <nav class="team-tabs" aria-label="Takım bölümleri">
+          <button type="button" data-team-tab="overview" class="is-active">GENEL</button>
+          <button type="button" data-team-tab="members">ÜYELER</button>
+          <button type="button" data-team-tab="requests">İSTEK</button>
+          <button type="button" data-team-tab="chat">SOHBET</button>
+          <button type="button" data-team-tab="battle">SAVAŞ</button>
+        </nav>
+        <div class="team-panels">
+          <section data-team-panel="overview" class="team-panel is-active">
+            <h3>Takım devresi</h3><p>Üyelerin toplam kupası takım sıralamasını belirler. Modül parçalarını paylaşabilir ve ödülsüz antrenman savaşları yapabilirsin.</p>
+            <div id="team-overview-members" class="team-overview-members"></div>
+          </section>
+          <section data-team-panel="members" class="team-panel" hidden>
+            <h3>Üyeler</h3><ol id="team-member-list" class="team-member-list"></ol>
+          </section>
+          <section data-team-panel="requests" class="team-panel" hidden>
+            <h3>Modül parçası iste</h3>
+            <div class="team-inline-action"><select id="team-module-request-select"><option value="">Açılmış modül seç</option></select><button id="team-module-request-button" type="button">İSTE</button></div>
+            <p class="team-policy-note">Haftalık sınır nadirliğe göre uygulanır; yalnız açılmış modüller istenebilir.</p>
+            <div id="team-request-list" class="team-request-list"></div>
+          </section>
+          <section data-team-panel="chat" class="team-panel" hidden>
+            <h3>Takım sohbeti</h3><div id="team-message-list" class="team-message-list" aria-live="polite"></div>
+            <div class="team-inline-action"><input id="team-message-input" maxlength="240" autocomplete="off" placeholder="Mesaj yaz"><button id="team-message-send" type="button">GÖNDER</button></div>
+          </section>
+          <section data-team-panel="battle" class="team-panel" hidden>
+            <h3>Antrenman savaşı</h3><p class="team-policy-note">Antrenman protokolü derecesizdir; kupa ve ödül ekonomisini etkilemez.</p>
+            <div class="team-inline-action"><select id="team-training-opponent"><option value="">Çevrimiçi üye yok</option></select><button id="team-training-send" type="button">DAVET ET</button></div>
+            <div id="team-training-list" class="team-training-list"></div>
+          </section>
+        </div>
+      </section>
     </section>
 
     <section id="events-screen" class="mobile-hub-screen events-screen" data-screen-panel="events" hidden>
@@ -449,10 +498,10 @@
           <div><span class="screen-kicker">40 KADEME · HER 10 KADEMEDE BÜYÜK ÖDÜL</span><h3 id="season-reward-title">Sezon Ödülleri</h3></div>
           <small>Ücretli geçiş yok</small>
         </div>
+        <p id="season-action-status" class="season-action-status" role="status"></p>
         <div id="season-reward-track" class="season-reward-track"></div>
+        <button type="button" class="reward-back-link" data-open-screen="daily">← ÖDÜL BÖLÜMLERİ</button>
       </section>
-      <p id="season-action-status" class="season-action-status" role="status"></p>
-      <button type="button" class="reward-back-link" data-open-screen="daily">← ÖDÜL BÖLÜMLERİ</button>
       <nav class="profile-terminal-tabs" aria-label="Operatör terminali bölümleri"><button type="button" data-open-screen="profile">PROFİL</button><button type="button" data-open-screen="avatar">AVATAR</button><button type="button" class="is-active" data-open-screen="daily">ÖDÜLLER</button><button type="button" data-open-screen="settings">AYARLAR</button></nav>
     </section>
 

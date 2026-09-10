@@ -5,17 +5,30 @@ import json
 
 DATA_DIR = Path(__file__).resolve().parent.parent / "data"
 CANON = json.loads((DATA_DIR / "arena_progression_v1.json").read_text(encoding="utf-8"))
-MODULES = {item["id"]: item for item in CANON["modules"]}
+ARENA_MINIMUM_RATING_BY_INDEX = {
+    int(arena["index"]): int(arena["minimum_rating"])
+    for arena in CANON["arenas"]
+}
+MODULES = {
+    item["id"]: {
+        **item,
+        # The historical field marked the targeted reward stop. Collection
+        # ownership now unlocks every module when its arena is reached.
+        "road_reward_trophies": int(item["unlock_trophies"]),
+        "unlock_trophies": ARENA_MINIMUM_RATING_BY_INDEX[int(item["unlock_arena"])],
+    }
+    for item in CANON["modules"]
+}
 
 
 def _normalized_arena_rewards() -> tuple[dict, ...]:
-    """Keep module unlocks on trophy thresholds and road rewards as pieces.
+    """Keep arena entry unlocks separate from targeted road-piece rewards.
 
     The original data used ``module_id`` reward nodes, which made the road look
-    as if a card had to be claimed after it had already unlocked.  The live
-    canon now converts those stops into targeted card pieces.  Values scale
-    gently by arena so early upgrades remain reachable while later levels
-    still require continued play.
+    as if a card had to be claimed. The live canon opens every card belonging
+    to an arena at that arena's entry rating, then converts the old stops into
+    targeted card pieces. Values scale gently by arena so early upgrades remain
+    reachable while later levels still require continued play.
     """
     arenas: list[dict] = []
     for raw_arena in CANON["arenas"]:
@@ -128,6 +141,62 @@ def trophy_delta(player_rating: int, opponent_rating: int, score: float) -> int:
 
 def unlocked_module_ids(rating: int) -> tuple[str, ...]:
     return tuple(key for key, item in MODULES.items() if rating >= item["unlock_trophies"])
+
+
+def unlocked_reward_module_ids(
+    rating: int,
+    highest_rating: int = 0,
+    preferred_ids=(),
+) -> tuple[str, ...]:
+    """Return the only module pool from which profile rewards may be drawn.
+
+    Old profiles can contain removed ids or a deck saved at a higher arena.
+    Rewards always start from the authoritative peak-rating unlock set; a
+    preferred deck merely narrows that set when it still has valid members.
+    """
+    unlocked = unlocked_module_ids(max(int(rating), int(highest_rating)))
+    unlocked_set = set(unlocked)
+    preferred = tuple(
+        dict.fromkeys(
+            str(module_id)
+            for module_id in (preferred_ids or ())
+            if str(module_id) in unlocked_set
+        )
+    )
+    return preferred or unlocked
+
+
+def validate_targeted_module_rewards() -> tuple[dict, ...]:
+    """Fail fast when a road node targets a missing or later-arena module."""
+    validated: list[dict] = []
+    for arena in ARENAS:
+        for node in arena.get("nodes", ()):
+            target = node.get("rewards", {}).get("module_shard_target")
+            if not target:
+                continue
+            module = MODULES.get(target)
+            if module is None:
+                raise ValueError(f"Bilinmeyen Devre Yolu modülü: {target}")
+            arena_minimum = int(arena["minimum_rating"])
+            if target not in unlocked_module_ids(arena_minimum):
+                raise ValueError(
+                    f"{node['id']} düğümü {target} modülünü arenası açılmadan ödüllendiriyor."
+                )
+            if int(module["unlock_arena"]) > int(arena["index"]):
+                raise ValueError(
+                    f"{node['id']} düğümü sonraki arena modülünü ödüllendiriyor: {target}"
+                )
+            validated.append({
+                "node_id": node["id"],
+                "arena_index": int(arena["index"]),
+                "arena_minimum_rating": arena_minimum,
+                "trophies": int(node["trophies"]),
+                "module_definition_id": target,
+            })
+    return tuple(validated)
+
+
+TARGETED_MODULE_REWARD_CONTRACTS = validate_targeted_module_rewards()
 
 def module_stats(definition, upgrade_level: int, talents: dict | None = None) -> dict:
     # Legacy storage counts upgrades from zero; the user-facing level is 1..15.

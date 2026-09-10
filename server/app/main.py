@@ -130,6 +130,12 @@ from .battle_pool_presets import (
     BattlePoolPresetService,
     JsonBattlePoolPresetRepository,
 )
+from .team_service import (
+    JsonTeamRepository,
+    REQUEST_POLICY as TEAM_REQUEST_POLICY,
+    TeamService,
+    TeamServiceError,
+)
 from .build_manifest import (
     build_manifest,
 )
@@ -620,6 +626,18 @@ balance_change_draft_service = (
     )
 )
 
+DEFAULT_TEAM_DATA_PATH = PLAYER_DATA_PATH.with_name(
+    "web_test_teams.json"
+)
+TEAM_DATA_PATH = Path(
+    os.environ.get(
+        "RELAY_TEAM_DATA_PATH",
+        str(DEFAULT_TEAM_DATA_PATH),
+    )
+)
+team_repository = JsonTeamRepository(TEAM_DATA_PATH)
+team_service = TeamService(team_repository)
+
 player_data_store_service = PlayerDataStoreService(
     profile_service=player_profile_service,
     statistics_service=player_statistics_service,
@@ -754,6 +772,40 @@ class LaboratoryOperationRequest(BaseModel):
 
 
 class MetaOperationRequest(BaseModel):
+    request_id: str
+
+
+class TeamCreateRequest(BaseModel):
+    player_id: str
+    name: str
+    request_id: str
+
+
+class TeamJoinRequest(BaseModel):
+    player_id: str
+    request_id: str
+
+
+class TeamModuleRequest(BaseModel):
+    player_id: str
+    module_id: str
+    request_id: str
+
+
+class TeamActionRequest(BaseModel):
+    player_id: str
+    request_id: str
+
+
+class TeamMessageRequest(BaseModel):
+    player_id: str
+    message: str
+    request_id: str
+
+
+class TeamTrainingChallengeRequest(BaseModel):
+    player_id: str
+    opponent_id: str
     request_id: str
 
 
@@ -3054,6 +3106,293 @@ def get_leaderboards() -> dict:
     }
 
 
+def _team_member_profile(player_id: str):
+    if player_id not in player_profile_service._profiles:
+        snapshot = player_data_repository.load(player_id)
+        if snapshot is not None:
+            player_data_store_service.load_player(player_id)
+    return player_profile_service.get_or_create(player_id)
+
+
+def _team_summary(team: dict) -> dict:
+    ratings = []
+    for member_id in team.get("member_ids", []):
+        ratings.append(max(0, int(_team_member_profile(member_id).rating)))
+    return {
+        "team_id": team["team_id"],
+        "name": team["name"],
+        "member_count": len(team.get("member_ids", [])),
+        "member_limit": int(team.get("member_limit", 30)),
+        "total_trophies": sum(ratings),
+    }
+
+
+def _team_view(team: dict, player_id: str) -> dict:
+    from .arena_canon import MODULES
+
+    online_ids = set(player_profile_service._profiles)
+    profiles = {
+        member_id: _team_member_profile(member_id)
+        for member_id in team.get("member_ids", [])
+    }
+    members = sorted(
+        (
+            {
+                "player_id": member_id,
+                "display_name": profile.display_name,
+                "trophies": max(0, int(profile.rating)),
+                "role": "owner" if member_id == team.get("owner_id") else "member",
+                "online": member_id in online_ids or member_id == player_id,
+            }
+            for member_id, profile in profiles.items()
+        ),
+        key=lambda item: (-item["trophies"], item["display_name"].casefold()),
+    )
+    names = {
+        member_id: profile.display_name
+        for member_id, profile in profiles.items()
+    }
+    requests = []
+    for item in reversed(team.get("module_requests", [])[-100:]):
+        module = MODULES.get(str(item.get("module_id")), {})
+        requests.append({
+            **dict(item),
+            "module_name_tr": module.get("name_tr", item.get("module_id", "Modül")),
+            "requester_name": names.get(item.get("requester_id"), "Oyuncu"),
+            "is_own": item.get("requester_id") == player_id,
+        })
+    messages = [
+        {
+            **dict(item),
+            "author_name": names.get(item.get("author_id"), "Oyuncu"),
+            "is_own": item.get("author_id") == player_id,
+        }
+        for item in team.get("messages", [])[-100:]
+        if item.get("visibility", "visible") == "visible"
+    ]
+    challenges = [
+        {
+            **dict(item),
+            "challenger_name": names.get(item.get("challenger_id"), "Oyuncu"),
+            "opponent_name": names.get(item.get("opponent_id"), "Oyuncu"),
+            "can_accept": (
+                item.get("opponent_id") == player_id
+                and item.get("status") == "pending"
+            ),
+        }
+        for item in reversed(team.get("training_challenges", [])[-50:])
+    ]
+    return {
+        "joined": True,
+        **_team_summary(team),
+        "owner_id": team.get("owner_id"),
+        "members": members,
+        "module_requests": requests,
+        "messages": messages,
+        "training_challenges": challenges,
+        "request_policy": TEAM_REQUEST_POLICY,
+        "online_opponents": [
+            item for item in members
+            if item["player_id"] != player_id and item["online"]
+        ],
+    }
+
+
+@app.get("/teams")
+def list_teams() -> dict:
+    return {
+        "teams": [_team_summary(team) for team in team_service.list_teams()]
+    }
+
+
+@app.get("/teams/player/{player_id}")
+def get_player_team(player_id: str) -> dict:
+    team = team_service.team_for_player(player_id)
+    profile = _team_member_profile(player_id)
+    if team is None:
+        if profile.team_id or profile.team_name:
+            profile.team_id = None
+            profile.team_name = None
+            persist_player_data(player_id)
+        return {
+            "joined": False,
+            "available_teams": [
+                _team_summary(candidate)
+                for candidate in team_service.list_teams()
+                if len(candidate.get("member_ids", []))
+                < int(candidate.get("member_limit", 30))
+            ][:50],
+            "request_policy": TEAM_REQUEST_POLICY,
+        }
+    profile.team_id = team["team_id"]
+    profile.team_name = team["name"]
+    return _team_view(team, player_id)
+
+
+@app.post("/teams")
+def create_team(request: TeamCreateRequest) -> dict:
+    try:
+        result = team_service.create_team(
+            request.player_id,
+            request.name,
+            request.request_id,
+        )
+    except TeamServiceError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+    profile = _team_member_profile(request.player_id)
+    profile.team_id = result["team_id"]
+    profile.team_name = result["team"]["name"]
+    persist_player_data(request.player_id)
+    return {**_team_view(result["team"], request.player_id), "replayed": result["replayed"]}
+
+
+@app.post("/teams/{team_id}/join")
+def join_team(team_id: str, request: TeamJoinRequest) -> dict:
+    try:
+        result = team_service.join_team(
+            request.player_id,
+            team_id,
+            request.request_id,
+        )
+    except TeamServiceError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+    profile = _team_member_profile(request.player_id)
+    profile.team_id = result["team_id"]
+    profile.team_name = result["team"]["name"]
+    persist_player_data(request.player_id)
+    return {**_team_view(result["team"], request.player_id), "replayed": result["replayed"]}
+
+
+@app.post("/teams/{team_id}/module-requests")
+def create_team_module_request(team_id: str, request: TeamModuleRequest) -> dict:
+    from .arena_canon import MODULES, unlocked_module_ids
+
+    profile = _team_member_profile(request.player_id)
+    module = MODULES.get(request.module_id)
+    if module is None or request.module_id not in unlocked_module_ids(
+        max(profile.rating, profile.highest_rating)
+    ):
+        raise HTTPException(
+            status_code=422,
+            detail="Yalnız koleksiyonda açılmış modüller istenebilir.",
+        )
+    try:
+        result = team_service.create_module_request(
+            team_id=team_id,
+            player_id=request.player_id,
+            module_id=request.module_id,
+            rarity=str(module["rarity"]),
+            request_id=request.request_id,
+        )
+    except TeamServiceError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+    return {
+        **_team_view(team_service.get_team(team_id), request.player_id),
+        "operation": result,
+    }
+
+
+@app.post("/teams/{team_id}/module-requests/{module_request_id}/donate")
+def donate_team_module_shard(
+    team_id: str,
+    module_request_id: str,
+    request: TeamActionRequest,
+) -> dict:
+    donor = _team_member_profile(request.player_id)
+    team = team_service.get_team(team_id)
+    target = next(
+        (
+            item
+            for item in team.get("module_requests", [])
+            if item.get("request_id") == module_request_id
+        ),
+        None,
+    )
+    if target is None:
+        raise HTTPException(status_code=404, detail="Modül isteği bulunamadı.")
+    module_id = str(target.get("module_id", ""))
+    try:
+        result = team_service.donate_module_shard(
+            team_id=team_id,
+            player_id=request.player_id,
+            module_request_id=module_request_id,
+            request_id=request.request_id,
+            available_amount=int(donor.module_shards.get(module_id, 0)),
+        )
+    except TeamServiceError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+    if not result["replayed"]:
+        requester = _team_member_profile(result["requester_id"])
+        donor.module_shards[module_id] = int(donor.module_shards.get(module_id, 0)) - 1
+        requester.module_shards[module_id] = int(requester.module_shards.get(module_id, 0)) + 1
+        persist_player_data(donor.player_id)
+        persist_player_data(requester.player_id)
+    return {
+        **_team_view(team_service.get_team(team_id), request.player_id),
+        "operation": result,
+    }
+
+
+@app.post("/teams/{team_id}/messages")
+def post_team_message(team_id: str, request: TeamMessageRequest) -> dict:
+    try:
+        result = team_service.post_message(
+            team_id=team_id,
+            player_id=request.player_id,
+            message=request.message,
+            request_id=request.request_id,
+        )
+    except TeamServiceError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+    return {
+        **_team_view(team_service.get_team(team_id), request.player_id),
+        "operation": result,
+    }
+
+
+@app.post("/teams/{team_id}/training-challenges")
+def create_team_training_challenge(
+    team_id: str,
+    request: TeamTrainingChallengeRequest,
+) -> dict:
+    if request.opponent_id not in player_profile_service._profiles:
+        raise HTTPException(status_code=422, detail="Seçilen takım üyesi çevrimiçi değil.")
+    try:
+        result = team_service.create_training_challenge(
+            team_id=team_id,
+            player_id=request.player_id,
+            opponent_id=request.opponent_id,
+            request_id=request.request_id,
+        )
+    except TeamServiceError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+    return {
+        **_team_view(team_service.get_team(team_id), request.player_id),
+        "operation": result,
+    }
+
+
+@app.post("/teams/{team_id}/training-challenges/{challenge_id}/accept")
+def accept_team_training_challenge(
+    team_id: str,
+    challenge_id: str,
+    request: TeamActionRequest,
+) -> dict:
+    try:
+        result = team_service.accept_training_challenge(
+            team_id=team_id,
+            player_id=request.player_id,
+            challenge_id=challenge_id,
+            request_id=request.request_id,
+        )
+    except TeamServiceError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+    return {
+        **_team_view(team_service.get_team(team_id), request.player_id),
+        "operation": result,
+    }
+
+
 @app.post("/participants/{player_id}/bootstrap")
 def bootstrap_test_participant(
     player_id: str,
@@ -3282,6 +3621,31 @@ def open_player_progression_chest(
 
 
 @app.post(
+    "/profile/{player_id}/meta-progression/chests/{definition_id}/open-all"
+)
+def open_all_available_player_progression_chests(
+    player_id: str,
+    definition_id: str,
+    request: MetaOperationRequest,
+) -> dict:
+    profile = player_profile_service.get_or_create(player_id)
+    try:
+        receipt = meta_progression_service.open_all_available_chests(
+            profile,
+            definition_id,
+            request.request_id,
+        )
+    except MetaProgressionError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+    persist_player_data(player_id)
+    return {
+        "receipt": receipt,
+        "meta_progression": meta_progression_service.view(profile),
+        "profile": profile.to_view(),
+    }
+
+
+@app.post(
     "/profile/{player_id}/meta-progression/shop/{offer_id}/purchase"
 )
 def purchase_player_daily_shop_offer(
@@ -3487,8 +3851,15 @@ def claim_season_tier_reward(
     persist_player_data(player_id)
     view = profile.to_view()
     tier_after = int(view["engagement"]["current_tier"])
+    season_reward_receipt = (
+        dict(profile.engagement_claim_receipts[engagement_request_id])
+        if engagement_request_id
+        and engagement_request_id in profile.engagement_claim_receipts
+        else None
+    )
     return {
         **view,
+        "season_reward_receipt": season_reward_receipt,
         "season_chest_receipt": chest_receipt,
         "tier_advanced": _tier_advanced_payload(
             player_id,
@@ -3554,6 +3925,19 @@ def update_profile_cosmetics(
             player_id,
             avatar_id=request.avatar_id,
             avatar_frame_id=request.avatar_frame_id,
+        )
+    except PlayerProfileError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+    persist_player_data(player_id)
+    return profile.to_view()
+
+
+@app.post("/profile/{player_id}/notifications/{section}/seen")
+def mark_profile_notifications_seen(player_id: str, section: str) -> dict:
+    try:
+        profile = player_profile_service.mark_notifications_seen(
+            player_id,
+            section,
         )
     except PlayerProfileError as exc:
         raise HTTPException(status_code=422, detail=str(exc)) from exc

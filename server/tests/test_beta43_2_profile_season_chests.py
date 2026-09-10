@@ -239,10 +239,15 @@ def test_season_chest_tier_opens_real_chest_and_persists_reward(monkeypatch):
     profile.season_xp = SEASON_REWARD_TRACK[9]["required_xp"]
     client = TestClient(gateway.app)
 
-    response = client.post(f"/profile/{player_id}/engagement/tiers/10/claim")
+    response = client.post(
+        f"/profile/{player_id}/engagement/tiers/10/claim",
+        json={"request_id": "season-tier-10-receipt"},
+    )
 
     assert response.status_code == 200
     payload = response.json()
+    assert payload["season_reward_receipt"]["module_definition_id"]
+    assert payload["season_reward_receipt"]["core_type_id"]
     assert payload["season_chest_receipt"]["definition_id"] == "core_24h"
     assert payload["season_chest_receipt"]["rewards"]["circuit_credits"] > 0
     assert profile.chest_slots == []

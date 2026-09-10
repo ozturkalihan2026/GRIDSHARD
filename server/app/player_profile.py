@@ -1,7 +1,9 @@
 from dataclasses import dataclass, field
 from calendar import monthrange
 from datetime import datetime, timedelta, timezone
+import hashlib
 
+from .arena_canon import unlocked_reward_module_ids
 from .game.battle_pool import default_battle_pool, validate_battle_pool
 
 
@@ -198,6 +200,26 @@ MONTHLY_LOGIN_REWARDS = tuple(
 )
 
 
+def _profile_reward_identity(profile, reward: dict, seed: str) -> dict:
+    """Attach deterministic, unlocked module/core identities to a reward."""
+    enriched = dict(reward)
+    if int(enriched.get("module_shards", 0)):
+        pool = unlocked_reward_module_ids(
+            profile.rating,
+            profile.highest_rating,
+            profile.preferred_battle_pool_ids,
+        )
+        roll = int(hashlib.sha256(f"{seed}:module".encode("utf-8")).hexdigest()[:12], 16)
+        enriched["module_definition_id"] = pool[roll % len(pool)]
+    if int(enriched.get("core_shards", 0)):
+        # Imported lazily because meta progression also imports the season
+        # constants in this module during application startup.
+        from .meta_progression import core_reward_type_id
+
+        enriched["core_type_id"] = core_reward_type_id(profile, seed)
+    return enriched
+
+
 def utc_day_key(moment: datetime | None = None) -> str:
     return (moment or datetime.now(timezone.utc)).astimezone(timezone.utc).date().isoformat()
 
@@ -232,6 +254,9 @@ class PlayerProfile:
     # Idempotency receipts for reward buttons.  A lost HTTP response must not
     # turn a successful claim into a permanent "doğrulanıyor"/duplicate error.
     engagement_claim_receipts: dict[str, dict] = field(default_factory=dict)
+    # Notification acknowledgements are persisted so a page refresh cannot
+    # dismiss a newly unlocked reward or cosmetic.
+    seen_notification_keys: tuple[str, ...] = ()
     unlocked_titles: tuple[str, ...] = ("Devre Çırağı",)
     equipped_title: str = "Devre Çırağı"
     unlocked_avatar_ids: tuple[str, ...] = ("default",)
@@ -261,6 +286,7 @@ class PlayerProfile:
     module_upgrade_receipts: dict[str, dict] = field(default_factory=dict)
     chest_slots: list[dict] = field(default_factory=list)
     chest_receipts: dict[str, dict] = field(default_factory=dict)
+    chest_batch_receipts: dict[str, dict] = field(default_factory=dict)
     gift_chest_claim_receipts: dict[str, dict] = field(default_factory=dict)
     shop_purchase_day: str = ""
     shop_purchased_offer_ids: tuple[str, ...] = ()
@@ -397,6 +423,37 @@ class PlayerProfile:
             span = max(1, next_required - previous_required)
             progress = min(span, max(0, self.season_xp - previous_required))
 
+        receipt_values = tuple(self.engagement_claim_receipts.values())
+
+        def reward_view(reward: dict, kind: str, identity: int) -> dict:
+            seed = (
+                f"login:{self.monthly_login_month}:{self.player_id}:{identity}"
+                if kind == "login"
+                else f"season:{self.active_meta_season_id}:{self.player_id}:{identity}"
+            )
+            result = _profile_reward_identity(self, reward, seed)
+            previous = next(
+                (
+                    receipt
+                    for receipt in receipt_values
+                    if receipt.get("kind") == kind
+                    and int(receipt.get("day" if kind == "login" else "tier", -1)) == identity
+                ),
+                None,
+            )
+            if previous:
+                for key in ("module_definition_id", "core_type_id"):
+                    if previous.get(key):
+                        result[key] = previous[key]
+            return result
+
+        notification_groups = self.notification_keys_by_section()
+        seen_notifications = set(self.seen_notification_keys)
+        unseen_notifications = {
+            section: [key for key in keys if key not in seen_notifications]
+            for section, keys in notification_groups.items()
+        }
+
         return {
             "season_id": season["id"],
             "season_name_tr": season["name_tr"],
@@ -436,7 +493,7 @@ class PlayerProfile:
                 "claimed_days": list(self.claimed_monthly_login_days),
                 "rewards": [
                     {
-                        **reward,
+                        **reward_view(reward, "login", int(reward["day"])),
                         "claimed": reward["day"] in self.claimed_monthly_login_days,
                         "claimable": (
                             reward["day"] == self.monthly_login_today
@@ -450,9 +507,25 @@ class PlayerProfile:
                 request_id: dict(receipt)
                 for request_id, receipt in self.engagement_claim_receipts.items()
             },
+            "seen_notification_keys": list(self.seen_notification_keys),
+            "notifications": {
+                "profile": any(unseen_notifications.values()),
+                "rewards": bool(
+                    unseen_notifications["daily"]
+                    or unseen_notifications["season"]
+                ),
+                "daily": bool(unseen_notifications["daily"]),
+                "season": bool(unseen_notifications["season"]),
+                "avatar": bool(unseen_notifications["avatar"]),
+                "unseen_keys": [
+                    key
+                    for keys in unseen_notifications.values()
+                    for key in keys
+                ],
+            },
             "reward_track": [
                 {
-                    **reward,
+                    **reward_view(reward, "tiers", int(reward["tier"])),
                     "claimed": reward["tier"] in claimed_tiers,
                     "claimable": (
                         self.season_xp >= reward["required_xp"]
@@ -461,6 +534,46 @@ class PlayerProfile:
                 }
                 for reward in SEASON_REWARD_TRACK
             ],
+        }
+
+    def notification_keys_by_section(self) -> dict[str, tuple[str, ...]]:
+        claimed_missions = set(self.claimed_daily_missions)
+        claimed_tiers = set(self.claimed_season_tiers)
+        claimed_login_days = set(self.claimed_monthly_login_days)
+        daily_keys: list[str] = []
+        if self.monthly_login_today not in claimed_login_days:
+            daily_keys.append(
+                f"daily-login:{self.monthly_login_month}:{self.monthly_login_today}"
+            )
+        daily_keys.extend(
+            f"daily-mission:{self.daily_mission_day}:{mission['id']}"
+            for mission in DAILY_MISSIONS
+            if mission["id"] not in claimed_missions
+            and int(self.daily_mission_progress.get(mission["id"], 0))
+            >= int(mission["target"])
+        )
+        season_keys = tuple(
+            f"season-tier:{self.active_meta_season_id}:{reward['tier']}"
+            for reward in SEASON_REWARD_TRACK
+            if int(self.season_xp) >= int(reward["required_xp"])
+            and int(reward["tier"]) not in claimed_tiers
+        )
+        avatar_keys = tuple(
+            [
+                f"avatar:{avatar_id}"
+                for avatar_id in self.unlocked_avatar_ids
+                if avatar_id != "default"
+            ]
+            + [
+                f"avatar-frame:{frame_id}"
+                for frame_id in self.unlocked_avatar_frame_ids
+                if frame_id != "none"
+            ]
+        )
+        return {
+            "daily": tuple(daily_keys),
+            "season": season_keys,
+            "avatar": avatar_keys,
         }
 
 
@@ -583,6 +696,21 @@ class PlayerProfileService:
             profile.selected_avatar_frame_id = clean_frame
         return profile
 
+    def mark_notifications_seen(
+        self,
+        player_id: str,
+        section: str,
+    ) -> PlayerProfile:
+        profile = self.get_or_create(player_id)
+        normalized = section.strip().lower()
+        groups = profile.notification_keys_by_section()
+        if normalized not in groups:
+            raise PlayerProfileError("Bilinmeyen bildirim bölümü.")
+        profile.seen_notification_keys = tuple(
+            dict.fromkeys((*profile.seen_notification_keys, *groups[normalized]))
+        )
+        return profile
+
     def add_experience(
         self,
         player_id: str,
@@ -648,9 +776,12 @@ class PlayerProfileService:
             raise PlayerProfileError("Yalnız bugünün giriş ödülü alınabilir.")
         if day in profile.claimed_monthly_login_days:
             raise PlayerProfileError("Bugünün giriş ödülü daha önce alındı.")
-        reward = MONTHLY_LOGIN_REWARDS[day - 1]
-        pool = profile.preferred_battle_pool_ids or default_battle_pool().module_definition_ids
-        module_id = pool[(sum(ord(char) for char in profile.player_id) + day) % len(pool)]
+        reward = _profile_reward_identity(
+            profile,
+            MONTHLY_LOGIN_REWARDS[day - 1],
+            f"login:{profile.monthly_login_month}:{profile.player_id}:{day}",
+        )
+        module_id = reward["module_definition_id"]
         profile.circuit_credits += int(reward["circuit_credits"])
         profile.flux_shards += int(reward["flux_shards"])
         profile.module_shards[module_id] = (
@@ -662,8 +793,8 @@ class PlayerProfileService:
         )
         receipt = {
             **reward,
+            "kind": "login",
             "month": profile.monthly_login_month,
-            "module_definition_id": module_id,
         }
         if request_id:
             profile.engagement_claim_receipts[request_id] = dict(receipt)
@@ -739,29 +870,39 @@ class PlayerProfileService:
         profile = self.get_or_create(player_id)
         if request_id and request_id in profile.engagement_claim_receipts:
             return profile
-        reward = next(
+        base_reward = next(
             (item for item in SEASON_REWARD_TRACK if item["tier"] == tier),
             None,
         )
-        if reward is None:
+        if base_reward is None:
             raise PlayerProfileError("Bilinmeyen sezon kademesi.")
         if tier in profile.claimed_season_tiers:
             raise PlayerProfileError("Bu kademe ödülü daha önce alındı.")
-        if profile.season_xp < reward["required_xp"]:
+        if profile.season_xp < base_reward["required_xp"]:
             raise PlayerProfileError("Bu sezon kademesi henüz açılmadı.")
+        reward = _profile_reward_identity(
+            profile,
+            base_reward,
+            f"season:{profile.active_meta_season_id}:{profile.player_id}:{tier}",
+        )
         profile.circuit_credits += int(reward.get("circuit_credits", 0))
         profile.flux_shards += int(reward["flux_shards"])
-        profile.core_shards += int(reward.get("core_shards", 0))
+        core_shards = int(reward.get("core_shards", 0))
+        core_type_id = reward.get("core_type_id")
+        if core_shards and core_type_id:
+            profile.core_shards_by_type[core_type_id] = (
+                int(profile.core_shards_by_type.get(core_type_id, 0)) + core_shards
+            )
         module_shards = int(reward.get("module_shards", 0))
         if module_shards:
-            pool = profile.preferred_battle_pool_ids or default_battle_pool().module_definition_ids
-            module_id = pool[(tier - 1) % len(pool)]
+            module_id = reward["module_definition_id"]
             profile.module_shards[module_id] = int(profile.module_shards.get(module_id, 0)) + module_shards
         profile.claimed_season_tiers = tuple(
             sorted({*profile.claimed_season_tiers, tier})
         )
         if request_id:
             profile.engagement_claim_receipts[request_id] = {
+                **reward,
                 "kind": "tiers",
                 "tier": tier,
                 "season_id": profile.active_meta_season_id,
