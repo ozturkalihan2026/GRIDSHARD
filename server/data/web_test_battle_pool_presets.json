@@ -14,6 +14,21 @@
       "use_count": 0
     }
   },
+  "wt-c6b71186-dcf0-4575-beea-a4fc5783f7e6": {
+    "Başlangıç Devresi": {
+      "favorite": false,
+      "last_used_at_ms": null,
+      "module_definition_ids": [
+        "laser",
+        "shield",
+        "repair",
+        "pulse_cannon",
+        "battery",
+        "emp"
+      ],
+      "use_count": 0
+    }
+  },
   "wt-dbd4a70f-4d90-4b60-958a-18ca1e4eff82": {
     "Başlangıç Devresi": {
       "favorite": false,
