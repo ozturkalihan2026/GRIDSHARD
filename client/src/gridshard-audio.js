@@ -119,10 +119,6 @@
       asset:"./assets/audio/energy_transfer.wav",
       identity:"kısa gövde darbesi + elektrik boşalması",
     },
-    tier_up:{
-      asset:"./assets/audio/tier_up.wav",
-      identity:"parlak yükseliş + çok katmanlı kademe mührü",
-    },
   });
 
   class GridshardSeamlessLoopTrack {

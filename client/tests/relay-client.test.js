@@ -821,7 +821,7 @@ function createClient() {
   const fs=require("fs");
   const html=fs.readFileSync(path.join(ROOT,"index.html"),"utf8");
   assert.ok(html.includes("Oyna"));
-  assert.ok(html.includes(">Profil<"));
+  assert.ok(html.includes(">PROFİL<"));
   assert.ok(html.includes(">İstatistikler<"));
   assert.ok(html.includes(">Ayarlar<"));
   assert.ok(html.includes('data-open-screen="laboratory"'));

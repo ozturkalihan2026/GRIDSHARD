@@ -1,12 +1,11 @@
 from app.game.combat import counter_strategy_multiplier, defense_profile, resolve_attack, select_target
 from app.game.engine import BattleEngine
-from app.game.models import BattleState, Direction, ModuleStatus, Position
+from app.game.models import BattleState, ModuleStatus, Position
 
-def add(engine, player_id, iid, did, x, y, direction=Direction.UP, powered=True):
+def add(engine, player_id, iid, did, x, y, powered=True):
     m=engine.grant_module(player_id,iid,did)
     m.status=ModuleStatus.ACTIVE
     m.position=Position(x,y)
-    m.direction=direction
     m.is_powered=powered
     return m
 
@@ -17,7 +16,7 @@ def make_engine():
 
 def test_powered_shield_reduces_damage():
     e=make_engine()
-    laser=add(e,"p1","laser","laser",1,1,Direction.RIGHT)
+    laser=add(e,"p1","laser","laser",1,1)
     shield=add(e,"p2","shield","shield",2,1,powered=True)
     r=resolve_attack("p1",laser,"p2",shield)
     assert r.raw_damage==10
@@ -93,10 +92,10 @@ def test_engine_reflection_applies_real_damage():
     e=make_engine()
     add(e,"p1","p1-core","core",2,2)
     add(e,"p1","p1-gen","generator",2,3)
-    laser=add(e,"p1","p1-laser","laser",2,1,Direction.DOWN)
+    laser=add(e,"p1","p1-laser","laser",2,1)
     add(e,"p2","p2-core","core",2,2)
     add(e,"p2","p2-gen","generator",2,3)
-    ref=add(e,"p2","p2-ref","reflector",2,1,Direction.DOWN)
+    ref=add(e,"p2","p2-ref","reflector",2,1)
     e._process_energy_flow()
     lb,rb=laser.hp,ref.hp
     e._process_combat_actions()

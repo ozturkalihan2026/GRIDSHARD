@@ -25,9 +25,11 @@ def test_notification_chain_is_section_scoped_and_survives_reload():
 
     notifications = profile.engagement_view()["notifications"]
     assert notifications == {
-        "profile": True,
+        "profile": False,
         "rewards": True,
         "daily": True,
+        "daily_login": True,
+        "daily_missions": False,
         "season": True,
         "avatar": True,
         "unseen_keys": notifications["unseen_keys"],
@@ -38,7 +40,7 @@ def test_notification_chain_is_section_scoped_and_survives_reload():
     assert after_daily["daily"] is False
     assert after_daily["season"] is True
     assert after_daily["avatar"] is True
-    assert after_daily["profile"] is True
+    assert after_daily["profile"] is False
 
     store = _store(profiles)
     store.save_player(profile.player_id)
@@ -49,6 +51,27 @@ def test_notification_chain_is_section_scoped_and_survives_reload():
     assert restored.seen_notification_keys == profile.seen_notification_keys
     assert restored.engagement_view()["notifications"]["daily"] is False
     assert restored.engagement_view()["notifications"]["season"] is True
+
+
+def test_login_and_mission_notifications_are_acknowledged_independently():
+    now = datetime(2026, 9, 10, 12, tzinfo=timezone.utc)
+    profiles = PlayerProfileService(now_func=lambda: now)
+    profile = profiles.get_or_create("notification-split-player")
+    mission = profile.engagement_view()["daily_missions"][0]
+    profile.daily_mission_progress[mission["id"]] = mission["target"]
+
+    before = profile.engagement_view()["notifications"]
+    assert before["daily_login"] is True
+    assert before["daily_missions"] is True
+
+    profiles.mark_notifications_seen(profile.player_id, "daily-login")
+    after_login = profile.engagement_view()["notifications"]
+    assert after_login["daily_login"] is False
+    assert after_login["daily_missions"] is True
+
+    profiles.mark_notifications_seen(profile.player_id, "daily-missions")
+    after_missions = profile.engagement_view()["notifications"]
+    assert after_missions["daily"] is False
 
 
 def test_claimed_reward_disappears_without_clearing_other_notification_sections():

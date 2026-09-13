@@ -2,6 +2,7 @@
 from pathlib import Path
 import hashlib
 import json
+import re
 
 DATA_DIR = Path(__file__).resolve().parent.parent / "data"
 CANON = json.loads((DATA_DIR / "arena_progression_v1.json").read_text(encoding="utf-8"))
@@ -37,6 +38,16 @@ def _normalized_arena_rewards() -> tuple[dict, ...]:
         nodes: list[dict] = []
         for raw_node in raw_arena["nodes"]:
             node = {**raw_node, "rewards": dict(raw_node.get("rewards", {}))}
+            # Core fragments are reserved for Diamond Chests.  Strip legacy
+            # arena-road values and their stale copy so old JSON cannot leak a
+            # second core-fragment source into the live economy.
+            node["rewards"].pop("core_shards", None)
+            node["description_tr"] = re.sub(
+                r"\s*\+?\s*\d+\s*Çekirdek Parçası",
+                "",
+                str(node.get("description_tr", "")),
+                flags=re.IGNORECASE,
+            ).strip(" ·")
             module_id = node["rewards"].pop("module_id", None)
             if module_id:
                 node["rewards"].update({
@@ -198,17 +209,70 @@ def validate_targeted_module_rewards() -> tuple[dict, ...]:
 
 TARGETED_MODULE_REWARD_CONTRACTS = validate_targeted_module_rewards()
 
+RARITY_STAT_PROFILES = {
+    # Nadirlik yalnız kartın rengini değil, savaş içindeki yatırım karşılığını
+    # da belirler.  Saldırı eğrisi diğer rollerden daha yatık tutulur; böylece
+    # efsanevi kart değerli kalırken altı saldırı kartlı deste zorunlu meta
+    # hâline gelmez.
+    "common": {
+        "hp": 1.00,
+        "attack": 1.00,
+        "effect": 1.00,
+        "cooldown": 1.00,
+        "energy": 1.00,
+    },
+    "rare": {
+        "hp": 1.08,
+        "attack": 1.07,
+        "effect": 1.11,
+        "cooldown": .98,
+        "energy": .98,
+    },
+    "epic": {
+        "hp": 1.18,
+        "attack": 1.16,
+        "effect": 1.25,
+        "cooldown": .95,
+        "energy": .95,
+    },
+    "legendary": {
+        "hp": 1.32,
+        "attack": 1.28,
+        "effect": 1.42,
+        "cooldown": .91,
+        "energy": .92,
+    },
+}
+
+# Eski dışa aktarımı kullanan istemci/test araçları için etki eğrisini aynı
+# adla erişilebilir tutuyoruz.
+RARITY_STAT_MULTIPLIER = {
+    rarity: profile["effect"]
+    for rarity, profile in RARITY_STAT_PROFILES.items()
+}
+
+
 def module_stats(definition, upgrade_level: int, talents: dict | None = None) -> dict:
     # Legacy storage counts upgrades from zero; the user-facing level is 1..15.
     level = max(0, min(14, int(upgrade_level)))
     learned = (talents or {}).values()
     power = 1 + .03 * sum(choice == "power" for choice in learned)
     resilience = 1 + .05 * sum(choice == "resilience" for choice in learned)
-    return {"level": level + 1, "max_hp": round(definition.max_hp * 1.03 ** level * resilience),
-            "base_damage": round(definition.base_damage * 1.05 ** level * power, 2),
-            "cooldown_ms": round(definition.cooldown_ms * max(.88, .992 ** level)),
-            "effect_multiplier": (1.03 if definition.category == "sabotaj" else 1.035) ** level * power,
-            "energy_consumption": definition.energy_consumption}
+    rarity = str(getattr(definition, "rarity", "common") or "common").lower()
+    rarity_profile = RARITY_STAT_PROFILES.get(
+        rarity,
+        RARITY_STAT_PROFILES["common"],
+    )
+    return {"level": level + 1, "rarity": rarity,
+            "max_hp": round(definition.max_hp * rarity_profile["hp"] * 1.03 ** level * resilience),
+            "base_damage": round(definition.base_damage * rarity_profile["attack"] * 1.05 ** level * power, 2),
+            "cooldown_ms": round(definition.cooldown_ms * rarity_profile["cooldown"] * max(.88, .992 ** level)),
+            "effect_multiplier": rarity_profile["effect"] * (1.03 if definition.category == "sabotaj" else 1.035) ** level * power,
+            "energy_consumption": round(definition.energy_consumption * rarity_profile["energy"] * max(.92, .996 ** level), 2),
+            "rarity_bonuses": {
+                key: round(value, 3)
+                for key, value in rarity_profile.items()
+            }}
 
 def select_bot(rating: int, session_id: str) -> dict:
     stage = rank_stage_for_rating(rating)

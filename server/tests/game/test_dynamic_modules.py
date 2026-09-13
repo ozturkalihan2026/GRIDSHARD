@@ -1,6 +1,6 @@
 from app.game.battle_pool import default_battle_pool
 from app.game.engine import BattleEngine
-from app.game.models import BattleCommand, BattleState, Direction, ModuleStatus
+from app.game.models import BattleCommand, BattleState, ModuleStatus
 
 
 def create_engine():
@@ -9,8 +9,8 @@ def create_engine():
     engine.set_battle_pool("player", default_battle_pool().module_definition_ids)
     engine.grant_module("player", "core", "core")
     engine.grant_module("player", "generator", "generator")
-    engine.set_initial_active_module("player", "core", 2, 2)
-    engine.set_initial_active_module("player", "generator", 2, 3)
+    engine.set_initial_active_module("player", "core", 2, 1)
+    engine.set_initial_active_module("player", "generator", 2, 0)
     engine.state.players["player"].circuit_credits = 2_000
     engine.start()
     return engine
@@ -46,17 +46,15 @@ def test_same_card_can_create_multiple_distinct_instances():
     assert len({laser.position for laser in lasers}) == 2
 
 
-def test_position_is_fixed_but_orientation_can_change():
+def test_active_module_can_move_without_legacy_orientation_state():
     engine = create_engine()
     command(engine, "deploy_module", definition_id="laser")
     laser = deployed(engine, "laser")[0]
     position = laser.position
-    direction = laser.direction
     command(engine, "move_module", module_id=laser.instance_id, x=0, y=0)
-    assert laser.position == position
-    command(engine, "rotate_module", module_id=laser.instance_id)
-    assert laser.position == position
-    assert laser.direction != direction
+    assert laser.position != position
+    assert laser.position.x == 0
+    assert laser.position.y == 0
 
 
 def test_destroyed_module_leaves_five_second_debris():

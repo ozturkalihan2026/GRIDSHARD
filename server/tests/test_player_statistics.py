@@ -6,7 +6,6 @@ from app.game.engine import (
 )
 from app.game.models import (
     BattleState,
-    Direction,
 )
 from app.main import (
     app,
@@ -54,7 +53,6 @@ def finished_match(
             f"{p}-gen",
             2,
             3,
-            Direction.UP,
         )
 
     engine.start()

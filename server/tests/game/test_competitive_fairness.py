@@ -3,17 +3,15 @@ from app.game.engine import BATTLE_TIME_LIMIT_MS, BattleEngine
 from app.game.models import (
     BattleState,
     BattleStatus,
-    Direction,
     ModuleStatus,
     Position,
 )
 
 
-def add(engine, player, iid, did, x, y, direction=Direction.UP):
+def add(engine, player, iid, did, x, y):
     module = engine.grant_module(player, iid, did)
     module.status = ModuleStatus.ACTIVE
     module.position = Position(x, y)
-    module.direction = direction
     return module
 
 
@@ -36,7 +34,7 @@ def test_time_limit_uses_existing_rank_tiebreak():
     for player in ("a", "b"):
         add(engine, player, f"{player}-core", "core", 2, 2)
         add(engine, player, f"{player}-gen", "generator", 2, 3)
-    add(engine, "a", "a-armor", "armor", 2, 1, Direction.DOWN)
+    add(engine, "a", "a-armor", "armor", 2, 1)
 
     engine.state.status = BattleStatus.RUNNING
     engine.state.elapsed_ms = BATTLE_TIME_LIMIT_MS - 100
@@ -56,7 +54,7 @@ def test_simultaneous_tick_attacks_are_marked_in_event():
         add(engine, player, f"{player}-gen", "generator", 2, 3)
         add(
             engine, player, f"{player}-laser",
-            "laser", 2, 1, Direction.DOWN
+            "laser", 2, 1
         )
 
     engine._process_energy_flow()
@@ -80,11 +78,11 @@ def test_energy_priority_is_role_based_not_instance_id():
     add(engine, "p1", "gen", "generator", 2, 3)
     emp = add(
         engine, "p1", "a-emp",
-        "emp", 1, 3, Direction.RIGHT
+        "emp", 1, 3
     )
     railgun = add(
         engine, "p1", "z-railgun",
-        "railgun", 3, 3, Direction.LEFT
+        "railgun", 3, 3
     )
 
     engine._process_energy_flow()

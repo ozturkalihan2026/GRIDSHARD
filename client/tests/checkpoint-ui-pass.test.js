@@ -46,7 +46,7 @@ assert.match(css, /\.reward-resource-row[\s\S]*grid-template-columns:auto minmax
 assert.match(css, /\.resource-symbol-core-card[\s\S]*var\(--core-accent,#56f1df\)/);
 assert.match(css, /\.core-detail-art \{ color:var\(--core-accent,#56f1df\) !important; \}/);
 assert.ok(app.includes("function markScreenNotificationsSeen"));
-assert.ok(app.includes('"daily-rewards": "daily"'));
+assert.ok(app.includes('"daily-rewards": "daily-login"'));
 assert.ok(app.includes('rewards: "season"'));
 assert.ok(app.includes("has-persistent-notification"));
 assert.ok(app.includes('action.textContent = ownedCount > 0'));
@@ -71,5 +71,35 @@ assert.ok(app.includes("/training-challenges"));
 assert.ok(html.includes("Antrenman protokolü derecesizdir"));
 assert.match(css, /\.team-member-row/);
 assert.match(css, /\.team-message-list/);
+
+const dailyRewardsPanel = html.match(
+  /<section class="engagement-summary-panel daily-rewards-screen"[\s\S]*?<\/section>\s*<section class="engagement-summary-panel daily-missions-screen"/
+)?.[0] || "";
+const dailyMissionsPanel = html.match(
+  /<section class="engagement-summary-panel daily-missions-screen"[\s\S]*?<\/section>\s*<section class="engagement-summary-panel season-rewards-screen"/
+)?.[0] || "";
+assert.ok(html.includes('data-open-screen="daily-missions"><strong>Günlük Devre Emirleri</strong>'));
+assert.ok(dailyRewardsPanel.includes('id="monthly-login-track"'));
+assert.ok(!dailyRewardsPanel.includes('id="daily-mission-list"'));
+assert.ok(dailyMissionsPanel.includes('id="daily-mission-list"'));
+assert.ok(app.includes('"daily-missions": "daily-missions"'));
+assert.ok(app.includes('engagement.daily_mission_day || new Date().toISOString().slice(0, 10)'));
+assert.ok(app.includes('engagement.daily_login?.month || new Date().toISOString().slice(0, 7)'));
+assert.ok(app.includes('const nextTierExperience'));
+
+const scoreboard = app.match(
+  /function renderPostMatchScoreboard\(result\)[\s\S]*?function renderOnlineBattleAnalysis/
+)?.[0] || "";
+assert.ok(scoreboard.includes('post-match-core-card'));
+assert.ok(scoreboard.includes('definitionId !== "core"'));
+assert.ok(scoreboard.includes('TOPLAM HASAR EŞDEĞERİ'));
+assert.ok(scoreboard.includes('damage_absorbed'));
+assert.ok(scoreboard.includes('energy_discharged'));
+assert.ok(scoreboard.includes('effectiveDamage'));
+assert.match(css, /\.play-result-panel \.post-match-player-body[\s\S]*display:grid !important/);
+assert.match(css, /\.battle-floating-feedback[\s\S]*display:block !important/);
+assert.match(css, /\.board\[data-core-wave-effect="heal"\]/);
+assert.match(css, /\.duel-attack-line\[data-kind="core-sabotage"\]/);
+assert.match(css, /\.unified-module-progress strong,[\s\S]*white-space:nowrap/);
 
 console.log("checkpoint UI pass contract passed");

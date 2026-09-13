@@ -40,7 +40,7 @@ def valid_setup_body(player):
         "player_id": player,
         "battle_pool_ids": list(default_battle_pool().module_definition_ids),
         "initial_modules": [
-            {"instance_id": f"{player}-core", "definition_id": "core", "x": 2, "y": 1, "direction": "up"},
+            {"instance_id": f"{player}-core", "definition_id": "core", "x": 2, "y": 1},
         ],
     }
 

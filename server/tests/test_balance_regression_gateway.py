@@ -53,8 +53,8 @@ def test_review_ready_credit_draft_runs_simulation_then_real_engine_regression()
         params={"player_id":player},
         json={
             "area":"circuit_credit",
-            "before_value":10,
-            "proposed_value":20,
+            "before_value":2500,
+            "proposed_value":3000,
             "approved":True,
             "simulation_status":"pending",
             "regression_status":"pending",

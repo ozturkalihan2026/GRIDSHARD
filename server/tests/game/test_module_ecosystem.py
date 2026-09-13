@@ -35,16 +35,14 @@ def test_new_modules_have_distinct_strategic_roles():
     assert all(roles)
 
 
-def test_role_metadata_contains_energy_damage_cooldown_and_ports():
+def test_role_metadata_contains_energy_damage_and_cooldown():
     pulse = get_module_definition("pulse_cannon")
     assert pulse.energy_consumption == 5.0
     assert pulse.base_damage == 32.0
     assert pulse.cooldown_ms == 2500
-    assert pulse.port_count == 1
 
     splitter = get_module_definition("splitter")
     assert splitter.base_damage == 0.0
-    assert splitter.port_count == 3
 
     armor = get_module_definition("armor")
     assert armor.energy_consumption == 0.0

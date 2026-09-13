@@ -38,38 +38,116 @@ def damage_by_module_from_events(
     upgrade_levels: dict[str, int] | None = None,
 ) -> tuple[dict, ...]:
     upgrade_levels = upgrade_levels or {}
-    damage: dict[str, int] = {}
+    contribution: dict[str, dict[str, float]] = {}
+
+    def bucket(definition_id: str) -> dict[str, float]:
+        return contribution.setdefault(
+            definition_id,
+            {
+                "damage": 0,
+                "damage_absorbed": 0,
+                "repair": 0,
+                "heat_reduced": 0.0,
+                "energy_saved": 0.0,
+                "support_value": 0.0,
+                "control_seconds": 0.0,
+                "control_actions": 0,
+                "support_actions": 0,
+            },
+        )
 
     if player.battle_pool is not None:
         for definition_id in player.battle_pool.module_definition_ids:
-            damage.setdefault(definition_id, 0)
+            bucket(definition_id)
+    for module in player.modules.values():
+        bucket(module.definition.id)
 
     for event in events:
         data = event.data
-        if event.type != "module_damaged":
-            continue
-        if data.get("source_player_id") != player.player_id:
-            continue
-        if data.get("player_id") == player.player_id:
-            continue
-        source = player.modules.get(str(data.get("source_module_id", "")))
-        if source is None:
-            continue
-        definition_id = source.definition.id
-        damage[definition_id] = damage.get(definition_id, 0) + int(data.get("damage", 0))
+        if event.type == "module_damaged":
+            if data.get("source_player_id") == player.player_id and data.get("player_id") != player.player_id:
+                source = player.modules.get(str(data.get("source_module_id", "")))
+                if source is not None:
+                    bucket(source.definition.id)["damage"] += int(data.get("damage", 0))
+        elif event.type == "attack_performed" and data.get("target_player_id") == player.player_id:
+            target = player.modules.get(str(data.get("target_module_id", "")))
+            if target is not None:
+                bucket(target.definition.id)["damage_absorbed"] += max(
+                    0,
+                    int(data.get("reduced_damage", 0)),
+                )
+        elif event.type == "module_repaired" and data.get("player_id") == player.player_id:
+            source = player.modules.get(str(data.get("source_module_id", "")))
+            if source is not None:
+                bucket(source.definition.id)["repair"] += int(data.get("repair", 0))
+        elif event.type == "module_cooled" and data.get("player_id") == player.player_id:
+            source = player.modules.get(str(data.get("source_module_id", "")))
+            if source is not None:
+                bucket(source.definition.id)["heat_reduced"] += max(
+                    0.0,
+                    float(data.get("heat_before", 0.0)) - float(data.get("heat_after", 0.0)),
+                )
+        elif event.type == "sabotage_applied":
+            if data.get("attacker_player_id") != player.player_id:
+                continue
+            source = player.modules.get(str(data.get("attacker_module_id") or ""))
+            if source is not None:
+                values = bucket(source.definition.id)
+                values["control_actions"] += 1
+                values["control_seconds"] += max(
+                    0.0,
+                    float(data.get("duration_ms", 0.0)) / 1000,
+                )
+        elif event.type == "module_contribution":
+            if data.get("source_player_id", data.get("player_id")) != player.player_id:
+                continue
+            source = player.modules.get(str(data.get("source_module_id") or ""))
+            if source is None:
+                continue
+            values = bucket(source.definition.id)
+            kind = str(data.get("contribution_kind") or "")
+            value = max(0.0, float(data.get("value", 0.0)))
+            if kind == "energy_saved":
+                values["energy_saved"] += value
+            elif data.get("category") == "destek":
+                values["support_value"] += value
+                values["support_actions"] += 1
 
     rows = []
-    for definition_id, amount in damage.items():
+    for definition_id, values in contribution.items():
+        if definition_id == "core":
+            continue
         module = next((item for item in player.modules.values() if item.definition.id == definition_id), None)
         if module is None:
             continue
+        values["energy_consumed"] = round(float(player.module_energy_consumed.get(definition_id, 0.0)), 3)
+        values["energy_discharged"] = round(float(player.module_energy_discharged.get(definition_id, 0.0)), 3)
+        if definition_id == "generator":
+            values["energy_generated"] = round(float(player.energy_generated_total), 3)
+        else:
+            values["energy_generated"] = 0.0
         rows.append({
             "definition_id": definition_id,
             "name_tr": module.definition.name_tr,
-            "damage": amount,
+            "category": module.definition.category,
+            **{key: (round(value, 3) if isinstance(value, float) else int(value)) for key, value in values.items()},
             "level": 1 + int(upgrade_levels.get(definition_id, 0)),
         })
-    rows.sort(key=lambda row: (-row["damage"], row["name_tr"]))
+    rows.sort(
+        key=lambda row: (
+            -(
+                row["damage"]
+                + row["damage_absorbed"]
+                + row["repair"]
+                + row["heat_reduced"]
+                + row["energy_discharged"]
+                + row["energy_saved"]
+                + row["support_value"]
+                + row["control_seconds"]
+            ),
+            row["name_tr"],
+        )
+    )
     return tuple(rows)
 
 

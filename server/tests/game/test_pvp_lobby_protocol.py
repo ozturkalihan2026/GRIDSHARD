@@ -9,8 +9,8 @@ def setup_message(player):
         "payload":{
             "battle_pool_ids":list(default_battle_pool().module_definition_ids),
             "initial_modules":[
-                {"instance_id":f"{player}-core","definition_id":"core","x":2,"y":2,"direction":"up"},
-                {"instance_id":f"{player}-gen","definition_id":"generator","x":2,"y":3,"direction":"up"},
+                {"instance_id":f"{player}-core","definition_id":"core","x":2,"y":1},
+                {"instance_id":f"{player}-gen","definition_id":"generator","x":2,"y":0},
             ],
         },
     }

@@ -2,17 +2,15 @@ from app.game.engine import BattleEngine
 from app.game.models import (
     BattleState,
     BattleStatus,
-    Direction,
     ModuleStatus,
     Position,
 )
 
 
-def add(engine, player, iid, did, x, y, direction=Direction.UP):
+def add(engine, player, iid, did, x, y):
     module=engine.grant_module(player,iid,did)
     module.status=ModuleStatus.ACTIVE
     module.position=Position(x,y)
-    module.direction=direction
     return module
 
 
@@ -21,8 +19,8 @@ def base_engine():
     engine.add_player("a")
     engine.add_player("b")
     for player in ("a","b"):
-        add(engine,player,f"{player}-core","core",2,2)
-        add(engine,player,f"{player}-gen","generator",2,3)
+        add(engine,player,f"{player}-core","core",2,1)
+        add(engine,player,f"{player}-gen","generator",2,0)
     engine.state.status=BattleStatus.RUNNING
     return engine
 
@@ -79,7 +77,7 @@ def test_simultaneous_equal_core_destruction_is_draw():
 
 def test_simultaneous_core_tiebreak_uses_living_module_count():
     engine=base_engine()
-    extra=add(engine,"a","a-laser","laser",2,1,Direction.DOWN)
+    extra=add(engine,"a","a-laser","laser",2,1)
 
     for player in ("a","b"):
         core=engine.state.players[player].modules[f"{player}-core"]
@@ -93,8 +91,8 @@ def test_simultaneous_core_tiebreak_uses_living_module_count():
 
 def test_tiebreak_then_hp_ratio():
     engine=base_engine()
-    a_laser=add(engine,"a","a-laser","laser",2,1,Direction.DOWN)
-    b_laser=add(engine,"b","b-laser","laser",2,1,Direction.DOWN)
+    a_laser=add(engine,"a","a-laser","laser",2,1)
+    b_laser=add(engine,"b","b-laser","laser",2,1)
     b_laser.hp=10
 
     for player in ("a","b"):
@@ -117,6 +115,7 @@ def test_summary_contains_energy_and_credit_data():
     summary=engine.state.result_summary["a"]
     assert summary["circuit_credits"]==42
     assert summary["energy_generated_total"]==12.5
+    assert all(row["definition_id"] != "core" for row in summary["damage_by_module"])
 
 
 def test_match_end_does_not_pause_before_core_is_destroyed():

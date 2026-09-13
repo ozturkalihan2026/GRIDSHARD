@@ -3153,10 +3153,32 @@ def _team_view(team: dict, player_id: str) -> dict:
         for member_id, profile in profiles.items()
     }
     requests = []
+    seen_request_weeks: set[tuple[str, str]] = set()
     for item in reversed(team.get("module_requests", [])[-100:]):
+        requester_id = str(item.get("requester_id", ""))
+        week_key = str(item.get("week_key", ""))
+        requester_week = (requester_id, week_key)
+        # Older builds allowed several requests from one player in the same
+        # week.  Keep the newest one visible and collapse the legacy extras.
+        if requester_id and week_key:
+            if requester_week in seen_request_weeks:
+                continue
+            seen_request_weeks.add(requester_week)
         module = MODULES.get(str(item.get("module_id")), {})
+        policy = TEAM_REQUEST_POLICY.get(str(item.get("rarity", "")), {})
+        # Requests persisted before the current rarity amounts were lowered
+        # must not keep advertising the legacy 12/8/4/2 target in the UI.
+        # The service also applies this cap when the next donation mutates the
+        # record, so the read model and write path stay consistent.
+        requested_amount = int(item.get("requested_amount", policy.get("amount", 0)) or 0)
+        if policy.get("amount"):
+            requested_amount = min(requested_amount, int(policy["amount"]))
+        donated_amount = min(int(item.get("donated_amount", 0) or 0), requested_amount)
         requests.append({
             **dict(item),
+            "requested_amount": requested_amount,
+            "donated_amount": donated_amount,
+            "fulfilled": bool(item.get("fulfilled")) or donated_amount >= requested_amount,
             "module_name_tr": module.get("name_tr", item.get("module_id", "Modül")),
             "requester_name": names.get(item.get("requester_id"), "Oyuncu"),
             "is_own": item.get("requester_id") == player_id,
@@ -3754,8 +3776,15 @@ def claim_daily_mission_reward(
     persist_player_data(player_id)
     view = profile.to_view()
     tier_after = int(view["engagement"]["current_tier"])
+    mission_receipt = (
+        dict(profile.engagement_claim_receipts[request.request_id])
+        if request
+        and request.request_id in profile.engagement_claim_receipts
+        else None
+    )
     return {
         **view,
+        "daily_mission_receipt": mission_receipt,
         "tier_advanced": _tier_advanced_payload(
             player_id,
             f"mission:{mission_id}",

@@ -21,6 +21,62 @@
         "team_id": "team-82e527da447d"
       }
     },
+    "team:donate:wt-1561dea8-843f-4d64-ae50-173ff6e15d04:1789239883695:e77e129fb48988": {
+      "created_at": "2026-09-12T19:04:43.717940+00:00",
+      "fingerprint": "d0ffc03ae9310bda571eed6044ca019e101913d376329c85d5badfc8d06a7823",
+      "result": {
+        "amount": 1,
+        "donor_id": "wt-1561dea8-843f-4d64-ae50-173ff6e15d04",
+        "fulfilled": false,
+        "module_id": "battery",
+        "module_request_id": "module-request-79b0030c3da04b75996f1c8b51a8d52c",
+        "replayed": false,
+        "requester_id": "wt-dbd4a70f-4d90-4b60-958a-18ca1e4eff82",
+        "team_id": "team-82e527da447d"
+      }
+    },
+    "team:donate:wt-1561dea8-843f-4d64-ae50-173ff6e15d04:1789239884722:58c8df59253018": {
+      "created_at": "2026-09-12T19:04:44.723563+00:00",
+      "fingerprint": "d0ffc03ae9310bda571eed6044ca019e101913d376329c85d5badfc8d06a7823",
+      "result": {
+        "amount": 1,
+        "donor_id": "wt-1561dea8-843f-4d64-ae50-173ff6e15d04",
+        "fulfilled": false,
+        "module_id": "battery",
+        "module_request_id": "module-request-79b0030c3da04b75996f1c8b51a8d52c",
+        "replayed": false,
+        "requester_id": "wt-dbd4a70f-4d90-4b60-958a-18ca1e4eff82",
+        "team_id": "team-82e527da447d"
+      }
+    },
+    "team:donate:wt-1561dea8-843f-4d64-ae50-173ff6e15d04:1789239886626:a1b056939e7968": {
+      "created_at": "2026-09-12T19:04:46.630810+00:00",
+      "fingerprint": "d0ffc03ae9310bda571eed6044ca019e101913d376329c85d5badfc8d06a7823",
+      "result": {
+        "amount": 1,
+        "donor_id": "wt-1561dea8-843f-4d64-ae50-173ff6e15d04",
+        "fulfilled": false,
+        "module_id": "battery",
+        "module_request_id": "module-request-79b0030c3da04b75996f1c8b51a8d52c",
+        "replayed": false,
+        "requester_id": "wt-dbd4a70f-4d90-4b60-958a-18ca1e4eff82",
+        "team_id": "team-82e527da447d"
+      }
+    },
+    "team:donate:wt-1561dea8-843f-4d64-ae50-173ff6e15d04:1789239887136:d835f273c4796": {
+      "created_at": "2026-09-12T19:04:47.138105+00:00",
+      "fingerprint": "d0ffc03ae9310bda571eed6044ca019e101913d376329c85d5badfc8d06a7823",
+      "result": {
+        "amount": 1,
+        "donor_id": "wt-1561dea8-843f-4d64-ae50-173ff6e15d04",
+        "fulfilled": true,
+        "module_id": "battery",
+        "module_request_id": "module-request-79b0030c3da04b75996f1c8b51a8d52c",
+        "replayed": false,
+        "requester_id": "wt-dbd4a70f-4d90-4b60-958a-18ca1e4eff82",
+        "team_id": "team-82e527da447d"
+      }
+    },
     "team:donate:wt-c6b71186-dcf0-4575-beea-a4fc5783f7e6:1789134063895:ffc7e40fc25e4": {
       "created_at": "2026-09-11T13:41:03.937195+00:00",
       "fingerprint": "29795f4d99bebb82f11294818040c1355eae1a035787cc1833b73a02d9193691",
@@ -175,6 +231,153 @@
         "team_id": "team-82e527da447d"
       }
     },
+    "team:donate:wt-c6b71186-dcf0-4575-beea-a4fc5783f7e6:1789134075269:6c296419c4ea": {
+      "created_at": "2026-09-11T13:41:15.273675+00:00",
+      "fingerprint": "29795f4d99bebb82f11294818040c1355eae1a035787cc1833b73a02d9193691",
+      "result": {
+        "amount": 1,
+        "donor_id": "wt-c6b71186-dcf0-4575-beea-a4fc5783f7e6",
+        "fulfilled": true,
+        "module_id": "laser",
+        "module_request_id": "module-request-ab477ad332384704b491bf819aad8a15",
+        "replayed": false,
+        "requester_id": "wt-81aef76b-f7e7-498a-9c29-63cdf1fb9793",
+        "team_id": "team-82e527da447d"
+      }
+    },
+    "team:join:wt-1561dea8-843f-4d64-ae50-173ff6e15d04:1789239835296:999c0a16099f18": {
+      "created_at": "2026-09-12T19:03:55.298070+00:00",
+      "fingerprint": "5d3bfdf5c0be26e964f1d2ad04cc8ef23c5511f40717f97c51b32a8aaf07fd84",
+      "result": {
+        "replayed": false,
+        "team": {
+          "created_at": "2026-09-10T11:47:16.783321+00:00",
+          "member_ids": [
+            "wt-81aef76b-f7e7-498a-9c29-63cdf1fb9793",
+            "wt-c6b71186-dcf0-4575-beea-a4fc5783f7e6",
+            "wt-dbd4a70f-4d90-4b60-958a-18ca1e4eff82",
+            "wt-1561dea8-843f-4d64-ae50-173ff6e15d04"
+          ],
+          "member_limit": 30,
+          "messages": [
+            {
+              "author_id": "wt-81aef76b-f7e7-498a-9c29-63cdf1fb9793",
+              "created_at": "2026-09-10T11:47:30.873889+00:00",
+              "message_id": "message-751143d81b6d43cda6fe1322fee1d546",
+              "moderation_status": "pending",
+              "reports": [],
+              "text": "dsfsaddfa",
+              "visibility": "visible"
+            }
+          ],
+          "module_requests": [
+            {
+              "created_at": "2026-09-10T12:33:10.195027+00:00",
+              "donated_amount": 12,
+              "donors": {
+                "wt-c6b71186-dcf0-4575-beea-a4fc5783f7e6": 12
+              },
+              "fulfilled": true,
+              "module_id": "laser",
+              "rarity": "common",
+              "request_id": "module-request-ab477ad332384704b491bf819aad8a15",
+              "requested_amount": 12,
+              "requester_id": "wt-81aef76b-f7e7-498a-9c29-63cdf1fb9793",
+              "week_key": "2026-W37"
+            },
+            {
+              "created_at": "2026-09-11T20:48:34.954382+00:00",
+              "donated_amount": 0,
+              "donors": {},
+              "fulfilled": false,
+              "module_id": "battery",
+              "rarity": "common",
+              "request_id": "module-request-bc76bcf306dc42f5be8ec8ca2a7ca75a",
+              "requested_amount": 12,
+              "requester_id": "wt-dbd4a70f-4d90-4b60-958a-18ca1e4eff82",
+              "week_key": "2026-W37"
+            },
+            {
+              "created_at": "2026-09-11T21:34:11.266122+00:00",
+              "donated_amount": 0,
+              "donors": {},
+              "fulfilled": false,
+              "module_id": "battery",
+              "rarity": "common",
+              "request_id": "module-request-136fe04f13ed4b0f9a8b20bd9924d37b",
+              "requested_amount": 12,
+              "requester_id": "wt-dbd4a70f-4d90-4b60-958a-18ca1e4eff82",
+              "week_key": "2026-W37"
+            },
+            {
+              "created_at": "2026-09-11T21:34:15.318184+00:00",
+              "donated_amount": 0,
+              "donors": {},
+              "fulfilled": false,
+              "module_id": "pulse_cannon",
+              "rarity": "rare",
+              "request_id": "module-request-00e1764224084b419ddc7720cf7681c8",
+              "requested_amount": 8,
+              "requester_id": "wt-dbd4a70f-4d90-4b60-958a-18ca1e4eff82",
+              "week_key": "2026-W37"
+            },
+            {
+              "created_at": "2026-09-11T21:34:17.859404+00:00",
+              "donated_amount": 0,
+              "donors": {},
+              "fulfilled": false,
+              "module_id": "emp",
+              "rarity": "rare",
+              "request_id": "module-request-9345a8748b1a49d4828a8446003b44c3",
+              "requested_amount": 8,
+              "requester_id": "wt-dbd4a70f-4d90-4b60-958a-18ca1e4eff82",
+              "week_key": "2026-W37"
+            },
+            {
+              "created_at": "2026-09-11T21:34:20.252763+00:00",
+              "donated_amount": 0,
+              "donors": {},
+              "fulfilled": false,
+              "module_id": "shield",
+              "rarity": "common",
+              "request_id": "module-request-2ef1b0f3214a4ab3ac44981161d9a1e0",
+              "requested_amount": 12,
+              "requester_id": "wt-dbd4a70f-4d90-4b60-958a-18ca1e4eff82",
+              "week_key": "2026-W37"
+            },
+            {
+              "created_at": "2026-09-11T21:57:15.317841+00:00",
+              "donated_amount": 0,
+              "donors": {},
+              "fulfilled": false,
+              "module_id": "battery",
+              "rarity": "common",
+              "request_id": "module-request-79b0030c3da04b75996f1c8b51a8d52c",
+              "requested_amount": 4,
+              "requester_id": "wt-dbd4a70f-4d90-4b60-958a-18ca1e4eff82",
+              "week_key": "2026-W37"
+            }
+          ],
+          "name": "Kesici",
+          "owner_id": "wt-81aef76b-f7e7-498a-9c29-63cdf1fb9793",
+          "team_id": "team-82e527da447d",
+          "training_challenges": [
+            {
+              "challenge_id": "training-74fd9caff9f74eee9cc06ed476d712a7",
+              "challenger_id": "wt-dbd4a70f-4d90-4b60-958a-18ca1e4eff82",
+              "created_at": "2026-09-11T21:35:40.232719+00:00",
+              "match_type": "team_training",
+              "opponent_id": "wt-81aef76b-f7e7-498a-9c29-63cdf1fb9793",
+              "protocol": "team_training_v1",
+              "ranked": false,
+              "rewards_enabled": false,
+              "status": "pending"
+            }
+          ]
+        },
+        "team_id": "team-82e527da447d"
+      }
+    },
     "team:join:wt-c6b71186-dcf0-4575-beea-a4fc5783f7e6:1789134059656:ec597a91bc0a78": {
       "created_at": "2026-09-11T13:40:59.661987+00:00",
       "fingerprint": "14bf036fe84d48ff479de8d4176875c86a22251cb5e49e981c5482b2b23335a0",
@@ -204,6 +407,54 @@
               "donated_amount": 0,
               "donors": {},
               "fulfilled": false,
+              "module_id": "laser",
+              "rarity": "common",
+              "request_id": "module-request-ab477ad332384704b491bf819aad8a15",
+              "requested_amount": 12,
+              "requester_id": "wt-81aef76b-f7e7-498a-9c29-63cdf1fb9793",
+              "week_key": "2026-W37"
+            }
+          ],
+          "name": "Kesici",
+          "owner_id": "wt-81aef76b-f7e7-498a-9c29-63cdf1fb9793",
+          "team_id": "team-82e527da447d",
+          "training_challenges": []
+        },
+        "team_id": "team-82e527da447d"
+      }
+    },
+    "team:join:wt-dbd4a70f-4d90-4b60-958a-18ca1e4eff82:1789151262634:83617fdf590218": {
+      "created_at": "2026-09-11T18:27:42.636322+00:00",
+      "fingerprint": "9de3c843df2b45c22e44ca904871cbe90bdf4624368b9c9f2d9f5df61054e461",
+      "result": {
+        "replayed": false,
+        "team": {
+          "created_at": "2026-09-10T11:47:16.783321+00:00",
+          "member_ids": [
+            "wt-81aef76b-f7e7-498a-9c29-63cdf1fb9793",
+            "wt-c6b71186-dcf0-4575-beea-a4fc5783f7e6",
+            "wt-dbd4a70f-4d90-4b60-958a-18ca1e4eff82"
+          ],
+          "member_limit": 30,
+          "messages": [
+            {
+              "author_id": "wt-81aef76b-f7e7-498a-9c29-63cdf1fb9793",
+              "created_at": "2026-09-10T11:47:30.873889+00:00",
+              "message_id": "message-751143d81b6d43cda6fe1322fee1d546",
+              "moderation_status": "pending",
+              "reports": [],
+              "text": "dsfsaddfa",
+              "visibility": "visible"
+            }
+          ],
+          "module_requests": [
+            {
+              "created_at": "2026-09-10T12:33:10.195027+00:00",
+              "donated_amount": 12,
+              "donors": {
+                "wt-c6b71186-dcf0-4575-beea-a4fc5783f7e6": 12
+              },
+              "fulfilled": true,
               "module_id": "laser",
               "rarity": "common",
               "request_id": "module-request-ab477ad332384704b491bf819aad8a15",
@@ -258,6 +509,176 @@
         "weekly_limit": 4,
         "weekly_used": 1
       }
+    },
+    "team:module-request:wt-dbd4a70f-4d90-4b60-958a-18ca1e4eff82:1789159714950:da9a020d841ac": {
+      "created_at": "2026-09-11T20:48:34.954382+00:00",
+      "fingerprint": "00f98f9e84a88204762f0652014c20dfad9a003e185bc66e099df14ae35612cc",
+      "result": {
+        "module_request": {
+          "created_at": "2026-09-11T20:48:34.954382+00:00",
+          "donated_amount": 0,
+          "donors": {},
+          "fulfilled": false,
+          "module_id": "battery",
+          "rarity": "common",
+          "request_id": "module-request-bc76bcf306dc42f5be8ec8ca2a7ca75a",
+          "requested_amount": 12,
+          "requester_id": "wt-dbd4a70f-4d90-4b60-958a-18ca1e4eff82",
+          "week_key": "2026-W37"
+        },
+        "replayed": false,
+        "team_id": "team-82e527da447d",
+        "weekly_limit": 4,
+        "weekly_used": 1
+      }
+    },
+    "team:module-request:wt-dbd4a70f-4d90-4b60-958a-18ca1e4eff82:1789162451260:b6ad22e838b658": {
+      "created_at": "2026-09-11T21:34:11.266122+00:00",
+      "fingerprint": "00f98f9e84a88204762f0652014c20dfad9a003e185bc66e099df14ae35612cc",
+      "result": {
+        "module_request": {
+          "created_at": "2026-09-11T21:34:11.266122+00:00",
+          "donated_amount": 0,
+          "donors": {},
+          "fulfilled": false,
+          "module_id": "battery",
+          "rarity": "common",
+          "request_id": "module-request-136fe04f13ed4b0f9a8b20bd9924d37b",
+          "requested_amount": 12,
+          "requester_id": "wt-dbd4a70f-4d90-4b60-958a-18ca1e4eff82",
+          "week_key": "2026-W37"
+        },
+        "replayed": false,
+        "team_id": "team-82e527da447d",
+        "weekly_limit": 4,
+        "weekly_used": 2
+      }
+    },
+    "team:module-request:wt-dbd4a70f-4d90-4b60-958a-18ca1e4eff82:1789162455315:0d48a6df5032b": {
+      "created_at": "2026-09-11T21:34:15.318184+00:00",
+      "fingerprint": "a87a66ce0e7f478bf4c2784fde7bffc9699e946b72fdfdddab4b40a0130233ba",
+      "result": {
+        "module_request": {
+          "created_at": "2026-09-11T21:34:15.318184+00:00",
+          "donated_amount": 0,
+          "donors": {},
+          "fulfilled": false,
+          "module_id": "pulse_cannon",
+          "rarity": "rare",
+          "request_id": "module-request-00e1764224084b419ddc7720cf7681c8",
+          "requested_amount": 8,
+          "requester_id": "wt-dbd4a70f-4d90-4b60-958a-18ca1e4eff82",
+          "week_key": "2026-W37"
+        },
+        "replayed": false,
+        "team_id": "team-82e527da447d",
+        "weekly_limit": 3,
+        "weekly_used": 1
+      }
+    },
+    "team:module-request:wt-dbd4a70f-4d90-4b60-958a-18ca1e4eff82:1789162457857:c2be3a44f4bb88": {
+      "created_at": "2026-09-11T21:34:17.859404+00:00",
+      "fingerprint": "88b7ef7bee6fb5d9916349d2d7e0707955c70f4102dc9440cd57732fa7f1c4f2",
+      "result": {
+        "module_request": {
+          "created_at": "2026-09-11T21:34:17.859404+00:00",
+          "donated_amount": 0,
+          "donors": {},
+          "fulfilled": false,
+          "module_id": "emp",
+          "rarity": "rare",
+          "request_id": "module-request-9345a8748b1a49d4828a8446003b44c3",
+          "requested_amount": 8,
+          "requester_id": "wt-dbd4a70f-4d90-4b60-958a-18ca1e4eff82",
+          "week_key": "2026-W37"
+        },
+        "replayed": false,
+        "team_id": "team-82e527da447d",
+        "weekly_limit": 3,
+        "weekly_used": 2
+      }
+    },
+    "team:module-request:wt-dbd4a70f-4d90-4b60-958a-18ca1e4eff82:1789162460250:c5bdadd9b27818": {
+      "created_at": "2026-09-11T21:34:20.252763+00:00",
+      "fingerprint": "b8bfee79a3e948f6e1dc01ca0327221e30df0a99e34c5c639ad079e1565e796a",
+      "result": {
+        "module_request": {
+          "created_at": "2026-09-11T21:34:20.252763+00:00",
+          "donated_amount": 0,
+          "donors": {},
+          "fulfilled": false,
+          "module_id": "shield",
+          "rarity": "common",
+          "request_id": "module-request-2ef1b0f3214a4ab3ac44981161d9a1e0",
+          "requested_amount": 12,
+          "requester_id": "wt-dbd4a70f-4d90-4b60-958a-18ca1e4eff82",
+          "week_key": "2026-W37"
+        },
+        "replayed": false,
+        "team_id": "team-82e527da447d",
+        "weekly_limit": 4,
+        "weekly_used": 3
+      }
+    },
+    "team:module-request:wt-dbd4a70f-4d90-4b60-958a-18ca1e4eff82:1789163835315:cbcb0a46275148": {
+      "created_at": "2026-09-11T21:57:15.317841+00:00",
+      "fingerprint": "00f98f9e84a88204762f0652014c20dfad9a003e185bc66e099df14ae35612cc",
+      "result": {
+        "module_request": {
+          "created_at": "2026-09-11T21:57:15.317841+00:00",
+          "donated_amount": 0,
+          "donors": {},
+          "fulfilled": false,
+          "module_id": "battery",
+          "rarity": "common",
+          "request_id": "module-request-79b0030c3da04b75996f1c8b51a8d52c",
+          "requested_amount": 4,
+          "requester_id": "wt-dbd4a70f-4d90-4b60-958a-18ca1e4eff82",
+          "week_key": "2026-W37"
+        },
+        "replayed": false,
+        "team_id": "team-82e527da447d",
+        "weekly_limit": 4,
+        "weekly_used": 4
+      }
+    },
+    "team:training:wt-1561dea8-843f-4d64-ae50-173ff6e15d04:1789241972237:a474a113143ce": {
+      "created_at": "2026-09-12T19:39:32.986285+00:00",
+      "fingerprint": "c3939efc9ce68d4e64ad263c8f6c7c23b1a6bc6bfcedb53d8f0815554d0ee36e",
+      "result": {
+        "challenge": {
+          "challenge_id": "training-d9fb44a2d2e04e5c8a998c09ee07f252",
+          "challenger_id": "wt-1561dea8-843f-4d64-ae50-173ff6e15d04",
+          "created_at": "2026-09-12T19:39:32.986285+00:00",
+          "match_type": "team_training",
+          "opponent_id": "wt-dbd4a70f-4d90-4b60-958a-18ca1e4eff82",
+          "protocol": "team_training_v1",
+          "ranked": false,
+          "rewards_enabled": false,
+          "status": "pending"
+        },
+        "replayed": false,
+        "team_id": "team-82e527da447d"
+      }
+    },
+    "team:training:wt-dbd4a70f-4d90-4b60-958a-18ca1e4eff82:1789162540231:e479c4946a1008": {
+      "created_at": "2026-09-11T21:35:40.232719+00:00",
+      "fingerprint": "27a8502ac5c5a0620c093747b8358d7b2cf90fe105020bc93b0fd32f012c87db",
+      "result": {
+        "challenge": {
+          "challenge_id": "training-74fd9caff9f74eee9cc06ed476d712a7",
+          "challenger_id": "wt-dbd4a70f-4d90-4b60-958a-18ca1e4eff82",
+          "created_at": "2026-09-11T21:35:40.232719+00:00",
+          "match_type": "team_training",
+          "opponent_id": "wt-81aef76b-f7e7-498a-9c29-63cdf1fb9793",
+          "protocol": "team_training_v1",
+          "ranked": false,
+          "rewards_enabled": false,
+          "status": "pending"
+        },
+        "replayed": false,
+        "team_id": "team-82e527da447d"
+      }
     }
   },
   "teams": {
@@ -265,7 +686,9 @@
       "created_at": "2026-09-10T11:47:16.783321+00:00",
       "member_ids": [
         "wt-81aef76b-f7e7-498a-9c29-63cdf1fb9793",
-        "wt-c6b71186-dcf0-4575-beea-a4fc5783f7e6"
+        "wt-c6b71186-dcf0-4575-beea-a4fc5783f7e6",
+        "wt-dbd4a70f-4d90-4b60-958a-18ca1e4eff82",
+        "wt-1561dea8-843f-4d64-ae50-173ff6e15d04"
       ],
       "member_limit": 30,
       "messages": [
@@ -282,23 +705,120 @@
       "module_requests": [
         {
           "created_at": "2026-09-10T12:33:10.195027+00:00",
-          "donated_amount": 11,
+          "donated_amount": 12,
           "donors": {
-            "wt-c6b71186-dcf0-4575-beea-a4fc5783f7e6": 11
+            "wt-c6b71186-dcf0-4575-beea-a4fc5783f7e6": 12
           },
-          "fulfilled": false,
+          "fulfilled": true,
           "module_id": "laser",
           "rarity": "common",
           "request_id": "module-request-ab477ad332384704b491bf819aad8a15",
           "requested_amount": 12,
           "requester_id": "wt-81aef76b-f7e7-498a-9c29-63cdf1fb9793",
           "week_key": "2026-W37"
+        },
+        {
+          "created_at": "2026-09-11T20:48:34.954382+00:00",
+          "donated_amount": 0,
+          "donors": {},
+          "fulfilled": false,
+          "module_id": "battery",
+          "rarity": "common",
+          "request_id": "module-request-bc76bcf306dc42f5be8ec8ca2a7ca75a",
+          "requested_amount": 12,
+          "requester_id": "wt-dbd4a70f-4d90-4b60-958a-18ca1e4eff82",
+          "week_key": "2026-W37"
+        },
+        {
+          "created_at": "2026-09-11T21:34:11.266122+00:00",
+          "donated_amount": 0,
+          "donors": {},
+          "fulfilled": false,
+          "module_id": "battery",
+          "rarity": "common",
+          "request_id": "module-request-136fe04f13ed4b0f9a8b20bd9924d37b",
+          "requested_amount": 12,
+          "requester_id": "wt-dbd4a70f-4d90-4b60-958a-18ca1e4eff82",
+          "week_key": "2026-W37"
+        },
+        {
+          "created_at": "2026-09-11T21:34:15.318184+00:00",
+          "donated_amount": 0,
+          "donors": {},
+          "fulfilled": false,
+          "module_id": "pulse_cannon",
+          "rarity": "rare",
+          "request_id": "module-request-00e1764224084b419ddc7720cf7681c8",
+          "requested_amount": 8,
+          "requester_id": "wt-dbd4a70f-4d90-4b60-958a-18ca1e4eff82",
+          "week_key": "2026-W37"
+        },
+        {
+          "created_at": "2026-09-11T21:34:17.859404+00:00",
+          "donated_amount": 0,
+          "donors": {},
+          "fulfilled": false,
+          "module_id": "emp",
+          "rarity": "rare",
+          "request_id": "module-request-9345a8748b1a49d4828a8446003b44c3",
+          "requested_amount": 8,
+          "requester_id": "wt-dbd4a70f-4d90-4b60-958a-18ca1e4eff82",
+          "week_key": "2026-W37"
+        },
+        {
+          "created_at": "2026-09-11T21:34:20.252763+00:00",
+          "donated_amount": 0,
+          "donors": {},
+          "fulfilled": false,
+          "module_id": "shield",
+          "rarity": "common",
+          "request_id": "module-request-2ef1b0f3214a4ab3ac44981161d9a1e0",
+          "requested_amount": 12,
+          "requester_id": "wt-dbd4a70f-4d90-4b60-958a-18ca1e4eff82",
+          "week_key": "2026-W37"
+        },
+        {
+          "created_at": "2026-09-11T21:57:15.317841+00:00",
+          "donated_amount": 4,
+          "donors": {
+            "wt-1561dea8-843f-4d64-ae50-173ff6e15d04": 4
+          },
+          "fulfilled": true,
+          "module_id": "battery",
+          "rarity": "common",
+          "request_id": "module-request-79b0030c3da04b75996f1c8b51a8d52c",
+          "requested_amount": 4,
+          "requester_id": "wt-dbd4a70f-4d90-4b60-958a-18ca1e4eff82",
+          "week_key": "2026-W37"
         }
       ],
       "name": "Kesici",
       "owner_id": "wt-81aef76b-f7e7-498a-9c29-63cdf1fb9793",
       "team_id": "team-82e527da447d",
-      "training_challenges": []
+      "training_challenges": [
+        {
+          "challenge_id": "training-74fd9caff9f74eee9cc06ed476d712a7",
+          "challenger_id": "wt-dbd4a70f-4d90-4b60-958a-18ca1e4eff82",
+          "created_at": "2026-09-11T21:35:40.232719+00:00",
+          "match_type": "team_training",
+          "opponent_id": "wt-81aef76b-f7e7-498a-9c29-63cdf1fb9793",
+          "protocol": "team_training_v1",
+          "ranked": false,
+          "rewards_enabled": false,
+          "status": "pending"
+        },
+        {
+          "challenge_id": "training-d9fb44a2d2e04e5c8a998c09ee07f252",
+          "challenger_id": "wt-1561dea8-843f-4d64-ae50-173ff6e15d04",
+          "created_at": "2026-09-12T19:39:32.986285+00:00",
+          "match_type": "team_training",
+          "opponent_id": "wt-dbd4a70f-4d90-4b60-958a-18ca1e4eff82",
+          "protocol": "team_training_v1",
+          "ranked": false,
+          "rewards_enabled": false,
+          "status": "pending"
+        }
+      ]
     }
   }
 }

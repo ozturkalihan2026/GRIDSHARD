@@ -1,0 +1,26 @@
+[
+  {
+    "event_id": "e2",
+    "event_type": "game_opened",
+    "metadata": {},
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 2
+  },
+  {
+    "event_id": "e3",
+    "event_type": "game_opened",
+    "metadata": {},
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 3
+  },
+  {
+    "event_id": "e4",
+    "event_type": "game_opened",
+    "metadata": {},
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 4
+  }
+]

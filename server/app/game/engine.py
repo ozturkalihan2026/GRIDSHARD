@@ -64,7 +64,7 @@ from .support import (
     overclock_targets,
     repair_amount,
     repair_cleanse_target,
-    repair_target,
+    repair_targets,
 )
 from .models import (
     BattleCommand,
@@ -137,6 +137,10 @@ class BattleEngine:
             int(max_pending_commands_per_player),
         )
         self.max_commands_per_tick = max(1, int(max_commands_per_tick))
+        self._energy_contribution_accumulator: dict[
+            tuple[str, str, str],
+            float,
+        ] = {}
 
         if circuit_credit_config.current_regen_interval_ms <= 0:
             raise ValueError("Akım yenilenme aralığı pozitif olmalıdır.")
@@ -217,7 +221,8 @@ class BattleEngine:
         stats = module_stats(definition, self.state.player_upgrade_levels.get(player_id, {}).get(definition_id, 0),
                              self.state.player_module_talents.get(player_id, {}).get(definition_id, {}))
         definition = replace(definition, max_hp=stats["max_hp"], base_damage=stats["base_damage"],
-                             cooldown_ms=stats["cooldown_ms"], effect_multiplier=stats["effect_multiplier"])
+                             cooldown_ms=stats["cooldown_ms"], effect_multiplier=stats["effect_multiplier"],
+                             energy_consumption=stats["energy_consumption"])
         module = BattleModule.create(
             instance_id=instance_id,
             definition=definition,
@@ -672,7 +677,44 @@ class BattleEngine:
 
     def _process_energy_flow(self) -> None:
         for player in self.state.players.values():
-            process_energy_tick(player, self.board.core_position)
+            result = process_energy_tick(player, self.board.core_position)
+            for contribution in result.module_contributions:
+                key = (
+                    player.player_id,
+                    str(contribution["module_id"]),
+                    str(contribution["contribution_kind"]),
+                )
+                self._energy_contribution_accumulator[key] = (
+                    self._energy_contribution_accumulator.get(key, 0.0)
+                    + max(0.0, float(contribution["value"]))
+                )
+
+        # Sürekli enerji akışı saniyede on olay üretmesin. Gerçek tick
+        # değerlerini bir saniyelik okunabilir bir katkı sayısında birleştir.
+        if (self.state.tick + 1) % TICK_RATE:
+            return
+        for (
+            player_id,
+            module_id,
+            contribution_kind,
+        ), value in sorted(self._energy_contribution_accumulator.items()):
+            if value <= 0:
+                continue
+            self._emit(
+                "module_contribution",
+                {
+                    "player_id": player_id,
+                    "source_player_id": player_id,
+                    "source_module_id": module_id,
+                    "target_player_id": player_id,
+                    "target_module_id": module_id,
+                    "category": "enerji",
+                    "contribution_kind": contribution_kind,
+                    "value": round(value, 2),
+                    "unit": "energy",
+                },
+            )
+        self._energy_contribution_accumulator.clear()
 
     def _process_virus_effects(self) -> None:
         for player in self.state.players.values():
@@ -858,6 +900,21 @@ class BattleEngine:
                         "effect_strength_multiplier": resistance.effect_strength_multiplier,
                         "resistance_reasons": list(resistance.reasons),
                         "cooldown_ms": sabotage_cooldown_ms(module),
+                        "contribution_event_emitted": True,
+                    },
+                )
+                self._emit(
+                    "module_contribution",
+                    {
+                        "player_id": attacker_player_id,
+                        "source_player_id": attacker_player_id,
+                        "source_module_id": module.instance_id,
+                        "target_player_id": target_player_id,
+                        "target_module_id": plan.target_module_id,
+                        "category": "sabotaj",
+                        "contribution_kind": "control_duration",
+                        "value": round(effective_duration_ms / 1000, 2),
+                        "unit": "seconds",
                     },
                 )
 
@@ -934,34 +991,36 @@ class BattleEngine:
                         )
                         continue
 
-                    target = repair_target(
+                    targets = repair_targets(
                         player,
                         module,
                         self.board.core_position,
                     )
-                    if target is None:
+                    if not targets:
                         continue
 
                     amount = max(1, round(repair_amount(module) * player.energy_support_multiplier))
-                    before = target.hp
-                    target.hp = min(
-                        target.definition.max_hp,
-                        target.hp + amount,
-                    )
-                    actual = target.hp - before
-
-                    if actual > 0:
-                        self._emit(
-                            "module_repaired",
-                            {
-                                "player_id": player.player_id,
-                                "source_module_id": module.instance_id,
-                                "target_module_id": target.instance_id,
-                                "repair": actual,
-                                "hp_before": before,
-                                "hp_after": target.hp,
-                            },
+                    for target in targets:
+                        before = target.hp
+                        target.hp = min(
+                            target.definition.max_hp,
+                            target.hp + amount,
                         )
+                        actual = target.hp - before
+
+                        if actual > 0:
+                            self._emit(
+                                "module_repaired",
+                                {
+                                    "player_id": player.player_id,
+                                    "source_module_id": module.instance_id,
+                                    "target_module_id": target.instance_id,
+                                    "module_id": target.instance_id,
+                                    "repair": actual,
+                                    "hp_before": before,
+                                    "hp_after": target.hp,
+                                },
+                            )
 
                     self.start_cooldown(
                         player.player_id,
@@ -1186,8 +1245,24 @@ class BattleEngine:
                     "damage": resolution.final_damage,
                     "reflected_damage": resolution.reflected_damage,
                     "simultaneous_tick": True,
+                    "contribution_event_emitted": resolution.reduced_damage > 0,
                 },
             )
+            if resolution.reduced_damage > 0:
+                self._emit(
+                    "module_contribution",
+                    {
+                        "player_id": target_player_id,
+                        "source_player_id": target_player_id,
+                        "source_module_id": target.instance_id,
+                        "target_player_id": target_player_id,
+                        "target_module_id": target.instance_id,
+                        "category": "savunma",
+                        "contribution_kind": "damage_prevented",
+                        "value": resolution.reduced_damage,
+                        "unit": "damage",
+                    },
+                )
             self.apply_damage(
                 target_player_id,
                 target.instance_id,
@@ -1232,8 +1307,24 @@ class BattleEngine:
                     "amplifier_active": support.amplifier_active,
                     "targeting_active": support.targeting_active,
                     "overclock_active": support.overclock_active,
+                    "contributions": list(support.contributions),
                 },
             )
+            for contribution in support.contributions:
+                self._emit(
+                    "module_contribution",
+                    {
+                        "player_id": attacker_player_id,
+                        "source_player_id": attacker_player_id,
+                        "source_module_id": contribution["source_module_id"],
+                        "target_player_id": attacker_player_id,
+                        "target_module_id": attacker.instance_id,
+                        "category": "destek",
+                        "contribution_kind": contribution["contribution_kind"],
+                        "value": round(float(contribution["value"]), 2),
+                        "unit": "percent",
+                    },
+                )
 
             heat_before = attacker.heat
             attacker.heat = min(
@@ -1586,23 +1677,116 @@ class BattleEngine:
         allies = [m for m in player.modules.values() if m.status == ModuleStatus.ACTIVE and m.hp > 0]
         power = player.core_type
         repaired = 0
+        effect_kind = {
+            "core_resonance": "heal",
+            "core_guardian": "defense",
+            "core_overdrive": "attack",
+            "core_disruptor": "sabotage",
+            "core_capacitor": "energy",
+            "core_phoenix": "heal",
+            "core_quantum": "hybrid",
+        }.get(power, "heal")
+        if power in {"core_resonance", "core_phoenix"} and not any(
+            module.hp < module.definition.max_hp for module in allies
+        ):
+            raise CommandRejected("Tüm devre tam canlı; dolum korunuyor.")
+        affected_targets = [
+            {"player_id": player_id, "module_id": module.instance_id}
+            for module in allies
+        ]
+        if power == "core_disruptor":
+            affected_targets = [
+                {"player_id": enemy_id, "module_id": module.instance_id}
+                for enemy_id, enemy in self.state.players.items()
+                if enemy_id != player_id
+                for module in enemy.modules.values()
+                if module.status == ModuleStatus.ACTIVE
+                and module.hp > 0
+                and module.definition.category == "destek"
+            ]
+        elif power == "core_capacitor":
+            affected_targets = [
+                {"player_id": player_id, "module_id": core.instance_id}
+            ]
+        self._emit(
+            "core_power_activated",
+            {
+                "player_id": player_id,
+                "request_id": request_id,
+                "power_id": power,
+                "target_module_id": core.instance_id,
+                "effect_kind": effect_kind,
+                "affected_module_ids": [
+                    target["module_id"] for target in affected_targets
+                ],
+                "affected_targets": affected_targets,
+            },
+        )
         if power in {"core_resonance", "core_phoenix", "core_quantum"}:
-            if not any(m.hp < m.definition.max_hp for m in allies) and power != "core_quantum":
-                raise CommandRejected("Tüm devre tam canlı; dolum korunuyor.")
             for module in allies:
                 heal = round((45 if module == core else 15) * 1.035 ** (level - 1)) if power == "core_resonance" else round(module.definition.max_hp * min(.30, .20 + .005 * (level - 1)))
                 actual = min(heal, module.definition.max_hp - module.hp)
                 module.hp += actual
                 repaired += actual
-                self._emit("module_repaired", {"player_id": player_id, "module_id": module.instance_id, "repair": actual, "hp": module.hp})
+                if actual > 0:
+                    self._emit(
+                        "module_repaired",
+                        {
+                            "player_id": player_id,
+                            "source_module_id": core.instance_id,
+                            "target_module_id": module.instance_id,
+                            "module_id": module.instance_id,
+                            "repair": actual,
+                            "hp": module.hp,
+                        },
+                    )
         if power in {"core_guardian", "core_quantum"}:
             for module in allies:
-                self.add_persistent_effect(player_id, module.instance_id, "core_guardian", "Çekirdek Kalkanı", 4000,
-                                           {"shield_hp": round(20 * 1.035 ** (level - 1))})
+                shield_amount = round(20 * 1.035 ** (level - 1))
+                self.add_persistent_effect(
+                    player_id,
+                    module.instance_id,
+                    "core_guardian",
+                    "Çekirdek Kalkanı",
+                    4000,
+                    {"shield_hp": shield_amount},
+                )
+                self._emit(
+                    "core_effect_applied",
+                    {
+                        "player_id": player_id,
+                        "source_module_id": core.instance_id,
+                        "target_player_id": player_id,
+                        "target_module_id": module.instance_id,
+                        "power_id": power,
+                        "effect_kind": "defense",
+                        "value": shield_amount,
+                    },
+                )
         if power == "core_overdrive":
             for module in allies:
-                self.add_persistent_effect(player_id, module.instance_id, "core_overdrive", "Aşırı Yük", 3000 + ((level - 1) // 3) * 100,
-                                           {"damage_multiplier": 1.25 + .01 * (level - 1)})
+                damage_multiplier = 1.25 + .01 * (level - 1)
+                self.add_persistent_effect(
+                    player_id,
+                    module.instance_id,
+                    "core_overdrive",
+                    "Aşırı Yük",
+                    3000 + ((level - 1) // 3) * 100,
+                    {"damage_multiplier": damage_multiplier},
+                )
+                self._emit(
+                    "core_effect_applied",
+                    {
+                        "player_id": player_id,
+                        "source_module_id": core.instance_id,
+                        "target_player_id": player_id,
+                        "target_module_id": module.instance_id,
+                        "power_id": power,
+                        "effect_kind": "attack",
+                        "value": round((damage_multiplier - 1) * 100),
+                        "unit": "%",
+                    },
+                )
         if power == "core_disruptor":
             for enemy_id, enemy in self.state.players.items():
                 if enemy_id == player_id:
@@ -1612,9 +1796,40 @@ class BattleEngine:
                         continue
                     module.persistent_effects.pop("core_overdrive", None)
                     if module.definition.category == "destek":
-                        self.add_debuff(enemy_id, module.instance_id, JAMMER_DEBUFF_ID, "Çekirdek Kesintisi", 2000 + (level - 1) * 50)
+                        duration_ms = 2000 + (level - 1) * 50
+                        self.add_debuff(
+                            enemy_id,
+                            module.instance_id,
+                            JAMMER_DEBUFF_ID,
+                            "Çekirdek Kesintisi",
+                            duration_ms,
+                        )
+                        self._emit(
+                            "core_effect_applied",
+                            {
+                                "player_id": player_id,
+                                "source_module_id": core.instance_id,
+                                "target_player_id": enemy_id,
+                                "target_module_id": module.instance_id,
+                                "power_id": power,
+                                "effect_kind": "sabotage",
+                                "value": round(duration_ms / 1000, 1),
+                            },
+                        )
         if power == "core_capacitor":
             player.discounted_deployments = 2
+            self._emit(
+                "core_effect_applied",
+                {
+                    "player_id": player_id,
+                    "source_module_id": core.instance_id,
+                    "target_player_id": player_id,
+                    "target_module_id": core.instance_id,
+                    "power_id": power,
+                    "effect_kind": "energy",
+                    "value": 2,
+                },
+            )
         player.core_power_charge = 0.0
         player.core_power_ready_emitted = False
         player.core_power_uses += 1
@@ -1626,8 +1841,12 @@ class BattleEngine:
                 "request_id": request_id,
                 "power_id": player.core_type,
                 "target_module_id": core.instance_id,
+                "effect_kind": effect_kind,
                 "repair": repaired,
-                "affected_module_ids": [m.instance_id for m in allies],
+                "affected_module_ids": [
+                    target["module_id"] for target in affected_targets
+                ],
+                "affected_targets": affected_targets,
                 "hp": core.hp,
                 "charge": 0,
             },

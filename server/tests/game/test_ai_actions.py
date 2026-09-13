@@ -1,14 +1,14 @@
 from app.game.ai import build_ai_action_plan, enqueue_ai_actions
 from app.game.ai_archetypes import get_ai_archetype
 from app.game.engine import BattleEngine
-from app.game.models import BattleCommand, BattleState, Direction
+from app.game.models import BattleCommand, BattleState
 
 
 def setup_engine(archetype_id="balanced") -> BattleEngine:
     engine = BattleEngine(BattleState(battle_id="ai-actions"))
-    for player_id, gate_y, direction in (
-        ("ai", 3, Direction.UP),
-        ("opponent", 1, Direction.DOWN),
+    for player_id, gate_y in (
+        ("ai", 2),
+        ("opponent", 0),
     ):
         engine.add_player(player_id)
         deck = (
@@ -19,11 +19,11 @@ def setup_engine(archetype_id="balanced") -> BattleEngine:
         engine.set_battle_pool(player_id, deck)
         engine.grant_module(player_id, f"{player_id}-core", "core")
         engine.set_initial_active_module(
-            player_id, f"{player_id}-core", 2, 2, Direction.UP
+            player_id, f"{player_id}-core", 2, 1
         )
         engine.grant_module(player_id, f"{player_id}-gen", "generator")
         engine.set_initial_active_module(
-            player_id, f"{player_id}-gen", 2, gate_y, direction
+            player_id, f"{player_id}-gen", 2, gate_y
         )
     engine.start()
     return engine

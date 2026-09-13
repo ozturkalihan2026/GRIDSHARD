@@ -2,15 +2,14 @@ import pytest
 
 from app.game.engine import BattleEngine, CommandRejected
 from app.game.energy import process_energy_tick
-from app.game.models import BattleState, Direction, ModuleStatus, Position
+from app.game.models import BattleState, ModuleStatus, Position
 from app.game.topology import build_energy_topology
 
 
-def active(engine, instance_id, definition_id, x, y, direction=Direction.UP):
+def active(engine, instance_id, definition_id, x, y):
     module = engine.grant_module("p1", instance_id, definition_id)
     module.status = ModuleStatus.ACTIVE
     module.position = Position(x, y)
-    module.direction = direction
     return module
 
 
@@ -20,13 +19,13 @@ def connected_engine():
     engine.state.players["p1"].circuit_credits = 2_000
     active(engine, "core-1", "core", 2, 2)
     active(engine, "generator-1", "generator", 2, 3)
-    splitter = active(engine, "splitter-1", "splitter", 2, 1, Direction.DOWN)
-    laser = active(engine, "laser-1", "laser", 1, 1, Direction.RIGHT)
+    splitter = active(engine, "splitter-1", "splitter", 2, 1)
+    laser = active(engine, "laser-1", "laser", 1, 1)
     engine.state.elapsed_ms = engine.module_interaction_unlock_ms
     return engine, splitter, laser
 
 
-def test_move_reorients_module_to_a_real_generator_reachable_port():
+def test_move_keeps_module_on_the_embedded_energy_network():
     engine, _, laser = connected_engine()
 
     engine._cmd_move_module(
@@ -35,7 +34,6 @@ def test_move_reorients_module_to_a_real_generator_reachable_port():
     )
 
     assert laser.position == Position(3, 1)
-    assert laser.direction == Direction.LEFT
     topology = build_energy_topology(
         engine.state.players["p1"],
         engine.board.core_position,
@@ -50,15 +48,13 @@ def test_move_reorients_module_to_a_real_generator_reachable_port():
     assert laser.energy_received_last_tick > 0
 
 
-def test_move_cannot_use_its_old_downstream_island_as_a_ghost_bridge():
+def test_move_does_not_require_port_orientation():
     engine, splitter, laser = connected_engine()
 
-    with pytest.raises(CommandRejected, match="Jeneratöre"):
-        engine._cmd_move_module(
-            "p1",
-            {"module_id": splitter.instance_id, "x": 0, "y": 1},
-        )
+    engine._cmd_move_module(
+        "p1",
+        {"module_id": splitter.instance_id, "x": 0, "y": 1},
+    )
 
-    assert splitter.position == Position(2, 1)
+    assert splitter.position == Position(0, 1)
     assert laser.position == Position(1, 1)
-

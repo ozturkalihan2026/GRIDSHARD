@@ -160,106 +160,53 @@ def _regress_circuit_credit(
 ) -> dict:
     before_int = int(before)
     proposed_int = int(proposed)
-
-    if (
-        before_int != before
-        or proposed_int != proposed
-    ):
-        raise BalanceRegressionError(
-            "Devre Kredisi pasif üretim değeri tam sayı olmalıdır."
-        )
-
-    configs = []
-    for value in (
-        before_int,
-        proposed_int,
-    ):
-        configs.append(
-            CircuitCreditConfig(
-                starting_credits=(
-                    DEFAULT_CIRCUIT_CREDIT_CONFIG
-                    .starting_credits
-                ),
-                passive_credits_per_second=value,
-                move_cost=(
-                    DEFAULT_CIRCUIT_CREDIT_CONFIG
-                    .move_cost
-                ),
-                remove_cost=(
-                    DEFAULT_CIRCUIT_CREDIT_CONFIG
-                    .remove_cost
-                ),
-            )
-        )
+    if before_int != before or proposed_int != proposed:
+        raise BalanceRegressionError("Akım yenilenme aralığı tam sayı milisaniye olmalıdır.")
+    if before_int <= 0 or proposed_int <= 0:
+        raise BalanceRegressionError("Akım yenilenme aralığı pozitif olmalıdır.")
+    if before_int % 100 or proposed_int % 100:
+        raise BalanceRegressionError("Akım yenilenme aralığı 100 ms tiklerine bölünebilmelidir.")
 
     snapshots = []
-    for label, config in zip(
-        ("before", "proposed"),
-        configs,
-    ):
+    for label, interval_ms in (("before", before_int), ("proposed", proposed_int)):
+        config = CircuitCreditConfig(
+            starting_credits=DEFAULT_CIRCUIT_CREDIT_CONFIG.starting_credits,
+            passive_credits_per_second=DEFAULT_CIRCUIT_CREDIT_CONFIG.passive_credits_per_second,
+            maximum_current=12,
+            current_regen_interval_ms=interval_ms,
+            move_cost=DEFAULT_CIRCUIT_CREDIT_CONFIG.move_cost,
+            remove_cost=DEFAULT_CIRCUIT_CREDIT_CONFIG.remove_cost,
+        )
         try:
-            engine = _engine_fixture(
-                credit_config=config
-            )
+            engine = _engine_fixture(credit_config=config)
         except ValueError as exc:
             raise BalanceRegressionError(
-                f"{label} Devre Kredisi yapılandırması gerçek engine tarafından reddedildi: {exc}"
+                f"{label} Akım yapılandırması gerçek engine tarafından reddedildi: {exc}"
             ) from exc
-
-        invariants = _generic_engine_invariants(
-            engine
-        )
-
-        expected = (
-            config.starting_credits
-            + config.passive_credits_per_second
-        )
-        balance = engine.circuit_credits(
-            "player-1"
-        )
-
-        before_place = engine.circuit_credits(
-            "player-1"
-        )
-        _command(
-            engine,
-            "deploy_module",
-            definition_id="laser",
-        )
-        laser = next(
-            module
-            for module in engine.state.players["player-1"].modules.values()
-            if module.definition.id == "laser"
-            and module.status == ModuleStatus.ACTIVE
-        )
-
+        player = engine.state.players["player-1"]
+        player.circuit_credits = 0
+        player.current_regen_remainder_ms = 0
+        for _ in range(interval_ms // 100):
+            engine.step()
+        first_regen = engine.circuit_credits("player-1")
+        for _ in range((interval_ms * 12) // 100):
+            engine.step()
+        capped = engine.circuit_credits("player-1")
         snapshots.append({
             "label": label,
             "config": asdict(config),
-            "invariants": invariants,
-            "credit_after_1s": balance,
-            "expected_after_1s": expected,
-            "credit_income_ok":
-                balance == expected,
-            "laser_placed":
-                laser.status
-                == ModuleStatus.ACTIVE,
-            "credit_before_place":
-                before_place,
-            "command_rejected":
-                _command_rejected(
-                    engine
-                ),
+            "interval_ms": interval_ms,
+            "first_regen_after_interval": first_regen == 1,
+            "maximum_current": config.maximum_current,
+            "cap_respected": capped == config.maximum_current,
+            "credit_after_interval": first_regen,
+            "credit_after_cap_window": capped,
         })
 
     passed = all(
-        snapshot["credit_income_ok"]
-        and snapshot["laser_placed"]
-        and all(
-            snapshot[
-                "invariants"
-            ].values()
-        )
+        snapshot["first_regen_after_interval"]
+        and snapshot["cap_respected"]
+        and snapshot["maximum_current"] == 12
         for snapshot in snapshots
     )
 

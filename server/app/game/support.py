@@ -34,6 +34,7 @@ class AttackSupportModifiers:
     amplifier_active: bool = False
     targeting_active: bool = False
     overclock_active: bool = False
+    contributions: tuple[dict, ...] = ()
 
 def _neighbors(module, topology, player):
     return [
@@ -46,14 +47,61 @@ def _neighbors(module, topology, player):
 def attack_support_modifiers(player, attack_module, core_position):
     topology=build_energy_topology(player,core_position)
     neighbors=_neighbors(attack_module,topology,player)
-    def strength(mechanic):
-        return max((m.definition.effect_multiplier for m in neighbors
-                    if m.definition.mechanic_id == mechanic and m.is_powered
-                    and JAMMER_DEBUFF_ID not in m.debuffs), default=0.) * player.energy_support_multiplier
-    amp, targeting, overclock = strength("amplifier"), strength("targeting_computer"), strength("overclock_unit")
+    def strongest(mechanic):
+        candidates = [
+            module
+            for module in neighbors
+            if module.definition.mechanic_id == mechanic
+            and module.is_powered
+            and JAMMER_DEBUFF_ID not in module.debuffs
+        ]
+        if not candidates:
+            return None, 0.0
+        source = sorted(
+            candidates,
+            key=lambda module: (
+                -module.definition.effect_multiplier,
+                module.instance_id,
+            ),
+        )[0]
+        return (
+            source,
+            source.definition.effect_multiplier
+            * player.energy_support_multiplier,
+        )
+
+    amp_source, amp = strongest("amplifier")
+    targeting_source, targeting = strongest("targeting_computer")
+    overclock_source, overclock = strongest("overclock_unit")
     damage = (1 + .15 * amp) * (1 + .20 * overclock)
     cooldown = max(.65, 1 - .15 * targeting) * max(.65, 1 - .20 * overclock)
-    return AttackSupportModifiers(damage,cooldown,bool(amp),bool(targeting),bool(overclock))
+    contributions = []
+    if amp_source is not None:
+        contributions.append({
+            "source_module_id": amp_source.instance_id,
+            "contribution_kind": "attack_boost",
+            "value": .15 * amp * 100,
+        })
+    if targeting_source is not None:
+        contributions.append({
+            "source_module_id": targeting_source.instance_id,
+            "contribution_kind": "cooldown_reduction",
+            "value": (1 - max(.65, 1 - .15 * targeting)) * 100,
+        })
+    if overclock_source is not None:
+        contributions.append({
+            "source_module_id": overclock_source.instance_id,
+            "contribution_kind": "attack_boost",
+            "value": .20 * overclock * 100,
+        })
+    return AttackSupportModifiers(
+        damage_multiplier=damage,
+        cooldown_multiplier=cooldown,
+        amplifier_active=bool(amp),
+        targeting_active=bool(targeting),
+        overclock_active=bool(overclock),
+        contributions=tuple(contributions),
+    )
 
 def repair_amount(repair_module):
     multiplier=repair_module.definition.effect_multiplier
@@ -63,17 +111,25 @@ def repair_amount(repair_module):
         )
     return max(1,int(round(BASE_REPAIR_AMOUNT*multiplier)))
 
-def repair_target(player, repair_module, core_position):
-    topology=build_energy_topology(player,core_position)
-    candidates=[
-        m for m in _neighbors(repair_module,topology,player)
-        if m.hp>0 and m.hp<m.definition.max_hp
-    ]
-    if not candidates: return None
+def repair_targets(player, repair_module, core_position):
+    del repair_module, core_position
     return sorted(
-        candidates,
-        key=lambda m:(m.hp/m.definition.max_hp,m.instance_id)
-    )[0]
+        (
+            module
+            for module in player.modules.values()
+            if module.status == ModuleStatus.ACTIVE
+            and module.definition.id != "core"
+            and module.hp > 0
+            and module.hp < module.definition.max_hp
+        ),
+        key=lambda module: (module.hp / module.definition.max_hp, module.instance_id),
+    )
+
+
+def repair_target(player, repair_module, core_position):
+    """Compatibility helper for callers that still need the first target."""
+    targets = repair_targets(player, repair_module, core_position)
+    return targets[0] if targets else None
 
 def cooler_targets(player, cooler_module, core_position):
     topology=build_energy_topology(player,core_position)

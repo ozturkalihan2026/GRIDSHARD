@@ -141,13 +141,18 @@ CHEST_DEFINITIONS: dict[str, dict] = {
         "unlock_hours": 0,
         "claim_cooldown_hours": 3,
         "open_seconds": 1,
-        "coins": (90, 140),
-        "shards": (2, 4),
+        "coins": (45, 75),
+        "flux": (2, 4),
+        # Module pieces are intentionally a slow, occasional progression lane;
+        # credits and flux remain the reliable chest currencies.
+        "shards": (1, 2),
+        "shards_by_rarity": {"common": (1, 2)},
+        "module_drop_chance": 0.14,
+        "core_drop_chance": 0.0,
+        "reward_odds": {"circuit_credits": 0.54, "flux_shards": 0.32, "module_shards": 0.14, "core_shards": 0.0},
+        "allowed_rarities": ("common",),
         "rarity_odds": {
-            "common": 0.70,
-            "rare": 0.24,
-            "epic": 0.055,
-            "legendary": 0.005,
+            "common": 1.0,
         },
     },
     "circuit_8h": {
@@ -157,13 +162,17 @@ CHEST_DEFINITIONS: dict[str, dict] = {
         "unlock_hours": 0,
         "claim_cooldown_hours": 8,
         "open_seconds": 1,
-        "coins": (220, 340),
-        "shards": (4, 7),
+        "coins": (90, 145),
+        "flux": (3, 6),
+        "shards": (1, 3),
+        "shards_by_rarity": {"common": (2, 3), "rare": (1, 1)},
+        "module_drop_chance": 0.15,
+        "core_drop_chance": 0.0,
+        "reward_odds": {"circuit_credits": 0.53, "flux_shards": 0.32, "module_shards": 0.15, "core_shards": 0.0},
+        "allowed_rarities": ("common", "rare"),
         "rarity_odds": {
-            "common": 0.55,
-            "rare": 0.32,
-            "epic": 0.115,
-            "legendary": 0.015,
+            "common": 0.70,
+            "rare": 0.30,
         },
     },
     "core_24h": {
@@ -173,13 +182,18 @@ CHEST_DEFINITIONS: dict[str, dict] = {
         "unlock_hours": 0,
         "claim_cooldown_hours": 16,
         "open_seconds": 1,
-        "coins": (550, 850),
-        "shards": (7, 11),
+        "coins": (175, 280),
+        "flux": (5, 9),
+        "shards": (1, 4),
+        "shards_by_rarity": {"common": (3, 4), "rare": (2, 2), "epic": (1, 1)},
+        "module_drop_chance": 0.16,
+        "core_drop_chance": 0.0,
+        "reward_odds": {"circuit_credits": 0.52, "flux_shards": 0.32, "module_shards": 0.16, "core_shards": 0.0},
+        "allowed_rarities": ("common", "rare", "epic"),
         "rarity_odds": {
-            "common": 0.35,
-            "rare": 0.40,
-            "epic": 0.22,
-            "legendary": 0.03,
+            "common": 0.60,
+            "rare": 0.30,
+            "epic": 0.10,
         },
     },
     "diamond_24h": {
@@ -189,16 +203,36 @@ CHEST_DEFINITIONS: dict[str, dict] = {
         "unlock_hours": 0,
         "claim_cooldown_hours": 24,
         "open_seconds": 1,
-        "coins": (950, 1350),
-        "shards": (10, 16),
+        "coins": (320, 480),
+        "flux": (8, 13),
+        "shards": (1, 5),
+        "shards_by_rarity": {
+            "common": (4, 5),
+            "rare": (3, 3),
+            "epic": (2, 2),
+            "legendary": (1, 1),
+        },
+        "module_drop_chance": 0.20,
+        "core_drop_chance": 0.06,
+        "reward_odds": {"circuit_credits": 0.44, "flux_shards": 0.30, "module_shards": 0.20, "core_shards": 0.06},
+        "allowed_rarities": ("common", "rare", "epic", "legendary"),
         "rarity_odds": {
-            "common": 0.18,
-            "rare": 0.37,
-            "epic": 0.37,
-            "legendary": 0.08,
+            "common": 0.50,
+            "rare": 0.30,
+            "epic": 0.15,
+            "legendary": 0.05,
         },
     },
 }
+
+# Battle victories award lower-tier chests most often while keeping the higher
+# tiers visible in ordinary play. Values are cumulative upper bounds.
+BATTLE_CHEST_DROP_THRESHOLDS: tuple[tuple[float, str], ...] = (
+    (0.03, "diamond_24h"),
+    (0.12, "core_24h"),
+    (0.35, "circuit_8h"),
+    (1.00, "field_3h"),
+)
 
 DAILY_SHOP_OFFERS: tuple[dict, ...] = (
     {
@@ -207,11 +241,15 @@ DAILY_SHOP_OFFERS: tuple[dict, ...] = (
         "tier": "bronze",
         "currency": "circuit_credits",
         "cost": 120,
-        "circuit_credits": (35, 65),
-        "flux_shards": (2, 5),
-        "module_shards": (1, 3),
-        "core_shards": (0, 1),
-        "rarity_odds": {"common": 0.82, "rare": 0.17, "epic": 0.01},
+        "circuit_credits": (30, 50),
+        "flux_shards": (2, 4),
+        "module_shards": (1, 2),
+        "shards_by_rarity": {"common": (1, 2)},
+        "core_shards": (0, 0),
+        "reward_odds": {"circuit_credits": 0.54, "flux_shards": 0.32, "module_shards": 0.14, "core_shards": 0.0},
+        "module_drop_chance": 0.72,
+        "allowed_rarities": ("common",),
+        "rarity_odds": {"common": 1.0},
     },
     {
         "id": "silver_daily",
@@ -219,11 +257,15 @@ DAILY_SHOP_OFFERS: tuple[dict, ...] = (
         "tier": "silver",
         "currency": "circuit_credits",
         "cost": 400,
-        "circuit_credits": (80, 125),
-        "flux_shards": (5, 10),
-        "module_shards": (3, 5),
-        "core_shards": (1, 3),
-        "rarity_odds": {"common": 0.48, "rare": 0.43, "epic": 0.085, "legendary": 0.005},
+        "circuit_credits": (70, 105),
+        "flux_shards": (4, 7),
+        "module_shards": (1, 3),
+        "shards_by_rarity": {"common": (2, 3), "rare": (1, 1)},
+        "core_shards": (0, 0),
+        "reward_odds": {"circuit_credits": 0.53, "flux_shards": 0.32, "module_shards": 0.15, "core_shards": 0.0},
+        "module_drop_chance": 0.62,
+        "allowed_rarities": ("common", "rare"),
+        "rarity_odds": {"common": 0.70, "rare": 0.30},
     },
     {
         "id": "gold_daily",
@@ -231,11 +273,15 @@ DAILY_SHOP_OFFERS: tuple[dict, ...] = (
         "tier": "gold",
         "currency": "circuit_credits",
         "cost": 900,
-        "circuit_credits": (170, 260),
-        "flux_shards": (10, 20),
-        "module_shards": (5, 8),
-        "core_shards": (3, 6),
-        "rarity_odds": {"common": 0.18, "rare": 0.47, "epic": 0.31, "legendary": 0.04},
+        "circuit_credits": (130, 190),
+        "flux_shards": (7, 12),
+        "module_shards": (1, 4),
+        "shards_by_rarity": {"common": (3, 4), "rare": (2, 2), "epic": (1, 1)},
+        "core_shards": (0, 0),
+        "reward_odds": {"circuit_credits": 0.52, "flux_shards": 0.32, "module_shards": 0.16, "core_shards": 0.0},
+        "module_drop_chance": 0.58,
+        "allowed_rarities": ("common", "rare", "epic"),
+        "rarity_odds": {"common": 0.60, "rare": 0.30, "epic": 0.10},
     },
 )
 
@@ -279,6 +325,13 @@ def _hash_range(seed: str, low: int, high: int) -> int:
     if high <= low:
         return low
     return low + int(_hash_unit(seed) * ((high - low) + 1)) % ((high - low) + 1)
+
+
+def _module_shard_range(definition: dict, rarity: str) -> tuple[int, int]:
+    """Return a tier-aware piece range, with fewer pieces for rarer modules."""
+    ranges = definition.get("shards_by_rarity", {})
+    selected = ranges.get(rarity, definition.get("shards", (0, 0)))
+    return int(selected[0]), int(selected[1])
 
 
 def _rarity_from_roll(odds: dict[str, float], roll: float) -> str:
@@ -361,7 +414,7 @@ class MetaProgressionService:
                     f"{profile.player_id}:{node['id']}:module",
                 )
             rewards["module_definition_id"] = module_id
-        if int(rewards.get("core_shards", 0)):
+        if "core_shards" in rewards:
             rewards["core_type_id"] = core_reward_type_id(profile, node["id"])
         return rewards
 
@@ -386,7 +439,10 @@ class MetaProgressionService:
             profile.circuit_credits += rewards.get("circuit_credits", 0)
             profile.flux_shards += rewards.get("flux_shards", 0)
             core_count = int(rewards.get("core_shards", 0))
-            core_type_id = self.award_core_pieces(profile, core_count, node_id)
+            # Keep a stable identity in receipts for older clients; the count
+            # is zero on every road node, so no fragments are awarded here.
+            core_type_id = core_reward_type_id(profile, node_id)
+            self.award_core_pieces(profile, core_count, node_id)
             shard_rewards = {}
             shard_target = rewards.get("module_shard_target") or rewards.get("module_id")
             if shard_target:
@@ -890,14 +946,10 @@ class MetaProgressionService:
         if any(item.get("source_battle_id") == battle_id for item in profile.chest_slots):
             return next(item for item in profile.chest_slots if item.get("source_battle_id") == battle_id)
         roll = _hash_unit(f"{battle_id}:{profile.player_id}:chest")
-        definition_id = (
-            "diamond_24h"
-            if roll < 0.02
-            else "core_24h"
-            if roll < 0.08
-            else "circuit_8h"
-            if roll < 0.28
-            else "field_3h"
+        definition_id = next(
+            chest_id
+            for upper_bound, chest_id in BATTLE_CHEST_DROP_THRESHOLDS
+            if roll < upper_bound
         )
         definition = CHEST_DEFINITIONS[definition_id]
         awarded_at = self._now_func()
@@ -1014,17 +1066,32 @@ class MetaProgressionService:
             f"{seed}:module",
             rarity=rarity,
         )
-        shards = _hash_range(f"{seed}:shards", *definition["shards"])
-        profile.circuit_credits += coins
-        flux = _hash_range(f"{seed}:flux", 3, max(5, definition["unlock_hours"] * 2))
-        core_pieces = (
-            _hash_range(f"{seed}:core", 1, 4)
-            if definition["id"] in {"circuit_8h", "core_24h", "diamond_24h"}
+        module_drop = _hash_unit(f"{seed}:module-drop") < float(definition.get("module_drop_chance", 1.0))
+        shard_range = _module_shard_range(definition, rarity)
+        shards = (
+            _hash_range(f"{seed}:shards", *shard_range)
+            if module_drop
             else 0
         )
-        core_type = self.award_core_pieces(profile, core_pieces, seed)
+        profile.circuit_credits += coins
+        flux = _hash_range(f"{seed}:flux", *definition["flux"])
+        # Core fragments are an endgame chase item and only come from the
+        # highest tier chest.  Other reward paths deliberately return zero.
+        core_drop = (
+            definition["id"] == "diamond_24h"
+            and _hash_unit(f"{seed}:core-drop")
+            < float(definition.get("core_drop_chance", 0.0))
+        )
+        core_pieces = 1 if core_drop else 0
+        core_type = core_reward_type_id(profile, seed)
+        self.award_core_pieces(profile, core_pieces, seed)
         profile.flux_shards += flux
-        profile.module_shards[module_id] = int(profile.module_shards.get(module_id, 0)) + shards
+        # Keep the selected module identity in the receipt even on a miss so
+        # clients can explain the deterministic roll; only a successful roll
+        # changes the player's shard balance.
+        profile.module_shards.setdefault(module_id, int(profile.module_shards.get(module_id, 0)))
+        if shards:
+            profile.module_shards[module_id] += shards
         profile.chest_slots = [item for item in profile.chest_slots if item.get("chest_id") != chest_id]
         receipt = {
             "request_id": request_id,
@@ -1037,9 +1104,11 @@ class MetaProgressionService:
                 "flux_shards": flux,
                 "core_shards": core_pieces,
                 "core_type_id": core_type,
+                "core_drop": core_drop,
                 "module_definition_id": module_id,
                 "module_rarity": rarity,
                 "module_shards": shards,
+                "module_drop": module_drop,
             },
         }
         profile.chest_receipts[request_id] = dict(receipt)
@@ -1080,21 +1149,29 @@ class MetaProgressionService:
             f"{seed}:module",
             rarity=rarity,
         )
+        module_drop = _hash_unit(f"{seed}:module-drop") < float(offer.get("module_drop_chance", 1.0))
+        shard_range = _module_shard_range(offer, rarity)
         rewards = {
             "circuit_credits": _hash_range(f"{seed}:credits", *offer["circuit_credits"]),
             "flux_shards": _hash_range(f"{seed}:flux", *offer["flux_shards"]),
             "module_definition_id": module_id,
             "module_rarity": rarity,
-            "module_shards": _hash_range(f"{seed}:module-shards", *offer["module_shards"]),
+            "module_shards": (
+                _hash_range(f"{seed}:module-shards", *shard_range)
+                if module_drop
+                else 0
+            ),
             "core_shards": _hash_range(f"{seed}:core-shards", *offer["core_shards"]),
+            "module_drop": module_drop,
         }
         setattr(profile, currency, balance - cost)
         profile.circuit_credits += int(rewards["circuit_credits"])
         profile.flux_shards += int(rewards["flux_shards"])
-        rewards["core_type_id"] = self.award_core_pieces(profile, int(rewards["core_shards"]), seed)
-        profile.module_shards[module_id] = (
-            int(profile.module_shards.get(module_id, 0)) + int(rewards["module_shards"])
-        )
+        rewards["core_type_id"] = core_reward_type_id(profile, seed)
+        self.award_core_pieces(profile, int(rewards["core_shards"]), seed)
+        profile.module_shards.setdefault(module_id, int(profile.module_shards.get(module_id, 0)))
+        if rewards["module_shards"]:
+            profile.module_shards[module_id] += int(rewards["module_shards"])
         profile.shop_purchased_offer_ids = tuple(
             dict.fromkeys((*profile.shop_purchased_offer_ids, offer_id))
         )

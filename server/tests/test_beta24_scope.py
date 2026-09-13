@@ -3,8 +3,7 @@ from fastapi.testclient import TestClient
 from app.game.catalog import BASIC_MODULE_DEFINITIONS
 from app.game.battle_pool import default_battle_pool
 from app.game.engine import BattleEngine
-from app.game.models import BattleState, Direction
-from app.game.topology import module_port_directions
+from app.game.models import BattleState
 from app.main import app
 
 
@@ -30,32 +29,23 @@ def test_beta24_menu_preparation_and_result_markup():
     assert "Eşleştirme: 10 sn doldu · AI rakip devraldı" in client.get("/src/app.js").text
 
 
-def test_generator_has_four_ports_and_powers_adjacent_repair_module():
+def test_embedded_energy_network_powers_adjacent_repair_module():
     generator_definition = BASIC_MODULE_DEFINITIONS["generator"]
-    assert generator_definition.port_count == 4
+    assert generator_definition.id == "generator"
 
     engine = BattleEngine(BattleState(battle_id="beta24-energy"))
     engine.add_player("player")
     engine.grant_module("player", "core", "core")
     engine.grant_module("player", "generator", "generator")
     engine.grant_module("player", "repair", "repair")
-    engine.set_initial_active_module("player", "core", 2, 2)
-    engine.set_initial_active_module("player", "generator", 2, 3)
+    engine.set_initial_active_module("player", "core", 2, 1)
+    engine.set_initial_active_module("player", "generator", 2, 0)
     engine.set_initial_active_module(
         "player",
         "repair",
         1,
-        3,
-        Direction.RIGHT,
+        0,
     )
-
-    generator = engine.state.players["player"].modules["generator"]
-    assert set(module_port_directions(generator, engine.board.core_position)) == {
-        Direction.UP,
-        Direction.RIGHT,
-        Direction.DOWN,
-        Direction.LEFT,
-    }
 
     engine.start()
     engine.step()
@@ -90,7 +80,7 @@ def test_local_ai_gateway_returns_server_authoritative_dual_snapshot():
         for module in player_modules
         if module["definition_id"] == "generator"
     )
-    assert generator["port_count"] == 4
+    assert "ports" not in generator
 
     follow_up = client.get(
         f"/local-ai/sessions/{payload['session_id']}/snapshot",

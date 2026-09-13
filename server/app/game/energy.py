@@ -1,8 +1,7 @@
 from dataclasses import dataclass
 
-from .board import get_cell_effects
 from .models import ModuleStatus, PlayerBattleState, Position
-from .topology import build_energy_topology, DISRUPTOR_DEBUFF_ID
+from .topology import DISRUPTOR_DEBUFF_ID
 
 EMP_DEBUFF_ID = "emp_disabled"
 ENERGY_LEECH_DEBUFF_ID = "energy_leech"
@@ -14,6 +13,15 @@ TICK_SECONDS = 0.1
 BATTERY_CAPACITY = 30.0
 CAPACITOR_CAPACITY = 12.0
 
+# The Core is the always-on source.  Its production now grows visibly with
+# its user-facing level, while a Battery contributes a smaller continuous
+# feed in addition to its burst reserve.  This keeps mixed decks online
+# without making an all-attack deck energy-neutral.
+BASE_CORE_GENERATION_PER_SECOND = 14.0
+CORE_LEVEL_GENERATION_MULTIPLIER = 1.06
+CORE_RESERVE_DISCHARGE_PER_SECOND = 4.5
+BATTERY_SUPPLY_PER_SECOND = 6.0
+
 BATTERY_CHARGE_RATE_PER_SECOND = 8.0
 BATTERY_DISCHARGE_RATE_PER_SECOND = 8.0
 CAPACITOR_CHARGE_RATE_PER_SECOND = 12.0
@@ -21,6 +29,13 @@ CAPACITOR_DISCHARGE_RATE_PER_SECOND = 12.0
 
 BASE_DISTRIBUTION_EFFICIENCY = 0.90
 SPLITTER_DISTRIBUTION_EFFICIENCY = 0.98
+
+# Zero-cost armour used to be effectively free.  A full defence deck could
+# therefore keep every card online forever.  Give passive armour a small bus
+# upkeep so it competes with attacks, support and sabotage for the same tick
+# budget without changing the published costs of existing active modules.
+PASSIVE_DEFENCE_UPKEEP_PER_SECOND = 1.8
+ENERGY_CATEGORY_ORDER = ("enerji", "destek", "savunma", "sabotaj", "saldırı")
 
 
 @dataclass(slots=True, frozen=True)
@@ -33,6 +48,7 @@ class EnergyTickResult:
     wasted: float
     powered_module_ids: tuple[str, ...]
     unpowered_module_ids: tuple[str, ...]
+    module_contributions: tuple[dict, ...]
 
 
 def _active_modules(player: PlayerBattleState):
@@ -41,14 +57,6 @@ def _active_modules(player: PlayerBattleState):
         for module in player.modules.values()
         if module.status == ModuleStatus.ACTIVE
     ]
-
-
-def _energy_multiplier(module) -> float:
-    if module.position is None:
-        return 1.0
-    return float(
-        get_cell_effects(module.position).get("energy_multiplier", 1.0)
-    )
 
 
 def _storage_capacity(module) -> float:
@@ -75,23 +83,164 @@ def _discharge_rate_per_tick(module) -> float:
     return 0.0
 
 
+def _module_demand_per_second(module) -> float:
+    demand = float(module.definition.energy_consumption)
+    if module.definition.category == "savunma" and demand <= 0:
+        return PASSIVE_DEFENCE_UPKEEP_PER_SECOND
+    return max(0.0, demand)
+
+
+def _energy_leech_multiplier(module) -> float:
+    effect = module.debuffs.get(ENERGY_LEECH_DEBUFF_ID)
+    if effect is None:
+        return 1.0
+    strength = max(0.0, float(effect.data.get("effect_strength_multiplier", 1.0)))
+    return max(0.35, 1.0 - ((1.0 - ENERGY_LEECH_GENERATION_MULTIPLIER) * strength))
+
+
 def process_energy_tick(player: PlayerBattleState, core_position: Position = Position(2, 1)) -> EnergyTickResult:
+    del core_position  # The GRIDSHARD 2.1 board has an embedded energy bus.
     active = [m for m in _active_modules(player) if m.hp > 0]
     core = next((m for m in active if m.definition.id == "core"), None)
     level = max(1, min(15, player.core_level))
-    production = 10.0 * 1.04 ** (level - 1) if core else 0.0
-    production *= 1 + .03 * sum(s.endswith("_energy") for s in player.core_skills)
+    compatibility_generators = [m for m in active if m.definition.id == "generator"]
+    compatibility_generation = max(
+        (
+            m.definition.energy_generation * _energy_leech_multiplier(m)
+            for m in compatibility_generators
+        ),
+        default=0.0,
+    )
+    core_generation = (
+        max(BASE_CORE_GENERATION_PER_SECOND, compatibility_generation)
+        * CORE_LEVEL_GENERATION_MULTIPLIER ** (level - 1)
+        if core
+        else 0.0
+    )
+    core_generation *= 1 + .03 * sum(s.endswith("_energy") for s in player.core_skills)
+    batteries = [
+        module
+        for module in active
+        if module.definition.id == "battery"
+        and EMP_DEBUFF_ID not in module.debuffs
+        and DISRUPTOR_DEBUFF_ID not in module.debuffs
+    ]
+    battery_generation_by_module = {
+        module.instance_id: (
+            (module.definition.energy_generation or BATTERY_SUPPLY_PER_SECOND)
+            * module.definition.effect_multiplier
+            * _energy_leech_multiplier(module)
+        )
+        for module in batteries
+    }
+    battery_generation = sum(battery_generation_by_module.values())
+    production = core_generation + battery_generation
     capacity = 100.0 + 3 * (level - 1)
-    capacity += sum((25 if m.definition.id == "capacitor" else 30 if m.definition.id == "battery" else 0) * m.definition.effect_multiplier for m in active)
-    regulators = sum(m.definition.effect_multiplier for m in active if m.definition.id == "current_balancer" and EMP_DEBUFF_ID not in m.debuffs)
+    capacity += sum(_storage_capacity(m) * m.definition.effect_multiplier for m in active)
+    regulator_modules = [
+        module
+        for module in active
+        if module.definition.id == "current_balancer"
+        and EMP_DEBUFF_ID not in module.debuffs
+        and DISRUPTOR_DEBUFF_ID not in module.debuffs
+    ]
+    regulators = sum(
+        module.definition.effect_multiplier
+        for module in regulator_modules
+    )
     reduction = max(.65, .92 ** regulators)
-    demand = sum(m.definition.energy_consumption * reduction for m in active if m != core)
+    consumers = [m for m in active if m is not core and m.definition.id != "generator"]
+    raw_demand_by_module = {
+        module.instance_id: _module_demand_per_second(module)
+        for module in consumers
+    }
+    demand_by_module = {
+        module.instance_id: raw_demand_by_module[module.instance_id] * reduction
+        for module in consumers
+    }
+    demand = sum(demand_by_module.values())
     generated = production * TICK_SECONDS
     required = demand * TICK_SECONDS
     before = player.energy_stock
-    player.energy_stock = max(0.0, min(capacity, before + generated - required))
     player.energy_load_ratio = demand / production if production else (2.0 if demand else 0.0)
-    load = player.energy_load_ratio if player.energy_stock <= 0 else min(1.0, player.energy_load_ratio)
+    # The embedded Core bus has a finite per-tick throughput.  Long-term stock
+    # is not allowed to make an overloaded board fire every module at once;
+    # batteries/capacitors are the explicit burst reserve instead.
+    distribution_efficiency = (
+        SPLITTER_DISTRIBUTION_EFFICIENCY
+        if any(m.definition.id == "splitter" for m in active)
+        else BASE_DISTRIBUTION_EFFICIENCY
+    )
+    available = generated * distribution_efficiency
+    # A small, rate-limited draw from the Core reserve prevents rapid
+    # on/off flicker when demand briefly crosses production.  It is not large
+    # enough to sustain an overloaded attack stack by itself.
+    reserve_draw = min(
+        max(0.0, before),
+        CORE_RESERVE_DISCHARGE_PER_SECOND * TICK_SECONDS,
+        max(0.0, required - available),
+    )
+    available += reserve_draw
+    discharged = 0.0
+    discharged_by_type = {"battery": 0.0, "capacitor": 0.0}
+    discharged_by_module: dict[str, float] = {}
+    if required > available:
+        for module in sorted(
+            (item for item in active if item.definition.id in {"battery", "capacitor"}),
+            key=lambda item: item.instance_id,
+        ):
+            amount = min(
+                max(0.0, module.stored_energy),
+                _discharge_rate_per_tick(module),
+                max(0.0, required - available),
+            )
+            if amount <= 0:
+                continue
+            module.stored_energy -= amount
+            available += amount
+            discharged += amount
+            discharged_by_type[module.definition.id] += amount
+            discharged_by_module[module.instance_id] = (
+                discharged_by_module.get(module.instance_id, 0.0)
+                + amount
+            )
+
+    # Deterministic round-robin by module group prevents an all-attack or
+    # all-defence board from monopolising the bus.  Every powered module pays
+    # its full tick demand; modules that do not fit remain online in reserve
+    # until a later tick.
+    buckets = {category: [] for category in ENERGY_CATEGORY_ORDER}
+    for module in consumers:
+        if module.definition.category in buckets:
+            buckets[module.definition.category].append(module)
+    for modules in buckets.values():
+        modules.sort(key=lambda item: item.instance_id)
+    powered_ids: set[str] = set()
+    remaining = available
+    index = 0
+    while True:
+        progressed = False
+        for category in ENERGY_CATEGORY_ORDER:
+            modules = buckets[category]
+            if index >= len(modules):
+                continue
+            module = modules[index]
+            needed = demand_by_module[module.instance_id] * TICK_SECONDS
+            if needed <= remaining + 1e-9:
+                powered_ids.add(module.instance_id)
+                remaining -= needed
+                progressed = True
+        if not progressed:
+            break
+        index += 1
+
+    consumed = sum(
+        demand_by_module[module.instance_id] * TICK_SECONDS
+        for module in consumers
+        if module.instance_id in powered_ids
+    )
+    player.energy_stock = max(0.0, min(capacity, before - reserve_draw))
+    load = player.energy_load_ratio if consumed + 1e-9 < required else min(1.0, player.energy_load_ratio)
     speed, damage, support = (1., 1., 1.)
     # Severe overload must not restore full damage after the 1.4 threshold.
     # Attack-heavy boards were bypassing the intended energy trade-off by
@@ -102,16 +251,101 @@ def process_energy_tick(player: PlayerBattleState, core_position: Position = Pos
     elif load > 1: speed = .9
     player.energy_speed_multiplier, player.energy_damage_multiplier, player.energy_support_multiplier = speed, damage, support
     for module in active:
-        module.is_powered = EMP_DEBUFF_ID not in module.debuffs and DISRUPTOR_DEBUFF_ID not in module.debuffs
-        module.energy_required_last_tick = module.definition.energy_consumption * reduction * TICK_SECONDS
+        debuff_powered = EMP_DEBUFF_ID not in module.debuffs and DISRUPTOR_DEBUFF_ID not in module.debuffs
+        module.is_powered = debuff_powered and (
+            module is core
+            or module.definition.id == "generator"
+            or module.instance_id in powered_ids
+        )
+        module.energy_required_last_tick = demand_by_module.get(module.instance_id, 0.0) * TICK_SECONDS
         module.energy_received_last_tick = module.energy_required_last_tick if module.is_powered else 0.0
-        if module == core:
+        if module is core:
             module.energy_received_last_tick = generated
-    consumed = min(required, before + generated)
-    wasted = max(0.0, before + generated - required - capacity)
+        if module.is_powered and module.instance_id in demand_by_module:
+            player.module_energy_consumed[module.definition.id] = (
+                player.module_energy_consumed.get(module.definition.id, 0.0)
+                + module.energy_required_last_tick
+            )
+    # Any headroom after powering the board fills explicit storage modules;
+    # this keeps battery contribution visible and creates a burst reserve.
+    stored = 0.0
+    surplus = max(0.0, available - consumed)
+    for module in sorted(
+        (item for item in active if item.definition.id in {"battery", "capacitor"}),
+        key=lambda item: item.instance_id,
+    ):
+        if not module.is_powered:
+            continue
+        amount = min(
+            surplus,
+            _charge_rate_per_tick(module),
+            max(0.0, _storage_capacity(module) * module.definition.effect_multiplier - module.stored_energy),
+        )
+        if amount <= 0:
+            continue
+        module.stored_energy = min(
+            _storage_capacity(module) * module.definition.effect_multiplier,
+            module.stored_energy + amount,
+        )
+        surplus -= amount
+        stored += amount
+    # Once explicit burst storage is full, remaining generation recharges the
+    # Core reserve.  This keeps the visible stock meaningful and eliminates
+    # the old state where it showed energy that the distributor could not use.
+    reserve_space = max(0.0, capacity - player.energy_stock)
+    reserve_charge = min(surplus, reserve_space)
+    player.energy_stock += reserve_charge
+    surplus -= reserve_charge
+    if battery_generation > 0:
+        player.module_energy_discharged["battery"] = (
+            player.module_energy_discharged.get("battery", 0.0)
+            + battery_generation * TICK_SECONDS
+        )
+    for definition_id, amount in discharged_by_type.items():
+        if amount:
+            player.module_energy_discharged[definition_id] = (
+                player.module_energy_discharged.get(definition_id, 0.0) + amount
+            )
+    wasted = max(0.0, surplus)
     player.energy_generated_total += generated
     player.energy_consumed_total += consumed
     player.energy_wasted_total += wasted
-    return EnergyTickResult(generated, generated, consumed, player.energy_stock, max(0., before - player.energy_stock),
-                            wasted, tuple(m.instance_id for m in active if m.is_powered),
-                            tuple(m.instance_id for m in active if not m.is_powered))
+    module_contributions = [
+        {
+            "module_id": module_id,
+            "contribution_kind": "energy_supplied",
+            "value": generation_per_second * TICK_SECONDS,
+        }
+        for module_id, generation_per_second
+        in battery_generation_by_module.items()
+    ]
+    for module_id, amount in discharged_by_module.items():
+        module_contributions.append(
+            {
+                "module_id": module_id,
+                "contribution_kind": "energy_supplied",
+                "value": amount,
+            }
+        )
+    raw_required = sum(raw_demand_by_module.values()) * TICK_SECONDS
+    saved = max(0.0, raw_required - required)
+    if saved > 0 and regulators > 0:
+        for module in regulator_modules:
+            module_contributions.append(
+                {
+                    "module_id": module.instance_id,
+                    "contribution_kind": "energy_saved",
+                    "value": saved * module.definition.effect_multiplier / regulators,
+                }
+            )
+    return EnergyTickResult(
+        generated,
+        available,
+        consumed,
+        stored,
+        discharged,
+        wasted,
+        tuple(m.instance_id for m in active if m.is_powered),
+        tuple(m.instance_id for m in active if not m.is_powered),
+        tuple(module_contributions),
+    )

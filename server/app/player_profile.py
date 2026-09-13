@@ -139,7 +139,6 @@ def _season_reward_for_tier(tier: int) -> dict:
             circuit_credits=250 + (major_index * 100),
             flux_shards=25 + (major_index * 10),
             module_shards=10 + (major_index * 3),
-            core_shards=major_index * 2,
             chest_tier="diamond" if tier == 40 else "gold",
         )
         if tier == 10:
@@ -155,7 +154,6 @@ def _season_reward_for_tier(tier: int) -> dict:
             circuit_credits=100 + (tier * 4),
             flux_shards=10 + tier,
             module_shards=5 + (tier // 5),
-            core_shards=1,
             chest_tier="silver",
         )
     elif tier % 3 == 0:
@@ -211,7 +209,7 @@ def _profile_reward_identity(profile, reward: dict, seed: str) -> dict:
         )
         roll = int(hashlib.sha256(f"{seed}:module".encode("utf-8")).hexdigest()[:12], 16)
         enriched["module_definition_id"] = pool[roll % len(pool)]
-    if int(enriched.get("core_shards", 0)):
+    if "core_shards" in enriched:
         # Imported lazily because meta progression also imports the season
         # constants in this module during application startup.
         from .meta_progression import core_reward_type_id
@@ -509,19 +507,24 @@ class PlayerProfile:
             },
             "seen_notification_keys": list(self.seen_notification_keys),
             "notifications": {
-                "profile": any(unseen_notifications.values()),
+                # Profile is the container screen; unread state is surfaced
+                # by the Rewards child tab so the same dot is not rendered
+                # twice in the terminal navigation.
+                "profile": False,
                 "rewards": bool(
                     unseen_notifications["daily"]
                     or unseen_notifications["season"]
                 ),
                 "daily": bool(unseen_notifications["daily"]),
+                "daily_login": bool(unseen_notifications["daily-login"]),
+                "daily_missions": bool(unseen_notifications["daily-missions"]),
                 "season": bool(unseen_notifications["season"]),
                 "avatar": bool(unseen_notifications["avatar"]),
-                "unseen_keys": [
+                "unseen_keys": list(dict.fromkeys(
                     key
                     for keys in unseen_notifications.values()
                     for key in keys
-                ],
+                )),
             },
             "reward_track": [
                 {
@@ -540,18 +543,19 @@ class PlayerProfile:
         claimed_missions = set(self.claimed_daily_missions)
         claimed_tiers = set(self.claimed_season_tiers)
         claimed_login_days = set(self.claimed_monthly_login_days)
-        daily_keys: list[str] = []
+        daily_login_keys: list[str] = []
         if self.monthly_login_today not in claimed_login_days:
-            daily_keys.append(
+            daily_login_keys.append(
                 f"daily-login:{self.monthly_login_month}:{self.monthly_login_today}"
             )
-        daily_keys.extend(
+        daily_mission_keys = [
             f"daily-mission:{self.daily_mission_day}:{mission['id']}"
             for mission in DAILY_MISSIONS
             if mission["id"] not in claimed_missions
             and int(self.daily_mission_progress.get(mission["id"], 0))
             >= int(mission["target"])
-        )
+        ]
+        daily_keys = [*daily_login_keys, *daily_mission_keys]
         season_keys = tuple(
             f"season-tier:{self.active_meta_season_id}:{reward['tier']}"
             for reward in SEASON_REWARD_TRACK
@@ -572,6 +576,8 @@ class PlayerProfile:
         )
         return {
             "daily": tuple(daily_keys),
+            "daily-login": tuple(daily_login_keys),
+            "daily-missions": tuple(daily_mission_keys),
             "season": season_keys,
             "avatar": avatar_keys,
         }
@@ -893,6 +899,8 @@ class PlayerProfileService:
             profile.core_shards_by_type[core_type_id] = (
                 int(profile.core_shards_by_type.get(core_type_id, 0)) + core_shards
             )
+        elif core_type_id:
+            profile.core_shards_by_type.setdefault(core_type_id, 0)
         module_shards = int(reward.get("module_shards", 0))
         if module_shards:
             module_id = reward["module_definition_id"]

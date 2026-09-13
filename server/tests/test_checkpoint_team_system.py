@@ -26,32 +26,32 @@ def test_team_state_persists_and_membership_operations_are_idempotent(tmp_path):
     assert TeamService(repository).team_for_player("beta")["name"] == "Akım Birliği"
 
 
-def test_module_requests_enforce_rarity_weekly_limits_and_donation_receipts():
+def test_module_requests_allow_one_module_per_week_and_rarity_amounts():
     now = datetime(2026, 9, 10, 12, tzinfo=timezone.utc)
     service = TeamService(InMemoryTeamRepository(), now_func=lambda: now)
     team_id = service.create_team("alpha", "Grid", "create")["team_id"]
     service.join_team("beta", team_id, "join")
 
-    requests = [
+    created_request = service.create_module_request(
+        team_id=team_id,
+        player_id="alpha",
+        module_id="laser",
+        rarity="common",
+        request_id="request-common",
+    )
+    assert created_request["module_request"]["requested_amount"] == 4
+    assert created_request["weekly_limit"] == 1
+
+    with pytest.raises(TeamServiceError, match="Bu hafta zaten"):
         service.create_module_request(
             team_id=team_id,
             player_id="alpha",
-            module_id="laser",
-            rarity="common",
-            request_id=f"request-{index}",
-        )
-        for index in range(4)
-    ]
-    with pytest.raises(TeamServiceError, match="haftalık"):
-        service.create_module_request(
-            team_id=team_id,
-            player_id="alpha",
-            module_id="laser",
-            rarity="common",
+            module_id="emp",
+            rarity="rare",
             request_id="request-over-limit",
         )
 
-    module_request_id = requests[0]["module_request"]["request_id"]
+    module_request_id = created_request["module_request"]["request_id"]
     donation = service.donate_module_shard(
         team_id=team_id,
         player_id="beta",

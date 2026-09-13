@@ -1,6 +1,8 @@
+import pytest
+
 from app.game.combat import resolve_attack
 from app.game.engine import BattleEngine
-from app.game.models import BattleState, Direction, ModuleStatus, Position
+from app.game.models import BattleState, ModuleStatus, Position
 from app.game.support import (
     AMPLIFIER_DAMAGE_MULTIPLIER,
     COOLER_HEAT_REDUCTION_PER_TICK,
@@ -11,11 +13,10 @@ from app.game.support import (
     repair_amount,
 )
 
-def add(engine, player, iid, did, x, y, direction=Direction.UP):
+def add(engine, player, iid, did, x, y):
     m=engine.grant_module(player,iid,did)
     m.status=ModuleStatus.ACTIVE
     m.position=Position(x,y)
-    m.direction=direction
     return m
 
 def make_engine():
@@ -24,11 +25,10 @@ def make_engine():
     return e
 
 def powered_support_line(engine, support_id, support_def, target_id, target_def):
-    add(engine,"p1","core","core",2,2)
-    add(engine,"p1","gen","generator",2,3)
-    add(engine,"p1","splitter","splitter",2,1,Direction.DOWN)
-    support=add(engine,"p1",support_id,support_def,1,1,Direction.RIGHT)
-    target=add(engine,"p1",target_id,target_def,0,1,Direction.RIGHT)
+    add(engine,"p1","core","core",2,1)
+    add(engine,"p1","splitter","splitter",2,0)
+    support=add(engine,"p1",support_id,support_def,1,0)
+    target=add(engine,"p1",target_id,target_def,0,0)
     engine._process_energy_flow()
     return support,target
 
@@ -40,22 +40,48 @@ def test_repair_heals_connected_damaged_module():
     assert repair.is_powered is True
     assert shield.hp==55
 
-def test_repair_cell_bonus_is_real():
-    e=make_engine()
-    repair=add(e,"p1","repair","repair",0,2,Direction.RIGHT)
-    assert repair_amount(repair)==18
 
-def test_unpowered_repair_does_nothing():
+def test_repair_heals_every_damaged_module_and_emits_actual_values():
     e=make_engine()
-    add(e,"p1","core","core",2,2)
-    add(e,"p1","gen","generator",2,3)
-    repair=add(e,"p1","repair","repair",4,3,Direction.UP)
-    shield=add(e,"p1","shield","shield",3,3,Direction.RIGHT)
+    add(e,"p1","core","core",2,1)
+    repair=add(e,"p1","repair","repair",0,0)
+    shield=add(e,"p1","shield","shield",1,0)
+    laser=add(e,"p1","laser","laser",4,2)
+    repair.hp=93
+    shield.hp=40
+    laser.hp=95
+    e._process_energy_flow()
+
+    e._process_support_actions()
+
+    assert repair.hp == 100
+    assert shield.hp == 55
+    assert laser.hp == 100
+    repaired = [
+        event.data
+        for event in e.state.events
+        if event.type == "module_repaired"
+        and event.data.get("source_module_id") == repair.instance_id
+    ]
+    assert {
+        event["target_module_id"]: event["repair"] for event in repaired
+    } == {"repair": 7, "shield": 15, "laser": 5}
+
+def test_normal_cells_have_no_hidden_repair_bonus():
+    e=make_engine()
+    repair=add(e,"p1","repair","repair",0,2)
+    assert repair_amount(repair)==round(15 * repair.definition.effect_multiplier)
+
+def test_embedded_bus_powers_remote_repair():
+    e=make_engine()
+    add(e,"p1","core","core",2,1)
+    repair=add(e,"p1","repair","repair",4,2)
+    shield=add(e,"p1","shield","shield",3,2)
     shield.hp=40
     e._process_energy_flow()
     e._process_support_actions()
-    assert repair.is_powered is False
-    assert shield.hp==40
+    assert repair.is_powered is True
+    assert shield.hp>40
 
 def test_cooler_reduces_connected_heat():
     e=make_engine()
@@ -71,7 +97,7 @@ def test_amplifier_increases_damage():
     mods=attack_support_modifiers(e.state.players["p1"],laser,Position(2,2))
     assert amp.is_powered is True
     assert mods.amplifier_active is True
-    assert mods.damage_multiplier==AMPLIFIER_DAMAGE_MULTIPLIER
+    assert mods.damage_multiplier==pytest.approx(1 + (AMPLIFIER_DAMAGE_MULTIPLIER - 1) * amp.definition.effect_multiplier)
 
 def test_targeting_reduces_cooldown():
     e=make_engine()
@@ -79,7 +105,7 @@ def test_targeting_reduces_cooldown():
     mods=attack_support_modifiers(e.state.players["p1"],laser,Position(2,2))
     assert targeting.is_powered is True
     assert mods.targeting_active is True
-    assert mods.cooldown_multiplier==TARGETING_COOLDOWN_MULTIPLIER
+    assert mods.cooldown_multiplier==pytest.approx(1 - (1 - TARGETING_COOLDOWN_MULTIPLIER) * targeting.definition.effect_multiplier)
 
 def test_overclock_boosts_damage_cooldown_and_heat():
     e=make_engine()
@@ -89,8 +115,8 @@ def test_overclock_boosts_damage_cooldown_and_heat():
     e._process_support_actions()
     assert overclock.is_powered is True
     assert mods.overclock_active is True
-    assert mods.damage_multiplier==OVERCLOCK_DAMAGE_MULTIPLIER
-    assert mods.cooldown_multiplier==OVERCLOCK_COOLDOWN_MULTIPLIER
+    assert mods.damage_multiplier==pytest.approx(1 + (OVERCLOCK_DAMAGE_MULTIPLIER - 1) * overclock.definition.effect_multiplier)
+    assert mods.cooldown_multiplier==pytest.approx(1 - (1 - OVERCLOCK_COOLDOWN_MULTIPLIER) * overclock.definition.effect_multiplier)
     assert laser.heat>before
 
 def test_support_multiplier_changes_real_attack_resolution():
@@ -103,12 +129,11 @@ def test_support_multiplier_changes_real_attack_resolution():
 
 def test_support_only_affects_direct_neighbor():
     e=make_engine()
-    add(e,"p1","core","core",2,2)
-    add(e,"p1","gen","generator",2,3)
-    add(e,"p1","splitter","splitter",2,1,Direction.DOWN)
-    add(e,"p1","amp","amplifier",1,1,Direction.RIGHT)
-    laser=add(e,"p1","laser","laser",0,1,Direction.RIGHT)
-    other=add(e,"p1","other","laser",3,1,Direction.LEFT)
+    add(e,"p1","core","core",2,1)
+    add(e,"p1","splitter","splitter",2,0)
+    add(e,"p1","amp","amplifier",1,0)
+    laser=add(e,"p1","laser","laser",0,0)
+    other=add(e,"p1","other","laser",4,0)
     e._process_energy_flow()
     a=attack_support_modifiers(e.state.players["p1"],laser,Position(2,2))
     b=attack_support_modifiers(e.state.players["p1"],other,Position(2,2))

@@ -8,10 +8,11 @@ BASIC_MODULE_DEFINITIONS: dict[str, ModuleDefinition] = {
         strategic_role="Ana hedef ve devre merkezi", description_tr="Devrenin ana merkezidir.",
         movable=False, removable=False),
     "generator": ModuleDefinition(id="generator", name_tr="Jeneratör", category="enerji", max_hp=150, circuit_credit_cost=0,
-        strategic_role="Ana enerji kaynağı", description_tr="Devreye sürekli enerji sağlar.", energy_generation=11.0,
+        strategic_role="Ana enerji kaynağı", description_tr="Devreye sürekli enerji sağlar.", energy_generation=14.0,
         weak_against=("emp",), movable=True, removable=False),
     "battery": ModuleDefinition(id="battery", name_tr="Batarya", category="enerji", max_hp=120, circuit_credit_cost=70,
-        strategic_role="Enerji rezervi", description_tr="Ani yüklerde devreyi destekler.",
+        strategic_role="Enerji besleme ve rezervi", description_tr="Devreye sürekli enerji verir ve ani yükler için enerji depolar.",
+        energy_generation=6.0,
         synergy_with=("pulse_cannon","shield")),
     "splitter": ModuleDefinition(id="splitter", name_tr="Dağıtıcı", category="enerji", max_hp=85, circuit_credit_cost=60,
         strategic_role="Enerji dağıtımı", description_tr="Gömülü devre ağının enerji verimliliğini artırır.",
@@ -141,7 +142,7 @@ CANON_MECHANICS = {
     "singularity_projector": "disruptor", "omega_amplifier": "amplifier",
 }
 SYSTEM_COPY = {
-    "battery": ("Enerji rezervi", "Devrenin enerji kapasitesini 30 artırır; üretimi artırmaz."),
+    "battery": ("Enerji besleme ve rezervi", "Devreye saniyede 6 enerji verir; ayrıca 30 enerji depolayarak ani yükleri karşılar."),
     "capacitor": ("Genişletilmiş enerji deposu", "Enerji kapasitesini 25 artırır; saniyede 1 enerji tüketir."),
     "current_balancer": ("Devre verimliliği", "Tüm modüllerin enerji tüketimini %8 azaltır. Çoklu kopyalar azalan verimle en fazla %35 azaltım sağlar."),
 }
@@ -150,6 +151,7 @@ for _module_id, _spec in MODULES.items():
     _role, _description = SYSTEM_COPY.get(_module_id, (_base.strategic_role, _base.description_tr))
     BASIC_MODULE_DEFINITIONS[_module_id] = replace(
         _base, id=_module_id, name_tr=_spec["name_tr"],
+        rarity=_spec["rarity"],
         max_hp=_spec["max_hp"], base_damage=_spec["base_damage"],
         behavior_id=CANON_MECHANICS.get(_module_id, _module_id),
         current_cost=_spec["current_cost"],

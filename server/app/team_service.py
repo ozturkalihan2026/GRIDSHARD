@@ -21,10 +21,12 @@ TEAM_MEMBER_LIMIT = 30
 TEAM_NAME_MAX_LENGTH = 24
 CHAT_MESSAGE_MAX_LENGTH = 240
 REQUEST_POLICY = {
-    "common": {"weekly_limit": 4, "amount": 12},
-    "rare": {"weekly_limit": 3, "amount": 8},
-    "epic": {"weekly_limit": 2, "amount": 4},
-    "legendary": {"weekly_limit": 1, "amount": 2},
+    # A player may open one module request per week.  The requested piece
+    # count is determined by the selected module's rarity.
+    "common": {"weekly_limit": 1, "amount": 4},
+    "rare": {"weekly_limit": 1, "amount": 3},
+    "epic": {"weekly_limit": 1, "amount": 2},
+    "legendary": {"weekly_limit": 1, "amount": 1},
 }
 
 
@@ -287,12 +289,11 @@ class TeamService:
                 1
                 for item in team.get("module_requests", [])
                 if item.get("requester_id") == player_id
-                and item.get("rarity") == rarity
                 and item.get("week_key") == week_key
             )
-            if used >= int(policy["weekly_limit"]):
+            if used >= 1:
                 raise TeamServiceError(
-                    f"{rarity.title()} modüller için haftalık istek sınırına ulaşıldı."
+                    "Bu hafta zaten bir modül parçası isteği oluşturdun."
                 )
             item = {
                 "request_id": "module-request-" + uuid4().hex,
@@ -356,13 +357,18 @@ class TeamService:
                 raise TeamServiceError("Modül isteği bulunamadı.")
             if item.get("requester_id") == player_id:
                 raise TeamServiceError("Kendi modül isteğine bağış yapılamaz.")
-            remaining = int(item["requested_amount"]) - int(item["donated_amount"])
+            policy = REQUEST_POLICY.get(str(item.get("rarity", "")))
+            requested_amount = int(item.get("requested_amount", 0) or 0)
+            if policy:
+                requested_amount = min(requested_amount, int(policy["amount"]))
+                item["requested_amount"] = requested_amount
+            remaining = requested_amount - int(item["donated_amount"])
             if remaining <= 0:
                 raise TeamServiceError("Modül isteği zaten tamamlandı.")
             item["donated_amount"] = int(item["donated_amount"]) + 1
             donors = item.setdefault("donors", {})
             donors[player_id] = int(donors.get(player_id, 0)) + 1
-            item["fulfilled"] = item["donated_amount"] >= item["requested_amount"]
+            item["fulfilled"] = item["donated_amount"] >= requested_amount
             return {
                 "team_id": team_id,
                 "module_request_id": module_request_id,

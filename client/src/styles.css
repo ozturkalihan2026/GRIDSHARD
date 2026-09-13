@@ -522,62 +522,6 @@ body[data-app-screen="play"] .battle-pool-panel:not([hidden]) {
   .menu-focus-pulse { animation:none; }
 }
 
-.tier-celebration {
-  position:fixed;
-  inset:0;
-  z-index:240;
-  display:grid;
-  place-items:center;
-  pointer-events:none;
-  background:radial-gradient(circle at center,rgba(64,237,255,.14),rgba(4,8,18,.08) 55%,transparent 76%);
-  opacity:0;
-  transition:opacity .24s ease;
-}
-.tier-celebration[data-active="true"] { opacity:1; }
-.tier-celebration-halo {
-  position:absolute;
-  width:min(58vw,620px);
-  aspect-ratio:1;
-  border:2px solid rgba(86,244,255,.62);
-  border-radius:50%;
-  box-shadow:0 0 42px rgba(73,235,255,.5),inset 0 0 60px rgba(255,222,105,.16);
-  animation:gs-tier-halo 1.35s cubic-bezier(.2,.7,.2,1) both;
-}
-.tier-celebration-card {
-  position:relative;
-  display:grid;
-  gap:9px;
-  min-width:min(82vw,430px);
-  padding:26px 34px;
-  text-align:center;
-  border:1px solid rgba(255,226,114,.78);
-  border-radius:18px;
-  background:linear-gradient(145deg,rgba(14,42,62,.96),rgba(9,17,35,.97));
-  box-shadow:0 0 34px rgba(72,235,255,.42),0 0 74px rgba(255,215,94,.26);
-  animation:gs-tier-card .72s cubic-bezier(.16,.82,.28,1.18) both;
-}
-.tier-celebration-card span { color:#6ef8ee;font-size:.72rem;font-weight:900;letter-spacing:.18em; }
-.tier-celebration-card strong { color:#ffe382;font-size:clamp(2.2rem,6vw,4.8rem);line-height:1;text-shadow:0 0 22px rgba(255,218,102,.72); }
-.tier-celebration-card small { color:#d9eaff;font-weight:700; }
-@keyframes gs-tier-halo {
-  from { opacity:0;transform:scale(.32) rotate(-16deg); }
-  45% { opacity:1; }
-  to { opacity:0;transform:scale(1.18) rotate(9deg); }
-}
-@keyframes gs-tier-card {
-  from { opacity:0;transform:translateY(28px) scale(.78); }
-  to { opacity:1;transform:translateY(0) scale(1); }
-}
-@media (prefers-reduced-motion:reduce) {
-  .tier-celebration-halo,
-  .tier-celebration-card {
-    animation:none !important;
-    transform:none !important;
-  }
-  .tier-celebration { transition:opacity .16s linear; }
-  .module-card.booster-target { animation:none !important; }
-}
-
 .initial-module-choice:focus,
 .initial-module-choice:hover {
   border-color:var(--gs-corelight-gold);
@@ -653,6 +597,17 @@ body[data-app-screen="play"] .battle-pool-panel:not([hidden]) {
   transition:width .4s ease;
 }
 #season-progress-copy { color:#b7c7df; }
+.season-progress-meta {
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:12px;
+}
+.season-progress-meta small:last-child {
+  color:#ffe99d;
+  text-align:right;
+  white-space:nowrap;
+}
 
 .season-zero-columns {
   display:grid;
@@ -8877,11 +8832,6 @@ body[data-app-screen="play"] .board {
 @media (prefers-reduced-motion:reduce) {
   .board-cell.special-cell::before { animation:none;opacity:.8; }
   .cell-debris-shards { animation:none; }
-}
-
-/* Floating combat text is disabled until a replacement feedback model is selected. */
-.battle-floating-feedback {
-  display:none !important;
 }
 
 /* Hovered modules and their explanations always sit above neighboring cards. */

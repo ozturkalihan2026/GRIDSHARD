@@ -14,9 +14,9 @@ from app.game.simulation import (
 )
 
 
-def test_generator_11_units_supports_active_battle_but_preserves_storage_role():
+def test_generator_14_units_supports_a_mixed_line_but_not_an_unbounded_stack():
     generator=BASIC_MODULE_DEFINITIONS['generator']
-    assert generator.energy_generation==11.0
+    assert generator.energy_generation==14.0
 
     base=generator.energy_generation*BASE_DISTRIBUTION_EFFICIENCY
     splitter=generator.energy_generation*SPLITTER_DISTRIBUTION_EFFICIENCY
@@ -25,12 +25,15 @@ def test_generator_11_units_supports_active_battle_but_preserves_storage_role():
     assert base >= 3+5  # laser + pulse cannon
     assert base >= 3+2  # laser + shield
 
-    # Three common modules become viable with a splitter.
-    assert base < 3+5+2
-    assert splitter >= 3+5+2
+    # A normal three-card combat line now remains stable without requiring a
+    # Battery, while a fourth heavy consumer still needs explicit support.
+    assert base >= 3+5+2
+    assert base < 3+5+2+4
+    assert splitter > base
 
-    # Highest-demand pair still needs stored energy/support.
-    assert splitter < 5+6  # pulse cannon + railgun
+    # Two heavy railguns still need stored energy or a Battery even with the
+    # distributor bonus.
+    assert splitter < 7+7
 
 
 def test_six_layout_round_robin_always_resolves_and_has_multiple_counters():

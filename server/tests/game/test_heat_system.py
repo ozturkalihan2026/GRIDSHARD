@@ -8,13 +8,12 @@ from app.game.heat import (
     attack_heat_gain,
     heat_performance,
 )
-from app.game.models import BattleState, Direction, ModuleStatus, Position
+from app.game.models import BattleState, ModuleStatus, Position
 
-def add(engine, player, iid, did, x, y, direction=Direction.UP):
+def add(engine, player, iid, did, x, y):
     m=engine.grant_module(player,iid,did)
     m.status=ModuleStatus.ACTIVE
     m.position=Position(x,y)
-    m.direction=direction
     return m
 
 def combat_engine():
@@ -22,10 +21,10 @@ def combat_engine():
     e.add_player("p1"); e.add_player("p2")
     add(e,"p1","p1-core","core",2,2)
     add(e,"p1","p1-gen","generator",2,3)
-    laser=add(e,"p1","p1-laser","laser",2,1,Direction.DOWN)
+    laser=add(e,"p1","p1-laser","laser",2,1)
     add(e,"p2","p2-core","core",2,2)
     add(e,"p2","p2-gen","generator",2,3)
-    shield=add(e,"p2","p2-shield","shield",2,1,Direction.DOWN)
+    shield=add(e,"p2","p2-shield","shield",2,1)
     e._process_energy_flow()
     return e,laser,shield
 

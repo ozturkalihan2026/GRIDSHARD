@@ -3,6 +3,7 @@ const fs = require("fs");
 
 const app = fs.readFileSync("./src/app.js", "utf8");
 const css = fs.readFileSync("./src/styles.css", "utf8");
+const canonCss = fs.readFileSync("./src/canon.css", "utf8");
 const html = fs.readFileSync("./index.html", "utf8");
 const packager = fs.readFileSync("../tools/package_release.py", "utf8");
 
@@ -25,13 +26,16 @@ assert.ok(app.includes('shelf.dataset.placementReady = String(anyAffordable)'));
 assert.ok(app.includes("client.circuitCredits >= Number(module.circuitCreditCost"));
 
 assert.ok(app.includes("updateFloatingFeedbackImportance"));
-assert.ok(app.includes("CAN · ONARIM"));
-assert.ok(app.includes("ENGELLENDİ ·"));
-assert.ok(app.includes("YANSITMA · YANSITICI"));
-assert.ok(app.includes("EMP · ENERJİ KESİLDİ"));
+assert.ok(!app.includes("CAN · ONARIM"));
+assert.ok(!app.includes("CAN · DARBE"));
+assert.match(app, /event\?\.type === "module_damaged"[\s\S]{0,900}`-\$\{damage\}`/);
+assert.match(app, /event\?\.type === "module_repaired"[\s\S]{0,900}`\+\$\{repair\}`/);
+assert.match(app, /preventedDamage[\s\S]{0,500}`\$\{preventedDamage\}`/);
+assert.match(app, /event\?\.type === "sabotage_applied"[\s\S]{0,900}`-\$\{durationSeconds\}`/);
 assert.ok(app.includes("AŞIRI ISI!"));
 assert.ok(css.includes('.battle-floating-feedback.sabotage'));
 assert.ok(css.includes('[data-impact="large"]'));
+assert.ok(canonCss.includes("gs-beta50-combat-number"));
 
 assert.ok(packager.includes('PACKAGE_LABEL = "cards-season"'));
 if (fs.existsSync("../RELEASE_MANIFEST.json")) {

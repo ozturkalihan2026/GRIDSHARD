@@ -1066,6 +1066,7 @@
     AVATAR: "avatar",
     DAILY: "daily",
     DAILY_REWARDS: "daily-rewards",
+    DAILY_MISSIONS: "daily-missions",
     REWARDS: "rewards",
     LABORATORY: "laboratory",
     STATISTICS: "statistics",

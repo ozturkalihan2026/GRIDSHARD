@@ -1,3 +1,5 @@
+import pytest
+
 from app.game.energy import (
     BATTERY_CAPACITY,
     CAPACITOR_CAPACITY,
@@ -6,7 +8,6 @@ from app.game.energy import (
 from app.game.engine import BattleEngine
 from app.game.models import (
     BattleState,
-    Direction,
     ModuleStatus,
     Position,
 )
@@ -24,7 +25,6 @@ def add(
     definition_id,
     x,
     y,
-    direction=Direction.UP,
 ):
     module = engine.grant_module(
         "p1",
@@ -33,7 +33,6 @@ def add(
     )
     module.status = ModuleStatus.ACTIVE
     module.position = Position(x, y)
-    module.direction = direction
     return module
 
 
@@ -52,10 +51,10 @@ def test_generator_produces_energy():
         Position(2, 2),
     )
 
-    assert round(result.generated, 6) == 1.1
+    assert round(result.generated, 6) == 1.4
 
 
-def test_disconnected_consumer_is_unpowered():
+def test_embedded_bus_powers_a_remote_consumer():
     engine, player = basic_engine()
     laser = add(
         engine,
@@ -63,7 +62,6 @@ def test_disconnected_consumer_is_unpowered():
         "laser",
         4,
         3,
-        Direction.UP,
     )
 
     result = process_energy_tick(
@@ -71,8 +69,8 @@ def test_disconnected_consumer_is_unpowered():
         Position(2, 2),
     )
 
-    assert laser.is_powered is False
-    assert "laser-1" in result.unpowered_module_ids
+    assert laser.is_powered is True
+    assert "laser-1" in result.powered_module_ids
 
 
 def test_connected_consumer_is_powered():
@@ -83,7 +81,6 @@ def test_connected_consumer_is_powered():
         "laser",
         2,
         1,
-        Direction.DOWN,
     )
 
     process_energy_tick(
@@ -103,7 +100,6 @@ def test_splitter_branches_energy():
         "splitter",
         2,
         1,
-        Direction.DOWN,
     )
     laser = add(
         engine,
@@ -111,7 +107,6 @@ def test_splitter_branches_energy():
         "laser",
         1,
         1,
-        Direction.RIGHT,
     )
     shield = add(
         engine,
@@ -119,7 +114,6 @@ def test_splitter_branches_energy():
         "shield",
         3,
         1,
-        Direction.LEFT,
     )
 
     result = process_energy_tick(
@@ -143,7 +137,6 @@ def test_connected_battery_charges():
         "battery",
         2,
         1,
-        Direction.UP,
     )
 
     process_energy_tick(
@@ -154,7 +147,7 @@ def test_connected_battery_charges():
     assert 0 < battery.stored_energy <= BATTERY_CAPACITY
 
 
-def test_disconnected_battery_does_not_charge():
+def test_embedded_bus_charges_a_remote_battery():
     engine, player = basic_engine()
     battery = add(
         engine,
@@ -162,7 +155,6 @@ def test_disconnected_battery_does_not_charge():
         "battery",
         4,
         3,
-        Direction.UP,
     )
 
     process_energy_tick(
@@ -170,7 +162,7 @@ def test_disconnected_battery_does_not_charge():
         Position(2, 2),
     )
 
-    assert battery.stored_energy == 0
+    assert battery.stored_energy > 0
 
 
 def test_battery_discharges_on_real_shortfall():
@@ -182,7 +174,6 @@ def test_battery_discharges_on_real_shortfall():
         "splitter",
         2,
         1,
-        Direction.DOWN,
     )
     battery = add(
         engine,
@@ -190,7 +181,6 @@ def test_battery_discharges_on_real_shortfall():
         "battery",
         1,
         1,
-        Direction.RIGHT,
     )
     # Battery's second port continues the line to pulse cannon.
     add(
@@ -199,7 +189,6 @@ def test_battery_discharges_on_real_shortfall():
         "pulse_cannon",
         0,
         1,
-        Direction.RIGHT,
     )
     add(
         engine,
@@ -207,10 +196,24 @@ def test_battery_discharges_on_real_shortfall():
         "railgun",
         3,
         1,
-        Direction.LEFT,
+    )
+    add(
+        engine,
+        "railgun-2",
+        "railgun",
+        4,
+        1,
+    )
+    add(
+        engine,
+        "railgun-3",
+        "railgun",
+        4,
+        2,
     )
 
     battery.stored_energy = 10.0
+    player.energy_stock = 0.0
 
     result = process_energy_tick(
         player,
@@ -229,7 +232,6 @@ def test_capacitor_has_smaller_capacity():
         "capacitor",
         2,
         1,
-        Direction.UP,
     )
 
     for _ in range(50):
@@ -238,8 +240,41 @@ def test_capacitor_has_smaller_capacity():
             Position(2, 2),
         )
 
-    assert capacitor.stored_energy <= CAPACITOR_CAPACITY
+    assert capacitor.stored_energy <= CAPACITOR_CAPACITY * capacitor.definition.effect_multiplier
     assert CAPACITOR_CAPACITY < BATTERY_CAPACITY
+
+
+def test_core_level_and_battery_raise_continuous_supply():
+    engine, player = basic_engine()
+    low = process_energy_tick(player, Position(2, 2)).generated
+
+    player.core_level = 8
+    high = process_energy_tick(player, Position(2, 2)).generated
+    assert high > low
+
+    battery = add(engine, "battery-supply", "battery", 4, 3)
+    with_battery = process_energy_tick(player, Position(2, 2)).generated
+    assert battery.definition.energy_generation > 0
+    assert with_battery > high
+
+
+def test_battery_materially_reduces_shortfall_without_powering_heavy_attack_stack():
+    engine, player = basic_engine()
+    for index, definition_id in enumerate(
+        ("railgun", "pulse_cannon", "laser", "shield", "repair")
+    ):
+        add(engine, f"load-{index}", definition_id, index, 0)
+
+    player.energy_stock = 0.0
+    without_battery = process_energy_tick(player, Position(2, 2))
+    battery = add(engine, "battery-support", "battery", 0, 1)
+    player.energy_stock = 0.0
+    with_battery = process_energy_tick(player, Position(2, 2))
+
+    assert with_battery.generated - without_battery.generated == pytest.approx(0.6)
+    assert len(with_battery.powered_module_ids) > len(without_battery.powered_module_ids)
+    assert battery.is_powered is True
+    assert with_battery.unpowered_module_ids
 
 
 def test_energy_and_circuit_credit_are_separate():
@@ -250,7 +285,6 @@ def test_energy_and_circuit_credit_are_separate():
         "laser",
         2,
         1,
-        Direction.DOWN,
     )
     credits_before = player.circuit_credits
 
@@ -263,7 +297,7 @@ def test_energy_and_circuit_credit_are_separate():
     assert player.energy_generated_total > 0
 
 
-def test_engine_event_data_contains_ports():
+def test_engine_event_data_contains_embedded_power_state():
     engine, player = basic_engine()
     laser = add(
         engine,
@@ -271,11 +305,10 @@ def test_engine_event_data_contains_ports():
         "laser",
         2,
         1,
-        Direction.DOWN,
     )
 
     engine._process_energy_flow()
     data = engine._module_event_data("p1", laser)
 
     assert data["is_powered"] is True
-    assert data["ports"] == ["down"]
+    assert "ports" not in data

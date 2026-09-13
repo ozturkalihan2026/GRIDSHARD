@@ -81,7 +81,7 @@
           maxLanes:6,
         })
       : null;
-  const FLOATING_COMBAT_TEXT_ENABLED = false;
+  const FLOATING_COMBAT_TEXT_ENABLED = true;
   const boosterTargetMode =
     typeof GridshardBoosterTargetMode === "function"
       ? new GridshardBoosterTargetMode()
@@ -742,7 +742,7 @@
       tutorialController?.maybeStart();
     }
 
-    if (["profile", "avatar", "daily", "daily-rewards", "rewards", "shop", "modules", "team", "events", "menu"].includes(screen)) {
+    if (["profile", "avatar", "daily", "daily-rewards", "daily-missions", "rewards", "shop", "modules", "team", "events", "menu"].includes(screen)) {
       accountDataLoader
         .loadProfile()
         .then(() => markScreenNotificationsSeen(screen))
@@ -792,7 +792,8 @@
   async function markScreenNotificationsSeen(screen) {
     const section = ({
       avatar: "avatar",
-      "daily-rewards": "daily",
+      "daily-rewards": "daily-login",
+      "daily-missions": "daily-missions",
       rewards: "season",
     })[screen];
     if (!section) return { ok: true, skipped: true };
@@ -1384,13 +1385,11 @@
       || null;
     const button = document.getElementById("home-core-hero");
     const glyph = document.getElementById("home-core-hero-glyph");
-    const name = document.getElementById("home-core-hero-name");
     const level = document.getElementById("home-core-hero-level");
     const coreId = core?.id || "core_resonance";
     const visual = applyCoreVisualIdentity(button, coreId);
     if (glyph) glyph.textContent = visual.glyph;
-    if (name) name.textContent = core?.name_tr || "Rezonans Çekirdeği";
-    if (level) level.textContent = `SEVİYE ${Number(core?.level || 1)}`;
+    if (level) level.textContent = `SV ${Number(core?.level || 1)}`;
     if (button) {
       button.setAttribute("aria-label", `${core?.name_tr || "Çekirdek"} · Seviye ${Number(core?.level || 1)} · Çekirdek seçimini aç`);
     }
@@ -1638,6 +1637,26 @@
 
   function renderHomeArena() {
     const { rank, rating, floor, ceiling, progress } = arenaViewModel();
+    const arenaCard = document.getElementById("home-arena-card");
+    const hasClaimableRoadReward = [
+      ...(metaProgressionState?.arena_path || []),
+      ...(metaProgressionState?.rank_stages || []),
+    ].some((stage) => (stage.nodes || []).some(
+      (node) => (
+        node.claimable === true
+        && node.claimed !== true
+        && Object.keys(node.rewards || {}).length > 0
+      )
+    ));
+    arenaCard?.classList.toggle("is-reward-ready", hasClaimableRoadReward);
+    if (arenaCard) {
+      arenaCard.setAttribute(
+        "aria-label",
+        hasClaimableRoadReward
+          ? "Devre yolu · Alınabilir ödül var"
+          : "Devre yolu"
+      );
+    }
     const setText = (id, value) => {
       const element = document.getElementById(id);
       if (element) element.textContent = String(value);
@@ -2249,7 +2268,20 @@
     const stats = item.stats || {};
     if (tabName === "stats") {
       text.textContent = "Savaş değerleri, sınıf karşılıkları ve uyumlu modüller.";
-      const entries = [["Sınıf", poolCategoryLabel(item.category)], ["Nadirlik", moduleRarityLabel(item.rarity)], ["CAN", stats.max_hp], ["Hasar", stats.base_damage], ["Bekleme", `${Number(stats.cooldown_ms || 0) / 1000} sn`], ["Etki çarpanı", Number(stats.effect_multiplier || 0).toLocaleString("tr-TR", {maximumFractionDigits:2})], ["Enerji tüketimi", `${stats.energy_consumption || 0}/sn`], ["Akım maliyeti", item.current_cost]];
+      const rarityBonuses = stats.rarity_bonuses || {};
+      const rarityPercent = (value, inverse=false) => {
+        const delta = Math.round(Math.abs(Number(value || 1) - 1) * 100);
+        if (delta === 0) return "0%";
+        return `${inverse ? "-" : "+"}${delta}%`;
+      };
+      const rarityImpact = [
+        `CAN ${rarityPercent(rarityBonuses.hp)}`,
+        `Hasar ${rarityPercent(rarityBonuses.attack)}`,
+        `Rol etkisi ${rarityPercent(rarityBonuses.effect)}`,
+        `Bekleme ${rarityPercent(rarityBonuses.cooldown, true)}`,
+        `Enerji ${rarityPercent(rarityBonuses.energy, true)}`,
+      ].join(" · ");
+      const entries = [["Sınıf", poolCategoryLabel(item.category)], ["Nadirlik", moduleRarityLabel(item.rarity)], ["Nadirlik avantajı", rarityImpact], ["CAN", stats.max_hp], ["Hasar", stats.base_damage], ["Bekleme", `${Number(stats.cooldown_ms || 0) / 1000} sn`], ["Etki çarpanı", Number(stats.effect_multiplier || 0).toLocaleString("tr-TR", {maximumFractionDigits:2})], ["Enerji tüketimi", `${stats.energy_consumption || 0}/sn`], ["Akım maliyeti", item.current_cost]];
       const list = document.createElement("dl");
       for (const [label, rawValue] of entries) {
         const row = document.createElement("div"), name = document.createElement("dt"), value = document.createElement("dd");
@@ -2453,6 +2485,27 @@
     }
   }
 
+  function renderTrophyValue(targetOrId, value) {
+    const target = typeof targetOrId === "string"
+      ? document.getElementById(targetOrId)
+      : targetOrId;
+    if (!target) return null;
+    const displayValue = typeof value === "number"
+      ? value.toLocaleString("tr-TR")
+      : String(value ?? "0");
+    const number = document.createElement("span");
+    number.className = "trophy-value-number";
+    number.textContent = displayValue;
+    const icon = document.createElement("span");
+    icon.className = "trophy-value-icon";
+    icon.setAttribute("aria-hidden", "true");
+    icon.textContent = "🏆";
+    target.classList.add("trophy-visual-value");
+    target.setAttribute("aria-label", `${displayValue} Kupa`);
+    target.replaceChildren(number, icon);
+    return target;
+  }
+
   function createTeamMemberRow(member, index, { compact = false } = {}) {
     const row = document.createElement(compact ? "div" : "li");
     row.className = compact ? "team-member-row is-compact" : "team-member-row";
@@ -2467,7 +2520,7 @@
     identity.append(name, meta);
     const trophies = document.createElement("strong");
     trophies.className = "team-member-trophies";
-    trophies.textContent = `${Number(member.trophies || 0).toLocaleString("tr-TR")} KUPA`;
+    renderTrophyValue(trophies, Number(member.trophies || 0));
     row.append(rank, identity, trophies);
     return row;
   }
@@ -2491,7 +2544,7 @@
         for (const team of teams) {
           const option = document.createElement("option");
           option.value = team.team_id;
-          option.textContent = `${team.name} · ${team.member_count}/${team.member_limit} · ${Number(team.total_trophies || 0).toLocaleString("tr-TR")} kupa`;
+          option.textContent = `${team.name} · ${team.member_count}/${team.member_limit} · ${Number(team.total_trophies || 0).toLocaleString("tr-TR")} 🏆`;
           select.appendChild(option);
         }
       }
@@ -2504,7 +2557,7 @@
     };
     setText("team-name", teamState.name || "Takım");
     setText("team-member-count", `${teamState.member_count || 0} / ${teamState.member_limit || 30} ÜYE`);
-    setText("team-total-trophies", `${Number(teamState.total_trophies || 0).toLocaleString("tr-TR")} KUPA`);
+    renderTrophyValue("team-total-trophies", Number(teamState.total_trophies || 0));
 
     for (const button of document.querySelectorAll("[data-team-tab]")) {
       button.classList.toggle("is-active", button.dataset.teamTab === activeTeamTab);
@@ -2535,7 +2588,7 @@
       moduleSelect.replaceChildren();
       const placeholder = document.createElement("option");
       placeholder.value = "";
-      placeholder.textContent = "Açılmış modül seç";
+      placeholder.textContent = "Modül seç";
       moduleSelect.appendChild(placeholder);
       const modules = (metaProgressionState?.module_collection || [])
         .filter((module) => module.unlocked !== false)
@@ -2543,7 +2596,7 @@
       for (const module of modules) {
         const option = document.createElement("option");
         option.value = module.definition_id;
-        option.textContent = `${module.name_tr} · ${module.rarity || "common"}`;
+        option.textContent = `${module.name_tr} · ${moduleRarityLabel(module.rarity)}`;
         moduleSelect.appendChild(option);
       }
       if ([...moduleSelect.options].some((option) => option.value === previous)) moduleSelect.value = previous;
@@ -2715,7 +2768,7 @@
   document.getElementById("team-module-request-button")?.addEventListener("click", () => {
     const moduleId = document.getElementById("team-module-request-select")?.value || "";
     if (!moduleId || !teamState?.team_id) {
-      setTeamActionStatus("İstemek için açılmış bir modül seç.", "error");
+      setTeamActionStatus("İstemek için bir modül seç.", "error");
       return;
     }
     mutateTeam(
@@ -3004,6 +3057,38 @@
 
   let postMatchSyncInFlight = null;
   let onlineFinishPresentedSessionId = null;
+  const preparedCorePowerFx = new Set();
+  const POST_MATCH_CORE_EXPLOSION_HOLD_MS = 2500;
+  let postMatchRevealReady = false;
+  let postMatchRevealTimer = null;
+  let postMatchRevealKey = null;
+
+  function resetPostMatchReveal() {
+    window.clearTimeout(postMatchRevealTimer);
+    postMatchRevealTimer = null;
+    postMatchRevealKey = null;
+    postMatchRevealReady = false;
+  }
+
+  function schedulePostMatchReveal(key, { waitForCoreExplosion = false } = {}) {
+    const normalizedKey = String(key || "battle-result");
+    if (postMatchRevealKey === normalizedKey && (postMatchRevealReady || postMatchRevealTimer)) {
+      return;
+    }
+    window.clearTimeout(postMatchRevealTimer);
+    postMatchRevealTimer = null;
+    postMatchRevealKey = normalizedKey;
+    postMatchRevealReady = !waitForCoreExplosion;
+    if (!waitForCoreExplosion) {
+      renderPlayModeUi();
+      return;
+    }
+    postMatchRevealTimer = window.setTimeout(() => {
+      postMatchRevealTimer = null;
+      postMatchRevealReady = true;
+      renderPlayModeUi();
+    }, POST_MATCH_CORE_EXPLOSION_HOLD_MS);
+  }
 
   function finishReasonLabel(reason) {
     const labels = {
@@ -3130,43 +3215,69 @@
 
       const body = document.createElement("div");
       body.className = "post-match-player-body";
-      const core = document.createElement("div");
-      core.className = "post-match-core-card";
-      const glyph = document.createElement("i");
+
+      const coreCard = document.createElement("div");
+      coreCard.className = "post-match-core-card";
       const coreType = summary.core_type || player.core_type || "core_resonance";
-      const coreVisual = applyCoreVisualIdentity(core, coreType);
-      glyph.textContent = coreVisual.glyph;
+      const coreVisual = applyCoreVisualIdentity(coreCard, coreType);
+      const coreGlyph = document.createElement("i");
+      coreGlyph.textContent = coreVisual.glyph;
       const coreCopy = document.createElement("div");
-      const coreName = (metaProgressionState?.cores?.types || []).find((item) => item.id === coreType)?.name_tr || "Çekirdek";
-      const name = document.createElement("strong");
-      name.textContent = coreName;
-      const level = document.createElement("small");
-      level.textContent = `SEVİYE ${Number(summary.core_level || player.core_level || 1)}`;
+      const coreName = document.createElement("strong");
+      coreName.textContent = coreVisual.nameTr || "Çekirdek";
+      const coreLevel = document.createElement("small");
+      coreLevel.textContent = `SEVİYE ${Math.max(1, Number(summary.core_level || player.core_level || 1))}`;
       const trophy = document.createElement("b");
-      const progression = progressionState.viewModel();
-      const rating = playerId === participantPlayerId && progression
-        ? progression.ratingAfter
-        : Number(player.rating ?? (playerId === participantPlayerId ? profileState.viewModel()?.rating : 0) ?? 0);
-      trophy.textContent = `🏆 ${Number(rating || 0).toLocaleString("tr-TR")}`;
-      coreCopy.append(name, level, trophy);
-      core.append(glyph, coreCopy);
+      const rating = Number(
+        player.rating
+        ?? (playerId === participantPlayerId ? profileState.viewModel()?.rating : 0)
+        ?? 0
+      );
+      trophy.textContent = `🏆 ${Math.max(0, Math.round(rating)).toLocaleString("tr-TR")}`;
+      coreCopy.append(coreName, coreLevel, trophy);
+      coreCard.append(coreGlyph, coreCopy);
 
       const damageColumn = document.createElement("div");
       damageColumn.className = "post-match-damage-column";
       const total = document.createElement("div");
       total.className = "post-match-total-damage";
+      const rows = document.createElement("div");
+      rows.className = "post-match-module-damage";
+      const moduleDamage = (Array.isArray(summary.damage_by_module) ? summary.damage_by_module : [])
+        .filter((item) => {
+          const definitionId = String(item?.definition_id || "").toLocaleLowerCase("tr");
+          const name = String(item?.name_tr || "").toLocaleLowerCase("tr");
+          return definitionId !== "core" && !definitionId.startsWith("core_") && name !== "çekirdek";
+        });
+      const damageEquivalent = (item) => Math.max(0, Math.round(
+        Number(item.damage || 0)
+        + Number(item.damage_absorbed || 0) * 0.8
+        + Number(item.repair || 0) * 0.9
+        + Number(item.heat_reduced || 0) * 0.4
+        + Number(item.energy_generated || 0) * 0.35
+        + Number(item.energy_discharged || 0) * 0.35
+        + Number(item.energy_saved || 0) * 0.45
+        + Number(item.support_value || 0) * 0.8
+        + Number(item.control_seconds || 0) * 5
+        + Number(item.control_actions || 0) * 30
+        + Number(item.support_actions || 0) * 4
+      ));
+      const moduleRows = moduleDamage.map((item) => ({
+        ...item,
+        effectiveDamage: Number.isFinite(Number(item.damage_equivalent))
+          ? Math.max(0, Math.round(Number(item.damage_equivalent)))
+          : damageEquivalent(item),
+      }));
+      const totalEquivalent = moduleRows.reduce((sum, item) => sum + item.effectiveDamage, 0);
       const totalLabel = document.createElement("span");
-      totalLabel.textContent = "VERİLEN TOPLAM HASAR";
+      totalLabel.textContent = "TOPLAM HASAR EŞDEĞERİ";
       const totalValue = document.createElement("strong");
-      totalValue.textContent = Number(summary.damage_dealt || 0).toLocaleString("tr-TR");
+      totalValue.textContent = totalEquivalent.toLocaleString("tr-TR");
       total.append(totalLabel, totalValue);
       damageColumn.appendChild(total);
 
-      const rows = document.createElement("div");
-      rows.className = "post-match-module-damage";
-      const moduleDamage = Array.isArray(summary.damage_by_module) ? summary.damage_by_module : [];
-      const maximum = Math.max(1, ...moduleDamage.map((item) => Number(item.damage || 0)));
-      for (const item of moduleDamage) {
+      const maximum = Math.max(1, ...moduleRows.map((item) => item.effectiveDamage));
+      for (const item of moduleRows) {
         const row = document.createElement("div");
         row.className = "post-match-damage-row";
         const icon = document.createElement("span");
@@ -3179,11 +3290,12 @@
         levelCopy.textContent = `SV ${Number(item.level || 1)}`;
         const track = document.createElement("i");
         const fill = document.createElement("b");
-        fill.style.width = `${Math.max(0, Math.min(100, Number(item.damage || 0) / maximum * 100))}%`;
+        fill.style.width = `${Math.max(0, Math.min(100, item.effectiveDamage / maximum * 100))}%`;
         track.appendChild(fill);
         copy.append(rowName, levelCopy, track);
         const damage = document.createElement("em");
-        damage.textContent = Number(item.damage || 0).toLocaleString("tr-TR");
+        damage.textContent = item.effectiveDamage.toLocaleString("tr-TR");
+        damage.title = "Hasar eşdeğeri";
         row.append(icon, copy, damage);
         rows.appendChild(row);
       }
@@ -3193,7 +3305,7 @@
         rows.appendChild(empty);
       }
       damageColumn.appendChild(rows);
-      body.append(core, damageColumn);
+      body.append(coreCard, damageColumn);
       card.appendChild(body);
       host.appendChild(card);
     }
@@ -3264,6 +3376,7 @@
   }
 
   function resetBattleResultPresentation() {
+    resetPostMatchReveal();
     onlineFinishPresentedSessionId = null;
     progressionState.clear?.();
     document.body.dataset.onlineFinished = "false";
@@ -3366,6 +3479,10 @@
       }
     }
 
+    schedulePostMatchReveal(
+      `online:${result.session_id || "finished"}`,
+      { waitForCoreExplosion: result.finish_reason === "core_destroyed" }
+    );
     renderOnlineBattleAnalysis(result);
     renderPostMatchSummary();
     const details = document.getElementById("post-match-analysis");
@@ -3429,9 +3546,6 @@
     }
 
     if (result.ok) {
-      presentTierCelebration(
-        result.payload?.progression?.tier_advanced
-      );
       renderPostMatchSummary();
       renderPostMatchRewards();
       renderOnlineBattleAnalysis(
@@ -3824,6 +3938,7 @@
       resetClientModulesForBattleStart();
       resetBattleResultPresentation();
       destructionFxPlayed.clear();
+      preparedCorePowerFx.clear();
       snapshotModuleHp.clear();
       clearTapSelection({ rerender: false });
       mobileBattleController.reset();
@@ -6337,37 +6452,6 @@
     };
   }
 
-  let tierCelebrationTimer = null;
-
-  function presentTierCelebration(event) {
-    if (!event?.event_id || !Number(event.tier_after)) return false;
-    const storageKey = `gridshard.tier-celebrated.${participantPlayerId}`;
-    try {
-      if (window.localStorage.getItem(storageKey) === event.event_id) {
-        return false;
-      }
-      window.localStorage.setItem(storageKey, event.event_id);
-    } catch (_) {
-      // Gizli/kapalı depolama kutlamayı engellemez; yalnız tekrar koruması devre dışı kalır.
-    }
-
-    const layer = document.getElementById("tier-celebration");
-    const tier = document.getElementById("tier-celebration-value");
-    if (!layer || !tier) return false;
-    tier.textContent = `KADEME ${Number(event.tier_after)}`;
-    layer.hidden = false;
-    layer.dataset.active = "true";
-    triggerGridshardCue("tier_up");
-    window.clearTimeout(tierCelebrationTimer);
-    tierCelebrationTimer = window.setTimeout(() => {
-      layer.dataset.active = "false";
-      window.setTimeout(() => {
-        if (layer.dataset.active === "false") layer.hidden = true;
-      }, 260);
-    }, 2400);
-    return true;
-  }
-
   let activePlayMode = "idle";
   const AI_ARCHETYPE_UI = Object.freeze({
     aggressive:{
@@ -7018,14 +7102,17 @@
       );
     if (resultPanel) {
       resultPanel.hidden =
-        !(
-          localBattle
-          && localBattleFinished
-        )
-        && !(
-          onlineBattle
-          && pvpState.phase
-            === "finished"
+        !postMatchRevealReady
+        || (
+          !(
+            localBattle
+            && localBattleFinished
+          )
+          && !(
+            onlineBattle
+            && pvpState.phase
+              === "finished"
+          )
         );
     }
 
@@ -8411,7 +8498,7 @@ function saveHumanReviewLocalNote() {
   }
 
   function parseFloatingFeedbackText(text) {
-    const match = String(text || "").trim().match(/^([+-]?)(\d+(?:[.,]\d+)?)(%)?\s+(.+)$/u);
+    const match = String(text || "").trim().match(/^([+-]?)(\d+(?:[.,]\d+)?)(%)?(?:\s+(.+))?$/u);
     if (!match) return null;
     const sign = match[1] === "-" ? -1 : 1;
     const numeric = Number(match[2].replace(",", "."));
@@ -8420,7 +8507,7 @@ function saveHumanReviewLocalNote() {
       amount: sign * numeric,
       explicitSign: Boolean(match[1]),
       percent: Boolean(match[3]),
-      suffix: match[4],
+      suffix: match[4] || "",
     };
   }
 
@@ -8432,12 +8519,13 @@ function saveHumanReviewLocalNote() {
     const rounded = Math.round(Number(amount) * 10) / 10;
     const prefix = rounded > 0 && explicitSign ? "+" : "";
     const unit = percent ? "%" : "";
-    return `${prefix}${Number.isInteger(rounded) ? rounded : rounded.toFixed(1)}${unit} ${suffix}`;
+    const numeric = `${prefix}${Number.isInteger(rounded) ? rounded : rounded.toFixed(1)}${unit}`;
+    return suffix ? `${numeric} ${suffix}` : numeric;
   }
 
   function updateFloatingFeedbackImportance(chip, amount) {
     const magnitude = Math.abs(Number(amount || 0));
-    const scale = Math.min(1.48, 0.88 + Math.log10(magnitude + 1) * 0.28);
+    const scale = Math.min(1.12, 0.88 + Math.log10(magnitude + 1) * 0.10);
     chip.style.setProperty("--feedback-scale", scale.toFixed(3));
     chip.dataset.impact = magnitude >= 30
       ? "large"
@@ -8556,7 +8644,7 @@ function saveHumanReviewLocalNote() {
     chip.dataset.lane = String(eventResult.lane || 0);
     chip.style.setProperty(
       "--feedback-lane-offset",
-      `${Math.max(0, Number(eventResult.lane || 0)) * 24}px`
+      `${Math.max(0, Number(eventResult.lane || 0)) * 14}px`
     );
     chip.textContent = Number.isFinite(eventResult.amount)
       ? formatFloatingFeedbackAmount(
@@ -8599,6 +8687,7 @@ function saveHumanReviewLocalNote() {
     const moduleDomId=serverModuleDomId(playerId, serverModule);
     const feedbackKind={
       damage:"hit",
+      attack:"hit",
       heal:"heal",
       cool:"cool",
       energy:"energy",
@@ -8655,6 +8744,73 @@ function saveHumanReviewLocalNote() {
         snapshotModuleHp.set(key, hp);
       }
     }
+  }
+
+  function corePowerEffect(powerId) {
+    if (powerId === "core_disruptor") return "sabotage";
+    if (powerId === "core_overdrive") return "attack";
+    if (powerId === "core_guardian") return "defense";
+    if (powerId === "core_capacitor") return "energy";
+    if (powerId === "core_quantum") return "hybrid";
+    return "heal";
+  }
+
+  function coreEffectFeedback(effectKind, value, unit="") {
+    const numericValue = Math.max(0, Number(value || 0));
+    const rounded = Math.round(numericValue * 10) / 10;
+    const rendered = Number.isInteger(rounded) ? String(rounded) : rounded.toFixed(1);
+    if (effectKind === "defense") return { text:rendered, variant:"defense" };
+    if (effectKind === "sabotage") return { text:`-${rendered}`, variant:"sabotage" };
+    if (effectKind === "attack") return { text:`+${rendered}${unit || "%"}`, variant:"attack" };
+    return { text:`+${rendered}${unit}`, variant:"energy" };
+  }
+
+  function presentCorePowerActivation(snapshot, data) {
+    const waveEffect = data.effect_kind || corePowerEffect(data.power_id);
+    const affectedTargets = Array.isArray(data.affected_targets)
+      ? data.affected_targets
+      : (data.affected_module_ids || []).map((moduleId) => ({
+          player_id:data.player_id,
+          module_id:moduleId,
+        }));
+    const wavePlayerId = waveEffect === "sabotage"
+      ? (affectedTargets[0]?.player_id || data.player_id)
+      : data.player_id;
+    const waveBoard = wavePlayerId === participantPlayerId ? board : enemyBoard;
+    if (waveBoard) waveBoard.dataset.coreWaveEffect = waveEffect;
+    waveBoard?.classList.add("core-wave");
+    window.setTimeout(() => {
+      waveBoard?.classList.remove("core-wave");
+      delete waveBoard?.dataset.coreWaveEffect;
+    }, 900);
+    if (waveEffect === "sabotage") {
+      const sourceId = data.player_id === participantPlayerId ? "core-1" : "enemy-core";
+      const targetId = data.player_id === participantPlayerId ? "enemy-core" : "core-1";
+      emitDuelAttackEffect(sourceId, targetId, "core-sabotage", "core_disruptor");
+    }
+    const coreModule = findSnapshotModule(
+      snapshot,
+      data.player_id,
+      data.target_module_id || data.module_id
+    );
+    const feedbackKind = waveEffect === "sabotage"
+      ? "sabotage"
+      : waveEffect === "attack"
+        ? "hit"
+        : waveEffect === "defense"
+          ? "shield"
+          : waveEffect === "energy"
+            ? "energy"
+            : "heal";
+    if (coreModule) {
+      pulseBattleFx(serverModuleDomId(data.player_id, coreModule), feedbackKind);
+    }
+    for (const target of affectedTargets) {
+      const affectedModule = findSnapshotModule(snapshot, target.player_id, target.module_id);
+      if (!affectedModule) continue;
+      pulseBattleFx(serverModuleDomId(target.player_id, affectedModule), feedbackKind);
+    }
+    setBattleLiveTicker(`${coreModule?.name_tr || "Çekirdek"} gücü devreye yayıldı`, waveEffect);
   }
 
   function processLocalServerEvents(
@@ -8719,17 +8875,17 @@ function saveHumanReviewLocalNote() {
         setBattleLiveTicker("Çekirdek gücü hazır", "boost");
         continue;
       }
+      if (event?.type === "core_power_activated") {
+        const visualKey = `${data.player_id}:${data.request_id || data.power_id}`;
+        preparedCorePowerFx.add(visualKey);
+        presentCorePowerActivation(snapshot, data);
+        continue;
+      }
       if (event?.type === "core_power_used") {
-        const waveBoard = data.player_id === participantPlayerId ? board : enemyBoard;
-        waveBoard?.classList.add("core-wave");
-        window.setTimeout(() => waveBoard?.classList.remove("core-wave"), 850);
-        emitServerModuleFeedback(
-          snapshot,
-          data.player_id,
-          data.target_module_id,
-          "ÇEKİRDEK GÜCÜ",
-          data.power_id === "core_disruptor" ? "sabotage" : data.power_id === "core_overdrive" ? "boost" : data.power_id === "core_guardian" ? "shield" : "heal"
-        );
+        const visualKey = `${data.player_id}:${data.request_id || data.power_id}`;
+        if (!preparedCorePowerFx.delete(visualKey)) {
+          presentCorePowerActivation(snapshot, data);
+        }
         if (data.player_id === participantPlayerId) {
           corePowerCharge=0;
           corePowerReady=false;
@@ -8740,32 +8896,101 @@ function saveHumanReviewLocalNote() {
         continue;
       }
       if (event?.type === "module_damaged") {
-        emitServerModuleFeedback(
-          snapshot,
-          data.player_id,
-          data.module_id,
-          `-${Math.max(0, Math.round(Number(data.damage || 0)))} CAN · DARBE`,
-          "damage"
-        );
+        const damage = Math.max(0, Math.round(Number(data.damage || 0)));
+        if (damage > 0) {
+          const sourceModule = findSnapshotModule(
+            snapshot,
+            data.source_player_id,
+            data.source_module_id
+          );
+          emitServerModuleFeedback(
+            snapshot,
+            data.player_id,
+            data.module_id,
+            `-${damage}`,
+            sourceModule?.category === "sabotaj" ? "sabotage" : "damage"
+          );
+        }
         continue;
       }
       if (event?.type === "damage_reflected") {
-        emitServerModuleFeedback(
+        const reflectedTarget = findSnapshotModule(
           snapshot,
           data.target_player_id,
-          data.target_module_id,
-          `${Math.max(0, Math.round(Number(data.damage || 0)))} YANSITMA · YANSITICI`,
-          "reflect"
+          data.target_module_id || data.module_id
         );
+        if (reflectedTarget) {
+          pulseBattleFx(serverModuleDomId(data.target_player_id, reflectedTarget), "reflect");
+        }
         continue;
       }
       if (event?.type === "module_repaired") {
+        const repair = Math.max(0, Math.round(Number(data.repair || 0)));
+        if (repair > 0) {
+          const feedback = () => emitServerModuleFeedback(
+              snapshot,
+              data.target_player_id || data.player_id,
+              data.target_module_id || data.module_id,
+              `+${repair}`,
+              "heal"
+            );
+          const sourceModule = findSnapshotModule(
+            snapshot,
+            data.player_id,
+            data.source_module_id
+          );
+          if (sourceModule?.definition_id === "core") {
+            window.setTimeout(feedback, 170);
+          } else {
+            feedback();
+          }
+        }
+        continue;
+      }
+      if (event?.type === "core_effect_applied") {
+        const feedback = coreEffectFeedback(
+          data.effect_kind,
+          data.value,
+          data.unit || ""
+        );
+        if (Number(data.value || 0) > 0) {
+          window.setTimeout(() => emitServerModuleFeedback(
+            snapshot,
+            data.target_player_id || data.player_id,
+            data.target_module_id || data.module_id,
+            feedback.text,
+            feedback.variant
+          ), 170);
+        }
+        continue;
+      }
+      if (event?.type === "module_contribution") {
+        const value = Math.max(0, Number(data.value || 0));
+        if (value <= 0) {
+          continue;
+        }
+        const category = String(data.category || "").toLocaleLowerCase("tr");
+        const unit = String(data.unit || "").toLocaleLowerCase("tr");
+        const rounded = Math.round(value * 10) / 10;
+        const variants = {
+          enerji:"energy",
+          sistem:"energy",
+          destek:"heal",
+          savunma:"defense",
+          sabotaj:"sabotage",
+        };
+        const contributionKind = String(data.contribution_kind || "");
+        const variant = contributionKind === "cooldown_reduction"
+          ? "cool"
+          : (variants[category] || "neutral");
+        const explicitSign = !["savunma", "sabotaj"].includes(category);
+        const sign = category === "sabotaj" ? "-" : (explicitSign ? "+" : "");
         emitServerModuleFeedback(
           snapshot,
           data.target_player_id || data.player_id,
-          data.target_module_id,
-          `+${Math.max(0, Math.round(Number(data.repair || 0)))} CAN · ONARIM`,
-          "heal"
+          data.target_module_id || data.source_module_id,
+          `${sign}${Number.isInteger(rounded) ? rounded : rounded.toFixed(1)}${unit === "percent" ? "%" : ""}`,
+          variant
         );
         continue;
       }
@@ -8777,22 +9002,20 @@ function saveHumanReviewLocalNote() {
           snapshot,
           data.player_id,
           data.target_module_id,
-          reduced > 0 ? `-${reduced} ISI · SOĞUTUCU` : "ISI DÜŞTÜ · SOĞUTUCU",
+          `-${reduced}`,
           "cool"
         );
         continue;
       }
       if (event?.type === "module_overclocked") {
-        emitServerModuleFeedback(
-          snapshot,
-          data.player_id,
-          data.target_module_id,
-          "+GÜÇ · GÜÇLENDİRİCİ",
-          "boost"
-        );
+        // Gerçek güç/hız yüzdesi saldırı gerçekleştiğinde sunucunun
+        // module_contribution olayıyla gösterilir.
         continue;
       }
       if (event?.type === "attack_support_applied") {
+        if (Array.isArray(data.contributions) && data.contributions.length > 0) {
+          continue;
+        }
         const supportBits = [];
         if (Number(data.damage_multiplier || 1) > 1) {
           supportBits.push(`+${Math.round((Number(data.damage_multiplier || 1) - 1) * 100)}% GÜÇ`);
@@ -8823,7 +9046,7 @@ function saveHumanReviewLocalNote() {
         if (data.booster_id === "emergency_repair") {
           boosterVariant = "heal";
           const repair = Math.max(0, Math.round(Number(data.hp_after || 0) - Number(data.hp_before || 0)));
-          boosterText = repair > 0 ? `+${repair} CAN · ACİL ONARIM` : "ACİL ONARIM";
+          boosterText = repair > 0 ? `+${repair}` : "ACİL ONARIM";
         } else if (data.booster_id === "overcharge_chip") {
           boosterText = "+25% GÜÇ · AŞIRI YÜK";
         } else if (data.booster_id === "cooling_burst") {
@@ -8843,18 +9066,18 @@ function saveHumanReviewLocalNote() {
         continue;
       }
       if (event?.type === "sabotage_applied") {
-        const sabotageLabels = {
-          emp_disabled: "EMP · ENERJİ KESİLDİ",
-          support_jammed: "SİNYAL BOZULDU",
-          virus: "VİRÜS · SABOTAJ",
-          energy_leech: "ENERJİ SÖMÜRÜSÜ",
-          line_disrupted: "HAT KESİLDİ",
-        };
+        if (data.contribution_event_emitted) {
+          continue;
+        }
+        const durationSeconds = Math.max(
+          0,
+          Math.round(Number(data.duration_ms || 0) / 100) / 10
+        );
         emitServerModuleFeedback(
           snapshot,
           data.target_player_id,
           data.target_module_id,
-          sabotageLabels[data.effect_id] || "SABOTAJ",
+          `-${durationSeconds}`,
           "sabotage"
         );
         continue;
@@ -8885,10 +9108,8 @@ function saveHumanReviewLocalNote() {
           snapshot,
           data.player_id,
           data.target_module_id,
-          reductionSeconds > 0
-            ? `-${reductionSeconds} sn SABOTAJ · SOĞUTUCU`
-            : "SABOTAJ AZALDI · SOĞUTUCU",
-          "sabotage"
+          `-${reductionSeconds}`,
+          "cool"
         );
         continue;
       }
@@ -8986,12 +9207,12 @@ function saveHumanReviewLocalNote() {
       }
 
       const preventedDamage = Math.max(0, Math.round(Number(data.reduced_damage || 0)));
-      if (preventedDamage > 0) {
+      if (preventedDamage > 0 && !data.contribution_event_emitted) {
         emitServerModuleFeedback(
           snapshot,
           data.target_player_id,
           data.target_module_id,
-          `${preventedDamage} ENGELLENDİ · ${defenseType === "shield" || defenseType === "kalkan" ? "KALKAN" : "SAVUNMA"}`,
+          `${preventedDamage}`,
           "defense"
         );
       }
@@ -9711,6 +9932,7 @@ function saveHumanReviewLocalNote() {
     commandLog.length = 0;
     resetBattleResultPresentation();
     destructionFxPlayed.clear();
+    preparedCorePowerFx.clear();
     snapshotModuleHp.clear();
     moduleAnchorRects.clear();
     for (const effectId of [...floatingFeedbackLive.keys()]) {
@@ -10053,6 +10275,11 @@ function saveHumanReviewLocalNote() {
   }
 
   function buildOfflineLocalBattleResult(won, finishReason) {
+    const selectedCore = metaProgressionState?.cores?.types?.find((item) => item.selected)
+      || metaProgressionState?.cores?.types?.find(
+        (item) => item.id === metaProgressionState?.cores?.selected_core_type
+      )
+      || null;
     const damageRows = (definitionIds, damageByDefinition = {}) =>
       definitionIds.slice(0, 6).map((definitionId) => {
         const definition = moduleDefinitions.find(
@@ -10083,7 +10310,7 @@ function saveHumanReviewLocalNote() {
           display_name:profileState.viewModel()?.displayName || "Oyuncu",
           rating:Number(profileState.viewModel()?.rating || 0),
           core_type:metaProgressionState?.cores?.selected_core_type || "core_resonance",
-          core_level:1,
+          core_level:Math.max(1, Number(selectedCore?.level || 1)),
         },
         "yerel-ai":{
           display_name:`${aiArchetypeName(activeLocalAiArchetype)} AI`,
@@ -10100,7 +10327,7 @@ function saveHumanReviewLocalNote() {
             localBattleMetrics?.damage_by_module || {}
           ),
           core_type:metaProgressionState?.cores?.selected_core_type || "core_resonance",
-          core_level:1,
+          core_level:Math.max(1, Number(selectedCore?.level || 1)),
         },
         "yerel-ai":{
           damage_dealt:enemyDamage,
@@ -10146,12 +10373,21 @@ function saveHumanReviewLocalNote() {
       won ? "victory" : "defeat"
     );
 
-    if (finishReason !== "player_forfeit") {
+    const waitForCoreExplosion = [
+      "core_destroyed",
+      "simultaneous_core_tiebreak",
+      "simultaneous_core_draw",
+    ].includes(finishReason || "core_destroyed");
+    if (waitForCoreExplosion) {
       emitModuleExplosion(
         won ? "enemy-core" : "core-1",
         { core: true }
       );
     }
+    schedulePostMatchReveal(
+      `local:${battleStartedAt || "finished"}`,
+      { waitForCoreExplosion }
+    );
 
     if (battleResultSummaryEl) {
       battleResultSummaryEl.hidden =
@@ -10704,7 +10940,7 @@ function saveHumanReviewLocalNote() {
         effect.remove();
         arena?.classList.remove("fx-module-impact", "fx-core-impact");
       },
-      core ? 1650 : 980
+      core ? 2450 : 980
     );
     return true;
   }
@@ -10821,7 +11057,7 @@ function saveHumanReviewLocalNote() {
     });
     emitFloatingBattleFeedback(
       target.instanceId,
-      `-${damage} Can`,
+      `-${damage}`,
       "damage",
       { core: target.instanceId === "core-1" }
     );
@@ -10967,6 +11203,12 @@ function saveHumanReviewLocalNote() {
         "span"
       );
     bar.className="hp-bar";
+    bar.setAttribute("role", "progressbar");
+    bar.setAttribute("aria-label", "Modül CAN değeri");
+    bar.setAttribute("aria-valuemin", "0");
+    bar.setAttribute("aria-valuemax", String(Math.max(1, Number(maxHp || 1))));
+    bar.setAttribute("aria-valuenow", String(Math.max(0, Number(hp || 0))));
+    bar.title = `CAN ${Math.max(0, Math.round(Number(hp || 0)))}/${Math.max(1, Math.round(Number(maxHp || 1)))}`;
 
     const fill=
       document.createElement(
@@ -13648,21 +13890,6 @@ function saveHumanReviewLocalNote() {
       return false;
     }
 
-    card.classList.add("energy-flowing");
-    const badge=
-      document.createElement("span");
-    badge.className="energy-flow-badge";
-    const energyValue=(
-      received < 1
-        ? received.toFixed(1)
-        : received.toFixed(1).replace(/\.0$/u,"")
-    );
-    badge.textContent=localizedUiText(
-      isSource
-        ? `KAYNAK ${energyValue} Ü`
-        : `AKIŞ ${energyValue} Ü`
-    );
-    card.appendChild(badge);
     return true;
   }
 
@@ -13682,16 +13909,6 @@ function saveHumanReviewLocalNote() {
       badge.title = title;
       row.appendChild(badge);
     };
-
-    const required = Number(moduleLike.energyRequired || 0);
-    const powered = Boolean(moduleLike.isPowered);
-    if (required > 0) {
-      addBadge(
-        powered ? "⚡" : "×",
-        powered ? "powered" : "unpowered",
-        powered ? "Enerji akışı aktif" : "Enerji bağlantısı yok"
-      );
-    }
 
     const heat = Number(moduleLike.heat || 0);
     if (heat >= 70) {
@@ -14482,7 +14699,7 @@ function saveHumanReviewLocalNote() {
       || "Devre Çırağı";
     const nextTitle = stages[achievedStages.length] || null;
     el.textContent = localizedUiText(
-      `${view.displayName} · ${activeTitle} · ${view.leagueNameTr} · ${view.rating} Kupa`
+      `${view.displayName} · ${activeTitle} · ${view.leagueNameTr} · ${view.rating} 🏆`
     );
 
     const setText = (id, value) => {
@@ -14490,12 +14707,12 @@ function saveHumanReviewLocalNote() {
       if (target) target.textContent = String(value);
     };
     setText("profile-player-name", view.displayName);
-    setText("profile-current-trophies", `${view.rating} Kupa`);
+    renderTrophyValue("profile-current-trophies", Number(view.rating || 0));
     setText("profile-operator-title", activeTitle);
     setText(
       "profile-title-progress",
       nextTitle
-        ? `${nextTitle.title_tr}: ${nextTitle.required_trophies} kupa + ${nextTitle.required_wins} galibiyet`
+        ? `${nextTitle.title_tr}: ${nextTitle.required_trophies} 🏆 + ${nextTitle.required_wins} galibiyet`
         : "En yüksek operatör ününe ulaştın."
     );
     setText("profile-clan-title", view.teamName || "Takıma dahil değil");
@@ -14520,10 +14737,10 @@ function saveHumanReviewLocalNote() {
     const remainingHours = Math.floor((remainingMs % 86400000) / 3600000);
     setText("profile-current-season-name", engagement.season_name_tr || "Güncel Sezon");
     setText("profile-season-countdown", Number.isFinite(seasonEndsAt) && seasonEndsAt > 0 ? `${remainingDays} gün ${remainingHours} sa kaldı` : "Sezon süresi hazırlanıyor");
-    setText("profile-season-trophies", view.rating || 0);
+    renderTrophyValue("profile-season-trophies", Number(view.rating || 0));
     setText("profile-season-league", view.leagueNameTr || "Arena 1");
-    setText("profile-last-season-trophies", previous ? Number(previous.final_rating || 0).toLocaleString("tr-TR") : "—");
-    setText("profile-best-season-trophies", best ? Number(best.final_rating || 0).toLocaleString("tr-TR") : "—");
+    renderTrophyValue("profile-last-season-trophies", previous ? Number(previous.final_rating || 0) : "—");
+    renderTrophyValue("profile-best-season-trophies", best ? Number(best.final_rating || 0) : "—");
 
     const nameInput =
       document.getElementById(
@@ -14571,7 +14788,7 @@ function saveHumanReviewLocalNote() {
   function renderProfileHighlights() {
     const view = profileState.viewModel();
     const highest = document.getElementById("profile-highest-trophies");
-    if (highest && view) highest.textContent = String(view.highestRating || view.rating || 0);
+    if (highest && view) renderTrophyValue(highest, Number(view.highestRating || view.rating || 0));
     const deckHost = document.getElementById("profile-most-used-deck");
     const deck = metaProgressionState?.statistics?.most_used_decks?.[0];
     if (deckHost) {
@@ -14728,9 +14945,11 @@ function saveHumanReviewLocalNote() {
       identity.append(nameNode, detailNode);
       const score = document.createElement("strong");
       score.className = "leaderboard-score";
-      score.textContent = activeLeaderboardTab === "core_damage"
-        ? `${Number(row.value || 0).toLocaleString("tr-TR")} HASAR`
-        : `${Number(row.value || 0).toLocaleString("tr-TR")} KUPA`;
+      if (activeLeaderboardTab === "core_damage") {
+        score.textContent = `${Number(row.value || 0).toLocaleString("tr-TR")} HASAR`;
+      } else {
+        renderTrophyValue(score, Number(row.value || 0));
+      }
       item.append(rank, identity, score);
       host.appendChild(item);
     }
@@ -14791,6 +15010,8 @@ function saveHumanReviewLocalNote() {
     );
     const seasonXp = Number(engagement.season_xp || 0);
     setText("season-progress-copy", nextReward ? `${Math.max(0, Number(nextReward.required_xp || 0) - seasonXp)} Deneyim kaldı` : "Sezon yolu tamamlandı");
+    const nextTierExperience = Number(nextReward?.required_xp || rewardList.at(-1)?.required_xp || seasonXp);
+    setText("season-progress-ratio", `${seasonXp.toLocaleString("tr-TR")} / ${nextTierExperience.toLocaleString("tr-TR")} Deneyim`);
     setText("lobby-season-tier", `Kademe ${engagement.current_tier || 0} / ${engagement.max_tier || 40}`);
     setText("lobby-season-progress-copy", nextReward ? `${Math.max(0, Number(nextReward.required_xp || 0) - seasonXp)} Deneyim kaldı` : "Sezon yolu tamamlandı");
     setText("lobby-flux-shards", engagement.flux_shards || 0);
@@ -14802,8 +15023,12 @@ function saveHumanReviewLocalNote() {
       (mission) => mission.completed && !mission.claimed
     ).length;
     const notifications = engagement.notifications || {};
+    const loginHasNotification = notifications.daily_login
+      ?? (claimableLoginRewards > 0);
+    const missionHasNotification = notifications.daily_missions
+      ?? (claimableMissions > 0);
     const dailyHasNotification = notifications.daily
-      ?? (claimableMissions + claimableLoginRewards > 0);
+      ?? (loginHasNotification || missionHasNotification);
     const activeMissions = missionList.filter((mission) => !mission.claimed).length;
     setText(
       "lobby-daily-summary",
@@ -14834,10 +15059,13 @@ function saveHumanReviewLocalNote() {
     if (rewardNotification) rewardNotification.hidden = !seasonHasNotification;
 
     const notificationByScreen = {
-      profile: notifications.profile ?? (dailyHasNotification || seasonHasNotification),
-      avatar: Boolean(notifications.avatar),
+      profile: false,
+      // Profile terminalinde okunmamış durum tek bir hedefte görünür:
+      // Ödüller sekmesi. Avatar açılır ekranı kendi başına nokta taşımaz.
+      avatar: false,
       daily: notifications.rewards ?? (dailyHasNotification || seasonHasNotification),
-      "daily-rewards": Boolean(dailyHasNotification),
+      "daily-rewards": Boolean(loginHasNotification),
+      "daily-missions": Boolean(missionHasNotification),
       rewards: Boolean(seasonHasNotification),
     };
     for (const button of document.querySelectorAll("[data-open-screen]")) {
@@ -14849,6 +15077,11 @@ function saveHumanReviewLocalNote() {
         Boolean(notificationByScreen[target]) && !hasOwnLobbyDot
       );
     }
+    const lobbyProfileButton = document.getElementById("lobby-profile-button");
+    lobbyProfileButton?.classList.toggle(
+      "has-avatar-notification",
+      Boolean(dailyHasNotification || seasonHasNotification || notifications.avatar)
+    );
 
     const progressTrack = document.querySelector(".season-progress-track");
     const progressFill = document.getElementById("season-progress-fill");
@@ -15220,15 +15453,19 @@ function saveHumanReviewLocalNote() {
     }
     if (button) button.disabled = true;
     if (status) status.textContent = "Ödül alınıyor…";
-    const seasonId = profileState.viewModel()?.engagement?.season_id || "current";
-    const requestId = `engagement:${participantPlayerId}:${seasonId}:${kind}:${id}`;
+    const engagement = profileState.viewModel()?.engagement || {};
+    const claimScope = kind === "missions"
+      ? (engagement.daily_mission_day || new Date().toISOString().slice(0, 10))
+      : kind === "login"
+        ? (engagement.daily_login?.month || new Date().toISOString().slice(0, 7))
+        : (engagement.season_id || "current");
+    const requestId = `engagement:${participantPlayerId}:${claimScope}:${kind}:${id}`;
     const result = await accountDataLoader.claimEngagementReward(kind, id, requestId);
     // A failed request must remain retryable.  The deterministic request id
     // makes a retry safe even when the server committed the reward before a
     // network response was lost.
     if (!result.ok && button) button.disabled = false;
     if (result.ok) {
-      presentTierCelebration(result.payload?.tier_advanced);
       await loadMetaProgression();
       if (result.payload?.season_chest_receipt) {
         showChestReveal(result.payload.season_chest_receipt);
@@ -15291,7 +15528,7 @@ function saveHumanReviewLocalNote() {
     if (!host) { host = document.createElement("div"); host.id = "statistics-canon"; host.className = "statistics-canon"; summary.after(host); }
     host.replaceChildren();
     const matches = Math.max(1, Number(stats.matches || 0));
-    const entries = [["Kupa / En yüksek", `${stats.current_trophies} / ${stats.highest_trophies}`], ["Arena / Lig", stats.rank], ["En uzun galibiyet serisi", stats.longest_streak || 0], ["Maç başı yerleştirme", ((stats.deployments || 0)/matches).toFixed(1)], ["Toplam / Ortalama Akım", `${stats.current_spent || 0} / ${((stats.current_spent || 0)/matches).toFixed(1)}`], ["Çekirdek gücü kullanımı", stats.core_power_uses || 0], ["En yüksek maç hasarı", stats.peak_damage || 0], ["Açılan modül", `${stats.unlocked_modules} / 36`], ["Yükseltilen modül", stats.upgraded_modules], ["En yüksek modül seviyesi", stats.highest_module_level], ["Açılan çekirdek", `${stats.unlocked_cores} / 7`], ["Açılan sandık", stats.opened_chests]];
+    const entries = [["🏆 / En yüksek", `${stats.current_trophies} / ${stats.highest_trophies}`], ["Arena / Lig", stats.rank], ["En uzun galibiyet serisi", stats.longest_streak || 0], ["Maç başı yerleştirme", ((stats.deployments || 0)/matches).toFixed(1)], ["Toplam / Ortalama Akım", `${stats.current_spent || 0} / ${((stats.current_spent || 0)/matches).toFixed(1)}`], ["Çekirdek gücü kullanımı", stats.core_power_uses || 0], ["En yüksek maç hasarı", stats.peak_damage || 0], ["Açılan modül", `${stats.unlocked_modules} / 36`], ["Yükseltilen modül", stats.upgraded_modules], ["En yüksek modül seviyesi", stats.highest_module_level], ["Açılan çekirdek", `${stats.unlocked_cores} / 7`], ["Açılan sandık", stats.opened_chests]];
     for (const [id, count] of Object.entries(stats.cores || {})) entries.push([metaProgressionState.cores?.types.find(c => c.id === id)?.name_tr || id, `%${Math.round(count / matches * 100)}`]);
     for (const [name, value] of entries) { const card=document.createElement("div"), label=document.createElement("small"), number=document.createElement("strong"); label.textContent=name; number.textContent=String(value ?? 0); card.append(label,number); host.appendChild(card); }
   }
@@ -16495,7 +16732,7 @@ function saveHumanReviewLocalNote() {
         );
       emitFloatingBattleFeedback(
         targetDomId,
-        `-${finalDamage} Can`,
+        `-${finalDamage}`,
         "damage",
         { core: targetDomId === "enemy-core" }
       );

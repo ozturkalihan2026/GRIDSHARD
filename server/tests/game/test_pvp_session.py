@@ -2,7 +2,6 @@ import pytest
 
 from app.game.models import (
     BattleCommand,
-    Direction,
 )
 from app.game.pvp_session import (
     PvPSessionError,
@@ -25,23 +24,11 @@ def install_minimal_board(session, player_id):
         f"{player_id}-core",
         "core",
     )
-    engine.grant_module(
-        player_id,
-        f"{player_id}-gen",
-        "generator",
-    )
     engine.set_initial_active_module(
         player_id,
         f"{player_id}-core",
         2,
-        2,
-    )
-    engine.set_initial_active_module(
-        player_id,
-        f"{player_id}-gen",
-        2,
-        3,
-        Direction.UP,
+        1,
     )
 
 
@@ -90,8 +77,8 @@ def test_impersonation_command_is_rejected():
             "alice",
             BattleCommand(
                 "bob",
-                "rotate_module",
-                {"module_id": "bob-gen"},
+                "move_module",
+                {"module_id": "bob-gen", "x": 2, "y": 3},
             ),
         )
 
@@ -100,32 +87,31 @@ def test_authenticated_command_uses_real_engine_queue():
     service, session = setup_service()
     install_minimal_board(session, "alice")
     install_minimal_board(session, "bob")
+    module = session.engine.grant_module("alice", "alice-laser", "laser")
+    session.engine.set_initial_active_module("alice", module.instance_id, 0, 0)
     service.start("pvp-1")
 
     # 15 saniye sonrası gerçek komut doğrulaması için state'i ilerlet.
     session.engine.state.elapsed_ms = 15_000
     session.engine.state.tick = 150
+    session.engine.state.players["alice"].circuit_credits = 20
 
     service.submit_command(
         "pvp-1",
         "alice",
         BattleCommand(
             "alice",
-            "rotate_module",
+            "move_module",
             {
-                "module_id": "alice-gen",
-                "clockwise": True,
+                "module_id": "alice-laser",
+                "x": 1,
+                "y": 0,
             },
         ),
     )
     service.step("pvp-1")
 
-    # Jeneratör rotatable=False olduğundan motor komutu reddeder;
-    # asıl doğrulama oturum servisinin komutu normal motor kuyruğuna taşımasıdır.
-    assert any(
-        event.type == "command_rejected"
-        for event in session.engine.state.events
-    )
+    assert any(event.type == "module_moved" for event in session.engine.state.events)
 
 
 def test_snapshot_hides_opponent_private_economy():
@@ -156,7 +142,7 @@ def test_snapshot_is_viewer_scoped_and_deterministic():
     assert first["viewer_player_id"] == "alice"
 
 
-def test_snapshot_exposes_effective_ports_and_server_power_reason():
+def test_snapshot_exposes_embedded_power_state():
     service, session = setup_service()
     install_minimal_board(session, "alice")
     laser = session.engine.grant_module(
@@ -167,17 +153,8 @@ def test_snapshot_exposes_effective_ports_and_server_power_reason():
     session.engine.set_initial_active_module(
         "alice",
         laser.instance_id,
-        2,
         1,
-        Direction.DOWN,
-    )
-    session.engine.add_temporary_booster_state(
-        "alice",
-        laser.instance_id,
-        "dual_port_adapter",
-        "Çift Port Adaptörü",
-        15_000,
-        {"extra_port_count": 1},
+        1,
     )
 
     isolated = session.engine.grant_module(
@@ -190,16 +167,13 @@ def test_snapshot_exposes_effective_ports_and_server_power_reason():
         isolated.instance_id,
         0,
         1,
-        Direction.UP,
     )
 
     modules = service.snapshot("pvp-1", "alice")["players"]["alice"]["modules"]
     by_id = {module["instance_id"]: module for module in modules}
 
-    assert by_id["alice-laser"]["port_count"] == 2
-    assert set(by_id["alice-laser"]["ports"]) == {"up", "down"}
     assert by_id["alice-laser"]["power_reason"] == "powered"
-    assert by_id["alice-isolated"]["power_reason"] == "port_disconnected"
+    assert by_id["alice-isolated"]["power_reason"] == "powered"
 
 
 def test_events_since_uses_cursor():

@@ -55,6 +55,7 @@ class ModuleDefinition:
     name_tr: str
     category: str
     max_hp: int
+    rarity: str = "common"
     circuit_credit_cost: int = 0
     current_cost: int = 0
     behavior_id: str = ""
@@ -167,6 +168,10 @@ class PlayerBattleState:
     energy_generated_total: float = 0.0
     energy_consumed_total: float = 0.0
     energy_wasted_total: float = 0.0
+    # Per-definition telemetry is kept on the transient battle state so the
+    # result sheet can explain what support and energy modules contributed.
+    module_energy_consumed: dict[str, float] = field(default_factory=dict)
+    module_energy_discharged: dict[str, float] = field(default_factory=dict)
     cell_debris_until_ms: dict[str, int] = field(default_factory=dict)
     core_power_charge: float = 0.0
     core_power_ready_emitted: bool = False

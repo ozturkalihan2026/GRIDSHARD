@@ -1,17 +1,15 @@
 from app.game.engine import BattleEngine
 from app.game.models import (
     BattleState,
-    Direction,
     ModuleStatus,
     Position,
 )
 
 
-def activate(engine, player_id, iid, did, pos, direction=Direction.UP):
+def activate(engine, player_id, iid, did, pos):
     module = engine.grant_module(player_id, iid, did)
     module.status = ModuleStatus.ACTIVE
     module.position = pos
-    module.direction = direction
     return module
 
 
@@ -29,7 +27,6 @@ def test_step_runs_energy_then_combat_without_pause():
             f"{player_id}-laser",
             "laser",
             Position(2, 1),
-            Direction.DOWN,
         )
 
     engine.start()

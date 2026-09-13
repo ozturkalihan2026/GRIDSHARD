@@ -4,7 +4,7 @@ from app.game.pvp_protocol_handler import PvPProtocolHandler
 from app.game.pvp_session import PvPSessionService
 
 def command_message(*,player_id="a",sequence=1,version=PVP_PROTOCOL_VERSION):
-    return {"version":version,"type":"command","session_id":"match","player_id":player_id,"request_id":"req-1","payload":{"sequence":sequence,"kind":"rotate_module","command_payload":{"module_id":"x"}}}
+    return {"version":version,"type":"command","session_id":"match","player_id":player_id,"request_id":"req-1","payload":{"sequence":sequence,"kind":"move_module","command_payload":{"module_id":"x","x":0,"y":0}}}
 
 def running_handler():
     service=PvPSessionService(); service.create_session("match"); service.join("match","a"); service.join("match","b"); service.start("match")
@@ -19,7 +19,7 @@ def test_protocol_rejects_unknown_client_type():
 
 def test_command_envelope_builds_authenticated_battle_command():
     e=parse_client_envelope(command_message()); s,c=battle_command_from_envelope(e)
-    assert s==1 and c.player_id=="a" and c.kind=="rotate_module"
+    assert s==1 and c.player_id=="a" and c.kind=="move_module"
 
 def test_handler_rejects_identity_mismatch():
     h,_=running_handler(); r=h.handle(command_message(player_id="b"),authenticated_player_id="a")

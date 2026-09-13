@@ -61,7 +61,7 @@ CATEGORY_LABELS_EN = {
 
 MODULE_COPY_EN: dict[str, tuple[str, str]] = {
     "generator": ("Primary energy source", "Continuously supplies energy and can move between the four Core gates."),
-    "battery": ("Energy reserve", "Adds 30 energy capacity without increasing production."),
+    "battery": ("Energy feed and reserve", "Supplies 3 energy per second and adds 30 reserve capacity."),
     "splitter": ("Energy distribution", "Improves the embedded grid's energy efficiency."),
     "capacitor": ("Expanded energy storage", "Adds 25 energy capacity and consumes 1 energy per second."),
     "current_balancer": ("Circuit efficiency", "Reduces module energy consumption by 8%; repeated copies have diminishing returns, capped at 35%."),
@@ -142,11 +142,11 @@ def _effect_lines(definition_id: str) -> list[str]:
     if definition_id == "battery":
         return [
             (
-                f"{BATTERY_CAPACITY:g} enerji depolar; "
+                f"Saniyede {definition.energy_generation:g} enerji sağlar ve {BATTERY_CAPACITY:g} enerji depolar; "
                 f"saniyede {BATTERY_CHARGE_RATE_PER_SECOND:g} şarj / "
                 f"{BATTERY_DISCHARGE_RATE_PER_SECOND:g} deşarj yapabilir."
             ),
-            "Ani enerji açığında tüketici modülleri beslemeye yardım eder.",
+            "Sürekli beslemesi ve ani yük rezervi enerji darboğazını azaltır.",
         ]
 
     if definition_id == "capacitor":
@@ -319,8 +319,8 @@ def _effect_lines_en(definition_id: str) -> list[str]:
         ]
     if definition_id == "battery":
         return [
-            f"Stores {BATTERY_CAPACITY:g} energy; charges at {BATTERY_CHARGE_RATE_PER_SECOND:g}/sec and discharges at {BATTERY_DISCHARGE_RATE_PER_SECOND:g}/sec.",
-            "Helps power consumer modules during a temporary energy shortage.",
+            f"Supplies {definition.energy_generation:g} energy/sec and stores {BATTERY_CAPACITY:g}; charges at {BATTERY_CHARGE_RATE_PER_SECOND:g}/sec and discharges at {BATTERY_DISCHARGE_RATE_PER_SECOND:g}/sec.",
+            "Its steady feed and burst reserve reduce temporary energy shortages.",
         ]
     if definition_id == "capacitor":
         return [

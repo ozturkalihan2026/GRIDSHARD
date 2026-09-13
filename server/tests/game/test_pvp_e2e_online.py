@@ -2,7 +2,6 @@ import asyncio
 
 from app.game.battle_pool import default_battle_pool
 from app.game.engine import BATTLE_TIME_LIMIT_MS
-from app.game.models import Direction
 from app.game.pvp_runner import PvPTickRunner
 from app.game.pvp_session import PvPSessionService
 from app.game.pvp_setup import (
@@ -26,8 +25,8 @@ def payload(p):
     return PvPSetupPayload(
         battle_pool_ids=default_battle_pool().module_definition_ids,
         initial_modules=(
-            InitialModulePlacement(f"{p}-core","core",2,2),
-            InitialModulePlacement(f"{p}-gen","generator",2,3,Direction.UP),
+            InitialModulePlacement(f"{p}-core","core",2,1),
+            InitialModulePlacement(f"{p}-gen","generator",2,0),
         ),
     )
 

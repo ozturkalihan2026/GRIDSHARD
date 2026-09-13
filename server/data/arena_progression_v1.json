@@ -449,7 +449,7 @@
         {
           "id": "arena_1_300",
           "trophies": 300,
-          "description_tr": "3 Saatlik Saha Sandığı",
+          "description_tr": "Bronz Sandık",
           "rewards": {
             "chest_id": "field_3h"
           }
@@ -508,7 +508,7 @@
         {
           "id": "arena_2_600",
           "trophies": 600,
-          "description_tr": "3 Saatlik Saha Sandığı",
+          "description_tr": "Bronz Sandık",
           "rewards": {
             "chest_id": "field_3h"
           }
@@ -575,7 +575,7 @@
         {
           "id": "arena_3_900",
           "trophies": 900,
-          "description_tr": "3 Saatlik Saha Sandığı",
+          "description_tr": "Bronz Sandık",
           "rewards": {
             "chest_id": "field_3h"
           }
@@ -634,7 +634,7 @@
         {
           "id": "arena_4_1200",
           "trophies": 1200,
-          "description_tr": "8 Saatlik Devre Sandığı",
+          "description_tr": "Gümüş Sandık",
           "rewards": {
             "chest_id": "circuit_8h"
           }
@@ -701,7 +701,7 @@
         {
           "id": "arena_5_1500",
           "trophies": 1500,
-          "description_tr": "8 Saatlik Devre Sandığı",
+          "description_tr": "Gümüş Sandık",
           "rewards": {
             "chest_id": "circuit_8h"
           }
@@ -760,7 +760,7 @@
         {
           "id": "arena_6_1800",
           "trophies": 1800,
-          "description_tr": "8 Saatlik Devre Sandığı",
+          "description_tr": "Gümüş Sandık",
           "rewards": {
             "chest_id": "circuit_8h"
           }
@@ -828,7 +828,7 @@
         {
           "id": "arena_7_2100",
           "trophies": 2100,
-          "description_tr": "8 Saatlik Devre Sandığı",
+          "description_tr": "Gümüş Sandık",
           "rewards": {
             "chest_id": "circuit_8h"
           }
@@ -888,7 +888,7 @@
         {
           "id": "arena_8_2400",
           "trophies": 2400,
-          "description_tr": "8 Saatlik Devre Sandığı",
+          "description_tr": "Gümüş Sandık",
           "rewards": {
             "chest_id": "circuit_8h"
           }
@@ -956,7 +956,7 @@
         {
           "id": "arena_9_2700",
           "trophies": 2700,
-          "description_tr": "24 Saatlik Çekirdek Sandığı",
+          "description_tr": "Altın Sandık",
           "rewards": {
             "chest_id": "core_24h"
           }
@@ -1016,7 +1016,7 @@
         {
           "id": "arena_10_3000",
           "trophies": 3000,
-          "description_tr": "24 Saatlik Çekirdek Sandığı",
+          "description_tr": "Altın Sandık",
           "rewards": {
             "chest_id": "core_24h"
           }
@@ -1084,7 +1084,7 @@
         {
           "id": "arena_11_3300",
           "trophies": 3300,
-          "description_tr": "24 Saatlik Çekirdek Sandığı",
+          "description_tr": "Altın Sandık",
           "rewards": {
             "chest_id": "core_24h"
           }
@@ -1144,7 +1144,7 @@
         {
           "id": "arena_12_3600",
           "trophies": 3600,
-          "description_tr": "24 Saatlik Çekirdek Sandığı",
+          "description_tr": "Altın Sandık",
           "rewards": {
             "chest_id": "core_24h"
           }

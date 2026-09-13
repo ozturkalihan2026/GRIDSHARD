@@ -1,0 +1,10 @@
+[
+  {
+    "event_id": "e1",
+    "event_type": "game_opened",
+    "metadata": {},
+    "player_id": null,
+    "session_id": null,
+    "timestamp_ms": 1
+  }
+]

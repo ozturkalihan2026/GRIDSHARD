@@ -9,14 +9,14 @@ from app.balance_regression import (
 def test_credit_regression_uses_real_engine_and_never_mutates_canonical():
     result=run_balance_regression(
         area="circuit_credit",
-        before_value=10,
-        proposed_value=20,
+        before_value=2500,
+        proposed_value=3000,
     )
 
     assert result["status"]=="passed"
-    assert len(
-        result["engine_scenarios"]
-    )==2
+    assert len(result["engine_scenarios"]) == 2
+    assert all(item["maximum_current"] == 12 for item in result["engine_scenarios"])
+    assert all(item["first_regen_after_interval"] for item in result["engine_scenarios"])
     assert result[
         "canonical_values_changed"
     ] is False
@@ -31,8 +31,8 @@ def test_credit_regression_rejects_engine_invalid_tick_income():
     ):
         run_balance_regression(
             area="circuit_credit",
-            before_value=10,
-            proposed_value=12,
+            before_value=12,
+            proposed_value=2500,
         )
 
 

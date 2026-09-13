@@ -26,7 +26,7 @@
 | 150 | **Zırh** (common, savunma, 2 Akım) |
 | 200 | 12 Akı |
 | 250 | **EMP** (rare, kontrol, 3 Akım) |
-| 300 | 3 Saatlik Saha Sandığı |
+| 300 | Bronz Sandık |
 | **Arena sonu** | **300 Devre Kredisi + 20 Akı + 20 Modül Parçası** |
 
 ### Arena 2 — Röle Sokakları (300–599 Kupa)
@@ -37,7 +37,7 @@
 | 400 | 270 Devre Kredisi |
 | 475 | 18 Akı |
 | 525 | **Hedefleme Bilgisayarı** (rare, destek, 3 Akım) |
-| 600 | 3 Saatlik Saha Sandığı |
+| 600 | Bronz Sandık |
 | **Arena sonu** | **480 Devre Kredisi + 28 Akı + 25 Modül Parçası** |
 
 ### Arena 3 — Akım Kavşağı (600–899 Kupa)
@@ -51,7 +51,7 @@
 | 750 | **Bariyer** (rare, savunma, 3 Akım) |
 | 800 | 24 Akı |
 | 850 | **Kapasitör** (rare, ekonomi, 2 Akım) |
-| 900 | 3 Saatlik Saha Sandığı |
+| 900 | Bronz Sandık |
 | **Arena sonu** | **660 Devre Kredisi + 36 Akı + 30 Modül Parçası** |
 
 ### Arena 4 — İletken Dökümhane (900–1199 Kupa)
@@ -62,7 +62,7 @@
 | 1000 | 450 Devre Kredisi |
 | 1075 | 30 Akı |
 | 1125 | **Sinyal Bozucu** (rare, kontrol, 3 Akım) |
-| 1200 | 8 Saatlik Devre Sandığı |
+| 1200 | Gümüş Sandık |
 | **Arena sonu** | **840 Devre Kredisi + 44 Akı + 35 Modül Parçası** |
 
 ### Arena 5 — Neon Omurga (1200–1499 Kupa)
@@ -76,7 +76,7 @@
 | 1350 | **Yansıtıcı** (epic, savunma, 4 Akım) |
 | 1400 | 36 Akı |
 | 1450 | **Akım Dengeleyici** (rare, ekonomi, 3 Akım) |
-| 1500 | 8 Saatlik Devre Sandığı |
+| 1500 | Gümüş Sandık |
 | **Arena sonu** | **1020 Devre Kredisi + 52 Akı + 40 Modül Parçası** |
 
 ### Arena 6 — Plazma Kanalları (1500–1799 Kupa)
@@ -87,7 +87,7 @@
 | 1600 | 630 Devre Kredisi |
 | 1675 | 42 Akı |
 | 1725 | **Aşırı Hızlandırıcı** (epic, destek, 4 Akım) |
-| 1800 | 8 Saatlik Devre Sandığı |
+| 1800 | Gümüş Sandık |
 | **Arena sonu** | **1200 Devre Kredisi + 60 Akı + 45 Modül Parçası + 1 Çekirdek Parçası** |
 
 ### Arena 7 — Darbe Surları (1800–2099 Kupa)
@@ -101,7 +101,7 @@
 | 1950 | **Muhafız Kubbesi** (epic, savunma, 4 Akım) |
 | 2000 | 48 Akı |
 | 2050 | **Nano Sağlıkçı** (rare, destek, 3 Akım) |
-| 2100 | 8 Saatlik Devre Sandığı |
+| 2100 | Gümüş Sandık |
 | **Arena sonu** | **1380 Devre Kredisi + 68 Akı + 50 Modül Parçası + 1 Çekirdek Parçası** |
 
 ### Arena 8 — Kuantum Hattı (2100–2399 Kupa)
@@ -112,7 +112,7 @@
 | 2200 | 810 Devre Kredisi |
 | 2275 | 54 Akı |
 | 2325 | **Krono Rölesi** (epic, destek, 4 Akım) |
-| 2400 | 8 Saatlik Devre Sandığı |
+| 2400 | Gümüş Sandık |
 | **Arena sonu** | **1560 Devre Kredisi + 76 Akı + 55 Modül Parçası + 2 Çekirdek Parçası** |
 
 ### Arena 9 — İyon Kalesi (2400–2699 Kupa)
@@ -126,7 +126,7 @@
 | 2550 | **Faz Zırhı** (epic, savunma, 4 Akım) |
 | 2600 | 60 Akı |
 | 2650 | **Sürü Fabrikatörü** (epic, saldırı, 4 Akım) |
-| 2700 | 24 Saatlik Çekirdek Sandığı |
+| 2700 | Altın Sandık |
 | **Arena sonu** | **1740 Devre Kredisi + 84 Akı + 60 Modül Parçası + 2 Çekirdek Parçası** |
 
 ### Arena 10 — Çekirdek Sınırı (2700–2999 Kupa)
@@ -137,7 +137,7 @@
 | 2800 | 990 Devre Kredisi |
 | 2875 | 66 Akı |
 | 2925 | **Hassasiyet Matrisi** (epic, destek, 4 Akım) |
-| 3000 | 24 Saatlik Çekirdek Sandığı |
+| 3000 | Altın Sandık |
 | **Arena sonu** | **1920 Devre Kredisi + 92 Akı + 65 Modül Parçası + 3 Çekirdek Parçası** |
 
 ### Arena 11 — Shard Nexus (3000–3299 Kupa)
@@ -151,7 +151,7 @@
 | 3150 | **Anka Onarım** (legendary, destek, 5 Akım) |
 | 3200 | 72 Akı |
 | 3250 | **Prizma Kalkanı** (legendary, savunma, 5 Akım) |
-| 3300 | 24 Saatlik Çekirdek Sandığı |
+| 3300 | Altın Sandık |
 | **Arena sonu** | **2100 Devre Kredisi + 100 Akı + 70 Modül Parçası + 3 Çekirdek Parçası** |
 
 ### Arena 12 — Apex Devre (3300–3599 Kupa)
@@ -164,7 +164,7 @@
 | 3400 | 1170 Devre Kredisi |
 | 3475 | 78 Akı |
 | 3525 | **Omega Güçlendirici** (legendary, destek, 5 Akım) |
-| 3600 | 24 Saatlik Çekirdek Sandığı |
+| 3600 | Altın Sandık |
 | **Arena sonu** | **2280 Devre Kredisi + 108 Akı + 75 Modül Parçası + 4 Çekirdek Parçası** |
 
 ## Ligler

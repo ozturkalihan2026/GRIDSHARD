@@ -754,7 +754,7 @@ class PvPSessionService:
         ):
             return None
 
-        if event.type == "core_power_used" and owner_player_id != viewer_player_id:
+        if event.type in {"core_power_activated", "core_power_used"} and owner_player_id != viewer_player_id:
             data.pop("request_id", None)
             data.pop("charge", None)
         if event.type == "battle_forfeited" and owner_player_id != viewer_player_id:

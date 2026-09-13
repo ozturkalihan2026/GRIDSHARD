@@ -1,7 +1,6 @@
 import pytest
 
 from app.game.battle_pool import default_battle_pool
-from app.game.models import Direction
 from app.game.pvp_session import PvPSessionError, PvPSessionService
 from app.game.pvp_setup import InitialModulePlacement, PvPSetupPayload
 
@@ -10,10 +9,8 @@ def valid_payload(player_id="a"):
     return PvPSetupPayload(
         battle_pool_ids=default_battle_pool().module_definition_ids,
         initial_modules=(
-            InitialModulePlacement(f"{player_id}-core", "core", 2, 2),
-            InitialModulePlacement(
-                f"{player_id}-gen", "generator", 2, 3, Direction.UP
-            ),
+            InitialModulePlacement(f"{player_id}-core", "core", 2, 1),
+            InitialModulePlacement(f"{player_id}-gen", "generator", 2, 0),
         ),
     )
 

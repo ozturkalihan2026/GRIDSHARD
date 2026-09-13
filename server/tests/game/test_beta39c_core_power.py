@@ -8,9 +8,12 @@ def create_engine() -> BattleEngine:
     engine.add_player("player")
     engine.set_battle_pool("player", default_battle_pool().module_definition_ids)
     engine.grant_module("player", "core", "core")
-    engine.grant_module("player", "generator", "generator")
-    engine.set_initial_active_module("player", "core", 2, 2)
-    engine.set_initial_active_module("player", "generator", 2, 3)
+    engine.set_initial_active_module(
+        "player",
+        "core",
+        engine.board.core_position.x,
+        engine.board.core_position.y,
+    )
     engine.start()
     return engine
 
@@ -36,7 +39,14 @@ def test_core_power_charges_once_and_repairs_own_core_atomically():
     assert core.hp == 245
     assert player.core_power_uses == 1
     assert 0 < player.core_power_charge < 1
-    assert any(event.type == "core_power_used" for event in engine.state.events)
+    event_types = [event.type for event in engine.state.events]
+    activation_index = event_types.index("core_power_activated")
+    repair_index = event_types.index("module_repaired", activation_index)
+    used_index = event_types.index("core_power_used", repair_index)
+    assert activation_index < repair_index < used_index
+    repair_event = engine.state.events[repair_index]
+    assert repair_event.data["target_module_id"] == "core"
+    assert repair_event.data["repair"] == 45
 
 
 def test_core_power_replay_does_not_apply_the_effect_twice():
@@ -75,4 +85,8 @@ def test_full_health_rejection_preserves_charge():
     assert player.core_power_charge == 100
     assert player.core_power_uses == 0
     assert engine.state.events[-1].type == "command_rejected"
-
+    assert not any(
+        event.type == "core_power_activated"
+        and event.data.get("request_id") == "full-health"
+        for event in engine.state.events
+    )

@@ -1,7 +1,6 @@
 import asyncio
 
 from app.game.engine import BATTLE_TIME_LIMIT_MS
-from app.game.models import Direction
 from app.game.pvp_runner import PvPTickRunner
 from app.game.pvp_session import PvPSessionService
 from app.game.pvp_websocket import PvPWebSocketAdapter
@@ -22,10 +21,10 @@ def test_runner_processes_finished_match_once():
                 p,f"{p}-gen","generator"
             )
             session.engine.set_initial_active_module(
-                p,f"{p}-core",2,2
+                p,f"{p}-core",2,1
             )
             session.engine.set_initial_active_module(
-                p,f"{p}-gen",2,3,Direction.UP
+                p,f"{p}-gen",2,0
             )
 
         service.start("stats")

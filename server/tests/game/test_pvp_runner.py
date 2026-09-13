@@ -1,7 +1,7 @@
 import asyncio
 from app.game.battle_pool import default_battle_pool
 from app.game.engine import BATTLE_TIME_LIMIT_MS, TICK_MS
-from app.game.models import Direction,BattleStatus,ModuleStatus,Position
+from app.game.models import BattleStatus,ModuleStatus,Position
 from app.game.pvp_runner import PvPTickRunner
 from app.game.pvp_session import PvPSessionService
 from app.game.pvp_websocket import PvPWebSocketAdapter
@@ -122,7 +122,6 @@ def test_runner_executes_marked_ai_player_decisions():
         armor = engine.grant_module("a", "a-armor", "armor")
         armor.status = ModuleStatus.ACTIVE
         armor.position = Position(1, 2)
-        armor.direction = Direction.RIGHT
         opponent.circuit_credits = 1000
 
         service.mark_ai_player("match", "b", first_decision_at_ms=0)

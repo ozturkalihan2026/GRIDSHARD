@@ -20,7 +20,7 @@ def _energy_player(module_ids):
 
 
 def test_severe_overload_never_restores_full_attack_damage():
-    moderate = _energy_player(("railgun", "pulse_cannon", "pulse_cannon"))
+    moderate = _energy_player(("quantum_cannon", "railgun", "pulse_cannon"))
     severe = _energy_player((
         "quantum_cannon",
         "quantum_cannon",

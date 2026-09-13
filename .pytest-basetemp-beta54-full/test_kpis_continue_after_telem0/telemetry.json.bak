@@ -1,0 +1,10 @@
+[
+  {
+    "event_id": "start",
+    "event_type": "match_started",
+    "metadata": {},
+    "player_id": "a",
+    "session_id": "s1",
+    "timestamp_ms": 10
+  }
+]

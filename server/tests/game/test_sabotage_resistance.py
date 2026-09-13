@@ -1,7 +1,6 @@
 from app.game.engine import BattleEngine
 from app.game.models import (
     BattleState,
-    Direction,
     ModuleStatus,
     Position,
 )
@@ -22,7 +21,6 @@ def add(
     did,
     x,
     y,
-    direction=Direction.UP,
 ):
     module = engine.grant_module(
         player,
@@ -31,7 +29,6 @@ def add(
     )
     module.status = ModuleStatus.ACTIVE
     module.position = Position(x, y)
-    module.direction = direction
     return module
 
 
@@ -59,7 +56,6 @@ def test_powered_barrier_reduces_sabotage_duration():
         "barrier",
         2,
         1,
-        Direction.DOWN,
     )
     target = add(
         engine,
@@ -68,7 +64,6 @@ def test_powered_barrier_reduces_sabotage_duration():
         "repair",
         1,
         1,
-        Direction.RIGHT,
     )
     attacker = add(
         engine,
@@ -77,7 +72,6 @@ def test_powered_barrier_reduces_sabotage_duration():
         "virus",
         1,
         3,
-        Direction.RIGHT,
     )
 
     barrier.is_powered = True
@@ -100,7 +94,6 @@ def test_weak_against_and_barrier_stack_duration_resistance():
         "barrier",
         2,
         1,
-        Direction.DOWN,
     )
     attacker = add(
         engine,
@@ -109,7 +102,6 @@ def test_weak_against_and_barrier_stack_duration_resistance():
         "emp",
         1,
         3,
-        Direction.RIGHT,
     )
 
     barrier.is_powered = True
@@ -143,7 +135,6 @@ def test_strong_against_increases_duration_deterministically():
         "emp",
         1,
         3,
-        Direction.RIGHT,
     )
 
     resistance = sabotage_resistance(
@@ -165,7 +156,6 @@ def test_repair_cleanses_virus_from_connected_module():
         "splitter",
         2,
         1,
-        Direction.DOWN,
     )
     repair = add(
         engine,
@@ -174,7 +164,6 @@ def test_repair_cleanses_virus_from_connected_module():
         "repair",
         1,
         1,
-        Direction.RIGHT,
     )
     target = add(
         engine,
@@ -183,7 +172,6 @@ def test_repair_cleanses_virus_from_connected_module():
         "laser",
         0,
         1,
-        Direction.RIGHT,
     )
 
     engine.add_debuff(
@@ -217,7 +205,6 @@ def test_repair_cleanses_jammer():
         "splitter",
         2,
         1,
-        Direction.DOWN,
     )
     add(
         engine,
@@ -226,7 +213,6 @@ def test_repair_cleanses_jammer():
         "repair",
         1,
         1,
-        Direction.RIGHT,
     )
     target = add(
         engine,
@@ -235,7 +221,6 @@ def test_repair_cleanses_jammer():
         "targeting_computer",
         0,
         1,
-        Direction.RIGHT,
     )
 
     engine.add_debuff(
@@ -263,7 +248,6 @@ def test_cooler_reduces_emp_duration():
         "splitter",
         2,
         1,
-        Direction.DOWN,
     )
     cooler = add(
         engine,
@@ -272,7 +256,6 @@ def test_cooler_reduces_emp_duration():
         "cooler",
         1,
         1,
-        Direction.RIGHT,
     )
     target = add(
         engine,
@@ -281,7 +264,6 @@ def test_cooler_reduces_emp_duration():
         "laser",
         0,
         1,
-        Direction.RIGHT,
     )
 
     engine.add_debuff(
@@ -319,7 +301,6 @@ def test_energy_leech_strength_reduced_by_powered_barrier():
         "barrier",
         2,
         1,
-        Direction.DOWN,
     )
     attacker = add(
         engine,
@@ -328,7 +309,6 @@ def test_energy_leech_strength_reduced_by_powered_barrier():
         "energy_leech",
         1,
         3,
-        Direction.RIGHT,
     )
     target = engine.state.players["p2"].modules[
         "p2-gen"
