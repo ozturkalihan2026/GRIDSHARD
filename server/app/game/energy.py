@@ -35,7 +35,6 @@ SPLITTER_DISTRIBUTION_EFFICIENCY = 0.98
 # upkeep so it competes with attacks, support and sabotage for the same tick
 # budget without changing the published costs of existing active modules.
 PASSIVE_DEFENCE_UPKEEP_PER_SECOND = 1.8
-ENERGY_CATEGORY_ORDER = ("enerji", "destek", "savunma", "sabotaj", "saldırı")
 
 
 @dataclass(slots=True, frozen=True)
@@ -205,42 +204,15 @@ def process_energy_tick(player: PlayerBattleState, core_position: Position = Pos
                 + amount
             )
 
-    # Deterministic round-robin by module group prevents an all-attack or
-    # all-defence board from monopolising the bus.  Every powered module pays
-    # its full tick demand; modules that do not fit remain online in reserve
-    # until a later tick.
-    buckets = {category: [] for category in ENERGY_CATEGORY_ORDER}
-    for module in consumers:
-        if module.definition.category in buckets:
-            buckets[module.definition.category].append(module)
-    for modules in buckets.values():
-        modules.sort(key=lambda item: item.instance_id)
-    powered_ids: set[str] = set()
-    remaining = available
-    index = 0
-    while True:
-        progressed = False
-        for category in ENERGY_CATEGORY_ORDER:
-            modules = buckets[category]
-            if index >= len(modules):
-                continue
-            module = modules[index]
-            needed = demand_by_module[module.instance_id] * TICK_SECONDS
-            if needed <= remaining + 1e-9:
-                powered_ids.add(module.instance_id)
-                remaining -= needed
-                progressed = True
-        if not progressed:
-            break
-        index += 1
-
-    consumed = sum(
-        demand_by_module[module.instance_id] * TICK_SECONDS
-        for module in consumers
-        if module.instance_id in powered_ids
-    )
+    # GRIDSHARD 2.1 overload is a circuit-wide efficiency pressure, not a
+    # lottery that switches individual modules off.  Share a shortfall across
+    # every connected consumer; the load multipliers below then slow/weaken
+    # the whole circuit progressively.  Only explicit EMP/disruptor effects
+    # may mark a module as unpowered.
+    consumed = min(required, available)
+    delivery_ratio = min(1.0, consumed / required) if required > 0 else 1.0
     player.energy_stock = max(0.0, min(capacity, before - reserve_draw))
-    load = player.energy_load_ratio if consumed + 1e-9 < required else min(1.0, player.energy_load_ratio)
+    load = player.energy_load_ratio if delivery_ratio < 1.0 else min(1.0, player.energy_load_ratio)
     speed, damage, support = (1., 1., 1.)
     # Severe overload must not restore full damage after the 1.4 threshold.
     # Attack-heavy boards were bypassing the intended energy trade-off by
@@ -252,19 +224,19 @@ def process_energy_tick(player: PlayerBattleState, core_position: Position = Pos
     player.energy_speed_multiplier, player.energy_damage_multiplier, player.energy_support_multiplier = speed, damage, support
     for module in active:
         debuff_powered = EMP_DEBUFF_ID not in module.debuffs and DISRUPTOR_DEBUFF_ID not in module.debuffs
-        module.is_powered = debuff_powered and (
-            module is core
-            or module.definition.id == "generator"
-            or module.instance_id in powered_ids
-        )
+        module.is_powered = debuff_powered
         module.energy_required_last_tick = demand_by_module.get(module.instance_id, 0.0) * TICK_SECONDS
-        module.energy_received_last_tick = module.energy_required_last_tick if module.is_powered else 0.0
+        module.energy_received_last_tick = (
+            module.energy_required_last_tick * delivery_ratio
+            if module.is_powered
+            else 0.0
+        )
         if module is core:
             module.energy_received_last_tick = generated
         if module.is_powered and module.instance_id in demand_by_module:
             player.module_energy_consumed[module.definition.id] = (
                 player.module_energy_consumed.get(module.definition.id, 0.0)
-                + module.energy_required_last_tick
+                + module.energy_received_last_tick
             )
     # Any headroom after powering the board fills explicit storage modules;
     # this keeps battery contribution visible and creates a burst reserve.

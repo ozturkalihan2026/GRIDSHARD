@@ -1931,9 +1931,270 @@ body[data-app-screen="rewards"] .season-reward-card > .season-reward-prize {
   gap:5px;
 }
 .season-reward-prize > strong { color:#eefaff;font:800 .54rem/1.25 var(--gs-font-display); }
-.season-reward-prize .reward-resource-list { grid-template-columns:repeat(2,minmax(0,1fr)); }
-.season-reward-prize .reward-resource-row { grid-template-columns:auto minmax(0,1fr); }
-.season-reward-prize .reward-resource-row > strong { grid-column:2; }
+.season-reward-chest {
+  width:24px;
+  height:22px;
+  min-height:0;
+  display:grid;
+  place-items:center;
+  justify-self:start;
+}
+
+/* Public profiles, rarity lanes and refundable module talent choices. */
+.public-player-link {
+  min-width:0;
+  padding:0;
+  overflow:hidden;
+  border:0;
+  color:inherit;
+  background:transparent;
+  font:inherit;
+  text-align:left;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+  cursor:pointer;
+}
+.public-player-link:not(:disabled):hover,
+.public-player-link:not(:disabled):focus-visible {
+  color:#75f5e2;
+  text-decoration:underline;
+  text-underline-offset:3px;
+}
+.public-player-link:disabled { cursor:default; }
+.leaderboard-identity .public-player-link,
+.team-member-row > div .public-player-link,
+.post-match-player-card > header > .public-player-link {
+  color:#f4f8fd;
+  font-weight:800;
+}
+.leaderboard-identity .public-player-link { font:.64rem var(--gs-font-display); }
+.team-member-row > div .public-player-link { font:.56rem var(--gs-font-display); }
+.post-match-player-card > header > .public-player-link { font:.56rem var(--gs-font-display); }
+.team-request-card button.public-player-link,
+.team-training-card button.public-player-link {
+  min-height:0;
+  padding:0;
+  border:0;
+  color:#75ead8;
+  background:transparent;
+  font:800 .48rem var(--gs-font-display);
+}
+.team-message button.public-player-link { color:#70e3d2;font:800 .48rem var(--gs-font-display); }
+.team-player-inline-meta,.team-challenge-player-links { display:flex;align-items:center;gap:3px; }
+.team-challenge-player-links { min-width:0;color:#f4f8fd;font:800 .55rem var(--gs-font-display); }
+.duel-enemy-identity .battle-player-link {
+  width:100%;
+  color:#edf7ff;
+  font:800 .62rem var(--gs-font-display);
+  text-align:center;
+}
+
+.public-profile-dialog {
+  width:min(440px,100vw);
+  height:100dvh;
+  max-height:100dvh;
+  padding:0;
+  overflow:hidden;
+  border:0;
+  color:#eff8ff;
+  background:linear-gradient(180deg,#12385a,#07162b 45%,#061225);
+}
+.public-profile-dialog[open] { display:grid;grid-template-rows:auto auto minmax(0,1fr); }
+.public-profile-dialog::backdrop { background:rgba(1,7,17,.9); }
+.public-profile-header {
+  padding:15px 14px 11px;
+  display:grid;
+  grid-template-columns:42px minmax(0,1fr) 42px;
+  align-items:center;
+  border-bottom:1px solid rgba(77,223,213,.22);
+  text-align:center;
+}
+.public-profile-header > button {
+  width:38px;
+  height:38px;
+  border:1px solid #4eb8b4;
+  border-radius:10px;
+  color:#8cf6e6;
+  background:#0e3048;
+  font-size:1.1rem;
+}
+.public-profile-header > div { grid-column:2;display:grid;gap:3px; }
+.public-profile-header h2 { margin:0;color:#f7fbff;font:900 1.05rem var(--gs-font-display); }
+.public-profile-header p,.public-profile-status { margin:0;color:#94adc2;font-size:.52rem; }
+.public-profile-status { min-height:15px;padding:7px 14px;text-align:center; }
+.public-profile-status:empty { display:none; }
+.public-profile-content {
+  min-height:0;
+  padding:4px 14px 28px;
+  display:grid;
+  align-content:start;
+  gap:10px;
+  overflow-y:auto;
+}
+.public-profile-current-season { align-items:center; }
+.public-profile-statistics {
+  padding:10px;
+  display:grid;
+  gap:9px;
+  border:1px solid rgba(92,171,210,.24);
+  border-radius:12px;
+  background:rgba(4,18,37,.6);
+}
+.public-profile-stat-grid { margin:0 !important; }
+.public-profile-stat-grid article {
+  min-height:72px;
+  padding:9px;
+  display:grid;
+  align-content:center;
+  gap:6px;
+  border:1px solid rgba(82,181,204,.3);
+  border-radius:10px;
+  background:#0d263f;
+}
+.public-profile-stat-grid article span { color:#8fa9c0;font:700 .45rem var(--gs-font-display); }
+.public-profile-stat-grid article strong { color:#f4f8ff;font:900 .72rem var(--gs-font-display); }
+
+.core-collection-grid {
+  grid-template-columns:1fr !important;
+  gap:10px !important;
+}
+.core-rarity-group {
+  --rarity-accent:#56f1df;
+  padding:9px;
+  display:grid;
+  gap:8px;
+  border:1px solid color-mix(in srgb,var(--rarity-accent) 42%,#29445d);
+  border-radius:13px;
+  background:color-mix(in srgb,var(--rarity-accent) 5%,#07172c);
+}
+.core-rarity-group[data-rarity="rare"] { --rarity-accent:#70adff; }
+.core-rarity-group[data-rarity="epic"] { --rarity-accent:#c482ff; }
+.core-rarity-group[data-rarity="legendary"] { --rarity-accent:#ffe071; }
+.core-rarity-group > header { display:flex;align-items:center;justify-content:space-between;gap:8px; }
+.core-rarity-group > header strong { color:var(--rarity-accent);font:900 .58rem var(--gs-font-display);letter-spacing:.08em; }
+.core-rarity-group > header small { color:#8fa9c0;font:700 .42rem var(--gs-font-display); }
+.core-rarity-list { display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px; }
+.core-rarity-list > .core-collection-tile:only-child { width:calc(50% - 4px);justify-self:center; }
+.core-collection-copy em { color:#9eb5c9;font:700 .37rem var(--gs-font-display);font-style:normal;letter-spacing:.06em; }
+
+.module-talent-reset-panel {
+  margin-top:5px;
+  padding:8px;
+  display:grid;
+  gap:7px;
+  border:1px solid rgba(255,205,99,.38);
+  border-radius:10px;
+  background:rgba(65,42,19,.32);
+}
+.module-talent-reset-panel > span { color:#b8c9d7;font-size:.48rem;text-align:center; }
+.module-talent-reset {
+  min-height:38px;
+  border:1px solid #ffd465;
+  border-radius:8px;
+  color:#fff0a6;
+  background:#4a321b;
+  font:900 .51rem var(--gs-font-display);
+}
+.module-talent-reset:disabled { opacity:.45;filter:grayscale(.6); }
+.season-reward-chest[data-tier="silver"] { --chest-color:#b8d4e8; }
+.season-reward-chest[data-tier="gold"] { --chest-color:#ffd54f; }
+.season-reward-chest[data-tier="diamond"] { --chest-color:#5aebff; }
+.season-reward-chest .chest-visual { width:24px;height:22px; }
+.season-reward-chest .chest-visual i,
+.season-reward-chest .chest-visual b { left:2px;right:2px;border-width:1px; }
+.season-reward-chest .chest-visual i { top:2px;height:6px;border-radius:4px 4px 1px 1px; }
+.season-reward-chest .chest-visual b { top:8px;bottom:1px;border-radius:2px 2px 4px 4px; }
+.season-reward-chest .chest-visual em { inset:9px 0 auto;font-size:.4rem; }
+.season-reward-prize .season-reward-items {
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:7px 12px;
+}
+.season-reward-prize .season-reward-items .reward-resource-row {
+  min-height:24px;
+  grid-template-columns:24px auto;
+  justify-content:start;
+  gap:5px;
+}
+.season-reward-prize .season-reward-items .reward-resource-row > span:not(.resource-symbol):not(.season-reward-cosmetic-preview) { display:none; }
+.season-reward-prize .season-reward-items .reward-resource-row > strong {
+  grid-column:auto;
+  color:#ffe16f;
+  font-size:.48rem;
+}
+.season-reward-items .reward-resource-row[data-reward-kind="chest"] { order:1; }
+.season-reward-items .reward-resource-row[data-reward-kind="flux_shards"] { order:2; }
+.season-reward-items .reward-resource-row[data-reward-kind="circuit_credits"] { order:3; }
+.season-reward-items .reward-resource-row[data-reward-kind="module_shards"] { order:4; }
+.season-reward-items .reward-resource-row[data-reward-kind="core_shards"] { order:5; }
+.season-reward-items .reward-resource-row[data-reward-kind="avatar"],
+.season-reward-items .reward-resource-row[data-reward-kind="avatar_frame"] { order:6; }
+.season-reward-cosmetic-preview {
+  width:22px;
+  height:22px;
+  border-width:1px;
+  font-size:.7rem;
+}
+.season-reward-cosmetic-preview[data-frame="neon_cyan"] {
+  box-shadow:0 0 0 1px #0d5d68,0 0 7px #42e9df;
+}
+.season-reward-cosmetic-preview[data-frame="season_gold"] {
+  box-shadow:0 0 0 1px #82691d,0 0 7px #ffd85d;
+}
+.season-reward-items .reward-resource-row[data-reward-kind="module_shards"] .resource-symbol-module-card {
+  position:relative;
+  isolation:isolate;
+  overflow:visible;
+  border-radius:4px;
+  transform:rotate(-3deg);
+}
+.season-reward-items .reward-resource-row[data-reward-kind="module_shards"] .resource-symbol-module-card::before,
+.season-reward-items .reward-resource-row[data-reward-kind="module_shards"] .resource-symbol-module-card::after {
+  content:"";
+  position:absolute;
+  z-index:-1;
+  width:7px;
+  height:7px;
+  border:1px solid currentColor;
+  border-radius:50%;
+  background:linear-gradient(150deg,color-mix(in srgb,currentColor 20%,#10253d),#071528 72%);
+}
+.season-reward-items .reward-resource-row[data-reward-kind="module_shards"] .resource-symbol-module-card::before {
+  top:-4px;
+  left:50%;
+  transform:translateX(-50%);
+}
+.season-reward-items .reward-resource-row[data-reward-kind="module_shards"] .resource-symbol-module-card::after {
+  top:50%;
+  right:-4px;
+  transform:translateY(-50%);
+}
+
+body[data-app-screen="rewards"] .season-rewards-screen .season-reward-card {
+  grid-template-areas:"tier prize action" !important;
+}
+.season-reward-action {
+  grid-area:action;
+  min-width:82px;
+  align-self:stretch;
+  display:flex;
+  flex-direction:column;
+  justify-content:flex-end;
+  gap:4px;
+}
+.season-reward-action > button { width:100%;min-width:0 !important; }
+.season-reward-action > small {
+  color:#a9bbd8;
+  font-size:.38rem;
+  line-height:1.25;
+  text-align:center;
+}
+
+@media(max-width:420px) {
+  body[data-app-screen="rewards"] .season-rewards-screen .season-reward-card {
+    grid-template-columns:auto minmax(0,1fr) 82px !important;
+    grid-template-areas:"tier prize action" !important;
+  }
+}
 
 body[data-app-screen="rewards"] .season-rewards-screen {
   display:grid !important;
@@ -2092,6 +2353,18 @@ body[data-app-screen="play"] .module-shelf .module-card .current-cost-badge {
   right:9px;
 }
 .chest-inventory-status { color:#8fe8dc; }
+.shop-chest-actions {
+  width:100%;
+  display:grid;
+  gap:4px;
+}
+.shop-chest-actions > button { width:100%; }
+.shop-chest-actions > .gift-chest-action:not(:disabled) {
+  border-color:rgba(255,224,112,.72);
+  color:#fff0a0;
+  background:linear-gradient(180deg,#3e3517,#142b3b);
+  box-shadow:0 0 10px rgba(255,215,83,.14);
+}
 .chest-reveal-rewards:has(.bulk-chest-reward) {
   max-height:min(48vh,430px);
   overflow-y:auto;
@@ -2525,17 +2798,75 @@ body[data-app-screen="play"] .vertical-circuit-arena .board-cell[data-occupied="
 body[data-app-screen="play"] .vertical-circuit-arena .enemy-board-cell[data-occupied="true"] > .module-card > .hp-bar {
   position:absolute !important;
   z-index:32 !important;
-  right:7% !important;
-  bottom:4px !important;
-  left:7% !important;
+  right:0 !important;
+  bottom:-1px !important;
+  left:0 !important;
   width:auto !important;
-  height:6px !important;
+  height:5px !important;
   display:block !important;
   visibility:visible !important;
   opacity:1 !important;
-  border:1px solid rgba(228,247,255,.42) !important;
+  border:0 !important;
+  border-radius:0 0 4px 4px !important;
   background:rgba(2,8,17,.94) !important;
-  box-shadow:0 0 8px rgba(98,238,221,.38) !important;
+  box-shadow:0 -1px 5px rgba(2,8,17,.72) !important;
+}
+body[data-app-screen="play"] .vertical-circuit-arena .board-cell[data-occupied="true"] > .module-card,
+body[data-app-screen="play"] .vertical-circuit-arena .enemy-board-cell[data-occupied="true"] > .module-card {
+  border-bottom-color:transparent !important;
+}
+body[data-app-screen="play"] .vertical-circuit-arena .module-card[data-hp-state="healthy"] > .hp-bar > .hp-bar-fill {
+  background:#60e58a !important;
+  box-shadow:0 0 7px rgba(96,229,138,.82);
+}
+body[data-app-screen="play"] .vertical-circuit-arena .module-card[data-hp-state="warning"] > .hp-bar > .hp-bar-fill {
+  background:#f0cb52 !important;
+  box-shadow:0 0 7px rgba(240,203,82,.82);
+}
+body[data-app-screen="play"] .vertical-circuit-arena .module-card[data-hp-state="critical"] > .hp-bar > .hp-bar-fill {
+  background:#ff5f6d !important;
+  box-shadow:0 0 7px rgba(255,95,109,.86);
+}
+
+/* Beta.50 CAN hotfix — use the card's own HP variables to paint a dedicated
+   bottom-edge layer.  This remains visible even when an older grid rule
+   changes or suppresses the generic hp-bar layout. */
+body[data-app-screen="play"] .vertical-circuit-arena .module-card.battle-module-card {
+  position:relative !important;
+  --battle-hp-color:#60e58a;
+}
+body[data-app-screen="play"] .vertical-circuit-arena .module-card.battle-module-card::after {
+  content:"";
+  position:absolute;
+  z-index:41;
+  right:0;
+  bottom:0;
+  left:0;
+  height:5px;
+  border-radius:0 0 4px 4px;
+  background:linear-gradient(
+    90deg,
+    var(--battle-hp-color) 0,
+    var(--battle-hp-color) var(--hp-percent,100%),
+    rgba(2,8,17,.96) var(--hp-percent,100%),
+    rgba(2,8,17,.96) 100%
+  );
+  box-shadow:0 -1px 5px color-mix(in srgb,var(--battle-hp-color) 58%,transparent);
+  pointer-events:none;
+}
+body[data-app-screen="play"] .vertical-circuit-arena .module-card.battle-module-card[data-hp-state="healthy"] {
+  --battle-hp-color:#60e58a;
+}
+body[data-app-screen="play"] .vertical-circuit-arena .module-card.battle-module-card[data-hp-state="warning"] {
+  --battle-hp-color:#f0cb52;
+}
+body[data-app-screen="play"] .vertical-circuit-arena .module-card.battle-module-card[data-hp-state="critical"],
+body[data-app-screen="play"] .vertical-circuit-arena .module-card.battle-module-card[data-hp-state="destroyed"] {
+  --battle-hp-color:#ff5f6d;
+}
+
+.play-result-panel .post-match-actions {
+  margin-top:9px !important;
 }
 
 body[data-app-screen="play"] .module-explosion.core-explosion .explosion-flash {

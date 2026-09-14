@@ -36,12 +36,15 @@ RARITY_COST_MULTIPLIER = {
     "legendary": 2.5,
 }
 
+MODULE_TALENT_RESET_COST_PER_SELECTION = 25
+
 
 CORE_TYPES: tuple[dict, ...] = (
     {
         "id": "core_resonance",
         "name_tr": "Rezonans Çekirdeği",
         "role_tr": "Hasarlı çekirdeği 45 CAN onarır.",
+        "rarity": "common",
         "unlock_arena": 1,
         "skills": (
             {"id": "stable_frequency", "name_tr": "Kararlı Frekans", "requires": None},
@@ -53,6 +56,7 @@ CORE_TYPES: tuple[dict, ...] = (
         "id": "core_guardian",
         "name_tr": "Muhafız Çekirdeği",
         "role_tr": "Savunma odaklı çekirdek prototipi.",
+        "rarity": "rare",
         "unlock_arena": 3,
         "skills": (
             {"id": "barrier_seed", "name_tr": "Bariyer Tohumu", "requires": None},
@@ -64,6 +68,7 @@ CORE_TYPES: tuple[dict, ...] = (
         "id": "core_overdrive",
         "name_tr": "Aşırı Yük Çekirdeği",
         "role_tr": "Saldırı temposu odaklı çekirdek prototipi.",
+        "rarity": "rare",
         "unlock_arena": 5,
         "skills": (
             {"id": "hot_start", "name_tr": "Sıcak Başlangıç", "requires": None},
@@ -75,6 +80,7 @@ CORE_TYPES: tuple[dict, ...] = (
         "id": "core_disruptor",
         "name_tr": "Kesinti Çekirdeği",
         "role_tr": "Sabotaj odaklı çekirdek prototipi.",
+        "rarity": "epic",
         "unlock_arena": 7,
         "skills": (
             {"id": "static_field", "name_tr": "Statik Alan", "requires": None},
@@ -86,6 +92,7 @@ CORE_TYPES: tuple[dict, ...] = (
         "id": "core_capacitor",
         "name_tr": "Kapasitör Çekirdeği",
         "role_tr": "Enerji ekonomisi odaklı çekirdek prototipi.",
+        "rarity": "epic",
         "unlock_arena": 9,
         "skills": (
             {"id": "reserve_cell", "name_tr": "Yedek Hücre", "requires": None},
@@ -97,6 +104,7 @@ CORE_TYPES: tuple[dict, ...] = (
         "id": "core_phoenix",
         "name_tr": "Anka Çekirdeği",
         "role_tr": "Kurtarma ve yeniden toparlanma prototipi.",
+        "rarity": "legendary",
         "unlock_arena": 11,
         "skills": (
             {"id": "ember", "name_tr": "Kor", "requires": None},
@@ -108,6 +116,7 @@ CORE_TYPES: tuple[dict, ...] = (
         "id": "core_quantum",
         "name_tr": "Kuantum Çekirdeği",
         "role_tr": "Üst düzey taktik esneklik prototipi.",
+        "rarity": "legendary",
         "unlock_arena": 12,
         "skills": (
             {"id": "phase_seed", "name_tr": "Faz Tohumu", "requires": None},
@@ -143,13 +152,14 @@ CHEST_DEFINITIONS: dict[str, dict] = {
         "open_seconds": 1,
         "coins": (45, 75),
         "flux": (2, 4),
-        # Module pieces are intentionally a slow, occasional progression lane;
-        # credits and flux remain the reliable chest currencies.
+        # Credits and Flux are guaranteed. Module and Core pieces use separate
+        # absolute rolls so the public probabilities match the actual receipt.
         "shards": (1, 2),
         "shards_by_rarity": {"common": (1, 2)},
-        "module_drop_chance": 0.14,
+        "module_drop_chance": 0.35,
+        "module_rarity_drop_odds": {"common": 0.35},
         "core_drop_chance": 0.0,
-        "reward_odds": {"circuit_credits": 0.54, "flux_shards": 0.32, "module_shards": 0.14, "core_shards": 0.0},
+        "reward_odds": {"circuit_credits": 1.0, "flux_shards": 1.0, "module_shards": 0.35, "core_shards": 0.0},
         "allowed_rarities": ("common",),
         "rarity_odds": {
             "common": 1.0,
@@ -165,14 +175,16 @@ CHEST_DEFINITIONS: dict[str, dict] = {
         "coins": (90, 145),
         "flux": (3, 6),
         "shards": (1, 3),
-        "shards_by_rarity": {"common": (2, 3), "rare": (1, 1)},
-        "module_drop_chance": 0.15,
+        "shards_by_rarity": {"common": (2, 3), "rare": (1, 2)},
+        "module_drop_chance": 0.35,
+        "module_rarity_drop_odds": {"common": 0.25, "rare": 0.10},
         "core_drop_chance": 0.0,
-        "reward_odds": {"circuit_credits": 0.53, "flux_shards": 0.32, "module_shards": 0.15, "core_shards": 0.0},
+        "reward_odds": {"circuit_credits": 1.0, "flux_shards": 1.0, "module_shards": 0.35, "core_shards": 0.0},
         "allowed_rarities": ("common", "rare"),
         "rarity_odds": {
-            "common": 0.70,
-            "rare": 0.30,
+            # Absolute table: 25% common + 10% rare = 35% module drop.
+            "common": 0.714285,
+            "rare": 0.285715,
         },
     },
     "core_24h": {
@@ -185,10 +197,11 @@ CHEST_DEFINITIONS: dict[str, dict] = {
         "coins": (175, 280),
         "flux": (5, 9),
         "shards": (1, 4),
-        "shards_by_rarity": {"common": (3, 4), "rare": (2, 2), "epic": (1, 1)},
-        "module_drop_chance": 0.16,
+        "shards_by_rarity": {"common": (3, 4), "rare": (2, 3), "epic": (1, 2)},
+        "module_drop_chance": 0.50,
+        "module_rarity_drop_odds": {"common": 0.30, "rare": 0.15, "epic": 0.05},
         "core_drop_chance": 0.0,
-        "reward_odds": {"circuit_credits": 0.52, "flux_shards": 0.32, "module_shards": 0.16, "core_shards": 0.0},
+        "reward_odds": {"circuit_credits": 1.0, "flux_shards": 1.0, "module_shards": 0.50, "core_shards": 0.0},
         "allowed_rarities": ("common", "rare", "epic"),
         "rarity_odds": {
             "common": 0.60,
@@ -204,23 +217,30 @@ CHEST_DEFINITIONS: dict[str, dict] = {
         "claim_cooldown_hours": 24,
         "open_seconds": 1,
         "coins": (320, 480),
-        "flux": (8, 13),
+        "flux": (10, 15),
         "shards": (1, 5),
         "shards_by_rarity": {
             "common": (4, 5),
-            "rare": (3, 3),
-            "epic": (2, 2),
+            "rare": (3, 4),
+            "epic": (2, 3),
             "legendary": (1, 1),
         },
-        "module_drop_chance": 0.20,
+        "module_drop_chance": 0.53,
+        "module_rarity_drop_odds": {
+            "common": 0.25,
+            "rare": 0.15,
+            "epic": 0.10,
+            "legendary": 0.03,
+        },
         "core_drop_chance": 0.06,
-        "reward_odds": {"circuit_credits": 0.44, "flux_shards": 0.30, "module_shards": 0.20, "core_shards": 0.06},
+        "reward_odds": {"circuit_credits": 1.0, "flux_shards": 1.0, "module_shards": 0.53, "core_shards": 0.06},
         "allowed_rarities": ("common", "rare", "epic", "legendary"),
         "rarity_odds": {
-            "common": 0.50,
-            "rare": 0.30,
-            "epic": 0.15,
-            "legendary": 0.05,
+            # Absolute table: 25/15/10/3 points inside a 53% module roll.
+            "common": 0.471698,
+            "rare": 0.283019,
+            "epic": 0.188679,
+            "legendary": 0.056604,
         },
     },
 }
@@ -234,55 +254,37 @@ BATTLE_CHEST_DROP_THRESHOLDS: tuple[tuple[float, str], ...] = (
     (1.00, "field_3h"),
 )
 
+def _daily_shop_chest_offer(
+    offer_id: str,
+    definition_id: str,
+    cost: int,
+) -> dict:
+    """Bind paid daily offers to the same reward contract as their tier."""
+    definition = CHEST_DEFINITIONS[definition_id]
+    return {
+        "id": offer_id,
+        "definition_id": definition_id,
+        "name_tr": definition["name_tr"],
+        "tier": definition["visual_tier"],
+        "currency": "circuit_credits",
+        "cost": cost,
+        "circuit_credits": tuple(definition["coins"]),
+        "flux_shards": tuple(definition["flux"]),
+        "module_shards": tuple(definition["shards"]),
+        "shards_by_rarity": dict(definition["shards_by_rarity"]),
+        "core_shards": (0, 0),
+        "reward_odds": dict(definition["reward_odds"]),
+        "module_drop_chance": definition["module_drop_chance"],
+        "module_rarity_drop_odds": dict(definition["module_rarity_drop_odds"]),
+        "allowed_rarities": tuple(definition["allowed_rarities"]),
+        "rarity_odds": dict(definition["rarity_odds"]),
+    }
+
+
 DAILY_SHOP_OFFERS: tuple[dict, ...] = (
-    {
-        "id": "bronze_daily",
-        "name_tr": "Bronz Sandık",
-        "tier": "bronze",
-        "currency": "circuit_credits",
-        "cost": 120,
-        "circuit_credits": (30, 50),
-        "flux_shards": (2, 4),
-        "module_shards": (1, 2),
-        "shards_by_rarity": {"common": (1, 2)},
-        "core_shards": (0, 0),
-        "reward_odds": {"circuit_credits": 0.54, "flux_shards": 0.32, "module_shards": 0.14, "core_shards": 0.0},
-        "module_drop_chance": 0.72,
-        "allowed_rarities": ("common",),
-        "rarity_odds": {"common": 1.0},
-    },
-    {
-        "id": "silver_daily",
-        "name_tr": "Gümüş Sandık",
-        "tier": "silver",
-        "currency": "circuit_credits",
-        "cost": 400,
-        "circuit_credits": (70, 105),
-        "flux_shards": (4, 7),
-        "module_shards": (1, 3),
-        "shards_by_rarity": {"common": (2, 3), "rare": (1, 1)},
-        "core_shards": (0, 0),
-        "reward_odds": {"circuit_credits": 0.53, "flux_shards": 0.32, "module_shards": 0.15, "core_shards": 0.0},
-        "module_drop_chance": 0.62,
-        "allowed_rarities": ("common", "rare"),
-        "rarity_odds": {"common": 0.70, "rare": 0.30},
-    },
-    {
-        "id": "gold_daily",
-        "name_tr": "Altın Sandık",
-        "tier": "gold",
-        "currency": "circuit_credits",
-        "cost": 900,
-        "circuit_credits": (130, 190),
-        "flux_shards": (7, 12),
-        "module_shards": (1, 4),
-        "shards_by_rarity": {"common": (3, 4), "rare": (2, 2), "epic": (1, 1)},
-        "core_shards": (0, 0),
-        "reward_odds": {"circuit_credits": 0.52, "flux_shards": 0.32, "module_shards": 0.16, "core_shards": 0.0},
-        "module_drop_chance": 0.58,
-        "allowed_rarities": ("common", "rare", "epic"),
-        "rarity_odds": {"common": 0.60, "rare": 0.30, "epic": 0.10},
-    },
+    _daily_shop_chest_offer("bronze_daily", "field_3h", 120),
+    _daily_shop_chest_offer("silver_daily", "circuit_8h", 400),
+    _daily_shop_chest_offer("gold_daily", "core_24h", 900),
 )
 
 
@@ -369,6 +371,46 @@ def _select_reward_module(
         candidates = list(eligible)
     module_id = candidates[_hash_range(seed, 0, len(candidates) - 1)]
     return module_id, MODULE_RARITY.get(module_id, "common")
+
+
+def _aggregate_chest_rewards(receipts: list[dict]) -> dict:
+    """Combine a bulk opening into one server-authored reward summary."""
+    circuit_credits = 0
+    flux_shards = 0
+    module_rewards: dict[str, dict] = {}
+    core_rewards: dict[str, dict] = {}
+    for receipt in receipts:
+        rewards = dict(receipt.get("rewards") or {})
+        circuit_credits += max(0, int(rewards.get("circuit_credits", 0)))
+        flux_shards += max(0, int(rewards.get("flux_shards", 0)))
+
+        module_amount = max(0, int(rewards.get("module_shards", 0)))
+        module_id = str(rewards.get("module_definition_id") or "")
+        if module_amount and module_id:
+            entry = module_rewards.setdefault(module_id, {
+                "module_definition_id": module_id,
+                "module_rarity": str(rewards.get("module_rarity") or "common"),
+                "module_shards": 0,
+            })
+            entry["module_shards"] += module_amount
+
+        core_amount = max(0, int(rewards.get("core_shards", 0)))
+        core_type_id = str(rewards.get("core_type_id") or "")
+        if core_amount and core_type_id:
+            entry = core_rewards.setdefault(core_type_id, {
+                "core_type_id": core_type_id,
+                "core_shards": 0,
+            })
+            entry["core_shards"] += core_amount
+
+    return {
+        "circuit_credits": circuit_credits,
+        "flux_shards": flux_shards,
+        "module_shards": sum(item["module_shards"] for item in module_rewards.values()),
+        "core_shards": sum(item["core_shards"] for item in core_rewards.values()),
+        "module_rewards": list(module_rewards.values()),
+        "core_rewards": list(core_rewards.values()),
+    }
 
 
 def unlocked_core_type_ids(profile) -> tuple[str, ...]:
@@ -470,6 +512,8 @@ class MetaProgressionService:
                 now = self._now_func()
                 profile.chest_slots.append({"chest_id": f"arena-{uuid4().hex}", "definition_id": definition["id"],
                     "name_tr": definition["name_tr"], "source": node_id, "source_battle_id": None,
+                    # Kept as legacy display metadata; it no longer blocks
+                    # accumulation or bulk opening beyond four chests.
                     "overflow": len(profile.chest_slots) >= 4,
                     "awarded_at": iso_utc(now), "unlocks_at": iso_utc(now + timedelta(hours=definition["unlock_hours"]))})
             profile.arena_reward_claims = (*profile.arena_reward_claims, node_id)
@@ -549,6 +593,7 @@ class MetaProgressionService:
                 "offers": [
                     {
                         "id": offer["id"],
+                        "definition_id": offer["definition_id"],
                         "name_tr": offer["name_tr"],
                         "tier": offer["tier"],
                         "currency": offer["currency"],
@@ -559,6 +604,14 @@ class MetaProgressionService:
                             "flux_shards": list(offer["flux_shards"]),
                             "module_shards": list(offer["module_shards"]),
                             "core_shards": list(offer["core_shards"]),
+                        },
+                        "reward_odds": dict(offer["reward_odds"]),
+                        "module_drop_chance": offer["module_drop_chance"],
+                        "module_rarity_drop_odds": dict(offer["module_rarity_drop_odds"]),
+                        "rarity_odds": dict(offer["rarity_odds"]),
+                        "shards_by_rarity": {
+                            rarity: list(amount_range)
+                            for rarity, amount_range in offer["shards_by_rarity"].items()
                         },
                     }
                     for offer in DAILY_SHOP_OFFERS
@@ -661,6 +714,7 @@ class MetaProgressionService:
             else 12
         )
         level = int(profile.module_upgrade_levels.get(module_id, 0))
+        selected_talent_count = len(profile.module_talents.get(module_id, {}))
         return {
             "definition_id": module_id,
             "name_tr": definition.name_tr,
@@ -684,6 +738,10 @@ class MetaProgressionService:
             "next_stats": module_stats(definition, level + 1, profile.module_talents.get(module_id)) if level < 14 else None,
             "talents": [{**node, "selected": profile.module_talents.get(module_id, {}).get(node["tier"])} for node in module_talent_options(module_id)],
             "talent_levels": {"common": [5, 8, 11, 14], "rare": [6, 9, 12, 15], "epic": [7, 10, 13, 15], "legendary": [8, 11, 14, 15]}[rarity],
+            "selected_talent_count": selected_talent_count,
+            "talent_reset_cost_flux": (
+                selected_talent_count * MODULE_TALENT_RESET_COST_PER_SELECTION
+            ),
             "ranked_normalized": False,
         }
 
@@ -754,6 +812,41 @@ class MetaProgressionService:
             profile.module_upgrade_receipts[request_id] = receipt
             return dict(receipt)
 
+    def reset_module_talents(self, profile, module_id: str, request_id: str) -> dict:
+        with self._lock:
+            clean_request_id = request_id.strip()
+            if not clean_request_id or module_id not in MODULES:
+                raise MetaProgressionError("Geçersiz yetenek sıfırlama isteği.")
+            previous = profile.module_upgrade_receipts.get(clean_request_id)
+            if previous:
+                if (
+                    previous.get("operation") != "talent_reset"
+                    or previous.get("module_definition_id") != module_id
+                ):
+                    raise MetaProgressionError("Talep kimliği farklı bir işleme ait.")
+                return dict(previous)
+
+            selected = dict(profile.module_talents.get(module_id, {}))
+            if not selected:
+                raise MetaProgressionError("Bu modülde sıfırlanacak yetenek yok.")
+            reset_cost = len(selected) * MODULE_TALENT_RESET_COST_PER_SELECTION
+            if profile.flux_shards < reset_cost:
+                raise MetaProgressionError(
+                    f"Yetenekleri sıfırlamak için {reset_cost} Akı gerekli."
+                )
+
+            profile.flux_shards -= reset_cost
+            profile.module_talents.pop(module_id, None)
+            receipt = {
+                "request_id": clean_request_id,
+                "operation": "talent_reset",
+                "module_definition_id": module_id,
+                "reset_selection_count": len(selected),
+                "flux_shards_spent": reset_cost,
+            }
+            profile.module_upgrade_receipts[clean_request_id] = dict(receipt)
+            return receipt
+
     def upgrade_module(self, profile, module_id: str, request_id: str) -> dict:
         with self._lock:
             return self._upgrade_module(profile, module_id, request_id)
@@ -810,17 +903,14 @@ class MetaProgressionService:
         """Claim a timed shop gift and apply its rewards in one operation.
 
         Gift chests are not inventory chests: the player opens them from the
-        shop and sees the reward immediately.  The transient chest therefore
-        may pass through a full battle-chest inventory, and the deterministic
-        request ids make a retry return the same reward instead of rolling or
-        crediting it twice.
+        shop and sees the reward immediately. Deterministic request ids make a
+        retry return the same reward instead of rolling or crediting it twice.
         """
         with self._lock:
             claim_receipt = self._claim_gift_chest(
                 profile,
                 definition_id,
                 request_id,
-                allow_transient_slot=True,
             )
             chest = dict(claim_receipt.get("chest") or {})
             receipt = self._open_chest(
@@ -838,8 +928,6 @@ class MetaProgressionService:
         profile,
         definition_id: str,
         request_id: str,
-        *,
-        allow_transient_slot: bool = False,
     ) -> dict:
         request_id = request_id.strip()
         if not request_id:
@@ -876,8 +964,6 @@ class MetaProgressionService:
                 raise MetaProgressionError(
                     f"Bu sandık {remaining} saniye sonra yeniden açılabilir."
                 )
-        if len(profile.chest_slots) >= 4 and not allow_transient_slot:
-            raise MetaProgressionError("Sandık yuvaları dolu.")
         chest = {
             "chest_id": f"gift-{uuid4().hex}",
             "definition_id": definition_id,
@@ -941,7 +1027,7 @@ class MetaProgressionService:
     def _award_battle_chest(self, profile, battle_id: str, won: bool) -> dict | None:
         if any(r.get("source_battle_id") == battle_id for r in profile.chest_receipts.values()):
             return None
-        if not won or len(profile.chest_slots) >= 4:
+        if not won:
             return None
         if any(item.get("source_battle_id") == battle_id for item in profile.chest_slots):
             return next(item for item in profile.chest_slots if item.get("source_battle_id") == battle_id)
@@ -1038,6 +1124,7 @@ class MetaProgressionService:
                 "opened_count": len(receipts),
                 "remaining_count": remaining_count,
                 "receipts": receipts,
+                "reward_totals": _aggregate_chest_rewards(receipts),
                 "errors": errors,
                 "partial": bool(errors),
             }

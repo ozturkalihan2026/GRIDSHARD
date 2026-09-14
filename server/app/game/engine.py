@@ -37,7 +37,6 @@ from .topology import build_energy_topology
 from .result import (
     build_player_summary,
     core_hp,
-    summary_rank,
     summary_to_dict,
 )
 from .sabotage import (
@@ -81,7 +80,15 @@ from .models import (
 
 TICK_RATE = 10
 TICK_MS = 1000 // TICK_RATE
-BATTLE_TIME_LIMIT_MS = 180_000
+OVERTIME_START_MS = 180_000
+OVERTIME_PHASE_INTERVAL_MS = 30_000
+OVERTIME_CORE_EXPOSE_MS = 210_000
+OVERTIME_CORE_DECAY_MS = 240_000
+OVERTIME_CORE_DECAY_INTERVAL_MS = 1_000
+# Compatibility for historical fixtures and external diagnostics.  This value
+# is the normal-phase boundary now; the engine no longer finishes the battle
+# when it is reached.
+BATTLE_TIME_LIMIT_MS = OVERTIME_START_MS
 DEFAULT_MAX_PENDING_COMMANDS = 128
 DEFAULT_MAX_PENDING_COMMANDS_PER_PLAYER = 32
 DEFAULT_MAX_COMMANDS_PER_TICK = 32
@@ -97,6 +104,29 @@ DESTROYED_CELL_DEBRIS_DURATION_MS = 3_000
 CORE_POWER_MAX_CHARGE = 100.0
 CORE_POWER_CHARGE_DURATION_MS = 35_000
 CORE_RESONANCE_REPAIR = 45
+
+
+def overtime_attack_multiplier_for_elapsed_ms(elapsed_ms: int) -> float:
+    if elapsed_ms < OVERTIME_START_MS:
+        return 1.0
+    phase = 1 + (elapsed_ms - OVERTIME_START_MS) // OVERTIME_PHASE_INTERVAL_MS
+    return 1.0 + 0.25 * phase
+
+
+def overtime_repair_multiplier_for_elapsed_ms(elapsed_ms: int) -> float:
+    if elapsed_ms < OVERTIME_START_MS:
+        return 1.0
+    phase = (elapsed_ms - OVERTIME_START_MS) // OVERTIME_PHASE_INTERVAL_MS
+    return max(0.10, 0.50 - 0.10 * phase)
+
+
+def overtime_core_decay_damage(max_hp: int, elapsed_ms: int) -> int:
+    if elapsed_ms < OVERTIME_CORE_DECAY_MS:
+        return 0
+    if (elapsed_ms - OVERTIME_CORE_DECAY_MS) % OVERTIME_CORE_DECAY_INTERVAL_MS:
+        return 0
+    phase = (elapsed_ms - OVERTIME_CORE_DECAY_MS) // OVERTIME_PHASE_INTERVAL_MS
+    return max(1, round(max_hp * (0.02 + 0.005 * phase)))
 
 
 def max_active_modules_for_elapsed_ms(
@@ -933,6 +963,7 @@ class BattleEngine:
 
     def _process_support_actions(self) -> None:
         for player in self.state.players.values():
+            repaired_target_ids: set[str] = set()
             support_modules = sorted(
                 (
                     module
@@ -996,31 +1027,48 @@ class BattleEngine:
                         module,
                         self.board.core_position,
                     )
+                    targets = [
+                        target
+                        for target in targets
+                        if target.instance_id not in repaired_target_ids
+                    ]
                     if not targets:
                         continue
 
-                    amount = max(1, round(repair_amount(module) * player.energy_support_multiplier))
-                    for target in targets:
-                        before = target.hp
-                        target.hp = min(
-                            target.definition.max_hp,
-                            target.hp + amount,
-                        )
-                        actual = target.hp - before
+                    target = targets[0]
+                    repair_multiplier = overtime_repair_multiplier_for_elapsed_ms(
+                        self.state.elapsed_ms + TICK_MS
+                    )
+                    amount = max(
+                        1,
+                        round(
+                            repair_amount(module)
+                            * player.energy_support_multiplier
+                            * repair_multiplier
+                        ),
+                    )
+                    before = target.hp
+                    target.hp = min(
+                        target.definition.max_hp,
+                        target.hp + amount,
+                    )
+                    actual = target.hp - before
 
-                        if actual > 0:
-                            self._emit(
-                                "module_repaired",
-                                {
-                                    "player_id": player.player_id,
-                                    "source_module_id": module.instance_id,
-                                    "target_module_id": target.instance_id,
-                                    "module_id": target.instance_id,
-                                    "repair": actual,
-                                    "hp_before": before,
-                                    "hp_after": target.hp,
-                                },
-                            )
+                    if actual > 0:
+                        repaired_target_ids.add(target.instance_id)
+                        self._emit(
+                            "module_repaired",
+                            {
+                                "player_id": player.player_id,
+                                "source_module_id": module.instance_id,
+                                "target_module_id": target.instance_id,
+                                "module_id": target.instance_id,
+                                "repair": actual,
+                                "hp_before": before,
+                                "hp_after": target.hp,
+                                "overtime_multiplier": repair_multiplier,
+                            },
+                        )
 
                     self.start_cooldown(
                         player.player_id,
@@ -1174,7 +1222,13 @@ class BattleEngine:
                 ):
                     continue
 
-                target = select_target(target_player)
+                effective_elapsed_ms = self.state.elapsed_ms + TICK_MS
+                target = select_target(
+                    target_player,
+                    core_exposed=(
+                        effective_elapsed_ms >= OVERTIME_CORE_EXPOSE_MS
+                    ),
+                )
                 if target is None:
                     continue
 
@@ -1192,6 +1246,9 @@ class BattleEngine:
                         support.damage_multiplier
                         * heat_state.damage_multiplier
                         * attacker_player.energy_damage_multiplier
+                        * overtime_attack_multiplier_for_elapsed_ms(
+                            effective_elapsed_ms
+                        )
                     ),
                     defense_effectiveness=target_player.energy_support_multiplier,
                 )
@@ -1413,6 +1470,90 @@ class BattleEngine:
             },
         )
 
+    def overtime_view(self) -> dict[str, int | float | bool]:
+        elapsed_ms = self.state.elapsed_ms
+        return {
+            "active": elapsed_ms >= OVERTIME_START_MS,
+            "started_at_ms": OVERTIME_START_MS,
+            "core_exposed": elapsed_ms >= OVERTIME_CORE_EXPOSE_MS,
+            "core_exposed_at_ms": OVERTIME_CORE_EXPOSE_MS,
+            "core_decay_active": elapsed_ms >= OVERTIME_CORE_DECAY_MS,
+            "core_decay_started_at_ms": OVERTIME_CORE_DECAY_MS,
+            "attack_multiplier": overtime_attack_multiplier_for_elapsed_ms(
+                elapsed_ms
+            ),
+            "repair_multiplier": overtime_repair_multiplier_for_elapsed_ms(
+                elapsed_ms
+            ),
+        }
+
+    def _process_overtime_pressure(self) -> None:
+        effective_elapsed_ms = self.state.elapsed_ms + TICK_MS
+
+        if effective_elapsed_ms == OVERTIME_START_MS:
+            self._emit(
+                "battle_overtime_started",
+                {
+                    "started_at_ms": OVERTIME_START_MS,
+                    "attack_multiplier": (
+                        overtime_attack_multiplier_for_elapsed_ms(
+                            effective_elapsed_ms
+                        )
+                    ),
+                    "repair_multiplier": (
+                        overtime_repair_multiplier_for_elapsed_ms(
+                            effective_elapsed_ms
+                        )
+                    ),
+                },
+            )
+        if effective_elapsed_ms == OVERTIME_CORE_EXPOSE_MS:
+            self._emit(
+                "overtime_core_exposed",
+                {"started_at_ms": OVERTIME_CORE_EXPOSE_MS},
+            )
+        if effective_elapsed_ms == OVERTIME_CORE_DECAY_MS:
+            self._emit(
+                "overtime_core_decay_started",
+                {"started_at_ms": OVERTIME_CORE_DECAY_MS},
+            )
+
+        for player_id in sorted(self.state.players):
+            player = self.state.players[player_id]
+            core = next(
+                (
+                    module
+                    for module in player.modules.values()
+                    if module.definition.id == "core"
+                    and module.status == ModuleStatus.ACTIVE
+                    and module.hp > 0
+                ),
+                None,
+            )
+            if core is None:
+                continue
+            damage = overtime_core_decay_damage(
+                core.definition.max_hp,
+                effective_elapsed_ms,
+            )
+            if damage <= 0:
+                continue
+            applied = self.apply_damage(
+                player_id,
+                core.instance_id,
+                damage,
+                source_module_id="overtime_core_decay",
+            )
+            if applied > 0:
+                self._emit(
+                    "overtime_core_decay",
+                    {
+                        "player_id": player_id,
+                        "target_module_id": core.instance_id,
+                        "damage": applied,
+                    },
+                )
+
     def _evaluate_battle_end(self) -> None:
         if self.state.status != BattleStatus.RUNNING:
             return
@@ -1440,58 +1581,12 @@ class BattleEngine:
             )
             return
 
-        should_rank = (
-            len(destroyed_core_players) >= 2
-            or self.state.elapsed_ms + TICK_MS >= BATTLE_TIME_LIMIT_MS
-        )
-        if not should_rank:
-            return
-
-        summaries = {
-            player_id: build_player_summary(
-                self.state.players[player_id],
-                self.state.events,
-                self.state.player_upgrade_levels.get(player_id, {}),
-            )
-            for player_id in player_ids
-        }
-        ranks = {
-            player_id: summary_rank(summary)
-            for player_id, summary in summaries.items()
-        }
-        best_rank = max(ranks.values())
-        winners = [
-            player_id for player_id in player_ids
-            if ranks[player_id] == best_rank
-        ]
-        is_time_limit = not destroyed_core_players
-
-        if len(winners) == 1:
-            winner = winners[0]
-            loser = next(
-                player_id for player_id in player_ids
-                if player_id != winner
-            )
-            self._finish_battle(
-                winner_player_id=winner,
-                loser_player_id=loser,
-                is_draw=False,
-                reason=(
-                    "time_limit_tiebreak"
-                    if is_time_limit
-                    else "simultaneous_core_tiebreak"
-                ),
-            )
-        else:
+        if len(destroyed_core_players) >= 2:
             self._finish_battle(
                 winner_player_id=None,
                 loser_player_id=None,
                 is_draw=True,
-                reason=(
-                    "time_limit_draw"
-                    if is_time_limit
-                    else "simultaneous_core_draw"
-                ),
+                reason="simultaneous_core_destroyed",
             )
 
     def _process_passive_heat(self) -> None:
@@ -2309,6 +2404,10 @@ class BattleEngine:
         self._process_sabotage_actions()
         self._process_virus_effects()
         self._process_support_actions()
+        self._process_overtime_pressure()
+        self._evaluate_battle_end()
+        if self.state.status == BattleStatus.FINISHED:
+            return
         self._process_combat_actions()
         self._process_passive_heat()
         self._expire_timed_module_state()

@@ -642,6 +642,46 @@
         "weekly_used": 4
       }
     },
+    "team:training-accept:wt-81aef76b-f7e7-498a-9c29-63cdf1fb9793:1789366550467:abf941adeefb38": {
+      "created_at": "2026-09-14T06:15:50.475032+00:00",
+      "fingerprint": "18d89f24ab08103a0618ddbc3dbede90a6f93061976933e1a9d1aeb94d8d0338",
+      "result": {
+        "challenge": {
+          "accepted_at": "2026-09-14T06:15:50.475032+00:00",
+          "challenge_id": "training-74fd9caff9f74eee9cc06ed476d712a7",
+          "challenger_id": "wt-dbd4a70f-4d90-4b60-958a-18ca1e4eff82",
+          "created_at": "2026-09-11T21:35:40.232719+00:00",
+          "match_type": "team_training",
+          "opponent_id": "wt-81aef76b-f7e7-498a-9c29-63cdf1fb9793",
+          "protocol": "team_training_v1",
+          "ranked": false,
+          "rewards_enabled": false,
+          "status": "accepted"
+        },
+        "replayed": false,
+        "team_id": "team-82e527da447d"
+      }
+    },
+    "team:training-accept:wt-dbd4a70f-4d90-4b60-958a-18ca1e4eff82:1789328861902:05c67bf68e6e9": {
+      "created_at": "2026-09-13T19:47:41.905798+00:00",
+      "fingerprint": "695e2d11891c41d0dc50434020ee0e365736644fa9ab1a5604d9a3471a5351c9",
+      "result": {
+        "challenge": {
+          "accepted_at": "2026-09-13T19:47:41.905798+00:00",
+          "challenge_id": "training-d9fb44a2d2e04e5c8a998c09ee07f252",
+          "challenger_id": "wt-1561dea8-843f-4d64-ae50-173ff6e15d04",
+          "created_at": "2026-09-12T19:39:32.986285+00:00",
+          "match_type": "team_training",
+          "opponent_id": "wt-dbd4a70f-4d90-4b60-958a-18ca1e4eff82",
+          "protocol": "team_training_v1",
+          "ranked": false,
+          "rewards_enabled": false,
+          "status": "accepted"
+        },
+        "replayed": false,
+        "team_id": "team-82e527da447d"
+      }
+    },
     "team:training:wt-1561dea8-843f-4d64-ae50-173ff6e15d04:1789241972237:a474a113143ce": {
       "created_at": "2026-09-12T19:39:32.986285+00:00",
       "fingerprint": "c3939efc9ce68d4e64ad263c8f6c7c23b1a6bc6bfcedb53d8f0815554d0ee36e",
@@ -797,6 +837,7 @@
       "team_id": "team-82e527da447d",
       "training_challenges": [
         {
+          "accepted_at": "2026-09-14T06:15:50.475032+00:00",
           "challenge_id": "training-74fd9caff9f74eee9cc06ed476d712a7",
           "challenger_id": "wt-dbd4a70f-4d90-4b60-958a-18ca1e4eff82",
           "created_at": "2026-09-11T21:35:40.232719+00:00",
@@ -805,9 +846,10 @@
           "protocol": "team_training_v1",
           "ranked": false,
           "rewards_enabled": false,
-          "status": "pending"
+          "status": "accepted"
         },
         {
+          "accepted_at": "2026-09-13T19:47:41.905798+00:00",
           "challenge_id": "training-d9fb44a2d2e04e5c8a998c09ee07f252",
           "challenger_id": "wt-1561dea8-843f-4d64-ae50-173ff6e15d04",
           "created_at": "2026-09-12T19:39:32.986285+00:00",
@@ -816,7 +858,7 @@
           "protocol": "team_training_v1",
           "ranked": false,
           "rewards_enabled": false,
-          "status": "pending"
+          "status": "accepted"
         }
       ]
     }

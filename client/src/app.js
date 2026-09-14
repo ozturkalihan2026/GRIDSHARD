@@ -447,6 +447,7 @@
   let selectedCollectionCoreId = "core_resonance";
   let activeLeaderboardTab = "trophies";
   let leaderboardPayload = null;
+  let publicProfileReturnDialogId = null;
   let teamState = null;
   let activeTeamTab = "overview";
   const PROFILE_AVATARS = Object.freeze([
@@ -459,6 +460,7 @@
     { id: "neon_cyan", nameTr: "Neon Akım" },
     { id: "season_gold", nameTr: "Sezon Ustası" },
   ]);
+  const CORE_RARITY_ORDER = Object.freeze(["common", "rare", "epic", "legendary"]);
   let pendingDeckModuleInstanceId = null;
   let homeMatchmakingLaunchPending = false;
   let homeMatchmakingCancelPending = false;
@@ -1191,7 +1193,7 @@
     const module = moduleRewardIdentity(rewards);
     const core = coreRewardIdentity(rewards);
     return [
-      { kind:"circuit_credits", amount:Number(rewards.circuit_credits || 0), label:"Devre Kredisi", suffix:" DK" },
+      { kind:"circuit_credits", amount:Number(rewards.circuit_credits || 0), label:"Devre Kredisi", suffix:"" },
       { kind:"flux_shards", amount:Number(rewards.flux_shards || 0), label:"Akı", suffix:"" },
       { kind:"module_shards", amount:Number(rewards.module_shards || 0), label:`${module.nameTr} Parçası`, suffix:"" },
       { kind:"core_shards", amount:Number(rewards.core_shards || 0), label:`${core.nameTr} Parçası`, suffix:"" },
@@ -1210,9 +1212,93 @@
       label.textContent = item.label;
       const value = document.createElement("strong");
       value.textContent = `+${item.amount}${item.suffix}`;
+      row.setAttribute("aria-label", `${item.label} ${value.textContent}`);
+      row.title = `${item.label} ${value.textContent}`;
       row.append(icon, label, value);
       list.appendChild(row);
     }
+    return list;
+  }
+
+  function createSeasonCosmeticRewardRow(kind, cosmeticId) {
+    const isFrame = kind === "avatar_frame";
+    const definition = (isFrame ? PROFILE_AVATAR_FRAMES : PROFILE_AVATARS).find(
+      (item) => item.id === cosmeticId
+    );
+    const name = definition?.nameTr || (isFrame ? "Avatar Çerçevesi" : "Avatar");
+    const row = document.createElement("div");
+    row.className = "reward-resource-row season-cosmetic-reward";
+    row.dataset.rewardKind = kind;
+    row.setAttribute("aria-label", `${name} ×1`);
+    row.title = `${name} ×1`;
+    const preview = document.createElement("span");
+    preview.className = "profile-avatar season-reward-cosmetic-preview";
+    preview.setAttribute("aria-hidden", "true");
+    applyAvatarVisual(
+      preview,
+      isFrame ? "default" : cosmeticId,
+      isFrame ? cosmeticId : "none"
+    );
+    const amount = document.createElement("strong");
+    amount.textContent = "×1";
+    row.append(preview, amount);
+    return row;
+  }
+
+  function aggregateChestRewards(receipts = []) {
+    const totals = {
+      circuit_credits: 0,
+      flux_shards: 0,
+      module_shards: 0,
+      core_shards: 0,
+      module_rewards: [],
+      core_rewards: [],
+    };
+    const modules = new Map();
+    const cores = new Map();
+    for (const receipt of receipts) {
+      const rewards = receipt?.rewards || {};
+      totals.circuit_credits += Math.max(0, Number(rewards.circuit_credits || 0));
+      totals.flux_shards += Math.max(0, Number(rewards.flux_shards || 0));
+      const moduleAmount = Math.max(0, Number(rewards.module_shards || 0));
+      const moduleId = String(rewards.module_definition_id || "");
+      if (moduleAmount > 0 && moduleId) {
+        const current = modules.get(moduleId) || {
+          module_definition_id: moduleId,
+          module_rarity: rewards.module_rarity || "common",
+          module_shards: 0,
+        };
+        current.module_shards += moduleAmount;
+        modules.set(moduleId, current);
+        totals.module_shards += moduleAmount;
+      }
+      const coreAmount = Math.max(0, Number(rewards.core_shards || 0));
+      const coreId = String(rewards.core_type_id || "");
+      if (coreAmount > 0 && coreId) {
+        const current = cores.get(coreId) || { core_type_id: coreId, core_shards: 0 };
+        current.core_shards += coreAmount;
+        cores.set(coreId, current);
+        totals.core_shards += coreAmount;
+      }
+    }
+    totals.module_rewards = [...modules.values()];
+    totals.core_rewards = [...cores.values()];
+    return totals;
+  }
+
+  function createBulkRewardRows(batchReceipt) {
+    const receipts = batchReceipt?.receipts || [];
+    const totals = batchReceipt?.reward_totals || aggregateChestRewards(receipts);
+    const list = createRewardRows({
+      circuit_credits: totals.circuit_credits,
+      flux_shards: totals.flux_shards,
+    });
+    const appendRows = (rewards) => {
+      const rows = createRewardRows(rewards);
+      while (rows.firstChild) list.appendChild(rows.firstChild);
+    };
+    for (const reward of totals.module_rewards || []) appendRows(reward);
+    for (const reward of totals.core_rewards || []) appendRows(reward);
     return list;
   }
 
@@ -1428,9 +1514,10 @@
     tile.type = "button";
     tile.className = `core-collection-tile${active ? " active-core-tile" : ""}`;
     tile.dataset.coreType = core.id;
+    tile.dataset.rarity = core.rarity || "common";
     tile.dataset.selected = String(selected);
     tile.dataset.locked = String(!core.unlocked);
-    tile.setAttribute("aria-label", `${core.name_tr} · Seviye ${core.level}${core.selected ? " · seçili" : ""}`);
+    tile.setAttribute("aria-label", `${core.name_tr} · ${moduleRarityLabel(core.rarity)} · Seviye ${core.level}${core.selected ? " · seçili" : ""}`);
     const visual = applyCoreVisualIdentity(tile, core.id);
     const glyph = document.createElement("span");
     glyph.className = "core-collection-glyph";
@@ -1438,7 +1525,13 @@
     glyph.setAttribute("aria-hidden", "true");
     const copy = document.createElement("span");
     copy.className = "core-collection-copy";
-    copy.innerHTML = `<strong>${core.name_tr}</strong><small>${core.unlocked ? `SV ${core.level}` : `ARENA ${core.unlock_arena}`}</small>`;
+    const name = document.createElement("strong");
+    name.textContent = core.name_tr;
+    const rarity = document.createElement("em");
+    rarity.textContent = moduleRarityLabel(core.rarity);
+    const state = document.createElement("small");
+    state.textContent = core.unlocked ? `SV ${core.level}` : `ARENA ${core.unlock_arena}`;
+    copy.append(name, rarity, state);
     const progress = document.createElement("i");
     const required = Number(core.next_upgrade_cost?.shards || 1);
     const owned = Number(core.shards || 0) + Number(core.legacy_shards || 0);
@@ -1502,10 +1595,27 @@
     }
     const count = document.getElementById("core-collection-count");
     if (count) count.textContent = `${cores.filter((core) => core.unlocked).length} / ${cores.length || 7}`;
-    for (const core of cores) {
-      const tile = coreCollectionTile(core, { selected: core.selected });
-      tile.addEventListener("click", () => showCoreQuickActions(core, tile));
-      host.appendChild(tile);
+    for (const rarity of CORE_RARITY_ORDER) {
+      const rarityCores = cores.filter((core) => (core.rarity || "common") === rarity);
+      if (!rarityCores.length) continue;
+      const group = document.createElement("section");
+      group.className = "core-rarity-group";
+      group.dataset.rarity = rarity;
+      const heading = document.createElement("header");
+      const title = document.createElement("strong");
+      title.textContent = moduleRarityLabel(rarity);
+      const summary = document.createElement("small");
+      summary.textContent = `${rarityCores.filter((core) => core.unlocked).length} / ${rarityCores.length} AÇIK`;
+      heading.append(title, summary);
+      const list = document.createElement("div");
+      list.className = "core-rarity-list";
+      for (const core of rarityCores) {
+        const tile = coreCollectionTile(core, { selected: core.selected });
+        tile.addEventListener("click", () => showCoreQuickActions(core, tile));
+        list.appendChild(tile);
+      }
+      group.append(heading, list);
+      host.appendChild(group);
     }
   }
 
@@ -1553,6 +1663,7 @@
       intro.textContent = "Çekirdeğin savaş alanına sağladığı kalıcı enerji ve dayanıklılık değerleri.";
       const list = document.createElement("dl");
       for (const [label, value] of [
+        ["Nadirlik", moduleRarityLabel(core.rarity)],
         ["Savaş rolü", core.role_tr],
         ["Enerji üretimi", `${core.energy_per_second}/sn`],
         ["Enerji deposu", core.energy_capacity],
@@ -1587,6 +1698,7 @@
       const overview = document.createElement("div");
       overview.className = "module-overview-grid";
       for (const [label, value] of [
+        ["NADİRLİK", moduleRarityLabel(core.rarity)],
         ["SAVAŞ ROLÜ", core.role_tr],
         ["AÇILIŞ", `Arena ${core.unlock_arena}`],
         ["ENERJİ", `${core.energy_per_second}/sn`],
@@ -1611,6 +1723,7 @@
     const visual = applyCoreVisualIdentity(dialog, core.id);
     const setText = (id, value) => { const target = document.getElementById(id); if (target) target.textContent = String(value); };
     setText("core-detail-name", core.name_tr);
+    setText("core-detail-rarity", moduleRarityLabel(core.rarity));
     setText("core-detail-level", `SEVİYE ${core.level}`);
     setText("core-detail-selected-state", core.selected ? "SEÇİLDİ" : core.unlocked ? "HAZIR" : "KİLİTLİ");
     const cost = core.next_upgrade_cost;
@@ -1662,7 +1775,7 @@
       if (element) element.textContent = String(value);
     };
     setText("home-arena-name", rank.kind !== "arena" ? rank.name_tr : `Arena ${rank.index || 1}`);
-    setText("home-arena-progress-copy", rank.next_stage ? `${rating - floor} / ${ceiling - floor} Kupa` : `${rating} Kupa`);
+    setText("home-arena-progress-copy", rank.next_stage ? `${rating} / ${ceiling} Kupa` : `${rating} Kupa`);
     const arenaTitle = rank.name_tr && !/^Arena\s+\d+$/i.test(rank.name_tr)
       ? `Arena ${rank.index || 1} · ${rank.name_tr}`
       : `Arena ${rank.index || 1}`;
@@ -1790,35 +1903,43 @@
         card.dataset.tier = tier;
         const remaining = Math.max(0, Number(definition.claim_remaining_seconds || 0));
         card.dataset.definitionId = definition.id;
-        if (ownedCount === 0) card.dataset.claimRemaining = String(remaining);
+        card.dataset.claimRemaining = String(remaining);
         card.innerHTML = `${chestVisualMarkup(tier)}<strong>${definition.name_tr} x${ownedCount}</strong>`;
         if (ownedCount > 0) {
           const inventoryStatus = document.createElement("small");
           inventoryStatus.className = "chest-inventory-status";
           inventoryStatus.textContent = `${openableCount} / ${ownedCount} açılabilir`;
           card.appendChild(inventoryStatus);
-        } else if (remaining > 0) {
+        }
+        if (remaining > 0) {
           const countdown = document.createElement("small");
           countdown.className = "chest-countdown";
           countdown.textContent = "Yenilenmesine " + formatChestCountdown(remaining);
           card.appendChild(countdown);
         }
-        const action = document.createElement("button");
-        action.type = "button";
-        action.textContent = ownedCount > 0
-          ? "HEPSİNİ AÇ"
-          : (remaining > 0 ? formatChestCountdown(remaining) : "HEDİYEYİ AÇ");
-        action.disabled = Boolean(
+        const actions = document.createElement("div");
+        actions.className = "shop-chest-actions";
+        const giftAction = document.createElement("button");
+        giftAction.type = "button";
+        giftAction.className = "gift-chest-action";
+        giftAction.textContent = remaining > 0 ? formatChestCountdown(remaining) : "HEDİYE SANDIK AÇ";
+        giftAction.disabled = Boolean(
           state.unavailable
-          || (ownedCount > 0 && openableCount === 0)
-          || (ownedCount === 0 && definition.claim_available === false)
+          || remaining > 0
+          || definition.claim_available === false
         );
+        giftAction.addEventListener("click", () => claimGiftChest(definition.id));
+        actions.appendChild(giftAction);
         if (ownedCount > 0) {
-          action.addEventListener("click", () => openAllAvailableChests(definition.id));
-        } else if (definition.claim_available !== false) {
-          action.addEventListener("click", () => claimGiftChest(definition.id));
+          const openAllAction = document.createElement("button");
+          openAllAction.type = "button";
+          openAllAction.className = "chest-open-all-action";
+          openAllAction.textContent = "HEPSİNİ AÇ";
+          openAllAction.disabled = Boolean(state.unavailable || openableCount === 0);
+          openAllAction.addEventListener("click", () => openAllAvailableChests(definition.id));
+          actions.appendChild(openAllAction);
         }
-        card.appendChild(action);
+        card.appendChild(actions);
         giftHost.appendChild(card);
       }
     }
@@ -1865,12 +1986,12 @@
         const next = Math.max(0, previous - 1);
         card.dataset.claimRemaining = String(next);
         const countdown = card.querySelector(".chest-countdown");
-        const button = card.querySelector("button");
+        const button = card.querySelector(".gift-chest-action");
         if (countdown) countdown.textContent = "Yenilenmesine " + formatChestCountdown(next);
         if (button && next === 0 && previous > 0) becameAvailable = true;
         if (button && next === 0 && !metaProgressionState?.unavailable) {
           button.disabled = false;
-          button.textContent = "HEDİYEYİ AÇ";
+          button.textContent = "HEDİYE SANDIK AÇ";
           countdown?.remove();
         }
       }
@@ -1972,14 +2093,12 @@
     }
     if (host) {
       host.replaceChildren();
-      receipts.forEach((receipt, index) => {
-        const section = document.createElement("section");
-        section.className = "bulk-chest-reward";
-        const label = document.createElement("small");
-        label.textContent = `${index + 1}. SANDIK`;
-        section.append(label, createRewardRows(receipt.rewards || {}));
-        host.appendChild(section);
-      });
+      const section = document.createElement("section");
+      section.className = "bulk-chest-reward";
+      const label = document.createElement("small");
+      label.textContent = `${receipts.length} SANDIĞIN TOPLAM ÖDÜLÜ`;
+      section.append(label, createBulkRewardRows(batchReceipt));
+      host.appendChild(section);
     }
     if (close) { close.disabled = false; close.textContent = "DEVAM"; }
     const dialog = document.getElementById("chest-reveal-dialog");
@@ -2355,6 +2474,37 @@
         });
         host.appendChild(row);
       }
+      const selectedCount = Number(
+        item.selected_talent_count
+        ?? (item.talents || []).filter((node) => Boolean(node.selected)).length
+      );
+      if (selectedCount > 0) {
+        const resetCost = Number(item.talent_reset_cost_flux || selectedCount * 25);
+        const resetPanel = document.createElement("section");
+        resetPanel.className = "module-talent-reset-panel";
+        const resetCopy = document.createElement("span");
+        resetCopy.textContent = `${selectedCount} seçili yetenek yeniden dağıtılabilir.`;
+        const resetButton = document.createElement("button");
+        resetButton.type = "button";
+        resetButton.className = "module-talent-reset";
+        resetButton.textContent = `YETENEKLERİ SIFIRLA · ${resetCost} AKI`;
+        resetButton.disabled = Number(metaProgressionState?.flux_shards || 0) < resetCost;
+        resetButton.addEventListener("click", async () => {
+          resetButton.disabled = true;
+          const status = document.getElementById("module-detail-status");
+          if (status) status.textContent = "Yetenek seçimleri sıfırlanıyor…";
+          try {
+            await metaProgressionMutation(`/profile/${encodeURIComponent(participantPlayerId)}/meta-progression/modules/${item.definition_id}/talents/reset`);
+            renderModuleDetailTab("talents");
+            if (status) status.textContent = `${selectedCount} yetenek seçimi sıfırlandı.`;
+          } catch (error) {
+            if (status) status.textContent = error instanceof Error ? error.message : String(error);
+            resetButton.disabled = false;
+          }
+        });
+        resetPanel.append(resetCopy, resetButton);
+        host.appendChild(resetPanel);
+      }
     } else {
       text.textContent = item.description_tr || item.strategic_role || item.name_tr;
       const overview = document.createElement("div");
@@ -2513,8 +2663,10 @@
     rank.className = "team-member-rank";
     rank.textContent = String(index + 1);
     const identity = document.createElement("div");
-    const name = document.createElement("strong");
-    name.textContent = member.display_name || "Oyuncu";
+    const name = createPublicPlayerName(
+      member.player_id,
+      member.display_name || "Oyuncu"
+    );
     const meta = document.createElement("small");
     meta.textContent = `${member.role === "owner" ? "LİDER · " : ""}${member.online ? "ÇEVRİMİÇİ" : "ÇEVRİMDIŞI"}`;
     identity.append(name, meta);
@@ -2620,7 +2772,14 @@
         const name = document.createElement("strong");
         name.textContent = request.module_name_tr || "Modül";
         const meta = document.createElement("small");
-        meta.textContent = `${request.requester_name || "Oyuncu"} · ${request.donated_amount || 0}/${request.requested_amount || 0} parça`;
+        meta.className = "team-player-inline-meta";
+        const requester = createPublicPlayerName(
+          request.requester_id,
+          request.requester_name || "Oyuncu"
+        );
+        const progress = document.createElement("span");
+        progress.textContent = ` · ${request.donated_amount || 0}/${request.requested_amount || 0} parça`;
+        meta.append(requester, progress);
         copy.append(name, meta);
         const action = document.createElement("button");
         action.type = "button";
@@ -2651,8 +2810,10 @@
       for (const message of messages) {
         const row = document.createElement("article");
         row.className = `team-message${message.is_own ? " is-own" : ""}`;
-        const author = document.createElement("strong");
-        author.textContent = message.author_name || "Oyuncu";
+        const author = createPublicPlayerName(
+          message.author_id,
+          message.author_name || "Oyuncu"
+        );
         const text = document.createElement("p");
         text.textContent = message.text || "";
         row.append(author, text);
@@ -2693,8 +2854,19 @@
         const card = document.createElement("article");
         card.className = "team-training-card";
         const copy = document.createElement("div");
-        const title = document.createElement("strong");
-        title.textContent = `${challenge.challenger_name} → ${challenge.opponent_name}`;
+        const title = document.createElement("div");
+        title.className = "team-challenge-player-links";
+        const challenger = createPublicPlayerName(
+          challenge.challenger_id,
+          challenge.challenger_name || "Oyuncu"
+        );
+        const arrow = document.createElement("span");
+        arrow.textContent = "→";
+        const opponentName = createPublicPlayerName(
+          challenge.opponent_id,
+          challenge.opponent_name || "Oyuncu"
+        );
+        title.append(challenger, arrow, opponentName);
         const meta = document.createElement("small");
         meta.textContent = challenge.status === "pending" ? "DAVET BEKLİYOR · ÖDÜLSÜZ" : "KABUL EDİLDİ · ÖDÜLSÜZ";
         copy.append(title, meta);
@@ -3098,6 +3270,7 @@
       time_limit_draw: "Süre sonu beraberliği",
       simultaneous_core_tiebreak: "Çifte çekirdek yıkımı",
       simultaneous_core_draw: "Eşzamanlı çekirdek yıkımı",
+      simultaneous_core_destroyed: "Eşzamanlı çekirdek yıkımı",
     };
     return localizedUiText(labels[reason] || "Savaş tamamlandı");
   }
@@ -3170,14 +3343,14 @@
       ? "Yüklenemedi · Tekrar dene"
       : "Kaydediliyor…";
     if (trophy) trophy.textContent = progression
-      ? `${Number(progression.ratingDelta) >= 0 ? "+" : ""}${Number(progression.ratingDelta)} Kupa`
-      : localTest ? "0 Kupa · Test maçı" : pendingLabel;
+      ? `${Number(progression.ratingDelta) >= 0 ? "+" : ""}${Number(progression.ratingDelta)}`
+      : localTest ? "0" : pendingLabel;
     if (credits) credits.textContent = progression
-      ? `+${Number(progression.circuitCreditsAwarded || 0)} DK`
-      : localTest ? "+0 DK · Test maçı" : pendingLabel;
+      ? `+${Number(progression.circuitCreditsAwarded || 0)}`
+      : localTest ? "+0" : pendingLabel;
     if (experience) experience.textContent = progression
-      ? `+${Number(progression.xpAwarded || 0)} Deneyim`
-      : localTest ? "+0 Deneyim · Test maçı" : pendingLabel;
+      ? `+${Number(progression.xpAwarded || 0)}`
+      : localTest ? "+0" : pendingLabel;
   }
 
   function setAnalysisValue(id, value) {
@@ -3208,8 +3381,12 @@
       const playerName = player.display_name
         || (playerId === participantPlayerId ? profileState.viewModel()?.displayName : null)
         || playerId;
-      const playerLabel = document.createElement("strong");
-      playerLabel.textContent = `${playerName}${playerId === participantPlayerId ? " · SEN" : ""}`;
+      const playerLabel = isPublicProfileTarget(playerId, player)
+        ? createPublicPlayerName(playerId, playerName)
+        : document.createElement("strong");
+      if (!isPublicProfileTarget(playerId, player)) {
+        playerLabel.textContent = `${playerName}${playerId === participantPlayerId ? " · SEN" : ""}`;
+      }
       head.append(outcomeLabel, playerLabel);
       card.appendChild(head);
 
@@ -3458,20 +3635,23 @@
         clearTerminalAudioState("online_match_draw");
         requestOwnedAudioState("online_match_draw");
       }
-      if (result.finish_reason === "core_destroyed") {
-        const loser = pvpState.snapshot?.players?.[result.loser_player_id];
-        const destroyedCore = loser?.modules?.find(
+      const destroyedCorePlayerIds = result.finish_reason === "core_destroyed"
+        ? [result.loser_player_id]
+        : result.finish_reason === "simultaneous_core_destroyed"
+          ? Object.keys(pvpState.snapshot?.players || {})
+          : [];
+      for (const destroyedPlayerId of destroyedCorePlayerIds) {
+        const destroyedPlayer = pvpState.snapshot?.players?.[destroyedPlayerId];
+        const destroyedCore = destroyedPlayer?.modules?.find(
           (module) => module.definition_id === "core"
         );
-        if (!emitServerModuleDestruction(result.loser_player_id, destroyedCore)) {
+        if (!emitServerModuleDestruction(destroyedPlayerId, destroyedCore)) {
           const destructionKey = destroyedCore?.instance_id
-            ? `${result.loser_player_id}:${destroyedCore.instance_id}`
+            ? `${destroyedPlayerId}:${destroyedCore.instance_id}`
             : null;
           if (!destructionKey || !destructionFxPlayed.has(destructionKey)) {
             emitModuleExplosion(
-              result.loser_player_id === pvpState.playerId
-                ? "core-1"
-                : "enemy-core",
+              destroyedPlayerId === pvpState.playerId ? "core-1" : "enemy-core",
               { core: true }
             );
           }
@@ -3481,7 +3661,12 @@
 
     schedulePostMatchReveal(
       `online:${result.session_id || "finished"}`,
-      { waitForCoreExplosion: result.finish_reason === "core_destroyed" }
+      {
+        waitForCoreExplosion: [
+          "core_destroyed",
+          "simultaneous_core_destroyed",
+        ].includes(result.finish_reason),
+      }
     );
     renderOnlineBattleAnalysis(result);
     renderPostMatchSummary();
@@ -8819,6 +9004,28 @@ function saveHumanReviewLocalNote() {
   ) {
     for (const event of events || []) {
       const data=event.data || {};
+      if (event?.type === "battle_overtime_started") {
+        setBattleLiveTicker(
+          "AŞIRI YÜK · Hasar artıyor, onarım zayıflıyor",
+          "danger"
+        );
+        triggerGridshardCue("warning");
+        continue;
+      }
+      if (event?.type === "overtime_core_exposed") {
+        setBattleLiveTicker(
+          "ÇEKİRDEKLER AÇIĞA ÇIKTI · Saldırılar çekirdeğe yöneliyor",
+          "danger"
+        );
+        continue;
+      }
+      if (event?.type === "overtime_core_decay_started") {
+        setBattleLiveTicker(
+          "ÇEKİRDEK KARARSIZLIĞI · Çekirdekler can kaybediyor",
+          "danger"
+        );
+        continue;
+      }
       if (
         event?.type === "command_rejected"
         && data.player_id === participantPlayerId
@@ -10377,6 +10584,7 @@ function saveHumanReviewLocalNote() {
       "core_destroyed",
       "simultaneous_core_tiebreak",
       "simultaneous_core_draw",
+      "simultaneous_core_destroyed",
     ].includes(finishReason || "core_destroyed");
     if (waitForCoreExplosion) {
       emitModuleExplosion(
@@ -11196,13 +11404,18 @@ function saveHumanReviewLocalNote() {
   function appendHpBar(
     container,
     hp,
-    maxHp
+    maxHp,
+    { battle=false }={}
   ) {
     const bar=
       document.createElement(
         "span"
       );
     bar.className="hp-bar";
+    if (battle) {
+      bar.classList.add("battle-module-hp-bar");
+      container.classList.add("battle-module-card");
+    }
     bar.setAttribute("role", "progressbar");
     bar.setAttribute("aria-label", "Modül CAN değeri");
     bar.setAttribute("aria-valuemin", "0");
@@ -11216,6 +11429,9 @@ function saveHumanReviewLocalNote() {
       );
     fill.className=
       "hp-bar-fill";
+    if (battle) {
+      fill.classList.add("battle-module-hp-fill");
+    }
 
     const ratio=
       hpRatio(
@@ -11225,6 +11441,20 @@ function saveHumanReviewLocalNote() {
 
     fill.style.width=
       `${Math.round(ratio*100)}%`;
+
+    if (battle) {
+      const hpColor = ratio <= .33
+        ? "#ff5f6d"
+        : ratio <= .66
+          ? "#f0cb52"
+          : "#60e58a";
+      container.style.setProperty(
+        "--battle-hp-color",
+        hpColor
+      );
+      bar.dataset.hpPercent =
+        String(Math.round(ratio * 100));
+    }
 
     bar.appendChild(fill);
     container.appendChild(bar);
@@ -13656,6 +13886,10 @@ function saveHumanReviewLocalNote() {
       for (const {dx,dy} of CIRCUIT_CABLE_DIRECTIONS) {
         const second = {x:x+dx,y:y+dy};
         if (!cells.has(cablePositionKey(second))) continue;
+        const firstCell = boardElement.querySelector(
+          `.board-cell[data-x="${first.x}"][data-y="${first.y}"]`
+        );
+        if (dy > 0 && firstCell?.dataset.occupied === "true") continue;
         createCircuitCableLine(layer, first, second, "circuit-cable-base");
         const forwardKey = `${cablePositionKey(first)}>${cablePositionKey(second)}`;
         const reverseKey = `${cablePositionKey(second)}>${cablePositionKey(first)}`;
@@ -13969,7 +14203,7 @@ function saveHumanReviewLocalNote() {
     label.className="name";
     label.textContent=name;
     card.appendChild(label);
-    appendHpBar(card,hp,maxHp);
+    appendHpBar(card,hp,maxHp,{ battle:true });
     const isSource=
       moduleId === "enemy-generator";
     appendEnergyFlowIndicator(
@@ -14067,6 +14301,11 @@ function saveHumanReviewLocalNote() {
     }
     if (enemyBattleNameEl) {
       enemyBattleNameEl.textContent=opponentBattleDisplayName();
+      const canOpenProfile = isPublicProfileTarget(enemyBattlePlayerId)
+        && matchmakingState.opponentType !== "ai";
+      enemyBattleNameEl.disabled = !canOpenProfile;
+      enemyBattleNameEl.classList.toggle("is-profile-enabled", canOpenProfile);
+      enemyBattleNameEl.title = canOpenProfile ? "Oyuncu profilini gör" : "";
     }
     if (!enemyDeckPreviewEl) return;
     enemyDeckPreviewEl.replaceChildren();
@@ -14902,6 +15141,245 @@ function saveHumanReviewLocalNote() {
     }
   }
 
+  function isPublicProfileTarget(playerId, player = null) {
+    const clean = String(playerId || "").trim();
+    return Boolean(
+      clean
+      && clean !== participantPlayerId
+      && !player?.is_bot
+      && !clean.startsWith("local-ai-")
+    );
+  }
+
+  function createPublicPlayerName(playerId, displayName, { suffix = "", className = "" } = {}) {
+    const canOpen = isPublicProfileTarget(playerId);
+    const node = document.createElement(canOpen ? "button" : "strong");
+    if (canOpen) {
+      node.type = "button";
+      node.className = `public-player-link ${className}`.trim();
+      node.setAttribute("aria-label", `${displayName} adlı oyuncunun profilini aç`);
+      node.title = "Oyuncu profilini gör";
+      node.addEventListener("click", (event) => {
+        event.stopPropagation();
+        openPublicProfile(playerId);
+      });
+    } else if (className) {
+      node.className = className;
+    }
+    node.textContent = `${displayName}${suffix}`;
+    return node;
+  }
+
+  function publicProfileMetric(label, value) {
+    const article = document.createElement("article");
+    const name = document.createElement("span");
+    const amount = document.createElement("strong");
+    name.textContent = label;
+    amount.textContent = String(value);
+    article.append(name, amount);
+    return article;
+  }
+
+  function renderPublicProfile(payload) {
+    const host = document.getElementById("public-profile-content");
+    if (!host) return;
+    host.replaceChildren();
+
+    const identity = document.createElement("article");
+    identity.className = "profile-identity-card public-profile-identity";
+    const avatar = document.createElement("span");
+    avatar.className = "profile-avatar";
+    applyAvatarVisual(
+      avatar,
+      payload.avatar?.selected_avatar_id || "default",
+      payload.avatar?.selected_avatar_frame_id || "none"
+    );
+    const identityCopy = document.createElement("div");
+    const playerName = document.createElement("strong");
+    playerName.textContent = payload.display_name || "Oyuncu";
+    const title = document.createElement("span");
+    title.textContent = payload.operator_title || "Devre Çırağı";
+    const rank = document.createElement("small");
+    rank.textContent = payload.rank_name_tr || "Arena 1";
+    identityCopy.append(playerName, title, rank);
+    const trophies = document.createElement("strong");
+    renderTrophyValue(trophies, Number(payload.rating || 0));
+    identity.append(avatar, identityCopy, trophies);
+    host.appendChild(identity);
+
+    const deckSection = document.createElement("section");
+    deckSection.className = "profile-deck-showcase";
+    const deckHeading = document.createElement("div");
+    deckHeading.className = "profile-section-heading";
+    const deckKicker = document.createElement("span");
+    deckKicker.textContent = "DEVRE ALIŞKANLIĞI";
+    const deckTitle = document.createElement("h3");
+    deckTitle.textContent = "En Çok Kullanılan Deste";
+    deckHeading.append(deckKicker, deckTitle);
+    const deckVisual = document.createElement("div");
+    deckVisual.className = "profile-deck-visual";
+    const core = document.createElement("div");
+    core.className = "profile-featured-core";
+    const coreGlyph = document.createElement("span");
+    coreGlyph.className = "profile-featured-core-glyph";
+    const coreCopy = document.createElement("span");
+    coreCopy.className = "profile-featured-core-copy";
+    const coreLabel = document.createElement("small");
+    coreLabel.textContent = `AKTİF ÇEKİRDEK · ${moduleRarityLabel(payload.selected_core?.rarity)}`;
+    const coreName = document.createElement("strong");
+    coreName.textContent = payload.selected_core?.name_tr || "Rezonans Çekirdeği";
+    const coreLevel = document.createElement("em");
+    coreLevel.textContent = `SEVİYE ${Number(payload.selected_core?.level || 1)}`;
+    const coreVisual = applyCoreVisualIdentity(core, payload.selected_core?.id || "core_resonance");
+    coreGlyph.textContent = coreVisual.glyph;
+    coreCopy.append(coreLabel, coreName, coreLevel);
+    core.append(coreGlyph, coreCopy);
+    const modules = document.createElement("div");
+    modules.className = "profile-featured-modules";
+    for (const definitionId of (payload.featured_deck?.module_ids || []).slice(0, 6)) {
+      const definition = moduleDefinitions.find((item) => item.definitionId === definitionId);
+      const tile = document.createElement("span");
+      tile.className = "profile-deck-module";
+      tile.dataset.category = definition?.category || "";
+      tile.textContent = moduleIconFor(definition || null);
+      tile.title = localizedUiText(definition?.nameTr || definitionId);
+      modules.appendChild(tile);
+    }
+    const deckUse = document.createElement("small");
+    const matches = Number(payload.featured_deck?.matches || 0);
+    deckUse.textContent = matches > 0 ? `${matches} maçta kullanıldı` : "Aktif savaş destesi";
+    modules.appendChild(deckUse);
+    deckVisual.append(core, modules);
+    deckSection.append(deckHeading, deckVisual);
+    host.appendChild(deckSection);
+
+    const team = document.createElement("section");
+    team.className = "profile-clan-card";
+    const teamLabel = document.createElement("span");
+    teamLabel.textContent = "TAKIM BİLGİSİ";
+    const teamName = document.createElement("strong");
+    teamName.textContent = payload.team?.team_name || "Takıma dahil değil";
+    const teamCopy = document.createElement("small");
+    teamCopy.textContent = payload.team?.team_name
+      ? "Oyuncunun mevcut takımı"
+      : "Bu oyuncu henüz bir takıma katılmadı.";
+    team.append(teamLabel, teamName, teamCopy);
+    host.appendChild(team);
+
+    const seasonSection = document.createElement("section");
+    seasonSection.className = "profile-season-history";
+    const seasonHeading = document.createElement("div");
+    seasonHeading.className = "profile-section-heading";
+    const seasonKicker = document.createElement("span");
+    seasonKicker.textContent = "SEZONLAR";
+    const seasonTitle = document.createElement("h3");
+    seasonTitle.textContent = "Sezon Geçmişi";
+    seasonHeading.append(seasonKicker, seasonTitle);
+    const currentSeason = document.createElement("article");
+    currentSeason.className = "profile-current-season public-profile-current-season";
+    const currentSeasonName = document.createElement("div");
+    const currentSeasonLabel = document.createElement("small");
+    currentSeasonLabel.textContent = "GÜNCEL SEZON";
+    const currentSeasonValue = document.createElement("strong");
+    currentSeasonValue.textContent = payload.season?.name_tr || "Güncel Sezon";
+    currentSeasonName.append(currentSeasonLabel, currentSeasonValue);
+    const seasonTrophies = document.createElement("strong");
+    renderTrophyValue(seasonTrophies, Number(payload.rating || 0));
+    const seasonRank = document.createElement("div");
+    const seasonRankLabel = document.createElement("small");
+    seasonRankLabel.textContent = "MEVCUT LİG";
+    const seasonRankValue = document.createElement("strong");
+    seasonRankValue.textContent = payload.rank_name_tr || "Arena 1";
+    seasonRank.append(seasonRankLabel, seasonRankValue);
+    currentSeason.append(currentSeasonName, seasonTrophies, seasonRank);
+    const past = document.createElement("div");
+    past.className = "profile-past-seasons";
+    const previous = payload.season?.summary?.previous;
+    const best = payload.season?.summary?.best;
+    for (const [label, value] of [
+      ["SON SEZON", previous ? Number(previous.final_rating || 0) : "—"],
+      ["EN İYİ SEZON", best ? Number(best.final_rating || 0) : "—"],
+      ["TÜM ZAMANLAR", Number(payload.highest_rating || payload.rating || 0)],
+    ]) {
+      const card = document.createElement("article");
+      const cardLabel = document.createElement("small");
+      cardLabel.textContent = label;
+      const valueNode = document.createElement("strong");
+      renderTrophyValue(valueNode, value);
+      card.append(cardLabel, valueNode);
+      past.appendChild(card);
+    }
+    seasonSection.append(seasonHeading, currentSeason, past);
+    host.appendChild(seasonSection);
+
+    const statistics = payload.statistics || {};
+    const statsSection = document.createElement("section");
+    statsSection.className = "public-profile-statistics";
+    const statsHeading = document.createElement("div");
+    statsHeading.className = "profile-section-heading";
+    const statsKicker = document.createElement("span");
+    statsKicker.textContent = "SAVAŞ ARŞİVİ";
+    const statsTitle = document.createElement("h3");
+    statsTitle.textContent = "İstatistikler";
+    statsHeading.append(statsKicker, statsTitle);
+    const statsGrid = document.createElement("div");
+    statsGrid.className = "statistics-metrics-grid public-profile-stat-grid";
+    const durationSeconds = Math.max(0, Math.round(Number(statistics.average_match_duration_ms || 0) / 1000));
+    const durationText = durationSeconds < 60
+      ? `${durationSeconds} sn`
+      : `${Math.floor(durationSeconds / 60)} dk ${durationSeconds % 60} sn`;
+    for (const metric of [
+      ["Toplam Maç", Number(statistics.total_matches || 0).toLocaleString("tr-TR")],
+      ["Galibiyet Oranı", `%${Math.round(Number(statistics.win_rate || 0) * 100)}`],
+      ["Ortalama Savaş", durationText],
+      ["Toplam Hasar", Number(statistics.total_damage_dealt || 0).toLocaleString("tr-TR")],
+    ]) statsGrid.appendChild(publicProfileMetric(...metric));
+    statsSection.append(statsHeading, statsGrid);
+    host.appendChild(statsSection);
+  }
+
+  async function openPublicProfile(playerId) {
+    if (!isPublicProfileTarget(playerId)) return;
+    const dialog = document.getElementById("public-profile-dialog");
+    const status = document.getElementById("public-profile-status");
+    const content = document.getElementById("public-profile-content");
+    const sourceDialog = ["leaderboard-dialog", "arena-detail-dialog"]
+      .map((id) => document.getElementById(id))
+      .find((candidate) => candidate?.open);
+    publicProfileReturnDialogId = sourceDialog?.id || null;
+    if (sourceDialog?.close) sourceDialog.close();
+    else sourceDialog?.removeAttribute("open");
+    if (content) content.replaceChildren();
+    if (status) status.textContent = "Oyuncu profili yükleniyor…";
+    if (dialog?.showModal && !dialog.open) dialog.showModal();
+    else dialog?.setAttribute("open", "");
+    try {
+      const payload = await requestJsonWithDeadline(
+        `/public-profiles/${encodeURIComponent(playerId)}`,
+        { cache: "no-store" },
+        8000
+      );
+      const title = document.getElementById("public-profile-title");
+      if (title) title.textContent = `${payload.display_name || "Oyuncu"} Profili`;
+      if (status) status.textContent = "";
+      renderPublicProfile(payload);
+    } catch (error) {
+      if (status) status.textContent = error instanceof Error ? error.message : String(error);
+    }
+  }
+
+  function closePublicProfile() {
+    const dialog = document.getElementById("public-profile-dialog");
+    if (dialog?.close) dialog.close();
+    else dialog?.removeAttribute("open");
+    const returnDialog = publicProfileReturnDialogId
+      ? document.getElementById(publicProfileReturnDialogId)
+      : null;
+    publicProfileReturnDialogId = null;
+    if (returnDialog?.showModal && !returnDialog.open) returnDialog.showModal();
+    else returnDialog?.setAttribute("open", "");
+  }
+
   function renderLeaderboard() {
     const host = document.getElementById("leaderboard-list");
     const status = document.getElementById("leaderboard-status");
@@ -14938,8 +15416,10 @@ function saveHumanReviewLocalNote() {
       const detail = activeLeaderboardTab === "teams"
         ? `${row.member_count} üye`
         : row.rank_name_tr || "Arena";
-      const nameNode = document.createElement("strong");
-      nameNode.textContent = name;
+      const nameNode = activeLeaderboardTab === "teams"
+        ? document.createElement("strong")
+        : createPublicPlayerName(row.player_id, name);
+      if (activeLeaderboardTab === "teams") nameNode.textContent = name;
       const detailNode = document.createElement("small");
       detailNode.textContent = detail;
       identity.append(nameNode, detailNode);
@@ -15181,14 +15661,41 @@ function saveHumanReviewLocalNote() {
         tier.textContent = `KADEME ${reward.tier}`;
         const prize = document.createElement("div");
         prize.className = "season-reward-prize";
-        const rewardLabel = document.createElement("strong");
-        const prizeParts = [
-          reward.reward_label_tr,
-          reward.avatar_id ? "Avatar" : null,
-          reward.avatar_frame_id ? "Avatar Çerçevesi" : null,
-        ].filter(Boolean);
-        rewardLabel.textContent = prizeParts.join(" · ");
-        prize.append(rewardLabel, createRewardRows(reward, { compact:true }));
+        const rewardItems = createRewardRows(reward, { compact:true });
+        rewardItems.classList.add("season-reward-items");
+        if (reward.chest_tier) {
+          const chestRow = document.createElement("div");
+          chestRow.className = "reward-resource-row season-reward-chest-item";
+          chestRow.dataset.rewardKind = "chest";
+          const chestPrize = document.createElement("div");
+          const chestTierName = {
+            bronze:"Bronz",
+            silver:"Gümüş",
+            gold:"Altın",
+            diamond:"Elmas",
+          }[reward.chest_tier] || "Sandık";
+          const chestName = `${chestTierName} Sandık`;
+          chestPrize.className = "season-reward-chest";
+          chestPrize.dataset.tier = reward.chest_tier;
+          chestPrize.innerHTML = chestVisualMarkup(reward.chest_tier);
+          chestPrize.setAttribute("aria-label", chestName);
+          chestPrize.title = chestName;
+          const chestAmount = document.createElement("strong");
+          chestAmount.textContent = "×1";
+          chestRow.setAttribute("aria-label", `${chestName} ×1`);
+          chestRow.title = `${chestName} ×1`;
+          chestRow.append(chestPrize, chestAmount);
+          rewardItems.prepend(chestRow);
+        }
+        if (reward.avatar_id) {
+          rewardItems.appendChild(createSeasonCosmeticRewardRow("avatar", reward.avatar_id));
+        }
+        if (reward.avatar_frame_id) {
+          rewardItems.appendChild(
+            createSeasonCosmeticRewardRow("avatar_frame", reward.avatar_frame_id)
+          );
+        }
+        prize.appendChild(rewardItems);
         const requirement = document.createElement("small");
         requirement.textContent = `${reward.required_xp} Deneyim ile açılır`;
         const action = document.createElement("button");
@@ -15200,7 +15707,10 @@ function saveHumanReviewLocalNote() {
           : reward.claimable
             ? "Al"
             : "Kilitli";
-        card.append(tier, prize, requirement, action);
+        const actionColumn = document.createElement("div");
+        actionColumn.className = "season-reward-action";
+        actionColumn.append(action, requirement);
+        card.append(tier, prize, actionColumn);
         rewards.appendChild(card);
       }
     }
@@ -15977,7 +16487,8 @@ function saveHumanReviewLocalNote() {
     appendHpBar(
       card,
       module.hp,
-      module.maxHp
+      module.maxHp,
+      { battle:module.status === "active" }
     );
     if (
       module.status !== "active"
@@ -17052,6 +17563,11 @@ function saveHumanReviewLocalNote() {
     const secs = seconds - minutes * 60;
     timeEl.textContent =
       `${String(minutes).padStart(2, "0")}:${secs.toFixed(1).padStart(4, "0")}`;
+    timeEl.classList.toggle(
+      "is-overtime",
+      elapsedMs >= 180000
+      && (localServerAuthoritative || activePlayMode === "online")
+    );
 
     renderLockState();
     renderCapacity();
@@ -17775,6 +18291,13 @@ function saveHumanReviewLocalNote() {
     else leaderboard?.removeAttribute("open");
     if (arenaDetailDialog?.showModal && !arenaDetailDialog.open) arenaDetailDialog.showModal();
     else arenaDetailDialog?.setAttribute("open", "");
+  });
+  document.getElementById("public-profile-close")?.addEventListener("click", closePublicProfile);
+  enemyBattleNameEl?.addEventListener("click", () => {
+    if (
+      isPublicProfileTarget(enemyBattlePlayerId)
+      && matchmakingState.opponentType !== "ai"
+    ) openPublicProfile(enemyBattlePlayerId);
   });
   document.querySelectorAll("[data-leaderboard-tab]").forEach((button) => {
     button.addEventListener("click", () => {

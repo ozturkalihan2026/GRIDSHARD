@@ -4,7 +4,6 @@ from dataclasses import dataclass
 from typing import Any
 
 from .game.battle_pool import default_battle_pool
-from .game.engine import BATTLE_TIME_LIMIT_MS
 from .game.pvp_runner import PvPTickRunner
 from .game.pvp_session import PvPSessionService
 from .game.pvp_setup import (
@@ -193,8 +192,16 @@ class WebTestSmokeRunner:
                 "Smoke test maçı ready sonrasında başlamadı."
             )
 
-        session.engine.state.elapsed_ms = (
-            BATTLE_TIME_LIMIT_MS - 100
+        losing_core = next(
+            module
+            for module in session.engine.state.players[pair.player_b_id].modules.values()
+            if module.definition.id == "core"
+        )
+        session.engine.apply_damage(
+            pair.player_b_id,
+            losing_core.instance_id,
+            losing_core.hp,
+            source_player_id=pair.player_a_id,
         )
 
         await self.tick_runner.run_single_tick(

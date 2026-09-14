@@ -10,7 +10,8 @@ from threading import RLock, get_ident
 import time
 from typing import Protocol
 
-from .game.battle_pool import default_battle_pool, migrate_battle_pool
+from .arena_canon import MODULES
+from .game.battle_pool import migrate_battle_pool
 from .player_profile import (
     CURRENT_SEASON_ID,
     PlayerProfile,
@@ -696,8 +697,14 @@ class PlayerDataStoreService:
         engagement = dict(data.get("engagement") or {})
         meta = dict(data.get("meta_progression_state") or {})
         default_shards = {
-            module_id: 40
-            for module_id in default_battle_pool().module_definition_ids
+            module_id: 0
+            for module_id in MODULES
+        }
+        stored_shards = {
+            str(module_id): max(0, int(amount))
+            for module_id, amount in dict(
+                meta.get("module_shards", {})
+            ).items()
         }
         profile=PlayerProfile(
             player_id=player_id,
@@ -824,10 +831,8 @@ class PlayerDataStoreService:
             module_talents={str(k): dict(v) for k, v in meta.get("module_talents", {}).items()},
             lifetime_stats=dict(meta.get("lifetime_stats", {})),
             module_shards={
-                str(module_id): int(amount)
-                for module_id, amount in dict(
-                    meta.get("module_shards", default_shards)
-                ).items()
+                **default_shards,
+                **stored_shards,
             },
             module_upgrade_levels={
                 str(module_id): max(0, min(14, int(level)))

@@ -49,7 +49,7 @@ BASIC_MODULE_DEFINITIONS: dict[str, ModuleDefinition] = {
         strong_against=("emp",), weak_against=("railgun",), synergy_with=("splitter","repair")),
 
     "repair": ModuleDefinition(id="repair", name_tr="Onarım Modülü", category="destek", max_hp=100, circuit_credit_cost=80,
-        strategic_role="Can onarımı", description_tr="Hasarlı modülleri onarır.", energy_consumption=2.0, cooldown_ms=2000,
+        strategic_role="Can onarımı", description_tr="En düşük CAN oranındaki tek modülü onarır.", energy_consumption=2.0, cooldown_ms=2000,
         strong_against=("virus",), weak_against=("jammer",), synergy_with=("shield","armor","barrier")),
     "cooler": ModuleDefinition(id="cooler", name_tr="Soğutucu", category="destek", max_hp=100, circuit_credit_cost=65,
         strategic_role="Isı kontrolü", description_tr="Yakındaki modüllerin ısısını düşürür.", energy_consumption=1.0,

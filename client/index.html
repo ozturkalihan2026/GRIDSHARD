@@ -195,6 +195,18 @@
       </nav>
     </dialog>
 
+    <dialog id="public-profile-dialog" class="public-profile-dialog" aria-labelledby="public-profile-title">
+      <header class="public-profile-header">
+        <button id="public-profile-close" type="button" aria-label="Profili kapat">←</button>
+        <div>
+          <span class="screen-kicker">HERKESE AÇIK OPERATÖR PROFİLİ</span>
+          <h2 id="public-profile-title">Oyuncu Profili</h2>
+        </div>
+      </header>
+      <p id="public-profile-status" class="public-profile-status" role="status" aria-live="polite"></p>
+      <div id="public-profile-content" class="public-profile-content"></div>
+    </dialog>
+
     <nav id="app-bottom-dock" class="main-scope-nav lobby-bottom-dock app-bottom-dock" aria-label="Ana gezinme">
       <button type="button" class="menu-action" data-open-screen="shop" data-shell-screen="shop" aria-label="Mağaza" title="Mağaza">
         <svg class="lobby-dock-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9h16l-1 11H5L4 9Z"/><path d="M7 9V6a5 5 0 0 1 10 0v3M9 13h6"/></svg>
@@ -348,7 +360,7 @@
       <button id="core-detail-close" class="module-detail-close" type="button" aria-label="Kapat">×</button>
       <header class="module-detail-hero core-detail-hero">
         <div id="core-detail-art" class="module-detail-art core-detail-art"></div>
-        <div class="module-detail-title"><h2 id="core-detail-name">Çekirdek</h2></div>
+        <div class="module-detail-title"><h2 id="core-detail-name">Çekirdek</h2><span id="core-detail-rarity">YAYGIN</span></div>
       </header>
       <div class="module-detail-level-row">
         <strong id="core-detail-level">SEVİYE 1</strong>
@@ -883,7 +895,7 @@
           <div id="battle-effect-layer" class="battle-effect-layer" aria-hidden="true"></div>
           <section class="duel-side duel-enemy-side">
             <div class="duel-side-heading duel-enemy-identity">
-              <strong id="enemy-battle-name">AI Rakip</strong>
+              <button id="enemy-battle-name" class="public-player-link battle-player-link" type="button">AI Rakip</button>
               <div id="enemy-deck-preview" class="enemy-deck-preview" aria-label="Rakip destesi"></div>
               <span id="enemy-board-status" class="board-vitals" hidden>Çekirdek 300/300</span>
             </div>
@@ -1049,7 +1061,7 @@
         <h2>SAVAŞ ÖDÜLLERİ</h2>
         <div class="post-match-reward-list">
           <article>
-            <i class="resource-symbol resource-symbol-trophy" aria-hidden="true">♛</i>
+            <i class="resource-symbol resource-symbol-trophy" aria-hidden="true">🏆</i>
             <span>KUPA</span>
             <strong id="post-match-trophy-reward">Kaydediliyor…</strong>
           </article>

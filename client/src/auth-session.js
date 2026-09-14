@@ -10,6 +10,7 @@
     "/post-match/",
     "/statistics/",
     "/profile/",
+    "/public-profiles/",
     "/local-ai/",
     "/pvp/",
   ];

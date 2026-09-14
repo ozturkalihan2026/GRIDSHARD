@@ -51,6 +51,13 @@ button, input { font: inherit; }
   background: #111c2c;
 }
 
+.battle-time.is-overtime {
+  color: #ffe071;
+  border-color: #ff725f;
+  background: #351525;
+  box-shadow: 0 0 16px rgba(255, 86, 76, 0.32);
+}
+
 .battle-layout {
   display: grid;
   grid-template-columns: minmax(0, 1fr) 330px;

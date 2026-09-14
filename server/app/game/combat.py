@@ -105,7 +105,22 @@ def selectable_targets(player: PlayerBattleState) -> list[BattleModule]:
     )
 
 
-def select_target(player: PlayerBattleState) -> BattleModule | None:
+def select_target(
+    player: PlayerBattleState,
+    *,
+    core_exposed: bool = False,
+) -> BattleModule | None:
+    if core_exposed:
+        cores = [
+            module
+            for module in player.modules.values()
+            if module.status == ModuleStatus.ACTIVE
+            and module.hp > 0
+            and module.definition.mechanic_id == "core"
+        ]
+        if cores:
+            return sorted(cores, key=lambda module: module.instance_id)[0]
+
     targets = selectable_targets(player)
     return targets[0] if targets else None
 

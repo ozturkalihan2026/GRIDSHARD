@@ -683,6 +683,7 @@ class PvPSessionService:
             "tick": state.tick,
             "snapshot_revision": session.snapshot_revision,
             "elapsed_ms": state.elapsed_ms,
+            "overtime": session.engine.overtime_view(),
             "winner_player_id": state.winner_player_id,
             "loser_player_id": state.loser_player_id,
             "is_draw": state.is_draw,

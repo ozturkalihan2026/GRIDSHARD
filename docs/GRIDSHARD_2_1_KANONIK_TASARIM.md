@@ -22,6 +22,7 @@ Savaş içinde oyuncu deste rafındaki bir modüle dokunur. Yeterli **Akım** va
 - Dağıtıcı yalnız eski port topolojisine hizmet ettiği için aktif hedef katalogdan çıkarılacaktır.
 - Savaş kartına dokunma → uygun rastgele boş modül hücresine yerleşme.
 - Aynı karttan maç içinde sınırsız sayıda savaş örneği üretilebilir; gerçek saha sınırı yalnızca **boş hücre sayısı** ve **Akım maliyetidir**.
+- Maç normal süre veya toplam hasar üstünlüğüyle bitmez; galibiyet için rakip **Çekirdeğin CAN değeri sıfıra düşmeli** ya da rakip savaştan çekilmelidir.
 - Savaş ekonomisinin yerleştirme kaynağı **Akım**dır. Enerji ise sahadaki modüllerin sürdürülebilir çalışma kapasitesini belirleyen ayrı savaş sistemidir.
 - Çekirdek, savaş sırasında zamanla dolan aktif güce sahiptir; dolum görseli merkez Çekirdeğin üzerinde/çevresinde görünür, hazır olduğunda Çekirdek parlar.
 - Çekirdek gücü tetiklendiğinde etki, merkezden kablo ağı boyunca yayılan bir enerji dalgası/akım animasyonuyla tüm devreye uygulanır.
@@ -131,6 +132,18 @@ Bir modülün CAN değeri sıfıra düşüp modül parçalandığında hücre an
 - Aynı anda birden fazla hücre bağımsız Enkaz süresi taşıyabilir.
 
 Bu 3 saniyelik pencere, parçalanan modülün yerine anında yeni kart basılmasını engelleyerek saldırı temposuna kısa fakat okunabilir bir karşılık penceresi üretir.
+
+## 2.3. Maç bitişi, Aşırı Yük ve onarım yığılması
+
+Maçın tek normal galibiyet koşulu rakip Çekirdeğin yok edilmesidir. Toplam hasar, kalan modül sayısı veya kalan toplam CAN hiçbir zaman süre sonu hakemi olarak kazanan seçmez. İki Çekirdek aynı sunucu adımında yok edilirse maç berabere biter. Savaştan çekilme ayrı ve açık bir mağlubiyet koşuludur.
+
+Savunma/onarım ağırlıklı devrelerin maçı sonsuza uzatmaması için `03:00` bir bitiş sınırı değil **Aşırı Yük başlangıcıdır**:
+
+- `03:00`: saldırı hasarı `×1.25` olur ve her 30 saniyede `+0.25` daha artar. Onarım verimi `×0.50` ile başlar, her 30 saniyede `0.10` azalır ve `×0.10` altına düşmez.
+- `03:30`: Çekirdekler açığa çıkar; sahada başka modüller bulunsa da saldırılar doğrudan Çekirdeği hedefleyebilir.
+- `04:00`: Çekirdek kararsızlığı başlar. Her saniye iki Çekirdeğe de azami CAN'ın `%2`si kadar hasar uygulanır; oran her 30 saniyede `+%0.5` artar. Önceden alınmış Çekirdek hasarı sonucu doğrudan etkiler; eşzamanlı sıfırlanma beraberedir.
+
+Onarım Modülü, her bekleme süresi tamamlandığında yalnız **bir** hasarlı ve yaşayan modülü iyileştirir. Aynı sunucu destek adımında aynı hedef birden fazla Onarım Modülünden onarım alamaz. Onarım Çekirdeği iyileştirmez, yok edilmiş modülü diriltmez ve Enkaz süresini kaldırmaz. Böylece çoklu onarım hâlâ sürdürülebilir bir savunma arketipidir fakat odaklanmış hasarı sınırsız biçimde silemez.
 
 ## 3. Modül yükseltme modeli
 

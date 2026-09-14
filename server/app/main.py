@@ -329,6 +329,7 @@ PROTECTED_PLAYER_PREFIXES = (
     "/post-match/",
     "/statistics/",
     "/profile/",
+    "/public-profiles/",
     "/local-ai/",
     "/pvp/",
 )
@@ -3066,6 +3067,90 @@ def _ranked_player_rows(players: list[dict], value_key: str) -> list[dict]:
     ]
 
 
+def _public_player_profile_view(player_id: str) -> dict:
+    """Return the public first profile page without private account controls."""
+    try:
+        profile = player_profile_service.get(player_id)
+    except PlayerProfileError:
+        try:
+            player_data_store_service.load_player(player_id)
+        except PlayerDataStoreError as exc:
+            raise HTTPException(status_code=404, detail="Oyuncu profili bulunamadı.") from exc
+        profile = player_profile_service.get_or_create(player_id)
+
+    profile_view = profile.to_view()
+    statistics = player_statistics_service.get_or_create(player_id).to_view()
+    meta_view = meta_progression_service.view(profile)
+    selected_core = next(
+        (
+            item
+            for item in meta_view["cores"]["types"]
+            if item["id"] == profile.selected_core_type
+        ),
+        meta_view["cores"]["types"][0],
+    )
+    most_used_decks = meta_view["statistics"].get("most_used_decks", [])
+    featured_deck = (
+        dict(most_used_decks[0])
+        if most_used_decks
+        else {
+            "module_ids": list(profile.preferred_battle_pool_ids),
+            "matches": 0,
+        }
+    )
+    season = monthly_season_descriptor()
+
+    return {
+        "player_id": profile.player_id,
+        "display_name": profile.display_name,
+        "rating": max(0, int(profile.rating)),
+        "highest_rating": max(0, int(profile_view["highest_rating"])),
+        "rank_name_tr": profile_view["league_name_tr"],
+        "operator_title": profile_view["operator_title"],
+        "avatar": {
+            "selected_avatar_id": profile.selected_avatar_id,
+            "selected_avatar_frame_id": profile.selected_avatar_frame_id,
+        },
+        "team": {
+            "team_id": profile.team_id,
+            "team_name": profile.team_name,
+        },
+        "featured_deck": featured_deck,
+        "selected_core": {
+            "id": selected_core["id"],
+            "name_tr": selected_core["name_tr"],
+            "level": selected_core["level"],
+            "rarity": selected_core["rarity"],
+        },
+        "season": {
+            "id": season["id"],
+            "name_tr": season["name_tr"],
+            "ends_at": season["ends_at"],
+            "summary": profile_view["season_summary"],
+        },
+        "statistics": {
+            "total_matches": statistics["total_matches"],
+            "wins": statistics["wins"],
+            "losses": statistics["losses"],
+            "draws": statistics["draws"],
+            "win_rate": statistics["win_rate"],
+            "average_match_duration_ms": statistics["average_match_duration_ms"],
+            "total_damage_dealt": statistics["total_damage_dealt"],
+        },
+        "visibility": {
+            "profile": True,
+            "avatar": False,
+            "rewards": False,
+            "settings": False,
+        },
+    }
+
+
+@app.get("/public-profiles/{player_id}")
+def get_public_player_profile(player_id: str) -> dict:
+    return _public_player_profile_view(player_id)
+
+
 @app.get("/leaderboards")
 def get_leaderboards() -> dict:
     players = _leaderboard_profile_rows()
@@ -3752,6 +3837,29 @@ def choose_player_module_talent(player_id: str, module_id: str, tier: str, choic
         raise HTTPException(status_code=422, detail=str(exc)) from exc
     persist_player_data(player_id)
     return {"receipt": receipt, "meta_progression": meta_progression_service.view(profile), "profile": profile.to_view()}
+
+
+@app.post("/profile/{player_id}/meta-progression/modules/{module_id}/talents/reset")
+def reset_player_module_talents(
+    player_id: str,
+    module_id: str,
+    request: MetaOperationRequest,
+) -> dict:
+    profile = player_profile_service.get_or_create(player_id)
+    try:
+        receipt = meta_progression_service.reset_module_talents(
+            profile,
+            module_id,
+            request.request_id,
+        )
+    except MetaProgressionError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+    persist_player_data(player_id)
+    return {
+        "receipt": receipt,
+        "meta_progression": meta_progression_service.view(profile),
+        "profile": profile.to_view(),
+    }
 
 
 @app.post("/profile/{player_id}/engagement/missions/{mission_id}/claim")

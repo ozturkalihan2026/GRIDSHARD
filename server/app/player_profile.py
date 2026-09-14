@@ -3,7 +3,7 @@ from calendar import monthrange
 from datetime import datetime, timedelta, timezone
 import hashlib
 
-from .arena_canon import unlocked_reward_module_ids
+from .arena_canon import MODULES, unlocked_reward_module_ids
 from .game.battle_pool import default_battle_pool, validate_battle_pool
 
 
@@ -276,8 +276,8 @@ class PlayerProfile:
     lifetime_stats: dict = field(default_factory=dict)
     module_shards: dict[str, int] = field(
         default_factory=lambda: {
-            module_id: 40
-            for module_id in default_battle_pool().module_definition_ids
+            module_id: 0
+            for module_id in MODULES
         }
     )
     module_upgrade_levels: dict[str, int] = field(default_factory=dict)

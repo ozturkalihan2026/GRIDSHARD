@@ -7,8 +7,8 @@ from .game.economy import (
     DEFAULT_CIRCUIT_CREDIT_CONFIG,
 )
 from .game.engine import (
-    BATTLE_TIME_LIMIT_MS,
     MODULE_INTERACTION_UNLOCK_MS,
+    OVERTIME_START_MS,
 )
 
 
@@ -150,7 +150,7 @@ def _simulate_module_interaction(
     proposed:float,
 )->BalanceSimulationResult:
     battle_seconds=(
-        BATTLE_TIME_LIMIT_MS
+        OVERTIME_START_MS
         / 1000
     )
     return BalanceSimulationResult(
@@ -181,7 +181,8 @@ def _simulate_module_interaction(
                 ),
         },
         notes=(
-            "Bu dry-run savaş içi modül müdahalesi kilidinin zaman etkisini karşılaştırır.",
+            "Bu dry-run savaş içi modül müdahalesi kilidini normal savaş safhasında karşılaştırır.",
+            "03:00 sonrasında maç bitmez; Aşırı Yük safhası başlar.",
             f"Mevcut motor kilidi {MODULE_INTERACTION_UNLOCK_MS/1000:g} saniyedir.",
         ),
     )

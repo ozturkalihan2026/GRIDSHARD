@@ -199,6 +199,8 @@ def _effect_lines(definition_id: str) -> list[str]:
                 f"Temel onarım eyleminde {BASE_REPAIR_AMOUNT} HP geri kazandırır; "
                 f"temel bekleme süresi {definition.cooldown_ms / 1000:g} sn."
             ),
+            "Her aktivasyonda en düşük CAN oranındaki tek yaşayan modülü hedefler.",
+            "Aynı destek adımında bir hedef yalnız bir kez onarılabilir.",
             "Belirli sabotaj etkilerini temizleyebilir.",
         ]
 
@@ -340,7 +342,7 @@ def _effect_lines_en(definition_id: str) -> list[str]:
     if definition_id == "barrier":
         return ["Reduces incoming damage by 20% while powered.", "Takes target priority and can shorten sabotage duration by 25%."]
     if definition_id == "repair":
-        return [f"Restores {BASE_REPAIR_AMOUNT} HP with a base cooldown of {definition.cooldown_ms / 1000:g} sec.", "Can cleanse selected sabotage effects."]
+        return [f"Restores {BASE_REPAIR_AMOUNT} HP to one lowest-health-ratio living module with a base cooldown of {definition.cooldown_ms / 1000:g} sec.", "A target can be repaired only once per support step.", "Can cleanse selected sabotage effects."]
     if definition_id == "cooler":
         return [f"Reduces target heat by {COOLER_HEAT_REDUCTION_PER_TICK:g} every 0.1 sec.", f"Removes {COOLER_DEBUFF_REDUCTION_MS_PER_TICK} ms from reducible debuffs per engine step."]
     if definition_id == "amplifier":

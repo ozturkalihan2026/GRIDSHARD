@@ -1,4 +1,19 @@
 {
+  "wt-741ee051-a7ea-434b-8bf4-05762efc947b": {
+    "Başlangıç Devresi": {
+      "favorite": false,
+      "last_used_at_ms": null,
+      "module_definition_ids": [
+        "laser",
+        "shield",
+        "repair",
+        "cooler",
+        "battery",
+        "pulse_cannon"
+      ],
+      "use_count": 0
+    }
+  },
   "wt-81aef76b-f7e7-498a-9c29-63cdf1fb9793": {
     "Başlangıç Devresi": {
       "favorite": false,
@@ -39,7 +54,7 @@
         "repair",
         "pulse_cannon",
         "battery",
-        "amplifier"
+        "emp"
       ],
       "use_count": 0
     },
