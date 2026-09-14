@@ -637,6 +637,23 @@
         "team_id": "team-82e527da447d"
       }
     },
+    "team:message:wt-dbd4a70f-4d90-4b60-958a-18ca1e4eff82:1789404764485:f8a089795e68": {
+      "created_at": "2026-09-14T16:52:44.484434+00:00",
+      "fingerprint": "abe2573300121911c9b4c0a5aa7a206c49f123639eded4337620bb2bbb1d1e70",
+      "result": {
+        "message": {
+          "author_id": "wt-dbd4a70f-4d90-4b60-958a-18ca1e4eff82",
+          "created_at": "2026-09-14T16:52:44.484434+00:00",
+          "message_id": "message-10547b829cd14974a6118c5c92670537",
+          "moderation_status": "pending",
+          "reports": [],
+          "text": "sana asıl asddmdufbhfb",
+          "visibility": "visible"
+        },
+        "replayed": false,
+        "team_id": "team-82e527da447d"
+      }
+    },
     "team:module-request:wt-81aef76b-f7e7-498a-9c29-63cdf1fb9793:1789043590185:b25114c8c6c83": {
       "created_at": "2026-09-10T12:33:10.195027+00:00",
       "fingerprint": "e896b41f29ff58106acc86b77018f07f484b05a08260337a62796b6ca52067f0",
@@ -889,6 +906,15 @@
           "moderation_status": "pending",
           "reports": [],
           "text": "dsfsaddfa",
+          "visibility": "visible"
+        },
+        {
+          "author_id": "wt-dbd4a70f-4d90-4b60-958a-18ca1e4eff82",
+          "created_at": "2026-09-14T16:52:44.484434+00:00",
+          "message_id": "message-10547b829cd14974a6118c5c92670537",
+          "moderation_status": "pending",
+          "reports": [],
+          "text": "sana asıl asddmdufbhfb",
           "visibility": "visible"
         }
       ],

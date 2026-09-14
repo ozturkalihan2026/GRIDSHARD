@@ -2,6 +2,7 @@ from dataclasses import dataclass
 from .board import get_cell_effects
 from .heat import heat_generation_multiplier
 from .models import BattleModule, ModuleStatus, PlayerBattleState, Position
+from .operations import module_is_operational
 from .topology import build_energy_topology
 
 REPAIR_COOLDOWN_ID = "support_repair"
@@ -52,7 +53,7 @@ def attack_support_modifiers(player, attack_module, core_position):
             module
             for module in neighbors
             if module.definition.mechanic_id == mechanic
-            and module.is_powered
+            and module_is_operational(module)
             and JAMMER_DEBUFF_ID not in module.debuffs
         ]
         if not candidates:
@@ -120,6 +121,7 @@ def repair_targets(player, repair_module, core_position):
             if module.status == ModuleStatus.ACTIVE
             and module.definition.id != "core"
             and module.hp > 0
+            and module_is_operational(module)
             and module.hp < module.definition.max_hp
         ),
         key=lambda module: (module.hp / module.definition.max_hp, module.instance_id),
@@ -133,13 +135,17 @@ def repair_target(player, repair_module, core_position):
 
 def cooler_targets(player, cooler_module, core_position):
     topology=build_energy_topology(player,core_position)
-    return [m for m in _neighbors(cooler_module,topology,player) if m.heat>0]
+    return [
+        m
+        for m in _neighbors(cooler_module,topology,player)
+        if m.heat > 0 and module_is_operational(m)
+    ]
 
 def overclock_targets(player, overclock_module, core_position):
     topology=build_energy_topology(player,core_position)
     return [
         m for m in _neighbors(overclock_module,topology,player)
-        if m.definition.category=="saldırı" and m.status==ModuleStatus.ACTIVE
+        if m.definition.category=="saldırı" and module_is_operational(m)
     ]
 
 

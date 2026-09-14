@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 
 from .models import ModuleStatus, PlayerBattleState, Position
+from .operations import has_disabling_sabotage, module_is_operational
 from .topology import DISRUPTOR_DEBUFF_ID
 
 EMP_DEBUFF_ID = "emp_disabled"
@@ -100,9 +101,14 @@ def _energy_leech_multiplier(module) -> float:
 def process_energy_tick(player: PlayerBattleState, core_position: Position = Position(2, 1)) -> EnergyTickResult:
     del core_position  # The GRIDSHARD 2.1 board has an embedded energy bus.
     active = [m for m in _active_modules(player) if m.hp > 0]
-    core = next((m for m in active if m.definition.id == "core"), None)
+    for module in active:
+        module.is_powered = not has_disabling_sabotage(module)
+    operational = [module for module in active if module_is_operational(module)]
+    core = next((m for m in operational if m.definition.id == "core"), None)
     level = max(1, min(15, player.core_level))
-    compatibility_generators = [m for m in active if m.definition.id == "generator"]
+    compatibility_generators = [
+        m for m in operational if m.definition.id == "generator"
+    ]
     compatibility_generation = max(
         (
             m.definition.energy_generation * _energy_leech_multiplier(m)
@@ -119,10 +125,8 @@ def process_energy_tick(player: PlayerBattleState, core_position: Position = Pos
     core_generation *= 1 + .03 * sum(s.endswith("_energy") for s in player.core_skills)
     batteries = [
         module
-        for module in active
+        for module in operational
         if module.definition.id == "battery"
-        and EMP_DEBUFF_ID not in module.debuffs
-        and DISRUPTOR_DEBUFF_ID not in module.debuffs
     ]
     battery_generation_by_module = {
         module.instance_id: (
@@ -135,20 +139,25 @@ def process_energy_tick(player: PlayerBattleState, core_position: Position = Pos
     battery_generation = sum(battery_generation_by_module.values())
     production = core_generation + battery_generation
     capacity = 100.0 + 3 * (level - 1)
-    capacity += sum(_storage_capacity(m) * m.definition.effect_multiplier for m in active)
+    capacity += sum(
+        _storage_capacity(m) * m.definition.effect_multiplier
+        for m in operational
+    )
     regulator_modules = [
         module
-        for module in active
+        for module in operational
         if module.definition.id == "current_balancer"
-        and EMP_DEBUFF_ID not in module.debuffs
-        and DISRUPTOR_DEBUFF_ID not in module.debuffs
     ]
     regulators = sum(
         module.definition.effect_multiplier
         for module in regulator_modules
     )
     reduction = max(.65, .92 ** regulators)
-    consumers = [m for m in active if m is not core and m.definition.id != "generator"]
+    consumers = [
+        m
+        for m in operational
+        if m is not core and m.definition.id != "generator"
+    ]
     raw_demand_by_module = {
         module.instance_id: _module_demand_per_second(module)
         for module in consumers
@@ -167,7 +176,7 @@ def process_energy_tick(player: PlayerBattleState, core_position: Position = Pos
     # batteries/capacitors are the explicit burst reserve instead.
     distribution_efficiency = (
         SPLITTER_DISTRIBUTION_EFFICIENCY
-        if any(m.definition.id == "splitter" for m in active)
+        if any(m.definition.id == "splitter" for m in operational)
         else BASE_DISTRIBUTION_EFFICIENCY
     )
     available = generated * distribution_efficiency
@@ -185,7 +194,11 @@ def process_energy_tick(player: PlayerBattleState, core_position: Position = Pos
     discharged_by_module: dict[str, float] = {}
     if required > available:
         for module in sorted(
-            (item for item in active if item.definition.id in {"battery", "capacitor"}),
+            (
+                item
+                for item in operational
+                if item.definition.id in {"battery", "capacitor"}
+            ),
             key=lambda item: item.instance_id,
         ):
             amount = min(
@@ -223,8 +236,6 @@ def process_energy_tick(player: PlayerBattleState, core_position: Position = Pos
     elif load > 1: speed = .9
     player.energy_speed_multiplier, player.energy_damage_multiplier, player.energy_support_multiplier = speed, damage, support
     for module in active:
-        debuff_powered = EMP_DEBUFF_ID not in module.debuffs and DISRUPTOR_DEBUFF_ID not in module.debuffs
-        module.is_powered = debuff_powered
         module.energy_required_last_tick = demand_by_module.get(module.instance_id, 0.0) * TICK_SECONDS
         module.energy_received_last_tick = (
             module.energy_required_last_tick * delivery_ratio
@@ -243,7 +254,11 @@ def process_energy_tick(player: PlayerBattleState, core_position: Position = Pos
     stored = 0.0
     surplus = max(0.0, available - consumed)
     for module in sorted(
-        (item for item in active if item.definition.id in {"battery", "capacitor"}),
+        (
+            item
+            for item in operational
+            if item.definition.id in {"battery", "capacitor"}
+        ),
         key=lambda item: item.instance_id,
     ):
         if not module.is_powered:

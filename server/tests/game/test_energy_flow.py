@@ -267,14 +267,17 @@ def test_battery_materially_reduces_shortfall_without_powering_heavy_attack_stac
 
     player.energy_stock = 0.0
     without_battery = process_energy_tick(player, Position(2, 2))
+    load_without_battery = player.energy_load_ratio
     battery = add(engine, "battery-support", "battery", 0, 1)
     player.energy_stock = 0.0
     with_battery = process_energy_tick(player, Position(2, 2))
+    load_with_battery = player.energy_load_ratio
 
     assert with_battery.generated - without_battery.generated == pytest.approx(0.6)
     assert len(with_battery.powered_module_ids) > len(without_battery.powered_module_ids)
     assert battery.is_powered is True
-    assert with_battery.unpowered_module_ids
+    assert load_with_battery < load_without_battery
+    assert with_battery.unpowered_module_ids == ()
 
 
 def test_energy_and_circuit_credit_are_separate():

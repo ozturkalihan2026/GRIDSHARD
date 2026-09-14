@@ -32,10 +32,10 @@ def test_unpowered_shield_does_not_reduce_damage():
     assert r.defense_type=="Yok"
     assert r.final_damage==r.raw_damage
 
-def test_armor_is_passive():
+def test_armor_is_passive_while_operational():
     e=make_engine()
     pulse=add(e,"p1","pulse","pulse_cannon",1,1)
-    armor=add(e,"p2","armor","armor",2,1,powered=False)
+    armor=add(e,"p2","armor","armor",2,1,powered=True)
     r=resolve_attack("p1",pulse,"p2",armor)
     assert r.defense_type=="Zırh"
     assert r.final_damage<r.raw_damage
@@ -72,13 +72,21 @@ def test_unpowered_barrier_loses_priority():
     add(e,"p2","gen","generator",2,3)
     assert select_target(e.state.players["p2"]).instance_id==first.instance_id
 
-def test_defense_cell_is_real():
+def test_normal_cell_has_no_hidden_defense_bonus():
     e=make_engine()
     laser=add(e,"p1","laser","laser",1,1)
-    armor=add(e,"p2","armor","armor",4,2,powered=False)
+    armor=add(e,"p2","armor","armor",4,2,powered=True)
     r=resolve_attack("p1",laser,"p2",armor)
-    assert "Savunma Hücresi" in r.defense_type
-    assert r.defense_multiplier < 0.75
+    assert r.defense_type=="Zırh"
+    assert r.defense_multiplier==0.75
+
+def test_unpowered_armor_has_no_passive_defense():
+    e=make_engine()
+    pulse=add(e,"p1","pulse","pulse_cannon",1,1)
+    armor=add(e,"p2","armor","armor",2,1,powered=False)
+    r=resolve_attack("p1",pulse,"p2",armor)
+    assert r.defense_type=="Yok"
+    assert r.final_damage==r.raw_damage
 
 def test_counter_strategy_multipliers():
     e=make_engine()

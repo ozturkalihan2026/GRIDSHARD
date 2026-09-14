@@ -2,6 +2,7 @@ from dataclasses import dataclass
 
 from .board import get_cell_effects
 from .models import BattleModule, ModuleStatus, PlayerBattleState
+from .operations import module_is_operational
 
 
 SABOTAGE_COOLDOWN_ID = "sabotage"
@@ -68,8 +69,7 @@ def _active_targets(player: PlayerBattleState) -> list[BattleModule]:
         (
             module
             for module in player.modules.values()
-            if module.status == ModuleStatus.ACTIVE
-            and module.hp > 0
+            if module_is_operational(module)
             and module.definition.mechanic_id != "core"
         ),
         key=lambda module: module.instance_id,
@@ -187,14 +187,26 @@ def sabotage_resistance(
     ]
 
     if powered_barriers:
-        duration_multiplier *= BARRIER_DURATION_MULTIPLIER
+        barrier_effect = max(
+            module.definition.effect_multiplier
+            for module in powered_barriers
+        )
+        duration_multiplier *= max(
+            0.35,
+            1 - (1 - BARRIER_DURATION_MULTIPLIER) * barrier_effect,
+        )
         reasons.append("enerjili-bariyer")
 
     if (
         sabotage_module.definition.mechanic_id == "disruptor"
         and target.definition.mechanic_id == "armor"
     ):
-        duration_multiplier *= ARMOR_DISRUPTOR_DURATION_MULTIPLIER
+        duration_multiplier *= max(
+            0.30,
+            1
+            - (1 - ARMOR_DISRUPTOR_DURATION_MULTIPLIER)
+            * target.definition.effect_multiplier,
+        )
         reasons.append("zırh-hat-direnci")
 
     # Sabotajın doğrudan enerjili Bariyere yönelmesi ve sabotajın

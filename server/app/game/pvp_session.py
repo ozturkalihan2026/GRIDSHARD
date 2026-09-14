@@ -550,12 +550,21 @@ class PvPSessionService:
                 received = module.energy_received_last_tick
                 if module.definition.id == "core":
                     power_reason = "source"
-                elif module.definition.energy_consumption <= 0:
-                    power_reason = "passive"
                 elif "emp_disabled" in module.debuffs:
                     power_reason = "emp_disabled"
                 elif "line_disrupted" in module.debuffs:
                     power_reason = "line_disrupted"
+                elif any(
+                    effect_id in module.debuffs
+                    for effect_id in (
+                        "support_jammed",
+                        "virus",
+                        "energy_leech",
+                    )
+                ):
+                    power_reason = "sabotaged"
+                elif module.definition.energy_consumption <= 0:
+                    power_reason = "passive"
                 elif module.instance_id not in reachable_ids:
                     power_reason = "board_disconnected"
                 elif module.is_powered:

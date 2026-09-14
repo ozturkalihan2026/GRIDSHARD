@@ -7,7 +7,7 @@
         "laser",
         "shield",
         "repair",
-        "cooler",
+        "emp",
         "battery",
         "pulse_cannon"
       ],
@@ -50,17 +50,17 @@
       "last_used_at_ms": null,
       "module_definition_ids": [
         "laser",
-        "shield",
+        "armor",
         "repair",
-        "pulse_cannon",
+        "targeting_computer",
         "battery",
-        "emp"
+        "missile_launcher"
       ],
       "use_count": 0
     },
     "Dengeli": {
       "favorite": true,
-      "last_used_at_ms": 1789151244171,
+      "last_used_at_ms": 1789405311352,
       "module_definition_ids": [
         "shield",
         "repair",
@@ -69,7 +69,7 @@
         "laser",
         "cooler"
       ],
-      "use_count": 19
+      "use_count": 21
     }
   }
 }

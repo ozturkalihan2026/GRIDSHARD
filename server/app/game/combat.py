@@ -2,6 +2,7 @@ from dataclasses import dataclass
 
 from .board import get_cell_effects
 from .models import BattleModule, ModuleStatus, PlayerBattleState
+from .operations import module_is_operational
 
 
 ATTACK_COOLDOWN_ID = "attack"
@@ -34,8 +35,7 @@ class AttackResolution:
 
 def is_attack_module(module: BattleModule) -> bool:
     return (
-        module.status == ModuleStatus.ACTIVE
-        and module.hp > 0
+        module_is_operational(module)
         and module.definition.category in {"saldırı", "sabotaj"}
         and module.definition.base_damage > 0
         and module.definition.cooldown_ms > 0
@@ -53,8 +53,7 @@ def selectable_targets(player: PlayerBattleState) -> list[BattleModule]:
     active = [
         module
         for module in player.modules.values()
-        if module.status == ModuleStatus.ACTIVE
-        and module.hp > 0
+        if module_is_operational(module)
     ]
 
     normal_targets = [
@@ -114,8 +113,7 @@ def select_target(
         cores = [
             module
             for module in player.modules.values()
-            if module.status == ModuleStatus.ACTIVE
-            and module.hp > 0
+            if module_is_operational(module)
             and module.definition.mechanic_id == "core"
         ]
         if cores:
@@ -164,6 +162,9 @@ def defense_profile(target: BattleModule) -> tuple[str, float, float]:
     defense_type = "Yok"
     multiplier = 1.0
     reflection_ratio = 0.0
+
+    if target.definition.mechanic_id != "core" and not module_is_operational(target):
+        return defense_type, multiplier, reflection_ratio
 
     if target.definition.mechanic_id == "shield" and target.is_powered:
         defense_type = "Kalkan"

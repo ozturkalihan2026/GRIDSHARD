@@ -378,6 +378,155 @@
         "team_id": "team-82e527da447d"
       }
     },
+    "team:join:wt-741ee051-a7ea-434b-8bf4-05762efc947b:1789391562617:f1b0881535eee8": {
+      "created_at": "2026-09-14T13:12:42.622625+00:00",
+      "fingerprint": "2a2665cc7a0fff6386cd170eb0685b74fe447108a222e1ccb9094241e100d63a",
+      "result": {
+        "replayed": false,
+        "team": {
+          "created_at": "2026-09-10T11:47:16.783321+00:00",
+          "member_ids": [
+            "wt-81aef76b-f7e7-498a-9c29-63cdf1fb9793",
+            "wt-c6b71186-dcf0-4575-beea-a4fc5783f7e6",
+            "wt-dbd4a70f-4d90-4b60-958a-18ca1e4eff82",
+            "wt-1561dea8-843f-4d64-ae50-173ff6e15d04",
+            "wt-741ee051-a7ea-434b-8bf4-05762efc947b"
+          ],
+          "member_limit": 30,
+          "messages": [
+            {
+              "author_id": "wt-81aef76b-f7e7-498a-9c29-63cdf1fb9793",
+              "created_at": "2026-09-10T11:47:30.873889+00:00",
+              "message_id": "message-751143d81b6d43cda6fe1322fee1d546",
+              "moderation_status": "pending",
+              "reports": [],
+              "text": "dsfsaddfa",
+              "visibility": "visible"
+            }
+          ],
+          "module_requests": [
+            {
+              "created_at": "2026-09-10T12:33:10.195027+00:00",
+              "donated_amount": 12,
+              "donors": {
+                "wt-c6b71186-dcf0-4575-beea-a4fc5783f7e6": 12
+              },
+              "fulfilled": true,
+              "module_id": "laser",
+              "rarity": "common",
+              "request_id": "module-request-ab477ad332384704b491bf819aad8a15",
+              "requested_amount": 12,
+              "requester_id": "wt-81aef76b-f7e7-498a-9c29-63cdf1fb9793",
+              "week_key": "2026-W37"
+            },
+            {
+              "created_at": "2026-09-11T20:48:34.954382+00:00",
+              "donated_amount": 0,
+              "donors": {},
+              "fulfilled": false,
+              "module_id": "battery",
+              "rarity": "common",
+              "request_id": "module-request-bc76bcf306dc42f5be8ec8ca2a7ca75a",
+              "requested_amount": 12,
+              "requester_id": "wt-dbd4a70f-4d90-4b60-958a-18ca1e4eff82",
+              "week_key": "2026-W37"
+            },
+            {
+              "created_at": "2026-09-11T21:34:11.266122+00:00",
+              "donated_amount": 0,
+              "donors": {},
+              "fulfilled": false,
+              "module_id": "battery",
+              "rarity": "common",
+              "request_id": "module-request-136fe04f13ed4b0f9a8b20bd9924d37b",
+              "requested_amount": 12,
+              "requester_id": "wt-dbd4a70f-4d90-4b60-958a-18ca1e4eff82",
+              "week_key": "2026-W37"
+            },
+            {
+              "created_at": "2026-09-11T21:34:15.318184+00:00",
+              "donated_amount": 0,
+              "donors": {},
+              "fulfilled": false,
+              "module_id": "pulse_cannon",
+              "rarity": "rare",
+              "request_id": "module-request-00e1764224084b419ddc7720cf7681c8",
+              "requested_amount": 8,
+              "requester_id": "wt-dbd4a70f-4d90-4b60-958a-18ca1e4eff82",
+              "week_key": "2026-W37"
+            },
+            {
+              "created_at": "2026-09-11T21:34:17.859404+00:00",
+              "donated_amount": 0,
+              "donors": {},
+              "fulfilled": false,
+              "module_id": "emp",
+              "rarity": "rare",
+              "request_id": "module-request-9345a8748b1a49d4828a8446003b44c3",
+              "requested_amount": 8,
+              "requester_id": "wt-dbd4a70f-4d90-4b60-958a-18ca1e4eff82",
+              "week_key": "2026-W37"
+            },
+            {
+              "created_at": "2026-09-11T21:34:20.252763+00:00",
+              "donated_amount": 0,
+              "donors": {},
+              "fulfilled": false,
+              "module_id": "shield",
+              "rarity": "common",
+              "request_id": "module-request-2ef1b0f3214a4ab3ac44981161d9a1e0",
+              "requested_amount": 12,
+              "requester_id": "wt-dbd4a70f-4d90-4b60-958a-18ca1e4eff82",
+              "week_key": "2026-W37"
+            },
+            {
+              "created_at": "2026-09-11T21:57:15.317841+00:00",
+              "donated_amount": 4,
+              "donors": {
+                "wt-1561dea8-843f-4d64-ae50-173ff6e15d04": 4
+              },
+              "fulfilled": true,
+              "module_id": "battery",
+              "rarity": "common",
+              "request_id": "module-request-79b0030c3da04b75996f1c8b51a8d52c",
+              "requested_amount": 4,
+              "requester_id": "wt-dbd4a70f-4d90-4b60-958a-18ca1e4eff82",
+              "week_key": "2026-W37"
+            }
+          ],
+          "name": "Kesici",
+          "owner_id": "wt-81aef76b-f7e7-498a-9c29-63cdf1fb9793",
+          "team_id": "team-82e527da447d",
+          "training_challenges": [
+            {
+              "accepted_at": "2026-09-14T06:15:50.475032+00:00",
+              "challenge_id": "training-74fd9caff9f74eee9cc06ed476d712a7",
+              "challenger_id": "wt-dbd4a70f-4d90-4b60-958a-18ca1e4eff82",
+              "created_at": "2026-09-11T21:35:40.232719+00:00",
+              "match_type": "team_training",
+              "opponent_id": "wt-81aef76b-f7e7-498a-9c29-63cdf1fb9793",
+              "protocol": "team_training_v1",
+              "ranked": false,
+              "rewards_enabled": false,
+              "status": "accepted"
+            },
+            {
+              "accepted_at": "2026-09-13T19:47:41.905798+00:00",
+              "challenge_id": "training-d9fb44a2d2e04e5c8a998c09ee07f252",
+              "challenger_id": "wt-1561dea8-843f-4d64-ae50-173ff6e15d04",
+              "created_at": "2026-09-12T19:39:32.986285+00:00",
+              "match_type": "team_training",
+              "opponent_id": "wt-dbd4a70f-4d90-4b60-958a-18ca1e4eff82",
+              "protocol": "team_training_v1",
+              "ranked": false,
+              "rewards_enabled": false,
+              "status": "accepted"
+            }
+          ]
+        },
+        "team_id": "team-82e527da447d"
+      }
+    },
     "team:join:wt-c6b71186-dcf0-4575-beea-a4fc5783f7e6:1789134059656:ec597a91bc0a78": {
       "created_at": "2026-09-11T13:40:59.661987+00:00",
       "fingerprint": "14bf036fe84d48ff479de8d4176875c86a22251cb5e49e981c5482b2b23335a0",
@@ -728,7 +877,8 @@
         "wt-81aef76b-f7e7-498a-9c29-63cdf1fb9793",
         "wt-c6b71186-dcf0-4575-beea-a4fc5783f7e6",
         "wt-dbd4a70f-4d90-4b60-958a-18ca1e4eff82",
-        "wt-1561dea8-843f-4d64-ae50-173ff6e15d04"
+        "wt-1561dea8-843f-4d64-ae50-173ff6e15d04",
+        "wt-741ee051-a7ea-434b-8bf4-05762efc947b"
       ],
       "member_limit": 30,
       "messages": [

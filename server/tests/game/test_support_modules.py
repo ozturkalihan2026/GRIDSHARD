@@ -41,7 +41,7 @@ def test_repair_heals_connected_damaged_module():
     assert shield.hp==55
 
 
-def test_repair_heals_every_damaged_module_and_emits_actual_values():
+def test_repair_heals_one_lowest_health_target_and_emits_actual_value():
     e=make_engine()
     add(e,"p1","core","core",2,1)
     repair=add(e,"p1","repair","repair",0,0)
@@ -54,9 +54,9 @@ def test_repair_heals_every_damaged_module_and_emits_actual_values():
 
     e._process_support_actions()
 
-    assert repair.hp == 100
+    assert repair.hp == 93
     assert shield.hp == 55
-    assert laser.hp == 100
+    assert laser.hp == 95
     repaired = [
         event.data
         for event in e.state.events
@@ -65,7 +65,7 @@ def test_repair_heals_every_damaged_module_and_emits_actual_values():
     ]
     assert {
         event["target_module_id"]: event["repair"] for event in repaired
-    } == {"repair": 7, "shield": 15, "laser": 5}
+    } == {"shield": 15}
 
 def test_normal_cells_have_no_hidden_repair_bonus():
     e=make_engine()

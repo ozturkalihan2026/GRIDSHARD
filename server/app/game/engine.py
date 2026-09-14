@@ -23,6 +23,7 @@ from .combat import (
     select_target,
 )
 from .energy import process_energy_tick
+from .operations import has_disabling_sabotage, module_is_operational
 from .heat import (
     CRITICAL_HEAT_THRESHOLD,
     MAX_HEAT,
@@ -826,7 +827,7 @@ class BattleEngine:
                 (
                     module
                     for module in attacker_player.modules.values()
-                    if module.status == ModuleStatus.ACTIVE
+                    if module_is_operational(module)
                     and module.definition.category == "sabotaj"
                 ),
                 key=lambda module: module.instance_id,
@@ -912,9 +913,11 @@ class BattleEngine:
                     data,
                 )
 
-                if plan.effect_id == EMP_DEBUFF_ID:
-                    target_module.is_powered = False
-                    target_module.energy_received_last_tick = 0.0
+                # Every sabotage family suspends the affected card.  The card
+                # stays visible for feedback/cleansing, but cannot attack,
+                # defend, support, generate energy or attract targeting.
+                target_module.is_powered = False
+                target_module.energy_received_last_tick = 0.0
 
                 self._emit(
                     "sabotage_applied",
@@ -968,7 +971,7 @@ class BattleEngine:
                 (
                     module
                     for module in player.modules.values()
-                    if module.status == ModuleStatus.ACTIVE
+                    if module_is_operational(module)
                     and module.definition.category == "destek"
                 ),
                 key=lambda module: module.instance_id,
@@ -1004,6 +1007,9 @@ class BattleEngine:
                     if cleanse is not None:
                         cleanse_target, effect_id = cleanse
                         del cleanse_target.debuffs[effect_id]
+                        cleanse_target.is_powered = not has_disabling_sabotage(
+                            cleanse_target
+                        )
                         self._emit(
                             "sabotage_cleansed",
                             {
@@ -1088,10 +1094,18 @@ class BattleEngine:
                             continue
 
                         before_expires = effect.expires_at_ms
+                        reduction_ms = max(
+                            1,
+                            round(
+                                COOLER_DEBUFF_REDUCTION_MS_PER_TICK
+                                * module.definition.effect_multiplier
+                                * player.energy_support_multiplier
+                            ),
+                        )
                         effect.expires_at_ms = max(
                             self.state.elapsed_ms,
                             effect.expires_at_ms
-                            - COOLER_DEBUFF_REDUCTION_MS_PER_TICK,
+                            - reduction_ms,
                         )
 
                         self._emit(
@@ -1104,8 +1118,7 @@ class BattleEngine:
                                 "before_expires_at_ms": before_expires,
                                 "after_expires_at_ms": effect.expires_at_ms,
                                 "reduction_ms": (
-                                    before_expires
-                                    - effect.expires_at_ms
+                                    before_expires - effect.expires_at_ms
                                 ),
                                 "cleanser": "cooler",
                             },
@@ -1113,6 +1126,9 @@ class BattleEngine:
 
                         if effect.expires_at_ms <= self.state.elapsed_ms:
                             del target.debuffs[effect_id]
+                            target.is_powered = not has_disabling_sabotage(
+                                target
+                            )
                             self._emit(
                                 "sabotage_cleansed",
                                 {
@@ -1769,7 +1785,11 @@ class BattleEngine:
         if target_module_id and target_module_id != core.instance_id:
             raise CommandRejected("Çekirdek gücü merkez Çekirdekten kullanılır.")
         level = max(1, min(15, player.core_level))
-        allies = [m for m in player.modules.values() if m.status == ModuleStatus.ACTIVE and m.hp > 0]
+        allies = [
+            module
+            for module in player.modules.values()
+            if module.definition.id == "core" or module_is_operational(module)
+        ]
         power = player.core_type
         repaired = 0
         effect_kind = {
@@ -1899,6 +1919,8 @@ class BattleEngine:
                             "Çekirdek Kesintisi",
                             duration_ms,
                         )
+                        module.is_powered = False
+                        module.energy_received_last_tick = 0.0
                         self._emit(
                             "core_effect_applied",
                             {

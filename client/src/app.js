@@ -259,7 +259,7 @@
   const client = new RelayBattleClient({
     modules: moduleDefinitions,
     unlockAtMs: 0,
-    circuitCredits: 200,
+    circuitCredits: 6,
     emitCommand(command) {
       const pvpEnvelope =
         pvpState.sessionId
@@ -6741,8 +6741,8 @@
   let webTestSamplingTimer = null;
   let activeWebTestRunId = null;
   let previousCapacity = null;
-  let mockServerCredits = 200;
-  let mockServerPassiveSeconds = 0;
+  let mockServerCredits = 6;
+  let mockServerRegenPulses = 0;
   let mockEnemyCoreHp = 300;
   let mockEnemyGeneratorHp = 150;
   let mockEnemyGeneratorPosition = {
@@ -10106,8 +10106,8 @@ function saveHumanReviewLocalNote() {
     lastBattleAnimationNow =
       null;
     mockServerCredits =
-      200;
-    mockServerPassiveSeconds =
+      6;
+    mockServerRegenPulses =
       0;
     mockEnemyCoreHp =
       300;
@@ -10129,7 +10129,7 @@ function saveHumanReviewLocalNote() {
     );
 
     client.applyServerEconomyState({
-      circuitCredits:200,
+      circuitCredits:6,
     });
     client.clearPendingPlacements();
     client.updateElapsedMs(0);
@@ -10752,8 +10752,7 @@ function saveHumanReviewLocalNote() {
     const earnedDuringBattle =
       Math.max(
         0,
-        Number(mockServerPassiveSeconds || 0)
-        * 10
+        Number(mockServerRegenPulses || 0)
       );
     const currentCredits =
       Math.max(
@@ -11407,15 +11406,26 @@ function saveHumanReviewLocalNote() {
     maxHp,
     { battle=false }={}
   ) {
+    if (battle) {
+      const ratio = hpRatio(hp, maxHp);
+      container.classList.add("battle-module-card");
+      container.style.setProperty(
+        "--battle-hp-color",
+        ratio <= .33
+          ? "#ff5f6d"
+          : ratio <= .66
+            ? "#f0cb52"
+            : "#60e58a"
+      );
+      applyHpVisual(container, hp, maxHp);
+      return;
+    }
+
     const bar=
       document.createElement(
         "span"
       );
     bar.className="hp-bar";
-    if (battle) {
-      bar.classList.add("battle-module-hp-bar");
-      container.classList.add("battle-module-card");
-    }
     bar.setAttribute("role", "progressbar");
     bar.setAttribute("aria-label", "Modül CAN değeri");
     bar.setAttribute("aria-valuemin", "0");
@@ -11429,10 +11439,6 @@ function saveHumanReviewLocalNote() {
       );
     fill.className=
       "hp-bar-fill";
-    if (battle) {
-      fill.classList.add("battle-module-hp-fill");
-    }
-
     const ratio=
       hpRatio(
         hp,
@@ -11441,20 +11447,6 @@ function saveHumanReviewLocalNote() {
 
     fill.style.width=
       `${Math.round(ratio*100)}%`;
-
-    if (battle) {
-      const hpColor = ratio <= .33
-        ? "#ff5f6d"
-        : ratio <= .66
-          ? "#f0cb52"
-          : "#60e58a";
-      container.style.setProperty(
-        "--battle-hp-color",
-        hpColor
-      );
-      bar.dataset.hpPercent =
-        String(Math.round(ratio * 100));
-    }
 
     bar.appendChild(fill);
     container.appendChild(bar);
@@ -15409,7 +15401,10 @@ function saveHumanReviewLocalNote() {
       if (row.player_id === participantPlayerId) item.classList.add("is-current-player");
       const rank = document.createElement("strong");
       rank.className = "leaderboard-rank";
-      rank.textContent = String(row.position);
+      const medal = { 1:"🥇", 2:"🥈", 3:"🥉" }[Number(row.position)];
+      rank.textContent = medal || String(row.position);
+      rank.classList.toggle("is-medal", Boolean(medal));
+      rank.setAttribute("aria-label", `${Number(row.position)}. sıra`);
       const identity = document.createElement("div");
       identity.className = "leaderboard-identity";
       const name = row.team_name || row.display_name || "Oyuncu";
@@ -16950,12 +16945,12 @@ function saveHumanReviewLocalNote() {
   }
 
   function updateMockServerPassiveCredits(elapsedMs) {
-    const passiveSeconds = Math.floor(elapsedMs / 1000);
-    if (passiveSeconds <= mockServerPassiveSeconds) return;
+    const regenPulses = Math.floor(elapsedMs / 2500);
+    if (regenPulses <= mockServerRegenPulses) return;
 
-    const gainedSeconds = passiveSeconds - mockServerPassiveSeconds;
-    mockServerCredits += gainedSeconds * 10;
-    mockServerPassiveSeconds = passiveSeconds;
+    const gainedPulses = regenPulses - mockServerRegenPulses;
+    mockServerCredits = Math.min(12, mockServerCredits + gainedPulses);
+    mockServerRegenPulses = regenPulses;
     client.applyServerEconomyState({ circuitCredits: mockServerCredits });
   }
 
