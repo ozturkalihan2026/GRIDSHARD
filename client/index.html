@@ -207,6 +207,39 @@
       <div id="public-profile-content" class="public-profile-content"></div>
     </dialog>
 
+    <dialog id="team-profile-dialog" class="public-profile-dialog team-profile-dialog" aria-labelledby="team-profile-title">
+      <header class="public-profile-header">
+        <button id="team-profile-close" type="button" aria-label="Takım profilini kapat">←</button>
+        <div>
+          <span class="screen-kicker">HERKESE AÇIK TAKIM PROFİLİ</span>
+          <h2 id="team-profile-title">Takım Profili</h2>
+        </div>
+      </header>
+      <p id="team-profile-status" class="public-profile-status" role="status" aria-live="polite"></p>
+      <div id="team-profile-content" class="public-profile-content team-profile-content"></div>
+    </dialog>
+
+    <dialog id="daily-meta-dialog" class="daily-meta-dialog" aria-labelledby="daily-meta-title">
+      <section class="daily-meta-stage">
+        <span class="screen-kicker">GÜNLÜK DEVRE PROTOKOLÜ</span>
+        <h2 id="daily-meta-title">Bugünün Metasını Belirle</h2>
+        <p id="daily-meta-dialog-copy">Yedi eşit olasılıklı stratejiden biri bugünkü savaş planın olacak.</p>
+        <div id="daily-meta-wheel" class="daily-meta-wheel" aria-hidden="true">
+          <div class="daily-meta-wheel-labels">
+            <span>HASAR</span><span>SAVUNMA</span><span>DESTEK</span><span>SABOTAJ</span><span>SİSTEM</span><span>ÇEKİRDEK</span><span>AKIM</span>
+          </div>
+          <strong class="daily-meta-die">7</strong>
+        </div>
+        <article id="daily-meta-result" class="daily-meta-result" hidden>
+          <span id="daily-meta-result-glyph" aria-hidden="true">◇</span>
+          <div><small>BUGÜNÜN METASI</small><strong id="daily-meta-result-name">—</strong><p id="daily-meta-result-effect"></p></div>
+        </article>
+        <p id="daily-meta-dialog-status" class="mobile-action-status" role="status" aria-live="polite"></p>
+        <button id="daily-meta-roll" type="button">METAYI BELİRLE</button>
+        <small class="daily-meta-reset-note">Seçim bir sonraki UTC gününe kadar değişmez.</small>
+      </section>
+    </dialog>
+
     <nav id="app-bottom-dock" class="main-scope-nav lobby-bottom-dock app-bottom-dock" aria-label="Ana gezinme">
       <button type="button" class="menu-action" data-open-screen="shop" data-shell-screen="shop" aria-label="Mağaza" title="Mağaza">
         <svg class="lobby-dock-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9h16l-1 11H5L4 9Z"/><path d="M7 9V6a5 5 0 0 1 10 0v3M9 13h6"/></svg>
@@ -311,12 +344,25 @@
         </article>
       </section>
       <section id="team-hub" class="team-hub" hidden>
-        <header class="team-identity-card">
-          <div><span>TAKIM MERKEZİ</span><h3 id="team-name">Takım</h3></div>
-          <div class="team-summary-metrics"><strong id="team-member-count">0 / 30 ÜYE</strong><strong id="team-total-trophies" class="trophy-visual-value" aria-label="0 Kupa"><span class="trophy-value-number">0</span><span class="trophy-value-icon" aria-hidden="true">🏆</span></strong></div>
-        </header>
         <div class="team-panels">
-          <section data-team-panel="members" class="team-panel is-active">
+          <section data-team-panel="profile" class="team-panel team-profile-panel is-active">
+            <header class="team-identity-card">
+              <div class="team-profile-open"><span>TAKIM MERKEZİ</span><h3 id="team-name">Takım</h3></div>
+              <div class="team-summary-metrics"><strong id="team-member-count">0 / 30 ÜYE</strong><strong id="team-total-trophies" class="trophy-visual-value" aria-label="0 Kupa"><span class="trophy-value-number">0</span><span class="trophy-value-icon" aria-hidden="true">🏆</span></strong></div>
+            </header>
+            <section class="team-profile-statistics">
+              <div class="public-profile-section-heading"><span>TAKIM ARŞİVİ</span><h3>Takım İstatistikleri</h3></div>
+              <div class="team-profile-stat-grid public-profile-stat-grid">
+                <article><span>TOPLAM KUPA</span><strong id="team-profile-total-trophies">0</strong></article>
+                <article><span>ORTALAMA KUPA</span><strong id="team-profile-average-trophies">0</strong></article>
+                <article><span>TOPLAM MAÇ</span><strong id="team-profile-total-matches">0</strong></article>
+                <article><span>GALİBİYET ORANI</span><strong id="team-profile-win-rate">%0</strong></article>
+                <article><span>TURNUVA SIRASI</span><strong id="team-profile-tournament-position">—</strong></article>
+                <article><span>TURNUVA PUANI</span><strong id="team-profile-tournament-points">0 P</strong></article>
+              </div>
+            </section>
+          </section>
+          <section data-team-panel="members" class="team-panel" hidden>
             <h3>Üyeler</h3><ol id="team-member-list" class="team-member-list"></ol>
           </section>
           <section data-team-panel="requests" class="team-panel" hidden>
@@ -336,7 +382,8 @@
           </section>
         </div>
         <nav class="team-tabs" aria-label="Takım bölümleri">
-          <button type="button" data-team-tab="members" class="is-active">ÜYELER</button>
+          <button type="button" data-team-tab="profile" class="is-active">PROFİL</button>
+          <button type="button" data-team-tab="members">ÜYELER</button>
           <button type="button" data-team-tab="requests">İSTEK</button>
           <button type="button" data-team-tab="chat">SOHBET</button>
           <button type="button" data-team-tab="battle">SAVAŞ</button>
@@ -350,28 +397,72 @@
         <h2>Turnuvalar</h2>
         <p id="event-period-copy">Etkinlik programı yükleniyor…</p>
       </header>
-      <article id="season-meta-card" class="season-meta-card">
-        <span>BU SEZONUN METASI</span><strong id="season-meta-name">—</strong>
-        <p id="season-meta-description">Sezon stratejisi yükleniyor.</p>
-        <small id="season-meta-modules"></small>
+      <article id="daily-meta-card" class="season-meta-card daily-meta-card">
+        <span>BUGÜNÜN METASI</span><strong id="daily-meta-name">Henüz belirlenmedi</strong>
+        <p id="daily-meta-description">Günün ilk girişinde meta çarkından stratejini belirle.</p>
+        <small id="daily-meta-effect">7 eşit olasılıklı meta</small>
       </article>
-      <section class="tournament-panel weekly-tournament-panel">
-        <header><div><span>HAFTALIK</span><h3 id="weekly-tournament-name">Haftalık Devre Turnuvası</h3></div><small id="weekly-tournament-reset"></small></header>
-        <p id="weekly-tournament-rules"></p>
-        <div id="weekly-tournament-prizes" class="tournament-prizes"></div>
-        <h4>Sıralama</h4>
-        <ol id="weekly-tournament-standings" class="tournament-standings"></ol>
-      </section>
-      <section class="tournament-panel team-tournament-panel">
-        <header><div><span>AYLIK · TAKIM</span><h3 id="team-tournament-name">Takımlar Arası Turnuva</h3></div><small id="team-tournament-week"></small></header>
-        <p id="team-tournament-rules"></p>
-        <div id="team-tournament-prizes" class="tournament-prizes"></div>
-        <h4>Takım Sıralaması</h4>
-        <ol id="team-tournament-standings" class="tournament-standings"></ol>
-        <h4>Bu Haftanın Eşleşmeleri</h4>
-        <div id="team-tournament-fixtures" class="team-tournament-fixtures"></div>
-      </section>
+      <nav class="event-directory" aria-label="Aktif etkinlikler">
+        <button type="button" data-open-screen="weekly-event">
+          <span>HAFTALIK ETKİNLİK</span><strong id="weekly-event-link-name">Haftalık Devre Turnuvası</strong><small id="weekly-event-link-period">Her pazartesi yenilenir</small><i aria-hidden="true">→</i>
+        </button>
+        <button type="button" data-open-screen="team-event">
+          <span>AYLIK TAKIM ETKİNLİĞİ</span><strong id="team-event-link-name">Takımlar Arası Turnuva</strong><small id="team-event-link-period">Her ay yenilenir</small><i aria-hidden="true">→</i>
+        </button>
+      </nav>
       <p id="event-action-status" class="mobile-action-status" role="status" aria-live="polite"></p>
+    </section>
+
+    <section id="weekly-event-screen" class="mobile-hub-screen events-screen event-detail-screen" data-screen-panel="weekly-event" hidden>
+      <header class="event-detail-header">
+        <button type="button" data-open-screen="events" aria-label="Etkinlik listesine dön">←</button>
+        <div><span>HAFTALIK ETKİNLİK</span><h2 id="weekly-tournament-name">Haftalık Devre Turnuvası</h2><small id="weekly-tournament-reset"></small></div>
+      </header>
+      <div class="event-detail-content">
+        <section data-weekly-event-panel="overview" class="event-subpage is-active">
+          <article class="tournament-panel event-overview-card"><span>ETKİNLİK KURALLARI</span><p id="weekly-tournament-rules"></p><div id="weekly-event-summary" class="event-summary-metrics"></div></article>
+        </section>
+        <section data-weekly-event-panel="standings" class="event-subpage" hidden>
+          <section class="tournament-panel"><h4>Oyuncu Sıralaması</h4><ol id="weekly-tournament-standings" class="tournament-standings"></ol></section>
+        </section>
+        <section data-weekly-event-panel="prizes" class="event-subpage" hidden>
+          <section class="tournament-panel"><h4>İlk 3 Ödülü</h4><div id="weekly-tournament-prizes" class="tournament-prizes"></div></section>
+        </section>
+      </div>
+      <p id="weekly-event-status" class="mobile-action-status" role="status" aria-live="polite"></p>
+      <nav class="event-detail-tabs" aria-label="Haftalık etkinlik bölümleri">
+        <button type="button" data-weekly-event-tab="overview" class="is-active">GENEL</button>
+        <button type="button" data-weekly-event-tab="standings">SIRALAMA</button>
+        <button type="button" data-weekly-event-tab="prizes">ÖDÜLLER</button>
+      </nav>
+    </section>
+
+    <section id="team-event-screen" class="mobile-hub-screen events-screen event-detail-screen" data-screen-panel="team-event" hidden>
+      <header class="event-detail-header">
+        <button type="button" data-open-screen="events" aria-label="Etkinlik listesine dön">←</button>
+        <div><span>AYLIK TAKIM ETKİNLİĞİ</span><h2 id="team-tournament-name">Takımlar Arası Turnuva</h2><small id="team-tournament-week"></small></div>
+      </header>
+      <div class="event-detail-content">
+        <section data-team-event-panel="overview" class="event-subpage is-active">
+          <article class="tournament-panel event-overview-card"><span>ETKİNLİK KURALLARI</span><p id="team-tournament-rules"></p><div id="team-event-summary" class="event-summary-metrics"></div></article>
+        </section>
+        <section data-team-event-panel="standings" class="event-subpage" hidden>
+          <section class="tournament-panel"><h4>Takım Sıralaması</h4><ol id="team-tournament-standings" class="tournament-standings"></ol></section>
+        </section>
+        <section data-team-event-panel="fixtures" class="event-subpage" hidden>
+          <section class="tournament-panel"><h4>Bu Haftanın Eşleşmeleri</h4><div id="team-tournament-fixtures" class="team-tournament-fixtures"></div></section>
+        </section>
+        <section data-team-event-panel="prizes" class="event-subpage" hidden>
+          <section class="tournament-panel"><h4>İlk 3 Takım Ödülü</h4><div id="team-tournament-prizes" class="tournament-prizes"></div></section>
+        </section>
+      </div>
+      <p id="team-event-status" class="mobile-action-status" role="status" aria-live="polite"></p>
+      <nav class="event-detail-tabs" aria-label="Takım etkinliği bölümleri">
+        <button type="button" data-team-event-tab="overview" class="is-active">GENEL</button>
+        <button type="button" data-team-event-tab="standings">SIRALAMA</button>
+        <button type="button" data-team-event-tab="fixtures">EŞLEŞMELER</button>
+        <button type="button" data-team-event-tab="prizes">ÖDÜLLER</button>
+      </nav>
     </section>
 
     <dialog id="core-detail-dialog" class="module-detail-dialog core-detail-dialog" aria-labelledby="core-detail-name">
@@ -437,7 +528,7 @@
           <div id="profile-most-used-deck" class="profile-featured-modules" aria-label="En çok kullanılan deste"><small>Henüz tamamlanmış maç yok.</small></div>
         </div>
       </section>
-      <section class="profile-clan-card" aria-labelledby="profile-clan-title"><span>TAKIM BİLGİSİ</span><strong id="profile-clan-title">Takıma dahil değil</strong><small id="profile-clan-copy">Bir takıma katıldığında takım bilgilerin burada görünecek.</small></section>
+      <section class="profile-clan-card" aria-labelledby="profile-clan-title"><span>TAKIM BİLGİSİ</span><button id="profile-clan-title" class="team-profile-link" type="button" disabled>Takıma dahil değil</button><small id="profile-clan-copy">Bir takıma katıldığında takım bilgilerin burada görünecek.</small></section>
       <section class="profile-season-history" aria-labelledby="profile-season-title">
         <div class="profile-section-heading"><span>SEZONLAR</span><h3 id="profile-season-title">Sezon Geçmişi</h3></div>
         <article class="profile-current-season"><div><span id="profile-current-season-name">Güncel Sezon</span><strong id="profile-season-countdown">—</strong></div><div><strong id="profile-season-trophies" class="trophy-visual-value" aria-label="0 Kupa"><span class="trophy-value-number">0</span><span class="trophy-value-icon" aria-hidden="true">🏆</span></strong></div><div><small>MEVCUT LİG</small><strong id="profile-season-league">Arena 1</strong></div></article>

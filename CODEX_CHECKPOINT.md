@@ -4,7 +4,38 @@ Güncelleme tarihi: 15 Eylül 2026
 
 Bu dosya güncel çalışma paketini ve korunması gereken önceki kararları içerir. Kullanıcı `checkpoint'ten devam et` dediğinde önce bu dosya, ardından `git status --short` okunmalıdır.
 
-## Aktif paket — Beta.56 takım, etkinlik ve sezon rekabeti
+## Aktif paket — Beta.58 takım Profil sekmesi ve günlük meta çarkı
+
+1. `[x]` Takım ekranını Profil sekmesiyle aç
+   - Daha önce kaldırılan `Genel` konumu `Profil` adıyla geri getirildi ve Takım ekranının varsayılan ilk alt sekmesi yapıldı.
+   - Herkese açık takım profilindeki takım kimliği; toplam/ortalama kupa, toplam maç, galibiyet oranı, turnuva sırası ve turnuva puanı aynı sunucu özetiyle bu sekmeye taşındı.
+   - `Profil`, `Üyeler`, `İstek`, `Sohbet`, `Savaş` sıralı beş alt sekmeli düzen kuruldu.
+2. `[x]` Sezonluk metayı oyuncu bazlı günlük metaya dönüştür
+   - Hasar, Savunma, Destek, Sabotaj, Sistem, Çekirdek ve Akım Desteği olmak üzere yedi eşit olasılıklı meta tanımlandı.
+   - Her oyuncunun seçimi UTC günü boyunca sunucuda saklanıyor; aynı gün yenileme veya yinelenen istek sonucu değiştirmiyor.
+   - Günün ilk başarılı girişinde kapatılamayan çark ekranı açılıyor; `METAYI BELİRLE` sonucunda seçilen meta gösteriliyor ve ertesi güne kadar sabitleniyor.
+   - Seçilen meta ilgili modül sınıfının savaş değerlerine uygulanıyor; etkileşimsiz AI oyuncular için gün ve oyuncu kimliğine bağlı kararlı günlük meta üretiliyor.
+   - Etkinlik merkezindeki sezon metası kartı `Bugünün Metası` kartına dönüştürüldü.
+
+Doğrulama: Kullanıcının açık tercihi doğrultusunda çalıştırmalı test veya tarayıcı denemesi yapılmadı; yalnız statik sözleşme ve değişiklik tutarlılığı incelendi.
+
+## Önceki aktif paket — Beta.57 takım profilleri ve etkinlik alt sayfaları
+
+1. `[x]` Takımları herkese açık profil olarak görüntülenebilir yap
+   - Oyuncunun kendi profilindeki takım adı, Takım Merkezi başlığı, takım lider panosu ve takım turnuvası sıralamasındaki takım adları takım profiline bağlandı.
+   - Gerçek oyuncu takımları ile altı AI takımı aynı profil sözleşmesini kullanıyor; toplam/ortalama kupa, takım maçları, galibiyet oranı, aylık turnuva sırası ve puanı gösteriliyor.
+   - Takım üyeleri kupa sırasıyla listeleniyor; üye adına tıklanınca yalnız herkese açık oyuncu profili açılıyor.
+2. `[x]` AI profil galibiyet oranını tek veri sözleşmesine geçir
+   - AI profillerinin yüzde değerini oran gibi yeniden yüzdeye çeviren çift dönüşüm kaldırıldı; sunucu gerçek oyuncularla aynı `0..1` oranını gönderiyor.
+   - İstemci eski veya bozuk veri gelse bile galibiyet oranını `%0..%100` aralığında sınırlıyor; `%6600` benzeri gösterimler artık üretilemiyor.
+3. `[x]` Etkinlik merkezini ayrı etkinlik sayfalarına böl
+   - Ana Etkinlik ekranı aktif etkinlik adlarını listeliyor; isme/karta tıklanınca haftalık bireysel turnuva veya aylık takım turnuvasının ayrı ekranı açılıyor.
+   - Haftalık etkinlikte `Genel`, `Sıralama`, `Ödüller`; takım etkinliğinde `Genel`, `Sıralama`, `Eşleşmeler`, `Ödüller` alt sekmeleri bulunuyor.
+   - Takım sıralaması ve fikstürdeki takım adları da doğrudan takım profiline bağlandı.
+
+Doğrulama: Kullanıcının önceki açık tercihi doğrultusunda çalıştırmalı test veya tarayıcı denemesi yapılmadı; yalnız kod, rota, görünüm ve veri sözleşmesi incelemesi uygulandı.
+
+## Önceki aktif paket — Beta.56 takım, etkinlik ve sezon rekabeti
 
 1. `[x]` Takım ekranını doğrudan Üyeler görünümünde aç
    - `Genel` sekmesi ve tekrar eden özet paneli kaldırıldı; Takım ekranına her girişte `Üyeler` sekmesi seçiliyor.

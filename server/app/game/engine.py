@@ -4,6 +4,7 @@ from typing import Deque
 
 from .catalog import get_module_definition
 from ..laboratory import calibrated_module_definition
+from ..season_competition import daily_meta_by_id
 from .battle_pool import validate_battle_pool
 from .board import get_cell_effects, get_default_board
 from .boosters import (
@@ -251,8 +252,35 @@ class BattleEngine:
         from ..arena_canon import module_stats
         stats = module_stats(definition, self.state.player_upgrade_levels.get(player_id, {}).get(definition_id, 0),
                              self.state.player_module_talents.get(player_id, {}).get(definition_id, {}))
-        definition = replace(definition, max_hp=stats["max_hp"], base_damage=stats["base_damage"],
-                             cooldown_ms=stats["cooldown_ms"], effect_multiplier=stats["effect_multiplier"],
+        daily_meta = daily_meta_by_id(
+            self.state.player_daily_meta_ids.get(player_id, "")
+        )
+        meta_id = daily_meta.get("id") if daily_meta else ""
+        meta_multiplier = float(
+            (daily_meta or {}).get("modifier", {}).get("multiplier", 1.0)
+        )
+        max_hp = stats["max_hp"]
+        base_damage = stats["base_damage"]
+        effect_multiplier = stats["effect_multiplier"]
+        if meta_id == "damage" and definition.category == "saldırı":
+            base_damage = round(base_damage * meta_multiplier)
+        elif meta_id == "defense" and definition.category == "savunma":
+            max_hp = round(max_hp * meta_multiplier)
+            effect_multiplier *= meta_multiplier
+        elif meta_id == "support" and definition.category == "destek":
+            effect_multiplier *= meta_multiplier
+        elif meta_id == "sabotage" and definition.category == "sabotaj":
+            effect_multiplier *= meta_multiplier
+        elif meta_id == "system" and definition.category == "enerji":
+            effect_multiplier *= meta_multiplier
+        elif meta_id == "core" and definition_id == "core":
+            max_hp = round(max_hp * meta_multiplier)
+        elif meta_id == "current_support" and definition_id in {
+            "generator", "battery", "capacitor", "current_balancer"
+        }:
+            effect_multiplier *= meta_multiplier
+        definition = replace(definition, max_hp=max_hp, base_damage=base_damage,
+                             cooldown_ms=stats["cooldown_ms"], effect_multiplier=effect_multiplier,
                              energy_consumption=stats["energy_consumption"])
         module = BattleModule.create(
             instance_id=instance_id,

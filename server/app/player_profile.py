@@ -5,7 +5,6 @@ import hashlib
 
 from .arena_canon import MODULES, unlocked_reward_module_ids
 from .game.battle_pool import default_battle_pool, validate_battle_pool
-from .season_competition import season_meta_for
 
 
 DEFAULT_RATING = 0
@@ -45,7 +44,6 @@ def monthly_season_descriptor(moment: datetime | None = None) -> dict:
         "name_tr": f"{TURKISH_MONTH_NAMES[current.month]} {current.year} Sezonu",
         "starts_at": _iso_utc(starts_at),
         "ends_at": _iso_utc(ends_at),
-        "meta": season_meta_for(current),
     }
 
 
@@ -299,6 +297,8 @@ class PlayerProfile:
     team_tournament_wins: int = 0
     team_tournament_week_period: str = ""
     team_tournament_week_matches: int = 0
+    daily_meta_day: str = ""
+    daily_meta_id: str = ""
     unlocked_core_types: tuple[str, ...] = ("core_resonance",)
     selected_core_type: str = "core_resonance"
     core_skill_points: int = 1

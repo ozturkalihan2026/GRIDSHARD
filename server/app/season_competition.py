@@ -1,4 +1,4 @@
-"""Season identity, canonical AI population and tournament read models.
+"""Daily meta catalog, canonical AI population and tournament read models.
 
 The event hub deliberately derives its seeded AI standings from stable hashes.
 This gives the beta a repeatable six-team competition without writing synthetic
@@ -11,19 +11,14 @@ from datetime import datetime, timedelta, timezone
 import hashlib
 
 
-SEASON_META_ROTATION: tuple[dict, ...] = (
-    {"meta_name_tr": "Kalkan Duvarı", "description_tr": "Savunma ve yansıtma zincirleri öne çıkar.", "featured_archetype_tr": "Savunma", "featured_modules": ("shield", "armor", "reflector")},
-    {"meta_name_tr": "Aşırı Akım", "description_tr": "Akım üretimi ve enerji verimliliği sezonun merkezindedir.", "featured_archetype_tr": "Akım Ekonomisi", "featured_modules": ("battery", "capacitor", "current_balancer")},
-    {"meta_name_tr": "Keskin Frekans", "description_tr": "Tek hedef baskısı ve hızlı saldırı döngüleri öne çıkar.", "featured_archetype_tr": "Hızlı Baskı", "featured_modules": ("laser", "pulse_cannon", "ion_spear")},
-    {"meta_name_tr": "Onarım Ağı", "description_tr": "Onarım zamanlaması ile sürdürülebilir devreler öne çıkar.", "featured_archetype_tr": "Sürdürülebilirlik", "featured_modules": ("repair", "phoenix_repair", "barrier")},
-    {"meta_name_tr": "Sessiz Devre", "description_tr": "EMP, kesinti ve karşı hamle planları öne çıkar.", "featured_archetype_tr": "Kontrol", "featured_modules": ("emp", "jammer", "disruptor")},
-    {"meta_name_tr": "Hızlı Kurulum", "description_tr": "Düşük maliyetli kurulum ve tempo yönetimi öne çıkar.", "featured_archetype_tr": "Dengeli", "featured_modules": ("battery", "laser", "repair")},
-    {"meta_name_tr": "Isı Dalgası", "description_tr": "Ağır hasar ile soğutma arasındaki denge öne çıkar.", "featured_archetype_tr": "Ağır Hasar", "featured_modules": ("railgun", "cooler", "overclock_unit")},
-    {"meta_name_tr": "Sürü Protokolü", "description_tr": "Çoklu hedef baskısı ve üretim zincirleri öne çıkar.", "featured_archetype_tr": "Alan Hasarı", "featured_modules": ("swarm_fabricator", "pulse_cannon", "targeting_computer")},
-    {"meta_name_tr": "Rezonans Kırılması", "description_tr": "Çekirdek baskısı ve karşı-meta seçimleri öne çıkar.", "featured_archetype_tr": "Karşı Meta", "featured_modules": ("disruptor", "amplifier", "ion_spear")},
-    {"meta_name_tr": "Kuantum Sapması", "description_tr": "Sabotaj ve yön değiştiren savunma planları öne çıkar.", "featured_archetype_tr": "Kontrol", "featured_modules": ("virus", "reflector", "jammer")},
-    {"meta_name_tr": "Çekirdek Avı", "description_tr": "Çekirdeğe giden hattı açan saldırı kombinasyonları öne çıkar.", "featured_archetype_tr": "Ağır Hasar", "featured_modules": ("railgun", "ion_spear", "targeting_computer")},
-    {"meta_name_tr": "Soğuk Devre", "description_tr": "Soğutma, dayanıklılık ve uzun savaş planları öne çıkar.", "featured_archetype_tr": "Destek Zinciri", "featured_modules": ("cooler", "shield", "phoenix_repair")},
+DAILY_META_DEFINITIONS: tuple[dict, ...] = (
+    {"id": "damage", "meta_name_tr": "Hasar Metası", "category_tr": "Hasar", "glyph": "⚡", "accent": "#ff6c80", "description_tr": "Saldırı modülleri bugün daha yüksek baskı kurar.", "effect_tr": "Saldırı modülü hasarı +%10", "modifier": {"category": "saldırı", "stat": "damage", "multiplier": 1.10}},
+    {"id": "defense", "meta_name_tr": "Savunma Metası", "category_tr": "Savunma", "glyph": "⬡", "accent": "#77b5ff", "description_tr": "Savunma modülleri bugün daha dayanıklı bir hat kurar.", "effect_tr": "Savunma CAN ve etkisi +%10", "modifier": {"category": "savunma", "stat": "defense", "multiplier": 1.10}},
+    {"id": "support", "meta_name_tr": "Destek Metası", "category_tr": "Destek", "glyph": "✚", "accent": "#8aef85", "description_tr": "Onarım ve destek zincirleri bugün güçlenir.", "effect_tr": "Destek etkisi +%12", "modifier": {"category": "destek", "stat": "support", "multiplier": 1.12}},
+    {"id": "sabotage", "meta_name_tr": "Sabotaj Metası", "category_tr": "Sabotaj", "glyph": "◉", "accent": "#c783ff", "description_tr": "Kesinti ve bozucu etkiler bugün daha kuvvetlidir.", "effect_tr": "Sabotaj etkisi +%10", "modifier": {"category": "sabotaj", "stat": "sabotage", "multiplier": 1.10}},
+    {"id": "system", "meta_name_tr": "Sistem Metası", "category_tr": "Sistem", "glyph": "▣", "accent": "#57e8d9", "description_tr": "Sistem modülleri bugün daha verimli çalışır.", "effect_tr": "Sistem etkisi +%10", "modifier": {"category": "sistem", "stat": "system", "multiplier": 1.10}},
+    {"id": "core", "meta_name_tr": "Çekirdek Metası", "category_tr": "Çekirdek", "glyph": "◇", "accent": "#ffe06d", "description_tr": "Çekirdek bugün daha yüksek dayanıklılıkla savaşa girer.", "effect_tr": "Çekirdek CAN +%10", "modifier": {"category": "çekirdek", "stat": "core_hp", "multiplier": 1.10}},
+    {"id": "current_support", "meta_name_tr": "Akım Desteği Metası", "category_tr": "Akım Desteği", "glyph": "ϟ", "accent": "#67f5ee", "description_tr": "Akım üretimi ve depolama bugün daha verimlidir.", "effect_tr": "Akım modülü etkisi +%15", "modifier": {"category": "sistem", "stat": "current", "multiplier": 1.15}},
 )
 
 
@@ -102,15 +97,40 @@ def build_ai_population(base_bots: list[dict]) -> list[dict]:
     return [*legacy, *additions]
 
 
-def season_meta_for(moment: datetime | None = None) -> dict:
+def daily_meta_by_id(meta_id: str) -> dict | None:
+    """Return a detached daily-meta definition safe for API responses."""
+    match = next(
+        (item for item in DAILY_META_DEFINITIONS if item["id"] == str(meta_id)),
+        None,
+    )
+    if match is None:
+        return None
+    return {**match, "modifier": dict(match["modifier"])}
+
+
+def daily_meta_catalog_view(moment: datetime | None = None) -> dict:
     current = (moment or datetime.now(timezone.utc)).astimezone(timezone.utc)
-    meta = dict(SEASON_META_ROTATION[current.month - 1])
+    next_day = (current + timedelta(days=1)).replace(
+        hour=0,
+        minute=0,
+        second=0,
+        microsecond=0,
+    )
     return {
-        "id": f"meta_{current.year}_{current.month:02d}",
-        **meta,
-        "featured_modules": list(meta["featured_modules"]),
-        "weekly_scoring_tr": "Galibiyet 3 puan · çekirdek yıkımı 1 ek puan",
+        "day": current.date().isoformat(),
+        "resets_at": _iso(next_day),
+        "dice_sides": len(DAILY_META_DEFINITIONS),
+        "probability_per_meta": round(1 / len(DAILY_META_DEFINITIONS), 8),
+        "selection_rule_tr": "Her oyuncu için günde bir kez, yedi eşit olasılıktan biri seçilir.",
+        "options": [daily_meta_by_id(item["id"]) for item in DAILY_META_DEFINITIONS],
     }
+
+
+def daily_meta_for_seed(player_id: str, moment: datetime | None = None) -> dict:
+    """Give non-interactive AI players a stable, evenly distributed daily meta."""
+    catalog = daily_meta_catalog_view(moment)
+    index = _stable_int(f"{catalog['day']}:{player_id}:daily-meta", catalog["dice_sides"])
+    return daily_meta_by_id(DAILY_META_DEFINITIONS[index]["id"]) or {}
 
 
 def _iso(moment: datetime) -> str:
@@ -169,7 +189,6 @@ def build_events_view(players: list[dict], moment: datetime | None = None) -> di
     current = (moment or datetime.now(timezone.utc)).astimezone(timezone.utc)
     week = _weekly_period(current)
     month = _monthly_period(current)
-    meta = season_meta_for(current)
 
     weekly_rows = []
     for player in players:
@@ -278,7 +297,7 @@ def build_events_view(players: list[dict], moment: datetime | None = None) -> di
         })
 
     return {
-        "season_meta": meta,
+        "daily_meta_catalog": daily_meta_catalog_view(current),
         "weekly_tournament": {
             "name_tr": "Haftalık Devre Turnuvası",
             "period": week,

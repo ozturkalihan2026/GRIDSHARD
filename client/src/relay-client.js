@@ -1061,6 +1061,8 @@
     MODULES: "modules",
     TEAM: "team",
     EVENTS: "events",
+    WEEKLY_EVENT: "weekly-event",
+    TEAM_EVENT: "team-event",
     PLAY: "play",
     PROFILE: "profile",
     AVATAR: "avatar",

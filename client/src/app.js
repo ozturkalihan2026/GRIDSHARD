@@ -421,6 +421,7 @@
       renderSettingsForm();
       loadBattlePoolPresets();
       loadMetaProgression();
+      loadDailyMetaState({ present:true });
     }
 
     renderParticipantBootstrapStatus();
@@ -448,9 +449,14 @@
   let activeLeaderboardTab = "trophies";
   let leaderboardPayload = null;
   let publicProfileReturnDialogId = null;
+  let teamProfileReturnDialogId = null;
   let teamState = null;
-  let activeTeamTab = "members";
+  let activeTeamTab = "profile";
   let eventsState = null;
+  let dailyMetaState = null;
+  let dailyMetaRollPending = false;
+  let activeWeeklyEventTab = "overview";
+  let activeTeamEventTab = "overview";
   const PROFILE_AVATARS = Object.freeze([
     { id: "default", nameTr: "Devre Operatörü", glyph: "◇" },
     { id: "circuit_scout", nameTr: "Devre Kaşifi", glyph: "⌁" },
@@ -745,7 +751,7 @@
       tutorialController?.maybeStart();
     }
 
-    if (["profile", "avatar", "daily", "daily-rewards", "daily-missions", "rewards", "shop", "modules", "team", "events", "menu"].includes(screen)) {
+    if (["profile", "avatar", "daily", "daily-rewards", "daily-missions", "rewards", "shop", "modules", "team", "events", "weekly-event", "team-event", "menu"].includes(screen)) {
       accountDataLoader
         .loadProfile()
         .then(() => markScreenNotificationsSeen(screen))
@@ -758,10 +764,15 @@
         loadMetaProgression();
       }
       if (screen === "team") {
-        activeTeamTab = "members";
+        activeTeamTab = "profile";
         loadTeamView();
       }
-      if (screen === "events") loadEventsView();
+      if (["events", "weekly-event", "team-event"].includes(screen)) {
+        if (screen === "weekly-event") activeWeeklyEventTab = "overview";
+        if (screen === "team-event") activeTeamEventTab = "overview";
+        renderEventSubpages();
+        loadEventsView();
+      }
     } else if (
       screen === "laboratory"
     ) {
@@ -2647,6 +2658,40 @@
     }
   }
 
+  function renderEventSummary(hostId, metrics = []) {
+    const host = document.getElementById(hostId);
+    if (!host) return;
+    host.replaceChildren();
+    for (const [label, value] of metrics) {
+      const card = document.createElement("article");
+      const name = document.createElement("span");
+      const amount = document.createElement("strong");
+      name.textContent = label;
+      amount.textContent = String(value);
+      card.append(name, amount);
+      host.appendChild(card);
+    }
+  }
+
+  function renderEventSubpages() {
+    for (const button of document.querySelectorAll("[data-weekly-event-tab]")) {
+      button.classList.toggle("is-active", button.dataset.weeklyEventTab === activeWeeklyEventTab);
+    }
+    for (const panel of document.querySelectorAll("[data-weekly-event-panel]")) {
+      const active = panel.dataset.weeklyEventPanel === activeWeeklyEventTab;
+      panel.classList.toggle("is-active", active);
+      panel.hidden = !active;
+    }
+    for (const button of document.querySelectorAll("[data-team-event-tab]")) {
+      button.classList.toggle("is-active", button.dataset.teamEventTab === activeTeamEventTab);
+    }
+    for (const panel of document.querySelectorAll("[data-team-event-panel]")) {
+      const active = panel.dataset.teamEventPanel === activeTeamEventTab;
+      panel.classList.toggle("is-active", active);
+      panel.hidden = !active;
+    }
+  }
+
   function renderWeeklyTournament(state) {
     const tournament = state?.weekly_tournament || {};
     const name = document.getElementById("weekly-tournament-name");
@@ -2656,6 +2701,12 @@
     if (reset) reset.textContent = `${eventDateLabel(tournament.period?.starts_at)} — ${eventDateLabel(tournament.period?.ends_at)}`;
     if (rules) rules.textContent = tournament.rules_tr || "";
     renderTournamentPrizes("weekly-tournament-prizes", tournament.prizes || []);
+    const participant = (tournament.standings || []).find((row) => row.player_id === participantPlayerId);
+    renderEventSummary("weekly-event-summary", [
+      ["SÜRE", `${eventDateLabel(tournament.period?.starts_at)} — ${eventDateLabel(tournament.period?.ends_at)}`],
+      ["SIRAN", participant ? `#${participant.position}` : "Henüz yok"],
+      ["PUANIN", participant ? `${participant.points} P` : "0 P"],
+    ]);
     const host = document.getElementById("weekly-tournament-standings");
     if (!host) return;
     host.replaceChildren();
@@ -2691,6 +2742,14 @@
     if (week) week.textContent = `${Number(tournament.week || 1)}. HAFTA`;
     if (rules) rules.textContent = tournament.rules_tr || "";
     renderTournamentPrizes("team-tournament-prizes", tournament.prizes || []);
+    const participantTeam = (tournament.standings || []).find((row) =>
+      row.members?.some((member) => member.player_id === participantPlayerId)
+    );
+    renderEventSummary("team-event-summary", [
+      ["DÖNEM", `${eventDateLabel(tournament.period?.starts_at)} — ${eventDateLabel(tournament.period?.ends_at)}`],
+      ["HAFTA", `${Number(tournament.week || 1)} / 5`],
+      ["TAKIM PUANI", participantTeam ? `${participantTeam.points} P` : "Takımın yok"],
+    ]);
     const standings = document.getElementById("team-tournament-standings");
     if (standings) {
       standings.replaceChildren();
@@ -2701,8 +2760,7 @@
         position.className = "tournament-position";
         position.textContent = String(row.position);
         const identity = document.createElement("div");
-        const teamName = document.createElement("strong");
-        teamName.textContent = row.team_name || "Takım";
+        const teamName = createTeamProfileLink(row.team_id, row.team_name || "Takım");
         const detail = document.createElement("small");
         detail.textContent = `${row.member_count} üye · ${row.qualified_member_count} ödüle uygun`;
         identity.append(teamName, detail);
@@ -2722,8 +2780,13 @@
           item.home_player_id === participantPlayerId || item.away_player_id === participantPlayerId
         );
         if (pairing) card.classList.add("is-current-fixture");
-        const teams = document.createElement("strong");
-        teams.textContent = `${fixture.home_team_name}  ×  ${fixture.away_team_name}`;
+        const teams = document.createElement("div");
+        teams.className = "event-fixture-team-links";
+        teams.append(
+          createTeamProfileLink(fixture.home_team_id, fixture.home_team_name || "Takım"),
+          document.createTextNode(" × "),
+          createTeamProfileLink(fixture.away_team_id, fixture.away_team_name || "Takım")
+        );
         const detail = document.createElement("small");
         detail.textContent = pairing
           ? `${pairing.home_player_name} × ${pairing.away_player_name} · rövanşlı 2 maç`
@@ -2736,37 +2799,155 @@
 
   function renderEventsHub() {
     if (!eventsState) return;
-    const meta = eventsState.season_meta || {};
-    const name = document.getElementById("season-meta-name");
-    const description = document.getElementById("season-meta-description");
-    const modules = document.getElementById("season-meta-modules");
     const period = document.getElementById("event-period-copy");
-    if (name) name.textContent = meta.meta_name_tr || "Sezon Metası";
-    if (description) description.textContent = meta.description_tr || "";
-    if (modules) {
-      const featured = (meta.featured_modules || []).map((id) =>
-        moduleDefinitions.find((item) => item.definitionId === id)?.nameTr || id
-      );
-      modules.textContent = `${meta.featured_archetype_tr || "Dengeli"} · ${featured.join(" · ")}`;
-    }
+    renderDailyMetaCard();
     if (period) {
       period.textContent = `${eventsState.ai_population?.total || 0} AI oyuncu · ${eventsState.ai_population?.team_count || 0} takım · haftalık ve aylık sıralamalar`;
     }
+    const weekly = eventsState.weekly_tournament || {};
+    const team = eventsState.team_tournament || {};
+    const weeklyLinkName = document.getElementById("weekly-event-link-name");
+    const weeklyLinkPeriod = document.getElementById("weekly-event-link-period");
+    const teamLinkName = document.getElementById("team-event-link-name");
+    const teamLinkPeriod = document.getElementById("team-event-link-period");
+    if (weeklyLinkName) weeklyLinkName.textContent = weekly.name_tr || "Haftalık Devre Turnuvası";
+    if (weeklyLinkPeriod) weeklyLinkPeriod.textContent = `${eventDateLabel(weekly.period?.starts_at)} — ${eventDateLabel(weekly.period?.ends_at)}`;
+    if (teamLinkName) teamLinkName.textContent = team.name_tr || "Takımlar Arası Turnuva";
+    if (teamLinkPeriod) teamLinkPeriod.textContent = `${Number(team.week || 1)}. hafta · ${eventDateLabel(team.period?.ends_at)} tarihinde yenilenir`;
     renderWeeklyTournament(eventsState);
     renderTeamTournament(eventsState);
+    renderEventSubpages();
   }
 
   async function loadEventsView() {
-    const status = document.getElementById("event-action-status");
-    if (status) status.textContent = "Turnuva verileri yükleniyor…";
+    const statuses = ["event-action-status", "weekly-event-status", "team-event-status"]
+      .map((id) => document.getElementById(id))
+      .filter(Boolean);
+    for (const status of statuses) status.textContent = "Turnuva verileri yükleniyor…";
     try {
       eventsState = await requestJsonWithDeadline("/events", { cache:"no-store" }, 12000);
-      if (status) status.textContent = "";
+      for (const status of statuses) status.textContent = "";
       renderEventsHub();
+      loadDailyMetaState({ present:false });
       return { ok:true, state:eventsState };
     } catch (error) {
+      for (const status of statuses) status.textContent = error instanceof Error ? error.message : String(error);
+      return { ok:false, error };
+    }
+  }
+
+  function renderDailyMetaCard() {
+    const name = document.getElementById("daily-meta-name");
+    const description = document.getElementById("daily-meta-description");
+    const effect = document.getElementById("daily-meta-effect");
+    const card = document.getElementById("daily-meta-card");
+    const selected = dailyMetaState?.selected ? dailyMetaState.meta : null;
+    if (name) name.textContent = selected?.meta_name_tr || "Henüz belirlenmedi";
+    if (description) {
+      description.textContent = selected?.description_tr
+        || "Günün ilk girişinde meta çarkından stratejini belirle.";
+    }
+    if (effect) {
+      effect.textContent = selected?.effect_tr
+        || `${Number(eventsState?.daily_meta_catalog?.dice_sides || 7)} eşit olasılıklı meta`;
+    }
+    if (card) {
+      card.dataset.selected = selected ? "true" : "false";
+      card.style.setProperty("--daily-meta-accent", selected?.accent || "#ffe078");
+    }
+  }
+
+  function renderDailyMetaDialog() {
+    const dialog = document.getElementById("daily-meta-dialog");
+    if (!dialog || !dailyMetaState) return;
+    const selected = dailyMetaState.selected ? dailyMetaState.meta : null;
+    const wheel = document.getElementById("daily-meta-wheel");
+    const result = document.getElementById("daily-meta-result");
+    const copy = document.getElementById("daily-meta-dialog-copy");
+    const status = document.getElementById("daily-meta-dialog-status");
+    const button = document.getElementById("daily-meta-roll");
+    const glyph = document.getElementById("daily-meta-result-glyph");
+    const name = document.getElementById("daily-meta-result-name");
+    const effect = document.getElementById("daily-meta-result-effect");
+    if (wheel) wheel.classList.toggle("has-result", Boolean(selected));
+    if (result) {
+      result.hidden = !selected;
+      result.style.setProperty("--daily-meta-accent", selected?.accent || "#61ead8");
+    }
+    if (copy) {
+      copy.textContent = selected
+        ? "Bugünkü meta kilitlendi. Yarın yeniden çark çevirebilirsin."
+        : "Yedi eşit olasılıklı stratejiden biri bugünkü savaş planın olacak.";
+    }
+    if (status && !dailyMetaRollPending) status.textContent = "";
+    if (glyph) glyph.textContent = selected?.glyph || "◇";
+    if (name) name.textContent = selected?.meta_name_tr || "—";
+    if (effect) effect.textContent = selected?.effect_tr || "";
+    if (button) {
+      button.disabled = dailyMetaRollPending;
+      button.textContent = dailyMetaRollPending
+        ? "META BELİRLENİYOR…"
+        : selected ? "DEVAM" : "METAYI BELİRLE";
+    }
+  }
+
+  async function loadDailyMetaState({ present = false } = {}) {
+    try {
+      dailyMetaState = await requestJsonWithDeadline(
+        `/profile/${encodeURIComponent(participantPlayerId)}/daily-meta`,
+        { cache:"no-store" },
+        12000
+      );
+      renderDailyMetaCard();
+      renderDailyMetaDialog();
+      const dialog = document.getElementById("daily-meta-dialog");
+      if (present && dailyMetaState.requires_roll && dialog && !dialog.open) {
+        if (dialog.showModal) dialog.showModal();
+        else dialog.setAttribute("open", "");
+      }
+      return { ok:true, state:dailyMetaState };
+    } catch (error) {
+      const status = document.getElementById("daily-meta-dialog-status");
       if (status) status.textContent = error instanceof Error ? error.message : String(error);
       return { ok:false, error };
+    }
+  }
+
+  async function rollDailyMeta() {
+    const dialog = document.getElementById("daily-meta-dialog");
+    if (dailyMetaState?.selected) {
+      if (dialog?.close) dialog.close();
+      else dialog?.removeAttribute("open");
+      return;
+    }
+    if (dailyMetaRollPending) return;
+    dailyMetaRollPending = true;
+    const wheel = document.getElementById("daily-meta-wheel");
+    const status = document.getElementById("daily-meta-dialog-status");
+    wheel?.classList.add("is-spinning");
+    if (status) status.textContent = "Yedi yüzlü meta zarı atılıyor…";
+    renderDailyMetaDialog();
+    const startedAt = Date.now();
+    try {
+      const payload = await requestJsonWithDeadline(
+        `/profile/${encodeURIComponent(participantPlayerId)}/daily-meta/roll`,
+        {
+          method:"POST",
+          body:JSON.stringify({ request_id:laboratoryRequestId("daily-meta") }),
+        },
+        30000
+      );
+      const remaining = Math.max(0, 950 - (Date.now() - startedAt));
+      if (remaining) await new Promise((resolve) => window.setTimeout(resolve, remaining));
+      dailyMetaState = payload;
+      if (status) status.textContent = "Günlük meta belirlendi.";
+      renderDailyMetaCard();
+    } catch (error) {
+      if (status) status.textContent = error instanceof Error ? error.message : String(error);
+    } finally {
+      dailyMetaRollPending = false;
+      wheel?.classList.remove("is-spinning");
+      renderDailyMetaDialog();
     }
   }
 
@@ -2871,6 +3052,14 @@
     setText("team-name", teamState.name || "Takım");
     setText("team-member-count", `${teamState.member_count || 0} / ${teamState.member_limit || 30} ÜYE`);
     renderTrophyValue("team-total-trophies", Number(teamState.total_trophies || 0));
+    const statistics = teamState.statistics || {};
+    const tournament = teamState.tournament || {};
+    setText("team-profile-total-trophies", Number(teamState.total_trophies || 0).toLocaleString("tr-TR"));
+    setText("team-profile-average-trophies", Number(teamState.average_trophies || 0).toLocaleString("tr-TR"));
+    setText("team-profile-total-matches", Number(statistics.total_matches || 0).toLocaleString("tr-TR"));
+    setText("team-profile-win-rate", `%${boundedWinRatePercent(statistics.win_rate || 0)}`);
+    setText("team-profile-tournament-position", tournament.position ? `#${tournament.position}` : "—");
+    setText("team-profile-tournament-points", `${Number(tournament.points || 0).toLocaleString("tr-TR")} P`);
 
     for (const button of document.querySelectorAll("[data-team-tab]")) {
       button.classList.toggle("is-active", button.dataset.teamTab === activeTeamTab);
@@ -3061,8 +3250,24 @@
 
   document.querySelectorAll("[data-team-tab]").forEach((button) => {
     button.addEventListener("click", () => {
-      activeTeamTab = button.dataset.teamTab || "members";
+      activeTeamTab = button.dataset.teamTab || "profile";
       renderTeamHub();
+    });
+  });
+  document.getElementById("daily-meta-roll")?.addEventListener("click", rollDailyMeta);
+  document.getElementById("daily-meta-dialog")?.addEventListener("cancel", (event) => {
+    if (dailyMetaState?.requires_roll) event.preventDefault();
+  });
+  document.querySelectorAll("[data-weekly-event-tab]").forEach((button) => {
+    button.addEventListener("click", () => {
+      activeWeeklyEventTab = button.dataset.weeklyEventTab || "overview";
+      renderEventSubpages();
+    });
+  });
+  document.querySelectorAll("[data-team-event-tab]").forEach((button) => {
+    button.addEventListener("click", () => {
+      activeTeamEventTab = button.dataset.teamEventTab || "overview";
+      renderEventSubpages();
     });
   });
   document.getElementById("team-create-button")?.addEventListener("click", async () => {
@@ -15101,6 +15306,11 @@ function saveHumanReviewLocalNote() {
         : "En yüksek operatör ününe ulaştın."
     );
     setText("profile-clan-title", view.teamName || "Takıma dahil değil");
+    const profileTeamButton = document.getElementById("profile-clan-title");
+    if (profileTeamButton) {
+      profileTeamButton.dataset.teamId = view.teamId || "";
+      profileTeamButton.disabled = !view.teamId;
+    }
     setText(
       "profile-clan-copy",
       view.teamName
@@ -15297,6 +15507,31 @@ function saveHumanReviewLocalNote() {
     );
   }
 
+  function boundedWinRatePercent(rawValue, wins = 0, matches = 0) {
+    const raw = Number(rawValue);
+    const fallback = Number(matches) > 0 ? Number(wins) / Number(matches) : 0;
+    const ratioOrPercent = Number.isFinite(raw) ? raw : fallback;
+    const percent = ratioOrPercent <= 1 ? ratioOrPercent * 100 : ratioOrPercent;
+    return Math.max(0, Math.min(100, Math.round(percent)));
+  }
+
+  function createTeamProfileLink(teamId, teamName, { className = "" } = {}) {
+    const cleanTeamId = String(teamId || "").trim();
+    const node = document.createElement(cleanTeamId ? "button" : "strong");
+    node.className = `${cleanTeamId ? "team-profile-link" : ""} ${className}`.trim();
+    node.textContent = teamName || "Takım";
+    if (cleanTeamId) {
+      node.type = "button";
+      node.title = "Takım profilini gör";
+      node.setAttribute("aria-label", `${teamName || "Takım"} takım profilini aç`);
+      node.addEventListener("click", (event) => {
+        event.stopPropagation();
+        openTeamProfile(cleanTeamId);
+      });
+    }
+    return node;
+  }
+
   function createPublicPlayerName(playerId, displayName, { suffix = "", className = "" } = {}) {
     const canOpen = isPublicProfileTarget(playerId);
     const node = document.createElement(canOpen ? "button" : "strong");
@@ -15401,8 +15636,10 @@ function saveHumanReviewLocalNote() {
     team.className = "profile-clan-card";
     const teamLabel = document.createElement("span");
     teamLabel.textContent = "TAKIM BİLGİSİ";
-    const teamName = document.createElement("strong");
-    teamName.textContent = payload.team?.team_name || "Takıma dahil değil";
+    const teamName = createTeamProfileLink(
+      payload.team?.team_id,
+      payload.team?.team_name || "Takıma dahil değil"
+    );
     const teamCopy = document.createElement("small");
     teamCopy.textContent = payload.team?.team_name
       ? "Oyuncunun mevcut takımı"
@@ -15474,7 +15711,7 @@ function saveHumanReviewLocalNote() {
       : `${Math.floor(durationSeconds / 60)} dk ${durationSeconds % 60} sn`;
     for (const metric of [
       ["Toplam Maç", Number(statistics.total_matches || 0).toLocaleString("tr-TR")],
-      ["Galibiyet Oranı", `%${Math.round(Number(statistics.win_rate || 0) * 100)}`],
+      ["Galibiyet Oranı", `%${boundedWinRatePercent(statistics.win_rate, statistics.wins, statistics.total_matches)}`],
       ["Ortalama Savaş", durationText],
       ["Toplam Hasar", Number(statistics.total_damage_dealt || 0).toLocaleString("tr-TR")],
     ]) statsGrid.appendChild(publicProfileMetric(...metric));
@@ -15487,7 +15724,7 @@ function saveHumanReviewLocalNote() {
     const dialog = document.getElementById("public-profile-dialog");
     const status = document.getElementById("public-profile-status");
     const content = document.getElementById("public-profile-content");
-    const sourceDialog = ["leaderboard-dialog", "arena-detail-dialog"]
+    const sourceDialog = ["leaderboard-dialog", "arena-detail-dialog", "team-profile-dialog"]
       .map((id) => document.getElementById(id))
       .find((candidate) => candidate?.open);
     publicProfileReturnDialogId = sourceDialog?.id || null;
@@ -15520,6 +15757,115 @@ function saveHumanReviewLocalNote() {
       ? document.getElementById(publicProfileReturnDialogId)
       : null;
     publicProfileReturnDialogId = null;
+    if (returnDialog?.showModal && !returnDialog.open) returnDialog.showModal();
+    else returnDialog?.setAttribute("open", "");
+  }
+
+  function renderTeamProfile(payload) {
+    const host = document.getElementById("team-profile-content");
+    if (!host) return;
+    host.replaceChildren();
+
+    const identity = document.createElement("article");
+    identity.className = "team-public-identity";
+    const emblem = document.createElement("span");
+    emblem.className = "team-public-emblem";
+    emblem.textContent = "♟";
+    const copy = document.createElement("div");
+    const name = document.createElement("strong");
+    name.textContent = payload.name || "Takım";
+    const size = document.createElement("small");
+    size.textContent = `${Number(payload.member_count || 0)} / ${Number(payload.member_limit || 30)} üye`;
+    copy.append(name, size);
+    const trophies = document.createElement("strong");
+    renderTrophyValue(trophies, Number(payload.total_trophies || 0));
+    identity.append(emblem, copy, trophies);
+    host.appendChild(identity);
+
+    const statistics = payload.statistics || {};
+    const tournament = payload.tournament || {};
+    const statsSection = document.createElement("section");
+    statsSection.className = "team-profile-statistics";
+    const heading = document.createElement("div");
+    heading.className = "profile-section-heading";
+    const kicker = document.createElement("span");
+    kicker.textContent = "TAKIM ARŞİVİ";
+    const title = document.createElement("h3");
+    title.textContent = "Takım İstatistikleri";
+    heading.append(kicker, title);
+    const grid = document.createElement("div");
+    grid.className = "statistics-metrics-grid public-profile-stat-grid team-profile-stat-grid";
+    for (const metric of [
+      ["Toplam Kupa", Number(payload.total_trophies || 0).toLocaleString("tr-TR")],
+      ["Ortalama Kupa", Number(payload.average_trophies || 0).toLocaleString("tr-TR")],
+      ["Toplam Maç", Number(statistics.total_matches || 0).toLocaleString("tr-TR")],
+      ["Galibiyet Oranı", `%${boundedWinRatePercent(statistics.win_rate, statistics.wins, statistics.total_matches)}`],
+      ["Turnuva Sırası", tournament.position ? `#${tournament.position}` : "—"],
+      ["Turnuva Puanı", `${Number(tournament.points || 0)} P`],
+    ]) grid.appendChild(publicProfileMetric(...metric));
+    statsSection.append(heading, grid);
+    host.appendChild(statsSection);
+
+    const membersSection = document.createElement("section");
+    membersSection.className = "team-profile-members";
+    const membersHeading = document.createElement("div");
+    membersHeading.className = "profile-section-heading";
+    const membersKicker = document.createElement("span");
+    membersKicker.textContent = "KADRO";
+    const membersTitle = document.createElement("h3");
+    membersTitle.textContent = "Üyeler";
+    membersHeading.append(membersKicker, membersTitle);
+    const memberList = document.createElement("ol");
+    memberList.className = "team-member-list team-profile-member-list";
+    for (const [index, member] of (payload.members || []).entries()) {
+      const row = createTeamMemberRow(member, index);
+      const meta = row.querySelector("small");
+      if (meta) meta.textContent = `${member.role === "owner" ? "LİDER · " : ""}${member.rank_name_tr || "Arena"} · ${member.operator_title || "Operatör"}`;
+      memberList.appendChild(row);
+    }
+    membersSection.append(membersHeading, memberList);
+    host.appendChild(membersSection);
+  }
+
+  async function openTeamProfile(teamId) {
+    const cleanTeamId = String(teamId || "").trim();
+    if (!cleanTeamId) return;
+    const dialog = document.getElementById("team-profile-dialog");
+    const status = document.getElementById("team-profile-status");
+    const content = document.getElementById("team-profile-content");
+    const sourceDialog = ["leaderboard-dialog", "public-profile-dialog"]
+      .map((id) => document.getElementById(id))
+      .find((candidate) => candidate?.open);
+    teamProfileReturnDialogId = sourceDialog?.id || null;
+    if (sourceDialog?.close) sourceDialog.close();
+    else sourceDialog?.removeAttribute("open");
+    if (content) content.replaceChildren();
+    if (status) status.textContent = "Takım profili yükleniyor…";
+    if (dialog?.showModal && !dialog.open) dialog.showModal();
+    else dialog?.setAttribute("open", "");
+    try {
+      const payload = await requestJsonWithDeadline(
+        `/team-profiles/${encodeURIComponent(cleanTeamId)}`,
+        { cache:"no-store" },
+        8000
+      );
+      const title = document.getElementById("team-profile-title");
+      if (title) title.textContent = payload.name || "Takım Profili";
+      if (status) status.textContent = "";
+      renderTeamProfile(payload);
+    } catch (error) {
+      if (status) status.textContent = error instanceof Error ? error.message : String(error);
+    }
+  }
+
+  function closeTeamProfile() {
+    const dialog = document.getElementById("team-profile-dialog");
+    if (dialog?.close) dialog.close();
+    else dialog?.removeAttribute("open");
+    const returnDialog = teamProfileReturnDialogId
+      ? document.getElementById(teamProfileReturnDialogId)
+      : null;
+    teamProfileReturnDialogId = null;
     if (returnDialog?.showModal && !returnDialog.open) returnDialog.showModal();
     else returnDialog?.setAttribute("open", "");
   }
@@ -15564,9 +15910,8 @@ function saveHumanReviewLocalNote() {
         ? `${row.member_count} üye`
         : row.rank_name_tr || "Arena";
       const nameNode = activeLeaderboardTab === "teams"
-        ? document.createElement("strong")
+        ? createTeamProfileLink(row.team_id, name)
         : createPublicPlayerName(row.player_id, name);
-      if (activeLeaderboardTab === "teams") nameNode.textContent = name;
       const detailNode = document.createElement("small");
       detailNode.textContent = detail;
       identity.append(nameNode, detailNode);
@@ -18440,6 +18785,14 @@ function saveHumanReviewLocalNote() {
     else arenaDetailDialog?.setAttribute("open", "");
   });
   document.getElementById("public-profile-close")?.addEventListener("click", closePublicProfile);
+  document.getElementById("team-profile-close")?.addEventListener("click", closeTeamProfile);
+  document.getElementById("team-profile-open")?.addEventListener("click", () => {
+    if (teamState?.team_id) openTeamProfile(teamState.team_id);
+  });
+  document.getElementById("profile-clan-title")?.addEventListener("click", (event) => {
+    const teamId = event.currentTarget?.dataset?.teamId || "";
+    if (teamId) openTeamProfile(teamId);
+  });
   enemyBattleNameEl?.addEventListener("click", () => {
     if (
       isPublicProfileTarget(enemyBattlePlayerId)

@@ -7,6 +7,8 @@
     modules: "Modüller",
     team: "Takım",
     events: "Etkinlik",
+    "weekly-event": "Haftalık Etkinlik",
+    "team-event": "Takım Etkinliği",
     play: "Oyna",
     profile: "Profil",
     avatar: "Avatar",
@@ -30,7 +32,9 @@
       const current = this.router.currentScreen;
       const shellCurrent = ["avatar", "daily", "daily-rewards", "daily-missions", "rewards", "statistics"].includes(current)
         ? "profile"
-        : current;
+        : ["weekly-event", "team-event"].includes(current)
+          ? "events"
+          : current;
       this.document.body.dataset.appScreen = current;
 
       for (const panel of this.document.querySelectorAll("[data-screen-panel]")) {

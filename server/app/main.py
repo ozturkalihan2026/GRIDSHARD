@@ -4,6 +4,7 @@ from uuid import uuid4
 import asyncio
 from contextlib import asynccontextmanager
 import hashlib
+import secrets
 import time
 import os
 import json
@@ -68,7 +69,13 @@ from .meta_progression import (
     MetaProgressionService,
 )
 from .arena_canon import BOTS, rank_stage_for_rating
-from .season_competition import build_events_view
+from .season_competition import (
+    DAILY_META_DEFINITIONS,
+    build_events_view,
+    daily_meta_by_id,
+    daily_meta_catalog_view,
+    daily_meta_for_seed,
+)
 from .player_statistics import (
     PlayerStatisticsService,
 )
@@ -696,6 +703,12 @@ def attach_player_laboratory_to_session(
     session.engine.state.players[player_id].core_level = 1 + profile.core_upgrade_levels.get(profile.selected_core_type, 0)
     session.engine.state.players[player_id].core_skills = profile.core_skills.get(profile.selected_core_type, ())
     session.engine.state.player_module_talents[player_id] = {k: dict(v) for k, v in profile.module_talents.items()}
+    today = daily_meta_catalog_view()["day"]
+    session.engine.state.player_daily_meta_ids[player_id] = (
+        profile.daily_meta_id
+        if profile.daily_meta_day == today and daily_meta_by_id(profile.daily_meta_id)
+        else ""
+    )
     from .arena_canon import unlocked_module_ids
     session.engine.state.player_unlocked_modules[player_id] = unlocked_module_ids(max(profile.rating, profile.highest_rating))
     pvp_service.set_player_calibrations(
@@ -3100,6 +3113,25 @@ def _ranked_player_rows(players: list[dict], value_key: str) -> list[dict]:
     ]
 
 
+def _synthetic_bot_record(bot: dict) -> dict:
+    """Build a plausible, bounded lifetime record for a canonical AI player."""
+    rating = max(0, int(bot.get("rating", 0)))
+    wins = 8 + (rating // 55)
+    matches = max(wins, wins + 5 + (rating // 110))
+    losses = max(0, matches - wins)
+    return {
+        "total_matches": matches,
+        "wins": min(wins, matches),
+        "losses": losses,
+        "draws": 0,
+        # Public profile statistics use a 0..1 ratio.  The client is the only
+        # layer that formats that ratio as a percentage.
+        "win_rate": round(min(1.0, wins / max(1, matches)), 6),
+        "average_match_duration_ms": 90000,
+        "total_damage_dealt": int(bot.get("core_damage", 0)) * 3,
+    }
+
+
 def _public_player_profile_view(player_id: str) -> dict:
     """Return the public first profile page without private account controls."""
     bot = next((item for item in BOTS if str(item.get("id")) == player_id), None)
@@ -3110,8 +3142,8 @@ def _public_player_profile_view(player_id: str) -> dict:
             (item for item in CORE_TYPES if item["id"] == bot.get("core_type")),
             CORE_TYPES[0],
         )
-        wins = 8 + (rating // 55)
-        matches = wins + 5 + (rating // 110)
+        record = _synthetic_bot_record(bot)
+        matches = record["total_matches"]
         return {
             "player_id": player_id,
             "display_name": bot["display_name"],
@@ -3124,7 +3156,7 @@ def _public_player_profile_view(player_id: str) -> dict:
             "featured_deck": {"module_ids": list(bot.get("battle_pool_ids", ())), "matches": matches},
             "selected_core": {"id": core["id"], "name_tr": core["name_tr"], "level": 1, "rarity": core["rarity"]},
             "season": {"id": monthly_season_descriptor()["id"], "name_tr": monthly_season_descriptor()["name_tr"], "ends_at": monthly_season_descriptor()["ends_at"], "summary": {}},
-            "statistics": {"total_matches": matches, "wins": wins, "losses": matches - wins, "draws": 0, "win_rate": round((wins / matches) * 100, 2), "average_match_duration_ms": 90000, "total_damage_dealt": int(bot.get("core_damage", 0)) * 3},
+            "statistics": record,
             "visibility": {"profile": True, "avatar": False, "rewards": False, "settings": False},
         }
     try:
@@ -3207,6 +3239,112 @@ def _public_player_profile_view(player_id: str) -> dict:
 @app.get("/public-profiles/{player_id}")
 def get_public_player_profile(player_id: str) -> dict:
     return _public_player_profile_view(player_id)
+
+
+def _public_team_profile_view(team_id: str) -> dict:
+    """Return a read-only team profile for both player and canonical AI teams."""
+    clean_team_id = str(team_id or "").strip()
+    ai_members = [
+        bot for bot in BOTS
+        if str(bot.get("team_id") or "").strip() == clean_team_id
+    ]
+
+    members: list[dict] = []
+    if ai_members:
+        team_name = str(ai_members[0].get("team_name") or "Takım")
+        member_limit = 30
+        for bot in ai_members:
+            record = _synthetic_bot_record(bot)
+            members.append({
+                "player_id": bot["id"],
+                "display_name": bot["display_name"],
+                "trophies": max(0, int(bot.get("rating", 0))),
+                "role": "member",
+                "online": True,
+                "is_bot": True,
+                "rank_name_tr": rank_stage_for_rating(int(bot.get("rating", 0)))["name_tr"],
+                "operator_title": bot.get("archetype_tr", "Devre Operatörü"),
+                "statistics": record,
+            })
+    else:
+        try:
+            team = team_service.get_team(clean_team_id)
+        except TeamServiceError as exc:
+            raise HTTPException(status_code=404, detail="Takım profili bulunamadı.") from exc
+        team_name = str(team.get("name") or "Takım")
+        member_limit = max(1, int(team.get("member_limit", 30)))
+        online_ids = set(player_profile_service._profiles)
+        for member_id in team.get("member_ids", []):
+            profile = _team_member_profile(member_id)
+            statistics = player_statistics_service.get_or_create(member_id).to_view()
+            members.append({
+                "player_id": member_id,
+                "display_name": profile.display_name,
+                "trophies": max(0, int(profile.rating)),
+                "role": "owner" if member_id == team.get("owner_id") else "member",
+                "online": member_id in online_ids,
+                "is_bot": False,
+                "rank_name_tr": profile.league_name_tr,
+                "operator_title": profile.to_view()["operator_title"],
+                "statistics": {
+                    "total_matches": max(0, int(statistics["total_matches"])),
+                    "wins": max(0, int(statistics["wins"])),
+                    "losses": max(0, int(statistics["losses"])),
+                    "draws": max(0, int(statistics["draws"])),
+                    "win_rate": max(0.0, min(1.0, float(statistics["win_rate"]))),
+                    "average_match_duration_ms": max(0, int(statistics["average_match_duration_ms"])),
+                    "total_damage_dealt": max(0, int(statistics["total_damage_dealt"])),
+                },
+            })
+
+    members.sort(key=lambda item: (-item["trophies"], item["display_name"].casefold()))
+    if ai_members and members:
+        members[0]["role"] = "owner"
+    for position, member in enumerate(members, start=1):
+        member["position"] = position
+
+    total_matches = sum(member["statistics"]["total_matches"] for member in members)
+    total_wins = sum(member["statistics"]["wins"] for member in members)
+    total_losses = sum(member["statistics"]["losses"] for member in members)
+    total_draws = sum(member["statistics"]["draws"] for member in members)
+    total_trophies = sum(member["trophies"] for member in members)
+
+    competition = build_events_view(_leaderboard_profile_rows())
+    tournament_row = next(
+        (
+            row for row in competition["team_tournament"]["standings"]
+            if row["team_id"] == clean_team_id
+        ),
+        None,
+    )
+    return {
+        "team_id": clean_team_id,
+        "name": team_name,
+        "member_count": len(members),
+        "member_limit": member_limit,
+        "total_trophies": total_trophies,
+        "average_trophies": round(total_trophies / max(1, len(members))),
+        "highest_member_trophies": max((member["trophies"] for member in members), default=0),
+        "members": members,
+        "statistics": {
+            "total_matches": total_matches,
+            "wins": total_wins,
+            "losses": total_losses,
+            "draws": total_draws,
+            "win_rate": round(min(1.0, total_wins / max(1, total_matches)), 6),
+        },
+        "tournament": {
+            "position": tournament_row.get("position") if tournament_row else None,
+            "points": tournament_row.get("points", 0) if tournament_row else 0,
+            "qualified_member_count": tournament_row.get("qualified_member_count", 0) if tournament_row else 0,
+            "minimum_reward_points": competition["team_tournament"]["minimum_reward_points"],
+        },
+    }
+
+
+@app.get("/team-profiles/{team_id}")
+def get_public_team_profile(team_id: str) -> dict:
+    return _public_team_profile_view(team_id)
 
 
 @app.get("/leaderboards")
@@ -3347,9 +3485,13 @@ def _team_view(team: dict, player_id: str) -> dict:
         }
         for item in reversed(team.get("training_challenges", [])[-50:])
     ]
+    overview = _public_team_profile_view(team["team_id"])
     return {
         "joined": True,
         **_team_summary(team),
+        "average_trophies": overview["average_trophies"],
+        "statistics": overview["statistics"],
+        "tournament": overview["tournament"],
         "owner_id": team.get("owner_id"),
         "members": members,
         "module_requests": requests,
@@ -3922,8 +4064,51 @@ def reset_player_module_talents(
 
 @app.get("/events")
 def get_events() -> dict:
-    """Public weekly and monthly competition hub, including canonical AI."""
+    """Public daily-meta catalog and competition hub, including canonical AI."""
     return build_events_view(_leaderboard_profile_rows())
+
+
+def _daily_meta_view(profile) -> dict:
+    catalog = daily_meta_catalog_view()
+    meta = (
+        daily_meta_by_id(profile.daily_meta_id)
+        if profile.daily_meta_day == catalog["day"]
+        else None
+    )
+    return {
+        **catalog,
+        "selected": meta is not None,
+        "requires_roll": meta is None,
+        "meta": meta,
+    }
+
+
+@app.get("/profile/{player_id}/daily-meta")
+def get_player_daily_meta(player_id: str) -> dict:
+    """Return the player's immutable choice for the current UTC day."""
+    return _daily_meta_view(_team_member_profile(player_id))
+
+
+@app.post("/profile/{player_id}/daily-meta/roll")
+def roll_player_daily_meta(
+    player_id: str,
+    request: MetaOperationRequest,
+) -> dict:
+    """Roll one of seven equal-probability metas once per player and UTC day."""
+    profile = _team_member_profile(player_id)
+    current = _daily_meta_view(profile)
+    if current["selected"]:
+        return {**current, "replayed": True, "request_id": request.request_id}
+
+    selected = DAILY_META_DEFINITIONS[secrets.randbelow(len(DAILY_META_DEFINITIONS))]
+    profile.daily_meta_day = current["day"]
+    profile.daily_meta_id = selected["id"]
+    persist_player_data(player_id)
+    return {
+        **_daily_meta_view(profile),
+        "replayed": False,
+        "request_id": request.request_id,
+    }
 
 
 @app.post("/profile/{player_id}/engagement/missions/{mission_id}/claim")
@@ -5403,6 +5588,9 @@ def _create_matchmaking_ai_session(
         module_id: max(0, min(14, round(sum(profile.module_upgrade_levels.get(mid, 0) for mid in profile.preferred_battle_pool_ids) / 6)))
         for module_id in bot["battle_pool_ids"]
     }
+    session.engine.state.player_daily_meta_ids[pair.player_b_id] = daily_meta_for_seed(
+        pair.player_b_id
+    ).get("id", "")
     session.ai_profile_options[pair.player_b_id] = bot
     attach_player_laboratory_to_session(pair.match_id, pair.player_a_id)
 
@@ -5476,6 +5664,10 @@ async def create_local_ai_session(
             ai_player_id,
         )
         attach_player_laboratory_to_session(session_id, request.player_id)
+        session = pvp_service.get_session(session_id)
+        session.engine.state.player_daily_meta_ids[ai_player_id] = daily_meta_for_seed(
+            ai_player_id
+        ).get("id", "")
         pvp_service.submit_setup(
             session_id,
             request.player_id,

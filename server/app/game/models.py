@@ -191,6 +191,7 @@ class BattleState:
     player_calibrations: dict[str, dict[str, int]] = field(default_factory=dict)
     player_upgrade_levels: dict[str, dict[str, int]] = field(default_factory=dict)
     player_module_talents: dict[str, dict[str, dict[str, str]]] = field(default_factory=dict)
+    player_daily_meta_ids: dict[str, str] = field(default_factory=dict)
     player_unlocked_modules: dict[str, tuple[str, ...]] = field(default_factory=dict)
     player_match_ratings: dict[str, int] = field(default_factory=dict)
     status: BattleStatus = BattleStatus.WAITING
