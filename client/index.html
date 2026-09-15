@@ -237,7 +237,7 @@
         <div id="gift-chest-list" class="gift-chest-list"></div>
       </section>
       <section class="shop-section" aria-labelledby="daily-offer-title">
-        <div class="mobile-section-heading"><div><span>HER GÜN YENİLENİR</span><h3 id="daily-offer-title">Günlük Özel Teklifler</h3></div><small id="shop-reset-copy">UTC 00:00</small></div>
+        <div class="mobile-section-heading"><div><span>HER PAZARTESİ YENİLENİR</span><h3 id="daily-offer-title">Haftalık Özel Teklifler</h3></div><small id="shop-reset-copy">Haftalık</small></div>
         <div id="daily-shop-offers" class="daily-shop-offers"></div>
       </section>
       <p id="shop-action-status" class="mobile-action-status" role="status">Sandık ödülleri sunucu tarafından belirlenir.</p>
@@ -316,11 +316,7 @@
           <div class="team-summary-metrics"><strong id="team-member-count">0 / 30 ÜYE</strong><strong id="team-total-trophies" class="trophy-visual-value" aria-label="0 Kupa"><span class="trophy-value-number">0</span><span class="trophy-value-icon" aria-hidden="true">🏆</span></strong></div>
         </header>
         <div class="team-panels">
-          <section data-team-panel="overview" class="team-panel is-active">
-            <h3>Takım devresi</h3><p>Üyelerin toplam kupası takım sıralamasını belirler. Modül parçalarını paylaşabilir ve ödülsüz antrenman savaşları yapabilirsin.</p>
-            <div id="team-overview-members" class="team-overview-members"></div>
-          </section>
-          <section data-team-panel="members" class="team-panel" hidden>
+          <section data-team-panel="members" class="team-panel is-active">
             <h3>Üyeler</h3><ol id="team-member-list" class="team-member-list"></ol>
           </section>
           <section data-team-panel="requests" class="team-panel" hidden>
@@ -340,8 +336,7 @@
           </section>
         </div>
         <nav class="team-tabs" aria-label="Takım bölümleri">
-          <button type="button" data-team-tab="overview" class="is-active">GENEL</button>
-          <button type="button" data-team-tab="members">ÜYELER</button>
+          <button type="button" data-team-tab="members" class="is-active">ÜYELER</button>
           <button type="button" data-team-tab="requests">İSTEK</button>
           <button type="button" data-team-tab="chat">SOHBET</button>
           <button type="button" data-team-tab="battle">SAVAŞ</button>
@@ -350,10 +345,33 @@
     </section>
 
     <section id="events-screen" class="mobile-hub-screen events-screen" data-screen-panel="events" hidden>
-      <div class="event-hub-grid">
-        <button type="button" disabled><span>YAKINDA</span><strong>Devre Turnuvası</strong><small>Sezonluk rekabet etkinliği hazırlanıyor</small></button>
-        <button type="button" disabled><span>YAKINDA</span><strong>Takım Baskını</strong><small>Ortak çekirdek savaşları burada açılacak</small></button>
-      </div>
+      <header class="events-hero">
+        <span>ETKİNLİK MERKEZİ</span>
+        <h2>Turnuvalar</h2>
+        <p id="event-period-copy">Etkinlik programı yükleniyor…</p>
+      </header>
+      <article id="season-meta-card" class="season-meta-card">
+        <span>BU SEZONUN METASI</span><strong id="season-meta-name">—</strong>
+        <p id="season-meta-description">Sezon stratejisi yükleniyor.</p>
+        <small id="season-meta-modules"></small>
+      </article>
+      <section class="tournament-panel weekly-tournament-panel">
+        <header><div><span>HAFTALIK</span><h3 id="weekly-tournament-name">Haftalık Devre Turnuvası</h3></div><small id="weekly-tournament-reset"></small></header>
+        <p id="weekly-tournament-rules"></p>
+        <div id="weekly-tournament-prizes" class="tournament-prizes"></div>
+        <h4>Sıralama</h4>
+        <ol id="weekly-tournament-standings" class="tournament-standings"></ol>
+      </section>
+      <section class="tournament-panel team-tournament-panel">
+        <header><div><span>AYLIK · TAKIM</span><h3 id="team-tournament-name">Takımlar Arası Turnuva</h3></div><small id="team-tournament-week"></small></header>
+        <p id="team-tournament-rules"></p>
+        <div id="team-tournament-prizes" class="tournament-prizes"></div>
+        <h4>Takım Sıralaması</h4>
+        <ol id="team-tournament-standings" class="tournament-standings"></ol>
+        <h4>Bu Haftanın Eşleşmeleri</h4>
+        <div id="team-tournament-fixtures" class="team-tournament-fixtures"></div>
+      </section>
+      <p id="event-action-status" class="mobile-action-status" role="status" aria-live="polite"></p>
     </section>
 
     <dialog id="core-detail-dialog" class="module-detail-dialog core-detail-dialog" aria-labelledby="core-detail-name">
@@ -414,7 +432,7 @@
         <div class="profile-deck-visual">
           <div id="profile-featured-core" class="profile-featured-core">
             <span id="profile-featured-core-glyph" class="profile-featured-core-glyph" aria-hidden="true">◇</span>
-            <span class="profile-featured-core-copy"><small>AKTİF ÇEKİRDEK</small><strong id="profile-featured-core-name">Rezonans Çekirdeği</strong><em id="profile-featured-core-level">SEVİYE 1</em></span>
+            <span class="profile-featured-core-copy"><strong id="profile-featured-core-name">Rezonans Çekirdeği</strong><em id="profile-featured-core-level">SEVİYE 1</em></span>
           </div>
           <div id="profile-most-used-deck" class="profile-featured-modules" aria-label="En çok kullanılan deste"><small>Henüz tamamlanmış maç yok.</small></div>
         </div>

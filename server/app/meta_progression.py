@@ -259,7 +259,7 @@ def _daily_shop_chest_offer(
     definition_id: str,
     cost: int,
 ) -> dict:
-    """Bind paid daily offers to the same reward contract as their tier."""
+    """Bind rotating shop offers to the same reward contract as their tier."""
     definition = CHEST_DEFINITIONS[definition_id]
     return {
         "id": offer_id,
@@ -286,6 +286,9 @@ DAILY_SHOP_OFFERS: tuple[dict, ...] = (
     _daily_shop_chest_offer("silver_daily", "circuit_8h", 400),
     _daily_shop_chest_offer("gold_daily", "core_24h", 900),
 )
+# Legacy symbol and offer ids stay valid for old receipts and clients.  The
+# reset contract itself is weekly from Beta.56 onward.
+WEEKLY_SHOP_OFFERS = DAILY_SHOP_OFFERS
 
 
 def utc_now() -> datetime:
@@ -294,6 +297,17 @@ def utc_now() -> datetime:
 
 def iso_utc(value: datetime) -> str:
     return value.astimezone(timezone.utc).isoformat().replace("+00:00", "Z")
+
+
+def weekly_shop_period(now: datetime) -> tuple[str, datetime]:
+    current = now.astimezone(timezone.utc)
+    starts_at = (current - timedelta(days=current.weekday())).replace(
+        hour=0,
+        minute=0,
+        second=0,
+        microsecond=0,
+    )
+    return starts_at.date().isoformat(), starts_at + timedelta(days=7)
 
 
 def parse_utc(value: str) -> datetime:
@@ -529,7 +543,7 @@ class MetaProgressionService:
         current_rank = rank_stage_for_rating(profile.rating)
         profile.highest_rating = max(profile.highest_rating, profile.rating)
         now = self._now_func()
-        shop_day = now.date().isoformat()
+        shop_day, shop_reset_at = weekly_shop_period(now)
         purchased = (
             set(profile.shop_purchased_offer_ids)
             if profile.shop_purchase_day == shop_day
@@ -590,6 +604,9 @@ class MetaProgressionService:
             },
             "shop": {
                 "day": shop_day,
+                "week": shop_day,
+                "period": "weekly",
+                "reset_at": iso_utc(shop_reset_at),
                 "offers": [
                     {
                         "id": offer["id"],
@@ -614,7 +631,7 @@ class MetaProgressionService:
                             for rarity, amount_range in offer["shards_by_rarity"].items()
                         },
                     }
-                    for offer in DAILY_SHOP_OFFERS
+                    for offer in WEEKLY_SHOP_OFFERS
                 ],
             },
             "cores": {
@@ -1214,15 +1231,15 @@ class MetaProgressionService:
             if receipt.get("offer_id") != offer_id:
                 raise MetaProgressionError("Talep kimliği farklı bir teklife ait.")
             return dict(receipt)
-        offer = next((item for item in DAILY_SHOP_OFFERS if item["id"] == offer_id), None)
+        offer = next((item for item in WEEKLY_SHOP_OFFERS if item["id"] == offer_id), None)
         if offer is None:
-            raise MetaProgressionError("Günlük teklif bulunamadı.")
-        shop_day = self._now_func().date().isoformat()
+            raise MetaProgressionError("Haftalık teklif bulunamadı.")
+        shop_day, _ = weekly_shop_period(self._now_func())
         if profile.shop_purchase_day != shop_day:
             profile.shop_purchase_day = shop_day
             profile.shop_purchased_offer_ids = ()
         if offer_id in profile.shop_purchased_offer_ids:
-            raise MetaProgressionError("Bu günlük teklif daha önce alındı.")
+            raise MetaProgressionError("Bu haftalık teklif daha önce alındı.")
         currency = str(offer["currency"])
         balance = int(getattr(profile, currency))
         cost = int(offer["cost"])

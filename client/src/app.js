@@ -449,7 +449,8 @@
   let leaderboardPayload = null;
   let publicProfileReturnDialogId = null;
   let teamState = null;
-  let activeTeamTab = "overview";
+  let activeTeamTab = "members";
+  let eventsState = null;
   const PROFILE_AVATARS = Object.freeze([
     { id: "default", nameTr: "Devre Operatörü", glyph: "◇" },
     { id: "circuit_scout", nameTr: "Devre Kaşifi", glyph: "⌁" },
@@ -756,7 +757,11 @@
       if (["shop", "modules", "team", "menu"].includes(screen)) {
         loadMetaProgression();
       }
-      if (screen === "team") loadTeamView();
+      if (screen === "team") {
+        activeTeamTab = "members";
+        loadTeamView();
+      }
+      if (screen === "events") loadEventsView();
     } else if (
       screen === "laboratory"
     ) {
@@ -840,7 +845,7 @@
         { id: "core_24h", name_tr: "Altın Sandık", visual_tier: "gold", unlock_hours: 0, open_seconds: 1, claim_cooldown_hours: 16, claim_available: true, claim_remaining_seconds: 0 },
         { id: "diamond_24h", name_tr: "Elmas Sandık", visual_tier: "diamond", unlock_hours: 0, open_seconds: 1, claim_cooldown_hours: 24, claim_available: true, claim_remaining_seconds: 0 },
       ], inventory: [] },
-      shop: { day: "", offers: [
+      shop: { day: "", week: "", period: "weekly", reset_at: "", offers: [
         { id: "bronze_daily", name_tr: "Bronz Sandık", tier: "bronze", currency: "circuit_credits", cost: 120, purchased: false },
         { id: "silver_daily", name_tr: "Gümüş Sandık", tier: "silver", currency: "circuit_credits", cost: 400, purchased: false },
         { id: "gold_daily", name_tr: "Altın Sandık", tier: "gold", currency: "circuit_credits", cost: 900, purchased: false },
@@ -1944,6 +1949,13 @@
       }
     }
     const offerHost = document.getElementById("daily-shop-offers");
+    const resetCopy = document.getElementById("shop-reset-copy");
+    if (resetCopy) {
+      const resetAt = state.shop?.reset_at ? new Date(state.shop.reset_at) : null;
+      resetCopy.textContent = resetAt && !Number.isNaN(resetAt.getTime())
+        ? `Pzt ${resetAt.toLocaleTimeString("tr-TR", { hour:"2-digit", minute:"2-digit" })}`
+        : "Haftalık";
+    }
     if (offerHost) {
       offerHost.replaceChildren();
       for (const offer of state.shop?.offers || []) {
@@ -2609,6 +2621,155 @@
     }
   }
 
+  function eventDateLabel(value) {
+    const date = value ? new Date(value) : null;
+    return date && !Number.isNaN(date.getTime())
+      ? date.toLocaleDateString("tr-TR", { day:"2-digit", month:"short" })
+      : "—";
+  }
+
+  function renderTournamentPrizes(hostId, prizes = []) {
+    const host = document.getElementById(hostId);
+    if (!host) return;
+    host.replaceChildren();
+    for (const prize of prizes.slice(0, 3)) {
+      const card = document.createElement("article");
+      card.dataset.position = String(prize.position);
+      const medal = document.createElement("strong");
+      medal.textContent = `${prize.position}. ÖDÜL`;
+      const chest = document.createElement("span");
+      chest.className = "event-prize-chest";
+      chest.innerHTML = chestVisualMarkup(prize.chest_tier || "bronze");
+      const reward = document.createElement("small");
+      reward.textContent = `${Number(prize.circuit_credits || 0).toLocaleString("tr-TR")} Devre Kredisi · ${Number(prize.flux_shards || 0)} Akı`;
+      card.append(medal, chest, reward);
+      host.appendChild(card);
+    }
+  }
+
+  function renderWeeklyTournament(state) {
+    const tournament = state?.weekly_tournament || {};
+    const name = document.getElementById("weekly-tournament-name");
+    const reset = document.getElementById("weekly-tournament-reset");
+    const rules = document.getElementById("weekly-tournament-rules");
+    if (name) name.textContent = tournament.name_tr || "Haftalık Devre Turnuvası";
+    if (reset) reset.textContent = `${eventDateLabel(tournament.period?.starts_at)} — ${eventDateLabel(tournament.period?.ends_at)}`;
+    if (rules) rules.textContent = tournament.rules_tr || "";
+    renderTournamentPrizes("weekly-tournament-prizes", tournament.prizes || []);
+    const host = document.getElementById("weekly-tournament-standings");
+    if (!host) return;
+    host.replaceChildren();
+    const standings = tournament.standings || [];
+    const visibleRows = standings.slice(0, 20);
+    const viewerRow = standings.find((row) => row.player_id === participantPlayerId);
+    if (viewerRow && !visibleRows.includes(viewerRow)) visibleRows.push(viewerRow);
+    for (const row of visibleRows) {
+      const item = document.createElement("li");
+      if (row.player_id === participantPlayerId) item.classList.add("is-current-player");
+      const position = document.createElement("strong");
+      position.className = "tournament-position";
+      position.textContent = String(row.position);
+      const identity = document.createElement("div");
+      const player = createPublicPlayerName(row.player_id, row.display_name || "Oyuncu");
+      const record = document.createElement("small");
+      record.textContent = `${row.wins}G · ${row.losses}M · ${row.matches} maç`;
+      identity.append(player, record);
+      const points = document.createElement("strong");
+      points.className = "tournament-points";
+      points.textContent = `${row.points} P`;
+      item.append(position, identity, points);
+      host.appendChild(item);
+    }
+  }
+
+  function renderTeamTournament(state) {
+    const tournament = state?.team_tournament || {};
+    const name = document.getElementById("team-tournament-name");
+    const week = document.getElementById("team-tournament-week");
+    const rules = document.getElementById("team-tournament-rules");
+    if (name) name.textContent = tournament.name_tr || "Takımlar Arası Turnuva";
+    if (week) week.textContent = `${Number(tournament.week || 1)}. HAFTA`;
+    if (rules) rules.textContent = tournament.rules_tr || "";
+    renderTournamentPrizes("team-tournament-prizes", tournament.prizes || []);
+    const standings = document.getElementById("team-tournament-standings");
+    if (standings) {
+      standings.replaceChildren();
+      for (const row of (tournament.standings || []).slice(0, 12)) {
+        const item = document.createElement("li");
+        if (row.members?.some((member) => member.player_id === participantPlayerId)) item.classList.add("is-current-player");
+        const position = document.createElement("strong");
+        position.className = "tournament-position";
+        position.textContent = String(row.position);
+        const identity = document.createElement("div");
+        const teamName = document.createElement("strong");
+        teamName.textContent = row.team_name || "Takım";
+        const detail = document.createElement("small");
+        detail.textContent = `${row.member_count} üye · ${row.qualified_member_count} ödüle uygun`;
+        identity.append(teamName, detail);
+        const points = document.createElement("strong");
+        points.className = "tournament-points";
+        points.textContent = `${row.points} P`;
+        item.append(position, identity, points);
+        standings.appendChild(item);
+      }
+    }
+    const fixtures = document.getElementById("team-tournament-fixtures");
+    if (fixtures) {
+      fixtures.replaceChildren();
+      for (const fixture of tournament.fixtures || []) {
+        const card = document.createElement("article");
+        const pairing = (fixture.member_pairings || []).find((item) =>
+          item.home_player_id === participantPlayerId || item.away_player_id === participantPlayerId
+        );
+        if (pairing) card.classList.add("is-current-fixture");
+        const teams = document.createElement("strong");
+        teams.textContent = `${fixture.home_team_name}  ×  ${fixture.away_team_name}`;
+        const detail = document.createElement("small");
+        detail.textContent = pairing
+          ? `${pairing.home_player_name} × ${pairing.away_player_name} · rövanşlı 2 maç`
+          : `${(fixture.member_pairings || []).length} yakın-kupa eşleşmesi · kişi başı 2 maç`;
+        card.append(teams, detail);
+        fixtures.appendChild(card);
+      }
+    }
+  }
+
+  function renderEventsHub() {
+    if (!eventsState) return;
+    const meta = eventsState.season_meta || {};
+    const name = document.getElementById("season-meta-name");
+    const description = document.getElementById("season-meta-description");
+    const modules = document.getElementById("season-meta-modules");
+    const period = document.getElementById("event-period-copy");
+    if (name) name.textContent = meta.meta_name_tr || "Sezon Metası";
+    if (description) description.textContent = meta.description_tr || "";
+    if (modules) {
+      const featured = (meta.featured_modules || []).map((id) =>
+        moduleDefinitions.find((item) => item.definitionId === id)?.nameTr || id
+      );
+      modules.textContent = `${meta.featured_archetype_tr || "Dengeli"} · ${featured.join(" · ")}`;
+    }
+    if (period) {
+      period.textContent = `${eventsState.ai_population?.total || 0} AI oyuncu · ${eventsState.ai_population?.team_count || 0} takım · haftalık ve aylık sıralamalar`;
+    }
+    renderWeeklyTournament(eventsState);
+    renderTeamTournament(eventsState);
+  }
+
+  async function loadEventsView() {
+    const status = document.getElementById("event-action-status");
+    if (status) status.textContent = "Turnuva verileri yükleniyor…";
+    try {
+      eventsState = await requestJsonWithDeadline("/events", { cache:"no-store" }, 12000);
+      if (status) status.textContent = "";
+      renderEventsHub();
+      return { ok:true, state:eventsState };
+    } catch (error) {
+      if (status) status.textContent = error instanceof Error ? error.message : String(error);
+      return { ok:false, error };
+    }
+  }
+
   async function mutateTeam(path, body, pendingMessage = "İşleniyor…") {
     setTeamActionStatus(pendingMessage, "pending");
     try {
@@ -2721,13 +2882,6 @@
     }
 
     const members = teamState.members || [];
-    const overview = document.getElementById("team-overview-members");
-    if (overview) {
-      overview.replaceChildren();
-      members.slice(0, 3).forEach((member, index) => {
-        overview.appendChild(createTeamMemberRow(member, index, { compact:true }));
-      });
-    }
     const memberList = document.getElementById("team-member-list");
     if (memberList) {
       memberList.replaceChildren();
@@ -2907,7 +3061,7 @@
 
   document.querySelectorAll("[data-team-tab]").forEach((button) => {
     button.addEventListener("click", () => {
-      activeTeamTab = button.dataset.teamTab || "overview";
+      activeTeamTab = button.dataset.teamTab || "members";
       renderTeamHub();
     });
   });
@@ -15216,15 +15370,13 @@ function saveHumanReviewLocalNote() {
     coreGlyph.className = "profile-featured-core-glyph";
     const coreCopy = document.createElement("span");
     coreCopy.className = "profile-featured-core-copy";
-    const coreLabel = document.createElement("small");
-    coreLabel.textContent = `AKTİF ÇEKİRDEK · ${moduleRarityLabel(payload.selected_core?.rarity)}`;
     const coreName = document.createElement("strong");
     coreName.textContent = payload.selected_core?.name_tr || "Rezonans Çekirdeği";
     const coreLevel = document.createElement("em");
     coreLevel.textContent = `SEVİYE ${Number(payload.selected_core?.level || 1)}`;
     const coreVisual = applyCoreVisualIdentity(core, payload.selected_core?.id || "core_resonance");
     coreGlyph.textContent = coreVisual.glyph;
-    coreCopy.append(coreLabel, coreName, coreLevel);
+    coreCopy.append(coreName, coreLevel);
     core.append(coreGlyph, coreCopy);
     const modules = document.createElement("div");
     modules.className = "profile-featured-modules";

@@ -679,6 +679,7 @@ class PvPSessionService:
             "match_type": state.match_type,
             "match_label_tr": {
                 "arena_ai": "Arena Savaşı",
+                "team_tournament": "Takım Turnuvası",
                 "ranked_pvp": "Dereceli PvP",
                 "unranked_ai": "Derecesiz AI",
                 "local_test": "Yerel Test",

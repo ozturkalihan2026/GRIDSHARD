@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from datetime import datetime, timezone
 
 from .game.models import BattleState, BattleStatus
 from .meta_progression import (
@@ -50,6 +51,7 @@ def match_circuit_credit_reward(
 
 MATCH_LABELS_TR = {
     "arena_ai": "Arena Savaşı",
+    "team_tournament": "Takım Turnuvası",
     "ranked_pvp": "Dereceli PvP",
     "unranked_ai": "Derecesiz AI",
     "local_test": "Yerel Test",
@@ -218,6 +220,29 @@ class PlayerProgressionService:
             tier_after = int(updated.engagement_view()["current_tier"])
             player = state.players[player_id]
             won = state.winner_player_id == player_id
+            completed_at = datetime.now(timezone.utc)
+            iso_year, iso_week, _ = completed_at.isocalendar()
+            weekly_period = f"{iso_year}-W{iso_week:02d}"
+            if updated.weekly_tournament_period != weekly_period:
+                updated.weekly_tournament_period = weekly_period
+                updated.weekly_tournament_matches = 0
+                updated.weekly_tournament_wins = 0
+            updated.weekly_tournament_matches += 1
+            if won:
+                updated.weekly_tournament_wins += 1
+            if state.match_type == "team_tournament":
+                team_period = f"{completed_at.year}-{completed_at.month:02d}"
+                if updated.team_tournament_period != team_period:
+                    updated.team_tournament_period = team_period
+                    updated.team_tournament_matches = 0
+                    updated.team_tournament_wins = 0
+                updated.team_tournament_matches += 1
+                if won:
+                    updated.team_tournament_wins += 1
+                if updated.team_tournament_week_period != weekly_period:
+                    updated.team_tournament_week_period = weekly_period
+                    updated.team_tournament_week_matches = 0
+                updated.team_tournament_week_matches += 1
             circuit_credits_awarded = match_circuit_credit_reward(
                 rank_before,
                 won=won,

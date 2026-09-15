@@ -62,7 +62,13 @@ def _normalized_arena_rewards() -> tuple[dict, ...]:
 
 
 ARENAS = _normalized_arena_rewards()
-BOTS = json.loads((DATA_DIR / "arena_bot_profiles_v1.json").read_text(encoding="utf-8"))["bots"]
+from .season_competition import build_ai_population
+
+
+_BASE_BOTS = json.loads(
+    (DATA_DIR / "arena_bot_profiles_v1.json").read_text(encoding="utf-8")
+)["bots"]
+BOTS = build_ai_population(_BASE_BOTS)
 STARTER_IDS = tuple(item["id"] for item in CANON["modules"] if item["unlock_trophies"] == 0)
 TALENT_LEVELS = {"common": (5, 8, 11, 14), "rare": (6, 9, 12, 15),
                  "epic": (7, 10, 13, 15), "legendary": (8, 11, 14, 15)}

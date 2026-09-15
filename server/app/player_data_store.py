@@ -634,6 +634,14 @@ class PlayerDataStoreService:
                 request_id: dict(receipt)
                 for request_id, receipt in profile.shop_receipts.items()
             },
+            "weekly_tournament_period": profile.weekly_tournament_period,
+            "weekly_tournament_matches": profile.weekly_tournament_matches,
+            "weekly_tournament_wins": profile.weekly_tournament_wins,
+            "team_tournament_period": profile.team_tournament_period,
+            "team_tournament_matches": profile.team_tournament_matches,
+            "team_tournament_wins": profile.team_tournament_wins,
+            "team_tournament_week_period": profile.team_tournament_week_period,
+            "team_tournament_week_matches": profile.team_tournament_week_matches,
             "unlocked_core_types": list(profile.unlocked_core_types),
             "selected_core_type": profile.selected_core_type,
             "core_skill_points": profile.core_skill_points,
@@ -882,6 +890,14 @@ class PlayerDataStoreService:
                 for request_id, receipt in dict(meta.get("shop_receipts", {})).items()
                 if isinstance(receipt, dict)
             },
+            weekly_tournament_period=str(meta.get("weekly_tournament_period", "")),
+            weekly_tournament_matches=max(0, int(meta.get("weekly_tournament_matches", 0))),
+            weekly_tournament_wins=max(0, int(meta.get("weekly_tournament_wins", 0))),
+            team_tournament_period=str(meta.get("team_tournament_period", "")),
+            team_tournament_matches=max(0, int(meta.get("team_tournament_matches", 0))),
+            team_tournament_wins=max(0, int(meta.get("team_tournament_wins", 0))),
+            team_tournament_week_period=str(meta.get("team_tournament_week_period", "")),
+            team_tournament_week_matches=max(0, int(meta.get("team_tournament_week_matches", 0))),
             unlocked_core_types=tuple(
                 str(value)
                 for value in meta.get("unlocked_core_types", ["core_resonance"])

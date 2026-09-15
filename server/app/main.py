@@ -63,10 +63,12 @@ from .laboratory import (
     upgrade_calibration,
 )
 from .meta_progression import (
+    CORE_TYPES,
     MetaProgressionError,
     MetaProgressionService,
 )
-from .arena_canon import rank_stage_for_rating
+from .arena_canon import BOTS, rank_stage_for_rating
+from .season_competition import build_events_view
 from .player_statistics import (
     PlayerStatisticsService,
 )
@@ -3031,6 +3033,13 @@ def _leaderboard_profile_rows() -> list[dict]:
             ),
             "team_id": profile.get("team_id"),
             "team_name": profile.get("team_name"),
+            "is_bot": False,
+            "weekly_matches": max(0, int(meta.get("weekly_tournament_matches", 0))),
+            "weekly_wins": max(0, int(meta.get("weekly_tournament_wins", 0))),
+            "weekly_period": str(meta.get("weekly_tournament_period", "")),
+            "team_tournament_matches": max(0, int(meta.get("team_tournament_matches", 0))),
+            "team_tournament_wins": max(0, int(meta.get("team_tournament_wins", 0))),
+            "team_tournament_period": str(meta.get("team_tournament_period", "")),
         }
 
     for player_id in list(player_profile_service._profiles):
@@ -3042,6 +3051,29 @@ def _leaderboard_profile_rows() -> list[dict]:
             "core_damage": max(0, int(profile.lifetime_stats.get("core_damage_dealt", 0))),
             "team_id": profile.team_id,
             "team_name": profile.team_name,
+            "is_bot": False,
+            "weekly_matches": profile.weekly_tournament_matches,
+            "weekly_wins": profile.weekly_tournament_wins,
+            "weekly_period": profile.weekly_tournament_period,
+            "team_tournament_matches": profile.team_tournament_matches,
+            "team_tournament_wins": profile.team_tournament_wins,
+            "team_tournament_period": profile.team_tournament_period,
+        }
+    for bot in BOTS:
+        players[str(bot["id"])] = {
+            "player_id": str(bot["id"]),
+            "display_name": str(bot["display_name"]),
+            "rating": max(0, int(bot.get("rating", 0))),
+            "core_damage": max(0, int(bot.get("core_damage", 0))),
+            "team_id": bot.get("team_id"),
+            "team_name": bot.get("team_name"),
+            "is_bot": True,
+            "weekly_matches": 0,
+            "weekly_wins": 0,
+            "weekly_period": "",
+            "team_tournament_matches": 0,
+            "team_tournament_wins": 0,
+            "team_tournament_period": "",
         }
     return list(players.values())
 
@@ -3062,6 +3094,7 @@ def _ranked_player_rows(players: list[dict], value_key: str) -> list[dict]:
             "display_name": row["display_name"],
             "rank_name_tr": rank_stage_for_rating(row["rating"])["name_tr"],
             "value": int(row[value_key]),
+            "is_bot": bool(row.get("is_bot")),
         }
         for index, row in enumerate(ordered, start=1)
     ]
@@ -3069,6 +3102,31 @@ def _ranked_player_rows(players: list[dict], value_key: str) -> list[dict]:
 
 def _public_player_profile_view(player_id: str) -> dict:
     """Return the public first profile page without private account controls."""
+    bot = next((item for item in BOTS if str(item.get("id")) == player_id), None)
+    if bot is not None:
+        rating = max(0, int(bot.get("rating", 0)))
+        rank = rank_stage_for_rating(rating)
+        core = next(
+            (item for item in CORE_TYPES if item["id"] == bot.get("core_type")),
+            CORE_TYPES[0],
+        )
+        wins = 8 + (rating // 55)
+        matches = wins + 5 + (rating // 110)
+        return {
+            "player_id": player_id,
+            "display_name": bot["display_name"],
+            "rating": rating,
+            "highest_rating": rating,
+            "rank_name_tr": rank["name_tr"],
+            "operator_title": bot.get("archetype_tr", "Devre Operatörü"),
+            "avatar": {"selected_avatar_id": "default", "selected_avatar_frame_id": "none"},
+            "team": {"team_id": bot.get("team_id"), "team_name": bot.get("team_name")},
+            "featured_deck": {"module_ids": list(bot.get("battle_pool_ids", ())), "matches": matches},
+            "selected_core": {"id": core["id"], "name_tr": core["name_tr"], "level": 1, "rarity": core["rarity"]},
+            "season": {"id": monthly_season_descriptor()["id"], "name_tr": monthly_season_descriptor()["name_tr"], "ends_at": monthly_season_descriptor()["ends_at"], "summary": {}},
+            "statistics": {"total_matches": matches, "wins": wins, "losses": matches - wins, "draws": 0, "win_rate": round((wins / matches) * 100, 2), "average_match_duration_ms": 90000, "total_damage_dealt": int(bot.get("core_damage", 0)) * 3},
+            "visibility": {"profile": True, "avatar": False, "rewards": False, "settings": False},
+        }
     try:
         profile = player_profile_service.get(player_id)
     except PlayerProfileError:
@@ -3860,6 +3918,12 @@ def reset_player_module_talents(
         "meta_progression": meta_progression_service.view(profile),
         "profile": profile.to_view(),
     }
+
+
+@app.get("/events")
+def get_events() -> dict:
+    """Public weekly and monthly competition hub, including canonical AI."""
+    return build_events_view(_leaderboard_profile_rows())
 
 
 @app.post("/profile/{player_id}/engagement/missions/{mission_id}/claim")
@@ -5269,11 +5333,57 @@ def _create_matchmaking_ai_session(
     except PvPSessionError:
         pass
 
+    from .arena_canon import select_bot
+    from .game.ai_archetypes import BOT_ARCHETYPE_IDS
+
+    profile = player_profile_service.get_or_create(pair.player_a_id)
+    bot = select_bot(profile.rating, pair.match_id)
+    match_type = "arena_ai"
+    if profile.team_id:
+        event_view = build_events_view(_leaderboard_profile_rows())
+        week_id = str(event_view["weekly_tournament"]["period"]["id"])
+        weekly_team_matches = (
+            profile.team_tournament_week_matches
+            if profile.team_tournament_week_period == week_id
+            else 0
+        )
+        fixture = next(
+            (
+                item
+                for item in event_view["team_tournament"]["fixtures"]
+                if profile.team_id in {
+                    item["home_team_id"],
+                    item["away_team_id"],
+                }
+            ),
+            None,
+        )
+        if fixture is not None and weekly_team_matches < 2:
+            opponent_team_id = (
+                fixture["away_team_id"]
+                if fixture["home_team_id"] == profile.team_id
+                else fixture["home_team_id"]
+            )
+            candidates = [
+                item for item in BOTS
+                if item.get("team_id") == opponent_team_id
+            ]
+            if candidates:
+                candidates.sort(
+                    key=lambda item: (
+                        abs(int(item.get("rating", 0)) - int(profile.rating)),
+                        str(item.get("id")),
+                    )
+                )
+                bot = dict(candidates[0])
+                bot["match_rating"] = int(bot["rating"])
+                match_type = "team_tournament"
+
     pvp_service.create_session(
         pair.match_id,
         setup_required=True,
         auto_start_when_ready=True,
-        match_type="arena_ai",
+        match_type=match_type,
         season_id=monthly_season_descriptor()["id"],
         ranked_eligible=False,
         normalized=False,
@@ -5284,10 +5394,6 @@ def _create_matchmaking_ai_session(
         pair.player_a_id,
         display_name=player_profile_service.get_or_create(pair.player_a_id).display_name,
     )
-    from .arena_canon import select_bot
-    from .game.ai_archetypes import BOT_ARCHETYPE_IDS
-    profile = player_profile_service.get_or_create(pair.player_a_id)
-    bot = select_bot(profile.rating, pair.match_id)
     pvp_service.join(pair.match_id, pair.player_b_id, display_name=bot["display_name"])
     session = pvp_service.get_session(pair.match_id)
     session.engine.state.player_match_ratings[pair.player_b_id] = bot["match_rating"]

@@ -61,7 +61,7 @@ assert.ok(app.includes("function createModuleEffectList"));
 assert.ok(app.includes("createModuleEffectList(item.effect_lines)"));
 assert.match(css, /\.module-effect-panel/);
 assert.ok(html.includes('id="team-onboarding"'));
-assert.ok(html.includes('data-team-tab="overview"'));
+assert.ok(!html.includes('data-team-tab="overview"'));
 assert.ok(html.includes('data-team-tab="members"'));
 assert.ok(html.includes('data-team-tab="requests"'));
 assert.ok(html.includes('data-team-tab="chat"'));
@@ -73,6 +73,11 @@ assert.ok(app.includes("/training-challenges"));
 assert.ok(html.includes("Antrenman protokolü derecesizdir"));
 assert.match(css, /\.team-member-row/);
 assert.match(css, /\.team-message-list/);
+assert.ok(html.includes('id="weekly-tournament-standings"'));
+assert.ok(html.includes('id="team-tournament-fixtures"'));
+assert.ok(app.includes("function loadEventsView"));
+assert.ok(app.includes("function renderTeamTournament"));
+assert.match(css, /\.tournament-prizes/);
 
 const dailyRewardsPanel = html.match(
   /<section class="engagement-summary-panel daily-rewards-screen"[\s\S]*?<\/section>\s*<section class="engagement-summary-panel daily-missions-screen"/

@@ -41,6 +41,8 @@
     "Savaşlardan kazanılır":"Earned from battles",
     "Günlük Özel Teklifler":"Daily Special Offers",
     "HER GÜN YENİLENİR":"REFRESHES DAILY",
+    "Haftalık Özel Teklifler":"Weekly Special Offers",
+    "HER PAZARTESİ YENİLENİR":"REFRESHES EVERY MONDAY",
     "KOLEKSİYON VE DESTE":"COLLECTION AND DECK",
     "Savaş Destesi":"Battle Deck",
     "Tümü":"All",

@@ -1295,14 +1295,14 @@ body:not([data-app-screen="play"]) .app-progress-ribbon .lobby-currency-chip > s
 .team-identity-card > div:first-child { display:grid;gap:4px;min-width:0; }
 .team-identity-card h3 { overflow:hidden;text-overflow:ellipsis;white-space:nowrap; }
 .team-summary-metrics { display:grid;justify-items:end;gap:5px;color:#ffe177;font:800 .48rem var(--gs-font-display); }
-.team-tabs { display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:4px; }
+.team-tabs { display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:4px; }
 .team-tabs button { min-height:38px;padding:0 3px;border:1px solid rgba(72,137,174,.34);border-radius:8px;color:#91a9bd;background:#0b2037;font:800 .42rem var(--gs-font-display); }
 .team-tabs button.is-active { border-color:#67e2d0;color:#67e2d0;background:#14354b; }
 .team-panels { min-height:365px; }
 .team-panel { min-height:340px;padding:14px;display:grid;align-content:start;gap:11px; }
 .team-panel[hidden] { display:none; }
 .team-panel > p,.team-policy-note { margin:0;color:#94aabd;font-size:.55rem;line-height:1.5; }
-.team-member-list,.team-overview-members,.team-request-list,.team-training-list { margin:0;padding:0;display:grid;gap:7px;list-style:none; }
+.team-member-list,.team-request-list,.team-training-list { margin:0;padding:0;display:grid;gap:7px;list-style:none; }
 .team-member-row { min-height:54px;padding:7px 9px;display:grid;grid-template-columns:29px minmax(0,1fr) auto;align-items:center;gap:8px;border:1px solid rgba(73,135,170,.28);border-radius:10px;background:#0b2139; }
 .team-member-row.is-compact { min-height:46px; }
 .team-member-rank { width:27px;height:27px;display:grid;place-items:center;border-radius:50%;color:#ffe17a;background:#25394c;font:900 .54rem var(--gs-font-display); }
@@ -1952,7 +1952,8 @@ body[data-app-screen="rewards"] .season-reward-card > .season-reward-prize {
 /* Public profiles, rarity lanes and refundable module talent choices. */
 .public-player-link {
   min-width:0;
-  padding:0;
+  padding:2px 4px 3px;
+  box-sizing:border-box;
   overflow:hidden;
   border:0;
   color:inherit;
@@ -1978,7 +1979,7 @@ body[data-app-screen="rewards"] .season-reward-card > .season-reward-prize {
 }
 .leaderboard-identity .public-player-link {
   width:100%;
-  padding-inline:2px;
+  padding-inline:4px;
   box-sizing:border-box;
   font:.64rem var(--gs-font-display);
 }
@@ -2001,6 +2002,65 @@ body[data-app-screen="rewards"] .season-reward-card > .season-reward-prize {
   color:#edf7ff;
   font:800 .62rem var(--gs-font-display);
   text-align:center;
+}
+
+/* All display-name containers reserve a few pixels inside their clipping box.
+   Orbitron-style glyph tips and glow therefore remain visible even when a
+   long name still needs ellipsis. */
+#battle-profile-name,
+#lobby-player-name,
+#profile-player-name,
+#player-battle-name,
+.profile-identity-card > div > strong,
+.leaderboard-identity > strong,
+.team-member-row > div > strong,
+.team-message > strong,
+.public-player-link {
+  padding-inline:4px;
+  box-sizing:border-box;
+}
+
+/* Live event hub: one scroll surface for seasonal meta and both tournaments. */
+.events-screen { padding:12px 12px 100px;overflow-y:auto; }
+.events-hero { padding:12px 4px 14px;border-bottom:1px solid rgba(88,221,213,.22); }
+.events-hero > span,.season-meta-card > span,.tournament-panel header span { color:#62ead8;font:800 .48rem var(--gs-font-display);letter-spacing:.1em; }
+.events-hero h2 { margin:4px 0;color:#f5f9ff;font:900 1.42rem var(--gs-font-display); }
+.events-hero p,.season-meta-card p,.tournament-panel > p { margin:4px 0 0;color:#94abc0;font-size:.55rem;line-height:1.5; }
+.season-meta-card,.tournament-panel { margin-top:10px;padding:13px;border:1px solid rgba(79,196,202,.28);border-radius:14px;background:linear-gradient(145deg,#123451,#081a30); }
+.season-meta-card { display:grid;gap:5px;border-color:rgba(255,219,103,.4);box-shadow:inset 0 0 22px rgba(255,216,93,.04); }
+.season-meta-card > strong { color:#ffe078;font:900 .9rem var(--gs-font-display); }
+.season-meta-card > small { color:#78dece;font-size:.49rem;line-height:1.4; }
+.tournament-panel { display:grid;gap:9px; }
+.tournament-panel > header { display:flex;justify-content:space-between;align-items:start;gap:8px; }
+.tournament-panel header div { min-width:0;display:grid;gap:3px; }
+.tournament-panel h3,.tournament-panel h4 { margin:0;color:#f3f8ff;font-family:var(--gs-font-display); }
+.tournament-panel h3 { font-size:.78rem; }
+.tournament-panel h4 { margin-top:3px;color:#8df0e2;font-size:.5rem;letter-spacing:.08em;text-transform:uppercase; }
+.tournament-panel header > small { color:#ffe17c;font:800 .46rem var(--gs-font-display);white-space:nowrap; }
+.tournament-prizes { display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:5px; }
+.tournament-prizes article { min-width:0;padding:7px 5px;display:grid;grid-template-columns:26px minmax(0,1fr);align-items:center;gap:3px 5px;border:1px solid rgba(89,151,190,.3);border-radius:9px;background:#0a2038; }
+.tournament-prizes article[data-position="1"] { border-color:#f6d15d; }
+.tournament-prizes article > strong { grid-column:1/-1;color:#ffe174;font:800 .42rem var(--gs-font-display); }
+.tournament-prizes article > small { overflow:hidden;color:#a9bdd0;font-size:.4rem;line-height:1.35; }
+.event-prize-chest { width:25px;height:24px;display:grid;place-items:center; }
+.event-prize-chest .chest-visual { transform:scale(.58);transform-origin:center; }
+.tournament-standings { margin:0;padding:0;display:grid;gap:5px;list-style:none; }
+.tournament-standings li { min-height:44px;padding:6px 8px;display:grid;grid-template-columns:26px minmax(0,1fr) auto;align-items:center;gap:7px;border:1px solid rgba(76,137,174,.25);border-radius:9px;background:#0a2037; }
+.tournament-standings li.is-current-player { border-color:#ffe071;background:#1b2c40; }
+.tournament-position { width:24px;height:24px;display:grid;place-items:center;border-radius:50%;color:#ffe078;background:#263b4f;font:900 .48rem var(--gs-font-display); }
+.tournament-standings li > div { min-width:0;display:grid;gap:2px; }
+.tournament-standings li > div > strong,.tournament-standings .public-player-link { overflow:hidden;color:#f4f8fd;font:800 .52rem var(--gs-font-display);text-overflow:ellipsis;white-space:nowrap; }
+.tournament-standings li > div > small { color:#78cfc3;font-size:.42rem; }
+.tournament-points { color:#ffe078;font:900 .5rem var(--gs-font-display);white-space:nowrap; }
+.team-tournament-fixtures { display:grid;gap:6px; }
+.team-tournament-fixtures article { padding:9px;display:grid;gap:4px;border:1px solid rgba(73,139,179,.28);border-radius:9px;background:#0a2037; }
+.team-tournament-fixtures article.is-current-fixture { border-color:#65e5d2;box-shadow:inset 0 0 15px rgba(82,232,211,.06); }
+.team-tournament-fixtures strong { color:#f1f7ff;font:800 .51rem var(--gs-font-display); }
+.team-tournament-fixtures small { color:#92aabd;font-size:.43rem;line-height:1.4; }
+@media (max-width:390px) {
+  .events-screen { padding-inline:8px; }
+  .tournament-prizes article { grid-template-columns:1fr; }
+  .event-prize-chest { display:none; }
 }
 
 .public-profile-dialog {
