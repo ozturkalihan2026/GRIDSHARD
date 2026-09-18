@@ -2110,7 +2110,6 @@ body[data-app-screen="rewards"] .season-reward-card > .season-reward-prize {
   font:900 1.5rem var(--gs-font-display);
   transform:translate(-50%,-50%) rotate(45deg);
 }
-.daily-meta-die::first-letter { transform:rotate(-45deg); }
 .daily-meta-wheel.is-spinning { animation:daily-meta-spin .95s cubic-bezier(.18,.78,.18,1); }
 .daily-meta-wheel.has-result { width:145px;opacity:.48;filter:saturate(.65); }
 @keyframes daily-meta-spin {

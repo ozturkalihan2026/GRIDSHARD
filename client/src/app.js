@@ -2879,7 +2879,6 @@
         ? "Bugünkü meta kilitlendi. Yarın yeniden çark çevirebilirsin."
         : "Yedi eşit olasılıklı stratejiden biri bugünkü savaş planın olacak.";
     }
-    if (status && !dailyMetaRollPending) status.textContent = "";
     if (glyph) glyph.textContent = selected?.glyph || "◇";
     if (name) name.textContent = selected?.meta_name_tr || "—";
     if (effect) effect.textContent = selected?.effect_tr || "";
@@ -2898,6 +2897,8 @@
         { cache:"no-store" },
         12000
       );
+      const status = document.getElementById("daily-meta-dialog-status");
+      if (status) status.textContent = "";
       renderDailyMetaCard();
       renderDailyMetaDialog();
       const dialog = document.getElementById("daily-meta-dialog");
@@ -18786,9 +18787,6 @@ function saveHumanReviewLocalNote() {
   });
   document.getElementById("public-profile-close")?.addEventListener("click", closePublicProfile);
   document.getElementById("team-profile-close")?.addEventListener("click", closeTeamProfile);
-  document.getElementById("team-profile-open")?.addEventListener("click", () => {
-    if (teamState?.team_id) openTeamProfile(teamState.team_id);
-  });
   document.getElementById("profile-clan-title")?.addEventListener("click", (event) => {
     const teamId = event.currentTarget?.dataset?.teamId || "";
     if (teamId) openTeamProfile(teamId);

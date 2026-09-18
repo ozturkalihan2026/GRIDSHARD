@@ -9,6 +9,7 @@ import time
 import os
 import json
 from pathlib import Path
+from threading import Lock
 
 from fastapi import BackgroundTasks, FastAPI, Header, HTTPException, Query, Request, WebSocket
 from fastapi.middleware.cors import CORSMiddleware
@@ -681,6 +682,7 @@ EXPERIMENTAL_LAB_EFFECTS_ENABLED = os.environ.get(
     "GRIDSHARD_EXPERIMENTAL_LAB_EFFECTS",
     "0",
 ).strip().lower() in {"1", "true", "yes", "on"}
+DAILY_META_ROLL_LOCK = Lock()
 
 
 def persist_player_data(
@@ -4095,20 +4097,23 @@ def roll_player_daily_meta(
     request: MetaOperationRequest,
 ) -> dict:
     """Roll one of seven equal-probability metas once per player and UTC day."""
-    profile = _team_member_profile(player_id)
-    current = _daily_meta_view(profile)
-    if current["selected"]:
-        return {**current, "replayed": True, "request_id": request.request_id}
+    with DAILY_META_ROLL_LOCK:
+        profile = _team_member_profile(player_id)
+        current = _daily_meta_view(profile)
+        if current["selected"]:
+            return {**current, "replayed": True, "request_id": request.request_id}
 
-    selected = DAILY_META_DEFINITIONS[secrets.randbelow(len(DAILY_META_DEFINITIONS))]
-    profile.daily_meta_day = current["day"]
-    profile.daily_meta_id = selected["id"]
-    persist_player_data(player_id)
-    return {
-        **_daily_meta_view(profile),
-        "replayed": False,
-        "request_id": request.request_id,
-    }
+        selected = DAILY_META_DEFINITIONS[
+            secrets.randbelow(len(DAILY_META_DEFINITIONS))
+        ]
+        profile.daily_meta_day = current["day"]
+        profile.daily_meta_id = selected["id"]
+        persist_player_data(player_id)
+        return {
+            **_daily_meta_view(profile),
+            "replayed": False,
+            "request_id": request.request_id,
+        }
 
 
 @app.post("/profile/{player_id}/engagement/missions/{mission_id}/claim")
