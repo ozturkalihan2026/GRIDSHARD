@@ -1,37 +1,36 @@
-GRIDSHARD
+# GRIDSHARD
 
-GRIDSHARD, oyuncuların savaş devam ederken kendi devrelerini kurduğu, modüllerini değiştirdiği ve rakibin stratejisine anlık karşılık verdiği gerçek zamanlı PvP devre kurma ve strateji oyunudur.
+GRIDSHARD, oyuncuların kart tabanlı modüllerle güçlendirdiği bir çekirdek etrafında devre kurup, gerçek zamanlı PvP savaşlarda rakibine karşı strateji kurduğu, dikey oynanışlı bir mobil savaş oyunudur.
 
-Temel Oyun Yapısı
+## Temel Oyun Döngüsü
 
-Oyuncular savaş sırasında:
+- **Savaş Destesi:** Her oyuncu 1 **Çekirdek** ve 6 **Modül**ten oluşan bir savaş destesi kurar.
+- **Modül Seviyeleri:** Modüller zamanla seviye atlayarak güçlenir.
+- **AKIM Mekaniği:** Savaş sırasında oyuncu istediği modüle tıklar; modül **5x3 devre kartı** üzerinde rastgele bir hücreye yerleşir. Yerleşim rastgele olduğundan anlık karar ve uyum önem taşır.
+- Savaş, rakibin devresine göre sürekli değişen, duraksız bir gerçek zamanlı akış içinde ilerler.
 
-Çekirdek ve Jeneratör etrafında kendi devrelerini oluşturur.
+## Meta Sistemler
 
-Modülleri savaş devam ederken ekleyebilir, çıkarabilir, taşıyabilir ve değiştirebilir.
+- **Devre Yolu:** Oyuncunun uzun vadeli ilerleme/progresyon çizgisi.
+- **Kupa Sıralaması:** Maç sonuçlarına göre kazanılan/kaybedilen kupalarla oluşan rekabetçi sıralama.
+- **Takım:** Oyuncuların bir araya gelip birlikte ilerlediği takım yapısı.
+- **Turnuvalar:** Belirli dönemlerde açılan rekabetçi turnuva etkinlikleri.
+- **Günlük ve Sezonluk Ödüller:** Düzenli oynanışı ödüllendiren günlük görevler ve sezon sonu ödül yolu.
 
-Enerji akışını ve Devre Kredisi ekonomisini yönetir.
+## Profil ve Kozmetikler
 
-Yaklaşık 24 modüllük global havuzdan 18 modüllük Savaş Havuzu oluşturur.
+- **Avatar**
+- **Çerçeve**
+- **Profil Barı Arka Planı**
 
-Aynı anda en fazla 10 aktif modül kullanabilir.
+## Lider Panosu
 
-Özel savaş alanı hücrelerinden ve geçici güçlendiricilerden yararlanabilir.
+Sıralamanın zirvesine yerleşen oyuncular, sezon/dönem sonunda kupa ve özel rozetlerle ödüllendirilir.
 
-Rakibin devresine göre savaş sırasında stratejisini değiştirebilir.
+## Platform
 
-GRIDSHARD'de savaş hiçbir zaman durmaz. Oyuncunun yaptığı bütün müdahaleler gerçek zamanlı savaş devam ederken gerçekleşir.
+GRIDSHARD, dikey (portrait) modda oynanacak şekilde tasarlanan bir mobil oyundur.
 
-Beta.33 ile maçlar arası hedef döngüsü de oynanabilir durumdadır: Sezon Sıfır'ın 10 kademeli ücretsiz ödül yolu, üç günlük devre görevi, Akı Parçası ve profil unvanları sunucu otoriteli maç sonuçlarından ilerler ve oyuncu profiline kalıcı kaydedilir. Ücretli Battle Pass veya mağaza ekonomisi bu pakette yoktur.
+## Proje Hedefi
 
-Dağıtık Eşleştirme
-
-`REDIS_URL` tanımlandığında eşleştirme kuyruğu Redis üzerinde çalışır. Oyuncu ekleme, en uygun rakibi seçme, kuyruktan iki oyuncuyu birlikte çıkarma, AI devralma, iptal ve süre aşımı temizliği atomik işlemlerdir. Birden fazla uygulama sunucusu aynı kuyruğu güvenle paylaşabilir; geliştirme ortamında Redis yoksa bellek içi eşleştirme korunur.
-
-Her uygulama örneği için isteğe bağlı `GRIDSHARD_INSTANCE_ID`, tarayıcının maçın sahibi olan sunucuya bağlanabilmesi için de `GRIDSHARD_PUBLIC_WS_BASE_URL` verilebilir. Birden fazla savaş sunucusunun doğrudan adreslendiği üretim kurulumunda WebSocket taban adresi her örnek için benzersiz ve tarayıcıdan erişilebilir olmalıdır (örnek: `wss://pvp-2.example.com`). Tek sunucu veya oturum yönlendirmeli yük dengeleyici kullanımında bu değer boş bırakılabilir.
-
-Sunucu test bağımlılıkları `server/requirements-test.txt` ile kurulur. Redis eşleştirme testleri iki ayrı sunucu örneğini, eşzamanlı insan/AI yarışını, sahiplik denetimini ve TTL temizliğini aynı paylaşılan Redis üzerinde doğrular.
-
-Proje Hedefi
-
-GRIDSHARD'ın amacı; kolay anlaşılabilen ancak enerji yönetimi, modül kombinasyonları, konumlandırma, ekonomi ve anlık karşı hamleler sayesinde ustalaşması zaman alan rekabetçi bir PvP deneyimi oluşturmaktır.
+GRIDSHARD'ın amacı; kolay öğrenilebilen ama modül kombinasyonları, AKIM zamanlaması, devre yerleşimi ve rekabetçi ilerleme sistemleri sayesinde ustalaşması zaman alan, tekrar oynanabilir bir PvP deneyimi sunmaktır.
