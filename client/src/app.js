@@ -421,7 +421,8 @@
       renderSettingsForm();
       loadBattlePoolPresets();
       loadMetaProgression();
-      loadDailyMetaState({ present:true });
+      const accountResult = await loadAccountPlatform({ presentOnboarding:true });
+      if (!accountResult.presented) loadDailyMetaState({ present:true });
       loadRewardInbox();
       void consumePendingDeepLink();
     }
@@ -480,23 +481,60 @@
     { id: "default", nameTr: "Devre Operatörü", glyph: "◇" },
     { id: "circuit_scout", nameTr: "Devre Kaşifi", glyph: "⌁" },
     { id: "core_guardian", nameTr: "Çekirdek Muhafızı", glyph: "⬡" },
+    { id: "season_champion", nameTr: "Sezon Şampiyonu", glyph: "♛" },
+    { id: "season_finalist", nameTr: "Sezon Finalisti", glyph: "◈" },
+    { id: "weekly_champion", nameTr: "Haftalık Şampiyon", glyph: "✹" },
+    { id: "weekly_finalist", nameTr: "Haftalık Finalist", glyph: "✧" },
+    { id: "rank_spark", nameTr: "Kıvılcım Operatörü", glyph: "ϟ" },
   ]);
   const PROFILE_AVATAR_FRAMES = Object.freeze([
     { id: "none", nameTr: "Standart" },
     { id: "neon_cyan", nameTr: "Neon Akım" },
     { id: "season_gold", nameTr: "Sezon Ustası" },
+    { id: "season_silver", nameTr: "Prizma Finalisti" },
+    { id: "weekly_gold", nameTr: "Haftalık Altın" },
+    { id: "weekly_silver", nameTr: "Haftalık Gümüş" },
+    { id: "frequency_cyan", nameTr: "Frekans Akımı" },
   ]);
   const BATTLE_EMOJIS = Object.freeze([
     { id:"none", nameTr:"Kapalı", glyph:"—" },
-    { id:"victory_pulse", nameTr:"Zafer Darbesi", glyph:"✦" },
-    { id:"respect_signal", nameTr:"Saygı Sinyali", glyph:"◇" },
-    { id:"team_beacon", nameTr:"Takım İşareti", glyph:"⌁" },
+    { id:"victory_pulse", nameTr:"Zafer Darbesi", glyph:"✦", motion:"pulse" },
+    { id:"respect_signal", nameTr:"Saygı Sinyali", glyph:"◇", motion:"float" },
+    { id:"team_beacon", nameTr:"Takım İşareti", glyph:"⌁", motion:"beacon" },
+    { id:"core_burst", nameTr:"Çekirdek Patlaması", glyph:"✹", motion:"burst" },
+    { id:"glitch_wave", nameTr:"Glitch Dalgası", glyph:"▧", motion:"glitch" },
+    { id:"overload_flash", nameTr:"Aşırı Yük", glyph:"ϟ", motion:"pulse" },
   ]);
   const PROFILE_BACKGROUNDS = Object.freeze([
     { id:"default", nameTr:"Standart Terminal", colors:["#0c2944", "#173f5d"] },
     { id:"rank_crown", nameTr:"Taç Devresi", colors:["#4b3611", "#145064"] },
     { id:"rank_prism", nameTr:"Prizma Akımı", colors:["#34265c", "#126a74"] },
+    { id:"rank_frequency", nameTr:"Frekans Hattı", colors:["#153b58", "#176b72"] },
+    { id:"rank_relay", nameTr:"Röle Akımı", colors:["#1b3159", "#174d64"] },
   ]);
+  const ACCOUNT_ONBOARDING_DISMISSED_KEY = `gridshard.account-onboarding.dismissed:${participantPlayerId}`;
+
+  function createBattleEmojiVisual(emoji) {
+    const visual = document.createElement(emoji?.mediaSrc ? "img" : "span");
+    visual.className = "battle-emoji-visual";
+    visual.dataset.motion = emoji?.motion || "none";
+    if (emoji?.mediaSrc) {
+      visual.src = emoji.mediaSrc;
+      visual.alt = "";
+      visual.decoding = "async";
+      visual.loading = "lazy";
+      visual.dataset.mediaType = /\.gif(?:$|\?)/i.test(emoji.mediaSrc) ? "gif" : "image";
+    } else {
+      visual.textContent = emoji?.glyph || "◇";
+      visual.setAttribute("aria-hidden", "true");
+    }
+    return visual;
+  }
+
+  function renderBattleEmojiVisual(host, emoji) {
+    if (!host) return;
+    host.replaceChildren(createBattleEmojiVisual(emoji));
+  }
   const PROFILE_RANK_TROPHIES = Object.freeze([
     { id:"season_first", nameTr:"Sezon Birinciliği", shortNameTr:"1. Kupa", glyph:"🏆", tone:"gold" },
     { id:"season_second", nameTr:"Sezon İkinciliği", shortNameTr:"2. Kupa", glyph:"🏆", tone:"silver" },
@@ -2879,9 +2917,73 @@
         devices.appendChild(row);
       }
     }
+    renderAccountOnboarding();
   }
 
-  async function loadAccountPlatform() {
+  function accountHasPersistentIdentity(state = accountPlatformState) {
+    return Boolean(
+      Object.keys(state?.contacts || {}).length
+      || Object.values(state?.oauth || {}).some((provider) => Boolean(provider?.linked))
+    );
+  }
+
+  function accountOnboardingWasDismissed() {
+    try {
+      return globalThis.localStorage?.getItem(ACCOUNT_ONBOARDING_DISMISSED_KEY) === "1";
+    } catch {
+      return false;
+    }
+  }
+
+  function renderAccountOnboarding(message = "") {
+    const state = accountPlatformState;
+    const status = document.getElementById("account-onboarding-status");
+    if (status && message) status.textContent = message;
+    for (const provider of ["google", "apple"]) {
+      const button = document.getElementById(`account-onboarding-${provider}`);
+      if (!button) continue;
+      const providerState = state?.oauth?.[provider] || {};
+      button.disabled = Boolean(providerState.linked || !providerState.configured);
+      button.textContent = providerState.linked
+        ? `${provider.toLocaleUpperCase("tr-TR")} BAĞLI`
+        : providerState.configured
+          ? `${provider.toLocaleUpperCase("tr-TR")} İLE DEVAM ET`
+          : `${provider.toLocaleUpperCase("tr-TR")} HENÜZ HAZIR DEĞİL`;
+    }
+    if (status && !message && state && !accountHasPersistentIdentity(state)) {
+      const configuredProviders = ["google", "apple"].filter(
+        (provider) => state.oauth?.[provider]?.configured
+      );
+      status.textContent = configuredProviders.length
+        ? "Bir sağlayıcı seç veya e-posta adresini doğrula."
+        : "Google ve Apple bağlantıları sunucu ayarlarını bekliyor; e-posta ya da misafir seçeneğini kullanabilirsin.";
+    }
+  }
+
+  function finishAccountOnboarding({ dismiss = false } = {}) {
+    if (dismiss) {
+      try {
+        globalThis.localStorage?.setItem(ACCOUNT_ONBOARDING_DISMISSED_KEY, "1");
+      } catch {
+        // Depolama kapalıysa yalnızca mevcut oturumda devam edilir.
+      }
+    }
+    const dialog = document.getElementById("account-onboarding-dialog");
+    if (dialog?.open) dialog.close();
+    loadDailyMetaState({ present:true });
+  }
+
+  function maybePresentAccountOnboarding() {
+    if (accountHasPersistentIdentity() || accountOnboardingWasDismissed()) return false;
+    renderAccountOnboarding();
+    const dialog = document.getElementById("account-onboarding-dialog");
+    if (!dialog || dialog.open) return Boolean(dialog?.open);
+    if (typeof dialog.showModal === "function") dialog.showModal();
+    else dialog.setAttribute("open", "");
+    return true;
+  }
+
+  async function loadAccountPlatform({ presentOnboarding = false } = {}) {
     const status = document.getElementById("account-platform-status");
     try {
       accountPlatformState = await requestJsonWithDeadline(
@@ -2890,10 +2992,11 @@
         12000
       );
       renderAccountPlatform();
-      return {ok:true};
+      const presented = presentOnboarding ? maybePresentAccountOnboarding() : false;
+      return {ok:true,presented};
     } catch (error) {
       if (status) status.textContent = error instanceof Error ? error.message : String(error);
-      return {ok:false,error};
+      return {ok:false,error,presented:false};
     }
   }
 
@@ -4023,6 +4126,72 @@
   nativeLaunchUrl?.then((result) => {
     if (result?.url) void consumePendingDeepLink(result.url);
   }).catch(() => {});
+  document.getElementById("account-onboarding-dialog")?.addEventListener("cancel", (event) => {
+    event.preventDefault();
+  });
+  document.getElementById("account-onboarding-guest")?.addEventListener("click", () => {
+    finishAccountOnboarding({ dismiss:true });
+  });
+  for (const provider of ["google", "apple"]) {
+    document.getElementById(`account-onboarding-${provider}`)?.addEventListener("click", async () => {
+      const status = document.getElementById("account-onboarding-status");
+      try {
+        const result = await requestJsonWithDeadline(
+          `/accounts/${encodeURIComponent(participantPlayerId)}/oauth/${provider}/start`,
+          {cache:"no-store"},
+          12000
+        );
+        if (result.authorization_url) globalThis.location.assign(result.authorization_url);
+        else if (status) status.textContent = `${provider.toLocaleUpperCase("tr-TR")} bağlantısı sunucuda henüz yapılandırılmadı.`;
+      } catch (error) {
+        if (status) status.textContent = error instanceof Error ? error.message : String(error);
+      }
+    });
+  }
+  document.getElementById("account-onboarding-code-request")?.addEventListener("click", async () => {
+    const status = document.getElementById("account-onboarding-status");
+    const email = document.getElementById("account-onboarding-email")?.value?.trim() || "";
+    if (!email) {
+      if (status) status.textContent = "Doğrulama kodu için e-posta adresini gir.";
+      return;
+    }
+    try {
+      const result = await requestJsonWithDeadline(
+        `/accounts/${encodeURIComponent(participantPlayerId)}/verification/request`,
+        {method:"POST",body:JSON.stringify({player_id:participantPlayerId,channel:"email",destination:email})},
+        12000
+      );
+      const codeInput = document.getElementById("account-onboarding-code");
+      if (result.development_code && codeInput) codeInput.value = result.development_code;
+      if (status) status.textContent = result.delivery_configured
+        ? `Kod ${result.destination} adresine gönderildi.`
+        : result.development_code
+          ? "Yerel geliştirme kodu alana yerleştirildi."
+          : "E-posta sağlayıcısı henüz yapılandırılmadı; doğrulama isteği kaydedildi.";
+    } catch (error) {
+      if (status) status.textContent = error instanceof Error ? error.message : String(error);
+    }
+  });
+  document.getElementById("account-onboarding-code-confirm")?.addEventListener("click", async () => {
+    const status = document.getElementById("account-onboarding-status");
+    const code = document.getElementById("account-onboarding-code")?.value?.trim() || "";
+    if (!/^\d{6}$/.test(code)) {
+      if (status) status.textContent = "Altı haneli doğrulama kodunu gir.";
+      return;
+    }
+    try {
+      const result = await requestJsonWithDeadline(
+        `/accounts/${encodeURIComponent(participantPlayerId)}/verification/confirm`,
+        {method:"POST",body:JSON.stringify({player_id:participantPlayerId,channel:"email",code})},
+        12000
+      );
+      accountPlatformState = result.account;
+      renderAccountPlatform();
+      finishAccountOnboarding();
+    } catch (error) {
+      if (status) status.textContent = error instanceof Error ? error.message : String(error);
+    }
+  });
   document.getElementById("account-verification-request")?.addEventListener("click", async () => {
     const status = document.getElementById("account-platform-status");
     const channel = document.getElementById("account-contact-channel")?.value || "email";
@@ -5952,7 +6121,10 @@
       battleEmojiButtonEl.title = selectedEmoji ? selectedEmoji.nameTr : "Savaş emojisi";
     }
     if (battleEmojiButtonGlyphEl) {
-      battleEmojiButtonGlyphEl.textContent = selectedEmoji?.glyph || "◇";
+      renderBattleEmojiVisual(
+        battleEmojiButtonGlyphEl,
+        selectedEmoji || { glyph:"◇" }
+      );
     }
   }
 
@@ -10366,7 +10538,7 @@ function saveHumanReviewLocalNote() {
     if (!targetBoard) return;
     const bubble = document.createElement("div");
     bubble.className = "battle-emoji-bubble";
-    bubble.textContent = emoji.glyph;
+    bubble.appendChild(createBattleEmojiVisual(emoji));
     bubble.setAttribute("role", "status");
     bubble.setAttribute("aria-label", emoji.nameTr);
     targetBoard.appendChild(bubble);
@@ -16314,7 +16486,6 @@ function saveHumanReviewLocalNote() {
     const activeTitle = achievedStages.at(-1)?.title_tr
       || view.operatorTitle
       || "Devre Çırağı";
-    const nextTitle = stages[achievedStages.length] || null;
     el.textContent = localizedUiText(
       `${view.displayName} · ${activeTitle} · ${view.leagueNameTr} · ${view.rating} 🏆`
     );
@@ -16323,15 +16494,6 @@ function saveHumanReviewLocalNote() {
       const target = document.getElementById(id);
       if (target) target.textContent = String(value);
     };
-    setText("profile-player-name", view.displayName);
-    renderTrophyValue("profile-current-trophies", Number(view.rating || 0));
-    setText("profile-operator-title", activeTitle);
-    setText(
-      "profile-title-progress",
-      nextTitle
-        ? `${nextTitle.title_tr}: ${nextTitle.required_trophies} 🏆 + ${nextTitle.required_wins} galibiyet`
-        : "En yüksek operatör ününe ulaştın."
-    );
     setText("profile-clan-title", view.teamName || "Takıma dahil değil");
     const profileTeamButton = document.getElementById("profile-clan-title");
     if (profileTeamButton) {
@@ -16595,7 +16757,13 @@ function saveHumanReviewLocalNote() {
         button.type = "button";
         button.dataset.state = !unlocked.has(emoji.id) ? "locked" : emoji.id === emojiId ? "selected" : "available";
         button.disabled = !unlocked.has(emoji.id);
-        button.innerHTML = `<span>${emoji.glyph}</span><strong>${emoji.nameTr}</strong><small>${unlocked.has(emoji.id) ? (emoji.id === emojiId ? "SEÇİLİ" : "SEÇ") : "REKABET ÖDÜLÜ"}</small>`;
+        const name = document.createElement("strong");
+        name.textContent = emoji.nameTr;
+        const state = document.createElement("small");
+        state.textContent = unlocked.has(emoji.id)
+          ? (emoji.id === emojiId ? "SEÇİLİ" : "SEÇ")
+          : "REKABET ÖDÜLÜ";
+        button.append(createBattleEmojiVisual(emoji), name, state);
         button.addEventListener("click", () => selectProfileCosmetic("emoji", emoji.id));
         emojiHost.appendChild(button);
       }

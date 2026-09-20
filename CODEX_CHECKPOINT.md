@@ -4,6 +4,29 @@ Güncelleme tarihi: 20 Eylül 2026
 
 Bu dosya güncel çalışma paketini ve korunması gereken önceki kararları içerir. Kullanıcı `checkpoint'ten devam et` dediğinde önce bu dosya, ardından `git status --short` okunmalıdır.
 
+## Aktif paket — Beta.65 hesap açılışı, Devre Koleksiyonu ve mağaza ikonu
+
+1. `[x]` Günlük meta çarkındaki başlıkları her durumda düz tut
+   - Dilim başlıkları çarkın dönüşünü eş zamanlı ters yönde dengeliyor; çark dönerken ve seçilen metada durduğunda yazılar baş aşağı kalmıyor.
+   - Sabit çentik dönme katmanının dışında kalmaya devam ediyor.
+2. `[x]` Profilin ilk kartını bütünüyle başarı koleksiyonuna ayır
+   - Kart içindeki tekrarlanan avatar, oyuncu adı, unvan, ilerleme ve mevcut kupa satırı kaldırıldı.
+   - Başlık `DEVRE KOLEKSİYONU` olarak değiştirildi ve ortalandı; kartın tamamı kalıcı sıralama kupaları ile rozetlerin sergilendiği alan oldu.
+3. `[x]` Hareketli emoji ve rekabet ödülü çeşitliliğini artır
+   - Savaş emoji çizicisi gliflerin yanında GIF/görsel kaynağını da güvenli `<img>` öğesiyle destekliyor.
+   - Çekirdek Patlaması, Glitch Dalgası ve Aşırı Yük hareketli emojileri eklendi; ilk 10 sezon kasalarında yeni avatar, çerçeve ve profil çubuğu ödülleri dağıtıldı.
+   - Yeni profil arka planları ve avatar çerçeveleri seçim ekranı ile üst profil barında kendi görsel stillerine sahip.
+4. `[x]` İlk açılış hesap kaydı ekranını göster
+   - Anonim cihaz oturumu oluşturulduktan sonra kalıcı e-posta/OAuth kimliği olmayan oyuncuya Google, Apple, e-posta doğrulama ve misafir seçenekleri sunuluyor.
+   - E-posta kod isteme/doğrulama mevcut hesap API'sine bağlı; geliştirme modunda kod güvenli biçimde varsayılan olarak açılıyor ve giriş alanına otomatik taşınıyor. Üretim modunda bu davranış varsayılan olarak kapalı.
+   - Google/Apple yapılandırılmadığında düğmeler açıkça hazır olmadığını söylüyor ve sahte başarı üretmiyor. Üretimde sağlayıcı kimlik bilgileri, OAuth callback/kod değişimi ve gerçek e-posta teslim adaptörü hâlâ dağıtım altyapısında tamamlanmalıdır.
+5. `[x]` GRIDSHARD mağaza ikonunu üret ve projeye bağla
+   - Özgün kırık cam Çekirdek, altın Akım halkası ve devre geometrisinden oluşan metinsiz ikon üretildi.
+   - Kaynak, `1024x1024` mağaza/Apple ve `512x512` Android/PWA sürümleri `client/assets/branding/` altına eklendi.
+   - Web manifesti ve Apple dokunma ikonu bağlantısı etkinleştirildi; köşeler mağaza maskeleri için görsele işlenmedi.
+
+Doğrulama: JavaScript ve Python sözdizimi temiz; tam istemci paketi `46/46` test dosyası ve Relay alt paketi `176/176` geçti. Beta.61/Beta.62/Beta.65 sunucu paketi `11/11` geçti. `git diff --check` yalnız mevcut Windows satır sonu uyarılarını verdi, içerik hatası yoktur.
+
 ## Aktif paket — Beta.64 ödül önizleme katmanı ve profil başarı vitrini
 
 1. `[x]` Liderlik ödül önizlemesini diğer sandıkların üstünde tut

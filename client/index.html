@@ -2,8 +2,10 @@
 <html lang="tr">
 <head>
     <meta name="theme-color" content="#07142B" />
-    <meta name="application-name" content="GRIDSHARD" />
+  <meta name="application-name" content="GRIDSHARD" />
   <link rel="icon" href="/favicon.ico" sizes="any">
+  <link rel="apple-touch-icon" href="./assets/branding/gridshard-store-icon-1024.png">
+  <link rel="manifest" href="./manifest.webmanifest">
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>GRIDSHARD — Devreni Kur. Çekirdeği Kır.</title>
@@ -231,6 +233,29 @@
       </header>
       <p id="team-profile-status" class="public-profile-status" role="status" aria-live="polite"></p>
       <div id="team-profile-content" class="public-profile-content team-profile-content"></div>
+    </dialog>
+
+    <dialog id="account-onboarding-dialog" class="account-onboarding-dialog" aria-labelledby="account-onboarding-title">
+      <section class="account-onboarding-stage">
+        <span class="account-onboarding-mark" aria-hidden="true">◇</span>
+        <span class="screen-kicker">OPERATÖR KAYDI</span>
+        <h2 id="account-onboarding-title">Devreni Güvenceye Al</h2>
+        <p>İlerlemeni cihazlar arasında korumak ve hesabını kurtarabilmek için bir giriş yöntemi seç.</p>
+        <div class="account-onboarding-providers">
+          <button id="account-onboarding-google" type="button">GOOGLE İLE DEVAM ET</button>
+          <button id="account-onboarding-apple" type="button">APPLE İLE DEVAM ET</button>
+        </div>
+        <div class="account-onboarding-divider"><span>E-POSTA İLE KAYIT</span></div>
+        <div class="account-onboarding-email">
+          <input id="account-onboarding-email" type="email" maxlength="180" autocomplete="email" placeholder="E-posta adresin">
+          <button id="account-onboarding-code-request" type="button">KOD GÖNDER</button>
+          <input id="account-onboarding-code" type="text" inputmode="numeric" maxlength="6" autocomplete="one-time-code" placeholder="6 haneli kod">
+          <button id="account-onboarding-code-confirm" type="button">HESABI OLUŞTUR</button>
+        </div>
+        <p id="account-onboarding-status" role="status" aria-live="polite"></p>
+        <button id="account-onboarding-guest" class="account-onboarding-guest" type="button">ŞİMDİLİK MİSAFİR OLARAK DEVAM ET</button>
+        <small>Misafir ilerlemesi bu cihazda korunur. Daha sonra Ayarlar → Hesap ve Gizlilik bölümünden hesabını bağlayabilirsin.</small>
+      </section>
     </dialog>
 
     <dialog id="daily-meta-dialog" class="daily-meta-dialog" aria-labelledby="daily-meta-title">
@@ -539,13 +564,8 @@
     <section class="profile-summary-panel" id="profile-summary-panel" data-screen-panel="profile" hidden>
       <span id="profile-load-status" data-status="idle" hidden>Yerel önizleme</span>
       <article class="profile-identity-card">
-        <button class="profile-avatar-button" type="button" data-open-screen="avatar" aria-label="Avatarı ve çerçeveyi değiştir">
-          <span id="profile-avatar" class="profile-avatar" data-avatar="default" data-frame="none" aria-hidden="true">◇</span>
-        </button>
-        <div><strong id="profile-player-name">Oyuncu</strong><span id="profile-operator-title">Devre Çırağı</span><small id="profile-title-progress">Yeni ün için savaşlara katıl.</small></div>
-        <strong id="profile-current-trophies" class="trophy-visual-value" aria-label="0 Kupa"><span class="trophy-value-number">0</span><span class="trophy-value-icon" aria-hidden="true">🏆</span></strong>
         <section class="profile-honor-showcase" aria-labelledby="profile-honor-title">
-          <header><span>REKABET KOLEKSİYONU</span><strong id="profile-honor-title">Kupa ve Rozet Vitrini</strong></header>
+          <header><strong id="profile-honor-title">DEVRE KOLEKSİYONU</strong></header>
           <div class="profile-honor-groups">
             <section aria-labelledby="profile-rank-trophies-title"><small id="profile-rank-trophies-title">SIRALAMA KUPALARI</small><div id="profile-rank-trophy-collection" class="profile-honor-collection"></div></section>
             <section aria-labelledby="profile-badges-title"><small id="profile-badges-title">ROZETLER</small><div id="profile-badge-collection" class="profile-honor-collection"></div></section>

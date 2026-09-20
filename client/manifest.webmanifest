@@ -1,0 +1,23 @@
+{
+  "name": "GRIDSHARD",
+  "short_name": "GRIDSHARD",
+  "description": "Devreni Kur. Çekirdeği Kır.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#020b18",
+  "theme_color": "#07142b",
+  "icons": [
+    {
+      "src": "./assets/branding/gridshard-store-icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "./assets/branding/gridshard-store-icon-1024.png",
+      "sizes": "1024x1024",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ]
+}

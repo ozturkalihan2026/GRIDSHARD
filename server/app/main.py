@@ -334,7 +334,7 @@ platform_service = PlatformService(
         )
     ),
     expose_codes=os.environ.get(
-        "GRIDSHARD_DEV_EXPOSE_VERIFICATION_CODES", "0"
+        "GRIDSHARD_DEV_EXPOSE_VERIFICATION_CODES", "0" if RUNTIME_STRICT else "1"
     ).strip().lower() in {"1", "true", "yes", "on"},
     web_base_url=os.environ.get(
         "GRIDSHARD_PUBLIC_WEB_URL", "https://gridshard.game"

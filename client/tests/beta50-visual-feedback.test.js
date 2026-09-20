@@ -7,11 +7,11 @@ const html = fs.readFileSync("./index.html", "utf8");
 
 assert.ok(app.includes("function renderTrophyValue"));
 assert.ok(app.includes('renderTrophyValue("team-total-trophies"'));
-assert.ok(app.includes('renderTrophyValue("profile-current-trophies"'));
+assert.ok(!app.includes('renderTrophyValue("profile-current-trophies"'));
 assert.match(app, /activeLeaderboardTab === "core_damage"[\s\S]{0,260}renderTrophyValue\(score/);
 assert.ok(html.includes('class="trophy-value-icon" aria-hidden="true">🏆</span>'));
 assert.ok(!html.includes('id="team-total-trophies">0 KUPA'));
-assert.ok(!html.includes('id="profile-current-trophies">0 Kupa'));
+assert.ok(!html.includes('id="profile-current-trophies"'));
 
 assert.ok(app.includes('event?.type === "core_power_activated"'));
 assert.ok(app.includes("presentCorePowerActivation(snapshot, data)"));
