@@ -14,7 +14,7 @@ from threading import Lock
 
 from fastapi import BackgroundTasks, FastAPI, Header, HTTPException, Query, Request, WebSocket
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, RedirectResponse
 from fastapi.websockets import WebSocketDisconnect
 from pydantic import BaseModel
 
@@ -337,7 +337,8 @@ platform_service = PlatformService(
         "GRIDSHARD_DEV_EXPOSE_VERIFICATION_CODES", "0" if RUNTIME_STRICT else "1"
     ).strip().lower() in {"1", "true", "yes", "on"},
     web_base_url=os.environ.get(
-        "GRIDSHARD_PUBLIC_WEB_URL", "https://gridshard.game"
+        "GRIDSHARD_PUBLIC_WEB_URL",
+        "https://gridshard.game" if RUNTIME_STRICT else "http://127.0.0.1:8000",
     ),
 )
 
@@ -1175,6 +1176,31 @@ def start_account_oauth(player_id: str, provider: str) -> dict:
         return platform_service.start_oauth(player_id, provider)
     except PlatformServiceError as exc:
         raise HTTPException(status_code=422, detail=str(exc)) from exc
+
+
+@app.get("/oauth/{provider}/callback")
+def complete_account_oauth(
+    provider: str,
+    state: str = Query(default=""),
+    code: str = Query(default=""),
+    error: str = Query(default=""),
+):
+    if error:
+        return RedirectResponse(
+            f"{platform_service.web_base_url}/?oauth_provider={provider}&oauth_status=cancelled",
+            status_code=303,
+        )
+    try:
+        platform_service.complete_oauth(provider, state, code)
+    except PlatformServiceError:
+        return RedirectResponse(
+            f"{platform_service.web_base_url}/?oauth_provider={provider}&oauth_status=error",
+            status_code=303,
+        )
+    return RedirectResponse(
+        f"{platform_service.web_base_url}/?oauth_provider={provider}&oauth_status=linked",
+        status_code=303,
+    )
 
 
 @app.delete("/accounts/{player_id}/devices/{device_id}")

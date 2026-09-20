@@ -1,5 +1,94 @@
 {
   "accounts": {
+    "wt-0d67fa7a-ae98-4822-b69c-cf16c560ee29": {
+      "blocked_player_ids": [],
+      "contacts": {
+        "email": {
+          "value": "ozturkalihan2010@gmail.com",
+          "verified_at": 1789929805
+        }
+      },
+      "devices": {
+        "974e3167-05ad-40be-9823-5cecd0bd2932": {
+          "device_id": "974e3167-05ad-40be-9823-5cecd0bd2932",
+          "last_seen_at": 1789929908,
+          "name": "WEB · Edge",
+          "platform": "web",
+          "token_ids": [
+            {
+              "expires_at": 1789933508,
+              "token_id": "wT2b29J9vJxeRM5I"
+            }
+          ]
+        }
+      },
+      "notifications": [],
+      "oauth_links": {},
+      "oauth_states": {},
+      "pending_verifications": {
+        "email": {
+          "attempts": 0,
+          "code_hash": "0246afc7bc2bd326e6a2121a656ae18e730614179f1c586aa241fd81a1e7bc69",
+          "destination": "ozturkalihan2010@gmail.com",
+          "expires_at": 1789930528
+        }
+      },
+      "push_subscriptions": {},
+      "recovery": {},
+      "revoked_token_ids": [
+        "rppbwow9Aw3eEKAW"
+      ]
+    },
+    "wt-1a03eb33-06c0-4ff6-b73f-f967964e170f": {
+      "blocked_player_ids": [],
+      "contacts": {},
+      "devices": {
+        "9ee0d163-0a0d-4cab-9e7d-318756b19917": {
+          "device_id": "9ee0d163-0a0d-4cab-9e7d-318756b19917",
+          "last_seen_at": 1789929598,
+          "name": "WEB · Edge",
+          "platform": "web",
+          "token_ids": [
+            {
+              "expires_at": 1789933198,
+              "token_id": "h-P4Vc7SoqfEBPLW"
+            }
+          ]
+        }
+      },
+      "notifications": [],
+      "oauth_links": {},
+      "oauth_states": {},
+      "pending_verifications": {},
+      "push_subscriptions": {},
+      "recovery": {},
+      "revoked_token_ids": []
+    },
+    "wt-272b715f-2032-4469-8b90-994a5dc0de93": {
+      "blocked_player_ids": [],
+      "contacts": {},
+      "devices": {
+        "ffe182f6-500f-40f8-84f2-f0851c6759ff": {
+          "device_id": "ffe182f6-500f-40f8-84f2-f0851c6759ff",
+          "last_seen_at": 1789930000,
+          "name": "WEB · Edge",
+          "platform": "web",
+          "token_ids": [
+            {
+              "expires_at": 1789933600,
+              "token_id": "dL5jwbep2ZzBeuUZ"
+            }
+          ]
+        }
+      },
+      "notifications": [],
+      "oauth_links": {},
+      "oauth_states": {},
+      "pending_verifications": {},
+      "push_subscriptions": {},
+      "recovery": {},
+      "revoked_token_ids": []
+    },
     "wt-33550d60-da6b-4fa5-b5ab-3059d88877ea": {
       "blocked_player_ids": [],
       "contacts": {},

@@ -4,6 +4,73 @@ Güncelleme tarihi: 20 Eylül 2026
 
 Bu dosya güncel çalışma paketini ve korunması gereken önceki kararları içerir. Kullanıcı `checkpoint'ten devam et` dediğinde önce bu dosya, ardından `git status --short` okunmalıdır.
 
+## Aktif paket — Beta.66 meta yüzdesi, sağlayıcı hesabı ve favicon
+
+1. `[x]` Günlük meta kartında seçimin sayısal etkisini göster
+   - Etkinlik Merkezi kartı artık sade açıklamayı korurken seçilen metanın `effect_tr` değerini de aynı satırda gösteriyor; örneğin `Destek etkisi +%12` kaybolmuyor.
+2. `[x]` Çark durduğunda dilim yazılarının yerinden kaymasını engelle
+   - Dilim üzerindeki radyal yerleşim dış kapsayıcıya, yazıyı düz tutan ters dönüş iç öğeye ayrıldı. Karşı dönüş artık konum dönüşümünü ezemediği için sonuç görünümünde başlıklar kendi dilim merkezlerinde kalıyor.
+3. `[x]` E-posta doğrulamasını gerçek teslim adaptörüne bağla
+   - SMTP/STARTTLS teslimi eklendi; Gmail veya Google Workspace gönderimi gerekli ortam değişkenleri girildiğinde doğrulama kodunu gerçekten gönderiyor.
+   - Yerel geliştirmede açığa çıkarılan kod hem ilk açılışta hem Ayarlar ekranında doğrulama alanına otomatik yerleştiriliyor; artık yalnız `istek kaydedildi` çıkmazında kalmıyor.
+4. `[x]` Google hesap bağlantısının OAuth dönüşünü tamamla
+   - Google yetkilendirme adresi, süreli `state`, sunucuda kod-belirteç değişimi, UserInfo doğrulanmış e-posta kontrolü ve hesaba kalıcı bağlantı eklendi.
+   - Başarı, iptal ve hata dönüşleri oyuna geri yönleniyor; Docker Compose sağlayıcı ortam değişkenlerini sunucuya aktarıyor. Gerçek bağlantı için Google Cloud'dan web OAuth istemci kimliği/gizli anahtarı ile kayıtlı callback URI girilmesi zorunlu; anahtar yokken sahte başarı üretilmiyor.
+5. `[x]` Mağaza ikonunu tarayıcı faviconu olarak kullan
+   - Mağaza ikonundan `32×32` ve `192×192` favicon türevleri eklendi; HTML bağlantılarına Beta.66 önbellek anahtarı verildi.
+6. `[x]` `Son Öneriler.docx` raporunu güncel kodla karşılaştır
+   - Rapor görev komutu olarak değil, eski Beta.43 durumuna göre hazırlanmış değerlendirme kaynağı olarak ele alındı.
+   - Zaten tamamlanmış hesap kurtarma, cihaz oturumu/iptali, belirteç iptali, istemci push köprüsü, mağaza ikonu ve düzeltilmiş eski test maddeleri aşağıdaki kuyruğa yeniden eklenmedi.
+
+Doğrulama: Tam istemci paketi `47/47`, platform servis paketi `7/7` geçti. `platform_services.py` ile `main.py` Python sözdizimi temizdir. `git diff --check` yalnız Windows satır sonu uyarıları verdi.
+
+## Son Öneriler'den kalan gerçek görevler
+
+### Yayın engelleyicileri
+
+1. `[ ]` Apple ile giriş dönüşünü ve üretim anahtar imzalama akışını tamamla
+   - Apple client secret/JWT üretimi, form-post callback, kimlik belirteci doğrulaması ve hesap çakışması kuralları Google akışıyla aynı güvenlik düzeyine getirilmeli.
+2. `[ ]` Sağlayıcı hesabını gerçek çoklu cihaz oturumuna dönüştür
+   - Google/Apple kimliğiyle başka cihazda mevcut oyuncu hesabını bulup yeni cihaza bağımsız kimlik bilgisi verilmesi gerekiyor; mevcut cihaz sırrını kopyalamak veya tek sırla değiştirmek yeterli değil.
+3. `[ ]` Üretimde `/web-test/*` rotalarını kapat
+   - `GRIDSHARD_RUNTIME_MODE=production` altında tanılama rotaları kayıt edilmemeli veya açıkça `404` vermeli; istemci tarafındaki gizleme güvenlik sınırı sayılmamalı.
+4. `[ ]` Çalışma zamanı JSON/BAK/TMP dosyalarını Git geçmişinden güvenli biçimde çıkar
+   - `.gitignore` desenleri hazır olsa da önceden izlenmiş `server/data/web_test_*` dosyaları hâlâ sürüm kontrolünde. Kullanıcı verisi silinmeden `git rm --cached` ve dağıtım veri dizini geçişi planlanmalı.
+5. `[ ]` Mobil dokunma/işaretçi akışını gerçek cihazlarda doğrula ve eski HTML5 drag-and-drop yolunu kaldır
+   - Birincil dokun-seç/yerleştir akışı korunmalı; kalan `dragstart/drop/dataTransfer` bağımlılıkları temizlenmeli ve iOS/Android uzun basma, kaydırma ve iptal davranışları test edilmeli.
+
+### Ürün ve altyapı
+
+6. `[ ]` Savaş seslerini mobil biçimlere dönüştür ve müzik katmanlarını etkinleştir
+   - Büyük WAV dosyaları OGG/AAC türevlerine taşınmalı; `GRIDSHARD_BATTLE_MUSIC_ENABLED` üretimde açılmalı ve farklı savaş durumlarının aynı dosyayı tekrar kullanması giderilmeli.
+7. `[ ]` Dikey ekran kilidini yerel mobil kabuğa ekle
+   - CSS medya sorgusuna ek olarak Capacitor/Android/iOS yapılandırmasında portrait orientation kilidi tanımlanmalı.
+8. `[ ]` Gerçek cihaz performans bütçesi ve FPS ölçümü oluştur
+   - Düşük/orta seviye cihazlarda savaş DOM güncellemeleri, efekt yoğunluğu, bellek ve kare süresi kaydedilmeli; kabul eşikleri release check'e bağlanmalı.
+9. `[ ]` JSON/PostgreSQL şema geçişlerini sürümlü migration sistemine taşı
+   - Üretim veri değişiklikleri için Alembic benzeri ileri/geri migration, şema sürümü ve dağıtım öncesi kontrol eklenmeli.
+10. `[ ]` Gerçek FCM/APNs gönderim adaptörlerini tamamla
+   - İstemci izin/token kaydı hazır; sunucu teslim sağlayıcısı, kimlik bilgileri, token yenileme/hata temizliği ve imzalı mobil yapılandırma hâlâ gerekli.
+11. `[ ]` CI iş akışlarını sürüm kontrolüne al
+   - `.github/` genel ignore kapsamından çıkarılmalı; istemci, sunucu ve paketleme doğrulamaları için gerçek workflow dosyaları eklenmeli.
+12. `[ ]` Test bağımlılığındaki `httpx2` paketini doğrula ve gereksizse kaldır
+   - `server/requirements-test.txt` içindeki `httpx` yanında bulunan `httpx2>=2.4,<3.0` kaynağı ve kullanımı doğrulanmalı.
+
+### Bakım kuyruğu
+
+13. `[ ]` Büyük istemci ve sunucu dosyalarını alan modüllerine böl
+   - `client/src/app.js` ve `server/app/main.py` ekran/rota alanlarına ayrılmalı; davranış önce sözleşme testleriyle sabitlenmeli.
+14. `[ ]` Üretim istemci derleme hattı kur
+   - Modül paketleme, küçültme, içerik hash'li statik dosyalar ve otomatik cache-busting eklenmeli.
+15. `[ ]` `canon.css` ve `styles.css` sahipliğini uzlaştır
+   - Tekrarlanan kurallar ve yüksek sayıdaki `!important` kullanımı ekran bazında azaltılmalı; görsel regresyon testleriyle korunmalı.
+16. `[ ]` Türkçe/İngilizce yerelleştirmeyi tamamla
+   - Kod içine gömülü kalan metinler anahtar sözlüğüne taşınmalı; çoğul, sayı/tarih ve hata mesajı kapsaması eklenmeli.
+17. `[ ]` Ürün analitiğini mahremiyet kontrollü biçimde ekle
+   - Huni, savaş sonucu, elde tutma ve performans olayları için açık şema, onay/opt-out ve veri saklama politikası tanımlanmalı.
+18. `[ ]` Uygulama içi satın alma karar kapısını kapat
+   - Para kazanma kapsamdaysa mağaza makbuz doğrulama ve ürün kataloğu tasarlanmalı; kapsam dışıysa release belgelerinde açıkça ertelenmeli.
+
 ## Aktif paket — Beta.65 hesap açılışı, Devre Koleksiyonu ve mağaza ikonu
 
 1. `[x]` Günlük meta çarkındaki başlıkları her durumda düz tut
@@ -19,7 +86,7 @@ Bu dosya güncel çalışma paketini ve korunması gereken önceki kararları i�
 4. `[x]` İlk açılış hesap kaydı ekranını göster
    - Anonim cihaz oturumu oluşturulduktan sonra kalıcı e-posta/OAuth kimliği olmayan oyuncuya Google, Apple, e-posta doğrulama ve misafir seçenekleri sunuluyor.
    - E-posta kod isteme/doğrulama mevcut hesap API'sine bağlı; geliştirme modunda kod güvenli biçimde varsayılan olarak açılıyor ve giriş alanına otomatik taşınıyor. Üretim modunda bu davranış varsayılan olarak kapalı.
-   - Google/Apple yapılandırılmadığında düğmeler açıkça hazır olmadığını söylüyor ve sahte başarı üretmiyor. Üretimde sağlayıcı kimlik bilgileri, OAuth callback/kod değişimi ve gerçek e-posta teslim adaptörü hâlâ dağıtım altyapısında tamamlanmalıdır.
+   - Google/Apple yapılandırılmadığında düğmeler açıkça hazır olmadığını söylüyor ve sahte başarı üretmiyor. Beta.66 ile Google callback/kod değişimi ve SMTP teslim adaptörü tamamlandı; Apple dönüşü ile dağıtım kimlik bilgileri hâlâ bekliyor.
 5. `[x]` GRIDSHARD mağaza ikonunu üret ve projeye bağla
    - Özgün kırık cam Çekirdek, altın Akım halkası ve devre geometrisinden oluşan metinsiz ikon üretildi.
    - Kaynak, `1024x1024` mağaza/Apple ve `512x512` Android/PWA sürümleri `client/assets/branding/` altına eklendi.
@@ -78,7 +145,7 @@ Doğrulama: Beta.59/Beta.61/Beta.62 hedef istemci paketi `3/3`; tam istemci pake
    - Seçili ve kazanılmış emoji, üç saniyelik bekleme sınırıyla sunucu WebSocket komutu olarak doğrulanıyor.
    - Olay iki savaş istemcisine yayımlanıyor ve ilgili devrenin üzerinde süreli emoji balonu olarak gösteriliyor.
 
-Üretim etkinleştirme notu: Google/Apple yetkilendirme kodu değişimi, e-posta/SMS teslimi ve FCM/APNs gönderimi için sağlayıcı kimlik bilgileri ile mobil eklenti imzalama yapılandırması hâlâ dağıtım ortamında girilmelidir. Kod bu değerler yokken başarı taklidi yapmaz.
+Üretim etkinleştirme notu: Google kod değişimi ve SMTP e-posta teslim kodu Beta.66'da tamamlandı; çalışmaları için gerçek sağlayıcı kimlik bilgileri dağıtım ortamına girilmelidir. Apple kod değişimi, SMS teslimi ve FCM/APNs gönderimi ile mobil imzalama hâlâ bekliyor. Kod bu değerler yokken başarı taklidi yapmaz.
 
 Doğrulama: Beta.58–62 geniş sunucu paketi `38/38`; Beta.62 seçili paket `15/15`; istemci paketi `44/44` test dosyası ve Relay istemci alt paketi `176/176` geçti. JavaScript/Python sözdizimi ve `git diff --check` temizdir.
 

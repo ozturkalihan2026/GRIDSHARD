@@ -1,4 +1,5 @@
 from pathlib import Path
+import json
 
 import pytest
 
@@ -74,6 +75,97 @@ def test_oauth_adapter_does_not_fake_an_unconfigured_provider(tmp_path, monkeypa
     assert result == {
         "provider": "google", "configured": False, "authorization_url": None
     }
+
+
+def test_google_oauth_callback_exchanges_code_and_links_verified_email(tmp_path, monkeypatch):
+    monkeypatch.setenv("GRIDSHARD_GOOGLE_OAUTH_CLIENT_ID", "client-id")
+    monkeypatch.setenv("GRIDSHARD_GOOGLE_OAUTH_CLIENT_SECRET", "client-secret")
+    monkeypatch.setenv(
+        "GRIDSHARD_GOOGLE_OAUTH_REDIRECT_URI",
+        "https://play.gridshard.test/oauth/google/callback",
+    )
+    calls = []
+
+    class Response:
+        def __init__(self, payload):
+            self.payload = payload
+
+        def __enter__(self):
+            return self
+
+        def __exit__(self, *_args):
+            return False
+
+        def read(self):
+            return json.dumps(self.payload).encode("utf-8")
+
+    def fake_open(request, timeout):
+        calls.append((request, timeout))
+        if request.full_url.endswith("/token"):
+            return Response({"access_token": "google-access-token"})
+        return Response({
+            "sub": "google-subject-1",
+            "email": "pilot@example.com",
+            "email_verified": True,
+        })
+
+    platform = PlatformService(
+        tmp_path / "platform.json",
+        now_func=lambda: 1000,
+        expose_codes=True,
+        web_base_url="https://play.gridshard.test",
+        http_open=fake_open,
+    )
+    started = platform.start_oauth("player-a", "google")
+    state = started["authorization_url"].split("state=", 1)[1].split("&", 1)[0]
+    result = platform.complete_oauth("google", state, "authorization-code")
+
+    assert result == {"provider": "google", "player_id": "player-a", "linked": True}
+    view = platform.account_view("player-a")
+    assert view["oauth"]["google"]["linked"] is True
+    assert view["contacts"]["email"]["masked"] == "pi***@example.com"
+    assert len(calls) == 2
+
+
+def test_smtp_provider_delivers_the_verification_code(tmp_path, monkeypatch):
+    monkeypatch.setenv("GRIDSHARD_EMAIL_PROVIDER", "smtp")
+    monkeypatch.setenv("GRIDSHARD_SMTP_HOST", "smtp.example.test")
+    monkeypatch.setenv("GRIDSHARD_SMTP_PORT", "587")
+    monkeypatch.setenv("GRIDSHARD_SMTP_USERNAME", "sender@example.test")
+    monkeypatch.setenv("GRIDSHARD_SMTP_PASSWORD", "app-password")
+    monkeypatch.setenv("GRIDSHARD_SMTP_FROM", "sender@example.test")
+    sent = []
+
+    class FakeSmtp:
+        def __init__(self, host, port, timeout):
+            assert (host, port, timeout) == ("smtp.example.test", 587, 12)
+
+        def __enter__(self):
+            return self
+
+        def __exit__(self, *_args):
+            return False
+
+        def ehlo(self):
+            return None
+
+        def starttls(self, context):
+            assert context is not None
+
+        def login(self, username, password):
+            assert (username, password) == ("sender@example.test", "app-password")
+
+        def send_message(self, message):
+            sent.append(message)
+
+    monkeypatch.setattr("app.platform_services.smtplib.SMTP", FakeSmtp)
+    result = service(tmp_path).request_verification(
+        "player-a", "email", "pilot@example.com"
+    )
+
+    assert result["delivery_configured"] is True
+    assert sent[0]["To"] == "pilot@example.com"
+    assert result["development_code"] in sent[0].get_content()
 
 
 def test_account_recovery_rotates_the_device_secret(tmp_path):

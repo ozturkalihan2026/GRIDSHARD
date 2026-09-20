@@ -2992,6 +2992,24 @@
         12000
       );
       renderAccountPlatform();
+      const oauthParams = new URLSearchParams(globalThis.location?.search || "");
+      const oauthStatus = oauthParams.get("oauth_status");
+      const oauthProvider = (oauthParams.get("oauth_provider") || "Google").toLocaleUpperCase("tr-TR");
+      if (oauthStatus) {
+        const message = oauthStatus === "linked"
+          ? `${oauthProvider} hesabı başarıyla bağlandı.`
+          : oauthStatus === "cancelled"
+            ? `${oauthProvider} hesap bağlantısı iptal edildi.`
+            : `${oauthProvider} hesap bağlantısı tamamlanamadı. Sunucu sağlayıcı ayarlarını kontrol et.`;
+        if (status) status.textContent = message;
+        renderAccountOnboarding(message);
+        oauthParams.delete("oauth_status");
+        oauthParams.delete("oauth_provider");
+        const query = oauthParams.toString();
+        globalThis.history?.replaceState?.(
+          {}, "", `${globalThis.location?.pathname || "/"}${query ? `?${query}` : ""}`
+        );
+      }
       const presented = presentOnboarding ? maybePresentAccountOnboarding() : false;
       return {ok:true,presented};
     } catch (error) {
@@ -3508,8 +3526,9 @@
     const selected = dailyMetaState?.selected ? dailyMetaState.meta : null;
     if (name) name.textContent = selected?.meta_name_tr || "Henüz belirlenmedi";
     if (description) {
-      description.textContent = selected?.description_tr
-        || "Meta çarkını çevirerek bugünkü oyun planını belirle.";
+      description.textContent = selected
+        ? `${selected.description_tr || "Günlük meta etkin."} · ${selected.effect_tr || ""}`.replace(/ · $/, "")
+        : "Meta çarkını çevirerek bugünkü oyun planını belirle.";
     }
     if (card) {
       card.dataset.selected = selected ? "true" : "false";
@@ -4202,9 +4221,13 @@
         {method:"POST",body:JSON.stringify({player_id:participantPlayerId,channel,destination})},
         12000
       );
+      const codeInput = document.getElementById("account-verification-code");
+      if (result.development_code && codeInput) codeInput.value = result.development_code;
       if (status) status.textContent = result.delivery_configured
         ? `Kod ${result.destination} adresine gönderildi.`
-        : "Doğrulama sağlayıcısı henüz yapılandırılmadı; istek güvenle kaydedildi.";
+        : result.development_code
+          ? "Yerel geliştirme kodu doğrulama alanına yerleştirildi."
+          : "E-posta teslimi için SMTP sağlayıcısı yapılandırılmalı.";
     } catch (error) {
       if (status) status.textContent = error instanceof Error ? error.message : String(error);
     }

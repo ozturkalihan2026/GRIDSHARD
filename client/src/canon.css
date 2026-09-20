@@ -2138,7 +2138,8 @@ body[data-app-screen="rewards"] .season-reward-card > .season-reward-prize {
   transform:translateX(-50%);
 }
 .daily-meta-wheel-labels { position:absolute;inset:0; }
-.daily-meta-wheel-labels span { position:absolute;left:50%;top:50%;width:58px;color:#f7fbff;font:900 .4rem var(--gs-font-display);line-height:1;text-align:center;text-shadow:0 2px 4px #03101d;transform:translate(-50%,-50%) rotate(var(--label-angle)) translateY(calc(-1 * var(--wheel-label-radius))) rotate(calc(var(--label-counter-angle) - var(--daily-meta-stop-angle,0deg)));transform-origin:center; }
+.daily-meta-wheel-labels span { position:absolute;left:50%;top:50%;width:58px;transform:translate(-50%,-50%) rotate(var(--label-angle)) translateY(calc(-1 * var(--wheel-label-radius)));transform-origin:center; }
+.daily-meta-wheel-labels span > b { display:block;color:#f7fbff;font:900 .4rem var(--gs-font-display);line-height:1;text-align:center;text-shadow:0 2px 4px #03101d;transform:rotate(calc(var(--label-counter-angle) - var(--daily-meta-stop-angle,0deg)));transform-origin:center;font-style:normal; }
 .daily-meta-wheel-labels span:nth-child(1) { --label-angle:0deg;--label-counter-angle:0deg; }
 .daily-meta-wheel-labels span:nth-child(2) { --label-angle:51.43deg;--label-counter-angle:-51.43deg; }
 .daily-meta-wheel-labels span:nth-child(3) { --label-angle:102.86deg;--label-counter-angle:-102.86deg; }
@@ -2163,17 +2164,18 @@ body[data-app-screen="rewards"] .season-reward-card > .season-reward-prize {
   transform:translate(-50%,-50%) rotate(45deg);
 }
 .daily-meta-wheel.is-spinning { animation:daily-meta-spin .95s cubic-bezier(.18,.78,.18,1) both; }
-.daily-meta-wheel.is-spinning .daily-meta-wheel-labels span { animation:daily-meta-label-counter-spin .95s cubic-bezier(.18,.78,.18,1) both; }
+.daily-meta-wheel.is-spinning .daily-meta-wheel-labels span > b { animation:daily-meta-label-counter-spin .95s cubic-bezier(.18,.78,.18,1) both; }
 .daily-meta-wheel.has-result { --wheel-label-radius:58px;width:170px;opacity:.62;filter:saturate(.72); }
-.daily-meta-wheel.has-result .daily-meta-wheel-labels span { width:48px;font-size:.34rem; }
+.daily-meta-wheel.has-result .daily-meta-wheel-labels span { width:48px; }
+.daily-meta-wheel.has-result .daily-meta-wheel-labels span > b { font-size:.34rem; }
 .daily-meta-wheel-shell:has(.daily-meta-wheel.has-result) { width:170px; }
 @keyframes daily-meta-spin {
   from { transform:rotate(0); }
   to { transform:rotate(calc(1080deg + var(--daily-meta-stop-angle,0deg))); }
 }
 @keyframes daily-meta-label-counter-spin {
-  from { transform:translate(-50%,-50%) rotate(var(--label-angle)) translateY(calc(-1 * var(--wheel-label-radius))) rotate(var(--label-counter-angle)); }
-  to { transform:translate(-50%,-50%) rotate(var(--label-angle)) translateY(calc(-1 * var(--wheel-label-radius))) rotate(calc(var(--label-counter-angle) - 1080deg - var(--daily-meta-stop-angle,0deg))); }
+  from { transform:rotate(var(--label-counter-angle)); }
+  to { transform:rotate(calc(var(--label-counter-angle) - 1080deg - var(--daily-meta-stop-angle,0deg))); }
 }
 .daily-meta-result {
   --daily-meta-accent:#61ead8;

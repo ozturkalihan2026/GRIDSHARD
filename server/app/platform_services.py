@@ -13,11 +13,16 @@ import hashlib
 import json
 import os
 import secrets
+import smtplib
+import ssl
 import threading
 import time
+from email.message import EmailMessage
 from pathlib import Path
 from tempfile import NamedTemporaryFile
 from urllib.parse import urlencode
+from urllib.error import HTTPError, URLError
+from urllib.request import Request as UrlRequest, urlopen
 
 
 class PlatformServiceError(ValueError):
@@ -42,6 +47,9 @@ class PlatformService:
     VERIFICATION_TTL_SECONDS = 10 * 60
     RECOVERY_TTL_SECONDS = 15 * 60
     INVITE_TTL_SECONDS = 7 * 24 * 60 * 60
+    GOOGLE_AUTHORIZE_URL = "https://accounts.google.com/o/oauth2/v2/auth"
+    GOOGLE_TOKEN_URL = "https://oauth2.googleapis.com/token"
+    GOOGLE_USERINFO_URL = "https://openidconnect.googleapis.com/v1/userinfo"
 
     def __init__(
         self,
@@ -50,11 +58,13 @@ class PlatformService:
         now_func=time.time,
         expose_codes: bool = False,
         web_base_url: str = "https://gridshard.game",
+        http_open=urlopen,
     ):
         self.path = Path(path)
         self.now_func = now_func
         self.expose_codes = bool(expose_codes)
         self.web_base_url = web_base_url.rstrip("/")
+        self.http_open = http_open
         self._lock = threading.RLock()
 
     def _empty(self) -> dict:
@@ -103,6 +113,55 @@ class PlatformService:
     def _code_hash(code: str) -> str:
         return hashlib.sha256(str(code).encode("utf-8")).hexdigest()
 
+    @staticmethod
+    def _truthy_environment(name: str, default: str = "0") -> bool:
+        return os.environ.get(name, default).strip().lower() in {
+            "1", "true", "yes", "on",
+        }
+
+    def _email_delivery_configured(self) -> bool:
+        return (
+            os.environ.get("GRIDSHARD_EMAIL_PROVIDER", "").strip().lower() == "smtp"
+            and bool(os.environ.get("GRIDSHARD_SMTP_HOST", "").strip())
+            and bool(os.environ.get("GRIDSHARD_SMTP_FROM", "").strip())
+        )
+
+    def _deliver_verification_email(self, destination: str, code: str) -> None:
+        host = os.environ.get("GRIDSHARD_SMTP_HOST", "").strip()
+        sender = os.environ.get("GRIDSHARD_SMTP_FROM", "").strip()
+        if not self._email_delivery_configured():
+            raise PlatformServiceError("E-posta teslim sağlayıcısı yapılandırılmadı.")
+        try:
+            port = int(os.environ.get("GRIDSHARD_SMTP_PORT", "587"))
+        except ValueError as exc:
+            raise PlatformServiceError("SMTP portu geçersiz.") from exc
+
+        message = EmailMessage()
+        message["Subject"] = "GRIDSHARD doğrulama kodu"
+        message["From"] = sender
+        message["To"] = destination
+        message.set_content(
+            "GRIDSHARD doğrulama kodun: "
+            f"{code}\n\nKod {self.VERIFICATION_TTL_SECONDS // 60} dakika geçerlidir."
+        )
+        username = os.environ.get("GRIDSHARD_SMTP_USERNAME", "").strip()
+        password = os.environ.get("GRIDSHARD_SMTP_PASSWORD", "")
+        try:
+            with smtplib.SMTP(host, port, timeout=12) as client:
+                client.ehlo()
+                if self._truthy_environment("GRIDSHARD_SMTP_STARTTLS", "1"):
+                    client.starttls(context=ssl.create_default_context())
+                    client.ehlo()
+                if username:
+                    if not password:
+                        raise PlatformServiceError("SMTP parolası yapılandırılmadı.")
+                    client.login(username, password)
+                client.send_message(message)
+        except PlatformServiceError:
+            raise
+        except (OSError, smtplib.SMTPException) as exc:
+            raise PlatformServiceError("Doğrulama e-postası gönderilemedi.") from exc
+
     def request_verification(self, player_id: str, channel: str, destination: str) -> dict:
         if channel not in {"email", "phone"}:
             raise PlatformServiceError("Doğrulama kanalı email veya phone olmalıdır.")
@@ -119,12 +178,20 @@ class PlatformService:
                 "attempts": 0,
             }
             self._write(data)
-        provider_env = "GRIDSHARD_EMAIL_PROVIDER" if channel == "email" else "GRIDSHARD_SMS_PROVIDER"
+        if channel == "email" and self._email_delivery_configured():
+            self._deliver_verification_email(destination, code)
+            delivery_configured = True
+        elif channel == "phone":
+            delivery_configured = bool(
+                os.environ.get("GRIDSHARD_SMS_PROVIDER", "").strip()
+            )
+        else:
+            delivery_configured = False
         response = {
             "channel": channel,
             "destination": _masked_contact(destination),
             "expires_at": now + self.VERIFICATION_TTL_SECONDS,
-            "delivery_configured": bool(os.environ.get(provider_env, "").strip()),
+            "delivery_configured": delivery_configured,
         }
         if self.expose_codes:
             response["development_code"] = code
@@ -154,26 +221,47 @@ class PlatformService:
         return {"channel": channel, "verified": True, "verified_at": now}
 
     def oauth_status(self) -> dict:
-        providers = {}
-        for provider in ("google", "apple"):
-            prefix = f"GRIDSHARD_{provider.upper()}_OAUTH"
-            providers[provider] = {
+        google = self._oauth_configuration("google")
+        return {
+            "google": {
                 "configured": bool(
-                    os.environ.get(f"{prefix}_CLIENT_ID", "").strip()
-                    and os.environ.get(f"{prefix}_AUTHORIZE_URL", "").strip()
-                    and os.environ.get(f"{prefix}_REDIRECT_URI", "").strip()
+                    google["client_id"]
+                    and google["client_secret"]
+                    and google["redirect_uri"]
                 )
-            }
-        return providers
+            },
+            "apple": {
+                # Apple callback/JWT verification is intentionally kept disabled
+                # until its complete server-side adapter is available.
+                "configured": False
+            },
+        }
+
+    def _oauth_configuration(self, provider: str) -> dict:
+        prefix = f"GRIDSHARD_{provider.upper()}_OAUTH"
+        return {
+            "client_id": os.environ.get(f"{prefix}_CLIENT_ID", "").strip(),
+            "client_secret": os.environ.get(f"{prefix}_CLIENT_SECRET", "").strip(),
+            "authorize_url": (
+                os.environ.get(f"{prefix}_AUTHORIZE_URL", "").strip()
+                or (self.GOOGLE_AUTHORIZE_URL if provider == "google" else "")
+            ),
+            "token_url": (
+                os.environ.get(f"{prefix}_TOKEN_URL", "").strip()
+                or (self.GOOGLE_TOKEN_URL if provider == "google" else "")
+            ),
+            "userinfo_url": (
+                os.environ.get(f"{prefix}_USERINFO_URL", "").strip()
+                or (self.GOOGLE_USERINFO_URL if provider == "google" else "")
+            ),
+            "redirect_uri": os.environ.get(f"{prefix}_REDIRECT_URI", "").strip(),
+        }
 
     def start_oauth(self, player_id: str, provider: str) -> dict:
         if provider not in {"google", "apple"}:
             raise PlatformServiceError("Desteklenmeyen OAuth sağlayıcısı.")
-        prefix = f"GRIDSHARD_{provider.upper()}_OAUTH"
-        client_id = os.environ.get(f"{prefix}_CLIENT_ID", "").strip()
-        authorize_url = os.environ.get(f"{prefix}_AUTHORIZE_URL", "").strip()
-        redirect_uri = os.environ.get(f"{prefix}_REDIRECT_URI", "").strip()
-        if not client_id or not authorize_url or not redirect_uri:
+        config = self._oauth_configuration(provider)
+        if not self.oauth_status()[provider]["configured"]:
             return {"provider": provider, "configured": False, "authorization_url": None}
         state = secrets.token_urlsafe(24)
         with self._lock:
@@ -185,15 +273,105 @@ class PlatformService:
             }
             self._write(data)
         params = {
-            "client_id": client_id, "redirect_uri": redirect_uri,
-            "response_type": "code", "scope": "openid email",
+            "client_id": config["client_id"], "redirect_uri": config["redirect_uri"],
+            "response_type": "code", "scope": "openid email profile",
             "state": state,
         }
+        if provider == "google":
+            params["prompt"] = "select_account"
         if provider == "apple":
             params["response_mode"] = "form_post"
         return {
             "provider": provider, "configured": True,
-            "authorization_url": f"{authorize_url}?{urlencode(params)}",
+            "authorization_url": f"{config['authorize_url']}?{urlencode(params)}",
+        }
+
+    def _request_oauth_json(self, request: UrlRequest) -> dict:
+        try:
+            with self.http_open(request, timeout=12) as response:
+                payload = json.loads(response.read().decode("utf-8"))
+        except (HTTPError, URLError, OSError, UnicodeDecodeError, json.JSONDecodeError) as exc:
+            raise PlatformServiceError("Google hesap bağlantısı tamamlanamadı.") from exc
+        if not isinstance(payload, dict):
+            raise PlatformServiceError("Google yanıtı geçersiz.")
+        return payload
+
+    def complete_oauth(self, provider: str, state: str, code: str) -> dict:
+        if provider != "google":
+            raise PlatformServiceError("Bu OAuth dönüş sağlayıcısı henüz desteklenmiyor.")
+        state = _clean_text(state, maximum=256, label="OAuth durumu")
+        code = _clean_text(code, maximum=2048, label="OAuth kodu")
+        config = self._oauth_configuration(provider)
+        if not self.oauth_status()[provider]["configured"]:
+            raise PlatformServiceError("Google OAuth sağlayıcısı yapılandırılmadı.")
+
+        now = int(self.now_func())
+        player_id = None
+        with self._lock:
+            data = self._read()
+            for candidate_id, account in data.get("accounts", {}).items():
+                pending = account.get("oauth_states", {}).get(provider)
+                if (
+                    pending
+                    and int(pending.get("expires_at", 0)) > now
+                    and secrets.compare_digest(
+                        str(pending.get("state_hash", "")), self._code_hash(state)
+                    )
+                ):
+                    player_id = candidate_id
+                    account["oauth_states"].pop(provider, None)
+                    break
+            if player_id is None:
+                raise PlatformServiceError("OAuth oturumu yok veya süresi dolmuş.")
+            self._write(data)
+
+        token_payload = self._request_oauth_json(UrlRequest(
+            config["token_url"],
+            data=urlencode({
+                "client_id": config["client_id"],
+                "client_secret": config["client_secret"],
+                "code": code,
+                "grant_type": "authorization_code",
+                "redirect_uri": config["redirect_uri"],
+            }).encode("utf-8"),
+            headers={"Content-Type": "application/x-www-form-urlencoded"},
+            method="POST",
+        ))
+        access_token = str(token_payload.get("access_token", "")).strip()
+        if not access_token:
+            raise PlatformServiceError("Google erişim belirteci alınamadı.")
+        userinfo = self._request_oauth_json(UrlRequest(
+            config["userinfo_url"],
+            headers={"Authorization": f"Bearer {access_token}"},
+            method="GET",
+        ))
+        subject = str(userinfo.get("sub", "")).strip()
+        email = str(userinfo.get("email", "")).strip()
+        email_verified = userinfo.get("email_verified") in {True, "true", "True", 1}
+        if not subject or not email or not email_verified:
+            raise PlatformServiceError("Google hesabının doğrulanmış e-postası alınamadı.")
+
+        with self._lock:
+            data = self._read()
+            for candidate_id, candidate in data.get("accounts", {}).items():
+                linked = candidate.get("oauth_links", {}).get(provider, {})
+                if candidate_id != player_id and linked.get("subject") == subject:
+                    raise PlatformServiceError("Google hesabı başka bir oyuncuya bağlı.")
+            account = self._account(data, player_id)
+            account["oauth_links"][provider] = {
+                "subject": subject,
+                "email": email,
+                "linked_at": now,
+            }
+            account["contacts"]["email"] = {
+                "value": email,
+                "verified_at": now,
+            }
+            self._write(data)
+        return {
+            "provider": provider,
+            "player_id": player_id,
+            "linked": True,
         }
 
     def register_device(

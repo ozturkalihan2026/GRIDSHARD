@@ -23,6 +23,6 @@ assert.ok(app.includes('if (dailyMetaState?.requires_roll) event.preventDefault(
 assert.ok(app.includes("function dailyMetaStopAngle"));
 assert.ok(app.includes('wheel?.classList.add("is-spinning")'));
 assert.match(css, /1080deg \+ var\(--daily-meta-stop-angle,0deg\)/);
-assert.strictEqual((html.match(/<span>(HASAR|SAVUNMA|DESTEK|SABOTAJ|SİSTEM|ÇEKİRDEK|AKIM)<\/span>/g) || []).length, 7);
+assert.strictEqual((html.match(/<span><b>(HASAR|SAVUNMA|DESTEK|SABOTAJ|SİSTEM|ÇEKİRDEK|AKIM)<\/b><\/span>/g) || []).length, 7);
 
 console.log("beta58 team profile and daily meta contract passed");
