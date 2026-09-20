@@ -4,6 +4,33 @@ Güncelleme tarihi: 20 Eylül 2026
 
 Bu dosya güncel çalışma paketini ve korunması gereken önceki kararları içerir. Kullanıcı `checkpoint'ten devam et` dediğinde önce bu dosya, ardından `git status --short` okunmalıdır.
 
+## Sıradaki paket — Beta.67 gerçek telefon savaş ve profil yerleşimi
+
+Kaynak doğrulama: Aynı Wi‑Fi ağında `192.168.1.104:8879` üzerinden açılan Android/Chrome portre görünümünün dört ekran görüntüsü incelendi. Bu turda uygulama kodu değiştirilmedi; aşağıdaki maddeler sonraki uygulama turunun bağlayıcı emirleridir.
+
+1. `[ ]` Mobil savaşta oyuncu ve rakip devrelerini aynı arena görünümünde göster
+   - Telefon görünümündeki `Devrem` / `Rakip` devre geçişi kaldırılmalı; rakip devresi üstte, oyuncu devresi altta ve `VS` ayracı ortada olacak şekilde iki taraf aynı anda görünmelidir.
+   - Kullanıcı rakibin saldırısını, iki Çekirdeğin CAN durumunu, Akım animasyonlarını ve kendi devresinin sonucunu sekme değiştirmeden izleyebilmelidir.
+   - İki devre mevcut boş dikey alanı kullanarak portre ekrana birlikte sığdırılmalı; kart oranları, dokunma hedefleri, isim/CAN bilgisi ve sabit alt el–Akım–Çekirdek gücü alanı okunabilir kalmalıdır.
+   - `data-mobile-battle-panel="player|enemy"` ile bir tarafı gizleyen eski mobil kural ve buna bağlı Devrem/Rakip düğmeleri kaldırılmalı. Modül rafı gerekiyorsa devre görünürlüğünü bozmayan ayrı alt el davranışı olarak kalmalıdır.
+   - Yerel AI, normal PvP, arkadaş maçı ve takım turnuvası aynı çift-devre mobil bileşenini kullanmalı; tek bir maç türü eski sekmeli düzene geri düşmemelidir.
+
+2. `[ ]` Yerleşmiş modüle dokununca açılan eski taşıma/iptal akışını kaldır
+   - Devrede aktif olan bir modüle dokunmak `... seçildi · hedef hücreye dokun`, `Rafa Al` veya `Seçimi Kaldır` araç çubuğunu açmamalıdır.
+   - Yerleşmiş modül yeniden taşınmamalı, başka hücreyle değiştirilmemeli ve savaş sırasında rafa geri alınmamalıdır; eski `beginDrag → dropOnCell/dropOnShelf` mobil yeniden yerleştirme yolu aktif kartlar için kapatılmalıdır.
+   - Yeni modül yerleştirme yalnız alt elde/rafta bulunan uygun kartın seçilip boş ve geçerli hücreye dokunulmasıyla başlamalıdır. Yerleştirme tamamlanınca seçim kendiliğinden temizlenmelidir.
+   - Yerleşmiş karta dokunma davranışı gerekiyorsa yalnız salt okunur savaş bilgisi veya hedef seçimi gibi güncel işlemlere ayrılmalı; taşıma vurgusu ve eski karar düğmeleri üretmemelidir.
+
+3. `[ ]` Profil alt sekmesini Sezon Geçmişi ve İstatistikler içeriğinin üzerinden kaldır
+   - Portre görünümünde `PROFİL / KOZMETİK / ÖDÜLLER / ARKADAŞ / AYARLAR` çubuğu kaydırılan profil içeriğinin ortasına yapışmamalı ve Sezon Geçmişi/İstatistik kartlarını kapatmamalıdır.
+   - Alt sekme çubuğu profil terminal çerçevesinin gerçek alt kenarına sabitlenmeli; içerik alanına çubuğun yüksekliği ve cihaz güvenli alanı kadar alt boşluk verilmelidir.
+   - Sayfa kaydırıldığında Sezon Geçmişi kartı, üç sezon özeti ve bütün istatistik kartları sekmenin arkasından görünmeden tamamen okunup dokunulabilmelidir.
+   - Aynı düzeltme beş profil alt ekranında ve `360–430 px` telefon genişliklerinde doğrulanmalı; ana alt gezinme ile profil alt gezinmesi üst üste binmemelidir.
+
+4. `[ ]` Beta.67 için gerçek cihaz regresyon kapsamı ekle
+   - Portre telefon testinde aynı karede hem oyuncu hem rakip devresi bulunduğu, aktif modüle dokunmanın taşıma araçlarını açmadığı ve profil sekmesinin sezon/istatistik içeriğini kapatmadığı doğrulanmalıdır.
+   - Tarayıcı performans göstergesi açıkken ve kapalıyken yerleşim değişmemeli; Android Chrome güvenli alanı ve alt sistem gezinme çubuğu ayrıca kontrol edilmelidir.
+
 ## Aktif paket — Beta.66 meta yüzdesi, sağlayıcı hesabı ve favicon
 
 1. `[x]` Günlük meta kartında seçimin sayısal etkisini göster
