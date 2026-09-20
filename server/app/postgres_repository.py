@@ -235,3 +235,32 @@ class PostgresIdentityRepository:
                 )
         except Exception as exc:
             raise AuthenticationError("Oyuncu kimliği zaten kayıtlı veya yazılamadı.") from exc
+
+    def update(self, player_id: str, record: dict) -> None:
+        try:
+            with self.database.connection() as connection:
+                cursor = connection.execute(
+                    """
+                    UPDATE participant_identities
+                    SET salt = %s, verifier = %s, created_at = NOW()
+                    WHERE player_id = %s
+                    """,
+                    (str(record["salt"]), str(record["verifier"]), player_id),
+                )
+                if cursor.rowcount < 1:
+                    raise AuthenticationError("Oyuncu kimliği bulunamadı.")
+        except AuthenticationError:
+            raise
+        except Exception as exc:
+            raise AuthenticationError("PostgreSQL kimlik kaydı güncellenemedi.") from exc
+
+    def delete(self, player_id: str) -> bool:
+        try:
+            with self.database.connection() as connection:
+                cursor = connection.execute(
+                    "DELETE FROM participant_identities WHERE player_id = %s",
+                    (player_id,),
+                )
+                return cursor.rowcount > 0
+        except Exception as exc:
+            raise AuthenticationError("PostgreSQL kimlik kaydı silinemedi.") from exc

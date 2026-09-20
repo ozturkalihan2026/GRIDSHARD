@@ -773,6 +773,10 @@ function createClient() {
     experience_to_next_level: 500,
     rating: 1200,
     league_name_tr: "Altın",
+    cosmetics: {
+      unlocked_badge_ids: ["season_champion"],
+      unlocked_rank_trophy_ids: ["season_first"],
+    },
     preferred_battle_pool_ids: Array.from(
       { length: 18 },
       (_, i) => `m${i}`
@@ -794,6 +798,8 @@ function createClient() {
   assert.strictEqual(view.battlePoolIds.length, 18);
   assert.strictEqual(view.engagement.current_tier, 2);
   assert.strictEqual(view.engagement.dailyMissions.length, 1);
+  assert.deepStrictEqual(view.cosmetics.unlockedBadgeIds, ["season_champion"]);
+  assert.deepStrictEqual(view.cosmetics.unlockedRankTrophyIds, ["season_first"]);
 }
 
 {

@@ -73,6 +73,22 @@ class JsonIdentityRepository:
             identities[player_id] = dict(record)
             self._write_all(identities)
 
+    def update(self, player_id: str, record: dict) -> None:
+        with self._lock:
+            identities = self._read_all()
+            if player_id not in identities:
+                raise AuthenticationError("Oyuncu kimliği bulunamadı.")
+            identities[player_id] = dict(record)
+            self._write_all(identities)
+
+    def delete(self, player_id: str) -> bool:
+        with self._lock:
+            identities = self._read_all()
+            existed = identities.pop(player_id, None) is not None
+            if existed:
+                self._write_all(identities)
+            return existed
+
     def _read_all(self) -> dict[str, dict]:
         if not self.path.exists():
             return {}
@@ -193,6 +209,28 @@ class ParticipantAuthService:
             hashlib.sha256,
         ).digest()
         return f"{encoded_header}.{encoded_payload}.{_b64url_encode(signature)}", expires_at
+
+    def reset_device_secret(self, player_id: str, device_secret: str) -> None:
+        player_id = validate_player_id(player_id)
+        device_secret = str(device_secret or "")
+        if len(device_secret) < DEVICE_SECRET_MIN_LENGTH:
+            raise AuthenticationError("Cihaz sırrı en az 32 karakter olmalıdır.")
+        if self.repository.get(player_id) is None:
+            raise AuthenticationError("Oyuncu kimliği bulunamadı.")
+        salt = secrets.token_bytes(16)
+        self.repository.update(
+            player_id,
+            {
+                "salt": _b64url_encode(salt),
+                "verifier": _b64url_encode(
+                    self._device_secret_verifier(device_secret, salt)
+                ),
+                "created_at": int(self.now_func()),
+            },
+        )
+
+    def delete_identity(self, player_id: str) -> bool:
+        return bool(self.repository.delete(validate_player_id(player_id)))
 
     def verify_access_token(self, token: str) -> AuthenticatedIdentity:
         parts = str(token or "").split(".")

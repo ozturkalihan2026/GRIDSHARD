@@ -19,9 +19,17 @@ def test_team_state_persists_and_membership_operations_are_idempotent(tmp_path):
 
     created = service.create_team("alpha", "Akım Birliği", "create-once")
     replay = service.create_team("alpha", "Akım Birliği", "create-once")
-    joined = service.join_team("beta", created["team_id"], "join-once")
+    application = service.join_team("beta", created["team_id"], "join-once")
+    joined = service.review_application(
+        team_id=created["team_id"],
+        owner_id="alpha",
+        applicant_id="beta",
+        accept=True,
+        request_id="accept-once",
+    )
 
     assert replay["replayed"] is True
+    assert application["application_pending"] is True
     assert joined["team"]["member_ids"] == ["alpha", "beta"]
     assert TeamService(repository).team_for_player("beta")["name"] == "Akım Birliği"
 
@@ -31,6 +39,13 @@ def test_module_requests_allow_one_module_per_week_and_rarity_amounts():
     service = TeamService(InMemoryTeamRepository(), now_func=lambda: now)
     team_id = service.create_team("alpha", "Grid", "create")["team_id"]
     service.join_team("beta", team_id, "join")
+    service.review_application(
+        team_id=team_id,
+        owner_id="alpha",
+        applicant_id="beta",
+        accept=True,
+        request_id="accept",
+    )
 
     created_request = service.create_module_request(
         team_id=team_id,
@@ -78,6 +93,13 @@ def test_chat_is_moderation_ready_and_training_is_explicitly_unranked():
     service = TeamService(InMemoryTeamRepository())
     team_id = service.create_team("alpha", "Grid", "create")["team_id"]
     service.join_team("beta", team_id, "join")
+    service.review_application(
+        team_id=team_id,
+        owner_id="alpha",
+        applicant_id="beta",
+        accept=True,
+        request_id="accept-member",
+    )
 
     message = service.post_message(
         team_id=team_id,
@@ -137,6 +159,15 @@ def test_gateway_team_view_sorts_trophies_and_transfers_one_unlocked_shard(monke
             player_id=beta.player_id,
             request_id="gateway-join",
         ))
+        gateway.review_team_application(
+            created["team_id"],
+            gateway.TeamApplicationActionRequest(
+                player_id=alpha.player_id,
+                applicant_id=beta.player_id,
+                accept=True,
+                request_id="gateway-accept",
+            ),
+        )
         view = gateway.get_player_team(alpha.player_id)
 
         assert [member["player_id"] for member in view["members"]] == [
@@ -172,7 +203,7 @@ def test_gateway_team_view_sorts_trophies_and_transfers_one_unlocked_shard(monke
         gateway.donate_team_module_shard(created["team_id"], request_id, action)
 
         assert beta.module_shards["laser"] == 1
-        assert alpha.module_shards["laser"] == 41
+        assert alpha.module_shards["laser"] == 1
         assert team_service.get_team(created["team_id"])["module_requests"][0]["donated_amount"] == 1
     finally:
         for player_id in profiles:

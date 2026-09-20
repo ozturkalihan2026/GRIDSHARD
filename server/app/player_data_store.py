@@ -637,11 +637,26 @@ class PlayerDataStoreService:
             "weekly_tournament_period": profile.weekly_tournament_period,
             "weekly_tournament_matches": profile.weekly_tournament_matches,
             "weekly_tournament_wins": profile.weekly_tournament_wins,
+            "weekly_tournament_registered_period": profile.weekly_tournament_registered_period,
+            "weekly_tournament_trophies_earned": profile.weekly_tournament_trophies_earned,
             "team_tournament_period": profile.team_tournament_period,
             "team_tournament_matches": profile.team_tournament_matches,
             "team_tournament_wins": profile.team_tournament_wins,
+            "team_tournament_contribution_points": profile.team_tournament_contribution_points,
             "team_tournament_week_period": profile.team_tournament_week_period,
             "team_tournament_week_matches": profile.team_tournament_week_matches,
+            "team_tournament_registered_period": profile.team_tournament_registered_period,
+            "friend_ids": list(profile.friend_ids),
+            "incoming_friend_request_ids": list(profile.incoming_friend_request_ids),
+            "outgoing_friend_request_ids": list(profile.outgoing_friend_request_ids),
+            "blocked_player_ids": list(profile.blocked_player_ids),
+            "social_battle_invites": [dict(item) for item in profile.social_battle_invites],
+            "universal_module_shards": profile.universal_module_shards,
+            "reward_inbox": [dict(item) for item in profile.reward_inbox],
+            "reward_inbox_receipts": {
+                request_id: dict(receipt)
+                for request_id, receipt in profile.reward_inbox_receipts.items()
+            },
             "daily_meta_day": profile.daily_meta_day,
             "daily_meta_id": profile.daily_meta_id,
             "unlocked_core_types": list(profile.unlocked_core_types),
@@ -799,6 +814,28 @@ class PlayerDataStoreService:
             selected_avatar_frame_id=str(
                 dict(data.get("cosmetics") or {}).get("selected_avatar_frame_id", "none")
             ),
+            unlocked_battle_emoji_ids=tuple(
+                str(value)
+                for value in dict(data.get("cosmetics") or {}).get("unlocked_battle_emoji_ids", ["none"])
+            ),
+            selected_battle_emoji_id=str(
+                dict(data.get("cosmetics") or {}).get("selected_battle_emoji_id", "none")
+            ),
+            unlocked_profile_background_ids=tuple(
+                str(value)
+                for value in dict(data.get("cosmetics") or {}).get("unlocked_profile_background_ids", ["default"])
+            ),
+            selected_profile_background_id=str(
+                dict(data.get("cosmetics") or {}).get("selected_profile_background_id", "default")
+            ),
+            unlocked_badge_ids=tuple(
+                str(value)
+                for value in dict(data.get("cosmetics") or {}).get("unlocked_badge_ids", [])
+            ),
+            unlocked_rank_trophy_ids=tuple(
+                str(value)
+                for value in dict(data.get("cosmetics") or {}).get("unlocked_rank_trophy_ids", [])
+            ),
             module_calibration_levels={
                 str(module_id): int(level)
                 for module_id, level in dict(
@@ -895,11 +932,49 @@ class PlayerDataStoreService:
             weekly_tournament_period=str(meta.get("weekly_tournament_period", "")),
             weekly_tournament_matches=max(0, int(meta.get("weekly_tournament_matches", 0))),
             weekly_tournament_wins=max(0, int(meta.get("weekly_tournament_wins", 0))),
+            weekly_tournament_registered_period=str(meta.get("weekly_tournament_registered_period", "")),
+            weekly_tournament_trophies_earned=max(0, int(meta.get("weekly_tournament_trophies_earned", 0))),
             team_tournament_period=str(meta.get("team_tournament_period", "")),
             team_tournament_matches=max(0, int(meta.get("team_tournament_matches", 0))),
             team_tournament_wins=max(0, int(meta.get("team_tournament_wins", 0))),
+            team_tournament_contribution_points=max(
+                0,
+                int(
+                    meta.get(
+                        "team_tournament_contribution_points",
+                        meta.get("team_tournament_wins", 0),
+                    )
+                ),
+            ),
             team_tournament_week_period=str(meta.get("team_tournament_week_period", "")),
             team_tournament_week_matches=max(0, int(meta.get("team_tournament_week_matches", 0))),
+            team_tournament_registered_period=str(meta.get("team_tournament_registered_period", "")),
+            friend_ids=tuple(str(value) for value in meta.get("friend_ids", [])),
+            incoming_friend_request_ids=tuple(
+                str(value) for value in meta.get("incoming_friend_request_ids", [])
+            ),
+            outgoing_friend_request_ids=tuple(
+                str(value) for value in meta.get("outgoing_friend_request_ids", [])
+            ),
+            blocked_player_ids=tuple(
+                str(value) for value in meta.get("blocked_player_ids", [])
+            ),
+            social_battle_invites=[
+                dict(item)
+                for item in meta.get("social_battle_invites", [])
+                if isinstance(item, dict)
+            ],
+            universal_module_shards=max(0, int(meta.get("universal_module_shards", 0))),
+            reward_inbox=[
+                dict(item)
+                for item in meta.get("reward_inbox", [])
+                if isinstance(item, dict)
+            ],
+            reward_inbox_receipts={
+                str(request_id): dict(receipt)
+                for request_id, receipt in dict(meta.get("reward_inbox_receipts", {})).items()
+                if isinstance(receipt, dict)
+            },
             daily_meta_day=str(meta.get("daily_meta_day", "")),
             daily_meta_id=str(meta.get("daily_meta_id", "")),
             unlocked_core_types=tuple(

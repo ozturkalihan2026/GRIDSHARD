@@ -156,15 +156,30 @@ def _monthly_period(moment: datetime) -> dict:
 
 
 WEEKLY_PRIZES: tuple[dict, ...] = (
-    {"position": 1, "circuit_credits": 1200, "flux_shards": 90, "chest_tier": "diamond"},
-    {"position": 2, "circuit_credits": 800, "flux_shards": 60, "chest_tier": "gold"},
-    {"position": 3, "circuit_credits": 500, "flux_shards": 40, "chest_tier": "silver"},
+    {"position": 1, "circuit_credits": 1200, "flux_shards": 90, "chest_tier": "weekly_first", "chest_visual_id": "weekly_circuit_crown", "chest_name_tr": "Haftalık Şampiyon Kasası", "avatar_id": "weekly_champion", "avatar_frame_id": "weekly_gold", "emoji_id": "victory_pulse"},
+    {"position": 2, "circuit_credits": 760, "flux_shards": 55, "chest_tier": "weekly_second", "chest_visual_id": "weekly_prism", "chest_name_tr": "Haftalık Finalist Kasası", "avatar_id": "weekly_finalist", "avatar_frame_id": "weekly_silver"},
+    {"position": 3, "circuit_credits": 420, "flux_shards": 30, "chest_tier": "weekly_third", "chest_visual_id": "weekly_pulse", "chest_name_tr": "Haftalık Üçüncülük Kasası", "avatar_id": "weekly_finalist"},
 )
 TEAM_PRIZES: tuple[dict, ...] = (
-    {"position": 1, "circuit_credits": 1500, "flux_shards": 110, "chest_tier": "diamond"},
-    {"position": 2, "circuit_credits": 1000, "flux_shards": 75, "chest_tier": "gold"},
-    {"position": 3, "circuit_credits": 700, "flux_shards": 50, "chest_tier": "silver"},
+    {"position": 1, "circuit_credits": 1500, "flux_shards": 110, "chest_tier": "team_first", "chest_visual_id": "team_reactor_crown", "chest_name_tr": "Takım Şampiyonu Relik Kasası", "team_avatar_id": "team_champion", "team_frame_id": "team_gold", "team_name_frame_id": "team_name_gold", "team_bar_background_id": "team_champion_grid", "emoji_id": "team_beacon"},
+    {"position": 2, "circuit_credits": 950, "flux_shards": 70, "chest_tier": "team_second", "chest_visual_id": "team_prism_relay", "chest_name_tr": "Takım Finalisti Relik Kasası", "team_avatar_id": "team_finalist", "team_frame_id": "team_silver", "team_bar_background_id": "team_finalist_grid"},
+    {"position": 3, "circuit_credits": 620, "flux_shards": 45, "chest_tier": "team_third", "chest_visual_id": "team_signal_cache", "chest_name_tr": "Takım Üçüncüsü Relik Kasası", "team_avatar_id": "team_finalist"},
 )
+
+LEADERBOARD_PRIZES: tuple[dict, ...] = (
+    {"position": 1, "chest_tier": "diamond", "chest_name_tr": "Taç Kasası", "chest_visual_id": "rank_crown", "circuit_credits": 2400, "flux_shards": 180, "universal_module_shards": 12, "rank_trophy_id": "season_first", "badge_id": "season_champion", "avatar_id": "season_champion", "avatar_frame_id": "season_gold", "emoji_id": "victory_pulse", "profile_background_id": "rank_crown", "cosmetics": ["1.lik Kupası", "Şampiyon Rozeti", "Avatar", "Avatar Çerçevesi", "Profil Çubuğu", "Savaş Emojisi"]},
+    {"position": 2, "chest_tier": "gold", "chest_name_tr": "Prizma Kasası", "chest_visual_id": "rank_prism", "circuit_credits": 1800, "flux_shards": 130, "universal_module_shards": 9, "rank_trophy_id": "season_second", "badge_id": "season_second", "avatar_frame_id": "season_silver", "emoji_id": "respect_signal", "profile_background_id": "rank_prism", "cosmetics": ["2.lik Kupası", "İkincilik Rozeti", "Avatar Çerçevesi", "Profil Çubuğu", "Savaş Emojisi"]},
+    {"position": 3, "chest_tier": "gold", "chest_name_tr": "Reaktör Kasası", "chest_visual_id": "rank_reactor", "circuit_credits": 1400, "flux_shards": 100, "universal_module_shards": 7, "rank_trophy_id": "season_third", "badge_id": "season_third", "avatar_id": "season_finalist", "cosmetics": ["3.lük Kupası", "Üçüncülük Rozeti", "Avatar"]},
+    {"position": 4, "chest_tier": "silver", "chest_name_tr": "Frekans Kasası", "chest_visual_id": "rank_frequency", "circuit_credits": 1000, "flux_shards": 75, "universal_module_shards": 5, "badge_id": "season_top10", "cosmetics": ["İlk 10 Rozeti"]},
+    {"position": 5, "chest_tier": "silver", "chest_name_tr": "Devre Kasası", "chest_visual_id": "rank_circuit", "circuit_credits": 750, "flux_shards": 55, "universal_module_shards": 4, "badge_id": "season_top10", "cosmetics": ["İlk 10 Rozeti"]},
+    {"position": 6, "chest_tier": "bronze", "chest_name_tr": "Akım Kasası", "chest_visual_id": "rank_current", "circuit_credits": 620, "flux_shards": 45, "universal_module_shards": 4, "cosmetics": []},
+    {"position": 7, "chest_tier": "bronze", "chest_name_tr": "Nöron Kasası", "chest_visual_id": "rank_neuron", "circuit_credits": 520, "flux_shards": 38, "universal_module_shards": 3, "cosmetics": []},
+    {"position": 8, "chest_tier": "bronze", "chest_name_tr": "Röle Kasası", "chest_visual_id": "rank_relay", "circuit_credits": 430, "flux_shards": 32, "universal_module_shards": 3, "cosmetics": []},
+    {"position": 9, "chest_tier": "bronze", "chest_name_tr": "İletken Kasası", "chest_visual_id": "rank_conductor", "circuit_credits": 350, "flux_shards": 26, "universal_module_shards": 2, "cosmetics": []},
+    {"position": 10, "chest_tier": "bronze", "chest_name_tr": "Kıvılcım Kasası", "chest_visual_id": "rank_spark", "circuit_credits": 280, "flux_shards": 20, "universal_module_shards": 2, "cosmetics": []},
+)
+
+WEEKLY_ENTRY_FEE = 100
 
 
 def _round_robin_pairs(team_ids: list[str], round_index: int) -> list[tuple[str, str]]:
@@ -193,6 +208,9 @@ def build_events_view(players: list[dict], moment: datetime | None = None) -> di
     weekly_rows = []
     for player in players:
         is_bot = bool(player.get("is_bot"))
+        registered = is_bot or player.get("weekly_registered_period") == week["id"]
+        if not registered:
+            continue
         seed = f"{week['id']}:{player.get('player_id')}"
         matches = (
             5 + _stable_int(seed + ":matches", 8)
@@ -208,10 +226,10 @@ def build_events_view(players: list[dict], moment: datetime | None = None) -> di
             if is_bot
             else min(matches, max(0, int(player.get("weekly_wins", 0))))
         )
-        core_bonus = (
-            min(wins, _stable_int(seed + ":core", max(1, wins + 1)))
+        trophies_earned = (
+            70 + _stable_int(seed + ":trophies", 240)
             if is_bot
-            else wins
+            else max(0, int(player.get("weekly_trophies_earned", 0)))
         )
         weekly_rows.append({
             "player_id": player["player_id"],
@@ -220,8 +238,10 @@ def build_events_view(players: list[dict], moment: datetime | None = None) -> di
             "matches": matches,
             "wins": wins,
             "losses": max(0, matches - wins),
-            "points": (wins * 3) + core_bonus,
+            "points": trophies_earned,
+            "trophies_earned": trophies_earned,
             "is_bot": is_bot,
+            "registered": True,
         })
     weekly_rows.sort(key=lambda row: (-row["points"], -row["wins"], -row["rating"], row["display_name"].casefold()))
     for position, row in enumerate(weekly_rows, start=1):
@@ -234,10 +254,21 @@ def build_events_view(players: list[dict], moment: datetime | None = None) -> di
         team_name = str(player.get("team_name") or "").strip()
         if not team_id or not team_name:
             continue
-        grouped.setdefault(team_id, {"team_id": team_id, "team_name": team_name, "members": []})["members"].append(player)
+        team = grouped.setdefault(
+            team_id,
+            {"team_id": team_id, "team_name": team_name, "members": [], "registered": False},
+        )
+        team["members"].append(player)
+        team["registered"] = bool(
+            team["registered"]
+            or player.get("is_bot")
+            or player.get("team_registered_period") == month["id"]
+        )
 
     team_rows = []
     for team in grouped.values():
+        if not team["registered"]:
+            continue
         members = []
         for player in sorted(team["members"], key=lambda row: (-int(row.get("rating", 0)), row["display_name"].casefold())):
             seed = f"{month['id']}:{team['team_id']}:{player['player_id']}"
@@ -248,14 +279,22 @@ def build_events_view(players: list[dict], moment: datetime | None = None) -> di
             )
             wins = _stable_int(seed + ":wins", matches + 1) if player.get("is_bot") else min(matches, max(0, int(player.get("team_tournament_wins", 0))))
             wins = min(matches, wins)
+            contribution_points = (
+                wins
+                if player.get("is_bot")
+                else min(
+                    matches,
+                    max(0, int(player.get("team_tournament_points", wins))),
+                )
+            )
             members.append({
                 "player_id": player["player_id"],
                 "display_name": player["display_name"],
                 "rating": int(player.get("rating", 0)),
                 "matches": matches,
                 "wins": wins,
-                "contribution_points": wins,
-                "reward_eligible": wins >= 5,
+                "contribution_points": contribution_points,
+                "reward_eligible": contribution_points >= 5,
             })
         team_rows.append({
             "team_id": team["team_id"],
@@ -270,12 +309,24 @@ def build_events_view(players: list[dict], moment: datetime | None = None) -> di
         row["position"] = position
 
     team_by_id = {team["team_id"]: team for team in team_rows}
+    week_starts = datetime.fromisoformat(week["starts_at"].replace("Z", "+00:00"))
+    scheduled_at = week_starts + timedelta(days=5, hours=18)
+    check_in_opens_at = scheduled_at - timedelta(minutes=15)
+    check_in_closes_at = scheduled_at + timedelta(minutes=30)
+    schedule_status = (
+        "upcoming"
+        if current < check_in_opens_at
+        else "live"
+        if current <= check_in_closes_at
+        else "completed"
+    )
     fixtures = []
     for home_id, away_id in _round_robin_pairs(list(team_by_id), week_of_month - 1):
         home = team_by_id[home_id]
         away = team_by_id[away_id]
         home_members = sorted(home["members"], key=lambda row: -row["rating"])
         away_members = sorted(away["members"], key=lambda row: -row["rating"])
+        fixture_id = f"{month['id']}-w{week_of_month}-{home_id}-{away_id}"
         pairings = [
             {
                 "home_player_id": left["player_id"],
@@ -284,16 +335,22 @@ def build_events_view(players: list[dict], moment: datetime | None = None) -> di
                 "away_player_name": right["display_name"],
                 "rating_difference": abs(left["rating"] - right["rating"]),
                 "legs": 2,
+                "battle_session_id": f"team-event-{fixture_id}-{index + 1}",
             }
-            for left, right in zip(home_members, away_members)
+            for index, (left, right) in enumerate(zip(home_members, away_members))
         ]
         fixtures.append({
+            "fixture_id": fixture_id,
             "home_team_id": home_id,
             "home_team_name": home["team_name"],
             "away_team_id": away_id,
             "away_team_name": away["team_name"],
             "member_pairings": pairings,
             "matches_per_player": 2,
+            "scheduled_at": _iso(scheduled_at),
+            "check_in_opens_at": _iso(check_in_opens_at),
+            "check_in_closes_at": _iso(check_in_closes_at),
+            "status": schedule_status,
         })
 
     return {
@@ -301,7 +358,8 @@ def build_events_view(players: list[dict], moment: datetime | None = None) -> di
         "weekly_tournament": {
             "name_tr": "Haftalık Devre Turnuvası",
             "period": week,
-            "rules_tr": "Galibiyet 3 puan, çekirdek yıkımı 1 ek puan. Sıralama her pazartesi yenilenir.",
+            "rules_tr": "100 Devre Kredisi ile katıl. Katıldıktan sonra normal Arena savaşlarında kazandığın kupalar haftalık sıralamaya eklenir; sıralama pazartesi yenilenir.",
+            "entry_fee": WEEKLY_ENTRY_FEE,
             "prizes": [dict(item) for item in WEEKLY_PRIZES],
             "standings": weekly_rows,
         },
@@ -309,7 +367,10 @@ def build_events_view(players: list[dict], moment: datetime | None = None) -> di
             "name_tr": "Aylık Takımlar Arası Turnuva",
             "period": month,
             "week": week_of_month,
-            "rules_tr": "Her hafta farklı rakip takım; yakın kupa eşleşmesiyle rövanşlı 2 maç. Galibiyet 1, mağlubiyet 0 takım puanı. Ödül için en az 5 katkı puanı gerekir.",
+            "rules_tr": "Takım lideri ücretsiz kaydeder. Sistem her cumartesi 21.00'de (Türkiye) yakın kupalı üyeleri canlı eşleştirir. Galibiyet 1 puan; ödül için en az 5 katkı puanı gerekir.",
+            "registration_fee": 0,
+            "scheduled_at": _iso(scheduled_at),
+            "schedule_status": schedule_status,
             "minimum_reward_points": 5,
             "prizes": [dict(item) for item in TEAM_PRIZES],
             "standings": team_rows,

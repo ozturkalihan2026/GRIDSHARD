@@ -1,6 +1,7 @@
 from dataclasses import dataclass, field
 
 from .game.models import BattleState, BattleStatus
+from .match_accounting import applies_to_profile_progression
 
 
 HABIT_EXCLUDED_DEFINITION_IDS = frozenset({"core", "generator"})
@@ -131,6 +132,10 @@ class PlayerStatisticsService:
 
         if state.battle_id in self._processed_battle_ids:
             return False
+
+        if not applies_to_profile_progression(state.match_type):
+            self._processed_battle_ids.add(state.battle_id)
+            return True
 
         account_player_ids = (
             state.account_player_ids

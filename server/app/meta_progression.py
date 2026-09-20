@@ -8,6 +8,11 @@ from uuid import uuid4
 
 from .game.catalog import BASIC_MODULE_DEFINITIONS
 from .game.catalog_view import build_module_catalog_view
+from .game.core_balance import core_rarity_profile
+from .game.energy import (
+    BASE_CORE_GENERATION_PER_SECOND,
+    CORE_LEVEL_GENERATION_MULTIPLIER,
+)
 from .player_profile import CURRENT_SEASON_ID
 
 
@@ -589,6 +594,7 @@ class MetaProgressionService:
             "flux_shards": profile.flux_shards,
             "circuit_credits": profile.circuit_credits,
             "core_shards": profile.core_shards,
+            "universal_module_shards": profile.universal_module_shards,
             "module_collection": [
                 self._module_view(profile, module_id, current_rank)
                 for module_id in MODULES
@@ -765,12 +771,24 @@ class MetaProgressionService:
     def _core_view(self, profile, core_type: dict, current_rank: dict) -> dict:
         unlocked = max(profile.highest_rating, profile.rating) >= (core_type["unlock_arena"] - 1) * 300
         counter = max(0, min(14, profile.core_upgrade_levels.get(core_type["id"], 0)))
+        rarity_profile = core_rarity_profile(core_type["id"])
         return {
             **{key: value for key, value in core_type.items() if key != "skills"},
             "unlocked": unlocked, "selected": profile.selected_core_type == core_type["id"],
             "level": counter + 1, "shards": profile.core_shards_by_type.get(core_type["id"], 0),
             "legacy_shards": profile.core_shards,
-            "energy_per_second": round(10 * 1.04 ** counter * (1 + .03 * sum(s.endswith("_energy") for s in profile.core_skills.get(core_type["id"], ()))), 2), "energy_capacity": 100 + counter * 3,
+            "energy_per_second": round(
+                BASE_CORE_GENERATION_PER_SECOND
+                * CORE_LEVEL_GENERATION_MULTIPLIER ** counter
+                * rarity_profile["energy"]
+                * (1 + .03 * sum(s.endswith("_energy") for s in profile.core_skills.get(core_type["id"], ()))),
+                2,
+            ),
+            "energy_capacity": 100 + counter * 3,
+            "rarity_bonuses": {
+                key: round(value, 3)
+                for key, value in rarity_profile.items()
+            },
             "next_upgrade_cost": {"flux_shards": 20 * (counter + 1), "shards": (2, 4, 8, 12, 20, 30, 45, 65, 90, 120, 160, 210, 270, 340)[counter]} if counter < 14 else None,
             "skills": [{**skill, "learned": skill["id"] in profile.core_skills.get(core_type["id"], ()),
                         "tier_selected": any(s.startswith(skill["tier"] + "_") for s in profile.core_skills.get(core_type["id"], ()))} for skill in core_type["skills"]],
@@ -890,10 +908,14 @@ class MetaProgressionService:
             raise MetaProgressionError("Modül azami seviyede.")
         cost = module_upgrade_cost(module_id, level)
         shards = int(profile.module_shards.get(module_id, 0))
-        if profile.circuit_credits < cost["circuit_credits"] or shards < cost["shards"]:
+        universal_shards = max(0, int(profile.universal_module_shards))
+        if profile.circuit_credits < cost["circuit_credits"] or shards + universal_shards < cost["shards"]:
             raise MetaProgressionError(f"Gerekli: {cost['circuit_credits']} Devre Kredisi ve {cost['shards']} modül parçası.")
         profile.circuit_credits -= int(cost["circuit_credits"])
-        profile.module_shards[module_id] = shards - int(cost["shards"])
+        card_shards_spent = min(shards, int(cost["shards"]))
+        universal_spent = int(cost["shards"]) - card_shards_spent
+        profile.module_shards[module_id] = shards - card_shards_spent
+        profile.universal_module_shards = universal_shards - universal_spent
         profile.module_upgrade_levels[module_id] = int(cost["next_level"])
         receipt = {
             "request_id": request_id,
@@ -902,6 +924,8 @@ class MetaProgressionService:
             "level_after": int(cost["next_level"]),
             "circuit_credits_spent": int(cost["circuit_credits"]),
             "shards_spent": int(cost["shards"]),
+            "module_shards_spent": card_shards_spent,
+            "universal_module_shards_spent": universal_spent,
             "ranked_normalized": False,
         }
         profile.module_upgrade_receipts[request_id] = dict(receipt)

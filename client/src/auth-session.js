@@ -11,11 +11,17 @@
     "/statistics/",
     "/profile/",
     "/public-profiles/",
+    "/social/",
+    "/accounts/",
+    "/notifications/",
+    "/players/",
+    "/events",
     "/local-ai/",
     "/pvp/",
   ];
   const API_PREFIXES = [
     "/auth/",
+    "/account-recovery/",
     ...PROTECTED_PREFIXES,
     "/health",
     "/leaderboards",
@@ -35,6 +41,7 @@
     }
   })();
   const DEVICE_SECRET_KEY = "gridshard.auth.device-secret";
+  const DEVICE_ID_KEY = "gridshard.auth.device-id";
   const PLAYER_ID_KEY = "project-relay.web-test.participant-id";
 
   class GridshardAuthSession {
@@ -112,6 +119,21 @@
       return null;
     }
 
+    deviceId() {
+      return this._deviceId();
+    }
+
+    replaceDeviceSecret(secret) {
+      const value = String(secret || "");
+      if (value.length < 32) {
+        throw new Error("Yeni cihaz sırrı en az 32 karakter olmalıdır.");
+      }
+      this.storage?.setItem(DEVICE_SECRET_KEY, value);
+      this.accessToken = null;
+      this.expiresAt = 0;
+      return value;
+    }
+
     async _openSession(playerId) {
       const response = await this.fetchImpl(this._apiInput("/auth/session"), {
         method: "POST",
@@ -119,6 +141,9 @@
         body: JSON.stringify({
           player_id: playerId,
           device_secret: this._deviceSecret(),
+          device_id: this._deviceId(),
+          device_name: this._deviceName(),
+          platform: this._platform(),
         }),
       });
       if (!response.ok) {
@@ -144,7 +169,7 @@
       const url = this._url(input);
       const segments = url.pathname.split("/").filter(Boolean);
       let playerId = url.searchParams.get("player_id");
-      if (!playerId && ["participants", "player-data", "settings", "statistics", "profile"].includes(segments[0])) {
+      if (!playerId && ["participants", "player-data", "settings", "statistics", "profile", "accounts", "notifications", "social"].includes(segments[0])) {
         playerId = segments[1] || null;
       }
       if (!playerId && segments[0] === "matchmaking" && segments[1] !== "join") {
@@ -196,6 +221,42 @@
         // Gizli değer yalnızca bu sayfa ömründe kullanılabilir.
       }
       return secret;
+    }
+
+    _deviceId() {
+      try {
+        const existing = this.storage?.getItem(DEVICE_ID_KEY);
+        if (existing) return existing;
+      } catch (_error) {
+        // Geçici kimlikle devam edilir.
+      }
+      const value = globalThis.crypto?.randomUUID
+        ? globalThis.crypto.randomUUID()
+        : `web-${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}`;
+      try {
+        this.storage?.setItem(DEVICE_ID_KEY, value);
+      } catch (_error) {
+        // Geçici kimlikle devam edilir.
+      }
+      return value;
+    }
+
+    _platform() {
+      if (globalThis.Capacitor?.getPlatform) return globalThis.Capacitor.getPlatform();
+      return "web";
+    }
+
+    _deviceName() {
+      const platform = this._platform();
+      const userAgent = String(globalThis.navigator?.userAgent || "");
+      const browser = /Edg\//.test(userAgent)
+        ? "Edge"
+        : /Chrome\//.test(userAgent)
+          ? "Chrome"
+          : /Safari\//.test(userAgent)
+            ? "Safari"
+            : "Tarayıcı";
+      return `${platform.toUpperCase()} · ${browser}`;
     }
 
     _url(input) {

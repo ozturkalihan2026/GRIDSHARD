@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 
 from .models import ModuleStatus, PlayerBattleState, Position
+from .core_balance import core_rarity_profile
 from .operations import has_disabling_sabotage, module_is_operational
 from .topology import DISRUPTOR_DEBUFF_ID
 
@@ -122,6 +123,7 @@ def process_energy_tick(player: PlayerBattleState, core_position: Position = Pos
         if core
         else 0.0
     )
+    core_generation *= core_rarity_profile(player.core_type)["energy"]
     core_generation *= 1 + .03 * sum(s.endswith("_energy") for s in player.core_skills)
     batteries = [
         module

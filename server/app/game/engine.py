@@ -24,6 +24,7 @@ from .combat import (
     select_target,
 )
 from .energy import process_energy_tick
+from .core_balance import core_rarity_profile
 from .operations import has_disabling_sabotage, module_is_operational
 from .heat import (
     CRITICAL_HEAT_THRESHOLD,
@@ -1716,6 +1717,7 @@ class BattleEngine:
                 "select_booster": self._cmd_select_booster,
                 "use_booster": self._cmd_use_booster,
                 "use_core_power": self._cmd_use_core_power,
+                "send_battle_emoji": self._cmd_send_battle_emoji,
                 "forfeit_battle": self._cmd_forfeit_battle,
             }
             handler = handlers.get(command.kind)
@@ -1785,6 +1787,22 @@ class BattleEngine:
         del player_id, payload
         raise CommandRejected("Güçlendiriciler bu savaş kuralında kapalıdır.")
 
+    def _cmd_send_battle_emoji(self, player_id: str, payload: dict) -> None:
+        player = self._require_player(player_id)
+        emoji_id = str(payload.get("emoji_id") or "").strip()
+        if emoji_id == "none" or emoji_id != player.selected_battle_emoji_id:
+            raise CommandRejected("Seçili ve kazanılmış bir savaş emojisi gerekli.")
+        if self.state.elapsed_ms - player.last_battle_emoji_at_ms < 3000:
+            raise CommandRejected("Savaş emojisi yeniden kullanım beklemesinde.")
+        player.last_battle_emoji_at_ms = self.state.elapsed_ms
+        self._emit(
+            "battle_emoji",
+            {
+                "player_id": player_id,
+                "emoji_id": emoji_id,
+            },
+        )
+
     def _cmd_use_core_power(self, player_id: str, payload: dict) -> None:
         player = self._require_player(player_id)
         request_id = str(payload.get("request_id") or "").strip()
@@ -1813,6 +1831,8 @@ class BattleEngine:
         if target_module_id and target_module_id != core.instance_id:
             raise CommandRejected("Çekirdek gücü merkez Çekirdekten kullanılır.")
         level = max(1, min(15, player.core_level))
+        rarity_profile = core_rarity_profile(player.core_type)
+        rarity_effect = rarity_profile["effect"]
         allies = [
             module
             for module in player.modules.values()
@@ -1867,7 +1887,14 @@ class BattleEngine:
         )
         if power in {"core_resonance", "core_phoenix", "core_quantum"}:
             for module in allies:
-                heal = round((45 if module == core else 15) * 1.035 ** (level - 1)) if power == "core_resonance" else round(module.definition.max_hp * min(.30, .20 + .005 * (level - 1)))
+                heal = (
+                    round((45 if module == core else 15) * 1.035 ** (level - 1) * rarity_effect)
+                    if power == "core_resonance"
+                    else round(
+                        module.definition.max_hp
+                        * min(.45, (.20 + .005 * (level - 1)) * rarity_effect)
+                    )
+                )
                 actual = min(heal, module.definition.max_hp - module.hp)
                 module.hp += actual
                 repaired += actual
@@ -1885,7 +1912,7 @@ class BattleEngine:
                     )
         if power in {"core_guardian", "core_quantum"}:
             for module in allies:
-                shield_amount = round(20 * 1.035 ** (level - 1))
+                shield_amount = round(20 * 1.035 ** (level - 1) * rarity_effect)
                 self.add_persistent_effect(
                     player_id,
                     module.instance_id,
@@ -1908,7 +1935,7 @@ class BattleEngine:
                 )
         if power == "core_overdrive":
             for module in allies:
-                damage_multiplier = 1.25 + .01 * (level - 1)
+                damage_multiplier = 1 + (.25 + .01 * (level - 1)) * rarity_effect
                 self.add_persistent_effect(
                     player_id,
                     module.instance_id,
@@ -1939,7 +1966,7 @@ class BattleEngine:
                         continue
                     module.persistent_effects.pop("core_overdrive", None)
                     if module.definition.category == "destek":
-                        duration_ms = 2000 + (level - 1) * 50
+                        duration_ms = round((2000 + (level - 1) * 50) * rarity_effect)
                         self.add_debuff(
                             enemy_id,
                             module.instance_id,
@@ -1962,7 +1989,7 @@ class BattleEngine:
                             },
                         )
         if power == "core_capacitor":
-            player.discounted_deployments = 2
+            player.discounted_deployments = 2 + int(rarity_effect >= 1.20)
             self._emit(
                 "core_effect_applied",
                 {
@@ -1972,7 +1999,7 @@ class BattleEngine:
                     "target_module_id": core.instance_id,
                     "power_id": power,
                     "effect_kind": "energy",
-                    "value": 2,
+                    "value": player.discounted_deployments,
                 },
             )
         player.core_power_charge = 0.0
@@ -2474,7 +2501,10 @@ class BattleEngine:
                 continue
             player.core_power_charge = min(
                 CORE_POWER_MAX_CHARGE,
-                player.core_power_charge + charge_per_tick * (1 + .03 * sum(s.endswith("_charge") for s in player.core_skills)),
+                player.core_power_charge
+                + charge_per_tick
+                * core_rarity_profile(player.core_type)["charge"]
+                * (1 + .03 * sum(s.endswith("_charge") for s in player.core_skills)),
             )
             if (
                 player.core_power_charge >= CORE_POWER_MAX_CHARGE

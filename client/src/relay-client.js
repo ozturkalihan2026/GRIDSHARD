@@ -898,6 +898,18 @@
           unlockedAvatarFrameIds: [
             ...(this.profile.cosmetics?.unlocked_avatar_frame_ids || ["none"]),
           ],
+          unlockedBattleEmojiIds: [
+            ...(this.profile.cosmetics?.unlocked_battle_emoji_ids || ["none"]),
+          ],
+          unlockedProfileBackgroundIds: [
+            ...(this.profile.cosmetics?.unlocked_profile_background_ids || ["default"]),
+          ],
+          unlockedBadgeIds: [
+            ...(this.profile.cosmetics?.unlocked_badge_ids || []),
+          ],
+          unlockedRankTrophyIds: [
+            ...(this.profile.cosmetics?.unlocked_rank_trophy_ids || []),
+          ],
         },
         seasonSummary: {
           ...this.profile.season_summary,
@@ -1066,6 +1078,7 @@
     PLAY: "play",
     PROFILE: "profile",
     AVATAR: "avatar",
+    FRIENDS: "friends",
     DAILY: "daily",
     DAILY_REWARDS: "daily-rewards",
     DAILY_MISSIONS: "daily-missions",
@@ -1628,6 +1641,12 @@
         matchType: result.match_type,
         matchLabelTr: result.match_label_tr,
         rankedEligible: Boolean(result.ranked_eligible),
+        profileProgressionApplied:
+          result.profile_progression_applied !== false,
+        teamTournamentPointsAwarded:
+          Number(result.team_tournament_points_awarded || 0),
+        teamTournamentPointsAfter:
+          Number(result.team_tournament_points_after || 0),
         tierAdvanced: result.tier_advanced || null,
       };
     }
@@ -2144,6 +2163,37 @@
             this.lastError,
         };
       }
+    }
+
+    connectSession(
+      response,
+      {
+        battlePoolIds,
+        initialModules,
+      }
+    ) {
+      if (!Array.isArray(battlePoolIds) || battlePoolIds.length !== 6) {
+        throw new Error("Özel savaş için tam 6 kartlık deste gerekli.");
+      }
+      if (!Array.isArray(initialModules) || initialModules.length !== 1) {
+        throw new Error("Özel savaş başlangıcında merkezde yalnız Çekirdek olmalı.");
+      }
+      this.attemptId += 1;
+      this._clearPoll();
+      this._clearReadyTimeout();
+      this.connectionManager.disconnect?.();
+      this.connectionManager.clearOutgoingQueue();
+      this.matchmakingState.reset();
+      this.pendingSetup = {
+        battlePoolIds:[...battlePoolIds],
+        initialModules:initialModules.map((module) => ({ ...module })),
+      };
+      this.lastError = null;
+      return this._activateMatch({
+        matched:true,
+        opponent_type:"human",
+        ...response,
+      });
     }
 
     async pollNow() {

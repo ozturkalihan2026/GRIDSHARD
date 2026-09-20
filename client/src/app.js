@@ -422,6 +422,8 @@
       loadBattlePoolPresets();
       loadMetaProgression();
       loadDailyMetaState({ present:true });
+      loadRewardInbox();
+      void consumePendingDeepLink();
     }
 
     renderParticipantBootstrapStatus();
@@ -447,16 +449,33 @@
   let activeCardPage = "modules";
   let selectedCollectionCoreId = "core_resonance";
   let activeLeaderboardTab = "trophies";
+  let activeTrophyLeaderboardScope = "general";
   let leaderboardPayload = null;
+  let rewardInboxState = null;
   let publicProfileReturnDialogId = null;
   let teamProfileReturnDialogId = null;
   let teamState = null;
   let activeTeamTab = "profile";
+  let socialState = null;
+  let pendingDeepLinkConsumed = false;
+  let activePublicProfileId = null;
   let eventsState = null;
   let dailyMetaState = null;
   let dailyMetaRollPending = false;
+  let accountPlatformState = null;
   let activeWeeklyEventTab = "overview";
   let activeTeamEventTab = "overview";
+  for (const nav of document.querySelectorAll(".profile-terminal-tabs")) {
+    const cosmeticButton = nav.querySelector('[data-open-screen="avatar"]');
+    if (cosmeticButton) cosmeticButton.textContent = "KOZMETİK";
+    if (nav.querySelector('[data-open-screen="friends"]')) continue;
+    const button = document.createElement("button");
+    button.type = "button";
+    button.dataset.openScreen = "friends";
+    button.textContent = "ARKADAŞ";
+    const settingsButton = nav.querySelector('[data-open-screen="settings"]');
+    nav.insertBefore(button, settingsButton || null);
+  }
   const PROFILE_AVATARS = Object.freeze([
     { id: "default", nameTr: "Devre Operatörü", glyph: "◇" },
     { id: "circuit_scout", nameTr: "Devre Kaşifi", glyph: "⌁" },
@@ -466,6 +485,28 @@
     { id: "none", nameTr: "Standart" },
     { id: "neon_cyan", nameTr: "Neon Akım" },
     { id: "season_gold", nameTr: "Sezon Ustası" },
+  ]);
+  const BATTLE_EMOJIS = Object.freeze([
+    { id:"none", nameTr:"Kapalı", glyph:"—" },
+    { id:"victory_pulse", nameTr:"Zafer Darbesi", glyph:"✦" },
+    { id:"respect_signal", nameTr:"Saygı Sinyali", glyph:"◇" },
+    { id:"team_beacon", nameTr:"Takım İşareti", glyph:"⌁" },
+  ]);
+  const PROFILE_BACKGROUNDS = Object.freeze([
+    { id:"default", nameTr:"Standart Terminal", colors:["#0c2944", "#173f5d"] },
+    { id:"rank_crown", nameTr:"Taç Devresi", colors:["#4b3611", "#145064"] },
+    { id:"rank_prism", nameTr:"Prizma Akımı", colors:["#34265c", "#126a74"] },
+  ]);
+  const PROFILE_RANK_TROPHIES = Object.freeze([
+    { id:"season_first", nameTr:"Sezon Birinciliği", shortNameTr:"1. Kupa", glyph:"🏆", tone:"gold" },
+    { id:"season_second", nameTr:"Sezon İkinciliği", shortNameTr:"2. Kupa", glyph:"🏆", tone:"silver" },
+    { id:"season_third", nameTr:"Sezon Üçüncülüğü", shortNameTr:"3. Kupa", glyph:"🏆", tone:"bronze" },
+  ]);
+  const PROFILE_BADGES = Object.freeze([
+    { id:"season_champion", nameTr:"Şampiyon Rozeti", shortNameTr:"Şampiyon", glyph:"✦", tone:"gold" },
+    { id:"season_second", nameTr:"İkincilik Rozeti", shortNameTr:"İkinci", glyph:"✦", tone:"silver" },
+    { id:"season_third", nameTr:"Üçüncülük Rozeti", shortNameTr:"Üçüncü", glyph:"✦", tone:"bronze" },
+    { id:"season_top10", nameTr:"Sezon İlk 10 Rozeti", shortNameTr:"İlk 10", glyph:"✧", tone:"cyan" },
   ]);
   const CORE_RARITY_ORDER = Object.freeze(["common", "rare", "epic", "legendary"]);
   let pendingDeckModuleInstanceId = null;
@@ -751,7 +792,7 @@
       tutorialController?.maybeStart();
     }
 
-    if (["profile", "avatar", "daily", "daily-rewards", "daily-missions", "rewards", "shop", "modules", "team", "events", "weekly-event", "team-event", "menu"].includes(screen)) {
+    if (["profile", "avatar", "friends", "daily", "daily-rewards", "daily-missions", "rewards", "shop", "modules", "team", "events", "weekly-event", "team-event", "menu"].includes(screen)) {
       accountDataLoader
         .loadProfile()
         .then(() => markScreenNotificationsSeen(screen))
@@ -766,6 +807,10 @@
       if (screen === "team") {
         activeTeamTab = "profile";
         loadTeamView();
+      }
+      if (screen === "friends") {
+        loadSocialView();
+        loadDirectMessages();
       }
       if (["events", "weekly-event", "team-event"].includes(screen)) {
         if (screen === "weekly-event") activeWeeklyEventTab = "overview";
@@ -801,6 +846,7 @@
           renderSettingsForm();
           renderRemoteDataStatus();
         });
+      loadAccountPlatform();
     }
 
     renderRemoteDataStatus();
@@ -1764,6 +1810,14 @@
     else dialog?.setAttribute("open", "");
   }
 
+  function navigateCoreDetail(direction) {
+    const items = metaProgressionState?.cores?.types || [];
+    if (!items.length) return;
+    const current = Math.max(0, items.findIndex((item) => item.id === selectedCollectionCoreId));
+    selectedCollectionCoreId = items[(current + direction + items.length) % items.length].id;
+    openCoreDetail();
+  }
+
   function renderHomeArena() {
     const { rank, rating, floor, ceiling, progress } = arenaViewModel();
     const arenaCard = document.getElementById("home-arena-card");
@@ -1884,9 +1938,14 @@
       || "bronze";
   }
 
-  function chestVisualMarkup(tier, { large = false } = {}) {
-    const safeTier = ["bronze", "silver", "gold", "diamond"].includes(tier) ? tier : "bronze";
-    return `<span class="chest-visual chest-visual-${safeTier}${large ? " chest-visual-large" : ""}" aria-hidden="true"><i></i><b></b><em>◆</em></span>`;
+  function chestVisualMarkup(tier, { large = false, visualId = "" } = {}) {
+    const customBase = {
+      weekly_first:"diamond", weekly_second:"gold", weekly_third:"silver",
+      team_first:"diamond", team_second:"gold", team_third:"silver",
+    }[tier];
+    const safeTier = ["bronze", "silver", "gold", "diamond"].includes(tier) ? tier : customBase || "bronze";
+    const safeVisual = String(visualId || "").replace(/[^a-z0-9_-]/gi, "");
+    return `<span class="chest-visual chest-visual-${safeTier}${safeVisual ? ` chest-visual-event chest-visual-${safeVisual}` : ""}${large ? " chest-visual-large" : ""}" aria-hidden="true"><i></i><b></b><em>${safeVisual.startsWith("team_") ? "⬡" : safeVisual.startsWith("weekly_") ? "✦" : "◆"}</em></span>`;
   }
 
   function renderShop() {
@@ -2561,9 +2620,11 @@
     setText("module-detail-selected-state", deckEditorSlots.filter(Boolean).map(clientDefinitionId).includes(item.definition_id) ? "DESTEDE" : "DESTE DIŞI");
     const cost = item.next_upgrade_cost;
     const required = Number(cost?.shards || 1);
-    setText("module-detail-shards", cost ? `${item.shards || 0} / ${required}` : "AZAMİ SEVİYE");
+    const universalShards = Number(metaProgressionState?.universal_module_shards || 0);
+    const totalUsableShards = Number(item.shards || 0) + universalShards;
+    setText("module-detail-shards", cost ? `${item.shards || 0} + ${universalShards} evrensel / ${required}` : "AZAMİ SEVİYE");
     const progress = document.getElementById("module-detail-progress");
-    if (progress) { progress.max = required; progress.value = cost ? Math.min(required, Number(item.shards || 0)) : required; }
+    if (progress) { progress.max = required; progress.value = cost ? Math.min(required, totalUsableShards) : required; }
     const art = document.getElementById("module-detail-art");
     if (art) {
       art.dataset.category = item.category || "";
@@ -2574,7 +2635,7 @@
     const stats = document.getElementById("module-detail-stats");
     if (stats) stats.innerHTML = `<div><span>CAN</span><strong>${item.stats?.max_hp ?? definition.maxHp}</strong></div><div><span>AKIM</span><strong>ϟ ${item.current_cost ?? definition.circuitCreditCost}</strong></div><div><span>HASAR</span><strong>${item.stats?.base_damage || 0}</strong></div>`;
     const upgrade = document.getElementById("module-detail-upgrade");
-    const reason = !item.unlocked ? `${item.unlock_trophies ?? 0} kupada açılır.` : !cost ? "Azami seviye." : Number(item.shards || 0) < required ? `Gerekli parça: ${item.shards || 0}/${required}` : Number(metaProgressionState?.circuit_credits || 0) < Number(cost.circuit_credits) ? `Gerekli Devre Kredisi: ${cost.circuit_credits}` : "";
+    const reason = !item.unlocked ? `${item.unlock_trophies ?? 0} kupada açılır.` : !cost ? "Azami seviye." : totalUsableShards < required ? `Gerekli parça: ${totalUsableShards}/${required}` : Number(metaProgressionState?.circuit_credits || 0) < Number(cost.circuit_credits) ? `Gerekli Devre Kredisi: ${cost.circuit_credits}` : "";
     if (upgrade) {
       upgrade.disabled = Boolean(reason || metaProgressionState?.unavailable);
       upgrade.textContent = cost ? `YÜKSELT · ${cost.circuit_credits} DK` : "AZAMİ SEVİYE";
@@ -2584,6 +2645,14 @@
     renderModuleDetailTab("overview");
     const dialog = document.getElementById("module-detail-dialog");
     if (dialog?.showModal && !dialog.open) dialog.showModal();
+  }
+
+  function navigateModuleDetail(direction) {
+    const items = metaProgressionState?.module_collection || fallbackMetaProgression().module_collection;
+    if (!items.length) return;
+    const current = Math.max(0, items.findIndex((item) => item.definition_id === selectedCollectionModuleId));
+    selectedCollectionModuleId = items[(current + direction + items.length) % items.length].definition_id;
+    openModuleDetail();
   }
 
   async function upgradeCollectionModule() {
@@ -2624,10 +2693,408 @@
       if (connection) connection.textContent = teamState.joined ? "BAĞLI" : "TAKIM YOK";
       setTeamActionStatus("");
       renderTeamHub();
+      if (teamState?.application_pending) {
+        setTeamActionStatus("Başvurun takım yöneticisinin onayına gönderildi.", "success");
+      }
       return { ok:true, state:teamState };
     } catch (error) {
       if (connection) connection.textContent = "BAĞLANTI HATASI";
       setTeamActionStatus(error instanceof Error ? error.message : String(error), "error");
+      return { ok:false, error };
+    }
+  }
+
+  function setFriendsStatus(message = "", state = "") {
+    const status = document.getElementById("friends-action-status");
+    if (!status) return;
+    status.textContent = String(message || "");
+    status.dataset.state = state;
+  }
+
+  function socialRequestId(kind) {
+    return `social:${kind}:${participantPlayerId}:${Date.now()}:${Math.random().toString(16).slice(2)}`;
+  }
+
+  async function socialMutation(path, body = {}, pendingMessage = "İşleniyor…") {
+    setFriendsStatus(pendingMessage, "pending");
+    try {
+      const payload = await requestJsonWithDeadline(
+        path,
+        {
+          method:"POST",
+          body:JSON.stringify({
+            player_id:participantPlayerId,
+            request_id:socialRequestId(body.requestKind || "action"),
+            ...body,
+            requestKind:undefined,
+          }),
+        },
+        30000
+      );
+      socialState = payload;
+      setFriendsStatus("");
+      renderFriendsScreen();
+      return { ok:true, payload };
+    } catch (error) {
+      setFriendsStatus(error instanceof Error ? error.message : String(error), "error");
+      return { ok:false, error };
+    }
+  }
+
+  async function loadSocialView() {
+    setFriendsStatus("Arkadaş ağı yükleniyor…", "pending");
+    try {
+      socialState = await requestJsonWithDeadline(
+        `/social/${encodeURIComponent(participantPlayerId)}`,
+        { cache:"no-store" },
+        12000
+      );
+      setFriendsStatus("");
+      renderFriendsScreen();
+      return { ok:true, state:socialState };
+    } catch (error) {
+      setFriendsStatus(error instanceof Error ? error.message : String(error), "error");
+      return { ok:false, error };
+    }
+  }
+
+  function parseGridshardDeepLink(rawUrl) {
+    const value = String(rawUrl || "").trim();
+    if (!value) return null;
+    try {
+      const url = new URL(
+        value,
+        globalThis.location?.origin || "https://play.gridshard.invalid"
+      );
+      if (url.protocol === "gridshard:") {
+        const kind = String(url.hostname || "").toLowerCase();
+        const parts = url.pathname.split("/").filter(Boolean).map(decodeURIComponent);
+        if (kind === "invite" && parts[0]) return { kind:"invite", value:parts[0] };
+        if (kind === "profile" && parts[0]) return { kind:"profile", value:parts[0] };
+        if (kind === "friends" && parts[0] === "messages") {
+          return { kind:"message", value:parts[1] || "" };
+        }
+        return null;
+      }
+      const parts = url.pathname.split("/").filter(Boolean).map(decodeURIComponent);
+      if (parts[0] === "invite" && parts[1]) return { kind:"invite", value:parts[1] };
+      if (parts[0] === "profile" && parts[1]) return { kind:"profile", value:parts[1] };
+    } catch (_error) {
+      return null;
+    }
+    return null;
+  }
+
+  async function consumePendingDeepLink(rawUrl = null) {
+    const explicitUrl = typeof rawUrl === "string" && Boolean(rawUrl.trim());
+    if (pendingDeepLinkConsumed && !explicitUrl) {
+      return { ok:true, skipped:true };
+    }
+    const target = parseGridshardDeepLink(
+      explicitUrl ? rawUrl : globalThis.location?.href || ""
+    );
+    if (!target) return { ok:true, skipped:true };
+    pendingDeepLinkConsumed = true;
+    if (target.kind === "invite") {
+      openAppScreen("friends");
+      setFriendsStatus("Davet kabul ediliyor…", "pending");
+      try {
+        const result = await requestJsonWithDeadline(
+          `/social/${encodeURIComponent(participantPlayerId)}/invite-codes/accept`,
+          {
+            method:"POST",
+            body:JSON.stringify({ player_id:participantPlayerId, code:target.value }),
+          },
+          12000
+        );
+        socialState = result.social || socialState;
+        renderFriendsScreen();
+        setFriendsStatus("Davet kabul edildi; oyuncu arkadaşlarına eklendi.", "success");
+      } catch (error) {
+        setFriendsStatus(error instanceof Error ? error.message : String(error), "error");
+        return { ok:false, error };
+      }
+    } else if (target.kind === "profile") {
+      await openPublicProfile(target.value);
+    } else if (target.kind === "message") {
+      openAppScreen("friends");
+      const peer = document.getElementById("direct-message-peer");
+      if (peer && target.value) peer.value = target.value;
+      await loadDirectMessages();
+    }
+    if (["http:", "https:"].includes(globalThis.location?.protocol)) {
+      globalThis.history?.replaceState?.({}, "", "/");
+    }
+    return { ok:true, target };
+  }
+
+  function renderAccountPlatform() {
+    const state = accountPlatformState;
+    if (!state) return;
+    const status = document.getElementById("account-platform-status");
+    const contacts = Object.entries(state.contacts || {})
+      .map(([channel, item]) => `${channel === "email" ? "E-posta" : "Telefon"}: ${item.masked}`);
+    if (status) {
+      status.textContent = [
+        contacts.length ? contacts.join(" · ") : "Doğrulanmış iletişim adresi yok",
+        state.push?.adapter_configured ? "Push sağlayıcısı hazır" : "Push sağlayıcısı yapılandırılmadı",
+      ].join(" · ");
+    }
+    for (const provider of ["google", "apple"]) {
+      const button = document.getElementById(`account-oauth-${provider}`);
+      if (!button) continue;
+      const providerState = state.oauth?.[provider] || {};
+      button.disabled = Boolean(providerState.linked || !providerState.configured);
+      button.textContent = providerState.linked
+        ? `${provider.toLocaleUpperCase("tr-TR")} BAĞLI`
+        : providerState.configured
+          ? `${provider.toLocaleUpperCase("tr-TR")} BAĞLA`
+          : `${provider.toLocaleUpperCase("tr-TR")} YAPILANDIRILMADI`;
+    }
+    const devices = document.getElementById("account-device-list");
+    if (devices) {
+      devices.replaceChildren();
+      for (const device of state.devices || []) {
+        const row = document.createElement("article");
+        const name = document.createElement("strong");
+        name.textContent = device.name || "Cihaz";
+        const meta = document.createElement("small");
+        meta.textContent = `${String(device.platform || "web").toUpperCase()} · ${new Date(Number(device.last_seen_at || 0) * 1000).toLocaleString("tr-TR")}`;
+        const revoke = document.createElement("button");
+        revoke.type = "button";
+        revoke.textContent = "OTURUMU KAPAT";
+        revoke.addEventListener("click", async () => {
+          try {
+            accountPlatformState = await requestJsonWithDeadline(
+              `/accounts/${encodeURIComponent(participantPlayerId)}/devices/${encodeURIComponent(device.device_id)}`,
+              { method:"DELETE", body:JSON.stringify({player_id:participantPlayerId}) },
+              12000
+            );
+            renderAccountPlatform();
+          } catch (error) {
+            if (status) status.textContent = error instanceof Error ? error.message : String(error);
+          }
+        });
+        row.append(name, meta, revoke);
+        devices.appendChild(row);
+      }
+    }
+  }
+
+  async function loadAccountPlatform() {
+    const status = document.getElementById("account-platform-status");
+    try {
+      accountPlatformState = await requestJsonWithDeadline(
+        `/accounts/${encodeURIComponent(participantPlayerId)}`,
+        { cache:"no-store" },
+        12000
+      );
+      renderAccountPlatform();
+      return {ok:true};
+    } catch (error) {
+      if (status) status.textContent = error instanceof Error ? error.message : String(error);
+      return {ok:false,error};
+    }
+  }
+
+  async function loadDirectMessages() {
+    const host = document.getElementById("direct-message-list");
+    if (!host) return;
+    try {
+      const payload = await requestJsonWithDeadline(
+        `/social/${encodeURIComponent(participantPlayerId)}/messages`,
+        {cache:"no-store"},
+        12000
+      );
+      host.replaceChildren();
+      for (const message of payload.messages || []) {
+        const row = document.createElement("article");
+        const sent = message.sender_id === participantPlayerId;
+        row.className = sent ? "is-sent" : "is-received";
+        const peer = sent ? message.recipient_id : message.sender_id;
+        row.textContent = `${sent ? "Sen →" : "←"} ${peer}: ${message.text}`;
+        host.appendChild(row);
+      }
+      if (!host.children.length) host.innerHTML = "<p>Henüz doğrudan mesaj yok.</p>";
+    } catch (error) {
+      host.textContent = error instanceof Error ? error.message : String(error);
+    }
+  }
+
+  async function sendDirectMessage() {
+    const peer = document.getElementById("direct-message-peer")?.value?.trim() || "";
+    const input = document.getElementById("direct-message-text");
+    const message = input?.value?.trim() || "";
+    if (!peer || !message) {
+      setFriendsStatus("Arkadaş kimliği ve mesaj gerekli.", "error");
+      return;
+    }
+    try {
+      await requestJsonWithDeadline(
+        `/social/${encodeURIComponent(participantPlayerId)}/messages`,
+        {method:"POST",body:JSON.stringify({player_id:participantPlayerId,recipient_id:peer,text:message})},
+        12000
+      );
+      if (input) input.value = "";
+      setFriendsStatus("Mesaj gönderildi.", "success");
+      await loadDirectMessages();
+    } catch (error) {
+      setFriendsStatus(error instanceof Error ? error.message : String(error), "error");
+    }
+  }
+
+  function createSocialPlayerCard(player, actions = []) {
+    const card = document.createElement("article");
+    card.className = "social-player-card";
+    const avatar = document.createElement("span");
+    avatar.className = "profile-avatar";
+    applyAvatarVisual(
+      avatar,
+      player.avatar?.selected_avatar_id || "default",
+      player.avatar?.selected_avatar_frame_id || "none"
+    );
+    const identity = document.createElement("div");
+    const name = createPublicPlayerName(player.player_id, player.display_name || "Oyuncu");
+    const meta = document.createElement("small");
+    meta.textContent = `${player.rank_name_tr || "Arena"} · ${Number(player.rating || 0).toLocaleString("tr-TR")} 🏆${player.online ? " · ÇEVRİMİÇİ" : ""}`;
+    identity.append(name, meta);
+    const controls = document.createElement("div");
+    controls.className = "social-player-actions";
+    for (const action of actions) {
+      const button = document.createElement("button");
+      button.type = "button";
+      button.textContent = action.label;
+      button.dataset.variant = action.variant || "primary";
+      button.addEventListener("click", action.onClick);
+      controls.appendChild(button);
+    }
+    card.append(avatar, identity, controls);
+    return card;
+  }
+
+  function renderFriendsScreen() {
+    if (!socialState) return;
+    const setEmpty = (host, text) => {
+      if (!host || host.children.length) return;
+      const empty = document.createElement("p");
+      empty.className = "social-empty-state";
+      empty.textContent = text;
+      host.appendChild(empty);
+    };
+    const summary = document.getElementById("friends-summary");
+    if (summary) summary.textContent = `${socialState.friends?.length || 0} / ${socialState.friend_limit || 100} arkadaş`;
+    const requests = document.getElementById("friend-request-list");
+    if (requests) {
+      requests.replaceChildren();
+      for (const player of socialState.incoming_requests || []) {
+        requests.appendChild(createSocialPlayerCard(player, [
+          { label:"KABUL ET", onClick:() => socialMutation(`/social/${encodeURIComponent(participantPlayerId)}/requests/accept`, { requester_id:player.player_id, requestKind:"friend-accept" }, "İstek kabul ediliyor…") },
+          { label:"REDDET", variant:"quiet", onClick:() => socialMutation(`/social/${encodeURIComponent(participantPlayerId)}/requests/reject`, { requester_id:player.player_id, requestKind:"friend-reject" }, "İstek reddediliyor…") },
+        ]));
+      }
+      setEmpty(requests, "Bekleyen arkadaşlık isteği yok.");
+    }
+    const friends = document.getElementById("friend-list");
+    if (friends) {
+      friends.replaceChildren();
+      for (const player of socialState.friends || []) {
+        friends.appendChild(createSocialPlayerCard(player, [
+          { label:"SAVAŞA ÇAĞIR", onClick:() => socialMutation(`/social/${encodeURIComponent(participantPlayerId)}/battle-invites`, { opponent_id:player.player_id, requestKind:"friend-battle" }, "Kupasız savaş daveti gönderiliyor…") },
+        ]));
+      }
+      setEmpty(friends, "Henüz arkadaşın yok. Oyuncu arayarak ilk bağlantını kurabilirsin.");
+    }
+    const invites = document.getElementById("friend-battle-invites");
+    if (invites) {
+      invites.replaceChildren();
+      for (const invite of [...(socialState.battle_invites || [])].reverse()) {
+        const opponentId = invite.challenger_id === participantPlayerId ? invite.opponent_id : invite.challenger_id;
+        const opponentName = invite.challenger_id === participantPlayerId ? invite.opponent_name : invite.challenger_name;
+        const card = document.createElement("article");
+        card.className = "social-battle-card";
+        const copy = document.createElement("div");
+        copy.append(createPublicPlayerName(opponentId, opponentName || "Oyuncu"));
+        const meta = document.createElement("small");
+        meta.textContent = invite.status === "completed"
+          ? "KUPASIZ SAVAŞ TAMAMLANDI"
+          : invite.status === "accepted" ? "KUPASIZ SAVAŞ HAZIR" : "KUPASIZ DAVET BEKLİYOR";
+        copy.appendChild(meta);
+        if (invite.status === "pending" && invite.opponent_id === participantPlayerId) {
+          const accept = document.createElement("button");
+          accept.type = "button";
+          accept.textContent = "KABUL ET";
+          accept.addEventListener("click", async () => {
+            const result = await socialMutation(`/social/${encodeURIComponent(participantPlayerId)}/battle-invites/${encodeURIComponent(invite.invite_id)}/accept`, { requestKind:"battle-accept" }, "Savaş alanı hazırlanıyor…");
+            if (result.ok && result.payload.battle) launchSocialBattle(result.payload.battle);
+          });
+          card.append(copy, accept);
+        } else if (invite.status === "accepted" && invite.battle_session_id) {
+          const enter = document.createElement("button");
+          enter.type = "button";
+          enter.textContent = "SAVAŞ ALANINA GİR";
+          enter.addEventListener("click", () => launchSocialBattle({ session_id:invite.battle_session_id, players:[invite.challenger_id, invite.opponent_id], opponent_type:"human" }));
+          card.append(copy, enter);
+        } else {
+          card.appendChild(copy);
+        }
+        invites.appendChild(card);
+      }
+      setEmpty(invites, "Bekleyen arkadaş savaşı yok.");
+    }
+  }
+
+  async function searchFriends(query) {
+    const host = document.getElementById("friend-search-results");
+    if (!host) return;
+    setFriendsStatus("Oyuncular aranıyor…", "pending");
+    try {
+      const payload = await requestJsonWithDeadline(
+        `/players/search?player_id=${encodeURIComponent(participantPlayerId)}&q=${encodeURIComponent(query)}`,
+        { cache:"no-store" },
+        12000
+      );
+      host.replaceChildren();
+      for (const player of payload.players || []) {
+        host.appendChild(createSocialPlayerCard(player, [
+          { label:"ARKADAŞ EKLE", onClick:() => socialMutation(`/social/${encodeURIComponent(participantPlayerId)}/requests`, { target_player_id:player.player_id, requestKind:"friend-request" }, "Arkadaşlık isteği gönderiliyor…") },
+        ]));
+      }
+      if (!host.children.length) {
+        const empty = document.createElement("p");
+        empty.className = "social-empty-state";
+        empty.textContent = "Bu adla eşleşen oyuncu bulunamadı.";
+        host.appendChild(empty);
+      }
+      setFriendsStatus("");
+    } catch (error) {
+      setFriendsStatus(error instanceof Error ? error.message : String(error), "error");
+    }
+  }
+
+  async function launchSocialBattle(battle) {
+    const repair = repairBattleDeckAgainstCollection();
+    if (repair.definitionIds.length !== 6) {
+      setFriendsStatus("Savaş için altı kartlık geçerli bir deste gerekli.", "error");
+      return { ok:false };
+    }
+    if (repair.changed) await persistBattlePoolDefinitionIds(repair.definitionIds);
+    prepareOnlineMatch();
+    try {
+      const result = onlinePlay.connectSession(
+        {
+          session_id:battle.session_id,
+          players:battle.players || [],
+          opponent_type:battle.opponent_type || "human",
+        },
+        {
+          battlePoolIds:selectedBattlePoolDefinitionIds(),
+          initialModules:buildInitialOnlineSetup(),
+        }
+      );
+      if (!result.ok) throw new Error(result.reason || "Özel savaş başlatılamadı.");
+      return result;
+    } catch (error) {
+      setFriendsStatus(error instanceof Error ? error.message : String(error), "error");
       return { ok:false, error };
     }
   }
@@ -2647,13 +3114,33 @@
       const card = document.createElement("article");
       card.dataset.position = String(prize.position);
       const medal = document.createElement("strong");
-      medal.textContent = `${prize.position}. ÖDÜL`;
+      medal.className = "event-prize-rank";
+      medal.textContent = ({ 1:"🥇 1. SIRA", 2:"🥈 2. SIRA", 3:"🥉 3. SIRA" })[prize.position] || `${prize.position}. SIRA`;
       const chest = document.createElement("span");
       chest.className = "event-prize-chest";
-      chest.innerHTML = chestVisualMarkup(prize.chest_tier || "bronze");
-      const reward = document.createElement("small");
-      reward.textContent = `${Number(prize.circuit_credits || 0).toLocaleString("tr-TR")} Devre Kredisi · ${Number(prize.flux_shards || 0)} Akı`;
-      card.append(medal, chest, reward);
+      chest.innerHTML = chestVisualMarkup(prize.chest_tier || "bronze", { visualId:prize.chest_visual_id || "" });
+      const detail = document.createElement("div");
+      detail.className = "event-prize-detail";
+      const title = document.createElement("strong");
+      title.textContent = prize.chest_name_tr || `${({ bronze:"Bronz", silver:"Gümüş", gold:"Altın", diamond:"Elmas" })[prize.chest_tier] || "Ödül"} Sandığı`;
+      const rewards = document.createElement("div");
+      rewards.className = "event-prize-rewards";
+      const rewardLabels = [
+        `◉ ${Number(prize.circuit_credits || 0).toLocaleString("tr-TR")} DK`,
+        `◇ ${Number(prize.flux_shards || 0)} Akı`,
+        prize.avatar_id ? "◈ Avatar" : prize.team_avatar_id ? "◈ Takım Avatarı" : "",
+        prize.avatar_frame_id ? "▱ Avatar Çerçevesi" : prize.team_frame_id ? "▱ Takım Çerçevesi" : "",
+        prize.team_name_frame_id ? "⌑ Takım İsim Çerçevesi" : "",
+        prize.team_bar_background_id ? "▰ Takım Profil Çubuğu" : "",
+        prize.emoji_id ? "☺ Savaş Emojisi" : "",
+      ].filter(Boolean);
+      for (const label of rewardLabels) {
+        const chip = document.createElement("small");
+        chip.textContent = label;
+        rewards.appendChild(chip);
+      }
+      detail.append(title, rewards);
+      card.append(medal, chest, detail);
       host.appendChild(card);
     }
   }
@@ -2700,12 +3187,20 @@
     if (name) name.textContent = tournament.name_tr || "Haftalık Devre Turnuvası";
     if (reset) reset.textContent = `${eventDateLabel(tournament.period?.starts_at)} — ${eventDateLabel(tournament.period?.ends_at)}`;
     if (rules) rules.textContent = tournament.rules_tr || "";
+    const register = document.getElementById("weekly-tournament-register");
+    const viewer = state?.viewer || {};
+    if (register) {
+      register.disabled = Boolean(viewer.weekly_registered);
+      register.textContent = viewer.weekly_registered
+        ? "TURNUVAYA KATILDIN"
+        : `${Number(tournament.entry_fee || 0)} DK · TURNUVAYA KATIL`;
+    }
     renderTournamentPrizes("weekly-tournament-prizes", tournament.prizes || []);
     const participant = (tournament.standings || []).find((row) => row.player_id === participantPlayerId);
     renderEventSummary("weekly-event-summary", [
       ["SÜRE", `${eventDateLabel(tournament.period?.starts_at)} — ${eventDateLabel(tournament.period?.ends_at)}`],
       ["SIRAN", participant ? `#${participant.position}` : "Henüz yok"],
-      ["PUANIN", participant ? `${participant.points} P` : "0 P"],
+      ["KAZANILAN KUPA", participant ? `${participant.trophies_earned || participant.points} 🏆` : "0 🏆"],
     ]);
     const host = document.getElementById("weekly-tournament-standings");
     if (!host) return;
@@ -2727,7 +3222,7 @@
       identity.append(player, record);
       const points = document.createElement("strong");
       points.className = "tournament-points";
-      points.textContent = `${row.points} P`;
+      points.textContent = `${row.trophies_earned || row.points} 🏆`;
       item.append(position, identity, points);
       host.appendChild(item);
     }
@@ -2741,6 +3236,17 @@
     if (name) name.textContent = tournament.name_tr || "Takımlar Arası Turnuva";
     if (week) week.textContent = `${Number(tournament.week || 1)}. HAFTA`;
     if (rules) rules.textContent = tournament.rules_tr || "";
+    const viewer = state?.viewer || {};
+    const register = document.getElementById("team-tournament-register");
+    if (register) {
+      register.hidden = !viewer.team_id;
+      register.disabled = Boolean(viewer.team_registered || !viewer.team_owner);
+      register.textContent = viewer.team_registered
+        ? "TAKIM KAYITLI"
+        : viewer.team_owner
+          ? "TAKIMI ÜCRETSİZ KAYDET"
+          : "KAYDI TAKIM LİDERİ YAPAR";
+    }
     renderTournamentPrizes("team-tournament-prizes", tournament.prizes || []);
     const participantTeam = (tournament.standings || []).find((row) =>
       row.members?.some((member) => member.player_id === participantPlayerId)
@@ -2788,10 +3294,23 @@
           createTeamProfileLink(fixture.away_team_id, fixture.away_team_name || "Takım")
         );
         const detail = document.createElement("small");
+        const schedule = fixture.scheduled_at ? new Date(fixture.scheduled_at) : null;
+        const scheduleLabel = schedule && !Number.isNaN(schedule.getTime())
+          ? schedule.toLocaleString("tr-TR", { weekday:"short", hour:"2-digit", minute:"2-digit" })
+          : "Saat hazırlanıyor";
         detail.textContent = pairing
-          ? `${pairing.home_player_name} × ${pairing.away_player_name} · rövanşlı 2 maç`
-          : `${(fixture.member_pairings || []).length} yakın-kupa eşleşmesi · kişi başı 2 maç`;
+          ? `${pairing.home_player_name} × ${pairing.away_player_name} · ${scheduleLabel}`
+          : `${(fixture.member_pairings || []).length} yakın-kupa eşleşmesi · ${scheduleLabel}`;
         card.append(teams, detail);
+        if (pairing) {
+          const action = document.createElement("button");
+          action.type = "button";
+          action.className = "event-fixture-enter";
+          action.disabled = fixture.status !== "live";
+          action.textContent = fixture.status === "live" ? "CANLI MAÇA GİR" : fixture.status === "completed" ? "MAÇ SAATİ GEÇTİ" : "MAÇ SAATİNİ BEKLE";
+          action.addEventListener("click", () => checkInTeamFixture(fixture.fixture_id));
+          card.appendChild(action);
+        }
         fixtures.appendChild(card);
       }
     }
@@ -2799,11 +3318,7 @@
 
   function renderEventsHub() {
     if (!eventsState) return;
-    const period = document.getElementById("event-period-copy");
     renderDailyMetaCard();
-    if (period) {
-      period.textContent = `${eventsState.ai_population?.total || 0} AI oyuncu · ${eventsState.ai_population?.team_count || 0} takım · haftalık ve aylık sıralamalar`;
-    }
     const weekly = eventsState.weekly_tournament || {};
     const team = eventsState.team_tournament || {};
     const weeklyLinkName = document.getElementById("weekly-event-link-name");
@@ -2825,7 +3340,7 @@
       .filter(Boolean);
     for (const status of statuses) status.textContent = "Turnuva verileri yükleniyor…";
     try {
-      eventsState = await requestJsonWithDeadline("/events", { cache:"no-store" }, 12000);
+      eventsState = await requestJsonWithDeadline(`/events?player_id=${encodeURIComponent(participantPlayerId)}`, { cache:"no-store" }, 12000);
       for (const status of statuses) status.textContent = "";
       renderEventsHub();
       loadDailyMetaState({ present:false });
@@ -2836,20 +3351,62 @@
     }
   }
 
+  async function registerEvent(path, statusId, pendingMessage) {
+    const status = document.getElementById(statusId);
+    if (status) status.textContent = pendingMessage;
+    try {
+      eventsState = await requestJsonWithDeadline(
+        path,
+        {
+          method:"POST",
+          body:JSON.stringify({
+            player_id:participantPlayerId,
+            request_id:`event:${Date.now()}:${Math.random().toString(16).slice(2)}`,
+          }),
+        },
+        30000
+      );
+      if (status) status.textContent = "Kayıt tamamlandı.";
+      renderEventsHub();
+      loadMetaProgression();
+      return { ok:true };
+    } catch (error) {
+      if (status) status.textContent = error instanceof Error ? error.message : String(error);
+      return { ok:false, error };
+    }
+  }
+
+  async function checkInTeamFixture(fixtureId) {
+    const status = document.getElementById("team-event-status");
+    if (status) status.textContent = "Canlı savaş oturumu hazırlanıyor…";
+    try {
+      const payload = await requestJsonWithDeadline(
+        `/events/team/fixtures/${encodeURIComponent(fixtureId)}/check-in`,
+        {
+          method:"POST",
+          body:JSON.stringify({
+            player_id:participantPlayerId,
+            request_id:`fixture:${fixtureId}:${Date.now()}`,
+          }),
+        },
+        30000
+      );
+      return launchSocialBattle(payload.battle);
+    } catch (error) {
+      if (status) status.textContent = error instanceof Error ? error.message : String(error);
+      return { ok:false, error };
+    }
+  }
+
   function renderDailyMetaCard() {
     const name = document.getElementById("daily-meta-name");
     const description = document.getElementById("daily-meta-description");
-    const effect = document.getElementById("daily-meta-effect");
     const card = document.getElementById("daily-meta-card");
     const selected = dailyMetaState?.selected ? dailyMetaState.meta : null;
     if (name) name.textContent = selected?.meta_name_tr || "Henüz belirlenmedi";
     if (description) {
       description.textContent = selected?.description_tr
-        || "Günün ilk girişinde meta çarkından stratejini belirle.";
-    }
-    if (effect) {
-      effect.textContent = selected?.effect_tr
-        || `${Number(eventsState?.daily_meta_catalog?.dice_sides || 7)} eşit olasılıklı meta`;
+        || "Meta çarkını çevirerek bugünkü oyun planını belirle.";
     }
     if (card) {
       card.dataset.selected = selected ? "true" : "false";
@@ -2869,7 +3426,13 @@
     const glyph = document.getElementById("daily-meta-result-glyph");
     const name = document.getElementById("daily-meta-result-name");
     const effect = document.getElementById("daily-meta-result-effect");
-    if (wheel) wheel.classList.toggle("has-result", Boolean(selected));
+    if (wheel) {
+      wheel.classList.toggle("has-result", Boolean(selected));
+      wheel.style.setProperty(
+        "--daily-meta-stop-angle",
+        dailyMetaStopAngle(dailyMetaState)
+      );
+    }
     if (result) {
       result.hidden = !selected;
       result.style.setProperty("--daily-meta-accent", selected?.accent || "#61ead8");
@@ -2888,6 +3451,14 @@
         ? "META BELİRLENİYOR…"
         : selected ? "DEVAM" : "METAYI BELİRLE";
     }
+  }
+
+  function dailyMetaStopAngle(state) {
+    const options = Array.isArray(state?.options) ? state.options : [];
+    const selectedId = state?.meta?.id;
+    const index = options.findIndex((item) => item?.id === selectedId);
+    if (index < 0 || options.length < 1) return "0deg";
+    return `${-(index * 360 / options.length)}deg`;
   }
 
   async function loadDailyMetaState({ present = false } = {}) {
@@ -2925,10 +3496,8 @@
     dailyMetaRollPending = true;
     const wheel = document.getElementById("daily-meta-wheel");
     const status = document.getElementById("daily-meta-dialog-status");
-    wheel?.classList.add("is-spinning");
     if (status) status.textContent = "Yedi yüzlü meta zarı atılıyor…";
     renderDailyMetaDialog();
-    const startedAt = Date.now();
     try {
       const payload = await requestJsonWithDeadline(
         `/profile/${encodeURIComponent(participantPlayerId)}/daily-meta/roll`,
@@ -2938,8 +3507,14 @@
         },
         30000
       );
-      const remaining = Math.max(0, 950 - (Date.now() - startedAt));
-      if (remaining) await new Promise((resolve) => window.setTimeout(resolve, remaining));
+      wheel?.style.setProperty(
+        "--daily-meta-stop-angle",
+        dailyMetaStopAngle(payload)
+      );
+      wheel?.classList.remove("is-spinning");
+      if (wheel) void wheel.offsetWidth;
+      wheel?.classList.add("is-spinning");
+      await new Promise((resolve) => window.setTimeout(resolve, 950));
       dailyMetaState = payload;
       if (status) status.textContent = "Günlük meta belirlendi.";
       renderDailyMetaCard();
@@ -2971,6 +3546,9 @@
       setTeamActionStatus("");
       renderTeamHub();
       accountDataLoader.loadProfile().then(renderProfileSummary);
+      if (teamState?.application_pending) {
+        setTeamActionStatus("Başvurun takım yöneticisinin onayına gönderildi.", "success");
+      }
       return { ok:true, state:teamState };
     } catch (error) {
       setTeamActionStatus(error instanceof Error ? error.message : String(error), "error");
@@ -3017,7 +3595,105 @@
     trophies.className = "team-member-trophies";
     renderTrophyValue(trophies, Number(member.trophies || 0));
     row.append(rank, identity, trophies);
+    if (!compact && teamState?.joined) {
+      const isSelf = member.player_id === participantPlayerId;
+      const canRemove = Boolean(teamState.is_owner && !isSelf);
+      if (isSelf || canRemove) {
+        const action = document.createElement("button");
+        action.type = "button";
+        action.className = `team-member-action ${isSelf ? "is-leave" : "is-remove"}`;
+        action.textContent = isSelf ? "TAKIMDAN AYRIL" : "TAKIMDAN ÇIKAR";
+        action.addEventListener("click", () => {
+          if (!teamState?.team_id) return;
+          const path = isSelf
+            ? `/teams/${encodeURIComponent(teamState.team_id)}/leave`
+            : `/teams/${encodeURIComponent(teamState.team_id)}/members/remove`;
+          mutateTeam(
+            path,
+            isSelf
+              ? { requestKind:"leave-team" }
+              : { member_id:member.player_id, requestKind:"remove-member" },
+            isSelf ? "Takımdan ayrılma işleniyor…" : "Üye takımdan çıkarılıyor…"
+          );
+        });
+        row.appendChild(action);
+      }
+    }
     return row;
+  }
+
+  function renderTeamManagement() {
+    const panel = document.querySelector('[data-team-panel="management"]');
+    if (!panel || !teamState?.joined || !teamState.is_owner) return;
+    const cosmetics = {
+      selected_avatar_id:"team_default",
+      selected_avatar_frame_id:"none",
+      selected_bar_background_id:"team_grid",
+      selected_name_frame_id:"none",
+      unlocked_avatar_ids:["team_default"],
+      unlocked_avatar_frame_ids:["none"],
+      unlocked_bar_background_ids:["team_grid"],
+      unlocked_name_frame_ids:["none"],
+      ...(teamState.cosmetics || {}),
+    };
+    const controls = document.getElementById("team-cosmetic-controls");
+    if (controls) {
+      controls.replaceChildren();
+      const definitions = [
+        ["Takım avatarı", "avatar_id", "selected_avatar_id", "unlocked_avatar_ids"],
+        ["Avatar çerçevesi", "avatar_frame_id", "selected_avatar_frame_id", "unlocked_avatar_frame_ids"],
+        ["Profil çubuğu", "bar_background_id", "selected_bar_background_id", "unlocked_bar_background_ids"],
+        ["İsim çerçevesi", "name_frame_id", "selected_name_frame_id", "unlocked_name_frame_ids"],
+      ];
+      for (const [labelText, field, selectedKey, unlockedKey] of definitions) {
+        const label = document.createElement("label");
+        label.append(document.createTextNode(labelText));
+        const select = document.createElement("select");
+        for (const value of cosmetics[unlockedKey] || []) {
+          const option = document.createElement("option");
+          option.value = value;
+          option.textContent = value.replaceAll("_", " ").toLocaleUpperCase("tr-TR");
+          select.appendChild(option);
+        }
+        select.value = cosmetics[selectedKey];
+        select.addEventListener("change", () => mutateTeam(
+          `/teams/${encodeURIComponent(teamState.team_id)}/cosmetics`,
+          { [field]:select.value, requestKind:`team-cosmetic-${field}` },
+          "Takım görünümü kaydediliyor…"
+        ));
+        label.appendChild(select);
+        controls.appendChild(label);
+      }
+    }
+    const applications = document.getElementById("team-application-list");
+    if (applications) {
+      applications.replaceChildren();
+      for (const applicant of teamState.applications || []) {
+        const row = document.createElement("article");
+        row.className = "team-management-row";
+        const copy = document.createElement("div");
+        copy.append(createPublicPlayerName(applicant.player_id, applicant.display_name));
+        const meta = document.createElement("small");
+        meta.textContent = `${applicant.rank_name_tr} · ${Number(applicant.trophies || 0).toLocaleString("tr-TR")} 🏆`;
+        copy.appendChild(meta);
+        const actions = document.createElement("span");
+        actions.className = "team-management-actions";
+        for (const [label, accept] of [["KABUL", true], ["REDDET", false]]) {
+          const button = document.createElement("button");
+          button.type = "button";
+          button.textContent = label;
+          button.addEventListener("click", () => mutateTeam(
+            `/teams/${encodeURIComponent(teamState.team_id)}/applications/review`,
+            { applicant_id:applicant.player_id, accept, requestKind:`application-${accept ? "accept" : "reject"}` },
+            "Başvuru değerlendiriliyor…"
+          ));
+          actions.appendChild(button);
+        }
+        row.append(copy, actions);
+        applications.appendChild(row);
+      }
+      if (!applications.children.length) applications.textContent = "Bekleyen başvuru yok.";
+    }
   }
 
   function renderTeamHub() {
@@ -3028,6 +3704,11 @@
     hub.hidden = !teamState.joined;
 
     if (!teamState.joined) {
+      const joinButton = document.getElementById("team-join-button");
+      if (joinButton) {
+        joinButton.disabled = Boolean(teamState.application_pending);
+        joinButton.textContent = teamState.application_pending ? "BAŞVURU BEKLİYOR" : "BAŞVUR";
+      }
       const select = document.getElementById("team-join-select");
       if (select) {
         select.replaceChildren();
@@ -3042,6 +3723,8 @@
           option.textContent = `${team.name} · ${team.member_count}/${team.member_limit} · ${Number(team.total_trophies || 0).toLocaleString("tr-TR")} 🏆`;
           select.appendChild(option);
         }
+        if (teamState.applied_team_id) select.value = teamState.applied_team_id;
+        select.disabled = Boolean(teamState.application_pending);
       }
       return;
     }
@@ -3061,6 +3744,18 @@
     setText("team-profile-win-rate", `%${boundedWinRatePercent(statistics.win_rate || 0)}`);
     setText("team-profile-tournament-position", tournament.position ? `#${tournament.position}` : "—");
     setText("team-profile-tournament-points", `${Number(tournament.points || 0).toLocaleString("tr-TR")} P`);
+    const teamIdentity = document.getElementById("team-identity-card");
+    const teamAvatar = document.getElementById("team-avatar-glyph");
+    const managementOpen = document.getElementById("team-management-open");
+    const teamCosmetics = teamState.cosmetics || {};
+    if (teamIdentity) {
+      teamIdentity.dataset.teamBackground = teamCosmetics.selected_bar_background_id || "team_grid";
+      teamIdentity.dataset.nameFrame = teamCosmetics.selected_name_frame_id || "none";
+    }
+    if (teamAvatar) teamAvatar.textContent = teamCosmetics.selected_avatar_id === "team_champion" ? "♛" : "⬡";
+    if (managementOpen) managementOpen.disabled = !teamState.is_owner;
+    setText("team-management-hint", teamState.is_owner ? "Yönetimi aç" : "Takım profili");
+    renderTeamManagement();
 
     for (const button of document.querySelectorAll("[data-team-tab]")) {
       button.classList.toggle("is-active", button.dataset.teamTab === activeTeamTab);
@@ -3212,18 +3907,35 @@
         );
         title.append(challenger, arrow, opponentName);
         const meta = document.createElement("small");
-        meta.textContent = challenge.status === "pending" ? "DAVET BEKLİYOR · ÖDÜLSÜZ" : "KABUL EDİLDİ · ÖDÜLSÜZ";
+        meta.textContent = challenge.status === "completed"
+          ? "ANTRENMAN TAMAMLANDI · ÖDÜLSÜZ"
+          : challenge.status === "pending" ? "DAVET BEKLİYOR · ÖDÜLSÜZ" : "KABUL EDİLDİ · ÖDÜLSÜZ";
         copy.append(title, meta);
         if (challenge.can_accept) {
           const accept = document.createElement("button");
           accept.type = "button";
           accept.textContent = "KABUL ET";
-          accept.addEventListener("click", () => mutateTeam(
-            `/teams/${encodeURIComponent(teamState.team_id)}/training-challenges/${encodeURIComponent(challenge.challenge_id)}/accept`,
-            { requestKind:"training-accept" },
-            "Antrenman daveti kabul ediliyor…"
-          ));
+          accept.addEventListener("click", async () => {
+            const result = await mutateTeam(
+              `/teams/${encodeURIComponent(teamState.team_id)}/training-challenges/${encodeURIComponent(challenge.challenge_id)}/accept`,
+              { requestKind:"training-accept" },
+              "Antrenman daveti kabul ediliyor…"
+            );
+            if (result.ok && result.state?.operation?.battle) {
+              launchSocialBattle(result.state.operation.battle);
+            }
+          });
           card.append(copy, accept);
+        } else if (challenge.status === "accepted" && challenge.battle_session_id) {
+          const enter = document.createElement("button");
+          enter.type = "button";
+          enter.textContent = "SAVAŞ ALANINA GİR";
+          enter.addEventListener("click", () => launchSocialBattle({
+            session_id:challenge.battle_session_id,
+            players:[challenge.challenger_id, challenge.opponent_id],
+            opponent_type:"human",
+          }));
+          card.append(copy, enter);
         } else {
           card.appendChild(copy);
         }
@@ -3271,6 +3983,203 @@
       renderEventSubpages();
     });
   });
+  document.getElementById("weekly-tournament-register")?.addEventListener("click", () =>
+    registerEvent("/events/weekly/register", "weekly-event-status", "Turnuva kaydı yapılıyor…")
+  );
+  document.getElementById("team-tournament-register")?.addEventListener("click", () =>
+    registerEvent("/events/team/register", "team-event-status", "Takım turnuvaya kaydediliyor…")
+  );
+  document.getElementById("friend-search-form")?.addEventListener("submit", (event) => {
+    event.preventDefault();
+    const query = document.getElementById("friend-search-input")?.value?.trim() || "";
+    if (query) searchFriends(query);
+  });
+  document.getElementById("friend-invite-create")?.addEventListener("click", async () => {
+    const output = document.getElementById("friend-invite-output");
+    try {
+      const invite = await requestJsonWithDeadline(
+        `/social/${encodeURIComponent(participantPlayerId)}/invite-codes`,
+        {method:"POST",body:JSON.stringify({player_id:participantPlayerId})},
+        12000
+      );
+      if (output) output.textContent = `${invite.code} · ${invite.web_link} · QR: ${invite.qr_payload}`;
+    } catch (error) {
+      if (output) output.textContent = error instanceof Error ? error.message : String(error);
+    }
+  });
+  document.getElementById("direct-message-form")?.addEventListener("submit", (event) => {
+    event.preventDefault();
+    sendDirectMessage();
+  });
+  globalThis.addEventListener?.("gridshard:deep-link", (event) => {
+    const rawUrl = event?.detail?.url || event?.detail || "";
+    void consumePendingDeepLink(rawUrl);
+  });
+  const nativeAppPlugin = globalThis.Capacitor?.Plugins?.App;
+  nativeAppPlugin?.addListener?.("appUrlOpen", ({ url }) => {
+    void consumePendingDeepLink(url);
+  });
+  const nativeLaunchUrl = nativeAppPlugin?.getLaunchUrl?.();
+  nativeLaunchUrl?.then((result) => {
+    if (result?.url) void consumePendingDeepLink(result.url);
+  }).catch(() => {});
+  document.getElementById("account-verification-request")?.addEventListener("click", async () => {
+    const status = document.getElementById("account-platform-status");
+    const channel = document.getElementById("account-contact-channel")?.value || "email";
+    const destination = document.getElementById("account-contact-destination")?.value?.trim() || "";
+    try {
+      const result = await requestJsonWithDeadline(
+        `/accounts/${encodeURIComponent(participantPlayerId)}/verification/request`,
+        {method:"POST",body:JSON.stringify({player_id:participantPlayerId,channel,destination})},
+        12000
+      );
+      if (status) status.textContent = result.delivery_configured
+        ? `Kod ${result.destination} adresine gönderildi.`
+        : "Doğrulama sağlayıcısı henüz yapılandırılmadı; istek güvenle kaydedildi.";
+    } catch (error) {
+      if (status) status.textContent = error instanceof Error ? error.message : String(error);
+    }
+  });
+  document.getElementById("account-verification-confirm")?.addEventListener("click", async () => {
+    const status = document.getElementById("account-platform-status");
+    const channel = document.getElementById("account-contact-channel")?.value || "email";
+    const code = document.getElementById("account-verification-code")?.value?.trim() || "";
+    try {
+      const result = await requestJsonWithDeadline(
+        `/accounts/${encodeURIComponent(participantPlayerId)}/verification/confirm`,
+        {method:"POST",body:JSON.stringify({player_id:participantPlayerId,channel,code})},
+        12000
+      );
+      accountPlatformState = result.account;
+      renderAccountPlatform();
+    } catch (error) {
+      if (status) status.textContent = error instanceof Error ? error.message : String(error);
+    }
+  });
+  for (const provider of ["google", "apple"]) {
+    document.getElementById(`account-oauth-${provider}`)?.addEventListener("click", async () => {
+      const status = document.getElementById("account-platform-status");
+      try {
+        const result = await requestJsonWithDeadline(
+          `/accounts/${encodeURIComponent(participantPlayerId)}/oauth/${provider}/start`,
+          {cache:"no-store"},
+          12000
+        );
+        if (result.authorization_url) window.location.assign(result.authorization_url);
+        else if (status) status.textContent = `${provider.toUpperCase()} OAuth sağlayıcısı yapılandırılmadı.`;
+      } catch (error) {
+        if (status) status.textContent = error instanceof Error ? error.message : String(error);
+      }
+    });
+  }
+  document.getElementById("account-recovery-request")?.addEventListener("click", async () => {
+    const status = document.getElementById("account-platform-status");
+    const identifier = document.getElementById("account-recovery-identifier")?.value?.trim() || "";
+    try {
+      const result = await requestJsonWithDeadline(
+        "/account-recovery/request",
+        {method:"POST",body:JSON.stringify({identifier})},
+        12000
+      );
+      if (status) status.textContent = result.accepted
+        ? "Adres kayıtlıysa kurtarma kodu gönderildi."
+        : "Kurtarma isteği işlenemedi.";
+    } catch (error) {
+      if (status) status.textContent = error instanceof Error ? error.message : String(error);
+    }
+  });
+  document.getElementById("account-recovery-confirm")?.addEventListener("click", async () => {
+    const status = document.getElementById("account-platform-status");
+    const code = document.getElementById("account-recovery-code")?.value?.trim() || "";
+    if (!globalThis.crypto?.getRandomValues) {
+      if (status) status.textContent = "Bu tarayıcı güvenli cihaz sırrı üretemiyor.";
+      return;
+    }
+    const bytes = new Uint8Array(32);
+    globalThis.crypto.getRandomValues(bytes);
+    const newDeviceSecret = Array.from(bytes, (value) => value.toString(16).padStart(2, "0")).join("");
+    if (newDeviceSecret.length < 32) {
+      if (status) status.textContent = "Bu tarayıcı güvenli cihaz sırrı üretemiyor.";
+      return;
+    }
+    try {
+      await requestJsonWithDeadline(
+        "/account-recovery/confirm",
+        {method:"POST",body:JSON.stringify({player_id:participantPlayerId,code,new_device_secret:newDeviceSecret})},
+        12000
+      );
+      globalThis.GridshardAuth?.session?.replaceDeviceSecret?.(newDeviceSecret);
+      if (status) status.textContent = "Hesap kurtarıldı. Güvenli oturum yeniden açılıyor…";
+      globalThis.location?.reload?.();
+    } catch (error) {
+      if (status) status.textContent = error instanceof Error ? error.message : String(error);
+    }
+  });
+  document.getElementById("account-push-enable")?.addEventListener("click", async () => {
+    const status = document.getElementById("account-platform-status");
+    const push = globalThis.Capacitor?.Plugins?.PushNotifications;
+    if (!push) {
+      if (status) status.textContent = "Mobil push eklentisi bu yapıda etkin değil.";
+      return;
+    }
+    try {
+      const permission = await push.requestPermissions();
+      if (permission?.receive !== "granted") throw new Error("Bildirim izni verilmedi.");
+      await push.addListener("registration", async ({ value }) => {
+        await requestJsonWithDeadline(
+          `/notifications/${encodeURIComponent(participantPlayerId)}/push-subscriptions`,
+          {
+            method:"POST",
+            body:JSON.stringify({
+              player_id:participantPlayerId,
+              device_id:globalThis.GridshardAuth?.session?.deviceId?.() || "mobile",
+              platform:globalThis.Capacitor?.getPlatform?.() || "mobile",
+              token:value,
+            }),
+          },
+          12000
+        );
+        if (status) status.textContent = "Mobil bildirim cihazı kaydedildi.";
+      });
+      await push.register();
+    } catch (error) {
+      if (status) status.textContent = error instanceof Error ? error.message : String(error);
+    }
+  });
+  document.getElementById("account-data-export")?.addEventListener("click", async () => {
+    const status = document.getElementById("account-platform-status");
+    try {
+      const payload = await requestJsonWithDeadline(
+        `/accounts/${encodeURIComponent(participantPlayerId)}/data-export`,
+        {cache:"no-store"},
+        20000
+      );
+      const url = URL.createObjectURL(new Blob([JSON.stringify(payload, null, 2)], {type:"application/json"}));
+      const anchor = document.createElement("a");
+      anchor.href = url;
+      anchor.download = `gridshard-${participantPlayerId}-veri.json`;
+      anchor.click();
+      URL.revokeObjectURL(url);
+      if (status) status.textContent = "Veri dışa aktarımı indirildi.";
+    } catch (error) {
+      if (status) status.textContent = error instanceof Error ? error.message : String(error);
+    }
+  });
+  document.getElementById("account-data-delete")?.addEventListener("click", async () => {
+    const status = document.getElementById("account-platform-status");
+    const confirmation = document.getElementById("account-delete-confirmation")?.value || "";
+    try {
+      await requestJsonWithDeadline(
+        `/accounts/${encodeURIComponent(participantPlayerId)}/delete`,
+        {method:"POST",body:JSON.stringify({player_id:participantPlayerId,confirmation})},
+        20000
+      );
+      localStorage.clear();
+      window.location.reload();
+    } catch (error) {
+      if (status) status.textContent = error instanceof Error ? error.message : String(error);
+    }
+  });
   document.getElementById("team-create-button")?.addEventListener("click", async () => {
     const input = document.getElementById("team-create-name");
     const name = input?.value?.trim() || "";
@@ -3288,14 +4197,23 @@
   document.getElementById("team-join-button")?.addEventListener("click", () => {
     const teamId = document.getElementById("team-join-select")?.value || "";
     if (!teamId) {
-      setTeamActionStatus("Katılmak için bir takım seç.", "error");
+      setTeamActionStatus("Başvurmak için bir takım seç.", "error");
       return;
     }
     mutateTeam(
       `/teams/${encodeURIComponent(teamId)}/join`,
       { requestKind:"join" },
-      "Takıma katılım doğrulanıyor…"
+      "Takım başvurusu gönderiliyor…"
     );
+  });
+  document.getElementById("team-management-open")?.addEventListener("click", () => {
+    if (!teamState?.is_owner) return;
+    activeTeamTab = "management";
+    renderTeamHub();
+  });
+  document.getElementById("team-management-back")?.addEventListener("click", () => {
+    activeTeamTab = "profile";
+    renderTeamHub();
   });
   document.getElementById("team-module-request-button")?.addEventListener("click", () => {
     const moduleId = document.getElementById("team-module-request-select")?.value || "";
@@ -3355,6 +4273,8 @@
   document.getElementById("core-quick-info")?.addEventListener("click", openCoreDetail);
   document.getElementById("core-quick-select")?.addEventListener("click", selectCollectionCore);
   document.getElementById("core-detail-close")?.addEventListener("click", () => document.getElementById("core-detail-dialog")?.close());
+  document.getElementById("core-detail-prev")?.addEventListener("click", () => navigateCoreDetail(-1));
+  document.getElementById("core-detail-next")?.addEventListener("click", () => navigateCoreDetail(1));
   document.getElementById("core-detail-select")?.addEventListener("click", async () => {
     const result = await selectCollectionCore();
     if (result.ok) openCoreDetail();
@@ -3373,6 +4293,8 @@
     });
   });
   document.getElementById("module-detail-close")?.addEventListener("click", () => document.getElementById("module-detail-dialog")?.close());
+  document.getElementById("module-detail-prev")?.addEventListener("click", () => navigateModuleDetail(-1));
+  document.getElementById("module-detail-next")?.addEventListener("click", () => navigateModuleDetail(1));
   document.getElementById("module-detail-upgrade")?.addEventListener("click", upgradeCollectionModule);
   document.querySelectorAll("[data-module-detail-tab]").forEach((button) => {
     button.addEventListener("click", () => {
@@ -3697,6 +4619,17 @@
     const trophy = document.getElementById("post-match-trophy-reward");
     const credits = document.getElementById("post-match-credit-reward");
     const experience = document.getElementById("post-match-experience-reward");
+    const teamPoint = document.getElementById("post-match-team-point-reward");
+    const heading = document.getElementById("post-match-reward-heading");
+    const rewardList = document.getElementById("post-match-reward-list");
+    const accountingNote = document.getElementById("post-match-accounting-note");
+    const trophyCard = document.getElementById("post-match-trophy-card");
+    const creditCard = document.getElementById("post-match-credit-card");
+    const experienceCard = document.getElementById("post-match-experience-card");
+    const teamPointCard = document.getElementById("post-match-team-point-card");
+    const matchType = progression?.matchType || result?.match_type || "local_test";
+    const teamTournament = matchType === "team_tournament";
+    const profileNeutral = ["friend_battle", "team_training"].includes(matchType);
     const localTest = activePlayMode === "local"
       && (!result || result.match_type === "local_test");
     const pendingLabel = postMatchSync.lastError
@@ -3711,6 +4644,35 @@
     if (experience) experience.textContent = progression
       ? `+${Number(progression.xpAwarded || 0)}`
       : localTest ? "+0" : pendingLabel;
+    if (teamPoint) teamPoint.textContent = progression
+      ? `+${Number(progression.teamTournamentPointsAwarded || 0)}`
+      : pendingLabel;
+    if (heading) {
+      heading.textContent = teamTournament
+        ? "TAKIM TURNUVASI SONUCU"
+        : profileNeutral
+          ? "ANTRENMAN SONUCU"
+          : "SAVAŞ ÖDÜLLERİ";
+    }
+    if (rewardList) {
+      rewardList.dataset.accountingMode = teamTournament
+        ? "team-tournament"
+        : profileNeutral
+          ? "neutral"
+          : "profile";
+    }
+    for (const card of [trophyCard, creditCard, experienceCard]) {
+      if (card) card.hidden = teamTournament || profileNeutral;
+    }
+    if (teamPointCard) teamPointCard.hidden = !teamTournament;
+    if (accountingNote) {
+      accountingNote.hidden = !(teamTournament || profileNeutral);
+      accountingNote.textContent = teamTournament
+        ? "Bu maç yalnız takım turnuvası katkı puanına işlendi; kupa ve profil ilerlemesi değişmedi."
+        : profileNeutral
+          ? "Bu antrenman maçı profile, kupaya veya Devre Yolu ilerlemesine etki etmedi."
+          : "";
+    }
   }
 
   function setAnalysisValue(id, value) {
@@ -4005,6 +4967,24 @@
         const destroyedCore = destroyedPlayer?.modules?.find(
           (module) => module.definition_id === "core"
         );
+        // The terminal result can arrive one render ahead of the final combat
+        // snapshot.  Pin the destroyed core to zero before the 2–3 second
+        // explosion presentation so no red HP sliver survives under the FX.
+        if (destroyedCore) {
+          destroyedCore.hp = 0;
+          destroyedCore.status = "destroyed";
+        }
+        if (destroyedPlayerId === pvpState.playerId) {
+          const ownCore = client.modules.get("core-1");
+          if (ownCore) {
+            ownCore.hp = 0;
+            ownCore.status = "destroyed";
+          }
+          renderBoard({ force:true });
+        } else {
+          mockEnemyCoreHp = 0;
+          renderEnemyBoard();
+        }
         if (!emitServerModuleDestruction(destroyedPlayerId, destroyedCore)) {
           const destructionKey = destroyedCore?.instance_id
             ? `${destroyedPlayerId}:${destroyedCore.instance_id}`
@@ -4896,6 +5876,8 @@
   const shelfCreditIndicatorEl = document.getElementById("shelf-credit-indicator");
   const corePowerButtonEl = document.getElementById("core-power-button");
   const corePowerChargeEl = document.getElementById("core-power-charge");
+  const battleEmojiButtonEl = document.getElementById("battle-emoji-button");
+  const battleEmojiButtonGlyphEl = document.getElementById("battle-emoji-button-glyph");
   const shelf = document.getElementById("module-shelf");
   const mobileSelectedModuleEl = document.getElementById("mobile-selected-module");
   const mobileReturnModuleEl = document.getElementById("mobile-return-module");
@@ -4961,6 +5943,17 @@
     if (corePowerChargeEl) {
       corePowerChargeEl.textContent=corePowerReady ? "HAZIR" : `%${charge}`;
     }
+    const selectedEmojiId = profileState.viewModel()?.cosmetics?.selected_battle_emoji_id || "none";
+    const selectedEmoji = BATTLE_EMOJIS.find((item) => item.id === selectedEmojiId);
+    if (battleEmojiButtonEl) {
+      battleEmojiButtonEl.hidden = !selectedEmoji || selectedEmoji.id === "none";
+      battleEmojiButtonEl.disabled = localBattleFinished;
+      battleEmojiButtonEl.dataset.emojiId = selectedEmoji?.id || "none";
+      battleEmojiButtonEl.title = selectedEmoji ? selectedEmoji.nameTr : "Savaş emojisi";
+    }
+    if (battleEmojiButtonGlyphEl) {
+      battleEmojiButtonGlyphEl.textContent = selectedEmoji?.glyph || "◇";
+    }
   }
 
   function syncCorePowerFromSnapshot(player) {
@@ -5007,6 +6000,14 @@
   corePowerButtonEl?.addEventListener("click", () => {
     if (!corePowerReady || localBattleFinished) return;
     useCorePowerOn(client.modules.get("core-1"));
+  });
+  battleEmojiButtonEl?.addEventListener("click", () => {
+    const emojiId = battleEmojiButtonEl.dataset.emojiId || "none";
+    if (localBattleFinished || emojiId === "none") return;
+    client.emitCommand({
+      kind:"send_battle_emoji",
+      payload:{emoji_id:emojiId},
+    });
   });
   const presetGalleryEl =
     document.getElementById(
@@ -9358,12 +10359,30 @@ function saveHumanReviewLocalNote() {
     setBattleLiveTicker(`${coreModule?.name_tr || "Çekirdek"} gücü devreye yayıldı`, waveEffect);
   }
 
+  function presentBattleEmoji(playerId, emojiId) {
+    const emoji = BATTLE_EMOJIS.find((item) => item.id === emojiId);
+    if (!emoji || emoji.id === "none") return;
+    const targetBoard = playerId === participantPlayerId ? board : enemyBoard;
+    if (!targetBoard) return;
+    const bubble = document.createElement("div");
+    bubble.className = "battle-emoji-bubble";
+    bubble.textContent = emoji.glyph;
+    bubble.setAttribute("role", "status");
+    bubble.setAttribute("aria-label", emoji.nameTr);
+    targetBoard.appendChild(bubble);
+    window.setTimeout(() => bubble.remove(), 1900);
+  }
+
   function processLocalServerEvents(
     events,
     snapshot
   ) {
     for (const event of events || []) {
       const data=event.data || {};
+      if (event?.type === "battle_emoji") {
+        presentBattleEmoji(data.player_id, data.emoji_id);
+        continue;
+      }
       if (event?.type === "battle_overtime_started") {
         setBattleLiveTicker(
           "AŞIRI YÜK · Hasar artıyor, onarım zayıflıyor",
@@ -14211,18 +15230,29 @@ function saveHumanReviewLocalNote() {
     );
     const energizedEdges = new Set();
     if (liveCore) {
-      for (const module of modules) {
-        if (!module?.position || !fedCells.has(cablePositionKey(module.position))) continue;
+      const poweredPositions = modules
+        .filter((module) => module?.position && fedCells.has(cablePositionKey(module.position)))
+        .map((module) => ({
+          x:Number(module.position.x),
+          y:Number(module.position.y),
+        }));
+      // The Core row is the horizontal distribution bus. Every powered
+      // column branches vertically from that row, so a module beside the Core
+      // visibly carries current onward to cards above and below it.
+      for (const column of new Set(poweredPositions.map((position) => position.x))) {
         let cursor = {x:2,y:1};
-        while (cursor.x !== Number(module.position.x)) {
-          const next = {x:cursor.x + Math.sign(Number(module.position.x) - cursor.x),y:cursor.y};
+        while (cursor.x !== column) {
+          const next = {x:cursor.x + Math.sign(column - cursor.x),y:1};
           energizedEdges.add(`${cablePositionKey(cursor)}>${cablePositionKey(next)}`);
           cursor = next;
         }
-        while (cursor.y !== Number(module.position.y)) {
-          const next = {x:cursor.x,y:cursor.y + Math.sign(Number(module.position.y) - cursor.y)};
-          energizedEdges.add(`${cablePositionKey(cursor)}>${cablePositionKey(next)}`);
-          cursor = next;
+        for (const target of poweredPositions.filter((position) => position.x === column)) {
+          cursor = {x:column,y:1};
+          while (cursor.y !== target.y) {
+            const next = {x:column,y:cursor.y + Math.sign(target.y - cursor.y)};
+            energizedEdges.add(`${cablePositionKey(cursor)}>${cablePositionKey(next)}`);
+            cursor = next;
+          }
         }
       }
     }
@@ -14238,10 +15268,6 @@ function saveHumanReviewLocalNote() {
       for (const {dx,dy} of CIRCUIT_CABLE_DIRECTIONS) {
         const second = {x:x+dx,y:y+dy};
         if (!cells.has(cablePositionKey(second))) continue;
-        const firstCell = boardElement.querySelector(
-          `.board-cell[data-x="${first.x}"][data-y="${first.y}"]`
-        );
-        if (dy > 0 && firstCell?.dataset.occupied === "true") continue;
         createCircuitCableLine(layer, first, second, "circuit-cable-base");
         const forwardKey = `${cablePositionKey(first)}>${cablePositionKey(second)}`;
         const reverseKey = `${cablePositionKey(second)}>${cablePositionKey(first)}`;
@@ -15370,8 +16396,65 @@ function saveHumanReviewLocalNote() {
     }
 
     renderProfileHighlights();
+    renderProfileHonorShowcase();
     renderAvatarCustomization(activeTitle);
     renderEngagementSummary(view.engagement);
+  }
+
+  function renderProfileHonorShowcase() {
+    const cosmetics = profileState.viewModel()?.cosmetics || {};
+    const groups = [
+      {
+        hostId:"profile-rank-trophy-collection",
+        ids:cosmetics.unlockedRankTrophyIds || [],
+        definitions:PROFILE_RANK_TROPHIES,
+        kind:"trophy",
+        emptyCopy:"Henüz sıralama kupası kazanılmadı.",
+      },
+      {
+        hostId:"profile-badge-collection",
+        ids:cosmetics.unlockedBadgeIds || [],
+        definitions:PROFILE_BADGES,
+        kind:"badge",
+        emptyCopy:"Henüz sıralama rozeti kazanılmadı.",
+      },
+    ];
+
+    for (const group of groups) {
+      const host = document.getElementById(group.hostId);
+      if (!host) continue;
+      host.replaceChildren();
+      const ids = [...new Set(group.ids.map((id) => String(id || "")).filter(Boolean))];
+      if (!ids.length) {
+        const empty = document.createElement("span");
+        empty.className = "profile-honor-empty";
+        empty.textContent = group.emptyCopy;
+        host.appendChild(empty);
+        continue;
+      }
+      for (const id of ids) {
+        const definition = group.definitions.find((item) => item.id === id) || {
+          id,
+          nameTr:id.replaceAll("_", " "),
+          shortNameTr:id.replaceAll("_", " "),
+          glyph:group.kind === "trophy" ? "🏆" : "✦",
+          tone:"cyan",
+        };
+        const item = document.createElement("article");
+        item.className = "profile-honor-item";
+        item.dataset.kind = group.kind;
+        item.dataset.tone = definition.tone;
+        item.title = definition.nameTr;
+        item.setAttribute("aria-label", definition.nameTr);
+        const glyph = document.createElement("span");
+        glyph.setAttribute("aria-hidden", "true");
+        glyph.textContent = definition.glyph;
+        const label = document.createElement("small");
+        label.textContent = definition.shortNameTr;
+        item.append(glyph, label);
+        host.appendChild(item);
+      }
+    }
   }
 
   function deckDisplayName(deck) {
@@ -15437,6 +16520,8 @@ function saveHumanReviewLocalNote() {
           body: JSON.stringify({
             avatar_id: kind === "avatar" ? id : current.selected_avatar_id,
             avatar_frame_id: kind === "frame" ? id : current.selected_avatar_frame_id,
+            battle_emoji_id: kind === "emoji" ? id : current.selected_battle_emoji_id,
+            profile_background_id: kind === "background" ? id : current.selected_profile_background_id,
           }),
         }
       );
@@ -15456,9 +16541,13 @@ function saveHumanReviewLocalNote() {
     const cosmetics = view.cosmetics || {};
     const avatarId = cosmetics.selected_avatar_id || "default";
     const frameId = cosmetics.selected_avatar_frame_id || "none";
+    const emojiId = cosmetics.selected_battle_emoji_id || "none";
+    const backgroundId = cosmetics.selected_profile_background_id || "default";
     applyAvatarVisual(document.getElementById("profile-avatar"), avatarId, frameId);
     applyAvatarVisual(document.getElementById("avatar-preview"), avatarId, frameId);
     applyAvatarVisual(document.getElementById("lobby-profile-avatar"), avatarId, frameId);
+    document.getElementById("app-progress-ribbon")?.setAttribute("data-profile-background", backgroundId);
+    document.querySelector(".profile-identity-card")?.setAttribute("data-profile-background", backgroundId);
     const profileName = document.getElementById("avatar-preview-name");
     const profileTitle = document.getElementById("avatar-preview-title");
     if (profileName) profileName.textContent = view.displayName;
@@ -15494,6 +16583,39 @@ function saveHumanReviewLocalNote() {
         button.innerHTML = `<span>◇</span><strong>${frame.nameTr}</strong><small>${unlocked.has(frame.id) ? (frame.id === frameId ? "SEÇİLİ" : "SEÇ") : "SEZON YOLUNDA"}</small>`;
         button.addEventListener("click", () => selectProfileCosmetic("frame", frame.id));
         frameHost.appendChild(button);
+      }
+    }
+
+    const emojiHost = document.getElementById("battle-emoji-choice-list");
+    if (emojiHost) {
+      emojiHost.replaceChildren();
+      const unlocked = new Set(cosmetics.unlockedBattleEmojiIds || ["none"]);
+      for (const emoji of BATTLE_EMOJIS) {
+        const button = document.createElement("button");
+        button.type = "button";
+        button.dataset.state = !unlocked.has(emoji.id) ? "locked" : emoji.id === emojiId ? "selected" : "available";
+        button.disabled = !unlocked.has(emoji.id);
+        button.innerHTML = `<span>${emoji.glyph}</span><strong>${emoji.nameTr}</strong><small>${unlocked.has(emoji.id) ? (emoji.id === emojiId ? "SEÇİLİ" : "SEÇ") : "REKABET ÖDÜLÜ"}</small>`;
+        button.addEventListener("click", () => selectProfileCosmetic("emoji", emoji.id));
+        emojiHost.appendChild(button);
+      }
+    }
+
+    const backgroundHost = document.getElementById("profile-background-choice-list");
+    if (backgroundHost) {
+      backgroundHost.replaceChildren();
+      const unlocked = new Set(cosmetics.unlockedProfileBackgroundIds || ["default"]);
+      for (const background of PROFILE_BACKGROUNDS) {
+        const button = document.createElement("button");
+        button.type = "button";
+        button.className = "profile-background-choice";
+        button.style.setProperty("--profile-bg-a", background.colors[0]);
+        button.style.setProperty("--profile-bg-b", background.colors[1]);
+        button.dataset.state = !unlocked.has(background.id) ? "locked" : background.id === backgroundId ? "selected" : "available";
+        button.disabled = !unlocked.has(background.id);
+        button.innerHTML = `<span>▰</span><strong>${background.nameTr}</strong><small>${unlocked.has(background.id) ? (background.id === backgroundId ? "SEÇİLİ" : "SEÇ") : "REKABET ÖDÜLÜ"}</small>`;
+        button.addEventListener("click", () => selectProfileCosmetic("background", background.id));
+        backgroundHost.appendChild(button);
       }
     }
   }
@@ -15720,6 +16842,30 @@ function saveHumanReviewLocalNote() {
     host.appendChild(statsSection);
   }
 
+  function renderPublicProfileFriendAction(payload = null) {
+    const button = document.getElementById("public-profile-friend-action");
+    if (!button) return;
+    const playerId = String(payload?.player_id || activePublicProfileId || "");
+    button.hidden = !playerId || Boolean(payload?.is_bot);
+    if (button.hidden) return;
+    const isFriend = socialState?.friends?.some((item) => item.player_id === playerId);
+    const incoming = socialState?.incoming_requests?.some((item) => item.player_id === playerId);
+    const outgoing = socialState?.outgoing_requests?.some((item) => item.player_id === playerId);
+    button.disabled = Boolean(isFriend || outgoing);
+    button.dataset.relationship = isFriend ? "friend" : incoming ? "incoming" : outgoing ? "outgoing" : "none";
+    button.textContent = isFriend
+      ? "ARKADAŞIN"
+      : incoming
+        ? "İSTEĞİ KABUL ET"
+        : outgoing
+          ? "İSTEK GÖNDERİLDİ"
+          : "+ ARKADAŞ";
+    for (const id of ["public-profile-share", "public-profile-report", "public-profile-block"]) {
+      const action = document.getElementById(id);
+      if (action) action.hidden = !playerId || Boolean(payload?.is_bot);
+    }
+  }
+
   async function openPublicProfile(playerId) {
     if (!isPublicProfileTarget(playerId)) return;
     const dialog = document.getElementById("public-profile-dialog");
@@ -15735,6 +16881,8 @@ function saveHumanReviewLocalNote() {
     if (status) status.textContent = "Oyuncu profili yükleniyor…";
     if (dialog?.showModal && !dialog.open) dialog.showModal();
     else dialog?.setAttribute("open", "");
+    activePublicProfileId = playerId;
+    renderPublicProfileFriendAction();
     try {
       const payload = await requestJsonWithDeadline(
         `/public-profiles/${encodeURIComponent(playerId)}`,
@@ -15745,6 +16893,8 @@ function saveHumanReviewLocalNote() {
       if (title) title.textContent = `${payload.display_name || "Oyuncu"} Profili`;
       if (status) status.textContent = "";
       renderPublicProfile(payload);
+      if (!payload.is_bot) await loadSocialView();
+      renderPublicProfileFriendAction(payload);
     } catch (error) {
       if (status) status.textContent = error instanceof Error ? error.message : String(error);
     }
@@ -15758,6 +16908,7 @@ function saveHumanReviewLocalNote() {
       ? document.getElementById(publicProfileReturnDialogId)
       : null;
     publicProfileReturnDialogId = null;
+    activePublicProfileId = null;
     if (returnDialog?.showModal && !returnDialog.open) returnDialog.showModal();
     else returnDialog?.setAttribute("open", "");
   }
@@ -15871,6 +17022,37 @@ function saveHumanReviewLocalNote() {
     else returnDialog?.setAttribute("open", "");
   }
 
+  function createLeaderboardRewardPopover(reward, position) {
+    const popover = document.createElement("span");
+    popover.className = "leaderboard-reward-popover";
+    popover.id = `leaderboard-reward-popover-${position}`;
+    popover.setAttribute("role", "tooltip");
+
+    const title = document.createElement("strong");
+    title.textContent = reward.chest_name_tr || `${position}. Sıra Ödülü`;
+    const list = document.createElement("span");
+    list.className = "leaderboard-reward-popover-list";
+    const rewards = [
+      ["◉", `${Number(reward.circuit_credits || 0).toLocaleString("tr-TR")} Devre Kredisi`],
+      ["◇", `${Number(reward.flux_shards || 0).toLocaleString("tr-TR")} Akı`],
+      ["🧩", `${Number(reward.universal_module_shards || 0).toLocaleString("tr-TR")} Evrensel Kart Parçası`],
+      ...(reward.cosmetics || []).map((label) => ["✦", label]),
+    ];
+    for (const [glyph, label] of rewards) {
+      const row = document.createElement("span");
+      const icon = document.createElement("i");
+      icon.textContent = glyph;
+      const text = document.createElement("span");
+      text.textContent = label;
+      row.append(icon, text);
+      list.appendChild(row);
+    }
+    const note = document.createElement("small");
+    note.textContent = "Sezon sonunda mesaj kutusuna teslim edilir.";
+    popover.append(title, list, note);
+    return popover;
+  }
+
   function renderLeaderboard() {
     const host = document.getElementById("leaderboard-list");
     const status = document.getElementById("leaderboard-status");
@@ -15880,13 +17062,33 @@ function saveHumanReviewLocalNote() {
     if (season && leaderboardPayload?.season) {
       season.textContent = `${leaderboardPayload.season.name_tr} · ${leaderboardPayload.season.starts_at.slice(0, 10)} — ${leaderboardPayload.season.ends_at.slice(0, 10)}`;
     }
-    const rows = leaderboardPayload?.[activeLeaderboardTab] || [];
+    const scopeNav = document.getElementById("leaderboard-trophy-scope");
+    const currentGroupLabel = document.getElementById("leaderboard-current-group");
+    if (scopeNav) scopeNav.hidden = activeLeaderboardTab !== "trophies";
+    const groups = leaderboardPayload?.trophy_groups || [];
+    const viewerGroup = leaderboardPayload?.viewer_trophy_group
+      || groups.find((group) => (group.standings || []).some((row) => row.player_id === participantPlayerId))
+      || groups[0]
+      || null;
+    if (currentGroupLabel) {
+      currentGroupLabel.hidden = activeLeaderboardTab !== "trophies"
+        || activeTrophyLeaderboardScope !== "group";
+      currentGroupLabel.textContent = viewerGroup
+        ? `MEVCUT GRUBUN · ${viewerGroup.name_tr}`
+        : "MEVCUT GRUP BULUNAMADI";
+    }
+    let rows = leaderboardPayload?.[activeLeaderboardTab] || [];
+    if (activeLeaderboardTab === "trophies" && activeTrophyLeaderboardScope === "group") {
+      rows = viewerGroup?.standings || [];
+    }
     const labels = {
       trophies: "Sezon Kupası",
       core_damage: "Toplam Çekirdek Hasarı",
       teams: "Takım Kupası",
     };
-    if (status) status.textContent = rows.length ? `${labels[activeLeaderboardTab]} · ilk ${rows.length}` : "Bu sıralamada henüz kayıt yok.";
+    if (status) status.textContent = rows.length
+      ? `${labels[activeLeaderboardTab]}${activeLeaderboardTab === "trophies" ? ` · ${activeTrophyLeaderboardScope === "general" ? "Genel" : viewerGroup?.name_tr || "Grup"}` : ""} · ilk ${rows.length}`
+      : "Bu sıralamada henüz kayıt yok.";
     if (!rows.length) {
       const empty = document.createElement("li");
       empty.className = "leaderboard-empty";
@@ -15922,6 +17124,29 @@ function saveHumanReviewLocalNote() {
         score.textContent = `${Number(row.value || 0).toLocaleString("tr-TR")} HASAR`;
       } else {
         renderTrophyValue(score, Number(row.value || 0));
+        if (activeLeaderboardTab === "trophies" && activeTrophyLeaderboardScope === "general" && Number(row.position) <= 10) {
+          const reward = (leaderboardPayload?.top_ten_rewards || []).find((item) => Number(item.position) === Number(row.position));
+          if (reward) {
+            const chest = document.createElement("button");
+            chest.type = "button";
+            chest.className = "leaderboard-reward-chest";
+            chest.dataset.rank = String(row.position);
+            const previewTier = Number(row.position) === 1
+              ? "diamond"
+              : Number(row.position) <= 3
+                ? "gold"
+                : Number(row.position) <= 5
+                  ? "silver"
+                  : "bronze";
+            chest.innerHTML = chestVisualMarkup(reward.chest_tier || previewTier, {
+              visualId:reward.chest_visual_id || "",
+            });
+            chest.setAttribute("aria-label", `${reward.chest_name_tr || "Ödül sandığı"} içeriğini göster`);
+            chest.setAttribute("aria-describedby", `leaderboard-reward-popover-${row.position}`);
+            chest.appendChild(createLeaderboardRewardPopover(reward, row.position));
+            score.appendChild(chest);
+          }
+        }
       }
       item.append(rank, identity, score);
       host.appendChild(item);
@@ -15933,7 +17158,7 @@ function saveHumanReviewLocalNote() {
     if (status) status.textContent = "Sıralama yükleniyor…";
     try {
       const response = await fetchWithDeadline(
-        "/leaderboards",
+        `/leaderboards?player_id=${encodeURIComponent(participantPlayerId)}`,
         { cache: "no-store" },
         8000
       );
@@ -15955,6 +17180,98 @@ function saveHumanReviewLocalNote() {
     if (dialog?.showModal && !dialog.open) dialog.showModal();
     else dialog?.setAttribute("open", "");
     loadLeaderboard();
+  }
+
+  function renderRewardInbox() {
+    const host = document.getElementById("reward-inbox-list");
+    const button = document.getElementById("reward-inbox-button");
+    const notification = document.getElementById("reward-inbox-notification");
+    const unclaimed = Number(rewardInboxState?.unclaimed_count || 0);
+    button?.classList.toggle("has-reward", unclaimed > 0);
+    if (notification) notification.hidden = unclaimed < 1;
+    if (!host) return;
+    host.replaceChildren();
+    const messages = rewardInboxState?.messages || [];
+    if (!messages.length) {
+      const empty = document.createElement("p");
+      empty.className = "leaderboard-empty";
+      empty.textContent = "Yeni rekabet ödülü yok. Sezon ve hafta kapanışları burada teslim edilir.";
+      host.appendChild(empty);
+      return;
+    }
+    for (const message of messages) {
+      const card = document.createElement("article");
+      card.className = "reward-inbox-card";
+      const reward = message.chest || {};
+      const chest = document.createElement("i");
+      chest.innerHTML = chestVisualMarkup(reward.chest_tier || "bronze", {
+        visualId:reward.chest_visual_id || "",
+      });
+      const copy = document.createElement("div");
+      const title = document.createElement("strong");
+      title.textContent = message.title_tr || "Rekabet Ödülü";
+      const detail = document.createElement("small");
+      const cosmeticCount = [
+        "rank_trophy_id", "badge_id", "avatar_id", "avatar_frame_id",
+        "emoji_id", "profile_background_id", "team_avatar_id",
+        "team_frame_id", "team_name_frame_id", "team_bar_background_id",
+      ].filter((key) => reward[key]).length;
+      detail.textContent = [
+        reward.chest_name_tr || "Ödül Kasası",
+        `${Number(reward.circuit_credits || 0).toLocaleString("tr-TR")} DK`,
+        `${Number(reward.flux_shards || 0)} Akı`,
+        reward.universal_module_shards ? `${reward.universal_module_shards} evrensel parça` : "",
+        cosmeticCount ? `${cosmeticCount} kozmetik` : "",
+      ].filter(Boolean).join(" · ");
+      copy.append(title, detail);
+      const claim = document.createElement("button");
+      claim.type = "button";
+      claim.textContent = message.status === "claimed" ? "ALINDI" : "AL VE AÇ";
+      claim.disabled = message.status === "claimed";
+      claim.addEventListener("click", async () => {
+        claim.disabled = true;
+        const status = document.getElementById("reward-inbox-status");
+        if (status) status.textContent = "Ödül kasası açılıyor…";
+        try {
+          const payload = await requestJsonWithDeadline(
+            `/profile/${encodeURIComponent(participantPlayerId)}/reward-inbox/${encodeURIComponent(message.message_id)}/claim`,
+            { method:"POST", body:JSON.stringify({ request_id:`inbox:${message.message_id}:${Date.now()}` }) },
+            30000
+          );
+          rewardInboxState = payload;
+          if (payload.profile) profileState.applyProfile(payload.profile);
+          await loadMetaProgression();
+          renderRewardInbox();
+          renderProfileSummary();
+          if (status) status.textContent = `${reward.chest_name_tr || "Ödül kasası"} açıldı.`;
+        } catch (error) {
+          claim.disabled = false;
+          if (status) status.textContent = error instanceof Error ? error.message : String(error);
+        }
+      });
+      card.append(chest, copy, claim);
+      host.appendChild(card);
+    }
+  }
+
+  async function loadRewardInbox({ open=false } = {}) {
+    const status = document.getElementById("reward-inbox-status");
+    try {
+      rewardInboxState = await requestJsonWithDeadline(
+        `/profile/${encodeURIComponent(participantPlayerId)}/reward-inbox`,
+        { cache:"no-store" },
+        12000
+      );
+      if (status) status.textContent = "";
+      renderRewardInbox();
+    } catch (error) {
+      if (status) status.textContent = error instanceof Error ? error.message : String(error);
+    }
+    if (open) {
+      const dialog = document.getElementById("reward-inbox-dialog");
+      if (dialog?.showModal && !dialog.open) dialog.showModal();
+      else dialog?.setAttribute("open", "");
+    }
   }
 
   function renderEngagementSummary(engagement) {
@@ -17173,6 +18490,11 @@ function saveHumanReviewLocalNote() {
       logClientMessage(
         "Maç tamamlandı; savaş komutları kilitli."
       );
+      return;
+    }
+
+    if (command.kind === "send_battle_emoji") {
+      presentBattleEmoji(participantPlayerId, command.payload.emoji_id);
       return;
     }
 
@@ -18591,6 +19913,8 @@ function saveHumanReviewLocalNote() {
     resetBattleResultPresentation();
     returnToMainMenu();
     renderPlayModeUi();
+    void loadSocialView();
+    void loadTeamView();
   }
 
   document.getElementById("post-match-continue")?.addEventListener(
@@ -18786,6 +20110,71 @@ function saveHumanReviewLocalNote() {
     else arenaDetailDialog?.setAttribute("open", "");
   });
   document.getElementById("public-profile-close")?.addEventListener("click", closePublicProfile);
+  document.getElementById("public-profile-friend-action")?.addEventListener("click", async (event) => {
+    if (!activePublicProfileId) return;
+    const relationship = event.currentTarget.dataset.relationship || "none";
+    const result = relationship === "incoming"
+      ? await socialMutation(
+          `/social/${encodeURIComponent(participantPlayerId)}/requests/accept`,
+          { requester_id:activePublicProfileId, requestKind:"profile-friend-accept" },
+          "Arkadaşlık isteği kabul ediliyor…"
+        )
+      : await socialMutation(
+          `/social/${encodeURIComponent(participantPlayerId)}/requests`,
+          { target_player_id:activePublicProfileId, requestKind:"profile-friend-request" },
+          "Arkadaşlık isteği gönderiliyor…"
+        );
+    if (result.ok) renderPublicProfileFriendAction();
+  });
+  document.getElementById("public-profile-share")?.addEventListener("click", async () => {
+    if (!activePublicProfileId) return;
+    const status = document.getElementById("public-profile-status");
+    try {
+      const links = await requestJsonWithDeadline(
+        `/social/${encodeURIComponent(participantPlayerId)}/share/${encodeURIComponent(activePublicProfileId)}`,
+        {cache:"no-store"},
+        12000
+      );
+      if (navigator.share) await navigator.share({title:"GRIDSHARD Profili",url:links.web_link});
+      else await navigator.clipboard.writeText(links.web_link);
+      if (status) status.textContent = "Profil bağlantısı paylaşıldı.";
+    } catch (error) {
+      if (status) status.textContent = error instanceof Error ? error.message : String(error);
+    }
+  });
+  document.getElementById("public-profile-block")?.addEventListener("click", async () => {
+    if (!activePublicProfileId || !window.confirm("Bu oyuncuyu engellemek ve arkadaşlıktan çıkarmak istiyor musun?")) return;
+    const status = document.getElementById("public-profile-status");
+    try {
+      socialState = (await requestJsonWithDeadline(
+        `/social/${encodeURIComponent(participantPlayerId)}/block`,
+        {method:"POST",body:JSON.stringify({player_id:participantPlayerId,target_player_id:activePublicProfileId,blocked:true})},
+        12000
+      )).social;
+      if (status) status.textContent = "Oyuncu engellendi.";
+      renderPublicProfileFriendAction();
+    } catch (error) {
+      if (status) status.textContent = error instanceof Error ? error.message : String(error);
+    }
+  });
+  document.getElementById("public-profile-report")?.addEventListener("click", async () => {
+    if (!activePublicProfileId) return;
+    const detail = window.prompt("Şikâyet nedenini kısaca yaz:", "uygunsuz davranış");
+    if (!detail) return;
+    const status = document.getElementById("public-profile-status");
+    try {
+      await requestJsonWithDeadline(
+        `/social/${encodeURIComponent(participantPlayerId)}/reports`,
+        {method:"POST",body:JSON.stringify({player_id:participantPlayerId,target_player_id:activePublicProfileId,reason:"player_report",detail})},
+        12000
+      );
+      if (status) status.textContent = "Şikâyet inceleme kuyruğuna alındı.";
+    } catch (error) {
+      if (status) status.textContent = error instanceof Error ? error.message : String(error);
+    }
+  });
+  document.getElementById("reward-inbox-button")?.addEventListener("click", () => loadRewardInbox({ open:true }));
+  document.getElementById("reward-inbox-close")?.addEventListener("click", () => document.getElementById("reward-inbox-dialog")?.close());
   document.getElementById("team-profile-close")?.addEventListener("click", closeTeamProfile);
   document.getElementById("profile-clan-title")?.addEventListener("click", (event) => {
     const teamId = event.currentTarget?.dataset?.teamId || "";
@@ -18801,6 +20190,13 @@ function saveHumanReviewLocalNote() {
     button.addEventListener("click", () => {
       activeLeaderboardTab = button.dataset.leaderboardTab || "trophies";
       document.querySelectorAll("[data-leaderboard-tab]").forEach((item) => item.classList.toggle("is-active", item === button));
+      renderLeaderboard();
+    });
+  });
+  document.querySelectorAll("[data-leaderboard-scope]").forEach((button) => {
+    button.addEventListener("click", () => {
+      activeTrophyLeaderboardScope = button.dataset.leaderboardScope || "general";
+      document.querySelectorAll("[data-leaderboard-scope]").forEach((item) => item.classList.toggle("is-active", item === button));
       renderLeaderboard();
     });
   });

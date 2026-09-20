@@ -8,6 +8,10 @@ from .meta_progression import (
     rank_stage_for_rating,
     trophy_delta,
 )
+from .match_accounting import (
+    applies_to_profile_progression,
+    contributes_to_weekly_tournament,
+)
 from .player_profile import PlayerProfileService
 
 
@@ -34,7 +38,7 @@ def match_circuit_credit_reward(
     Rewards rise gently with progression, while a loss still gives a small
     consolation so a player is never locked out of module upgrades.
     """
-    if match_type == "local_test":
+    if match_type == "local_test" or not applies_to_profile_progression(match_type):
         return 0
     stage_index = int(rank.get("index", 1))
     if rank.get("kind") != "arena":
@@ -54,6 +58,8 @@ MATCH_LABELS_TR = {
     "team_tournament": "Takım Turnuvası",
     "ranked_pvp": "Dereceli PvP",
     "unranked_ai": "Derecesiz AI",
+    "friend_battle": "Arkadaş Savaşı",
+    "team_training": "Takım Antrenmanı",
     "local_test": "Yerel Test",
 }
 
@@ -79,6 +85,9 @@ class ProgressionResult:
     rank_before: dict
     rank_after: dict
     chest_awarded: dict | None
+    profile_progression_applied: bool
+    team_tournament_points_awarded: int
+    team_tournament_points_after: int
 
     def to_dict(self) -> dict:
         return {
@@ -101,6 +110,9 @@ class ProgressionResult:
             "rank_before": self.rank_before,
             "rank_after": self.rank_after,
             "chest_awarded": self.chest_awarded,
+            "profile_progression_applied": self.profile_progression_applied,
+            "team_tournament_points_awarded": self.team_tournament_points_awarded,
+            "team_tournament_points_after": self.team_tournament_points_after,
         }
 
 
@@ -154,6 +166,9 @@ class PlayerProgressionService:
             profile = self.profile_service.get_or_create(
                 player_id
             )
+            profile_progression_applied = applies_to_profile_progression(
+                state.match_type
+            )
             rating_before = profile.rating
             rank_before = rank_stage_for_rating(rating_before)
             tier_before = int(profile.engagement_view()["current_tier"])
@@ -182,23 +197,27 @@ class PlayerProgressionService:
                 rating_delta = 0
             if state.match_type == "unranked_ai":
                 xp_awarded = max(1, round(xp_awarded * AI_REWARD_RATIO))
+            if not profile_progression_applied:
+                rating_delta = 0
+                xp_awarded = 0
 
-            rating_after = max(
-                arena_floor_for_rating(max(rating_before, profile.highest_rating)),
-                rating_before + rating_delta,
-            )
-
-            self.profile_service.set_rating(
-                player_id,
-                rating_after,
-            )
-            updated = (
-                self.profile_service
-                .add_experience(
+            if profile_progression_applied:
+                rating_after = max(
+                    arena_floor_for_rating(
+                        max(rating_before, profile.highest_rating)
+                    ),
+                    rating_before + rating_delta,
+                )
+                self.profile_service.set_rating(
+                    player_id,
+                    rating_after,
+                )
+                updated = self.profile_service.add_experience(
                     player_id,
                     xp_awarded,
                 )
-            )
+            else:
+                updated = profile
             summary = state.result_summary.get(player_id, {})
             circuit_actions = sum(
                 1
@@ -211,34 +230,48 @@ class PlayerProgressionService:
                     "modules_swapped",
                 }
             )
-            updated = self.profile_service.record_battle_engagement(
-                player_id,
-                season_xp_awarded=xp_awarded,
-                damage_dealt=int(summary.get("damage_dealt", 0)),
-                circuit_actions=circuit_actions,
-            )
+            if profile_progression_applied:
+                updated = self.profile_service.record_battle_engagement(
+                    player_id,
+                    season_xp_awarded=xp_awarded,
+                    damage_dealt=int(summary.get("damage_dealt", 0)),
+                    circuit_actions=circuit_actions,
+                )
             tier_after = int(updated.engagement_view()["current_tier"])
             player = state.players[player_id]
             won = state.winner_player_id == player_id
             completed_at = datetime.now(timezone.utc)
             iso_year, iso_week, _ = completed_at.isocalendar()
             weekly_period = f"{iso_year}-W{iso_week:02d}"
-            if updated.weekly_tournament_period != weekly_period:
-                updated.weekly_tournament_period = weekly_period
-                updated.weekly_tournament_matches = 0
-                updated.weekly_tournament_wins = 0
-            updated.weekly_tournament_matches += 1
-            if won:
-                updated.weekly_tournament_wins += 1
+            if (
+                updated.weekly_tournament_registered_period == weekly_period
+                and contributes_to_weekly_tournament(state.match_type)
+            ):
+                if updated.weekly_tournament_period != weekly_period:
+                    updated.weekly_tournament_period = weekly_period
+                    updated.weekly_tournament_matches = 0
+                    updated.weekly_tournament_wins = 0
+                    updated.weekly_tournament_trophies_earned = 0
+                updated.weekly_tournament_matches += 1
+                if won:
+                    updated.weekly_tournament_wins += 1
+                updated.weekly_tournament_trophies_earned += max(
+                    0,
+                    int(updated.rating) - int(rating_before),
+                )
+            team_tournament_points_awarded = 0
             if state.match_type == "team_tournament":
                 team_period = f"{completed_at.year}-{completed_at.month:02d}"
                 if updated.team_tournament_period != team_period:
                     updated.team_tournament_period = team_period
                     updated.team_tournament_matches = 0
                     updated.team_tournament_wins = 0
+                    updated.team_tournament_contribution_points = 0
                 updated.team_tournament_matches += 1
                 if won:
                     updated.team_tournament_wins += 1
+                    team_tournament_points_awarded = 1
+                    updated.team_tournament_contribution_points += 1
                 if updated.team_tournament_week_period != weekly_period:
                     updated.team_tournament_week_period = weekly_period
                     updated.team_tournament_week_matches = 0
@@ -250,45 +283,14 @@ class PlayerProgressionService:
                 match_type=state.match_type,
             )
             updated.circuit_credits += circuit_credits_awarded
-            stats = updated.lifetime_stats
-            stats["matches"] = stats.get("matches", 0) + 1
-            if state.is_draw:
-                stats["draws"] = stats.get("draws", 0) + 1
-            elif won:
-                stats["wins"] = stats.get("wins", 0) + 1
-            else:
-                stats["losses"] = stats.get("losses", 0) + 1
-            stats["current_streak"] = stats.get("current_streak", 0) + 1 if won else 0
-            stats["longest_streak"] = max(stats.get("longest_streak", 0), stats["current_streak"])
-            stats["peak_damage"] = max(stats.get("peak_damage", 0), int(summary.get("damage_dealt", 0)))
-            core_damage = 0
-            for event in state.events:
-                data = event.data
-                if event.type != "module_damaged":
-                    continue
-                if data.get("source_player_id") != player_id:
-                    continue
-                target_player_id = str(data.get("player_id", ""))
-                if not target_player_id or target_player_id == player_id:
-                    continue
-                target_player = state.players.get(target_player_id)
-                target_module = (
-                    target_player.modules.get(str(data.get("module_id", "")))
-                    if target_player is not None
-                    else None
+            if profile_progression_applied:
+                self._record_lifetime_stats(
+                    updated,
+                    state,
+                    player_id,
+                    summary,
+                    won,
                 )
-                if target_module is not None and target_module.definition.id == "core":
-                    core_damage += max(0, int(data.get("damage", 0)))
-            stats["core_damage_dealt"] = stats.get("core_damage_dealt", 0) + core_damage
-            stats["current_spent"] = stats.get("current_spent", 0) + player.total_circuit_credits_spent
-            stats["core_power_uses"] = stats.get("core_power_uses", 0) + player.core_power_uses
-            stats["deployments"] = stats.get("deployments", 0) + sum(1 for m in player.modules.values() if m.definition.id != "core" and m.status.value in {"active", "destroyed"})
-            deck = "|".join(sorted(player.battle_pool.module_definition_ids)) if player.battle_pool else ""
-            if deck:
-                usage = stats.setdefault("decks", {})
-                usage[deck] = usage.get(deck, 0) + 1
-            cores = stats.setdefault("cores", {})
-            cores[player.core_type] = cores.get(player.core_type, 0) + 1
             if tier_after > tier_before:
                 updated.core_skill_points += tier_after - tier_before
             tier_advanced = (
@@ -303,13 +305,17 @@ class PlayerProgressionService:
                 if tier_after > tier_before
                 else None
             )
-            chest_awarded = self.meta_progression_service.award_battle_chest(
-                updated,
-                state.battle_id,
-                bool(
-                    (state.ranked_eligible or state.match_type == "arena_ai")
-                    and state.winner_player_id == player_id
-                ),
+            chest_awarded = (
+                self.meta_progression_service.award_battle_chest(
+                    updated,
+                    state.battle_id,
+                    bool(
+                        (state.ranked_eligible or state.match_type == "arena_ai")
+                        and state.winner_player_id == player_id
+                    ),
+                )
+                if profile_progression_applied
+                else None
             )
 
             battle_results[player_id] = (
@@ -341,6 +347,13 @@ class PlayerProgressionService:
                     rank_before=rank_before,
                     rank_after=rank_stage_for_rating(updated.rating),
                     chest_awarded=chest_awarded,
+                    profile_progression_applied=profile_progression_applied,
+                    team_tournament_points_awarded=(
+                        team_tournament_points_awarded
+                    ),
+                    team_tournament_points_after=(
+                        updated.team_tournament_contribution_points
+                    ),
                 )
             )
 
@@ -351,6 +364,78 @@ class PlayerProgressionService:
             state.battle_id
         ] = battle_results
         return True
+
+    @staticmethod
+    def _record_lifetime_stats(
+        updated,
+        state: BattleState,
+        player_id: str,
+        summary: dict,
+        won: bool,
+    ) -> None:
+        player = state.players[player_id]
+        stats = updated.lifetime_stats
+        stats["matches"] = stats.get("matches", 0) + 1
+        if state.is_draw:
+            stats["draws"] = stats.get("draws", 0) + 1
+        elif won:
+            stats["wins"] = stats.get("wins", 0) + 1
+        else:
+            stats["losses"] = stats.get("losses", 0) + 1
+        stats["current_streak"] = (
+            stats.get("current_streak", 0) + 1 if won else 0
+        )
+        stats["longest_streak"] = max(
+            stats.get("longest_streak", 0),
+            stats["current_streak"],
+        )
+        stats["peak_damage"] = max(
+            stats.get("peak_damage", 0),
+            int(summary.get("damage_dealt", 0)),
+        )
+        core_damage = 0
+        for event in state.events:
+            data = event.data
+            if event.type != "module_damaged":
+                continue
+            if data.get("source_player_id") != player_id:
+                continue
+            target_player_id = str(data.get("player_id", ""))
+            if not target_player_id or target_player_id == player_id:
+                continue
+            target_player = state.players.get(target_player_id)
+            target_module = (
+                target_player.modules.get(str(data.get("module_id", "")))
+                if target_player is not None
+                else None
+            )
+            if target_module is not None and target_module.definition.id == "core":
+                core_damage += max(0, int(data.get("damage", 0)))
+        stats["core_damage_dealt"] = (
+            stats.get("core_damage_dealt", 0) + core_damage
+        )
+        stats["current_spent"] = (
+            stats.get("current_spent", 0) + player.total_circuit_credits_spent
+        )
+        stats["core_power_uses"] = (
+            stats.get("core_power_uses", 0) + player.core_power_uses
+        )
+        stats["deployments"] = stats.get("deployments", 0) + sum(
+            1
+            for module in player.modules.values()
+            if module.definition.id != "core"
+            and module.status.value in {"active", "destroyed"}
+        )
+        deck = (
+            "|".join(sorted(player.battle_pool.module_definition_ids))
+            if player.battle_pool
+            else ""
+        )
+        if deck:
+            usage = stats.setdefault("decks", {})
+            usage[deck] = usage.get(deck, 0) + 1
+        cores = stats.setdefault("cores", {})
+        cores[player.core_type] = cores.get(player.core_type, 0) + 1
 
     def battle_results(
         self,

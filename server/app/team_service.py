@@ -224,6 +224,17 @@ class TeamService:
                 "module_requests": [],
                 "messages": [],
                 "training_challenges": [],
+                "application_ids": [],
+                "cosmetics": {
+                    "selected_avatar_id": "team_default",
+                    "selected_avatar_frame_id": "none",
+                    "selected_bar_background_id": "team_grid",
+                    "selected_name_frame_id": "none",
+                    "unlocked_avatar_ids": ["team_default"],
+                    "unlocked_avatar_frame_ids": ["none"],
+                    "unlocked_bar_background_ids": ["team_grid"],
+                    "unlocked_name_frame_ids": ["none"],
+                },
             }
             payload["teams"][team_id] = team
             return {"team_id": team_id, "team": team}
@@ -235,6 +246,7 @@ class TeamService:
         )
 
     def join_team(self, player_id: str, team_id: str, request_id: str) -> dict:
+        """Create a leader-reviewed application instead of joining immediately."""
         clean_team_id = str(team_id or "").strip()
         fingerprint = self._fingerprint(
             "join", player_id, {"team_id": clean_team_id}
@@ -246,21 +258,259 @@ class TeamService:
                 if current.get("team_id") == clean_team_id:
                     return {"team_id": clean_team_id, "team": current}
                 raise TeamServiceError("Oyuncu zaten başka bir takımda.")
+            pending_team = next(
+                (
+                    candidate
+                    for candidate in payload["teams"].values()
+                    if player_id in candidate.get("application_ids", [])
+                ),
+                None,
+            )
+            if pending_team is not None:
+                if pending_team.get("team_id") == clean_team_id:
+                    return {"team_id": clean_team_id, "team": pending_team, "application_pending": True}
+                raise TeamServiceError("Önce mevcut takım başvurunun sonuçlanmasını beklemelisin.")
             team = payload["teams"].get(clean_team_id)
             if team is None:
                 raise TeamServiceError("Takım bulunamadı.")
             members = list(team.get("member_ids", []))
             if len(members) >= int(team.get("member_limit", TEAM_MEMBER_LIMIT)):
                 raise TeamServiceError("Takımın üye kapasitesi dolu.")
-            members.append(player_id)
-            team["member_ids"] = members
-            return {"team_id": clean_team_id, "team": team}
+            applications = team.setdefault("application_ids", [])
+            if player_id not in applications:
+                applications.append(player_id)
+            return {
+                "team_id": clean_team_id,
+                "team": team,
+                "application_pending": True,
+            }
 
         return self._mutate(
             request_id=request_id,
             fingerprint=fingerprint,
             operation=operation,
         )
+
+    def review_application(
+        self,
+        *,
+        team_id: str,
+        owner_id: str,
+        applicant_id: str,
+        accept: bool,
+        request_id: str,
+    ) -> dict:
+        fingerprint = self._fingerprint(
+            "team_application_review",
+            owner_id,
+            {"team_id": team_id, "applicant_id": applicant_id, "accept": bool(accept)},
+        )
+
+        def operation(payload: dict) -> dict:
+            team = payload["teams"].get(team_id)
+            if team is None or team.get("owner_id") != owner_id:
+                raise TeamServiceError("Başvuruları yalnız takım yöneticisi değerlendirebilir.")
+            applications = team.setdefault("application_ids", [])
+            if applicant_id not in applications:
+                raise TeamServiceError("Bekleyen takım başvurusu bulunamadı.")
+            applications.remove(applicant_id)
+            if accept:
+                if self._find_team_for_player(payload, applicant_id):
+                    raise TeamServiceError("Başvuran oyuncu artık başka bir takımda.")
+                members = team.setdefault("member_ids", [])
+                if len(members) >= int(team.get("member_limit", TEAM_MEMBER_LIMIT)):
+                    raise TeamServiceError("Takımın üye kapasitesi dolu.")
+                members.append(applicant_id)
+            return {
+                "team_id": team_id,
+                "team": team,
+                "applicant_id": applicant_id,
+                "accepted": bool(accept),
+            }
+
+        return self._mutate(
+            request_id=request_id,
+            fingerprint=fingerprint,
+            operation=operation,
+        )
+
+    def remove_member(
+        self,
+        *,
+        team_id: str,
+        owner_id: str,
+        member_id: str,
+        request_id: str,
+    ) -> dict:
+        fingerprint = self._fingerprint(
+            "team_remove_member", owner_id, {"team_id": team_id, "member_id": member_id}
+        )
+
+        def operation(payload: dict) -> dict:
+            team = payload["teams"].get(team_id)
+            if team is None or team.get("owner_id") != owner_id:
+                raise TeamServiceError("Üye çıkarma yetkisi takım yöneticisine aittir.")
+            if member_id == owner_id:
+                raise TeamServiceError("Yönetici kendisini çıkaramaz; önce yöneticiliği devret.")
+            members = team.setdefault("member_ids", [])
+            if member_id not in members:
+                raise TeamServiceError("Oyuncu bu takımın üyesi değil.")
+            members.remove(member_id)
+            return {"team_id": team_id, "team": team, "removed_member_id": member_id}
+
+        return self._mutate(request_id=request_id, fingerprint=fingerprint, operation=operation)
+
+    def leave_team(
+        self,
+        *,
+        team_id: str,
+        player_id: str,
+        request_id: str,
+    ) -> dict:
+        """Remove a player from their own team without orphaning ownership."""
+        fingerprint = self._fingerprint(
+            "team_leave", player_id, {"team_id": team_id}
+        )
+
+        def operation(payload: dict) -> dict:
+            team = payload["teams"].get(team_id)
+            if team is None:
+                raise TeamServiceError("Takım bulunamadı.")
+            members = team.setdefault("member_ids", [])
+            if player_id not in members:
+                raise TeamServiceError("Oyuncu bu takımın üyesi değil.")
+            was_owner = team.get("owner_id") == player_id
+            members.remove(player_id)
+            successor_id = None
+            dissolved = not members
+            if dissolved:
+                del payload["teams"][team_id]
+                team = None
+            elif was_owner:
+                successor_id = sorted(members)[0]
+                team["owner_id"] = successor_id
+            return {
+                "team_id": team_id,
+                "team": team,
+                "left_member_id": player_id,
+                "successor_id": successor_id,
+                "dissolved": dissolved,
+            }
+
+        return self._mutate(
+            request_id=request_id,
+            fingerprint=fingerprint,
+            operation=operation,
+        )
+
+    def transfer_ownership(
+        self,
+        *,
+        team_id: str,
+        owner_id: str,
+        member_id: str,
+        request_id: str,
+    ) -> dict:
+        fingerprint = self._fingerprint(
+            "team_transfer_owner", owner_id, {"team_id": team_id, "member_id": member_id}
+        )
+
+        def operation(payload: dict) -> dict:
+            team = payload["teams"].get(team_id)
+            if team is None or team.get("owner_id") != owner_id:
+                raise TeamServiceError("Yöneticilik yalnız mevcut yönetici tarafından devredilebilir.")
+            if member_id not in team.get("member_ids", []) or member_id == owner_id:
+                raise TeamServiceError("Yöneticilik başka bir takım üyesine devredilmelidir.")
+            team["owner_id"] = member_id
+            return {"team_id": team_id, "team": team, "owner_id": member_id}
+
+        return self._mutate(request_id=request_id, fingerprint=fingerprint, operation=operation)
+
+    def set_cosmetics(
+        self,
+        *,
+        team_id: str,
+        owner_id: str,
+        selections: dict,
+        request_id: str,
+    ) -> dict:
+        clean = {str(key): str(value).strip() for key, value in selections.items() if value is not None}
+        fingerprint = self._fingerprint(
+            "team_cosmetics", owner_id, {"team_id": team_id, "selections": clean}
+        )
+
+        def operation(payload: dict) -> dict:
+            team = payload["teams"].get(team_id)
+            if team is None or team.get("owner_id") != owner_id:
+                raise TeamServiceError("Takım görünümünü yalnız yönetici değiştirebilir.")
+            cosmetics = team.setdefault("cosmetics", {})
+            cosmetics.setdefault("selected_avatar_id", "team_default")
+            cosmetics.setdefault("selected_avatar_frame_id", "none")
+            cosmetics.setdefault("selected_bar_background_id", "team_grid")
+            cosmetics.setdefault("selected_name_frame_id", "none")
+            cosmetics.setdefault("unlocked_avatar_ids", ["team_default"])
+            cosmetics.setdefault("unlocked_avatar_frame_ids", ["none"])
+            cosmetics.setdefault("unlocked_bar_background_ids", ["team_grid"])
+            cosmetics.setdefault("unlocked_name_frame_ids", ["none"])
+            mapping = {
+                "avatar_id": ("selected_avatar_id", "unlocked_avatar_ids"),
+                "avatar_frame_id": ("selected_avatar_frame_id", "unlocked_avatar_frame_ids"),
+                "bar_background_id": ("selected_bar_background_id", "unlocked_bar_background_ids"),
+                "name_frame_id": ("selected_name_frame_id", "unlocked_name_frame_ids"),
+            }
+            for key, value in clean.items():
+                if key not in mapping:
+                    continue
+                selected_key, unlocked_key = mapping[key]
+                if value not in cosmetics.get(unlocked_key, []):
+                    raise TeamServiceError("Bu takım kozmetiği henüz açılmadı.")
+                cosmetics[selected_key] = value
+            return {"team_id": team_id, "team": team, "cosmetics": cosmetics}
+
+        return self._mutate(request_id=request_id, fingerprint=fingerprint, operation=operation)
+
+    def complete_training_challenge(self, battle_session_id: str) -> bool:
+        """Close accepted training invitations when their battle reaches a terminal state."""
+        clean_session_id = str(battle_session_id or "").strip()
+        if not clean_session_id:
+            return False
+        with self._lock:
+            payload = self.repository.load()
+            changed = False
+            for team in payload["teams"].values():
+                for item in team.get("training_challenges", []):
+                    if (
+                        item.get("battle_session_id") == clean_session_id
+                        and item.get("status") == "accepted"
+                    ):
+                        item["status"] = "completed"
+                        item["completed_at"] = self._timestamp()
+                        changed = True
+            if changed:
+                self.repository.save(payload)
+            return changed
+
+    def grant_reward_cosmetics(self, team_id: str, rewards: dict) -> dict:
+        """Unlock team-only cosmetics from a settled tournament inbox item."""
+        with self._lock:
+            payload = self.repository.load()
+            team = payload["teams"].get(str(team_id))
+            if team is None:
+                raise TeamServiceError("Ödülün bağlı olduğu takım bulunamadı.")
+            cosmetics = team.setdefault("cosmetics", {})
+            mapping = {
+                "team_avatar_id": ("unlocked_avatar_ids", "team_default"),
+                "team_frame_id": ("unlocked_avatar_frame_ids", "none"),
+                "team_bar_background_id": ("unlocked_bar_background_ids", "team_grid"),
+                "team_name_frame_id": ("unlocked_name_frame_ids", "none"),
+            }
+            for reward_key, (inventory_key, fallback) in mapping.items():
+                value = str(rewards.get(reward_key) or "").strip()
+                values = cosmetics.setdefault(inventory_key, [fallback])
+                if value and value not in values:
+                    values.append(value)
+            self.repository.save(payload)
+            return json.loads(json.dumps(cosmetics))
 
     def create_module_request(
         self,
@@ -504,6 +754,7 @@ class TeamService:
                 raise TeamServiceError("Antrenman isteği artık beklemede değil.")
             item["status"] = "accepted"
             item["accepted_at"] = self._timestamp()
+            item["battle_session_id"] = f"team-training-{challenge_id}"
             return {"team_id": team_id, "challenge": item}
 
         return self._mutate(

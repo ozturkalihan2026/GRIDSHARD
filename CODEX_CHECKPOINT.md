@@ -1,10 +1,153 @@
 # GRIDSHARD geliştirme kontrol noktası
 
-Güncelleme tarihi: 15 Eylül 2026
+Güncelleme tarihi: 20 Eylül 2026
 
 Bu dosya güncel çalışma paketini ve korunması gereken önceki kararları içerir. Kullanıcı `checkpoint'ten devam et` dediğinde önce bu dosya, ardından `git status --short` okunmalıdır.
 
-## Aktif paket — Beta.58 takım Profil sekmesi ve günlük meta çarkı
+## Aktif paket — Beta.64 ödül önizleme katmanı ve profil başarı vitrini
+
+1. `[x]` Liderlik ödül önizlemesini diğer sandıkların üstünde tut
+   - Sandık parıltısının oluşturduğu ayrı CSS katmanı kaldırıldı; aynı görünüm `box-shadow` ile korunuyor.
+   - Üzerine gelinen veya klavye odağı alan liderlik satırı listenin en üst katmanına taşınıyor; alttaki sıraların sandıkları açık önizlemenin önüne geçmiyor.
+2. `[x]` Profil kimlik kartına gerçek kupa ve rozet koleksiyonu ekle
+   - Kimlik kartı içinde `Kupa ve Rozet Vitrini` oluşturuldu; sıralama kupaları ile rozetler ayrı koleksiyonlarda gösteriliyor.
+   - Vitrin yalnız sunucuda kalıcı olarak açılmış `unlocked_rank_trophy_ids` ve `unlocked_badge_ids` öğelerini kullanıyor; ödül kasası açıldığında profil yenilenerek vitrin de anında güncelleniyor.
+   - Henüz kazanım yoksa iki koleksiyon da anlaşılır boş durum metni gösteriyor; bilinmeyen gelecek ödül kimlikleri de güvenli bir genel görünümle sergileniyor.
+
+Doğrulama: Beta.64 hedef istemci testi geçti; tam istemci paketi `33/33` test dosyası ve Relay alt paketi `176/176` geçti. JavaScript sözdizimi ve `git diff --check` temizdir.
+
+## Önceki aktif paket — Beta.63 liderlik ödül önizlemesi ve sade meta kartı
+
+1. `[x]` Liderlik ödüllerini sandık önizlemesine taşı
+   - Genel Kupa ilk 10 satırında sandık adı ve evrensel parça özeti artık oyuncu adının altında sürekli görünmüyor.
+   - Sandık üzerine gelindiğinde veya klavyeyle/mobil dokunmayla odaklandığında Devre Kredisi, Akı, evrensel kart parçası ve o sıraya ait bütün kozmetikler tek önizleme kartında gösteriliyor.
+   - Önizleme ilk üç sırada aşağı, diğer sıralarda yukarı açılarak görünür listenin kenarlarında daha az kırpılıyor.
+2. `[x]` Etkinlik Merkezi meta kartını sadeleştir
+   - Tekrarlanan `ETKİNLİK MERKEZİ`, `BUGÜNÜN METASI`, ayrı sayısal etki ve AI/etkinlik programı ayrıntıları kaldırıldı.
+   - Kartta yalnız seçilen meta adı ile tek cümlelik anlaşılır meta açıklaması kalıyor; seçim yapılmadıysa kısa çark yönlendirmesi gösteriliyor.
+
+Doğrulama: Beta.59/Beta.61/Beta.62 hedef istemci paketi `3/3`; tam istemci paketi `44/44` test dosyası ve Relay alt paketi `176/176` geçti. JavaScript sözdizimi ve `git diff --check` temizdir.
+
+## Önceki aktif paket — Beta.62 görünüm düzeltmeleri, nadirlik dengesi ve platform altyapısı
+
+1. `[x]` Günlük meta çarkını sonuç durumunda da okunabilir tut
+   - Sabit üst çentik çarkla dönmüyor; dilim yazıları dilim merkezlerine bağlı kalıyor.
+   - Sonuç ekranında çark küçülürken yazı yarıçapı da birlikte küçülüyor; başlıklar çemberin dışına taşmıyor.
+2. `[x]` Lider Panosu kapsamını oyuncunun bulunduğu gruba sabitle ve sekmeleri kalıcı tut
+   - `GRUP` görünümü arena/lig seçicisini kaldırdı; sunucunun oturum sahibi için döndürdüğü `viewer_trophy_group` otomatik kullanılıyor.
+   - `KUPA`, `ÇEKİRDEK` ve `TAKIM` alt gezinmesi bütün sıralama türlerinde görünür kalan sabit alt satıra taşındı.
+3. `[x]` Savaş Akım rotasını ve kart ayrıntısı gezinmesini düzelt
+   - Akım önce çekirdek satırında beslenen bütün sütunlara ulaşıyor, ardından her sütunda yukarı/aşağı yerleşik modüllere ayrı dikey dal çiziyor.
+   - Modül ve çekirdek önceki/sonraki okları kart ayrıntısının dikey orta çizgisine alındı.
+4. `[x]` Takım yönetimini sayfa içine taşı; çıkarma ve ayrılmayı çalışır hale getir
+   - Yönetim artık modal açmıyor; Takım ekranının normal içerik alanında geri dönüşlü ayrı panel olarak açılıyor.
+   - Lider diğer üyeleri çıkarabiliyor; her oyuncu kendi satırında takımdan ayrılabiliyor. Lider ayrılırsa sıradaki üyeye yöneticilik aktarılıyor, son üye ayrılırsa takım dağılıyor.
+5. `[x]` Modül ve çekirdek nadirlik eğrilerini savaş değerlerine uygula
+   - Mevcut modül eğrisi CAN, saldırı, etki/onarım/sabotaj, bekleme ve Akım verimini Yaygın < Nadir < Epik < Efsanevi biçiminde koruyor.
+   - Çekirdeklere de ayrı CAN, aktif etki, enerji üretimi ve güç dolumu çarpanları eklendi; laboratuvar gösterimi ile canlı savaş aynı enerji sözleşmesini kullanıyor.
+6. `[x]` Hesap güvenliği ve veri hakları yüzeylerini kur
+   - Süreli e-posta/telefon doğrulama kodu, deneme sınırı, hesap kurtarma, cihaz oturumu listeleme/iptal, belirteç iptali, veri dışa aktarma ve doğrulama metinli hesap silme uçtan uca bağlandı.
+   - Google/Apple OAuth başlatma durum/nonce sözleşmesi ve Ayarlar düğmeleri eklendi; sağlayıcı yapılandırılmadığında sistem sahte başarı üretmiyor.
+7. `[x]` Sosyal platform ve mobil köprüleri kur
+   - Davet kodu, web bağlantısı ve QR içeriği; bağlantı açıldığında daveti kabul eden web/özel şema deep-link tüketimi; DM, engelleme, şikâyet ve profil paylaşımı eklendi.
+   - Mobil `appUrlOpen` köprüsü ve PushNotifications eklentisi bulunduğunda izin/token kaydı eklendi; bildirimler hedef deep-link ile kalıcı kuyruğa yazılıyor.
+8. `[x]` Savaş emojilerini gerçek zamanlı savaş kanalına bağla
+   - Seçili ve kazanılmış emoji, üç saniyelik bekleme sınırıyla sunucu WebSocket komutu olarak doğrulanıyor.
+   - Olay iki savaş istemcisine yayımlanıyor ve ilgili devrenin üzerinde süreli emoji balonu olarak gösteriliyor.
+
+Üretim etkinleştirme notu: Google/Apple yetkilendirme kodu değişimi, e-posta/SMS teslimi ve FCM/APNs gönderimi için sağlayıcı kimlik bilgileri ile mobil eklenti imzalama yapılandırması hâlâ dağıtım ortamında girilmelidir. Kod bu değerler yokken başarı taklidi yapmaz.
+
+Doğrulama: Beta.58–62 geniş sunucu paketi `38/38`; Beta.62 seçili paket `15/15`; istemci paketi `44/44` test dosyası ve Relay istemci alt paketi `176/176` geçti. JavaScript/Python sözdizimi ve `git diff --check` temizdir.
+
+## Önceki aktif paket — Beta.61 sosyal maç kapanışı, rekabet ödülleri ve takım yönetimi
+
+1. `[x]` Biten arkadaş ve takım antrenman savaşlarının girişini kalıcı olarak kapat
+   - Savaşın oturum kimliği terminal callback'te doğru `battle_id` alanından okunuyor; iki taraftaki arkadaş davetleri ve takım antrenman kayıtları `completed` durumuna geçiriliyor.
+   - Okuma anındaki terminal durum uzlaştırması eski kabul kayıtlarını da kapatıyor; tamamlanan savaşta `SAVAŞ ALANINA GİR` düğmesi yeniden görünmüyor.
+2. `[x]` Günlük meta çarkının sabit işaretçisini ve dilim yazılarını düzelt
+   - Üst çentik dönen çarkın dışına taşındı; yalnız çark ve dilimler dönüyor.
+   - Yedi başlık eşit açılarla, kendi diliminin merkezine dönük ve okunabilir yönde yerleştirildi.
+3. `[x]` Çekirdekten yukarı/aşağı Akım omurgasını görünür yap
+   - Besleme rotası önce çekirdeğin merkez sütununda hedef satıra, ardından yatay kola ilerliyor; sağ/sol bağlantılara ek olarak üst ve alt satırlarda da hareketli Akım çizgisi oluşuyor.
+4. `[x]` Kart ayrıntıları arasında oklarla gezinme ekle
+   - Modül ve çekirdek bilgi pencerelerine önceki/sonraki okları eklendi; pencere kapanmadan koleksiyonun tamamı döngüsel gezilebiliyor.
+5. `[x]` Lider Panosunu Genel/Grup sıralaması ve ilk 10 kasasıyla genişlet
+   - Alt sekmeler `KUPA`, `ÇEKİRDEK`, `TAKIM` adlarını gösteriyor; Kupa sıralamasında `GENEL` ve arena bazlı `GRUP` kapsamları bulunuyor.
+   - Genel ilk 10 için konuma göre azalan Devre Kredisi, Akı ve evrensel modül parçası; seçili sıralarda kupa, rozet, avatar, çerçeve, savaş emojisi ve profil çubuğu arka planı tanımlandı.
+   - Sıra yanındaki sandıklar mevcut sandık görsel dilini kullanıyor ve sezon kasası kimliğini önizliyor.
+6. `[x]` Sezon/hafta/takım turnuvası ödüllerini mesaj kutusuna teslim et
+   - Üst profil çubuğuna zarf düğmesi eklendi; alınmamış hediye varsa sarı yanıp sönüyor.
+   - Kapanan sezon ilk 10, haftalık ilk 3 ve katkı şartını sağlayan takım turnuvası ilk 3 ödülleri tekil kimlikle kuyruğa alınır; `AL VE AÇ` işlemi kredi, Akı, evrensel parça ve kozmetiği kalıcı envantere işler.
+   - Yeni dönem kaydı veya ilk yeni dönem maçı eski sayaçları sıfırlamadan önce ödül uzlaştırması çalışır; aynı ödül iki kez üretilemez veya alınamaz.
+7. `[x]` Kozmetik ekranını emoji ve profil çubuğu arka planlarıyla tamamla
+   - `AVATAR` alt sekmesi `KOZMETİK` oldu; avatar ve çerçevelerin altına savaş emojileri ile profil çubuğu arka planları eklendi.
+   - Seçimler oyuncu profiline kalıcı yazılıyor; seçili profil arka planı üst profil çubuğunda ve profil kimliğinde uygulanıyor.
+8. `[x]` Takım katılımını yönetici onaylı başvuruya ve takım profil barını yönetim alanına dönüştür
+   - `KATIL` yerine `BAŞVUR` kullanılıyor; aday yönetici kabul edene kadar üye sayılmıyor ve aynı anda başka takıma başvuramıyor.
+   - Takım başlığında avatar, çerçeve, isim çerçevesi ve profil çubuğu arka planını taşıyan kimlik kartı bulunuyor. Yönetici bu karttan başvuruları kabul/ret, üye çıkarma, yöneticilik devri ve takım kozmetiği seçimini yapabiliyor.
+9. `[x]` Haftalık ve takım turnuvası ilk üç sandıklarını ayrı aileler olarak dengele
+   - Haftalık 1. sandık Akı, Devre Kredisi, avatar, çerçeve ve savaş emojisi; 2. sandık emojisi çıkarılmış ve azaltılmış; 3. sandık emoji/çerçevesi çıkarılmış daha düşük pakettir.
+   - Takım ilk üç sandığı normal sandıklardan farklı görsel kimlik kullanır; 1. takım avatarı, çerçevesi, isim çerçevesi ve takım barı arka planını birlikte verir, 2. ve 3. paketler kademeli azalır. En az `5` katkı puanı şartı korunur.
+
+Doğrulama: Beta.58–61 seçili sunucu paketi `31/31`; Beta.61 sunucu paketi `4/4`; istemci paketi `43/43` test dosyası ve Relay istemci alt paketi `176/176` geçti. Python/JavaScript sözdizimi ve `git diff --check` temizdir. Takım başvurusu/onayı, bitiş callback kimliği, haftalık ödülün tekil teslimi ve kalıcı açılması, ilk 10/ilk 3 sandık sözleşmeleri, sabit çark işaretçisi, dikey Akım rotası ve yeni ekran yüzeyleri regresyon kapsamına alındı.
+
+## Önceki aktif paket — Beta.60 maç türüne göre bağımsız hesaplama
+
+1. `[x]` Normal PvP ilerlemesini arkadaş ve takım turnuvası maçlarından ayır
+   - `ranked_pvp` ve dereceli `arena_ai` normal profil akışını kullanır; kupa, deneyim, Devre Yolu, Devre Kredisi, sandık, günlük emir ve kalıcı savaş istatistikleri yalnız bu normal ilerleme yolunda işlenir.
+   - `friend_battle` ve `team_training` tamamen antrenman sayılır; profil, kupa, deneyim, Devre Yolu, kredi, sandık, günlük emir ve kalıcı istatistiklere hiçbir katkı yapmaz.
+2. `[x]` Takım turnuvasını kendi puan defterine taşı
+   - `team_tournament` normal profil ilerlemesine dokunmaz ve kupa hesaplamaz; yalnız turnuva maç/galibiyet sayacı ile galibiyet başına `1` takım katkı puanı işler.
+   - Katkı puanı kalıcı oyuncu verisine eklendi; aylık takım sıralaması ve en az `5` puanlık ödül uygunluğu artık bu açık sayaçtan okunur.
+3. `[x]` Haftalık Devre Turnuvasını yalnız kazanılmış PvP kupalarıyla sırala
+   - Haftalık kayıt sonrasında sadece `ranked_pvp` ve dereceli `arena_ai` maçlarında kazanılan pozitif kupa ayrı haftalık toplamda birikir.
+   - Arkadaş savaşı, takım antrenmanı ve takım turnuvası haftalık maç/galibiyet/kupa sayaçlarını değiştirmez.
+4. `[x]` Maç sonu ekranında hesap türünü görünür kıl
+   - Takım turnuvasında normal ödül kartları yerine takım katkı puanı gösterilir ve kupa/profil ilerlemesi olmadığı açıklanır.
+   - Arkadaş ve takım antrenmanında ödül kartları gizlenir; maçın profil, kupa ve Devre Yolu bakımından nötr olduğu yazılır.
+
+Doğrulama: Beta.60 sunucu paketi `7/7`; Beta.60/Beta.59/Beta.58 seçili sunucu paketi `23/23`; istemci paketi `42/42` test dosyası ve Relay istemci alt paketi `176/176` geçti. Arkadaş/antrenman nötrlüğü, takım turnuvasının yalnız kendi katkı puanını işlemesi, puanın kalıcılığı, haftalık sıralamanın yalnız normal dereceli PvP kupalarını toplaması ve ayrı maç sonu sunumları regresyon testleriyle kapsandı.
+
+## Önceki aktif paket — Beta.59 etkinlikler, sosyal ağ ve kupasız savaş alanları
+
+1. `[x]` Etkinlik merkezini günlük meta ve okunabilir ödül kartları etrafında yeniden düzenle
+   - Ana ekrandaki büyük `Turnuvalar` başlığı kaldırıldı; günlük meta doğrudan etkinlik başlığına yerleştirildi.
+   - İlk üç ödülü artık madalya, sandık görseli/adı, Devre Kredisi, Akı ve kozmetik içeriklerini ayrı etiketlerle gösteriyor.
+   - Haftalık turnuvaya `100 Devre Kredisi` ile oyuncu katılımı, aylık takım turnuvasına yalnız liderin ücretsiz kayıt akışı eklendi.
+2. `[x]` Haftalık sıralamayı kayıt sonrası kazanılan normal Arena kupalarına bağla
+   - Kayıtsız gerçek oyuncular haftalık sıralamaya alınmıyor; kayıt anında haftalık sayaçlar sıfırlanıyor.
+   - Kayıttan sonra yalnız `arena_ai` ve `ranked_pvp` maçlarında kazanılan pozitif kupa haftalık skora ekleniyor.
+3. `[x]` AI zaferlerinde `+0 Kupa` üreten eşleştirme sapmasını kaldır
+   - Normal AI eşleştirmesi artık sessizce takım turnuvası oturumuna çevrilmiyor; `arena_ai` dereceli ve kupa uygunluğu açık kuruluyor.
+   - Arkadaş savaşı ve takım antrenmanı ise açıkça kupasız, ödülsüz ve normalleştirilmiş ayrı oturum türleri olarak kalıyor.
+4. `[x]` Çekirdek patlamasından önce CAN göstergesini kesin olarak sıfırla
+   - Terminal sonuç son savaş snapshot'ından önce gelse bile yok edilen çekirdek istemci modelinde ve görünen devrede `0 CAN / destroyed` durumuna sabitleniyor.
+   - 2–3 saniyelik patlama sunumu boyunca kırmızı CAN artığı görünmüyor.
+5. `[x]` Takım alt sekmelerinin dikey büyümesini durdur
+   - Takım merkezi yalnız içerik ve sabit alt sekme satırından oluşan iki satırlı ızgaraya geçirildi; beş sekme 38 piksel yükseklikte sabitlendi.
+6. `[x]` Profil altına Arkadaşlar alanı ve oyuncu profiline arkadaş eylemi ekle
+   - Oyuncu arama, istek gönderme, kabul/ret, 100 arkadaş sınırı ve iki yönlü kalıcılık sunucu sözleşmesine bağlandı.
+   - Herkese açık gerçek oyuncu profilinde ilişki durumuna göre `Arkadaş`, `İstek Gönderildi` veya `İsteği Kabul Et` eylemi gösteriliyor; AI profilleri sosyal istek almıyor.
+7. `[x]` Arkadaş ve takım antrenman savaşlarını kupa hesabından ayır
+   - Arkadaşlar sayfasından kupasız savaş daveti gönderme/kabul etme ve hazırlanmış savaş alanına iki tarafın yeniden girebilmesi eklendi.
+   - Takım Savaş sekmesindeki antrenman daveti kabul edildiğinde de aynı ödülsüz özel PvP oturumu kuruluyor; kupa, deneyim, kredi ve sandık verilmez.
+8. `[x]` Takım turnuvasına sistem saatli canlı eşleşme alanı kur
+   - Takım liderinin aylık kaydı sonrası sistem cumartesi `18.00 UTC / 21.00 Türkiye` için yakın kupalı üye eşleşmeleri ve tekil savaş oturumları üretir.
+   - Giriş penceresi maçtan 15 dakika önce açılır ve 30 dakika sonra kapanır; fikstürde oyuncunun rakibi, yerel saat ve canlı giriş düğmesi gösterilir.
+   - İlk üç takım ödülünde üye uygunluğu en az `5` katkı puanına bağlıdır; takım avatarı ve takım çerçevesi ödül tanımlarına eklendi.
+9. `[x]` Genel liderlik ilk beş kasa kararını görünür veri sözleşmesine geçir
+   - İlk beş sıra için birbirinden farklı kasa adı/görsel kimliği, kredi, Akı, evrensel modül parçası ve kozmetik paketleri tanımlandı.
+   - Lider panosunda kasa adı ile yapboz parçası simgeli evrensel parça önizlemesi gösteriliyor.
+
+Doğrulama: Beta.59/Beta.58 seçili sunucu paketi `16/16`; istemci paketi `41/41` test dosyası ve Relay istemci alt paketi `176/176` geçti. Arkadaşlık kalıcılığı, kupasız savaş oturumu, normal AI savaşının dereceli kalması, haftalık kayıt filtresi, canlı takım fikstürü, zengin ödül sözleşmesi ve ilgili istemci yüzeyleri regresyon testleriyle kapsandı.
+
+### Belge incelemesinden kalan altyapı kuyruğu
+
+- `[x]` E-posta/telefon doğrulaması, hesap kurtarma, çoklu cihaz ve GDPR silme/veri dışa aktarma ürün akışları kuruldu; Google/Apple OAuth sağlayıcı etkinleştirmesi dağıtım kimlik bilgilerini bekliyor.
+- `[x]` Davet linki/kod/QR içeriği, deep-link tüketimi, doğrudan mesaj, engelleme/şikâyet ve paylaşım tamamlandı; gerçek push teslimi FCM/APNs sağlayıcı anahtarlarını bekliyor.
+- `[x]` Kazanılan savaş emojileri sunucu doğrulamalı WebSocket sosyal ifade paketiyle rakip istemciye iletiliyor.
+
+## Önceki aktif paket — Beta.58 takım Profil sekmesi ve günlük meta çarkı
 
 1. `[x]` Takım ekranını Profil sekmesiyle aç
    - Daha önce kaldırılan `Genel` konumu `Profil` adıyla geri getirildi ve Takım ekranının varsayılan ilk alt sekmesi yapıldı.
@@ -14,10 +157,12 @@ Bu dosya güncel çalışma paketini ve korunması gereken önceki kararları i�
    - Hasar, Savunma, Destek, Sabotaj, Sistem, Çekirdek ve Akım Desteği olmak üzere yedi eşit olasılıklı meta tanımlandı.
    - Her oyuncunun seçimi UTC günü boyunca sunucuda saklanıyor; aynı gün yenileme veya yinelenen istek sonucu değiştirmiyor.
    - Günün ilk başarılı girişinde kapatılamayan çark ekranı açılıyor; `METAYI BELİRLE` sonucunda seçilen meta gösteriliyor ve ertesi güne kadar sabitleniyor.
+   - Çark animasyonu artık sunucunun seçtiği dilimde duruyor; görsel sonuç ile kaydedilen günlük meta birbiriyle eşleşiyor.
    - Seçilen meta ilgili modül sınıfının savaş değerlerine uygulanıyor; etkileşimsiz AI oyuncular için gün ve oyuncu kimliğine bağlı kararlı günlük meta üretiliyor.
+   - Eşleştirme AI'ları geçici maç slotu yerine kanonik bot kimliğiyle, yerel AI ise kanonik arşetip kimliğiyle tohumlanıyor; aynı UTC gününde yeni maç açmak metayı değiştirmiyor.
    - Etkinlik merkezindeki sezon metası kartı `Bugünün Metası` kartına dönüştürüldü.
 
-Doğrulama: Kullanıcının açık tercihi doğrultusunda çalıştırmalı test veya tarayıcı denemesi yapılmadı; yalnız statik sözleşme ve değişiklik tutarlılığı incelendi.
+Doğrulama: İstemci paketi `40/40` test (`176` Relay istemci kontrolü dâhil), Beta.58 takım/meta ve ilişkili oyun paketi `67/67` geçti. Yedi eşit seçenek, UTC yenilenmesi, aynı gün değişmezliği ve kalıcılık, yedi metanın gerçek savaş eksenlerine etkisi, sistem/akım metasının gerçek enerji üretimi, takım Profil özeti ile herkese açık takım özeti eşitliği ve istemci açılış/çark sözleşmeleri otomatik regresyon testleriyle kapsandı.
 
 ## Önceki aktif paket — Beta.57 takım profilleri ve etkinlik alt sayfaları
 

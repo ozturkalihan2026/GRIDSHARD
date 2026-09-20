@@ -27,3 +27,6 @@ client/build/
 server/data/.auth_signing_key
 server/data/player_identities.json
 server/data/e2e_playwright_*.json*
+.*
+.*/
+server/data/web_test_players*

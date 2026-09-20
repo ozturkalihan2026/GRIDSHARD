@@ -261,6 +261,15 @@ class PlayerProfile:
     selected_avatar_id: str = "default"
     unlocked_avatar_frame_ids: tuple[str, ...] = ("none",)
     selected_avatar_frame_id: str = "none"
+    unlocked_battle_emoji_ids: tuple[str, ...] = ("none",)
+    selected_battle_emoji_id: str = "none"
+    unlocked_profile_background_ids: tuple[str, ...] = ("default",)
+    selected_profile_background_id: str = "default"
+    unlocked_badge_ids: tuple[str, ...] = ()
+    unlocked_rank_trophy_ids: tuple[str, ...] = ()
+    universal_module_shards: int = 0
+    reward_inbox: list[dict] = field(default_factory=list)
+    reward_inbox_receipts: dict[str, dict] = field(default_factory=dict)
     module_calibration_levels: dict[str, int] = field(default_factory=dict)
     laboratory_transactions: list[dict] = field(default_factory=list)
     laboratory_receipts: dict[str, dict] = field(default_factory=dict)
@@ -292,11 +301,20 @@ class PlayerProfile:
     weekly_tournament_period: str = ""
     weekly_tournament_matches: int = 0
     weekly_tournament_wins: int = 0
+    weekly_tournament_registered_period: str = ""
+    weekly_tournament_trophies_earned: int = 0
     team_tournament_period: str = ""
     team_tournament_matches: int = 0
     team_tournament_wins: int = 0
+    team_tournament_contribution_points: int = 0
     team_tournament_week_period: str = ""
     team_tournament_week_matches: int = 0
+    team_tournament_registered_period: str = ""
+    friend_ids: tuple[str, ...] = ()
+    incoming_friend_request_ids: tuple[str, ...] = ()
+    outgoing_friend_request_ids: tuple[str, ...] = ()
+    blocked_player_ids: tuple[str, ...] = ()
+    social_battle_invites: list[dict] = field(default_factory=list)
     daily_meta_day: str = ""
     daily_meta_id: str = ""
     unlocked_core_types: tuple[str, ...] = ("core_resonance",)
@@ -353,6 +371,12 @@ class PlayerProfile:
                 "selected_avatar_frame_id": self.selected_avatar_frame_id,
                 "unlocked_avatar_ids": list(self.unlocked_avatar_ids),
                 "unlocked_avatar_frame_ids": list(self.unlocked_avatar_frame_ids),
+                "selected_battle_emoji_id": self.selected_battle_emoji_id,
+                "unlocked_battle_emoji_ids": list(self.unlocked_battle_emoji_ids),
+                "selected_profile_background_id": self.selected_profile_background_id,
+                "unlocked_profile_background_ids": list(self.unlocked_profile_background_ids),
+                "unlocked_badge_ids": list(self.unlocked_badge_ids),
+                "unlocked_rank_trophy_ids": list(self.unlocked_rank_trophy_ids),
             },
             "season_summary": {
                 "current_rating": self.rating,
@@ -698,6 +722,8 @@ class PlayerProfileService:
         *,
         avatar_id: str | None = None,
         avatar_frame_id: str | None = None,
+        battle_emoji_id: str | None = None,
+        profile_background_id: str | None = None,
     ) -> PlayerProfile:
         profile = self.get_or_create(player_id)
         if avatar_id is not None:
@@ -710,6 +736,16 @@ class PlayerProfileService:
             if clean_frame not in profile.unlocked_avatar_frame_ids:
                 raise PlayerProfileError("Bu avatar çerçevesi henüz açılmadı.")
             profile.selected_avatar_frame_id = clean_frame
+        if battle_emoji_id is not None:
+            clean_emoji = battle_emoji_id.strip()
+            if clean_emoji not in profile.unlocked_battle_emoji_ids:
+                raise PlayerProfileError("Bu savaş emojisi henüz açılmadı.")
+            profile.selected_battle_emoji_id = clean_emoji
+        if profile_background_id is not None:
+            clean_background = profile_background_id.strip()
+            if clean_background not in profile.unlocked_profile_background_ids:
+                raise PlayerProfileError("Bu profil çubuğu arka planı henüz açılmadı.")
+            profile.selected_profile_background_id = clean_background
         return profile
 
     def mark_notifications_seen(

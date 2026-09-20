@@ -52,6 +52,9 @@
         <small id="lobby-season-progress-copy">0 / 100 Deneyim</small>
       </div>
       <div class="lobby-currency-cluster" aria-label="Oyuncu kaynakları">
+        <button id="reward-inbox-button" class="reward-inbox-button" type="button" aria-label="Mesaj ve ödül kutusunu aç" title="Mesaj Kutusu">
+          <span aria-hidden="true">✉</span><i id="reward-inbox-notification" hidden></i>
+        </button>
         <div class="lobby-currency-chip" title="Akı" aria-label="Akı">
           <i class="resource-symbol resource-symbol-flux" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m12 2 4 6 6 4-6 4-4 6-4-6-6-4 6-4Z"/><circle cx="12" cy="12" r="2.3"/></svg></i>
           <span>AKI</span>
@@ -186,10 +189,15 @@
         <p id="leaderboard-season-label">Bu ayın sıralaması</p>
       </header>
       <p id="leaderboard-status" class="leaderboard-status" role="status" aria-live="polite">Sıralama yükleniyor…</p>
+      <nav id="leaderboard-trophy-scope" class="leaderboard-scope-tabs" aria-label="Kupa sıralaması kapsamı">
+        <button type="button" data-leaderboard-scope="general" class="is-active">GENEL</button>
+        <button type="button" data-leaderboard-scope="group">GRUP</button>
+        <p id="leaderboard-current-group" class="leaderboard-current-group" hidden></p>
+      </nav>
       <ol id="leaderboard-list" class="leaderboard-list" aria-label="Oyuncu sıralaması"></ol>
       <nav class="leaderboard-tabs" aria-label="Lider panosu bölümleri">
         <button id="leaderboard-back" type="button" aria-label="Devre Yoluna dön" title="Geri">←</button>
-        <button type="button" data-leaderboard-tab="trophies" class="is-active" aria-label="Kupa sıralaması" title="Kupa sıralaması"><span>🏆</span></button>
+        <button type="button" data-leaderboard-tab="trophies" class="is-active" aria-label="Kupa sıralaması" title="Kupa sıralaması"><span>🏆</span><small>KUPA</small></button>
         <button type="button" data-leaderboard-tab="core_damage"><span>◈</span><small>ÇEKİRDEK</small></button>
         <button type="button" data-leaderboard-tab="teams"><span>♟</span><small>TAKIM</small></button>
       </nav>
@@ -201,6 +209,12 @@
         <div>
           <span class="screen-kicker">HERKESE AÇIK OPERATÖR PROFİLİ</span>
           <h2 id="public-profile-title">Oyuncu Profili</h2>
+        </div>
+        <div class="public-profile-actions">
+          <button id="public-profile-friend-action" class="public-profile-friend-action" type="button">+ ARKADAŞ</button>
+          <button id="public-profile-share" type="button" aria-label="Profili paylaş">↗</button>
+          <button id="public-profile-report" type="button" aria-label="Oyuncuyu şikâyet et">!</button>
+          <button id="public-profile-block" type="button" aria-label="Oyuncuyu engelle">⊘</button>
         </div>
       </header>
       <p id="public-profile-status" class="public-profile-status" role="status" aria-live="polite"></p>
@@ -224,11 +238,14 @@
         <span class="screen-kicker">GÜNLÜK DEVRE PROTOKOLÜ</span>
         <h2 id="daily-meta-title">Bugünün Metasını Belirle</h2>
         <p id="daily-meta-dialog-copy">Yedi eşit olasılıklı stratejiden biri bugünkü savaş planın olacak.</p>
-        <div id="daily-meta-wheel" class="daily-meta-wheel" aria-hidden="true">
-          <div class="daily-meta-wheel-labels">
-            <span>HASAR</span><span>SAVUNMA</span><span>DESTEK</span><span>SABOTAJ</span><span>SİSTEM</span><span>ÇEKİRDEK</span><span>AKIM</span>
+        <div class="daily-meta-wheel-shell" aria-hidden="true">
+          <span class="daily-meta-wheel-pointer"></span>
+          <div id="daily-meta-wheel" class="daily-meta-wheel">
+            <div class="daily-meta-wheel-labels">
+              <span>HASAR</span><span>SAVUNMA</span><span>DESTEK</span><span>SABOTAJ</span><span>SİSTEM</span><span>ÇEKİRDEK</span><span>AKIM</span>
+            </div>
+            <strong class="daily-meta-die">7</strong>
           </div>
-          <strong class="daily-meta-die">7</strong>
         </div>
         <article id="daily-meta-result" class="daily-meta-result" hidden>
           <span id="daily-meta-result-glyph" aria-hidden="true">◇</span>
@@ -238,6 +255,12 @@
         <button id="daily-meta-roll" type="button">METAYI BELİRLE</button>
         <small class="daily-meta-reset-note">Seçim bir sonraki UTC gününe kadar değişmez.</small>
       </section>
+    </dialog>
+
+    <dialog id="reward-inbox-dialog" class="reward-inbox-dialog" aria-labelledby="reward-inbox-title">
+      <header><div><span class="screen-kicker">MESAJ KUTUSU</span><h2 id="reward-inbox-title">Rekabet Ödülleri</h2></div><button id="reward-inbox-close" type="button" aria-label="Kapat">×</button></header>
+      <p id="reward-inbox-status" role="status" aria-live="polite"></p>
+      <div id="reward-inbox-list" class="reward-inbox-list"></div>
     </dialog>
 
     <nav id="app-bottom-dock" class="main-scope-nav lobby-bottom-dock app-bottom-dock" aria-label="Ana gezinme">
@@ -340,14 +363,15 @@
         <article class="team-action-card">
           <span>MEVCUT TAKIM</span><h3>Takıma katıl</h3>
           <label>Takım<select id="team-join-select"><option value="">Açık takım yok</option></select></label>
-          <button id="team-join-button" type="button">KATIL</button>
+          <button id="team-join-button" type="button">BAŞVUR</button>
         </article>
       </section>
       <section id="team-hub" class="team-hub" hidden>
         <div class="team-panels">
           <section data-team-panel="profile" class="team-panel team-profile-panel is-active">
-            <header class="team-identity-card">
-              <div class="team-profile-open"><span>TAKIM MERKEZİ</span><h3 id="team-name">Takım</h3></div>
+            <header id="team-identity-card" class="team-identity-card">
+              <button id="team-management-open" class="team-avatar-button" type="button" aria-label="Takım yönetimini aç"><span id="team-avatar-glyph">⬡</span></button>
+              <div class="team-profile-open"><span>TAKIM MERKEZİ</span><h3 id="team-name">Takım</h3><small id="team-management-hint">Takım profili</small></div>
               <div class="team-summary-metrics"><strong id="team-member-count">0 / 30 ÜYE</strong><strong id="team-total-trophies" class="trophy-visual-value" aria-label="0 Kupa"><span class="trophy-value-number">0</span><span class="trophy-value-icon" aria-hidden="true">🏆</span></strong></div>
             </header>
             <section class="team-profile-statistics">
@@ -380,6 +404,12 @@
             <div class="team-inline-action"><select id="team-training-opponent"><option value="">Çevrimiçi üye yok</option></select><button id="team-training-send" type="button">DAVET ET</button></div>
             <div id="team-training-list" class="team-training-list"></div>
           </section>
+          <section data-team-panel="management" class="team-panel team-management-panel" hidden>
+            <header class="team-management-heading"><button id="team-management-back" type="button" aria-label="Takım profiline dön">←</button><div><span>YÖNETİCİ MERKEZİ</span><h3>Takım Yönetimi</h3></div></header>
+            <section><h4>Takım Kozmetikleri</h4><div id="team-cosmetic-controls" class="team-cosmetic-controls"></div></section>
+            <section><h4>Başvurular</h4><div id="team-application-list" class="team-management-list"></div></section>
+            <p id="team-management-status" role="status" aria-live="polite"></p>
+          </section>
         </div>
         <nav class="team-tabs" aria-label="Takım bölümleri">
           <button type="button" data-team-tab="profile" class="is-active">PROFİL</button>
@@ -392,16 +422,10 @@
     </section>
 
     <section id="events-screen" class="mobile-hub-screen events-screen" data-screen-panel="events" hidden>
-      <header class="events-hero">
-        <span>ETKİNLİK MERKEZİ</span>
-        <h2>Turnuvalar</h2>
-        <p id="event-period-copy">Etkinlik programı yükleniyor…</p>
+      <header id="daily-meta-card" class="events-hero daily-meta-card">
+        <strong id="daily-meta-name">Henüz belirlenmedi</strong>
+        <p id="daily-meta-description">Meta çarkını çevirerek bugünkü oyun planını belirle.</p>
       </header>
-      <article id="daily-meta-card" class="season-meta-card daily-meta-card">
-        <span>BUGÜNÜN METASI</span><strong id="daily-meta-name">Henüz belirlenmedi</strong>
-        <p id="daily-meta-description">Günün ilk girişinde meta çarkından stratejini belirle.</p>
-        <small id="daily-meta-effect">7 eşit olasılıklı meta</small>
-      </article>
       <nav class="event-directory" aria-label="Aktif etkinlikler">
         <button type="button" data-open-screen="weekly-event">
           <span>HAFTALIK ETKİNLİK</span><strong id="weekly-event-link-name">Haftalık Devre Turnuvası</strong><small id="weekly-event-link-period">Her pazartesi yenilenir</small><i aria-hidden="true">→</i>
@@ -420,7 +444,7 @@
       </header>
       <div class="event-detail-content">
         <section data-weekly-event-panel="overview" class="event-subpage is-active">
-          <article class="tournament-panel event-overview-card"><span>ETKİNLİK KURALLARI</span><p id="weekly-tournament-rules"></p><div id="weekly-event-summary" class="event-summary-metrics"></div></article>
+          <article class="tournament-panel event-overview-card"><span>ETKİNLİK KURALLARI</span><p id="weekly-tournament-rules"></p><button id="weekly-tournament-register" class="event-register-button" type="button">TURNUVAYA KATIL</button><div id="weekly-event-summary" class="event-summary-metrics"></div></article>
         </section>
         <section data-weekly-event-panel="standings" class="event-subpage" hidden>
           <section class="tournament-panel"><h4>Oyuncu Sıralaması</h4><ol id="weekly-tournament-standings" class="tournament-standings"></ol></section>
@@ -444,7 +468,7 @@
       </header>
       <div class="event-detail-content">
         <section data-team-event-panel="overview" class="event-subpage is-active">
-          <article class="tournament-panel event-overview-card"><span>ETKİNLİK KURALLARI</span><p id="team-tournament-rules"></p><div id="team-event-summary" class="event-summary-metrics"></div></article>
+          <article class="tournament-panel event-overview-card"><span>ETKİNLİK KURALLARI</span><p id="team-tournament-rules"></p><button id="team-tournament-register" class="event-register-button" type="button">TAKIMI KAYDET</button><div id="team-event-summary" class="event-summary-metrics"></div></article>
         </section>
         <section data-team-event-panel="standings" class="event-subpage" hidden>
           <section class="tournament-panel"><h4>Takım Sıralaması</h4><ol id="team-tournament-standings" class="tournament-standings"></ol></section>
@@ -467,6 +491,8 @@
 
     <dialog id="core-detail-dialog" class="module-detail-dialog core-detail-dialog" aria-labelledby="core-detail-name">
       <button id="core-detail-close" class="module-detail-close" type="button" aria-label="Kapat">×</button>
+      <button id="core-detail-prev" class="module-detail-arrow is-prev" type="button" aria-label="Önceki çekirdek">‹</button>
+      <button id="core-detail-next" class="module-detail-arrow is-next" type="button" aria-label="Sonraki çekirdek">›</button>
       <header class="module-detail-hero core-detail-hero">
         <div id="core-detail-art" class="module-detail-art core-detail-art"></div>
         <div class="module-detail-title"><h2 id="core-detail-name">Çekirdek</h2><span id="core-detail-rarity">YAYGIN</span></div>
@@ -488,6 +514,8 @@
     </dialog>
     <dialog id="module-detail-dialog" class="module-detail-dialog" aria-labelledby="module-detail-name">
       <button id="module-detail-close" class="module-detail-close" type="button" aria-label="Kapat">×</button>
+      <button id="module-detail-prev" class="module-detail-arrow is-prev" type="button" aria-label="Önceki kart">‹</button>
+      <button id="module-detail-next" class="module-detail-arrow is-next" type="button" aria-label="Sonraki kart">›</button>
       <header class="module-detail-hero">
         <div id="module-detail-art" class="module-detail-art"></div>
         <div class="module-detail-title"><h2 id="module-detail-name">Modül</h2><span id="module-detail-rarity">SIRADAN</span></div>
@@ -516,6 +544,13 @@
         </button>
         <div><strong id="profile-player-name">Oyuncu</strong><span id="profile-operator-title">Devre Çırağı</span><small id="profile-title-progress">Yeni ün için savaşlara katıl.</small></div>
         <strong id="profile-current-trophies" class="trophy-visual-value" aria-label="0 Kupa"><span class="trophy-value-number">0</span><span class="trophy-value-icon" aria-hidden="true">🏆</span></strong>
+        <section class="profile-honor-showcase" aria-labelledby="profile-honor-title">
+          <header><span>REKABET KOLEKSİYONU</span><strong id="profile-honor-title">Kupa ve Rozet Vitrini</strong></header>
+          <div class="profile-honor-groups">
+            <section aria-labelledby="profile-rank-trophies-title"><small id="profile-rank-trophies-title">SIRALAMA KUPALARI</small><div id="profile-rank-trophy-collection" class="profile-honor-collection"></div></section>
+            <section aria-labelledby="profile-badges-title"><small id="profile-badges-title">ROZETLER</small><div id="profile-badge-collection" class="profile-honor-collection"></div></section>
+          </div>
+        </section>
       </article>
       <p id="profile-live-summary" class="profile-accessible-summary">Oyuncu · Devre Çırağı · Arena 1 · 0 🏆</p>
       <section class="profile-deck-showcase" aria-labelledby="profile-deck-title">
@@ -556,8 +591,10 @@
       <div class="avatar-live-preview"><span id="avatar-preview" class="profile-avatar" data-avatar="default" data-frame="none" aria-hidden="true">◇</span><div><strong id="avatar-preview-name">Oyuncu</strong><small id="avatar-preview-title">Devre Çırağı</small></div></div>
       <section class="avatar-picker-section"><div class="profile-section-heading"><span>KİMLİK</span><h3>Avatarlar</h3></div><div id="avatar-choice-list" class="avatar-choice-list"></div></section>
       <section class="avatar-picker-section"><div class="profile-section-heading"><span>ÇERÇEVE</span><h3>Avatar Çerçeveleri</h3></div><div id="avatar-frame-choice-list" class="avatar-choice-list"></div></section>
+      <section class="avatar-picker-section"><div class="profile-section-heading"><span>SAVAŞ İFADESİ</span><h3>Emojiler</h3></div><div id="battle-emoji-choice-list" class="avatar-choice-list"></div></section>
+      <section class="avatar-picker-section"><div class="profile-section-heading"><span>PROFİL ÇUBUĞU</span><h3>Arka Planlar</h3></div><div id="profile-background-choice-list" class="avatar-choice-list"></div></section>
       <p id="avatar-action-status" class="season-action-status" role="status"></p>
-      <nav class="profile-terminal-tabs" aria-label="Operatör terminali bölümleri"><button type="button" data-open-screen="profile">PROFİL</button><button type="button" class="is-active" data-open-screen="avatar">AVATAR</button><button type="button" data-open-screen="daily">ÖDÜLLER</button><button type="button" data-open-screen="settings">AYARLAR</button></nav>
+      <nav class="profile-terminal-tabs" aria-label="Operatör terminali bölümleri"><button type="button" data-open-screen="profile">PROFİL</button><button type="button" class="is-active" data-open-screen="avatar">KOZMETİK</button><button type="button" data-open-screen="daily">ÖDÜLLER</button><button type="button" data-open-screen="settings">AYARLAR</button></nav>
     </section>
 
     <section class="engagement-summary-panel rewards-hub-screen" id="rewards-hub-screen" data-screen-panel="daily" hidden>
@@ -688,6 +725,34 @@
       </section>
     </section>
 
+    <section class="profile-summary-panel friends-screen" id="friends-screen" data-screen-panel="friends" hidden>
+      <div class="friends-heading">
+        <div class="profile-section-heading"><span>SOSYAL AĞ</span><h3>Arkadaşlar</h3></div>
+        <small id="friends-summary">0 / 100 arkadaş</small>
+      </div>
+      <form id="friend-search-form" class="friend-search-form">
+        <label for="friend-search-input">Oyuncu ara</label>
+        <div><input id="friend-search-input" type="search" minlength="1" maxlength="24" autocomplete="off" placeholder="Oyuncu adı"><button type="submit">ARA</button></div>
+      </form>
+      <p id="friends-action-status" class="season-action-status" role="status" aria-live="polite"></p>
+      <section class="friends-section"><div class="profile-section-heading"><span>ARAMA</span><h3>Oyuncular</h3></div><div id="friend-search-results" class="social-player-list"><p>Arama yaptığında oyuncular burada görünür.</p></div></section>
+      <section class="friends-section"><div class="profile-section-heading"><span>BEKLEYEN</span><h3>Arkadaşlık İstekleri</h3></div><div id="friend-request-list" class="social-player-list"></div></section>
+      <section class="friends-section"><div class="profile-section-heading"><span>DEVRE BAĞLANTILARI</span><h3>Arkadaşların</h3></div><div id="friend-list" class="social-player-list"></div></section>
+      <section class="friends-section social-invite-panel">
+        <div class="profile-section-heading"><span>DAVET</span><h3>Bağlantı Kodu</h3></div>
+        <p>Bağlantıyı veya QR içeriğini paylaş; kod kullanıldığında iki oyuncu arkadaş olur.</p>
+        <button id="friend-invite-create" type="button">DAVET KODU OLUŞTUR</button>
+        <output id="friend-invite-output">Henüz davet oluşturulmadı.</output>
+      </section>
+      <section class="friends-section direct-message-panel">
+        <div class="profile-section-heading"><span>MESAJ</span><h3>Doğrudan Mesaj</h3></div>
+        <form id="direct-message-form"><input id="direct-message-peer" type="text" maxlength="72" placeholder="Arkadaş oyuncu kimliği"><textarea id="direct-message-text" maxlength="500" placeholder="Mesajını yaz"></textarea><button type="submit">GÖNDER</button></form>
+        <div id="direct-message-list" class="direct-message-list"><p>Mesaj geçmişi yükleniyor.</p></div>
+      </section>
+      <section class="friends-section"><div class="profile-section-heading"><span>KUPASIZ ALAN</span><h3>Arkadaş Savaşları</h3></div><p>Bu savaşlar kupa, sandık ve ödül hesabına girmez.</p><div id="friend-battle-invites" class="social-player-list"></div></section>
+      <nav class="profile-terminal-tabs" aria-label="Operatör terminali bölümleri"><button type="button" data-open-screen="profile">PROFİL</button><button type="button" data-open-screen="avatar">AVATAR</button><button type="button" data-open-screen="daily">ÖDÜLLER</button><button type="button" class="is-active" data-open-screen="friends">ARKADAŞ</button><button type="button" data-open-screen="settings">AYARLAR</button></nav>
+    </section>
+
     <section class="settings-summary-panel" id="settings-summary-panel" data-screen-panel="settings" hidden>
       <span id="settings-title" hidden>Ayarlar</span><span hidden>Ses · Müzik · Titreşim · Grafik · Dil</span><strong id="settings-load-status" data-status="idle" hidden>Yerel önizleme</strong>
       <div class="profile-name-form">
@@ -720,6 +785,28 @@
           <button id="settings-preview-sfx" type="button">SFX Önizle</button>
         </div>
       </div>
+      <section class="account-platform-panel" aria-labelledby="account-platform-title">
+        <div class="profile-section-heading"><span>HESAP VE GİZLİLİK</span><h3 id="account-platform-title">Bağlı Hesap</h3></div>
+        <p id="account-platform-status">Hesap güvenliği yükleniyor…</p>
+        <div class="account-verification-form">
+          <select id="account-contact-channel"><option value="email">E-posta</option><option value="phone">Telefon</option></select>
+          <input id="account-contact-destination" type="text" maxlength="180" placeholder="E-posta veya telefon">
+          <button id="account-verification-request" type="button">KOD GÖNDER</button>
+          <input id="account-verification-code" type="text" inputmode="numeric" maxlength="6" placeholder="6 haneli kod">
+          <button id="account-verification-confirm" type="button">DOĞRULA</button>
+        </div>
+        <div class="account-oauth-actions"><button id="account-oauth-google" type="button">GOOGLE BAĞLA</button><button id="account-oauth-apple" type="button">APPLE BAĞLA</button></div>
+        <div class="account-recovery-form">
+          <strong>Hesap Kurtarma</strong>
+          <input id="account-recovery-identifier" type="text" maxlength="180" placeholder="Doğrulanmış e-posta veya telefon">
+          <button id="account-recovery-request" type="button">KURTARMA KODU GÖNDER</button>
+          <input id="account-recovery-code" type="text" inputmode="numeric" maxlength="6" placeholder="Kurtarma kodu">
+          <button id="account-recovery-confirm" type="button">BU CİHAZDA HESABI KURTAR</button>
+        </div>
+        <button id="account-push-enable" type="button">MOBİL BİLDİRİMLERİ AÇ</button>
+        <div><strong>Cihaz Oturumları</strong><div id="account-device-list" class="account-device-list"></div></div>
+        <div class="account-data-actions"><button id="account-data-export" type="button">VERİLERİMİ DIŞA AKTAR</button><input id="account-delete-confirmation" type="text" placeholder="SIL oyuncu-kimliğin"><button id="account-data-delete" type="button">HESABI VE VERİLERİ SİL</button></div>
+      </section>
       <section class="settings-about-panel" aria-labelledby="settings-about-title">
         <div>
           <span class="screen-kicker">ÜRÜN BİLGİSİ</span>
@@ -1041,6 +1128,9 @@
           <span class="core-power-glyph" aria-hidden="true">◈</span>
           <small id="core-power-charge">0%</small>
         </button>
+        <button id="battle-emoji-button" class="battle-emoji-button" type="button" aria-label="Savaş emojisi gönder" hidden>
+          <span id="battle-emoji-button-glyph" aria-hidden="true">◇</span>
+        </button>
       </aside>
     </section>
 
@@ -1167,24 +1257,30 @@
       </div>
       <section id="post-match-reward-stage" class="post-match-stage post-match-reward-stage" aria-label="Maç ödülleri" hidden>
         <span id="post-match-reward-outcome" class="post-match-reward-outcome">ZAFER</span>
-        <h2>SAVAŞ ÖDÜLLERİ</h2>
-        <div class="post-match-reward-list">
-          <article>
+        <h2 id="post-match-reward-heading">SAVAŞ ÖDÜLLERİ</h2>
+        <div id="post-match-reward-list" class="post-match-reward-list" data-accounting-mode="profile">
+          <article id="post-match-trophy-card">
             <i class="resource-symbol resource-symbol-trophy" aria-hidden="true">🏆</i>
             <span>KUPA</span>
             <strong id="post-match-trophy-reward">Kaydediliyor…</strong>
           </article>
-          <article>
+          <article id="post-match-credit-card">
             <i class="resource-symbol resource-symbol-credit" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M7 12h3l2-4 2 8 2-4h2"/></svg></i>
             <span>DEVRE KREDİSİ</span>
             <strong id="post-match-credit-reward">Kaydediliyor…</strong>
           </article>
-          <article>
+          <article id="post-match-experience-card">
             <i class="resource-symbol resource-symbol-experience" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m12 2 2.4 5.4L20 8l-4.2 3.8 1.2 5.7-5-2.9-5 2.9 1.2-5.7L4 8l5.6-.6Z"/><circle cx="12" cy="11" r="2.3"/></svg></i>
             <span>DENEYİM</span>
             <strong id="post-match-experience-reward">Kaydediliyor…</strong>
           </article>
+          <article id="post-match-team-point-card" hidden>
+            <i class="resource-symbol resource-symbol-team-point" aria-hidden="true">◆</i>
+            <span>TAKIM KATKI PUANI</span>
+            <strong id="post-match-team-point-reward">Kaydediliyor…</strong>
+          </article>
         </div>
+        <p id="post-match-accounting-note" class="post-match-accounting-note" hidden></p>
       </section>
       <div class="post-match-actions">
         <button id="post-match-continue" type="button">DEVAM</button>

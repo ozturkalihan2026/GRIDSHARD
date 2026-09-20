@@ -1,4 +1,34 @@
 {
+  "wt-1561dea8-843f-4d64-ae50-173ff6e15d04": {
+    "Başlangıç Devresi": {
+      "favorite": false,
+      "last_used_at_ms": null,
+      "module_definition_ids": [
+        "battery",
+        "laser",
+        "emp",
+        "shield",
+        "drone_bay",
+        "repair"
+      ],
+      "use_count": 0
+    }
+  },
+  "wt-41a87514-39bc-4005-aea5-f5d67e7d2efe": {
+    "Başlangıç Devresi": {
+      "favorite": false,
+      "last_used_at_ms": null,
+      "module_definition_ids": [
+        "laser",
+        "shield",
+        "repair",
+        "pulse_cannon",
+        "battery",
+        "amplifier"
+      ],
+      "use_count": 0
+    }
+  },
   "wt-741ee051-a7ea-434b-8bf4-05762efc947b": {
     "Başlangıç Devresi": {
       "favorite": false,
@@ -70,6 +100,21 @@
         "cooler"
       ],
       "use_count": 22
+    }
+  },
+  "wt-edc103a7-0b9d-44d6-ae7d-62295d8002be": {
+    "Başlangıç Devresi": {
+      "favorite": false,
+      "last_used_at_ms": null,
+      "module_definition_ids": [
+        "laser",
+        "shield",
+        "repair",
+        "pulse_cannon",
+        "battery",
+        "emp"
+      ],
+      "use_count": 0
     }
   }
 }

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from uuid import uuid4
+from dataclasses import replace
 import asyncio
 from contextlib import asynccontextmanager
 import hashlib
@@ -23,6 +24,7 @@ from .auth import (
     ParticipantAuthService,
     load_or_create_signing_key,
 )
+from .platform_services import PlatformService, PlatformServiceError
 from .postgres_repository import (
     PostgresIdentityRepository,
     PostgresPlayerDataRepository,
@@ -38,7 +40,9 @@ from .game.models import BattleCommand, BattleStatus
 from .game.catalog import (
     BASIC_MODULE_DEFINITIONS,
     PLAYER_SELECTABLE_MODULE_IDS,
+    get_module_definition,
 )
+from .game.core_balance import core_rarity_profile
 from .game.ai_archetypes import (
     AI_ARCHETYPE_IDS,
     get_ai_archetype,
@@ -72,6 +76,9 @@ from .meta_progression import (
 from .arena_canon import BOTS, rank_stage_for_rating
 from .season_competition import (
     DAILY_META_DEFINITIONS,
+    LEADERBOARD_PRIZES,
+    TEAM_PRIZES,
+    WEEKLY_PRIZES,
     build_events_view,
     daily_meta_by_id,
     daily_meta_catalog_view,
@@ -319,6 +326,20 @@ participant_auth_service = ParticipantAuthService(
         os.environ.get("GRIDSHARD_ACCESS_TOKEN_TTL_SECONDS", "3600")
     ),
 )
+platform_service = PlatformService(
+    Path(
+        os.environ.get(
+            "GRIDSHARD_PLATFORM_STATE_PATH",
+            str(SERVER_DATA_DIR / "platform_state.json"),
+        )
+    ),
+    expose_codes=os.environ.get(
+        "GRIDSHARD_DEV_EXPOSE_VERIFICATION_CODES", "0"
+    ).strip().lower() in {"1", "true", "yes", "on"},
+    web_base_url=os.environ.get(
+        "GRIDSHARD_PUBLIC_WEB_URL", "https://gridshard.game"
+    ),
+)
 
 
 def auth_is_required() -> bool:
@@ -340,6 +361,11 @@ PROTECTED_PLAYER_PREFIXES = (
     "/statistics/",
     "/profile/",
     "/public-profiles/",
+    "/social/",
+    "/accounts/",
+    "/notifications/",
+    "/players/",
+    "/events",
     "/local-ai/",
     "/pvp/",
 )
@@ -349,7 +375,7 @@ def _path_claimed_player_id(path: str) -> str | None:
     segments = [segment for segment in path.split("/") if segment]
     if not segments:
         return None
-    if segments[0] in {"participants", "player-data", "settings", "statistics", "profile"}:
+    if segments[0] in {"participants", "player-data", "settings", "statistics", "profile", "social", "accounts", "notifications"}:
         return segments[1] if len(segments) > 1 else None
     if segments[0] == "matchmaking" and len(segments) > 1 and segments[1] != "join":
         return segments[1]
@@ -370,6 +396,8 @@ async def require_participant_authentication(request: Request, call_next):
             request.headers.get("authorization")
         )
         identity = participant_auth_service.verify_access_token(token)
+        if platform_service.token_is_revoked(identity.player_id, identity.token_id):
+            raise AuthenticationError("Bu cihaz oturumu sonlandırılmış.")
     except AuthenticationError as exc:
         return JSONResponse(
             status_code=401,
@@ -528,6 +556,20 @@ def process_completed_pvp_battle(state) -> None:
         )
         return
 
+    # The first tournament match of a new month replaces the previous
+    # contribution counters. Queue the closed-period reward before that
+    # authoritative progression write happens.
+    if state.match_type == "team_tournament":
+        for account_player_id in (
+            state.account_player_ids
+            if state.account_player_ids
+            else tuple(state.players)
+        ):
+            try:
+                _settle_competition_rewards(str(account_player_id))
+            except Exception:
+                pass
+
     player_statistics_service.process_finished_battle(
         state
     )
@@ -537,6 +579,18 @@ def process_completed_pvp_battle(state) -> None:
     telemetry_service.ingest_finished_battle(
         state
     )
+
+    # Social and team-training invitations are one-shot entry points.  Close
+    # them at the authoritative terminal transition so a finished arena can
+    # never be re-entered from either social surface.
+    try:
+        battle_session_id = str(getattr(state, "battle_id", "") or "")
+        _complete_social_battle_invites(battle_session_id)
+        team_service.complete_training_challenge(battle_session_id)
+    except Exception:
+        # Progression/statistics must not fail because a legacy social record
+        # cannot be reconciled; the read models also backfill this state.
+        pass
 
     account_player_ids = (
         state.account_player_ids
@@ -683,6 +737,8 @@ EXPERIMENTAL_LAB_EFFECTS_ENABLED = os.environ.get(
     "0",
 ).strip().lower() in {"1", "true", "yes", "on"}
 DAILY_META_ROLL_LOCK = Lock()
+SOCIAL_LOCK = Lock()
+REWARD_INBOX_LOCK = Lock()
 
 
 def persist_player_data(
@@ -701,9 +757,27 @@ def attach_player_laboratory_to_session(
     session = pvp_service.get_session(session_id)
     session.engine.state.player_upgrade_levels[player_id] = dict(profile.module_upgrade_levels)
     session.engine.state.player_match_ratings[player_id] = profile.rating
-    session.engine.state.players[player_id].core_type = profile.selected_core_type
-    session.engine.state.players[player_id].core_level = 1 + profile.core_upgrade_levels.get(profile.selected_core_type, 0)
-    session.engine.state.players[player_id].core_skills = profile.core_skills.get(profile.selected_core_type, ())
+    battle_player = session.engine.state.players[player_id]
+    battle_player.core_type = profile.selected_core_type
+    battle_player.core_level = 1 + profile.core_upgrade_levels.get(profile.selected_core_type, 0)
+    battle_player.core_skills = profile.core_skills.get(profile.selected_core_type, ())
+    battle_player.selected_battle_emoji_id = profile.selected_battle_emoji_id
+    core = next(
+        (
+            module for module in battle_player.modules.values()
+            if module.definition.id == "core"
+        ),
+        None,
+    )
+    if core is not None:
+        base_core = get_module_definition("core")
+        hp_ratio = core.hp / max(1, core.definition.max_hp)
+        scaled_hp = round(
+            base_core.max_hp
+            * core_rarity_profile(profile.selected_core_type)["hp"]
+        )
+        core.definition = replace(base_core, max_hp=scaled_hp)
+        core.hp = max(1, round(scaled_hp * hp_ratio))
     session.engine.state.player_module_talents[player_id] = {k: dict(v) for k, v in profile.module_talents.items()}
     today = daily_meta_catalog_view()["day"]
     session.engine.state.player_daily_meta_ids[player_id] = (
@@ -783,6 +857,8 @@ class ProfileBattlePoolRequest(BaseModel):
 class ProfileCosmeticsRequest(BaseModel):
     avatar_id: str | None = None
     avatar_frame_id: str | None = None
+    battle_emoji_id: str | None = None
+    profile_background_id: str | None = None
 
 
 class LaboratoryOperationRequest(BaseModel):
@@ -827,6 +903,45 @@ class TeamTrainingChallengeRequest(BaseModel):
     request_id: str
 
 
+class TeamMemberActionRequest(TeamActionRequest):
+    member_id: str
+
+
+class TeamApplicationActionRequest(TeamActionRequest):
+    applicant_id: str
+    accept: bool
+
+
+class TeamCosmeticsRequest(TeamActionRequest):
+    avatar_id: str | None = None
+    avatar_frame_id: str | None = None
+    bar_background_id: str | None = None
+    name_frame_id: str | None = None
+
+
+class FriendRequestOperation(BaseModel):
+    player_id: str
+    target_player_id: str
+    request_id: str
+
+
+class FriendDecisionOperation(BaseModel):
+    player_id: str
+    requester_id: str
+    request_id: str
+
+
+class SocialBattleInviteOperation(BaseModel):
+    player_id: str
+    opponent_id: str
+    request_id: str
+
+
+class EventRegistrationOperation(BaseModel):
+    player_id: str
+    request_id: str
+
+
 class CoreSelectionRequest(BaseModel):
     core_type_id: str
 
@@ -866,6 +981,66 @@ class MatchmakingJoinRequest(BaseModel):
 class AuthSessionRequest(BaseModel):
     player_id: str
     device_secret: str
+    device_id: str | None = None
+    device_name: str | None = None
+    platform: str = "web"
+
+
+class ContactVerificationRequest(BaseModel):
+    player_id: str
+    channel: str
+    destination: str
+
+
+class ContactVerificationConfirmRequest(BaseModel):
+    player_id: str
+    channel: str
+    code: str
+
+
+class DeviceActionRequest(BaseModel):
+    player_id: str
+
+
+class RecoveryRequest(BaseModel):
+    identifier: str
+
+
+class RecoveryConfirmRequest(BaseModel):
+    player_id: str
+    code: str
+    new_device_secret: str
+
+
+class PushSubscriptionRequest(BaseModel):
+    player_id: str
+    device_id: str
+    platform: str
+    token: str
+
+
+class InviteCodeRequest(BaseModel):
+    player_id: str
+    code: str | None = None
+
+
+class DirectMessageRequest(BaseModel):
+    player_id: str
+    recipient_id: str
+    text: str
+
+
+class SocialSafetyRequest(BaseModel):
+    player_id: str
+    target_player_id: str
+    blocked: bool | None = None
+    reason: str | None = None
+    detail: str | None = None
+
+
+class GdprDeleteRequest(BaseModel):
+    player_id: str
+    confirmation: str
 
 
 class WebTestSessionAuditRequest(BaseModel):
@@ -930,15 +1105,308 @@ def create_participant_auth_session(
     request: AuthSessionRequest,
 ) -> dict:
     try:
-        return participant_auth_service.register_or_login(
+        result = participant_auth_service.register_or_login(
             request.player_id,
             request.device_secret,
         )
+        identity = participant_auth_service.verify_access_token(
+            result["access_token"]
+        )
+        device_id = str(request.device_id or "").strip() or hashlib.sha256(
+            request.device_secret.encode("utf-8")
+        ).hexdigest()[:24]
+        platform_service.register_device(
+            request.player_id,
+            device_id,
+            request.device_name or f"{request.platform.title()} cihazı",
+            request.platform,
+            identity.token_id,
+            identity.expires_at,
+        )
+        return {**result, "device_id": device_id}
     except AuthenticationError as exc:
         raise HTTPException(
             status_code=401,
             detail=str(exc),
         ) from exc
+    except PlatformServiceError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+
+
+@app.get("/accounts/{player_id}")
+def get_account_platform_view(player_id: str) -> dict:
+    return platform_service.account_view(player_id)
+
+
+@app.post("/accounts/{player_id}/verification/request")
+def request_account_verification(
+    player_id: str,
+    request: ContactVerificationRequest,
+) -> dict:
+    if request.player_id != player_id:
+        raise HTTPException(status_code=403, detail="Başka bir oyuncu adına işlem yapılamaz.")
+    try:
+        return platform_service.request_verification(
+            player_id, request.channel, request.destination
+        )
+    except PlatformServiceError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+
+
+@app.post("/accounts/{player_id}/verification/confirm")
+def confirm_account_verification(
+    player_id: str,
+    request: ContactVerificationConfirmRequest,
+) -> dict:
+    if request.player_id != player_id:
+        raise HTTPException(status_code=403, detail="Başka bir oyuncu adına işlem yapılamaz.")
+    try:
+        result = platform_service.confirm_verification(
+            player_id, request.channel, request.code
+        )
+        return {**result, "account": platform_service.account_view(player_id)}
+    except PlatformServiceError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+
+
+@app.get("/accounts/{player_id}/oauth/{provider}/start")
+def start_account_oauth(player_id: str, provider: str) -> dict:
+    try:
+        return platform_service.start_oauth(player_id, provider)
+    except PlatformServiceError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+
+
+@app.delete("/accounts/{player_id}/devices/{device_id}")
+def revoke_account_device(
+    player_id: str,
+    device_id: str,
+    request: DeviceActionRequest,
+) -> dict:
+    if request.player_id != player_id:
+        raise HTTPException(status_code=403, detail="Başka bir oyuncu adına işlem yapılamaz.")
+    try:
+        return platform_service.revoke_device(player_id, device_id)
+    except PlatformServiceError as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
+
+
+@app.post("/account-recovery/request")
+def request_account_recovery(request: RecoveryRequest) -> dict:
+    try:
+        return platform_service.request_recovery(request.identifier)
+    except PlatformServiceError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+
+
+@app.post("/account-recovery/confirm")
+def confirm_account_recovery(request: RecoveryConfirmRequest) -> dict:
+    try:
+        platform_service.confirm_recovery(request.player_id, request.code)
+        participant_auth_service.reset_device_secret(
+            request.player_id, request.new_device_secret
+        )
+        for device in list(platform_service.account_view(request.player_id)["devices"]):
+            platform_service.revoke_device(request.player_id, device["device_id"])
+        return {"player_id": request.player_id, "recovered": True}
+    except (AuthenticationError, PlatformServiceError) as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+
+
+@app.get("/notifications/{player_id}")
+def get_platform_notifications(player_id: str) -> dict:
+    return platform_service.notification_view(player_id)
+
+
+@app.post("/notifications/{player_id}/push-subscriptions")
+def subscribe_platform_push(
+    player_id: str,
+    request: PushSubscriptionRequest,
+) -> dict:
+    if request.player_id != player_id:
+        raise HTTPException(status_code=403, detail="Başka bir oyuncu adına işlem yapılamaz.")
+    try:
+        return platform_service.subscribe_push(
+            player_id, request.device_id, request.platform, request.token
+        )
+    except PlatformServiceError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+
+
+@app.post("/social/{player_id}/invite-codes")
+def create_social_invite_code(player_id: str, request: InviteCodeRequest) -> dict:
+    if request.player_id != player_id:
+        raise HTTPException(status_code=403, detail="Başka bir oyuncu adına işlem yapılamaz.")
+    return platform_service.create_invite(player_id)
+
+
+@app.post("/social/{player_id}/invite-codes/accept")
+def accept_social_invite_code(player_id: str, request: InviteCodeRequest) -> dict:
+    if request.player_id != player_id:
+        raise HTTPException(status_code=403, detail="Başka bir oyuncu adına işlem yapılamaz.")
+    try:
+        result = platform_service.accept_invite(player_id, request.code or "")
+        inviter_id = result["inviter_id"]
+        with SOCIAL_LOCK:
+            profile = _team_member_profile(player_id)
+            inviter = _team_member_profile(inviter_id)
+            if (
+                inviter_id in profile.blocked_player_ids
+                or player_id in inviter.blocked_player_ids
+                or platform_service.is_blocked(player_id, inviter_id)
+            ):
+                raise PlatformServiceError("Engellenen oyuncunun daveti kullanılamaz.")
+            _replace_tuple(profile, "friend_ids", (*profile.friend_ids, inviter_id))
+            _replace_tuple(inviter, "friend_ids", (*inviter.friend_ids, player_id))
+            persist_player_data(player_id)
+            persist_player_data(inviter_id)
+        platform_service.queue_notification(
+            inviter_id,
+            "Davet kabul edildi",
+            f"{profile.display_name} artık arkadaşın.",
+            f"gridshard://profile/{player_id}",
+        )
+        return {**result, "social": _social_view(player_id)}
+    except PlatformServiceError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+
+
+@app.get("/social/{player_id}/messages")
+def get_direct_messages(player_id: str, peer_id: str | None = None) -> dict:
+    return {"messages": platform_service.messages(player_id, peer_id)}
+
+
+@app.post("/social/{player_id}/messages")
+def send_direct_message(player_id: str, request: DirectMessageRequest) -> dict:
+    if request.player_id != player_id:
+        raise HTTPException(status_code=403, detail="Başka bir oyuncu adına işlem yapılamaz.")
+    sender = _team_member_profile(player_id)
+    recipient = _team_member_profile(request.recipient_id)
+    if request.recipient_id not in sender.friend_ids:
+        raise HTTPException(status_code=422, detail="Doğrudan mesaj yalnız arkadaşlara gönderilebilir.")
+    if (
+        request.recipient_id in sender.blocked_player_ids
+        or player_id in recipient.blocked_player_ids
+        or platform_service.is_blocked(player_id, request.recipient_id)
+    ):
+        raise HTTPException(status_code=422, detail="Engellenen oyuncuya mesaj gönderilemez.")
+    try:
+        message = platform_service.send_message(
+            player_id, request.recipient_id, request.text
+        )
+        platform_service.queue_notification(
+            request.recipient_id,
+            "Yeni mesaj",
+            f"{sender.display_name} sana mesaj gönderdi.",
+            f"gridshard://friends/messages/{player_id}",
+        )
+        return {"message": message}
+    except PlatformServiceError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+
+
+@app.post("/social/{player_id}/block")
+def set_social_block(player_id: str, request: SocialSafetyRequest) -> dict:
+    if request.player_id != player_id or request.target_player_id == player_id:
+        raise HTTPException(status_code=403, detail="Geçersiz engelleme işlemi.")
+    blocked = request.blocked is not False
+    with SOCIAL_LOCK:
+        profile = _team_member_profile(player_id)
+        target = _team_member_profile(request.target_player_id)
+        if blocked:
+            _replace_tuple(profile, "blocked_player_ids", (*profile.blocked_player_ids, request.target_player_id))
+        else:
+            _replace_tuple(profile, "blocked_player_ids", (value for value in profile.blocked_player_ids if value != request.target_player_id))
+        for owner, other_id in ((profile, request.target_player_id), (target, player_id)):
+            _replace_tuple(owner, "friend_ids", (value for value in owner.friend_ids if value != other_id))
+            _replace_tuple(owner, "incoming_friend_request_ids", (value for value in owner.incoming_friend_request_ids if value != other_id))
+            _replace_tuple(owner, "outgoing_friend_request_ids", (value for value in owner.outgoing_friend_request_ids if value != other_id))
+        persist_player_data(player_id)
+        persist_player_data(request.target_player_id)
+    return {
+        "blocked_player_ids": platform_service.set_block(
+            player_id, request.target_player_id, blocked
+        ),
+        "social": _social_view(player_id),
+    }
+
+
+@app.post("/social/{player_id}/reports")
+def report_social_player(player_id: str, request: SocialSafetyRequest) -> dict:
+    if request.player_id != player_id or request.target_player_id == player_id:
+        raise HTTPException(status_code=403, detail="Geçersiz şikâyet işlemi.")
+    try:
+        return platform_service.report(
+            player_id,
+            request.target_player_id,
+            request.reason or "other",
+            request.detail or "",
+        )
+    except PlatformServiceError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+
+
+@app.get("/social/{player_id}/share/{target_player_id}")
+def share_player_profile(player_id: str, target_player_id: str) -> dict:
+    del player_id
+    base = platform_service.web_base_url
+    return {
+        "deep_link": f"gridshard://profile/{target_player_id}",
+        "web_link": f"{base}/profile/{target_player_id}",
+    }
+
+
+@app.get("/accounts/{player_id}/data-export")
+def export_account_data(player_id: str) -> dict:
+    snapshot = player_data_store_service.save_player(player_id).to_dict()
+    return {
+        "schema_version": 1,
+        "exported_at": int(time.time()),
+        "player_data": snapshot,
+        "platform_data": platform_service.export_data(player_id),
+    }
+
+
+@app.post("/accounts/{player_id}/delete")
+def delete_account_data(player_id: str, request: GdprDeleteRequest) -> dict:
+    if request.player_id != player_id:
+        raise HTTPException(status_code=403, detail="Başka bir oyuncu adına işlem yapılamaz.")
+    if request.confirmation.strip() != f"SIL {player_id}":
+        raise HTTPException(status_code=422, detail=f"Onay metni `SIL {player_id}` olmalıdır.")
+    profile = _team_member_profile(player_id)
+    if profile.team_id:
+        try:
+            team_service.leave_team(
+                profile.team_id, player_id, f"gdpr-delete:{player_id}"
+            )
+        except TeamServiceError:
+            pass
+    for other in list(player_profile_service._profiles.values()):
+        if other.player_id == player_id:
+            continue
+        changed = False
+        for attribute in (
+            "friend_ids", "incoming_friend_request_ids",
+            "outgoing_friend_request_ids", "blocked_player_ids",
+        ):
+            values = tuple(value for value in getattr(other, attribute) if value != player_id)
+            if values != getattr(other, attribute):
+                setattr(other, attribute, values)
+                changed = True
+        if changed:
+            persist_player_data(other.player_id)
+    deleted = player_data_repository.delete(player_id)
+    platform_service.erase(player_id)
+    identity_deleted = participant_auth_service.delete_identity(player_id)
+    player_profile_service._profiles.pop(player_id, None)
+    player_statistics_service._statistics.pop(player_id, None)
+    player_settings_service._settings.pop(player_id, None)
+    return {
+        "player_id": player_id,
+        "deleted": bool(deleted or identity_deleted),
+        "identity_deleted": identity_deleted,
+        "gdpr_erasure_completed": True,
+    }
 
 
 @app.post("/web-test/audit/session-start")
@@ -3052,9 +3520,21 @@ def _leaderboard_profile_rows() -> list[dict]:
             "weekly_matches": max(0, int(meta.get("weekly_tournament_matches", 0))),
             "weekly_wins": max(0, int(meta.get("weekly_tournament_wins", 0))),
             "weekly_period": str(meta.get("weekly_tournament_period", "")),
+            "weekly_registered_period": str(meta.get("weekly_tournament_registered_period", "")),
+            "weekly_trophies_earned": max(0, int(meta.get("weekly_tournament_trophies_earned", 0))),
             "team_tournament_matches": max(0, int(meta.get("team_tournament_matches", 0))),
             "team_tournament_wins": max(0, int(meta.get("team_tournament_wins", 0))),
+            "team_tournament_points": max(
+                0,
+                int(
+                    meta.get(
+                        "team_tournament_contribution_points",
+                        meta.get("team_tournament_wins", 0),
+                    )
+                ),
+            ),
             "team_tournament_period": str(meta.get("team_tournament_period", "")),
+            "team_registered_period": str(meta.get("team_tournament_registered_period", "")),
         }
 
     for player_id in list(player_profile_service._profiles):
@@ -3070,9 +3550,13 @@ def _leaderboard_profile_rows() -> list[dict]:
             "weekly_matches": profile.weekly_tournament_matches,
             "weekly_wins": profile.weekly_tournament_wins,
             "weekly_period": profile.weekly_tournament_period,
+            "weekly_registered_period": profile.weekly_tournament_registered_period,
+            "weekly_trophies_earned": profile.weekly_tournament_trophies_earned,
             "team_tournament_matches": profile.team_tournament_matches,
             "team_tournament_wins": profile.team_tournament_wins,
+            "team_tournament_points": profile.team_tournament_contribution_points,
             "team_tournament_period": profile.team_tournament_period,
+            "team_registered_period": profile.team_tournament_registered_period,
         }
     for bot in BOTS:
         players[str(bot["id"])] = {
@@ -3086,9 +3570,13 @@ def _leaderboard_profile_rows() -> list[dict]:
             "weekly_matches": 0,
             "weekly_wins": 0,
             "weekly_period": "",
+            "weekly_registered_period": "",
+            "weekly_trophies_earned": 0,
             "team_tournament_matches": 0,
             "team_tournament_wins": 0,
+            "team_tournament_points": 0,
             "team_tournament_period": "",
+            "team_registered_period": "",
         }
     return list(players.values())
 
@@ -3108,6 +3596,7 @@ def _ranked_player_rows(players: list[dict], value_key: str) -> list[dict]:
             "player_id": row["player_id"],
             "display_name": row["display_name"],
             "rank_name_tr": rank_stage_for_rating(row["rating"])["name_tr"],
+            "rank_stage_id": rank_stage_for_rating(row["rating"])["id"],
             "value": int(row[value_key]),
             "is_bot": bool(row.get("is_bot")),
         }
@@ -3148,6 +3637,7 @@ def _public_player_profile_view(player_id: str) -> dict:
         matches = record["total_matches"]
         return {
             "player_id": player_id,
+            "is_bot": True,
             "display_name": bot["display_name"],
             "rating": rating,
             "highest_rating": rating,
@@ -3350,7 +3840,7 @@ def get_public_team_profile(team_id: str) -> dict:
 
 
 @app.get("/leaderboards")
-def get_leaderboards() -> dict:
+def get_leaderboards(player_id: str | None = None) -> dict:
     players = _leaderboard_profile_rows()
     teams: dict[str, dict] = {}
     for player in players:
@@ -3378,9 +3868,44 @@ def get_leaderboards() -> dict:
             row["team_id"],
         ),
     )[:100]
+    trophy_groups: dict[str, dict] = {}
+    for player in players:
+        stage = rank_stage_for_rating(player["rating"])
+        group = trophy_groups.setdefault(
+            stage["id"],
+            {
+                "id": stage["id"],
+                "name_tr": stage["name_tr"],
+                "minimum_rating": int(stage["minimum_rating"]),
+                "players": [],
+            },
+        )
+        group["players"].append(player)
+    ordered_groups = []
+    for group in sorted(trophy_groups.values(), key=lambda item: item["minimum_rating"]):
+        ordered_groups.append({
+            **{key: value for key, value in group.items() if key != "players"},
+            "standings": _ranked_player_rows(group["players"], "rating"),
+        })
+    viewer_group = None
+    if player_id:
+        viewer = next(
+            (player for player in players if player["player_id"] == player_id),
+            None,
+        )
+        if viewer is not None:
+            viewer_stage_id = rank_stage_for_rating(viewer["rating"])["id"]
+            viewer_group = next(
+                (group for group in ordered_groups if group["id"] == viewer_stage_id),
+                None,
+            )
     return {
         "season": monthly_season_descriptor(),
+        "top_five_rewards": [dict(item) for item in LEADERBOARD_PRIZES[:5]],
+        "top_ten_rewards": [dict(item) for item in LEADERBOARD_PRIZES],
         "trophies": _ranked_player_rows(players, "rating"),
+        "trophy_groups": ordered_groups,
+        "viewer_trophy_group": viewer_group,
         "core_damage": _ranked_player_rows(players, "core_damage"),
         "teams": [
             {**row, "position": index}
@@ -3389,12 +3914,470 @@ def get_leaderboards() -> dict:
     }
 
 
+def _real_competition_profiles() -> list:
+    player_ids = set(player_profile_service._profiles)
+    player_ids.update(snapshot.player_id for snapshot in player_data_repository.list_snapshots())
+    return [_team_member_profile(player_id) for player_id in sorted(player_ids)]
+
+
+def _queue_competition_reward(profile, *, source: str, period_id: str, position: int, prize: dict, team_id: str | None = None) -> bool:
+    message_id = f"{source}:{period_id}:{profile.player_id}"
+    if any(item.get("message_id") == message_id for item in profile.reward_inbox):
+        return False
+    source_names = {
+        "season_leaderboard": "Sezon Lider Panosu",
+        "weekly_tournament": "Haftalık Devre Turnuvası",
+        "team_tournament": "Takımlar Arası Turnuva",
+    }
+    profile.reward_inbox.append({
+        "message_id": message_id,
+        "source": source,
+        "period_id": period_id,
+        "position": int(position),
+        "title_tr": f"{source_names[source]} · {position}. sıra",
+        "body_tr": "Sıralama kapandı. Ödül kasan teslim edilmeyi bekliyor.",
+        "status": "unclaimed",
+        "team_id": team_id,
+        "chest": dict(prize),
+    })
+    profile.reward_inbox[:] = profile.reward_inbox[-60:]
+    return True
+
+
+def _settle_competition_rewards(player_id: str) -> None:
+    """Lazily materialize ended season/week/team rewards exactly once."""
+    with REWARD_INBOX_LOCK:
+        profiles = _real_competition_profiles()
+        target = next((item for item in profiles if item.player_id == player_id), None)
+        if target is None:
+            return
+        changed = False
+        current_events = build_events_view(_leaderboard_profile_rows())
+        current_week = current_events["weekly_tournament"]["period"]["id"]
+        current_month = current_events["team_tournament"]["period"]["id"]
+        current_season = monthly_season_descriptor()["id"]
+
+        # Monthly general leaderboard: archived final ratings are immutable and
+        # therefore safe to settle after rollover.
+        for archive in target.season_archives:
+            period_id = str(archive.get("season_id") or archive.get("id") or "")
+            if not period_id or period_id == current_season:
+                continue
+            rows = []
+            for profile in profiles:
+                record = next(
+                    (
+                        item for item in profile.season_archives
+                        if str(item.get("season_id") or item.get("id") or "") == period_id
+                    ),
+                    None,
+                )
+                if record is not None:
+                    rows.append((profile.player_id, int(record.get("final_rating", 0))))
+            rows.sort(key=lambda item: (-item[1], item[0]))
+            position = next((index for index, row in enumerate(rows, 1) if row[0] == player_id), 0)
+            if 1 <= position <= len(LEADERBOARD_PRIZES):
+                changed |= _queue_competition_reward(
+                    target,
+                    source="season_leaderboard",
+                    period_id=period_id,
+                    position=position,
+                    prize=dict(LEADERBOARD_PRIZES[position - 1]),
+                )
+
+        # Weekly standings retain the last closed period until the player
+        # registers or records progress in a newer week.
+        weekly_period = str(target.weekly_tournament_period or "")
+        if weekly_period and weekly_period != current_week:
+            rows = sorted(
+                (
+                    (profile.player_id, int(profile.weekly_tournament_trophies_earned), int(profile.weekly_tournament_wins))
+                    for profile in profiles
+                    if profile.weekly_tournament_period == weekly_period
+                    and profile.weekly_tournament_registered_period == weekly_period
+                ),
+                key=lambda item: (-item[1], -item[2], item[0]),
+            )
+            position = next((index for index, row in enumerate(rows, 1) if row[0] == player_id), 0)
+            if 1 <= position <= len(WEEKLY_PRIZES):
+                changed |= _queue_competition_reward(
+                    target,
+                    source="weekly_tournament",
+                    period_id=weekly_period,
+                    position=position,
+                    prize=dict(WEEKLY_PRIZES[position - 1]),
+                )
+
+        team_period = str(target.team_tournament_period or "")
+        if (
+            team_period
+            and team_period != current_month
+            and target.team_id
+            and int(target.team_tournament_contribution_points) >= 5
+        ):
+            team_scores: dict[str, int] = {}
+            for profile in profiles:
+                if profile.team_tournament_period != team_period or not profile.team_id:
+                    continue
+                team_scores[profile.team_id] = team_scores.get(profile.team_id, 0) + int(profile.team_tournament_contribution_points)
+            ranked_teams = sorted(team_scores.items(), key=lambda item: (-item[1], item[0]))
+            position = next((index for index, row in enumerate(ranked_teams, 1) if row[0] == target.team_id), 0)
+            if 1 <= position <= len(TEAM_PRIZES):
+                changed |= _queue_competition_reward(
+                    target,
+                    source="team_tournament",
+                    period_id=team_period,
+                    position=position,
+                    prize=dict(TEAM_PRIZES[position - 1]),
+                    team_id=target.team_id,
+                )
+        if changed:
+            persist_player_data(player_id)
+
+
+def _reward_inbox_view(profile) -> dict:
+    messages = [dict(item) for item in reversed(profile.reward_inbox)]
+    return {
+        "player_id": profile.player_id,
+        "messages": messages,
+        "unclaimed_count": sum(item.get("status") == "unclaimed" for item in messages),
+        "universal_module_shards": int(profile.universal_module_shards),
+    }
+
+
+@app.get("/profile/{player_id}/reward-inbox")
+def get_reward_inbox(player_id: str) -> dict:
+    _settle_competition_rewards(player_id)
+    return _reward_inbox_view(_team_member_profile(player_id))
+
+
+@app.post("/profile/{player_id}/reward-inbox/{message_id}/claim")
+def claim_reward_inbox_item(player_id: str, message_id: str, request: MetaOperationRequest) -> dict:
+    with REWARD_INBOX_LOCK:
+        profile = _team_member_profile(player_id)
+        if request.request_id in profile.reward_inbox_receipts:
+            return {**_reward_inbox_view(profile), "receipt": dict(profile.reward_inbox_receipts[request.request_id]), "replayed": True}
+        message = next((item for item in profile.reward_inbox if item.get("message_id") == message_id), None)
+        if message is None:
+            raise HTTPException(status_code=404, detail="Ödül mesajı bulunamadı.")
+        if message.get("status") != "unclaimed":
+            raise HTTPException(status_code=422, detail="Bu ödül daha önce alındı.")
+        reward = dict(message.get("chest") or {})
+        profile.circuit_credits += max(0, int(reward.get("circuit_credits", 0)))
+        profile.flux_shards += max(0, int(reward.get("flux_shards", 0)))
+        profile.universal_module_shards += max(0, int(reward.get("universal_module_shards", 0)))
+        player_unlocks = {
+            "avatar_id": "unlocked_avatar_ids",
+            "avatar_frame_id": "unlocked_avatar_frame_ids",
+            "emoji_id": "unlocked_battle_emoji_ids",
+            "profile_background_id": "unlocked_profile_background_ids",
+            "badge_id": "unlocked_badge_ids",
+            "rank_trophy_id": "unlocked_rank_trophy_ids",
+        }
+        for reward_key, attribute in player_unlocks.items():
+            value = str(reward.get(reward_key) or "").strip()
+            if value:
+                setattr(profile, attribute, tuple(dict.fromkeys((*getattr(profile, attribute), value))))
+        if message.get("source") == "team_tournament" and message.get("team_id"):
+            team_service.grant_reward_cosmetics(str(message["team_id"]), reward)
+        message["status"] = "claimed"
+        receipt = {
+            "request_id": request.request_id,
+            "message_id": message_id,
+            "source": message.get("source"),
+            "position": message.get("position"),
+            "chest": reward,
+        }
+        profile.reward_inbox_receipts[request.request_id] = dict(receipt)
+        persist_player_data(player_id)
+        return {**_reward_inbox_view(profile), "receipt": receipt, "profile": profile.to_view(), "replayed": False}
+
+
 def _team_member_profile(player_id: str):
     if player_id not in player_profile_service._profiles:
         snapshot = player_data_repository.load(player_id)
         if snapshot is not None:
             player_data_store_service.load_player(player_id)
     return player_profile_service.get_or_create(player_id)
+
+
+def _social_player_summary(player_id: str) -> dict:
+    profile = _team_member_profile(player_id)
+    return {
+        "player_id": profile.player_id,
+        "is_bot": False,
+        "display_name": profile.display_name,
+        "rating": max(0, int(profile.rating)),
+        "rank_name_tr": profile.league_name_tr,
+        "team_id": profile.team_id,
+        "team_name": profile.team_name,
+        "online": player_id in player_profile_service._profiles,
+        "avatar": {
+            "selected_avatar_id": profile.selected_avatar_id,
+            "selected_avatar_frame_id": profile.selected_avatar_frame_id,
+        },
+    }
+
+
+def _replace_tuple(profile, attribute: str, values) -> None:
+    setattr(profile, attribute, tuple(dict.fromkeys(str(value) for value in values if value)))
+
+
+def _battle_session_finished(session_id: str | None) -> bool:
+    if not session_id:
+        return False
+    try:
+        session = pvp_service.get_session(str(session_id))
+    except PvPSessionError:
+        return False
+    status = getattr(session.engine.state.status, "value", session.engine.state.status)
+    return str(status) == "finished"
+
+
+def _complete_social_battle_invites(session_id: str) -> bool:
+    clean_session_id = str(session_id or "").strip()
+    if not clean_session_id:
+        return False
+    changed = False
+    with SOCIAL_LOCK:
+        candidates = set(player_profile_service._profiles)
+        candidates.update(snapshot.player_id for snapshot in player_data_repository.list_snapshots())
+        for owner_id in candidates:
+            profile = _team_member_profile(owner_id)
+            owner_changed = False
+            for item in profile.social_battle_invites:
+                if (
+                    item.get("battle_session_id") == clean_session_id
+                    and item.get("status") == "accepted"
+                ):
+                    item["status"] = "completed"
+                    owner_changed = True
+                    changed = True
+            if owner_changed:
+                persist_player_data(owner_id)
+    return changed
+
+
+def _social_view(player_id: str) -> dict:
+    profile = _team_member_profile(player_id)
+    invitations = []
+    changed = False
+    for stored in profile.social_battle_invites[-50:]:
+        item = dict(stored)
+        if item.get("status") == "accepted" and _battle_session_finished(item.get("battle_session_id")):
+            item["status"] = "completed"
+            stored["status"] = "completed"
+            changed = True
+        invitations.append(item)
+    if changed:
+        persist_player_data(player_id)
+    return {
+        "player_id": player_id,
+        "friend_limit": 100,
+        "friends": [_social_player_summary(value) for value in profile.friend_ids],
+        "incoming_requests": [
+            _social_player_summary(value)
+            for value in profile.incoming_friend_request_ids
+        ],
+        "outgoing_requests": [
+            _social_player_summary(value)
+            for value in profile.outgoing_friend_request_ids
+        ],
+        "battle_invites": invitations,
+    }
+
+
+def _create_unranked_social_session(
+    session_id: str,
+    player_a_id: str,
+    player_b_id: str,
+    *,
+    match_type: str,
+) -> dict:
+    try:
+        session = pvp_service.get_session(session_id)
+    except PvPSessionError:
+        session = pvp_service.create_session(
+            session_id,
+            setup_required=True,
+            auto_start_when_ready=True,
+            match_type=match_type,
+            season_id=monthly_season_descriptor()["id"],
+            ranked_eligible=False,
+            normalized=True,
+            laboratory_effects_enabled=False,
+        )
+    for player_id in (player_a_id, player_b_id):
+        profile = _team_member_profile(player_id)
+        pvp_service.join(session_id, player_id, display_name=profile.display_name)
+        attach_player_laboratory_to_session(session_id, player_id)
+    return {
+        "session_id": session.session_id,
+        "players": [player_a_id, player_b_id],
+        "opponent_type": "human",
+        "match_type": match_type,
+        "ranked_eligible": False,
+        "rewards_enabled": False,
+    }
+
+
+@app.get("/social/{player_id}")
+def get_social_view(player_id: str) -> dict:
+    return _social_view(player_id)
+
+
+@app.get("/players/search")
+def search_players(
+    player_id: str = Query(...),
+    q: str = Query("", min_length=1, max_length=24),
+) -> dict:
+    viewer = _team_member_profile(player_id)
+    needle = " ".join(str(q).strip().split()).casefold()
+    excluded = {
+        player_id,
+        *viewer.friend_ids,
+        *viewer.incoming_friend_request_ids,
+        *viewer.outgoing_friend_request_ids,
+        *viewer.blocked_player_ids,
+    }
+    rows = []
+    for row in _leaderboard_profile_rows():
+        candidate_id = str(row.get("player_id", ""))
+        if row.get("is_bot") or candidate_id in excluded:
+            continue
+        if needle not in str(row.get("display_name", "")).casefold():
+            continue
+        rows.append(_social_player_summary(candidate_id))
+        if len(rows) >= 20:
+            break
+    return {"query": q, "players": rows}
+
+
+@app.post("/social/{player_id}/requests")
+def send_friend_request(player_id: str, request: FriendRequestOperation) -> dict:
+    if request.player_id != player_id:
+        raise HTTPException(status_code=403, detail="Başka bir oyuncu adına işlem yapılamaz.")
+    target_id = str(request.target_player_id).strip()
+    if not target_id or target_id == player_id:
+        raise HTTPException(status_code=422, detail="Geçerli bir oyuncu seç.")
+    with SOCIAL_LOCK:
+        profile = _team_member_profile(player_id)
+        target = _team_member_profile(target_id)
+        if target_id in profile.blocked_player_ids or player_id in target.blocked_player_ids:
+            raise HTTPException(status_code=422, detail="Bu oyuncuyla arkadaşlık isteği kullanılamıyor.")
+        if target_id in profile.friend_ids:
+            return {**_social_view(player_id), "replayed": True}
+        if len(profile.friend_ids) >= 100 or len(target.friend_ids) >= 100:
+            raise HTTPException(status_code=422, detail="Arkadaş sınırı 100 oyuncudur.")
+        if player_id in target.outgoing_friend_request_ids:
+            _replace_tuple(profile, "friend_ids", (*profile.friend_ids, target_id))
+            _replace_tuple(target, "friend_ids", (*target.friend_ids, player_id))
+            _replace_tuple(profile, "incoming_friend_request_ids", (value for value in profile.incoming_friend_request_ids if value != target_id))
+            _replace_tuple(target, "outgoing_friend_request_ids", (value for value in target.outgoing_friend_request_ids if value != player_id))
+        else:
+            _replace_tuple(profile, "outgoing_friend_request_ids", (*profile.outgoing_friend_request_ids, target_id))
+            _replace_tuple(target, "incoming_friend_request_ids", (*target.incoming_friend_request_ids, player_id))
+        persist_player_data(player_id)
+        persist_player_data(target_id)
+    return _social_view(player_id)
+
+
+@app.post("/social/{player_id}/requests/accept")
+def accept_friend_request(player_id: str, request: FriendDecisionOperation) -> dict:
+    if request.player_id != player_id:
+        raise HTTPException(status_code=403, detail="Başka bir oyuncu adına işlem yapılamaz.")
+    requester_id = str(request.requester_id).strip()
+    with SOCIAL_LOCK:
+        profile = _team_member_profile(player_id)
+        requester = _team_member_profile(requester_id)
+        if requester_id not in profile.incoming_friend_request_ids and requester_id not in profile.friend_ids:
+            raise HTTPException(status_code=422, detail="Bekleyen arkadaşlık isteği bulunamadı.")
+        _replace_tuple(profile, "friend_ids", (*profile.friend_ids, requester_id))
+        _replace_tuple(requester, "friend_ids", (*requester.friend_ids, player_id))
+        _replace_tuple(profile, "incoming_friend_request_ids", (value for value in profile.incoming_friend_request_ids if value != requester_id))
+        _replace_tuple(requester, "outgoing_friend_request_ids", (value for value in requester.outgoing_friend_request_ids if value != player_id))
+        persist_player_data(player_id)
+        persist_player_data(requester_id)
+    return _social_view(player_id)
+
+
+@app.post("/social/{player_id}/requests/reject")
+def reject_friend_request(player_id: str, request: FriendDecisionOperation) -> dict:
+    if request.player_id != player_id:
+        raise HTTPException(status_code=403, detail="Başka bir oyuncu adına işlem yapılamaz.")
+    requester_id = str(request.requester_id).strip()
+    with SOCIAL_LOCK:
+        profile = _team_member_profile(player_id)
+        requester = _team_member_profile(requester_id)
+        _replace_tuple(profile, "incoming_friend_request_ids", (value for value in profile.incoming_friend_request_ids if value != requester_id))
+        _replace_tuple(requester, "outgoing_friend_request_ids", (value for value in requester.outgoing_friend_request_ids if value != player_id))
+        persist_player_data(player_id)
+        persist_player_data(requester_id)
+    return _social_view(player_id)
+
+
+@app.post("/social/{player_id}/battle-invites")
+def create_social_battle_invite(player_id: str, request: SocialBattleInviteOperation) -> dict:
+    if request.player_id != player_id:
+        raise HTTPException(status_code=403, detail="Başka bir oyuncu adına işlem yapılamaz.")
+    opponent_id = str(request.opponent_id).strip()
+    with SOCIAL_LOCK:
+        profile = _team_member_profile(player_id)
+        opponent = _team_member_profile(opponent_id)
+        if opponent_id not in profile.friend_ids:
+            raise HTTPException(status_code=422, detail="Arkadaş savaşı için önce arkadaş olmalısınız.")
+        invite_id = "friend-battle-" + hashlib.sha1(request.request_id.encode("utf-8")).hexdigest()[:16]
+        existing = next((item for item in profile.social_battle_invites if item.get("invite_id") == invite_id), None)
+        if existing is None:
+            item = {
+                "invite_id": invite_id,
+                "challenger_id": player_id,
+                "challenger_name": profile.display_name,
+                "opponent_id": opponent_id,
+                "opponent_name": opponent.display_name,
+                "status": "pending",
+                "match_type": "friend_battle",
+                "ranked": False,
+                "rewards_enabled": False,
+            }
+            profile.social_battle_invites.append(dict(item))
+            opponent.social_battle_invites.append(dict(item))
+            profile.social_battle_invites[:] = profile.social_battle_invites[-50:]
+            opponent.social_battle_invites[:] = opponent.social_battle_invites[-50:]
+            persist_player_data(player_id)
+            persist_player_data(opponent_id)
+    return _social_view(player_id)
+
+
+@app.post("/social/{player_id}/battle-invites/{invite_id}/accept")
+def accept_social_battle_invite(
+    player_id: str,
+    invite_id: str,
+    request: EventRegistrationOperation,
+) -> dict:
+    if request.player_id != player_id:
+        raise HTTPException(status_code=403, detail="Başka bir oyuncu adına işlem yapılamaz.")
+    with SOCIAL_LOCK:
+        profile = _team_member_profile(player_id)
+        invite = next((item for item in profile.social_battle_invites if item.get("invite_id") == invite_id), None)
+        if invite is None or invite.get("opponent_id") != player_id:
+            raise HTTPException(status_code=404, detail="Arkadaş savaşı daveti bulunamadı.")
+        challenger_id = str(invite["challenger_id"])
+        session_id = str(invite.get("battle_session_id") or f"social-{invite_id}")
+        for owner_id in (player_id, challenger_id):
+            owner = _team_member_profile(owner_id)
+            for item in owner.social_battle_invites:
+                if item.get("invite_id") == invite_id:
+                    item["status"] = "accepted"
+                    item["battle_session_id"] = session_id
+            persist_player_data(owner_id)
+    battle = _create_unranked_social_session(
+        session_id,
+        challenger_id,
+        player_id,
+        match_type="friend_battle",
+    )
+    return {**_social_view(player_id), "battle": battle}
 
 
 def _team_summary(team: dict) -> dict:
@@ -3475,18 +4458,40 @@ def _team_view(team: dict, player_id: str) -> dict:
         for item in team.get("messages", [])[-100:]
         if item.get("visibility", "visible") == "visible"
     ]
-    challenges = [
-        {
-            **dict(item),
+    challenges = []
+    completed_session_ids: set[str] = set()
+    for stored in reversed(team.get("training_challenges", [])[-50:]):
+        item = dict(stored)
+        if item.get("status") == "accepted" and _battle_session_finished(item.get("battle_session_id")):
+            item["status"] = "completed"
+            completed_session_ids.add(str(item.get("battle_session_id") or ""))
+        challenges.append({
+            **item,
             "challenger_name": names.get(item.get("challenger_id"), "Oyuncu"),
             "opponent_name": names.get(item.get("opponent_id"), "Oyuncu"),
             "can_accept": (
                 item.get("opponent_id") == player_id
                 and item.get("status") == "pending"
             ),
-        }
-        for item in reversed(team.get("training_challenges", [])[-50:])
-    ]
+        })
+    # Read-time reconciliation also persists the terminal state. This covers
+    # battles completed by an older runner process before the authoritative
+    # finish callback learned how to close team invitations.
+    for session_id in completed_session_ids:
+        if session_id:
+            team_service.complete_training_challenge(session_id)
+    applicants = []
+    for applicant_id in team.get("application_ids", []):
+        try:
+            applicant = _team_member_profile(str(applicant_id))
+        except Exception:
+            continue
+        applicants.append({
+            "player_id": applicant.player_id,
+            "display_name": applicant.display_name,
+            "trophies": max(0, int(applicant.rating)),
+            "rank_name_tr": applicant.league_name_tr,
+        })
     overview = _public_team_profile_view(team["team_id"])
     return {
         "joined": True,
@@ -3495,6 +4500,9 @@ def _team_view(team: dict, player_id: str) -> dict:
         "statistics": overview["statistics"],
         "tournament": overview["tournament"],
         "owner_id": team.get("owner_id"),
+        "is_owner": team.get("owner_id") == player_id,
+        "cosmetics": dict(team.get("cosmetics") or {}),
+        "applications": applicants,
         "members": members,
         "module_requests": requests,
         "messages": messages,
@@ -3523,11 +4531,18 @@ def get_player_team(player_id: str) -> dict:
             profile.team_id = None
             profile.team_name = None
             persist_player_data(player_id)
+        listed_teams = team_service.list_teams()
+        pending_team = next(
+            (candidate for candidate in listed_teams if player_id in candidate.get("application_ids", [])),
+            None,
+        )
         return {
             "joined": False,
+            "application_pending": pending_team is not None,
+            "applied_team_id": pending_team.get("team_id") if pending_team else None,
             "available_teams": [
                 _team_summary(candidate)
-                for candidate in team_service.list_teams()
+                for candidate in listed_teams
                 if len(candidate.get("member_ids", []))
                 < int(candidate.get("member_limit", 30))
             ][:50],
@@ -3565,10 +4580,114 @@ def join_team(team_id: str, request: TeamJoinRequest) -> dict:
         )
     except TeamServiceError as exc:
         raise HTTPException(status_code=422, detail=str(exc)) from exc
+    return {
+        "joined": False,
+        "application_pending": True,
+        "applied_team_id": result["team_id"],
+        "replayed": result["replayed"],
+        "available_teams": [
+            _team_summary(candidate)
+            for candidate in team_service.list_teams()
+            if len(candidate.get("member_ids", [])) < int(candidate.get("member_limit", 30))
+        ][:50],
+        "request_policy": TEAM_REQUEST_POLICY,
+    }
+
+
+@app.post("/teams/{team_id}/applications/review")
+def review_team_application(team_id: str, request: TeamApplicationActionRequest) -> dict:
+    try:
+        result = team_service.review_application(
+            team_id=team_id,
+            owner_id=request.player_id,
+            applicant_id=request.applicant_id,
+            accept=request.accept,
+            request_id=request.request_id,
+        )
+    except TeamServiceError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+    if result["accepted"]:
+        applicant = _team_member_profile(request.applicant_id)
+        applicant.team_id = team_id
+        applicant.team_name = result["team"]["name"]
+        persist_player_data(applicant.player_id)
+    return {**_team_view(result["team"], request.player_id), "replayed": result["replayed"]}
+
+
+@app.post("/teams/{team_id}/members/remove")
+def remove_team_member(team_id: str, request: TeamMemberActionRequest) -> dict:
+    try:
+        result = team_service.remove_member(
+            team_id=team_id,
+            owner_id=request.player_id,
+            member_id=request.member_id,
+            request_id=request.request_id,
+        )
+    except TeamServiceError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+    member = _team_member_profile(request.member_id)
+    member.team_id = None
+    member.team_name = None
+    persist_player_data(member.player_id)
+    return {**_team_view(result["team"], request.player_id), "replayed": result["replayed"]}
+
+
+@app.post("/teams/{team_id}/leave")
+def leave_team(team_id: str, request: TeamActionRequest) -> dict:
+    try:
+        result = team_service.leave_team(
+            team_id=team_id,
+            player_id=request.player_id,
+            request_id=request.request_id,
+        )
+    except TeamServiceError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
     profile = _team_member_profile(request.player_id)
-    profile.team_id = result["team_id"]
-    profile.team_name = result["team"]["name"]
-    persist_player_data(request.player_id)
+    profile.team_id = None
+    profile.team_name = None
+    persist_player_data(profile.player_id)
+    return {
+        "joined": False,
+        "replayed": result["replayed"],
+        "available_teams": [
+            _team_summary(candidate)
+            for candidate in team_service.list_teams()
+            if len(candidate.get("member_ids", [])) < int(candidate.get("member_limit", 30))
+        ][:50],
+        "request_policy": TEAM_REQUEST_POLICY,
+    }
+
+
+@app.post("/teams/{team_id}/owner/transfer")
+def transfer_team_owner(team_id: str, request: TeamMemberActionRequest) -> dict:
+    try:
+        result = team_service.transfer_ownership(
+            team_id=team_id,
+            owner_id=request.player_id,
+            member_id=request.member_id,
+            request_id=request.request_id,
+        )
+    except TeamServiceError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+    return {**_team_view(result["team"], request.player_id), "replayed": result["replayed"]}
+
+
+@app.post("/teams/{team_id}/cosmetics")
+def update_team_cosmetics(team_id: str, request: TeamCosmeticsRequest) -> dict:
+    try:
+        result = team_service.set_cosmetics(
+            team_id=team_id,
+            owner_id=request.player_id,
+            selections={
+                "avatar_id": request.avatar_id,
+                "avatar_frame_id": request.avatar_frame_id,
+                "bar_background_id": request.bar_background_id,
+                "name_frame_id": request.name_frame_id,
+            },
+            request_id=request.request_id,
+        )
+    except TeamServiceError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
     return {**_team_view(result["team"], request.player_id), "replayed": result["replayed"]}
 
 
@@ -3696,9 +4815,16 @@ def accept_team_training_challenge(
         )
     except TeamServiceError as exc:
         raise HTTPException(status_code=422, detail=str(exc)) from exc
+    challenge = result["challenge"]
+    battle = _create_unranked_social_session(
+        str(challenge["battle_session_id"]),
+        str(challenge["challenger_id"]),
+        str(challenge["opponent_id"]),
+        match_type="team_training",
+    )
     return {
         **_team_view(team_service.get_team(team_id), request.player_id),
-        "operation": result,
+        "operation": {**result, "battle": battle},
     }
 
 
@@ -4065,9 +5191,139 @@ def reset_player_module_talents(
 
 
 @app.get("/events")
-def get_events() -> dict:
-    """Public daily-meta catalog and competition hub, including canonical AI."""
-    return build_events_view(_leaderboard_profile_rows())
+def get_events(player_id: str | None = Query(None)) -> dict:
+    """Competition hub plus viewer registration/readiness state."""
+    view = build_events_view(_leaderboard_profile_rows())
+    if not player_id:
+        return view
+    profile = _team_member_profile(player_id)
+    week_id = str(view["weekly_tournament"]["period"]["id"])
+    month_id = str(view["team_tournament"]["period"]["id"])
+    team = team_service.team_for_player(player_id)
+    owner = _team_member_profile(str(team.get("owner_id"))) if team else None
+    view["viewer"] = {
+        "player_id": player_id,
+        "weekly_registered": profile.weekly_tournament_registered_period == week_id,
+        "weekly_entry_fee": int(view["weekly_tournament"].get("entry_fee", 0)),
+        "weekly_trophies_earned": (
+            profile.weekly_tournament_trophies_earned
+            if profile.weekly_tournament_registered_period == week_id
+            else 0
+        ),
+        "team_id": profile.team_id,
+        "team_owner": bool(team and team.get("owner_id") == player_id),
+        "team_registered": bool(
+            owner and owner.team_tournament_registered_period == month_id
+        ),
+    }
+    return view
+
+
+@app.post("/events/weekly/register")
+def register_weekly_tournament(request: EventRegistrationOperation) -> dict:
+    profile = _team_member_profile(request.player_id)
+    # Registration resets weekly counters, so materialize an unopened reward
+    # from the just-closed week before advancing the period.
+    _settle_competition_rewards(request.player_id)
+    view = build_events_view(_leaderboard_profile_rows())
+    period_id = str(view["weekly_tournament"]["period"]["id"])
+    entry_fee = int(view["weekly_tournament"].get("entry_fee", 100))
+    if profile.weekly_tournament_registered_period != period_id:
+        if profile.circuit_credits < entry_fee:
+            raise HTTPException(status_code=422, detail="Turnuva katılımı için yeterli Devre Kredisi yok.")
+        profile.circuit_credits -= entry_fee
+        profile.weekly_tournament_registered_period = period_id
+        profile.weekly_tournament_period = period_id
+        profile.weekly_tournament_matches = 0
+        profile.weekly_tournament_wins = 0
+        profile.weekly_tournament_trophies_earned = 0
+        persist_player_data(request.player_id)
+    return get_events(request.player_id)
+
+
+@app.post("/events/team/register")
+def register_team_tournament(request: EventRegistrationOperation) -> dict:
+    profile = _team_member_profile(request.player_id)
+    _settle_competition_rewards(request.player_id)
+    team = team_service.team_for_player(request.player_id)
+    if team is None:
+        raise HTTPException(status_code=422, detail="Takım turnuvası için bir takıma katılmalısın.")
+    if team.get("owner_id") != request.player_id:
+        raise HTTPException(status_code=422, detail="Takım turnuvasına yalnız takım lideri kayıt yapabilir.")
+    view = build_events_view(_leaderboard_profile_rows())
+    profile.team_tournament_registered_period = str(view["team_tournament"]["period"]["id"])
+    persist_player_data(request.player_id)
+    return get_events(request.player_id)
+
+
+@app.post("/events/team/fixtures/{fixture_id}/check-in")
+def check_in_team_tournament_fixture(
+    fixture_id: str,
+    request: EventRegistrationOperation,
+) -> dict:
+    view = get_events(request.player_id)
+    if not view.get("viewer", {}).get("team_registered"):
+        raise HTTPException(status_code=422, detail="Takım bu turnuvaya kayıtlı değil.")
+    fixture = next(
+        (
+            item
+            for item in view["team_tournament"].get("fixtures", [])
+            if item.get("fixture_id") == fixture_id
+        ),
+        None,
+    )
+    if fixture is None:
+        raise HTTPException(status_code=404, detail="Turnuva eşleşmesi bulunamadı.")
+    if fixture.get("status") != "live":
+        raise HTTPException(status_code=422, detail="Bu canlı eşleşmenin giriş saati henüz açık değil.")
+    pairing = next(
+        (
+            item
+            for item in fixture.get("member_pairings", [])
+            if request.player_id in {item.get("home_player_id"), item.get("away_player_id")}
+        ),
+        None,
+    )
+    if pairing is None:
+        raise HTTPException(status_code=422, detail="Bu fikstürde oyuncuya atanmış maç yok.")
+    opponent_id = (
+        pairing["away_player_id"]
+        if pairing["home_player_id"] == request.player_id
+        else pairing["home_player_id"]
+    )
+    session_id = str(pairing["battle_session_id"])
+    bot = next((item for item in BOTS if str(item.get("id")) == opponent_id), None)
+    if bot is not None:
+        pair = MatchmakingPair(
+            match_id=session_id,
+            player_a_id=request.player_id,
+            player_b_id=opponent_id,
+            rating_difference=abs(
+                int(_team_member_profile(request.player_id).rating)
+                - int(bot.get("rating", 0))
+            ),
+            opponent_type="ai",
+        )
+        _create_matchmaking_ai_session(
+            pair,
+            bot_override=bot,
+            match_type_override="team_tournament",
+            ranked_eligible_override=False,
+        )
+        battle = {
+            "session_id": session_id,
+            "players": [request.player_id, opponent_id],
+            "opponent_type": "ai",
+            "match_type": "team_tournament",
+        }
+    else:
+        battle = _create_unranked_social_session(
+            session_id,
+            request.player_id,
+            str(opponent_id),
+            match_type="team_tournament",
+        )
+    return {"fixture": fixture, "pairing": pairing, "battle": battle}
 
 
 def _daily_meta_view(profile) -> dict:
@@ -4316,6 +5572,8 @@ def update_profile_cosmetics(
             player_id,
             avatar_id=request.avatar_id,
             avatar_frame_id=request.avatar_frame_id,
+            battle_emoji_id=request.battle_emoji_id,
+            profile_background_id=request.profile_background_id,
         )
     except PlayerProfileError as exc:
         raise HTTPException(status_code=422, detail=str(exc)) from exc
@@ -5515,6 +6773,9 @@ def _create_matchmaking_ai_session(
     pair,
     *,
     background_tasks: BackgroundTasks | None = None,
+    bot_override: dict | None = None,
+    match_type_override: str | None = None,
+    ranked_eligible_override: bool | None = None,
 ) -> None:
     """İnsan kuyruğu zaman aşımında normal PvP protokolüne AI slotu ekler."""
     try:
@@ -5527,47 +6788,14 @@ def _create_matchmaking_ai_session(
     from .game.ai_archetypes import BOT_ARCHETYPE_IDS
 
     profile = player_profile_service.get_or_create(pair.player_a_id)
-    bot = select_bot(profile.rating, pair.match_id)
-    match_type = "arena_ai"
-    if profile.team_id:
-        event_view = build_events_view(_leaderboard_profile_rows())
-        week_id = str(event_view["weekly_tournament"]["period"]["id"])
-        weekly_team_matches = (
-            profile.team_tournament_week_matches
-            if profile.team_tournament_week_period == week_id
-            else 0
-        )
-        fixture = next(
-            (
-                item
-                for item in event_view["team_tournament"]["fixtures"]
-                if profile.team_id in {
-                    item["home_team_id"],
-                    item["away_team_id"],
-                }
-            ),
-            None,
-        )
-        if fixture is not None and weekly_team_matches < 2:
-            opponent_team_id = (
-                fixture["away_team_id"]
-                if fixture["home_team_id"] == profile.team_id
-                else fixture["home_team_id"]
-            )
-            candidates = [
-                item for item in BOTS
-                if item.get("team_id") == opponent_team_id
-            ]
-            if candidates:
-                candidates.sort(
-                    key=lambda item: (
-                        abs(int(item.get("rating", 0)) - int(profile.rating)),
-                        str(item.get("id")),
-                    )
-                )
-                bot = dict(candidates[0])
-                bot["match_rating"] = int(bot["rating"])
-                match_type = "team_tournament"
+    bot = dict(bot_override or select_bot(profile.rating, pair.match_id))
+    bot.setdefault("match_rating", int(bot.get("rating", profile.rating)))
+    match_type = str(match_type_override or "arena_ai")
+    ranked_eligible = (
+        bool(ranked_eligible_override)
+        if ranked_eligible_override is not None
+        else match_type == "arena_ai"
+    )
 
     pvp_service.create_session(
         pair.match_id,
@@ -5575,7 +6803,7 @@ def _create_matchmaking_ai_session(
         auto_start_when_ready=True,
         match_type=match_type,
         season_id=monthly_season_descriptor()["id"],
-        ranked_eligible=False,
+        ranked_eligible=ranked_eligible,
         normalized=False,
         laboratory_effects_enabled=False,
     )
@@ -5593,8 +6821,12 @@ def _create_matchmaking_ai_session(
         module_id: max(0, min(14, round(sum(profile.module_upgrade_levels.get(mid, 0) for mid in profile.preferred_battle_pool_ids) / 6)))
         for module_id in bot["battle_pool_ids"]
     }
+    # Eşleştirme oturumundaki rakip slotu her maçta yeniden üretilir. Günlük
+    # meta tohumunu bu geçici slotla değil, kanonik bot kimliğiyle kurarak aynı
+    # AI oyuncunun UTC günü boyunca aynı metayı kullanmasını sağla.
+    ai_meta_seed = str(bot.get("id") or pair.player_b_id)
     session.engine.state.player_daily_meta_ids[pair.player_b_id] = daily_meta_for_seed(
-        pair.player_b_id
+        ai_meta_seed
     ).get("id", "")
     session.ai_profile_options[pair.player_b_id] = bot
     attach_player_laboratory_to_session(pair.match_id, pair.player_a_id)
@@ -5670,8 +6902,10 @@ async def create_local_ai_session(
         )
         attach_player_laboratory_to_session(session_id, request.player_id)
         session = pvp_service.get_session(session_id)
+        # Yerel AI slotu UUID içerdiği için doğrudan kullanılırsa her maçta
+        # farklı meta üretir. Arşetip günlük rakip kimliği olarak davranır.
         session.engine.state.player_daily_meta_ids[ai_player_id] = daily_meta_for_seed(
-            ai_player_id
+            f"local-ai-archetype:{ai_archetype_id}"
         ).get("id", "")
         pvp_service.submit_setup(
             session_id,
@@ -5993,6 +7227,8 @@ async def pvp_websocket(
             identity = participant_auth_service.verify_access_token(
                 access_token or ""
             )
+            if platform_service.token_is_revoked(identity.player_id, identity.token_id):
+                raise AuthenticationError("Bu cihaz oturumu sonlandırılmış.")
             if identity.player_id != player_id:
                 raise AuthenticationError(
                     "WebSocket oyuncu kimliği belirteçle eşleşmiyor."

@@ -157,6 +157,8 @@ class PlayerBattleState:
     core_type: str = "core_resonance"
     core_level: int = 1
     core_skills: tuple[str, ...] = ()
+    selected_battle_emoji_id: str = "none"
+    last_battle_emoji_at_ms: int = -10_000
     discounted_deployments: int = 0
     total_circuit_credits_earned: int = 0
     total_circuit_credits_spent: int = 0
