@@ -93,11 +93,6 @@ button, input { font: inherit; }
   transition: border-color .15s ease, background .15s ease;
 }
 
-.board-cell.drag-over {
-  border-color: #9dc1ff;
-  background: #17273e;
-}
-
 /* =========================================================
    GRIDSHARD Beta.33 — Corelight visual identity + Season Zero
    Brighter cyan/indigo/gold light fields preserve the tactical dark base
@@ -695,17 +690,6 @@ body[data-app-screen="play"] .battle-pool-panel:not([hidden]) {
   .initial-circuit-picker::before { position:static;grid-column:1/-1;width:max-content; }
 }
 
-.board-cell.drag-over[data-occupied="true"] {
-  border-color:var(--gs-reactor-gold,#f4c85a);
-  background:rgba(244,200,90,.14);
-  box-shadow:inset 0 0 18px rgba(244,200,90,.22),0 0 14px rgba(244,200,90,.18);
-}
-
-.board-cell.drag-over[data-occupied="true"] .module-card {
-  outline:2px solid rgba(244,200,90,.82);
-  outline-offset:-3px;
-}
-
 .module-shelf {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -925,7 +909,6 @@ body[data-app-screen="play"] .battle-pool-panel:not([hidden]) {
   animation:gs-booster-eligible-pulse .82s ease-in-out infinite alternate;
 }
 .module-card.booster-target-ineligible { filter:brightness(.38) saturate(.45);opacity:.62; }
-.module-card.booster-drop-ready { outline-color:#fff !important;filter:brightness(1.65) saturate(1.35); }
 @keyframes gs-booster-eligible-pulse {
   from { box-shadow:0 0 10px rgba(255,225,106,.62),0 0 22px rgba(71,230,255,.34); }
   to { box-shadow:0 0 22px rgba(255,225,106,1),0 0 46px rgba(71,230,255,.72); }
@@ -4311,12 +4294,6 @@ body[data-local-finished="true"] .module-card {
   display:none;
 }
 
-.module-card.tap-selected {
-  outline:3px solid var(--gs-reactor-gold,#f4c85a);
-  outline-offset:-2px;
-  box-shadow:0 0 0 2px rgba(7,11,20,.9),0 0 20px rgba(244,200,90,.55);
-}
-
 .board-cell.tap-drop-target {
   cursor:pointer;
   border-color:rgba(53,229,210,.78);
@@ -4422,11 +4399,6 @@ body[data-local-finished="true"] .module-card {
     background:rgba(10,21,48,.94);
   }
 
-  body[data-app-screen="play"][data-local-status="battle"][data-tap-placement="idle"] .mobile-placement-controls,
-  body[data-app-screen="play"][data-online-status="battle"][data-tap-placement="idle"] .mobile-placement-controls {
-    display:none !important;
-  }
-
   .mobile-placement-controls strong {
     min-width:0;
     color:var(--gs-ice-white,#f3f7ff);
@@ -4468,35 +4440,12 @@ body[data-local-finished="true"] .module-card {
     overflow:hidden;
   }
 
-  body[data-mobile-battle-panel="shelf"] .arena-panel,
-  body:not([data-mobile-battle-panel="shelf"]) .shelf-panel {
-    display:none !important;
-  }
-
-  body[data-mobile-battle-panel="shelf"] .shelf-panel {
-    display:flex;
-    flex-direction:column;
-  }
-
   body[data-app-screen="play"][data-local-status="battle"] .duel-arena,
   body[data-app-screen="play"][data-online-status="battle"] .duel-arena {
     display:block;
     width:100%;
     height:calc(100% - 30px);
     min-height:0;
-  }
-
-  .duel-vs,
-  body[data-mobile-battle-panel="player"] .duel-enemy-side,
-  body[data-mobile-battle-panel="enemy"] .duel-player-side {
-    display:none !important;
-  }
-
-  body[data-mobile-battle-panel="player"] .duel-player-side,
-  body[data-mobile-battle-panel="enemy"] .duel-enemy-side {
-    display:flex;
-    width:100%;
-    height:100%;
   }
 
   body[data-app-screen="play"][data-local-status="battle"] .duel-side .board,
@@ -5197,10 +5146,6 @@ details.battle-pool-preset-bar { max-height:min(22dvh,170px); }
     width:min(460px,calc(100vw - 16px));
     min-height:42px;
     padding:2px 5px;
-  }
-  body[data-app-screen="play"][data-local-status="battle"][data-tap-placement="idle"] .mobile-placement-controls,
-  body[data-app-screen="play"][data-online-status="battle"][data-tap-placement="idle"] .mobile-placement-controls {
-    display:none !important;
   }
   .mobile-placement-controls button { min-height:36px; }
   body[data-app-screen="play"] .arena-panel > .panel-title-row {
@@ -8298,40 +8243,6 @@ body[data-app-screen="play"] .enemy-board-cell .hp-bar {
   height:6px;
   margin-top:2px;
 }
-.drag-ghost-preview {
-  display:grid;
-  gap:3px;
-  min-width:136px;
-  max-width:172px;
-  padding:9px 11px;
-  border:1px solid rgba(126,225,255,.42);
-  border-radius:12px;
-  background:linear-gradient(155deg, rgba(10,31,58,.98), rgba(6,15,30,.98));
-  box-shadow:0 16px 36px rgba(0,0,0,.42), 0 0 18px rgba(72,244,224,.14);
-  color:#eef6ff;
-  pointer-events:none;
-  z-index:9999;
-}
-.drag-ghost-preview strong {
-  font-size:.76rem;
-  line-height:1.05;
-  letter-spacing:.01em;
-}
-.drag-ghost-preview span {
-  color:#a7c1dd;
-  font-size:.60rem;
-  line-height:1.15;
-}
-.drag-ghost-preview--overcharge_chip { border-color:rgba(255,215,99,.62); box-shadow:0 16px 36px rgba(0,0,0,.42),0 0 18px rgba(255,214,112,.18); }
-.drag-ghost-preview--emergency_repair { border-color:rgba(121,233,168,.62); }
-.drag-ghost-preview--cooling_burst { border-color:rgba(111,235,255,.62); }
-.drag-ghost-preview--signal_cleanser { border-color:rgba(193,133,255,.62); }
-.drag-ghost-preview--module.drag-ghost-preview--enerji { border-color:rgba(82,220,255,.56); }
-.drag-ghost-preview--module.drag-ghost-preview--saldırı { border-color:rgba(255,104,129,.56); }
-.drag-ghost-preview--module.drag-ghost-preview--savunma { border-color:rgba(136,185,255,.56); }
-.drag-ghost-preview--module.drag-ghost-preview--destek { border-color:rgba(120,226,132,.56); }
-.drag-ghost-preview--module.drag-ghost-preview--sabotaj { border-color:rgba(187,125,255,.56); }
-
 /* GRIDSHARD Beta.38 — connected circuit board and stable screen headings. */
 body[data-app-screen="play"][data-local-status="battle"] .duel-side .board,
 body[data-app-screen="play"][data-online-status="battle"] .duel-side .board {

@@ -3362,3 +3362,118 @@ body[data-app-screen="play"] .module-explosion.core-explosion::after {
     100% { opacity:0; }
   }
 }
+
+/* Beta.67 — one portrait battle surface and a reserved profile terminal bar. */
+@media (max-width:680px) {
+  body[data-app-screen="play"] .mobile-battle-tabs,
+  body[data-app-screen="play"] .mobile-placement-controls {
+    display:none !important;
+  }
+
+  body[data-app-screen="play"][data-local-status="battle"] .battle-layout,
+  body[data-app-screen="play"][data-online-status="battle"] .battle-layout {
+    width:calc(100vw - 8px) !important;
+    height:calc(100dvh - 8px) !important;
+    grid-template-rows:minmax(0,1fr) 96px !important;
+    gap:4px !important;
+  }
+
+  body[data-app-screen="play"][data-local-status="battle"] .arena-panel,
+  body[data-app-screen="play"][data-online-status="battle"] .arena-panel {
+    min-height:0 !important;
+    padding:2px 4px !important;
+    display:block !important;
+    overflow:hidden !important;
+  }
+
+  body[data-app-screen="play"][data-local-status="battle"] .vertical-circuit-arena,
+  body[data-app-screen="play"][data-online-status="battle"] .vertical-circuit-arena {
+    --gs-vertical-board-size:clamp(
+      156px,
+      min(27dvh,calc(100vw - 112px)),
+      218px
+    );
+    --gs-battle-card-size:calc((var(--gs-vertical-board-size) - 20px)/5);
+    height:100% !important;
+    min-height:0 !important;
+    grid-template-rows:auto 26px auto !important;
+    align-content:center !important;
+    gap:0 !important;
+  }
+
+  body[data-app-screen="play"] .vertical-circuit-arena .duel-enemy-side,
+  body[data-app-screen="play"] .vertical-circuit-arena .duel-player-side {
+    width:var(--gs-vertical-board-size) !important;
+    min-height:0 !important;
+    display:grid !important;
+    visibility:visible !important;
+    opacity:1 !important;
+  }
+
+  body[data-app-screen="play"] .vertical-circuit-arena .duel-enemy-side {
+    grid-row:1 !important;
+    grid-template-rows:auto var(--gs-vertical-board-size) !important;
+  }
+
+  body[data-app-screen="play"] .vertical-circuit-arena .duel-vs {
+    grid-row:2 !important;
+    align-self:center !important;
+  }
+
+  body[data-app-screen="play"] .vertical-circuit-arena .duel-player-side {
+    grid-row:3 !important;
+    grid-template-rows:var(--gs-vertical-board-size) auto !important;
+  }
+
+  body[data-app-screen="play"] .vertical-circuit-arena .duel-enemy-identity {
+    width:min(calc(var(--gs-vertical-board-size) + 92px),calc(100vw - 16px)) !important;
+    min-height:calc(var(--gs-battle-card-size) + 18px) !important;
+    margin:0 0 2px !important;
+  }
+
+  body[data-app-screen="play"] .vertical-circuit-arena .duel-player-identity {
+    min-height:18px !important;
+    margin:2px 0 0 !important;
+  }
+
+  body[data-app-screen="play"] .enemy-deck-preview {
+    min-height:var(--gs-battle-card-size) !important;
+  }
+
+  body[data-app-screen="play"][data-local-status="battle"] .shelf-panel,
+  body[data-app-screen="play"][data-online-status="battle"] .shelf-panel {
+    min-height:96px !important;
+    max-height:96px !important;
+    display:grid !important;
+    visibility:visible !important;
+  }
+
+  #profile-summary-panel,
+  #avatar-customization-screen,
+  #rewards-hub-screen,
+  #daily-rewards-screen,
+  #daily-missions-screen,
+  #season-rewards-screen,
+  #friends-screen,
+  #settings-summary-panel {
+    padding-bottom:calc(76px + env(safe-area-inset-bottom)) !important;
+    scroll-padding-bottom:calc(76px + env(safe-area-inset-bottom));
+  }
+
+  .profile-terminal-tabs {
+    position:fixed !important;
+    z-index:96 !important;
+    right:auto !important;
+    bottom:calc(67px + max(5px,env(safe-area-inset-bottom))) !important;
+    left:50% !important;
+    width:min(calc(100vw - 24px),456px) !important;
+    min-height:52px;
+    margin:0 !important;
+    padding:7px 8px !important;
+    grid-template-columns:repeat(5,minmax(0,1fr)) !important;
+    transform:translateX(-50%);
+    border:1px solid rgba(80,210,210,.28);
+    border-radius:13px 13px 0 0;
+    box-shadow:0 -9px 24px rgba(1,9,21,.62);
+  }
+}

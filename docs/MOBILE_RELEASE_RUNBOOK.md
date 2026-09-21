@@ -9,6 +9,12 @@ Bu akış sıra kilitlidir: **Android gerçek cihaz → Google Play kapalı test
 3. Backend'de `GRIDSHARD_CORS_ORIGINS=https://localhost,capacitor://localhost` değerini ayarlayın.
 4. Google Play Console, Apple Developer/App Store Connect ve BrowserStack kimliklerini GitHub secrets olarak tanımlayın.
 
+## Uygulama içi satın alma karar kapısı
+
+Bu yayın hattında gerçek para ile ürün, premium sezon yolu veya uygulama içi satın alma **kapsam dışıdır**. İstemciye Google Play Billing / StoreKit SDK'sı eklenmez; mağaza ürün kimliği, makbuz doğrulama ucu veya gerçek para fiyatı tanımlanmaz. Oyundaki sandık ve teklifler yalnız oyun içi kazanılan para birimlerini kullanır.
+
+Bu karar değişirse mağaza ekranına fiyat eklenmeden önce ayrı bir güvenlik paketi açılmalıdır: sunucu tarafı Google/Apple makbuz doğrulaması, idempotent teslim kaydı, iade/iptal işleme, bölgesel fiyat ve çocuk/ebeveyn politikaları tamamlanmadan satın alma özelliği yayınlanamaz.
+
 Paket kimliği mağazada uygulama kaydı oluşturulduktan sonra değiştirilmemelidir. Bu nedenle `android/` ve `ios/` projeleri, gerçek kimlik kesinleşmeden depoya üretilmez.
 
 ## Ortak mobil web paketi
@@ -73,5 +79,6 @@ python tools/mobile_release_gate.py --stage ios `
 
 - Otomatik: statik mobil paket, API yönlendirme, auth/WebSocket adresleme, CORS yapılandırması, Android/iPhone tarayıcı matrisi, gerçek cihaz kanıt şeması ve sıralı yayın kapısı.
 - Dış bağımlılık: kalıcı bundle id kararı, üretim HTTPS backend'i, mağaza hesapları, imza anahtarları/provisioning, gerçek tester grupları ve mağaza panelindeki yükleme/onay işlemleri.
+- Para kazanma: bu sürümde ertelendi; mağaza formlarında uygulama içi satın alma bulunmadığı açıkça seçilmelidir.
 
 Resmî başvuru kaynakları: [Capacitor kurulumu](https://capacitorjs.com/docs), [Android App Bundle yükleme](https://developer.android.com/studio/publish/upload-bundle), [Google Play test kanalları](https://support.google.com/googleplay/android-developer/answer/9845334), [TestFlight genel bakış](https://developer.apple.com/help/app-store-connect/test-a-beta-version/testflight-overview).

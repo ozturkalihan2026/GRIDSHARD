@@ -7,7 +7,7 @@
 | Modül | Rol | Yaygınlık | Akım |
 |---|---|---|---:|
 | Lazer | Saldırı | common | 2 |
-| Kalkan | Savunma | common | 3 |
+| Kalkan | Savunma | common | 2 |
 | Onarım Modülü | Destek | common | 2 |
 | Soğutucu | Destek | common | 2 |
 | Batarya | Ekonomi | common | 2 |
@@ -188,7 +188,7 @@
 | # | Modül | Rol | Rarity | Açılış | Akım | Temel CAN | Temel Hasar |
 |---:|---|---|---|---|---:|---:|---:|
 | 1 | Lazer | saldırı | common | Başlangıç | 2 | 100 | 12 |
-| 2 | Kalkan | savunma | common | Başlangıç | 3 | 150 | 0 |
+| 2 | Kalkan | savunma | common | Başlangıç | 2 | 150 | 0 |
 | 3 | Onarım Modülü | destek | common | Başlangıç | 2 | 100 | 0 |
 | 4 | Soğutucu | destek | common | Başlangıç | 2 | 100 | 0 |
 | 5 | Batarya | ekonomi | common | Başlangıç | 2 | 120 | 0 |

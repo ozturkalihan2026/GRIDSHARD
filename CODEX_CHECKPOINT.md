@@ -1,35 +1,111 @@
 # GRIDSHARD geliştirme kontrol noktası
 
-Güncelleme tarihi: 20 Eylül 2026
+Güncelleme tarihi: 21 Eylül 2026
 
 Bu dosya güncel çalışma paketini ve korunması gereken önceki kararları içerir. Kullanıcı `checkpoint'ten devam et` dediğinde önce bu dosya, ardından `git status --short` okunmalıdır.
 
-## Sıradaki paket — Beta.67 gerçek telefon savaş ve profil yerleşimi
+## Aktif paket — Beta.69 otomatik yerleşim ve devre kompozisyonu
 
-Kaynak doğrulama: Aynı Wi‑Fi ağında `192.168.1.104:8879` üzerinden açılan Android/Chrome portre görünümünün dört ekran görüntüsü incelendi. Bu turda uygulama kodu değiştirilmedi; aşağıdaki maddeler sonraki uygulama turunun bağlayıcı emirleridir.
+1. `[x]` Tek dokunuşla sunucu yerleşimini geri getir
+   - Raf kartına dokunmak artık hücre seçimi başlatmıyor; istemci yalnız modül kimliğini gönderiyor ve sunucu uygun boş hücreyi deterministik olarak seçiyor.
+   - Koordinatlı `deploy_module` istemci yolu, seçili kart/hücre vurgusu ve devre hücrelerindeki yerleştirme tıklamaları kaldırıldı.
+   - Eski Relay `beginDrag/dropOnCell` yolu artık komut üretmiyor. Sunucu, eski istemciden `x/y` gelse bile oyuncu seçimini kullanmıyor; bütün yeni kopyalar `server_automatic` yerleşim moduyla üretiliyor.
+2. `[x]` Kalkan Akım maliyetini kanonik `2` değeriyle eşleştir
+   - Sunucu kanonu zaten `2` idi; istemcide kalmış `3` değeri ve kanon belgesindeki eski satırlar `2` olarak düzeltildi.
+3. `[x]` Kırılamayan yardımcı-modül yığınını kompozisyon kurallarıyla engelle
+   - Savunma, Destek, Sistem ve Sabotaj sınıflarının her biri sahada en fazla `3` aktif modül taşıyabilir.
+   - Bu dört sınıfta aynı karttan aynı anda en fazla `2` aktif kopya bulunabilir.
+   - Saldırı dışı aktif modül sayısı, aktif Saldırı sayısını en fazla `2` aşabilir; örneğin iki yardımcı karttan sonra üçüncü yardımcı kart için önce Saldırı modülü gerekir.
+   - Aynı kurallar insan ve AI yerleşim kararında sunucu tarafından uygulanır; eski yerleştirme/değiştirme komutları da sınırı aşamaz.
+4. `[x]` Destek etkilerinin üst üste binmesini sınırla
+   - Aynı hedef aynı destek adımında yalnız bir Onarım, bir Soğutma ve bir Aşırı Hızlandırma etkisi alabilir.
+   - Bir Saldırı modülü komşu Güçlendirici, Hedefleme Bilgisayarı ve Aşırı Hızlandırıcı arasından yalnız en güçlü tek saldırı desteğini kullanır.
+5. `[x]` Süreyle Çekirdek açma ve eritme kuralını kaldır
+   - `03:30` sonrası doğrudan Çekirdek hedefleme ile `04:00` sonrası otomatik Çekirdek hasarı kaldırıldı.
+   - `03:00` Devre Gerilimi yalnız modül hattındaki saldırı/onarım dengesini hızlandırır; Çekirdek ancak diğer yaşayan modüller ve sistem hattı temizlendikten sonra normal hedef sırasıyla vurulabilir.
+   - Verilen hasardan Akım kazanımı, öndeki oyuncuya ek kartopu etkisi yaratacağı için eklenmedi; yardımcı kartların CAN ve enerji değerleri de kompozisyon sınırıyla birlikte topluca cezalandırılmadı.
 
-1. `[ ]` Mobil savaşta oyuncu ve rakip devrelerini aynı arena görünümünde göster
+Doğrulama: Kullanıcının isteği gereği otomatik test, tarayıcı veya savaş denemesi çalıştırılmadı. Değişiklikler kod, kanonik veri ve kural belgeleri üzerinden statik olarak incelendi.
+
+## Aktif paket — Beta.68 üretim kimliği ve yayın sınırı
+
+1. `[x]` Apple ile giriş dönüşünü üretim güvenliğiyle tamamla
+   - Apple yetkilendirmesi `form_post`, süreli `state` ve tek kullanımlık `nonce` ile başlatılıyor.
+   - Apple client secret, Team ID + Key ID + P-256 özel anahtardan ES256 olarak sunucuda imzalanıyor; hazır istemci sırrı kullanımı da kontrollü dağıtımlar için korunuyor.
+   - Apple kimlik belirteci Apple JWKS anahtarından RS256 ile doğrulanıyor; issuer, audience, süre ve nonce talepleri kabulden önce denetleniyor.
+   - Hesap bağlama başka bir oyuncuya ait sağlayıcı kimliğini devralmıyor; giriş modu ise mevcut bağlı hesabı bulup güvenli cihaz değişimine yönlendiriyor.
+
+2. `[x]` Google/Apple hesabını gerçek çoklu cihaz oturumuna dönüştür
+   - Sağlayıcı dönüşü erişim belirteci taşımayan, beş dakika geçerli ve tek kullanımlık bir değişim kodu üretiyor.
+   - Yeni cihaz kendi cihaz kimliği ve kendi yerel sırrıyla bağımsız doğrulayıcı alıyor; eski cihazın sırrı kopyalanmıyor veya üzerine yazılmıyor.
+   - JSON ve PostgreSQL kimlik depoları cihaz bazlı doğrulayıcı haritasına geçirildi. Eski tek-sır kayıtları ilk başarılı girişte geriye uyumlu biçimde taşınıyor.
+   - Cihaz oturumu iptal edildiğinde hem etkin belirteçler hem o cihazın yeniden giriş doğrulayıcısı kaldırılıyor; hesap kurtarma yalnız kurtaran cihaz için yeni sır kuruyor.
+
+3. `[x]` Üretimde tanılama rotalarını kapat
+   - `GRIDSHARD_RUNTIME_MODE=production` altında `/web-test` ve bütün `/web-test/*` istekleri rota çalışmadan açık `404 Not Found` alıyor.
+
+4. `[x]` Çalışma zamanı verilerini Git indeksinden güvenle çıkar
+   - `.gitignore`, bütün `server/data/web_test_*` JSON/BAK/TMP türevlerini kapsıyor.
+   - Önceden izlenen sekiz JSON/BAK dosyası yalnız Git indeksinden çıkarıldı; dosyaların tamamının çalışma dizininde kaldığı ayrıca doğrulandı.
+
+5. `[x]` Eski HTML5 drag-and-drop istemci yolunu kaldır
+   - Modül yerleşimi ve güçlendirici hedefi masaüstü/mobil ayrımı olmadan dokun-seç/yerleştir akışını kullanıyor.
+   - `dragstart`, `drop`, `dataTransfer`, sürükleme hayaleti ve bunlara ait ölü CSS kuralları istemciden çıkarıldı.
+   - Gerçek Android/iOS uzun basma, kaydırma, iptal ve performans doğrulaması kullanıcının cihaz testinde bekliyor; bu nedenle aşağıdaki birleşik yayın maddesi tamamen kapatılmadı.
+
+6. `[x]` Test bağımlılığı listesini düzelt
+   - Kodda ve testlerde kullanımı olmayan `httpx2` kaldırıldı; FastAPI test istemcisinin kullandığı gerçek `httpx` bağımlılığı korundu.
+
+7. `[x]` CI iş akışlarını sürüm kontrolüne al
+   - `.github/workflows` genel gizli-klasör ignore kuralından güvenli istisna olarak çıkarıldı.
+   - GitHub Actions; Python 3.12 sunucu sözleşmelerini, Node 22/pnpm istemci sözleşmelerini ve ikisi geçtikten sonra release guard + kaynak ZIP/SHA-256 paketini çalıştırıyor.
+   - Üretilen kaynak adayı commit SHA ile adlandırılan, 14 gün saklanan CI artifact'i olarak yükleniyor.
+
+8. `[x]` Uygulama içi satın alma karar kapısını kapat
+   - Bu yayın için gerçek para, ücretli sezon yolu ve IAP kapsam dışı bırakıldı; mevcut teklifler yalnız kazanılan oyun içi para birimlerini kullanıyor.
+   - Mobil yayın belgesi, Billing/StoreKit SDK'sı ve mağaza ürün kimliği eklenmemesini açıkça kaydediyor. Karar değişirse makbuz doğrulama, idempotent teslim ve iade/iptal işleme tamamlanmadan UI fiyatı açılamaz.
+
+9. `[~]` PostgreSQL şema geçişlerini sürümlendir
+   - Numaralı ileri/geri SQL dosyaları `schema_migrations` tablosunda SHA-256 checksum ile izleniyor; uygulanmış migration değişirse sunucu açılışı duruyor.
+   - Çoklu cihaz alanı geçmiş `001` dosyasını değiştirmek yerine `002_identity_devices` migration'ına ayrıldı.
+   - Eşzamanlı uygulama PostgreSQL advisory lock ile tekilleştirildi. `status`, dağıtım öncesi `check`, `up` ve yalnız `--allow-destructive` onaylı `down` operatör aracı eklendi.
+   - PostgreSQL bölümü tamamlandı. Dosya tabanlı JSON depolarının ortak şema sürümü/ileri-geri migration kaydı henüz eklenmediği için ana kuyruk maddesi açık kalıyor.
+
+Doğrulama: Kullanıcının talebi gereği otomatik test, tarayıcı veya gerçek cihaz denemesi çalıştırılmadı. Kod ve dağıtım farkları statik olarak incelendi; gerçek Apple/Google sağlayıcı anahtarları dağıtım ortamında girilmelidir.
+
+## Aktif paket — Beta.67 gerçek telefon savaş ve profil yerleşimi
+
+Kaynak doğrulama: Aynı Wi‑Fi ağında `192.168.1.104:8879` üzerinden açılan Android/Chrome portre görünümünün dört ekran görüntüsü incelendi. Aşağıdaki kararların kod uygulaması tamamlandı; gerçek cihaz yerleşim doğrulaması kullanıcıda bekliyor.
+
+1. `[x]` Mobil savaşta oyuncu ve rakip devrelerini aynı arena görünümünde göster
    - Telefon görünümündeki `Devrem` / `Rakip` devre geçişi kaldırılmalı; rakip devresi üstte, oyuncu devresi altta ve `VS` ayracı ortada olacak şekilde iki taraf aynı anda görünmelidir.
    - Kullanıcı rakibin saldırısını, iki Çekirdeğin CAN durumunu, Akım animasyonlarını ve kendi devresinin sonucunu sekme değiştirmeden izleyebilmelidir.
    - İki devre mevcut boş dikey alanı kullanarak portre ekrana birlikte sığdırılmalı; kart oranları, dokunma hedefleri, isim/CAN bilgisi ve sabit alt el–Akım–Çekirdek gücü alanı okunabilir kalmalıdır.
    - `data-mobile-battle-panel="player|enemy"` ile bir tarafı gizleyen eski mobil kural ve buna bağlı Devrem/Rakip düğmeleri kaldırılmalı. Modül rafı gerekiyorsa devre görünürlüğünü bozmayan ayrı alt el davranışı olarak kalmalıdır.
    - Yerel AI, normal PvP, arkadaş maçı ve takım turnuvası aynı çift-devre mobil bileşenini kullanmalı; tek bir maç türü eski sekmeli düzene geri düşmemelidir.
+   - Eski mobil savaş sekmeleri, `data-mobile-battle-panel` görünürlük kuralı ve kullanılmayan mobil panel denetleyicisi kaldırıldı. Ortak savaş DOM'u portrede rakibi üstte, oyuncuyu altta ve sabit rafı en altta birlikte gösteriyor.
 
-2. `[ ]` Yerleşmiş modüle dokununca açılan eski taşıma/iptal akışını kaldır
+2. `[x]` Yerleşmiş modüle dokununca açılan eski taşıma/iptal akışını kaldır
    - Devrede aktif olan bir modüle dokunmak `... seçildi · hedef hücreye dokun`, `Rafa Al` veya `Seçimi Kaldır` araç çubuğunu açmamalıdır.
    - Yerleşmiş modül yeniden taşınmamalı, başka hücreyle değiştirilmemeli ve savaş sırasında rafa geri alınmamalıdır; eski `beginDrag → dropOnCell/dropOnShelf` mobil yeniden yerleştirme yolu aktif kartlar için kapatılmalıdır.
-   - Yeni modül yerleştirme yalnız alt elde/rafta bulunan uygun kartın seçilip boş ve geçerli hücreye dokunulmasıyla başlamalıdır. Yerleştirme tamamlanınca seçim kendiliğinden temizlenmelidir.
+   - Yeni modül yerleştirme alt elde/rafta bulunan uygun karta tek dokunuşla başlamalı; oyuncu hücre seçmemeli, sunucu uygun boş hücreyi otomatik belirlemelidir.
    - Yerleşmiş karta dokunma davranışı gerekiyorsa yalnız salt okunur savaş bilgisi veya hedef seçimi gibi güncel işlemlere ayrılmalı; taşıma vurgusu ve eski karar düğmeleri üretmemelidir.
+   - Aktif modül için `beginDrag`, hücre taşıma/takas ve rafa alma istemci katmanında reddediliyor. Beta.69 ile raf kartı tek dokunuşta koordinatsız `deploy_module` gönderiyor ve sunucu uygun hücreyi otomatik seçiyor.
 
-3. `[ ]` Profil alt sekmesini Sezon Geçmişi ve İstatistikler içeriğinin üzerinden kaldır
+3. `[x]` Profil alt sekmesini Sezon Geçmişi ve İstatistikler içeriğinin üzerinden kaldır
    - Portre görünümünde `PROFİL / KOZMETİK / ÖDÜLLER / ARKADAŞ / AYARLAR` çubuğu kaydırılan profil içeriğinin ortasına yapışmamalı ve Sezon Geçmişi/İstatistik kartlarını kapatmamalıdır.
    - Alt sekme çubuğu profil terminal çerçevesinin gerçek alt kenarına sabitlenmeli; içerik alanına çubuğun yüksekliği ve cihaz güvenli alanı kadar alt boşluk verilmelidir.
    - Sayfa kaydırıldığında Sezon Geçmişi kartı, üç sezon özeti ve bütün istatistik kartları sekmenin arkasından görünmeden tamamen okunup dokunulabilmelidir.
    - Aynı düzeltme beş profil alt ekranında ve `360–430 px` telefon genişliklerinde doğrulanmalı; ana alt gezinme ile profil alt gezinmesi üst üste binmemelidir.
+   - Beş düğmeli terminal çubuğu telefon görünümünde ana gezinmenin hemen üstündeki ayrılmış sabit alana taşındı. Profil, Kozmetik, Ödüller, Arkadaş ve Ayarlar içeriklerine çubuk yüksekliği ile güvenli alan kadar alt kaydırma boşluğu eklendi.
 
 4. `[ ]` Beta.67 için gerçek cihaz regresyon kapsamı ekle
    - Portre telefon testinde aynı karede hem oyuncu hem rakip devresi bulunduğu, aktif modüle dokunmanın taşıma araçlarını açmadığı ve profil sekmesinin sezon/istatistik içeriğini kapatmadığı doğrulanmalıdır.
    - Tarayıcı performans göstergesi açıkken ve kapalıyken yerleşim değişmemeli; Android Chrome güvenli alanı ve alt sistem gezinme çubuğu ayrıca kontrol edilmelidir.
+   - `[x]` DOM/CSS ve istemci komut sözleşmesini koruyan `beta67-mobile-battle-profile.test.js` eklendi; eski Relay taşıma beklentileri yeni sabit modül kararına uyarlandı.
+   - `[ ]` Kullanıcının isteği gereği çalıştırmalı test ve tarayıcı/telefon denemesi yapılmadı. `360–430 px` Android Chrome, performans göstergesi ve sistem gezinme çubuğu kontrolleri kullanıcı doğrulamasına bırakıldı.
+
+Doğrulama: Kullanıcının açık talebi nedeniyle test paketi ve tarayıcı çalıştırılmadı. Yalnız statik sözleşme kapsamı eklendi ve metin/diff tutarlılığı incelendi.
 
 ## Aktif paket — Beta.66 meta yüzdesi, sağlayıcı hesabı ve favicon
 
@@ -55,16 +131,18 @@ Doğrulama: Tam istemci paketi `47/47`, platform servis paketi `7/7` geçti. `pl
 
 ### Yayın engelleyicileri
 
-1. `[ ]` Apple ile giriş dönüşünü ve üretim anahtar imzalama akışını tamamla
+1. `[x]` Apple ile giriş dönüşünü ve üretim anahtar imzalama akışını tamamla
    - Apple client secret/JWT üretimi, form-post callback, kimlik belirteci doğrulaması ve hesap çakışması kuralları Google akışıyla aynı güvenlik düzeyine getirilmeli.
-2. `[ ]` Sağlayıcı hesabını gerçek çoklu cihaz oturumuna dönüştür
+2. `[x]` Sağlayıcı hesabını gerçek çoklu cihaz oturumuna dönüştür
    - Google/Apple kimliğiyle başka cihazda mevcut oyuncu hesabını bulup yeni cihaza bağımsız kimlik bilgisi verilmesi gerekiyor; mevcut cihaz sırrını kopyalamak veya tek sırla değiştirmek yeterli değil.
-3. `[ ]` Üretimde `/web-test/*` rotalarını kapat
+3. `[x]` Üretimde `/web-test/*` rotalarını kapat
    - `GRIDSHARD_RUNTIME_MODE=production` altında tanılama rotaları kayıt edilmemeli veya açıkça `404` vermeli; istemci tarafındaki gizleme güvenlik sınırı sayılmamalı.
-4. `[ ]` Çalışma zamanı JSON/BAK/TMP dosyalarını Git geçmişinden güvenli biçimde çıkar
+4. `[x]` Çalışma zamanı JSON/BAK/TMP dosyalarını Git geçmişinden güvenli biçimde çıkar
    - `.gitignore` desenleri hazır olsa da önceden izlenmiş `server/data/web_test_*` dosyaları hâlâ sürüm kontrolünde. Kullanıcı verisi silinmeden `git rm --cached` ve dağıtım veri dizini geçişi planlanmalı.
 5. `[ ]` Mobil dokunma/işaretçi akışını gerçek cihazlarda doğrula ve eski HTML5 drag-and-drop yolunu kaldır
    - Birincil dokun-seç/yerleştir akışı korunmalı; kalan `dragstart/drop/dataTransfer` bağımlılıkları temizlenmeli ve iOS/Android uzun basma, kaydırma ve iptal davranışları test edilmeli.
+   - `[x]` Kod tarafındaki HTML5 drag-and-drop ve ölü stil yolu kaldırıldı.
+   - `[ ]` Gerçek Android/iOS uzun basma, kaydırma, iptal ve FPS kontrolü kullanıcı doğrulamasında bekliyor.
 
 ### Ürün ve altyapı
 
@@ -76,11 +154,13 @@ Doğrulama: Tam istemci paketi `47/47`, platform servis paketi `7/7` geçti. `pl
    - Düşük/orta seviye cihazlarda savaş DOM güncellemeleri, efekt yoğunluğu, bellek ve kare süresi kaydedilmeli; kabul eşikleri release check'e bağlanmalı.
 9. `[ ]` JSON/PostgreSQL şema geçişlerini sürümlü migration sistemine taşı
    - Üretim veri değişiklikleri için Alembic benzeri ileri/geri migration, şema sürümü ve dağıtım öncesi kontrol eklenmeli.
+   - `[x]` PostgreSQL numaralı migration, checksum, advisory lock, status/check/up ve onaylı down akışı tamamlandı.
+   - `[ ]` JSON depoları için ortak dosya şema sürümü ve geri alınabilir migration günlüğü bekliyor.
 10. `[ ]` Gerçek FCM/APNs gönderim adaptörlerini tamamla
    - İstemci izin/token kaydı hazır; sunucu teslim sağlayıcısı, kimlik bilgileri, token yenileme/hata temizliği ve imzalı mobil yapılandırma hâlâ gerekli.
-11. `[ ]` CI iş akışlarını sürüm kontrolüne al
+11. `[x]` CI iş akışlarını sürüm kontrolüne al
    - `.github/` genel ignore kapsamından çıkarılmalı; istemci, sunucu ve paketleme doğrulamaları için gerçek workflow dosyaları eklenmeli.
-12. `[ ]` Test bağımlılığındaki `httpx2` paketini doğrula ve gereksizse kaldır
+12. `[x]` Test bağımlılığındaki `httpx2` paketini doğrula ve gereksizse kaldır
    - `server/requirements-test.txt` içindeki `httpx` yanında bulunan `httpx2>=2.4,<3.0` kaynağı ve kullanımı doğrulanmalı.
 
 ### Bakım kuyruğu
@@ -95,7 +175,7 @@ Doğrulama: Tam istemci paketi `47/47`, platform servis paketi `7/7` geçti. `pl
    - Kod içine gömülü kalan metinler anahtar sözlüğüne taşınmalı; çoğul, sayı/tarih ve hata mesajı kapsaması eklenmeli.
 17. `[ ]` Ürün analitiğini mahremiyet kontrollü biçimde ekle
    - Huni, savaş sonucu, elde tutma ve performans olayları için açık şema, onay/opt-out ve veri saklama politikası tanımlanmalı.
-18. `[ ]` Uygulama içi satın alma karar kapısını kapat
+18. `[x]` Uygulama içi satın alma karar kapısını kapat
    - Para kazanma kapsamdaysa mağaza makbuz doğrulama ve ürün kataloğu tasarlanmalı; kapsam dışıysa release belgelerinde açıkça ertelenmeli.
 
 ## Aktif paket — Beta.65 hesap açılışı, Devre Koleksiyonu ve mağaza ikonu
@@ -417,10 +497,9 @@ Doğrulama: `39/39` istemci paketi (`176` Relay istemci testi dâhil) ve seçili
 1. `[x]` Süre/hasar hakemliğini kaldır
    - `03:00` sonunda çalışan `time_limit_tiebreak` ve `time_limit_draw` üretimi kaldırıldı.
    - Maç artık yalnız bir Çekirdek yok edildiğinde veya oyuncu savaştan çekildiğinde galibiyet/mağlubiyet üretir; iki Çekirdek aynı adımda yok edilirse berabere biter.
-2. `[x]` Sonsuz savunma çıkmazını Aşırı Yük ile çöz
-   - `03:00` Aşırı Yük başlangıcıdır: saldırı hasarı artar, onarım verimi düşer ve bu fark her 30 saniyede büyür.
-   - `03:30` sonrasında saldırılar yaşayan diğer modülleri beklemeden Çekirdeği hedefleyebilir.
-   - `04:00` sonrasında iki Çekirdeğe de giderek artan kararsızlık hasarı uygulanır; sonuç yine yalnız gerçek Çekirdek yıkımıyla oluşur.
+2. `[x]` Sonsuz savunma çıkmazını Devre Gerilimi ile çöz
+   - `03:00` Devre Gerilimi başlangıcıdır: saldırı hasarı artar, onarım verimi düşer ve bu fark her 30 saniyede büyür.
+   - Beta.69 kararıyla süreye bağlı doğrudan Çekirdek hedefleme ve otomatik Çekirdek hasarı kaldırıldı; gerilim yalnız yaşayan modül hattının çözülmesini hızlandırır.
 3. `[x]` Çoklu Onarım Modülü yığılmasını sınırla
    - Bir Onarım Modülü artık her aktivasyonda bütün hasarlı modülleri değil yalnız en düşük CAN oranındaki tek modülü iyileştirir.
    - Aynı destek adımında aynı hedef yalnız bir kez onarılabilir; çok sayıda Onarım Modülü odak hasarı üst üste silmez.
@@ -503,5 +582,7 @@ Doğrulama: `39/39` istemci paketi (`176` Relay istemci testi dâhil) ve seçili
 
 - Çalışma dizini: `D:\Projects\GRIDSHARD`
 - Kullanıcı çalışma zamanı verileri korunmalıdır; `server/data/web_test_*.json` ve `.bak` dosyaları geri alınmamalı veya düzenlenmemelidir.
-- Bu paketle değişen dosyalar: `client/index.html`, `client/src/app.js`, `client/src/auth-session.js`, `client/src/canon.css`, `client/src/styles.css`, `server/app/balance_simulation.py`, `server/app/game/catalog.py`, `server/app/game/catalog_view.py`, `server/app/game/combat.py`, `server/app/game/engine.py`, `server/app/game/energy.py`, `server/app/game/pvp_session.py`, `server/app/main.py`, `server/app/meta_progression.py`, `server/app/player_data_store.py`, `server/app/player_profile.py`, `server/app/web_test.py`, `docs/GRIDSHARD_2_1_KANONIK_TASARIM.md` ve bu checkpoint.
+- Beta.68 değişiklikleri: `.env.example`, `.gitignore`, `.github/workflows/quality.yml`, `client/src/app.js`, `client/src/auth-session.js`, `client/src/i18n.js`, `client/src/styles.css`, `docker-compose.yml`, `docs/GELISTIRME_ORTAMI.md`, `docs/MOBILE_RELEASE_RUNBOOK.md`, `server/app/auth.py`, `server/app/main.py`, `server/app/platform_services.py`, `server/app/postgres_repository.py`, `server/app/schema_migrations.py`, `server/migrations/*`, `server/requirements*.txt`, `tools/schema_migrate.py` ve bu checkpoint.
+- Git durumunda `server/data/web_test_*.json(.bak)` dosyalarının `D` görünmesi kasıtlı indeks kaldırmadır; dosyalar diskte bulunur ve ignore edilir. `server/data/platform_state.json` kullanıcı/çalışma zamanı değişikliği olarak korunmuş, bu pakette düzenlenmemiştir.
+- Önceki ürün paketinde değişen dosyalar: `client/index.html`, `client/src/app.js`, `client/src/auth-session.js`, `client/src/canon.css`, `client/src/styles.css`, `server/app/balance_simulation.py`, `server/app/game/catalog.py`, `server/app/game/catalog_view.py`, `server/app/game/combat.py`, `server/app/game/engine.py`, `server/app/game/energy.py`, `server/app/game/pvp_session.py`, `server/app/main.py`, `server/app/meta_progression.py`, `server/app/player_data_store.py`, `server/app/player_profile.py`, `server/app/web_test.py`, `docs/GRIDSHARD_2_1_KANONIK_TASARIM.md` ve bu checkpoint.
 - Önceki paketten çalışma ağacında kalan dosya: `server/app/game/energy.py`.

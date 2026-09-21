@@ -133,6 +133,7 @@ class JsonIdentityRepository:
 
 
 class ParticipantAuthService:
+    DEVICE_SCHEMA_KEY = "__schema__"
     def __init__(
         self,
         repository: JsonIdentityRepository,
@@ -148,33 +149,79 @@ class ParticipantAuthService:
         self.now_func = now_func
         self.access_token_ttl_seconds = max(60, int(access_token_ttl_seconds))
 
-    def register_or_login(self, player_id: str, device_secret: str) -> dict:
+    @staticmethod
+    def _device_key(device_id: str | None) -> str:
+        value = str(device_id or "legacy").strip()
+        if not value or len(value) > 96:
+            raise AuthenticationError("Cihaz kimliği 1-96 karakter olmalıdır.")
+        return value
+
+    def _device_record(self, device_secret: str) -> dict:
+        salt = secrets.token_bytes(16)
+        return {
+            "salt": _b64url_encode(salt),
+            "verifier": _b64url_encode(
+                self._device_secret_verifier(device_secret, salt)
+            ),
+            "created_at": int(self.now_func()),
+        }
+
+    def _verify_device_record(self, device_secret: str, record: dict) -> bool:
+        try:
+            salt = _b64url_decode(str(record["salt"]))
+            expected = _b64url_decode(str(record["verifier"]))
+        except (KeyError, TypeError) as exc:
+            raise AuthenticationError("Oyuncu kimliği kaydı bozuk.") from exc
+        actual = self._device_secret_verifier(device_secret, salt)
+        return hmac.compare_digest(actual, expected)
+
+    def register_or_login(
+        self,
+        player_id: str,
+        device_secret: str,
+        device_id: str | None = None,
+    ) -> dict:
         player_id = validate_player_id(player_id)
+        device_key = self._device_key(device_id)
         device_secret = str(device_secret or "")
         if len(device_secret) < DEVICE_SECRET_MIN_LENGTH:
             raise AuthenticationError("Cihaz sırrı en az 32 karakter olmalıdır.")
 
         record = self.repository.get(player_id)
         if record is None:
-            salt = secrets.token_bytes(16)
-            verifier = self._device_secret_verifier(device_secret, salt)
+            device = self._device_record(device_secret)
             self.repository.create(
                 player_id,
                 {
-                    "salt": _b64url_encode(salt),
-                    "verifier": _b64url_encode(verifier),
-                    "created_at": int(self.now_func()),
+                    **device,
+                    "devices": {
+                        self.DEVICE_SCHEMA_KEY: {"version": 2},
+                        device_key: device,
+                    },
                 },
             )
         else:
-            try:
-                salt = _b64url_decode(str(record["salt"]))
-                expected = _b64url_decode(str(record["verifier"]))
-            except (KeyError, TypeError) as exc:
-                raise AuthenticationError("Oyuncu kimliği kaydı bozuk.") from exc
-            actual = self._device_secret_verifier(device_secret, salt)
-            if not hmac.compare_digest(actual, expected):
+            devices = dict(record.get("devices") or {})
+            device = devices.get(device_key)
+            migrated_legacy = False
+            if (
+                device is None
+                and not devices
+                and record.get("salt")
+                and record.get("verifier")
+            ):
+                device = record
+                migrated_legacy = True
+            if device is None or not self._verify_device_record(device_secret, device):
                 raise AuthenticationError("Oyuncu kimliği doğrulanamadı.")
+            if migrated_legacy:
+                devices[self.DEVICE_SCHEMA_KEY] = {"version": 2}
+                devices[device_key] = {
+                    "salt": str(record["salt"]),
+                    "verifier": str(record["verifier"]),
+                    "created_at": int(record.get("created_at", self.now_func())),
+                }
+                self.repository.update(player_id, {**record, "devices": devices})
 
         token, expires_at = self.issue_access_token(player_id)
         return {
@@ -183,6 +230,54 @@ class ParticipantAuthService:
             "token_type": "bearer",
             "expires_at": expires_at,
         }
+
+    def authorize_device(
+        self,
+        player_id: str,
+        device_secret: str,
+        device_id: str,
+    ) -> dict:
+        """Adds or refreshes a device only after an external identity proof."""
+        player_id = validate_player_id(player_id)
+        device_key = self._device_key(device_id)
+        device_secret = str(device_secret or "")
+        if len(device_secret) < DEVICE_SECRET_MIN_LENGTH:
+            raise AuthenticationError("Cihaz sırrı en az 32 karakter olmalıdır.")
+        record = self.repository.get(player_id)
+        if record is None:
+            device = self._device_record(device_secret)
+            self.repository.create(
+                player_id,
+                {
+                    **device,
+                    "devices": {
+                        self.DEVICE_SCHEMA_KEY: {"version": 2},
+                        device_key: device,
+                    },
+                },
+            )
+        else:
+            devices = dict(record.get("devices") or {})
+            devices[device_key] = self._device_record(device_secret)
+            self.repository.update(player_id, {**record, "devices": devices})
+        token, expires_at = self.issue_access_token(player_id)
+        return {
+            "player_id": player_id,
+            "access_token": token,
+            "token_type": "bearer",
+            "expires_at": expires_at,
+        }
+
+    def revoke_device(self, player_id: str, device_id: str) -> None:
+        player_id = validate_player_id(player_id)
+        device_key = self._device_key(device_id)
+        record = self.repository.get(player_id)
+        if record is None:
+            raise AuthenticationError("Oyuncu kimliği bulunamadı.")
+        devices = dict(record.get("devices") or {})
+        if devices.pop(device_key, None) is None:
+            return
+        self.repository.update(player_id, {**record, "devices": devices})
 
     def issue_access_token(self, player_id: str) -> tuple[str, int]:
         player_id = validate_player_id(player_id)
@@ -210,22 +305,28 @@ class ParticipantAuthService:
         ).digest()
         return f"{encoded_header}.{encoded_payload}.{_b64url_encode(signature)}", expires_at
 
-    def reset_device_secret(self, player_id: str, device_secret: str) -> None:
+    def reset_device_secret(
+        self,
+        player_id: str,
+        device_secret: str,
+        device_id: str | None = None,
+    ) -> None:
         player_id = validate_player_id(player_id)
+        device_key = self._device_key(device_id)
         device_secret = str(device_secret or "")
         if len(device_secret) < DEVICE_SECRET_MIN_LENGTH:
             raise AuthenticationError("Cihaz sırrı en az 32 karakter olmalıdır.")
         if self.repository.get(player_id) is None:
             raise AuthenticationError("Oyuncu kimliği bulunamadı.")
-        salt = secrets.token_bytes(16)
+        device = self._device_record(device_secret)
         self.repository.update(
             player_id,
             {
-                "salt": _b64url_encode(salt),
-                "verifier": _b64url_encode(
-                    self._device_secret_verifier(device_secret, salt)
-                ),
-                "created_at": int(self.now_func()),
+                **device,
+                "devices": {
+                    self.DEVICE_SCHEMA_KEY: {"version": 2},
+                    device_key: device,
+                },
             },
         )
 

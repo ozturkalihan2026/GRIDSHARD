@@ -47,13 +47,11 @@
   const BOOSTER_FIRST_OFFER_MS = 30000;
   const BOOSTER_OFFER_INTERVAL_MS = 30000;
   const BOOSTER_OPTIONS_PER_OFFER = 3;
-  const BOOSTER_DRAG_TYPE = "application/x-gridshard-booster";
   let nextBoosterOfferIndex = 0;
   let boosterOfferOpen = false;
   let serverBoosterOfferId = null;
   let serverBoosterEligibleTargets = new Map();
   let activeBoosterOfferIds = new Set();
-  let activeDragGhostPreview = null;
 
   const BOOSTER_OPTIONS = [
     { id:"overcharge_chip", nameTr:"Aşırı Yük Çipi", nameEn:"Overcharge Chip", descriptionTr:"+%25 saldırı · 15 sn", descriptionEn:"+25% attack · 15 sec", targetCategories:["saldırı"] },
@@ -2985,14 +2983,30 @@
 
   async function loadAccountPlatform({ presentOnboarding = false } = {}) {
     const status = document.getElementById("account-platform-status");
+    const oauthParams = new URLSearchParams(globalThis.location?.search || "");
+    const oauthExchange = oauthParams.get("oauth_exchange");
     try {
+      if (oauthExchange) {
+        const authSession = globalThis.GridshardAuth?.session;
+        if (typeof authSession?.completeProviderLogin !== "function") {
+          throw new Error("Sağlayıcı oturum köprüsü hazır değil.");
+        }
+        await authSession.completeProviderLogin(oauthExchange);
+        oauthParams.delete("oauth_exchange");
+        oauthParams.delete("oauth_status");
+        oauthParams.delete("oauth_provider");
+        const query = oauthParams.toString();
+        globalThis.location?.replace?.(
+          `${globalThis.location?.pathname || "/"}${query ? `?${query}` : ""}`
+        );
+        return {ok:true,presented:false,redirecting:true};
+      }
       accountPlatformState = await requestJsonWithDeadline(
         `/accounts/${encodeURIComponent(participantPlayerId)}`,
         { cache:"no-store" },
         12000
       );
       renderAccountPlatform();
-      const oauthParams = new URLSearchParams(globalThis.location?.search || "");
       const oauthStatus = oauthParams.get("oauth_status");
       const oauthProvider = (oauthParams.get("oauth_provider") || "Google").toLocaleUpperCase("tr-TR");
       if (oauthStatus) {
@@ -4156,7 +4170,7 @@
       const status = document.getElementById("account-onboarding-status");
       try {
         const result = await requestJsonWithDeadline(
-          `/accounts/${encodeURIComponent(participantPlayerId)}/oauth/${provider}/start`,
+          `/accounts/${encodeURIComponent(participantPlayerId)}/oauth/${provider}/start?mode=login`,
           {cache:"no-store"},
           12000
         );
@@ -4297,7 +4311,15 @@
     try {
       await requestJsonWithDeadline(
         "/account-recovery/confirm",
-        {method:"POST",body:JSON.stringify({player_id:participantPlayerId,code,new_device_secret:newDeviceSecret})},
+        {
+          method:"POST",
+          body:JSON.stringify({
+            player_id:participantPlayerId,
+            code,
+            new_device_secret:newDeviceSecret,
+            device_id:globalThis.GridshardAuth?.session?.deviceId?.() || null,
+          }),
+        },
         12000
       );
       globalThis.GridshardAuth?.session?.replaceDeviceSecret?.(newDeviceSecret);
@@ -5657,8 +5679,7 @@
       destructionFxPlayed.clear();
       preparedCorePowerFx.clear();
       snapshotModuleHp.clear();
-      clearTapSelection({ rerender: false });
-      mobileBattleController.reset();
+      client.cancelDrag?.();
       if (document.documentElement) document.documentElement.scrollTop = 0;
       document.body.scrollTop = 0;
       if (battleJustStarted) {
@@ -6071,11 +6092,6 @@
   const battleEmojiButtonEl = document.getElementById("battle-emoji-button");
   const battleEmojiButtonGlyphEl = document.getElementById("battle-emoji-button-glyph");
   const shelf = document.getElementById("module-shelf");
-  const mobileSelectedModuleEl = document.getElementById("mobile-selected-module");
-  const mobileReturnModuleEl = document.getElementById("mobile-return-module");
-  const mobileCancelPlacementEl = document.getElementById("mobile-cancel-placement");
-  const mobileBattleController = new GridshardMobileBattleController();
-  let tapSelectedModuleId = null;
   let corePowerCharge = 0;
   let corePowerReady = false;
   let corePowerTargeting = false;
@@ -6269,139 +6285,6 @@
       "quick-loadout-filter-favorites"
     );
 
-  function isTapPlacementUi() {
-    return (
-      Number(globalThis.innerWidth || 0) <= 1100
-      || Boolean(globalThis.matchMedia?.("(pointer: coarse)").matches)
-    );
-  }
-
-  function selectedTapModule() {
-    return tapSelectedModuleId
-      ? client.modules.get(tapSelectedModuleId) || null
-      : null;
-  }
-
-  function updateMobilePlacementControls() {
-    const module = selectedTapModule();
-    if (mobileSelectedModuleEl) {
-      mobileSelectedModuleEl.textContent = module
-        ? `${module.nameTr} seçildi · hedef hücreye dokun`
-        : "Yerleştirmek için bir modül seç";
-    }
-    if (mobileReturnModuleEl) {
-      mobileReturnModuleEl.disabled = !(
-        module
-        && module.status === "active"
-        && module.removable !== false
-        && client.isShelfUnlocked()
-        && !localBattleFinished
-      );
-    }
-    if (mobileCancelPlacementEl) {
-      mobileCancelPlacementEl.disabled = !module;
-    }
-    document.body.dataset.tapPlacement = module ? "selected" : "idle";
-  }
-
-  function clearTapSelection({ cancelDrag = true, rerender = true } = {}) {
-    tapSelectedModuleId = null;
-    if (cancelDrag) client.cancelDrag();
-    updateMobilePlacementControls();
-    if (rerender) {
-      renderShelf();
-      renderBoard();
-    }
-  }
-
-  function selectModuleForTap(module) {
-    if (!module || localBattleFinished) return false;
-    if (tapSelectedModuleId === module.instanceId) {
-      clearTapSelection();
-      return true;
-    }
-    const result = client.beginDrag(module.instanceId);
-    if (!result.ok) {
-      logClientMessage(result.reason);
-      return false;
-    }
-    tapSelectedModuleId = module.instanceId;
-    if (module.status === "reserve") {
-      telemetryDispatcher.trackModuleShelfUsed({
-        module_id: module.instanceId,
-        elapsed_ms: client.elapsedMs,
-      });
-      if (isTapPlacementUi()) mobileBattleController.show("player", { focus: false });
-    }
-    updateMobilePlacementControls();
-    renderShelf();
-    renderBoard({ force: true });
-    trackBattleUiInteraction("tap_select_module", "module_place");
-    return true;
-  }
-
-  function placeTapSelectionOnCell(cell) {
-    if (!tapSelectedModuleId || localBattleFinished || cell.classList.contains("core-cell")) {
-      return false;
-    }
-    const selectedModule = client.requireModule(tapSelectedModuleId);
-    const rejection = cellPlacementRejection(cell, selectedModule);
-    if (rejection) {
-      logClientMessage(rejection);
-      return false;
-    }
-    const targetCard = cell.querySelector(".module-card");
-    const result = client.dropOnCell(
-      Number(cell.dataset.x),
-      Number(cell.dataset.y),
-      targetCard?.dataset.moduleId || null
-    );
-    if (!result.ok) {
-      logClientMessage(result.reason);
-      return false;
-    }
-    clearTapSelection({ cancelDrag: false, rerender: false });
-    render();
-    return true;
-  }
-
-  function cellPlacementRejection(cell, module) {
-    if (cell?.dataset?.debris === "true") {
-      return "Bu hücredeki enkaz temizlenene kadar modül yerleştirilemez.";
-    }
-    const special = SPECIAL_CELL_INFO[
-      `${cell?.dataset?.x},${cell?.dataset?.y}`
-    ];
-    if (!special || !module) return null;
-    const definitionId = String(
-      module.definitionId
-      || module.definition_id
-      || module.instanceId
-      || ""
-    )
-      .replace(/-\d+$/u, "")
-      .replace(/-/gu, "_");
-    if (special.definitionId && definitionId !== special.definitionId) {
-      return `${localizedUiText(special.label)} yalnızca ${localizedUiText("Onarım Modülü")} kabul eder.`;
-    }
-    if (special.category && module.category !== special.category) {
-      return `${localizedUiText(special.label)} yalnızca ${localizedUiText(special.category)} sınıfını kabul eder.`;
-    }
-    return null;
-  }
-
-  mobileReturnModuleEl?.addEventListener("click", () => {
-    if (mobileReturnModuleEl.disabled) return;
-    const result = client.dropOnShelf();
-    if (!result.ok) {
-      logClientMessage(result.reason);
-      return;
-    }
-    clearTapSelection({ cancelDrag: false });
-    mobileBattleController.show("shelf", { focus: false });
-  });
-
-  mobileCancelPlacementEl?.addEventListener("click", () => clearTapSelection());
   const quickLoadoutActiveSummaryEl =
     document.getElementById(
       "quick-loadout-active-summary"
@@ -10586,20 +10469,6 @@ function saveHumanReviewLocalNote() {
         triggerGridshardCue("warning");
         continue;
       }
-      if (event?.type === "overtime_core_exposed") {
-        setBattleLiveTicker(
-          "ÇEKİRDEKLER AÇIĞA ÇIKTI · Saldırılar çekirdeğe yöneliyor",
-          "danger"
-        );
-        continue;
-      }
-      if (event?.type === "overtime_core_decay_started") {
-        setBattleLiveTicker(
-          "ÇEKİRDEK KARARSIZLIĞI · Çekirdekler can kaybediyor",
-          "danger"
-        );
-        continue;
-      }
       if (
         event?.type === "command_rejected"
         && data.player_id === participantPlayerId
@@ -11660,8 +11529,7 @@ function saveHumanReviewLocalNote() {
       true;
     document.body.dataset.localStatus =
       "battle";
-    clearTapSelection({ rerender: false });
-    mobileBattleController.reset();
+    client.cancelDrag?.();
     if (document.documentElement) document.documentElement.scrollTop = 0;
     document.body.scrollTop = 0;
     globalThis.scrollTo?.({ top: 0, left: 0, behavior: "instant" });
@@ -11788,7 +11656,7 @@ function saveHumanReviewLocalNote() {
       false;
     document.body.dataset.localStatus =
       "setup";
-    clearTapSelection({ rerender: false });
+    client.cancelDrag?.();
     setActivePlayMode(
       "local"
     );
@@ -14566,7 +14434,7 @@ function saveHumanReviewLocalNote() {
     root.hidden = true;
 
     if (status) {
-      status.textContent = localizedUiText("Çekirdek sabit başlar; diğer modüller boş hücrelere yerleşir");
+      status.textContent = localizedUiText("Çekirdek sabit başlar; diğer modülleri sistem uygun boş hücrelere otomatik yerleştirir");
       status.dataset.ready = "true";
     }
   }
@@ -15169,7 +15037,6 @@ function saveHumanReviewLocalNote() {
       button.title = boosterEnglish ? booster.descriptionEn : booster.descriptionTr;
       const isOfferChoice = !boosterOfferOpen || activeBoosterOfferIds.size === 0 || activeBoosterOfferIds.has(booster.id);
       button.disabled = !boosterOfferOpen || !isOfferChoice;
-      button.draggable = boosterOfferOpen && isOfferChoice;
       if (boosterTargetMode.selectedBoosterId === booster.id) button.classList.add("selected");
       const pickBoosterForTargeting = () => {
         if (!boosterOfferOpen || !isOfferChoice) return false;
@@ -15185,35 +15052,6 @@ function saveHumanReviewLocalNote() {
       };
       button.addEventListener("click", () => {
         pickBoosterForTargeting();
-      });
-      button.addEventListener("pointerdown", () => {
-        if (pickBoosterForTargeting()) {
-          boosterStatusEl.textContent = localizedUiText("Uygun, parlayan modüle bırak");
-        }
-      });
-      button.addEventListener("dragstart", (event) => {
-        if (!boosterOfferOpen || !isOfferChoice) {
-          event.preventDefault();
-          return;
-        }
-        selectBoosterTargetMode(booster.id, "booster_drag");
-        event.dataTransfer?.setData(
-          BOOSTER_DRAG_TYPE,
-          booster.id
-        );
-        event.dataTransfer?.setData("text/plain", booster.id);
-        event.dataTransfer.effectAllowed = "move";
-        attachDragGhostPreview(event, {
-          title: boosterEnglish ? booster.nameEn : booster.nameTr,
-          subtitle: boosterEnglish ? booster.descriptionEn : booster.descriptionTr,
-          accentClass: `drag-ghost-preview--${booster.id}`
-        });
-        boosterStatusEl.textContent = localizedUiText("Uygun, parlayan modüle bırak");
-      });
-      button.addEventListener("dragend", () => {
-        clearDragGhostPreview();
-        renderBoosterOptions();
-        renderBoard();
       });
       boosterOptionsEl.appendChild(button);
     }
@@ -15267,25 +15105,14 @@ function saveHumanReviewLocalNote() {
     return true;
   }
 
-  function draggedBoosterId(event) {
-    const transfer = event?.dataTransfer;
-    const transferTypes = Array.from(transfer?.types || []);
-    if (!transfer || !transferTypes.includes(BOOSTER_DRAG_TYPE)) return "";
-    const boosterId = transfer.getData(BOOSTER_DRAG_TYPE) || boosterTargetMode.selectedBoosterId || "";
-    return BOOSTER_OPTIONS.some((booster) => booster.id === boosterId)
-      ? boosterId
-      : "";
-  }
-
   function cancelBoosterTargeting(reason="cancelled") {
     if (!boosterTargetMode.selectedBoosterId) return;
     clearBoosterTargetMode(reason);
     document.querySelectorAll(
-      ".module-card.booster-target, .module-card.booster-target-ineligible, .module-card.booster-drop-ready"
+      ".module-card.booster-target, .module-card.booster-target-ineligible"
     ).forEach((card) => card.classList.remove(
       "booster-target",
-      "booster-target-ineligible",
-      "booster-drop-ready"
+      "booster-target-ineligible"
     ));
     if (boosterOfferOpen && boosterStatusEl) {
       boosterStatusEl.textContent = localizedUiText(
@@ -15294,10 +15121,6 @@ function saveHumanReviewLocalNote() {
     }
     renderBoosterOptions();
     return true;
-  }
-
-  function cancelBoosterTargetingForModuleDrag() {
-    return cancelBoosterTargeting("module_drag");
   }
 
   function tryApplySelectedBooster(module) {
@@ -15543,60 +15366,6 @@ function saveHumanReviewLocalNote() {
         cell.dataset.cellLabel =
           localizedUiText(`Hücre ${x},${y}`);
       }
-
-      cell.addEventListener("dragover", (event) => {
-        if (
-          localBattleFinished
-          || cell.classList.contains("core-cell")
-          || cell.dataset.debris === "true"
-        ) return;
-        event.preventDefault();
-        cell.classList.add("drag-over");
-      });
-
-      cell.addEventListener("dragleave", () => cell.classList.remove("drag-over"));
-
-      cell.addEventListener("drop", (event) => {
-        if (
-          localBattleFinished
-          || cell.classList.contains("core-cell")
-        ) return;
-        event.preventDefault();
-        cell.classList.remove("drag-over");
-
-        const sourceModuleId = client.dragState?.moduleId;
-        const sourceModule = sourceModuleId
-          ? client.requireModule(sourceModuleId)
-          : null;
-        const rejection = cellPlacementRejection(cell, sourceModule);
-        if (rejection) {
-          logClientMessage(rejection);
-          client.cancelDrag();
-          return;
-        }
-
-        const targetCard = cell.querySelector(".module-card");
-        const targetModuleId = targetCard?.dataset.moduleId || null;
-
-        const result = client.dropOnCell(
-          Number(cell.dataset.x),
-          Number(cell.dataset.y),
-          targetModuleId
-        );
-
-        if (!result.ok) logClientMessage(result.reason);
-      });
-
-      cell.addEventListener("click", () => {
-        placeTapSelectionOnCell(cell);
-      });
-
-      cell.addEventListener("keydown", (event) => {
-        if (event.key !== "Enter" && event.key !== " ") return;
-        if (!tapSelectedModuleId) return;
-        event.preventDefault();
-        placeTapSelectionOnCell(cell);
-      });
 
       board.appendChild(cell);
     }
@@ -18143,7 +17912,7 @@ function saveHumanReviewLocalNote() {
     renderShelf();
     renderBoard();
     renderLockState();
-    updateMobilePlacementControls();
+    updateTapPlacementState();
   }
 
   let renderedShelfSignature = null;
@@ -18168,7 +17937,62 @@ function saveHumanReviewLocalNote() {
     };
   }
 
+  const LIVE_UTILITY_CATEGORIES = new Set([
+    "savunma", "destek", "enerji", "sabotaj",
+  ]);
+  const LIVE_CATEGORY_LIMITS = Object.freeze({
+    savunma:3,
+    destek:3,
+    enerji:3,
+    sabotaj:3,
+  });
+
+  function deploymentCompositionRejection(module) {
+    if (!module || !LIVE_UTILITY_CATEGORIES.has(module.category)) return null;
+    const definitionId = module.definitionId || clientDefinitionId(module.instanceId);
+    const active = [...client.modules.values()].filter((candidate) => (
+      candidate.status === "active"
+      && Number(candidate.hp || 0) > 0
+      && !["core", "generator"].includes(
+        candidate.definitionId || clientDefinitionId(candidate.instanceId)
+      )
+    ));
+    const sameDefinitionCount = active.filter((candidate) => (
+      (candidate.definitionId || clientDefinitionId(candidate.instanceId)) === definitionId
+    )).length;
+    if (sameDefinitionCount >= 2) {
+      return `${localizedUiText(module.nameTr)} için aynı anda en fazla 2 kopya kullanılabilir.`;
+    }
+    const categoryCount = active.filter(
+      (candidate) => candidate.category === module.category
+    ).length;
+    const categoryLimit = LIVE_CATEGORY_LIMITS[module.category];
+    if (categoryCount >= categoryLimit) {
+      return `${poolCategoryLabel(module.category)} sınırı dolu: ${categoryCount}/${categoryLimit}.`;
+    }
+    const attackCount = active.filter(
+      (candidate) => candidate.category === "saldırı"
+    ).length;
+    const utilityCount = active.filter(
+      (candidate) => LIVE_UTILITY_CATEGORIES.has(candidate.category)
+    ).length;
+    if (utilityCount + 1 > attackCount + 2) {
+      return "Devre dengesi için önce bir Saldırı modülü yerleştir.";
+    }
+    return null;
+  }
+
   function deployDeckModule(module) {
+    const compositionRejection = deploymentCompositionRejection(module);
+    if (compositionRejection) {
+      logClientMessage(compositionRejection);
+      renderShelf();
+      return false;
+    }
+    telemetryDispatcher.trackModuleShelfUsed({
+      module_id: module.instanceId,
+      elapsed_ms: client.elapsedMs,
+    });
     const result = client.deployDefinition(
       module.definitionId || clientDefinitionId(module.instanceId),
       module.circuitCreditCost
@@ -18189,7 +18013,7 @@ function saveHumanReviewLocalNote() {
     return true;
   }
 
-  function createDeckModuleCard(module, enabled) {
+  function createDeckModuleCard(module, enabled, compositionRejection = null) {
     const card = document.createElement("button");
     card.type = "button";
     card.className = "module-card deck-module-card";
@@ -18198,8 +18022,8 @@ function saveHumanReviewLocalNote() {
     card.disabled = !enabled;
     card.setAttribute("aria-disabled", String(!enabled));
     card.title = enabled
-      ? `${localizedUiText(module.nameTr)} · ${module.circuitCreditCost} Akım · Tıkla ve yerleştir`
-      : `${localizedUiText(module.nameTr)} · ${module.circuitCreditCost} Akım · Yetersiz Akım veya devre dolu`;
+      ? `${localizedUiText(module.nameTr)} · ${module.circuitCreditCost} Akım · Tıkla, sistem yerleştirsin`
+      : compositionRejection || `${localizedUiText(module.nameTr)} · ${module.circuitCreditCost} Akım · Yetersiz Akım veya devre dolu`;
 
     const icon = document.createElement("span");
     icon.className = "module-icon";
@@ -18227,38 +18051,46 @@ function saveHumanReviewLocalNote() {
     const deckModules = battlePoolSelection.selectedIds().map(id => client.modules.get(id)).filter(Boolean);
     const discounted = Number(client.currentDiscountRemaining || 0) > 0;
     const costFor = m => Math.max(1, Number(m.currentCost ?? m.circuitCreditCost) - (discounted ? 1 : 0));
-    const signature = JSON.stringify([placement.ready, client.circuitCredits, discounted, deckModules.map(m => m.instanceId)]);
+    const signature = JSON.stringify([
+      placement.ready,
+      client.circuitCredits,
+      discounted,
+      deckModules.map(m => m.instanceId),
+      [...client.modules.values()]
+        .filter((module) => module.status === "active" && Number(module.hp || 0) > 0)
+        .map((module) => [
+          module.definitionId || clientDefinitionId(module.instanceId),
+          module.category,
+        ]),
+    ]);
     if (signature === renderedShelfSignature) return;
     renderedShelfSignature = signature;
     shelf.replaceChildren();
-    const anyAffordable = placement.ready && deckModules.some(m => costFor(m) <= client.circuitCredits);
+    const anyAffordable = placement.ready && deckModules.some(
+      (module) => costFor(module) <= client.circuitCredits
+        && !deploymentCompositionRejection(module)
+    );
     shelf.dataset.placementReady = String(anyAffordable);
     shelf.setAttribute("aria-disabled", String(!anyAffordable));
     for (const module of deckModules) {
       const cost = costFor(module);
-      const enabled = placement.ready && client.circuitCredits >= cost;
-      const card = createDeckModuleCard(module, enabled);
-      card.title = `${localizedUiText(module.nameTr)} · ${cost} Akım`;
+      const compositionRejection = deploymentCompositionRejection(module);
+      const enabled = placement.ready && client.circuitCredits >= cost && !compositionRejection;
+      const card = createDeckModuleCard(module, enabled, compositionRejection);
+      if (enabled && cost !== module.circuitCreditCost) {
+        card.title = `${localizedUiText(module.nameTr)} · ${cost} Akım · Tıkla, sistem yerleştirsin`;
+      }
       const badge = card.querySelector(".current-cost-badge");
       if (badge) badge.textContent = `ϟ ${cost}`;
       if (!enabled) card.classList.add("locked", "placement-locked");
       shelf.appendChild(card);
     }
-    shelf.ondragover = null;
-    shelf.ondrop = null;
   }
 
   function renderBoard(
     { force=false }={}
   ) {
-    if (
-      !force
-      && client.dragState
-    ) {
-      return;
-    }
     const boardSignature = JSON.stringify({
-      selectedModuleId:tapSelectedModuleId,
       battleFinished:localBattleFinished,
       selectedBoosterId:boosterTargetMode.selectedBoosterId,
       corePowerTargeting,
@@ -18285,7 +18117,7 @@ function saveHumanReviewLocalNote() {
     battleBoardView.render(
       client.modules.values(),
       {
-        selectedModuleId: tapSelectedModuleId,
+        selectedModuleId: null,
         battleFinished: localBattleFinished,
         createModuleCard,
         cellDebris: playerCellDebris,
@@ -18298,41 +18130,6 @@ function saveHumanReviewLocalNote() {
     );
   }
 
-  function clearDragGhostPreview() {
-    if (activeDragGhostPreview?.isConnected) {
-      activeDragGhostPreview.remove();
-    }
-    activeDragGhostPreview = null;
-  }
-
-  function attachDragGhostPreview(
-    event,
-    { title = "", subtitle = "", accentClass = "" } = {}
-  ) {
-    const transfer = event.dataTransfer;
-    if (!transfer) return;
-    clearDragGhostPreview();
-    const ghost = document.createElement("div");
-    ghost.className = `drag-ghost-preview ${accentClass}`.trim();
-    const heading = document.createElement("strong");
-    heading.textContent = title;
-    const detail = document.createElement("span");
-    detail.textContent = subtitle;
-    ghost.append(heading, detail);
-    ghost.style.position = "fixed";
-    ghost.style.left = "-9999px";
-    ghost.style.top = "-9999px";
-    document.body.appendChild(ghost);
-    activeDragGhostPreview = ghost;
-    const rect = ghost.getBoundingClientRect();
-    transfer.setDragImage(
-      ghost,
-      Math.max(16, Math.round(rect.width / 2)),
-      Math.max(16, Math.round(rect.height / 2))
-    );
-    window.setTimeout(clearDragGhostPreview, 0);
-  }
-
   function moduleIconFor(module) {
     return GridshardModuleCardView.iconFor(module);
   }
@@ -18343,27 +18140,17 @@ function saveHumanReviewLocalNote() {
     const reservePlacementReady =
       module.status !== "reserve"
       || modulePlacementSlotState().ready;
-    card.draggable = false;
     card.dataset.moduleId =
       module.instanceId;
     card.dataset.category =
       module.category || "";
-    card.setAttribute(
-      "aria-pressed",
-      String(tapSelectedModuleId === module.instanceId)
+    const hasTargetInteraction = Boolean(
+      boosterTargetMode.selectedBoosterId
+      || (module.nameTr === "Çekirdek" && corePowerTargeting)
     );
-    if (tapSelectedModuleId === module.instanceId) {
-      card.classList.add("tap-selected");
-    }
-    if (module.movable !== false) {
+    if (hasTargetInteraction) {
       card.tabIndex = 0;
       card.setAttribute("role", "button");
-    }
-    if (module.nameTr === "Çekirdek" && corePowerTargeting) {
-      card.classList.add("core-power-target");
-      card.tabIndex=0;
-      card.setAttribute("role","button");
-      card.title="Çekirdek Rezonansını kullan";
     }
 
     if (
@@ -18375,9 +18162,11 @@ function saveHumanReviewLocalNote() {
       card.title =
         `${module.nameTr} sabit başlangıç modülüdür.`;
     } else {
-      card.title =
-        module.strategicRole
-        || module.nameTr;
+      card.title = `${module.nameTr} · savaş sırasında sabit`;
+    }
+    if (module.nameTr === "Çekirdek" && corePowerTargeting) {
+      card.classList.add("core-power-target");
+      card.title="Çekirdek Rezonansını kullan";
     }
 
     const icon=
@@ -18538,31 +18327,6 @@ function saveHumanReviewLocalNote() {
       );
     }
 
-    card.addEventListener("dragover", (event) => {
-      const boosterId = draggedBoosterId(event);
-      if (!boosterId) return;
-      if (boosterId !== boosterTargetMode.selectedBoosterId) {
-        selectBoosterTargetMode(boosterId, "booster_drag_over");
-      }
-      event.preventDefault();
-      event.stopPropagation();
-      if (isBoosterTargetEligible(module, boosterId)) {
-        card.classList.add("booster-drop-ready");
-      }
-    });
-    card.addEventListener("dragleave", () => {
-      card.classList.remove("booster-drop-ready");
-    });
-    card.addEventListener("drop", (event) => {
-      const boosterId = draggedBoosterId(event);
-      if (!boosterId) return;
-      selectBoosterTargetMode(boosterId, "booster_drop");
-      event.preventDefault();
-      event.stopPropagation();
-      card.classList.remove("booster-drop-ready");
-      tryApplySelectedBooster(module);
-    });
-
     card.addEventListener(
       "click",
       (event) => {
@@ -18580,11 +18344,8 @@ function saveHumanReviewLocalNote() {
             logClientMessage("Yeni modül yerleştirme hakkı için geri sayımı bekleyin.");
             return;
           }
-          selectModuleForTap(module);
+          deployDeckModule(module);
           return;
-        }
-        if (module.status === "active" && module.movable !== false && isTapPlacementUi()) {
-          selectModuleForTap(module);
         }
       }
     );
@@ -18595,76 +18356,6 @@ function saveHumanReviewLocalNote() {
         if (event.key !== "Enter" && event.key !== " ") return;
         event.preventDefault();
         card.click();
-      }
-    );
-
-    card.addEventListener(
-      "dragstart",
-      (event) => {
-        cancelBoosterTargetingForModuleDrag();
-        if (tapSelectedModuleId) {
-          clearTapSelection({ rerender: false });
-        }
-        if (localBattleFinished) {
-          event.preventDefault();
-          logClientMessage(
-            "Maç bittikten sonra modüller hareket ettirilemez."
-          );
-          return;
-        }
-        if (module.status === "reserve" && !modulePlacementSlotState().ready) {
-          event.preventDefault();
-          logClientMessage("Yeni modül yerleştirme hakkı için geri sayımı bekleyin.");
-          return;
-        }
-        const result =
-          client.beginDrag(
-            module.instanceId
-          );
-        if (!result.ok) {
-          event.preventDefault();
-          logClientMessage(
-            result.reason
-          );
-          return;
-        }
-
-        if (
-          module.status
-          === "reserve"
-        ) {
-          telemetryDispatcher
-            .trackModuleShelfUsed({
-              module_id:
-                module.instanceId,
-              elapsed_ms:
-                client.elapsedMs,
-            });
-        }
-
-        event.dataTransfer
-          .effectAllowed =
-          "move";
-        event.dataTransfer
-          .setData(
-            "text/plain",
-            module.instanceId
-          );
-        attachDragGhostPreview(event, {
-          title: module.nameTr,
-          subtitle: module.status === "reserve"
-            ? `${localizedUiText("Akım")}: ${module.circuitCreditCost}`
-            : `${localizedUiText("Can")}: ${module.hp}/${module.maxHp}`,
-          accentClass: `drag-ghost-preview--module drag-ghost-preview--${module.category || "neutral"}`
-        });
-      }
-    );
-
-    card.addEventListener(
-      "dragend",
-      () => {
-        clearDragGhostPreview();
-        client.cancelDrag();
       }
     );
 
@@ -18806,9 +18497,21 @@ function saveHumanReviewLocalNote() {
         return cell?.dataset.debris !== "true";
       });
       const validPlacements = candidates.map(([x, y]) => ({ x, y }));
-      const selected = validPlacements.length
-        ? validPlacements[Math.floor(Math.random() * validPlacements.length)]
+      const requestedPosition = (
+        Number.isInteger(command.payload.x)
+        && Number.isInteger(command.payload.y)
+      )
+        ? { x:command.payload.x, y:command.payload.y }
         : null;
+      const selected = requestedPosition
+        ? validPlacements.find(
+            ({ x, y }) => x === requestedPosition.x && y === requestedPosition.y
+          ) || null
+        : (
+            validPlacements.length
+              ? validPlacements[Math.floor(Math.random() * validPlacements.length)]
+              : null
+          );
       if (!selected) {
         mockServerCredits += cost;
         client.applyServerEconomyState({ circuitCredits:mockServerCredits });
@@ -20487,10 +20190,10 @@ function saveHumanReviewLocalNote() {
         hint: "Çekirdek sabit enerji kaynağıdır; altı kartlık havuzu sen seçersin.",
       },
       {
-        title: "Dokun, sonra yerleştir",
-        body: "Savaşta altı karttan birine dokun. Yeterli Devre Kredin varsa sunucu yeni örneği uygun hücreye yerleştirir.",
-        target: "#mobile-battle-tabs",
-        hint: "Masaüstünde sürükle-bırak da kullanılmaya devam eder.",
+        title: "Dokun, sistem yerleştirsin",
+        body: "Savaşta altı karttan birine dokun. Sunucu uygun boş hücreyi otomatik seçip yeni modülü yerleştirir.",
+        target: "#module-shelf",
+        hint: "Masaüstü ve mobilde hücre seçmeden tek dokunuş yeterlidir.",
       },
     ],
     onAction: async (action) => {

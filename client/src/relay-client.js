@@ -13,11 +13,6 @@
     return 15;
   }
 
-  const DRAG_KIND = Object.freeze({
-    SHELF_MODULE: "shelf-module",
-    ACTIVE_MODULE: "active-module",
-  });
-
   class BattlePoolSelection {
     constructor({
       selectableModuleIds,
@@ -146,8 +141,6 @@
       this.emitCommand = emitCommand;
       this.elapsedMs = 0;
       this.circuitCredits = Math.max(0, Math.floor(circuitCredits));
-      this.dragState = null;
-      this.pendingPlacementModuleIds = new Set();
       this.pendingDeployments = 0;
       this.modules = new Map(
         modules.map((module) => [
@@ -182,15 +175,17 @@
     }
 
     pendingPlacementCount() {
-      return this.pendingPlacementModuleIds.size + this.pendingDeployments;
+      return this.pendingDeployments;
     }
 
     clearPendingPlacements() {
-      this.pendingPlacementModuleIds.clear();
       this.pendingDeployments = 0;
     }
 
-    deployDefinition(definitionId, circuitCreditCost = 0) {
+    deployDefinition(
+      definitionId,
+      circuitCreditCost = 0
+    ) {
       const cleanDefinitionId = String(definitionId || "").trim();
       if (!cleanDefinitionId) {
         return { ok: false, reason: "Yerleştirilecek deste kartı seçilmedi." };
@@ -208,7 +203,9 @@
       }
       const command = {
         kind: "deploy_module",
-        payload: { definition_id: cleanDefinitionId },
+        payload: {
+          definition_id:cleanDefinitionId,
+        },
       };
       this.pendingDeployments += 1;
       this.emitCommand(command);
@@ -229,206 +226,36 @@
 
     beginDrag(moduleId) {
       const module = this.requireModule(moduleId);
-
-      if (module.status === MODULE_STATUS.DESTROYED) {
-        return { ok: false, reason: "Yok edilmiş modül sürüklenemez." };
-      }
-
-      if (
-        module.status === MODULE_STATUS.ACTIVE
-        && module.movable === false
-      ) {
+      if (module.status === MODULE_STATUS.ACTIVE) {
         return {
           ok:false,
-          reason:
-            `${module.nameTr} sabit başlangıç modülüdür ve taşınamaz.`,
+          reason:"Yerleşmiş modüller savaş sırasında taşınamaz.",
         };
       }
-
-      if (
-        module.status === MODULE_STATUS.RESERVE &&
-        !this.isShelfUnlocked()
-      ) {
-        return { ok: false, reason: "Modül Rafı henüz kilitli." };
-      }
-
-      this.dragState = {
-        moduleId,
-        kind:
-          module.status === MODULE_STATUS.ACTIVE
-            ? DRAG_KIND.ACTIVE_MODULE
-            : DRAG_KIND.SHELF_MODULE,
+      return {
+        ok:false,
+        reason:"Hücre seçerek yerleştirme kaldırıldı; modül kartına dokun.",
       };
-
-      return { ok: true };
     }
 
     cancelDrag() {
-      this.dragState = null;
+      // Eski ekran sıfırlama çağrıları için zararsız uyumluluk kancası.
     }
 
-    dropOnCell(targetX, targetY, targetModuleId = null) {
-      if (!this.dragState) {
-        return { ok: false, reason: "Aktif sürükleme yok." };
-      }
-
-      const source = this.requireModule(this.dragState.moduleId);
-
-      if (
-        Array.isArray(source.allowedMovePositions)
-        && source.status === MODULE_STATUS.ACTIVE
-      ) {
-        const allowed =
-          source.allowedMovePositions.some(
-            (position) =>
-              position.x === targetX
-              && position.y === targetY
-          );
-
-        if (!allowed) {
-          this.dragState = null;
-          return {
-            ok:false,
-            reason:
-              `${source.nameTr} yalnızca dört Çekirdek kapısı arasında taşınabilir.`,
-          };
-        }
-
-        if (
-          targetModuleId
-          && targetModuleId !== source.instanceId
-        ) {
-          this.dragState = null;
-          return {
-            ok:false,
-            reason:
-              "Hedef Çekirdek kapısı dolu. Jeneratör başka modülle değiştirilemez.",
-          };
-        }
-      }
-
-      let command;
-
-      if (
-        targetModuleId
-        && targetModuleId !== source.instanceId
-        && source.status === MODULE_STATUS.ACTIVE
-      ) {
-        const target = this.requireModule(targetModuleId);
-        if (
-          target.status !== MODULE_STATUS.ACTIVE
-          || target.movable === false
-          || Array.isArray(target.allowedMovePositions)
-          || Array.isArray(source.allowedMovePositions)
-        ) {
-          this.dragState = null;
-          return {
-            ok:false,
-            reason:
-              "Çekirdek ve Jeneratör normal modül takasına dahil edilemez.",
-          };
-        }
-        command = {
-          kind: "swap_modules",
-          payload: {
-            module_id: source.instanceId,
-            target_module_id: targetModuleId,
-          },
-        };
-      } else if (targetModuleId && targetModuleId !== source.instanceId) {
-        command = {
-          kind: "replace_module",
-          payload: {
-            outgoing_module_id: targetModuleId,
-            incoming_module_id: source.instanceId,
-          },
-        };
-      } else if (source.status === MODULE_STATUS.RESERVE) {
-        if (!this.isShelfUnlocked()) {
-          return { ok: false, reason: "Modül Rafı henüz kilitli." };
-        }
-
-        const activeLimit = this.maxActiveModules();
-        const effectiveActiveCount =
-          this.activeModuleCount()
-          + this.pendingPlacementCount();
-        if (
-          activeLimit === null
-          || effectiveActiveCount >= activeLimit
-        ) {
-          this.dragState = null;
-          return {
-            ok: false,
-            reason:
-              `Aktif modül sınırına ulaşıldı: ${effectiveActiveCount}/${activeLimit ?? 0}. `
-              + "Sonraki kapasite yuvasını bekleyin veya aktif bir modülün üzerine bırakarak değiştirin.",
-          };
-        }
-
-        command = {
-          kind: "place_module",
-          payload: {
-            module_id: source.instanceId,
-            x: targetX,
-            y: targetY,
-          },
-        };
-        this.pendingPlacementModuleIds.add(source.instanceId);
-      } else {
-        command = {
-          kind: "move_module",
-          payload: {
-            module_id: source.instanceId,
-            x: targetX,
-            y: targetY,
-          },
-        };
-      }
-
-      this.emitCommand(command);
-      this.dragState = null;
-      return { ok: true, command };
+    dropOnCell() {
+      return {
+        ok:false,
+        reason:"Hücre seçerek yerleştirme kaldırıldı; sistem uygun hücreyi otomatik seçer.",
+      };
     }
 
     dropOnShelf() {
-      if (!this.dragState) {
-        return { ok: false, reason: "Aktif sürükleme yok." };
-      }
-
-      const module = this.requireModule(this.dragState.moduleId);
-
-      if (module.removable === false) {
-        this.dragState = null;
-        return {
-          ok:false,
-          reason:
-            `${module.nameTr} devreden çıkarılamaz.`,
-        };
-      }
-
-      if (module.status !== MODULE_STATUS.ACTIVE) {
-        this.dragState = null;
-        return { ok: false, reason: "Yalnızca aktif modül rafa çekilebilir." };
-      }
-
-      const command = {
-        kind: "remove_module",
-        payload: {
-          module_id: module.instanceId,
-        },
-      };
-
-      this.emitCommand(command);
-      this.dragState = null;
-      return { ok: true, command };
+      return { ok:false, reason:"Yerleşmiş modüller savaş sırasında rafa alınamaz." };
     }
 
     applyServerModuleState(moduleState) {
       const module = this.requireModule(moduleState.instanceId);
       Object.assign(module, moduleState);
-      if (Object.prototype.hasOwnProperty.call(moduleState, "status")) {
-        this.pendingPlacementModuleIds.delete(moduleState.instanceId);
-      }
     }
 
     applyServerEconomyState({ circuitCredits }) {
@@ -4726,7 +4553,6 @@
     PARTICIPANT_CONTINUITY_STATUS,
     PVP_PHASE,
     MODULE_STATUS,
-    DRAG_KIND,
     maxActiveModulesForElapsedMs,
   };
 

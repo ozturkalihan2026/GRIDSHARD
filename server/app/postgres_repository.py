@@ -1,31 +1,14 @@
 from __future__ import annotations
 
+from pathlib import Path
 from typing import Any
 
 from .auth import AuthenticationError
 from .player_data_store import PlayerDataSnapshot, PlayerDataStoreError
+from .schema_migrations import apply_pending_migrations
 
 
-SCHEMA_SQL = """
-CREATE TABLE IF NOT EXISTS player_data (
-    player_id VARCHAR(72) PRIMARY KEY,
-    profile JSONB NOT NULL,
-    statistics JSONB NOT NULL,
-    settings JSONB NOT NULL,
-    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
-);
-
-CREATE TABLE IF NOT EXISTS participant_identities (
-    player_id VARCHAR(72) PRIMARY KEY,
-    salt TEXT NOT NULL,
-    verifier TEXT NOT NULL,
-    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
-);
-
-CREATE INDEX IF NOT EXISTS player_data_updated_at_idx
-    ON player_data (updated_at);
-"""
+MIGRATIONS_DIR = Path(__file__).resolve().parent.parent / "migrations"
 
 
 def _load_psycopg():
@@ -64,8 +47,12 @@ class PostgresPool:
         if self._opened:
             return
         self.pool.open(wait=True, timeout=10.0)
-        with self.pool.connection() as connection:
-            connection.execute(SCHEMA_SQL)
+        try:
+            with self.pool.connection() as connection:
+                apply_pending_migrations(connection, MIGRATIONS_DIR)
+        except Exception:
+            self.pool.close(timeout=5.0)
+            raise
         self._opened = True
 
     def close(self) -> None:
@@ -211,7 +198,8 @@ class PostgresIdentityRepository:
             with self.database.connection() as connection:
                 row = connection.execute(
                     """
-                    SELECT salt, verifier, EXTRACT(EPOCH FROM created_at)::BIGINT
+                    SELECT salt, verifier, devices,
+                           EXTRACT(EPOCH FROM created_at)::BIGINT
                     FROM participant_identities
                     WHERE player_id = %s
                     """,
@@ -221,31 +209,50 @@ class PostgresIdentityRepository:
             raise AuthenticationError("PostgreSQL kimlik kaydı okunamadı.") from exc
         if row is None:
             return None
-        return {"salt": row[0], "verifier": row[1], "created_at": int(row[2])}
+        return {
+            "salt": row[0],
+            "verifier": row[1],
+            "devices": dict(row[2] or {}),
+            "created_at": int(row[3]),
+        }
 
     def create(self, player_id: str, record: dict) -> None:
+        _, Jsonb = _load_psycopg()
         try:
             with self.database.connection() as connection:
                 connection.execute(
                     """
-                    INSERT INTO participant_identities (player_id, salt, verifier)
-                    VALUES (%s, %s, %s)
+                    INSERT INTO participant_identities
+                        (player_id, salt, verifier, devices)
+                    VALUES (%s, %s, %s, %s)
                     """,
-                    (player_id, str(record["salt"]), str(record["verifier"])),
+                    (
+                        player_id,
+                        str(record["salt"]),
+                        str(record["verifier"]),
+                        Jsonb(dict(record.get("devices") or {})),
+                    ),
                 )
         except Exception as exc:
             raise AuthenticationError("Oyuncu kimliği zaten kayıtlı veya yazılamadı.") from exc
 
     def update(self, player_id: str, record: dict) -> None:
+        _, Jsonb = _load_psycopg()
         try:
             with self.database.connection() as connection:
                 cursor = connection.execute(
                     """
                     UPDATE participant_identities
-                    SET salt = %s, verifier = %s, created_at = NOW()
+                    SET salt = %s, verifier = %s, devices = %s,
+                        created_at = NOW()
                     WHERE player_id = %s
                     """,
-                    (str(record["salt"]), str(record["verifier"]), player_id),
+                    (
+                        str(record["salt"]),
+                        str(record["verifier"]),
+                        Jsonb(dict(record.get("devices") or {})),
+                        player_id,
+                    ),
                 )
                 if cursor.rowcount < 1:
                     raise AuthenticationError("Oyuncu kimliği bulunamadı.")

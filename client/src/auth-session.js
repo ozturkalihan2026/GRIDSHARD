@@ -134,6 +134,35 @@
       return value;
     }
 
+    async completeProviderLogin(exchange) {
+      const response = await this.fetchImpl(
+        this._apiInput("/auth/provider-session"),
+        {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({
+            exchange,
+            device_secret: this._deviceSecret(),
+            device_id: this._deviceId(),
+            device_name: this._deviceName(),
+            platform: this._platform(),
+          }),
+        }
+      );
+      if (!response.ok) {
+        throw new Error(`Sağlayıcı oturumu açılamadı: ${response.status}`);
+      }
+      const payload = await response.json();
+      if (!payload.player_id || !payload.access_token) {
+        throw new Error("Sağlayıcı kimlik sunucusu geçersiz yanıt döndürdü.");
+      }
+      this.storage?.setItem(PLAYER_ID_KEY, payload.player_id);
+      this.playerId = payload.player_id;
+      this.accessToken = payload.access_token;
+      this.expiresAt = Number(payload.expires_at || 0);
+      return payload;
+    }
+
     async _openSession(playerId) {
       const response = await this.fetchImpl(this._apiInput("/auth/session"), {
         method: "POST",

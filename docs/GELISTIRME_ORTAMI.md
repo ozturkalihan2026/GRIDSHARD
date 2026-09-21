@@ -31,9 +31,18 @@ kullanılabilir.
 
 `.vscode/tasks.json` içinde Tam QA, sunucu başlatma, pytest ve client test görevleri hazırdır.
 
-## Alembic neden eklenmedi?
+## PostgreSQL şema migration akışı
 
-Mevcut Beta sürümü ilişkisel veritabanı/Alembic migration altyapısı kullanmıyor; oyuncu ve telemetri kalıcılığı mevcut dosya tabanlı katman üzerinden ilerliyor. Alembic'i şimdi eklemek test hızını artırmaz, aksine kullanılmayan bir migration katmanı yaratır. Kalıcı ilişkisel veritabanına geçme kararı alındığında Alembic aynı paket içinde eklenmelidir.
+`server/migrations/` altındaki numaralı ileri ve geri SQL dosyaları checksum ile `schema_migrations` tablosunda izlenir. Sunucu açılışta advisory lock alıp yalnız bekleyen ileri migration'ları sırasıyla uygular; daha önce uygulanmış bir dosya sonradan değiştirilmişse açılış güvenli biçimde durur.
+
+Dağıtım öncesi durum kontrolü:
+
+```powershell
+python tools/schema_migrate.py status
+python tools/schema_migrate.py check
+```
+
+Bekleyen migration'ı bakım penceresinde açıkça uygulamak için `up` kullanılır. Geri alma veri değiştiren bir işlem olduğu için yalnız operatör kararıyla `python tools/schema_migrate.py down --allow-destructive` biçiminde çalışır; uygulama sürümü de aynı anda uyumlu önceki sürüme döndürülmelidir.
 
 ## Tarayıcı E2E
 

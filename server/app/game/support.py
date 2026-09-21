@@ -71,9 +71,37 @@ def attack_support_modifiers(player, attack_module, core_position):
             * player.energy_support_multiplier,
         )
 
-    amp_source, amp = strongest("amplifier")
-    targeting_source, targeting = strongest("targeting_computer")
-    overclock_source, overclock = strongest("overclock_unit")
+    # One attack module may receive only one offensive support at a time.
+    # Pick the strongest real contribution instead of multiplying several
+    # different support cards on the same target.
+    support_options = []
+    for mechanic, impact in (
+        ("amplifier", .15),
+        ("targeting_computer", .15),
+        ("overclock_unit", .40),
+    ):
+        source, effect = strongest(mechanic)
+        if source is not None:
+            support_options.append((impact * effect, effect, mechanic, source))
+
+    selected = (
+        sorted(
+            support_options,
+            key=lambda item: (-item[0], -item[1], item[2], item[3].instance_id),
+        )[0]
+        if support_options
+        else None
+    )
+    amp_source = targeting_source = overclock_source = None
+    amp = targeting = overclock = 0.0
+    if selected is not None:
+        _, effect, mechanic, source = selected
+        if mechanic == "amplifier":
+            amp_source, amp = source, effect
+        elif mechanic == "targeting_computer":
+            targeting_source, targeting = source, effect
+        else:
+            overclock_source, overclock = source, effect
     damage = (1 + .15 * amp) * (1 + .20 * overclock)
     cooldown = max(.65, 1 - .15 * targeting) * max(.65, 1 - .20 * overclock)
     contributions = []

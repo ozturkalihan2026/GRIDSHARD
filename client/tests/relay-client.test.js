@@ -53,25 +53,22 @@ function createClient() {
 {
   const { client, emitted } = createClient();
   client.updateElapsedMs(15000);
-  assert.strictEqual(client.beginDrag("laser-1").ok, true);
-  const result = client.dropOnCell(3, 4);
+  assert.strictEqual(client.beginDrag("laser-1").ok, false);
+  const result = client.deployDefinition("laser", 90);
   assert.strictEqual(result.ok, true);
   assert.deepStrictEqual(emitted[0], {
-    kind: "place_module",
-    payload: { module_id: "laser-1", x: 3, y: 4 },
+    kind: "deploy_module",
+    payload: { definition_id: "laser" },
   });
 }
 
 {
   const { client, emitted } = createClient();
   client.updateElapsedMs(20000);
-  assert.strictEqual(client.beginDrag("shield-1").ok, true);
-  const result = client.dropOnShelf();
-  assert.strictEqual(result.ok, true);
-  assert.deepStrictEqual(emitted[0], {
-    kind: "remove_module",
-    payload: { module_id: "shield-1" },
-  });
+  const result = client.beginDrag("shield-1");
+  assert.strictEqual(result.ok, false);
+  assert.ok(result.reason.includes("taşınamaz"));
+  assert.strictEqual(emitted.length, 0);
 }
 
 {
@@ -82,49 +79,34 @@ function createClient() {
     status:MODULE_STATUS.ACTIVE,
     position:{x:3,y:2},
   });
-  assert.strictEqual(client.beginDrag("laser-1").ok, true);
-  const result = client.dropOnCell(2, 2, "shield-1");
-  assert.strictEqual(result.ok, true);
-  assert.deepStrictEqual(emitted[0], {
-    kind:"swap_modules",
-    payload:{
-      module_id:"laser-1",
-      target_module_id:"shield-1",
-    },
-  });
+  const result = client.beginDrag("laser-1");
+  assert.strictEqual(result.ok, false);
+  assert.ok(result.reason.includes("taşınamaz"));
+  assert.strictEqual(emitted.length, 0);
 }
 
 {
   const { client, emitted } = createClient();
   client.updateElapsedMs(20000);
-  assert.strictEqual(client.beginDrag("shield-1").ok, true);
-  const result = client.dropOnCell(4, 4);
-  assert.strictEqual(result.ok, true);
-  assert.deepStrictEqual(emitted[0], {
-    kind: "move_module",
-    payload: { module_id: "shield-1", x: 4, y: 4 },
-  });
+  const result = client.beginDrag("shield-1");
+  assert.strictEqual(result.ok, false);
+  assert.strictEqual(emitted.length, 0);
 }
 
 {
   const { client, emitted } = createClient();
   client.updateElapsedMs(20000);
-  assert.strictEqual(client.beginDrag("laser-1").ok, true);
+  assert.strictEqual(client.beginDrag("laser-1").ok, false);
   const result = client.dropOnCell(2, 2, "shield-1");
-  assert.strictEqual(result.ok, true);
-  assert.deepStrictEqual(emitted[0], {
-    kind: "replace_module",
-    payload: {
-      outgoing_module_id: "shield-1",
-      incoming_module_id: "laser-1",
-    },
-  });
+  assert.strictEqual(result.ok, false);
+  assert.ok(result.reason.includes("Hücre seçerek"));
+  assert.strictEqual(emitted.length, 0);
 }
 
 {
   const { client } = createClient();
   client.updateElapsedMs(20000);
-  assert.strictEqual(client.beginDrag("shield-1").ok, true);
+  assert.strictEqual(client.beginDrag("shield-1").ok, false);
 
   // Sürüklemek aktif modülü savaş dışına çıkarmaz.
   assert.strictEqual(
@@ -276,7 +258,7 @@ function createClient() {
   const fs = require("fs");
   const src = fs.readFileSync(path.join(ROOT,"src/app.js"),"utf8");
   assert.ok(src.includes("const SPECIAL_CELL_INFO = {}"));
-  assert.ok(src.includes("cellPlacementRejection"));
+  assert.ok(!src.includes("cellPlacementRejection"));
   assert.ok(src.includes("playerCellDebris"));
 }
 
@@ -4732,13 +4714,10 @@ function createClient() {
     }],
   });
 
-  assert.strictEqual(client.beginDrag("generator-1").ok,true);
-  assert.strictEqual(client.dropOnCell(1,1,null).ok,false);
+  const drag=client.beginDrag("generator-1");
+  assert.strictEqual(drag.ok,false);
+  assert.ok(drag.reason.includes("taşınamaz"));
   assert.strictEqual(commands.length,0);
-
-  assert.strictEqual(client.beginDrag("generator-1").ok,true);
-  assert.strictEqual(client.dropOnCell(1,2,null).ok,true);
-  assert.strictEqual(commands[0].kind,"move_module");
 }
 
 {

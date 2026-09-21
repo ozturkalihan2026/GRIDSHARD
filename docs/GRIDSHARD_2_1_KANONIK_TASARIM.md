@@ -21,7 +21,8 @@ Savaş içinde oyuncu deste rafındaki bir modüle dokunur. Yeterli **Akım** va
 - Eski **Enerji sınıfı** adı ve bağlantı/dağıtım rolü kaldırılır; bu stratejik alan bundan sonra yalnız **Sistem sınıfı** olarak adlandırılır.
 - Dağıtıcı yalnız eski port topolojisine hizmet ettiği için aktif hedef katalogdan çıkarılacaktır.
 - Savaş kartına dokunma → uygun rastgele boş modül hücresine yerleşme.
-- Aynı karttan maç içinde sınırsız sayıda savaş örneği üretilebilir; gerçek saha sınırı yalnızca **boş hücre sayısı** ve **Akım maliyetidir**.
+- Saldırı kartları boş hücre ve Akım elverdiği sürece tekrar üretilebilir. Savunma, Destek, Sistem ve Sabotaj kartlarında aynı tanımdan en fazla **2**, aynı sınıftan en fazla **3** aktif kopya bulunabilir.
+- Saldırı dışı aktif modül sayısı, aktif Saldırı modülü sayısını en fazla **2** aşabilir. Böylece dolu bir devre yalnız iyileştirme/savunma yığınına dönüşmez.
 - Maç normal süre veya toplam hasar üstünlüğüyle bitmez; galibiyet için rakip **Çekirdeğin CAN değeri sıfıra düşmeli** ya da rakip savaştan çekilmelidir.
 - Savaş ekonomisinin yerleştirme kaynağı **Akım**dır. Enerji ise sahadaki modüllerin sürdürülebilir çalışma kapasitesini belirleyen ayrı savaş sistemidir.
 - Çekirdek, savaş sırasında zamanla dolan aktif güce sahiptir; dolum görseli merkez Çekirdeğin üzerinde/çevresinde görünür, hazır olduğunda Çekirdek parlar.
@@ -133,17 +134,18 @@ Bir modülün CAN değeri sıfıra düşüp modül parçalandığında hücre an
 
 Bu 3 saniyelik pencere, parçalanan modülün yerine anında yeni kart basılmasını engelleyerek saldırı temposuna kısa fakat okunabilir bir karşılık penceresi üretir.
 
-## 2.3. Maç bitişi, Aşırı Yük ve onarım yığılması
+## 2.3. Maç bitişi, Devre Gerilimi ve destek yığılması
 
 Maçın tek normal galibiyet koşulu rakip Çekirdeğin yok edilmesidir. Toplam hasar, kalan modül sayısı veya kalan toplam CAN hiçbir zaman süre sonu hakemi olarak kazanan seçmez. İki Çekirdek aynı sunucu adımında yok edilirse maç berabere biter. Savaştan çekilme ayrı ve açık bir mağlubiyet koşuludur.
 
-Savunma/onarım ağırlıklı devrelerin maçı sonsuza uzatmaması için `03:00` bir bitiş sınırı değil **Aşırı Yük başlangıcıdır**:
+Savunma/onarım ağırlıklı devrelerin maçı sonsuza uzatmaması için `03:00` bir bitiş sınırı değil **Devre Gerilimi başlangıcıdır**:
 
 - `03:00`: saldırı hasarı `×1.25` olur ve her 30 saniyede `+0.25` daha artar. Onarım verimi `×0.50` ile başlar, her 30 saniyede `0.10` azalır ve `×0.10` altına düşmez.
-- `03:30`: Çekirdekler açığa çıkar; sahada başka modüller bulunsa da saldırılar doğrudan Çekirdeği hedefleyebilir.
-- `04:00`: Çekirdek kararsızlığı başlar. Her saniye iki Çekirdeğe de azami CAN'ın `%2`si kadar hasar uygulanır; oran her 30 saniyede `+%0.5` artar. Önceden alınmış Çekirdek hasarı sonucu doğrudan etkiler; eşzamanlı sıfırlanma beraberedir.
+- Geçen süre Çekirdeği hiçbir zaman doğrudan hedefe açmaz ve Çekirdeğe otomatik hasar vermez. Saldırılar önce yaşayan savaş modüllerini, ardından varsa sistem hattını ve son olarak Çekirdeği hedefler.
 
-Onarım Modülü, her bekleme süresi tamamlandığında yalnız **bir** hasarlı ve yaşayan modülü iyileştirir. Aynı sunucu destek adımında aynı hedef birden fazla Onarım Modülünden onarım alamaz. Onarım Çekirdeği iyileştirmez, yok edilmiş modülü diriltmez ve Enkaz süresini kaldırmaz. Böylece çoklu onarım hâlâ sürdürülebilir bir savunma arketipidir fakat odaklanmış hasarı sınırsız biçimde silemez.
+Onarım Modülü, her bekleme süresi tamamlandığında yalnız **bir** hasarlı ve yaşayan modülü iyileştirir. Aynı sunucu destek adımında aynı hedef birden fazla Onarım Modülünden onarım alamaz. Aynı hedef aynı adımda birden fazla Soğutucu veya Aşırı Hızlandırıcı etkisi de alamaz. Bir Saldırı modülü komşu Güçlendirici, Hedefleme Bilgisayarı ve Aşırı Hızlandırıcı arasından yalnız en güçlü tek saldırı desteğini kullanır. Onarım Çekirdeği iyileştirmez, yok edilmiş modülü diriltmez ve Enkaz süresini kaldırmaz.
+
+Can, enerji tüketimi veya bütün yardımcı kartların Akım maliyeti topluca ağırlaştırılmaz. Denge; sınıf/kopya sınırı, saldırı–yardımcı oranı ve aynı etkinin yığılmamasıyla kurulur. Verilen hasardan Akım üretimi kartopu etkisi yaratacağı için temel savaş ekonomisine eklenmez.
 
 ## 3. Modül yükseltme modeli
 

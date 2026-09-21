@@ -11,6 +11,7 @@ import os
 import json
 from pathlib import Path
 from threading import Lock
+from urllib.parse import parse_qs, urlencode
 
 from fastapi import BackgroundTasks, FastAPI, Header, HTTPException, Query, Request, WebSocket
 from fastapi.middleware.cors import CORSMiddleware
@@ -289,6 +290,16 @@ app = FastAPI(
     lifespan=application_lifespan,
 )
 
+
+@app.middleware("http")
+async def hide_web_test_routes_in_production(request: Request, call_next):
+    if RUNTIME_STRICT and (
+        request.url.path == "/web-test"
+        or request.url.path.startswith("/web-test/")
+    ):
+        return JSONResponse(status_code=404, content={"detail": "Not Found"})
+    return await call_next(request)
+
 CORS_ORIGINS = tuple(
     origin.strip()
     for origin in os.environ.get("GRIDSHARD_CORS_ORIGINS", "").split(",")
@@ -436,7 +447,7 @@ async def require_participant_authentication(request: Request, call_next):
 
 
 def _rate_limit_policy(path: str) -> tuple[str, int, int] | None:
-    if path == "/auth/session":
+    if path in {"/auth/session", "/auth/provider-session"}:
         return ("auth", 10, 60)
     if path.endswith("/commands") or path == "/matchmaking/join":
         return ("commands", 30, 1)
@@ -987,6 +998,14 @@ class AuthSessionRequest(BaseModel):
     platform: str = "web"
 
 
+class ProviderSessionRequest(BaseModel):
+    exchange: str
+    device_secret: str
+    device_id: str
+    device_name: str | None = None
+    platform: str = "web"
+
+
 class ContactVerificationRequest(BaseModel):
     player_id: str
     channel: str
@@ -1011,6 +1030,7 @@ class RecoveryConfirmRequest(BaseModel):
     player_id: str
     code: str
     new_device_secret: str
+    device_id: str | None = None
 
 
 class PushSubscriptionRequest(BaseModel):
@@ -1106,16 +1126,17 @@ def create_participant_auth_session(
     request: AuthSessionRequest,
 ) -> dict:
     try:
+        device_id = str(request.device_id or "").strip() or hashlib.sha256(
+            request.device_secret.encode("utf-8")
+        ).hexdigest()[:24]
         result = participant_auth_service.register_or_login(
             request.player_id,
             request.device_secret,
+            device_id,
         )
         identity = participant_auth_service.verify_access_token(
             result["access_token"]
         )
-        device_id = str(request.device_id or "").strip() or hashlib.sha256(
-            request.device_secret.encode("utf-8")
-        ).hexdigest()[:24]
         platform_service.register_device(
             request.player_id,
             device_id,
@@ -1131,6 +1152,35 @@ def create_participant_auth_session(
             detail=str(exc),
         ) from exc
     except PlatformServiceError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+
+
+@app.post("/auth/provider-session")
+def create_provider_auth_session(request: ProviderSessionRequest) -> dict:
+    try:
+        exchange = platform_service.consume_oauth_exchange(request.exchange)
+        result = participant_auth_service.authorize_device(
+            exchange["player_id"],
+            request.device_secret,
+            request.device_id,
+        )
+        identity = participant_auth_service.verify_access_token(
+            result["access_token"]
+        )
+        platform_service.register_device(
+            exchange["player_id"],
+            request.device_id,
+            request.device_name or f"{request.platform.title()} cihazı",
+            request.platform,
+            identity.token_id,
+            identity.expires_at,
+        )
+        return {
+            **result,
+            "device_id": request.device_id,
+            "provider": exchange["provider"],
+        }
+    except (AuthenticationError, PlatformServiceError) as exc:
         raise HTTPException(status_code=422, detail=str(exc)) from exc
 
 
@@ -1171,11 +1221,45 @@ def confirm_account_verification(
 
 
 @app.get("/accounts/{player_id}/oauth/{provider}/start")
-def start_account_oauth(player_id: str, provider: str) -> dict:
+def start_account_oauth(
+    player_id: str,
+    provider: str,
+    mode: str = Query(default="link"),
+) -> dict:
     try:
-        return platform_service.start_oauth(player_id, provider)
+        return platform_service.start_oauth(player_id, provider, mode=mode)
     except PlatformServiceError as exc:
         raise HTTPException(status_code=422, detail=str(exc)) from exc
+
+
+def _oauth_callback_redirect(
+    provider: str,
+    state: str,
+    code: str,
+    error: str,
+):
+    query = {"oauth_provider": provider}
+    if error:
+        query["oauth_status"] = "cancelled"
+        return RedirectResponse(
+            f"{platform_service.web_base_url}/?{urlencode(query)}",
+            status_code=303,
+        )
+    try:
+        result = platform_service.complete_oauth(provider, state, code)
+    except PlatformServiceError:
+        query["oauth_status"] = "error"
+        return RedirectResponse(
+            f"{platform_service.web_base_url}/?{urlencode(query)}",
+            status_code=303,
+        )
+    query["oauth_status"] = "linked"
+    if result.get("exchange"):
+        query["oauth_exchange"] = result["exchange"]
+    return RedirectResponse(
+        f"{platform_service.web_base_url}/?{urlencode(query)}",
+        status_code=303,
+    )
 
 
 @app.get("/oauth/{provider}/callback")
@@ -1185,21 +1269,21 @@ def complete_account_oauth(
     code: str = Query(default=""),
     error: str = Query(default=""),
 ):
-    if error:
-        return RedirectResponse(
-            f"{platform_service.web_base_url}/?oauth_provider={provider}&oauth_status=cancelled",
-            status_code=303,
-        )
+    return _oauth_callback_redirect(provider, state, code, error)
+
+
+@app.post("/oauth/apple/callback")
+async def complete_apple_oauth(request: Request):
     try:
-        platform_service.complete_oauth(provider, state, code)
-    except PlatformServiceError:
-        return RedirectResponse(
-            f"{platform_service.web_base_url}/?oauth_provider={provider}&oauth_status=error",
-            status_code=303,
-        )
-    return RedirectResponse(
-        f"{platform_service.web_base_url}/?oauth_provider={provider}&oauth_status=linked",
-        status_code=303,
+        body = (await request.body()).decode("utf-8")
+        fields = parse_qs(body, keep_blank_values=True)
+    except UnicodeDecodeError:
+        fields = {}
+    return _oauth_callback_redirect(
+        "apple",
+        str(fields.get("state", [""])[0]),
+        str(fields.get("code", [""])[0]),
+        str(fields.get("error", [""])[0]),
     )
 
 
@@ -1212,8 +1296,10 @@ def revoke_account_device(
     if request.player_id != player_id:
         raise HTTPException(status_code=403, detail="Başka bir oyuncu adına işlem yapılamaz.")
     try:
-        return platform_service.revoke_device(player_id, device_id)
-    except PlatformServiceError as exc:
+        account = platform_service.revoke_device(player_id, device_id)
+        participant_auth_service.revoke_device(player_id, device_id)
+        return account
+    except (AuthenticationError, PlatformServiceError) as exc:
         raise HTTPException(status_code=404, detail=str(exc)) from exc
 
 
@@ -1230,7 +1316,9 @@ def confirm_account_recovery(request: RecoveryConfirmRequest) -> dict:
     try:
         platform_service.confirm_recovery(request.player_id, request.code)
         participant_auth_service.reset_device_secret(
-            request.player_id, request.new_device_secret
+            request.player_id,
+            request.new_device_secret,
+            request.device_id,
         )
         for device in list(platform_service.account_view(request.player_id)["devices"]):
             platform_service.revoke_device(request.player_id, device["device_id"])

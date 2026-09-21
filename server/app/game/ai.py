@@ -7,6 +7,7 @@ from .boosters import (
 )
 from .ai_archetypes import get_ai_archetype
 from .catalog import get_module_definition
+from .composition import deployment_rejection_reason
 from .models import ModuleStatus, PlayerBattleState
 
 
@@ -377,6 +378,8 @@ def choose_deploy_definition(
     candidates: list[tuple[float, int, str]] = []
     for definition_id in ai_player.battle_pool.module_definition_ids:
         definition = get_module_definition(definition_id)
+        if deployment_rejection_reason(ai_player, definition) is not None:
+            continue
         cost = max(1, definition.current_cost - (1 if ai_player.discounted_deployments else 0))
         if cost > ai_player.circuit_credits:
             continue

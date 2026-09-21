@@ -23,6 +23,7 @@ from .combat import (
     resolve_attack,
     select_target,
 )
+from .composition import deployment_rejection_reason
 from .energy import process_energy_tick
 from .core_balance import core_rarity_profile
 from .operations import has_disabling_sabotage, module_is_operational
@@ -85,9 +86,6 @@ TICK_RATE = 10
 TICK_MS = 1000 // TICK_RATE
 OVERTIME_START_MS = 180_000
 OVERTIME_PHASE_INTERVAL_MS = 30_000
-OVERTIME_CORE_EXPOSE_MS = 210_000
-OVERTIME_CORE_DECAY_MS = 240_000
-OVERTIME_CORE_DECAY_INTERVAL_MS = 1_000
 # Compatibility for historical fixtures and external diagnostics.  This value
 # is the normal-phase boundary now; the engine no longer finishes the battle
 # when it is reached.
@@ -121,15 +119,6 @@ def overtime_repair_multiplier_for_elapsed_ms(elapsed_ms: int) -> float:
         return 1.0
     phase = (elapsed_ms - OVERTIME_START_MS) // OVERTIME_PHASE_INTERVAL_MS
     return max(0.10, 0.50 - 0.10 * phase)
-
-
-def overtime_core_decay_damage(max_hp: int, elapsed_ms: int) -> int:
-    if elapsed_ms < OVERTIME_CORE_DECAY_MS:
-        return 0
-    if (elapsed_ms - OVERTIME_CORE_DECAY_MS) % OVERTIME_CORE_DECAY_INTERVAL_MS:
-        return 0
-    phase = (elapsed_ms - OVERTIME_CORE_DECAY_MS) // OVERTIME_PHASE_INTERVAL_MS
-    return max(1, round(max_hp * (0.02 + 0.005 * phase)))
 
 
 def max_active_modules_for_elapsed_ms(
@@ -996,6 +985,8 @@ class BattleEngine:
     def _process_support_actions(self) -> None:
         for player in self.state.players.values():
             repaired_target_ids: set[str] = set()
+            cooled_target_ids: set[str] = set()
+            overclocked_target_ids: set[str] = set()
             support_modules = sorted(
                 (
                     module
@@ -1035,7 +1026,10 @@ class BattleEngine:
                     )
                     if cleanse is not None:
                         cleanse_target, effect_id = cleanse
+                        if cleanse_target.instance_id in repaired_target_ids:
+                            continue
                         del cleanse_target.debuffs[effect_id]
+                        repaired_target_ids.add(cleanse_target.instance_id)
                         cleanse_target.is_powered = not has_disabling_sabotage(
                             cleanse_target
                         )
@@ -1118,6 +1112,8 @@ class BattleEngine:
                         module,
                         self.board.core_position,
                     ):
+                        if target.instance_id in cooled_target_ids:
+                            continue
                         effect = target.debuffs.get(effect_id)
                         if effect is None or effect.expires_at_ms is None:
                             continue
@@ -1136,6 +1132,7 @@ class BattleEngine:
                             effect.expires_at_ms
                             - reduction_ms,
                         )
+                        cooled_target_ids.add(target.instance_id)
 
                         self._emit(
                             "sabotage_duration_reduced",
@@ -1174,12 +1171,15 @@ class BattleEngine:
                         module,
                         self.board.core_position,
                     ):
+                        if target.instance_id in cooled_target_ids:
+                            continue
                         before = target.heat
                         target.heat = max(
                             0.0,
                             target.heat - COOLER_HEAT_REDUCTION_PER_TICK * module.definition.effect_multiplier * player.energy_support_multiplier,
                         )
                         if target.heat != before:
+                            cooled_target_ids.add(target.instance_id)
                             self._emit(
                                 "module_cooled",
                                 {
@@ -1197,6 +1197,9 @@ class BattleEngine:
                         module,
                         self.board.core_position,
                     ):
+                        if target.instance_id in overclocked_target_ids:
+                            continue
+                        overclocked_target_ids.add(target.instance_id)
                         target.heat += OVERCLOCK_HEAT_PER_TICK
                         self._emit(
                             "module_overclocked",
@@ -1267,13 +1270,10 @@ class BattleEngine:
                 ):
                     continue
 
-                effective_elapsed_ms = self.state.elapsed_ms + TICK_MS
-                target = select_target(
-                    target_player,
-                    core_exposed=(
-                        effective_elapsed_ms >= OVERTIME_CORE_EXPOSE_MS
-                    ),
-                )
+                # Elapsed time never exposes the Core. Attackers must disable
+                # the deployable modules and system line before target
+                # selection can naturally reach it.
+                target = select_target(target_player)
                 if target is None:
                     continue
 
@@ -1515,15 +1515,15 @@ class BattleEngine:
             },
         )
 
-    def overtime_view(self) -> dict[str, int | float | bool]:
+    def overtime_view(self) -> dict[str, int | float | bool | None]:
         elapsed_ms = self.state.elapsed_ms
         return {
             "active": elapsed_ms >= OVERTIME_START_MS,
             "started_at_ms": OVERTIME_START_MS,
-            "core_exposed": elapsed_ms >= OVERTIME_CORE_EXPOSE_MS,
-            "core_exposed_at_ms": OVERTIME_CORE_EXPOSE_MS,
-            "core_decay_active": elapsed_ms >= OVERTIME_CORE_DECAY_MS,
-            "core_decay_started_at_ms": OVERTIME_CORE_DECAY_MS,
+            "core_exposed": False,
+            "core_exposed_at_ms": None,
+            "core_decay_active": False,
+            "core_decay_started_at_ms": None,
             "attack_multiplier": overtime_attack_multiplier_for_elapsed_ms(
                 elapsed_ms
             ),
@@ -1552,52 +1552,9 @@ class BattleEngine:
                     ),
                 },
             )
-        if effective_elapsed_ms == OVERTIME_CORE_EXPOSE_MS:
-            self._emit(
-                "overtime_core_exposed",
-                {"started_at_ms": OVERTIME_CORE_EXPOSE_MS},
-            )
-        if effective_elapsed_ms == OVERTIME_CORE_DECAY_MS:
-            self._emit(
-                "overtime_core_decay_started",
-                {"started_at_ms": OVERTIME_CORE_DECAY_MS},
-            )
-
-        for player_id in sorted(self.state.players):
-            player = self.state.players[player_id]
-            core = next(
-                (
-                    module
-                    for module in player.modules.values()
-                    if module.definition.id == "core"
-                    and module.status == ModuleStatus.ACTIVE
-                    and module.hp > 0
-                ),
-                None,
-            )
-            if core is None:
-                continue
-            damage = overtime_core_decay_damage(
-                core.definition.max_hp,
-                effective_elapsed_ms,
-            )
-            if damage <= 0:
-                continue
-            applied = self.apply_damage(
-                player_id,
-                core.instance_id,
-                damage,
-                source_module_id="overtime_core_decay",
-            )
-            if applied > 0:
-                self._emit(
-                    "overtime_core_decay",
-                    {
-                        "player_id": player_id,
-                        "target_module_id": core.instance_id,
-                        "damage": applied,
-                    },
-                )
+        # No timed Core exposure or automatic Core damage. Overtime only
+        # helps attacks break utility-heavy module lines; it cannot skip the
+        # circuit-clear objective.
 
     def _evaluate_battle_end(self) -> None:
         if self.state.status != BattleStatus.RUNNING:
@@ -2071,6 +2028,14 @@ class BattleEngine:
 
         instance_id = self._next_deployed_instance_id(player_id, definition_id)
         module = self.grant_module(player_id, instance_id, definition_id)
+        composition_rejection = deployment_rejection_reason(
+            player,
+            module.definition,
+        )
+        if composition_rejection is not None:
+            player.modules.pop(instance_id, None)
+            raise CommandRejected(composition_rejection)
+
         candidates = self._deployment_candidates(player_id, module)
         if not candidates:
             player.modules.pop(instance_id, None)
@@ -2105,11 +2070,12 @@ class BattleEngine:
             "module_placed",
             {
                 **self._module_event_data(player_id, module),
-                "placement_mode": "server_random",
+                "placement_mode": "server_automatic",
             },
         )
 
     def _cmd_place_module_legacy(self, player_id: str, payload: dict) -> None:
+        """Place an existing reserve copy without trusting client coordinates."""
         self._ensure_active_capacity_for_new_module(player_id)
         module = self._require_module(player_id, payload["module_id"])
 
@@ -2118,10 +2084,26 @@ class BattleEngine:
         if module.status != ModuleStatus.RESERVE:
             raise CommandRejected("Yalnızca rezervdeki modül yerleştirilebilir.")
 
-        position = self._position_from_payload(payload)
-        self._ensure_board_position_placeable(position)
-        self._ensure_module_allowed_in_cell(module, position)
-        self._ensure_position_available(player_id, position)
+        composition_rejection = deployment_rejection_reason(
+            self._require_player(player_id),
+            module.definition,
+        )
+        if composition_rejection is not None:
+            raise CommandRejected(composition_rejection)
+
+        candidates = self._deployment_candidates(player_id, module)
+        if not candidates:
+            raise CommandRejected(
+                "Bu kart için uygun ve boş bir hücre bulunamadı."
+            )
+        seed = (
+            f"{self.state.battle_id}:{player_id}:{module.definition.id}:"
+            f"{module.instance_id}:{self.state.tick}:legacy"
+        )
+        digest = hashlib.sha256(seed.encode("utf-8")).digest()
+        position = candidates[
+            int.from_bytes(digest[:8], "big") % len(candidates)
+        ]
 
         self._spend_circuit_credits(
             player_id,
@@ -2131,12 +2113,14 @@ class BattleEngine:
 
         module.status = ModuleStatus.ACTIVE
         module.position = position
-        # Every occupied cell is supplied by the board's embedded cable layer.
-        module.is_powered = False
+        module.is_powered = True
 
         self._emit(
             "module_placed",
-            self._module_event_data(player_id, module),
+            {
+                **self._module_event_data(player_id, module),
+                "placement_mode": "server_automatic_legacy",
+            },
         )
 
     def _cmd_remove_module(self, player_id: str, payload: dict) -> None:
@@ -2261,6 +2245,14 @@ class BattleEngine:
             raise CommandRejected("Gelen modül rezervde olmalıdır.")
         if outgoing.position is None:
             raise CommandRejected("Değiştirilecek modülün konumu bulunamadı.")
+
+        composition_rejection = deployment_rejection_reason(
+            self._require_player(player_id),
+            incoming.definition,
+            ignored_instance_id=outgoing.instance_id,
+        )
+        if composition_rejection is not None:
+            raise CommandRejected(composition_rejection)
 
         position = outgoing.position
         self._ensure_module_allowed_in_cell(incoming, position)

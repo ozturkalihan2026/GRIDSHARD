@@ -1985,7 +1985,7 @@ Beta.38.1 yayın kanıtı:
 
 1. [x] `6 modül türü → maç içinde aynı türden birden fazla örnek` üretim modeli kuruldu. Her başarılı kullanım yeni ve benzersiz bir savaş örneği oluşturur; deste kartı tüketilmez.
 2. [x] Çekirdek ve Jeneratör desteden çıkarılıp sistem tarafından sabit sağlandı; oyuncu 6 farklı savaş kartı seçer.
-3. [x] Raf yalnız seçili altı türü gösterir. Karta tıklama, sunucunun enerji bağlantısı ve özel hücre kurallarına uyan boş hücreler arasından tekrar üretilebilir rastgele seçim yapmasını ister. Yerleşen modüller taşınamaz; oyuncu yalnız port yönünü çevirebilir.
+3. [x] Raf yalnız seçili altı türü gösterir. Karta tıklama, sunucunun uygun boş hücreler arasından deterministik seçim yapmasını ister; oyuncu ayrıca hücre seçmez. Yerleşen modüller taşınamaz.
 4. [x] Eski 18'lik hazır havuzlar ve oyuncu kayıtları, geçerli ilk altı farklı kart korunup eksikler güvenli başlangıç kartlarıyla tamamlanarak 6 kartlık desteye dönüştürülür.
 5. [x] Yerleştirme hakkı geri sayımı kaldırıldı. On aktif modül kapasitesi maç başında açıktır; her kart yalnız kendi Devre Kredisi bedeli karşılandığında etkinleşir.
 6. [x] Güçlendirici teklifleri ve kullanımları savaş akışından kapatıldı; modül rafı yalnız deste kartlarına ayrıldı.

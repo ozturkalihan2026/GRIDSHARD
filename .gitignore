@@ -29,4 +29,7 @@ server/data/player_identities.json
 server/data/e2e_playwright_*.json*
 .*
 .*/
-server/data/web_test_players*
+server/data/web_test_*
+!.github/
+!.github/workflows/
+!.github/workflows/*.yml

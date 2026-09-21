@@ -1,5 +1,3 @@
-BEGIN;
-
 CREATE TABLE IF NOT EXISTS player_data (
     player_id VARCHAR(72) PRIMARY KEY,
     profile JSONB NOT NULL,
@@ -18,5 +16,3 @@ CREATE TABLE IF NOT EXISTS participant_identities (
 
 CREATE INDEX IF NOT EXISTS player_data_updated_at_idx
     ON player_data (updated_at);
-
-COMMIT;

@@ -16,7 +16,7 @@ globalThis.GRIDSHARD_CANON_MODULES = Object.freeze([
     "category": "savunma",
     "rarity": "common",
     "unlock_arena": 1,
-    "current_cost": 3,
+    "current_cost": 2,
     "max_hp": 150,
     "base_damage": 0,
     "unlock_trophies": 0
