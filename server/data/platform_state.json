@@ -179,6 +179,31 @@
       "recovery": {},
       "revoked_token_ids": []
     },
+    "wt-63dcb22b-2990-4511-aa88-f01ccc2b2ca7": {
+      "blocked_player_ids": [],
+      "contacts": {},
+      "devices": {
+        "53ca6142-75ae-4086-b753-1c6537968e06": {
+          "device_id": "53ca6142-75ae-4086-b753-1c6537968e06",
+          "last_seen_at": 1789990071,
+          "name": "WEB · Chrome",
+          "platform": "web",
+          "token_ids": [
+            {
+              "expires_at": 1789993671,
+              "token_id": "EViIIDosKA4zhSlb"
+            }
+          ]
+        }
+      },
+      "notifications": [],
+      "oauth_links": {},
+      "oauth_states": {},
+      "pending_verifications": {},
+      "push_subscriptions": {},
+      "recovery": {},
+      "revoked_token_ids": []
+    },
     "wt-81b99a29-3943-4fca-b238-48c60341f88d": {
       "blocked_player_ids": [],
       "contacts": {},
