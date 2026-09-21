@@ -1270,6 +1270,7 @@ class BattleEngine:
                 ):
                     continue
 
+                effective_elapsed_ms = self.state.elapsed_ms + TICK_MS
                 # Elapsed time never exposes the Core. Attackers must disable
                 # the deployable modules and system line before target
                 # selection can naturally reach it.

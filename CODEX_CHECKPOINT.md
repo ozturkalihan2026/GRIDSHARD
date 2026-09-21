@@ -6,6 +6,8 @@ Bu dosya güncel çalışma paketini ve korunması gereken önceki kararları i�
 
 ## Aktif paket — Beta.69 otomatik yerleşim ve devre kompozisyonu
 
+Hotfix: Savaş saldırı döngüsünün Devre Gerilimi çarpanında kullandığı `effective_elapsed_ms` yeniden tanımlandı. Tick döngüsünü durduran `NameError` giderildi; bu değişken yalnız saldırı çarpanını hesaplar ve süreyle Çekirdek açma davranışını geri getirmez.
+
 1. `[x]` Tek dokunuşla sunucu yerleşimini geri getir
    - Raf kartına dokunmak artık hücre seçimi başlatmıyor; istemci yalnız modül kimliğini gönderiyor ve sunucu uygun boş hücreyi deterministik olarak seçiyor.
    - Koordinatlı `deploy_module` istemci yolu, seçili kart/hücre vurgusu ve devre hücrelerindeki yerleştirme tıklamaları kaldırıldı.
