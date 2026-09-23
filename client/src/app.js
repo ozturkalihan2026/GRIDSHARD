@@ -4374,7 +4374,7 @@
       anchor.download = `gridshard-${participantPlayerId}-veri.json`;
       anchor.click();
       URL.revokeObjectURL(url);
-      if (status) status.textContent = "Veri dışa aktarımı indirildi.";
+      if (status) status.textContent = "Kişisel veri kopyası indirildi. Bu dosya oyun kaydı değildir; değiştirilerek ilerleme yüklenemez.";
     } catch (error) {
       if (status) status.textContent = error instanceof Error ? error.message : String(error);
     }
@@ -4487,8 +4487,7 @@
   document.getElementById("core-quick-info")?.addEventListener("click", openCoreDetail);
   document.getElementById("core-quick-select")?.addEventListener("click", selectCollectionCore);
   document.getElementById("core-detail-close")?.addEventListener("click", () => document.getElementById("core-detail-dialog")?.close());
-  document.getElementById("core-detail-prev")?.addEventListener("click", () => navigateCoreDetail(-1));
-  document.getElementById("core-detail-next")?.addEventListener("click", () => navigateCoreDetail(1));
+  globalThis.GridshardCardSwipe.bind(document.getElementById("core-detail-dialog"), navigateCoreDetail);
   document.getElementById("core-detail-select")?.addEventListener("click", async () => {
     const result = await selectCollectionCore();
     if (result.ok) openCoreDetail();
@@ -4507,8 +4506,7 @@
     });
   });
   document.getElementById("module-detail-close")?.addEventListener("click", () => document.getElementById("module-detail-dialog")?.close());
-  document.getElementById("module-detail-prev")?.addEventListener("click", () => navigateModuleDetail(-1));
-  document.getElementById("module-detail-next")?.addEventListener("click", () => navigateModuleDetail(1));
+  globalThis.GridshardCardSwipe.bind(document.getElementById("module-detail-dialog"), navigateModuleDetail);
   document.getElementById("module-detail-upgrade")?.addEventListener("click", upgradeCollectionModule);
   document.querySelectorAll("[data-module-detail-tab]").forEach((button) => {
     button.addEventListener("click", () => {

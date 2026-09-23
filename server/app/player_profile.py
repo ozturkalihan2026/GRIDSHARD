@@ -2,6 +2,9 @@ from dataclasses import dataclass, field
 from calendar import monthrange
 from datetime import datetime, timedelta, timezone
 import hashlib
+from threading import RLock
+
+from .display_names import DisplayNameError, normalize_display_name, ensure_display_name_available
 
 from .arena_canon import MODULES, unlocked_reward_module_ids
 from .game.battle_pool import default_battle_pool, validate_battle_pool
@@ -617,13 +620,14 @@ class PlayerProfile:
         }
 
 
-class PlayerProfileError(ValueError):
+class PlayerProfileError(DisplayNameError):
     pass
 
 
 class PlayerProfileService:
     def __init__(self, now_func=None):
         self._profiles: dict[str, PlayerProfile] = {}
+        self.name_lock = RLock()
         self._now_func = now_func or (lambda: datetime.now(timezone.utc))
 
     def get_or_create(
@@ -687,20 +691,19 @@ class PlayerProfileService:
         player_id: str,
         display_name: str,
     ) -> PlayerProfile:
-        profile = self.get_or_create(player_id)
-        clean = display_name.strip()
-
-        if not clean:
-            raise PlayerProfileError(
-                "Görünen oyuncu adı boş olamaz."
-            )
-        if len(clean) > 24:
-            raise PlayerProfileError(
-                "Görünen oyuncu adı en fazla 24 karakter olabilir."
-            )
-
-        profile.display_name = clean
-        return profile
+        with self.name_lock:
+            profile = self.get_or_create(player_id)
+            try:
+                clean = normalize_display_name(display_name)
+                ensure_display_name_available(
+                    player_id, clean,
+                    ((owner, other.display_name) for owner, other in self._profiles.items()),
+                    previous_name=profile.display_name,
+                )
+            except DisplayNameError as exc:
+                raise PlayerProfileError(str(exc), code=exc.code) from exc
+            profile.display_name = clean
+            return profile
 
     def set_preferred_battle_pool(
         self,

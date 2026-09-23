@@ -4,6 +4,7 @@ from pathlib import Path
 from typing import Any
 
 from .auth import AuthenticationError
+from .display_names import DisplayNameError, ensure_display_name_available
 from .player_data_store import PlayerDataSnapshot, PlayerDataStoreError
 from .schema_migrations import apply_pending_migrations
 
@@ -98,6 +99,24 @@ class PostgresPlayerDataRepository:
     def save(self, snapshot: PlayerDataSnapshot) -> None:
         try:
             with self.database.connection() as connection:
+                # All profile writers share this transaction lock, including
+                # separate workers. A check followed by an unlocked UPSERT
+                # would allow two accounts to claim the same name.
+                connection.execute("SELECT pg_advisory_xact_lock(71407101)")
+                previous = connection.execute(
+                    "SELECT profile ->> 'display_name' FROM player_data WHERE player_id = %s",
+                    (snapshot.player_id,),
+                ).fetchone()
+                name = str(snapshot.profile.get("display_name", snapshot.player_id))
+                if previous is None or previous[0] != name:
+                    names = connection.execute(
+                        "SELECT player_id, profile ->> 'display_name' FROM player_data"
+                    ).fetchall()
+                    ensure_display_name_available(
+                        snapshot.player_id, name,
+                        ((str(owner), str(other or owner)) for owner, other in names),
+                        previous_name=previous[0] if previous else None,
+                    )
                 connection.execute(
                     """
                     INSERT INTO player_data (player_id, profile, statistics, settings)
@@ -115,6 +134,8 @@ class PostgresPlayerDataRepository:
                         self.Jsonb(snapshot.settings),
                     ),
                 )
+        except DisplayNameError:
+            raise
         except Exception as exc:
             raise PlayerDataStoreError("PostgreSQL oyuncu verisi yazılamadı.") from exc
 

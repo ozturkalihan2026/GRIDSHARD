@@ -257,6 +257,8 @@ Botlar:
 - mükemmel oynamaz,
 - aynı arena içinde farklı güç ve tempo profillerine sahiptir.
 
+Eşleştirme botunun modül yükseltme seviyesi, savaş başlatılırken oyuncunun **o maçta gönderdiği altılı destenin** ortalamasına (en yakın tam sayı, 0–14 yükseltme) eşlenir; eski kayıtlı hazır deste referans alınmaz. Çekirdek seviyesi oyuncunun maça bağlı Çekirdek seviyesiyle eşlenir. Modül CAN/hasar, Akım, enerji ve kompozisyon kuralları insanla ortaktır; AI'ye ayrı güç çarpanı verilmez. Aynı tick'te hazır saldırı ve sabotajlar iki taraf için etkiler uygulanmadan önce planlanır; oyuncu kimliğinin sıralaması ilk hamle avantajı sağlamaz.
+
 Makine-okunur plan: `server/data/arena_bot_profiles_v1.json`.
 
 ## 10. Çekirdek sistemi

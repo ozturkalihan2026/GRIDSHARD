@@ -29,6 +29,17 @@ Komut `client/` içeriğini `dist/` altına kopyalar ve yalnız üretilen `dist/
 
 ## 1 — Android kapalı test
 
+### Yerel portre yönü
+
+`mobile:add:android` / `mobile:add:ios` komutları yerel proje üretildikten sonra `tools/configure-native-orientation.js` aracını uygular. Sonraki `cap sync` işlemlerinde aynı araç `capacitor:sync:after` kancasıyla tekrar çalışır. İşlem tekrar çalıştırılabilir; uygulama kimliği, izinler ve diğer etkinlikler değiştirilmez.
+
+- Android: yalnız `MainActivity` için `android:screenOrientation="portrait"`.
+- iPhone/iPad: `UISupportedInterfaceOrientations` ve `UISupportedInterfaceOrientations~ipad` yalnız portre; eski iPad sürümleri için `UIRequiresFullScreen=true`.
+- Proje dosyası yoksa veya beklenmeyen bir şablon varsa komut açık hata verir; kilit uygulanmış gibi devam etmez.
+- Bu ayar web tarayıcısının yönünü zorla kilitlemez. Yeni Android büyük ekran/pencere modları ile yeni iPad pencere davranışları yön talebini geçersiz kılabilir; duyarlı CSS korunmalıdır. Telefon dönüşü ve güvenli alan doğrulaması gerçek cihazda ayrıca yapılmalıdır.
+
+Kaynaklar: [Capacitor CLI kancaları](https://capacitorjs.com/docs/cli/hooks), [Android activity yönü](https://developer.android.com/guide/topics/manifest/activity-element#screen), [Apple desteklenen yönler](https://developer.apple.com/documentation/bundleresources/information-property-list/uisupportedinterfaceorientations), [iPad tam ekran davranışı](https://developer.apple.com/documentation/bundleresources/information-property-list/uirequiresfullscreen).
+
 1. Gerçek paket kimliğiyle bir kez `pnpm mobile:add:android` çalıştırın ve oluşan `android/` projesini depoya ekleyin.
 2. `pnpm mobile:sync:android` ile web paketini eşitleyin.
 3. Android Studio/Gradle üzerinden release keystore ile imzalı `.aab` üretin. Google Play yeni uygulamalarda Play App Signing kullanır.

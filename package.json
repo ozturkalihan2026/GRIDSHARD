@@ -6,10 +6,11 @@
   "scripts": {
     "test:client": "cd client && node --test tests/*.test.js",
     "build:mobile:web": "node tools/build-mobile-web.js",
-    "mobile:add:android": "pnpm build:mobile:web && cap add android",
-    "mobile:add:ios": "pnpm build:mobile:web && cap add ios",
+    "mobile:add:android": "pnpm build:mobile:web && cap add android && node tools/configure-native-orientation.js android",
+    "mobile:add:ios": "pnpm build:mobile:web && cap add ios && node tools/configure-native-orientation.js ios",
     "mobile:sync:android": "pnpm build:mobile:web && cap sync android",
     "mobile:sync:ios": "pnpm build:mobile:web && cap sync ios",
+    "capacitor:sync:after": "node tools/configure-native-orientation.js",
     "test:e2e": "playwright test",
     "test:e2e:pvp": "playwright test --project=desktop-chromium",
     "test:e2e:mobile": "playwright test --project=android-chrome-emulated --project=iphone-safari-emulated",

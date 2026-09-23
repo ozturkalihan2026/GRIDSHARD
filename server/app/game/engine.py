@@ -48,6 +48,8 @@ from .sabotage import (
     ENERGY_LEECH_DEBUFF_ID,
     JAMMER_DEBUFF_ID,
     SABOTAGE_COOLDOWN_ID,
+    SabotagePlan,
+    SabotageResistance,
     VIRUS_DEBUFF_ID,
     VIRUS_TICK_DAMAGE,
     VIRUS_TICK_INTERVAL_MS,
@@ -827,7 +829,13 @@ class BattleEngine:
             return
 
         player_ids = sorted(self.state.players)
+        planned_actions: list[
+            tuple[str, str, BattleModule, SabotagePlan, SabotageResistance, int]
+        ] = []
 
+        # As with attacks, both sides act from the same pre-effect state.
+        # Otherwise a lexically earlier player ID can disable a ready enemy
+        # saboteur before that player's actions have even been considered.
         for attacker_player_id in player_ids:
             attacker_player = self.state.players[attacker_player_id]
             opponent_ids = [
@@ -840,6 +848,7 @@ class BattleEngine:
 
             target_player_id = opponent_ids[0]
             target_player = self.state.players[target_player_id]
+            reserved_target_ids: set[str] = set()
 
             sabotage_modules = sorted(
                 (
@@ -872,6 +881,7 @@ class BattleEngine:
                 plan = plan_sabotage(
                     module,
                     target_player,
+                    excluded_target_ids=reserved_target_ids,
                 )
                 if plan is None:
                     continue
@@ -892,95 +902,110 @@ class BattleEngine:
                     )
                 )
 
-                self.start_cooldown(
-                    attacker_player_id,
-                    module.instance_id,
-                    SABOTAGE_COOLDOWN_ID,
-                    sabotage_cooldown_ms(module),
-                )
+                planned_actions.append((
+                    attacker_player_id, target_player_id, module, plan,
+                    resistance, effective_duration_ms,
+                ))
+                # Preserve the old per-side targeting rule: a successful
+                # disabling effect removes its target from later choices.
+                if not resistance.blocked:
+                    reserved_target_ids.add(plan.target_module_id)
 
-                if resistance.blocked:
-                    self._emit(
-                        "sabotage_blocked",
-                        {
-                            "attacker_player_id": attacker_player_id,
-                            "attacker_module_id": module.instance_id,
-                            "target_player_id": target_player_id,
-                            "target_module_id": plan.target_module_id,
-                            "effect_id": plan.effect_id,
-                            "reasons": list(resistance.reasons),
-                        },
-                    )
-                    continue
+        for (
+            attacker_player_id, target_player_id, module, plan,
+            resistance, effective_duration_ms,
+        ) in planned_actions:
+            self.start_cooldown(
+                attacker_player_id,
+                module.instance_id,
+                SABOTAGE_COOLDOWN_ID,
+                sabotage_cooldown_ms(module),
+            )
 
-                data = {
-                    "source_player_id": attacker_player_id,
-                    "source_module_id": module.instance_id,
-                    "effect_strength_multiplier": resistance.effect_strength_multiplier,
-                    "resistance_reasons": list(resistance.reasons),
-                }
-                if plan.effect_id == VIRUS_DEBUFF_ID:
-                    data["next_tick_at_ms"] = self.state.elapsed_ms
-
-                self.add_debuff(
-                    target_player_id,
-                    plan.target_module_id,
-                    plan.effect_id,
-                    plan.name_tr,
-                    effective_duration_ms,
-                    data,
-                )
-
-                # Every sabotage family suspends the affected card.  The card
-                # stays visible for feedback/cleansing, but cannot attack,
-                # defend, support, generate energy or attract targeting.
-                target_module.is_powered = False
-                target_module.energy_received_last_tick = 0.0
-
+            if resistance.blocked:
                 self._emit(
-                    "sabotage_applied",
+                    "sabotage_blocked",
                     {
                         "attacker_player_id": attacker_player_id,
                         "attacker_module_id": module.instance_id,
                         "target_player_id": target_player_id,
                         "target_module_id": plan.target_module_id,
                         "effect_id": plan.effect_id,
-                        "base_duration_ms": plan.duration_ms,
-                        "duration_ms": effective_duration_ms,
-                        "duration_multiplier": resistance.duration_multiplier,
-                        "effect_strength_multiplier": resistance.effect_strength_multiplier,
-                        "resistance_reasons": list(resistance.reasons),
-                        "cooldown_ms": sabotage_cooldown_ms(module),
-                        "contribution_event_emitted": True,
+                        "reasons": list(resistance.reasons),
                     },
                 )
+                continue
+
+            data = {
+                "source_player_id": attacker_player_id,
+                "source_module_id": module.instance_id,
+                "effect_strength_multiplier": resistance.effect_strength_multiplier,
+                "resistance_reasons": list(resistance.reasons),
+            }
+            if plan.effect_id == VIRUS_DEBUFF_ID:
+                data["next_tick_at_ms"] = self.state.elapsed_ms
+
+            self.add_debuff(
+                target_player_id,
+                plan.target_module_id,
+                plan.effect_id,
+                plan.name_tr,
+                effective_duration_ms,
+                data,
+            )
+
+            # Every sabotage family suspends the affected card. The card
+            # stays visible for feedback/cleansing, but cannot attack,
+            # defend, support, generate energy or attract targeting.
+            target_module = self._require_module(target_player_id, plan.target_module_id)
+            target_module.is_powered = False
+            target_module.energy_received_last_tick = 0.0
+
+            self._emit(
+                "sabotage_applied",
+                {
+                    "attacker_player_id": attacker_player_id,
+                    "attacker_module_id": module.instance_id,
+                    "target_player_id": target_player_id,
+                    "target_module_id": plan.target_module_id,
+                    "effect_id": plan.effect_id,
+                    "base_duration_ms": plan.duration_ms,
+                    "duration_ms": effective_duration_ms,
+                    "duration_multiplier": resistance.duration_multiplier,
+                    "effect_strength_multiplier": resistance.effect_strength_multiplier,
+                    "resistance_reasons": list(resistance.reasons),
+                    "cooldown_ms": sabotage_cooldown_ms(module),
+                    "contribution_event_emitted": True,
+                    "simultaneous_tick": True,
+                },
+            )
+            self._emit(
+                "module_contribution",
+                {
+                    "player_id": attacker_player_id,
+                    "source_player_id": attacker_player_id,
+                    "source_module_id": module.instance_id,
+                    "target_player_id": target_player_id,
+                    "target_module_id": plan.target_module_id,
+                    "category": "sabotaj",
+                    "contribution_kind": "control_duration",
+                    "value": round(effective_duration_ms / 1000, 2),
+                    "unit": "seconds",
+                },
+            )
+
+            if effective_duration_ms != plan.duration_ms:
                 self._emit(
-                    "module_contribution",
+                    "sabotage_resisted",
                     {
-                        "player_id": attacker_player_id,
-                        "source_player_id": attacker_player_id,
-                        "source_module_id": module.instance_id,
                         "target_player_id": target_player_id,
                         "target_module_id": plan.target_module_id,
-                        "category": "sabotaj",
-                        "contribution_kind": "control_duration",
-                        "value": round(effective_duration_ms / 1000, 2),
-                        "unit": "seconds",
+                        "effect_id": plan.effect_id,
+                        "base_duration_ms": plan.duration_ms,
+                        "effective_duration_ms": effective_duration_ms,
+                        "reasons": list(resistance.reasons),
                     },
                 )
-
-                if effective_duration_ms != plan.duration_ms:
-                    self._emit(
-                        "sabotage_resisted",
-                        {
-                            "target_player_id": target_player_id,
-                            "target_module_id": plan.target_module_id,
-                            "effect_id": plan.effect_id,
-                            "base_duration_ms": plan.duration_ms,
-                            "effective_duration_ms": effective_duration_ms,
-                            "reasons": list(resistance.reasons),
-                        },
-                    )
 
     def _process_support_actions(self) -> None:
         for player in self.state.players.values():

@@ -26,6 +26,8 @@ from .auth import (
     load_or_create_signing_key,
 )
 from .platform_services import PlatformService, PlatformServiceError
+from .display_names import DisplayNameError
+from .account_export import build_personal_export
 from .postgres_repository import (
     PostgresIdentityRepository,
     PostgresPlayerDataRepository,
@@ -355,7 +357,7 @@ platform_service = PlatformService(
 
 
 def auth_is_required() -> bool:
-    return os.environ.get("GRIDSHARD_AUTH_REQUIRED", "1").strip().lower() not in {
+    return RUNTIME_STRICT or os.environ.get("GRIDSHARD_AUTH_REQUIRED", "1").strip().lower() not in {
         "0",
         "false",
         "no",
@@ -373,6 +375,7 @@ PROTECTED_PLAYER_PREFIXES = (
     "/statistics/",
     "/profile/",
     "/public-profiles/",
+    "/teams",
     "/social/",
     "/accounts/",
     "/notifications/",
@@ -393,6 +396,8 @@ def _path_claimed_player_id(path: str) -> str | None:
         return segments[1]
     if segments[0] in {"progression", "post-match"} and len(segments) > 2:
         return segments[-1]
+    if segments[0] == "teams" and len(segments) > 2 and segments[1] == "player":
+        return segments[2]
     return None
 
 
@@ -859,14 +864,17 @@ class LocalAiBattleCommandRequest(BaseModel):
 
 
 class ProfileNameRequest(BaseModel):
+    model_config = {"extra": "forbid"}
     display_name: str
 
 
 class ProfileBattlePoolRequest(BaseModel):
+    model_config = {"extra": "forbid"}
     battle_pool_ids: list[str]
 
 
 class ProfileCosmeticsRequest(BaseModel):
+    model_config = {"extra": "forbid"}
     avatar_id: str | None = None
     avatar_frame_id: str | None = None
     battle_emoji_id: str | None = None
@@ -874,10 +882,12 @@ class ProfileCosmeticsRequest(BaseModel):
 
 
 class LaboratoryOperationRequest(BaseModel):
+    model_config = {"extra": "forbid"}
     request_id: str
 
 
 class MetaOperationRequest(BaseModel):
+    model_config = {"extra": "forbid"}
     request_id: str
 
 
@@ -955,6 +965,7 @@ class EventRegistrationOperation(BaseModel):
 
 
 class CoreSelectionRequest(BaseModel):
+    model_config = {"extra": "forbid"}
     core_type_id: str
 
 
@@ -1471,14 +1482,16 @@ def share_player_profile(player_id: str, target_player_id: str) -> dict:
 
 
 @app.get("/accounts/{player_id}/data-export")
-def export_account_data(player_id: str) -> dict:
-    snapshot = player_data_store_service.save_player(player_id).to_dict()
-    return {
-        "schema_version": 1,
-        "exported_at": int(time.time()),
-        "player_data": snapshot,
-        "platform_data": platform_service.export_data(player_id),
-    }
+def export_account_data(player_id: str) -> JSONResponse:
+    # Export is a read, not a save: do not overwrite a cold account with a
+    # default profile, and do not hand a client any restore capability.
+    _team_member_profile(player_id)
+    snapshot = player_data_store_service.build_snapshot(player_id).to_dict()
+    payload = build_personal_export(
+        snapshot, platform_service.export_data(player_id),
+        participant_auth_service.signing_key,
+    )
+    return JSONResponse(payload, headers={"Cache-Control": "no-store", "Pragma": "no-cache"})
 
 
 @app.post("/accounts/{player_id}/delete")
@@ -3102,42 +3115,21 @@ def get_telemetry_summary(
 def save_player_data(
     player_id: str,
 ) -> dict:
-    return (
-        player_data_store_service
-        .save_player(player_id)
-        .to_dict()
-    )
+    raise HTTPException(status_code=410, detail="İlerleme yalnız sunucudaki oyun işlemleriyle kaydedilir.")
 
 
 @app.post("/player-data/{player_id}/load")
 def load_player_data(
     player_id: str,
 ) -> dict:
-    try:
-        snapshot = (
-            player_data_store_service
-            .load_player(player_id)
-        )
-    except PlayerDataStoreError as exc:
-        raise HTTPException(
-            status_code=404,
-            detail=str(exc),
-        ) from exc
-
-    return snapshot.to_dict()
+    raise HTTPException(status_code=410, detail="Dışa aktarılan veya istemcide düzenlenen ilerleme yüklenemez.")
 
 
 @app.delete("/player-data/{player_id}")
 def delete_player_data(
     player_id: str,
 ) -> dict:
-    return {
-        "player_id": player_id,
-        "deleted": (
-            player_data_repository
-            .delete(player_id)
-        ),
-    }
+    raise HTTPException(status_code=410, detail="Hesap silmek için Ayarlar'daki onaylı hesap silme işlemini kullanın.")
 
 
 def _redis_matchmaking_enabled() -> bool:
@@ -5636,20 +5628,22 @@ def update_profile_display_name(
     player_id: str,
     request: ProfileNameRequest,
 ) -> dict:
-    try:
-        profile = player_profile_service.set_display_name(
-            player_id,
-            request.display_name,
-        )
-    except PlayerProfileError as exc:
-        raise HTTPException(
-            status_code=422,
-            detail=str(exc),
-        ) from exc
-    persist_player_data(
-        player_id
-    )
-    return profile.to_view()
+    with player_profile_service.name_lock:
+        profile = _team_member_profile(player_id)
+        previous_name = profile.display_name
+        try:
+            profile = player_profile_service.set_display_name(player_id, request.display_name)
+            persist_player_data(player_id)
+        except (DisplayNameError, PlayerProfileError) as exc:
+            profile.display_name = previous_name
+            raise HTTPException(
+                status_code=409 if getattr(exc, "code", "") == "taken" else 422,
+                detail=str(exc),
+            ) from exc
+        except Exception:
+            profile.display_name = previous_name
+            raise
+        return profile.to_view()
 
 
 @app.put("/profile/{player_id}/battle-pool")
@@ -6930,11 +6924,8 @@ def _create_matchmaking_ai_session(
     session = pvp_service.get_session(pair.match_id)
     session.engine.state.player_match_ratings[pair.player_b_id] = bot["match_rating"]
     session.engine.state.players[pair.player_b_id].core_type = bot["core_type"]
-    session.engine.state.players[pair.player_b_id].core_level = 1 + profile.core_upgrade_levels.get(profile.selected_core_type, 0)
-    session.engine.state.player_upgrade_levels[pair.player_b_id] = {
-        module_id: max(0, min(14, round(sum(profile.module_upgrade_levels.get(mid, 0) for mid in profile.preferred_battle_pool_ids) / 6)))
-        for module_id in bot["battle_pool_ids"]
-    }
+    # Resolve progression only when both final battle decks are ready.
+    session.ai_level_reference_player_ids[pair.player_b_id] = pair.player_a_id
     # Eşleştirme oturumundaki rakip slotu her maçta yeniden üretilir. Günlük
     # meta tohumunu bu geçici slotla değil, kanonik bot kimliğiyle kurarak aynı
     # AI oyuncunun UTC günü boyunca aynı metayı kullanmasını sağla.
@@ -6971,7 +6962,7 @@ def _create_matchmaking_ai_session(
         "player_id": pair.player_a_id,
         "session_id": pair.match_id,
         "metadata": {
-            "rating_difference": 0,
+            "rating_difference": abs(int(bot["match_rating"]) - profile.rating),
             "opponent_type": "ai",
             "fallback_after_seconds": 0 if MATCHMAKING_AI_ONLY else MATCHMAKING_AI_FALLBACK_SECONDS,
             "ai_archetype": ai_archetype.id,

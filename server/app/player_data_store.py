@@ -11,6 +11,7 @@ import time
 from typing import Protocol
 
 from .arena_canon import MODULES
+from .display_names import ensure_display_name_available
 from .game.battle_pool import migrate_battle_pool
 from .player_profile import (
     CURRENT_SEASON_ID,
@@ -157,6 +158,11 @@ class JsonFilePlayerDataRepository:
         with self._lock:
             with self._interprocess_write_lock():
                 payload = self._read_all()
+                ensure_display_name_available(
+                    snapshot.player_id, str(snapshot.profile.get("display_name", snapshot.player_id)),
+                    ((owner, str(item["profile"].get("display_name", owner))) for owner, item in payload.items()),
+                    previous_name=payload.get(snapshot.player_id, {}).get("profile", {}).get("display_name"),
+                )
                 payload[
                     snapshot.player_id
                 ] = snapshot.to_dict()
@@ -485,6 +491,7 @@ class JsonFilePlayerDataRepository:
 
 class InMemoryPlayerDataRepository:
     def __init__(self):
+        self._lock = RLock()
         self._snapshots: dict[
             str,
             PlayerDataSnapshot,
@@ -494,16 +501,19 @@ class InMemoryPlayerDataRepository:
         self,
         snapshot: PlayerDataSnapshot,
     ) -> None:
-        self._snapshots[
-            snapshot.player_id
-        ] = PlayerDataSnapshot(
-            player_id=snapshot.player_id,
-            profile=dict(snapshot.profile),
-            statistics=dict(
-                snapshot.statistics
-            ),
-            settings=dict(snapshot.settings),
-        )
+        with self._lock:
+            previous = self._snapshots.get(snapshot.player_id)
+            ensure_display_name_available(
+                snapshot.player_id, str(snapshot.profile.get("display_name", snapshot.player_id)),
+                ((owner, str(item.profile.get("display_name", owner))) for owner, item in self._snapshots.items()),
+                previous_name=previous.profile.get("display_name") if previous else None,
+            )
+            self._snapshots[snapshot.player_id] = PlayerDataSnapshot(
+                player_id=snapshot.player_id,
+                profile=dict(snapshot.profile),
+                statistics=dict(snapshot.statistics),
+                settings=dict(snapshot.settings),
+            )
 
     def load(
         self,

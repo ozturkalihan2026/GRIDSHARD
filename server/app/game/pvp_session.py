@@ -68,6 +68,7 @@ class PvPSession:
     ai_next_decision_at_ms: dict[str, int] = field(default_factory=dict)
     ai_archetypes: dict[str, str] = field(default_factory=dict)
     ai_profile_options: dict[str, dict] = field(default_factory=dict)
+    ai_level_reference_player_ids: dict[str, str] = field(default_factory=dict)
 
     @property
     def is_full(self) -> bool:
@@ -363,8 +364,33 @@ class PvPSessionService:
                     "PvP maçı için iki oyuncunun da geçerli kurulumu ve hazır durumu gerekli."
                 )
 
+        # Matchmaking bots follow the opponent's submitted six-card deck,
+        # not a saved preference which may belong to a different preset.
+        # Setup is final here and no combat module has been deployed yet.
+        if session.engine.state.status == BattleStatus.WAITING:
+            self._sync_ai_progression(session)
         session.engine.start()
         self._touch(session)
+
+    def _sync_ai_progression(self, session: PvPSession) -> None:
+        state = session.engine.state
+        for ai_player_id, reference_player_id in session.ai_level_reference_player_ids.items():
+            if ai_player_id not in session.ai_player_ids:
+                continue
+            reference = state.players[reference_player_id]
+            ai_player = state.players[ai_player_id]
+            if reference.battle_pool is None or ai_player.battle_pool is None:
+                raise PvPSessionError("AI seviye eşlemesi için iki oyuncunun da destesi gerekli.")
+            deck = reference.battle_pool.module_definition_ids
+            levels = state.player_upgrade_levels.get(reference_player_id, {})
+            matched_level = max(0, min(14, round(
+                sum(levels.get(module_id, 0) for module_id in deck) / len(deck)
+            )))
+            state.player_upgrade_levels[ai_player_id] = {
+                module_id: matched_level
+                for module_id in ai_player.battle_pool.module_definition_ids
+            }
+            ai_player.core_level = reference.core_level
 
     def submit_command(
         self,

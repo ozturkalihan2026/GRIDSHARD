@@ -1,8 +1,22 @@
 # GRIDSHARD geliştirme kontrol noktası
 
-Güncelleme tarihi: 21 Eylül 2026
+Güncelleme tarihi: 23 Eylül 2026
 
 Bu dosya güncel çalışma paketini ve korunması gereken önceki kararları içerir. Kullanıcı `checkpoint'ten devam et` dediğinde önce bu dosya, ardından `git status --short` okunmalıdır.
+
+## Aktif paket — Beta.70 AI savaş gücü adaleti
+
+1. `[~]` AI modüllerinin oyuncuya göre aşırı güçlü görünmesini incele
+   - Kullanıcı otomatik yerleşimin çalıştığını doğruladı; deneme savaşında kendi modülleri hızla yok olurken AI modüllerini yok edemediğini bildirdi.
+   - `[x]` Modül üretimi, seviye/nadirlik/yetenek çarpanları, günlük meta, başlangıç Akımı, enerji baskısı, hasar ve destek yolları koddan karşılaştırıldı. AI'ye özel ek CAN/hasar veya ücretsiz kart üretimi bulunmadı. AI ile insan aynı kanonik modül hesaplamasını ve kompozisyon sınırlarını kullanıyor.
+   - `[x]` Sabotajda kimlik sırasından gelen ilk hamle avantajı giderildi. Önceden `local-ai-...` kimliği `wt-...` kimliğinden önce işlendiği için aynı tick'te hazır olan insan sabotajı hiç çalışmadan devre dışı kalabiliyordu. İki tarafın hedefi, direnci ve etkisi artık aynı başlangıç durumundan planlanıp sonra uygulanıyor. Aynı taraftaki sabotajların ayrı hedeflere yönelmesi korunuyor; doğrudan saldırı zaten iki aşamalıydı.
+   - `[x]` AI modül seviyesi, eski kayıtlı `preferred_battle_pool_ids` yerine iki taraf hazır olduğunda oyuncunun gerçekten gönderdiği altılı destenin ortalama yükseltme seviyesinden hesaplanıyor. Çekirdek seviyesi de aynı noktada oyuncunun maça bağlı Çekirdek seviyesiyle eşleniyor. Yuvarlama, seviye sınırı, botun kart/Çekirdek türü ve günlük meta kuralları değiştirilmedi. Bu eşleme yalnız eşleştirme botlarına uygulanır; sabit eğitim AI'sı ve insan–insan maçları etkilenmez.
+   - `[x]` AI eşleşmesi telemetrisindeki daima `0` yazılan kupa farkı gerçek eşleşme farkına düzeltildi.
+   - `[ ]` Kullanıcının bildirdiği güç farkının yeni maçta doğrulanması bekliyor. Mevcut kalıcı telemetri maç sonucu/süresini ve harcamaları tutuyor; o maçın anlık CAN, enerji, destek ve hasar durumlarını içeren tekrar kaydı yok. Bu nedenle bildirimin tamamı iki kod hatasına bağlanmadı ve genel modül dengesi gelişigüzel düşürülmedi.
+
+Doğrulama: Kullanıcının kararı gereği otomatik test, sunucu başlatma, tarayıcı veya savaş denemesi çalıştırılmadı. Kod yolları ve diff statik olarak incelendi; `git diff --check` temiz (yalnız Windows satır sonu uyarıları). `server/data/platform_state.json` içindeki önceden var olan çalışma zamanı değişikliklerine dokunulmadı.
+
+Devam notu: Bu iki düzeltme yeni oluşturulan savaşlar içindir; çalışan sunucu yeni kodu yüklemelidir. Oynanış doğrulaması kullanıcıda kalır. Son Öneriler kuyruğundaki kod işleri aşağıda korunuyor; eski manuel hücre seçimi geri getirilmeyecek.
 
 ## Aktif paket — Beta.69 otomatik yerleşim ve devre kompozisyonu
 

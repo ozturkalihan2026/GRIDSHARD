@@ -11,6 +11,7 @@
     "/statistics/",
     "/profile/",
     "/public-profiles/",
+    "/teams",
     "/social/",
     "/accounts/",
     "/notifications/",
@@ -206,6 +207,9 @@
       }
       if (!playerId && ["progression", "post-match"].includes(segments[0])) {
         playerId = segments.at(-1) || null;
+      }
+      if (!playerId && segments[0] === "teams" && segments[1] === "player") {
+        playerId = segments[2] || null;
       }
       if (!playerId && typeof init.body === "string") {
         try {

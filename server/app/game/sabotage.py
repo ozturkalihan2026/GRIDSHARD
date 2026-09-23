@@ -79,8 +79,13 @@ def _active_targets(player: PlayerBattleState) -> list[BattleModule]:
 def select_sabotage_target(
     sabotage_module: BattleModule,
     opponent: PlayerBattleState,
+    *,
+    excluded_target_ids: frozenset[str] | set[str] = frozenset(),
 ) -> BattleModule | None:
-    targets = _active_targets(opponent)
+    targets = [
+        module for module in _active_targets(opponent)
+        if module.instance_id not in excluded_target_ids
+    ]
     if not targets:
         return None
 
@@ -107,10 +112,13 @@ def select_sabotage_target(
 def plan_sabotage(
     sabotage_module: BattleModule,
     opponent: PlayerBattleState,
+    *,
+    excluded_target_ids: frozenset[str] | set[str] = frozenset(),
 ) -> SabotagePlan | None:
     target = select_sabotage_target(
         sabotage_module,
         opponent,
+        excluded_target_ids=excluded_target_ids,
     )
     if target is None:
         return None

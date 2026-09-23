@@ -517,8 +517,6 @@
 
     <dialog id="core-detail-dialog" class="module-detail-dialog core-detail-dialog" aria-labelledby="core-detail-name">
       <button id="core-detail-close" class="module-detail-close" type="button" aria-label="Kapat">×</button>
-      <button id="core-detail-prev" class="module-detail-arrow is-prev" type="button" aria-label="Önceki çekirdek">‹</button>
-      <button id="core-detail-next" class="module-detail-arrow is-next" type="button" aria-label="Sonraki çekirdek">›</button>
       <header class="module-detail-hero core-detail-hero">
         <div id="core-detail-art" class="module-detail-art core-detail-art"></div>
         <div class="module-detail-title"><h2 id="core-detail-name">Çekirdek</h2><span id="core-detail-rarity">YAYGIN</span></div>
@@ -540,8 +538,6 @@
     </dialog>
     <dialog id="module-detail-dialog" class="module-detail-dialog" aria-labelledby="module-detail-name">
       <button id="module-detail-close" class="module-detail-close" type="button" aria-label="Kapat">×</button>
-      <button id="module-detail-prev" class="module-detail-arrow is-prev" type="button" aria-label="Önceki kart">‹</button>
-      <button id="module-detail-next" class="module-detail-arrow is-next" type="button" aria-label="Sonraki kart">›</button>
       <header class="module-detail-hero">
         <div id="module-detail-art" class="module-detail-art"></div>
         <div class="module-detail-title"><h2 id="module-detail-name">Modül</h2><span id="module-detail-rarity">SIRADAN</span></div>
@@ -827,6 +823,7 @@
         <button id="account-push-enable" type="button">MOBİL BİLDİRİMLERİ AÇ</button>
         <div><strong>Cihaz Oturumları</strong><div id="account-device-list" class="account-device-list"></div></div>
         <div class="account-data-actions"><button id="account-data-export" type="button">VERİLERİMİ DIŞA AKTAR</button><input id="account-delete-confirmation" type="text" placeholder="SIL oyuncu-kimliğin"><button id="account-data-delete" type="button">HESABI VE VERİLERİ SİL</button></div>
+        <p>Kişisel veri kopyası oyun kaydı değildir. Kart, kupa ve ilerleme yalnız sunucuda güncellenir; dosyadan geri yüklenemez.</p>
       </section>
       <section class="settings-about-panel" aria-labelledby="settings-about-title">
         <div>
@@ -1335,6 +1332,7 @@
   <script src="./src/auth-session.js"></script>
   <script src="./src/relay-client.js"></script>
   <script src="./src/screens/screen-controller.js"></script>
+  <script src="./src/screens/card-swipe.js"></script>
   <script src="./src/tutorial/tutorial-controller.js"></script>
   <script src="./src/battle/board-view.js"></script>
   <script src="./src/battle/module-card-view.js"></script>

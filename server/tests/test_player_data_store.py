@@ -145,7 +145,7 @@ def reset_gateway():
     player_settings_service._settings.clear()
 
 
-def test_gateway_save_and_load_roundtrip():
+def test_gateway_cannot_replace_progress_via_save_or_load():
     reset_gateway()
 
     player_profile_service.set_display_name(
@@ -160,16 +160,13 @@ def test_gateway_save_and_load_roundtrip():
     saved=client.post(
         "/player-data/a/save"
     )
-    assert saved.status_code==200
-
-    player_profile_service._profiles.clear()
-    player_settings_service._settings.clear()
+    assert saved.status_code==410
 
     loaded=client.post(
         "/player-data/a/load"
     )
 
-    assert loaded.status_code==200
+    assert loaded.status_code==410
     assert (
         client.get(
             "/profile/a"
@@ -184,11 +181,11 @@ def test_gateway_save_and_load_roundtrip():
     )
 
 
-def test_gateway_missing_load_is_404():
+def test_gateway_missing_load_is_also_closed():
     reset_gateway()
 
     response=client.post(
         "/player-data/missing/load"
     )
 
-    assert response.status_code==404
+    assert response.status_code==410
