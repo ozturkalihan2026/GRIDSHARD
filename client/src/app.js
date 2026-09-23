@@ -687,6 +687,8 @@
         document.body.dataset.localStatus
         || "setup",
       critical:criticalCoreAudioRequested,
+      battleElapsedMs: Number(client.elapsedMs || 0),
+      battlePressure: Number(gridshardAudioDirector?.battlePressure || 0),
       ...overrides,
     };
   }
@@ -11811,11 +11813,11 @@ function saveHumanReviewLocalNote() {
   }
 
   function syncCriticalCoreAudioState() {
+    const onlineBattleActive = activePlayMode === "online" && document.body.dataset.onlineStatus === "battle";
+    const localBattleActive = activePlayMode === "local" && localBattleStarted && !localBattleFinished;
     if (
       !gridshardAudioDirector
-      || activePlayMode !== "local"
-      || !localBattleStarted
-      || localBattleFinished
+      || !(onlineBattleActive || localBattleActive)
     ) {
       if (criticalCoreAudioRequested) {
         criticalCoreAudioRequested = false;
@@ -11842,34 +11844,9 @@ function saveHumanReviewLocalNote() {
           )
         );
 
-    if (
-      ratio > 0
-      && ratio <= .33
-    ) {
-      criticalCoreAudioRequested = true;
-      requestOwnedAudioState("critical_core_entered");
-      if (
-        typeof gridshardAudioDirector
-          .setBattlePressure
-        === "function"
-      ) {
-        const hits=
-          Number(
-            localBattleMetrics?.ai_hits
-            || 0
-          );
-        gridshardAudioDirector
-          .setBattlePressure(
-            Math.min(
-              1,
-              .35 + hits/18
-            )
-          );
-      }
-    } else if (criticalCoreAudioRequested) {
-      criticalCoreAudioRequested = false;
-      requestOwnedAudioState("critical_core_cleared");
-    }
+    criticalCoreAudioRequested = ratio > 0 && ratio <= .33;
+    gridshardAudioDirector.setBattlePressure(Math.min(1, Math.max(0, 1 - ratio) + Math.min(.35, Number(client.elapsedMs || 0) / 240000)));
+    requestOwnedAudioState("battle_audio_snapshot");
   }
 
   function renderPlayerCoreSummary() {

@@ -73,6 +73,13 @@ def test_http_identity_cannot_read_or_mutate_another_player(monkeypatch):
         headers=headers_a,
         json={"player_id": player_b},
     ).status_code == 403
+    assert client.get(f"/accounts/{player_b}/data-export", headers=headers_a).status_code == 403
+    assert client.get(f"/teams/player/{player_b}", headers=headers_a).status_code == 403
+    assert client.post(
+        "/teams/fake-team/module-requests/fake-request/donate",
+        headers=headers_a,
+        json={"player_id": player_b, "request_id": "spoofed-donation"},
+    ).status_code == 403
 
 
 def test_http_private_routes_reject_missing_token(monkeypatch):

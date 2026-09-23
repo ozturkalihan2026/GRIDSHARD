@@ -4,6 +4,47 @@ Güncelleme tarihi: 23 Eylül 2026
 
 Bu dosya güncel çalışma paketini ve korunması gereken önceki kararları içerir. Kullanıcı `checkpoint'ten devam et` dediğinde önce bu dosya, ardından `git status --short` okunmalıdır.
 
+## Aktif paket — Beta.72 üretim istemci derlemesi
+
+1. `[x]` Son Öneriler / üretim istemci derleme hattının kodunu tamamla
+   - `pnpm build:web` ile web, mevcut `pnpm build:mobile:web` ile mobil aynı `tools/build-client.js` hattını kullanır. Sabit `esbuild 0.28.2` ve platform paketleri kilit dosyasına alındı; diğer bağımlılıklar güncellenmedi.
+   - `index.html` içindeki açık derleme blokları JS yürütme sırasını ve `styles.css → canon.css` sırasını belirler. JS/CSS birleştirilip küçültülür; SHA-256 içerik özeti taşıyan dosya adları HTML'e otomatik yazılır. Global istemci bağlantıları, fonksiyon/sınıf adları ve ayrı runtime API yapılandırması korunur.
+   - Çıktıda yalnız uygulama HTML'i, JS/CSS paketleri, ikon/manifest/ses varlıkları ve genel API ayarı vardır; testler, kaynak haritaları ve geliştirme dosyaları kopyalanmaz. Paket önce geçici dizinde hazırlanır; derleme/kopyalama hatası önceki `dist/` çıktısını silmez.
+2. `[x]` Üretim ve geliştirme statik servislerini ayır
+   - Geliştirme varsayılan `client/` ve no-cache davranışında kalır. Üretim varsayılan `dist/` veya `GRIDSHARD_CLIENT_DIR` dizinini kullanır; eksik web manifesti ya da uyumsuz JS/CSS dosya özeti açılışı durdurur. Mobil çıktı yanlışlıkla web yayını olarak sunulamaz.
+   - Yalnız manifestteki doğrulanmış içerik özetli JS/CSS bir yıl immutable önbelleğe alınabilir. Ana HTML, runtime ayarı ve derleme manifesti `no-store`; sabit adlı ses/ikon varlıkları ETag ile yeniden doğrulanır.
+3. `[x]` Docker ve CI paketlemeye bağla
+   - Docker ayrı Node derleme katmanından yalnız `dist/` içeriğini Python imajına taşır. Yerel ortam/sır dosyaları, Node bağımlılıkları ve eski çıktılar Docker bağlamından dışlanır.
+   - Quality iş akışına derleme sözleşmeleri, web paketi üretimi ve commit SHA ile artifact eklendi. İncelemede `.github/workflows/quality.yml` dosyasının hâlâ Git ignore kapsamına girdiği görüldü; yalnız workflow YAML dosyalarını açan istisnalar düzeltildi. Commit/push veya CI çalıştırma yapılmadı.
+   - Kullanım ve yayın/önbellek sınırları `docs/CLIENT_BUILD.md` dosyasına eklendi; mobil yayın belgesi ortak hattı gösterecek şekilde güncellendi.
+
+Doğrulama: Kullanıcının önceki kararı korunarak test, derleme, Docker, tarayıcı, sunucu veya savaş denemesi çalıştırılmadı. Yalnız bağımlılık sürümü/kilit dosyası güncellendi ve kod/diff statik incelendi. Derleme sırası, içerik özeti, başarısız derlemede eski paketin korunması, mobil API zorunluluğu ve HTTP önbellek davranışı için sözleşmeler yazıldı; çalıştırılmadı. Gerçek CI ve cihaz sonucu yayın öncesi bekler. `server/data/platform_state.json` içindeki çalışma zamanı değişikliklerine dokunulmadı.
+
+Sonraki kod paketi: Son Öneriler kuyruğunda WAV→OGG/AAC dönüşümü ve savaş müzik katmanları; ardından JSON migration günlüğü açık. Gerçek cihaz/oynanış doğrulaması kullanıcıda kalır. Tek dokunuşla sunucunun otomatik modül yerleştirmesi korunur.
+
+## Aktif paket — Beta.71 kart kaydırma, benzersiz ad ve veri yetkisi
+
+1. `[x]` Kart ayrıntılarındaki sağ/sol okları kaldır, sürüklemeyi koru
+   - Modül ve Çekirdek pencerelerinde ok düğmeleri ve eski stilleri kaldırıldı. Ortak `screens/card-swipe.js`, parmak/fare ile yatay sürüklemede kart değiştirir; dikey kaydırma ve işlem düğmeleri korunur.
+   - İptal edilen/çoklu dokunuş hareketi geçiş üretmez; tamamlanan sürüklemenin yanlışlıkla seçim/yükseltme tıklamasına dönüşmesi engellenir. Klavyede sağ/sol ok desteği korunur.
+2. `[x]` Sunucu otoriteli kullanıcı adı benzersizliği
+   - Unicode NFKC, fazla boşluk ve harf büyüklüğü normalleştirilir; `I/İ/ı/i` aynı ad anahtarına karşılık gelir. Görünmez/kontrol karakterleri reddedilir. AI adları da ayrılmıştır.
+   - JSON dosya kilidi ve PostgreSQL transaction advisory lock altında kalıcı kayıtlar kontrol edilir; çevrimdışı oyuncu adı veya eşzamanlı iki istek kontrolü aşamaz. Başarısız kalıcı yazıda bellekteki ad geri alınır; dolu ad HTTP `409` döner.
+   - Mevcut veride 28 oyuncu ve bir yinelenen ad grubu (`Kesici`, iki hesap) salt okunur olarak tespit edildi. Eski hesaplar zorla yeniden adlandırılmadı; yeni ad talepleri bu adı alamaz. Eski çakışmaların temizlenmesi ayrı kullanıcı kararıdır ve alakasız ilerleme kayıtlarını durdurmaz.
+3. `[x]` Kişisel veri kopyasını oyun kaydından ayır
+   - Dışa aktarım artık kayıt yazmaz; sunucunun verisinden salt okunur, `restorable:false` kişisel kopya üretir. HMAC-SHA256 bütünlük imzası sunucu anahtarından ayrı bağlamla türetilir; istemciye anahtar verilmez. Yanıt önbelleğe alınmaz.
+   - Eski `/player-data/{id}/save`, `/load` ve doğrudan silme uçları `410` ile kapatıldı. Oyuncu gönderdiği JSON ile ilerleme geri yükleyemez; normal maç/ödül/yükseltme kaydı ve açık onaylı hesap silme akışı korunur.
+   - İsim/deste/kozmetik/yükseltme/Çekirdek isteklerine fazladan alan eklenmesi reddedilir. Üretimde kimlik denetimi ortam değişkeniyle kapatılamaz.
+   - Kart parçası aktarımı da içerdiğinden takım uçları ortak Bearer/oyuncu sahipliği denetimine alındı; istemci takım isteklerinde de belirteç gönderir.
+   - İndirilen dosyanın bilgisayarda düzenlenmesi engellenemez; güvenlik, dosyanın ilerleme kaynağı olarak kabul edilmemesidir. Sunucu dosyalarını/DB'yi doğrudan değiştirebilen makine yöneticisine karşı istemci güvenliği garantisi verilmez.
+4. `[~]` Son Öneriler / yerel mobil portre kilidi
+   - Android MainActivity ve iOS Info.plist yönleri için tekrar çalıştırılabilir `configure-native-orientation.js` eklendi; mobil proje oluşturma komutları ve Capacitor sync sonrası kancaya bağlandı.
+   - Depoda henüz `android/` veya `ios/` projesi yok; kalıcı paket kimliği belirlendikten sonra üretilecek projelere uygulanır. Proje/şablon bulunmadığında açık hata verir. Büyük ekran/pencere modu istisnaları ve gerçek cihaz doğrulaması yayın belgesinde ayrıştırıldı.
+
+Doğrulama: Kullanıcının isteği gereği otomatik test, derleme, tarayıcı, sunucu veya savaş denemesi çalıştırılmadı. Kod ve diff statik olarak incelendi. İsim çakışması, dosya imzası ve takım sahipliği regresyon sözleşmeleri yazıldı/güncellendi, çalıştırılmadı. Gerçek cihaz ve oynanış sonuçları tamamlanmış sayılmadı.
+
+Devam durumu: Üretim istemci derleme hattının kodu Beta.72'de tamamlandı; mobil ses dönüşümü/müzik katmanları açık. Portre kilidinin cihaz doğrulaması ile mevcut yinelenen adların değiştirilmesi kullanıcı tarafında bekliyor.
+
 ## Aktif paket — Beta.70 AI savaş gücü adaleti
 
 1. `[~]` AI modüllerinin oyuncuya göre aşırı güçlü görünmesini incele
@@ -156,7 +197,7 @@ Doğrulama: Tam istemci paketi `47/47`, platform servis paketi `7/7` geçti. `pl
 4. `[x]` Çalışma zamanı JSON/BAK/TMP dosyalarını Git geçmişinden güvenli biçimde çıkar
    - `.gitignore` desenleri hazır olsa da önceden izlenmiş `server/data/web_test_*` dosyaları hâlâ sürüm kontrolünde. Kullanıcı verisi silinmeden `git rm --cached` ve dağıtım veri dizini geçişi planlanmalı.
 5. `[ ]` Mobil dokunma/işaretçi akışını gerçek cihazlarda doğrula ve eski HTML5 drag-and-drop yolunu kaldır
-   - Birincil dokun-seç/yerleştir akışı korunmalı; kalan `dragstart/drop/dataTransfer` bağımlılıkları temizlenmeli ve iOS/Android uzun basma, kaydırma ve iptal davranışları test edilmeli.
+   - Birincil tek dokunuşla sunucunun otomatik hücreye yerleştirdiği akış korunmalı; manuel hücre seçimi geri getirilmemeli. iOS/Android uzun basma, kaydırma ve iptal davranışları kullanıcı tarafından doğrulanmalı.
    - `[x]` Kod tarafındaki HTML5 drag-and-drop ve ölü stil yolu kaldırıldı.
    - `[ ]` Gerçek Android/iOS uzun basma, kaydırma, iptal ve FPS kontrolü kullanıcı doğrulamasında bekliyor.
 
@@ -164,8 +205,10 @@ Doğrulama: Tam istemci paketi `47/47`, platform servis paketi `7/7` geçti. `pl
 
 6. `[ ]` Savaş seslerini mobil biçimlere dönüştür ve müzik katmanlarını etkinleştir
    - Büyük WAV dosyaları OGG/AAC türevlerine taşınmalı; `GRIDSHARD_BATTLE_MUSIC_ENABLED` üretimde açılmalı ve farklı savaş durumlarının aynı dosyayı tekrar kullanması giderilmeli.
-7. `[ ]` Dikey ekran kilidini yerel mobil kabuğa ekle
+7. `[~]` Dikey ekran kilidini yerel mobil kabuğa ekle
    - CSS medya sorgusuna ek olarak Capacitor/Android/iOS yapılandırmasında portrait orientation kilidi tanımlanmalı.
+   - `[x]` Beta.71: Android MainActivity ve iOS Info.plist için portre yapılandırıcısı mobil add/sync akışına bağlandı; beklenmeyen şablonda sessiz başarı vermez.
+   - `[ ]` Gerçek paket kimliğiyle yerel projeleri üretme ve cihazda dönüş/güvenli alan doğrulaması bekliyor. Mevcut depoda native projeler yok.
 8. `[ ]` Gerçek cihaz performans bütçesi ve FPS ölçümü oluştur
    - Düşük/orta seviye cihazlarda savaş DOM güncellemeleri, efekt yoğunluğu, bellek ve kare süresi kaydedilmeli; kabul eşikleri release check'e bağlanmalı.
 9. `[ ]` JSON/PostgreSQL şema geçişlerini sürümlü migration sistemine taşı
@@ -176,15 +219,18 @@ Doğrulama: Tam istemci paketi `47/47`, platform servis paketi `7/7` geçti. `pl
    - İstemci izin/token kaydı hazır; sunucu teslim sağlayıcısı, kimlik bilgileri, token yenileme/hata temizliği ve imzalı mobil yapılandırma hâlâ gerekli.
 11. `[x]` CI iş akışlarını sürüm kontrolüne al
    - `.github/` genel ignore kapsamından çıkarılmalı; istemci, sunucu ve paketleme doğrulamaları için gerçek workflow dosyaları eklenmeli.
+   - Beta.72: mevcut dosyanın Git tarafından hâlâ yok sayıldığı saptanıp workflow YAML istisnaları düzeltildi; üretim web paketi ve artifact adımları eklendi. Uzak CI çalıştırılmadı.
 12. `[x]` Test bağımlılığındaki `httpx2` paketini doğrula ve gereksizse kaldır
    - `server/requirements-test.txt` içindeki `httpx` yanında bulunan `httpx2>=2.4,<3.0` kaynağı ve kullanımı doğrulanmalı.
 
 ### Bakım kuyruğu
 
-13. `[ ]` Büyük istemci ve sunucu dosyalarını alan modüllerine böl
+13. `[~]` Büyük istemci ve sunucu dosyalarını alan modüllerine böl
    - `client/src/app.js` ve `server/app/main.py` ekran/rota alanlarına ayrılmalı; davranış önce sözleşme testleriyle sabitlenmeli.
-14. `[ ]` Üretim istemci derleme hattı kur
-   - Modül paketleme, küçültme, içerik hash'li statik dosyalar ve otomatik cache-busting eklenmeli.
+   - Beta.71: kart sürükleme, ad normalleştirme/benzersizlik ve kişisel dışa aktarım ayrı alan modüllerine alındı. Büyük dosyaların kalan ekran/rota ayrıştırması henüz yapılmadı.
+14. `[x]` Üretim istemci derleme hattı kur
+   - Beta.72: ortak web/mobil JS-CSS paketleme, küçültme, SHA-256 dosya adları, otomatik HTML güncellemesi, üretim önbelleği, Docker derleme katmanı ve CI artifact'i eklendi.
+   - Kullanıcının talebiyle derleme/test çalıştırılmadı; kod uygulaması tamamlandı, CI/gerçek cihaz yayın doğrulaması bekliyor. İşletim ayrıntıları `docs/CLIENT_BUILD.md` içinde.
 15. `[ ]` `canon.css` ve `styles.css` sahipliğini uzlaştır
    - Tekrarlanan kurallar ve yüksek sayıdaki `!important` kullanımı ekran bazında azaltılmalı; görsel regresyon testleriyle korunmalı.
 16. `[ ]` Türkçe/İngilizce yerelleştirmeyi tamamla

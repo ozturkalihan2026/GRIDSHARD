@@ -25,7 +25,7 @@ $env:GRIDSHARD_API_BASE_URL="https://api.gridshard.example"
 pnpm build:mobile:web
 ```
 
-Komut `client/` içeriğini `dist/` altına kopyalar ve yalnız üretilen `dist/runtime-config.js` içine HTTPS API adresini yazar. HTTP adresleri ancak açık yerel geliştirme bayrağıyla kabul edilir; mağaza adayı için kabul edilmez.
+Komut ortak üretim hattıyla JS/CSS dosyalarını sıralarını koruyarak birleştirir, küçültür ve içerik özetli isimlerle `dist/` altına yazar. Yalnız üretilen `dist/runtime-config.js` içine HTTPS API adresini ekler; testler/kaynak dosyalar pakete kopyalanmaz. HTTP adresleri ancak açık yerel geliştirme bayrağıyla kabul edilir; mağaza adayı için kabul edilmez. Ayrıntılar: [İstemci derlemesi](CLIENT_BUILD.md).
 
 ## 1 — Android kapalı test
 

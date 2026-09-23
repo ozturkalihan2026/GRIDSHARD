@@ -226,6 +226,10 @@
       }
       if (screen !== "play") return "menu";
       if (context.critical && battleActive) return "critical_core";
+      if (battleActive && Number.isFinite(context.battleElapsedMs)) {
+        if (context.battleElapsedMs < 6000) return "battle_intro";
+        if (context.battleElapsedMs >= 90000 || Number(context.battlePressure || 0) >= .72) return "battle_pressure";
+      }
       if (battleActive) return "battle";
       return "pool";
     }

@@ -1,5 +1,30 @@
 {
   "accounts": {
+    "wt-02a396b0-8119-49b1-9a82-9b8283a5e9a5": {
+      "blocked_player_ids": [],
+      "contacts": {},
+      "devices": {
+        "45e5a505-eb58-4595-a24d-3630deb874e5": {
+          "device_id": "45e5a505-eb58-4595-a24d-3630deb874e5",
+          "last_seen_at": 1790162505,
+          "name": "WEB · Tarayıcı",
+          "platform": "web",
+          "token_ids": [
+            {
+              "expires_at": 1790166105,
+              "token_id": "DUdASViii9xIWxgG"
+            }
+          ]
+        }
+      },
+      "notifications": [],
+      "oauth_links": {},
+      "oauth_states": {},
+      "pending_verifications": {},
+      "push_subscriptions": {},
+      "recovery": {},
+      "revoked_token_ids": []
+    },
     "wt-0d67fa7a-ae98-4822-b69c-cf16c560ee29": {
       "blocked_player_ids": [],
       "contacts": {

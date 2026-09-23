@@ -41,5 +41,5 @@ def ensure_display_name_available(
     if any(owner != player_id and display_name_key(other) == key for owner, other in existing):
         raise DisplayNameError("Bu oyuncu adı zaten kullanılıyor. Başka bir ad seç.", code="taken")
     from .arena_canon import BOTS
-    if any(str(bot["id"]) != player_id and display_name_key(bot["display_name"]) == key for bot in BOTS):
+    if any(display_name_key(bot["display_name"]) == key for bot in BOTS):
         raise DisplayNameError("Bu oyuncu adı zaten kullanılıyor. Başka bir ad seç.", code="taken")

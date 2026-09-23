@@ -1,4 +1,13 @@
 .venv
+.git
+.env
+.env.*
+node_modules
+dist
+.client-build-*
+.audio-tools
+.audio-convert-*
+server/data/.auth_signing_key
 __pycache__
 .pytest_cache
 qa_reports/*.json

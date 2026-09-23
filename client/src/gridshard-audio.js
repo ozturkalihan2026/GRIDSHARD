@@ -1,6 +1,9 @@
 (function (global) {
   "use strict";
 
+  const GRIDSHARD_BATTLE_MIXES = global.GRIDSHARD_BATTLE_MIXES
+    || (typeof require === "function" ? require("./audio-mix.js") : null);
+
   const GRIDSHARD_AUDIO_STATES = Object.freeze({
     MENU: "menu",
     POOL: "pool",
@@ -26,7 +29,7 @@
   });
 
   const GRIDSHARD_AUDIO_MIX = Object.freeze({
-    version:"shardglass-seamless-v9",
+    version:"shardglass-mobile-v10",
     crossfadeMs:1200,
     menuPoolCrossfadeMs:480,
     resultCrossfadeMs:320,
@@ -42,10 +45,10 @@
     menu:"./assets/audio/menu_ensemble_v6.wav",
     pool:"./assets/audio/pool_ensemble_v6.wav",
     matchmaking:"./assets/audio/matchmaking_rise.wav",
-    battle_intro:"./assets/audio/battle_tension_v7_01_sub.wav",
-    battle:"./assets/audio/battle_tension_v7_01_sub.wav",
-    battle_pressure:"./assets/audio/battle_tension_v7_01_sub.wav",
-    critical_core:"./assets/audio/battle_tension_v7_01_sub.wav",
+    battle_intro:GRIDSHARD_BATTLE_MIXES.battle_intro.asset,
+    battle:GRIDSHARD_BATTLE_MIXES.battle.asset,
+    battle_pressure:GRIDSHARD_BATTLE_MIXES.battle_pressure.asset,
+    critical_core:GRIDSHARD_BATTLE_MIXES.critical_core.asset,
     victory:"./assets/audio/victory_sting.wav",
     defeat:"./assets/audio/defeat_sting.wav",
   });
@@ -54,7 +57,7 @@
     "./assets/audio/battle_tension_v7_07_pressure.wav";
 
   const GRIDSHARD_CONTINUOUS_LOOP_SECONDS = 32;
-  const GRIDSHARD_BATTLE_MUSIC_ENABLED = false;
+  const GRIDSHARD_BATTLE_MUSIC_ENABLED = true;
 
   const GRIDSHARD_BATTLE_LAYERS = Object.freeze([
     {id:"sub", asset:"./assets/audio/battle_tension_v7_01_sub.wav", baseGain:.36, pressureGain:.10},
@@ -121,6 +124,47 @@
     },
   });
 
+  let preferredAudioExtensions = null;
+
+  function compressedAudioCandidates(asset) {
+    const name = /^\.\/assets\/audio\/([^/]+)\.wav$/.exec(asset)?.[1];
+    if (!name) return [asset];
+    if (!preferredAudioExtensions) {
+      const probe = global.document?.createElement?.("audio")
+        || (typeof global.Audio === "function" ? new global.Audio() : null);
+      const vorbis = probe?.canPlayType?.('audio/ogg; codecs="vorbis"');
+      preferredAudioExtensions = vorbis && vorbis !== "no" ? ["ogg", "m4a"] : ["m4a", "ogg"];
+    }
+    // WAV names remain stable cue IDs, never network requests or release assets.
+    return preferredAudioExtensions.map((extension) => `./assets/audio/mobile/${name}.${extension}`);
+  }
+
+  function loadCompressedBuffer(context, asset, cache) {
+    if (!cache.has(asset)) {
+      const pending = (async () => {
+        let lastError;
+        for (const source of compressedAudioCandidates(asset)) {
+          const controller = typeof global.AbortController === "function" ? new global.AbortController() : null;
+          const timeout = controller ? global.setTimeout(() => controller.abort(), 12000) : null;
+          try {
+            const response = await global.fetch(source, controller ? { signal: controller.signal } : undefined);
+            if (!response.ok) throw new Error(`Audio asset could not be loaded: ${source}`);
+            return await context.decodeAudioData(await response.arrayBuffer());
+          } catch (error) {
+            lastError = error;
+          } finally {
+            if (timeout !== null) global.clearTimeout(timeout);
+          }
+        }
+        throw lastError || new Error(`Audio decoding failed: ${asset}`);
+      })();
+      cache.set(asset, pending);
+      // A temporary network failure must not poison the cache forever.
+      pending.catch(() => { if (cache.get(asset) === pending) cache.delete(asset); });
+    }
+    return cache.get(asset);
+  }
+
   class GridshardSeamlessLoopTrack {
     constructor(context, asset, bufferCache) {
       this.context = context;
@@ -133,6 +177,8 @@
       this._volume = 0;
       this._playbackRate = 1;
       this._playToken = 0;
+      this._loopSeconds = /menu_ensemble|pool_ensemble|battle_/.test(asset) ? 32
+        : /matchmaking_rise/.test(asset) ? 6 : 0;
       this.loop = true;
       this.paused = true;
       this.preload = "auto";
@@ -167,7 +213,7 @@
         return (
           this._offset
           + elapsed * this._playbackRate
-        ) % this._buffer.duration;
+        ) % this._loopDuration();
       }
       return this._offset;
     }
@@ -175,7 +221,7 @@
     set currentTime(value) {
       const next = Math.max(0, Number(value || 0));
       this._offset = this._buffer?.duration
-        ? next % this._buffer.duration
+        ? next % this._loopDuration()
         : next;
       if (!this.paused && this._buffer) {
         this._startSource();
@@ -183,20 +229,24 @@
     }
 
     _loadBuffer() {
-      if (!this._bufferCache.has(this.src)) {
-        this._bufferCache.set(
-          this.src,
-          global.fetch(this.src)
-            .then((response) => {
-              if (!response.ok) {
-                throw new Error(`Music asset could not be loaded: ${this.src}`);
-              }
-              return response.arrayBuffer();
-            })
-            .then((bytes) => this.context.decodeAudioData(bytes))
-        );
-      }
-      return this._bufferCache.get(this.src);
+      return loadCompressedBuffer(this.context, this.src, this._bufferCache);
+    }
+
+    _loopDuration() {
+      return Math.min(this._buffer.duration, this._loopSeconds || this._buffer.duration);
+    }
+
+    async prepare() {
+      this._buffer = await this._loadBuffer();
+      return this._buffer;
+    }
+
+    playAt(when, offset = 0) {
+      if (!this._buffer) return;
+      this._playToken += 1;
+      this.paused = false;
+      this._offset = offset % this._loopDuration();
+      this._startSource(when);
     }
 
     _stopSource() {
@@ -211,18 +261,18 @@
       }
     }
 
-    _startSource() {
+    _startSource(when = this.context.currentTime) {
       if (!this._buffer || this.paused) return;
       this._stopSource();
       const source = this.context.createBufferSource();
       source.buffer = this._buffer;
       source.loop = this.loop;
       source.loopStart = 0;
-      source.loopEnd = this._buffer.duration;
+      source.loopEnd = this._loopDuration();
       source.playbackRate.value = this._playbackRate;
       source.connect(this._gain);
-      this._startedAt = this.context.currentTime;
-      source.start(0, this._offset % this._buffer.duration);
+      this._startedAt = when;
+      source.start(when, this._offset % this._loopDuration());
       this._source = source;
     }
 
@@ -235,7 +285,7 @@
       const buffer = await this._loadBuffer();
       if (this.paused || token !== this._playToken) return;
       this._buffer = buffer;
-      this._offset %= buffer.duration;
+      this._offset %= this._loopDuration();
       this._startSource();
     }
 
@@ -263,6 +313,9 @@
       this.criticalLayerTrack = null;
       this.battleLayerTracks = [];
       this.battlePressure = .32;
+      this._battleMixState = null;
+      this._battleUseFallback = false;
+      this._battlePlaybackPromise = null;
       this._fadeTimers = new Set();
       this._fadeTimerByAudio = new Map();
       this._musicContext = null;
@@ -340,7 +393,16 @@
           this._musicBufferCache
         );
       }
-      return new global.Audio(asset);
+      return this._createHtmlAudio(asset);
+    }
+
+    _createHtmlAudio(asset) {
+      const candidates = compressedAudioCandidates(asset);
+      const audio = new global.Audio(candidates[0]);
+      audio._gridshardCandidates = candidates;
+      audio._gridshardCandidateIndex = 0;
+      audio._gridshardAsset = asset;
+      return audio;
     }
 
     _canPlayAudio() {
@@ -382,18 +444,7 @@
       if (!context || typeof global.fetch !== "function") {
         return Promise.reject(new Error("Web Audio is unavailable."));
       }
-      if (!this._musicBufferCache.has(asset)) {
-        const pending=global.fetch(asset)
-          .then((response)=>{
-            if (!response.ok) {
-              throw new Error(`Audio asset could not be loaded: ${asset}`);
-            }
-            return response.arrayBuffer();
-          })
-          .then((bytes)=>context.decodeAudioData(bytes));
-        this._musicBufferCache.set(asset,pending);
-      }
-      return this._musicBufferCache.get(asset);
+      return loadCompressedBuffer(context, asset, this._musicBufferCache);
     }
 
     _preloadAudioBuffers(assets=[]) {
@@ -482,7 +533,7 @@
       if (!this._canPlayAudio()) return;
       for (const asset of new Set(assets.filter(Boolean))) {
         if (this._preloadedAudio.has(asset)) continue;
-        const audio=new global.Audio(asset);
+        const audio=this._createHtmlAudio(asset);
         audio.preload="auto";
         this._preloadedAudio.set(asset,audio);
         if (typeof audio.load === "function") {
@@ -512,10 +563,13 @@
       }
       if (template && typeof template.cloneNode === "function") {
         const clone=template.cloneNode(true);
+        clone._gridshardCandidates = template._gridshardCandidates;
+        clone._gridshardCandidateIndex = template._gridshardCandidateIndex;
+        clone._gridshardAsset = asset;
         clone.preload="none";
         return clone;
       }
-      const audio=new global.Audio(asset);
+      const audio=this._createHtmlAudio(asset);
       audio.preload="none";
       return audio;
     }
@@ -562,6 +616,16 @@
           return true;
         })
         .catch((error) => {
+          const candidates = audio._gridshardCandidates || [];
+          if (
+            error?.name !== "NotAllowedError"
+            && error?.name !== "AbortError"
+            && audio._gridshardCandidateIndex + 1 < candidates.length
+          ) {
+            audio._gridshardCandidateIndex += 1;
+            audio.src = candidates[audio._gridshardCandidateIndex];
+            return this._safePlay(audio);
+          }
           this._recordPlaybackFailure(audio, error);
           return false;
         });
@@ -584,17 +648,18 @@
       const contextReady=await this._resumeAudioContext();
       this._syncWebAudioVolumes();
       const candidates = new Set([
-        ...this._pendingPlayback.keys(),
+        ...[...this._pendingPlayback.keys()].filter((audio) => !this.battleLayerTracks.includes(audio)),
         ...[
           this.currentTrack,
           this._resultTrack,
           this.criticalLayerTrack,
           ...this.battleLayerTracks,
-        ].filter((audio) => audio && audio.paused !== false),
+        ].filter((audio) => audio && audio.paused !== false && !this.battleLayerTracks.includes(audio)),
       ]);
       const results = await Promise.all(
         [...candidates].map((audio) => this._safePlay(audio))
       );
+      if (contextReady) this._startPreparedBattleLayers();
       if (
         contextReady
         && this._pendingResultOutcome
@@ -615,6 +680,9 @@
       const context=this._ensureAudioContext();
       const resumePromise=this._resumeAudioContext();
       this._syncWebAudioVolumes();
+      if (GRIDSHARD_BATTLE_MUSIC_ENABLED && !this.musicMuted && this.musicVolume > 0) {
+        this._preloadAudioBuffers(GRIDSHARD_BATTLE_LAYERS.map((layer) => layer.asset));
+      }
       return {
         ok:Boolean(context),
         contextState:context?.state || "unavailable",
@@ -819,10 +887,9 @@
         return;
       }
 
-      const layer=
-        new global.Audio(
-          GRIDSHARD_CRITICAL_LAYER
-        );
+      // The single-track fallback already contains its own critical layer.
+      if (this.currentTrack?._gridshardBattleFallback) return;
+      const layer=this._createHtmlAudio(GRIDSHARD_CRITICAL_LAYER);
       layer.loop=true;
       layer.volume=0;
       this.criticalLayerTrack=layer;
@@ -859,13 +926,13 @@
 
     _applyBattleLayerMix(pressure=this.battlePressure, {fade=false}={}) {
       const normalized = Math.max(0, Math.min(1, Number(pressure)));
-      this.battlePressure = normalized;
+      const profile = GRIDSHARD_BATTLE_MIXES[this._battleMixState] || GRIDSHARD_BATTLE_MIXES.battle;
       for (let index = 0; index < this.battleLayerTracks.length; index += 1) {
         const track = this.battleLayerTracks[index];
         const layer = GRIDSHARD_BATTLE_LAYERS[index];
         if (!track || !layer) continue;
         const target = this._musicTargetVolume()
-          * (layer.baseGain + layer.pressureGain * normalized);
+          * profile.gains[index] * (.85 + .15 * normalized);
         if (fade) {
           this._fade(track, Number(track.volume || 0), target, 420);
         } else {
@@ -888,6 +955,7 @@
     _stopBattleLayers({fade=true}={}) {
       const tracks = [...this.battleLayerTracks];
       this.battleLayerTracks = [];
+      this._battlePlaybackPromise = null;
       if (tracks.includes(this.currentTrack)) this.currentTrack = null;
       if (tracks.includes(this.criticalLayerTrack)) this.criticalLayerTrack = null;
       for (const track of tracks) {
@@ -913,6 +981,12 @@
         || !this._canPlayAudio()
       ) return;
 
+      this._battleMixState = state;
+      const context = this._ensureAudioContext();
+      if (!context || typeof global.fetch !== "function" || this._battleUseFallback) {
+        this._transitionToBattleFallback(state);
+        return;
+      }
       const pressure = this._battlePressureForState(state);
       if (this.battleLayerTracks.length === GRIDSHARD_BATTLE_LAYERS.length) {
         this.currentTrack = this.battleLayerTracks[0];
@@ -928,10 +1002,9 @@
       this._stopCriticalLayer({fade:false});
       this._stopBattleLayers({fade:false});
       const tracks = GRIDSHARD_BATTLE_LAYERS.map(layer => {
-        const audio = new global.Audio(layer.asset);
+        const audio = new GridshardSeamlessLoopTrack(context, layer.asset, this._musicBufferCache);
         audio.loop = true;
         audio.volume = 0;
-        this._safePlay(audio);
         return audio;
       });
       this.battleLayerTracks = tracks;
@@ -941,6 +1014,20 @@
           ? tracks[tracks.length - 1] || null
           : null;
       this._applyBattleLayerMix(pressure, {fade:true});
+      this._battlePlaybackPromise = Promise.all(tracks.map((track) => track.prepare()))
+        .then(async () => {
+          await this._resumeAudioContext();
+          if (this.battleLayerTracks !== tracks) return false;
+          return this._startPreparedBattleLayers();
+        })
+        .catch((error) => {
+          if (this.battleLayerTracks !== tracks) return false;
+          this._lastPlaybackError = { name: "BattleLayersError", message: String(error?.message || error), at: Date.now() };
+          this._stopBattleLayers({fade:false});
+          this._battleUseFallback = true;
+          this._transitionToBattleFallback(this._battleMixState);
+          return false;
+        });
 
       if (previous && !tracks.includes(previous)) {
         this._fade(
@@ -951,6 +1038,38 @@
           () => this._stopAudio(previous)
         );
       }
+    }
+
+    _startPreparedBattleLayers() {
+      const tracks = this.battleLayerTracks;
+      if (!tracks.length || !this.enabled || this.musicMuted || this.musicVolume <= 0
+        || this._musicContext?.state !== "running" || tracks.some((track) => !track._buffer)) return false;
+      if (tracks.every((track) => !track.paused)) return true;
+      const when = this._musicContext.currentTime + .04;
+      const offset = tracks.find((track) => !track.paused)?.currentTime || 0;
+      tracks.forEach((track) => track.playAt(when, offset));
+      return true;
+    }
+
+    _transitionToBattleFallback(state) {
+      const asset = GRIDSHARD_MUSIC_ASSETS[state];
+      if (!asset) return;
+      const previous = this.currentTrack;
+      if (previous?._gridshardState === state && previous._gridshardBattleFallback) return;
+      const next = this._createHtmlAudio(asset);
+      next._gridshardState = state;
+      next._gridshardBattleFallback = true;
+      next.loop = true;
+      next.volume = 0;
+      // Preserve the 32-second musical phase when the state changes.
+      const offset = previous?._gridshardBattleFallback ? Number(previous.currentTime || 0) % 32 : 0;
+      const seek = () => { try { next.currentTime = offset; } catch (_) {} };
+      next.addEventListener?.("loadedmetadata", seek, {once:true});
+      seek();
+      this.currentTrack = next;
+      this._safePlay(next);
+      this._fade(next, 0, this._musicTargetVolume(), GRIDSHARD_AUDIO_MIX.crossfadeMs);
+      if (previous) this._fade(previous, Number(previous.volume || 0), 0, GRIDSHARD_AUDIO_MIX.crossfadeMs, () => this._stopAudio(previous));
     }
 
     _transitionToStateAsset(
@@ -980,6 +1099,8 @@
         this._transitionToBattleLayers(state);
         return;
       }
+      this._battleUseFallback = false;
+      this._battleMixState = null;
 
       const asset=
         GRIDSHARD_MUSIC_ASSETS[

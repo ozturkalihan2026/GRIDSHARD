@@ -1,0 +1,88 @@
+name: GRIDSHARD Quality
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: gridshard-quality-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  server:
+    name: Server contracts
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: |
+            server/requirements.txt
+            server/requirements-test.txt
+      - name: Install server dependencies
+        run: python -m pip install -r server/requirements-test.txt
+      - name: Run server tests
+        working-directory: server
+        run: python -m pytest
+
+  client:
+    name: Client contracts
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 11.19.0
+          run_install: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: pnpm
+      - name: Install client toolchain
+        run: pnpm install --frozen-lockfile --ignore-scripts
+      - name: Run client tests
+        run: pnpm test:client
+      - name: Run production build contracts
+        run: pnpm test:build
+      - name: Build production web client
+        run: pnpm build:web
+      - name: Upload production web client
+        uses: actions/upload-artifact@v4
+        with:
+          name: gridshard-web-${{ github.sha }}
+          path: dist/
+          if-no-files-found: error
+          retention-days: 14
+
+  package:
+    name: Reproducible source package
+    needs: [server, client]
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Check release source contract
+        run: python tools/release_guard.py
+      - name: Build source archive and checksum
+        run: python tools/package_release.py --output-dir artifacts
+      - name: Upload release candidate
+        uses: actions/upload-artifact@v4
+        with:
+          name: gridshard-source-${{ github.sha }}
+          path: |
+            artifacts/*.zip
+            artifacts/*.sha256
+          if-no-files-found: error
+          retention-days: 14

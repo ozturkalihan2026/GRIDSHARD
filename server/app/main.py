@@ -120,6 +120,8 @@ from .web_test import (
 )
 from .web_test_static import (
     NoCacheStaticFiles,
+    ProductionStaticFiles,
+    client_directory,
 )
 from .web_test_metrics import (
     WebTestKpiService,
@@ -503,10 +505,10 @@ async def apply_rate_limit(request: Request, call_next):
     response.headers.update(headers)
     return response
 
-CLIENT_DIR = (
-    Path(__file__).resolve()
-    .parents[2]
-    / "client"
+CLIENT_DIR = client_directory(
+    Path(__file__).resolve().parents[2],
+    production=RUNTIME_STRICT,
+    override=os.environ.get("GRIDSHARD_CLIENT_DIR", ""),
 )
 
 pvp_service = PvPSessionService()
@@ -6617,7 +6619,7 @@ def web_test_manifest() -> dict:
     )
     manifest["version"]=VERSION
     manifest["ui_build_label"]=f"GRIDSHARD {VERSION}"
-    manifest["static_cache_mode"]="no-store"
+    manifest["static_cache_mode"]="content-hash" if RUNTIME_STRICT else "no-store"
     manifest["browser_e2e"]="optional-real-browser"
     return manifest
 
@@ -7391,10 +7393,10 @@ async def pvp_websocket(
 
 
 # API ve WebSocket rotalarından sonra istemciyi aynı origin altında servis et.
-# Böylece gerçek Web testi için ayrı bir statik HTTP sunucusuna gerek kalmaz.
+# Geliştirmede kaynak/no-cache, üretimde doğrulanmış dist/içerik-özetli önbellek.
 app.mount(
     "/",
-    NoCacheStaticFiles(
+    (ProductionStaticFiles if RUNTIME_STRICT else NoCacheStaticFiles)(
         directory=str(
             CLIENT_DIR
         ),
