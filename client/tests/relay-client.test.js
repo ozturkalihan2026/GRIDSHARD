@@ -4941,7 +4941,7 @@ function createClient() {
   assert.ok(app.includes("gridshardE2eTimeScale"));
   assert.ok(app.includes("loadUiBuildManifest"));
   assert.ok(app.includes("setBattlePressure"));
-  assert.ok(audio.includes('version:"shardglass-seamless-v9"'));
+  assert.ok(audio.includes('version:"shardglass-mobile-v10"'));
   assert.ok(audio.includes("menuPoolCrossfadeMs:480"));
   assert.ok(audio.includes("phaseLockedTransition"));
   assert.ok(audio.includes("criticalLayerMaxGain"));

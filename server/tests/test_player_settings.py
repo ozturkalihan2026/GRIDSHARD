@@ -26,6 +26,7 @@ def test_default_settings_are_turkish_and_high_graphics():
     assert settings.vibration_enabled is True
     assert settings.graphics_quality=="yuksek"
     assert settings.language=="tr"
+    assert settings.analytics_consent is False
 
 
 def test_update_all_basic_preferences():
@@ -38,6 +39,7 @@ def test_update_all_basic_preferences():
         vibration_enabled=False,
         graphics_quality="orta",
         language="en",
+        analytics_consent=True,
     )
 
     assert settings.sound_volume==40
@@ -45,6 +47,7 @@ def test_update_all_basic_preferences():
     assert settings.vibration_enabled is False
     assert settings.graphics_quality=="orta"
     assert settings.language=="en"
+    assert settings.analytics_consent is True
 
 
 def test_volume_out_of_range_is_rejected():

@@ -30,6 +30,10 @@ server/data/e2e_playwright_*.json*
 .*
 .*/
 server/data/web_test_*
+server/data/*.schema.json
+server/data/*.schema.lock
+server/data/*.schema-v*-*.bak
+server/data/product_analytics.json*
 !/.github/
 /.github/*
 !/.github/workflows/

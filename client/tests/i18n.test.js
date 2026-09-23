@@ -48,5 +48,17 @@ assert.strictEqual(
   i18n.translateText("18 modül · Henüz kullanılmadı", "en"),
   "18 modules · Never used"
 );
+assert.strictEqual(i18n.translateText("Takma kimlikli ürün analitiğine izin ver", "en"), "Allow pseudonymous product analytics");
+assert.strictEqual(i18n.t("friends.count", {count:1}, "en"), "1 friend");
+assert.strictEqual(i18n.t("friends.count", {count:2}, "en"), "2 friends");
+assert.strictEqual(i18n.t("friends.count", {count:2}, "tr"), "2 arkadaş");
+assert.strictEqual(i18n.t("error.timeout", {}, "en"), "The server timed out. You can try again.");
+assert.strictEqual(i18n.formatNumber(1234.5, {}, "en"), "1,234.5");
+assert.strictEqual(i18n.formatNumber(1234.5, {}, "tr"), "1.234,5");
+assert.strictEqual(i18n.formatNumber(0.75, {style:"percent"}, "en"), "75%");
+assert.strictEqual(i18n.formatDate("2026-09-23T12:00:00Z", {timeZone:"UTC", dateStyle:"medium"}, "en"), "Sep 23, 2026");
+assert.strictEqual(i18n.translateText("7 ödül alınmaya hazır", "en"), "7 rewards ready to claim");
+assert.strictEqual(i18n.translateText("7 rewards ready to claim", "tr"), "7 ödül alınmaya hazır");
+assert.strictEqual(i18n.translateText("15 Akım", "en"), "15 Current");
 
 console.log("gridshard i18n test passed");

@@ -15,7 +15,7 @@ pnpm build:web
 - Birleştirilmiş ve küçültülmüş JS/CSS, `bundles/gridshard-<SHA256-ilk-16>.*` adlarını alır. İçerik değişince HTML otomatik yeni adları kullanır. Kaynak haritası yayınlanmaz; özellik adları değiştirilmez, fonksiyon/sınıf adları korunur.
 - Hedef dönüşüm Chrome 109 / Safari 15'tir; bu bir gerçek cihaz uyumluluk onayı veya eksik Web API'leri için polyfill değildir.
 - Çalışma zamanı API adresi ayrı `runtime-config.js` içindedir. Web için boş adres aynı origin demektir. İstenirse `GRIDSHARD_API_BASE_URL` ile HTTPS API verilebilir. Bu dosyaya yalnız genel API adresi yazılır, sunucu sırları yazılmaz.
-- `assets/`, favicon ve web manifesti kopyalanır. Kaynak JS/CSS, testler, yerel önbellek ve geliştirme raporları dağıtılmaz. Sesler şu aşamada mevcut WAV biçimindedir; codec dönüşümü ayrı açık iştir.
+- `assets/`, favicon ve web manifesti kopyalanır. Kaynak JS/CSS, testler, yerel önbellek ve geliştirme raporları dağıtılmaz. Seslerde WAV asılları yayın paketinden çıkarılır; manifestte doğrulanmış OGG/AAC dosyaları kopyalanır. Ayrıntılar: [Mobil sesler](MOBILE_AUDIO.md).
 - `client-build-manifest.json` girdi sırasını, araç sürümünü, çıktı boyutlarını ve SHA-256 özetlerini taşır. Aynı kaynak/yapılandırma sabit çıktı üretir; duvar saati eklenmez.
 
 ## Sunucu ve önbellek

@@ -16,7 +16,7 @@ def _signature(payload: dict, signing_key: bytes) -> str:
     return hmac.new(key, message.encode("utf-8"), hashlib.sha256).hexdigest()
 
 
-def build_personal_export(player_data: dict, platform_data: dict, signing_key: bytes) -> dict:
+def build_personal_export(player_data: dict, platform_data: dict, signing_key: bytes, *, product_analytics: list[dict] | None = None) -> dict:
     payload = {
         "schema_version": 2,
         "purpose": EXPORT_PURPOSE,
@@ -25,6 +25,7 @@ def build_personal_export(player_data: dict, platform_data: dict, signing_key: b
         "exported_at": int(time.time()),
         "player_data": deepcopy(player_data),
         "platform_data": deepcopy(platform_data),
+        "product_analytics": deepcopy(product_analytics or []),
     }
     return {**payload, "integrity": {"algorithm": "HMAC-SHA256", "signature": _signature(payload, signing_key)}}
 

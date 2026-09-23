@@ -445,6 +445,31 @@
       "recovery": {},
       "revoked_token_ids": []
     },
+    "wt-e41f1916-7603-457f-9412-9edb8f5c6f4b": {
+      "blocked_player_ids": [],
+      "contacts": {},
+      "devices": {
+        "2e915290-b896-4486-8b87-1a6392a489fa": {
+          "device_id": "2e915290-b896-4486-8b87-1a6392a489fa",
+          "last_seen_at": 1790164930,
+          "name": "WEB · Tarayıcı",
+          "platform": "web",
+          "token_ids": [
+            {
+              "expires_at": 1790168530,
+              "token_id": "QA5oclpvkH95f7iE"
+            }
+          ]
+        }
+      },
+      "notifications": [],
+      "oauth_links": {},
+      "oauth_states": {},
+      "pending_verifications": {},
+      "push_subscriptions": {},
+      "recovery": {},
+      "revoked_token_ids": []
+    },
     "wt-e7701fc9-4917-47bd-aa94-f483beac97cb": {
       "blocked_player_ids": [],
       "contacts": {},
@@ -483,6 +508,35 @@
             {
               "expires_at": 1789976562,
               "token_id": "HA9XeQn6IqY7-3ah"
+            }
+          ]
+        }
+      },
+      "notifications": [],
+      "oauth_links": {},
+      "oauth_states": {},
+      "pending_verifications": {},
+      "push_subscriptions": {},
+      "recovery": {},
+      "revoked_token_ids": []
+    },
+    "wt-mue3fk0s-ffh3pujfxe": {
+      "blocked_player_ids": [],
+      "contacts": {},
+      "devices": {
+        "web-mue3fk28-iy407l2arc": {
+          "device_id": "web-mue3fk28-iy407l2arc",
+          "last_seen_at": 1790167915,
+          "name": "WEB · Chrome",
+          "platform": "web",
+          "token_ids": [
+            {
+              "expires_at": 1790170972,
+              "token_id": "EnAMjJyvzxGOwTSV"
+            },
+            {
+              "expires_at": 1790171515,
+              "token_id": "DrbhWb0ztFFYclrB"
             }
           ]
         }

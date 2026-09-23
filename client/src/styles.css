@@ -7751,6 +7751,13 @@ body[data-app-screen="laboratory"] .app-progress-ribbon {
 .settings-form > label {
   align-content:center;
 }
+.settings-form > .settings-privacy-note {
+  grid-column:1/-1;
+  margin:0;
+  color:#b9d0e7;
+  font-size:.85rem;
+  line-height:1.45;
+}
 .settings-form > .audio-preview-actions {
   display:flex;
   align-items:center;

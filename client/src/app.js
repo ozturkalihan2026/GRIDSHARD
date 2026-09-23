@@ -357,6 +357,7 @@
     vibration_enabled: true,
     graphics_quality: "yuksek",
     language: "tr",
+    analytics_consent: false,
   });
 
   const participantContinuity =
@@ -387,6 +388,8 @@
       result;
 
     if (result.ok) {
+      recordProductEvent("session_started");
+      recordProductEvent("screen_view", {screen:appRouter.currentScreen});
       const preferredPoolIds = definitionIdsToInstanceIds(
         profileState.viewModel()?.battlePoolIds || []
       );
@@ -567,9 +570,7 @@
       return await fetch(input, { ...init, signal: controller.signal });
     } catch (error) {
       if (!timedOut) throw error;
-      const timeoutError = new Error(
-        "Sunucu yanıt süresini aştı. İşlemi yeniden deneyebilirsin."
-      );
+      const timeoutError = new Error(localizedMessage("error.timeout"));
       timeoutError.code = "request_timeout";
       throw timeoutError;
     } finally {
@@ -611,15 +612,14 @@
         try {
           payload = rawBody ? JSON.parse(rawBody) : {};
         } catch (_parseError) {
-          const parseError = new Error("Sunucu okunamayan bir yanıt gönderdi.");
+          const parseError = new Error(localizedUiText("Sunucu okunamayan bir yanıt gönderdi."));
           parseError.status = response.status;
           throw parseError;
         }
         if (!response.ok) {
-          const responseError = new Error(
-            payload.detail || `Sunucu işlemi reddetti (${response.status}).`
-          );
+          const responseError = new Error(localizedApiError(payload, response.status));
           responseError.status = response.status;
+          responseError.code = payload.code || apiErrorCodeForStatus(response.status);
           if (attempt === 0 && [500, 502, 503, 504].includes(response.status)) {
             lastError = responseError;
             await new Promise((resolve) => window.setTimeout(resolve, 150));
@@ -637,7 +637,19 @@
         throw error;
       }
     }
-    throw lastError || new Error("Sunucu işlemi tamamlanamadı.");
+    throw lastError || new Error(localizedUiText("Sunucu işlemi tamamlanamadı."));
+  }
+
+  function recordProductEvent(eventType, dimensions = {}) {
+    if (settingsState.viewModel()?.analyticsConsent !== true) return;
+    if (document.getElementById("settings-analytics-consent")?.checked === false) return;
+    const requestId = globalThis.crypto?.randomUUID?.().replaceAll("-", "");
+    void requestJsonWithDeadline("/analytics/events", {
+      method: "POST",
+      body: JSON.stringify({event_type: eventType, dimensions, request_id: requestId}),
+    }, 5000).catch(() => {
+      // Optional analytics must never interrupt play or produce a retry queue.
+    });
   }
 
   function syncDeckEditorFromSelection() {
@@ -823,6 +835,7 @@
     }
 
     renderAppScreen();
+    recordProductEvent("screen_view", {screen});
 
     if (screen === "play") {
       // Beta.26: Oyna doğrudan tek çevrimiçi hazırlık ekranını açar.
@@ -2061,7 +2074,7 @@
     if (resetCopy) {
       const resetAt = state.shop?.reset_at ? new Date(state.shop.reset_at) : null;
       resetCopy.textContent = resetAt && !Number.isNaN(resetAt.getTime())
-        ? `Pzt ${resetAt.toLocaleTimeString("tr-TR", { hour:"2-digit", minute:"2-digit" })}`
+        ? `${localizedUiText("Pzt")} ${localizedDate(resetAt, {hour:"2-digit", minute:"2-digit"})}`
         : "Haftalık";
     }
     if (offerHost) {
@@ -2384,7 +2397,7 @@
     const ids = deckEditorSlots.filter(Boolean);
     renderMetaHubScreens();
     if (ids.length !== 6) {
-      if (status) status.textContent = `${ids.length} / 6 modül seçildi. İlk boş yuva yeni seçimle doldurulacak.`;
+      if (status) status.textContent = localizedMessage("deck.selected_count", {count:ids.length});
       return { ok: true, pending: true };
     }
     const result = battlePoolSelection.setSelection(ids);
@@ -2520,7 +2533,7 @@
         `Bekleme ${rarityPercent(rarityBonuses.cooldown, true)}`,
         `Enerji ${rarityPercent(rarityBonuses.energy, true)}`,
       ].join(" · ");
-      const entries = [["Sınıf", poolCategoryLabel(item.category)], ["Nadirlik", moduleRarityLabel(item.rarity)], ["Nadirlik avantajı", rarityImpact], ["CAN", stats.max_hp], ["Hasar", stats.base_damage], ["Bekleme", `${Number(stats.cooldown_ms || 0) / 1000} sn`], ["Etki çarpanı", Number(stats.effect_multiplier || 0).toLocaleString("tr-TR", {maximumFractionDigits:2})], ["Enerji tüketimi", `${stats.energy_consumption || 0}/sn`], ["Akım maliyeti", item.current_cost]];
+      const entries = [["Sınıf", poolCategoryLabel(item.category)], ["Nadirlik", moduleRarityLabel(item.rarity)], ["Nadirlik avantajı", rarityImpact], ["CAN", stats.max_hp], ["Hasar", stats.base_damage], ["Bekleme", `${Number(stats.cooldown_ms || 0) / 1000} sn`], ["Etki çarpanı", localizedNumber(stats.effect_multiplier, {maximumFractionDigits:2})], ["Enerji tüketimi", `${stats.energy_consumption || 0}/sn`], ["Akım maliyeti", item.current_cost]];
       const list = document.createElement("dl");
       for (const [label, rawValue] of entries) {
         const row = document.createElement("div"), name = document.createElement("dt"), value = document.createElement("dd");
@@ -2673,7 +2686,7 @@
     const stats = document.getElementById("module-detail-stats");
     if (stats) stats.innerHTML = `<div><span>CAN</span><strong>${item.stats?.max_hp ?? definition.maxHp}</strong></div><div><span>AKIM</span><strong>ϟ ${item.current_cost ?? definition.circuitCreditCost}</strong></div><div><span>HASAR</span><strong>${item.stats?.base_damage || 0}</strong></div>`;
     const upgrade = document.getElementById("module-detail-upgrade");
-    const reason = !item.unlocked ? `${item.unlock_trophies ?? 0} kupada açılır.` : !cost ? "Azami seviye." : totalUsableShards < required ? `Gerekli parça: ${totalUsableShards}/${required}` : Number(metaProgressionState?.circuit_credits || 0) < Number(cost.circuit_credits) ? `Gerekli Devre Kredisi: ${cost.circuit_credits}` : "";
+    const reason = !item.unlocked ? localizedMessage("module.unlock_trophies", {count:item.unlock_trophies ?? 0}) : !cost ? localizedUiText("Azami seviye.") : totalUsableShards < required ? `Gerekli parça: ${totalUsableShards}/${required}` : Number(metaProgressionState?.circuit_credits || 0) < Number(cost.circuit_credits) ? `Gerekli Devre Kredisi: ${cost.circuit_credits}` : "";
     if (upgrade) {
       upgrade.disabled = Boolean(reason || metaProgressionState?.unavailable);
       upgrade.textContent = cost ? `YÜKSELT · ${cost.circuit_credits} DK` : "AZAMİ SEVİYE";
@@ -2897,7 +2910,7 @@
         const name = document.createElement("strong");
         name.textContent = device.name || "Cihaz";
         const meta = document.createElement("small");
-        meta.textContent = `${String(device.platform || "web").toUpperCase()} · ${new Date(Number(device.last_seen_at || 0) * 1000).toLocaleString("tr-TR")}`;
+        meta.textContent = `${String(device.platform || "web").toUpperCase()} · ${localizedDate(Number(device.last_seen_at || 0) * 1000, {dateStyle:"medium", timeStyle:"short"})}`;
         const revoke = document.createElement("button");
         revoke.type = "button";
         revoke.textContent = "OTURUMU KAPAT";
@@ -3093,7 +3106,7 @@
     const identity = document.createElement("div");
     const name = createPublicPlayerName(player.player_id, player.display_name || "Oyuncu");
     const meta = document.createElement("small");
-    meta.textContent = `${player.rank_name_tr || "Arena"} · ${Number(player.rating || 0).toLocaleString("tr-TR")} 🏆${player.online ? " · ÇEVRİMİÇİ" : ""}`;
+    meta.textContent = `${player.rank_name_tr || "Arena"} · ${localizedNumber(player.rating || 0)} 🏆${player.online ? " · ÇEVRİMİÇİ" : ""}`;
     identity.append(name, meta);
     const controls = document.createElement("div");
     controls.className = "social-player-actions";
@@ -3239,7 +3252,7 @@
   function eventDateLabel(value) {
     const date = value ? new Date(value) : null;
     return date && !Number.isNaN(date.getTime())
-      ? date.toLocaleDateString("tr-TR", { day:"2-digit", month:"short" })
+      ? localizedDate(date, { day:"2-digit", month:"short" })
       : "—";
   }
 
@@ -3263,7 +3276,7 @@
       const rewards = document.createElement("div");
       rewards.className = "event-prize-rewards";
       const rewardLabels = [
-        `◉ ${Number(prize.circuit_credits || 0).toLocaleString("tr-TR")} DK`,
+        `◉ ${localizedNumber(prize.circuit_credits || 0)} DK`,
         `◇ ${Number(prize.flux_shards || 0)} Akı`,
         prize.avatar_id ? "◈ Avatar" : prize.team_avatar_id ? "◈ Takım Avatarı" : "",
         prize.avatar_frame_id ? "▱ Avatar Çerçevesi" : prize.team_frame_id ? "▱ Takım Çerçevesi" : "",
@@ -3433,7 +3446,7 @@
         const detail = document.createElement("small");
         const schedule = fixture.scheduled_at ? new Date(fixture.scheduled_at) : null;
         const scheduleLabel = schedule && !Number.isNaN(schedule.getTime())
-          ? schedule.toLocaleString("tr-TR", { weekday:"short", hour:"2-digit", minute:"2-digit" })
+          ? localizedDate(schedule, { weekday:"short", hour:"2-digit", minute:"2-digit" })
           : "Saat hazırlanıyor";
         detail.textContent = pairing
           ? `${pairing.home_player_name} × ${pairing.away_player_name} · ${scheduleLabel}`
@@ -3700,7 +3713,7 @@
       : targetOrId;
     if (!target) return null;
     const displayValue = typeof value === "number"
-      ? value.toLocaleString("tr-TR")
+      ? localizedNumber(value)
       : String(value ?? "0");
     const number = document.createElement("span");
     number.className = "trophy-value-number";
@@ -3812,7 +3825,7 @@
         const copy = document.createElement("div");
         copy.append(createPublicPlayerName(applicant.player_id, applicant.display_name));
         const meta = document.createElement("small");
-        meta.textContent = `${applicant.rank_name_tr} · ${Number(applicant.trophies || 0).toLocaleString("tr-TR")} 🏆`;
+        meta.textContent = `${applicant.rank_name_tr} · ${localizedNumber(applicant.trophies || 0)} 🏆`;
         copy.appendChild(meta);
         const actions = document.createElement("span");
         actions.className = "team-management-actions";
@@ -3858,7 +3871,7 @@
         for (const team of teams) {
           const option = document.createElement("option");
           option.value = team.team_id;
-          option.textContent = `${team.name} · ${team.member_count}/${team.member_limit} · ${Number(team.total_trophies || 0).toLocaleString("tr-TR")} 🏆`;
+          option.textContent = `${team.name} · ${team.member_count}/${team.member_limit} · ${localizedNumber(team.total_trophies || 0)} 🏆`;
           select.appendChild(option);
         }
         if (teamState.applied_team_id) select.value = teamState.applied_team_id;
@@ -3876,12 +3889,12 @@
     renderTrophyValue("team-total-trophies", Number(teamState.total_trophies || 0));
     const statistics = teamState.statistics || {};
     const tournament = teamState.tournament || {};
-    setText("team-profile-total-trophies", Number(teamState.total_trophies || 0).toLocaleString("tr-TR"));
-    setText("team-profile-average-trophies", Number(teamState.average_trophies || 0).toLocaleString("tr-TR"));
-    setText("team-profile-total-matches", Number(statistics.total_matches || 0).toLocaleString("tr-TR"));
-    setText("team-profile-win-rate", `%${boundedWinRatePercent(statistics.win_rate || 0)}`);
+    setText("team-profile-total-trophies", localizedNumber(teamState.total_trophies || 0));
+    setText("team-profile-average-trophies", localizedNumber(teamState.average_trophies || 0));
+    setText("team-profile-total-matches", localizedNumber(statistics.total_matches || 0));
+    setText("team-profile-win-rate", localizedPercent(boundedWinRatePercent(statistics.win_rate || 0)));
     setText("team-profile-tournament-position", tournament.position ? `#${tournament.position}` : "—");
-    setText("team-profile-tournament-points", `${Number(tournament.points || 0).toLocaleString("tr-TR")} P`);
+    setText("team-profile-tournament-points", `${localizedNumber(tournament.points || 0)} P`);
     const teamIdentity = document.getElementById("team-identity-card");
     const teamAvatar = document.getElementById("team-avatar-glyph");
     const managementOpen = document.getElementById("team-management-open");
@@ -4565,6 +4578,7 @@
     new RelayMatchmakingClientState();
 
   function trackMatchmakingStart() {
+    recordProductEvent("matchmaking_started", {mode:"arena"});
     return telemetryDispatcher
       .trackMatchmakingStarted({
         rating:
@@ -4705,8 +4719,7 @@
               const payload = await response.json();
               if (!response.ok) {
                 throw new Error(
-                  payload.detail
-                  || `Maç sonucu kaydı alınamadı (${response.status}).`
+                  localizedApiError(payload, response.status)
                 );
               }
               return payload;
@@ -4946,7 +4959,7 @@
         ?? (playerId === participantPlayerId ? profileState.viewModel()?.rating : 0)
         ?? 0
       );
-      trophy.textContent = `🏆 ${Math.max(0, Math.round(rating)).toLocaleString("tr-TR")}`;
+      trophy.textContent = `🏆 ${localizedNumber(Math.max(0, Math.round(rating)))}`;
       coreCopy.append(coreName, coreLevel, trophy);
       coreCard.append(coreGlyph, coreCopy);
 
@@ -4985,7 +4998,7 @@
       const totalLabel = document.createElement("span");
       totalLabel.textContent = "TOPLAM HASAR EŞDEĞERİ";
       const totalValue = document.createElement("strong");
-      totalValue.textContent = totalEquivalent.toLocaleString("tr-TR");
+      totalValue.textContent = localizedNumber(totalEquivalent);
       total.append(totalLabel, totalValue);
       damageColumn.appendChild(total);
 
@@ -5007,7 +5020,7 @@
         track.appendChild(fill);
         copy.append(rowName, levelCopy, track);
         const damage = document.createElement("em");
-        damage.textContent = item.effectiveDamage.toLocaleString("tr-TR");
+        damage.textContent = localizedNumber(item.effectiveDamage);
         damage.title = "Hasar eşdeğeri";
         row.append(icon, copy, damage);
         rows.appendChild(row);
@@ -5965,6 +5978,9 @@
       && result.matched
       && result.sessionId
     ) {
+      recordProductEvent("matchmaking_matched", {
+        opponent: String(result.sessionId).startsWith("local-ai-match-") ? "ai" : "human",
+      });
       auditPromise.then(
         (audit) => {
           if (
@@ -9165,9 +9181,9 @@
             );
           } else {
             simulationResult.textContent=
-              payload.reason
-              || payload.detail
-              || "İzole simülasyon başarısız.";
+              response.ok
+                ? localizedUiText(payload.reason || "İzole simülasyon başarısız.")
+                : localizedApiError(payload, response.status);
             if (payload.draft) {
               renderBalanceDraft(
                 payload.draft
@@ -9209,9 +9225,9 @@
               `Battle-engine regresyonu geçti · ${scenarios.length} engine senaryosu doğrulandı · Kanonik değer değişmedi.`;
           } else {
             regressionResult.textContent=
-              payload.reason
-              || payload.detail
-              || "Battle-engine regresyonu başarısız.";
+              response.ok
+                ? localizedUiText(payload.reason || "Battle-engine regresyonu başarısız.")
+                : localizedApiError(payload, response.status);
           }
 
           if (payload.draft) {
@@ -13104,7 +13120,7 @@ function saveHumanReviewLocalNote() {
       return "Az önce kullanıldı";
     }
     if (minutes < 60) {
-      return `${minutes} dk önce`;
+      return localizedMessage("time.minutes_ago", {count:minutes});
     }
 
     const hours=
@@ -13119,7 +13135,7 @@ function saveHumanReviewLocalNote() {
       Math.floor(
         hours / 24
       );
-    return `${days} gün önce`;
+    return localizedMessage("time.days_ago", {count:days});
   }
 
   async function updateBattlePoolPresetMeta(
@@ -15928,6 +15944,7 @@ function saveHumanReviewLocalNote() {
       document.getElementById(
         "settings-language"
       );
+    const analyticsConsent = document.getElementById("settings-analytics-consent");
 
     if (sound) {
       sound.value =
@@ -15961,6 +15978,7 @@ function saveHumanReviewLocalNote() {
       language.value =
         view.language;
     }
+    if (analyticsConsent) analyticsConsent.checked = view.analyticsConsent === true;
 
     applyLanguagePreference(
       view.language
@@ -16018,12 +16036,14 @@ function saveHumanReviewLocalNote() {
       document.getElementById(
         "settings-language"
       );
+    const analyticsConsent = document.getElementById("settings-analytics-consent");
 
     renderSettingsSaveStatus(
-      "Kaydediliyor...",
+      localizedUiText("Kaydediliyor..."),
       "saving"
     );
 
+    const wasAnalyticsEnabled = settingsState.viewModel()?.analyticsConsent === true;
     const result =
       await accountDataLoader
         .saveSettings({
@@ -16049,6 +16069,7 @@ function saveHumanReviewLocalNote() {
           language:
             language?.value
             || "tr",
+          analytics_consent: analyticsConsent?.checked === true,
         });
 
     renderSettingsForm();
@@ -16056,14 +16077,16 @@ function saveHumanReviewLocalNote() {
 
     if (!result.ok) {
       renderSettingsSaveStatus(
-        result.reason
-        || "Ayarlar kaydedilemedi.",
+        localizedUiText(result.reason || "Ayarlar kaydedilemedi."),
         "error"
       );
       logClientMessage(
         result.reason
       );
     } else {
+      if (!wasAnalyticsEnabled && result.payload?.analytics_consent === true) {
+        recordProductEvent("session_started");
+      }
       const languageValue =
         result.payload
           ?.language
@@ -16412,7 +16435,7 @@ function saveHumanReviewLocalNote() {
         deckHost.appendChild(tile);
       }
       const matchCount = document.createElement("small");
-      matchCount.textContent = deck ? `${deck.matches} maçta kullanıldı` : "Aktif savaş destesi";
+      matchCount.textContent = deck ? localizedMessage("deck.matches_used", {count:deck.matches}) : localizedUiText("Aktif savaş destesi");
       deckHost.appendChild(matchCount);
     }
     const coreHost = document.getElementById("profile-featured-core");
@@ -16684,7 +16707,7 @@ function saveHumanReviewLocalNote() {
     }
     const deckUse = document.createElement("small");
     const matches = Number(payload.featured_deck?.matches || 0);
-    deckUse.textContent = matches > 0 ? `${matches} maçta kullanıldı` : "Aktif savaş destesi";
+    deckUse.textContent = matches > 0 ? localizedMessage("deck.matches_used", {count:matches}) : localizedUiText("Aktif savaş destesi");
     modules.appendChild(deckUse);
     deckVisual.append(core, modules);
     deckSection.append(deckHeading, deckVisual);
@@ -16768,10 +16791,10 @@ function saveHumanReviewLocalNote() {
       ? `${durationSeconds} sn`
       : `${Math.floor(durationSeconds / 60)} dk ${durationSeconds % 60} sn`;
     for (const metric of [
-      ["Toplam Maç", Number(statistics.total_matches || 0).toLocaleString("tr-TR")],
-      ["Galibiyet Oranı", `%${boundedWinRatePercent(statistics.win_rate, statistics.wins, statistics.total_matches)}`],
+      ["Toplam Maç", localizedNumber(statistics.total_matches || 0)],
+      ["Galibiyet Oranı", localizedPercent(boundedWinRatePercent(statistics.win_rate, statistics.wins, statistics.total_matches))],
       ["Ortalama Savaş", durationText],
-      ["Toplam Hasar", Number(statistics.total_damage_dealt || 0).toLocaleString("tr-TR")],
+      ["Toplam Hasar", localizedNumber(statistics.total_damage_dealt || 0)],
     ]) statsGrid.appendChild(publicProfileMetric(...metric));
     statsSection.append(statsHeading, statsGrid);
     host.appendChild(statsSection);
@@ -16883,10 +16906,10 @@ function saveHumanReviewLocalNote() {
     const grid = document.createElement("div");
     grid.className = "statistics-metrics-grid public-profile-stat-grid team-profile-stat-grid";
     for (const metric of [
-      ["Toplam Kupa", Number(payload.total_trophies || 0).toLocaleString("tr-TR")],
-      ["Ortalama Kupa", Number(payload.average_trophies || 0).toLocaleString("tr-TR")],
-      ["Toplam Maç", Number(statistics.total_matches || 0).toLocaleString("tr-TR")],
-      ["Galibiyet Oranı", `%${boundedWinRatePercent(statistics.win_rate, statistics.wins, statistics.total_matches)}`],
+      ["Toplam Kupa", localizedNumber(payload.total_trophies || 0)],
+      ["Ortalama Kupa", localizedNumber(payload.average_trophies || 0)],
+      ["Toplam Maç", localizedNumber(statistics.total_matches || 0)],
+      ["Galibiyet Oranı", localizedPercent(boundedWinRatePercent(statistics.win_rate, statistics.wins, statistics.total_matches))],
       ["Turnuva Sırası", tournament.position ? `#${tournament.position}` : "—"],
       ["Turnuva Puanı", `${Number(tournament.points || 0)} P`],
     ]) grid.appendChild(publicProfileMetric(...metric));
@@ -16968,9 +16991,9 @@ function saveHumanReviewLocalNote() {
     const list = document.createElement("span");
     list.className = "leaderboard-reward-popover-list";
     const rewards = [
-      ["◉", `${Number(reward.circuit_credits || 0).toLocaleString("tr-TR")} Devre Kredisi`],
-      ["◇", `${Number(reward.flux_shards || 0).toLocaleString("tr-TR")} Akı`],
-      ["🧩", `${Number(reward.universal_module_shards || 0).toLocaleString("tr-TR")} Evrensel Kart Parçası`],
+      ["◉", `${localizedNumber(reward.circuit_credits || 0)} Devre Kredisi`],
+      ["◇", `${localizedNumber(reward.flux_shards || 0)} Akı`],
+      ["🧩", `${localizedNumber(reward.universal_module_shards || 0)} Evrensel Kart Parçası`],
       ...(reward.cosmetics || []).map((label) => ["✦", label]),
     ];
     for (const [glyph, label] of rewards) {
@@ -17056,7 +17079,7 @@ function saveHumanReviewLocalNote() {
       const score = document.createElement("strong");
       score.className = "leaderboard-score";
       if (activeLeaderboardTab === "core_damage") {
-        score.textContent = `${Number(row.value || 0).toLocaleString("tr-TR")} HASAR`;
+        score.textContent = `${localizedNumber(row.value || 0)} HASAR`;
       } else {
         renderTrophyValue(score, Number(row.value || 0));
         if (activeLeaderboardTab === "trophies" && activeTrophyLeaderboardScope === "general" && Number(row.position) <= 10) {
@@ -17098,7 +17121,7 @@ function saveHumanReviewLocalNote() {
         8000
       );
       const payload = await response.json();
-      if (!response.ok) throw new Error(payload.detail || "Lider panosu yüklenemedi.");
+      if (!response.ok) throw new Error(localizedApiError(payload, response.status));
       leaderboardPayload = payload;
       renderLeaderboard();
       return { ok: true };
@@ -17153,7 +17176,7 @@ function saveHumanReviewLocalNote() {
       ].filter((key) => reward[key]).length;
       detail.textContent = [
         reward.chest_name_tr || "Ödül Kasası",
-        `${Number(reward.circuit_credits || 0).toLocaleString("tr-TR")} DK`,
+        `${localizedNumber(reward.circuit_credits || 0)} DK`,
         `${Number(reward.flux_shards || 0)} Akı`,
         reward.universal_module_shards ? `${reward.universal_module_shards} evrensel parça` : "",
         cosmeticCount ? `${cosmeticCount} kozmetik` : "",
@@ -17234,11 +17257,11 @@ function saveHumanReviewLocalNote() {
       `Kademe ${engagement.current_tier || 0} / ${engagement.max_tier || 40}`
     );
     const seasonXp = Number(engagement.season_xp || 0);
-    setText("season-progress-copy", nextReward ? `${Math.max(0, Number(nextReward.required_xp || 0) - seasonXp)} Deneyim kaldı` : "Sezon yolu tamamlandı");
+    setText("season-progress-copy", nextReward ? localizedMessage("season.xp_remaining", {count:Math.max(0, Number(nextReward.required_xp || 0) - seasonXp)}) : localizedUiText("Sezon yolu tamamlandı"));
     const nextTierExperience = Number(nextReward?.required_xp || rewardList.at(-1)?.required_xp || seasonXp);
-    setText("season-progress-ratio", `${seasonXp.toLocaleString("tr-TR")} / ${nextTierExperience.toLocaleString("tr-TR")} Deneyim`);
+    setText("season-progress-ratio", localizedMessage("season.progress", {current:seasonXp, next:nextTierExperience}));
     setText("lobby-season-tier", `Kademe ${engagement.current_tier || 0} / ${engagement.max_tier || 40}`);
-    setText("lobby-season-progress-copy", nextReward ? `${Math.max(0, Number(nextReward.required_xp || 0) - seasonXp)} Deneyim kaldı` : "Sezon yolu tamamlandı");
+    setText("lobby-season-progress-copy", nextReward ? localizedMessage("season.xp_remaining", {count:Math.max(0, Number(nextReward.required_xp || 0) - seasonXp)}) : localizedUiText("Sezon yolu tamamlandı"));
     setText("lobby-flux-shards", engagement.flux_shards || 0);
 
     const missionList = engagement.dailyMissions || [];
@@ -17258,13 +17281,13 @@ function saveHumanReviewLocalNote() {
     setText(
       "lobby-daily-summary",
       claimableMissions + claimableLoginRewards > 0
-        ? `${claimableMissions + claimableLoginRewards} ödül alınmaya hazır`
+        ? localizedMessage("rewards.available", {count:claimableMissions + claimableLoginRewards})
         : `${activeMissions} devre emri aktif`
     );
     setText(
       "daily-mission-page-summary",
       claimableMissions > 0
-        ? `${claimableMissions} ödül alınmaya hazır`
+        ? localizedMessage("rewards.available", {count:claimableMissions})
         : `${activeMissions} görev aktif`
     );
     const dailyNotification = document.getElementById("lobby-daily-notification");
@@ -17277,8 +17300,8 @@ function saveHumanReviewLocalNote() {
     setText(
       "lobby-reward-summary",
       claimableRewards > 0
-        ? `${claimableRewards} kademe ödülü hazır`
-        : `${engagement.max_tier || 40} ücretsiz kademe`
+        ? localizedMessage("season.tier_rewards", {count:claimableRewards})
+        : localizedMessage("season.free_tiers", {count:engagement.max_tier || 40})
     );
     const rewardNotification = document.getElementById("lobby-reward-notification");
     if (rewardNotification) rewardNotification.hidden = !seasonHasNotification;
@@ -17619,7 +17642,7 @@ function saveHumanReviewLocalNote() {
       if (!transactions.length) {
         const empty = document.createElement("p");
         empty.className = "laboratory-empty-state";
-        empty.textContent = "Henüz laboratuvar işlemi yok.";
+        empty.textContent = localizedUiText("Henüz laboratuvar işlemi yok.");
         history.appendChild(empty);
       } else {
         for (const transaction of transactions) {
@@ -17628,12 +17651,10 @@ function saveHumanReviewLocalNote() {
           const copy = document.createElement("span");
           const title = document.createElement("strong");
           title.textContent = transaction.kind === "free_beta_reset"
-            ? "Ücretsiz Beta Sıfırlaması"
+            ? localizedUiText("Ücretsiz Beta Sıfırlaması")
             : `${transaction.module_name_tr} · SV ${transaction.level}`;
           const date = document.createElement("small");
-          date.textContent = new Date(transaction.created_at).toLocaleString(
-            document.documentElement.lang === "en" ? "en-US" : "tr-TR"
-          );
+          date.textContent = localizedDate(transaction.created_at, {dateStyle:"medium", timeStyle:"short"});
           copy.append(title, date);
           const amount = document.createElement("strong");
           amount.textContent = `${transaction.flux_delta > 0 ? "+" : ""}${transaction.flux_delta} Akı`;
@@ -17837,7 +17858,7 @@ function saveHumanReviewLocalNote() {
       "statistics-record",
       `${number(view.wins)}G · ${number(view.losses)}M · ${number(view.draws)}B`
     );
-    setValue("statistics-win-rate", `%${number(view.winRatePercent)}`);
+    setValue("statistics-win-rate", localizedPercent(view.winRatePercent));
     setValue(
       "statistics-average-duration",
       duration(view.averageMatchDurationMs)
@@ -17910,6 +17931,35 @@ function saveHumanReviewLocalNote() {
         !localBattleFinished
         && available > 0,
     };
+  }
+
+  function localizedMessage(key, params = {}) {
+    return globalThis.GridshardI18n?.t(key, params, document.documentElement.lang) || key;
+  }
+
+  function apiErrorCodeForStatus(status) {
+    return ({400:"bad_request",401:"unauthorized",403:"forbidden",404:"not_found",409:"conflict",410:"gone",422:"invalid_request",429:"rate_limited",500:"internal_error",502:"unavailable",503:"unavailable",504:"timeout"})[status] || "request_failed";
+  }
+
+  function localizedApiError(payload, status) {
+    const candidate = String(payload?.code || apiErrorCodeForStatus(status));
+    const code = /^[a-z][a-z0-9_]{0,63}$/u.test(candidate) ? candidate : "request_failed";
+    const key = `error.${code}`;
+    const translated = localizedMessage(key, {status});
+    return translated === key ? localizedMessage("error.request_failed", {status}) : translated;
+  }
+
+  function localizedNumber(value, options = {}) {
+    return globalThis.GridshardI18n?.formatNumber(value, options, document.documentElement.lang)
+      || String(value);
+  }
+
+  function localizedPercent(percent) {
+    return localizedNumber(Number(percent || 0) / 100, {style:"percent", maximumFractionDigits:0});
+  }
+
+  function localizedDate(value, options = {}) {
+    return globalThis.GridshardI18n?.formatDate(value, options, document.documentElement.lang) || "";
   }
 
   const LIVE_UTILITY_CATEGORIES = new Set([
@@ -19163,7 +19213,30 @@ function saveHumanReviewLocalNote() {
     renderLog();
   }
 
+  let analyticsFrameWindowStart = null;
+  let analyticsFrameCount = 0;
+  let analyticsLastFrameReport = -60_000;
   function updateClock(now) {
+    const analyticsBattleActive = activePlayMode === "online"
+      ? document.body.dataset.onlineStatus === "battle"
+      : activePlayMode === "local" && localBattleStarted && !localBattleFinished;
+    if (analyticsBattleActive && !document.hidden && settingsState.viewModel()?.analyticsConsent === true && Number.isFinite(now)) {
+      if (analyticsFrameWindowStart === null) analyticsFrameWindowStart = now;
+      analyticsFrameCount += 1;
+      if (now - analyticsFrameWindowStart >= 5000) {
+        if (now - analyticsLastFrameReport >= 60_000) {
+          const fps = analyticsFrameCount * 1000 / Math.max(1, now - analyticsFrameWindowStart);
+          const bucket = fps < 20 ? "under_20" : fps < 30 ? "20_29" : fps < 45 ? "30_44" : fps < 60 ? "45_59" : "60_plus";
+          recordProductEvent("performance_sample", {screen:"play", fps:bucket});
+          analyticsLastFrameReport = now;
+        }
+        analyticsFrameWindowStart = now;
+        analyticsFrameCount = 0;
+      }
+    } else {
+      analyticsFrameWindowStart = null;
+      analyticsFrameCount = 0;
+    }
     let elapsedMs =
       client.elapsedMs;
 
@@ -19720,6 +19793,7 @@ function saveHumanReviewLocalNote() {
       "settings-vibration",
       "settings-graphics",
       "settings-language",
+      "settings-analytics-consent",
     ]
   ) {
     const control=
@@ -19733,7 +19807,7 @@ function saveHumanReviewLocalNote() {
         () => {
           previewAudioSettingsFromControls();
           if (controlId !== "settings-language") {
-            scheduleSettingsAutoSave(control.type === "range" ? 320 : 120);
+            scheduleSettingsAutoSave(controlId === "settings-analytics-consent" ? 0 : control.type === "range" ? 320 : 120);
           }
         }
       );

@@ -17,6 +17,7 @@
     "/notifications/",
     "/players/",
     "/events",
+    "/analytics/",
     "/local-ai/",
     "/pvp/",
   ];

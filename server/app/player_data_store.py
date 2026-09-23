@@ -13,6 +13,7 @@ from typing import Protocol
 from .arena_canon import MODULES
 from .display_names import ensure_display_name_available
 from .game.battle_pool import migrate_battle_pool
+from .json_schema_migrations import assert_supported_schema
 from .player_profile import (
     CURRENT_SEASON_ID,
     PlayerProfile,
@@ -404,6 +405,7 @@ class JsonFilePlayerDataRepository:
                 return True
 
     def _read_all(self) -> dict:
+        assert_supported_schema(self.path, "players", dict)
         if not self.path.exists():
             return {}
 
@@ -437,6 +439,7 @@ class JsonFilePlayerDataRepository:
         self,
         payload: dict,
     ) -> None:
+        assert_supported_schema(self.path, "players", dict)
         try:
             self.path.parent.mkdir(
                 parents=True,
@@ -1112,4 +1115,5 @@ class PlayerDataStoreService:
             language=str(
                 data["language"]
             ),
+            analytics_consent=data.get("analytics_consent") is True,
         )

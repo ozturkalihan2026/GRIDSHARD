@@ -36,7 +36,7 @@ assert.strictEqual(
 
 assert.strictEqual(
   global.GRIDSHARD_AUDIO_MIX.version,
-  "shardglass-seamless-v9"
+  "shardglass-mobile-v10"
 );
 
 assert.strictEqual(
@@ -61,10 +61,12 @@ assert.strictEqual(matchmakingTrack.loop, true);
 
 director.setState("battle");
 const battleTrack = director.currentTrack;
-assert.strictEqual(battleTrack, null);
+assert.ok(battleTrack);
+assert.ok(battleTrack.src.includes("battle_main_v10"));
 assert.strictEqual(director.battleLayerTracks.length, 0);
 
 director.setState("critical_core");
+assert.ok(director.currentTrack.src.includes("battle_critical_v10"));
 assert.strictEqual(director.criticalLayerTrack, null);
 
 const pressure =
@@ -88,7 +90,7 @@ setTimeout(() => {
   const victoryTrack = director.currentTrack;
   assert.ok(
     victoryTrack.src.includes(
-      "victory_sting.wav"
+      "victory_sting."
     )
   );
   assert.strictEqual(

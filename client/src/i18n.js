@@ -1,7 +1,10 @@
 (function (global) {
   "use strict";
 
+  const catalog = global.GridshardI18nCatalog
+    || (typeof require === "function" ? require("./i18n-catalog.js") : {translations:{}, messages:{}});
   const EN = Object.freeze({
+    ...catalog.translations,
     "GÜNCEL YAPI":"CURRENT BUILD",
     "manifest bekleniyor":"waiting for manifest",
     "Ana Menü":"Main Menu",
@@ -498,6 +501,37 @@
   );
   let activeLanguage = "tr";
   let observer = null;
+  const textOrigins = new WeakMap();
+  const attributeOrigins = new WeakMap();
+
+  function locale(language = activeLanguage) {
+    return language === "en" ? "en-US" : "tr-TR";
+  }
+
+  function formatNumber(value, options = {}, language = activeLanguage) {
+    return new Intl.NumberFormat(locale(language), options).format(Number(value) || 0);
+  }
+
+  function formatDate(value, options = {}, language = activeLanguage) {
+    const parsed = value instanceof Date ? value : new Date(value);
+    if (Number.isNaN(parsed.getTime())) return "";
+    return new Intl.DateTimeFormat(locale(language), options).format(parsed);
+  }
+
+  function t(key, params = {}, language = activeLanguage) {
+    const normalized = language === "en" ? "en" : "tr";
+    const entry = catalog.messages[key];
+    if (!entry) return key;
+    const value = entry[normalized];
+    const template = typeof value === "string"
+      ? value
+      : value[new Intl.PluralRules(locale(normalized)).select(Number(params.count) || 0)] || value.other;
+    return template.replace(/\{([a-z_]+)\}/gu, (_, name) => {
+      const parameter = params[name];
+      if (parameter === undefined || parameter === null) return "";
+      return typeof parameter === "number" ? formatNumber(parameter, {}, normalized) : String(parameter);
+    });
+  }
 
   function translatePatterns(value, language) {
     if (language === "en") {
@@ -515,6 +549,31 @@
         .replace(/^(\d+) modül · (.+)$/u, (_, count, tail) => `${count} modules · ${EN[tail] || tail}`)
         .replace(/^(.+) · (\d+) modül · (.+)$/u, (_, name, count, tail) => `${name} · ${count} modules · ${EN[tail] || tail}`)
         .replace(/^(.+) kaydedildi\.$/u, "$1 saved.")
+        .replace(/^(\d+) \/ (\d+) üye$/u, "$1 / $2 members")
+        .replace(/^(\d+) \/ (\d+) ÜYE$/u, "$1 / $2 MEMBERS")
+        .replace(/^(\d+) \/ (\d+) arkadaş$/u, "$1 / $2 friends")
+        .replace(/^(\d+) üye$/u, "$1 members")
+        .replace(/^(\d+) gün alındı$/u, "$1 days claimed")
+        .replace(/^(\d+) gerçek maç$/u, "$1 real matches")
+        .replace(/^(\d+) ödül alınmaya hazır$/u, "$1 rewards ready to claim")
+        .replace(/^(\d+) kademe ödülü hazır$/u, "$1 tier rewards ready")
+        .replace(/^(\d+) ücretsiz kademe$/u, "$1 free tiers")
+        .replace(/^(\d+) maçta kullanıldı$/u, "Used in $1 matches")
+        .replace(/^(\d+) kupada açılır\.$/u, "Unlocks at $1 trophies.")
+        .replace(/^(\d+) Deneyim kaldı$/u, "$1 Experience remaining")
+        .replace(/^(\d+) Deneyim ile açılır$/u, "Unlocks at $1 Experience")
+        .replace(/^(\d+) parça$/u, "$1 shards")
+        .replace(/^(\d+) evrensel parça$/u, "$1 universal shards")
+        .replace(/^(\d+) Kupa$/u, "$1 trophies")
+        .replace(/^(\d+) sn sonra açılır$/u, "Unlocks in $1 sec")
+        .replace(/^(\d+) gün önce$/u, "$1 days ago")
+        .replace(/^(\d+) dk önce$/u, "$1 min ago")
+        .replace(/^(\d+) sa önce$/u, "$1 hr ago")
+        .replace(/^SEVİYE (\d+)$/u, "LEVEL $1")
+        .replace(/^SV (\d+) GEREKLİ$/u, "LV $1 REQUIRED")
+        .replace(/^(\d+) Akım$/u, "$1 Current")
+        .replace(/^(\d+) Akı$/u, "$1 Flux")
+        .replace(/^(\d+) \/ (\d+) Deneyim$/u, "$1 / $2 Experience")
         .replace(/^(.+) yüklendi; istersen modülleri değiştirebilirsin\.$/u, "$1 loaded; you can change its modules.")
         .replace(/^(.+) silindi\.$/u, "$1 deleted.")
         .replace(/^(.+) → (.+) olarak değiştirildi\.$/u, "$1 → renamed to $2.")
@@ -569,6 +628,29 @@
       .replace(/^(\d+) presets saved$/u, "$1 hazır havuz kayıtlı")
       .replace(/^(\d+) modules · (.+)$/u, (_, count, tail) => `${count} modül · ${TR[tail] || tail}`)
       .replace(/^(.+) saved\.$/u, "$1 kaydedildi.")
+      .replace(/^(\d+) \/ (\d+) members$/u, "$1 / $2 üye")
+      .replace(/^(\d+) \/ (\d+) MEMBERS$/u, "$1 / $2 ÜYE")
+      .replace(/^(\d+) \/ (\d+) friends$/u, "$1 / $2 arkadaş")
+      .replace(/^(\d+) members$/u, "$1 üye")
+      .replace(/^(\d+) days claimed$/u, "$1 gün alındı")
+      .replace(/^(\d+) real matches$/u, "$1 gerçek maç")
+      .replace(/^(\d+) rewards ready to claim$/u, "$1 ödül alınmaya hazır")
+      .replace(/^(\d+) tier rewards ready$/u, "$1 kademe ödülü hazır")
+      .replace(/^(\d+) free tiers$/u, "$1 ücretsiz kademe")
+      .replace(/^Used in (\d+) matches$/u, "$1 maçta kullanıldı")
+      .replace(/^Unlocks at (\d+) trophies\.$/u, "$1 kupada açılır.")
+      .replace(/^(\d+) Experience remaining$/u, "$1 Deneyim kaldı")
+      .replace(/^Unlocks at (\d+) Experience$/u, "$1 Deneyim ile açılır")
+      .replace(/^(\d+) shards$/u, "$1 parça")
+      .replace(/^(\d+) universal shards$/u, "$1 evrensel parça")
+      .replace(/^(\d+) trophies$/u, "$1 Kupa")
+      .replace(/^(\d+) days ago$/u, "$1 gün önce")
+      .replace(/^(\d+) min ago$/u, "$1 dk önce")
+      .replace(/^(\d+) hr ago$/u, "$1 sa önce")
+      .replace(/^LEVEL (\d+)$/u, "SEVİYE $1")
+      .replace(/^LV (\d+) REQUIRED$/u, "SV $1 GEREKLİ")
+      .replace(/^(\d+) Current$/u, "$1 Akım")
+      .replace(/^(\d+) Flux$/u, "$1 Akı")
       .replace(/^(.+) loaded; you can change its modules\.$/u, "$1 yüklendi; istersen modülleri değiştirebilirsin.")
       .replace(/^(.+) deleted\.$/u, "$1 silindi.")
       .replace(/^(.+) → renamed to (.+)\.$/u, "$1 → $2 olarak değiştirildi.")
@@ -616,7 +698,10 @@
     const trailing = raw.match(/\s*$/u)?.[0] || "";
     const value = raw.trim();
     if (!value) return;
-    const translated = translateText(value);
+    const prior = textOrigins.get(node);
+    const original = prior && prior.translated === value ? prior.original : value;
+    const translated = translateText(original);
+    textOrigins.set(node, {original, translated});
     if (translated !== value) {
       node.nodeValue = `${leading}${translated}${trailing}`;
     }
@@ -633,12 +718,17 @@
     if (root.nodeType === 1) {
       const elements = [root, ...root.querySelectorAll("[aria-label],[title],[placeholder]")];
       for (const element of elements) {
+        const origins = attributeOrigins.get(element) || new Map();
         for (const attribute of ["aria-label", "title", "placeholder"]) {
           const value = element.getAttribute(attribute);
           if (!value) continue;
-          const translated = translateText(value);
+          const prior = origins.get(attribute);
+          const original = prior && prior.translated === value ? prior.original : value;
+          const translated = translateText(original);
+          origins.set(attribute, {original, translated});
           if (translated !== value) element.setAttribute(attribute, translated);
         }
+        attributeOrigins.set(element, origins);
       }
     }
 
@@ -675,7 +765,7 @@
     return activeLanguage;
   }
 
-  const api = Object.freeze({ EN, apply, translateText });
+  const api = Object.freeze({ EN, apply, translateText, t, formatNumber, formatDate });
   global.GridshardI18n = api;
   if (typeof module !== "undefined" && module.exports) module.exports = api;
 })(typeof globalThis !== "undefined" ? globalThis : window);

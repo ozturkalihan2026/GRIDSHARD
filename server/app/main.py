@@ -9,15 +9,19 @@ import secrets
 import time
 import os
 import json
+import logging
 from pathlib import Path
 from threading import Lock
 from urllib.parse import parse_qs, urlencode
 
 from fastapi import BackgroundTasks, FastAPI, Header, HTTPException, Query, Request, WebSocket
+from fastapi.encoders import jsonable_encoder
+from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse, RedirectResponse
 from fastapi.websockets import WebSocketDisconnect
 from pydantic import BaseModel
+from starlette.exceptions import HTTPException as StarletteHTTPException
 
 from .auth import (
     AuthenticationError,
@@ -34,6 +38,8 @@ from .postgres_repository import (
     PostgresPool,
 )
 from .runtime_coordination import RuntimeCoordinator
+from .json_schema_migrations import JsonStoreSpec, migration_status
+from .product_analytics import ProductAnalyticsService, ProductAnalyticsError, ProductAnalyticsStorageError, EVENT_DIMENSIONS, RETENTION_DAYS
 
 from .game.pvp_session import (
     PvPSessionError,
@@ -247,8 +253,15 @@ runtime_coordinator = RuntimeCoordinator(
 
 
 async def _runtime_maintenance_loop() -> None:
+    last_analytics_prune = 0.0
     while True:
         await asyncio.sleep(5.0)
+        if time.monotonic() - last_analytics_prune >= 3600:
+            last_analytics_prune = time.monotonic()
+            try:
+                await asyncio.to_thread(product_analytics_service.prune_expired)
+            except (ProductAnalyticsError, OSError):
+                logging.getLogger(__name__).warning("Product analytics retention cleanup failed", exc_info=True)
         await pvp_websocket_adapter.sweep_connection_health()
         expired_session_ids = pvp_service.cleanup_expired_sessions()
         for session_id in expired_session_ids:
@@ -294,6 +307,44 @@ app = FastAPI(
     lifespan=application_lifespan,
 )
 
+# Error codes are a protocol contract. Client copy must never be selected by
+# matching the Turkish human-readable detail string.
+ERROR_CODES_BY_STATUS = {
+    400: "bad_request",
+    401: "unauthorized",
+    403: "forbidden",
+    404: "not_found",
+    409: "conflict",
+    410: "gone",
+    422: "invalid_request",
+    429: "rate_limited",
+    500: "internal_error",
+    502: "unavailable",
+    503: "unavailable",
+    504: "timeout",
+}
+
+
+def api_error_code(status_code: int) -> str:
+    return ERROR_CODES_BY_STATUS.get(status_code, "request_failed")
+
+
+@app.exception_handler(StarletteHTTPException)
+async def coded_http_error(_request: Request, exc: StarletteHTTPException) -> JSONResponse:
+    return JSONResponse(
+        status_code=exc.status_code,
+        content={"code": api_error_code(exc.status_code), "detail": exc.detail},
+        headers=exc.headers,
+    )
+
+
+@app.exception_handler(RequestValidationError)
+async def coded_validation_error(_request: Request, exc: RequestValidationError) -> JSONResponse:
+    return JSONResponse(
+        status_code=422,
+        content={"code": "invalid_request", "detail": jsonable_encoder(exc.errors())},
+    )
+
 
 @app.middleware("http")
 async def hide_web_test_routes_in_production(request: Request, call_next):
@@ -301,7 +352,7 @@ async def hide_web_test_routes_in_production(request: Request, call_next):
         request.url.path == "/web-test"
         or request.url.path.startswith("/web-test/")
     ):
-        return JSONResponse(status_code=404, content={"detail": "Not Found"})
+        return JSONResponse(status_code=404, content={"code": "not_found", "detail": "Not Found"})
     return await call_next(request)
 
 CORS_ORIGINS = tuple(
@@ -384,6 +435,7 @@ PROTECTED_PLAYER_PREFIXES = (
     "/players/",
     "/events",
     "/local-ai/",
+    "/analytics/",
     "/pvp/",
 )
 
@@ -420,7 +472,7 @@ async def require_participant_authentication(request: Request, call_next):
     except AuthenticationError as exc:
         return JSONResponse(
             status_code=401,
-            content={"detail": str(exc)},
+            content={"code": "unauthorized", "detail": str(exc)},
             headers={"WWW-Authenticate": "Bearer"},
         )
 
@@ -445,7 +497,7 @@ async def require_participant_authentication(request: Request, call_next):
     if any(player_id != identity.player_id for player_id in claimed_player_ids):
         return JSONResponse(
             status_code=403,
-            content={"detail": "Başka bir oyuncu adına işlem yapılamaz."},
+            content={"code": "forbidden", "detail": "Başka bir oyuncu adına işlem yapılamaz."},
         )
 
     request.state.authenticated_player_id = identity.player_id
@@ -498,7 +550,7 @@ async def apply_rate_limit(request: Request, call_next):
         headers["Retry-After"] = str(decision.retry_after_seconds)
         return JSONResponse(
             status_code=429,
-            content={"detail": "İstek hızı sınırı aşıldı; daha sonra yeniden deneyin."},
+            content={"code": "rate_limited", "detail": "İstek hızı sınırı aşıldı; daha sonra yeniden deneyin."},
             headers=headers,
         )
     response = await call_next(request)
@@ -621,6 +673,27 @@ def process_completed_pvp_battle(state) -> None:
             player_id
         )
 
+    analytics_mode = (
+        "team" if state.match_type == "team_tournament"
+        else "friend" if state.match_type in {"friend", "social_friend", "team_training"}
+        else "training" if state.match_type == "local_test"
+        else "arena"
+    )
+    duration_ms = int(state.finished_at_ms if state.finished_at_ms is not None else state.elapsed_ms)
+    duration_bucket = "under_60s" if duration_ms < 60_000 else "60_179s" if duration_ms < 180_000 else "180s_plus"
+    for player_id in account_player_ids:
+        result = "draw" if state.is_draw else "win" if player_id == state.winner_player_id else "loss"
+        request_id = hashlib.sha256(f"product:battle:{state.battle_id}:{player_id}".encode("utf-8")).hexdigest()[:32]
+        try:
+            product_analytics_service.record(
+                player_id, "battle_completed",
+                {"result": result, "mode": analytics_mode, "duration": duration_bucket},
+                request_id=request_id, client=False,
+            )
+        except Exception:
+            # Optional analytics cannot change an authoritative battle result.
+            pass
+
     player_ids=tuple(state.players)
     if player_ids:
         matchmaking_service.clear_match(
@@ -661,6 +734,14 @@ player_data_repository = (
     else JsonFilePlayerDataRepository(
         PLAYER_DATA_PATH
     )
+)
+product_analytics_service = ProductAnalyticsService(
+    Path(os.environ.get("GRIDSHARD_PRODUCT_ANALYTICS_PATH", str(SERVER_DATA_DIR / "product_analytics.json"))),
+    participant_auth_service.signing_key,
+    lambda player_id: bool(
+        (snapshot := player_data_repository.load(player_id))
+        and snapshot.settings.get("analytics_consent") is True
+    ),
 )
 DEFAULT_BATTLE_POOL_PRESET_PATH = (
     PLAYER_DATA_PATH.with_name(
@@ -719,6 +800,23 @@ TEAM_DATA_PATH = Path(
         str(DEFAULT_TEAM_DATA_PATH),
     )
 )
+if RUNTIME_STRICT:
+    json_stores = (
+        JsonStoreSpec("platform", platform_service.path, dict),
+        JsonStoreSpec("telemetry", TELEMETRY_PATH, list),
+        JsonStoreSpec("battle_pool_presets", BATTLE_POOL_PRESET_PATH, dict),
+        JsonStoreSpec("balance_drafts", BALANCE_CHANGE_DRAFT_PATH, dict),
+        JsonStoreSpec("teams", TEAM_DATA_PATH, dict),
+    )
+    pending_json_stores = [
+        status["store"] for status in (migration_status(spec) for spec in json_stores)
+        if status["pending"]
+    ]
+    if pending_json_stores:
+        raise RuntimeError(
+            "JSON şema migration bekliyor: " + ", ".join(pending_json_stores)
+            + ". Sunucu duruyorken tools/json_schema_migrate.py up çalıştırın."
+        )
 team_repository = JsonTeamRepository(TEAM_DATA_PATH)
 team_service = TeamService(team_repository)
 
@@ -1132,6 +1230,13 @@ class PlayerSettingsRequest(BaseModel):
     vibration_enabled: bool | None = None
     graphics_quality: str | None = None
     language: str | None = None
+    analytics_consent: bool | None = None
+
+
+class ProductAnalyticsEventRequest(BaseModel):
+    event_type: str
+    dimensions: dict
+    request_id: str | None = None
 
 
 @app.post("/auth/session")
@@ -1492,6 +1597,7 @@ def export_account_data(player_id: str) -> JSONResponse:
     payload = build_personal_export(
         snapshot, platform_service.export_data(player_id),
         participant_auth_service.signing_key,
+        product_analytics=product_analytics_service.events_for(player_id),
     )
     return JSONResponse(payload, headers={"Cache-Control": "no-store", "Pragma": "no-cache"})
 
@@ -1524,6 +1630,9 @@ def delete_account_data(player_id: str, request: GdprDeleteRequest) -> dict:
                 changed = True
         if changed:
             persist_player_data(other.player_id)
+    player_settings_service.update(player_id, analytics_consent=False)
+    persist_player_data(player_id)
+    product_analytics_service.erase_player(player_id)
     deleted = player_data_repository.delete(player_id)
     platform_service.erase(player_id)
     identity_deleted = participant_auth_service.delete_identity(player_id)
@@ -3477,6 +3586,61 @@ def get_player_settings(
     )
 
 
+def _analytics_actor(request: Request) -> str:
+    try:
+        token = participant_auth_service.bearer_token(request.headers.get("authorization"))
+        identity = participant_auth_service.verify_access_token(token)
+        if platform_service.token_is_revoked(identity.player_id, identity.token_id):
+            raise AuthenticationError("Bu cihaz oturumu sonlandırılmış.")
+        return identity.player_id
+    except AuthenticationError as exc:
+        raise HTTPException(status_code=401, detail=str(exc)) from exc
+
+
+@app.get("/analytics/schema")
+def product_analytics_schema() -> dict:
+    return {
+        "schema_version": 1,
+        "default_consent": False,
+        "retention_days": RETENTION_DAYS,
+        "events": {name: {key: sorted(values) for key, values in fields.items()} for name, fields in EVENT_DIMENSIONS.items()},
+    }
+
+
+@app.post("/analytics/events")
+def record_product_analytics(request: Request, event: ProductAnalyticsEventRequest) -> dict:
+    player_id = _analytics_actor(request)
+    try:
+        accepted = product_analytics_service.record(
+            player_id, event.event_type, event.dimensions, request_id=event.request_id,
+        )
+    except ProductAnalyticsStorageError as exc:
+        raise HTTPException(status_code=503, detail=str(exc)) from exc
+    except ProductAnalyticsError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+    return {"accepted": accepted}
+
+
+@app.get("/analytics/my-events")
+def my_product_analytics(request: Request) -> JSONResponse:
+    player_id = _analytics_actor(request)
+    try:
+        events = product_analytics_service.events_for(player_id)
+    except ProductAnalyticsStorageError as exc:
+        raise HTTPException(status_code=503, detail=str(exc)) from exc
+    return JSONResponse({"events": events}, headers={"Cache-Control": "no-store"})
+
+
+@app.delete("/analytics/my-events")
+def delete_my_product_analytics(request: Request) -> dict:
+    player_id = _analytics_actor(request)
+    try:
+        removed = product_analytics_service.erase_player(player_id)
+    except ProductAnalyticsStorageError as exc:
+        raise HTTPException(status_code=503, detail=str(exc)) from exc
+    return {"deleted_events": removed}
+
+
 @app.put("/settings/{player_id}")
 def update_player_settings(
     player_id: str,
@@ -3496,6 +3660,7 @@ def update_player_settings(
                 request.graphics_quality
             ),
             language=request.language,
+            analytics_consent=request.analytics_consent,
         )
     except PlayerSettingsError as exc:
         raise HTTPException(
@@ -3506,6 +3671,8 @@ def update_player_settings(
     persist_player_data(
         player_id
     )
+    if request.analytics_consent is False:
+        product_analytics_service.erase_player(player_id)
     return settings.to_view()
 
 

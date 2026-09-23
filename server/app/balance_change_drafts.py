@@ -7,6 +7,8 @@ import shutil
 from threading import RLock
 from typing import Any
 
+from .json_schema_migrations import assert_supported_schema
+
 
 class BalanceChangeDraftError(ValueError):
     pass
@@ -34,6 +36,7 @@ class JsonBalanceChangeDraftRepository:
         )
 
     def _read_all(self)->dict:
+        assert_supported_schema(self.path, "balance_drafts", dict)
         if not self.path.exists():
             return {}
 
@@ -64,6 +67,7 @@ class JsonBalanceChangeDraftRepository:
         payload:dict,
     )->None:
         with self._lock:
+            assert_supported_schema(self.path, "balance_drafts", dict)
             try:
                 self.path.parent.mkdir(
                     parents=True,

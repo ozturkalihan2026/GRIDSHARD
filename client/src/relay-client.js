@@ -888,6 +888,8 @@
           ] || this.settings.graphics_quality,
         language:
           this.settings.language,
+        analyticsConsent:
+          this.settings.analytics_consent === true,
       };
     }
   }

@@ -4,6 +4,35 @@ Güncelleme tarihi: 23 Eylül 2026
 
 Bu dosya güncel çalışma paketini ve korunması gereken önceki kararları içerir. Kullanıcı `checkpoint'ten devam et` dediğinde önce bu dosya, ardından `git status --short` okunmalıdır.
 
+## Aktif paket — Beta.74 JSON dosya şema geçişleri
+
+1. `[x]` Yedi JSON deposunu ortak sürüm sözleşmesine bağla
+   - Kimlik, platform, oyuncu, telemetri, hazır deste, denge taslağı ve takım depoları ortak şema kaydını okumadan veri okumaz/yazmaz. Şemasız eski dosya sürüm 0 olarak okunabilir; bilinmeyen/bozuk sürüm ve değiştirilmiş migration günlüğü reddedilir.
+   - Nesne ve liste köklü dosyaların mevcut biçimi korunur. Sürüm 1, veri dosyasını yeniden yazmayan güvenli benimseme adımıdır. Sürüm ve SHA-256 zincirli ileri/geri günlük `<dosya>.schema.json` içinde birlikte atomik yazılır; mevcut verinin birebir migration yedeği ayrıca tutulur.
+2. `[x]` Bakım ve dağıtım kapısını ekle
+   - `tools/json_schema_migrate.py status/check/up/down` etkin JSON yollarını aynı sunucu ortam değişkenlerinden çözer. Çoklu `up` önce bütün depoları okur/doğrular, sonra idempotent uygular. `check` bekleyen migration için sıfır olmayan çıkış verir. PostgreSQL etkinse kimlik/oyuncu dosyaları atlanır, kalan JSON depoları yönetilir.
+   - Üretim başlangıcı etkin JSON depolarında bekleyen migration varsa durur. `down` tek depo ve açık `--allow-destructive` ister; yalnız şema sürümünü geri alır, arada kazanılan oyuncu ilerlemesini eski yedekle ezmez.
+   - Bakım sırası, sunucuyu durdurma zorunluluğu, bağımsız yedek, komutlar ve geri alma sınırı `docs/JSON_SCHEMA_MIGRATIONS.md` dosyasında açıklandı. İzole fixture senaryoları için sözleşme testleri yazıldı.
+
+Doğrulama sınırı: Kullanıcının önceki tercihi gereği otomatik test, sunucu veya migration komutu çalıştırılmadı. Gerçek `server/data` dosyaları ve özellikle önceden değişmiş `platform_state.json` korunmuştur; üretimden önce operatörün sunucuyu durdurup `up` ve `check` çalıştırması gerekir. Bu turdaki v1 benimsemesi veri içeriğini değiştirmez.
+
+Sonraki kod paketi: Son Öneriler kuyruğundaki gerçek FCM/APNs gönderim adaptörleri. Gerçek cihaz performans/FPS ve portre doğrulaması kullanıcı tarafında bekliyor; tek dokunuşla sunucunun otomatik modül yerleştirmesi korunur.
+
+## Aktif paket — Beta.73 mobil ses ve savaş müziği
+
+1. `[x]` Kullanılan sesleri OGG/AAC biçimlerine dönüştür
+   - 28 ses kimliği için OGG Vorbis ve AAC-LC türevleri `client/assets/audio/mobile/` altında manifest, boyut ve SHA-256 özetleriyle hazırlandı. WAV asılları korundu. Dört savaş durumu için yedi gövdeden ayrı 32 saniyelik yedek miks üretildi.
+   - Karşılaştırılan toplam asıl/miks WAV boyutu 39.462.044 bayt; OGG 2.332.148, AAC 6.058.878 bayt. Kaynaklar tekrar `pnpm assets:audio` ile üretilebilir; araç FFmpeg gerektirir. Normal derleme hazır dosyaları kullanır.
+2. `[x]` Savaş müziği katmanlarını ve durum geçişlerini aç
+   - `GRIDSHARD_BATTLE_MUSIC_ENABLED` açık. Web Audio'da yedi gövde hazırlanıp aynı ses saatiyle başlar; giriş, normal savaş, baskı ve kritik Çekirdek durumları ayrı miks oranları kullanır. Web Audio yoksa her durumun kendi sıkıştırılmış ön miksi çalınır.
+   - İstemci savaş süresi, baskı ve yerel/çevrimiçi Çekirdek CAN durumunu ses yöneticisine geçirir. SFX, menü ve sonuç sesleri de sıkıştırılmış biçimlerden yüklenir; desteklenen biçim oynatılamazsa diğer biçim denenir.
+3. `[x]` Üretim paketini WAV'sız ve doğrulanır tut
+   - Web/mobil derleme ses manifestindeki 28 kimliğin iki biçimini dosya boyutu ve SHA-256 ile denetler; WAV asıllarını `dist/` altına kopyalamaz. Yeniden üretme ve cihazda dinleme sınırları `docs/MOBILE_AUDIO.md` ve mobil yayın belgesine yazıldı.
+
+Doğrulama sınırı: Varlık dönüştürme işlemi tamamlandı ve manifest üretildi. Kullanıcının önceki talebi gereği otomatik test, derleme, tarayıcı, sunucu veya savaş denemesi çalıştırılmadı. Gerçek Android/iPhone ses çalma, senkronizasyon ve geçiş sonucu kullanıcı doğrulamasında bekliyor. `server/data/platform_state.json` içindeki çalışma zamanı değişikliklerine dokunulmadı.
+
+Devam durumu: JSON depoları için ortak dosya şema sürümü ve geri alınabilir migration günlüğü Beta.74'te tamamlandı. Gerçek cihaz/oynanış görevleri kullanıcı doğrulamasında kalır; tek dokunuşla sunucunun otomatik modül yerleştirmesi korunur.
+
 ## Aktif paket — Beta.72 üretim istemci derlemesi
 
 1. `[x]` Son Öneriler / üretim istemci derleme hattının kodunu tamamla
@@ -20,7 +49,7 @@ Bu dosya güncel çalışma paketini ve korunması gereken önceki kararları i�
 
 Doğrulama: Kullanıcının önceki kararı korunarak test, derleme, Docker, tarayıcı, sunucu veya savaş denemesi çalıştırılmadı. Yalnız bağımlılık sürümü/kilit dosyası güncellendi ve kod/diff statik incelendi. Derleme sırası, içerik özeti, başarısız derlemede eski paketin korunması, mobil API zorunluluğu ve HTTP önbellek davranışı için sözleşmeler yazıldı; çalıştırılmadı. Gerçek CI ve cihaz sonucu yayın öncesi bekler. `server/data/platform_state.json` içindeki çalışma zamanı değişikliklerine dokunulmadı.
 
-Sonraki kod paketi: Son Öneriler kuyruğunda WAV→OGG/AAC dönüşümü ve savaş müzik katmanları; ardından JSON migration günlüğü açık. Gerçek cihaz/oynanış doğrulaması kullanıcıda kalır. Tek dokunuşla sunucunun otomatik modül yerleştirmesi korunur.
+Devam durumu: WAV→OGG/AAC dönüşümü ve savaş müzik katmanları Beta.73'te tamamlandı; ardından JSON migration günlüğü açık. Gerçek cihaz/oynanış doğrulaması kullanıcıda kalır. Tek dokunuşla sunucunun otomatik modül yerleştirmesi korunur.
 
 ## Aktif paket — Beta.71 kart kaydırma, benzersiz ad ve veri yetkisi
 
@@ -43,7 +72,7 @@ Sonraki kod paketi: Son Öneriler kuyruğunda WAV→OGG/AAC dönüşümü ve sav
 
 Doğrulama: Kullanıcının isteği gereği otomatik test, derleme, tarayıcı, sunucu veya savaş denemesi çalıştırılmadı. Kod ve diff statik olarak incelendi. İsim çakışması, dosya imzası ve takım sahipliği regresyon sözleşmeleri yazıldı/güncellendi, çalıştırılmadı. Gerçek cihaz ve oynanış sonuçları tamamlanmış sayılmadı.
 
-Devam durumu: Üretim istemci derleme hattının kodu Beta.72'de tamamlandı; mobil ses dönüşümü/müzik katmanları açık. Portre kilidinin cihaz doğrulaması ile mevcut yinelenen adların değiştirilmesi kullanıcı tarafında bekliyor.
+Devam durumu: Üretim istemci derleme hattının kodu Beta.72'de, mobil ses dönüşümü/müzik katmanları Beta.73'te tamamlandı. Portre kilidinin cihaz doğrulaması ile mevcut yinelenen adların değiştirilmesi kullanıcı tarafında bekliyor.
 
 ## Aktif paket — Beta.70 AI savaş gücü adaleti
 
@@ -203,18 +232,18 @@ Doğrulama: Tam istemci paketi `47/47`, platform servis paketi `7/7` geçti. `pl
 
 ### Ürün ve altyapı
 
-6. `[ ]` Savaş seslerini mobil biçimlere dönüştür ve müzik katmanlarını etkinleştir
-   - Büyük WAV dosyaları OGG/AAC türevlerine taşınmalı; `GRIDSHARD_BATTLE_MUSIC_ENABLED` üretimde açılmalı ve farklı savaş durumlarının aynı dosyayı tekrar kullanması giderilmeli.
+6. `[x]` Savaş seslerini mobil biçimlere dönüştür ve müzik katmanlarını etkinleştir
+   - Beta.73: kullanılan 28 ses OGG/AAC türevleriyle manifestlendi, üretim paketi WAV'ları dışlıyor. Savaş katmanları açık; dört savaş durumu ayrı miks ve ayrı yedek ses kullanıyor. Gerçek cihazda dinleme ayrıca bekliyor.
 7. `[~]` Dikey ekran kilidini yerel mobil kabuğa ekle
    - CSS medya sorgusuna ek olarak Capacitor/Android/iOS yapılandırmasında portrait orientation kilidi tanımlanmalı.
    - `[x]` Beta.71: Android MainActivity ve iOS Info.plist için portre yapılandırıcısı mobil add/sync akışına bağlandı; beklenmeyen şablonda sessiz başarı vermez.
    - `[ ]` Gerçek paket kimliğiyle yerel projeleri üretme ve cihazda dönüş/güvenli alan doğrulaması bekliyor. Mevcut depoda native projeler yok.
 8. `[ ]` Gerçek cihaz performans bütçesi ve FPS ölçümü oluştur
    - Düşük/orta seviye cihazlarda savaş DOM güncellemeleri, efekt yoğunluğu, bellek ve kare süresi kaydedilmeli; kabul eşikleri release check'e bağlanmalı.
-9. `[ ]` JSON/PostgreSQL şema geçişlerini sürümlü migration sistemine taşı
+9. `[x]` JSON/PostgreSQL şema geçişlerini sürümlü migration sistemine taşı
    - Üretim veri değişiklikleri için Alembic benzeri ileri/geri migration, şema sürümü ve dağıtım öncesi kontrol eklenmeli.
    - `[x]` PostgreSQL numaralı migration, checksum, advisory lock, status/check/up ve onaylı down akışı tamamlandı.
-   - `[ ]` JSON depoları için ortak dosya şema sürümü ve geri alınabilir migration günlüğü bekliyor.
+   - `[x]` Beta.74: JSON depolarında ortak yan dosya sürümü, SHA-256 zincirli ileri/geri günlük, birebir veri yedeği, status/check/up/down ve üretim başlangıç kapısı tamamlandı. Gerçek veride `up` bu turda çalıştırılmadı; bakım penceresinde operatör adımı bekliyor.
 10. `[ ]` Gerçek FCM/APNs gönderim adaptörlerini tamamla
    - İstemci izin/token kaydı hazır; sunucu teslim sağlayıcısı, kimlik bilgileri, token yenileme/hata temizliği ve imzalı mobil yapılandırma hâlâ gerekli.
 11. `[x]` CI iş akışlarını sürüm kontrolüne al
@@ -233,10 +262,11 @@ Doğrulama: Tam istemci paketi `47/47`, platform servis paketi `7/7` geçti. `pl
    - Kullanıcının talebiyle derleme/test çalıştırılmadı; kod uygulaması tamamlandı, CI/gerçek cihaz yayın doğrulaması bekliyor. İşletim ayrıntıları `docs/CLIENT_BUILD.md` içinde.
 15. `[ ]` `canon.css` ve `styles.css` sahipliğini uzlaştır
    - Tekrarlanan kurallar ve yüksek sayıdaki `!important` kullanımı ekran bazında azaltılmalı; görsel regresyon testleriyle korunmalı.
-16. `[ ]` Türkçe/İngilizce yerelleştirmeyi tamamla
-   - Kod içine gömülü kalan metinler anahtar sözlüğüne taşınmalı; çoğul, sayı/tarih ve hata mesajı kapsaması eklenmeli.
-17. `[ ]` Ürün analitiğini mahremiyet kontrollü biçimde ekle
-   - Huni, savaş sonucu, elde tutma ve performans olayları için açık şema, onay/opt-out ve veri saklama politikası tanımlanmalı.
+16. `[~]` Türkçe/İngilizce yerelleştirmeyi tamamla
+   - Beta.73: ana HTML ve istemcideki doğrudan Türkçe metinler genişletilmiş İngilizce sözlüğe alındı; çoğul, sayı, tarih ve hata mesajı için anahtarlı API eklendi; dil değişiminde özgün metni koruyan geri dönüş ve önemli ödül/ayar akışlarında anahtarlı kullanım eklendi. `docs/LOCALIZATION_AND_PRODUCT_ANALYTICS.md` sözleşmesi yazıldı.
+   - Kalan: `app.js` içindeki dinamik template ifadelerinin ve yönetici/beta ekranı metinlerinin tamamını sabit anahtarlara taşımak; sunucu hata kodlarını metinden bağımsızlaştırmak. Kullanıcı isteğiyle test/derleme çalıştırılmadı.
+17. `[x]` Ürün analitiğini mahremiyet kontrollü biçimde ekle
+   - Beta.73: varsayılan kapalı sunucu onayı, ayarlardan opt-in/opt-out, opt-out ve hesap silmede ham olay temizliği, oyuncuya özel erişim/dışa aktarım, şema kısıtlı huni/savaş/retention/FPS olayları, 30 gün saklama, küçük kohort bastırmalı toplu rapor ve ayrı depo eklendi. Kullanıcı isteğiyle test/derleme çalıştırılmadı; üretim gizlilik bildirimi ürün/hukuk kontrolü bekliyor.
 18. `[x]` Uygulama içi satın alma karar kapısını kapat
    - Para kazanma kapsamdaysa mağaza makbuz doğrulama ve ürün kataloğu tasarlanmalı; kapsam dışıysa release belgelerinde açıkça ertelenmeli.
 

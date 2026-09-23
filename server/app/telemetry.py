@@ -10,6 +10,7 @@ import shutil
 from typing import Any, Callable, Protocol
 
 from .game.models import BattleState, BattleStatus
+from .json_schema_migrations import assert_supported_schema
 
 
 TELEMETRY_EVENT_TYPES = frozenset({
@@ -166,6 +167,7 @@ class JsonFileTelemetryRepository:
         )
 
     def load(self) -> list[TelemetryEvent]:
+        assert_supported_schema(self.path, "telemetry", list)
         if not self.path.exists():
             return []
 
@@ -258,6 +260,7 @@ class JsonFileTelemetryRepository:
         self,
         events: list[TelemetryEvent],
     ) -> None:
+        assert_supported_schema(self.path, "telemetry", list)
         retained = list(
             events[
                 -self.max_events:

@@ -13,6 +13,8 @@ from pathlib import Path
 from tempfile import NamedTemporaryFile
 from typing import Callable
 
+from .json_schema_migrations import assert_supported_schema
+
 
 PLAYER_ID_MAX_LENGTH = 72
 DEVICE_SECRET_MIN_LENGTH = 32
@@ -90,6 +92,7 @@ class JsonIdentityRepository:
             return existed
 
     def _read_all(self) -> dict[str, dict]:
+        assert_supported_schema(self.path, "identities", dict)
         if not self.path.exists():
             return {}
         try:
@@ -105,6 +108,7 @@ class JsonIdentityRepository:
         }
 
     def _write_all(self, identities: dict[str, dict]) -> None:
+        assert_supported_schema(self.path, "identities", dict)
         self.path.parent.mkdir(parents=True, exist_ok=True)
         temporary_name: str | None = None
         try:

@@ -23,6 +23,7 @@ class PlayerSettings:
     vibration_enabled: bool = True
     graphics_quality: str = "yuksek"
     language: str = "tr"
+    analytics_consent: bool = False
 
     def to_view(self) -> dict:
         return {
@@ -38,6 +39,7 @@ class PlayerSettings:
                 self.graphics_quality
             ),
             "language": self.language,
+            "analytics_consent": self.analytics_consent,
         }
 
 
@@ -79,6 +81,7 @@ class PlayerSettingsService:
         vibration_enabled: bool | None = None,
         graphics_quality: str | None = None,
         language: str | None = None,
+        analytics_consent: bool | None = None,
     ) -> PlayerSettings:
         settings = self.get_or_create(
             player_id
@@ -150,6 +153,11 @@ class PlayerSettingsService:
                     "Desteklenmeyen dil tercihi."
                 )
             settings.language = language
+
+        if analytics_consent is not None:
+            if not isinstance(analytics_consent, bool):
+                raise PlayerSettingsError("Analitik izni doğru/yanlış olmalıdır.")
+            settings.analytics_consent = analytics_consent
 
         return settings
 

@@ -402,7 +402,23 @@
       audio._gridshardCandidates = candidates;
       audio._gridshardCandidateIndex = 0;
       audio._gridshardAsset = asset;
+      audio._gridshardStopped = true;
+      audio.addEventListener?.("error", () => {
+        if (audio._gridshardStopped) return;
+        this._tryNextHtmlSource(audio);
+      });
       return audio;
+    }
+
+    _tryNextHtmlSource(audio) {
+      const candidates = audio._gridshardCandidates || [];
+      const index = Number(audio._gridshardCandidateIndex || 0);
+      if (audio._gridshardStopped || index + 1 >= candidates.length) return null;
+      audio._gridshardCandidateIndex = index + 1;
+      audio.src = candidates[index + 1];
+      const retry = this._safePlay(audio);
+      audio._gridshardRetryPromise = retry;
+      return retry;
     }
 
     _canPlayAudio() {
@@ -566,6 +582,10 @@
         clone._gridshardCandidates = template._gridshardCandidates;
         clone._gridshardCandidateIndex = template._gridshardCandidateIndex;
         clone._gridshardAsset = asset;
+        clone._gridshardStopped = true;
+        clone.addEventListener?.("error", () => {
+          if (!clone._gridshardStopped) this._tryNextHtmlSource(clone);
+        });
         clone.preload="none";
         return clone;
       }
@@ -602,10 +622,15 @@
       if (!audio || typeof audio.play !== "function") {
         return Promise.resolve(false);
       }
+      audio._gridshardStopped = false;
+      const candidateIndex = audio._gridshardCandidateIndex;
       let result;
       try {
         result=audio.play();
       } catch (error) {
+        const retry = error?.name !== "NotAllowedError" && error?.name !== "AbortError"
+          ? this._tryNextHtmlSource(audio) : null;
+        if (retry) return retry;
         this._recordPlaybackFailure(audio, error);
         return Promise.resolve(false);
       }
@@ -616,16 +641,11 @@
           return true;
         })
         .catch((error) => {
-          const candidates = audio._gridshardCandidates || [];
-          if (
-            error?.name !== "NotAllowedError"
-            && error?.name !== "AbortError"
-            && audio._gridshardCandidateIndex + 1 < candidates.length
-          ) {
-            audio._gridshardCandidateIndex += 1;
-            audio.src = candidates[audio._gridshardCandidateIndex];
-            return this._safePlay(audio);
-          }
+          if (audio._gridshardStopped) return false;
+          if (candidateIndex !== audio._gridshardCandidateIndex) return audio._gridshardRetryPromise || false;
+          const retry = error?.name !== "NotAllowedError" && error?.name !== "AbortError"
+            ? this._tryNextHtmlSource(audio) : null;
+          if (retry) return retry;
           this._recordPlaybackFailure(audio, error);
           return false;
         });
@@ -753,6 +773,7 @@
 
     _stopAudio(audio) {
       if (!audio) return;
+      audio._gridshardStopped = true;
       this._pendingPlayback.delete(audio);
       this._cancelFade(audio);
       try {

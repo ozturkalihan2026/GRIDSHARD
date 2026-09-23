@@ -16,6 +16,8 @@ import shutil
 from threading import RLock
 from uuid import uuid4
 
+from .json_schema_migrations import assert_supported_schema
+
 
 TEAM_MEMBER_LIMIT = 30
 TEAM_NAME_MAX_LENGTH = 24
@@ -45,6 +47,7 @@ class JsonTeamRepository:
 
     def load(self) -> dict:
         with self._lock:
+            assert_supported_schema(self.path, "teams", dict)
             if not self.path.exists():
                 return {"teams": {}, "receipts": {}}
             try:
@@ -61,6 +64,7 @@ class JsonTeamRepository:
 
     def save(self, payload: dict) -> None:
         with self._lock:
+            assert_supported_schema(self.path, "teams", dict)
             try:
                 self.path.parent.mkdir(parents=True, exist_ok=True)
                 if self.path.exists():

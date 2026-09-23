@@ -44,6 +44,8 @@ python tools/schema_migrate.py check
 
 Bekleyen migration'ı bakım penceresinde açıkça uygulamak için `up` kullanılır. Geri alma veri değiştiren bir işlem olduğu için yalnız operatör kararıyla `python tools/schema_migrate.py down --allow-destructive` biçiminde çalışır; uygulama sürümü de aynı anda uyumlu önceki sürüme döndürülmelidir.
 
+JSON depolarının sürüm ve geri alma günlüğü ayrı yönetilir. Üretim açılışından önce sunucu kapalıyken `python tools/json_schema_migrate.py up` ve `python tools/json_schema_migrate.py check` çalıştırılmalıdır. Geçiş veri içeriğini değiştirmez; yöntem ve yedek sınırları [JSON şema migration belgesinde](JSON_SCHEMA_MIGRATIONS.md) açıklanmıştır.
+
 ## Tarayıcı E2E
 
 Playwright gerçek tarayıcı E2E testi sonraki QA adımıdır. ChatGPT çalışma ortamındaki Chromium yerel adresleri yönetici politikasıyla engellediğinden burada zorunlu CI testi haline getirilmedi. Yerel makinede Playwright kurulursa Oyna/Profil/İstatistikler/Ayarlar gezinmesi ayrıca gerçek Chromium üzerinde otomatikleştirilebilir.

@@ -25,6 +25,8 @@ from urllib.parse import urlencode
 from urllib.error import HTTPError, URLError
 from urllib.request import Request as UrlRequest, urlopen
 
+from .json_schema_migrations import assert_supported_schema
+
 
 class PlatformServiceError(ValueError):
     pass
@@ -83,6 +85,7 @@ class PlatformService:
         }
 
     def _read(self) -> dict:
+        assert_supported_schema(self.path, "platform", dict)
         if not self.path.exists():
             return self._empty()
         try:
@@ -96,6 +99,7 @@ class PlatformService:
         return base
 
     def _write(self, data: dict) -> None:
+        assert_supported_schema(self.path, "platform", dict)
         self.path.parent.mkdir(parents=True, exist_ok=True)
         temporary_name = None
         try:

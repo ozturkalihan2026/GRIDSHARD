@@ -69,6 +69,41 @@ function assertOutputDirectory(root, directory) {
   }
 }
 
+function validateCompressedAudio(source, scripts) {
+  if (!scripts.includes("./src/gridshard-audio.js")) return;
+  const audioRoot = path.join(source, "assets", "audio");
+  const manifest = JSON.parse(readText(path.join(audioRoot, "mobile", "manifest.json")));
+  if (manifest.schema_version !== 1 || !manifest.assets || typeof manifest.assets !== "object") {
+    throw new Error("Mobil ses manifesti geçersiz; pnpm assets:audio ile yeniden üretin.");
+  }
+  // The runtime's complete cue list is the source of truth, including SFX.
+  require(path.join(source, "src", "audio-mix.js"));
+  require(path.join(source, "src", "gridshard-audio.js"));
+  const audio = global.GRIDSHARD_AUDIO_MIX;
+  if (manifest.mix_version !== audio.version) throw new Error("Ses miks sürümü derleme manifestiyle eşleşmiyor.");
+  const nameOf = (asset) => /^\.\/assets\/audio\/([a-z0-9_]+)\.wav$/.exec(asset)?.[1];
+  const names = new Set([
+    ...Object.values(global.GRIDSHARD_MUSIC_ASSETS),
+    ...global.GRIDSHARD_BATTLE_LAYERS.map((layer) => layer.asset),
+    ...Object.values(global.GRIDSHARD_SFX_CUES).map((cue) => cue.asset),
+  ].map(nameOf));
+  if (names.has(undefined) || Object.keys(manifest.assets).length !== names.size) {
+    throw new Error("Mobil ses paketi oyun ses listesiyle eşleşmiyor.");
+  }
+  for (const name of names) {
+    const asset = manifest.assets[name];
+    if (!asset) throw new Error(`Eksik sıkıştırılmış ses: ${name}`);
+    for (const extension of ["ogg", "m4a"]) {
+      const metadata = asset.formats?.[extension];
+      if (metadata?.file !== `${name}.${extension}`) throw new Error(`Eksik ses biçimi: ${name}.${extension}`);
+      const bytes = fs.readFileSync(path.join(audioRoot, "mobile", metadata.file));
+      if (bytes.length !== metadata.bytes || digest(bytes) !== metadata.sha256) {
+        throw new Error(`Ses dosyası bütünlük hatası: ${metadata.file}`);
+      }
+    }
+  }
+}
+
 async function buildClient({ root = path.resolve(__dirname, ".."), mobile = false, environment = process.env } = {}) {
   root = fs.realpathSync(root);
   const source = fs.realpathSync(path.join(root, "client"));
@@ -77,6 +112,7 @@ async function buildClient({ root = path.resolve(__dirname, ".."), mobile = fals
   const html = readText(path.join(source, "index.html"));
   const scripts = readBuildBlock(html, "scripts");
   const styles = readBuildBlock(html, "styles");
+  validateCompressedAudio(source, scripts.inputs);
   const runtimeTag = '<script src="./runtime-config.js"></script>';
   if (html.split(runtimeTag).length !== 2 || html.indexOf(runtimeTag) > html.indexOf(scripts.text)) {
     throw new Error("Runtime API ayarı uygulama betiklerinden önce, bir kez yüklenmelidir.");
@@ -140,6 +176,7 @@ async function buildClient({ root = path.resolve(__dirname, ".."), mobile = fals
         recursive: true,
         filter: (entry) => {
           if (fs.lstatSync(entry).isSymbolicLink()) throw new Error("Paket varlıklarında sembolik bağlantı kabul edilmez.");
+          if (entry.startsWith(path.join(source, "assets", "audio") + path.sep) && entry.endsWith(".wav")) return false;
           return !path.basename(entry).startsWith(".");
         },
       });

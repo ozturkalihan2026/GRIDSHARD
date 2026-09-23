@@ -27,6 +27,8 @@ pnpm build:mobile:web
 
 Komut ortak üretim hattıyla JS/CSS dosyalarını sıralarını koruyarak birleştirir, küçültür ve içerik özetli isimlerle `dist/` altına yazar. Yalnız üretilen `dist/runtime-config.js` içine HTTPS API adresini ekler; testler/kaynak dosyalar pakete kopyalanmaz. HTTP adresleri ancak açık yerel geliştirme bayrağıyla kabul edilir; mağaza adayı için kabul edilmez. Ayrıntılar: [İstemci derlemesi](CLIENT_BUILD.md).
 
+Ses paketi yalnız manifestte doğrulanan OGG/AAC biçimlerini taşır; büyük WAV asılları pakete girmez. Savaş müziği katmanları açık ve farklı savaş durumlarına göre mikslenir. Android ve iPhone gerçek cihaz kapısında menü/savaş/sonuç seslerini, ses açma iznini, susturma ve arka plandan dönüşü ayrıca dinleyin. Biçim üretimi ve denetim sınırı: [Mobil ses paketi](MOBILE_AUDIO.md).
+
 ## 1 — Android kapalı test
 
 ### Yerel portre yönü
