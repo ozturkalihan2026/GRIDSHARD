@@ -30,6 +30,6 @@ server/data/e2e_playwright_*.json*
 .*
 .*/
 server/data/web_test_*
-!.github/
-!.github/workflows/
-!.github/workflows/*.yml
+.github/
+.github/workflows/
+.github/workflows/*.yml
