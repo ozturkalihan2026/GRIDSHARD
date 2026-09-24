@@ -109,6 +109,16 @@ def _effect_label(definition: ModuleDefinition) -> str:
     )
 
 
+def _effect_label_en(definition: ModuleDefinition) -> str:
+    return {
+        "saldırı": "Experimental mode improves damage efficiency.",
+        "savunma": "Experimental mode improves durability.",
+        "enerji": "Experimental mode improves energy efficiency.",
+        "destek": "Experimental mode speeds up support cycles.",
+        "sabotaj": "Experimental mode speeds up sabotage cycles.",
+    }.get(definition.category, "Experimental mode improves module efficiency.")
+
+
 def build_laboratory_view(profile) -> dict:
     catalog_by_id = {
         item["id"]: item
@@ -146,6 +156,7 @@ def build_laboratory_view(profile) -> dict:
                 else None
             ),
             "experimental_effect_tr": _effect_label(definition),
+            "experimental_effect_en": _effect_label_en(definition),
         })
 
     invested = sum(

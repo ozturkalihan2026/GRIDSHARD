@@ -62,6 +62,11 @@ def _normalized_arena_rewards() -> tuple[dict, ...]:
 
 
 ARENAS = _normalized_arena_rewards()
+ARENA_NAMES_EN = (
+    "Starter Circuit", "Relay Streets", "Current Junction", "Conductor Foundry",
+    "Neon Spine", "Plasma Channels", "Pulse Ramparts", "Quantum Line",
+    "Ion Fortress", "Core Frontier", "Shard Nexus", "Apex Circuit",
+)
 from .season_competition import build_ai_population
 
 
@@ -77,6 +82,8 @@ def module_talent_options(module_id: str) -> tuple[dict, ...]:
     category = MODULES[module_id]["category"]
     first = {"saldırı": "Hasar +%3", "savunma": "Savunma etkisi +%3", "destek": "Destek etkisi +%3",
              "sabotaj": "Kontrol etkisi +%3", "sistem": "Sistem etkisi +%3"}[category]
+    first_en = {"saldırı": "Damage +3%", "savunma": "Defense effect +3%", "destek": "Support effect +3%",
+                "sabotaj": "Control effect +3%", "sistem": "System effect +3%"}[category]
     power_description = {
         "saldırı": "Bu modülün verdiği hasarı kalıcı olarak %3 artırır.",
         "savunma": "Bu modülün savunma etkisini kalıcı olarak %3 artırır.",
@@ -84,14 +91,26 @@ def module_talent_options(module_id: str) -> tuple[dict, ...]:
         "sabotaj": "Bu modülün kontrol etkisini kalıcı olarak %3 artırır.",
         "sistem": "Bu modülün sistem etkisini kalıcı olarak %3 artırır.",
     }[category]
+    power_description_en = {
+        "saldırı": "Permanently increases this module's damage by 3%.",
+        "savunma": "Permanently increases this module's defense effect by 3%.",
+        "destek": "Permanently increases this module's support effect by 3%.",
+        "sabotaj": "Permanently increases this module's control effect by 3%.",
+        "sistem": "Permanently increases this module's system effect by 3%.",
+    }[category]
     return tuple({"tier": str(i), "level": level, "flux_cost": 15 * (i + 1),
                   "choices": [
-                      {"id": "power", "name_tr": first, "description_tr": power_description},
-                      {"id": "resilience", "name_tr": "CAN +%5", "description_tr": "Bu modülün azami CAN değerini kalıcı olarak %5 artırır."},
+                      {"id": "power", "name_tr": first, "name_en": first_en,
+                       "description_tr": power_description, "description_en": power_description_en},
+                      {"id": "resilience", "name_tr": "CAN +%5", "name_en": "HP +5%",
+                       "description_tr": "Bu modülün azami CAN değerini kalıcı olarak %5 artırır.",
+                       "description_en": "Permanently increases this module's maximum HP by 5%."},
                   ]}
                  for i, level in enumerate(TALENT_LEVELS[MODULES[module_id]["rarity"]]))
 LEAGUE_NAMES = ("Kıvılcım Ligi", "Voltaj Ligi", "Reaktör Ligi", "Kuantum Ligi", "Nexus Ligi",
                 "Şampiyonlar I", "Şampiyonlar II", "Şampiyonlar III", "Şampiyonlar IV", "Şampiyonlar V", "Efsanevi Lig")
+LEAGUE_NAMES_EN = ("Spark League", "Voltage League", "Reactor League", "Quantum League", "Nexus League",
+                   "Champions I", "Champions II", "Champions III", "Champions IV", "Champions V", "Legendary League")
 
 
 def _league_reward_nodes(league_index: int, minimum_rating: int) -> tuple[dict, ...]:
@@ -130,7 +149,7 @@ def _league_stage_identity(league_index: int) -> tuple[str, str]:
 
 
 RANK_STAGES = tuple(
-    {"id": a["id"], "kind": "arena", "index": a["index"], "name_tr": a["name_tr"], "minimum_rating": a["minimum_rating"]}
+    {"id": a["id"], "kind": "arena", "index": a["index"], "name_tr": a["name_tr"], "name_en": ARENA_NAMES_EN[int(a["index"]) - 1], "minimum_rating": a["minimum_rating"]}
     for a in ARENAS
 ) + tuple(
     {
@@ -138,6 +157,7 @@ RANK_STAGES = tuple(
         "kind": _league_stage_identity(i + 1)[1],
         "index": i + 1,
         "name_tr": name,
+        "name_en": LEAGUE_NAMES_EN[i],
         "minimum_rating": 3600 + i * 200,
         "nodes": _league_reward_nodes(i + 1, 3600 + i * 200),
     }

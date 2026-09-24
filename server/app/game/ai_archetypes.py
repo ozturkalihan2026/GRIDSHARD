@@ -124,15 +124,15 @@ BOT_ARCHETYPE_IDS = {
     "Savunma": "defensive", "Sürdürülebilirlik": "sustain", "Kontrol": "sabotage",
     "Destek Zinciri": "support_chain", "Akım Ekonomisi": "economy", "Alan Hasarı": "area_damage", "Karşı Meta": "counter_meta",
 }
-for _id, _base, _name, _bias in (
-    ("fast_pressure", AGGRESSIVE_AI, "Hızlı Baskı", (("saldırı", 8), ("destek", 1))),
-    ("heavy_damage", AGGRESSIVE_AI, "Ağır Hasar", (("saldırı", 9), ("enerji", 3))),
-    ("sustain", DEFENSIVE_AI, "Sürdürülebilirlik", (("destek", 8), ("savunma", 3))),
-    ("support_chain", BALANCED_AI, "Destek Zinciri", (("destek", 9), ("saldırı", 3))),
-    ("area_damage", AGGRESSIVE_AI, "Alan Hasarı", (("saldırı", 7), ("sabotaj", 3))),
-    ("counter_meta", BALANCED_AI, "Karşı Meta", (("sabotaj", 4), ("savunma", 2))),
+for _id, _base, _name, _name_en, _bias in (
+    ("fast_pressure", AGGRESSIVE_AI, "Hızlı Baskı", "Fast Pressure", (("saldırı", 8), ("destek", 1))),
+    ("heavy_damage", AGGRESSIVE_AI, "Ağır Hasar", "Heavy Damage", (("saldırı", 9), ("enerji", 3))),
+    ("sustain", DEFENSIVE_AI, "Sürdürülebilirlik", "Sustain", (("destek", 8), ("savunma", 3))),
+    ("support_chain", BALANCED_AI, "Destek Zinciri", "Support Chain", (("destek", 9), ("saldırı", 3))),
+    ("area_damage", AGGRESSIVE_AI, "Alan Hasarı", "Area Damage", (("saldırı", 7), ("sabotaj", 3))),
+    ("counter_meta", BALANCED_AI, "Karşı Meta", "Counter Meta", (("sabotaj", 4), ("savunma", 2))),
 ):
-    AI_ARCHETYPES[_id] = replace(_base, id=_id, name_tr=_name, category_bias=_bias)
+    AI_ARCHETYPES[_id] = replace(_base, id=_id, name_tr=_name, name_en=_name_en, category_bias=_bias)
 
 AI_ARCHETYPE_IDS: tuple[str, ...] = tuple(AI_ARCHETYPES)
 

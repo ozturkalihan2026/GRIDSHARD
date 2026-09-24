@@ -28,9 +28,10 @@ from .arena_canon import (
 from threading import RLock
 
 MODULE_RARITY = {key: item["rarity"] for key, item in MODULES.items()}
+MODULE_CATALOG_COPY = {item["id"]: item for item in build_module_catalog_view()["modules"]}
 MODULE_EFFECT_LINES = {
-    item["id"]: tuple(item.get("effect_lines", ()))
-    for item in build_module_catalog_view()["modules"]
+    module_id: tuple(item.get("effect_lines", ()))
+    for module_id, item in MODULE_CATALOG_COPY.items()
 }
 RARITY_UNLOCK_ARENA = {"common": 1, "rare": 1, "epic": 5, "legendary": 9}
 
@@ -141,9 +142,23 @@ CORE_ROLES = (
     "Tüm dost modüllere %20 CAN iyileştirmesi.",
     "İyileştirme ve kısa takım kalkanını birleştirir.",
 )
-CORE_TYPES = tuple({**core, "role_tr": CORE_ROLES[i], "skills": tuple(
+CORE_ROLES_EN = (
+    "Repair pulse to the allied circuit: 45 HP to the Core and 15 HP to modules.",
+    "Grant each allied module 20 shield for 4 seconds.",
+    "Grant all allied modules +25% damage for 3 seconds.",
+    "Interrupt enemy support for 2 seconds and clear active damage boosts.",
+    "Reduce Current cost by 1 for the next two deployments (minimum cost 1).",
+    "Heal all allied modules for 20% HP.",
+    "Combine healing with a brief team shield.",
+)
+CORE_NAMES_EN = (
+    "Resonance Core", "Guardian Core", "Overdrive Core", "Disruptor Core",
+    "Capacitor Core", "Phoenix Core", "Quantum Core",
+)
+CORE_TYPES = tuple({**core, "name_en": CORE_NAMES_EN[i], "role_tr": CORE_ROLES[i], "role_en": CORE_ROLES_EN[i], "skills": tuple(
     {"id": f"{tier}_{choice}", "tier": str(tier), "level": level, "flux_cost": 25 * (tier + 1),
-     "name_tr": "Enerji üretimi +%3" if choice == "energy" else "Aktif güç dolumu +%3"}
+     "name_tr": "Enerji üretimi +%3" if choice == "energy" else "Aktif güç dolumu +%3",
+     "name_en": "Energy generation +3%" if choice == "energy" else "Active power charge +3%"}
     for tier, level in enumerate((5, 9, 13)) for choice in ("energy", "charge")
 )} for i, core in enumerate(CORE_TYPES))
 
@@ -738,6 +753,7 @@ class MetaProgressionService:
         )
         level = int(profile.module_upgrade_levels.get(module_id, 0))
         selected_talent_count = len(profile.module_talents.get(module_id, {}))
+        catalog_copy = MODULE_CATALOG_COPY.get(module_id, {})
         return {
             "definition_id": module_id,
             "name_tr": definition.name_tr,
@@ -752,8 +768,11 @@ class MetaProgressionService:
             "max_level": 15,
             "current_cost": MODULES[module_id]["current_cost"],
             "description_tr": definition.description_tr,
+            "description_en": catalog_copy.get("description_en", ""),
             "strategic_role": definition.strategic_role,
+            "strategic_role_en": catalog_copy.get("strategic_role_en", ""),
             "effect_lines": list(MODULE_EFFECT_LINES.get(module_id, ())),
+            "effect_lines_en": list(catalog_copy.get("effect_lines_en", ())),
             "strong_against": list(definition.strong_against),
             "weak_against": list(definition.weak_against),
             "synergy_with": list(definition.synergy_with),

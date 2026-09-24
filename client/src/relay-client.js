@@ -188,16 +188,18 @@
     ) {
       const cleanDefinitionId = String(definitionId || "").trim();
       if (!cleanDefinitionId) {
-        return { ok: false, reason: "Yerleştirilecek deste kartı seçilmedi." };
+        return { ok: false, code:"missing_deck_card", reason: "Yerleştirilecek deste kartı seçilmedi." };
       }
       const activeCount = this.activeModuleCount() + this.pendingPlacementCount();
       if (activeCount >= 15) {
-        return { ok: false, reason: `Devre dolu: ${activeCount}/15.` };
+        return { ok: false, code:"circuit_full", details:{activeCount}, reason: `Devre dolu: ${activeCount}/15.` };
       }
       const cost = Math.max(1, Math.floor(Number(circuitCreditCost) || 0) - (this.currentDiscountRemaining > 0 ? 1 : 0));
       if (this.circuitCredits < cost) {
         return {
           ok: false,
+          code:"insufficient_current",
+          details:{required:cost, available:this.circuitCredits},
           reason: `Yetersiz Akım: gerekli ${cost}, mevcut ${this.circuitCredits}.`,
         };
       }
@@ -715,6 +717,7 @@
           Number(this.profile.highest_rating || 0)
         ),
         leagueNameTr: this.profile.league_name_tr,
+        leagueNameEn: this.profile.league_name_en,
         operatorTitle: this.profile.operator_title || "Devre Çırağı",
         operatorTitleProgression: this.profile.operator_title_progression || null,
         cosmetics: {

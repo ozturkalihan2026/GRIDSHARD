@@ -54,6 +54,7 @@ from .game.catalog import (
 from .game.core_balance import core_rarity_profile
 from .game.ai_archetypes import (
     AI_ARCHETYPE_IDS,
+    BOT_ARCHETYPE_IDS,
     get_ai_archetype,
     normalize_ai_archetype_id,
     select_ai_archetype_for_key,
@@ -2763,6 +2764,7 @@ def simulate_balance_change(
         )
         return {
             "ok":False,
+            "code":"simulation_failed",
             "reason":str(exc),
             "draft":updated,
             "canonical_values_changed":
@@ -2928,6 +2930,7 @@ def regress_balance_change(
         )
         return {
             "ok":False,
+            "code":"regression_failed",
             "reason":str(exc),
             "draft":updated,
             "canonical_values_changed":
@@ -3917,12 +3920,14 @@ def _public_player_profile_view(player_id: str) -> dict:
             "rating": rating,
             "highest_rating": rating,
             "rank_name_tr": rank["name_tr"],
+            "rank_name_en": rank["name_en"],
             "operator_title": bot.get("archetype_tr", "Devre Operatörü"),
+            "operator_title_en": get_ai_archetype(BOT_ARCHETYPE_IDS.get(bot.get("archetype_tr"), "balanced")).name_en,
             "avatar": {"selected_avatar_id": "default", "selected_avatar_frame_id": "none"},
             "team": {"team_id": bot.get("team_id"), "team_name": bot.get("team_name")},
             "featured_deck": {"module_ids": list(bot.get("battle_pool_ids", ())), "matches": matches},
             "selected_core": {"id": core["id"], "name_tr": core["name_tr"], "level": 1, "rarity": core["rarity"]},
-            "season": {"id": monthly_season_descriptor()["id"], "name_tr": monthly_season_descriptor()["name_tr"], "ends_at": monthly_season_descriptor()["ends_at"], "summary": {}},
+            "season": {"id": monthly_season_descriptor()["id"], "name_tr": monthly_season_descriptor()["name_tr"], "name_en": monthly_season_descriptor()["name_en"], "ends_at": monthly_season_descriptor()["ends_at"], "summary": {}},
             "statistics": record,
             "visibility": {"profile": True, "avatar": False, "rewards": False, "settings": False},
         }
@@ -3963,7 +3968,9 @@ def _public_player_profile_view(player_id: str) -> dict:
         "rating": max(0, int(profile.rating)),
         "highest_rating": max(0, int(profile_view["highest_rating"])),
         "rank_name_tr": profile_view["league_name_tr"],
+        "rank_name_en": profile_view["league_name_en"],
         "operator_title": profile_view["operator_title"],
+        "operator_title_en": profile_view["operator_title_progression"]["current"]["title_en"],
         "avatar": {
             "selected_avatar_id": profile.selected_avatar_id,
             "selected_avatar_frame_id": profile.selected_avatar_frame_id,
@@ -3976,12 +3983,14 @@ def _public_player_profile_view(player_id: str) -> dict:
         "selected_core": {
             "id": selected_core["id"],
             "name_tr": selected_core["name_tr"],
+            "name_en": selected_core.get("name_en", ""),
             "level": selected_core["level"],
             "rarity": selected_core["rarity"],
         },
         "season": {
             "id": season["id"],
             "name_tr": season["name_tr"],
+            "name_en": season["name_en"],
             "ends_at": season["ends_at"],
             "summary": profile_view["season_summary"],
         },
@@ -4030,7 +4039,9 @@ def _public_team_profile_view(team_id: str) -> dict:
                 "online": True,
                 "is_bot": True,
                 "rank_name_tr": rank_stage_for_rating(int(bot.get("rating", 0)))["name_tr"],
+                "rank_name_en": rank_stage_for_rating(int(bot.get("rating", 0)))["name_en"],
                 "operator_title": bot.get("archetype_tr", "Devre Operatörü"),
+                "operator_title_en": get_ai_archetype(BOT_ARCHETYPE_IDS.get(bot.get("archetype_tr"), "balanced")).name_en,
                 "statistics": record,
             })
     else:

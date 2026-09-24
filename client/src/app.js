@@ -461,6 +461,8 @@
   let socialState = null;
   let pendingDeepLinkConsumed = false;
   let activePublicProfileId = null;
+  let publicProfilePayload = null;
+  let teamProfilePayload = null;
   let eventsState = null;
   let dailyMetaState = null;
   let dailyMetaRollPending = false;
@@ -1067,7 +1069,7 @@
       const shards = Math.max(0, Number(item.shards || 0));
       const footer = document.createElement("span");
       footer.className = "unified-module-progress";
-      footer.innerHTML = `<strong>SV ${level}</strong><span>${level >= 15 ? "AZAMİ" : `${shards} / ${required}`}</span><i style="--module-progress:${level >= 15 ? 100 : Math.min(100, Math.round((shards / required) * 100))}%"></i>`;
+      footer.innerHTML = `<strong>${localizedMessage("module.level_short", {level:localizedNumber(level)})}</strong><span>${level >= 15 ? localizedMessage("module.maximum") : `${localizedNumber(shards)} / ${localizedNumber(required)}`}</span><i style="--module-progress:${level >= 15 ? 100 : Math.min(100, Math.round((shards / required) * 100))}%"></i>`;
       tile.appendChild(footer);
     }
     return tile;
@@ -1098,7 +1100,7 @@
         empty.type = "button";
         empty.className = "unified-module-tile module-deck-empty";
         empty.dataset.deckIndex = String(index);
-        empty.setAttribute("aria-label", `${index + 1}. boş deste yuvası`);
+        empty.setAttribute("aria-label", localizedMessage("deck.empty_slot_aria", {slot:index + 1}));
         empty.textContent = "+";
         empty.disabled = true;
         host.appendChild(empty);
@@ -1109,7 +1111,7 @@
       tile.classList.toggle("is-replace-target", editable && Boolean(pendingDeckModuleInstanceId));
       if (editable) {
         tile.disabled = false;
-        tile.setAttribute("aria-label", `${localizedUiText(item.name_tr)} · ${pendingDeckModuleInstanceId ? "Yerine koy" : "Çıkar"}`);
+        tile.setAttribute("aria-label", localizedMessage("deck.module_action_aria", {name:localizedUiText(item.name_tr), action:localizedMessage(pendingDeckModuleInstanceId ? "deck.replace" : "deck.remove")}));
         const badge = tile.querySelector(".unified-module-selected");
         if (badge) badge.textContent = pendingDeckModuleInstanceId ? "↔" : "−";
         tile.addEventListener("click", async () => {
@@ -1137,10 +1139,10 @@
       const button = document.createElement("button");
       button.type = "button";
       button.textContent = preset ? String(index + 1) : "+";
-      button.title = preset?.name || `Boş deste ${index + 1} · Oluştur`;
+      button.title = preset?.name || localizedMessage("deck.create_empty", {slot:index + 1});
       button.setAttribute(
         "aria-label",
-        preset?.name || `${index + 1}. boş deste yuvası oluştur`
+        preset?.name || localizedMessage("deck.create_empty_aria", {slot:index + 1})
       );
       button.classList.toggle("is-empty", !preset);
       button.classList.toggle("is-active", preset?.name === activeBattlePoolPresetName);
@@ -1158,10 +1160,10 @@
 
   function beginEmptyBattlePoolPreset(index) {
     const slotNumber = Math.max(2, Math.min(7, Number(index) + 1));
-    let name = `Deste ${slotNumber}`;
+    let name = localizedMessage("deck.default_name", {slot:localizedNumber(slotNumber)});
     let suffix = 2;
     while (battlePoolPresets.some((preset) => preset.name === name)) {
-      name = `Deste ${slotNumber}.${suffix}`;
+      name = localizedMessage("deck.default_name_suffix", {slot:localizedNumber(slotNumber), suffix:localizedNumber(suffix)});
       suffix += 1;
     }
     activeBattlePoolPresetName = name;
@@ -1173,7 +1175,7 @@
     renderMetaHubScreens();
     const status = document.getElementById("module-action-status");
     if (status) {
-      status.textContent = `${slotNumber}. deste boş. Modüllerde Seç düğmesine dokun; ilk boş yuvaya otomatik yerleşir.`;
+      status.textContent = localizedMessage("deck.empty_hint", {slot:slotNumber});
     }
   }
 
@@ -1306,10 +1308,10 @@
     const module = moduleRewardIdentity(rewards);
     const core = coreRewardIdentity(rewards);
     return [
-      { kind:"circuit_credits", amount:Number(rewards.circuit_credits || 0), label:"Devre Kredisi", suffix:"" },
-      { kind:"flux_shards", amount:Number(rewards.flux_shards || 0), label:"Akı", suffix:"" },
-      { kind:"module_shards", amount:Number(rewards.module_shards || 0), label:`${module.nameTr} Parçası`, suffix:"" },
-      { kind:"core_shards", amount:Number(rewards.core_shards || 0), label:`${core.nameTr} Parçası`, suffix:"" },
+      { kind:"circuit_credits", amount:Number(rewards.circuit_credits || 0), label:localizedMessage("currency.credits_label"), suffix:"" },
+      { kind:"flux_shards", amount:Number(rewards.flux_shards || 0), label:localizedMessage("currency.flux_label"), suffix:"" },
+      { kind:"module_shards", amount:Number(rewards.module_shards || 0), label:localizedMessage("reward.module_shard", {name:localizedUiText(module.nameTr)}), suffix:"" },
+      { kind:"core_shards", amount:Number(rewards.core_shards || 0), label:localizedMessage("reward.core_shard", {name:localizedUiText(core.nameTr)}), suffix:"" },
     ].filter((item) => item.amount > 0);
   }
 
@@ -1324,7 +1326,7 @@
       const label = document.createElement("span");
       label.textContent = item.label;
       const value = document.createElement("strong");
-      value.textContent = `+${item.amount}${item.suffix}`;
+      value.textContent = localizedMessage("reward.signed_amount", {amount:localizedNumber(item.amount), suffix:item.suffix});
       row.setAttribute("aria-label", `${item.label} ${value.textContent}`);
       row.title = `${item.label} ${value.textContent}`;
       row.append(icon, label, value);
@@ -1338,12 +1340,12 @@
     const definition = (isFrame ? PROFILE_AVATAR_FRAMES : PROFILE_AVATARS).find(
       (item) => item.id === cosmeticId
     );
-    const name = definition?.nameTr || (isFrame ? "Avatar Çerçevesi" : "Avatar");
+    const name = localizedCatalogName(isFrame ? "frame" : "avatar", cosmeticId, definition?.nameTr || localizedMessage(isFrame ? "team.cosmetic_frame" : "event.prize_avatar"));
     const row = document.createElement("div");
     row.className = "reward-resource-row season-cosmetic-reward";
     row.dataset.rewardKind = kind;
-    row.setAttribute("aria-label", `${name} ×1`);
-    row.title = `${name} ×1`;
+    row.setAttribute("aria-label", localizedMessage("reward.single_item", {name}));
+    row.title = localizedMessage("reward.single_item", {name});
     const preview = document.createElement("span");
     preview.className = "profile-avatar season-reward-cosmetic-preview";
     preview.setAttribute("aria-hidden", "true");
@@ -1454,18 +1456,18 @@
       copy.className = "arena-path-stage-copy";
       const title = document.createElement("h3");
       title.textContent = isLeagueStage
-        ? stage.name_tr
-        : `Arena ${stage.index}${stage.name_tr ? ` · ${stage.name_tr}` : ""}`;
+        ? localizedUiText(stage.name_tr)
+        : localizedMessage("arena.stage_name", {arena:localizedNumber(stage.index), name:stage.name_tr ? localizedMessage("arena.stage_name_suffix", {name:localizedUiText(stage.name_tr)}) : ""});
       const detail = document.createElement("p");
       if (arena) {
         const nodeCount = (arena.nodes || []).filter((node) => Object.keys(node.rewards || {}).length && Number(node.trophies) >= Number(stage.minimum_rating || 0)).length;
-        const coreCopy = arena.core_unlock ? " · Yeni çekirdek" : "";
-        detail.textContent = `${stage.minimum_rating || 0} Kupa · ${nodeCount} ödül durağı${coreCopy}`;
+        const coreCopy = arena.core_unlock ? localizedMessage("arena.new_core_suffix") : "";
+        detail.textContent = localizedMessage("arena.stage_detail", {trophies:localizedNumber(stage.minimum_rating || 0), count:localizedNumber(nodeCount), core:coreCopy});
       } else {
         const next = stages[stages.indexOf(stage) + 1];
         detail.textContent = next
-          ? `${stage.minimum_rating || 0}–${Number(next.minimum_rating) - 1} Kupa · Sezonluk rekabet ligi`
-          : `${stage.minimum_rating || 0}+ Kupa · Efsanevi rekabet ligi`;
+          ? localizedMessage("arena.league_range", {minimum:localizedNumber(stage.minimum_rating || 0), maximum:localizedNumber(Number(next.minimum_rating) - 1)})
+          : localizedMessage("arena.legendary_range", {minimum:localizedNumber(stage.minimum_rating || 0)});
       }
       copy.append(title, detail);
       head.append(marker, copy);
@@ -1506,8 +1508,16 @@
           reward.type = "button";
           reward.className = `arena-reward-node${node.claimed ? " is-claimed" : ""}${node.claimable ? " is-claimable" : ""}`;
           reward.disabled = !node.claimable;
-          reward.innerHTML = `<span class="arena-reward-trophy">${Number(node.trophies)} 🏆</span><i aria-hidden="true">${rewardIcon(node.rewards)}</i><strong>${node.claimed ? "ALINDI" : rewardDescription}</strong>`;
-          if (node.claimable) reward.setAttribute("aria-label", `${rewardDescription} ödülünü al`);
+          const trophy=document.createElement("span");
+          trophy.className="arena-reward-trophy";
+          trophy.textContent=localizedMessage("arena.trophy_icon", {count:localizedNumber(node.trophies)});
+          const icon=document.createElement("i");
+          icon.setAttribute("aria-hidden","true");
+          icon.textContent=rewardIcon(node.rewards);
+          const caption=document.createElement("strong");
+          caption.textContent=node.claimed ? localizedMessage("reward.claimed") : rewardDescription;
+          reward.append(trophy,icon,caption);
+          if (node.claimable) reward.setAttribute("aria-label", localizedMessage("reward.claim_aria", {reward:rewardDescription}));
           reward.addEventListener("click", async () => {
             reward.disabled = true;
             const status = document.getElementById("arena-reward-status");
@@ -1532,8 +1542,16 @@
           reward.type = "button";
           reward.className = `arena-reward-node${node.claimed ? " is-claimed" : ""}${node.claimable ? " is-claimable" : ""}`;
           reward.disabled = !node.claimable;
-          reward.innerHTML = `<span class="arena-reward-trophy">${Number(node.trophies)} 🏆</span><i aria-hidden="true">${rewardIcon(node.rewards)}</i><strong>${node.claimed ? "ALINDI" : rewardDescription}</strong>`;
-          if (node.claimable) reward.setAttribute("aria-label", `${rewardDescription} ödülünü al`);
+          const trophy=document.createElement("span");
+          trophy.className="arena-reward-trophy";
+          trophy.textContent=localizedMessage("arena.trophy_icon", {count:localizedNumber(node.trophies)});
+          const icon=document.createElement("i");
+          icon.setAttribute("aria-hidden","true");
+          icon.textContent=rewardIcon(node.rewards);
+          const caption=document.createElement("strong");
+          caption.textContent=node.claimed ? localizedMessage("reward.claimed") : rewardDescription;
+          reward.append(trophy,icon,caption);
+          if (node.claimable) reward.setAttribute("aria-label", localizedMessage("reward.claim_aria", {reward:rewardDescription}));
           reward.addEventListener("click", async () => {
             reward.disabled = true;
             const status = document.getElementById("arena-reward-status");
@@ -1588,9 +1606,9 @@
     const coreId = core?.id || "core_resonance";
     const visual = applyCoreVisualIdentity(button, coreId);
     if (glyph) glyph.textContent = visual.glyph;
-    if (level) level.textContent = `SV ${Number(core?.level || 1)}`;
+    if (level) level.textContent = localizedMessage("module.level_short", {level:localizedNumber(core?.level || 1)});
     if (button) {
-      button.setAttribute("aria-label", `${core?.name_tr || "Çekirdek"} · Seviye ${Number(core?.level || 1)} · Çekirdek seçimini aç`);
+      button.setAttribute("aria-label", localizedMessage("core.select_aria", {name:localizedUiText(core?.name_tr || "Çekirdek"), level:localizedNumber(core?.level || 1)}));
     }
   }
   function openCoreCollection() {
@@ -1630,7 +1648,7 @@
     tile.dataset.rarity = core.rarity || "common";
     tile.dataset.selected = String(selected);
     tile.dataset.locked = String(!core.unlocked);
-    tile.setAttribute("aria-label", `${core.name_tr} · ${moduleRarityLabel(core.rarity)} · Seviye ${core.level}${core.selected ? " · seçili" : ""}`);
+    tile.setAttribute("aria-label", localizedMessage("core.tile_aria", {name:localizedUiText(core.name_tr), rarity:moduleRarityLabel(core.rarity), level:localizedNumber(core.level), selected:core.selected ? localizedMessage("core.selected_suffix") : ""}));
     const visual = applyCoreVisualIdentity(tile, core.id);
     const glyph = document.createElement("span");
     glyph.className = "core-collection-glyph";
@@ -1639,11 +1657,11 @@
     const copy = document.createElement("span");
     copy.className = "core-collection-copy";
     const name = document.createElement("strong");
-    name.textContent = core.name_tr;
+    name.textContent = localizedRecordText(core, "name");
     const rarity = document.createElement("em");
     rarity.textContent = moduleRarityLabel(core.rarity);
     const state = document.createElement("small");
-    state.textContent = core.unlocked ? `SV ${core.level}` : `ARENA ${core.unlock_arena}`;
+    state.textContent = core.unlocked ? localizedMessage("module.level_short", {level:localizedNumber(core.level)}) : localizedMessage("arena.numbered", {arena:localizedNumber(core.unlock_arena)});
     copy.append(name, rarity, state);
     const progress = document.createElement("i");
     const required = Number(core.next_upgrade_cost?.shards || 1);
@@ -1676,9 +1694,9 @@
     if (!panel) return;
     const name = document.getElementById("core-quick-name");
     const select = document.getElementById("core-quick-select");
-    if (name) name.textContent = core.name_tr;
+    if (name) name.textContent = localizedRecordText(core, "name");
     if (select) {
-      select.textContent = core.selected ? "Seçildi" : core.unlocked ? "Seç" : "Kilitli";
+      select.textContent = localizedMessage(core.selected ? "core.selected" : core.unlocked ? "core.select" : "reward.locked");
       select.disabled = !core.unlocked || core.selected;
     }
     panel.hidden = false;
@@ -1707,7 +1725,7 @@
       }
     }
     const count = document.getElementById("core-collection-count");
-    if (count) count.textContent = `${cores.filter((core) => core.unlocked).length} / ${cores.length || 7}`;
+    if (count) count.textContent = localizedMessage("core.unlock_ratio", {unlocked:localizedNumber(cores.filter((core) => core.unlocked).length), total:localizedNumber(cores.length || 7)});
     for (const rarity of CORE_RARITY_ORDER) {
       const rarityCores = cores.filter((core) => (core.rarity || "common") === rarity);
       if (!rarityCores.length) continue;
@@ -1718,7 +1736,7 @@
       const title = document.createElement("strong");
       title.textContent = moduleRarityLabel(rarity);
       const summary = document.createElement("small");
-      summary.textContent = `${rarityCores.filter((core) => core.unlocked).length} / ${rarityCores.length} AÇIK`;
+      summary.textContent = localizedMessage("core.unlocked_count", {unlocked:localizedNumber(rarityCores.filter((core) => core.unlocked).length), total:localizedNumber(rarityCores.length)});
       heading.append(title, summary);
       const list = document.createElement("div");
       list.className = "core-rarity-list";
@@ -1773,30 +1791,38 @@
     const intro = document.createElement("p");
     intro.className = "module-detail-tab-intro";
     if (tabName === "stats") {
-      intro.textContent = "Çekirdeğin savaş alanına sağladığı kalıcı enerji ve dayanıklılık değerleri.";
+      intro.textContent = localizedMessage("core.stats_intro");
       const list = document.createElement("dl");
       for (const [label, value] of [
-        ["Nadirlik", moduleRarityLabel(core.rarity)],
-        ["Savaş rolü", core.role_tr],
-        ["Enerji üretimi", `${core.energy_per_second}/sn`],
-        ["Enerji deposu", core.energy_capacity],
-        ["Seviye", `${core.level} / 15`],
+        ["module.rarity", moduleRarityLabel(core.rarity)],
+        ["core.battle_role", localizedRecordText(core, "role")],
+        ["core.energy_generation", localizedMessage("module.energy_per_second", {energy:localizedNumber(core.energy_per_second)})],
+        ["core.energy_storage", core.energy_capacity],
+        ["core.level_label", `${core.level} / 15`],
       ]) {
         const row = document.createElement("div");
-        row.innerHTML = `<dt>${label}</dt><dd>${value}</dd>`;
+        const term=document.createElement("dt");
+        term.textContent=localizedMessage(label);
+        const description=document.createElement("dd");
+        description.textContent=localizedUiText(String(value));
+        row.append(term,description);
         list.appendChild(row);
       }
       host.appendChild(list);
     } else if (tabName === "skills") {
-      intro.textContent = "Her eşikte tek bir çekirdek yeteneği seçilebilir.";
+      intro.textContent = localizedMessage("core.skills_intro");
       const tree = document.createElement("div");
       tree.className = "core-skill-tree";
       for (const skill of core.skills || []) {
         const button = document.createElement("button");
         button.type = "button";
         button.className = skill.learned ? "is-selected" : "";
-        const state = skill.learned ? "SEÇİLDİ" : skill.tier_selected ? "DİĞER DAL SEÇİLDİ" : core.level < skill.level ? `SV ${skill.level} GEREKLİ` : `${skill.flux_cost} AKI`;
-        button.innerHTML = `<strong>${skill.name_tr}</strong><small>SV ${skill.level} · ${state}</small>`;
+        const state = skill.learned ? localizedMessage("core.skill_selected") : skill.tier_selected ? localizedMessage("core.other_branch_selected") : core.level < skill.level ? localizedMessage("core.level_required", {level:localizedNumber(skill.level)}) : localizedMessage("currency.flux", {amount:localizedNumber(skill.flux_cost)});
+        const name=document.createElement("strong");
+        name.textContent=localizedRecordText(skill, "name");
+        const detail=document.createElement("small");
+        detail.textContent=localizedMessage("core.skill_level_state", {level:localizedNumber(skill.level), state});
+        button.append(name,detail);
         button.disabled = !core.unlocked || skill.learned || skill.tier_selected || core.level < skill.level || Number(metaProgressionState?.flux_shards || 0) < Number(skill.flux_cost || 0);
         button.addEventListener("click", async () => {
           button.disabled = true;
@@ -1807,18 +1833,22 @@
       }
       host.appendChild(tree);
     } else {
-      intro.textContent = core.role_tr;
+      intro.textContent = localizedRecordText(core, "role");
       const overview = document.createElement("div");
       overview.className = "module-overview-grid";
       for (const [label, value] of [
-        ["NADİRLİK", moduleRarityLabel(core.rarity)],
-        ["SAVAŞ ROLÜ", core.role_tr],
-        ["AÇILIŞ", `Arena ${core.unlock_arena}`],
-        ["ENERJİ", `${core.energy_per_second}/sn`],
-        ["SONRAKİ SEVİYE", core.next_upgrade_cost ? `${core.next_upgrade_cost.shards} parça · ${core.next_upgrade_cost.flux_shards} Akı` : "Azami seviye"],
+        ["core.rarity_upper", moduleRarityLabel(core.rarity)],
+        ["module.battle_role", localizedRecordText(core, "role")],
+        ["module.unlock", localizedMessage("arena.numbered", {arena:localizedNumber(core.unlock_arena)})],
+        ["core.energy_upper", localizedMessage("module.energy_per_second", {energy:localizedNumber(core.energy_per_second)})],
+        ["module.next_level", core.next_upgrade_cost ? localizedMessage("core.upgrade_cost", {shards:localizedNumber(core.next_upgrade_cost.shards), flux:localizedNumber(core.next_upgrade_cost.flux_shards)}) : localizedMessage("core.max_level")],
       ]) {
         const card = document.createElement("div");
-        card.innerHTML = `<span>${label}</span><strong>${value}</strong>`;
+        const caption=document.createElement("span");
+        caption.textContent=localizedMessage(label);
+        const amount=document.createElement("strong");
+        amount.textContent=localizedUiText(String(value));
+        card.append(caption,amount);
         overview.appendChild(card);
       }
       host.appendChild(overview);
@@ -1826,7 +1856,7 @@
     host.prepend(intro);
   }
 
-  function openCoreDetail() {
+  function openCoreDetail(tabName = "overview") {
     const core = activeMetaCore()
       || metaProgressionState?.cores?.types?.find((item) => item.selected)
       || metaProgressionState?.cores?.types?.[0];
@@ -1835,28 +1865,28 @@
     const dialog = document.getElementById("core-detail-dialog");
     const visual = applyCoreVisualIdentity(dialog, core.id);
     const setText = (id, value) => { const target = document.getElementById(id); if (target) target.textContent = String(value); };
-    setText("core-detail-name", core.name_tr);
+    setText("core-detail-name", localizedRecordText(core, "name"));
     setText("core-detail-rarity", moduleRarityLabel(core.rarity));
-    setText("core-detail-level", `SEVİYE ${core.level}`);
-    setText("core-detail-selected-state", core.selected ? "SEÇİLDİ" : core.unlocked ? "HAZIR" : "KİLİTLİ");
+    setText("core-detail-level", localizedMessage("core.level", {level:localizedNumber(core.level)}));
+    setText("core-detail-selected-state", localizedMessage(core.selected ? "core.selected_upper" : core.unlocked ? "core.ready_upper" : "reward.locked_upper"));
     const cost = core.next_upgrade_cost;
     const required = Number(cost?.shards || 1);
     const owned = Number(core.shards || 0) + Number(core.legacy_shards || 0);
-    setText("core-detail-shards", cost ? `${owned} / ${required}` : "AZAMİ SEVİYE");
+    setText("core-detail-shards", cost ? `${localizedNumber(owned)} / ${localizedNumber(required)}` : localizedMessage("core.max_level"));
     const progress = document.getElementById("core-detail-progress");
     if (progress) { progress.max = required; progress.value = cost ? Math.min(required, owned) : required; }
     const art = document.getElementById("core-detail-art");
     if (art) { art.textContent = visual.glyph; applyCoreVisualIdentity(art, core.id); }
     const stats = document.getElementById("core-detail-stats");
-    if (stats) stats.innerHTML = `<div><span>ENERJİ</span><strong>${core.energy_per_second}/sn</strong></div><div><span>DEPO</span><strong>${core.energy_capacity}</strong></div><div><span>YETENEK</span><strong>${(core.skills || []).filter((skill) => skill.learned).length}</strong></div>`;
+    if (stats) stats.innerHTML = `<div><span>${localizedMessage("core.energy")}</span><strong>${localizedMessage("module.energy_per_second", {energy:localizedNumber(core.energy_per_second)})}</strong></div><div><span>${localizedMessage("core.storage")}</span><strong>${localizedNumber(core.energy_capacity)}</strong></div><div><span>${localizedMessage("core.skills")}</span><strong>${localizedNumber((core.skills || []).filter((skill) => skill.learned).length)}</strong></div>`;
     const select = document.getElementById("core-detail-select");
-    if (select) { select.disabled = !core.unlocked || core.selected; select.textContent = core.selected ? "SEÇİLDİ" : core.unlocked ? "SEÇ" : "KİLİTLİ"; }
+    if (select) { select.disabled = !core.unlocked || core.selected; select.textContent = localizedMessage(core.selected ? "core.selected_upper" : core.unlocked ? "core.select_upper" : "reward.locked_upper"); }
     const upgrade = document.getElementById("core-detail-upgrade");
     const canUpgrade = core.unlocked && cost && owned >= Number(cost.shards) && Number(metaProgressionState?.flux_shards || 0) >= Number(cost.flux_shards);
-    if (upgrade) { upgrade.disabled = !canUpgrade; upgrade.textContent = cost ? `YÜKSELT · ${cost.flux_shards} AKI` : "AZAMİ SEVİYE"; }
-    setText("core-detail-status", !core.unlocked ? `Arena ${core.unlock_arena} seviyesinde açılır.` : cost && !canUpgrade ? `${cost.shards} parça ve ${cost.flux_shards} Akı gerekli.` : "");
-    for (const button of document.querySelectorAll("[data-core-detail-tab]")) button.classList.toggle("is-active", button.dataset.coreDetailTab === "overview");
-    renderCoreDetailTab("overview");
+    if (upgrade) { upgrade.disabled = !canUpgrade; upgrade.textContent = cost ? localizedMessage("core.upgrade_button", {flux:localizedNumber(cost.flux_shards)}) : localizedMessage("core.max_level"); }
+    setText("core-detail-status", !core.unlocked ? localizedMessage("core.unlock_arena", {arena:localizedNumber(core.unlock_arena)}) : cost && !canUpgrade ? localizedMessage("core.upgrade_required", {shards:localizedNumber(cost.shards), flux:localizedNumber(cost.flux_shards)}) : "");
+    for (const button of document.querySelectorAll("[data-core-detail-tab]")) button.classList.toggle("is-active", button.dataset.coreDetailTab === tabName);
+    renderCoreDetailTab(tabName);
     if (dialog?.showModal && !dialog.open) dialog.showModal();
     else dialog?.setAttribute("open", "");
   }
@@ -1895,15 +1925,15 @@
       const element = document.getElementById(id);
       if (element) element.textContent = String(value);
     };
-    setText("home-arena-name", rank.kind !== "arena" ? rank.name_tr : `Arena ${rank.index || 1}`);
-    setText("home-arena-progress-copy", rank.next_stage ? `${rating} / ${ceiling} Kupa` : `${rating} Kupa`);
+    setText("home-arena-name", rank.kind !== "arena" ? localizedUiText(rank.name_tr) : localizedMessage("arena.numbered", {arena:localizedNumber(rank.index || 1)}));
+    setText("home-arena-progress-copy", rank.next_stage ? localizedMessage("arena.progress_to_next", {current:localizedNumber(rating), next:localizedNumber(ceiling)}) : localizedMessage("profile.trophies", {count:localizedNumber(rating)}));
     const arenaTitle = rank.name_tr && !/^Arena\s+\d+$/i.test(rank.name_tr)
-      ? `Arena ${rank.index || 1} · ${rank.name_tr}`
-      : `Arena ${rank.index || 1}`;
+      ? localizedMessage("arena.name_and_rank", {arena:localizedNumber(rank.index || 1), name:localizedUiText(rank.name_tr)})
+      : localizedMessage("arena.numbered", {arena:localizedNumber(rank.index || 1)});
     setText("arena-detail-title", rank.kind !== "arena" ? rank.name_tr : arenaTitle);
-    setText("arena-detail-rating", `${rating} Kupa`);
-    setText("arena-detail-range", rank.next_stage ? `${rating - floor} / ${ceiling - floor}` : "Azami aşama");
-    setText("arena-detail-next", rank.next_stage ? `Sonraki: ${rank.next_stage.name_tr} · ${ceiling} Kupa` : "Efsanevi yol tamamlandı");
+    setText("arena-detail-rating", localizedMessage("profile.trophies", {count:localizedNumber(rating)}));
+    setText("arena-detail-range", rank.next_stage ? `${localizedNumber(rating - floor)} / ${localizedNumber(ceiling - floor)}` : localizedMessage("arena.max_stage"));
+    setText("arena-detail-next", rank.next_stage ? localizedMessage("arena.next_stage", {name:localizedUiText(rank.next_stage.name_tr), trophies:localizedNumber(ceiling)}) : localizedMessage("arena.complete"));
     renderArenaPath();
     const segments = document.getElementById("home-arena-segments");
     if (segments) {
@@ -1921,7 +1951,7 @@
       stops.forEach((node, index) => {
         const segment = document.createElement("i");
         segment.className = rating >= Number(node.trophies) ? "is-complete" : (index === stops.findIndex((item) => rating < Number(item.trophies)) ? "is-current" : "");
-        segment.title = `${Number(node.trophies)} Kupa${node.description_tr ? ` · ${localizedRewardDescription(node.description_tr)}` : ""}`;
+        segment.title = localizedMessage("arena.node_title", {trophies:localizedNumber(node.trophies), reward:node.description_tr ? localizedMessage("arena.node_reward_suffix", {description:localizedRewardDescription(node.description_tr)}) : ""});
         segments.appendChild(segment);
       });
     }
@@ -2005,8 +2035,8 @@
       const element = document.getElementById(id);
       if (element) element.textContent = String(value);
     };
-    setText("shop-flux-balance", `${state.flux_shards || 0} Akı`);
-    setText("shop-credit-balance", `${state.circuit_credits || 0} DK`);
+    setText("shop-flux-balance", localizedMessage("currency.flux", {amount:localizedNumber(state.flux_shards || 0)}));
+    setText("shop-credit-balance", localizedMessage("currency.credits_short", {amount:localizedNumber(state.circuit_credits || 0)}));
     const giftHost = document.getElementById("gift-chest-list");
     if (giftHost) {
       giftHost.replaceChildren();
@@ -2030,17 +2060,20 @@
         const remaining = Math.max(0, Number(definition.claim_remaining_seconds || 0));
         card.dataset.definitionId = definition.id;
         card.dataset.claimRemaining = String(remaining);
-        card.innerHTML = `${chestVisualMarkup(tier)}<strong>${definition.name_tr} x${ownedCount}</strong>`;
+        card.innerHTML = chestVisualMarkup(tier);
+        const chestName=document.createElement("strong");
+        chestName.textContent=localizedMessage("chest.owned_count", {name:localizedUiText(definition.name_tr), count:localizedNumber(ownedCount)});
+        card.appendChild(chestName);
         if (ownedCount > 0) {
           const inventoryStatus = document.createElement("small");
           inventoryStatus.className = "chest-inventory-status";
-          inventoryStatus.textContent = `${openableCount} / ${ownedCount} açılabilir`;
+          inventoryStatus.textContent = localizedMessage("chest.openable_count", {openable:localizedNumber(openableCount), owned:localizedNumber(ownedCount)});
           card.appendChild(inventoryStatus);
         }
         if (remaining > 0) {
           const countdown = document.createElement("small");
           countdown.className = "chest-countdown";
-          countdown.textContent = "Yenilenmesine " + formatChestCountdown(remaining);
+          countdown.textContent = localizedMessage("chest.renewal_countdown", {time:formatChestCountdown(remaining)});
           card.appendChild(countdown);
         }
         const actions = document.createElement("div");
@@ -2048,7 +2081,7 @@
         const giftAction = document.createElement("button");
         giftAction.type = "button";
         giftAction.className = "gift-chest-action";
-        giftAction.textContent = remaining > 0 ? formatChestCountdown(remaining) : "HEDİYE SANDIK AÇ";
+        giftAction.textContent = remaining > 0 ? formatChestCountdown(remaining) : localizedMessage("chest.open_gift");
         giftAction.disabled = Boolean(
           state.unavailable
           || remaining > 0
@@ -2060,7 +2093,7 @@
           const openAllAction = document.createElement("button");
           openAllAction.type = "button";
           openAllAction.className = "chest-open-all-action";
-          openAllAction.textContent = "HEPSİNİ AÇ";
+          openAllAction.textContent = localizedMessage("chest.open_all");
           openAllAction.disabled = Boolean(state.unavailable || openableCount === 0);
           openAllAction.addEventListener("click", () => openAllAvailableChests(definition.id));
           actions.appendChild(openAllAction);
@@ -2075,7 +2108,7 @@
       const resetAt = state.shop?.reset_at ? new Date(state.shop.reset_at) : null;
       resetCopy.textContent = resetAt && !Number.isNaN(resetAt.getTime())
         ? `${localizedUiText("Pzt")} ${localizedDate(resetAt, {hour:"2-digit", minute:"2-digit"})}`
-        : "Haftalık";
+        : localizedMessage("shop.weekly");
     }
     if (offerHost) {
       offerHost.replaceChildren();
@@ -2084,11 +2117,15 @@
         card.className = "daily-offer-card";
         card.dataset.tier = offer.tier;
         card.dataset.offerId = offer.id;
-        const currency = offer.currency === "flux_shards" ? "Akı" : "DK";
-        card.innerHTML = `${chestVisualMarkup(offer.tier)}<div><strong>${offer.name_tr}</strong></div>`;
+        card.innerHTML = chestVisualMarkup(offer.tier);
+        const offerCopy=document.createElement("div");
+        const offerName=document.createElement("strong");
+        offerName.textContent=localizedUiText(offer.name_tr);
+        offerCopy.appendChild(offerName);
+        card.appendChild(offerCopy);
         const action = document.createElement("button");
         action.type = "button";
-        action.textContent = offer.purchased ? "ALINDI" : `${offer.cost} ${currency}`;
+        action.textContent = offer.purchased ? localizedMessage("reward.claimed") : localizedMessage(offer.currency === "flux_shards" ? "currency.flux" : "currency.credits_short", {amount:localizedNumber(offer.cost)});
         action.disabled = Boolean(state.unavailable || offer.purchased || Number(state[offer.currency] || 0) < offer.cost);
         action.addEventListener("click", () => purchaseShopOffer(offer.id));
         card.appendChild(action);
@@ -2103,9 +2140,9 @@
     const hours = Math.floor(total / 3600);
     const minutes = Math.floor((total % 3600) / 60);
     const secs = total % 60;
-    if (hours) return `${hours}s ${String(minutes).padStart(2, "0")}dk`;
-    if (minutes) return `${minutes}dk ${String(secs).padStart(2, "0")}sn`;
-    return `${secs}sn`;
+    if (hours) return localizedMessage("time.chest_hours", {hours:localizedNumber(hours), minutes:String(minutes).padStart(2, "0")});
+    if (minutes) return localizedMessage("time.chest_minutes", {minutes:localizedNumber(minutes), seconds:String(secs).padStart(2, "0")});
+    return localizedMessage("time.chest_seconds", {seconds:localizedNumber(secs)});
   }
 
   let shopCountdownTimer = null;
@@ -2120,11 +2157,11 @@
         card.dataset.claimRemaining = String(next);
         const countdown = card.querySelector(".chest-countdown");
         const button = card.querySelector(".gift-chest-action");
-        if (countdown) countdown.textContent = "Yenilenmesine " + formatChestCountdown(next);
+        if (countdown) countdown.textContent = localizedMessage("chest.renewal_countdown", {time:formatChestCountdown(next)});
         if (button && next === 0 && previous > 0) becameAvailable = true;
         if (button && next === 0 && !metaProgressionState?.unavailable) {
           button.disabled = false;
-          button.textContent = "HEDİYE SANDIK AÇ";
+          button.textContent = localizedMessage("chest.open_gift");
           countdown?.remove();
         }
       }
@@ -2217,11 +2254,11 @@
     const close = document.getElementById("chest-reveal-close");
     if (card) { card.dataset.tier = tier; card.dataset.state = "revealed"; }
     if (visual) visual.className = `chest-visual chest-visual-large chest-visual-${tier}`;
-    if (title) title.textContent = `${definition?.name_tr || "Sandık"} · ${receipts.length} açıldı`;
+    if (title) title.textContent = localizedMessage("chest.opened_title", {name:localizedUiText(definition?.name_tr || "Sandık"), count:localizedNumber(receipts.length)});
     if (kicker) {
       kicker.hidden = false;
       kicker.textContent = batchReceipt?.partial
-        ? `${receipts.length} AÇILDI · ${batchReceipt.remaining_count || 0} KALDI`
+        ? localizedMessage("chest.opened_remaining", {opened:localizedNumber(receipts.length), remaining:localizedNumber(batchReceipt.remaining_count || 0)})
         : "TÜM AÇILABİLİR SANDIKLAR AÇILDI";
     }
     if (host) {
@@ -2229,7 +2266,7 @@
       const section = document.createElement("section");
       section.className = "bulk-chest-reward";
       const label = document.createElement("small");
-      label.textContent = `${receipts.length} SANDIĞIN TOPLAM ÖDÜLÜ`;
+      label.textContent = localizedMessage("chest.total_rewards", {count:localizedNumber(receipts.length)});
       section.append(label, createBulkRewardRows(batchReceipt));
       host.appendChild(section);
     }
@@ -2266,7 +2303,13 @@
     const close = document.getElementById("chest-reveal-close");
     if (card) card.dataset.state = "error";
     if (kicker) { kicker.hidden = false; kicker.textContent = "SANDIK AÇILAMADI"; }
-    if (host) host.innerHTML = `<div><span>${error instanceof Error ? error.message : String(error)}</span></div>`;
+    if (host) {
+      const box=document.createElement("div");
+      const message=document.createElement("span");
+      message.textContent=error instanceof Error ? error.message : String(error);
+      box.appendChild(message);
+      host.replaceChildren(box);
+    }
     if (close) { close.disabled = false; close.textContent = "DEVAM"; }
   }
 
@@ -2350,7 +2393,7 @@
     );
     showChestOpening({
       tier: chestTier(definition || { id: definitionId }),
-      title: `${definition?.name_tr || "Sandık"} sandıkları`,
+      title: localizedMessage("chest.collection_title", {name:localizedUiText(definition?.name_tr || "Sandık")}),
     });
     try {
       const payload = await metaProgressionMutation(
@@ -2437,7 +2480,7 @@
         );
       }
       if (presetName === activeBattlePoolPresetName) activeBattlePoolPresetBaseline = [...definitionIds];
-      if (status) status.textContent = `${presetName || "Aktif savaş destesi"} kaydedildi.`;
+      if (status) status.textContent = localizedMessage("deck.saved", {name:presetName || localizedMessage("deck.active_name")});
     } catch (error) {
       if (revision !== deckEditRevision) return { ok: false };
       if (status) status.textContent = error instanceof Error ? error.message : String(error);
@@ -2455,7 +2498,7 @@
     const instanceId = definitionIdsToInstanceIds([selectedCollectionModuleId])[0];
     const status = document.getElementById("module-action-status");
     if (!instanceId) {
-      if (status) status.textContent = "Bu modülün savaş kartı henüz yüklenmedi. Sayfayı yenileyip tekrar deneyebilirsin.";
+      if (status) status.textContent = localizedMessage("module.card_not_loaded");
       return;
     }
     const existingIndex = deckEditorSlots.indexOf(instanceId);
@@ -2479,7 +2522,7 @@
 
     pendingDeckModuleInstanceId = instanceId;
     document.getElementById("module-quick-actions")?.setAttribute("hidden", "");
-    if (status) status.textContent = "Deste dolu. Yer değiştirmek istediğin deste kartına dokun.";
+    if (status) status.textContent = localizedMessage("module.deck_full_replace");
     renderMetaHubScreens();
     document.getElementById("module-deck-strip")?.scrollIntoView?.({ block: "nearest", behavior: "smooth" });
   }
@@ -2493,7 +2536,7 @@
     const section = document.createElement("section");
     section.className = "module-effect-panel";
     const heading = document.createElement("strong");
-    heading.textContent = "GERÇEK SAVAŞ ETKİLERİ";
+    heading.textContent = localizedMessage("module.real_battle_effects");
     const list = document.createElement("ul");
     for (const effectLine of effectLines) {
       const item = document.createElement("li");
@@ -2502,7 +2545,7 @@
     }
     if (!list.childElementCount) {
       const item = document.createElement("li");
-      item.textContent = "Bu modülün ek sayısal etkisi yok.";
+      item.textContent = localizedMessage("module.no_extra_effects");
       list.appendChild(item);
     }
     section.append(heading, list);
@@ -2519,7 +2562,7 @@
     text.className = "module-detail-tab-intro";
     const stats = item.stats || {};
     if (tabName === "stats") {
-      text.textContent = "Savaş değerleri, sınıf karşılıkları ve uyumlu modüller.";
+      text.textContent = localizedMessage("module.stats_intro");
       const rarityBonuses = stats.rarity_bonuses || {};
       const rarityPercent = (value, inverse=false) => {
         const delta = Math.round(Math.abs(Number(value || 1) - 1) * 100);
@@ -2527,32 +2570,32 @@
         return `${inverse ? "-" : "+"}${delta}%`;
       };
       const rarityImpact = [
-        `CAN ${rarityPercent(rarityBonuses.hp)}`,
-        `Hasar ${rarityPercent(rarityBonuses.attack)}`,
-        `Rol etkisi ${rarityPercent(rarityBonuses.effect)}`,
-        `Bekleme ${rarityPercent(rarityBonuses.cooldown, true)}`,
-        `Enerji ${rarityPercent(rarityBonuses.energy, true)}`,
+        localizedMessage("module.rarity_hp", {value:rarityPercent(rarityBonuses.hp)}),
+        localizedMessage("module.rarity_damage", {value:rarityPercent(rarityBonuses.attack)}),
+        localizedMessage("module.rarity_effect", {value:rarityPercent(rarityBonuses.effect)}),
+        localizedMessage("module.rarity_cooldown", {value:rarityPercent(rarityBonuses.cooldown, true)}),
+        localizedMessage("module.rarity_energy", {value:rarityPercent(rarityBonuses.energy, true)}),
       ].join(" · ");
-      const entries = [["Sınıf", poolCategoryLabel(item.category)], ["Nadirlik", moduleRarityLabel(item.rarity)], ["Nadirlik avantajı", rarityImpact], ["CAN", stats.max_hp], ["Hasar", stats.base_damage], ["Bekleme", `${Number(stats.cooldown_ms || 0) / 1000} sn`], ["Etki çarpanı", localizedNumber(stats.effect_multiplier, {maximumFractionDigits:2})], ["Enerji tüketimi", `${stats.energy_consumption || 0}/sn`], ["Akım maliyeti", item.current_cost]];
+      const entries = [["module.class", poolCategoryLabel(item.category)], ["module.rarity", moduleRarityLabel(item.rarity)], ["module.rarity_advantage", rarityImpact], ["module.hp_label", stats.max_hp], ["module.damage_label", stats.base_damage], ["module.cooldown", localizedMessage("time.seconds_short", {count:localizedNumber(Number(stats.cooldown_ms || 0) / 1000)})], ["module.effect_multiplier", localizedNumber(stats.effect_multiplier, {maximumFractionDigits:2})], ["module.energy_consumption", localizedMessage("module.energy_per_second", {energy:localizedNumber(stats.energy_consumption || 0)})], ["module.current_cost", item.current_cost]];
       const list = document.createElement("dl");
       for (const [label, rawValue] of entries) {
         const row = document.createElement("div"), name = document.createElement("dt"), value = document.createElement("dd");
-        name.textContent = label;
+        name.textContent = localizedMessage(label);
         value.textContent = String(rawValue ?? "—");
         row.append(name, value); list.appendChild(row);
       }
       host.appendChild(list);
-      host.appendChild(createModuleEffectList(item.effect_lines));
-      const moduleName = (id) => (metaProgressionState?.module_collection || []).find((module) => module.definition_id === id)?.name_tr || id;
+      host.appendChild(createModuleEffectList(localizedRecordText(item, "effect_lines") || []));
+      const moduleName = (id) => localizedUiText((metaProgressionState?.module_collection || []).find((module) => module.definition_id === id)?.name_tr || id);
       const counters = document.createElement("div");
       counters.className = "module-counter-grid";
-      for (const [label, ids, className] of [["GÜÇLÜ OLDUĞU", item.strong_against, "is-strong"], ["ZAYIF OLDUĞU", item.weak_against, "is-weak"], ["UYUMLU OLDUĞU", item.synergy_with, "is-synergy"]]) {
+      for (const [label, ids, className] of [["module.strong_against", item.strong_against, "is-strong"], ["module.weak_against", item.weak_against, "is-weak"], ["module.synergy_with", item.synergy_with, "is-synergy"]]) {
         const card = document.createElement("section");
         card.className = className;
         const heading = document.createElement("strong");
-        heading.textContent = label;
+        heading.textContent = localizedMessage(label);
         const copy = document.createElement("span");
-        copy.textContent = ids?.length ? ids.map(moduleName).join(" · ") : "Özel karşılık yok";
+        copy.textContent = ids?.length ? ids.map(moduleName).join(" · ") : localizedMessage("module.no_special_matchup");
         card.append(heading, copy);
         counters.appendChild(card);
       }
@@ -2561,13 +2604,13 @@
       const selectedTalent = (item.talents || [])
         .flatMap((node) => node.choices || [])
         .find((choice) => (item.talents || []).some((node) => node.selected === choice.id));
-      text.textContent = selectedTalent?.description_tr || "Açıklamasını görmek için bir yeteneğe dokun.";
+      text.textContent = selectedTalent ? localizedRecordText(selectedTalent, "description") : localizedMessage("module.tap_skill_for_description");
       for (const node of item.talents || []) {
         const row = document.createElement("section");
         row.className = "module-talent-node";
         row.dataset.selected = node.selected || "";
         const heading = document.createElement("strong");
-        heading.textContent = `Seviye ${node.level} · ${node.flux_cost} Akı`;
+        heading.textContent = localizedMessage("module.skill_level_cost", {level:localizedNumber(node.level), flux:localizedNumber(node.flux_cost)});
         const connector = document.createElement("span");
         connector.className = "module-talent-connector";
         connector.setAttribute("aria-hidden", "true");
@@ -2583,24 +2626,28 @@
             && Number(metaProgressionState?.flux_shards || 0) >= node.flux_cost;
           button.className = `${choiceIndex === 0 ? "is-left-choice" : "is-right-choice"}${node.selected === choice.id ? " is-selected" : ""}${canChoose ? "" : " is-unavailable"}`;
           const choiceState = node.selected === choice.id
-            ? "SEÇİLDİ"
-            : node.selected ? "DİĞER DAL SEÇİLDİ"
-              : Number(item.level) + 1 < node.level ? `SV ${node.level} GEREKLİ`
-                : Number(metaProgressionState?.flux_shards || 0) < node.flux_cost ? `${node.flux_cost} AKI GEREKLİ`
-                  : "SEÇ";
-          button.innerHTML = `<strong>${choice.name_tr}</strong><small>${choiceState}</small>`;
+            ? localizedMessage("module.skill_selected")
+            : node.selected ? localizedMessage("module.other_branch_selected")
+              : Number(item.level) + 1 < node.level ? localizedMessage("core.level_required", {level:localizedNumber(node.level)})
+                : Number(metaProgressionState?.flux_shards || 0) < node.flux_cost ? localizedMessage("module.flux_required", {flux:localizedNumber(node.flux_cost)})
+                  : localizedMessage("cosmetic.select");
+          const name=document.createElement("strong");
+          name.textContent=localizedRecordText(choice, "name");
+          const state=document.createElement("small");
+          state.textContent=choiceState;
+          button.append(name,state);
           button.dataset.selectable = String(canChoose);
-          button.setAttribute("aria-label", `${choice.name_tr} · ${choiceState} · Açıklamayı göster`);
-          button.title = choice.description_tr || choice.name_tr;
+          button.setAttribute("aria-label", localizedMessage("module.skill_choice_aria", {name:localizedRecordText(choice, "name"), state:choiceState}));
+          button.title = localizedRecordText(choice, "description") || localizedRecordText(choice, "name");
           button.addEventListener("click", async () => {
-            text.textContent = choice.description_tr || choice.name_tr;
+            text.textContent = localizedRecordText(choice, "description") || localizedRecordText(choice, "name");
             choices.querySelectorAll("button").forEach((candidate) => candidate.classList.toggle("is-previewed", candidate === button));
             if (!canChoose) return;
             button.disabled = true;
             try {
               await metaProgressionMutation(`/profile/${encodeURIComponent(participantPlayerId)}/meta-progression/modules/${item.definition_id}/talents/${node.tier}/${choice.id}`);
               renderModuleDetailTab("talents");
-              document.getElementById("module-detail-status").textContent = "Uzmanlık kaydedildi.";
+              document.getElementById("module-detail-status").textContent = localizedMessage("module.skill_saved");
             } catch (error) { document.getElementById("module-detail-status").textContent = error.message; button.disabled = false; }
           });
           choices.appendChild(button);
@@ -2616,20 +2663,20 @@
         const resetPanel = document.createElement("section");
         resetPanel.className = "module-talent-reset-panel";
         const resetCopy = document.createElement("span");
-        resetCopy.textContent = `${selectedCount} seçili yetenek yeniden dağıtılabilir.`;
+        resetCopy.textContent = localizedMessage("module.skills_resettable", {count:localizedNumber(selectedCount)});
         const resetButton = document.createElement("button");
         resetButton.type = "button";
         resetButton.className = "module-talent-reset";
-        resetButton.textContent = `YETENEKLERİ SIFIRLA · ${resetCost} AKI`;
+        resetButton.textContent = localizedMessage("module.reset_skills_cost", {flux:localizedNumber(resetCost)});
         resetButton.disabled = Number(metaProgressionState?.flux_shards || 0) < resetCost;
         resetButton.addEventListener("click", async () => {
           resetButton.disabled = true;
           const status = document.getElementById("module-detail-status");
-          if (status) status.textContent = "Yetenek seçimleri sıfırlanıyor…";
+          if (status) status.textContent = localizedMessage("module.skills_resetting");
           try {
             await metaProgressionMutation(`/profile/${encodeURIComponent(participantPlayerId)}/meta-progression/modules/${item.definition_id}/talents/reset`);
             renderModuleDetailTab("talents");
-            if (status) status.textContent = `${selectedCount} yetenek seçimi sıfırlandı.`;
+            if (status) status.textContent = localizedMessage("module.skills_reset", {count:localizedNumber(selectedCount)});
           } catch (error) {
             if (status) status.textContent = error instanceof Error ? error.message : String(error);
             resetButton.disabled = false;
@@ -2639,25 +2686,25 @@
         host.appendChild(resetPanel);
       }
     } else {
-      text.textContent = item.description_tr || item.strategic_role || item.name_tr;
+      text.textContent = localizedRecordText(item, "description") || localizedRecordText(item, "strategic_role") || localizedUiText(item.name_tr);
       const overview = document.createElement("div");
       overview.className = "module-overview-grid";
-      for (const [label, rawValue] of [["SAVAŞ ROLÜ", item.strategic_role || "—"], ["SINIF", poolCategoryLabel(item.category)], ["AÇILIŞ", `Arena ${item.unlock_arena} · ${item.unlock_trophies} Kupa`], ["SONRAKİ SEVİYE", item.next_stats ? `CAN ${item.next_stats.max_hp} · HASAR ${item.next_stats.base_damage}` : "Azami seviye"]]) {
+      for (const [label, rawValue] of [["module.battle_role", localizedRecordText(item, "strategic_role") || "—"], ["module.class_upper", poolCategoryLabel(item.category)], ["module.unlock", localizedMessage("module.unlock_requirement", {arena:localizedNumber(item.unlock_arena), trophies:localizedNumber(item.unlock_trophies)})], ["module.next_level", item.next_stats ? localizedMessage("module.next_stats", {hp:localizedNumber(item.next_stats.max_hp), damage:localizedNumber(item.next_stats.base_damage)}) : localizedMessage("core.max_level")]]) {
         const card = document.createElement("div");
         const name = document.createElement("span");
         const value = document.createElement("strong");
-        name.textContent = label;
+        name.textContent = localizedMessage(label);
         value.textContent = rawValue;
         card.append(name, value);
         overview.appendChild(card);
       }
       host.appendChild(overview);
-      host.appendChild(createModuleEffectList(item.effect_lines));
+      host.appendChild(createModuleEffectList(localizedRecordText(item, "effect_lines") || []));
     }
     host.prepend(text);
   }
 
-  function openModuleDetail() {
+  function openModuleDetail(tabName = "overview") {
     const item = activeMetaModule();
     const definition = metaModuleDefinition(item);
     if (!item || !definition) return;
@@ -2666,14 +2713,14 @@
       if (element) element.textContent = String(value);
     };
     setText("module-detail-name", localizedUiText(item.name_tr));
-    setText("module-detail-rarity", moduleRarityLabel(item.rarity).toLocaleUpperCase("tr-TR"));
-    setText("module-detail-level", `SEVİYE ${Number(item.level || 0) + 1}`);
-    setText("module-detail-selected-state", deckEditorSlots.filter(Boolean).map(clientDefinitionId).includes(item.definition_id) ? "DESTEDE" : "DESTE DIŞI");
+    setText("module-detail-rarity", moduleRarityLabel(item.rarity).toLocaleUpperCase(document.documentElement.lang === "en" ? "en-US" : "tr-TR"));
+    setText("module-detail-level", localizedMessage("core.level", {level:localizedNumber(Number(item.level || 0) + 1)}));
+    setText("module-detail-selected-state", localizedMessage(deckEditorSlots.filter(Boolean).map(clientDefinitionId).includes(item.definition_id) ? "module.in_deck" : "module.out_of_deck"));
     const cost = item.next_upgrade_cost;
     const required = Number(cost?.shards || 1);
     const universalShards = Number(metaProgressionState?.universal_module_shards || 0);
     const totalUsableShards = Number(item.shards || 0) + universalShards;
-    setText("module-detail-shards", cost ? `${item.shards || 0} + ${universalShards} evrensel / ${required}` : "AZAMİ SEVİYE");
+    setText("module-detail-shards", cost ? localizedMessage("module.shard_progress", {shards:localizedNumber(item.shards || 0), universal:localizedNumber(universalShards), required:localizedNumber(required)}) : localizedMessage("core.max_level"));
     const progress = document.getElementById("module-detail-progress");
     if (progress) { progress.max = required; progress.value = cost ? Math.min(required, totalUsableShards) : required; }
     const art = document.getElementById("module-detail-art");
@@ -2681,19 +2728,19 @@
       art.dataset.category = item.category || "";
       art.dataset.module = item.definition_id || "";
       art.textContent = moduleIconFor(definition);
-      art.setAttribute("aria-label", `${localizedUiText(item.name_tr)} görseli`);
+      art.setAttribute("aria-label", localizedMessage("module.art_aria", {name:localizedUiText(item.name_tr)}));
     }
     const stats = document.getElementById("module-detail-stats");
-    if (stats) stats.innerHTML = `<div><span>CAN</span><strong>${item.stats?.max_hp ?? definition.maxHp}</strong></div><div><span>AKIM</span><strong>ϟ ${item.current_cost ?? definition.circuitCreditCost}</strong></div><div><span>HASAR</span><strong>${item.stats?.base_damage || 0}</strong></div>`;
+    if (stats) stats.innerHTML = `<div><span>${localizedMessage("module.hp_label")}</span><strong>${localizedNumber(item.stats?.max_hp ?? definition.maxHp)}</strong></div><div><span>${localizedMessage("module.current_label")}</span><strong>ϟ ${localizedNumber(item.current_cost ?? definition.circuitCreditCost)}</strong></div><div><span>${localizedMessage("module.damage_label")}</span><strong>${localizedNumber(item.stats?.base_damage || 0)}</strong></div>`;
     const upgrade = document.getElementById("module-detail-upgrade");
-    const reason = !item.unlocked ? localizedMessage("module.unlock_trophies", {count:item.unlock_trophies ?? 0}) : !cost ? localizedUiText("Azami seviye.") : totalUsableShards < required ? `Gerekli parça: ${totalUsableShards}/${required}` : Number(metaProgressionState?.circuit_credits || 0) < Number(cost.circuit_credits) ? `Gerekli Devre Kredisi: ${cost.circuit_credits}` : "";
+    const reason = !item.unlocked ? localizedMessage("module.unlock_trophies", {count:item.unlock_trophies ?? 0}) : !cost ? localizedMessage("core.max_level") : totalUsableShards < required ? localizedMessage("module.required_shards", {owned:localizedNumber(totalUsableShards), required:localizedNumber(required)}) : Number(metaProgressionState?.circuit_credits || 0) < Number(cost.circuit_credits) ? localizedMessage("module.required_credits", {credits:localizedNumber(cost.circuit_credits)}) : "";
     if (upgrade) {
       upgrade.disabled = Boolean(reason || metaProgressionState?.unavailable);
-      upgrade.textContent = cost ? `YÜKSELT · ${cost.circuit_credits} DK` : "AZAMİ SEVİYE";
+      upgrade.textContent = cost ? localizedMessage("module.upgrade_button", {credits:localizedNumber(cost.circuit_credits)}) : localizedMessage("core.max_level");
     }
     setText("module-detail-status", reason);
-    for (const button of document.querySelectorAll("[data-module-detail-tab]")) button.classList.toggle("is-active", button.dataset.moduleDetailTab === "overview");
-    renderModuleDetailTab("overview");
+    for (const button of document.querySelectorAll("[data-module-detail-tab]")) button.classList.toggle("is-active", button.dataset.moduleDetailTab === tabName);
+    renderModuleDetailTab(tabName);
     const dialog = document.getElementById("module-detail-dialog");
     if (dialog?.showModal && !dialog.open) dialog.showModal();
   }
@@ -2714,7 +2761,7 @@
     try {
       await metaProgressionMutation(`/profile/${encodeURIComponent(participantPlayerId)}/meta-progression/modules/${encodeURIComponent(moduleId)}/upgrade`);
       openModuleDetail();
-      document.getElementById("module-detail-status").textContent = "Modül seviyesi yükseltildi.";
+      document.getElementById("module-detail-status").textContent = localizedMessage("module.level_up_success");
     } catch (error) {
       if (button) button.disabled = false;
       document.getElementById("module-detail-status").textContent = error.message;
@@ -2734,22 +2781,22 @@
 
   async function loadTeamView() {
     const connection = document.getElementById("team-connection-state");
-    if (connection) connection.textContent = "Yükleniyor…";
+    if (connection) connection.textContent = localizedMessage("team.loading");
     try {
       teamState = await requestJsonWithDeadline(
         `/teams/player/${encodeURIComponent(participantPlayerId)}`,
         { cache: "no-store" },
         10000
       );
-      if (connection) connection.textContent = teamState.joined ? "BAĞLI" : "TAKIM YOK";
+      if (connection) connection.textContent = localizedMessage(teamState.joined ? "team.connected_upper" : "team.none_upper");
       setTeamActionStatus("");
       renderTeamHub();
       if (teamState?.application_pending) {
-        setTeamActionStatus("Başvurun takım yöneticisinin onayına gönderildi.", "success");
+        setTeamActionStatus(localizedMessage("team.application_sent"), "success");
       }
       return { ok:true, state:teamState };
     } catch (error) {
-      if (connection) connection.textContent = "BAĞLANTI HATASI";
+      if (connection) connection.textContent = localizedMessage("team.connection_error_upper");
       setTeamActionStatus(error instanceof Error ? error.message : String(error), "error");
       return { ok:false, error };
     }
@@ -2884,7 +2931,7 @@
     if (!state) return;
     const status = document.getElementById("account-platform-status");
     const contacts = Object.entries(state.contacts || {})
-      .map(([channel, item]) => `${channel === "email" ? "E-posta" : "Telefon"}: ${item.masked}`);
+      .map(([channel, item]) => localizedMessage("account.contact", {channel:localizedMessage(channel === "email" ? "account.email" : "account.phone"), value:item.masked}));
     if (status) {
       status.textContent = [
         contacts.length ? contacts.join(" · ") : "Doğrulanmış iletişim adresi yok",
@@ -2897,10 +2944,10 @@
       const providerState = state.oauth?.[provider] || {};
       button.disabled = Boolean(providerState.linked || !providerState.configured);
       button.textContent = providerState.linked
-        ? `${provider.toLocaleUpperCase("tr-TR")} BAĞLI`
+        ? localizedMessage("account.provider_connected", {provider:provider.toUpperCase()})
         : providerState.configured
-          ? `${provider.toLocaleUpperCase("tr-TR")} BAĞLA`
-          : `${provider.toLocaleUpperCase("tr-TR")} YAPILANDIRILMADI`;
+          ? localizedMessage("account.provider_connect", {provider:provider.toUpperCase()})
+          : localizedMessage("account.provider_not_configured", {provider:provider.toUpperCase()});
     }
     const devices = document.getElementById("account-device-list");
     if (devices) {
@@ -2958,10 +3005,10 @@
       const providerState = state?.oauth?.[provider] || {};
       button.disabled = Boolean(providerState.linked || !providerState.configured);
       button.textContent = providerState.linked
-        ? `${provider.toLocaleUpperCase("tr-TR")} BAĞLI`
+        ? localizedMessage("account.provider_connected", {provider:provider.toUpperCase()})
         : providerState.configured
-          ? `${provider.toLocaleUpperCase("tr-TR")} İLE DEVAM ET`
-          : `${provider.toLocaleUpperCase("tr-TR")} HENÜZ HAZIR DEĞİL`;
+          ? localizedMessage("account.provider_continue", {provider:provider.toUpperCase()})
+          : localizedMessage("account.provider_unavailable", {provider:provider.toUpperCase()});
     }
     if (status && !message && state && !accountHasPersistentIdentity(state)) {
       const configuredProviders = ["google", "apple"].filter(
@@ -3026,10 +3073,10 @@
       const oauthProvider = (oauthParams.get("oauth_provider") || "Google").toLocaleUpperCase("tr-TR");
       if (oauthStatus) {
         const message = oauthStatus === "linked"
-          ? `${oauthProvider} hesabı başarıyla bağlandı.`
+          ? localizedMessage("account.link_success", {provider:oauthProvider})
           : oauthStatus === "cancelled"
-            ? `${oauthProvider} hesap bağlantısı iptal edildi.`
-            : `${oauthProvider} hesap bağlantısı tamamlanamadı. Sunucu sağlayıcı ayarlarını kontrol et.`;
+            ? localizedMessage("account.link_cancelled", {provider:oauthProvider})
+            : localizedMessage("account.link_failed", {provider:oauthProvider});
         if (status) status.textContent = message;
         renderAccountOnboarding(message);
         oauthParams.delete("oauth_status");
@@ -3062,7 +3109,7 @@
         const sent = message.sender_id === participantPlayerId;
         row.className = sent ? "is-sent" : "is-received";
         const peer = sent ? message.recipient_id : message.sender_id;
-        row.textContent = `${sent ? "Sen →" : "←"} ${peer}: ${message.text}`;
+        row.textContent = localizedMessage("social.message_line", {direction:sent ? localizedMessage("social.sent_arrow") : "←", peer, message:message.text});
         host.appendChild(row);
       }
       if (!host.children.length) host.innerHTML = "<p>Henüz doğrudan mesaj yok.</p>";
@@ -3106,7 +3153,7 @@
     const identity = document.createElement("div");
     const name = createPublicPlayerName(player.player_id, player.display_name || "Oyuncu");
     const meta = document.createElement("small");
-    meta.textContent = `${player.rank_name_tr || "Arena"} · ${localizedNumber(player.rating || 0)} 🏆${player.online ? " · ÇEVRİMİÇİ" : ""}`;
+    meta.textContent = localizedMessage("social.player_meta", {rank:localizedUiText(player.rank_name_tr || "Arena"), trophies:localizedNumber(player.rating || 0), online:player.online ? localizedMessage("social.online_suffix") : ""});
     identity.append(name, meta);
     const controls = document.createElement("div");
     controls.className = "social-player-actions";
@@ -3132,7 +3179,7 @@
       host.appendChild(empty);
     };
     const summary = document.getElementById("friends-summary");
-    if (summary) summary.textContent = `${socialState.friends?.length || 0} / ${socialState.friend_limit || 100} arkadaş`;
+    if (summary) summary.textContent = localizedMessage("social.friend_limit", {count:localizedNumber(socialState.friends?.length || 0), limit:localizedNumber(socialState.friend_limit || 100)});
     const requests = document.getElementById("friend-request-list");
     if (requests) {
       requests.replaceChildren();
@@ -3265,24 +3312,24 @@
       card.dataset.position = String(prize.position);
       const medal = document.createElement("strong");
       medal.className = "event-prize-rank";
-      medal.textContent = ({ 1:"🥇 1. SIRA", 2:"🥈 2. SIRA", 3:"🥉 3. SIRA" })[prize.position] || `${prize.position}. SIRA`;
+      medal.textContent = ({ 1:"🥇", 2:"🥈", 3:"🥉" })[prize.position] ? localizedMessage("event.prize_rank_medal", {medal:({1:"🥇",2:"🥈",3:"🥉"})[prize.position], position:localizedNumber(prize.position)}) : localizedMessage("event.prize_rank", {position:localizedNumber(prize.position)});
       const chest = document.createElement("span");
       chest.className = "event-prize-chest";
       chest.innerHTML = chestVisualMarkup(prize.chest_tier || "bronze", { visualId:prize.chest_visual_id || "" });
       const detail = document.createElement("div");
       detail.className = "event-prize-detail";
       const title = document.createElement("strong");
-      title.textContent = prize.chest_name_tr || `${({ bronze:"Bronz", silver:"Gümüş", gold:"Altın", diamond:"Elmas" })[prize.chest_tier] || "Ödül"} Sandığı`;
+      title.textContent = localizedRewardChestName(prize);
       const rewards = document.createElement("div");
       rewards.className = "event-prize-rewards";
       const rewardLabels = [
-        `◉ ${localizedNumber(prize.circuit_credits || 0)} DK`,
-        `◇ ${Number(prize.flux_shards || 0)} Akı`,
-        prize.avatar_id ? "◈ Avatar" : prize.team_avatar_id ? "◈ Takım Avatarı" : "",
-        prize.avatar_frame_id ? "▱ Avatar Çerçevesi" : prize.team_frame_id ? "▱ Takım Çerçevesi" : "",
-        prize.team_name_frame_id ? "⌑ Takım İsim Çerçevesi" : "",
-        prize.team_bar_background_id ? "▰ Takım Profil Çubuğu" : "",
-        prize.emoji_id ? "☺ Savaş Emojisi" : "",
+        localizedMessage("event.prize_credits", {amount:localizedNumber(prize.circuit_credits || 0)}),
+        localizedMessage("event.prize_flux", {amount:localizedNumber(prize.flux_shards || 0)}),
+        prize.avatar_id ? localizedMessage("event.prize_avatar") : prize.team_avatar_id ? localizedMessage("event.prize_team_avatar") : "",
+        prize.avatar_frame_id ? localizedMessage("event.prize_avatar_frame") : prize.team_frame_id ? localizedMessage("event.prize_team_frame") : "",
+        prize.team_name_frame_id ? localizedMessage("event.prize_team_name_frame") : "",
+        prize.team_bar_background_id ? localizedMessage("event.prize_team_bar") : "",
+        prize.emoji_id ? localizedMessage("event.prize_battle_emoji") : "",
       ].filter(Boolean);
       for (const label of rewardLabels) {
         const chip = document.createElement("small");
@@ -3334,23 +3381,23 @@
     const name = document.getElementById("weekly-tournament-name");
     const reset = document.getElementById("weekly-tournament-reset");
     const rules = document.getElementById("weekly-tournament-rules");
-    if (name) name.textContent = tournament.name_tr || "Haftalık Devre Turnuvası";
-    if (reset) reset.textContent = `${eventDateLabel(tournament.period?.starts_at)} — ${eventDateLabel(tournament.period?.ends_at)}`;
-    if (rules) rules.textContent = tournament.rules_tr || "";
+    if (name) name.textContent = localizedRecordText(tournament, "name") || localizedMessage("event.weekly_name");
+    if (reset) reset.textContent = localizedMessage("event.date_range", {start:eventDateLabel(tournament.period?.starts_at), end:eventDateLabel(tournament.period?.ends_at)});
+    if (rules) rules.textContent = localizedRecordText(tournament, "rules") || localizedMessage("event.weekly_rules");
     const register = document.getElementById("weekly-tournament-register");
     const viewer = state?.viewer || {};
     if (register) {
       register.disabled = Boolean(viewer.weekly_registered);
       register.textContent = viewer.weekly_registered
-        ? "TURNUVAYA KATILDIN"
-        : `${Number(tournament.entry_fee || 0)} DK · TURNUVAYA KATIL`;
+        ? localizedMessage("event.joined_upper")
+        : localizedMessage("event.enter_tournament", {fee:localizedNumber(tournament.entry_fee || 0)});
     }
     renderTournamentPrizes("weekly-tournament-prizes", tournament.prizes || []);
     const participant = (tournament.standings || []).find((row) => row.player_id === participantPlayerId);
     renderEventSummary("weekly-event-summary", [
-      ["SÜRE", `${eventDateLabel(tournament.period?.starts_at)} — ${eventDateLabel(tournament.period?.ends_at)}`],
-      ["SIRAN", participant ? `#${participant.position}` : "Henüz yok"],
-      ["KAZANILAN KUPA", participant ? `${participant.trophies_earned || participant.points} 🏆` : "0 🏆"],
+      [localizedMessage("event.duration"), localizedMessage("event.date_range", {start:eventDateLabel(tournament.period?.starts_at), end:eventDateLabel(tournament.period?.ends_at)})],
+      [localizedMessage("event.your_rank"), participant ? localizedMessage("leaderboard.position_hash", {position:localizedNumber(participant.position)}) : localizedMessage("leaderboard.no_position")],
+      [localizedMessage("event.trophies_earned"), localizedMessage("arena.trophy_icon", {count:localizedNumber(participant ? participant.trophies_earned || participant.points : 0)})],
     ]);
     const host = document.getElementById("weekly-tournament-standings");
     if (!host) return;
@@ -3368,11 +3415,11 @@
       const identity = document.createElement("div");
       const player = createPublicPlayerName(row.player_id, row.display_name || "Oyuncu");
       const record = document.createElement("small");
-      record.textContent = `${row.wins}G · ${row.losses}M · ${row.matches} maç`;
+      record.textContent = localizedMessage("event.match_record", {wins:localizedNumber(row.wins), losses:localizedNumber(row.losses), matches:localizedNumber(row.matches)});
       identity.append(player, record);
       const points = document.createElement("strong");
       points.className = "tournament-points";
-      points.textContent = `${row.trophies_earned || row.points} 🏆`;
+      points.textContent = localizedMessage("arena.trophy_icon", {count:localizedNumber(row.trophies_earned || row.points)});
       item.append(position, identity, points);
       host.appendChild(item);
     }
@@ -3383,28 +3430,28 @@
     const name = document.getElementById("team-tournament-name");
     const week = document.getElementById("team-tournament-week");
     const rules = document.getElementById("team-tournament-rules");
-    if (name) name.textContent = tournament.name_tr || "Takımlar Arası Turnuva";
-    if (week) week.textContent = `${Number(tournament.week || 1)}. HAFTA`;
-    if (rules) rules.textContent = tournament.rules_tr || "";
+    if (name) name.textContent = localizedRecordText(tournament, "name") || localizedMessage("event.team_name");
+    if (week) week.textContent = localizedMessage("event.week_label", {week:localizedNumber(tournament.week || 1)});
+    if (rules) rules.textContent = localizedRecordText(tournament, "rules") || localizedMessage("event.team_rules");
     const viewer = state?.viewer || {};
     const register = document.getElementById("team-tournament-register");
     if (register) {
       register.hidden = !viewer.team_id;
       register.disabled = Boolean(viewer.team_registered || !viewer.team_owner);
       register.textContent = viewer.team_registered
-        ? "TAKIM KAYITLI"
+        ? localizedMessage("event.team_registered")
         : viewer.team_owner
-          ? "TAKIMI ÜCRETSİZ KAYDET"
-          : "KAYDI TAKIM LİDERİ YAPAR";
+          ? localizedMessage("event.register_team_free")
+          : localizedMessage("event.leader_registers_team");
     }
     renderTournamentPrizes("team-tournament-prizes", tournament.prizes || []);
     const participantTeam = (tournament.standings || []).find((row) =>
       row.members?.some((member) => member.player_id === participantPlayerId)
     );
     renderEventSummary("team-event-summary", [
-      ["DÖNEM", `${eventDateLabel(tournament.period?.starts_at)} — ${eventDateLabel(tournament.period?.ends_at)}`],
-      ["HAFTA", `${Number(tournament.week || 1)} / 5`],
-      ["TAKIM PUANI", participantTeam ? `${participantTeam.points} P` : "Takımın yok"],
+      [localizedMessage("event.period"), localizedMessage("event.date_range", {start:eventDateLabel(tournament.period?.starts_at), end:eventDateLabel(tournament.period?.ends_at)})],
+      [localizedMessage("event.week"), localizedMessage("event.week_progress", {week:localizedNumber(tournament.week || 1)})],
+      [localizedMessage("event.team_score"), participantTeam ? localizedMessage("event.team_points", {points:localizedNumber(participantTeam.points)}) : localizedMessage("event.no_team")],
     ]);
     const standings = document.getElementById("team-tournament-standings");
     if (standings) {
@@ -3416,13 +3463,13 @@
         position.className = "tournament-position";
         position.textContent = String(row.position);
         const identity = document.createElement("div");
-        const teamName = createTeamProfileLink(row.team_id, row.team_name || "Takım");
+        const teamName = createTeamProfileLink(row.team_id, row.team_name || localizedMessage("profile.team"));
         const detail = document.createElement("small");
-        detail.textContent = `${row.member_count} üye · ${row.qualified_member_count} ödüle uygun`;
+        detail.textContent = localizedMessage("event.team_qualified", {members:localizedNumber(row.member_count), qualified:localizedNumber(row.qualified_member_count)});
         identity.append(teamName, detail);
         const points = document.createElement("strong");
         points.className = "tournament-points";
-        points.textContent = `${row.points} P`;
+        points.textContent = localizedMessage("event.team_points", {points:localizedNumber(row.points)});
         item.append(position, identity, points);
         standings.appendChild(item);
       }
@@ -3439,25 +3486,25 @@
         const teams = document.createElement("div");
         teams.className = "event-fixture-team-links";
         teams.append(
-          createTeamProfileLink(fixture.home_team_id, fixture.home_team_name || "Takım"),
+          createTeamProfileLink(fixture.home_team_id, fixture.home_team_name || localizedMessage("profile.team")),
           document.createTextNode(" × "),
-          createTeamProfileLink(fixture.away_team_id, fixture.away_team_name || "Takım")
+          createTeamProfileLink(fixture.away_team_id, fixture.away_team_name || localizedMessage("profile.team"))
         );
         const detail = document.createElement("small");
         const schedule = fixture.scheduled_at ? new Date(fixture.scheduled_at) : null;
         const scheduleLabel = schedule && !Number.isNaN(schedule.getTime())
           ? localizedDate(schedule, { weekday:"short", hour:"2-digit", minute:"2-digit" })
-          : "Saat hazırlanıyor";
+          : localizedMessage("event.schedule_preparing");
         detail.textContent = pairing
-          ? `${pairing.home_player_name} × ${pairing.away_player_name} · ${scheduleLabel}`
-          : `${(fixture.member_pairings || []).length} yakın-kupa eşleşmesi · ${scheduleLabel}`;
+          ? localizedMessage("event.player_pairing", {home:pairing.home_player_name, away:pairing.away_player_name, schedule:scheduleLabel})
+          : localizedMessage("event.close_trophy_pairings", {count:localizedNumber((fixture.member_pairings || []).length), schedule:scheduleLabel});
         card.append(teams, detail);
         if (pairing) {
           const action = document.createElement("button");
           action.type = "button";
           action.className = "event-fixture-enter";
           action.disabled = fixture.status !== "live";
-          action.textContent = fixture.status === "live" ? "CANLI MAÇA GİR" : fixture.status === "completed" ? "MAÇ SAATİ GEÇTİ" : "MAÇ SAATİNİ BEKLE";
+          action.textContent = localizedMessage(fixture.status === "live" ? "event.enter_live_match" : fixture.status === "completed" ? "event.match_time_passed" : "event.wait_for_match");
           action.addEventListener("click", () => checkInTeamFixture(fixture.fixture_id));
           card.appendChild(action);
         }
@@ -3475,10 +3522,10 @@
     const weeklyLinkPeriod = document.getElementById("weekly-event-link-period");
     const teamLinkName = document.getElementById("team-event-link-name");
     const teamLinkPeriod = document.getElementById("team-event-link-period");
-    if (weeklyLinkName) weeklyLinkName.textContent = weekly.name_tr || "Haftalık Devre Turnuvası";
-    if (weeklyLinkPeriod) weeklyLinkPeriod.textContent = `${eventDateLabel(weekly.period?.starts_at)} — ${eventDateLabel(weekly.period?.ends_at)}`;
-    if (teamLinkName) teamLinkName.textContent = team.name_tr || "Takımlar Arası Turnuva";
-    if (teamLinkPeriod) teamLinkPeriod.textContent = `${Number(team.week || 1)}. hafta · ${eventDateLabel(team.period?.ends_at)} tarihinde yenilenir`;
+    if (weeklyLinkName) weeklyLinkName.textContent = localizedRecordText(weekly, "name") || localizedMessage("event.weekly_name");
+    if (weeklyLinkPeriod) weeklyLinkPeriod.textContent = localizedMessage("event.date_range", {start:eventDateLabel(weekly.period?.starts_at), end:eventDateLabel(weekly.period?.ends_at)});
+    if (teamLinkName) teamLinkName.textContent = localizedRecordText(team, "name") || localizedMessage("event.team_name");
+    if (teamLinkPeriod) teamLinkPeriod.textContent = localizedMessage("event.team_period", {week:localizedNumber(team.week || 1), date:eventDateLabel(team.period?.ends_at)});
     renderWeeklyTournament(eventsState);
     renderTeamTournament(eventsState);
     renderEventSubpages();
@@ -3488,7 +3535,7 @@
     const statuses = ["event-action-status", "weekly-event-status", "team-event-status"]
       .map((id) => document.getElementById(id))
       .filter(Boolean);
-    for (const status of statuses) status.textContent = "Turnuva verileri yükleniyor…";
+    for (const status of statuses) status.textContent = localizedMessage("event.loading");
     try {
       eventsState = await requestJsonWithDeadline(`/events?player_id=${encodeURIComponent(participantPlayerId)}`, { cache:"no-store" }, 12000);
       for (const status of statuses) status.textContent = "";
@@ -3516,7 +3563,7 @@
         },
         30000
       );
-      if (status) status.textContent = "Kayıt tamamlandı.";
+      if (status) status.textContent = localizedMessage("event.registration_completed");
       renderEventsHub();
       loadMetaProgression();
       return { ok:true };
@@ -3528,7 +3575,7 @@
 
   async function checkInTeamFixture(fixtureId) {
     const status = document.getElementById("team-event-status");
-    if (status) status.textContent = "Canlı savaş oturumu hazırlanıyor…";
+    if (status) status.textContent = localizedMessage("event.live_match_preparing");
     try {
       const payload = await requestJsonWithDeadline(
         `/events/team/fixtures/${encodeURIComponent(fixtureId)}/check-in`,
@@ -3553,11 +3600,11 @@
     const description = document.getElementById("daily-meta-description");
     const card = document.getElementById("daily-meta-card");
     const selected = dailyMetaState?.selected ? dailyMetaState.meta : null;
-    if (name) name.textContent = selected?.meta_name_tr || "Henüz belirlenmedi";
+    if (name) name.textContent = selected ? localizedMessage(`meta.${selected.id}.name`) : localizedMessage("meta.not_selected");
     if (description) {
       description.textContent = selected
-        ? `${selected.description_tr || "Günlük meta etkin."} · ${selected.effect_tr || ""}`.replace(/ · $/, "")
-        : "Meta çarkını çevirerek bugünkü oyun planını belirle.";
+        ? localizedMessage("event.daily_meta_description", {description:localizedMessage(`meta.${selected.id}.description`), effect:localizedMessage(`meta.${selected.id}.effect`)}).replace(/ · $/, "")
+        : localizedMessage("meta.roll_hint");
     }
     if (card) {
       card.dataset.selected = selected ? "true" : "false";
@@ -3590,17 +3637,17 @@
     }
     if (copy) {
       copy.textContent = selected
-        ? "Bugünkü meta kilitlendi. Yarın yeniden çark çevirebilirsin."
-        : "Yedi eşit olasılıklı stratejiden biri bugünkü savaş planın olacak.";
+        ? localizedMessage("meta.locked_today")
+        : localizedMessage("meta.seven_strategies");
     }
     if (glyph) glyph.textContent = selected?.glyph || "◇";
-    if (name) name.textContent = selected?.meta_name_tr || "—";
-    if (effect) effect.textContent = selected?.effect_tr || "";
+    if (name) name.textContent = selected ? localizedMessage(`meta.${selected.id}.name`) : "—";
+    if (effect) effect.textContent = selected ? localizedMessage(`meta.${selected.id}.effect`) : "";
     if (button) {
       button.disabled = dailyMetaRollPending;
       button.textContent = dailyMetaRollPending
-        ? "META BELİRLENİYOR…"
-        : selected ? "DEVAM" : "METAYI BELİRLE";
+        ? localizedMessage("meta.rolling")
+        : selected ? localizedMessage("common.continue_upper") : localizedMessage("meta.roll_button");
     }
   }
 
@@ -3647,7 +3694,7 @@
     dailyMetaRollPending = true;
     const wheel = document.getElementById("daily-meta-wheel");
     const status = document.getElementById("daily-meta-dialog-status");
-    if (status) status.textContent = "Yedi yüzlü meta zarı atılıyor…";
+    if (status) status.textContent = localizedMessage("meta.rolling_status");
     renderDailyMetaDialog();
     try {
       const payload = await requestJsonWithDeadline(
@@ -3667,7 +3714,7 @@
       wheel?.classList.add("is-spinning");
       await new Promise((resolve) => window.setTimeout(resolve, 950));
       dailyMetaState = payload;
-      if (status) status.textContent = "Günlük meta belirlendi.";
+      if (status) status.textContent = localizedMessage("meta.selected_status");
       renderDailyMetaCard();
     } catch (error) {
       if (status) status.textContent = error instanceof Error ? error.message : String(error);
@@ -3678,7 +3725,7 @@
     }
   }
 
-  async function mutateTeam(path, body, pendingMessage = "İşleniyor…") {
+  async function mutateTeam(path, body, pendingMessage = localizedMessage("common.processing")) {
     setTeamActionStatus(pendingMessage, "pending");
     try {
       teamState = await requestJsonWithDeadline(
@@ -3698,7 +3745,7 @@
       renderTeamHub();
       accountDataLoader.loadProfile().then(renderProfileSummary);
       if (teamState?.application_pending) {
-        setTeamActionStatus("Başvurun takım yöneticisinin onayına gönderildi.", "success");
+        setTeamActionStatus(localizedMessage("team.application_sent"), "success");
       }
       return { ok:true, state:teamState };
     } catch (error) {
@@ -3723,7 +3770,7 @@
     icon.setAttribute("aria-hidden", "true");
     icon.textContent = "🏆";
     target.classList.add("trophy-visual-value");
-    target.setAttribute("aria-label", `${displayValue} Kupa`);
+    target.setAttribute("aria-label", localizedMessage("profile.trophies", {count:displayValue}));
     target.replaceChildren(number, icon);
     return target;
   }
@@ -3737,10 +3784,10 @@
     const identity = document.createElement("div");
     const name = createPublicPlayerName(
       member.player_id,
-      member.display_name || "Oyuncu"
+      member.display_name || localizedMessage("profile.player")
     );
     const meta = document.createElement("small");
-    meta.textContent = `${member.role === "owner" ? "LİDER · " : ""}${member.online ? "ÇEVRİMİÇİ" : "ÇEVRİMDIŞI"}`;
+    meta.textContent = localizedMessage("team.member_status", {leader:member.role === "owner" ? localizedMessage("team.leader_suffix") : "", presence:localizedMessage(member.online ? "team.online" : "team.offline")});
     identity.append(name, meta);
     const trophies = document.createElement("strong");
     trophies.className = "team-member-trophies";
@@ -3753,7 +3800,7 @@
         const action = document.createElement("button");
         action.type = "button";
         action.className = `team-member-action ${isSelf ? "is-leave" : "is-remove"}`;
-        action.textContent = isSelf ? "TAKIMDAN AYRIL" : "TAKIMDAN ÇIKAR";
+        action.textContent = localizedMessage(isSelf ? "team.leave_upper" : "team.remove_upper");
         action.addEventListener("click", () => {
           if (!teamState?.team_id) return;
           const path = isSelf
@@ -3764,7 +3811,7 @@
             isSelf
               ? { requestKind:"leave-team" }
               : { member_id:member.player_id, requestKind:"remove-member" },
-            isSelf ? "Takımdan ayrılma işleniyor…" : "Üye takımdan çıkarılıyor…"
+            localizedMessage(isSelf ? "team.leaving" : "team.removing_member")
           );
         });
         row.appendChild(action);
@@ -3791,26 +3838,26 @@
     if (controls) {
       controls.replaceChildren();
       const definitions = [
-        ["Takım avatarı", "avatar_id", "selected_avatar_id", "unlocked_avatar_ids"],
-        ["Avatar çerçevesi", "avatar_frame_id", "selected_avatar_frame_id", "unlocked_avatar_frame_ids"],
-        ["Profil çubuğu", "bar_background_id", "selected_bar_background_id", "unlocked_bar_background_ids"],
-        ["İsim çerçevesi", "name_frame_id", "selected_name_frame_id", "unlocked_name_frame_ids"],
+        ["team.cosmetic_avatar", "avatar_id", "selected_avatar_id", "unlocked_avatar_ids"],
+        ["team.cosmetic_frame", "avatar_frame_id", "selected_avatar_frame_id", "unlocked_avatar_frame_ids"],
+        ["team.cosmetic_bar", "bar_background_id", "selected_bar_background_id", "unlocked_bar_background_ids"],
+        ["team.cosmetic_name_frame", "name_frame_id", "selected_name_frame_id", "unlocked_name_frame_ids"],
       ];
       for (const [labelText, field, selectedKey, unlockedKey] of definitions) {
         const label = document.createElement("label");
-        label.append(document.createTextNode(labelText));
+        label.append(document.createTextNode(localizedMessage(labelText)));
         const select = document.createElement("select");
         for (const value of cosmetics[unlockedKey] || []) {
           const option = document.createElement("option");
           option.value = value;
-          option.textContent = value.replaceAll("_", " ").toLocaleUpperCase("tr-TR");
+          option.textContent = localizedCatalogName("team_cosmetic", value, value.replaceAll("_", " "));
           select.appendChild(option);
         }
         select.value = cosmetics[selectedKey];
         select.addEventListener("change", () => mutateTeam(
           `/teams/${encodeURIComponent(teamState.team_id)}/cosmetics`,
           { [field]:select.value, requestKind:`team-cosmetic-${field}` },
-          "Takım görünümü kaydediliyor…"
+          localizedMessage("team.appearance_saving")
         ));
         label.appendChild(select);
         controls.appendChild(label);
@@ -3825,25 +3872,25 @@
         const copy = document.createElement("div");
         copy.append(createPublicPlayerName(applicant.player_id, applicant.display_name));
         const meta = document.createElement("small");
-        meta.textContent = `${applicant.rank_name_tr} · ${localizedNumber(applicant.trophies || 0)} 🏆`;
+        meta.textContent = localizedMessage("team.applicant_rank", {rank:localizedUiText(applicant.rank_name_tr), trophies:localizedNumber(applicant.trophies || 0)});
         copy.appendChild(meta);
         const actions = document.createElement("span");
         actions.className = "team-management-actions";
-        for (const [label, accept] of [["KABUL", true], ["REDDET", false]]) {
+        for (const [label, accept] of [["team.accept_upper", true], ["team.reject_upper", false]]) {
           const button = document.createElement("button");
           button.type = "button";
-          button.textContent = label;
+          button.textContent = localizedMessage(label);
           button.addEventListener("click", () => mutateTeam(
             `/teams/${encodeURIComponent(teamState.team_id)}/applications/review`,
             { applicant_id:applicant.player_id, accept, requestKind:`application-${accept ? "accept" : "reject"}` },
-            "Başvuru değerlendiriliyor…"
+            localizedMessage("team.reviewing_application")
           ));
           actions.appendChild(button);
         }
         row.append(copy, actions);
         applications.appendChild(row);
       }
-      if (!applications.children.length) applications.textContent = "Bekleyen başvuru yok.";
+      if (!applications.children.length) applications.textContent = localizedMessage("team.no_applications");
     }
   }
 
@@ -3858,7 +3905,7 @@
       const joinButton = document.getElementById("team-join-button");
       if (joinButton) {
         joinButton.disabled = Boolean(teamState.application_pending);
-        joinButton.textContent = teamState.application_pending ? "BAŞVURU BEKLİYOR" : "BAŞVUR";
+        joinButton.textContent = localizedMessage(teamState.application_pending ? "team.application_pending_upper" : "team.apply_upper");
       }
       const select = document.getElementById("team-join-select");
       if (select) {
@@ -3866,12 +3913,12 @@
         const teams = teamState.available_teams || [];
         const placeholder = document.createElement("option");
         placeholder.value = "";
-        placeholder.textContent = teams.length ? "Takım seç" : "Açık takım yok";
+        placeholder.textContent = localizedMessage(teams.length ? "team.choose_team" : "team.no_open_teams");
         select.appendChild(placeholder);
         for (const team of teams) {
           const option = document.createElement("option");
           option.value = team.team_id;
-          option.textContent = `${team.name} · ${team.member_count}/${team.member_limit} · ${localizedNumber(team.total_trophies || 0)} 🏆`;
+          option.textContent = localizedMessage("team.join_option", {name:team.name, members:localizedNumber(team.member_count), limit:localizedNumber(team.member_limit), trophies:localizedNumber(team.total_trophies || 0)});
           select.appendChild(option);
         }
         if (teamState.applied_team_id) select.value = teamState.applied_team_id;
@@ -3884,8 +3931,8 @@
       const element = document.getElementById(id);
       if (element) element.textContent = String(value);
     };
-    setText("team-name", teamState.name || "Takım");
-    setText("team-member-count", `${teamState.member_count || 0} / ${teamState.member_limit || 30} ÜYE`);
+    setText("team-name", teamState.name || localizedMessage("profile.team"));
+    setText("team-member-count", localizedMessage("team.member_count", {count:localizedNumber(teamState.member_count || 0), limit:localizedNumber(teamState.member_limit || 30)}));
     renderTrophyValue("team-total-trophies", Number(teamState.total_trophies || 0));
     const statistics = teamState.statistics || {};
     const tournament = teamState.tournament || {};
@@ -3894,7 +3941,7 @@
     setText("team-profile-total-matches", localizedNumber(statistics.total_matches || 0));
     setText("team-profile-win-rate", localizedPercent(boundedWinRatePercent(statistics.win_rate || 0)));
     setText("team-profile-tournament-position", tournament.position ? `#${tournament.position}` : "—");
-    setText("team-profile-tournament-points", `${localizedNumber(tournament.points || 0)} P`);
+    setText("team-profile-tournament-points", localizedMessage("event.team_points", {points:localizedNumber(tournament.points || 0)}));
     const teamIdentity = document.getElementById("team-identity-card");
     const teamAvatar = document.getElementById("team-avatar-glyph");
     const managementOpen = document.getElementById("team-management-open");
@@ -3905,7 +3952,7 @@
     }
     if (teamAvatar) teamAvatar.textContent = teamCosmetics.selected_avatar_id === "team_champion" ? "♛" : "⬡";
     if (managementOpen) managementOpen.disabled = !teamState.is_owner;
-    setText("team-management-hint", teamState.is_owner ? "Yönetimi aç" : "Takım profili");
+    setText("team-management-hint", localizedMessage(teamState.is_owner ? "team.open_management" : "team.profile"));
     renderTeamManagement();
 
     for (const button of document.querySelectorAll("[data-team-tab]")) {
@@ -3930,7 +3977,7 @@
       moduleSelect.replaceChildren();
       const placeholder = document.createElement("option");
       placeholder.value = "";
-      placeholder.textContent = "Modül seç";
+      placeholder.textContent = localizedMessage("team.choose_module");
       moduleSelect.appendChild(placeholder);
       const modules = (metaProgressionState?.module_collection || [])
         .filter((module) => module.unlocked !== false)
@@ -3938,7 +3985,7 @@
       for (const module of modules) {
         const option = document.createElement("option");
         option.value = module.definition_id;
-        option.textContent = `${module.name_tr} · ${moduleRarityLabel(module.rarity)}`;
+        option.textContent = localizedMessage("module.name_rarity", {name:localizedUiText(module.name_tr), rarity:moduleRarityLabel(module.rarity)});
         moduleSelect.appendChild(option);
       }
       if ([...moduleSelect.options].some((option) => option.value === previous)) moduleSelect.value = previous;
@@ -3951,7 +3998,7 @@
       if (!requests.length) {
         const empty = document.createElement("p");
         empty.className = "team-empty-state";
-        empty.textContent = "Henüz modül parçası isteği yok.";
+        empty.textContent = localizedMessage("team.no_module_requests");
         requestList.appendChild(empty);
       }
       for (const request of requests) {
@@ -3960,26 +4007,26 @@
         card.dataset.rarity = request.rarity || "common";
         const copy = document.createElement("div");
         const name = document.createElement("strong");
-        name.textContent = request.module_name_tr || "Modül";
+        name.textContent = localizedUiText(request.module_name_tr || localizedMessage("team.module"));
         const meta = document.createElement("small");
         meta.className = "team-player-inline-meta";
         const requester = createPublicPlayerName(
           request.requester_id,
-          request.requester_name || "Oyuncu"
+          request.requester_name || localizedMessage("profile.player")
         );
         const progress = document.createElement("span");
-        progress.textContent = ` · ${request.donated_amount || 0}/${request.requested_amount || 0} parça`;
+        progress.textContent = localizedMessage("team.donation_progress", {donated:localizedNumber(request.donated_amount || 0), requested:localizedNumber(request.requested_amount || 0)});
         meta.append(requester, progress);
         copy.append(name, meta);
         const action = document.createElement("button");
         action.type = "button";
-        action.textContent = request.fulfilled ? "TAMAMLANDI" : request.is_own ? "SENİN İSTEĞİN" : "1 BAĞIŞLA";
+        action.textContent = localizedMessage(request.fulfilled ? "team.completed_upper" : request.is_own ? "team.your_request_upper" : "team.donate_one_upper");
         action.disabled = Boolean(request.fulfilled || request.is_own);
         if (!action.disabled) {
           action.addEventListener("click", () => mutateTeam(
             `/teams/${encodeURIComponent(teamState.team_id)}/module-requests/${encodeURIComponent(request.request_id)}/donate`,
             { requestKind:"donate" },
-            "Modül parçası aktarılıyor…"
+            localizedMessage("team.donating_module")
           ));
         }
         card.append(copy, action);
@@ -3994,7 +4041,7 @@
       if (!messages.length) {
         const empty = document.createElement("p");
         empty.className = "team-empty-state";
-        empty.textContent = "Takım sohbetini başlatabilirsin.";
+        empty.textContent = localizedMessage("team.start_chat");
         messageList.appendChild(empty);
       }
       for (const message of messages) {
@@ -4002,7 +4049,7 @@
         row.className = `team-message${message.is_own ? " is-own" : ""}`;
         const author = createPublicPlayerName(
           message.author_id,
-          message.author_name || "Oyuncu"
+          message.author_name || localizedMessage("profile.player")
         );
         const text = document.createElement("p");
         text.textContent = message.text || "";
@@ -4019,7 +4066,7 @@
       const options = teamState.online_opponents || [];
       const placeholder = document.createElement("option");
       placeholder.value = "";
-      placeholder.textContent = options.length ? "Çevrimiçi üye seç" : "Çevrimiçi üye yok";
+      placeholder.textContent = localizedMessage(options.length ? "team.choose_online_member" : "team.no_online_members");
       opponent.appendChild(placeholder);
       for (const member of options) {
         const option = document.createElement("option");
@@ -4037,7 +4084,7 @@
       if (!challenges.length) {
         const empty = document.createElement("p");
         empty.className = "team-empty-state";
-        empty.textContent = "Bekleyen antrenman daveti yok.";
+        empty.textContent = localizedMessage("team.no_training_invitations");
         trainingList.appendChild(empty);
       }
       for (const challenge of challenges) {
@@ -4048,29 +4095,29 @@
         title.className = "team-challenge-player-links";
         const challenger = createPublicPlayerName(
           challenge.challenger_id,
-          challenge.challenger_name || "Oyuncu"
+          challenge.challenger_name || localizedMessage("profile.player")
         );
         const arrow = document.createElement("span");
         arrow.textContent = "→";
         const opponentName = createPublicPlayerName(
           challenge.opponent_id,
-          challenge.opponent_name || "Oyuncu"
+          challenge.opponent_name || localizedMessage("profile.player")
         );
         title.append(challenger, arrow, opponentName);
         const meta = document.createElement("small");
-        meta.textContent = challenge.status === "completed"
-          ? "ANTRENMAN TAMAMLANDI · ÖDÜLSÜZ"
-          : challenge.status === "pending" ? "DAVET BEKLİYOR · ÖDÜLSÜZ" : "KABUL EDİLDİ · ÖDÜLSÜZ";
+        meta.textContent = localizedMessage(challenge.status === "completed"
+          ? "team.training_completed"
+          : challenge.status === "pending" ? "team.training_pending" : "team.training_accepted");
         copy.append(title, meta);
         if (challenge.can_accept) {
           const accept = document.createElement("button");
           accept.type = "button";
-          accept.textContent = "KABUL ET";
+          accept.textContent = localizedMessage("team.accept_invitation_upper");
           accept.addEventListener("click", async () => {
             const result = await mutateTeam(
               `/teams/${encodeURIComponent(teamState.team_id)}/training-challenges/${encodeURIComponent(challenge.challenge_id)}/accept`,
               { requestKind:"training-accept" },
-              "Antrenman daveti kabul ediliyor…"
+              localizedMessage("team.accepting_invitation")
             );
             if (result.ok && result.state?.operation?.battle) {
               launchSocialBattle(result.state.operation.battle);
@@ -4080,7 +4127,7 @@
         } else if (challenge.status === "accepted" && challenge.battle_session_id) {
           const enter = document.createElement("button");
           enter.type = "button";
-          enter.textContent = "SAVAŞ ALANINA GİR";
+          enter.textContent = localizedMessage("team.enter_battle_upper");
           enter.addEventListener("click", () => launchSocialBattle({
             session_id:challenge.battle_session_id,
             players:[challenge.challenger_id, challenge.opponent_id],
@@ -4135,10 +4182,10 @@
     });
   });
   document.getElementById("weekly-tournament-register")?.addEventListener("click", () =>
-    registerEvent("/events/weekly/register", "weekly-event-status", "Turnuva kaydı yapılıyor…")
+    registerEvent("/events/weekly/register", "weekly-event-status", localizedMessage("event.registering_weekly"))
   );
   document.getElementById("team-tournament-register")?.addEventListener("click", () =>
-    registerEvent("/events/team/register", "team-event-status", "Takım turnuvaya kaydediliyor…")
+    registerEvent("/events/team/register", "team-event-status", localizedMessage("event.registering_team"))
   );
   document.getElementById("friend-search-form")?.addEventListener("submit", (event) => {
     event.preventDefault();
@@ -4190,7 +4237,7 @@
           12000
         );
         if (result.authorization_url) globalThis.location.assign(result.authorization_url);
-        else if (status) status.textContent = `${provider.toLocaleUpperCase("tr-TR")} bağlantısı sunucuda henüz yapılandırılmadı.`;
+        else if (status) status.textContent = localizedMessage("account.provider_not_configured_message", {provider:provider.toUpperCase()});
       } catch (error) {
         if (status) status.textContent = error instanceof Error ? error.message : String(error);
       }
@@ -4212,7 +4259,7 @@
       const codeInput = document.getElementById("account-onboarding-code");
       if (result.development_code && codeInput) codeInput.value = result.development_code;
       if (status) status.textContent = result.delivery_configured
-        ? `Kod ${result.destination} adresine gönderildi.`
+        ? localizedMessage("account.code_sent", {destination:result.destination})
         : result.development_code
           ? "Yerel geliştirme kodu alana yerleştirildi."
           : "E-posta sağlayıcısı henüz yapılandırılmadı; doğrulama isteği kaydedildi.";
@@ -4253,7 +4300,7 @@
       const codeInput = document.getElementById("account-verification-code");
       if (result.development_code && codeInput) codeInput.value = result.development_code;
       if (status) status.textContent = result.delivery_configured
-        ? `Kod ${result.destination} adresine gönderildi.`
+        ? localizedMessage("account.code_sent", {destination:result.destination})
         : result.development_code
           ? "Yerel geliştirme kodu doğrulama alanına yerleştirildi."
           : "E-posta teslimi için SMTP sağlayıcısı yapılandırılmalı.";
@@ -4287,7 +4334,7 @@
           12000
         );
         if (result.authorization_url) window.location.assign(result.authorization_url);
-        else if (status) status.textContent = `${provider.toUpperCase()} OAuth sağlayıcısı yapılandırılmadı.`;
+        else if (status) status.textContent = localizedMessage("account.oauth_not_configured", {provider:provider.toUpperCase()});
       } catch (error) {
         if (status) status.textContent = error instanceof Error ? error.message : String(error);
       }
@@ -4386,7 +4433,7 @@
       const url = URL.createObjectURL(new Blob([JSON.stringify(payload, null, 2)], {type:"application/json"}));
       const anchor = document.createElement("a");
       anchor.href = url;
-      anchor.download = `gridshard-${participantPlayerId}-veri.json`;
+      anchor.download = localizedMessage("account.export_filename", {id:participantPlayerId});
       anchor.click();
       URL.revokeObjectURL(url);
       if (status) status.textContent = "Kişisel veri kopyası indirildi. Bu dosya oyun kaydı değildir; değiştirilerek ilerleme yüklenemez.";
@@ -4413,26 +4460,26 @@
     const input = document.getElementById("team-create-name");
     const name = input?.value?.trim() || "";
     if (!name) {
-      setTeamActionStatus("Takım adı gerekli.", "error");
+      setTeamActionStatus(localizedMessage("team.name_required"), "error");
       return;
     }
     const result = await mutateTeam(
       "/teams",
       { name, requestKind:"create" },
-      "Takım oluşturuluyor…"
+      localizedMessage("team.creating")
     );
     if (result.ok && input) input.value = "";
   });
   document.getElementById("team-join-button")?.addEventListener("click", () => {
     const teamId = document.getElementById("team-join-select")?.value || "";
     if (!teamId) {
-      setTeamActionStatus("Başvurmak için bir takım seç.", "error");
+      setTeamActionStatus(localizedMessage("team.choose_to_join"), "error");
       return;
     }
     mutateTeam(
       `/teams/${encodeURIComponent(teamId)}/join`,
       { requestKind:"join" },
-      "Takım başvurusu gönderiliyor…"
+      localizedMessage("team.joining")
     );
   });
   document.getElementById("team-management-open")?.addEventListener("click", () => {
@@ -4447,13 +4494,13 @@
   document.getElementById("team-module-request-button")?.addEventListener("click", () => {
     const moduleId = document.getElementById("team-module-request-select")?.value || "";
     if (!moduleId || !teamState?.team_id) {
-      setTeamActionStatus("İstemek için bir modül seç.", "error");
+      setTeamActionStatus(localizedMessage("team.choose_module"), "error");
       return;
     }
     mutateTeam(
       `/teams/${encodeURIComponent(teamState.team_id)}/module-requests`,
       { module_id:moduleId, requestKind:"module-request" },
-      "Modül isteği oluşturuluyor…"
+      localizedMessage("team.requesting_module")
     );
   });
   async function sendTeamMessage() {
@@ -4463,7 +4510,7 @@
     const result = await mutateTeam(
       `/teams/${encodeURIComponent(teamState.team_id)}/messages`,
       { message, requestKind:"message" },
-      "Mesaj gönderiliyor…"
+      localizedMessage("team.sending_message")
     );
     if (result.ok && input) input.value = "";
   }
@@ -4477,13 +4524,13 @@
   document.getElementById("team-training-send")?.addEventListener("click", () => {
     const opponentId = document.getElementById("team-training-opponent")?.value || "";
     if (!opponentId || !teamState?.team_id) {
-      setTeamActionStatus("Antrenman için çevrimiçi bir üye seç.", "error");
+      setTeamActionStatus(localizedMessage("team.choose_training_member"), "error");
       return;
     }
     mutateTeam(
       `/teams/${encodeURIComponent(teamState.team_id)}/training-challenges`,
       { opponent_id:opponentId, requestKind:"training" },
-      "Antrenman daveti gönderiliyor…"
+      localizedMessage("team.sending_training_invite")
     );
   });
 
@@ -4556,7 +4603,7 @@
     };
 
     connectionStatusEl.textContent =
-      labels[status] || `Bağlantı: ${status}`;
+      labels[status] || localizedMessage("battle.connection_status", {status});
     connectionStatusEl.dataset.status =
       status;
 
@@ -4934,7 +4981,7 @@
         ? createPublicPlayerName(playerId, playerName)
         : document.createElement("strong");
       if (!isPublicProfileTarget(playerId, player)) {
-        playerLabel.textContent = `${playerName}${playerId === participantPlayerId ? " · SEN" : ""}`;
+        playerLabel.textContent = localizedMessage("battle.player_label", {name:playerName, you:playerId === participantPlayerId ? localizedMessage("battle.you_suffix") : ""});
       }
       head.append(outcomeLabel, playerLabel);
       card.appendChild(head);
@@ -4952,7 +4999,7 @@
       const coreName = document.createElement("strong");
       coreName.textContent = coreVisual.nameTr || "Çekirdek";
       const coreLevel = document.createElement("small");
-      coreLevel.textContent = `SEVİYE ${Math.max(1, Number(summary.core_level || player.core_level || 1))}`;
+      coreLevel.textContent = localizedMessage("core.level", {level:localizedNumber(Math.max(1, Number(summary.core_level || player.core_level || 1)))});
       const trophy = document.createElement("b");
       const rating = Number(
         player.rating
@@ -5013,7 +5060,7 @@
         const rowName = document.createElement("strong");
         rowName.textContent = item.name_tr || item.definition_id;
         const levelCopy = document.createElement("small");
-        levelCopy.textContent = `SV ${Number(item.level || 1)}`;
+        levelCopy.textContent = localizedMessage("module.level_short", {level:localizedNumber(item.level || 1)});
         const track = document.createElement("i");
         const fill = document.createElement("b");
         fill.style.width = `${Math.max(0, Math.min(100, item.effectiveDamage / maximum * 100))}%`;
@@ -5045,14 +5092,14 @@
     panel.hidden = false;
     setAnalysisValue(
       "battle-analysis-duration",
-      `${(Number(result.finished_at_ms || 0) / 1000).toFixed(1)} sn`
+      localizedMessage("time.seconds_short", {count:localizedNumber(Number(result.finished_at_ms || 0) / 1000, {minimumFractionDigits:1, maximumFractionDigits:1})})
     );
     setAnalysisValue(
       "battle-analysis-reason",
       finishReasonLabel(result.finish_reason)
     );
     setAnalysisValue("battle-analysis-damage", Number(own.damage_dealt || 0));
-    setAnalysisValue("battle-analysis-core", `${Number(own.core_hp || 0)} HP`);
+    setAnalysisValue("battle-analysis-core", localizedMessage("battle.hp_value", {hp:localizedNumber(own.core_hp || 0)}));
     setAnalysisValue(
       "battle-analysis-modules",
       Number(own.living_module_count || 0)
@@ -5083,7 +5130,7 @@
     panel.hidden = false;
     setAnalysisValue(
       "battle-analysis-duration",
-      `${(Number(localBattleMetrics.duration_ms || 0) / 1000).toFixed(1)} sn`
+      localizedMessage("time.seconds_short", {count:localizedNumber(Number(localBattleMetrics.duration_ms || 0) / 1000, {minimumFractionDigits:1, maximumFractionDigits:1})})
     );
     setAnalysisValue(
       "battle-analysis-reason",
@@ -5093,7 +5140,7 @@
       "battle-analysis-damage",
       Number(localBattleMetrics.damage_dealt || 0)
     );
-    setAnalysisValue("battle-analysis-core", `${Number(core?.hp || 0)} HP`);
+    setAnalysisValue("battle-analysis-core", localizedMessage("battle.hp_value", {hp:localizedNumber(core?.hp || 0)}));
     setAnalysisValue("battle-analysis-modules", living.length);
     setAnalysisValue("battle-analysis-hp", `${remainingHp} / ${totalHp}`);
     if (localServerFinalResult) {
@@ -5167,14 +5214,7 @@
     showPostMatchStage("damage");
 
     if (battleStateLabelEl) {
-      battleStateLabelEl.textContent =
-        localizedUiText(`Maç tamamlandı · ${
-          outcome === "victory"
-            ? "Galibiyet"
-            : outcome === "defeat"
-              ? "Mağlubiyet"
-              : "Beraberlik"
-        }`);
+      battleStateLabelEl.textContent=localizedMessage("battle.match_finished", {result:localizedMessage(outcome === "victory" ? "battle.win" : outcome === "defeat" ? "battle.loss" : "battle.draw")});
     }
 
     if (firstPresentation) {
@@ -5388,7 +5428,7 @@
 
     telemetryStatus.textContent =
       labels[status]
-      || `Telemetri: ${status}`;
+      || localizedMessage("telemetry.status", {status});
     telemetryStatus.dataset.status =
       status;
 
@@ -5643,7 +5683,7 @@
           ? "Eşleştirme: arena rakibi bulundu"
           : labels[status]
       )
-      || `Eşleştirme: ${status}`;
+      || localizedMessage("battle.matchmaking_status", {status});
 
     matchmakingStatusEl.dataset.status =
       status;
@@ -6151,7 +6191,7 @@
       coreCard.style.setProperty("--core-charge", `${charge}%`);
       coreCard.classList.toggle("core-power-ready", corePowerReady);
       coreCard.classList.add("core-charge-card");
-      coreCard.setAttribute("aria-label", `Çekirdek gücü · ${corePowerReady ? "Hazır" : "%" + charge}`);
+      coreCard.setAttribute("aria-label", localizedMessage("battle.core_power_aria", {state:corePowerReady ? localizedMessage("beta.ready") : localizedMessage("battle.percent", {value:localizedNumber(charge)})}));
       const icon = coreCard.querySelector(".module-icon");
       if (icon) icon.textContent = glyph;
     }
@@ -6161,11 +6201,11 @@
     corePowerButtonEl.setAttribute("aria-pressed",String(corePowerTargeting));
     corePowerButtonEl.title=corePowerReady
       ? (corePowerTargeting
-          ? "Çekirdek gücünü kullan"
-          : "Çekirdek gücü hazır")
-      : `Çekirdek gücü doluyor · %${charge}`;
+          ? localizedMessage("battle.use_core_power")
+          : localizedMessage("battle.core_power_ready"))
+      : localizedMessage("battle.core_power_charging", {charge:localizedNumber(charge)});
     if (corePowerChargeEl) {
-      corePowerChargeEl.textContent=corePowerReady ? "HAZIR" : `%${charge}`;
+      corePowerChargeEl.textContent=corePowerReady ? localizedMessage("beta.ready").toUpperCase() : localizedMessage("battle.percent", {value:localizedNumber(charge)});
     }
     const selectedEmojiId = profileState.viewModel()?.cosmetics?.selected_battle_emoji_id || "none";
     const selectedEmoji = BATTLE_EMOJIS.find((item) => item.id === selectedEmojiId);
@@ -6189,7 +6229,7 @@
     client.energyStock = Number(player?.energy_stock || 0);
     document.getElementById("board")?.classList.toggle("energy-strain", client.energyLoadRatio > 1.2 && client.energyStock <= 0);
     const summary = document.getElementById("player-core-summary");
-    if (summary) summary.title = `Enerji yükü %${Math.round(client.energyLoadRatio * 100)} · Depo ${client.energyStock}`;
+    if (summary) summary.title = localizedMessage("battle.energy_load", {load:localizedNumber(Math.round(client.energyLoadRatio * 100)), stock:localizedNumber(client.energyStock)});
     const power=player?.core_power;
     if (!power) return;
     corePowerCharge=Number(power.charge || 0);
@@ -6487,11 +6527,11 @@
     }
 
     const labels = {
-      idle: "Sunucu: Kontrol bekliyor",
-      checking: "Sunucu: Kontrol ediliyor",
-      ready: "Sunucu: Hazır",
-      blocked: "Sunucu: Oyna geçici olarak kapalı",
-      error: "Sunucu: Sağlık kontrolü başarısız",
+      idle: localizedMessage("beta.server_idle"),
+      checking: localizedMessage("beta.server_checking"),
+      ready: localizedMessage("beta.server_ready"),
+      blocked: localizedMessage("beta.server_blocked"),
+      error: localizedMessage("beta.server_error"),
     };
 
     serverBootStatusEl.textContent =
@@ -6548,10 +6588,10 @@
             manifestRunId
           );
         testRunEl.textContent =
-          `Test Koşusu: ${manifestRunId}`;
+          localizedMessage("beta.test_run_id", {run:manifestRunId});
       } else {
         testRunEl.textContent =
-          "Test Koşusu: Kontrol bekliyor";
+          localizedMessage("beta.test_run_waiting");
       }
 
       testRunEl.dataset.status =
@@ -6565,7 +6605,7 @@
 
       if (!operation) {
         operationEl.textContent =
-          "Operasyon: Kontrol bekliyor";
+          localizedMessage("beta.operation_waiting");
       } else if (
         operation.ready
       ) {
@@ -6575,13 +6615,12 @@
         operationEl.textContent =
           warnings.length
             ? (
-                "Operasyon: Hazır · "
-                + warnings.join(" | ")
+                localizedMessage("beta.operation_ready_warnings", {warnings:warnings.join(" | ")})
               )
-            : "Operasyon: Hazır";
+            : localizedMessage("beta.operation_ready");
       } else {
         operationEl.textContent =
-          "Operasyon: Hazır değil";
+          localizedMessage("beta.operation_not_ready");
       }
 
       operationEl.dataset.ready =
@@ -6612,7 +6651,7 @@
 
       if (!response.ok) {
         throw new Error(
-          "Operasyon izleme özeti alınamadı."
+          localizedMessage("beta.monitoring_load_failed")
         );
       }
 
@@ -6622,30 +6661,19 @@
         );
 
       const operationLabels = {
-        not_ready:"Hazır Değil",
-        ready_not_started:
-          "Hazır, Başlatılmadı",
-        running:"Test Çalışıyor",
+        not_ready:localizedMessage("beta.not_ready"),
+        ready_not_started:localizedMessage("beta.ready_not_started"),
+        running:localizedMessage("beta.test_running"),
       };
       const stabilityLabels = {
-        not_running:"Çalışmıyor",
-        stable:"Stabil",
-        degraded:"Bozulmuş",
+        not_running:localizedMessage("beta.not_running"),
+        stable:localizedMessage("beta.stable"),
+        degraded:localizedMessage("beta.degraded"),
       };
 
       if (el) {
         el.textContent =
-          `İzleme: ${
-            operationLabels[
-              view.operationState
-            ] || view.operationState
-          } · ${
-            stabilityLabels[
-              view.stabilityState
-            ] || view.stabilityState
-          } · Tamamlama %${
-            view.auditFinishRatePercent
-          }`;
+          localizedMessage("beta.monitoring_status", {operation:operationLabels[view.operationState] || view.operationState, stability:stabilityLabels[view.stabilityState] || view.stabilityState, completion:localizedNumber(view.auditFinishRatePercent)});
         el.dataset.state =
           view.operationState;
       }
@@ -6657,7 +6685,7 @@
     } catch (error) {
       if (el) {
         el.textContent =
-          "İzleme: Alınamadı";
+          localizedMessage("beta.monitoring_unavailable");
         el.dataset.state =
           "unknown";
       }
@@ -6686,7 +6714,7 @@
 
       if (!response.ok) {
         throw new Error(
-          "Operasyon stabilitesi alınamadı."
+          localizedMessage("beta.stability_load_failed")
         );
       }
 
@@ -6696,20 +6724,14 @@
         );
 
       const labels = {
-        not_running:
-          "Test Çalışmıyor",
-        stable:
-          "Stabil",
-        degraded:
-          "Bozulmuş",
+        not_running:localizedMessage("beta.test_not_running"),
+        stable:localizedMessage("beta.stable"),
+        degraded:localizedMessage("beta.degraded"),
       };
 
       if (el) {
         el.textContent =
-          `Stabilite: ${
-            labels[view.stability]
-            || view.stability
-          }`;
+          localizedMessage("beta.stability_status", {state:labels[view.stability] || view.stability});
         el.dataset.stability =
           view.stability;
       }
@@ -6721,7 +6743,7 @@
     } catch (error) {
       if (el) {
         el.textContent =
-          "Stabilite: Alınamadı";
+          localizedMessage("beta.stability_unavailable");
         el.dataset.stability =
           "unknown";
       }
@@ -6750,7 +6772,7 @@
 
       if (!response.ok) {
         throw new Error(
-          "Operasyon durumu alınamadı."
+          localizedMessage("beta.operation_load_failed")
         );
       }
 
@@ -6760,20 +6782,14 @@
         );
 
       const labels = {
-        not_ready:
-          "Hazır Değil",
-        ready_not_started:
-          "Hazır, Başlatılmadı",
-        running:
-          "Test Çalışıyor",
+        not_ready:localizedMessage("beta.not_ready"),
+        ready_not_started:localizedMessage("beta.ready_not_started"),
+        running:localizedMessage("beta.test_running"),
       };
 
       if (el) {
         el.textContent =
-          `Operasyon Durumu: ${
-            labels[view.state]
-            || view.state
-          }`;
+          localizedMessage("beta.operation_status", {state:labels[view.state] || view.state});
         el.dataset.state =
           view.state;
       }
@@ -6785,7 +6801,7 @@
     } catch (error) {
       if (el) {
         el.textContent =
-          "Operasyon Durumu: Alınamadı";
+          localizedMessage("beta.operation_unavailable");
         el.dataset.state =
           "unknown";
       }
@@ -6814,7 +6830,7 @@
 
       if (!response.ok) {
         throw new Error(
-          "Web test run durumu alınamadı."
+          localizedMessage("beta.test_run_load_failed")
         );
       }
 
@@ -6825,15 +6841,7 @@
 
       if (el) {
         el.textContent =
-          `Gerçek Test: ${
-            view.finished
-              ? "Tamamlandı"
-              : (
-                  view.started
-                    ? "Başlatıldı"
-                    : "Başlatılmadı"
-                )
-          }`
+          localizedMessage("beta.test_run_status", {state:localizedMessage(view.finished ? "beta.completed" : view.started ? "beta.started" : "beta.not_started")})
           + (
               view.testRunId
                 ? ` · ${view.testRunId}`
@@ -6852,7 +6860,7 @@
     } catch (error) {
       if (el) {
         el.textContent =
-          "Gerçek Test: Durum alınamadı";
+          localizedMessage("beta.test_run_unavailable");
         el.dataset.started =
           "false";
       }
@@ -6881,7 +6889,7 @@
 
       if (!response.ok) {
         throw new Error(
-          "Web test preflight raporu alınamadı."
+          localizedMessage("beta.preflight_load_failed")
         );
       }
 
@@ -6892,11 +6900,7 @@
 
       if (el) {
         el.textContent =
-          `Gerçek Web Testi: ${
-            view.ready
-              ? "Başlatılabilir"
-              : "Hazır Değil"
-          }`
+          localizedMessage("beta.preflight_status", {state:localizedMessage(view.ready ? "beta.can_start" : "beta.not_ready")})
           + (
               view.testRunId
                 ? ` · ${view.testRunId}`
@@ -6918,7 +6922,7 @@
     } catch (error) {
       if (el) {
         el.textContent =
-          "Gerçek Web Testi: Preflight alınamadı";
+          localizedMessage("beta.preflight_unavailable");
         el.dataset.ready="false";
       }
       return {
@@ -6945,7 +6949,7 @@
 
       if (!response.ok) {
         throw new Error(
-          "İlk koşu checklist alınamadı."
+          localizedMessage("beta.first_run_load_failed")
         );
       }
 
@@ -6956,11 +6960,7 @@
 
       if (el) {
         el.textContent =
-          `İlk Koşu: ${
-            view.ready
-              ? "Hazır"
-              : "Hazır Değil"
-          }`
+          localizedMessage("beta.first_run_status", {state:localizedMessage(view.ready ? "beta.ready" : "beta.not_ready")})
           + (
               view.failedChecks.length
                 ? ` · ${view.failedChecks.join(", ")}`
@@ -6968,7 +6968,7 @@
             )
           + (
               view.noteCount
-                ? ` · ${view.noteCount} operasyon notu`
+                ? localizedMessage("beta.operation_notes_suffix", {count:localizedNumber(view.noteCount)})
                 : ""
             );
         el.dataset.ready =
@@ -6982,7 +6982,7 @@
     } catch (error) {
       if (el) {
         el.textContent =
-          "İlk Koşu: Checklist alınamadı";
+          localizedMessage("beta.first_run_unavailable");
         el.dataset.ready="false";
       }
       return {
@@ -7009,7 +7009,7 @@
 
       if (!response.ok) {
         throw new Error(
-          "Web test çıkış onayı alınamadı."
+          localizedMessage("beta.launch_load_failed")
         );
       }
 
@@ -7021,9 +7021,9 @@
       if (el) {
         el.textContent =
           view.ready
-            ? `Çıkış Onayı: Hazır · ${view.testRunId || "-"}`
+            ? localizedMessage("beta.launch_ready", {run:view.testRunId || "-"})
             : (
-                "Çıkış Onayı: Hazır Değil"
+                localizedMessage("beta.launch_not_ready")
                 + (
                     view.failedChecks.length
                       ? ` · ${view.failedChecks.join(", ")}`
@@ -7053,7 +7053,7 @@
 
       if (el) {
         el.textContent =
-          "Çıkış Onayı: Durum alınamadı";
+          localizedMessage("beta.launch_unavailable");
         el.dataset.ready =
           "false";
       }
@@ -7085,7 +7085,7 @@
 
       if (!response.ok) {
         throw new Error(
-          "RC aday özeti alınamadı."
+          localizedMessage("beta.rc_load_failed")
         );
       }
 
@@ -7096,11 +7096,7 @@
 
       if (el) {
         el.textContent =
-          `RC Adayı: ${
-            view.ready
-              ? "Hazır"
-              : "Hazır Değil"
-          }`
+          localizedMessage("beta.rc_status", {state:localizedMessage(view.ready ? "beta.ready" : "beta.not_ready")})
           + (
               view.testRunId
                 ? ` · ${view.testRunId}`
@@ -7108,7 +7104,7 @@
             )
           + (
               view.insufficientSignalCount
-                ? ` · ${view.insufficientSignalCount} davranış sinyalinde yetersiz veri`
+                ? localizedMessage("beta.insufficient_signals_suffix", {count:localizedNumber(view.insufficientSignalCount)})
                 : ""
             );
         el.dataset.ready =
@@ -7124,7 +7120,7 @@
     } catch (error) {
       if (el) {
         el.textContent =
-          "RC Adayı: Durum alınamadı";
+          localizedMessage("beta.rc_unavailable");
         el.dataset.ready =
           "false";
       }
@@ -7153,7 +7149,7 @@
 
       if (!response.ok) {
         throw new Error(
-          "Go/No-Go özeti alınamadı."
+          localizedMessage("beta.go_no_go_load_failed")
         );
       }
 
@@ -7164,11 +7160,11 @@
 
       if (el) {
         el.textContent =
-          `Web Test: ${view.decision}`
+          localizedMessage("beta.go_no_go_status", {decision:view.decision})
           + (
               view.insufficientSignalCount
-                ? ` · ${view.insufficientSignalCount} davranış sinyalinde yetersiz veri`
-                : " · davranış örnekleri gözlemlenebilir"
+                ? localizedMessage("beta.insufficient_signals_suffix", {count:localizedNumber(view.insufficientSignalCount)})
+                : localizedMessage("beta.signals_observable_suffix")
             );
         el.dataset.decision =
           view.decision;
@@ -7181,7 +7177,7 @@
     } catch (error) {
       if (el) {
         el.textContent =
-          "Web Test: Go/No-Go özeti alınamadı";
+          localizedMessage("beta.go_no_go_unavailable");
         el.dataset.decision =
           "UNKNOWN";
       }
@@ -7277,7 +7273,7 @@
 
       if (!response.ok) {
         throw new Error(
-          "Geri bildirim özeti alınamadı."
+          localizedMessage("beta.feedback_load_failed")
         );
       }
 
@@ -7289,21 +7285,13 @@
 
       if (el) {
         el.textContent =
-          `Geri Bildirim Özeti: ${
-            payload.feedback_count
-          } kayıt`
-          + ` · Kullanılabilirlik ${
-              averages.usability ?? "-"
-            }`
-          + ` · Bağlantı ${
-              averages.connection ?? "-"
-            }`
-          + ` · Savaş Dengesi ${
-              averages.battle_balance ?? "-"
-            }`
-          + ` · Modül/Booster ${
-              averages.module_booster_balance ?? "-"
-            }`;
+          localizedMessage("beta.feedback_summary", {
+            count:localizedNumber(payload.feedback_count),
+            usability:averages.usability ?? "-",
+            connection:averages.connection ?? "-",
+            battle:averages.battle_balance ?? "-",
+            module:averages.module_booster_balance ?? "-",
+          });
       }
 
       return {
@@ -7313,7 +7301,7 @@
     } catch (error) {
       if (el) {
         el.textContent =
-          "Geri Bildirim Özeti: Alınamadı";
+          localizedMessage("beta.feedback_unavailable");
       }
 
       return {
@@ -7332,21 +7320,21 @@
     try {
       const response=await fetch("/web-test/review-candidates");
       if (!response.ok) {
-        throw new Error("İnceleme adayları alınamadı.");
+        throw new Error(localizedMessage("beta.review_load_failed"));
       }
 
       const payload=await response.json();
 
       if (el) {
         if (payload.status==="waiting_for_real_data") {
-          el.textContent="İnceleme Adayları: Gerçek veri bekleniyor";
+          el.textContent=localizedMessage("beta.review_waiting");
         } else if (payload.status==="no_priority_issue") {
-          el.textContent="İnceleme Adayları: Öncelikli sorun yok";
+          el.textContent=localizedMessage("beta.review_no_issue");
         } else {
           const first=payload.candidates?.[0];
           el.textContent=
-            `İnceleme Adayları: ${payload.candidate_count} alan`
-            + (first ? ` · Öncelik: ${first.label}` : "");
+            localizedMessage("beta.review_areas", {count:localizedNumber(payload.candidate_count)})
+            + (first ? localizedMessage("beta.review_priority_suffix", {label:localizedUiText(first.label)}) : "");
         }
         el.dataset.status=payload.status;
       }
@@ -7354,7 +7342,7 @@
       return {ok:true,payload};
     } catch (error) {
       if (el) {
-        el.textContent="İnceleme Adayları: Alınamadı";
+        el.textContent=localizedMessage("beta.review_unavailable");
         el.dataset.status="error";
       }
       return {
@@ -7378,7 +7366,7 @@
 
       if (!response.ok) {
         throw new Error(
-          "Beta bulguları alınamadı."
+          localizedMessage("beta.findings_load_failed")
         );
       }
 
@@ -7391,14 +7379,10 @@
           === "insufficient_data"
         ) {
           el.textContent =
-            `Beta Bulguları: Veri bekleniyor · ${
-              payload.feedback_count
-            }/${payload.minimum_feedback} geri bildirim`;
+            localizedMessage("beta.findings_waiting", {count:localizedNumber(payload.feedback_count), minimum:localizedNumber(payload.minimum_feedback)});
         } else {
           el.textContent =
-            `Beta Bulguları: Analiz hazır`
-            + ` · ${payload.concerns.length} izleme alanı`
-            + ` · ${payload.gameplay_signals.completed_matches} tamamlanan maç`;
+            localizedMessage("beta.findings_ready", {concerns:localizedNumber(payload.concerns.length), matches:localizedNumber(payload.gameplay_signals.completed_matches)});
         }
 
         el.dataset.status =
@@ -7412,7 +7396,7 @@
     } catch (error) {
       if (el) {
         el.textContent =
-          "Beta Bulguları: Alınamadı";
+          localizedMessage("beta.findings_unavailable");
         el.dataset.status =
           "error";
       }
@@ -7485,15 +7469,12 @@
         );
 
       if (!response.ok) {
-        let detail =
-          "Geri bildirim gönderilemedi.";
+        let detail =localizedMessage("beta.feedback_submit_failed");
 
         try {
           const body =
             await response.json();
-          detail =
-            body?.detail
-            || detail;
+          detail =localizedApiError(body,response.status);
         } catch (_error) {
           // JSON gövdesi zorunlu değil.
         }
@@ -7505,7 +7486,7 @@
 
       if (statusEl) {
         statusEl.textContent =
-          "Geri bildirim kaydedildi.";
+          localizedMessage("beta.feedback_saved");
       }
 
       setFeedbackFormVisible(
@@ -7537,7 +7518,7 @@
       return {
         ok:false,
         reason:
-          "Aktif test koşusu bulunamadı.",
+          localizedMessage("beta.active_test_missing"),
       };
     }
 
@@ -7560,7 +7541,7 @@
 
       if (!response.ok) {
         throw new Error(
-          "Gerçek Web test koşusu tamamlanamadı."
+          localizedMessage("beta.test_finish_failed")
         );
       }
 
@@ -7607,7 +7588,7 @@
 
       if (!response.ok) {
         throw new Error(
-          "Test koşusu raporu alınamadı."
+          localizedMessage("beta.report_unavailable")
         );
       }
 
@@ -7618,24 +7599,10 @@
         const duration =
           payload.run_duration_ms == null
             ? "-"
-            : `${Math.round(
-                payload.run_duration_ms
-                / 1000
-              )} sn`;
+            : localizedMessage("time.seconds_short", {count:localizedNumber(Math.round(payload.run_duration_ms / 1000))});
 
         el.textContent =
-          `Test Raporu: ${payload.status}`
-          + ` · Süre ${duration}`
-          + ` · Operasyon ${
-              payload.monitoring
-                ?.operation?.state
-              || "-"
-            }`
-          + ` · Stabilite ${
-              payload.monitoring
-                ?.stability?.state
-              || "-"
-            }`;
+          localizedMessage("beta.test_report", {status:payload.status, duration, operation:payload.monitoring?.operation?.state || "-", stability:payload.monitoring?.stability?.state || "-"});
         el.dataset.status =
           payload.status;
       }
@@ -7647,7 +7614,7 @@
     } catch (error) {
       if (el) {
         el.textContent =
-          "Test Raporu: Alınamadı";
+          localizedMessage("beta.report_status_unavailable");
         el.dataset.status =
           "error";
       }
@@ -7669,7 +7636,7 @@
       return {
         ok:false,
         reason:
-          "Aktif test koşusu kimliği bulunamadı.",
+          localizedMessage("beta.active_test_id_missing"),
       };
     }
 
@@ -7730,15 +7697,12 @@
         );
 
       if (!response.ok) {
-        let detail =
-          "Gerçek Web test koşusu başlatılamadı.";
+        let detail =localizedMessage("beta.test_start_failed");
 
         try {
           const payload =
             await response.json();
-          detail =
-            payload?.detail
-            || detail;
+          detail =localizedApiError(payload,response.status);
         } catch (_error) {
           // Yanıt gövdesi zorunlu değil.
         }
@@ -7792,7 +7756,7 @@
       if (!result.ok) {
         showPlayError(
           "websocket",
-          result.reason || "Sunucu bağlantısı hazır değil."
+          result.reason || localizedMessage("beta.server_not_ready")
         );
       } else if (playRecoveryState.kind === "websocket") {
         clearPlayError();
@@ -7852,13 +7816,13 @@
       showPlayError(
         "websocket",
         result.reason
-        || "Sunucu Web test release-check hazır değil."
+        || localizedMessage("beta.release_check_not_ready")
       );
     } else if (!launch.ok) {
       showPlayError(
         "websocket",
         launch.reason
-        || "Web test çıkış onayı hazır değil."
+        || localizedMessage("beta.launch_approval_not_ready")
       );
     } else if (
       preflight.ok
@@ -7869,7 +7833,7 @@
       showPlayError(
         "websocket",
         runStart.reason
-        || "Gerçek Web test koşusu başlatılamadı."
+        || localizedMessage("beta.test_start_failed")
       );
     } else if (
       playRecoveryState.kind
@@ -7980,8 +7944,7 @@
           || "2.1.0-beta.43";
       }
       if (runEl) {
-        runEl.textContent=
-          `${manifest.test_run_id || "local"} · cache ${manifest.static_cache_mode || "unknown"}`;
+        runEl.textContent=localizedMessage("beta.manifest_cache", {run:manifest.test_run_id || "local", mode:manifest.static_cache_mode || "unknown"});
       }
     } catch (_error) {
       // Build chip is informational; startup remains available.
@@ -8055,8 +8018,8 @@
           document.body.classList.contains(
             "battle-hud-settings-open"
           )
-            ? "Ayarlar açık · savaş devam ediyor"
-            : "Ayarlar";
+            ? localizedMessage("battle.settings_open")
+            : localizedMessage("ui.settings");
       }
     );
   }
@@ -8088,46 +8051,26 @@
     }
     return {
       ok:false,
-      reason:"Audio director hazır değil.",
+      reason:localizedMessage("audio.director_not_ready"),
     };
   }
 
   let activePlayMode = "idle";
   const AI_ARCHETYPE_UI = Object.freeze({
     aggressive:{
-      name_tr:"Saldırgan", name_en:"Aggressive",
-      description_tr:"Erken hasar temposu kurar; saldırı modüllerini ve Aşırı Yük'ü öne alır.",
-      description_en:"Builds early damage pressure and prioritizes attack modules and Overcharge.",
-      plan_tr:"5. hak Dron Üssü · 6. hak Güçlendirici",
-      plan_en:"Slot 5 Drone Bay · Slot 6 Amplifier",
+      key:"ai.aggressive",
     },
     defensive:{
-      name_tr:"Savunmacı", name_en:"Defensive",
-      description_tr:"Çekirdeği ayakta tutar; savunma ve onarım katmanını saldırı baskısına göre büyütür.",
-      description_en:"Protects the core by layering defense and repair against incoming pressure.",
-      plan_tr:"5. hak Bariyer · 6. hak Onarım Modülü",
-      plan_en:"Slot 5 Barrier · Slot 6 Repair Module",
+      key:"ai.defensive",
     },
     balanced:{
-      name_tr:"Dengeli", name_en:"Balanced",
-      description_tr:"Rakibin devresine göre karşı modül seçer; saldırı ve savunmayı dengeler.",
-      description_en:"Counters the opponent while balancing offense and defense.",
-      plan_tr:"5. hak Darbe Topu · 6. hak Onarım Modülü",
-      plan_en:"Slot 5 Pulse Cannon · Slot 6 Repair Module",
+      key:"ai.balanced",
     },
     sabotage:{
-      name_tr:"Sabotaj Odaklı", name_en:"Sabotage",
-      description_tr:"Enerji ve destek hattını bozar; EMP, Kesici ve bozucu etkilerle tempo kırar.",
-      description_en:"Disrupts energy and support lines with EMP, Disruptor and control effects.",
-      plan_tr:"5. hak Sinyal Bozucu · 6. hak EMP",
-      plan_en:"Slot 5 Jammer · Slot 6 EMP",
+      key:"ai.sabotage",
     },
     economy:{
-      name_tr:"Ekonomi Odaklı", name_en:"Economy",
-      description_tr:"Önce enerji rezervi ve dağıtımı kurar; sonra yüksek maliyetli saldırılara geçer.",
-      description_en:"Builds energy reserve and distribution first, then transitions into expensive attacks.",
-      plan_tr:"5. hak Batarya · 6. hak Dağıtıcı",
-      plan_en:"Slot 5 Battery · Slot 6 Splitter",
+      key:"ai.economy",
     },
   });
   let selectedAiArchetype = "balanced";
@@ -8139,25 +8082,22 @@
 
   function aiArchetypeName(archetypeId=selectedAiArchetype) {
     const info=aiArchetypeInfo(archetypeId);
-    return (document.documentElement?.lang || "tr") === "en"
-      ? info.name_en
-      : info.name_tr;
+    return localizedMessage(`${info.key}.name`);
   }
 
   function renderAiArchetypePicker() {
     const picker=document.getElementById("ai-archetype-picker");
     if (!picker) return;
     const info=aiArchetypeInfo(selectedAiArchetype);
-    const english=(document.documentElement?.lang || "tr") === "en";
     const heading=document.getElementById("ai-archetype-title");
     const selected=document.getElementById("ai-archetype-selected");
     const description=document.getElementById("ai-archetype-description");
-    if (heading) heading.textContent=english ? "AI OPPONENT" : "AI RAKİBİ";
-    if (selected) selected.textContent=english ? info.name_en : info.name_tr;
+    if (heading) heading.textContent=localizedMessage("ai.opponent_title");
+    if (selected) selected.textContent=localizedMessage(`${info.key}.name`);
     if (description) {
-      const descriptionText = english ? info.description_en : info.description_tr;
-      const planText = english ? info.plan_en : info.plan_tr;
-      description.textContent = `${descriptionText} · ${planText}`;
+      const descriptionText = localizedMessage(`${info.key}.description`);
+      const planText = localizedMessage(`${info.key}.plan`);
+      description.textContent = localizedMessage("ai.description_plan", {description:descriptionText, plan:planText});
     }
 
     for (const button of picker.querySelectorAll("[data-ai-archetype]")) {
@@ -8166,7 +8106,7 @@
       button.dataset.active=String(archetypeId === selectedAiArchetype);
       button.setAttribute("aria-pressed",String(archetypeId === selectedAiArchetype));
       const strong=button.querySelector("strong");
-      if (strong) strong.textContent=english ? buttonInfo.name_en : buttonInfo.name_tr;
+      if (strong) strong.textContent=localizedMessage(`${buttonInfo.key}.name`);
     }
   }
 
@@ -8625,12 +8565,9 @@
 
     if (playModeStatusEl) {
       const labels = {
-        idle:
-          "Mod seçimi bekleniyor",
-        local:
-          "Tek Oyunculu Test Maçı aktif",
-        online:
-          "Online PvP hazırlanıyor",
+        idle:localizedMessage("battle.mode_waiting"),
+        local:localizedMessage("battle.local_active"),
+        online:localizedMessage("battle.online_preparing"),
       };
       playModeStatusEl.textContent =
         labels[mode] || mode;
@@ -8887,8 +8824,8 @@
 
     status.textContent=
       draft.review_ready
-        ? "Review-ready · Manuel taslak açık"
-        : "Review-ready bekleniyor";
+        ? localizedMessage("admin.review_ready")
+        : localizedMessage("admin.review_pending");
     status.dataset.ready=
       String(
         Boolean(
@@ -8905,7 +8842,7 @@
       const p=
         document.createElement("p");
       p.textContent=
-        "Gerçek 3 maç review-ready olmadan sayısal değişiklik taslağı açılamaz.";
+        localizedMessage("admin.three_matches_required");
       list.appendChild(p);
       return;
     }
@@ -8943,7 +8880,7 @@
         );
       before.type="text";
       before.placeholder=
-        "Mevcut değer";
+        localizedMessage("admin.current_value");
       before.value=
         item.before_value ?? "";
 
@@ -8953,7 +8890,7 @@
         );
       proposed.type="text";
       proposed.placeholder=
-        "Önerilen değer";
+        localizedMessage("admin.proposed_value");
       proposed.value=
         item.proposed_value ?? "";
 
@@ -8971,7 +8908,7 @@
       approvalLabel.append(
         approval,
         document.createTextNode(
-          " Manuel taslağı onayla"
+          localizedMessage("admin.approve_draft")
         )
       );
 
@@ -8979,8 +8916,7 @@
         document.createElement(
           "small"
         );
-      checks.textContent=
-        `Simülasyon: ${item.simulation_status || "pending"} · Regresyon: ${item.regression_status || "pending"} · Uygulanabilir: ${item.ready_for_apply ? "Evet" : "Hayır"}`;
+      checks.textContent=localizedMessage("admin.draft_checks", {simulation:item.simulation_status || "pending", regression:item.regression_status || "pending", applicable:localizedMessage(item.ready_for_apply ? "admin.yes" : "admin.no")});
 
       const save=
         document.createElement(
@@ -8988,7 +8924,7 @@
         );
       save.type="button";
       save.textContent=
-        "Taslağı Kaydet";
+        localizedMessage("admin.save_draft");
 
       const simulate=
         document.createElement(
@@ -8998,7 +8934,7 @@
       simulate.className=
         "simulate-button";
       simulate.textContent=
-        "İzole Simülasyonu Çalıştır";
+        localizedMessage("admin.run_simulation");
 
       const simulationResult=
         document.createElement(
@@ -9014,7 +8950,7 @@
       regress.className=
         "regression-button";
       regress.textContent=
-        "Battle-Engine Regresyonunu Çalıştır";
+        localizedMessage("admin.run_regression");
       const structuralReview=
         [
           "generator_route",
@@ -9033,7 +8969,7 @@
 
       if (structuralReview) {
         regress.textContent=
-          "Yapısal Engine Regresyonunu Çalıştır";
+          localizedMessage("admin.run_structural_regression");
         before.disabled=true;
         proposed.disabled=true;
         approval.disabled=true;
@@ -9049,25 +8985,25 @@
       regressionResult.textContent=
         item.regression_status
         === "passed"
-          ? "Son battle-engine regresyonu başarılı. Kanonik değer değişmedi."
+          ? localizedMessage("admin.previous_regression_passed")
           : (
               item.regression_status
               === "failed"
-                ? "Son battle-engine regresyonu başarısız veya bu alan engine adaptörüne bağlı değil."
-                : "Battle-engine regresyonu bekleniyor."
+                ? localizedMessage("admin.previous_regression_failed")
+                : localizedMessage("admin.regression_pending")
             );
       simulationResult.textContent=
         structuralReview
-          ? "Bu aday sayısal değişiklik değildir; yapısal BattleEngine regresyonu ile doğrulanır."
+          ? localizedMessage("admin.structural_regression_needed")
           : (
               item.simulation_status
               === "passed"
-                ? "Son izole simülasyon başarılı. Kanonik değer değişmedi."
+                ? localizedMessage("admin.previous_simulation_passed")
                 : (
                     item.simulation_status
                     === "failed"
-                      ? "Son izole simülasyon başarısız veya bu alan henüz desteklenmiyor."
-                      : "Simülasyon bekleniyor."
+                      ? localizedMessage("admin.previous_simulation_failed")
+                      : localizedMessage("admin.simulation_pending")
                   )
             );
 
@@ -9137,7 +9073,7 @@
 
           if (!saveResponse.ok) {
             simulationResult.textContent=
-              "Taslak kaydedilemedi; simülasyon çalıştırılmadı.";
+              localizedMessage("admin.draft_save_failed");
             return;
           }
 
@@ -9174,15 +9110,14 @@
                   ?.metrics_proposed
                 || {}
               );
-            simulationResult.textContent=
-              `İzole simülasyon geçti · Önce ${beforeMetrics} · Öneri ${proposedMetrics} · Kanonik değer değişmedi.`;
+            simulationResult.textContent=localizedMessage("admin.simulation_passed", {before:beforeMetrics, proposed:proposedMetrics});
             renderBalanceDraft(
               payload.draft
             );
           } else {
             simulationResult.textContent=
               response.ok
-                ? localizedUiText(payload.reason || "İzole simülasyon başarısız.")
+                ? localizedMessage("admin.simulation_failed")
                 : localizedApiError(payload, response.status);
             if (payload.draft) {
               renderBalanceDraft(
@@ -9221,12 +9156,11 @@
               payload.regression
                 ?.engine_scenarios
               || [];
-            regressionResult.textContent=
-              `Battle-engine regresyonu geçti · ${scenarios.length} engine senaryosu doğrulandı · Kanonik değer değişmedi.`;
+            regressionResult.textContent=localizedMessage("admin.regression_passed", {count:localizedNumber(scenarios.length)});
           } else {
             regressionResult.textContent=
               response.ok
-                ? localizedUiText(payload.reason || "Battle-engine regresyonu başarısız.")
+                ? localizedMessage("admin.regression_failed")
                 : localizedApiError(payload, response.status);
           }
 
@@ -9265,7 +9199,7 @@
 
       if (!response.ok) {
         throw new Error(
-          "Denge değişiklik taslağı alınamadı."
+          localizedMessage("admin.draft_unavailable")
         );
       }
 
@@ -9317,8 +9251,8 @@
 
     status.textContent=
       total
-        ? `${total} aday insan değerlendirmesine hazır`
-        : "Güvenlik kapıları bekleniyor";
+        ? localizedMessage("admin.review_candidates_ready", {count:localizedNumber(total)})
+        : localizedMessage("admin.safety_gates_pending");
 
     list.innerHTML="";
     const evidence=
@@ -9329,8 +9263,8 @@
     if (evidence) {
       evidence.innerHTML=
         total
-          ? `<strong>Kanıt Paketi</strong><span>${numeric.length} sayısal · ${structural.length} yapısal aday · simulation/regression kanıtları doğrulandı · otomatik apply kapalı</span>`
-          : "<strong>Kanıt Paketi</strong><span>Henüz güvenlik kapılarını geçen aday yok.</span>";
+          ? `<strong>${localizedMessage("admin.evidence_package")}</strong><span>${localizedMessage("admin.evidence_summary", {numeric:localizedNumber(numeric.length), structural:localizedNumber(structural.length)})}</span>`
+          : `<strong>${localizedMessage("admin.evidence_package")}</strong><span>${localizedMessage("admin.no_evidence_candidates")}</span>`;
     }
 
     if (!total) {
@@ -9339,7 +9273,7 @@
           "p"
         );
       empty.textContent=
-        "Yalnız simulation + regression geçen sayısal adaylar veya yapısal engine regresyonu geçen incelemeler burada görünür.";
+        localizedMessage("admin.queue_eligibility");
       list.appendChild(empty);
       return;
     }
@@ -9375,15 +9309,15 @@
         );
       detail.textContent=
         item.numeric_change
-          ? `Mevcut ${item.before_value} → Öneri ${item.proposed_value}`
-          : "Yapısal engine doğrulaması geçti · sayısal değişiklik yok";
+          ? localizedMessage("admin.current_proposed", {before:item.before_value, proposed:item.proposed_value})
+          : localizedMessage("admin.structural_verified");
 
       const safety=
         document.createElement(
           "small"
         );
       safety.textContent=
-        "İnsan kararı zorunlu · otomatik uygulama kapalı";
+        localizedMessage("admin.manual_decision_required");
 
       card.append(
         title,
@@ -9450,7 +9384,7 @@
           "p"
         );
       empty.textContent=
-        "Simulation ve regression güvenlik kapılarını geçen ayrıntılı kanıt henüz yok.";
+        localizedMessage("admin.no_detailed_evidence");
       host.appendChild(empty);
       return;
     }
@@ -9470,8 +9404,7 @@
         document.createElement(
           "summary"
         );
-      summary.textContent=
-        `${item.area} · ${item.numeric_change ? "Sayısal" : "Yapısal"} · ${item.regression_status}`;
+      summary.textContent=localizedMessage("admin.evidence_card_summary", {area:item.area, type:localizedMessage(item.numeric_change ? "admin.numeric" : "admin.structural"), regression:item.regression_status});
 
       const body=
         document.createElement(
@@ -9514,20 +9447,43 @@
               : 0
             );
 
-      body.innerHTML=
-        `<div class="human-review-compare-grid">`
-        + `<div><span>Simulation Önce</span><strong>${simulationBefore ? safeJson(simulationBefore) : "—"}</strong></div>`
-        + `<div><span>Simulation Öneri</span><strong>${simulationProposed ? safeJson(simulationProposed) : "—"}</strong></div>`
-        + `<div><span>Regression</span><strong>${item.regression_status} · ${regressionScenarioCount} senaryo</strong></div>`
-        + `</div>`
-        + `<p><strong>Gerekçe:</strong> ${item.reason || "—"}</p>`
-        + `<p><strong>Öneri:</strong> ${item.suggestion || "—"}</p>`
-        + `<p><strong>Mevcut → Önerilen:</strong> ${item.before_value ?? "—"} → ${item.proposed_value ?? "—"}</p>`
-        + `<p><strong>Simulation:</strong> ${item.simulation_status}</p>`
-        + `<pre>${safeJson(item.simulation)}</pre>`
-        + `<p><strong>Regression:</strong> ${item.regression_status}</p>`
-        + `<pre>${safeJson(item.regression)}</pre>`
-        + `<p class="human-review-safety">Otomatik apply kapalı · insan kararı zorunlu</p>`;
+      const comparison=document.createElement("div");
+      comparison.className="human-review-compare-grid";
+      const addComparison=(key,value)=>{
+        const row=document.createElement("div");
+        const label=document.createElement("span");
+        const content=document.createElement("strong");
+        label.textContent=localizedMessage(key);
+        content.textContent=String(value);
+        row.append(label,content);
+        comparison.appendChild(row);
+      };
+      addComparison("admin.simulation_before",simulationBefore ? safeJson(simulationBefore) : "—");
+      addComparison("admin.simulation_proposed",simulationProposed ? safeJson(simulationProposed) : "—");
+      addComparison("admin.regression",localizedMessage("admin.regression_scenarios", {status:item.regression_status, count:localizedNumber(regressionScenarioCount)}));
+      body.appendChild(comparison);
+      const addDetail=(key,value)=>{
+        const row=document.createElement("p");
+        const label=document.createElement("strong");
+        label.textContent=localizedMessage(key);
+        row.append(label,document.createTextNode(` ${value ?? "—"}`));
+        body.appendChild(row);
+      };
+      addDetail("admin.reason",item.reason);
+      addDetail("admin.proposal",item.suggestion);
+      addDetail("admin.current_to_proposed",`${item.before_value ?? "—"} → ${item.proposed_value ?? "—"}`);
+      addDetail("admin.simulation",item.simulation_status);
+      const simulationJson=document.createElement("pre");
+      simulationJson.textContent=safeJson(item.simulation);
+      body.appendChild(simulationJson);
+      addDetail("admin.regression",item.regression_status);
+      const regressionJson=document.createElement("pre");
+      regressionJson.textContent=safeJson(item.regression);
+      body.appendChild(regressionJson);
+      const safety=document.createElement("p");
+      safety.className="human-review-safety";
+      safety.textContent=localizedMessage("admin.manual_decision_required");
+      body.appendChild(safety);
 
       const candidateDraft=readCandidateReviewDraft(item.area);
       const decisionBox=document.createElement("div");
@@ -9536,27 +9492,27 @@
       for (const [value,label] of Object.entries(HUMAN_REVIEW_STATE_LABELS)) {
         const option=document.createElement("option");
         option.value=value;
-        option.textContent=label;
+        option.textContent=localizedMessage(label);
         option.selected=candidateDraft.state===value;
         decisionSelect.appendChild(option);
       }
       const noteField=document.createElement("textarea");
       noteField.maxLength=600;
-      noteField.placeholder="Bu adaya özel yerel inceleme notu";
+      noteField.placeholder=localizedMessage("admin.candidate_note_placeholder");
       noteField.value=candidateDraft.note;
       const saveButton=document.createElement("button");
       saveButton.type="button";
-      saveButton.textContent="Bu Adayın Kararını Yerelde Kaydet";
+      saveButton.textContent=localizedMessage("admin.save_candidate_local");
       const draftStatus=document.createElement("span");
       draftStatus.textContent=(candidateDraft.state!=="none" || candidateDraft.note)
-        ? `${HUMAN_REVIEW_STATE_LABELS[candidateDraft.state]} · yalnız bu adaya ait yerel taslak`
-        : "Bu aday için yerel karar yok";
+        ? localizedMessage("admin.candidate_local_draft", {state:localizedMessage(HUMAN_REVIEW_STATE_LABELS[candidateDraft.state])})
+        : localizedMessage("admin.no_candidate_decision");
       saveButton.addEventListener("click",()=>{
         try {
           const saved=saveCandidateReviewDraft(item.area,decisionSelect.value,noteField.value);
-          draftStatus.textContent=`${HUMAN_REVIEW_STATE_LABELS[saved.state]} · ${item.area} için kaydedildi · canonical denge değişmedi`;
+          draftStatus.textContent=localizedMessage("admin.candidate_saved", {state:localizedMessage(HUMAN_REVIEW_STATE_LABELS[saved.state]), area:item.area});
         } catch (_error) {
-          draftStatus.textContent="Aday kararı yerelde kaydedilemedi";
+          draftStatus.textContent=localizedMessage("admin.candidate_save_failed");
         }
       });
       decisionBox.append(decisionSelect,noteField,saveButton,draftStatus);
@@ -9603,10 +9559,10 @@ const HUMAN_REVIEW_NOTE_KEY=
   "gridshard.balance-review.local-draft";
 
 const HUMAN_REVIEW_STATE_LABELS={
-  none:"Karar verilmedi",
-  hold:"Beklet",
-  reject:"Reddet",
-  revisit:"İleride değerlendir",
+  none:"admin.state.none",
+  hold:"admin.state.hold",
+  reject:"admin.state.reject",
+  revisit:"admin.state.revisit",
 };
 
 function readHumanReviewLocalDraft() {
@@ -9690,8 +9646,8 @@ function loadHumanReviewLocalNote() {
         draft.state !== "none"
         || draft.note
       )
-        ? `${label} · yerel taslak · canonical dengeye uygulanmaz`
-        : "Yerel inceleme kararı yok";
+        ? localizedMessage("admin.local_draft", {state:localizedMessage(label)})
+        : localizedMessage("admin.no_local_decision");
   }
 }
 
@@ -9739,7 +9695,7 @@ function saveHumanReviewLocalNote() {
     );
     if (status) {
       status.textContent=
-        `${HUMAN_REVIEW_STATE_LABELS[state]} · yerel inceleme kaydedildi · sunucuya gönderilmedi`;
+        localizedMessage("admin.review_saved_local", {state:localizedMessage(HUMAN_REVIEW_STATE_LABELS[state])});
     }
   } catch (_error) {
     if (status) {
@@ -9757,7 +9713,7 @@ function saveHumanReviewLocalNote() {
         );
       if (!response.ok) {
         throw new Error(
-          "İnsan değerlendirme kuyruğu alınamadı."
+          localizedMessage("admin.queue_unavailable")
         );
       }
       const queue=
@@ -9793,7 +9749,7 @@ function saveHumanReviewLocalNote() {
 
     set(
       "balance-review-progress",
-      `${report.battle_count || 0} / ${report.minimum_battles || 3} gerçek maç`
+      localizedMessage("admin.real_match_progress", {current:localizedNumber(report.battle_count || 0), required:localizedNumber(report.minimum_battles || 3)})
     );
 
     const route=
@@ -9813,13 +9769,10 @@ function saveHumanReviewLocalNote() {
     if (routeSummary) {
       if ((route.move_count || 0) <= 0) {
         routeSummary.textContent=
-        "Henüz devre kablosu değişimi kaydedilmedi.";
+        localizedMessage("admin.no_route_changes");
       } else {
         routeSummary.textContent=
-          `Toplam ${route.move_count} bağlantı değişimi`
-          + ` · Tercih edilen hat ${route.preferred_gate_label || "-"}`
-          + ` · Değişim sonrası bağlı modül ort. ${route.average_connected_modules_after_move || 0}`
-          + ` · Enerjili hücre ort. ${route.average_powered_special_cells_after_move || 0}`;
+          localizedMessage("admin.route_summary", {moves:localizedNumber(route.move_count), gate:route.preferred_gate_label || "-", modules:localizedNumber(route.average_connected_modules_after_move || 0), cells:localizedNumber(route.average_powered_special_cells_after_move || 0)});
       }
     }
 
@@ -9883,18 +9836,18 @@ function saveHumanReviewLocalNote() {
       const archetypeEntries=Object.entries(report.ai_archetypes || {});
       const archetypeSummary=archetypeEntries.length
         ? archetypeEntries
-            .map(([id,value]) => `${aiArchetypeName(id)} ${value.battle_count || 0}`)
+            .map(([id,value]) => localizedMessage("admin.archetype_match_count", {name:aiArchetypeName(id), count:localizedNumber(value.battle_count || 0)}))
             .join(" · ")
-        : "Arketip verisi yok";
+        : localizedMessage("admin.no_archetype_data");
       if (
         report.status
         === "review_ready"
       ) {
         balanceStatus.textContent=
-          `İlk denge incelemesi için yeterli manuel örnek oluştu. ${archetypeSummary}. Öneriler otomatik uygulanmaz.`;
+          localizedMessage("admin.balance_review_ready", {archetypes:archetypeSummary});
       } else {
         balanceStatus.textContent=
-          `Denge incelemesi için ${report.battles_remaining || 0} gerçek maç daha gerekli. ${archetypeSummary}.`;
+          localizedMessage("admin.balance_review_waiting", {remaining:localizedNumber(report.battles_remaining || 0), archetypes:archetypeSummary});
       }
     }
   }
@@ -9908,7 +9861,7 @@ function saveHumanReviewLocalNote() {
 
       if (!response.ok) {
         throw new Error(
-          "Manuel savaş raporu alınamadı."
+          localizedMessage("admin.manual_report_unavailable")
         );
       }
 
@@ -9931,7 +9884,7 @@ function saveHumanReviewLocalNote() {
         );
       if (status) {
         status.textContent=
-          "Toplu manuel savaş raporu alınamadı; bu maçın yerel özeti korunuyor.";
+          localizedMessage("admin.cumulative_report_unavailable");
       }
       return {
         ok:false,
@@ -9956,13 +9909,13 @@ function saveHumanReviewLocalNote() {
     };
 
     set("local-report-duration",
-      `${(localBattleMetrics.duration_ms/1000).toFixed(1)} sn`);
+      localizedMessage("time.seconds_short", {count:localizedNumber(localBattleMetrics.duration_ms / 1000, {minimumFractionDigits:1, maximumFractionDigits:1})}));
     set("local-report-result",
-      localBattleMetrics.won ? "Galibiyet" : "Mağlubiyet");
+      localizedMessage(localBattleMetrics.won ? "battle.win" : "battle.loss"));
     set("local-report-credits",
-      `${localBattleMetrics.credits_spent} Akım`);
+      localizedMessage("currency.current", {amount:localizedNumber(localBattleMetrics.credits_spent)}));
     set("local-report-forfeit-penalty",
-      `${localBattleMetrics.forfeit_credit_penalty || 0} Akım`);
+      localizedMessage("currency.current", {amount:localizedNumber(localBattleMetrics.forfeit_credit_penalty || 0)}));
     set("local-report-generator-moves",
       localBattleMetrics.generator_moves);
     set("local-report-damage-dealt",
@@ -9979,7 +9932,7 @@ function saveHumanReviewLocalNote() {
     const status=document.getElementById("local-report-balance-status");
     if (status) {
       status.textContent=
-        "Bu maç telemetriye kaydedildi. İlk sayısal denge kararı en az 3 gerçek manuel maçtan sonra incelenecek.";
+        localizedMessage("admin.match_recorded");
     }
   }
 
@@ -10347,7 +10300,7 @@ function saveHumanReviewLocalNote() {
     if (pulsed || emitted) {
       const tickerKind = variant === "damage" ? "danger" : variant;
       setBattleLiveTicker(
-        `${serverModule.name_tr || "Modül"} · ${text}`,
+        localizedMessage("battle.module_ticker", {name:localizedUiText(serverModule.name_tr || "Modül"), text:localizedUiText(text)}),
         tickerKind
       );
     }
@@ -10450,7 +10403,7 @@ function saveHumanReviewLocalNote() {
       if (!affectedModule) continue;
       pulseBattleFx(serverModuleDomId(target.player_id, affectedModule), feedbackKind);
     }
-    setBattleLiveTicker(`${coreModule?.name_tr || "Çekirdek"} gücü devreye yayıldı`, waveEffect);
+    setBattleLiveTicker(localizedMessage("battle.core_power_spread", {name:localizedUiText(coreModule?.name_tr || "Çekirdek")}), waveEffect);
   }
 
   function presentBattleEmoji(playerId, emojiId) {
@@ -10489,9 +10442,7 @@ function saveHumanReviewLocalNote() {
         event?.type === "command_rejected"
         && data.player_id === participantPlayerId
       ) {
-        logClientMessage(
-          `Savaş komutu reddedildi: ${data.reason || "Bilinmeyen neden"}`
-        );
+        logClientMessage(localizedMessage("battle.command_rejected"));
         continue;
       }
       if (
@@ -10518,7 +10469,7 @@ function saveHumanReviewLocalNote() {
         }
         renderCredits();
         setBattleLiveTicker(
-          `Savaştan çekilme · ${penalty} Akım silindi`,
+          localizedMessage("battle.forfeit_penalty", {penalty:localizedNumber(penalty)}),
           "danger"
         );
         continue;
@@ -10684,10 +10635,10 @@ function saveHumanReviewLocalNote() {
         }
         const supportBits = [];
         if (Number(data.damage_multiplier || 1) > 1) {
-          supportBits.push(`+${Math.round((Number(data.damage_multiplier || 1) - 1) * 100)}% GÜÇ`);
+          supportBits.push(localizedMessage("battle.power_boost", {percent:localizedNumber(Math.round((Number(data.damage_multiplier || 1) - 1) * 100))}));
         }
         if (Number(data.cooldown_multiplier || 1) < 1) {
-          supportBits.push(`+${Math.round((1 - Number(data.cooldown_multiplier || 1)) * 100)}% HIZ`);
+          supportBits.push(localizedMessage("battle.speed_boost", {percent:localizedNumber(Math.round((1 - Number(data.cooldown_multiplier || 1)) * 100))}));
         }
         if (data.targeting_active) {
           supportBits.push("+HEDEFLEME");
@@ -10700,7 +10651,7 @@ function saveHumanReviewLocalNote() {
             snapshot,
             data.player_id,
             data.module_id,
-            `${supportBits.join(" · ")} · DESTEK`,
+            localizedMessage("battle.support_effects", {effects:supportBits.join(" · ")}),
             "boost"
           );
         }
@@ -10712,7 +10663,7 @@ function saveHumanReviewLocalNote() {
         if (data.booster_id === "emergency_repair") {
           boosterVariant = "heal";
           const repair = Math.max(0, Math.round(Number(data.hp_after || 0) - Number(data.hp_before || 0)));
-          boosterText = repair > 0 ? `+${repair}` : "ACİL ONARIM";
+          boosterText = repair > 0 ? `+${localizedNumber(repair)}` : localizedMessage("battle.emergency_repair");
         } else if (data.booster_id === "overcharge_chip") {
           boosterText = "+25% GÜÇ · AŞIRI YÜK";
         } else if (data.booster_id === "cooling_burst") {
@@ -10819,7 +10770,7 @@ function saveHumanReviewLocalNote() {
           destroyedModule
         );
         setBattleLiveTicker(
-          `${destroyedModule?.name_tr || "Modül"} devre dışı kaldı`,
+          localizedMessage("battle.module_destroyed", {name:localizedUiText(destroyedModule?.name_tr || "Modül")}),
           "danger"
         );
         continue;
@@ -11202,13 +11153,13 @@ function saveHumanReviewLocalNote() {
       renderAiArchetypePicker();
       if (localBattleMetrics) localBattleMetrics.ai_archetype=activeLocalAiArchetype;
       const label=aiArchetypeName(activeLocalAiArchetype);
-      if (activeMatchModeEl) activeMatchModeEl.textContent=`Maç: Tek Oyunculu · ${label} AI`;
+      if (activeMatchModeEl) activeMatchModeEl.textContent=localizedMessage("battle.ai_match_mode", {label});
       if (matchmakingStatusEl) {
-        matchmakingStatusEl.textContent=`Rakip: ${label} AI`;
+        matchmakingStatusEl.textContent=localizedMessage("battle.ai_opponent", {label});
         matchmakingStatusEl.dataset.status="local";
       }
       const battleMatchLabel=document.getElementById("battle-match-label");
-      if (battleMatchLabel) battleMatchLabel.textContent=`${label} AI`;
+      if (battleMatchLabel) battleMatchLabel.textContent=localizedMessage("battle.ai_label", {label});
     }
 
     localServerAuthoritative=true;
@@ -11403,7 +11354,7 @@ function saveHumanReviewLocalNote() {
           250
         );
       logClientMessage(
-        `${aiArchetypeName(activeLocalAiArchetype)} AI savaşı sunucu BattleEngine otoritesine bağlandı.`
+        localizedMessage("battle.ai_connected", {archetype:aiArchetypeName(activeLocalAiArchetype)})
       );
       return true;
     } catch (_error) {
@@ -11444,10 +11395,7 @@ function saveHumanReviewLocalNote() {
         const detail=await response
           .json()
           .catch(() => ({}));
-        logClientMessage(
-          detail.detail
-          || "Sunucu savaş komutunu reddetti."
-        );
+        logClientMessage(localizedApiError(detail, response.status));
         return false;
       }
       await pollLocalServerBattle();
@@ -11605,7 +11553,7 @@ function saveHumanReviewLocalNote() {
     }
     battleEffectAggregator?.clear?.();
     setBattleLiveTicker(
-      `${aiArchetypeName(selectedAiArchetype)} AI · Kalkan + Lazer başlangıcı`,
+      localizedMessage("battle.ai_start", {archetype:aiArchetypeName(selectedAiArchetype)}),
       "neutral"
     );
 
@@ -11616,20 +11564,19 @@ function saveHumanReviewLocalNote() {
     const aiLabel=aiArchetypeName(activeLocalAiArchetype);
     if (activeMatchModeEl) {
       activeMatchModeEl.textContent =
-        `Maç: Tek Oyunculu · ${aiLabel} AI`;
+        localizedMessage("battle.ai_match_mode", {label:aiLabel});
     }
     if (battleStateLabelEl) {
       battleStateLabelEl.textContent =
         "Savaş devam ediyor";
     }
     if (matchmakingStatusEl) {
-      matchmakingStatusEl.textContent =
-        `Rakip: ${aiLabel} AI`;
+      matchmakingStatusEl.textContent =localizedMessage("battle.ai_opponent", {label:aiLabel});
       matchmakingStatusEl.dataset.status =
         "local";
     }
     const battleMatchLabel=document.getElementById("battle-match-label");
-    if (battleMatchLabel) battleMatchLabel.textContent=`${aiLabel} AI`;
+    if (battleMatchLabel) battleMatchLabel.textContent=localizedMessage("battle.ai_label", {label:aiLabel});
 
     if (boosterStatusEl) boosterStatusEl.textContent = "Kapalı";
     criticalCoreAudioRequested = false;
@@ -11767,7 +11714,7 @@ function saveHumanReviewLocalNote() {
       );
     if (status) {
       status.textContent=
-        `Savaş alanına giriş başarılı · 6/6 deste hazır · ${aiArchetypeName()} AI aktif`;
+        localizedMessage("battle.arena_entered", {archetype:aiArchetypeName()});
     }
 
     telemetryDispatcher.track(
@@ -11879,17 +11826,10 @@ function saveHumanReviewLocalNote() {
         "generator-1"
       );
 
-    playerCoreSummaryEl.textContent =
-      `Sen: Çekirdek ${
-        Math.max(
-          0,
-          Number(core?.hp || 0)
-        )
-      }/${core?.maxHp || 300}`;
+    playerCoreSummaryEl.textContent=localizedMessage("battle.your_core_hp", {hp:localizedNumber(Math.max(0, Number(core?.hp || 0))), max:localizedNumber(core?.maxHp || 300)});
 
     if (playerBoardStatusEl) {
-      playerBoardStatusEl.textContent=
-        `Çekirdek ${Math.max(0,Number(core?.hp||0))}/${core?.maxHp||300} · Enerji %${Math.round(Number(client.energyLoadRatio || 0) * 100)}`;
+      playerBoardStatusEl.textContent=localizedMessage("battle.core_hp_energy", {hp:localizedNumber(Math.max(0,Number(core?.hp||0))), max:localizedNumber(core?.maxHp||300), energy:localizedNumber(Math.round(Number(client.energyLoadRatio || 0) * 100))});
     }
 
     const playerSide=
@@ -12035,7 +11975,7 @@ function saveHumanReviewLocalNote() {
         false;
       battleResultSummaryEl.textContent = localizedUiText(
         finishReason === "player_forfeit"
-          ? `KAYBETTİN · Savaşı bıraktın · ${forfeitPenalty} Akım silindi`
+          ? localizedMessage("battle.forfeit_loss", {penalty:localizedNumber(forfeitPenalty)})
           : (
               won
                 ? "KAZANDIN · Rakip Çekirdek yok edildi"
@@ -12702,7 +12642,7 @@ function saveHumanReviewLocalNote() {
       { core: target.instanceId === "core-1" }
     );
     setBattleLiveTicker(
-      `${target.nameTr || "Modül"} · -${damage} Can`,
+      localizedMessage("battle.damage_ticker", {name:localizedUiText(target.nameTr || "Modül"), damage:localizedNumber(damage)}),
       "danger"
     );
 
@@ -12864,7 +12804,7 @@ function saveHumanReviewLocalNote() {
     bar.setAttribute("aria-valuemin", "0");
     bar.setAttribute("aria-valuemax", String(Math.max(1, Number(maxHp || 1))));
     bar.setAttribute("aria-valuenow", String(Math.max(0, Number(hp || 0))));
-    bar.title = `CAN ${Math.max(0, Math.round(Number(hp || 0)))}/${Math.max(1, Math.round(Number(maxHp || 1)))}`;
+    bar.title = localizedMessage("battle.hp_bar_title", {hp:localizedNumber(Math.max(0, Math.round(Number(hp || 0)))), max:localizedNumber(Math.max(1, Math.round(Number(maxHp || 1))))});
 
     const fill=
       document.createElement(
@@ -12986,21 +12926,19 @@ function saveHumanReviewLocalNote() {
             )
           : "incomplete";
 
-    const favorite=
-      preset?.favorite
-        ? "★ Favori · "
-        : "";
+    const favorite=preset?.favorite ? localizedMessage("preset.favorite_prefix") : "";
     const freshness=
       preset?.last_used_at_ms
         ? presetLastUsedLabel(
             preset.last_used_at_ms
           )
-        : "Henüz kullanılmadı";
+        : localizedMessage("preset.never_used");
 
-    quickLoadoutActiveSummaryEl
-      .innerHTML=
-        `<strong>${favorite}${activeBattlePoolPresetName}</strong>`
-        + `<span>${selectedCount}/6 kart · ${clean ? "Kayıtla aynı" : "Değiştirildi"} · ${freshness}</span>`;
+    const heading=document.createElement("strong");
+    heading.textContent=`${favorite}${activeBattlePoolPresetName}`;
+    const detail=document.createElement("span");
+    detail.textContent=localizedMessage("preset.active_summary", {count:localizedNumber(selectedCount), state:localizedMessage(clean ? "preset.unchanged" : "preset.modified"), freshness});
+    quickLoadoutActiveSummaryEl.replaceChildren(heading,detail);
   }
 
   function renderActivePresetState() {
@@ -13027,8 +12965,8 @@ function saveHumanReviewLocalNote() {
     if (activePresetEl) {
       activePresetEl.textContent=
         hasActive
-          ? `Aktif hazır havuz: ${activeBattlePoolPresetName}`
-          : "Aktif hazır havuz: Yok";
+          ? localizedMessage("preset.active_name", {name:activeBattlePoolPresetName})
+          : localizedMessage("preset.no_active");
       activePresetEl.dataset.state=
         hasActive
           ? "active"
@@ -13092,7 +13030,7 @@ function saveHumanReviewLocalNote() {
       && !presetNameEl.value
     ) {
       presetNameEl.placeholder=
-        `Aktif: ${activeBattlePoolPresetName}`;
+        localizedMessage("preset.active_placeholder", {name:activeBattlePoolPresetName});
     }
 
     renderQuickLoadoutActiveSummary();
@@ -13128,7 +13066,7 @@ function saveHumanReviewLocalNote() {
         minutes / 60
       );
     if (hours < 24) {
-      return `${hours} sa önce`;
+      return localizedMessage("time.hours_ago", {count:localizedNumber(hours)});
     }
 
     const days=
@@ -13223,7 +13161,7 @@ function saveHumanReviewLocalNote() {
       title.textContent = preset.name;
       const meta = document.createElement("span");
       const count = Number(preset.use_count || 0);
-      meta.textContent = `${preset.module_definition_ids.length} modül · ${count} kullanım`;
+      meta.textContent = localizedMessage("preset.module_use_count", {modules:localizedNumber(preset.module_definition_ids.length), uses:localizedNumber(count)});
       text.append(title, meta);
 
       const use = document.createElement("button");
@@ -13343,8 +13281,7 @@ function saveHumanReviewLocalNote() {
         );
       meta.className=
         "preset-card-meta";
-      meta.textContent=
-        `${preset.module_definition_ids.length} modül · ${presetLastUsedLabel(preset.last_used_at_ms)}`;
+      meta.textContent=localizedMessage("preset.module_last_used", {modules:localizedNumber(preset.module_definition_ids.length), last:presetLastUsedLabel(preset.last_used_at_ms)});
 
       const actions=
         document.createElement(
@@ -13487,7 +13424,7 @@ function saveHumanReviewLocalNote() {
           (item)=>item.favorite
         ).length;
       quickLoadoutStatusEl.textContent=
-        `${favoriteCount} favori · ${battlePoolPresets.length} kayıtlı havuz`;
+        localizedMessage("preset.favorite_registered_count", {favorites:localizedNumber(favoriteCount), registered:localizedNumber(battlePoolPresets.length)});
     }
 
     for (
@@ -13573,8 +13510,7 @@ function saveHumanReviewLocalNote() {
         document.createElement(
           "span"
         );
-      meta.textContent=
-        `${preset.module_definition_ids.length} modül · ${presetLastUsedLabel(preset.last_used_at_ms)}`;
+      meta.textContent=localizedMessage("preset.module_last_used", {modules:localizedNumber(preset.module_definition_ids.length), last:presetLastUsedLabel(preset.last_used_at_ms)});
 
       const actions=
         document.createElement(
@@ -13621,7 +13557,7 @@ function saveHumanReviewLocalNote() {
 
             if (presetStatusEl) {
               presetStatusEl.textContent=
-                `${preset.name} hızlı loadout olarak yüklendi. Savaş Havuzunu doğrulayıp maça geçebilirsin.`;
+                localizedMessage("preset.quick_loaded", {name:preset.name});
             }
           }
         );
@@ -13669,7 +13605,7 @@ function saveHumanReviewLocalNote() {
             ? "★ "
             : ""
         )
-        + `${preset.name} · ${preset.module_definition_ids.length}`;
+        + localizedMessage("preset.option_count", {name:preset.name, count:localizedNumber(preset.module_definition_ids.length)});
       presetSelectEl.appendChild(
         option
       );
@@ -13702,7 +13638,7 @@ function saveHumanReviewLocalNote() {
       if (presetStatusEl) {
         presetStatusEl.textContent=
           battlePoolPresets.length
-            ? `${battlePoolPresets.length} hazır havuz kayıtlı`
+            ? localizedMessage("preset.registered_count", {count:localizedNumber(battlePoolPresets.length)})
             : "Henüz kayıtlı hazır havuz yok.";
       }
       return {ok:true};
@@ -13767,19 +13703,13 @@ function saveHumanReviewLocalNote() {
       );
 
       if (!response.ok) {
-        let detail="";
+        let errorPayload={};
         try {
-          detail=String(
-            (await response.json())
-              ?.detail || ""
-          );
+          errorPayload=await response.json();
         } catch (_error) {
           // Non-JSON server errors use the generic message below.
         }
-        throw new Error(
-          detail
-          || "Sunucu kaydı kabul etmedi."
-        );
+        throw new Error(localizedApiError(errorPayload, response.status));
       }
 
       const payload=
@@ -13803,8 +13733,7 @@ function saveHumanReviewLocalNote() {
       }
       renderActivePresetState();
       if (presetStatusEl) {
-        presetStatusEl.textContent=
-          `${savedName} kaydedildi.`;
+        presetStatusEl.textContent=localizedMessage("preset.saved", {name:savedName});
       }
       return {
         ok:true,
@@ -13817,7 +13746,7 @@ function saveHumanReviewLocalNote() {
           : String(error);
       if (presetStatusEl) {
         presetStatusEl.textContent=
-          `Hazır havuz kaydedilemedi: ${reason}`;
+          localizedMessage("preset.save_failed_reason", {reason:localizedUiText(reason)});
       }
       return {
         ok:false,
@@ -13875,12 +13804,7 @@ function saveHumanReviewLocalNote() {
       );
     } catch (error) {
       if (presetStatusEl) {
-        presetStatusEl.textContent=
-          `Deste sunucuya kaydedilemedi: ${
-            error instanceof Error
-              ? error.message
-              : String(error)
-          }`;
+        presetStatusEl.textContent=localizedMessage("preset.server_save_failed", {reason:error instanceof Error ? error.message : String(error)});
       }
       return {
         ok:false,
@@ -13895,7 +13819,7 @@ function saveHumanReviewLocalNote() {
     renderPresetOptions();
     if (presetStatusEl) {
       presetStatusEl.textContent=
-        `${name} yüklendi; istersen modülleri değiştirebilirsin.`;
+        localizedMessage("preset.loaded", {name});
     }
     return {
       ok:true,
@@ -13949,8 +13873,7 @@ function saveHumanReviewLocalNote() {
     renderPresetOptions();
 
     if (presetStatusEl) {
-      presetStatusEl.textContent=
-        `${name} silindi.`;
+      presetStatusEl.textContent=localizedMessage("preset.deleted", {name});
     }
   }
 
@@ -14028,7 +13951,7 @@ function saveHumanReviewLocalNote() {
 
     if (presetStatusEl) {
       presetStatusEl.textContent=
-        `${oldName} → ${newName} olarak değiştirildi.`;
+        localizedMessage("preset.renamed", {old:oldName, name:newName});
     }
   }
 
@@ -14128,8 +14051,7 @@ function saveHumanReviewLocalNote() {
       };
     } catch (error) {
       if (poolCatalogSourceEl) {
-        poolCatalogSourceEl.textContent =
-          "Sunucu kataloğu yüklenemedi; temel modül bilgileri gösteriliyor. Sayısal savaş etkileri doğrulanamadı.";
+        poolCatalogSourceEl.textContent = localizedMessage("pool.catalog_fallback");
         poolCatalogSourceEl.dataset.status =
           "fallback";
       }
@@ -14166,11 +14088,7 @@ function saveHumanReviewLocalNote() {
       );
     }
 
-    return (
-      `${module.strategicRole}. `
-      + `Canı ${module.maxHp}, savaş içi yerleştirme maliyeti `
-      + `${module.circuitCreditCost} Akım'dır.`
-    );
+    return localizedMessage("pool.module_description", {role:localizedUiText(module.strategicRole), hp:localizedNumber(module.maxHp), cost:localizedNumber(module.circuitCreditCost)});
   }
 
   function setTextOrDash(
@@ -14226,8 +14144,7 @@ function saveHumanReviewLocalNote() {
 
     poolDetailHpEl.textContent =
       `${catalog?.max_hp ?? module.maxHp}`;
-    poolDetailCostEl.textContent =
-      `${catalog?.circuit_credit_cost ?? module.circuitCreditCost} Akım`;
+    poolDetailCostEl.textContent=localizedMessage("currency.current", {amount:localizedNumber(catalog?.circuit_credit_cost ?? module.circuitCreditCost)});
     renderBattlePoolModulePreview(
       module,
       catalog
@@ -14237,13 +14154,13 @@ function saveHumanReviewLocalNote() {
       poolDetailEnergyGenerationEl,
       catalog
         ? `${catalog.energy_generation || 0}/${localizedUiText("sn")}`
-        : localizedUiText("Sunucu kataloğu bekleniyor")
+        : localizedMessage("pool.catalog_loading")
     );
     setTextOrDash(
       poolDetailEnergyConsumptionEl,
       catalog
         ? `${catalog.energy_consumption || 0}/${localizedUiText("sn")}`
-        : localizedUiText("Sunucu kataloğu bekleniyor")
+        : localizedMessage("pool.catalog_loading")
     );
     setTextOrDash(
       poolDetailDamageEl,
@@ -14251,23 +14168,19 @@ function saveHumanReviewLocalNote() {
         ? (
             catalog.base_damage > 0
               ? `${catalog.base_damage}`
-              : localizedUiText("Doğrudan hasar yok")
+              : localizedMessage("pool.no_direct_damage")
           )
-        : localizedUiText("Sunucu kataloğu bekleniyor")
+        : localizedMessage("pool.catalog_loading")
     );
     setTextOrDash(
       poolDetailCooldownEl,
       catalog
         ? (
             catalog.cooldown_ms > 0
-              ? `${(catalog.cooldown_ms / 1000).toFixed(
-                  catalog.cooldown_ms % 1000 === 0
-                    ? 0
-                    : 1
-                )} sn`
-              : localizedUiText("Bekleme yok")
+              ? localizedMessage("time.seconds_short", {count:localizedNumber(catalog.cooldown_ms / 1000, {maximumFractionDigits:1})})
+              : localizedMessage("pool.no_cooldown")
           )
-        : localizedUiText("Sunucu kataloğu bekleniyor")
+        : localizedMessage("pool.catalog_loading")
     );
 
     poolDetailRoleEl.textContent =
@@ -14291,7 +14204,7 @@ function saveHumanReviewLocalNote() {
       const lines =
         (englishCatalog ? catalog?.effect_lines_en : catalog?.effect_lines)
         || [
-          "Sayısal savaş etkileri sunucu kataloğu yüklendiğinde gösterilir.",
+          localizedMessage("pool.effects_loading"),
         ];
 
       for (const line of lines) {
@@ -14311,19 +14224,19 @@ function saveHumanReviewLocalNote() {
       poolDetailStrongEl,
       catalog?.strong_against?.length
         ? catalog.strong_against.map(localizedUiText).join(", ")
-        : localizedUiText("Belirgin karşı üstünlük yok")
+        : localizedMessage("pool.no_strong_matchup")
     );
     setTextOrDash(
       poolDetailWeakEl,
       catalog?.weak_against?.length
         ? catalog.weak_against.map(localizedUiText).join(", ")
-        : localizedUiText("Belirgin zayıflık yok")
+        : localizedMessage("pool.no_weak_matchup")
     );
     setTextOrDash(
       poolDetailSynergyEl,
       catalog?.synergy_with?.length
         ? catalog.synergy_with.map(localizedUiText).join(", ")
-        : localizedUiText("Tanımlı özel sinerji yok")
+        : localizedMessage("pool.no_synergy")
     );
 
   }
@@ -14369,8 +14282,7 @@ function saveHumanReviewLocalNote() {
       );
     heading.className =
       "pool-category-title";
-    heading.textContent =
-      `${title} · ${count}`;
+    heading.textContent =localizedMessage("pool.category_heading", {title:localizedUiText(title), count:localizedNumber(count)});
 
     const list =
       document.createElement(
@@ -14627,7 +14539,7 @@ function saveHumanReviewLocalNote() {
             "required"
           );
           button.title =
-            `${localizedUiText(module.nameTr)} · ${localizedUiText("Başlangıç devresi için zorunlu")}`;
+            localizedMessage("pool.required_start", {name:localizedUiText(module.nameTr)});
         }
 
         button.addEventListener(
@@ -14932,7 +14844,7 @@ function saveHumanReviewLocalNote() {
         0,
         Math.ceil((dueAtMs - client.elapsedMs) / 1000)
       );
-      boosterStatusEl.textContent = localizedUiText(`${remainingSeconds} sn sonra açılır`);
+      boosterStatusEl.textContent = localizedMessage("battle.booster_unlock_seconds", {seconds:localizedNumber(remainingSeconds)});
     }
   }
 
@@ -14953,7 +14865,7 @@ function saveHumanReviewLocalNote() {
 
     poolDetailPreviewEl.setAttribute(
       "aria-label",
-      `${localizedUiText(module.nameTr)} · ${localizedUiText("Modül önizlemesi")}`
+      localizedMessage("pool.module_preview_aria", {name:localizedUiText(module.nameTr)})
     );
     poolDetailPreviewEl.appendChild(card);
   }
@@ -14987,7 +14899,7 @@ function saveHumanReviewLocalNote() {
       const optionCount = activeBoosterOfferIds.size || (offer.booster_ids || []).length || 0;
       boosterStatusEl.textContent = localizedUiText(boosterTargetMode.selectedBoosterId
         ? "Hedef modül seç"
-        : `HAZIR · ${optionCount} seçenekten 1'ini seç`);
+        : localizedMessage("battle.booster_choose", {count:localizedNumber(optionCount)}));
       renderBoosterOptions();
       return;
     }
@@ -15000,10 +14912,10 @@ function saveHumanReviewLocalNote() {
     activeBoosterOfferIds = new Set();
     boosterOfferOpen = false;
     clearBoosterTargetMode("offer_closed");
-    boosterStatusEl.textContent = localizedUiText(`${Math.max(
+    boosterStatusEl.textContent = localizedMessage("battle.booster_unlock_seconds", {seconds:localizedNumber(Math.max(
       0,
       Math.ceil((boosterOfferDueAtMs(nextBoosterOfferIndex) - client.elapsedMs) / 1000)
-    )} sn sonra açılır`);
+    ))});
     if (offerWasVisible) {
       renderBoosterOptions();
     }
@@ -15107,7 +15019,7 @@ function saveHumanReviewLocalNote() {
     ));
     if (boosterOfferOpen && boosterStatusEl) {
       boosterStatusEl.textContent = localizedUiText(
-        `HAZIR · ${activeBoosterOfferIds.size || BOOSTER_OPTIONS_PER_OFFER} seçenekten 1'ini seç`
+        localizedMessage("battle.booster_choose", {count:localizedNumber(activeBoosterOfferIds.size || BOOSTER_OPTIONS_PER_OFFER)})
       );
     }
     renderBoosterOptions();
@@ -15119,7 +15031,7 @@ function saveHumanReviewLocalNote() {
     const booster = BOOSTER_OPTIONS.find(item => item.id === boosterTargetMode.selectedBoosterId);
     if (!booster) return false;
     if (!isBoosterTargetEligible(module, booster.id)) {
-      logClientMessage(`${booster.nameTr}, bu modülde etkili olmayacağı için hak korunarak reddedildi.`);
+      logClientMessage(localizedMessage("battle.booster_rejected", {name:localizedUiText(booster.nameTr)}));
       return true;
     }
     trackBattleUiInteraction(
@@ -15350,12 +15262,12 @@ function saveHumanReviewLocalNote() {
       } else if (SPECIAL_CELL_INFO[key]) {
         const special = SPECIAL_CELL_INFO[key];
         cell.classList.add("special-cell", special.css);
-        cell.title = `${special.label}: ${special.bonus}`;
+        cell.title = localizedMessage("battle.special_cell", {label:localizedUiText(special.label), bonus:localizedUiText(special.bonus)});
         cell.dataset.specialLabel = localizedUiText(special.label);
         cell.dataset.specialBonus = special.bonus;
       } else {
         cell.dataset.cellLabel =
-          localizedUiText(`Hücre ${x},${y}`);
+          localizedMessage("battle.cell_coordinates", {x:localizedNumber(x), y:localizedNumber(y)});
       }
 
       board.appendChild(cell);
@@ -15435,9 +15347,7 @@ function saveHumanReviewLocalNote() {
         line_disrupted:english
           ? "A disruptor effect temporarily broke this module's energy line."
           : "Kesici etkisi bu modülün enerji hattını geçici olarak kopardı.",
-        insufficient_supply:english
-          ? `Core energy demand: ${required.toFixed(1)} U, received: ${received.toFixed(1)} U.`
-          : `Çekirdek enerji ihtiyacı: ${required.toFixed(1)} Ü, gelen: ${received.toFixed(1)} Ü.`,
+        insufficient_supply:localizedMessage("battle.core_energy_need", {required:localizedNumber(required, {minimumFractionDigits:1, maximumFractionDigits:1}), received:localizedNumber(received, {minimumFractionDigits:1, maximumFractionDigits:1})}),
       };
       const message=reasons[powerReason]
         || (english
@@ -15482,7 +15392,7 @@ function saveHumanReviewLocalNote() {
       addBadge(
         "♨",
         heat >= 100 ? "heat-critical" : "heat-high",
-        `Isı ${Math.round(heat)}`
+        localizedMessage("battle.heat", {heat:localizedNumber(Math.round(heat))})
       );
     }
 
@@ -15493,7 +15403,7 @@ function saveHumanReviewLocalNote() {
       addBadge(
         `✦${boosters.length > 1 ? boosters.length : ""}`,
         "boosted",
-        `Aktif güçlendirici: ${boosters.join(", ")}`
+        localizedMessage("battle.active_boosters", {boosters:boosters.join(", ")})
       );
     }
 
@@ -15504,7 +15414,7 @@ function saveHumanReviewLocalNote() {
       addBadge(
         `!${debuffs.length > 1 ? debuffs.length : ""}`,
         "debuffed",
-        `Aktif olumsuz etki: ${debuffs.join(", ")}`
+        localizedMessage("battle.active_debuffs", {effects:debuffs.map(localizedUiText).join(", ")})
       );
     }
 
@@ -15526,7 +15436,7 @@ function saveHumanReviewLocalNote() {
     card.dataset.moduleId=moduleId;
     card.dataset.category=kind;
     card.title=
-      `${name} · HP ${Math.max(0,Math.round(hp))}/${maxHp}`;
+      localizedMessage("battle.module_title_hp", {name:localizedUiText(name), hp:localizedNumber(Math.max(0, Math.round(hp))), max:localizedNumber(maxHp)});
     const icon=document.createElement("span");
     icon.className="module-icon";
     icon.textContent=moduleIconFor({nameTr:name});
@@ -15598,7 +15508,7 @@ function saveHumanReviewLocalNote() {
     }
     mockEnemyModuleHp=enemyLivingModules().reduce((sum,module)=>sum+module.hp,0);
     if (enemyBoardStatusEl) {
-      enemyBoardStatusEl.textContent=`Çekirdek ${Math.max(0,mockEnemyCoreHp)}/300`;
+      enemyBoardStatusEl.textContent=localizedMessage("battle.enemy_core_hp", {hp:localizedNumber(Math.max(0,mockEnemyCoreHp))});
     }
     renderBattleIdentityPanels();
     renderBoardCables(
@@ -15614,7 +15524,7 @@ function saveHumanReviewLocalNote() {
       || matchmakingState.opponentType === "ai"
       || String(enemyBattlePlayerId || "").includes("ai-")
     ) {
-      return `${aiArchetypeName(activeLocalAiArchetype)} AI`;
+      return localizedMessage("battle.ai_label", {label:aiArchetypeName(activeLocalAiArchetype)});
     }
     if (enemyBattleDisplayName) return enemyBattleDisplayName;
     if (!enemyBattlePlayerId) return localizedUiText("Rakip Oyuncu");
@@ -15682,13 +15592,13 @@ function saveHumanReviewLocalNote() {
       marker.setAttribute("role", "status");
       marker.setAttribute(
         "aria-label",
-        `${localizedUiText("Enkaz")}: ${seconds}`
+        localizedMessage("battle.debris_seconds", {seconds:localizedNumber(seconds)})
       );
       const shards = document.createElement("span");
       shards.className = "cell-debris-shards";
       shards.setAttribute("aria-hidden", "true");
       const countdown = document.createElement("strong");
-      countdown.textContent = `${seconds} sn`;
+      countdown.textContent = localizedMessage("time.seconds_short", {count:localizedNumber(seconds)});
       marker.append(shards, countdown);
       cell.appendChild(marker);
     }
@@ -15844,8 +15754,58 @@ function saveHumanReviewLocalNote() {
     renderBattlePoolSelection();
     renderBattlePoolDetail();
     renderBoosterOptions();
+    renderArenaPath();
+    renderShop();
+    renderPresetOptions();
+    renderFriendsScreen();
+    renderTeamHub();
+    renderEventsHub();
     renderProfileSummary();
+    renderEngagementSummary(profileState.viewModel()?.engagement);
+    renderLaboratory();
+    renderStatisticsSummary();
+    renderLeaderboard();
+    renderRewardInbox();
     renderPostMatchSummary();
+    if (document.getElementById("module-detail-dialog")?.open) {
+      openModuleDetail(document.getElementById("module-detail-tab-content")?.dataset.tab || "overview");
+    }
+    if (document.getElementById("core-detail-dialog")?.open) {
+      openCoreDetail(document.getElementById("core-detail-tab-content")?.dataset.tab || "overview");
+    }
+    if (publicProfilePayload && document.getElementById("public-profile-dialog")?.open) {
+      renderPublicProfile(publicProfilePayload);
+      renderPublicProfileFriendAction(publicProfilePayload);
+    }
+    if (teamProfilePayload && document.getElementById("team-profile-dialog")?.open) renderTeamProfile(teamProfilePayload);
+    // Newly rebuilt panels contain static labels as well as keyed dynamic text.
+    globalThis.GridshardI18n?.apply(normalized);
+  }
+
+  function localizedRecordText(record, field) {
+    if (!record) return "";
+    const english = document.documentElement.lang === "en";
+    const englishValue = record[`${field}_en`];
+    const turkishValue = record[`${field}_tr`] ?? record[field];
+    const value = english && englishValue !== undefined && englishValue !== "" && (!Array.isArray(englishValue) || englishValue.length)
+      ? englishValue : turkishValue;
+    return Array.isArray(value) ? value.map(localizedUiText) : localizedUiText(value);
+  }
+
+  function localizedCatalogName(kind, id, fallback = "") {
+    const key = `cosmetic.${kind}.${id}`;
+    const value = localizedMessage(key);
+    return value === key ? localizedUiText(fallback || id.replaceAll("_", " ")) : value;
+  }
+
+  function localizedRewardChestName(reward = {}) {
+    const key = `chest.visual.${reward.chest_visual_id || ""}`;
+    const byVisual = localizedMessage(key);
+    if (byVisual !== key) return byVisual;
+    const byTierKey = `event.chest.${reward.chest_tier || ""}`;
+    const byTier = localizedMessage(byTierKey);
+    if (byTier !== byTierKey) return byTier;
+    return localizedRecordText(reward, "chest_name") || localizedMessage("reward.chest_generic");
   }
 
   function renderSettingsPersistenceStatus(
@@ -16251,7 +16211,7 @@ function saveHumanReviewLocalNote() {
         : participantPlayerId;
 
     el.textContent =
-      `Web Test Kimliği: ${shortId}`;
+      localizedMessage("beta.web_test_id", {id:shortId});
   }
 
   function renderProfileSummary() {
@@ -16273,18 +16233,17 @@ function saveHumanReviewLocalNote() {
       (stage) => view.rating >= Number(stage.required_trophies || 0)
         && wins >= Number(stage.required_wins || 0)
     );
-    const activeTitle = achievedStages.at(-1)?.title_tr
+    const activeTitle = localizedRecordText(achievedStages.at(-1), "title")
       || view.operatorTitle
       || "Devre Çırağı";
-    el.textContent = localizedUiText(
-      `${view.displayName} · ${activeTitle} · ${view.leagueNameTr} · ${view.rating} 🏆`
-    );
+    const leagueName = document.documentElement.lang === "en" ? view.leagueNameEn || view.leagueNameTr : view.leagueNameTr;
+    el.textContent = localizedMessage("profile.identity_summary", {name:view.displayName, title:localizedUiText(activeTitle), league:localizedUiText(leagueName), trophies:localizedNumber(view.rating)});
 
     const setText = (id, value) => {
       const target = document.getElementById(id);
       if (target) target.textContent = String(value);
     };
-    setText("profile-clan-title", view.teamName || "Takıma dahil değil");
+    setText("profile-clan-title", view.teamName || localizedMessage("profile.no_team"));
     const profileTeamButton = document.getElementById("profile-clan-title");
     if (profileTeamButton) {
       profileTeamButton.dataset.teamId = view.teamId || "";
@@ -16293,8 +16252,8 @@ function saveHumanReviewLocalNote() {
     setText(
       "profile-clan-copy",
       view.teamName
-        ? `Takım kimliği: ${view.teamId || "—"}`
-        : "Bir takıma katıldığında takım bilgilerin burada görünecek."
+        ? localizedMessage("profile.team_id", {id:view.teamId || "—"})
+        : localizedMessage("profile.no_team_description")
     );
 
     const engagement = view.engagement || {};
@@ -16309,10 +16268,10 @@ function saveHumanReviewLocalNote() {
     const remainingMs = Math.max(0, seasonEndsAt - Date.now());
     const remainingDays = Math.floor(remainingMs / 86400000);
     const remainingHours = Math.floor((remainingMs % 86400000) / 3600000);
-    setText("profile-current-season-name", engagement.season_name_tr || "Güncel Sezon");
-    setText("profile-season-countdown", Number.isFinite(seasonEndsAt) && seasonEndsAt > 0 ? `${remainingDays} gün ${remainingHours} sa kaldı` : "Sezon süresi hazırlanıyor");
+    setText("profile-current-season-name", localizedRecordText(engagement, "season_name") || localizedMessage("profile.current_season"));
+    setText("profile-season-countdown", Number.isFinite(seasonEndsAt) && seasonEndsAt > 0 ? localizedMessage("season.time_remaining", {days:localizedNumber(remainingDays), hours:localizedNumber(remainingHours)}) : localizedMessage("season.time_preparing"));
     renderTrophyValue("profile-season-trophies", Number(view.rating || 0));
-    setText("profile-season-league", view.leagueNameTr || "Arena 1");
+    setText("profile-season-league", localizedUiText(leagueName || localizedMessage("arena.first")));
     renderTrophyValue("profile-last-season-trophies", previous ? Number(previous.final_rating || 0) : "—");
     renderTrophyValue("profile-best-season-trophies", best ? Number(best.final_rating || 0) : "—");
 
@@ -16342,9 +16301,7 @@ function saveHumanReviewLocalNote() {
         view.displayName;
     }
     if (lobbyPlayerDetails) {
-      lobbyPlayerDetails.textContent= localizedUiText(
-        `${activeTitle} · 🏆 ${view.rating}`
-      );
+      lobbyPlayerDetails.textContent=localizedMessage("profile.lobby_title_trophies", {title:localizedUiText(activeTitle), trophies:localizedNumber(view.rating)});
     }
 
     renderProfileHighlights();
@@ -16361,14 +16318,14 @@ function saveHumanReviewLocalNote() {
         ids:cosmetics.unlockedRankTrophyIds || [],
         definitions:PROFILE_RANK_TROPHIES,
         kind:"trophy",
-        emptyCopy:"Henüz sıralama kupası kazanılmadı.",
+        emptyCopy:localizedMessage("profile.no_rank_trophies"),
       },
       {
         hostId:"profile-badge-collection",
         ids:cosmetics.unlockedBadgeIds || [],
         definitions:PROFILE_BADGES,
         kind:"badge",
-        emptyCopy:"Henüz sıralama rozeti kazanılmadı.",
+        emptyCopy:localizedMessage("profile.no_rank_badges"),
       },
     ];
 
@@ -16396,13 +16353,13 @@ function saveHumanReviewLocalNote() {
         item.className = "profile-honor-item";
         item.dataset.kind = group.kind;
         item.dataset.tone = definition.tone;
-        item.title = definition.nameTr;
-        item.setAttribute("aria-label", definition.nameTr);
+        item.title = localizedCatalogName(group.kind, id, definition.nameTr);
+        item.setAttribute("aria-label", item.title);
         const glyph = document.createElement("span");
         glyph.setAttribute("aria-hidden", "true");
         glyph.textContent = definition.glyph;
         const label = document.createElement("small");
-        label.textContent = definition.shortNameTr;
+        label.textContent = localizedCatalogName(`${group.kind}_short`, id, definition.shortNameTr);
         item.append(glyph, label);
         host.appendChild(item);
       }
@@ -16410,9 +16367,9 @@ function saveHumanReviewLocalNote() {
   }
 
   function deckDisplayName(deck) {
-    if (!deck?.module_ids?.length) return "Henüz maç yok";
+    if (!deck?.module_ids?.length) return localizedMessage("profile.no_matches_yet");
     return deck.module_ids
-      .map((id) => moduleDefinitions.find((module) => module.definitionId === id)?.nameTr || id)
+      .map((id) => localizedUiText(moduleDefinitions.find((module) => module.definitionId === id)?.nameTr || id))
       .join(" · ");
   }
 
@@ -16447,8 +16404,8 @@ function saveHumanReviewLocalNote() {
       const label = document.getElementById("profile-featured-core-name");
       const level = document.getElementById("profile-featured-core-level");
       if (icon) icon.textContent = visual.glyph;
-      if (label) label.textContent = core?.name_tr || "Rezonans Çekirdeği";
-      if (level) level.textContent = `SEVİYE ${Number(core?.level || 1)}`;
+      if (label) label.textContent = localizedUiText(core?.name_tr || localizedMessage("core.resonance"));
+      if (level) level.textContent = localizedMessage("core.level", {level:localizedNumber(core?.level || 1)});
     }
   }
 
@@ -16462,7 +16419,7 @@ function saveHumanReviewLocalNote() {
 
   async function selectProfileCosmetic(kind, id) {
     const status = document.getElementById("avatar-action-status");
-    if (status) status.textContent = "Seçim kaydediliyor…";
+    if (status) status.textContent = localizedMessage("cosmetic.saving_choice");
     try {
       const current = profileState.viewModel()?.cosmetics || {};
       const payload = await requestJsonWithDeadline(
@@ -16503,7 +16460,7 @@ function saveHumanReviewLocalNote() {
     const profileName = document.getElementById("avatar-preview-name");
     const profileTitle = document.getElementById("avatar-preview-title");
     if (profileName) profileName.textContent = view.displayName;
-    if (profileTitle) profileTitle.textContent = activeTitle || view.operatorTitle || "Devre Çırağı";
+    if (profileTitle) profileTitle.textContent = localizedUiText(activeTitle || view.operatorTitle || localizedMessage("profile.default_title"));
 
     const avatarHost = document.getElementById("avatar-choice-list");
     if (avatarHost) {
@@ -16515,7 +16472,13 @@ function saveHumanReviewLocalNote() {
         button.dataset.avatarId = avatar.id;
         button.dataset.state = !unlocked.has(avatar.id) ? "locked" : avatar.id === avatarId ? "selected" : "available";
         button.disabled = !unlocked.has(avatar.id);
-        button.innerHTML = `<span>${avatar.glyph}</span><strong>${avatar.nameTr}</strong><small>${unlocked.has(avatar.id) ? (avatar.id === avatarId ? "SEÇİLİ" : "SEÇ") : "SEZON YOLUNDA"}</small>`;
+        const glyph=document.createElement("span");
+        glyph.textContent=avatar.glyph;
+        const name=document.createElement("strong");
+        name.textContent=localizedCatalogName("avatar", avatar.id, avatar.nameTr);
+        const state=document.createElement("small");
+        state.textContent=localizedMessage(unlocked.has(avatar.id) ? (avatar.id === avatarId ? "cosmetic.selected" : "cosmetic.select") : "cosmetic.season_path");
+        button.append(glyph,name,state);
         button.addEventListener("click", () => selectProfileCosmetic("avatar", avatar.id));
         avatarHost.appendChild(button);
       }
@@ -16532,7 +16495,13 @@ function saveHumanReviewLocalNote() {
         button.dataset.frame = frame.id;
         button.dataset.state = !unlocked.has(frame.id) ? "locked" : frame.id === frameId ? "selected" : "available";
         button.disabled = !unlocked.has(frame.id);
-        button.innerHTML = `<span>◇</span><strong>${frame.nameTr}</strong><small>${unlocked.has(frame.id) ? (frame.id === frameId ? "SEÇİLİ" : "SEÇ") : "SEZON YOLUNDA"}</small>`;
+        const glyph=document.createElement("span");
+        glyph.textContent="◇";
+        const name=document.createElement("strong");
+        name.textContent=localizedCatalogName("frame", frame.id, frame.nameTr);
+        const state=document.createElement("small");
+        state.textContent=localizedMessage(unlocked.has(frame.id) ? (frame.id === frameId ? "cosmetic.selected" : "cosmetic.select") : "cosmetic.season_path");
+        button.append(glyph,name,state);
         button.addEventListener("click", () => selectProfileCosmetic("frame", frame.id));
         frameHost.appendChild(button);
       }
@@ -16548,11 +16517,11 @@ function saveHumanReviewLocalNote() {
         button.dataset.state = !unlocked.has(emoji.id) ? "locked" : emoji.id === emojiId ? "selected" : "available";
         button.disabled = !unlocked.has(emoji.id);
         const name = document.createElement("strong");
-        name.textContent = emoji.nameTr;
+        name.textContent = localizedCatalogName("emoji", emoji.id, emoji.nameTr);
         const state = document.createElement("small");
-        state.textContent = unlocked.has(emoji.id)
-          ? (emoji.id === emojiId ? "SEÇİLİ" : "SEÇ")
-          : "REKABET ÖDÜLÜ";
+        state.textContent = localizedMessage(unlocked.has(emoji.id)
+          ? (emoji.id === emojiId ? "cosmetic.selected" : "cosmetic.select")
+          : "cosmetic.competition_reward");
         button.append(createBattleEmojiVisual(emoji), name, state);
         button.addEventListener("click", () => selectProfileCosmetic("emoji", emoji.id));
         emojiHost.appendChild(button);
@@ -16571,7 +16540,13 @@ function saveHumanReviewLocalNote() {
         button.style.setProperty("--profile-bg-b", background.colors[1]);
         button.dataset.state = !unlocked.has(background.id) ? "locked" : background.id === backgroundId ? "selected" : "available";
         button.disabled = !unlocked.has(background.id);
-        button.innerHTML = `<span>▰</span><strong>${background.nameTr}</strong><small>${unlocked.has(background.id) ? (background.id === backgroundId ? "SEÇİLİ" : "SEÇ") : "REKABET ÖDÜLÜ"}</small>`;
+        const glyph=document.createElement("span");
+        glyph.textContent="▰";
+        const name=document.createElement("strong");
+        name.textContent=localizedCatalogName("background", background.id, background.nameTr);
+        const state=document.createElement("small");
+        state.textContent=localizedMessage(unlocked.has(background.id) ? (background.id === backgroundId ? "cosmetic.selected" : "cosmetic.select") : "cosmetic.competition_reward");
+        button.append(glyph,name,state);
         button.addEventListener("click", () => selectProfileCosmetic("background", background.id));
         backgroundHost.appendChild(button);
       }
@@ -16600,11 +16575,11 @@ function saveHumanReviewLocalNote() {
     const cleanTeamId = String(teamId || "").trim();
     const node = document.createElement(cleanTeamId ? "button" : "strong");
     node.className = `${cleanTeamId ? "team-profile-link" : ""} ${className}`.trim();
-    node.textContent = teamName || "Takım";
+    node.textContent = teamName || localizedMessage("profile.team");
     if (cleanTeamId) {
       node.type = "button";
-      node.title = "Takım profilini gör";
-      node.setAttribute("aria-label", `${teamName || "Takım"} takım profilini aç`);
+      node.title = localizedMessage("profile.open_team");
+      node.setAttribute("aria-label", localizedMessage("profile.open_team_aria", {name:teamName || localizedMessage("profile.team")}));
       node.addEventListener("click", (event) => {
         event.stopPropagation();
         openTeamProfile(cleanTeamId);
@@ -16619,8 +16594,8 @@ function saveHumanReviewLocalNote() {
     if (canOpen) {
       node.type = "button";
       node.className = `public-player-link ${className}`.trim();
-      node.setAttribute("aria-label", `${displayName} adlı oyuncunun profilini aç`);
-      node.title = "Oyuncu profilini gör";
+      node.setAttribute("aria-label", localizedMessage("profile.open_player_aria", {name:displayName}));
+      node.title = localizedMessage("profile.open_player");
       node.addEventListener("click", (event) => {
         event.stopPropagation();
         openPublicProfile(playerId);
@@ -16658,11 +16633,11 @@ function saveHumanReviewLocalNote() {
     );
     const identityCopy = document.createElement("div");
     const playerName = document.createElement("strong");
-    playerName.textContent = payload.display_name || "Oyuncu";
+    playerName.textContent = payload.display_name || localizedMessage("profile.player");
     const title = document.createElement("span");
-    title.textContent = payload.operator_title || "Devre Çırağı";
+    title.textContent = localizedRecordText(payload, "operator_title") || localizedMessage("profile.default_title");
     const rank = document.createElement("small");
-    rank.textContent = payload.rank_name_tr || "Arena 1";
+    rank.textContent = localizedRecordText(payload, "rank_name") || localizedMessage("arena.first");
     identityCopy.append(playerName, title, rank);
     const trophies = document.createElement("strong");
     renderTrophyValue(trophies, Number(payload.rating || 0));
@@ -16674,9 +16649,9 @@ function saveHumanReviewLocalNote() {
     const deckHeading = document.createElement("div");
     deckHeading.className = "profile-section-heading";
     const deckKicker = document.createElement("span");
-    deckKicker.textContent = "DEVRE ALIŞKANLIĞI";
+    deckKicker.textContent = localizedMessage("profile.circuit_habit");
     const deckTitle = document.createElement("h3");
-    deckTitle.textContent = "En Çok Kullanılan Deste";
+    deckTitle.textContent = localizedMessage("profile.most_used_deck");
     deckHeading.append(deckKicker, deckTitle);
     const deckVisual = document.createElement("div");
     deckVisual.className = "profile-deck-visual";
@@ -16687,9 +16662,9 @@ function saveHumanReviewLocalNote() {
     const coreCopy = document.createElement("span");
     coreCopy.className = "profile-featured-core-copy";
     const coreName = document.createElement("strong");
-    coreName.textContent = payload.selected_core?.name_tr || "Rezonans Çekirdeği";
+    coreName.textContent = localizedRecordText(payload.selected_core, "name") || localizedMessage("core.resonance");
     const coreLevel = document.createElement("em");
-    coreLevel.textContent = `SEVİYE ${Number(payload.selected_core?.level || 1)}`;
+    coreLevel.textContent = localizedMessage("core.level", {level:localizedNumber(payload.selected_core?.level || 1)});
     const coreVisual = applyCoreVisualIdentity(core, payload.selected_core?.id || "core_resonance");
     coreGlyph.textContent = coreVisual.glyph;
     coreCopy.append(coreName, coreLevel);
@@ -16707,7 +16682,7 @@ function saveHumanReviewLocalNote() {
     }
     const deckUse = document.createElement("small");
     const matches = Number(payload.featured_deck?.matches || 0);
-    deckUse.textContent = matches > 0 ? localizedMessage("deck.matches_used", {count:matches}) : localizedUiText("Aktif savaş destesi");
+    deckUse.textContent = matches > 0 ? localizedMessage("deck.matches_used", {count:matches}) : localizedMessage("profile.active_deck");
     modules.appendChild(deckUse);
     deckVisual.append(core, modules);
     deckSection.append(deckHeading, deckVisual);
@@ -16716,15 +16691,15 @@ function saveHumanReviewLocalNote() {
     const team = document.createElement("section");
     team.className = "profile-clan-card";
     const teamLabel = document.createElement("span");
-    teamLabel.textContent = "TAKIM BİLGİSİ";
+    teamLabel.textContent = localizedMessage("profile.team_info");
     const teamName = createTeamProfileLink(
       payload.team?.team_id,
-      payload.team?.team_name || "Takıma dahil değil"
+      payload.team?.team_name || localizedMessage("profile.no_team")
     );
     const teamCopy = document.createElement("small");
     teamCopy.textContent = payload.team?.team_name
-      ? "Oyuncunun mevcut takımı"
-      : "Bu oyuncu henüz bir takıma katılmadı.";
+      ? localizedMessage("profile.players_team")
+      : localizedMessage("profile.player_no_team");
     team.append(teamLabel, teamName, teamCopy);
     host.appendChild(team);
 
@@ -16733,25 +16708,25 @@ function saveHumanReviewLocalNote() {
     const seasonHeading = document.createElement("div");
     seasonHeading.className = "profile-section-heading";
     const seasonKicker = document.createElement("span");
-    seasonKicker.textContent = "SEZONLAR";
+    seasonKicker.textContent = localizedMessage("profile.seasons_upper");
     const seasonTitle = document.createElement("h3");
-    seasonTitle.textContent = "Sezon Geçmişi";
+    seasonTitle.textContent = localizedMessage("profile.season_history");
     seasonHeading.append(seasonKicker, seasonTitle);
     const currentSeason = document.createElement("article");
     currentSeason.className = "profile-current-season public-profile-current-season";
     const currentSeasonName = document.createElement("div");
     const currentSeasonLabel = document.createElement("small");
-    currentSeasonLabel.textContent = "GÜNCEL SEZON";
+    currentSeasonLabel.textContent = localizedMessage("profile.current_season_upper");
     const currentSeasonValue = document.createElement("strong");
-    currentSeasonValue.textContent = payload.season?.name_tr || "Güncel Sezon";
+    currentSeasonValue.textContent = localizedRecordText(payload.season, "name") || localizedMessage("profile.current_season");
     currentSeasonName.append(currentSeasonLabel, currentSeasonValue);
     const seasonTrophies = document.createElement("strong");
     renderTrophyValue(seasonTrophies, Number(payload.rating || 0));
     const seasonRank = document.createElement("div");
     const seasonRankLabel = document.createElement("small");
-    seasonRankLabel.textContent = "MEVCUT LİG";
+    seasonRankLabel.textContent = localizedMessage("profile.current_league_upper");
     const seasonRankValue = document.createElement("strong");
-    seasonRankValue.textContent = payload.rank_name_tr || "Arena 1";
+    seasonRankValue.textContent = localizedRecordText(payload, "rank_name") || localizedMessage("arena.first");
     seasonRank.append(seasonRankLabel, seasonRankValue);
     currentSeason.append(currentSeasonName, seasonTrophies, seasonRank);
     const past = document.createElement("div");
@@ -16759,13 +16734,13 @@ function saveHumanReviewLocalNote() {
     const previous = payload.season?.summary?.previous;
     const best = payload.season?.summary?.best;
     for (const [label, value] of [
-      ["SON SEZON", previous ? Number(previous.final_rating || 0) : "—"],
-      ["EN İYİ SEZON", best ? Number(best.final_rating || 0) : "—"],
-      ["TÜM ZAMANLAR", Number(payload.highest_rating || payload.rating || 0)],
+      ["profile.last_season_upper", previous ? Number(previous.final_rating || 0) : "—"],
+      ["profile.best_season_upper", best ? Number(best.final_rating || 0) : "—"],
+      ["profile.all_time_upper", Number(payload.highest_rating || payload.rating || 0)],
     ]) {
       const card = document.createElement("article");
       const cardLabel = document.createElement("small");
-      cardLabel.textContent = label;
+      cardLabel.textContent = localizedMessage(label);
       const valueNode = document.createElement("strong");
       renderTrophyValue(valueNode, value);
       card.append(cardLabel, valueNode);
@@ -16780,21 +16755,21 @@ function saveHumanReviewLocalNote() {
     const statsHeading = document.createElement("div");
     statsHeading.className = "profile-section-heading";
     const statsKicker = document.createElement("span");
-    statsKicker.textContent = "SAVAŞ ARŞİVİ";
+    statsKicker.textContent = localizedMessage("profile.battle_archive");
     const statsTitle = document.createElement("h3");
-    statsTitle.textContent = "İstatistikler";
+    statsTitle.textContent = localizedMessage("profile.statistics");
     statsHeading.append(statsKicker, statsTitle);
     const statsGrid = document.createElement("div");
     statsGrid.className = "statistics-metrics-grid public-profile-stat-grid";
     const durationSeconds = Math.max(0, Math.round(Number(statistics.average_match_duration_ms || 0) / 1000));
     const durationText = durationSeconds < 60
-      ? `${durationSeconds} sn`
-      : `${Math.floor(durationSeconds / 60)} dk ${durationSeconds % 60} sn`;
+      ? localizedMessage("time.seconds_short", {count:localizedNumber(durationSeconds)})
+      : localizedMessage("time.minutes_seconds_short", {minutes:localizedNumber(Math.floor(durationSeconds / 60)), seconds:localizedNumber(durationSeconds % 60)});
     for (const metric of [
-      ["Toplam Maç", localizedNumber(statistics.total_matches || 0)],
-      ["Galibiyet Oranı", localizedPercent(boundedWinRatePercent(statistics.win_rate, statistics.wins, statistics.total_matches))],
-      ["Ortalama Savaş", durationText],
-      ["Toplam Hasar", localizedNumber(statistics.total_damage_dealt || 0)],
+      [localizedMessage("profile.total_matches"), localizedNumber(statistics.total_matches || 0)],
+      [localizedMessage("profile.win_rate"), localizedPercent(boundedWinRatePercent(statistics.win_rate, statistics.wins, statistics.total_matches))],
+      [localizedMessage("profile.average_battle"), durationText],
+      [localizedMessage("profile.total_damage"), localizedNumber(statistics.total_damage_dealt || 0)],
     ]) statsGrid.appendChild(publicProfileMetric(...metric));
     statsSection.append(statsHeading, statsGrid);
     host.appendChild(statsSection);
@@ -16811,13 +16786,13 @@ function saveHumanReviewLocalNote() {
     const outgoing = socialState?.outgoing_requests?.some((item) => item.player_id === playerId);
     button.disabled = Boolean(isFriend || outgoing);
     button.dataset.relationship = isFriend ? "friend" : incoming ? "incoming" : outgoing ? "outgoing" : "none";
-    button.textContent = isFriend
-      ? "ARKADAŞIN"
+    button.textContent = localizedMessage(isFriend
+      ? "profile.your_friend"
       : incoming
-        ? "İSTEĞİ KABUL ET"
+        ? "profile.accept_request"
         : outgoing
-          ? "İSTEK GÖNDERİLDİ"
-          : "+ ARKADAŞ";
+          ? "profile.request_sent"
+          : "profile.add_friend");
     for (const id of ["public-profile-share", "public-profile-report", "public-profile-block"]) {
       const action = document.getElementById(id);
       if (action) action.hidden = !playerId || Boolean(payload?.is_bot);
@@ -16836,10 +16811,11 @@ function saveHumanReviewLocalNote() {
     if (sourceDialog?.close) sourceDialog.close();
     else sourceDialog?.removeAttribute("open");
     if (content) content.replaceChildren();
-    if (status) status.textContent = "Oyuncu profili yükleniyor…";
+    if (status) status.textContent = localizedMessage("profile.player_loading");
     if (dialog?.showModal && !dialog.open) dialog.showModal();
     else dialog?.setAttribute("open", "");
     activePublicProfileId = playerId;
+    publicProfilePayload = null;
     renderPublicProfileFriendAction();
     try {
       const payload = await requestJsonWithDeadline(
@@ -16848,8 +16824,9 @@ function saveHumanReviewLocalNote() {
         8000
       );
       const title = document.getElementById("public-profile-title");
-      if (title) title.textContent = `${payload.display_name || "Oyuncu"} Profili`;
+      if (title) title.textContent = localizedMessage("profile.public_title", {name:payload.display_name || localizedMessage("profile.player")});
       if (status) status.textContent = "";
+      publicProfilePayload = payload;
       renderPublicProfile(payload);
       if (!payload.is_bot) await loadSocialView();
       renderPublicProfileFriendAction(payload);
@@ -16867,6 +16844,7 @@ function saveHumanReviewLocalNote() {
       : null;
     publicProfileReturnDialogId = null;
     activePublicProfileId = null;
+    publicProfilePayload = null;
     if (returnDialog?.showModal && !returnDialog.open) returnDialog.showModal();
     else returnDialog?.setAttribute("open", "");
   }
@@ -16883,9 +16861,9 @@ function saveHumanReviewLocalNote() {
     emblem.textContent = "♟";
     const copy = document.createElement("div");
     const name = document.createElement("strong");
-    name.textContent = payload.name || "Takım";
+    name.textContent = payload.name || localizedMessage("profile.team");
     const size = document.createElement("small");
-    size.textContent = `${Number(payload.member_count || 0)} / ${Number(payload.member_limit || 30)} üye`;
+    size.textContent = localizedMessage("team.member_count_lower", {count:localizedNumber(payload.member_count || 0), limit:localizedNumber(payload.member_limit || 30)});
     copy.append(name, size);
     const trophies = document.createElement("strong");
     renderTrophyValue(trophies, Number(payload.total_trophies || 0));
@@ -16899,19 +16877,19 @@ function saveHumanReviewLocalNote() {
     const heading = document.createElement("div");
     heading.className = "profile-section-heading";
     const kicker = document.createElement("span");
-    kicker.textContent = "TAKIM ARŞİVİ";
+    kicker.textContent = localizedMessage("team.archive_upper");
     const title = document.createElement("h3");
-    title.textContent = "Takım İstatistikleri";
+    title.textContent = localizedMessage("team.statistics");
     heading.append(kicker, title);
     const grid = document.createElement("div");
     grid.className = "statistics-metrics-grid public-profile-stat-grid team-profile-stat-grid";
     for (const metric of [
-      ["Toplam Kupa", localizedNumber(payload.total_trophies || 0)],
-      ["Ortalama Kupa", localizedNumber(payload.average_trophies || 0)],
-      ["Toplam Maç", localizedNumber(statistics.total_matches || 0)],
-      ["Galibiyet Oranı", localizedPercent(boundedWinRatePercent(statistics.win_rate, statistics.wins, statistics.total_matches))],
-      ["Turnuva Sırası", tournament.position ? `#${tournament.position}` : "—"],
-      ["Turnuva Puanı", `${Number(tournament.points || 0)} P`],
+      [localizedMessage("team.total_trophies"), localizedNumber(payload.total_trophies || 0)],
+      [localizedMessage("team.average_trophies"), localizedNumber(payload.average_trophies || 0)],
+      [localizedMessage("profile.total_matches"), localizedNumber(statistics.total_matches || 0)],
+      [localizedMessage("profile.win_rate"), localizedPercent(boundedWinRatePercent(statistics.win_rate, statistics.wins, statistics.total_matches))],
+      [localizedMessage("team.tournament_rank"), tournament.position ? `#${tournament.position}` : "—"],
+      [localizedMessage("team.tournament_points"), localizedMessage("event.team_points", {points:localizedNumber(tournament.points || 0)})],
     ]) grid.appendChild(publicProfileMetric(...metric));
     statsSection.append(heading, grid);
     host.appendChild(statsSection);
@@ -16921,16 +16899,16 @@ function saveHumanReviewLocalNote() {
     const membersHeading = document.createElement("div");
     membersHeading.className = "profile-section-heading";
     const membersKicker = document.createElement("span");
-    membersKicker.textContent = "KADRO";
+    membersKicker.textContent = localizedMessage("team.roster_upper");
     const membersTitle = document.createElement("h3");
-    membersTitle.textContent = "Üyeler";
+    membersTitle.textContent = localizedMessage("team.members");
     membersHeading.append(membersKicker, membersTitle);
     const memberList = document.createElement("ol");
     memberList.className = "team-member-list team-profile-member-list";
     for (const [index, member] of (payload.members || []).entries()) {
       const row = createTeamMemberRow(member, index);
       const meta = row.querySelector("small");
-      if (meta) meta.textContent = `${member.role === "owner" ? "LİDER · " : ""}${member.rank_name_tr || "Arena"} · ${member.operator_title || "Operatör"}`;
+      if (meta) meta.textContent = localizedMessage("team.member_rank_title", {leader:member.role === "owner" ? localizedMessage("team.leader_suffix") : "", rank:localizedRecordText(member, "rank_name") || localizedMessage("team.arena"), title:localizedRecordText(member, "operator_title") || localizedMessage("team.operator")});
       memberList.appendChild(row);
     }
     membersSection.append(membersHeading, memberList);
@@ -16950,7 +16928,8 @@ function saveHumanReviewLocalNote() {
     if (sourceDialog?.close) sourceDialog.close();
     else sourceDialog?.removeAttribute("open");
     if (content) content.replaceChildren();
-    if (status) status.textContent = "Takım profili yükleniyor…";
+    teamProfilePayload = null;
+    if (status) status.textContent = localizedMessage("team.profile_loading");
     if (dialog?.showModal && !dialog.open) dialog.showModal();
     else dialog?.setAttribute("open", "");
     try {
@@ -16960,8 +16939,9 @@ function saveHumanReviewLocalNote() {
         8000
       );
       const title = document.getElementById("team-profile-title");
-      if (title) title.textContent = payload.name || "Takım Profili";
+      if (title) title.textContent = payload.name || localizedMessage("team.profile");
       if (status) status.textContent = "";
+      teamProfilePayload = payload;
       renderTeamProfile(payload);
     } catch (error) {
       if (status) status.textContent = error instanceof Error ? error.message : String(error);
@@ -16976,6 +16956,7 @@ function saveHumanReviewLocalNote() {
       ? document.getElementById(teamProfileReturnDialogId)
       : null;
     teamProfileReturnDialogId = null;
+    teamProfilePayload = null;
     if (returnDialog?.showModal && !returnDialog.open) returnDialog.showModal();
     else returnDialog?.setAttribute("open", "");
   }
@@ -16987,14 +16968,22 @@ function saveHumanReviewLocalNote() {
     popover.setAttribute("role", "tooltip");
 
     const title = document.createElement("strong");
-    title.textContent = reward.chest_name_tr || `${position}. Sıra Ödülü`;
+    title.textContent = reward.chest_visual_id || reward.chest_name_tr
+      ? localizedRewardChestName(reward)
+      : localizedMessage("reward.position_prize", {position:localizedNumber(position)});
     const list = document.createElement("span");
     list.className = "leaderboard-reward-popover-list";
     const rewards = [
-      ["◉", `${localizedNumber(reward.circuit_credits || 0)} Devre Kredisi`],
-      ["◇", `${localizedNumber(reward.flux_shards || 0)} Akı`],
-      ["🧩", `${localizedNumber(reward.universal_module_shards || 0)} Evrensel Kart Parçası`],
-      ...(reward.cosmetics || []).map((label) => ["✦", label]),
+      ["◉", localizedMessage("currency.credits_full", {amount:localizedNumber(reward.circuit_credits || 0)})],
+      ["◇", localizedMessage("currency.flux", {amount:localizedNumber(reward.flux_shards || 0)})],
+      ["🧩", localizedMessage("reward.universal_shards", {amount:localizedNumber(reward.universal_module_shards || 0)})],
+      ...[
+        ["rank_trophy_id", "trophy"], ["badge_id", "badge"],
+        ["avatar_id", "avatar"], ["avatar_frame_id", "frame"],
+        ["emoji_id", "emoji"], ["profile_background_id", "background"],
+        ["team_avatar_id", "team_cosmetic"], ["team_frame_id", "team_cosmetic"],
+        ["team_name_frame_id", "team_cosmetic"], ["team_bar_background_id", "team_cosmetic"],
+      ].filter(([field]) => reward[field]).map(([field, kind]) => ["✦", localizedCatalogName(kind, reward[field])]),
     ];
     for (const [glyph, label] of rewards) {
       const row = document.createElement("span");
@@ -17018,7 +17007,7 @@ function saveHumanReviewLocalNote() {
     if (!host) return;
     host.replaceChildren();
     if (season && leaderboardPayload?.season) {
-      season.textContent = `${leaderboardPayload.season.name_tr} · ${leaderboardPayload.season.starts_at.slice(0, 10)} — ${leaderboardPayload.season.ends_at.slice(0, 10)}`;
+      season.textContent = localizedMessage("leaderboard.season_period", {name:localizedUiText(leaderboardPayload.season.name_tr), start:localizedDate(leaderboardPayload.season.starts_at, {dateStyle:"medium"}), end:localizedDate(leaderboardPayload.season.ends_at, {dateStyle:"medium"})});
     }
     const scopeNav = document.getElementById("leaderboard-trophy-scope");
     const currentGroupLabel = document.getElementById("leaderboard-current-group");
@@ -17032,8 +17021,8 @@ function saveHumanReviewLocalNote() {
       currentGroupLabel.hidden = activeLeaderboardTab !== "trophies"
         || activeTrophyLeaderboardScope !== "group";
       currentGroupLabel.textContent = viewerGroup
-        ? `MEVCUT GRUBUN · ${viewerGroup.name_tr}`
-        : "MEVCUT GRUP BULUNAMADI";
+        ? localizedMessage("leaderboard.current_group", {name:localizedUiText(viewerGroup.name_tr)})
+        : localizedMessage("leaderboard.no_current_group");
     }
     let rows = leaderboardPayload?.[activeLeaderboardTab] || [];
     if (activeLeaderboardTab === "trophies" && activeTrophyLeaderboardScope === "group") {
@@ -17045,8 +17034,8 @@ function saveHumanReviewLocalNote() {
       teams: "Takım Kupası",
     };
     if (status) status.textContent = rows.length
-      ? `${labels[activeLeaderboardTab]}${activeLeaderboardTab === "trophies" ? ` · ${activeTrophyLeaderboardScope === "general" ? "Genel" : viewerGroup?.name_tr || "Grup"}` : ""} · ilk ${rows.length}`
-      : "Bu sıralamada henüz kayıt yok.";
+      ? localizedMessage("leaderboard.list_summary", {name:localizedUiText(labels[activeLeaderboardTab]), scope:activeLeaderboardTab === "trophies" ? localizedMessage("leaderboard.scope_suffix", {name:activeTrophyLeaderboardScope === "general" ? localizedMessage("leaderboard.general") : localizedUiText(viewerGroup?.name_tr || "Grup")}) : "", count:localizedNumber(rows.length)})
+      : localizedMessage("leaderboard.empty");
     if (!rows.length) {
       const empty = document.createElement("li");
       empty.className = "leaderboard-empty";
@@ -17063,12 +17052,12 @@ function saveHumanReviewLocalNote() {
       const medal = { 1:"🥇", 2:"🥈", 3:"🥉" }[Number(row.position)];
       rank.textContent = medal || String(row.position);
       rank.classList.toggle("is-medal", Boolean(medal));
-      rank.setAttribute("aria-label", `${Number(row.position)}. sıra`);
+      rank.setAttribute("aria-label", localizedMessage("leaderboard.position_aria", {position:localizedNumber(row.position)}));
       const identity = document.createElement("div");
       identity.className = "leaderboard-identity";
       const name = row.team_name || row.display_name || "Oyuncu";
       const detail = activeLeaderboardTab === "teams"
-        ? `${row.member_count} üye`
+        ? localizedMessage("team.members_lower", {count:localizedNumber(row.member_count)})
         : row.rank_name_tr || "Arena";
       const nameNode = activeLeaderboardTab === "teams"
         ? createTeamProfileLink(row.team_id, name)
@@ -17079,7 +17068,7 @@ function saveHumanReviewLocalNote() {
       const score = document.createElement("strong");
       score.className = "leaderboard-score";
       if (activeLeaderboardTab === "core_damage") {
-        score.textContent = `${localizedNumber(row.value || 0)} HASAR`;
+        score.textContent = localizedMessage("leaderboard.damage_score", {damage:localizedNumber(row.value || 0)});
       } else {
         renderTrophyValue(score, Number(row.value || 0));
         if (activeLeaderboardTab === "trophies" && activeTrophyLeaderboardScope === "general" && Number(row.position) <= 10) {
@@ -17099,7 +17088,7 @@ function saveHumanReviewLocalNote() {
             chest.innerHTML = chestVisualMarkup(reward.chest_tier || previewTier, {
               visualId:reward.chest_visual_id || "",
             });
-            chest.setAttribute("aria-label", `${reward.chest_name_tr || "Ödül sandığı"} içeriğini göster`);
+            chest.setAttribute("aria-label", localizedMessage("reward.chest_contents_aria", {name:localizedUiText(reward.chest_name_tr || "Ödül sandığı")}));
             chest.setAttribute("aria-describedby", `leaderboard-reward-popover-${row.position}`);
             chest.appendChild(createLeaderboardRewardPopover(reward, row.position));
             score.appendChild(chest);
@@ -17167,7 +17156,11 @@ function saveHumanReviewLocalNote() {
       });
       const copy = document.createElement("div");
       const title = document.createElement("strong");
-      title.textContent = message.title_tr || "Rekabet Ödülü";
+      const sourceKey = `reward.source.${message.source}`;
+      const sourceName = localizedMessage(sourceKey);
+      title.textContent = sourceName !== sourceKey
+        ? localizedMessage("reward.competition_title", {source:sourceName, position:localizedNumber(message.position || 0)})
+        : localizedRecordText(message, "title") || localizedMessage("reward.competition");
       const detail = document.createElement("small");
       const cosmeticCount = [
         "rank_trophy_id", "badge_id", "avatar_id", "avatar_frame_id",
@@ -17175,21 +17168,21 @@ function saveHumanReviewLocalNote() {
         "team_frame_id", "team_name_frame_id", "team_bar_background_id",
       ].filter((key) => reward[key]).length;
       detail.textContent = [
-        reward.chest_name_tr || "Ödül Kasası",
-        `${localizedNumber(reward.circuit_credits || 0)} DK`,
-        `${Number(reward.flux_shards || 0)} Akı`,
-        reward.universal_module_shards ? `${reward.universal_module_shards} evrensel parça` : "",
-        cosmeticCount ? `${cosmeticCount} kozmetik` : "",
+        localizedRewardChestName(reward),
+        localizedMessage("currency.credits_short", {amount:localizedNumber(reward.circuit_credits || 0)}),
+        localizedMessage("currency.flux", {amount:localizedNumber(reward.flux_shards || 0)}),
+        reward.universal_module_shards ? localizedMessage("reward.universal_shards_lower", {amount:localizedNumber(reward.universal_module_shards)}) : "",
+        cosmeticCount ? localizedMessage("reward.cosmetic_count", {count:localizedNumber(cosmeticCount)}) : "",
       ].filter(Boolean).join(" · ");
       copy.append(title, detail);
       const claim = document.createElement("button");
       claim.type = "button";
-      claim.textContent = message.status === "claimed" ? "ALINDI" : "AL VE AÇ";
+      claim.textContent = localizedMessage(message.status === "claimed" ? "reward.claimed_upper" : "reward.claim_and_open_upper");
       claim.disabled = message.status === "claimed";
       claim.addEventListener("click", async () => {
         claim.disabled = true;
         const status = document.getElementById("reward-inbox-status");
-        if (status) status.textContent = "Ödül kasası açılıyor…";
+        if (status) status.textContent = localizedMessage("reward.chest_opening");
         try {
           const payload = await requestJsonWithDeadline(
             `/profile/${encodeURIComponent(participantPlayerId)}/reward-inbox/${encodeURIComponent(message.message_id)}/claim`,
@@ -17201,7 +17194,7 @@ function saveHumanReviewLocalNote() {
           await loadMetaProgression();
           renderRewardInbox();
           renderProfileSummary();
-          if (status) status.textContent = `${reward.chest_name_tr || "Ödül kasası"} açıldı.`;
+          if (status) status.textContent = localizedMessage("reward.chest_opened", {name:localizedRewardChestName(reward)});
         } catch (error) {
           claim.disabled = false;
           if (status) status.textContent = error instanceof Error ? error.message : String(error);
@@ -17247,21 +17240,21 @@ function saveHumanReviewLocalNote() {
       (reward) => Number(engagement.season_xp || 0) < Number(reward.required_xp || 0)
     );
 
-    setText("season-rewards-kicker", "SEZON ÖDÜLLERİ");
-    setText("season-rewards-subtitle", `${engagement.season_name_tr || "Bu sezon"} boyunca kademeleri aç ve sunucu doğrulamalı ödüllerini al.`);
-    setText("season-rewards-name", engagement.season_name_tr || "Sezon Ödülleri");
+    setText("season-rewards-kicker", localizedMessage("season.rewards_kicker"));
+    setText("season-rewards-subtitle", localizedMessage("season.rewards_subtitle", {season:localizedRecordText(engagement, "season_name") || localizedMessage("season.this_season")}));
+    setText("season-rewards-name", localizedRecordText(engagement, "season_name") || localizedMessage("season.rewards_kicker"));
     setText("season-flux-shards", engagement.flux_shards || 0);
-    setText("season-equipped-title", engagement.equipped_title || "Devre Çırağı");
+    setText("season-equipped-title", localizedRecordText(engagement, "equipped_title") || localizedMessage("profile.default_title"));
     setText(
       "season-tier-label",
-      `Kademe ${engagement.current_tier || 0} / ${engagement.max_tier || 40}`
+      localizedMessage("season.tier_progress", {current:localizedNumber(engagement.current_tier || 0), maximum:localizedNumber(engagement.max_tier || 40)})
     );
     const seasonXp = Number(engagement.season_xp || 0);
-    setText("season-progress-copy", nextReward ? localizedMessage("season.xp_remaining", {count:Math.max(0, Number(nextReward.required_xp || 0) - seasonXp)}) : localizedUiText("Sezon yolu tamamlandı"));
+    setText("season-progress-copy", nextReward ? localizedMessage("season.xp_remaining", {count:Math.max(0, Number(nextReward.required_xp || 0) - seasonXp)}) : localizedMessage("season.path_completed"));
     const nextTierExperience = Number(nextReward?.required_xp || rewardList.at(-1)?.required_xp || seasonXp);
     setText("season-progress-ratio", localizedMessage("season.progress", {current:seasonXp, next:nextTierExperience}));
-    setText("lobby-season-tier", `Kademe ${engagement.current_tier || 0} / ${engagement.max_tier || 40}`);
-    setText("lobby-season-progress-copy", nextReward ? localizedMessage("season.xp_remaining", {count:Math.max(0, Number(nextReward.required_xp || 0) - seasonXp)}) : localizedUiText("Sezon yolu tamamlandı"));
+    setText("lobby-season-tier", localizedMessage("season.tier_progress", {current:localizedNumber(engagement.current_tier || 0), maximum:localizedNumber(engagement.max_tier || 40)}));
+    setText("lobby-season-progress-copy", nextReward ? localizedMessage("season.xp_remaining", {count:Math.max(0, Number(nextReward.required_xp || 0) - seasonXp)}) : localizedMessage("season.path_completed"));
     setText("lobby-flux-shards", engagement.flux_shards || 0);
 
     const missionList = engagement.dailyMissions || [];
@@ -17282,13 +17275,13 @@ function saveHumanReviewLocalNote() {
       "lobby-daily-summary",
       claimableMissions + claimableLoginRewards > 0
         ? localizedMessage("rewards.available", {count:claimableMissions + claimableLoginRewards})
-        : `${activeMissions} devre emri aktif`
+        : localizedMessage("daily.active_orders", {count:localizedNumber(activeMissions)})
     );
     setText(
       "daily-mission-page-summary",
       claimableMissions > 0
         ? localizedMessage("rewards.available", {count:claimableMissions})
-        : `${activeMissions} görev aktif`
+        : localizedMessage("daily.active_missions", {count:localizedNumber(activeMissions)})
     );
     const dailyNotification = document.getElementById("lobby-daily-notification");
     if (dailyNotification) dailyNotification.hidden = !dailyHasNotification;
@@ -17344,8 +17337,8 @@ function saveHumanReviewLocalNote() {
     setText(
       "monthly-login-summary",
       claimableLoginRewards
-        ? "Bugünün ödülü hazır"
-        : `${engagement.daily_login?.claimed_days?.length || 0} gün alındı`
+        ? localizedMessage("daily.today_reward_ready")
+        : localizedMessage("daily.claimed_days", {count:localizedNumber(engagement.daily_login?.claimed_days?.length || 0)})
     );
     if (loginTrack) {
       loginTrack.replaceChildren();
@@ -17362,19 +17355,19 @@ function saveHumanReviewLocalNote() {
               : "locked";
         card.dataset.major = String(Boolean(reward.is_major));
         const day = document.createElement("strong");
-        day.textContent = `${reward.day}. GÜN`;
+        day.textContent = localizedMessage("daily.day_label", {day:localizedNumber(reward.day)});
         const prize = createRewardRows(reward, { compact:true });
         const action = document.createElement("button");
         action.type = "button";
         action.dataset.loginClaim = String(reward.day);
         action.disabled = !reward.claimable;
-        action.textContent = reward.claimed
-          ? "ALINDI"
+        action.textContent = localizedMessage(reward.claimed
+          ? "reward.claimed_upper"
           : reward.claimable
-            ? "AL"
+            ? "reward.claim_upper"
             : Number(reward.day) < today
-              ? "KAÇIRILDI"
-              : "KİLİTLİ";
+              ? "reward.missed_upper"
+              : "reward.locked_upper");
         card.append(day, prize, action);
         loginTrack.appendChild(card);
       }
@@ -17393,21 +17386,21 @@ function saveHumanReviewLocalNote() {
             : "active";
         const copy = document.createElement("div");
         const name = document.createElement("strong");
-        name.textContent = mission.name_tr;
+        name.textContent = localizedRecordText(mission, "name");
         const description = document.createElement("span");
-        description.textContent = mission.description_tr;
+        description.textContent = localizedRecordText(mission, "description");
         const meter = document.createElement("small");
-        meter.textContent = `${mission.progress} / ${mission.target} · +${mission.season_xp_reward} Deneyim · +${mission.flux_shard_reward} Akı`;
+        meter.textContent = localizedMessage("daily.mission_meter", {progress:localizedNumber(mission.progress), target:localizedNumber(mission.target), xp:localizedNumber(mission.season_xp_reward), flux:localizedNumber(mission.flux_shard_reward)});
         copy.append(name, description, meter);
         const action = document.createElement("button");
         action.type = "button";
         action.dataset.missionClaim = mission.id;
         action.disabled = !mission.completed || mission.claimed;
-        action.textContent = mission.claimed
-          ? "Alındı"
+        action.textContent = localizedMessage(mission.claimed
+          ? "reward.claimed_title"
           : mission.completed
-            ? "Ödülü Al"
-            : "Devam Ediyor";
+            ? "reward.claim"
+            : "daily.in_progress");
         card.append(copy, action);
         missions.appendChild(card);
       }
@@ -17426,7 +17419,7 @@ function saveHumanReviewLocalNote() {
             ? "claimable"
             : "locked";
         const tier = document.createElement("span");
-        tier.textContent = `KADEME ${reward.tier}`;
+        tier.textContent = localizedMessage("season.tier_label", {tier:localizedNumber(reward.tier)});
         const prize = document.createElement("div");
         prize.className = "season-reward-prize";
         const rewardItems = createRewardRows(reward, { compact:true });
@@ -17442,7 +17435,7 @@ function saveHumanReviewLocalNote() {
             gold:"Altın",
             diamond:"Elmas",
           }[reward.chest_tier] || "Sandık";
-          const chestName = `${chestTierName} Sandık`;
+          const chestName = localizedMessage("chest.tier_name", {tier:localizedUiText(chestTierName)});
           chestPrize.className = "season-reward-chest";
           chestPrize.dataset.tier = reward.chest_tier;
           chestPrize.innerHTML = chestVisualMarkup(reward.chest_tier);
@@ -17450,8 +17443,8 @@ function saveHumanReviewLocalNote() {
           chestPrize.title = chestName;
           const chestAmount = document.createElement("strong");
           chestAmount.textContent = "×1";
-          chestRow.setAttribute("aria-label", `${chestName} ×1`);
-          chestRow.title = `${chestName} ×1`;
+          chestRow.setAttribute("aria-label", localizedMessage("reward.single_item", {name:chestName}));
+          chestRow.title = localizedMessage("reward.single_item", {name:chestName});
           chestRow.append(chestPrize, chestAmount);
           rewardItems.prepend(chestRow);
         }
@@ -17465,16 +17458,16 @@ function saveHumanReviewLocalNote() {
         }
         prize.appendChild(rewardItems);
         const requirement = document.createElement("small");
-        requirement.textContent = `${reward.required_xp} Deneyim ile açılır`;
+        requirement.textContent = localizedMessage("season.xp_unlock", {xp:localizedNumber(reward.required_xp)});
         const action = document.createElement("button");
         action.type = "button";
         action.dataset.tierClaim = String(reward.tier);
         action.disabled = !reward.claimable;
-        action.textContent = reward.claimed
-          ? "Alındı"
+        action.textContent = localizedMessage(reward.claimed
+          ? "reward.claimed_title"
           : reward.claimable
-            ? "Al"
-            : "Kilitli";
+            ? "reward.claim_short"
+            : "reward.locked");
         const actionColumn = document.createElement("div");
         actionColumn.className = "season-reward-action";
         actionColumn.append(action, requirement);
@@ -17511,27 +17504,27 @@ function saveHumanReviewLocalNote() {
 
     host.setAttribute(
       "aria-label",
-      `${localizedUiText(module.name_tr)} · devre kartı önizlemesi`
+      localizedMessage("laboratory.preview_aria", {name:localizedUiText(module.name_tr)})
     );
     host.appendChild(card);
   }
 
   function laboratoryStatSummary(stats) {
-    if (!stats) return "En yüksek kalibrasyon";
+    if (!stats) return localizedMessage("laboratory.maximum_calibration");
     const parts = [];
     if (Number(stats.base_damage) > 0) {
-      parts.push(`Hasar ${Number(stats.base_damage).toFixed(1)}`);
+      parts.push(localizedMessage("laboratory.damage", {value:localizedNumber(stats.base_damage, {minimumFractionDigits:1, maximumFractionDigits:1})}));
     }
     if (Number(stats.energy_generation) > 0) {
-      parts.push(`Üretim ${Number(stats.energy_generation).toFixed(1)}/sn`);
+      parts.push(localizedMessage("laboratory.generation", {value:localizedNumber(stats.energy_generation, {minimumFractionDigits:1, maximumFractionDigits:1})}));
     }
     if (Number(stats.energy_consumption) > 0) {
-      parts.push(`Tüketim ${Number(stats.energy_consumption).toFixed(1)}/sn`);
+      parts.push(localizedMessage("laboratory.consumption", {value:localizedNumber(stats.energy_consumption, {minimumFractionDigits:1, maximumFractionDigits:1})}));
     }
     if (Number(stats.cooldown_ms) > 0) {
-      parts.push(`Bekleme ${(Number(stats.cooldown_ms) / 1000).toFixed(1)} sn`);
+      parts.push(localizedMessage("laboratory.cooldown", {value:localizedNumber(Number(stats.cooldown_ms) / 1000, {minimumFractionDigits:1, maximumFractionDigits:1})}));
     }
-    parts.push(`Can ${Math.round(Number(stats.max_hp || 0))}`);
+    parts.push(localizedMessage("laboratory.hp", {value:localizedNumber(Math.round(Number(stats.max_hp || 0)))}));
     return parts.join(" · ");
   }
 
@@ -17552,13 +17545,13 @@ function saveHumanReviewLocalNote() {
       if (element) element.textContent = String(value);
     };
     setText("laboratory-flux-balance", view.flux_shards || 0);
-    setText("laboratory-invested-flux", `Yatırım ${view.invested_flux || 0}`);
+    setText("laboratory-invested-flux", localizedMessage("laboratory.invested", {flux:localizedNumber(view.invested_flux || 0)}));
     setText("lobby-flux-shards", view.flux_shards || 0);
     setText(
       "lobby-laboratory-summary",
       Number(view.calibrated_module_count || 0) > 0
-        ? `${view.calibrated_module_count} modül kalibre edildi`
-        : "Akı ile favori modüllerini kalibre et"
+        ? localizedMessage("laboratory.calibrated_count", {count:localizedNumber(view.calibrated_module_count)})
+        : localizedMessage("laboratory.calibrate_favorites")
     );
 
     const list = document.getElementById("laboratory-module-list");
@@ -17572,7 +17565,7 @@ function saveHumanReviewLocalNote() {
         group.className = "laboratory-category-group";
         group.dataset.category = category;
         const heading = document.createElement("strong");
-        heading.textContent = `${groupModules[0].category_label} · ${groupModules.length}`;
+        heading.textContent = localizedMessage("laboratory.category_count", {category:localizedUiText(groupModules[0].category_label), count:localizedNumber(groupModules.length)});
         const grid = document.createElement("div");
         for (const module of groupModules) {
           const button = document.createElement("button");
@@ -17592,9 +17585,9 @@ function saveHumanReviewLocalNote() {
           icon.textContent = moduleIconFor({ nameTr: module.name_tr });
           const copy = document.createElement("span");
           const name = document.createElement("strong");
-          name.textContent = module.name_tr;
+          name.textContent = localizedUiText(module.name_tr);
           const level = document.createElement("small");
-          level.textContent = `SV ${module.level} / ${module.max_level}`;
+          level.textContent = localizedMessage("module.level_range", {level:localizedNumber(module.level), max:localizedNumber(module.max_level)});
           copy.append(name, level);
           button.append(icon, copy);
           grid.appendChild(button);
@@ -17606,21 +17599,21 @@ function saveHumanReviewLocalNote() {
 
     if (selected) {
       renderLaboratoryModulePreview(selected);
-      setText("laboratory-detail-category", String(selected.category_label || "").toUpperCase());
-      setText("laboratory-detail-name", selected.name_tr);
-      setText("laboratory-detail-role", selected.strategic_role);
-      setText("laboratory-detail-level", `SV ${selected.level} / ${selected.max_level}`);
-      setText("laboratory-detail-effect", selected.experimental_effect_tr);
+      setText("laboratory-detail-category", String(localizedRecordText(selected, "category_label") || "").toLocaleUpperCase(document.documentElement.lang === "en" ? "en-US" : "tr-TR"));
+      setText("laboratory-detail-name", localizedUiText(selected.name_tr));
+      setText("laboratory-detail-role", localizedRecordText(selected, "strategic_role"));
+      setText("laboratory-detail-level", localizedMessage("module.level_range", {level:localizedNumber(selected.level), max:localizedNumber(selected.max_level)}));
+      setText("laboratory-detail-effect", localizedRecordText(selected, "experimental_effect"));
       setText(
         "laboratory-current-efficiency",
-        `%${selected.current_stats?.efficiency_bonus_percent || 0}`
+        localizedMessage("laboratory.efficiency_percent", {percent:localizedNumber(selected.current_stats?.efficiency_bonus_percent || 0)})
       );
       setText("laboratory-current-stats", laboratoryStatSummary(selected.current_stats));
       setText(
         "laboratory-next-efficiency",
         selected.next_stats
-          ? `%${selected.next_stats.efficiency_bonus_percent}`
-          : "MAKS"
+          ? localizedMessage("laboratory.efficiency_percent", {percent:localizedNumber(selected.next_stats.efficiency_bonus_percent)})
+          : localizedMessage("laboratory.max_upper")
       );
       setText("laboratory-next-stats", laboratoryStatSummary(selected.next_stats));
       const upgrade = document.getElementById("laboratory-upgrade-button");
@@ -17628,10 +17621,10 @@ function saveHumanReviewLocalNote() {
         upgrade.dataset.moduleId = selected.id;
         upgrade.disabled = !selected.can_upgrade;
         upgrade.textContent = selected.next_cost == null
-          ? "En Yüksek Kalibrasyon"
+          ? localizedMessage("laboratory.maximum_calibration")
           : selected.can_upgrade
-            ? `${selected.next_cost} Akı ile Kalibre Et`
-            : `${selected.next_cost} Akı Gerekli`;
+            ? localizedMessage("laboratory.calibrate_cost", {flux:localizedNumber(selected.next_cost)})
+            : localizedMessage("laboratory.flux_required", {flux:localizedNumber(selected.next_cost)});
       }
     }
 
@@ -17652,12 +17645,12 @@ function saveHumanReviewLocalNote() {
           const title = document.createElement("strong");
           title.textContent = transaction.kind === "free_beta_reset"
             ? localizedUiText("Ücretsiz Beta Sıfırlaması")
-            : `${transaction.module_name_tr} · SV ${transaction.level}`;
+            : localizedMessage("laboratory.transaction_level", {name:localizedUiText(transaction.module_name_tr), level:localizedNumber(transaction.level)});
           const date = document.createElement("small");
           date.textContent = localizedDate(transaction.created_at, {dateStyle:"medium", timeStyle:"short"});
           copy.append(title, date);
           const amount = document.createElement("strong");
-          amount.textContent = `${transaction.flux_delta > 0 ? "+" : ""}${transaction.flux_delta} Akı`;
+          amount.textContent = localizedMessage("currency.signed_flux", {sign:transaction.flux_delta > 0 ? "+" : "", amount:localizedNumber(transaction.flux_delta)});
           item.append(copy, amount);
           history.appendChild(item);
         }
@@ -17675,7 +17668,7 @@ function saveHumanReviewLocalNote() {
     const moduleId = button?.dataset.moduleId;
     if (!moduleId || button?.disabled) return;
     button.disabled = true;
-    if (status) status.textContent = "Kalibrasyon sunucuda doğrulanıyor…";
+    if (status) status.textContent = localizedMessage("laboratory.verifying_calibration");
     const result = await accountDataLoader.upgradeLaboratoryModule(
       moduleId,
       laboratoryRequestId("upgrade")
@@ -17685,8 +17678,8 @@ function saveHumanReviewLocalNote() {
     renderRemoteDataStatus();
     if (status) {
       status.textContent = result.ok
-        ? "Kalibrasyon tamamlandı ve Akı işlemi kalıcı olarak kaydedildi."
-        : (result.reason || "Kalibrasyon tamamlanamadı.");
+        ? localizedMessage("laboratory.calibration_saved")
+        : (result.reason || localizedMessage("laboratory.calibration_failed"));
       status.dataset.status = result.ok ? "success" : "error";
     }
   }
@@ -17696,7 +17689,7 @@ function saveHumanReviewLocalNote() {
     const status = document.getElementById("laboratory-action-status");
     if (reset?.disabled) return;
     reset.disabled = true;
-    if (status) status.textContent = "Akı iadesi sunucuda doğrulanıyor…";
+    if (status) status.textContent = localizedMessage("laboratory.verifying_refund");
     const result = await accountDataLoader.resetLaboratory(
       laboratoryRequestId("reset")
     );
@@ -17705,8 +17698,8 @@ function saveHumanReviewLocalNote() {
     renderRemoteDataStatus();
     if (status) {
       status.textContent = result.ok
-        ? `${result.payload.receipt.refund} Akı iade edildi; kalibrasyonlar sıfırlandı.`
-        : (result.reason || "Laboratuvar sıfırlanamadı.");
+        ? localizedMessage("laboratory.reset_refund", {flux:localizedNumber(result.payload.receipt.refund)})
+        : (result.reason || localizedMessage("laboratory.reset_failed"));
       status.dataset.status = result.ok ? "success" : "error";
     }
   }
@@ -17724,11 +17717,11 @@ function saveHumanReviewLocalNote() {
     if (opensChest) {
       showChestOpening({
         tier: selectedReward.chest_tier,
-        title: `Kademe ${selectedReward.tier} Sandığı`,
+        title: localizedMessage("season.tier_chest", {tier:localizedNumber(selectedReward.tier)}),
       });
     }
     if (button) button.disabled = true;
-    if (status) status.textContent = "Ödül alınıyor…";
+    if (status) status.textContent = localizedMessage("reward.claiming");
     const engagement = profileState.viewModel()?.engagement || {};
     const claimScope = kind === "missions"
       ? (engagement.daily_mission_day || new Date().toISOString().slice(0, 10))
@@ -17747,12 +17740,12 @@ function saveHumanReviewLocalNote() {
         showChestReveal(result.payload.season_chest_receipt);
       }
     } else if (opensChest) {
-      showChestFailure(result.reason || "Sezon sandığı açılamadı.");
+      showChestFailure(result.reason || localizedMessage("season.chest_failed"));
     }
     renderProfileSummary();
     renderRemoteDataStatus();
     if (status) {
-      status.textContent = result.ok ? "" : (result.reason || "Ödül alınamadı.");
+      status.textContent = result.ok ? "" : (result.reason || localizedMessage("reward.claim_failed"));
       status.dataset.status = result.ok ? "success" : "error";
     }
     return result;
@@ -17771,7 +17764,7 @@ function saveHumanReviewLocalNote() {
     const button = document.getElementById("profile-display-name-save");
     if (button?.disabled) return { ok:false, pending:true };
     if (button) button.disabled = true;
-    if (status) status.textContent = "Oyuncu adı kaydediliyor…";
+    if (status) status.textContent = localizedMessage("profile.saving_name");
 
     let result;
     try {
@@ -17783,10 +17776,10 @@ function saveHumanReviewLocalNote() {
     if (status) {
       status.textContent =
         result.ok
-          ? "Görünen ad kaydedildi"
+          ? localizedMessage("profile.name_saved")
           : (
               result.reason
-              || "Görünen ad kaydedilemedi"
+              || localizedMessage("profile.name_save_failed")
             );
     }
 
@@ -17804,8 +17797,21 @@ function saveHumanReviewLocalNote() {
     if (!host) { host = document.createElement("div"); host.id = "statistics-canon"; host.className = "statistics-canon"; summary.after(host); }
     host.replaceChildren();
     const matches = Math.max(1, Number(stats.matches || 0));
-    const entries = [["🏆 / En yüksek", `${stats.current_trophies} / ${stats.highest_trophies}`], ["Arena / Lig", stats.rank], ["En uzun galibiyet serisi", stats.longest_streak || 0], ["Maç başı yerleştirme", ((stats.deployments || 0)/matches).toFixed(1)], ["Toplam / Ortalama Akım", `${stats.current_spent || 0} / ${((stats.current_spent || 0)/matches).toFixed(1)}`], ["Çekirdek gücü kullanımı", stats.core_power_uses || 0], ["En yüksek maç hasarı", stats.peak_damage || 0], ["Açılan modül", `${stats.unlocked_modules} / 36`], ["Yükseltilen modül", stats.upgraded_modules], ["En yüksek modül seviyesi", stats.highest_module_level], ["Açılan çekirdek", `${stats.unlocked_cores} / 7`], ["Açılan sandık", stats.opened_chests]];
-    for (const [id, count] of Object.entries(stats.cores || {})) entries.push([metaProgressionState.cores?.types.find(c => c.id === id)?.name_tr || id, `%${Math.round(count / matches * 100)}`]);
+    const entries = [
+      [localizedMessage("stats.trophies_peak"), `${localizedNumber(stats.current_trophies)} / ${localizedNumber(stats.highest_trophies)}`],
+      [localizedMessage("stats.arena_league"), localizedUiText(stats.rank)],
+      [localizedMessage("stats.longest_streak"), stats.longest_streak || 0],
+      [localizedMessage("stats.deployments_per_match"), localizedNumber((stats.deployments || 0) / matches, {minimumFractionDigits:1, maximumFractionDigits:1})],
+      [localizedMessage("stats.current_total_average"), `${localizedNumber(stats.current_spent || 0)} / ${localizedNumber((stats.current_spent || 0) / matches, {minimumFractionDigits:1, maximumFractionDigits:1})}`],
+      [localizedMessage("stats.core_power_uses"), stats.core_power_uses || 0],
+      [localizedMessage("stats.peak_damage"), stats.peak_damage || 0],
+      [localizedMessage("stats.unlocked_modules"), `${localizedNumber(stats.unlocked_modules)} / 36`],
+      [localizedMessage("stats.upgraded_modules"), stats.upgraded_modules],
+      [localizedMessage("stats.highest_module_level"), stats.highest_module_level],
+      [localizedMessage("stats.unlocked_cores"), `${localizedNumber(stats.unlocked_cores)} / 7`],
+      [localizedMessage("stats.opened_chests"), stats.opened_chests],
+    ];
+    for (const [id, count] of Object.entries(stats.cores || {})) entries.push([localizedUiText(metaProgressionState.cores?.types.find(c => c.id === id)?.name_tr || id), localizedPercent(Math.round(count / matches * 100))]);
     for (const [name, value] of entries) { const card=document.createElement("div"), label=document.createElement("small"), number=document.createElement("strong"); label.textContent=name; number.textContent=String(value ?? 0); card.append(label,number); host.appendChild(card); }
   }
 
@@ -17822,12 +17828,7 @@ function saveHumanReviewLocalNote() {
       return;
     }
 
-    el.textContent =
-      `Maç ${view.totalMatches} · `
-      + `Galibiyet ${view.wins} · `
-      + `Mağlubiyet ${view.losses} · `
-      + `Beraberlik ${view.draws} · `
-      + `Galibiyet %${view.winRatePercent}`;
+    el.textContent=localizedMessage("stats.match_summary", {matches:localizedNumber(view.totalMatches), wins:localizedNumber(view.wins), losses:localizedNumber(view.losses), draws:localizedNumber(view.draws), rate:localizedNumber(view.winRatePercent)});
 
     const language =
       document.documentElement.lang === "en"
@@ -17842,11 +17843,11 @@ function saveHumanReviewLocalNote() {
         Math.round(Number(value || 0) / 1000)
       );
       if (seconds < 60) {
-        return `${seconds} ${localizedUiText("sn")}`;
+        return localizedMessage("time.seconds_short", {count:localizedNumber(seconds)});
       }
       const minutes = Math.floor(seconds / 60);
       const remainder = seconds % 60;
-      return `${minutes} ${localizedUiText("dk")} ${remainder} ${localizedUiText("sn")}`;
+      return localizedMessage("time.minutes_seconds_short", {minutes:localizedNumber(minutes), seconds:localizedNumber(remainder)});
     };
     const setValue = (id, value) => {
       const target = document.getElementById(id);
@@ -17856,7 +17857,7 @@ function saveHumanReviewLocalNote() {
     setValue("statistics-total-matches", number(view.totalMatches));
     setValue(
       "statistics-record",
-      `${number(view.wins)}G · ${number(view.losses)}M · ${number(view.draws)}B`
+      localizedMessage("stats.win_loss_draw_record", {wins:number(view.wins), losses:number(view.losses), draws:number(view.draws)})
     );
     setValue("statistics-win-rate", localizedPercent(view.winRatePercent));
     setValue(
@@ -17887,7 +17888,11 @@ function saveHumanReviewLocalNote() {
       const card = document.createElement("article");
       card.className = "statistics-deck-card";
       const heading = document.createElement("div");
-      heading.innerHTML = `<strong>${index + 1}. DESTE</strong><small>${number(deck.matches)} maç</small>`;
+      const title=document.createElement("strong");
+      title.textContent=localizedMessage("deck.numbered", {number:localizedNumber(index + 1)});
+      const count=document.createElement("small");
+      count.textContent=localizedMessage("match.count", {count:Number(deck.matches || 0)});
+      heading.replaceChildren(title,count);
       const strip = document.createElement("div");
       strip.className = "statistics-deck-strip";
       for (const definitionId of deck.module_ids || []) {
@@ -17986,14 +17991,14 @@ function saveHumanReviewLocalNote() {
       (candidate.definitionId || clientDefinitionId(candidate.instanceId)) === definitionId
     )).length;
     if (sameDefinitionCount >= 2) {
-      return `${localizedUiText(module.nameTr)} için aynı anda en fazla 2 kopya kullanılabilir.`;
+      return localizedMessage("pool.copy_limit", {name:localizedUiText(module.nameTr)});
     }
     const categoryCount = active.filter(
       (candidate) => candidate.category === module.category
     ).length;
     const categoryLimit = LIVE_CATEGORY_LIMITS[module.category];
     if (categoryCount >= categoryLimit) {
-      return `${poolCategoryLabel(module.category)} sınırı dolu: ${categoryCount}/${categoryLimit}.`;
+      return localizedMessage("pool.category_limit", {category:poolCategoryLabel(module.category), count:localizedNumber(categoryCount), limit:localizedNumber(categoryLimit)});
     }
     const attackCount = active.filter(
       (candidate) => candidate.category === "saldırı"
@@ -18023,8 +18028,11 @@ function saveHumanReviewLocalNote() {
       module.circuitCreditCost
     );
     if (!result.ok) {
-      logClientMessage(result.reason);
-      if (String(result.reason).includes("Akım")) {
+      const deploymentError = result.code
+        ? localizedMessage(`deployment.${result.code}`, result.details || {})
+        : localizedMessage("error.request_failed", {status:""});
+      logClientMessage(deploymentError);
+      if (result.code === "insufficient_current") {
         flashInsufficientCredits();
       }
       renderShelf();
@@ -18032,7 +18040,7 @@ function saveHumanReviewLocalNote() {
     }
     trackBattleUiInteraction("deploy_module", "module_place");
     logClientMessage(
-      `${localizedUiText(module.nameTr)} için sunucu uygun hücreyi seçiyor.`
+      localizedMessage("pool.server_placing", {name:localizedUiText(module.nameTr)})
     );
     renderShelf();
     return true;
@@ -18047,8 +18055,8 @@ function saveHumanReviewLocalNote() {
     card.disabled = !enabled;
     card.setAttribute("aria-disabled", String(!enabled));
     card.title = enabled
-      ? `${localizedUiText(module.nameTr)} · ${module.circuitCreditCost} Akım · Tıkla, sistem yerleştirsin`
-      : compositionRejection || `${localizedUiText(module.nameTr)} · ${module.circuitCreditCost} Akım · Yetersiz Akım veya devre dolu`;
+      ? localizedMessage("pool.place_hint", {name:localizedUiText(module.nameTr), cost:localizedNumber(module.circuitCreditCost)})
+      : compositionRejection || localizedMessage("pool.cannot_place_hint", {name:localizedUiText(module.nameTr), cost:localizedNumber(module.circuitCreditCost)});
 
     const icon = document.createElement("span");
     icon.className = "module-icon";
@@ -18060,7 +18068,7 @@ function saveHumanReviewLocalNote() {
     stats.className = "module-stats";
     const cost = document.createElement("span");
     cost.className = "module-stat credit";
-    cost.textContent = `${module.circuitCreditCost} Akım`;
+    cost.textContent = localizedMessage("currency.current", {amount:localizedNumber(module.circuitCreditCost)});
     stats.append(cost);
     card.append(icon, name, stats);
     const currentBadge = document.createElement("span");
@@ -18103,7 +18111,7 @@ function saveHumanReviewLocalNote() {
       const enabled = placement.ready && client.circuitCredits >= cost && !compositionRejection;
       const card = createDeckModuleCard(module, enabled, compositionRejection);
       if (enabled && cost !== module.circuitCreditCost) {
-        card.title = `${localizedUiText(module.nameTr)} · ${cost} Akım · Tıkla, sistem yerleştirsin`;
+        card.title = localizedMessage("pool.place_hint", {name:localizedUiText(module.nameTr), cost:localizedNumber(cost)});
       }
       const badge = card.querySelector(".current-cost-badge");
       if (badge) badge.textContent = `ϟ ${cost}`;
@@ -18185,9 +18193,9 @@ function saveHumanReviewLocalNote() {
         "fixed-module"
       );
       card.title =
-        `${module.nameTr} sabit başlangıç modülüdür.`;
+        localizedMessage("pool.fixed_start_module", {name:localizedUiText(module.nameTr)});
     } else {
-      card.title = `${module.nameTr} · savaş sırasında sabit`;
+      card.title = localizedMessage("pool.fixed_during_battle", {name:localizedUiText(module.nameTr)});
     }
     if (module.nameTr === "Çekirdek" && corePowerTargeting) {
       card.classList.add("core-power-target");
@@ -18220,8 +18228,7 @@ function saveHumanReviewLocalNote() {
       document.createElement("span");
     hp.className =
       "module-stat hp";
-    hp.textContent =
-      `HP ${module.hp}/${module.maxHp}`;
+    hp.textContent =localizedMessage("battle.module_hp", {hp:localizedNumber(module.hp), max:localizedNumber(module.maxHp)});
     stats.appendChild(hp);
 
     if (
@@ -18232,8 +18239,7 @@ function saveHumanReviewLocalNote() {
         document.createElement("span");
       cost.className =
         "module-stat credit";
-      cost.textContent =
-        `${module.circuitCreditCost} DK`;
+      cost.textContent =localizedMessage("currency.credits_short", {amount:localizedNumber(module.circuitCreditCost)});
       stats.appendChild(cost);
     }
 
@@ -18244,10 +18250,7 @@ function saveHumanReviewLocalNote() {
         "module-stat energy";
       power.textContent =
         Number(module.energyRequired || 0) > 0
-          ? (
-              `E ${Number(module.energyReceived || 0).toFixed(0)}`
-              + `/${Number(module.energyRequired || 0).toFixed(0)}`
-            )
+          ? localizedMessage("battle.energy_received_required", {received:localizedNumber(Math.round(module.energyReceived || 0)), required:localizedNumber(Math.round(module.energyRequired || 0))})
           : "Pasif";
       stats.appendChild(power);
 
@@ -18452,7 +18455,7 @@ function saveHumanReviewLocalNote() {
 
     if (mockServerCredits < cost) {
       logClientMessage(
-        `Yetersiz Akım: gerekli ${cost}, mevcut ${mockServerCredits}.`
+        localizedMessage("deployment.insufficient_current", {required:localizedNumber(cost), available:localizedNumber(mockServerCredits)})
       );
       flashInsufficientCredits();
       return;
@@ -18766,7 +18769,7 @@ function saveHumanReviewLocalNote() {
     }
 
     energySummaryEl.textContent =
-      `Enerji: ${generated.toFixed(1)} Ü / ${totalDemand.toFixed(1)} T`;
+      localizedMessage("battle.energy_generation_demand", {generated:localizedNumber(generated, {minimumFractionDigits:1, maximumFractionDigits:1}), demand:localizedNumber(totalDemand, {minimumFractionDigits:1, maximumFractionDigits:1})});
   }
 
   function sabotageLabelForModule(module) {
@@ -18780,9 +18783,9 @@ function saveHumanReviewLocalNote() {
 
   function heatStatusLabel(module) {
     const heat = Number(module.heat || 0);
-    if (heat >= 100) return `KRİTİK ISI ${heat.toFixed(0)}`;
-    if (heat >= 70) return `YÜKSEK ISI ${heat.toFixed(0)}`;
-    return `Isı ${heat.toFixed(0)}`;
+    if (heat >= 100) return localizedMessage("battle.heat_critical", {heat:localizedNumber(heat.toFixed(0))});
+    if (heat >= 70) return localizedMessage("battle.heat_high", {heat:localizedNumber(heat.toFixed(0))});
+    return localizedMessage("battle.heat", {heat:localizedNumber(heat.toFixed(0))});
   }
 
   function supportLabelForModule(module) {
@@ -18982,7 +18985,7 @@ function saveHumanReviewLocalNote() {
         { core: targetDomId === "enemy-core" }
       );
       setBattleLiveTicker(
-        `${attacker.nameTr} → ${targetName} · ${finalDamage} hasar`,
+        localizedMessage("battle.mock_attack_ticker", {attacker:localizedUiText(attacker.nameTr), target:targetModule ? localizedMessage("battle.enemy_module", {name:localizedUiText(targetModule.name)}) : localizedUiText(targetName), damage:localizedNumber(finalDamage)}),
         "attack"
       );
       const travelMs=emitDuelAttackEffect(
@@ -19058,7 +19061,7 @@ function saveHumanReviewLocalNote() {
     }
 
     combatSummaryEl.textContent=
-      `Rakip: Modül ${mockEnemyModuleHp} HP · Çekirdek ${mockEnemyCoreHp}/300`;
+      localizedMessage("battle.mock_enemy_hp", {module:localizedNumber(mockEnemyModuleHp), core:localizedNumber(mockEnemyCoreHp)});
 
     renderEnemyBoard();
     updateMockBattleResult();
@@ -19067,7 +19070,7 @@ function saveHumanReviewLocalNote() {
 
   function renderCredits() {
     const battleValue = document.getElementById("credit-indicator-value");
-    if (battleValue) battleValue.textContent = `Akım: ${client.circuitCredits} / 12`;
+    if (battleValue) battleValue.textContent = localizedMessage("battle.current_meter", {current:localizedNumber(client.circuitCredits)});
     if (shelfCreditIndicatorEl) {
       const value = document.getElementById("shelf-credit-value");
       if (value) value.textContent = `${client.circuitCredits} / 12`;
@@ -19087,9 +19090,7 @@ function saveHumanReviewLocalNote() {
   function renderCapacity() {
     if (!capacityEl) return;
     const placement = modulePlacementSlotState();
-    capacityEl.textContent = localizedUiText(
-      `Devrede ${placement.active} / ${placement.currentLimit}`
-    );
+    capacityEl.textContent = localizedMessage("battle.circuit_capacity", {active:localizedNumber(placement.active), limit:localizedNumber(placement.currentLimit)});
     capacityEl.dataset.state = placement.available > 0 ? "ready" : "complete";
     capacityEl.classList.remove("capacity-opened");
     previousCapacity = placement.currentLimit;
@@ -19133,65 +19134,65 @@ function saveHumanReviewLocalNote() {
     if (entry.kind === "attack_performed") {
       const reduced = Number(entry.reducedDamage ?? 0);
       const defense = entry.defenseType ?? "Yok";
-      return `${entry.attacker} → ${entry.target} · Final ${entry.damage}${reduced > 0 ? ` · Azaltılan ${reduced}` : ""} · Savunma ${defense}`;
+      return localizedMessage("battle.damage_log", {attacker:localizedUiText(entry.attacker), target:localizedUiText(entry.target), damage:localizedNumber(entry.damage), reduction:reduced > 0 ? localizedMessage("battle.damage_reduction_suffix", {amount:localizedNumber(reduced)}) : "", defense:localizedUiText(defense)});
     }
     if (entry.kind === "damage_reflected") {
-      return `Yansıtılan hasar · ${entry.damage}`;
+      return localizedMessage("battle.reflected_damage", {damage:localizedNumber(entry.damage)});
     }
     if (entry.kind === "module_repaired") {
-      return `Onarım · +${entry.repair} Can`;
+      return localizedMessage("battle.repair_event", {repair:localizedNumber(entry.repair)});
     }
     if (entry.kind === "module_cooled") {
-      return `Soğutma · Isı ${Math.round(entry.heatBefore)} → ${Math.round(entry.heatAfter)}`;
+      return localizedMessage("battle.cooling_event", {before:localizedNumber(Math.round(entry.heatBefore)), after:localizedNumber(Math.round(entry.heatAfter))});
     }
     if (entry.kind === "module_overclocked") {
-      return `Aşırı Hızlandırma · saldırı temposu arttı`;
+      return localizedMessage("battle.overclocked");
     }
     if (entry.kind === "module_heat_changed") {
       const before = Number(entry.heatBefore || 0);
       const after = Number(entry.heatAfter || 0);
       if (Math.abs(after - before) < 10) return "";
-      return `Isı · ${Math.round(before)} → ${Math.round(after)}`;
+      return localizedMessage("battle.heat_event", {before:localizedNumber(Math.round(before)), after:localizedNumber(Math.round(after))});
     }
     if (entry.kind === "module_overheated") {
-      return `AŞIRI YÜK · ${entry.selfDamage} öz hasar`;
+      return localizedMessage("battle.overload_self_damage", {damage:localizedNumber(entry.selfDamage)});
     }
     if (entry.kind === "attack_skipped_overheated") {
-      return `Saldırı engellendi: kritik ısı`;
+      return localizedMessage("battle.attack_blocked_overheat");
     }
     if (entry.kind === "sabotage_applied") {
-      return `Sabotaj uygulandı · ${entry.effectId || entry.effect_id}`;
+      return localizedMessage("battle.sabotage_event", {effect:localizedUiText(entry.effectId || entry.effect_id)});
     }
     if (entry.kind === "virus_damage") {
-      return `Virüs: ${entry.damage} hasar`;
+      return localizedMessage("battle.virus_damage", {damage:localizedNumber(entry.damage)});
     }
     if (entry.kind === "support_skipped_jammed") {
-      return `Destek engellendi · Sinyal Bozma`;
+      return localizedMessage("battle.support_jammed");
     }
     if (entry.kind === "sabotage_resisted") {
-      return `Sabotaj direnci çalıştı`;
+      return localizedMessage("battle.sabotage_resisted");
     }
     if (entry.kind === "sabotage_blocked") {
-      return `Sabotaj engellendi`;
+      return localizedMessage("battle.sabotage_blocked");
     }
     if (entry.kind === "sabotage_cleansed") {
-      return `Sabotaj temizlendi · ${entry.effectId || entry.effect_id}`;
+      return localizedMessage("battle.sabotage_cleansed", {effect:localizedUiText(entry.effectId || entry.effect_id)});
     }
     if (entry.kind === "sabotage_duration_reduced") {
-      return `Sabotaj süresi azaltıldı`;
+      return localizedMessage("battle.sabotage_reduced");
     }
     if (entry.kind === "battle_finished") {
-      if (entry.isDraw || entry.is_draw) return `MAÇ BİTTİ · Berabere`;
-      return `MAÇ BİTTİ · Kazanan ${entry.winnerPlayerId || entry.winner_player_id}`;
+      if (entry.isDraw || entry.is_draw) return localizedMessage("battle.match_draw");
+      return localizedMessage("battle.match_winner", {winner:entry.winnerPlayerId || entry.winner_player_id});
     }
     if (entry.kind === "module_damaged") {
-      return `${entry.moduleName || "Modül"} · -${entry.damage} Can`;
+      return localizedMessage("battle.damage_ticker", {name:localizedUiText(entry.moduleName || "Modül"), damage:localizedNumber(entry.damage)});
     }
     if (entry.kind === "client_notice") {
-      return `Bilgi · ${entry.payload?.message || ""}`;
+      return localizedMessage("battle.client_notice", {message:localizedUiText(entry.payload?.message || "")});
     }
     if (entry.kind === "battle_forfeited") {
-      return `Savaş bırakıldı`;
+      return localizedMessage("battle.forfeited");
     }
     return String(entry.kind || "Olay").replaceAll("_", " ");
   }

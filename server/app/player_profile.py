@@ -1,5 +1,5 @@
 from dataclasses import dataclass, field
-from calendar import monthrange
+from calendar import month_name, monthrange
 from datetime import datetime, timedelta, timezone
 import hashlib
 from threading import RLock
@@ -45,6 +45,7 @@ def monthly_season_descriptor(moment: datetime | None = None) -> dict:
     return {
         "id": f"gridshard_{current.year}_{current.month:02d}",
         "name_tr": f"{TURKISH_MONTH_NAMES[current.month]} {current.year} Sezonu",
+        "name_en": f"{month_name[current.month]} {current.year} Season",
         "starts_at": _iso_utc(starts_at),
         "ends_at": _iso_utc(ends_at),
     }
@@ -60,7 +61,9 @@ DAILY_MISSIONS = (
     {
         "id": "complete_battles",
         "name_tr": "Devreyi Ateşle",
+        "name_en": "Power Up the Circuit",
         "description_tr": "2 savaş tamamla.",
+        "description_en": "Complete 2 battles.",
         "target": 2,
         "season_xp_reward": 20,
         "flux_shard_reward": 10,
@@ -68,7 +71,9 @@ DAILY_MISSIONS = (
     {
         "id": "deal_damage",
         "name_tr": "Çekirdeğe Baskı",
+        "name_en": "Core Pressure",
         "description_tr": "Rakip devrelere toplam 1000 hasar ver.",
+        "description_en": "Deal a total of 1,000 damage to enemy circuits.",
         "target": 1000,
         "season_xp_reward": 25,
         "flux_shard_reward": 15,
@@ -76,7 +81,9 @@ DAILY_MISSIONS = (
     {
         "id": "circuit_actions",
         "name_tr": "Canlı Strateji",
+        "name_en": "Live Strategy",
         "description_tr": "Savaşta 3 modül yerleştir.",
+        "description_en": "Deploy 3 modules in battle.",
         "target": 3,
         "season_xp_reward": 25,
         "flux_shard_reward": 15,
@@ -84,12 +91,12 @@ DAILY_MISSIONS = (
 )
 
 OPERATOR_TITLE_STAGES = (
-    {"title_tr": "Devre Çırağı", "required_trophies": 0, "required_wins": 0},
-    {"title_tr": "Devre Teknisyeni", "required_trophies": 300, "required_wins": 3},
-    {"title_tr": "İletken Ustası", "required_trophies": 900, "required_wins": 10},
-    {"title_tr": "Çekirdek Muhafızı", "required_trophies": 1800, "required_wins": 25},
-    {"title_tr": "Arena Mimarı", "required_trophies": 3000, "required_wins": 50},
-    {"title_tr": "GRIDSHARD Efsanesi", "required_trophies": 4200, "required_wins": 100},
+    {"title_tr": "Devre Çırağı", "title_en": "Circuit Apprentice", "required_trophies": 0, "required_wins": 0},
+    {"title_tr": "Devre Teknisyeni", "title_en": "Circuit Technician", "required_trophies": 300, "required_wins": 3},
+    {"title_tr": "İletken Ustası", "title_en": "Conductor Master", "required_trophies": 900, "required_wins": 10},
+    {"title_tr": "Çekirdek Muhafızı", "title_en": "Core Guardian", "required_trophies": 1800, "required_wins": 25},
+    {"title_tr": "Arena Mimarı", "title_en": "Arena Architect", "required_trophies": 3000, "required_wins": 50},
+    {"title_tr": "GRIDSHARD Efsanesi", "title_en": "GRIDSHARD Legend", "required_trophies": 4200, "required_wins": 100},
 )
 
 
@@ -332,6 +339,11 @@ class PlayerProfile:
         return rank_stage_for_rating(self.rating)["name_tr"]
 
     @property
+    def league_name_en(self) -> str:
+        from .arena_canon import rank_stage_for_rating
+        return rank_stage_for_rating(self.rating)["name_en"]
+
+    @property
     def experience_into_level(self) -> int:
         return self.experience % XP_PER_LEVEL
 
@@ -367,6 +379,7 @@ class PlayerProfile:
             "team_id": self.team_id,
             "team_name": self.team_name,
             "league_name_tr": self.league_name_tr,
+            "league_name_en": self.league_name_en,
             "operator_title": current_title,
             "operator_title_progression": title_progression,
             "cosmetics": {
@@ -492,6 +505,7 @@ class PlayerProfile:
         return {
             "season_id": season["id"],
             "season_name_tr": season["name_tr"],
+            "season_name_en": season["name_en"],
             "season_starts_at": season["starts_at"],
             "season_ends_at": season["ends_at"],
             "season_xp": self.season_xp,
@@ -505,6 +519,10 @@ class PlayerProfile:
                 self.rating,
                 int(self.lifetime_stats.get("wins", 0)),
             )["current"]["title_tr"],
+            "equipped_title_en": operator_title_progression(
+                self.rating,
+                int(self.lifetime_stats.get("wins", 0)),
+            )["current"]["title_en"],
             "unlocked_titles": list(self.unlocked_titles),
             "daily_mission_day": self.daily_mission_day,
             "daily_missions": [

@@ -1715,6 +1715,7 @@ class BattleEngine:
                 {
                     "player_id": command.player_id,
                     "kind": command.kind,
+                    "code": "command_rejected",
                     "reason": str(exc),
                 },
             )
