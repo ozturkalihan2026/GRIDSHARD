@@ -429,6 +429,31 @@
       "recovery": {},
       "revoked_token_ids": []
     },
+    "wt-c27b0355-8375-4047-9ba1-135a08f3c45b": {
+      "blocked_player_ids": [],
+      "contacts": {},
+      "devices": {
+        "5d782baf-b989-4d88-b992-ace1c06613e7": {
+          "device_id": "5d782baf-b989-4d88-b992-ace1c06613e7",
+          "last_seen_at": 1790317507,
+          "name": "WEB · Tarayıcı",
+          "platform": "web",
+          "token_ids": [
+            {
+              "expires_at": 1790321107,
+              "token_id": "5tLyQ_EnOL17Ctww"
+            }
+          ]
+        }
+      },
+      "notifications": [],
+      "oauth_links": {},
+      "oauth_states": {},
+      "pending_verifications": {},
+      "push_subscriptions": {},
+      "recovery": {},
+      "revoked_token_ids": []
+    },
     "wt-ca8d3a93-29e4-4148-91b0-3acb3f2f3cbb": {
       "blocked_player_ids": [],
       "contacts": {},
@@ -533,6 +558,31 @@
             {
               "expires_at": 1790168530,
               "token_id": "QA5oclpvkH95f7iE"
+            }
+          ]
+        }
+      },
+      "notifications": [],
+      "oauth_links": {},
+      "oauth_states": {},
+      "pending_verifications": {},
+      "push_subscriptions": {},
+      "recovery": {},
+      "revoked_token_ids": []
+    },
+    "wt-e68b960d-2741-4ea5-881a-8eb31a4ce9d3": {
+      "blocked_player_ids": [],
+      "contacts": {},
+      "devices": {
+        "70dd7cc2-b26c-47c0-a85a-0a7391292541": {
+          "device_id": "70dd7cc2-b26c-47c0-a85a-0a7391292541",
+          "last_seen_at": 1790251777,
+          "name": "WEB · Edge",
+          "platform": "web",
+          "token_ids": [
+            {
+              "expires_at": 1790255377,
+              "token_id": "aOHDnomGOgPGUmnZ"
             }
           ]
         }

@@ -403,7 +403,7 @@
               <div class="team-summary-metrics"><strong id="team-member-count">0 / 30 ÜYE</strong><strong id="team-total-trophies" class="trophy-visual-value" aria-label="0 Kupa"><span class="trophy-value-number">0</span><span class="trophy-value-icon" aria-hidden="true">🏆</span></strong></div>
             </header>
             <section class="team-profile-statistics">
-              <div class="public-profile-section-heading"><span>TAKIM ARŞİVİ</span><h3>Takım İstatistikleri</h3></div>
+              <div class="public-profile-section-heading"><h3>Takım İstatistikleri</h3></div>
               <div class="team-profile-stat-grid public-profile-stat-grid">
                 <article><span>TOPLAM KUPA</span><strong id="team-profile-total-trophies">0</strong></article>
                 <article><span>ORTALAMA KUPA</span><strong id="team-profile-average-trophies">0</strong></article>
@@ -419,7 +419,7 @@
           </section>
           <section data-team-panel="requests" class="team-panel" hidden>
             <h3>Modül parçası iste</h3>
-            <div class="team-inline-action"><select id="team-module-request-select"><option value="">Modül seç</option></select><button id="team-module-request-button" type="button">İSTE</button></div>
+            <div class="team-inline-action"><button id="team-module-picker-open" type="button">Modül seç</button><select id="team-module-request-select" hidden aria-label="İstenen modül"><option value="">Modül seç</option></select><button id="team-module-request-button" type="button">İSTE</button></div>
             <p class="team-policy-note">Haftada tek modül isteği · Parça sınırı: Yaygın 4 · Nadir 3 · Epik 2 · Efsanevi 1. Yalnız açılmış modüller istenebilir.</p>
             <div id="team-request-list" class="team-request-list"></div>
           </section>
@@ -434,8 +434,9 @@
           </section>
           <section data-team-panel="management" class="team-panel team-management-panel" hidden>
             <header class="team-management-heading"><button id="team-management-back" type="button" aria-label="Takım profiline dön">←</button><div><span>YÖNETİCİ MERKEZİ</span><h3>Takım Yönetimi</h3></div></header>
-            <section><h4>Takım Kozmetikleri</h4><div id="team-cosmetic-controls" class="team-cosmetic-controls"></div></section>
-            <section><h4>Başvurular</h4><div id="team-application-list" class="team-management-list"></div></section>
+            <nav class="team-management-tabs" aria-label="Takım yönetimi bölümleri"><button type="button" data-team-management-tab="cosmetics" class="is-active">KOZMETİK</button><button type="button" data-team-management-tab="members">ÜYE YÖNETİMİ</button></nav>
+            <section data-team-management-panel="cosmetics"><h4>Takım Kozmetikleri</h4><div id="team-cosmetic-controls" class="team-cosmetic-controls"></div><button id="team-cosmetic-save" type="button">KAYDET</button></section>
+            <section data-team-management-panel="members" hidden><h4>Başvurular</h4><div id="team-application-list" class="team-management-list"></div><h4>Üyeler</h4><ol id="team-management-member-list" class="team-member-list"></ol></section>
             <p id="team-management-status" role="status" aria-live="polite"></p>
           </section>
         </div>
@@ -448,6 +449,8 @@
         </nav>
       </section>
     </section>
+
+    <dialog id="team-module-picker" class="team-module-picker" aria-labelledby="team-module-picker-title"><header><h2 id="team-module-picker-title">Modül seç</h2><button id="team-module-picker-close" type="button" aria-label="Kapat">×</button></header><div id="team-module-picker-list" class="team-module-picker-list"></div></dialog>
 
     <section id="events-screen" class="mobile-hub-screen events-screen" data-screen-panel="events" hidden>
       <header id="daily-meta-card" class="events-hero daily-meta-card">
@@ -477,15 +480,11 @@
         <section data-weekly-event-panel="standings" class="event-subpage" hidden>
           <section class="tournament-panel"><h4>Oyuncu Sıralaması</h4><ol id="weekly-tournament-standings" class="tournament-standings"></ol></section>
         </section>
-        <section data-weekly-event-panel="prizes" class="event-subpage" hidden>
-          <section class="tournament-panel"><h4>İlk 3 Ödülü</h4><div id="weekly-tournament-prizes" class="tournament-prizes"></div></section>
-        </section>
       </div>
       <p id="weekly-event-status" class="mobile-action-status" role="status" aria-live="polite"></p>
       <nav class="event-detail-tabs" aria-label="Haftalık etkinlik bölümleri">
         <button type="button" data-weekly-event-tab="overview" class="is-active">GENEL</button>
         <button type="button" data-weekly-event-tab="standings">SIRALAMA</button>
-        <button type="button" data-weekly-event-tab="prizes">ÖDÜLLER</button>
       </nav>
     </section>
 
@@ -504,16 +503,12 @@
         <section data-team-event-panel="fixtures" class="event-subpage" hidden>
           <section class="tournament-panel"><h4>Bu Haftanın Eşleşmeleri</h4><div id="team-tournament-fixtures" class="team-tournament-fixtures"></div></section>
         </section>
-        <section data-team-event-panel="prizes" class="event-subpage" hidden>
-          <section class="tournament-panel"><h4>İlk 3 Takım Ödülü</h4><div id="team-tournament-prizes" class="tournament-prizes"></div></section>
-        </section>
       </div>
       <p id="team-event-status" class="mobile-action-status" role="status" aria-live="polite"></p>
       <nav class="event-detail-tabs" aria-label="Takım etkinliği bölümleri">
         <button type="button" data-team-event-tab="overview" class="is-active">GENEL</button>
         <button type="button" data-team-event-tab="standings">SIRALAMA</button>
         <button type="button" data-team-event-tab="fixtures">EŞLEŞMELER</button>
-        <button type="button" data-team-event-tab="prizes">ÖDÜLLER</button>
       </nav>
     </section>
 
@@ -661,9 +656,9 @@
       </div>
       <section id="season-reward-panel" class="season-reward-panel" aria-labelledby="season-reward-title">
         <div class="season-section-heading">
-          <div><span class="screen-kicker">40 KADEME · HER 10 KADEMEDE BÜYÜK ÖDÜL</span><h3 id="season-reward-title">Sezon Ödülleri</h3></div>
-          <small>Ücretli geçiş yok</small>
+          <h3 id="season-reward-title">Sezon Ödülleri</h3>
         </div>
+        <div class="season-lane-headings"><strong>ÜCRETSİZ</strong><strong>ÜCRETLİ · YAKINDA</strong></div>
         <p id="season-action-status" class="season-action-status" role="status"></p>
         <div id="season-reward-track" class="season-reward-track"></div>
         <button type="button" class="reward-back-link" data-open-screen="daily">← ÖDÜL BÖLÜMLERİ</button>
@@ -754,9 +749,11 @@
         <div><input id="friend-search-input" type="search" minlength="1" maxlength="24" autocomplete="off" placeholder="Oyuncu adı"><button type="submit">ARA</button></div>
       </form>
       <p id="friends-action-status" class="season-action-status" role="status" aria-live="polite"></p>
-      <section class="friends-section"><div class="profile-section-heading"><span>ARAMA</span><h3>Oyuncular</h3></div><div id="friend-search-results" class="social-player-list"><p>Arama yaptığında oyuncular burada görünür.</p></div></section>
-      <section class="friends-section"><div class="profile-section-heading"><span>BEKLEYEN</span><h3>Arkadaşlık İstekleri</h3></div><div id="friend-request-list" class="social-player-list"></div></section>
-      <section class="friends-section"><div class="profile-section-heading"><span>DEVRE BAĞLANTILARI</span><h3>Arkadaşların</h3></div><div id="friend-list" class="social-player-list"></div></section>
+      <nav class="friends-tabs" aria-label="Arkadaş bölümleri"><button type="button" data-friends-tab="friends" class="is-active">ARKADAŞLAR</button><button type="button" data-friends-tab="messages">MESAJLAR</button><button type="button" data-friends-tab="incoming">GELEN İSTEKLER</button><button type="button" data-friends-tab="outgoing">GÖNDERİLEN</button><button type="button" data-friends-tab="battle">SAVAŞ</button></nav>
+      <div data-friends-panel="friends"><section class="friends-section"><div class="profile-section-heading"><span>ARAMA</span><h3>Oyuncular</h3></div><div id="friend-search-results" class="social-player-list"><p>Arama yaptığında oyuncular burada görünür.</p></div></section><section class="friends-section"><div class="profile-section-heading"><span>DEVRE BAĞLANTILARI</span><h3>Arkadaşların</h3></div><div id="friend-list" class="social-player-list"></div></section></div>
+      <div data-friends-panel="incoming" hidden><section class="friends-section"><div class="profile-section-heading"><span>BEKLEYEN</span><h3>Arkadaşlık İstekleri</h3></div><div id="friend-request-list" class="social-player-list"></div></section></div>
+      <div data-friends-panel="outgoing" hidden><section class="friends-section"><h3>Gönderilen İstekler</h3><div id="friend-outgoing-list" class="social-player-list"></div></section></div>
+      <div data-friends-panel="messages" hidden>
       <section class="friends-section social-invite-panel">
         <div class="profile-section-heading"><span>DAVET</span><h3>Bağlantı Kodu</h3></div>
         <p>Bağlantıyı veya QR içeriğini paylaş; kod kullanıldığında iki oyuncu arkadaş olur.</p>
@@ -768,7 +765,8 @@
         <form id="direct-message-form"><input id="direct-message-peer" type="text" maxlength="72" placeholder="Arkadaş oyuncu kimliği"><textarea id="direct-message-text" maxlength="500" placeholder="Mesajını yaz"></textarea><button type="submit">GÖNDER</button></form>
         <div id="direct-message-list" class="direct-message-list"><p>Mesaj geçmişi yükleniyor.</p></div>
       </section>
-      <section class="friends-section"><div class="profile-section-heading"><span>KUPASIZ ALAN</span><h3>Arkadaş Savaşları</h3></div><p>Bu savaşlar kupa, sandık ve ödül hesabına girmez.</p><div id="friend-battle-invites" class="social-player-list"></div></section>
+      </div>
+      <div data-friends-panel="battle" hidden><section class="friends-section"><div class="profile-section-heading"><span>KUPASIZ ALAN</span><h3>Arkadaş Savaşları</h3></div><p>Bu savaşlar kupa, sandık ve ödül hesabına girmez.</p><div id="friend-battle-friends" class="social-player-list"></div><div id="friend-battle-invites" class="social-player-list"></div></section></div>
       <nav class="profile-terminal-tabs" aria-label="Operatör terminali bölümleri"><button type="button" data-open-screen="profile">PROFİL</button><button type="button" data-open-screen="avatar">KOZMETİK</button><button type="button" data-open-screen="daily">ÖDÜLLER</button><button type="button" class="is-active" data-open-screen="friends">ARKADAŞ</button><button type="button" data-open-screen="settings">AYARLAR</button></nav>
     </section>
 

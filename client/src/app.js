@@ -463,7 +463,10 @@
   let teamProfileReturnDialogId = null;
   let teamState = null;
   let activeTeamTab = "profile";
+  let activeTeamManagementTab = "cosmetics";
+  let teamCosmeticDraft = null;
   let socialState = null;
+  let activeFriendsTab = "friends";
   let pendingDeepLinkConsumed = false;
   let activePublicProfileId = null;
   let publicProfilePayload = null;
@@ -3790,7 +3793,7 @@
     return target;
   }
 
-  function createTeamMemberRow(member, index, { compact = false } = {}) {
+  function createTeamMemberRow(member, index, { compact = false, allowManagement = false } = {}) {
     const row = document.createElement(compact ? "div" : "li");
     row.className = compact ? "team-member-row is-compact" : "team-member-row";
     const rank = document.createElement("strong");
@@ -3808,7 +3811,7 @@
     trophies.className = "team-member-trophies";
     renderTrophyValue(trophies, Number(member.trophies || 0));
     row.append(rank, identity, trophies);
-    if (!compact && teamState?.joined) {
+    if (!compact && allowManagement && teamState?.joined) {
       const isSelf = member.player_id === participantPlayerId;
       const canRemove = Boolean(teamState.is_owner && !isSelf);
       if (isSelf || canRemove) {
@@ -3852,32 +3855,51 @@
     const controls = document.getElementById("team-cosmetic-controls");
     if (controls) {
       controls.replaceChildren();
+      teamCosmeticDraft ||= {
+        avatar_id:cosmetics.selected_avatar_id,
+        avatar_frame_id:cosmetics.selected_avatar_frame_id,
+        bar_background_id:cosmetics.selected_bar_background_id,
+        name_frame_id:cosmetics.selected_name_frame_id,
+      };
       const definitions = [
-        ["team.cosmetic_avatar", "avatar_id", "selected_avatar_id", "unlocked_avatar_ids"],
-        ["team.cosmetic_frame", "avatar_frame_id", "selected_avatar_frame_id", "unlocked_avatar_frame_ids"],
-        ["team.cosmetic_bar", "bar_background_id", "selected_bar_background_id", "unlocked_bar_background_ids"],
-        ["team.cosmetic_name_frame", "name_frame_id", "selected_name_frame_id", "unlocked_name_frame_ids"],
+        ["team.cosmetic_avatar", "avatar_id", "unlocked_avatar_ids", ["team_default", "team_champion", "team_finalist"]],
+        ["team.cosmetic_frame", "avatar_frame_id", "unlocked_avatar_frame_ids", ["none", "team_gold", "team_silver"]],
+        ["team.cosmetic_bar", "bar_background_id", "unlocked_bar_background_ids", ["team_grid", "team_champion_grid", "team_finalist_grid"]],
+        ["team.cosmetic_name_frame", "name_frame_id", "unlocked_name_frame_ids", ["none", "team_name_gold"]],
       ];
-      for (const [labelText, field, selectedKey, unlockedKey] of definitions) {
-        const label = document.createElement("label");
-        label.append(document.createTextNode(localizedMessage(labelText)));
-        const select = document.createElement("select");
-        for (const value of cosmetics[unlockedKey] || []) {
-          const option = document.createElement("option");
-          option.value = value;
-          option.textContent = localizedCatalogName("team_cosmetic", value, value.replaceAll("_", " "));
-          select.appendChild(option);
+      for (const [labelText, field, unlockedKey, catalog] of definitions) {
+        const group = document.createElement("section");
+        group.className = "team-cosmetic-group";
+        const heading = document.createElement("h5");
+        heading.textContent = localizedMessage(labelText);
+        const choices = document.createElement("div");
+        choices.className = "team-cosmetic-grid";
+        const unlocked = new Set(cosmetics[unlockedKey] || []);
+        for (const value of new Set([...catalog, ...unlocked])) {
+          const option = document.createElement("button");
+          option.type = "button";
+          option.className = "team-cosmetic-choice";
+          option.dataset.selected = String(teamCosmeticDraft[field] === value);
+          option.dataset.locked = String(!unlocked.has(value));
+          option.disabled = !unlocked.has(value);
+          const glyph = document.createElement("span");
+          glyph.className = "team-cosmetic-glyph";
+          glyph.textContent = field === "avatar_id" ? ({team_default:"⬡",team_champion:"♛",team_finalist:"✦"}[value] || "⬡") : field === "bar_background_id" ? "▰" : "▢";
+          const name = document.createElement("small");
+          name.textContent = localizedCatalogName("team_cosmetic", value);
+          option.append(glyph, name);
+          option.addEventListener("click", () => {
+            teamCosmeticDraft[field] = value;
+            choices.querySelectorAll("button").forEach((button) => { button.dataset.selected = String(button === option); });
+          });
+          choices.appendChild(option);
         }
-        select.value = cosmetics[selectedKey];
-        select.addEventListener("change", () => mutateTeam(
-          `/teams/${encodeURIComponent(teamState.team_id)}/cosmetics`,
-          { [field]:select.value, requestKind:`team-cosmetic-${field}` },
-          localizedMessage("team.appearance_saving")
-        ));
-        label.appendChild(select);
-        controls.appendChild(label);
+        group.append(heading, choices);
+        controls.appendChild(group);
       }
     }
+    for (const button of document.querySelectorAll("[data-team-management-tab]")) button.classList.toggle("is-active", button.dataset.teamManagementTab === activeTeamManagementTab);
+    for (const section of document.querySelectorAll("[data-team-management-panel]")) section.hidden = section.dataset.teamManagementPanel !== activeTeamManagementTab;
     const applications = document.getElementById("team-application-list");
     if (applications) {
       applications.replaceChildren();
@@ -3906,6 +3928,11 @@
         applications.appendChild(row);
       }
       if (!applications.children.length) applications.textContent = localizedMessage("team.no_applications");
+    }
+    const managerMembers = document.getElementById("team-management-member-list");
+    if (managerMembers) {
+      managerMembers.replaceChildren();
+      (teamState.members || []).forEach((member, index) => managerMembers.appendChild(createTeamMemberRow(member, index, {allowManagement:true})));
     }
   }
 
@@ -3969,6 +3996,8 @@
     if (managementOpen) managementOpen.disabled = !teamState.is_owner;
     setText("team-management-hint", localizedMessage(teamState.is_owner ? "team.open_management" : "team.profile"));
     renderTeamManagement();
+    const teamTabs = document.querySelector("#team-hub .team-tabs");
+    if (teamTabs) teamTabs.hidden = activeTeamTab === "management";
 
     for (const button of document.querySelectorAll("[data-team-tab]")) {
       button.classList.toggle("is-active", button.dataset.teamTab === activeTeamTab);
@@ -3983,7 +4012,7 @@
     const memberList = document.getElementById("team-member-list");
     if (memberList) {
       memberList.replaceChildren();
-      members.forEach((member, index) => memberList.appendChild(createTeamMemberRow(member, index)));
+      members.forEach((member, index) => memberList.appendChild(createTeamMemberRow(member, index, {allowManagement:true})));
     }
 
     const moduleSelect = document.getElementById("team-module-request-select");
@@ -4498,11 +4527,22 @@
   document.getElementById("team-management-open")?.addEventListener("click", () => {
     if (!teamState?.is_owner) return;
     activeTeamTab = "management";
+    activeTeamManagementTab = "cosmetics";
+    teamCosmeticDraft = null;
     renderTeamHub();
   });
   document.getElementById("team-management-back")?.addEventListener("click", () => {
     activeTeamTab = "profile";
     renderTeamHub();
+  });
+  document.querySelectorAll("[data-team-management-tab]").forEach((button) => button.addEventListener("click", () => {
+    activeTeamManagementTab = button.dataset.teamManagementTab || "cosmetics";
+    renderTeamManagement();
+  }));
+  document.getElementById("team-cosmetic-save")?.addEventListener("click", async () => {
+    if (!teamState?.team_id || !teamCosmeticDraft) return;
+    const result = await mutateTeam(`/teams/${encodeURIComponent(teamState.team_id)}/cosmetics`, {...teamCosmeticDraft, requestKind:"team-cosmetics"}, localizedMessage("team.appearance_saving"));
+    if (result.ok) teamCosmeticDraft = null;
   });
   document.getElementById("team-module-request-button")?.addEventListener("click", () => {
     const moduleId = document.getElementById("team-module-request-select")?.value || "";
