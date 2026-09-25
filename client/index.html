@@ -825,6 +825,7 @@
           <button id="account-recovery-confirm" type="button">BU CİHAZDA HESABI KURTAR</button>
         </div>
         <button id="account-push-enable" type="button">MOBİL BİLDİRİMLERİ AÇ</button>
+        <button id="account-push-disable" type="button">BU CİHAZDA BİLDİRİMLERİ KAPAT</button>
         <div><strong>Cihaz Oturumları</strong><div id="account-device-list" class="account-device-list"></div></div>
         <div class="account-data-actions"><button id="account-data-export" type="button">VERİLERİMİ DIŞA AKTAR</button><input id="account-delete-confirmation" type="text" placeholder="SIL oyuncu-kimliğin"><button id="account-data-delete" type="button">HESABI VE VERİLERİ SİL</button></div>
         <p>Kişisel veri kopyası oyun kaydı değildir. Kart, kupa ve ilerleme yalnız sunucuda güncellenir; dosyadan geri yüklenemez.</p>
@@ -1335,6 +1336,7 @@
   <script src="./runtime-config.js"></script>
   <!-- build:scripts -->
   <script src="./src/auth-session.js"></script>
+  <script src="./src/native-push.js"></script>
   <script src="./src/relay-client.js"></script>
   <script src="./src/screens/screen-controller.js"></script>
   <script src="./src/screens/card-swipe.js"></script>

@@ -17,3 +17,6 @@ os.environ.setdefault("RELAY_BATTLE_POOL_PRESET_PATH", str(TEST_DATA_DIR / "pres
 os.environ.setdefault("RELAY_BALANCE_CHANGE_DRAFT_PATH", str(TEST_DATA_DIR / "balance-drafts.json"))
 os.environ.setdefault("GRIDSHARD_AUTH_IDENTITY_PATH", str(TEST_DATA_DIR / "identities.json"))
 os.environ.setdefault("GRIDSHARD_AUTH_KEY_PATH", str(TEST_DATA_DIR / "auth-signing-key"))
+os.environ.setdefault("GRIDSHARD_PLATFORM_STATE_PATH", str(TEST_DATA_DIR / "platform.json"))
+# Unit/integration suites must not contact notification providers with real keys.
+os.environ["GRIDSHARD_PUSH_ENABLED"] = "0"

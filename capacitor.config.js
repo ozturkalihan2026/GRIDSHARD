@@ -10,5 +10,10 @@ module.exports = {
   },
   android: {
     allowMixedContent: false
+  },
+  plugins: {
+    PushNotifications: {
+      presentationOptions: ["sound", "alert"]
+    }
   }
 };

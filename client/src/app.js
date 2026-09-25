@@ -423,6 +423,11 @@
       loadBattlePoolPresets();
       loadMetaProgression();
       const accountResult = await loadAccountPlatform({ presentOnboarding:true });
+      if (accountResult.ok && !accountResult.redirecting) {
+        void nativePush.start().catch(() => {
+          setNativePushStatus("Bildirim cihaz kaydı tamamlanamadı. Bağlantı gelince yeniden denenecek.");
+        });
+      }
       if (!accountResult.presented) loadDailyMetaState({ present:true });
       loadRewardInbox();
       void consumePendingDeepLink();
@@ -1503,7 +1508,7 @@
         const road = document.createElement("div");
         road.className = "arena-reward-road";
         for (const node of nodes) {
-          const rewardDescription = localizedRewardDescription(node.description_tr);
+          const rewardDescription = localizedArenaRewardDescription(node);
           const reward = document.createElement("button");
           reward.type = "button";
           reward.className = `arena-reward-node${node.claimed ? " is-claimed" : ""}${node.claimable ? " is-claimable" : ""}`;
@@ -1537,7 +1542,7 @@
         const leagueRoad = document.createElement("div");
         leagueRoad.className = "arena-reward-road arena-league-reward-road";
         for (const node of stage.nodes || []) {
-          const rewardDescription = localizedRewardDescription(node.description_tr);
+          const rewardDescription = localizedArenaRewardDescription(node);
           const reward = document.createElement("button");
           reward.type = "button";
           reward.className = `arena-reward-node${node.claimed ? " is-claimed" : ""}${node.claimable ? " is-claimable" : ""}`;
@@ -1930,7 +1935,7 @@
     const arenaTitle = rank.name_tr && !/^Arena\s+\d+$/i.test(rank.name_tr)
       ? localizedMessage("arena.name_and_rank", {arena:localizedNumber(rank.index || 1), name:localizedUiText(rank.name_tr)})
       : localizedMessage("arena.numbered", {arena:localizedNumber(rank.index || 1)});
-    setText("arena-detail-title", rank.kind !== "arena" ? rank.name_tr : arenaTitle);
+    setText("arena-detail-title", rank.kind !== "arena" ? localizedRecordText(rank, "name") : arenaTitle);
     setText("arena-detail-rating", localizedMessage("profile.trophies", {count:localizedNumber(rating)}));
     setText("arena-detail-range", rank.next_stage ? `${localizedNumber(rating - floor)} / ${localizedNumber(ceiling - floor)}` : localizedMessage("arena.max_stage"));
     setText("arena-detail-next", rank.next_stage ? localizedMessage("arena.next_stage", {name:localizedUiText(rank.next_stage.name_tr), trophies:localizedNumber(ceiling)}) : localizedMessage("arena.complete"));
@@ -1951,7 +1956,7 @@
       stops.forEach((node, index) => {
         const segment = document.createElement("i");
         segment.className = rating >= Number(node.trophies) ? "is-complete" : (index === stops.findIndex((item) => rating < Number(item.trophies)) ? "is-current" : "");
-        segment.title = localizedMessage("arena.node_title", {trophies:localizedNumber(node.trophies), reward:node.description_tr ? localizedMessage("arena.node_reward_suffix", {description:localizedRewardDescription(node.description_tr)}) : ""});
+        segment.title = localizedMessage("arena.node_title", {trophies:localizedNumber(node.trophies), reward:node.description_tr ? localizedMessage("arena.node_reward_suffix", {description:localizedArenaRewardDescription(node)}) : ""});
         segments.appendChild(segment);
       });
     }
@@ -2228,7 +2233,7 @@
     const close = document.getElementById("chest-reveal-close");
     if (card) { card.dataset.tier = tier; card.dataset.state = "revealed"; }
     if (visual) visual.className = `chest-visual chest-visual-large chest-visual-${tier}`;
-    if (title) title.textContent = definition?.name_tr || offer?.name_tr || "Sandık";
+    if (title) title.textContent = localizedRecordText(definition, "name") || localizedRecordText(offer, "name") || localizedUiText("Sandık");
     if (kicker) { kicker.hidden = true; kicker.textContent = ""; }
     if (close) { close.disabled = false; close.textContent = "DEVAM"; }
     if (host) {
@@ -2343,10 +2348,16 @@
     const close = document.getElementById("chest-reveal-close");
     if (card) { card.dataset.tier = tier; card.dataset.state = "revealed"; }
     if (visual) visual.className = `chest-visual chest-visual-large chest-visual-${tier}`;
-    if (title) title.textContent = chest.name_tr || definition?.name_tr || "Hediye Sandık";
+    if (title) title.textContent = localizedRecordText(chest, "name") || localizedRecordText(definition, "name") || localizedUiText("Hediye Sandık");
     if (kicker) { kicker.hidden = true; kicker.textContent = ""; }
     if (host) {
-      host.innerHTML = "<div><span>SANDIK</span><strong>Açılmaya hazır</strong></div>";
+      const box = document.createElement("div");
+      const label = document.createElement("span");
+      const readiness = document.createElement("strong");
+      label.textContent = localizedUiText("SANDIK");
+      readiness.textContent = localizedUiText("Açılmaya hazır");
+      box.append(label, readiness);
+      host.replaceChildren(box);
     }
     if (close) { close.disabled = false; close.textContent = "DEVAM"; }
   }
@@ -2354,7 +2365,7 @@
   async function purchaseShopOffer(offerId) {
     const status = document.getElementById("shop-action-status");
     const offer = metaProgressionState?.shop?.offers?.find((item) => item.id === offerId);
-    showChestOpening({ tier: offer?.tier || "bronze", title: offer?.name_tr || "Sandık" });
+    showChestOpening({ tier: offer?.tier || "bronze", title: localizedRecordText(offer, "name") || localizedUiText("Sandık") });
     try {
       const payload = await metaProgressionMutation(
         `/profile/${encodeURIComponent(participantPlayerId)}/meta-progression/shop/${encodeURIComponent(offerId)}/purchase`
@@ -2372,7 +2383,7 @@
     const status = document.getElementById("shop-action-status");
     const chest = metaProgressionState?.chests?.slots?.find((item) => item.chest_id === chestId);
     const definition = metaProgressionState?.chests?.definitions?.find((item) => item.id === chest?.definition_id);
-    showChestOpening({ tier: chestTier(definition || chest || {}), title: definition?.name_tr || chest?.name_tr || "Sandık" });
+    showChestOpening({ tier: chestTier(definition || chest || {}), title: localizedRecordText(definition, "name") || localizedRecordText(chest, "name") || localizedUiText("Sandık") });
     try {
       const payload = await metaProgressionMutation(
         `/profile/${encodeURIComponent(participantPlayerId)}/meta-progression/chests/${encodeURIComponent(chestId)}/open`
@@ -2417,7 +2428,7 @@
     );
     showChestOpening({
       tier: chestTier(definition || { id: definitionId }),
-      title: definition?.name_tr || "Hediye Sandık",
+      title: localizedRecordText(definition, "name") || localizedUiText("Hediye Sandık"),
     });
     try {
       const payload = await metaProgressionMutation(
@@ -3112,7 +3123,11 @@
         row.textContent = localizedMessage("social.message_line", {direction:sent ? localizedMessage("social.sent_arrow") : "←", peer, message:message.text});
         host.appendChild(row);
       }
-      if (!host.children.length) host.innerHTML = "<p>Henüz doğrudan mesaj yok.</p>";
+      if (!host.children.length) {
+        const empty = document.createElement("p");
+        empty.textContent = localizedUiText("Henüz doğrudan mesaj yok.");
+        host.replaceChildren(empty);
+      }
     } catch (error) {
       host.textContent = error instanceof Error ? error.message : String(error);
     }
@@ -3981,7 +3996,7 @@
       moduleSelect.appendChild(placeholder);
       const modules = (metaProgressionState?.module_collection || [])
         .filter((module) => module.unlocked !== false)
-        .sort((left, right) => String(left.name_tr).localeCompare(String(right.name_tr), "tr"));
+        .sort((left, right) => localizedRecordText(left, "name").localeCompare(localizedRecordText(right, "name"), document.documentElement.lang === "en" ? "en" : "tr"));
       for (const module of modules) {
         const option = document.createElement("option");
         option.value = module.definition_id;
@@ -4391,37 +4406,35 @@
       if (status) status.textContent = error instanceof Error ? error.message : String(error);
     }
   });
-  document.getElementById("account-push-enable")?.addEventListener("click", async () => {
+  function setNativePushStatus(message) {
     const status = document.getElementById("account-platform-status");
-    const push = globalThis.Capacitor?.Plugins?.PushNotifications;
-    if (!push) {
-      if (status) status.textContent = "Mobil push eklentisi bu yapıda etkin değil.";
-      return;
-    }
-    try {
-      const permission = await push.requestPermissions();
-      if (permission?.receive !== "granted") throw new Error("Bildirim izni verilmedi.");
-      await push.addListener("registration", async ({ value }) => {
-        await requestJsonWithDeadline(
-          `/notifications/${encodeURIComponent(participantPlayerId)}/push-subscriptions`,
-          {
-            method:"POST",
-            body:JSON.stringify({
-              player_id:participantPlayerId,
-              device_id:globalThis.GridshardAuth?.session?.deviceId?.() || "mobile",
-              platform:globalThis.Capacitor?.getPlatform?.() || "mobile",
-              token:value,
-            }),
-          },
-          12000
-        );
-        if (status) status.textContent = "Mobil bildirim cihazı kaydedildi.";
-      });
-      await push.register();
-    } catch (error) {
-      if (status) status.textContent = error instanceof Error ? error.message : String(error);
-    }
+    if (status) status.textContent = message;
+  }
+  const nativePush = new globalThis.GridshardNativePush.NativePushController({
+    request: (path, options) => requestJsonWithDeadline(path, options, 12000),
+    identity: () => ({ playerId: participantPlayerId, deviceId: globalThis.GridshardAuth?.session?.deviceId?.() }),
+    onStatus: setNativePushStatus,
+    onOpen: (url) => consumePendingDeepLink(url),
   });
+  // Install action listeners before authentication finishes (cold-start taps).
+  void nativePush.listen().catch(() => {});
+  for (const [id, action] of [["account-push-enable", "enable"], ["account-push-disable", "disable"]]) {
+    const button = document.getElementById(id);
+    if (button) button.hidden = !nativePush.plugin;
+    button?.addEventListener("click", async () => {
+      button.disabled = true;
+      try { await nativePush[action](); }
+      catch (_) { setNativePushStatus("Bildirim işlemi tamamlanamadı. Bağlantınızı kontrol edip yeniden deneyin."); }
+      finally { button.disabled = false; }
+    });
+  }
+  const resumeNativePush = () => {
+    if (accountPlatformState && document.visibilityState !== "hidden") {
+      void nativePush.start().catch(() => {});
+    }
+  };
+  globalThis.addEventListener?.("online", resumeNativePush);
+  document.addEventListener("visibilitychange", resumeNativePush);
   document.getElementById("account-data-export")?.addEventListener("click", async () => {
     const status = document.getElementById("account-platform-status");
     try {
@@ -4997,7 +5010,7 @@
       coreGlyph.textContent = coreVisual.glyph;
       const coreCopy = document.createElement("div");
       const coreName = document.createElement("strong");
-      coreName.textContent = coreVisual.nameTr || "Çekirdek";
+      coreName.textContent = localizedUiText(coreVisual.nameTr || "Çekirdek");
       const coreLevel = document.createElement("small");
       coreLevel.textContent = localizedMessage("core.level", {level:localizedNumber(Math.max(1, Number(summary.core_level || player.core_level || 1)))});
       const trophy = document.createElement("b");
@@ -5058,7 +5071,7 @@
         icon.textContent = moduleIconFor({ nameTr: item.name_tr });
         const copy = document.createElement("div");
         const rowName = document.createElement("strong");
-        rowName.textContent = item.name_tr || item.definition_id;
+        rowName.textContent = localizedRecordText(item, "name") || item.definition_id;
         const levelCopy = document.createElement("small");
         levelCopy.textContent = localizedMessage("module.level_short", {level:localizedNumber(item.level || 1)});
         const track = document.createElement("i");
@@ -6213,7 +6226,7 @@
       battleEmojiButtonEl.hidden = !selectedEmoji || selectedEmoji.id === "none";
       battleEmojiButtonEl.disabled = localBattleFinished;
       battleEmojiButtonEl.dataset.emojiId = selectedEmoji?.id || "none";
-      battleEmojiButtonEl.title = selectedEmoji ? selectedEmoji.nameTr : "Savaş emojisi";
+      battleEmojiButtonEl.title = localizedUiText(selectedEmoji ? selectedEmoji.nameTr : "Savaş emojisi");
     }
     if (battleEmojiButtonGlyphEl) {
       renderBattleEmojiVisual(
@@ -10415,7 +10428,7 @@ function saveHumanReviewLocalNote() {
     bubble.className = "battle-emoji-bubble";
     bubble.appendChild(createBattleEmojiVisual(emoji));
     bubble.setAttribute("role", "status");
-    bubble.setAttribute("aria-label", emoji.nameTr);
+    bubble.setAttribute("aria-label", localizedUiText(emoji.nameTr));
     targetBoard.appendChild(bubble);
     window.setTimeout(() => bubble.remove(), 1900);
   }
@@ -12893,10 +12906,11 @@ function saveHumanReviewLocalNote() {
     if (!activeBattlePoolPresetName) {
       quickLoadoutActiveSummaryEl
         .dataset.state="none";
-      quickLoadoutActiveSummaryEl
-        .innerHTML=
-          "<strong>Aktif loadout yok</strong>"
-          + "<span>Hazır havuz seçtiğinde savaş öncesi özet burada görünecek.</span>";
+      const title = document.createElement("strong");
+      title.textContent = localizedUiText("Aktif loadout yok");
+      const hint = document.createElement("span");
+      hint.textContent = localizedUiText("Hazır havuz seçtiğinde savaş öncesi özet burada görünecek.");
+      quickLoadoutActiveSummaryEl.replaceChildren(title, hint);
       return;
     }
 
@@ -13587,8 +13601,10 @@ function saveHumanReviewLocalNote() {
 
     const current=
       presetSelectEl.value;
-    presetSelectEl.innerHTML=
-      '<option value="">Hazır havuz seç...</option>';
+    const emptyOption = document.createElement("option");
+    emptyOption.value = "";
+    emptyOption.textContent = localizedUiText("Hazır havuz seç...");
+    presetSelectEl.replaceChildren(emptyOption);
 
     for (
       const preset
@@ -14315,12 +14331,35 @@ function saveHumanReviewLocalNote() {
     })[String(rarity || "").toLowerCase()] || "Yaygın";
   }
 
-  function localizedRewardDescription(value) {
-    return String(value || "")
-      .replace(/\blegendary\b/gi, "Efsanevi")
-      .replace(/\bcommon\b/gi, "Yaygın")
-      .replace(/\brare\b/gi, "Nadir")
-      .replace(/\bepic\b/gi, "Epik");
+  function localizedArenaRewardDescription(node) {
+    if (!node) return "";
+    if (document.documentElement.lang !== "en" || node.description_en) {
+      return localizedRecordText(node, "description");
+    }
+    // Older arena reward nodes only contain Turkish copy. Compose the English
+    // label from their reward payload so amounts and targeted cards stay exact.
+    const rewards = node.rewards || {};
+    const parts = [];
+    if (Number(rewards.circuit_credits) > 0) {
+      parts.push(localizedMessage("arena.reward_credits", {amount:localizedNumber(rewards.circuit_credits)}));
+    }
+    if (Number(rewards.flux_shards) > 0) {
+      parts.push(localizedMessage("arena.reward_flux", {amount:localizedNumber(rewards.flux_shards)}));
+    }
+    if (Number(rewards.module_shards) > 0) {
+      const target = rewards.module_shard_target;
+      const name = target && moduleDefinitions.find((item) => item.definitionId === target)?.nameTr;
+      parts.push(localizedMessage(name ? "arena.reward_targeted_shards" : "arena.reward_module_shards", {
+        amount:localizedNumber(rewards.module_shards),
+        name:localizedUiText(name || ""),
+      }));
+    }
+    if (rewards.chest_id) {
+      const chestName = metaProgressionState?.chests?.definitions?.find((item) => item.id === rewards.chest_id);
+      const fallback = ({field_3h:"Bronz Sandık", circuit_8h:"Gümüş Sandık", core_24h:"Altın Sandık", diamond_24h:"Elmas Sandık"})[rewards.chest_id];
+      parts.push(localizedRecordText(chestName, "name") || localizedUiText(fallback || "Sandık"));
+    }
+    return parts.length ? parts.join(" + ") : localizedRecordText(node, "description");
   }
 
   function normalizeInitialBattleModuleIds() {
@@ -14368,9 +14407,9 @@ function saveHumanReviewLocalNote() {
           )
           .sort(
             (a,b) =>
-              a.nameTr.localeCompare(
-                b.nameTr,
-                "tr"
+              localizedUiText(a.nameTr).localeCompare(
+                localizedUiText(b.nameTr),
+                document.documentElement.lang === "en" ? "en" : "tr"
               )
           );
 
@@ -14627,9 +14666,9 @@ function saveHumanReviewLocalNote() {
           )
           .sort(
             (a,b) =>
-              a.nameTr.localeCompare(
-                b.nameTr,
-                "tr"
+              localizedUiText(a.nameTr).localeCompare(
+                localizedUiText(b.nameTr),
+                document.documentElement.lang === "en" ? "en" : "tr"
               )
           );
 
@@ -15751,6 +15790,9 @@ function saveHumanReviewLocalNote() {
 
     // Dynamic server-backed panels must be rebuilt so they can select the
     // language-specific catalog payload instead of keeping stale text nodes.
+    renderHomeHub();
+    renderModuleCollection();
+    renderCoreCollection();
     renderBattlePoolSelection();
     renderBattlePoolDetail();
     renderBoosterOptions();
@@ -15760,6 +15802,7 @@ function saveHumanReviewLocalNote() {
     renderFriendsScreen();
     renderTeamHub();
     renderEventsHub();
+    if (document.getElementById("daily-meta-dialog")?.open) renderDailyMetaDialog();
     renderProfileSummary();
     renderEngagementSummary(profileState.viewModel()?.engagement);
     renderLaboratory();
@@ -18199,7 +18242,7 @@ function saveHumanReviewLocalNote() {
     }
     if (module.nameTr === "Çekirdek" && corePowerTargeting) {
       card.classList.add("core-power-target");
-      card.title="Çekirdek Rezonansını kullan";
+      card.title=localizedUiText("Çekirdek Rezonansını kullan");
     }
 
     const icon=
@@ -18212,12 +18255,12 @@ function saveHumanReviewLocalNote() {
       moduleIconFor(module);
     icon.setAttribute(
       "aria-label",
-      module.nameTr
+      localizedUiText(module.nameTr)
     );
 
     const name = document.createElement("span");
     name.className = "name";
-    name.textContent = module.nameTr;
+    name.textContent = localizedUiText(module.nameTr);
 
     const stats =
       document.createElement("span");
@@ -20005,7 +20048,7 @@ function saveHumanReviewLocalNote() {
       return;
     }
     homeMatchmakingCancelPending = true;
-    if (button) { button.disabled = true; button.textContent = "İPTAL EDİLİYOR…"; }
+    if (button) { button.disabled = true; button.textContent = localizedMessage("matchmaking.cancelling"); }
     await onlinePlay.cancel();
     // İptal yerelde anlıktır. Önceki /join isteği ağda sürse bile yeni
     // SAVAŞ dokunuşunu kilitlememeli; koordinatör yeni başlangıcı sunucu

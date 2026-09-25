@@ -115,6 +115,7 @@ sandbox.globalThis = sandbox;
 vm.createContext(sandbox);
 
 for (const relativePath of [
+  ["src", "native-push.js"],
   ["src", "screens", "screen-controller.js"],
   ["src", "tutorial", "tutorial-controller.js"],
   ["src", "battle", "board-view.js"],

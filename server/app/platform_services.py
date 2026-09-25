@@ -16,7 +16,7 @@ import os
 import secrets
 import smtplib
 import ssl
-import threading
+import re
 import time
 from email.message import EmailMessage
 from pathlib import Path
@@ -26,6 +26,9 @@ from urllib.error import HTTPError, URLError
 from urllib.request import Request as UrlRequest, urlopen
 
 from .json_schema_migrations import assert_supported_schema
+from .platform_storage_lock import PlatformStorageLock
+from .push_delivery import PushSender
+from .push_outbox import PushOutbox
 
 
 class PlatformServiceError(ValueError):
@@ -46,7 +49,7 @@ def _masked_contact(value: str) -> str:
     return f"***{value[-4:]}" if len(value) > 4 else "***"
 
 
-class PlatformService:
+class PlatformService(PushOutbox):
     VERIFICATION_TTL_SECONDS = 10 * 60
     RECOVERY_TTL_SECONDS = 15 * 60
     INVITE_TTL_SECONDS = 7 * 24 * 60 * 60
@@ -67,13 +70,15 @@ class PlatformService:
         expose_codes: bool = False,
         web_base_url: str = "https://gridshard.game",
         http_open=urlopen,
+        push_sender=None,
     ):
         self.path = Path(path)
         self.now_func = now_func
         self.expose_codes = bool(expose_codes)
         self.web_base_url = web_base_url.rstrip("/")
         self.http_open = http_open
-        self._lock = threading.RLock()
+        self._lock = PlatformStorageLock(self.path)
+        self.push_sender = push_sender if push_sender is not None else PushSender()
 
     def _empty(self) -> dict:
         return {
@@ -679,7 +684,7 @@ class PlatformService:
             revoked = set(account.get("revoked_token_ids", []))
             revoked.update(item["token_id"] for item in device.get("token_ids", []))
             account["revoked_token_ids"] = sorted(revoked)[-200:]
-            account["push_subscriptions"].pop(device_id, None)
+            self._cancel_device_push(account, device_id)
             self._write(data)
         return self.account_view(player_id)
 
@@ -727,22 +732,61 @@ class PlatformService:
             self._write(data)
         return True
 
-    def subscribe_push(self, player_id: str, device_id: str, platform: str, token: str) -> dict:
-        token = _clean_text(token, maximum=512, label="Push belirteci")
+    def subscribe_push(self, player_id: str, device_id: str, platform: str, token: str, *, token_id=None) -> dict:
+        if platform not in {"android", "ios"}:
+            raise PlatformServiceError("Bildirimler yalnız Android ve iOS uygulamasında kullanılabilir.")
+        token = str(token or "").strip()
+        pattern = r"[A-Za-z0-9_:\-]{16,4096}" if platform == "android" else r"(?:[a-fA-F0-9]{2}){16,128}"
+        if not re.fullmatch(pattern, token):
+            raise PlatformServiceError("Bildirim cihaz belirteci geçersiz.")
+        if platform == "ios":
+            token = token.lower()
         with self._lock:
             data = self._read()
             account = self._account(data, player_id)
-            if device_id not in account["devices"]:
-                raise PlatformServiceError("Önce cihaz oturumu açılmalıdır.")
-            account["push_subscriptions"][device_id] = {
+            self._require_push_device(account, device_id, token_id)
+            self._prune_push(account, int(self.now_func()))
+            subscriptions = account["push_subscriptions"]
+            if device_id not in subscriptions and len(subscriptions) >= 10:
+                raise PlatformServiceError("En fazla 10 cihazda bildirim açılabilir.")
+            # A native installation token belongs to one account/device. On an
+            # account switch, don't send the former account's notifications.
+            for other_account in data["accounts"].values():
+                for other_id, other_sub in list(other_account.get("push_subscriptions", {}).items()):
+                    if (other_account is not account or other_id != device_id) and other_sub.get("token") == token:
+                        self._cancel_device_push(other_account, other_id)
+            previous = subscriptions.get(device_id, {})
+            same_token = previous.get("token") == token and previous.get("platform") == platform
+            subscriptions[device_id] = {
                 "platform": platform,
                 "token": token,
                 "updated_at": int(self.now_func()),
+                "registered_at_ms": int(self.now_func() * 1000),
+                "revision": previous.get("revision") if same_token and previous.get("revision") else secrets.token_urlsafe(16),
             }
             self._write(data)
         return self.notification_view(player_id)
 
-    def queue_notification(self, player_id: str, title: str, body: str, deep_link: str = "") -> dict:
+    def _require_push_device(self, account, device_id, token_id):
+        device = account.get("devices", {}).get(device_id)
+        if not device:
+            raise PlatformServiceError("Önce cihaz oturumu açılmalıdır.")
+        if token_id is not None and not any(
+            item.get("token_id") == token_id and item.get("expires_at", 0) > self.now_func()
+            for item in device.get("token_ids", [])
+        ):
+            raise PlatformServiceError("Bildirim işlemi yalnız bu cihazın oturumundan yapılabilir.")
+
+    def unsubscribe_push(self, player_id, device_id, *, token_id=None):
+        with self._lock:
+            data = self._read()
+            account = self._account(data, player_id)
+            self._require_push_device(account, device_id, token_id)
+            self._cancel_device_push(account, device_id)
+            self._write(data)
+        return self.notification_view(player_id)
+
+    def queue_notification(self, player_id: str, title: str, body: str, deep_link: str = "", *, source_player_id=None) -> dict:
         item = {
             "notification_id": secrets.token_urlsafe(10),
             "title": _clean_text(title, maximum=80, label="Bildirim başlığı"),
@@ -754,6 +798,7 @@ class PlatformService:
             data = self._read()
             account = self._account(data, player_id)
             account["notifications"] = (account.get("notifications", []) + [item])[-100:]
+            self._enqueue_push(account, item, source_player_id)
             self._write(data)
         return dict(item)
 
@@ -762,10 +807,7 @@ class PlatformService:
             account = self._account(self._read(), player_id)
             return {
                 "notifications": [dict(item) for item in account.get("notifications", [])],
-                "push": {
-                    "subscribed_devices": len(account.get("push_subscriptions", {})),
-                    "adapter_configured": bool(os.environ.get("GRIDSHARD_PUSH_PROVIDER", "").strip()),
-                },
+                "push": self._push_view(account),
             }
 
     def create_invite(self, player_id: str) -> dict:
@@ -874,10 +916,7 @@ class PlatformService:
                     {key: value for key, value in device.items() if key != "token_ids"}
                     for device in account.get("devices", {}).values()
                 ],
-                "push": {
-                    "subscribed_devices": len(account.get("push_subscriptions", {})),
-                    "adapter_configured": bool(os.environ.get("GRIDSHARD_PUSH_PROVIDER", "").strip()),
-                },
+                "push": self._push_view(account),
             }
 
     def export_data(self, player_id: str) -> dict:

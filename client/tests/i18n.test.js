@@ -60,5 +60,14 @@ assert.strictEqual(i18n.formatDate("2026-09-23T12:00:00Z", {timeZone:"UTC", date
 assert.strictEqual(i18n.translateText("7 ödül alınmaya hazır", "en"), "7 rewards ready to claim");
 assert.strictEqual(i18n.translateText("7 rewards ready to claim", "tr"), "7 ödül alınmaya hazır");
 assert.strictEqual(i18n.translateText("15 Akım", "en"), "15 Current");
+assert.strictEqual(
+  i18n.t("arena.reward_targeted_shards", {name:"Pulse Cannon", amount:"12"}, "en"),
+  "Pulse Cannon · 12 Module Shards"
+);
+assert.strictEqual(
+  i18n.t("arena.reward_credits", {amount:"180"}, "en"),
+  "180 Circuit Credits"
+);
+assert.strictEqual(i18n.t("matchmaking.cancelling", {}, "en"), "CANCELLING…");
 
 console.log("gridshard i18n test passed");

@@ -30,6 +30,7 @@ from .auth import (
     load_or_create_signing_key,
 )
 from .platform_services import PlatformService, PlatformServiceError
+from .push_delivery import PushSender
 from .display_names import DisplayNameError
 from .account_export import build_personal_export
 from .postgres_repository import (
@@ -282,15 +283,38 @@ async def _runtime_maintenance_loop() -> None:
         await runtime_coordinator.local_limiter.cleanup()
 
 
+async def _push_delivery_loop(stop: asyncio.Event):
+    while not stop.is_set():
+        try:
+            processed = await asyncio.to_thread(platform_service.process_push_once)
+        except Exception:
+            # Do not log request URLs/exceptions: APNs URLs contain device tokens.
+            logging.getLogger(__name__).warning("Push outbox unavailable; retrying without exposing payloads")
+            processed = False
+        try:
+            await asyncio.wait_for(stop.wait(), timeout=.25 if processed else 5)
+        except asyncio.TimeoutError:
+            pass
+
+
 @asynccontextmanager
 async def application_lifespan(_app: FastAPI):
     if postgres_pool is not None:
         await asyncio.to_thread(postgres_pool.open)
     await runtime_coordinator.open()
     maintenance_task = asyncio.create_task(_runtime_maintenance_loop())
+    push_stop = asyncio.Event()
+    push_task = None
     try:
+        platform_service.push_sender = PushSender.from_environment()
+        push_task = asyncio.create_task(_push_delivery_loop(push_stop))
         yield
     finally:
+        push_stop.set()
+        if push_task is not None:
+            # Wait for the bounded in-flight HTTP call before closing its client.
+            await push_task
+        platform_service.push_sender.close()
         maintenance_task.cancel()
         try:
             await maintenance_task
@@ -1146,6 +1170,7 @@ class RecoveryConfirmRequest(BaseModel):
 
 
 class PushSubscriptionRequest(BaseModel):
+    model_config = {"extra": "forbid"}
     player_id: str
     device_id: str
     platform: str
@@ -1455,12 +1480,24 @@ def get_platform_notifications(player_id: str) -> dict:
 def subscribe_platform_push(
     player_id: str,
     request: PushSubscriptionRequest,
+    http_request: Request,
 ) -> dict:
     if request.player_id != player_id:
         raise HTTPException(status_code=403, detail="Başka bir oyuncu adına işlem yapılamaz.")
     try:
         return platform_service.subscribe_push(
-            player_id, request.device_id, request.platform, request.token
+            player_id, request.device_id, request.platform, request.token,
+            token_id=getattr(http_request.state, "authenticated_token_id", None),
+        )
+    except PlatformServiceError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+
+
+@app.delete("/notifications/{player_id}/push-subscriptions/{device_id}")
+def unsubscribe_platform_push(player_id: str, device_id: str, request: Request) -> dict:
+    try:
+        return platform_service.unsubscribe_push(
+            player_id, device_id, token_id=getattr(request.state, "authenticated_token_id", None),
         )
     except PlatformServiceError as exc:
         raise HTTPException(status_code=422, detail=str(exc)) from exc
@@ -1498,6 +1535,7 @@ def accept_social_invite_code(player_id: str, request: InviteCodeRequest) -> dic
             "Davet kabul edildi",
             f"{profile.display_name} artık arkadaşın.",
             f"gridshard://profile/{player_id}",
+            source_player_id=player_id,
         )
         return {**result, "social": _social_view(player_id)}
     except PlatformServiceError as exc:
@@ -1532,6 +1570,7 @@ def send_direct_message(player_id: str, request: DirectMessageRequest) -> dict:
             "Yeni mesaj",
             f"{sender.display_name} sana mesaj gönderdi.",
             f"gridshard://friends/messages/{player_id}",
+            source_player_id=player_id,
         )
         return {"message": message}
     except PlatformServiceError as exc:

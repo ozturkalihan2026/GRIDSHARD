@@ -1,10 +1,42 @@
 # GRIDSHARD geliştirme kontrol noktası
 
-Güncelleme tarihi: 23 Eylül 2026
+Güncelleme tarihi: 25 Eylül 2026
 
 Bu dosya güncel çalışma paketini ve korunması gereken önceki kararları içerir. Kullanıcı `checkpoint'ten devam et` dediğinde önce bu dosya, ardından `git status --short` okunmalıdır.
 
-## Aktif paket — Beta.74 JSON dosya şema geçişleri
+## Aktif paket — Beta.77 Türkçe/İngilizce yerelleştirme denetimi
+
+Kullanıcı yerelleştirme çalışmalarının yarım kaldığını belirtti; Beta.75'in tamamlandı işareti gerçek ekran doğrulaması olmadan kesin kabul edilmiyor.
+
+1. `[x]` Kaynak ve sözlük taramasında bulunan dinamik açıkları gider
+   - `client/index.html` görünen metinleri ile `aria-label`/`title`/`placeholder` değerleri ve istemcideki sabit Türkçe dizgeler sözlükle statik karşılaştırıldı. Sabit HTML'de yeni sözlük açığı bulunmadı; sabit anahtar kullanımlarında eksik mesaj anahtarı bulunmadı.
+   - Devre Yolu arena/lig ödül düğümleri sunucudan çoğunlukla yalnız `description_tr` aldığından, İngilizce görünümde ödül yükünden miktarları, hedef modül parçalarını, sandıkları ve çoklu ödülleri üreten yerel açıklama eklendi. Lig adında sunucunun `name_en` alanı kullanılıyor.
+   - Sandık açılış/ödül başlıkları, alınan sandığın hazır açıklaması, maç sonu modül/Çekirdek adları, savaş kartı/emoji erişilebilirlik etiketleri, arkadaş mesajı boş durumu, hazır havuz boş özeti/seçeneği ve eşleştirme iptali seçili dile bağlandı. Modül/havuz listeleri seçili dildeki adla sıralanıyor.
+   - Dil değişiminde ana ekran, modül ve Çekirdek koleksiyonu ile açık günlük meta penceresi yeniden çiziliyor. Yeni çeviri anahtarları için regresyon beklentileri eklendi.
+2. `[~]` Tamamlanma kapısı
+   - Kullanıcının önceki doğrulama sınırı nedeniyle test, derleme, sunucu, tarayıcı veya cihaz çalıştırılmadı; yalnız statik kaynak/diff denetimi yapıldı. TR→EN→TR gerçek ekran geçişi, Devre Yolu ödülleri, savaş/sandık durumları, dar mobil görünüm ve sunucu kaynaklı nadir açıklamalar kullanıcı onaylı uçtan uca doğrulama bekliyor. Bu yapılmadan yerelleştirme işi tamamlandı olarak işaretlenmemeli.
+
+## Aktif paket — Beta.76 FCM/APNs mobil bildirim teslimi
+
+İş bilgisayarından devam: kayıtlı son yönlendirme olan gerçek push gönderim paketi ele alındı. Beta.75 yerelleştirme notları ve önceki mobil/otomatik yerleştirme kararları korundu.
+
+1. `[x]` Gerçek gönderici ve kalıcı kuyruk kodu
+   - Android FCM HTTP v1 / hizmet hesabı OAuth ve iOS APNs HTTP/2 / ES256 adaptörleri ayrı `push_delivery.py` dosyasında. Varsayılan kapalı; yalnız `GRIDSHARD_PUSH_ENABLED=1` ve doğrulanan sağlayıcı ayarıyla etkinleşir. Sahte başarı veya eski `GRIDSHARD_PUSH_PROVIDER` bayrağıyla hazır görünümü yok.
+   - `push_outbox.py`, platform hesabında bildirimle aynı atomik yazıda iş kaydeder; yeniden başlatma, süreli claim/lease, en çok 6 deneme, Retry-After/üstel gecikme/jitter, sağlayıcı beklemesi ve 24 saatlik süre sınırı uygular. Gönderim savaş tick'inden ve veri kilidinden ayrı thread'de yapılır.
+   - Tüm platform JSON işlemleri thread + OS dosya kilidi altında korunur. Yerel ortak dosyayı paylaşan worker'lar aynı işi birlikte claim etmez; bağımsız makinelerde farklı JSON kopyalarıyla dağıtık outbox garantisi verilmez. Kabul sonrası bağlantı/süreç kaybında tekrar teslim mümkün; `accepted` cihazda görüldü anlamına gelmez.
+2. `[x]` Mobil kayıt, token yenileme ve iptal bağlantısı
+   - Capacitor push plugin 8.1.2 bağımlılığı ve kilit dosyası eklendi. `native-push.js`: açık kullanıcı izni, tek dinleyici kurulumu, başlangıç/öne dönüşte token yenileme, kayıt hatası, çevrimdışı iptali yeniden iletme ve bildirimden doğru hesaptaki güvenli profil/mesaj ekranını açma.
+   - Ayarlarda bu cihaz için kapatma düğmesi; izin/token yanıtı geç gelince iptal geri alınmaz. POST/DELETE, Bearer sahipliği yanında mevcut cihaz oturumunu denetler. Aynı tokenın hesap değişimi, cihaz iptali, hesap silme, engellenen oyuncu ve 30 günlük eski abonelikler kuyrukta gözetilir. Geçersiz eski token yanıtı yenilenmiş tokenı silemez.
+   - Türkçe/İngilizce arayüz metinleri, üretim HTTP/2 bağımlılığı, ortam örneği/Compose aktarımı ve sır dosyası ignore kuralları güncellendi. Oyun savaş/ödül/kupa hesabına dokunulmadı.
+3. `[~]` Canlı mobil teslimi etkinleştir ve cihazda doğrula
+   - **Hâlâ bekliyor:** gerçek Firebase hizmet hesabı, APNs key/team/topic/ortam değerleri, kalıcı native paket kimliği, Android Firebase dosyası ve iOS capability/provisioning/registration callback'leri. Depoda Android/iOS projeleri henüz yok; bu adımlar uygulanmış sayılmadı. Anahtarları sohbete veya repoya koyma; sunucuya secret olarak bağla.
+   - Ayar, native kurulum, veri/teslim sınırları ve yayın kontrol listesi `docs/PUSH_NOTIFICATIONS.md` içinde. Mevcut olaylar DM ve davet kabulü; yeni maç/etkinlik hatırlatma zamanlayıcısı bu pakette yok. LAN tarayıcısı Web Push kapsamına alınmadı.
+
+Doğrulama sınırı: Kullanıcının önceki tercihi korundu; test, derleme, sunucu, tarayıcı, oyun, migration ve gerçek bildirim gönderimi çalıştırılmadı. İzole gönderici/kuyruk/mobil yaşam döngüsü testleri yazıldı; çalıştırılmadı. Yalnız bağımlılık kilidi `--lockfile-only --ignore-scripts` ile güncellendi ve kod/diff statik incelendi. Gerçek `server/data` kayıtlarına dokunulmadı. Canlı teslim tamamlandı diye işaretlenmedi.
+
+Sonraki adım: Sağlayıcı/native bilgiler hazırsa yukarıdaki kurulum ve izinli gerçek cihaz doğrulaması; bunlar hazır değilse Son Öneriler bakım kuyruğu 13'te kalan ekran/rota modülerleştirmesi, ardından 15'te CSS sahipliği. Gerçek cihaz FPS/portre doğrulaması kullanıcıda bekler. Tek dokunuşta sunucunun otomatik modül yerleştirmesi değişmez.
+
+## Önceki paket — Beta.74 JSON dosya şema geçişleri
 
 1. `[x]` Yedi JSON deposunu ortak sürüm sözleşmesine bağla
    - Kimlik, platform, oyuncu, telemetri, hazır deste, denge taslağı ve takım depoları ortak şema kaydını okumadan veri okumaz/yazmaz. Şemasız eski dosya sürüm 0 olarak okunabilir; bilinmeyen/bozuk sürüm ve değiştirilmiş migration günlüğü reddedilir.
@@ -16,7 +48,7 @@ Bu dosya güncel çalışma paketini ve korunması gereken önceki kararları i�
 
 Doğrulama sınırı: Kullanıcının önceki tercihi gereği otomatik test, sunucu veya migration komutu çalıştırılmadı. Gerçek `server/data` dosyaları ve özellikle önceden değişmiş `platform_state.json` korunmuştur; üretimden önce operatörün sunucuyu durdurup `up` ve `check` çalıştırması gerekir. Bu turdaki v1 benimsemesi veri içeriğini değiştirmez.
 
-Sonraki kod paketi: Son Öneriler kuyruğundaki gerçek FCM/APNs gönderim adaptörleri. Gerçek cihaz performans/FPS ve portre doğrulaması kullanıcı tarafında bekliyor; tek dokunuşla sunucunun otomatik modül yerleştirmesi korunur.
+Devam durumu: Son Öneriler kuyruğundaki FCM/APNs gönderim kodu Beta.76'da eklendi; canlı sağlayıcı/native kurulum ve cihaz kanıtı hâlâ bekliyor. Gerçek cihaz performans/FPS ve portre doğrulaması kullanıcı tarafında bekliyor; tek dokunuşla sunucunun otomatik modül yerleştirmesi korunur.
 
 ## Aktif paket — Beta.73 mobil ses ve savaş müziği
 
@@ -244,8 +276,9 @@ Doğrulama: Tam istemci paketi `47/47`, platform servis paketi `7/7` geçti. `pl
    - Üretim veri değişiklikleri için Alembic benzeri ileri/geri migration, şema sürümü ve dağıtım öncesi kontrol eklenmeli.
    - `[x]` PostgreSQL numaralı migration, checksum, advisory lock, status/check/up ve onaylı down akışı tamamlandı.
    - `[x]` Beta.74: JSON depolarında ortak yan dosya sürümü, SHA-256 zincirli ileri/geri günlük, birebir veri yedeği, status/check/up/down ve üretim başlangıç kapısı tamamlandı. Gerçek veride `up` bu turda çalıştırılmadı; bakım penceresinde operatör adımı bekliyor.
-10. `[ ]` Gerçek FCM/APNs gönderim adaptörlerini tamamla
-   - İstemci izin/token kaydı hazır; sunucu teslim sağlayıcısı, kimlik bilgileri, token yenileme/hata temizliği ve imzalı mobil yapılandırma hâlâ gerekli.
+10. `[~]` Gerçek FCM/APNs gönderim adaptörlerini tamamla
+   - `[x]` Beta.76: FCM/APNs gönderici, kalıcı outbox/lease, retry/expiry, token yenileme ve güvenli hata temizliği, cihaz/hesap iptali, mobil plugin/izin/kapatma/deep-link bağlantısı eklendi. Sözleşme testleri yazıldı fakat kullanıcı tercihiyle çalıştırılmadı.
+   - `[ ]` Gerçek sağlayıcı anahtarları, Firebase dosyası, imzalı native yapılandırma ve Android/iPhone teslim kanıtı bekliyor; `docs/PUSH_NOTIFICATIONS.md` izlenmeli. Yalnız kodun bulunması canlı teslimin tamamlandığı anlamına gelmez.
 11. `[x]` CI iş akışlarını sürüm kontrolüne al
    - `.github/` genel ignore kapsamından çıkarılmalı; istemci, sunucu ve paketleme doğrulamaları için gerçek workflow dosyaları eklenmeli.
    - Beta.72: mevcut dosyanın Git tarafından hâlâ yok sayıldığı saptanıp workflow YAML istisnaları düzeltildi; üretim web paketi ve artifact adımları eklendi. Uzak CI çalıştırılmadı.
@@ -257,15 +290,17 @@ Doğrulama: Tam istemci paketi `47/47`, platform servis paketi `7/7` geçti. `pl
 13. `[~]` Büyük istemci ve sunucu dosyalarını alan modüllerine böl
    - `client/src/app.js` ve `server/app/main.py` ekran/rota alanlarına ayrılmalı; davranış önce sözleşme testleriyle sabitlenmeli.
    - Beta.71: kart sürükleme, ad normalleştirme/benzersizlik ve kişisel dışa aktarım ayrı alan modüllerine alındı. Büyük dosyaların kalan ekran/rota ayrıştırması henüz yapılmadı.
+   - Beta.76: native bildirim yaşam döngüsü, sunucu göndericisi, kuyruk ve platform dosya kilidi ayrı modüllere alındı; mevcut sosyal/hesap rotalarının genel ayrıştırması açık.
 14. `[x]` Üretim istemci derleme hattı kur
    - Beta.72: ortak web/mobil JS-CSS paketleme, küçültme, SHA-256 dosya adları, otomatik HTML güncellemesi, üretim önbelleği, Docker derleme katmanı ve CI artifact'i eklendi.
    - Kullanıcının talebiyle derleme/test çalıştırılmadı; kod uygulaması tamamlandı, CI/gerçek cihaz yayın doğrulaması bekliyor. İşletim ayrıntıları `docs/CLIENT_BUILD.md` içinde.
 15. `[ ]` `canon.css` ve `styles.css` sahipliğini uzlaştır
    - Tekrarlanan kurallar ve yüksek sayıdaki `!important` kullanımı ekran bazında azaltılmalı; görsel regresyon testleriyle korunmalı.
-16. `[x]` Türkçe/İngilizce yerelleştirmeyi tamamla
+16. `[~]` Türkçe/İngilizce yerelleştirmeyi tamamla
    - Beta.73: ana HTML ve istemcideki doğrudan Türkçe metinler genişletilmiş İngilizce sözlüğe alındı; çoğul, sayı, tarih ve hata mesajı için anahtarlı API eklendi; dil değişiminde özgün metni koruyan geri dönüş ve önemli ödül/ayar akışlarında anahtarlı kullanım eklendi. `docs/LOCALIZATION_AND_PRODUCT_ANALYTICS.md` sözleşmesi yazıldı.
    - Beta.74: `app.js` içindeki oyuncuya görünen değişkenli metinler, savaş/ödül/profil/havuz özetleri ve yönetici/beta durum metinleri TR/EN sabit anahtarlara taşındı; dil değişiminde ilgili paneller yeniden çiziliyor. HTTP hata yanıtlarına dil bağımsız `code` eklendi, istemci hata metnini `detail` yerine koddan seçiyor; savaş yerleştirme uyarısı da metin aramıyor. Dinamik HTML içine sunucu/oyuncu metni koyan birkaç alan güvenli metin düğümlerine çevrildi. Kullanıcının isteğiyle test/derleme çalıştırılmadı.
    - Beta.75: Profil ve herkese açık profil, kozmetikler, günlük/sezon ödülleri, etkinlikler, takım alt sekmeleri ile modül/çekirdek ve laboratuvar bilgi/önizleme panellerindeki kalan dinamik sabitler TR/EN anahtarlara taşındı. Sezon/görev/modül/yetenek/çekirdek/arena/laboratuvar/turnuva veri yanıtlarına İngilizce alanlar eklendi; açık bilgi pencereleri dil değişiminde yeniden çiziliyor. İlgili HTML bölümündeki çevirisiz sabit etiketler ve erişilebilirlik metinleri de sözlüğe eklendi. Kullanıcının isteğiyle test/derleme ve oyun denemesi çalıştırılmadı.
+   - Beta.77: Kalan dinamik ödül ve savaş/sandık adları, dil değişiminde koleksiyon/meta yenilemesi ve dile göre sıralama ele alındı. Gerçek iki yönlü ekran/cihaz doğrulaması beklediği için bu madde yeniden açık.
 17. `[x]` Ürün analitiğini mahremiyet kontrollü biçimde ekle
    - Beta.73: varsayılan kapalı sunucu onayı, ayarlardan opt-in/opt-out, opt-out ve hesap silmede ham olay temizliği, oyuncuya özel erişim/dışa aktarım, şema kısıtlı huni/savaş/retention/FPS olayları, 30 gün saklama, küçük kohort bastırmalı toplu rapor ve ayrı depo eklendi. Kullanıcı isteğiyle test/derleme çalıştırılmadı; üretim gizlilik bildirimi ürün/hukuk kontrolü bekliyor.
 18. `[x]` Uygulama içi satın alma karar kapısını kapat

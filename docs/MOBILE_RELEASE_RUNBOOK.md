@@ -31,6 +31,8 @@ Ses paketi yalnız manifestte doğrulanan OGG/AAC biçimlerini taşır; büyük 
 
 ## 1 — Android kapalı test
 
+Mobil bildirim gönderimi ve native kurulum için ayrıca [FCM/APNs teslim kılavuzunu](PUSH_NOTIFICATIONS.md) izleyin. Push plugin bağımlılığı tek başına Firebase dosyası, Apple capability/provisioning veya sağlayıcı anahtarlarını sağlamaz; bunlar gerçek cihaz yayın kapısının ayrı adımlarıdır.
+
 ### Yerel portre yönü
 
 `mobile:add:android` / `mobile:add:ios` komutları yerel proje üretildikten sonra `tools/configure-native-orientation.js` aracını uygular. Sonraki `cap sync` işlemlerinde aynı araç `capacitor:sync:after` kancasıyla tekrar çalışır. İşlem tekrar çalıştırılabilir; uygulama kimliği, izinler ve diğer etkinlikler değiştirilmez.

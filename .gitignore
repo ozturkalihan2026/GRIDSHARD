@@ -34,6 +34,12 @@ server/data/*.schema.json
 server/data/*.schema.lock
 server/data/*.schema-v*-*.bak
 server/data/product_analytics.json*
+server/data/*.lock
+secrets/
+**/google-services.json
+**/GoogleService-Info.plist
+*.p8
+*firebase-adminsdk*.json
 !/.github/
 /.github/*
 !/.github/workflows/
