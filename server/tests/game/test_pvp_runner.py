@@ -1,10 +1,16 @@
 import asyncio
 from app.game.battle_pool import default_battle_pool
-from app.game.engine import BATTLE_TIME_LIMIT_MS, TICK_MS
 from app.game.models import BattleStatus,ModuleStatus,Position
 from app.game.pvp_runner import PvPTickRunner
 from app.game.pvp_session import PvPSessionService
 from app.game.pvp_websocket import PvPWebSocketAdapter
+
+def destroy_core(engine, player_id):
+    # Savaş yalnız bir Çekirdek yok olunca biter.
+    for module in engine.state.players[player_id].modules.values():
+        if module.definition.id == "core":
+            module.hp = 0
+
 
 class FakeSocket:
     def __init__(self):
@@ -98,9 +104,7 @@ def test_terminal_result_is_broadcast_even_if_projection_callback_fails():
             adapter,
             match_finished_callback=failing_callback,
         )
-        session.engine.state.tick = BATTLE_TIME_LIMIT_MS // TICK_MS - 1
-        session.engine.state.elapsed_ms = BATTLE_TIME_LIMIT_MS - TICK_MS
-
+        destroy_core(session.engine, "b")
         assert await runner.run_single_tick("match") is True
         assert session.engine.state.status == BattleStatus.FINISHED
         assert any(message["type"] == "match_finished" for message in socket.sent)

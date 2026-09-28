@@ -29,7 +29,6 @@ services:
     ports:
       - "8000:8000"
     environment:
-      RELAY_WEB_TEST_RUN_ID: web-test-beta.6-docker
       RELAY_TELEMETRY_MAX_EVENTS: "50000"
       GRIDSHARD_RUNTIME_MODE: ${GRIDSHARD_RUNTIME_MODE:-development}
       GRIDSHARD_AUTH_SIGNING_KEY: ${GRIDSHARD_AUTH_SIGNING_KEY:-}

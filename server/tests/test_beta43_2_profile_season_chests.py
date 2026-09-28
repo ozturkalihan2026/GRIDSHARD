@@ -44,26 +44,31 @@ def test_season_claim_spends_no_sxp_and_unlocks_major_cosmetic():
     assert "circuit_scout" in claimed.unlocked_avatar_ids
 
 
-def test_monthly_login_reward_resets_by_month_and_persists_real_currency_and_cards():
-    now = datetime(2026, 9, 8, tzinfo=timezone.utc)
+def test_login_reward_follows_four_week_cycle_and_persists_real_currency_and_cards():
+    # 5 Ekim 2026 Pazartesi: 28 Eylül'de başlayan döngünün 8. günü.
+    now = datetime(2026, 10, 5, tzinfo=timezone.utc)
     clock = [now]
     service = PlayerProfileService(now_func=lambda: clock[0])
-    profile = service.get_or_create("monthly-login-player")
+    profile = service.get_or_create("login-period-player")
     credits_before = profile.circuit_credits
 
-    receipt = service.claim_monthly_login(profile.player_id, 8)
+    receipt = service.claim_login_reward(profile.player_id, 8)
 
-    assert receipt["month"] == "2026-09"
+    assert receipt["period"] == "2026-09-28"
     assert receipt["module_shards"] > 0
     assert profile.circuit_credits > credits_before
-    assert profile.claimed_monthly_login_days == (8,)
-    assert len(profile.engagement_view()["daily_login"]["rewards"]) == 30
+    assert profile.claimed_login_period_days == (8,)
+    login = profile.engagement_view()["daily_login"]
+    assert len(login["rewards"]) == 28
+    assert login["ends_at"] == "2026-10-25T23:59:59Z"
+    assert [reward["day"] for reward in login["rewards"] if reward["is_major"]] == [7, 14, 21, 28]
 
-    clock[0] = datetime(2026, 10, 1, tzinfo=timezone.utc)
+    clock[0] = datetime(2026, 10, 26, tzinfo=timezone.utc)
     service.get_or_create(profile.player_id)
-    assert profile.monthly_login_month == "2026-10"
-    assert profile.claimed_monthly_login_days == ()
-    assert len(profile.engagement_view()["daily_login"]["rewards"]) == 31
+    assert profile.login_period_id == "2026-10-26"
+    assert profile.login_period_day == 1
+    assert profile.claimed_login_period_days == ()
+    assert len(profile.engagement_view()["daily_login"]["rewards"]) == 28
 
 
 def test_operator_title_requires_both_trophies_and_wins():
@@ -83,8 +88,8 @@ def test_cosmetic_selection_roundtrips_through_player_store():
     profile = profiles.get_or_create("cosmetic-player")
     profile.unlocked_avatar_ids = ("default", "circuit_scout")
     profile.unlocked_avatar_frame_ids = ("none", "neon_cyan")
-    profile.monthly_login_month = "2026-09"
-    profile.claimed_monthly_login_days = (1, 2, 8)
+    profile.login_period_id = "2026-09-28"
+    profile.claimed_login_period_days = (1, 2, 8)
     profiles.set_cosmetics(
         profile.player_id,
         avatar_id="circuit_scout",
@@ -97,8 +102,8 @@ def test_cosmetic_selection_roundtrips_through_player_store():
     restored = profiles.get(profile.player_id)
     assert restored.selected_avatar_id == "circuit_scout"
     assert restored.selected_avatar_frame_id == "neon_cyan"
-    assert restored.monthly_login_month == "2026-09"
-    assert restored.claimed_monthly_login_days == (1, 2, 8)
+    assert restored.login_period_id == "2026-09-28"
+    assert restored.claimed_login_period_days == (1, 2, 8)
 
 
 def test_every_owned_chest_can_open_immediately_even_if_it_was_saved_with_a_timer():
@@ -140,16 +145,9 @@ def test_daily_gift_endpoint_opens_and_persists_reward_in_one_request(monkeypatc
 
 
 def test_gift_chests_use_the_requested_server_cooldowns_and_reopen_after_expiry():
-    expected_hours = {
-        "field_3h": 3,
-        "circuit_8h": 8,
-        "core_24h": 16,
-        "diamond_24h": 24,
-    }
-    assert {
-        definition_id: definition["claim_cooldown_hours"]
-        for definition_id, definition in CHEST_DEFINITIONS.items()
-    } == expected_hours
+    # Tur 9: hediye olarak yalnız Bronz Sandık kalır, 8 saatte bir.
+    expected_hours = {"field_3h": 8}
+    assert CHEST_DEFINITIONS["field_3h"]["claim_cooldown_hours"] == 8
 
     for definition_id, hours in expected_hours.items():
         clock = [datetime(2026, 9, 8, tzinfo=timezone.utc)]
@@ -217,8 +215,8 @@ def test_instant_shop_gift_does_not_fail_when_battle_chest_slots_are_full():
 
     receipt = service.claim_and_open_gift_chest(
         profile,
-        "diamond_24h",
-        "full-slot-diamond",
+        "field_3h",
+        "full-slot-bronze",
     )
 
     assert receipt["rewards"]["circuit_credits"] > 0

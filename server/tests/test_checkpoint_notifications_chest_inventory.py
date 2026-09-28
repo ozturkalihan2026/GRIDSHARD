@@ -81,7 +81,7 @@ def test_claimed_reward_disappears_without_clearing_other_notification_sections(
     profile.season_xp = SEASON_REWARD_TRACK[0]["required_xp"]
     profile.unlocked_avatar_frame_ids = ("none", "neon_cyan")
 
-    profiles.claim_monthly_login(profile.player_id, 10, "notification-login")
+    profiles.claim_login_reward(profile.player_id, profile.login_period_day, "notification-login")
     notifications = profile.engagement_view()["notifications"]
 
     assert notifications["daily"] is False

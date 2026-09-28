@@ -48,7 +48,7 @@ def test_ux_matrix_uses_verified_windows_browser_evidence():
                                     "average_clock_delta_ms":500,
                                     "max_clock_delta_ms":700,
                                 },
-                                "generator_gate":{
+                                "technical_drawer":{
                                     "count":1,
                                     "average_frame_gap_ms":17,
                                     "max_frame_gap_ms":17,

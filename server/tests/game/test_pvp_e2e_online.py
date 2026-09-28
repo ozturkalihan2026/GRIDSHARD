@@ -1,7 +1,6 @@
 import asyncio
 
 from app.game.battle_pool import default_battle_pool
-from app.game.engine import BATTLE_TIME_LIMIT_MS
 from app.game.pvp_runner import PvPTickRunner
 from app.game.pvp_session import PvPSessionService
 from app.game.pvp_setup import (
@@ -9,6 +8,13 @@ from app.game.pvp_setup import (
     PvPSetupPayload,
 )
 from app.game.pvp_websocket import PvPWebSocketAdapter
+
+
+def destroy_core(engine, player_id):
+    # Savaş yalnız bir Çekirdek yok olunca biter.
+    for module in engine.state.players[player_id].modules.values():
+        if module.definition.id == "core":
+            module.hp = 0
 
 
 class FakeSocket:
@@ -26,7 +32,6 @@ def payload(p):
         battle_pool_ids=default_battle_pool().module_definition_ids,
         initial_modules=(
             InitialModulePlacement(f"{p}-core","core",2,1),
-            InitialModulePlacement(f"{p}-gen","generator",2,0),
         ),
     )
 
@@ -60,8 +65,7 @@ def test_two_player_online_flow_reaches_server_authoritative_result():
         service.set_ready("e2e","b",True)
         assert session.engine.state.status.value=="running"
 
-        session.engine.state.elapsed_ms=BATTLE_TIME_LIMIT_MS-100
-
+        destroy_core(session.engine, "b")
         runner=PvPTickRunner(service,adapter)
         await runner.run_single_tick("e2e")
 

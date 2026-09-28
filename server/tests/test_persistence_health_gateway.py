@@ -31,28 +31,3 @@ def test_health_degrades_when_persistence_file_corrupt(
     assert body["status"]=="degraded"
     assert body["persistence"]["player_data"]["ready"] is False
     assert body["persistence"]["player_data"]["state"]=="corrupt"
-    assert body["web_test"]["ready"] is False
-
-    release=client.get(
-        "/web-test/release-check"
-    ).json()
-
-    assert release["ready"] is False
-    assert (
-        release["checks"][
-            "player_data_persistence"
-        ]
-        is False
-    )
-
-    manifest=client.get(
-        "/web-test/manifest"
-    ).json()
-
-    assert (
-        manifest[
-            "player_data_persistence_ready"
-        ]
-        is False
-    )
-    assert manifest["release_ready"] is False

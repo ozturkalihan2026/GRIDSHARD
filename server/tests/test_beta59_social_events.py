@@ -53,6 +53,15 @@ def test_registered_tournaments_expose_rich_prizes_and_live_player_pairing():
             },
         ],
         moment,
+        team_tournament_state={
+            "registrations": {
+                "human-team": {
+                    "team_name": "İnsan Devresi",
+                    "roster": [{"player_id": "human-owner", "display_name": "İnsan Lider", "rating": 750}],
+                },
+            },
+            "legs": {},
+        },
     )
 
     weekly = view["weekly_tournament"]
@@ -65,12 +74,21 @@ def test_registered_tournaments_expose_rich_prizes_and_live_player_pairing():
 
     team = view["team_tournament"]
     assert team["registration_fee"] == 0
+    # 19 Eylül Cumartesi: 31 Ağustos'ta başlayan döngünün 3. haftası; kayıt
+    # kapalı, Cuma–Pazar rövanşlı maç günleri açık.
+    assert team["phase"] == "matches"
+    assert team["registration_open"] is False
+    assert team["minimum_reward_points"] == 4
     assert team["schedule_status"] == "live"
     fixture = team["fixtures"][0]
     assert fixture["status"] == "live"
-    assert fixture["scheduled_at"] == "2026-09-19T18:00:00Z"
-    assert fixture["member_pairings"][0]["battle_session_id"].startswith("team-event-")
-    assert team["prizes"][0]["team_avatar_id"]
+    assert fixture["matches_open_at"] == "2026-09-18T00:00:00Z"
+    assert {fixture["home_team_id"], fixture["away_team_id"]} == {"human-team", "bot-team"}
+    legs = fixture["member_pairings"][0]["legs"]
+    assert [leg["status"] for leg in legs] == ["open", "locked"]
+    assert legs[0]["battle_session_id"].startswith("team-event-")
+    # Takım turnuvası ödülleri takım profilindeki görünüm seçenekleridir.
+    assert team["prizes"][0]["team_emblem_id"]
     assert team["prizes"][0]["team_frame_id"]
     assert len({prize["chest_visual_id"] for prize in LEADERBOARD_PRIZES}) == 10
 

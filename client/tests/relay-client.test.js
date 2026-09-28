@@ -7,7 +7,7 @@ const {
   RelayBattleClient,
   BattlePoolSelection,
   MODULE_STATUS,
-  maxActiveModulesForElapsedMs,
+  MAX_ACTIVE_MODULES,
 } = require("../src/relay-client.js");
 
 function createClient() {
@@ -33,99 +33,12 @@ function createClient() {
         position: { x: 2, y: 2 },
       },
     ],
-    unlockAtMs: 15000,
     circuitCredits: 200,
     emitCommand(command) {
       emitted.push(command);
     },
   });
   return { client, emitted };
-}
-
-{
-  const { client, emitted } = createClient();
-  client.updateElapsedMs(14999);
-  const start = client.beginDrag("laser-1");
-  assert.strictEqual(start.ok, false);
-  assert.strictEqual(emitted.length, 0);
-}
-
-{
-  const { client, emitted } = createClient();
-  client.updateElapsedMs(15000);
-  assert.strictEqual(client.beginDrag("laser-1").ok, false);
-  const result = client.deployDefinition("laser", 90);
-  assert.strictEqual(result.ok, true);
-  assert.deepStrictEqual(emitted[0], {
-    kind: "deploy_module",
-    payload: { definition_id: "laser" },
-  });
-}
-
-{
-  const { client, emitted } = createClient();
-  client.updateElapsedMs(20000);
-  const result = client.beginDrag("shield-1");
-  assert.strictEqual(result.ok, false);
-  assert.ok(result.reason.includes("taşınamaz"));
-  assert.strictEqual(emitted.length, 0);
-}
-
-{
-  const { client, emitted } = createClient();
-  client.updateElapsedMs(20000);
-  client.applyServerModuleState({
-    instanceId:"laser-1",
-    status:MODULE_STATUS.ACTIVE,
-    position:{x:3,y:2},
-  });
-  const result = client.beginDrag("laser-1");
-  assert.strictEqual(result.ok, false);
-  assert.ok(result.reason.includes("taşınamaz"));
-  assert.strictEqual(emitted.length, 0);
-}
-
-{
-  const { client, emitted } = createClient();
-  client.updateElapsedMs(20000);
-  const result = client.beginDrag("shield-1");
-  assert.strictEqual(result.ok, false);
-  assert.strictEqual(emitted.length, 0);
-}
-
-{
-  const { client, emitted } = createClient();
-  client.updateElapsedMs(20000);
-  assert.strictEqual(client.beginDrag("laser-1").ok, false);
-  const result = client.dropOnCell(2, 2, "shield-1");
-  assert.strictEqual(result.ok, false);
-  assert.ok(result.reason.includes("Hücre seçerek"));
-  assert.strictEqual(emitted.length, 0);
-}
-
-{
-  const { client } = createClient();
-  client.updateElapsedMs(20000);
-  assert.strictEqual(client.beginDrag("shield-1").ok, false);
-
-  // Sürüklemek aktif modülü savaş dışına çıkarmaz.
-  assert.strictEqual(
-    client.requireModule("shield-1").status,
-    MODULE_STATUS.ACTIVE
-  );
-}
-
-
-
-{
-  assert.strictEqual(maxActiveModulesForElapsedMs(0), 15);
-  assert.strictEqual(maxActiveModulesForElapsedMs(14999), 15);
-  assert.strictEqual(maxActiveModulesForElapsedMs(15000), 15);
-  assert.strictEqual(maxActiveModulesForElapsedMs(30000), 15);
-  assert.strictEqual(maxActiveModulesForElapsedMs(45000), 15);
-  assert.strictEqual(maxActiveModulesForElapsedMs(60000), 15);
-  assert.strictEqual(maxActiveModulesForElapsedMs(75000), 15);
-  assert.strictEqual(maxActiveModulesForElapsedMs(90000), 15);
 }
 
 {
@@ -138,7 +51,7 @@ function createClient() {
 {
   const emitted = [];
   const modules = [
-    "core", "generator", "laser", "pulse", "shield", "battery",
+    "core", "armor", "laser", "pulse", "shield", "battery",
   ].map((id, index) => ({
     instanceId: `${id}-1`,
     nameTr: id,
@@ -147,7 +60,6 @@ function createClient() {
   }));
   const battle = new RelayBattleClient({
     modules,
-    unlockAtMs: 15000,
     circuitCredits: 1000,
     emitCommand(command) { emitted.push(command); },
   });
@@ -218,8 +130,8 @@ function createClient() {
 
 {
   const fs=require("fs");
-  const src=fs.readFileSync(path.join(ROOT,"src/app.js"),"utf8");
-  for (const name of ["Füze Fırlatıcı","Dron Üssü","Ark Topu","Aşırı Hızlandırıcı","Virüs","Enerji Sömürücü","Kesici"]) {
+  const src=fs.readFileSync(path.join(ROOT,"src/canon-data.js"),"utf8");
+  for (const name of ["Füze Fırlatıcı","Dron Üssü","Ark Topu","Aşırı Hızlandırıcı","Virüs","Kesici"]) {
     assert.ok(src.includes(`"${name}"`));
   }
 }
@@ -248,8 +160,6 @@ function createClient() {
   const fs = require("fs");
   const src = fs.readFileSync(path.join(ROOT,"src/app.js"),"utf8");
   assert.ok(src.includes("Array.from({length: 15}"));
-  assert.ok(src.includes("const GATE_KEYS = new Set()"));
-  assert.ok(src.includes("const SPECIAL_CELL_INFO = {}"));
   assert.ok(src.includes("core-cell"));
 }
 
@@ -257,7 +167,6 @@ function createClient() {
 {
   const fs = require("fs");
   const src = fs.readFileSync(path.join(ROOT,"src/app.js"),"utf8");
-  assert.ok(src.includes("const SPECIAL_CELL_INFO = {}"));
   assert.ok(!src.includes("cellPlacementRejection"));
   assert.ok(src.includes("playerCellDebris"));
 }
@@ -275,10 +184,6 @@ function createClient() {
 {
   const fs=require("fs");
   const src=fs.readFileSync(path.join(ROOT,"src/app.js"),"utf8");
-  assert.ok(src.includes("BOOSTER_FIRST_OFFER_MS = 30000"));
-  assert.ok(src.includes("BOOSTER_OFFER_INTERVAL_MS = 30000"));
-  assert.ok(src.includes("3 seçenekten 1'ini seç"));
-  assert.ok(src.includes("next_booster_offer_index"));
 }
 
 
@@ -286,9 +191,7 @@ function createClient() {
   const fs = require("fs");
   const src = fs.readFileSync(path.join(ROOT,"src/app.js"),"utf8");
 
-  assert.ok(src.includes("updateMockEnergy"));
   assert.ok(src.includes("ENERJİSİZ"));
-  assert.ok(src.includes("Enerji:"));
 }
 
 
@@ -299,8 +202,6 @@ function createClient() {
   assert.ok(!src.includes("PORT_COUNT_BY_NAME"));
   assert.ok(!src.includes("modulePorts"));
   assert.ok(!src.includes("areConnected"));
-  assert.ok(src.includes("connectedEnergyModuleIds"));
-  assert.ok(src.includes("return new Set(active.map((module) => module.instanceId))"));
   assert.ok(src.includes("energy-disconnected"));
 }
 
@@ -309,9 +210,7 @@ function createClient() {
   const fs = require("fs");
   const src = fs.readFileSync(path.join(ROOT,"src/app.js"),"utf8");
 
-  assert.ok(src.includes("updateMockCombat"));
   assert.ok(src.includes("attack_performed"));
-  assert.ok(src.includes("Rakip Jeneratör"));
   assert.ok(src.includes("Rakip Çekirdek"));
   assert.ok(src.includes("hasar"));
 }
@@ -395,7 +294,6 @@ function createClient() {
 {
   const fs=require("fs");
   const src=fs.readFileSync(path.join(ROOT,"src/app.js"),"utf8");
-  assert.ok(src.includes("updateMockBattleResult"));
   assert.ok(src.includes("KAZANDIN"));
   assert.ok(src.includes("MAÇ BİTTİ"));
 }
@@ -403,108 +301,86 @@ function createClient() {
 {
   const fs=require("fs");
   const src=fs.readFileSync(path.join(ROOT,"src/app.js"),"utf8");
-  assert.ok(src.includes("META_STATUS"));
-  assert.ok(src.includes("M1-M6 çekirdeği uygulandı"));
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync(path.join(ROOT,"src/app.js"),"utf8");
-  assert.ok(src.includes("COMPETITIVE_STATUS"));
-  assert.ok(src.includes("M7 rekabetçi altyapı doğrulanıyor"));
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync(path.join(ROOT,"src/app.js"),"utf8");
-  assert.ok(src.includes("BALANCE_STATUS"));
-  assert.ok(src.includes("Denge simülasyonu mevcut · geniş örnek bekliyor"));
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync(path.join(ROOT,"src/app.js"),"utf8");
-  assert.ok(src.includes("BALANCE_STATUS")); // alpha27 counter validation
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync(path.join(ROOT,"src/app.js"),"utf8");
-  assert.ok(src.includes("AI_STATUS"));
-  assert.ok(src.includes("5 AI arketipi aktif · oyuncu test telemetrisi toplanıyor"));
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync(path.join(ROOT,"src/app.js"),"utf8");
-  assert.ok(src.includes("AI_STATUS")); // alpha29 AI commands
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync(path.join(ROOT,"src/app.js"),"utf8");
-  assert.ok(src.includes("geniş örnek bekliyor")); // alpha30 fairness
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync(path.join(ROOT,"src/app.js"),"utf8");
-  assert.ok(src.includes("PVP_STATUS"));
-  assert.ok(src.includes("GRIDSHARD Beta.39 · 6 Kartlık Deste + Sunucu Yerleşimi"));
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync(path.join(ROOT,"src/app.js"),"utf8");
-  assert.ok(src.includes("GRIDSHARD Beta.39 · 6 Kartlık Deste + Sunucu Yerleşimi")); // alpha32->33 protocol status
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync(path.join(ROOT,"src/app.js"),"utf8");
-  assert.ok(src.includes("GRIDSHARD Beta.39 · 6 Kartlık Deste + Sunucu Yerleşimi")); // alpha33 protocol
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync(path.join(ROOT,"src/app.js"),"utf8");
-  assert.ok(src.includes("GRIDSHARD Beta.39 · 6 Kartlık Deste + Sunucu Yerleşimi")); // alpha34 websocket
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync(path.join(ROOT,"src/app.js"),"utf8");
-  assert.ok(src.includes("GRIDSHARD Beta.39 · 6 Kartlık Deste + Sunucu Yerleşimi")); // alpha35 gateway
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync(path.join(ROOT,"src/app.js"),"utf8");
-  assert.ok(src.includes("GRIDSHARD Beta.39 · 6 Kartlık Deste + Sunucu Yerleşimi")); // alpha36 setup
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync(path.join(ROOT,"src/app.js"),"utf8");
-  assert.ok(src.includes("GRIDSHARD Beta.39 · 6 Kartlık Deste + Sunucu Yerleşimi")); // alpha37 lobby
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync(path.join(ROOT,"src/app.js"),"utf8");
-  assert.ok(src.includes("GRIDSHARD Beta.39 · 6 Kartlık Deste + Sunucu Yerleşimi")); // alpha38 runner
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync(path.join(ROOT,"src/app.js"),"utf8");
-  assert.ok(src.includes("GRIDSHARD Beta.39 · 6 Kartlık Deste + Sunucu Yerleşimi")); // alpha39 heartbeat
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync(path.join(ROOT,"src/app.js"),"utf8");
-  assert.ok(src.includes("GRIDSHARD Beta.39 · 6 Kartlık Deste + Sunucu Yerleşimi")); // alpha40 online pvp
 }
 
 {
@@ -576,12 +452,12 @@ function createClient() {
   });
 
   const first = pvp.buildCommandMessage({
-    kind: "place_module",
-    payload: { module_id: "laser" },
+    kind: "deploy_module",
+    payload: { definition_id: "laser" },
   });
   const second = pvp.buildCommandMessage({
-    kind: "remove_module",
-    payload: { module_id: "laser" },
+    kind: "deploy_module",
+    payload: { definition_id: "shield" },
   });
 
   assert.strictEqual(first.payload.sequence, 1);
@@ -715,7 +591,7 @@ function createClient() {
         winner_player_id: null,
         loser_player_id: null,
         is_draw: true,
-        finish_reason: "time_limit_draw",
+        finish_reason: "simultaneous_core_destroyed",
         finished_at_ms: 180000,
         result_summary: {},
       },
@@ -735,7 +611,6 @@ function createClient() {
 {
   const fs=require("fs");
   const src=fs.readFileSync(path.join(ROOT,"src/app.js"),"utf8");
-  assert.ok(src.includes("GRIDSHARD Beta.39 · 6 Kartlık Deste + Sunucu Yerleşimi"));
   assert.ok(src.includes("buildPvPCommandEnvelope"));
   assert.ok(src.includes("applyPvPServerEnvelope"));
 }
@@ -812,8 +687,7 @@ function createClient() {
   assert.ok(html.includes(">PROFİL<"));
   assert.ok(html.includes(">İstatistikler<"));
   assert.ok(html.includes(">Ayarlar<"));
-  assert.ok(html.includes('data-open-screen="laboratory"'));
-  assert.ok(html.includes('id="laboratory-screen"'));
+  assert.ok(!html.includes('data-screen-panel="laboratory"'));
   assert.ok(!html.includes(">Kozmetik<"));
 }
 
@@ -834,8 +708,6 @@ function createClient() {
     win_rate: 0.6,
     average_match_duration_ms: 125000,
     total_damage_dealt: 8400,
-    module_replacements: 18,
-    boosters_used: 9,
     most_used_modules: [
       {
         definition_id: "laser",
@@ -906,7 +778,7 @@ function createClient() {
   assert.ok(
     html.includes("Ses · Müzik · Titreşim · Grafik · Dil")
   );
-  assert.ok(html.includes('data-open-screen="laboratory"'));
+  assert.ok(!html.includes('data-screen-panel="laboratory"'));
   assert.ok(!html.includes(">Sezon<"));
   assert.ok(!html.includes(">Battle Pass<"));
 }
@@ -1534,199 +1406,11 @@ function createClient() {
   } = require("../src/relay-client.js");
 
   const telemetry=
-    new RelayTelemetryDispatcher({
-      playerId:"a",
-      sessionId:"m",
-      now:() => 100,
-    });
-
-  telemetry.trackModuleShelfUsed({
-    module_id:"laser-1",
-  });
-  telemetry.trackRematchRequested();
-
-  assert.strictEqual(
-    telemetry.buffer.length,
-    2
-  );
-  assert.strictEqual(
-    telemetry.drain().length,
-    2
-  );
-  assert.strictEqual(
-    telemetry.buffer.length,
-    0
-  );
-}
-
-{
-  const {
-    RelayTelemetryDispatcher,
-  } = require("../src/relay-client.js");
-
-  const telemetry=
     new RelayTelemetryDispatcher();
 
   assert.strictEqual(
     telemetry.track(
       "not_supported"
-    ).ok,
-    false
-  );
-}
-
-{
-  const fs=require("fs");
-  const app=fs.readFileSync(path.join(ROOT,"src/app.js"),"utf8");
-  const html=fs.readFileSync(path.join(ROOT,"index.html"),"utf8");
-
-  assert.ok(
-    app.includes(
-      "trackGameOpened"
-    )
-  );
-  assert.ok(
-    app.includes(
-      "trackModuleShelfUsed"
-    )
-  );
-  assert.ok(
-    app.includes(
-      "trackRematchRequest"
-    )
-  );
-  assert.ok(
-    app.includes(
-      "trackMatchmakingStart"
-    )
-  );
-  assert.ok(
-    !html.includes(">Telemetri<")
-  );
-}
-
-{
-  const {
-    RelayWebTestBuildState,
-  } = require("../src/relay-client.js");
-
-  const state =
-    new RelayWebTestBuildState();
-
-  const result=state.applyHealth({
-    status:"ok",
-    version:"2.0.0-beta.23",
-    web_test:{
-      ready:true,
-      build:"web-test-beta.13",
-      release_checks:[
-        "health",
-        "matchmaking",
-        "setup",
-        "ready",
-        "server_tick",
-        "match_result",
-        "telemetry",
-      ],
-      capabilities:{
-        server_authoritative_pvp:true,
-      },
-    },
-  });
-
-  assert.strictEqual(
-    result.ok,
-    true
-  );
-  assert.strictEqual(
-    state.ready,
-    true
-  );
-  assert.strictEqual(
-    state.labelTr(),
-    "Web Test: Hazır"
-  );
-  assert.strictEqual(
-    state.releaseChecks.length,
-    7
-  );
-}
-
-{
-  const {
-    RelayWebTestBuildState,
-  } = require("../src/relay-client.js");
-
-  const state =
-    new RelayWebTestBuildState();
-
-  const result=state.applyHealth({
-    status:"ok",
-    version:"2.0.0-beta.23",
-  });
-
-  assert.strictEqual(
-    result.ok,
-    false
-  );
-  assert.strictEqual(
-    state.labelTr(),
-    "Web Test: Sağlık Hatası"
-  );
-}
-
-{
-  const fs=require("fs");
-  const html=fs.readFileSync(path.join(ROOT,"index.html"),"utf8");
-  const app=fs.readFileSync(path.join(ROOT,"src/app.js"),"utf8");
-
-  assert.ok(
-    html.includes(
-      'id="web-test-status"'
-    )
-  );
-  assert.ok(
-    html.includes(
-      "Web Test: Kontrol Bekliyor"
-    )
-  );
-  assert.ok(
-    app.includes(
-      "RelayWebTestBuildState"
-    )
-  );
-  assert.ok(
-    !html.includes(">Eğitim<")
-  );
-}
-
-{
-  const {
-    BattlePoolSelection,
-  } = require("../src/relay-client.js");
-
-  const pool =
-    new BattlePoolSelection({
-      selectableModuleIds:[
-        "generator-1",
-        "laser-1",
-        "shield-1",
-      ],
-      requiredSize:2,
-      requiredModuleIds:[
-        "generator-1",
-      ],
-    });
-
-  assert.strictEqual(
-    pool.selected.has(
-      "generator-1"
-    ),
-    true
-  );
-  assert.strictEqual(
-    pool.toggle(
-      "generator-1"
     ).ok,
     false
   );
@@ -2180,8 +1864,6 @@ function createClient() {
               win_rate:1,
               average_match_duration_ms:90000,
               total_damage_dealt:500,
-              module_replacements:2,
-              boosters_used:1,
               most_used_modules:[],
             },
           };
@@ -2316,8 +1998,6 @@ function createClient() {
               win_rate:0.5,
               average_match_duration_ms:100000,
               total_damage_dealt:1000,
-              module_replacements:4,
-              boosters_used:2,
               most_used_modules:[],
             };
           }
@@ -2448,90 +2128,11 @@ function createClient() {
 }
 
 {
-  const {
-    RelayWebTestKpiState,
-  } = require("../src/relay-client.js");
-
-  const state=
-    new RelayWebTestKpiState();
-
-  const view=state.applyKpis({
-    completed_matches:10,
-    match_completion_rate:0.8,
-    rematch_requests:4,
-    rematch_request_rate:0.4,
-    second_match_transition_rate:0.6,
-    losing_player_rematch_rate:0.5,
-    module_changes:25,
-    average_module_changes_per_match:2.5,
-    total_circuit_credits_spent:1500,
-    module_shelf_uses:20,
-    boosters_used:8,
-    average_match_duration_ms:110000,
-    launch_attempts:12,
-    launch_ready_attempts:9,
-    launch_ready_rate:0.75,
-    audit_session_starts:10,
-    audit_session_bounds:8,
-    audit_to_session_rate:0.8,
-  });
-
-  assert.strictEqual(
-    view.completedMatches,
-    10
-  );
-  assert.strictEqual(
-    view.completionRatePercent,
-    80
-  );
-  assert.strictEqual(
-    view.rematchRatePercent,
-    40
-  );
-  assert.strictEqual(
-    view.secondMatchTransitionRatePercent,
-    60
-  );
-  assert.strictEqual(
-    view.losingPlayerRematchRatePercent,
-    50
-  );
-  assert.strictEqual(
-    view.averageMatchDurationMs,
-    110000
-  );
-  assert.strictEqual(
-    view.launchAttempts,
-    12
-  );
-  assert.strictEqual(
-    view.launchReadyAttempts,
-    9
-  );
-  assert.strictEqual(
-    view.launchReadyRatePercent,
-    75
-  );
-  assert.strictEqual(
-    view.auditSessionStarts,
-    10
-  );
-  assert.strictEqual(
-    view.auditSessionBounds,
-    8
-  );
-  assert.strictEqual(
-    view.auditToSessionRatePercent,
-    80
-  );
-}
-
-{
   const fs=require("fs");
   const html=fs.readFileSync(path.join(ROOT,"index.html"),"utf8");
   assert.ok(
     html.includes(
-      "2.1.0-beta.43"
+      "2.1.0-beta.72"
     )
   );
   assert.ok(
@@ -2702,73 +2303,20 @@ function createClient() {
 }
 
 {
-  const {
-    RelayReleaseCheckState,
-  } = require("../src/relay-client.js");
-
-  const state=
-    new RelayReleaseCheckState();
-
-  const view=state.apply({
-    version:"2.0.0-beta.23",
-    build:"web-test-beta.13",
-    ready:true,
-    checks:{
-      health_ready:true,
-      matchmaking:true,
-      menu_scope_locked:true,
-    },
-    menu_areas:[
-      "Oyna",
-      "Profil",
-      "İstatistikler",
-      "Ayarlar",
-    ],
-    deferred_areas:[
-      "Eğitim",
-      "Mağaza",
-    ],
-  });
-
-  assert.strictEqual(
-    view.ready,
-    true
-  );
-  assert.deepStrictEqual(
-    view.menuAreas,
-    [
-      "Oyna",
-      "Profil",
-      "İstatistikler",
-      "Ayarlar",
-    ]
-  );
-  assert.strictEqual(
-    view.failedChecks.length,
-    0
-  );
-  assert.ok(
-    view.deferredAreas.includes(
-      "Eğitim"
-    )
-  );
-}
-
-{
   const fs=require("fs");
   const html=fs.readFileSync(path.join(ROOT,"index.html"),"utf8");
   assert.ok(
     !html.includes(">Eğitim<")
   );
   assert.ok(
-    html.includes('data-open-screen="laboratory"')
+    !html.includes('data-screen-panel="laboratory"')
   );
   assert.ok(
     !html.includes(">Kozmetik<")
   );
   assert.ok(
     html.includes(
-      'data-open-screen="play"'
+      'id="home-battle-button"'
     )
   );
   assert.ok(
@@ -2832,112 +2380,6 @@ function createClient() {
 }
 
 {
-  const {
-    RelayServerBootGate,
-    RelayWebTestBuildState,
-    RelayReleaseCheckState,
-    SERVER_BOOT_STATUS,
-  } = require("../src/relay-client.js");
-
-  const health=
-    new RelayWebTestBuildState();
-  const release=
-    new RelayReleaseCheckState();
-
-  const gate=
-    new RelayServerBootGate({
-      healthState:health,
-      releaseCheckState:release,
-      expectedVersion:
-        "2.0.0-beta.23",
-      expectedProtocolVersion:1,
-      requestJson:
-        async (path) => {
-          if (path==="/health") {
-            return {
-              status:"ok",
-              version:"2.0.0-beta.23",
-              web_test:{
-                ready:true,
-                build:"web-test-beta.13",
-                release_checks:[],
-                capabilities:{},
-              },
-            };
-          }
-          if (
-            path
-            === "/web-test/release-check"
-          ) {
-            return {
-              version:"2.0.0-beta.23",
-              build:"web-test-beta.13",
-              ready:true,
-              checks:{
-                health_ready:true,
-              },
-              menu_areas:[
-                "Oyna","Profil",
-                "İstatistikler","Ayarlar",
-              ],
-              deferred_areas:[],
-            };
-          }
-
-          if (
-            path
-            === "/web-test/operation-readiness"
-          ) {
-            return {
-              ready:true,
-              checks:{
-                release_ready:true,
-                player_data_ready:true,
-                telemetry_ready:true,
-                retention_configured:true,
-                rc_ready:true,
-              },
-              warnings:[],
-            };
-          }
-
-          return {
-            server_version:
-              "2.0.0-beta.23",
-            web_test_build:
-              "web-test-alpha.62",
-            pvp_protocol_version:1,
-            menu_areas:[
-              "Oyna","Profil",
-              "İstatistikler","Ayarlar",
-            ],
-            release_ready:true,
-            release_failed_checks:[],
-          };
-        },
-    });
-
-  asyncTests.push(
-    gate.check().then(
-      (result) => {
-        assert.strictEqual(
-          result.ok,
-          true
-        );
-        assert.strictEqual(
-          gate.canPlay(),
-          true
-        );
-        assert.strictEqual(
-          gate.status,
-          SERVER_BOOT_STATUS.READY
-        );
-      }
-    )
-  );
-}
-
-{
   const fs=require("fs");
   const html=fs.readFileSync(path.join(ROOT,"index.html"),"utf8");
   const app=fs.readFileSync(path.join(ROOT,"src/app.js"),"utf8");
@@ -2946,212 +2388,6 @@ function createClient() {
   assert.ok(html.includes('id="server-boot-retry"'));
   assert.ok(app.includes("checkServerReadiness"));
   assert.ok(app.includes("serverBootGate.canPlay()"));
-  assert.ok(!app.includes('webTestBuildState.applyHealth({'));
-}
-
-{
-  const {
-    RelayDiagnosticSnapshot,
-  } = require("../src/relay-client.js");
-
-  const snapshot=
-    new RelayDiagnosticSnapshot({
-      version:"2.0.0-beta.23",
-      build:"web-test-beta.13",
-      bootGate:{status:"ready"},
-      connectionManager:{
-        status:"open",
-      },
-      matchmakingState:{
-        matched:true,
-        queued:false,
-      },
-      pvpState:{
-        sessionId:"s1",
-        phase:"battle",
-      },
-      recoveryState:{
-        viewModel:() => ({
-          kind:"none",
-          active:false,
-        }),
-      },
-      telemetryTransport:{
-        pending:new Map([
-          ["e1",{}],
-        ]),
-        status:"retry_wait",
-      },
-      releaseCheckState:{
-        viewModel:() => ({
-          failedChecks:[
-            "telemetry",
-          ],
-        }),
-      },
-    });
-
-  const value=
-    snapshot.buildSnapshot();
-
-  assert.strictEqual(
-    value.session_id,
-    "s1"
-  );
-  assert.strictEqual(
-    value.telemetry_pending_count,
-    1
-  );
-  assert.deepStrictEqual(
-    value.release_failed_checks,
-    ["telemetry"]
-  );
-  assert.strictEqual(
-    Object.prototype.hasOwnProperty.call(
-      value,
-      "profile"
-    ),
-    false
-  );
-}
-
-{
-  const fs=require("fs");
-  const html=fs.readFileSync(path.join(ROOT,"index.html"),"utf8");
-  const app=fs.readFileSync(path.join(ROOT,"src/app.js"),"utf8");
-
-  assert.ok(html.includes('id="diagnostic-snapshot-button"'));
-  assert.ok(html.includes('id="diagnostic-snapshot-output"'));
-  assert.ok(app.includes("RelayDiagnosticSnapshot"));
-  assert.ok(app.includes("renderDiagnosticSnapshot"));
-}
-
-{
-  const {
-    RelayServerBootGate,
-    RelayWebTestBuildState,
-    RelayReleaseCheckState,
-    SERVER_BOOT_STATUS,
-  } = require("../src/relay-client.js");
-
-  const gate=
-    new RelayServerBootGate({
-      healthState:
-        new RelayWebTestBuildState(),
-      releaseCheckState:
-        new RelayReleaseCheckState(),
-      expectedVersion:
-        "2.0.0-beta.23",
-      expectedProtocolVersion:1,
-      requestJson:
-        async (path) => {
-          if (path==="/health") {
-            return {
-              version:"2.0.0-beta.23",
-              web_test:{
-                ready:true,
-                build:"web-test-beta.13",
-                release_checks:[],
-                capabilities:{},
-              },
-            };
-          }
-          if (
-            path
-            === "/web-test/release-check"
-          ) {
-            return {
-              version:"2.0.0-beta.23",
-              build:"web-test-beta.13",
-              ready:true,
-              checks:{ok:true},
-              menu_areas:[],
-              deferred_areas:[],
-            };
-          }
-          if (
-            path
-            === "/web-test/operation-readiness"
-          ) {
-            return {
-              ready:true,
-              checks:{
-                release_ready:true,
-                player_data_ready:true,
-                telemetry_ready:true,
-                retention_configured:true,
-                rc_ready:true,
-              },
-              warnings:[],
-            };
-          }
-
-          return {
-            server_version:
-              "2.0.0-alpha.61",
-            pvp_protocol_version:1,
-            release_ready:true,
-          };
-        },
-    });
-
-  asyncTests.push(
-    gate.check().then(
-      (result) => {
-        assert.strictEqual(
-          result.ok,
-          false
-        );
-        assert.strictEqual(
-          gate.status,
-          SERVER_BOOT_STATUS.BLOCKED
-        );
-        assert.ok(
-          gate.lastError.includes(
-            "Sürüm uyuşmazlığı"
-          )
-        );
-      }
-    )
-  );
-}
-
-{
-  const {
-    RelayWebTestRcReportState,
-  } = require("../src/relay-client.js");
-
-  const state=
-    new RelayWebTestRcReportState();
-
-  const view=state.apply({
-    version:"2.0.0-beta.23",
-    build:"web-test-beta.13",
-    ready:true,
-    critical_failures:[],
-    kpis:{
-      completed_matches:12,
-      second_match_transition_rate:0.5,
-      losing_player_rematch_rate:0.4,
-    },
-  });
-
-  assert.strictEqual(
-    view.ready,
-    true
-  );
-  assert.strictEqual(
-    view.completedMatches,
-    12
-  );
-  assert.strictEqual(
-    view.secondMatchTransitionRate,
-    0.5
-  );
-  assert.strictEqual(
-    view.losingPlayerRematchRate,
-    0.4
-  );
 }
 
 {
@@ -3336,8 +2572,6 @@ function createClient() {
               win_rate:0,
               average_match_duration_ms:0,
               total_damage_dealt:0,
-              module_replacements:0,
-              boosters_used:0,
               most_used_modules:[],
             },
             settings:{
@@ -3617,7 +2851,7 @@ function createClient() {
     player_id:"wt-a-123456",
     identity:{
       kind:
-        "web_test_participant",
+        "participant",
       player_id:
         "wt-a-123456",
     },
@@ -3676,166 +2910,29 @@ function createClient() {
   const fs=require("fs");
   const app=fs.readFileSync(path.join(ROOT,"src/app.js"),"utf8");
 
-  assert.strictEqual(
-    app.includes(
-      "/web-test/persistence/restore-backup"
-    ),
-    false
-  );
 }
 
 {
   const fs=require("fs");
   const app=fs.readFileSync(path.join(ROOT,"src/app.js"),"utf8");
 
-  assert.strictEqual(
-    app.includes(
-      "/web-test/telemetry/restore-backup"
-    ),
-    false
-  );
-}
-
-{
-  const {
-    RelayServerBootGate,
-    RelayWebTestBuildState,
-    RelayReleaseCheckState,
-    SERVER_BOOT_STATUS,
-  } = require("../src/relay-client.js");
-
-  const gate=
-    new RelayServerBootGate({
-      healthState:
-        new RelayWebTestBuildState(),
-      releaseCheckState:
-        new RelayReleaseCheckState(),
-      expectedVersion:
-        "2.0.0-beta.23",
-      expectedProtocolVersion:1,
-      requestJson:
-        async (path) => {
-          if (path==="/health") {
-            return {
-              version:"2.0.0-beta.23",
-              web_test:{
-                ready:true,
-                build:"web-test-beta.13",
-                release_checks:[],
-                capabilities:{},
-              },
-            };
-          }
-          if (
-            path
-            === "/web-test/release-check"
-          ) {
-            return {
-              version:"2.0.0-beta.23",
-              build:"web-test-beta.13",
-              ready:true,
-              checks:{ok:true},
-              menu_areas:[],
-              deferred_areas:[],
-            };
-          }
-          if (
-            path
-            === "/web-test/manifest"
-          ) {
-            return {
-              server_version:
-                "2.0.0-beta.23",
-              pvp_protocol_version:1,
-              release_ready:true,
-            };
-          }
-          return {
-            ready:false,
-            checks:{
-              telemetry_ready:false,
-            },
-            warnings:[],
-          };
-        },
-    });
-
-  asyncTests.push(
-    gate.check().then(
-      (result) => {
-        assert.strictEqual(
-          result.ok,
-          false
-        );
-        assert.strictEqual(
-          gate.status,
-          SERVER_BOOT_STATUS.BLOCKED
-        );
-        assert.ok(
-          gate.lastError.includes(
-            "telemetry_ready"
-          )
-        );
-      }
-    )
-  );
 }
 
 {
   const fs=require("fs");
   const html=fs.readFileSync(path.join(ROOT,"index.html"),"utf8");
-  assert.ok(
-    html.includes(
-      'id="operation-readiness-status"'
-    )
-  );
 }
 
 {
   const fs=require("fs");
   const app=fs.readFileSync(path.join(ROOT,"src/app.js"),"utf8");
 
-  assert.ok(
-    app.includes(
-      "recordWebTestSessionAudit"
-    )
-  );
-  assert.ok(
-    app.includes(
-      "/web-test/audit/session-start"
-    )
-  );
-  assert.ok(
-    app.includes(
-      "matchmaking_started_at_ms"
-    )
-  );
-  assert.ok(
-    app.includes(
-      "Audit operasyon içindir"
-    )
-  );
 }
 
 {
   const fs=require("fs");
   const app=fs.readFileSync(path.join(ROOT,"src/app.js"),"utf8");
 
-  assert.ok(
-    app.includes(
-      "bindWebTestSessionAudit"
-    )
-  );
-  assert.ok(
-    app.includes(
-      "/web-test/audit/session-bind"
-    )
-  );
-  assert.ok(
-    app.includes(
-      "audit_event_id"
-    )
-  );
   assert.ok(
     app.includes(
       "pvpState.sessionId"
@@ -3844,40 +2941,22 @@ function createClient() {
 }
 
 {
-  const {
-    RelayWebTestGoNoGoState,
-  } = require("../src/relay-client.js");
+  const fs=require("fs");
+  const app=fs.readFileSync(path.join(ROOT,"src/app.js"),"utf8");
+  const html=fs.readFileSync(path.join(ROOT,"index.html"),"utf8");
 
-  const state=
-    new RelayWebTestGoNoGoState();
+}
 
-  const view=state.apply({
-    decision:"GO",
-    technical_ready:true,
-    minimum_behavior_sample:10,
-    behavior_signals:{
-      a:{
-        status:
-          "insufficient_data",
-      },
-      b:{
-        status:"observed",
-      },
-    },
-  });
+{
+  const fs=require("fs");
+  const app=fs.readFileSync(path.join(ROOT,"src/app.js"),"utf8");
 
-  assert.strictEqual(
-    view.decision,
-    "GO"
-  );
-  assert.strictEqual(
-    view.technicalReady,
-    true
-  );
-  assert.strictEqual(
-    view.insufficientSignalCount,
-    1
-  );
+}
+
+{
+  const fs=require("fs");
+  const app=fs.readFileSync(path.join(ROOT,"src/app.js"),"utf8");
+
 }
 
 {
@@ -3885,91 +2964,6 @@ function createClient() {
   const app=fs.readFileSync(path.join(ROOT,"src/app.js"),"utf8");
   const html=fs.readFileSync(path.join(ROOT,"index.html"),"utf8");
 
-  assert.ok(
-    app.includes(
-      "loadGoNoGoStatus"
-    )
-  );
-  assert.ok(
-    html.includes(
-      'id="go-no-go-status"'
-    )
-  );
-}
-
-{
-  const fs=require("fs");
-  const app=fs.readFileSync(path.join(ROOT,"src/app.js"),"utf8");
-
-  assert.ok(
-    app.includes(
-      "finishWebTestSessionAudit"
-    )
-  );
-  assert.ok(
-    app.includes(
-      "/web-test/audit/session-finish"
-    )
-  );
-  assert.ok(
-    app.includes(
-      "currentAuditEventId"
-    )
-  );
-}
-
-{
-  const fs=require("fs");
-  const app=fs.readFileSync(path.join(ROOT,"src/app.js"),"utf8");
-
-  assert.ok(
-    app.includes(
-      "currentTestRunId"
-    )
-  );
-  assert.ok(
-    app.includes(
-      "test_run_id"
-    )
-  );
-}
-
-{
-  const {
-    RelayTestRunConsistencyState,
-  } = require("../src/relay-client.js");
-
-  const state=
-    new RelayTestRunConsistencyState();
-
-  state.setExpected(
-    "run-a"
-  );
-  const ok=state.applyAudit(
-    "run-a"
-  );
-
-  assert.strictEqual(
-    ok.ok,
-    true
-  );
-  assert.strictEqual(
-    state.isVerified(),
-    true
-  );
-
-  const bad=state.applyAudit(
-    "run-b"
-  );
-
-  assert.strictEqual(
-    bad.ok,
-    false
-  );
-  assert.strictEqual(
-    state.status,
-    "mismatch"
-  );
 }
 
 {
@@ -3977,50 +2971,6 @@ function createClient() {
   const app=fs.readFileSync(path.join(ROOT,"src/app.js"),"utf8");
   const html=fs.readFileSync(path.join(ROOT,"index.html"),"utf8");
 
-  assert.ok(
-    app.includes(
-      "testRunConsistency"
-    )
-  );
-  assert.ok(
-    html.includes(
-      'id="test-run-status"'
-    )
-  );
-}
-
-{
-  const {
-    RelayRcCandidateState,
-  } = require("../src/relay-client.js");
-
-  const state=
-    new RelayRcCandidateState();
-
-  const view=state.apply({
-    rc_candidate:true,
-    decision:"GO",
-    test_run_id:"run-99",
-    test_run:{
-      lifecycle_state:"active",
-    },
-    behavior:{
-      insufficient_signal_count:2,
-    },
-  });
-
-  assert.strictEqual(
-    view.ready,
-    true
-  );
-  assert.strictEqual(
-    view.testRunId,
-    "run-99"
-  );
-  assert.strictEqual(
-    view.insufficientSignalCount,
-    2
-  );
 }
 
 {
@@ -4028,100 +2978,12 @@ function createClient() {
   const app=fs.readFileSync(path.join(ROOT,"src/app.js"),"utf8");
   const html=fs.readFileSync(path.join(ROOT,"index.html"),"utf8");
 
-  assert.ok(
-    app.includes(
-      "loadRcCandidateStatus"
-    )
-  );
-  assert.ok(
-    app.includes(
-      "/web-test/rc-candidate"
-    )
-  );
-  assert.ok(
-    html.includes(
-      'id="rc-candidate-status"'
-    )
-  );
-}
-
-{
-  const {
-    RelayLaunchReadinessState,
-  } = require("../src/relay-client.js");
-
-  const state=
-    new RelayLaunchReadinessState();
-
-  let view=state.apply({
-    launch_ready:false,
-    failed_checks:[
-      "data_health",
-    ],
-    test_run_id:"run-101",
-  });
-
-  assert.strictEqual(
-    view.ready,
-    false
-  );
-  assert.deepStrictEqual(
-    view.failedChecks,
-    ["data_health"]
-  );
-
-  view=state.apply({
-    launch_ready:true,
-    failed_checks:[],
-    test_run_id:"run-101",
-  });
-
-  assert.strictEqual(
-    state.isReady(),
-    true
-  );
-  assert.strictEqual(
-    view.testRunId,
-    "run-101"
-  );
-}
-
-{
-  const fs=require("fs");
-  const app=fs.readFileSync(path.join(ROOT,"src/app.js"),"utf8");
-  const html=fs.readFileSync(path.join(ROOT,"index.html"),"utf8");
-
-  assert.ok(
-    app.includes(
-      "loadLaunchReadiness"
-    )
-  );
-  assert.ok(
-    app.includes(
-      "/web-test/launch-readiness"
-    )
-  );
-  assert.ok(
-    html.includes(
-      'id="launch-readiness-status"'
-    )
-  );
 }
 
 {
   const fs=require("fs");
   const app=fs.readFileSync(path.join(ROOT,"src/app.js"),"utf8");
 
-  assert.ok(
-    app.includes(
-      "recordLaunchAttemptAudit"
-    )
-  );
-  assert.ok(
-    app.includes(
-      "/web-test/audit/launch-attempt"
-    )
-  );
   assert.ok(
     app.includes(
       'if (screen === "play")'
@@ -4130,70 +2992,9 @@ function createClient() {
 }
 
 {
-  const {
-    RelayFirstRunChecklistState,
-  } = require("../src/relay-client.js");
-
-  const state=
-    new RelayFirstRunChecklistState();
-
-  const view=state.apply({
-    ready:false,
-    failed_checks:["telemetry_ready"],
-    notes:["yedek bekleniyor"],
-    test_run_id:"run-105",
-  });
-
-  assert.strictEqual(view.ready,false);
-  assert.strictEqual(view.noteCount,1);
-  assert.deepStrictEqual(
-    view.failedChecks,
-    ["telemetry_ready"]
-  );
-}
-
-{
   const fs=require("fs");
   const app=fs.readFileSync(path.join(ROOT,"src/app.js"),"utf8");
   const html=fs.readFileSync(path.join(ROOT,"index.html"),"utf8");
-  assert.ok(
-    app.includes(
-      "loadFirstRunChecklist"
-    )
-  );
-  assert.ok(
-    html.includes(
-      'id="first-run-checklist-status"'
-    )
-  );
-}
-
-{
-  const {
-    RelayPreflightState,
-  } = require("../src/relay-client.js");
-
-  const state=
-    new RelayPreflightState();
-
-  const view=state.apply({
-    preflight_ready:false,
-    failed_checks:["launch_ready"],
-    test_run_id:"run-109",
-    test_run:{
-      lifecycle_state:"empty",
-    },
-  });
-
-  assert.strictEqual(view.ready,false);
-  assert.deepStrictEqual(
-    view.failedChecks,
-    ["launch_ready"]
-  );
-  assert.strictEqual(
-    view.testRunId,
-    "run-109"
-  );
 }
 
 {
@@ -4201,45 +3002,6 @@ function createClient() {
   const app=fs.readFileSync(path.join(ROOT,"src/app.js"),"utf8");
   const html=fs.readFileSync(path.join(ROOT,"index.html"),"utf8");
 
-  assert.ok(
-    app.includes(
-      "loadPreflightStatus"
-    )
-  );
-  assert.ok(
-    app.includes(
-      "/web-test/preflight"
-    )
-  );
-  assert.ok(
-    html.includes(
-      'id="preflight-status"'
-    )
-  );
-}
-
-{
-  const {
-    RelayWebTestRunStatusState,
-  } = require("../src/relay-client.js");
-
-  const state=
-    new RelayWebTestRunStatusState();
-
-  const view=state.apply({
-    started:true,
-    test_run_id:"run-113",
-    build:"web-test-beta.13",
-  });
-
-  assert.strictEqual(
-    view.started,
-    true
-  );
-  assert.strictEqual(
-    view.testRunId,
-    "run-113"
-  );
 }
 
 {
@@ -4247,40 +3009,6 @@ function createClient() {
   const app=fs.readFileSync(path.join(ROOT,"src/app.js"),"utf8");
   const html=fs.readFileSync(path.join(ROOT,"index.html"),"utf8");
 
-  assert.ok(
-    app.includes(
-      "loadWebTestRunStatus"
-    )
-  );
-  assert.ok(
-    html.includes(
-      'id="web-test-run-status"'
-    )
-  );
-}
-
-{
-  const {
-    RelayOperationStatusState,
-  } = require("../src/relay-client.js");
-
-  const state=
-    new RelayOperationStatusState();
-
-  const view=state.apply({
-    operational_state:"running",
-    test_run_id:"run-118",
-    consistent:true,
-  });
-
-  assert.strictEqual(
-    view.state,
-    "running"
-  );
-  assert.strictEqual(
-    view.consistent,
-    true
-  );
 }
 
 {
@@ -4288,44 +3016,6 @@ function createClient() {
   const app=fs.readFileSync(path.join(ROOT,"src/app.js"),"utf8");
   const html=fs.readFileSync(path.join(ROOT,"index.html"),"utf8");
 
-  assert.ok(
-    app.includes(
-      "loadOperationStatus"
-    )
-  );
-  assert.ok(
-    html.includes(
-      'id="operation-status"'
-    )
-  );
-}
-
-{
-  const {
-    RelayOperationStabilityState,
-  } = require("../src/relay-client.js");
-
-  const state=
-    new RelayOperationStabilityState();
-
-  const view=state.apply({
-    stability:"degraded",
-    operation_running_rate:0.4,
-    running_to_other_regressions:2,
-  });
-
-  assert.strictEqual(
-    view.stability,
-    "degraded"
-  );
-  assert.strictEqual(
-    view.runningRate,
-    0.4
-  );
-  assert.strictEqual(
-    view.regressions,
-    2
-  );
 }
 
 {
@@ -4333,56 +3023,6 @@ function createClient() {
   const app=fs.readFileSync(path.join(ROOT,"src/app.js"),"utf8");
   const html=fs.readFileSync(path.join(ROOT,"index.html"),"utf8");
 
-  assert.ok(
-    app.includes(
-      "loadOperationStability"
-    )
-  );
-  assert.ok(
-    app.includes(
-      "/web-test/operation-stability"
-    )
-  );
-  assert.ok(
-    html.includes(
-      'id="operation-stability-status"'
-    )
-  );
-}
-
-{
-  const {
-    RelayMonitoringState,
-  } = require("../src/relay-client.js");
-
-  const state=
-    new RelayMonitoringState();
-
-  const view=state.apply({
-    test_run_id:"run-final",
-    operation:{
-      state:"running",
-    },
-    stability:{
-      state:"stable",
-    },
-    funnel:{
-      audit_to_finish_rate:0.625,
-    },
-  });
-
-  assert.strictEqual(
-    view.operationState,
-    "running"
-  );
-  assert.strictEqual(
-    view.stabilityState,
-    "stable"
-  );
-  assert.strictEqual(
-    view.auditFinishRatePercent,
-    62.5
-  );
 }
 
 {
@@ -4390,51 +3030,6 @@ function createClient() {
   const app=fs.readFileSync(path.join(ROOT,"src/app.js"),"utf8");
   const html=fs.readFileSync(path.join(ROOT,"index.html"),"utf8");
 
-  assert.ok(
-    app.includes(
-      "loadMonitoringSummary"
-    )
-  );
-  assert.ok(
-    app.includes(
-      "ensureWebTestRunStarted"
-    )
-  );
-  assert.ok(
-    app.includes(
-      "/web-test/test-run/start"
-    )
-  );
-  assert.ok(
-    html.includes(
-      'id="monitoring-summary-status"'
-    )
-  );
-}
-
-{
-  const {
-    RelayWebTestRunStatusState,
-  } = require("../src/relay-client.js");
-
-  const state=
-    new RelayWebTestRunStatusState();
-
-  const view=state.apply({
-    started:true,
-    finished:true,
-    test_run_id:"run-beta",
-    build:"web-test-beta.13",
-  });
-
-  assert.strictEqual(
-    view.started,
-    true
-  );
-  assert.strictEqual(
-    view.finished,
-    true
-  );
 }
 
 {
@@ -4442,36 +3037,6 @@ function createClient() {
   const app=fs.readFileSync(path.join(ROOT,"src/app.js"),"utf8");
   const html=fs.readFileSync(path.join(ROOT,"index.html"),"utf8");
 
-  assert.ok(
-    app.includes(
-      "startWebTestSampling"
-    )
-  );
-  assert.ok(
-    app.includes(
-      "finishActiveWebTestRun"
-    )
-  );
-  assert.ok(
-    app.includes(
-      "/web-test/test-run/finish"
-    )
-  );
-  assert.ok(
-    app.includes(
-      "/web-test/test-run/report"
-    )
-  );
-  assert.ok(
-    html.includes(
-      'id="web-test-finish-button"'
-    )
-  );
-  assert.ok(
-    html.includes(
-      'id="web-test-run-report"'
-    )
-  );
 }
 
 {
@@ -4479,31 +3044,6 @@ function createClient() {
   const app=fs.readFileSync(path.join(ROOT,"src/app.js"),"utf8");
   const html=fs.readFileSync(path.join(ROOT,"index.html"),"utf8");
 
-  assert.ok(
-    app.includes(
-      "submitWebTestFeedback"
-    )
-  );
-  assert.ok(
-    app.includes(
-      "loadFeedbackSummary"
-    )
-  );
-  assert.ok(
-    app.includes(
-      "/web-test/feedback"
-    )
-  );
-  assert.ok(
-    html.includes(
-      'id="web-test-feedback-form"'
-    )
-  );
-  assert.ok(
-    html.includes(
-      'id="feedback-summary-status"'
-    )
-  );
 }
 
 {
@@ -4511,26 +3051,6 @@ function createClient() {
   const app=fs.readFileSync(path.join(ROOT,"src/app.js"),"utf8");
   const html=fs.readFileSync(path.join(ROOT,"index.html"),"utf8");
 
-  assert.ok(
-    app.includes(
-      "loadBetaFindings"
-    )
-  );
-  assert.ok(
-    app.includes(
-      "/web-test/findings"
-    )
-  );
-  assert.ok(
-    html.includes(
-      'id="beta-findings-status"'
-    )
-  );
-  assert.ok(
-    app.includes(
-      "insufficient_data"
-    )
-  );
 }
 
 {
@@ -4538,10 +3058,6 @@ function createClient() {
   const app=fs.readFileSync(path.join(ROOT,"src/app.js"),"utf8");
   const html=fs.readFileSync(path.join(ROOT,"index.html"),"utf8");
 
-  assert.ok(app.includes("loadReviewCandidates"));
-  assert.ok(app.includes("/web-test/review-candidates"));
-  assert.ok(html.includes('id="beta-review-status"'));
-  assert.ok(app.includes("waiting_for_real_data"));
 }
 
 {
@@ -4551,9 +3067,9 @@ function createClient() {
   const css=fs.readFileSync(path.join(ROOT,"src/styles.css"),"utf8");
 
   assert.ok(app.includes("document.body.dataset.appScreen"));
-  assert.ok(html.includes("menu-action-play"));
+  assert.ok(html.includes('class="mobile-home-hub"'));
   assert.ok(!html.includes("main-menu-lead"));
-  assert.ok(html.includes("lobby-subtitle"));
+  assert.ok(!html.includes("lobby-feature-grid"));
   assert.ok(css.includes('body[data-app-screen="menu"] .battle-status-cluster'));
   assert.ok(css.includes("grid-template-columns: repeat(2, minmax(0, 1fr))"));
   assert.ok(!html.includes('data-open-screen="education"'));
@@ -4564,11 +3080,9 @@ function createClient() {
   const html=fs.readFileSync(path.join(ROOT,"index.html"),"utf8");
   const css=fs.readFileSync(path.join(ROOT,"src/styles.css"),"utf8");
   assert.ok(html.includes("Olay Günlüğü"));
-  assert.ok(html.includes('<details class="diagnostic-panel play-technical-panel"'));
   assert.ok(html.includes("screen-subtitle"));
   assert.ok(css.includes('body[data-app-screen="profile"] .battle-status-cluster'));
   assert.ok(css.includes("grid-template-columns:repeat(2,minmax(0,1fr))") || css.includes("grid-template-columns: repeat(2, minmax(0, 1fr))"));
-  assert.ok(css.includes(".diagnostic-panel > summary"));
 }
 
 {
@@ -4577,13 +3091,12 @@ function createClient() {
   const html=fs.readFileSync(path.join(ROOT,"index.html"),"utf8");
   const css=fs.readFileSync(path.join(ROOT,"src/styles.css"),"utf8");
 
-  assert.ok(css.includes(".initial-module-choice option"));
   assert.ok(css.includes("color-scheme:dark"));
   assert.ok(!app.includes("+${reward.season_xp_reward || 0} SXP"));
   assert.ok(app.includes("reward.required_xp"));
   assert.ok(app.includes('"daily-action-status"'));
-  assert.ok(app.includes('"lobby-daily-notification"'));
-  assert.ok(app.includes('"lobby-reward-notification"'));
+  assert.ok(app.includes('"has-persistent-notification"'));
+  assert.ok(!app.includes("lobby-notification-dot"));
   assert.ok(html.includes('id="lobby-season-progress-fill"'));
   assert.ok(html.includes('class="main-scope-nav lobby-bottom-dock app-bottom-dock"'));
   assert.ok(html.includes('id="daily-missions-screen"'));
@@ -4599,44 +3112,12 @@ function createClient() {
   assert.ok(!html.includes('id="local-play-start"'));
   assert.ok(!html.includes('id="online-play-prepare"'));
   assert.ok(html.includes('id="battle-pool-preset-dialog"'));
-  assert.ok(html.includes('id="initial-module-picker"'));
   assert.ok(app.includes("startLocalPlayableMatch"));
   assert.ok(app.includes("resetLocalBattleState"));
-  assert.ok(app.includes("updateLocalEnemyCombat"));
   assert.ok(app.includes("finishLocalBattle"));
   assert.ok(app.includes('activePlayMode === "local"'));
   assert.ok(css.includes('body[data-play-mode="idle"]'));
   assert.ok(css.includes(".technical-status-drawer"));
-}
-
-{
-  const {
-    RelayBattleClient,
-  } = require("../src/relay-client.js");
-
-  const commands=[];
-  const client=new RelayBattleClient({
-    modules:[
-      {
-        instanceId:"generator-1",
-        nameTr:"Jeneratör",
-        hp:150,
-        maxHp:150,
-        status:"active",
-        position:{x:2,y:3},
-        movable:false,
-        removable:false,
-      },
-    ],
-    unlockAtMs:0,
-    circuitCredits:200,
-    emitCommand:(command)=>commands.push(command),
-  });
-
-  const drag=client.beginDrag("generator-1");
-  assert.strictEqual(drag.ok,false);
-  assert.ok(drag.reason.includes("taşınamaz"));
-  assert.strictEqual(commands.length,0);
 }
 
 {
@@ -4664,7 +3145,6 @@ function createClient() {
   const html=fs.readFileSync("./index.html","utf8");
   const css=fs.readFileSync("./src/styles.css","utf8");
 
-  assert.ok(html.includes('class="battle-legend play-live-panel"'));
   assert.ok(!html.includes('id="settings-persistence-status"'));
   assert.ok(app.includes("renderSettingsPersistenceStatus"));
   assert.ok(app.includes("Kalıcılık: Sunucuda doğrulandı"));
@@ -4690,124 +3170,25 @@ function createClient() {
 }
 
 {
-  const { RelayBattleClient } = require("../src/relay-client.js");
-  const commands=[];
-  const client=new RelayBattleClient({
-    unlockAtMs:0,
-    circuitCredits:200,
-    emitCommand:(command)=>commands.push(command),
-    modules:[{
-      instanceId:"generator-1",
-      nameTr:"Jeneratör",
-      hp:150,
-      maxHp:150,
-      status:"active",
-      position:{x:2,y:3},
-      movable:true,
-      removable:false,
-      allowedMovePositions:[
-        {x:2,y:1},
-        {x:3,y:2},
-        {x:2,y:3},
-        {x:1,y:2},
-      ],
-    }],
-  });
-
-  const drag=client.beginDrag("generator-1");
-  assert.strictEqual(drag.ok,false);
-  assert.ok(drag.reason.includes("taşınamaz"));
-  assert.strictEqual(commands.length,0);
-}
-
-{
   const fs=require("fs");
   const html=fs.readFileSync("./index.html","utf8");
   const css=fs.readFileSync("./src/styles.css","utf8");
   const app=fs.readFileSync("./src/app.js","utf8");
 
   assert.ok(!html.includes("GRIDSHARD // CORE ARENA"));
-  assert.ok(html.includes('<span class="lobby-subtitle">CORE ARENA</span>'));
-  assert.ok(html.includes("Kablodan modül hücresine"));
+  assert.ok(!html.includes("CORE ARENA"));
   assert.ok(css.includes(".lobby-core-orbit"));
-  assert.ok(css.includes(".battle-fx-strip"));
   assert.ok(css.includes("@keyframes relay-hit"));
   assert.ok(css.includes("@keyframes gs-core-breath"));
   assert.ok(app.includes("BOARD_CELLS"));
 }
 
 {
-  const {
-    RelayTelemetryDispatcher,
-  } = require("../src/relay-client.js");
-
-  const dispatcher=new RelayTelemetryDispatcher({
-    playerId:"p1",
-  });
-
-  assert.strictEqual(
-    dispatcher.trackLocalBattleStarted({}).ok,
-    true
-  );
-  assert.strictEqual(
-    dispatcher.trackGeneratorGateMoved({to_gate:"west"}).ok,
-    true
-  );
-  assert.strictEqual(
-    dispatcher.trackLocalBattleCompleted({won:true}).ok,
-    true
-  );
-
-  const events=dispatcher.drain();
-  assert.strictEqual(events.length,3);
-  assert.strictEqual(events[1].event_type,"generator_gate_moved");
-}
-
-{
   const fs=require("fs");
   const html=fs.readFileSync("./index.html","utf8");
   const app=fs.readFileSync("./src/app.js","utf8");
   const css=fs.readFileSync("./src/styles.css","utf8");
 
-  assert.ok(html.includes('id="local-battle-report"'));
-  assert.ok(app.includes("localBattleMetrics"));
-  assert.ok(app.includes("trackGeneratorGateMoved"));
-  assert.ok(app.includes("trackLocalBattleCompleted"));
-  assert.ok(css.includes(".local-report-grid"));
-}
-
-{
-  const fs=require("fs");
-  const html=fs.readFileSync("./index.html","utf8");
-  const app=fs.readFileSync("./src/app.js","utf8");
-  const css=fs.readFileSync("./src/styles.css","utf8");
-
-  assert.ok(html.includes('id="balance-review-panel"'));
-  assert.ok(html.includes('id="gate-use-north"'));
-  assert.ok(html.includes('id="balance-review-candidates"'));
-  assert.ok(app.includes("loadCumulativeManualReport"));
-  assert.ok(app.includes("renderCumulativeManualReport"));
-  assert.ok(css.includes(".balance-review-grid"));
-  assert.ok(css.includes(".gate-usage-grid"));
-}
-
-{
-  const { BattlePoolSelection } = require("../src/relay-client.js");
-
-  const ids=Array.from({length:24},(_,i)=>`m-${i}`);
-  const selection=new BattlePoolSelection({
-    selectableModuleIds:ids,
-    requiredSize:6,
-    requiredModuleIds:["m-0"],
-  });
-
-  const preset=ids.slice(0,6);
-  const loaded=selection.setSelection(preset);
-  assert.strictEqual(loaded.ok,true);
-  assert.strictEqual(selection.isComplete(),true);
-
-  const invalid=selection.setSelection(ids.slice(0,5));
-  assert.strictEqual(invalid.ok,false);
 }
 
 {
@@ -4836,7 +3217,7 @@ function createClient() {
   const css=fs.readFileSync("./src/styles.css","utf8");
   const app=fs.readFileSync("./src/app.js","utf8");
 
-  assert.ok(html.includes("CORE ARENA"));
+  assert.ok(html.includes("<title>GRIDSHARD — Devreni Kur. Çekirdeği Kır.</title>"));
   assert.ok(html.includes("Devreni Kur."));
   assert.ok(html.includes("Çekirdeği Kır."));
   assert.ok(html.includes("shard-core-mark"));
@@ -4855,11 +3236,8 @@ function createClient() {
   assert.ok(html.includes('id="battle-pool-preset-rename"'));
   assert.ok(html.includes('id="battle-pool-active-preset"'));
   assert.ok(html.includes('id="battle-pool-preset-dirty"'));
-  assert.ok(html.includes('id="balance-draft-items"'));
   assert.ok(app.includes("renameSelectedBattlePoolPreset"));
   assert.ok(app.includes("renderActivePresetState"));
-  assert.ok(app.includes("loadBalanceDraft"));
-  assert.ok(css.includes(".balance-draft-item"));
 }
 
 {
@@ -4878,12 +3256,10 @@ function createClient() {
   assert.ok(app.includes("renderPresetGallery"));
   assert.ok(app.includes("updateBattlePoolPresetMeta"));
   assert.ok(app.includes("lobby-parallax-x"));
-  assert.ok(app.includes("/telemetry/balance-change-simulate"));
   assert.ok(css.includes(".lobby-board-grid"));
   assert.ok(css.includes(".preset-card"));
   assert.ok(css.includes('[data-action="remove"]'));
   assert.ok(audio.includes("GRIDSHARD_SFX_CUES"));
-  assert.ok(audio.includes("generator_move"));
   assert.ok(audio.includes("core_hit"));
 }
 
@@ -4898,7 +3274,6 @@ function createClient() {
   assert.ok(html.includes('id="battle-pool-preset-dialog"'));
   assert.ok(app.includes("renderQuickLoadoutGallery"));
   assert.ok(app.includes("previewAudioSettingsFromControls"));
-  assert.ok(app.includes("/telemetry/balance-change-regression"));
   assert.ok(css.includes(".quick-loadout-card"));
   assert.ok(css.includes(".balance-regression-result"));
 }
@@ -4913,16 +3288,12 @@ function createClient() {
   assert.ok(html.includes('id="settings-preview-music"'));
   assert.ok(html.includes('id="settings-preview-sfx"'));
   assert.ok(html.includes('id="battle-pool-preset-open"'));
-  assert.ok(html.includes('id="initial-module-picker"'));
-  assert.ok(html.includes('id="human-review-items"'));
   assert.ok(app.includes("quickLoadoutFilter"));
   assert.ok(app.includes("renderQuickLoadoutActiveSummary"));
-  assert.ok(app.includes("loadHumanReviewQueue"));
   assert.ok(app.includes("syncCriticalCoreAudioState"));
   assert.ok(app.includes('previewMusic('));
   assert.ok(app.includes('previewSfx('));
   assert.ok(css.includes(".quick-loadout-badges"));
-  assert.ok(css.includes(".human-review-item"));
   assert.ok(audio.includes("GRIDSHARD_AUDIO_MIX"));
   assert.ok(audio.includes("crossfadeMs:1200"));
   assert.ok(audio.includes("battle_tension_v7_07_pressure.wav"));
@@ -4936,12 +3307,8 @@ function createClient() {
   const audio=fs.readFileSync("./src/gridshard-audio.js","utf8");
 
   assert.ok(html.includes('id="ui-build-version"'));
-  assert.ok(html.includes('id="ui-build-run"'));
-  assert.ok(html.includes('id="human-review-evidence"'));
-  assert.ok(app.includes("gridshardE2eTimeScale"));
-  assert.ok(app.includes("loadUiBuildManifest"));
   assert.ok(app.includes("setBattlePressure"));
-  assert.ok(audio.includes('version:"shardglass-mobile-v10"'));
+  assert.ok(audio.includes('version:"shardglass-seamless-v12"'));
   assert.ok(audio.includes("menuPoolCrossfadeMs:480"));
   assert.ok(audio.includes("phaseLockedTransition"));
   assert.ok(audio.includes("criticalLayerMaxGain"));
@@ -4954,13 +3321,10 @@ function createClient() {
   const css=fs.readFileSync("./src/styles.css","utf8");
   const audio=fs.readFileSync("./src/gridshard-audio.js","utf8");
 
-  assert.ok(html.includes('id="human-review-evidence-details"'));
   assert.ok(app.includes("__GRIDSHARD_BATTLE_UX"));
   assert.ok(app.includes("battle_ui_interaction"));
   assert.ok(app.includes("battle_ux_timing_summary"));
   assert.ok(app.includes("pause_violation_count"));
-  assert.ok(app.includes("/telemetry/balance-human-review-evidence"));
-  assert.ok(css.includes(".human-review-evidence-card"));
   assert.ok(audio.includes('stage="high"') || audio.includes('"high"'));
 }
 
@@ -4970,16 +3334,9 @@ function createClient() {
   const app=fs.readFileSync("./src/app.js","utf8");
   const css=fs.readFileSync("./src/styles.css","utf8");
 
-  assert.ok(html.includes('id="human-review-decision-note"'));
   assert.ok(app.includes("ux_categories"));
   assert.ok(app.includes('"module_place"'));
-  assert.ok(app.includes('"module_move"'));
-  assert.ok(app.includes('"generator_gate"'));
-  assert.ok(app.includes('"booster"'));
   assert.ok(app.includes('"technical_drawer"'));
-  assert.ok(app.includes("HUMAN_REVIEW_NOTE_KEY"));
-  assert.ok(css.includes(".human-review-compare-grid"));
-  assert.ok(css.includes(".human-review-local-note"));
 }
 
 {
@@ -4987,16 +3344,9 @@ function createClient() {
   const html=fs.readFileSync("./index.html","utf8");
   const app=fs.readFileSync("./src/app.js","utf8");
 
-  assert.ok(html.includes('id="human-review-decision-state"'));
-  assert.ok(html.includes('value="hold"'));
-  assert.ok(html.includes('value="reject"'));
-  assert.ok(html.includes('value="revisit"'));
   assert.ok(app.includes("ux_matrix"));
   assert.ok(app.includes("average_frame_gap_ms"));
   assert.ok(app.includes("average_clock_delta_ms"));
-  assert.ok(app.includes("HUMAN_REVIEW_STATE_LABELS"));
-  assert.ok(app.includes('"gridshard.balance-review.local-draft"'));
-  assert.ok(app.includes("canonical_balance_changed"));
 }
 
 {
@@ -5005,8 +3355,6 @@ function createClient() {
   const app=fs.readFileSync("./src/app.js","utf8");
   assert.ok(!html.includes('id="local-battle-quick-start"'));
   assert.ok(app.includes("startQuickLocalBattle"));
-  assert.ok(app.includes("HUMAN_REVIEW_CANDIDATE_PREFIX"));
-  assert.ok(app.includes("saveCandidateReviewDraft"));
 }
 
 {
@@ -5025,22 +3373,16 @@ function createClient() {
     assert.ok(html.includes(`id="${id}"`));
   }
   assert.ok(!html.includes('id="statistics-module-replacements"'));
-  assert.ok(!html.includes('id="statistics-boosters-used"'));
-  assert.ok(app.includes('["core", "generator"].includes'));
   assert.ok(app.includes("most_used_decks"));
   assert.ok(app.includes("statistics-deck-card"));
   assert.ok(css.includes(".statistics-metrics-grid"));
   assert.ok(css.includes(".statistics-empty-state"));
-  assert.ok(html.includes('class="booster-panel battle-booster-dock"'));
-  assert.ok(css.includes('#booster-panel'));
   assert.ok(app.includes('"deploy_module"'));
   assert.ok(app.includes("createDeckModuleCard"));
   assert.ok(css.includes("GRIDSHARD Beta.32 — fixed battle viewport"));
   assert.ok(css.includes("GRIDSHARD Beta.32 Fix.1 — invariant card geometry"));
   assert.ok(css.includes("gs-card-impact-static"));
   assert.ok(css.includes("gs-card-fire-static"));
-  assert.ok(css.includes('.battle-booster-dock[data-state="ready"]'));
-  assert.ok(app.includes('boosterPanelEl.dataset.state'));
 }
 
 {
@@ -5091,6 +3433,94 @@ function createClient() {
       );
     })
   );
+}
+
+{
+  const {
+    RelayServerBootGate,
+    RelayServerHealthState,
+    SERVER_BOOT_STATUS,
+  } = require("../src/relay-client.js");
+
+  const health = new RelayServerHealthState();
+  const requested = [];
+  const gate = new RelayServerBootGate({
+    healthState: health,
+    expectedVersion: "2.1.0-beta.72",
+    expectedProtocolVersion: 1,
+    requestJson: async (requestPath) => {
+      requested.push(requestPath);
+      return { status: "ok", version: "2.1.0-beta.72", pvp_protocol_version: 1 };
+    },
+  });
+
+  asyncTests.push(
+    gate.check().then((result) => {
+      assert.strictEqual(result.ok, true);
+      assert.strictEqual(gate.canPlay(), true);
+      assert.strictEqual(gate.status, SERVER_BOOT_STATUS.READY);
+      // Açılış kapısı yalnız /health okur.
+      assert.deepStrictEqual(requested, ["/health"]);
+      assert.strictEqual(health.labelTr(), "Sunucu: Hazır");
+    })
+  );
+}
+
+{
+  const {
+    RelayServerBootGate,
+    RelayServerHealthState,
+    SERVER_BOOT_STATUS,
+  } = require("../src/relay-client.js");
+
+  const mismatch = new RelayServerBootGate({
+    healthState: new RelayServerHealthState(),
+    expectedVersion: "2.1.0-beta.72",
+    requestJson: async () => ({ status: "ok", version: "2.1.0-beta.42", pvp_protocol_version: 1 }),
+  });
+  const degraded = new RelayServerBootGate({
+    healthState: new RelayServerHealthState(),
+    expectedVersion: "2.1.0-beta.72",
+    requestJson: async () => ({ status: "degraded", version: "2.1.0-beta.72", pvp_protocol_version: 1 }),
+  });
+  const unreachable = new RelayServerBootGate({
+    healthState: new RelayServerHealthState(),
+    requestJson: async () => { throw new Error("unreachable"); },
+  });
+
+  asyncTests.push(
+    Promise.all([mismatch.check(), degraded.check(), unreachable.check()]).then(
+      ([versionResult, degradedResult, unreachableResult]) => {
+        assert.strictEqual(versionResult.ok, false);
+        assert.match(versionResult.reason, /Sürüm uyuşmazlığı/);
+        assert.strictEqual(degradedResult.ok, false);
+        assert.strictEqual(degraded.status, SERVER_BOOT_STATUS.BLOCKED);
+        assert.strictEqual(unreachableResult.ok, false);
+        assert.strictEqual(unreachable.status, SERVER_BOOT_STATUS.ERROR);
+      }
+    )
+  );
+}
+
+{
+  assert.strictEqual(MAX_ACTIVE_MODULES, 15);
+}
+
+{
+  const pool = new BattlePoolSelection({
+    selectableModuleIds: ["laser-1", "shield-1", "armor-1", "repair-1", "cooler-1", "battery-1", "emp-1"],
+    requiredSize: 6,
+    attackModuleIds: ["laser-1"],
+  });
+  const noAttack = pool.setSelection(["shield-1", "armor-1", "repair-1", "cooler-1", "battery-1", "emp-1"]);
+  assert.strictEqual(noAttack.ok, false);
+  assert.match(noAttack.reason, /saldırı kartı/);
+  assert.strictEqual(pool.isComplete(), false);
+  assert.strictEqual(
+    pool.setSelection(["laser-1", "shield-1", "armor-1", "repair-1", "cooler-1", "battery-1"]).ok,
+    true
+  );
+  assert.strictEqual(pool.isComplete(), true);
 }
 
 Promise.all(asyncTests).then(() => {

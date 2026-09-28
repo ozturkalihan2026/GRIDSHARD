@@ -17,7 +17,6 @@ assert.match(css, /\.core-detail-dialog \.core-detail-art \{[\s\S]*translateY\(1
 assert.match(css, /\.season-reward-action > small \{[\s\S]*font-size:\.44rem/);
 
 assert.ok(app.includes('circuitCredits: 6'));
-assert.ok(app.includes('mockServerCredits = Math.min(12, mockServerCredits + gainedPulses)'));
 assert.ok(app.includes('container.classList.add("battle-module-card")'));
 assert.ok(!app.includes('bar.classList.add("battle-module-hp-bar")'));
 

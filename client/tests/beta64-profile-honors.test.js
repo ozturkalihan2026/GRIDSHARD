@@ -17,7 +17,7 @@ assert.ok(app.includes("PROFILE_BADGES"));
 assert.ok(relayClient.includes("unlockedRankTrophyIds"));
 assert.ok(relayClient.includes("unlockedBadgeIds"));
 assert.ok(css.includes(".leaderboard-row:hover,.leaderboard-row:focus-within { z-index:60; }"));
-assert.ok(css.includes(".leaderboard-reward-chest:focus .leaderboard-reward-popover"));
+assert.ok(css.includes('.reward-chest-button[aria-expanded="true"]'));
 assert.ok(css.includes(".profile-honor-showcase"));
 assert.ok(!css.includes(".leaderboard-reward-chest { position:relative;width:30px;height:24px;min-height:0;padding:0;display:inline-grid;place-items:center;margin-left:5px;border:1px solid var(--reward-chest,#ffe170);border-radius:6px;color:var(--reward-chest,#ffe170);background:color-mix(in srgb,var(--reward-chest,#ffe170) 13%,#08172a);font-size:.75rem;filter:drop-shadow"));
 

@@ -16,7 +16,6 @@ class PlayerBattleSummary:
     core_type: str
     core_level: int
     circuit_credits: int
-    forfeit_credit_penalty: int
     energy_generated_total: float
     energy_consumed_total: float
 
@@ -30,6 +29,21 @@ def core_hp(player: PlayerBattleState) -> int:
     if not cores:
         return 0
     return max(0, cores[0].hp)
+
+
+# İmza mekaniğinin gerçekten devreye girdiği anlar (maç sonu satırında sayılır).
+SIGNATURE_ACTIVATION_EVENTS = frozenset({
+    "quantum_repeat",
+    "quantum_collapse",
+    "swarm_released",
+    "phoenix_rebirth",
+    "prism_energy_converted",
+    "sabotage_echo_applied",
+    "signature_secondary_hit",
+    "nano_repair_pulse",
+    "chrono_window_started",
+    "core_signature_triggered",
+})
 
 
 def damage_by_module_from_events(
@@ -53,6 +67,10 @@ def damage_by_module_from_events(
                 "control_seconds": 0.0,
                 "control_actions": 0,
                 "support_actions": 0,
+                "energy_waits": 0,
+                "overheat_events": 0,
+                "thermal_saves": 0,
+                "signature_activations": 0,
             },
         )
 
@@ -87,6 +105,25 @@ def damage_by_module_from_events(
                     0.0,
                     float(data.get("heat_before", 0.0)) - float(data.get("heat_after", 0.0)),
                 )
+        elif event.type == "action_energy_waiting" and data.get("player_id") == player.player_id:
+            source = player.modules.get(str(data.get("module_id") or ""))
+            if source is not None:
+                bucket(source.definition.id)["energy_waits"] += 1
+        elif event.type == "module_overheated" and data.get("player_id") == player.player_id:
+            source = player.modules.get(str(data.get("module_id") or ""))
+            if source is not None:
+                bucket(source.definition.id)["overheat_events"] += 1
+        elif event.type == "thermal_stabilized" and data.get("player_id") == player.player_id:
+            source = player.modules.get(str(data.get("source_module_id") or ""))
+            if source is not None:
+                bucket(source.definition.id)["thermal_saves"] += 1
+        elif event.type in SIGNATURE_ACTIVATION_EVENTS:
+            owner = data.get("player_id", data.get("attacker_player_id"))
+            source_id = data.get("module_id") or data.get("source_module_id") or data.get("attacker_module_id")
+            if owner == player.player_id:
+                source = player.modules.get(str(source_id or ""))
+                if source is not None:
+                    bucket(source.definition.id)["signature_activations"] += 1
         elif event.type == "sabotage_applied":
             if data.get("attacker_player_id") != player.player_id:
                 continue
@@ -122,10 +159,7 @@ def damage_by_module_from_events(
             continue
         values["energy_consumed"] = round(float(player.module_energy_consumed.get(definition_id, 0.0)), 3)
         values["energy_discharged"] = round(float(player.module_energy_discharged.get(definition_id, 0.0)), 3)
-        if definition_id == "generator":
-            values["energy_generated"] = round(float(player.energy_generated_total), 3)
-        else:
-            values["energy_generated"] = 0.0
+        values["energy_generated"] = 0.0
         rows.append({
             "definition_id": definition_id,
             "name_tr": module.definition.name_tr,
@@ -191,7 +225,6 @@ def build_player_summary(
         core_type=player.core_type,
         core_level=player.core_level,
         circuit_credits=player.circuit_credits,
-        forfeit_credit_penalty=player.forfeit_credit_penalty,
         energy_generated_total=player.energy_generated_total,
         energy_consumed_total=player.energy_consumed_total,
     )
@@ -219,7 +252,6 @@ def summary_to_dict(summary: PlayerBattleSummary) -> dict:
         "core_type": summary.core_type,
         "core_level": summary.core_level,
         "circuit_credits": summary.circuit_credits,
-        "forfeit_credit_penalty": summary.forfeit_credit_penalty,
         "energy_generated_total": round(
             summary.energy_generated_total,
             6,

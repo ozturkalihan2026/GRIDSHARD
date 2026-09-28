@@ -21,8 +21,6 @@ assert.ok(app.includes('setTerminalAudioState(outcome, "online_match_finished")'
 assert.ok(audio.includes("bindUserGestureUnlock"));
 assert.ok(audio.includes("playbackStatus()"));
 
-assert.ok(events.includes("class GridshardBoosterTargetMode"));
-assert.ok(css.includes("#booster-panel"));
 assert.ok(css.includes("display:none !important"));
 assert.ok(app.includes("function deployDeckModule"));
 assert.ok(app.includes("client.deployDefinition"));

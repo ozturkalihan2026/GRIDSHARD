@@ -1,10 +1,11 @@
 from dataclasses import dataclass, field
 
+from .game.catalog import PLAYER_SELECTABLE_MODULE_IDS
 from .game.models import BattleState, BattleStatus
 from .match_accounting import applies_to_profile_progression
 
 
-HABIT_EXCLUDED_DEFINITION_IDS = frozenset({"core", "generator"})
+HABIT_EXCLUDED_DEFINITION_IDS = frozenset({"core"})
 
 
 @dataclass(slots=True)
@@ -16,8 +17,6 @@ class PlayerStatistics:
     draws: int = 0
     total_match_duration_ms: int = 0
     total_damage_dealt: int = 0
-    module_replacements: int = 0
-    boosters_used: int = 0
     module_usage: dict[str, int] = field(
         default_factory=dict
     )
@@ -43,7 +42,8 @@ class PlayerStatistics:
             (
                 item
                 for item in self.module_usage.items()
-                if item[0] not in HABIT_EXCLUDED_DEFINITION_IDS
+                # Eski kayıtlarda kalan Çekirdek ve kaldırılmış kartlar alışkanlık sayılmaz.
+                if item[0] in PLAYER_SELECTABLE_MODULE_IDS
             ),
             key=lambda item: (
                 -item[1],
@@ -67,10 +67,6 @@ class PlayerStatistics:
             "total_damage_dealt": (
                 self.total_damage_dealt
             ),
-            "module_replacements": (
-                self.module_replacements
-            ),
-            "boosters_used": self.boosters_used,
             "most_used_modules": [
                 {
                     "definition_id": definition_id,
@@ -180,22 +176,6 @@ class PlayerStatisticsService:
                     "damage_dealt",
                     0,
                 )
-            )
-
-            stats.module_replacements += sum(
-                1
-                for event in state.events
-                if event.type == "module_replaced"
-                and event.data.get("player_id")
-                == player_id
-            )
-
-            stats.boosters_used += sum(
-                1
-                for event in state.events
-                if event.type == "booster_applied"
-                and event.data.get("player_id")
-                == player_id
             )
 
             for definition_id in self._used_definition_ids(

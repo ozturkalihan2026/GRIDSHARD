@@ -24,12 +24,8 @@ def test_persistent_telemetry_handles_concurrent_writes(
             TelemetryEvent(
                 event_id=f"event-{index}",
                 event_type=
-                    "web_test_stability_snapshot",
+                    "match_started",
                 timestamp_ms=1000+index,
-                metadata={
-                    "test_run_id":"r",
-                    "stability":"stable",
-                },
             )
         )
 

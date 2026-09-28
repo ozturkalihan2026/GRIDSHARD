@@ -51,7 +51,7 @@ BALANCED_LAYOUT = BattleLayoutSpec(
     name_tr="Dengeli Devre",
     modules=(
         LayoutModule("core", "core", 2, 1),
-        LayoutModule("splitter", "splitter", 2, 0),
+        LayoutModule("battery", "battery", 2, 0),
         LayoutModule("armor", "armor", 1, 1),
         LayoutModule("drone", "drone_bay", 3, 1),
         LayoutModule("laser", "laser", 4, 1),
@@ -64,7 +64,7 @@ OFFENSE_LAYOUT = BattleLayoutSpec(
     name_tr="Saldırı Devresi",
     modules=(
         LayoutModule("core", "core", 2, 1),
-        LayoutModule("splitter", "splitter", 2, 0),
+        LayoutModule("capacitor", "capacitor", 2, 0),
         LayoutModule("amp", "amplifier", 1, 1),
         LayoutModule("laser", "laser", 0, 1),
         LayoutModule("rail", "railgun", 3, 1),
@@ -77,7 +77,7 @@ DEFENSE_LAYOUT = BattleLayoutSpec(
     name_tr="Savunma Devresi",
     modules=(
         LayoutModule("core", "core", 2, 1),
-        LayoutModule("splitter", "splitter", 2, 0),
+        LayoutModule("battery", "battery", 2, 0),
         LayoutModule("barrier", "barrier", 1, 1),
         LayoutModule("drone", "drone_bay", 3, 1),
         LayoutModule("laser", "laser", 4, 1),
@@ -90,7 +90,7 @@ SABOTAGE_LAYOUT = BattleLayoutSpec(
     name_tr="Sabotaj Devresi",
     modules=(
         LayoutModule("core", "core", 2, 1),
-        LayoutModule("splitter", "splitter", 2, 0),
+        LayoutModule("battery", "battery", 2, 0),
         LayoutModule("jammer", "jammer", 1, 1),
         LayoutModule("drone", "drone_bay", 3, 1),
         LayoutModule("laser", "laser", 4, 1),
@@ -103,7 +103,7 @@ BATTERY_PULSE_LAYOUT = BattleLayoutSpec(
     name_tr="Batarya Darbe Devresi",
     modules=(
         LayoutModule("core", "core", 2, 1),
-        LayoutModule("splitter", "splitter", 2, 0),
+        LayoutModule("balancer", "current_balancer", 2, 0),
         LayoutModule("battery", "battery", 1, 1),
         LayoutModule("pulse", "pulse_cannon", 0, 1),
         LayoutModule("laser", "laser", 3, 1),
@@ -116,7 +116,7 @@ ARMOR_COUNTER_LAYOUT = BattleLayoutSpec(
     name_tr="Zırh Karşı Devresi",
     modules=(
         LayoutModule("core", "core", 2, 1),
-        LayoutModule("splitter", "splitter", 2, 0),
+        LayoutModule("battery", "battery", 2, 0),
         LayoutModule("armor", "armor", 1, 1),
         LayoutModule("drone", "drone_bay", 3, 1),
         LayoutModule("laser", "laser", 4, 1),

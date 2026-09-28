@@ -10,7 +10,6 @@ def valid_payload(player_id="a"):
         battle_pool_ids=default_battle_pool().module_definition_ids,
         initial_modules=(
             InitialModulePlacement(f"{player_id}-core", "core", 2, 1),
-            InitialModulePlacement(f"{player_id}-gen", "generator", 2, 0),
         ),
     )
 
@@ -29,12 +28,12 @@ def test_strict_session_cannot_start_without_setups():
         service.start("match")
 
 
-def test_valid_setup_installs_six_card_deck_and_two_fixed_modules():
+def test_valid_setup_installs_six_card_deck_and_the_core():
     service, session = strict_session()
     service.submit_setup("match", "a", valid_payload("a"))
     player = session.engine.state.players["a"]
     assert len(player.battle_pool.module_definition_ids) == 6
-    assert len(player.modules) == 2
+    assert len(player.modules) == 1
     assert all(module.status.value == "active" for module in player.modules.values())
     assert session.slots["a"].setup_submitted is True
 

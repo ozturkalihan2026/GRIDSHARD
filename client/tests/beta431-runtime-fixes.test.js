@@ -13,7 +13,6 @@ assert.ok(html.includes('id="post-match-continue"'));
 assert.ok(!html.includes('id="post-match-persistence-status"'));
 assert.ok(app.includes("function fetchWithDeadline"));
 assert.ok(app.includes("function requestJsonWithDeadline"));
-assert.ok(app.includes("void finishWebTestSessionAudit"));
 assert.ok(app.includes("localServerFinalResult"));
 assert.ok(app.includes("arena-league-reward-road"));
 assert.ok(app.includes("energizedEdges"));

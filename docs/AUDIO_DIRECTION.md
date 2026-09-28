@@ -87,14 +87,8 @@ Foundation motif tasarım kuralı:
 
 ## 5. Ses efekt dili
 
-### Port bağlantısı
-`mekanik klik → elektrik kilidi → kısa enerji pulse`
-
 ### Enerji transferi
 kısa dijital akım; sürekli uğultu yapılmaz.
-
-### Jeneratör kapı değişimi
-manyetik kilit açılması + yön değiştiren elektrik sesi.
 
 ### Lazer
 kapasitör dolumu + sert elektrik boşalması.
@@ -191,7 +185,15 @@ Beta.16 hâlâ prototip mix kullanır. Final loudness, stereo imaging ve masteri
 - Müzik assetleri hedef peak: `-6 dBFS`
 - SFX assetleri hedef peak: `-3 dBFS`
 - Runtime music base gain: `0.72`
-- Runtime SFX base gain: `0.86`
+- Runtime SFX base gain: `0.55` (Eylül 2026 / mix v11; v10 `0.72`, önceki `0.86`)
+- Savaş müziği katmanları ek olarak `battleMusicGain: 1.5` ile çalar (v11; v10 `1.22`). Menü müziği değişmedi.
+- v11 efekt yoğunluğu (`GRIDSHARD_SFX_VOICE_LIMIT`): iki tarafın her saldırısı ateş + isabet efekti çaldığı için efekt yığını müziği bastırıyordu. Aynı efekt 90 ms içinde tekrar çalmaz; rutin efektler (ateş, isabet, akım) 320 ms'lik pencerede en fazla 3 tanedir. Çekirdek isabeti, yok etme, modül kaybı, uyarı, çekirdek gücü, diriliş ve EMP sınıra takılmaz.
+- v11 efekt kanalı Web Audio'da sıkıştırıcıdan geçer (eşik −20 dB, oran 4:1, atak 4 ms, bırakma 220 ms); tarayıcı desteklemezse doğrudan çıkışa bağlanır.
+- v12 (28 Eylül 2026, kullanıcı kararı): savaşta katmanlı müzik baskın, efektler arka planda.
+  - `battleMusicGain` `1.5` → `1.85`; savaş stem taban kazançları %15 yükseldi (ör. sub `.36` → `.41`).
+  - Yeni `battleSfxGain: 0.5`: savaş durumlarında (giriş, savaş, baskı, kritik çekirdek) efekt kanalı ayrıca yarıya iner (yaklaşık −6 dB). Menü efektleri değişmedi.
+  - Varsayılan ayarlarda (müzik %70) savaş müziği yaklaşık +3 dB, savaş efektleri −6 dB oynadı.
+  - Web Audio'da müzik izleri sınırlayıcıdan geçer (eşik −3 dB, oran 20:1, atak 3 ms, bırakma 250 ms): katman toplamı kırpılmaz. Tarayıcı desteklemezse doğrudan çıkışa bağlanır.
 
 Bu iki aşamalı yaklaşım asset dosyasındaki tepe seviyesini ve oyuncu volume slider'ından önceki runtime headroom'u ayrı tutar.
 
@@ -390,3 +392,14 @@ Deterministik kaynak: `tools/generate_beta31_battle_audio.py`.
 Ana Menü ile hazırlık ekranı artık aynı 32 saniyelik ve 52 BPM'lik zaman ızgarasını paylaşır. Ekran geçişi yeni parçayı eski parçanın fazından başlatır; böylece iki farklı ritim üst üste binip hızlanma veya takılma algısı üretmez. Çalışma zamanı aynı ses elemanı üzerindeki eski fade zamanlayıcısını yeni geçişten önce iptal eder.
 
 V6 WAV üretiminde başlangıç ve bitişi sessizliğe çeken pencere kaldırılmıştır. Frekanslar 32 saniyelik döngüye kuantalanır ve kısa dikiş bölgesi son örneği ilk örneğe taşır. Bu nedenle parçanın yeniden başlamasında dijital sessizlik boşluğu yoktur. Deterministik kaynak: `tools/generate_beta28_menu_audio.py`.
+
+## 19. Beta.71 Mobil Ses Biçimleri ve Savaş Katmanları
+
+Kanonik kaynak `client/assets/audio/*.wav` olarak kalır. `tools/encode_mobile_audio.py` (ffmpeg gerekir) her WAV için `client/assets/audio/mobile/` altında OGG Vorbis ve AAC (`.m4a`) türevi üretir, `mobile/manifest.json` içine kaynak SHA-256 değerini yazar ve çalışma zamanı listesini `client/src/gridshard-audio-formats.js` dosyasına işler. `--check` kaynak/türev uyumunu denetler.
+
+- İstemci `canPlayType` ile önce OGG Vorbis (`probably`), sonra AAC dener. Yalnız manifestte listelenen türev kullanılır; türev yüklenemez veya çözülemezse aynı ses kanonik WAV ile yeniden denenir.
+- Üretim paketleri (`pnpm build:web` ve `pnpm build:mobile:web`, bkz. `docs/CLIENT_BUILD.md`), iki türevi de doğrulanan WAV'ları pakete almaz. WAV türevinden yeniyse veya türev eksik/bozuksa paket üretimi durur. `GRIDSHARD_MOBILE_KEEP_WAV=1` WAV'ları korur; bu durumda türev çözülemezse WAV yedeği pakette kalır. Geliştirme sunucusu (`client/`) WAV'ları her zaman sunar.
+- Savaş müziği (`GRIDSHARD_BATTLE_MUSIC_ENABLED`) açıldı. Web Audio varken yedi stem önce çözülür ve aynı bağlam zamanında başlatılır; HTML ses öğesi yedeğinde senkron garanti edilmez. iOS'ta HTML `volume` yok sayıldığı için katman miksi yalnız Web Audio yolunda duyulur.
+- Durumlar aynı dosyayı paylaşmaz: `battle_intro` sub/pulse/percussion, `battle` +ostinato/shards, `battle_pressure` +dissonance, `critical_core` +pressure stem'lerini açar. Baskı değeri etkin küme içindeki kazançları değiştirir.
+- `navigator.deviceMemory <= 2` bildiren cihazlarda çözülmüş PCM bütçesini düşürmek için yalnız sub/pulse/percussion/pressure stem'leri yüklenir.
+- AAC kodlayıcı gecikmesini ffmpeg MP4 edit list ile işaretler; 32 sn döngü dikişinin iOS'ta duyulmadığı gerçek cihazda doğrulanmalıdır.

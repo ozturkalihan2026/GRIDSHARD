@@ -4,8 +4,8 @@ import hashlib
 from dataclasses import dataclass
 from typing import Awaitable, Callable
 from .engine import TICK_MS
-from .ai import enqueue_ai_actions
-from .models import BattleStatus, BattleCommand, ModuleStatus
+from .ai import enqueue_ai_actions, should_use_core_power
+from .models import BattleStatus, BattleCommand
 from .pvp_session import PvPSessionService
 from .pvp_websocket import PvPWebSocketAdapter
 
@@ -98,8 +98,7 @@ class PvPTickRunner:
             roll = int(hashlib.sha256(f"{session_id}:{ai_player_id}:{session.engine.state.tick}".encode()).hexdigest()[:8], 16) / 0xFFFFFFFF
             if opponent_player_id is not None and roll >= float(options.get("mistake_rate", 0)):
                 ai = session.engine.state.players[ai_player_id]
-                living = [m for m in ai.modules.values() if m.status == ModuleStatus.ACTIVE]
-                if ai.core_power_charge >= 100 and (ai.core_type not in {"core_resonance", "core_phoenix"} or any(m.hp < m.definition.max_hp for m in living)):
+                if should_use_core_power(ai, session.engine.state.players.get(opponent_player_id)):
                     session.engine.enqueue_command(BattleCommand(player_id=ai_player_id, kind="use_core_power",
                         payload={"request_id": f"{session_id}:{ai_player_id}:core:{session.engine.state.tick}"}))
                 plan=enqueue_ai_actions(
@@ -117,7 +116,8 @@ class PvPTickRunner:
         self.service.step(session_id)
         stats.ticks_executed+=1
         stats.live_event_broadcasts += await self.websocket_adapter.broadcast_live_events(session_id)
-        if stats.ticks_executed % self.snapshot_every_ticks == 0:
+        snapshot_sent = stats.ticks_executed % self.snapshot_every_ticks == 0
+        if snapshot_sent:
             stats.snapshot_broadcasts += await self.websocket_adapter.broadcast_snapshot(session_id)
 
         if session.engine.state.status == BattleStatus.FINISHED:
@@ -134,6 +134,12 @@ class PvPTickRunner:
                     # Projection failure is recorded, but the terminal result
                     # is still delivered so the battle itself never hangs.
                     stats.match_finished_callback_failures += 1
+
+            # Anlık görüntü her karede gitmez. Savaş arada bir karede bittiyse
+            # (ör. modül ve çekirdek aynı saniyede öldü) son tahta da gönderilir;
+            # yoksa istemcide ölü modül eski görüntüyle kalır.
+            if not snapshot_sent:
+                stats.snapshot_broadcasts += await self.websocket_adapter.broadcast_snapshot(session_id)
 
             stats.match_finished_broadcasts += (
                 await self.websocket_adapter.broadcast_match_finished(

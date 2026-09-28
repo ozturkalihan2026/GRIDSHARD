@@ -19,7 +19,7 @@ Savaş içinde oyuncu deste rafındaki bir modüle dokunur. Yeterli **Akım** va
 - **Jeneratör zorunluluğu kaldırılmıştır.** Jeneratör artık Çekirdekten önce gereken temel enerji kaynağı değildir.
 - Çekirdek savaşın ana enerji üreticisidir; **Çekirdek seviyesi yükseldikçe enerji üretimi artar**.
 - Eski **Enerji sınıfı** adı ve bağlantı/dağıtım rolü kaldırılır; bu stratejik alan bundan sonra yalnız **Sistem sınıfı** olarak adlandırılır.
-- Dağıtıcı yalnız eski port topolojisine hizmet ettiği için aktif hedef katalogdan çıkarılacaktır.
+- Dağıtıcı yalnız eski port topolojisine hizmet ettiği için katalogdan çıkarılmıştır; Jeneratör ve Enerji Sömürücü de katalogda yoktur. Katalog 36 modül + Çekirdektir.
 - Savaş kartına dokunma → uygun rastgele boş modül hücresine yerleşme.
 - Saldırı kartları boş hücre ve Akım elverdiği sürece tekrar üretilebilir. Savunma, Destek, Sistem ve Sabotaj kartlarında aynı tanımdan en fazla **2**, aynı sınıftan en fazla **3** aktif kopya bulunabilir.
 - Saldırı dışı aktif modül sayısı, aktif Saldırı modülü sayısını en fazla **2** aşabilir. Böylece dolu bir devre yalnız iyileştirme/savunma yığınına dönüşmez.
@@ -44,50 +44,93 @@ Savaş içinde oyuncu deste rafındaki bir modüle dokunur. Yeterli **Akım** va
 
 ## 2.1. Çekirdek enerji üretimi ve Enerji Baskısı
 
-Çekirdek, savaş alanındaki tüm modüllerin temel enerji kaynağıdır. Her modül sahada kaldığı sürece enerji tüketir. Enerji üretimi ve tüketimi, **Akım** yerleştirme kaynağından tamamen ayrıdır.
+Çekirdek, savaş alanındaki tüm modüllerin temel enerji kaynağıdır. Enerji üretimi ve tüketimi, **Akım** yerleştirme kaynağından tamamen ayrıdır. Beta.72 ile enerji iki biçimde harcanır:
+
+- **Aksiyon enerjisi:** Saldırı, onarım ve sabotaj modülleri enerjiyi işi yaptıkları anda öder. Enerji yetmezse yalnız o modül görünür biçimde bekler (`action_energy_waiting`, kartta ϟ rozeti); bekleme süresi boşa gitmez ve enerji biriktiği adımda eylem gerçekleşir.
+- **Bakım enerjisi:** Kalkan, Zırh, Yansıtıcı, Bariyer, Soğutucu, Güçlendirici gibi sürekli sistemler saniyelik küçük bir bakım öder. Dağıtım bakımın yarısını bile karşılayamazsa bu sistemler kapanır.
+
+Aksiyon enerjisi sırasıyla Çekirdek rezervinden, Kapasitörden (aksiyon başına en fazla 10) ve Bataryadan (aksiyon başına en fazla 4) karşılanır.
 
 Çekirdeğin temel enerji parametreleri:
 
-- `energy_per_second`: saniyelik enerji üretimi.
-- `energy_capacity`: kısa süreli dalgalanmaları karşılayan enerji deposu.
+- `energy_per_second`: saniyelik enerji üretimi (dağıtım verimi %90).
+- `energy_capacity`: Çekirdek rezervi; ani aksiyon maliyetlerini karşılar.
 - `core_charge_rate`: Çekirdek aktif gücünün dolum hızı.
-- Çekirdek seviyesi arttıkça `energy_per_second` ve kontrollü biçimde `energy_capacity` artar.
 
-Başlangıç denge hedefi:
+Beta.72 başlangıç değerleri:
 
-- Çekirdek Seviye 1: yaklaşık **10 enerji/sn**, **100 enerji kapasitesi**.
-- Enerji üretimi seviye başına yaklaşık **%4 bileşik** artar.
-- Enerji kapasitesi seviye başına yaklaşık **+3** artar.
-- Kesin değerler Beta.42H denge simülasyonunda kalibre edilir.
+- Çekirdek Seviye 1: **12 enerji/sn**, **24 enerji rezervi**; maç 16 enerjiyle başlar.
+- Enerji üretimi seviye başına **%3 bileşik** artar; rezerv seviye başına **+1** artar.
+- Batarya: saniyede **3** enerji üretir, **20** enerji depolar. Kapasitör: enerji üretmez, **10** enerjilik hızlı rezervdir. Akım Dengeleyici: aksiyon ve bakım maliyetlerini **%8** azaltır, çoklu kopyada en fazla **%24**.
 
-Tamamen saldırı modüllerinden oluşan bir deste, yüksek hücre doluluğunda Çekirdeğin enerji üretimini aşabilmelidir. Böylece oyuncu yalnız ham saldırı gücü değil, enerji sürdürülebilirliği de planlamak zorunda kalır.
+Karışık bir devre (hafif saldırı, kalkan, onarım, destek) rahat çalışır; ağır saldırı yığını (ör. dört Kuantum Topu, saniyede ~12,8 enerji) Seviye 1 Çekirdeğin ~10,8 enerji/sn dağıtımını aşar ve atışları beklemeye düşer. Böylece oyuncu ham saldırı gücüyle birlikte enerji sürdürülebilirliğini de planlar.
 
-### Modül enerji tüketimi için V1 hedef bantları
+### Aksiyon enerjisi ve bakım değerleri
 
-| Modül rolü | Başlangıç enerji tüketimi hedefi |
-|---|---:|
-| Hafif saldırı | **2–3 enerji/sn** |
-| Orta saldırı | **4–5 enerji/sn** |
-| Ağır saldırı | **7–9 enerji/sn** |
-| Savunma | **2–4 enerji/sn** |
-| Destek / Onarım | **2–4 enerji/sn** |
-| Sistem | **0–2 enerji/sn** |
+| Modül | Aksiyon enerjisi | Modül | Bakım (enerji/sn) |
+|---|---:|---|---:|
+| Lazer | 1,2 | Kalkan | 0,8 |
+| Dron Üssü | 1,0 | Yansıtıcı | 0,6 |
+| Kuantum Tekrarlayıcı | 2,8 | Bariyer, Zırh, Faz Zırhı | 0,5 |
+| Ark Topu | 3,5 | Koruyucu Kubbe, Prizma Kalkanı | 1,0 |
+| Füze Fırlatıcı | 4,5 | Soğutucu | 0,25 |
+| Darbe Topu | 5,0 | Güçlendirici, Hedefleme Bilgisayarı, Akım Dengeleyici | 0,4 |
+| Plazma Havanı | 5,5 | Aşırı Hızlandırıcı, Omega Güçlendirici | 0,8 |
+| Ray Topu | 6,0 | Kronos Rölesi | 0,7 |
+| İyon Mızrağı | 7,0 | Hassas Matris | 0,6 |
+| Kuantum Topu | 8,0 | | |
+| Onarım / Nano Medik / Anka Onarımı | 2,5 / 3,0 / 5,0 | | |
+| EMP, Virüs | 6,0 | | |
+| Sinyal Bozucu | 5,0 | | |
+| Kesici, Tekillik Projektörü | 8,0 | | |
 
-Bu bantlar modül bazında kesin değer değildir; amaç, 14 modül hücresinin tamamını ağır saldırı modülleriyle dolduran bir oyuncunun Çekirdek üretimini açık biçimde aşması, dengeli veya Sistem destekli destelerin ise Enerji Baskısını daha iyi yönetebilmesidir.
+### Enerji darlığı
 
-### Enerji Baskısı / Aşırı Yük
+Eski devre çapındaki gizli hız/hasar cezası kaldırıldı. Enerji darlığı yalnız görünür biçimde ortaya çıkar: bekleyen aksiyonlar ve kapanan sürekli sistemler. Savaş hiçbir enerji durumunda pause olmaz.
 
-Toplam anlık tüketim Çekirdeğin sürdürülebilir üretimini geçtiğinde modüller aniden kapanmaz. Bunun yerine kademeli verim cezası uygulanır:
+### Isı
 
-| Enerji yükü | V1 hedef ceza |
-|---:|---|
-| %0–100 | Normal çalışma |
-| %101–120 | Saldırı hızı -%10 |
-| %121–140 | Saldırı hızı -%20, onarım/kalkan etkinliği -%10 |
-| %141–160 | Saldırı hızı -%30, hasar -%10 |
-| %160+ | **Aşırı Yük:** saldırı hızı -%40, destek/onarım etkinliği -%25 |
+- Her atış ısı üretir: `1,4 × temel bekleme süresi (sn) + 0,9 × aksiyon enerjisi`. Pasif soğuma saniyede **1,3**'tür; sürekli ateş eden her saldırı modülü bunu aşar. Hafif silahlar ~60 sn, enerji yoğun silahlar ~25 sn sonra Yüksek Isı'ya çıkar.
+- **70 ısı (Yüksek Isı):** hasar %85, bekleme süresi ×1,2.
+- **100 ısı (Aşırı Isınma):** modül 5 CAN hasar alır ve ısısı **70'in altına inene kadar susar**; susarken iki kat hızlı soğur (~12 sn).
+- **Soğutucu:** yerleşimden bağımsız olarak devredeki en sıcak iki modülü saniyede 8 soğutur; susmuş modülü ~4 sn'de toparlar. EMP ve hat kesintisi sürelerini de en fazla iki modülde kısaltır.
+- **Aşırı Hızlandırıcı:** devredeki en ağır (aksiyon enerjisi en yüksek) saldırı modülünü seçer; hasar ×1,2 ve bekleme ×0,8 verir, hedefe saniyede 1,5 ek ısı ekler. Birden fazla Aşırı Hızlandırıcı farklı hedefler seçer; aşırı ısınan hedef bırakılır ve sıradaki ağır saldırıya geçilir.
 
-Bu eşikler ürünün ilk denge hedefidir; telemetri ve simülasyona göre değiştirilebilir. Savaş hiçbir enerji durumunda pause olmaz.
+### Enderlik ve imza mekanikleri (Beta.72)
+
+Enderlik gizli güç vermez; aynı seviyedeki kartlar aynı çarpanı alır. Enderlik kartın mekanik kimliğini belirler: Yaygın tek iş, Nadir bir koşul, Destansı zamanla biriken durum ya da risk–ödül, Efsanevi savaşın bir kuralını değiştiren imza. İmza kartları ailesinin davranışını ve karşılıklarını korur (Prizma Kalkanı hâlâ bir Kalkan'dır); imza bunun üstüne eklenir. Destekler yerleşimden bağımsız olarak tüm devrede çalışır ve bir saldırı yalnız en güçlü tek desteği kullanır.
+
+| Kart | İmza mekaniği |
+|---|---|
+| Ray Topu / İyon Mızrağı | Savunma azaltımının %40 / %60'ını deler; İyon Mızrağı arka hedefe %55 taşar |
+| Füze Fırlatıcı / Plazma Havanı | Ateşlemeden önce 0,7 / 1,2 sn kilit; kilit saldırı aralığının içindedir, hedef değişirse baştan başlar; Plazma %35 sıçrar |
+| Dron Üssü / Ark Topu | Sıradaki hedefe %25 / %45 ikincil vuruş |
+| İkincil vuruşların tamamı | Hedefin savunması, Kubbe ve karşılık kurallarından geçer |
+| Kuantum Tekrarlayıcı | Aynı hedefe 4. ardışık vuruşta son hasarın %65'i kadar yankı |
+| Sürü Fabrikası | Her atışta dron biriktirir; 4. atışta üç hedefe (her birine %25) sürü |
+| Kuantum Topu | Devrenin boşa giden enerjisini (rezerv ve depolar doluyken) 30'a kadar yük olarak toplar; yük sıradaki atışa %80'e kadar hasar ekler |
+| Koruyucu Kubbe | Kendisi %32 azaltır; yaşadığı sürece diğer modüllere gelen hasar %12 azalır |
+| Faz Zırhı | Her 6 sn'nin ilk 1 sn'sinde saldırıları tamamen boşa çıkarır; diğer anlarda %18 azaltır |
+| Prizma Kalkanı | %30 azaltır; engellediği hasarın dörtte birini Çekirdek rezervine ekler |
+| Nano Medik | En yaralı iki modülü temel onarımın %62'si kadar onarır |
+| Anka Onarımı | 30 sn'de bir, 10 enerjiyle, sınıf/kopya/saha sınırlarından geçerek yok edilmiş bir modülü %30 CAN ile geri getirir; her modül maçta bir kez; aday yoksa ×1,15 tek hedef onarım |
+| Güçlendirici / Hedefleme Bilgisayarı | Tüm saldırılara hasar / bekleme desteği: toplam %30 pay saldırı sayısına bölünür, tek saldırıya en fazla %15 |
+| Aşırı Hızlandırıcı | En ağır saldırıyı seçer; bonus ve ısı yalnız hedefe gider |
+| Kronos Rölesi | 4 sn tüm saldırılar hızlanır (bekleme ×0,72), ardından 2,5 sn borç (bekleme ×1,18, hasar ×0,95); borç başka destekle atlatılamaz |
+| Hassas Matris | Aynı hedefe art arda vuran saldırı 4 kademeye kadar kademe başına +%4 hasar, -%3 bekleme |
+| Omega Güçlendirici | Devredeki her farklı sınıf paylaşılan hasar payına %8 ekler (en fazla 5 sınıf); tek saldırıya en fazla %20 |
+| Virüs | 4 hasarla başlar, her tikte 2 artar (6 sn'de 54) |
+| Kesici / Tekillik Projektörü | 3,5 / 4,5 sn kesinti; ikinci bir sisteme %50 / %65 süreli yankı. Sabotaj kartları saldırı döngüsüne girmez |
+
+### İmza görünürlüğü: efekt, rozet, sarsıntı ve ses
+
+Her imza sahada okunur olmalıdır; görsel yalnız motorun gerçekten ürettiği olaydan doğar, istemci kendi başına imza tetiklemez.
+
+- **Kart rozetleri** (kartın sol altı, CAN çubuğunun üstü; en fazla 2): Kuantum Tekrar `↻n/4`, Sürü deposu `✥n/4`, Kuantum yükü `◎%`, Füze/Plazma kilidi `⌖`, Kronos `⧗+` / borç `⧗−`, Faz penceresi `FAZ`, Omega kategori sayısı `Ωn`, Hassas odak `⊕n`, Anka ile dirilmiş `✦`. Canlı durum rozetleri (ısı, enerji bekliyor, olumsuz etki) sağ üstte kalır. Sunucu rozeti yalnız görünür durumdan üretir ve milisaniye sayacı göndermez.
+- **Efektler:** hale + halka + parçacık, gerekirse kaynaktan hedefe bağ ışını ve kısa etiket (YANKI, ÇÖKÜŞ, SÜRÜ, DİRİLİŞ, PRİZMA, TEKİLLİK, KRONOS, BORÇ, FAZ, KİLİT, İMHA). Kilit telgrafı gerçek hazırlık süresi kadar görünür; rakip bu sürede hedefin ne olduğunu okuyabilir. Aynı anda çok efekt varsa önceliği düşük olan (yankı, ikincil vuruş, borç) önce atlanır; Grafik ayarı Orta/Düşük bütçeyi küçültür.
+- **Arena sarsıntısı:** hafif (imza vuruşu, rakip çekirdeğe ağır vuruş), orta (modül düştü, kendi çekirdeğine ağır vuruş), ağır (dolu Kuantum çöküşü), çekirdek (çekirdek yıkımı). Hareket azaltma tercihinde sarsıntı yerine kısa parlama kullanılır. Titreşim ayarı açıksa orta ve üstü sarsıntı cihazı titretir.
+- **Okunabilirlik:** rozet ve efekt yazıları opak koyu zeminde (`#06111f`) açık renktir; en düşük kontrast 9,3:1. Renk tek başına anlam taşımaz, her rozetin simgesi ve açıklama başlığı vardır.
+- **Ses:** imza ipuçlarının kendi adları vardır (`quantum_charge`, `repeat_echo`, `swarm_release`, `phoenix_revive`, `prism_shield`, `phase_evade`, `singularity_field`, `sabotage_echo`, `omega_link`, `chrono_shift`, `target_lock`, `nano_pulse`, `kill_confirm`, `module_lost`) ve imza saldırı kartları kendi atış ipucunu kullanır. Adlar mevcut ses dosyalarına bağlanır; yeni dosya eklenince yalnız eşleme değişir. Aynı ipucu 160 ms'den sık çalmaz.
 
 ### Sistem sınıfının yeni rolü
 
@@ -107,8 +150,8 @@ Aşağıdaki değerler **kanonik başlangıç denge hedefidir**; Beta.42H simül
 
 | Sistem modülü | V1 temel etki | Enerji tüketimi / sınır | Denge amacı |
 |---|---|---|---|
-| **Kapasitör** | Maksimum enerji kapasitesi **+25** | **1 enerji/sn** | Ağır tüketim dalgalanmalarını yumuşatır; kalıcı üretim sağlamaz |
-| **Akım Regülatörü** | Tüm dost modüllerin enerji tüketimi **-%8** | Düşük tüketim; çoklu kopyada azalan verim | Tam saldırı destelerine bedelsiz çözüm olmadan verim kazandırır |
+| **Kapasitör** | **10** enerjilik hızlı rezerv; açıkta Bataryadan önce boşalır | Bakım yok; üretim yapmaz | Ağır aksiyon dalgalanmalarını yumuşatır; kalıcı üretim sağlamaz |
+| **Akım Dengeleyici** | Aksiyon ve bakım maliyetleri **-%8** | **0,4** bakım; çoklu kopyada en fazla **-%24** | Tam saldırı destelerine bedelsiz çözüm olmadan verim kazandırır |
 | **Süperkapasitör** | Her **12 sn** bir **+30 enerji** rezerv darbesi | Pasif üretim yerine aralıklı destek | Kısa saldırı pencereleri ve toparlanma sağlar |
 | **Enerji Geri Kazanım Modülü** | Düşman modülü yok edildiğinde **+15 enerji** | Tetik başına; zincirleme kazanım için iç cooldown uygulanabilir | Agresif fakat başarılı oyunu enerjiyle ödüllendirir |
 | **Verimlilik Çipi** | Sahadaki en yüksek tüketimli **3 modülün tüketimini -%12** azaltır | Etki hedef sayısıyla sınırlı | Ağır modülleri destekler ama bütün devreyi bedelsiz ucuzlatmaz |
@@ -136,7 +179,7 @@ Bu 3 saniyelik pencere, parçalanan modülün yerine anında yeni kart basılmas
 
 ## 2.3. Maç bitişi, Devre Gerilimi ve destek yığılması
 
-Maçın tek normal galibiyet koşulu rakip Çekirdeğin yok edilmesidir. Toplam hasar, kalan modül sayısı veya kalan toplam CAN hiçbir zaman süre sonu hakemi olarak kazanan seçmez. İki Çekirdek aynı sunucu adımında yok edilirse maç berabere biter. Savaştan çekilme ayrı ve açık bir mağlubiyet koşuludur.
+Maçın tek normal galibiyet koşulu rakip Çekirdeğin yok edilmesidir. Savaştan çekilme Akım cezası içermez; bedeli yalnız mağlubiyettir. **Hareketsizlik:** Süre sınırı olmadığı için bağlı ama kart basmayan oyuncu maçı sonsuza uzatamaz. Akım tavandayken (12) ve yerleşecek boş hücre varken 15 sn kart basmayan oyuncu uyarılır, 30 sn'de savaştan çekilmiş sayılır (`player_inactive`). İki taraf aynı tikte sınıra ulaşırsa maç berabere biter (`mutual_inactivity`). Tahtası dolu oyuncu hareketsiz sayılmaz. Toplam hasar, kalan modül sayısı veya kalan toplam CAN hiçbir zaman süre sonu hakemi olarak kazanan seçmez. İki Çekirdek aynı sunucu adımında yok edilirse maç berabere biter. Savaştan çekilme ayrı ve açık bir mağlubiyet koşuludur.
 
 Savunma/onarım ağırlıklı devrelerin maçı sonsuza uzatmaması için `03:00` bir bitiş sınırı değil **Devre Gerilimi başlangıcıdır**:
 
@@ -204,6 +247,11 @@ Oyuncu tüm kayıtlı desteleri değiştirebilir.
 - Oyuncu destedeki kartı seçince atomik değişim yapılır.
 - Desteden kart çıkarma, yeni seçim bekleyen boş yuva üretebilir.
 - Aktif deste daima 6 farklı kart tanımından oluşur; maç içinde aynı karttan birden fazla örnek üretilebilir.
+- Destede **en az bir saldırı kartı** bulunur. Sabotaj Çekirdeği hedefleyemediği için saldırısız iki deste maçı hiç bitiremezdi; kayıtlı saldırısız desteler ilk varsayılan saldırı kartını alır.
+
+### Akım maliyetleri (Beta.72 R2)
+
+Maliyet enderliği değil, simülasyonda ölçülen güç ve tempo değerini izler (2–6 Akım). R2 değişiklikleri: Lazer, Kalkan, Zırh, Onarım 2→3; Darbe Topu 3→4; Kuantum Tekrarlayıcı 4→5; İyon Mızrağı ve Kuantum Topu 5→6; Prizma Kalkanı ve Anka Onarım 5→4; Yansıtıcı, Sürü Fabrikatörü, Krono Rölesi, Aşırı Hızlandırıcı, Hassasiyet Matrisi 4→3; Omega Güçlendirici, Kesici, Tekillik Projektörü 5→3. Simülasyonda kart galibiyet oranı aralığı %37–62'den %41–59'a daraldı.
 
 ## 6. Arena ve kupa yolu
 
@@ -244,6 +292,8 @@ Oyuncular **aynı Arena/Lig kademesi** içinde aranır.
 
 AI fallback gerçek oyuncu aramasını sonlandırır; bot aynı kademeye, kupa bandına ve erişilebilir modül havuzuna göre seçilir.
 
+AI destesinin tamamını oynar: maç içinde daha önce basılan kartlar (ölmüş olsalar da) hafif ceza alır, aynı kart art arda basılmaz; sahada saldırı varken daha iyi kart birkaç saniye içinde alınabilecekse Akım biriktirir.
+
 ## 9. Bot havuzu
 
 Her arena için 10 profil; toplam **120 AI oyuncu**. Her arena setinde 10 farklı arketip kullanılır: Dengeli, Hızlı Baskı, Ağır Hasar, Savunma, Sürdürülebilirlik, Kontrol, Destek Zinciri, Akım Ekonomisi, Alan Hasarı ve Karşı Meta.
@@ -283,10 +333,10 @@ Savaş rafındaki `Ç` harfi kaldırılarak seçili çekirdeğin gerçek görsel
 
 Çekirdek gelişiminin hem enerji ekonomisini hem de aktif gücü etkilediği kabul edilir. Başlangıç hedefleri:
 
-- **Seviye 1 enerji üretimi:** yaklaşık **10 enerji/sn**.
-- **Seviye 1 enerji kapasitesi:** yaklaşık **100 enerji**.
-- **Enerji üretimi seviye başına:** yaklaşık **%4 bileşik artış**.
-- **Enerji kapasitesi seviye başına:** yaklaşık **+3 enerji**.
+- **Seviye 1 enerji üretimi:** **12 enerji/sn**.
+- **Seviye 1 enerji rezervi:** **24 enerji**.
+- **Enerji üretimi seviye başına:** **%3 bileşik artış**.
+- **Enerji rezervi seviye başına:** **+1 enerji**.
 - Çekirdek aktif gücü ayrı bir dolum göstergesiyle zaman içinde dolar; enerji stoğu ile aktif güç dolumu aynı sayaç değildir.
 - Çekirdek hazır olduğunda merkez hücrede belirgin parlama/pulse görülür; kullanımda etki kablo ağı üzerinden tüm devreye yayılır.
 
@@ -299,6 +349,22 @@ Savaş rafındaki `Ç` harfi kaldırılarak seçili çekirdeğin gerçek görsel
 | **Kapasitör** | **Sonraki 2 modül yerleştirmesinde -1 Akım** | İleri seviyelerde dolum/etki verimi artar; yerleştirme indirimi sert tavana bağlıdır |
 | **Anka / İyileştirme** | Tüm dost modüllere anlık yaklaşık **%20 CAN iyileştirmesi** | İyileştirme yüzdesi kontrollü artar; tam yenileme sağlayamaz |
 
+### Çekirdek enderliği ve imza mekanikleri (Beta.72)
+
+Çekirdeklerde de enderlik güç vermez. Beta.62'deki enderlik eğrisi (Efsanevi için +%30 CAN, +%40 güç etkisi, +%12 enerji, +%10 dolum) kaldırıldı; aynı seviyedeki bütün çekirdekler 300 CAN, aynı enerji üretimi, aynı dolum süresi (35 sn) ve aynı temel güç değerleriyle savaşa girer. Sayısal büyüme yalnız Çekirdek seviyesi ve yeteneklerden gelir. Enderlik, modüllerdeki kuralla aynı biçimde imzayı belirler:
+
+| Çekirdek | Enderlik | İmza | Kural |
+|---|---|---|---|
+| Rezonans | Yaygın | Tek Darbe | Tek iş: Çekirdeğe 45, modüllere 15 CAN onarım. Devre tam canlıyken kullanılamaz, dolum korunur |
+| Muhafız | Nadir | Son Hat (koşul) | Çekirdek CAN'ı yarının altındayken kalkan modül başına 20 → 30, Çekirdeğe 60 |
+| Aşırı Yük | Nadir | Zincir (koşul) | Güç sürerken yok edilen her rakip modül süreyi 1 sn uzatır (en fazla +2 sn) |
+| Kesinti | Destansı | Statik Birikim (birikim) | Güç dolduktan sonra bekletilen her 4 sn kesintiye +0,5 sn (en fazla +2 sn) |
+| Kapasitör | Destansı | Deşarj (risk–ödül) | Güç Çekirdek rezervinin tamamını boşaltır; rezerv en az yarı doluysa 2 yerine 3 yerleştirme 1 Akım indirimli |
+| Anka | Efsanevi | Küllerden Doğuş (kural) | Dolum tamken Çekirdek yok olacak vuruşu alırsa %25 CAN ile ayakta kalır, dolum sıfırlanır; maçta bir kez |
+| Kuantum | Efsanevi | Yarım Faz (kural) | Güç %50 dolumda da kullanılabilir: yarım dolumda yalnız 4 sn kalkan, tam dolumda onarım + kalkan |
+
+Telgraf ve karşı oyun: Anka doğuşu hazır (✹), Statik yük (⚡n/4), Son Hat koşulu (◆) ve Zincir uzaması (⛓) Çekirdek kartında iki tarafa da görünür; rakibin dolum yüzdesi ise görünmez. Deşarjdan sonra boş rezerv ağır saldırıları geciktirir; Yarım Faz kalkanı kısadır ve onarım içermez. AI imzaya göre kullanır: Anka Çekirdek zayıfken dolumu doğuş için saklar, Muhafız Son Hat koşulunu, Kesinti en az iki Statik yükü, Kapasitör yarı dolu rezervi bekler (en geç 10 sn).
+
 Denge ilkesi: yüksek Çekirdek seviyesi anlamlı avantaj sağlamalı, fakat tek başına kupa/eşleştirme farkını ezmemelidir. Bu nedenle eşleştirme kalitesinde kupa ana kriter olarak korunurken **ortalama deste seviyesi ve Çekirdek seviyesi** ikincil denge sinyali olarak kullanılmalıdır.
 
 ## 11. Kasa ve günlük teklif ekonomisi
@@ -306,6 +372,36 @@ Denge ilkesi: yüksek Çekirdek seviyesi anlamlı avantaj sağlamalı, fakat tek
 Savaşlardan 3 / 8 / 24 saatlik sandıklar kazanılır. Ödül havuzu Devre Kredisi, Akı, modül parçaları ve yüksek sandıklarda çekirdek parçalarından oluşur.
 
 Günlük teklif sandıkları **Devre Kredisi** ile alınır. Akı mağaza harcaması olarak kullanılmaz; yetenek/çekirdek gelişimi için korunur.
+
+### Sezon ve turnuva takvimi: dört haftalık döngü (Beta.72 tur 6)
+
+Sezon ve Takımlar Arası Turnuva aynı takvimi kullanır. Her döngü Pazartesi 00:00 UTC'de başlar ve dört hafta (28 gün) sürer; 1. döngü 28 Eylül 2026'dır. Sezon değişince kupa arşivlenir ve yumuşak sıfırlama yapılır (sezon deneyimi ve alınan kademeler sıfırlanır, lig oyuncuları 3600 kupaya iner).
+
+Turnuvada kayıt ilk haftanın Pazartesi–Çarşamba günleri açıktır ve yalnız takım lideri yapar. Eşleşme her Perşembe açıklanır. Eşleşen oyuncular Cuma–Pazar rövanşlı iki maç oynar: galibiyet 1, mağlubiyet 0 puan. Ödülü, 4. hafta bitince ilk üç takımın en az 4 puan katkı veren oyuncuları alır. Haftalık turnuva da Pazartesi başlar. Günlük giriş ödülü takvimi de aynı döngüyü izler: 28 gün, yalnız bugünün ödülü alınır; 7, 14, 21 ve 28. günler (Pazar) büyük ödüldür.
+
+### Sezon ödül yolu: ücretsiz ve ücretli geçiş (Beta.72 arayüz turu)
+
+Sezon ödülleri iki sütundur. Solda ücretsiz yol, sağda ücretli geçiş vardır. Her kademe sandık olarak görünür; sandığa dokununca içindeki ödüller gerçek görselleriyle önizlenir. Ücretli geçiş sütunu her kademede ücretsiz ödülün **iki katı** kaynak (Devre Kredisi, Akı, modül ve çekirdek parçası) ve iki sandık verir. Kozmetikler ücretsiz yolda kalır. Geçişin etkin olduğu sezon profilde tutulur ve sezon değişince sona erer; ücretli kademe talepleri de sıfırlanır.
+
+**Karar (25 Eylül 2026):** Ücretli geçiş gerçek parayla açılacak, ama şimdi değil; oyun içi para onu açmaz. Beta.68 sınırı geçerlidir: mağaza makbuz doğrulaması, idempotent teslim ve iade işleme tamamlanmadan fiyat açılmaz. Bu yüzden ücretli sütun kilitli görünür ve satın alma kapalıdır.
+
+## 11.1. Sosyal katman ve mesaj kutusu
+
+- **Mesaj kutusu** (üst bardaki ✉) tek bildirim merkezidir. Üç bölümü vardır:
+  - Savaş davetleri: arkadaş savaşı ve takım antrenman maçı.
+  - Etkinlik ve sıralama ödül sandıkları.
+  - Oyun bildirimleri: oyun güncellemeleri ile takım turnuvası maç saati gibi oyuncuya özel bildirimler.
+  - Okunmamış öğe varken kutuda kırmızı nokta yanar.
+- **Kupasız savaş daveti:** Arkadaşlar → Savaş sekmesinden gönderilir. Liste çevrimiçi arkadaşlardan başlar. Davet karşı tarafın mesaj kutusuna düşer ve **Kabul Et** onu doğrudan savaş alanına götürür. Daveti gönderen oyuncu da, aynı oturumda gönderdiyse kabul anında otomatik olarak savaş alanına geçer. Aynı arkadaşa bekleyen bir davet varken yenisi açılmaz; davet reddedilebilir. Takım üyeleriyle yapılan kupasız antrenman istekleri de aynı mesaj kutusuna düşer.
+- **Arkadaşlar ekranı:** beş alt sekme (Arkadaşlar, Mesajlar, Gelen İstekler, Gönderilen, Savaş), üstte davet kodu ve oyuncu arama.
+  - Gelen istek, okunmamış mesaj ya da bekleyen savaş davetinde ilgili alt sekmede, profildeki Arkadaş sekmesinde ve avatarda kırmızı nokta yanar.
+  - Gönderilen istek geri çekilebilir.
+- **Herkese açık profil:** Devre Koleksiyonu (sıralama kupaları ve rozetler) ziyaretçilere de görünür. Arkadaş ekle, paylaş, şikâyet ve engelle eylemleri yan yana, etiketli düğmelerdir.
+- **Takım yönetimi** (takım simgesi): iki alt sekmesi vardır.
+  - Kozmetik: Lider Görünümü. Amblem (10), çerçeve (6) ve isim rengi (6) herkese açık seçeneklerdir ve Kaydet ile uygulanır. Turnuvada kazanılan takım kozmetikleri ayrıca listelenir.
+  - Üye Yönetimi: başvurular, üyeyi çıkarma ve liderliği devretme.
+  - Başka bir takımın profilinde yönetim düğmesi görünmez.
+- **Etkinlikler:** ayrı ödül sayfası yoktur. Sıralamada ilk üç satırın yanında ödül sandığı ve içerik önizlemesi bulunur. Takım eşleşmeleri sayfası yalnız oyuncunun kendi takımının eşleşmesini gösterir. Her üye satırında maç saati yazar; kendi satırında maç saati gelince "Savaş Alanına Gir" düğmesi açılır.
 
 ## 12. İstatistik ekranı
 
@@ -328,7 +424,7 @@ Beta.39 öncesindeki aşağıdaki tasarım kararları yeni kanonu yönetmez:
 - Dağıtıcının bağlantı topolojisi rolü
 - Savaş içi yerleştirme için Devre Kredisi kullanımı
 
-Bu öğeler koddan kontrollü migrasyonla kaldırılır. Tarihsel testler gerekirse `legacy` etiketiyle korunabilir fakat yeni ürün davranışını zorlayamaz.
+Bu öğeler Beta.72 legacy temizliğinde koddan kaldırılmıştır. Aynı pakette şunlar da kaldırıldı: güçlendiriciler (booster), modül taşıma/değiştirme/sürükle-bırak komutları, süre sınırı ve süre sonu hakemliği, 15 sn modül müdahale kilidi, 18 kartlık raf seçimi, istemci içi çevrimdışı savaş simülasyonu ve web-test QA alt sistemi. Kayıtlı veride kalan kaldırılmış kart kimlikleri deste normalizasyonu ve istatistik görünümünde yok sayılır. Hücreler arası kablo ağı ve Akım animasyonu görsel kimlik olarak korunur (§1). Modül ve Çekirdek enderlik güç eğrileri (Beta.62) de kaldırıldı; enderlik yalnız imza mekaniğini belirler (§2.1, §10).
 
 ## Yeni Durumlar
 - Görsel hedef tam 3D değildir: **2D taban + 2.5D derinlik illüzyonu + güçlü VFX**. Sprite, UI, shader ve particle efektleri önceliklidir.

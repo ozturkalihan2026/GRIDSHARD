@@ -1,9 +1,8 @@
 (() => {
   "use strict";
 
-  // Operational Web-test reporting is intentionally opt-in.  The player
-  // client must not poll large QA snapshots or write audit files while normal
-  // menu, matchmaking and progression requests are waiting for the server.
+  // İstemci telemetrisi yalnız ?diagnostics=1 ile gönderilir; normal oyunda
+  // menü, eşleştirme ve ilerleme istekleri ek ağ trafiğiyle yavaşlatılmaz.
   const operationalDiagnosticsEnabled = (() => {
     try {
       return new URLSearchParams(globalThis.location?.search || "")
@@ -15,57 +14,29 @@
 
   const moduleDefinitions = [
     { id: "core", name_tr: "Çekirdek", max_hp: 300, category: "çekirdek", current_cost: 0 },
-    // Retain only the legacy instance handle for old diagnostic views.
-    { id: "generator", name_tr: "Jeneratör", max_hp: 0, category: "enerji", current_cost: 0 },
     ...(Array.isArray(globalThis.GRIDSHARD_CANON_MODULES)
       ? globalThis.GRIDSHARD_CANON_MODULES
       : []),
   ].map(item => ({
     instanceId: item.id.replaceAll("_", "-") + "-1", definitionId: item.id,
     nameTr: item.name_tr, hp: item.max_hp, maxHp: item.max_hp,
-    circuitCreditCost: item.current_cost, currentCost: item.current_cost,
+    currentCost: item.current_cost,
     category: item.category === "sistem" ? "enerji" : item.category,
     strategicRole: item.name_tr, rarity: item.rarity,
     unlockTrophies: Math.max(0, (Number(item.unlock_arena || 1) - 1) * 300),
-    status: item.id === "core" ? "active" : item.id === "generator" ? "destroyed" : "reserve",
+    status: item.id === "core" ? "active" : "reserve",
     position: item.id === "core" ? {x: 2, y: 1} : null,
-    isDeckTemplate: !["core", "generator"].includes(item.id),
+    isDeckTemplate: item.id !== "core",
     energyRequired: 0, energyReceived: 0, isPowered: true, storedEnergy: 0,
-    movable: item.id !== "core",
-    removable: !["core", "generator"].includes(item.id),
   }));
 
   const commandLog = [];
-  const META_STATUS = "M1-M6 çekirdeği uygulandı";
-  const COMPETITIVE_STATUS = "M7 rekabetçi altyapı doğrulanıyor";
-  const BALANCE_STATUS = "Denge simülasyonu mevcut · geniş örnek bekliyor";
-  const AI_STATUS = "5 AI arketipi aktif · oyuncu test telemetrisi toplanıyor";
-  const PVP_STATUS = "GRIDSHARD Beta.39 · 6 Kartlık Deste + Sunucu Yerleşimi";
-
-
-
-  const BOOSTER_FIRST_OFFER_MS = 30000;
-  const BOOSTER_OFFER_INTERVAL_MS = 30000;
-  const BOOSTER_OPTIONS_PER_OFFER = 3;
-  let nextBoosterOfferIndex = 0;
-  let boosterOfferOpen = false;
-  let serverBoosterOfferId = null;
-  let serverBoosterEligibleTargets = new Map();
-  let activeBoosterOfferIds = new Set();
-
-  const BOOSTER_OPTIONS = [
-    { id:"overcharge_chip", nameTr:"Aşırı Yük Çipi", nameEn:"Overcharge Chip", descriptionTr:"+%25 saldırı · 15 sn", descriptionEn:"+25% attack · 15 sec", targetCategories:["saldırı"] },
-    { id:"emergency_repair", nameTr:"Acil Onarım", nameEn:"Emergency Repair", descriptionTr:"%25 anlık onarım", descriptionEn:"25% instant repair", targetCategories:[] },
-    { id:"cooling_burst", nameTr:"Soğutma Darbesi", nameEn:"Cooling Burst", descriptionTr:"Bir modülün ısısını sıfırlar", descriptionEn:"Resets a module's heat", targetCategories:[] },
-    { id:"signal_cleanser", nameTr:"Sinyal Temizleyici", nameEn:"Signal Cleanser", descriptionTr:"Bir modüldeki anlık sabotaj etkilerini temizler", descriptionEn:"Cleanses active sabotage effects on a module", targetCategories:[] },
-  ];
   const battleEventChannels =
     typeof GRIDSHARD_BATTLE_EVENT_CHANNELS === "object"
       ? GRIDSHARD_BATTLE_EVENT_CHANNELS
       : {
           GAME_EFFECT:"game_effect",
           AUDIO_STATE:"audio_state",
-          BOOSTER_STATE:"booster_state",
         };
   const battleEventBus =
     typeof GridshardBattleEventBus === "function"
@@ -80,64 +51,10 @@
         })
       : null;
   const FLOATING_COMBAT_TEXT_ENABLED = true;
-  const boosterTargetMode =
-    typeof GridshardBoosterTargetMode === "function"
-      ? new GridshardBoosterTargetMode()
-      : {
-          selectedBoosterId:null,
-          handle(event) {
-            const payload=event?.payload || event || {};
-            this.selectedBoosterId = payload.action === "select"
-              ? String(payload.boosterId || "") || null
-              : null;
-            return {
-              active:Boolean(this.selectedBoosterId),
-              selectedBoosterId:this.selectedBoosterId,
-            };
-          },
-          snapshot() {
-            return {
-              active:Boolean(this.selectedBoosterId),
-              selectedBoosterId:this.selectedBoosterId,
-            };
-          },
-        };
-
   function emitBattleEvent(channel, payload={}) {
     return battleEventBus
       ? battleEventBus.emit(channel, payload)
       : { event:{ channel, payload, occurredAt:Date.now() }, results:[] };
-  }
-
-  function selectBoosterTargetMode(boosterId, reason="booster_selected") {
-    const payload={
-      action:"select",
-      boosterId,
-      reason,
-    };
-    const emitted=emitBattleEvent(
-      battleEventChannels.BOOSTER_STATE,
-      payload
-    );
-    if (!battleEventBus) {
-      return boosterTargetMode.handle(payload);
-    }
-    return emitted.results[0] || boosterTargetMode.snapshot();
-  }
-
-  function clearBoosterTargetMode(reason="cancelled") {
-    const payload={
-      action:"cancel",
-      reason,
-    };
-    const emitted=emitBattleEvent(
-      battleEventChannels.BOOSTER_STATE,
-      payload
-    );
-    if (!battleEventBus) {
-      return boosterTargetMode.handle(payload);
-    }
-    return emitted.results[0] || boosterTargetMode.snapshot();
   }
 
   if (battleEventBus && battleEffectAggregator) {
@@ -149,14 +66,8 @@
       )
     );
   }
-  if (battleEventBus) {
-    battleEventBus.subscribe(
-      battleEventChannels.BOOSTER_STATE,
-      (event) => boosterTargetMode.handle(event)
-    );
-  }
   const selectablePoolModules = moduleDefinitions.filter(
-    (module) => !["core-1", "generator-1"].includes(module.instanceId)
+    (module) => module.instanceId !== "core-1"
   );
   const moduleCatalogById =
     new Map();
@@ -234,7 +145,9 @@
   const battlePoolSelection = new BattlePoolSelection({
     selectableModuleIds: selectablePoolModules.map((module) => module.instanceId),
     requiredSize: 6,
-    requiredModuleIds: [],
+    attackModuleIds: selectablePoolModules
+      .filter((module) => module.category === "saldırı")
+      .map((module) => module.instanceId),
   });
   battlePoolSelection.setSelection(
     definitionIdsToInstanceIds(
@@ -247,16 +160,12 @@
     global:new Set(),
     selected:new Set(),
   };
-  const collapsedShelfCategories = new Set();
   let battlePoolPresets = withStarterBattlePoolPresets([]);
   let activeBattlePoolPresetName = STARTER_BATTLE_POOL_PRESET.name;
   let activeBattlePoolPresetBaseline = [];
   let quickLoadoutFilter = "all";
-  let initialBattleModuleIds = [];
-
   const client = new RelayBattleClient({
     modules: moduleDefinitions,
-    unlockAtMs: 0,
     circuitCredits: 6,
     emitCommand(command) {
       const pvpEnvelope =
@@ -287,22 +196,14 @@
           command
         );
       } else {
-        applyMockServerCommand(command);
+        logClientMessage(
+          "Komut gönderilemedi: sunucu savaş oturumu bağlı değil."
+        );
       }
 
       renderLog();
     },
   });
-
-  const gridshardE2eTimeScale =
-    (
-      typeof location !== "undefined"
-      && new URLSearchParams(
-        location.search
-      ).get("e2e") === "1"
-    )
-      ? 25
-      : 1;
 
   const participantIdentity =
     new RelayTestParticipantIdentity();
@@ -341,8 +242,6 @@
     win_rate: 0,
     average_match_duration_ms: 0,
     total_damage_dealt: 0,
-    module_replacements: 0,
-    boosters_used: 0,
     most_used_modules: [],
   });
 
@@ -388,8 +287,6 @@
       result;
 
     if (result.ok) {
-      recordProductEvent("session_started");
-      recordProductEvent("screen_view", {screen:appRouter.currentScreen});
       const preferredPoolIds = definitionIdsToInstanceIds(
         profileState.viewModel()?.battlePoolIds || []
       );
@@ -420,16 +317,20 @@
       renderProfileSummary();
       renderStatisticsSummary();
       renderSettingsForm();
+      recordProductEvent("session_started");
+      recordProductEvent("screen_view", {screen:appRouter.currentScreen});
       loadBattlePoolPresets();
       loadMetaProgression();
       const accountResult = await loadAccountPlatform({ presentOnboarding:true });
       if (accountResult.ok && !accountResult.redirecting) {
-        void nativePush.start().catch(() => {
+        void nativePush?.start().catch(() => {
           setNativePushStatus("Bildirim cihaz kaydı tamamlanamadı. Bağlantı gelince yeniden denenecek.");
         });
       }
       if (!accountResult.presented) loadDailyMetaState({ present:true });
       loadRewardInbox();
+      void loadSocialView({ quiet:true });
+      startSocialPolling();
       void consumePendingDeepLink();
     }
 
@@ -448,8 +349,19 @@
       settingsState,
       requestJson: requestJsonWithDeadline,
     });
-  let selectedLaboratoryModuleId = "laser";
   let metaProgressionState = null;
+  // Gerçek para mağazası (/store): ürünler, sağlayıcılar, geçiş ve premium durumu.
+  let storeState = null;
+  let purchaseInFlight = false;
+  const pendingPurchaseIds = new Map();
+  // Reklamla ikiye katlanan savaşlar (savaş kimliği → sunucu makbuzu).
+  const adRewardReceipts = new Map();
+  let adRewardPending = false;
+  // Günlük meta çarkının birikimli açısı (derece). Dönüş hep saat yönünde
+  // ileri gider; geri sarma olmaz, aynı yöndeki açıya yeniden dokunulmaz.
+  let dailyMetaWheelRotation = 0;
+  const DAILY_META_SPIN_MS = 2600;
+  const DAILY_META_SPIN_TURNS = 5;
   const pendingMetaRequests = new Map();
   let activeModuleFilter = "all";
   let selectedCollectionModuleId = "laser";
@@ -459,19 +371,13 @@
   let activeTrophyLeaderboardScope = "general";
   let leaderboardPayload = null;
   let rewardInboxState = null;
-  let inboxDirectMessages = [];
   let publicProfileReturnDialogId = null;
   let teamProfileReturnDialogId = null;
   let teamState = null;
   let activeTeamTab = "profile";
-  let activeTeamManagementTab = "cosmetics";
-  let teamCosmeticDraft = null;
   let socialState = null;
-  let activeFriendsTab = "friends";
   let pendingDeepLinkConsumed = false;
   let activePublicProfileId = null;
-  let publicProfilePayload = null;
-  let teamProfilePayload = null;
   let eventsState = null;
   let dailyMetaState = null;
   let dailyMetaRollPending = false;
@@ -503,6 +409,7 @@
     { id: "none", nameTr: "Standart" },
     { id: "neon_cyan", nameTr: "Neon Akım" },
     { id: "season_gold", nameTr: "Sezon Ustası" },
+    { id: "season_crown", nameTr: "Şampiyon Tacı" },
     { id: "season_silver", nameTr: "Prizma Finalisti" },
     { id: "weekly_gold", nameTr: "Haftalık Altın" },
     { id: "weekly_silver", nameTr: "Haftalık Gümüş" },
@@ -510,6 +417,17 @@
   ]);
   const BATTLE_EMOJIS = Object.freeze([
     { id:"none", nameTr:"Kapalı", glyph:"—" },
+    // Gerçek emojiler: ilk altısı herkese açık, diğerleri sezon yolunda.
+    { id:"thumbs_up", nameTr:"Beğendim", glyph:"👍", real:true },
+    { id:"laugh", nameTr:"Kahkaha", glyph:"😂", real:true },
+    { id:"wow", nameTr:"Vay Canına", glyph:"😮", real:true },
+    { id:"cry", nameTr:"Gözyaşı", glyph:"😢", real:true },
+    { id:"angry", nameTr:"Öfke", glyph:"😠", real:true },
+    { id:"good_game", nameTr:"İyi Oyun", glyph:"🤝", real:true },
+    { id:"fire", nameTr:"Alev Aldı", glyph:"🔥", real:true },
+    { id:"cool", nameTr:"Havalı", glyph:"😎", real:true },
+    { id:"mind_blown", nameTr:"Beyin Yandı", glyph:"🤯", real:true },
+    { id:"crown", nameTr:"Taç", glyph:"👑", real:true },
     { id:"victory_pulse", nameTr:"Zafer Darbesi", glyph:"✦", motion:"pulse" },
     { id:"respect_signal", nameTr:"Saygı Sinyali", glyph:"◇", motion:"float" },
     { id:"team_beacon", nameTr:"Takım İşareti", glyph:"⌁", motion:"beacon" },
@@ -530,6 +448,7 @@
     const visual = document.createElement(emoji?.mediaSrc ? "img" : "span");
     visual.className = "battle-emoji-visual";
     visual.dataset.motion = emoji?.motion || "none";
+    if (emoji?.real) visual.dataset.real = "true";
     if (emoji?.mediaSrc) {
       visual.src = emoji.mediaSrc;
       visual.alt = "";
@@ -541,6 +460,46 @@
       visual.setAttribute("aria-hidden", "true");
     }
     return visual;
+  }
+
+  // Savaşta paylaşılabilen emojiler: herkese açıklar + kazanılanlar.
+  function availableBattleEmojis(cosmetics) {
+    const unlocked = new Set(cosmetics?.unlockedBattleEmojiIds || cosmetics?.unlocked_battle_emoji_ids || []);
+    return BATTLE_EMOJIS.filter((emoji) => emoji.id !== "none" && unlocked.has(emoji.id));
+  }
+
+  // Savaştaki emoji düğmesinin yüzü: seçili emoji açıksa o, değilse ilk açık emoji.
+  function quickBattleEmoji(cosmetics) {
+    const available = availableBattleEmojis(cosmetics);
+    return available.find((emoji) => emoji.id === cosmetics?.selected_battle_emoji_id) || available[0] || null;
+  }
+
+  // Kilitli kozmetiğin nereden açıldığı: sunucunun unlock_sources listesinden.
+  function cosmeticUnlockLabels(kind, id, cosmetics) {
+    const sources = cosmetics?.unlock_sources?.[kind]?.[id] || [];
+    const labels = sources.map((source) => {
+      if (source.kind === "season_road") return `SEZON YOLU ${source.tier}`;
+      if (source.kind === "leaderboard") return `LİDER PANOSU ${source.position}.`;
+      if (source.kind === "weekly_tournament") return `HAFTALIK TURNUVA ${source.position}.`;
+      if (source.kind === "team_tournament") return `TAKIM TURNUVASI ${source.position}.`;
+      return "";
+    }).filter(Boolean);
+    return labels.length ? [...new Set(labels)] : ["REKABET ÖDÜLÜ"];
+  }
+
+  function cosmeticStateLabel({ unlocked, selected, kind, id, cosmetics }) {
+    const state = document.createElement("small");
+    if (unlocked) {
+      state.textContent = selected ? "SEÇİLİ" : "SEÇ";
+      return state;
+    }
+    state.className = "cosmetic-lock-source";
+    for (const text of cosmeticUnlockLabels(kind, id, cosmetics)) {
+      const part = document.createElement("span");
+      part.textContent = text;
+      state.appendChild(part);
+    }
+    return state;
   }
 
   function renderBattleEmojiVisual(host, emoji) {
@@ -581,7 +540,9 @@
       return await fetch(input, { ...init, signal: controller.signal });
     } catch (error) {
       if (!timedOut) throw error;
-      const timeoutError = new Error(localizedMessage("error.timeout"));
+      const timeoutError = new Error(
+        "Sunucu yanıt süresini aştı. İşlemi yeniden deneyebilirsin."
+      );
       timeoutError.code = "request_timeout";
       throw timeoutError;
     } finally {
@@ -623,14 +584,15 @@
         try {
           payload = rawBody ? JSON.parse(rawBody) : {};
         } catch (_parseError) {
-          const parseError = new Error(localizedUiText("Sunucu okunamayan bir yanıt gönderdi."));
+          const parseError = new Error("Sunucu okunamayan bir yanıt gönderdi.");
           parseError.status = response.status;
           throw parseError;
         }
         if (!response.ok) {
-          const responseError = new Error(localizedApiError(payload, response.status));
+          const responseError = new Error(
+            payload.detail || `Sunucu işlemi reddetti (${response.status}).`
+          );
           responseError.status = response.status;
-          responseError.code = payload.code || apiErrorCodeForStatus(response.status);
           if (attempt === 0 && [500, 502, 503, 504].includes(response.status)) {
             lastError = responseError;
             await new Promise((resolve) => window.setTimeout(resolve, 150));
@@ -648,7 +610,7 @@
         throw error;
       }
     }
-    throw lastError || new Error(localizedUiText("Sunucu işlemi tamamlanamadı."));
+    throw lastError || new Error("Sunucu işlemi tamamlanamadı.");
   }
 
   function recordProductEvent(eventType, dimensions = {}) {
@@ -656,10 +618,10 @@
     if (document.getElementById("settings-analytics-consent")?.checked === false) return;
     const requestId = globalThis.crypto?.randomUUID?.().replaceAll("-", "");
     void requestJsonWithDeadline("/analytics/events", {
-      method: "POST",
-      body: JSON.stringify({event_type: eventType, dimensions, request_id: requestId}),
-    }, 5000).catch(() => {
-      // Optional analytics must never interrupt play or produce a retry queue.
+      method:"POST",
+      body:JSON.stringify({event_type:eventType, dimensions, request_id:requestId}),
+    }).catch(() => {
+      // İsteğe bağlı analitik, oyun/ayar kaydetme akışını engellemez.
     });
   }
 
@@ -710,8 +672,6 @@
         document.body.dataset.localStatus
         || "setup",
       critical:criticalCoreAudioRequested,
-      battleElapsedMs: Number(client.elapsedMs || 0),
-      battlePressure: Number(gridshardAudioDirector?.battlePressure || 0),
       ...overrides,
     };
   }
@@ -791,42 +751,7 @@
     }
   }
 
-  async function recordLaunchAttemptAudit() {
-    if (!operationalDiagnosticsEnabled) return { ok:true, skipped:true };
-    try {
-      const response =
-        await fetch(
-          "/web-test/audit/launch-attempt",
-          {
-            method:"POST",
-            headers:{
-              "content-type":
-                "application/json",
-            },
-            body:JSON.stringify({
-              player_id:
-                participantPlayerId,
-              attempted_at_ms:
-                Date.now(),
-            }),
-          }
-        );
-
-      return {
-        ok:response.ok,
-      };
-    } catch (_error) {
-      return {
-        ok:false,
-      };
-    }
-  }
-
   function openAppScreen(screen) {
-    if (screen === "play" && operationalDiagnosticsEnabled) {
-      recordLaunchAttemptAudit();
-    }
-
     const result = appRouter.go(screen);
     if (!result.ok) {
       logClientMessage(result.reason);
@@ -866,13 +791,14 @@
       if (["shop", "modules", "team", "menu"].includes(screen)) {
         loadMetaProgression();
       }
+      if (["shop", "rewards"].includes(screen)) void loadStoreState();
       if (screen === "team") {
         activeTeamTab = "profile";
         loadTeamView();
       }
       if (screen === "friends") {
-        loadSocialView();
-        loadDirectMessages();
+        void loadSocialView();
+        if (activeDirectMessagePeerId) void loadDirectMessageThread();
       }
       if (["events", "weekly-event", "team-event"].includes(screen)) {
         if (screen === "weekly-event") activeWeeklyEventTab = "overview";
@@ -880,16 +806,6 @@
         renderEventSubpages();
         loadEventsView();
       }
-    } else if (
-      screen === "laboratory"
-    ) {
-      accountDataLoader
-        .loadLaboratory()
-        .then(() => {
-          renderLaboratory();
-          renderProfileSummary();
-          renderRemoteDataStatus();
-        });
     } else if (
       screen === "statistics"
     ) {
@@ -959,16 +875,17 @@
         next_upgrade_cost: null,
       })),
       chests: { slots: [], definitions: [
-        { id: "field_3h", name_tr: "Bronz Sandık", visual_tier: "bronze", unlock_hours: 0, open_seconds: 1, claim_cooldown_hours: 3, claim_available: true, claim_remaining_seconds: 0 },
-        { id: "circuit_8h", name_tr: "Gümüş Sandık", visual_tier: "silver", unlock_hours: 0, open_seconds: 1, claim_cooldown_hours: 8, claim_available: true, claim_remaining_seconds: 0 },
-        { id: "core_24h", name_tr: "Altın Sandık", visual_tier: "gold", unlock_hours: 0, open_seconds: 1, claim_cooldown_hours: 16, claim_available: true, claim_remaining_seconds: 0 },
-        { id: "diamond_24h", name_tr: "Elmas Sandık", visual_tier: "diamond", unlock_hours: 0, open_seconds: 1, claim_cooldown_hours: 24, claim_available: true, claim_remaining_seconds: 0 },
+        { id: "field_3h", name_tr: "Bronz Sandık", visual_tier: "bronze", unlock_hours: 0, open_seconds: 1, claim_cooldown_hours: 8, gift: true, claim_available: true, claim_remaining_seconds: 0 },
+        { id: "circuit_8h", name_tr: "Gümüş Sandık", visual_tier: "silver", unlock_hours: 0, open_seconds: 1, gift: false, claim_available: false, claim_remaining_seconds: 0 },
+        { id: "core_24h", name_tr: "Altın Sandık", visual_tier: "gold", unlock_hours: 0, open_seconds: 1, gift: false, claim_available: false, claim_remaining_seconds: 0 },
+        { id: "diamond_24h", name_tr: "Elmas Sandık", visual_tier: "diamond", unlock_hours: 0, open_seconds: 1, gift: false, claim_available: false, claim_remaining_seconds: 0 },
       ], inventory: [] },
-      shop: { day: "", week: "", period: "weekly", reset_at: "", offers: [
-        { id: "bronze_daily", name_tr: "Bronz Sandık", tier: "bronze", currency: "circuit_credits", cost: 120, purchased: false },
-        { id: "silver_daily", name_tr: "Gümüş Sandık", tier: "silver", currency: "circuit_credits", cost: 400, purchased: false },
-        { id: "gold_daily", name_tr: "Altın Sandık", tier: "gold", currency: "circuit_credits", cost: 900, purchased: false },
-      ] },
+      shop: { chest_store: { sale_active: false, discount_percent: 40, sale_ends_at: null, items: [
+        { definition_id: "field_3h", name_tr: "Bronz Sandık", tier: "bronze", currency: "circuit_credits", cost: 300, base_cost: 300 },
+        { definition_id: "circuit_8h", name_tr: "Gümüş Sandık", tier: "silver", currency: "circuit_credits", cost: 1000, base_cost: 1000 },
+        { definition_id: "core_24h", name_tr: "Altın Sandık", tier: "gold", currency: "flux_shards", cost: 250, base_cost: 250 },
+        { definition_id: "diamond_24h", name_tr: "Elmas Sandık", tier: "diamond", currency: "flux_shards", cost: 1000, base_cost: 1000 },
+      ] } },
     };
   }
 
@@ -1054,7 +971,6 @@
     tile.type = "button";
     tile.className = `unified-module-tile${collection ? " collection-module-tile" : ""}`;
     tile.dataset.category = item.category || definition.category || "";
-    tile.dataset.rarity = item.rarity || definition.rarity || "common";
     tile.dataset.moduleDefinitionId = item.definition_id || definition.definitionId || "";
     tile.dataset.selected = String(selected);
     tile.setAttribute("aria-label", localizedUiText(item.name_tr || definition.nameTr || "Modül"));
@@ -1079,7 +995,8 @@
       const shards = Math.max(0, Number(item.shards || 0));
       const footer = document.createElement("span");
       footer.className = "unified-module-progress";
-      footer.innerHTML = `<strong>${localizedMessage("module.level_short", {level:localizedNumber(level)})}</strong><span>${level >= 15 ? localizedMessage("module.maximum") : `${localizedNumber(shards)} / ${localizedNumber(required)}`}</span><i style="--module-progress:${level >= 15 ? 100 : Math.min(100, Math.round((shards / required) * 100))}%"></i>`;
+      const piece = createModulePuzzlePiece({ category:tile.dataset.category }).outerHTML;
+      footer.innerHTML = `<strong>SV ${level}</strong><span>${level >= 15 ? "AZAMİ" : `${piece}${shards} / ${required}`}</span><i style="--module-progress:${level >= 15 ? 100 : Math.min(100, Math.round((shards / required) * 100))}%"></i>`;
       tile.appendChild(footer);
     }
     return tile;
@@ -1110,7 +1027,7 @@
         empty.type = "button";
         empty.className = "unified-module-tile module-deck-empty";
         empty.dataset.deckIndex = String(index);
-        empty.setAttribute("aria-label", localizedMessage("deck.empty_slot_aria", {slot:index + 1}));
+        empty.setAttribute("aria-label", `${index + 1}. boş deste yuvası`);
         empty.textContent = "+";
         empty.disabled = true;
         host.appendChild(empty);
@@ -1121,7 +1038,7 @@
       tile.classList.toggle("is-replace-target", editable && Boolean(pendingDeckModuleInstanceId));
       if (editable) {
         tile.disabled = false;
-        tile.setAttribute("aria-label", localizedMessage("deck.module_action_aria", {name:localizedUiText(item.name_tr), action:localizedMessage(pendingDeckModuleInstanceId ? "deck.replace" : "deck.remove")}));
+        tile.setAttribute("aria-label", `${item.name_tr} · ${pendingDeckModuleInstanceId ? "Yerine koy" : "Çıkar"}`);
         const badge = tile.querySelector(".unified-module-selected");
         if (badge) badge.textContent = pendingDeckModuleInstanceId ? "↔" : "−";
         tile.addEventListener("click", async () => {
@@ -1149,10 +1066,10 @@
       const button = document.createElement("button");
       button.type = "button";
       button.textContent = preset ? String(index + 1) : "+";
-      button.title = preset?.name || localizedMessage("deck.create_empty", {slot:index + 1});
+      button.title = preset?.name || `Boş deste ${index + 1} · Oluştur`;
       button.setAttribute(
         "aria-label",
-        preset?.name || localizedMessage("deck.create_empty_aria", {slot:index + 1})
+        preset?.name || `${index + 1}. boş deste yuvası oluştur`
       );
       button.classList.toggle("is-empty", !preset);
       button.classList.toggle("is-active", preset?.name === activeBattlePoolPresetName);
@@ -1170,10 +1087,10 @@
 
   function beginEmptyBattlePoolPreset(index) {
     const slotNumber = Math.max(2, Math.min(7, Number(index) + 1));
-    let name = localizedMessage("deck.default_name", {slot:localizedNumber(slotNumber)});
+    let name = `Deste ${slotNumber}`;
     let suffix = 2;
     while (battlePoolPresets.some((preset) => preset.name === name)) {
-      name = localizedMessage("deck.default_name_suffix", {slot:localizedNumber(slotNumber), suffix:localizedNumber(suffix)});
+      name = `Deste ${slotNumber}.${suffix}`;
       suffix += 1;
     }
     activeBattlePoolPresetName = name;
@@ -1185,7 +1102,7 @@
     renderMetaHubScreens();
     const status = document.getElementById("module-action-status");
     if (status) {
-      status.textContent = localizedMessage("deck.empty_hint", {slot:slotNumber});
+      status.textContent = `${slotNumber}. deste boş. Modüllerde Seç düğmesine dokun; ilk boş yuvaya otomatik yerleşir.`;
     }
   }
 
@@ -1232,11 +1149,35 @@
     const symbols = {
       flux_shards: '<span class="resource-symbol resource-symbol-flux" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m12 2 4 6 6 4-6 4-4 6-4-6-6-4 6-4Z"/><circle cx="12" cy="12" r="2.3"/></svg></span>',
       circuit_credits: '<span class="resource-symbol resource-symbol-credit" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M7 12h3l2-4 2 8 2-4h2"/></svg></span>',
-      module_shards: '<span class="resource-symbol resource-symbol-module-shard" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m5 4 8 2 5 7-8 7-6-6Z"/><path d="m13 6-3 6 6 2"/></svg></span>',
       core_shards: '<span class="resource-symbol resource-symbol-core-shard" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m12 3 7 4v10l-7 4-7-4V7Z"/><path d="m12 7 4 5-4 5-4-5Z"/></svg></span>',
       chest: '<span class="resource-symbol resource-symbol-chest" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 9h16v11H4Z"/><path d="M3 5h18v5H3ZM12 9v11"/></svg></span>',
+      experience: '<span class="resource-symbol resource-symbol-experience" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m12 2 2.4 5.4L20 8l-4.2 3.8 1.2 5.7-5-2.9-5 2.9 1.2-5.7L4 8l5.6-.6Z"/><circle cx="12" cy="11" r="2.3"/></svg></span>',
     };
-    return symbols[kind] || '<span class="resource-symbol resource-symbol-module-shard" aria-hidden="true">◆</span>';
+    return symbols[kind] || createModulePuzzlePiece().outerHTML;
+  }
+
+  // Modül kartı parçaları her yerde yapboz parçası olarak görünür. Parça,
+  // modülün sınıf rengini ve simgesini taşır; evrensel parça yıldızlıdır.
+  function createModulePuzzlePiece({ category = "", glyph = "", universal = false } = {}) {
+    // Gövde 8..48 × 16..56; üstte ve sağda çıkıntı, altta ve solda girinti.
+    const outline = "M8 16H22A7 7 0 1 1 34 16H48V30A7 7 0 1 1 48 42V56H34A7 7 0 1 0 22 56H8V42A7 7 0 1 0 8 30Z";
+    const piece = document.createElement("span");
+    piece.className = "resource-symbol resource-symbol-module-piece";
+    piece.dataset.category = universal ? "universal" : category;
+    piece.setAttribute("aria-hidden", "true");
+    const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+    svg.setAttribute("viewBox", "7 4.4 52.6 52.6");
+    const shape = document.createElementNS("http://www.w3.org/2000/svg", "path");
+    shape.setAttribute("d", outline);
+    svg.appendChild(shape);
+    piece.appendChild(svg);
+    const mark = universal ? "✦" : glyph;
+    if (mark) {
+      const symbol = document.createElement("b");
+      symbol.textContent = mark;
+      piece.appendChild(symbol);
+    }
+    return piece;
   }
 
   function moduleShardSymbolMarkup(rewards = {}) {
@@ -1250,7 +1191,10 @@
       (candidate) => candidate.definitionId === definitionId
     );
     if (!module) return resourceSymbolMarkup("module_shards");
-    return `<span class="resource-symbol resource-symbol-module-card" data-category="${module.category || ""}" aria-hidden="true">${moduleIconFor(module)}</span>`;
+    return createModulePuzzlePiece({
+      category:module.category || "",
+      glyph:moduleIconFor(module),
+    }).outerHTML;
   }
 
   function moduleRewardIdentity(rewards = {}) {
@@ -1291,14 +1235,11 @@
   }
 
   function createRewardResourceIcon(kind, rewards = {}) {
+    if (kind === "universal_module_shards") return createModulePuzzlePiece({ universal:true });
     if (kind === "module_shards") {
       const identity = moduleRewardIdentity(rewards);
-      const icon = document.createElement("span");
-      icon.className = "resource-symbol resource-symbol-module-card";
-      icon.dataset.category = identity.category;
-      icon.setAttribute("aria-hidden", "true");
-      icon.textContent = identity.glyph;
-      return icon;
+      if (!identity.id) return createModulePuzzlePiece();
+      return createModulePuzzlePiece({ category:identity.category, glyph:identity.glyph });
     }
     if (kind === "core_shards") {
       const identity = coreRewardIdentity(rewards);
@@ -1318,10 +1259,10 @@
     const module = moduleRewardIdentity(rewards);
     const core = coreRewardIdentity(rewards);
     return [
-      { kind:"circuit_credits", amount:Number(rewards.circuit_credits || 0), label:localizedMessage("currency.credits_label"), suffix:"" },
-      { kind:"flux_shards", amount:Number(rewards.flux_shards || 0), label:localizedMessage("currency.flux_label"), suffix:"" },
-      { kind:"module_shards", amount:Number(rewards.module_shards || 0), label:localizedMessage("reward.module_shard", {name:localizedUiText(module.nameTr)}), suffix:"" },
-      { kind:"core_shards", amount:Number(rewards.core_shards || 0), label:localizedMessage("reward.core_shard", {name:localizedUiText(core.nameTr)}), suffix:"" },
+      { kind:"circuit_credits", amount:Number(rewards.circuit_credits || 0), label:"Devre Kredisi", suffix:"" },
+      { kind:"flux_shards", amount:Number(rewards.flux_shards || 0), label:"Akı", suffix:"" },
+      { kind:"module_shards", amount:Number(rewards.module_shards || 0), label:`${module.nameTr} Parçası`, suffix:"" },
+      { kind:"core_shards", amount:Number(rewards.core_shards || 0), label:`${core.nameTr} Parçası`, suffix:"" },
     ].filter((item) => item.amount > 0);
   }
 
@@ -1336,93 +1277,13 @@
       const label = document.createElement("span");
       label.textContent = item.label;
       const value = document.createElement("strong");
-      value.textContent = localizedMessage("reward.signed_amount", {amount:localizedNumber(item.amount), suffix:item.suffix});
+      value.textContent = `+${item.amount}${item.suffix}`;
       row.setAttribute("aria-label", `${item.label} ${value.textContent}`);
       row.title = `${item.label} ${value.textContent}`;
       row.append(icon, label, value);
       list.appendChild(row);
     }
     return list;
-  }
-
-  function createSeasonCosmeticRewardRow(kind, cosmeticId) {
-    const isFrame = kind === "avatar_frame";
-    const definition = (isFrame ? PROFILE_AVATAR_FRAMES : PROFILE_AVATARS).find(
-      (item) => item.id === cosmeticId
-    );
-    const name = localizedCatalogName(isFrame ? "frame" : "avatar", cosmeticId, definition?.nameTr || localizedMessage(isFrame ? "team.cosmetic_frame" : "event.prize_avatar"));
-    const row = document.createElement("div");
-    row.className = "reward-resource-row season-cosmetic-reward";
-    row.dataset.rewardKind = kind;
-    row.setAttribute("aria-label", localizedMessage("reward.single_item", {name}));
-    row.title = localizedMessage("reward.single_item", {name});
-    const preview = document.createElement("span");
-    preview.className = "profile-avatar season-reward-cosmetic-preview";
-    preview.setAttribute("aria-hidden", "true");
-    applyAvatarVisual(
-      preview,
-      isFrame ? "default" : cosmeticId,
-      isFrame ? cosmeticId : "none"
-    );
-    const amount = document.createElement("strong");
-    amount.textContent = "×1";
-    row.append(preview, amount);
-    return row;
-  }
-
-  function createSeasonRewardLane(reward, premium = false) {
-    const lane = document.createElement("div");
-    lane.className = `season-reward-lane${premium ? " is-premium" : ""}`;
-    const heading = document.createElement("strong");
-    heading.textContent = localizedMessage(premium ? "season.premium_lane" : "season.free_lane");
-    const preview = document.createElement("div");
-    preview.className = "season-reward-preview";
-    const summary = document.createElement("button");
-    summary.type = "button";
-    summary.setAttribute("aria-label", localizedMessage("season.chest_preview"));
-    const chest = document.createElement("span");
-    chest.className = "season-reward-chest";
-    chest.dataset.tier = reward.chest_tier || (reward.is_major ? "gold" : "bronze");
-    chest.innerHTML = chestVisualMarkup(chest.dataset.tier);
-    const count = document.createElement("span");
-    count.className = "season-reward-chest-count";
-    count.textContent = premium && reward.chest_tier ? "×2" : "×1";
-    summary.append(chest, count);
-    const previewReward = premium ? {
-      ...reward,
-      circuit_credits: Number(reward.circuit_credits || 0) * 2,
-      flux_shards: Number(reward.flux_shards || 0) * 2,
-      module_shards: Number(reward.module_shards || 0) * 2,
-      core_shards: Number(reward.core_shards || 0) * 2,
-    } : reward;
-    const contents = createRewardRows(previewReward, {compact:true});
-    contents.classList.add("season-reward-items");
-    if (reward.avatar_id) contents.appendChild(createSeasonCosmeticRewardRow("avatar", reward.avatar_id));
-    if (reward.avatar_frame_id) contents.appendChild(createSeasonCosmeticRewardRow("avatar_frame", reward.avatar_frame_id));
-    preview.append(summary, contents);
-    summary.addEventListener("click", () => {
-      preview.classList.toggle("is-open");
-      window.setTimeout(() => preview.classList.remove("is-open"), 2600);
-    });
-    lane.append(heading, preview);
-    if (premium) {
-      const locked = document.createElement("span");
-      locked.className = "season-premium-locked";
-      locked.textContent = localizedMessage("season.premium_locked");
-      lane.appendChild(locked);
-    } else {
-      const action = document.createElement("button");
-      action.type = "button";
-      action.dataset.tierClaim = String(reward.tier);
-      action.disabled = !reward.claimable;
-      action.textContent = localizedMessage(reward.claimed
-        ? "reward.claimed_title"
-        : reward.claimable
-          ? "reward.claim_short"
-          : "reward.locked");
-      lane.appendChild(action);
-    }
-    return lane;
   }
 
   function aggregateChestRewards(receipts = []) {
@@ -1482,6 +1343,263 @@
     return list;
   }
 
+  // Ödül sandığı önizlemesi. Sandığın içindeki her ödül gerçek görseliyle
+  // (kaynak simgesi, modül/çekirdek kartı, avatar, çerçeve, emoji, profil
+  // çubuğu, rozet ve kupa) gösterilir. Önizleme kaydırılan listenin dışında
+  // tek bir katmanda çizilir: açılması satırları kaydırmaz; farede üzerine
+  // gelince, dokunmatikte dokununca açılır, dışarı dokununca kapanır.
+  const CHEST_TIER_NAMES = Object.freeze({
+    bronze:"Bronz", silver:"Gümüş", gold:"Altın", diamond:"Elmas",
+  });
+
+  function rewardPreviewEntries(reward = {}) {
+    const entries = [];
+    const icon = (kind) => createRewardResourceIcon(kind, reward);
+    const amount = (value) => `+${Number(value || 0).toLocaleString(uiLocale())}`;
+    if (Number(reward.circuit_credits) > 0) {
+      entries.push({ visual:icon("circuit_credits"), label:"Devre Kredisi", amount:amount(reward.circuit_credits) });
+    }
+    if (Number(reward.flux_shards) > 0) {
+      entries.push({ visual:icon("flux_shards"), label:"Akı", amount:amount(reward.flux_shards) });
+    }
+    if (Number(reward.universal_module_shards) > 0) {
+      entries.push({ visual:createRewardResourceIcon("universal_module_shards"), label:"Evrensel Kart Parçası", amount:amount(reward.universal_module_shards) });
+    }
+    if (Number(reward.module_shards) > 0) {
+      entries.push({ visual:icon("module_shards"), label:`${moduleRewardIdentity(reward).nameTr} Parçası`, amount:amount(reward.module_shards) });
+    }
+    if (Number(reward.core_shards) > 0) {
+      entries.push({ visual:icon("core_shards"), label:`${coreRewardIdentity(reward).nameTr} Parçası`, amount:amount(reward.core_shards) });
+    }
+    const chestCount = Number(reward.chest_count ?? (reward.chest_tier ? 1 : 0));
+    if (reward.chest_tier && chestCount > 0 && !reward.chest_is_container) {
+      const chest = document.createElement("span");
+      chest.className = "reward-preview-chest";
+      chest.innerHTML = chestVisualMarkup(reward.chest_tier);
+      entries.push({ visual:chest, label:`${CHEST_TIER_NAMES[reward.chest_tier] || "Ödül"} Sandık`, amount:`×${chestCount}` });
+    }
+    if (reward.avatar_id) {
+      const avatar = document.createElement("span");
+      avatar.className = "profile-avatar reward-preview-avatar";
+      applyAvatarVisual(avatar, reward.avatar_id, "none");
+      const name = PROFILE_AVATARS.find((item) => item.id === reward.avatar_id)?.nameTr || "Avatar";
+      entries.push({ visual:avatar, label:`Avatar · ${name}`, amount:"×1" });
+    }
+    if (reward.avatar_frame_id) {
+      const frame = document.createElement("span");
+      frame.className = "profile-avatar reward-preview-avatar";
+      applyAvatarVisual(frame, "default", reward.avatar_frame_id);
+      const name = PROFILE_AVATAR_FRAMES.find((item) => item.id === reward.avatar_frame_id)?.nameTr || "Çerçeve";
+      entries.push({ visual:frame, label:`Avatar Çerçevesi · ${name}`, amount:"×1" });
+    }
+    if (reward.emoji_id) {
+      const emoji = BATTLE_EMOJIS.find((item) => item.id === reward.emoji_id);
+      const holder = document.createElement("span");
+      holder.className = "reward-preview-emoji";
+      holder.appendChild(createBattleEmojiVisual(emoji || { glyph:"✦" }));
+      entries.push({ visual:holder, label:`Savaş Emojisi · ${emoji?.nameTr || "Emoji"}`, amount:"×1" });
+    }
+    if (reward.profile_background_id) {
+      const background = PROFILE_BACKGROUNDS.find((item) => item.id === reward.profile_background_id);
+      const swatch = document.createElement("span");
+      swatch.className = "reward-preview-swatch";
+      const [from, to] = background?.colors || ["#153b58", "#176b72"];
+      swatch.style.background = `linear-gradient(135deg,${from},${to})`;
+      entries.push({ visual:swatch, label:`Profil Çubuğu · ${background?.nameTr || "Arka plan"}`, amount:"×1" });
+    }
+    for (const [key, definitions, fallbackGlyph] of [
+      ["rank_trophy_id", PROFILE_RANK_TROPHIES, "🏆"],
+      ["badge_id", PROFILE_BADGES, "✦"],
+    ]) {
+      if (!reward[key]) continue;
+      const definition = definitions.find((item) => item.id === reward[key]);
+      const honor = document.createElement("span");
+      honor.className = "reward-preview-honor";
+      honor.dataset.tone = definition?.tone || "cyan";
+      honor.textContent = definition?.glyph || fallbackGlyph;
+      entries.push({ visual:honor, label:definition?.nameTr || "Onur", amount:"×1" });
+    }
+    // Takım turnuvası: takım profilindeki görünüm seçeneklerini açar.
+    if (reward.team_emblem_id && TEAM_EMBLEMS[reward.team_emblem_id]) {
+      const emblem = TEAM_EMBLEMS[reward.team_emblem_id];
+      const visual = document.createElement("span");
+      visual.className = "reward-preview-team-emblem";
+      visual.style.setProperty("--team-emblem-color", emblem.color);
+      visual.innerHTML = teamEmblemSvg(reward.team_emblem_id);
+      entries.push({ visual, label:`Takım Amblemi · ${emblem.nameTr}`, amount:"×1" });
+    }
+    if (reward.team_frame_id && TEAM_FRAMES[reward.team_frame_id]) {
+      const frame = TEAM_FRAMES[reward.team_frame_id];
+      const visual = document.createElement("span");
+      visual.className = "reward-preview-team-frame";
+      visual.style.setProperty("--team-frame-color", frame.color);
+      entries.push({ visual, label:`Takım Çerçevesi · ${frame.nameTr}`, amount:"×1" });
+    }
+    if (reward.team_name_color_id && TEAM_NAME_COLORS[reward.team_name_color_id]) {
+      const color = TEAM_NAME_COLORS[reward.team_name_color_id];
+      const visual = document.createElement("span");
+      visual.className = "reward-preview-team-color";
+      visual.style.background = color.color;
+      entries.push({ visual, label:`Takım İsim Rengi · ${color.nameTr}`, amount:"×1" });
+    }
+    return entries;
+  }
+
+  let rewardPreviewState = null;
+
+  function hideRewardPreview() {
+    if (!rewardPreviewState) return;
+    rewardPreviewState.panel.remove();
+    rewardPreviewState.trigger.setAttribute("aria-expanded", "false");
+    rewardPreviewState.trigger.removeAttribute("aria-describedby");
+    rewardPreviewState = null;
+  }
+
+  function positionRewardPreview(trigger, panel) {
+    const margin = 8;
+    panel.style.left = "0px";
+    panel.style.top = "0px";
+    // Kapsayıcı blok (açık diyalog ya da görüntü alanı) ne olursa olsun
+    // paneli tetikleyiciye göre görüntü alanı koordinatlarında konumlar.
+    const origin = panel.getBoundingClientRect();
+    const target = trigger.getBoundingClientRect();
+    const width = origin.width;
+    const height = origin.height;
+    const viewportWidth = window.innerWidth || document.documentElement.clientWidth;
+    const viewportHeight = window.innerHeight || document.documentElement.clientHeight;
+    let left = target.left + target.width / 2 - width / 2;
+    left = Math.max(margin, Math.min(left, viewportWidth - width - margin));
+    let top = target.bottom + margin;
+    if (top + height > viewportHeight - margin) top = target.top - height - margin;
+    top = Math.max(margin, top);
+    panel.style.left = `${Math.round(left - origin.left)}px`;
+    panel.style.top = `${Math.round(top - origin.top)}px`;
+  }
+
+  function showRewardPreview(trigger, { title, reward, note }) {
+    if (rewardPreviewState?.trigger === trigger) return;
+    hideRewardPreview();
+    const host = trigger.closest("dialog[open]") || document.body;
+    const panel = document.createElement("div");
+    panel.className = "reward-preview-panel";
+    panel.setAttribute("role", "tooltip");
+    panel.id = `reward-preview-${Date.now()}`;
+    const accent = trigger.style.getPropertyValue("--reward-accent");
+    if (accent) panel.style.setProperty("--reward-accent", accent);
+    const heading = document.createElement("strong");
+    heading.textContent = localizedUiText(title || "Ödül Sandığı");
+    const list = document.createElement("div");
+    list.className = "reward-preview-list";
+    for (const entry of rewardPreviewEntries(reward)) {
+      const row = document.createElement("div");
+      row.className = "reward-preview-row";
+      const visual = document.createElement("span");
+      visual.className = "reward-preview-visual";
+      visual.appendChild(entry.visual);
+      const label = document.createElement("span");
+      label.className = "reward-preview-label";
+      label.textContent = localizedUiText(entry.label);
+      const value = document.createElement("strong");
+      value.className = "reward-preview-amount";
+      value.textContent = entry.amount;
+      row.append(visual, label, value);
+      list.appendChild(row);
+    }
+    if (!list.children.length) {
+      const empty = document.createElement("small");
+      empty.textContent = localizedUiText("Bu sandığın içeriği hazırlanıyor.");
+      list.appendChild(empty);
+    }
+    panel.append(heading, list);
+    if (note) {
+      const noteNode = document.createElement("small");
+      noteNode.className = "reward-preview-note";
+      noteNode.textContent = localizedUiText(note);
+      panel.appendChild(noteNode);
+    }
+    host.appendChild(panel);
+    positionRewardPreview(trigger, panel);
+    trigger.setAttribute("aria-expanded", "true");
+    trigger.setAttribute("aria-describedby", panel.id);
+    rewardPreviewState = { trigger, panel, pinned:false };
+  }
+
+  function createRewardChestButton({
+    tier = "bronze",
+    visualId = "",
+    reward = {},
+    title = "",
+    note = "",
+    count = 1,
+    locked = false,
+    accent = "",
+    className = "",
+  } = {}) {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = `reward-chest-button${className ? ` ${className}` : ""}`;
+    button.dataset.tier = tier;
+    button.dataset.locked = String(Boolean(locked));
+    if (accent) button.style.setProperty("--reward-accent", accent);
+    button.setAttribute("aria-expanded", "false");
+    button.setAttribute("aria-label", `${title || "Ödül sandığı"} · içeriği göster`);
+    button.innerHTML = chestVisualMarkup(tier, { visualId });
+    if (count > 1) {
+      const badge = document.createElement("span");
+      badge.className = "reward-chest-count";
+      badge.textContent = `×${count}`;
+      button.appendChild(badge);
+    }
+    if (locked) {
+      const lock = document.createElement("span");
+      lock.className = "reward-chest-lock";
+      lock.setAttribute("aria-hidden", "true");
+      lock.textContent = "🔒";
+      button.appendChild(lock);
+    }
+    const options = { title, reward, note };
+    button.addEventListener("pointerenter", (event) => {
+      if (event.pointerType === "mouse") showRewardPreview(button, options);
+    });
+    button.addEventListener("pointerleave", (event) => {
+      if (event.pointerType === "mouse" && rewardPreviewState?.trigger === button && !rewardPreviewState.pinned) {
+        hideRewardPreview();
+      }
+    });
+    button.addEventListener("focus", () => {
+      if (button.matches(":focus-visible")) showRewardPreview(button, options);
+    });
+    button.addEventListener("blur", () => {
+      if (rewardPreviewState?.trigger === button && !rewardPreviewState.pinned) hideRewardPreview();
+    });
+    button.addEventListener("click", (event) => {
+      event.preventDefault();
+      event.stopPropagation();
+      if (rewardPreviewState?.trigger === button && rewardPreviewState.pinned) {
+        hideRewardPreview();
+        return;
+      }
+      showRewardPreview(button, options);
+      if (rewardPreviewState) rewardPreviewState.pinned = true;
+    });
+    return button;
+  }
+
+  document.addEventListener("pointerdown", (event) => {
+    if (!rewardPreviewState) return;
+    if (rewardPreviewState.panel.contains(event.target)) return;
+    if (rewardPreviewState.trigger.contains(event.target)) return;
+    hideRewardPreview();
+  }, true);
+  document.addEventListener("scroll", hideRewardPreview, true);
+  window.addEventListener("resize", hideRewardPreview);
+  document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape") hideRewardPreview();
+  });
+
+  // Maçta yeni açılan Devre Yolu ödülü; yol yeniden çizilse de vurgulu kalır.
+  let highlightedArenaNodeId = "";
+
   function renderArenaPath() {
     const host = document.getElementById("arena-path");
     if (!host) return;
@@ -1521,17 +1639,26 @@
       copy.className = "arena-path-stage-copy";
       const title = document.createElement("h3");
       title.textContent = isLeagueStage
-        ? localizedUiText(stage.name_tr)
-        : localizedMessage("arena.stage_name", {arena:localizedNumber(stage.index), name:stage.name_tr ? localizedMessage("arena.stage_name_suffix", {name:localizedUiText(stage.name_tr)}) : ""});
+        ? (document.documentElement.lang === "en" && stage.name_en || localizedUiText(stage.name_tr))
+        : localizedMessage("arena.stage_name", {
+          arena:localizedNumber(stage.index),
+          name:stage.name_tr ? localizedMessage("arena.stage_name_suffix", {name:localizedUiText(stage.name_tr)}) : "",
+        });
       const detail = document.createElement("p");
       if (arena) {
         const nodeCount = (arena.nodes || []).filter((node) => Object.keys(node.rewards || {}).length && Number(node.trophies) >= Number(stage.minimum_rating || 0)).length;
         const coreCopy = arena.core_unlock ? localizedMessage("arena.new_core_suffix") : "";
-        detail.textContent = localizedMessage("arena.stage_detail", {trophies:localizedNumber(stage.minimum_rating || 0), count:localizedNumber(nodeCount), core:coreCopy});
+        detail.textContent = localizedMessage("arena.stage_detail", {
+          trophies:localizedNumber(stage.minimum_rating || 0),
+          count:localizedNumber(nodeCount), core:coreCopy,
+        });
       } else {
         const next = stages[stages.indexOf(stage) + 1];
         detail.textContent = next
-          ? localizedMessage("arena.league_range", {minimum:localizedNumber(stage.minimum_rating || 0), maximum:localizedNumber(Number(next.minimum_rating) - 1)})
+          ? localizedMessage("arena.league_range", {
+            minimum:localizedNumber(stage.minimum_rating || 0),
+            maximum:localizedNumber(Number(next.minimum_rating) - 1),
+          })
           : localizedMessage("arena.legendary_range", {minimum:localizedNumber(stage.minimum_rating || 0)});
       }
       copy.append(title, detail);
@@ -1545,7 +1672,7 @@
           const unlockArea = document.createElement("div");
           unlockArea.className = "arena-module-unlocks";
           const label = document.createElement("span");
-          label.textContent = "BU ARENADA AÇILAN MODÜLLER";
+          label.textContent = localizedUiText("BU ARENADA AÇILAN MODÜLLER");
           const cards = document.createElement("div");
           for (const item of unlocks) {
             const card = document.createElement("button");
@@ -1573,15 +1700,17 @@
           reward.type = "button";
           reward.className = `arena-reward-node${node.claimed ? " is-claimed" : ""}${node.claimable ? " is-claimable" : ""}`;
           reward.disabled = !node.claimable;
-          const trophy=document.createElement("span");
-          trophy.className="arena-reward-trophy";
-          trophy.textContent=localizedMessage("arena.trophy_icon", {count:localizedNumber(node.trophies)});
-          const icon=document.createElement("i");
-          icon.setAttribute("aria-hidden","true");
-          icon.textContent=rewardIcon(node.rewards);
-          const caption=document.createElement("strong");
-          caption.textContent=node.claimed ? localizedMessage("reward.claimed") : rewardDescription;
-          reward.append(trophy,icon,caption);
+          reward.dataset.arenaNodeId = String(node.id);
+          reward.classList.toggle("is-new-reward", Boolean(node.claimable) && String(node.id) === highlightedArenaNodeId);
+          const trophy = document.createElement("span");
+          trophy.className = "arena-reward-trophy";
+          trophy.textContent = localizedMessage("arena.trophy_icon", {count:localizedNumber(node.trophies)});
+          const glyph = document.createElement("i");
+          glyph.setAttribute("aria-hidden", "true");
+          glyph.innerHTML = rewardIcon(node.rewards);
+          const caption = document.createElement("strong");
+          caption.textContent = node.claimed ? localizedMessage("reward.claimed") : rewardDescription;
+          reward.append(trophy, glyph, caption);
           if (node.claimable) reward.setAttribute("aria-label", localizedMessage("reward.claim_aria", {reward:rewardDescription}));
           reward.addEventListener("click", async () => {
             reward.disabled = true;
@@ -1607,15 +1736,17 @@
           reward.type = "button";
           reward.className = `arena-reward-node${node.claimed ? " is-claimed" : ""}${node.claimable ? " is-claimable" : ""}`;
           reward.disabled = !node.claimable;
-          const trophy=document.createElement("span");
-          trophy.className="arena-reward-trophy";
-          trophy.textContent=localizedMessage("arena.trophy_icon", {count:localizedNumber(node.trophies)});
-          const icon=document.createElement("i");
-          icon.setAttribute("aria-hidden","true");
-          icon.textContent=rewardIcon(node.rewards);
-          const caption=document.createElement("strong");
-          caption.textContent=node.claimed ? localizedMessage("reward.claimed") : rewardDescription;
-          reward.append(trophy,icon,caption);
+          reward.dataset.arenaNodeId = String(node.id);
+          reward.classList.toggle("is-new-reward", Boolean(node.claimable) && String(node.id) === highlightedArenaNodeId);
+          const trophy = document.createElement("span");
+          trophy.className = "arena-reward-trophy";
+          trophy.textContent = localizedMessage("arena.trophy_icon", {count:localizedNumber(node.trophies)});
+          const glyph = document.createElement("i");
+          glyph.setAttribute("aria-hidden", "true");
+          glyph.innerHTML = rewardIcon(node.rewards);
+          const caption = document.createElement("strong");
+          caption.textContent = node.claimed ? localizedMessage("reward.claimed") : rewardDescription;
+          reward.append(trophy, glyph, caption);
           if (node.claimable) reward.setAttribute("aria-label", localizedMessage("reward.claim_aria", {reward:rewardDescription}));
           reward.addEventListener("click", async () => {
             reward.disabled = true;
@@ -1635,7 +1766,7 @@
       }
       host.appendChild(section);
     }
-    if (!host.childElementCount) host.textContent = "Devre Yolu yükleniyor…";
+    if (!host.childElementCount) host.textContent = localizedUiText("Devre Yolu yükleniyor…");
   }
 
   const CORE_VISUALS = Object.freeze({
@@ -1671,9 +1802,9 @@
     const coreId = core?.id || "core_resonance";
     const visual = applyCoreVisualIdentity(button, coreId);
     if (glyph) glyph.textContent = visual.glyph;
-    if (level) level.textContent = localizedMessage("module.level_short", {level:localizedNumber(core?.level || 1)});
+    if (level) level.textContent = `SV ${Number(core?.level || 1)}`;
     if (button) {
-      button.setAttribute("aria-label", localizedMessage("core.select_aria", {name:localizedUiText(core?.name_tr || "Çekirdek"), level:localizedNumber(core?.level || 1)}));
+      button.setAttribute("aria-label", `${core?.name_tr || "Çekirdek"} · Seviye ${Number(core?.level || 1)} · Çekirdek seçimini aç`);
     }
   }
   function openCoreCollection() {
@@ -1713,7 +1844,7 @@
     tile.dataset.rarity = core.rarity || "common";
     tile.dataset.selected = String(selected);
     tile.dataset.locked = String(!core.unlocked);
-    tile.setAttribute("aria-label", localizedMessage("core.tile_aria", {name:localizedUiText(core.name_tr), rarity:moduleRarityLabel(core.rarity), level:localizedNumber(core.level), selected:core.selected ? localizedMessage("core.selected_suffix") : ""}));
+    tile.setAttribute("aria-label", `${core.name_tr} · ${moduleRarityLabel(core.rarity)} · Seviye ${core.level}${core.selected ? " · seçili" : ""}`);
     const visual = applyCoreVisualIdentity(tile, core.id);
     const glyph = document.createElement("span");
     glyph.className = "core-collection-glyph";
@@ -1722,11 +1853,11 @@
     const copy = document.createElement("span");
     copy.className = "core-collection-copy";
     const name = document.createElement("strong");
-    name.textContent = localizedRecordText(core, "name");
+    name.textContent = core.name_tr;
     const rarity = document.createElement("em");
     rarity.textContent = moduleRarityLabel(core.rarity);
     const state = document.createElement("small");
-    state.textContent = core.unlocked ? localizedMessage("module.level_short", {level:localizedNumber(core.level)}) : localizedMessage("arena.numbered", {arena:localizedNumber(core.unlock_arena)});
+    state.textContent = core.unlocked ? `SV ${core.level}` : `ARENA ${core.unlock_arena}`;
     copy.append(name, rarity, state);
     const progress = document.createElement("i");
     const required = Number(core.next_upgrade_cost?.shards || 1);
@@ -1759,9 +1890,9 @@
     if (!panel) return;
     const name = document.getElementById("core-quick-name");
     const select = document.getElementById("core-quick-select");
-    if (name) name.textContent = localizedRecordText(core, "name");
+    if (name) name.textContent = core.name_tr;
     if (select) {
-      select.textContent = localizedMessage(core.selected ? "core.selected" : core.unlocked ? "core.select" : "reward.locked");
+      select.textContent = core.selected ? "Seçildi" : core.unlocked ? "Seç" : "Kilitli";
       select.disabled = !core.unlocked || core.selected;
     }
     panel.hidden = false;
@@ -1790,7 +1921,7 @@
       }
     }
     const count = document.getElementById("core-collection-count");
-    if (count) count.textContent = localizedMessage("core.unlock_ratio", {unlocked:localizedNumber(cores.filter((core) => core.unlocked).length), total:localizedNumber(cores.length || 7)});
+    if (count) count.textContent = `${cores.filter((core) => core.unlocked).length} / ${cores.length || 7}`;
     for (const rarity of CORE_RARITY_ORDER) {
       const rarityCores = cores.filter((core) => (core.rarity || "common") === rarity);
       if (!rarityCores.length) continue;
@@ -1801,7 +1932,7 @@
       const title = document.createElement("strong");
       title.textContent = moduleRarityLabel(rarity);
       const summary = document.createElement("small");
-      summary.textContent = localizedMessage("core.unlocked_count", {unlocked:localizedNumber(rarityCores.filter((core) => core.unlocked).length), total:localizedNumber(rarityCores.length)});
+      summary.textContent = `${rarityCores.filter((core) => core.unlocked).length} / ${rarityCores.length} AÇIK`;
       heading.append(title, summary);
       const list = document.createElement("div");
       list.className = "core-rarity-list";
@@ -1856,38 +1987,32 @@
     const intro = document.createElement("p");
     intro.className = "module-detail-tab-intro";
     if (tabName === "stats") {
-      intro.textContent = localizedMessage("core.stats_intro");
+      intro.textContent = "Çekirdeğin savaş alanına sağladığı kalıcı enerji ve dayanıklılık değerleri.";
       const list = document.createElement("dl");
+      list.className = "module-stat-tiles core-stat-tiles";
       for (const [label, value] of [
-        ["module.rarity", moduleRarityLabel(core.rarity)],
-        ["core.battle_role", localizedRecordText(core, "role")],
-        ["core.energy_generation", localizedMessage("module.energy_per_second", {energy:localizedNumber(core.energy_per_second)})],
-        ["core.energy_storage", core.energy_capacity],
-        ["core.level_label", `${core.level} / 15`],
+        ["Nadirlik", moduleRarityLabel(core.rarity)],
+        ["Savaş rolü", core.role_tr],
+        ["İmza", core.signature_name_tr || "—"],
+        ["Enerji üretimi", `${core.energy_per_second}/sn`],
+        ["Enerji deposu", core.energy_capacity],
+        ["Seviye", `${core.level} / 15`],
       ]) {
         const row = document.createElement("div");
-        const term=document.createElement("dt");
-        term.textContent=localizedMessage(label);
-        const description=document.createElement("dd");
-        description.textContent=localizedUiText(String(value));
-        row.append(term,description);
+        row.innerHTML = `<dt>${label}</dt><dd>${value}</dd>`;
         list.appendChild(row);
       }
       host.appendChild(list);
     } else if (tabName === "skills") {
-      intro.textContent = localizedMessage("core.skills_intro");
+      intro.textContent = "Her eşikte tek bir çekirdek yeteneği seçilebilir.";
       const tree = document.createElement("div");
       tree.className = "core-skill-tree";
       for (const skill of core.skills || []) {
         const button = document.createElement("button");
         button.type = "button";
         button.className = skill.learned ? "is-selected" : "";
-        const state = skill.learned ? localizedMessage("core.skill_selected") : skill.tier_selected ? localizedMessage("core.other_branch_selected") : core.level < skill.level ? localizedMessage("core.level_required", {level:localizedNumber(skill.level)}) : localizedMessage("currency.flux", {amount:localizedNumber(skill.flux_cost)});
-        const name=document.createElement("strong");
-        name.textContent=localizedRecordText(skill, "name");
-        const detail=document.createElement("small");
-        detail.textContent=localizedMessage("core.skill_level_state", {level:localizedNumber(skill.level), state});
-        button.append(name,detail);
+        const state = skill.learned ? "SEÇİLDİ" : skill.tier_selected ? "DİĞER DAL SEÇİLDİ" : core.level < skill.level ? `SV ${skill.level} GEREKLİ` : `${skill.flux_cost} AKI`;
+        button.innerHTML = `<strong>${skill.name_tr}</strong><small>SV ${skill.level} · ${state}</small>`;
         button.disabled = !core.unlocked || skill.learned || skill.tier_selected || core.level < skill.level || Number(metaProgressionState?.flux_shards || 0) < Number(skill.flux_cost || 0);
         button.addEventListener("click", async () => {
           button.disabled = true;
@@ -1898,22 +2023,22 @@
       }
       host.appendChild(tree);
     } else {
-      intro.textContent = localizedRecordText(core, "role");
+      intro.textContent = core.role_tr;
+      host.appendChild(createModuleIdentityPanel(core, {
+        noAdvantageTr:"Enderlik CAN, enerji üretimi, dolum hızı veya güç etkisi avantajı vermez.",
+      }));
       const overview = document.createElement("div");
       overview.className = "module-overview-grid";
       for (const [label, value] of [
-        ["core.rarity_upper", moduleRarityLabel(core.rarity)],
-        ["module.battle_role", localizedRecordText(core, "role")],
-        ["module.unlock", localizedMessage("arena.numbered", {arena:localizedNumber(core.unlock_arena)})],
-        ["core.energy_upper", localizedMessage("module.energy_per_second", {energy:localizedNumber(core.energy_per_second)})],
-        ["module.next_level", core.next_upgrade_cost ? localizedMessage("core.upgrade_cost", {shards:localizedNumber(core.next_upgrade_cost.shards), flux:localizedNumber(core.next_upgrade_cost.flux_shards)}) : localizedMessage("core.max_level")],
+        ["NADİRLİK", moduleRarityLabel(core.rarity)],
+        ["SAVAŞ ROLÜ", core.role_tr],
+        ["İMZA", core.signature_name_tr || "—"],
+        ["AÇILIŞ", `Arena ${core.unlock_arena}`],
+        ["ENERJİ", `${core.energy_per_second}/sn`],
+        ["SONRAKİ SEVİYE", core.next_upgrade_cost ? `${core.next_upgrade_cost.shards} parça · ${core.next_upgrade_cost.flux_shards} Akı` : "Azami seviye"],
       ]) {
         const card = document.createElement("div");
-        const caption=document.createElement("span");
-        caption.textContent=localizedMessage(label);
-        const amount=document.createElement("strong");
-        amount.textContent=localizedUiText(String(value));
-        card.append(caption,amount);
+        card.innerHTML = `<span>${label}</span><strong>${value}</strong>`;
         overview.appendChild(card);
       }
       host.appendChild(overview);
@@ -1921,7 +2046,7 @@
     host.prepend(intro);
   }
 
-  function openCoreDetail(tabName = "overview") {
+  function openCoreDetail() {
     const core = activeMetaCore()
       || metaProgressionState?.cores?.types?.find((item) => item.selected)
       || metaProgressionState?.cores?.types?.[0];
@@ -1930,28 +2055,28 @@
     const dialog = document.getElementById("core-detail-dialog");
     const visual = applyCoreVisualIdentity(dialog, core.id);
     const setText = (id, value) => { const target = document.getElementById(id); if (target) target.textContent = String(value); };
-    setText("core-detail-name", localizedRecordText(core, "name"));
+    setText("core-detail-name", core.name_tr);
     setText("core-detail-rarity", moduleRarityLabel(core.rarity));
-    setText("core-detail-level", localizedMessage("core.level", {level:localizedNumber(core.level)}));
-    setText("core-detail-selected-state", localizedMessage(core.selected ? "core.selected_upper" : core.unlocked ? "core.ready_upper" : "reward.locked_upper"));
+    setText("core-detail-level", `SEVİYE ${core.level}`);
+    setText("core-detail-selected-state", core.selected ? "SEÇİLDİ" : core.unlocked ? "HAZIR" : "KİLİTLİ");
     const cost = core.next_upgrade_cost;
     const required = Number(cost?.shards || 1);
     const owned = Number(core.shards || 0) + Number(core.legacy_shards || 0);
-    setText("core-detail-shards", cost ? `${localizedNumber(owned)} / ${localizedNumber(required)}` : localizedMessage("core.max_level"));
+    setText("core-detail-shards", cost ? `${owned} / ${required}` : "AZAMİ SEVİYE");
     const progress = document.getElementById("core-detail-progress");
     if (progress) { progress.max = required; progress.value = cost ? Math.min(required, owned) : required; }
     const art = document.getElementById("core-detail-art");
     if (art) { art.textContent = visual.glyph; applyCoreVisualIdentity(art, core.id); }
     const stats = document.getElementById("core-detail-stats");
-    if (stats) stats.innerHTML = `<div><span>${localizedMessage("core.energy")}</span><strong>${localizedMessage("module.energy_per_second", {energy:localizedNumber(core.energy_per_second)})}</strong></div><div><span>${localizedMessage("core.storage")}</span><strong>${localizedNumber(core.energy_capacity)}</strong></div><div><span>${localizedMessage("core.skills")}</span><strong>${localizedNumber((core.skills || []).filter((skill) => skill.learned).length)}</strong></div>`;
+    if (stats) stats.innerHTML = `<div><span>ENERJİ</span><strong>${core.energy_per_second}/sn</strong></div><div><span>DEPO</span><strong>${core.energy_capacity}</strong></div><div><span>YETENEK</span><strong>${(core.skills || []).filter((skill) => skill.learned).length}</strong></div>`;
     const select = document.getElementById("core-detail-select");
-    if (select) { select.disabled = !core.unlocked || core.selected; select.textContent = localizedMessage(core.selected ? "core.selected_upper" : core.unlocked ? "core.select_upper" : "reward.locked_upper"); }
+    if (select) { select.disabled = !core.unlocked || core.selected; select.textContent = core.selected ? "SEÇİLDİ" : core.unlocked ? "SEÇ" : "KİLİTLİ"; }
     const upgrade = document.getElementById("core-detail-upgrade");
     const canUpgrade = core.unlocked && cost && owned >= Number(cost.shards) && Number(metaProgressionState?.flux_shards || 0) >= Number(cost.flux_shards);
-    if (upgrade) { upgrade.disabled = !canUpgrade; upgrade.textContent = cost ? localizedMessage("core.upgrade_button", {flux:localizedNumber(cost.flux_shards)}) : localizedMessage("core.max_level"); }
-    setText("core-detail-status", !core.unlocked ? localizedMessage("core.unlock_arena", {arena:localizedNumber(core.unlock_arena)}) : cost && !canUpgrade ? localizedMessage("core.upgrade_required", {shards:localizedNumber(cost.shards), flux:localizedNumber(cost.flux_shards)}) : "");
-    for (const button of document.querySelectorAll("[data-core-detail-tab]")) button.classList.toggle("is-active", button.dataset.coreDetailTab === tabName);
-    renderCoreDetailTab(tabName);
+    if (upgrade) { upgrade.disabled = !canUpgrade; upgrade.textContent = cost ? `YÜKSELT · ${cost.flux_shards} AKI` : "AZAMİ SEVİYE"; }
+    setText("core-detail-status", !core.unlocked ? `Arena ${core.unlock_arena} seviyesinde açılır.` : cost && !canUpgrade ? `${cost.shards} parça ve ${cost.flux_shards} Akı gerekli.` : "");
+    for (const button of document.querySelectorAll("[data-core-detail-tab]")) button.classList.toggle("is-active", button.dataset.coreDetailTab === "overview");
+    renderCoreDetailTab("overview");
     if (dialog?.showModal && !dialog.open) dialog.showModal();
     else dialog?.setAttribute("open", "");
   }
@@ -1990,15 +2115,15 @@
       const element = document.getElementById(id);
       if (element) element.textContent = String(value);
     };
-    setText("home-arena-name", rank.kind !== "arena" ? localizedUiText(rank.name_tr) : localizedMessage("arena.numbered", {arena:localizedNumber(rank.index || 1)}));
-    setText("home-arena-progress-copy", rank.next_stage ? localizedMessage("arena.progress_to_next", {current:localizedNumber(rating), next:localizedNumber(ceiling)}) : localizedMessage("profile.trophies", {count:localizedNumber(rating)}));
+    setText("home-arena-name", rank.kind !== "arena" ? rank.name_tr : `Arena ${rank.index || 1}`);
+    setText("home-arena-progress-copy", rank.next_stage ? `${rating} / ${ceiling} Kupa` : `${rating} Kupa`);
     const arenaTitle = rank.name_tr && !/^Arena\s+\d+$/i.test(rank.name_tr)
-      ? localizedMessage("arena.name_and_rank", {arena:localizedNumber(rank.index || 1), name:localizedUiText(rank.name_tr)})
-      : localizedMessage("arena.numbered", {arena:localizedNumber(rank.index || 1)});
-    setText("arena-detail-title", rank.kind !== "arena" ? localizedRecordText(rank, "name") : arenaTitle);
-    setText("arena-detail-rating", localizedMessage("profile.trophies", {count:localizedNumber(rating)}));
-    setText("arena-detail-range", rank.next_stage ? `${localizedNumber(rating - floor)} / ${localizedNumber(ceiling - floor)}` : localizedMessage("arena.max_stage"));
-    setText("arena-detail-next", rank.next_stage ? localizedMessage("arena.next_stage", {name:localizedUiText(rank.next_stage.name_tr), trophies:localizedNumber(ceiling)}) : localizedMessage("arena.complete"));
+      ? `Arena ${rank.index || 1} · ${rank.name_tr}`
+      : `Arena ${rank.index || 1}`;
+    setText("arena-detail-title", rank.kind !== "arena" ? rank.name_tr : arenaTitle);
+    setText("arena-detail-rating", `${rating} Kupa`);
+    setText("arena-detail-range", rank.next_stage ? `${rating - floor} / ${ceiling - floor}` : "Azami aşama");
+    setText("arena-detail-next", rank.next_stage ? `Sonraki: ${rank.next_stage.name_tr} · ${ceiling} Kupa` : "Efsanevi yol tamamlandı");
     renderArenaPath();
     const segments = document.getElementById("home-arena-segments");
     if (segments) {
@@ -2016,7 +2141,12 @@
       stops.forEach((node, index) => {
         const segment = document.createElement("i");
         segment.className = rating >= Number(node.trophies) ? "is-complete" : (index === stops.findIndex((item) => rating < Number(item.trophies)) ? "is-current" : "");
-        segment.title = localizedMessage("arena.node_title", {trophies:localizedNumber(node.trophies), reward:node.description_tr ? localizedMessage("arena.node_reward_suffix", {description:localizedArenaRewardDescription(node)}) : ""});
+        segment.title = localizedMessage("arena.node_title", {
+          trophies:localizedNumber(node.trophies),
+          reward:node.description_tr ? localizedMessage("arena.node_reward_suffix", {
+            description:localizedArenaRewardDescription(node),
+          }) : "",
+        });
         segments.appendChild(segment);
       });
     }
@@ -2069,7 +2199,12 @@
     if (!host) return;
     host.replaceChildren();
     const selected = new Set(deckEditorSlots.filter(Boolean).map(clientDefinitionId));
-    for (const item of state.module_collection || []) {
+    const sortedModules = [...(state.module_collection || [])].sort((a, b) =>
+      localizedUiText(a.name_tr || "").localeCompare(
+        localizedUiText(b.name_tr || ""), document.documentElement.lang === "en" ? "en" : "tr"
+      )
+    );
+    for (const item of sortedModules) {
       if (activeModuleFilter !== "all" && item.category !== activeModuleFilter) continue;
       const tile = unifiedModuleTile(item, { collection: true, selected: selected.has(item.definition_id) });
       tile.addEventListener("click", () => showCollectionQuickActions(item, tile));
@@ -2100,45 +2235,35 @@
       const element = document.getElementById(id);
       if (element) element.textContent = String(value);
     };
-    setText("shop-flux-balance", localizedMessage("currency.flux", {amount:localizedNumber(state.flux_shards || 0)}));
-    setText("shop-credit-balance", localizedMessage("currency.credits_short", {amount:localizedNumber(state.circuit_credits || 0)}));
+    setText("shop-flux-balance", `${state.flux_shards || 0} Akı`);
+    setText("shop-credit-balance", `${state.circuit_credits || 0} DK`);
     const giftHost = document.getElementById("gift-chest-list");
+    const inventory = state.chests?.inventory || [];
+    const slots = state.chests?.slots || [];
+    const ownedChests = (definitionId) => inventory.find((item) => item.definition_id === definitionId) || {
+      count: slots.filter((slot) => slot.definition_id === definitionId).length,
+      openable_count: slots.filter((slot) => slot.definition_id === definitionId).length,
+      locked_count: 0,
+    };
     if (giftHost) {
       giftHost.replaceChildren();
-      const definitions = state.chests?.definitions || [];
-      const inventory = state.chests?.inventory || [];
-      const slots = state.chests?.slots || [];
-      for (const definition of definitions) {
-        const owned = inventory.find(
-          (item) => item.definition_id === definition.id
-        ) || {
-          count: slots.filter((slot) => slot.definition_id === definition.id).length,
-          openable_count: slots.filter((slot) => slot.definition_id === definition.id).length,
-          locked_count: 0,
-        };
-        const ownedCount = Math.max(0, Number(owned.count || 0));
-        const openableCount = Math.max(0, Number(owned.openable_count || 0));
+      // Hediye olarak yalnız Bronz Sandık kalır; 8 saatte bir yenilenir.
+      const giftDefinitions = (state.chests?.definitions || []).filter(
+        (definition) => definition.gift ?? definition.id === "field_3h"
+      );
+      for (const definition of giftDefinitions) {
         const card = document.createElement("article");
-        card.className = "shop-chest-card";
+        card.className = "shop-chest-card gift-chest-card";
         const tier = chestTier(definition);
         card.dataset.tier = tier;
         const remaining = Math.max(0, Number(definition.claim_remaining_seconds || 0));
         card.dataset.definitionId = definition.id;
         card.dataset.claimRemaining = String(remaining);
-        card.innerHTML = chestVisualMarkup(tier);
-        const chestName=document.createElement("strong");
-        chestName.textContent=localizedMessage("chest.owned_count", {name:localizedUiText(definition.name_tr), count:localizedNumber(ownedCount)});
-        card.appendChild(chestName);
-        if (ownedCount > 0) {
-          const inventoryStatus = document.createElement("small");
-          inventoryStatus.className = "chest-inventory-status";
-          inventoryStatus.textContent = localizedMessage("chest.openable_count", {openable:localizedNumber(openableCount), owned:localizedNumber(ownedCount)});
-          card.appendChild(inventoryStatus);
-        }
+        card.innerHTML = `${chestVisualMarkup(tier)}<strong>${definition.name_tr}</strong>`;
         if (remaining > 0) {
           const countdown = document.createElement("small");
           countdown.className = "chest-countdown";
-          countdown.textContent = localizedMessage("chest.renewal_countdown", {time:formatChestCountdown(remaining)});
+          countdown.textContent = "Yenilenmesine " + formatChestCountdown(remaining);
           card.appendChild(countdown);
         }
         const actions = document.createElement("div");
@@ -2146,7 +2271,7 @@
         const giftAction = document.createElement("button");
         giftAction.type = "button";
         giftAction.className = "gift-chest-action";
-        giftAction.textContent = remaining > 0 ? formatChestCountdown(remaining) : localizedMessage("chest.open_gift");
+        giftAction.textContent = remaining > 0 ? formatChestCountdown(remaining) : "HEDİYE SANDIK AÇ";
         giftAction.disabled = Boolean(
           state.unavailable
           || remaining > 0
@@ -2154,49 +2279,67 @@
         );
         giftAction.addEventListener("click", () => claimGiftChest(definition.id));
         actions.appendChild(giftAction);
-        if (ownedCount > 0) {
-          const openAllAction = document.createElement("button");
-          openAllAction.type = "button";
-          openAllAction.className = "chest-open-all-action";
-          openAllAction.textContent = localizedMessage("chest.open_all");
-          openAllAction.disabled = Boolean(state.unavailable || openableCount === 0);
-          openAllAction.addEventListener("click", () => openAllAvailableChests(definition.id));
-          actions.appendChild(openAllAction);
-        }
         card.appendChild(actions);
         giftHost.appendChild(card);
       }
     }
-    const offerHost = document.getElementById("daily-shop-offers");
-    const resetCopy = document.getElementById("shop-reset-copy");
-    if (resetCopy) {
-      const resetAt = state.shop?.reset_at ? new Date(state.shop.reset_at) : null;
-      resetCopy.textContent = resetAt && !Number.isNaN(resetAt.getTime())
-        ? `${localizedUiText("Pzt")} ${localizedDate(resetAt, {hour:"2-digit", minute:"2-digit"})}`
-        : localizedMessage("shop.weekly");
+    const chestStore = state.shop?.chest_store || null;
+    const saleCopy = document.getElementById("chest-store-sale");
+    if (saleCopy) {
+      saleCopy.textContent = chestStore?.sale_active
+        ? `BUGÜN %${chestStore.discount_percent || 40} İNDİRİM`
+        : "Her ay sürpriz bir günde %40 indirim";
+      saleCopy.dataset.sale = String(Boolean(chestStore?.sale_active));
     }
-    if (offerHost) {
-      offerHost.replaceChildren();
-      for (const offer of state.shop?.offers || []) {
+    const storeHost = document.getElementById("chest-store-list");
+    if (storeHost) {
+      storeHost.replaceChildren();
+      for (const item of chestStore?.items || []) {
+        const owned = ownedChests(item.definition_id);
+        const ownedCount = Math.max(0, Number(owned.count || 0));
+        const openableCount = Math.max(0, Number(owned.openable_count || 0));
+        const currency = item.currency === "flux_shards" ? "Akı" : "DK";
         const card = document.createElement("article");
-        card.className = "daily-offer-card";
-        card.dataset.tier = offer.tier;
-        card.dataset.offerId = offer.id;
-        card.innerHTML = chestVisualMarkup(offer.tier);
-        const offerCopy=document.createElement("div");
-        const offerName=document.createElement("strong");
-        offerName.textContent=localizedUiText(offer.name_tr);
-        offerCopy.appendChild(offerName);
-        card.appendChild(offerCopy);
-        const action = document.createElement("button");
-        action.type = "button";
-        action.textContent = offer.purchased ? localizedMessage("reward.claimed") : localizedMessage(offer.currency === "flux_shards" ? "currency.flux" : "currency.credits_short", {amount:localizedNumber(offer.cost)});
-        action.disabled = Boolean(state.unavailable || offer.purchased || Number(state[offer.currency] || 0) < offer.cost);
-        action.addEventListener("click", () => purchaseShopOffer(offer.id));
-        card.appendChild(action);
-       offerHost.appendChild(card);
-     }
-   }
+        card.className = "shop-chest-card chest-store-card";
+        card.dataset.tier = item.tier;
+        card.dataset.storeChestId = item.definition_id;
+        card.dataset.sale = String(Number(item.cost) < Number(item.base_cost));
+        card.innerHTML = `${chestVisualMarkup(item.tier)}<strong>${item.name_tr}</strong>`;
+        if (ownedCount > 0) {
+          const inventoryStatus = document.createElement("small");
+          inventoryStatus.className = "chest-inventory-status";
+          inventoryStatus.textContent = `Envanter ${openableCount} / ${ownedCount} açılabilir`;
+          card.appendChild(inventoryStatus);
+        }
+        const actions = document.createElement("div");
+        actions.className = "shop-chest-actions";
+        const buy = document.createElement("button");
+        buy.type = "button";
+        buy.className = "chest-store-buy";
+        if (Number(item.cost) < Number(item.base_cost)) {
+          const base = document.createElement("s");
+          base.textContent = `${item.base_cost} ${currency}`;
+          buy.append(base, document.createTextNode(` ${item.cost} ${currency}`));
+        } else {
+          buy.textContent = `${item.cost} ${currency}`;
+        }
+        buy.disabled = Boolean(state.unavailable || Number(state[item.currency] || 0) < Number(item.cost));
+        buy.addEventListener("click", () => buyStoreChest(item.definition_id));
+        actions.appendChild(buy);
+        if (ownedCount > 0) {
+          const openAllAction = document.createElement("button");
+          openAllAction.type = "button";
+          openAllAction.className = "chest-open-all-action";
+          openAllAction.textContent = "HEPSİNİ AÇ";
+          openAllAction.disabled = Boolean(state.unavailable || openableCount === 0);
+          openAllAction.addEventListener("click", () => openAllAvailableChests(item.definition_id));
+          actions.appendChild(openAllAction);
+        }
+        card.appendChild(actions);
+        storeHost.appendChild(card);
+      }
+    }
+    renderPaidStore();
     ensureShopCountdownTimer();
  }
 
@@ -2205,9 +2348,9 @@
     const hours = Math.floor(total / 3600);
     const minutes = Math.floor((total % 3600) / 60);
     const secs = total % 60;
-    if (hours) return localizedMessage("time.chest_hours", {hours:localizedNumber(hours), minutes:String(minutes).padStart(2, "0")});
-    if (minutes) return localizedMessage("time.chest_minutes", {minutes:localizedNumber(minutes), seconds:String(secs).padStart(2, "0")});
-    return localizedMessage("time.chest_seconds", {seconds:localizedNumber(secs)});
+    if (hours) return `${hours}s ${String(minutes).padStart(2, "0")}dk`;
+    if (minutes) return `${minutes}dk ${String(secs).padStart(2, "0")}sn`;
+    return `${secs}sn`;
   }
 
   let shopCountdownTimer = null;
@@ -2222,11 +2365,11 @@
         card.dataset.claimRemaining = String(next);
         const countdown = card.querySelector(".chest-countdown");
         const button = card.querySelector(".gift-chest-action");
-        if (countdown) countdown.textContent = localizedMessage("chest.renewal_countdown", {time:formatChestCountdown(next)});
+        if (countdown) countdown.textContent = "Yenilenmesine " + formatChestCountdown(next);
         if (button && next === 0 && previous > 0) becameAvailable = true;
         if (button && next === 0 && !metaProgressionState?.unavailable) {
           button.disabled = false;
-          button.textContent = localizedMessage("chest.open_gift");
+          button.textContent = "HEDİYE SANDIK AÇ";
           countdown?.remove();
         }
       }
@@ -2238,7 +2381,7 @@
     let entry = pendingMetaRequests.get(url);
     if (entry?.inFlight) throw new Error("Bu işlem sürüyor; lütfen bekle.");
     if (!entry) {
-      entry = {requestId: laboratoryRequestId("meta"), inFlight: false};
+      entry = {requestId: operationRequestId("meta"), inFlight: false};
       pendingMetaRequests.set(url, entry);
     }
     entry.inFlight = true;
@@ -2280,10 +2423,10 @@
     const definition = metaProgressionState?.chests?.definitions?.find(
       (item) => item.id === receipt.definition_id
     );
-    const offer = metaProgressionState?.shop?.offers?.find(
-      (item) => item.id === receipt.offer_id
+    const storeItem = metaProgressionState?.shop?.chest_store?.items?.find(
+      (item) => item.definition_id === (receipt.store_chest_id || receipt.definition_id)
     );
-    const tier = offer?.tier || chestTier(definition || { id: receipt.definition_id });
+    const tier = storeItem?.tier || chestTier(definition || { id: receipt.definition_id });
     const rewards = receipt.rewards || {};
     const card = document.getElementById("chest-reveal-card");
     const visual = document.getElementById("chest-reveal-visual");
@@ -2293,7 +2436,7 @@
     const close = document.getElementById("chest-reveal-close");
     if (card) { card.dataset.tier = tier; card.dataset.state = "revealed"; }
     if (visual) visual.className = `chest-visual chest-visual-large chest-visual-${tier}`;
-    if (title) title.textContent = localizedRecordText(definition, "name") || localizedRecordText(offer, "name") || localizedUiText("Sandık");
+    if (title) title.textContent = definition?.name_tr || storeItem?.name_tr || "Sandık";
     if (kicker) { kicker.hidden = true; kicker.textContent = ""; }
     if (close) { close.disabled = false; close.textContent = "DEVAM"; }
     if (host) {
@@ -2319,11 +2462,11 @@
     const close = document.getElementById("chest-reveal-close");
     if (card) { card.dataset.tier = tier; card.dataset.state = "revealed"; }
     if (visual) visual.className = `chest-visual chest-visual-large chest-visual-${tier}`;
-    if (title) title.textContent = localizedMessage("chest.opened_title", {name:localizedUiText(definition?.name_tr || "Sandık"), count:localizedNumber(receipts.length)});
+    if (title) title.textContent = `${definition?.name_tr || "Sandık"} · ${receipts.length} açıldı`;
     if (kicker) {
       kicker.hidden = false;
       kicker.textContent = batchReceipt?.partial
-        ? localizedMessage("chest.opened_remaining", {opened:localizedNumber(receipts.length), remaining:localizedNumber(batchReceipt.remaining_count || 0)})
+        ? `${receipts.length} AÇILDI · ${batchReceipt.remaining_count || 0} KALDI`
         : "TÜM AÇILABİLİR SANDIKLAR AÇILDI";
     }
     if (host) {
@@ -2331,7 +2474,7 @@
       const section = document.createElement("section");
       section.className = "bulk-chest-reward";
       const label = document.createElement("small");
-      label.textContent = localizedMessage("chest.total_rewards", {count:localizedNumber(receipts.length)});
+      label.textContent = `${receipts.length} SANDIĞIN TOPLAM ÖDÜLÜ`;
       section.append(label, createBulkRewardRows(batchReceipt));
       host.appendChild(section);
     }
@@ -2368,24 +2511,18 @@
     const close = document.getElementById("chest-reveal-close");
     if (card) card.dataset.state = "error";
     if (kicker) { kicker.hidden = false; kicker.textContent = "SANDIK AÇILAMADI"; }
-    if (host) {
-      const box=document.createElement("div");
-      const message=document.createElement("span");
-      message.textContent=error instanceof Error ? error.message : String(error);
-      box.appendChild(message);
-      host.replaceChildren(box);
-    }
+    if (host) host.innerHTML = `<div><span>${error instanceof Error ? error.message : String(error)}</span></div>`;
     if (close) { close.disabled = false; close.textContent = "DEVAM"; }
   }
 
-  function restoreShopAction({ chestId = null, definitionId = null, offerId = null } = {}) {
+  function restoreShopAction({ chestId = null, definitionId = null, storeChestId = null } = {}) {
     let card = null;
     if (chestId) card = [...document.querySelectorAll("[data-chest-id]")]
       .find((item) => item.dataset.chestId === String(chestId));
     if (!card && definitionId) card = [...document.querySelectorAll("[data-definition-id]")]
       .find((item) => item.dataset.definitionId === String(definitionId));
-    if (!card && offerId) card = [...document.querySelectorAll("[data-offer-id]")]
-      .find((item) => item.dataset.offerId === String(offerId));
+    if (!card && storeChestId) card = [...document.querySelectorAll("[data-store-chest-id]")]
+      .find((item) => item.dataset.storeChestId === String(storeChestId));
     const button = card?.querySelector("button");
     if (button) button.disabled = false;
   }
@@ -2408,34 +2545,286 @@
     const close = document.getElementById("chest-reveal-close");
     if (card) { card.dataset.tier = tier; card.dataset.state = "revealed"; }
     if (visual) visual.className = `chest-visual chest-visual-large chest-visual-${tier}`;
-    if (title) title.textContent = localizedRecordText(chest, "name") || localizedRecordText(definition, "name") || localizedUiText("Hediye Sandık");
+    if (title) title.textContent = chest.name_tr || definition?.name_tr || "Hediye Sandık";
     if (kicker) { kicker.hidden = true; kicker.textContent = ""; }
     if (host) {
-      const box = document.createElement("div");
-      const label = document.createElement("span");
-      const readiness = document.createElement("strong");
-      label.textContent = localizedUiText("SANDIK");
-      readiness.textContent = localizedUiText("Açılmaya hazır");
-      box.append(label, readiness);
-      host.replaceChildren(box);
+      host.innerHTML = "<div><span>SANDIK</span><strong>Açılmaya hazır</strong></div>";
     }
     if (close) { close.disabled = false; close.textContent = "DEVAM"; }
   }
 
-  async function purchaseShopOffer(offerId) {
+  async function buyStoreChest(definitionId) {
     const status = document.getElementById("shop-action-status");
-    const offer = metaProgressionState?.shop?.offers?.find((item) => item.id === offerId);
-    showChestOpening({ tier: offer?.tier || "bronze", title: localizedRecordText(offer, "name") || localizedUiText("Sandık") });
+    const item = metaProgressionState?.shop?.chest_store?.items?.find(
+      (entry) => entry.definition_id === definitionId
+    );
+    showChestOpening({ tier: item?.tier || "bronze", title: item?.name_tr || "Sandık" });
     try {
       const payload = await metaProgressionMutation(
-        `/profile/${encodeURIComponent(participantPlayerId)}/meta-progression/shop/${encodeURIComponent(offerId)}/purchase`
+        `/store/${encodeURIComponent(participantPlayerId)}/chests/${encodeURIComponent(definitionId)}/buy`
       );
-      if (status) status.textContent = "";
+      if (status) status.textContent = payload.receipt?.sale
+        ? `İndirimli alım: liste fiyatı ${payload.receipt.base_cost}, ödenen ${payload.receipt.cost}.`
+        : "";
       showChestReveal(payload.receipt);
     } catch (error) {
       if (status) status.textContent = error instanceof Error ? error.message : String(error);
-      restoreShopAction({ offerId });
+      restoreShopAction({ storeChestId: definitionId });
       showChestFailure(error);
+    }
+  }
+
+  const PAID_ICON_MARKUP = {
+    flux_shards: '<svg viewBox="0 0 24 24"><path d="m12 2 4 6 6 4-6 4-4 6-4-6-6-4 6-4Z"/><circle cx="12" cy="12" r="2.3"/></svg>',
+    circuit_credits: '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M7 12h3l2-4 2 8 2-4h2"/></svg>',
+  };
+
+  async function loadStoreState() {
+    try {
+      storeState = await requestJsonWithDeadline(
+        `/store/${encodeURIComponent(participantPlayerId)}`,
+        { cache:"no-store" },
+        12000
+      );
+    } catch (_error) {
+      return { ok:false };
+    }
+    renderPaidStore();
+    renderSeasonPremiumPurchase();
+    renderPostMatchPremium();
+    renderPostMatchAdReward();
+    return { ok:true, state:storeState };
+  }
+
+  function createPaidProductCard(product, { premium = false, provider = null } = {}) {
+    const card = document.createElement("article");
+    card.className = `paid-product-card${premium ? " is-premium" : ""}`;
+    card.dataset.productId = product.id;
+    card.dataset.active = String(Boolean(product.active));
+    if (product.currency) card.dataset.currency = product.currency;
+    const icon = document.createElement("i");
+    icon.className = `resource-symbol ${product.currency === "flux_shards" ? "resource-symbol-flux" : product.currency === "circuit_credits" ? "resource-symbol-credit" : "resource-symbol-premium"}`;
+    icon.setAttribute("aria-hidden", "true");
+    if (PAID_ICON_MARKUP[product.currency]) icon.innerHTML = PAID_ICON_MARKUP[product.currency];
+    else icon.textContent = "★";
+    const copy = document.createElement("div");
+    const name = document.createElement("strong");
+    name.textContent = product.name_tr;
+    copy.appendChild(name);
+    const detail = document.createElement("small");
+    detail.textContent = premium
+      ? String(product.description_tr || "")
+      : product.bonus_percent ? `+%${product.bonus_percent} bonus` : "Temel paket";
+    copy.appendChild(detail);
+    const button = document.createElement("button");
+    button.type = "button";
+    button.textContent = product.active ? "ETKİN" : String(product.price_label_tr || "");
+    button.disabled = Boolean(product.active || !provider || purchaseInFlight);
+    button.addEventListener("click", () => purchasePaidProduct(product.id));
+    card.append(icon, copy, button);
+    return card;
+  }
+
+  function renderPaidStore() {
+    const premiumHost = document.getElementById("paid-store-premium");
+    const fluxHost = document.getElementById("paid-flux-packs");
+    const creditHost = document.getElementById("paid-credit-packs");
+    const mode = document.getElementById("paid-store-mode");
+    const provider = storeState?.providers?.purchase || null;
+    if (mode) {
+      mode.textContent = !storeState
+        ? "Yükleniyor…"
+        : provider === "test"
+          ? "DENEME MODU · gerçek ödeme alınmaz"
+          : provider ? "" : "Ödeme altyapısı hazırlanıyor";
+      mode.dataset.mode = provider || "unavailable";
+    }
+    if (premiumHost) {
+      premiumHost.replaceChildren();
+      for (const product of [storeState?.season_pass, storeState?.battle_premium].filter(Boolean)) {
+        premiumHost.appendChild(createPaidProductCard(product, { premium:true, provider }));
+      }
+    }
+    for (const [host, packs] of [[fluxHost, storeState?.flux_packs], [creditHost, storeState?.credit_packs]]) {
+      if (!host) continue;
+      host.replaceChildren();
+      for (const pack of packs || []) host.appendChild(createPaidProductCard(pack, { provider }));
+    }
+  }
+
+  async function purchasePaidProduct(productId, { status = null } = {}) {
+    const statusElement = status || document.getElementById("shop-action-status");
+    const setStatus = (message, state = "") => {
+      if (!statusElement) return;
+      statusElement.textContent = message;
+      statusElement.dataset.status = state;
+    };
+    const provider = storeState?.providers?.purchase || null;
+    if (!provider) {
+      setStatus("Ödeme altyapısı hazırlanıyor; gerçek ödeme henüz açılmadı.", "error");
+      return { ok:false };
+    }
+    if (purchaseInFlight) return { ok:false };
+    purchaseInFlight = true;
+    // Aynı ürün için yarım kalan istek aynı işlem kimliğiyle yinelenir; ürün iki kez verilmez.
+    let transactionId = pendingPurchaseIds.get(productId);
+    if (!transactionId) {
+      transactionId = operationRequestId("purchase");
+      pendingPurchaseIds.set(productId, transactionId);
+    }
+    setStatus(
+      provider === "test" ? "Deneme alımı işleniyor… Gerçek ödeme alınmaz." : "Ödeme doğrulanıyor…",
+      "pending"
+    );
+    renderPaidStore();
+    try {
+      const payload = await requestJsonWithDeadline(
+        `/store/${encodeURIComponent(participantPlayerId)}/purchases`,
+        {
+          method:"POST",
+          body:JSON.stringify({ product_id:productId, provider, transaction_id:transactionId }),
+        },
+        15000
+      );
+      pendingPurchaseIds.delete(productId);
+      storeState = payload.store || storeState;
+      if (payload.meta_progression) metaProgressionState = payload.meta_progression;
+      if (payload.profile) profileState.applyProfile(payload.profile);
+      renderProfileSummary();
+      renderMetaHubScreens();
+      setStatus(
+        payload.receipt?.test
+          ? "Deneme alımı tamamlandı; gerçek ödeme alınmadı."
+          : "Satın alma tamamlandı.",
+        "success"
+      );
+      return { ok:true, payload };
+    } catch (error) {
+      if (Number(error?.status) >= 400 && Number(error?.status) < 500) {
+        pendingPurchaseIds.delete(productId);
+      }
+      setStatus(error instanceof Error ? error.message : String(error), "error");
+      return { ok:false, error };
+    } finally {
+      purchaseInFlight = false;
+      renderPaidStore();
+      renderSeasonPremiumPurchase();
+      renderPostMatchPremium();
+    }
+  }
+
+  function renderSeasonPremiumPurchase() {
+    const button = document.getElementById("season-premium-buy");
+    if (!button) return;
+    const pass = storeState?.season_pass || null;
+    const engagementPass = profileState.profile?.engagement?.premium_pass || null;
+    const active = Boolean(pass?.active ?? engagementPass?.active);
+    button.hidden = active || !(pass || engagementPass?.purchasable);
+    button.disabled = Boolean(!storeState?.providers?.purchase || purchaseInFlight);
+    button.textContent = `ÜCRETLİ GEÇİŞİ AÇ · ${pass?.price_label_tr || engagementPass?.price_label_tr || "99,99 TL"}`;
+  }
+
+  function renderPostMatchPremium() {
+    const host = document.getElementById("post-match-premium");
+    if (!host) return;
+    const progression = progressionState.viewModel();
+    const product = storeState?.battle_premium || null;
+    const bonus = Number(product?.bonus_percent || 50);
+    const eligible = Boolean(progression?.profileProgressionApplied)
+      && (Number(progression?.circuitCreditsAwarded || 0) > 0 || Number(progression?.xpAwarded || 0) > 0);
+    const applied = Boolean(progression?.battlePremiumApplied);
+    const copy = document.getElementById("post-match-premium-copy");
+    const buy = document.getElementById("post-match-premium-buy");
+    host.hidden = !eligible || (!applied && !product);
+    host.dataset.active = String(applied || Boolean(product?.active));
+    if (copy) {
+      copy.textContent = applied
+        ? `Bu savaşta Savaş Premium uygulandı: Devre Kredisi ve Deneyim +%${bonus} (kupa hariç).`
+        : product?.active
+          ? `Savaş Premium etkin: sonraki savaşlarda Devre Kredisi ve Deneyim +%${bonus} (kupa hariç).`
+          : `Savaş Premium ile bu sezon Devre Kredisi ve Deneyim +%${bonus} (kupa hariç).`;
+    }
+    if (buy) {
+      buy.hidden = applied || Boolean(product?.active) || !product;
+      buy.disabled = Boolean(!storeState?.providers?.purchase || purchaseInFlight);
+      buy.textContent = `SAVAŞ PREMIUM · ${product?.price_label_tr || "99,99 TL"}`;
+    }
+  }
+
+  function renderPostMatchAdReward() {
+    const host = document.getElementById("post-match-ad-reward");
+    if (!host) return;
+    const progression = progressionState.viewModel();
+    const battleId = postMatchSync.lastBattleId;
+    const hasRewards = Boolean(progression?.profileProgressionApplied)
+      && (Number(progression?.circuitCreditsAwarded || 0) > 0 || Number(progression?.xpAwarded || 0) > 0);
+    const provider = storeState?.providers?.ads || null;
+    const claimed = battleId ? adRewardReceipts.get(battleId) : null;
+    host.hidden = !battleId || !hasRewards || !provider;
+    host.dataset.claimed = String(Boolean(claimed));
+    const button = document.getElementById("post-match-ad-button");
+    const copy = document.getElementById("post-match-ad-copy");
+    if (button) {
+      button.disabled = Boolean(claimed) || adRewardPending;
+      button.textContent = claimed
+        ? "x2 ÖDÜL ALINDI"
+        : adRewardPending ? "REKLAM OYNATILIYOR…" : "▶ REKLAM İZLE · x2";
+    }
+    if (copy) {
+      copy.textContent = claimed
+        ? `+${claimed.circuit_credits} Devre Kredisi ve +${claimed.xp} Deneyim eklendi · kupa hariç`
+        : "Devre Kredisi ve Deneyim x2 · kupa hariç";
+    }
+  }
+
+  function playTestRewardAd(seconds = 5) {
+    const dialog = document.getElementById("reward-ad-dialog");
+    const countdown = document.getElementById("reward-ad-countdown");
+    return new Promise((resolve) => {
+      let remaining = seconds;
+      if (countdown) countdown.textContent = String(remaining);
+      if (dialog?.showModal && !dialog.open) dialog.showModal();
+      else dialog?.setAttribute("open", "");
+      const timer = window.setInterval(() => {
+        remaining -= 1;
+        if (countdown) countdown.textContent = String(Math.max(0, remaining));
+        if (remaining > 0) return;
+        window.clearInterval(timer);
+        if (dialog?.close) dialog.close();
+        else dialog?.removeAttribute("open");
+        resolve();
+      }, 1000);
+    });
+  }
+
+  async function watchRewardAd() {
+    const battleId = postMatchSync.lastBattleId;
+    const provider = storeState?.providers?.ads || null;
+    const status = document.getElementById("post-match-store-status");
+    if (!battleId || !provider || adRewardPending || adRewardReceipts.has(battleId)) return;
+    adRewardPending = true;
+    renderPostMatchAdReward();
+    try {
+      // Yalnız deneme sağlayıcısı var; gerçek reklam SDK'sı bağlanınca burada oynatılır.
+      await playTestRewardAd();
+      const payload = await requestJsonWithDeadline(
+        `/profile/${encodeURIComponent(participantPlayerId)}/battles/${encodeURIComponent(battleId)}/ad-reward`,
+        {
+          method:"POST",
+          body:JSON.stringify({ request_id:operationRequestId("ad"), provider }),
+        },
+        15000
+      );
+      adRewardReceipts.set(battleId, payload.receipt);
+      if (payload.profile) profileState.applyProfile(payload.profile);
+      renderProfileSummary();
+      if (status) status.textContent = "";
+      renderPostMatchRewards();
+    } catch (error) {
+      if (status) status.textContent = error instanceof Error ? error.message : String(error);
+    } finally {
+      adRewardPending = false;
+      renderPostMatchAdReward();
     }
   }
 
@@ -2443,7 +2832,7 @@
     const status = document.getElementById("shop-action-status");
     const chest = metaProgressionState?.chests?.slots?.find((item) => item.chest_id === chestId);
     const definition = metaProgressionState?.chests?.definitions?.find((item) => item.id === chest?.definition_id);
-    showChestOpening({ tier: chestTier(definition || chest || {}), title: localizedRecordText(definition, "name") || localizedRecordText(chest, "name") || localizedUiText("Sandık") });
+    showChestOpening({ tier: chestTier(definition || chest || {}), title: definition?.name_tr || chest?.name_tr || "Sandık" });
     try {
       const payload = await metaProgressionMutation(
         `/profile/${encodeURIComponent(participantPlayerId)}/meta-progression/chests/${encodeURIComponent(chestId)}/open`
@@ -2464,7 +2853,7 @@
     );
     showChestOpening({
       tier: chestTier(definition || { id: definitionId }),
-      title: localizedMessage("chest.collection_title", {name:localizedUiText(definition?.name_tr || "Sandık")}),
+      title: `${definition?.name_tr || "Sandık"} sandıkları`,
     });
     try {
       const payload = await metaProgressionMutation(
@@ -2488,7 +2877,7 @@
     );
     showChestOpening({
       tier: chestTier(definition || { id: definitionId }),
-      title: localizedRecordText(definition, "name") || localizedUiText("Hediye Sandık"),
+      title: definition?.name_tr || "Hediye Sandık",
     });
     try {
       const payload = await metaProgressionMutation(
@@ -2511,7 +2900,7 @@
     const ids = deckEditorSlots.filter(Boolean);
     renderMetaHubScreens();
     if (ids.length !== 6) {
-      if (status) status.textContent = localizedMessage("deck.selected_count", {count:ids.length});
+      if (status) status.textContent = `${ids.length} / 6 modül seçildi. İlk boş yuva yeni seçimle doldurulacak.`;
       return { ok: true, pending: true };
     }
     const result = battlePoolSelection.setSelection(ids);
@@ -2551,7 +2940,7 @@
         );
       }
       if (presetName === activeBattlePoolPresetName) activeBattlePoolPresetBaseline = [...definitionIds];
-      if (status) status.textContent = localizedMessage("deck.saved", {name:presetName || localizedMessage("deck.active_name")});
+      if (status) status.textContent = `${presetName || "Aktif savaş destesi"} kaydedildi.`;
     } catch (error) {
       if (revision !== deckEditRevision) return { ok: false };
       if (status) status.textContent = error instanceof Error ? error.message : String(error);
@@ -2569,7 +2958,7 @@
     const instanceId = definitionIdsToInstanceIds([selectedCollectionModuleId])[0];
     const status = document.getElementById("module-action-status");
     if (!instanceId) {
-      if (status) status.textContent = localizedMessage("module.card_not_loaded");
+      if (status) status.textContent = "Bu modülün savaş kartı henüz yüklenmedi. Sayfayı yenileyip tekrar deneyebilirsin.";
       return;
     }
     const existingIndex = deckEditorSlots.indexOf(instanceId);
@@ -2593,7 +2982,7 @@
 
     pendingDeckModuleInstanceId = instanceId;
     document.getElementById("module-quick-actions")?.setAttribute("hidden", "");
-    if (status) status.textContent = localizedMessage("module.deck_full_replace");
+    if (status) status.textContent = "Deste dolu. Yer değiştirmek istediğin deste kartına dokun.";
     renderMetaHubScreens();
     document.getElementById("module-deck-strip")?.scrollIntoView?.({ block: "nearest", behavior: "smooth" });
   }
@@ -2607,7 +2996,7 @@
     const section = document.createElement("section");
     section.className = "module-effect-panel";
     const heading = document.createElement("strong");
-    heading.textContent = localizedMessage("module.real_battle_effects");
+    heading.textContent = "GERÇEK SAVAŞ ETKİLERİ";
     const list = document.createElement("ul");
     for (const effectLine of effectLines) {
       const item = document.createElement("li");
@@ -2616,78 +3005,185 @@
     }
     if (!list.childElementCount) {
       const item = document.createElement("li");
-      item.textContent = localizedMessage("module.no_extra_effects");
+      item.textContent = "Bu modülün ek sayısal etkisi yok.";
       list.appendChild(item);
     }
     section.append(heading, list);
     return section;
   }
 
+  const MODULE_RARITY_RULE_TR = {
+    common: "Tek ve net davranış.",
+    rare: "Temel davranışa oyuncunun kurduğu bir koşul ekler.",
+    epic: "Zamanla biriken bir durum ya da risk–ödül taşır.",
+    legendary: "Savaşın bir kuralını değiştiren imza mekaniği taşır.",
+  };
+
+  function createModuleIdentityPanel(
+    item,
+    { noAdvantageTr="Enderlik CAN, hasar, bekleme veya enerji avantajı vermez." }={}
+  ) {
+    const panel = document.createElement("section");
+    panel.className = "module-identity-panel";
+    const rarity = String(item.rarity || "common").toLowerCase();
+    const signature = item.signature_mechanic
+      || (item.shared_behavior_tr ? `Şimdilik ${item.shared_behavior_tr} ile aynı temel davranışı kullanır.` : "");
+    const rows = [
+      [`ENDERLİK · ${moduleRarityLabel(rarity).toLocaleUpperCase("tr-TR")}`, `${MODULE_RARITY_RULE_TR[rarity] || MODULE_RARITY_RULE_TR.common} ${noAdvantageTr}`, "is-rarity"],
+      ["İMZA MEKANİĞİ", signature, ""],
+      ["SAVAŞTA NASIL GÖRÜLÜR", item.telegraph_tr, ""],
+      ["KARŞI OYUN", item.counterplay_tr, ""],
+    ];
+    for (const [label, value, className] of rows) {
+      if (!value) continue;
+      const row = document.createElement("div");
+      row.className = `module-identity-row${className ? ` ${className}` : ""}`;
+      row.dataset.rarity = rarity;
+      const name = document.createElement("span");
+      name.textContent = label;
+      const copy = document.createElement("strong");
+      copy.textContent = localizedUiText(value);
+      row.append(name, copy);
+      panel.appendChild(row);
+    }
+    return panel;
+  }
+
+  // İstatistik sekmesinin değer karoları. CAN, hasar ve etki çubukları
+  // koleksiyondaki en yüksek değere oranlanır; enderlik bu değerleri artırmaz.
+  function createModuleStatTiles(item) {
+    const stats = item.stats || {};
+    const collection = metaProgressionState?.module_collection || [];
+    const peak = (key) => Math.max(1, ...collection.map((module) => Number(module.stats?.[key] || 0)));
+    const number = (value, digits = 0) => Number(value || 0).toLocaleString(uiLocale(), { maximumFractionDigits:digits });
+    const list = document.createElement("dl");
+    list.className = "module-stat-tiles";
+    for (const tile of [
+      { key:"hp", glyph:"✚", label:"CAN", value:number(stats.max_hp), meter:Number(stats.max_hp || 0) / peak("max_hp") },
+      { key:"damage", glyph:"✹", label:"HASAR", value:number(stats.base_damage), meter:Number(stats.base_damage || 0) / peak("base_damage") },
+      { key:"cooldown", glyph:"◷", label:"BEKLEME", value:`${number(Number(stats.cooldown_ms || 0) / 1000, 1)} sn` },
+      { key:"effect", glyph:"✦", label:"ETKİ ÇARPANI", value:`×${number(stats.effect_multiplier, 2)}`, meter:Number(stats.effect_multiplier || 0) / peak("effect_multiplier") },
+      { key:"energy", glyph:"◌", label:"ENERJİ TÜKETİMİ", value:`${number(stats.energy_consumption, 1)}/sn` },
+      { key:"current", glyph:"ϟ", label:"AKIM MALİYETİ", value:number(item.current_cost) },
+    ]) {
+      const row = document.createElement("div");
+      row.dataset.stat = tile.key;
+      const name = document.createElement("dt");
+      const glyph = document.createElement("i");
+      glyph.setAttribute("aria-hidden", "true");
+      glyph.textContent = tile.glyph;
+      name.append(glyph, document.createTextNode(tile.label));
+      const value = document.createElement("dd");
+      value.textContent = tile.value;
+      row.append(name, value);
+      if (tile.meter !== undefined) {
+        const meter = document.createElement("span");
+        meter.className = "module-stat-meter";
+        meter.setAttribute("aria-hidden", "true");
+        meter.style.setProperty("--stat-fill", `${Math.round(Math.max(0, Math.min(1, tile.meter)) * 100)}%`);
+        row.appendChild(meter);
+      }
+      list.appendChild(row);
+    }
+    return list;
+  }
+
+  // Güçlü, zayıf ve uyumlu olduğu modüller simgeli etiketler olarak dizilir.
+  function createModuleCounterGrid(item) {
+    const collection = metaProgressionState?.module_collection || [];
+    const counters = document.createElement("div");
+    counters.className = "module-counter-grid";
+    for (const [label, ids, className] of [["GÜÇLÜ OLDUĞU", item.strong_against, "is-strong"], ["ZAYIF OLDUĞU", item.weak_against, "is-weak"], ["UYUMLU OLDUĞU", item.synergy_with, "is-synergy"]]) {
+      const card = document.createElement("section");
+      card.className = className;
+      const heading = document.createElement("strong");
+      heading.textContent = label;
+      const chips = document.createElement("span");
+      chips.className = "module-counter-chips";
+      for (const id of ids || []) {
+        const collectionItem = collection.find((module) => module.definition_id === id);
+        const definition = moduleDefinitions.find((module) => module.definitionId === id);
+        const chip = document.createElement("span");
+        chip.className = "module-counter-chip";
+        chip.dataset.category = collectionItem?.category || definition?.category || "";
+        const glyph = document.createElement("b");
+        glyph.setAttribute("aria-hidden", "true");
+        glyph.textContent = moduleIconFor(definition || { nameTr:collectionItem?.name_tr || id });
+        const name = document.createElement("em");
+        name.textContent = collectionItem?.name_tr || definition?.nameTr || id;
+        chip.append(glyph, name);
+        chips.appendChild(chip);
+      }
+      if (!chips.childElementCount) {
+        const none = document.createElement("em");
+        none.className = "module-counter-empty";
+        none.textContent = "Özel karşılık yok";
+        chips.appendChild(none);
+      }
+      card.append(heading, chips);
+      counters.appendChild(card);
+    }
+    return counters;
+  }
+
+  // Modül bilgi penceresi sekmeleri koyu zeminli kartlardan oluşur: Genel
+  // kimlik ve etkileri, İstatistik değer karolarını, Yetenekler iki dallı
+  // seviye yolunu gösterir. İçerik uzarsa sekme alanı kendi içinde kayar.
   function renderModuleDetailTab(tabName) {
     const item = activeMetaModule();
     const host = document.getElementById("module-detail-tab-content");
     if (!item || !host) return;
     host.replaceChildren();
     host.dataset.tab = tabName;
+    host.dataset.category = item.category || "";
+    host.scrollTop = 0;
     const text = document.createElement("p");
     text.className = "module-detail-tab-intro";
-    const stats = item.stats || {};
     if (tabName === "stats") {
-      text.textContent = localizedMessage("module.stats_intro");
-      const rarityBonuses = stats.rarity_bonuses || {};
-      const rarityPercent = (value, inverse=false) => {
-        const delta = Math.round(Math.abs(Number(value || 1) - 1) * 100);
-        if (delta === 0) return "0%";
-        return `${inverse ? "-" : "+"}${delta}%`;
-      };
-      const rarityImpact = [
-        localizedMessage("module.rarity_hp", {value:rarityPercent(rarityBonuses.hp)}),
-        localizedMessage("module.rarity_damage", {value:rarityPercent(rarityBonuses.attack)}),
-        localizedMessage("module.rarity_effect", {value:rarityPercent(rarityBonuses.effect)}),
-        localizedMessage("module.rarity_cooldown", {value:rarityPercent(rarityBonuses.cooldown, true)}),
-        localizedMessage("module.rarity_energy", {value:rarityPercent(rarityBonuses.energy, true)}),
-      ].join(" · ");
-      const entries = [["module.class", poolCategoryLabel(item.category)], ["module.rarity", moduleRarityLabel(item.rarity)], ["module.rarity_advantage", rarityImpact], ["module.hp_label", stats.max_hp], ["module.damage_label", stats.base_damage], ["module.cooldown", localizedMessage("time.seconds_short", {count:localizedNumber(Number(stats.cooldown_ms || 0) / 1000)})], ["module.effect_multiplier", localizedNumber(stats.effect_multiplier, {maximumFractionDigits:2})], ["module.energy_consumption", localizedMessage("module.energy_per_second", {energy:localizedNumber(stats.energy_consumption || 0)})], ["module.current_cost", item.current_cost]];
-      const list = document.createElement("dl");
-      for (const [label, rawValue] of entries) {
-        const row = document.createElement("div"), name = document.createElement("dt"), value = document.createElement("dd");
-        name.textContent = localizedMessage(label);
-        value.textContent = String(rawValue ?? "—");
-        row.append(name, value); list.appendChild(row);
+      text.textContent = "Savaş değerleri seviye ve yeteneklerden gelir; enderlik bu değerleri artırmaz.";
+      const chips = document.createElement("div");
+      chips.className = "module-stat-chips";
+      for (const [label, value, kind] of [
+        ["SINIF", poolCategoryLabel(item.category), "category"],
+        ["ENDERLİK", moduleRarityLabel(item.rarity), "rarity"],
+      ]) {
+        const chip = document.createElement("span");
+        chip.dataset.chip = kind;
+        chip.dataset.category = item.category || "";
+        chip.dataset.rarity = String(item.rarity || "common").toLowerCase();
+        const name = document.createElement("small");
+        name.textContent = label;
+        const valueNode = document.createElement("strong");
+        valueNode.textContent = value;
+        chip.append(name, valueNode);
+        chips.appendChild(chip);
       }
-      host.appendChild(list);
-      host.appendChild(createModuleEffectList(localizedRecordText(item, "effect_lines") || []));
-      const moduleName = (id) => localizedUiText((metaProgressionState?.module_collection || []).find((module) => module.definition_id === id)?.name_tr || id);
-      const counters = document.createElement("div");
-      counters.className = "module-counter-grid";
-      for (const [label, ids, className] of [["module.strong_against", item.strong_against, "is-strong"], ["module.weak_against", item.weak_against, "is-weak"], ["module.synergy_with", item.synergy_with, "is-synergy"]]) {
-        const card = document.createElement("section");
-        card.className = className;
-        const heading = document.createElement("strong");
-        heading.textContent = localizedMessage(label);
-        const copy = document.createElement("span");
-        copy.textContent = ids?.length ? ids.map(moduleName).join(" · ") : localizedMessage("module.no_special_matchup");
-        card.append(heading, copy);
-        counters.appendChild(card);
-      }
-      host.appendChild(counters);
+      host.appendChild(chips);
+      host.appendChild(createModuleStatTiles(item));
+      host.appendChild(createModuleCounterGrid(item));
     } else if (tabName === "talents") {
       const selectedTalent = (item.talents || [])
         .flatMap((node) => node.choices || [])
         .find((choice) => (item.talents || []).some((node) => node.selected === choice.id));
-      text.textContent = selectedTalent ? localizedRecordText(selectedTalent, "description") : localizedMessage("module.tap_skill_for_description");
+      text.textContent = selectedTalent?.description_tr || "Yetenekler seviye ilerlemesidir, enderlik bonusu değildir. Açıklamasını görmek için bir yeteneğe dokun.";
+      const tree = document.createElement("div");
+      tree.className = "module-talent-path";
       for (const node of item.talents || []) {
         const row = document.createElement("section");
         row.className = "module-talent-node";
         row.dataset.selected = node.selected || "";
-        const heading = document.createElement("strong");
-        heading.textContent = localizedMessage("module.skill_level_cost", {level:localizedNumber(node.level), flux:localizedNumber(node.flux_cost)});
-        const connector = document.createElement("span");
-        connector.className = "module-talent-connector";
-        connector.setAttribute("aria-hidden", "true");
+        row.dataset.reachable = String(Number(item.level) + 1 >= node.level);
+        // Seviye rozeti iki dalın ortasında durur: sol dal · rozet · sağ dal.
+        const level = document.createElement("span");
+        level.className = "module-talent-level";
+        const levelValue = document.createElement("strong");
+        levelValue.textContent = `SV ${node.level}`;
+        const levelCost = document.createElement("small");
+        levelCost.textContent = `${node.flux_cost} Akı`;
+        level.append(levelValue, levelCost);
         const choices = document.createElement("div");
         choices.className = "module-talent-choices";
-        row.append(heading, connector, choices);
+        row.appendChild(choices);
         node.choices.forEach((choice, choiceIndex) => {
           const button = document.createElement("button");
           button.type = "button";
@@ -2697,34 +3193,32 @@
             && Number(metaProgressionState?.flux_shards || 0) >= node.flux_cost;
           button.className = `${choiceIndex === 0 ? "is-left-choice" : "is-right-choice"}${node.selected === choice.id ? " is-selected" : ""}${canChoose ? "" : " is-unavailable"}`;
           const choiceState = node.selected === choice.id
-            ? localizedMessage("module.skill_selected")
-            : node.selected ? localizedMessage("module.other_branch_selected")
-              : Number(item.level) + 1 < node.level ? localizedMessage("core.level_required", {level:localizedNumber(node.level)})
-                : Number(metaProgressionState?.flux_shards || 0) < node.flux_cost ? localizedMessage("module.flux_required", {flux:localizedNumber(node.flux_cost)})
-                  : localizedMessage("cosmetic.select");
-          const name=document.createElement("strong");
-          name.textContent=localizedRecordText(choice, "name");
-          const state=document.createElement("small");
-          state.textContent=choiceState;
-          button.append(name,state);
+            ? "SEÇİLDİ"
+            : node.selected ? "DİĞER DAL SEÇİLDİ"
+              : Number(item.level) + 1 < node.level ? `SV ${node.level} GEREKLİ`
+                : Number(metaProgressionState?.flux_shards || 0) < node.flux_cost ? `${node.flux_cost} AKI GEREKLİ`
+                  : "SEÇ";
+          button.innerHTML = `<strong>${choice.name_tr}</strong><small>${choiceState}</small>`;
           button.dataset.selectable = String(canChoose);
-          button.setAttribute("aria-label", localizedMessage("module.skill_choice_aria", {name:localizedRecordText(choice, "name"), state:choiceState}));
-          button.title = localizedRecordText(choice, "description") || localizedRecordText(choice, "name");
+          button.setAttribute("aria-label", `${choice.name_tr} · ${choiceState} · Açıklamayı göster`);
+          button.title = choice.description_tr || choice.name_tr;
           button.addEventListener("click", async () => {
-            text.textContent = localizedRecordText(choice, "description") || localizedRecordText(choice, "name");
+            text.textContent = choice.description_tr || choice.name_tr;
             choices.querySelectorAll("button").forEach((candidate) => candidate.classList.toggle("is-previewed", candidate === button));
             if (!canChoose) return;
             button.disabled = true;
             try {
               await metaProgressionMutation(`/profile/${encodeURIComponent(participantPlayerId)}/meta-progression/modules/${item.definition_id}/talents/${node.tier}/${choice.id}`);
               renderModuleDetailTab("talents");
-              document.getElementById("module-detail-status").textContent = localizedMessage("module.skill_saved");
+              document.getElementById("module-detail-status").textContent = "Uzmanlık kaydedildi.";
             } catch (error) { document.getElementById("module-detail-status").textContent = error.message; button.disabled = false; }
           });
           choices.appendChild(button);
+          if (choiceIndex === 0) choices.appendChild(level);
         });
-        host.appendChild(row);
+        tree.appendChild(row);
       }
+      host.appendChild(tree);
       const selectedCount = Number(
         item.selected_talent_count
         ?? (item.talents || []).filter((node) => Boolean(node.selected)).length
@@ -2734,20 +3228,20 @@
         const resetPanel = document.createElement("section");
         resetPanel.className = "module-talent-reset-panel";
         const resetCopy = document.createElement("span");
-        resetCopy.textContent = localizedMessage("module.skills_resettable", {count:localizedNumber(selectedCount)});
+        resetCopy.textContent = `${selectedCount} seçili yetenek yeniden dağıtılabilir.`;
         const resetButton = document.createElement("button");
         resetButton.type = "button";
         resetButton.className = "module-talent-reset";
-        resetButton.textContent = localizedMessage("module.reset_skills_cost", {flux:localizedNumber(resetCost)});
+        resetButton.textContent = `YETENEKLERİ SIFIRLA · ${resetCost} AKI`;
         resetButton.disabled = Number(metaProgressionState?.flux_shards || 0) < resetCost;
         resetButton.addEventListener("click", async () => {
           resetButton.disabled = true;
           const status = document.getElementById("module-detail-status");
-          if (status) status.textContent = localizedMessage("module.skills_resetting");
+          if (status) status.textContent = "Yetenek seçimleri sıfırlanıyor…";
           try {
             await metaProgressionMutation(`/profile/${encodeURIComponent(participantPlayerId)}/meta-progression/modules/${item.definition_id}/talents/reset`);
             renderModuleDetailTab("talents");
-            if (status) status.textContent = localizedMessage("module.skills_reset", {count:localizedNumber(selectedCount)});
+            if (status) status.textContent = `${selectedCount} yetenek seçimi sıfırlandı.`;
           } catch (error) {
             if (status) status.textContent = error instanceof Error ? error.message : String(error);
             resetButton.disabled = false;
@@ -2757,25 +3251,26 @@
         host.appendChild(resetPanel);
       }
     } else {
-      text.textContent = localizedRecordText(item, "description") || localizedRecordText(item, "strategic_role") || localizedUiText(item.name_tr);
+      text.textContent = item.description_tr || item.strategic_role || item.name_tr;
       const overview = document.createElement("div");
       overview.className = "module-overview-grid";
-      for (const [label, rawValue] of [["module.battle_role", localizedRecordText(item, "strategic_role") || "—"], ["module.class_upper", poolCategoryLabel(item.category)], ["module.unlock", localizedMessage("module.unlock_requirement", {arena:localizedNumber(item.unlock_arena), trophies:localizedNumber(item.unlock_trophies)})], ["module.next_level", item.next_stats ? localizedMessage("module.next_stats", {hp:localizedNumber(item.next_stats.max_hp), damage:localizedNumber(item.next_stats.base_damage)}) : localizedMessage("core.max_level")]]) {
+      for (const [label, rawValue] of [["SAVAŞ ROLÜ", item.strategic_role || "—"], ["SINIF", poolCategoryLabel(item.category)], ["AÇILIŞ", `Arena ${item.unlock_arena} · ${item.unlock_trophies} Kupa`], ["SONRAKİ SEVİYE", item.next_stats ? `CAN ${item.next_stats.max_hp} · HASAR ${item.next_stats.base_damage}` : "Azami seviye"]]) {
         const card = document.createElement("div");
         const name = document.createElement("span");
         const value = document.createElement("strong");
-        name.textContent = localizedMessage(label);
+        name.textContent = label;
         value.textContent = rawValue;
         card.append(name, value);
         overview.appendChild(card);
       }
+      host.appendChild(createModuleIdentityPanel(item));
       host.appendChild(overview);
-      host.appendChild(createModuleEffectList(localizedRecordText(item, "effect_lines") || []));
+      host.appendChild(createModuleEffectList(item.effect_lines));
     }
     host.prepend(text);
   }
 
-  function openModuleDetail(tabName = "overview") {
+  function openModuleDetail() {
     const item = activeMetaModule();
     const definition = metaModuleDefinition(item);
     if (!item || !definition) return;
@@ -2784,14 +3279,17 @@
       if (element) element.textContent = String(value);
     };
     setText("module-detail-name", localizedUiText(item.name_tr));
-    setText("module-detail-rarity", moduleRarityLabel(item.rarity).toLocaleUpperCase(document.documentElement.lang === "en" ? "en-US" : "tr-TR"));
-    setText("module-detail-level", localizedMessage("core.level", {level:localizedNumber(Number(item.level || 0) + 1)}));
-    setText("module-detail-selected-state", localizedMessage(deckEditorSlots.filter(Boolean).map(clientDefinitionId).includes(item.definition_id) ? "module.in_deck" : "module.out_of_deck"));
+    setText("module-detail-rarity", moduleRarityLabel(item.rarity).toLocaleUpperCase("tr-TR"));
+    setText("module-detail-level", `SEVİYE ${Number(item.level || 0) + 1}`);
+    setText("module-detail-selected-state", deckEditorSlots.filter(Boolean).map(clientDefinitionId).includes(item.definition_id) ? "DESTEDE" : "DESTE DIŞI");
     const cost = item.next_upgrade_cost;
     const required = Number(cost?.shards || 1);
     const universalShards = Number(metaProgressionState?.universal_module_shards || 0);
     const totalUsableShards = Number(item.shards || 0) + universalShards;
-    setText("module-detail-shards", cost ? localizedMessage("module.shard_progress", {shards:localizedNumber(item.shards || 0), universal:localizedNumber(universalShards), required:localizedNumber(required)}) : localizedMessage("core.max_level"));
+    setText("module-detail-shards", cost ? `${item.shards || 0} + ${universalShards} evrensel / ${required}` : "AZAMİ SEVİYE");
+    document.getElementById("module-detail-shard-icon")?.replaceChildren(
+      createModulePuzzlePiece({ category:item.category || "", glyph:moduleIconFor(definition) })
+    );
     const progress = document.getElementById("module-detail-progress");
     if (progress) { progress.max = required; progress.value = cost ? Math.min(required, totalUsableShards) : required; }
     const art = document.getElementById("module-detail-art");
@@ -2799,19 +3297,19 @@
       art.dataset.category = item.category || "";
       art.dataset.module = item.definition_id || "";
       art.textContent = moduleIconFor(definition);
-      art.setAttribute("aria-label", localizedMessage("module.art_aria", {name:localizedUiText(item.name_tr)}));
+      art.setAttribute("aria-label", `${item.name_tr} görseli`);
     }
     const stats = document.getElementById("module-detail-stats");
-    if (stats) stats.innerHTML = `<div><span>${localizedMessage("module.hp_label")}</span><strong>${localizedNumber(item.stats?.max_hp ?? definition.maxHp)}</strong></div><div><span>${localizedMessage("module.current_label")}</span><strong>ϟ ${localizedNumber(item.current_cost ?? definition.circuitCreditCost)}</strong></div><div><span>${localizedMessage("module.damage_label")}</span><strong>${localizedNumber(item.stats?.base_damage || 0)}</strong></div>`;
+    if (stats) stats.innerHTML = `<div><span>CAN</span><strong>${item.stats?.max_hp ?? definition.maxHp}</strong></div><div><span>AKIM</span><strong>ϟ ${item.current_cost ?? definition.currentCost}</strong></div><div><span>HASAR</span><strong>${item.stats?.base_damage || 0}</strong></div>`;
     const upgrade = document.getElementById("module-detail-upgrade");
-    const reason = !item.unlocked ? localizedMessage("module.unlock_trophies", {count:item.unlock_trophies ?? 0}) : !cost ? localizedMessage("core.max_level") : totalUsableShards < required ? localizedMessage("module.required_shards", {owned:localizedNumber(totalUsableShards), required:localizedNumber(required)}) : Number(metaProgressionState?.circuit_credits || 0) < Number(cost.circuit_credits) ? localizedMessage("module.required_credits", {credits:localizedNumber(cost.circuit_credits)}) : "";
+    const reason = !item.unlocked ? `${item.unlock_trophies ?? 0} kupada açılır.` : !cost ? "Azami seviye." : totalUsableShards < required ? `Gerekli parça: ${totalUsableShards}/${required}` : Number(metaProgressionState?.circuit_credits || 0) < Number(cost.circuit_credits) ? `Gerekli Devre Kredisi: ${cost.circuit_credits}` : "";
     if (upgrade) {
       upgrade.disabled = Boolean(reason || metaProgressionState?.unavailable);
-      upgrade.textContent = cost ? localizedMessage("module.upgrade_button", {credits:localizedNumber(cost.circuit_credits)}) : localizedMessage("core.max_level");
+      upgrade.textContent = cost ? `YÜKSELT · ${cost.circuit_credits} DK` : "AZAMİ SEVİYE";
     }
     setText("module-detail-status", reason);
-    for (const button of document.querySelectorAll("[data-module-detail-tab]")) button.classList.toggle("is-active", button.dataset.moduleDetailTab === tabName);
-    renderModuleDetailTab(tabName);
+    for (const button of document.querySelectorAll("[data-module-detail-tab]")) button.classList.toggle("is-active", button.dataset.moduleDetailTab === "overview");
+    renderModuleDetailTab("overview");
     const dialog = document.getElementById("module-detail-dialog");
     if (dialog?.showModal && !dialog.open) dialog.showModal();
   }
@@ -2832,7 +3330,7 @@
     try {
       await metaProgressionMutation(`/profile/${encodeURIComponent(participantPlayerId)}/meta-progression/modules/${encodeURIComponent(moduleId)}/upgrade`);
       openModuleDetail();
-      document.getElementById("module-detail-status").textContent = localizedMessage("module.level_up_success");
+      document.getElementById("module-detail-status").textContent = "Modül seviyesi yükseltildi.";
     } catch (error) {
       if (button) button.disabled = false;
       document.getElementById("module-detail-status").textContent = error.message;
@@ -2852,22 +3350,22 @@
 
   async function loadTeamView() {
     const connection = document.getElementById("team-connection-state");
-    if (connection) connection.textContent = localizedMessage("team.loading");
+    if (connection) connection.textContent = "Yükleniyor…";
     try {
       teamState = await requestJsonWithDeadline(
         `/teams/player/${encodeURIComponent(participantPlayerId)}`,
         { cache: "no-store" },
         10000
       );
-      if (connection) connection.textContent = localizedMessage(teamState.joined ? "team.connected_upper" : "team.none_upper");
+      if (connection) connection.textContent = teamState.joined ? "BAĞLI" : "TAKIM YOK";
       setTeamActionStatus("");
       renderTeamHub();
       if (teamState?.application_pending) {
-        setTeamActionStatus(localizedMessage("team.application_sent"), "success");
+        setTeamActionStatus("Başvurun takım yöneticisinin onayına gönderildi.", "success");
       }
       return { ok:true, state:teamState };
     } catch (error) {
-      if (connection) connection.textContent = localizedMessage("team.connection_error_upper");
+      if (connection) connection.textContent = "BAĞLANTI HATASI";
       setTeamActionStatus(error instanceof Error ? error.message : String(error), "error");
       return { ok:false, error };
     }
@@ -2903,7 +3401,6 @@
       socialState = payload;
       setFriendsStatus("");
       renderFriendsScreen();
-      renderRewardInbox();
       return { ok:true, payload };
     } catch (error) {
       setFriendsStatus(error instanceof Error ? error.message : String(error), "error");
@@ -2911,20 +3408,19 @@
     }
   }
 
-  async function loadSocialView() {
-    setFriendsStatus("Arkadaş ağı yükleniyor…", "pending");
+  async function loadSocialView({ quiet = false } = {}) {
+    if (!quiet) setFriendsStatus("Arkadaş ağı yükleniyor…", "pending");
     try {
       socialState = await requestJsonWithDeadline(
         `/social/${encodeURIComponent(participantPlayerId)}`,
         { cache:"no-store" },
         12000
       );
-      setFriendsStatus("");
+      if (!quiet) setFriendsStatus("");
       renderFriendsScreen();
-      renderRewardInbox();
       return { ok:true, state:socialState };
     } catch (error) {
-      setFriendsStatus(error instanceof Error ? error.message : String(error), "error");
+      if (!quiet) setFriendsStatus(error instanceof Error ? error.message : String(error), "error");
       return { ok:false, error };
     }
   }
@@ -2945,6 +3441,7 @@
         if (kind === "friends" && parts[0] === "messages") {
           return { kind:"message", value:parts[1] || "" };
         }
+        if (kind === "inbox" && !parts.length) return { kind:"inbox", value:"" };
         return null;
       }
       const parts = url.pathname.split("/").filter(Boolean).map(decodeURIComponent);
@@ -2989,9 +3486,11 @@
       await openPublicProfile(target.value);
     } else if (target.kind === "message") {
       openAppScreen("friends");
-      const peer = document.getElementById("direct-message-peer");
-      if (peer && target.value) peer.value = target.value;
-      await loadDirectMessages();
+      if (target.value) openDirectMessageThread(target.value);
+      else openFriendsTab("messages");
+    } else if (target.kind === "inbox") {
+      // Savaş daveti bildirimi: davet yalnız gelen kutusunda gösterilir, kendiliğinden kabul edilmez.
+      await loadRewardInbox({ open:true });
     }
     if (["http:", "https:"].includes(globalThis.location?.protocol)) {
       globalThis.history?.replaceState?.({}, "", "/");
@@ -3004,7 +3503,7 @@
     if (!state) return;
     const status = document.getElementById("account-platform-status");
     const contacts = Object.entries(state.contacts || {})
-      .map(([channel, item]) => localizedMessage("account.contact", {channel:localizedMessage(channel === "email" ? "account.email" : "account.phone"), value:item.masked}));
+      .map(([channel, item]) => `${channel === "email" ? "E-posta" : "Telefon"}: ${item.masked}`);
     if (status) {
       status.textContent = [
         contacts.length ? contacts.join(" · ") : "Doğrulanmış iletişim adresi yok",
@@ -3017,10 +3516,10 @@
       const providerState = state.oauth?.[provider] || {};
       button.disabled = Boolean(providerState.linked || !providerState.configured);
       button.textContent = providerState.linked
-        ? localizedMessage("account.provider_connected", {provider:provider.toUpperCase()})
+        ? `${provider.toUpperCase()} BAĞLI`
         : providerState.configured
-          ? localizedMessage("account.provider_connect", {provider:provider.toUpperCase()})
-          : localizedMessage("account.provider_not_configured", {provider:provider.toUpperCase()});
+          ? `${provider.toUpperCase()} BAĞLA`
+          : `${provider.toUpperCase()} YAPILANDIRILMADI`;
     }
     const devices = document.getElementById("account-device-list");
     if (devices) {
@@ -3030,7 +3529,7 @@
         const name = document.createElement("strong");
         name.textContent = device.name || "Cihaz";
         const meta = document.createElement("small");
-        meta.textContent = `${String(device.platform || "web").toUpperCase()} · ${localizedDate(Number(device.last_seen_at || 0) * 1000, {dateStyle:"medium", timeStyle:"short"})}`;
+        meta.textContent = `${String(device.platform || "web").toUpperCase()} · ${new Date(Number(device.last_seen_at || 0) * 1000).toLocaleString(uiLocale())}`;
         const revoke = document.createElement("button");
         revoke.type = "button";
         revoke.textContent = "OTURUMU KAPAT";
@@ -3078,10 +3577,10 @@
       const providerState = state?.oauth?.[provider] || {};
       button.disabled = Boolean(providerState.linked || !providerState.configured);
       button.textContent = providerState.linked
-        ? localizedMessage("account.provider_connected", {provider:provider.toUpperCase()})
+        ? `${provider.toUpperCase()} BAĞLI`
         : providerState.configured
-          ? localizedMessage("account.provider_continue", {provider:provider.toUpperCase()})
-          : localizedMessage("account.provider_unavailable", {provider:provider.toUpperCase()});
+          ? `${provider.toUpperCase()} İLE DEVAM ET`
+          : `${provider.toUpperCase()} HENÜZ HAZIR DEĞİL`;
     }
     if (status && !message && state && !accountHasPersistentIdentity(state)) {
       const configuredProviders = ["google", "apple"].filter(
@@ -3143,13 +3642,13 @@
       );
       renderAccountPlatform();
       const oauthStatus = oauthParams.get("oauth_status");
-      const oauthProvider = (oauthParams.get("oauth_provider") || "Google").toLocaleUpperCase("tr-TR");
+      const oauthProvider = (oauthParams.get("oauth_provider") || "Google").toUpperCase();
       if (oauthStatus) {
         const message = oauthStatus === "linked"
-          ? localizedMessage("account.link_success", {provider:oauthProvider})
+          ? `${oauthProvider} hesabı başarıyla bağlandı.`
           : oauthStatus === "cancelled"
-            ? localizedMessage("account.link_cancelled", {provider:oauthProvider})
-            : localizedMessage("account.link_failed", {provider:oauthProvider});
+            ? `${oauthProvider} hesap bağlantısı iptal edildi.`
+            : `${oauthProvider} hesap bağlantısı tamamlanamadı. Sunucu sağlayıcı ayarlarını kontrol et.`;
         if (status) status.textContent = message;
         renderAccountOnboarding(message);
         oauthParams.delete("oauth_status");
@@ -3167,42 +3666,270 @@
     }
   }
 
-  async function loadDirectMessages() {
-    const host = document.getElementById("direct-message-list");
-    if (!host) return;
-    try {
-      const payload = await requestJsonWithDeadline(
-        `/social/${encodeURIComponent(participantPlayerId)}/messages`,
-        {cache:"no-store"},
-        12000
+  // Doğrudan mesajlar oyuncu başına ayrı sohbetlerdir: Mesajlar sekmesi sohbet
+  // listesini, bir sohbete dokunmak takım sohbeti gibi yazışma alanını açar.
+  let directMessagesCache = [];
+  let activeDirectMessagePeerId = "";
+  let directMessageLoadSequence = 0;
+  // Önbellekteki mesajların ait olduğu sohbet; ilk yükleme bitene kadar boş.
+  let directMessageLoadedPeerId = "";
+  // Sohbet başına sunucuya okundu bildirilen son gelen mesaj.
+  const directMessageSeenMarks = new Map();
+
+  function directMessageConversations() {
+    return Array.isArray(socialState?.conversations) ? socialState.conversations : [];
+  }
+
+  function directMessagePeer(playerId) {
+    return directMessageConversations().find((item) => item.peer_id === playerId)?.peer
+      || socialState?.friends?.find((item) => item.player_id === playerId)
+      || null;
+  }
+
+  function directMessageTimeLabel(seconds) {
+    const value = Number(seconds || 0);
+    if (!value) return "";
+    const date = new Date(value * 1000);
+    return date.toDateString() === new Date().toDateString()
+      ? date.toLocaleTimeString(uiLocale(), { hour:"2-digit", minute:"2-digit" })
+      : date.toLocaleDateString(uiLocale(), { day:"numeric", month:"short" });
+  }
+
+  function createDirectMessageAvatar(peer) {
+    const avatar = document.createElement("span");
+    avatar.className = "profile-avatar";
+    avatar.setAttribute("aria-hidden", "true");
+    applyAvatarVisual(
+      avatar,
+      peer?.avatar?.selected_avatar_id || "default",
+      peer?.avatar?.selected_avatar_frame_id || "none"
+    );
+    return avatar;
+  }
+
+  function createDirectMessageThreadCard(conversation) {
+    const peer = conversation.peer || {};
+    const card = document.createElement("button");
+    card.type = "button";
+    card.className = "direct-message-thread-card";
+    card.dataset.peerId = conversation.peer_id;
+    const unread = Number(conversation.unread_count || 0);
+    card.dataset.unread = String(unread > 0);
+    const copy = document.createElement("span");
+    copy.className = "direct-message-thread-copy";
+    const name = document.createElement("strong");
+    name.textContent = peer.display_name || "Oyuncu";
+    const preview = document.createElement("small");
+    const last = conversation.last_message || {};
+    if (last.sender_id === participantPlayerId) {
+      const self = document.createElement("span");
+      self.textContent = "Sen: ";
+      preview.appendChild(self);
+    }
+    // Oyuncu yazısı çeviri katmanına girmez.
+    const previewText = document.createElement("span");
+    previewText.setAttribute("translate", "no");
+    previewText.textContent = last.text || "";
+    preview.appendChild(previewText);
+    copy.append(name, preview);
+    const meta = document.createElement("span");
+    meta.className = "direct-message-thread-meta";
+    const time = document.createElement("time");
+    time.textContent = directMessageTimeLabel(last.sent_at);
+    meta.appendChild(time);
+    if (unread > 0) {
+      const badge = document.createElement("b");
+      badge.className = "direct-message-unread";
+      badge.textContent = unread > 99 ? "99+" : String(unread);
+      meta.appendChild(badge);
+    }
+    card.setAttribute(
+      "aria-label",
+      `${peer.display_name || "Oyuncu"} ile sohbet${unread > 0 ? ` · ${unread} okunmamış` : ""}`
+    );
+    card.append(createDirectMessageAvatar(peer), copy, meta);
+    card.addEventListener("click", () => openDirectMessageThread(conversation.peer_id));
+    return card;
+  }
+
+  function renderDirectMessageInbox() {
+    const conversations = directMessageConversations();
+    const count = document.getElementById("direct-message-thread-count");
+    if (count) count.textContent = `${conversations.length} sohbet`;
+    const threads = document.getElementById("direct-message-threads");
+    if (threads) {
+      threads.replaceChildren(...conversations.map(createDirectMessageThreadCard));
+      if (!conversations.length) {
+        threads.appendChild(createFriendsEmptyState(
+          "HENÜZ SOHBET YOK",
+          "Aşağıdan bir arkadaşını seçip ilk mesajı gönder."
+        ));
+      }
+    }
+    const starters = document.getElementById("direct-message-starters");
+    if (starters) {
+      starters.replaceChildren();
+      const active = new Set(conversations.map((item) => item.peer_id));
+      for (const friend of sortedFriendsForBattle()) {
+        if (active.has(friend.player_id)) continue;
+        starters.appendChild(createSocialPlayerCard(friend, [
+          { label:"YAZ", variant:"quiet", onClick:() => openDirectMessageThread(friend.player_id) },
+        ]));
+      }
+      if (!starters.children.length) {
+        const empty = document.createElement("p");
+        empty.className = "social-empty-state";
+        empty.textContent = socialState?.friends?.length
+          ? "Bütün arkadaşlarınla bir sohbetin var."
+          : "Mesajlaşmak için önce arkadaş ekle.";
+        starters.appendChild(empty);
+      }
+    }
+  }
+
+  function renderDirectMessageThread() {
+    const inbox = document.getElementById("direct-message-inbox");
+    const thread = document.getElementById("direct-message-thread");
+    const peerId = activeDirectMessagePeerId;
+    if (inbox) inbox.hidden = Boolean(peerId);
+    if (thread) thread.hidden = !peerId;
+    renderSocialNotificationDots();
+    if (!peerId) return;
+
+    const peer = directMessagePeer(peerId);
+    const conversation = directMessageConversations().find((item) => item.peer_id === peerId);
+    const isFriend = conversation
+      ? Boolean(conversation.is_friend)
+      : Boolean(socialState?.friends?.some((item) => item.player_id === peerId));
+    const avatar = document.getElementById("direct-message-peer-avatar");
+    if (avatar) {
+      applyAvatarVisual(
+        avatar,
+        peer?.avatar?.selected_avatar_id || "default",
+        peer?.avatar?.selected_avatar_frame_id || "none"
       );
+    }
+    const name = document.getElementById("direct-message-peer-name");
+    if (name) name.textContent = peer?.display_name || "Oyuncu";
+    const meta = document.getElementById("direct-message-peer-meta");
+    if (meta) {
+      meta.textContent = peer
+        ? `${peer.rank_name_tr || "Arena"} · ${Number(peer.rating || 0).toLocaleString(uiLocale())} 🏆${peer.online ? " · ÇEVRİMİÇİ" : ""}`
+        : "";
+    }
+
+    const host = document.getElementById("direct-message-list");
+    // Liste yalnız sohbet değişince yeniden çizilir; yukarı kaydırılmış okuma
+    // konumu periyodik yenilemede kaybolmaz.
+    const signature = [
+      peerId,
+      directMessagesCache.length,
+      directMessagesCache.at(-1)?.message_id || "",
+      peer?.display_name || "",
+      directMessageLoadedPeerId === peerId,
+    ].join("|");
+    if (host && host.dataset.signature !== signature) {
+      const previousScrollTop = host.scrollTop;
+      const stickToBottom = host.scrollHeight - host.scrollTop - host.clientHeight < 48;
       host.replaceChildren();
-      for (const message of payload.messages || []) {
+      for (const message of directMessagesCache) {
+        const own = message.sender_id === participantPlayerId;
         const row = document.createElement("article");
-        const sent = message.sender_id === participantPlayerId;
-        row.className = sent ? "is-sent" : "is-received";
-        const peer = sent ? message.recipient_id : message.sender_id;
-        row.textContent = localizedMessage("social.message_line", {direction:sent ? localizedMessage("social.sent_arrow") : "←", peer, message:message.text});
+        row.className = `team-message direct-message${own ? " is-own" : ""}`;
+        const author = document.createElement("strong");
+        author.textContent = own ? "Sen" : (peer?.display_name || "Oyuncu");
+        const text = document.createElement("p");
+        text.setAttribute("translate", "no");
+        text.textContent = message.text || "";
+        const time = document.createElement("time");
+        time.textContent = directMessageTimeLabel(message.sent_at);
+        row.append(author, text, time);
         host.appendChild(row);
       }
       if (!host.children.length) {
         const empty = document.createElement("p");
-        empty.textContent = localizedUiText("Henüz doğrudan mesaj yok.");
-        host.replaceChildren(empty);
+        empty.className = "team-empty-state";
+        empty.textContent = directMessageLoadedPeerId === peerId
+          ? "Sohbeti başlatmak için ilk mesajı yaz."
+          : "Mesajlar yükleniyor…";
+        host.appendChild(empty);
+      }
+      host.scrollTop = stickToBottom || host.dataset.peerId !== peerId
+        ? host.scrollHeight
+        : previousScrollTop;
+      host.dataset.peerId = peerId;
+      host.dataset.signature = signature;
+    }
+
+    const input = document.getElementById("direct-message-text");
+    const submit = document.querySelector("#direct-message-form button[type=submit]");
+    if (input) input.disabled = !isFriend;
+    if (submit) submit.disabled = !isFriend;
+    const note = document.getElementById("direct-message-note");
+    if (note) {
+      note.hidden = isFriend;
+      note.textContent = isFriend ? "" : "Bu oyuncu artık arkadaş listende değil; yeni mesaj gönderilemez.";
+    }
+  }
+
+  async function loadDirectMessageThread() {
+    const peerId = activeDirectMessagePeerId;
+    if (!peerId) return;
+    const sequence = ++directMessageLoadSequence;
+    try {
+      const payload = await requestJsonWithDeadline(
+        `/social/${encodeURIComponent(participantPlayerId)}/messages?peer_id=${encodeURIComponent(peerId)}`,
+        { cache:"no-store" },
+        12000
+      );
+      // Yanıt gelmeden başka bir sohbete geçildiyse eski sonuç çizilmez.
+      if (sequence !== directMessageLoadSequence || peerId !== activeDirectMessagePeerId) return;
+      directMessagesCache = payload.messages || [];
+      directMessageLoadedPeerId = peerId;
+      renderDirectMessageThread();
+      const lastIncoming = [...directMessagesCache].reverse().find((message) => message.sender_id === peerId);
+      const conversation = directMessageConversations().find((item) => item.peer_id === peerId);
+      if (
+        Number(conversation?.unread_count || 0) > 0
+        || (lastIncoming && directMessageSeenMarks.get(peerId) !== lastIncoming.message_id)
+      ) {
+        directMessageSeenMarks.set(peerId, lastIncoming?.message_id || "");
+        void markDirectMessageThreadSeen(peerId);
       }
     } catch (error) {
-      host.textContent = error instanceof Error ? error.message : String(error);
+      if (sequence === directMessageLoadSequence) {
+        setFriendsStatus(error instanceof Error ? error.message : String(error), "error");
+      }
+    }
+  }
+
+  async function markDirectMessageThreadSeen(peerId) {
+    try {
+      socialState = await requestJsonWithDeadline(
+        `/social/${encodeURIComponent(participantPlayerId)}/messages/seen`,
+        {
+          method:"POST",
+          body:JSON.stringify({
+            player_id:participantPlayerId,
+            peer_id:peerId,
+            request_id:socialRequestId("messages-seen"),
+          }),
+        },
+        12000
+      );
+      renderFriendsScreen();
+    } catch (_error) {
+      // Okundu işareti bir sonraki yenilemede tekrar denenir.
     }
   }
 
   async function sendDirectMessage() {
-    const peer = document.getElementById("direct-message-peer")?.value?.trim() || "";
+    const peer = activeDirectMessagePeerId;
     const input = document.getElementById("direct-message-text");
     const message = input?.value?.trim() || "";
-    if (!peer || !message) {
-      setFriendsStatus("Arkadaş kimliği ve mesaj gerekli.", "error");
-      return;
-    }
+    if (!peer || !message) return;
+    const submit = document.querySelector("#direct-message-form button[type=submit]");
+    if (submit) submit.disabled = true;
     try {
       await requestJsonWithDeadline(
         `/social/${encodeURIComponent(participantPlayerId)}/messages`,
@@ -3210,11 +3937,23 @@
         12000
       );
       if (input) input.value = "";
-      setFriendsStatus("Mesaj gönderildi.", "success");
-      await loadDirectMessages();
+      setFriendsStatus("");
+      await loadDirectMessageThread();
+      void loadSocialView({ quiet:true });
     } catch (error) {
       setFriendsStatus(error instanceof Error ? error.message : String(error), "error");
+    } finally {
+      if (submit) submit.disabled = false;
+      renderDirectMessageThread();
     }
+  }
+
+  function closeDirectMessageThread() {
+    // Önbellek kalır: aynı sohbet yeniden açılınca mesajlar hemen görünür.
+    activeDirectMessagePeerId = "";
+    directMessageLoadSequence += 1;
+    renderDirectMessageInbox();
+    renderDirectMessageThread();
   }
 
   function createSocialPlayerCard(player, actions = []) {
@@ -3230,7 +3969,7 @@
     const identity = document.createElement("div");
     const name = createPublicPlayerName(player.player_id, player.display_name || "Oyuncu");
     const meta = document.createElement("small");
-    meta.textContent = localizedMessage("social.player_meta", {rank:localizedUiText(player.rank_name_tr || "Arena"), trophies:localizedNumber(player.rating || 0), online:player.online ? localizedMessage("social.online_suffix") : ""});
+    meta.textContent = `${player.rank_name_tr || "Arena"} · ${Number(player.rating || 0).toLocaleString(uiLocale())} 🏆${player.online ? " · ÇEVRİMİÇİ" : ""}`;
     identity.append(name, meta);
     const controls = document.createElement("div");
     controls.className = "social-player-actions";
@@ -3246,25 +3985,115 @@
     return card;
   }
 
+  let activeFriendsTab = "friends";
+  // Bu oturumda savaşa çağrılan arkadaşlar: davet kabul edilince otomatik giriş.
+  const recentBattleInviteTargets = new Set();
+  const autoLaunchedBattleSessions = new Set();
+
+  function socialNotificationCounts() {
+    const counts = socialState?.notifications || {};
+    return {
+      incoming:Number(counts.incoming_requests || 0),
+      messages:Number(counts.unread_messages || 0),
+      battle:Number(counts.battle_invites || 0),
+    };
+  }
+
+  function renderSocialNotificationDots() {
+    const counts = socialNotificationCounts();
+    const hasSocial = counts.incoming + counts.messages + counts.battle > 0;
+    for (const button of document.querySelectorAll('.profile-terminal-tabs [data-open-screen="friends"]')) {
+      button.classList.toggle("has-persistent-notification", hasSocial);
+    }
+    document.getElementById("lobby-profile-button")?.classList.toggle("has-social-notification", hasSocial);
+    for (const button of document.querySelectorAll("[data-friends-tab]")) {
+      const tab = button.dataset.friendsTab;
+      button.classList.toggle("is-active", tab === activeFriendsTab);
+      button.setAttribute("aria-pressed", String(tab === activeFriendsTab));
+      button.classList.toggle("has-friends-notification", Number(counts[tab] || 0) > 0);
+    }
+    for (const panel of document.querySelectorAll("[data-friends-panel]")) {
+      panel.hidden = panel.dataset.friendsPanel !== activeFriendsTab;
+    }
+    // Açık sohbette başlık ve arama gizlenir; yazışma alanı ekranı doldurur.
+    const friendsScreen = document.getElementById("friends-screen");
+    if (friendsScreen) {
+      friendsScreen.dataset.dmThread =
+        activeFriendsTab === "messages" && activeDirectMessagePeerId ? "open" : "closed";
+    }
+  }
+
+  function createFriendsEmptyState(title, copy) {
+    const empty = document.createElement("div");
+    empty.className = "friends-empty-state";
+    empty.innerHTML = '<svg viewBox="0 0 48 48" aria-hidden="true"><circle cx="18" cy="16" r="7"/><circle cx="32" cy="18" r="5"/><path d="M5 40c1-8 6-12 13-12s12 4 13 12M29 30c6-1 11 2 13 9"/></svg>';
+    const heading = document.createElement("strong");
+    heading.textContent = title;
+    const text = document.createElement("small");
+    text.textContent = copy;
+    empty.append(heading, text);
+    return empty;
+  }
+
+  function sortedFriendsForBattle() {
+    return [...(socialState?.friends || [])].sort((left, right) =>
+      Number(Boolean(right.online)) - Number(Boolean(left.online))
+      || String(left.display_name || "").localeCompare(String(right.display_name || ""), "tr")
+    );
+  }
+
+  function openFriendsTab(tab) {
+    const next = tab || "friends";
+    // Mesajlar sekmesine yeniden dokunmak açık sohbetten listeye döndürür.
+    if (next === "messages" && activeFriendsTab === "messages" && activeDirectMessagePeerId) {
+      closeDirectMessageThread();
+    }
+    activeFriendsTab = next;
+    renderSocialNotificationDots();
+    if (activeFriendsTab === "messages") {
+      renderDirectMessageInbox();
+      renderDirectMessageThread();
+    }
+  }
+
+  function openDirectMessageThread(playerId) {
+    if (!playerId) return;
+    if (directMessageLoadedPeerId !== playerId) {
+      directMessagesCache = [];
+      directMessageLoadedPeerId = "";
+    }
+    activeDirectMessagePeerId = playerId;
+    activeFriendsTab = "messages";
+    renderSocialNotificationDots();
+    renderDirectMessageThread();
+    void loadDirectMessageThread();
+    // Dokunmatik ekranda klavye kendiliğinden açılıp sohbeti örtmesin.
+    if (globalThis.matchMedia?.("(pointer: fine)")?.matches) {
+      document.getElementById("direct-message-text")?.focus({ preventScroll:true });
+    }
+  }
+
   function renderFriendsScreen() {
     if (!socialState) return;
-    for (const button of document.querySelectorAll("[data-friends-tab]")) {
-      const selected = button.dataset.friendsTab === activeFriendsTab;
-      button.classList.toggle("is-active", selected);
-      button.setAttribute("aria-selected", String(selected));
-      button.classList.toggle("has-persistent-notification", button.dataset.friendsTab === "incoming" && Boolean(socialState.incoming_requests?.length)
-        || button.dataset.friendsTab === "battle" && Boolean((socialState.battle_invites || []).some((invite) => invite.status === "pending" && invite.opponent_id === participantPlayerId)));
-    }
-    for (const panel of document.querySelectorAll("[data-friends-panel]")) panel.hidden = panel.dataset.friendsPanel !== activeFriendsTab;
-    const setEmpty = (host, text) => {
-      if (!host || host.children.length) return;
-      const empty = document.createElement("p");
-      empty.className = "social-empty-state";
-      empty.textContent = text;
-      host.appendChild(empty);
-    };
     const summary = document.getElementById("friends-summary");
-    if (summary) summary.textContent = localizedMessage("social.friend_limit", {count:localizedNumber(socialState.friends?.length || 0), limit:localizedNumber(socialState.friend_limit || 100)});
+    if (summary) summary.textContent = `${socialState.friends?.length || 0} / ${socialState.friend_limit || 100} arkadaş`;
+
+    const friends = document.getElementById("friend-list");
+    if (friends) {
+      friends.replaceChildren();
+      for (const player of sortedFriendsForBattle()) {
+        friends.appendChild(createSocialPlayerCard(player, [
+          { label:"MESAJ", variant:"quiet", onClick:() => openDirectMessageThread(player.player_id) },
+        ]));
+      }
+      if (!friends.children.length) {
+        friends.appendChild(createFriendsEmptyState(
+          "HENÜZ ARKADAŞ YOK",
+          "Davet kodu paylaş veya yukarıdan oyuncu adıyla ara."
+        ));
+      }
+    }
+
     const requests = document.getElementById("friend-request-list");
     if (requests) {
       requests.replaceChildren();
@@ -3274,33 +4103,69 @@
           { label:"REDDET", variant:"quiet", onClick:() => socialMutation(`/social/${encodeURIComponent(participantPlayerId)}/requests/reject`, { requester_id:player.player_id, requestKind:"friend-reject" }, "İstek reddediliyor…") },
         ]));
       }
-      setEmpty(requests, "Bekleyen arkadaşlık isteği yok.");
+      if (!requests.children.length) {
+        requests.appendChild(createFriendsEmptyState("GELEN İSTEK YOK", "Sana gönderilen arkadaşlık istekleri burada görünür."));
+      }
     }
-    const friends = document.getElementById("friend-list");
-    if (friends) {
-      friends.replaceChildren();
-      for (const player of socialState.friends || []) friends.appendChild(createSocialPlayerCard(player));
-      setEmpty(friends, "Henüz arkadaşın yok. Oyuncu arayarak ilk bağlantını kurabilirsin.");
-    }
+
     const outgoing = document.getElementById("friend-outgoing-list");
     if (outgoing) {
       outgoing.replaceChildren();
-      for (const player of socialState.outgoing_requests || []) outgoing.appendChild(createSocialPlayerCard(player));
-      setEmpty(outgoing, localizedMessage("social.no_outgoing_requests"));
+      for (const player of socialState.outgoing_requests || []) {
+        outgoing.appendChild(createSocialPlayerCard(player, [
+          { label:"İPTAL", variant:"quiet", onClick:() => socialMutation(`/social/${encodeURIComponent(participantPlayerId)}/requests/cancel`, { target_player_id:player.player_id, requestKind:"friend-cancel" }, "İstek geri çekiliyor…") },
+        ]));
+      }
+      if (!outgoing.children.length) {
+        outgoing.appendChild(createFriendsEmptyState("GÖNDERİLEN İSTEK YOK", "Gönderdiğin arkadaşlık istekleri yanıtlanana kadar burada bekler."));
+      }
     }
-    const battleFriends = document.getElementById("friend-battle-friends");
-    if (battleFriends) {
-      battleFriends.replaceChildren();
-      const sorted = [...(socialState.friends || [])].sort((a, b) => Number(Boolean(b.online)) - Number(Boolean(a.online)) || String(a.display_name || "").localeCompare(String(b.display_name || ""), document.documentElement.lang));
-      for (const player of sorted) battleFriends.appendChild(createSocialPlayerCard(player, [
-        { label:localizedMessage("social.invite_to_battle"), onClick:() => socialMutation(`/social/${encodeURIComponent(participantPlayerId)}/battle-invites`, { opponent_id:player.player_id, requestKind:"friend-battle" }, localizedMessage("social.sending_battle_invite")) },
-      ]));
-      setEmpty(battleFriends, localizedMessage("social.no_friends_for_battle"));
+
+    const battleList = document.getElementById("friend-battle-list");
+    if (battleList) {
+      battleList.replaceChildren();
+      const pendingTargets = new Set(
+        (socialState.battle_invites || [])
+          .filter((invite) => invite.status === "pending" && invite.challenger_id === participantPlayerId)
+          .map((invite) => invite.opponent_id)
+      );
+      for (const player of sortedFriendsForBattle()) {
+        const pending = pendingTargets.has(player.player_id);
+        const card = createSocialPlayerCard(player, [
+          {
+            label:pending ? "DAVET GÖNDERİLDİ" : "SAVAŞA ÇAĞIR",
+            variant:pending ? "quiet" : "primary",
+            onClick:async (event) => {
+              if (pending) return;
+              event.currentTarget.disabled = true;
+              recentBattleInviteTargets.add(player.player_id);
+              const result = await socialMutation(
+                `/social/${encodeURIComponent(participantPlayerId)}/battle-invites`,
+                { opponent_id:player.player_id, requestKind:"friend-battle" },
+                "Kupasız savaş daveti gönderiliyor…"
+              );
+              if (result.ok) {
+                setFriendsStatus(`${player.display_name || "Arkadaşın"} davet edildi; kabul ettiğinde savaş alanına geçeceksin.`, "success");
+              } else {
+                recentBattleInviteTargets.delete(player.player_id);
+              }
+            },
+          },
+        ]);
+        card.dataset.online = String(Boolean(player.online));
+        if (pending) card.querySelector(".social-player-actions button")?.setAttribute("disabled", "");
+        battleList.appendChild(card);
+      }
+      if (!battleList.children.length) {
+        battleList.appendChild(createFriendsEmptyState("SAVAŞILACAK ARKADAŞ YOK", "Arkadaş ekledikten sonra onları kupasız savaşa çağırabilirsin."));
+      }
     }
+
     const invites = document.getElementById("friend-battle-invites");
     if (invites) {
       invites.replaceChildren();
       for (const invite of [...(socialState.battle_invites || [])].reverse()) {
+        if (!["pending", "accepted"].includes(invite.status)) continue;
         const opponentId = invite.challenger_id === participantPlayerId ? invite.opponent_id : invite.challenger_id;
         const opponentName = invite.challenger_id === participantPlayerId ? invite.opponent_name : invite.challenger_name;
         const card = document.createElement("article");
@@ -3308,9 +4173,9 @@
         const copy = document.createElement("div");
         copy.append(createPublicPlayerName(opponentId, opponentName || "Oyuncu"));
         const meta = document.createElement("small");
-        meta.textContent = invite.status === "completed"
-          ? "KUPASIZ SAVAŞ TAMAMLANDI"
-          : invite.status === "accepted" ? "KUPASIZ SAVAŞ HAZIR" : "KUPASIZ DAVET BEKLİYOR";
+        meta.textContent = invite.status === "accepted"
+          ? "KUPASIZ SAVAŞ HAZIR"
+          : invite.opponent_id === participantPlayerId ? "SENİ SAVAŞA ÇAĞIRDI" : "YANIT BEKLENİYOR";
         copy.appendChild(meta);
         if (invite.status === "pending" && invite.opponent_id === participantPlayerId) {
           const accept = document.createElement("button");
@@ -3318,7 +4183,10 @@
           accept.textContent = "KABUL ET";
           accept.addEventListener("click", async () => {
             const result = await socialMutation(`/social/${encodeURIComponent(participantPlayerId)}/battle-invites/${encodeURIComponent(invite.invite_id)}/accept`, { requestKind:"battle-accept" }, "Savaş alanı hazırlanıyor…");
-            if (result.ok && result.payload.battle) launchSocialBattle(result.payload.battle);
+            if (result.ok && result.payload.battle) {
+              autoLaunchedBattleSessions.add(result.payload.battle.session_id);
+              launchSocialBattle(result.payload.battle);
+            }
           });
           card.append(copy, accept);
         } else if (invite.status === "accepted" && invite.battle_session_id) {
@@ -3332,15 +4200,18 @@
         }
         invites.appendChild(card);
       }
-      setEmpty(invites, "Bekleyen arkadaş savaşı yok.");
     }
-    const engagement = profileState.viewModel()?.engagement;
-    if (engagement) renderEngagementSummary(engagement);
+
+    renderDirectMessageInbox();
+    renderDirectMessageThread();
+    renderSocialNotificationDots();
   }
 
   async function searchFriends(query) {
     const host = document.getElementById("friend-search-results");
     if (!host) return;
+    const panel = document.getElementById("friend-search-panel");
+    if (panel) panel.hidden = false;
     setFriendsStatus("Oyuncular aranıyor…", "pending");
     try {
       const payload = await requestJsonWithDeadline(
@@ -3394,64 +4265,31 @@
     }
   }
 
+  // Etkinlik dönemleri sunucuda UTC gün sınırlarıyla tanımlıdır; etiket de
+  // UTC gününü gösterir, yerel saat farkı bitiş gününü kaydırmaz.
   function eventDateLabel(value) {
     const date = value ? new Date(value) : null;
     return date && !Number.isNaN(date.getTime())
-      ? localizedDate(date, { day:"2-digit", month:"short" })
+      ? date.toLocaleDateString(uiLocale(), { day:"2-digit", month:"short", timeZone:"UTC" })
       : "—";
   }
 
-  function createEventRewardChest(prize, eventKind) {
-    const chest = document.createElement("button");
-    chest.type = "button";
-    chest.className = "leaderboard-reward-chest event-standing-reward";
-    chest.dataset.rank = String(prize.position);
-    chest.innerHTML = chestVisualMarkup(prize.chest_tier || "bronze", {visualId:prize.chest_visual_id || ""});
-    chest.setAttribute("aria-label", localizedMessage("reward.chest_contents_aria", {name:localizedRewardChestName(prize)}));
-    const popover = createLeaderboardRewardPopover(prize, `${eventKind}-${prize.position}`, "event.reward_delivery_note");
-    chest.setAttribute("aria-describedby", popover.id);
-    chest.appendChild(popover);
-    chest.addEventListener("pointerup", (event) => { if (event.pointerType !== "mouse") window.setTimeout(() => chest.blur(), 1800); });
-    return chest;
-  }
-
-  function renderTournamentPrizes(hostId, prizes = []) {
-    const host = document.getElementById(hostId);
-    if (!host) return;
-    host.replaceChildren();
-    for (const prize of prizes.slice(0, 3)) {
-      const card = document.createElement("article");
-      card.dataset.position = String(prize.position);
-      const medal = document.createElement("strong");
-      medal.className = "event-prize-rank";
-      medal.textContent = ({ 1:"🥇", 2:"🥈", 3:"🥉" })[prize.position] ? localizedMessage("event.prize_rank_medal", {medal:({1:"🥇",2:"🥈",3:"🥉"})[prize.position], position:localizedNumber(prize.position)}) : localizedMessage("event.prize_rank", {position:localizedNumber(prize.position)});
-      const chest = document.createElement("span");
-      chest.className = "event-prize-chest";
-      chest.innerHTML = chestVisualMarkup(prize.chest_tier || "bronze", { visualId:prize.chest_visual_id || "" });
-      const detail = document.createElement("div");
-      detail.className = "event-prize-detail";
-      const title = document.createElement("strong");
-      title.textContent = localizedRewardChestName(prize);
-      const rewards = document.createElement("div");
-      rewards.className = "event-prize-rewards";
-      const rewardLabels = [
-        localizedMessage("event.prize_credits", {amount:localizedNumber(prize.circuit_credits || 0)}),
-        localizedMessage("event.prize_flux", {amount:localizedNumber(prize.flux_shards || 0)}),
-        prize.avatar_id ? localizedMessage("event.prize_avatar") : prize.team_avatar_id ? localizedMessage("event.prize_team_avatar") : "",
-        prize.avatar_frame_id ? localizedMessage("event.prize_avatar_frame") : prize.team_frame_id ? localizedMessage("event.prize_team_frame") : "",
-        prize.team_name_frame_id ? localizedMessage("event.prize_team_name_frame") : "",
-        prize.team_bar_background_id ? localizedMessage("event.prize_team_bar") : "",
-        prize.emoji_id ? localizedMessage("event.prize_battle_emoji") : "",
-      ].filter(Boolean);
-      for (const label of rewardLabels) {
-        const chip = document.createElement("small");
-        chip.textContent = label;
-        rewards.appendChild(chip);
-      }
-      detail.append(title, rewards);
-      card.append(medal, chest, detail);
-      host.appendChild(card);
-    }
+  // Sıralamada ilk üç satırın yanında ödül sandığı ve içeriği görünür.
+  function appendTournamentPrizeChest(item, prizes, position, note) {
+    const prize = (prizes || []).find((candidate) => Number(candidate.position) === Number(position));
+    if (!prize || Number(position) > 3) return;
+    item.classList.add("has-prize");
+    const chest = createRewardChestButton({
+      tier:prize.chest_tier || "bronze",
+      visualId:prize.chest_visual_id || "",
+      reward:{ ...prize, chest_is_container:true },
+      title:prize.chest_name_tr || `${position}. Sıra Ödülü`,
+      note,
+      accent:({ 1:"#ffe16f", 2:"#c9e1ef", 3:"#dd9864" })[Number(position)] || "#8fd8ff",
+      className:"tournament-prize-chest",
+    });
+    chest.dataset.rank = String(position);
+    item.appendChild(chest);
   }
 
   function renderEventSummary(hostId, metrics = []) {
@@ -3493,22 +4331,22 @@
     const name = document.getElementById("weekly-tournament-name");
     const reset = document.getElementById("weekly-tournament-reset");
     const rules = document.getElementById("weekly-tournament-rules");
-    if (name) name.textContent = localizedRecordText(tournament, "name") || localizedMessage("event.weekly_name");
-    if (reset) reset.textContent = localizedMessage("event.date_range", {start:eventDateLabel(tournament.period?.starts_at), end:eventDateLabel(tournament.period?.ends_at)});
-    if (rules) rules.textContent = localizedRecordText(tournament, "rules") || localizedMessage("event.weekly_rules");
+    if (name) name.textContent = tournament.name_tr || "Haftalık Devre Turnuvası";
+    if (reset) reset.textContent = `${eventDateLabel(tournament.period?.starts_at)} — ${eventDateLabel(tournament.period?.ends_at)}`;
+    if (rules) rules.textContent = tournament.rules_tr || "";
     const register = document.getElementById("weekly-tournament-register");
     const viewer = state?.viewer || {};
     if (register) {
       register.disabled = Boolean(viewer.weekly_registered);
       register.textContent = viewer.weekly_registered
-        ? localizedMessage("event.joined_upper")
-        : localizedMessage("event.enter_tournament", {fee:localizedNumber(tournament.entry_fee || 0)});
+        ? "TURNUVAYA KATILDIN"
+        : `${Number(tournament.entry_fee || 0)} DK · TURNUVAYA KATIL`;
     }
     const participant = (tournament.standings || []).find((row) => row.player_id === participantPlayerId);
     renderEventSummary("weekly-event-summary", [
-      [localizedMessage("event.duration"), localizedMessage("event.date_range", {start:eventDateLabel(tournament.period?.starts_at), end:eventDateLabel(tournament.period?.ends_at)})],
-      [localizedMessage("event.your_rank"), participant ? localizedMessage("leaderboard.position_hash", {position:localizedNumber(participant.position)}) : localizedMessage("leaderboard.no_position")],
-      [localizedMessage("event.trophies_earned"), localizedMessage("arena.trophy_icon", {count:localizedNumber(participant ? participant.trophies_earned || participant.points : 0)})],
+      ["SÜRE", `${eventDateLabel(tournament.period?.starts_at)} — ${eventDateLabel(tournament.period?.ends_at)}`],
+      ["SIRAN", participant ? `#${participant.position}` : "Henüz yok"],
+      ["KAZANILAN KUPA", participant ? `${participant.trophies_earned || participant.points} 🏆` : "0 🏆"],
     ]);
     const host = document.getElementById("weekly-tournament-standings");
     if (!host) return;
@@ -3526,16 +4364,37 @@
       const identity = document.createElement("div");
       const player = createPublicPlayerName(row.player_id, row.display_name || "Oyuncu");
       const record = document.createElement("small");
-      record.textContent = localizedMessage("event.match_record", {wins:localizedNumber(row.wins), losses:localizedNumber(row.losses), matches:localizedNumber(row.matches)});
+      record.textContent = `${row.wins}G · ${row.losses}M · ${row.matches} maç`;
       identity.append(player, record);
       const points = document.createElement("strong");
       points.className = "tournament-points";
-      points.textContent = localizedMessage("arena.trophy_icon", {count:localizedNumber(row.trophies_earned || row.points)});
-      const prize = (tournament.prizes || []).find((item) => Number(item.position) === Number(row.position));
-      if (prize) points.appendChild(createEventRewardChest(prize, "weekly"));
+      points.textContent = `${row.trophies_earned || row.points} 🏆`;
       item.append(position, identity, points);
+      appendTournamentPrizeChest(item, tournament.prizes || [], row.position, "Hafta sonunda mesaj kutusuna teslim edilir.");
       host.appendChild(item);
     }
+  }
+
+  // Takımlar arası turnuva (sunucu: team_tournament.py). Sezonla aynı dört
+  // haftalık dönem Pazartesi başlar: ilk haftanın Pazartesi–Çarşamba günleri
+  // kayıt, her Perşembe eşleşme, Cuma–Pazar rövanşlı maçlar.
+  const TEAM_TOURNAMENT_PHASE_TR = Object.freeze({
+    registration:"Kayıt açık",
+    waiting:"Eşleşme bekleniyor",
+    paired:"Eşleşmeler açıklandı",
+    matches:"Maç günleri",
+    finished:"Turnuva bitti",
+  });
+
+  // Bitiş anı hariç tutulan aralığın son gününü gösterir (ör. 5–7 Eyl).
+  function eventDayRangeLabel(startIso, endIso) {
+    const start = startIso ? new Date(startIso) : null;
+    const end = endIso ? new Date(Date.parse(endIso) - 1) : null;
+    if (!start || !end || Number.isNaN(start.getTime()) || Number.isNaN(end.getTime())) return "—";
+    const format = (date) => date.toLocaleDateString(uiLocale(), { day:"numeric", month:"short", timeZone:"UTC" });
+    return start.getUTCMonth() === end.getUTCMonth()
+      ? `${start.getUTCDate()}–${format(end)}`
+      : `${format(start)} – ${format(end)}`;
   }
 
   function renderTeamTournament(state) {
@@ -3543,107 +4402,294 @@
     const name = document.getElementById("team-tournament-name");
     const week = document.getElementById("team-tournament-week");
     const rules = document.getElementById("team-tournament-rules");
-    if (name) name.textContent = localizedRecordText(tournament, "name") || localizedMessage("event.team_name");
-    if (week) week.textContent = localizedMessage("event.week_label", {week:localizedNumber(tournament.week || 1)});
-    if (rules) rules.textContent = localizedRecordText(tournament, "rules") || localizedMessage("event.team_rules");
+    const phaseLabel = TEAM_TOURNAMENT_PHASE_TR[tournament.phase] || "";
+    if (name) name.textContent = tournament.name_tr || "Takımlar Arası Turnuva";
+    if (week) week.textContent = `${Number(tournament.week || 1)}. HAFTA · ${phaseLabel}`;
+    if (rules) rules.textContent = tournament.rules_tr || "";
     const viewer = state?.viewer || {};
     const register = document.getElementById("team-tournament-register");
     if (register) {
+      const open = Boolean(tournament.registration_open);
       register.hidden = !viewer.team_id;
-      register.disabled = Boolean(viewer.team_registered || !viewer.team_owner);
+      register.disabled = !(open && viewer.team_owner);
       register.textContent = viewer.team_registered
-        ? localizedMessage("event.team_registered")
-        : viewer.team_owner
-          ? localizedMessage("event.register_team_free")
-          : localizedMessage("event.leader_registers_team");
+        ? (open && viewer.team_owner ? "KADROYU GÜNCELLE" : "TAKIM KAYITLI")
+        : !open
+          ? "KAYIT SÜRESİ DOLDU"
+          : viewer.team_owner
+            ? "TAKIMI ÜCRETSİZ KAYDET"
+            : "KAYDI TAKIM LİDERİ YAPAR";
     }
-    const participantTeam = (tournament.standings || []).find((row) =>
-      row.members?.some((member) => member.player_id === participantPlayerId)
-    );
+    const standingsRows = tournament.standings || [];
+    const viewerTeam = standingsRows.find((row) => row.team_id === viewer.team_id && !row.is_ai) || null;
     renderEventSummary("team-event-summary", [
-      [localizedMessage("event.period"), localizedMessage("event.date_range", {start:eventDateLabel(tournament.period?.starts_at), end:eventDateLabel(tournament.period?.ends_at)})],
-      [localizedMessage("event.week"), localizedMessage("event.week_progress", {week:localizedNumber(tournament.week || 1)})],
-      [localizedMessage("event.team_score"), participantTeam ? localizedMessage("event.team_points", {points:localizedNumber(participantTeam.points)}) : localizedMessage("event.no_team")],
+      ["DÖNEM", `${eventDateLabel(tournament.period?.starts_at)} — ${eventDateLabel(tournament.period?.ends_at)}`],
+      ["HAFTA", `${Number(tournament.week || 1)} / ${Number(tournament.weeks_total || 4)}`],
+      ["TAKIM PUANI", viewerTeam ? `${viewerTeam.points} P` : viewer.team_id ? "Kayıtlı değil" : "Takımın yok"],
     ]);
+    renderTeamTournamentCalendar(tournament);
     const standings = document.getElementById("team-tournament-standings");
     if (standings) {
       standings.replaceChildren();
-      for (const row of (tournament.standings || []).slice(0, 12)) {
+      for (const row of standingsRows.slice(0, 12)) {
         const item = document.createElement("li");
-        if (row.members?.some((member) => member.player_id === participantPlayerId)) item.classList.add("is-current-player");
+        if (row.team_id === viewer.team_id && !row.is_ai) item.classList.add("is-current-player");
         const position = document.createElement("strong");
         position.className = "tournament-position";
         position.textContent = String(row.position);
         const identity = document.createElement("div");
-        const teamName = createTeamProfileLink(row.team_id, row.team_name || localizedMessage("profile.team"));
+        const teamName = row.is_ai
+          ? Object.assign(document.createElement("strong"), { textContent:row.team_name || "Takım" })
+          : createTeamProfileLink(row.team_id, row.team_name || "Takım");
         const detail = document.createElement("small");
-        detail.textContent = localizedMessage("event.team_qualified", {members:localizedNumber(row.member_count), qualified:localizedNumber(row.qualified_member_count)});
+        detail.textContent = `${row.member_count} oyuncu · ${row.qualified_member_count} ödüle uygun`;
         identity.append(teamName, detail);
         const points = document.createElement("strong");
         points.className = "tournament-points";
-        points.textContent = localizedMessage("event.team_points", {points:localizedNumber(row.points)});
-        const prize = (tournament.prizes || []).find((item) => Number(item.position) === Number(row.position));
-        if (prize) points.appendChild(createEventRewardChest(prize, "team"));
+        points.textContent = `${row.points} P`;
         item.append(position, identity, points);
+        appendTournamentPrizeChest(item, tournament.prizes || [], row.position, `Turnuva bitince en az ${Number(tournament.minimum_reward_points || 4)} katkı puanı olan oyuncuların mesaj kutusuna teslim edilir. Takım görünümü zaten açıksa sıradaki kilitli seçenek açılır.`);
         standings.appendChild(item);
       }
     }
-    const fixtures = document.getElementById("team-tournament-fixtures");
-    if (fixtures) {
-      fixtures.replaceChildren();
-      const ownFixtures = (tournament.fixtures || []).filter((fixture) =>
-        viewer.team_id && (fixture.home_team_id === viewer.team_id || fixture.away_team_id === viewer.team_id)
-      );
-      for (const fixture of ownFixtures) {
-        const card = document.createElement("article");
-        const ownSide = fixture.home_team_id === viewer.team_id ? "home" : "away";
-        const pairings = fixture.member_pairings || [];
-        if (pairings.some((item) => item.home_player_id === participantPlayerId || item.away_player_id === participantPlayerId)) card.classList.add("is-current-fixture");
-        const teams = document.createElement("div");
-        teams.className = "event-fixture-team-links";
-        teams.append(
-          createTeamProfileLink(fixture.home_team_id, fixture.home_team_name || localizedMessage("profile.team")),
-          document.createTextNode(" × "),
-          createTeamProfileLink(fixture.away_team_id, fixture.away_team_name || localizedMessage("profile.team"))
-        );
-        const detail = document.createElement("small");
-        const schedule = fixture.scheduled_at ? new Date(fixture.scheduled_at) : null;
-        const scheduleLabel = schedule && !Number.isNaN(schedule.getTime())
-          ? localizedDate(schedule, { weekday:"short", hour:"2-digit", minute:"2-digit" })
-          : localizedMessage("event.schedule_preparing");
-        detail.textContent = localizedMessage("event.close_trophy_pairings", {count:localizedNumber(pairings.length), schedule:scheduleLabel});
-        card.append(teams, detail);
-        const roster = document.createElement("div");
-        roster.className = "event-fixture-pairings";
-        for (const pairing of pairings) {
-          const row = document.createElement("div");
-          row.className = "event-fixture-pairing";
-          const ownPlayerId = pairing[`${ownSide}_player_id`];
-          const rivalSide = ownSide === "home" ? "away" : "home";
-          const names = document.createElement("span");
-          names.textContent = localizedMessage("event.roster_pairing", {own:pairing[`${ownSide}_player_name`] || localizedMessage("profile.player"), rival:pairing[`${rivalSide}_player_name`] || localizedMessage("profile.player")});
-          row.appendChild(names);
-          if (ownPlayerId === participantPlayerId) {
-            row.classList.add("is-current-player");
-            const matchTime = document.createElement("small");
-            matchTime.textContent = localizedMessage("event.match_at", {time:scheduleLabel});
-            row.appendChild(matchTime);
-            const action = document.createElement("button");
-            action.type = "button";
-            action.className = "event-fixture-enter";
-            action.disabled = fixture.status !== "live";
-            action.textContent = localizedMessage(fixture.status === "live" ? "event.enter_live_match" : fixture.status === "completed" ? "event.match_time_passed" : "event.wait_for_match");
-            action.addEventListener("click", () => checkInTeamFixture(fixture.fixture_id));
-            row.appendChild(action);
-          }
-          roster.appendChild(row);
-        }
-        card.appendChild(roster);
-        fixtures.appendChild(card);
+    renderTeamContributions(tournament, viewer, viewerTeam);
+    renderTeamFixtures(state);
+  }
+
+  function renderTeamTournamentCalendar(tournament) {
+    const host = document.getElementById("team-tournament-calendar");
+    if (!host) return;
+    host.replaceChildren();
+    const calendar = tournament.calendar || {};
+    const addRow = (title, rows, { current = false, done = false } = {}) => {
+      const item = document.createElement("li");
+      item.classList.toggle("is-current", current);
+      item.classList.toggle("is-done", done);
+      const heading = document.createElement("strong");
+      heading.textContent = title;
+      item.appendChild(heading);
+      for (const [label, value] of rows) {
+        const part = document.createElement("span");
+        const name = document.createElement("small");
+        name.textContent = label;
+        const date = document.createElement("b");
+        date.textContent = value;
+        part.append(name, date);
+        item.appendChild(part);
       }
-      if (!ownFixtures.length) fixtures.textContent = localizedMessage(viewer.team_id ? "event.no_team_fixture" : "event.no_team");
+      host.appendChild(item);
+    };
+    const now = Date.now();
+    const registrationCloses = Date.parse(calendar.registration_closes_at || "");
+    addRow("KAYIT", [["Takım lideri", eventDayRangeLabel(calendar.registration_opens_at, calendar.registration_closes_at)]], {
+      current:tournament.phase === "registration",
+      done:Number.isFinite(registrationCloses) && now >= registrationCloses,
+    });
+    for (const week of calendar.weeks || []) {
+      const closes = Date.parse(week.matches_close_at || "");
+      addRow(`${week.week}. HAFTA`, [
+        ["Eşleşme", eventDateLabel(week.pairing_at)],
+        ["Maçlar", eventDayRangeLabel(week.matches_open_at, week.matches_close_at)],
+      ], {
+        current:tournament.phase !== "registration" && tournament.phase !== "finished" && Number(week.week) === Number(tournament.week),
+        done:Number.isFinite(closes) && now >= closes,
+      });
     }
   }
+
+  // Takım kendi kadrosunun katkısını görür: kim kaç puan getirdi, kim ödüle uygun.
+  function renderTeamContributions(tournament, viewer, viewerTeam) {
+    const host = document.getElementById("team-tournament-contributions");
+    const note = document.getElementById("team-tournament-contribution-note");
+    if (!host) return;
+    host.replaceChildren();
+    const minimum = Number(tournament.minimum_reward_points || 4);
+    if (note) {
+      note.textContent = !viewer.team_id
+        ? "Katkı listesini görmek için bir takıma katıl."
+        : !viewerTeam
+          ? "Takımın bu dönem turnuvada değil; kayıt dönemin ilk Pazartesi–Çarşamba günlerinde takım lideri tarafından yapılır."
+          : viewer.team_roster_member === false
+            ? "Takıma kayıttan sonra katıldın; kadro kayıtta sabitlendiği için bu dönem maçın yok."
+            : `Her galibiyet 1, mağlubiyet 0 puan. Ödül için en az ${minimum} puan katkı gerekir.`;
+    }
+    for (const member of viewerTeam?.members || []) {
+      const item = document.createElement("li");
+      item.classList.toggle("is-current-player", member.player_id === participantPlayerId);
+      item.dataset.eligible = String(Boolean(member.reward_eligible));
+      const identity = document.createElement("div");
+      const record = document.createElement("small");
+      record.textContent = `${Number(member.wins || 0)}G · ${Math.max(0, Number(member.matches || 0) - Number(member.wins || 0))}M · ${Number(member.matches || 0)} maç`;
+      identity.append(createPublicPlayerName(member.player_id, member.display_name || "Oyuncu"), record);
+      const points = document.createElement("strong");
+      points.className = "team-contribution-points";
+      points.textContent = `${Number(member.contribution_points || 0)} P`;
+      const state = document.createElement("span");
+      state.className = "team-contribution-state";
+      const missing = Math.max(0, minimum - Number(member.contribution_points || 0));
+      state.textContent = member.reward_eligible ? "✓ Ödüle uygun" : `${missing} puan daha`;
+      item.append(identity, points, state);
+      host.appendChild(item);
+    }
+  }
+
+  // Maç günleri istemcide de saate göre açılır; ayak sonuçları sunucudan gelir.
+  function teamFixtureWindow(fixture, now = Date.now()) {
+    const opens = Date.parse(fixture?.matches_open_at || "");
+    const closes = Date.parse(fixture?.matches_close_at || "");
+    if (Number.isFinite(opens) && Number.isFinite(closes)) {
+      if (now < opens) return "upcoming";
+      if (now < closes) return "live";
+      return "completed";
+    }
+    return fixture?.status || "upcoming";
+  }
+
+  function teamLegLabel(leg, ownPlayerId) {
+    if (leg.status === "played") {
+      if (leg.draw) return "Berabere";
+      return leg.winner_player_id === ownPlayerId ? "Galibiyet" : "Mağlubiyet";
+    }
+    return {
+      open:"Açık",
+      locked:"İlk maçtan sonra",
+      missed:"Oynanmadı",
+      upcoming:"Bekliyor",
+    }[leg.status] || "Bekliyor";
+  }
+
+  function renderTeamFixtures(state = eventsState) {
+    const host = document.getElementById("team-tournament-fixtures");
+    if (!host) return;
+    host.replaceChildren();
+    const tournament = state?.team_tournament || {};
+    const viewer = state?.viewer || {};
+    const viewerTeamId = viewer.team_id || "";
+    const empty = (text) => {
+      const note = document.createElement("p");
+      note.className = "team-fixture-empty";
+      note.textContent = text;
+      host.appendChild(note);
+    };
+    if (!viewerTeamId) {
+      empty("Takım eşleşmelerini görmek için bir takıma katıl.");
+      return;
+    }
+    if (!viewer.team_registered) {
+      empty(tournament.registration_open
+        ? "Takımın turnuvaya kayıtlı değil; kaydı takım lideri yapar."
+        : "Takımın bu dönem turnuvada değil; kayıt dönemin ilk Pazartesi–Çarşamba günlerinde yapılır.");
+      return;
+    }
+    if (viewer.team_roster_member === false) {
+      empty("Takıma kayıttan sonra katıldın; kadro kayıtta sabitlendiği için bu dönem maçın yok.");
+    }
+    const ownFixtures = (tournament.fixtures || []).filter((fixture) =>
+      fixture.home_team_id === viewerTeamId || fixture.away_team_id === viewerTeamId
+    );
+    if (!ownFixtures.length) {
+      const nextWeek = (tournament.calendar?.weeks || []).find((week) => Date.parse(week.pairing_at) > Date.now());
+      empty(tournament.bye_team_id === viewerTeamId
+        ? "Takım sayısı tek olduğu için takımın bu hafta bay geçiyor."
+        : nextWeek
+          ? `Eşleşmeler ${eventDateLabel(nextWeek.pairing_at)} tarihinde açıklanır.`
+          : "Bu dönemin eşleşmeleri tamamlandı.");
+      return;
+    }
+    for (const fixture of ownFixtures) {
+      const isHome = fixture.home_team_id === viewerTeamId;
+      const windowState = teamFixtureWindow(fixture);
+      const card = document.createElement("article");
+      card.className = "team-fixture-card";
+      card.dataset.state = windowState;
+      const heading = document.createElement("header");
+      heading.className = "event-fixture-team-links";
+      const rivalName = (isHome ? fixture.away_team_name : fixture.home_team_name) || "Rakip";
+      const rivalLink = (isHome ? fixture.away_is_ai : fixture.home_is_ai)
+        ? Object.assign(document.createElement("strong"), { textContent:rivalName })
+        : createTeamProfileLink(isHome ? fixture.away_team_id : fixture.home_team_id, rivalName);
+      const score = document.createElement("b");
+      score.className = "team-fixture-score";
+      score.textContent = `${isHome ? fixture.home_points : fixture.away_points} – ${isHome ? fixture.away_points : fixture.home_points}`;
+      heading.append(
+        createTeamProfileLink(isHome ? fixture.home_team_id : fixture.away_team_id, (isHome ? fixture.home_team_name : fixture.away_team_name) || "Takımın"),
+        score,
+        rivalLink
+      );
+      const windowNote = document.createElement("small");
+      windowNote.className = "team-fixture-window";
+      windowNote.textContent = `${Number(fixture.week || tournament.week || 1)}. HAFTA · Maçlar ${eventDayRangeLabel(fixture.matches_open_at, fixture.matches_close_at)}`;
+      const list = document.createElement("ol");
+      list.className = "team-fixture-pairings";
+      for (const pairing of fixture.member_pairings || []) {
+        const ownPlayerId = isHome ? pairing.home_player_id : pairing.away_player_id;
+        const ownName = isHome ? pairing.home_player_name : pairing.away_player_name;
+        const rivalPlayerId = isHome ? pairing.away_player_id : pairing.home_player_id;
+        const rivalPlayerName = isHome ? pairing.away_player_name : pairing.home_player_name;
+        const row = document.createElement("li");
+        row.className = "team-fixture-pairing";
+        const isViewer = ownPlayerId === participantPlayerId;
+        row.classList.toggle("is-current-player", isViewer);
+        const players = document.createElement("div");
+        players.className = "team-fixture-players";
+        const versus = document.createElement("span");
+        versus.textContent = "×";
+        players.append(
+          createPublicPlayerName(ownPlayerId, ownName || "Üye"),
+          versus,
+          createPublicPlayerName(rivalPlayerId, rivalPlayerName || "Rakip")
+        );
+        const legs = document.createElement("div");
+        legs.className = "team-fixture-legs";
+        const legViews = pairing.legs || [];
+        legViews.forEach((leg, index) => {
+          const chip = document.createElement("span");
+          chip.className = "team-fixture-leg";
+          chip.dataset.status = leg.status;
+          if (leg.status === "played" && !leg.draw) {
+            chip.dataset.result = leg.winner_player_id === ownPlayerId ? "win" : "loss";
+          }
+          const label = document.createElement("small");
+          label.textContent = index === 0 ? "1. MAÇ" : "RÖVANŞ";
+          const value = document.createElement("b");
+          value.textContent = teamLegLabel(leg, ownPlayerId);
+          chip.append(label, value);
+          legs.appendChild(chip);
+        });
+        row.append(players, legs);
+        if (isViewer) {
+          // Sunucu görüntüsü eski kalsa da maç günleri saatle açılır; oynanmış
+          // ilk ayaktan sonra rövanş, ikisi de oynandıysa tamamlandı gösterilir.
+          const nextIndex = legViews.findIndex((leg) => leg.status !== "played");
+          const action = document.createElement("button");
+          action.type = "button";
+          action.className = "event-fixture-enter";
+          action.disabled = windowState !== "live" || nextIndex < 0;
+          action.textContent = windowState === "upcoming"
+            ? `MAÇLAR ${eventDateLabel(fixture.matches_open_at)} AÇILIR`
+            : windowState === "completed"
+              ? "HAFTA TAMAMLANDI"
+              : nextIndex < 0
+                ? "MAÇLAR TAMAMLANDI"
+                : nextIndex === 0
+                  ? "1. MAÇA GİR"
+                  : "RÖVANŞA GİR";
+          action.addEventListener("click", () => checkInTeamFixture(fixture.fixture_id));
+          row.appendChild(action);
+        }
+        list.appendChild(row);
+      }
+      card.append(heading, windowNote, list);
+      host.appendChild(card);
+    }
+  }
+
+  // Açık eşleşme sayfasında maç saati gelince düğme sayfa yenilenmeden açılır.
+  window.setInterval(() => {
+    if (document.body.dataset.appScreen === "team-event" && activeTeamEventTab === "fixtures" && eventsState) {
+      renderTeamFixtures(eventsState);
+    }
+  }, 20000);
 
   function renderEventsHub() {
     if (!eventsState) return;
@@ -3654,10 +4700,10 @@
     const weeklyLinkPeriod = document.getElementById("weekly-event-link-period");
     const teamLinkName = document.getElementById("team-event-link-name");
     const teamLinkPeriod = document.getElementById("team-event-link-period");
-    if (weeklyLinkName) weeklyLinkName.textContent = localizedRecordText(weekly, "name") || localizedMessage("event.weekly_name");
-    if (weeklyLinkPeriod) weeklyLinkPeriod.textContent = localizedMessage("event.date_range", {start:eventDateLabel(weekly.period?.starts_at), end:eventDateLabel(weekly.period?.ends_at)});
-    if (teamLinkName) teamLinkName.textContent = localizedRecordText(team, "name") || localizedMessage("event.team_name");
-    if (teamLinkPeriod) teamLinkPeriod.textContent = localizedMessage("event.team_period", {week:localizedNumber(team.week || 1), date:eventDateLabel(team.period?.ends_at)});
+    if (weeklyLinkName) weeklyLinkName.textContent = weekly.name_tr || "Haftalık Devre Turnuvası";
+    if (weeklyLinkPeriod) weeklyLinkPeriod.textContent = `${eventDateLabel(weekly.period?.starts_at)} — ${eventDateLabel(weekly.period?.ends_at)}`;
+    if (teamLinkName) teamLinkName.textContent = team.name_tr || "Takımlar Arası Turnuva";
+    if (teamLinkPeriod) teamLinkPeriod.textContent = `${Number(team.week || 1)}. hafta · ${eventDateLabel(team.period?.ends_at)} tarihinde yenilenir`;
     renderWeeklyTournament(eventsState);
     renderTeamTournament(eventsState);
     renderEventSubpages();
@@ -3667,7 +4713,7 @@
     const statuses = ["event-action-status", "weekly-event-status", "team-event-status"]
       .map((id) => document.getElementById(id))
       .filter(Boolean);
-    for (const status of statuses) status.textContent = localizedMessage("event.loading");
+    for (const status of statuses) status.textContent = "Turnuva verileri yükleniyor…";
     try {
       eventsState = await requestJsonWithDeadline(`/events?player_id=${encodeURIComponent(participantPlayerId)}`, { cache:"no-store" }, 12000);
       for (const status of statuses) status.textContent = "";
@@ -3695,7 +4741,7 @@
         },
         30000
       );
-      if (status) status.textContent = localizedMessage("event.registration_completed");
+      if (status) status.textContent = "Kayıt tamamlandı.";
       renderEventsHub();
       loadMetaProgression();
       return { ok:true };
@@ -3707,7 +4753,7 @@
 
   async function checkInTeamFixture(fixtureId) {
     const status = document.getElementById("team-event-status");
-    if (status) status.textContent = localizedMessage("event.live_match_preparing");
+    if (status) status.textContent = "Canlı savaş oturumu hazırlanıyor…";
     try {
       const payload = await requestJsonWithDeadline(
         `/events/team/fixtures/${encodeURIComponent(fixtureId)}/check-in`,
@@ -3730,18 +4776,18 @@
   function renderDailyMetaCard() {
     const name = document.getElementById("daily-meta-name");
     const description = document.getElementById("daily-meta-description");
-    const effect = document.getElementById("daily-meta-effect");
     const card = document.getElementById("daily-meta-card");
     const selected = dailyMetaState?.selected ? dailyMetaState.meta : null;
-    if (name) name.textContent = selected ? localizedMessage(`meta.${selected.id}.name`) : localizedMessage("meta.not_selected");
+    if (name) name.textContent = selected?.meta_name_tr || "Henüz belirlenmedi";
     if (description) {
       description.textContent = selected
-        ? localizedMessage(`meta.${selected.id}.description`)
-        : localizedMessage("meta.roll_hint");
+        ? (selected.description_tr || "Günlük meta etkin.")
+        : "Meta çarkını çevirerek bugünkü oyun planını belirle.";
     }
+    const effect = document.getElementById("daily-meta-effect");
     if (effect) {
-      effect.hidden = !selected;
-      effect.textContent = selected ? localizedMessage(`meta.${selected.id}.effect`) : "";
+      effect.textContent = selected?.effect_tr || "";
+      effect.hidden = !selected?.effect_tr;
     }
     if (card) {
       card.dataset.selected = selected ? "true" : "false";
@@ -3762,11 +4808,9 @@
     const name = document.getElementById("daily-meta-result-name");
     const effect = document.getElementById("daily-meta-result-effect");
     if (wheel) {
-      wheel.classList.toggle("has-result", Boolean(selected));
-      wheel.style.setProperty(
-        "--daily-meta-stop-angle",
-        dailyMetaStopAngle(dailyMetaState)
-      );
+      wheel.classList.toggle("has-result", Boolean(selected) && !dailyMetaRollPending);
+      // Dönüş sürerken açı elle değiştirilmez; bitince aynı açıdaysa dokunulmaz.
+      if (!dailyMetaRollPending) settleDailyMetaWheel(wheel, dailyMetaTargetAngle(dailyMetaState) ?? 0);
     }
     if (result) {
       result.hidden = !selected;
@@ -3774,26 +4818,69 @@
     }
     if (copy) {
       copy.textContent = selected
-        ? localizedMessage("meta.locked_today")
-        : localizedMessage("meta.seven_strategies");
+        ? "Bugünkü meta kilitlendi. Yarın yeniden çark çevirebilirsin."
+        : "Yedi eşit olasılıklı stratejiden biri bugünkü savaş planın olacak.";
     }
     if (glyph) glyph.textContent = selected?.glyph || "◇";
-    if (name) name.textContent = selected ? localizedMessage(`meta.${selected.id}.name`) : "—";
-    if (effect) effect.textContent = selected ? localizedMessage(`meta.${selected.id}.effect`) : "";
+    if (name) name.textContent = selected?.meta_name_tr || "—";
+    if (effect) effect.textContent = selected?.effect_tr || "";
     if (button) {
       button.disabled = dailyMetaRollPending;
       button.textContent = dailyMetaRollPending
-        ? localizedMessage("meta.rolling")
-        : selected ? localizedMessage("common.continue_upper") : localizedMessage("meta.roll_button");
+        ? "META BELİRLENİYOR…"
+        : selected ? "DEVAM" : "METAYI BELİRLE";
     }
   }
 
-  function dailyMetaStopAngle(state) {
+  function dailyMetaTargetAngle(state) {
     const options = Array.isArray(state?.options) ? state.options : [];
     const selectedId = state?.meta?.id;
     const index = options.findIndex((item) => item?.id === selectedId);
-    if (index < 0 || options.length < 1) return "0deg";
-    return `${-(index * 360 / options.length)}deg`;
+    if (index < 0 || options.length < 1) return null;
+    return -(index * 360 / options.length);
+  }
+
+  function sameWheelDirection(first, second) {
+    const difference = Math.abs((((first - second) % 360) + 360) % 360);
+    return Math.min(difference, 360 - difference) < 0.01;
+  }
+
+  function settleDailyMetaWheel(wheel, target) {
+    if (!wheel || sameWheelDirection(dailyMetaWheelRotation, target)) return;
+    wheel.classList.add("is-instant");
+    wheel.style.setProperty("--daily-meta-rotation", `${target}deg`);
+    dailyMetaWheelRotation = target;
+    void wheel.offsetWidth;
+    wheel.classList.remove("is-instant");
+  }
+
+  function spinDailyMetaWheel(wheel, target) {
+    const reducedMotion = globalThis.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches;
+    if (!wheel || reducedMotion) {
+      settleDailyMetaWheel(wheel, target);
+      return Promise.resolve();
+    }
+    const current = dailyMetaWheelRotation;
+    const forward = (((target - current) % 360) + 360) % 360;
+    const next = current + DAILY_META_SPIN_TURNS * 360 + forward;
+    wheel.classList.add("is-spinning");
+    wheel.style.setProperty("--daily-meta-rotation", `${next}deg`);
+    dailyMetaWheelRotation = next;
+    return new Promise((resolve) => {
+      let finished = false;
+      const finish = () => {
+        if (finished) return;
+        finished = true;
+        wheel.removeEventListener("transitionend", onEnd);
+        wheel.classList.remove("is-spinning");
+        resolve();
+      };
+      const onEnd = (event) => {
+        if (event.target === wheel && event.propertyName === "transform") finish();
+      };
+      wheel.addEventListener("transitionend", onEnd);
+      window.setTimeout(finish, DAILY_META_SPIN_MS + 150);
+    });
   }
 
   async function loadDailyMetaState({ present = false } = {}) {
@@ -3831,38 +4918,31 @@
     dailyMetaRollPending = true;
     const wheel = document.getElementById("daily-meta-wheel");
     const status = document.getElementById("daily-meta-dialog-status");
-    if (status) status.textContent = localizedMessage("meta.rolling_status");
+    if (status) status.textContent = "Yedi yüzlü meta zarı atılıyor…";
     renderDailyMetaDialog();
     try {
       const payload = await requestJsonWithDeadline(
         `/profile/${encodeURIComponent(participantPlayerId)}/daily-meta/roll`,
         {
           method:"POST",
-          body:JSON.stringify({ request_id:laboratoryRequestId("daily-meta") }),
+          body:JSON.stringify({ request_id:operationRequestId("daily-meta") }),
         },
         30000
       );
-      wheel?.style.setProperty(
-        "--daily-meta-stop-angle",
-        dailyMetaStopAngle(payload)
-      );
-      wheel?.classList.remove("is-spinning");
-      if (wheel) void wheel.offsetWidth;
-      wheel?.classList.add("is-spinning");
-      await new Promise((resolve) => window.setTimeout(resolve, 950));
+      const target = dailyMetaTargetAngle(payload);
+      if (target !== null) await spinDailyMetaWheel(wheel, target);
       dailyMetaState = payload;
-      if (status) status.textContent = localizedMessage("meta.selected_status");
+      if (status) status.textContent = "Günlük meta belirlendi.";
       renderDailyMetaCard();
     } catch (error) {
       if (status) status.textContent = error instanceof Error ? error.message : String(error);
     } finally {
       dailyMetaRollPending = false;
-      wheel?.classList.remove("is-spinning");
       renderDailyMetaDialog();
     }
   }
 
-  async function mutateTeam(path, body, pendingMessage = localizedMessage("common.processing")) {
+  async function mutateTeam(path, body, pendingMessage = "İşleniyor…") {
     setTeamActionStatus(pendingMessage, "pending");
     try {
       teamState = await requestJsonWithDeadline(
@@ -3880,10 +4960,9 @@
       );
       setTeamActionStatus("");
       renderTeamHub();
-      renderRewardInbox();
       accountDataLoader.loadProfile().then(renderProfileSummary);
       if (teamState?.application_pending) {
-        setTeamActionStatus(localizedMessage("team.application_sent"), "success");
+        setTeamActionStatus("Başvurun takım yöneticisinin onayına gönderildi.", "success");
       }
       return { ok:true, state:teamState };
     } catch (error) {
@@ -3898,7 +4977,7 @@
       : targetOrId;
     if (!target) return null;
     const displayValue = typeof value === "number"
-      ? localizedNumber(value)
+      ? value.toLocaleString(uiLocale())
       : String(value ?? "0");
     const number = document.createElement("span");
     number.className = "trophy-value-number";
@@ -3908,12 +4987,12 @@
     icon.setAttribute("aria-hidden", "true");
     icon.textContent = "🏆";
     target.classList.add("trophy-visual-value");
-    target.setAttribute("aria-label", localizedMessage("profile.trophies", {count:displayValue}));
+    target.setAttribute("aria-label", `${displayValue} Kupa`);
     target.replaceChildren(number, icon);
     return target;
   }
 
-  function createTeamMemberRow(member, index, { compact = false, allowManagement = false } = {}) {
+  function createTeamMemberRow(member, index, { compact = false, manageable = false } = {}) {
     const row = document.createElement(compact ? "div" : "li");
     row.className = compact ? "team-member-row is-compact" : "team-member-row";
     const rank = document.createElement("strong");
@@ -3922,34 +5001,30 @@
     const identity = document.createElement("div");
     const name = createPublicPlayerName(
       member.player_id,
-      member.display_name || localizedMessage("profile.player")
+      member.display_name || "Oyuncu"
     );
     const meta = document.createElement("small");
-    meta.textContent = localizedMessage("team.member_status", {leader:member.role === "owner" ? localizedMessage("team.leader_suffix") : "", presence:localizedMessage(member.online ? "team.online" : "team.offline")});
+    meta.textContent = `${member.role === "owner" ? "LİDER · " : ""}${member.online ? "ÇEVRİMİÇİ" : "ÇEVRİMDIŞI"}`;
     identity.append(name, meta);
     const trophies = document.createElement("strong");
     trophies.className = "team-member-trophies";
     renderTrophyValue(trophies, Number(member.trophies || 0));
     row.append(rank, identity, trophies);
-    if (!compact && allowManagement && teamState?.joined) {
+    // Eylemler yalnız oyuncunun kendi takım listesinde görünür; başka bir
+    // takımın herkese açık profilinde "takımdan çıkar" düğmesi çıkmaz.
+    if (!compact && manageable && teamState?.joined) {
       const isSelf = member.player_id === participantPlayerId;
-      const canRemove = Boolean(teamState.is_owner && !isSelf);
-      if (isSelf || canRemove) {
+      if (isSelf) {
         const action = document.createElement("button");
         action.type = "button";
-        action.className = `team-member-action ${isSelf ? "is-leave" : "is-remove"}`;
-        action.textContent = localizedMessage(isSelf ? "team.leave_upper" : "team.remove_upper");
+        action.className = "team-member-action is-leave";
+        action.textContent = "TAKIMDAN AYRIL";
         action.addEventListener("click", () => {
           if (!teamState?.team_id) return;
-          const path = isSelf
-            ? `/teams/${encodeURIComponent(teamState.team_id)}/leave`
-            : `/teams/${encodeURIComponent(teamState.team_id)}/members/remove`;
           mutateTeam(
-            path,
-            isSelf
-              ? { requestKind:"leave-team" }
-              : { member_id:member.player_id, requestKind:"remove-member" },
-            localizedMessage(isSelf ? "team.leaving" : "team.removing_member")
+            `/teams/${encodeURIComponent(teamState.team_id)}/leave`,
+            { requestKind:"leave-team" },
+            "Takımdan ayrılma işleniyor…"
           );
         });
         row.appendChild(action);
@@ -3958,68 +5033,155 @@
     return row;
   }
 
-  function renderTeamManagement() {
-    const panel = document.querySelector('[data-team-panel="management"]');
-    if (!panel || !teamState?.joined || !teamState.is_owner) return;
-    const cosmetics = {
-      selected_avatar_id:"team_default",
-      selected_avatar_frame_id:"none",
-      selected_bar_background_id:"team_grid",
-      selected_name_frame_id:"none",
-      unlocked_avatar_ids:["team_default"],
-      unlocked_avatar_frame_ids:["none"],
-      unlocked_bar_background_ids:["team_grid"],
-      unlocked_name_frame_ids:["none"],
-      ...(teamState.cosmetics || {}),
+  // Lider Görünümü: amblem, çerçeve ve isim rengi (sunucu kimlikleriyle aynı).
+  const TEAM_EMBLEMS = Object.freeze({
+    shield:{ nameTr:"Kalkan", color:"#6ff1e0", path:'<path d="M12 3 5 6v5c0 4.6 3 8.4 7 10 4-1.6 7-5.4 7-10V6Z"/>' },
+    crown:{ nameTr:"Taç", color:"#ffd76a", path:'<path d="m3.5 8 4.5 4 4-7 4 7 4.5-4-2 11h-13Z"/>' },
+    bolt:{ nameTr:"Yıldırım", color:"#ffb347", path:'<path d="M13.5 2 5 13h6l-1 9 9-12h-6Z"/>' },
+    star:{ nameTr:"Yıldız", color:"#ffe26f", path:'<path d="m12 3 2.7 5.6 6.1.8-4.5 4.2 1.2 6-5.5-3-5.5 3 1.2-6-4.5-4.2 6.1-.8Z"/>' },
+    orbit:{ nameTr:"Yörünge", color:"#9fd8ff", path:'<circle cx="12" cy="12" r="2.6"/><ellipse cx="12" cy="12" rx="9.5" ry="4.2" transform="rotate(-28 12 12)"/>' },
+    gear:{ nameTr:"Dişli", color:"#c4d2e0", path:'<circle cx="12" cy="12" r="3.2"/><path d="M12 2.5v3.2M12 18.3v3.2M2.5 12h3.2M18.3 12h3.2M5.3 5.3l2.3 2.3M16.4 16.4l2.3 2.3M5.3 18.7l2.3-2.3M16.4 7.6l2.3-2.3"/>' },
+    swords:{ nameTr:"Kılıç", color:"#ff9aaa", path:'<path d="m5 4 10 10M4 5l1-1M15 14l-2 3 1 1 3-2M19 4 9 14M20 5l-1-1M9 14l2 3-1 1-3-2"/>' },
+    wing:{ nameTr:"Kanat", color:"#d9b8ff", path:'<path d="M12 3c.8 4.4 3.6 7.2 9 9-5.4 1.8-8.2 4.6-9 9-.8-4.4-3.6-7.2-9-9 5.4-1.8 8.2-4.6 9-9Z"/>' },
+    circuit:{ nameTr:"Devre", color:"#7ff3ff", path:'<rect x="6" y="6" width="12" height="12" rx="2"/><path d="M9.5 9.5h5v5h-5ZM12 2.5V6M12 18v3.5M2.5 12H6M18 12h3.5"/>' },
+    lens:{ nameTr:"Mercek", color:"#8fe8ff", path:'<circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="3.6"/><path d="M12 3.5v2M12 18.5v2"/>' },
+  });
+  const TEAM_FRAMES = Object.freeze({
+    steel:{ nameTr:"Çelik", color:"#8aa3b8" },
+    gold:{ nameTr:"Altın", color:"#ffd24a" },
+    neon:{ nameTr:"Neon", color:"#4ff0e6" },
+    crimson:{ nameTr:"Kızıl", color:"#ff6b82" },
+    violet:{ nameTr:"Mor", color:"#b98cff" },
+    royal:{ nameTr:"Kraliyet", color:"#6fa9ff" },
+  });
+  const TEAM_NAME_COLORS = Object.freeze({
+    cyan:{ nameTr:"Camgöbeği", color:"#5ff0da" },
+    gold:{ nameTr:"Altın", color:"#ffd76a" },
+    red:{ nameTr:"Kızıl", color:"#ff9aa8" },
+    violet:{ nameTr:"Mor", color:"#c9a2ff" },
+    green:{ nameTr:"Yeşil", color:"#7ff0a8" },
+    sky:{ nameTr:"Gök", color:"#a6e3ff" },
+  });
+  const TEAM_APPEARANCE_DEFAULT = Object.freeze({ emblem_id:"shield", frame_id:"steel", name_color_id:"cyan" });
+  let activeTeamManagementTab = "cosmetics";
+  let teamAppearanceDraft = null;
+
+  function normalizedTeamAppearance(appearance = {}) {
+    return {
+      emblem_id:TEAM_EMBLEMS[appearance?.emblem_id] ? appearance.emblem_id : TEAM_APPEARANCE_DEFAULT.emblem_id,
+      frame_id:TEAM_FRAMES[appearance?.frame_id] ? appearance.frame_id : TEAM_APPEARANCE_DEFAULT.frame_id,
+      name_color_id:TEAM_NAME_COLORS[appearance?.name_color_id] ? appearance.name_color_id : TEAM_APPEARANCE_DEFAULT.name_color_id,
     };
-    const controls = document.getElementById("team-cosmetic-controls");
-    if (controls) {
-      controls.replaceChildren();
-      teamCosmeticDraft ||= {
-        avatar_id:cosmetics.selected_avatar_id,
-        avatar_frame_id:cosmetics.selected_avatar_frame_id,
-        bar_background_id:cosmetics.selected_bar_background_id,
-        name_frame_id:cosmetics.selected_name_frame_id,
-      };
-      const definitions = [
-        ["team.cosmetic_avatar", "avatar_id", "unlocked_avatar_ids", ["team_default", "team_champion", "team_finalist"]],
-        ["team.cosmetic_frame", "avatar_frame_id", "unlocked_avatar_frame_ids", ["none", "team_gold", "team_silver"]],
-        ["team.cosmetic_bar", "bar_background_id", "unlocked_bar_background_ids", ["team_grid", "team_champion_grid", "team_finalist_grid"]],
-        ["team.cosmetic_name_frame", "name_frame_id", "unlocked_name_frame_ids", ["none", "team_name_gold"]],
-      ];
-      for (const [labelText, field, unlockedKey, catalog] of definitions) {
-        const group = document.createElement("section");
-        group.className = "team-cosmetic-group";
-        const heading = document.createElement("h5");
-        heading.textContent = localizedMessage(labelText);
-        const choices = document.createElement("div");
-        choices.className = "team-cosmetic-grid";
-        const unlocked = new Set(cosmetics[unlockedKey] || []);
-        for (const value of new Set([...catalog, ...unlocked])) {
-          const option = document.createElement("button");
-          option.type = "button";
-          option.className = "team-cosmetic-choice";
-          option.dataset.selected = String(teamCosmeticDraft[field] === value);
-          option.dataset.locked = String(!unlocked.has(value));
-          option.disabled = !unlocked.has(value);
-          const glyph = document.createElement("span");
-          glyph.className = "team-cosmetic-glyph";
-          glyph.textContent = field === "avatar_id" ? ({team_default:"⬡",team_champion:"♛",team_finalist:"✦"}[value] || "⬡") : field === "bar_background_id" ? "▰" : "▢";
-          const name = document.createElement("small");
-          name.textContent = localizedCatalogName("team_cosmetic", value);
-          option.append(glyph, name);
+  }
+
+  function teamEmblemSvg(emblemId) {
+    const emblem = TEAM_EMBLEMS[emblemId] || TEAM_EMBLEMS.shield;
+    return `<svg class="team-emblem-svg" viewBox="0 0 24 24" aria-hidden="true">${emblem.path}</svg>`;
+  }
+
+  // Amblemi, çerçeve rengini ve isim rengini bir kimlik kutusuna uygular.
+  function applyTeamAppearance(element, appearance, { emblemHost = null, nameHost = null } = {}) {
+    if (!element) return;
+    const look = normalizedTeamAppearance(appearance);
+    element.dataset.teamEmblem = look.emblem_id;
+    element.dataset.teamFrame = look.frame_id;
+    element.style.setProperty("--team-emblem-color", TEAM_EMBLEMS[look.emblem_id].color);
+    element.style.setProperty("--team-frame-color", TEAM_FRAMES[look.frame_id].color);
+    element.style.setProperty("--team-name-color", TEAM_NAME_COLORS[look.name_color_id].color);
+    if (emblemHost) emblemHost.innerHTML = teamEmblemSvg(look.emblem_id);
+    if (nameHost) nameHost.style.color = TEAM_NAME_COLORS[look.name_color_id].color;
+  }
+
+  function renderTeamAppearanceEditor() {
+    const current = normalizedTeamAppearance(teamState?.appearance);
+    if (!teamAppearanceDraft || teamAppearanceDraft.team_id !== teamState?.team_id) {
+      teamAppearanceDraft = { ...current, team_id:teamState?.team_id };
+    }
+    const preview = document.getElementById("team-appearance-preview");
+    if (preview) {
+      preview.replaceChildren();
+      const badge = document.createElement("span");
+      badge.className = "team-appearance-badge";
+      const name = document.createElement("strong");
+      name.textContent = teamState?.name || "Takım";
+      applyTeamAppearance(preview, teamAppearanceDraft, { emblemHost:badge, nameHost:name });
+      preview.append(badge, name);
+    }
+    const groups = [
+      ["team-emblem-options", "emblem_id", TEAM_EMBLEMS, (item, id) => {
+        const visual = document.createElement("span");
+        visual.className = "team-option-emblem";
+        visual.style.setProperty("--team-emblem-color", item.color);
+        visual.innerHTML = teamEmblemSvg(id);
+        return visual;
+      }],
+      ["team-frame-options", "frame_id", TEAM_FRAMES, (item) => {
+        const visual = document.createElement("span");
+        visual.className = "team-option-frame";
+        visual.style.setProperty("--team-frame-color", item.color);
+        return visual;
+      }],
+      ["team-name-color-options", "name_color_id", TEAM_NAME_COLORS, (item) => {
+        const visual = document.createElement("span");
+        visual.className = "team-option-color";
+        visual.style.background = item.color;
+        return visual;
+      }],
+    ];
+    for (const [hostId, field, catalog, visualFor] of groups) {
+      const host = document.getElementById(hostId);
+      if (!host) continue;
+      host.replaceChildren();
+      const allowed = teamState?.appearance_options?.[field] || Object.keys(catalog);
+      // Varsayılanlar dışındaki seçenekler takım turnuvasında kazanılır.
+      const unlocked = teamState?.appearance_unlocked?.[field] || null;
+      const sources = teamState?.appearance_unlock_sources?.[field] || {};
+      for (const id of allowed) {
+        const item = catalog[id];
+        if (!item) continue;
+        const locked = Boolean(unlocked) && !unlocked.includes(id);
+        const selected = teamAppearanceDraft[field] === id;
+        const option = document.createElement("button");
+        option.type = "button";
+        option.className = "team-appearance-option";
+        option.setAttribute("role", "radio");
+        option.setAttribute("aria-checked", String(selected));
+        option.classList.toggle("is-selected", selected);
+        option.dataset.locked = String(locked);
+        option.disabled = locked;
+        const label = document.createElement("strong");
+        label.textContent = item.nameTr;
+        const state = document.createElement("small");
+        state.textContent = locked
+          ? (sources[id] ? `TURNUVA ${sources[id]}.` : "TURNUVA ÖDÜLÜ")
+          : selected ? "SEÇİLİ" : "SEÇ";
+        option.append(visualFor(item, id), label, state);
+        if (locked) {
+          const lock = document.createElement("i");
+          lock.className = "team-appearance-lock";
+          lock.setAttribute("aria-hidden", "true");
+          lock.textContent = "🔒";
+          option.appendChild(lock);
+        } else {
           option.addEventListener("click", () => {
-            teamCosmeticDraft[field] = value;
-            choices.querySelectorAll("button").forEach((button) => { button.dataset.selected = String(button === option); });
+            teamAppearanceDraft = { ...teamAppearanceDraft, [field]:id };
+            renderTeamAppearanceEditor();
           });
-          choices.appendChild(option);
         }
-        group.append(heading, choices);
-        controls.appendChild(group);
+        host.appendChild(option);
       }
     }
-    for (const button of document.querySelectorAll("[data-team-management-tab]")) button.classList.toggle("is-active", button.dataset.teamManagementTab === activeTeamManagementTab);
-    for (const section of document.querySelectorAll("[data-team-management-panel]")) section.hidden = section.dataset.teamManagementPanel !== activeTeamManagementTab;
+    const save = document.getElementById("team-appearance-save");
+    if (save) {
+      const changed = ["emblem_id", "frame_id", "name_color_id"].some(
+        (key) => teamAppearanceDraft[key] !== current[key]
+      );
+      save.disabled = !changed;
+      save.textContent = changed ? "KAYDET" : "KAYDEDİLDİ";
+    }
+  }
+
+  function renderTeamMemberManagement() {
     const applications = document.getElementById("team-application-list");
     if (applications) {
       applications.replaceChildren();
@@ -4029,30 +5191,316 @@
         const copy = document.createElement("div");
         copy.append(createPublicPlayerName(applicant.player_id, applicant.display_name));
         const meta = document.createElement("small");
-        meta.textContent = localizedMessage("team.applicant_rank", {rank:localizedUiText(applicant.rank_name_tr), trophies:localizedNumber(applicant.trophies || 0)});
+        meta.textContent = `${applicant.rank_name_tr} · ${Number(applicant.trophies || 0).toLocaleString(uiLocale())} 🏆`;
         copy.appendChild(meta);
         const actions = document.createElement("span");
         actions.className = "team-management-actions";
-        for (const [label, accept] of [["team.accept_upper", true], ["team.reject_upper", false]]) {
+        for (const [label, accept] of [["KABUL", true], ["REDDET", false]]) {
           const button = document.createElement("button");
           button.type = "button";
-          button.textContent = localizedMessage(label);
+          button.textContent = label;
+          button.dataset.variant = accept ? "primary" : "quiet";
           button.addEventListener("click", () => mutateTeam(
             `/teams/${encodeURIComponent(teamState.team_id)}/applications/review`,
             { applicant_id:applicant.player_id, accept, requestKind:`application-${accept ? "accept" : "reject"}` },
-            localizedMessage("team.reviewing_application")
+            "Başvuru değerlendiriliyor…"
           ));
           actions.appendChild(button);
         }
         row.append(copy, actions);
         applications.appendChild(row);
       }
-      if (!applications.children.length) applications.textContent = localizedMessage("team.no_applications");
+      if (!applications.children.length) {
+        const empty = document.createElement("p");
+        empty.className = "team-empty-state";
+        empty.textContent = "Bekleyen başvuru yok.";
+        applications.appendChild(empty);
+      }
     }
-    const managerMembers = document.getElementById("team-management-member-list");
-    if (managerMembers) {
-      managerMembers.replaceChildren();
-      (teamState.members || []).forEach((member, index) => managerMembers.appendChild(createTeamMemberRow(member, index, {allowManagement:true})));
+    const members = document.getElementById("team-member-management-list");
+    if (members) {
+      members.replaceChildren();
+      for (const member of teamState.members || []) {
+        if (member.player_id === participantPlayerId) continue;
+        const row = document.createElement("article");
+        row.className = "team-management-row";
+        const copy = document.createElement("div");
+        copy.append(createPublicPlayerName(member.player_id, member.display_name || "Üye"));
+        const meta = document.createElement("small");
+        meta.textContent = `${member.online ? "ÇEVRİMİÇİ" : "ÇEVRİMDIŞI"} · ${Number(member.trophies || 0).toLocaleString(uiLocale())} 🏆`;
+        copy.appendChild(meta);
+        const actions = document.createElement("span");
+        actions.className = "team-management-actions";
+        const promote = document.createElement("button");
+        promote.type = "button";
+        promote.textContent = "LİDER YAP";
+        promote.dataset.variant = "quiet";
+        promote.addEventListener("click", () => {
+          if (!window.confirm(localizedUiText(`${member.display_name || "Bu üye"} takım lideri olsun mu? Yönetim yetkisi ona geçer.`))) return;
+          mutateTeam(
+            `/teams/${encodeURIComponent(teamState.team_id)}/owner/transfer`,
+            { member_id:member.player_id, requestKind:"owner-transfer" },
+            "Liderlik devrediliyor…"
+          );
+        });
+        const remove = document.createElement("button");
+        remove.type = "button";
+        remove.textContent = "TAKIMDAN ÇIKAR";
+        remove.dataset.variant = "danger";
+        remove.addEventListener("click", () => {
+          if (!window.confirm(localizedUiText(`${member.display_name || "Bu üye"} takımdan çıkarılsın mı?`))) return;
+          mutateTeam(
+            `/teams/${encodeURIComponent(teamState.team_id)}/members/remove`,
+            { member_id:member.player_id, requestKind:"remove-member" },
+            "Üye takımdan çıkarılıyor…"
+          );
+        });
+        actions.append(promote, remove);
+        row.append(copy, actions);
+        members.appendChild(row);
+      }
+      if (!members.children.length) {
+        const empty = document.createElement("p");
+        empty.className = "team-empty-state";
+        empty.textContent = "Takımda yönetilecek başka üye yok.";
+        members.appendChild(empty);
+      }
+    }
+  }
+
+  function renderTeamManagement() {
+    const panel = document.querySelector('[data-team-panel="management"]');
+    if (!panel || !teamState?.joined || !teamState.is_owner) return;
+    for (const button of panel.querySelectorAll("[data-team-management-tab]")) {
+      const active = button.dataset.teamManagementTab === activeTeamManagementTab;
+      button.classList.toggle("is-active", active);
+      button.setAttribute("aria-pressed", String(active));
+    }
+    for (const section of panel.querySelectorAll("[data-team-management-panel]")) {
+      section.hidden = section.dataset.teamManagementPanel !== activeTeamManagementTab;
+    }
+    renderTeamAppearanceEditor();
+    renderTeamMemberManagement();
+  }
+
+  // --- Takım: modül parçası isteği ----------------------------------------
+  const TEAM_REQUEST_AMOUNTS = Object.freeze({ common:4, rare:3, epic:2, legendary:1 });
+  const TEAM_REQUEST_RARITY_ORDER = Object.freeze(["common", "rare", "epic", "legendary"]);
+  let selectedTeamRequestModuleId = "";
+  let activeTeamRequestRarity = "all";
+
+  function teamRequestAmount(rarity) {
+    const key = String(rarity || "common");
+    return Number(teamState?.request_policy?.[key]?.amount || TEAM_REQUEST_AMOUNTS[key] || 0);
+  }
+
+  function teamRequestModule(definitionId) {
+    return (metaProgressionState?.module_collection || [])
+      .find((item) => item.definition_id === definitionId) || null;
+  }
+
+  // Koleksiyondaki modül kartının görseli: kategori rengi + modül simgesi.
+  function teamRequestModuleArt(item) {
+    const art = document.createElement("span");
+    art.className = "unified-module-tile team-request-art";
+    art.dataset.category = item?.category || "";
+    art.setAttribute("aria-hidden", "true");
+    const glyph = document.createElement("span");
+    glyph.className = "unified-module-art";
+    glyph.textContent = moduleIconFor({ nameTr: item?.name_tr });
+    art.appendChild(glyph);
+    return art;
+  }
+
+  function teamRequestShardProgress(item) {
+    const owned = Math.max(0, Number(item?.shards || 0));
+    const required = Number(item?.next_upgrade_cost?.shards || 0);
+    return { owned, required, percent: required > 0 ? Math.min(100, Math.round((owned / required) * 100)) : 100 };
+  }
+
+  function createTeamRequestModuleOption(item, { selected = false, available = true } = {}) {
+    const option = document.createElement("button");
+    option.type = "button";
+    option.className = "team-request-module";
+    option.dataset.rarity = item.rarity || "common";
+    option.dataset.moduleDefinitionId = item.definition_id;
+    option.setAttribute("role", "radio");
+    option.setAttribute("aria-checked", String(selected));
+    option.setAttribute("aria-label", `${item.name_tr} · ${moduleRarityLabel(item.rarity)} · ${teamRequestAmount(item.rarity)} parça`);
+    option.disabled = !available;
+    const name = document.createElement("strong");
+    name.textContent = item.name_tr || "Modül";
+    const rarity = document.createElement("small");
+    rarity.textContent = moduleRarityLabel(item.rarity);
+    const amount = document.createElement("em");
+    amount.append(
+      createModulePuzzlePiece({ category:item.category || "" }),
+      document.createTextNode(`${teamRequestAmount(item.rarity)} parça`)
+    );
+    const { percent } = teamRequestShardProgress(item);
+    const progress = document.createElement("i");
+    progress.className = "team-request-module-progress";
+    progress.style.setProperty("--module-progress", `${percent}%`);
+    progress.setAttribute("aria-hidden", "true");
+    option.append(teamRequestModuleArt(item), name, rarity, amount, progress);
+    option.addEventListener("click", () => {
+      selectedTeamRequestModuleId = item.definition_id;
+      renderTeamRequestComposer();
+    });
+    return option;
+  }
+
+  function renderTeamRequestComposer() {
+    const available = teamState?.module_request_available !== false;
+    const quota = document.getElementById("team-request-quota");
+    if (quota) {
+      quota.dataset.available = String(available);
+      quota.textContent = available ? "HAFTALIK HAK: 1" : "BU HAFTA KULLANILDI";
+    }
+    const composer = document.getElementById("team-request-composer");
+    if (composer) composer.dataset.available = String(available);
+
+    const modules = (metaProgressionState?.module_collection || [])
+      .filter((item) => item.unlocked !== false)
+      .sort((left, right) => (
+        TEAM_REQUEST_RARITY_ORDER.indexOf(right.rarity) - TEAM_REQUEST_RARITY_ORDER.indexOf(left.rarity)
+        || String(left.name_tr).localeCompare(String(right.name_tr), "tr")
+      ));
+    if (!modules.some((item) => item.definition_id === selectedTeamRequestModuleId)) {
+      selectedTeamRequestModuleId = "";
+    }
+    if (activeTeamRequestRarity !== "all" && !modules.some((item) => item.rarity === activeTeamRequestRarity)) {
+      activeTeamRequestRarity = "all";
+    }
+    for (const button of document.querySelectorAll("[data-request-rarity]")) {
+      const rarity = button.dataset.requestRarity;
+      const active = rarity === activeTeamRequestRarity;
+      button.classList.toggle("is-active", active);
+      button.setAttribute("aria-pressed", String(active));
+      button.hidden = rarity !== "all" && !modules.some((item) => item.rarity === rarity);
+    }
+
+    const grid = document.getElementById("team-module-request-grid");
+    if (grid) {
+      grid.replaceChildren();
+      const visible = modules.filter((item) => activeTeamRequestRarity === "all" || item.rarity === activeTeamRequestRarity);
+      for (const item of visible) {
+        grid.appendChild(createTeamRequestModuleOption(item, {
+          selected:item.definition_id === selectedTeamRequestModuleId,
+          available,
+        }));
+      }
+      if (!visible.length) {
+        const empty = document.createElement("p");
+        empty.className = "team-empty-state";
+        empty.textContent = metaProgressionState ? "İstenebilecek açık modül yok." : "Modül koleksiyonu yükleniyor…";
+        grid.appendChild(empty);
+      }
+    }
+
+    const summary = document.getElementById("team-module-request-selected");
+    const selected = teamRequestModule(selectedTeamRequestModuleId);
+    if (summary) {
+      summary.replaceChildren();
+      summary.dataset.rarity = selected?.rarity || "";
+      if (selected) {
+        const { owned, required } = teamRequestShardProgress(selected);
+        const copy = document.createElement("div");
+        const name = document.createElement("strong");
+        name.textContent = selected.name_tr || "Modül";
+        const detail = document.createElement("small");
+        detail.textContent = `${teamRequestAmount(selected.rarity)} parça istenir`;
+        const ownedLine = document.createElement("small");
+        ownedLine.textContent = required > 0 ? `Sende ${owned} / ${required}` : `Sende ${owned}`;
+        copy.append(name, detail, ownedLine);
+        summary.append(teamRequestModuleArt(selected), copy);
+      } else {
+        const hint = document.createElement("small");
+        hint.textContent = available ? "Yukarıdan bir modül seç." : "Yeni istek hakkın pazartesi açılır.";
+        summary.appendChild(hint);
+      }
+    }
+    const submit = document.getElementById("team-module-request-button");
+    if (submit) {
+      submit.disabled = !available || !selected;
+      submit.textContent = available ? "İSTE" : "KULLANILDI";
+    }
+  }
+
+  function renderTeamRequestList() {
+    const requestList = document.getElementById("team-request-list");
+    if (!requestList) return;
+    requestList.replaceChildren();
+    const requests = teamState?.module_requests || [];
+    const openCount = requests.filter((request) => !request.fulfilled).length;
+    const count = document.getElementById("team-request-count");
+    if (count) count.textContent = `${openCount} açık istek`;
+    if (!requests.length) {
+      const empty = document.createElement("p");
+      empty.className = "team-empty-state";
+      empty.textContent = "Henüz modül parçası isteği yok.";
+      requestList.appendChild(empty);
+    }
+    for (const request of requests) {
+      const module = teamRequestModule(request.module_id);
+      const card = document.createElement("article");
+      card.className = "team-request-card";
+      card.dataset.rarity = request.rarity || "common";
+      card.dataset.fulfilled = String(Boolean(request.fulfilled));
+      const copy = document.createElement("div");
+      copy.className = "team-request-copy";
+      const name = document.createElement("strong");
+      name.textContent = request.module_name_tr || module?.name_tr || "Modül";
+      const meta = document.createElement("small");
+      meta.className = "team-player-inline-meta";
+      const requester = createPublicPlayerName(
+        request.requester_id,
+        request.requester_name || "Oyuncu"
+      );
+      const rarity = document.createElement("span");
+      rarity.className = "team-request-rarity";
+      rarity.textContent = moduleRarityLabel(request.rarity);
+      meta.append(requester, rarity);
+      const requested = Math.max(1, Number(request.requested_amount || 0));
+      const donated = Math.min(requested, Math.max(0, Number(request.donated_amount || 0)));
+      const meter = document.createElement("span");
+      meter.className = "team-request-meter";
+      meter.setAttribute("role", "progressbar");
+      meter.setAttribute("aria-valuemin", "0");
+      meter.setAttribute("aria-valuemax", String(requested));
+      meter.setAttribute("aria-valuenow", String(donated));
+      meter.setAttribute("aria-label", `${donated} / ${requested} parça`);
+      meter.style.setProperty("--request-progress", `${Math.round((donated / requested) * 100)}%`);
+      const amount = document.createElement("small");
+      amount.className = "team-request-amount";
+      const ownShards = Math.max(0, Number(module?.shards || 0));
+      amount.append(
+        createModulePuzzlePiece({ category:module?.category || "" }),
+        document.createTextNode(request.is_own || !module
+          ? `${donated} / ${requested} parça`
+          : `${donated} / ${requested} parça · Sende ${ownShards}`)
+      );
+      copy.append(name, meta, meter, amount);
+      const action = document.createElement("button");
+      action.type = "button";
+      action.textContent = request.fulfilled ? "TAMAMLANDI" : request.is_own ? "SENİN İSTEĞİN" : "1 BAĞIŞLA";
+      action.disabled = Boolean(request.fulfilled || request.is_own || (module && ownShards < 1));
+      if (!action.disabled) {
+        action.addEventListener("click", async () => {
+          action.disabled = true;
+          const result = await mutateTeam(
+            `/teams/${encodeURIComponent(teamState.team_id)}/module-requests/${encodeURIComponent(request.request_id)}/donate`,
+            { requestKind:"donate" },
+            "Modül parçası aktarılıyor…"
+          );
+          // Bağışlanan parça koleksiyondan düştüğü için "Sende" sayısı tazelenir;
+          // yükleme ekranları (takım dahil) yeniden çizer.
+          if (result.ok) await loadMetaProgression();
+          else renderTeamHub();
+        });
+      }
+      card.append(teamRequestModuleArt(module || { name_tr:request.module_name_tr }), copy, action);
+      requestList.appendChild(card);
     }
   }
 
@@ -4067,7 +5515,7 @@
       const joinButton = document.getElementById("team-join-button");
       if (joinButton) {
         joinButton.disabled = Boolean(teamState.application_pending);
-        joinButton.textContent = localizedMessage(teamState.application_pending ? "team.application_pending_upper" : "team.apply_upper");
+        joinButton.textContent = teamState.application_pending ? "BAŞVURU BEKLİYOR" : "BAŞVUR";
       }
       const select = document.getElementById("team-join-select");
       if (select) {
@@ -4075,12 +5523,12 @@
         const teams = teamState.available_teams || [];
         const placeholder = document.createElement("option");
         placeholder.value = "";
-        placeholder.textContent = localizedMessage(teams.length ? "team.choose_team" : "team.no_open_teams");
+        placeholder.textContent = teams.length ? "Takım seç" : "Açık takım yok";
         select.appendChild(placeholder);
         for (const team of teams) {
           const option = document.createElement("option");
           option.value = team.team_id;
-          option.textContent = localizedMessage("team.join_option", {name:team.name, members:localizedNumber(team.member_count), limit:localizedNumber(team.member_limit), trophies:localizedNumber(team.total_trophies || 0)});
+          option.textContent = `${team.name} · ${team.member_count}/${team.member_limit} · ${Number(team.total_trophies || 0).toLocaleString(uiLocale())} 🏆`;
           select.appendChild(option);
         }
         if (teamState.applied_team_id) select.value = teamState.applied_team_id;
@@ -4093,31 +5541,24 @@
       const element = document.getElementById(id);
       if (element) element.textContent = String(value);
     };
-    setText("team-name", teamState.name || localizedMessage("profile.team"));
-    setText("team-member-count", localizedMessage("team.member_count", {count:localizedNumber(teamState.member_count || 0), limit:localizedNumber(teamState.member_limit || 30)}));
+    setText("team-name", teamState.name || "Takım");
+    setText("team-member-count", `${teamState.member_count || 0} / ${teamState.member_limit || 30} ÜYE`);
     renderTrophyValue("team-total-trophies", Number(teamState.total_trophies || 0));
     const statistics = teamState.statistics || {};
     const tournament = teamState.tournament || {};
-    setText("team-profile-total-trophies", localizedNumber(teamState.total_trophies || 0));
-    setText("team-profile-average-trophies", localizedNumber(teamState.average_trophies || 0));
-    setText("team-profile-total-matches", localizedNumber(statistics.total_matches || 0));
-    setText("team-profile-win-rate", localizedPercent(boundedWinRatePercent(statistics.win_rate || 0)));
+    setText("team-profile-total-trophies", Number(teamState.total_trophies || 0).toLocaleString(uiLocale()));
+    setText("team-profile-average-trophies", Number(teamState.average_trophies || 0).toLocaleString(uiLocale()));
+    setText("team-profile-total-matches", Number(statistics.total_matches || 0).toLocaleString(uiLocale()));
+    setText("team-profile-win-rate", `%${boundedWinRatePercent(statistics.win_rate || 0)}`);
     setText("team-profile-tournament-position", tournament.position ? `#${tournament.position}` : "—");
-    setText("team-profile-tournament-points", localizedMessage("event.team_points", {points:localizedNumber(tournament.points || 0)}));
+    setText("team-profile-tournament-points", `${Number(tournament.points || 0).toLocaleString(uiLocale())} P`);
     const teamIdentity = document.getElementById("team-identity-card");
     const teamAvatar = document.getElementById("team-avatar-glyph");
     const managementOpen = document.getElementById("team-management-open");
-    const teamCosmetics = teamState.cosmetics || {};
-    if (teamIdentity) {
-      teamIdentity.dataset.teamBackground = teamCosmetics.selected_bar_background_id || "team_grid";
-      teamIdentity.dataset.nameFrame = teamCosmetics.selected_name_frame_id || "none";
-    }
-    if (teamAvatar) teamAvatar.textContent = teamCosmetics.selected_avatar_id === "team_champion" ? "♛" : "⬡";
+    const teamNameNode = document.getElementById("team-name");
+    applyTeamAppearance(teamIdentity, teamState.appearance, { emblemHost:teamAvatar, nameHost:teamNameNode });
     if (managementOpen) managementOpen.disabled = !teamState.is_owner;
-    setText("team-management-hint", localizedMessage(teamState.is_owner ? "team.open_management" : "team.profile"));
     renderTeamManagement();
-    const teamTabs = document.querySelector("#team-hub .team-tabs");
-    if (teamTabs) teamTabs.hidden = activeTeamTab === "management";
 
     for (const button of document.querySelectorAll("[data-team-tab]")) {
       button.classList.toggle("is-active", button.dataset.teamTab === activeTeamTab);
@@ -4132,73 +5573,11 @@
     const memberList = document.getElementById("team-member-list");
     if (memberList) {
       memberList.replaceChildren();
-      members.forEach((member, index) => memberList.appendChild(createTeamMemberRow(member, index, {allowManagement:true})));
+      members.forEach((member, index) => memberList.appendChild(createTeamMemberRow(member, index, { manageable:true })));
     }
 
-    const moduleSelect = document.getElementById("team-module-request-select");
-    if (moduleSelect) {
-      const previous = moduleSelect.value;
-      moduleSelect.replaceChildren();
-      const placeholder = document.createElement("option");
-      placeholder.value = "";
-      placeholder.textContent = localizedMessage("team.choose_module");
-      moduleSelect.appendChild(placeholder);
-      const modules = (metaProgressionState?.module_collection || [])
-        .filter((module) => module.unlocked !== false)
-        .sort((left, right) => localizedRecordText(left, "name").localeCompare(localizedRecordText(right, "name"), document.documentElement.lang === "en" ? "en" : "tr"));
-      for (const module of modules) {
-        const option = document.createElement("option");
-        option.value = module.definition_id;
-        option.textContent = localizedMessage("module.name_rarity", {name:localizedUiText(module.name_tr), rarity:moduleRarityLabel(module.rarity)});
-        moduleSelect.appendChild(option);
-      }
-      if ([...moduleSelect.options].some((option) => option.value === previous)) moduleSelect.value = previous;
-      const pickerButton = document.getElementById("team-module-picker-open");
-      if (pickerButton) pickerButton.textContent = moduleSelect.value ? moduleSelect.selectedOptions[0]?.textContent || localizedMessage("team.choose_module") : localizedMessage("team.choose_module");
-    }
-
-    const requestList = document.getElementById("team-request-list");
-    if (requestList) {
-      requestList.replaceChildren();
-      const requests = teamState.module_requests || [];
-      if (!requests.length) {
-        const empty = document.createElement("p");
-        empty.className = "team-empty-state";
-        empty.textContent = localizedMessage("team.no_module_requests");
-        requestList.appendChild(empty);
-      }
-      for (const request of requests) {
-        const card = document.createElement("article");
-        card.className = "team-request-card";
-        card.dataset.rarity = request.rarity || "common";
-        const copy = document.createElement("div");
-        const name = document.createElement("strong");
-        name.textContent = localizedUiText(request.module_name_tr || localizedMessage("team.module"));
-        const meta = document.createElement("small");
-        meta.className = "team-player-inline-meta";
-        const requester = createPublicPlayerName(
-          request.requester_id,
-          request.requester_name || localizedMessage("profile.player")
-        );
-        const progress = document.createElement("span");
-        progress.textContent = localizedMessage("team.donation_progress", {donated:localizedNumber(request.donated_amount || 0), requested:localizedNumber(request.requested_amount || 0)});
-        meta.append(requester, progress);
-        copy.append(name, meta);
-        const action = document.createElement("button");
-        action.type = "button";
-        action.textContent = localizedMessage(request.fulfilled ? "team.completed_upper" : request.is_own ? "team.your_request_upper" : "team.donate_one_upper");
-        action.disabled = Boolean(request.fulfilled || request.is_own);
-        if (!action.disabled) {
-          action.addEventListener("click", () => mutateTeam(
-            `/teams/${encodeURIComponent(teamState.team_id)}/module-requests/${encodeURIComponent(request.request_id)}/donate`,
-            { requestKind:"donate" },
-            localizedMessage("team.donating_module")
-          ));
-        }
-        card.append(copy, action);
-        requestList.appendChild(card);
-      }
-    }
+    renderTeamRequestComposer();
+    renderTeamRequestList();
 
     const messageList = document.getElementById("team-message-list");
     if (messageList) {
@@ -4207,7 +5586,7 @@
       if (!messages.length) {
         const empty = document.createElement("p");
         empty.className = "team-empty-state";
-        empty.textContent = localizedMessage("team.start_chat");
+        empty.textContent = "Takım sohbetini başlatabilirsin.";
         messageList.appendChild(empty);
       }
       for (const message of messages) {
@@ -4215,9 +5594,10 @@
         row.className = `team-message${message.is_own ? " is-own" : ""}`;
         const author = createPublicPlayerName(
           message.author_id,
-          message.author_name || localizedMessage("profile.player")
+          message.author_name || "Oyuncu"
         );
         const text = document.createElement("p");
+        text.setAttribute("translate", "no");
         text.textContent = message.text || "";
         row.append(author, text);
         messageList.appendChild(row);
@@ -4232,7 +5612,7 @@
       const options = teamState.online_opponents || [];
       const placeholder = document.createElement("option");
       placeholder.value = "";
-      placeholder.textContent = localizedMessage(options.length ? "team.choose_online_member" : "team.no_online_members");
+      placeholder.textContent = options.length ? "Çevrimiçi üye seç" : "Çevrimiçi üye yok";
       opponent.appendChild(placeholder);
       for (const member of options) {
         const option = document.createElement("option");
@@ -4250,7 +5630,7 @@
       if (!challenges.length) {
         const empty = document.createElement("p");
         empty.className = "team-empty-state";
-        empty.textContent = localizedMessage("team.no_training_invitations");
+        empty.textContent = "Bekleyen antrenman daveti yok.";
         trainingList.appendChild(empty);
       }
       for (const challenge of challenges) {
@@ -4261,29 +5641,29 @@
         title.className = "team-challenge-player-links";
         const challenger = createPublicPlayerName(
           challenge.challenger_id,
-          challenge.challenger_name || localizedMessage("profile.player")
+          challenge.challenger_name || "Oyuncu"
         );
         const arrow = document.createElement("span");
         arrow.textContent = "→";
         const opponentName = createPublicPlayerName(
           challenge.opponent_id,
-          challenge.opponent_name || localizedMessage("profile.player")
+          challenge.opponent_name || "Oyuncu"
         );
         title.append(challenger, arrow, opponentName);
         const meta = document.createElement("small");
-        meta.textContent = localizedMessage(challenge.status === "completed"
-          ? "team.training_completed"
-          : challenge.status === "pending" ? "team.training_pending" : "team.training_accepted");
+        meta.textContent = challenge.status === "completed"
+          ? "ANTRENMAN TAMAMLANDI · ÖDÜLSÜZ"
+          : challenge.status === "pending" ? "DAVET BEKLİYOR · ÖDÜLSÜZ" : "KABUL EDİLDİ · ÖDÜLSÜZ";
         copy.append(title, meta);
         if (challenge.can_accept) {
           const accept = document.createElement("button");
           accept.type = "button";
-          accept.textContent = localizedMessage("team.accept_invitation_upper");
+          accept.textContent = "KABUL ET";
           accept.addEventListener("click", async () => {
             const result = await mutateTeam(
               `/teams/${encodeURIComponent(teamState.team_id)}/training-challenges/${encodeURIComponent(challenge.challenge_id)}/accept`,
               { requestKind:"training-accept" },
-              localizedMessage("team.accepting_invitation")
+              "Antrenman daveti kabul ediliyor…"
             );
             if (result.ok && result.state?.operation?.battle) {
               launchSocialBattle(result.state.operation.battle);
@@ -4293,7 +5673,7 @@
         } else if (challenge.status === "accepted" && challenge.battle_session_id) {
           const enter = document.createElement("button");
           enter.type = "button";
-          enter.textContent = localizedMessage("team.enter_battle_upper");
+          enter.textContent = "SAVAŞ ALANINA GİR";
           enter.addEventListener("click", () => launchSocialBattle({
             session_id:challenge.battle_session_id,
             players:[challenge.challenger_id, challenge.opponent_id],
@@ -4331,42 +5711,6 @@
       renderTeamHub();
     });
   });
-  document.querySelectorAll("[data-friends-tab]").forEach((button) => button.addEventListener("click", () => {
-    activeFriendsTab = button.dataset.friendsTab || "friends";
-    renderFriendsScreen();
-    if (activeFriendsTab === "messages") loadDirectMessages();
-  }));
-  document.getElementById("team-module-picker-open")?.addEventListener("click", () => {
-    const select = document.getElementById("team-module-request-select");
-    const host = document.getElementById("team-module-picker-list");
-    const dialog = document.getElementById("team-module-picker");
-    if (!select || !host || !dialog) return;
-    host.replaceChildren();
-    for (const option of [...select.options].filter((item) => item.value)) {
-      const module = (metaProgressionState?.module_collection || []).find((item) => item.definition_id === option.value);
-      const card = document.createElement("button");
-      card.type = "button";
-      card.className = "team-module-picker-choice";
-      card.dataset.rarity = module?.rarity || "common";
-      card.setAttribute("aria-pressed", String(select.value === option.value));
-      const glyph = document.createElement("i");
-      glyph.textContent = moduleIconFor(metaModuleDefinition(module));
-      const copy = document.createElement("span");
-      copy.textContent = localizedRecordText(module, "name") || option.textContent;
-      const rarity = document.createElement("small");
-      rarity.textContent = moduleRarityLabel(module?.rarity);
-      card.append(glyph, copy, rarity);
-      card.addEventListener("click", () => {
-        select.value = option.value;
-        const open = document.getElementById("team-module-picker-open");
-        if (open) open.textContent = option.textContent;
-        dialog.close();
-      });
-      host.appendChild(card);
-    }
-    if (dialog.showModal) dialog.showModal(); else dialog.setAttribute("open", "");
-  });
-  document.getElementById("team-module-picker-close")?.addEventListener("click", () => document.getElementById("team-module-picker")?.close());
   document.getElementById("daily-meta-roll")?.addEventListener("click", rollDailyMeta);
   document.getElementById("daily-meta-dialog")?.addEventListener("cancel", (event) => {
     if (dailyMetaState?.requires_roll) event.preventDefault();
@@ -4384,10 +5728,10 @@
     });
   });
   document.getElementById("weekly-tournament-register")?.addEventListener("click", () =>
-    registerEvent("/events/weekly/register", "weekly-event-status", localizedMessage("event.registering_weekly"))
+    registerEvent("/events/weekly/register", "weekly-event-status", "Turnuva kaydı yapılıyor…")
   );
   document.getElementById("team-tournament-register")?.addEventListener("click", () =>
-    registerEvent("/events/team/register", "team-event-status", localizedMessage("event.registering_team"))
+    registerEvent("/events/team/register", "team-event-status", "Takım turnuvaya kaydediliyor…")
   );
   document.getElementById("friend-search-form")?.addEventListener("submit", (event) => {
     event.preventDefault();
@@ -4402,14 +5746,30 @@
         {method:"POST",body:JSON.stringify({player_id:participantPlayerId})},
         12000
       );
-      if (output) output.textContent = `${invite.code} · ${invite.web_link} · QR: ${invite.qr_payload}`;
+      if (output) {
+        output.hidden = false;
+        output.textContent = `Davet kodu: ${invite.code} · ${invite.web_link}`;
+      }
     } catch (error) {
-      if (output) output.textContent = error instanceof Error ? error.message : String(error);
+      if (output) {
+        output.hidden = false;
+        output.textContent = error instanceof Error ? error.message : String(error);
+      }
     }
   });
   document.getElementById("direct-message-form")?.addEventListener("submit", (event) => {
     event.preventDefault();
     sendDirectMessage();
+  });
+  document.getElementById("direct-message-back")?.addEventListener("click", closeDirectMessageThread);
+  document.querySelectorAll("[data-friends-tab]").forEach((button) => {
+    button.addEventListener("click", () => openFriendsTab(button.dataset.friendsTab));
+  });
+  document.getElementById("friend-search-close")?.addEventListener("click", () => {
+    const panel = document.getElementById("friend-search-panel");
+    if (panel) panel.hidden = true;
+    const input = document.getElementById("friend-search-input");
+    if (input) input.value = "";
   });
   globalThis.addEventListener?.("gridshard:deep-link", (event) => {
     const rawUrl = event?.detail?.url || event?.detail || "";
@@ -4439,7 +5799,7 @@
           12000
         );
         if (result.authorization_url) globalThis.location.assign(result.authorization_url);
-        else if (status) status.textContent = localizedMessage("account.provider_not_configured_message", {provider:provider.toUpperCase()});
+        else if (status) status.textContent = `${provider.toUpperCase()} bağlantısı sunucuda henüz yapılandırılmadı.`;
       } catch (error) {
         if (status) status.textContent = error instanceof Error ? error.message : String(error);
       }
@@ -4461,7 +5821,7 @@
       const codeInput = document.getElementById("account-onboarding-code");
       if (result.development_code && codeInput) codeInput.value = result.development_code;
       if (status) status.textContent = result.delivery_configured
-        ? localizedMessage("account.code_sent", {destination:result.destination})
+        ? `Kod ${result.destination} adresine gönderildi.`
         : result.development_code
           ? "Yerel geliştirme kodu alana yerleştirildi."
           : "E-posta sağlayıcısı henüz yapılandırılmadı; doğrulama isteği kaydedildi.";
@@ -4502,7 +5862,7 @@
       const codeInput = document.getElementById("account-verification-code");
       if (result.development_code && codeInput) codeInput.value = result.development_code;
       if (status) status.textContent = result.delivery_configured
-        ? localizedMessage("account.code_sent", {destination:result.destination})
+        ? `Kod ${result.destination} adresine gönderildi.`
         : result.development_code
           ? "Yerel geliştirme kodu doğrulama alanına yerleştirildi."
           : "E-posta teslimi için SMTP sağlayıcısı yapılandırılmalı.";
@@ -4536,7 +5896,7 @@
           12000
         );
         if (result.authorization_url) window.location.assign(result.authorization_url);
-        else if (status) status.textContent = localizedMessage("account.oauth_not_configured", {provider:provider.toUpperCase()});
+        else if (status) status.textContent = `${provider.toUpperCase()} OAuth sağlayıcısı yapılandırılmadı.`;
       } catch (error) {
         if (status) status.textContent = error instanceof Error ? error.message : String(error);
       }
@@ -4597,27 +5957,29 @@
     const status = document.getElementById("account-platform-status");
     if (status) status.textContent = message;
   }
-  const nativePush = new globalThis.GridshardNativePush.NativePushController({
+  // native-push.js yüklenemezse yalnız bildirimler kapanır; oyun açılmaya devam eder.
+  const NativePushController = globalThis.GridshardNativePush?.NativePushController;
+  const nativePush = NativePushController ? new NativePushController({
     request: (path, options) => requestJsonWithDeadline(path, options, 12000),
     identity: () => ({ playerId: participantPlayerId, deviceId: globalThis.GridshardAuth?.session?.deviceId?.() }),
     onStatus: setNativePushStatus,
     onOpen: (url) => consumePendingDeepLink(url),
-  });
-  // Install action listeners before authentication finishes (cold-start taps).
-  void nativePush.listen().catch(() => {});
+  }) : null;
+  // Soğuk açılıştaki bildirim dokunuşu kaçmasın diye dinleyiciler kimlikten önce kurulur.
+  void nativePush?.listen().catch(() => {});
   for (const [id, action] of [["account-push-enable", "enable"], ["account-push-disable", "disable"]]) {
     const button = document.getElementById(id);
-    if (button) button.hidden = !nativePush.plugin;
+    if (button) button.hidden = !nativePush?.plugin;
     button?.addEventListener("click", async () => {
       button.disabled = true;
-      try { await nativePush[action](); }
+      try { await nativePush?.[action](); }
       catch (_) { setNativePushStatus("Bildirim işlemi tamamlanamadı. Bağlantınızı kontrol edip yeniden deneyin."); }
       finally { button.disabled = false; }
     });
   }
   const resumeNativePush = () => {
     if (accountPlatformState && document.visibilityState !== "hidden") {
-      void nativePush.start().catch(() => {});
+      void nativePush?.start().catch(() => {});
     }
   };
   globalThis.addEventListener?.("online", resumeNativePush);
@@ -4633,7 +5995,7 @@
       const url = URL.createObjectURL(new Blob([JSON.stringify(payload, null, 2)], {type:"application/json"}));
       const anchor = document.createElement("a");
       anchor.href = url;
-      anchor.download = localizedMessage("account.export_filename", {id:participantPlayerId});
+      anchor.download = `gridshard-${participantPlayerId}-veri.json`;
       anchor.click();
       URL.revokeObjectURL(url);
       if (status) status.textContent = "Kişisel veri kopyası indirildi. Bu dosya oyun kaydı değildir; değiştirilerek ilerleme yüklenemez.";
@@ -4660,62 +6022,81 @@
     const input = document.getElementById("team-create-name");
     const name = input?.value?.trim() || "";
     if (!name) {
-      setTeamActionStatus(localizedMessage("team.name_required"), "error");
+      setTeamActionStatus("Takım adı gerekli.", "error");
       return;
     }
     const result = await mutateTeam(
       "/teams",
       { name, requestKind:"create" },
-      localizedMessage("team.creating")
+      "Takım oluşturuluyor…"
     );
     if (result.ok && input) input.value = "";
   });
   document.getElementById("team-join-button")?.addEventListener("click", () => {
     const teamId = document.getElementById("team-join-select")?.value || "";
     if (!teamId) {
-      setTeamActionStatus(localizedMessage("team.choose_to_join"), "error");
+      setTeamActionStatus("Başvurmak için bir takım seç.", "error");
       return;
     }
     mutateTeam(
       `/teams/${encodeURIComponent(teamId)}/join`,
       { requestKind:"join" },
-      localizedMessage("team.joining")
+      "Takım başvurusu gönderiliyor…"
     );
   });
   document.getElementById("team-management-open")?.addEventListener("click", () => {
     if (!teamState?.is_owner) return;
     activeTeamTab = "management";
-    activeTeamManagementTab = "cosmetics";
-    teamCosmeticDraft = null;
     renderTeamHub();
   });
   document.getElementById("team-management-back")?.addEventListener("click", () => {
     activeTeamTab = "profile";
     renderTeamHub();
   });
-  document.querySelectorAll("[data-team-management-tab]").forEach((button) => button.addEventListener("click", () => {
-    activeTeamManagementTab = button.dataset.teamManagementTab || "cosmetics";
-    renderTeamManagement();
-  }));
-  document.getElementById("team-cosmetic-save")?.addEventListener("click", async () => {
-    if (!teamState?.team_id || !teamCosmeticDraft) return;
-    const draft = teamCosmeticDraft;
-    teamCosmeticDraft = null;
-    const result = await mutateTeam(`/teams/${encodeURIComponent(teamState.team_id)}/cosmetics`, {...draft, requestKind:"team-cosmetics"}, localizedMessage("team.appearance_saving"));
-    if (!result.ok) teamCosmeticDraft = draft;
-    renderTeamManagement();
+  document.querySelectorAll("[data-team-management-tab]").forEach((button) => {
+    button.addEventListener("click", () => {
+      activeTeamManagementTab = button.dataset.teamManagementTab || "cosmetics";
+      renderTeamManagement();
+    });
   });
-  document.getElementById("team-module-request-button")?.addEventListener("click", () => {
-    const moduleId = document.getElementById("team-module-request-select")?.value || "";
+  document.getElementById("team-appearance-save")?.addEventListener("click", async () => {
+    if (!teamState?.team_id || !teamAppearanceDraft) return;
+    const status = document.getElementById("team-management-status");
+    const result = await mutateTeam(
+      `/teams/${encodeURIComponent(teamState.team_id)}/cosmetics`,
+      {
+        emblem_id:teamAppearanceDraft.emblem_id,
+        frame_id:teamAppearanceDraft.frame_id,
+        name_color_id:teamAppearanceDraft.name_color_id,
+        requestKind:"team-appearance",
+      },
+      "Takım görünümü kaydediliyor…"
+    );
+    if (status) status.textContent = result.ok ? "Takım görünümü kaydedildi." : "";
+    if (result.ok) teamAppearanceDraft = null;
+    renderTeamHub();
+  });
+  document.getElementById("team-module-request-button")?.addEventListener("click", async () => {
+    const moduleId = selectedTeamRequestModuleId;
     if (!moduleId || !teamState?.team_id) {
-      setTeamActionStatus(localizedMessage("team.choose_module"), "error");
+      setTeamActionStatus("İstemek için bir modül seç.", "error");
       return;
     }
-    mutateTeam(
+    const result = await mutateTeam(
       `/teams/${encodeURIComponent(teamState.team_id)}/module-requests`,
       { module_id:moduleId, requestKind:"module-request" },
-      localizedMessage("team.requesting_module")
+      "Modül isteği oluşturuluyor…"
     );
+    if (result.ok) {
+      selectedTeamRequestModuleId = "";
+      renderTeamHub();
+    }
+  });
+  document.getElementById("team-module-request-filters")?.addEventListener("click", (event) => {
+    const button = event.target.closest("[data-request-rarity]");
+    if (!button) return;
+    activeTeamRequestRarity = button.dataset.requestRarity || "all";
+    renderTeamRequestComposer();
   });
   async function sendTeamMessage() {
     const input = document.getElementById("team-message-input");
@@ -4724,7 +6105,7 @@
     const result = await mutateTeam(
       `/teams/${encodeURIComponent(teamState.team_id)}/messages`,
       { message, requestKind:"message" },
-      localizedMessage("team.sending_message")
+      "Mesaj gönderiliyor…"
     );
     if (result.ok && input) input.value = "";
   }
@@ -4738,13 +6119,14 @@
   document.getElementById("team-training-send")?.addEventListener("click", () => {
     const opponentId = document.getElementById("team-training-opponent")?.value || "";
     if (!opponentId || !teamState?.team_id) {
-      setTeamActionStatus(localizedMessage("team.choose_training_member"), "error");
+      setTeamActionStatus("Antrenman için çevrimiçi bir üye seç.", "error");
       return;
     }
+    recentBattleInviteTargets.add(opponentId);
     mutateTeam(
       `/teams/${encodeURIComponent(teamState.team_id)}/training-challenges`,
       { opponent_id:opponentId, requestKind:"training" },
-      localizedMessage("team.sending_training_invite")
+      "Antrenman daveti gönderiliyor…"
     );
   });
 
@@ -4762,7 +6144,6 @@
   document.getElementById("module-quick-select")?.addEventListener("click", selectCollectionModule);
   document.getElementById("core-quick-info")?.addEventListener("click", openCoreDetail);
   document.getElementById("core-quick-select")?.addEventListener("click", selectCollectionCore);
-  document.getElementById("core-detail-close")?.addEventListener("click", () => document.getElementById("core-detail-dialog")?.close());
   globalThis.GridshardCardSwipe.bind(document.getElementById("core-detail-dialog"), navigateCoreDetail);
   document.getElementById("core-detail-select")?.addEventListener("click", async () => {
     const result = await selectCollectionCore();
@@ -4781,7 +6162,6 @@
       renderCoreDetailTab(button.dataset.coreDetailTab || "overview");
     });
   });
-  document.getElementById("module-detail-close")?.addEventListener("click", () => document.getElementById("module-detail-dialog")?.close());
   globalThis.GridshardCardSwipe.bind(document.getElementById("module-detail-dialog"), navigateModuleDetail);
   document.getElementById("module-detail-upgrade")?.addEventListener("click", upgradeCollectionModule);
   document.querySelectorAll("[data-module-detail-tab]").forEach((button) => {
@@ -4817,7 +6197,7 @@
     };
 
     connectionStatusEl.textContent =
-      labels[status] || localizedMessage("battle.connection_status", {status});
+      labels[status] || `Bağlantı: ${status}`;
     connectionStatusEl.dataset.status =
       status;
 
@@ -4862,67 +6242,25 @@
   const playerDataSnapshotState =
     new RelayPlayerDataSnapshotState();
 
-  const webTestKpiState =
-    new RelayWebTestKpiState();
-
-  const webTestRcReportState =
-    new RelayWebTestRcReportState();
-
-  const webTestGoNoGoState =
-    new RelayWebTestGoNoGoState();
-
-  const testRunConsistency =
-    new RelayTestRunConsistencyState();
-
-  const rcCandidateState =
-    new RelayRcCandidateState();
-
-  const launchReadinessState =
-    new RelayLaunchReadinessState();
-
-  const firstRunChecklistState =
-    new RelayFirstRunChecklistState();
-
-  const preflightState =
-    new RelayPreflightState();
-
-  const webTestRunStatusState =
-    new RelayWebTestRunStatusState();
-
-  const operationStatusState =
-    new RelayOperationStatusState();
-
-  const operationStabilityState =
-    new RelayOperationStabilityState();
-
-  const monitoringState =
-    new RelayMonitoringState();
-
   const playRecoveryState =
     new RelayPlayRecoveryState();
 
-  const releaseCheckState =
-    new RelayReleaseCheckState();
-
-  const webTestBuildState =
-    new RelayWebTestBuildState();
+  const serverHealthState =
+    new RelayServerHealthState();
 
   const serverBootGate =
     new RelayServerBootGate({
       healthState:
-        webTestBuildState,
-      releaseCheckState,
+        serverHealthState,
       expectedVersion:
-        "2.1.0-beta.43",
+        "2.1.0-beta.72",
       expectedProtocolVersion: 1,
-      operationalChecks: operationalDiagnosticsEnabled,
     });
   const playReadinessGate =
     new RelayPlayReadinessGate({
       serverBootGate,
       participantBootstrap,
       participantContinuity,
-      launchReadinessState,
     });
 
 
@@ -4957,7 +6295,7 @@
 
   telemetryDispatcher.trackGameOpened({
     platform: "web",
-    build: "2.1.0-beta.43",
+    build: "2.1.0-beta.72",
   });
 
   const postMatchSync =
@@ -4980,7 +6318,8 @@
               const payload = await response.json();
               if (!response.ok) {
                 throw new Error(
-                  localizedApiError(payload, response.status)
+                  payload.detail
+                  || `Maç sonucu kaydı alınamadı (${response.status}).`
                 );
               }
               return payload;
@@ -5036,10 +6375,8 @@
     const labels = {
       core_destroyed: "Çekirdek yok edildi",
       player_forfeit: "Savaştan çekilme",
-      time_limit_tiebreak: "Süre sonu üstünlüğü",
-      time_limit_draw: "Süre sonu beraberliği",
-      simultaneous_core_tiebreak: "Çifte çekirdek yıkımı",
-      simultaneous_core_draw: "Eşzamanlı çekirdek yıkımı",
+      player_inactive: "Hareketsizlik",
+      mutual_inactivity: "Karşılıklı hareketsizlik",
       simultaneous_core_destroyed: "Eşzamanlı çekirdek yıkımı",
     };
     return localizedUiText(labels[reason] || "Savaş tamamlandı");
@@ -5126,11 +6463,13 @@
     if (trophy) trophy.textContent = progression
       ? `${Number(progression.ratingDelta) >= 0 ? "+" : ""}${Number(progression.ratingDelta)}`
       : localTest ? "0" : pendingLabel;
+    const adReceipt = postMatchSync.lastBattleId ? adRewardReceipts.get(postMatchSync.lastBattleId) : null;
+    const adMultiplier = adReceipt ? 2 : 1;
     if (credits) credits.textContent = progression
-      ? `+${Number(progression.circuitCreditsAwarded || 0)}`
+      ? `+${Number(progression.circuitCreditsAwarded || 0) * adMultiplier}${adReceipt ? " · x2" : ""}`
       : localTest ? "+0" : pendingLabel;
     if (experience) experience.textContent = progression
-      ? `+${Number(progression.xpAwarded || 0)}`
+      ? `+${Number(progression.xpAwarded || 0) * adMultiplier}${adReceipt ? " · x2" : ""}`
       : localTest ? "+0" : pendingLabel;
     if (teamPoint) teamPoint.textContent = progression
       ? `+${Number(progression.teamTournamentPointsAwarded || 0)}`
@@ -5161,6 +6500,9 @@
           ? "Bu antrenman maçı profile, kupaya veya Devre Yolu ilerlemesine etki etmedi."
           : "";
     }
+    if (!storeState) void loadStoreState();
+    renderPostMatchPremium();
+    renderPostMatchAdReward();
   }
 
   function setAnalysisValue(id, value) {
@@ -5195,7 +6537,7 @@
         ? createPublicPlayerName(playerId, playerName)
         : document.createElement("strong");
       if (!isPublicProfileTarget(playerId, player)) {
-        playerLabel.textContent = localizedMessage("battle.player_label", {name:playerName, you:playerId === participantPlayerId ? localizedMessage("battle.you_suffix") : ""});
+        playerLabel.textContent = `${playerName}${playerId === participantPlayerId ? " · SEN" : ""}`;
       }
       head.append(outcomeLabel, playerLabel);
       card.appendChild(head);
@@ -5211,16 +6553,16 @@
       coreGlyph.textContent = coreVisual.glyph;
       const coreCopy = document.createElement("div");
       const coreName = document.createElement("strong");
-      coreName.textContent = localizedUiText(coreVisual.nameTr || "Çekirdek");
+      coreName.textContent = coreVisual.nameTr || "Çekirdek";
       const coreLevel = document.createElement("small");
-      coreLevel.textContent = localizedMessage("core.level", {level:localizedNumber(Math.max(1, Number(summary.core_level || player.core_level || 1)))});
+      coreLevel.textContent = `SEVİYE ${Math.max(1, Number(summary.core_level || player.core_level || 1))}`;
       const trophy = document.createElement("b");
       const rating = Number(
         player.rating
         ?? (playerId === participantPlayerId ? profileState.viewModel()?.rating : 0)
         ?? 0
       );
-      trophy.textContent = `🏆 ${localizedNumber(Math.max(0, Math.round(rating)))}`;
+      trophy.textContent = `🏆 ${Math.max(0, Math.round(rating)).toLocaleString(uiLocale())}`;
       coreCopy.append(coreName, coreLevel, trophy);
       coreCard.append(coreGlyph, coreCopy);
 
@@ -5259,7 +6601,7 @@
       const totalLabel = document.createElement("span");
       totalLabel.textContent = "TOPLAM HASAR EŞDEĞERİ";
       const totalValue = document.createElement("strong");
-      totalValue.textContent = localizedNumber(totalEquivalent);
+      totalValue.textContent = totalEquivalent.toLocaleString(uiLocale());
       total.append(totalLabel, totalValue);
       damageColumn.appendChild(total);
 
@@ -5272,16 +6614,16 @@
         icon.textContent = moduleIconFor({ nameTr: item.name_tr });
         const copy = document.createElement("div");
         const rowName = document.createElement("strong");
-        rowName.textContent = localizedRecordText(item, "name") || item.definition_id;
+        rowName.textContent = item.name_tr || item.definition_id;
         const levelCopy = document.createElement("small");
-        levelCopy.textContent = localizedMessage("module.level_short", {level:localizedNumber(item.level || 1)});
+        levelCopy.textContent = `SV ${Number(item.level || 1)}`;
         const track = document.createElement("i");
         const fill = document.createElement("b");
         fill.style.width = `${Math.max(0, Math.min(100, item.effectiveDamage / maximum * 100))}%`;
         track.appendChild(fill);
         copy.append(rowName, levelCopy, track);
         const damage = document.createElement("em");
-        damage.textContent = localizedNumber(item.effectiveDamage);
+        damage.textContent = item.effectiveDamage.toLocaleString(uiLocale());
         damage.title = "Hasar eşdeğeri";
         row.append(icon, copy, damage);
         rows.appendChild(row);
@@ -5306,14 +6648,14 @@
     panel.hidden = false;
     setAnalysisValue(
       "battle-analysis-duration",
-      localizedMessage("time.seconds_short", {count:localizedNumber(Number(result.finished_at_ms || 0) / 1000, {minimumFractionDigits:1, maximumFractionDigits:1})})
+      `${(Number(result.finished_at_ms || 0) / 1000).toFixed(1)} sn`
     );
     setAnalysisValue(
       "battle-analysis-reason",
       finishReasonLabel(result.finish_reason)
     );
     setAnalysisValue("battle-analysis-damage", Number(own.damage_dealt || 0));
-    setAnalysisValue("battle-analysis-core", localizedMessage("battle.hp_value", {hp:localizedNumber(own.core_hp || 0)}));
+    setAnalysisValue("battle-analysis-core", `${Number(own.core_hp || 0)} HP`);
     setAnalysisValue(
       "battle-analysis-modules",
       Number(own.living_module_count || 0)
@@ -5344,17 +6686,20 @@
     panel.hidden = false;
     setAnalysisValue(
       "battle-analysis-duration",
-      localizedMessage("time.seconds_short", {count:localizedNumber(Number(localBattleMetrics.duration_ms || 0) / 1000, {minimumFractionDigits:1, maximumFractionDigits:1})})
+      `${(Number(localBattleMetrics.duration_ms || 0) / 1000).toFixed(1)} sn`
     );
     setAnalysisValue(
       "battle-analysis-reason",
       finishReasonLabel(finishReason || (won ? "core_destroyed" : null))
     );
+    // Verilen hasar sunucu maç özetinden okunur.
+    const ownSummary =
+      localServerFinalResult?.result_summary?.[participantPlayerId] || {};
     setAnalysisValue(
       "battle-analysis-damage",
-      Number(localBattleMetrics.damage_dealt || 0)
+      Number(ownSummary.damage_dealt || 0)
     );
-    setAnalysisValue("battle-analysis-core", localizedMessage("battle.hp_value", {hp:localizedNumber(core?.hp || 0)}));
+    setAnalysisValue("battle-analysis-core", `${Number(core?.hp || 0)} HP`);
     setAnalysisValue("battle-analysis-modules", living.length);
     setAnalysisValue("battle-analysis-hp", `${remainingHp} / ${totalHp}`);
     if (localServerFinalResult) {
@@ -5392,13 +6737,6 @@
     const result = pvpState.finalResult;
     if (!result) return false;
 
-    boosterOfferOpen = false;
-    clearBoosterTargetMode("online_match_finished");
-    serverBoosterOfferId = null;
-    serverBoosterEligibleTargets = new Map();
-    if (boosterStatusEl) boosterStatusEl.textContent = localizedUiText("Maç tamamlandı");
-    renderBoosterOptions();
-
     const outcome = onlineOutcome(result);
     const ownResult =
       result.result_summary?.[pvpState.playerId]
@@ -5428,7 +6766,14 @@
     showPostMatchStage("damage");
 
     if (battleStateLabelEl) {
-      battleStateLabelEl.textContent=localizedMessage("battle.match_finished", {result:localizedMessage(outcome === "victory" ? "battle.win" : outcome === "defeat" ? "battle.loss" : "battle.draw")});
+      battleStateLabelEl.textContent =
+        localizedUiText(`Maç tamamlandı · ${
+          outcome === "victory"
+            ? "Galibiyet"
+            : outcome === "defeat"
+              ? "Mağlubiyet"
+              : "Beraberlik"
+        }`);
     }
 
     if (firstPresentation) {
@@ -5512,12 +6857,6 @@
     }
 
     presentOnlineMatchFinished();
-
-    // QA telemetry is ancillary.  It must never hold the player-facing reward
-    // projection behind a second network request.
-    void finishWebTestSessionAudit(
-      battleId
-    );
 
     if (
       postMatchSyncInFlight
@@ -5642,7 +6981,7 @@
 
     telemetryStatus.textContent =
       labels[status]
-      || localizedMessage("telemetry.status", {status});
+      || `Telemetri: ${status}`;
     telemetryStatus.dataset.status =
       status;
 
@@ -5750,6 +7089,33 @@
       cue:"arc_cannon_fire",
       fx:"arc",
       travelMs:300,
+    },
+    // İmza saldırı kartları en yakın temel silahın atış görselini kullanır;
+    // ayırt edici görüntüleri imza efektlerinden gelir.
+    plasma_mortar:{
+      cue:"plasma_mortar_fire",
+      fx:"missile",
+      travelMs:600,
+    },
+    quantum_repeater:{
+      cue:"quantum_repeater_fire",
+      fx:"laser",
+      travelMs:240,
+    },
+    ion_spear:{
+      cue:"ion_spear_fire",
+      fx:"railgun",
+      travelMs:220,
+    },
+    swarm_fabricator:{
+      cue:"swarm_fabricator_fire",
+      fx:"drone",
+      travelMs:430,
+    },
+    quantum_cannon:{
+      cue:"quantum_cannon_fire",
+      fx:"pulse",
+      travelMs:380,
     },
   });
 
@@ -5897,7 +7263,7 @@
           ? "Eşleştirme: arena rakibi bulundu"
           : labels[status]
       )
-      || localizedMessage("battle.matchmaking_status", {status});
+      || `Eşleştirme: ${status}`;
 
     matchmakingStatusEl.dataset.status =
       status;
@@ -5946,7 +7312,7 @@
       destructionFxPlayed.clear();
       preparedCorePowerFx.clear();
       snapshotModuleHp.clear();
-      client.cancelDrag?.();
+      serverDestroyedModuleAt.clear();
       if (document.documentElement) document.documentElement.scrollTop = 0;
       document.body.scrollTop = 0;
       if (battleJustStarted) {
@@ -5975,247 +7341,11 @@
             .setSession(
               sessionId
             );
-          if (currentAuditEventId) {
-            bindWebTestSessionAudit(
-              currentAuditEventId,
-              sessionId
-            );
-          }
         },
     });
 
-  let currentAuditEventId = null;
-  let currentAuditSessionId = null;
-  let currentTestRunId = null;
-
-  async function recordWebTestSessionAudit(
-    startedAtMs
-  ) {
-    if (!operationalDiagnosticsEnabled) return { ok:true, skipped:true };
-    try {
-      const response =
-        await fetch(
-          "/web-test/audit/session-start",
-          {
-            method: "POST",
-            headers: {
-              "content-type":
-                "application/json",
-            },
-            body: JSON.stringify({
-              player_id:
-                participantPlayerId,
-              matchmaking_started_at_ms:
-                startedAtMs,
-            }),
-          }
-        );
-
-      const payload =
-        response.ok
-          ? await response.json()
-          : null;
-
-      const auditEventId =
-        payload
-          ?.audit_event_id
-        || null;
-
-      const auditTestRunId =
-        payload
-          ?.test_run_id
-        || null;
-      const consistency =
-        testRunConsistency
-          .applyAudit(
-            auditTestRunId
-          );
-
-      if (
-        response.ok
-        && auditEventId
-        && consistency.ok
-      ) {
-        currentAuditEventId =
-          auditEventId;
-        currentAuditSessionId =
-          null;
-        currentTestRunId =
-          auditTestRunId;
-        if (
-          pvpState.sessionId
-          && pvpState.sessionId
-            !== "local-preview"
-        ) {
-          bindWebTestSessionAudit(
-            auditEventId,
-            pvpState.sessionId
-          );
-        }
-      } else if (
-        response.ok
-        && auditEventId
-        && !consistency.ok
-      ) {
-        currentAuditEventId =
-          null;
-        currentTestRunId =
-          null;
-      }
-
-      renderServerBootStatus();
-
-      return {
-        ok:
-          response.ok
-          && consistency.ok,
-        auditEventId:
-          consistency.ok
-            ? auditEventId
-            : null,
-        testRunConsistent:
-          consistency.ok,
-      };
-    } catch (_error) {
-      return {
-        ok: false,
-      };
-    }
-  }
-
-  async function bindWebTestSessionAudit(
-    auditEventId,
-    sessionId
-  ) {
-    if (!operationalDiagnosticsEnabled) return { ok:true, skipped:true };
-    if (
-      !auditEventId
-      || !sessionId
-    ) {
-      return {
-        ok: false,
-      };
-    }
-
-    try {
-      const response =
-        await fetch(
-          "/web-test/audit/session-bind",
-          {
-            method: "POST",
-            headers: {
-              "content-type":
-                "application/json",
-            },
-            body: JSON.stringify({
-              audit_event_id:
-                auditEventId,
-              session_id:
-                sessionId,
-            }),
-          }
-        );
-
-      if (
-        response.ok
-        && auditEventId
-          === currentAuditEventId
-      ) {
-        currentAuditSessionId =
-          sessionId;
-      }
-
-      return {
-        ok: response.ok,
-      };
-    } catch (_error) {
-      return {
-        ok: false,
-      };
-    }
-  }
-
-  async function finishWebTestSessionAudit(
-    sessionId
-  ) {
-    if (!operationalDiagnosticsEnabled) return { ok:true, skipped:true };
-    if (
-      !currentAuditEventId
-      || !sessionId
-    ) {
-      return {
-        ok: false,
-      };
-    }
-
-    if (
-      currentAuditSessionId
-      !== sessionId
-    ) {
-      const binding =
-        await bindWebTestSessionAudit(
-          currentAuditEventId,
-          sessionId
-        );
-      if (!binding.ok) {
-        return {
-          ok: false,
-        };
-      }
-    }
-
-    try {
-      const response =
-        await fetch(
-          "/web-test/audit/session-finish",
-          {
-            method: "POST",
-            headers: {
-              "content-type":
-                "application/json",
-            },
-            body: JSON.stringify({
-              audit_event_id:
-                currentAuditEventId,
-              session_id:
-                sessionId,
-            }),
-          }
-        );
-
-      return {
-        ok: response.ok,
-      };
-    } catch (_error) {
-      return {
-        ok: false,
-      };
-    }
-  }
-
   async function startRealOnlineMatch() {
-    const matchmakingStartedAtMs =
-      Date.now();
-
-    nextBoosterOfferIndex = 0;
-    boosterOfferOpen = false;
-    serverBoosterOfferId = null;
-    serverBoosterEligibleTargets = new Map();
-    clearBoosterTargetMode("online_match_reset");
-    if (boosterStatusEl) {
-      boosterStatusEl.textContent = localizedUiText("İlk güçlendirici 30. saniyede");
-    }
-    renderBoosterOptions();
-
     trackMatchmakingStart();
-
-    // Audit operasyon içindir; başarısızlığı eşleştirmeyi durdurmaz.
-    currentAuditEventId = null;
-    currentAuditSessionId = null;
-    const auditPromise =
-      recordWebTestSessionAudit(
-        matchmakingStartedAtMs
-      );
 
     const result =
       await onlinePlay.start({
@@ -6227,27 +7357,10 @@
 
     if (result.cancelled) return result;
 
-    if (
-      result.ok
-      && result.matched
-      && result.sessionId
-    ) {
+    if (result.ok && result.sessionId) {
       recordProductEvent("matchmaking_matched", {
-        opponent: String(result.sessionId).startsWith("local-ai-match-") ? "ai" : "human",
+        opponent:String(result.sessionId).startsWith("local-ai-match-") ? "ai" : "human",
       });
-      auditPromise.then(
-        (audit) => {
-          if (
-            audit.ok
-            && audit.auditEventId
-          ) {
-            bindWebTestSessionAudit(
-              audit.auditEventId,
-              result.sessionId
-            );
-          }
-        }
-      );
     }
 
     if (!result.ok) {
@@ -6267,58 +7380,6 @@
     }
 
     return result;
-  }
-
-  const diagnosticSnapshot =
-    new RelayDiagnosticSnapshot({
-      version:
-        "2.1.0-beta.43",
-      build:
-        "web-test-beta.13",
-      bootGate:
-        serverBootGate,
-      connectionManager:
-        pvpConnection,
-      matchmakingState,
-      pvpState,
-      recoveryState:
-        playRecoveryState,
-      telemetryTransport,
-      releaseCheckState,
-    });
-
-  const diagnosticButton =
-    document.getElementById(
-      "diagnostic-snapshot-button"
-    );
-  const diagnosticOutput =
-    document.getElementById(
-      "diagnostic-snapshot-output"
-    );
-
-  function renderDiagnosticSnapshot() {
-    if (!diagnosticOutput) {
-      return null;
-    }
-
-    const text =
-      diagnosticSnapshot
-        .toJson();
-
-    diagnosticOutput.value =
-      text;
-    diagnosticOutput.hidden =
-      false;
-
-    return text;
-  }
-
-  if (diagnosticButton) {
-    diagnosticButton
-      .addEventListener(
-        "click",
-        renderDiagnosticSnapshot
-      );
   }
 
   function connectPvP(url) {
@@ -6361,6 +7422,10 @@
   const corePowerChargeEl = document.getElementById("core-power-charge");
   const battleEmojiButtonEl = document.getElementById("battle-emoji-button");
   const battleEmojiButtonGlyphEl = document.getElementById("battle-emoji-button-glyph");
+  const battleEmojiTrayEl = document.getElementById("battle-emoji-tray");
+  const BATTLE_EMOJI_COOLDOWN_MS = 3000; // sunucudaki bekleme ile aynı
+  let battleEmojiCooldownUntil = 0;
+  let battleEmojiCooldownTimer = 0;
   const shelf = document.getElementById("module-shelf");
   let corePowerCharge = 0;
   let corePowerReady = false;
@@ -6374,9 +7439,6 @@
   const lockLabel = document.getElementById("shelf-lock-label");
   const shelfHelp = document.getElementById("shelf-help");
   const logEl = document.getElementById("event-log");
-  const boosterOptionsEl = document.getElementById("booster-options");
-  const boosterStatusEl = document.getElementById("booster-status");
-  const boosterPanelEl = document.getElementById("booster-panel");
   const poolSelectionEl = document.getElementById("battle-pool-selection");
   const poolCountEl = document.getElementById("battle-pool-count");
   const poolConfirmEl = document.getElementById("battle-pool-confirm");
@@ -6405,7 +7467,7 @@
       coreCard.style.setProperty("--core-charge", `${charge}%`);
       coreCard.classList.toggle("core-power-ready", corePowerReady);
       coreCard.classList.add("core-charge-card");
-      coreCard.setAttribute("aria-label", localizedMessage("battle.core_power_aria", {state:corePowerReady ? localizedMessage("beta.ready") : localizedMessage("battle.percent", {value:localizedNumber(charge)})}));
+      coreCard.setAttribute("aria-label", `Çekirdek gücü · ${corePowerReady ? "Hazır" : "%" + charge}`);
       const icon = coreCard.querySelector(".module-icon");
       if (icon) icon.textContent = glyph;
     }
@@ -6413,28 +7475,91 @@
     corePowerButtonEl.dataset.targeting=String(corePowerTargeting);
     corePowerButtonEl.disabled=localBattleFinished || !corePowerReady;
     corePowerButtonEl.setAttribute("aria-pressed",String(corePowerTargeting));
+    // Kuantum · Yarım Faz: güç %50'de kullanılabilir, tam dolmadan yalnız kalkan verir.
+    const halfPhaseReady = corePowerReady && charge < 100;
+    corePowerButtonEl.dataset.halfPhase=String(halfPhaseReady);
     corePowerButtonEl.title=corePowerReady
-      ? (corePowerTargeting
-          ? localizedMessage("battle.use_core_power")
-          : localizedMessage("battle.core_power_ready"))
-      : localizedMessage("battle.core_power_charging", {charge:localizedNumber(charge)});
+      ? (halfPhaseReady
+          ? "Yarım Faz hazır · yalnız kalkan; tam dolumda onarım da gelir"
+          : (corePowerTargeting
+              ? "Çekirdek gücünü kullan"
+              : "Çekirdek gücü hazır"))
+      : `Çekirdek gücü doluyor · %${charge}`;
     if (corePowerChargeEl) {
-      corePowerChargeEl.textContent=corePowerReady ? localizedMessage("beta.ready").toUpperCase() : localizedMessage("battle.percent", {value:localizedNumber(charge)});
+      corePowerChargeEl.textContent=corePowerReady
+        ? (halfPhaseReady ? "YARIM" : "HAZIR")
+        : `%${charge}`;
     }
-    const selectedEmojiId = profileState.viewModel()?.cosmetics?.selected_battle_emoji_id || "none";
-    const selectedEmoji = BATTLE_EMOJIS.find((item) => item.id === selectedEmojiId);
-    if (battleEmojiButtonEl) {
-      battleEmojiButtonEl.hidden = !selectedEmoji || selectedEmoji.id === "none";
-      battleEmojiButtonEl.disabled = localBattleFinished;
-      battleEmojiButtonEl.dataset.emojiId = selectedEmoji?.id || "none";
-      battleEmojiButtonEl.title = localizedUiText(selectedEmoji ? selectedEmoji.nameTr : "Savaş emojisi");
-    }
+    renderBattleEmojiControl();
+  }
+
+  // Savaş emojileri: düğme, oyuncunun açtığı bütün emojileri gösteren tepsiyi
+  // açar; seçilen emoji rakibin de gördüğü savaş olayı olarak gönderilir.
+
+  function closeBattleEmojiTray() {
+    if (!battleEmojiTrayEl || battleEmojiTrayEl.hidden) return;
+    battleEmojiTrayEl.hidden = true;
+    battleEmojiButtonEl?.setAttribute("aria-expanded", "false");
+  }
+
+  function renderBattleEmojiControl() {
+    if (!battleEmojiButtonEl) return;
+    const cosmetics = profileState.viewModel()?.cosmetics;
+    const available = availableBattleEmojis(cosmetics);
+    const coolingDown = Date.now() < battleEmojiCooldownUntil;
+    battleEmojiButtonEl.hidden = !available.length;
+    battleEmojiButtonEl.disabled = localBattleFinished || coolingDown;
+    battleEmojiButtonEl.dataset.cooldown = String(coolingDown);
     if (battleEmojiButtonGlyphEl) {
       renderBattleEmojiVisual(
         battleEmojiButtonGlyphEl,
-        selectedEmoji || { glyph:"◇" }
+        quickBattleEmoji(cosmetics) || { glyph:"🙂", real:true }
       );
     }
+    if (localBattleFinished || coolingDown) closeBattleEmojiTray();
+  }
+
+  function openBattleEmojiTray() {
+    if (!battleEmojiTrayEl) return;
+    const available = availableBattleEmojis(profileState.viewModel()?.cosmetics);
+    battleEmojiTrayEl.replaceChildren(...available.map((emoji) => {
+      const option = document.createElement("button");
+      option.type = "button";
+      option.className = "battle-emoji-option";
+      option.setAttribute("role", "menuitem");
+      option.setAttribute("aria-label", emoji.nameTr);
+      option.title = emoji.nameTr;
+      option.appendChild(createBattleEmojiVisual(emoji));
+      option.addEventListener("click", () => sendBattleEmoji(emoji.id));
+      return option;
+    }));
+    positionBattleEmojiTray();
+    battleEmojiTrayEl.hidden = false;
+    battleEmojiButtonEl?.setAttribute("aria-expanded", "true");
+  }
+
+  // Raf paneli taşanı kestiği için tepsi sabit konumda, düğmenin üstünde açılır.
+  function positionBattleEmojiTray() {
+    const anchor = battleEmojiButtonEl?.getBoundingClientRect();
+    if (!battleEmojiTrayEl || !anchor) return;
+    battleEmojiTrayEl.style.right = `${Math.max(8, window.innerWidth - anchor.right)}px`;
+    battleEmojiTrayEl.style.bottom = `${Math.max(8, window.innerHeight - anchor.top + 8)}px`;
+  }
+
+  function sendBattleEmoji(emojiId) {
+    if (localBattleFinished || Date.now() < battleEmojiCooldownUntil) return;
+    client.emitCommand({
+      kind:"send_battle_emoji",
+      payload:{emoji_id:emojiId},
+    });
+    battleEmojiCooldownUntil = Date.now() + BATTLE_EMOJI_COOLDOWN_MS;
+    closeBattleEmojiTray();
+    renderBattleEmojiControl();
+    window.clearTimeout(battleEmojiCooldownTimer);
+    battleEmojiCooldownTimer = window.setTimeout(
+      renderBattleEmojiControl,
+      BATTLE_EMOJI_COOLDOWN_MS + 30
+    );
   }
 
   function syncCorePowerFromSnapshot(player) {
@@ -6443,7 +7568,7 @@
     client.energyStock = Number(player?.energy_stock || 0);
     document.getElementById("board")?.classList.toggle("energy-strain", client.energyLoadRatio > 1.2 && client.energyStock <= 0);
     const summary = document.getElementById("player-core-summary");
-    if (summary) summary.title = localizedMessage("battle.energy_load", {load:localizedNumber(Math.round(client.energyLoadRatio * 100)), stock:localizedNumber(client.energyStock)});
+    if (summary) summary.title = `Enerji yükü %${Math.round(client.energyLoadRatio * 100)} · Depo ${client.energyStock}`;
     const power=player?.core_power;
     if (!power) return;
     corePowerCharge=Number(power.charge || 0);
@@ -6482,13 +7607,19 @@
     if (!corePowerReady || localBattleFinished) return;
     useCorePowerOn(client.modules.get("core-1"));
   });
-  battleEmojiButtonEl?.addEventListener("click", () => {
-    const emojiId = battleEmojiButtonEl.dataset.emojiId || "none";
-    if (localBattleFinished || emojiId === "none") return;
-    client.emitCommand({
-      kind:"send_battle_emoji",
-      payload:{emoji_id:emojiId},
-    });
+  battleEmojiButtonEl?.addEventListener("click", (event) => {
+    event.stopPropagation();
+    if (battleEmojiTrayEl?.hidden === false) closeBattleEmojiTray();
+    else openBattleEmojiTray();
+  });
+  document.addEventListener("pointerdown", (event) => {
+    if (battleEmojiTrayEl?.hidden !== false) return;
+    if (event.target.closest?.("#battle-emoji-tray, #battle-emoji-button")) return;
+    closeBattleEmojiTray();
+  }, true);
+  // Mobil tarayıcı çubuğu kayınca görüntü alanı değişir; tepsi düğmeye bağlı kalır.
+  window.addEventListener("resize", () => {
+    if (battleEmojiTrayEl?.hidden === false) positionBattleEmojiTray();
   });
   const presetGalleryEl =
     document.getElementById(
@@ -6628,17 +7759,6 @@
       "battle-pool-catalog-source"
     );
 
-  const webTestStatusEl =
-    document.getElementById(
-      "web-test-status"
-    );
-  if (webTestStatusEl) {
-    webTestStatusEl.textContent =
-      webTestBuildState.labelTr();
-    webTestStatusEl.dataset.status =
-      webTestBuildState.status;
-  }
-
   for (
     const button
     of document.querySelectorAll(
@@ -6741,11 +7861,11 @@
     }
 
     const labels = {
-      idle: localizedMessage("beta.server_idle"),
-      checking: localizedMessage("beta.server_checking"),
-      ready: localizedMessage("beta.server_ready"),
-      blocked: localizedMessage("beta.server_blocked"),
-      error: localizedMessage("beta.server_error"),
+      idle: "Sunucu: Kontrol bekliyor",
+      checking: "Sunucu: Kontrol ediliyor",
+      ready: "Sunucu: Hazır",
+      blocked: "Sunucu: Oyna geçici olarak kapalı",
+      error: "Sunucu: Sağlık kontrolü başarısız",
     };
 
     serverBootStatusEl.textContent =
@@ -6781,1171 +7901,9 @@
         );
     }
 
-    const operationEl =
-      document.getElementById(
-        "operation-readiness-status"
-      );
-    const testRunEl =
-      document.getElementById(
-        "test-run-status"
-      );
-    if (testRunEl) {
-      const manifestRunId =
-        serverBootGate
-          .manifest
-          ?.test_run_id
-        || null;
-
-      if (manifestRunId) {
-        testRunConsistency
-          .setExpected(
-            manifestRunId
-          );
-        testRunEl.textContent =
-          localizedMessage("beta.test_run_id", {run:manifestRunId});
-      } else {
-        testRunEl.textContent =
-          localizedMessage("beta.test_run_waiting");
-      }
-
-      testRunEl.dataset.status =
-        testRunConsistency.status;
-    }
-
-    if (operationEl) {
-      const operation =
-        serverBootGate
-          .operationReadiness;
-
-      if (!operation) {
-        operationEl.textContent =
-          localizedMessage("beta.operation_waiting");
-      } else if (
-        operation.ready
-      ) {
-        const warnings =
-          operation.warnings
-          || [];
-        operationEl.textContent =
-          warnings.length
-            ? (
-                localizedMessage("beta.operation_ready_warnings", {warnings:warnings.join(" | ")})
-              )
-            : localizedMessage("beta.operation_ready");
-      } else {
-        operationEl.textContent =
-          localizedMessage("beta.operation_not_ready");
-      }
-
-      operationEl.dataset.ready =
-        String(
-          Boolean(
-            operation?.ready
-          )
-        );
-    }
-
     if (serverBootRetry) {
       serverBootRetry.hidden =
         serverBootGate.canPlay();
-    }
-  }
-
-  async function loadMonitoringSummary() {
-    const el =
-      document.getElementById(
-        "monitoring-summary-status"
-      );
-
-    try {
-      const response =
-        await fetch(
-          "/web-test/monitoring"
-        );
-
-      if (!response.ok) {
-        throw new Error(
-          localizedMessage("beta.monitoring_load_failed")
-        );
-      }
-
-      const view =
-        monitoringState.apply(
-          await response.json()
-        );
-
-      const operationLabels = {
-        not_ready:localizedMessage("beta.not_ready"),
-        ready_not_started:localizedMessage("beta.ready_not_started"),
-        running:localizedMessage("beta.test_running"),
-      };
-      const stabilityLabels = {
-        not_running:localizedMessage("beta.not_running"),
-        stable:localizedMessage("beta.stable"),
-        degraded:localizedMessage("beta.degraded"),
-      };
-
-      if (el) {
-        el.textContent =
-          localizedMessage("beta.monitoring_status", {operation:operationLabels[view.operationState] || view.operationState, stability:stabilityLabels[view.stabilityState] || view.stabilityState, completion:localizedNumber(view.auditFinishRatePercent)});
-        el.dataset.state =
-          view.operationState;
-      }
-
-      return {
-        ok:true,
-        view,
-      };
-    } catch (error) {
-      if (el) {
-        el.textContent =
-          localizedMessage("beta.monitoring_unavailable");
-        el.dataset.state =
-          "unknown";
-      }
-
-      return {
-        ok:false,
-        reason:
-          error instanceof Error
-            ? error.message
-            : String(error),
-      };
-    }
-  }
-
-  async function loadOperationStability() {
-    const el =
-      document.getElementById(
-        "operation-stability-status"
-      );
-
-    try {
-      const response =
-        await fetch(
-          "/web-test/operation-stability"
-        );
-
-      if (!response.ok) {
-        throw new Error(
-          localizedMessage("beta.stability_load_failed")
-        );
-      }
-
-      const view =
-        operationStabilityState.apply(
-          await response.json()
-        );
-
-      const labels = {
-        not_running:localizedMessage("beta.test_not_running"),
-        stable:localizedMessage("beta.stable"),
-        degraded:localizedMessage("beta.degraded"),
-      };
-
-      if (el) {
-        el.textContent =
-          localizedMessage("beta.stability_status", {state:labels[view.stability] || view.stability});
-        el.dataset.stability =
-          view.stability;
-      }
-
-      return {
-        ok:true,
-        view,
-      };
-    } catch (error) {
-      if (el) {
-        el.textContent =
-          localizedMessage("beta.stability_unavailable");
-        el.dataset.stability =
-          "unknown";
-      }
-
-      return {
-        ok:false,
-        reason:
-          error instanceof Error
-            ? error.message
-            : String(error),
-      };
-    }
-  }
-
-  async function loadOperationStatus() {
-    const el =
-      document.getElementById(
-        "operation-status"
-      );
-
-    try {
-      const response =
-        await fetch(
-          "/web-test/operation-status"
-        );
-
-      if (!response.ok) {
-        throw new Error(
-          localizedMessage("beta.operation_load_failed")
-        );
-      }
-
-      const view =
-        operationStatusState.apply(
-          await response.json()
-        );
-
-      const labels = {
-        not_ready:localizedMessage("beta.not_ready"),
-        ready_not_started:localizedMessage("beta.ready_not_started"),
-        running:localizedMessage("beta.test_running"),
-      };
-
-      if (el) {
-        el.textContent =
-          localizedMessage("beta.operation_status", {state:labels[view.state] || view.state});
-        el.dataset.state =
-          view.state;
-      }
-
-      return {
-        ok:true,
-        view,
-      };
-    } catch (error) {
-      if (el) {
-        el.textContent =
-          localizedMessage("beta.operation_unavailable");
-        el.dataset.state =
-          "unknown";
-      }
-
-      return {
-        ok:false,
-        reason:
-          error instanceof Error
-            ? error.message
-            : String(error),
-      };
-    }
-  }
-
-  async function loadWebTestRunStatus() {
-    const el =
-      document.getElementById(
-        "web-test-run-status"
-      );
-
-    try {
-      const response =
-        await fetch(
-          "/web-test/test-run/status"
-        );
-
-      if (!response.ok) {
-        throw new Error(
-          localizedMessage("beta.test_run_load_failed")
-        );
-      }
-
-      const view =
-        webTestRunStatusState.apply(
-          await response.json()
-        );
-
-      if (el) {
-        el.textContent =
-          localizedMessage("beta.test_run_status", {state:localizedMessage(view.finished ? "beta.completed" : view.started ? "beta.started" : "beta.not_started")})
-          + (
-              view.testRunId
-                ? ` · ${view.testRunId}`
-                : ""
-            );
-        el.dataset.started =
-          String(
-            view.started
-          );
-      }
-
-      return {
-        ok:true,
-        view,
-      };
-    } catch (error) {
-      if (el) {
-        el.textContent =
-          localizedMessage("beta.test_run_unavailable");
-        el.dataset.started =
-          "false";
-      }
-
-      return {
-        ok:false,
-        reason:
-          error instanceof Error
-            ? error.message
-            : String(error),
-      };
-    }
-  }
-
-  async function loadPreflightStatus() {
-    const el =
-      document.getElementById(
-        "preflight-status"
-      );
-
-    try {
-      const response =
-        await fetch(
-          "/web-test/preflight"
-        );
-
-      if (!response.ok) {
-        throw new Error(
-          localizedMessage("beta.preflight_load_failed")
-        );
-      }
-
-      const view =
-        preflightState.apply(
-          await response.json()
-        );
-
-      if (el) {
-        el.textContent =
-          localizedMessage("beta.preflight_status", {state:localizedMessage(view.ready ? "beta.can_start" : "beta.not_ready")})
-          + (
-              view.testRunId
-                ? ` · ${view.testRunId}`
-                : ""
-            )
-          + (
-              view.failedChecks.length
-                ? ` · ${view.failedChecks.join(", ")}`
-                : ""
-            );
-        el.dataset.ready =
-          String(view.ready);
-      }
-
-      return {
-        ok:true,
-        view,
-      };
-    } catch (error) {
-      if (el) {
-        el.textContent =
-          localizedMessage("beta.preflight_unavailable");
-        el.dataset.ready="false";
-      }
-      return {
-        ok:false,
-        reason:
-          error instanceof Error
-            ? error.message
-            : String(error),
-      };
-    }
-  }
-
-  async function loadFirstRunChecklist() {
-    const el =
-      document.getElementById(
-        "first-run-checklist-status"
-      );
-
-    try {
-      const response =
-        await fetch(
-          "/web-test/first-run-checklist"
-        );
-
-      if (!response.ok) {
-        throw new Error(
-          localizedMessage("beta.first_run_load_failed")
-        );
-      }
-
-      const view =
-        firstRunChecklistState.apply(
-          await response.json()
-        );
-
-      if (el) {
-        el.textContent =
-          localizedMessage("beta.first_run_status", {state:localizedMessage(view.ready ? "beta.ready" : "beta.not_ready")})
-          + (
-              view.failedChecks.length
-                ? ` · ${view.failedChecks.join(", ")}`
-                : ""
-            )
-          + (
-              view.noteCount
-                ? localizedMessage("beta.operation_notes_suffix", {count:localizedNumber(view.noteCount)})
-                : ""
-            );
-        el.dataset.ready =
-          String(view.ready);
-      }
-
-      return {
-        ok:true,
-        view,
-      };
-    } catch (error) {
-      if (el) {
-        el.textContent =
-          localizedMessage("beta.first_run_unavailable");
-        el.dataset.ready="false";
-      }
-      return {
-        ok:false,
-        reason:
-          error instanceof Error
-            ? error.message
-            : String(error),
-      };
-    }
-  }
-
-  async function loadLaunchReadiness() {
-    const el =
-      document.getElementById(
-        "launch-readiness-status"
-      );
-
-    try {
-      const response =
-        await fetch(
-          "/web-test/launch-readiness"
-        );
-
-      if (!response.ok) {
-        throw new Error(
-          localizedMessage("beta.launch_load_failed")
-        );
-      }
-
-      const view =
-        launchReadinessState.apply(
-          await response.json()
-        );
-
-      if (el) {
-        el.textContent =
-          view.ready
-            ? localizedMessage("beta.launch_ready", {run:view.testRunId || "-"})
-            : (
-                localizedMessage("beta.launch_not_ready")
-                + (
-                    view.failedChecks.length
-                      ? ` · ${view.failedChecks.join(", ")}`
-                      : ""
-                  )
-              );
-        el.dataset.ready =
-          String(
-            view.ready
-          );
-      }
-
-      renderParticipantBootstrapStatus();
-      renderServerBootStatus();
-
-      return {
-        ok:view.ready,
-        view,
-      };
-    } catch (error) {
-      launchReadinessState.apply({
-        launch_ready:false,
-        failed_checks:[
-          "launch_request",
-        ],
-      });
-
-      if (el) {
-        el.textContent =
-          localizedMessage("beta.launch_unavailable");
-        el.dataset.ready =
-          "false";
-      }
-
-      renderParticipantBootstrapStatus();
-      renderServerBootStatus();
-
-      return {
-        ok:false,
-        reason:
-          error instanceof Error
-            ? error.message
-            : String(error),
-      };
-    }
-  }
-
-  async function loadRcCandidateStatus() {
-    const el =
-      document.getElementById(
-        "rc-candidate-status"
-      );
-
-    try {
-      const response =
-        await fetch(
-          "/web-test/rc-candidate"
-        );
-
-      if (!response.ok) {
-        throw new Error(
-          localizedMessage("beta.rc_load_failed")
-        );
-      }
-
-      const view =
-        rcCandidateState.apply(
-          await response.json()
-        );
-
-      if (el) {
-        el.textContent =
-          localizedMessage("beta.rc_status", {state:localizedMessage(view.ready ? "beta.ready" : "beta.not_ready")})
-          + (
-              view.testRunId
-                ? ` · ${view.testRunId}`
-                : ""
-            )
-          + (
-              view.insufficientSignalCount
-                ? localizedMessage("beta.insufficient_signals_suffix", {count:localizedNumber(view.insufficientSignalCount)})
-                : ""
-            );
-        el.dataset.ready =
-          String(
-            view.ready
-          );
-      }
-
-      return {
-        ok:true,
-        view,
-      };
-    } catch (error) {
-      if (el) {
-        el.textContent =
-          localizedMessage("beta.rc_unavailable");
-        el.dataset.ready =
-          "false";
-      }
-
-      return {
-        ok:false,
-        reason:
-          error instanceof Error
-            ? error.message
-            : String(error),
-      };
-    }
-  }
-
-  async function loadGoNoGoStatus() {
-    const el =
-      document.getElementById(
-        "go-no-go-status"
-      );
-
-    try {
-      const response =
-        await fetch(
-          "/web-test/go-no-go"
-        );
-
-      if (!response.ok) {
-        throw new Error(
-          localizedMessage("beta.go_no_go_load_failed")
-        );
-      }
-
-      const view =
-        webTestGoNoGoState.apply(
-          await response.json()
-        );
-
-      if (el) {
-        el.textContent =
-          localizedMessage("beta.go_no_go_status", {decision:view.decision})
-          + (
-              view.insufficientSignalCount
-                ? localizedMessage("beta.insufficient_signals_suffix", {count:localizedNumber(view.insufficientSignalCount)})
-                : localizedMessage("beta.signals_observable_suffix")
-            );
-        el.dataset.decision =
-          view.decision;
-      }
-
-      return {
-        ok: true,
-        view,
-      };
-    } catch (error) {
-      if (el) {
-        el.textContent =
-          localizedMessage("beta.go_no_go_unavailable");
-        el.dataset.decision =
-          "UNKNOWN";
-      }
-
-      return {
-        ok: false,
-        reason:
-          error instanceof Error
-            ? error.message
-            : String(error),
-      };
-    }
-  }
-
-  async function captureWebTestOperationalSnapshot() {
-    try {
-      await Promise.all([
-        fetch(
-          "/web-test/audit/operation-snapshot",
-          {
-            method:"POST",
-          }
-        ),
-        fetch(
-          "/web-test/audit/stability-snapshot",
-          {
-            method:"POST",
-          }
-        ),
-      ]);
-    } catch (_error) {
-      // Gözlemsel snapshot hatası oyuncu akışını durdurmaz.
-    }
-  }
-
-  function stopWebTestSampling() {
-    if (webTestSamplingTimer) {
-      clearInterval(
-        webTestSamplingTimer
-      );
-      webTestSamplingTimer =
-        null;
-    }
-  }
-
-  function startWebTestSampling(
-    testRunId
-  ) {
-    if (!operationalDiagnosticsEnabled) return;
-    activeWebTestRunId =
-      testRunId;
-
-    stopWebTestSampling();
-    captureWebTestOperationalSnapshot();
-
-    webTestSamplingTimer =
-      setInterval(
-        () => {
-          captureWebTestOperationalSnapshot();
-          loadMonitoringSummary();
-          loadOperationStatus();
-          loadOperationStability();
-        },
-        10000
-      );
-  }
-
-  function setFeedbackFormVisible(
-    visible
-  ) {
-    const form =
-      document.getElementById(
-        "web-test-feedback-form"
-      );
-
-    if (form) {
-      form.hidden =
-        !visible;
-    }
-  }
-
-  async function loadFeedbackSummary() {
-    const el =
-      document.getElementById(
-        "feedback-summary-status"
-      );
-
-    try {
-      const response =
-        await fetch(
-          "/web-test/feedback/summary"
-        );
-
-      if (!response.ok) {
-        throw new Error(
-          localizedMessage("beta.feedback_load_failed")
-        );
-      }
-
-      const payload =
-        await response.json();
-      const averages =
-        payload.average_ratings
-        || {};
-
-      if (el) {
-        el.textContent =
-          localizedMessage("beta.feedback_summary", {
-            count:localizedNumber(payload.feedback_count),
-            usability:averages.usability ?? "-",
-            connection:averages.connection ?? "-",
-            battle:averages.battle_balance ?? "-",
-            module:averages.module_booster_balance ?? "-",
-          });
-      }
-
-      return {
-        ok:true,
-        payload,
-      };
-    } catch (error) {
-      if (el) {
-        el.textContent =
-          localizedMessage("beta.feedback_unavailable");
-      }
-
-      return {
-        ok:false,
-        reason:
-          error instanceof Error
-            ? error.message
-            : String(error),
-      };
-    }
-  }
-
-  async function loadReviewCandidates() {
-    const el=document.getElementById("beta-review-status");
-
-    try {
-      const response=await fetch("/web-test/review-candidates");
-      if (!response.ok) {
-        throw new Error(localizedMessage("beta.review_load_failed"));
-      }
-
-      const payload=await response.json();
-
-      if (el) {
-        if (payload.status==="waiting_for_real_data") {
-          el.textContent=localizedMessage("beta.review_waiting");
-        } else if (payload.status==="no_priority_issue") {
-          el.textContent=localizedMessage("beta.review_no_issue");
-        } else {
-          const first=payload.candidates?.[0];
-          el.textContent=
-            localizedMessage("beta.review_areas", {count:localizedNumber(payload.candidate_count)})
-            + (first ? localizedMessage("beta.review_priority_suffix", {label:localizedUiText(first.label)}) : "");
-        }
-        el.dataset.status=payload.status;
-      }
-
-      return {ok:true,payload};
-    } catch (error) {
-      if (el) {
-        el.textContent=localizedMessage("beta.review_unavailable");
-        el.dataset.status="error";
-      }
-      return {
-        ok:false,
-        reason:error instanceof Error ? error.message : String(error),
-      };
-    }
-  }
-
-  async function loadBetaFindings() {
-    const el =
-      document.getElementById(
-        "beta-findings-status"
-      );
-
-    try {
-      const response =
-        await fetch(
-          "/web-test/findings"
-        );
-
-      if (!response.ok) {
-        throw new Error(
-          localizedMessage("beta.findings_load_failed")
-        );
-      }
-
-      const payload =
-        await response.json();
-
-      if (el) {
-        if (
-          payload.status
-          === "insufficient_data"
-        ) {
-          el.textContent =
-            localizedMessage("beta.findings_waiting", {count:localizedNumber(payload.feedback_count), minimum:localizedNumber(payload.minimum_feedback)});
-        } else {
-          el.textContent =
-            localizedMessage("beta.findings_ready", {concerns:localizedNumber(payload.concerns.length), matches:localizedNumber(payload.gameplay_signals.completed_matches)});
-        }
-
-        el.dataset.status =
-          payload.status;
-      }
-
-      return {
-        ok:true,
-        payload,
-      };
-    } catch (error) {
-      if (el) {
-        el.textContent =
-          localizedMessage("beta.findings_unavailable");
-        el.dataset.status =
-          "error";
-      }
-
-      return {
-        ok:false,
-        reason:
-          error instanceof Error
-            ? error.message
-            : String(error),
-      };
-    }
-  }
-
-  async function submitWebTestFeedback() {
-    const statusEl =
-      document.getElementById(
-        "feedback-submit-status"
-      );
-
-    const readRating =
-      (id) => Number(
-        document.getElementById(id)
-          ?.value
-        || 0
-      );
-
-    const payload = {
-      test_run_id:
-        activeWebTestRunId,
-      submitted_at_ms:
-        Date.now(),
-      usability:
-        readRating(
-          "feedback-usability"
-        ),
-      connection:
-        readRating(
-          "feedback-connection"
-        ),
-      battle_balance:
-        readRating(
-          "feedback-battle-balance"
-        ),
-      module_booster_balance:
-        readRating(
-          "feedback-module-booster-balance"
-        ),
-      note:
-        document.getElementById(
-          "feedback-note"
-        )?.value
-        || "",
-    };
-
-    try {
-      const response =
-        await fetch(
-          "/web-test/feedback",
-          {
-            method:"POST",
-            headers:{
-              "content-type":
-                "application/json",
-            },
-            body:JSON.stringify(
-              payload
-            ),
-          }
-        );
-
-      if (!response.ok) {
-        let detail =localizedMessage("beta.feedback_submit_failed");
-
-        try {
-          const body =
-            await response.json();
-          detail =localizedApiError(body,response.status);
-        } catch (_error) {
-          // JSON gövdesi zorunlu değil.
-        }
-
-        throw new Error(
-          detail
-        );
-      }
-
-      if (statusEl) {
-        statusEl.textContent =
-          localizedMessage("beta.feedback_saved");
-      }
-
-      setFeedbackFormVisible(
-        false
-      );
-      await loadFeedbackSummary();
-      await loadBetaFindings();
-      await loadReviewCandidates();
-
-      return {
-        ok:true,
-      };
-    } catch (error) {
-      if (statusEl) {
-        statusEl.textContent =
-          error instanceof Error
-            ? error.message
-            : String(error);
-      }
-
-      return {
-        ok:false,
-      };
-    }
-  }
-
-  async function finishActiveWebTestRun() {
-    if (!activeWebTestRunId) {
-      return {
-        ok:false,
-        reason:
-          localizedMessage("beta.active_test_missing"),
-      };
-    }
-
-    try {
-      const response =
-        await fetch(
-          "/web-test/test-run/finish",
-          {
-            method:"POST",
-            headers:{
-              "content-type":
-                "application/json",
-            },
-            body:JSON.stringify({
-              test_run_id:
-                activeWebTestRunId,
-            }),
-          }
-        );
-
-      if (!response.ok) {
-        throw new Error(
-          localizedMessage("beta.test_finish_failed")
-        );
-      }
-
-      stopWebTestSampling();
-      await loadWebTestRunStatus();
-      await loadOperationStatus();
-      await loadOperationStability();
-      await loadMonitoringSummary();
-      await loadWebTestRunReport();
-      setFeedbackFormVisible(
-        true
-      );
-      await loadFeedbackSummary();
-      await loadBetaFindings();
-      await loadReviewCandidates();
-
-      return {
-        ok:true,
-        payload:
-          await response.json(),
-      };
-    } catch (error) {
-      return {
-        ok:false,
-        reason:
-          error instanceof Error
-            ? error.message
-            : String(error),
-      };
-    }
-  }
-
-  async function loadWebTestRunReport() {
-    const el =
-      document.getElementById(
-        "web-test-run-report"
-      );
-
-    try {
-      const response =
-        await fetch(
-          "/web-test/test-run/report"
-        );
-
-      if (!response.ok) {
-        throw new Error(
-          localizedMessage("beta.report_unavailable")
-        );
-      }
-
-      const payload =
-        await response.json();
-
-      if (el) {
-        const duration =
-          payload.run_duration_ms == null
-            ? "-"
-            : localizedMessage("time.seconds_short", {count:localizedNumber(Math.round(payload.run_duration_ms / 1000))});
-
-        el.textContent =
-          localizedMessage("beta.test_report", {status:payload.status, duration, operation:payload.monitoring?.operation?.state || "-", stability:payload.monitoring?.stability?.state || "-"});
-        el.dataset.status =
-          payload.status;
-      }
-
-      return {
-        ok:true,
-        payload,
-      };
-    } catch (error) {
-      if (el) {
-        el.textContent =
-          localizedMessage("beta.report_status_unavailable");
-        el.dataset.status =
-          "error";
-      }
-
-      return {
-        ok:false,
-        reason:
-          error instanceof Error
-            ? error.message
-            : String(error),
-      };
-    }
-  }
-
-  async function ensureWebTestRunStarted(
-    testRunId
-  ) {
-    if (!testRunId) {
-      return {
-        ok:false,
-        reason:
-          localizedMessage("beta.active_test_id_missing"),
-      };
-    }
-
-    const status =
-      await loadWebTestRunStatus();
-
-    if (
-      status.ok
-      && status.view
-        ?.finished
-    ) {
-      activeWebTestRunId =
-        testRunId;
-      stopWebTestSampling();
-      await loadWebTestRunReport();
-      setFeedbackFormVisible(
-        true
-      );
-      await loadFeedbackSummary();
-      await loadBetaFindings();
-      await loadReviewCandidates();
-      return {
-        ok:true,
-        alreadyStarted:true,
-        finished:true,
-      };
-    }
-
-    if (
-      status.ok
-      && status.view
-        ?.started
-    ) {
-      startWebTestSampling(
-        testRunId
-      );
-      return {
-        ok:true,
-        alreadyStarted:true,
-      };
-    }
-
-    try {
-      const response =
-        await fetch(
-          "/web-test/test-run/start",
-          {
-            method:"POST",
-            headers:{
-              "content-type":
-                "application/json",
-            },
-            body:JSON.stringify({
-              test_run_id:
-                testRunId,
-            }),
-          }
-        );
-
-      if (!response.ok) {
-        let detail =localizedMessage("beta.test_start_failed");
-
-        try {
-          const payload =
-            await response.json();
-          detail =localizedApiError(payload,response.status);
-        } catch (_error) {
-          // Yanıt gövdesi zorunlu değil.
-        }
-
-        throw new Error(
-          detail
-        );
-      }
-
-      await loadWebTestRunStatus();
-      await loadOperationStatus();
-      await loadOperationStability();
-      await loadMonitoringSummary();
-      startWebTestSampling(
-        testRunId
-      );
-
-      return {
-        ok:true,
-        alreadyStarted:false,
-      };
-    } catch (error) {
-      return {
-        ok:false,
-        reason:
-          error instanceof Error
-            ? error.message
-            : String(error),
-      };
     }
   }
 
@@ -7960,121 +7918,17 @@
     const result =
       await pending;
 
-    renderServerBootStatus();
-
-    if (!operationalDiagnosticsEnabled) {
-      launchReadinessState.apply({
-        launch_ready:Boolean(result.ok),
-        failed_checks:result.ok ? [] : ["server_boot"],
-      });
-      if (!result.ok) {
-        showPlayError(
-          "websocket",
-          result.reason || localizedMessage("beta.server_not_ready")
-        );
-      } else if (playRecoveryState.kind === "websocket") {
-        clearPlayError();
-      }
-      renderParticipantBootstrapStatus();
-      renderServerBootStatus();
-      return {
-        ...result,
-        launchReady:Boolean(result.ok),
-        preflightReady:Boolean(result.ok),
-        runStarted:false,
-        diagnosticsSkipped:true,
-      };
-    }
-
-    loadGoNoGoStatus();
-    loadRcCandidateStatus();
-    loadFirstRunChecklist();
-
-    const preflight =
-      result.ok
-        ? await loadPreflightStatus()
-        : {
-            ok:false,
-          };
-
-    const launch =
-      result.ok
-        ? await loadLaunchReadiness()
-        : {
-            ok:false,
-          };
-
-    let runStart = {
-      ok:false,
-    };
-
-    if (
-      result.ok
-      && launch.ok
-      && preflight.ok
-      && preflight.view
-        ?.ready
-    ) {
-      runStart =
-        await ensureWebTestRunStarted(
-          preflight.view.testRunId
-        );
-    }
-
-    await loadWebTestRunStatus();
-    await loadOperationStatus();
-    await loadOperationStability();
-    await loadMonitoringSummary();
-
     if (!result.ok) {
       showPlayError(
         "websocket",
-        result.reason
-        || localizedMessage("beta.release_check_not_ready")
+        result.reason || "Sunucu bağlantısı hazır değil."
       );
-    } else if (!launch.ok) {
-      showPlayError(
-        "websocket",
-        launch.reason
-        || localizedMessage("beta.launch_approval_not_ready")
-      );
-    } else if (
-      preflight.ok
-      && preflight.view
-        ?.ready
-      && !runStart.ok
-    ) {
-      showPlayError(
-        "websocket",
-        runStart.reason
-        || localizedMessage("beta.test_start_failed")
-      );
-    } else if (
-      playRecoveryState.kind
-      === "websocket"
-    ) {
+    } else if (playRecoveryState.kind === "websocket") {
       clearPlayError();
     }
-
     renderParticipantBootstrapStatus();
     renderServerBootStatus();
-
-    return {
-      ...result,
-      launchReady:
-        Boolean(
-          launch.ok
-        ),
-      preflightReady:
-        Boolean(
-          preflight.view
-            ?.ready
-        ),
-      runStarted:
-        Boolean(
-          runStart.ok
-        ),
-    };
+    return result;
   }
 
   if (serverBootRetry) {
@@ -8091,90 +7945,11 @@
       );
   }
 
-  const webTestFeedbackForm =
-    document.getElementById(
-      "web-test-feedback-form"
-    );
-
-  if (webTestFeedbackForm) {
-    webTestFeedbackForm
-      .addEventListener(
-        "submit",
-        async (event) => {
-          event.preventDefault();
-          await submitWebTestFeedback();
-        }
-      );
-  }
-
-  const webTestFinishButton =
-    document.getElementById(
-      "web-test-finish-button"
-    );
-
-  if (webTestFinishButton) {
-    webTestFinishButton
-      .addEventListener(
-        "click",
-        async () => {
-          const result =
-            await finishActiveWebTestRun();
-
-          if (!result.ok) {
-            logClientMessage(
-              result.reason
-            );
-          }
-        }
-      );
-  }
-
-  async function loadUiBuildManifest(
-    providedManifest=null
-  ) {
-    try {
-      let manifest=providedManifest;
-      if (!manifest) {
-        const response=await fetch(
-          "/web-test/manifest",
-          {
-            cache:"no-store",
-          }
-        );
-        if (!response.ok) return;
-        manifest=await response.json();
-      }
-      const versionEl=
-        document.getElementById(
-          "ui-build-version"
-        );
-      const runEl=
-        document.getElementById(
-          "ui-build-run"
-        );
-      if (versionEl) {
-        versionEl.textContent=
-          manifest.version
-          || "2.1.0-beta.43";
-      }
-      if (runEl) {
-        runEl.textContent=localizedMessage("beta.manifest_cache", {run:manifest.test_run_id || "local", mode:manifest.static_cache_mode || "unknown"});
-      }
-    } catch (_error) {
-      // Build chip is informational; startup remains available.
-    }
-  }
-
   renderAppScreen();
   renderConnectionStatus(
     pvpConnection.status
   );
-  checkServerReadiness()
-    .then((result) =>
-      loadUiBuildManifest(
-        result?.manifest || null
-      )
-    );
+  checkServerReadiness();
 
   const localPlayStartButton =
     document.getElementById(
@@ -8232,16 +8007,14 @@
           document.body.classList.contains(
             "battle-hud-settings-open"
           )
-            ? localizedMessage("battle.settings_open")
-            : localizedMessage("ui.settings");
+            ? "Ayarlar açık · savaş devam ediyor"
+            : "Ayarlar";
       }
     );
   }
 
   const BOARD_CELLS = Array.from({length: 15}, (_, i) => [i % 5, Math.floor(i / 5)]);
   const CORE_POSITION = { x: 2, y: 1 };
-  const GATE_KEYS = new Set();
-  const SPECIAL_CELL_INFO = {};
   let battleStartedAt = performance.now();
   gridshardAudioDirector =
     typeof GridshardAudioDirector === "function"
@@ -8265,26 +8038,36 @@
     }
     return {
       ok:false,
-      reason:localizedMessage("audio.director_not_ready"),
+      reason:"Audio director hazır değil.",
     };
   }
 
   let activePlayMode = "idle";
   const AI_ARCHETYPE_UI = Object.freeze({
     aggressive:{
-      key:"ai.aggressive",
+      name_tr:"Saldırgan", name_en:"Aggressive",
+      description_tr:"Erken hasar temposu kurar; saldırı modüllerini öne alır.",
+      description_en:"Builds early damage pressure and prioritizes attack modules.",
     },
     defensive:{
-      key:"ai.defensive",
+      name_tr:"Savunmacı", name_en:"Defensive",
+      description_tr:"Çekirdeği ayakta tutar; savunma ve onarım katmanını saldırı baskısına göre büyütür.",
+      description_en:"Protects the core by layering defense and repair against incoming pressure.",
     },
     balanced:{
-      key:"ai.balanced",
+      name_tr:"Dengeli", name_en:"Balanced",
+      description_tr:"Rakibin devresine göre karşı modül seçer; saldırı ve savunmayı dengeler.",
+      description_en:"Counters the opponent while balancing offense and defense.",
     },
     sabotage:{
-      key:"ai.sabotage",
+      name_tr:"Sabotaj Odaklı", name_en:"Sabotage",
+      description_tr:"Rakip sistemleri susturur; EMP, Kesici ve bozucu etkilerle tempo kırar.",
+      description_en:"Silences enemy systems with EMP, Disruptor and control effects.",
     },
     economy:{
-      key:"ai.economy",
+      name_tr:"Ekonomi Odaklı", name_en:"Economy",
+      description_tr:"Önce enerji rezervi kurar; sonra yüksek maliyetli saldırılara geçer.",
+      description_en:"Builds an energy reserve first, then transitions into expensive attacks.",
     },
   });
   let selectedAiArchetype = "balanced";
@@ -8296,22 +8079,22 @@
 
   function aiArchetypeName(archetypeId=selectedAiArchetype) {
     const info=aiArchetypeInfo(archetypeId);
-    return localizedMessage(`${info.key}.name`);
+    // Metin Türkçe yazılır; İngilizce görünümü i18n katmanı üretir.
+    return info.name_tr;
   }
 
   function renderAiArchetypePicker() {
     const picker=document.getElementById("ai-archetype-picker");
     if (!picker) return;
     const info=aiArchetypeInfo(selectedAiArchetype);
+    const english=(document.documentElement?.lang || "tr") === "en";
     const heading=document.getElementById("ai-archetype-title");
     const selected=document.getElementById("ai-archetype-selected");
     const description=document.getElementById("ai-archetype-description");
-    if (heading) heading.textContent=localizedMessage("ai.opponent_title");
-    if (selected) selected.textContent=localizedMessage(`${info.key}.name`);
+    if (heading) heading.textContent=english ? "AI OPPONENT" : "AI RAKİBİ";
+    if (selected) selected.textContent=english ? info.name_en : info.name_tr;
     if (description) {
-      const descriptionText = localizedMessage(`${info.key}.description`);
-      const planText = localizedMessage(`${info.key}.plan`);
-      description.textContent = localizedMessage("ai.description_plan", {description:descriptionText, plan:planText});
+      description.textContent = english ? info.description_en : info.description_tr;
     }
 
     for (const button of picker.querySelectorAll("[data-ai-archetype]")) {
@@ -8320,7 +8103,7 @@
       button.dataset.active=String(archetypeId === selectedAiArchetype);
       button.setAttribute("aria-pressed",String(archetypeId === selectedAiArchetype));
       const strong=button.querySelector("strong");
-      if (strong) strong.textContent=localizedMessage(`${buttonInfo.key}.name`);
+      if (strong) strong.textContent=english ? buttonInfo.name_en : buttonInfo.name_tr;
     }
   }
 
@@ -8332,7 +8115,6 @@
 
   let localBattleStarted = false;
   let localBattleFinished = false;
-  let localEnemyAttackSecond = -1;
   let localBattleMetrics = null;
   let localServerSessionId = null;
   let localServerSyncTimer = null;
@@ -8343,26 +8125,16 @@
   let localBattleOutcome = "pending";
   const destructionFxPlayed = new Set();
   const snapshotModuleHp = new Map();
+  // Oyuncu:modül → sunucudaki yok etme anı (at_ms). Anlık görüntü saniyede bir
+  // gelir; olaydan önce alınmış bayat bir görüntü ölü modülü geri getirmez.
+  const serverDestroyedModuleAt = new Map();
   const moduleAnchorRects = new Map();
   const floatingFeedbackLive = new Map();
   let battleLiveTickerTimer = null;
 
-  let webTestSamplingTimer = null;
-  let activeWebTestRunId = null;
   let previousCapacity = null;
-  let mockServerCredits = 6;
-  let mockServerRegenPulses = 0;
   let mockEnemyCoreHp = 300;
-  let mockEnemyGeneratorHp = 150;
-  let mockEnemyGeneratorPosition = {
-    x: 2,
-    y: 1,
-  };
-  let mockEnemyGeneratorPower = {
-    isPowered:true,
-    energyReceived:11,
-    energyRequired:0,
-  };
+  let mockEnemyCoreBadges = [];
   let mockEnemyModuleHp = 140;
   let mockEnemyModules = [];
   let enemyBattlePlayerId = null;
@@ -8373,78 +8145,10 @@
   let playerCellDebris = [];
   let enemyCellDebris = [];
 
-  function resetMockEnemyCircuit() {
-    mockEnemyGeneratorPosition = {
-      x: 2,
-      y: 1,
-    };
-    mockEnemyGeneratorPower = {
-      isPowered:true,
-      energyReceived:11,
-      energyRequired:0,
-    };
-    mockEnemyModules = [
-      {id:"enemy-shield",definitionId:"shield",name:"Kalkan",hp:140,maxHp:140,position:{x:1,y:1},kind:"defense",isPowered:true,energyReceived:2,energyRequired:2},
-      {id:"enemy-laser",definitionId:"laser",name:"Lazer",hp:100,maxHp:100,position:{x:3,y:1},kind:"attack",isPowered:true,energyReceived:3,energyRequired:3},
-      {id:"enemy-battery",definitionId:"battery",name:"Batarya",hp:120,maxHp:120,position:{x:3,y:0},kind:"energy",isPowered:true,energyReceived:0,energyRequired:0},
-    ];
-    mockEnemyModuleHp = mockEnemyModules.reduce((sum,module)=>sum+module.hp,0);
-  }
-
   function enemyLivingModules() {
     return mockEnemyModules.filter((module)=>Number(module.hp||0)>0);
   }
 
-  const MOCK_TARGET_CATEGORY_PRIORITY = {
-    savunma:0,
-    defense:0,
-    sabotaj:1,
-    sabotage:1,
-    destek:2,
-    support:2,
-    enerji:3,
-    energy:3,
-    saldırı:4,
-    attack:4,
-  };
-
-  function mockTargetPriority(
-    module
-  ) {
-    return MOCK_TARGET_CATEGORY_PRIORITY[
-      module?.category
-      || module?.kind
-    ] ?? 99;
-  }
-
-  function selectMockEnemyTarget() {
-    return [...enemyLivingModules()]
-      .sort(
-        (a,b) =>
-          mockTargetPriority(a)
-          - mockTargetPriority(b)
-          || String(a.id).localeCompare(
-            String(b.id),
-            "tr"
-          )
-      )[0] || null;
-  }
-
-  function enemyHasLivingAttackModule() {
-    return enemyLivingModules()
-      .some(
-        (module) =>
-          [
-            "saldırı",
-            "attack",
-          ].includes(
-            module.category
-            || module.kind
-          )
-      );
-  }
-  let previousCombatSecond = -1;
-  const mockAttackerLastAttack = new Map();
   let lastBattleAnimationNow = null;
   let battleVisualGeneration = 0;
   const BATTLE_PAUSE_GAP_THRESHOLD_MS = 1000;
@@ -8540,14 +8244,6 @@
       String(
         kind || ""
       ).toLocaleLowerCase("tr");
-
-    if (
-      value.includes("booster")
-      || value.includes("aşırı yük")
-      || value.includes("acil onarım")
-    ) {
-      return "booster";
-    }
 
     if (
       value.includes("technical")
@@ -8779,9 +8475,12 @@
 
     if (playModeStatusEl) {
       const labels = {
-        idle:localizedMessage("battle.mode_waiting"),
-        local:localizedMessage("battle.local_active"),
-        online:localizedMessage("battle.online_preparing"),
+        idle:
+          "Mod seçimi bekleniyor",
+        local:
+          "Tek Oyunculu Test Maçı aktif",
+        online:
+          "Online PvP hazırlanıyor",
       };
       playModeStatusEl.textContent =
         labels[mode] || mode;
@@ -8929,22 +8628,6 @@
       duration_ms:0,
       won:false,
       forfeited:false,
-      forfeit_credit_penalty:0,
-      credits_spent:0,
-      generator_moves:0,
-      generator_gate_visits:{
-        north:0,
-        east:0,
-        south:1,
-        west:0,
-      },
-      damage_dealt:0,
-      damage_by_module:{},
-      damage_received:0,
-      shield_mitigated:0,
-      module_changes:0,
-      ai_hits:0,
-      player_attacks:0,
       frame_count:0,
       max_frame_gap_ms:0,
       pause_violation_count:0,
@@ -8952,38 +8635,11 @@
       ui_interaction_samples:[],
       ux_categories:{
         module_place:0,
-        module_move:0,
-        generator_gate:0,
-        booster:0,
         technical_drawer:0,
         other_ui:0,
       },
       ux_matrix:{
         module_place:{
-          count:0,
-          total_frame_gap_ms:0,
-          max_frame_gap_ms:0,
-          total_clock_delta_ms:0,
-          max_clock_delta_ms:0,
-          last_elapsed_ms:null,
-        },
-        module_move:{
-          count:0,
-          total_frame_gap_ms:0,
-          max_frame_gap_ms:0,
-          total_clock_delta_ms:0,
-          max_clock_delta_ms:0,
-          last_elapsed_ms:null,
-        },
-        generator_gate:{
-          count:0,
-          total_frame_gap_ms:0,
-          max_frame_gap_ms:0,
-          total_clock_delta_ms:0,
-          max_clock_delta_ms:0,
-          last_elapsed_ms:null,
-        },
-        booster:{
           count:0,
           total_frame_gap_ms:0,
           max_frame_gap_ms:0,
@@ -9009,1145 +8665,6 @@
         },
       },
     };
-  }
-
-  function generatorGateName(position) {
-    if (!position) return "unknown";
-    if (position.x===2 && position.y===1) return "north";
-    if (position.x===3 && position.y===2) return "east";
-    if (position.x===2 && position.y===3) return "south";
-    if (position.x===1 && position.y===2) return "west";
-    return "unknown";
-  }
-
-  function renderBalanceDraft(
-    draft
-  ) {
-    const status=
-      document.getElementById(
-        "balance-draft-status"
-      );
-    const list=
-      document.getElementById(
-        "balance-draft-items"
-      );
-
-    if (!status || !list) {
-      return;
-    }
-
-    status.textContent=
-      draft.review_ready
-        ? localizedMessage("admin.review_ready")
-        : localizedMessage("admin.review_pending");
-    status.dataset.ready=
-      String(
-        Boolean(
-          draft.review_ready
-        )
-      );
-
-    list.innerHTML="";
-
-    if (
-      !draft.review_ready
-      || !(draft.items || []).length
-    ) {
-      const p=
-        document.createElement("p");
-      p.textContent=
-        localizedMessage("admin.three_matches_required");
-      list.appendChild(p);
-      return;
-    }
-
-    for (
-      const item
-      of draft.items
-    ) {
-      const card=
-        document.createElement(
-          "article"
-        );
-      card.className=
-        "balance-draft-item";
-      card.dataset.area=
-        item.area;
-
-      const heading=
-        document.createElement(
-          "strong"
-        );
-      heading.textContent=
-        item.area;
-
-      const reason=
-        document.createElement(
-          "span"
-        );
-      reason.textContent=
-        item.reason || "";
-
-      const before=
-        document.createElement(
-          "input"
-        );
-      before.type="text";
-      before.placeholder=
-        localizedMessage("admin.current_value");
-      before.value=
-        item.before_value ?? "";
-
-      const proposed=
-        document.createElement(
-          "input"
-        );
-      proposed.type="text";
-      proposed.placeholder=
-        localizedMessage("admin.proposed_value");
-      proposed.value=
-        item.proposed_value ?? "";
-
-      const approvalLabel=
-        document.createElement(
-          "label"
-        );
-      const approval=
-        document.createElement(
-          "input"
-        );
-      approval.type="checkbox";
-      approval.checked=
-        Boolean(item.approved);
-      approvalLabel.append(
-        approval,
-        document.createTextNode(
-          localizedMessage("admin.approve_draft")
-        )
-      );
-
-      const checks=
-        document.createElement(
-          "small"
-        );
-      checks.textContent=localizedMessage("admin.draft_checks", {simulation:item.simulation_status || "pending", regression:item.regression_status || "pending", applicable:localizedMessage(item.ready_for_apply ? "admin.yes" : "admin.no")});
-
-      const save=
-        document.createElement(
-          "button"
-        );
-      save.type="button";
-      save.textContent=
-        localizedMessage("admin.save_draft");
-
-      const simulate=
-        document.createElement(
-          "button"
-        );
-      simulate.type="button";
-      simulate.className=
-        "simulate-button";
-      simulate.textContent=
-        localizedMessage("admin.run_simulation");
-
-      const simulationResult=
-        document.createElement(
-          "div"
-        );
-      simulationResult.className=
-        "balance-simulation-result";
-      const regress=
-        document.createElement(
-          "button"
-        );
-      regress.type="button";
-      regress.className=
-        "regression-button";
-      regress.textContent=
-        localizedMessage("admin.run_regression");
-      const structuralReview=
-        [
-          "generator_route",
-          "defense_usage",
-        ].includes(
-          item.area
-        );
-
-      regress.disabled=
-        structuralReview
-          ? false
-          : (
-              item.simulation_status
-              !== "passed"
-            );
-
-      if (structuralReview) {
-        regress.textContent=
-          localizedMessage("admin.run_structural_regression");
-        before.disabled=true;
-        proposed.disabled=true;
-        approval.disabled=true;
-        simulate.disabled=true;
-      }
-
-      const regressionResult=
-        document.createElement(
-          "div"
-        );
-      regressionResult.className=
-        "balance-regression-result";
-      regressionResult.textContent=
-        item.regression_status
-        === "passed"
-          ? localizedMessage("admin.previous_regression_passed")
-          : (
-              item.regression_status
-              === "failed"
-                ? localizedMessage("admin.previous_regression_failed")
-                : localizedMessage("admin.regression_pending")
-            );
-      simulationResult.textContent=
-        structuralReview
-          ? localizedMessage("admin.structural_regression_needed")
-          : (
-              item.simulation_status
-              === "passed"
-                ? localizedMessage("admin.previous_simulation_passed")
-                : (
-                    item.simulation_status
-                    === "failed"
-                      ? localizedMessage("admin.previous_simulation_failed")
-                      : localizedMessage("admin.simulation_pending")
-                  )
-            );
-
-      save.addEventListener(
-        "click",
-        async () => {
-          const response=await fetch(
-            `/telemetry/balance-change-draft?player_id=${encodeURIComponent(participantPlayerId)}`,
-            {
-              method:"PUT",
-              headers:{
-                "content-type":"application/json",
-              },
-              body:JSON.stringify({
-                area:item.area,
-                before_value:
-                  before.value || null,
-                proposed_value:
-                  proposed.value || null,
-                approved:
-                  approval.checked,
-                simulation_status:
-                  item.simulation_status || "pending",
-                regression_status:
-                  item.regression_status || "pending",
-              }),
-            }
-          );
-
-          if (response.ok) {
-            const updated=
-              await response.json();
-            renderBalanceDraft(
-              updated
-            );
-          }
-        }
-      );
-
-      simulate.addEventListener(
-        "click",
-        async () => {
-          // Save current draft values first, then simulate stored proposal.
-          const saveResponse=
-            await fetch(
-              `/telemetry/balance-change-draft?player_id=${encodeURIComponent(participantPlayerId)}`,
-              {
-                method:"PUT",
-                headers:{
-                  "content-type":"application/json",
-                },
-                body:JSON.stringify({
-                  area:item.area,
-                  before_value:
-                    before.value || null,
-                  proposed_value:
-                    proposed.value || null,
-                  approved:
-                    approval.checked,
-                  simulation_status:
-                    "pending",
-                  regression_status:
-                    item.regression_status || "pending",
-                }),
-              }
-            );
-
-          if (!saveResponse.ok) {
-            simulationResult.textContent=
-              localizedMessage("admin.draft_save_failed");
-            return;
-          }
-
-          const response=
-            await fetch(
-              `/telemetry/balance-change-simulate?player_id=${encodeURIComponent(participantPlayerId)}`,
-              {
-                method:"POST",
-                headers:{
-                  "content-type":"application/json",
-                },
-                body:JSON.stringify({
-                  area:item.area,
-                }),
-              }
-            );
-
-          const payload=
-            await response.json();
-
-          if (
-            response.ok
-            && payload.ok
-          ) {
-            const beforeMetrics=
-              JSON.stringify(
-                payload.simulation
-                  ?.metrics_before
-                || {}
-              );
-            const proposedMetrics=
-              JSON.stringify(
-                payload.simulation
-                  ?.metrics_proposed
-                || {}
-              );
-            simulationResult.textContent=localizedMessage("admin.simulation_passed", {before:beforeMetrics, proposed:proposedMetrics});
-            renderBalanceDraft(
-              payload.draft
-            );
-          } else {
-            simulationResult.textContent=
-              response.ok
-                ? localizedMessage("admin.simulation_failed")
-                : localizedApiError(payload, response.status);
-            if (payload.draft) {
-              renderBalanceDraft(
-                payload.draft
-              );
-            }
-          }
-        }
-      );
-
-      regress.addEventListener(
-        "click",
-        async () => {
-          const response=
-            await fetch(
-              `/telemetry/balance-change-regression?player_id=${encodeURIComponent(participantPlayerId)}`,
-              {
-                method:"POST",
-                headers:{
-                  "content-type":"application/json",
-                },
-                body:JSON.stringify({
-                  area:item.area,
-                }),
-              }
-            );
-
-          const payload=
-            await response.json();
-
-          if (
-            response.ok
-            && payload.ok
-          ) {
-            const scenarios=
-              payload.regression
-                ?.engine_scenarios
-              || [];
-            regressionResult.textContent=localizedMessage("admin.regression_passed", {count:localizedNumber(scenarios.length)});
-          } else {
-            regressionResult.textContent=
-              response.ok
-                ? localizedMessage("admin.regression_failed")
-                : localizedApiError(payload, response.status);
-          }
-
-          if (payload.draft) {
-            renderBalanceDraft(
-              payload.draft
-            );
-          }
-          loadHumanReviewQueue();
-        }
-      );
-
-      card.append(
-        heading,
-        reason,
-        before,
-        proposed,
-        approvalLabel,
-        checks,
-        save,
-        simulate,
-        simulationResult,
-        regress,
-        regressionResult
-      );
-      list.appendChild(card);
-    }
-  }
-
-  async function loadBalanceDraft() {
-    try {
-      const response=
-        await fetch(
-          `/telemetry/balance-change-draft?player_id=${encodeURIComponent(participantPlayerId)}`
-        );
-
-      if (!response.ok) {
-        throw new Error(
-          localizedMessage("admin.draft_unavailable")
-        );
-      }
-
-      const draft=
-        await response.json();
-      renderBalanceDraft(
-        draft
-      );
-      loadHumanReviewQueue();
-      return {
-        ok:true,
-        draft,
-      };
-    } catch (error) {
-      return {
-        ok:false,
-        reason:
-          error instanceof Error
-            ? error.message
-            : String(error),
-      };
-    }
-  }
-
-  function renderHumanReviewQueue(
-    queue
-  ) {
-    const status=
-      document.getElementById(
-        "human-review-status"
-      );
-    const list=
-      document.getElementById(
-        "human-review-items"
-      );
-
-    if (!status || !list) {
-      return;
-    }
-
-    const numeric=
-      queue.numeric_candidates || [];
-    const structural=
-      queue.structural_candidates || [];
-    const total=
-      Number(
-        queue.candidate_count || 0
-      );
-
-    status.textContent=
-      total
-        ? localizedMessage("admin.review_candidates_ready", {count:localizedNumber(total)})
-        : localizedMessage("admin.safety_gates_pending");
-
-    list.innerHTML="";
-    const evidence=
-      document.getElementById(
-        "human-review-evidence"
-      );
-
-    if (evidence) {
-      evidence.innerHTML=
-        total
-          ? `<strong>${localizedMessage("admin.evidence_package")}</strong><span>${localizedMessage("admin.evidence_summary", {numeric:localizedNumber(numeric.length), structural:localizedNumber(structural.length)})}</span>`
-          : `<strong>${localizedMessage("admin.evidence_package")}</strong><span>${localizedMessage("admin.no_evidence_candidates")}</span>`;
-    }
-
-    if (!total) {
-      const empty=
-        document.createElement(
-          "p"
-        );
-      empty.textContent=
-        localizedMessage("admin.queue_eligibility");
-      list.appendChild(empty);
-      return;
-    }
-
-    for (
-      const item
-      of [
-        ...numeric,
-        ...structural,
-      ]
-    ) {
-      const card=
-        document.createElement(
-          "article"
-        );
-      card.className=
-        "human-review-item";
-      card.dataset.kind=
-        item.numeric_change
-          ? "numeric"
-          : "structural";
-
-      const title=
-        document.createElement(
-          "strong"
-        );
-      title.textContent=
-        item.area;
-
-      const detail=
-        document.createElement(
-          "span"
-        );
-      detail.textContent=
-        item.numeric_change
-          ? localizedMessage("admin.current_proposed", {before:item.before_value, proposed:item.proposed_value})
-          : localizedMessage("admin.structural_verified");
-
-      const safety=
-        document.createElement(
-          "small"
-        );
-      safety.textContent=
-        localizedMessage("admin.manual_decision_required");
-
-      card.append(
-        title,
-        detail,
-        safety
-      );
-      list.appendChild(card);
-    }
-  }
-
-  const HUMAN_REVIEW_CANDIDATE_PREFIX=
-    "gridshard.balance-review.candidate.";
-
-  function humanReviewCandidateKey(area) {
-    return HUMAN_REVIEW_CANDIDATE_PREFIX + String(area || "unknown");
-  }
-
-  function readCandidateReviewDraft(area) {
-    try {
-      const raw=localStorage.getItem(humanReviewCandidateKey(area));
-      if (!raw) return {state:"none",note:""};
-      const parsed=JSON.parse(raw);
-      return {
-        state:Object.prototype.hasOwnProperty.call(HUMAN_REVIEW_STATE_LABELS,parsed?.state) ? parsed.state : "none",
-        note:String(parsed?.note || ""),
-      };
-    } catch (_error) {
-      return {state:"none",note:""};
-    }
-  }
-
-  function saveCandidateReviewDraft(area,state,note) {
-    const safeState=Object.prototype.hasOwnProperty.call(HUMAN_REVIEW_STATE_LABELS,state) ? state : "none";
-    const payload={
-      area:String(area),
-      state:safeState,
-      note:String(note || "").trim(),
-      updated_at_ms:Date.now(),
-      local_only:true,
-      canonical_balance_changed:false,
-      automatic_apply:false,
-    };
-    localStorage.setItem(humanReviewCandidateKey(area),JSON.stringify(payload));
-    return payload;
-  }
-
-  function renderHumanReviewEvidenceDetails(
-    payload
-  ) {
-    const host=
-      document.getElementById(
-        "human-review-evidence-details"
-      );
-    if (!host) return;
-
-    host.innerHTML="";
-
-    const evidence=
-      payload?.evidence || [];
-
-    if (!evidence.length) {
-      const empty=
-        document.createElement(
-          "p"
-        );
-      empty.textContent=
-        localizedMessage("admin.no_detailed_evidence");
-      host.appendChild(empty);
-      return;
-    }
-
-    for (
-      const item
-      of evidence
-    ) {
-      const details=
-        document.createElement(
-          "details"
-        );
-      details.className=
-        "human-review-evidence-card";
-
-      const summary=
-        document.createElement(
-          "summary"
-        );
-      summary.textContent=localizedMessage("admin.evidence_card_summary", {area:item.area, type:localizedMessage(item.numeric_change ? "admin.numeric" : "admin.structural"), regression:item.regression_status});
-
-      const body=
-        document.createElement(
-          "div"
-        );
-      body.className=
-        "human-review-evidence-body";
-
-      const safeJson=
-        (value)=>
-          JSON.stringify(
-            value ?? null,
-            null,
-            2
-          );
-
-      const simulationBefore=
-        item.simulation
-          ?.metrics_before
-        || item.simulation
-          ?.before
-        || null;
-      const simulationProposed=
-        item.simulation
-          ?.metrics_proposed
-        || item.simulation
-          ?.proposed
-        || null;
-      const regressionScenarioCount=
-        Array.isArray(
-          item.regression
-            ?.engine_scenarios
-        )
-          ? item.regression
-              .engine_scenarios
-              .length
-          : (
-              item.regression
-              ? 1
-              : 0
-            );
-
-      const comparison=document.createElement("div");
-      comparison.className="human-review-compare-grid";
-      const addComparison=(key,value)=>{
-        const row=document.createElement("div");
-        const label=document.createElement("span");
-        const content=document.createElement("strong");
-        label.textContent=localizedMessage(key);
-        content.textContent=String(value);
-        row.append(label,content);
-        comparison.appendChild(row);
-      };
-      addComparison("admin.simulation_before",simulationBefore ? safeJson(simulationBefore) : "—");
-      addComparison("admin.simulation_proposed",simulationProposed ? safeJson(simulationProposed) : "—");
-      addComparison("admin.regression",localizedMessage("admin.regression_scenarios", {status:item.regression_status, count:localizedNumber(regressionScenarioCount)}));
-      body.appendChild(comparison);
-      const addDetail=(key,value)=>{
-        const row=document.createElement("p");
-        const label=document.createElement("strong");
-        label.textContent=localizedMessage(key);
-        row.append(label,document.createTextNode(` ${value ?? "—"}`));
-        body.appendChild(row);
-      };
-      addDetail("admin.reason",item.reason);
-      addDetail("admin.proposal",item.suggestion);
-      addDetail("admin.current_to_proposed",`${item.before_value ?? "—"} → ${item.proposed_value ?? "—"}`);
-      addDetail("admin.simulation",item.simulation_status);
-      const simulationJson=document.createElement("pre");
-      simulationJson.textContent=safeJson(item.simulation);
-      body.appendChild(simulationJson);
-      addDetail("admin.regression",item.regression_status);
-      const regressionJson=document.createElement("pre");
-      regressionJson.textContent=safeJson(item.regression);
-      body.appendChild(regressionJson);
-      const safety=document.createElement("p");
-      safety.className="human-review-safety";
-      safety.textContent=localizedMessage("admin.manual_decision_required");
-      body.appendChild(safety);
-
-      const candidateDraft=readCandidateReviewDraft(item.area);
-      const decisionBox=document.createElement("div");
-      decisionBox.className="candidate-review-draft";
-      const decisionSelect=document.createElement("select");
-      for (const [value,label] of Object.entries(HUMAN_REVIEW_STATE_LABELS)) {
-        const option=document.createElement("option");
-        option.value=value;
-        option.textContent=localizedMessage(label);
-        option.selected=candidateDraft.state===value;
-        decisionSelect.appendChild(option);
-      }
-      const noteField=document.createElement("textarea");
-      noteField.maxLength=600;
-      noteField.placeholder=localizedMessage("admin.candidate_note_placeholder");
-      noteField.value=candidateDraft.note;
-      const saveButton=document.createElement("button");
-      saveButton.type="button";
-      saveButton.textContent=localizedMessage("admin.save_candidate_local");
-      const draftStatus=document.createElement("span");
-      draftStatus.textContent=(candidateDraft.state!=="none" || candidateDraft.note)
-        ? localizedMessage("admin.candidate_local_draft", {state:localizedMessage(HUMAN_REVIEW_STATE_LABELS[candidateDraft.state])})
-        : localizedMessage("admin.no_candidate_decision");
-      saveButton.addEventListener("click",()=>{
-        try {
-          const saved=saveCandidateReviewDraft(item.area,decisionSelect.value,noteField.value);
-          draftStatus.textContent=localizedMessage("admin.candidate_saved", {state:localizedMessage(HUMAN_REVIEW_STATE_LABELS[saved.state]), area:item.area});
-        } catch (_error) {
-          draftStatus.textContent=localizedMessage("admin.candidate_save_failed");
-        }
-      });
-      decisionBox.append(decisionSelect,noteField,saveButton,draftStatus);
-      body.appendChild(decisionBox);
-
-      details.append(
-        summary,
-        body
-      );
-      host.appendChild(
-        details
-      );
-    }
-  }
-
-  async function loadHumanReviewEvidence() {
-    try {
-      const response=
-        await fetch(
-          `/telemetry/balance-human-review-evidence?player_id=${encodeURIComponent(participantPlayerId)}`
-        );
-      if (!response.ok) {
-        return {
-          ok:false,
-        };
-      }
-      const payload=
-        await response.json();
-      renderHumanReviewEvidenceDetails(
-        payload
-      );
-      return {
-        ok:true,
-        payload,
-      };
-    } catch (_error) {
-      return {
-        ok:false,
-      };
-    }
-  }
-
-const HUMAN_REVIEW_NOTE_KEY=
-  "gridshard.balance-review.local-draft";
-
-const HUMAN_REVIEW_STATE_LABELS={
-  none:"admin.state.none",
-  hold:"admin.state.hold",
-  reject:"admin.state.reject",
-  revisit:"admin.state.revisit",
-};
-
-function readHumanReviewLocalDraft() {
-  try {
-    const raw=
-      localStorage.getItem(
-        HUMAN_REVIEW_NOTE_KEY
-      );
-    if (!raw) {
-      return {
-        state:"none",
-        note:"",
-        updated_at_ms:null,
-      };
-    }
-
-    const parsed=
-      JSON.parse(raw);
-
-    return {
-      state:
-        Object.prototype
-          .hasOwnProperty.call(
-            HUMAN_REVIEW_STATE_LABELS,
-            parsed?.state
-          )
-          ? parsed.state
-          : "none",
-      note:
-        String(
-          parsed?.note || ""
-        ),
-      updated_at_ms:
-        Number(
-          parsed?.updated_at_ms
-          || 0
-        )
-        || null,
-    };
-  } catch (_error) {
-    return {
-      state:"none",
-      note:"",
-      updated_at_ms:null,
-    };
-  }
-}
-
-function loadHumanReviewLocalNote() {
-  const field=
-    document.getElementById(
-      "human-review-decision-note"
-    );
-  const stateField=
-    document.getElementById(
-      "human-review-decision-state"
-    );
-  const status=
-    document.getElementById(
-      "human-review-note-status"
-    );
-
-  const draft=
-    readHumanReviewLocalDraft();
-
-  if (field) {
-    field.value=draft.note;
-  }
-  if (stateField) {
-    stateField.value=
-      draft.state;
-  }
-
-  if (status) {
-    const label=
-      HUMAN_REVIEW_STATE_LABELS[
-        draft.state
-      ];
-    status.textContent=
-      (
-        draft.state !== "none"
-        || draft.note
-      )
-        ? localizedMessage("admin.local_draft", {state:localizedMessage(label)})
-        : localizedMessage("admin.no_local_decision");
-  }
-}
-
-function saveHumanReviewLocalNote() {
-  const field=
-    document.getElementById(
-      "human-review-decision-note"
-    );
-  const stateField=
-    document.getElementById(
-      "human-review-decision-state"
-    );
-  const status=
-    document.getElementById(
-      "human-review-note-status"
-    );
-
-  const state=
-    Object.prototype
-      .hasOwnProperty.call(
-        HUMAN_REVIEW_STATE_LABELS,
-        stateField?.value
-      )
-      ? stateField.value
-      : "none";
-
-  const draft={
-    state,
-    note:
-      field?.value.trim()
-      || "",
-    updated_at_ms:
-      Date.now(),
-    local_only:true,
-    canonical_balance_changed:
-      false,
-  };
-
-  try {
-    localStorage.setItem(
-      HUMAN_REVIEW_NOTE_KEY,
-      JSON.stringify(
-        draft
-      )
-    );
-    if (status) {
-      status.textContent=
-        localizedMessage("admin.review_saved_local", {state:localizedMessage(HUMAN_REVIEW_STATE_LABELS[state])});
-    }
-  } catch (_error) {
-    if (status) {
-      status.textContent=
-        "Yerel inceleme kaydedilemedi";
-    }
-  }
-}
-
-  async function loadHumanReviewQueue() {
-    try {
-      const response=
-        await fetch(
-          `/telemetry/balance-human-review?player_id=${encodeURIComponent(participantPlayerId)}`
-        );
-      if (!response.ok) {
-        throw new Error(
-          localizedMessage("admin.queue_unavailable")
-        );
-      }
-      const queue=
-        await response.json();
-      renderHumanReviewQueue(
-        queue
-      );
-      loadHumanReviewEvidence();
-      return {
-        ok:true,
-        queue,
-      };
-    } catch (error) {
-      return {
-        ok:false,
-        reason:
-          error instanceof Error
-            ? error.message
-            : String(error),
-      };
-    }
-  }
-
-  function renderCumulativeManualReport(
-    report
-  ) {
-    if (!report) return;
-
-    const set=(id,value)=>{
-      const el=document.getElementById(id);
-      if (el) el.textContent=String(value);
-    };
-
-    set(
-      "balance-review-progress",
-      localizedMessage("admin.real_match_progress", {current:localizedNumber(report.battle_count || 0), required:localizedNumber(report.minimum_battles || 3)})
-    );
-
-    const route=
-      report.generator_route || {};
-    const visits=
-      route.visits || {};
-
-    set("gate-use-north",visits.north || 0);
-    set("gate-use-east",visits.east || 0);
-    set("gate-use-south",visits.south || 0);
-    set("gate-use-west",visits.west || 0);
-
-    const routeSummary=
-      document.getElementById(
-        "generator-route-summary"
-      );
-    if (routeSummary) {
-      if ((route.move_count || 0) <= 0) {
-        routeSummary.textContent=
-        localizedMessage("admin.no_route_changes");
-      } else {
-        routeSummary.textContent=
-          localizedMessage("admin.route_summary", {moves:localizedNumber(route.move_count), gate:route.preferred_gate_label || "-", modules:localizedNumber(route.average_connected_modules_after_move || 0), cells:localizedNumber(route.average_powered_special_cells_after_move || 0)});
-      }
-    }
-
-    const list=
-      document.getElementById(
-        "balance-review-candidates"
-      );
-    if (list) {
-      list.innerHTML="";
-      for (
-        const candidate
-        of report.review_candidates || []
-      ) {
-        const li=
-          document.createElement(
-            "li"
-          );
-        li.className=
-          `balance-candidate ${candidate.severity || "observe"}`;
-
-        const title=
-          document.createElement(
-            "strong"
-          );
-        title.textContent=
-          candidate.label || candidate.area;
-
-        const reason=
-          document.createElement(
-            "span"
-          );
-        reason.textContent=
-          candidate.reason || "";
-
-        li.append(
-          title,
-          reason
-        );
-
-        if (candidate.suggestion) {
-          const suggestion=
-            document.createElement(
-              "small"
-            );
-          suggestion.textContent=
-            candidate.suggestion;
-          li.appendChild(
-            suggestion
-          );
-        }
-
-        list.appendChild(li);
-      }
-    }
-
-    const balanceStatus=
-      document.getElementById(
-        "local-report-balance-status"
-      );
-    if (balanceStatus) {
-      const archetypeEntries=Object.entries(report.ai_archetypes || {});
-      const archetypeSummary=archetypeEntries.length
-        ? archetypeEntries
-            .map(([id,value]) => localizedMessage("admin.archetype_match_count", {name:aiArchetypeName(id), count:localizedNumber(value.battle_count || 0)}))
-            .join(" · ")
-        : localizedMessage("admin.no_archetype_data");
-      if (
-        report.status
-        === "review_ready"
-      ) {
-        balanceStatus.textContent=
-          localizedMessage("admin.balance_review_ready", {archetypes:archetypeSummary});
-      } else {
-        balanceStatus.textContent=
-          localizedMessage("admin.balance_review_waiting", {remaining:localizedNumber(report.battles_remaining || 0), archetypes:archetypeSummary});
-      }
-    }
-  }
-
-  async function loadCumulativeManualReport() {
-    try {
-      const response=
-        await fetch(
-          `/telemetry/manual-battle-report?player_id=${encodeURIComponent(participantPlayerId)}`
-        );
-
-      if (!response.ok) {
-        throw new Error(
-          localizedMessage("admin.manual_report_unavailable")
-        );
-      }
-
-      const report=
-        await response.json();
-
-      renderCumulativeManualReport(
-        report
-      );
-      loadBalanceDraft();
-
-      return {
-        ok:true,
-        report,
-      };
-    } catch (error) {
-      const status=
-        document.getElementById(
-          "local-report-balance-status"
-        );
-      if (status) {
-        status.textContent=
-          localizedMessage("admin.cumulative_report_unavailable");
-      }
-      return {
-        ok:false,
-        reason:
-          error instanceof Error
-            ? error.message
-            : String(error),
-      };
-    }
-  }
-
-  function renderLocalBattleReport() {
-    const panel=document.getElementById("local-battle-report");
-    if (!panel || !localBattleMetrics) return;
-
-    panel.hidden=!localBattleFinished;
-    if (!localBattleFinished) return;
-
-    const set=(id,value)=>{
-      const el=document.getElementById(id);
-      if (el) el.textContent=String(value);
-    };
-
-    set("local-report-duration",
-      localizedMessage("time.seconds_short", {count:localizedNumber(localBattleMetrics.duration_ms / 1000, {minimumFractionDigits:1, maximumFractionDigits:1})}));
-    set("local-report-result",
-      localizedMessage(localBattleMetrics.won ? "battle.win" : "battle.loss"));
-    set("local-report-credits",
-      localizedMessage("currency.current", {amount:localizedNumber(localBattleMetrics.credits_spent)}));
-    set("local-report-forfeit-penalty",
-      localizedMessage("currency.current", {amount:localizedNumber(localBattleMetrics.forfeit_credit_penalty || 0)}));
-    set("local-report-generator-moves",
-      localBattleMetrics.generator_moves);
-    set("local-report-damage-dealt",
-      localBattleMetrics.damage_dealt);
-    set("local-report-damage-received",
-      localBattleMetrics.damage_received);
-    set("local-report-shield",
-      localBattleMetrics.shield_mitigated);
-    set("local-report-module-changes",
-      localBattleMetrics.module_changes);
-    set("local-report-ai-archetype",
-      aiArchetypeName(localBattleMetrics.ai_archetype || activeLocalAiArchetype));
-
-    const status=document.getElementById("local-report-balance-status");
-    if (status) {
-      status.textContent=
-        localizedMessage("admin.match_recorded");
-    }
   }
 
   function stopLocalServerPolling() {
@@ -10180,9 +8697,6 @@ function saveHumanReviewLocalNote() {
     if (exact) return exact;
     if (serverModule.definition_id === "core") {
       return client.modules.get("core-1") || null;
-    }
-    if (serverModule.definition_id === "generator") {
-      return client.modules.get("generator-1") || null;
     }
     const template = clientModuleForDefinitionId(serverModule.definition_id);
     if (!template) return null;
@@ -10217,9 +8731,6 @@ function saveHumanReviewLocalNote() {
     }
     if (serverModule.definition_id === "core") {
       return "enemy-core";
-    }
-    if (serverModule.definition_id === "generator") {
-      return "enemy-generator";
     }
     return serverModule.instance_id
       ? `enemy-${serverModule.instance_id}`
@@ -10514,7 +9025,7 @@ function saveHumanReviewLocalNote() {
     if (pulsed || emitted) {
       const tickerKind = variant === "damage" ? "danger" : variant;
       setBattleLiveTicker(
-        localizedMessage("battle.module_ticker", {name:localizedUiText(serverModule.name_tr || "Modül"), text:localizedUiText(text)}),
+        `${serverModule.name_tr || "Modül"} · ${text}`,
         tickerKind
       );
     }
@@ -10533,10 +9044,12 @@ function saveHumanReviewLocalNote() {
       return false;
     }
     destructionFxPlayed.add(key);
-    return emitModuleExplosion(
-      serverModuleDomId(playerId, serverModule),
-      { core: serverModule.definition_id === "core" }
-    );
+    const moduleDomId = serverModuleDomId(playerId, serverModule);
+    const core = serverModule.definition_id === "core";
+    if (!core && playerId !== participantPlayerId) {
+      emitSignatureBattleEffect("kill_confirm", moduleDomId, { label:"İMHA" });
+    }
+    return emitModuleExplosion(moduleDomId, { core });
   }
 
   function processSnapshotDestructionFx(snapshot) {
@@ -10617,7 +9130,7 @@ function saveHumanReviewLocalNote() {
       if (!affectedModule) continue;
       pulseBattleFx(serverModuleDomId(target.player_id, affectedModule), feedbackKind);
     }
-    setBattleLiveTicker(localizedMessage("battle.core_power_spread", {name:localizedUiText(coreModule?.name_tr || "Çekirdek")}), waveEffect);
+    setBattleLiveTicker(`${coreModule?.name_tr || "Çekirdek"} gücü devreye yayıldı`, waveEffect);
   }
 
   function presentBattleEmoji(playerId, emojiId) {
@@ -10629,9 +9142,200 @@ function saveHumanReviewLocalNote() {
     bubble.className = "battle-emoji-bubble";
     bubble.appendChild(createBattleEmojiVisual(emoji));
     bubble.setAttribute("role", "status");
-    bubble.setAttribute("aria-label", localizedUiText(emoji.nameTr));
+    bubble.setAttribute("aria-label", emoji.nameTr);
     targetBoard.appendChild(bubble);
     window.setTimeout(() => bubble.remove(), 1900);
+  }
+
+  // Beta.72 imza mekaniklerinin yalnız görsel/ses karşılığı olan olayları.
+  const SIGNATURE_EVENT_TYPES = new Set([
+    "quantum_repeat",
+    "quantum_collapse",
+    "swarm_released",
+    "phoenix_rebirth",
+    "prism_energy_converted",
+    "sabotage_echo_applied",
+    "signature_secondary_hit",
+    "nano_repair_pulse",
+    "chrono_window_started",
+    "chrono_debt_started",
+    "attack_windup_started",
+    "core_signature_triggered",
+  ]);
+
+  // Çekirdek imzası → efekt türü, etiket ve (varsa) canlı şerit metni.
+  const CORE_SIGNATURE_PRESENTATION = Object.freeze({
+    ember_rebirth:{
+      effect:"core_rebirth",
+      label:"DOĞUŞ",
+      ownTicker:"Küllerden Doğuş · Çekirdeğin ayakta kaldı",
+      rivalTicker:"Rakip Çekirdek küllerden doğdu",
+    },
+    last_stand:{ effect:"core_last_stand", label:"SON HAT" },
+    overdrive_chain:{ effect:"core_chain", label:"ZİNCİR" },
+    static_charge:{ effect:"core_static", label:"STATİK" },
+    reserve_discharge:{ effect:"core_discharge", label:"DEŞARJ" },
+    half_phase:{ effect:"core_half_phase", label:"YARIM FAZ" },
+  });
+
+  function snapshotOpponentId(snapshot, playerId) {
+    return Object.keys(snapshot?.players || {}).find(
+      (candidate) => candidate !== playerId
+    ) || null;
+  }
+
+  function snapshotModuleDomId(snapshot, playerId, moduleId) {
+    if (!playerId || !moduleId) return null;
+    return serverModuleDomId(
+      playerId,
+      findSnapshotModule(snapshot, playerId, moduleId)
+    );
+  }
+
+  // İmza olayını sahnede gösterir. Yalnız imzaya ait olaylar için true döner;
+  // saldırı ve katkı olayları ayrıca kendi işleyicilerinden de geçer.
+  function presentSignatureEvent(event, snapshot) {
+    const type = event?.type;
+    const data = event?.data || {};
+    if (type === "attack_performed") {
+      if (String(data.defense_type || "").startsWith("Faz Zırhı · Faz")) {
+        emitSignatureBattleEffect(
+          "phase_evade",
+          snapshotModuleDomId(snapshot, data.target_player_id, data.target_module_id),
+          { label:"FAZ" }
+        );
+      }
+      return false;
+    }
+    if (type === "module_contribution") {
+      const sourcePlayerId = data.source_player_id || data.player_id;
+      const source = findSnapshotModule(snapshot, sourcePlayerId, data.source_module_id);
+      if (source?.definition_id === "omega_amplifier") {
+        const omegaId = serverModuleDomId(sourcePlayerId, source);
+        const attackId = snapshotModuleDomId(
+          snapshot,
+          data.target_player_id || data.player_id,
+          data.target_module_id
+        );
+        emitSignatureBattleEffect("omega_link", attackId, {
+          links:[[omegaId, attackId]],
+          throttleKey:omegaId,
+        });
+      }
+      return false;
+    }
+    if (!SIGNATURE_EVENT_TYPES.has(type)) {
+      return false;
+    }
+
+    const ownerId = data.player_id;
+    const rivalId = snapshotOpponentId(snapshot, ownerId);
+    const own = (moduleId) => snapshotModuleDomId(snapshot, ownerId, moduleId);
+    const rival = (moduleId) => snapshotModuleDomId(snapshot, rivalId, moduleId);
+    if (type === "quantum_repeat") {
+      const sourceId = own(data.module_id);
+      const targetId = rival(data.target_module_id);
+      emitSignatureBattleEffect("repeat_echo", targetId, {
+        links:[[sourceId, targetId]],
+        label:"YANKI",
+      });
+    } else if (type === "quantum_collapse") {
+      emitSignatureBattleEffect("quantum_charge", own(data.module_id), {
+        label:"ÇÖKÜŞ",
+        arena:Number(data.charge_consumed || 0) >= 20 ? "heavy" : "light",
+      });
+    } else if (type === "swarm_released") {
+      const sourceId = own(data.module_id);
+      const targetIds = (data.target_module_ids || []).map(rival).filter(Boolean);
+      emitSignatureBattleEffect("swarm_release", sourceId, {
+        links:targetIds.map((targetId) => [sourceId, targetId]),
+        label:"SÜRÜ",
+      });
+    } else if (type === "phoenix_rebirth") {
+      // Dirilen modül yeniden düşerse patlaması tekrar oynatılabilsin.
+      destructionFxPlayed.delete(`${ownerId}:${data.target_module_id}`);
+      const sourceId = own(data.source_module_id);
+      const revivedId = own(data.target_module_id);
+      emitSignatureBattleEffect("phoenix_revive", revivedId, {
+        links:[[sourceId, revivedId]],
+        label:"DİRİLİŞ",
+      });
+    } else if (type === "prism_energy_converted") {
+      emitSignatureBattleEffect("prism_shield", own(data.module_id), {
+        label:"PRİZMA",
+      });
+    } else if (type === "sabotage_echo_applied") {
+      const sourceId = snapshotModuleDomId(
+        snapshot,
+        data.attacker_player_id,
+        data.attacker_module_id
+      );
+      const targetId = snapshotModuleDomId(
+        snapshot,
+        data.target_player_id,
+        data.target_module_id
+      );
+      const singularity = data.definition_id === "singularity_projector";
+      emitSignatureBattleEffect(
+        singularity ? "singularity_field" : "disruptor_echo",
+        targetId,
+        {
+          links:[[sourceId, targetId]],
+          label:singularity ? "TEKİLLİK" : "YANKI",
+        }
+      );
+    } else if (type === "signature_secondary_hit") {
+      const sourceId = own(data.module_id);
+      const targetId = snapshotModuleDomId(
+        snapshot,
+        data.target_player_id,
+        data.target_module_id
+      );
+      emitSignatureBattleEffect("secondary_hit", targetId, {
+        links:[[sourceId, targetId]],
+      });
+    } else if (type === "nano_repair_pulse") {
+      const sourceId = own(data.source_module_id);
+      const targetIds = (data.target_module_ids || []).map(own).filter(Boolean);
+      emitSignatureBattleEffect("nano_pulse", sourceId, {
+        links:targetIds.map((targetId) => [sourceId, targetId]),
+      });
+    } else if (type === "chrono_window_started") {
+      emitSignatureBattleEffect("chrono_window", own(data.source_module_id), {
+        label:"KRONOS",
+      });
+    } else if (type === "chrono_debt_started") {
+      emitSignatureBattleEffect("chrono_debt", own(data.source_module_id), {
+        label:"BORÇ",
+      });
+    } else if (type === "core_signature_triggered") {
+      const presentation = CORE_SIGNATURE_PRESENTATION[data.signature_id];
+      const coreId = own(data.module_id)
+        || (ownerId === participantPlayerId ? "core-1" : "enemy-core");
+      if (presentation) {
+        emitSignatureBattleEffect(presentation.effect, coreId, {
+          label:presentation.label,
+        });
+        const ticker = ownerId === participantPlayerId
+          ? presentation.ownTicker
+          : presentation.rivalTicker;
+        if (ticker) {
+          setBattleLiveTicker(ticker, ownerId === participantPlayerId ? "heal" : "danger");
+        }
+      }
+    } else if (type === "attack_windup_started") {
+      const sourceId = own(data.module_id);
+      const targetId = rival(data.target_module_id);
+      const windupMs = Number(data.ready_at_ms) - Number(event.at_ms);
+      emitSignatureBattleEffect("target_lock", targetId, {
+        links:[[sourceId, targetId]],
+        label:"KİLİT",
+        lifetimeMs:Number.isFinite(windupMs) && windupMs > 0
+          ? Math.min(1400, windupMs + 160)
+          : null,
+      });
+    }
+    return true;
   }
 
   function processLocalServerEvents(
@@ -10640,6 +9344,9 @@ function saveHumanReviewLocalNote() {
   ) {
     for (const event of events || []) {
       const data=event.data || {};
+      if (presentSignatureEvent(event, snapshot)) {
+        continue;
+      }
       if (event?.type === "battle_emoji") {
         presentBattleEmoji(data.player_id, data.emoji_id);
         continue;
@@ -10656,43 +9363,40 @@ function saveHumanReviewLocalNote() {
         event?.type === "command_rejected"
         && data.player_id === participantPlayerId
       ) {
-        logClientMessage(localizedMessage("battle.command_rejected"));
+        logClientMessage(
+          `Savaş komutu reddedildi: ${data.reason || "Bilinmeyen neden"}`
+        );
         continue;
       }
       if (
         event?.type === "battle_forfeited"
         && data.player_id === participantPlayerId
       ) {
-        const penalty = Math.max(
-          0,
-          Number(data.credit_penalty || 0)
-        );
-        const remainingCredits = Math.max(
-          0,
-          Number(
-            data.remaining_circuit_credits
-            ?? client.circuitCredits
-          )
-        );
-        client.applyServerEconomyState({
-          circuitCredits:remainingCredits,
-        });
-        if (localBattleMetrics) {
-          localBattleMetrics.forfeit_credit_penalty =
-            penalty;
-        }
-        renderCredits();
         setBattleLiveTicker(
-          localizedMessage("battle.forfeit_penalty", {penalty:localizedNumber(penalty)}),
+          "Savaştan çekildin",
           "danger"
         );
         continue;
       }
       if (
-        event?.type === "modules_swapped"
+        event?.type === "inactivity_warning"
         && data.player_id === participantPlayerId
       ) {
-        logClientMessage("İki aktif modül yer değiştirdi.");
+        const seconds = Math.max(1, Math.ceil(Number(data.remaining_ms || 0) / 1000));
+        const warning = localizedUiText(
+          `Hareketsizlik: ${seconds} sn içinde kart basmazsan savaştan çekilmiş sayılırsın`
+        );
+        setBattleLiveTicker(warning, "danger");
+        logClientMessage(warning);
+        continue;
+      }
+      if (event?.type === "player_inactive") {
+        setBattleLiveTicker(
+          data.player_id === participantPlayerId
+            ? "Hareketsiz kaldın · savaştan çekilmiş sayıldın"
+            : "Rakip hareketsiz kaldı",
+          data.player_id === participantPlayerId ? "danger" : "heal"
+        );
         continue;
       }
       if (
@@ -10741,6 +9445,11 @@ function saveHumanReviewLocalNote() {
             `-${damage}`,
             sourceModule?.category === "sabotaj" ? "sabotage" : "damage"
           );
+          // Çekirdeğe gelen ağır vuruş arenayı sarsar; kendi çekirdeğin daha güçlü.
+          const damagedModule = findSnapshotModule(snapshot, data.player_id, data.module_id);
+          if (damagedModule?.definition_id === "core" && damage >= 18) {
+            pulseArenaImpact(data.player_id === participantPlayerId ? "medium" : "light");
+          }
         }
         continue;
       }
@@ -10849,10 +9558,10 @@ function saveHumanReviewLocalNote() {
         }
         const supportBits = [];
         if (Number(data.damage_multiplier || 1) > 1) {
-          supportBits.push(localizedMessage("battle.power_boost", {percent:localizedNumber(Math.round((Number(data.damage_multiplier || 1) - 1) * 100))}));
+          supportBits.push(`+${Math.round((Number(data.damage_multiplier || 1) - 1) * 100)}% GÜÇ`);
         }
         if (Number(data.cooldown_multiplier || 1) < 1) {
-          supportBits.push(localizedMessage("battle.speed_boost", {percent:localizedNumber(Math.round((1 - Number(data.cooldown_multiplier || 1)) * 100))}));
+          supportBits.push(`+${Math.round((1 - Number(data.cooldown_multiplier || 1)) * 100)}% HIZ`);
         }
         if (data.targeting_active) {
           supportBits.push("+HEDEFLEME");
@@ -10865,35 +9574,10 @@ function saveHumanReviewLocalNote() {
             snapshot,
             data.player_id,
             data.module_id,
-            localizedMessage("battle.support_effects", {effects:supportBits.join(" · ")}),
+            `${supportBits.join(" · ")} · DESTEK`,
             "boost"
           );
         }
-        continue;
-      }
-      if (event?.type === "booster_applied") {
-        let boosterText = "Güçlendirildi";
-        let boosterVariant = "boost";
-        if (data.booster_id === "emergency_repair") {
-          boosterVariant = "heal";
-          const repair = Math.max(0, Math.round(Number(data.hp_after || 0) - Number(data.hp_before || 0)));
-          boosterText = repair > 0 ? `+${localizedNumber(repair)}` : localizedMessage("battle.emergency_repair");
-        } else if (data.booster_id === "overcharge_chip") {
-          boosterText = "+25% GÜÇ · AŞIRI YÜK";
-        } else if (data.booster_id === "cooling_burst") {
-          boosterVariant = "cool";
-          boosterText = "ISI SIFIRLANDI · SOĞUTMA";
-        } else if (data.booster_id === "signal_cleanser") {
-          boosterVariant = "sabotage";
-          boosterText = "SABOTAJ TEMİZLENDİ";
-        }
-        emitServerModuleFeedback(
-          snapshot,
-          data.player_id,
-          data.target_module_id,
-          boosterText,
-          boosterVariant
-        );
         continue;
       }
       if (event?.type === "sabotage_applied") {
@@ -10984,7 +9668,7 @@ function saveHumanReviewLocalNote() {
           destroyedModule
         );
         setBattleLiveTicker(
-          localizedMessage("battle.module_destroyed", {name:localizedUiText(destroyedModule?.name_tr || "Modül")}),
+          `${destroyedModule?.name_tr || "Modül"} devre dışı kaldı`,
           "danger"
         );
         continue;
@@ -11094,6 +9778,22 @@ function saveHumanReviewLocalNote() {
     }
   }
 
+  function rememberServerDestructions(events) {
+    for (const event of events || []) {
+      if (event?.type !== "module_destroyed") continue;
+      const data = event.data || {};
+      if (!data.player_id || !data.module_id) continue;
+      serverDestroyedModuleAt.set(`${data.player_id}:${data.module_id}`, Number(event.at_ms ?? 0));
+    }
+  }
+
+  // Görüntü yok etme anında ya da öncesinde alınmışsa modül ölü sayılır;
+  // sonraki görüntüler (ör. aynı kart yeniden basıldıysa) yine belirleyicidir.
+  function destroyedAfterSnapshot(playerId, instanceId, snapshot) {
+    const destroyedAt = serverDestroyedModuleAt.get(`${playerId}:${instanceId}`);
+    return destroyedAt !== undefined && Number(snapshot?.elapsed_ms ?? 0) <= destroyedAt;
+  }
+
   function applyEnemyServerSnapshot(
     snapshot
   ) {
@@ -11131,62 +9831,21 @@ function saveHumanReviewLocalNote() {
           module.definition_id
           === "core"
       );
-    const enemyGenerator=
-      (enemy.modules || []).find(
-        (module) =>
-          module.definition_id
-          === "generator"
-      );
     mockEnemyCoreHp=Number(
       enemyCore?.hp || 0
     );
-    mockEnemyGeneratorHp=Number(
-      enemyGenerator?.hp || 0
-    );
-    mockEnemyGeneratorPower={
-      isPowered:Boolean(
-        enemyGenerator?.is_powered
-      ),
-      energyReceived:Number(
-        enemyGenerator?.energy_received || 0
-      ),
-      energyRequired:Number(
-        enemyGenerator?.energy_required || 0
-      ),
-      powerReason:
-        enemyGenerator?.power_reason,
-      heat:Number(enemyGenerator?.heat || 0),
-      debuffs:Array.isArray(enemyGenerator?.debuffs) ? enemyGenerator.debuffs : [],
-      temporaryBoosters:Array.isArray(enemyGenerator?.temporary_boosters) ? enemyGenerator.temporary_boosters : [],
-    };
-    if (
-      Number.isFinite(
-        Number(enemyGenerator?.x)
-      )
-      && Number.isFinite(
-        Number(enemyGenerator?.y)
-      )
-    ) {
-      mockEnemyGeneratorPosition={
-        x:Number(enemyGenerator.x),
-        y:Number(enemyGenerator.y),
-      };
-    }
+    mockEnemyCoreBadges=normalizeSignatureBadges(enemyCore?.signature_badges);
     mockEnemyModules=(
       enemy.modules || []
     )
       .filter(
         (module) =>
-          ![
-            "core",
-            "generator",
-          ].includes(
-            module.definition_id
-          )
+          module.definition_id !== "core"
           && module.status
             === "active"
           && module.x !== null
           && module.y !== null
+          && !destroyedAfterSnapshot(enemy.player_id, module.instance_id, snapshot)
       )
       .map(
         (module) => ({
@@ -11217,8 +9876,10 @@ function saveHumanReviewLocalNote() {
           powerReason:
             module.power_reason,
           heat:Number(module.heat || 0),
+          energyWaiting:Boolean(module.energy_waiting),
+          overheated:Boolean(module.overheated),
           debuffs:Array.isArray(module.debuffs) ? module.debuffs : [],
-          temporaryBoosters:Array.isArray(module.temporary_boosters) ? module.temporary_boosters : [],
+          signatureBadges:normalizeSignatureBadges(module.signature_badges),
         })
       );
     mockEnemyModuleHp=
@@ -11254,8 +9915,15 @@ function saveHumanReviewLocalNote() {
       return false;
     }
 
+    const events=
+      message.type === "events"
+      || message.type
+        === "reconnect_state"
+        ? payload.events || []
+        : [];
+    rememberServerDestructions(events);
+
     const ownPlayer = snapshot.players[participantPlayerId];
-    syncBoosterOfferFromSnapshot(ownPlayer);
     syncCorePowerFromSnapshot(ownPlayer);
     if (ownPlayer) {
       playerCellDebris = Array.isArray(ownPlayer.cell_debris)
@@ -11268,12 +9936,13 @@ function saveHumanReviewLocalNote() {
       for (const serverModule of ownPlayer.modules || []) {
         const clientModuleId = localServerClientModuleId(serverModule);
         if (!clientModuleId) continue;
+        const destroyed = destroyedAfterSnapshot(participantPlayerId, serverModule.instance_id, snapshot);
         client.applyServerModuleState({
           instanceId:clientModuleId,
-          hp:Number(serverModule.hp || 0),
-          status:serverModule.status,
+          hp:destroyed ? 0 : Number(serverModule.hp || 0),
+          status:destroyed ? "destroyed" : serverModule.status,
           position:
-            serverModule.x === null || serverModule.y === null
+            destroyed || serverModule.x === null || serverModule.y === null
               ? null
               : {x:Number(serverModule.x), y:Number(serverModule.y)},
           isPowered:Boolean(serverModule.is_powered),
@@ -11281,19 +9950,15 @@ function saveHumanReviewLocalNote() {
           energyReceived:Number(serverModule.energy_received || 0),
           energyRequired:Number(serverModule.energy_required || 0),
           heat:Number(serverModule.heat || 0),
+          energyWaiting:Boolean(serverModule.energy_waiting),
+          overheated:Boolean(serverModule.overheated),
           debuffs:Array.isArray(serverModule.debuffs) ? serverModule.debuffs : [],
-          temporaryBoosters:Array.isArray(serverModule.temporary_boosters) ? serverModule.temporary_boosters : [],
+          signatureBadges:normalizeSignatureBadges(serverModule.signature_badges),
         });
       }
       client.clearPendingPlacements();
     }
 
-    const events=
-      message.type === "events"
-      || message.type
-        === "reconnect_state"
-        ? payload.events || []
-        : [];
     processLocalServerEvents(
       events,
       snapshot
@@ -11348,7 +10013,6 @@ function saveHumanReviewLocalNote() {
     playerCellDebris = Array.isArray(player.cell_debris)
       ? player.cell_debris
       : [];
-    syncBoosterOfferFromSnapshot(player);
     syncCorePowerFromSnapshot(player);
     const enemy=Object.values(
       snapshot.players
@@ -11367,13 +10031,13 @@ function saveHumanReviewLocalNote() {
       renderAiArchetypePicker();
       if (localBattleMetrics) localBattleMetrics.ai_archetype=activeLocalAiArchetype;
       const label=aiArchetypeName(activeLocalAiArchetype);
-      if (activeMatchModeEl) activeMatchModeEl.textContent=localizedMessage("battle.ai_match_mode", {label});
+      if (activeMatchModeEl) activeMatchModeEl.textContent=`Maç: Tek Oyunculu · ${label} AI`;
       if (matchmakingStatusEl) {
-        matchmakingStatusEl.textContent=localizedMessage("battle.ai_opponent", {label});
+        matchmakingStatusEl.textContent=`Rakip: ${label} AI`;
         matchmakingStatusEl.dataset.status="local";
       }
       const battleMatchLabel=document.getElementById("battle-match-label");
-      if (battleMatchLabel) battleMatchLabel.textContent=localizedMessage("battle.ai_label", {label});
+      if (battleMatchLabel) battleMatchLabel.textContent=`${label} AI`;
     }
 
     localServerAuthoritative=true;
@@ -11394,13 +10058,6 @@ function saveHumanReviewLocalNote() {
           player.circuit_credits || 0
         ),
     });
-    if (localBattleMetrics) {
-      localBattleMetrics.forfeit_credit_penalty =
-        Number(
-          player.forfeit_credit_penalty || 0
-        );
-    }
-
     for (
       const serverModule
       of player.modules || []
@@ -11438,12 +10095,12 @@ function saveHumanReviewLocalNote() {
         heat:Number(
           serverModule.heat || 0
         ),
+        energyWaiting:Boolean(serverModule.energy_waiting),
+        overheated:Boolean(serverModule.overheated),
         debuffs:Array.isArray(serverModule.debuffs)
           ? serverModule.debuffs
           : [],
-        temporaryBoosters:Array.isArray(serverModule.temporary_boosters)
-          ? serverModule.temporary_boosters
-          : [],
+        signatureBadges:normalizeSignatureBadges(serverModule.signature_badges),
       });
 
     }
@@ -11477,12 +10134,10 @@ function saveHumanReviewLocalNote() {
         won:
           snapshot.winner_player_id
           === participantPlayerId,
+        isDraw:
+          Boolean(snapshot.is_draw),
         finishReason:
           snapshot.finish_reason || null,
-        forfeitPenalty:
-          Number(
-            player.forfeit_credit_penalty || 0
-          ),
       });
     }
 
@@ -11568,12 +10223,10 @@ function saveHumanReviewLocalNote() {
           250
         );
       logClientMessage(
-        localizedMessage("battle.ai_connected", {archetype:aiArchetypeName(activeLocalAiArchetype)})
+        `${aiArchetypeName(activeLocalAiArchetype)} AI savaşı sunucu BattleEngine otoritesine bağlandı.`
       );
       return true;
     } catch (_error) {
-      document.body.dataset.battleAuthority=
-        "offline-fallback";
       return false;
     }
   }
@@ -11609,7 +10262,10 @@ function saveHumanReviewLocalNote() {
         const detail=await response
           .json()
           .catch(() => ({}));
-        logClientMessage(localizedApiError(detail, response.status));
+        logClientMessage(
+          detail.detail
+          || "Sunucu savaş komutunu reddetti."
+        );
         return false;
       }
       await pollLocalServerBattle();
@@ -11633,7 +10289,10 @@ function saveHumanReviewLocalNote() {
 
   function resetBattleVisualSurface() {
     battleVisualGeneration += 1;
-    client.cancelDrag?.();
+    clearArenaPulse();
+    signatureEffectsLive = 0;
+    signatureEffectLastAt.clear();
+    battleCueLastAt.clear();
     client.clearPendingPlacements?.();
     renderedShelfSignature = null;
     renderedBoardSignature = null;
@@ -11652,7 +10311,7 @@ function saveHumanReviewLocalNote() {
     for (const [instanceId, module] of client.modules) {
       if (
         !module.isDeckTemplate
-        && !["core-1", "generator-1"].includes(instanceId)
+        && instanceId !== "core-1"
       ) {
         client.modules.delete(instanceId);
       }
@@ -11663,7 +10322,6 @@ function saveHumanReviewLocalNote() {
 
     for (const module of client.modules.values()) {
       const isCore = module.instanceId === "core-1";
-      const isGenerator = module.instanceId === "generator-1";
       const initialSetup = initialSetupByInstanceId.get(module.instanceId);
       const initialConfig = initialSetup
         ? {
@@ -11684,7 +10342,7 @@ function saveHumanReviewLocalNote() {
         storedEnergy:0,
         heat:0,
         debuffs:[],
-        temporaryBoosters:[],
+        signatureBadges:[],
       });
     }
   }
@@ -11701,13 +10359,12 @@ function saveHumanReviewLocalNote() {
     localServerFinalResult=null;
     localBattleOutcome="pending";
     document.body.dataset.battleAuthority=
-      "offline-fallback";
+      "connecting";
 
     localBattleStarted =
       true;
     document.body.dataset.localStatus =
       "battle";
-    client.cancelDrag?.();
     if (document.documentElement) document.documentElement.scrollTop = 0;
     document.body.scrollTop = 0;
     globalThis.scrollTo?.({ top: 0, left: 0, behavior: "instant" });
@@ -11716,37 +10373,19 @@ function saveHumanReviewLocalNote() {
       performance.now();
     localBattleFinished =
       false;
-    localEnemyAttackSecond =
-      -1;
     localBattleMetrics =
       createLocalBattleMetrics();
-    previousCombatSecond =
-      -1;
-    mockAttackerLastAttack.clear();
     lastBattleAnimationNow =
       null;
-    mockServerCredits =
-      6;
-    mockServerRegenPulses =
-      0;
+    // Rakip devresi sunucunun ilk anlık görüntüsüyle dolar.
     mockEnemyCoreHp =
       300;
-    mockEnemyGeneratorHp =
-      150;
+    mockEnemyCoreBadges =
+      [];
+    mockEnemyModules =
+      [];
     mockEnemyModuleHp =
-      360;
-    resetMockEnemyCircuit();
-    nextBoosterOfferIndex =
       0;
-    boosterOfferOpen =
-      false;
-    serverBoosterOfferId =
-      null;
-    serverBoosterEligibleTargets =
-      new Map();
-    clearBoosterTargetMode(
-      "local_match_reset"
-    );
 
     client.applyServerEconomyState({
       circuitCredits:6,
@@ -11761,13 +10400,14 @@ function saveHumanReviewLocalNote() {
     destructionFxPlayed.clear();
     preparedCorePowerFx.clear();
     snapshotModuleHp.clear();
+    serverDestroyedModuleAt.clear();
     moduleAnchorRects.clear();
     for (const effectId of [...floatingFeedbackLive.keys()]) {
       removeFloatingFeedbackRecord(effectId);
     }
     battleEffectAggregator?.clear?.();
     setBattleLiveTicker(
-      localizedMessage("battle.ai_start", {archetype:aiArchetypeName(selectedAiArchetype)}),
+      `${aiArchetypeName(selectedAiArchetype)} AI · sunucuya bağlanıyor`,
       "neutral"
     );
 
@@ -11778,21 +10418,21 @@ function saveHumanReviewLocalNote() {
     const aiLabel=aiArchetypeName(activeLocalAiArchetype);
     if (activeMatchModeEl) {
       activeMatchModeEl.textContent =
-        localizedMessage("battle.ai_match_mode", {label:aiLabel});
+        `Maç: Tek Oyunculu · ${aiLabel} AI`;
     }
     if (battleStateLabelEl) {
       battleStateLabelEl.textContent =
         "Savaş devam ediyor";
     }
     if (matchmakingStatusEl) {
-      matchmakingStatusEl.textContent =localizedMessage("battle.ai_opponent", {label:aiLabel});
+      matchmakingStatusEl.textContent =
+        `Rakip: ${aiLabel} AI`;
       matchmakingStatusEl.dataset.status =
         "local";
     }
     const battleMatchLabel=document.getElementById("battle-match-label");
-    if (battleMatchLabel) battleMatchLabel.textContent=localizedMessage("battle.ai_label", {label:aiLabel});
+    if (battleMatchLabel) battleMatchLabel.textContent=`${aiLabel} AI`;
 
-    if (boosterStatusEl) boosterStatusEl.textContent = "Kapalı";
     criticalCoreAudioRequested = false;
     requestOwnedAudioState("local_battle_started");
     triggerGridshardCue("energy_transfer");
@@ -11809,17 +10449,12 @@ function saveHumanReviewLocalNote() {
       .trackLocalBattleStarted({
         selected_pool_size:
           battlePoolSelection.selected.size,
-        initial_generator_gate:
-          "south",
-        initial_credits:200,
         ai_archetype:selectedAiArchetype,
       });
 
-    renderLocalBattleReport();
-    loadCumulativeManualReport();
 
     logClientMessage(
-      "Tek Oyunculu Test Maçı başladı. Altı kartlık deste Devre Kredisine göre kullanıma hazır."
+      "Tek Oyunculu Test Maçı başladı. Altı kartlık deste Akıma göre kullanıma hazır."
     );
   }
 
@@ -11833,7 +10468,6 @@ function saveHumanReviewLocalNote() {
       false;
     document.body.dataset.localStatus =
       "setup";
-    client.cancelDrag?.();
     setActivePlayMode(
       "local"
     );
@@ -11902,6 +10536,9 @@ function saveHumanReviewLocalNote() {
       return prepared;
     }
 
+    // Geliştirme kısayolu artık ana ekrandan çağrılıyor; savaş görünümünü de aç.
+    openAppScreen("play");
+
     setActivePlayMode(
       "local"
     );
@@ -11928,7 +10565,7 @@ function saveHumanReviewLocalNote() {
       );
     if (status) {
       status.textContent=
-        localizedMessage("battle.arena_entered", {archetype:aiArchetypeName()});
+        `Savaş alanına giriş başarılı · 6/6 deste hazır · ${aiArchetypeName()} AI aktif`;
     }
 
     telemetryDispatcher.track(
@@ -11955,13 +10592,22 @@ function saveHumanReviewLocalNote() {
     };
   }
 
-  function startLocalPlayableMatch() {
+  async function startLocalPlayableMatch() {
     setActivePlayMode(
       "local"
     );
     resetLocalBattleState();
     renderPlayModeUi();
-    connectLocalServerBattle();
+    const connected =
+      await connectLocalServerBattle();
+    if (!connected) {
+      // Savaş yalnız sunucu BattleEngine'inde çalışır; bağlantı yoksa maç açılmaz.
+      prepareLocalMatch();
+      showPlayError(
+        "websocket",
+        "AI savaşı başlatılamadı: sunucuya ulaşılamıyor."
+      );
+    }
   }
 
   function prepareOnlineMatch() {
@@ -11990,11 +10636,11 @@ function saveHumanReviewLocalNote() {
   }
 
   function syncCriticalCoreAudioState() {
-    const onlineBattleActive = activePlayMode === "online" && document.body.dataset.onlineStatus === "battle";
-    const localBattleActive = activePlayMode === "local" && localBattleStarted && !localBattleFinished;
     if (
       !gridshardAudioDirector
-      || !(onlineBattleActive || localBattleActive)
+      || activePlayMode !== "local"
+      || !localBattleStarted
+      || localBattleFinished
     ) {
       if (criticalCoreAudioRequested) {
         criticalCoreAudioRequested = false;
@@ -12021,9 +10667,26 @@ function saveHumanReviewLocalNote() {
           )
         );
 
-    criticalCoreAudioRequested = ratio > 0 && ratio <= .33;
-    gridshardAudioDirector.setBattlePressure(Math.min(1, Math.max(0, 1 - ratio) + Math.min(.35, Number(client.elapsedMs || 0) / 240000)));
-    requestOwnedAudioState("battle_audio_snapshot");
+    if (
+      ratio > 0
+      && ratio <= .33
+    ) {
+      criticalCoreAudioRequested = true;
+      requestOwnedAudioState("critical_core_entered");
+      if (
+        typeof gridshardAudioDirector
+          .setBattlePressure
+        === "function"
+      ) {
+        gridshardAudioDirector
+          .setBattlePressure(
+            .35
+          );
+      }
+    } else if (criticalCoreAudioRequested) {
+      criticalCoreAudioRequested = false;
+      requestOwnedAudioState("critical_core_cleared");
+    }
   }
 
   function renderPlayerCoreSummary() {
@@ -12035,15 +10698,18 @@ function saveHumanReviewLocalNote() {
       client.modules.get(
         "core-1"
       );
-    const generator =
-      client.modules.get(
-        "generator-1"
-      );
 
-    playerCoreSummaryEl.textContent=localizedMessage("battle.your_core_hp", {hp:localizedNumber(Math.max(0, Number(core?.hp || 0))), max:localizedNumber(core?.maxHp || 300)});
+    playerCoreSummaryEl.textContent =
+      `Sen: Çekirdek ${
+        Math.max(
+          0,
+          Number(core?.hp || 0)
+        )
+      }/${core?.maxHp || 300}`;
 
     if (playerBoardStatusEl) {
-      playerBoardStatusEl.textContent=localizedMessage("battle.core_hp_energy", {hp:localizedNumber(Math.max(0,Number(core?.hp||0))), max:localizedNumber(core?.maxHp||300), energy:localizedNumber(Math.round(Number(client.energyLoadRatio || 0) * 100))});
+      playerBoardStatusEl.textContent=
+        `Çekirdek ${Math.max(0,Number(core?.hp||0))}/${core?.maxHp||300} · Enerji %${Math.round(Number(client.energyLoadRatio || 0) * 100)}`;
     }
 
     const playerSide=
@@ -12068,75 +10734,41 @@ function saveHumanReviewLocalNote() {
     syncCriticalCoreAudioState();
   }
 
-  function buildOfflineLocalBattleResult(won, finishReason) {
-    const selectedCore = metaProgressionState?.cores?.types?.find((item) => item.selected)
-      || metaProgressionState?.cores?.types?.find(
-        (item) => item.id === metaProgressionState?.cores?.selected_core_type
-      )
-      || null;
-    const damageRows = (definitionIds, damageByDefinition = {}) =>
-      definitionIds.slice(0, 6).map((definitionId) => {
-        const definition = moduleDefinitions.find(
-          (item) => item.definitionId === definitionId
-        );
-        return {
-          definition_id:definitionId,
-          name_tr:definition?.nameTr || definitionId,
-          level:1,
-          damage:Number(damageByDefinition[definitionId] || 0),
-        };
-      }).sort((left, right) => right.damage - left.damage);
-    const enemyDamage = Math.max(0, Number(localBattleMetrics?.damage_received || 0));
-    const enemyDamageMap = enemyBattlePoolDefinitionIds.includes("laser")
-      ? {laser:enemyDamage}
-      : {[enemyBattlePoolDefinitionIds[0]]:enemyDamage};
+  function localBattleResultCopy(outcome, finishReason) {
+    if (outcome === "draw") {
+      return {
+        summary: finishReason === "mutual_inactivity"
+          ? "BERABERE · İki taraf da hareketsiz kaldı"
+          : "BERABERE · İki Çekirdek aynı anda yok edildi",
+        state: "Maç tamamlandı · Beraberlik",
+        ticker: "Savaş tamamlandı · Beraberlik",
+      };
+    }
+    const won = outcome === "victory";
+    const reasons = {
+      player_forfeit: won
+        ? ["KAZANDIN · Rakip savaştan çekildi", "Maç tamamlandı · Galibiyet"]
+        : ["KAYBETTİN · Savaşı bıraktın", "Maç tamamlandı · Savaşı bıraktın"],
+      player_inactive: won
+        ? ["KAZANDIN · Rakip hareketsiz kaldı", "Maç tamamlandı · Galibiyet"]
+        : ["KAYBETTİN · Hareketsiz kaldın", "Maç tamamlandı · Hareketsizlik"],
+    };
+    const [summary, state] = reasons[finishReason] || (
+      won
+        ? ["KAZANDIN · Rakip Çekirdek yok edildi", "Maç tamamlandı · Galibiyet"]
+        : ["KAYBETTİN · Çekirdeğin yok edildi", "Maç tamamlandı · Mağlubiyet"]
+    );
     return {
-      session_id:localServerSessionId || `offline-${Date.now()}`,
-      match_type:"local_test",
-      viewer_player_id:participantPlayerId,
-      winner_player_id:won ? participantPlayerId : "yerel-ai",
-      loser_player_id:won ? "yerel-ai" : participantPlayerId,
-      is_draw:false,
-      finish_reason:finishReason || "core_destroyed",
-      finished_at_ms:Math.round(client.elapsedMs),
-      players:{
-        [participantPlayerId]:{
-          display_name:profileState.viewModel()?.displayName || "Oyuncu",
-          rating:Number(profileState.viewModel()?.rating || 0),
-          core_type:metaProgressionState?.cores?.selected_core_type || "core_resonance",
-          core_level:Math.max(1, Number(selectedCore?.level || 1)),
-        },
-        "yerel-ai":{
-          display_name:`${aiArchetypeName(activeLocalAiArchetype)} AI`,
-          rating:Number(profileState.viewModel()?.rating || 0),
-          core_type:"core_resonance",
-          core_level:1,
-        },
-      },
-      result_summary:{
-        [participantPlayerId]:{
-          damage_dealt:Number(localBattleMetrics?.damage_dealt || 0),
-          damage_by_module:damageRows(
-            selectedBattlePoolDefinitionIds(),
-            localBattleMetrics?.damage_by_module || {}
-          ),
-          core_type:metaProgressionState?.cores?.selected_core_type || "core_resonance",
-          core_level:Math.max(1, Number(selectedCore?.level || 1)),
-        },
-        "yerel-ai":{
-          damage_dealt:enemyDamage,
-          damage_by_module:damageRows(enemyBattlePoolDefinitionIds, enemyDamageMap),
-          core_type:"core_resonance",
-          core_level:1,
-        },
-      },
+      summary,
+      state,
+      ticker: won ? "Savaş tamamlandı · Galibiyet" : "Savaş tamamlandı · Mağlubiyet",
     };
   }
 
   function finishLocalBattle({
     won,
+    isDraw=false,
     finishReason=null,
-    forfeitPenalty=0,
   }) {
     if (localBattleFinished) {
       return;
@@ -12144,14 +10776,12 @@ function saveHumanReviewLocalNote() {
 
     localBattleFinished =
       true;
-    localBattleOutcome = won ? "victory" : "defeat";
-    localServerFinalResult ||= buildOfflineLocalBattleResult(
-      won,
-      finishReason
-    );
+    const outcome = isDraw ? "draw" : (won ? "victory" : "defeat");
+    const resultCopy = localBattleResultCopy(outcome, finishReason);
+    localBattleOutcome = outcome;
     setBattleLiveTicker(
-      won ? "Savaş tamamlandı · Galibiyet" : "Savaş tamamlandı · Mağlubiyet",
-      won ? "heal" : "danger"
+      resultCopy.ticker,
+      outcome === "defeat" ? "danger" : "heal"
     );
     document.body.dataset.localFinished =
       "true";
@@ -12159,25 +10789,25 @@ function saveHumanReviewLocalNote() {
 
     criticalCoreAudioRequested = false;
     setTerminalAudioState(
-      won ? "victory" : "defeat",
+      outcome,
       "local_match_finished"
     );
 
     setBattleResultHero(
-      won ? "victory" : "defeat"
+      outcome
     );
 
     const waitForCoreExplosion = [
       "core_destroyed",
-      "simultaneous_core_tiebreak",
-      "simultaneous_core_draw",
       "simultaneous_core_destroyed",
     ].includes(finishReason || "core_destroyed");
     if (waitForCoreExplosion) {
-      emitModuleExplosion(
-        won ? "enemy-core" : "core-1",
-        { core: true }
-      );
+      const explodedCores = outcome === "draw"
+        ? ["enemy-core", "core-1"]
+        : [won ? "enemy-core" : "core-1"];
+      for (const coreId of explodedCores) {
+        emitModuleExplosion(coreId, { core: true });
+      }
     }
     schedulePostMatchReveal(
       `local:${battleStartedAt || "finished"}`,
@@ -12188,25 +10818,13 @@ function saveHumanReviewLocalNote() {
       battleResultSummaryEl.hidden =
         false;
       battleResultSummaryEl.textContent = localizedUiText(
-        finishReason === "player_forfeit"
-          ? localizedMessage("battle.forfeit_loss", {penalty:localizedNumber(forfeitPenalty)})
-          : (
-              won
-                ? "KAZANDIN · Rakip Çekirdek yok edildi"
-                : "KAYBETTİN · Çekirdeğin yok edildi"
-            )
+        resultCopy.summary
       );
     }
 
     if (battleStateLabelEl) {
       battleStateLabelEl.textContent = localizedUiText(
-        finishReason === "player_forfeit"
-          ? "Maç tamamlandı · Savaşı bıraktın"
-          : (
-              won
-                ? "Maç tamamlandı · Galibiyet"
-                : "Maç tamamlandı · Mağlubiyet"
-            )
+        resultCopy.state
       );
     }
 
@@ -12216,17 +10834,10 @@ function saveHumanReviewLocalNote() {
       localBattleMetrics.won = Boolean(won);
       localBattleMetrics.forfeited =
         finishReason === "player_forfeit";
-      localBattleMetrics.forfeit_credit_penalty =
-        Math.max(
-          0,
-          Number(forfeitPenalty || 0)
-        );
 
       telemetryDispatcher
         .trackLocalBattleCompleted({
           ...localBattleMetrics,
-          generator_gate_visits:
-            {...localBattleMetrics.generator_gate_visits},
         });
       telemetryDispatcher.track(
         "battle_ux_timing_summary",
@@ -12325,49 +10936,7 @@ function saveHumanReviewLocalNote() {
       isDraw:false,
     });
     renderLog();
-    renderLocalBattleReport();
-    window.setTimeout(
-      () => {
-        loadCumulativeManualReport();
-      },
-      350
-    );
     renderPlayModeUi();
-  }
-
-  function forfeitOfflineLocalBattle() {
-    const earnedDuringBattle =
-      Math.max(
-        0,
-        Number(mockServerRegenPulses || 0)
-      );
-    const currentCredits =
-      Math.max(
-        0,
-        Number(client.circuitCredits || 0)
-      );
-    const penalty =
-      Math.min(
-        currentCredits,
-        earnedDuringBattle
-      );
-
-    client.applyServerEconomyState({
-      circuitCredits:
-        currentCredits - penalty,
-    });
-    commandLog.push({
-      atMs:client.elapsedMs,
-      kind:"battle_forfeited",
-      payload:{
-        credit_penalty:penalty,
-      },
-    });
-    finishLocalBattle({
-      won:false,
-      finishReason:"player_forfeit",
-      forfeitPenalty:penalty,
-    });
   }
 
   async function forfeitActiveBattle() {
@@ -12381,18 +10950,18 @@ function saveHumanReviewLocalNote() {
         "battle_forfeit",
         "other_ui"
       );
-      if (localServerSessionId) {
-        const accepted =
-          await sendLocalServerCommand({
-            kind:"forfeit_battle",
-            payload:{},
-          });
-        if (!accepted) {
-          battleForfeitButton.disabled = false;
-        }
+      if (!localServerSessionId) {
+        battleForfeitButton.disabled = false;
         return;
       }
-      forfeitOfflineLocalBattle();
+      const accepted =
+        await sendLocalServerCommand({
+          kind:"forfeit_battle",
+          payload:{},
+        });
+      if (!accepted) {
+        battleForfeitButton.disabled = false;
+      }
       return;
     }
 
@@ -12722,202 +11291,295 @@ function saveHumanReviewLocalNote() {
     }
 
     layer.appendChild(effect);
-    const arena = document.getElementById("duel-arena");
-    if (arena) {
-      arena.classList.remove("fx-module-impact", "fx-core-impact");
-      void arena.offsetWidth;
-      arena.classList.add(core ? "fx-core-impact" : "fx-module-impact");
-    }
-    triggerGridshardCue(core ? "core_hit" : "energy_transfer");
+    pulseArenaImpact(core ? "core" : "medium");
+    triggerGridshardCue(
+      core
+        ? "core_hit"
+        : (moduleId.startsWith("enemy-") ? "kill_confirm" : "module_lost")
+    );
     window.setTimeout(
-      () => {
-        effect.remove();
-        arena?.classList.remove("fx-module-impact", "fx-core-impact");
-      },
+      () => effect.remove(),
       core ? 2450 : 980
     );
     return true;
   }
 
-  function updateLocalEnemyCombat() {
+  // Beta.72 — arena sarsıntısı. Güçlü bir sarsıntı sürerken daha zayıfı onu
+  // kesmez; hareket azaltma tercihinde yalnız parlama kalır (CSS).
+  const ARENA_PULSE_LEVELS = Object.freeze({
+    light:{ className:"fx-arena-pulse-light", rank:1, durationMs:360, vibrate:null },
+    medium:{ className:"fx-arena-pulse-medium", rank:2, durationMs:460, vibrate:18 },
+    heavy:{ className:"fx-arena-pulse-heavy", rank:3, durationMs:540, vibrate:[26, 40, 18] },
+    core:{ className:"fx-arena-pulse-core", rank:4, durationMs:780, vibrate:[45, 45, 70] },
+  });
+  const ARENA_PULSE_CLASSES = Object.values(ARENA_PULSE_LEVELS).map(
+    (level) => level.className
+  );
+  const BATTLE_VIBRATION_MIN_GAP_MS = 260;
+  let arenaPulseLevel = null;
+  let arenaPulseTimer = 0;
+  let lastBattleVibrationAt = -Infinity;
+
+  function clearArenaPulse() {
+    window.clearTimeout(arenaPulseTimer);
+    arenaPulseLevel = null;
+    document.getElementById("duel-arena")?.classList.remove(...ARENA_PULSE_CLASSES);
+  }
+
+  function vibrateBattle(pattern) {
+    if (!pattern || settingsState.settings?.vibration_enabled === false) {
+      return false;
+    }
+    const now = performance.now();
+    if (now - lastBattleVibrationAt < BATTLE_VIBRATION_MIN_GAP_MS) {
+      return false;
+    }
+    lastBattleVibrationAt = now;
+    try {
+      return Boolean(navigator.vibrate?.(pattern));
+    } catch (_error) {
+      return false;
+    }
+  }
+
+  function pulseArenaImpact(level="light") {
+    const config = ARENA_PULSE_LEVELS[level];
+    const arena = document.getElementById("duel-arena");
+    if (!config || !arena) {
+      return false;
+    }
     if (
-      activePlayMode !== "local"
-      || localBattleFinished
+      arenaPulseLevel
+      && ARENA_PULSE_LEVELS[arenaPulseLevel].rank > config.rank
     ) {
-      return;
+      return false;
+    }
+    arena.classList.remove(...ARENA_PULSE_CLASSES);
+    void arena.offsetWidth;
+    arena.classList.add(config.className);
+    arenaPulseLevel = level;
+    window.clearTimeout(arenaPulseTimer);
+    arenaPulseTimer = window.setTimeout(() => {
+      arena.classList.remove(config.className);
+      arenaPulseLevel = null;
+    }, config.durationMs);
+    vibrateBattle(config.vibrate);
+    return true;
+  }
+
+  // Sık tekrarlanan imza seslerinin üst üste binmesini önler.
+  const battleCueLastAt = new Map();
+
+  function triggerBattleCue(
+    cueName,
+    { minIntervalMs=160 }={}
+  ) {
+    if (!cueName) return false;
+    const now = performance.now();
+    if (now - (battleCueLastAt.get(cueName) ?? -Infinity) < minIntervalMs) {
+      return false;
+    }
+    battleCueLastAt.set(cueName, now);
+    return triggerGridshardCue(cueName).ok === true;
+  }
+
+  // Beta.72 — imza efektleri. Her tür motorun gerçek bir olayına bağlıdır.
+  // Aynı anda çok efekt birikirse önceliği düşük olanlar atlanır; Grafik
+  // ayarı Düşük/Orta iken parçacık ve efekt bütçesi küçülür.
+  const SIGNATURE_EFFECTS = Object.freeze({
+    kill_confirm:{ priority:4, lifetimeMs:980, particles:8, cue:null },
+    quantum_charge:{ priority:3, lifetimeMs:1180, particles:10, cue:"quantum_charge", arena:"heavy" },
+    phoenix_revive:{ priority:3, lifetimeMs:1280, particles:12, cue:"phoenix_revive", arena:"medium" },
+    singularity_field:{ priority:3, lifetimeMs:1200, particles:10, cue:"singularity_field", arena:"medium" },
+    swarm_release:{ priority:3, lifetimeMs:1040, particles:8, cue:"swarm_release", arena:"light" },
+    prism_shield:{ priority:3, lifetimeMs:900, particles:6, cue:"prism_shield", minRepeatMs:700 },
+    omega_link:{ priority:2, lifetimeMs:820, particles:0, cue:"omega_link", minRepeatMs:1400, cueIntervalMs:1400 },
+    nano_pulse:{ priority:2, lifetimeMs:900, particles:6, cue:"nano_pulse" },
+    chrono_window:{ priority:2, lifetimeMs:1000, particles:6, cue:"chrono_shift" },
+    phase_evade:{ priority:2, lifetimeMs:820, particles:6, cue:"phase_evade", minRepeatMs:400 },
+    target_lock:{ priority:2, lifetimeMs:900, particles:0, cue:"target_lock", cueIntervalMs:500 },
+    disruptor_echo:{ priority:2, lifetimeMs:900, particles:6, cue:"sabotage_echo" },
+    repeat_echo:{ priority:1, lifetimeMs:860, particles:6, cue:"repeat_echo", arena:"light" },
+    chrono_debt:{ priority:1, lifetimeMs:900, particles:0, cue:null },
+    secondary_hit:{ priority:1, lifetimeMs:760, particles:0, cue:null },
+    // Çekirdek imzaları. Güç kullanımının zaten sesi olduğu için yalnız güç
+    // dışında tetiklenen Doğuş ve Zincir kendi sesini çalar.
+    core_rebirth:{ priority:4, lifetimeMs:1400, particles:14, cue:"core_rebirth", arena:"heavy" },
+    core_last_stand:{ priority:3, lifetimeMs:1100, particles:8, cue:null },
+    core_chain:{ priority:3, lifetimeMs:900, particles:6, cue:"overdrive_chain", arena:"light" },
+    core_static:{ priority:3, lifetimeMs:1100, particles:10, cue:null },
+    core_discharge:{ priority:3, lifetimeMs:1000, particles:8, cue:null },
+    core_half_phase:{ priority:3, lifetimeMs:1000, particles:6, cue:null },
+  });
+  const signatureEffectLastAt = new Map();
+  let signatureEffectsLive = 0;
+
+  function battleGraphicsQuality() {
+    return settingsState.settings?.graphics_quality || "yuksek";
+  }
+
+  function signatureEffectMinimumPriority() {
+    const quality = battleGraphicsQuality();
+    if (quality === "dusuk") {
+      return signatureEffectsLive >= 3 ? 4 : 3;
+    }
+    const steps = quality === "orta"
+      ? [[6, 4], [4, 3], [2, 2]]
+      : [[9, 4], [6, 3], [4, 2]];
+    for (const [liveCount, priority] of steps) {
+      if (signatureEffectsLive >= liveCount) return priority;
+    }
+    return 1;
+  }
+
+  function signatureParticleCount(baseCount) {
+    const quality = battleGraphicsQuality();
+    if (quality === "dusuk") return 0;
+    return quality === "orta" ? Math.ceil(baseCount / 2) : baseCount;
+  }
+
+  function isCoreDomId(moduleId) {
+    return moduleId === "enemy-core" || moduleId === "core-1";
+  }
+
+  function signatureAnchorPoint(layerRect, moduleId) {
+    if (!moduleId) return null;
+    const rect = resolveModuleAnchor(moduleId, { core:isCoreDomId(moduleId) });
+    if (!rect) return null;
+    return {
+      x:rect.left + rect.width / 2 - layerRect.left,
+      y:rect.top + rect.height / 2 - layerRect.top,
+      size:Math.max(28, Math.min(rect.width, rect.height)),
+    };
+  }
+
+  function buildSignatureEffectNodes(
+    kind,
+    anchorId,
+    { links, label, lifetimeMs, particleCount }
+  ) {
+    const layer = document.getElementById("battle-effect-layer");
+    if (!layer || typeof layer.getBoundingClientRect !== "function") {
+      return [];
+    }
+    const layerRect = layer.getBoundingClientRect();
+    const anchor = signatureAnchorPoint(layerRect, anchorId);
+    if (!anchor) return [];
+    const nodes = [];
+    for (const [fromId, toId] of links) {
+      const from = signatureAnchorPoint(layerRect, fromId);
+      const to = signatureAnchorPoint(layerRect, toId);
+      if (!from || !to) continue;
+      const dx = to.x - from.x;
+      const dy = to.y - from.y;
+      const distance = Math.hypot(dx, dy);
+      if (distance < 4) continue;
+      const link = document.createElement("span");
+      link.className = "signature-link-effect";
+      link.dataset.signature = kind;
+      link.style.left = `${from.x}px`;
+      link.style.top = `${from.y}px`;
+      link.style.width = `${distance}px`;
+      link.style.setProperty("--fx-angle", `${Math.atan2(dy, dx)}rad`);
+      link.style.setProperty("--fx-distance", `${distance}px`);
+      link.style.setProperty("--signature-life", `${lifetimeMs}ms`);
+      const beam = document.createElement("span");
+      beam.className = "signature-link-beam";
+      const pulse = document.createElement("span");
+      pulse.className = "signature-link-pulse";
+      link.append(beam, pulse);
+      nodes.push(link);
     }
 
-    if (!enemyHasLivingAttackModule()) {
-      return;
-    }
-
-    const attackSecond =
-      Math.floor(
-        client.elapsedMs
-        / 2000
+    const effect = document.createElement("span");
+    effect.className = "module-signature-effect";
+    effect.dataset.signature = kind;
+    effect.style.left = `${anchor.x}px`;
+    effect.style.top = `${anchor.y}px`;
+    effect.style.setProperty("--signature-size", `${Math.round(anchor.size)}px`);
+    effect.style.setProperty("--signature-life", `${lifetimeMs}ms`);
+    const halo = document.createElement("span");
+    halo.className = "signature-halo";
+    const ring = document.createElement("span");
+    ring.className = "signature-ring";
+    effect.append(halo, ring);
+    for (let index = 0; index < particleCount; index += 1) {
+      const particle = document.createElement("i");
+      particle.style.setProperty(
+        "--signature-angle",
+        `${(360 / particleCount) * index + (index % 2) * 11}deg`
       );
+      effect.appendChild(particle);
+    }
+    if (label) {
+      const tag = document.createElement("span");
+      tag.className = "signature-label";
+      tag.textContent = localizedUiText(label);
+      effect.appendChild(tag);
+    }
+    nodes.push(effect);
+    layer.append(...nodes);
+    return nodes;
+  }
 
+  function emitSignatureBattleEffect(
+    kind,
+    anchorId,
+    {
+      links=[],
+      label=null,
+      arena,
+      lifetimeMs=null,
+      throttleKey=null,
+    }={}
+  ) {
+    const config = SIGNATURE_EFFECTS[kind];
+    if (!config || !anchorId) {
+      return false;
+    }
+    const now = performance.now();
+    const repeatKey = `${kind}:${throttleKey || anchorId}`;
     if (
-      attackSecond
-      === localEnemyAttackSecond
+      config.minRepeatMs
+      && now - (signatureEffectLastAt.get(repeatKey) ?? -Infinity) < config.minRepeatMs
     ) {
-      return;
+      return false;
     }
-
-    localEnemyAttackSecond =
-      attackSecond;
-
-    const activeTargets = [
-      ...client.modules.values(),
-    ]
-      .filter(
-        (module) =>
-          module.status === "active"
-          && ![
-            "core-1",
-            "generator-1",
-          ].includes(
-            module.instanceId
-          )
-          && Number(
-            module.hp || 0
-          ) > 0
-      )
-      .sort(
-        (a,b) =>
-          mockTargetPriority(a)
-          - mockTargetPriority(b)
-          || a.instanceId.localeCompare(
-            b.instanceId
-          )
-      );
-
-    let target =
-      activeTargets[0]
-      || (
-        Number(
-          client.modules.get(
-            "generator-1"
-          )?.hp || 0
-        ) > 0
-          ? client.modules.get(
-              "generator-1"
-            )
-          : client.modules.get(
-              "core-1"
-            )
-      );
-
-    if (
-      !target
-      || Number(
-        target.hp || 0
-      ) <= 0
-    ) {
-      return;
+    if (config.priority < signatureEffectMinimumPriority()) {
+      return false;
     }
-
-    const shieldActive =
-      [...client.modules.values()]
-        .some(
-          (module) =>
-            module.instanceId
-            === "shield-1"
-            && module.status
-              === "active"
-            && Number(
-              module.hp || 0
-            ) > 0
-        );
-
-    const rawDamage = 8;
-    const damage =
-      shieldActive
-        ? 5
-        : rawDamage;
-    const newHp =
-      Math.max(
-        0,
-        Number(
-          target.hp || 0
-        )
-        - damage
-      );
-
-    client.applyServerModuleState({
-      instanceId:
-        target.instanceId,
-      hp:newHp,
+    signatureEffectLastAt.set(repeatKey, now);
+    signatureEffectsLive += 1;
+    const lifetime = Math.max(400, Math.round(lifetimeMs ?? config.lifetimeMs));
+    const visualGeneration = battleVisualGeneration;
+    const validLinks = links.filter(
+      (pair) => Array.isArray(pair) && pair[0] && pair[1] && pair[0] !== pair[1]
+    );
+    // Olaylar yeni anlık görüntü çizilmeden işlenir; konumu çizimden sonra ölç.
+    // Sekme arka plandayken bekleyen kareler dönüşte topluca çizilmez.
+    window.requestAnimationFrame(() => {
+      const fresh = performance.now() - now < 600;
+      const nodes = fresh && visualGeneration === battleVisualGeneration
+        ? buildSignatureEffectNodes(kind, anchorId, {
+            links:validLinks,
+            label,
+            lifetimeMs:lifetime,
+            particleCount:signatureParticleCount(config.particles),
+          })
+        : [];
+      window.setTimeout(() => {
+        for (const node of nodes) node.remove();
+        signatureEffectsLive = Math.max(0, signatureEffectsLive - 1);
+      }, lifetime);
     });
-    emitFloatingBattleFeedback(
-      target.instanceId,
-      `-${damage}`,
-      "damage",
-      { core: target.instanceId === "core-1" }
-    );
-    setBattleLiveTicker(
-      localizedMessage("battle.damage_ticker", {name:localizedUiText(target.nameTr || "Modül"), damage:localizedNumber(damage)}),
-      "danger"
-    );
-
-    const travelMs=emitDuelAttackEffect(
-      "enemy-laser",
-      target.instanceId,
-      shieldActive
-        ? "shield"
-        : "enemy",
-      "laser"
-    );
-    triggerGridshardCue(
-      weaponCue("laser")
-    );
-    scheduleAttackImpactCue({
-      defended:shieldActive,
-      targetDefinitionId:
-        clientDefinitionId(
-          target.instanceId
-        ),
-      travelMs,
-    });
-
-    if (localBattleMetrics) {
-      localBattleMetrics.damage_received += damage;
-      localBattleMetrics.ai_hits += 1;
-      localBattleMetrics.shield_mitigated +=
-        Math.max(0, rawDamage-damage);
-
-      telemetryDispatcher.trackLocalAiHit({
-        module_id:target.instanceId,
-        raw_damage:rawDamage,
-        final_damage:damage,
-        shield_active:shieldActive,
-        elapsed_ms:client.elapsedMs,
-      });
+    if (config.cue) {
+      triggerBattleCue(config.cue, { minIntervalMs:config.cueIntervalMs ?? 160 });
     }
-
-    commandLog.push({
-      atMs:client.elapsedMs,
-      kind:"module_damaged",
-      moduleName:
-        target.nameTr,
-      damage,
-      hp:newHp,
-      source:"Yerel AI",
-    });
-
-    if (
-      target.instanceId
-      === "core-1"
-      && newHp <= 0
-    ) {
-      finishLocalBattle({
-        won:false,
-      });
+    const arenaLevel = arena === undefined ? config.arena : arena;
+    if (arenaLevel) {
+      pulseArenaImpact(arenaLevel);
     }
-
-    renderPlayerCoreSummary();
-    renderBoard();
-    renderLog();
+    return true;
   }
 
   function hpRatio(
@@ -13018,7 +11680,7 @@ function saveHumanReviewLocalNote() {
     bar.setAttribute("aria-valuemin", "0");
     bar.setAttribute("aria-valuemax", String(Math.max(1, Number(maxHp || 1))));
     bar.setAttribute("aria-valuenow", String(Math.max(0, Number(hp || 0))));
-    bar.title = localizedMessage("battle.hp_bar_title", {hp:localizedNumber(Math.max(0, Math.round(Number(hp || 0)))), max:localizedNumber(Math.max(1, Math.round(Number(maxHp || 1))))});
+    bar.title = `CAN ${Math.max(0, Math.round(Number(hp || 0)))}/${Math.max(1, Math.round(Number(maxHp || 1)))}`;
 
     const fill=
       document.createElement(
@@ -13107,11 +11769,10 @@ function saveHumanReviewLocalNote() {
     if (!activeBattlePoolPresetName) {
       quickLoadoutActiveSummaryEl
         .dataset.state="none";
-      const title = document.createElement("strong");
-      title.textContent = localizedUiText("Aktif loadout yok");
-      const hint = document.createElement("span");
-      hint.textContent = localizedUiText("Hazır havuz seçtiğinde savaş öncesi özet burada görünecek.");
-      quickLoadoutActiveSummaryEl.replaceChildren(title, hint);
+      quickLoadoutActiveSummaryEl
+        .innerHTML=
+          "<strong>Aktif loadout yok</strong>"
+          + "<span>Hazır havuz seçtiğinde savaş öncesi özet burada görünecek.</span>";
       return;
     }
 
@@ -13141,19 +11802,21 @@ function saveHumanReviewLocalNote() {
             )
           : "incomplete";
 
-    const favorite=preset?.favorite ? localizedMessage("preset.favorite_prefix") : "";
+    const favorite=
+      preset?.favorite
+        ? "★ Favori · "
+        : "";
     const freshness=
       preset?.last_used_at_ms
         ? presetLastUsedLabel(
             preset.last_used_at_ms
           )
-        : localizedMessage("preset.never_used");
+        : "Henüz kullanılmadı";
 
-    const heading=document.createElement("strong");
-    heading.textContent=`${favorite}${activeBattlePoolPresetName}`;
-    const detail=document.createElement("span");
-    detail.textContent=localizedMessage("preset.active_summary", {count:localizedNumber(selectedCount), state:localizedMessage(clean ? "preset.unchanged" : "preset.modified"), freshness});
-    quickLoadoutActiveSummaryEl.replaceChildren(heading,detail);
+    quickLoadoutActiveSummaryEl
+      .innerHTML=
+        `<strong>${favorite}${activeBattlePoolPresetName}</strong>`
+        + `<span>${selectedCount}/6 kart · ${clean ? "Kayıtla aynı" : "Değiştirildi"} · ${freshness}</span>`;
   }
 
   function renderActivePresetState() {
@@ -13180,8 +11843,8 @@ function saveHumanReviewLocalNote() {
     if (activePresetEl) {
       activePresetEl.textContent=
         hasActive
-          ? localizedMessage("preset.active_name", {name:activeBattlePoolPresetName})
-          : localizedMessage("preset.no_active");
+          ? `Aktif hazır havuz: ${activeBattlePoolPresetName}`
+          : "Aktif hazır havuz: Yok";
       activePresetEl.dataset.state=
         hasActive
           ? "active"
@@ -13245,7 +11908,7 @@ function saveHumanReviewLocalNote() {
       && !presetNameEl.value
     ) {
       presetNameEl.placeholder=
-        localizedMessage("preset.active_placeholder", {name:activeBattlePoolPresetName});
+        `Aktif: ${activeBattlePoolPresetName}`;
     }
 
     renderQuickLoadoutActiveSummary();
@@ -13273,7 +11936,7 @@ function saveHumanReviewLocalNote() {
       return "Az önce kullanıldı";
     }
     if (minutes < 60) {
-      return localizedMessage("time.minutes_ago", {count:minutes});
+      return `${minutes} dk önce`;
     }
 
     const hours=
@@ -13281,14 +11944,14 @@ function saveHumanReviewLocalNote() {
         minutes / 60
       );
     if (hours < 24) {
-      return localizedMessage("time.hours_ago", {count:localizedNumber(hours)});
+      return `${hours} sa önce`;
     }
 
     const days=
       Math.floor(
         hours / 24
       );
-    return localizedMessage("time.days_ago", {count:days});
+    return `${days} gün önce`;
   }
 
   async function updateBattlePoolPresetMeta(
@@ -13376,7 +12039,7 @@ function saveHumanReviewLocalNote() {
       title.textContent = preset.name;
       const meta = document.createElement("span");
       const count = Number(preset.use_count || 0);
-      meta.textContent = localizedMessage("preset.module_use_count", {modules:localizedNumber(preset.module_definition_ids.length), uses:localizedNumber(count)});
+      meta.textContent = `${preset.module_definition_ids.length} modül · ${count} kullanım`;
       text.append(title, meta);
 
       const use = document.createElement("button");
@@ -13496,7 +12159,8 @@ function saveHumanReviewLocalNote() {
         );
       meta.className=
         "preset-card-meta";
-      meta.textContent=localizedMessage("preset.module_last_used", {modules:localizedNumber(preset.module_definition_ids.length), last:presetLastUsedLabel(preset.last_used_at_ms)});
+      meta.textContent=
+        `${preset.module_definition_ids.length} modül · ${presetLastUsedLabel(preset.last_used_at_ms)}`;
 
       const actions=
         document.createElement(
@@ -13639,7 +12303,7 @@ function saveHumanReviewLocalNote() {
           (item)=>item.favorite
         ).length;
       quickLoadoutStatusEl.textContent=
-        localizedMessage("preset.favorite_registered_count", {favorites:localizedNumber(favoriteCount), registered:localizedNumber(battlePoolPresets.length)});
+        `${favoriteCount} favori · ${battlePoolPresets.length} kayıtlı havuz`;
     }
 
     for (
@@ -13725,7 +12389,8 @@ function saveHumanReviewLocalNote() {
         document.createElement(
           "span"
         );
-      meta.textContent=localizedMessage("preset.module_last_used", {modules:localizedNumber(preset.module_definition_ids.length), last:presetLastUsedLabel(preset.last_used_at_ms)});
+      meta.textContent=
+        `${preset.module_definition_ids.length} modül · ${presetLastUsedLabel(preset.last_used_at_ms)}`;
 
       const actions=
         document.createElement(
@@ -13772,7 +12437,7 @@ function saveHumanReviewLocalNote() {
 
             if (presetStatusEl) {
               presetStatusEl.textContent=
-                localizedMessage("preset.quick_loaded", {name:preset.name});
+                `${preset.name} hızlı loadout olarak yüklendi. Savaş Havuzunu doğrulayıp maça geçebilirsin.`;
             }
           }
         );
@@ -13802,10 +12467,8 @@ function saveHumanReviewLocalNote() {
 
     const current=
       presetSelectEl.value;
-    const emptyOption = document.createElement("option");
-    emptyOption.value = "";
-    emptyOption.textContent = localizedUiText("Hazır havuz seç...");
-    presetSelectEl.replaceChildren(emptyOption);
+    presetSelectEl.innerHTML=
+      '<option value="">Hazır havuz seç...</option>';
 
     for (
       const preset
@@ -13822,7 +12485,7 @@ function saveHumanReviewLocalNote() {
             ? "★ "
             : ""
         )
-        + localizedMessage("preset.option_count", {name:preset.name, count:localizedNumber(preset.module_definition_ids.length)});
+        + `${preset.name} · ${preset.module_definition_ids.length}`;
       presetSelectEl.appendChild(
         option
       );
@@ -13855,7 +12518,7 @@ function saveHumanReviewLocalNote() {
       if (presetStatusEl) {
         presetStatusEl.textContent=
           battlePoolPresets.length
-            ? localizedMessage("preset.registered_count", {count:localizedNumber(battlePoolPresets.length)})
+            ? `${battlePoolPresets.length} hazır havuz kayıtlı`
             : "Henüz kayıtlı hazır havuz yok.";
       }
       return {ok:true};
@@ -13920,13 +12583,19 @@ function saveHumanReviewLocalNote() {
       );
 
       if (!response.ok) {
-        let errorPayload={};
+        let detail="";
         try {
-          errorPayload=await response.json();
+          detail=String(
+            (await response.json())
+              ?.detail || ""
+          );
         } catch (_error) {
           // Non-JSON server errors use the generic message below.
         }
-        throw new Error(localizedApiError(errorPayload, response.status));
+        throw new Error(
+          detail
+          || "Sunucu kaydı kabul etmedi."
+        );
       }
 
       const payload=
@@ -13950,7 +12619,8 @@ function saveHumanReviewLocalNote() {
       }
       renderActivePresetState();
       if (presetStatusEl) {
-        presetStatusEl.textContent=localizedMessage("preset.saved", {name:savedName});
+        presetStatusEl.textContent=
+          `${savedName} kaydedildi.`;
       }
       return {
         ok:true,
@@ -13963,7 +12633,7 @@ function saveHumanReviewLocalNote() {
           : String(error);
       if (presetStatusEl) {
         presetStatusEl.textContent=
-          localizedMessage("preset.save_failed_reason", {reason:localizedUiText(reason)});
+          `Hazır havuz kaydedilemedi: ${reason}`;
       }
       return {
         ok:false,
@@ -14021,7 +12691,12 @@ function saveHumanReviewLocalNote() {
       );
     } catch (error) {
       if (presetStatusEl) {
-        presetStatusEl.textContent=localizedMessage("preset.server_save_failed", {reason:error instanceof Error ? error.message : String(error)});
+        presetStatusEl.textContent=
+          `Deste sunucuya kaydedilemedi: ${
+            error instanceof Error
+              ? error.message
+              : String(error)
+          }`;
       }
       return {
         ok:false,
@@ -14036,7 +12711,7 @@ function saveHumanReviewLocalNote() {
     renderPresetOptions();
     if (presetStatusEl) {
       presetStatusEl.textContent=
-        localizedMessage("preset.loaded", {name});
+        `${name} yüklendi; istersen modülleri değiştirebilirsin.`;
     }
     return {
       ok:true,
@@ -14090,7 +12765,8 @@ function saveHumanReviewLocalNote() {
     renderPresetOptions();
 
     if (presetStatusEl) {
-      presetStatusEl.textContent=localizedMessage("preset.deleted", {name});
+      presetStatusEl.textContent=
+        `${name} silindi.`;
     }
   }
 
@@ -14168,7 +12844,7 @@ function saveHumanReviewLocalNote() {
 
     if (presetStatusEl) {
       presetStatusEl.textContent=
-        localizedMessage("preset.renamed", {old:oldName, name:newName});
+        `${oldName} → ${newName} olarak değiştirildi.`;
     }
   }
 
@@ -14192,12 +12868,25 @@ function saveHumanReviewLocalNote() {
       ) || value;
   }
 
+  function uiLocale() {
+    return document.documentElement?.lang === "en" ? "en-US" : "tr-TR";
+  }
+
   function localizedUiText(value) {
     return globalThis.GridshardI18n
       ?.translateText(
         String(value ?? ""),
         document.documentElement.lang
       ) || String(value ?? "");
+  }
+
+  function localizedMessage(key, params = {}) {
+    return globalThis.GridshardI18n?.t(key, params, document.documentElement.lang) || key;
+  }
+
+  function localizedNumber(value, options = {}) {
+    return globalThis.GridshardI18n?.formatNumber(value, options, document.documentElement.lang)
+      || String(value);
   }
 
   function definitionIdFromInstanceId(
@@ -14268,7 +12957,8 @@ function saveHumanReviewLocalNote() {
       };
     } catch (error) {
       if (poolCatalogSourceEl) {
-        poolCatalogSourceEl.textContent = localizedMessage("pool.catalog_fallback");
+        poolCatalogSourceEl.textContent =
+          "Sunucu kataloğu yüklenemedi; temel modül bilgileri gösteriliyor. Sayısal savaş etkileri doğrulanamadı.";
         poolCatalogSourceEl.dataset.status =
           "fallback";
       }
@@ -14296,16 +12986,11 @@ function saveHumanReviewLocalNote() {
   function fallbackPoolModuleDescription(
     module
   ) {
-    if (
-      module.instanceId
-      === "generator-1"
-    ) {
-      return (
-        "Devrenin sabit başlangıç enerji kaynağıdır. Çekirdek tüm aktif hücrelere otomatik enerji iletir."
-      );
-    }
-
-    return localizedMessage("pool.module_description", {role:localizedUiText(module.strategicRole), hp:localizedNumber(module.maxHp), cost:localizedNumber(module.circuitCreditCost)});
+    return (
+      `${module.strategicRole}. `
+      + `Canı ${module.maxHp}, savaş içi yerleştirme maliyeti `
+      + `${module.currentCost} Akım'dır.`
+    );
   }
 
   function setTextOrDash(
@@ -14341,12 +13026,6 @@ function saveHumanReviewLocalNote() {
         .has(
           module.instanceId
         );
-    const required =
-      battlePoolSelection
-        .requiredModuleIds
-        .has(
-          module.instanceId
-        );
 
     poolDetailNameEl.textContent =
       localizedUiText(module.nameTr);
@@ -14361,7 +13040,8 @@ function saveHumanReviewLocalNote() {
 
     poolDetailHpEl.textContent =
       `${catalog?.max_hp ?? module.maxHp}`;
-    poolDetailCostEl.textContent=localizedMessage("currency.current", {amount:localizedNumber(catalog?.circuit_credit_cost ?? module.circuitCreditCost)});
+    poolDetailCostEl.textContent =
+      `${catalog?.current_cost ?? module.currentCost} Akım`;
     renderBattlePoolModulePreview(
       module,
       catalog
@@ -14370,14 +13050,14 @@ function saveHumanReviewLocalNote() {
     setTextOrDash(
       poolDetailEnergyGenerationEl,
       catalog
-        ? `${catalog.energy_generation || 0}/${localizedUiText("sn")}`
-        : localizedMessage("pool.catalog_loading")
+        ? `${catalog.energy_generation || 0}/sn`
+        : localizedUiText("Sunucu kataloğu bekleniyor")
     );
     setTextOrDash(
       poolDetailEnergyConsumptionEl,
       catalog
-        ? `${catalog.energy_consumption || 0}/${localizedUiText("sn")}`
-        : localizedMessage("pool.catalog_loading")
+        ? `${catalog.energy_consumption || 0}/sn`
+        : localizedUiText("Sunucu kataloğu bekleniyor")
     );
     setTextOrDash(
       poolDetailDamageEl,
@@ -14385,19 +13065,23 @@ function saveHumanReviewLocalNote() {
         ? (
             catalog.base_damage > 0
               ? `${catalog.base_damage}`
-              : localizedMessage("pool.no_direct_damage")
+              : localizedUiText("Doğrudan hasar yok")
           )
-        : localizedMessage("pool.catalog_loading")
+        : localizedUiText("Sunucu kataloğu bekleniyor")
     );
     setTextOrDash(
       poolDetailCooldownEl,
       catalog
         ? (
             catalog.cooldown_ms > 0
-              ? localizedMessage("time.seconds_short", {count:localizedNumber(catalog.cooldown_ms / 1000, {maximumFractionDigits:1})})
-              : localizedMessage("pool.no_cooldown")
+              ? `${(catalog.cooldown_ms / 1000).toFixed(
+                  catalog.cooldown_ms % 1000 === 0
+                    ? 0
+                    : 1
+                )} sn`
+              : localizedUiText("Bekleme yok")
           )
-        : localizedMessage("pool.catalog_loading")
+        : localizedUiText("Sunucu kataloğu bekleniyor")
     );
 
     poolDetailRoleEl.textContent =
@@ -14421,7 +13105,7 @@ function saveHumanReviewLocalNote() {
       const lines =
         (englishCatalog ? catalog?.effect_lines_en : catalog?.effect_lines)
         || [
-          localizedMessage("pool.effects_loading"),
+          "Sayısal savaş etkileri sunucu kataloğu yüklendiğinde gösterilir.",
         ];
 
       for (const line of lines) {
@@ -14441,19 +13125,19 @@ function saveHumanReviewLocalNote() {
       poolDetailStrongEl,
       catalog?.strong_against?.length
         ? catalog.strong_against.map(localizedUiText).join(", ")
-        : localizedMessage("pool.no_strong_matchup")
+        : localizedUiText("Belirgin karşı üstünlük yok")
     );
     setTextOrDash(
       poolDetailWeakEl,
       catalog?.weak_against?.length
         ? catalog.weak_against.map(localizedUiText).join(", ")
-        : localizedMessage("pool.no_weak_matchup")
+        : localizedUiText("Belirgin zayıflık yok")
     );
     setTextOrDash(
       poolDetailSynergyEl,
       catalog?.synergy_with?.length
         ? catalog.synergy_with.map(localizedUiText).join(", ")
-        : localizedMessage("pool.no_synergy")
+        : localizedUiText("Tanımlı özel sinerji yok")
     );
 
   }
@@ -14499,7 +13183,8 @@ function saveHumanReviewLocalNote() {
       );
     heading.className =
       "pool-category-title";
-    heading.textContent =localizedMessage("pool.category_heading", {title:localizedUiText(title), count:localizedNumber(count)});
+    heading.textContent =
+      `${title} · ${count}`;
 
     const list =
       document.createElement(
@@ -14519,10 +13204,6 @@ function saveHumanReviewLocalNote() {
     };
   }
 
-  function availableInitialBattleModuleIds() {
-    return [];
-  }
-
   function moduleRarityLabel(rarity) {
     return ({
       common: "Yaygın",
@@ -14532,13 +13213,22 @@ function saveHumanReviewLocalNote() {
     })[String(rarity || "").toLowerCase()] || "Yaygın";
   }
 
+  function localizedRewardDescription(value) {
+    return localizedUiText(String(value || "")
+      .replace(/\blegendary\b/gi, "Efsanevi")
+      .replace(/\bcommon\b/gi, "Yaygın")
+      .replace(/\brare\b/gi, "Nadir")
+      .replace(/\bepic\b/gi, "Epik"));
+  }
+
   function localizedArenaRewardDescription(node) {
     if (!node) return "";
-    if (document.documentElement.lang !== "en" || node.description_en) {
-      return localizedRecordText(node, "description");
+    if (document.documentElement.lang !== "en") {
+      return localizedRewardDescription(node.description_tr || node.description_en);
     }
-    // Older arena reward nodes only contain Turkish copy. Compose the English
-    // label from their reward payload so amounts and targeted cards stay exact.
+    if (node.description_en) return node.description_en;
+    // Eski ödül düğümleri yalnız Türkçe açıklama taşır. Sayı ve hedef kart
+    // adını korumak için İngilizce metni ödül yükünden kur.
     const rewards = node.rewards || {};
     const parts = [];
     if (Number(rewards.circuit_credits) > 0) {
@@ -14555,27 +13245,22 @@ function saveHumanReviewLocalNote() {
         name:localizedUiText(name || ""),
       }));
     }
-    if (rewards.chest_id) {
-      const chestName = metaProgressionState?.chests?.definitions?.find((item) => item.id === rewards.chest_id);
-      const fallback = ({field_3h:"Bronz Sandık", circuit_8h:"Gümüş Sandık", core_24h:"Altın Sandık", diamond_24h:"Elmas Sandık"})[rewards.chest_id];
-      parts.push(localizedRecordText(chestName, "name") || localizedUiText(fallback || "Sandık"));
+    if (Number(rewards.core_shards) > 0) {
+      const core = coreRewardIdentity(rewards);
+      parts.push(localizedMessage("arena.reward_core_shards", {
+        name:localizedUiText(core.nameTr), amount:localizedNumber(rewards.core_shards),
+      }));
     }
-    return parts.length ? parts.join(" + ") : localizedRecordText(node, "description");
-  }
-
-  function normalizeInitialBattleModuleIds() {
-    initialBattleModuleIds = [];
-    return [];
+    if (rewards.chest_id) {
+      const chest = metaProgressionState?.chests?.definitions?.find((item) => item.id === rewards.chest_id);
+      const fallback = ({field_3h:"Bronz Sandık", circuit_8h:"Gümüş Sandık", core_24h:"Altın Sandık", diamond_24h:"Elmas Sandık"})[rewards.chest_id];
+      parts.push(chest?.name_en || localizedUiText(chest?.name_tr || fallback || "Sandık"));
+    }
+    return parts.length ? parts.join(" + ") : localizedRewardDescription(node.description_tr);
   }
 
   function renderInitialModulePicker() {
-    const root = document.getElementById("initial-module-picker");
     const status = document.getElementById("initial-module-status");
-    if (!root) return;
-
-    root.innerHTML = "";
-    root.hidden = true;
-
     if (status) {
       status.textContent = localizedUiText("Çekirdek sabit başlar; diğer modülleri sistem uygun boş hücrelere otomatik yerleştirir");
       status.dataset.ready = "true";
@@ -14608,9 +13293,9 @@ function saveHumanReviewLocalNote() {
           )
           .sort(
             (a,b) =>
-              localizedUiText(a.nameTr).localeCompare(
-                localizedUiText(b.nameTr),
-                document.documentElement.lang === "en" ? "en" : "tr"
+              a.nameTr.localeCompare(
+                b.nameTr,
+                "tr"
               )
           );
 
@@ -14689,44 +13374,22 @@ function saveHumanReviewLocalNote() {
           );
         selectMark.className=
           "pool-choice-select";
-        const required=
-          battlePoolSelection
-            .requiredModuleIds
-            .has(
-              module.instanceId
-            );
-
         selectMark.textContent=
-          required
-            ? "◆"
-            : (
-                selected
-                  ? "✓"
-                  : "+"
-              );
+          selected
+            ? "✓"
+            : "+";
         selectMark.title=localizedUiText(
-          required
-            ? "Zorunlu modül · çıkarılamaz"
-            : (
-                selected
-                  ? "Savaş Havuzuna eklendi"
-                  : "Havuza ekle"
-              )
+          selected
+            ? "Savaş Havuzuna eklendi"
+            : "Havuza ekle"
         );
         selectMark.dataset.action=
-          required
-            ? "required"
-            : (
-                selected
-                  ? "selected"
-                  : "add"
-              );
+          selected
+            ? "selected"
+            : "add";
         selectMark.setAttribute(
           "aria-disabled",
-          String(
-            required
-            || selected
-          )
+          String(selected)
         );
 
         const catalog=
@@ -14752,10 +13415,10 @@ function saveHumanReviewLocalNote() {
           module.category;
         button.setAttribute(
           "aria-label",
-          `${localizedUiText(module.nameTr)} · ${poolCategoryLabel(module.category)}`
+          `${module.nameTr} · ${poolCategoryLabel(module.category)}`
         );
         button.title =
-          `${localizedUiText(module.nameTr)} · ${poolCategoryLabel(module.category)}`;
+          `${module.nameTr} · ${poolCategoryLabel(module.category)}`;
 
         if (selected) {
           button.classList.add(
@@ -14766,20 +13429,6 @@ function saveHumanReviewLocalNote() {
           button.classList.add(
             "focused"
           );
-        }
-
-        if (
-          battlePoolSelection
-            .requiredModuleIds
-            .has(
-              module.instanceId
-            )
-        ) {
-          button.classList.add(
-            "required"
-          );
-          button.title =
-            localizedMessage("pool.required_start", {name:localizedUiText(module.nameTr)});
         }
 
         button.addEventListener(
@@ -14795,16 +13444,6 @@ function saveHumanReviewLocalNote() {
           "click",
           (event) => {
             event.stopPropagation();
-
-            if (
-              selectMark.dataset.action
-              === "required"
-            ) {
-              logClientMessage(
-                "Çekirdek sabittir; diğer modüller Savaş Havuzundan seçilebilir."
-              );
-              return;
-            }
 
             if (
               selectMark.dataset.action
@@ -14867,9 +13506,9 @@ function saveHumanReviewLocalNote() {
           )
           .sort(
             (a,b) =>
-              localizedUiText(a.nameTr).localeCompare(
-                localizedUiText(b.nameTr),
-                document.documentElement.lang === "en" ? "en" : "tr"
+              a.nameTr.localeCompare(
+                b.nameTr,
+                "tr"
               )
           );
 
@@ -14933,35 +13572,17 @@ function saveHumanReviewLocalNote() {
           poolCategoryLabel(
             module.category
           );
-        const required=
-          battlePoolSelection
-            .requiredModuleIds
-            .has(
-              module.instanceId
-            );
         const removeMark=
           document.createElement(
             "span"
           );
         removeMark.className=
           "pool-selected-remove";
-        removeMark.textContent=
-          required
-            ? "◆"
-            : "−";
+        removeMark.textContent="−";
         removeMark.title=localizedUiText(
-          required
-            ? "Zorunlu modül · çıkarılamaz"
-            : "Havuzdan çıkar"
+          "Havuzdan çıkar"
         );
-        removeMark.dataset.action=
-          required
-            ? "required"
-            : "remove";
-        removeMark.setAttribute(
-          "aria-disabled",
-          String(required)
-        );
+        removeMark.dataset.action="remove";
         chip.append(
           chipIcon,
           chipName,
@@ -14970,10 +13591,10 @@ function saveHumanReviewLocalNote() {
         );
         chip.setAttribute(
           "aria-label",
-          `${localizedUiText(module.nameTr)} · ${poolCategoryLabel(module.category)}`
+          `${module.nameTr} · ${poolCategoryLabel(module.category)}`
         );
         chip.title =
-          `${localizedUiText(module.nameTr)} · ${poolCategoryLabel(module.category)}`;
+          `${module.nameTr} · ${poolCategoryLabel(module.category)}`;
 
         const catalog=
           catalogForModule(
@@ -14999,12 +13620,6 @@ function saveHumanReviewLocalNote() {
           "click",
           (event) => {
             event.stopPropagation();
-            if (required) {
-              logClientMessage(
-                "Çekirdek sabittir; diğer modüller Savaş Havuzundan seçilebilir."
-              );
-              return;
-            }
             const result=
               battlePoolSelection.toggle(
                 module.instanceId
@@ -15030,7 +13645,10 @@ function saveHumanReviewLocalNote() {
     }
 
     poolCountEl.textContent =
-      `${battlePoolSelection.selected.size} / ${battlePoolSelection.requiredSize}`;
+      battlePoolSelection.selected.size === battlePoolSelection.requiredSize
+      && !battlePoolSelection.hasAttackCard()
+        ? `${battlePoolSelection.selected.size} / ${battlePoolSelection.requiredSize} · saldırı kartı gerekli`
+        : `${battlePoolSelection.selected.size} / ${battlePoolSelection.requiredSize}`;
 
     renderInitialModulePicker();
 
@@ -15060,34 +13678,6 @@ function saveHumanReviewLocalNote() {
     renderActivePresetState();
   }
 
-  function boosterOfferDueAtMs(index) {
-    return BOOSTER_FIRST_OFFER_MS + index * BOOSTER_OFFER_INTERVAL_MS;
-  }
-
-  function rotatingBoosterOfferIds(index) {
-    const offset = Math.max(0, Number(index) || 0) % BOOSTER_OPTIONS.length;
-    const rotated = BOOSTER_OPTIONS.slice(offset).concat(BOOSTER_OPTIONS.slice(0, offset));
-    return rotated.slice(0, BOOSTER_OPTIONS_PER_OFFER).map((booster) => booster.id);
-  }
-
-  function updateBoosterOfferAvailability() {
-    if (localServerAuthoritative) return;
-    const dueAtMs = boosterOfferDueAtMs(nextBoosterOfferIndex);
-    if (!boosterOfferOpen && client.elapsedMs >= dueAtMs) {
-      boosterOfferOpen = true;
-      clearBoosterTargetMode("offer_opened");
-      activeBoosterOfferIds = new Set(rotatingBoosterOfferIds(nextBoosterOfferIndex));
-      boosterStatusEl.textContent = localizedUiText("HAZIR · 3 seçenekten 1'ini seç");
-      renderBoosterOptions();
-    } else if (!boosterOfferOpen) {
-      const remainingSeconds = Math.max(
-        0,
-        Math.ceil((dueAtMs - client.elapsedMs) / 1000)
-      );
-      boosterStatusEl.textContent = localizedMessage("battle.booster_unlock_seconds", {seconds:localizedNumber(remainingSeconds)});
-    }
-  }
-
   function renderBattlePoolModulePreview(module, catalog) {
     if (!poolDetailPreviewEl) return;
 
@@ -15095,7 +13685,6 @@ function saveHumanReviewLocalNote() {
     const card = document.createElement("div");
     card.className = "pool-detail-preview-card";
     card.dataset.category = module.category || "";
-    card.dataset.rarity = module.rarity || "common";
 
     const icon = document.createElement("span");
     icon.className = "module-icon pool-detail-preview-icon";
@@ -15106,99 +13695,9 @@ function saveHumanReviewLocalNote() {
 
     poolDetailPreviewEl.setAttribute(
       "aria-label",
-      localizedMessage("pool.module_preview_aria", {name:localizedUiText(module.nameTr)})
+      `${module.nameTr} · Modül önizlemesi`
     );
     poolDetailPreviewEl.appendChild(card);
-  }
-
-  function syncBoosterOfferFromSnapshot(player) {
-    const authoritativeOfferIndex = Number(
-      player?.next_booster_offer_index
-    );
-    if (
-      Number.isInteger(authoritativeOfferIndex)
-      && authoritativeOfferIndex >= 0
-    ) {
-      nextBoosterOfferIndex = authoritativeOfferIndex;
-    }
-    const offer = player?.pending_booster_offer || null;
-    if (offer) {
-      const offerId = String(offer.id || "");
-      const offerChanged = serverBoosterOfferId !== offerId;
-      serverBoosterOfferId = offerId;
-      activeBoosterOfferIds = new Set((offer.booster_ids || []).map(String));
-      serverBoosterEligibleTargets = new Map(
-        Object.entries(offer.eligible_target_module_ids || {}).map(
-          ([boosterId, moduleIds]) => [
-            boosterId,
-            new Set((moduleIds || []).map(String)),
-          ]
-        )
-      );
-      boosterOfferOpen = true;
-      if (offerChanged) clearBoosterTargetMode("offer_changed");
-      const optionCount = activeBoosterOfferIds.size || (offer.booster_ids || []).length || 0;
-      boosterStatusEl.textContent = localizedUiText(boosterTargetMode.selectedBoosterId
-        ? "Hedef modül seç"
-        : localizedMessage("battle.booster_choose", {count:localizedNumber(optionCount)}));
-      renderBoosterOptions();
-      return;
-    }
-
-    const offerWasVisible =
-      serverBoosterOfferId !== null
-      || boosterOfferOpen;
-    serverBoosterOfferId = null;
-    serverBoosterEligibleTargets = new Map();
-    activeBoosterOfferIds = new Set();
-    boosterOfferOpen = false;
-    clearBoosterTargetMode("offer_closed");
-    boosterStatusEl.textContent = localizedMessage("battle.booster_unlock_seconds", {seconds:localizedNumber(Math.max(
-      0,
-      Math.ceil((boosterOfferDueAtMs(nextBoosterOfferIndex) - client.elapsedMs) / 1000)
-    ))});
-    if (offerWasVisible) {
-      renderBoosterOptions();
-    }
-  }
-
-  function renderBoosterOptions() {
-    if (boosterPanelEl) {
-      boosterPanelEl.dataset.state = !boosterOfferOpen
-        ? "locked"
-        : (boosterTargetMode.selectedBoosterId ? "target" : "ready");
-    }
-    boosterOptionsEl.innerHTML = "";
-    const visibleBoosters = boosterOfferOpen && activeBoosterOfferIds.size
-      ? BOOSTER_OPTIONS.filter((booster) => activeBoosterOfferIds.has(booster.id))
-      : BOOSTER_OPTIONS;
-    for (const booster of visibleBoosters) {
-      const button = document.createElement("button");
-      button.type = "button";
-      button.className = "booster-option";
-      const boosterEnglish = document.documentElement?.lang === "en";
-      button.textContent = boosterEnglish ? booster.nameEn : booster.nameTr;
-      button.title = boosterEnglish ? booster.descriptionEn : booster.descriptionTr;
-      const isOfferChoice = !boosterOfferOpen || activeBoosterOfferIds.size === 0 || activeBoosterOfferIds.has(booster.id);
-      button.disabled = !boosterOfferOpen || !isOfferChoice;
-      if (boosterTargetMode.selectedBoosterId === booster.id) button.classList.add("selected");
-      const pickBoosterForTargeting = () => {
-        if (!boosterOfferOpen || !isOfferChoice) return false;
-        selectBoosterTargetMode(booster.id, "booster_button");
-        trackBattleUiInteraction(
-          `booster_select:${booster.id}`,
-          "booster"
-        );
-        boosterStatusEl.textContent = localizedUiText(boosterTargetMode.selectedBoosterId ? "Hedef modül seç" : "Seçim bekleniyor");
-        renderBoosterOptions();
-        renderBoard();
-        return true;
-      };
-      button.addEventListener("click", () => {
-        pickBoosterForTargeting();
-      });
-      boosterOptionsEl.appendChild(button);
-    }
   }
 
   function updateShelfTooltipPlacement(
@@ -15214,7 +13713,7 @@ function saveHumanReviewLocalNote() {
       return;
     }
     tooltip.classList.remove("tooltip-below");
-    const shelf = card.closest(".module-shelf, .duel-arena, .battle-pool-selected-list, .battle-pool-module-grid, .laboratory-module-list");
+    const shelf = card.closest(".module-shelf, .duel-arena, .battle-pool-selected-list, .battle-pool-module-grid");
     const cardRect = card.getBoundingClientRect();
     const tooltipRect = tooltip.getBoundingClientRect();
     const boundaryTop = shelf && typeof shelf.getBoundingClientRect === "function"
@@ -15224,88 +13723,6 @@ function saveHumanReviewLocalNote() {
       tooltip.classList.add("tooltip-below");
     }
   }
-
-  function isBoosterTargetEligible(module, boosterId = boosterTargetMode.selectedBoosterId) {
-    if (!module || !boosterId || module.status !== "active" || Number(module.hp) <= 0) {
-      return false;
-    }
-    if (serverBoosterEligibleTargets.has(boosterId)) {
-      return serverBoosterEligibleTargets.get(boosterId).has(String(module.instanceId));
-    }
-    const booster = BOOSTER_OPTIONS.find((item) => item.id === boosterId);
-    if (!booster) return false;
-    if (booster.targetCategories.length && !booster.targetCategories.includes(module.category)) {
-      return false;
-    }
-    if (boosterId === "emergency_repair" && Number(module.hp) >= Number(module.maxHp)) {
-      return false;
-    }
-    if (boosterId === "cooling_burst" && Number(module.heat || 0) <= 0) {
-      return false;
-    }
-    if (boosterId === "signal_cleanser" && (!Array.isArray(module.debuffs) || module.debuffs.length === 0)) {
-      return false;
-    }
-    return true;
-  }
-
-  function cancelBoosterTargeting(reason="cancelled") {
-    if (!boosterTargetMode.selectedBoosterId) return;
-    clearBoosterTargetMode(reason);
-    document.querySelectorAll(
-      ".module-card.booster-target, .module-card.booster-target-ineligible"
-    ).forEach((card) => card.classList.remove(
-      "booster-target",
-      "booster-target-ineligible"
-    ));
-    if (boosterOfferOpen && boosterStatusEl) {
-      boosterStatusEl.textContent = localizedUiText(
-        localizedMessage("battle.booster_choose", {count:localizedNumber(activeBoosterOfferIds.size || BOOSTER_OPTIONS_PER_OFFER)})
-      );
-    }
-    renderBoosterOptions();
-    return true;
-  }
-
-  function tryApplySelectedBooster(module) {
-    if (!boosterTargetMode.selectedBoosterId) return false;
-    const booster = BOOSTER_OPTIONS.find(item => item.id === boosterTargetMode.selectedBoosterId);
-    if (!booster) return false;
-    if (!isBoosterTargetEligible(module, booster.id)) {
-      logClientMessage(localizedMessage("battle.booster_rejected", {name:localizedUiText(booster.nameTr)}));
-      return true;
-    }
-    trackBattleUiInteraction(
-      `booster_apply:${booster.id}`,
-      "booster"
-    );
-    client.emitCommand({
-      kind:"use_booster",
-      payload:{
-        offer_id:serverBoosterOfferId,
-        booster_id:booster.id,
-        target_module_id:module.instanceId,
-      },
-    });
-    boosterStatusEl.textContent = localizedUiText("Sunucu hedefi doğruluyor…");
-    renderLog();
-    renderBoosterOptions();
-    renderBoard();
-    return true;
-  }
-
-  document.addEventListener?.("keydown", (event) => {
-    if (event.key !== "Escape") return;
-    if (!cancelBoosterTargeting("escape_key")) return;
-    event.preventDefault();
-  });
-
-  document.addEventListener?.("click", (event) => {
-    if (!boosterTargetMode.selectedBoosterId) return;
-    if (event.target.closest(".booster-option, .module-card")) return;
-    if (!event.target.closest(".battle-layout, .battle-shell, .play-live-panel")) return;
-    cancelBoosterTargeting("empty_battle_area");
-  });
 
   const CIRCUIT_CABLE_DIRECTIONS = [
     { dx:1, dy:0 },
@@ -15398,22 +13815,23 @@ function saveHumanReviewLocalNote() {
           x:Number(module.position.x),
           y:Number(module.position.y),
         }));
-      // The Core row is the horizontal distribution bus. Every powered
-      // column branches vertically from that row, so a module beside the Core
-      // visibly carries current onward to cards above and below it.
-      for (const column of new Set(poweredPositions.map((position) => position.x))) {
-        let cursor = {x:2,y:1};
-        while (cursor.x !== column) {
-          const next = {x:cursor.x + Math.sign(column - cursor.x),y:1};
-          energizedEdges.add(`${cablePositionKey(cursor)}>${cablePositionKey(next)}`);
-          cursor = next;
-        }
-        for (const target of poweredPositions.filter((position) => position.x === column)) {
-          cursor = {x:column,y:1};
-          while (cursor.y !== target.y) {
-            const next = {x:column,y:cursor.y + Math.sign(target.y - cursor.y)};
-            energizedEdges.add(`${cablePositionKey(cursor)}>${cablePositionKey(next)}`);
-            cursor = next;
+      // Current spreads along every shortest route from the Core to each
+      // powered module: the whole rectangle between them carries it. The top
+      // and bottom rows therefore show left/right flow as well, and every
+      // cable points away from the Core, so directions never conflict.
+      const core = {x:2,y:1};
+      for (const target of poweredPositions) {
+        const stepX = Math.sign(target.x - core.x);
+        const stepY = Math.sign(target.y - core.y);
+        for (let x = Math.min(core.x, target.x); x <= Math.max(core.x, target.x); x += 1) {
+          for (let y = Math.min(core.y, target.y); y <= Math.max(core.y, target.y); y += 1) {
+            const from = {x,y};
+            if (stepX && x !== target.x) {
+              energizedEdges.add(`${cablePositionKey(from)}>${cablePositionKey({x:x + stepX,y})}`);
+            }
+            if (stepY && y !== target.y) {
+              energizedEdges.add(`${cablePositionKey(from)}>${cablePositionKey({x,y:y + stepY})}`);
+            }
           }
         }
       }
@@ -15487,28 +13905,15 @@ function saveHumanReviewLocalNote() {
       cell.style.gridColumn = String(x + 1);
       cell.style.gridRow = String(y + 1);
 
-      const key = `${x},${y}`;
       if (x === CORE_POSITION.x && y === CORE_POSITION.y) {
         cell.classList.add("core-cell");
         cell.dataset.cellLabel =
           localizedUiText("Çekirdek");
         cell.title =
           "Çekirdek: sabit ana hedef";
-      } else if (GATE_KEYS.has(key)) {
-        cell.classList.add("gate-cell");
-        cell.dataset.cellLabel =
-          localizedUiText("Kapı");
-        cell.title =
-          "Çekirdek Kapısı: başlangıç bağlantı noktası";
-      } else if (SPECIAL_CELL_INFO[key]) {
-        const special = SPECIAL_CELL_INFO[key];
-        cell.classList.add("special-cell", special.css);
-        cell.title = localizedMessage("battle.special_cell", {label:localizedUiText(special.label), bonus:localizedUiText(special.bonus)});
-        cell.dataset.specialLabel = localizedUiText(special.label);
-        cell.dataset.specialBonus = special.bonus;
       } else {
         cell.dataset.cellLabel =
-          localizedMessage("battle.cell_coordinates", {x:localizedNumber(x), y:localizedNumber(y)});
+          localizedUiText(`Hücre ${x},${y}`);
       }
 
       board.appendChild(cell);
@@ -15527,16 +13932,9 @@ function saveHumanReviewLocalNote() {
       cell.dataset.occupied="false";
       cell.style.gridColumn=String(x+1);
       cell.style.gridRow=String(y+1);
-      const key=`${x},${y}`;
       if (x===CORE_POSITION.x && y===CORE_POSITION.y) {
         cell.classList.add("core-cell");
         cell.dataset.cellLabel=localizedUiText("Rakip Çekirdek");
-      } else if (GATE_KEYS.has(key)) {
-        cell.classList.add("gate-cell");
-        cell.dataset.cellLabel=localizedUiText("Kapı");
-      } else if (SPECIAL_CELL_INFO[key]) {
-        cell.classList.add("special-cell",SPECIAL_CELL_INFO[key].css);
-        cell.dataset.specialLabel=localizedUiText(SPECIAL_CELL_INFO[key].label);
       }
       enemyBoard.appendChild(cell);
     }
@@ -15579,21 +13977,15 @@ function saveHumanReviewLocalNote() {
           );
     if (!flowing) {
       if (required <= 0) return false;
-      const english=
-        document.documentElement.lang === "en";
+      // Türkçe yazılır; İngilizce görünümü i18n katmanı üretir.
       const reasons={
-        emp_disabled:english
-          ? "An EMP effect disabled this module's energy system."
-          : "EMP etkisi bu modülün enerji sistemini devre dışı bıraktı.",
-        line_disrupted:english
-          ? "A disruptor effect temporarily broke this module's energy line."
-          : "Kesici etkisi bu modülün enerji hattını geçici olarak kopardı.",
-        insufficient_supply:localizedMessage("battle.core_energy_need", {required:localizedNumber(required, {minimumFractionDigits:1, maximumFractionDigits:1}), received:localizedNumber(received, {minimumFractionDigits:1, maximumFractionDigits:1})}),
+        emp_disabled:"EMP etkisi bu modülün enerji sistemini devre dışı bıraktı.",
+        line_disrupted:"Kesici etkisi bu modülün enerji hattını geçici olarak kopardı.",
+        insufficient_supply:`Çekirdek enerji ihtiyacı: ${required.toFixed(1)} Ü, gelen: ${received.toFixed(1)} Ü.`,
+        waiting_energy:"Enerji rezervi bu modülün sıradaki eylemine yetmiyor; enerji birikince ateşler.",
       };
       const message=reasons[powerReason]
-        || (english
-          ? "This module is disabled. Check sabotage effects and Core energy pressure."
-          : "Bu modül devre dışı. Sabotaj etkilerini ve Çekirdek enerji baskısını kontrol edin.");
+        || "Bu modül devre dışı. Sabotaj etkilerini ve Çekirdek enerji baskısını kontrol edin.";
       card.classList.add("energy-disconnected");
       const tooltip=document.createElement("span");
       tooltip.className="power-state-tooltip";
@@ -15609,6 +14001,37 @@ function saveHumanReviewLocalNote() {
     }
 
     return true;
+  }
+
+  // Isı barı kartın üst kenarında durur: CAN barından ince, iki yandan içeride
+  // ve termometre gibi sarıdan kırmızıya ilerler. 70 (yüksek ısı) ve 100
+  // (aşırı ısınma) eşikleri çentikle işaretlidir; ısısı olmayan kartta çizilmez.
+  const MODULE_MAX_HEAT = 120;
+
+  function appendModuleHeatBar(card, moduleLike) {
+    const heat = Math.max(0, Number(moduleLike?.heat || 0));
+    const overheated = Boolean(moduleLike?.overheated);
+    if (!card || (heat <= 0 && !overheated)) return;
+    const percent = overheated ? 100 : Math.min(100, Math.round((heat / MODULE_MAX_HEAT) * 100));
+    const bar = document.createElement("span");
+    bar.className = "module-heat-bar";
+    bar.dataset.heatState = overheated
+      ? "overheated"
+      : heat >= 100
+        ? "critical"
+        : heat >= 70
+          ? "high"
+          : "warm";
+    bar.style.setProperty("--heat-percent", `${percent}%`);
+    bar.setAttribute("role", "img");
+    bar.setAttribute("aria-label", overheated
+      ? `Aşırı ısındı · Isı ${Math.round(heat)}`
+      : `Isı ${Math.round(heat)} / ${MODULE_MAX_HEAT}`);
+    const fill = document.createElement("i");
+    fill.setAttribute("aria-hidden", "true");
+    bar.appendChild(fill);
+    card.classList.add("has-heat-bar");
+    card.appendChild(bar);
   }
 
   function appendModuleLiveStatus(
@@ -15629,36 +14052,138 @@ function saveHumanReviewLocalNote() {
     };
 
     const heat = Number(moduleLike.heat || 0);
-    if (heat >= 70) {
+    if (moduleLike.overheated) {
+      addBadge(
+        "♨",
+        "heat-critical overheated",
+        `Aşırı ısındı · Isı ${Math.round(heat)} · 70'in altına inince yeniden ateşler`
+      );
+    } else if (heat >= 70) {
       addBadge(
         "♨",
         heat >= 100 ? "heat-critical" : "heat-high",
-        localizedMessage("battle.heat", {heat:localizedNumber(Math.round(heat))})
+        `Isı ${Math.round(heat)}`
       );
     }
 
-    const boosters = Array.isArray(moduleLike.temporaryBoosters)
-      ? moduleLike.temporaryBoosters
-      : [];
-    if (boosters.length > 0) {
+    if (moduleLike.energyWaiting) {
       addBadge(
-        `✦${boosters.length > 1 ? boosters.length : ""}`,
-        "boosted",
-        localizedMessage("battle.active_boosters", {boosters:boosters.join(", ")})
+        "ϟ",
+        "energy-waiting",
+        "Enerji bekliyor · rezerv dolunca ateşler"
       );
     }
 
+    // Aşırı ısınma kendi rozetiyle gösterilir; genel etki sayacına katılmaz.
     const debuffs = Array.isArray(moduleLike.debuffs)
-      ? moduleLike.debuffs
+      ? moduleLike.debuffs.filter((effectId) => effectId !== "overheated")
       : [];
     if (debuffs.length > 0) {
       addBadge(
         `!${debuffs.length > 1 ? debuffs.length : ""}`,
         "debuffed",
-        localizedMessage("battle.active_debuffs", {effects:debuffs.map(localizedUiText).join(", ")})
+        `Aktif olumsuz etki: ${debuffs.join(", ")}`
       );
     }
 
+    if (row.children.length > 0) {
+      card.appendChild(row);
+    }
+    appendSignatureBadges(card, moduleLike.signatureBadges);
+  }
+
+  // Beta.72 — kart üstü imza rozetleri. Başlıklar sabit metindir (çeviri
+  // sözlüğünden geçer); sayı yalnız rozetin kendi yazısındadır.
+  const SIGNATURE_BADGE_KINDS = Object.freeze({
+    repeat:{
+      label:(badge) => `↻${badge.value}/${badge.max}`,
+      title:"Kuantum Tekrar · aynı hedefe 4. vuruşta yankı",
+    },
+    swarm:{
+      label:(badge) => `✥${badge.value}/${badge.max}`,
+      title:"Sürü deposu · 4 dronda toplu salınım",
+    },
+    quantum:{
+      label:(badge) => `◎${badge.value}%`,
+      title:"Kuantum yükü · sonraki atışta boşalır",
+    },
+    lock:{
+      label:() => "⌖",
+      title:"Hedefe kilitleniyor",
+    },
+    chrono:{
+      label:(badge) => (badge.phase === "debt" ? "⧗−" : "⧗+"),
+      title:(badge) => (
+        badge.phase === "debt"
+          ? "Kronos borcu · saldırılar yavaşladı"
+          : "Kronos penceresi · saldırılar hızlandı"
+      ),
+    },
+    phase:{
+      label:() => "FAZ",
+      title:"Faz penceresi · saldırılar boşa çıkar",
+    },
+    resonance:{
+      label:(badge) => `Ω${badge.value}`,
+      title:"Omega rezonansı · devredeki farklı kategori sayısı",
+    },
+    focus:{
+      label:(badge) => `⊕${badge.value}`,
+      title:"Hassas odak · aynı hedefe art arda vuruş",
+    },
+    reborn:{
+      label:() => "✦",
+      title:"Anka ile dirildi · yeniden diriltilemez",
+    },
+    ember:{
+      label:() => "✹",
+      title:"Küllerden Doğuş hazır · Çekirdek bir kez yok olmaz",
+    },
+    static:{
+      label:(badge) => `⚡${badge.value}/${badge.max}`,
+      title:"Statik Birikim · Kesinti gücü uzuyor",
+    },
+    last_stand:{
+      label:() => "◆",
+      title:"Son Hat · Muhafız kalkanı güçlü",
+    },
+    chain:{
+      label:(badge) => `⛓${badge.value}`,
+      title:"Zincir · Aşırı Yük uzadı",
+    },
+  });
+  const SIGNATURE_BADGE_LIMIT = 2;
+
+  function normalizeSignatureBadges(badges) {
+    if (!Array.isArray(badges)) return [];
+    return badges
+      .filter((badge) => SIGNATURE_BADGE_KINDS[badge?.kind])
+      .slice(0, SIGNATURE_BADGE_LIMIT)
+      .map((badge) => ({
+        kind:badge.kind,
+        value:Math.max(0, Math.round(Number(badge.value || 0))),
+        max:Math.max(0, Math.round(Number(badge.max || 0))),
+        phase:badge.phase === "debt" ? "debt" : (badge.phase ? "boost" : null),
+      }));
+  }
+
+  function appendSignatureBadges(card, badges) {
+    if (!card || !Array.isArray(badges) || badges.length === 0) return;
+    const row = document.createElement("span");
+    row.className = "module-signature-row";
+    for (const badge of badges.slice(0, SIGNATURE_BADGE_LIMIT)) {
+      const kind = SIGNATURE_BADGE_KINDS[badge.kind];
+      if (!kind) continue;
+      const element = document.createElement("span");
+      element.className = "module-signature-badge";
+      element.dataset.badge = badge.kind;
+      if (badge.phase) element.dataset.phase = badge.phase;
+      element.textContent = kind.label(badge);
+      element.title = localizedUiText(
+        typeof kind.title === "function" ? kind.title(badge) : kind.title
+      );
+      row.appendChild(element);
+    }
     if (row.children.length > 0) {
       card.appendChild(row);
     }
@@ -15677,7 +14202,7 @@ function saveHumanReviewLocalNote() {
     card.dataset.moduleId=moduleId;
     card.dataset.category=kind;
     card.title=
-      localizedMessage("battle.module_title_hp", {name:localizedUiText(name), hp:localizedNumber(Math.max(0, Math.round(hp))), max:localizedNumber(maxHp)});
+      `${name} · HP ${Math.max(0,Math.round(hp))}/${maxHp}`;
     const icon=document.createElement("span");
     icon.className="module-icon";
     icon.textContent=moduleIconFor({nameTr:name});
@@ -15689,7 +14214,7 @@ function saveHumanReviewLocalNote() {
     card.appendChild(label);
     appendHpBar(card,hp,maxHp,{ battle:true });
     const isSource=
-      moduleId === "enemy-generator";
+      moduleId === "enemy-core";
     appendEnergyFlowIndicator(
       card,
       {
@@ -15706,6 +14231,7 @@ function saveHumanReviewLocalNote() {
       );
     }
     appendModuleLiveStatus(card, power);
+    if (!isSource) appendModuleHeatBar(card, power);
     window.requestAnimationFrame(
       () => recordModuleAnchor(moduleId, card)
     );
@@ -15731,7 +14257,7 @@ function saveHumanReviewLocalNote() {
         cell.appendChild(card);
       }
     };
-    place(2,1,enemyCard("enemy-core","Çekirdek",mockEnemyCoreHp,300,"core"));
+    place(2,1,enemyCard("enemy-core","Çekirdek",mockEnemyCoreHp,300,"core",{ signatureBadges:mockEnemyCoreBadges }));
     for (const module of mockEnemyModules) {
       if (module.hp<=0) continue;
       place(
@@ -15749,7 +14275,7 @@ function saveHumanReviewLocalNote() {
     }
     mockEnemyModuleHp=enemyLivingModules().reduce((sum,module)=>sum+module.hp,0);
     if (enemyBoardStatusEl) {
-      enemyBoardStatusEl.textContent=localizedMessage("battle.enemy_core_hp", {hp:localizedNumber(Math.max(0,mockEnemyCoreHp))});
+      enemyBoardStatusEl.textContent=`Çekirdek ${Math.max(0,mockEnemyCoreHp)}/300`;
     }
     renderBattleIdentityPanels();
     renderBoardCables(
@@ -15765,7 +14291,7 @@ function saveHumanReviewLocalNote() {
       || matchmakingState.opponentType === "ai"
       || String(enemyBattlePlayerId || "").includes("ai-")
     ) {
-      return localizedMessage("battle.ai_label", {label:aiArchetypeName(activeLocalAiArchetype)});
+      return `${aiArchetypeName(activeLocalAiArchetype)} AI`;
     }
     if (enemyBattleDisplayName) return enemyBattleDisplayName;
     if (!enemyBattlePlayerId) return localizedUiText("Rakip Oyuncu");
@@ -15833,13 +14359,13 @@ function saveHumanReviewLocalNote() {
       marker.setAttribute("role", "status");
       marker.setAttribute(
         "aria-label",
-        localizedMessage("battle.debris_seconds", {seconds:localizedNumber(seconds)})
+        `Enkaz: ${seconds}`
       );
       const shards = document.createElement("span");
       shards.className = "cell-debris-shards";
       shards.setAttribute("aria-hidden", "true");
       const countdown = document.createElement("strong");
-      countdown.textContent = localizedMessage("time.seconds_short", {count:localizedNumber(seconds)});
+      countdown.textContent = `${seconds} sn`;
       marker.append(shards, countdown);
       cell.appendChild(marker);
     }
@@ -15858,10 +14384,6 @@ function saveHumanReviewLocalNote() {
       settings:
         document.getElementById(
           "settings-load-status"
-        ),
-      laboratory:
-        document.getElementById(
-          "laboratory-load-status"
         ),
     };
 
@@ -15910,8 +14432,6 @@ function saveHumanReviewLocalNote() {
     const text = (
       normalized === "en"
       ? {
-          menu:"GRIDSHARD",
-          play:"Play",
           profile:"Profile",
           statistics:"Statistics",
           settings:"Settings",
@@ -15920,8 +14440,6 @@ function saveHumanReviewLocalNote() {
           battlePool:"Build Battle Pool",
         }
       : {
-          menu:"GRIDSHARD",
-          play:"Oyna",
           profile:"Profil",
           statistics:"İstatistikler",
           settings:"Ayarlar",
@@ -15932,8 +14450,6 @@ function saveHumanReviewLocalNote() {
     );
 
     const direct = {
-      "main-menu-title":
-        text.menu,
       "settings-title":
         text.settings,
       "settings-save":
@@ -15961,7 +14477,6 @@ function saveHumanReviewLocalNote() {
     }
 
     const menuLabels = {
-      play:text.play,
       profile:text.profile,
       statistics:
         text.statistics,
@@ -15992,65 +14507,29 @@ function saveHumanReviewLocalNote() {
 
     // Dynamic server-backed panels must be rebuilt so they can select the
     // language-specific catalog payload instead of keeping stale text nodes.
-    renderHomeHub();
-    renderModuleCollection();
-    renderCoreCollection();
     renderBattlePoolSelection();
     renderBattlePoolDetail();
-    renderBoosterOptions();
-    renderArenaPath();
-    renderShop();
-    renderPresetOptions();
-    renderFriendsScreen();
-    renderTeamHub();
-    renderEventsHub();
-    if (document.getElementById("daily-meta-dialog")?.open) renderDailyMetaDialog();
     renderProfileSummary();
-    renderEngagementSummary(profileState.viewModel()?.engagement);
-    renderLaboratory();
-    renderStatisticsSummary();
-    renderLeaderboard();
-    renderRewardInbox();
     renderPostMatchSummary();
-    if (document.getElementById("module-detail-dialog")?.open) {
-      openModuleDetail(document.getElementById("module-detail-tab-content")?.dataset.tab || "overview");
+    // Tarih/sayı biçimi taşıyan ve sunucu verisinden kurulan paneller de
+    // yeni dilde yeniden çizilir; biri başarısız olursa diğerleri sürer.
+    for (const rerender of [
+      renderMetaHubScreens,
+      renderFriendsScreen,
+      () => socialState && renderDirectMessageInbox(),
+      renderEventsHub,
+      () => dailyMetaState && renderDailyMetaDialog(),
+      renderRewardInbox,
+      () => leaderboardPayload && renderLeaderboard(),
+      renderAccountPlatform,
+      renderStatisticsSummary,
+    ]) {
+      try {
+        rerender();
+      } catch (error) {
+        console.warn("Dil değişiminde panel yenilenemedi", error);
+      }
     }
-    if (document.getElementById("core-detail-dialog")?.open) {
-      openCoreDetail(document.getElementById("core-detail-tab-content")?.dataset.tab || "overview");
-    }
-    if (publicProfilePayload && document.getElementById("public-profile-dialog")?.open) {
-      renderPublicProfile(publicProfilePayload);
-      renderPublicProfileFriendAction(publicProfilePayload);
-    }
-    if (teamProfilePayload && document.getElementById("team-profile-dialog")?.open) renderTeamProfile(teamProfilePayload);
-    // Newly rebuilt panels contain static labels as well as keyed dynamic text.
-    globalThis.GridshardI18n?.apply(normalized);
-  }
-
-  function localizedRecordText(record, field) {
-    if (!record) return "";
-    const english = document.documentElement.lang === "en";
-    const englishValue = record[`${field}_en`];
-    const turkishValue = record[`${field}_tr`] ?? record[field];
-    const value = english && englishValue !== undefined && englishValue !== "" && (!Array.isArray(englishValue) || englishValue.length)
-      ? englishValue : turkishValue;
-    return Array.isArray(value) ? value.map(localizedUiText) : localizedUiText(value);
-  }
-
-  function localizedCatalogName(kind, id, fallback = "") {
-    const key = `cosmetic.${kind}.${id}`;
-    const value = localizedMessage(key);
-    return value === key ? localizedUiText(fallback || id.replaceAll("_", " ")) : value;
-  }
-
-  function localizedRewardChestName(reward = {}) {
-    const key = `chest.visual.${reward.chest_visual_id || ""}`;
-    const byVisual = localizedMessage(key);
-    if (byVisual !== key) return byVisual;
-    const byTierKey = `event.chest.${reward.chest_tier || ""}`;
-    const byTier = localizedMessage(byTierKey);
-    if (byTier !== byTierKey) return byTier;
-    return localizedRecordText(reward, "chest_name") || localizedMessage("reward.chest_generic");
   }
 
   function renderSettingsPersistenceStatus(
@@ -16244,7 +14723,7 @@ function saveHumanReviewLocalNote() {
     const analyticsConsent = document.getElementById("settings-analytics-consent");
 
     renderSettingsSaveStatus(
-      localizedUiText("Kaydediliyor..."),
+      "Kaydediliyor...",
       "saving"
     );
 
@@ -16282,7 +14761,8 @@ function saveHumanReviewLocalNote() {
 
     if (!result.ok) {
       renderSettingsSaveStatus(
-        localizedUiText(result.reason || "Ayarlar kaydedilemedi."),
+        result.reason
+        || "Ayarlar kaydedilemedi.",
         "error"
       );
       logClientMessage(
@@ -16456,7 +14936,7 @@ function saveHumanReviewLocalNote() {
         : participantPlayerId;
 
     el.textContent =
-      localizedMessage("beta.web_test_id", {id:shortId});
+      `Oyuncu Kimliği: ${shortId}`;
   }
 
   function renderProfileSummary() {
@@ -16478,17 +14958,18 @@ function saveHumanReviewLocalNote() {
       (stage) => view.rating >= Number(stage.required_trophies || 0)
         && wins >= Number(stage.required_wins || 0)
     );
-    const activeTitle = localizedRecordText(achievedStages.at(-1), "title")
+    const activeTitle = achievedStages.at(-1)?.title_tr
       || view.operatorTitle
       || "Devre Çırağı";
-    const leagueName = document.documentElement.lang === "en" ? view.leagueNameEn || view.leagueNameTr : view.leagueNameTr;
-    el.textContent = localizedMessage("profile.identity_summary", {name:view.displayName, title:localizedUiText(activeTitle), league:localizedUiText(leagueName), trophies:localizedNumber(view.rating)});
+    el.textContent = localizedUiText(
+      `${view.displayName} · ${activeTitle} · ${view.leagueNameTr} · ${view.rating} 🏆`
+    );
 
     const setText = (id, value) => {
       const target = document.getElementById(id);
       if (target) target.textContent = String(value);
     };
-    setText("profile-clan-title", view.teamName || localizedMessage("profile.no_team"));
+    setText("profile-clan-title", view.teamName || "Takıma dahil değil");
     const profileTeamButton = document.getElementById("profile-clan-title");
     if (profileTeamButton) {
       profileTeamButton.dataset.teamId = view.teamId || "";
@@ -16497,8 +14978,8 @@ function saveHumanReviewLocalNote() {
     setText(
       "profile-clan-copy",
       view.teamName
-        ? localizedMessage("profile.team_id", {id:view.teamId || "—"})
-        : localizedMessage("profile.no_team_description")
+        ? `Takım kimliği: ${view.teamId || "—"}`
+        : "Bir takıma katıldığında takım bilgilerin burada görünecek."
     );
 
     const engagement = view.engagement || {};
@@ -16513,10 +14994,10 @@ function saveHumanReviewLocalNote() {
     const remainingMs = Math.max(0, seasonEndsAt - Date.now());
     const remainingDays = Math.floor(remainingMs / 86400000);
     const remainingHours = Math.floor((remainingMs % 86400000) / 3600000);
-    setText("profile-current-season-name", localizedRecordText(engagement, "season_name") || localizedMessage("profile.current_season"));
-    setText("profile-season-countdown", Number.isFinite(seasonEndsAt) && seasonEndsAt > 0 ? localizedMessage("season.time_remaining", {days:localizedNumber(remainingDays), hours:localizedNumber(remainingHours)}) : localizedMessage("season.time_preparing"));
+    setText("profile-current-season-name", engagement.season_name_tr || "Güncel Sezon");
+    setText("profile-season-countdown", Number.isFinite(seasonEndsAt) && seasonEndsAt > 0 ? `${remainingDays} gün ${remainingHours} sa kaldı` : "Sezon süresi hazırlanıyor");
     renderTrophyValue("profile-season-trophies", Number(view.rating || 0));
-    setText("profile-season-league", localizedUiText(leagueName || localizedMessage("arena.first")));
+    setText("profile-season-league", view.leagueNameTr || "Arena 1");
     renderTrophyValue("profile-last-season-trophies", previous ? Number(previous.final_rating || 0) : "—");
     renderTrophyValue("profile-best-season-trophies", best ? Number(best.final_rating || 0) : "—");
 
@@ -16546,7 +15027,9 @@ function saveHumanReviewLocalNote() {
         view.displayName;
     }
     if (lobbyPlayerDetails) {
-      lobbyPlayerDetails.textContent=localizedMessage("profile.lobby_title_trophies", {title:localizedUiText(activeTitle), trophies:localizedNumber(view.rating)});
+      lobbyPlayerDetails.textContent= localizedUiText(
+        `${activeTitle} · 🏆 ${view.rating}`
+      );
     }
 
     renderProfileHighlights();
@@ -16563,58 +15046,61 @@ function saveHumanReviewLocalNote() {
         ids:cosmetics.unlockedRankTrophyIds || [],
         definitions:PROFILE_RANK_TROPHIES,
         kind:"trophy",
-        emptyCopy:localizedMessage("profile.no_rank_trophies"),
+        emptyCopy:"Henüz sıralama kupası kazanılmadı.",
       },
       {
         hostId:"profile-badge-collection",
         ids:cosmetics.unlockedBadgeIds || [],
         definitions:PROFILE_BADGES,
         kind:"badge",
-        emptyCopy:localizedMessage("profile.no_rank_badges"),
+        emptyCopy:"Henüz sıralama rozeti kazanılmadı.",
       },
     ];
 
     for (const group of groups) {
-      const host = document.getElementById(group.hostId);
-      if (!host) continue;
-      host.replaceChildren();
-      const ids = [...new Set(group.ids.map((id) => String(id || "")).filter(Boolean))];
-      if (!ids.length) {
-        const empty = document.createElement("span");
-        empty.className = "profile-honor-empty";
-        empty.textContent = group.emptyCopy;
-        host.appendChild(empty);
-        continue;
-      }
-      for (const id of ids) {
-        const definition = group.definitions.find((item) => item.id === id) || {
-          id,
-          nameTr:id.replaceAll("_", " "),
-          shortNameTr:id.replaceAll("_", " "),
-          glyph:group.kind === "trophy" ? "🏆" : "✦",
-          tone:"cyan",
-        };
-        const item = document.createElement("article");
-        item.className = "profile-honor-item";
-        item.dataset.kind = group.kind;
-        item.dataset.tone = definition.tone;
-        item.title = localizedCatalogName(group.kind, id, definition.nameTr);
-        item.setAttribute("aria-label", item.title);
-        const glyph = document.createElement("span");
-        glyph.setAttribute("aria-hidden", "true");
-        glyph.textContent = definition.glyph;
-        const label = document.createElement("small");
-        label.textContent = localizedCatalogName(`${group.kind}_short`, id, definition.shortNameTr);
-        item.append(glyph, label);
-        host.appendChild(item);
-      }
+      fillHonorCollection(document.getElementById(group.hostId), group);
+    }
+  }
+
+  function fillHonorCollection(host, group) {
+    if (!host) return;
+    host.replaceChildren();
+    const ids = [...new Set(group.ids.map((id) => String(id || "")).filter(Boolean))];
+    if (!ids.length) {
+      const empty = document.createElement("span");
+      empty.className = "profile-honor-empty";
+      empty.textContent = group.emptyCopy;
+      host.appendChild(empty);
+      return;
+    }
+    for (const id of ids) {
+      const definition = group.definitions.find((item) => item.id === id) || {
+        id,
+        nameTr:id.replaceAll("_", " "),
+        shortNameTr:id.replaceAll("_", " "),
+        glyph:group.kind === "trophy" ? "🏆" : "✦",
+        tone:"cyan",
+      };
+      const item = document.createElement("article");
+      item.className = "profile-honor-item";
+      item.dataset.kind = group.kind;
+      item.dataset.tone = definition.tone;
+      item.title = definition.nameTr;
+      item.setAttribute("aria-label", definition.nameTr);
+      const glyph = document.createElement("span");
+      glyph.setAttribute("aria-hidden", "true");
+      glyph.textContent = definition.glyph;
+      const label = document.createElement("small");
+      label.textContent = definition.shortNameTr;
+      item.append(glyph, label);
+      host.appendChild(item);
     }
   }
 
   function deckDisplayName(deck) {
-    if (!deck?.module_ids?.length) return localizedMessage("profile.no_matches_yet");
+    if (!deck?.module_ids?.length) return "Henüz maç yok";
     return deck.module_ids
-      .map((id) => localizedUiText(moduleDefinitions.find((module) => module.definitionId === id)?.nameTr || id))
+      .map((id) => moduleDefinitions.find((module) => module.definitionId === id)?.nameTr || id)
       .join(" · ");
   }
 
@@ -16637,7 +15123,7 @@ function saveHumanReviewLocalNote() {
         deckHost.appendChild(tile);
       }
       const matchCount = document.createElement("small");
-      matchCount.textContent = deck ? localizedMessage("deck.matches_used", {count:deck.matches}) : localizedUiText("Aktif savaş destesi");
+      matchCount.textContent = deck ? `${deck.matches} maçta kullanıldı` : "Aktif savaş destesi";
       deckHost.appendChild(matchCount);
     }
     const coreHost = document.getElementById("profile-featured-core");
@@ -16649,8 +15135,8 @@ function saveHumanReviewLocalNote() {
       const label = document.getElementById("profile-featured-core-name");
       const level = document.getElementById("profile-featured-core-level");
       if (icon) icon.textContent = visual.glyph;
-      if (label) label.textContent = localizedUiText(core?.name_tr || localizedMessage("core.resonance"));
-      if (level) level.textContent = localizedMessage("core.level", {level:localizedNumber(core?.level || 1)});
+      if (label) label.textContent = core?.name_tr || "Rezonans Çekirdeği";
+      if (level) level.textContent = `SEVİYE ${Number(core?.level || 1)}`;
     }
   }
 
@@ -16664,7 +15150,7 @@ function saveHumanReviewLocalNote() {
 
   async function selectProfileCosmetic(kind, id) {
     const status = document.getElementById("avatar-action-status");
-    if (status) status.textContent = localizedMessage("cosmetic.saving_choice");
+    if (status) status.textContent = "Seçim kaydediliyor…";
     try {
       const current = profileState.viewModel()?.cosmetics || {};
       const payload = await requestJsonWithDeadline(
@@ -16695,7 +15181,6 @@ function saveHumanReviewLocalNote() {
     const cosmetics = view.cosmetics || {};
     const avatarId = cosmetics.selected_avatar_id || "default";
     const frameId = cosmetics.selected_avatar_frame_id || "none";
-    const emojiId = cosmetics.selected_battle_emoji_id || "none";
     const backgroundId = cosmetics.selected_profile_background_id || "default";
     applyAvatarVisual(document.getElementById("profile-avatar"), avatarId, frameId);
     applyAvatarVisual(document.getElementById("avatar-preview"), avatarId, frameId);
@@ -16705,7 +15190,7 @@ function saveHumanReviewLocalNote() {
     const profileName = document.getElementById("avatar-preview-name");
     const profileTitle = document.getElementById("avatar-preview-title");
     if (profileName) profileName.textContent = view.displayName;
-    if (profileTitle) profileTitle.textContent = localizedUiText(activeTitle || view.operatorTitle || localizedMessage("profile.default_title"));
+    if (profileTitle) profileTitle.textContent = activeTitle || view.operatorTitle || "Devre Çırağı";
 
     const avatarHost = document.getElementById("avatar-choice-list");
     if (avatarHost) {
@@ -16717,13 +15202,8 @@ function saveHumanReviewLocalNote() {
         button.dataset.avatarId = avatar.id;
         button.dataset.state = !unlocked.has(avatar.id) ? "locked" : avatar.id === avatarId ? "selected" : "available";
         button.disabled = !unlocked.has(avatar.id);
-        const glyph=document.createElement("span");
-        glyph.textContent=avatar.glyph;
-        const name=document.createElement("strong");
-        name.textContent=localizedCatalogName("avatar", avatar.id, avatar.nameTr);
-        const state=document.createElement("small");
-        state.textContent=localizedMessage(unlocked.has(avatar.id) ? (avatar.id === avatarId ? "cosmetic.selected" : "cosmetic.select") : "cosmetic.season_path");
-        button.append(glyph,name,state);
+        button.innerHTML = `<span>${avatar.glyph}</span><strong>${avatar.nameTr}</strong>`;
+        button.appendChild(cosmeticStateLabel({ unlocked:unlocked.has(avatar.id), selected:avatar.id === avatarId, kind:"avatar", id:avatar.id, cosmetics }));
         button.addEventListener("click", () => selectProfileCosmetic("avatar", avatar.id));
         avatarHost.appendChild(button);
       }
@@ -16740,13 +15220,8 @@ function saveHumanReviewLocalNote() {
         button.dataset.frame = frame.id;
         button.dataset.state = !unlocked.has(frame.id) ? "locked" : frame.id === frameId ? "selected" : "available";
         button.disabled = !unlocked.has(frame.id);
-        const glyph=document.createElement("span");
-        glyph.textContent="◇";
-        const name=document.createElement("strong");
-        name.textContent=localizedCatalogName("frame", frame.id, frame.nameTr);
-        const state=document.createElement("small");
-        state.textContent=localizedMessage(unlocked.has(frame.id) ? (frame.id === frameId ? "cosmetic.selected" : "cosmetic.select") : "cosmetic.season_path");
-        button.append(glyph,name,state);
+        button.innerHTML = `<span>◇</span><strong>${frame.nameTr}</strong>`;
+        button.appendChild(cosmeticStateLabel({ unlocked:unlocked.has(frame.id), selected:frame.id === frameId, kind:"avatar_frame", id:frame.id, cosmetics }));
         button.addEventListener("click", () => selectProfileCosmetic("frame", frame.id));
         frameHost.appendChild(button);
       }
@@ -16755,19 +15230,21 @@ function saveHumanReviewLocalNote() {
     const emojiHost = document.getElementById("battle-emoji-choice-list");
     if (emojiHost) {
       emojiHost.replaceChildren();
-      const unlocked = new Set(cosmetics.unlockedBattleEmojiIds || ["none"]);
+      const unlocked = new Set(cosmetics.unlockedBattleEmojiIds || []);
+      const quickEmojiId = quickBattleEmoji(cosmetics)?.id;
       for (const emoji of BATTLE_EMOJIS) {
+        if (emoji.id === "none") continue;
         const button = document.createElement("button");
         button.type = "button";
-        button.dataset.state = !unlocked.has(emoji.id) ? "locked" : emoji.id === emojiId ? "selected" : "available";
+        button.dataset.state = !unlocked.has(emoji.id) ? "locked" : emoji.id === quickEmojiId ? "selected" : "available";
         button.disabled = !unlocked.has(emoji.id);
         const name = document.createElement("strong");
-        name.textContent = localizedCatalogName("emoji", emoji.id, emoji.nameTr);
-        const state = document.createElement("small");
-        state.textContent = localizedMessage(unlocked.has(emoji.id)
-          ? (emoji.id === emojiId ? "cosmetic.selected" : "cosmetic.select")
-          : "cosmetic.competition_reward");
-        button.append(createBattleEmojiVisual(emoji), name, state);
+        name.textContent = emoji.nameTr;
+        button.append(
+          createBattleEmojiVisual(emoji),
+          name,
+          cosmeticStateLabel({ unlocked:unlocked.has(emoji.id), selected:emoji.id === quickEmojiId, kind:"battle_emoji", id:emoji.id, cosmetics })
+        );
         button.addEventListener("click", () => selectProfileCosmetic("emoji", emoji.id));
         emojiHost.appendChild(button);
       }
@@ -16785,13 +15262,8 @@ function saveHumanReviewLocalNote() {
         button.style.setProperty("--profile-bg-b", background.colors[1]);
         button.dataset.state = !unlocked.has(background.id) ? "locked" : background.id === backgroundId ? "selected" : "available";
         button.disabled = !unlocked.has(background.id);
-        const glyph=document.createElement("span");
-        glyph.textContent="▰";
-        const name=document.createElement("strong");
-        name.textContent=localizedCatalogName("background", background.id, background.nameTr);
-        const state=document.createElement("small");
-        state.textContent=localizedMessage(unlocked.has(background.id) ? (background.id === backgroundId ? "cosmetic.selected" : "cosmetic.select") : "cosmetic.competition_reward");
-        button.append(glyph,name,state);
+        button.innerHTML = `<span>▰</span><strong>${background.nameTr}</strong>`;
+        button.appendChild(cosmeticStateLabel({ unlocked:unlocked.has(background.id), selected:background.id === backgroundId, kind:"profile_background", id:background.id, cosmetics }));
         button.addEventListener("click", () => selectProfileCosmetic("background", background.id));
         backgroundHost.appendChild(button);
       }
@@ -16820,11 +15292,11 @@ function saveHumanReviewLocalNote() {
     const cleanTeamId = String(teamId || "").trim();
     const node = document.createElement(cleanTeamId ? "button" : "strong");
     node.className = `${cleanTeamId ? "team-profile-link" : ""} ${className}`.trim();
-    node.textContent = teamName || localizedMessage("profile.team");
+    node.textContent = teamName || "Takım";
     if (cleanTeamId) {
       node.type = "button";
-      node.title = localizedMessage("profile.open_team");
-      node.setAttribute("aria-label", localizedMessage("profile.open_team_aria", {name:teamName || localizedMessage("profile.team")}));
+      node.title = "Takım profilini gör";
+      node.setAttribute("aria-label", `${teamName || "Takım"} takım profilini aç`);
       node.addEventListener("click", (event) => {
         event.stopPropagation();
         openTeamProfile(cleanTeamId);
@@ -16839,8 +15311,8 @@ function saveHumanReviewLocalNote() {
     if (canOpen) {
       node.type = "button";
       node.className = `public-player-link ${className}`.trim();
-      node.setAttribute("aria-label", localizedMessage("profile.open_player_aria", {name:displayName}));
-      node.title = localizedMessage("profile.open_player");
+      node.setAttribute("aria-label", `${displayName} adlı oyuncunun profilini aç`);
+      node.title = "Oyuncu profilini gör";
       node.addEventListener("click", (event) => {
         event.stopPropagation();
         openPublicProfile(playerId);
@@ -16862,84 +15334,82 @@ function saveHumanReviewLocalNote() {
     return article;
   }
 
+  // Ziyaret edilen oyuncunun adı, ünvanı, ligi ve kupası profilin sabit üst
+  // barında durur; içerik kaydırılsa da kimlik görünür kalır. payload yoksa
+  // (profil yüklenirken) önceki oyuncunun kimliği temizlenir.
+  function renderPublicProfileIdentity(payload = null) {
+    const setText = (id, value) => {
+      const element = document.getElementById(id);
+      if (element) element.textContent = String(value);
+    };
+    const avatar = document.getElementById("public-profile-avatar");
+    if (avatar) {
+      applyAvatarVisual(
+        avatar,
+        payload?.avatar?.selected_avatar_id || "default",
+        payload?.avatar?.selected_avatar_frame_id || "none"
+      );
+    }
+    setText("public-profile-title", payload?.display_name || "Oyuncu");
+    setText("public-profile-operator-title", payload ? payload.operator_title || "Devre Çırağı" : "");
+    setText("public-profile-rank", payload ? payload.rank_name_tr || "Arena 1" : "");
+    const trophies = document.getElementById("public-profile-trophies");
+    if (trophies) {
+      trophies.hidden = !payload;
+      if (payload) renderTrophyValue(trophies, Number(payload.rating || 0));
+    }
+  }
+
   function renderPublicProfile(payload) {
     const host = document.getElementById("public-profile-content");
     if (!host) return;
     host.replaceChildren();
+    renderPublicProfileIdentity(payload);
 
-    const identity = document.createElement("article");
-    identity.className = "profile-identity-card public-profile-identity";
-    const avatar = document.createElement("span");
-    avatar.className = "profile-avatar";
-    applyAvatarVisual(
-      avatar,
-      payload.avatar?.selected_avatar_id || "default",
-      payload.avatar?.selected_avatar_frame_id || "none"
-    );
-    const identityCopy = document.createElement("div");
-    const playerName = document.createElement("strong");
-    playerName.textContent = payload.display_name || localizedMessage("profile.player");
-    const title = document.createElement("span");
-    title.textContent = localizedRecordText(payload, "operator_title") || localizedMessage("profile.default_title");
-    const rank = document.createElement("small");
-    rank.textContent = localizedRecordText(payload, "rank_name") || localizedMessage("arena.first");
-    identityCopy.append(playerName, title, rank);
-    const trophies = document.createElement("strong");
-    renderTrophyValue(trophies, Number(payload.rating || 0));
-    identity.append(avatar, identityCopy, trophies);
-    host.appendChild(identity);
-
-    const honorSection = document.createElement("section");
-    honorSection.className = "profile-honor-showcase";
-    const honorHeader = document.createElement("header");
-    const honorTitle = document.createElement("strong");
-    honorTitle.textContent = localizedMessage("profile.honor_collection");
-    honorHeader.appendChild(honorTitle);
+    const honors = document.createElement("section");
+    honors.className = "profile-honor-showcase public-profile-honors";
+    const honorsHeader = document.createElement("header");
+    const honorsTitle = document.createElement("strong");
+    honorsTitle.textContent = "DEVRE KOLEKSİYONU";
+    honorsHeader.appendChild(honorsTitle);
     const honorGroups = document.createElement("div");
     honorGroups.className = "profile-honor-groups";
     for (const group of [
-      {label:"profile.rank_trophies", ids:payload.honors?.rank_trophy_ids || [], definitions:PROFILE_RANK_TROPHIES, kind:"trophy", empty:"profile.no_rank_trophies"},
-      {label:"profile.badges", ids:payload.honors?.badge_ids || [], definitions:PROFILE_BADGES, kind:"badge", empty:"profile.no_rank_badges"},
+      {
+        label:"SIRALAMA KUPALARI",
+        ids:payload.honors?.rank_trophy_ids || [],
+        definitions:PROFILE_RANK_TROPHIES,
+        kind:"trophy",
+        emptyCopy:"Henüz sıralama kupası kazanılmadı.",
+      },
+      {
+        label:"ROZETLER",
+        ids:payload.honors?.badge_ids || [],
+        definitions:PROFILE_BADGES,
+        kind:"badge",
+        emptyCopy:"Henüz sıralama rozeti kazanılmadı.",
+      },
     ]) {
-      const wrapper = document.createElement("section");
+      const section = document.createElement("section");
       const label = document.createElement("small");
-      label.textContent = localizedMessage(group.label);
+      label.textContent = group.label;
       const collection = document.createElement("div");
       collection.className = "profile-honor-collection";
-      if (!group.ids.length) {
-        const empty = document.createElement("span");
-        empty.className = "profile-honor-empty";
-        empty.textContent = localizedMessage(group.empty);
-        collection.appendChild(empty);
-      }
-      for (const id of [...new Set(group.ids)]) {
-        const definition = group.definitions.find((item) => item.id === id);
-        const item = document.createElement("article");
-        item.className = "profile-honor-item";
-        item.dataset.kind = group.kind;
-        item.dataset.tone = definition?.tone || "cyan";
-        item.title = localizedCatalogName(group.kind, id, definition?.nameTr || id);
-        const glyph = document.createElement("span");
-        glyph.textContent = definition?.glyph || (group.kind === "trophy" ? "🏆" : "✦");
-        const name = document.createElement("small");
-        name.textContent = localizedCatalogName(`${group.kind}_short`, id, definition?.shortNameTr || id);
-        item.append(glyph, name);
-        collection.appendChild(item);
-      }
-      wrapper.append(label, collection);
-      honorGroups.appendChild(wrapper);
+      fillHonorCollection(collection, group);
+      section.append(label, collection);
+      honorGroups.appendChild(section);
     }
-    honorSection.append(honorHeader, honorGroups);
-    host.appendChild(honorSection);
+    honors.append(honorsHeader, honorGroups);
+    host.appendChild(honors);
 
     const deckSection = document.createElement("section");
     deckSection.className = "profile-deck-showcase";
     const deckHeading = document.createElement("div");
     deckHeading.className = "profile-section-heading";
     const deckKicker = document.createElement("span");
-    deckKicker.textContent = localizedMessage("profile.circuit_habit");
+    deckKicker.textContent = "DEVRE ALIŞKANLIĞI";
     const deckTitle = document.createElement("h3");
-    deckTitle.textContent = localizedMessage("profile.most_used_deck");
+    deckTitle.textContent = "En Çok Kullanılan Deste";
     deckHeading.append(deckKicker, deckTitle);
     const deckVisual = document.createElement("div");
     deckVisual.className = "profile-deck-visual";
@@ -16950,9 +15420,9 @@ function saveHumanReviewLocalNote() {
     const coreCopy = document.createElement("span");
     coreCopy.className = "profile-featured-core-copy";
     const coreName = document.createElement("strong");
-    coreName.textContent = localizedRecordText(payload.selected_core, "name") || localizedMessage("core.resonance");
+    coreName.textContent = payload.selected_core?.name_tr || "Rezonans Çekirdeği";
     const coreLevel = document.createElement("em");
-    coreLevel.textContent = localizedMessage("core.level", {level:localizedNumber(payload.selected_core?.level || 1)});
+    coreLevel.textContent = `SEVİYE ${Number(payload.selected_core?.level || 1)}`;
     const coreVisual = applyCoreVisualIdentity(core, payload.selected_core?.id || "core_resonance");
     coreGlyph.textContent = coreVisual.glyph;
     coreCopy.append(coreName, coreLevel);
@@ -16970,7 +15440,7 @@ function saveHumanReviewLocalNote() {
     }
     const deckUse = document.createElement("small");
     const matches = Number(payload.featured_deck?.matches || 0);
-    deckUse.textContent = matches > 0 ? localizedMessage("deck.matches_used", {count:matches}) : localizedMessage("profile.active_deck");
+    deckUse.textContent = matches > 0 ? `${matches} maçta kullanıldı` : "Aktif savaş destesi";
     modules.appendChild(deckUse);
     deckVisual.append(core, modules);
     deckSection.append(deckHeading, deckVisual);
@@ -16979,15 +15449,15 @@ function saveHumanReviewLocalNote() {
     const team = document.createElement("section");
     team.className = "profile-clan-card";
     const teamLabel = document.createElement("span");
-    teamLabel.textContent = localizedMessage("profile.team_info");
+    teamLabel.textContent = "TAKIM BİLGİSİ";
     const teamName = createTeamProfileLink(
       payload.team?.team_id,
-      payload.team?.team_name || localizedMessage("profile.no_team")
+      payload.team?.team_name || "Takıma dahil değil"
     );
     const teamCopy = document.createElement("small");
     teamCopy.textContent = payload.team?.team_name
-      ? localizedMessage("profile.players_team")
-      : localizedMessage("profile.player_no_team");
+      ? "Oyuncunun mevcut takımı"
+      : "Bu oyuncu henüz bir takıma katılmadı.";
     team.append(teamLabel, teamName, teamCopy);
     host.appendChild(team);
 
@@ -16996,39 +15466,43 @@ function saveHumanReviewLocalNote() {
     const seasonHeading = document.createElement("div");
     seasonHeading.className = "profile-section-heading";
     const seasonKicker = document.createElement("span");
-    seasonKicker.textContent = localizedMessage("profile.seasons_upper");
+    seasonKicker.textContent = "SEZONLAR";
     const seasonTitle = document.createElement("h3");
-    seasonTitle.textContent = localizedMessage("profile.season_history");
+    seasonTitle.textContent = "Sezon Geçmişi";
     seasonHeading.append(seasonKicker, seasonTitle);
+    // Güncel sezon tek satırdır: solda sezon adı, sağ üstte lig ve kupa.
     const currentSeason = document.createElement("article");
     currentSeason.className = "profile-current-season public-profile-current-season";
     const currentSeasonName = document.createElement("div");
     const currentSeasonLabel = document.createElement("small");
-    currentSeasonLabel.textContent = localizedMessage("profile.current_season_upper");
+    currentSeasonLabel.textContent = "GÜNCEL SEZON";
     const currentSeasonValue = document.createElement("strong");
-    currentSeasonValue.textContent = localizedRecordText(payload.season, "name") || localizedMessage("profile.current_season");
+    currentSeasonValue.textContent = payload.season?.name_tr || "Güncel Sezon";
     currentSeasonName.append(currentSeasonLabel, currentSeasonValue);
+    const seasonRank = document.createElement("div");
+    seasonRank.className = "public-profile-season-league";
+    const seasonRankLabel = document.createElement("small");
+    seasonRankLabel.textContent = "MEVCUT LİG";
+    const seasonRankLine = document.createElement("span");
+    const seasonRankValue = document.createElement("strong");
+    seasonRankValue.textContent = payload.rank_name_tr || "Arena 1";
     const seasonTrophies = document.createElement("strong");
     renderTrophyValue(seasonTrophies, Number(payload.rating || 0));
-    const seasonRank = document.createElement("div");
-    const seasonRankLabel = document.createElement("small");
-    seasonRankLabel.textContent = localizedMessage("profile.current_league_upper");
-    const seasonRankValue = document.createElement("strong");
-    seasonRankValue.textContent = localizedRecordText(payload, "rank_name") || localizedMessage("arena.first");
-    seasonRank.append(seasonRankLabel, seasonRankValue);
-    currentSeason.append(currentSeasonName, seasonTrophies, seasonRank);
+    seasonRankLine.append(seasonRankValue, seasonTrophies);
+    seasonRank.append(seasonRankLabel, seasonRankLine);
+    currentSeason.append(currentSeasonName, seasonRank);
     const past = document.createElement("div");
     past.className = "profile-past-seasons";
     const previous = payload.season?.summary?.previous;
     const best = payload.season?.summary?.best;
     for (const [label, value] of [
-      ["profile.last_season_upper", previous ? Number(previous.final_rating || 0) : "—"],
-      ["profile.best_season_upper", best ? Number(best.final_rating || 0) : "—"],
-      ["profile.all_time_upper", Number(payload.highest_rating || payload.rating || 0)],
+      ["SON SEZON", previous ? Number(previous.final_rating || 0) : "—"],
+      ["EN İYİ SEZON", best ? Number(best.final_rating || 0) : "—"],
+      ["TÜM ZAMANLAR", Number(payload.highest_rating || payload.rating || 0)],
     ]) {
       const card = document.createElement("article");
       const cardLabel = document.createElement("small");
-      cardLabel.textContent = localizedMessage(label);
+      cardLabel.textContent = label;
       const valueNode = document.createElement("strong");
       renderTrophyValue(valueNode, value);
       card.append(cardLabel, valueNode);
@@ -17043,21 +15517,21 @@ function saveHumanReviewLocalNote() {
     const statsHeading = document.createElement("div");
     statsHeading.className = "profile-section-heading";
     const statsKicker = document.createElement("span");
-    statsKicker.textContent = localizedMessage("profile.battle_archive");
+    statsKicker.textContent = "SAVAŞ ARŞİVİ";
     const statsTitle = document.createElement("h3");
-    statsTitle.textContent = localizedMessage("profile.statistics");
+    statsTitle.textContent = "İstatistikler";
     statsHeading.append(statsKicker, statsTitle);
     const statsGrid = document.createElement("div");
     statsGrid.className = "statistics-metrics-grid public-profile-stat-grid";
     const durationSeconds = Math.max(0, Math.round(Number(statistics.average_match_duration_ms || 0) / 1000));
     const durationText = durationSeconds < 60
-      ? localizedMessage("time.seconds_short", {count:localizedNumber(durationSeconds)})
-      : localizedMessage("time.minutes_seconds_short", {minutes:localizedNumber(Math.floor(durationSeconds / 60)), seconds:localizedNumber(durationSeconds % 60)});
+      ? `${durationSeconds} sn`
+      : `${Math.floor(durationSeconds / 60)} dk ${durationSeconds % 60} sn`;
     for (const metric of [
-      [localizedMessage("profile.total_matches"), localizedNumber(statistics.total_matches || 0)],
-      [localizedMessage("profile.win_rate"), localizedPercent(boundedWinRatePercent(statistics.win_rate, statistics.wins, statistics.total_matches))],
-      [localizedMessage("profile.average_battle"), durationText],
-      [localizedMessage("profile.total_damage"), localizedNumber(statistics.total_damage_dealt || 0)],
+      ["Toplam Maç", Number(statistics.total_matches || 0).toLocaleString(uiLocale())],
+      ["Galibiyet Oranı", `%${boundedWinRatePercent(statistics.win_rate, statistics.wins, statistics.total_matches)}`],
+      ["Ortalama Savaş", durationText],
+      ["Toplam Hasar", Number(statistics.total_damage_dealt || 0).toLocaleString(uiLocale())],
     ]) statsGrid.appendChild(publicProfileMetric(...metric));
     statsSection.append(statsHeading, statsGrid);
     host.appendChild(statsSection);
@@ -17074,13 +15548,13 @@ function saveHumanReviewLocalNote() {
     const outgoing = socialState?.outgoing_requests?.some((item) => item.player_id === playerId);
     button.disabled = Boolean(isFriend || outgoing);
     button.dataset.relationship = isFriend ? "friend" : incoming ? "incoming" : outgoing ? "outgoing" : "none";
-    button.textContent = localizedMessage(isFriend
-      ? "profile.your_friend"
+    button.textContent = isFriend
+      ? "ARKADAŞIN"
       : incoming
-        ? "profile.accept_request"
+        ? "İSTEĞİ KABUL ET"
         : outgoing
-          ? "profile.request_sent"
-          : "profile.add_friend");
+          ? "İSTEK GÖNDERİLDİ"
+          : "+ ARKADAŞ";
     for (const id of ["public-profile-share", "public-profile-report", "public-profile-block"]) {
       const action = document.getElementById(id);
       if (action) action.hidden = !playerId || Boolean(payload?.is_bot);
@@ -17099,11 +15573,11 @@ function saveHumanReviewLocalNote() {
     if (sourceDialog?.close) sourceDialog.close();
     else sourceDialog?.removeAttribute("open");
     if (content) content.replaceChildren();
-    if (status) status.textContent = localizedMessage("profile.player_loading");
+    renderPublicProfileIdentity(null);
+    if (status) status.textContent = "Oyuncu profili yükleniyor…";
     if (dialog?.showModal && !dialog.open) dialog.showModal();
     else dialog?.setAttribute("open", "");
     activePublicProfileId = playerId;
-    publicProfilePayload = null;
     renderPublicProfileFriendAction();
     try {
       const payload = await requestJsonWithDeadline(
@@ -17111,10 +15585,7 @@ function saveHumanReviewLocalNote() {
         { cache: "no-store" },
         8000
       );
-      const title = document.getElementById("public-profile-title");
-      if (title) title.textContent = localizedMessage("profile.public_title", {name:payload.display_name || localizedMessage("profile.player")});
       if (status) status.textContent = "";
-      publicProfilePayload = payload;
       renderPublicProfile(payload);
       if (!payload.is_bot) await loadSocialView();
       renderPublicProfileFriendAction(payload);
@@ -17132,7 +15603,6 @@ function saveHumanReviewLocalNote() {
       : null;
     publicProfileReturnDialogId = null;
     activePublicProfileId = null;
-    publicProfilePayload = null;
     if (returnDialog?.showModal && !returnDialog.open) returnDialog.showModal();
     else returnDialog?.setAttribute("open", "");
   }
@@ -17146,12 +15616,12 @@ function saveHumanReviewLocalNote() {
     identity.className = "team-public-identity";
     const emblem = document.createElement("span");
     emblem.className = "team-public-emblem";
-    emblem.textContent = "♟";
     const copy = document.createElement("div");
     const name = document.createElement("strong");
-    name.textContent = payload.name || localizedMessage("profile.team");
+    name.textContent = payload.name || "Takım";
+    applyTeamAppearance(identity, payload.appearance, { emblemHost:emblem, nameHost:name });
     const size = document.createElement("small");
-    size.textContent = localizedMessage("team.member_count_lower", {count:localizedNumber(payload.member_count || 0), limit:localizedNumber(payload.member_limit || 30)});
+    size.textContent = `${Number(payload.member_count || 0)} / ${Number(payload.member_limit || 30)} üye`;
     copy.append(name, size);
     const trophies = document.createElement("strong");
     renderTrophyValue(trophies, Number(payload.total_trophies || 0));
@@ -17164,20 +15634,19 @@ function saveHumanReviewLocalNote() {
     statsSection.className = "team-profile-statistics";
     const heading = document.createElement("div");
     heading.className = "profile-section-heading";
-    const kicker = document.createElement("span");
-    kicker.textContent = localizedMessage("team.archive_upper");
+    heading.classList.add("team-stats-heading");
     const title = document.createElement("h3");
-    title.textContent = localizedMessage("team.statistics");
-    heading.append(kicker, title);
+    title.textContent = "Takım İstatistikleri";
+    heading.append(title);
     const grid = document.createElement("div");
     grid.className = "statistics-metrics-grid public-profile-stat-grid team-profile-stat-grid";
     for (const metric of [
-      [localizedMessage("team.total_trophies"), localizedNumber(payload.total_trophies || 0)],
-      [localizedMessage("team.average_trophies"), localizedNumber(payload.average_trophies || 0)],
-      [localizedMessage("profile.total_matches"), localizedNumber(statistics.total_matches || 0)],
-      [localizedMessage("profile.win_rate"), localizedPercent(boundedWinRatePercent(statistics.win_rate, statistics.wins, statistics.total_matches))],
-      [localizedMessage("team.tournament_rank"), tournament.position ? `#${tournament.position}` : "—"],
-      [localizedMessage("team.tournament_points"), localizedMessage("event.team_points", {points:localizedNumber(tournament.points || 0)})],
+      ["Toplam Kupa", Number(payload.total_trophies || 0).toLocaleString(uiLocale())],
+      ["Ortalama Kupa", Number(payload.average_trophies || 0).toLocaleString(uiLocale())],
+      ["Toplam Maç", Number(statistics.total_matches || 0).toLocaleString(uiLocale())],
+      ["Galibiyet Oranı", `%${boundedWinRatePercent(statistics.win_rate, statistics.wins, statistics.total_matches)}`],
+      ["Turnuva Sırası", tournament.position ? `#${tournament.position}` : "—"],
+      ["Turnuva Puanı", `${Number(tournament.points || 0)} P`],
     ]) grid.appendChild(publicProfileMetric(...metric));
     statsSection.append(heading, grid);
     host.appendChild(statsSection);
@@ -17187,16 +15656,16 @@ function saveHumanReviewLocalNote() {
     const membersHeading = document.createElement("div");
     membersHeading.className = "profile-section-heading";
     const membersKicker = document.createElement("span");
-    membersKicker.textContent = localizedMessage("team.roster_upper");
+    membersKicker.textContent = "KADRO";
     const membersTitle = document.createElement("h3");
-    membersTitle.textContent = localizedMessage("team.members");
+    membersTitle.textContent = "Üyeler";
     membersHeading.append(membersKicker, membersTitle);
     const memberList = document.createElement("ol");
     memberList.className = "team-member-list team-profile-member-list";
     for (const [index, member] of (payload.members || []).entries()) {
       const row = createTeamMemberRow(member, index);
       const meta = row.querySelector("small");
-      if (meta) meta.textContent = localizedMessage("team.member_rank_title", {leader:member.role === "owner" ? localizedMessage("team.leader_suffix") : "", rank:localizedRecordText(member, "rank_name") || localizedMessage("team.arena"), title:localizedRecordText(member, "operator_title") || localizedMessage("team.operator")});
+      if (meta) meta.textContent = `${member.role === "owner" ? "LİDER · " : ""}${member.rank_name_tr || "Arena"} · ${member.operator_title || "Operatör"}`;
       memberList.appendChild(row);
     }
     membersSection.append(membersHeading, memberList);
@@ -17216,8 +15685,7 @@ function saveHumanReviewLocalNote() {
     if (sourceDialog?.close) sourceDialog.close();
     else sourceDialog?.removeAttribute("open");
     if (content) content.replaceChildren();
-    teamProfilePayload = null;
-    if (status) status.textContent = localizedMessage("team.profile_loading");
+    if (status) status.textContent = "Takım profili yükleniyor…";
     if (dialog?.showModal && !dialog.open) dialog.showModal();
     else dialog?.setAttribute("open", "");
     try {
@@ -17227,9 +15695,8 @@ function saveHumanReviewLocalNote() {
         8000
       );
       const title = document.getElementById("team-profile-title");
-      if (title) title.textContent = payload.name || localizedMessage("team.profile");
+      if (title) title.textContent = payload.name || "Takım Profili";
       if (status) status.textContent = "";
-      teamProfilePayload = payload;
       renderTeamProfile(payload);
     } catch (error) {
       if (status) status.textContent = error instanceof Error ? error.message : String(error);
@@ -17244,72 +15711,8 @@ function saveHumanReviewLocalNote() {
       ? document.getElementById(teamProfileReturnDialogId)
       : null;
     teamProfileReturnDialogId = null;
-    teamProfilePayload = null;
     if (returnDialog?.showModal && !returnDialog.open) returnDialog.showModal();
     else returnDialog?.setAttribute("open", "");
-  }
-
-  function rewardPreviewVisual(field, reward) {
-    const visual = document.createElement("i");
-    visual.className = "reward-preview-icon";
-    if (field === "avatar_id" || field === "avatar_frame_id") {
-      visual.classList.add("profile-avatar");
-      applyAvatarVisual(visual, reward.avatar_id || "default", reward.avatar_frame_id || "none");
-    } else if (field === "rank_trophy_id") visual.textContent = "🏆";
-    else if (field === "badge_id") visual.textContent = PROFILE_BADGES.find((item) => item.id === reward.badge_id)?.glyph || "✦";
-    else if (field === "emoji_id") visual.textContent = BATTLE_EMOJIS.find((item) => item.id === reward.emoji_id)?.glyph || "◇";
-    else if (field === "team_avatar_id") visual.textContent = ({team_champion:"♛", team_finalist:"✦", team_default:"⬡"})[reward.team_avatar_id] || "⬡";
-    else if (field === "team_frame_id" || field === "team_name_frame_id") {
-      visual.textContent = "▢";
-      visual.dataset.teamFrame = reward[field] || "none";
-    }
-    else if (field === "team_bar_background_id") {
-      visual.textContent = "▰";
-      visual.dataset.teamBar = reward[field] || "team_grid";
-    }
-    else if (field === "universal_module_shards") visual.textContent = "🧩";
-    else if (field === "flux_shards") visual.textContent = "◇";
-    else if (field === "circuit_credits") visual.textContent = "◉";
-    else visual.textContent = "✦";
-    return visual;
-  }
-
-  function createLeaderboardRewardPopover(reward, position, noteKey = "reward.season_delivery_note") {
-    const popover = document.createElement("span");
-    popover.className = "leaderboard-reward-popover";
-    popover.id = `${noteKey === "reward.season_delivery_note" ? "leaderboard" : "event"}-reward-popover-${position}`;
-    popover.setAttribute("role", "tooltip");
-
-    const title = document.createElement("strong");
-    title.textContent = reward.chest_visual_id || reward.chest_name_tr
-      ? localizedRewardChestName(reward)
-      : localizedMessage("reward.position_prize", {position:localizedNumber(position)});
-    const list = document.createElement("span");
-    list.className = "leaderboard-reward-popover-list";
-    const rewards = [
-      ["circuit_credits", localizedMessage("currency.credits_full", {amount:localizedNumber(reward.circuit_credits || 0)})],
-      ["flux_shards", localizedMessage("currency.flux", {amount:localizedNumber(reward.flux_shards || 0)})],
-      ...(reward.universal_module_shards ? [["universal_module_shards", localizedMessage("reward.universal_shards", {amount:localizedNumber(reward.universal_module_shards || 0)})]] : []),
-      ...[
-        ["rank_trophy_id", "trophy"], ["badge_id", "badge"],
-        ["avatar_id", "avatar"], ["avatar_frame_id", "frame"],
-        ["emoji_id", "emoji"], ["profile_background_id", "background"],
-        ["team_avatar_id", "team_cosmetic"], ["team_frame_id", "team_cosmetic"],
-        ["team_name_frame_id", "team_cosmetic"], ["team_bar_background_id", "team_cosmetic"],
-      ].filter(([field]) => reward[field]).map(([field, kind]) => [field, localizedCatalogName(kind, reward[field])]),
-    ];
-    for (const [field, label] of rewards) {
-      const row = document.createElement("span");
-      const icon = rewardPreviewVisual(field, reward);
-      const text = document.createElement("span");
-      text.textContent = label;
-      row.append(icon, text);
-      list.appendChild(row);
-    }
-    const note = document.createElement("small");
-    note.textContent = localizedMessage(noteKey);
-    popover.append(title, list, note);
-    return popover;
   }
 
   function renderLeaderboard() {
@@ -17319,7 +15722,7 @@ function saveHumanReviewLocalNote() {
     if (!host) return;
     host.replaceChildren();
     if (season && leaderboardPayload?.season) {
-      season.textContent = localizedMessage("leaderboard.season_period", {name:localizedUiText(leaderboardPayload.season.name_tr), start:localizedDate(leaderboardPayload.season.starts_at, {dateStyle:"medium"}), end:localizedDate(leaderboardPayload.season.ends_at, {dateStyle:"medium"})});
+      season.textContent = `${leaderboardPayload.season.name_tr} · ${leaderboardPayload.season.starts_at.slice(0, 10)} — ${leaderboardPayload.season.ends_at.slice(0, 10)}`;
     }
     const scopeNav = document.getElementById("leaderboard-trophy-scope");
     const currentGroupLabel = document.getElementById("leaderboard-current-group");
@@ -17333,8 +15736,8 @@ function saveHumanReviewLocalNote() {
       currentGroupLabel.hidden = activeLeaderboardTab !== "trophies"
         || activeTrophyLeaderboardScope !== "group";
       currentGroupLabel.textContent = viewerGroup
-        ? localizedMessage("leaderboard.current_group", {name:localizedUiText(viewerGroup.name_tr)})
-        : localizedMessage("leaderboard.no_current_group");
+        ? `MEVCUT GRUBUN · ${viewerGroup.name_tr}`
+        : "MEVCUT GRUP BULUNAMADI";
     }
     let rows = leaderboardPayload?.[activeLeaderboardTab] || [];
     if (activeLeaderboardTab === "trophies" && activeTrophyLeaderboardScope === "group") {
@@ -17346,8 +15749,8 @@ function saveHumanReviewLocalNote() {
       teams: "Takım Kupası",
     };
     if (status) status.textContent = rows.length
-      ? localizedMessage("leaderboard.list_summary", {name:localizedUiText(labels[activeLeaderboardTab]), scope:activeLeaderboardTab === "trophies" ? localizedMessage("leaderboard.scope_suffix", {name:activeTrophyLeaderboardScope === "general" ? localizedMessage("leaderboard.general") : localizedUiText(viewerGroup?.name_tr || "Grup")}) : "", count:localizedNumber(rows.length)})
-      : localizedMessage("leaderboard.empty");
+      ? `${labels[activeLeaderboardTab]}${activeLeaderboardTab === "trophies" ? ` · ${activeTrophyLeaderboardScope === "general" ? "Genel" : viewerGroup?.name_tr || "Grup"}` : ""} · ilk ${rows.length}`
+      : "Bu sıralamada henüz kayıt yok.";
     if (!rows.length) {
       const empty = document.createElement("li");
       empty.className = "leaderboard-empty";
@@ -17364,12 +15767,12 @@ function saveHumanReviewLocalNote() {
       const medal = { 1:"🥇", 2:"🥈", 3:"🥉" }[Number(row.position)];
       rank.textContent = medal || String(row.position);
       rank.classList.toggle("is-medal", Boolean(medal));
-      rank.setAttribute("aria-label", localizedMessage("leaderboard.position_aria", {position:localizedNumber(row.position)}));
+      rank.setAttribute("aria-label", `${Number(row.position)}. sıra`);
       const identity = document.createElement("div");
       identity.className = "leaderboard-identity";
       const name = row.team_name || row.display_name || "Oyuncu";
       const detail = activeLeaderboardTab === "teams"
-        ? localizedMessage("team.members_lower", {count:localizedNumber(row.member_count)})
+        ? `${row.member_count} üye`
         : row.rank_name_tr || "Arena";
       const nameNode = activeLeaderboardTab === "teams"
         ? createTeamProfileLink(row.team_id, name)
@@ -17380,16 +15783,12 @@ function saveHumanReviewLocalNote() {
       const score = document.createElement("strong");
       score.className = "leaderboard-score";
       if (activeLeaderboardTab === "core_damage") {
-        score.textContent = localizedMessage("leaderboard.damage_score", {damage:localizedNumber(row.value || 0)});
+        score.textContent = `${Number(row.value || 0).toLocaleString(uiLocale())} HASAR`;
       } else {
         renderTrophyValue(score, Number(row.value || 0));
         if (activeLeaderboardTab === "trophies" && activeTrophyLeaderboardScope === "general" && Number(row.position) <= 10) {
           const reward = (leaderboardPayload?.top_ten_rewards || []).find((item) => Number(item.position) === Number(row.position));
           if (reward) {
-            const chest = document.createElement("button");
-            chest.type = "button";
-            chest.className = "leaderboard-reward-chest";
-            chest.dataset.rank = String(row.position);
             const previewTier = Number(row.position) === 1
               ? "diamond"
               : Number(row.position) <= 3
@@ -17397,14 +15796,16 @@ function saveHumanReviewLocalNote() {
                 : Number(row.position) <= 5
                   ? "silver"
                   : "bronze";
-            chest.innerHTML = chestVisualMarkup(reward.chest_tier || previewTier, {
+            const chest = createRewardChestButton({
+              tier:reward.chest_tier || previewTier,
               visualId:reward.chest_visual_id || "",
+              reward:{ ...reward, chest_is_container:true },
+              title:reward.chest_name_tr || `${row.position}. Sıra Ödülü`,
+              note:"Sezon sonunda mesaj kutusuna teslim edilir.",
+              accent:({ 1:"#ffe16f", 2:"#c9e1ef", 3:"#dd9864" })[Number(row.position)] || "#8fd8ff",
+              className:"leaderboard-reward-chest",
             });
-            chest.setAttribute("aria-label", localizedMessage("reward.chest_contents_aria", {name:localizedUiText(reward.chest_name_tr || "Ödül sandığı")}));
-            const popover = createLeaderboardRewardPopover(reward, row.position);
-            chest.setAttribute("aria-describedby", popover.id);
-            chest.appendChild(popover);
-            chest.addEventListener("pointerup", (event) => { if (event.pointerType !== "mouse") window.setTimeout(() => chest.blur(), 1800); });
+            chest.dataset.rank = String(row.position);
             score.appendChild(chest);
           }
         }
@@ -17424,7 +15825,7 @@ function saveHumanReviewLocalNote() {
         8000
       );
       const payload = await response.json();
-      if (!response.ok) throw new Error(localizedApiError(payload, response.status));
+      if (!response.ok) throw new Error(payload.detail || "Lider panosu yüklenemedi.");
       leaderboardPayload = payload;
       renderLeaderboard();
       return { ok: true };
@@ -17443,192 +15844,286 @@ function saveHumanReviewLocalNote() {
     loadLeaderboard();
   }
 
-  function renderRewardInbox() {
-    const host = document.getElementById("reward-inbox-list");
-    const heading = document.getElementById("reward-inbox-title");
-    if (heading) heading.textContent = localizedMessage("inbox.title");
-    const button = document.getElementById("reward-inbox-button");
-    const notification = document.getElementById("reward-inbox-notification");
-    const pendingFriends = socialState?.incoming_requests || [];
-    const pendingBattles = (socialState?.battle_invites || []).filter((invite) => invite.status === "pending" && invite.opponent_id === participantPlayerId);
-    const pendingTraining = (teamState?.training_challenges || []).filter((challenge) => challenge.can_accept);
-    const attention = Number(rewardInboxState?.unclaimed_count || 0) + pendingFriends.length + pendingBattles.length + pendingTraining.length;
-    button?.classList.toggle("has-reward", attention > 0);
-    if (notification) notification.hidden = attention < 1;
-    const engagement = profileState.viewModel()?.engagement;
-    if (engagement) renderEngagementSummary(engagement);
-    if (!host) return;
-    host.replaceChildren();
-    const messages = rewardInboxState?.messages || [];
-    const section = (key) => {
-      const heading = document.createElement("h3");
-      heading.className = "reward-inbox-section-heading";
-      heading.textContent = localizedMessage(key);
-      host.appendChild(heading);
-    };
-    const inboxAction = (labelKey, onClick) => {
-      const action = document.createElement("button");
-      action.type = "button";
-      action.textContent = localizedMessage(labelKey);
-      action.addEventListener("click", onClick);
-      return action;
-    };
-    if (pendingFriends.length || pendingBattles.length || pendingTraining.length) section("inbox.invitations");
-    for (const player of pendingFriends) {
-      const card = document.createElement("article");
-      card.className = "reward-inbox-card";
-      const copy = document.createElement("div");
-      const title = document.createElement("strong");
-      title.textContent = localizedMessage("inbox.friend_request", {name:player.display_name || localizedMessage("profile.player")});
-      copy.appendChild(title);
-      const accept = inboxAction("inbox.accept", async () => {
-        const result = await socialMutation(`/social/${encodeURIComponent(participantPlayerId)}/requests/accept`, {requester_id:player.player_id, requestKind:"friend-accept"}, localizedMessage("inbox.accepting"));
-        if (result.ok) renderRewardInbox();
+  function closeRewardInbox() {
+    const dialog = document.getElementById("reward-inbox-dialog");
+    if (dialog?.close) dialog.close();
+    else dialog?.removeAttribute("open");
+  }
+
+  async function acceptInboxInvitation(item, button) {
+    if (button) button.disabled = true;
+    const status = document.getElementById("reward-inbox-status");
+    if (status) status.textContent = "Savaş alanı hazırlanıyor…";
+    try {
+      let battle = null;
+      const body = JSON.stringify({
+        player_id:participantPlayerId,
+        request_id:`inbox:accept:${item.invitation_id}`,
       });
-      card.append(copy, accept);
-      host.appendChild(card);
-    }
-    for (const invite of pendingBattles) {
-      const card = document.createElement("article");
-      card.className = "reward-inbox-card";
-      const copy = document.createElement("div");
-      const title = document.createElement("strong");
-      title.textContent = localizedMessage("inbox.battle_invite", {name:invite.challenger_name || localizedMessage("profile.player")});
-      copy.appendChild(title);
-      const accept = inboxAction("inbox.accept", async () => {
-        const result = await socialMutation(`/social/${encodeURIComponent(participantPlayerId)}/battle-invites/${encodeURIComponent(invite.invite_id)}/accept`, {requestKind:"battle-accept"}, localizedMessage("inbox.accepting"));
-        if (result.ok) {
-          renderRewardInbox();
-          if (result.payload.battle) {
-            document.getElementById("reward-inbox-dialog")?.close();
-            launchSocialBattle(result.payload.battle);
-          }
-        }
-      });
-      card.append(copy, accept);
-      host.appendChild(card);
-    }
-    for (const challenge of pendingTraining) {
-      const card = document.createElement("article");
-      card.className = "reward-inbox-card";
-      const copy = document.createElement("div");
-      const title = document.createElement("strong");
-      title.textContent = localizedMessage("inbox.training_invite", {name:challenge.challenger_name || localizedMessage("profile.player")});
-      copy.appendChild(title);
-      const accept = inboxAction("inbox.accept", async () => {
-        const result = await mutateTeam(`/teams/${encodeURIComponent(teamState.team_id)}/training-challenges/${encodeURIComponent(challenge.challenge_id)}/accept`, {requestKind:"training-accept"}, localizedMessage("inbox.accepting"));
-        if (result.ok) {
-          renderRewardInbox();
-          if (result.state?.operation?.battle) {
-            document.getElementById("reward-inbox-dialog")?.close();
-            launchSocialBattle(result.state.operation.battle);
-          }
-        }
-      });
-      card.append(copy, accept);
-      host.appendChild(card);
-    }
-    if (inboxDirectMessages.length) section("inbox.messages");
-    for (const message of inboxDirectMessages.slice(-8).reverse()) {
-      const card = document.createElement("article");
-      card.className = "reward-inbox-card";
-      const copy = document.createElement("div");
-      const title = document.createElement("strong");
-      title.textContent = message.sender_id === participantPlayerId ? localizedMessage("inbox.message_sent") : localizedMessage("inbox.message_received");
-      const detail = document.createElement("small");
-      detail.textContent = message.text || "";
-      copy.append(title, detail);
-      card.append(copy, inboxAction("inbox.open_messages", () => {
-        document.getElementById("reward-inbox-dialog")?.close();
-        activeFriendsTab = "messages";
-        openAppScreen("friends");
-        renderFriendsScreen();
-        loadDirectMessages();
-      }));
-      host.appendChild(card);
-    }
-    const updates = rewardInboxState?.updates || [];
-    if (updates.length) section("inbox.updates");
-    for (const update of updates) {
-      const card = document.createElement("article");
-      card.className = "reward-inbox-card";
-      const copy = document.createElement("div");
-      const title = document.createElement("strong");
-      title.textContent = localizedMessage("inbox.version_title", {version:update.version});
-      const detail = document.createElement("small");
-      detail.textContent = localizedMessage("inbox.version_detail");
-      copy.append(title, detail);
-      card.appendChild(copy);
-      host.appendChild(card);
-    }
-    if (messages.length) section("inbox.rewards");
-    if (!messages.length && !host.children.length) {
-      const empty = document.createElement("p");
-      empty.className = "leaderboard-empty";
-      empty.textContent = localizedMessage("inbox.empty");
-      host.appendChild(empty);
-      return;
-    }
-    for (const message of messages) {
-      const card = document.createElement("article");
-      card.className = "reward-inbox-card";
-      const reward = message.chest || {};
-      const chest = document.createElement("i");
-      chest.innerHTML = chestVisualMarkup(reward.chest_tier || "bronze", {
-        visualId:reward.chest_visual_id || "",
-      });
-      const copy = document.createElement("div");
-      const title = document.createElement("strong");
-      const sourceKey = `reward.source.${message.source}`;
-      const sourceName = localizedMessage(sourceKey);
-      title.textContent = sourceName !== sourceKey
-        ? localizedMessage("reward.competition_title", {source:sourceName, position:localizedNumber(message.position || 0)})
-        : localizedRecordText(message, "title") || localizedMessage("reward.competition");
-      const detail = document.createElement("small");
-      const cosmeticCount = [
-        "rank_trophy_id", "badge_id", "avatar_id", "avatar_frame_id",
-        "emoji_id", "profile_background_id", "team_avatar_id",
-        "team_frame_id", "team_name_frame_id", "team_bar_background_id",
-      ].filter((key) => reward[key]).length;
-      detail.textContent = [
-        localizedRewardChestName(reward),
-        localizedMessage("currency.credits_short", {amount:localizedNumber(reward.circuit_credits || 0)}),
-        localizedMessage("currency.flux", {amount:localizedNumber(reward.flux_shards || 0)}),
-        reward.universal_module_shards ? localizedMessage("reward.universal_shards_lower", {amount:localizedNumber(reward.universal_module_shards)}) : "",
-        cosmeticCount ? localizedMessage("reward.cosmetic_count", {count:localizedNumber(cosmeticCount)}) : "",
-      ].filter(Boolean).join(" · ");
-      copy.append(title, detail);
-      const claim = document.createElement("button");
-      claim.type = "button";
-      claim.textContent = localizedMessage(message.status === "claimed" ? "reward.claimed_upper" : "reward.claim_and_open_upper");
-      claim.disabled = message.status === "claimed";
-      claim.addEventListener("click", async () => {
-        claim.disabled = true;
-        const status = document.getElementById("reward-inbox-status");
-        if (status) status.textContent = localizedMessage("reward.chest_opening");
-        try {
-          const payload = await requestJsonWithDeadline(
-            `/profile/${encodeURIComponent(participantPlayerId)}/reward-inbox/${encodeURIComponent(message.message_id)}/claim`,
-            { method:"POST", body:JSON.stringify({ request_id:`inbox:${message.message_id}:${Date.now()}` }) },
-            30000
-          );
-          rewardInboxState = payload;
-          if (payload.profile) profileState.applyProfile(payload.profile);
-          await loadMetaProgression();
-          renderRewardInbox();
-          renderProfileSummary();
-          if (status) status.textContent = localizedMessage("reward.chest_opened", {name:localizedRewardChestName(reward)});
-        } catch (error) {
-          claim.disabled = false;
-          if (status) status.textContent = error instanceof Error ? error.message : String(error);
-        }
-      });
-      card.append(chest, copy, claim);
-      host.appendChild(card);
+      if (item.kind === "team_training") {
+        const payload = await requestJsonWithDeadline(
+          `/teams/${encodeURIComponent(item.team_id)}/training-challenges/${encodeURIComponent(item.invitation_id)}/accept`,
+          { method:"POST", body },
+          30000
+        );
+        teamState = payload;
+        battle = payload.operation?.battle || null;
+      } else {
+        const payload = await requestJsonWithDeadline(
+          `/social/${encodeURIComponent(participantPlayerId)}/battle-invites/${encodeURIComponent(item.invitation_id)}/accept`,
+          { method:"POST", body },
+          30000
+        );
+        socialState = payload;
+        battle = payload.battle || null;
+      }
+      if (!battle?.session_id) throw new Error("Savaş oturumu hazırlanamadı.");
+      autoLaunchedBattleSessions.add(battle.session_id);
+      closeRewardInbox();
+      await launchSocialBattle(battle);
+    } catch (error) {
+      if (button) button.disabled = false;
+      if (status) status.textContent = error instanceof Error ? error.message : String(error);
     }
   }
 
-  async function loadRewardInbox({ open=false } = {}) {
+  async function declineInboxInvitation(item, button) {
+    if (button) button.disabled = true;
+    const status = document.getElementById("reward-inbox-status");
+    try {
+      const path = item.kind === "team_training"
+        ? `/teams/${encodeURIComponent(item.team_id)}/training-challenges/${encodeURIComponent(item.invitation_id)}/decline`
+        : `/social/${encodeURIComponent(participantPlayerId)}/battle-invites/${encodeURIComponent(item.invitation_id)}/decline`;
+      const payload = await requestJsonWithDeadline(
+        path,
+        {
+          method:"POST",
+          body:JSON.stringify({ player_id:participantPlayerId, request_id:`inbox:decline:${item.invitation_id}` }),
+        },
+        30000
+      );
+      if (payload.inbox) rewardInboxState = payload.inbox;
+      if (item.kind === "team_training") teamState = payload;
+      else socialState = payload;
+      renderRewardInbox();
+      renderFriendsScreen();
+      if (status) status.textContent = "Davet reddedildi.";
+    } catch (error) {
+      if (button) button.disabled = false;
+      if (status) status.textContent = error instanceof Error ? error.message : String(error);
+    }
+  }
+
+  function createInboxInvitationCard(item) {
+    const card = document.createElement("article");
+    card.className = "reward-inbox-card inbox-invitation-card";
+    card.dataset.kind = item.kind;
+    card.dataset.status = item.status;
+    const icon = document.createElement("span");
+    icon.className = "inbox-card-icon";
+    icon.setAttribute("aria-hidden", "true");
+    icon.textContent = item.kind === "team_training" ? "⬡" : "⚔";
+    const copy = document.createElement("div");
+    const title = document.createElement("strong");
+    title.textContent = item.kind === "team_training" ? "Takım antrenman maçı" : "Arkadaş savaşı";
+    const detail = document.createElement("small");
+    detail.textContent = item.incoming && item.status === "pending"
+      ? `${item.peer_name} seni kupasız savaşa çağırdı.`
+      : `${item.peer_name} ile kupasız savaş alanı hazır.`;
+    copy.append(title, detail);
+    const actions = document.createElement("span");
+    actions.className = "inbox-card-actions";
+    if (item.incoming && item.status === "pending") {
+      const accept = document.createElement("button");
+      accept.type = "button";
+      accept.textContent = "KABUL ET";
+      accept.addEventListener("click", () => acceptInboxInvitation(item, accept));
+      const decline = document.createElement("button");
+      decline.type = "button";
+      decline.textContent = "REDDET";
+      decline.dataset.variant = "quiet";
+      decline.addEventListener("click", () => declineInboxInvitation(item, decline));
+      actions.append(accept, decline);
+    } else if (item.status === "accepted" && item.battle_session_id) {
+      const enter = document.createElement("button");
+      enter.type = "button";
+      enter.textContent = "SAVAŞ ALANINA GİR";
+      enter.addEventListener("click", () => {
+        autoLaunchedBattleSessions.add(item.battle_session_id);
+        closeRewardInbox();
+        launchSocialBattle({ session_id:item.battle_session_id, players:item.players || [], opponent_type:"human" });
+      });
+      actions.appendChild(enter);
+    }
+    card.append(icon, copy, actions);
+    return card;
+  }
+
+  function createInboxNoticeCard(notice) {
+    const card = document.createElement("article");
+    card.className = "reward-inbox-card inbox-notice-card";
+    card.dataset.kind = notice.kind || "update";
+    card.dataset.seen = String(Boolean(notice.seen));
+    const icon = document.createElement("span");
+    icon.className = "inbox-card-icon";
+    icon.setAttribute("aria-hidden", "true");
+    icon.textContent = notice.kind === "game" ? "◈" : "✦";
+    const copy = document.createElement("div");
+    const title = document.createElement("strong");
+    title.textContent = notice.title_tr || "Bildirim";
+    const detail = document.createElement("small");
+    const schedule = notice.scheduled_at ? new Date(notice.scheduled_at) : null;
+    const scheduleLabel = schedule && !Number.isNaN(schedule.getTime())
+      ? ` · ${schedule.toLocaleString(uiLocale(), { weekday:"short", hour:"2-digit", minute:"2-digit" })}`
+      : "";
+    detail.textContent = `${notice.body_tr || ""}${scheduleLabel}`;
+    copy.append(title, detail);
+    card.append(icon, copy);
+    return card;
+  }
+
+  function createInboxRewardCard(message) {
+    const card = document.createElement("article");
+    card.className = "reward-inbox-card";
+    const reward = message.chest || {};
+    const chest = createRewardChestButton({
+      tier:reward.chest_tier || "bronze",
+      visualId:reward.chest_visual_id || "",
+      reward:{ ...reward, chest_is_container:true },
+      title:reward.chest_name_tr || "Ödül Kasası",
+      note:message.status === "claimed" ? "Bu kasa açıldı." : "AL VE AÇ ile ödüller hesabına eklenir.",
+      className:"inbox-reward-chest",
+    });
+    const copy = document.createElement("div");
+    const title = document.createElement("strong");
+    title.textContent = message.title_tr || "Rekabet Ödülü";
+    const detail = document.createElement("small");
+    detail.textContent = reward.chest_name_tr || "Ödül Kasası";
+    copy.append(title, detail);
+    const claim = document.createElement("button");
+    claim.type = "button";
+    claim.textContent = message.status === "claimed" ? "ALINDI" : "AL VE AÇ";
+    claim.disabled = message.status === "claimed";
+    claim.addEventListener("click", async () => {
+      claim.disabled = true;
+      const status = document.getElementById("reward-inbox-status");
+      if (status) status.textContent = "Ödül kasası açılıyor…";
+      try {
+        const payload = await requestJsonWithDeadline(
+          `/profile/${encodeURIComponent(participantPlayerId)}/reward-inbox/${encodeURIComponent(message.message_id)}/claim`,
+          { method:"POST", body:JSON.stringify({ request_id:`inbox:${message.message_id}:${Date.now()}` }) },
+          30000
+        );
+        rewardInboxState = payload;
+        if (payload.profile) profileState.applyProfile(payload.profile);
+        await loadMetaProgression();
+        renderRewardInbox();
+        renderProfileSummary();
+        if (status) status.textContent = `${reward.chest_name_tr || "Ödül kasası"} açıldı.`;
+      } catch (error) {
+        claim.disabled = false;
+        if (status) status.textContent = error instanceof Error ? error.message : String(error);
+      }
+    });
+    card.append(chest, copy, claim);
+    return card;
+  }
+
+  function renderRewardInbox() {
+    const button = document.getElementById("reward-inbox-button");
+    const notification = document.getElementById("reward-inbox-notification");
+    const unclaimed = Number(rewardInboxState?.unclaimed_count || 0);
+    const unread = Number(rewardInboxState?.unread_count ?? unclaimed);
+    button?.classList.toggle("has-reward", unclaimed > 0);
+    button?.classList.toggle("has-unread", unread > 0);
+    if (notification) {
+      notification.hidden = unread < 1;
+      notification.textContent = unread > 9 ? "9+" : String(unread);
+    }
+    if (button) {
+      button.title = unread > 0 ? `Mesaj Kutusu · ${unread} yeni` : "Mesaj Kutusu";
+    }
+    const fill = (hostId, items, createCard, emptyCopy) => {
+      const host = document.getElementById(hostId);
+      if (!host) return;
+      host.replaceChildren();
+      for (const item of items) host.appendChild(createCard(item));
+      if (!host.children.length) {
+        const empty = document.createElement("p");
+        empty.className = "reward-inbox-empty";
+        empty.textContent = emptyCopy;
+        host.appendChild(empty);
+      }
+    };
+    fill("reward-inbox-invitations", rewardInboxState?.invitations || [], createInboxInvitationCard, "Bekleyen savaş daveti yok.");
+    fill("reward-inbox-list", rewardInboxState?.messages || [], createInboxRewardCard, "Yeni ödül sandığı yok. Sezon, hafta ve takım turnuvası ödülleri burada teslim edilir.");
+    fill("reward-inbox-notices", rewardInboxState?.notices || [], createInboxNoticeCard, "Yeni oyun bildirimi yok.");
+  }
+
+  // Arkadaşın ya da takım üyen daveti kabul edince davet eden oyuncu da savaş
+  // alanına otomatik girer (yalnız bu oturumda gönderilen davetler için).
+  function maybeAutoLaunchAcceptedInvite() {
+    if (document.body.dataset.appScreen === "play") return false;
+    const item = (rewardInboxState?.invitations || []).find((candidate) =>
+      !candidate.incoming
+      && candidate.status === "accepted"
+      && candidate.battle_session_id
+      && recentBattleInviteTargets.has(candidate.peer_id)
+      && !autoLaunchedBattleSessions.has(candidate.battle_session_id)
+    );
+    if (!item) return false;
+    autoLaunchedBattleSessions.add(item.battle_session_id);
+    recentBattleInviteTargets.delete(item.peer_id);
+    closeRewardInbox();
+    void launchSocialBattle({ session_id:item.battle_session_id, players:item.players || [], opponent_type:"human" });
+    return true;
+  }
+
+  async function markInboxNoticesSeen() {
+    const unseen = (rewardInboxState?.notices || []).filter((notice) => !notice.seen);
+    if (!unseen.length) return;
+    try {
+      rewardInboxState = await requestJsonWithDeadline(
+        `/profile/${encodeURIComponent(participantPlayerId)}/reward-inbox/notices/seen`,
+        {
+          method:"POST",
+          body:JSON.stringify({ player_id:participantPlayerId, notice_ids:unseen.map((notice) => notice.notice_id) }),
+        },
+        12000
+      );
+      renderRewardInbox();
+    } catch (_error) {
+      // Okundu işareti bir sonraki açılışta yeniden denenir.
+    }
+  }
+
+  let socialPollTimer = null;
+  let socialPollTick = 0;
+
+  // Mesaj kutusu ve arkadaş bildirimleri arka planda tazelenir; savaş
+  // sırasında ya da sekme gizliyken istek atılmaz. Gönderilmiş bir davet
+  // varken kabulü hızlı yakalamak için sıklık artar.
+  function startSocialPolling() {
+    if (socialPollTimer) return;
+    socialPollTimer = window.setInterval(() => {
+      if (document.hidden || document.body.dataset.appScreen === "play") return;
+      socialPollTick += 1;
+      // Açık sohbet her turda tazelenir; karşı tarafın mesajı birkaç saniyede görünür.
+      if (
+        activeDirectMessagePeerId
+        && activeFriendsTab === "messages"
+        && document.body.dataset.appScreen === "friends"
+      ) {
+        void loadDirectMessageThread();
+      }
+      const urgent = recentBattleInviteTargets.size > 0;
+      if (!urgent && socialPollTick % 4 !== 0) return;
+      void loadRewardInbox({ quiet:true });
+      void loadSocialView({ quiet:true });
+    }, 5000);
+  }
+
+  async function loadRewardInbox({ open=false, quiet=false } = {}) {
     const status = document.getElementById("reward-inbox-status");
     try {
       rewardInboxState = await requestJsonWithDeadline(
@@ -17636,27 +16131,156 @@ function saveHumanReviewLocalNote() {
         { cache:"no-store" },
         12000
       );
-      if (open) {
-        const [social, team, direct] = await Promise.allSettled([
-          requestJsonWithDeadline(`/social/${encodeURIComponent(participantPlayerId)}`, {cache:"no-store"}, 12000),
-          requestJsonWithDeadline(`/teams/player/${encodeURIComponent(participantPlayerId)}`, {cache:"no-store"}, 12000),
-          requestJsonWithDeadline(`/social/${encodeURIComponent(participantPlayerId)}/messages`, {cache:"no-store"}, 12000),
-        ]);
-        if (social.status === "fulfilled") socialState = social.value;
-        if (team.status === "fulfilled") teamState = team.value;
-        if (direct.status === "fulfilled") inboxDirectMessages = direct.value.messages || [];
-      }
-      if (status) status.textContent = "";
+      if (status && !quiet) status.textContent = "";
       renderRewardInbox();
+      maybeAutoLaunchAcceptedInvite();
     } catch (error) {
-      if (status) status.textContent = error instanceof Error ? error.message : String(error);
+      if (status && !quiet) status.textContent = error instanceof Error ? error.message : String(error);
     }
     if (open) {
       const dialog = document.getElementById("reward-inbox-dialog");
       if (dialog?.showModal && !dialog.open) dialog.showModal();
       else dialog?.setAttribute("open", "");
+      void markInboxNoticesSeen();
     }
   }
+
+  // Sezon yolu hücresi: ödül sandık olarak görünür, içeriği önizlemede.
+  function seasonPassCell(reward, { premium = false, tierNumber = 0, passActive = false } = {}) {
+    const cell = document.createElement("div");
+    cell.className = `season-pass-cell${premium ? " is-premium" : ""}`;
+    if (!reward) {
+      cell.dataset.state = "empty";
+      return cell;
+    }
+    const state = reward.claimed
+      ? "claimed"
+      : reward.claimable
+        ? "claimable"
+        : premium && !passActive
+          ? "pass-locked"
+          : "locked";
+    cell.dataset.state = state;
+    const chest = createRewardChestButton({
+      tier:reward.chest_tier || (reward.is_major ? "gold" : "bronze"),
+      reward,
+      count:premium ? 2 : 1,
+      title:`${premium ? "Ücretli Geçiş · " : ""}Kademe ${tierNumber} Ödülü`,
+      note:state === "claimed"
+        ? "Bu ödül alındı."
+        : state === "pass-locked"
+          ? "Ücretli geçiş etkin olduğunda alınabilir."
+          : state === "claimable"
+            ? "Ödül alınmaya hazır."
+            : `${Number(reward.required_xp || 0).toLocaleString(uiLocale())} Deneyim ile açılır.`,
+      locked:state === "locked" || state === "pass-locked",
+      accent:premium ? "#ffd36e" : "#6ff1e0",
+      className:"season-pass-chest",
+    });
+    const action = document.createElement("button");
+    action.type = "button";
+    action.className = "season-pass-claim";
+    if (premium) action.dataset.premiumTierClaim = String(tierNumber);
+    else action.dataset.tierClaim = String(tierNumber);
+    action.disabled = state !== "claimable";
+    action.textContent = state === "claimed"
+      ? "ALINDI"
+      : state === "claimable"
+        ? "AL"
+        : state === "pass-locked"
+          ? "GEÇİŞ GEREKLİ"
+          : "KİLİTLİ";
+    cell.append(chest, action);
+    return cell;
+  }
+
+  // Günlük devre emirleri: her emir tek satırdır. Solda emrin simgesi,
+  // ortada ilerleme çubuğu, sağda ödül rozetleri ve durum düğmesi durur.
+  const DAILY_MISSION_ICONS = Object.freeze({
+    complete_battles:'<path d="M13 2 4 14h7l-1 8 9-12h-7Z"/>',
+    deal_damage:'<circle cx="12" cy="12" r="3"/><path d="M12 2v5M12 17v5M2 12h5M17 12h5M5 5l3.5 3.5M15.5 15.5 19 19M19 5l-3.5 3.5M8.5 15.5 5 19"/>',
+    circuit_actions:'<rect x="3.5" y="3.5" width="7" height="7" rx="1.5"/><rect x="13.5" y="3.5" width="7" height="7" rx="1.5"/><rect x="3.5" y="13.5" width="7" height="7" rx="1.5"/><path d="M17 14v6M14 17h6"/>',
+    win_battles:'<path d="M8 4h8v5a4 4 0 0 1-8 0Z"/><path d="M8 6H5a3 3 0 0 0 3 4M16 6h3a3 3 0 0 1-3 4M12 13v4M8 21h8M10 17h4"/>',
+    destroy_modules:'<rect x="4" y="4" width="16" height="16" rx="2"/><path d="m13 4-3 6 4 3-3 7"/>',
+    core_power:'<path d="m12 3 6 9-6 9-6-9Z"/><path d="M2 12h3M19 12h3"/>',
+  });
+  const DAILY_MISSION_STATE_ORDER = Object.freeze({ claimable:0, active:1, claimed:2 });
+
+  function dailyMissionState(mission) {
+    return mission.claimed ? "claimed" : mission.completed ? "claimable" : "active";
+  }
+
+  function createDailyMissionCard(mission) {
+    const state = dailyMissionState(mission);
+    const target = Math.max(1, Number(mission.target || 1));
+    const progress = Math.max(0, Math.min(target, Number(mission.progress || 0)));
+    const card = document.createElement("article");
+    card.className = "daily-mission-card";
+    card.dataset.state = state;
+    card.dataset.mission = String(mission.id || "");
+    const icon = document.createElement("span");
+    icon.className = "daily-mission-icon";
+    icon.setAttribute("aria-hidden", "true");
+    icon.innerHTML = `<svg viewBox="0 0 24 24">${DAILY_MISSION_ICONS[mission.id] || DAILY_MISSION_ICONS.complete_battles}</svg>`;
+    const copy = document.createElement("div");
+    copy.className = "daily-mission-copy";
+    const name = document.createElement("strong");
+    name.textContent = mission.name_tr;
+    const description = document.createElement("span");
+    description.textContent = mission.description_tr;
+    const meter = document.createElement("span");
+    meter.className = "daily-mission-meter";
+    meter.setAttribute("role", "progressbar");
+    meter.setAttribute("aria-valuemin", "0");
+    meter.setAttribute("aria-valuemax", String(target));
+    meter.setAttribute("aria-valuenow", String(progress));
+    meter.setAttribute("aria-label", `${mission.name_tr} · ${progress} / ${target}`);
+    meter.style.setProperty("--mission-progress", `${Math.round((progress / target) * 100)}%`);
+    const count = document.createElement("small");
+    count.className = "daily-mission-count";
+    count.textContent = `${progress.toLocaleString(uiLocale())} / ${target.toLocaleString(uiLocale())}`;
+    copy.append(name, description, meter, count);
+    const side = document.createElement("div");
+    side.className = "daily-mission-side";
+    const rewards = document.createElement("span");
+    rewards.className = "daily-mission-rewards";
+    for (const [kind, amount, label] of [
+      ["experience", Number(mission.season_xp_reward || 0), "Deneyim"],
+      ["flux_shards", Number(mission.flux_shard_reward || 0), "Akı"],
+    ]) {
+      if (amount <= 0) continue;
+      const reward = document.createElement("em");
+      reward.className = "daily-mission-reward";
+      reward.dataset.rewardKind = kind;
+      reward.title = `+${amount} ${label}`;
+      reward.innerHTML = `${resourceSymbolMarkup(kind)}<b>+${amount}</b>`;
+      rewards.appendChild(reward);
+    }
+    const action = document.createElement("button");
+    action.type = "button";
+    action.className = "daily-mission-action";
+    action.dataset.missionClaim = String(mission.id || "");
+    action.disabled = state !== "claimable";
+    action.textContent = state === "claimed" ? "Alındı" : state === "claimable" ? "Ödülü Al" : "Devam Ediyor";
+    side.append(rewards, action);
+    card.append(icon, copy, side);
+    return card;
+  }
+
+  // Emirler sunucuda UTC gün değişiminde yenilenir (utc_day_key).
+  function updateDailyMissionReset() {
+    const target = document.getElementById("daily-mission-reset");
+    if (!target) return;
+    const now = new Date();
+    const nextReset = Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() + 1);
+    const minutes = Math.max(1, Math.ceil((nextReset - now.getTime()) / 60000));
+    const hours = Math.floor(minutes / 60);
+    target.textContent = hours > 0
+      ? `Yenilenme ${hours} sa ${minutes % 60} dk`
+      : `Yenilenme ${minutes} dk`;
+  }
+
+  const LOGIN_WEEKDAYS_TR = Object.freeze(["Pzt", "Sal", "Çar", "Per", "Cum", "Cmt", "Paz"]);
 
   function renderEngagementSummary(engagement) {
     if (!engagement) return;
@@ -17673,21 +16297,17 @@ function saveHumanReviewLocalNote() {
       (reward) => Number(engagement.season_xp || 0) < Number(reward.required_xp || 0)
     );
 
-    setText("season-rewards-kicker", localizedMessage("season.rewards_kicker"));
-    setText("season-rewards-subtitle", localizedMessage("season.rewards_subtitle", {season:localizedRecordText(engagement, "season_name") || localizedMessage("season.this_season")}));
-    setText("season-rewards-name", localizedRecordText(engagement, "season_name") || localizedMessage("season.rewards_kicker"));
-    setText("season-flux-shards", engagement.flux_shards || 0);
-    setText("season-equipped-title", localizedRecordText(engagement, "equipped_title") || localizedMessage("profile.default_title"));
+    setText("season-equipped-title", engagement.equipped_title || "Devre Çırağı");
     setText(
       "season-tier-label",
-      localizedMessage("season.tier_progress", {current:localizedNumber(engagement.current_tier || 0), maximum:localizedNumber(engagement.max_tier || 40)})
+      `Kademe ${engagement.current_tier || 0} / ${engagement.max_tier || 40}`
     );
     const seasonXp = Number(engagement.season_xp || 0);
-    setText("season-progress-copy", nextReward ? localizedMessage("season.xp_remaining", {count:Math.max(0, Number(nextReward.required_xp || 0) - seasonXp)}) : localizedMessage("season.path_completed"));
+    setText("season-progress-copy", nextReward ? `${Math.max(0, Number(nextReward.required_xp || 0) - seasonXp)} Deneyim kaldı` : "Sezon yolu tamamlandı");
     const nextTierExperience = Number(nextReward?.required_xp || rewardList.at(-1)?.required_xp || seasonXp);
-    setText("season-progress-ratio", localizedMessage("season.progress", {current:seasonXp, next:nextTierExperience}));
-    setText("lobby-season-tier", localizedMessage("season.tier_progress", {current:localizedNumber(engagement.current_tier || 0), maximum:localizedNumber(engagement.max_tier || 40)}));
-    setText("lobby-season-progress-copy", nextReward ? localizedMessage("season.xp_remaining", {count:Math.max(0, Number(nextReward.required_xp || 0) - seasonXp)}) : localizedMessage("season.path_completed"));
+    setText("season-progress-ratio", `${seasonXp.toLocaleString(uiLocale())} / ${nextTierExperience.toLocaleString(uiLocale())} Deneyim`);
+    setText("lobby-season-tier", `Kademe ${engagement.current_tier || 0} / ${engagement.max_tier || 40}`);
+    setText("lobby-season-progress-copy", nextReward ? `${Math.max(0, Number(nextReward.required_xp || 0) - seasonXp)} Deneyim kaldı` : "Sezon yolu tamamlandı");
     setText("lobby-flux-shards", engagement.flux_shards || 0);
 
     const missionList = engagement.dailyMissions || [];
@@ -17705,32 +16325,16 @@ function saveHumanReviewLocalNote() {
       ?? (loginHasNotification || missionHasNotification);
     const activeMissions = missionList.filter((mission) => !mission.claimed).length;
     setText(
-      "lobby-daily-summary",
-      claimableMissions + claimableLoginRewards > 0
-        ? localizedMessage("rewards.available", {count:claimableMissions + claimableLoginRewards})
-        : localizedMessage("daily.active_orders", {count:localizedNumber(activeMissions)})
-    );
-    setText(
       "daily-mission-page-summary",
       claimableMissions > 0
-        ? localizedMessage("rewards.available", {count:claimableMissions})
-        : localizedMessage("daily.active_missions", {count:localizedNumber(activeMissions)})
+        ? `${claimableMissions} ödül alınmaya hazır`
+        : `${activeMissions} görev aktif`
     );
-    const dailyNotification = document.getElementById("lobby-daily-notification");
-    if (dailyNotification) dailyNotification.hidden = !dailyHasNotification;
     const claimableRewards = rewardList.filter(
       (reward) => reward.claimable && !reward.claimed
     ).length;
     const seasonHasNotification = notifications.season
       ?? (claimableRewards > 0);
-    setText(
-      "lobby-reward-summary",
-      claimableRewards > 0
-        ? localizedMessage("season.tier_rewards", {count:claimableRewards})
-        : localizedMessage("season.free_tiers", {count:engagement.max_tier || 40})
-    );
-    const rewardNotification = document.getElementById("lobby-reward-notification");
-    if (rewardNotification) rewardNotification.hidden = !seasonHasNotification;
 
     const notificationByScreen = {
       profile: false,
@@ -17741,21 +16345,19 @@ function saveHumanReviewLocalNote() {
       "daily-rewards": Boolean(loginHasNotification),
       "daily-missions": Boolean(missionHasNotification),
       rewards: Boolean(seasonHasNotification),
-      friends: Boolean(socialState?.incoming_requests?.length || (socialState?.battle_invites || []).some((invite) => invite.status === "pending" && invite.opponent_id === participantPlayerId) || (teamState?.training_challenges || []).some((challenge) => challenge.can_accept)),
     };
     for (const button of document.querySelectorAll("[data-open-screen]")) {
       const target = button.dataset.openScreen;
       if (!(target in notificationByScreen)) continue;
-      const hasOwnLobbyDot = Boolean(button.querySelector(".lobby-notification-dot"));
       button.classList.toggle(
         "has-persistent-notification",
-        Boolean(notificationByScreen[target]) && !hasOwnLobbyDot
+        Boolean(notificationByScreen[target])
       );
     }
     const lobbyProfileButton = document.getElementById("lobby-profile-button");
     lobbyProfileButton?.classList.toggle(
       "has-avatar-notification",
-      Boolean(dailyHasNotification || seasonHasNotification || notifications.avatar || notificationByScreen.friends)
+      Boolean(dailyHasNotification || seasonHasNotification || notifications.avatar)
     );
 
     const progressTrack = document.querySelector(".season-progress-track");
@@ -17768,11 +16370,18 @@ function saveHumanReviewLocalNote() {
     if (lobbyProgressFill) lobbyProgressFill.style.width = `${percentage}%`;
 
     const loginTrack = document.getElementById("monthly-login-track");
+    const loginDayCount = Number(engagement.daily_login?.day_count || loginRewards.length || 28);
     setText(
       "monthly-login-summary",
       claimableLoginRewards
-        ? localizedMessage("daily.today_reward_ready")
-        : localizedMessage("daily.claimed_days", {count:localizedNumber(engagement.daily_login?.claimed_days?.length || 0)})
+        ? "Bugünün ödülü hazır"
+        : `${engagement.daily_login?.claimed_days?.length || 0} / ${loginDayCount} gün alındı`
+    );
+    setText(
+      "monthly-login-period",
+      engagement.daily_login?.starts_at
+        ? `BU DÖNEM · ${eventDayRangeLabel(engagement.daily_login.starts_at, engagement.daily_login.ends_at)}`
+        : "BU DÖNEM"
     );
     if (loginTrack) {
       loginTrack.replaceChildren();
@@ -17789,19 +16398,20 @@ function saveHumanReviewLocalNote() {
               : "locked";
         card.dataset.major = String(Boolean(reward.is_major));
         const day = document.createElement("strong");
-        day.textContent = localizedMessage("daily.day_label", {day:localizedNumber(reward.day)});
+        // Dönem Pazartesi başlar; 7, 14, 21 ve 28. günler Pazar'dır.
+        day.textContent = `${reward.day}. GÜN · ${LOGIN_WEEKDAYS_TR[(Number(reward.day) - 1) % 7]}`;
         const prize = createRewardRows(reward, { compact:true });
         const action = document.createElement("button");
         action.type = "button";
         action.dataset.loginClaim = String(reward.day);
         action.disabled = !reward.claimable;
-        action.textContent = localizedMessage(reward.claimed
-          ? "reward.claimed_upper"
+        action.textContent = reward.claimed
+          ? "ALINDI"
           : reward.claimable
-            ? "reward.claim_upper"
+            ? "AL"
             : Number(reward.day) < today
-              ? "reward.missed_upper"
-              : "reward.locked_upper");
+              ? "KAÇIRILDI"
+              : "KİLİTLİ";
         card.append(day, prize, action);
         loginTrack.appendChild(card);
       }
@@ -17810,311 +16420,97 @@ function saveHumanReviewLocalNote() {
     const missions = document.getElementById("daily-mission-list");
     if (missions) {
       missions.replaceChildren();
-      for (const mission of engagement.dailyMissions || []) {
-        const card = document.createElement("article");
-        card.className = "daily-mission-card";
-        card.dataset.state = mission.claimed
-          ? "claimed"
-          : mission.completed
-            ? "claimable"
-            : "active";
-        const copy = document.createElement("div");
-        const name = document.createElement("strong");
-        name.textContent = localizedRecordText(mission, "name");
-        const description = document.createElement("span");
-        description.textContent = localizedRecordText(mission, "description");
-        const meter = document.createElement("small");
-        meter.textContent = localizedMessage("daily.mission_meter", {progress:localizedNumber(mission.progress), target:localizedNumber(mission.target), xp:localizedNumber(mission.season_xp_reward), flux:localizedNumber(mission.flux_shard_reward)});
-        copy.append(name, description, meter);
-        const action = document.createElement("button");
-        action.type = "button";
-        action.dataset.missionClaim = mission.id;
-        action.disabled = !mission.completed || mission.claimed;
-        action.textContent = localizedMessage(mission.claimed
-          ? "reward.claimed_title"
-          : mission.completed
-            ? "reward.claim"
-            : "daily.in_progress");
-        card.append(copy, action);
-        missions.appendChild(card);
-      }
+      // Alınabilir emirler üstte, sürenler ortada, alınanlar altta durur.
+      const orderedMissions = [...missionList].sort(
+        (left, right) => DAILY_MISSION_STATE_ORDER[dailyMissionState(left)]
+          - DAILY_MISSION_STATE_ORDER[dailyMissionState(right)]
+      );
+      for (const mission of orderedMissions) missions.appendChild(createDailyMissionCard(mission));
     }
+    const completedMissions = missionList.filter((mission) => mission.completed || mission.claimed).length;
+    setText("daily-mission-overview-copy", `${completedMissions} / ${missionList.length} emir tamamlandı`);
+    const missionOverview = document.getElementById("daily-mission-overview-meter");
+    if (missionOverview) {
+      missionOverview.setAttribute("aria-valuemax", String(missionList.length));
+      missionOverview.setAttribute("aria-valuenow", String(completedMissions));
+      missionOverview.style.setProperty(
+        "--mission-overview",
+        `${missionList.length ? Math.round((completedMissions / missionList.length) * 100) : 0}%`
+      );
+    }
+    updateDailyMissionReset();
 
     const rewards = document.getElementById("season-reward-track");
     if (rewards) {
       rewards.replaceChildren();
+      const premiumPass = engagement.premium_pass || {};
+      const premiumTrack = engagement.premiumRewardTrack || engagement.premium_reward_track || [];
+      const premiumStatus = document.getElementById("season-premium-status");
+      if (premiumStatus) {
+        premiumStatus.textContent = localizedUiText(premiumPass.status_tr || "");
+        premiumStatus.dataset.active = String(Boolean(premiumPass.active));
+        premiumStatus.hidden = !premiumPass.status_tr;
+      }
+      renderSeasonPremiumPurchase();
+      const seasonXp = Number(engagement.season_xp || 0);
       for (const reward of engagement.rewardTrack || []) {
-        const card = document.createElement("article");
-        card.className = "season-reward-card";
-        card.dataset.major = String(Boolean(reward.is_major));
-        card.dataset.state = reward.claimed
-          ? "claimed"
-          : reward.claimable
-            ? "claimable"
-            : "locked";
-        const tier = document.createElement("span");
-        tier.textContent = localizedMessage("season.tier_label", {tier:localizedNumber(reward.tier)});
-        const lanes = document.createElement("div");
-        lanes.className = "season-reward-lanes";
-        lanes.append(createSeasonRewardLane(reward), createSeasonRewardLane(reward, true));
+        const premium = premiumTrack.find((item) => Number(item.tier) === Number(reward.tier)) || null;
+        const row = document.createElement("article");
+        row.className = "season-pass-row";
+        row.dataset.major = String(Boolean(reward.is_major));
+        row.dataset.unlocked = String(seasonXp >= Number(reward.required_xp || 0));
+        const tier = document.createElement("header");
+        tier.className = "season-pass-tier";
+        const tierName = document.createElement("strong");
+        tierName.textContent = `KADEME ${reward.tier}`;
         const requirement = document.createElement("small");
-        requirement.textContent = localizedMessage("season.xp_unlock", {xp:localizedNumber(reward.required_xp)});
-        card.append(tier, lanes, requirement);
-        rewards.appendChild(card);
+        requirement.textContent = `${Number(reward.required_xp || 0).toLocaleString(uiLocale())} Deneyim`;
+        tier.append(tierName, requirement);
+        row.append(
+          tier,
+          seasonPassCell(reward, { tierNumber:reward.tier }),
+          seasonPassCell(premium, { premium:true, tierNumber:reward.tier, passActive:Boolean(premiumPass.active) })
+        );
+        rewards.appendChild(row);
       }
     }
 
     globalThis.GridshardI18n?.apply(document.documentElement.lang || "tr");
   }
 
-  function laboratoryRequestId(prefix) {
+  function operationRequestId(prefix) {
     const suffix = globalThis.crypto?.randomUUID
       ? globalThis.crypto.randomUUID()
       : `${Date.now()}-${Math.random().toString(16).slice(2)}`;
     return `${prefix}:${participantPlayerId}:${suffix}`;
   }
 
-  function renderLaboratoryModulePreview(module) {
-    const host = document.getElementById("laboratory-detail-icon");
-    if (!host || !module) return;
-
-    host.replaceChildren();
-    const card = document.createElement("div");
-    card.className = "pool-detail-preview-card laboratory-board-preview";
-    card.dataset.category = module.category || "";
-
-    const icon = document.createElement("span");
-    icon.className = "module-icon pool-detail-preview-icon";
-    icon.textContent = moduleIconFor({ nameTr: module.name_tr });
-    icon.setAttribute("aria-hidden", "true");
-
-    card.append(icon);
-
-    host.setAttribute(
-      "aria-label",
-      localizedMessage("laboratory.preview_aria", {name:localizedUiText(module.name_tr)})
-    );
-    host.appendChild(card);
-  }
-
-  function laboratoryStatSummary(stats) {
-    if (!stats) return localizedMessage("laboratory.maximum_calibration");
-    const parts = [];
-    if (Number(stats.base_damage) > 0) {
-      parts.push(localizedMessage("laboratory.damage", {value:localizedNumber(stats.base_damage, {minimumFractionDigits:1, maximumFractionDigits:1})}));
-    }
-    if (Number(stats.energy_generation) > 0) {
-      parts.push(localizedMessage("laboratory.generation", {value:localizedNumber(stats.energy_generation, {minimumFractionDigits:1, maximumFractionDigits:1})}));
-    }
-    if (Number(stats.energy_consumption) > 0) {
-      parts.push(localizedMessage("laboratory.consumption", {value:localizedNumber(stats.energy_consumption, {minimumFractionDigits:1, maximumFractionDigits:1})}));
-    }
-    if (Number(stats.cooldown_ms) > 0) {
-      parts.push(localizedMessage("laboratory.cooldown", {value:localizedNumber(Number(stats.cooldown_ms) / 1000, {minimumFractionDigits:1, maximumFractionDigits:1})}));
-    }
-    parts.push(localizedMessage("laboratory.hp", {value:localizedNumber(Math.round(Number(stats.max_hp || 0)))}));
-    return parts.join(" · ");
-  }
-
-  function renderLaboratory() {
-    const view = accountDataLoader.laboratory;
-    if (!view) return;
-    const modules = Array.isArray(view.modules) ? view.modules : [];
-    let selected = modules.find(
-      (module) => module.id === selectedLaboratoryModuleId
-    );
-    if (!selected) {
-      selected = modules[0] || null;
-      selectedLaboratoryModuleId = selected?.id || "";
-    }
-
-    const setText = (id, value) => {
-      const element = document.getElementById(id);
-      if (element) element.textContent = String(value);
-    };
-    setText("laboratory-flux-balance", view.flux_shards || 0);
-    setText("laboratory-invested-flux", localizedMessage("laboratory.invested", {flux:localizedNumber(view.invested_flux || 0)}));
-    setText("lobby-flux-shards", view.flux_shards || 0);
-    setText(
-      "lobby-laboratory-summary",
-      Number(view.calibrated_module_count || 0) > 0
-        ? localizedMessage("laboratory.calibrated_count", {count:localizedNumber(view.calibrated_module_count)})
-        : localizedMessage("laboratory.calibrate_favorites")
-    );
-
-    const list = document.getElementById("laboratory-module-list");
-    if (list) {
-      list.replaceChildren();
-      const categories = ["enerji", "saldırı", "savunma", "destek", "sabotaj"];
-      for (const category of categories) {
-        const groupModules = modules.filter((module) => module.category === category);
-        if (!groupModules.length) continue;
-        const group = document.createElement("section");
-        group.className = "laboratory-category-group";
-        group.dataset.category = category;
-        const heading = document.createElement("strong");
-        heading.textContent = localizedMessage("laboratory.category_count", {category:localizedUiText(groupModules[0].category_label), count:localizedNumber(groupModules.length)});
-        const grid = document.createElement("div");
-        for (const module of groupModules) {
-          const button = document.createElement("button");
-          button.type = "button";
-          button.dataset.laboratoryModule = module.id;
-          button.dataset.category = module.category;
-          button.className = "laboratory-module-card";
-          button.setAttribute(
-            "aria-pressed",
-            String(module.id === selectedLaboratoryModuleId)
-          );
-          if (module.id === selectedLaboratoryModuleId) {
-            button.classList.add("is-selected");
-          }
-          const icon = document.createElement("span");
-          icon.className = "laboratory-module-icon";
-          icon.textContent = moduleIconFor({ nameTr: module.name_tr });
-          const copy = document.createElement("span");
-          const name = document.createElement("strong");
-          name.textContent = localizedUiText(module.name_tr);
-          const level = document.createElement("small");
-          level.textContent = localizedMessage("module.level_range", {level:localizedNumber(module.level), max:localizedNumber(module.max_level)});
-          copy.append(name, level);
-          button.append(icon, copy);
-          grid.appendChild(button);
-        }
-        group.append(heading, grid);
-        list.appendChild(group);
-      }
-    }
-
-    if (selected) {
-      renderLaboratoryModulePreview(selected);
-      setText("laboratory-detail-category", String(localizedRecordText(selected, "category_label") || "").toLocaleUpperCase(document.documentElement.lang === "en" ? "en-US" : "tr-TR"));
-      setText("laboratory-detail-name", localizedUiText(selected.name_tr));
-      setText("laboratory-detail-role", localizedRecordText(selected, "strategic_role"));
-      setText("laboratory-detail-level", localizedMessage("module.level_range", {level:localizedNumber(selected.level), max:localizedNumber(selected.max_level)}));
-      setText("laboratory-detail-effect", localizedRecordText(selected, "experimental_effect"));
-      setText(
-        "laboratory-current-efficiency",
-        localizedMessage("laboratory.efficiency_percent", {percent:localizedNumber(selected.current_stats?.efficiency_bonus_percent || 0)})
-      );
-      setText("laboratory-current-stats", laboratoryStatSummary(selected.current_stats));
-      setText(
-        "laboratory-next-efficiency",
-        selected.next_stats
-          ? localizedMessage("laboratory.efficiency_percent", {percent:localizedNumber(selected.next_stats.efficiency_bonus_percent)})
-          : localizedMessage("laboratory.max_upper")
-      );
-      setText("laboratory-next-stats", laboratoryStatSummary(selected.next_stats));
-      const upgrade = document.getElementById("laboratory-upgrade-button");
-      if (upgrade) {
-        upgrade.dataset.moduleId = selected.id;
-        upgrade.disabled = !selected.can_upgrade;
-        upgrade.textContent = selected.next_cost == null
-          ? localizedMessage("laboratory.maximum_calibration")
-          : selected.can_upgrade
-            ? localizedMessage("laboratory.calibrate_cost", {flux:localizedNumber(selected.next_cost)})
-            : localizedMessage("laboratory.flux_required", {flux:localizedNumber(selected.next_cost)});
-      }
-    }
-
-    const history = document.getElementById("laboratory-transaction-list");
-    if (history) {
-      history.replaceChildren();
-      const transactions = Array.isArray(view.transactions) ? view.transactions : [];
-      if (!transactions.length) {
-        const empty = document.createElement("p");
-        empty.className = "laboratory-empty-state";
-        empty.textContent = localizedUiText("Henüz laboratuvar işlemi yok.");
-        history.appendChild(empty);
-      } else {
-        for (const transaction of transactions) {
-          const item = document.createElement("article");
-          item.dataset.kind = transaction.kind;
-          const copy = document.createElement("span");
-          const title = document.createElement("strong");
-          title.textContent = transaction.kind === "free_beta_reset"
-            ? localizedUiText("Ücretsiz Beta Sıfırlaması")
-            : localizedMessage("laboratory.transaction_level", {name:localizedUiText(transaction.module_name_tr), level:localizedNumber(transaction.level)});
-          const date = document.createElement("small");
-          date.textContent = localizedDate(transaction.created_at, {dateStyle:"medium", timeStyle:"short"});
-          copy.append(title, date);
-          const amount = document.createElement("strong");
-          amount.textContent = localizedMessage("currency.signed_flux", {sign:transaction.flux_delta > 0 ? "+" : "", amount:localizedNumber(transaction.flux_delta)});
-          item.append(copy, amount);
-          history.appendChild(item);
-        }
-      }
-    }
-
-    const reset = document.getElementById("laboratory-reset-button");
-    if (reset) reset.disabled = Number(view.invested_flux || 0) <= 0;
-    globalThis.GridshardI18n?.apply(document.documentElement.lang || "tr");
-  }
-
-  async function upgradeLaboratorySelection() {
-    const button = document.getElementById("laboratory-upgrade-button");
-    const status = document.getElementById("laboratory-action-status");
-    const moduleId = button?.dataset.moduleId;
-    if (!moduleId || button?.disabled) return;
-    button.disabled = true;
-    if (status) status.textContent = localizedMessage("laboratory.verifying_calibration");
-    const result = await accountDataLoader.upgradeLaboratoryModule(
-      moduleId,
-      laboratoryRequestId("upgrade")
-    );
-    renderLaboratory();
-    renderProfileSummary();
-    renderRemoteDataStatus();
-    if (status) {
-      status.textContent = result.ok
-        ? localizedMessage("laboratory.calibration_saved")
-        : (result.reason || localizedMessage("laboratory.calibration_failed"));
-      status.dataset.status = result.ok ? "success" : "error";
-    }
-  }
-
-  async function resetLaboratorySelection() {
-    const reset = document.getElementById("laboratory-reset-button");
-    const status = document.getElementById("laboratory-action-status");
-    if (reset?.disabled) return;
-    reset.disabled = true;
-    if (status) status.textContent = localizedMessage("laboratory.verifying_refund");
-    const result = await accountDataLoader.resetLaboratory(
-      laboratoryRequestId("reset")
-    );
-    renderLaboratory();
-    renderProfileSummary();
-    renderRemoteDataStatus();
-    if (status) {
-      status.textContent = result.ok
-        ? localizedMessage("laboratory.reset_refund", {flux:localizedNumber(result.payload.receipt.refund)})
-        : (result.reason || localizedMessage("laboratory.reset_failed"));
-      status.dataset.status = result.ok ? "success" : "error";
-    }
-  }
-
   async function claimEngagementReward(kind, id, button) {
+    const isSeasonTrack = kind === "tiers" || kind === "premium-tiers";
     const status = document.getElementById(
-      kind === "tiers" ? "season-action-status" : "daily-action-status"
+      isSeasonTrack ? "season-action-status" : "daily-action-status"
     );
-    const selectedReward = kind === "tiers"
-      ? profileState.viewModel()?.engagement?.rewardTrack?.find(
-          (reward) => String(reward.tier) === String(id)
-        )
+    const viewEngagement = profileState.viewModel()?.engagement || {};
+    const selectedReward = isSeasonTrack
+      ? (kind === "premium-tiers"
+          ? viewEngagement.premiumRewardTrack
+          : viewEngagement.rewardTrack
+        )?.find((reward) => String(reward.tier) === String(id))
       : null;
     const opensChest = Boolean(selectedReward?.chest_tier);
     if (opensChest) {
       showChestOpening({
         tier: selectedReward.chest_tier,
-        title: localizedMessage("season.tier_chest", {tier:localizedNumber(selectedReward.tier)}),
+        title: `Kademe ${selectedReward.tier} Sandığı`,
       });
     }
     if (button) button.disabled = true;
-    if (status) status.textContent = localizedMessage("reward.claiming");
+    if (status) status.textContent = "Ödül alınıyor…";
     const engagement = profileState.viewModel()?.engagement || {};
     const claimScope = kind === "missions"
       ? (engagement.daily_mission_day || new Date().toISOString().slice(0, 10))
       : kind === "login"
-        ? (engagement.daily_login?.month || new Date().toISOString().slice(0, 7))
+        ? (engagement.daily_login?.period || new Date().toISOString().slice(0, 10))
         : (engagement.season_id || "current");
     const requestId = `engagement:${participantPlayerId}:${claimScope}:${kind}:${id}`;
     const result = await accountDataLoader.claimEngagementReward(kind, id, requestId);
@@ -18124,16 +16520,24 @@ function saveHumanReviewLocalNote() {
     if (!result.ok && button) button.disabled = false;
     if (result.ok) {
       await loadMetaProgression();
-      if (result.payload?.season_chest_receipt) {
+      const premiumReceipts = result.payload?.season_chest_receipts || [];
+      if (premiumReceipts.length > 1) {
+        showBulkChestReveal({
+          receipts:premiumReceipts,
+          definition_id:premiumReceipts[0]?.definition_id,
+        });
+      } else if (premiumReceipts.length === 1) {
+        showChestReveal(premiumReceipts[0]);
+      } else if (result.payload?.season_chest_receipt) {
         showChestReveal(result.payload.season_chest_receipt);
       }
     } else if (opensChest) {
-      showChestFailure(result.reason || localizedMessage("season.chest_failed"));
+      showChestFailure(result.reason || "Sezon sandığı açılamadı.");
     }
     renderProfileSummary();
     renderRemoteDataStatus();
     if (status) {
-      status.textContent = result.ok ? "" : (result.reason || localizedMessage("reward.claim_failed"));
+      status.textContent = result.ok ? "" : (result.reason || "Ödül alınamadı.");
       status.dataset.status = result.ok ? "success" : "error";
     }
     return result;
@@ -18152,7 +16556,7 @@ function saveHumanReviewLocalNote() {
     const button = document.getElementById("profile-display-name-save");
     if (button?.disabled) return { ok:false, pending:true };
     if (button) button.disabled = true;
-    if (status) status.textContent = localizedMessage("profile.saving_name");
+    if (status) status.textContent = "Oyuncu adı kaydediliyor…";
 
     let result;
     try {
@@ -18164,10 +16568,10 @@ function saveHumanReviewLocalNote() {
     if (status) {
       status.textContent =
         result.ok
-          ? localizedMessage("profile.name_saved")
+          ? "Görünen ad kaydedildi"
           : (
               result.reason
-              || localizedMessage("profile.name_save_failed")
+              || "Görünen ad kaydedilemedi"
             );
     }
 
@@ -18185,21 +16589,8 @@ function saveHumanReviewLocalNote() {
     if (!host) { host = document.createElement("div"); host.id = "statistics-canon"; host.className = "statistics-canon"; summary.after(host); }
     host.replaceChildren();
     const matches = Math.max(1, Number(stats.matches || 0));
-    const entries = [
-      [localizedMessage("stats.trophies_peak"), `${localizedNumber(stats.current_trophies)} / ${localizedNumber(stats.highest_trophies)}`],
-      [localizedMessage("stats.arena_league"), localizedUiText(stats.rank)],
-      [localizedMessage("stats.longest_streak"), stats.longest_streak || 0],
-      [localizedMessage("stats.deployments_per_match"), localizedNumber((stats.deployments || 0) / matches, {minimumFractionDigits:1, maximumFractionDigits:1})],
-      [localizedMessage("stats.current_total_average"), `${localizedNumber(stats.current_spent || 0)} / ${localizedNumber((stats.current_spent || 0) / matches, {minimumFractionDigits:1, maximumFractionDigits:1})}`],
-      [localizedMessage("stats.core_power_uses"), stats.core_power_uses || 0],
-      [localizedMessage("stats.peak_damage"), stats.peak_damage || 0],
-      [localizedMessage("stats.unlocked_modules"), `${localizedNumber(stats.unlocked_modules)} / 36`],
-      [localizedMessage("stats.upgraded_modules"), stats.upgraded_modules],
-      [localizedMessage("stats.highest_module_level"), stats.highest_module_level],
-      [localizedMessage("stats.unlocked_cores"), `${localizedNumber(stats.unlocked_cores)} / 7`],
-      [localizedMessage("stats.opened_chests"), stats.opened_chests],
-    ];
-    for (const [id, count] of Object.entries(stats.cores || {})) entries.push([localizedUiText(metaProgressionState.cores?.types.find(c => c.id === id)?.name_tr || id), localizedPercent(Math.round(count / matches * 100))]);
+    const entries = [["🏆 / En yüksek", `${stats.current_trophies} / ${stats.highest_trophies}`], ["Arena / Lig", stats.rank], ["En uzun galibiyet serisi", stats.longest_streak || 0], ["Maç başı yerleştirme", ((stats.deployments || 0)/matches).toFixed(1)], ["Toplam / Ortalama Akım", `${stats.current_spent || 0} / ${((stats.current_spent || 0)/matches).toFixed(1)}`], ["Çekirdek gücü kullanımı", stats.core_power_uses || 0], ["En yüksek maç hasarı", stats.peak_damage || 0], ["Açılan modül", `${stats.unlocked_modules} / 36`], ["Yükseltilen modül", stats.upgraded_modules], ["En yüksek modül seviyesi", stats.highest_module_level], ["Açılan çekirdek", `${stats.unlocked_cores} / 7`], ["Açılan sandık", stats.opened_chests]];
+    for (const [id, count] of Object.entries(stats.cores || {})) entries.push([metaProgressionState.cores?.types.find(c => c.id === id)?.name_tr || id, `%${Math.round(count / matches * 100)}`]);
     for (const [name, value] of entries) { const card=document.createElement("div"), label=document.createElement("small"), number=document.createElement("strong"); label.textContent=name; number.textContent=String(value ?? 0); card.append(label,number); host.appendChild(card); }
   }
 
@@ -18216,7 +16607,12 @@ function saveHumanReviewLocalNote() {
       return;
     }
 
-    el.textContent=localizedMessage("stats.match_summary", {matches:localizedNumber(view.totalMatches), wins:localizedNumber(view.wins), losses:localizedNumber(view.losses), draws:localizedNumber(view.draws), rate:localizedNumber(view.winRatePercent)});
+    el.textContent =
+      `Maç ${view.totalMatches} · `
+      + `Galibiyet ${view.wins} · `
+      + `Mağlubiyet ${view.losses} · `
+      + `Beraberlik ${view.draws} · `
+      + `Galibiyet %${view.winRatePercent}`;
 
     const language =
       document.documentElement.lang === "en"
@@ -18231,11 +16627,11 @@ function saveHumanReviewLocalNote() {
         Math.round(Number(value || 0) / 1000)
       );
       if (seconds < 60) {
-        return localizedMessage("time.seconds_short", {count:localizedNumber(seconds)});
+        return `${seconds} sn`;
       }
       const minutes = Math.floor(seconds / 60);
       const remainder = seconds % 60;
-      return localizedMessage("time.minutes_seconds_short", {minutes:localizedNumber(minutes), seconds:localizedNumber(remainder)});
+      return `${minutes} dk ${remainder} sn`;
     };
     const setValue = (id, value) => {
       const target = document.getElementById(id);
@@ -18245,19 +16641,14 @@ function saveHumanReviewLocalNote() {
     setValue("statistics-total-matches", number(view.totalMatches));
     setValue(
       "statistics-record",
-      localizedMessage("stats.win_loss_draw_record", {wins:number(view.wins), losses:number(view.losses), draws:number(view.draws)})
+      `${number(view.wins)}G · ${number(view.losses)}M · ${number(view.draws)}B`
     );
-    setValue("statistics-win-rate", localizedPercent(view.winRatePercent));
+    setValue("statistics-win-rate", `%${number(view.winRatePercent)}`);
     setValue(
       "statistics-average-duration",
       duration(view.averageMatchDurationMs)
     );
     setValue("statistics-total-damage", number(view.totalDamageDealt));
-    setValue(
-      "statistics-module-replacements",
-      number(view.moduleReplacements)
-    );
-    setValue("statistics-boosters-used", number(view.boostersUsed));
 
     const deckList = document.getElementById("statistics-most-used-decks");
     if (!deckList) return;
@@ -18276,11 +16667,7 @@ function saveHumanReviewLocalNote() {
       const card = document.createElement("article");
       card.className = "statistics-deck-card";
       const heading = document.createElement("div");
-      const title=document.createElement("strong");
-      title.textContent=localizedMessage("deck.numbered", {number:localizedNumber(index + 1)});
-      const count=document.createElement("small");
-      count.textContent=localizedMessage("match.count", {count:Number(deck.matches || 0)});
-      heading.replaceChildren(title,count);
+      heading.innerHTML = `<strong>${index + 1}. DESTE</strong><small>${number(deck.matches)} maç</small>`;
       const strip = document.createElement("div");
       strip.className = "statistics-deck-strip";
       for (const definitionId of deck.module_ids || []) {
@@ -18301,7 +16688,6 @@ function saveHumanReviewLocalNote() {
     renderShelf();
     renderBoard();
     renderLockState();
-    updateTapPlacementState();
   }
 
   let renderedShelfSignature = null;
@@ -18326,35 +16712,6 @@ function saveHumanReviewLocalNote() {
     };
   }
 
-  function localizedMessage(key, params = {}) {
-    return globalThis.GridshardI18n?.t(key, params, document.documentElement.lang) || key;
-  }
-
-  function apiErrorCodeForStatus(status) {
-    return ({400:"bad_request",401:"unauthorized",403:"forbidden",404:"not_found",409:"conflict",410:"gone",422:"invalid_request",429:"rate_limited",500:"internal_error",502:"unavailable",503:"unavailable",504:"timeout"})[status] || "request_failed";
-  }
-
-  function localizedApiError(payload, status) {
-    const candidate = String(payload?.code || apiErrorCodeForStatus(status));
-    const code = /^[a-z][a-z0-9_]{0,63}$/u.test(candidate) ? candidate : "request_failed";
-    const key = `error.${code}`;
-    const translated = localizedMessage(key, {status});
-    return translated === key ? localizedMessage("error.request_failed", {status}) : translated;
-  }
-
-  function localizedNumber(value, options = {}) {
-    return globalThis.GridshardI18n?.formatNumber(value, options, document.documentElement.lang)
-      || String(value);
-  }
-
-  function localizedPercent(percent) {
-    return localizedNumber(Number(percent || 0) / 100, {style:"percent", maximumFractionDigits:0});
-  }
-
-  function localizedDate(value, options = {}) {
-    return globalThis.GridshardI18n?.formatDate(value, options, document.documentElement.lang) || "";
-  }
-
   const LIVE_UTILITY_CATEGORIES = new Set([
     "savunma", "destek", "enerji", "sabotaj",
   ]);
@@ -18371,22 +16728,20 @@ function saveHumanReviewLocalNote() {
     const active = [...client.modules.values()].filter((candidate) => (
       candidate.status === "active"
       && Number(candidate.hp || 0) > 0
-      && !["core", "generator"].includes(
-        candidate.definitionId || clientDefinitionId(candidate.instanceId)
-      )
+      && (candidate.definitionId || clientDefinitionId(candidate.instanceId)) !== "core"
     ));
     const sameDefinitionCount = active.filter((candidate) => (
       (candidate.definitionId || clientDefinitionId(candidate.instanceId)) === definitionId
     )).length;
     if (sameDefinitionCount >= 2) {
-      return localizedMessage("pool.copy_limit", {name:localizedUiText(module.nameTr)});
+      return `${module.nameTr} için aynı anda en fazla 2 kopya kullanılabilir.`;
     }
     const categoryCount = active.filter(
       (candidate) => candidate.category === module.category
     ).length;
     const categoryLimit = LIVE_CATEGORY_LIMITS[module.category];
     if (categoryCount >= categoryLimit) {
-      return localizedMessage("pool.category_limit", {category:poolCategoryLabel(module.category), count:localizedNumber(categoryCount), limit:localizedNumber(categoryLimit)});
+      return `${poolCategoryLabel(module.category)} sınırı dolu: ${categoryCount}/${categoryLimit}.`;
     }
     const attackCount = active.filter(
       (candidate) => candidate.category === "saldırı"
@@ -18407,20 +16762,13 @@ function saveHumanReviewLocalNote() {
       renderShelf();
       return false;
     }
-    telemetryDispatcher.trackModuleShelfUsed({
-      module_id: module.instanceId,
-      elapsed_ms: client.elapsedMs,
-    });
     const result = client.deployDefinition(
       module.definitionId || clientDefinitionId(module.instanceId),
-      module.circuitCreditCost
+      module.currentCost
     );
     if (!result.ok) {
-      const deploymentError = result.code
-        ? localizedMessage(`deployment.${result.code}`, result.details || {})
-        : localizedMessage("error.request_failed", {status:""});
-      logClientMessage(deploymentError);
-      if (result.code === "insufficient_current") {
+      logClientMessage(result.reason);
+      if (String(result.reason).includes("Akım")) {
         flashInsufficientCredits();
       }
       renderShelf();
@@ -18428,7 +16776,7 @@ function saveHumanReviewLocalNote() {
     }
     trackBattleUiInteraction("deploy_module", "module_place");
     logClientMessage(
-      localizedMessage("pool.server_placing", {name:localizedUiText(module.nameTr)})
+      `${module.nameTr} için sunucu uygun hücreyi seçiyor.`
     );
     renderShelf();
     return true;
@@ -18440,12 +16788,11 @@ function saveHumanReviewLocalNote() {
     card.className = "module-card deck-module-card";
     card.dataset.moduleId = module.instanceId;
     card.dataset.category = module.category || "";
-    card.dataset.rarity = (metaProgressionState?.module_collection || []).find((item) => item.definition_id === module.definitionId)?.rarity || module.rarity || "common";
     card.disabled = !enabled;
     card.setAttribute("aria-disabled", String(!enabled));
     card.title = enabled
-      ? localizedMessage("pool.place_hint", {name:localizedUiText(module.nameTr), cost:localizedNumber(module.circuitCreditCost)})
-      : compositionRejection || localizedMessage("pool.cannot_place_hint", {name:localizedUiText(module.nameTr), cost:localizedNumber(module.circuitCreditCost)});
+      ? `${module.nameTr} · ${module.currentCost} Akım · Tıkla, sistem yerleştirsin`
+      : compositionRejection || `${module.nameTr} · ${module.currentCost} Akım · Yetersiz Akım veya devre dolu`;
 
     const icon = document.createElement("span");
     icon.className = "module-icon";
@@ -18457,12 +16804,12 @@ function saveHumanReviewLocalNote() {
     stats.className = "module-stats";
     const cost = document.createElement("span");
     cost.className = "module-stat credit";
-    cost.textContent = localizedMessage("currency.current", {amount:localizedNumber(module.circuitCreditCost)});
+    cost.textContent = `${module.currentCost} Akım`;
     stats.append(cost);
     card.append(icon, name, stats);
     const currentBadge = document.createElement("span");
     currentBadge.className = "current-cost-badge";
-    currentBadge.textContent = `ϟ ${module.circuitCreditCost}`;
+    currentBadge.textContent = `ϟ ${module.currentCost}`;
     card.appendChild(currentBadge);
     card.addEventListener("click", () => deployDeckModule(module));
     return card;
@@ -18472,7 +16819,7 @@ function saveHumanReviewLocalNote() {
     const placement = modulePlacementSlotState();
     const deckModules = battlePoolSelection.selectedIds().map(id => client.modules.get(id)).filter(Boolean);
     const discounted = Number(client.currentDiscountRemaining || 0) > 0;
-    const costFor = m => Math.max(1, Number(m.currentCost ?? m.circuitCreditCost) - (discounted ? 1 : 0));
+    const costFor = m => Math.max(1, Number(m.currentCost) - (discounted ? 1 : 0));
     const signature = JSON.stringify([
       placement.ready,
       client.circuitCredits,
@@ -18499,8 +16846,11 @@ function saveHumanReviewLocalNote() {
       const compositionRejection = deploymentCompositionRejection(module);
       const enabled = placement.ready && client.circuitCredits >= cost && !compositionRejection;
       const card = createDeckModuleCard(module, enabled, compositionRejection);
-      if (enabled && cost !== module.circuitCreditCost) {
-        card.title = localizedMessage("pool.place_hint", {name:localizedUiText(module.nameTr), cost:localizedNumber(cost)});
+      // Akımı yeten kart aktif, yetmeyen ya da yerleşemeyen kart pasif görünür.
+      card.dataset.affordable = String(client.circuitCredits >= cost);
+      card.dataset.playable = String(enabled);
+      if (enabled && cost !== module.currentCost) {
+        card.title = `${module.nameTr} · ${cost} Akım · Tıkla, sistem yerleştirsin`;
       }
       const badge = card.querySelector(".current-cost-badge");
       if (badge) badge.textContent = `ϟ ${cost}`;
@@ -18514,7 +16864,6 @@ function saveHumanReviewLocalNote() {
   ) {
     const boardSignature = JSON.stringify({
       battleFinished:localBattleFinished,
-      selectedBoosterId:boosterTargetMode.selectedBoosterId,
       corePowerTargeting,
       cellDebris:playerCellDebris,
       modules:[...client.modules.values()].map(module => ({
@@ -18529,7 +16878,7 @@ function saveHumanReviewLocalNote() {
         energyRequired:module.energyRequired,
         powerReason:module.powerReason,
         debuffs:module.debuffs,
-        temporaryBoosters:module.temporaryBoosters,
+        signatureBadges:module.signatureBadges,
       })),
     });
     if (!force && boardSignature === renderedBoardSignature) {
@@ -18567,8 +16916,7 @@ function saveHumanReviewLocalNote() {
     card.dataset.category =
       module.category || "";
     const hasTargetInteraction = Boolean(
-      boosterTargetMode.selectedBoosterId
-      || (module.nameTr === "Çekirdek" && corePowerTargeting)
+      module.nameTr === "Çekirdek" && corePowerTargeting
     );
     if (hasTargetInteraction) {
       card.tabIndex = 0;
@@ -18576,19 +16924,19 @@ function saveHumanReviewLocalNote() {
     }
 
     if (
-      module.movable === false
+      module.definitionId === "core"
     ) {
       card.classList.add(
         "fixed-module"
       );
       card.title =
-        localizedMessage("pool.fixed_start_module", {name:localizedUiText(module.nameTr)});
+        `${module.nameTr} sabit başlangıç modülüdür.`;
     } else {
-      card.title = localizedMessage("pool.fixed_during_battle", {name:localizedUiText(module.nameTr)});
+      card.title = `${module.nameTr} · savaş sırasında sabit`;
     }
     if (module.nameTr === "Çekirdek" && corePowerTargeting) {
       card.classList.add("core-power-target");
-      card.title=localizedUiText("Çekirdek Rezonansını kullan");
+      card.title="Çekirdek Rezonansını kullan";
     }
 
     const icon=
@@ -18601,12 +16949,12 @@ function saveHumanReviewLocalNote() {
       moduleIconFor(module);
     icon.setAttribute(
       "aria-label",
-      localizedUiText(module.nameTr)
+      module.nameTr
     );
 
     const name = document.createElement("span");
     name.className = "name";
-    name.textContent = localizedUiText(module.nameTr);
+    name.textContent = module.nameTr;
 
     const stats =
       document.createElement("span");
@@ -18617,18 +16965,20 @@ function saveHumanReviewLocalNote() {
       document.createElement("span");
     hp.className =
       "module-stat hp";
-    hp.textContent =localizedMessage("battle.module_hp", {hp:localizedNumber(module.hp), max:localizedNumber(module.maxHp)});
+    hp.textContent =
+      `HP ${module.hp}/${module.maxHp}`;
     stats.appendChild(hp);
 
     if (
       module.status === "reserve"
-      && module.circuitCreditCost > 0
+      && module.currentCost > 0
     ) {
       const cost =
         document.createElement("span");
       cost.className =
         "module-stat credit";
-      cost.textContent =localizedMessage("currency.credits_short", {amount:localizedNumber(module.circuitCreditCost)});
+      cost.textContent =
+        `${module.currentCost} Akım`;
       stats.appendChild(cost);
     }
 
@@ -18639,7 +16989,10 @@ function saveHumanReviewLocalNote() {
         "module-stat energy";
       power.textContent =
         Number(module.energyRequired || 0) > 0
-          ? localizedMessage("battle.energy_received_required", {received:localizedNumber(Math.round(module.energyReceived || 0)), required:localizedNumber(Math.round(module.energyRequired || 0))})
+          ? (
+              `E ${Number(module.energyReceived || 0).toFixed(0)}`
+              + `/${Number(module.energyRequired || 0).toFixed(0)}`
+            )
           : "Pasif";
       stats.appendChild(power);
 
@@ -18731,17 +17084,7 @@ function saveHumanReviewLocalNote() {
         }
       );
       appendModuleLiveStatus(card, module);
-    }
-
-    if (
-      boosterTargetMode.selectedBoosterId
-      && module.status === "active"
-    ) {
-      card.classList.add(
-        isBoosterTargetEligible(module)
-          ? "booster-target"
-          : "booster-target-ineligible"
-      );
+      if (module.definitionId !== "core") appendModuleHeatBar(card, module);
     }
 
     card.addEventListener(
@@ -18752,13 +17095,9 @@ function saveHumanReviewLocalNote() {
           useCorePowerOn(module);
           return;
         }
-        if (boosterTargetMode.selectedBoosterId) {
-          tryApplySelectedBooster(module);
-          return;
-        }
         if (module.status === "reserve") {
           if (!modulePlacementSlotState().ready) {
-            logClientMessage("Yeni modül yerleştirme hakkı için geri sayımı bekleyin.");
+            logClientMessage("Devre dolu; boş hücre açılınca yerleştirebilirsin.");
             return;
           }
           deployDeckModule(module);
@@ -18782,385 +17121,6 @@ function saveHumanReviewLocalNote() {
     return card;
   }
 
-  function applyMockServerCommand(command) {
-    // Alpha.6: Bu katman yalnızca UI demosu için sahte sunucu cevabıdır.
-    // Gerçek savaş içi Akım otoritesi Python savaş motorundadır.
-    if (localBattleFinished) {
-      logClientMessage(
-        "Maç tamamlandı; savaş komutları kilitli."
-      );
-      return;
-    }
-
-    if (command.kind === "send_battle_emoji") {
-      presentBattleEmoji(participantPlayerId, command.payload.emoji_id);
-      return;
-    }
-
-    if (command.kind === "use_core_power") {
-      const core=client.modules.get("core-1");
-      if (!corePowerReady || !core || core.hp >= core.maxHp) {
-        logClientMessage(
-          !corePowerReady
-            ? "Çekirdek Gücü henüz dolmadı."
-            : "Çekirdek zaten tam canlı; dolum korunuyor."
-        );
-        return;
-      }
-      core.hp=Math.min(core.maxHp,core.hp + 45);
-      corePowerCharge=0;
-      corePowerReady=false;
-      corePowerTargeting=false;
-      triggerGridshardCue("shield_activate");
-      logClientMessage("Çekirdek Rezonansı kullanıldı · +45 CAN sınırı.");
-      renderCorePowerControl();
-      renderBoard({force:true});
-      return;
-    }
-
-    const moduleCost = (moduleId) =>
-      client.requireModule(moduleId).circuitCreditCost || 0;
-    const deployTemplate = command.kind === "deploy_module"
-      ? clientModuleForDefinitionId(command.payload.definition_id)
-      : null;
-
-    let cost = 0;
-    if (command.kind === "deploy_module") {
-      if (!deployTemplate) {
-        logClientMessage("Deste kartı istemcide bulunamadı.");
-        client.clearPendingPlacements();
-        return;
-      }
-      cost = Number(deployTemplate.circuitCreditCost || 0);
-    } else if (command.kind === "place_module") {
-      cost = moduleCost(command.payload.module_id);
-    } else if (command.kind === "move_module") {
-      cost = 10;
-    } else if (command.kind === "swap_modules") {
-      cost = 10;
-    } else if (command.kind === "replace_module") {
-      cost = moduleCost(command.payload.incoming_module_id);
-    }
-
-    if (mockServerCredits < cost) {
-      logClientMessage(
-        localizedMessage("deployment.insufficient_current", {required:localizedNumber(cost), available:localizedNumber(mockServerCredits)})
-      );
-      flashInsufficientCredits();
-      return;
-    }
-
-    mockServerCredits -= cost;
-    client.applyServerEconomyState({ circuitCredits: mockServerCredits });
-
-    if (
-      activePlayMode === "local"
-      && localBattleStarted
-      && !localBattleFinished
-    ) {
-      if (command.kind === "place_module") {
-        trackBattleUiInteraction(
-          command.kind,
-          "module_place"
-        );
-      } else if (
-        command.kind === "move_module"
-        || command.kind === "swap_modules"
-      ) {
-        const movedModule=
-          client.requireModule(
-            command.payload.module_id
-          );
-        trackBattleUiInteraction(
-          command.kind,
-          command.kind === "move_module"
-          && movedModule.instanceId
-          === "generator-1"
-            ? "generator_gate"
-            : "module_move"
-        );
-      }
-    }
-
-    if (
-      activePlayMode === "local"
-      && localBattleMetrics
-      && cost > 0
-    ) {
-      localBattleMetrics.credits_spent += cost;
-      telemetryDispatcher.track(
-        "circuit_credit_spent",
-        {
-          amount:cost,
-          command_kind:command.kind,
-          elapsed_ms:client.elapsedMs,
-        }
-      );
-    }
-
-    if (command.kind === "deploy_module") {
-      const occupied = new Set(
-        [...client.modules.values()]
-          .filter((module) => module.status === "active" && module.position)
-          .map((module) => `${module.position.x},${module.position.y}`)
-      );
-      const candidates = BOARD_CELLS.filter(([x, y]) => {
-        const key = `${x},${y}`;
-        if (key === "2,1" || occupied.has(key)) return false;
-        const special = SPECIAL_CELL_INFO[key];
-        if (special?.definitionId && special.definitionId !== deployTemplate.definitionId) return false;
-        if (special?.category && special.category !== deployTemplate.category) return false;
-        const cell = board.querySelector(`[data-x="${x}"][data-y="${y}"]`);
-        return cell?.dataset.debris !== "true";
-      });
-      const validPlacements = candidates.map(([x, y]) => ({ x, y }));
-      const requestedPosition = (
-        Number.isInteger(command.payload.x)
-        && Number.isInteger(command.payload.y)
-      )
-        ? { x:command.payload.x, y:command.payload.y }
-        : null;
-      const selected = requestedPosition
-        ? validPlacements.find(
-            ({ x, y }) => x === requestedPosition.x && y === requestedPosition.y
-          ) || null
-        : (
-            validPlacements.length
-              ? validPlacements[Math.floor(Math.random() * validPlacements.length)]
-              : null
-          );
-      if (!selected) {
-        mockServerCredits += cost;
-        client.applyServerEconomyState({ circuitCredits:mockServerCredits });
-        client.clearPendingPlacements();
-        logClientMessage("Bu kart için enerjiye bağlı uygun boş hücre bulunamadı.");
-        render();
-        renderCredits();
-        return;
-      }
-      const instanceId = `mock-${deployTemplate.definitionId}-${Date.now()}`;
-      client.registerModule({
-        ...deployTemplate,
-        instanceId,
-        isDeckTemplate:false,
-        status:"active",
-        position:{x:selected.x, y:selected.y},
-        hp:deployTemplate.maxHp,
-      });
-      client.clearPendingPlacements();
-      triggerGridshardCue("energy_transfer");
-    } else if (command.kind === "place_module") {
-      const module = client.requireModule(command.payload.module_id);
-      client.applyServerModuleState({
-        instanceId: module.instanceId,
-        status: "active",
-        position: { x: command.payload.x, y: command.payload.y },
-      });
-      triggerGridshardCue("energy_transfer");
-    } else if (command.kind === "move_module") {
-      const module = client.requireModule(command.payload.module_id);
-      const previousPosition =
-        module.position
-          ? {...module.position}
-          : null;
-
-      client.applyServerModuleState({
-        instanceId: module.instanceId,
-        position: { x: command.payload.x, y: command.payload.y },
-      });
-
-      if (
-        activePlayMode === "local"
-        && localBattleMetrics
-      ) {
-        localBattleMetrics.module_changes += 1;
-
-        if (module.instanceId === "generator-1") {
-          localBattleMetrics.generator_moves += 1;
-          const toGate=generatorGateName(module.position);
-          localBattleMetrics.generator_gate_visits[toGate] =
-            (localBattleMetrics.generator_gate_visits[toGate] || 0) + 1;
-
-          const active=[...client.modules.values()]
-            .filter((item)=>item.status==="active");
-          const connected=connectedEnergyModuleIds(active);
-          const poweredSpecialCount=active.filter(
-            (item)=>
-              item.position
-              && SPECIAL_CELL_INFO[`${item.position.x},${item.position.y}`]
-              && connected.has(item.instanceId)
-          ).length;
-
-          telemetryDispatcher.trackGeneratorGateMoved({
-            from_gate:generatorGateName(previousPosition),
-            to_gate:toGate,
-            elapsed_ms:client.elapsedMs,
-            connected_module_count:connected.size,
-            powered_special_cell_count:poweredSpecialCount,
-          });
-          triggerGridshardCue(
-            "generator_move"
-          );
-        }
-      }
-    } else if (command.kind === "swap_modules") {
-      const first = client.requireModule(
-        command.payload.module_id
-      );
-      const second = client.requireModule(
-        command.payload.target_module_id
-      );
-      const firstPosition = first.position
-        ? {...first.position}
-        : null;
-      const secondPosition = second.position
-        ? {...second.position}
-        : null;
-      if (!firstPosition || !secondPosition) {
-        logClientMessage(
-          "Yer değiştirilecek modüllerin konumu bulunamadı."
-        );
-        return;
-      }
-      client.applyServerModuleState({
-        instanceId:first.instanceId,
-        position:secondPosition,
-        isPowered:false,
-      });
-      client.applyServerModuleState({
-        instanceId:second.instanceId,
-        position:firstPosition,
-        isPowered:false,
-      });
-      if (localBattleMetrics) {
-        localBattleMetrics.module_changes += 1;
-      }
-    } else if (command.kind === "remove_module") {
-      const module = client.requireModule(command.payload.module_id);
-      client.applyServerModuleState({
-        instanceId: module.instanceId,
-        status: "reserve",
-        position: null,
-      });
-    } else if (command.kind === "replace_module") {
-      const outgoing = client.requireModule(command.payload.outgoing_module_id);
-      const incoming = client.requireModule(command.payload.incoming_module_id);
-      const position = outgoing.position;
-      client.applyServerModuleState({
-        instanceId: outgoing.instanceId,
-        status: "reserve",
-        position: null,
-      });
-      client.applyServerModuleState({
-        instanceId: incoming.instanceId,
-        status: "active",
-        position,
-      });
-    }
-
-    if (
-      activePlayMode === "local"
-      && localBattleMetrics
-      && [
-        "deploy_module",
-        "place_module",
-        "remove_module",
-        "replace_module",
-      ].includes(command.kind)
-    ) {
-      localBattleMetrics.module_changes += 1;
-    }
-
-    render();
-    renderCredits();
-  }
-
-  function updateMockServerPassiveCredits(elapsedMs) {
-    const regenPulses = Math.floor(elapsedMs / 2500);
-    if (regenPulses <= mockServerRegenPulses) return;
-
-    const gainedPulses = regenPulses - mockServerRegenPulses;
-    mockServerCredits = Math.min(12, mockServerCredits + gainedPulses);
-    mockServerRegenPulses = regenPulses;
-    client.applyServerEconomyState({ circuitCredits: mockServerCredits });
-  }
-
-  function connectedEnergyModuleIds(active) {
-    // Gömülü devre yolları her dolu hücreyi besler; kart yönü güç aktarımını
-    // etkilemez.
-    return new Set(active.map((module) => module.instanceId));
-  }
-
-  function updateMockEnergy() {
-    const active = [...client.modules.values()].filter(
-      (module) => module.status === "active"
-    );
-    const connected = connectedEnergyModuleIds(active);
-
-    const generated = active.some(
-      (module) => module.nameTr === "Çekirdek"
-    ) ? 10 : 0;
-
-    const demandByName = {
-      "Lazer": 3,
-      "Darbe Topu": 5,
-      "Ray Topu": 6,
-      "Kalkan": 2,
-      "Yansıtıcı": 2,
-      "Bariyer": 1,
-      "Onarım Modülü": 2,
-      "Soğutucu": 1,
-      "Güçlendirici": 1,
-      "Hedefleme Bilgisayarı": 1,
-      "EMP": 4,
-      "Sinyal Bozucu": 3,
-      "Füze Fırlatıcı": 5,
-      "Dron Üssü": 4,
-      "Ark Topu": 5,
-      "Aşırı Hızlandırıcı": 2,
-      "Virüs": 3,
-      "Enerji Sömürücü": 3,
-      "Kesici": 4,
-    };
-
-    let available =
-      generated *
-      (active.some((module) => module.nameTr === "Dağıtıcı")
-        ? 0.98
-        : 0.90);
-
-    let totalDemand = 0;
-
-    for (const module of active) {
-      const demand = demandByName[module.nameTr] || 0;
-      module.energyRequired = demand;
-      totalDemand += demand;
-
-      if (!connected.has(module.instanceId) && demand > 0) {
-        module.energyReceived = 0;
-        module.isPowered = false;
-      } else if (demand <= 0) {
-        module.energyReceived =
-          module.nameTr === "Jeneratör"
-            ? generated
-            : 0;
-        module.isPowered =
-          connected.has(module.instanceId) ||
-          module.nameTr === "Çekirdek";
-      } else if (available >= demand) {
-        available -= demand;
-        module.energyReceived = demand;
-        module.isPowered = true;
-      } else {
-        module.energyReceived = 0;
-        module.isPowered = false;
-      }
-    }
-
-    energySummaryEl.textContent =
-      localizedMessage("battle.energy_generation_demand", {generated:localizedNumber(generated, {minimumFractionDigits:1, maximumFractionDigits:1}), demand:localizedNumber(totalDemand, {minimumFractionDigits:1, maximumFractionDigits:1})});
-  }
-
   function sabotageLabelForModule(module) {
     if (module.nameTr === "EMP") return "Enerji Kesme";
     if (module.nameTr === "Sinyal Bozucu") return "Destek Susturma";
@@ -19172,9 +17132,9 @@ function saveHumanReviewLocalNote() {
 
   function heatStatusLabel(module) {
     const heat = Number(module.heat || 0);
-    if (heat >= 100) return localizedMessage("battle.heat_critical", {heat:localizedNumber(heat.toFixed(0))});
-    if (heat >= 70) return localizedMessage("battle.heat_high", {heat:localizedNumber(heat.toFixed(0))});
-    return localizedMessage("battle.heat", {heat:localizedNumber(heat.toFixed(0))});
+    if (heat >= 100) return `KRİTİK ISI ${heat.toFixed(0)}`;
+    if (heat >= 70) return `YÜKSEK ISI ${heat.toFixed(0)}`;
+    return `Isı ${heat.toFixed(0)}`;
   }
 
   function supportLabelForModule(module) {
@@ -19186,280 +17146,9 @@ function saveHumanReviewLocalNote() {
     return "";
   }
 
-  function updateMockBattleResult() {
-    if (
-      activePlayMode !== "local"
-    ) {
-      return;
-    }
-
-    if (mockEnemyCoreHp > 0) {
-      if (
-        battleResultSummaryEl
-        && !localBattleFinished
-      ) {
-        battleResultSummaryEl.textContent =
-          "Maç sürüyor";
-      }
-      return;
-    }
-
-    finishLocalBattle({
-      won:true,
-    });
-  }
-
-  function updateMockCombat() {
-    if (
-      activePlayMode !== "local"
-      || localBattleFinished
-    ) {
-      return;
-    }
-
-    const currentSecond=
-      Math.floor(
-        client.elapsedMs / 1000
-      );
-    if (
-      currentSecond
-      === previousCombatSecond
-    ) {
-      return;
-    }
-    previousCombatSecond=
-      currentSecond;
-
-    const attackers=[
-      ...client.modules.values(),
-    ]
-      .filter(
-        (module)=>
-          module.status === "active"
-          && module.category === "saldırı"
-          && module.isPowered
-          && Number(module.hp||0)>0
-      )
-      .sort(
-        (a,b)=>
-          a.instanceId.localeCompare(
-            b.instanceId
-          )
-      );
-
-    if (!attackers.length) {
-      return;
-    }
-
-    const damageByName={
-      "Lazer":12,
-      "Darbe Topu":32,
-      "Ray Topu":40,
-      "Füze Fırlatıcı":28,
-      "Dron Üssü":8,
-      "Ark Topu":20,
-    };
-    const cooldownSeconds={
-      "Lazer":1,
-      "Darbe Topu":3,
-      "Ray Topu":4,
-      "Füze Fırlatıcı":3,
-      "Dron Üssü":1,
-      "Ark Topu":2,
-    };
-
-    for (const attacker of attackers) {
-      const last=
-        mockAttackerLastAttack.get(
-          attacker.instanceId
-        );
-      const cooldown=
-        cooldownSeconds[
-          attacker.nameTr
-        ] || 2;
-
-      if (
-        last !== undefined
-        && currentSecond-last
-          < cooldown
-      ) {
-        continue;
-      }
-
-      const rawDamage=
-        damageByName[
-          attacker.nameTr
-        ] || 0;
-      if (rawDamage<=0) {
-        continue;
-      }
-
-      mockAttackerLastAttack.set(
-        attacker.instanceId,
-        currentSecond
-      );
-
-      const targetModule=
-        selectMockEnemyTarget();
-
-      let targetName=
-        targetModule
-          ? `Rakip ${targetModule.name}`
-          : (
-              mockEnemyGeneratorHp>0
-                ? "Rakip Jeneratör"
-                : "Rakip Çekirdek"
-            );
-      let defenseType="Yok";
-      let reducedDamage=0;
-      let finalDamage=rawDamage;
-
-      if (
-        targetModule
-        && targetModule.name
-          === "Kalkan"
-      ) {
-        defenseType="Kalkan";
-        finalDamage=Math.max(
-          1,
-          Math.round(
-            rawDamage*0.65
-          )
-        );
-        reducedDamage=
-          rawDamage-finalDamage;
-      }
-
-      if (targetModule) {
-        targetModule.hp=Math.max(
-          0,
-          targetModule.hp
-          - finalDamage
-        );
-      } else if (
-        mockEnemyGeneratorHp>0
-      ) {
-        mockEnemyGeneratorHp=
-          Math.max(
-            0,
-            mockEnemyGeneratorHp
-            - finalDamage
-          );
-      } else {
-        mockEnemyCoreHp=
-          Math.max(
-            0,
-            mockEnemyCoreHp
-            - finalDamage
-          );
-      }
-
-      const targetDomId=
-        targetModule
-          ? targetModule.id
-          : (
-              targetName
-              === "Rakip Jeneratör"
-                ? "enemy-generator"
-                : "enemy-core"
-            );
-      const attackerDefinitionId=
-        clientDefinitionId(
-          attacker.instanceId
-        );
-      emitFloatingBattleFeedback(
-        targetDomId,
-        `-${finalDamage}`,
-        "damage",
-        { core: targetDomId === "enemy-core" }
-      );
-      setBattleLiveTicker(
-        localizedMessage("battle.mock_attack_ticker", {attacker:localizedUiText(attacker.nameTr), target:targetModule ? localizedMessage("battle.enemy_module", {name:localizedUiText(targetModule.name)}) : localizedUiText(targetName), damage:localizedNumber(finalDamage)}),
-        "attack"
-      );
-      const travelMs=emitDuelAttackEffect(
-        attacker.instanceId,
-        targetDomId,
-        defenseType === "Kalkan"
-          ? "shield"
-          : "attack",
-        attackerDefinitionId
-      );
-
-      mockEnemyModuleHp=
-        enemyLivingModules()
-          .reduce(
-            (sum,module)=>
-              sum+module.hp,
-            0
-          );
-
-      triggerGridshardCue(
-        weaponCue(
-          attackerDefinitionId
-        )
-      );
-      scheduleAttackImpactCue({
-        defended:
-          defenseType === "Kalkan",
-        targetDefinitionId:
-          targetName === "Rakip Çekirdek"
-            ? "core"
-            : targetModule?.definitionId,
-        travelMs,
-      });
-
-      if (localBattleMetrics) {
-        localBattleMetrics
-      .damage_dealt +=
-            finalDamage;
-        localBattleMetrics.damage_by_module[attackerDefinitionId] =
-          Number(localBattleMetrics.damage_by_module[attackerDefinitionId] || 0)
-          + finalDamage;
-        localBattleMetrics
-          .player_attacks += 1;
-        telemetryDispatcher
-          .trackLocalPlayerAttack({
-            attacker:
-              attacker.nameTr,
-            target:
-              targetName,
-            damage:
-              finalDamage,
-            elapsed_ms:
-              client.elapsedMs,
-          });
-      }
-
-      commandLog.push({
-        atMs:client.elapsedMs,
-        kind:
-          "attack_performed",
-        attacker:
-          attacker.nameTr,
-        target:targetName,
-        rawDamage,
-        reducedDamage,
-        damage:finalDamage,
-        defenseType,
-      });
-
-      if (mockEnemyCoreHp<=0) {
-        break;
-      }
-    }
-
-    combatSummaryEl.textContent=
-      localizedMessage("battle.mock_enemy_hp", {module:localizedNumber(mockEnemyModuleHp), core:localizedNumber(mockEnemyCoreHp)});
-
-    renderEnemyBoard();
-    updateMockBattleResult();
-    renderLog();
-  }
-
   function renderCredits() {
     const battleValue = document.getElementById("credit-indicator-value");
-    if (battleValue) battleValue.textContent = localizedMessage("battle.current_meter", {current:localizedNumber(client.circuitCredits)});
+    if (battleValue) battleValue.textContent = `Akım: ${client.circuitCredits} / 12`;
     if (shelfCreditIndicatorEl) {
       const value = document.getElementById("shelf-credit-value");
       if (value) value.textContent = `${client.circuitCredits} / 12`;
@@ -19479,7 +17168,9 @@ function saveHumanReviewLocalNote() {
   function renderCapacity() {
     if (!capacityEl) return;
     const placement = modulePlacementSlotState();
-    capacityEl.textContent = localizedMessage("battle.circuit_capacity", {active:localizedNumber(placement.active), limit:localizedNumber(placement.currentLimit)});
+    capacityEl.textContent = localizedUiText(
+      `Devrede ${placement.active} / ${placement.currentLimit}`
+    );
     capacityEl.dataset.state = placement.available > 0 ? "ready" : "complete";
     capacityEl.classList.remove("capacity-opened");
     previousCapacity = placement.currentLimit;
@@ -19493,7 +17184,7 @@ function saveHumanReviewLocalNote() {
         "Maç Bitti";
       if (shelfHelp) {
         shelfHelp.textContent =
-          "Savaş tamamlandı; modül hareketleri kilitlendi.";
+          "Savaş tamamlandı; yeni kart basılamaz.";
       }
       return;
     }
@@ -19501,7 +17192,7 @@ function saveHumanReviewLocalNote() {
     const placement = modulePlacementSlotState();
     const affordable = battlePoolSelection.selectedIds().some((instanceId) => {
       const module = client.modules.get(instanceId);
-      return module && client.circuitCredits >= Number(module.circuitCreditCost || 0);
+      return module && client.circuitCredits >= Number(module.currentCost || 0);
     });
     const unlocked = placement.ready && affordable;
     lockLabel.dataset.active = String(unlocked);
@@ -19523,66 +17214,74 @@ function saveHumanReviewLocalNote() {
     if (entry.kind === "attack_performed") {
       const reduced = Number(entry.reducedDamage ?? 0);
       const defense = entry.defenseType ?? "Yok";
-      return localizedMessage("battle.damage_log", {attacker:localizedUiText(entry.attacker), target:localizedUiText(entry.target), damage:localizedNumber(entry.damage), reduction:reduced > 0 ? localizedMessage("battle.damage_reduction_suffix", {amount:localizedNumber(reduced)}) : "", defense:localizedUiText(defense)});
+      return `${entry.attacker} → ${entry.target} · Final ${entry.damage}${reduced > 0 ? ` · Azaltılan ${reduced}` : ""} · Savunma ${defense}`;
     }
     if (entry.kind === "damage_reflected") {
-      return localizedMessage("battle.reflected_damage", {damage:localizedNumber(entry.damage)});
+      return `Yansıtılan hasar · ${entry.damage}`;
     }
     if (entry.kind === "module_repaired") {
-      return localizedMessage("battle.repair_event", {repair:localizedNumber(entry.repair)});
+      return `Onarım · +${entry.repair} Can`;
     }
     if (entry.kind === "module_cooled") {
-      return localizedMessage("battle.cooling_event", {before:localizedNumber(Math.round(entry.heatBefore)), after:localizedNumber(Math.round(entry.heatAfter))});
+      return `Soğutma · Isı ${Math.round(entry.heatBefore)} → ${Math.round(entry.heatAfter)}`;
     }
     if (entry.kind === "module_overclocked") {
-      return localizedMessage("battle.overclocked");
+      return `Aşırı Hızlandırma · saldırı temposu arttı`;
     }
     if (entry.kind === "module_heat_changed") {
       const before = Number(entry.heatBefore || 0);
       const after = Number(entry.heatAfter || 0);
       if (Math.abs(after - before) < 10) return "";
-      return localizedMessage("battle.heat_event", {before:localizedNumber(Math.round(before)), after:localizedNumber(Math.round(after))});
+      return `Isı · ${Math.round(before)} → ${Math.round(after)}`;
     }
     if (entry.kind === "module_overheated") {
-      return localizedMessage("battle.overload_self_damage", {damage:localizedNumber(entry.selfDamage)});
+      return `AŞIRI YÜK · ${entry.selfDamage} öz hasar`;
     }
     if (entry.kind === "attack_skipped_overheated") {
-      return localizedMessage("battle.attack_blocked_overheat");
+      return `Saldırı engellendi: kritik ısı`;
     }
     if (entry.kind === "sabotage_applied") {
-      return localizedMessage("battle.sabotage_event", {effect:localizedUiText(entry.effectId || entry.effect_id)});
+      return `Sabotaj uygulandı · ${entry.effectId || entry.effect_id}`;
     }
     if (entry.kind === "virus_damage") {
-      return localizedMessage("battle.virus_damage", {damage:localizedNumber(entry.damage)});
+      return `Virüs: ${entry.damage} hasar`;
     }
     if (entry.kind === "support_skipped_jammed") {
-      return localizedMessage("battle.support_jammed");
+      return `Destek engellendi · Sinyal Bozma`;
     }
     if (entry.kind === "sabotage_resisted") {
-      return localizedMessage("battle.sabotage_resisted");
+      return `Sabotaj direnci çalıştı`;
     }
     if (entry.kind === "sabotage_blocked") {
-      return localizedMessage("battle.sabotage_blocked");
+      return `Sabotaj engellendi`;
     }
     if (entry.kind === "sabotage_cleansed") {
-      return localizedMessage("battle.sabotage_cleansed", {effect:localizedUiText(entry.effectId || entry.effect_id)});
+      return `Sabotaj temizlendi · ${entry.effectId || entry.effect_id}`;
     }
     if (entry.kind === "sabotage_duration_reduced") {
-      return localizedMessage("battle.sabotage_reduced");
+      return `Sabotaj süresi azaltıldı`;
     }
     if (entry.kind === "battle_finished") {
-      if (entry.isDraw || entry.is_draw) return localizedMessage("battle.match_draw");
-      return localizedMessage("battle.match_winner", {winner:entry.winnerPlayerId || entry.winner_player_id});
+      if (entry.isDraw || entry.is_draw) return `MAÇ BİTTİ · Berabere`;
+      return `MAÇ BİTTİ · Kazanan ${entry.winnerPlayerId || entry.winner_player_id}`;
     }
     if (entry.kind === "module_damaged") {
-      return localizedMessage("battle.damage_ticker", {name:localizedUiText(entry.moduleName || "Modül"), damage:localizedNumber(entry.damage)});
+      return `${entry.moduleName || "Modül"} · -${entry.damage} Can`;
     }
     if (entry.kind === "client_notice") {
-      return localizedMessage("battle.client_notice", {message:localizedUiText(entry.payload?.message || "")});
+      return `Bilgi · ${entry.payload?.message || ""}`;
     }
     if (entry.kind === "battle_forfeited") {
-      return localizedMessage("battle.forfeited");
+      return `Savaş bırakıldı`;
     }
+    const commandLabels = {
+      deploy_module: "Modül yerleştirme isteği",
+      use_core_power: "Çekirdek gücü kullanıldı",
+      send_battle_emoji: "Savaş emojisi gönderildi",
+      set_battle_pool: "Savaş Havuzu ayarlandı",
+      quick_test_battle_pool: "Hızlı test havuzu yüklendi",
+    };
+    if (commandLabels[entry.kind]) return commandLabels[entry.kind];
     return String(entry.kind || "Olay").replaceAll("_", " ");
   }
 
@@ -19669,35 +17368,10 @@ function saveHumanReviewLocalNote() {
         lastBattleAnimationNow=now;
       }
 
-      if (
-        localBattleStarted
-        && !localBattleFinished
-        && !localServerAuthoritative
-      ) {
-        elapsedMs =
-          Math.max(
-            0,
-            (
-              now
-              - battleStartedAt
-            )
-            * gridshardE2eTimeScale
-          );
-        client.updateElapsedMs(
-          elapsedMs
-        );
-        updateMockServerPassiveCredits(
-          elapsedMs
-        );
-        corePowerCharge=Math.min(100,(elapsedMs / 35000) * 100);
-        corePowerReady=corePowerCharge >= 100;
-        renderCorePowerControl();
-      } else {
-        // Sunucu otoritesinde snapshot zamanı kullanılır; sonuçtan sonra
-        // son değer korunarak sayaç kesin biçimde dondurulur.
-        elapsedMs=
-          client.elapsedMs;
-      }
+      // Sayaç her zaman sunucu anlık görüntüsünü izler; sonuçtan sonra
+      // son değer korunarak kesin biçimde dondurulur.
+      elapsedMs=
+        client.elapsedMs;
     } else if (
       activePlayMode
       === "idle"
@@ -19723,11 +17397,6 @@ function saveHumanReviewLocalNote() {
       === "local"
       && !localBattleFinished
     ) {
-      if (!localServerAuthoritative) {
-        updateMockEnergy();
-        updateMockCombat();
-        updateLocalEnemyCombat();
-      }
       renderEnemyBoard();
       publishBattleUxMetrics();
     }
@@ -19827,59 +17496,6 @@ function saveHumanReviewLocalNote() {
     );
   }
 
-  const humanReviewNoteSaveEl =
-    document.getElementById(
-      "human-review-note-save"
-    );
-  if (humanReviewNoteSaveEl) {
-    humanReviewNoteSaveEl.addEventListener(
-      "click",
-      saveHumanReviewLocalNote
-    );
-  }
-
-  const humanReviewNoteClearEl =
-    document.getElementById(
-      "human-review-note-clear"
-    );
-  if (humanReviewNoteClearEl) {
-    humanReviewNoteClearEl.addEventListener(
-      "click",
-      () => {
-        const field=
-          document.getElementById(
-            "human-review-decision-note"
-          );
-        try {
-          localStorage.removeItem(
-            HUMAN_REVIEW_NOTE_KEY
-          );
-        } catch (_error) {}
-        if (field) {
-          field.value="";
-        }
-        const stateField=
-          document.getElementById(
-            "human-review-decision-state"
-          );
-        if (stateField) {
-          stateField.value=
-            "none";
-        }
-        const status=
-          document.getElementById(
-            "human-review-note-status"
-          );
-        if (status) {
-          status.textContent=
-            "Yerel inceleme taslağı temizlendi";
-        }
-      }
-    );
-  }
-
-  loadHumanReviewLocalNote();
-
   const presetDialog = document.getElementById("battle-pool-preset-dialog");
   document.getElementById("battle-pool-preset-open")?.addEventListener(
     "click",
@@ -19902,19 +17518,6 @@ function saveHumanReviewLocalNote() {
     }
   );
 
-  const humanReviewRefreshEl =
-    document.getElementById(
-      "human-review-refresh"
-    );
-  if (humanReviewRefreshEl) {
-    humanReviewRefreshEl.addEventListener(
-      "click",
-      () => {
-        loadHumanReviewQueue();
-      }
-    );
-  }
-
   for (const button of document.querySelectorAll("[data-ai-archetype]")) {
     button.addEventListener("click",() => {
       setSelectedAiArchetype(button.dataset.aiArchetype);
@@ -19924,19 +17527,6 @@ function saveHumanReviewLocalNote() {
     });
   }
   renderAiArchetypePicker();
-
-  const balanceDraftRefreshEl =
-    document.getElementById(
-      "balance-draft-refresh"
-    );
-  if (balanceDraftRefreshEl) {
-    balanceDraftRefreshEl.addEventListener(
-      "click",
-      () => {
-        loadBalanceDraft();
-      }
-    );
-  }
 
   const localBattleQuickStartButton=
     document.getElementById(
@@ -20046,6 +17636,10 @@ function saveHumanReviewLocalNote() {
     if (!button || button.disabled) return;
     claimEngagementReward("missions", button.dataset.missionClaim, button);
   });
+  // Açık günlük emir ekranında yenilenme sayacı dakikada bir güncellenir.
+  window.setInterval(() => {
+    if (document.body.dataset.appScreen === "daily-missions") updateDailyMissionReset();
+  }, 30000);
 
   const monthlyLoginTrack = document.getElementById("monthly-login-track");
   monthlyLoginTrack?.addEventListener("click", (event) => {
@@ -20056,23 +17650,15 @@ function saveHumanReviewLocalNote() {
 
   const seasonRewardTrack = document.getElementById("season-reward-track");
   seasonRewardTrack?.addEventListener("click", (event) => {
+    const premiumButton = event.target.closest("[data-premium-tier-claim]");
+    if (premiumButton && !premiumButton.disabled) {
+      claimEngagementReward("premium-tiers", premiumButton.dataset.premiumTierClaim, premiumButton);
+      return;
+    }
     const button = event.target.closest("[data-tier-claim]");
     if (!button || button.disabled) return;
     claimEngagementReward("tiers", button.dataset.tierClaim, button);
   });
-
-  const laboratoryModuleList = document.getElementById("laboratory-module-list");
-  laboratoryModuleList?.addEventListener("click", (event) => {
-    const button = event.target.closest("[data-laboratory-module]");
-    if (!button) return;
-    selectedLaboratoryModuleId = button.dataset.laboratoryModule;
-    renderLaboratory();
-  });
-
-  document.getElementById("laboratory-upgrade-button")
-    ?.addEventListener("click", upgradeLaboratorySelection);
-  document.getElementById("laboratory-reset-button")
-    ?.addEventListener("click", resetLaboratorySelection);
 
   function previewAudioSettingsFromControls() {
     const sound=
@@ -20239,6 +17825,8 @@ function saveHumanReviewLocalNote() {
   }
 
   function returnHomeAfterMatch() {
+    // Sunum sıfırlaması ilerleme sonucunu da temizlediği için önce alınır.
+    const progression = progressionState.viewModel();
     postMatchSync.clear();
     pvpConnection.disconnect();
     pvpState.reset();
@@ -20248,6 +17836,7 @@ function saveHumanReviewLocalNote() {
     renderPlayModeUi();
     void loadSocialView();
     void loadTeamView();
+    void presentArenaRewardEarnedInMatch(progression);
   }
 
   document.getElementById("post-match-continue")?.addEventListener(
@@ -20394,7 +17983,7 @@ function saveHumanReviewLocalNote() {
       return;
     }
     homeMatchmakingCancelPending = true;
-    if (button) { button.disabled = true; button.textContent = localizedMessage("matchmaking.cancelling"); }
+    if (button) { button.disabled = true; button.textContent = "İPTAL EDİLİYOR…"; }
     await onlinePlay.cancel();
     // İptal yerelde anlıktır. Önceki /join isteği ağda sürse bile yeni
     // SAVAŞ dokunuşunu kilitlememeli; koordinatör yeni başlangıcı sunucu
@@ -20411,20 +18000,71 @@ function saveHumanReviewLocalNote() {
   });
 
   const arenaDetailDialog = document.getElementById("arena-detail-dialog");
-  document.getElementById("home-arena-card")?.addEventListener("click", () => {
+  // focusNodeId verilirse yol o ödül durağına kaydırılır ve durak vurgulanır;
+  // verilmezse oyuncunun bulunduğu aşama ortalanır.
+  function openArenaDetail({ focusNodeId = "" } = {}) {
+    highlightedArenaNodeId = focusNodeId;
     renderHomeArena();
+    const status = document.getElementById("arena-reward-status");
+    if (status) status.textContent = "";
     if (arenaDetailDialog?.showModal && !arenaDetailDialog.open) arenaDetailDialog.showModal();
     else arenaDetailDialog?.setAttribute("open", "");
     if (arenaDetailDialog) arenaDetailDialog.scrollTop = 0;
     const path = document.getElementById("arena-path");
+    if (!path) return;
+    const node = focusNodeId
+      ? [...path.querySelectorAll("[data-arena-node-id]")]
+        .find((item) => item.dataset.arenaNodeId === focusNodeId)
+      : null;
+    if (node) {
+      // getBoundingClientRect düzeni hemen hesaplar; kare beklemeye gerek yok.
+      const pathBox = path.getBoundingClientRect();
+      const nodeBox = node.getBoundingClientRect();
+      path.scrollTop = Math.max(0, path.scrollTop + nodeBox.top - pathBox.top
+        - ((path.clientHeight - nodeBox.height) / 2));
+      node.focus({ preventScroll:true });
+      return;
+    }
     requestAnimationFrame(() => {
-      const current = path?.querySelector(".arena-path-stage.is-current");
-      if (!path || !current) return;
+      const current = path.querySelector(".arena-path-stage.is-current");
+      if (!current) return;
       path.scrollTop = Math.max(0, current.offsetHeight >= path.clientHeight
         ? current.offsetTop
         : current.offsetTop - ((path.clientHeight - current.offsetHeight) / 2));
     });
+  }
+  arenaDetailDialog?.addEventListener("close", () => {
+    highlightedArenaNodeId = "";
   });
+
+  // PvP'de kazanılan kupalar Devre Yolu'nda yeni bir ödül durağı açtıysa ana
+  // ekrana dönüşte önce o durak gösterilir. Bilgi notu yazılmaz; kazanılan
+  // durak kendi parıltısıyla öne çıkar (canon.css .is-new-reward).
+  async function presentArenaRewardEarnedInMatch(progression) {
+    const before = Number(progression?.ratingBefore);
+    const after = Number(progression?.ratingAfter);
+    if (!Number.isFinite(before) || !Number.isFinite(after) || after <= before) return false;
+    await loadMetaProgression();
+    if (document.body.dataset.appScreen !== "menu" || arenaDetailDialog?.open) return false;
+    const earned = [
+      ...(metaProgressionState?.arena_path || []),
+      ...(metaProgressionState?.rank_stages || []),
+    ]
+      .flatMap((stage) => stage.nodes || [])
+      .filter((node) => (
+        node.claimable === true
+        && node.claimed !== true
+        && Object.keys(node.rewards || {}).length > 0
+        && Number(node.trophies) > before
+        && Number(node.trophies) <= after
+      ))
+      .sort((left, right) => Number(left.trophies) - Number(right.trophies));
+    if (!earned.length) return false;
+    openArenaDetail({ focusNodeId:String(earned[0].id) });
+    return true;
+  }
+
+  document.getElementById("home-arena-card")?.addEventListener("click", () => openArenaDetail());
   document.getElementById("arena-detail-close")?.addEventListener("click", () => {
     if (arenaDetailDialog?.close) arenaDetailDialog.close();
     else arenaDetailDialog?.removeAttribute("open");
@@ -20476,7 +18116,7 @@ function saveHumanReviewLocalNote() {
     }
   });
   document.getElementById("public-profile-block")?.addEventListener("click", async () => {
-    if (!activePublicProfileId || !window.confirm("Bu oyuncuyu engellemek ve arkadaşlıktan çıkarmak istiyor musun?")) return;
+    if (!activePublicProfileId || !window.confirm(localizedUiText("Bu oyuncuyu engellemek ve arkadaşlıktan çıkarmak istiyor musun?"))) return;
     const status = document.getElementById("public-profile-status");
     try {
       socialState = (await requestJsonWithDeadline(
@@ -20492,7 +18132,7 @@ function saveHumanReviewLocalNote() {
   });
   document.getElementById("public-profile-report")?.addEventListener("click", async () => {
     if (!activePublicProfileId) return;
-    const detail = window.prompt("Şikâyet nedenini kısaca yaz:", "uygunsuz davranış");
+    const detail = window.prompt(localizedUiText("Şikâyet nedenini kısaca yaz:"), localizedUiText("uygunsuz davranış"));
     if (!detail) return;
     const status = document.getElementById("public-profile-status");
     try {
@@ -20507,6 +18147,15 @@ function saveHumanReviewLocalNote() {
     }
   });
   document.getElementById("reward-inbox-button")?.addEventListener("click", () => loadRewardInbox({ open:true }));
+  document.getElementById("season-premium-buy")?.addEventListener("click", () => {
+    void purchasePaidProduct("season_pass_premium", { status:document.getElementById("season-action-status") });
+  });
+  document.getElementById("post-match-premium-buy")?.addEventListener("click", () => {
+    void purchasePaidProduct("battle_rewards_premium", { status:document.getElementById("post-match-store-status") });
+  });
+  document.getElementById("post-match-ad-button")?.addEventListener("click", () => void watchRewardAd());
+  // Deneme reklamı süresi dolmadan kapatılamaz; ödül yalnız izleme bitince istenir.
+  document.getElementById("reward-ad-dialog")?.addEventListener("cancel", (event) => event.preventDefault());
   document.getElementById("reward-inbox-close")?.addEventListener("click", () => document.getElementById("reward-inbox-dialog")?.close());
   document.getElementById("team-profile-close")?.addEventListener("click", closeTeamProfile);
   document.getElementById("profile-clan-title")?.addEventListener("click", (event) => {
@@ -20540,6 +18189,7 @@ function saveHumanReviewLocalNote() {
     else dialog?.removeAttribute("open");
   });
 
+  /* build:development-only */
   if (
     typeof window
     !== "undefined"
@@ -20557,7 +18207,6 @@ function saveHumanReviewLocalNote() {
         || null,
       getBattleEventState:() => ({
         effects:battleEffectAggregator?.snapshot?.() || [],
-        booster:boosterTargetMode.snapshot?.() || null,
         audio:{
           state:audioStateOwner?.currentState || null,
           terminalState:audioStateOwner?.terminalState || null,
@@ -20566,16 +18215,6 @@ function saveHumanReviewLocalNote() {
       }),
       emitFloatingFeedback:(moduleId, text, variant="neutral") =>
         emitFloatingBattleFeedback(moduleId, text, variant),
-      selectBoosterForTest:(boosterId) => {
-        const known = BOOSTER_OPTIONS.some((booster) => booster.id === boosterId);
-        if (!known) return { ok:false, reason:"unknown_booster" };
-        boosterOfferOpen = true;
-        activeBoosterOfferIds = new Set([boosterId]);
-        selectBoosterTargetMode(boosterId, "test_api");
-        renderBoosterOptions();
-        renderBoard({ force:true });
-        return { ok:true, state:boosterTargetMode.snapshot?.() || null };
-      },
       deployModule:(definitionId) => {
         const module = clientModuleForDefinitionId(definitionId);
         return Boolean(module && deployDeckModule(module));
@@ -20607,6 +18246,7 @@ function saveHumanReviewLocalNote() {
       }),
     };
   }
+  /* /build:development-only */
 
   tutorialController = new GridshardTutorialController({
     root: document.getElementById("tutorial-overlay"),
@@ -20663,7 +18303,6 @@ function saveHumanReviewLocalNote() {
   renderParticipantIdentity();
   renderParticipantBootstrapStatus();
   bootstrapParticipant();
-  renderBoosterOptions();
   createBoard();
   render();
   renderCapacity();

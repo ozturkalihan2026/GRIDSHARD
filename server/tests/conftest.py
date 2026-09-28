@@ -14,9 +14,8 @@ TEST_DATA_DIR = Path(tempfile.gettempdir()) / f"gridshard-pytest-{os.getpid()}"
 os.environ.setdefault("RELAY_PLAYER_DATA_PATH", str(TEST_DATA_DIR / "players.json"))
 os.environ.setdefault("RELAY_TELEMETRY_PATH", str(TEST_DATA_DIR / "telemetry.json"))
 os.environ.setdefault("RELAY_BATTLE_POOL_PRESET_PATH", str(TEST_DATA_DIR / "presets.json"))
-os.environ.setdefault("RELAY_BALANCE_CHANGE_DRAFT_PATH", str(TEST_DATA_DIR / "balance-drafts.json"))
 os.environ.setdefault("GRIDSHARD_AUTH_IDENTITY_PATH", str(TEST_DATA_DIR / "identities.json"))
 os.environ.setdefault("GRIDSHARD_AUTH_KEY_PATH", str(TEST_DATA_DIR / "auth-signing-key"))
-os.environ.setdefault("GRIDSHARD_PLATFORM_STATE_PATH", str(TEST_DATA_DIR / "platform.json"))
-# Unit/integration suites must not contact notification providers with real keys.
-os.environ["GRIDSHARD_PUSH_ENABLED"] = "0"
+# Platform deposu (cihazlar, bildirimler, doğrudan mesajlar) da geçici alanda
+# kalır; aksi hâlde testler server/data/platform_state.json'a hesap yazar.
+os.environ.setdefault("GRIDSHARD_PLATFORM_STATE_PATH", str(TEST_DATA_DIR / "platform_state.json"))

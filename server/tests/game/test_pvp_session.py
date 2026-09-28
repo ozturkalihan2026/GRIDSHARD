@@ -1,5 +1,6 @@
 import pytest
 
+from app.game.battle_pool import default_battle_pool
 from app.game.models import (
     BattleCommand,
 )
@@ -77,8 +78,8 @@ def test_impersonation_command_is_rejected():
             "alice",
             BattleCommand(
                 "bob",
-                "move_module",
-                {"module_id": "bob-gen", "x": 2, "y": 3},
+                "deploy_module",
+                {"definition_id": "laser"},
             ),
         )
 
@@ -87,31 +88,22 @@ def test_authenticated_command_uses_real_engine_queue():
     service, session = setup_service()
     install_minimal_board(session, "alice")
     install_minimal_board(session, "bob")
-    module = session.engine.grant_module("alice", "alice-laser", "laser")
-    session.engine.set_initial_active_module("alice", module.instance_id, 0, 0)
+    session.engine.set_battle_pool("alice", default_battle_pool().module_definition_ids)
     service.start("pvp-1")
-
-    # 15 saniye sonrası gerçek komut doğrulaması için state'i ilerlet.
-    session.engine.state.elapsed_ms = 15_000
-    session.engine.state.tick = 150
-    session.engine.state.players["alice"].circuit_credits = 20
+    session.engine.state.players["alice"].circuit_credits = 12
 
     service.submit_command(
         "pvp-1",
         "alice",
         BattleCommand(
             "alice",
-            "move_module",
-            {
-                "module_id": "alice-laser",
-                "x": 1,
-                "y": 0,
-            },
+            "deploy_module",
+            {"definition_id": "laser"},
         ),
     )
     service.step("pvp-1")
 
-    assert any(event.type == "module_moved" for event in session.engine.state.events)
+    assert any(event.type == "module_placed" for event in session.engine.state.events)
 
 
 def test_snapshot_hides_opponent_private_economy():

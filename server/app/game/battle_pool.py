@@ -1,11 +1,16 @@
-from .catalog import PLAYER_SELECTABLE_MODULE_IDS
+from .catalog import PLAYER_SELECTABLE_MODULE_IDS, get_module_definition
 from ..arena_canon import STARTER_IDS
 from .models import BattlePool
 
 
 BATTLE_POOL_SIZE = 6
-DECK_EXCLUDED_MODULE_IDS = frozenset({"core", "generator"})
+DECK_EXCLUDED_MODULE_IDS = frozenset({"core"})
 DEFAULT_BATTLE_POOL_IDS = STARTER_IDS
+ATTACK_CATEGORY = "saldırı"
+
+
+def _is_attack_card(module_id: str) -> bool:
+    return get_module_definition(module_id).category == ATTACK_CATEGORY
 
 
 class BattlePoolValidationError(ValueError):
@@ -33,6 +38,12 @@ def validate_battle_pool(module_definition_ids: list[str] | tuple[str, ...]) -> 
             + ", ".join(sorted(invalid))
         )
 
+    # Sabotaj Çekirdeği hedefleyemez; saldırısız deste maçı hiç bitiremez.
+    if not any(_is_attack_card(module_id) for module_id in module_ids):
+        raise BattlePoolValidationError(
+            "Savaş Destesi en az bir saldırı kartı içermelidir."
+        )
+
     return BattlePool(module_definition_ids=module_ids)
 
 
@@ -43,7 +54,7 @@ def default_battle_pool() -> BattlePool:
 def migrate_battle_pool(
     module_definition_ids: list[str] | tuple[str, ...] | None,
 ) -> BattlePool:
-    """Project legacy 18-card pools to a valid six-card deck without data loss."""
+    """Kayıtlı desteyi geçerli altılı desteye indirger; kaldırılmış kartları atıp varsayılanla tamamlar."""
     selectable = set(PLAYER_SELECTABLE_MODULE_IDS) - DECK_EXCLUDED_MODULE_IDS
     selected: list[str] = []
     for module_id in module_definition_ids or ():
@@ -59,4 +70,8 @@ def migrate_battle_pool(
             selected.append(module_id)
         if len(selected) == BATTLE_POOL_SIZE:
             break
+    if not any(_is_attack_card(module_id) for module_id in selected):
+        # Eski kayıtlı saldırısız desteler ilk varsayılan saldırı kartını alır.
+        attack = next(module_id for module_id in DEFAULT_BATTLE_POOL_IDS if _is_attack_card(module_id))
+        selected[-1] = attack
     return validate_battle_pool(selected)

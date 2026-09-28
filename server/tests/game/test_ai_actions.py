@@ -1,4 +1,4 @@
-from app.game.ai import build_ai_action_plan, enqueue_ai_actions
+from app.game.ai import build_ai_action_plan, choose_deploy_definition, enqueue_ai_actions
 from app.game.ai_archetypes import get_ai_archetype
 from app.game.engine import BattleEngine
 from app.game.models import BattleCommand, BattleState
@@ -6,10 +6,7 @@ from app.game.models import BattleCommand, BattleState
 
 def setup_engine(archetype_id="balanced") -> BattleEngine:
     engine = BattleEngine(BattleState(battle_id="ai-actions"))
-    for player_id, gate_y in (
-        ("ai", 2),
-        ("opponent", 0),
-    ):
+    for player_id in ("ai", "opponent"):
         engine.add_player(player_id)
         deck = (
             get_ai_archetype(archetype_id).battle_pool_ids
@@ -20,10 +17,6 @@ def setup_engine(archetype_id="balanced") -> BattleEngine:
         engine.grant_module(player_id, f"{player_id}-core", "core")
         engine.set_initial_active_module(
             player_id, f"{player_id}-core", 2, 1
-        )
-        engine.grant_module(player_id, f"{player_id}-gen", "generator")
-        engine.set_initial_active_module(
-            player_id, f"{player_id}-gen", 2, gate_y
         )
     engine.start()
     return engine
@@ -50,8 +43,8 @@ def test_ai_deploy_command_is_processed_by_real_engine():
         for module in engine.state.players["ai"].modules.values()
         if module.status.value == "active"
     ]
-    assert len(active) == 3
-    assert any(module.definition.id not in {"core", "generator"} for module in active)
+    assert len(active) == 2
+    assert any(module.definition.id != "core" for module in active)
 
 
 def test_ai_waits_when_no_card_is_affordable():
@@ -60,13 +53,49 @@ def test_ai_waits_when_no_card_is_affordable():
     assert build_ai_action_plan(engine, "ai", "opponent") is None
 
 
-def test_ai_does_not_use_boosters_when_feature_is_disabled():
-    engine = setup_engine()
-    engine.enqueue_command(BattleCommand(
-        "ai",
-        "use_booster",
-        {"offer_id": "x", "booster_id": "x", "target_module_id": "ai-core"},
-    ))
+ROTATION_DECK = ("laser", "drone_bay", "missile_launcher", "pulse_cannon", "amplifier", "overclock_unit")
+
+
+def rotation_engine() -> BattleEngine:
+    engine = BattleEngine(BattleState(battle_id="ai-rotation"))
+    for player_id in ("ai", "opponent"):
+        engine.add_player(player_id)
+        engine.set_battle_pool(player_id, ROTATION_DECK)
+        engine.grant_module(player_id, f"{player_id}-core", "core")
+        engine.set_initial_active_module(player_id, f"{player_id}-core", 2, 1)
+    engine.start()
+    return engine
+
+
+def test_ai_rotates_deck_cards_even_after_they_die():
+    engine = rotation_engine()
+    ai = engine.state.players["ai"]
+    picks = []
+    for _ in range(6):
+        ai.circuit_credits = 12
+        pick = choose_deploy_definition(ai, engine.state.players["opponent"])
+        picks.append(pick)
+        engine.enqueue_command(BattleCommand("ai", "deploy_module", {"definition_id": pick}))
+        engine.step()
+        placed = [m for m in ai.modules.values() if m.definition.id == pick][-1]
+        engine.apply_damage("ai", placed.instance_id, placed.hp)
+
+    # Ölen kart da geçmişte sayılır: aynı kart art arda basılmaz, deste döner.
+    assert all(first != second for first, second in zip(picks, picks[1:]))
+    assert len(set(picks)) >= 3
+
+
+def test_ai_waits_briefly_for_a_better_card_only_when_an_attack_is_live():
+    engine = rotation_engine()
+    ai = engine.state.players["ai"]
+    ai.circuit_credits = 3
+    # Sahada saldırı yokken beklemez; ucuz saldırıyı hemen basar.
+    assert choose_deploy_definition(ai, engine.state.players["opponent"]) is not None
+
+    ai.circuit_credits = 12
+    engine.enqueue_command(BattleCommand("ai", "deploy_module", {"definition_id": "laser"}))
     engine.step()
-    assert engine.state.events[-1].type == "command_rejected"
-    assert "kapalı" in engine.state.events[-1].data["reason"]
+    ai.circuit_credits = 3
+    assert choose_deploy_definition(ai, engine.state.players["opponent"]) is None
+    ai.circuit_credits = 4
+    assert choose_deploy_definition(ai, engine.state.players["opponent"]) == "pulse_cannon"

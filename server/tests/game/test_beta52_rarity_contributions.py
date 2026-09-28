@@ -14,7 +14,8 @@ from app.game.models import (
 from app.game.result import damage_by_module_from_events
 
 
-def test_rarity_profiles_improve_every_combat_axis_in_order():
+def test_rarity_gives_no_hidden_stat_advantage_at_the_same_level():
+    # GRIDSHARD 2.1 enderlik kanunu: aynı seviyede her enderlik aynı değerleri alır.
     base = ModuleDefinition(
         id="rarity-probe",
         name_tr="Nadirlik Probu",
@@ -25,37 +26,18 @@ def test_rarity_profiles_improve_every_combat_axis_in_order():
         energy_consumption=5,
     )
     stats = [
-        module_stats(replace(base, rarity=rarity), 0)
+        module_stats(replace(base, rarity=rarity), 4)
         for rarity in ("common", "rare", "epic", "legendary")
     ]
 
-    assert [item["max_hp"] for item in stats] == sorted(
-        item["max_hp"] for item in stats
-    )
-    assert [item["base_damage"] for item in stats] == sorted(
-        item["base_damage"] for item in stats
-    )
-    assert [item["effect_multiplier"] for item in stats] == sorted(
-        item["effect_multiplier"] for item in stats
-    )
-    assert [item["cooldown_ms"] for item in stats] == sorted(
-        (item["cooldown_ms"] for item in stats),
-        reverse=True,
-    )
-    assert [item["energy_consumption"] for item in stats] == sorted(
-        (item["energy_consumption"] for item in stats),
-        reverse=True,
-    )
-    assert stats[-1]["effect_multiplier"] == pytest.approx(1.42)
-    assert stats[-1]["base_damage"] == pytest.approx(25.6)
+    for key in ("max_hp", "base_damage", "effect_multiplier", "cooldown_ms", "energy_consumption"):
+        assert len({item[key] for item in stats}) == 1, key
+    assert all("rarity_bonuses" not in item for item in stats)
 
 
-def test_attack_curve_is_flatter_than_role_effect_curve():
-    common = RARITY_STAT_PROFILES["common"]
-    legendary = RARITY_STAT_PROFILES["legendary"]
-
-    assert legendary["attack"] / common["attack"] < legendary["effect"] / common["effect"]
-    assert legendary["energy"] < common["energy"]
+def test_rarity_profiles_are_neutral():
+    for profile in RARITY_STAT_PROFILES.values():
+        assert set(profile.values()) == {1.0}
 
 
 def _add(engine, player_id, instance_id, definition_id, x, y):
@@ -109,7 +91,8 @@ def test_attack_support_publishes_real_source_and_percentage():
     assert contribution["category"] == "destek"
     assert contribution["contribution_kind"] == "attack_boost"
     assert contribution["unit"] == "percent"
-    assert contribution["value"] > 15
+    # Tek saldırı modülünde Güçlendirici tam payını (%15) verir.
+    assert contribution["value"] == pytest.approx(15)
 
 
 def test_defense_publishes_the_real_prevented_damage_value():

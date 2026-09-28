@@ -1,4 +1,8 @@
-"""Reentrant process/thread lock for the platform JSON transaction boundary."""
+"""Platform JSON işlem sınırı için yeniden girilebilir süreç/iş parçacığı kilidi.
+
+GRIDSHARD projesinden taşındı. Aynı yerel dosyayı paylaşan işçiler (sunucu ve
+push teslim döngüsü) tek yazıcıyla çalışır.
+"""
 
 from pathlib import Path
 import os
@@ -20,8 +24,8 @@ class PlatformStorageLock:
                 self.path.parent.mkdir(parents=True, exist_ok=True)
                 handle = self.path.open("a+b")
                 try:
-                    # Windows byte-range locking needs a byte to lock. The file
-                    # is persistent: unlinking it would allow two lock inodes.
+                    # Windows bayt aralığı kilidi için kilitlenecek bir bayt gerekir.
+                    # Dosya kalıcıdır: silmek iki ayrı kilit düğümüne izin verirdi.
                     if handle.seek(0, os.SEEK_END) == 0:
                         handle.write(b"\0")
                         handle.flush()

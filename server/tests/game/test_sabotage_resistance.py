@@ -6,7 +6,6 @@ from app.game.models import (
 )
 from app.game.sabotage import (
     EMP_DEBUFF_ID,
-    ENERGY_LEECH_DEBUFF_ID,
     JAMMER_DEBUFF_ID,
     VIRUS_DEBUFF_ID,
     effective_sabotage_duration_ms,
@@ -42,8 +41,7 @@ def make_engine():
 
 
 def base_network(engine, player):
-    add(engine, player, f"{player}-core", "core", 2, 2)
-    add(engine, player, f"{player}-gen", "generator", 2, 3)
+    add(engine, player, f"{player}-core", "core", 2, 1)
 
 
 def test_powered_barrier_reduces_sabotage_duration():
@@ -123,10 +121,10 @@ def test_strong_against_increases_duration_deterministically():
     target = add(
         engine,
         "p2",
-        "p2-generator",
-        "generator",
-        2,
-        3,
+        "p2-shield",
+        "shield",
+        1,
+        1,
     )
     attacker = add(
         engine,
@@ -146,17 +144,9 @@ def test_strong_against_increases_duration_deterministically():
     assert resistance.duration_multiplier > 1.0
 
 
-def test_repair_cleanses_virus_from_connected_module():
+def test_repair_cleanses_virus_anywhere_in_circuit():
     engine = make_engine()
     base_network(engine, "p1")
-    add(
-        engine,
-        "p1",
-        "p1-splitter",
-        "splitter",
-        2,
-        1,
-    )
     repair = add(
         engine,
         "p1",
@@ -201,14 +191,6 @@ def test_repair_cleanses_jammer():
     add(
         engine,
         "p1",
-        "p1-splitter",
-        "splitter",
-        2,
-        1,
-    )
-    add(
-        engine,
-        "p1",
         "p1-repair",
         "repair",
         1,
@@ -241,14 +223,6 @@ def test_repair_cleanses_jammer():
 def test_cooler_reduces_emp_duration():
     engine = make_engine()
     base_network(engine, "p1")
-    add(
-        engine,
-        "p1",
-        "p1-splitter",
-        "splitter",
-        2,
-        1,
-    )
     cooler = add(
         engine,
         "p1",
@@ -289,39 +263,6 @@ def test_cooler_reduces_emp_duration():
 
     assert cooler.is_powered is True
     assert after < before
-
-
-def test_energy_leech_strength_reduced_by_powered_barrier():
-    engine = make_engine()
-    base_network(engine, "p2")
-    barrier = add(
-        engine,
-        "p2",
-        "p2-barrier",
-        "barrier",
-        2,
-        1,
-    )
-    attacker = add(
-        engine,
-        "p1",
-        "p1-leech",
-        "energy_leech",
-        1,
-        3,
-    )
-    target = engine.state.players["p2"].modules[
-        "p2-gen"
-    ]
-
-    barrier.is_powered = True
-    resistance = sabotage_resistance(
-        attacker,
-        target,
-        engine.state.players["p2"],
-    )
-
-    assert resistance.effect_strength_multiplier < 1.0
 
 
 def test_resistance_never_pauses_battle():

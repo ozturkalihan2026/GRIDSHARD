@@ -56,7 +56,6 @@ class ModuleDefinition:
     category: str
     max_hp: int
     rarity: str = "common"
-    circuit_credit_cost: int = 0
     current_cost: int = 0
     behavior_id: str = ""
     effect_multiplier: float = 1.0
@@ -72,14 +71,19 @@ class ModuleDefinition:
     description_tr: str = ""
     energy_generation: float = 0.0
     energy_consumption: float = 0.0
+    # Sürekli bakım enerjisi (energy_consumption) ile aksiyon başına harcanan
+    # enerji ayrıdır; saldırı/onarım/sabotaj işi yaptığı anda öder.
+    action_energy_cost: float = 0.0
     base_damage: float = 0.0
     cooldown_ms: int = 0
     strong_against: tuple[str, ...] = ()
     weak_against: tuple[str, ...] = ()
     synergy_with: tuple[str, ...] = ()
-
-    movable: bool = True
-    removable: bool = True
+    # Enderlik kimliği: kartın mekaniğini oyuncuya anlatan kısa başlık, savaşta
+    # nasıl okunduğu ve rakibin nasıl karşılık verebileceği.
+    signature_mechanic: str = ""
+    telegraph_tr: str = ""
+    counterplay_tr: str = ""
 
 
 @dataclass(slots=True)
@@ -95,13 +99,14 @@ class BattleModule:
     debuffs: dict[str, TimedModuleEffect] = field(default_factory=dict)
     persistent_effects: dict[str, TimedModuleEffect] = field(default_factory=dict)
     cooldowns_ready_at_ms: dict[str, int] = field(default_factory=dict)
-    temporary_boosters: dict[str, TimedModuleEffect] = field(default_factory=dict)
+    # İmza mekaniklerinin maç içi durumu (sayaç, yük, kilit, borç, diriltme izi).
+    mechanic_state: dict[str, Any] = field(default_factory=dict)
 
     is_powered: bool = True
     energy_received_last_tick: float = 0.0
     energy_required_last_tick: float = 0.0
-    calibration_level: int = 0
-    calibration_applied: bool = False
+    energy_waiting: bool = False
+    last_action_energy_cost: float = 0.0
 
     @classmethod
     def create(
@@ -114,23 +119,6 @@ class BattleModule:
             definition=definition,
             hp=definition.max_hp,
         )
-
-
-@dataclass(slots=True, frozen=True)
-class BoosterDefinition:
-    id: str
-    name_tr: str
-    description_tr: str
-    duration_ms: int
-    target_categories: tuple[str, ...] = ()
-    effect_data: dict[str, Any] = field(default_factory=dict)
-
-
-@dataclass(slots=True, frozen=True)
-class BoosterOffer:
-    id: str
-    booster_ids: tuple[str, ...]
-    created_at_ms: int
 
 
 @dataclass(slots=True, frozen=True)
@@ -149,24 +137,24 @@ class PlayerBattleState:
     modules: dict[str, BattleModule] = field(default_factory=dict)
     circuit_credits: int = 0
     current_regen_remainder_ms: int = 0
-    energy_stock: float = 100.0
+    # energy.CORE_STARTING_ENERGY ile aynı; rezerv tavanı Çekirdek seviyesine bağlıdır.
+    energy_stock: float = 16.0
     energy_load_ratio: float = 0.0
-    energy_speed_multiplier: float = 1.0
-    energy_damage_multiplier: float = 1.0
     energy_support_multiplier: float = 1.0
     core_type: str = "core_resonance"
     core_level: int = 1
     core_skills: tuple[str, ...] = ()
     selected_battle_emoji_id: str = "none"
+    # Savaşta paylaşılabilen emojiler (herkese açıklar + kazanılanlar).
+    battle_emoji_ids: tuple[str, ...] = ()
     last_battle_emoji_at_ms: int = -10_000
     discounted_deployments: int = 0
     total_circuit_credits_earned: int = 0
     total_circuit_credits_spent: int = 0
-    forfeit_credit_penalty: int = 0
     battle_pool: BattlePool | None = None
-    pending_booster_offer: BoosterOffer | None = None
-    consumed_booster_offer_ids: set[str] = field(default_factory=set)
-    next_booster_offer_index: int = 0
+    # Hareketsizlik: Akım tavanda ve boş hücre varken kart basılmayan süre.
+    idle_at_cap_ms: int = 0
+    inactivity_warned: bool = False
     energy_generated_total: float = 0.0
     energy_consumed_total: float = 0.0
     energy_wasted_total: float = 0.0
@@ -179,6 +167,8 @@ class PlayerBattleState:
     core_power_ready_emitted: bool = False
     core_power_uses: int = 0
     consumed_core_power_request_ids: set[str] = field(default_factory=set)
+    # Çekirdek imzası izleri: dolu bekleme süresi, zincir sayısı, doğuş hakkı.
+    core_signature_state: dict[str, Any] = field(default_factory=dict)
 
 
 @dataclass(slots=True)
@@ -189,8 +179,6 @@ class BattleState:
     ranked_eligible: bool = True
     account_player_ids: tuple[str, ...] = ()
     normalized: bool = True
-    laboratory_effects_enabled: bool = False
-    player_calibrations: dict[str, dict[str, int]] = field(default_factory=dict)
     player_upgrade_levels: dict[str, dict[str, int]] = field(default_factory=dict)
     player_module_talents: dict[str, dict[str, dict[str, str]]] = field(default_factory=dict)
     player_daily_meta_ids: dict[str, str] = field(default_factory=dict)

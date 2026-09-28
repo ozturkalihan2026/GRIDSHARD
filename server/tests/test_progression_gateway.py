@@ -2,7 +2,6 @@ import asyncio
 
 from fastapi.testclient import TestClient
 
-from app.game.engine import BATTLE_TIME_LIMIT_MS
 from app.main import (
     app,
     player_profile_service,
@@ -14,6 +13,13 @@ from app.main import (
 
 
 client=TestClient(app)
+
+
+def destroy_core(engine, player_id):
+    # Savaş yalnız bir Çekirdek yok olunca biter.
+    for module in engine.state.players[player_id].modules.values():
+        if module.definition.id == "core":
+            module.hp = 0
 
 
 def reset():
@@ -52,10 +58,7 @@ def test_runner_finish_updates_profile_and_progression_endpoint():
 
         pvp_service.start("ranked")
 
-        session.engine.state.elapsed_ms=(
-            BATTLE_TIME_LIMIT_MS-100
-        )
-
+        destroy_core(session.engine, "b")
         await pvp_tick_runner.run_single_tick(
             "ranked"
         )
@@ -69,7 +72,7 @@ def test_runner_finish_updates_profile_and_progression_endpoint():
             "/profile/a"
         ).json()
 
-        assert profile["experience"]==90
-        assert profile["rating"]==0
+        assert profile["experience"]==120
+        assert profile["rating"]==25
 
     asyncio.run(scenario())

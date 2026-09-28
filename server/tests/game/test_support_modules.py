@@ -26,13 +26,12 @@ def make_engine():
 
 def powered_support_line(engine, support_id, support_def, target_id, target_def):
     add(engine,"p1","core","core",2,1)
-    add(engine,"p1","splitter","splitter",2,0)
     support=add(engine,"p1",support_id,support_def,1,0)
     target=add(engine,"p1",target_id,target_def,0,0)
     engine._process_energy_flow()
     return support,target
 
-def test_repair_heals_connected_damaged_module():
+def test_repair_heals_damaged_module():
     e=make_engine()
     repair,shield=powered_support_line(e,"repair","repair","shield","shield")
     shield.hp=40
@@ -83,7 +82,7 @@ def test_embedded_bus_powers_remote_repair():
     assert repair.is_powered is True
     assert shield.hp>40
 
-def test_cooler_reduces_connected_heat():
+def test_cooler_reduces_circuit_heat():
     e=make_engine()
     cooler,rail=powered_support_line(e,"cooler","cooler","rail","railgun")
     rail.heat=10
@@ -127,18 +126,17 @@ def test_support_multiplier_changes_real_attack_resolution():
     boosted=resolve_attack("p1",attacker,"p2",target,support_damage_multiplier=1.15)
     assert boosted.raw_damage>normal.raw_damage
 
-def test_support_only_affects_direct_neighbor():
+def test_amplifier_reaches_every_attack_and_shares_its_budget():
     e=make_engine()
     add(e,"p1","core","core",2,1)
-    add(e,"p1","splitter","splitter",2,0)
-    add(e,"p1","amp","amplifier",1,0)
-    laser=add(e,"p1","laser","laser",0,0)
-    other=add(e,"p1","other","laser",4,0)
+    amp=add(e,"p1","amp","amplifier",1,0)
+    lasers=[add(e,"p1",f"laser-{index}","laser",x,y) for index,(x,y) in enumerate(((0,0),(4,0),(0,2),(4,2)))]
     e._process_energy_flow()
-    a=attack_support_modifiers(e.state.players["p1"],laser,Position(2,2))
-    b=attack_support_modifiers(e.state.players["p1"],other,Position(2,2))
-    assert a.amplifier_active is True
-    assert b.amplifier_active is False
+    player=e.state.players["p1"]
+    mods=[attack_support_modifiers(player,laser,Position(2,2)) for laser in lasers]
+    # Yerleşim önemsizdir; dört saldırıda %30 pay dörde bölünür.
+    assert all(item.amplifier_active for item in mods)
+    assert all(item.damage_multiplier==pytest.approx(1 + 0.30 / 4 * amp.definition.effect_multiplier) for item in mods)
 
 def test_support_processing_never_pauses():
     e=make_engine()

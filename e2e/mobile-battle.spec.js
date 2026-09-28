@@ -1,14 +1,7 @@
 const { test, expect } = require("@playwright/test");
-const { waitForParticipantReady } = require("./ui-helpers");
+const { waitForParticipantReady, closeActiveBattle } = require("./ui-helpers");
 
-async function closeActiveBattle(page) {
-  const forfeit = page.locator("#battle-forfeit-button");
-  await expect(forfeit).toBeVisible();
-  await forfeit.click({ force: true });
-  await expect(page.locator(".post-match-panel")).toBeVisible({ timeout: 15_000 });
-}
-
-test("dokunmatik savaş görünümü tek ekrana sığar ve seç-yerleştir çalışır", async ({ page }) => {
+test("mobil savaşta iki devre aynı ekranda ve tek dokunuşla yerleştirme çalışır", async ({ page }) => {
   test.setTimeout(150_000);
   const errors = [];
   page.on("pageerror", error => errors.push(String(error)));
@@ -16,98 +9,42 @@ test("dokunmatik savaş görünümü tek ekrana sığar ve seç-yerleştir çal�
 
   await page.goto("/?e2e=1", { waitUntil: "domcontentloaded" });
   await waitForParticipantReady(page);
-  await page.getByRole("button", { name: "Oyna" }).click();
+  await expect(page.locator("#home-active-deck .unified-module-tile")).toHaveCount(6);
+  await expect(page.locator("#home-battle-button")).toBeEnabled();
+  await page.locator("#home-battle-button").click();
 
-  const cards = page.locator("#battle-pool-selection .pool-choice");
-  await expect(cards).toHaveCount(24);
-  await page.getByRole("button", { name: "Hazır Havuzları Yönet" }).click();
-  const starterPreset = page.locator(".preset-card", { hasText: "Başlangıç Devresi" });
-  await starterPreset.getByRole("button", { name: "Yükle" }).click();
-  await expect(page.locator("#battle-pool-count")).toHaveText(/18\s*\/\s*18/);
-  await page.getByRole("button", { name: "Kapat" }).click();
-  await expect(page.locator("#play-readiness-status")).toHaveAttribute(
-    "data-ready",
-    "true",
-    { timeout: 30_000 }
-  );
-  await page.locator("#battle-pool-confirm").click();
-
-  await expect(page.locator("body")).toHaveAttribute(
-    "data-online-status",
-    "battle",
-    { timeout: 40_000 }
-  );
+  await expect(page.locator("body")).toHaveAttribute("data-online-status", "battle", {
+    timeout: 40_000,
+  });
   await expect(page.locator("body")).toHaveAttribute("data-opponent-type", "ai");
-  const viewport = await page.evaluate(() => ({
-    height: window.innerHeight,
-    scrollHeight: document.body.scrollHeight,
-    scrollTop: window.scrollY
-  }));
-  expect(viewport.scrollHeight).toBeLessThanOrEqual(viewport.height + 1);
-  expect(viewport.scrollTop).toBe(0);
+  await expect(page.locator("#board .board-cell")).toHaveCount(15);
+  await expect(page.locator("#enemy-board .board-cell")).toHaveCount(15);
+  await expect(page.locator("#board")).toBeVisible();
+  await expect(page.locator("#enemy-board")).toBeVisible();
 
-  const boardBox = await page.locator("#board").boundingBox();
-  expect(boardBox).not.toBeNull();
-  expect(boardBox.y + boardBox.height).toBeLessThanOrEqual(viewport.height + 1);
-  await expect(page.locator("#board .module-card")).toHaveCount(4);
+  const layout = await page.evaluate(() => {
+    const own = document.querySelector("#board").getBoundingClientRect();
+    const rival = document.querySelector("#enemy-board").getBoundingClientRect();
+    const tolerance = 2;
+    return {
+      bothFitWidth: own.left >= -tolerance && rival.left >= -tolerance
+        && own.right <= innerWidth + tolerance && rival.right <= innerWidth + tolerance,
+      bothFitHeight: own.top >= -tolerance && rival.top >= -tolerance
+        && own.bottom <= innerHeight + tolerance && rival.bottom <= innerHeight + tolerance,
+      separate: rival.bottom <= own.top + tolerance,
+    };
+  });
+  expect(layout).toEqual({ bothFitWidth: true, bothFitHeight: true, separate: true });
 
-  await page.locator('[data-mobile-battle-panel="shelf"]').click();
-  await expect(page.locator("body")).toHaveAttribute("data-mobile-battle-panel", "shelf");
-  const reserveCards = page.locator("#module-shelf .module-card");
-  const initialReserveCount = await reserveCards.count();
-  expect(initialReserveCount).toBeGreaterThan(0);
-
-  await expect(page.locator("#module-shelf")).toHaveAttribute(
-    "data-placement-ready",
-    "true",
-    { timeout: 30_000 }
-  );
-  await expect(reserveCards.first()).not.toHaveClass(/locked/);
-  // WebKit'in emüle edilen görsel viewport'u, ekranda görünen ilk raf kartını
-  // layout viewport dışında sayabiliyor; olay hedefini doğrudan doğruluyoruz.
-  await reserveCards.first().click({ force: true });
-  await expect(page.locator("body")).toHaveAttribute("data-mobile-battle-panel", "player");
-  const dropTargets = page.locator("#board .tap-drop-target[data-occupied=false]");
-  await expect.poll(() => dropTargets.count()).toBeGreaterThan(0);
-  const target = dropTargets.first();
-  await expect(target).toHaveCount(1);
-  const coordinates = await target.evaluate(cell => ({ x: cell.dataset.x, y: cell.dataset.y }));
-  await target.click();
-  await expect(page.locator(
-    `#board .board-cell[data-x="${coordinates.x}"][data-y="${coordinates.y}"] .module-card`
-  )).toHaveCount(1);
-  await expect(page.locator("#module-shelf .module-card")).toHaveCount(initialReserveCount - 1);
+  const shelf = page.locator("#module-shelf");
+  await expect(shelf).toHaveAttribute("data-placement-ready", "true", { timeout: 30_000 });
+  const playable = shelf.locator(".deck-module-card[data-playable=true]").first();
+  await expect(playable).toBeEnabled();
+  const initialCount = await page.locator("#board .module-card").count();
+  await playable.click();
+  await expect.poll(() => page.locator("#board .module-card").count(), {
+    timeout: 15_000,
+  }).toBeGreaterThan(initialCount);
   expect(errors).toEqual([]);
-  await closeActiveBattle(page);
-});
-
-test("ilk maç eğitimi hazır havuzu yükler ve AI devralmalı eşleştirmeyi başlatır", async ({ page }) => {
-  await page.goto("/?e2e=tutorial", { waitUntil: "domcontentloaded" });
-  await waitForParticipantReady(page);
-  await page.getByRole("button", { name: "Oyna" }).click();
-
-  const tutorial = page.locator("#tutorial-overlay");
-  await expect(tutorial).toBeVisible();
-  await expect(tutorial.locator("[data-tutorial-progress]")).toHaveText("1 / 3");
-  await tutorial.getByRole("button", { name: "Başlangıç Devresini Yükle" }).click();
-  await expect(page.locator("#battle-pool-count")).toHaveText(/18\s*\/\s*18/);
-  await expect(tutorial.locator("[data-tutorial-progress]")).toHaveText("2 / 3");
-  await expect(page.locator("#play-readiness-status")).toHaveAttribute(
-    "data-ready",
-    "true",
-    { timeout: 30_000 }
-  );
-
-  await tutorial.getByRole("button", { name: "Savaş", exact: true }).click();
-  await expect(page.locator("body")).toHaveAttribute(
-    "data-online-status",
-    "battle",
-    { timeout: 40_000 }
-  );
-  await expect(page.locator("body")).toHaveAttribute("data-opponent-type", "ai");
-  await expect(tutorial.locator("[data-tutorial-progress]")).toHaveText("3 / 3");
-  await tutorial.getByRole("button", { name: "Tamamla" }).click();
-  await expect(tutorial).toBeHidden();
-  await expect.poll(() => page.evaluate(() => localStorage.getItem("gridshard.tutorial.v1"))).toBe("complete");
   await closeActiveBattle(page);
 });

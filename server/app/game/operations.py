@@ -8,7 +8,6 @@ DISABLING_SABOTAGE_DEBUFF_IDS = frozenset({
     "emp_disabled",
     "support_jammed",
     "virus",
-    "energy_leech",
     "line_disrupted",
 })
 

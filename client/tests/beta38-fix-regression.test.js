@@ -23,7 +23,7 @@ assert.ok(app.includes("getAudioState:() =>"));
 assert.ok(!html.includes('id="capacity-indicator"'));
 assert.ok(app.includes("function modulePlacementSlotState()"));
 assert.ok(app.includes('shelf.dataset.placementReady = String(anyAffordable)'));
-assert.ok(app.includes("client.circuitCredits >= Number(module.circuitCreditCost"));
+assert.ok(app.includes("client.circuitCredits >= Number(module.currentCost"));
 
 assert.ok(app.includes("updateFloatingFeedbackImportance"));
 assert.ok(!app.includes("CAN · ONARIM"));

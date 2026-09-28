@@ -9,9 +9,6 @@ OUTPUT=QA/"ux_interaction_matrix.json"
 
 CATEGORIES=[
     "module_place",
-    "module_move",
-    "generator_gate",
-    "booster",
     "technical_drawer",
     "other_ui",
 ]

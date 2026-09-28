@@ -1,8 +1,3 @@
-from app.game.catalog import BASIC_MODULE_DEFINITIONS
-from app.game.energy import (
-    BASE_DISTRIBUTION_EFFICIENCY,
-    SPLITTER_DISTRIBUTION_EFFICIENCY,
-)
 from app.game.simulation import (
     BALANCED_LAYOUT,
     OFFENSE_LAYOUT,
@@ -14,29 +9,7 @@ from app.game.simulation import (
 )
 
 
-def test_generator_14_units_supports_a_mixed_line_but_not_an_unbounded_stack():
-    generator=BASIC_MODULE_DEFINITIONS['generator']
-    assert generator.energy_generation==14.0
-
-    base=generator.energy_generation*BASE_DISTRIBUTION_EFFICIENCY
-    splitter=generator.energy_generation*SPLITTER_DISTRIBUTION_EFFICIENCY
-
-    # Regular combat pairs stay active without forcing constant waiting.
-    assert base >= 3+5  # laser + pulse cannon
-    assert base >= 3+2  # laser + shield
-
-    # A normal three-card combat line now remains stable without requiring a
-    # Battery, while a fourth heavy consumer still needs explicit support.
-    assert base >= 3+5+2
-    assert base < 3+5+2+4
-    assert splitter > base
-
-    # Two heavy railguns still need stored energy or a Battery even with the
-    # distributor bonus.
-    assert splitter < 7+7
-
-
-def test_six_layout_round_robin_always_resolves_and_has_multiple_counters():
+def test_six_layout_round_robin_resolves_without_a_timer_and_has_multiple_counters():
     layouts=(
         BALANCED_LAYOUT,
         OFFENSE_LAYOUT,
@@ -47,20 +20,25 @@ def test_six_layout_round_robin_always_resolves_and_has_multiple_counters():
     )
     report=run_round_robin(
         layouts,
-        max_ticks=1800,
+        max_ticks=6000,
         mirrored=True,
     )
 
     assert len(report.matches)==30
-    assert report.timeouts==0
-    assert all(
-        match.finish_reason != 'timeout'
-        for match in report.matches
-    )
-    assert all(
-        match.elapsed_ms <= 180_000
-        for match in report.matches
-    )
+
+    # Süre sınırı yoktur. Bu koşum kart basmadığı için yalnız birebir aynı
+    # iki düzen, iki tarafın saldırıları aynı anda yok olunca kilitlenebilir;
+    # gerçek maçta oyuncular Akım ile yeni kart basar.
+    by_id={layout.id:layout for layout in layouts}
+    for match in report.matches:
+        if match.timed_out:
+            first=by_id[match.layout_a_id]
+            second=by_id[match.layout_b_id]
+            assert [
+                (item.definition_id,item.x,item.y) for item in first.modules
+            ]==[
+                (item.definition_id,item.x,item.y) for item in second.modules
+            ]
 
     # There is no single layout winning every pairing.
     winning_layouts={

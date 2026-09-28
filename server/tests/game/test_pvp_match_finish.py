@@ -1,12 +1,18 @@
 import asyncio
 
-from app.game.engine import BATTLE_TIME_LIMIT_MS
 from app.game.pvp_runner import PvPTickRunner
 from app.game.pvp_session import (
     PvPSessionError,
     PvPSessionService,
 )
 from app.game.pvp_websocket import PvPWebSocketAdapter
+
+
+def destroy_core(engine, player_id):
+    # Savaş yalnız bir Çekirdek yok olunca biter.
+    for module in engine.state.players[player_id].modules.values():
+        if module.definition.id == "core":
+            module.hp = 0
 
 
 class FakeSocket:
@@ -60,10 +66,7 @@ def test_runner_broadcasts_final_result_and_closes_connections():
                 socket=sockets[p],
             )
 
-        session.engine.state.elapsed_ms = (
-            BATTLE_TIME_LIMIT_MS - 100
-        )
-
+        destroy_core(session.engine, "b")
         runner=PvPTickRunner(
             service,
             adapter,
@@ -106,7 +109,7 @@ def test_runner_persists_finished_projection_before_terminal_result():
             player_id="a",
             socket=socket,
         )
-        session.engine.state.elapsed_ms = BATTLE_TIME_LIMIT_MS - 100
+        destroy_core(session.engine, "b")
         runner = PvPTickRunner(
             service,
             adapter,
@@ -123,7 +126,7 @@ def test_runner_persists_finished_projection_before_terminal_result():
 
 def test_reconnect_after_finish_contains_final_result():
     service,session=running_match()
-    session.engine.state.elapsed_ms=BATTLE_TIME_LIMIT_MS-100
+    destroy_core(session.engine, "b")
     session.engine.step()
 
     payload=service.reconnect_payload("m","a")
@@ -138,7 +141,7 @@ def test_reconnect_after_finish_contains_final_result():
 
 def test_terminal_snapshot_keeps_server_result():
     service,session=running_match()
-    session.engine.state.elapsed_ms=BATTLE_TIME_LIMIT_MS-100
+    destroy_core(session.engine, "b")
     session.engine.step()
 
     snap=service.snapshot("m","a")
@@ -150,7 +153,6 @@ def test_terminal_snapshot_keeps_server_result():
         == session.engine.state.result_summary["a"]
     )
     assert "circuit_credits" not in snap["result_summary"]["b"]
-    assert "forfeit_credit_penalty" not in snap["result_summary"]["b"]
     assert (
         snap["result_summary"]["b"]["core_hp"]
         == session.engine.state.result_summary["b"]["core_hp"]

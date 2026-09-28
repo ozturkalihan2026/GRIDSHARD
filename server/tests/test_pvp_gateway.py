@@ -55,7 +55,7 @@ def test_health_exposes_version():
 
     assert response.status_code == 200
     assert response.json()["status"] == "ok"
-    assert response.json()["version"] == "2.1.0-beta.43"
+    assert response.json()["version"] == "2.1.0-beta.72"
 
 
 def test_post_match_lazily_recovers_a_finished_session(monkeypatch):

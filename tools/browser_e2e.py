@@ -107,11 +107,9 @@ def main()->int:
 
     env=os.environ.copy()
     env["PYTHONPATH"]=str(SERVER)
-    env["RELAY_WEB_TEST_RUN_ID"]="web-test-beta.33-browser-e2e"
     env["RELAY_PLAYER_DATA_PATH"]=str(SERVER/"data/e2e_players.json")
     env["RELAY_TELEMETRY_PATH"]=str(SERVER/"data/e2e_telemetry.json")
     env["RELAY_BATTLE_POOL_PRESET_PATH"]=str(SERVER/"data/e2e_presets.json")
-    env["RELAY_BALANCE_CHANGE_DRAFT_PATH"]=str(SERVER/"data/e2e_balance_drafts.json")
     env["RELAY_TELEMETRY_MAX_EVENTS"]="50000"
 
     for path in (SERVER/"data").glob("e2e_*.json*"):
@@ -229,32 +227,24 @@ def main()->int:
                 full_page=True,
             )
 
-            page.locator("#main-menu-title").wait_for(state="visible")
-            page.locator('[data-open-screen="play"]').click()
-
-            card=page.locator(".quick-loadout-card",has_text="E2E Loadout")
-            card.wait_for(state="visible",timeout=10_000)
-            card.get_by_role("button",name="Tek Oyunculu").click()
-
-            page.locator("#battle-pool-panel").wait_for(
-                state="visible",
-                timeout=10_000,
-            )
+            page.locator("#home-battle-button").wait_for(state="visible")
             page.wait_for_function(
-                "() => document.querySelector('#battle-pool-count')?.textContent?.includes('18 / 18')",
-                timeout=10_000,
-            )
-            page.wait_for_function(
-                "() => !document.querySelector('#battle-pool-confirm')?.disabled",
-                timeout=10_000,
+                "() => document.querySelector('#participant-bootstrap-status')?.dataset.status === 'ready'",
+                timeout=30_000,
             )
             page.screenshot(
                 path=str(
-                    ARTIFACT_DIR/"02-loadout-ready.png"
+                    ARTIFACT_DIR/"02-home-ready.png"
                 ),
                 full_page=True,
             )
-            page.locator("#battle-pool-confirm").click()
+            # Geliştirme kısayolu 6/6 havuzu doldurur ve güncel savaş
+            # ekranını açar; silinmiş hızlı loadout / 18 kart akışını kullanmaz.
+            quick_start=page.evaluate(
+                "() => window.__GRIDSHARD_TEST_API.startQuickLocalBattle()"
+            )
+            if not quick_start or not quick_start.get("ok"):
+                raise RuntimeError(f"Yerel hızlı savaş açılamadı: {quick_start}")
 
             page.wait_for_function(
                 "() => document.body.dataset.localStatus === 'battle'",
@@ -443,8 +433,8 @@ def main()->int:
             return 1
 
         print(
-            "Browser E2E PASSED: Ana Menü → Hızlı Loadout → "
-            "Savaş Havuzu → Yerel Savaş → Sonuç → Telemetri"
+            "Browser E2E PASSED: Ana Ekran → 6 Kartlık Yerel Savaş → "
+            "Sonuç → Telemetri"
         )
         return 0
     except Exception as exc:

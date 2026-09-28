@@ -1,6 +1,5 @@
 from app.game.combat import (
     ATTACK_COOLDOWN_ID,
-    attack_damage_multiplier,
     select_target,
 )
 from app.game.engine import BattleEngine
@@ -134,31 +133,6 @@ def test_laser_can_attack_again_when_cooldown_finishes():
     engine._process_combat_actions()
 
     assert shield.hp == hp_after_first - first_damage
-
-
-def test_normal_cells_have_no_hidden_attack_bonus():
-    engine = two_player_engine()
-    laser = engine.state.players["p1"].modules["p1-laser"]
-    laser.position = Position(2, 0)
-
-    assert attack_damage_multiplier(laser) == 1.0
-
-
-def test_overcharge_is_the_only_attack_multiplier_on_a_normal_cell():
-    engine = two_player_engine()
-    laser = engine.state.players["p1"].modules["p1-laser"]
-    laser.position = Position(2, 0)
-
-    engine.add_temporary_booster_state(
-        "p1",
-        "p1-laser",
-        "overcharge_chip",
-        "Aşırı Yük Çipi",
-        15_000,
-        {"attack_multiplier": 1.25},
-    )
-
-    assert round(attack_damage_multiplier(laser), 6) == 1.25
 
 
 def test_damage_destroys_module_and_removes_position():

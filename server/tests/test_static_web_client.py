@@ -26,6 +26,6 @@ def test_client_assets_are_same_origin():
     assert app_js.status_code==200
     assert styles.status_code==200
     assert (
-        "ensureWebTestRunStarted"
+        "RelayServerBootGate"
         in app_js.text
     )

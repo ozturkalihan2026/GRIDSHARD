@@ -1,27 +1,24 @@
 from __future__ import annotations
 
+from datetime import datetime, timezone
 from uuid import uuid4
-from dataclasses import replace
 import asyncio
 from contextlib import asynccontextmanager
 import hashlib
+import logging
 import secrets
 import time
 import os
 import json
-import logging
 from pathlib import Path
 from threading import Lock
 from urllib.parse import parse_qs, urlencode
 
 from fastapi import BackgroundTasks, FastAPI, Header, HTTPException, Query, Request, WebSocket
-from fastapi.encoders import jsonable_encoder
-from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse, RedirectResponse
 from fastapi.websockets import WebSocketDisconnect
 from pydantic import BaseModel
-from starlette.exceptions import HTTPException as StarletteHTTPException
 
 from .auth import (
     AuthenticationError,
@@ -31,6 +28,11 @@ from .auth import (
 )
 from .platform_services import PlatformService, PlatformServiceError
 from .push_delivery import PushSender
+from .json_schema_migrations import apply_json_store_migrations, json_store_paths
+from .product_analytics import (
+    ProductAnalyticsService, ProductAnalyticsError, ProductAnalyticsStorageError,
+    EVENT_DIMENSIONS, RETENTION_DAYS,
+)
 from .display_names import DisplayNameError
 from .account_export import build_personal_export
 from .postgres_repository import (
@@ -39,8 +41,6 @@ from .postgres_repository import (
     PostgresPool,
 )
 from .runtime_coordination import RuntimeCoordinator
-from .json_schema_migrations import JsonStoreSpec, migration_status
-from .product_analytics import ProductAnalyticsService, ProductAnalyticsError, ProductAnalyticsStorageError, EVENT_DIMENSIONS, RETENTION_DAYS
 
 from .game.pvp_session import (
     PvPSessionError,
@@ -50,12 +50,9 @@ from .game.models import BattleCommand, BattleStatus
 from .game.catalog import (
     BASIC_MODULE_DEFINITIONS,
     PLAYER_SELECTABLE_MODULE_IDS,
-    get_module_definition,
 )
-from .game.core_balance import core_rarity_profile
 from .game.ai_archetypes import (
     AI_ARCHETYPE_IDS,
-    BOT_ARCHETYPE_IDS,
     get_ai_archetype,
     normalize_ai_archetype_id,
     select_ai_archetype_for_key,
@@ -63,6 +60,7 @@ from .game.ai_archetypes import (
 from .game.catalog_view import (
     build_module_catalog_view,
 )
+from .game.pvp_protocol import PVP_PROTOCOL_VERSION
 from .game.pvp_setup import InitialModulePlacement, PvPSetupPayload
 from .game.pvp_websocket import PvPWebSocketAdapter
 from .game.pvp_runner import PvPTickRunner
@@ -70,14 +68,9 @@ from .version import VERSION
 from .player_profile import (
     PlayerProfileError,
     PlayerProfileService,
+    SEASON_PREMIUM_REWARD_TRACK,
     SEASON_REWARD_TRACK,
-    monthly_season_descriptor,
-)
-from .laboratory import (
-    LaboratoryError,
-    build_laboratory_view,
-    reset_calibrations,
-    upgrade_calibration,
+    season_descriptor,
 )
 from .meta_progression import (
     CORE_TYPES,
@@ -95,6 +88,17 @@ from .season_competition import (
     daily_meta_catalog_view,
     daily_meta_for_seed,
 )
+from .team_tournament import (
+    MINIMUM_REWARD_POINTS as TEAM_TOURNAMENT_MINIMUM_POINTS,
+    SESSION_PREFIX as TEAM_TOURNAMENT_SESSION_PREFIX,
+    build_team_tournament_view,
+    locate_leg as locate_team_tournament_leg,
+    period_id_for as team_tournament_period_id,
+    period_id_of_leg as team_tournament_period_of_leg,
+    player_open_leg as team_tournament_open_leg,
+    registration_open as team_tournament_registration_open,
+    tournament_calendar as team_tournament_calendar,
+)
 from .player_statistics import (
     PlayerStatisticsService,
 )
@@ -110,7 +114,16 @@ from .matchmaking import (
     RedisMatchmakingService,
 )
 from .player_progression import (
+    PlayerProgressionError,
     PlayerProgressionService,
+)
+from .store_catalog import (
+    StoreError,
+    ad_test_mode_enabled,
+    process_purchase,
+    purchase_test_mode_enabled,
+    store_view,
+    verify_ad_view,
 )
 from .player_data_store import (
     JsonFilePlayerDataRepository,
@@ -123,38 +136,13 @@ from .telemetry import (
     TelemetryError,
     TelemetryEvent,
 )
-from .web_test import (
-    build_web_test_readiness,
-)
-from .web_test_static import (
+
+from .static_files import (
     NoCacheStaticFiles,
     ProductionStaticFiles,
     client_directory,
 )
-from .web_test_metrics import (
-    WebTestKpiService,
-)
-from .release_check import (
-    build_release_check,
-)
-from .balance_change_plan import (
-    build_balance_change_plan,
-)
-from .balance_simulation import (
-    BalanceSimulationError,
-    run_balance_simulation,
-)
-from .balance_regression import (
-    BalanceRegressionError,
-    is_structural_regression_area,
-    run_balance_regression,
-)
-from .balance_change_drafts import (
-    BalanceChangeDraftError,
-    BalanceChangeDraftService,
-    JsonBalanceChangeDraftRepository,
-    build_human_review_queue,
-)
+
 from .battle_pool_presets import (
     BattlePoolPresetError,
     BattlePoolPresetService,
@@ -163,72 +151,14 @@ from .battle_pool_presets import (
 from .team_service import (
     JsonTeamRepository,
     REQUEST_POLICY as TEAM_REQUEST_POLICY,
+    TEAM_APPEARANCE_OPTIONS,
+    TEAM_PRIZE_APPEARANCE_KEYS,
     TeamService,
     TeamServiceError,
+    team_appearance,
+    team_appearance_for_seed,
+    team_appearance_unlocked,
 )
-from .build_manifest import (
-    build_manifest,
-)
-from .web_test_rc_report import (
-    build_rc_report,
-)
-from .web_test_operation_readiness import (
-    build_operation_readiness,
-)
-from .web_test_go_no_go import (
-    build_go_no_go,
-)
-from .web_test_rc_candidate import (
-    build_rc_candidate_summary,
-)
-from .web_test_launch import (
-    build_launch_snapshot,
-)
-from .web_test_checklist import (
-    build_first_run_checklist,
-)
-from .web_test_preflight import (
-    build_preflight_report,
-)
-from .web_test_run_consistency import (
-    build_run_started_consistency,
-)
-from .web_test_operation_status import (
-    build_operation_status,
-)
-from .web_test_stability import (
-    build_operation_stability,
-)
-from .web_test_monitoring import (
-    build_monitoring_summary,
-)
-from .web_test_post_run import (
-    build_post_run_report,
-)
-from .web_test_feedback import (
-    build_feedback_summary,
-    normalize_feedback_note,
-    validate_feedback_rating,
-)
-from .web_test_findings import (
-    build_beta_findings,
-)
-from .web_test_review import (
-    build_review_candidates,
-)
-from .manual_battle_report import (
-    build_manual_battle_report,
-)
-from .web_test_run import (
-    build_operation_history_summary,
-    build_operation_transition_summary,
-    build_stability_history_summary,
-    build_test_run_catalog,
-    build_test_run_go_no_go,
-    build_test_run_summary,
-    compare_test_runs,
-)
-
 
 SERVER_DATA_DIR = (
     Path(__file__).resolve()
@@ -248,6 +178,14 @@ if RUNTIME_STRICT and not os.environ.get("GRIDSHARD_AUTH_SIGNING_KEY", "").strip
     raise RuntimeError("Üretim modunda GRIDSHARD_AUTH_SIGNING_KEY zorunludur.")
 
 postgres_pool = PostgresPool(DATABASE_URL) if DATABASE_URL else None
+# JSON depoları okunmadan önce bekleyen dosya şema göçleri uygulanır;
+# değişmiş, zinciri bozuk veya bilinmeyen göç geçmişi açılışı durdurur.
+# Üretimde mevcut veriyi dönüştüren göç otomatik uygulanmaz; operatör
+# sunucu dururken tools/json_schema_migrate.py up çalıştırır.
+apply_json_store_migrations(
+    json_store_paths(SERVER_DATA_DIR, postgres=postgres_pool is not None),
+    auto_apply=not RUNTIME_STRICT,
+)
 runtime_coordinator = RuntimeCoordinator(
     REDIS_URL,
     strict=RUNTIME_STRICT,
@@ -284,11 +222,12 @@ async def _runtime_maintenance_loop() -> None:
 
 
 async def _push_delivery_loop(stop: asyncio.Event):
+    # Sağlayıcı çağrısı savaş tick döngüsünden ayrı iş parçacığında yapılır.
     while not stop.is_set():
         try:
             processed = await asyncio.to_thread(platform_service.process_push_once)
         except Exception:
-            # Do not log request URLs/exceptions: APNs URLs contain device tokens.
+            # İstek URL'si/istisna loglanmaz: APNs URL'si cihaz belirtecini taşır.
             logging.getLogger(__name__).warning("Push outbox unavailable; retrying without exposing payloads")
             processed = False
         try:
@@ -306,13 +245,14 @@ async def application_lifespan(_app: FastAPI):
     push_stop = asyncio.Event()
     push_task = None
     try:
+        # GRIDSHARD_PUSH_ENABLED=1 değilse gönderici kapalıdır, bağlantı açmaz.
         platform_service.push_sender = PushSender.from_environment()
         push_task = asyncio.create_task(_push_delivery_loop(push_stop))
         yield
     finally:
         push_stop.set()
         if push_task is not None:
-            # Wait for the bounded in-flight HTTP call before closing its client.
+            # Süren sınırlı HTTP çağrısı bitmeden istemci kapatılmaz.
             await push_task
         platform_service.push_sender.close()
         maintenance_task.cancel()
@@ -332,53 +272,6 @@ app = FastAPI(
     lifespan=application_lifespan,
 )
 
-# Error codes are a protocol contract. Client copy must never be selected by
-# matching the Turkish human-readable detail string.
-ERROR_CODES_BY_STATUS = {
-    400: "bad_request",
-    401: "unauthorized",
-    403: "forbidden",
-    404: "not_found",
-    409: "conflict",
-    410: "gone",
-    422: "invalid_request",
-    429: "rate_limited",
-    500: "internal_error",
-    502: "unavailable",
-    503: "unavailable",
-    504: "timeout",
-}
-
-
-def api_error_code(status_code: int) -> str:
-    return ERROR_CODES_BY_STATUS.get(status_code, "request_failed")
-
-
-@app.exception_handler(StarletteHTTPException)
-async def coded_http_error(_request: Request, exc: StarletteHTTPException) -> JSONResponse:
-    return JSONResponse(
-        status_code=exc.status_code,
-        content={"code": api_error_code(exc.status_code), "detail": exc.detail},
-        headers=exc.headers,
-    )
-
-
-@app.exception_handler(RequestValidationError)
-async def coded_validation_error(_request: Request, exc: RequestValidationError) -> JSONResponse:
-    return JSONResponse(
-        status_code=422,
-        content={"code": "invalid_request", "detail": jsonable_encoder(exc.errors())},
-    )
-
-
-@app.middleware("http")
-async def hide_web_test_routes_in_production(request: Request, call_next):
-    if RUNTIME_STRICT and (
-        request.url.path == "/web-test"
-        or request.url.path.startswith("/web-test/")
-    ):
-        return JSONResponse(status_code=404, content={"code": "not_found", "detail": "Not Found"})
-    return await call_next(request)
 
 CORS_ORIGINS = tuple(
     origin.strip()
@@ -460,8 +353,9 @@ PROTECTED_PLAYER_PREFIXES = (
     "/players/",
     "/events",
     "/local-ai/",
-    "/analytics/",
     "/pvp/",
+    "/store/",
+    "/analytics/",
 )
 
 
@@ -469,7 +363,7 @@ def _path_claimed_player_id(path: str) -> str | None:
     segments = [segment for segment in path.split("/") if segment]
     if not segments:
         return None
-    if segments[0] in {"participants", "player-data", "settings", "statistics", "profile", "social", "accounts", "notifications"}:
+    if segments[0] in {"participants", "player-data", "settings", "statistics", "profile", "social", "accounts", "notifications", "store"}:
         return segments[1] if len(segments) > 1 else None
     if segments[0] == "matchmaking" and len(segments) > 1 and segments[1] != "join":
         return segments[1]
@@ -497,7 +391,7 @@ async def require_participant_authentication(request: Request, call_next):
     except AuthenticationError as exc:
         return JSONResponse(
             status_code=401,
-            content={"code": "unauthorized", "detail": str(exc)},
+            content={"detail": str(exc)},
             headers={"WWW-Authenticate": "Bearer"},
         )
 
@@ -522,7 +416,7 @@ async def require_participant_authentication(request: Request, call_next):
     if any(player_id != identity.player_id for player_id in claimed_player_ids):
         return JSONResponse(
             status_code=403,
-            content={"code": "forbidden", "detail": "Başka bir oyuncu adına işlem yapılamaz."},
+            content={"detail": "Başka bir oyuncu adına işlem yapılamaz."},
         )
 
     request.state.authenticated_player_id = identity.player_id
@@ -575,7 +469,7 @@ async def apply_rate_limit(request: Request, call_next):
         headers["Retry-After"] = str(decision.retry_after_seconds)
         return JSONResponse(
             status_code=429,
-            content={"code": "rate_limited", "detail": "İstek hızı sınırı aşıldı; daha sonra yeniden deneyin."},
+            content={"detail": "İstek hızı sınırı aşıldı; daha sonra yeniden deneyin."},
             headers=headers,
         )
     response = await call_next(request)
@@ -623,10 +517,6 @@ TELEMETRY_MAX_EVENTS = int(
         "50000",
     )
 )
-WEB_TEST_RUN_ID = os.environ.get(
-    "RELAY_WEB_TEST_RUN_ID",
-    "web-test-beta.13",
-).strip() or "web-test-beta.13"
 
 telemetry_repository = (
     JsonFileTelemetryRepository(
@@ -637,9 +527,6 @@ telemetry_repository = (
 )
 telemetry_service = InMemoryTelemetryService(
     repository=telemetry_repository
-)
-web_test_kpi_service = WebTestKpiService(
-    telemetry_service
 )
 
 def process_completed_pvp_battle(state) -> None:
@@ -652,9 +539,9 @@ def process_completed_pvp_battle(state) -> None:
         )
         return
 
-    # The first tournament match of a new month replaces the previous
-    # contribution counters. Queue the closed-period reward before that
-    # authoritative progression write happens.
+    # The first tournament match of a new four-week period replaces the
+    # previous contribution counters. Queue the closed-period reward before
+    # that authoritative progression write happens.
     if state.match_type == "team_tournament":
         for account_player_id in (
             state.account_player_ids
@@ -675,6 +562,13 @@ def process_completed_pvp_battle(state) -> None:
     telemetry_service.ingest_finished_battle(
         state
     )
+    if state.match_type == "team_tournament":
+        try:
+            _record_team_tournament_leg(state)
+        except Exception:
+            # Sonuç yazılamasa da maç kapanır; giriş uç noktası bitmiş oturumu
+            # gördüğünde sonucu yeniden yazmayı dener.
+            pass
 
     # Social and team-training invitations are one-shot entry points.  Close
     # them at the authoritative terminal transition so a finished arena can
@@ -716,8 +610,8 @@ def process_completed_pvp_battle(state) -> None:
                 request_id=request_id, client=False,
             )
         except Exception:
-            # Optional analytics cannot change an authoritative battle result.
-            pass
+            # İsteğe bağlı analitik savaşın otoriter sonucunu değiştiremez.
+            logging.getLogger(__name__).warning("Product analytics battle record failed", exc_info=True)
 
     player_ids=tuple(state.players)
     if player_ids:
@@ -792,29 +686,6 @@ battle_pool_preset_service = (
     )
 )
 
-DEFAULT_BALANCE_CHANGE_DRAFT_PATH = (
-    PLAYER_DATA_PATH.with_name(
-        "web_test_balance_change_drafts.json"
-    )
-)
-BALANCE_CHANGE_DRAFT_PATH = Path(
-    os.environ.get(
-        "RELAY_BALANCE_CHANGE_DRAFT_PATH",
-        str(
-            DEFAULT_BALANCE_CHANGE_DRAFT_PATH
-        ),
-    )
-)
-balance_change_draft_repository = (
-    JsonBalanceChangeDraftRepository(
-        BALANCE_CHANGE_DRAFT_PATH
-    )
-)
-balance_change_draft_service = (
-    BalanceChangeDraftService(
-        balance_change_draft_repository
-    )
-)
 
 DEFAULT_TEAM_DATA_PATH = PLAYER_DATA_PATH.with_name(
     "web_test_teams.json"
@@ -825,23 +696,6 @@ TEAM_DATA_PATH = Path(
         str(DEFAULT_TEAM_DATA_PATH),
     )
 )
-if RUNTIME_STRICT:
-    json_stores = (
-        JsonStoreSpec("platform", platform_service.path, dict),
-        JsonStoreSpec("telemetry", TELEMETRY_PATH, list),
-        JsonStoreSpec("battle_pool_presets", BATTLE_POOL_PRESET_PATH, dict),
-        JsonStoreSpec("balance_drafts", BALANCE_CHANGE_DRAFT_PATH, dict),
-        JsonStoreSpec("teams", TEAM_DATA_PATH, dict),
-    )
-    pending_json_stores = [
-        status["store"] for status in (migration_status(spec) for spec in json_stores)
-        if status["pending"]
-    ]
-    if pending_json_stores:
-        raise RuntimeError(
-            "JSON şema migration bekliyor: " + ", ".join(pending_json_stores)
-            + ". Sunucu duruyorken tools/json_schema_migrate.py up çalıştırın."
-        )
 team_repository = JsonTeamRepository(TEAM_DATA_PATH)
 team_service = TeamService(team_repository)
 
@@ -874,10 +728,8 @@ MATCHMAKING_AI_ONLY = os.environ.get(
     "GRIDSHARD_MATCHMAKING_AI_ONLY",
     "1" if "beta" in VERSION.lower() else "0",
 ).strip().lower() in {"1", "true", "yes", "on"}
-EXPERIMENTAL_LAB_EFFECTS_ENABLED = os.environ.get(
-    "GRIDSHARD_EXPERIMENTAL_LAB_EFFECTS",
-    "0",
-).strip().lower() in {"1", "true", "yes", "on"}
+PURCHASE_TEST_MODE = purchase_test_mode_enabled(RUNTIME_STRICT)
+AD_TEST_MODE = ad_test_mode_enabled(RUNTIME_STRICT)
 DAILY_META_ROLL_LOCK = Lock()
 SOCIAL_LOCK = Lock()
 REWARD_INBOX_LOCK = Lock()
@@ -891,7 +743,7 @@ def persist_player_data(
     )
 
 
-def attach_player_laboratory_to_session(
+def attach_player_progression_to_session(
     session_id: str,
     player_id: str,
 ) -> None:
@@ -904,22 +756,8 @@ def attach_player_laboratory_to_session(
     battle_player.core_level = 1 + profile.core_upgrade_levels.get(profile.selected_core_type, 0)
     battle_player.core_skills = profile.core_skills.get(profile.selected_core_type, ())
     battle_player.selected_battle_emoji_id = profile.selected_battle_emoji_id
-    core = next(
-        (
-            module for module in battle_player.modules.values()
-            if module.definition.id == "core"
-        ),
-        None,
-    )
-    if core is not None:
-        base_core = get_module_definition("core")
-        hp_ratio = core.hp / max(1, core.definition.max_hp)
-        scaled_hp = round(
-            base_core.max_hp
-            * core_rarity_profile(profile.selected_core_type)["hp"]
-        )
-        core.definition = replace(base_core, max_hp=scaled_hp)
-        core.hp = max(1, round(scaled_hp * hp_ratio))
+    battle_player.battle_emoji_ids = profile.available_battle_emoji_ids
+    # Beta.72: çekirdek türü CAN'ı değiştirmez; bütün çekirdekler kanonik CAN'la girer.
     session.engine.state.player_module_talents[player_id] = {k: dict(v) for k, v in profile.module_talents.items()}
     today = daily_meta_catalog_view()["day"]
     session.engine.state.player_daily_meta_ids[player_id] = (
@@ -929,11 +767,6 @@ def attach_player_laboratory_to_session(
     )
     from .arena_canon import unlocked_module_ids
     session.engine.state.player_unlocked_modules[player_id] = unlocked_module_ids(max(profile.rating, profile.highest_rating))
-    pvp_service.set_player_calibrations(
-        session_id,
-        player_id,
-        profile.module_calibration_levels,
-    )
 
 
 def player_data_persistence_health() -> dict:
@@ -978,7 +811,6 @@ class LocalAiBattleStartRequest(BaseModel):
     player_id: str
     battle_pool_ids: list[str]
     initial_modules: list[InitialModuleRequest] | None = None
-    experimental_calibrations: bool = False
     ai_archetype: str = "balanced"
 
 
@@ -1006,14 +838,22 @@ class ProfileCosmeticsRequest(BaseModel):
     profile_background_id: str | None = None
 
 
-class LaboratoryOperationRequest(BaseModel):
-    model_config = {"extra": "forbid"}
-    request_id: str
-
-
 class MetaOperationRequest(BaseModel):
     model_config = {"extra": "forbid"}
     request_id: str
+
+
+class PurchaseRequest(BaseModel):
+    model_config = {"extra": "forbid"}
+    product_id: str
+    provider: str
+    transaction_id: str
+
+
+class AdRewardRequest(BaseModel):
+    model_config = {"extra": "forbid"}
+    request_id: str
+    provider: str
 
 
 class TeamCreateRequest(BaseModel):
@@ -1060,10 +900,9 @@ class TeamApplicationActionRequest(TeamActionRequest):
 
 
 class TeamCosmeticsRequest(TeamActionRequest):
-    avatar_id: str | None = None
-    avatar_frame_id: str | None = None
-    bar_background_id: str | None = None
-    name_frame_id: str | None = None
+    emblem_id: str | None = None
+    frame_id: str | None = None
+    name_color_id: str | None = None
 
 
 class FriendRequestOperation(BaseModel):
@@ -1089,6 +928,17 @@ class EventRegistrationOperation(BaseModel):
     request_id: str
 
 
+class FriendRequestCancelOperation(BaseModel):
+    player_id: str
+    target_player_id: str
+    request_id: str
+
+
+class InboxNoticeSeenRequest(BaseModel):
+    player_id: str
+    notice_ids: list[str] = []
+
+
 class CoreSelectionRequest(BaseModel):
     model_config = {"extra": "forbid"}
     core_type_id: str
@@ -1107,19 +957,6 @@ class BattlePoolPresetRenameRequest(BaseModel):
 class BattlePoolPresetMetaRequest(BaseModel):
     favorite: bool | None = None
     mark_used: bool = False
-
-
-class BalanceChangeDraftItemRequest(BaseModel):
-    area: str
-    before_value: float | int | str | None = None
-    proposed_value: float | int | str | None = None
-    approved: bool = False
-    simulation_status: str = "pending"
-    regression_status: str = "pending"
-
-
-class BalanceSimulationRequest(BaseModel):
-    area: str
 
 
 class MatchmakingJoinRequest(BaseModel):
@@ -1188,6 +1025,13 @@ class DirectMessageRequest(BaseModel):
     text: str
 
 
+class DirectMessageSeenRequest(BaseModel):
+    player_id: str
+    request_id: str | None = None
+    # Boşsa bütün sohbetler okunur (eski istemci davranışı).
+    peer_id: str | None = None
+
+
 class SocialSafetyRequest(BaseModel):
     player_id: str
     target_player_id: str
@@ -1199,44 +1043,6 @@ class SocialSafetyRequest(BaseModel):
 class GdprDeleteRequest(BaseModel):
     player_id: str
     confirmation: str
-
-
-class WebTestSessionAuditRequest(BaseModel):
-    player_id: str
-    matchmaking_started_at_ms: int
-
-
-class WebTestSessionAuditBindRequest(BaseModel):
-    audit_event_id: str
-    session_id: str
-
-
-class WebTestSessionAuditFinishRequest(BaseModel):
-    audit_event_id: str
-    session_id: str
-
-
-class WebTestLaunchAttemptRequest(BaseModel):
-    player_id: str
-    attempted_at_ms: int
-
-
-class WebTestRunStartRequest(BaseModel):
-    test_run_id: str
-
-
-class WebTestRunFinishRequest(BaseModel):
-    test_run_id: str
-
-
-class WebTestFeedbackRequest(BaseModel):
-    test_run_id: str
-    submitted_at_ms: int
-    usability: int
-    connection: int
-    battle_balance: int
-    module_booster_balance: int
-    note: str | None = None
 
 
 class TelemetryEventRequest(BaseModel):
@@ -1485,6 +1291,7 @@ def subscribe_platform_push(
     if request.player_id != player_id:
         raise HTTPException(status_code=403, detail="Başka bir oyuncu adına işlem yapılamaz.")
     try:
+        # Abonelik yalnız o cihazın kendi oturumundan açılabilir.
         return platform_service.subscribe_push(
             player_id, request.device_id, request.platform, request.token,
             token_id=getattr(http_request.state, "authenticated_token_id", None),
@@ -1545,6 +1352,20 @@ def accept_social_invite_code(player_id: str, request: InviteCodeRequest) -> dic
 @app.get("/social/{player_id}/messages")
 def get_direct_messages(player_id: str, peer_id: str | None = None) -> dict:
     return {"messages": platform_service.messages(player_id, peer_id)}
+
+
+@app.post("/social/{player_id}/messages/seen")
+def mark_direct_messages_seen(player_id: str, request: DirectMessageSeenRequest) -> dict:
+    if request.player_id != player_id:
+        raise HTTPException(status_code=403, detail="Başka bir oyuncu adına işlem yapılamaz.")
+    peer_id = str(request.peer_id or "").strip() or None
+    platform_service.mark_conversation_seen(player_id, peer_id)
+    if peer_id is None:
+        with SOCIAL_LOCK:
+            profile = _team_member_profile(player_id)
+            profile.direct_messages_seen_at = int(time.time())
+            persist_player_data(player_id)
+    return _social_view(player_id)
 
 
 @app.post("/social/{player_id}/messages")
@@ -1634,10 +1455,14 @@ def export_account_data(player_id: str) -> JSONResponse:
     # default profile, and do not hand a client any restore capability.
     _team_member_profile(player_id)
     snapshot = player_data_store_service.build_snapshot(player_id).to_dict()
+    try:
+        analytics_events = product_analytics_service.events_for(player_id)
+    except ProductAnalyticsStorageError as exc:
+        raise HTTPException(status_code=503, detail=str(exc)) from exc
     payload = build_personal_export(
         snapshot, platform_service.export_data(player_id),
         participant_auth_service.signing_key,
-        product_analytics=product_analytics_service.events_for(player_id),
+        product_analytics=analytics_events,
     )
     return JSONResponse(payload, headers={"Cache-Control": "no-store", "Pragma": "no-cache"})
 
@@ -1672,7 +1497,10 @@ def delete_account_data(player_id: str, request: GdprDeleteRequest) -> dict:
             persist_player_data(other.player_id)
     player_settings_service.update(player_id, analytics_consent=False)
     persist_player_data(player_id)
-    product_analytics_service.erase_player(player_id)
+    try:
+        product_analytics_service.erase_player(player_id)
+    except ProductAnalyticsStorageError as exc:
+        raise HTTPException(status_code=503, detail=str(exc)) from exc
     deleted = player_data_repository.delete(player_id)
     platform_service.erase(player_id)
     identity_deleted = participant_auth_service.delete_identity(player_id)
@@ -1684,914 +1512,6 @@ def delete_account_data(player_id: str, request: GdprDeleteRequest) -> dict:
         "deleted": bool(deleted or identity_deleted),
         "identity_deleted": identity_deleted,
         "gdpr_erasure_completed": True,
-    }
-
-
-@app.post("/web-test/audit/session-start")
-def record_web_test_session_start_audit(
-    request: WebTestSessionAuditRequest,
-) -> dict:
-    player_persistence = (
-        player_data_persistence_health()
-    )
-    telemetry_persistence = (
-        telemetry_persistence_health()
-    )
-
-    manifest = build_manifest(
-        version=VERSION,
-        telemetry_service=telemetry_service,
-        persistence_ready=bool(
-            player_persistence["ready"]
-        ),
-        telemetry_persistence_ready=bool(
-            telemetry_persistence["ready"]
-        ),
-        test_run_id=
-            WEB_TEST_RUN_ID,
-    )
-
-    data_health = web_test_data_health()
-    rc_report = build_rc_report(
-        version=VERSION,
-        telemetry_service=telemetry_service,
-        persistence_ready=bool(
-            player_persistence["ready"]
-        ),
-        telemetry_persistence_ready=bool(
-            telemetry_persistence["ready"]
-        ),
-        test_run_id=
-            WEB_TEST_RUN_ID,
-    )
-    operation = build_operation_readiness(
-        manifest=manifest,
-        data_health=data_health,
-        rc_report=rc_report,
-    )
-
-    event_id = (
-        "web-test-audit-"
-        + request.player_id
-        + "-"
-        + str(
-            request.matchmaking_started_at_ms
-        )
-    )
-
-    accepted = telemetry_service.record(
-        TelemetryEvent(
-            event_id=event_id,
-            event_type=
-                "web_test_session_started",
-            timestamp_ms=
-                request.matchmaking_started_at_ms,
-            player_id=
-                request.player_id,
-            metadata={
-                "build":
-                    manifest[
-                        "web_test_build"
-                    ],
-                "server_version":
-                    manifest[
-                        "server_version"
-                    ],
-                "pvp_protocol_version":
-                    manifest[
-                        "pvp_protocol_version"
-                    ],
-                "operation_ready":
-                    operation[
-                        "ready"
-                    ],
-                "release_ready":
-                    manifest[
-                        "release_ready"
-                    ],
-                "player_data_ready":
-                    data_health[
-                        "player_data"
-                    ][
-                        "ready"
-                    ],
-                "telemetry_ready":
-                    data_health[
-                        "telemetry"
-                    ][
-                        "ready"
-                    ],
-                "retention_limit":
-                    data_health[
-                        "telemetry"
-                    ][
-                        "retention_limit"
-                    ],
-                "test_run_id":
-                    WEB_TEST_RUN_ID,
-            },
-        )
-    )
-
-    return {
-        "accepted": accepted,
-        "duplicate":
-            not accepted,
-        "audit_event_id":
-            event_id,
-        "test_run_id":
-            WEB_TEST_RUN_ID,
-    }
-
-
-@app.post("/web-test/audit/session-bind")
-def bind_web_test_session_audit(
-    request: WebTestSessionAuditBindRequest,
-) -> dict:
-    source = None
-
-    for event in telemetry_service.events(
-        event_type=
-            "web_test_session_started",
-    ):
-        if (
-            event["event_id"]
-            == request.audit_event_id
-        ):
-            source = event
-            break
-
-    if source is None:
-        raise HTTPException(
-            status_code=404,
-            detail=(
-                "Bağlanacak Web test audit başlangıç kaydı bulunamadı."
-            ),
-        )
-
-    bound_event_id = (
-        request.audit_event_id
-        + "-bound-"
-        + request.session_id
-    )
-
-    accepted = telemetry_service.record(
-        TelemetryEvent(
-            event_id=
-                bound_event_id,
-            event_type=
-                "web_test_session_bound",
-            timestamp_ms=
-                int(
-                    time.time()
-                    * 1000
-                ),
-            player_id=
-                source.get(
-                    "player_id"
-                ),
-            session_id=
-                request.session_id,
-            metadata={
-                "audit_event_id":
-                    request.audit_event_id,
-                "test_run_id":
-                    source.get(
-                        "metadata",
-                        {},
-                    ).get(
-                        "test_run_id",
-                        WEB_TEST_RUN_ID,
-                    ),
-            },
-        )
-    )
-
-    return {
-        "accepted": accepted,
-        "duplicate":
-            not accepted,
-        "bound_event_id":
-            bound_event_id,
-        "session_id":
-            request.session_id,
-    }
-
-
-@app.post("/web-test/audit/session-finish")
-def finish_web_test_session_audit(
-    request: WebTestSessionAuditFinishRequest,
-) -> dict:
-    bound = None
-
-    for event in telemetry_service.events(
-        event_type=
-            "web_test_session_bound",
-    ):
-        if (
-            event["metadata"].get(
-                "audit_event_id"
-            )
-            == request.audit_event_id
-            and event["session_id"]
-            == request.session_id
-        ):
-            bound = event
-            break
-
-    if bound is None:
-        raise HTTPException(
-            status_code=404,
-            detail=(
-                "Tamamlanacak Web test audit-session bağı bulunamadı."
-            ),
-        )
-
-    finished_event_id = (
-        request.audit_event_id
-        + "-finished-"
-        + request.session_id
-    )
-
-    accepted = telemetry_service.record(
-        TelemetryEvent(
-            event_id=
-                finished_event_id,
-            event_type=
-                "web_test_session_finished",
-            timestamp_ms=
-                int(
-                    time.time()
-                    * 1000
-                ),
-            player_id=
-                bound.get(
-                    "player_id"
-                ),
-            session_id=
-                request.session_id,
-            metadata={
-                "audit_event_id":
-                    request.audit_event_id,
-                "technical_completed":
-                    True,
-                "test_run_id":
-                    bound.get(
-                        "metadata",
-                        {},
-                    ).get(
-                        "test_run_id",
-                        WEB_TEST_RUN_ID,
-                    ),
-            },
-        )
-    )
-
-    return {
-        "accepted": accepted,
-        "duplicate":
-            not accepted,
-        "finished_event_id":
-            finished_event_id,
-        "session_id":
-            request.session_id,
-    }
-
-
-@app.post("/web-test/audit/launch-attempt")
-def record_web_test_launch_attempt(
-    request: WebTestLaunchAttemptRequest,
-) -> dict:
-    launch = (
-        web_test_launch_readiness()
-    )
-
-    event_id = (
-        "web-test-launch-"
-        + request.player_id
-        + "-"
-        + str(
-            request.attempted_at_ms
-        )
-    )
-
-    accepted = telemetry_service.record(
-        TelemetryEvent(
-            event_id=
-                event_id,
-            event_type=
-                "web_test_launch_attempted",
-            timestamp_ms=
-                request.attempted_at_ms,
-            player_id=
-                request.player_id,
-            metadata={
-                "test_run_id":
-                    WEB_TEST_RUN_ID,
-                "launch_ready":
-                    bool(
-                        launch[
-                            "launch_ready"
-                        ]
-                    ),
-                "failed_checks":
-                    list(
-                        launch[
-                            "failed_checks"
-                        ]
-                    ),
-            },
-        )
-    )
-
-    return {
-        "accepted":
-            accepted,
-        "duplicate":
-            not accepted,
-        "launch_ready":
-            bool(
-                launch[
-                    "launch_ready"
-                ]
-            ),
-        "failed_checks":
-            list(
-                launch[
-                    "failed_checks"
-                ]
-            ),
-        "test_run_id":
-            WEB_TEST_RUN_ID,
-    }
-
-
-@app.post("/web-test/audit/checklist-snapshot")
-def record_web_test_checklist_snapshot() -> dict:
-    checklist = (
-        web_test_first_run_checklist()
-    )
-    timestamp_ms = int(
-        time.time()
-        * 1000
-    )
-    event_id = (
-        "web-test-checklist-"
-        + WEB_TEST_RUN_ID
-        + "-"
-        + str(timestamp_ms)
-    )
-
-    accepted = telemetry_service.record(
-        TelemetryEvent(
-            event_id=event_id,
-            event_type=
-                "web_test_checklist_snapshot",
-            timestamp_ms=
-                timestamp_ms,
-            metadata={
-                "test_run_id":
-                    WEB_TEST_RUN_ID,
-                "checklist_ready":
-                    bool(
-                        checklist[
-                            "ready"
-                        ]
-                    ),
-                "failed_checks":
-                    list(
-                        checklist[
-                            "failed_checks"
-                        ]
-                    ),
-                "note_count":
-                    len(
-                        checklist[
-                            "notes"
-                        ]
-                    ),
-            },
-        )
-    )
-
-    return {
-        "accepted":
-            accepted,
-        "test_run_id":
-            WEB_TEST_RUN_ID,
-        "checklist_ready":
-            bool(
-                checklist[
-                    "ready"
-                ]
-            ),
-        "failed_checks":
-            list(
-                checklist[
-                    "failed_checks"
-                ]
-            ),
-        "note_count":
-            len(
-                checklist[
-                    "notes"
-                ]
-            ),
-    }
-
-
-@app.post("/web-test/audit/preflight-snapshot")
-def record_web_test_preflight_snapshot() -> dict:
-    preflight = (
-        web_test_preflight()
-    )
-    timestamp_ms = int(
-        time.time()
-        * 1000
-    )
-    event_id = (
-        "web-test-preflight-"
-        + WEB_TEST_RUN_ID
-        + "-"
-        + str(timestamp_ms)
-    )
-
-    operational = (
-        preflight.get(
-            "operational_kpis",
-            {},
-        )
-    )
-
-    accepted = telemetry_service.record(
-        TelemetryEvent(
-            event_id=event_id,
-            event_type=
-                "web_test_preflight_snapshot",
-            timestamp_ms=
-                timestamp_ms,
-            metadata={
-                "test_run_id":
-                    WEB_TEST_RUN_ID,
-                "preflight_ready":
-                    bool(
-                        preflight[
-                            "preflight_ready"
-                        ]
-                    ),
-                "failed_checks":
-                    list(
-                        preflight[
-                            "failed_checks"
-                        ]
-                    ),
-                "checklist_snapshots":
-                    int(
-                        operational.get(
-                            "checklist_snapshots",
-                            0,
-                        )
-                    ),
-                "launch_attempts":
-                    int(
-                        operational.get(
-                            "launch_attempts",
-                            0,
-                        )
-                    ),
-            },
-        )
-    )
-
-    return {
-        "accepted":accepted,
-        "test_run_id":
-            WEB_TEST_RUN_ID,
-        "preflight_ready":
-            bool(
-                preflight[
-                    "preflight_ready"
-                ]
-            ),
-        "failed_checks":
-            list(
-                preflight[
-                    "failed_checks"
-                ]
-            ),
-    }
-
-
-@app.post("/web-test/test-run/start")
-def start_web_test_run(
-    request: WebTestRunStartRequest,
-) -> dict:
-    if (
-        request.test_run_id
-        != WEB_TEST_RUN_ID
-    ):
-        raise HTTPException(
-            status_code=409,
-            detail=(
-                "İstenen test koşusu aktif Web test koşusuyla eşleşmiyor."
-            ),
-        )
-
-    preflight = (
-        web_test_preflight()
-    )
-
-    if not preflight.get(
-        "preflight_ready"
-    ):
-        raise HTTPException(
-            status_code=409,
-            detail=(
-                "Gerçek Web testi preflight hazır olmadan başlatılamaz."
-            ),
-        )
-
-    event_id = (
-        "web-test-run-started-"
-        + WEB_TEST_RUN_ID
-    )
-
-    accepted = telemetry_service.record(
-        TelemetryEvent(
-            event_id=event_id,
-            event_type=
-                "web_test_run_started",
-            timestamp_ms=
-                int(
-                    time.time()
-                    * 1000
-                ),
-            metadata={
-                "test_run_id":
-                    WEB_TEST_RUN_ID,
-                "preflight_ready":
-                    True,
-                "build":
-                    "web-test-beta.13",
-            },
-        )
-    )
-
-    return {
-        "started":True,
-        "accepted":
-            accepted,
-        "duplicate":
-            not accepted,
-        "test_run_id":
-            WEB_TEST_RUN_ID,
-        "build":
-            "web-test-beta.13",
-    }
-
-
-@app.post("/web-test/test-run/finish")
-def finish_web_test_run(
-    request: WebTestRunFinishRequest,
-) -> dict:
-    if (
-        request.test_run_id
-        != WEB_TEST_RUN_ID
-    ):
-        raise HTTPException(
-            status_code=409,
-            detail=(
-                "İstenen test koşusu aktif Web test koşusuyla eşleşmiyor."
-            ),
-        )
-
-    status = web_test_run_status()
-
-    if not status.get("started"):
-        raise HTTPException(
-            status_code=409,
-            detail=(
-                "Başlatılmamış Web test koşusu tamamlanamaz."
-            ),
-        )
-
-    # Final gözlem snapshot'larını koşu bitmeden kaydet.
-    record_web_test_operation_snapshot()
-    record_web_test_stability_snapshot()
-
-    event_id = (
-        "web-test-run-finished-"
-        + WEB_TEST_RUN_ID
-    )
-
-    accepted = telemetry_service.record(
-        TelemetryEvent(
-            event_id=event_id,
-            event_type=
-                "web_test_run_finished",
-            timestamp_ms=
-                int(
-                    time.time()
-                    * 1000
-                ),
-            metadata={
-                "test_run_id":
-                    WEB_TEST_RUN_ID,
-                "build":
-                    "web-test-beta.13",
-            },
-        )
-    )
-
-    return {
-        "finished":True,
-        "accepted":
-            accepted,
-        "duplicate":
-            not accepted,
-        "test_run_id":
-            WEB_TEST_RUN_ID,
-        "build":
-            "web-test-beta.13",
-    }
-
-
-@app.post("/web-test/feedback")
-def submit_web_test_feedback(
-    request: WebTestFeedbackRequest,
-) -> dict:
-    if (
-        request.test_run_id
-        != WEB_TEST_RUN_ID
-    ):
-        raise HTTPException(
-            status_code=409,
-            detail=(
-                "Geri bildirim aktif Web test koşusuyla eşleşmiyor."
-            ),
-        )
-
-    status = web_test_run_status()
-
-    if not status.get(
-        "finished"
-    ):
-        raise HTTPException(
-            status_code=409,
-            detail=(
-                "Geri bildirim yalnızca tamamlanmış Web test koşusu için gönderilebilir."
-            ),
-        )
-
-    try:
-        usability = (
-            validate_feedback_rating(
-                request.usability,
-                field_name=
-                    "Kullanılabilirlik",
-            )
-        )
-        connection = (
-            validate_feedback_rating(
-                request.connection,
-                field_name=
-                    "Bağlantı deneyimi",
-            )
-        )
-        battle_balance = (
-            validate_feedback_rating(
-                request.battle_balance,
-                field_name=
-                    "Savaş dengesi",
-            )
-        )
-        module_booster_balance = (
-            validate_feedback_rating(
-                request.module_booster_balance,
-                field_name=
-                    "Modül/güçlendirici dengesi",
-            )
-        )
-        note = normalize_feedback_note(
-            request.note
-        )
-    except ValueError as exc:
-        raise HTTPException(
-            status_code=422,
-            detail=str(exc),
-        ) from exc
-
-    event_id = (
-        "web-test-feedback-"
-        + WEB_TEST_RUN_ID
-        + "-"
-        + str(
-            request.submitted_at_ms
-        )
-    )
-
-    accepted = telemetry_service.record(
-        TelemetryEvent(
-            event_id=event_id,
-            event_type=
-                "web_test_feedback_submitted",
-            timestamp_ms=
-                request.submitted_at_ms,
-            metadata={
-                "test_run_id":
-                    WEB_TEST_RUN_ID,
-                "usability":
-                    usability,
-                "connection":
-                    connection,
-                "battle_balance":
-                    battle_balance,
-                "module_booster_balance":
-                    module_booster_balance,
-                "has_note":
-                    bool(note),
-                "note":
-                    note,
-            },
-        )
-    )
-
-    return {
-        "accepted":
-            accepted,
-        "duplicate":
-            not accepted,
-        "test_run_id":
-            WEB_TEST_RUN_ID,
-    }
-
-
-@app.get("/web-test/feedback/summary")
-def web_test_feedback_summary() -> dict:
-    return build_feedback_summary(
-        telemetry_service=
-            telemetry_service,
-        test_run_id=
-            WEB_TEST_RUN_ID,
-    )
-
-
-@app.get("/web-test/findings")
-def web_test_findings() -> dict:
-    feedback = (
-        web_test_feedback_summary()
-    )
-
-    return build_beta_findings(
-        telemetry_service=
-            telemetry_service,
-        test_run_id=
-            WEB_TEST_RUN_ID,
-        feedback_summary=
-            feedback,
-        minimum_feedback=3,
-    )
-
-
-@app.get("/web-test/review-candidates")
-def web_test_review_candidates() -> dict:
-    return build_review_candidates(
-        findings=
-            web_test_findings(),
-    )
-
-
-@app.post("/web-test/audit/operation-snapshot")
-def record_web_test_operation_snapshot() -> dict:
-    status = (
-        web_test_operation_status()
-    )
-    timestamp_ms = int(
-        time.time()
-        * 1000
-    )
-    event_id = (
-        "web-test-operation-"
-        + WEB_TEST_RUN_ID
-        + "-"
-        + str(timestamp_ms)
-    )
-
-    accepted = telemetry_service.record(
-        TelemetryEvent(
-            event_id=event_id,
-            event_type=
-                "web_test_operation_snapshot",
-            timestamp_ms=
-                timestamp_ms,
-            metadata={
-                "test_run_id":
-                    WEB_TEST_RUN_ID,
-                "operational_state":
-                    status[
-                        "operational_state"
-                    ],
-                "preflight_ready":
-                    bool(
-                        status[
-                            "preflight_ready"
-                        ]
-                    ),
-                "run_started":
-                    bool(
-                        status[
-                            "run_started"
-                        ]
-                    ),
-                "consistency_status":
-                    status[
-                        "consistency_status"
-                    ],
-            },
-        )
-    )
-
-    return {
-        "accepted":accepted,
-        "test_run_id":
-            WEB_TEST_RUN_ID,
-        "operational_state":
-            status[
-                "operational_state"
-            ],
-        "preflight_ready":
-            bool(
-                status[
-                    "preflight_ready"
-                ]
-            ),
-        "run_started":
-            bool(
-                status[
-                    "run_started"
-                ]
-            ),
-        "consistency_status":
-            status[
-                "consistency_status"
-            ],
-    }
-
-
-@app.post("/web-test/audit/stability-snapshot")
-def record_web_test_stability_snapshot() -> dict:
-    stability = (
-        web_test_operation_stability()
-    )
-    timestamp_ms = int(
-        time.time()
-        * 1000
-    )
-    event_id = (
-        "web-test-stability-"
-        + WEB_TEST_RUN_ID
-        + "-"
-        + str(timestamp_ms)
-    )
-
-    accepted = telemetry_service.record(
-        TelemetryEvent(
-            event_id=event_id,
-            event_type=
-                "web_test_stability_snapshot",
-            timestamp_ms=
-                timestamp_ms,
-            metadata={
-                "test_run_id":
-                    WEB_TEST_RUN_ID,
-                "stability":
-                    stability[
-                        "stability"
-                    ],
-                "operation_running_rate":
-                    float(
-                        stability[
-                            "operation_running_rate"
-                        ]
-                    ),
-                "running_to_other_regressions":
-                    int(
-                        stability[
-                            "running_to_other_regressions"
-                        ]
-                    ),
-            },
-        )
-    )
-
-    return {
-        "accepted":accepted,
-        "test_run_id":
-            WEB_TEST_RUN_ID,
-        "stability":
-            stability[
-                "stability"
-            ],
     }
 
 
@@ -2632,636 +1552,6 @@ def get_telemetry_events(
             event_type=event_type,
         )
     }
-
-
-def _balance_change_plan_for_player(
-    player_id:str|None,
-)->dict:
-    report=build_manual_battle_report(
-        events=telemetry_service.events(
-            player_id=player_id,
-        ),
-        player_id=player_id,
-        minimum_battles=3,
-    )
-    return build_balance_change_plan(
-        report
-    )
-
-
-@app.get("/telemetry/balance-change-plan")
-def balance_change_plan(
-    player_id:str|None=None,
-)->dict:
-    return _balance_change_plan_for_player(
-        player_id
-    )
-
-
-@app.get("/telemetry/balance-change-draft")
-def balance_change_draft(
-    player_id:str,
-)->dict:
-    plan=_balance_change_plan_for_player(
-        player_id
-    )
-    return (
-        balance_change_draft_service
-        .view(
-            player_id=player_id,
-            plan=plan,
-        )
-    )
-
-
-@app.put("/telemetry/balance-change-draft")
-def update_balance_change_draft(
-    player_id:str,
-    request:BalanceChangeDraftItemRequest,
-)->dict:
-    plan=_balance_change_plan_for_player(
-        player_id
-    )
-
-    try:
-        return (
-            balance_change_draft_service
-            .update_item(
-                player_id=player_id,
-                plan=plan,
-                area=request.area,
-                before_value=
-                    request.before_value,
-                proposed_value=
-                    request.proposed_value,
-                approved=
-                    request.approved,
-                simulation_status=
-                    request.simulation_status,
-                regression_status=
-                    request.regression_status,
-            )
-        )
-    except BalanceChangeDraftError as exc:
-        raise HTTPException(
-            status_code=422,
-            detail=str(exc),
-        ) from exc
-
-
-@app.post("/telemetry/balance-change-simulate")
-def simulate_balance_change(
-    player_id:str,
-    request:BalanceSimulationRequest,
-)->dict:
-    plan=_balance_change_plan_for_player(
-        player_id
-    )
-    draft=(
-        balance_change_draft_service
-        .view(
-            player_id=player_id,
-            plan=plan,
-        )
-    )
-
-    if not draft.get(
-        "review_ready"
-    ):
-        raise HTTPException(
-            status_code=422,
-            detail="İzole denge simülasyonu yalnız review_ready gerçek maç raporunda çalıştırılabilir.",
-        )
-
-    item=next(
-        (
-            value
-            for value
-            in draft.get(
-                "items",
-                [],
-            )
-            if value.get("area")
-            == request.area
-        ),
-        None,
-    )
-    if item is None:
-        raise HTTPException(
-            status_code=404,
-            detail="Simüle edilecek denge taslağı bulunamadı.",
-        )
-
-    if item.get(
-        "before_value"
-    ) is None or item.get(
-        "proposed_value"
-    ) is None:
-        raise HTTPException(
-            status_code=422,
-            detail="Simülasyon için mevcut ve önerilen değer girilmelidir.",
-        )
-
-    try:
-        result=run_balance_simulation(
-            area=request.area,
-            before_value=
-                item["before_value"],
-            proposed_value=
-                item["proposed_value"],
-        )
-    except BalanceSimulationError as exc:
-        # Unsupported/invalid simulation never changes canonical values.
-        updated=(
-            balance_change_draft_service
-            .update_item(
-                player_id=player_id,
-                plan=plan,
-                area=request.area,
-                before_value=
-                    item.get(
-                        "before_value"
-                    ),
-                proposed_value=
-                    item.get(
-                        "proposed_value"
-                    ),
-                approved=bool(
-                    item.get(
-                        "approved",
-                        False,
-                    )
-                ),
-                simulation_status=
-                    "failed",
-                regression_status=
-                    item.get(
-                        "regression_status",
-                        "pending",
-                    ),
-            )
-        )
-        return {
-            "ok":False,
-            "code":"simulation_failed",
-            "reason":str(exc),
-            "draft":updated,
-            "canonical_values_changed":
-                False,
-        }
-
-    updated=(
-        balance_change_draft_service
-        .update_item(
-            player_id=player_id,
-            plan=plan,
-            area=request.area,
-            before_value=
-                item.get(
-                    "before_value"
-                ),
-            proposed_value=
-                item.get(
-                    "proposed_value"
-                ),
-            approved=bool(
-                item.get(
-                    "approved",
-                    False,
-                )
-            ),
-            simulation_status=
-                "passed",
-            regression_status=
-                item.get(
-                    "regression_status",
-                    "pending",
-                ),
-        )
-    )
-
-    return {
-        "ok":True,
-        "simulation":result,
-        "draft":updated,
-        "canonical_values_changed":
-            False,
-        "automatic_apply":False,
-    }
-
-
-@app.post("/telemetry/balance-change-regression")
-def regress_balance_change(
-    player_id:str,
-    request:BalanceSimulationRequest,
-)->dict:
-    plan=_balance_change_plan_for_player(
-        player_id
-    )
-    draft=(
-        balance_change_draft_service
-        .view(
-            player_id=player_id,
-            plan=plan,
-        )
-    )
-
-    if not draft.get(
-        "review_ready"
-    ):
-        raise HTTPException(
-            status_code=422,
-            detail="Battle-engine regresyonu yalnız review_ready gerçek maç raporunda çalıştırılabilir.",
-        )
-
-    item=next(
-        (
-            value
-            for value
-            in draft.get(
-                "items",
-                [],
-            )
-            if value.get("area")
-            == request.area
-        ),
-        None,
-    )
-    if item is None:
-        raise HTTPException(
-            status_code=404,
-            detail="Regresyonu çalıştırılacak denge taslağı bulunamadı.",
-        )
-
-    structural=(
-        is_structural_regression_area(
-            request.area
-        )
-    )
-
-    if (
-        not structural
-        and item.get(
-            "simulation_status"
-        ) != "passed"
-    ):
-        raise HTTPException(
-            status_code=422,
-            detail="Sayısal regresyondan önce izole simülasyon passed olmalıdır.",
-        )
-
-    if (
-        not structural
-        and (
-            item.get(
-                "before_value"
-            ) is None
-            or item.get(
-                "proposed_value"
-            ) is None
-        )
-    ):
-        raise HTTPException(
-            status_code=422,
-            detail="Sayısal regresyon için mevcut ve önerilen değer girilmelidir.",
-        )
-
-    try:
-        result=run_balance_regression(
-            area=request.area,
-            before_value=
-                item["before_value"],
-            proposed_value=
-                item["proposed_value"],
-        )
-    except BalanceRegressionError as exc:
-        updated=(
-            balance_change_draft_service
-            .update_item(
-                player_id=player_id,
-                plan=plan,
-                area=request.area,
-                before_value=
-                    item.get(
-                        "before_value"
-                    ),
-                proposed_value=
-                    item.get(
-                        "proposed_value"
-                    ),
-                approved=bool(
-                    item.get(
-                        "approved",
-                        False,
-                    )
-                ),
-                simulation_status=(
-                    item.get(
-                        "simulation_status",
-                        "pending",
-                    )
-                    if structural
-                    else "passed"
-                ),
-                regression_status=
-                    "failed",
-            )
-        )
-        return {
-            "ok":False,
-            "code":"regression_failed",
-            "reason":str(exc),
-            "draft":updated,
-            "canonical_values_changed":
-                False,
-            "automatic_apply":False,
-        }
-
-    regression_status=(
-        "passed"
-        if result.get(
-            "status"
-        ) == "passed"
-        else "failed"
-    )
-
-    updated=(
-        balance_change_draft_service
-        .update_item(
-            player_id=player_id,
-            plan=plan,
-            area=request.area,
-            before_value=
-                item.get(
-                    "before_value"
-                ),
-            proposed_value=
-                item.get(
-                    "proposed_value"
-                ),
-            approved=bool(
-                item.get(
-                    "approved",
-                    False,
-                )
-            ),
-            simulation_status=(
-                item.get(
-                    "simulation_status",
-                    "pending",
-                )
-                if structural
-                else "passed"
-            ),
-            regression_status=
-                regression_status,
-        )
-    )
-
-    return {
-        "ok":
-            regression_status
-            == "passed",
-        "regression":result,
-        "draft":updated,
-        "canonical_values_changed":
-            False,
-        "automatic_apply":False,
-        "apply_endpoint_available":
-            False,
-        "structural_review":
-            structural,
-    }
-
-
-@app.get("/telemetry/balance-human-review")
-def balance_human_review(
-    player_id:str,
-)->dict:
-    plan=_balance_change_plan_for_player(
-        player_id
-    )
-    draft=(
-        balance_change_draft_service
-        .view(
-            player_id=player_id,
-            plan=plan,
-        )
-    )
-    return build_human_review_queue(
-        draft
-    )
-
-
-@app.get("/telemetry/balance-human-review-evidence")
-def balance_human_review_evidence(
-    player_id:str,
-)->dict:
-    plan=_balance_change_plan_for_player(
-        player_id
-    )
-    draft=(
-        balance_change_draft_service
-        .view(
-            player_id=player_id,
-            plan=plan,
-        )
-    )
-    queue=build_human_review_queue(
-        draft
-    )
-
-    evidence=[]
-    for item in draft.get(
-        "items",
-        [],
-    ):
-        area=str(
-            item.get(
-                "area",
-                "",
-            )
-        )
-        human_ready=bool(
-            item.get(
-                "human_review_ready",
-                False,
-            )
-        )
-        if not human_ready:
-            continue
-
-        entry={
-            "area":area,
-            "reason":
-                item.get("reason"),
-            "suggestion":
-                item.get("suggestion"),
-            "before_value":
-                item.get(
-                    "before_value"
-                ),
-            "proposed_value":
-                item.get(
-                    "proposed_value"
-                ),
-            "approved":bool(
-                item.get(
-                    "approved",
-                    False,
-                )
-            ),
-            "simulation_status":
-                item.get(
-                    "simulation_status",
-                    "pending",
-                ),
-            "regression_status":
-                item.get(
-                    "regression_status",
-                    "pending",
-                ),
-            "numeric_change":
-                item.get(
-                    "proposed_value"
-                ) is not None,
-            "simulation":None,
-            "regression":None,
-            "errors":[],
-        }
-
-        if (
-            entry[
-                "simulation_status"
-            ] == "passed"
-            and entry[
-                "before_value"
-            ] is not None
-            and entry[
-                "proposed_value"
-            ] is not None
-        ):
-            try:
-                entry[
-                    "simulation"
-                ]=run_balance_simulation(
-                    area=area,
-                    before_value=
-                        entry[
-                            "before_value"
-                        ],
-                    proposed_value=
-                        entry[
-                            "proposed_value"
-                        ],
-                )
-            except BalanceSimulationError as exc:
-                entry[
-                    "errors"
-                ].append(
-                    f"simulation: {exc}"
-                )
-
-        if (
-            entry[
-                "regression_status"
-            ] == "passed"
-        ):
-            try:
-                entry[
-                    "regression"
-                ]=run_balance_regression(
-                    area=area,
-                    before_value=
-                        entry[
-                            "before_value"
-                        ],
-                    proposed_value=
-                        entry[
-                            "proposed_value"
-                        ],
-                )
-            except BalanceRegressionError as exc:
-                entry[
-                    "errors"
-                ].append(
-                    f"regression: {exc}"
-                )
-
-        evidence.append(entry)
-
-    return {
-        "player_id":player_id,
-        "review_ready":bool(
-            draft.get(
-                "review_ready"
-            )
-        ),
-        "candidate_count":
-            len(evidence),
-        "evidence":
-            evidence,
-        "human_decision_required":
-            True,
-        "automatic_apply":
-            False,
-        "apply_endpoint_available":
-            False,
-        "numeric_balance_changed":
-            False,
-        "queue":queue,
-    }
-
-
-@app.delete("/telemetry/balance-change-draft")
-def clear_balance_change_draft(
-    player_id:str,
-)->dict:
-    balance_change_draft_service.clear(
-        player_id
-    )
-    return {
-        "player_id":player_id,
-        "cleared":True,
-        "automatic_apply":False,
-        "numeric_balance_changed":False,
-    }
-
-
-@app.get("/telemetry/manual-battle-report")
-def manual_battle_report(
-    player_id: str | None = None,
-) -> dict:
-    return build_manual_battle_report(
-        events=telemetry_service.events(
-            player_id=player_id,
-        ),
-        player_id=player_id,
-        minimum_battles=3,
-    )
-
-
-@app.get("/telemetry/kpis")
-def get_telemetry_kpis(
-    player_id: str | None = None,
-) -> dict:
-    return (
-        web_test_kpi_service
-        .snapshot(
-            player_id=player_id
-        )
-    )
-
-
-@app.get("/telemetry/summary")
-def get_telemetry_summary(
-    player_id: str | None = None,
-    session_id: str | None = None,
-) -> dict:
-    return telemetry_service.summary(
-        player_id=player_id,
-        session_id=session_id,
-    )
 
 
 @app.post("/player-data/{player_id}/save")
@@ -3392,7 +1682,6 @@ def _ensure_human_match_session(pair: MatchmakingPair) -> None:
         setup_required=True,
         auto_start_when_ready=True,
         normalized=False,
-        laboratory_effects_enabled=False,
     )
     pvp_service.join(
         session.session_id,
@@ -3404,8 +1693,8 @@ def _ensure_human_match_session(pair: MatchmakingPair) -> None:
         pair.player_b_id,
         display_name=player_profile_service.get_or_create(pair.player_b_id).display_name,
     )
-    attach_player_laboratory_to_session(session.session_id, pair.player_a_id)
-    attach_player_laboratory_to_session(session.session_id, pair.player_b_id)
+    attach_player_progression_to_session(session.session_id, pair.player_a_id)
+    attach_player_progression_to_session(session.session_id, pair.player_b_id)
 
 
 async def _provision_match_session(
@@ -3714,7 +2003,10 @@ def update_player_settings(
         player_id
     )
     if request.analytics_consent is False:
-        product_analytics_service.erase_player(player_id)
+        try:
+            product_analytics_service.erase_player(player_id)
+        except ProductAnalyticsStorageError as exc:
+            raise HTTPException(status_code=503, detail=str(exc)) from exc
     return settings.to_view()
 
 
@@ -3815,7 +2107,7 @@ def get_statistics(
 def _leaderboard_profile_rows() -> list[dict]:
     """Merge persisted players with authoritative profiles already in memory."""
     players: dict[str, dict] = {}
-    current_season = monthly_season_descriptor()
+    current_season = season_descriptor()
 
     for snapshot in player_data_repository.list_snapshots():
         profile = dict(snapshot.profile)
@@ -3898,6 +2190,114 @@ def _leaderboard_profile_rows() -> list[dict]:
     return list(players.values())
 
 
+
+# --- Takımlar arası turnuva ------------------------------------------------
+# Kurallar ve eşleşme team_tournament.py içindedir; takvim sezonla aynı dört
+# haftalık döngüdür. Kayıtlar ve oynanan maç ayakları takım deposunda dönem
+# kimliğiyle tutulur; AI takımları her dönem katılır.
+
+def _team_tournament_ai_teams() -> dict[str, dict]:
+    teams: dict[str, dict] = {}
+    for bot in BOTS:
+        team_id = str(bot.get("team_id") or "").strip()
+        if not team_id:
+            continue
+        team = teams.setdefault(
+            team_id,
+            {"team_name": str(bot.get("team_name") or "AI Takımı"), "roster": []},
+        )
+        team["roster"].append({
+            "player_id": str(bot["id"]),
+            "display_name": str(bot["display_name"]),
+            "rating": max(0, int(bot.get("rating", 0))),
+        })
+    return teams
+
+
+def _team_roster_snapshot(team: dict) -> list[dict]:
+    roster = []
+    for member_id in team.get("member_ids", []):
+        profile = _team_member_profile(str(member_id))
+        roster.append({
+            "player_id": str(member_id),
+            "display_name": profile.display_name,
+            "rating": max(0, int(profile.rating)),
+        })
+    return roster
+
+
+def _team_tournament_state(period_id: str) -> dict:
+    """Dönemin kayıtları ve oynanan maç ayakları."""
+    return team_service.tournament_state(period_id)
+
+
+def _events_view(moment: datetime | None = None) -> dict:
+    current = moment or datetime.now(timezone.utc)
+    return build_events_view(
+        _leaderboard_profile_rows(),
+        current,
+        team_tournament_state=_team_tournament_state(team_tournament_period_id(current)),
+    )
+
+
+def _team_tournament_final_standings(period_id: str) -> list[dict]:
+    calendar = team_tournament_calendar(period_id)
+    state = _team_tournament_state(period_id)
+    return build_team_tournament_view(
+        period_id,
+        calendar["ends_at"],
+        registrations=state["registrations"],
+        ai_teams=_team_tournament_ai_teams(),
+        legs=state["legs"],
+    )["standings"]
+
+
+def _team_tournament_periods_to_settle(profile, moment: datetime) -> list[str]:
+    """Turnuvası bitmiş (4. hafta Pazar'ı geçmiş) ve oyuncunun maç oynadığı dönemler."""
+    candidates = {str(profile.team_tournament_period or ""), team_tournament_period_id(moment)}
+    ready = []
+    for period_id in candidates:
+        try:
+            calendar = team_tournament_calendar(period_id)
+        except (TypeError, ValueError):
+            continue
+        if moment >= calendar["ends_at"]:
+            ready.append(period_id)
+    return sorted(ready)
+
+
+def _record_team_tournament_leg(state) -> None:
+    """Takım turnuvası maçının sonucunu kendi maç ayağına bir kez yazar."""
+    session_id = str(getattr(state, "battle_id", "") or "")
+    if not session_id.startswith(TEAM_TOURNAMENT_SESSION_PREFIX):
+        return
+    leg_id = session_id[len(TEAM_TOURNAMENT_SESSION_PREFIX):]
+    period_id = team_tournament_period_of_leg(leg_id)
+    try:
+        located = locate_team_tournament_leg(
+            period_id,
+            leg_id,
+            registrations=_team_tournament_state(period_id)["registrations"],
+            ai_teams=_team_tournament_ai_teams(),
+        )
+    except (TypeError, ValueError):
+        return
+    if located is None:
+        return
+    pairing = located["pairing"]
+    participants = {pairing["home_player_id"], pairing["away_player_id"]}
+    winner = str(getattr(state, "winner_player_id", "") or "")
+    loser = str(getattr(state, "loser_player_id", "") or "")
+    draw = bool(getattr(state, "is_draw", False)) or winner not in participants
+    team_service.record_tournament_leg(period_id, leg_id, {
+        "winner_player_id": None if draw else winner,
+        "loser_player_id": None if draw else loser,
+        "draw": draw,
+        "battle_id": session_id,
+        "finish_reason": str(getattr(state, "finish_reason", "") or ""),
+    })
+
+
 def _ranked_player_rows(players: list[dict], value_key: str) -> list[dict]:
     ordered = sorted(
         players,
@@ -3959,16 +2359,14 @@ def _public_player_profile_view(player_id: str) -> dict:
             "rating": rating,
             "highest_rating": rating,
             "rank_name_tr": rank["name_tr"],
-            "rank_name_en": rank["name_en"],
             "operator_title": bot.get("archetype_tr", "Devre Operatörü"),
-            "operator_title_en": get_ai_archetype(BOT_ARCHETYPE_IDS.get(bot.get("archetype_tr"), "balanced")).name_en,
             "avatar": {"selected_avatar_id": "default", "selected_avatar_frame_id": "none"},
-            "honors": {"rank_trophy_ids": [], "badge_ids": []},
             "team": {"team_id": bot.get("team_id"), "team_name": bot.get("team_name")},
             "featured_deck": {"module_ids": list(bot.get("battle_pool_ids", ())), "matches": matches},
             "selected_core": {"id": core["id"], "name_tr": core["name_tr"], "level": 1, "rarity": core["rarity"]},
-            "season": {"id": monthly_season_descriptor()["id"], "name_tr": monthly_season_descriptor()["name_tr"], "name_en": monthly_season_descriptor()["name_en"], "ends_at": monthly_season_descriptor()["ends_at"], "summary": {}},
+            "season": {"id": season_descriptor()["id"], "name_tr": season_descriptor()["name_tr"], "ends_at": season_descriptor()["ends_at"], "summary": {}},
             "statistics": record,
+            "honors": {"rank_trophy_ids": [], "badge_ids": []},
             "visibility": {"profile": True, "avatar": False, "rewards": False, "settings": False},
         }
     try:
@@ -4000,7 +2398,7 @@ def _public_player_profile_view(player_id: str) -> dict:
             "matches": 0,
         }
     )
-    season = monthly_season_descriptor()
+    season = season_descriptor()
 
     return {
         "player_id": profile.player_id,
@@ -4008,16 +2406,10 @@ def _public_player_profile_view(player_id: str) -> dict:
         "rating": max(0, int(profile.rating)),
         "highest_rating": max(0, int(profile_view["highest_rating"])),
         "rank_name_tr": profile_view["league_name_tr"],
-        "rank_name_en": profile_view["league_name_en"],
         "operator_title": profile_view["operator_title"],
-        "operator_title_en": profile_view["operator_title_progression"]["current"]["title_en"],
         "avatar": {
             "selected_avatar_id": profile.selected_avatar_id,
             "selected_avatar_frame_id": profile.selected_avatar_frame_id,
-        },
-        "honors": {
-            "rank_trophy_ids": list(profile.unlocked_rank_trophy_ids),
-            "badge_ids": list(profile.unlocked_badge_ids),
         },
         "team": {
             "team_id": profile.team_id,
@@ -4027,14 +2419,12 @@ def _public_player_profile_view(player_id: str) -> dict:
         "selected_core": {
             "id": selected_core["id"],
             "name_tr": selected_core["name_tr"],
-            "name_en": selected_core.get("name_en", ""),
             "level": selected_core["level"],
             "rarity": selected_core["rarity"],
         },
         "season": {
             "id": season["id"],
             "name_tr": season["name_tr"],
-            "name_en": season["name_en"],
             "ends_at": season["ends_at"],
             "summary": profile_view["season_summary"],
         },
@@ -4046,6 +2436,11 @@ def _public_player_profile_view(player_id: str) -> dict:
             "win_rate": statistics["win_rate"],
             "average_match_duration_ms": statistics["average_match_duration_ms"],
             "total_damage_dealt": statistics["total_damage_dealt"],
+        },
+        # Devre Koleksiyonu ziyaretçilere de açıktır.
+        "honors": {
+            "rank_trophy_ids": list(profile.unlocked_rank_trophy_ids),
+            "badge_ids": list(profile.unlocked_badge_ids),
         },
         "visibility": {
             "profile": True,
@@ -4073,6 +2468,7 @@ def _public_team_profile_view(team_id: str) -> dict:
     if ai_members:
         team_name = str(ai_members[0].get("team_name") or "Takım")
         member_limit = 30
+        appearance = team_appearance_for_seed(clean_team_id)
         for bot in ai_members:
             record = _synthetic_bot_record(bot)
             members.append({
@@ -4083,9 +2479,7 @@ def _public_team_profile_view(team_id: str) -> dict:
                 "online": True,
                 "is_bot": True,
                 "rank_name_tr": rank_stage_for_rating(int(bot.get("rating", 0)))["name_tr"],
-                "rank_name_en": rank_stage_for_rating(int(bot.get("rating", 0)))["name_en"],
                 "operator_title": bot.get("archetype_tr", "Devre Operatörü"),
-                "operator_title_en": get_ai_archetype(BOT_ARCHETYPE_IDS.get(bot.get("archetype_tr"), "balanced")).name_en,
                 "statistics": record,
             })
     else:
@@ -4095,6 +2489,7 @@ def _public_team_profile_view(team_id: str) -> dict:
             raise HTTPException(status_code=404, detail="Takım profili bulunamadı.") from exc
         team_name = str(team.get("name") or "Takım")
         member_limit = max(1, int(team.get("member_limit", 30)))
+        appearance = team_appearance(team.get("cosmetics"))
         online_ids = set(player_profile_service._profiles)
         for member_id in team.get("member_ids", []):
             profile = _team_member_profile(member_id)
@@ -4131,7 +2526,7 @@ def _public_team_profile_view(team_id: str) -> dict:
     total_draws = sum(member["statistics"]["draws"] for member in members)
     total_trophies = sum(member["trophies"] for member in members)
 
-    competition = build_events_view(_leaderboard_profile_rows())
+    competition = _events_view()
     tournament_row = next(
         (
             row for row in competition["team_tournament"]["standings"]
@@ -4142,6 +2537,7 @@ def _public_team_profile_view(team_id: str) -> dict:
     return {
         "team_id": clean_team_id,
         "name": team_name,
+        "appearance": appearance,
         "member_count": len(members),
         "member_limit": member_limit,
         "total_trophies": total_trophies,
@@ -4230,7 +2626,7 @@ def get_leaderboards(player_id: str | None = None) -> dict:
                 None,
             )
     return {
-        "season": monthly_season_descriptor(),
+        "season": season_descriptor(),
         "top_five_rewards": [dict(item) for item in LEADERBOARD_PRIZES[:5]],
         "top_ten_rewards": [dict(item) for item in LEADERBOARD_PRIZES],
         "trophies": _ranked_player_rows(players, "rating"),
@@ -4282,10 +2678,9 @@ def _settle_competition_rewards(player_id: str) -> None:
         if target is None:
             return
         changed = False
-        current_events = build_events_view(_leaderboard_profile_rows())
-        current_week = current_events["weekly_tournament"]["period"]["id"]
-        current_month = current_events["team_tournament"]["period"]["id"]
-        current_season = monthly_season_descriptor()["id"]
+        iso_year, iso_week, _ = datetime.now(timezone.utc).isocalendar()
+        current_week = f"{iso_year}-W{iso_week:02d}"
+        current_season = season_descriptor()["id"]
 
         # Monthly general leaderboard: archived final ratings are immutable and
         # therefore safe to settle after rollover.
@@ -4338,42 +2733,181 @@ def _settle_competition_rewards(player_id: str) -> None:
                     prize=dict(WEEKLY_PRIZES[position - 1]),
                 )
 
-        team_period = str(target.team_tournament_period or "")
-        if (
-            team_period
-            and team_period != current_month
-            and target.team_id
-            and int(target.team_tournament_contribution_points) >= 5
-        ):
-            team_scores: dict[str, int] = {}
-            for profile in profiles:
-                if profile.team_tournament_period != team_period or not profile.team_id:
-                    continue
-                team_scores[profile.team_id] = team_scores.get(profile.team_id, 0) + int(profile.team_tournament_contribution_points)
-            ranked_teams = sorted(team_scores.items(), key=lambda item: (-item[1], item[0]))
-            position = next((index for index, row in enumerate(ranked_teams, 1) if row[0] == target.team_id), 0)
-            if 1 <= position <= len(TEAM_PRIZES):
-                changed |= _queue_competition_reward(
-                    target,
-                    source="team_tournament",
-                    period_id=team_period,
-                    position=position,
-                    prize=dict(TEAM_PRIZES[position - 1]),
-                    team_id=target.team_id,
-                )
+        # Takım turnuvası dönemin 4. haftası bitince sona erer. Ödül ekrandaki
+        # sıralamayla aynı hesaptan gelir: oyuncunun kayıtlı kadrosunda olduğu
+        # takım ilk üçteyse ve katkısı en az 4 puansa kasası kuyruğa girer.
+        for team_period in _team_tournament_periods_to_settle(target, datetime.now(timezone.utc)):
+            standings = _team_tournament_final_standings(team_period)
+            team_row = next(
+                (
+                    row for row in standings
+                    if not row["is_ai"]
+                    and any(member["player_id"] == player_id for member in row["members"])
+                ),
+                None,
+            )
+            if team_row is None or not 1 <= team_row["position"] <= len(TEAM_PRIZES):
+                continue
+            member = next(item for item in team_row["members"] if item["player_id"] == player_id)
+            if member["contribution_points"] < TEAM_TOURNAMENT_MINIMUM_POINTS:
+                continue
+            changed |= _queue_competition_reward(
+                target,
+                source="team_tournament",
+                period_id=team_period,
+                position=team_row["position"],
+                prize=dict(TEAM_PRIZES[team_row["position"] - 1]),
+                team_id=team_row["team_id"],
+            )
         if changed:
             persist_player_data(player_id)
 
 
+# Mesaj kutusu duyuruları: oyun güncellemeleri. Oyun bildirimleri (ör. takım
+# turnuvası maç saati) okuma anında oyuncunun durumundan üretilir.
+INBOX_UPDATE_NOTICES: tuple[dict, ...] = (
+    {
+        "notice_id": "update-beta72",
+        "kind": "update",
+        "title_tr": "Beta.72 güncellemesi",
+        "body_tr": "Modül ve çekirdek imza mekanikleri, yeni savaş efektleri, sezon ödüllerinde ücretli geçiş sütunu ve arkadaş savaşı davetleri oyuna eklendi.",
+    },
+)
+
+
+def _inbox_invitations(profile) -> list[dict]:
+    """Bekleyen ve kabul edilip henüz bitmemiş kupasız savaş davetleri."""
+    player_id = profile.player_id
+    items: list[dict] = []
+    for invite in reversed(profile.social_battle_invites[-50:]):
+        status = str(invite.get("status") or "")
+        incoming = invite.get("opponent_id") == player_id
+        if status == "pending" and not incoming:
+            continue
+        if status not in {"pending", "accepted"}:
+            continue
+        if status == "accepted" and not _battle_session_open(invite.get("battle_session_id")):
+            continue
+        peer_id = invite.get("challenger_id") if incoming else invite.get("opponent_id")
+        peer_name = invite.get("challenger_name") if incoming else invite.get("opponent_name")
+        items.append({
+            "invitation_id": str(invite.get("invite_id")),
+            "kind": "friend_battle",
+            "status": status,
+            "incoming": incoming,
+            "peer_id": peer_id,
+            "peer_name": peer_name or "Oyuncu",
+            "battle_session_id": invite.get("battle_session_id"),
+            "players": [invite.get("challenger_id"), invite.get("opponent_id")],
+        })
+    team = team_service.team_for_player(player_id)
+    if team:
+        names = {
+            member_id: _team_member_profile(member_id).display_name
+            for member_id in team.get("member_ids", [])
+        }
+        for challenge in reversed(team.get("training_challenges", [])[-50:]):
+            status = str(challenge.get("status") or "")
+            incoming = challenge.get("opponent_id") == player_id
+            outgoing = challenge.get("challenger_id") == player_id
+            if not (incoming or outgoing):
+                continue
+            if status == "pending" and not incoming:
+                continue
+            if status not in {"pending", "accepted"}:
+                continue
+            if status == "accepted" and not _battle_session_open(challenge.get("battle_session_id")):
+                continue
+            peer_id = challenge.get("challenger_id") if incoming else challenge.get("opponent_id")
+            items.append({
+                "invitation_id": str(challenge.get("challenge_id")),
+                "kind": "team_training",
+                "status": status,
+                "incoming": incoming,
+                "team_id": team.get("team_id"),
+                "peer_id": peer_id,
+                "peer_name": names.get(peer_id, "Takım üyesi"),
+                "battle_session_id": challenge.get("battle_session_id"),
+                "players": [challenge.get("challenger_id"), challenge.get("opponent_id")],
+            })
+    return items[:20]
+
+
+def _inbox_notices(profile) -> list[dict]:
+    seen = set(profile.seen_inbox_notice_ids)
+    notices = [dict(item) for item in INBOX_UPDATE_NOTICES]
+    try:
+        events = _events_view()
+    except Exception:  # Bildirim üretimi mesaj kutusunu hiçbir zaman düşürmez.
+        events = {}
+    for fixture in (events.get("team_tournament") or {}).get("fixtures", []):
+        if fixture.get("status") not in {"upcoming", "live"}:
+            continue
+        pairing = next(
+            (
+                item for item in fixture.get("member_pairings", [])
+                if profile.player_id in {item.get("home_player_id"), item.get("away_player_id")}
+            ),
+            None,
+        )
+        if pairing is None or all(leg.get("status") == "played" for leg in pairing.get("legs", [])):
+            continue
+        opponent_name = (
+            pairing.get("away_player_name")
+            if pairing.get("home_player_id") == profile.player_id
+            else pairing.get("home_player_name")
+        )
+        live = fixture.get("status") == "live"
+        notices.append({
+            "notice_id": f"fixture:{fixture.get('fixture_id')}",
+            "kind": "game",
+            "title_tr": "Takım turnuvası maçların açık" if live else "Takım turnuvası eşleşmen açıklandı",
+            "body_tr": f"Rakibin: {opponent_name or 'Rakip'}. Rövanşlı iki maç Cuma–Pazar oynanır; Etkinlik → Eşleşmeler bölümünden gir.",
+            "scheduled_at": fixture.get("matches_open_at"),
+            "fixture_id": fixture.get("fixture_id"),
+        })
+    for notice in notices:
+        notice["seen"] = notice["notice_id"] in seen
+    return notices
+
+
 def _reward_inbox_view(profile) -> dict:
     messages = [dict(item) for item in reversed(profile.reward_inbox)]
+    invitations = _inbox_invitations(profile)
+    notices = _inbox_notices(profile)
+    unclaimed_count = sum(item.get("status") == "unclaimed" for item in messages)
+    actionable_invitations = sum(
+        1 for item in invitations
+        if item["incoming"] and item["status"] == "pending"
+    )
     return {
         "player_id": profile.player_id,
         "messages": messages,
-        "updates": [{"id": f"release:{VERSION}", "version": VERSION}],
-        "unclaimed_count": sum(item.get("status") == "unclaimed" for item in messages),
+        "unclaimed_count": unclaimed_count,
         "universal_module_shards": int(profile.universal_module_shards),
+        "invitations": invitations,
+        "notices": notices,
+        "unread_count": (
+            unclaimed_count
+            + actionable_invitations
+            + sum(not item["seen"] for item in notices)
+        ),
     }
+
+
+@app.post("/profile/{player_id}/reward-inbox/notices/seen")
+def mark_reward_inbox_notices_seen(player_id: str, request: InboxNoticeSeenRequest) -> dict:
+    if request.player_id != player_id:
+        raise HTTPException(status_code=403, detail="Başka bir oyuncu adına işlem yapılamaz.")
+    with REWARD_INBOX_LOCK:
+        profile = _team_member_profile(player_id)
+        current = [item["notice_id"] for item in _inbox_notices(profile)]
+        wanted = [value for value in request.notice_ids if value in current] or current
+        profile.seen_inbox_notice_ids = tuple(
+            dict.fromkeys((*profile.seen_inbox_notice_ids, *wanted))
+        )[-200:]
+        persist_player_data(player_id)
+        return _reward_inbox_view(profile)
 
 
 @app.get("/profile/{player_id}/reward-inbox")
@@ -4409,8 +2943,14 @@ def claim_reward_inbox_item(player_id: str, message_id: str, request: MetaOperat
             value = str(reward.get(reward_key) or "").strip()
             if value:
                 setattr(profile, attribute, tuple(dict.fromkeys((*getattr(profile, attribute), value))))
+        team_unlocks: dict[str, str] = {}
         if message.get("source") == "team_tournament" and message.get("team_id"):
-            team_service.grant_reward_cosmetics(str(message["team_id"]), reward)
+            # Ödülü her üye alır; takım görünümü takım ve dönem başına bir kez açılır.
+            team_unlocks = team_service.grant_reward_cosmetics(
+                str(message["team_id"]),
+                reward,
+                grant_id=f"team_tournament:{message.get('period_id')}:{message['team_id']}",
+            )
         message["status"] = "claimed"
         receipt = {
             "request_id": request.request_id,
@@ -4418,6 +2958,7 @@ def claim_reward_inbox_item(player_id: str, message_id: str, request: MetaOperat
             "source": message.get("source"),
             "position": message.get("position"),
             "chest": reward,
+            "team_unlocks": team_unlocks,
         }
         profile.reward_inbox_receipts[request.request_id] = dict(receipt)
         persist_player_data(player_id)
@@ -4465,6 +3006,18 @@ def _battle_session_finished(session_id: str | None) -> bool:
     return str(status) == "finished"
 
 
+def _battle_session_open(session_id: str | None) -> bool:
+    """Oturum hâlâ kayıtlı ve bitmemişse True (süresi dolan oturum kapalıdır)."""
+    if not session_id:
+        return False
+    try:
+        session = pvp_service.get_session(str(session_id))
+    except PvPSessionError:
+        return False
+    status = getattr(session.engine.state.status, "value", session.engine.state.status)
+    return str(status) != "finished"
+
+
 def _complete_social_battle_invites(session_id: str) -> bool:
     clean_session_id = str(session_id or "").strip()
     if not clean_session_id:
@@ -4489,6 +3042,35 @@ def _complete_social_battle_invites(session_id: str) -> bool:
     return changed
 
 
+def _direct_message_conversations(profile) -> list[dict]:
+    """Oyuncunun sohbet listesi: karşı oyuncu, son mesaj ve okunmamış sayısı."""
+    try:
+        rows = platform_service.conversations(
+            profile.player_id,
+            legacy_seen_at=int(profile.direct_messages_seen_at or 0),
+        )
+    except Exception:
+        return []
+    friend_ids = set(profile.friend_ids)
+    blocked_ids = set(profile.blocked_player_ids)
+    conversations = []
+    for row in rows:
+        if row["peer_id"] in blocked_ids:
+            continue
+        try:
+            peer = _social_player_summary(row["peer_id"])
+        except Exception:
+            continue
+        conversations.append({
+            **row,
+            "peer": peer,
+            "is_friend": row["peer_id"] in friend_ids,
+        })
+        if len(conversations) >= 100:
+            break
+    return conversations
+
+
 def _social_view(player_id: str) -> dict:
     profile = _team_member_profile(player_id)
     invitations = []
@@ -4502,9 +3084,20 @@ def _social_view(player_id: str) -> dict:
         invitations.append(item)
     if changed:
         persist_player_data(player_id)
+    conversations = _direct_message_conversations(profile)
+    unread_messages = sum(int(item["unread_count"]) for item in conversations)
+    pending_battle_invites = sum(
+        1 for item in invitations
+        if item.get("status") == "pending" and item.get("opponent_id") == player_id
+    )
     return {
         "player_id": player_id,
         "friend_limit": 100,
+        "notifications": {
+            "incoming_requests": len(profile.incoming_friend_request_ids),
+            "battle_invites": pending_battle_invites,
+            "unread_messages": unread_messages,
+        },
         "friends": [_social_player_summary(value) for value in profile.friend_ids],
         "incoming_requests": [
             _social_player_summary(value)
@@ -4515,6 +3108,7 @@ def _social_view(player_id: str) -> dict:
             for value in profile.outgoing_friend_request_ids
         ],
         "battle_invites": invitations,
+        "conversations": conversations,
     }
 
 
@@ -4533,15 +3127,14 @@ def _create_unranked_social_session(
             setup_required=True,
             auto_start_when_ready=True,
             match_type=match_type,
-            season_id=monthly_season_descriptor()["id"],
+            season_id=season_descriptor()["id"],
             ranked_eligible=False,
             normalized=True,
-            laboratory_effects_enabled=False,
         )
     for player_id in (player_a_id, player_b_id):
         profile = _team_member_profile(player_id)
         pvp_service.join(session_id, player_id, display_name=profile.display_name)
-        attach_player_laboratory_to_session(session_id, player_id)
+        attach_player_progression_to_session(session_id, player_id)
     return {
         "session_id": session.session_id,
         "players": [player_a_id, player_b_id],
@@ -4647,6 +3240,46 @@ def reject_friend_request(player_id: str, request: FriendDecisionOperation) -> d
     return _social_view(player_id)
 
 
+@app.post("/social/{player_id}/requests/cancel")
+def cancel_friend_request(player_id: str, request: FriendRequestCancelOperation) -> dict:
+    if request.player_id != player_id:
+        raise HTTPException(status_code=403, detail="Başka bir oyuncu adına işlem yapılamaz.")
+    target_id = str(request.target_player_id).strip()
+    with SOCIAL_LOCK:
+        profile = _team_member_profile(player_id)
+        target = _team_member_profile(target_id)
+        _replace_tuple(profile, "outgoing_friend_request_ids", (value for value in profile.outgoing_friend_request_ids if value != target_id))
+        _replace_tuple(target, "incoming_friend_request_ids", (value for value in target.incoming_friend_request_ids if value != player_id))
+        persist_player_data(player_id)
+        persist_player_data(target_id)
+    return _social_view(player_id)
+
+
+@app.post("/social/{player_id}/battle-invites/{invite_id}/decline")
+def decline_social_battle_invite(
+    player_id: str,
+    invite_id: str,
+    request: EventRegistrationOperation,
+) -> dict:
+    if request.player_id != player_id:
+        raise HTTPException(status_code=403, detail="Başka bir oyuncu adına işlem yapılamaz.")
+    with SOCIAL_LOCK:
+        profile = _team_member_profile(player_id)
+        invite = next((item for item in profile.social_battle_invites if item.get("invite_id") == invite_id), None)
+        if invite is None or invite.get("opponent_id") != player_id:
+            raise HTTPException(status_code=404, detail="Arkadaş savaşı daveti bulunamadı.")
+        if invite.get("status") != "pending":
+            raise HTTPException(status_code=422, detail="Bu davet artık beklemede değil.")
+        challenger_id = str(invite["challenger_id"])
+        for owner_id in (player_id, challenger_id):
+            owner = _team_member_profile(owner_id)
+            for item in owner.social_battle_invites:
+                if item.get("invite_id") == invite_id:
+                    item["status"] = "declined"
+            persist_player_data(owner_id)
+    return {**_social_view(player_id), "inbox": _reward_inbox_view(_team_member_profile(player_id))}
+
+
 @app.post("/social/{player_id}/battle-invites")
 def create_social_battle_invite(player_id: str, request: SocialBattleInviteOperation) -> dict:
     if request.player_id != player_id:
@@ -4657,6 +3290,18 @@ def create_social_battle_invite(player_id: str, request: SocialBattleInviteOpera
         opponent = _team_member_profile(opponent_id)
         if opponent_id not in profile.friend_ids:
             raise HTTPException(status_code=422, detail="Arkadaş savaşı için önce arkadaş olmalısınız.")
+        # Aynı arkadaşa bekleyen bir davet varken yenisi açılmaz.
+        pending = next(
+            (
+                item for item in profile.social_battle_invites
+                if item.get("status") == "pending"
+                and item.get("challenger_id") == player_id
+                and item.get("opponent_id") == opponent_id
+            ),
+            None,
+        )
+        if pending is not None:
+            return {**_social_view(player_id), "replayed": True}
         invite_id = "friend-battle-" + hashlib.sha1(request.request_id.encode("utf-8")).hexdigest()[:16]
         existing = next((item for item in profile.social_battle_invites if item.get("invite_id") == invite_id), None)
         if existing is None:
@@ -4677,6 +3322,13 @@ def create_social_battle_invite(player_id: str, request: SocialBattleInviteOpera
             opponent.social_battle_invites[:] = opponent.social_battle_invites[-50:]
             persist_player_data(player_id)
             persist_player_data(opponent_id)
+            platform_service.queue_notification(
+                opponent_id,
+                "Savaş daveti",
+                f"{profile.display_name} seni kupasız savaşa çağırdı.",
+                "gridshard://inbox",
+                source_player_id=player_id,
+            )
     return _social_view(player_id)
 
 
@@ -4722,6 +3374,17 @@ def _team_summary(team: dict) -> dict:
         "member_limit": int(team.get("member_limit", 30)),
         "total_trophies": sum(ratings),
     }
+
+
+def _team_appearance_unlock_sources() -> dict[str, dict[str, int]]:
+    """Görünüm seçeneği → onu doğrudan veren takım turnuvası sırası."""
+    sources: dict[str, dict[str, int]] = {key: {} for key in TEAM_APPEARANCE_OPTIONS}
+    for prize in TEAM_PRIZES:
+        for reward_key, key in TEAM_PRIZE_APPEARANCE_KEYS.items():
+            value = prize.get(reward_key)
+            if value and value not in sources[key]:
+                sources[key][value] = int(prize["position"])
+    return sources
 
 
 def _team_view(team: dict, player_id: str) -> dict:
@@ -4833,9 +3496,16 @@ def _team_view(team: dict, player_id: str) -> dict:
         "owner_id": team.get("owner_id"),
         "is_owner": team.get("owner_id") == player_id,
         "cosmetics": dict(team.get("cosmetics") or {}),
+        "appearance": team_appearance(team.get("cosmetics")),
+        "appearance_options": {
+            key: list(values) for key, values in TEAM_APPEARANCE_OPTIONS.items()
+        },
+        "appearance_unlocked": team_appearance_unlocked(team.get("cosmetics")),
+        "appearance_unlock_sources": _team_appearance_unlock_sources(),
         "applications": applicants,
         "members": members,
         "module_requests": requests,
+        "module_request_available": team_service.module_request_available(team, player_id),
         "messages": messages,
         "training_challenges": challenges,
         "request_policy": TEAM_REQUEST_POLICY,
@@ -5010,10 +3680,9 @@ def update_team_cosmetics(team_id: str, request: TeamCosmeticsRequest) -> dict:
             team_id=team_id,
             owner_id=request.player_id,
             selections={
-                "avatar_id": request.avatar_id,
-                "avatar_frame_id": request.avatar_frame_id,
-                "bar_background_id": request.bar_background_id,
-                "name_frame_id": request.name_frame_id,
+                "emblem_id": request.emblem_id,
+                "frame_id": request.frame_id,
+                "name_color_id": request.name_color_id,
             },
             request_id=request.request_id,
         )
@@ -5159,6 +3828,28 @@ def accept_team_training_challenge(
     }
 
 
+@app.post("/teams/{team_id}/training-challenges/{challenge_id}/decline")
+def decline_team_training_challenge(
+    team_id: str,
+    challenge_id: str,
+    request: TeamActionRequest,
+) -> dict:
+    try:
+        result = team_service.decline_training_challenge(
+            team_id=team_id,
+            player_id=request.player_id,
+            challenge_id=challenge_id,
+            request_id=request.request_id,
+        )
+    except TeamServiceError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+    return {
+        **_team_view(team_service.get_team(team_id), request.player_id),
+        "operation": result,
+        "inbox": _reward_inbox_view(_team_member_profile(request.player_id)),
+    }
+
+
 @app.post("/participants/{player_id}/bootstrap")
 def bootstrap_test_participant(
     player_id: str,
@@ -5215,8 +3906,8 @@ def bootstrap_test_participant(
         )
     )
 
-    # Restoring an existing account can apply the calendar-month season
-    # rollover, so the normalized state must also be persisted.
+    # Restoring an existing account can apply the four-week season rollover,
+    # so the normalized state must also be persisted.
     persist_player_data(
         player_id
     )
@@ -5225,7 +3916,7 @@ def bootstrap_test_participant(
         "player_id": player_id,
         "identity": {
             "kind":
-                "web_test_participant",
+                "participant",
             "player_id":
                 player_id,
         },
@@ -5245,53 +3936,6 @@ def get_profile(
         player_id
     )
     return profile.to_view()
-
-
-@app.get("/profile/{player_id}/laboratory")
-def get_player_laboratory(player_id: str) -> dict:
-    profile = player_profile_service.get_or_create(player_id)
-    return build_laboratory_view(profile)
-
-
-@app.post("/profile/{player_id}/laboratory/{module_definition_id}/upgrade")
-def upgrade_player_laboratory_module(
-    player_id: str,
-    module_definition_id: str,
-    request: LaboratoryOperationRequest,
-) -> dict:
-    profile = player_profile_service.get_or_create(player_id)
-    try:
-        receipt = upgrade_calibration(
-            profile,
-            module_definition_id,
-            request.request_id,
-        )
-    except LaboratoryError as exc:
-        raise HTTPException(status_code=422, detail=str(exc)) from exc
-    persist_player_data(player_id)
-    return {
-        "receipt": receipt,
-        "laboratory": build_laboratory_view(profile),
-        "profile": profile.to_view(),
-    }
-
-
-@app.post("/profile/{player_id}/laboratory/reset")
-def reset_player_laboratory(
-    player_id: str,
-    request: LaboratoryOperationRequest,
-) -> dict:
-    profile = player_profile_service.get_or_create(player_id)
-    try:
-        receipt = reset_calibrations(profile, request.request_id)
-    except LaboratoryError as exc:
-        raise HTTPException(status_code=422, detail=str(exc)) from exc
-    persist_player_data(player_id)
-    return {
-        "receipt": receipt,
-        "laboratory": build_laboratory_view(profile),
-        "profile": profile.to_view(),
-    }
 
 
 @app.get("/profile/{player_id}/meta-progression")
@@ -5411,19 +4055,17 @@ def open_all_available_player_progression_chests(
     }
 
 
-@app.post(
-    "/profile/{player_id}/meta-progression/shop/{offer_id}/purchase"
-)
-def purchase_player_daily_shop_offer(
+@app.post("/store/{player_id}/chests/{definition_id}/buy")
+def buy_store_chest(
     player_id: str,
-    offer_id: str,
+    definition_id: str,
     request: MetaOperationRequest,
 ) -> dict:
     profile = player_profile_service.get_or_create(player_id)
     try:
-        receipt = meta_progression_service.purchase_daily_offer(
+        receipt = meta_progression_service.purchase_store_chest(
             profile,
-            offer_id,
+            definition_id,
             request.request_id,
         )
     except MetaProgressionError as exc:
@@ -5434,6 +4076,63 @@ def purchase_player_daily_shop_offer(
         "meta_progression": meta_progression_service.view(profile),
         "profile": profile.to_view(),
     }
+
+
+@app.get("/store/{player_id}")
+def get_player_store(player_id: str) -> dict:
+    profile = player_profile_service.get_or_create(player_id)
+    return store_view(
+        profile,
+        purchase_test_mode=PURCHASE_TEST_MODE,
+        ad_test_mode=AD_TEST_MODE,
+    )
+
+
+@app.post("/store/{player_id}/purchases")
+def purchase_store_product(player_id: str, request: PurchaseRequest) -> dict:
+    profile = player_profile_service.get_or_create(player_id)
+    try:
+        receipt = process_purchase(
+            profile,
+            request.product_id,
+            request.provider,
+            request.transaction_id,
+            test_mode=PURCHASE_TEST_MODE,
+            now_iso=datetime.now(timezone.utc).isoformat(),
+        )
+    except StoreError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+    persist_player_data(player_id)
+    return {
+        "receipt": receipt,
+        "store": store_view(
+            profile,
+            purchase_test_mode=PURCHASE_TEST_MODE,
+            ad_test_mode=AD_TEST_MODE,
+        ),
+        "meta_progression": meta_progression_service.view(profile),
+        "profile": profile.to_view(),
+    }
+
+
+@app.post("/profile/{player_id}/battles/{battle_id}/ad-reward")
+def claim_battle_ad_reward(
+    player_id: str,
+    battle_id: str,
+    request: AdRewardRequest,
+) -> dict:
+    profile = player_profile_service.get_or_create(player_id)
+    try:
+        verify_ad_view(request.provider, test_mode=AD_TEST_MODE)
+        receipt = player_progression_service.grant_ad_bonus(
+            battle_id,
+            player_id,
+            now_iso=datetime.now(timezone.utc).isoformat(),
+        )
+    except (StoreError, PlayerProgressionError) as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+    persist_player_data(player_id)
+    return {"receipt": receipt, "profile": profile.to_view()}
 
 
 @app.put("/profile/{player_id}/meta-progression/core")
@@ -5524,14 +4223,22 @@ def reset_player_module_talents(
 @app.get("/events")
 def get_events(player_id: str | None = Query(None)) -> dict:
     """Competition hub plus viewer registration/readiness state."""
-    view = build_events_view(_leaderboard_profile_rows())
+    view = _events_view()
     if not player_id:
         return view
     profile = _team_member_profile(player_id)
     week_id = str(view["weekly_tournament"]["period"]["id"])
-    month_id = str(view["team_tournament"]["period"]["id"])
+    tournament = view["team_tournament"]
     team = team_service.team_for_player(player_id)
-    owner = _team_member_profile(str(team.get("owner_id"))) if team else None
+    viewer_team_id = str(team.get("team_id") or "") if team else ""
+    registered_team_ids = set(tournament.get("registered_team_ids") or [])
+    roster_member = any(
+        member["player_id"] == player_id
+        for row in tournament.get("standings", [])
+        if row["team_id"] == viewer_team_id
+        for member in row["members"]
+    )
+    open_leg = team_tournament_open_leg(tournament, player_id)
     view["viewer"] = {
         "player_id": player_id,
         "weekly_registered": profile.weekly_tournament_registered_period == week_id,
@@ -5541,10 +4248,19 @@ def get_events(player_id: str | None = Query(None)) -> dict:
             if profile.weekly_tournament_registered_period == week_id
             else 0
         ),
-        "team_id": profile.team_id,
+        "team_id": viewer_team_id or profile.team_id,
         "team_owner": bool(team and team.get("owner_id") == player_id),
-        "team_registered": bool(
-            owner and owner.team_tournament_registered_period == month_id
+        "team_registered": viewer_team_id in registered_team_ids,
+        "team_roster_member": roster_member,
+        "team_registration_open": bool(tournament.get("registration_open")),
+        "team_next_leg": (
+            {
+                "fixture_id": open_leg["fixture"]["fixture_id"],
+                "leg": open_leg["leg"]["leg"],
+                "battle_session_id": open_leg["leg"]["battle_session_id"],
+            }
+            if open_leg
+            else None
         ),
     }
     return view
@@ -5556,7 +4272,7 @@ def register_weekly_tournament(request: EventRegistrationOperation) -> dict:
     # Registration resets weekly counters, so materialize an unopened reward
     # from the just-closed week before advancing the period.
     _settle_competition_rewards(request.player_id)
-    view = build_events_view(_leaderboard_profile_rows())
+    view = _events_view()
     period_id = str(view["weekly_tournament"]["period"]["id"])
     entry_fee = int(view["weekly_tournament"].get("entry_fee", 100))
     if profile.weekly_tournament_registered_period != period_id:
@@ -5581,8 +4297,23 @@ def register_team_tournament(request: EventRegistrationOperation) -> dict:
         raise HTTPException(status_code=422, detail="Takım turnuvası için bir takıma katılmalısın.")
     if team.get("owner_id") != request.player_id:
         raise HTTPException(status_code=422, detail="Takım turnuvasına yalnız takım lideri kayıt yapabilir.")
-    view = build_events_view(_leaderboard_profile_rows())
-    profile.team_tournament_registered_period = str(view["team_tournament"]["period"]["id"])
+    now = datetime.now(timezone.utc)
+    period_id = team_tournament_period_id(now)
+    if not team_tournament_registration_open(period_id, now):
+        raise HTTPException(
+            status_code=422,
+            detail="Takım turnuvası kaydı yalnız dönemin ilk Pazartesi–Çarşamba günlerinde açıktır; bu dönemin kayıt süresi doldu.",
+        )
+    try:
+        team_service.register_tournament(
+            str(team.get("team_id")),
+            period_id,
+            registered_by=request.player_id,
+            roster=_team_roster_snapshot(team),
+        )
+    except TeamServiceError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+    profile.team_tournament_registered_period = period_id
     persist_player_data(request.player_id)
     return get_events(request.player_id)
 
@@ -5592,13 +4323,15 @@ def check_in_team_tournament_fixture(
     fixture_id: str,
     request: EventRegistrationOperation,
 ) -> dict:
+    """Oyuncunun bu haftaki sıradaki maç ayağına girer (önce ilk maç, sonra rövanş)."""
     view = get_events(request.player_id)
+    tournament = view["team_tournament"]
     if not view.get("viewer", {}).get("team_registered"):
         raise HTTPException(status_code=422, detail="Takım bu turnuvaya kayıtlı değil.")
     fixture = next(
         (
             item
-            for item in view["team_tournament"].get("fixtures", [])
+            for item in tournament.get("fixtures", [])
             if item.get("fixture_id") == fixture_id
         ),
         None,
@@ -5606,7 +4339,10 @@ def check_in_team_tournament_fixture(
     if fixture is None:
         raise HTTPException(status_code=404, detail="Turnuva eşleşmesi bulunamadı.")
     if fixture.get("status") != "live":
-        raise HTTPException(status_code=422, detail="Bu canlı eşleşmenin giriş saati henüz açık değil.")
+        raise HTTPException(
+            status_code=422,
+            detail="Turnuva maçları her hafta Cuma, Cumartesi ve Pazar oynanır.",
+        )
     pairing = next(
         (
             item
@@ -5617,12 +4353,27 @@ def check_in_team_tournament_fixture(
     )
     if pairing is None:
         raise HTTPException(status_code=422, detail="Bu fikstürde oyuncuya atanmış maç yok.")
+    located = team_tournament_open_leg(tournament, request.player_id, fixture_id)
+    if located is None:
+        raise HTTPException(status_code=422, detail="Bu haftanın iki maçını da oynadın.")
+    leg = located["leg"]
     opponent_id = (
         pairing["away_player_id"]
         if pairing["home_player_id"] == request.player_id
         else pairing["home_player_id"]
     )
-    session_id = str(pairing["battle_session_id"])
+    session_id = str(leg["battle_session_id"])
+    # Sonucu yazılamamış bitmiş bir oturum kalmışsa önce sonucu kaydedilir.
+    try:
+        existing = pvp_service.get_session(session_id)
+    except PvPSessionError:
+        existing = None
+    if existing is not None and existing.engine.state.status == BattleStatus.FINISHED:
+        _record_team_tournament_leg(existing.engine.state)
+        raise HTTPException(
+            status_code=409,
+            detail="Bu maç tamamlandı ve sonucu kaydedildi; sıradaki maç için yeniden gir.",
+        )
     bot = next((item for item in BOTS if str(item.get("id")) == opponent_id), None)
     if bot is not None:
         pair = MatchmakingPair(
@@ -5654,7 +4405,7 @@ def check_in_team_tournament_fixture(
             str(opponent_id),
             match_type="team_tournament",
         )
-    return {"fixture": fixture, "pairing": pairing, "battle": battle}
+    return {"fixture": fixture, "pairing": pairing, "leg": leg, "battle": battle}
 
 
 def _daily_meta_view(profile) -> dict:
@@ -5744,13 +4495,13 @@ def claim_daily_mission_reward(
 
 
 @app.post("/profile/{player_id}/engagement/login/{day}/claim")
-def claim_monthly_login_reward(
+def claim_login_period_reward(
     player_id: str,
     day: int,
     request: MetaOperationRequest | None = None,
 ) -> dict:
     try:
-        receipt = player_profile_service.claim_monthly_login(
+        receipt = player_profile_service.claim_login_reward(
             player_id,
             day,
             request_id=request.request_id if request else None,
@@ -5774,8 +4525,8 @@ def _tier_advanced_payload(
     if tier_after <= tier_before:
         return None
     return {
-        "event_id": f"{monthly_season_descriptor()['id']}:{player_id}:{source}:{tier_after}",
-        "season_id": monthly_season_descriptor()["id"],
+        "event_id": f"{season_descriptor()['id']}:{player_id}:{source}:{tier_after}",
+        "season_id": season_descriptor()["id"],
         "tier_before": tier_before,
         "tier_after": tier_after,
     }
@@ -5845,6 +4596,65 @@ def claim_season_tier_reward(
             tier_before,
             tier_after,
         ),
+    }
+
+
+@app.post("/profile/{player_id}/engagement/tiers/{tier}/premium/claim")
+def claim_premium_season_tier_reward(
+    player_id: str,
+    tier: int,
+    request: MetaOperationRequest | None = None,
+) -> dict:
+    engagement_request_id = request.request_id if request else None
+    before_profile = player_profile_service.get_or_create(player_id)
+    replayed = bool(
+        engagement_request_id
+        and engagement_request_id in before_profile.engagement_claim_receipts
+    )
+    try:
+        profile = player_profile_service.claim_premium_season_tier(
+            player_id,
+            tier,
+            request_id=engagement_request_id,
+        )
+    except PlayerProfileError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+    reward = next(
+        (item for item in SEASON_PREMIUM_REWARD_TRACK if int(item["tier"]) == tier),
+        None,
+    )
+    chest_definition_ids = {
+        "bronze": "field_3h",
+        "silver": "circuit_8h",
+        "gold": "core_24h",
+        "diamond": "diamond_24h",
+    }
+    chest_receipts = []
+    if reward and reward.get("chest_tier"):
+        for index in range(int(reward.get("chest_count", 0) or 0)):
+            chest_request_id = f"season-premium-tier:{profile.player_id}:{profile.active_meta_season_id}:{tier}:{index}"
+            if replayed:
+                receipt = profile.chest_receipts.get(chest_request_id)
+            else:
+                receipt = meta_progression_service.award_instant_chest(
+                    profile,
+                    chest_definition_ids[str(reward["chest_tier"])],
+                    f"season-premium-tier:{profile.active_meta_season_id}:{tier}:{index}",
+                    chest_request_id,
+                )
+            if receipt:
+                chest_receipts.append(receipt)
+    persist_player_data(player_id)
+    view = profile.to_view()
+    return {
+        **view,
+        "season_reward_receipt": (
+            dict(profile.engagement_claim_receipts[engagement_request_id])
+            if engagement_request_id
+            and engagement_request_id in profile.engagement_claim_receipts
+            else None
+        ),
+        "season_chest_receipts": chest_receipts,
     }
 
 
@@ -6076,7 +4886,6 @@ def game_ai_archetypes() -> dict:
                 "description_tr": archetype.description_tr,
                 "description_en": archetype.description_en,
                 "battle_pool_ids": list(archetype.battle_pool_ids),
-                "initial_module_ids": list(archetype.initial_module_ids),
                 "expansion_module_ids": list(archetype.expansion_module_ids),
             }
             for archetype in (get_ai_archetype(item_id) for item_id in AI_ARCHETYPE_IDS)
@@ -6121,29 +4930,12 @@ async def health() -> dict:
         telemetry_persistence_health()
     )
     runtime_health = await runtime_coordinator.health()
-    readiness = build_web_test_readiness(
-        version=VERSION,
-        telemetry_service=telemetry_service,
-        persistence_ready=bool(
-            player_persistence["ready"]
-        ),
-        telemetry_persistence_ready=bool(
-            telemetry_persistence["ready"]
-        ),
-        test_run_id_ready=
-            bool(
-                WEB_TEST_RUN_ID
-            ),
-    )
+    ready = bool(player_persistence["ready"]) and bool(telemetry_persistence["ready"])
 
     return {
-        "status":
-            (
-                "ok"
-                if readiness.ready
-                else "degraded"
-            ),
+        "status": "ok" if ready else "degraded",
         "version": VERSION,
+        "pvp_protocol_version": PVP_PROTOCOL_VERSION,
         "persistence": {
             "player_data":
                 player_persistence,
@@ -6174,877 +4966,6 @@ async def health() -> dict:
                 if connection.connected
             ),
         },
-        "web_test": readiness.to_dict(),
-    }
-
-
-@app.get("/web-test/data-health")
-def web_test_data_health() -> dict:
-    player_data = (
-        player_data_persistence_health()
-    )
-    telemetry = (
-        telemetry_persistence_health()
-    )
-
-    player_backup = dict(
-        player_data.get(
-            "backup",
-            {},
-        )
-    )
-    telemetry_backup = dict(
-        telemetry.get(
-            "backup",
-            {},
-        )
-    )
-
-    return {
-        "ready": bool(
-            player_data.get(
-                "ready"
-            )
-            and telemetry.get(
-                "ready"
-            )
-        ),
-        "player_data": {
-            "state":
-                player_data.get(
-                    "state"
-                ),
-            "ready":
-                bool(
-                    player_data.get(
-                        "ready"
-                    )
-                ),
-            "player_count":
-                int(
-                    player_data.get(
-                        "player_count",
-                        0,
-                    )
-                ),
-            "backup_available":
-                bool(
-                    player_backup.get(
-                        "available"
-                    )
-                ),
-            "backup_ready":
-                bool(
-                    player_backup.get(
-                        "ready"
-                    )
-                ),
-        },
-        "telemetry": {
-            "state":
-                telemetry.get(
-                    "state"
-                ),
-            "ready":
-                bool(
-                    telemetry.get(
-                        "ready"
-                    )
-                ),
-            "event_count":
-                int(
-                    telemetry.get(
-                        "event_count",
-                        0,
-                    )
-                ),
-            "retention_limit":
-                int(
-                    telemetry.get(
-                        "retention_limit",
-                        TELEMETRY_MAX_EVENTS,
-                    )
-                ),
-            "retention_active":
-                bool(
-                    telemetry.get(
-                        "retention_active"
-                    )
-                ),
-            "backup_available":
-                bool(
-                    telemetry_backup.get(
-                        "available"
-                    )
-                ),
-            "backup_ready":
-                bool(
-                    telemetry_backup.get(
-                        "ready"
-                    )
-                ),
-        },
-    }
-
-
-@app.get("/web-test/operation-readiness")
-def web_test_operation_readiness() -> dict:
-    player_data = (
-        player_data_persistence_health()
-    )
-    telemetry = (
-        telemetry_persistence_health()
-    )
-
-    data_health = web_test_data_health()
-
-    manifest = build_manifest(
-        version=VERSION,
-        telemetry_service=telemetry_service,
-        persistence_ready=bool(
-            player_data["ready"]
-        ),
-        telemetry_persistence_ready=bool(
-            telemetry["ready"]
-        ),
-    )
-
-    rc_report = build_rc_report(
-        version=VERSION,
-        telemetry_service=telemetry_service,
-        persistence_ready=bool(
-            player_data["ready"]
-        ),
-        telemetry_persistence_ready=bool(
-            telemetry["ready"]
-        ),
-    )
-
-    return build_operation_readiness(
-        manifest=manifest,
-        data_health=data_health,
-        rc_report=rc_report,
-    )
-
-
-@app.get("/web-test/go-no-go")
-def web_test_go_no_go() -> dict:
-    operation = (
-        web_test_operation_readiness()
-    )
-    kpis = (
-        web_test_kpi_service
-        .snapshot()
-    )
-    return build_go_no_go(
-        operation_readiness=
-            operation,
-        kpis=kpis,
-    )
-
-
-@app.get("/web-test/test-run")
-def web_test_current_run() -> dict:
-    return {
-        "test_run_id":
-            WEB_TEST_RUN_ID,
-        "build":
-            "web-test-beta.13",
-    }
-
-
-@app.get("/web-test/test-runs/compare")
-def web_test_compare_runs(
-    baseline_test_run_id: str,
-    candidate_test_run_id: str,
-    minimum_sample: int = 10,
-) -> dict:
-    return compare_test_runs(
-        telemetry_service=
-            telemetry_service,
-        baseline_test_run_id=
-            baseline_test_run_id,
-        candidate_test_run_id=
-            candidate_test_run_id,
-        minimum_sample=
-            max(
-                1,
-                minimum_sample,
-            ),
-    )
-
-
-@app.get("/web-test/test-runs/{test_run_id}/stability-history")
-def web_test_stability_history(
-    test_run_id: str,
-) -> dict:
-    return build_stability_history_summary(
-        telemetry_service=
-            telemetry_service,
-        test_run_id=
-            test_run_id,
-    )
-
-
-@app.get("/web-test/test-runs/{test_run_id}/operation-transitions")
-def web_test_operation_transitions(
-    test_run_id: str,
-) -> dict:
-    return build_operation_transition_summary(
-        telemetry_service=
-            telemetry_service,
-        test_run_id=
-            test_run_id,
-    )
-
-
-@app.get("/web-test/test-runs/{test_run_id}/operation-history")
-def web_test_operation_history(
-    test_run_id: str,
-) -> dict:
-    return build_operation_history_summary(
-        telemetry_service=
-            telemetry_service,
-        test_run_id=
-            test_run_id,
-    )
-
-
-@app.get("/web-test/test-runs")
-def web_test_run_catalog() -> dict:
-    return build_test_run_catalog(
-        telemetry_service=
-            telemetry_service,
-        active_test_run_id=
-            WEB_TEST_RUN_ID,
-    )
-
-
-@app.get("/web-test/test-runs/{test_run_id}/summary")
-def web_test_run_summary(
-    test_run_id: str,
-) -> dict:
-    return build_test_run_summary(
-        telemetry_service=
-            telemetry_service,
-        test_run_id=test_run_id,
-    )
-
-
-@app.get("/web-test/test-runs/{test_run_id}/go-no-go")
-def web_test_run_go_no_go(
-    test_run_id: str,
-) -> dict:
-    return build_test_run_go_no_go(
-        test_run_id=test_run_id,
-        active_test_run_id=
-            WEB_TEST_RUN_ID,
-        operation_readiness=
-            web_test_operation_readiness(),
-        run_summary=
-            build_test_run_summary(
-                telemetry_service=
-                    telemetry_service,
-                test_run_id=
-                    test_run_id,
-            ),
-    )
-
-
-@app.get("/web-test/rc-candidate")
-def web_test_rc_candidate() -> dict:
-    operation = (
-        web_test_operation_readiness()
-    )
-    go_no_go = (
-        web_test_go_no_go()
-    )
-    data_health = (
-        web_test_data_health()
-    )
-    run_summary = (
-        build_test_run_summary(
-            telemetry_service=
-                telemetry_service,
-            test_run_id=
-                WEB_TEST_RUN_ID,
-        )
-    )
-
-    return build_rc_candidate_summary(
-        version=VERSION,
-        build=
-            "web-test-beta.13",
-        test_run_id=
-            WEB_TEST_RUN_ID,
-        operation_readiness=
-            operation,
-        go_no_go=
-            go_no_go,
-        data_health=
-            data_health,
-        run_summary=
-            run_summary,
-    )
-
-
-@app.get("/web-test/launch-readiness")
-def web_test_launch_readiness() -> dict:
-    player_persistence = (
-        player_data_persistence_health()
-    )
-    telemetry_persistence = (
-        telemetry_persistence_health()
-    )
-    manifest = build_manifest(
-        version=VERSION,
-        telemetry_service=
-            telemetry_service,
-        persistence_ready=bool(
-            player_persistence["ready"]
-        ),
-        telemetry_persistence_ready=bool(
-            telemetry_persistence[
-                "ready"
-            ]
-        ),
-        test_run_id=
-            WEB_TEST_RUN_ID,
-    )
-
-    return build_launch_snapshot(
-        version=VERSION,
-        build=
-            "web-test-beta.13",
-        test_run_id=
-            WEB_TEST_RUN_ID,
-        manifest=manifest,
-        operation_readiness=
-            web_test_operation_readiness(),
-        rc_candidate=
-            web_test_rc_candidate(),
-        data_health=
-            web_test_data_health(),
-    )
-
-
-@app.get("/web-test/first-run-checklist")
-def web_test_first_run_checklist() -> dict:
-    data_health = (
-        web_test_data_health()
-    )
-    rc_candidate = (
-        web_test_rc_candidate()
-    )
-    launch = (
-        web_test_launch_readiness()
-    )
-    run_summary = (
-        build_test_run_summary(
-            telemetry_service=
-                telemetry_service,
-            test_run_id=
-                WEB_TEST_RUN_ID,
-        )
-    )
-
-    return build_first_run_checklist(
-        version=VERSION,
-        build=
-            "web-test-beta.13",
-        test_run_id=
-            WEB_TEST_RUN_ID,
-        launch_readiness=
-            launch,
-        data_health=
-            data_health,
-        rc_candidate=
-            rc_candidate,
-        run_summary=
-            run_summary,
-    )
-
-
-@app.get("/web-test/preflight")
-def web_test_preflight() -> dict:
-    run_summary = (
-        build_test_run_summary(
-            telemetry_service=
-                telemetry_service,
-            test_run_id=
-                WEB_TEST_RUN_ID,
-        )
-    )
-
-    return build_preflight_report(
-        version=VERSION,
-        build=
-            "web-test-beta.13",
-        test_run_id=
-            WEB_TEST_RUN_ID,
-        checklist=
-            web_test_first_run_checklist(),
-        launch=
-            web_test_launch_readiness(),
-        rc_candidate=
-            web_test_rc_candidate(),
-        data_health=
-            web_test_data_health(),
-        run_summary=
-            run_summary,
-        kpis=
-            web_test_kpi_service
-            .snapshot(),
-    )
-
-
-@app.get("/web-test/test-run/status")
-def web_test_run_status() -> dict:
-    started_events = (
-        telemetry_service.events(
-            event_type=
-                "web_test_run_started",
-        )
-    )
-    finished_events = (
-        telemetry_service.events(
-            event_type=
-                "web_test_run_finished",
-        )
-    )
-
-    started = any(
-        event.get(
-            "metadata",
-            {},
-        ).get(
-            "test_run_id"
-        )
-        == WEB_TEST_RUN_ID
-        for event in started_events
-    )
-    finished = any(
-        event.get(
-            "metadata",
-            {},
-        ).get(
-            "test_run_id"
-        )
-        == WEB_TEST_RUN_ID
-        for event in finished_events
-    )
-
-    return {
-        "test_run_id":
-            WEB_TEST_RUN_ID,
-        "build":
-            "web-test-beta.13",
-        "started":
-            started,
-        "finished":
-            finished,
-    }
-
-
-@app.get("/web-test/test-run/consistency")
-def web_test_run_consistency() -> dict:
-    return build_run_started_consistency(
-        active_test_run_id=
-            WEB_TEST_RUN_ID,
-        run_status=
-            web_test_run_status(),
-        preflight=
-            web_test_preflight(),
-    )
-
-
-@app.get("/web-test/operation-status")
-def web_test_operation_status() -> dict:
-    return build_operation_status(
-        version=VERSION,
-        build=
-            "web-test-beta.13",
-        test_run_id=
-            WEB_TEST_RUN_ID,
-        preflight=
-            web_test_preflight(),
-        run_status=
-            web_test_run_status(),
-        consistency=
-            web_test_run_consistency(),
-    )
-
-
-@app.get("/web-test/operation-stability")
-def web_test_operation_stability() -> dict:
-    run_summary = (
-        build_test_run_summary(
-            telemetry_service=
-                telemetry_service,
-            test_run_id=
-                WEB_TEST_RUN_ID,
-        )
-    )
-    transitions = (
-        build_operation_transition_summary(
-            telemetry_service=
-                telemetry_service,
-            test_run_id=
-                WEB_TEST_RUN_ID,
-        )
-    )
-
-    return build_operation_stability(
-        operation_status=
-            web_test_operation_status(),
-        run_summary=
-            run_summary,
-        transition_summary=
-            transitions,
-    )
-
-
-@app.get("/web-test/monitoring")
-def web_test_monitoring() -> dict:
-    run_summary = (
-        build_test_run_summary(
-            telemetry_service=
-                telemetry_service,
-            test_run_id=
-                WEB_TEST_RUN_ID,
-        )
-    )
-
-    return build_monitoring_summary(
-        version=VERSION,
-        build=
-            "web-test-beta.13",
-        test_run_id=
-            WEB_TEST_RUN_ID,
-        operation_status=
-            web_test_operation_status(),
-        stability=
-            web_test_operation_stability(),
-        run_summary=
-            run_summary,
-        kpis=
-            web_test_kpi_service
-            .snapshot(),
-    )
-
-
-@app.get("/web-test/test-run/report")
-def web_test_run_report() -> dict:
-    run_summary = (
-        build_test_run_summary(
-            telemetry_service=
-                telemetry_service,
-            test_run_id=
-                WEB_TEST_RUN_ID,
-        )
-    )
-
-    return build_post_run_report(
-        version=VERSION,
-        build=
-            "web-test-beta.13",
-        test_run_id=
-            WEB_TEST_RUN_ID,
-        run_summary=
-            run_summary,
-        monitoring=
-            web_test_monitoring(),
-        operation_history=
-            build_operation_history_summary(
-                telemetry_service=
-                    telemetry_service,
-                test_run_id=
-                    WEB_TEST_RUN_ID,
-            ),
-        operation_transitions=
-            build_operation_transition_summary(
-                telemetry_service=
-                    telemetry_service,
-                test_run_id=
-                    WEB_TEST_RUN_ID,
-            ),
-        stability_history=
-            build_stability_history_summary(
-                telemetry_service=
-                    telemetry_service,
-                test_run_id=
-                    WEB_TEST_RUN_ID,
-            ),
-        data_health=
-            web_test_data_health(),
-    )
-
-
-@app.get("/web-test/status")
-def web_test_status() -> dict:
-    player_persistence = (
-        player_data_persistence_health()
-    )
-    telemetry_persistence = (
-        telemetry_persistence_health()
-    )
-    return build_web_test_readiness(
-        version=VERSION,
-        telemetry_service=telemetry_service,
-        persistence_ready=bool(
-            player_persistence["ready"]
-        ),
-        telemetry_persistence_ready=bool(
-            telemetry_persistence["ready"]
-        ),
-    ).to_dict()
-
-
-@app.get("/web-test/release-check")
-def web_test_release_check() -> dict:
-    player_persistence = (
-        player_data_persistence_health()
-    )
-    telemetry_persistence = (
-        telemetry_persistence_health()
-    )
-    return build_release_check(
-        version=VERSION,
-        telemetry_service=telemetry_service,
-        persistence_ready=bool(
-            player_persistence["ready"]
-        ),
-        telemetry_persistence_ready=bool(
-            telemetry_persistence["ready"]
-        ),
-    ).to_dict()
-
-
-@app.get("/web-test/manifest")
-def web_test_manifest() -> dict:
-    player_persistence = (
-        player_data_persistence_health()
-    )
-    telemetry_persistence = (
-        telemetry_persistence_health()
-    )
-    manifest=build_manifest(
-        version=VERSION,
-        telemetry_service=telemetry_service,
-        persistence_ready=bool(
-            player_persistence["ready"]
-        ),
-        telemetry_persistence_ready=bool(
-            telemetry_persistence["ready"]
-        ),
-        test_run_id=
-            WEB_TEST_RUN_ID,
-    )
-    manifest["version"]=VERSION
-    manifest["ui_build_label"]=f"GRIDSHARD {VERSION}"
-    manifest["static_cache_mode"]="content-hash" if RUNTIME_STRICT else "no-store"
-    manifest["browser_e2e"]="optional-real-browser"
-    return manifest
-
-
-@app.get("/web-test/rc-report")
-def web_test_rc_report() -> dict:
-    player_persistence = (
-        player_data_persistence_health()
-    )
-    telemetry_persistence = (
-        telemetry_persistence_health()
-    )
-    return build_rc_report(
-        version=VERSION,
-        telemetry_service=telemetry_service,
-        persistence_ready=bool(
-            player_persistence["ready"]
-        ),
-        telemetry_persistence_ready=bool(
-            telemetry_persistence["ready"]
-        ),
-        test_run_id=
-            WEB_TEST_RUN_ID,
-    )
-
-
-@app.post("/web-test/telemetry/restore-backup")
-def restore_web_test_telemetry_backup(
-    x_relay_admin_token: str | None = Header(
-        default=None,
-    ),
-) -> dict:
-    expected_token = os.environ.get(
-        "RELAY_WEB_TEST_ADMIN_TOKEN"
-    )
-
-    if not expected_token:
-        raise HTTPException(
-            status_code=503,
-            detail=(
-                "Web test veri kurtarma yönetici anahtarı yapılandırılmamış."
-            ),
-        )
-
-    if (
-        not x_relay_admin_token
-        or x_relay_admin_token
-        != expected_token
-    ):
-        raise HTTPException(
-            status_code=403,
-            detail="Web test telemetri kurtarma yetkisi reddedildi.",
-        )
-
-    before = (
-        telemetry_persistence_health()
-    )
-
-    if before["ready"]:
-        raise HTTPException(
-            status_code=409,
-            detail=(
-                "Kalıcı telemetri zaten sağlıklı; restore uygulanmadı."
-            ),
-        )
-
-    backup = before.get(
-        "backup",
-        {},
-    )
-    if not backup.get(
-        "ready",
-        False,
-    ):
-        raise HTTPException(
-            status_code=409,
-            detail=(
-                "Kullanılabilir sağlam telemetri yedeği bulunamadı."
-            ),
-        )
-
-    if not telemetry_repository.restore_backup():
-        raise HTTPException(
-            status_code=409,
-            detail="Telemetri yedeği geri yüklenemedi.",
-        )
-
-    event_count = (
-        telemetry_service
-        .reload_from_repository()
-    )
-
-    after = (
-        telemetry_persistence_health()
-    )
-    if not after["ready"]:
-        raise HTTPException(
-            status_code=500,
-            detail=(
-                "Telemetri yedeği geri yüklendi ancak health doğrulanamadı."
-            ),
-        )
-
-    kpis = (
-        web_test_kpi_service
-        .snapshot()
-    )
-
-    return {
-        "restored": True,
-        "event_count": event_count,
-        "before": before,
-        "after": after,
-        "kpis": kpis,
-    }
-
-
-@app.post("/web-test/persistence/restore-backup")
-def restore_web_test_persistence_backup(
-    x_relay_admin_token: str | None = Header(
-        default=None,
-    ),
-) -> dict:
-    expected_token = os.environ.get(
-        "RELAY_WEB_TEST_ADMIN_TOKEN"
-    )
-
-    if not expected_token:
-        raise HTTPException(
-            status_code=503,
-            detail=(
-                "Web test veri kurtarma yönetici anahtarı yapılandırılmamış."
-            ),
-        )
-
-    if (
-        not x_relay_admin_token
-        or x_relay_admin_token
-        != expected_token
-    ):
-        raise HTTPException(
-            status_code=403,
-            detail="Web test veri kurtarma yetkisi reddedildi.",
-        )
-
-    before = (
-        player_data_persistence_health()
-    )
-
-    if before["ready"]:
-        raise HTTPException(
-            status_code=409,
-            detail=(
-                "Kalıcı oyuncu verisi zaten sağlıklı; restore uygulanmadı."
-            ),
-        )
-
-    backup = before.get(
-        "backup",
-        {},
-    )
-    if not backup.get(
-        "ready",
-        False,
-    ):
-        raise HTTPException(
-            status_code=409,
-            detail=(
-                "Kullanılabilir sağlam oyuncu veri yedeği bulunamadı."
-            ),
-        )
-
-    restored = (
-        player_data_repository
-        .restore_backup()
-    )
-    if not restored:
-        raise HTTPException(
-            status_code=409,
-            detail="Oyuncu veri yedeği geri yüklenemedi.",
-        )
-
-    after = (
-        player_data_persistence_health()
-    )
-    if not after["ready"]:
-        raise HTTPException(
-            status_code=500,
-            detail=(
-                "Yedek geri yüklendi ancak persistence health doğrulanamadı."
-            ),
-        )
-
-    # Eski bozuk süreç state'i yeni sağlam dosyayı gölgelememeli.
-    player_profile_service._profiles.clear()
-    player_statistics_service._statistics.clear()
-    player_settings_service._settings.clear()
-
-    return {
-        "restored": True,
-        "before": before,
-        "after": after,
     }
 
 
@@ -7135,10 +5056,9 @@ def _create_matchmaking_ai_session(
         setup_required=True,
         auto_start_when_ready=True,
         match_type=match_type,
-        season_id=monthly_season_descriptor()["id"],
+        season_id=season_descriptor()["id"],
         ranked_eligible=ranked_eligible,
         normalized=False,
-        laboratory_effects_enabled=False,
     )
     pvp_service.join(
         pair.match_id,
@@ -7159,7 +5079,7 @@ def _create_matchmaking_ai_session(
         ai_meta_seed
     ).get("id", "")
     session.ai_profile_options[pair.player_b_id] = bot
-    attach_player_laboratory_to_session(pair.match_id, pair.player_a_id)
+    attach_player_progression_to_session(pair.match_id, pair.player_a_id)
 
     ai_archetype = get_ai_archetype(BOT_ARCHETYPE_IDS[bot["archetype_tr"]])
     ai_pool = tuple(bot["battle_pool_ids"])
@@ -7207,19 +5127,14 @@ async def create_local_ai_session(
     ai_player_id = f"{session_id}-opponent"
     try:
         ai_archetype_id = normalize_ai_archetype_id(request.ai_archetype)
-        experimental_enabled = bool(
-            request.experimental_calibrations
-            and EXPERIMENTAL_LAB_EFFECTS_ENABLED
-        )
         pvp_service.create_session(
             session_id,
             setup_required=True,
             auto_start_when_ready=False,
             match_type="local_test",
-            season_id=monthly_season_descriptor()["id"],
+            season_id=season_descriptor()["id"],
             ranked_eligible=False,
-            normalized=not experimental_enabled,
-            laboratory_effects_enabled=experimental_enabled,
+            normalized=True,
         )
         pvp_service.join(
             session_id,
@@ -7230,7 +5145,7 @@ async def create_local_ai_session(
             session_id,
             ai_player_id,
         )
-        attach_player_laboratory_to_session(session_id, request.player_id)
+        attach_player_progression_to_session(session_id, request.player_id)
         session = pvp_service.get_session(session_id)
         # Yerel AI slotu UUID içerdiği için doğrudan kullanılırsa her maçta
         # farklı meta üretir. Arşetip günlük rakip kimliği olarak davranır.
@@ -7363,7 +5278,7 @@ def create_pvp_session(
             setup_required=True,
             auto_start_when_ready=request.auto_start_when_ready,
             match_type="ranked_pvp",
-            season_id=monthly_season_descriptor()["id"],
+            season_id=season_descriptor()["id"],
             ranked_eligible=True,
         )
     except PvPSessionError as exc:
@@ -7390,7 +5305,7 @@ def join_pvp_session(
             request.player_id,
             display_name=player_profile_service.get_or_create(request.player_id).display_name,
         )
-        attach_player_laboratory_to_session(
+        attach_player_progression_to_session(
             session_id,
             request.player_id,
         )
@@ -7616,7 +5531,7 @@ async def pvp_websocket(
 
 
 # API ve WebSocket rotalarından sonra istemciyi aynı origin altında servis et.
-# Geliştirmede kaynak/no-cache, üretimde doğrulanmış dist/içerik-özetli önbellek.
+# Geliştirmede kaynak/no-cache; üretimde doğrulanmış dist ve içerik özetli önbellek.
 app.mount(
     "/",
     (ProductionStaticFiles if RUNTIME_STRICT else NoCacheStaticFiles)(

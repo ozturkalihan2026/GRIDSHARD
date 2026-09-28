@@ -1,9 +1,7 @@
 from dataclasses import dataclass
-from .board import get_cell_effects
-from .heat import heat_generation_multiplier
+from .heat import is_overheated
 from .models import BattleModule, ModuleStatus, PlayerBattleState, Position
 from .operations import module_is_operational
-from .topology import build_energy_topology
 
 REPAIR_COOLDOWN_ID = "support_repair"
 BASE_REPAIR_AMOUNT = 15
@@ -11,14 +9,54 @@ AMPLIFIER_DAMAGE_MULTIPLIER = 1.15
 TARGETING_COOLDOWN_MULTIPLIER = 0.85
 OVERCLOCK_DAMAGE_MULTIPLIER = 1.20
 OVERCLOCK_COOLDOWN_MULTIPLIER = 0.80
-OVERCLOCK_HEAT_PER_TICK = 1.0
-COOLER_HEAT_REDUCTION_PER_TICK = 2.0
+# Aşırı Hızlandırıcı hedefini daha sık ateşlettiği için zaten ısıtır; bu
+# ek ısı (saniyede 1,5) Soğutucu olmadan ~20 sn'de Yüksek Isı getirir.
+OVERCLOCK_HEAT_PER_TICK = 0.15
+# Soğutucu devredeki en sıcak iki modülü saniyede 8 soğutur: susmuş bir
+# modülü ~4 sn'de toparlar.
+COOLER_HEAT_REDUCTION_PER_TICK = 0.8
+COOLER_MAX_TARGETS = 2
+
+# Tüm devreye etki eden destekler toplam paylarını sahadaki saldırı
+# modüllerine böler: 1-2 saldırıda her biri tam pay, daha kalabalık devrede
+# pay küçülür (Güçlendirici: 3 saldırıda %10, 4'te %7,5, 6'da %5).
+AMPLIFIER_PER_ATTACK_CAP = 0.15
+AMPLIFIER_TOTAL_BUDGET = 0.30
+TARGETING_PER_ATTACK_CAP = 0.15
+TARGETING_TOTAL_BUDGET = 0.30
+
+# Hassas Matris: aynı hedefe art arda vuran saldırı odak yığını biriktirir.
+PRECISION_DAMAGE_PER_STACK = 0.04
+PRECISION_COOLDOWN_PER_STACK = 0.03
+PRECISION_MAX_STACKS = 4
+
+# Kronos Rölesi: 4 sn hızlanma, ardından 2,5 sn zaman borcu.
+CHRONO_BOOST_MS = 4000
+CHRONO_DEBT_MS = 2500
+CHRONO_BOOST_COOLDOWN = 0.72
+CHRONO_DEBT_COOLDOWN = 1.18
+CHRONO_DEBT_DAMAGE = 0.95
+
+# Omega Güçlendirici: devredeki her farklı sınıf toplam paya %8 ekler.
+OMEGA_BUDGET_PER_CATEGORY = 0.08
+OMEGA_PER_ATTACK_CAP = 0.20
+OMEGA_MAX_CATEGORIES = 5
+
+# Nano Medik iki hedefe, her birine temel onarımın %62'si kadar.
+NANO_MEDIC_TARGETS = 2
+NANO_MEDIC_REPAIR_RATIO = 0.62
+# Anka Onarımı: 30 sn'de bir, sınıf sınırlarına uyarak yok edilmiş bir modülü
+# %30 CAN ile geri getirir; her modül maçta en fazla bir kez dirilir.
+PHOENIX_COOLDOWN_ID = "phoenix_rebirth"
+PHOENIX_COOLDOWN_MS = 30_000
+PHOENIX_REVIVE_HP_RATIO = 0.30
+PHOENIX_REVIVE_ENERGY = 10.0
+PHOENIX_REPAIR_RATIO = 1.15
 JAMMER_DEBUFF_ID = "support_jammed"
 
 REPAIR_CLEANSABLE_DEBUFFS = (
     "virus",
     "support_jammed",
-    "energy_leech",
 )
 
 COOLER_REDUCIBLE_DEBUFFS = (
@@ -26,7 +64,7 @@ COOLER_REDUCIBLE_DEBUFFS = (
     "line_disrupted",
 )
 
-COOLER_DEBUFF_REDUCTION_MS_PER_TICK = 500
+COOLER_DEBUFF_REDUCTION_MS_PER_TICK = 200
 
 @dataclass(slots=True, frozen=True)
 class AttackSupportModifiers:
@@ -37,108 +75,198 @@ class AttackSupportModifiers:
     overclock_active: bool = False
     contributions: tuple[dict, ...] = ()
 
-def _neighbors(module, topology, player):
-    return [
-        player.modules[mid]
-        for mid in topology.adjacency.get(module.instance_id, ())
-        if mid in player.modules
-        and player.modules[mid].status == ModuleStatus.ACTIVE
-    ]
-
-def attack_support_modifiers(player, attack_module, core_position):
-    topology=build_energy_topology(player,core_position)
-    neighbors=_neighbors(attack_module,topology,player)
-    def strongest(mechanic):
-        candidates = [
+def _operational_supports(
+    player: PlayerBattleState,
+    definition_id: str,
+) -> list[BattleModule]:
+    return sorted(
+        (
             module
-            for module in neighbors
-            if module.definition.mechanic_id == mechanic
+            for module in player.modules.values()
+            if module.definition.id == definition_id
             and module_is_operational(module)
             and JAMMER_DEBUFF_ID not in module.debuffs
-        ]
-        if not candidates:
-            return None, 0.0
-        source = sorted(
-            candidates,
-            key=lambda module: (
-                -module.definition.effect_multiplier,
-                module.instance_id,
-            ),
-        )[0]
-        return (
-            source,
-            source.definition.effect_multiplier
-            * player.energy_support_multiplier,
-        )
+        ),
+        key=lambda module: (-module.definition.effect_multiplier, module.instance_id),
+    )
 
-    # One attack module may receive only one offensive support at a time.
-    # Pick the strongest real contribution instead of multiplying several
-    # different support cards on the same target.
-    support_options = []
-    for mechanic, impact in (
-        ("amplifier", .15),
-        ("targeting_computer", .15),
-        ("overclock_unit", .40),
-    ):
-        source, effect = strongest(mechanic)
-        if source is not None:
-            support_options.append((impact * effect, effect, mechanic, source))
+
+def operational_attack_count(player: PlayerBattleState) -> int:
+    return sum(
+        1
+        for module in player.modules.values()
+        if module.definition.category == "saldırı"
+        and module.definition.base_damage > 0
+        and module_is_operational(module)
+    )
+
+
+def shared_support_share(per_attack_cap: float, total_budget: float, attack_count: int) -> float:
+    """Tüm devreye etki eden destek, toplam payını saldırı modüllerine böler."""
+    return min(per_attack_cap, total_budget / max(1, attack_count))
+
+
+def overclock_assignments(player: PlayerBattleState) -> dict[str, BattleModule]:
+    """Her Aşırı Hızlandırıcı en ağır, henüz seçilmemiş saldırı modülünü seçer.
+
+    Seçim yerleşimden bağımsızdır; hız/hasar bonusu ve ısı aynı hedefe gider.
+    """
+    overclocks = _operational_supports(player, "overclock_unit")
+    attacks = sorted(
+        (
+            module
+            for module in player.modules.values()
+            if module.definition.category == "saldırı"
+            and module_is_operational(module)
+            and not is_overheated(module)
+        ),
+        key=lambda module: (
+            -module.definition.action_energy_cost,
+            -module.definition.base_damage,
+            module.instance_id,
+        ),
+    )
+    return {
+        target.instance_id: overclock
+        for overclock, target in zip(overclocks, attacks)
+    }
+
+
+def chrono_phase(chrono_module: BattleModule, elapsed_ms: int) -> str:
+    boost_until = int(chrono_module.mechanic_state.get("chrono_boost_until_ms", 0))
+    debt_until = int(chrono_module.mechanic_state.get("chrono_debt_until_ms", 0))
+    if elapsed_ms < boost_until:
+        return "boost"
+    if elapsed_ms < debt_until:
+        return "debt"
+    return "idle"
+
+
+def circuit_category_diversity(player: PlayerBattleState) -> int:
+    return min(
+        OMEGA_MAX_CATEGORIES,
+        len({
+            module.definition.category
+            for module in player.modules.values()
+            if module.definition.id != "core" and module_is_operational(module)
+        }),
+    )
+
+
+def attack_support_modifiers(player, attack_module, core_position, elapsed_ms: int = 0):
+    """Bir saldırı modülünün aldığı tek saldırı desteğini ve Kronos borcunu hesaplar.
+
+    Destekler yerleşimden bağımsız olarak tüm devrede çalışır. Bir saldırı modülü
+    yalnız en güçlü tek desteği kullanır; Kronos borcu ise seçimden bağımsız bir
+    cezadır ve başka destekle atlatılamaz.
+    """
+    del core_position
+    support = player.energy_support_multiplier
+    attacks = operational_attack_count(player)
+    # (etki, tür, kaynak, hasar çarpanı, bekleme çarpanı)
+    options: list[tuple[float, str, BattleModule, float, float]] = []
+
+    amplifiers = _operational_supports(player, "amplifier")
+    if amplifiers:
+        source = amplifiers[0]
+        bonus = (
+            shared_support_share(AMPLIFIER_PER_ATTACK_CAP, AMPLIFIER_TOTAL_BUDGET, attacks)
+            * source.definition.effect_multiplier
+            * support
+        )
+        options.append((bonus, "amplifier", source, 1 + bonus, 1.0))
+
+    targeting = _operational_supports(player, "targeting_computer")
+    if targeting:
+        source = targeting[0]
+        reduction = (
+            shared_support_share(TARGETING_PER_ATTACK_CAP, TARGETING_TOTAL_BUDGET, attacks)
+            * source.definition.effect_multiplier
+            * support
+        )
+        options.append((reduction, "targeting_computer", source, 1.0, max(.65, 1 - reduction)))
+
+    overclock = overclock_assignments(player).get(attack_module.instance_id)
+    if overclock is not None:
+        effect = overclock.definition.effect_multiplier * support
+        options.append((
+            .40 * effect,
+            "overclock_unit",
+            overclock,
+            1 + (OVERCLOCK_DAMAGE_MULTIPLIER - 1) * effect,
+            max(.65, 1 - (1 - OVERCLOCK_COOLDOWN_MULTIPLIER) * effect),
+        ))
+
+    matrices = _operational_supports(player, "precision_matrix")
+    stacks = max(0, min(PRECISION_MAX_STACKS, int(attack_module.mechanic_state.get("precision_focus_stacks", 0))))
+    if matrices and stacks:
+        source = matrices[0]
+        effect = source.definition.effect_multiplier * support
+        damage = 1 + PRECISION_DAMAGE_PER_STACK * stacks * effect
+        cooldown = max(.72, 1 - PRECISION_COOLDOWN_PER_STACK * stacks * effect)
+        options.append(((damage - 1) + (1 - cooldown), "precision_matrix", source, damage, cooldown))
+
+    chronos = _operational_supports(player, "chrono_relay")
+    chrono_debt = False
+    if chronos:
+        source = chronos[0]
+        phase = chrono_phase(source, elapsed_ms)
+        if phase == "boost":
+            cooldown = max(.65, 1 - (1 - CHRONO_BOOST_COOLDOWN) * source.definition.effect_multiplier * support)
+            options.append((1 - cooldown, "chrono_relay", source, 1.0, cooldown))
+        elif phase == "debt":
+            chrono_debt = True
+
+    omegas = _operational_supports(player, "omega_amplifier")
+    if omegas:
+        source = omegas[0]
+        diversity = circuit_category_diversity(player)
+        source.mechanic_state["resonance_categories"] = diversity
+        bonus = (
+            shared_support_share(OMEGA_PER_ATTACK_CAP, OMEGA_BUDGET_PER_CATEGORY * diversity, attacks)
+            * source.definition.effect_multiplier
+            * support
+        )
+        if bonus > 0:
+            options.append((bonus, "omega_amplifier", source, 1 + bonus, 1.0))
 
     selected = (
-        sorted(
-            support_options,
-            key=lambda item: (-item[0], -item[1], item[2], item[3].instance_id),
-        )[0]
-        if support_options
+        sorted(options, key=lambda item: (-item[0], item[1], item[2].instance_id))[0]
+        if options
         else None
     )
-    amp_source = targeting_source = overclock_source = None
-    amp = targeting = overclock = 0.0
+    damage = cooldown = 1.0
+    kind = ""
+    contributions: list[dict] = []
     if selected is not None:
-        _, effect, mechanic, source = selected
-        if mechanic == "amplifier":
-            amp_source, amp = source, effect
-        elif mechanic == "targeting_computer":
-            targeting_source, targeting = source, effect
-        else:
-            overclock_source, overclock = source, effect
-    damage = (1 + .15 * amp) * (1 + .20 * overclock)
-    cooldown = max(.65, 1 - .15 * targeting) * max(.65, 1 - .20 * overclock)
-    contributions = []
-    if amp_source is not None:
-        contributions.append({
-            "source_module_id": amp_source.instance_id,
-            "contribution_kind": "attack_boost",
-            "value": .15 * amp * 100,
-        })
-    if targeting_source is not None:
-        contributions.append({
-            "source_module_id": targeting_source.instance_id,
-            "contribution_kind": "cooldown_reduction",
-            "value": (1 - max(.65, 1 - .15 * targeting)) * 100,
-        })
-    if overclock_source is not None:
-        contributions.append({
-            "source_module_id": overclock_source.instance_id,
-            "contribution_kind": "attack_boost",
-            "value": .20 * overclock * 100,
-        })
+        _, kind, source, damage, cooldown = selected
+        if damage > 1.0:
+            contributions.append({
+                "source_module_id": source.instance_id,
+                "contribution_kind": "attack_boost",
+                "value": (damage - 1.0) * 100,
+            })
+        if cooldown < 1.0:
+            contributions.append({
+                "source_module_id": source.instance_id,
+                "contribution_kind": "cooldown_reduction",
+                "value": (1.0 - cooldown) * 100,
+            })
+    if chrono_debt:
+        damage *= CHRONO_DEBT_DAMAGE
+        cooldown *= CHRONO_DEBT_COOLDOWN
     return AttackSupportModifiers(
         damage_multiplier=damage,
         cooldown_multiplier=cooldown,
-        amplifier_active=bool(amp),
-        targeting_active=bool(targeting),
-        overclock_active=bool(overclock),
+        amplifier_active=kind in {"amplifier", "omega_amplifier"},
+        targeting_active=kind in {"targeting_computer", "precision_matrix", "chrono_relay"},
+        overclock_active=kind == "overclock_unit",
         contributions=tuple(contributions),
     )
 
+
 def repair_amount(repair_module):
-    multiplier=repair_module.definition.effect_multiplier
-    if repair_module.position is not None:
-        multiplier*=float(
-            get_cell_effects(repair_module.position).get("repair_multiplier",1.0)
-        )
-    return max(1,int(round(BASE_REPAIR_AMOUNT*multiplier)))
+    return max(1, int(round(BASE_REPAIR_AMOUNT * repair_module.definition.effect_multiplier)))
 
 def repair_targets(player, repair_module, core_position):
     del repair_module, core_position
@@ -162,26 +290,38 @@ def repair_target(player, repair_module, core_position):
     return targets[0] if targets else None
 
 def cooler_targets(player, cooler_module, core_position):
-    topology=build_energy_topology(player,core_position)
-    return [
-        m
-        for m in _neighbors(cooler_module,topology,player)
-        if m.heat > 0 and module_is_operational(m)
-    ]
+    # Yerleşim otomatik olduğu için Soğutucu komşuluğa değil tüm devreye bakar.
+    del cooler_module, core_position
+    return sorted(
+        (
+            module
+            for module in player.modules.values()
+            if module.definition.id != "core"
+            and module.heat > 0
+            and module_is_operational(module)
+        ),
+        key=lambda module: (-module.heat, module.instance_id),
+    )[:COOLER_MAX_TARGETS]
+
 
 def overclock_targets(player, overclock_module, core_position):
-    topology=build_energy_topology(player,core_position)
+    del core_position
     return [
-        m for m in _neighbors(overclock_module,topology,player)
-        if m.definition.category=="saldırı" and module_is_operational(m)
+        target
+        for target_id, source in overclock_assignments(player).items()
+        if source is overclock_module
+        for target in (player.modules[target_id],)
     ]
 
 
 def repair_cleanse_target(player, repair_module, core_position):
-    topology = build_energy_topology(player, core_position)
+    # Kartlar birbirine bağlanmak zorunda olmadığından temizleme de tüm devreye bakar.
+    del core_position
     candidates = []
 
-    for module in _neighbors(repair_module, topology, player):
+    for module in player.modules.values():
+        if module is repair_module or module.status != ModuleStatus.ACTIVE or module.hp <= 0:
+            continue
         active_effects = [
             effect_id
             for effect_id in REPAIR_CLEANSABLE_DEBUFFS
@@ -205,10 +345,12 @@ def cooler_reducible_debuff_targets(
     cooler_module,
     core_position,
 ):
-    topology = build_energy_topology(player, core_position)
+    del cooler_module, core_position
     results = []
 
-    for module in _neighbors(cooler_module, topology, player):
+    for module in player.modules.values():
+        if module.status != ModuleStatus.ACTIVE or module.hp <= 0:
+            continue
         for effect_id in COOLER_REDUCIBLE_DEBUFFS:
             if effect_id in module.debuffs:
                 results.append((module, effect_id))
@@ -217,4 +359,4 @@ def cooler_reducible_debuff_targets(
     return sorted(
         results,
         key=lambda item: item[0].instance_id,
-    )
+    )[:COOLER_MAX_TARGETS]

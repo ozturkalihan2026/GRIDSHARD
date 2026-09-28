@@ -14,8 +14,6 @@ class BoardCell:
     position: Position
     cell_type: BoardCellType
     placeable: bool = True
-    allowed_categories: tuple[str, ...] = ()
-    allowed_definition_ids: tuple[str, ...] = ()
 
 
 @dataclass(slots=True, frozen=True)
@@ -46,15 +44,6 @@ BOARD_HEIGHT = 3
 
 def get_default_board() -> BoardLayout:
     return CANONICAL_BOARD
-
-
-def get_cell_effects(position: Position) -> dict[str, float]:
-    CANONICAL_BOARD.get_cell(position)
-    return {}
-
-
-def special_cell_positions() -> tuple[Position, ...]:
-    return ()
 
 
 CANONICAL_BOARD = BoardLayout(

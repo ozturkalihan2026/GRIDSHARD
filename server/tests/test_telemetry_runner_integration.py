@@ -1,11 +1,17 @@
 import asyncio
 
-from app.game.engine import BATTLE_TIME_LIMIT_MS
 from app.main import (
     pvp_service,
     pvp_tick_runner,
     telemetry_service,
 )
+
+
+def destroy_core(engine, player_id):
+    # Savaş yalnız bir Çekirdek yok olunca biter.
+    for module in engine.state.players[player_id].modules.values():
+        if module.definition.id == "core":
+            module.hp = 0
 
 
 def test_main_runner_records_match_completion_telemetry():
@@ -17,17 +23,12 @@ def test_main_runner_records_match_completion_telemetry():
         for player in ("a", "b"):
             pvp_service.join("telemetry-runner", player)
             session.engine.grant_module(player, f"{player}-core", "core")
-            session.engine.grant_module(player, f"{player}-gen", "generator")
             session.engine.set_initial_active_module(
                 player, f"{player}-core", 2, 1
             )
-            session.engine.set_initial_active_module(
-                player, f"{player}-gen", 2, 0
-            )
 
         pvp_service.start("telemetry-runner")
-        session.engine.state.elapsed_ms = BATTLE_TIME_LIMIT_MS - 100
-
+        destroy_core(session.engine, "b")
         await pvp_tick_runner.run_single_tick("telemetry-runner")
 
         completed = telemetry_service.events(

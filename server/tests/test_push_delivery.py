@@ -1,4 +1,7 @@
-"""Isolated provider/outbox contracts; no real device, key or network access."""
+"""Sağlayıcı ve kuyruk sözleşmeleri (GRIDSHARD projesinden taşındı).
+
+Gerçek cihaz, anahtar veya ağ erişimi kullanılmaz.
+"""
 
 import base64
 import json
@@ -54,6 +57,19 @@ def test_inbox_enqueue_is_durable_and_no_network_inside_request(setup):
     assert view["push"]["deliveries"] == {"accepted": 1}
     assert "token-abcdef" not in json.dumps(view)
     assert "push_jobs" not in json.dumps(service.export_data("alice"))
+
+
+def test_battle_invite_opens_inbox_and_carries_source_player(setup):
+    service, sender, _ = setup
+    service.queue_notification("alice", "Savaş daveti", "Bob seni kupasız savaşa çağırdı.",
+                               "gridshard://inbox", source_player_id="bob")
+    assert service.process_push_once()
+    assert sender.calls[0][1]["deep_link"] == "gridshard://inbox"
+    service.set_block("bob", "alice", True)
+    service.queue_notification("alice", "Savaş daveti", "Bob seni kupasız savaşa çağırdı.",
+                               "gridshard://inbox", source_player_id="bob")
+    assert not service.process_push_once()
+    assert len(sender.calls) == 1
 
 
 def test_retry_after_and_expiry_are_obeyed(setup):

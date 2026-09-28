@@ -93,18 +93,9 @@ async function waitFor(driver, predicate, timeout = 20_000) {
       driver,
       "return document.querySelector('#participant-bootstrap-status')?.dataset.status === 'ready'",
       30_000);
-    const playButton = await driver.wait(until.elementLocated(By.css(".menu-action-play")), 20_000);
+    const playButton = await driver.wait(until.elementLocated(By.css("#home-battle-button")), 20_000);
+    await waitFor(driver, "return !document.querySelector('#home-battle-button')?.disabled");
     await playButton.click();
-    await driver.wait(until.elementsLocated(By.css("#battle-pool-selection .pool-choice")), 20_000);
-
-    await driver.findElement(By.css("#battle-pool-preset-open")).click();
-    await driver.wait(until.elementLocated(By.css('.preset-card[data-preset-name="Başlangıç Devresi"] button')), 20_000).click();
-    await waitFor(
-      driver,
-      "return /18\\s*\\/\\s*18/.test(document.querySelector('#battle-pool-count')?.textContent || '')"
-    );
-    await driver.findElement(By.css("#battle-pool-preset-close")).click();
-    await driver.findElement(By.css("#battle-pool-confirm")).click();
 
     await waitFor(
       driver,
@@ -113,29 +104,33 @@ async function waitFor(driver, predicate, timeout = 20_000) {
     await waitFor(driver, "return document.body.dataset.opponentType === 'ai'");
     const layout = await driver.executeScript(`
       const board = document.querySelector('#board').getBoundingClientRect();
+      const rival = document.querySelector('#enemy-board').getBoundingClientRect();
       return {
+        innerWidth: window.innerWidth,
         innerHeight: window.innerHeight,
-        scrollHeight: document.body.scrollHeight,
-        scrollTop: window.scrollY,
-        boardBottom: board.bottom
+        own: { left: board.left, right: board.right, top: board.top, bottom: board.bottom },
+        rival: { left: rival.left, right: rival.right, top: rival.top, bottom: rival.bottom },
+        ownCells: document.querySelectorAll('#board .board-cell').length,
+        rivalCells: document.querySelectorAll('#enemy-board .board-cell').length
       };
     `);
-    assert.ok(layout.scrollHeight <= layout.innerHeight + 1, `Dikey taşma: ${JSON.stringify(layout)}`);
-    assert.equal(layout.scrollTop, 0);
-    assert.ok(layout.boardBottom <= layout.innerHeight + 1, `Tahta ekran dışında: ${JSON.stringify(layout)}`);
+    assert.equal(layout.ownCells, 15);
+    assert.equal(layout.rivalCells, 15);
+    assert.ok(layout.rival.bottom <= layout.own.top + 2, `Devreler ayrışmıyor: ${JSON.stringify(layout)}`);
+    for (const board of [layout.own, layout.rival]) {
+      assert.ok(board.left >= -2 && board.right <= layout.innerWidth + 2, `Yatay taşma: ${JSON.stringify(layout)}`);
+      assert.ok(board.top >= -2 && board.bottom <= layout.innerHeight + 2, `Dikey taşma: ${JSON.stringify(layout)}`);
+    }
 
-    await driver.findElement(By.css("[data-mobile-battle-panel=shelf]")).click();
     await waitFor(driver, `
-      const card = document.querySelector('#module-shelf .module-card');
+      const card = document.querySelector('#module-shelf .deck-module-card[data-playable=true]');
       const shelf = document.querySelector('#module-shelf');
-      return card && !card.classList.contains('locked') && shelf?.dataset.placementReady === 'true';
+      return card && !card.disabled && shelf?.dataset.placementReady === 'true';
     `, 35_000);
-    const before = (await driver.findElements(By.css("#module-shelf .module-card"))).length;
-    await driver.findElement(By.css("#module-shelf .module-card")).click();
-    await waitFor(driver, "return document.body.dataset.mobileBattlePanel === 'player'");
-    await driver.findElement(By.css('#board .tap-drop-target[data-occupied=false]')).click();
+    const before = (await driver.findElements(By.css("#board .module-card"))).length;
+    await driver.findElement(By.css("#module-shelf .deck-module-card[data-playable=true]")).click();
     await driver.wait(async () =>
-      (await driver.findElements(By.css("#module-shelf .module-card"))).length === before - 1,
+      (await driver.findElements(By.css("#board .module-card"))).length > before,
     15_000);
 
     await driver.findElement(By.css("#battle-forfeit-button")).click();
@@ -145,7 +140,7 @@ async function waitFor(driver, predicate, timeout = 20_000) {
 
     await driver.executeScript(`browserstack_executor: ${JSON.stringify({
       action: "setSessionStatus",
-      arguments: { status: "passed", reason: "Mobil savaş ve dokunmatik seç-yerleştir akışı geçti." }
+      arguments: { status: "passed", reason: "İki devre ve tek dokunuşlu sunucu yerleştirmesi doğrulandı." }
     })}`);
     writeEvidence({ passed: true, sessionId });
   } catch (error) {

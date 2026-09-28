@@ -9,8 +9,8 @@ const html = fs.readFileSync("./index.html", "utf8");
 const styles = fs.readFileSync("./src/styles.css", "utf8");
 
 assert.strictEqual(
-  global.GridshardI18n.translateText("Günlük Görevler", "en"),
-  "Daily Missions"
+  global.GridshardI18n.translateText("Günlük Devre Emirleri", "en"),
+  "Daily Circuit Orders"
 );
 assert.strictEqual(
   global.GridshardI18n.translateText("Ödül Yolu", "en"),
@@ -25,12 +25,12 @@ assert.strictEqual(
   "AKIŞ 3 Ü"
 );
 assert.strictEqual(
-  global.GridshardI18n.translateText("3 devre emri aktif", "en"),
-  "3 circuit orders active"
+  global.GridshardI18n.translateText("3 görev aktif", "en"),
+  "3 missions active"
 );
 assert.strictEqual(
-  global.GridshardI18n.translateText("SEZON SIFIR", "en"),
-  "SEASON ZERO"
+  global.GridshardI18n.translateText("Sezon Ödülleri", "en"),
+  "Season Rewards"
 );
 assert.strictEqual(
   global.GridshardI18n.translateText("Eşleştiriliyor", "en"),
@@ -39,7 +39,6 @@ assert.strictEqual(
 
 assert.ok(app.includes('settingsLanguageEl.addEventListener('));
 assert.ok(app.includes('await saveSettingsForm();'));
-assert.ok(app.includes('const collapsedShelfCategories = new Set();'));
 assert.ok(/document\.createElement\(\s*"details"\s*\)/u.test(app));
 assert.ok(!app.includes('"rotate_module"'));
 

@@ -11,9 +11,9 @@ Bu akış sıra kilitlidir: **Android gerçek cihaz → Google Play kapalı test
 
 ## Uygulama içi satın alma karar kapısı
 
-Bu yayın hattında gerçek para ile ürün, premium sezon yolu veya uygulama içi satın alma **kapsam dışıdır**. İstemciye Google Play Billing / StoreKit SDK'sı eklenmez; mağaza ürün kimliği, makbuz doğrulama ucu veya gerçek para fiyatı tanımlanmaz. Oyundaki sandık ve teklifler yalnız oyun içi kazanılan para birimlerini kullanır.
+Beta.72 ile ücretli geçiş, Savaş Premium ve para paketlerinin fiyatları ile sunucu tarafı deneme kataloğu eklendi. **Gerçek satın alma henüz yayınlanamaz.** Google Play Billing / StoreKit istemci entegrasyonu ve Google/Apple makbuz doğrulaması yoktur; üretimde deneme alımı kapalı, gerçek sağlayıcı istekleri reddedilir. Deneme reklamı da gerçek AdMob/SSV teslimi değildir. Ayrıntılar: [Mağaza ve satın alma sınırları](STORE_PURCHASES.md).
 
-Bu karar değişirse mağaza ekranına fiyat eklenmeden önce ayrı bir güvenlik paketi açılmalıdır: sunucu tarafı Google/Apple makbuz doğrulaması, idempotent teslim kaydı, iade/iptal işleme, bölgesel fiyat ve çocuk/ebeveyn politikaları tamamlanmadan satın alma özelliği yayınlanamaz.
+Mağaza ürünleri yayımlanmadan önce makbuz doğrulama, idempotent teslim, iade/iptal, bölgesel fiyat, çocuk/ebeveyn politikaları ve reklam SSV akışı ayrıca tamamlanıp gerçek cihazda doğrulanmalıdır.
 
 Paket kimliği mağazada uygulama kaydı oluşturulduktan sonra değiştirilmemelidir. Bu nedenle `android/` ve `ios/` projeleri, gerçek kimlik kesinleşmeden depoya üretilmez.
 
@@ -25,13 +25,13 @@ $env:GRIDSHARD_API_BASE_URL="https://api.gridshard.example"
 pnpm build:mobile:web
 ```
 
-Komut ortak üretim hattıyla JS/CSS dosyalarını sıralarını koruyarak birleştirir, küçültür ve içerik özetli isimlerle `dist/` altına yazar. Yalnız üretilen `dist/runtime-config.js` içine HTTPS API adresini ekler; testler/kaynak dosyalar pakete kopyalanmaz. HTTP adresleri ancak açık yerel geliştirme bayrağıyla kabul edilir; mağaza adayı için kabul edilmez. Ayrıntılar: [İstemci derlemesi](CLIENT_BUILD.md).
+Komut web yayınıyla aynı üretim hattını kullanır (`tools/build-client.js`, ayrıntı: [Üretim istemci paketi](CLIENT_BUILD.md)). JS ve CSS'yi içerik özetli tek pakete derler, `dist/` içine yalnız izin verilen varlıkları kopyalar ve HTTPS API adresini ayrı `dist/runtime-config.js` dosyasına yazar. Önce `pnpm install --frozen-lockfile --ignore-scripts` ile sabit `esbuild` kurulmalıdır. HTTP adresleri ancak açık yerel geliştirme bayrağıyla kabul edilir; mağaza adayı için kabul edilmez.
 
-Ses paketi yalnız manifestte doğrulanan OGG/AAC biçimlerini taşır; büyük WAV asılları pakete girmez. Savaş müziği katmanları açık ve farklı savaş durumlarına göre mikslenir. Android ve iPhone gerçek cihaz kapısında menü/savaş/sonuç seslerini, ses açma iznini, susturma ve arka plandan dönüşü ayrıca dinleyin. Biçim üretimi ve denetim sınırı: [Mobil ses paketi](MOBILE_AUDIO.md).
+### Mobil ses biçimleri
+
+Paketten önce `python tools/encode_mobile_audio.py` ile OGG/AAC türevleri üretilir (ffmpeg gerekir). `pnpm build:mobile:web` türevi doğrulanan WAV'ları pakete almaz; WAV türevinden yeniyse veya türev eksik/bozuksa durur. Ayrıntı: `docs/AUDIO_DIRECTION.md` §19.
 
 ## 1 — Android kapalı test
-
-Mobil bildirim gönderimi ve native kurulum için ayrıca [FCM/APNs teslim kılavuzunu](PUSH_NOTIFICATIONS.md) izleyin. Push plugin bağımlılığı tek başına Firebase dosyası, Apple capability/provisioning veya sağlayıcı anahtarlarını sağlamaz; bunlar gerçek cihaz yayın kapısının ayrı adımlarıdır.
 
 ### Yerel portre yönü
 
@@ -65,7 +65,7 @@ python tools/mobile_release_gate.py --stage android `
   "passed": true,
   "app_id": "com.sirket.gridshard",
   "commit_sha": "tam-git-sha",
-  "play_release_name": "2.0.0-beta.38.1",
+  "play_release_name": "2.1.0-beta.72",
   "completed_at": "ISO-8601"
 }
 ```

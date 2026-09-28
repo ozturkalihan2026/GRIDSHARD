@@ -1,6 +1,5 @@
 from dataclasses import dataclass
 
-from .board import get_cell_effects
 from .models import BattleModule, ModuleStatus, PlayerBattleState
 from .operations import module_is_operational
 
@@ -17,13 +16,15 @@ VIRUS_DEBUFF_ID = "virus"
 VIRUS_DURATION_MS = 6000
 VIRUS_TICK_INTERVAL_MS = 1000
 VIRUS_TICK_DAMAGE = 4
-
-ENERGY_LEECH_DEBUFF_ID = "energy_leech"
-ENERGY_LEECH_DURATION_MS = 5000
-ENERGY_LEECH_GENERATION_MULTIPLIER = 0.70
+# Tırmanan enfeksiyon: her tik bir öncekinden bu kadar fazla vurur.
+VIRUS_TICK_ESCALATION = 2
 
 DISRUPTOR_DEBUFF_ID = "line_disrupted"
 DISRUPTOR_DURATION_MS = 3500
+SINGULARITY_DURATION_MS = 4500
+# Kesici ve Tekillik birincil kesintiye ek olarak ikinci bir sisteme kısa
+# yankı uygular (birincil sürenin oranı).
+SABOTAGE_ECHO_RATIOS = {"disruptor": 0.50, "singularity_projector": 0.65}
 
 
 @dataclass(slots=True, frozen=True)
@@ -49,19 +50,7 @@ WEAK_AGAINST_DURATION_MULTIPLIER = 0.75
 
 
 def sabotage_cooldown_ms(module: BattleModule) -> int:
-    multiplier = 1.0
-    if module.position is not None:
-        multiplier *= float(
-            get_cell_effects(module.position).get(
-                "cooldown_multiplier",
-                1.0,
-            )
-        )
-
-    return max(
-        100,
-        int(round(module.definition.cooldown_ms * multiplier)),
-    )
+    return max(100, int(module.definition.cooldown_ms))
 
 
 def _active_targets(player: PlayerBattleState) -> list[BattleModule]:
@@ -149,11 +138,11 @@ def plan_sabotage(
             target.instance_id,
         )
 
-    if definition_id == "energy_leech":
+    if sabotage_module.definition.id == "singularity_projector":
         return SabotagePlan(
-            ENERGY_LEECH_DEBUFF_ID,
-            "Enerji Sömürüsü",
-            ENERGY_LEECH_DURATION_MS,
+            DISRUPTOR_DEBUFF_ID,
+            "Tekillik Alanı",
+            SINGULARITY_DURATION_MS,
             target.instance_id,
         )
 
@@ -227,11 +216,6 @@ def sabotage_resistance(
 
     if blocked:
         reasons.append("bariyer-tam-engelleme")
-
-    if sabotage_module.definition.mechanic_id == "energy_leech":
-        # Bariyer Enerji Sömürücü şiddetini de azaltır.
-        if powered_barriers:
-            effect_strength_multiplier *= 0.85
 
     return SabotageResistance(
         duration_multiplier=duration_multiplier,

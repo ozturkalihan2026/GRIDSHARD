@@ -11,8 +11,8 @@ from pathlib import Path
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "2.1.0-beta.43"
-PACKAGE_LABEL = "cards-season"
+VERSION = "2.1.0-beta.72"
+PACKAGE_LABEL = "signatures-social"
 ARCHIVE_ROOT = f"GRIDSHARD-{VERSION}-{PACKAGE_LABEL}"
 
 EXCLUDED_RUNTIME_PATTERNS = (
@@ -21,7 +21,11 @@ EXCLUDED_RUNTIME_PATTERNS = (
     "server/data/web_test_players.json*",
     "server/data/web_test_telemetry.json*",
     "server/data/web_test_battle_pool_presets.json*",
-    "server/data/web_test_balance_change_drafts.json*",
+    "server/data/*.schema.json",
+    "server/data/*.schema.lock",
+    "server/data/*.pre-*.bak",
+    "server/data/platform_state.json*",
+    "server/data/*.lock",
 )
 EXCLUDED_NAMES = {"RELEASE_MANIFEST.json"}
 GENERATED_ROOT_PATTERNS = (

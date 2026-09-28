@@ -17,27 +17,6 @@ WEAPON_FILES = (
 )
 
 
-def test_server_power_truth_reaches_both_player_and_enemy_cards():
-    app = (ROOT / "client" / "src" / "app.js").read_text(encoding="utf-8")
-    relay = (ROOT / "client" / "src" / "relay-client.js").read_text(
-        encoding="utf-8"
-    )
-    css = (ROOT / "client" / "src" / "styles.css").read_text(encoding="utf-8")
-
-    assert "serverModule.energy_received" in relay
-    assert "serverModule.energy_required" in relay
-    assert "module.energy_received" in app
-    assert "module.energy_required" in app
-    assert "appendEnergyFlowIndicator" in app
-    assert '"energy-flow-badge"' in app
-    assert "received.toFixed(1)" in app
-    assert "power-state-tooltip" in app
-    assert "powerReason" in app
-    assert "@keyframes gs-energy-presence" in css
-    assert "gs-energy-current" not in css
-    assert '.module-card.energy-disconnected::after' in css
-
-
 def test_every_attack_travels_to_exact_target_and_emits_impact_feedback():
     app = (ROOT / "client" / "src" / "app.js").read_text(encoding="utf-8")
     css = (ROOT / "client" / "src" / "styles.css").read_text(encoding="utf-8")

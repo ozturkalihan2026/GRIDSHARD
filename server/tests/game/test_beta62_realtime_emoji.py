@@ -17,9 +17,9 @@ def _running_engine():
     return engine
 
 
-def test_selected_reward_emoji_is_broadcast_as_a_public_battle_event():
+def test_any_unlocked_emoji_is_broadcast_as_a_public_battle_event():
     engine = _running_engine()
-    engine.state.players["p1"].selected_battle_emoji_id = "respect_signal"
+    engine.state.players["p1"].battle_emoji_ids = ("thumbs_up", "respect_signal")
 
     engine.enqueue_command(BattleCommand(
         "p1", "send_battle_emoji", {"emoji_id": "respect_signal"}
@@ -33,17 +33,17 @@ def test_selected_reward_emoji_is_broadcast_as_a_public_battle_event():
 def test_locked_or_spammed_battle_emoji_is_rejected():
     engine = _running_engine()
     player = engine.state.players["p1"]
-    player.selected_battle_emoji_id = "respect_signal"
+    player.battle_emoji_ids = ("thumbs_up",)
     engine.enqueue_command(BattleCommand(
         "p1", "send_battle_emoji", {"emoji_id": "victory_pulse"}
     ))
     engine.step()
     engine.enqueue_command(BattleCommand(
-        "p1", "send_battle_emoji", {"emoji_id": "respect_signal"}
+        "p1", "send_battle_emoji", {"emoji_id": "thumbs_up"}
     ))
     engine.step()
     engine.enqueue_command(BattleCommand(
-        "p1", "send_battle_emoji", {"emoji_id": "respect_signal"}
+        "p1", "send_battle_emoji", {"emoji_id": "thumbs_up"}
     ))
     engine.step()
 

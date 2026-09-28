@@ -1,4 +1,4 @@
-from app.game.energy import process_energy_tick
+from app.game.energy import process_energy_tick, spend_action_energy
 from app.game.engine import BattleEngine
 from app.game.models import BattleState
 
@@ -19,8 +19,8 @@ def _energy_player(module_ids):
     return player
 
 
-def test_severe_overload_never_restores_full_attack_damage():
-    moderate = _energy_player(("quantum_cannon", "railgun", "pulse_cannon"))
+def test_overload_is_paid_by_visible_waits_not_hidden_circuit_penalties():
+    moderate = _energy_player(("laser", "shield", "repair"))
     severe = _energy_player((
         "quantum_cannon",
         "quantum_cannon",
@@ -30,9 +30,18 @@ def test_severe_overload_never_restores_full_attack_damage():
         "quantum_cannon",
     ))
 
-    assert 1.4 < moderate.energy_load_ratio < 1.6
-    assert moderate.energy_damage_multiplier == 0.9
-    assert severe.energy_load_ratio > 1.6
-    assert severe.energy_speed_multiplier == 0.6
-    assert severe.energy_damage_multiplier == 0.75
-    assert severe.energy_damage_multiplier < moderate.energy_damage_multiplier
+    assert moderate.energy_load_ratio < 1.0
+    assert severe.energy_load_ratio > 1.0
+    # Devre çapında gizli hız/hasar cezası taşıyan alan yok.
+    for player in (moderate, severe):
+        assert not hasattr(player, "energy_speed_multiplier")
+        assert not hasattr(player, "energy_damage_multiplier")
+
+    # Ağır yığın rezervi hızla tüketir; sıradaki atış görünür biçimde bekler.
+    cannons = [
+        module for module in severe.modules.values()
+        if module.definition.id == "quantum_cannon"
+    ]
+    results = [spend_action_energy(severe, cannon) for cannon in cannons]
+    assert not all(result.success for result in results)
+    assert any(cannon.energy_waiting for cannon in cannons)

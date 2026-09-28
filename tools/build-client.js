@@ -3,6 +3,7 @@
 const crypto = require("node:crypto");
 const fs = require("node:fs");
 const path = require("node:path");
+const vm = require("node:vm");
 const esbuild = require("esbuild");
 
 const TARGETS = ["chrome109", "safari15"];
@@ -13,7 +14,7 @@ function apiBaseForBuild(environment, mobile) {
   const raw = String(environment.GRIDSHARD_API_BASE_URL || "").trim();
   if (!raw) {
     if (mobile) throw new Error("GRIDSHARD_API_BASE_URL mobil pakette zorunludur.");
-    return ""; // Web release: same-origin API, no deployment host baked in.
+    return ""; // Web yayını: aynı origin API; dağıtım adresi pakete gömülmez.
   }
   const url = new URL(raw);
   const insecure = environment.GRIDSHARD_ALLOW_INSECURE_MOBILE_API === "1";
@@ -36,8 +37,8 @@ function readBuildBlock(html, kind) {
   const to = html.indexOf(end);
   if (to < from) throw new Error(`${kind} derleme bloğu kapanışı geçersiz.`);
   const body = html.slice(from + start.length, to);
-  // These are explicit build blocks, not a general HTML parser. Fail closed if
-  // async/module scripts or media-specific styles are introduced: order matters.
+  // Bunlar genel bir HTML ayrıştırıcısı değil, açık derleme bloklarıdır. Sıra
+  // önemli olduğundan async/module betik veya media'lı stil gelirse derleme durur.
   const pattern = kind === "scripts"
     ? /<script\s+src="(\.\/src\/[^"?#]+\.js)"\s*>\s*<\/script>/g
     : /<link\s+rel="stylesheet"\s+href="(\.\/src\/[^"?#]+\.css)"\s*\/?\s*>/g;
@@ -69,39 +70,102 @@ function assertOutputDirectory(root, directory) {
   }
 }
 
-function validateCompressedAudio(source, scripts) {
-  if (!scripts.includes("./src/gridshard-audio.js")) return;
+// Mobil ses türevlerini (tools/encode_mobile_audio.py) doğrular ve pakete
+// alınmayacak kanonik WAV'ları döndürür. İstemci yalnız
+// gridshard-audio-formats.js listesindeki türevi çalar; türevi her biçimde
+// doğrulanan WAV pakete girmez. Türevi olmayan WAV'lar paket içinde kalır.
+function compressedAudioReplacements(source, scripts, environment) {
+  const replaced = new Set();
+  if (!scripts.includes("./src/gridshard-audio.js") || !scripts.includes("./src/gridshard-audio-formats.js")) {
+    return replaced;
+  }
   const audioRoot = path.join(source, "assets", "audio");
-  const manifest = JSON.parse(readText(path.join(audioRoot, "mobile", "manifest.json")));
-  if (manifest.schema_version !== 1 || !manifest.assets || typeof manifest.assets !== "object") {
-    throw new Error("Mobil ses manifesti geçersiz; pnpm assets:audio ile yeniden üretin.");
+  const manifestPath = path.join(audioRoot, "mobile", "manifest.json");
+  if (!fs.existsSync(manifestPath)) return replaced; // Türev yok: istemci WAV çalar.
+  const manifest = JSON.parse(readText(manifestPath));
+  const formats = manifest.formats;
+  if (manifest.version !== 1 || !Array.isArray(formats) || !formats.length
+      || !formats.every((extension) => /^[a-z0-9]+$/.test(extension))
+      || !manifest.sources || typeof manifest.sources !== "object") {
+    throw new Error("Mobil ses manifesti geçersiz; python tools/encode_mobile_audio.py ile yeniden üretin.");
   }
-  // The runtime's complete cue list is the source of truth, including SFX.
-  require(path.join(source, "src", "audio-mix.js"));
-  require(path.join(source, "src", "gridshard-audio.js"));
-  const audio = global.GRIDSHARD_AUDIO_MIX;
-  if (manifest.mix_version !== audio.version) throw new Error("Ses miks sürümü derleme manifestiyle eşleşmiyor.");
-  const nameOf = (asset) => /^\.\/assets\/audio\/([a-z0-9_]+)\.wav$/.exec(asset)?.[1];
-  const names = new Set([
-    ...Object.values(global.GRIDSHARD_MUSIC_ASSETS),
-    ...global.GRIDSHARD_BATTLE_LAYERS.map((layer) => layer.asset),
-    ...Object.values(global.GRIDSHARD_SFX_CUES).map((cue) => cue.asset),
-  ].map(nameOf));
-  if (names.has(undefined) || Object.keys(manifest.assets).length !== names.size) {
-    throw new Error("Mobil ses paketi oyun ses listesiyle eşleşmiyor.");
+  const context = vm.createContext({});
+  vm.runInContext(readText(sourceFile(source, "./src/gridshard-audio-formats.js")), context);
+  const runtime = context.GRIDSHARD_AUDIO_ENCODINGS;
+  if (runtime?.version !== manifest.version
+      || JSON.stringify(Object.keys(runtime.formats || {}).sort()) !== JSON.stringify([...formats].sort())) {
+    throw new Error("Ses türevi listesi manifestle eşleşmiyor; python tools/encode_mobile_audio.py çalıştırın.");
   }
-  for (const name of names) {
-    const asset = manifest.assets[name];
-    if (!asset) throw new Error(`Eksik sıkıştırılmış ses: ${name}`);
-    for (const extension of ["ogg", "m4a"]) {
-      const metadata = asset.formats?.[extension];
-      if (metadata?.file !== `${name}.${extension}`) throw new Error(`Eksik ses biçimi: ${name}.${extension}`);
-      const bytes = fs.readFileSync(path.join(audioRoot, "mobile", metadata.file));
-      if (bytes.length !== metadata.bytes || digest(bytes) !== metadata.sha256) {
-        throw new Error(`Ses dosyası bütünlük hatası: ${metadata.file}`);
+  const listed = formats.map((extension) => new Set(runtime.formats[extension]));
+  for (const name of new Set(listed.flatMap((names) => [...names]))) {
+    const entry = manifest.sources[name];
+    if (!/^[a-z0-9_]+$/.test(name) || !entry) throw new Error(`Manifestte olmayan ses türevi: ${name}`);
+    const wav = path.join(audioRoot, `${name}.wav`);
+    if (!fs.existsSync(wav)) throw new Error(`Türevi listelenen sesin kanonik WAV dosyası yok: ${name}.wav`);
+    if (digest(fs.readFileSync(wav)) !== entry.sha256) {
+      throw new Error(`${name}.wav mobil türevinden yeni; önce python tools/encode_mobile_audio.py çalıştırın.`);
+    }
+    formats.forEach((extension, index) => {
+      if (!listed[index].has(name)) return;
+      const file = path.join(audioRoot, "mobile", `${name}.${extension}`);
+      if (!fs.existsSync(file) || fs.statSync(file).size !== entry[`${extension}_bytes`]) {
+        throw new Error(`Ses türevi eksik veya bozuk: ${name}.${extension}`);
+      }
+    });
+    if (listed.every((names) => names.has(name))) replaced.add(path.resolve(wav));
+  }
+  // Kanonik WAV'ları korumak isteyen paket (ör. yedek çözümleme denemesi) için.
+  return environment.GRIDSHARD_MOBILE_KEEP_WAV === "1" ? new Set() : replaced;
+}
+
+function runtimeAssets(source, html, scripts, omittedWav) {
+  const assets = new Set();
+  const add = (raw) => {
+    const relative = String(raw).split(/[?#]/, 1)[0].replace(/^\.\//, "");
+    if (!/^assets\/(?:[a-zA-Z0-9_-]+\/)*[a-zA-Z0-9_.-]+$/.test(relative)
+        || relative.split("/").some((part) => part.startsWith("."))) {
+      throw new Error(`Geçersiz paket varlığı: ${raw}`);
+    }
+    const file = sourceFile(source, `./${relative}`);
+    if (!fs.statSync(file).isFile()) throw new Error(`Paket varlığı dosya değil: ${raw}`);
+    if (!omittedWav.has(file)) assets.add(relative);
+  };
+  for (const match of html.matchAll(/(?:src|href)="(\.\/assets\/[^"\s]+)"/g)) add(match[1]);
+  const webManifest = JSON.parse(readText(sourceFile(source, "./manifest.webmanifest")));
+  for (const icon of webManifest.icons || []) add(icon.src);
+  if (scripts.includes("./src/gridshard-audio.js")) {
+    const audioScript = readText(sourceFile(source, "./src/gridshard-audio.js"));
+    const audioNames = new Set();
+    for (const match of audioScript.matchAll(/["']\.\/assets\/audio\/([a-z0-9_]+)\.wav["']/g)) {
+      audioNames.add(match[1]);
+      add(`./assets/audio/${match[1]}.wav`);
+    }
+    if (scripts.includes("./src/gridshard-audio-formats.js")) {
+      const context = vm.createContext({});
+      vm.runInContext(readText(sourceFile(source, "./src/gridshard-audio-formats.js")), context);
+      for (const [extension, names] of Object.entries(context.GRIDSHARD_AUDIO_ENCODINGS?.formats || {})) {
+        for (const name of names) {
+          if (audioNames.has(name)) add(`./assets/audio/mobile/${name}.${extension}`);
+        }
       }
     }
   }
+  return [...assets].sort();
+}
+
+function stripDevelopmentBlocks(script) {
+  const start = "/* build:development-only */";
+  const end = "/* /build:development-only */";
+  const starts = script.split(start).length - 1;
+  const ends = script.split(end).length - 1;
+  if (starts !== ends) throw new Error("Geliştirme bloğu kapanışı geçersiz.");
+  for (let i = 0; i < starts; i += 1) {
+    const from = script.indexOf(start);
+    const to = script.indexOf(end, from + start.length);
+    if (to < from) throw new Error("Geliştirme bloğu sırası geçersiz.");
+    script = script.slice(0, from) + script.slice(to + end.length);
+  }
+  return script;
 }
 
 async function buildClient({ root = path.resolve(__dirname, ".."), mobile = false, environment = process.env } = {}) {
@@ -112,7 +176,7 @@ async function buildClient({ root = path.resolve(__dirname, ".."), mobile = fals
   const html = readText(path.join(source, "index.html"));
   const scripts = readBuildBlock(html, "scripts");
   const styles = readBuildBlock(html, "styles");
-  validateCompressedAudio(source, scripts.inputs);
+  const omittedWav = compressedAudioReplacements(source, scripts.inputs, environment);
   const runtimeTag = '<script src="./runtime-config.js"></script>';
   if (html.split(runtimeTag).length !== 2 || html.indexOf(runtimeTag) > html.indexOf(scripts.text)) {
     throw new Error("Runtime API ayarı uygulama betiklerinden önce, bir kez yüklenmelidir.");
@@ -122,9 +186,9 @@ async function buildClient({ root = path.resolve(__dirname, ".."), mobile = fals
   try {
     const bundleDirectory = path.join(staging, "bundles");
     fs.mkdirSync(bundleDirectory);
-    // Preserve classic-script execution order and explicit window/globalThis
-    // exports. A separator also protects boundaries from trailing comments/ASI.
-    const scriptSource = scripts.inputs.map((input) => readText(sourceFile(source, input))).join("\n;\n");
+    // Klasik betiklerin yürütme sırası ve window/globalThis dışa aktarımları
+    // korunur. Ayırıcı, sondaki yorum/ASI kaynaklı sınır hatalarını da önler.
+    const scriptSource = scripts.inputs.map((input) => stripDevelopmentBlocks(readText(sourceFile(source, input)))).join("\n;\n");
     const [javascript, css] = await Promise.all([
       esbuild.transform(scriptSource, {
         loader: "js", sourcefile: "gridshard.js", target: TARGETS,
@@ -170,16 +234,16 @@ async function buildClient({ root = path.resolve(__dirname, ".."), mobile = fals
     fs.writeFileSync(path.join(staging, "index.html"), outputHtml);
     const runtime = `globalThis.GRIDSHARD_API_BASE_URL = ${JSON.stringify(apiBase)};\n`;
     fs.writeFileSync(path.join(staging, "runtime-config.js"), runtime);
-    // Deliberate allowlist: no tests, source trees, local caches or dev reports.
-    for (const name of ["favicon.ico", "manifest.webmanifest", "assets"]) {
-      fs.cpSync(path.join(source, name), path.join(staging, name), {
-        recursive: true,
-        filter: (entry) => {
-          if (fs.lstatSync(entry).isSymbolicLink()) throw new Error("Paket varlıklarında sembolik bağlantı kabul edilmez.");
-          if (entry.startsWith(path.join(source, "assets", "audio") + path.sep) && entry.endsWith(".wav")) return false;
-          return !path.basename(entry).startsWith(".");
-        },
-      });
+    // Bilinçli izin listesi: testler, kaynak ağaçları, yerel önbellek ve
+    // geliştirme raporları dağıtılmaz.
+    for (const name of ["favicon.ico", "manifest.webmanifest"]) {
+      fs.copyFileSync(sourceFile(source, `./${name}`), path.join(staging, name));
+    }
+    const assets = runtimeAssets(source, outputHtml, scripts.inputs, omittedWav);
+    for (const relative of assets) {
+      const output = path.join(staging, relative);
+      fs.mkdirSync(path.dirname(output), { recursive: true });
+      fs.copyFileSync(sourceFile(source, `./${relative}`), output);
     }
     const manifest = {
       schema_version: 1, project: "GRIDSHARD", platform: mobile ? "mobile" : "web",
@@ -187,9 +251,14 @@ async function buildClient({ root = path.resolve(__dirname, ".."), mobile = fals
       toolchain: { esbuild: esbuild.version, targets: TARGETS },
       inputs: { scripts: scripts.inputs, styles: styles.inputs },
       immutable,
+      audio: {
+        omitted_wav: [...omittedWav].map((file) => path.relative(source, file).split(path.sep).join("/")).sort(),
+      },
+      assets,
     };
-    fs.writeFileSync(path.join(staging, "client-build-manifest.json"), JSON.stringify(manifest, null, 2) + "\n");
-    // Do not touch the previous release until every compilation/copy succeeded.
+    // Native WebView manifesti kullanmaz; mobil varlığa derleme girdilerini taşımayız.
+    if (!mobile) fs.writeFileSync(path.join(staging, "client-build-manifest.json"), JSON.stringify(manifest, null, 2) + "\n");
+    // Önceki sürüme, bütün derleme/kopyalama başarıyla bitmeden dokunulmaz.
     assertOutputDirectory(root, destination);
     fs.rmSync(destination, { recursive: true, force: true });
     fs.renameSync(staging, destination);
@@ -200,11 +269,13 @@ async function buildClient({ root = path.resolve(__dirname, ".."), mobile = fals
   }
 }
 
-module.exports = { apiBaseForBuild, readBuildBlock, buildClient };
+module.exports = { apiBaseForBuild, readBuildBlock, compressedAudioReplacements, buildClient };
 
 if (require.main === module) {
   buildClient().then(({ destination, manifest }) => {
+    const omitted = manifest.audio.omitted_wav.length;
     console.log(`Web paketi hazır: ${destination} (${manifest.build_id})`);
+    if (omitted) console.log(`Ses türevi kullanılan ${omitted} WAV pakete alınmadı.`);
   }).catch((error) => {
     console.error(error.message);
     process.exitCode = 1;

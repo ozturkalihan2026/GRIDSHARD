@@ -35,15 +35,3 @@ def test_beta31_has_seven_unique_synchronized_battle_stems_with_headroom():
         assert peak > 0
 
     assert len(hashes) == 7
-
-
-def test_beta31_runtime_starts_and_pressure_mixes_all_seven_stems():
-    source = (ROOT / "client" / "src" / "gridshard-audio.js").read_text(
-        encoding="utf-8"
-    )
-    assert 'version:"shardglass-mobile-v10"' in source
-    assert "GRIDSHARD_BATTLE_LAYERS.length" in source
-    assert "_applyBattleLayerMix" in source
-    assert "_transitionToBattleLayers" in source
-    for name in STEMS:
-        assert name in source

@@ -1,13 +1,12 @@
 {
   "name": "gridshard",
-  "version": "2.1.0-beta.43",
+  "version": "2.1.0-beta.72",
   "private": true,
   "packageManager": "pnpm@11.19.0",
   "scripts": {
     "test:client": "cd client && node --test tests/*.test.js",
     "test:build": "node --test tools/tests/client-build.test.js",
     "build:web": "node tools/build-client.js",
-    "assets:audio": "node tools/prepare-mobile-audio.js",
     "build:mobile:web": "node tools/build-mobile-web.js",
     "mobile:add:android": "pnpm build:mobile:web && cap add android && node tools/configure-native-orientation.js android",
     "mobile:add:ios": "pnpm build:mobile:web && cap add ios && node tools/configure-native-orientation.js ios",

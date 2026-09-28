@@ -12,8 +12,9 @@ assert.ok(app.includes('unit === "percent" ? "%" : ""'));
 assert.ok(app.includes('Number(item.energy_saved || 0)'));
 assert.ok(app.includes('Number(item.support_value || 0)'));
 assert.ok(app.includes('Number(item.control_seconds || 0)'));
-assert.ok(app.includes('["Nadirlik avantajı", rarityImpact]'));
-assert.ok(app.includes('`Rol etkisi ${rarityPercent(rarityBonuses.effect)}`'));
+// Beta.72 enderlik kanunu: bilgi ekranı enderliği bir stat avantajı olarak sunmaz.
+assert.ok(!app.includes("Nadirlik avantajı"));
+assert.ok(!app.includes("rarity_bonuses"));
 assert.ok(css.includes("font-size:.68rem !important"));
 
 console.log("beta52 rarity and module contribution contract passed");

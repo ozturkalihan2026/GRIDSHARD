@@ -1,7 +1,7 @@
 const { test, expect } = require("@playwright/test");
 const { waitForParticipantReady, closeActiveBattle } = require("./ui-helpers");
 
-test("10+10 aktif modül üç masaüstü viewportunda taşmadan okunur", async ({ page }) => {
+test("10+10 aktif modül dikey savaş alanında üç masaüstü viewportunda taşmadan okunur", async ({ page }) => {
   test.setTimeout(120_000);
   const errors = [];
   page.on("pageerror", error => errors.push(String(error)));
@@ -10,17 +10,8 @@ test("10+10 aktif modül üç masaüstü viewportunda taşmadan okunur", async (
 
   await page.goto("/?e2e=1", { waitUntil: "domcontentloaded" });
   await waitForParticipantReady(page);
-  await page.getByRole("button", { name: "Oyna" }).click();
-  await page.getByRole("button", { name: "Hazır Havuzları Yönet" }).click();
-  const starterPreset = page.locator(".preset-card", { hasText: "Başlangıç Devresi" });
-  await starterPreset.getByRole("button", { name: "Yükle" }).click();
-  await page.getByRole("button", { name: "Kapat" }).click();
-  await expect(page.locator("#play-readiness-status")).toHaveAttribute(
-    "data-ready",
-    "true",
-    { timeout: 30_000 }
-  );
-  await page.locator("#battle-pool-confirm").click();
+  await expect(page.locator("#home-battle-button")).toBeEnabled();
+  await page.locator("#home-battle-button").click();
   await expect(page.locator("body")).toHaveAttribute("data-online-status", "battle", {
     timeout: 40_000
   });
@@ -69,7 +60,7 @@ test("10+10 aktif modül üç masaüstü viewportunda taşmadan okunur", async (
       const boardBoxes = ["board", "enemy-board"].map(id =>
         document.getElementById(id).getBoundingClientRect()
       );
-      const boardsSeparated = boardBoxes[0].right <= boardBoxes[1].left + tolerance;
+      const boardsSeparated = boardBoxes[1].bottom <= boardBoxes[0].top + tolerance;
       return { bodyFits, cardsFitCells, boardsSeparated, cardCount: cards.length };
     });
     expect(layout).toEqual({

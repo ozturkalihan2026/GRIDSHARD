@@ -74,7 +74,8 @@ def test_daily_and_season_receipts_use_unlocked_named_reward_targets():
     profile = service.get_or_create("corrupted-engagement-deck")
     profile.preferred_battle_pool_ids = ("quantum_cannon", "removed_module")
 
-    daily = service.claim_monthly_login(profile.player_id, 10, "daily-receipt")
+    login_day = profile.login_period_day
+    daily = service.claim_login_reward(profile.player_id, login_day, "daily-receipt")
     assert daily["module_definition_id"] in unlocked_module_ids(0)
     assert profile.engagement_claim_receipts["daily-receipt"] == daily
 
@@ -87,7 +88,7 @@ def test_daily_and_season_receipts_use_unlocked_named_reward_targets():
     assert profile.core_shards_by_type["core_resonance"] == season["core_shards"]
 
     view = profile.engagement_view()
-    daily_view = next(item for item in view["daily_login"]["rewards"] if item["day"] == 10)
+    daily_view = next(item for item in view["daily_login"]["rewards"] if item["day"] == login_day)
     season_view = next(item for item in view["reward_track"] if item["tier"] == 10)
     assert daily_view["module_definition_id"] == daily["module_definition_id"]
     assert season_view["module_definition_id"] == season["module_definition_id"]
@@ -127,8 +128,8 @@ def test_arena_chest_and_shop_receipts_carry_actual_module_and_core_ids():
 
     shop_profile = profiles.get_or_create("shop-receipt-player")
     shop_profile.preferred_battle_pool_ids = ("quantum_cannon", "removed_module")
-    shop_profile.circuit_credits = 2000
-    shop = meta.purchase_daily_offer(shop_profile, "gold_daily", "shop-receipt")
+    shop_profile.flux_shards = 2000
+    shop = meta.purchase_store_chest(shop_profile, "core_24h", "shop-receipt")
     assert shop["rewards"]["module_definition_id"] in unlocked_module_ids(0)
     assert shop["rewards"]["core_type_id"] == "core_resonance"
 

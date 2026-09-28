@@ -10,7 +10,6 @@ import shutil
 from typing import Any, Callable, Protocol
 
 from .game.models import BattleState, BattleStatus
-from .json_schema_migrations import assert_supported_schema
 
 
 TELEMETRY_EVENT_TYPES = frozenset({
@@ -19,27 +18,12 @@ TELEMETRY_EVENT_TYPES = frozenset({
     "matchmaking_matched",
     "match_started",
     "match_completed",
-    "module_changed",
     "circuit_credit_spent",
-    "module_shelf_used",
-    "booster_used",
     "rematch_requested",
     "local_battle_started",
     "local_battle_completed",
-    "generator_gate_moved",
     "local_ai_hit",
     "local_player_attack",
-    "web_test_session_started",
-    "web_test_session_bound",
-    "web_test_session_finished",
-    "web_test_launch_attempted",
-    "web_test_checklist_snapshot",
-    "web_test_preflight_snapshot",
-    "web_test_run_started",
-    "web_test_run_finished",
-    "web_test_feedback_submitted",
-    "web_test_operation_snapshot",
-    "web_test_stability_snapshot",
 })
 
 
@@ -167,7 +151,6 @@ class JsonFileTelemetryRepository:
         )
 
     def load(self) -> list[TelemetryEvent]:
-        assert_supported_schema(self.path, "telemetry", list)
         if not self.path.exists():
             return []
 
@@ -260,7 +243,6 @@ class JsonFileTelemetryRepository:
         self,
         events: list[TelemetryEvent],
     ) -> None:
-        assert_supported_schema(self.path, "telemetry", list)
         retained = list(
             events[
                 -self.max_events:
@@ -750,19 +732,7 @@ class InMemoryTelemetryService:
         for index, event in enumerate(state.events):
             player_id = event.data.get("player_id")
 
-            if event.type == "module_replaced":
-                queue_event(
-                    event_id=f"server:{battle_id}:{index}:module_changed",
-                    event_type="module_changed",
-                    player_id=player_id,
-                    metadata={
-                        "outgoing_module_id": event.data.get("outgoing_module_id"),
-                        "incoming_module_id": event.data.get("incoming_module_id"),
-                        "battle_elapsed_ms": event.at_ms,
-                    },
-                )
-
-            elif event.type == "circuit_credits_spent":
+            if event.type == "circuit_credits_spent":
                 queue_event(
                     event_id=f"server:{battle_id}:{index}:credit_spent",
                     event_type="circuit_credit_spent",
@@ -771,18 +741,6 @@ class InMemoryTelemetryService:
                         "amount": int(event.data.get("amount", 0)),
                         "reason": event.data.get("reason"),
                         "balance": event.data.get("balance"),
-                        "battle_elapsed_ms": event.at_ms,
-                    },
-                )
-
-            elif event.type == "booster_applied":
-                queue_event(
-                    event_id=f"server:{battle_id}:{index}:booster_used",
-                    event_type="booster_used",
-                    player_id=player_id,
-                    metadata={
-                        "booster_id": event.data.get("booster_id"),
-                        "target_module_id": event.data.get("target_module_id"),
                         "battle_elapsed_ms": event.at_ms,
                     },
                 )

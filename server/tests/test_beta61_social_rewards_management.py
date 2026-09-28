@@ -183,8 +183,9 @@ def test_ranked_and_tournament_chests_have_descending_distinct_contracts():
     assert not WEEKLY_PRIZES[2].get("avatar_frame_id")
 
     assert TEAM_PRIZES[0]["chest_visual_id"].startswith("team_")
-    assert TEAM_PRIZES[0].get("team_avatar_id")
-    assert TEAM_PRIZES[0].get("team_frame_id")
-    assert TEAM_PRIZES[0].get("team_name_frame_id")
-    assert TEAM_PRIZES[0].get("team_bar_background_id")
+    # Takım ödülleri takım profilindeki görünüm seçenekleridir.
+    assert TEAM_PRIZES[0].get("team_emblem_id") == "crown"
+    assert TEAM_PRIZES[0].get("team_frame_id") == "gold"
+    assert TEAM_PRIZES[0].get("team_name_color_id") == "gold"
+    assert not TEAM_PRIZES[0].get("team_avatar_id")
     assert not TEAM_PRIZES[2].get("team_frame_id")

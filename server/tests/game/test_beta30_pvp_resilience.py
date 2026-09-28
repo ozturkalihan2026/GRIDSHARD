@@ -2,10 +2,8 @@ from app.game.models import BattleCommand
 from app.game.pvp_session import PvPSessionService
 
 
-TEN_MODULE_LAYOUT = (
-    ("core", 2, 2),
-    ("generator", 2, 3),
-    ("splitter", 2, 1),
+FULL_BOARD_LAYOUT = (
+    ("core", 2, 1),
     ("laser", 1, 1),
     ("battery", 1, 0),
     ("capacitor", 3, 0),
@@ -13,23 +11,30 @@ TEN_MODULE_LAYOUT = (
     ("repair", 0, 2),
     ("emp", 3, 1),
     ("arc_cannon", 4, 1),
+    ("armor", 0, 0),
+    ("railgun", 2, 0),
+    ("barrier", 4, 0),
+    ("cooler", 0, 1),
+    ("jammer", 1, 2),
+    ("virus", 2, 2),
+    ("amplifier", 3, 2),
 )
 
 
-def install_ten_active_modules(service, session_id, player_id):
+def install_full_board(service, session_id, player_id):
     engine = service.get_session(session_id).engine
-    for definition_id, x, y in TEN_MODULE_LAYOUT:
+    for definition_id, x, y in FULL_BOARD_LAYOUT:
         instance_id = f"{player_id}-{definition_id}"
         engine.grant_module(player_id, instance_id, definition_id)
         engine.set_initial_active_module(player_id, instance_id, x, y)
 
 
-def test_two_player_snapshot_keeps_all_twenty_active_modules_visible():
+def test_two_player_snapshot_keeps_all_thirty_active_modules_visible():
     service = PvPSessionService()
     service.create_session("density")
     for player_id in ("a", "b"):
         service.join("density", player_id)
-        install_ten_active_modules(service, "density", player_id)
+        install_full_board(service, "density", player_id)
     service.start("density")
 
     for viewer in ("a", "b"):
@@ -38,13 +43,13 @@ def test_two_player_snapshot_keeps_all_twenty_active_modules_visible():
             module["status"] == "active"
             for player in snapshot["players"].values()
             for module in player["modules"]
-        ) == 20
+        ) == 30
         assert all(
             len([
                 module
                 for module in player["modules"]
                 if module["status"] == "active"
-            ]) == 10
+            ]) == 15
             for player in snapshot["players"].values()
         )
 

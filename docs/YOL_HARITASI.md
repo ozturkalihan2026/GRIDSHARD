@@ -1,7 +1,8 @@
 # GRIDSHARD 2.1 — YOL HARİTASI
 
-**Güncel Sürüm:** `2.1.0-beta.43`
-**Paket:** Beta.43 — Kartlar, Aylık Sezon ve Lider Panosu
+**Güncel Sürüm:** `2.1.0-beta.72`
+**Paket:** Beta.72 — İmza Mekanikleri, Legacy Temizliği, Çekirdek İmzaları ve Mobil Arayüz Turu
+**Güncel kanon:** `docs/GRIDSHARD_2_1_KANONIK_TASARIM.md` · **Ayrıntılı çalışma kaydı:** `CODEX_CHECKPOINT.md`
 **Kanonik Dosya:** `docs/YOL_HARITASI.md`
 
 > Bu dosya GRIDSHARD 2.0 için tek kanonik geliştirme kaydıdır. Kaynak karar belgesi ile kod tabanı yeniden karşılaştırılmıştır. Buradaki `[x]`, `[~]`, `[ ]` işaretleri artık yalnızca kodda ve testlerde doğrulanabilen gerçek durumu gösterir.
@@ -15,6 +16,8 @@
 ---
 
 # 1. Değişmeyecek Tasarım Kararları
+
+> **Kanon notu (Beta.42–Beta.72):** Bu listedeki sürükle-bırak, ilk 15 saniye modül kilidi, 4 → 10 aktif modül kapasitesi, Jeneratör/port bağlantıları ve 24/18 kartlık havuz maddeleri tarihsel kayıttır. GRIDSHARD 2.1 kanonu bunların yerini aldı: 5×3 tahta, 6 kartlık deste, sunucu yerleşimi, Akım ekonomisi ve kablo ağı görsel kimliği. Kaldırılan kararlar Beta.72 legacy temizliğinde koddan da silindi. Güncel kurallar için `docs/GRIDSHARD_2_1_KANONIK_TASARIM.md` esastır.
 
 Aşağıdaki kararlar sabittir ve bundan sonraki geliştirmeler bunları bozamaz:
 
@@ -2046,3 +2049,72 @@ Beta.40 sunucu yüzeyi:
 10. [x] Arena ödülleri, 3/8/24 saatlik sandıklar ve günlük teklifler DK, Akı, kart parçası ve türe özel Çekirdek Parçası üretir. Harcama ve ödüller sunucu kilidi ve işlem makbuzuyla tekrar korumalıdır.
 11. [x] Kupa rekoru, galibiyet serisi, Akım tüketimi, yerleştirme, Çekirdek kullanımı, deste ve Çekirdek tercihleri kalıcı istatistik görünümüne eklendi.
 12. [~] Beta.42H denge kapısı açıktır. Başlangıç Akım, enerji baskısı, yükseltme maliyetleri, ödül hacmi ve Çekirdek güçleri uygulandı; oynanış testi ve geniş örnekli simülasyon yapılmadan nihai denge olarak işaretlenmeyecektir.
+
+---
+
+# 30. Beta.43 → Beta.72 Özeti
+
+Beta.43'ten sonraki paketlerin ayrıntılı kaydı `CODEX_CHECKPOINT.md` dosyasındadır; bu bölüm sürüm hattını tek yerde toplar.
+
+1. [x] **Beta.43–Beta.54:**
+   - Kartlar, aylık sezon ve lider panosu.
+   - Sandık ekonomisi ve toplu açılış.
+   - Herkese açık profil ve koleksiyon ekonomisi.
+   - Sezon yolu kozmetik önizlemeleri, savaş CAN görünürlüğü ve çekirdek ölümüne bağlı maç sonu.
+2. [x] **Beta.55–Beta.58:**
+   - Profil, koleksiyon ve savaş tutarlılığı.
+   - Takım, etkinlik ve sezon rekabeti.
+   - Takım profilleri ve etkinlik alt sayfaları.
+   - Takım Profil sekmesi ve günlük meta çarkı.
+3. [x] **Beta.59–Beta.61:**
+   - Etkinlikler, sosyal ağ ve kupasız savaş alanları.
+   - Maç türüne göre bağımsız hesaplama.
+   - Sosyal maç kapanışı, rekabet ödülleri ve takım yönetimi.
+4. [x] **Beta.62–Beta.66:**
+   - Görünüm düzeltmeleri, nadirlik dengesi ve platform altyapısı.
+   - Lider panosu ödül önizlemesi ve profil başarı vitrini.
+   - Hesap açılışı, Devre Koleksiyonu, sağlayıcı hesabı ve favicon.
+5. [x] **Beta.67–Beta.68:**
+   - Gerçek telefon savaş ve profil yerleşimi.
+   - Üretim kimliği ve yayın sınırı: IAP ve ücretli sezon yolu kapsam dışı.
+6. [x] **Beta.69–Beta.71:**
+   - Otomatik yerleşim ve devre kompozisyonu.
+   - AI savaş gücü adaleti.
+   - Mobil ses biçimleri, portre kilidi ve JSON şema göç çerçevesi.
+7. [x] **Beta.72:**
+   - ChatGPT savaş revizyonunun seçici aktarımı: enderlik = mekanik kimlik; aksiyon enerjisi ve ısı; 36 kartta imza mekanikleri.
+   - Görsel imza efektleri, arena sarsıntısı, kart imza rozetleri ve ses adları.
+   - Çekirdek enderlik eğrisinin kaldırılması ve yedi çekirdek imzası.
+   - Legacy temizliği: sürükle-bırak, güçlendirici, süre sınırı ve web-test QA kaldırıldı.
+   - R2 Akım maliyetleri; savaşı bırakma cezası kaldırıldı; PvP hareketsizlik kuralı.
+   - Mobil arayüz turu:
+     - İki sütunlu sezon yolu (ücretsiz / ücretli geçiş).
+     - Sandık önizleme katmanı.
+     - Mesaj kutusu davetleri ve arkadaş alt sekmeleri.
+     - Lider Görünümü; büyük ve karşılıklı savaş tahtaları.
+   - Mobil turlar 2–4:
+     - Tur 2: takım parça isteği ızgarası, oyuncu başına sohbetler, maç sonrası Devre Yolu durağı.
+     - Tur 3: ses dengesi, küçük ve kaydırılabilir kart bilgi penceresi, kazanılınca açılan kozmetikler, savaş emojileri, tam TR/EN yerelleştirme.
+     - Tur 4: sabit kimlik barlı herkese açık profil, üst ve alt satırlarda da akan savaş akımları, koyu kartlı bilgi penceresi, 6 günlük devre emri, her yerde yapboz parçası görünümlü modül parçaları.
+     - Tur 5: takım turnuvası kuralları (kayıt süresi, dengeli ve tekrarsız eşleşme, rövanşlı maçlar, 4 puan ödül eşiği, takım katkı listesi); savaş sonunda son tahta görüntüsü; modül ısı barı.
+     - Tur 6: sezon, Takımlar Arası Turnuva ve günlük giriş ödülleri Pazartesi başlayan dört haftalık döngüye geçti (1. döngü 28 Eylül–25 Ekim 2026). Turnuvada kayıt Pazartesi–Çarşamba, eşleşme Perşembe, maçlar Cuma–Pazar; giriş takvimi 28 gün, Pazar günleri büyük ödül.
+     - Tur 7: GRIDSHARD projesinden üretim derleme hattı (esbuild, içerik özetli paket, doğrulanmış `dist/` servisi, iki aşamalı Docker) ve FCM/APNs mobil bildirim teslimi taşındı. JSON şema göçlerinde bizim çerçeve korundu; hash zinciri, yedek bütünlüğü ve üretimde otomatik dönüştürmeme eklendi (`docs/CLIENT_BUILD.md`, `docs/PUSH_NOTIFICATIONS.md`).
+     - Tur 8: açılışta bir an görünen eski lobi (Beta.2x ana menü ızgarası) HTML, CSS, JS ve çevirilerden tamamen silindi; maç sonu "ZAFER" etiketi başlıktan ayrıldı. Savaşa etkisi olmayan Devre Laboratuvarı (Beta.36) istemci, sunucu ve savaş motorundan kaldırıldı; eski kayıtlarda yatırılmış Akı yüklemede iade edilir.
+8. [~] **Açık:**
+   - Ücretli geçiş gerçek parayla açılacak (kullanıcı kararı, 25 Eylül 2026); şimdilik kilitli kalır.
+     Önkoşul: mağaza makbuz doğrulaması, idempotent teslim ve iade/iptal işleme (Beta.68 IAP kararı).
+   - Denge simülasyonları ve gerçek cihaz görsel kabulü kullanıcı doğrulamasındadır.
+   - Canlı push teslimi: Firebase/APNs sırları, native projeler ve gerçek cihaz kanıtı bekliyor (varsayılan kapalı).
+   - E2E akışları eski OYNA düğmesini arıyor; SAVAŞ düğmesine göre yeniden yazılmalı.
+
+**Sürüm ve göç kaydı (2.1.0-beta.72):**
+- Uygulama sürümü aşağıdaki yerlerde tek değerdir:
+  - `server/app/version.py` (`/health` sürümü).
+  - `package.json`.
+  - İstemci UI etiketi ve açılış kapısı (`client/index.html`, `client/src/app.js`).
+  - `tools/release_guard.py`, `tools/package_release.py` (`RELEASE_MANIFEST.json`, paket etiketi `signatures-social`).
+  - `HIZLI_SAVAS_TESTI.bat`.
+- PostgreSQL şeması `002_identity_devices` sürümündedir. Beta.72'nin yeni alanları oyuncu belgesinde varsayılanla okunduğu için yeni SQL göçü gerekmez.
+- JSON depolarında ilk göçler eklendi. Sunucu açılışında otomatik uygulanır; önce `.pre-001.bak` yedeği alınır.
+  - `players/001_beta72_social_pass`: ücretli geçiş sezonu, ücretli kademeler, görülen duyurular, doğrudan mesaj okundu zamanı.
+  - `teams/001_beta72_team_appearance`: amblem, çerçeve, isim rengi.

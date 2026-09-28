@@ -1,7 +1,7 @@
 import pytest
 
 from app.game.battle_pool import default_battle_pool
-from app.game.board import get_default_board
+from app.game.board import BOARD_HEIGHT, BOARD_WIDTH, get_default_board
 from app.game.engine import BattleEngine
 from app.game.models import BattleCommand, BattleState, ModuleStatus, Position
 
@@ -11,65 +11,42 @@ def make_engine():
     engine.add_player("p1")
     engine.set_battle_pool("p1", default_battle_pool().module_definition_ids)
     engine.grant_module("p1", "core-1", "core")
-    engine.grant_module("p1", "generator-1", "generator")
     engine.grant_module("p1", "laser-1", "laser")
     return engine
 
 
-def advance_15s(engine):
-    for _ in range(150):
-        engine.step()
-
-
-def test_board_has_21_cells_and_20_placeable_positions():
+def test_board_has_15_cells_and_14_placeable_positions():
     board = get_default_board()
-    assert len(board.cells) == 21
-    assert len(board.placeable_positions) == 20
+    assert (BOARD_WIDTH, BOARD_HEIGHT) == (5, 3)
+    assert len(board.cells) == 15
+    assert len(board.placeable_positions) == 14
 
 
 def test_core_is_center_and_not_placeable():
     board = get_default_board()
-    assert board.core_position == Position(2, 2)
-    assert board.get_cell(Position(2, 2)).placeable is False
+    assert board.core_position == Position(2, 1)
+    assert board.get_cell(Position(2, 1)).placeable is False
 
 
-def test_four_gates_surround_core():
+def test_every_non_core_cell_is_a_plain_placeable_cell():
     board = get_default_board()
-    assert set(board.generator_gate_positions) == {
-        Position(2, 1),
-        Position(3, 2),
-        Position(2, 3),
-        Position(1, 2),
-    }
-
-
-def test_outer_corners_are_not_board_cells():
-    board = get_default_board()
-    for pos in (Position(0,0), Position(4,0), Position(0,4), Position(4,4)):
-        assert board.contains(pos) is False
+    for cell in board.cells:
+        if cell.position != board.core_position:
+            assert cell.placeable is True
+            assert cell.cell_type.value == "normal"
 
 
 def test_core_only_uses_center():
     engine = make_engine()
     with pytest.raises(ValueError):
         engine.set_initial_active_module("p1", "core-1", 1, 1)
-    engine.set_initial_active_module("p1", "core-1", 2, 2)
+    engine.set_initial_active_module("p1", "core-1", 2, 1)
 
 
-def test_generator_only_uses_gate():
+def test_manual_cell_placement_command_does_not_exist():
     engine = make_engine()
-    engine.set_initial_active_module("p1", "core-1", 2, 2)
-    with pytest.raises(ValueError):
-        engine.set_initial_active_module("p1", "generator-1", 1, 1)
-    engine.set_initial_active_module("p1", "generator-1", 2, 3)
-
-
-def test_dynamic_place_rejects_outside_board():
-    engine = make_engine()
-    engine.set_initial_active_module("p1", "core-1", 2, 2)
-    engine.set_initial_active_module("p1", "generator-1", 2, 3)
+    engine.set_initial_active_module("p1", "core-1", 2, 1)
     engine.start()
-    advance_15s(engine)
 
     engine.enqueue_command(BattleCommand(
         player_id="p1",
@@ -83,12 +60,10 @@ def test_dynamic_place_rejects_outside_board():
     assert engine.state.events[-1].type == "command_rejected"
 
 
-def test_deck_deploy_selects_a_valid_board_cell():
+def test_deck_deploy_selects_a_random_valid_board_cell():
     engine = make_engine()
-    engine.set_initial_active_module("p1", "core-1", 2, 2)
-    engine.set_initial_active_module("p1", "generator-1", 2, 3)
+    engine.set_initial_active_module("p1", "core-1", 2, 1)
     engine.start()
-    advance_15s(engine)
 
     engine.enqueue_command(BattleCommand(
         player_id="p1",
@@ -101,14 +76,10 @@ def test_deck_deploy_selects_a_valid_board_cell():
         module for module in engine.state.players["p1"].modules.values()
         if module.definition.id == "laser" and module.status == ModuleStatus.ACTIVE
     )
-    assert laser.status == ModuleStatus.ACTIVE
     assert laser.position in engine.board.placeable_positions
 
 
-def test_board_space_does_not_change_10_active_module_cap():
+def test_active_module_cap_matches_the_board():
     engine = BattleEngine(BattleState(battle_id="cap"))
-    engine.state.elapsed_ms = 90_000
-    engine.state.tick = 900
-
-    assert len(engine.board.placeable_positions) == 20
-    assert engine.max_active_modules() == 10
+    assert len(engine.board.placeable_positions) == 14
+    assert engine.max_active_modules() == 15

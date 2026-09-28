@@ -3,7 +3,6 @@ import asyncio
 from fastapi.testclient import TestClient
 import pytest
 
-from app.game.engine import BATTLE_TIME_LIMIT_MS
 from app.main import (
     app,
     player_profile_service,
@@ -15,6 +14,13 @@ from app.main import (
 
 
 client=TestClient(app)
+
+
+def destroy_core(engine, player_id):
+    # Savaş yalnız bir Çekirdek yok olunca biter.
+    for module in engine.state.players[player_id].modules.values():
+        if module.definition.id == "core":
+            module.hp = 0
 
 
 def reset():
@@ -46,8 +52,7 @@ def test_post_match_endpoint_returns_progression_profile_and_statistics(
             session.engine.set_initial_active_module(p,f"{p}-core",2,1)
 
         pvp_service.start(battle_id)
-        session.engine.state.elapsed_ms=BATTLE_TIME_LIMIT_MS-100
-
+        destroy_core(session.engine, "b")
         await pvp_tick_runner.run_single_tick(battle_id)
 
         response=client.get(f"/post-match/{battle_id}/a")
@@ -56,11 +61,12 @@ def test_post_match_endpoint_returns_progression_profile_and_statistics(
         body=response.json()
         assert body["battle_id"]==battle_id
         assert body["player_id"]=="a"
-        assert body["progression"]["xp_awarded"]==90
-        assert body["profile"]["experience"]==90
-        assert body["profile"]["rating"]==0
+        # Çekirdeği yok eden taraf kazanır: galibiyet XP'si ve +25 kupa.
+        assert body["progression"]["xp_awarded"]==120
+        assert body["profile"]["experience"]==120
+        assert body["profile"]["rating"]==25
         assert body["statistics"]["total_matches"]==1
-        assert body["statistics"]["draws"]==1
+        assert body["statistics"]["wins"]==1
 
     asyncio.run(scenario())
 

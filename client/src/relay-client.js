@@ -7,43 +7,28 @@
     DESTROYED: "destroyed",
   });
 
-
-  function maxActiveModulesForElapsedMs(elapsedMs) {
-    void elapsedMs;
-    return 15;
-  }
+  // Çekirdek + 14 hücre; kartlar sunucuda rastgele boş hücreye yerleşir.
+  const MAX_ACTIVE_MODULES = 15;
 
   class BattlePoolSelection {
     constructor({
       selectableModuleIds,
       requiredSize = 6,
-      requiredModuleIds = [],
+      attackModuleIds = [],
     }) {
       this.selectableModuleIds = [...selectableModuleIds];
       this.requiredSize = requiredSize;
-      this.requiredModuleIds = new Set(
-        requiredModuleIds
-      );
+      // Sabotaj Çekirdeği hedefleyemez; destede en az bir saldırı kartı olmalı.
+      this.attackModuleIds = new Set(attackModuleIds);
+      this.selected = new Set();
+    }
 
-      for (const moduleId of this.requiredModuleIds) {
-        if (!this.selectableModuleIds.includes(moduleId)) {
-          throw new Error(
-            `Zorunlu Savaş Havuzu modülü seçilebilir değil: ${moduleId}`
-          );
-        }
+    hasAttackCard(moduleIds = this.selected) {
+      if (this.attackModuleIds.size === 0) {
+        return true;
       }
-
-      if (
-        this.requiredModuleIds.size
-        > this.requiredSize
-      ) {
-        throw new Error(
-          "Zorunlu modül sayısı Savaş Havuzu sınırını aşıyor."
-        );
-      }
-
-      this.selected = new Set(
-        this.requiredModuleIds
+      return [...moduleIds].some(
+        (moduleId) => this.attackModuleIds.has(moduleId)
       );
     }
 
@@ -53,18 +38,6 @@
       }
 
       if (this.selected.has(moduleId)) {
-        if (
-          this.requiredModuleIds.has(
-            moduleId
-          )
-        ) {
-          return {
-            ok: false,
-            reason:
-              "Bu modül başlangıç devresi için Savaş Havuzu'nda zorunludur.",
-          };
-        }
-
         this.selected.delete(moduleId);
         return { ok: true, selected: false };
       }
@@ -81,15 +54,6 @@
       const candidate=new Set(
         moduleIds || []
       );
-
-      for (
-        const requiredId
-        of this.requiredModuleIds
-      ) {
-        candidate.add(
-          requiredId
-        );
-      }
 
       for (
         const moduleId
@@ -118,6 +82,14 @@
         };
       }
 
+      if (!this.hasAttackCard(candidate)) {
+        return {
+          ok:false,
+          reason:
+            "Destede en az bir saldırı kartı olmalı.",
+        };
+      }
+
       this.selected=candidate;
       return {
         ok:true,
@@ -127,7 +99,10 @@
     }
 
     isComplete() {
-      return this.selected.size === this.requiredSize;
+      return (
+        this.selected.size === this.requiredSize
+        && this.hasAttackCard()
+      );
     }
 
     selectedIds() {
@@ -136,8 +111,7 @@
   }
 
   class RelayBattleClient {
-    constructor({ modules, unlockAtMs = 0, circuitCredits = 0, emitCommand }) {
-      this.unlockAtMs = unlockAtMs;
+    constructor({ modules, circuitCredits = 0, emitCommand }) {
       this.emitCommand = emitCommand;
       this.elapsedMs = 0;
       this.circuitCredits = Math.max(0, Math.floor(circuitCredits));
@@ -158,12 +132,8 @@
       this.elapsedMs = Math.max(0, elapsedMs);
     }
 
-    isShelfUnlocked() {
-      return this.elapsedMs >= this.unlockAtMs;
-    }
-
     maxActiveModules() {
-      return maxActiveModulesForElapsedMs(this.elapsedMs);
+      return MAX_ACTIVE_MODULES;
     }
 
     activeModuleCount() {
@@ -184,22 +154,20 @@
 
     deployDefinition(
       definitionId,
-      circuitCreditCost = 0
+      currentCost = 0
     ) {
       const cleanDefinitionId = String(definitionId || "").trim();
       if (!cleanDefinitionId) {
-        return { ok: false, code:"missing_deck_card", reason: "Yerleştirilecek deste kartı seçilmedi." };
+        return { ok: false, reason: "Yerleştirilecek deste kartı seçilmedi." };
       }
       const activeCount = this.activeModuleCount() + this.pendingPlacementCount();
-      if (activeCount >= 15) {
-        return { ok: false, code:"circuit_full", details:{activeCount}, reason: `Devre dolu: ${activeCount}/15.` };
+      if (activeCount >= MAX_ACTIVE_MODULES) {
+        return { ok: false, reason: `Devre dolu: ${activeCount}/${MAX_ACTIVE_MODULES}.` };
       }
-      const cost = Math.max(1, Math.floor(Number(circuitCreditCost) || 0) - (this.currentDiscountRemaining > 0 ? 1 : 0));
+      const cost = Math.max(1, Math.floor(Number(currentCost) || 0) - (this.currentDiscountRemaining > 0 ? 1 : 0));
       if (this.circuitCredits < cost) {
         return {
           ok: false,
-          code:"insufficient_current",
-          details:{required:cost, available:this.circuitCredits},
           reason: `Yetersiz Akım: gerekli ${cost}, mevcut ${this.circuitCredits}.`,
         };
       }
@@ -224,35 +192,6 @@
         position: module.position || null,
       });
       return this.modules.get(module.instanceId);
-    }
-
-    beginDrag(moduleId) {
-      const module = this.requireModule(moduleId);
-      if (module.status === MODULE_STATUS.ACTIVE) {
-        return {
-          ok:false,
-          reason:"Yerleşmiş modüller savaş sırasında taşınamaz.",
-        };
-      }
-      return {
-        ok:false,
-        reason:"Hücre seçerek yerleştirme kaldırıldı; modül kartına dokun.",
-      };
-    }
-
-    cancelDrag() {
-      // Eski ekran sıfırlama çağrıları için zararsız uyumluluk kancası.
-    }
-
-    dropOnCell() {
-      return {
-        ok:false,
-        reason:"Hücre seçerek yerleştirme kaldırıldı; sistem uygun hücreyi otomatik seçer.",
-      };
-    }
-
-    dropOnShelf() {
-      return { ok:false, reason:"Yerleşmiş modüller savaş sırasında rafa alınamaz." };
     }
 
     applyServerModuleState(moduleState) {
@@ -717,7 +656,6 @@
           Number(this.profile.highest_rating || 0)
         ),
         leagueNameTr: this.profile.league_name_tr,
-        leagueNameEn: this.profile.league_name_en,
         operatorTitle: this.profile.operator_title || "Devre Çırağı",
         operatorTitleProgression: this.profile.operator_title_progression || null,
         cosmetics: {
@@ -755,6 +693,9 @@
               ],
               rewardTrack: [
                 ...(this.profile.engagement.reward_track || []),
+              ],
+              premiumRewardTrack: [
+                ...(this.profile.engagement.premium_reward_track || []),
               ],
               unlockedTitles: [
                 ...(this.profile.engagement.unlocked_titles || []),
@@ -814,10 +755,6 @@
           this.statistics.average_match_duration_ms,
         totalDamageDealt:
           this.statistics.total_damage_dealt,
-        moduleReplacements:
-          this.statistics.module_replacements,
-        boostersUsed:
-          this.statistics.boosters_used,
         mostUsedModules: [
           ...this.statistics.most_used_modules,
         ],
@@ -915,7 +852,6 @@
     DAILY_REWARDS: "daily-rewards",
     DAILY_MISSIONS: "daily-missions",
     REWARDS: "rewards",
-    LABORATORY: "laboratory",
     STATISTICS: "statistics",
     SETTINGS: "settings",
   });
@@ -1480,6 +1416,7 @@
         teamTournamentPointsAfter:
           Number(result.team_tournament_points_after || 0),
         tierAdvanced: result.tier_advanced || null,
+        battlePremiumApplied: Boolean(result.battle_premium_applied),
       };
     }
 
@@ -1537,14 +1474,10 @@
     MATCHMAKING_MATCHED: "matchmaking_matched",
     MATCH_STARTED: "match_started",
     MATCH_COMPLETED: "match_completed",
-    MODULE_CHANGED: "module_changed",
     CIRCUIT_CREDIT_SPENT: "circuit_credit_spent",
-    MODULE_SHELF_USED: "module_shelf_used",
-    BOOSTER_USED: "booster_used",
     REMATCH_REQUESTED: "rematch_requested",
     LOCAL_BATTLE_STARTED: "local_battle_started",
     LOCAL_BATTLE_COMPLETED: "local_battle_completed",
-    GENERATOR_GATE_MOVED: "generator_gate_moved",
     LOCAL_AI_HIT: "local_ai_hit",
     LOCAL_PLAYER_ATTACK: "local_player_attack",
   });
@@ -1627,13 +1560,6 @@
       );
     }
 
-    trackModuleShelfUsed(metadata = {}) {
-      return this.track(
-        TELEMETRY_EVENT_TYPE.MODULE_SHELF_USED,
-        metadata
-      );
-    }
-
     trackRematchRequested(metadata = {}) {
       return this.track(
         TELEMETRY_EVENT_TYPE.REMATCH_REQUESTED,
@@ -1662,13 +1588,6 @@
       );
     }
 
-    trackGeneratorGateMoved(metadata = {}) {
-      return this.track(
-        TELEMETRY_EVENT_TYPE.GENERATOR_GATE_MOVED,
-        metadata
-      );
-    }
-
     trackLocalAiHit(metadata = {}) {
       return this.track(
         TELEMETRY_EVENT_TYPE.LOCAL_AI_HIT,
@@ -1692,46 +1611,31 @@
 
 
 
-  class RelayWebTestBuildState {
+
+
+  class RelayServerHealthState {
     constructor() {
       this.status = "unknown";
       this.version = null;
-      this.build = null;
+      this.protocolVersion = null;
       this.ready = false;
-      this.releaseChecks = [];
-      this.capabilities = {};
     }
 
     applyHealth(health) {
-      const webTest =
-        health && health.web_test;
-
-      if (!webTest) {
+      if (!health || typeof health !== "object") {
         this.status = "error";
         this.ready = false;
         return {
           ok: false,
-          reason:
-            "Web test sağlık bilgisi bulunamadı.",
+          reason: "Sunucu sağlık bilgisi bulunamadı.",
         };
       }
 
-      this.version =
-        health.version || null;
-      this.build =
-        webTest.build || null;
-      this.ready =
-        Boolean(webTest.ready);
-      this.releaseChecks = [
-        ...(webTest.release_checks || []),
-      ];
-      this.capabilities = {
-        ...(webTest.capabilities || {}),
-      };
-      this.status =
-        this.ready
-          ? "ready"
-          : "blocked";
+      this.version = health.version || null;
+      this.protocolVersion =
+        health.pvp_protocol_version ?? null;
+      this.ready = health.status === "ok";
+      this.status = this.ready ? "ready" : "blocked";
 
       return {
         ok: true,
@@ -1741,19 +1645,17 @@
 
     labelTr() {
       if (this.status === "ready") {
-        return "Web Test: Hazır";
+        return "Sunucu: Hazır";
       }
       if (this.status === "blocked") {
-        return "Web Test: Engelli";
+        return "Sunucu: Kalıcılık sorunu";
       }
       if (this.status === "error") {
-        return "Web Test: Sağlık Hatası";
+        return "Sunucu: Sağlık hatası";
       }
-      return "Web Test: Kontrol Bekliyor";
+      return "Sunucu: Kontrol bekliyor";
     }
   }
-
-
 
   const ONLINE_PLAY_STATUS = Object.freeze({
     IDLE: "idle",
@@ -2440,7 +2342,6 @@
       this.profileState = profileState;
       this.statisticsState = statisticsState;
       this.settingsState = settingsState;
-      this.laboratory = null;
       this.requestJson =
         requestJson
         || (async (path, options = {}) => {
@@ -2472,14 +2373,11 @@
           REMOTE_DATA_STATUS.IDLE,
         settings:
           REMOTE_DATA_STATUS.IDLE,
-        laboratory:
-          REMOTE_DATA_STATUS.IDLE,
       };
       this.errors = {
         profile: null,
         statistics: null,
         settings: null,
-        laboratory: null,
       };
     }
 
@@ -2571,59 +2469,12 @@
       }
     }
 
-    async loadLaboratory() {
-      return this._load(
-        "laboratory",
-        `/profile/${encodeURIComponent(this.playerId)}/laboratory`,
-        (payload) => {
-          this.laboratory = payload;
-          return payload;
-        }
-      );
-    }
-
-    async upgradeLaboratoryModule(moduleDefinitionId, requestId) {
-      return this._laboratoryOperation(
-        `/profile/${encodeURIComponent(this.playerId)}/laboratory/${encodeURIComponent(moduleDefinitionId)}/upgrade`,
-        requestId
-      );
-    }
-
-    async resetLaboratory(requestId) {
-      return this._laboratoryOperation(
-        `/profile/${encodeURIComponent(this.playerId)}/laboratory/reset`,
-        requestId
-      );
-    }
-
-    async _laboratoryOperation(path, requestId) {
-      this.status.laboratory = REMOTE_DATA_STATUS.LOADING;
-      this.errors.laboratory = null;
-      try {
-        const payload = await this.requestJson(path, {
-          method: "POST",
-          body: JSON.stringify({ request_id: requestId }),
-        });
-        this.laboratory = payload.laboratory;
-        if (payload.profile) {
-          this.profileState.applyProfile(payload.profile);
-        }
-        this.status.laboratory = REMOTE_DATA_STATUS.READY;
-        return { ok: true, payload };
-      } catch (error) {
-        this.status.laboratory = REMOTE_DATA_STATUS.ERROR;
-        this.errors.laboratory = error instanceof Error
-          ? error.message
-          : String(error);
-        return { ok: false, reason: this.errors.laboratory };
-      }
-    }
-
     async claimEngagementReward(kind, id, requestId = null) {
       if (![
         "login",
         "missions",
         "tiers",
+        "premium-tiers",
       ].includes(kind)) {
         return {
           ok: false,
@@ -2636,7 +2487,9 @@
 
       try {
         const payload = await this.requestJson(
-          `/profile/${encodeURIComponent(this.playerId)}/engagement/${kind}/${encodeURIComponent(id)}/claim`,
+          kind === "premium-tiers"
+            ? `/profile/${encodeURIComponent(this.playerId)}/engagement/tiers/${encodeURIComponent(id)}/premium/claim`
+            : `/profile/${encodeURIComponent(this.playerId)}/engagement/${kind}/${encodeURIComponent(id)}/claim`,
           {
             method: "POST",
             ...(requestId
@@ -2759,121 +2612,6 @@
   }
 
 
-
-  class RelayWebTestKpiState {
-    constructor() {
-      this.kpis = null;
-    }
-
-    applyKpis(kpis) {
-      if (!kpis) {
-        throw new Error(
-          "Web test KPI verisi gerekli."
-        );
-      }
-
-      this.kpis = {
-        ...kpis,
-      };
-      return this.viewModel();
-    }
-
-    viewModel() {
-      if (!this.kpis) {
-        return null;
-      }
-
-      return {
-        completedMatches:
-          this.kpis.completed_matches,
-        completionRatePercent:
-          Math.round(
-            Number(
-              this.kpis.match_completion_rate
-              || 0
-            ) * 10000
-          ) / 100,
-        rematchRequests:
-          this.kpis.rematch_requests,
-        rematchRatePercent:
-          Math.round(
-            Number(
-              this.kpis.rematch_request_rate
-              || 0
-            ) * 10000
-          ) / 100,
-        secondMatchTransitionRatePercent:
-          Math.round(
-            Number(
-              this.kpis.second_match_transition_rate
-              || 0
-            ) * 10000
-          ) / 100,
-        losingPlayerRematchRatePercent:
-          Math.round(
-            Number(
-              this.kpis.losing_player_rematch_rate
-              || 0
-            ) * 10000
-          ) / 100,
-        moduleChanges:
-          this.kpis.module_changes,
-        averageModuleChangesPerMatch:
-          this.kpis.average_module_changes_per_match,
-        totalCircuitCreditsSpent:
-          this.kpis.total_circuit_credits_spent,
-        moduleShelfUses:
-          this.kpis.module_shelf_uses,
-        boostersUsed:
-          this.kpis.boosters_used,
-        averageMatchDurationMs:
-          this.kpis.average_match_duration_ms,
-        launchAttempts:
-          this.kpis.launch_attempts
-          || 0,
-        launchReadyAttempts:
-          this.kpis.launch_ready_attempts
-          || 0,
-        launchReadyRatePercent:
-          Math.round(
-            Number(
-              this.kpis.launch_ready_rate
-              || 0
-            ) * 10000
-          ) / 100,
-        auditSessionStarts:
-          this.kpis.audit_session_starts
-          || 0,
-        auditSessionBounds:
-          this.kpis.audit_session_bounds
-          || 0,
-        auditToSessionRatePercent:
-          Math.round(
-            Number(
-              this.kpis.audit_to_session_rate
-              || 0
-            ) * 10000
-          ) / 100,
-        auditSessionFinishes:
-          this.kpis.audit_session_finishes
-          || 0,
-        auditToFinishRatePercent:
-          Math.round(
-            Number(
-              this.kpis.audit_to_finish_rate
-              || 0
-            ) * 10000
-          ) / 100,
-        boundToFinishRatePercent:
-          Math.round(
-            Number(
-              this.kpis.bound_to_finish_rate
-              || 0
-            ) * 10000
-          ) / 100,
-      };
-    }
-  }
 
 
 
@@ -3107,68 +2845,6 @@
 
 
 
-  class RelayReleaseCheckState {
-    constructor() {
-      this.result = null;
-    }
-
-    apply(result) {
-      if (!result) {
-        throw new Error(
-          "Release-check sonucu gerekli."
-        );
-      }
-
-      this.result = {
-        ...result,
-        checks: {
-          ...(result.checks || {}),
-        },
-        menu_areas: [
-          ...(result.menu_areas || []),
-        ],
-        deferred_areas: [
-          ...(result.deferred_areas || []),
-        ],
-      };
-
-      return this.viewModel();
-    }
-
-    viewModel() {
-      if (!this.result) {
-        return null;
-      }
-
-      return {
-        ready:
-          Boolean(
-            this.result.ready
-          ),
-        version:
-          this.result.version,
-        build:
-          this.result.build,
-        menuAreas: [
-          ...this.result.menu_areas,
-        ],
-        deferredAreas: [
-          ...this.result.deferred_areas,
-        ],
-        failedChecks:
-          Object.entries(
-            this.result.checks
-          )
-            .filter(
-              ([, ok]) => !ok
-            )
-            .map(
-              ([name]) => name
-            ),
-      };
-    }
-  }
-
 
 
   const PLAY_RECOVERY_KIND = Object.freeze({
@@ -3232,23 +2908,15 @@
   class RelayServerBootGate {
     constructor({
       healthState,
-      releaseCheckState,
       expectedVersion = null,
       expectedProtocolVersion = 1,
-      operationalChecks = true,
       requestJson = null,
     }) {
       this.healthState = healthState;
-      this.releaseCheckState =
-        releaseCheckState;
       this.expectedVersion =
         expectedVersion;
       this.expectedProtocolVersion =
         expectedProtocolVersion;
-      this.operationalChecks =
-        operationalChecks !== false;
-      this.manifest = null;
-      this.operationReadiness = null;
       this.requestJson =
         requestJson
         || (async (path) => {
@@ -3268,7 +2936,6 @@
         SERVER_BOOT_STATUS.IDLE;
       this.lastError = null;
       this.health = null;
-      this.releaseCheck = null;
     }
 
     async check() {
@@ -3277,62 +2944,26 @@
       this.lastError = null;
 
       try {
-        const [
-          health,
-          releaseCheck,
-          manifest,
-          operationReadiness,
-        ] = await Promise.all([
-          this.requestJson(
+        const health =
+          await this.requestJson(
             "/health"
-          ),
-          this.requestJson(
-            "/web-test/release-check"
-          ),
-          this.requestJson(
-            "/web-test/manifest"
-          ),
-          this.operationalChecks
-            ? this.requestJson(
-                "/web-test/operation-readiness"
-              )
-            : Promise.resolve({
-                ready:true,
-                checks:{},
-                warnings:[],
-                skipped:true,
-              }),
-        ]);
-
+          );
         this.health = health;
-        this.releaseCheck =
-          releaseCheck;
-        this.manifest =
-          manifest;
-        this.operationReadiness =
-          operationReadiness;
 
         const healthResult =
           this.healthState
             .applyHealth(
               health
             );
-        const releaseView =
-          this.releaseCheckState
-            .apply(
-              releaseCheck
-            );
 
         const versionMatches =
           !this.expectedVersion
-          || (
-            manifest.server_version
-            === this.expectedVersion
-          );
+          || health.version
+          === this.expectedVersion;
 
         const protocolMatches =
           Number(
-            manifest.pvp_protocol_version
+            health.pvp_protocol_version
           )
           === Number(
             this.expectedProtocolVersion
@@ -3341,46 +2972,20 @@
         const ready =
           healthResult.ok
           && healthResult.ready
-          && releaseView.ready
-          && Boolean(
-            manifest.release_ready
-          )
-          && Boolean(
-            operationReadiness.ready
-          )
           && versionMatches
           && protocolMatches;
 
         if (!versionMatches) {
           this.lastError =
-            `Sürüm uyuşmazlığı: istemci ${this.expectedVersion}, sunucu ${manifest.server_version}`;
+            `Sürüm uyuşmazlığı: istemci ${this.expectedVersion}, sunucu ${health.version}`;
         } else if (
           !protocolMatches
         ) {
           this.lastError =
             "PvP protokol sürümü uyuşmuyor.";
-        } else if (
-          !operationReadiness.ready
-        ) {
-          const failedChecks =
-            Object.entries(
-              operationReadiness.checks
-              || {}
-            )
-              .filter(
-                ([, ok]) => !ok
-              )
-              .map(
-                ([name]) => name
-              );
-
+        } else if (!ready) {
           this.lastError =
-            failedChecks.length
-              ? (
-                  "Web test operasyon hazırlığı tamamlanmadı: "
-                  + failedChecks.join(", ")
-                )
-              : "Web test operasyon hazırlığı tamamlanmadı.";
+            "Sunucu kalıcılık katmanı hazır değil.";
         }
 
         this.status = ready
@@ -3391,11 +2996,9 @@
           ok: ready,
           ready,
           health,
-          releaseCheck,
-          manifest,
-          operationReadiness,
           versionMatches,
           protocolMatches,
+          reason: this.lastError,
         };
       } catch (error) {
         this.status =
@@ -3424,174 +3027,7 @@
 
 
 
-  class RelayDiagnosticSnapshot {
-    constructor({
-      version,
-      build,
-      bootGate,
-      connectionManager,
-      matchmakingState,
-      pvpState,
-      recoveryState,
-      telemetryTransport,
-      releaseCheckState,
-    }) {
-      this.version = version;
-      this.build = build;
-      this.bootGate = bootGate;
-      this.connectionManager =
-        connectionManager;
-      this.matchmakingState =
-        matchmakingState;
-      this.pvpState = pvpState;
-      this.recoveryState =
-        recoveryState;
-      this.telemetryTransport =
-        telemetryTransport;
-      this.releaseCheckState =
-        releaseCheckState;
-    }
 
-    buildSnapshot() {
-      const release =
-        this.releaseCheckState
-          ?.viewModel?.()
-        || null;
-      const recovery =
-        this.recoveryState
-          ?.viewModel?.()
-        || {};
-
-      return {
-        schema_version: 1,
-        version: this.version,
-        build: this.build,
-        server_boot_status:
-          this.bootGate?.status
-          || "unknown",
-        websocket_status:
-          this.connectionManager
-            ?.status
-          || "unknown",
-        matchmaking_status:
-          this.matchmakingState
-            ?.matched
-            ? "matched"
-            : (
-                this.matchmakingState
-                  ?.queued
-                  ? "queued"
-                  : "idle"
-              ),
-        session_id:
-          this.pvpState
-            ?.sessionId
-          || null,
-        pvp_phase:
-          this.pvpState
-            ?.phase
-          || "unknown",
-        recovery_kind:
-          recovery.kind
-          || "none",
-        recovery_active:
-          Boolean(
-            recovery.active
-          ),
-        telemetry_pending_count:
-          this.telemetryTransport
-            ?.pending?.size
-          || 0,
-        telemetry_status:
-          this.telemetryTransport
-            ?.status
-          || "unknown",
-        release_failed_checks:
-          release
-            ?.failedChecks
-          ? [
-              ...release
-                .failedChecks
-            ]
-          : [],
-      };
-    }
-
-    toJson() {
-      return JSON.stringify(
-        this.buildSnapshot(),
-        null,
-        2
-      );
-    }
-  }
-
-
-
-  class RelayWebTestRcReportState {
-    constructor() {
-      this.report = null;
-    }
-
-    apply(report) {
-      if (!report) {
-        throw new Error(
-          "Web test RC raporu gerekli."
-        );
-      }
-
-      this.report = {
-        ...report,
-        critical_failures: [
-          ...(report.critical_failures || []),
-        ],
-        kpis: {
-          ...(report.kpis || {}),
-        },
-      };
-
-      return this.viewModel();
-    }
-
-    viewModel() {
-      if (!this.report) {
-        return null;
-      }
-
-      return {
-        ready:
-          Boolean(
-            this.report.ready
-          ),
-        version:
-          this.report.version,
-        build:
-          this.report.build,
-        criticalFailures: [
-          ...this.report
-            .critical_failures,
-        ],
-        completedMatches:
-          Number(
-            this.report.kpis
-              ?.completed_matches
-            || 0
-          ),
-        secondMatchTransitionRate:
-          Number(
-            this.report.kpis
-              ?.second_match_transition_rate
-            || 0
-          ),
-        losingPlayerRematchRate:
-          Number(
-            this.report.kpis
-              ?.losing_player_rematch_rate
-            || 0
-          ),
-      };
-    }
-  }
 
 
 
@@ -3669,7 +3105,7 @@
 
       if (!this._isValid(playerId)) {
         throw new Error(
-          "Web test katılımcı kimliği üretilemedi."
+          "Oyuncu kimliği üretilemedi."
         );
       }
 
@@ -3860,60 +3296,12 @@
 
 
 
-  class RelayLaunchReadinessState {
-    constructor() {
-      this.value = null;
-      this.status = "unknown";
-    }
-
-    apply(value) {
-      this.value = {
-        ...(value || {}),
-      };
-      this.status =
-        this.value.launch_ready
-          ? "ready"
-          : "blocked";
-
-      return this.viewModel();
-    }
-
-    isReady() {
-      return (
-        this.status === "ready"
-      );
-    }
-
-    viewModel() {
-      return {
-        status:this.status,
-        ready:this.isReady(),
-        failedChecks:
-          Array.isArray(
-            this.value?.failed_checks
-          )
-            ? [...this.value.failed_checks]
-            : [],
-        testRunId:
-          this.value?.test_run_id
-          || null,
-        insufficientSignalCount:
-          Number(
-            this.value
-              ?.behavior_insufficient_signal_count
-            || 0
-          ),
-      };
-    }
-  }
-
 
   class RelayPlayReadinessGate {
     constructor({
       serverBootGate,
       participantBootstrap,
       participantContinuity = null,
-      launchReadinessState = null,
     }) {
       this.serverBootGate =
         serverBootGate;
@@ -3921,8 +3309,6 @@
         participantBootstrap;
       this.participantContinuity =
         participantContinuity;
-      this.launchReadinessState =
-        launchReadinessState;
     }
 
     canPlay() {
@@ -3931,11 +3317,6 @@
         || this.participantContinuity
           .isVerified();
 
-      const launchReady =
-        !this.launchReadinessState
-        || this.launchReadinessState
-          .isReady();
-
       return Boolean(
         this.serverBootGate
           ?.canPlay?.()
@@ -3943,8 +3324,7 @@
         this.participantBootstrap
           ?.status
         === "ready"
-      ) && continuityReady
-        && launchReady;
+      ) && continuityReady;
     }
 
     blockers() {
@@ -3979,16 +3359,6 @@
         );
       }
 
-      if (
-        this.launchReadinessState
-        && !this.launchReadinessState
-          .isReady()
-      ) {
-        blockers.push(
-          "launch"
-        );
-      }
-
       return blockers;
     }
 
@@ -4015,12 +3385,6 @@
         )
       ) {
         return "Oyna: Katılımcı kimliği doğrulanıyor";
-      }
-
-      if (
-        blockers.includes("launch")
-      ) {
-        return "Oyna: Web test çıkış onayı bekleniyor";
       }
 
       if (
@@ -4088,424 +3452,21 @@
 
 
 
-  class RelayWebTestGoNoGoState {
-    constructor() {
-      this.value = null;
-    }
-
-    apply(value) {
-      if (!value) {
-        throw new Error(
-          "Web test Go/No-Go özeti gerekli."
-        );
-      }
-
-      this.value = {
-        ...value,
-        behavior_signals: {
-          ...(value.behavior_signals || {}),
-        },
-      };
-
-      return this.viewModel();
-    }
-
-    viewModel() {
-      if (!this.value) {
-        return null;
-      }
-
-      const signals =
-        this.value.behavior_signals
-        || {};
-      const insufficient =
-        Object.values(signals)
-          .filter(
-            (item) =>
-              item?.status
-              === "insufficient_data"
-          )
-          .length;
-
-      return {
-        decision:
-          this.value.decision
-          || "NO_GO",
-        technicalReady:
-          Boolean(
-            this.value.technical_ready
-          ),
-        insufficientSignalCount:
-          insufficient,
-        minimumBehaviorSample:
-          Number(
-            this.value
-              .minimum_behavior_sample
-            || 0
-          ),
-      };
-    }
-  }
 
 
 
-  class RelayTestRunConsistencyState {
-    constructor() {
-      this.expectedTestRunId = null;
-      this.auditTestRunId = null;
-      this.status = "unknown";
-    }
-
-    setExpected(testRunId) {
-      this.expectedTestRunId =
-        String(
-          testRunId || ""
-        ).trim() || null;
-      return this._evaluate();
-    }
-
-    applyAudit(testRunId) {
-      this.auditTestRunId =
-        String(
-          testRunId || ""
-        ).trim() || null;
-      return this._evaluate();
-    }
-
-    _evaluate() {
-      if (
-        !this.expectedTestRunId
-        || !this.auditTestRunId
-      ) {
-        this.status = "unknown";
-        return {
-          ok: false,
-          status:
-            this.status,
-        };
-      }
-
-      const ok =
-        this.expectedTestRunId
-        === this.auditTestRunId;
-
-      this.status = ok
-        ? "verified"
-        : "mismatch";
-
-      return {
-        ok,
-        status:
-          this.status,
-        expectedTestRunId:
-          this.expectedTestRunId,
-        auditTestRunId:
-          this.auditTestRunId,
-      };
-    }
-
-    isVerified() {
-      return (
-        this.status
-        === "verified"
-      );
-    }
-  }
 
 
 
-  class RelayRcCandidateState {
-    constructor() {
-      this.value = null;
-    }
-
-    apply(value) {
-      if (!value) {
-        throw new Error(
-          "RC aday özeti gerekli."
-        );
-      }
-
-      this.value = {
-        ...value,
-      };
-
-      return this.viewModel();
-    }
-
-    viewModel() {
-      if (!this.value) {
-        return null;
-      }
-
-      return {
-        ready:
-          Boolean(
-            this.value.rc_candidate
-          ),
-        decision:
-          this.value.decision
-          || "NO_GO",
-        testRunId:
-          this.value.test_run_id
-          || null,
-        lifecycleState:
-          this.value.test_run
-            ?.lifecycle_state
-          || "empty",
-        insufficientSignalCount:
-          Number(
-            this.value.behavior
-              ?.insufficient_signal_count
-            || 0
-          ),
-      };
-    }
-  }
 
 
 
-  class RelayFirstRunChecklistState {
-    constructor() {
-      this.value = null;
-    }
-
-    apply(value) {
-      if (!value) {
-        throw new Error(
-          "İlk koşu checklist özeti gerekli."
-        );
-      }
-      this.value={...value};
-      return this.viewModel();
-    }
-
-    viewModel() {
-      if (!this.value) return null;
-
-      return {
-        ready:Boolean(
-          this.value.ready
-        ),
-        failedChecks:
-          Array.isArray(
-            this.value.failed_checks
-          )
-            ? [...this.value.failed_checks]
-            : [],
-        noteCount:
-          Array.isArray(
-            this.value.notes
-          )
-            ? this.value.notes.length
-            : 0,
-        testRunId:
-          this.value.test_run_id
-          || null,
-      };
-    }
-  }
 
 
 
-  class RelayPreflightState {
-    constructor() {
-      this.value = null;
-    }
-
-    apply(value) {
-      if (!value) {
-        throw new Error(
-          "Web test preflight özeti gerekli."
-        );
-      }
-      this.value={...value};
-      return this.viewModel();
-    }
-
-    viewModel() {
-      if (!this.value) return null;
-
-      return {
-        ready:Boolean(
-          this.value.preflight_ready
-        ),
-        failedChecks:
-          Array.isArray(
-            this.value.failed_checks
-          )
-            ? [...this.value.failed_checks]
-            : [],
-        testRunId:
-          this.value.test_run_id
-          || null,
-        lifecycleState:
-          this.value.test_run
-            ?.lifecycle_state
-          || "empty",
-      };
-    }
-  }
 
 
 
-  class RelayWebTestRunStatusState {
-    constructor() {
-      this.value = null;
-    }
-
-    apply(value) {
-      if (!value) {
-        throw new Error(
-          "Web test run durumu gerekli."
-        );
-      }
-
-      this.value={...value};
-      return this.viewModel();
-    }
-
-    viewModel() {
-      if (!this.value) return null;
-
-      return {
-        started:Boolean(
-          this.value.started
-        ),
-        finished:Boolean(
-          this.value.finished
-        ),
-        testRunId:
-          this.value.test_run_id
-          || null,
-        build:
-          this.value.build
-          || null,
-      };
-    }
-  }
-
-
-
-  class RelayOperationStatusState {
-    constructor() {
-      this.value = null;
-    }
-
-    apply(value) {
-      if (!value) {
-        throw new Error(
-          "Operasyon durum özeti gerekli."
-        );
-      }
-      this.value={...value};
-      return this.viewModel();
-    }
-
-    viewModel() {
-      if (!this.value) return null;
-
-      return {
-        state:
-          this.value.operational_state
-          || "not_ready",
-        testRunId:
-          this.value.test_run_id
-          || null,
-        consistent:
-          Boolean(
-            this.value.consistent
-          ),
-      };
-    }
-  }
-
-
-
-  class RelayOperationStabilityState {
-    constructor() {
-      this.value = null;
-    }
-
-    apply(value) {
-      if (!value) {
-        throw new Error(
-          "Operasyon stabilite özeti gerekli."
-        );
-      }
-      this.value={...value};
-      return this.viewModel();
-    }
-
-    viewModel() {
-      if (!this.value) return null;
-
-      return {
-        stability:
-          this.value.stability
-          || "not_running",
-        runningRate:
-          Number(
-            this.value.operation_running_rate
-            || 0
-          ),
-        regressions:
-          Number(
-            this.value.running_to_other_regressions
-            || 0
-          ),
-      };
-    }
-  }
-
-
-
-  class RelayMonitoringState {
-    constructor() {
-      this.value = null;
-    }
-
-    apply(value) {
-      if (!value) {
-        throw new Error(
-          "Operasyon izleme özeti gerekli."
-        );
-      }
-
-      this.value={...value};
-      return this.viewModel();
-    }
-
-    viewModel() {
-      if (!this.value) return null;
-
-      const finishRate =
-        Number(
-          this.value.funnel
-            ?.audit_to_finish_rate
-          || 0
-        );
-
-      return {
-        operationState:
-          this.value.operation
-            ?.state
-          || "not_ready",
-        stabilityState:
-          this.value.stability
-            ?.state
-          || "not_running",
-        auditFinishRatePercent:
-          Math.round(
-            finishRate
-            * 10000
-          ) / 100,
-        testRunId:
-          this.value.test_run_id
-          || null,
-      };
-    }
-  }
 
 
   const api = {
@@ -4520,27 +3481,13 @@
     RelayProgressionClientState,
     RelayPlayerDataSnapshotState,
     RelayTelemetryDispatcher,
-    RelayWebTestBuildState,
+    RelayServerHealthState,
     RelayOnlinePlayCoordinator,
     RelayPostMatchSync,
     RelayAccountDataLoader,
-    RelayWebTestKpiState,
     RelayTelemetryHttpTransport,
-    RelayReleaseCheckState,
     RelayPlayRecoveryState,
     RelayServerBootGate,
-    RelayDiagnosticSnapshot,
-    RelayWebTestRcReportState,
-    RelayWebTestGoNoGoState,
-    RelayTestRunConsistencyState,
-    RelayRcCandidateState,
-    RelayLaunchReadinessState,
-    RelayFirstRunChecklistState,
-    RelayPreflightState,
-    RelayWebTestRunStatusState,
-    RelayOperationStatusState,
-    RelayOperationStabilityState,
-    RelayMonitoringState,
     RelayTestParticipantIdentity,
     RelayParticipantBootstrap,
     RelayPlayReadinessGate,
@@ -4558,7 +3505,7 @@
     PARTICIPANT_CONTINUITY_STATUS,
     PVP_PHASE,
     MODULE_STATUS,
-    maxActiveModulesForElapsedMs,
+    MAX_ACTIVE_MODULES,
   };
 
   if (typeof module !== "undefined" && module.exports) {
@@ -4576,27 +3523,13 @@
   global.RelayProgressionClientState = RelayProgressionClientState;
   global.RelayPlayerDataSnapshotState = RelayPlayerDataSnapshotState;
   global.RelayTelemetryDispatcher = RelayTelemetryDispatcher;
-  global.RelayWebTestBuildState = RelayWebTestBuildState;
+  global.RelayServerHealthState = RelayServerHealthState;
   global.RelayOnlinePlayCoordinator = RelayOnlinePlayCoordinator;
   global.RelayPostMatchSync = RelayPostMatchSync;
   global.RelayAccountDataLoader = RelayAccountDataLoader;
-  global.RelayWebTestKpiState = RelayWebTestKpiState;
   global.RelayTelemetryHttpTransport = RelayTelemetryHttpTransport;
-  global.RelayReleaseCheckState = RelayReleaseCheckState;
   global.RelayPlayRecoveryState = RelayPlayRecoveryState;
   global.RelayServerBootGate = RelayServerBootGate;
-  global.RelayDiagnosticSnapshot = RelayDiagnosticSnapshot;
-  global.RelayWebTestRcReportState = RelayWebTestRcReportState;
-  global.RelayWebTestGoNoGoState = RelayWebTestGoNoGoState;
-  global.RelayTestRunConsistencyState = RelayTestRunConsistencyState;
-  global.RelayRcCandidateState = RelayRcCandidateState;
-  global.RelayLaunchReadinessState = RelayLaunchReadinessState;
-  global.RelayFirstRunChecklistState = RelayFirstRunChecklistState;
-  global.RelayPreflightState = RelayPreflightState;
-  global.RelayWebTestRunStatusState = RelayWebTestRunStatusState;
-  global.RelayOperationStatusState = RelayOperationStatusState;
-  global.RelayOperationStabilityState = RelayOperationStabilityState;
-  global.RelayMonitoringState = RelayMonitoringState;
   global.RelayTestParticipantIdentity = RelayTestParticipantIdentity;
   global.RelayParticipantBootstrap = RelayParticipantBootstrap;
   global.RelayPlayReadinessGate = RelayPlayReadinessGate;

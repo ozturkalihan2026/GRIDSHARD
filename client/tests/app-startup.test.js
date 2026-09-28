@@ -56,6 +56,8 @@ const menuButtons = ["play", "profile", "statistics", "settings"].map((screen) =
 const genericPanel = () => new FakeElement("generic-panel");
 const document = {
   body: getElement("body"),
+  visibilityState: "visible",
+  addEventListener() {},
   getElementById: getElement,
   createElement: (tag) => new FakeElement(tag),
   createElementNS: (_namespace, tag) => new FakeElement(tag),
@@ -85,6 +87,7 @@ const sandbox = {
   RelayAppScreen: { MENU:"menu", PLAY:"play", PROFILE:"profile", STATISTICS:"statistics", SETTINGS:"settings" },
   document,
   console,
+  addEventListener() {},
   performance: { now: () => 0 },
   requestAnimationFrame: (callback) => { rafCallbacks.push(callback); return rafCallbacks.length; },
   cancelAnimationFrame: () => {},
@@ -117,6 +120,7 @@ vm.createContext(sandbox);
 for (const relativePath of [
   ["src", "native-push.js"],
   ["src", "screens", "screen-controller.js"],
+  ["src", "screens", "card-swipe.js"],
   ["src", "tutorial", "tutorial-controller.js"],
   ["src", "battle", "board-view.js"],
   ["src", "battle", "module-card-view.js"],
@@ -128,11 +132,6 @@ for (const relativePath of [
   vm.runInContext(moduleSource, sandbox, { filename: relativePath.at(-1) });
 }
 
-const mobileControllerSource = fs.readFileSync(
-  path.join(CLIENT_ROOT, "src", "battle", "mobile-controller.js"),
-  "utf8"
-);
-vm.runInContext(mobileControllerSource, sandbox, { filename: "mobile-controller.js" });
 const canonDataSource = fs.readFileSync(
   path.join(CLIENT_ROOT, "src", "canon-data.js"),
   "utf8"
@@ -195,28 +194,13 @@ if (rafCallbacks.length === 0) {
   throw new Error("Savaş requestAnimationFrame döngüsü kurulmadı.");
 }
 
-// Saat ilerlerken krediye bağlı raf durumu korunmalı; yerleştirme sayacı yoktur.
+// Savaş yalnız sunucu BattleEngine'inde çalışır: sunucu anlık görüntüsü
+// gelmeden sayaç ilerlemez ve istemci kendi başına savaş simüle etmez.
 for (let ms = 1000; ms <= 16000; ms += 1000) {
   runAnimationFrame(ms);
 }
-
-if (getElement("battle-time").textContent === "00:00.0") {
-  throw new Error("Savaş sayacı ilerlemedi.");
-}
-if (getElement("shelf-lock-label").textContent !== "Aktif") {
-  throw new Error(
-    `Modül Rafı 15. saniyede açılmadı: ${getElement("shelf-lock-label").textContent}`
-    + ` · durum ${JSON.stringify(sandbox.window.__GRIDSHARD_TEST_API.getBattleState())}`
-  );
-}
-
-if (!sandbox.window.__GRIDSHARD_TEST_API.deployModule("laser")) {
-  throw new Error("Krediye bağlı deste kartı yerleştirilemedi.");
-}
-const deployedLaserId = sandbox.window.__GRIDSHARD_TEST_API
-  .getBattleState().active_module_ids.find((moduleId) => moduleId.startsWith("mock-laser-"));
-if (!deployedLaserId) {
-  throw new Error("Sunucu yerleşimli Lazer örneği bulunamadı.");
+if (getElement("battle-time").textContent !== "00:00.0") {
+  throw new Error(`Sunucu olmadan savaş sayacı ilerledi: ${getElement("battle-time").textContent}`);
 }
 if ("rotateModule" in sandbox.window.__GRIDSHARD_TEST_API) {
   throw new Error("Eski modül döndürme komutu test API'sinde kaldı.");
@@ -225,57 +209,24 @@ if ("directions" in sandbox.window.__GRIDSHARD_TEST_API.getBattleState()) {
   throw new Error("Eski port yönleri savaş durumunda kaldı.");
 }
 
-// Çevrimdışı UI yedeğinde rakip deste üretimi yoktur; sonuç ve sayaç donmasını
-// kullanıcı çekilmesiyle doğrula. Gerçek AI akışı sunucu E2E testindedir.
-const firstForfeitButton = getElement("battle-forfeit-button");
-firstForfeitButton._listeners.click();
-if (document.body.dataset.localFinished !== "true") {
-  throw new Error("Çevrimdışı savaş çekilme sonucuna ulaşmadı.");
-}
-if (!getElement("enemy-board")) {
-  throw new Error("Rakip devresi render alanı bulunamadı.");
+// Sunucu oturumu yokken deste kartı istemcide yerleşmez.
+sandbox.window.__GRIDSHARD_TEST_API.deployModule("laser");
+const activeWithoutServer = sandbox.window.__GRIDSHARD_TEST_API.getBattleState().active_module_ids;
+if (activeWithoutServer.some((moduleId) => moduleId !== "core-1")) {
+  throw new Error(`Sunucusuz yerleşim yapıldı: ${JSON.stringify(activeWithoutServer)}`);
 }
 
-const frozenState = sandbox.window.__GRIDSHARD_TEST_API.getBattleState();
-const frozenElapsed = frozenState.elapsed_ms;
-runAnimationFrame(130000);
-const afterFinishState = sandbox.window.__GRIDSHARD_TEST_API.getBattleState();
-if (afterFinishState.elapsed_ms !== frozenElapsed) {
-  throw new Error(`Maç sonu sayaç donmadı: ${frozenElapsed} -> ${afterFinishState.elapsed_ms}`);
-}
-
-const postMatchContinue = getElement("post-match-continue");
-if (typeof postMatchContinue._listeners.click !== "function") {
-  throw new Error("Maç sonu Devam handler bağlanmadı.");
-}
-postMatchContinue._listeners.click({ currentTarget: postMatchContinue });
-if (postMatchContinue.dataset.postMatchStage !== "rewards") {
-  throw new Error("İlk Devam ödül aşamasını açmadı.");
-}
-postMatchContinue._listeners.click({ currentTarget: postMatchContinue });
-if (document.body.dataset.appScreen !== "menu") {
-  throw new Error(`İkinci Devam ile EV ekranına dönülmedi: ${document.body.dataset.appScreen}`);
-}
-
-sandbox.window.__GRIDSHARD_TEST_API.startQuickLocalBattle();
-for (let ms = 1000; ms <= 5000; ms += 1000) {
-  runAnimationFrame(ms);
-}
-
-const forfeitButton = getElement("battle-forfeit-button");
-if (typeof forfeitButton._listeners.click !== "function") {
-  throw new Error("Savaşı Bırak handler bağlanmadı.");
-}
-forfeitButton._listeners.click();
-if (document.body.dataset.localFinished !== "true") {
-  throw new Error("Savaşı Bırak çevrimdışı geri dönüş savaşını sonuçlandırmadı.");
-}
-if (!getElement("battle-result-summary").textContent.includes("Savaşı bıraktın")) {
-  throw new Error(`Savaşı bırakma sonucu görünmedi: ${getElement("battle-result-summary").textContent}`);
-}
-if (getElement("local-report-forfeit-penalty").textContent === "0 DK") {
-  throw new Error("Savaşta kazanılan kredi için kaçış cezası uygulanmadı.");
-}
-
-console.log("app startup + two-step result return + forfeit penalty + timer freeze + reciprocal local battle test passed");
-process.exit(0);
+(async () => {
+  // Sunucu 503 döndüğünde AI savaşı açılmaz; oyuncu hazırlık ekranına döner.
+  for (let index = 0; index < 20; index += 1) {
+    await new Promise((resolve) => setImmediate(resolve));
+  }
+  if (document.body.dataset.localStatus !== "setup") {
+    throw new Error(`Sunucusuz savaş hazırlığa dönmedi: ${document.body.dataset.localStatus}`);
+  }
+  console.log("app startup + menu + server-only battle guard test passed");
+  process.exit(0);
+})().catch((error) => {
+  console.error(error);
+  process.exit(1);
+});

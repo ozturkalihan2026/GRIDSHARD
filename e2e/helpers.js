@@ -1,32 +1,20 @@
 const { expect } = require("@playwright/test");
 
+// Sunucunun varsayılan başlangıç destesi (arena_canon.STARTER_IDS).
 const DEFAULT_POOL = [
-  "generator",
-  "battery",
-  "splitter",
-  "capacitor",
   "laser",
-  "pulse_cannon",
-  "railgun",
-  "missile_launcher",
-  "drone_bay",
-  "arc_cannon",
   "shield",
-  "armor",
-  "reflector",
-  "barrier",
   "repair",
   "cooler",
-  "amplifier",
-  "targeting_computer"
+  "battery",
+  "amplifier"
 ];
 
+// Başlangıç devresi yalnız merkezdeki Çekirdektir; kartlar sunucuda rastgele
+// boş hücreye yerleşir.
 function initialModules(playerId) {
   return [
-    { instance_id: `${playerId}-core`, definition_id: "core", x: 2, y: 2, direction: "up" },
-    { instance_id: `${playerId}-generator`, definition_id: "generator", x: 2, y: 3, direction: "up" },
-    { instance_id: `${playerId}-splitter`, definition_id: "splitter", x: 2, y: 1, direction: "down" },
-    { instance_id: `${playerId}-laser`, definition_id: "laser", x: 1, y: 1, direction: "right" }
+    { instance_id: `${playerId}-core`, definition_id: "core", x: 2, y: 1 }
   ];
 }
 

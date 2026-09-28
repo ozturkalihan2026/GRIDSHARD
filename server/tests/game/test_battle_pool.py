@@ -17,7 +17,7 @@ def test_battle_pool_is_a_six_card_deck():
     assert BATTLE_POOL_SIZE == 6
     assert len(pool.module_definition_ids) == 6
     assert len(pool.as_set()) == 6
-    assert not {"core", "generator"} & pool.as_set()
+    assert "core" not in pool.as_set()
 
 
 @pytest.mark.parametrize("size", [5, 7])
@@ -36,8 +36,6 @@ def test_pool_rejects_duplicate_and_fixed_modules():
         validate_battle_pool(valid[:-1] + [valid[0]])
     with pytest.raises(BattlePoolValidationError):
         validate_battle_pool(valid[:-1] + ["core"])
-    with pytest.raises(BattlePoolValidationError):
-        validate_battle_pool(valid[:-1] + ["generator"])
 
 
 def test_pool_rejects_unknown_module():
@@ -46,25 +44,25 @@ def test_pool_rejects_unknown_module():
         validate_battle_pool(valid[:-1] + ["unknown-module"])
 
 
-def test_legacy_pool_migrates_without_fixed_modules():
-    legacy = list(PLAYER_SELECTABLE_MODULE_IDS[:18])
-    pool = migrate_battle_pool(legacy)
+def test_stored_deck_is_normalized_without_removed_cards():
+    stored = ["generator", "splitter", "energy_leech", *PLAYER_SELECTABLE_MODULE_IDS[:3]]
+    pool = migrate_battle_pool(stored)
     assert len(pool.module_definition_ids) == 6
-    assert "generator" not in pool.module_definition_ids
+    assert pool.module_definition_ids[:3] == PLAYER_SELECTABLE_MODULE_IDS[:3]
+    assert not {"generator", "splitter", "energy_leech"} & pool.as_set()
 
 
-def test_engine_accepts_deck_and_fixed_start_modules_only_outside_it():
+def test_engine_accepts_core_and_deck_cards_only():
     engine = BattleEngine(BattleState(battle_id="pool"))
     engine.add_player("p1")
     deck = default_battle_pool().module_definition_ids
     engine.set_battle_pool("p1", deck)
     assert engine.grant_module("p1", "core-1", "core").definition.id == "core"
-    assert engine.grant_module("p1", "gen-1", "generator").definition.id == "generator"
     assert engine.grant_module("p1", "inside-1", deck[0]).definition.id == deck[0]
     outside = next(
         module_id
         for module_id in PLAYER_SELECTABLE_MODULE_IDS
-        if module_id not in deck and module_id != "generator"
+        if module_id not in deck
     )
     with pytest.raises(ValueError):
         engine.grant_module("p1", "outside-1", outside)
@@ -78,3 +76,15 @@ def test_engine_rejects_deck_change_after_start():
     engine.start()
     with pytest.raises(ValueError):
         engine.set_battle_pool("p1", deck)
+
+
+def test_pool_requires_at_least_one_attack_card():
+    # Sabotaj Çekirdeği hedefleyemez; saldırısız iki deste maçı hiç bitiremezdi.
+    with pytest.raises(BattlePoolValidationError):
+        validate_battle_pool(["shield", "armor", "repair", "cooler", "battery", "emp"])
+
+
+def test_stored_deck_without_attack_is_normalized_with_an_attack_card():
+    pool = migrate_battle_pool(["shield", "armor", "repair", "cooler", "battery", "emp"])
+    assert len(pool.module_definition_ids) == 6
+    assert "laser" in pool.module_definition_ids

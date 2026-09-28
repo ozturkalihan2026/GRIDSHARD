@@ -14,7 +14,7 @@ assert.ok(app.includes("viewer_trophy_group"));
 assert.ok(css.includes("grid-template-rows:auto auto auto minmax(0,1fr) auto"));
 
 assert.ok(css.includes("--wheel-label-radius:82px"));
-assert.ok(css.includes("--wheel-label-radius:58px"));
+assert.ok(css.includes(".daily-meta-wheel.has-result ~ .daily-meta-wheel-focus"));
 assert.ok(css.includes("translateY(-50%)"));
 
 assert.ok(app.includes("const poweredPositions = modules"));
@@ -32,14 +32,18 @@ assert.ok(html.includes('id="account-data-export"'));
 assert.ok(html.includes('id="account-data-delete"'));
 assert.ok(html.includes('id="account-recovery-confirm"'));
 assert.ok(html.includes('id="account-push-enable"'));
+assert.ok(html.includes('id="account-push-disable"'));
 assert.ok(html.includes('id="direct-message-form"'));
 assert.ok(html.includes('id="friend-invite-create"'));
 assert.ok(app.includes("function parseGridshardDeepLink"));
 assert.ok(app.includes("gridshard:deep-link"));
 assert.ok(app.includes("invite-codes/accept"));
 assert.ok(app.includes('"appUrlOpen"'));
-assert.ok(app.includes('PushNotifications'));
-assert.ok(app.includes("function createLeaderboardRewardPopover"));
+// Push kaydı ortak denetleyicide (native-push.js); app.js yalnız onu bağlar.
+assert.ok(app.includes("GridshardNativePush?.NativePushController"));
+assert.ok(app.includes('kind:"inbox"'));
+assert.ok(html.indexOf('src="./src/native-push.js"') < html.indexOf('src="./src/app.js"'));
+assert.ok(app.includes("function createRewardChestButton"));
 assert.ok(!app.includes('preview.className = "leaderboard-reward-preview"'));
 assert.ok(!html.includes('id="daily-meta-effect"'));
 assert.ok(!html.includes('id="event-period-copy"'));

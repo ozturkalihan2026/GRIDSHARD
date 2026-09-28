@@ -1,19 +1,15 @@
 from app.game.battle_pool import BATTLE_POOL_SIZE, default_battle_pool
-from app.game.board import (
-    BoardCellType,
-    get_default_board,
-    special_cell_positions,
-)
+from app.game.board import get_default_board
 from app.game.catalog import (
     BASIC_MODULE_DEFINITIONS,
     PLAYER_SELECTABLE_MODULE_IDS,
 )
-from app.game.engine import max_active_modules_for_elapsed_ms
+from app.game.engine import MAX_ACTIVE_MODULES
 
 
-def test_meta_has_approximately_24_modules():
-    assert len(BASIC_MODULE_DEFINITIONS) == 25
-    assert len(PLAYER_SELECTABLE_MODULE_IDS) >= 23
+def test_catalog_has_36_player_modules_plus_core():
+    assert len(PLAYER_SELECTABLE_MODULE_IDS) == 36
+    assert set(BASIC_MODULE_DEFINITIONS) == {"core", *PLAYER_SELECTABLE_MODULE_IDS}
 
 
 def test_battle_deck_is_exactly_6_unique_module_definitions():
@@ -22,28 +18,16 @@ def test_battle_deck_is_exactly_6_unique_module_definitions():
     assert len(pool.module_definition_ids) == 6
     assert len(set(pool.module_definition_ids)) == 6
     assert "core" not in pool.module_definition_ids
-    assert "generator" not in pool.module_definition_ids
 
 
-def test_all_ten_slots_are_available_without_a_countdown():
-    for elapsed_ms in (0, 14_999, 15_000, 90_000, 200_000):
-        assert max_active_modules_for_elapsed_ms(elapsed_ms) == 10
-
-
-def test_board_has_four_class_restricted_special_cell_types():
+def test_board_is_15_plain_cells_around_a_fixed_core():
     board = get_default_board()
-    positions = special_cell_positions()
-    assert len(positions) == 4
-    types = {
-        board.get_cell(position).cell_type
-        for position in positions
+    assert len(board.cells) == 15
+    assert {(cell.position.x, cell.position.y) for cell in board.cells} == {
+        (x, y) for x in range(5) for y in range(3)
     }
-    assert {
-        BoardCellType.ATTACK,
-        BoardCellType.DEFENSE,
-        BoardCellType.ENERGY,
-        BoardCellType.REPAIR,
-    } == types
+    assert MAX_ACTIVE_MODULES == 15
+    assert (board.core_position.x, board.core_position.y) == (2, 1)
 
 
 def test_counter_strategy_metadata_is_broadly_configured():

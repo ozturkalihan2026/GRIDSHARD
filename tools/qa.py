@@ -64,14 +64,10 @@ def http_post(url: str):
 def smoke_server() -> dict:
     port = free_port()
     env = os.environ.copy()
-    env["RELAY_WEB_TEST_RUN_ID"] = "web-test-beta.34-qa"
     env["RELAY_TELEMETRY_PATH"] = str(ROOT / "server/data/qa_telemetry.json")
     env["RELAY_PLAYER_DATA_PATH"] = str(ROOT / "server/data/qa_players.json")
     env["RELAY_BATTLE_POOL_PRESET_PATH"] = str(
         ROOT / "server/data/qa_battle_pool_presets.json"
-    )
-    env["RELAY_BALANCE_CHANGE_DRAFT_PATH"] = str(
-        ROOT / "server/data/qa_balance_change_drafts.json"
     )
 
     proc = subprocess.Popen(
@@ -116,9 +112,7 @@ def smoke_server() -> dict:
             "/src/relay-client.js",
             "/src/i18n.js",
             "/src/styles.css",
-            "/web-test/preflight",
-            "/web-test/launch-readiness",
-            "/web-test/operation-status",
+            "/game/module-catalog",
         ):
             status, body = http_get(
                 f"http://127.0.0.1:{port}{path}",
@@ -131,74 +125,6 @@ def smoke_server() -> dict:
                 for required in ("Oyna", "Profil", "İstatistikler", "Ayarlar"):
                     if required not in body:
                         raise RuntimeError(f"Ana sayfada menü eksik: {required}")
-
-        audit_urls = [
-            (
-                f"http://127.0.0.1:{port}"
-                + (
-                    "/web-test/audit/operation-snapshot"
-                    if index % 2 == 0
-                    else "/web-test/audit/stability-snapshot"
-                )
-            )
-            for index in range(24)
-        ]
-
-        with ThreadPoolExecutor(
-            max_workers=12
-        ) as executor:
-            audit_statuses = list(
-                executor.map(
-                    http_post,
-                    audit_urls,
-                )
-            )
-
-        if any(
-            status != 200
-            for status
-            in audit_statuses
-        ):
-            raise RuntimeError(
-                "Eşzamanlı telemetri audit smoke testinde 200 dışı yanıt oluştu."
-            )
-
-        checks.append({
-            "path":
-                "concurrent_audit_snapshots",
-            "status":200,
-            "ok":True,
-            "requests":
-                len(audit_statuses),
-        })
-
-        status, body = http_get(
-            f"http://127.0.0.1:{port}"
-            "/telemetry/manual-battle-report"
-            "?player_id=qa-smoke"
-        )
-        if status != 200:
-            raise RuntimeError(
-                "Manuel savaş raporu smoke testi 200 dönmedi."
-            )
-        manual_report = json.loads(body)
-        checks.append({
-            "path":
-                "/telemetry/manual-battle-report"
-                "?player_id=qa-smoke",
-            "status":status,
-            "ok":
-                isinstance(
-                    manual_report,
-                    dict,
-                )
-                and "battle_count"
-                in manual_report,
-        })
-        if not checks[-1]["ok"]:
-            raise RuntimeError(
-                "Manuel savaş raporu smoke cevabı geçersiz."
-            )
 
         return {
             "name": "uvicorn_http_smoke",
@@ -375,114 +301,6 @@ def main() -> int:
     if all(step["ok"] for step in steps):
         steps.append(
             run_step(
-                "beta25_energy_port_regression",
-                [
-                    sys.executable,
-                    "tools/beta24_energy_port_report.py",
-                ],
-                cwd=ROOT,
-            )
-        )
-
-    if all(step["ok"] for step in steps):
-        steps.append(
-            run_step(
-                "beta33_acceptance_report",
-                [
-                    sys.executable,
-                    "tools/beta33_acceptance_report.py",
-                ],
-                cwd=ROOT,
-            )
-        )
-
-    if all(step["ok"] for step in steps):
-        steps.append(
-            run_step(
-                "beta34_acceptance_report",
-                [
-                    sys.executable,
-                    "tools/beta34_acceptance_report.py",
-                ],
-                cwd=ROOT,
-            )
-        )
-
-    if all(step["ok"] for step in steps):
-        steps.append(
-            run_step(
-                "beta35_acceptance_report",
-                [
-                    sys.executable,
-                    "tools/beta35_acceptance_report.py",
-                ],
-                cwd=ROOT,
-            )
-        )
-
-    if all(step["ok"] for step in steps):
-        steps.append(
-            run_step(
-                "beta36_acceptance_report",
-                [
-                    sys.executable,
-                    "tools/beta36_acceptance_report.py",
-                ],
-                cwd=ROOT,
-            )
-        )
-
-    if all(step["ok"] for step in steps):
-        steps.append(
-            run_step(
-                "beta37_balance_report",
-                [
-                    sys.executable,
-                    "tools/beta37_balance_report.py",
-                ],
-                cwd=ROOT,
-            )
-        )
-
-    if all(step["ok"] for step in steps):
-        steps.append(
-            run_step(
-                "beta37_acceptance_report",
-                [
-                    sys.executable,
-                    "tools/beta37_acceptance_report.py",
-                ],
-                cwd=ROOT,
-            )
-        )
-
-    if all(step["ok"] for step in steps):
-        steps.append(
-            run_step(
-                "beta38_acceptance_report",
-                [
-                    sys.executable,
-                    "tools/beta38_acceptance_report.py",
-                ],
-                cwd=ROOT,
-            )
-        )
-
-    if all(step["ok"] for step in steps):
-        steps.append(
-            run_step(
-                "beta381_acceptance_report",
-                [
-                    sys.executable,
-                    "tools/beta381_acceptance_report.py",
-                ],
-                cwd=ROOT,
-            )
-        )
-
-    if all(step["ok"] for step in steps):
-        steps.append(
-            run_step(
                 "browser_e2e_evidence_summary",
                 [
                     sys.executable,
@@ -558,9 +376,12 @@ def main() -> int:
                 "Gerçek Windows/Chrome E2E kanıt paketi henüz içe aktarılmadı.",
         }
 
+    sys.path.insert(0, str(ROOT / "server"))
+    from app.version import VERSION
+
     report = {
-        "project": "GRIDSHARD 2.0",
-        "version": "2.0.0-beta.38.1",
+        "project": "GRIDSHARD 2.1",
+        "version": VERSION,
         "generated_at_epoch": int(time.time()),
         "ok": all(step["ok"] for step in steps),
         "steps": steps,

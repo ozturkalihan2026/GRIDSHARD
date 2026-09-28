@@ -88,7 +88,7 @@ assert.ok(app.includes("function renderTeamTournament"));
 assert.ok(app.includes("function renderEventSubpages"));
 assert.ok(app.includes("function openTeamProfile"));
 assert.ok(app.includes("function boundedWinRatePercent"));
-assert.match(css, /\.tournament-prizes/);
+assert.match(css, /\.tournament-standings li\.has-prize/);
 assert.match(css, /\.event-directory/);
 assert.match(css, /\.event-detail-tabs/);
 assert.match(css, /\.team-public-identity/);
@@ -114,7 +114,7 @@ assert.ok(!dailyRewardsPanel.includes('id="daily-mission-list"'));
 assert.ok(dailyMissionsPanel.includes('id="daily-mission-list"'));
 assert.ok(app.includes('"daily-missions": "daily-missions"'));
 assert.ok(app.includes('engagement.daily_mission_day || new Date().toISOString().slice(0, 10)'));
-assert.ok(app.includes('engagement.daily_login?.month || new Date().toISOString().slice(0, 7)'));
+assert.ok(app.includes('engagement.daily_login?.period || new Date().toISOString().slice(0, 10)'));
 assert.ok(app.includes('const nextTierExperience'));
 
 const scoreboard = app.match(

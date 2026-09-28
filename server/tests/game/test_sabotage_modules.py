@@ -7,11 +7,9 @@ from app.game.models import (
 from app.game.sabotage import (
     DISRUPTOR_DEBUFF_ID,
     EMP_DEBUFF_ID,
-    ENERGY_LEECH_DEBUFF_ID,
     JAMMER_DEBUFF_ID,
     SABOTAGE_COOLDOWN_ID,
     VIRUS_DEBUFF_ID,
-    sabotage_cooldown_ms,
 )
 
 
@@ -120,42 +118,18 @@ def test_virus_deals_periodic_damage():
     )
 
 
-def test_energy_leech_reduces_battery_output():
-    engine, _ = setup_engine(
-        "leech-1",
-        "energy_leech",
-    )
-    battery = add(engine, "p2", "p2-battery", "battery", 3, 1)
-    before = engine.state.players["p2"].energy_generated_total
-    engine._process_energy_flow()
-    normal_generation = engine.state.players["p2"].energy_generated_total - before
-
-    engine._process_sabotage_actions()
-
-    assert ENERGY_LEECH_DEBUFF_ID in battery.debuffs
-
-    before = engine.state.players["p2"].energy_generated_total
-    engine._process_energy_flow()
-    generated = (
-        engine.state.players["p2"].energy_generated_total
-        - before
-    )
-
-    assert generated < normal_generation
-
-
 def test_disruptor_disables_its_target_but_not_the_embedded_bus():
     engine, _ = setup_engine(
         "disruptor-1",
         "disruptor",
     )
 
-    splitter = add(
+    battery = add(
         engine,
         "p2",
-        "p2-splitter",
-        "splitter",
-        2,
+        "p2-battery",
+        "battery",
+        0,
         1,
     )
     laser = add(
@@ -167,31 +141,32 @@ def test_disruptor_disables_its_target_but_not_the_embedded_bus():
         1,
     )
 
+    shield = add(
+        engine,
+        "p2",
+        "p2-shield",
+        "shield",
+        3,
+        1,
+    )
+
     engine._process_energy_flow()
     assert laser.is_powered is True
 
     engine._process_sabotage_actions()
 
-    affected = splitter if DISRUPTOR_DEBUFF_ID in splitter.debuffs else laser
-    unaffected = laser if affected is splitter else splitter
-    assert DISRUPTOR_DEBUFF_ID in affected.debuffs
+    # Kesici birincil hedefi keser ve ikinci bir sisteme kısa yankı uygular;
+    # gömülü enerji hattı kesilmez, üçüncü modül enerjili kalır.
+    modules = (battery, laser, shield)
+    affected = [module for module in modules if DISRUPTOR_DEBUFF_ID in module.debuffs]
+    unaffected = [module for module in modules if DISRUPTOR_DEBUFF_ID not in module.debuffs]
+    assert len(affected) == 2
+    assert len(unaffected) == 1
+    assert any(event.type == "sabotage_echo_applied" for event in engine.state.events)
 
     engine._process_energy_flow()
-    assert affected.is_powered is False
-    assert unaffected.is_powered is True
-
-
-def test_former_signal_cell_no_longer_grants_hidden_cooldown_bonus():
-    engine, sabotage = setup_engine(
-        "jammer-1",
-        "jammer",
-    )
-
-    normal = sabotage_cooldown_ms(sabotage)
-    sabotage.position = Position(3, 2)
-    signal = sabotage_cooldown_ms(sabotage)
-
-    assert signal == normal
+    assert all(module.is_powered is False for module in affected)
+    assert unaffected[0].is_powered is True
 
 
 def test_emp_disabled_sabotage_does_not_fire():

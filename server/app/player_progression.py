@@ -13,6 +13,8 @@ from .match_accounting import (
     contributes_to_weekly_tournament,
 )
 from .player_profile import PlayerProfileService
+from .store_catalog import BATTLE_PREMIUM_BONUS_PERCENT
+from .team_tournament import period_id_for as team_tournament_period_id
 
 
 WIN_RATING_DELTA = 20
@@ -23,6 +25,12 @@ WIN_XP = 120
 LOSS_XP = 70
 DRAW_XP = 90
 AI_REWARD_RATIO = 0.5
+AD_REWARD_RECEIPT_LIMIT = 50
+
+
+def battle_premium_amount(value: int) -> int:
+    """Savaş Premium: kredi ve deneyim %50 artar (kupa hariç)."""
+    return int(round(int(value) * (100 + BATTLE_PREMIUM_BONUS_PERCENT) / 100))
 
 
 def match_circuit_credit_reward(
@@ -88,6 +96,7 @@ class ProgressionResult:
     profile_progression_applied: bool
     team_tournament_points_awarded: int
     team_tournament_points_after: int
+    battle_premium_applied: bool = False
 
     def to_dict(self) -> dict:
         return {
@@ -113,6 +122,7 @@ class ProgressionResult:
             "profile_progression_applied": self.profile_progression_applied,
             "team_tournament_points_awarded": self.team_tournament_points_awarded,
             "team_tournament_points_after": self.team_tournament_points_after,
+            "battle_premium_applied": self.battle_premium_applied,
         }
 
 
@@ -200,6 +210,12 @@ class PlayerProgressionService:
             if not profile_progression_applied:
                 rating_delta = 0
                 xp_awarded = 0
+            # Savaş Premium bu sezon açıksa deneyim ve kredi artar; kupa değişmez.
+            battle_premium_applied = bool(
+                profile_progression_applied and profile.battle_premium_active()
+            )
+            if battle_premium_applied:
+                xp_awarded = battle_premium_amount(xp_awarded)
 
             if profile_progression_applied:
                 rating_after = max(
@@ -223,23 +239,24 @@ class PlayerProgressionService:
                 1
                 for event in state.events
                 if event.data.get("player_id") == player_id
-                and event.type in {
-                    "module_placed",
-                    "module_moved",
-                    "module_replaced",
-                    "modules_swapped",
-                }
+                and event.type == "module_placed"
             )
+            won = state.winner_player_id == player_id
             if profile_progression_applied:
                 updated = self.profile_service.record_battle_engagement(
                     player_id,
                     season_xp_awarded=xp_awarded,
                     damage_dealt=int(summary.get("damage_dealt", 0)),
                     circuit_actions=circuit_actions,
+                    won=won,
+                    modules_destroyed=self._opponent_modules_destroyed(
+                        state,
+                        player_id,
+                    ),
+                    core_power_uses=int(summary.get("core_power_uses", 0)),
                 )
             tier_after = int(updated.engagement_view()["current_tier"])
             player = state.players[player_id]
-            won = state.winner_player_id == player_id
             completed_at = datetime.now(timezone.utc)
             iso_year, iso_week, _ = completed_at.isocalendar()
             weekly_period = f"{iso_year}-W{iso_week:02d}"
@@ -261,7 +278,8 @@ class PlayerProgressionService:
                 )
             team_tournament_points_awarded = 0
             if state.match_type == "team_tournament":
-                team_period = f"{completed_at.year}-{completed_at.month:02d}"
+                # Dönem, sezonla aynı dört haftalık döngüdür (Pazartesi başlar).
+                team_period = team_tournament_period_id(completed_at)
                 if updated.team_tournament_period != team_period:
                     updated.team_tournament_period = team_period
                     updated.team_tournament_matches = 0
@@ -282,6 +300,8 @@ class PlayerProgressionService:
                 draw=state.is_draw,
                 match_type=state.match_type,
             )
+            if battle_premium_applied:
+                circuit_credits_awarded = battle_premium_amount(circuit_credits_awarded)
             updated.circuit_credits += circuit_credits_awarded
             if profile_progression_applied:
                 self._record_lifetime_stats(
@@ -354,6 +374,7 @@ class PlayerProgressionService:
                     team_tournament_points_after=(
                         updated.team_tournament_contribution_points
                     ),
+                    battle_premium_applied=battle_premium_applied,
                 )
             )
 
@@ -364,6 +385,27 @@ class PlayerProgressionService:
             state.battle_id
         ] = battle_results
         return True
+
+    @staticmethod
+    def _opponent_modules_destroyed(state: BattleState, player_id: str) -> int:
+        """Savaşta rakip tahtasında yok edilen modül sayısı (çekirdek hariç)."""
+        destroyed = 0
+        for event in state.events:
+            if event.type != "module_destroyed":
+                continue
+            owner_id = str(event.data.get("player_id", ""))
+            if not owner_id or owner_id == player_id:
+                continue
+            owner = state.players.get(owner_id)
+            module = (
+                owner.modules.get(str(event.data.get("module_id", "")))
+                if owner is not None
+                else None
+            )
+            if module is not None and module.definition.id == "core":
+                continue
+            destroyed += 1
+        return destroyed
 
     @staticmethod
     def _record_lifetime_stats(
@@ -436,6 +478,44 @@ class PlayerProgressionService:
             usage[deck] = usage.get(deck, 0) + 1
         cores = stats.setdefault("cores", {})
         cores[player.core_type] = cores.get(player.core_type, 0) + 1
+
+    def grant_ad_bonus(self, battle_id: str, player_id: str, *, now_iso: str) -> dict:
+        """Reklam izlenince bu savaşın kredi ve deneyim ödülünü bir kez daha verir.
+
+        Kupa ve takım puanı değişmez. Savaş başına bir kez; aynı istek yeniden
+        gelirse ilk makbuz döner. Sonuç bu süreçteki savaş kaydından okunur.
+        """
+        profile = self.profile_service.get_or_create(player_id)
+        existing = profile.ad_reward_receipts.get(battle_id)
+        if existing is not None:
+            return {**existing, "replayed": True}
+        result = self._results_by_battle_id.get(battle_id, {}).get(player_id)
+        if result is None:
+            raise PlayerProgressionError("Bu savaşın sonucu bulunamadı; reklam ödülü verilemez.")
+        credits = max(0, int(result.circuit_credits_awarded))
+        xp = max(0, int(result.xp_awarded))
+        if not result.profile_progression_applied or (credits <= 0 and xp <= 0):
+            raise PlayerProgressionError("Bu savaş türünde reklam ödülü yok.")
+        tier_before = int(profile.engagement_view()["current_tier"])
+        profile.circuit_credits += credits
+        if xp:
+            self.profile_service.add_experience(player_id, xp)
+            profile.season_xp += xp
+        tier_after = int(profile.engagement_view()["current_tier"])
+        if tier_after > tier_before:
+            profile.core_skill_points += tier_after - tier_before
+        receipt = {
+            "battle_id": battle_id,
+            "circuit_credits": credits,
+            "xp": xp,
+            "tier_after": tier_after,
+            "claimed_at": now_iso,
+            "replayed": False,
+        }
+        profile.ad_reward_receipts[battle_id] = dict(receipt)
+        while len(profile.ad_reward_receipts) > AD_REWARD_RECEIPT_LIMIT:
+            profile.ad_reward_receipts.pop(next(iter(profile.ad_reward_receipts)))
+        return receipt
 
     def battle_results(
         self,

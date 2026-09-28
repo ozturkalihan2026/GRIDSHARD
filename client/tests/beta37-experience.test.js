@@ -18,8 +18,9 @@ assert.ok(!html.includes('id="capacity-indicator"'));
 assert.ok(html.includes('data-shell-screen="shop"'));
 assert.ok(html.includes('data-shell-screen="modules"'));
 assert.ok(html.includes("dock-home-crack"));
-assert.ok(html.includes("lobby-feature-icon-daily"));
-assert.ok(html.includes("lobby-feature-icon-reward"));
+// Eski lobi ızgarası kaldırıldı; Ev yalnız mobil savaş merkezini kullanır.
+assert.ok(!html.includes("lobby-feature-grid"));
+assert.ok(html.includes('id="home-battle-button"'));
 
 assert.ok(app.includes("function isOnlineMatchmakingCancelable"));
 assert.ok(app.includes('localizedUiText("İptal Et")'));
@@ -27,16 +28,11 @@ assert.ok(app.includes("function deployDeckModule"));
 assert.ok(app.includes('"deploy_module"'));
 assert.ok(app.includes("const limit = 15"));
 assert.ok(app.includes("catalog?.effect_lines_en"));
-assert.ok(css.includes("#booster-panel"));
 assert.ok(css.includes("GRIDSHARD Beta.37"));
 assert.ok(css.includes('#battle-pool-confirm[data-matchmaking="true"]'));
 assert.ok(i18n.includes('"TAKIM":"TEAM"'));
-assert.ok(i18n.includes('"Aşırı Yük Çipi":"Overcharge Chip"'));
 assert.ok(app.includes("function resetBattleVisualSurface"));
-assert.ok(app.includes("client.cancelDrag?.()"));
 assert.ok(app.includes("createBoard();"));
-assert.ok(app.includes("function renderLaboratoryModulePreview"));
-assert.ok(html.includes('id="laboratory-detail-icon" class="laboratory-detail-icon"'));
 assert.ok(css.includes("Beta.37 hotfix v3"));
 assert.ok(css.includes("Beta.37 hotfix v4"));
 assert.ok(html.includes('id="ai-archetype-picker"'));

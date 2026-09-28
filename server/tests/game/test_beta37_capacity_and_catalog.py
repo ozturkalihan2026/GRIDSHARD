@@ -1,35 +1,5 @@
 from app.game.catalog_view import build_module_catalog_view
-from app.game.engine import BattleEngine
-from app.game.models import BattleState
 from app.game.pvp_session import PvPSessionService
-
-
-def test_capacity_view_exposes_ten_immediate_slots_without_timer() -> None:
-    engine = BattleEngine(BattleState(battle_id="beta37-capacity"))
-    engine.add_player("player")
-    positions = ((2, 2), (2, 3), (1, 3), (3, 3))
-    for index, definition_id in enumerate(("core", "generator", "laser", "shield")):
-        module = engine.grant_module("player", f"module-{index}", definition_id)
-        engine.set_initial_active_module(
-            "player", module.instance_id, *positions[index]
-        )
-
-    assert engine.module_capacity_view("player") == {
-        "active_module_count": 4,
-        "active_module_limit": 10,
-        "available_module_slots": 6,
-        "next_module_slot_at_ms": None,
-        "next_module_slot_in_ms": None,
-    }
-
-    engine.state.elapsed_ms = 30_000
-    assert engine.module_capacity_view("player") == {
-        "active_module_count": 4,
-        "active_module_limit": 10,
-        "available_module_slots": 6,
-        "next_module_slot_at_ms": None,
-        "next_module_slot_in_ms": None,
-    }
 
 
 def test_pvp_snapshot_publishes_authoritative_capacity() -> None:
@@ -41,13 +11,13 @@ def test_pvp_snapshot_publishes_authoritative_capacity() -> None:
     capacity = service.snapshot(session.session_id, "a")["players"]["a"][
         "module_capacity"
     ]
-    assert capacity["active_module_limit"] == 10
-    assert capacity["next_module_slot_in_ms"] is None
+    assert capacity["active_module_limit"] == 15
+    assert "next_module_slot_in_ms" not in capacity
 
 
-def test_catalog_has_complete_english_copy_for_all_24_modules() -> None:
+def test_catalog_has_complete_english_copy_for_all_36_modules() -> None:
     view = build_module_catalog_view()
-    assert len(view["modules"]) == 24
+    assert len(view["modules"]) == 36
     assert view["category_labels_en"]["saldırı"] == "Attack"
     for module in view["modules"]:
         assert module["strategic_role_en"]

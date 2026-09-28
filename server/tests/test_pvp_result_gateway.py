@@ -5,10 +5,16 @@ from app.main import (
     pvp_service,
     pvp_websocket_adapter,
 )
-from app.game.engine import BATTLE_TIME_LIMIT_MS
 
 
 client=TestClient(app)
+
+
+def destroy_core(engine, player_id):
+    # Savaş yalnız bir Çekirdek yok olunca biter.
+    for module in engine.state.players[player_id].modules.values():
+        if module.definition.id == "core":
+            module.hp = 0
 
 
 def reset():
@@ -26,7 +32,7 @@ def test_result_endpoint_returns_terminal_server_result():
             p,f"{p}-core",2,1
         )
     pvp_service.start("result")
-    session.engine.state.elapsed_ms=BATTLE_TIME_LIMIT_MS-100
+    destroy_core(session.engine, "b")
     session.engine.step()
 
     response=client.get(

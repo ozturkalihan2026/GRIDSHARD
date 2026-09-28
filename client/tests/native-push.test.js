@@ -10,7 +10,7 @@ function fixture({ enabled = false, granted = true } = {}) {
   const preferences = new Map([["gridshard.push.enabled", String(enabled)]]);
   const plugin = {
     addListener: async (name, callback) => {
-      assert.equal(listeners[name], undefined, "listeners must not accumulate");
+      assert.equal(listeners[name], undefined, "dinleyiciler birikmemeli");
       listeners[name] = callback;
       return { remove() { delete listeners[name]; } };
     },
@@ -30,7 +30,7 @@ function fixture({ enabled = false, granted = true } = {}) {
   return { controller, calls, listeners, opened, preferences, plugin };
 }
 
-test("opt-in installs listeners once and serializes token refresh / opt-out", async () => {
+test("izin açılışı dinleyicileri bir kez kurar, belirteç yenileme ve kapatma sıralanır", async () => {
   const { controller, calls, listeners, preferences } = fixture();
   await controller.start();
   assert.ok(calls.every((call) => call.method === "DELETE"));
@@ -49,14 +49,14 @@ test("opt-in installs listeners once and serializes token refresh / opt-out", as
   assert.ok(!JSON.stringify([...preferences]).includes("token"));
 });
 
-test("denied permission cancels stale server subscription without registration", async () => {
+test("reddedilen izin eski sunucu aboneliğini kayıt yapmadan iptal eder", async () => {
   const { controller, calls } = fixture({ enabled: true, granted: false });
   await controller.start();
   assert.equal(controller.wanted, false);
   assert.ok(calls.every((call) => call.method === "DELETE"));
 });
 
-test("cold-start taps wait for identity, only open safe recipient-scoped links, and deduplicate", async () => {
+test("soğuk açılış dokunuşu kimliği bekler, yalnız aynı alıcının güvenli bağlantısını bir kez açar", async () => {
   const { controller, listeners, opened } = fixture();
   await controller.listen();
   const tap = (data) => listeners.pushNotificationActionPerformed({ notification: { data } });
@@ -68,10 +68,14 @@ test("cold-start taps wait for identity, only open safe recipient-scoped links, 
   tap({ ...valid, notification_id: "n2", recipient_id: "other-account" });
   tap({ ...valid, notification_id: "n3", deep_link: "https://evil.example/profile/bob" });
   tap({ ...valid, notification_id: "n4", deep_link: "gridshard://invite/CODE" });
-  assert.deepEqual(opened, [valid.deep_link]);
+  tap({ ...valid, notification_id: "n5", deep_link: "gridshard://inbox" });
+  tap({ ...valid, notification_id: "n6", deep_link: "gridshard://inbox/accept/x" });
+  tap({ ...valid, notification_id: "n7", deep_link: "gridshard://constructor/x" });
+  await new Promise((resolve) => setImmediate(resolve));
+  assert.deepEqual(opened, [valid.deep_link, "gridshard://inbox"]);
 });
 
-test("an offline disable is retried after restart", async () => {
+test("çevrimdışıyken yapılan kapatma yeniden açılışta tekrar gönderilir", async () => {
   const { controller, calls } = fixture({ enabled: true });
   await controller.start();
   await controller.mutations;
@@ -83,17 +87,17 @@ test("an offline disable is retried after restart", async () => {
   assert.equal(calls.at(-1).method, "DELETE");
 });
 
-test("web never requests native permissions or writes push subscriptions", async () => {
+test("web tarayıcısı yerel izin istemez ve push aboneliği yazmaz", async () => {
   const controller = new NativePushController({
     capacitor: { getPlatform: () => "web" }, storage: null,
-    request: () => assert.fail("web must not call notification endpoints"), identity: () => ({}),
+    request: () => assert.fail("web bildirim uç noktalarını çağırmamalı"), identity: () => ({}),
   });
   await controller.start();
   await controller.enable();
   assert.equal(controller.plugin, null);
 });
 
-test("late permission grant cannot undo a newer disable action", async () => {
+test("geç gelen izin onayı daha yeni kapatma işlemini geri alamaz", async () => {
   const { controller, plugin, calls } = fixture();
   await controller.start();
   let grant;

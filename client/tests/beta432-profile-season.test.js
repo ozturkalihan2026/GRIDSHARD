@@ -12,7 +12,9 @@ assert.ok(html.includes('data-screen-panel="avatar"'));
 assert.ok(html.includes('data-screen-panel="daily-rewards"'));
 assert.ok(html.includes('data-screen-panel="rewards"'));
 assert.ok(html.includes("40 KADEMELİ SEZON YOLUNU AÇ"));
-assert.ok(html.includes("HER 10 KADEMEDE BÜYÜK ÖDÜL"));
+// Beta.72 arayüz turu: sezon yolu başlığı kalktı, ücretsiz/ücretli sütunlar geldi.
+assert.ok(!html.includes("HER 10 KADEMEDE BÜYÜK ÖDÜL"));
+assert.ok(html.includes('class="season-pass-columns"'));
 assert.ok(html.includes('id="monthly-login-track"'));
 assert.ok(html.includes("3–24 saatte yenilenir"));
 assert.ok(html.includes('id="lobby-profile-avatar"'));

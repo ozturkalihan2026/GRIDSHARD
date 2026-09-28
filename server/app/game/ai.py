@@ -1,14 +1,83 @@
+from collections import Counter
 from dataclasses import dataclass
+import hashlib
 
-from .boosters import (
-    BOOSTER_DEFINITIONS,
-    booster_target_rejection_reason,
-    get_booster_definition,
-)
 from .ai_archetypes import get_ai_archetype
 from .catalog import get_module_definition
 from .composition import deployment_rejection_reason
+from .core_balance import (
+    CORE_POWER_FULL_CHARGE,
+    DISCHARGE_FULL_RESERVE_RATIO,
+    LAST_STAND_HP_RATIO,
+    STATIC_CHARGE_INTERVAL_MS,
+)
+from .energy import action_energy_per_second, core_reserve_capacity
 from .models import ModuleStatus, PlayerBattleState
+
+
+# Kart çeşitliliği: ölen kopyalar da sayılır; aynı kartı art arda basmak
+# cezalandırılır. Böylece AI destesinin tamamını oynar.
+ROTATION_PENALTY = 0.9
+RECENT_PENALTY = 1.0
+REPEAT_PENALTY = 3.0
+# En iyi kart birkaç saniye içinde alınabilecekse ve sahada saldırı varsa
+# AI ucuz kartı hemen basmak yerine bekler; pahalı kartlar da oynanır.
+SAVE_WINDOW_MS = 5_000
+
+
+# Çekirdek gücü hazırken koşulu gelmezse en geç bu süre sonra kullanılır.
+CORE_POWER_HOLD_LIMIT_MS = 10_000
+
+
+def should_use_core_power(ai_player: PlayerBattleState, opponent: PlayerBattleState | None) -> bool:
+    """AI Çekirdek gücünü imzasına göre kullanır (dolum tamken çağrılır)."""
+    if ai_player.core_power_charge < CORE_POWER_FULL_CHARGE:
+        return False
+    living = [
+        module
+        for module in ai_player.modules.values()
+        if module.status == ModuleStatus.ACTIVE and module.hp > 0
+    ]
+    core = next((module for module in living if module.definition.id == "core"), None)
+    if core is None:
+        return False
+    damaged = any(module.hp < module.definition.max_hp for module in living)
+    held_ms = int(ai_player.core_signature_state.get("held_ms", 0))
+    held_too_long = held_ms >= CORE_POWER_HOLD_LIMIT_MS
+    core_type = ai_player.core_type
+    if core_type == "core_resonance":
+        return damaged
+    if core_type == "core_phoenix":
+        # Dolum Küllerden Doğuş sigortasıdır: Çekirdek zayıfken saklanır.
+        return damaged and core.hp >= core.definition.max_hp * 0.6
+    if core_type == "core_guardian":
+        return core.hp < core.definition.max_hp * LAST_STAND_HP_RATIO or held_too_long
+    if core_type == "core_overdrive":
+        return any(module.definition.category == "saldırı" for module in living)
+    if core_type == "core_disruptor":
+        rival_active = [
+            module
+            for module in (opponent.modules.values() if opponent is not None else ())
+            if module.status == ModuleStatus.ACTIVE
+        ]
+        # Rakip Aşırı Yük açtıysa hemen siler; yoksa en az iki Statik yük biriktirir.
+        if any("core_overdrive" in module.persistent_effects for module in rival_active):
+            return True
+        rival_supports = any(module.definition.category == "destek" for module in rival_active)
+        return rival_supports and held_ms >= STATIC_CHARGE_INTERVAL_MS * 2
+    if core_type == "core_capacitor":
+        full_reserve = (
+            ai_player.energy_stock
+            >= core_reserve_capacity(ai_player) * DISCHARGE_FULL_RESERVE_RATIO
+        )
+        return full_reserve or held_too_long
+    return True
+
+
+def _variety_key(player_id: str, deploy_count: int, definition_id: str) -> int:
+    """Eşit puanlı kartları maç ilerledikçe değişen deterministik sırayla ayırır."""
+    digest = hashlib.sha256(f"{player_id}:{deploy_count}:{definition_id}".encode()).hexdigest()
+    return int(digest[:8], 16)
 
 
 @dataclass(slots=True, frozen=True)
@@ -28,16 +97,6 @@ class CounterCandidate:
     strong_hits: tuple[str, ...]
     weak_hits: tuple[str, ...]
     credit_cost: int
-
-
-@dataclass(slots=True, frozen=True)
-class AIDecision:
-    counter_module_definition_id: str | None
-    counter_score: int
-    target_threat_ids: tuple[str, ...]
-    booster_id: str | None
-    booster_target_module_id: str | None
-    reason_tr: str
 
 
 def build_threat_profile(
@@ -137,226 +196,16 @@ def score_counter_candidate(
     )
 
 
-def choose_counter_module(
-    ai_player: PlayerBattleState,
-    opponent: PlayerBattleState,
-    archetype_id: str = "balanced",
-) -> CounterCandidate | None:
-    if ai_player.battle_pool is None:
-        return None
-
-    archetype = get_ai_archetype(archetype_id)
-    active_definition_ids = {
-        module.definition.id
-        for module in ai_player.modules.values()
-        if module.status == ModuleStatus.ACTIVE
-    }
-
-    threat_profile = build_threat_profile(opponent)
-
-    candidates = [
-        score_counter_candidate(
-            definition_id,
-            threat_profile,
-        )
-        for definition_id
-        in ai_player.battle_pool.module_definition_ids
-        if definition_id not in active_definition_ids
-        and definition_id not in {"core", "generator"}
-    ]
-
-    affordable = [
-        candidate
-        for candidate in candidates
-        if candidate.credit_cost
-        <= ai_player.circuit_credits
-    ]
-
-    if not affordable:
-        return None
-
-    active_by_category = {
-        "saldırı": 0,
-        "savunma": 0,
-        "destek": 0,
-        "sabotaj": 0,
-        "enerji": 0,
-    }
-    for module in ai_player.modules.values():
-        if module.status == ModuleStatus.ACTIVE and module.hp > 0:
-            if module.definition.category in active_by_category:
-                active_by_category[module.definition.category] += 1
-
-    def candidate_score(candidate: CounterCandidate) -> float:
-        definition = get_module_definition(candidate.module_definition_id)
-        score = float(candidate.score + archetype.bias_for(definition.category))
-
-        # Arketipin stratejik omurgası tamamlanana kadar ilgili sınıfa ek ağırlık ver.
-        if definition.category == "enerji" and active_by_category["enerji"] < archetype.energy_floor:
-            score += 12
-        if definition.category == "savunma" and active_by_category["savunma"] < archetype.defense_floor:
-            score += 10 + min(4, threat_profile.attack_count * 2)
-        if (
-            definition.category == "sabotaj"
-            and active_by_category["sabotaj"] < archetype.sabotage_floor
-        ):
-            score += 10 + min(4, (threat_profile.energy_count + threat_profile.support_count) * 2)
-
-        # Ekonomi AI düşük maliyetli enerji hattını daha erken tamamlamayı tercih eder.
-        if archetype.id == "economy" and definition.category == "enerji":
-            score += max(0.0, (100 - candidate.credit_cost) / 20)
-
-        return score
-
-    active_attack_count = active_by_category["saldırı"]
-    if active_attack_count < archetype.attack_foundation_target:
-        attack_foundation = [
-            candidate
-            for candidate in affordable
-            if get_module_definition(
-                candidate.module_definition_id
-            ).category == "saldırı"
-        ]
-        if attack_foundation:
-            def foundation_score(candidate: CounterCandidate) -> float:
-                definition = get_module_definition(
-                    candidate.module_definition_id
-                )
-                damage_per_second = (
-                    definition.base_damage
-                    / max(1, definition.cooldown_ms)
-                    * 1000
-                )
-                return damage_per_second * (
-                    1 + max(0, candidate.score) * 0.08
-                ) + max(0, archetype.bias_for("saldırı"))
-
-            # Dengeli profil eski davranışı aynen korur: bir saldırı varken ikinci saldırı omurgası kurulur.
-            if archetype.id == "balanced" and active_attack_count == 0:
-                pass
-            else:
-                return sorted(
-                    attack_foundation,
-                    key=lambda candidate: (
-                        -foundation_score(candidate),
-                        candidate.credit_cost,
-                        candidate.module_definition_id,
-                    ),
-                )[0]
-
-    return sorted(
-        affordable,
-        key=lambda candidate: (
-            -candidate_score(candidate),
-            candidate.credit_cost,
-            candidate.module_definition_id,
-        ),
-    )[0]
-
-
-def choose_fill_module(
-    ai_player: PlayerBattleState,
-    opponent: PlayerBattleState,
-    archetype_id: str = "balanced",
-):
-    if ai_player.battle_pool is None:
-        return None
-
-    active_modules = [
-        module
-        for module in ai_player.modules.values()
-        if module.status == ModuleStatus.ACTIVE and module.hp > 0
-    ]
-    active_definition_ids = {
-        module.definition.id
-        for module in active_modules
-    }
-
-    # Savunma + temel saldırı omurgası her arketip için korunur.
-    for definition_id in ("shield", "laser"):
-        if definition_id in active_definition_ids:
-            continue
-        reserve = _reserve_module_for_definition(ai_player, definition_id)
-        if reserve is None:
-            continue
-        if reserve.definition.current_cost <= ai_player.circuit_credits:
-            return reserve
-
-    archetype = get_ai_archetype(archetype_id)
-    active_count = len(active_modules)
-
-    # 5. ve 6. aktif hak arketipin kimliğini görünür kılar. Bir plan modülü
-    # daha önce yok edilmişse sıradaki uygun plan modülüne geçilir.
-    plan_start_index = max(0, active_count - 4)
-    expansion_order = (
-        archetype.expansion_module_ids[plan_start_index:]
-        + archetype.expansion_module_ids[:plan_start_index]
-    )
-    for definition_id in expansion_order:
-        if definition_id in active_definition_ids:
-            continue
-        reserve = _reserve_module_for_definition(ai_player, definition_id)
-        if reserve is None:
-            continue
-        if reserve.definition.current_cost <= ai_player.circuit_credits:
-            return reserve
-
-    threat_profile = build_threat_profile(opponent)
-    candidates = []
-    for definition_id in ai_player.battle_pool.module_definition_ids:
-        if definition_id in {"core", "generator"}:
-            continue
-        if definition_id in active_definition_ids:
-            continue
-        reserve = _reserve_module_for_definition(ai_player, definition_id)
-        if reserve is None:
-            continue
-        if reserve.definition.current_cost > ai_player.circuit_credits:
-            continue
-        candidate = score_counter_candidate(definition_id, threat_profile)
-        candidates.append((candidate, reserve))
-
-    if not candidates:
-        return None
-
-    active_by_category = {
-        "saldırı": 0,
-        "savunma": 0,
-        "destek": 0,
-        "sabotaj": 0,
-        "enerji": 0,
-    }
-    for module in active_modules:
-        if module.definition.category in active_by_category:
-            active_by_category[module.definition.category] += 1
-
-    def sort_key(item):
-        candidate, reserve = item
-        definition = reserve.definition
-        bonus = float(candidate.score + archetype.bias_for(definition.category))
-        if definition.category == "saldırı" and active_by_category["saldırı"] < archetype.attack_foundation_target:
-            bonus += 12
-        if definition.category == "savunma" and active_by_category["savunma"] < archetype.defense_floor:
-            bonus += 11
-        if definition.category == "enerji" and active_by_category["enerji"] < archetype.energy_floor:
-            bonus += 10
-        if definition.category == "sabotaj" and active_by_category["sabotaj"] < archetype.sabotage_floor:
-            bonus += 8
-        return (
-            -bonus,
-            reserve.definition.current_cost,
-            reserve.instance_id,
-        )
-
-    return sorted(candidates, key=sort_key)[0][1]
-
-
 def choose_deploy_definition(
     ai_player: PlayerBattleState,
     opponent: PlayerBattleState,
     archetype_id: str = "balanced",
+    regen_interval_ms: int = 2_500,
 ) -> str | None:
-    """Choose one of the six deck cards; deployed definitions may repeat."""
+    """Choose one of the six deck cards; deployed definitions may repeat.
+
+    ``None`` means no legal card or a short wait for a better, pricier card.
+    """
     if ai_player.battle_pool is None:
         return None
 
@@ -374,15 +223,21 @@ def choose_deploy_definition(
         counts[definition_id] = counts.get(definition_id, 0) + 1
         category = module.definition.category
         category_counts[category] = category_counts.get(category, 0) + 1
+    # Modüller yok edilince de oyuncu durumunda kalır; sözlük sırası basım sırasıdır.
+    history = [
+        module.definition.id
+        for module in ai_player.modules.values()
+        if module.definition.id != "core"
+    ]
+    deployed_counts = Counter(history)
+    recent = history[-3:]
 
-    candidates: list[tuple[float, int, str]] = []
+    candidates: list[tuple[float, int, int, str]] = []
     for definition_id in ai_player.battle_pool.module_definition_ids:
         definition = get_module_definition(definition_id)
         if deployment_rejection_reason(ai_player, definition) is not None:
             continue
         cost = max(1, definition.current_cost - (1 if ai_player.discounted_deployments else 0))
-        if cost > ai_player.circuit_credits:
-            continue
         counter = score_counter_candidate(definition_id, threat_profile)
         score = float(counter.score + archetype.bias_for(definition.category))
         # Önce çalışan bir saldırı omurgası, sonra arketipin sınıf tabanları.
@@ -397,148 +252,42 @@ def choose_deploy_definition(
         if definition.category == "sabotaj" and category_counts.get("sabotaj", 0) < archetype.sabotage_floor:
             score += 7
         if definition_id in archetype.expansion_module_ids:
-            score += max(0, 5 - archetype.expansion_module_ids.index(definition_id))
+            # Arketip kimliği küçük bir tercih; dönüşüm cezasını ezmemeli.
+            score += max(0, 3 - archetype.expansion_module_ids.index(definition_id))
         if ai_player.energy_load_ratio > 1.2:
             if definition_id == "current_balancer":
                 score += 10
             elif definition_id in {"battery", "capacitor"} and ai_player.energy_stock > 0:
                 score += 4
             elif definition.category == "saldırı":
-                score -= max(0, definition.energy_consumption - 3) * 1.5
-        # Tek kart spamini yasaklamadan çeşitliliği hafifçe teşvik et.
+                # Saldırılar enerjiyi atış anında öder; yük yüksekken
+                # saniyelik enerji talebi büyük olan kartlar geri planda kalır.
+                score -= max(0.0, action_energy_per_second(definition) - 1.5) * 4
+        # Tek kart spamini yasaklamadan çeşitliliği teşvik et.
         score -= counts.get(definition_id, 0) * 2.5
-        candidates.append((score, cost, definition_id))
+        score -= deployed_counts.get(definition_id, 0) * ROTATION_PENALTY
+        score -= recent.count(definition_id) * RECENT_PENALTY
+        if history and history[-1] == definition_id:
+            score -= REPEAT_PENALTY
+        candidates.append((
+            score,
+            _variety_key(ai_player.player_id, len(history), definition_id),
+            cost,
+            definition_id,
+        ))
 
     if not candidates:
         return None
-    return sorted(candidates, key=lambda item: (-item[0], item[1], item[2]))[0][2]
-
-def choose_booster(
-    ai_player: PlayerBattleState,
-    archetype_id: str = "balanced",
-) -> tuple[str | None, str | None]:
-    offer = ai_player.pending_booster_offer
-    if offer is None:
-        return None, None
-
-    archetype = get_ai_archetype(archetype_id)
-    active = sorted(
-        (
-            module
-            for module in ai_player.modules.values()
-            if module.status == ModuleStatus.ACTIVE
-            and module.hp > 0
-        ),
-        key=lambda module: module.instance_id,
-    )
-
-    damaged = [
-        module
-        for module in active
-        if module.hp / module.definition.max_hp <= 0.50
-    ]
-    attacks = [
-        module
-        for module in active
-        if module.definition.category == "saldırı"
-    ]
-
-    def eligible_targets(booster_id: str, candidates):
-        booster = get_booster_definition(booster_id)
-        return [
-            module
-            for module in candidates
-            if booster_target_rejection_reason(booster, module) is None
-        ]
-
-    for booster_id in archetype.booster_priority:
-        if booster_id not in offer.booster_ids:
-            continue
-        if booster_id == "emergency_repair":
-            candidates = eligible_targets(booster_id, damaged)
-            if candidates:
-                target = sorted(
-                    candidates,
-                    key=lambda module: (
-                        module.hp / module.definition.max_hp,
-                        module.instance_id,
-                    ),
-                )[0]
-                return booster_id, target.instance_id
-        if booster_id == "overcharge_chip":
-            candidates = eligible_targets(booster_id, attacks)
-            if candidates:
-                target = sorted(
-                    candidates,
-                    key=lambda module: (
-                        -module.definition.base_damage,
-                        module.instance_id,
-                    ),
-                )[0]
-                return booster_id, target.instance_id
-        if booster_id == "cooling_burst":
-            candidates = eligible_targets(booster_id, active)
-            if candidates:
-                target = sorted(
-                    candidates,
-                    key=lambda module: (
-                        -module.heat,
-                        module.instance_id,
-                    ),
-                )[0]
-                return booster_id, target.instance_id
-        if booster_id == "signal_cleanser":
-            candidates = eligible_targets(booster_id, active)
-            if candidates:
-                target = sorted(
-                    candidates,
-                    key=lambda module: (-len(module.debuffs), module.instance_id),
-                )[0]
-                return booster_id, target.instance_id
-
-    return None, None
-
-
-def build_ai_decision(
-    ai_player: PlayerBattleState,
-    opponent: PlayerBattleState,
-    archetype_id: str = "balanced",
-) -> AIDecision:
-    profile = build_threat_profile(opponent)
-    counter = choose_counter_module(
-        ai_player,
-        opponent,
-        archetype_id,
-    )
-    booster_id, booster_target = choose_booster(
-        ai_player,
-        archetype_id,
-    )
-
-    if counter is None:
-        reason = (
-            "Uygun ve karşılanabilir yeni counter modül yok."
-        )
-        counter_id = None
-        score = 0
-        threats = ()
-    else:
-        counter_id = counter.module_definition_id
-        score = counter.score
-        threats = counter.strong_hits
-        reason = (
-            f"{counter_id} seçildi; "
-            f"counter skoru {counter.score}."
-        )
-
-    return AIDecision(
-        counter_module_definition_id=counter_id,
-        counter_score=score,
-        target_threat_ids=threats,
-        booster_id=booster_id,
-        booster_target_module_id=booster_target,
-        reason_tr=reason,
-    )
+    candidates.sort(key=lambda item: (-item[0], item[1]))
+    _score, _key, best_cost, best_id = candidates[0]
+    credits = ai_player.circuit_credits
+    if best_cost <= credits:
+        return best_id
+    wait_ms = (best_cost - credits) * regen_interval_ms - ai_player.current_regen_remainder_ms
+    if category_counts.get("saldırı", 0) > 0 and wait_ms <= SAVE_WINDOW_MS:
+        return None
+    affordable = [item for item in candidates if item[2] <= credits]
+    return affordable[0][3] if affordable else None
 
 
 @dataclass(slots=True, frozen=True)
@@ -546,113 +295,6 @@ class AIActionPlan:
     kind: str
     commands: tuple
     reason_tr: str
-
-
-def _reserve_module_for_definition(
-    ai_player,
-    definition_id,
-):
-    candidates = sorted(
-        (
-            module
-            for module in ai_player.modules.values()
-            if module.status == ModuleStatus.RESERVE
-            and module.definition.id == definition_id
-        ),
-        key=lambda module: module.instance_id,
-    )
-
-    return candidates[0] if candidates else None
-
-
-def prepare_ai_reserve_modules(
-    engine,
-    player_id: str,
-) -> None:
-    from .models import BattleStatus
-
-    player = engine.state.players[player_id]
-
-    if engine.state.status != BattleStatus.WAITING:
-        raise ValueError(
-            "AI rezerv modülleri yalnızca maç başlamadan hazırlanabilir."
-        )
-
-    if player.battle_pool is None:
-        raise ValueError(
-            "AI için önce Savaş Havuzu ayarlanmalıdır."
-        )
-
-    existing_definitions = {
-        module.definition.id
-        for module in player.modules.values()
-    }
-
-    for definition_id in player.battle_pool.module_definition_ids:
-        if definition_id in existing_definitions:
-            continue
-
-        engine.grant_module(
-            player_id,
-            f"{player_id}-reserve-{definition_id}",
-            definition_id,
-        )
-
-
-def _cell_accepts_module(engine, module, position) -> bool:
-    cell = engine.board.get_cell(position)
-    if (
-        cell.allowed_definition_ids
-        and module.definition.id not in cell.allowed_definition_ids
-    ):
-        return False
-    if (
-        cell.allowed_categories
-        and module.definition.category not in cell.allowed_categories
-    ):
-        return False
-    return True
-
-
-def _outgoing_module_for_replacement(
-    ai_player,
-    opponent,
-    archetype_id: str = "balanced",
-):
-    profile = build_threat_profile(opponent)
-    archetype = get_ai_archetype(archetype_id)
-
-    active = [
-        module
-        for module in ai_player.modules.values()
-        if module.status == ModuleStatus.ACTIVE
-        and module.definition.removable
-        and module.definition.id not in {"core", "generator"}
-    ]
-
-    if not active:
-        return None
-
-    scored = [
-        (
-            score_counter_candidate(
-                module.definition.id,
-                profile,
-            ).score
-            + archetype.bias_for(module.definition.category),
-            module.instance_id,
-            module,
-        )
-        for module in active
-    ]
-
-    return sorted(
-        scored,
-        key=lambda item: (
-            item[0],
-            item[1],
-        ),
-    )[0][2]
 
 
 def build_ai_action_plan(
@@ -680,6 +322,7 @@ def build_ai_action_plan(
         ai_player,
         opponent,
         archetype_id,
+        engine.circuit_credit_config.current_regen_interval_ms,
     )
     if definition_id is None:
         return None

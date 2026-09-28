@@ -1,8 +1,9 @@
-"""Durable, leased push deliveries stored alongside their owning account.
+"""Sahibi olan hesabın yanında saklanan kalıcı, kiralı push teslim işleri.
 
-Provider I/O happens outside the JSON lock. Leases prevent concurrent workers
-from claiming the same job; an ambiguous provider timeout can still duplicate a
-delivery (at-least-once transport). Stable notification IDs let clients coalesce.
+GRIDSHARD projesinden taşındı. Sağlayıcı çağrısı JSON kilidinin dışında yapılır.
+Kiralama, eşzamanlı işçilerin aynı işi almasını engeller; belirsiz bir sağlayıcı
+zaman aşımı yine de tekrar gönderime yol açabilir (en az bir kez teslim).
+Sabit bildirim kimliği istemcinin tekrarları birleştirmesini sağlar.
 """
 
 from collections import Counter
@@ -29,7 +30,7 @@ class PushOutbox:
         self._prune_push(account, now)
         jobs = account.setdefault("push_jobs", [])
         for device_id, subscription in account.get("push_subscriptions", {}).items():
-            # Legacy registrations require a fresh opt-in/token registration.
+            # Eski kayıtlar yeni izin/belirteç kaydı gerektirir.
             if not subscription.get("revision"):
                 continue
             jobs.append({
@@ -39,8 +40,8 @@ class PushOutbox:
                 "expires_at": now + self.PUSH_TTL, "next_attempt_at": now,
                 "status": "pending", "attempts": 0,
             })
-        # There are at most ten subscriptions and one hundred inbox items.
-        # Jobs for evicted inbox items are cancelled on the next worker pass.
+        # En çok on abonelik ve yüz gelen kutusu kaydı vardır. Kutudan düşen
+        # kayıtların işleri bir sonraki işçi turunda iptal edilir.
         account["push_jobs"] = jobs[-1000:]
 
     def _prune_push(self, account, now):
@@ -101,7 +102,7 @@ class PushOutbox:
             data = self._read()
             account = data["accounts"].get(claim["player_id"])
             if not account:
-                return  # Account deletion must never recreate the account.
+                return  # Hesap silindiyse yeniden oluşturulmaz.
             job = next((job for job in account.get("push_jobs", []) if job["job_id"] == claim["job"]["job_id"]), None)
             if not job or job.get("lease_id") != claim["job"]["lease_id"] or job["status"] != "sending":
                 return
@@ -114,8 +115,8 @@ class PushOutbox:
             else:
                 job.update(status="failed" if result.status == "retry" else result.status, code=result.code)
                 if result.status == "invalid":
-                    # An APNs response older than a freshly registered token
-                    # cannot invalidate that new registration, even if equal.
+                    # Taze kaydedilmiş belirteçten eski bir APNs yanıtı, aynı
+                    # belirteç olsa bile yeni kaydı geçersiz kılamaz.
                     registered_ms = current.get("registered_at_ms", 0)
                     if result.invalidated_at is None or result.invalidated_at >= registered_ms:
                         account["push_subscriptions"].pop(job["device_id"], None)

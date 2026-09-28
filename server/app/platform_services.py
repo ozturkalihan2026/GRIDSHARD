@@ -13,10 +13,10 @@ import hashlib
 import base64
 import json
 import os
+import re
 import secrets
 import smtplib
 import ssl
-import re
 import time
 from email.message import EmailMessage
 from pathlib import Path
@@ -25,7 +25,6 @@ from urllib.parse import urlencode
 from urllib.error import HTTPError, URLError
 from urllib.request import Request as UrlRequest, urlopen
 
-from .json_schema_migrations import assert_supported_schema
 from .platform_storage_lock import PlatformStorageLock
 from .push_delivery import PushSender
 from .push_outbox import PushOutbox
@@ -47,6 +46,49 @@ def _masked_contact(value: str) -> str:
         local, domain = value.split("@", 1)
         return f"{local[:2]}***@{domain}"
     return f"***{value[-4:]}" if len(value) > 4 else "***"
+
+
+# Doğrudan mesajlar oyuncu çifti başına ayrı sohbet olarak tutulur: bir
+# arkadaşla uzun yazışma, başka bir sohbetin geçmişini depodan itmez.
+DIRECT_MESSAGE_THREAD_LIMIT = 200
+DIRECT_MESSAGE_STORE_LIMIT = 5000
+
+
+def _message_peer(item: dict, player_id: str) -> str | None:
+    """Mesaj oyuncuyu içeriyorsa sohbetin karşı tarafını döndürür."""
+    sender_id = item.get("sender_id")
+    recipient_id = item.get("recipient_id")
+    if sender_id == player_id:
+        return recipient_id or None
+    if recipient_id == player_id:
+        return sender_id or None
+    return None
+
+
+def _thread_unread_count(
+    rows: list[dict], peer_id: str, marker: object, legacy_seen_at: int
+) -> int:
+    """Karşı taraftan gelip okundu işaretinden sonra kalan mesajları sayar.
+
+    İşaret, sohbette görülen son mesajın kimliğidir. İşaretli mesaj sohbet
+    sınırı yüzünden silindiyse kalan her mesaj ondan yenidir; işaret hiç
+    yoksa eski tek zaman damgası (``direct_messages_seen_at``) kullanılır.
+    """
+    start = 0
+    threshold: int | None = int(legacy_seen_at or 0)
+    if isinstance(marker, dict):
+        ids = [row.get("message_id") for row in rows]
+        if marker.get("message_id") in ids:
+            start = ids.index(marker["message_id"]) + 1
+            threshold = None
+        else:
+            threshold = int(marker.get("sent_at", 0) or 0)
+    return sum(
+        1
+        for row in rows[start:]
+        if row.get("sender_id") == peer_id
+        and (threshold is None or int(row.get("sent_at", 0) or 0) > threshold)
+    )
 
 
 class PlatformService(PushOutbox):
@@ -77,7 +119,10 @@ class PlatformService(PushOutbox):
         self.expose_codes = bool(expose_codes)
         self.web_base_url = web_base_url.rstrip("/")
         self.http_open = http_open
+        # İstek işleyicileri ve push teslim döngüsü aynı dosyaya yazar; iş
+        # parçacığı kilidine ek olarak işletim sistemi dosya kilidi tutulur.
         self._lock = PlatformStorageLock(self.path)
+        # Varsayılan gönderici kapalıdır; açılışta ortamdan yeniden kurulur.
         self.push_sender = push_sender if push_sender is not None else PushSender()
 
     def _empty(self) -> dict:
@@ -90,7 +135,6 @@ class PlatformService(PushOutbox):
         }
 
     def _read(self) -> dict:
-        assert_supported_schema(self.path, "platform", dict)
         if not self.path.exists():
             return self._empty()
         try:
@@ -104,7 +148,6 @@ class PlatformService(PushOutbox):
         return base
 
     def _write(self, data: dict) -> None:
-        assert_supported_schema(self.path, "platform", dict)
         self.path.parent.mkdir(parents=True, exist_ok=True)
         temporary_name = None
         try:
@@ -736,6 +779,7 @@ class PlatformService(PushOutbox):
         if platform not in {"android", "ios"}:
             raise PlatformServiceError("Bildirimler yalnız Android ve iOS uygulamasında kullanılabilir.")
         token = str(token or "").strip()
+        # FCM belirteci izinli karakterlerle, APNs belirteci onaltılık sayıyla sınırlıdır.
         pattern = r"[A-Za-z0-9_:\-]{16,4096}" if platform == "android" else r"(?:[a-fA-F0-9]{2}){16,128}"
         if not re.fullmatch(pattern, token):
             raise PlatformServiceError("Bildirim cihaz belirteci geçersiz.")
@@ -749,8 +793,8 @@ class PlatformService(PushOutbox):
             subscriptions = account["push_subscriptions"]
             if device_id not in subscriptions and len(subscriptions) >= 10:
                 raise PlatformServiceError("En fazla 10 cihazda bildirim açılabilir.")
-            # A native installation token belongs to one account/device. On an
-            # account switch, don't send the former account's notifications.
+            # Yerel kurulum belirteci tek hesap/cihaza aittir. Hesap değişince
+            # önceki hesabın bildirimleri bu cihaza gönderilmez.
             for other_account in data["accounts"].values():
                 for other_id, other_sub in list(other_account.get("push_subscriptions", {}).items()):
                     if (other_account is not account or other_id != device_id) and other_sub.get("token") == token:
@@ -762,6 +806,7 @@ class PlatformService(PushOutbox):
                 "token": token,
                 "updated_at": int(self.now_func()),
                 "registered_at_ms": int(self.now_func() * 1000),
+                # Belirteç değişince eski revizyona ait bekleyen işler gönderilmez.
                 "revision": previous.get("revision") if same_token and previous.get("revision") else secrets.token_urlsafe(16),
             }
             self._write(data)
@@ -798,6 +843,8 @@ class PlatformService(PushOutbox):
             data = self._read()
             account = self._account(data, player_id)
             account["notifications"] = (account.get("notifications", []) + [item])[-100:]
+            # Teslim işi bildirimle aynı atomik yazıda kuyruğa girer; ağ çağrısı
+            # istek içinde yapılmaz, arka plandaki push döngüsü gönderir.
             self._enqueue_push(account, item, source_player_id)
             self._write(data)
         return dict(item)
@@ -851,7 +898,15 @@ class PlatformService(PushOutbox):
         }
         with self._lock:
             data = self._read()
-            data["messages"] = (data.get("messages", []) + [item])[-2000:]
+            rows = [*data.get("messages", []), item]
+            thread = [
+                index for index, row in enumerate(rows)
+                if _message_peer(row, sender_id) == recipient_id
+            ]
+            overflow = set(thread[:max(0, len(thread) - DIRECT_MESSAGE_THREAD_LIMIT)])
+            if overflow:
+                rows = [row for index, row in enumerate(rows) if index not in overflow]
+            data["messages"] = rows[-DIRECT_MESSAGE_STORE_LIMIT:]
             self._write(data)
         return dict(item)
 
@@ -859,10 +914,67 @@ class PlatformService(PushOutbox):
         with self._lock:
             rows = [
                 dict(item) for item in self._read().get("messages", [])
-                if player_id in {item.get("sender_id"), item.get("recipient_id")}
-                and (not peer_id or peer_id in {item.get("sender_id"), item.get("recipient_id")})
+                if _message_peer(item, player_id)
+                and (not peer_id or _message_peer(item, player_id) == peer_id)
             ]
-        return rows[-100:]
+        return rows[-(DIRECT_MESSAGE_THREAD_LIMIT if peer_id else 100):]
+
+    def conversations(self, player_id: str, *, legacy_seen_at: int = 0) -> list[dict]:
+        """Her karşı oyuncu için bir sohbet özeti; en son yazışılan önce."""
+        with self._lock:
+            data = self._read()
+            reads = dict(
+                data["accounts"].get(player_id, {}).get("direct_message_reads", {})
+            )
+            threads: dict[str, list[dict]] = {}
+            order: dict[str, int] = {}
+            for index, item in enumerate(data.get("messages", [])):
+                peer_id = _message_peer(item, player_id)
+                if not peer_id:
+                    continue
+                threads.setdefault(peer_id, []).append(dict(item))
+                order[peer_id] = index
+        summaries = []
+        for peer_id, rows in threads.items():
+            last = rows[-1]
+            summaries.append({
+                "peer_id": peer_id,
+                "message_count": len(rows),
+                "unread_count": _thread_unread_count(
+                    rows, peer_id, reads.get(peer_id), legacy_seen_at
+                ),
+                "last_message": {
+                    key: last.get(key)
+                    for key in ("message_id", "sender_id", "recipient_id", "text", "sent_at")
+                },
+            })
+        summaries.sort(key=lambda item: order[item["peer_id"]], reverse=True)
+        return summaries
+
+    def mark_conversation_seen(self, player_id: str, peer_id: str | None = None) -> int:
+        """Sohbeti (peer_id yoksa bütün sohbetleri) son mesajına kadar okur."""
+        with self._lock:
+            data = self._read()
+            last_by_peer: dict[str, dict] = {}
+            for item in data.get("messages", []):
+                peer = _message_peer(item, player_id)
+                if peer and (not peer_id or peer == peer_id):
+                    last_by_peer[peer] = item
+            if not last_by_peer:
+                return 0
+            reads = self._account(data, player_id).setdefault("direct_message_reads", {})
+            changed = 0
+            for peer, last in last_by_peer.items():
+                marker = {
+                    "message_id": last.get("message_id"),
+                    "sent_at": int(last.get("sent_at", 0) or 0),
+                }
+                if reads.get(peer) != marker:
+                    reads[peer] = marker
+                    changed += 1
+            if changed:
+                self._write(data)
+            return changed
 
     def set_block(self, player_id: str, target_id: str, blocked: bool) -> list[str]:
         with self._lock:

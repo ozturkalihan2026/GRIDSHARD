@@ -1,17 +1,29 @@
 from dataclasses import dataclass
-from .board import get_cell_effects
+
 from .models import BattleModule, ModuleStatus, PlayerBattleState
 
 HIGH_HEAT_THRESHOLD = 70.0
 CRITICAL_HEAT_THRESHOLD = 100.0
 MAX_HEAT = 120.0
-PASSIVE_COOLING_PER_TICK = 0.35
+# Sürekli ateş eden her saldırı modülü pasif soğumayı aşar: hafif silahlar
+# ~60 sn, enerji yoğun silahlar ~25 sn sonra Yüksek Isı'ya çıkar. Soğutucu bu
+# yüzden yalnız Aşırı Hızlandırıcı'nın eşlikçisi değil, gerçek bir deste
+# kararıdır.
+PASSIVE_COOLING_PER_TICK = 0.13
 HIGH_HEAT_DAMAGE_MULTIPLIER = 0.85
 HIGH_HEAT_COOLDOWN_MULTIPLIER = 1.20
 OVERHEAT_DEBUFF_ID = "overheated"
-OVERHEAT_DURATION_MS = 2500
+# Aşırı ısınan modül sabit bir süre değil, ısısı bu eşiğin altına inene kadar
+# susar. Susarken hava alır ve iki kat hızlı soğur.
+OVERHEAT_RECOVERY_THRESHOLD = HIGH_HEAT_THRESHOLD
+OVERHEAT_VENT_COOLING_MULTIPLIER = 2.0
 OVERHEAT_SELF_DAMAGE = 5
-BASE_ATTACK_HEAT = 3.0
+# Bir atışın ısısı: ateş temposu (temel bekleme süresi başına) ve harcanan
+# aksiyon enerjisi. Hızlandırılmış modül daha sık ateşlediği için daha hızlı
+# ısınır.
+HEAT_PER_FIRING_SECOND = 1.4
+HEAT_PER_ACTION_ENERGY = 0.9
+
 
 @dataclass(slots=True, frozen=True)
 class HeatPerformance:
@@ -21,19 +33,22 @@ class HeatPerformance:
     critical_heat: bool = False
     overheated: bool = False
 
-def heat_generation_multiplier(module: BattleModule) -> float:
-    if module.position is None:
-        return 1.0
-    return float(get_cell_effects(module.position).get("heat_multiplier", 1.0))
 
 def attack_heat_gain(module: BattleModule) -> float:
-    base = BASE_ATTACK_HEAT + (module.definition.base_damage / 20.0)
-    return max(0.0, base * heat_generation_multiplier(module))
+    base = (
+        HEAT_PER_FIRING_SECOND * (module.definition.cooldown_ms / 1000.0)
+        + HEAT_PER_ACTION_ENERGY * module.definition.action_energy_cost
+    )
+    return max(0.0, base)
+
+
+def is_overheated(module: BattleModule) -> bool:
+    return OVERHEAT_DEBUFF_ID in module.debuffs
+
 
 def heat_performance(module: BattleModule, elapsed_ms: int) -> HeatPerformance:
-    effect = module.debuffs.get(OVERHEAT_DEBUFF_ID)
-    overheated = effect is not None and elapsed_ms < effect.expires_at_ms
-    if overheated:
+    del elapsed_ms  # Aşırı ısınma artık süreyle değil ısıyla biter.
+    if is_overheated(module):
         return HeatPerformance(0.0, 1.0, True, True, True)
     if module.heat >= HIGH_HEAT_THRESHOLD:
         return HeatPerformance(
@@ -45,6 +60,7 @@ def heat_performance(module: BattleModule, elapsed_ms: int) -> HeatPerformance:
         )
     return HeatPerformance()
 
+
 def apply_passive_cooling(player: PlayerBattleState) -> None:
     for module in player.modules.values():
         if module.status != ModuleStatus.ACTIVE:
@@ -54,8 +70,6 @@ def apply_passive_cooling(player: PlayerBattleState) -> None:
         if module.heat <= 0:
             continue
         cooling = PASSIVE_COOLING_PER_TICK
-        if module.position is not None:
-            multiplier = float(get_cell_effects(module.position).get("heat_multiplier", 1.0))
-            if multiplier < 1.0:
-                cooling += 1.0 - multiplier
+        if is_overheated(module):
+            cooling *= OVERHEAT_VENT_COOLING_MULTIPLIER
         module.heat = max(0.0, module.heat - cooling)

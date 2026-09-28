@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import calendar
 from datetime import datetime, timedelta, timezone
 import hashlib
 import math
@@ -8,10 +9,12 @@ from uuid import uuid4
 
 from .game.catalog import BASIC_MODULE_DEFINITIONS
 from .game.catalog_view import build_module_catalog_view
-from .game.core_balance import core_rarity_profile
+from .game.core_balance import core_signature
 from .game.energy import (
     BASE_CORE_GENERATION_PER_SECOND,
     CORE_LEVEL_GENERATION_MULTIPLIER,
+    CORE_RESERVE_BASE_CAPACITY,
+    CORE_RESERVE_PER_LEVEL,
 )
 from .player_profile import CURRENT_SEASON_ID
 
@@ -28,10 +31,9 @@ from .arena_canon import (
 from threading import RLock
 
 MODULE_RARITY = {key: item["rarity"] for key, item in MODULES.items()}
-MODULE_CATALOG_COPY = {item["id"]: item for item in build_module_catalog_view()["modules"]}
 MODULE_EFFECT_LINES = {
-    module_id: tuple(item.get("effect_lines", ()))
-    for module_id, item in MODULE_CATALOG_COPY.items()
+    item["id"]: tuple(item.get("effect_lines", ()))
+    for item in build_module_catalog_view()["modules"]
 }
 RARITY_UNLOCK_ARENA = {"common": 1, "rare": 1, "epic": 5, "legendary": 9}
 
@@ -142,23 +144,9 @@ CORE_ROLES = (
     "Tüm dost modüllere %20 CAN iyileştirmesi.",
     "İyileştirme ve kısa takım kalkanını birleştirir.",
 )
-CORE_ROLES_EN = (
-    "Repair pulse to the allied circuit: 45 HP to the Core and 15 HP to modules.",
-    "Grant each allied module 20 shield for 4 seconds.",
-    "Grant all allied modules +25% damage for 3 seconds.",
-    "Interrupt enemy support for 2 seconds and clear active damage boosts.",
-    "Reduce Current cost by 1 for the next two deployments (minimum cost 1).",
-    "Heal all allied modules for 20% HP.",
-    "Combine healing with a brief team shield.",
-)
-CORE_NAMES_EN = (
-    "Resonance Core", "Guardian Core", "Overdrive Core", "Disruptor Core",
-    "Capacitor Core", "Phoenix Core", "Quantum Core",
-)
-CORE_TYPES = tuple({**core, "name_en": CORE_NAMES_EN[i], "role_tr": CORE_ROLES[i], "role_en": CORE_ROLES_EN[i], "skills": tuple(
+CORE_TYPES = tuple({**core, "role_tr": CORE_ROLES[i], "skills": tuple(
     {"id": f"{tier}_{choice}", "tier": str(tier), "level": level, "flux_cost": 25 * (tier + 1),
-     "name_tr": "Enerji üretimi +%3" if choice == "energy" else "Aktif güç dolumu +%3",
-     "name_en": "Energy generation +3%" if choice == "energy" else "Active power charge +3%"}
+     "name_tr": "Enerji üretimi +%3" if choice == "energy" else "Aktif güç dolumu +%3"}
     for tier, level in enumerate((5, 9, 13)) for choice in ("energy", "charge")
 )} for i, core in enumerate(CORE_TYPES))
 
@@ -168,7 +156,8 @@ CHEST_DEFINITIONS: dict[str, dict] = {
         "name_tr": "Bronz Sandık",
         "visual_tier": "bronze",
         "unlock_hours": 0,
-        "claim_cooldown_hours": 3,
+        # Tek hediye sandığıdır: 8 saatte bir ücretsiz (Beta.72 tur 9).
+        "claim_cooldown_hours": 8,
         "open_seconds": 1,
         "coins": (45, 75),
         "flux": (2, 4),
@@ -274,41 +263,42 @@ BATTLE_CHEST_DROP_THRESHOLDS: tuple[tuple[float, str], ...] = (
     (1.00, "field_3h"),
 )
 
-def _daily_shop_chest_offer(
-    offer_id: str,
-    definition_id: str,
-    cost: int,
-) -> dict:
-    """Bind rotating shop offers to the same reward contract as their tier."""
-    definition = CHEST_DEFINITIONS[definition_id]
-    return {
-        "id": offer_id,
-        "definition_id": definition_id,
-        "name_tr": definition["name_tr"],
-        "tier": definition["visual_tier"],
-        "currency": "circuit_credits",
-        "cost": cost,
-        "circuit_credits": tuple(definition["coins"]),
-        "flux_shards": tuple(definition["flux"]),
-        "module_shards": tuple(definition["shards"]),
-        "shards_by_rarity": dict(definition["shards_by_rarity"]),
-        "core_shards": (0, 0),
-        "reward_odds": dict(definition["reward_odds"]),
-        "module_drop_chance": definition["module_drop_chance"],
-        "module_rarity_drop_odds": dict(definition["module_rarity_drop_odds"]),
-        "allowed_rarities": tuple(definition["allowed_rarities"]),
-        "rarity_odds": dict(definition["rarity_odds"]),
-    }
+# Beta.72 tur 9 (kullanıcı kararı): ücretsiz hediye olarak yalnız Bronz Sandık
+# kalır. Diğer sandıklar savaşta kazanılır veya sandık mağazasından alınır.
+GIFT_CHEST_ID = "field_3h"
+
+# Sandık mağazası: sınırsız alım, her alım gerçek bir sandık açar. Her ay
+# sunucunun belirlediği rastgele bir UTC gününde bütün sandıklar %40 indirimli.
+STORE_CHEST_PRICES: dict[str, tuple[str, int]] = {
+    "field_3h": ("circuit_credits", 300),
+    "circuit_8h": ("circuit_credits", 1000),
+    "core_24h": ("flux_shards", 250),
+    "diamond_24h": ("flux_shards", 1000),
+}
+STORE_SALE_DISCOUNT_PERCENT = 40
+STORE_RECEIPT_LIMIT = 200
 
 
-DAILY_SHOP_OFFERS: tuple[dict, ...] = (
-    _daily_shop_chest_offer("bronze_daily", "field_3h", 120),
-    _daily_shop_chest_offer("silver_daily", "circuit_8h", 400),
-    _daily_shop_chest_offer("gold_daily", "core_24h", 900),
-)
-# Legacy symbol and offer ids stay valid for old receipts and clients.  The
-# reset contract itself is weekly from Beta.56 onward.
-WEEKLY_SHOP_OFFERS = DAILY_SHOP_OFFERS
+def chest_sale_day(year: int, month: int) -> int:
+    """Ayın indirim günü: ay kimliğinden türetilir, bütün sunucularda aynıdır."""
+    days = calendar.monthrange(year, month)[1]
+    digest = hashlib.sha256(
+        f"gridshard-chest-sale:{year:04d}-{month:02d}".encode("utf-8")
+    ).hexdigest()
+    return 1 + int(digest[:8], 16) % days
+
+
+def chest_sale_active(now: datetime) -> bool:
+    current = now.astimezone(timezone.utc)
+    return current.day == chest_sale_day(current.year, current.month)
+
+
+def store_chest_price(definition_id: str, now: datetime) -> tuple[str, int, int]:
+    """(para birimi, bugünkü fiyat, liste fiyatı)."""
+    currency, base = STORE_CHEST_PRICES[definition_id]
+    if chest_sale_active(now):
+        return currency, int(round(base * (100 - STORE_SALE_DISCOUNT_PERCENT) / 100)), base
+    return currency, base, base
 
 
 def utc_now() -> datetime:
@@ -317,17 +307,6 @@ def utc_now() -> datetime:
 
 def iso_utc(value: datetime) -> str:
     return value.astimezone(timezone.utc).isoformat().replace("+00:00", "Z")
-
-
-def weekly_shop_period(now: datetime) -> tuple[str, datetime]:
-    current = now.astimezone(timezone.utc)
-    starts_at = (current - timedelta(days=current.weekday())).replace(
-        hour=0,
-        minute=0,
-        second=0,
-        microsecond=0,
-    )
-    return starts_at.date().isoformat(), starts_at + timedelta(days=7)
 
 
 def parse_utc(value: str) -> datetime:
@@ -563,12 +542,6 @@ class MetaProgressionService:
         current_rank = rank_stage_for_rating(profile.rating)
         profile.highest_rating = max(profile.highest_rating, profile.rating)
         now = self._now_func()
-        shop_day, shop_reset_at = weekly_shop_period(now)
-        purchased = (
-            set(profile.shop_purchased_offer_ids)
-            if profile.shop_purchase_day == shop_day
-            else set()
-        )
         return {
             "statistics": {
                 **profile.lifetime_stats,
@@ -624,36 +597,7 @@ class MetaProgressionService:
                 "server_time": iso_utc(now),
             },
             "shop": {
-                "day": shop_day,
-                "week": shop_day,
-                "period": "weekly",
-                "reset_at": iso_utc(shop_reset_at),
-                "offers": [
-                    {
-                        "id": offer["id"],
-                        "definition_id": offer["definition_id"],
-                        "name_tr": offer["name_tr"],
-                        "tier": offer["tier"],
-                        "currency": offer["currency"],
-                        "cost": offer["cost"],
-                        "purchased": offer["id"] in purchased,
-                        "reward_preview": {
-                            "circuit_credits": list(offer["circuit_credits"]),
-                            "flux_shards": list(offer["flux_shards"]),
-                            "module_shards": list(offer["module_shards"]),
-                            "core_shards": list(offer["core_shards"]),
-                        },
-                        "reward_odds": dict(offer["reward_odds"]),
-                        "module_drop_chance": offer["module_drop_chance"],
-                        "module_rarity_drop_odds": dict(offer["module_rarity_drop_odds"]),
-                        "rarity_odds": dict(offer["rarity_odds"]),
-                        "shards_by_rarity": {
-                            rarity: list(amount_range)
-                            for rarity, amount_range in offer["shards_by_rarity"].items()
-                        },
-                    }
-                    for offer in WEEKLY_SHOP_OFFERS
-                ],
+                "chest_store": self._chest_store_view(profile, now),
             },
             "cores": {
                 "selected_core_type": profile.selected_core_type,
@@ -665,9 +609,43 @@ class MetaProgressionService:
             "season_archives": [dict(item) for item in profile.season_archives],
             "economy_separation": {
                 "module_upgrades": "circuit_credits_and_module_shards",
-                "laboratory": "flux_shards",
+                "module_talents_and_cores": "flux_shards",
                 "ranked_normalized": False,
             },
+        }
+
+    def _chest_store_view(self, profile, now: datetime) -> dict:
+        sale = chest_sale_active(now)
+        tomorrow = (now.astimezone(timezone.utc) + timedelta(days=1)).replace(
+            hour=0, minute=0, second=0, microsecond=0,
+        )
+        items = []
+        for definition_id in STORE_CHEST_PRICES:
+            definition = CHEST_DEFINITIONS[definition_id]
+            currency, cost, base_cost = store_chest_price(definition_id, now)
+            items.append({
+                "definition_id": definition_id,
+                "name_tr": definition["name_tr"],
+                "tier": definition["visual_tier"],
+                "currency": currency,
+                "cost": cost,
+                "base_cost": base_cost,
+                "affordable": int(getattr(profile, currency)) >= cost,
+                "reward_preview": {
+                    "circuit_credits": list(definition["coins"]),
+                    "flux_shards": list(definition["flux"]),
+                    "module_shards": list(definition["shards"]),
+                },
+                "module_drop_chance": definition["module_drop_chance"],
+                "core_drop_chance": definition.get("core_drop_chance", 0.0),
+                "rarity_odds": dict(definition["rarity_odds"]),
+            })
+        return {
+            # İndirimin hangi gün olduğu önceden yayınlanmaz; yalnız bugün görünür.
+            "sale_active": sale,
+            "discount_percent": STORE_SALE_DISCOUNT_PERCENT,
+            "sale_ends_at": iso_utc(tomorrow) if sale else None,
+            "items": items,
         }
 
     def _owned_chest_inventory_view(self, profile, now: datetime) -> list[dict]:
@@ -711,6 +689,15 @@ class MetaProgressionService:
         render a countdown without relying on a local clock or a stale daily
         reset flag.
         """
+        if definition["id"] != GIFT_CHEST_ID:
+            return {
+                **definition,
+                "rarity_odds": dict(definition["rarity_odds"]),
+                "gift": False,
+                "claim_available": False,
+                "next_claim_at": None,
+                "claim_remaining_seconds": 0,
+            }
         latest = max(
             (
                 receipt
@@ -737,6 +724,7 @@ class MetaProgressionService:
         return {
             **definition,
             "rarity_odds": dict(definition["rarity_odds"]),
+            "gift": True,
             "claim_available": remaining <= 0,
             "next_claim_at": next_claim_at,
             "claim_remaining_seconds": remaining,
@@ -753,7 +741,6 @@ class MetaProgressionService:
         )
         level = int(profile.module_upgrade_levels.get(module_id, 0))
         selected_talent_count = len(profile.module_talents.get(module_id, {}))
-        catalog_copy = MODULE_CATALOG_COPY.get(module_id, {})
         return {
             "definition_id": module_id,
             "name_tr": definition.name_tr,
@@ -768,14 +755,23 @@ class MetaProgressionService:
             "max_level": 15,
             "current_cost": MODULES[module_id]["current_cost"],
             "description_tr": definition.description_tr,
-            "description_en": catalog_copy.get("description_en", ""),
             "strategic_role": definition.strategic_role,
-            "strategic_role_en": catalog_copy.get("strategic_role_en", ""),
             "effect_lines": list(MODULE_EFFECT_LINES.get(module_id, ())),
-            "effect_lines_en": list(catalog_copy.get("effect_lines_en", ())),
             "strong_against": list(definition.strong_against),
             "weak_against": list(definition.weak_against),
             "synergy_with": list(definition.synergy_with),
+            "signature_mechanic": definition.signature_mechanic,
+            "telegraph_tr": definition.telegraph_tr,
+            "counterplay_tr": definition.counterplay_tr,
+            # Kendi mekaniğine henüz ayrışmamış kart hangi kartın davranışını
+            # kullanıyorsa arayüz bunu açıkça gösterir.
+            "shared_behavior_tr": (
+                BASIC_MODULE_DEFINITIONS[definition.mechanic_id].name_tr
+                if not definition.signature_mechanic
+                and definition.mechanic_id != module_id
+                and definition.mechanic_id in BASIC_MODULE_DEFINITIONS
+                else ""
+            ),
             "stats": module_stats(definition, level, profile.module_talents.get(module_id)),
             "next_stats": module_stats(definition, level + 1, profile.module_talents.get(module_id)) if level < 14 else None,
             "talents": [{**node, "selected": profile.module_talents.get(module_id, {}).get(node["tier"])} for node in module_talent_options(module_id)],
@@ -790,7 +786,7 @@ class MetaProgressionService:
     def _core_view(self, profile, core_type: dict, current_rank: dict) -> dict:
         unlocked = max(profile.highest_rating, profile.rating) >= (core_type["unlock_arena"] - 1) * 300
         counter = max(0, min(14, profile.core_upgrade_levels.get(core_type["id"], 0)))
-        rarity_profile = core_rarity_profile(core_type["id"])
+        signature = core_signature(core_type["id"])
         return {
             **{key: value for key, value in core_type.items() if key != "skills"},
             "unlocked": unlocked, "selected": profile.selected_core_type == core_type["id"],
@@ -799,15 +795,19 @@ class MetaProgressionService:
             "energy_per_second": round(
                 BASE_CORE_GENERATION_PER_SECOND
                 * CORE_LEVEL_GENERATION_MULTIPLIER ** counter
-                * rarity_profile["energy"]
                 * (1 + .03 * sum(s.endswith("_energy") for s in profile.core_skills.get(core_type["id"], ()))),
                 2,
             ),
-            "energy_capacity": 100 + counter * 3,
-            "rarity_bonuses": {
-                key: round(value, 3)
-                for key, value in rarity_profile.items()
-            },
+            "energy_capacity": round(
+                CORE_RESERVE_BASE_CAPACITY + CORE_RESERVE_PER_LEVEL * counter,
+                1,
+            ),
+            # Enderlik güç eğrisi yoktur; kimliği imza mekaniği taşır (Beta.72).
+            "signature_id": signature["signature_id"],
+            "signature_name_tr": signature["name_tr"],
+            "signature_mechanic": f"{signature['name_tr']} — {signature['signature_tr']}",
+            "telegraph_tr": signature["telegraph_tr"],
+            "counterplay_tr": signature["counterplay_tr"],
             "next_upgrade_cost": {"flux_shards": 20 * (counter + 1), "shards": (2, 4, 8, 12, 20, 30, 45, 65, 90, 120, 160, 210, 270, 340)[counter]} if counter < 14 else None,
             "skills": [{**skill, "learned": skill["id"] in profile.core_skills.get(core_type["id"], ()),
                         "tier_selected": any(s.startswith(skill["tier"] + "_") for s in profile.core_skills.get(core_type["id"], ()))} for skill in core_type["skills"]],
@@ -1000,6 +1000,8 @@ class MetaProgressionService:
         definition = CHEST_DEFINITIONS.get(definition_id)
         if definition is None:
             raise MetaProgressionError("Hediye sandık türü bulunamadı.")
+        if definition_id != GIFT_CHEST_ID:
+            raise MetaProgressionError("Hediye olarak yalnız Bronz Sandık verilir; 8 saatte bir yenilenir.")
         now = self._now_func()
         claim_day = now.date().isoformat()
         previous = max(
@@ -1261,76 +1263,56 @@ class MetaProgressionService:
         profile.chest_receipts[request_id] = dict(receipt)
         return receipt
 
-    def purchase_daily_offer(self, profile, offer_id: str, request_id: str) -> dict:
+    def purchase_store_chest(self, profile, definition_id: str, request_id: str) -> dict:
         with self._lock:
-            return self._purchase_daily_offer(profile, offer_id, request_id)
+            return self._purchase_store_chest(profile, definition_id, request_id)
 
-    def _purchase_daily_offer(self, profile, offer_id: str, request_id: str) -> dict:
+    def _purchase_store_chest(self, profile, definition_id: str, request_id: str) -> dict:
         request_id = request_id.strip()
         if not request_id:
             raise MetaProgressionError("Mağaza talep kimliği zorunludur.")
         if request_id in profile.shop_receipts:
             receipt = profile.shop_receipts[request_id]
-            if receipt.get("offer_id") != offer_id:
-                raise MetaProgressionError("Talep kimliği farklı bir teklife ait.")
+            if receipt.get("store_chest_id") != definition_id:
+                raise MetaProgressionError("Talep kimliği farklı bir sandığa ait.")
             return dict(receipt)
-        offer = next((item for item in WEEKLY_SHOP_OFFERS if item["id"] == offer_id), None)
-        if offer is None:
-            raise MetaProgressionError("Haftalık teklif bulunamadı.")
-        shop_day, _ = weekly_shop_period(self._now_func())
-        if profile.shop_purchase_day != shop_day:
-            profile.shop_purchase_day = shop_day
-            profile.shop_purchased_offer_ids = ()
-        if offer_id in profile.shop_purchased_offer_ids:
-            raise MetaProgressionError("Bu haftalık teklif daha önce alındı.")
-        currency = str(offer["currency"])
+        if definition_id not in STORE_CHEST_PRICES:
+            raise MetaProgressionError("Mağazada böyle bir sandık yok.")
+        now = self._now_func()
+        currency, cost, base_cost = store_chest_price(definition_id, now)
         balance = int(getattr(profile, currency))
-        cost = int(offer["cost"])
         if balance < cost:
-            raise MetaProgressionError("Bu sandık için kaynak yetersiz.")
-
-        seed = f"{profile.player_id}:{shop_day}:{offer_id}"
-        rarity = _rarity_from_roll(offer["rarity_odds"], _hash_unit(f"{seed}:rarity"))
-        module_id, rarity = _select_reward_module(
-            profile,
-            f"{seed}:module",
-            rarity=rarity,
-        )
-        module_drop = _hash_unit(f"{seed}:module-drop") < float(offer.get("module_drop_chance", 1.0))
-        shard_range = _module_shard_range(offer, rarity)
-        rewards = {
-            "circuit_credits": _hash_range(f"{seed}:credits", *offer["circuit_credits"]),
-            "flux_shards": _hash_range(f"{seed}:flux", *offer["flux_shards"]),
-            "module_definition_id": module_id,
-            "module_rarity": rarity,
-            "module_shards": (
-                _hash_range(f"{seed}:module-shards", *shard_range)
-                if module_drop
-                else 0
-            ),
-            "core_shards": _hash_range(f"{seed}:core-shards", *offer["core_shards"]),
-            "module_drop": module_drop,
-        }
+            label = "Akı" if currency == "flux_shards" else "Devre Kredisi"
+            raise MetaProgressionError(f"Bu sandık için {cost} {label} gerekir.")
         setattr(profile, currency, balance - cost)
-        profile.circuit_credits += int(rewards["circuit_credits"])
-        profile.flux_shards += int(rewards["flux_shards"])
-        rewards["core_type_id"] = core_reward_type_id(profile, seed)
-        self.award_core_pieces(profile, int(rewards["core_shards"]), seed)
-        profile.module_shards.setdefault(module_id, int(profile.module_shards.get(module_id, 0)))
-        if rewards["module_shards"]:
-            profile.module_shards[module_id] += int(rewards["module_shards"])
-        profile.shop_purchased_offer_ids = tuple(
-            dict.fromkeys((*profile.shop_purchased_offer_ids, offer_id))
-        )
+        definition = CHEST_DEFINITIONS[definition_id]
+        chest = {
+            "chest_id": f"store-{uuid4().hex}",
+            "definition_id": definition_id,
+            "name_tr": definition["name_tr"],
+            "source_battle_id": None,
+            "source": "store",
+            "awarded_at": iso_utc(now),
+            "unlocks_at": iso_utc(now),
+        }
+        profile.chest_slots.append(chest)
+        # Standart sandık açılışı: ödül tablosu ve tohum sandık kimliğinden gelir,
+        # böylece aynı hafta içindeki alımlar aynı ödülü vermez.
+        opened = self._open_chest(profile, chest["chest_id"], f"{request_id}:store-open")
         receipt = {
+            **opened,
             "request_id": request_id,
-            "offer_id": offer_id,
-            "purchased_at": iso_utc(self._now_func()),
+            "store_chest_id": definition_id,
+            "chest": dict(chest),
             "currency": currency,
             "cost": cost,
-            "rewards": rewards,
+            "base_cost": base_cost,
+            "sale": cost < base_cost,
+            "purchased_at": iso_utc(now),
         }
         profile.shop_receipts[request_id] = dict(receipt)
+        while len(profile.shop_receipts) > STORE_RECEIPT_LIMIT:
+            profile.shop_receipts.pop(next(iter(profile.shop_receipts)))
         return receipt
 
     def select_core(self, profile, core_type_id: str) -> None:
@@ -1393,6 +1375,7 @@ def archive_and_soft_reset_season(profile, next_season_id: str, archived_at: str
         profile.rating = 3600
     profile.season_xp = 0
     profile.claimed_season_tiers = ()
+    profile.claimed_premium_season_tiers = ()
     profile.active_meta_season_id = next_season_id
     return archive
 

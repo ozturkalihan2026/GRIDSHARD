@@ -10,12 +10,13 @@ from app.player_progression import PlayerProgressionService
 from app.player_settings import PlayerSettingsService
 from app.player_statistics import PlayerStatisticsService
 from app.season_competition import build_events_view
+from app.team_tournament import build_schedule, participating_teams, period_id_for
 
 
 def _periods() -> tuple[str, str]:
     now = datetime.now(timezone.utc)
     iso_year, iso_week, _ = now.isocalendar()
-    return f"{iso_year}-W{iso_week:02d}", f"{now.year}-{now.month:02d}"
+    return f"{iso_year}-W{iso_week:02d}", period_id_for(now)
 
 
 def _finished_state(
@@ -148,31 +149,34 @@ def test_weekly_tournament_counts_only_positive_ranked_pvp_trophies(
     assert winner.weekly_tournament_trophies_earned == trophies_after_ranked
 
 
-def test_team_standings_read_explicit_contribution_points():
+def test_team_standings_count_only_recorded_leg_wins():
     moment = datetime(2026, 9, 19, 12, tzinfo=timezone.utc)
+    registrations = {
+        "team-1": {"team_name": "Kesici Takımı", "roster": [{"player_id": "p1", "display_name": "Kesici", "rating": 800}]},
+        "team-2": {"team_name": "Rakip Takım", "roster": [{"player_id": "p2", "display_name": "Rakip", "rating": 790}]},
+    }
+    week_one = build_schedule(period_id_for(moment), participating_teams(registrations, {}), 1)[0]
+    pairing = week_one["fixtures"][0]["pairings"][0]
+    legs = {
+        leg_id: {"winner_player_id": "p1", "loser_player_id": "p2", "draw": False}
+        for leg_id in pairing["leg_ids"]
+    }
+
     events = build_events_view(
-        [
-            {
-                "player_id": "p1",
-                "display_name": "Kesici",
-                "rating": 800,
-                "team_id": "team-1",
-                "team_name": "Kesici Takımı",
-                "is_bot": False,
-                "team_registered_period": "2026-09",
-                "team_tournament_period": "2026-09",
-                "team_tournament_matches": 6,
-                "team_tournament_wins": 5,
-                "team_tournament_points": 3,
-            }
-        ],
+        [],
         moment,
+        team_tournament_state={"registrations": registrations, "legs": legs},
     )
 
-    member = events["team_tournament"]["standings"][0]["members"][0]
-    assert member["wins"] == 5
-    assert member["contribution_points"] == 3
-    assert member["reward_eligible"] is False
+    standings = events["team_tournament"]["standings"]
+    winner = next(row for row in standings if row["team_id"] == "team-1")
+    loser = next(row for row in standings if row["team_id"] == "team-2")
+    assert winner["points"] == 2 and winner["position"] == 1
+    assert winner["members"][0]["wins"] == 2
+    assert winner["members"][0]["contribution_points"] == 2
+    assert winner["members"][0]["reward_eligible"] is False
+    assert loser["points"] == 0
+    assert loser["members"][0]["matches"] == 2
 
 
 def test_team_tournament_points_roundtrip_in_player_snapshot():

@@ -3,7 +3,23 @@ from dataclasses import dataclass, field
 import time
 from typing import Callable
 
-from .engine import BattleEngine
+from .combat import (
+    ATTACK_WINDUP_MS,
+    QUANTUM_REPEAT_HITS,
+    SWARM_RELEASE_DRONES,
+    phase_armor_active,
+)
+from .core_balance import (
+    CORE_POWER_FULL_CHARGE,
+    LAST_STAND_HP_RATIO,
+    OVERDRIVE_CHAIN_MAX,
+    STATIC_CHARGE_MAX_STACKS,
+    core_power_threshold,
+    static_charge_stacks,
+)
+from .energy import QUANTUM_CHARGE_MAX
+from .engine import INACTIVITY_FORFEIT_MS, BattleEngine
+from .heat import OVERHEAT_DEBUFF_ID
 from .ai_archetypes import normalize_ai_archetype_id
 from .models import BattleCommand, BattleState, BattleStatus, ModuleStatus
 from .pvp_setup import (
@@ -11,6 +27,7 @@ from .pvp_setup import (
     PvPSetupValidationError,
     validate_setup_payload,
 )
+from .support import PRECISION_MAX_STACKS, chrono_phase, circuit_category_diversity
 
 
 MAX_PVP_PLAYERS = 2
@@ -22,17 +39,13 @@ OWNER_ONLY_EVENT_TYPES = frozenset({
     "command_received",
     "command_rejected",
     "module_stored_energy_changed",
-    "booster_offer_created",
-    "booster_offer_consumed",
-    "booster_selected",
-    "booster_applied",
     "core_power_ready",
     "core_power_replayed",
+    "inactivity_warning",
 })
 
 PRIVATE_RESULT_FIELDS = frozenset({
     "circuit_credits",
-    "forfeit_credit_penalty",
     "energy_generated_total",
     "energy_consumed_total",
 })
@@ -40,6 +53,93 @@ PRIVATE_RESULT_FIELDS = frozenset({
 
 class PvPSessionError(ValueError):
     pass
+
+
+def module_signature_badges(player, module, elapsed_ms: int) -> list[dict]:
+    """Kart üstü imza rozetleri.
+
+    Yalnız sahada zaten okunabilen oynanış durumunu taşır; iç sayaçlar ve
+    milisaniye bilgisi gönderilmez (her anlık görüntüde kart yeniden çizilmesin).
+    """
+    if module.status != ModuleStatus.ACTIVE:
+        return []
+    state = module.mechanic_state
+    definition_id = module.definition.id
+    badges: list[dict] = []
+    if definition_id == "core":
+        return core_signature_badges(player, module, elapsed_ms)
+    if definition_id == "quantum_repeater":
+        stacks = int(state.get("repeat_stacks", 0))
+        if stacks > 0:
+            badges.append({"kind": "repeat", "value": stacks, "max": QUANTUM_REPEAT_HITS})
+    elif definition_id == "swarm_fabricator":
+        drones = int(state.get("stored_drones", 0))
+        if drones > 0:
+            badges.append({"kind": "swarm", "value": drones, "max": SWARM_RELEASE_DRONES})
+    elif definition_id == "quantum_cannon":
+        # %10 adımlarla: yük her tikte artar, rozet yalnız eşik geçince değişir.
+        ratio = max(0.0, min(1.0, float(state.get("quantum_charge", 0.0)) / QUANTUM_CHARGE_MAX))
+        percent = int(ratio * 10) * 10
+        if percent > 0:
+            badges.append({"kind": "quantum", "value": percent, "max": 100})
+    elif definition_id in ATTACK_WINDUP_MS:
+        if state.get("windup_target_id") and int(state.get("windup_ready_at_ms", 0)) > elapsed_ms:
+            badges.append({"kind": "lock"})
+    elif definition_id == "chrono_relay":
+        phase = chrono_phase(module, elapsed_ms)
+        if phase != "idle":
+            badges.append({"kind": "chrono", "phase": phase})
+    elif definition_id == "phase_armor":
+        if phase_armor_active(elapsed_ms):
+            badges.append({"kind": "phase"})
+    elif definition_id == "omega_amplifier":
+        categories = circuit_category_diversity(player)
+        if categories > 0:
+            badges.append({"kind": "resonance", "value": categories})
+    focus = int(state.get("precision_focus_stacks", 0))
+    if focus > 0:
+        badges.append({
+            "kind": "focus",
+            "value": min(focus, PRECISION_MAX_STACKS),
+            "max": PRECISION_MAX_STACKS,
+        })
+    if state.get("phoenix_revived"):
+        badges.append({"kind": "reborn"})
+    return badges
+
+
+def core_signature_badges(player, core, elapsed_ms: int) -> list[dict]:
+    """Çekirdek imzasının iki tarafa da açık telgrafı.
+
+    Rakip Çekirdek gücünün dolumunu göremez; yalnız karşı oyun için gereken
+    imza durumu (Anka doğuşu hazır, Statik yük, Son Hat, Zincir) gösterilir.
+    """
+    del elapsed_ms
+    signature = player.core_signature_state
+    core_type = player.core_type
+    if core_type == "core_phoenix":
+        if (
+            player.core_power_charge >= CORE_POWER_FULL_CHARGE
+            and not signature.get("rebirth_used")
+        ):
+            return [{"kind": "ember"}]
+    elif core_type == "core_disruptor":
+        stacks = static_charge_stacks(int(signature.get("held_ms", 0)))
+        if stacks:
+            return [{"kind": "static", "value": stacks, "max": STATIC_CHARGE_MAX_STACKS}]
+    elif core_type == "core_guardian":
+        if core.hp < core.definition.max_hp * LAST_STAND_HP_RATIO:
+            return [{"kind": "last_stand"}]
+    elif core_type == "core_overdrive":
+        chain = int(signature.get("overdrive_chain", 0))
+        active = any(
+            "core_overdrive" in module.persistent_effects
+            for module in player.modules.values()
+            if module.status == ModuleStatus.ACTIVE
+        )
+        if active and chain:
+            return [{"kind": "chain", "value": chain, "max": OVERDRIVE_CHAIN_MAX}]
+    return []
 
 
 @dataclass(slots=True)
@@ -95,8 +195,10 @@ class PvPSessionService:
         waiting_ttl_seconds: float = 180.0,
         disconnected_ttl_seconds: float = 90.0,
         finished_ttl_seconds: float = 300.0,
+        inactivity_forfeit_ms: int | None = INACTIVITY_FORFEIT_MS,
     ):
         self._sessions: dict[str, PvPSession] = {}
+        self.inactivity_forfeit_ms = inactivity_forfeit_ms
         self.now_func = now_func
         self.waiting_ttl_seconds = waiting_ttl_seconds
         self.disconnected_ttl_seconds = disconnected_ttl_seconds
@@ -112,7 +214,6 @@ class PvPSessionService:
         season_id: str = "core_awakening_s0",
         ranked_eligible: bool = True,
         normalized: bool = True,
-        laboratory_effects_enabled: bool = False,
     ) -> PvPSession:
         if session_id in self._sessions:
             raise PvPSessionError(
@@ -120,11 +221,6 @@ class PvPSessionService:
             )
 
         normalized = bool(normalized)
-        laboratory_effects_enabled = bool(
-            laboratory_effects_enabled
-            and not normalized
-            and not ranked_eligible
-        )
         engine = BattleEngine(
             BattleState(
                 battle_id=session_id,
@@ -132,8 +228,8 @@ class PvPSessionService:
                 season_id=season_id,
                 ranked_eligible=ranked_eligible,
                 normalized=normalized,
-                laboratory_effects_enabled=laboratory_effects_enabled,
-            )
+            ),
+            inactivity_forfeit_ms=self.inactivity_forfeit_ms,
         )
         now = self.now_func()
         session = PvPSession(
@@ -146,25 +242,6 @@ class PvPSessionService:
         )
         self._sessions[session_id] = session
         return session
-
-    def set_player_calibrations(
-        self,
-        session_id: str,
-        player_id: str,
-        levels: dict[str, int],
-    ) -> None:
-        session = self.get_session(session_id)
-        session.slot_for(player_id)
-        if session.engine.state.status != BattleStatus.WAITING:
-            raise PvPSessionError(
-                "Laboratuvar kalibrasyonları yalnız savaş başlamadan bağlanabilir."
-            )
-        session.engine.state.player_calibrations[player_id] = {
-            str(module_id): max(0, min(3, int(level)))
-            for module_id, level in levels.items()
-            if int(level) > 0
-        }
-        self._touch(session)
 
     def get_session(self, session_id: str) -> PvPSession:
         try:
@@ -411,11 +488,6 @@ class PvPSessionService:
                 "Komut yalnızca çalışan PvP maçına gönderilebilir."
             )
 
-        if command.kind in {"select_booster", "apply_booster"}:
-            raise PvPSessionError(
-                "Eski iki aşamalı güçlendirici komutları kapalı; use_booster kullanılmalıdır."
-            )
-
         try:
             session.engine.enqueue_command(command)
         except ValueError as exc:
@@ -559,8 +631,6 @@ class PvPSessionService:
         players = {}
         for player_id in sorted(state.players):
             player = state.players[player_id]
-            topology = session.engine.energy_topology_for_player(player_id)
-            reachable_ids = set(topology.reachable_from_generator)
             public_modules = []
             for module in sorted(
                 player.modules.values(),
@@ -582,17 +652,16 @@ class PvPSessionService:
                     power_reason = "line_disrupted"
                 elif any(
                     effect_id in module.debuffs
-                    for effect_id in (
-                        "support_jammed",
-                        "virus",
-                        "energy_leech",
-                    )
+                    for effect_id in ("support_jammed", "virus")
                 ):
                     power_reason = "sabotaged"
-                elif module.definition.energy_consumption <= 0:
+                elif module.energy_waiting:
+                    power_reason = "waiting_energy"
+                elif (
+                    module.definition.energy_consumption <= 0
+                    and module.definition.action_energy_cost <= 0
+                ):
                     power_reason = "passive"
-                elif module.instance_id not in reachable_ids:
-                    power_reason = "board_disconnected"
                 elif module.is_powered:
                     power_reason = "powered"
                 else:
@@ -623,11 +692,14 @@ class PvPSessionService:
                     "energy_received": received,
                     "energy_required": required,
                     "energy_shortfall": max(0.0, required - received),
+                    "energy_waiting": module.energy_waiting,
+                    "action_energy_cost": module.definition.action_energy_cost,
                     "heat": module.heat,
+                    "overheated": OVERHEAT_DEBUFF_ID in module.debuffs,
                     "debuffs": sorted(module.debuffs),
-                    "temporary_boosters": sorted(module.temporary_boosters),
-                    "calibration_level": module.calibration_level,
-                    "calibration_applied": module.calibration_applied,
+                    "signature_badges": module_signature_badges(
+                        player, module, state.elapsed_ms
+                    ),
                 })
 
             player_data = {
@@ -664,37 +736,16 @@ class PvPSessionService:
                         "energy_load_ratio": player.energy_load_ratio,
                         "energy_stock": round(player.energy_stock, 1),
                         "total_circuit_credits_earned": player.total_circuit_credits_earned,
-                        "forfeit_credit_penalty": player.forfeit_credit_penalty,
                         "core_power": {
                             "id": player.core_type,
                             "charge": round(player.core_power_charge, 2),
                             "max_charge": 100,
-                            "ready": player.core_power_charge >= 100,
+                            "ready_threshold": core_power_threshold(player.core_type),
+                            "ready": player.core_power_charge >= core_power_threshold(player.core_type),
                             "uses": player.core_power_uses,
                         },
                         "last_command_sequence": session.slots[player_id].last_command_sequence,
                         "acknowledged_event_cursor": session.slots[player_id].acknowledged_event_cursor,
-                        "next_booster_offer_index": player.next_booster_offer_index,
-                        "pending_booster_offer": (
-                            {
-                                "id": player.pending_booster_offer.id,
-                                "booster_ids": list(
-                                    player.pending_booster_offer.booster_ids
-                                ),
-                                "created_at_ms": (
-                                    player.pending_booster_offer.created_at_ms
-                                ),
-                                "eligible_target_module_ids": {
-                                    booster_id: session.engine.eligible_booster_target_ids(
-                                        player_id,
-                                        booster_id,
-                                    )
-                                    for booster_id in player.pending_booster_offer.booster_ids
-                                },
-                            }
-                            if player.pending_booster_offer is not None
-                            else None
-                        ),
                     }
                 )
 
@@ -713,7 +764,6 @@ class PvPSessionService:
             "season_id": state.season_id,
             "ranked_eligible": state.ranked_eligible,
             "normalized": state.normalized,
-            "laboratory_effects_enabled": state.laboratory_effects_enabled,
             "viewer_player_id": viewer_player_id,
             "status": state.status.value,
             "tick": state.tick,
@@ -794,14 +844,10 @@ class PvPSessionService:
         if event.type in {"core_power_activated", "core_power_used"} and owner_player_id != viewer_player_id:
             data.pop("request_id", None)
             data.pop("charge", None)
-        if event.type == "battle_forfeited" and owner_player_id != viewer_player_id:
-            for field_name in (
-                "earned_during_battle",
-                "credit_penalty",
-                "remaining_circuit_credits",
-            ):
-                data.pop(field_name, None)
-
+        if event.type == "core_signature_triggered" and owner_player_id != viewer_player_id:
+            # Rezerv enerjisi ve dolum yalnız sahibine açıktır.
+            data.pop("energy_drained", None)
+            data.pop("charge", None)
         if event.type == "battle_finished" and isinstance(data.get("summary"), dict):
             data["summary"] = self._result_summary_for_viewer(
                 data["summary"],

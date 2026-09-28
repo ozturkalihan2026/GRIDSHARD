@@ -58,10 +58,7 @@ const client = new RelayBattleClient({
   ],
 });
 
-assert.strictEqual(client.beginDrag("active-1").ok, false);
 assert.strictEqual(commands.length, 0);
-assert.strictEqual(client.beginDrag("reserve-1").ok, false);
-assert.strictEqual(client.dropOnCell(1, 1, "active-1").ok, false);
 assert.strictEqual(commands.length, 0);
 assert.strictEqual(client.deployDefinition("shield", 2).ok, true);
 assert.deepStrictEqual(commands[0], {

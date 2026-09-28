@@ -2,6 +2,13 @@
   "use strict";
 
   const PREFERENCE = "gridshard.push.enabled";
+  // Bildirim yükü güvenilmezdir: yalnız bu salt açma hedefleri desteklenir.
+  // Savaş daveti gelen kutusunu açar; daveti kendiliğinden kabul etmez.
+  const OPEN_TARGETS = new Map([
+    ["profile", /^\/[^/]+$/],
+    ["friends", /^\/messages\/[^/]+$/],
+    ["inbox", /^\/?$/],
+  ]);
 
   class NativePushController {
     constructor({ capacitor = global.Capacitor, storage, request, identity, onStatus, onOpen }) {
@@ -18,7 +25,7 @@
       this.plugin = ["android", "ios"].includes(this.platform)
         ? capacitor?.Plugins?.PushNotifications || capacitor?.registerPlugin?.("PushNotifications") : null;
       this.ready = false;
-      this.token = null; // Never persist or log a native device token.
+      this.token = null; // Yerel cihaz belirteci diske yazılmaz, loglanmaz.
       this.pendingActions = [];
       this.seenActions = new Set();
       this.listenerPromise = null;
@@ -36,7 +43,7 @@
 
     setPreference(value) {
       this.wanted = value;
-      try { this.storage?.setItem(PREFERENCE, String(value)); } catch (_) { /* Memory preference still applies. */ }
+      try { this.storage?.setItem(PREFERENCE, String(value)); } catch (_) { /* Bellekteki tercih yine geçerli. */ }
     }
 
     status(message) { this.onStatus?.(message); }
@@ -71,17 +78,16 @@
     async openAction(data) {
       const account = this.identity();
       if (!data || data.recipient_id !== account.playerId || !data.notification_id || this.seenActions.has(data.notification_id)) return;
-      // Notification payloads are untrusted: never navigate arbitrary URLs or
-      // auto-accept an invite. Only these two read/open actions are supported.
+      // Keyfi adres açılmaz, davet kendiliğinden kabul edilmez.
       try {
         const url = new URL(data.deep_link);
-        const validPath = url.hostname === "profile" ? /^\/[^/]+$/ : /^\/messages\/[^/]+$/;
-        if (url.protocol !== "gridshard:" || !["profile", "friends"].includes(url.hostname)
+        const validPath = OPEN_TARGETS.get(url.hostname);
+        if (url.protocol !== "gridshard:" || !validPath
             || url.username || url.password || url.port || url.search || url.hash || !validPath.test(url.pathname)) return;
         this.seenActions.add(data.notification_id);
         if (this.seenActions.size > 100) this.seenActions.delete(this.seenActions.values().next().value);
         await this.onOpen?.(url.href);
-      } catch (_) { /* Malformed/unavailable targets must not break startup. */ }
+      } catch (_) { /* Bozuk veya ulaşılamayan hedef açılışı bozmamalı. */ }
     }
 
     serialize(action) {
@@ -118,7 +124,7 @@
       this.ready = true;
       for (const data of this.pendingActions.splice(0)) await this.openAction(data);
       if (this.wanted) await this.resume(firstStart);
-      // Reconcile a previous offline disable before registering anything.
+      // Çevrimdışıyken yapılan kapatma, yeni kayıttan önce sunucuya iletilir.
       else await this.removeSubscription();
     }
 
@@ -144,13 +150,13 @@
 
     async disable() {
       const intent = ++this.intent;
-      // Set preference first: a late registration callback cannot re-subscribe.
+      // Tercih önce kapanır: geç gelen kayıt çağrısı aboneliği yeniden açamaz.
       this.setPreference(false);
       await this.removeSubscription();
       if (intent !== this.intent) return;
       this.token = null;
       this.unregisterPromise = Promise.resolve().then(() => this.plugin?.unregister?.())
-        .catch(() => {}) // Server opt-out already committed.
+        .catch(() => {}) // Sunucudaki kapatma zaten kaydedildi.
         .finally(() => { this.unregisterPromise = null; });
       await this.unregisterPromise;
       if (intent === this.intent) this.status("Bu cihazın mobil bildirimleri kapatıldı.");
@@ -181,7 +187,7 @@
         });
         if (!this.wanted || intent !== this.intent) return;
         this.status("Cihaz bildirim kaydı bekleniyor…");
-        // register emits the latest token at startup/resume and on rotation.
+        // register açılışta/öne dönüşte ve belirteç değişince son belirteci yayar.
         await this.plugin.register();
       })().finally(() => { this.syncPromise = null; });
       return this.syncPromise;

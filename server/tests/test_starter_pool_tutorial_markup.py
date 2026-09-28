@@ -10,12 +10,10 @@ def test_starter_deck_has_six_valid_unique_module_ids():
     end = source.index("function withStarterBattlePoolPresets", start)
     block = source[start:end]
 
-    expected = {
-        "battery", "laser", "pulse_cannon",
-        "shield", "repair", "targeting_computer",
-    }
-    assert all(f'"{module_id}"' in block for module_id in expected)
-    assert '"generator"' not in block
+    from app.arena_canon import STARTER_IDS
+
+    assert all(f'"{module_id}"' in block for module_id in STARTER_IDS)
+    assert len(STARTER_IDS) == len(set(STARTER_IDS)) == 6
     assert '"core"' not in block
 
 

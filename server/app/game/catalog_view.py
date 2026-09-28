@@ -1,6 +1,11 @@
 from __future__ import annotations
 
-from .catalog import BASIC_MODULE_DEFINITIONS
+from .catalog import BASIC_MODULE_DEFINITIONS, CARD_COPY
+from .combat import (
+    ATTACK_WINDUP_MS,
+    PIERCE_KEPT_REDUCTION,
+    SECONDARY_HIT_RATIOS,
+)
 from .energy import (
     BATTERY_CAPACITY,
     BATTERY_CHARGE_RATE_PER_SECOND,
@@ -8,8 +13,6 @@ from .energy import (
     CAPACITOR_CAPACITY,
     CAPACITOR_CHARGE_RATE_PER_SECOND,
     CAPACITOR_DISCHARGE_RATE_PER_SECOND,
-    BASE_DISTRIBUTION_EFFICIENCY,
-    SPLITTER_DISTRIBUTION_EFFICIENCY,
 )
 from .support import (
     BASE_REPAIR_AMOUNT,
@@ -20,15 +23,21 @@ from .support import (
     OVERCLOCK_HEAT_PER_TICK,
     COOLER_HEAT_REDUCTION_PER_TICK,
     COOLER_DEBUFF_REDUCTION_MS_PER_TICK,
+    COOLER_MAX_TARGETS,
+    AMPLIFIER_PER_ATTACK_CAP,
+    AMPLIFIER_TOTAL_BUDGET,
+    TARGETING_PER_ATTACK_CAP,
+    TARGETING_TOTAL_BUDGET,
 )
+from .heat import OVERHEAT_RECOVERY_THRESHOLD
 from .sabotage import (
     EMP_DURATION_MS,
     JAMMER_DURATION_MS,
     VIRUS_DURATION_MS,
     VIRUS_TICK_DAMAGE,
+    VIRUS_TICK_ESCALATION,
     VIRUS_TICK_INTERVAL_MS,
-    ENERGY_LEECH_DURATION_MS,
-    ENERGY_LEECH_GENERATION_MULTIPLIER,
+    SABOTAGE_ECHO_RATIOS,
     DISRUPTOR_DURATION_MS,
 )
 
@@ -60,31 +69,42 @@ CATEGORY_LABELS_EN = {
 }
 
 MODULE_COPY_EN: dict[str, tuple[str, str]] = {
-    "generator": ("Primary energy source", "Continuously supplies energy and can move between the four Core gates."),
-    "battery": ("Energy feed and reserve", "Supplies 3 energy per second and adds 30 reserve capacity."),
-    "splitter": ("Energy distribution", "Improves the embedded grid's energy efficiency."),
-    "capacitor": ("Expanded energy storage", "Adds 25 energy capacity and consumes 1 energy per second."),
-    "current_balancer": ("Circuit efficiency", "Reduces module energy consumption by 8%; repeated copies have diminishing returns, capped at 35%."),
+    "battery": ("Energy feed and reserve", "Supplies 3 energy per second and stores 20 energy for sudden loads."),
+    "capacitor": ("Burst energy reserve", "Generates no energy; a 10-energy reserve that charges and discharges very fast, before the Battery."),
+    "current_balancer": ("Circuit efficiency", "Reduces action and upkeep energy costs by 8%; repeated copies are capped at 24%."),
     "laser": ("Sustained single-target damage", "Deals steady damage to one target."),
     "pulse_cannon": ("High burst damage", "Fires slower, powerful pulses."),
     "railgun": ("High piercing damage", "Deals piercing damage against armored targets."),
     "missile_launcher": ("Delayed area pressure", "Trades preparation time for heavy area pressure."),
     "drone_bay": ("Distributed sustained pressure", "Wears down defenses with multiple small attacks."),
-    "arc_cannon": ("Chained multi-target damage", "Produces energy attacks that can jump between nearby targets."),
+    "arc_cannon": ("Chained multi-target damage", "Produces chained energy attacks that jump onto the next target."),
     "shield": ("Active damage absorption", "Consumes energy to absorb part of incoming damage."),
     "armor": ("Durability", "Reduces incoming damage while contributing to the circuit's energy demand."),
     "reflector": ("Energy-attack reflection", "Redirects part of incoming energy-based damage."),
-    "barrier": ("Connection-line protection", "Protects critical connection points."),
+    "barrier": ("Defense-line protection", "Draws attacks onto itself and protects critical circuit cells."),
     "repair": ("Health repair", "Repairs damaged modules."),
-    "cooler": ("Heat control", "Reduces heat on nearby modules."),
-    "amplifier": ("Attack-line amplification", "Increases the output of a nearby attack module."),
-    "targeting_computer": ("Targeting support", "Improves target selection and attack efficiency."),
-    "overclock_unit": ("Performance at a heat cost", "Accelerates a connected module while increasing heat and energy load."),
+    "cooler": ("Heat control", "Cools the two hottest modules in the circuit and quickly restores an overheated one."),
+    "amplifier": ("Attack-line amplification", "Increases the damage of attack modules in the circuit; a 30% budget is shared among attacks, at most 15% each."),
+    "targeting_computer": ("Targeting support", "Shortens the cooldown of attack modules in the circuit; a 30% budget is shared among attacks, at most 15% each."),
+    "overclock_unit": ("Performance at a heat cost", "Accelerates and strengthens the heaviest attack module; that module heats up faster."),
     "emp": ("Temporary system disruption", "Temporarily disrupts energy and support lines."),
     "jammer": ("Support-line disruption", "Weakens targeting and support modules."),
     "virus": ("Escalating system debuff", "Applies a weakening effect that grows across support and control lines."),
-    "energy_leech": ("Energy-economy pressure", "Weakens the opponent's energy generation and storage line."),
-    "disruptor": ("Temporary connection cut", "Temporarily disables a selected connection line."),
+    "disruptor": ("Temporary system cut", "Temporarily cuts a target system and echoes a shorter cut onto a second system."),
+    "guardian_dome": ("Circuit protection", "Reduces its own incoming damage by 32%; while alive, other modules in the circuit take 12% less damage."),
+    "prism_shield": ("Prismatic conversion", "Reduces its own incoming damage by 30% and converts a quarter of the prevented damage into Core reserve energy."),
+    "phase_armor": ("Periodic phase", "Voids every attack during the first second of each 6-second cycle; otherwise reduces damage by 18%."),
+    "nano_medic": ("Distributed repair", "Repairs the two most damaged modules at once, each for 62% of a base repair."),
+    "phoenix_repair": ("Return to service", "Every 30 seconds, within class limits, brings a destroyed module back at 30% HP (10 energy); each module can return only once per match. Without a candidate it performs a strong single repair."),
+    "quantum_repeater": ("Quantum repeat", "On the fourth consecutive hit on the same target, echoes 65% of the last damage."),
+    "plasma_mortar": ("Delayed plasma field", "Locks onto a target for 1.2 sec before firing; 35% area damage splashes onto the next target."),
+    "ion_spear": ("Ionic pierce", "Ignores 60% of defensive reduction; 55% damage carries onto the target behind."),
+    "swarm_fabricator": ("Swarm build-up", "Stores a drone on every shot; the fourth shot releases a swarm onto three targets."),
+    "quantum_cannon": ("Quantum charge", "Collects the circuit's wasted energy as charge; a full charge adds up to 80% damage to the next shot."),
+    "chrono_relay": ("Time debt", "Speeds up every attack for 4 sec, then a 2.5-sec time debt slows them down."),
+    "precision_matrix": ("Focus stacks", "Attacks that keep hitting the same target gain damage and speed for up to 4 stacks."),
+    "omega_amplifier": ("Adaptive resonance", "Each distinct class in the circuit grows its shared damage support."),
+    "singularity_projector": ("Singularity field", "Cuts the target system for 4.5 sec and echoes a 65%-duration cut onto a second system."),
 }
 
 
@@ -107,7 +127,95 @@ def _percent(multiplier: float) -> int:
     )
 
 
+def _action_energy_line(definition_id: str) -> list[str]:
+    definition = BASIC_MODULE_DEFINITIONS[definition_id]
+    cost = definition.action_energy_cost
+    if cost <= 0:
+        return []
+    action = {"saldırı": "atış", "sabotaj": "sabotaj", "destek": "onarım"}.get(
+        definition.category, "eylem"
+    )
+    return [
+        f"Her {action} {cost:g} enerji harcar; enerji yetmezse modül bekler "
+        "ve bekleme süresi boşa gitmez."
+    ]
+
+
+def _action_energy_line_en(definition_id: str) -> list[str]:
+    cost = BASIC_MODULE_DEFINITIONS[definition_id].action_energy_cost
+    if cost <= 0:
+        return []
+    return [
+        f"Each action spends {cost:g} energy; without enough energy the module "
+        "waits and its cooldown is not wasted."
+    ]
+
+
+def _signature_effect_lines(definition_id: str) -> list[str]:
+    lines = []
+    if definition_id in ATTACK_WINDUP_MS:
+        lines.append(
+            f"Ateşlemeden önce hedefe {ATTACK_WINDUP_MS[definition_id] / 1000:g} sn kilitlenir; "
+            "hazırlık süresi saldırı aralığının içindedir, hedef değişirse kilit baştan başlar."
+        )
+    if definition_id in PIERCE_KEPT_REDUCTION:
+        lines.append(
+            f"Hedefin savunma azaltımının %{round((1 - PIERCE_KEPT_REDUCTION[definition_id]) * 100)}'ını yok sayar."
+        )
+    if definition_id in SECONDARY_HIT_RATIOS:
+        lines.append(
+            f"Her atışta sıradaki hedefe %{round(SECONDARY_HIT_RATIOS[definition_id] * 100)} hasar sıçrar; "
+            "sıçrama da o hedefin savunmasından geçer."
+        )
+    return lines
+
+
+def _signature_effect_lines_en(definition_id: str) -> list[str]:
+    lines = []
+    if definition_id in ATTACK_WINDUP_MS:
+        lines.append(
+            f"Locks onto the target for {ATTACK_WINDUP_MS[definition_id] / 1000:g} sec before firing; "
+            "the lock is part of the attack interval and restarts if the target changes."
+        )
+    if definition_id in PIERCE_KEPT_REDUCTION:
+        lines.append(
+            f"Ignores {round((1 - PIERCE_KEPT_REDUCTION[definition_id]) * 100)}% of the target's defensive reduction."
+        )
+    if definition_id in SECONDARY_HIT_RATIOS:
+        lines.append(
+            f"Each shot splashes {round(SECONDARY_HIT_RATIOS[definition_id] * 100)}% damage onto the next target, "
+            "through that target's defenses."
+        )
+    return lines
+
+
 def _effect_lines(definition_id: str) -> list[str]:
+    definition = BASIC_MODULE_DEFINITIONS[definition_id]
+    if definition_id in CARD_COPY and definition.category != "saldırı":
+        # Türetilmiş kartın kendi imzası aile değerlerinin yerini alır.
+        lines = [definition.description_tr]
+    else:
+        signature = _signature_effect_lines(definition_id)
+        lines = _mechanic_effect_lines(definition_id) + signature
+        if definition_id in CARD_COPY and not signature:
+            lines.append(definition.description_tr)
+    return lines + _action_energy_line(definition_id)
+
+
+def _effect_lines_en(definition_id: str) -> list[str]:
+    definition = BASIC_MODULE_DEFINITIONS[definition_id]
+    copy_en = MODULE_COPY_EN.get(definition_id)
+    if definition_id in CARD_COPY and definition.category != "saldırı" and copy_en:
+        lines = [copy_en[1]]
+    else:
+        signature = _signature_effect_lines_en(definition_id)
+        lines = _mechanic_effect_lines_en(definition_id) + signature
+        if definition_id in CARD_COPY and copy_en and not signature:
+            lines.append(copy_en[1])
+    return lines + _action_energy_line_en(definition_id)
+
+
+def _mechanic_effect_lines(definition_id: str) -> list[str]:
     definition = BASIC_MODULE_DEFINITIONS[
         definition_id
     ]
@@ -124,18 +232,6 @@ def _effect_lines(definition_id: str) -> list[str]:
             (
                 "Güçlü hedeflerde hasar çarpanı %125, "
                 "zayıf olduğu hedeflerde %80 uygulanır."
-            ),
-        ]
-
-    if definition_id == "generator":
-        return [
-            (
-                f"Saniyede {definition.energy_generation:g} enerji üretir. "
-                "Bir Çekirdek kapısında başlar ve savaş sırasında dört kapı arasında taşınabilir."
-            ),
-            (
-                "Enerji Sömürücü etkisinde üretim temel olarak "
-                f"%{_percent(ENERGY_LEECH_GENERATION_MULTIPLIER)} seviyesine düşer."
             ),
         ]
 
@@ -159,15 +255,6 @@ def _effect_lines(definition_id: str) -> list[str]:
             "Enerji açığında Batarya'dan önce boşalır.",
         ]
 
-    if definition_id == "splitter":
-        return [
-            (
-                "Gömülü devre ağını güçlendirir ve devrede en az bir Dağıtıcı varsa "
-                f"dağıtım verimliliğini %{_percent(SPLITTER_DISTRIBUTION_EFFICIENCY)} yapar "
-                f"(normal %{_percent(BASE_DISTRIBUTION_EFFICIENCY)})."
-            ),
-        ]
-
     if definition_id == "shield":
         return [
             "Enerjiliyken kendisine gelen hasarı %35 azaltır; %65 hasar geçirir.",
@@ -177,7 +264,7 @@ def _effect_lines(definition_id: str) -> list[str]:
     if definition_id == "armor":
         return [
             "Pasif savunmadır; kendisine gelen hasarı %25 azaltır.",
-            "Enerji tüketmeden çalışır.",
+            f"Saniyede {definition.energy_consumption:g} bakım enerjisi harcar.",
         ]
 
     if definition_id == "reflector":
@@ -207,42 +294,50 @@ def _effect_lines(definition_id: str) -> list[str]:
     if definition_id == "cooler":
         return [
             (
-                f"Her 0,1 sn motor adımında hedef ısıyı "
-                f"{COOLER_HEAT_REDUCTION_PER_TICK:g} azaltır."
+                f"Devredeki en sıcak {COOLER_MAX_TARGETS} modülün ısısını saniyede "
+                f"{COOLER_HEAT_REDUCTION_PER_TICK * 10:g} azaltır."
             ),
             (
-                "Azaltılabilir debuff sürelerinden motor adımı başına "
-                f"{COOLER_DEBUFF_REDUCTION_MS_PER_TICK} ms düşürür."
+                "Aşırı ısınıp susan modül ısısı "
+                f"{OVERHEAT_RECOVERY_THRESHOLD:g}'in altına inince yeniden ateş eder; "
+                "Soğutucu bunu birkaç saniyeye indirir."
+            ),
+            (
+                f"EMP ve hat kesintisi yaşayan en fazla {COOLER_MAX_TARGETS} modülün "
+                f"kalan süresini saniyede {COOLER_DEBUFF_REDUCTION_MS_PER_TICK * 10 / 1000:g} sn kısaltır."
             ),
         ]
 
     if definition_id == "amplifier":
         return [
             (
-                "Yakındaki saldırı modüllerinin hasarını "
-                f"%{_percent(AMPLIFIER_DAMAGE_MULTIPLIER)} seviyesine çıkarır "
-                f"(+%{_percent(AMPLIFIER_DAMAGE_MULTIPLIER)-100})."
+                "Yerleşimden bağımsız olarak devredeki her saldırı modülünün hasarını artırır: "
+                f"toplam %{_percent(AMPLIFIER_TOTAL_BUDGET)} pay saldırı modülü sayısına bölünür, "
+                f"tek saldırıya en fazla %{_percent(AMPLIFIER_PER_ATTACK_CAP)}."
             ),
+            "Örnek: 1–2 saldırıda her biri %15, 3 saldırıda %10, 4 saldırıda %7,5, 6 saldırıda %5.",
         ]
 
     if definition_id == "targeting_computer":
         return [
             (
-                "Desteklediği saldırı modülünün bekleme süresini "
-                f"%{_percent(TARGETING_COOLDOWN_MULTIPLIER)} seviyesine indirir "
-                f"(yaklaşık %{100-_percent(TARGETING_COOLDOWN_MULTIPLIER)} daha hızlı)."
+                "Yerleşimden bağımsız olarak devredeki her saldırı modülünün bekleme süresini kısaltır: "
+                f"toplam %{_percent(TARGETING_TOTAL_BUDGET)} pay saldırı modülü sayısına bölünür, "
+                f"tek saldırıya en fazla %{_percent(TARGETING_PER_ATTACK_CAP)}."
             ),
         ]
 
     if definition_id == "overclock_unit":
         return [
             (
-                f"Hasarı %{_percent(OVERCLOCK_DAMAGE_MULTIPLIER)} seviyesine çıkarır "
+                "Devredeki en ağır saldırı modülünü seçer; hasarını "
+                f"%{_percent(OVERCLOCK_DAMAGE_MULTIPLIER)} seviyesine çıkarır "
                 f"ve bekleme süresini %{_percent(OVERCLOCK_COOLDOWN_MULTIPLIER)} seviyesine indirir."
             ),
             (
-                "Karşılığında motor adımı başına "
-                f"{OVERCLOCK_HEAT_PER_TICK:g} ısı ekler."
+                "Karşılığında hedef daha sık ateşlediği için hızlı ısınır ve saniyede "
+                f"{OVERCLOCK_HEAT_PER_TICK * 10:g} ek ısı alır. Hedef aşırı ısınırsa "
+                "sıradaki ağır saldırı modülüne geçer."
             ),
         ]
 
@@ -266,28 +361,24 @@ def _effect_lines(definition_id: str) -> list[str]:
         return [
             (
                 f"{VIRUS_DURATION_MS / 1000:g} sn sürer; "
-                f"her {VIRUS_TICK_INTERVAL_MS / 1000:g} sn'de {VIRUS_TICK_DAMAGE} hasar verir."
+                f"her {VIRUS_TICK_INTERVAL_MS / 1000:g} sn'de {VIRUS_TICK_DAMAGE} hasarla başlar "
+                f"ve her tikte {VIRUS_TICK_ESCALATION} artar."
             ),
             (
                 f"Direnç uygulanmazsa teorik temel toplamı "
-                f"{total_ticks * VIRUS_TICK_DAMAGE} hasardır."
-            ),
-        ]
-
-    if definition_id == "energy_leech":
-        return [
-            (
-                f"{ENERGY_LEECH_DURATION_MS / 1000:g} sn boyunca hedef enerji üretimini "
-                f"temel olarak %{_percent(ENERGY_LEECH_GENERATION_MULTIPLIER)} seviyesine düşürür "
-                f"(-%{100-_percent(ENERGY_LEECH_GENERATION_MULTIPLIER)})."
+                f"{sum(VIRUS_TICK_DAMAGE + VIRUS_TICK_ESCALATION * index for index in range(total_ticks))} hasardır."
             ),
         ]
 
     if definition_id == "disruptor":
         return [
             (
-                f"Hedef bağlantı hattını {DISRUPTOR_DURATION_MS / 1000:g} sn keser; "
-                "bu hat üzerinden beslenen modüller enerjisiz kalabilir."
+                f"Hedef sistemi {DISRUPTOR_DURATION_MS / 1000:g} sn keser; "
+                "diğer modüller enerji almaya devam eder."
+            ),
+            (
+                "Ek olarak ikinci bir sisteme "
+                f"%{_percent(SABOTAGE_ECHO_RATIOS['disruptor'])} süreli yankı kesintisi uygular."
             ),
         ]
 
@@ -304,7 +395,7 @@ def _effect_lines(definition_id: str) -> list[str]:
     ]
 
 
-def _effect_lines_en(definition_id: str) -> list[str]:
+def _mechanic_effect_lines_en(definition_id: str) -> list[str]:
     definition = BASIC_MODULE_DEFINITIONS[definition_id]
     if definition_id in {"battery", "capacitor", "current_balancer"}:
         return [MODULE_COPY_EN[definition_id][1]]
@@ -313,11 +404,6 @@ def _effect_lines_en(definition_id: str) -> list[str]:
         return [
             f"Base damage per shot is {definition.base_damage:g}; base attack interval is {definition.cooldown_ms / 1000:g} sec.",
             "Damage multiplier is 125% against strong targets and 80% against weak targets.",
-        ]
-    if definition_id == "generator":
-        return [
-            f"Generates {definition.energy_generation:g} energy per second and can move between all four Core gates.",
-            f"Energy Leech reduces base generation to {_percent(ENERGY_LEECH_GENERATION_MULTIPLIER)}%.",
         ]
     if definition_id == "battery":
         return [
@@ -329,14 +415,10 @@ def _effect_lines_en(definition_id: str) -> list[str]:
             f"Stores {CAPACITOR_CAPACITY:g} energy; charges at {CAPACITOR_CHARGE_RATE_PER_SECOND:g}/sec and discharges at {CAPACITOR_DISCHARGE_RATE_PER_SECOND:g}/sec.",
             "Discharges before the Battery when the circuit lacks energy.",
         ]
-    if definition_id == "splitter":
-        return [
-            f"Raises the embedded grid's distribution efficiency to {_percent(SPLITTER_DISTRIBUTION_EFFICIENCY)}% instead of {_percent(BASE_DISTRIBUTION_EFFICIENCY)}%.",
-        ]
     if definition_id == "shield":
         return ["Reduces incoming damage by 35% while powered.", f"Consumes {definition.energy_consumption:g} energy per second."]
     if definition_id == "armor":
-        return ["Reduces incoming damage by 25%.", f"Energy demand: {definition.energy_consumption:g}/sec."]
+        return ["Reduces incoming damage by 25%.", f"Upkeep: {definition.energy_consumption:g} energy/sec."]
     if definition_id == "reflector":
         return ["Reduces incoming damage by 25% while powered.", "Reflects 20% of the last incoming damage to the attacker."]
     if definition_id == "barrier":
@@ -344,19 +426,18 @@ def _effect_lines_en(definition_id: str) -> list[str]:
     if definition_id == "repair":
         return [f"Restores {BASE_REPAIR_AMOUNT} HP to one lowest-health-ratio living module with a base cooldown of {definition.cooldown_ms / 1000:g} sec.", "A target can be repaired only once per support step.", "Can cleanse selected sabotage effects."]
     if definition_id == "cooler":
-        return [f"Reduces target heat by {COOLER_HEAT_REDUCTION_PER_TICK:g} every 0.1 sec.", f"Removes {COOLER_DEBUFF_REDUCTION_MS_PER_TICK} ms from reducible debuffs per engine step."]
+        return [f"Cools the {COOLER_MAX_TARGETS} hottest modules in the circuit by {COOLER_HEAT_REDUCTION_PER_TICK * 10:g} heat/sec.", f"An overheated module stays silent until its heat drops below {OVERHEAT_RECOVERY_THRESHOLD:g}; Cooler shortens this to a few seconds.", f"Shortens EMP and line-cut effects on up to {COOLER_MAX_TARGETS} modules."]
     if definition_id == "amplifier":
-        return [f"Raises nearby attack-module damage to {_percent(AMPLIFIER_DAMAGE_MULTIPLIER)}% (+{_percent(AMPLIFIER_DAMAGE_MULTIPLIER)-100}%)."]
+        return [f"Boosts every attack module in the circuit regardless of placement: a {_percent(AMPLIFIER_TOTAL_BUDGET)}% damage budget is shared across attack modules, at most {_percent(AMPLIFIER_PER_ATTACK_CAP)}% each."]
     if definition_id == "targeting_computer":
-        return [f"Reduces the supported attack module's cooldown to {_percent(TARGETING_COOLDOWN_MULTIPLIER)}%."]
+        return [f"Shortens every attack module's cooldown regardless of placement: a {_percent(TARGETING_TOTAL_BUDGET)}% budget is shared across attack modules, at most {_percent(TARGETING_PER_ATTACK_CAP)}% each."]
     if definition_id == "overclock_unit":
-        return [f"Raises damage to {_percent(OVERCLOCK_DAMAGE_MULTIPLIER)}% and reduces cooldown to {_percent(OVERCLOCK_COOLDOWN_MULTIPLIER)}%.", f"Adds {OVERCLOCK_HEAT_PER_TICK:g} heat per engine step."]
+        return [f"Picks the heaviest attack module; raises its damage to {_percent(OVERCLOCK_DAMAGE_MULTIPLIER)}% and reduces its cooldown to {_percent(OVERCLOCK_COOLDOWN_MULTIPLIER)}%.", f"The target heats faster and gains {OVERCLOCK_HEAT_PER_TICK * 10:g} extra heat/sec; an overheated target is swapped for the next heaviest attack."]
     sabotage = {
         "emp": [f"Disables the target system for {EMP_DURATION_MS / 1000:g} sec.", f"Base sabotage cooldown is {definition.cooldown_ms / 1000:g} sec."],
         "jammer": [f"Disrupts a target support or control module for {JAMMER_DURATION_MS / 1000:g} sec.", f"Base sabotage cooldown is {definition.cooldown_ms / 1000:g} sec."],
-        "virus": [f"Lasts {VIRUS_DURATION_MS / 1000:g} sec and deals {VIRUS_TICK_DAMAGE} damage every {VIRUS_TICK_INTERVAL_MS / 1000:g} sec.", "Damage continues over time unless cleansed or resisted."],
-        "energy_leech": [f"Reduces target energy generation to {_percent(ENERGY_LEECH_GENERATION_MULTIPLIER)}% for {ENERGY_LEECH_DURATION_MS / 1000:g} sec."],
-        "disruptor": [f"Disables the target for {DISRUPTOR_DURATION_MS / 1000:g} sec; other cells keep receiving energy."],
+        "virus": [f"Lasts {VIRUS_DURATION_MS / 1000:g} sec; starts at {VIRUS_TICK_DAMAGE} damage every {VIRUS_TICK_INTERVAL_MS / 1000:g} sec and grows by {VIRUS_TICK_ESCALATION} each tick.", "Damage continues over time unless cleansed or resisted."],
+        "disruptor": [f"Disables the target for {DISRUPTOR_DURATION_MS / 1000:g} sec; other cells keep receiving energy.", f"Also echoes a {_percent(SABOTAGE_ECHO_RATIOS['disruptor'])}%-duration cut onto a second system."],
     }
     return sabotage.get(definition_id, ["No additional numeric effect is published for this module."])
 
@@ -367,7 +448,7 @@ def build_module_catalog_view() -> dict:
     for definition_id,definition in (
         BASIC_MODULE_DEFINITIONS.items()
     ):
-        if definition_id in {"core", "generator", "splitter", "energy_leech"}:
+        if definition_id == "core":
             continue
 
         modules.append({
@@ -384,8 +465,6 @@ def build_module_catalog_view() -> dict:
                 definition.category,
             ),
             "max_hp":definition.max_hp,
-            "circuit_credit_cost":
-                definition.current_cost,
             "current_cost": definition.current_cost,
             "strategic_role":
                 definition.strategic_role,
@@ -397,6 +476,8 @@ def build_module_catalog_view() -> dict:
                 definition.energy_generation,
             "energy_consumption":
                 definition.energy_consumption,
+            "action_energy_cost":
+                definition.action_energy_cost,
             "base_damage":
                 definition.base_damage,
             "cooldown_ms":
@@ -418,8 +499,10 @@ def build_module_catalog_view() -> dict:
                     definition.id
                 ),
             "effect_lines_en": _effect_lines_en(definition.id),
-            "movable":definition.movable,
-            "removable":definition.removable,
+            "rarity": definition.rarity,
+            "signature_mechanic": definition.signature_mechanic,
+            "telegraph_tr": definition.telegraph_tr,
+            "counterplay_tr": definition.counterplay_tr,
         })
 
     modules.sort(

@@ -57,12 +57,6 @@ for (const cue of [
 }
 assert.strictEqual(
   director.triggerCue(
-    "generator_move"
-  ).ok,
-  true
-);
-assert.strictEqual(
-  director.triggerCue(
     "missing"
   ).ok,
   false
@@ -99,7 +93,7 @@ assert.strictEqual(
 
 assert.strictEqual(
   global.GRIDSHARD_AUDIO_MIX.version,
-  "shardglass-mobile-v10"
+  "shardglass-seamless-v12"
 );
 assert.strictEqual(global.GRIDSHARD_BATTLE_LAYERS.length, 7);
 assert.strictEqual(

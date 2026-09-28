@@ -13,7 +13,6 @@ from typing import Protocol
 from .arena_canon import MODULES
 from .display_names import ensure_display_name_available
 from .game.battle_pool import migrate_battle_pool
-from .json_schema_migrations import assert_supported_schema
 from .player_profile import (
     CURRENT_SEASON_ID,
     PlayerProfile,
@@ -216,7 +215,7 @@ class JsonFilePlayerDataRepository:
 
     def backup_health(self) -> dict:
         # Windows does not allow the atomic backup replacement while another
-        # thread has the old .bak file open.  The web-test health endpoints are
+        # thread has the old .bak file open.  The health endpoint is
         # polled frequently, so serialize that read with profile writes too.
         with self._lock:
             return self._backup_health_unlocked()
@@ -405,7 +404,6 @@ class JsonFilePlayerDataRepository:
                 return True
 
     def _read_all(self) -> dict:
-        assert_supported_schema(self.path, "players", dict)
         if not self.path.exists():
             return {}
 
@@ -439,7 +437,6 @@ class JsonFilePlayerDataRepository:
         self,
         payload: dict,
     ) -> None:
-        assert_supported_schema(self.path, "players", dict)
         try:
             self.path.parent.mkdir(
                 parents=True,
@@ -562,6 +559,24 @@ class PlayerDataStoreError(ValueError):
     pass
 
 
+# Devre Laboratuvarı kaldırıldı (Beta.72 tur 8). Eski kayıtta kalibrasyona
+# yatırılmış Akı yüklemede iade edilir; laboratuvar bloğu bir sonraki kayıtta
+# yazılmadığı için iade kalıcı olarak yalnız bir kez işlenir.
+RETIRED_LABORATORY_LEVEL_COSTS = (25, 75, 150)
+
+
+def retired_laboratory_refund(data: dict) -> int:
+    levels = dict(dict(data.get("laboratory") or {}).get("module_levels") or {})
+    refund = 0
+    for level in levels.values():
+        try:
+            safe_level = max(0, min(len(RETIRED_LABORATORY_LEVEL_COSTS), int(level)))
+        except (TypeError, ValueError):
+            continue
+        refund += sum(RETIRED_LABORATORY_LEVEL_COSTS[:safe_level])
+    return refund
+
+
 class PlayerDataStoreService:
     def __init__(
         self,
@@ -598,17 +613,6 @@ class PlayerDataStoreService:
         )
 
         profile_data = profile.to_view()
-        profile_data["laboratory"] = {
-            "module_levels": dict(profile.module_calibration_levels),
-            "transactions": [
-                dict(item) for item in profile.laboratory_transactions
-            ],
-            "receipts": {
-                request_id: dict(receipt)
-                for request_id, receipt in profile.laboratory_receipts.items()
-            },
-            "reset_count": profile.laboratory_reset_count,
-        }
         profile_data["meta_progression_state"] = {
             "progression_version": profile.progression_version,
             "highest_rating": max(profile.rating, profile.highest_rating),
@@ -664,6 +668,17 @@ class PlayerDataStoreService:
             "outgoing_friend_request_ids": list(profile.outgoing_friend_request_ids),
             "blocked_player_ids": list(profile.blocked_player_ids),
             "social_battle_invites": [dict(item) for item in profile.social_battle_invites],
+            "season_premium_pass_season_id": profile.season_premium_pass_season_id,
+            "claimed_premium_season_tiers": list(profile.claimed_premium_season_tiers),
+            "battle_premium_season_id": profile.battle_premium_season_id,
+            "purchase_receipts": {
+                key: dict(receipt) for key, receipt in profile.purchase_receipts.items()
+            },
+            "ad_reward_receipts": {
+                battle_id: dict(receipt) for battle_id, receipt in profile.ad_reward_receipts.items()
+            },
+            "seen_inbox_notice_ids": list(profile.seen_inbox_notice_ids),
+            "direct_messages_seen_at": int(profile.direct_messages_seen_at),
             "universal_module_shards": profile.universal_module_shards,
             "reward_inbox": [dict(item) for item in profile.reward_inbox],
             "reward_inbox_receipts": {
@@ -762,7 +777,8 @@ class PlayerDataStoreService:
                 ).module_definition_ids
             ),
             season_xp=int(engagement.get("season_xp", 0)),
-            flux_shards=int(engagement.get("flux_shards", 0)),
+            flux_shards=int(engagement.get("flux_shards", 0))
+            + retired_laboratory_refund(data),
             claimed_season_tiers=tuple(
                 int(value)
                 for value in engagement.get("claimed_season_tiers", [])
@@ -778,16 +794,19 @@ class PlayerDataStoreService:
                 for item in engagement.get("daily_missions", [])
                 if item.get("id") and item.get("claimed")
             ),
-            monthly_login_month=str(
-                dict(engagement.get("daily_login") or {}).get("month", "")
+            # Eski kayıtta aylık "month" anahtarı durur; dönem kimliğiyle
+            # eşleşmediği için ilk eşitlemede yeni döngüye geçilir.
+            login_period_id=str(
+                dict(engagement.get("daily_login") or {}).get("period")
+                or dict(engagement.get("daily_login") or {}).get("month", "")
             ),
-            monthly_login_today=int(
+            login_period_day=int(
                 dict(engagement.get("daily_login") or {}).get("today", 1)
             ),
-            monthly_login_day_count=int(
-                dict(engagement.get("daily_login") or {}).get("day_count", 31)
+            login_period_day_count=int(
+                dict(engagement.get("daily_login") or {}).get("day_count", 28)
             ),
-            claimed_monthly_login_days=tuple(
+            claimed_login_period_days=tuple(
                 int(value)
                 for value in dict(engagement.get("daily_login") or {}).get(
                     "claimed_days", []
@@ -848,27 +867,6 @@ class PlayerDataStoreService:
             unlocked_rank_trophy_ids=tuple(
                 str(value)
                 for value in dict(data.get("cosmetics") or {}).get("unlocked_rank_trophy_ids", [])
-            ),
-            module_calibration_levels={
-                str(module_id): int(level)
-                for module_id, level in dict(
-                    data.get("laboratory", {}).get("module_levels", {})
-                ).items()
-            },
-            laboratory_transactions=[
-                dict(item)
-                for item in data.get("laboratory", {}).get("transactions", [])
-                if isinstance(item, dict)
-            ],
-            laboratory_receipts={
-                str(request_id): dict(receipt)
-                for request_id, receipt in dict(
-                    data.get("laboratory", {}).get("receipts", {})
-                ).items()
-                if isinstance(receipt, dict)
-            },
-            laboratory_reset_count=int(
-                data.get("laboratory", {}).get("reset_count", 0)
             ),
             active_meta_season_id=str(
                 meta.get("active_season_id", CURRENT_SEASON_ID)
@@ -977,6 +975,25 @@ class PlayerDataStoreService:
                 for item in meta.get("social_battle_invites", [])
                 if isinstance(item, dict)
             ],
+            season_premium_pass_season_id=str(meta.get("season_premium_pass_season_id", "")),
+            claimed_premium_season_tiers=tuple(
+                int(value) for value in meta.get("claimed_premium_season_tiers", [])
+            ),
+            battle_premium_season_id=str(meta.get("battle_premium_season_id", "")),
+            purchase_receipts={
+                str(key): dict(receipt)
+                for key, receipt in dict(meta.get("purchase_receipts") or {}).items()
+                if isinstance(receipt, dict)
+            },
+            ad_reward_receipts={
+                str(battle_id): dict(receipt)
+                for battle_id, receipt in dict(meta.get("ad_reward_receipts") or {}).items()
+                if isinstance(receipt, dict)
+            },
+            seen_inbox_notice_ids=tuple(
+                str(value) for value in meta.get("seen_inbox_notice_ids", [])
+            ),
+            direct_messages_seen_at=max(0, int(meta.get("direct_messages_seen_at", 0) or 0)),
             universal_module_shards=max(0, int(meta.get("universal_module_shards", 0))),
             reward_inbox=[
                 dict(item)
@@ -1049,14 +1066,6 @@ class PlayerDataStoreService:
                 data[
                     "total_damage_dealt"
                 ]
-            ),
-            module_replacements=int(
-                data[
-                    "module_replacements"
-                ]
-            ),
-            boosters_used=int(
-                data["boosters_used"]
             ),
             module_usage=usage,
             match_type_records={

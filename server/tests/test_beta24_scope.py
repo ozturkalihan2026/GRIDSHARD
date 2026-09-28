@@ -1,6 +1,6 @@
+import pytest
 from fastapi.testclient import TestClient
 
-from app.game.catalog import BASIC_MODULE_DEFINITIONS
 from app.game.battle_pool import default_battle_pool
 from app.game.engine import BattleEngine
 from app.game.models import BattleState
@@ -14,37 +14,30 @@ def test_beta24_menu_preparation_and_result_markup():
     html = client.get("/").text
 
     assert "GRIDSHARD // CORE ARENA" not in html
-    assert '<span class="lobby-subtitle">CORE ARENA</span>' in html
+    assert 'lobby-feature-grid' not in html
     assert 'id="lobby-player-name"' in html
     assert 'id="lobby-player-details"' in html
     assert 'id="battle-prepare-local"' not in html
     assert 'id="battle-prepare-online"' not in html
     assert 'id="battle-pool-preset-dialog"' in html
-    assert 'id="initial-module-picker"' in html
     assert '<h3>Global Modüller</h3>' in html
     assert '<h3>Seçilen Deste</h3>' in html
     assert 'class="post-match-analysis"' in html
     assert "Savaş Analizini Aç" in html
     assert 'id="battle-pool-confirm" type="button" disabled>Savaş</button>' in html
-    assert "Eşleştirme: 10 sn doldu · AI rakip devraldı" in client.get("/src/app.js").text
 
 
-def test_embedded_energy_network_powers_adjacent_repair_module():
-    generator_definition = BASIC_MODULE_DEFINITIONS["generator"]
-    assert generator_definition.id == "generator"
-
+def test_core_energy_powers_a_repair_module_anywhere_on_the_board():
     engine = BattleEngine(BattleState(battle_id="beta24-energy"))
     engine.add_player("player")
     engine.grant_module("player", "core", "core")
-    engine.grant_module("player", "generator", "generator")
     engine.grant_module("player", "repair", "repair")
     engine.set_initial_active_module("player", "core", 2, 1)
-    engine.set_initial_active_module("player", "generator", 2, 0)
     engine.set_initial_active_module(
         "player",
         "repair",
-        1,
-        0,
+        4,
+        2,
     )
 
     engine.start()
@@ -52,8 +45,9 @@ def test_embedded_energy_network_powers_adjacent_repair_module():
 
     repair = engine.state.players["player"].modules["repair"]
     assert repair.is_powered is True
-    assert repair.energy_required_last_tick == 0.2
-    assert repair.energy_received_last_tick == 0.2
+    # Onarım enerjiyi eylem anında öder; yayınlanan akış 2,5 enerji / 2 sn.
+    assert repair.energy_required_last_tick == pytest.approx(0.125)
+    assert repair.energy_received_last_tick == pytest.approx(0.125)
 
 
 def test_local_ai_gateway_returns_server_authoritative_dual_snapshot():
@@ -72,15 +66,15 @@ def test_local_ai_gateway_returns_server_authoritative_dual_snapshot():
     snapshot = payload["snapshot"]
     assert snapshot["status"] == "running"
     assert len(snapshot["players"]) == 2
-    assert snapshot["players"]["beta24-player"]["circuit_credits"] == 200
+    assert snapshot["players"]["beta24-player"]["circuit_credits"] == 6
 
     player_modules = snapshot["players"]["beta24-player"]["modules"]
-    generator = next(
+    core = next(
         module
         for module in player_modules
-        if module["definition_id"] == "generator"
+        if module["definition_id"] == "core"
     )
-    assert "ports" not in generator
+    assert "ports" not in core
 
     follow_up = client.get(
         f"/local-ai/sessions/{payload['session_id']}/snapshot",

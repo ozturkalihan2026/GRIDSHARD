@@ -1,4 +1,7 @@
-"""FCM HTTP v1 / APNs HTTP/2 senders. Never log payloads, tokens or keys."""
+"""FCM HTTP v1 / APNs HTTP/2 göndericileri (GRIDSHARD projesinden taşındı).
+
+Yük, cihaz belirteci veya anahtar asla loglanmaz.
+"""
 
 from dataclasses import dataclass
 from email.utils import parsedate_to_datetime
@@ -13,10 +16,11 @@ import time
 
 @dataclass(frozen=True)
 class DeliveryResult:
-    status: str  # accepted by provider (not confirmed on device), retry, invalid, failed
+    # accepted: sağlayıcı kabul etti (cihazda gösterildiği kanıtlanmaz); retry, invalid, failed
+    status: str
     code: str
     retry_after: int = 0
-    invalidated_at: int | None = None  # APNs milliseconds since Unix epoch
+    invalidated_at: int | None = None  # APNs: Unix döneminden beri milisaniye
 
 
 def _b64(value: bytes) -> str:
@@ -56,7 +60,7 @@ def _retry_after(response, now: int) -> int:
 
 
 class PushSender:
-    """One sender per background worker; disabled by default, injectable in tests."""
+    """Arka plan işçisi başına bir gönderici; varsayılan kapalı, testte enjekte edilir."""
 
     def __init__(self, *, fcm=None, apns=None, client=None, now_func=time.time):
         self.fcm = fcm
@@ -117,9 +121,9 @@ class PushSender:
             if not fcm and not apns:
                 raise ValueError("No configured push adapter")
         except (OSError, ValueError, KeyError, TypeError):
-            # No filenames, key material or provider responses in startup logs.
-            raise ValueError("Push configuration invalid; see docs/PUSH_NOTIFICATIONS.md") from None
-        # HTTP client INFO/DEBUG logging exposes APNs token paths/headers.
+            # Açılış logunda dosya adı, anahtar veya sağlayıcı yanıtı görünmez.
+            raise ValueError("Push yapılandırması geçersiz; docs/PUSH_NOTIFICATIONS.md belgesine bakın.") from None
+        # HTTP istemcisinin INFO/DEBUG logları APNs belirteç yollarını ve başlıklarını açar.
         logging.getLogger("httpx").setLevel(logging.WARNING)
         logging.getLogger("httpcore").setLevel(logging.WARNING)
         return cls(fcm=fcm, apns=apns, client=httpx.Client(
@@ -136,8 +140,8 @@ class PushSender:
         try:
             result = self._fcm(subscription, notification, expires_at) if platform == "android" else self._apns(subscription, notification, expires_at)
         except Exception:
-            # Network/protocol failures are ambiguous: bounded retries, never
-            # delete a device token, never leak an exception containing its URL.
+            # Ağ/protokol hataları belirsizdir: sınırlı yeniden deneme; cihaz
+            # belirteci silinmez, URL'yi taşıyan istisna dışarı sızmaz.
             result = DeliveryResult("retry", "transport_error", 60)
         if result.status == "retry":
             self._cooldowns[platform] = self.now() + result.retry_after
@@ -216,6 +220,6 @@ class PushSender:
             return DeliveryResult("retry", "apns_authorization", max(300, _retry_after(response, now)))
         if response.status_code in {408, 429} or response.status_code >= 500:
             return DeliveryResult("retry", "apns_unavailable", _retry_after(response, now))
-        # BadDeviceToken can also mean an environment/topic mismatch. Keep the
-        # subscription until a definitive Unregistered response or user revoke.
+        # BadDeviceToken ortam/topic uyuşmazlığı da olabilir. Kesin Unregistered
+        # yanıtı veya kullanıcı iptali gelene kadar abonelik korunur.
         return DeliveryResult("failed", "apns_rejected")

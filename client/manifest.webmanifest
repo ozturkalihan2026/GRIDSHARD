@@ -4,6 +4,7 @@
   "description": "Devreni Kur. Çekirdeği Kır.",
   "start_url": "/",
   "display": "standalone",
+  "orientation": "portrait",
   "background_color": "#020b18",
   "theme_color": "#07142b",
   "icons": [

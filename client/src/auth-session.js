@@ -17,9 +17,10 @@
     "/notifications/",
     "/players/",
     "/events",
-    "/analytics/",
     "/local-ai/",
     "/pvp/",
+    "/store/",
+    "/analytics/",
   ];
   const API_PREFIXES = [
     "/auth/",
@@ -29,7 +30,6 @@
     "/leaderboards",
     "/game/",
     "/telemetry/",
-    "/web-test/",
   ];
   const API_BASE_URL = (() => {
     const configured = String(globalThis.GRIDSHARD_API_BASE_URL || "").trim();
@@ -200,7 +200,7 @@
       const url = this._url(input);
       const segments = url.pathname.split("/").filter(Boolean);
       let playerId = url.searchParams.get("player_id");
-      if (!playerId && ["participants", "player-data", "settings", "statistics", "profile", "accounts", "notifications", "social"].includes(segments[0])) {
+      if (!playerId && ["participants", "player-data", "settings", "statistics", "profile", "accounts", "notifications", "social", "store"].includes(segments[0])) {
         playerId = segments[1] || null;
       }
       if (!playerId && segments[0] === "matchmaking" && segments[1] !== "join") {

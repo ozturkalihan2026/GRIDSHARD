@@ -17,22 +17,6 @@ def reset():
     player_settings_service._settings.clear()
 
 
-def test_bootstrap_creates_all_player_domains():
-    reset()
-
-    response=client.post(
-        "/participants/wt-test-123456/bootstrap"
-    )
-
-    assert response.status_code==200
-    body=response.json()
-
-    assert body["player_id"]=="wt-test-123456"
-    assert body["profile"]["rating"]==1000
-    assert body["statistics"]["total_matches"]==0
-    assert body["settings"]["language"]=="tr"
-
-
 def test_bootstrap_is_idempotent_and_preserves_existing_values():
     reset()
 

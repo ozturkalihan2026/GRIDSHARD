@@ -6,18 +6,16 @@ from app.game.catalog import (
 )
 
 
-def test_catalog_contains_exactly_18_alpha8_definitions():
-    assert len(BASIC_MODULE_DEFINITIONS) == 25
+REMOVED_LEGACY_MODULE_IDS = {"generator", "splitter", "energy_leech"}
 
 
-def test_four_new_alpha7_modules_exist_with_turkish_names():
-    assert get_module_definition("splitter").name_tr == "Dağıtıcı"
-    assert get_module_definition("pulse_cannon").name_tr == "Darbe Topu"
-    assert get_module_definition("armor").name_tr == "Zırh"
-    assert get_module_definition("emp").name_tr == "EMP"
+def test_catalog_is_the_36_card_canon_plus_core():
+    assert len(BASIC_MODULE_DEFINITIONS) == 37
+    assert "core" in BASIC_MODULE_DEFINITIONS
+    assert not REMOVED_LEGACY_MODULE_IDS & set(BASIC_MODULE_DEFINITIONS)
 
 
-def test_alpha7_catalog_covers_all_planned_role_categories():
+def test_catalog_covers_all_role_categories():
     categories = {
         definition.category
         for definition in BASIC_MODULE_DEFINITIONS.values()
@@ -25,8 +23,8 @@ def test_alpha7_catalog_covers_all_planned_role_categories():
     assert {"enerji", "saldırı", "savunma", "destek", "sabotaj"} <= categories
 
 
-def test_new_modules_have_distinct_strategic_roles():
-    module_ids = ("splitter", "pulse_cannon", "armor", "emp")
+def test_core_modules_have_distinct_strategic_roles():
+    module_ids = ("battery", "pulse_cannon", "armor", "emp")
     roles = {
         get_module_definition(module_id).strategic_role
         for module_id in module_ids
@@ -37,15 +35,15 @@ def test_new_modules_have_distinct_strategic_roles():
 
 def test_role_metadata_contains_energy_damage_and_cooldown():
     pulse = get_module_definition("pulse_cannon")
-    assert pulse.energy_consumption == 5.0
+    # Saldırılar enerjiyi atış anında öder; sürekli bakım enerjileri yoktur.
+    assert pulse.energy_consumption == 0.0
+    assert pulse.action_energy_cost == 5.0
     assert pulse.base_damage == 32.0
     assert pulse.cooldown_ms == 2500
 
-    splitter = get_module_definition("splitter")
-    assert splitter.base_damage == 0.0
-
     armor = get_module_definition("armor")
-    assert armor.energy_consumption == 0.0
+    # Pasif zırh küçük bir bakım enerjisi öder.
+    assert armor.energy_consumption == 0.5
     assert armor.max_hp == 180
 
     emp = get_module_definition("emp")
@@ -53,10 +51,10 @@ def test_role_metadata_contains_energy_damage_and_cooldown():
     assert emp.cooldown_ms == 6000
 
 
-def test_player_selectable_list_excludes_core_and_keeps_generator():
+def test_player_selectable_list_is_36_cards_without_core():
     assert "core" not in PLAYER_SELECTABLE_MODULE_IDS
-    assert "generator" in PLAYER_SELECTABLE_MODULE_IDS
-    assert len(PLAYER_SELECTABLE_MODULE_IDS) == 24
+    assert len(PLAYER_SELECTABLE_MODULE_IDS) == 36
+    assert len(set(PLAYER_SELECTABLE_MODULE_IDS)) == 36
 
 
 def test_category_query_returns_only_requested_category():
@@ -68,37 +66,16 @@ def test_category_query_returns_only_requested_category():
         "missile_launcher",
         "drone_bay",
         "arc_cannon",
+        "plasma_mortar",
+        "quantum_repeater",
+        "ion_spear",
+        "swarm_fabricator",
+        "quantum_cannon",
     }
     assert all(module.category == "saldırı" for module in attack_modules)
 
 
-def test_all_player_facing_module_names_are_turkish_or_established_abbreviation():
-    names = {definition.name_tr for definition in BASIC_MODULE_DEFINITIONS.values()}
-    expected = {
-        "Çekirdek",
-        "Kesici",
-        "Enerji Sömürücü",
-        "Virüs",
-        "Aşırı Hızlandırıcı",
-        "Ark Topu",
-        "Dron Üssü",
-        "Füze Fırlatıcı",
-        "Jeneratör",
-        "Lazer",
-        "Kalkan",
-        "Batarya",
-        "Güçlendirici",
-        "Soğutucu",
-        "Onarım Modülü",
-        "Dağıtıcı",
-        "Darbe Topu",
-        "Zırh",
-        "EMP",
-        "Kapasitör",
-        "Ray Topu",
-        "Yansıtıcı",
-        "Bariyer",
-        "Hedefleme Bilgisayarı",
-        "Sinyal Bozucu",
-    }
-    assert names == expected
+def test_player_facing_module_names_are_unique_and_legacy_names_are_gone():
+    names = [definition.name_tr for definition in BASIC_MODULE_DEFINITIONS.values()]
+    assert len(names) == len(set(names))
+    assert not {"Jeneratör", "Dağıtıcı", "Enerji Sömürücü"} & set(names)

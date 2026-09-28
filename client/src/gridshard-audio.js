@@ -1,9 +1,6 @@
 (function (global) {
   "use strict";
 
-  const GRIDSHARD_BATTLE_MIXES = global.GRIDSHARD_BATTLE_MIXES
-    || (typeof require === "function" ? require("./audio-mix.js") : null);
-
   const GRIDSHARD_AUDIO_STATES = Object.freeze({
     MENU: "menu",
     POOL: "pool",
@@ -29,12 +26,21 @@
   });
 
   const GRIDSHARD_AUDIO_MIX = Object.freeze({
-    version:"shardglass-mobile-v10",
+    version:"shardglass-seamless-v12",
     crossfadeMs:1200,
     menuPoolCrossfadeMs:480,
     resultCrossfadeMs:320,
     musicBaseGain:0.72,
-    sfxBaseGain:0.86,
+    // v11: savaş efektleri müziği bastırmasın; efektler kısık, savaş
+    // müziği açık, efekt kanalı sıkıştırıcıdan geçer.
+    sfxBaseGain:0.55,
+    // v12: savaşta katmanlı müzik baskın, silah/darbe efektleri arka planda.
+    // Müzik kazancı yükseldi; efekt kanalı savaş durumlarında ayrıca kısılır.
+    // Katman toplamı kırpılmasın diye müzik hattı sınırlayıcıdan geçer.
+    battleMusicGain:1.85,
+    battleSfxGain:0.5,
+    sfxCompressor:Object.freeze({ threshold:-20, knee:12, ratio:4, attack:.004, release:.22 }),
+    musicLimiter:Object.freeze({ threshold:-3, knee:0, ratio:20, attack:.003, release:.25 }),
     criticalLayerGain:0.28,
     criticalLayerMaxGain:0.52,
     musicPeakDbfs:-6,
@@ -45,10 +51,12 @@
     menu:"./assets/audio/menu_ensemble_v6.wav",
     pool:"./assets/audio/pool_ensemble_v6.wav",
     matchmaking:"./assets/audio/matchmaking_rise.wav",
-    battle_intro:GRIDSHARD_BATTLE_MIXES.battle_intro.asset,
-    battle:GRIDSHARD_BATTLE_MIXES.battle.asset,
-    battle_pressure:GRIDSHARD_BATTLE_MIXES.battle_pressure.asset,
-    critical_core:GRIDSHARD_BATTLE_MIXES.critical_core.asset,
+    // Savaş durumları katmanlı çalar; buradaki değer o durumu tanımlayan
+    // imza stem'idir. Durumlar artık aynı dosyayı paylaşmaz.
+    battle_intro:"./assets/audio/battle_tension_v7_02_pulse.wav",
+    battle:"./assets/audio/battle_tension_v7_04_ostinato.wav",
+    battle_pressure:"./assets/audio/battle_tension_v7_06_dissonance.wav",
+    critical_core:"./assets/audio/battle_tension_v7_07_pressure.wav",
     victory:"./assets/audio/victory_sting.wav",
     defeat:"./assets/audio/defeat_sting.wav",
   });
@@ -59,15 +67,106 @@
   const GRIDSHARD_CONTINUOUS_LOOP_SECONDS = 32;
   const GRIDSHARD_BATTLE_MUSIC_ENABLED = true;
 
-  const GRIDSHARD_BATTLE_LAYERS = Object.freeze([
-    {id:"sub", asset:"./assets/audio/battle_tension_v7_01_sub.wav", baseGain:.36, pressureGain:.10},
-    {id:"pulse", asset:"./assets/audio/battle_tension_v7_02_pulse.wav", baseGain:.30, pressureGain:.14},
-    {id:"percussion", asset:"./assets/audio/battle_tension_v7_03_percussion.wav", baseGain:.27, pressureGain:.18},
-    {id:"ostinato", asset:"./assets/audio/battle_tension_v7_04_ostinato.wav", baseGain:.24, pressureGain:.20},
-    {id:"shards", asset:"./assets/audio/battle_tension_v7_05_shards.wav", baseGain:.16, pressureGain:.24},
-    {id:"dissonance", asset:"./assets/audio/battle_tension_v7_06_dissonance.wav", baseGain:.13, pressureGain:.27},
-    {id:"pressure", asset:"./assets/audio/battle_tension_v7_07_pressure.wav", baseGain:.06, pressureGain:.36},
+  // Her savaş durumu yalnız kendi stem kümesini duyurur; baskı değeri bu
+  // küme içindeki kazançları değiştirir.
+  const GRIDSHARD_BATTLE_STATE_LAYERS = Object.freeze({
+    battle_intro:Object.freeze(["sub", "pulse", "percussion"]),
+    battle:Object.freeze(["sub", "pulse", "percussion", "ostinato", "shards"]),
+    battle_pressure:Object.freeze(["sub", "pulse", "percussion", "ostinato", "shards", "dissonance"]),
+    critical_core:Object.freeze(["sub", "pulse", "percussion", "ostinato", "shards", "dissonance", "pressure"]),
+  });
+
+  // navigator.deviceMemory <= 2 GB cihazlarda çözülmüş PCM bütçesini
+  // yarıya indirmek için yalnız omurga ve kritik stem'ler yüklenir.
+  const GRIDSHARD_LOW_MEMORY_BATTLE_LAYERS = Object.freeze([
+    "sub", "pulse", "percussion", "pressure",
   ]);
+
+  // tools/encode_mobile_audio.py üretir: ./assets/audio/mobile/<ad>.<uzantı>
+  const GRIDSHARD_AUDIO_ENCODING_PROBES = Object.freeze([
+    {extension:"ogg", mime:'audio/ogg; codecs="vorbis"', accept:["probably"]},
+    {extension:"m4a", mime:'audio/mp4; codecs="mp4a.40.2"', accept:["probably", "maybe"]},
+  ]);
+
+  let gridshardPreferredEncodingCache;
+
+  function gridshardPreferredEncoding() {
+    if (gridshardPreferredEncodingCache !== undefined) {
+      return gridshardPreferredEncodingCache;
+    }
+    gridshardPreferredEncodingCache = null;
+    const manifest = global.GRIDSHARD_AUDIO_ENCODINGS;
+    if (!manifest?.formats || typeof global.Audio !== "function") {
+      return gridshardPreferredEncodingCache;
+    }
+    let probe;
+    try {
+      probe = new global.Audio();
+    } catch (_) {
+      return gridshardPreferredEncodingCache;
+    }
+    if (typeof probe?.canPlayType !== "function") {
+      return gridshardPreferredEncodingCache;
+    }
+    for (const candidate of GRIDSHARD_AUDIO_ENCODING_PROBES) {
+      const available = manifest.formats[candidate.extension];
+      if (!Array.isArray(available) || !available.length) continue;
+      if (candidate.accept.includes(probe.canPlayType(candidate.mime))) {
+        gridshardPreferredEncodingCache = {
+          extension:candidate.extension,
+          names:new Set(available),
+        };
+        break;
+      }
+    }
+    return gridshardPreferredEncodingCache;
+  }
+
+  function gridshardResolveAudioAsset(asset) {
+    const match = /^(.*\/assets\/audio\/)([\w.-]+)\.wav$/.exec(String(asset || ""));
+    const encoding = match && gridshardPreferredEncoding();
+    if (!encoding || !encoding.names.has(match[2])) return asset;
+    return `${match[1]}mobile/${match[2]}.${encoding.extension}`;
+  }
+
+  function gridshardDecodeAudioAsset(context, asset) {
+    const load = (src) => global.fetch(src)
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error(`Audio asset could not be loaded: ${src}`);
+        }
+        return response.arrayBuffer();
+      })
+      .then((bytes) => context.decodeAudioData(bytes));
+    const resolved = gridshardResolveAudioAsset(asset);
+    if (resolved === asset) return load(asset);
+    // Mobil türev eksik veya çözülemiyorsa kanonik WAV'a düşülür.
+    return load(resolved).catch(() => load(asset));
+  }
+
+  const GRIDSHARD_BATTLE_LAYERS = Object.freeze([
+    {id:"sub", asset:"./assets/audio/battle_tension_v7_01_sub.wav", baseGain:.41, pressureGain:.10},
+    {id:"pulse", asset:"./assets/audio/battle_tension_v7_02_pulse.wav", baseGain:.35, pressureGain:.14},
+    {id:"percussion", asset:"./assets/audio/battle_tension_v7_03_percussion.wav", baseGain:.31, pressureGain:.18},
+    {id:"ostinato", asset:"./assets/audio/battle_tension_v7_04_ostinato.wav", baseGain:.28, pressureGain:.20},
+    {id:"shards", asset:"./assets/audio/battle_tension_v7_05_shards.wav", baseGain:.18, pressureGain:.24},
+    {id:"dissonance", asset:"./assets/audio/battle_tension_v7_06_dissonance.wav", baseGain:.15, pressureGain:.27},
+    {id:"pressure", asset:"./assets/audio/battle_tension_v7_07_pressure.wav", baseGain:.07, pressureGain:.36},
+  ]);
+
+  // Savaşta iki tarafın her saldırısı ateş ve isabet efekti çalar; yığılan
+  // efektler müziği bastırıyordu. Aynı efekt kısa aralıkla tekrar çalmaz ve
+  // rutin efektler (ateş, isabet, akım) kısa bir pencerede sınırlanır.
+  // Önemli olaylar sınıra takılmaz.
+  const GRIDSHARD_SFX_VOICE_LIMIT = Object.freeze({
+    retriggerMs:90,
+    voiceWindowMs:320,
+    maxRoutineVoices:3,
+    priorityCues:Object.freeze([
+      "core_hit", "kill_confirm", "module_lost", "warning",
+      "shield_activate", "phoenix_revive", "core_rebirth", "emp",
+    ]),
+  });
 
   const GRIDSHARD_SFX_CUES = Object.freeze({
     energy_transfer:{
@@ -110,10 +209,6 @@
       asset:"./assets/audio/virus_glitch.wav",
       identity:"dijital glitch",
     },
-    generator_move:{
-      asset:"./assets/audio/generator_move.wav",
-      identity:"manyetik kilit aç / yön değişimi / kilit",
-    },
     core_hit:{
       asset:"./assets/audio/core_hit.wav",
       identity:"derin bass transient + elektrik çatlağı",
@@ -122,51 +217,104 @@
       asset:"./assets/audio/energy_transfer.wav",
       identity:"kısa gövde darbesi + elektrik boşalması",
     },
+    // Beta.72 — imza ipuçları. Yeni ses dosyası yoktur; her ad mevcut bir
+    // varlığa bağlanır, böylece mobil ogg/m4a seçimi aynen çalışır.
+    plasma_mortar_fire:{
+      asset:"./assets/audio/missile_fire.wav",
+      identity:"ağır plazma havan fırlatması",
+    },
+    quantum_repeater_fire:{
+      asset:"./assets/audio/laser_fire.wav",
+      identity:"kısa kuantum atımı",
+    },
+    ion_spear_fire:{
+      asset:"./assets/audio/railgun_fire.wav",
+      identity:"delici iyon mızrağı",
+    },
+    swarm_fabricator_fire:{
+      asset:"./assets/audio/drone_fire.wav",
+      identity:"sürü dronu salvosu",
+    },
+    quantum_cannon_fire:{
+      asset:"./assets/audio/pulse_cannon_fire.wav",
+      identity:"kuantum top boşalması",
+    },
+    quantum_charge:{
+      asset:"./assets/audio/pulse_cannon_fire.wav",
+      identity:"birikmiş kuantum yükünün çöküşü",
+    },
+    repeat_echo:{
+      asset:"./assets/audio/laser_fire.wav",
+      identity:"aynı hedefe kuantum yankısı",
+    },
+    swarm_release:{
+      asset:"./assets/audio/drone_fire.wav",
+      identity:"depolanan dronların toplu salınımı",
+    },
+    phoenix_revive:{
+      asset:"./assets/audio/tier_up.wav",
+      identity:"yükselen diriliş tonu",
+    },
+    prism_shield:{
+      asset:"./assets/audio/shield_hit.wav",
+      identity:"prizmanın hasarı enerjiye çevirmesi",
+    },
+    phase_evade:{
+      asset:"./assets/audio/shield_hit.wav",
+      identity:"faz penceresinde boşa çıkan vuruş",
+    },
+    singularity_field:{
+      asset:"./assets/audio/emp.wav",
+      identity:"tekillik alanının ikinci sisteme sıçraması",
+    },
+    sabotage_echo:{
+      asset:"./assets/audio/virus_glitch.wav",
+      identity:"kesinti yankısı",
+    },
+    omega_link:{
+      asset:"./assets/audio/port_connect.wav",
+      identity:"omega rezonans bağlantısı",
+    },
+    chrono_shift:{
+      asset:"./assets/audio/port_connect.wav",
+      identity:"kronos penceresinin açılması",
+    },
+    target_lock:{
+      asset:"./assets/audio/port_connect.wav",
+      identity:"hedefe kilitlenme",
+    },
+    nano_pulse:{
+      asset:"./assets/audio/energy_transfer.wav",
+      identity:"nano onarım darbesi",
+    },
+    kill_confirm:{
+      asset:"./assets/audio/core_hit.wav",
+      identity:"rakip modülün yok edilmesi",
+    },
+    module_lost:{
+      asset:"./assets/audio/energy_transfer.wav",
+      identity:"kendi modülünün düşmesi",
+    },
+    shield_activate:{
+      asset:"./assets/audio/shield_hit.wav",
+      identity:"çekirdek gücünün devreye girmesi",
+    },
+    warning:{
+      asset:"./assets/audio/emp.wav",
+      identity:"devre gerilimi uyarısı",
+    },
+    core_rebirth:{
+      asset:"./assets/audio/tier_up.wav",
+      identity:"Anka Çekirdeğinin küllerden doğuşu",
+    },
+    overdrive_chain:{
+      asset:"./assets/audio/arc_cannon_fire.wav",
+      identity:"Aşırı Yük zincirinin uzaması",
+    },
   });
 
-  let preferredAudioExtensions = null;
-
-  function compressedAudioCandidates(asset) {
-    const name = /^\.\/assets\/audio\/([^/]+)\.wav$/.exec(asset)?.[1];
-    if (!name) return [asset];
-    if (!preferredAudioExtensions) {
-      const probe = global.document?.createElement?.("audio")
-        || (typeof global.Audio === "function" ? new global.Audio() : null);
-      const vorbis = probe?.canPlayType?.('audio/ogg; codecs="vorbis"');
-      preferredAudioExtensions = vorbis && vorbis !== "no" ? ["ogg", "m4a"] : ["m4a", "ogg"];
-    }
-    // WAV names remain stable cue IDs, never network requests or release assets.
-    return preferredAudioExtensions.map((extension) => `./assets/audio/mobile/${name}.${extension}`);
-  }
-
-  function loadCompressedBuffer(context, asset, cache) {
-    if (!cache.has(asset)) {
-      const pending = (async () => {
-        let lastError;
-        for (const source of compressedAudioCandidates(asset)) {
-          const controller = typeof global.AbortController === "function" ? new global.AbortController() : null;
-          const timeout = controller ? global.setTimeout(() => controller.abort(), 12000) : null;
-          try {
-            const response = await global.fetch(source, controller ? { signal: controller.signal } : undefined);
-            if (!response.ok) throw new Error(`Audio asset could not be loaded: ${source}`);
-            return await context.decodeAudioData(await response.arrayBuffer());
-          } catch (error) {
-            lastError = error;
-          } finally {
-            if (timeout !== null) global.clearTimeout(timeout);
-          }
-        }
-        throw lastError || new Error(`Audio decoding failed: ${asset}`);
-      })();
-      cache.set(asset, pending);
-      // A temporary network failure must not poison the cache forever.
-      pending.catch(() => { if (cache.get(asset) === pending) cache.delete(asset); });
-    }
-    return cache.get(asset);
-  }
-
   class GridshardSeamlessLoopTrack {
-    constructor(context, asset, bufferCache) {
+    constructor(context, asset, bufferCache, output = context.destination) {
       this.context = context;
       this.src = asset;
       this._bufferCache = bufferCache;
@@ -177,14 +325,12 @@
       this._volume = 0;
       this._playbackRate = 1;
       this._playToken = 0;
-      this._loopSeconds = /menu_ensemble|pool_ensemble|battle_/.test(asset) ? 32
-        : /matchmaking_rise/.test(asset) ? 6 : 0;
       this.loop = true;
       this.paused = true;
       this.preload = "auto";
       this._gain = context.createGain();
       this._gain.gain.value = 0;
-      this._gain.connect(context.destination);
+      this._gain.connect(output || context.destination);
     }
 
     get volume() {
@@ -213,7 +359,7 @@
         return (
           this._offset
           + elapsed * this._playbackRate
-        ) % this._loopDuration();
+        ) % this._buffer.duration;
       }
       return this._offset;
     }
@@ -221,7 +367,7 @@
     set currentTime(value) {
       const next = Math.max(0, Number(value || 0));
       this._offset = this._buffer?.duration
-        ? next % this._loopDuration()
+        ? next % this._buffer.duration
         : next;
       if (!this.paused && this._buffer) {
         this._startSource();
@@ -229,24 +375,13 @@
     }
 
     _loadBuffer() {
-      return loadCompressedBuffer(this.context, this.src, this._bufferCache);
-    }
-
-    _loopDuration() {
-      return Math.min(this._buffer.duration, this._loopSeconds || this._buffer.duration);
-    }
-
-    async prepare() {
-      this._buffer = await this._loadBuffer();
-      return this._buffer;
-    }
-
-    playAt(when, offset = 0) {
-      if (!this._buffer) return;
-      this._playToken += 1;
-      this.paused = false;
-      this._offset = offset % this._loopDuration();
-      this._startSource(when);
+      if (!this._bufferCache.has(this.src)) {
+        this._bufferCache.set(
+          this.src,
+          gridshardDecodeAudioAsset(this.context, this.src)
+        );
+      }
+      return this._bufferCache.get(this.src);
     }
 
     _stopSource() {
@@ -261,19 +396,29 @@
       }
     }
 
-    _startSource(when = this.context.currentTime) {
+    _startSource(when = 0) {
       if (!this._buffer || this.paused) return;
       this._stopSource();
       const source = this.context.createBufferSource();
       source.buffer = this._buffer;
       source.loop = this.loop;
       source.loopStart = 0;
-      source.loopEnd = this._loopDuration();
+      source.loopEnd = this._buffer.duration;
       source.playbackRate.value = this._playbackRate;
       source.connect(this._gain);
-      this._startedAt = when;
-      source.start(when, this._offset % this._loopDuration());
+      this._startedAt = Math.max(when, this.context.currentTime);
+      source.start(when, this._offset % this._buffer.duration);
       this._source = source;
+    }
+
+    // Katman grubunun bütün stem'leri aynı bağlam zamanında başlar; bağlam
+    // askıdaysa saat ilerlemediği için devam ettiğinde de birlikte başlarlar.
+    startAt(buffer, when, offset = 0) {
+      this.paused = false;
+      this._playToken += 1;
+      this._buffer = buffer;
+      this._offset = offset % buffer.duration;
+      this._startSource(when);
     }
 
     async play() {
@@ -285,7 +430,7 @@
       const buffer = await this._loadBuffer();
       if (this.paused || token !== this._playToken) return;
       this._buffer = buffer;
-      this._offset %= this._loopDuration();
+      this._offset %= buffer.duration;
       this._startSource();
     }
 
@@ -312,16 +457,15 @@
       this.currentTrack = null;
       this.criticalLayerTrack = null;
       this.battleLayerTracks = [];
+      this._battleLayerState = null;
       this.battlePressure = .32;
-      this._battleMixState = null;
-      this._battleUseFallback = false;
-      this._battlePlaybackPromise = null;
       this._fadeTimers = new Set();
       this._fadeTimerByAudio = new Map();
       this._musicContext = null;
       this._musicBufferCache = new Map();
       this._sfxGainNode = null;
       this._resultGainNode = null;
+      this._musicOutputNode = null;
       this._activeBufferSources = new Set();
       this._resultBufferSource = null;
       this._resultBufferOutcome = null;
@@ -329,6 +473,8 @@
       this._pendingResultOutcome = null;
       this._pendingPlayback = new Map();
       this._activeSfx = new Set();
+      this._sfxLastTriggeredAt = new Map();
+      this._routineSfxStarts = [];
       this._preloadedAudio = new Map();
       this._resultTrack = null;
       this._lastPlaybackError = null;
@@ -347,8 +493,9 @@
         this._musicContext = new AudioContextClass();
         this._sfxGainNode = this._musicContext.createGain();
         this._resultGainNode = this._musicContext.createGain();
-        this._sfxGainNode.connect(this._musicContext.destination);
+        this._sfxGainNode.connect(this._createSfxCompressor(this._musicContext));
         this._resultGainNode.connect(this._musicContext.destination);
+        this._musicOutputNode = this._createMusicLimiter(this._musicContext);
         this._syncWebAudioVolumes();
         this._musicContext.addEventListener?.(
           "statechange",
@@ -359,6 +506,7 @@
         this._musicContext = null;
         this._sfxGainNode = null;
         this._resultGainNode = null;
+        this._musicOutputNode = null;
         this._lastPlaybackError = {
           name:String(error?.name || "AudioContextError"),
           message:String(error?.message || error || "Audio context could not be created."),
@@ -367,6 +515,65 @@
         };
       }
       return this._musicContext;
+    }
+
+    // Katmanlı savaş müziğinin toplam tepesini -3 dBFS altında tutar; tarayıcı
+    // desteklemiyorsa müzik doğrudan çıkışa bağlanır.
+    _createMusicLimiter(context) {
+      if (typeof context.createDynamicsCompressor !== "function") {
+        return context.destination;
+      }
+      try {
+        const limiter = context.createDynamicsCompressor();
+        const settings = GRIDSHARD_AUDIO_MIX.musicLimiter;
+        limiter.threshold.value = settings.threshold;
+        limiter.knee.value = settings.knee;
+        limiter.ratio.value = settings.ratio;
+        limiter.attack.value = settings.attack;
+        limiter.release.value = settings.release;
+        limiter.connect(context.destination);
+        return limiter;
+      } catch (_) {
+        return context.destination;
+      }
+    }
+
+    // Üst üste binen efektlerin tepe seviyesini yumuşatır; tarayıcı
+    // desteklemiyorsa efekt kanalı doğrudan çıkışa bağlanır.
+    _createSfxCompressor(context) {
+      if (typeof context.createDynamicsCompressor !== "function") {
+        return context.destination;
+      }
+      try {
+        const compressor = context.createDynamicsCompressor();
+        const settings = GRIDSHARD_AUDIO_MIX.sfxCompressor;
+        compressor.threshold.value = settings.threshold;
+        compressor.knee.value = settings.knee;
+        compressor.ratio.value = settings.ratio;
+        compressor.attack.value = settings.attack;
+        compressor.release.value = settings.release;
+        compressor.connect(context.destination);
+        return compressor;
+      } catch (_) {
+        return context.destination;
+      }
+    }
+
+    // Efekt çalınacaksa true döner ve zamanını kaydeder.
+    _admitSfxVoice(name) {
+      const now = Date.now();
+      const rules = GRIDSHARD_SFX_VOICE_LIMIT;
+      const lastAt = this._sfxLastTriggeredAt.get(name) ?? -Infinity;
+      if (now - lastAt < rules.retriggerMs) return false;
+      if (!rules.priorityCues.includes(name)) {
+        this._routineSfxStarts = this._routineSfxStarts.filter(
+          (startedAt) => now - startedAt < rules.voiceWindowMs
+        );
+        if (this._routineSfxStarts.length >= rules.maxRoutineVoices) return false;
+        this._routineSfxStarts.push(now);
+      }
+      this._sfxLastTriggeredAt.set(name, now);
+      return true;
     }
 
     _publishPlaybackState() {
@@ -390,35 +597,28 @@
         return new GridshardSeamlessLoopTrack(
           context,
           asset,
-          this._musicBufferCache
+          this._musicBufferCache,
+          this._musicOutputNode
         );
       }
       return this._createHtmlAudio(asset);
     }
 
     _createHtmlAudio(asset) {
-      const candidates = compressedAudioCandidates(asset);
-      const audio = new global.Audio(candidates[0]);
-      audio._gridshardCandidates = candidates;
-      audio._gridshardCandidateIndex = 0;
+      const resolved = gridshardResolveAudioAsset(asset);
+      const audio = new global.Audio(resolved);
       audio._gridshardAsset = asset;
-      audio._gridshardStopped = true;
-      audio.addEventListener?.("error", () => {
-        if (audio._gridshardStopped) return;
-        this._tryNextHtmlSource(audio);
-      });
+      if (resolved !== asset && typeof audio.addEventListener === "function") {
+        // Mobil türev yüklenemezse aynı öğe kanonik WAV ile yeniden denenir.
+        audio.addEventListener("error", () => {
+          audio.src = asset;
+          if (typeof audio.load === "function") {
+            try { audio.load(); } catch (_) {}
+          }
+          if (audio._gridshardPlayRequested) this._safePlay(audio);
+        }, {once:true});
+      }
       return audio;
-    }
-
-    _tryNextHtmlSource(audio) {
-      const candidates = audio._gridshardCandidates || [];
-      const index = Number(audio._gridshardCandidateIndex || 0);
-      if (audio._gridshardStopped || index + 1 >= candidates.length) return null;
-      audio._gridshardCandidateIndex = index + 1;
-      audio.src = candidates[index + 1];
-      const retry = this._safePlay(audio);
-      audio._gridshardRetryPromise = retry;
-      return retry;
     }
 
     _canPlayAudio() {
@@ -460,7 +660,13 @@
       if (!context || typeof global.fetch !== "function") {
         return Promise.reject(new Error("Web Audio is unavailable."));
       }
-      return loadCompressedBuffer(context, asset, this._musicBufferCache);
+      if (!this._musicBufferCache.has(asset)) {
+        this._musicBufferCache.set(
+          asset,
+          gridshardDecodeAudioAsset(context,asset)
+        );
+      }
+      return this._musicBufferCache.get(asset);
     }
 
     _preloadAudioBuffers(assets=[]) {
@@ -579,13 +785,6 @@
       }
       if (template && typeof template.cloneNode === "function") {
         const clone=template.cloneNode(true);
-        clone._gridshardCandidates = template._gridshardCandidates;
-        clone._gridshardCandidateIndex = template._gridshardCandidateIndex;
-        clone._gridshardAsset = asset;
-        clone._gridshardStopped = true;
-        clone.addEventListener?.("error", () => {
-          if (!clone._gridshardStopped) this._tryNextHtmlSource(clone);
-        });
         clone.preload="none";
         return clone;
       }
@@ -606,7 +805,22 @@
       );
     }
 
+    _battleMusicTargetVolume() {
+      return Math.max(
+        0,
+        Math.min(
+          1,
+          this._musicTargetVolume()
+          * GRIDSHARD_AUDIO_MIX.battleMusicGain
+        )
+      );
+    }
+
     _sfxTargetVolume() {
+      // Savaş durumlarında efektler katmanlı müziğin arkasında kalır.
+      const battleDuck = GRIDSHARD_BATTLE_STATE_LAYERS[this.state]
+        ? GRIDSHARD_AUDIO_MIX.battleSfxGain
+        : 1;
       return Math.max(
         0,
         Math.min(
@@ -614,6 +828,7 @@
           this.masterVolume
           * this.sfxVolume
           * GRIDSHARD_AUDIO_MIX.sfxBaseGain
+          * battleDuck
         )
       );
     }
@@ -622,15 +837,11 @@
       if (!audio || typeof audio.play !== "function") {
         return Promise.resolve(false);
       }
-      audio._gridshardStopped = false;
-      const candidateIndex = audio._gridshardCandidateIndex;
+      audio._gridshardPlayRequested=true;
       let result;
       try {
         result=audio.play();
       } catch (error) {
-        const retry = error?.name !== "NotAllowedError" && error?.name !== "AbortError"
-          ? this._tryNextHtmlSource(audio) : null;
-        if (retry) return retry;
         this._recordPlaybackFailure(audio, error);
         return Promise.resolve(false);
       }
@@ -641,11 +852,6 @@
           return true;
         })
         .catch((error) => {
-          if (audio._gridshardStopped) return false;
-          if (candidateIndex !== audio._gridshardCandidateIndex) return audio._gridshardRetryPromise || false;
-          const retry = error?.name !== "NotAllowedError" && error?.name !== "AbortError"
-            ? this._tryNextHtmlSource(audio) : null;
-          if (retry) return retry;
           this._recordPlaybackFailure(audio, error);
           return false;
         });
@@ -668,18 +874,17 @@
       const contextReady=await this._resumeAudioContext();
       this._syncWebAudioVolumes();
       const candidates = new Set([
-        ...[...this._pendingPlayback.keys()].filter((audio) => !this.battleLayerTracks.includes(audio)),
+        ...this._pendingPlayback.keys(),
         ...[
           this.currentTrack,
           this._resultTrack,
           this.criticalLayerTrack,
           ...this.battleLayerTracks,
-        ].filter((audio) => audio && audio.paused !== false && !this.battleLayerTracks.includes(audio)),
+        ].filter((audio) => audio && audio.paused !== false),
       ]);
       const results = await Promise.all(
         [...candidates].map((audio) => this._safePlay(audio))
       );
-      if (contextReady) this._startPreparedBattleLayers();
       if (
         contextReady
         && this._pendingResultOutcome
@@ -700,9 +905,6 @@
       const context=this._ensureAudioContext();
       const resumePromise=this._resumeAudioContext();
       this._syncWebAudioVolumes();
-      if (GRIDSHARD_BATTLE_MUSIC_ENABLED && !this.musicMuted && this.musicVolume > 0) {
-        this._preloadAudioBuffers(GRIDSHARD_BATTLE_LAYERS.map((layer) => layer.asset));
-      }
       return {
         ok:Boolean(context),
         contextState:context?.state || "unavailable",
@@ -773,7 +975,7 @@
 
     _stopAudio(audio) {
       if (!audio) return;
-      audio._gridshardStopped = true;
+      audio._gridshardPlayRequested=false;
       this._pendingPlayback.delete(audio);
       this._cancelFade(audio);
       try {
@@ -893,10 +1095,8 @@
       }
 
       if (this.battleLayerTracks.length) {
-        this.criticalLayerTrack =
-          this.battleLayerTracks[
-            this.battleLayerTracks.length - 1
-          ];
+        this._battleLayerState = GRIDSHARD_AUDIO_STATES.CRITICAL_CORE;
+        this.criticalLayerTrack = this._battleLayerTrack("pressure");
         this._applyBattleLayerMix(1);
         return;
       }
@@ -908,9 +1108,10 @@
         return;
       }
 
-      // The single-track fallback already contains its own critical layer.
-      if (this.currentTrack?._gridshardBattleFallback) return;
-      const layer=this._createHtmlAudio(GRIDSHARD_CRITICAL_LAYER);
+      const layer=
+        this._createHtmlAudio(
+          GRIDSHARD_CRITICAL_LAYER
+        );
       layer.loop=true;
       layer.volume=0;
       this.criticalLayerTrack=layer;
@@ -919,7 +1120,7 @@
       this._fade(
         layer,
         0,
-        this._musicTargetVolume()
+        this._battleMusicTargetVolume()
           * GRIDSHARD_AUDIO_MIX
             .criticalLayerGain,
         GRIDSHARD_AUDIO_MIX
@@ -945,18 +1146,43 @@
       return Math.max(.32, this.battlePressure);
     }
 
+    _battleLayerSet() {
+      const memory = Number(global.navigator?.deviceMemory);
+      if (Number.isFinite(memory) && memory > 0 && memory <= 2) {
+        return GRIDSHARD_BATTLE_LAYERS.filter(
+          layer => GRIDSHARD_LOW_MEMORY_BATTLE_LAYERS.includes(layer.id)
+        );
+      }
+      return [...GRIDSHARD_BATTLE_LAYERS];
+    }
+
+    _battleLayerTrack(id) {
+      return this.battleLayerTracks.find(
+        track => track._gridshardLayer?.id === id
+      ) || null;
+    }
+
     _applyBattleLayerMix(pressure=this.battlePressure, {fade=false}={}) {
       const normalized = Math.max(0, Math.min(1, Number(pressure)));
-      const profile = GRIDSHARD_BATTLE_MIXES[this._battleMixState] || GRIDSHARD_BATTLE_MIXES.battle;
-      for (let index = 0; index < this.battleLayerTracks.length; index += 1) {
-        const track = this.battleLayerTracks[index];
-        const layer = GRIDSHARD_BATTLE_LAYERS[index];
-        if (!track || !layer) continue;
-        const target = this._musicTargetVolume()
-          * profile.gains[index] * (.85 + .15 * normalized);
+      this.battlePressure = normalized;
+      const activeIds =
+        GRIDSHARD_BATTLE_STATE_LAYERS[this._battleLayerState]
+        || GRIDSHARD_BATTLE_STATE_LAYERS[GRIDSHARD_AUDIO_STATES.BATTLE];
+      for (const track of this.battleLayerTracks) {
+        const layer = track?._gridshardLayer;
+        if (!layer) continue;
+        const target = activeIds.includes(layer.id)
+          ? Math.min(
+              1,
+              this._battleMusicTargetVolume()
+                * (layer.baseGain + layer.pressureGain * normalized)
+            )
+          : 0;
         if (fade) {
           this._fade(track, Number(track.volume || 0), target, 420);
         } else {
+          // Süren bir geçiş, yeni baskı değerini bitişinde ezmemeli.
+          this._cancelFade(track);
           track.volume = target;
         }
         if ("playbackRate" in track) track.playbackRate = 1;
@@ -976,7 +1202,7 @@
     _stopBattleLayers({fade=true}={}) {
       const tracks = [...this.battleLayerTracks];
       this.battleLayerTracks = [];
-      this._battlePlaybackPromise = null;
+      this._battleLayerState = null;
       if (tracks.includes(this.currentTrack)) this.currentTrack = null;
       if (tracks.includes(this.criticalLayerTrack)) this.criticalLayerTrack = null;
       for (const track of tracks) {
@@ -994,6 +1220,51 @@
       }
     }
 
+    _createBattleLayerTracks() {
+      const context = this._ensureAudioContext();
+      const webAudio = Boolean(context) && typeof global.fetch === "function";
+      return this._battleLayerSet().map(layer => {
+        const track = webAudio
+          ? new GridshardSeamlessLoopTrack(context, layer.asset, this._musicBufferCache, this._musicOutputNode)
+          : this._createHtmlAudio(layer.asset);
+        track._gridshardLayer = layer;
+        track._gridshardAsset = layer.asset;
+        track.loop = true;
+        track.volume = 0;
+        return track;
+      });
+    }
+
+    _startBattleLayerTracks(tracks) {
+      if (!tracks.length) return;
+      if (!(tracks[0] instanceof GridshardSeamlessLoopTrack)) {
+        // Web Audio yoksa HTML öğeleri ayrı başlar; senkron garanti edilmez.
+        for (const track of tracks) this._safePlay(track);
+        return;
+      }
+      // Stem'ler tek tek oynatılırsa çözümleme süreleri faz kayması yaratır.
+      // Hepsi çözülene kadar beklenir ve aynı bağlam zamanında başlatılır.
+      // paused=false, unlock() yolunun stem'leri tek tek başlatmasını önler.
+      for (const track of tracks) track.paused = false;
+      const context = tracks[0].context;
+      Promise.all(tracks.map(track => track._loadBuffer()))
+        .then((buffers) => {
+          if (this.battleLayerTracks !== tracks) return;
+          const when = context.currentTime + .05;
+          tracks.forEach((track, index) => track.startAt(buffers[index], when, 0));
+          this._lastPlaybackError = null;
+        })
+        .catch((error) => {
+          this._lastPlaybackError = {
+            name:String(error?.name || "AudioBufferError"),
+            message:String(error?.message || error || "Battle layers could not be loaded."),
+            src:"battle_layers",
+            at:Date.now(),
+          };
+        });
+      this._resumeAudioContext();
+    }
+
     _transitionToBattleLayers(state) {
       if (
         !this.enabled
@@ -1002,18 +1273,13 @@
         || !this._canPlayAudio()
       ) return;
 
-      this._battleMixState = state;
-      const context = this._ensureAudioContext();
-      if (!context || typeof global.fetch !== "function" || this._battleUseFallback) {
-        this._transitionToBattleFallback(state);
-        return;
-      }
       const pressure = this._battlePressureForState(state);
-      if (this.battleLayerTracks.length === GRIDSHARD_BATTLE_LAYERS.length) {
+      if (this.battleLayerTracks.length) {
+        this._battleLayerState = state;
         this.currentTrack = this.battleLayerTracks[0];
         this.criticalLayerTrack =
           state === GRIDSHARD_AUDIO_STATES.CRITICAL_CORE
-            ? this.battleLayerTracks[this.battleLayerTracks.length - 1]
+            ? this._battleLayerTrack("pressure")
             : null;
         this._applyBattleLayerMix(pressure, {fade:true});
         return;
@@ -1022,33 +1288,16 @@
       const previous = this.currentTrack;
       this._stopCriticalLayer({fade:false});
       this._stopBattleLayers({fade:false});
-      const tracks = GRIDSHARD_BATTLE_LAYERS.map(layer => {
-        const audio = new GridshardSeamlessLoopTrack(context, layer.asset, this._musicBufferCache);
-        audio.loop = true;
-        audio.volume = 0;
-        return audio;
-      });
+      const tracks = this._createBattleLayerTracks();
       this.battleLayerTracks = tracks;
+      this._battleLayerState = state;
       this.currentTrack = tracks[0] || null;
       this.criticalLayerTrack =
         state === GRIDSHARD_AUDIO_STATES.CRITICAL_CORE
-          ? tracks[tracks.length - 1] || null
+          ? this._battleLayerTrack("pressure")
           : null;
       this._applyBattleLayerMix(pressure, {fade:true});
-      this._battlePlaybackPromise = Promise.all(tracks.map((track) => track.prepare()))
-        .then(async () => {
-          await this._resumeAudioContext();
-          if (this.battleLayerTracks !== tracks) return false;
-          return this._startPreparedBattleLayers();
-        })
-        .catch((error) => {
-          if (this.battleLayerTracks !== tracks) return false;
-          this._lastPlaybackError = { name: "BattleLayersError", message: String(error?.message || error), at: Date.now() };
-          this._stopBattleLayers({fade:false});
-          this._battleUseFallback = true;
-          this._transitionToBattleFallback(this._battleMixState);
-          return false;
-        });
+      this._startBattleLayerTracks(tracks);
 
       if (previous && !tracks.includes(previous)) {
         this._fade(
@@ -1059,38 +1308,6 @@
           () => this._stopAudio(previous)
         );
       }
-    }
-
-    _startPreparedBattleLayers() {
-      const tracks = this.battleLayerTracks;
-      if (!tracks.length || !this.enabled || this.musicMuted || this.musicVolume <= 0
-        || this._musicContext?.state !== "running" || tracks.some((track) => !track._buffer)) return false;
-      if (tracks.every((track) => !track.paused)) return true;
-      const when = this._musicContext.currentTime + .04;
-      const offset = tracks.find((track) => !track.paused)?.currentTime || 0;
-      tracks.forEach((track) => track.playAt(when, offset));
-      return true;
-    }
-
-    _transitionToBattleFallback(state) {
-      const asset = GRIDSHARD_MUSIC_ASSETS[state];
-      if (!asset) return;
-      const previous = this.currentTrack;
-      if (previous?._gridshardState === state && previous._gridshardBattleFallback) return;
-      const next = this._createHtmlAudio(asset);
-      next._gridshardState = state;
-      next._gridshardBattleFallback = true;
-      next.loop = true;
-      next.volume = 0;
-      // Preserve the 32-second musical phase when the state changes.
-      const offset = previous?._gridshardBattleFallback ? Number(previous.currentTime || 0) % 32 : 0;
-      const seek = () => { try { next.currentTime = offset; } catch (_) {} };
-      next.addEventListener?.("loadedmetadata", seek, {once:true});
-      seek();
-      this.currentTrack = next;
-      this._safePlay(next);
-      this._fade(next, 0, this._musicTargetVolume(), GRIDSHARD_AUDIO_MIX.crossfadeMs);
-      if (previous) this._fade(previous, Number(previous.volume || 0), 0, GRIDSHARD_AUDIO_MIX.crossfadeMs, () => this._stopAudio(previous));
     }
 
     _transitionToStateAsset(
@@ -1120,8 +1337,6 @@
         this._transitionToBattleLayers(state);
         return;
       }
-      this._battleUseFallback = false;
-      this._battleMixState = null;
 
       const asset=
         GRIDSHARD_MUSIC_ASSETS[
@@ -1402,6 +1617,8 @@
       const changed=
         this.state!==state;
       this.state=state;
+      // Savaşa girişte/çıkışta efekt kanalının kısma çarpanı güncellenir.
+      if (changed) this._syncWebAudioVolumes();
 
       if (
         [
@@ -1505,12 +1722,13 @@
         };
       }
 
-      if (
+      const audible=
         this.enabled
         && this.sfxEnabled
         && !this.soundMuted
-        && this.sfxVolume>0
-      ) {
+        && this.sfxVolume>0;
+      const played=audible && this._admitSfxVoice(name);
+      if (played) {
         if (this._ensureAudioContext()) {
           this._playAudioBuffer(cue.asset,{channel:"sfx"})
             .then((played)=>{
@@ -1524,6 +1742,7 @@
       return {
         ok:true,
         name,
+        played,
         normalizedPeakDbfs:
           GRIDSHARD_AUDIO_MIX
             .sfxPeakDbfs,
@@ -1612,7 +1831,7 @@
         }[stage];
 
         this.criticalLayerTrack.volume=
-          this._musicTargetVolume()
+          this._battleMusicTargetVolume()
           * stageGain;
 
         if (
@@ -1698,7 +1917,7 @@
         ) {
           this.criticalLayerTrack
             .volume=
-              this._musicTargetVolume()
+              this._battleMusicTargetVolume()
               * GRIDSHARD_AUDIO_MIX
                 .criticalLayerGain;
         }
@@ -1749,7 +1968,7 @@
       ) {
         this.criticalLayerTrack
           .volume=
-            this._musicTargetVolume()
+            this._battleMusicTargetVolume()
             * GRIDSHARD_AUDIO_MIX
               .criticalLayerGain;
       }
@@ -1758,6 +1977,8 @@
     }
   }
 
+  global.GRIDSHARD_SFX_VOICE_LIMIT=
+    GRIDSHARD_SFX_VOICE_LIMIT;
   global.GRIDSHARD_AUDIO_STATES=
     GRIDSHARD_AUDIO_STATES;
   global.GRIDSHARD_AUDIO_DIRECTION=
@@ -1772,6 +1993,12 @@
     GRIDSHARD_CONTINUOUS_LOOP_SECONDS;
   global.GRIDSHARD_BATTLE_LAYERS=
     GRIDSHARD_BATTLE_LAYERS;
+  global.GRIDSHARD_BATTLE_STATE_LAYERS=
+    GRIDSHARD_BATTLE_STATE_LAYERS;
+  global.GRIDSHARD_BATTLE_MUSIC_ENABLED=
+    GRIDSHARD_BATTLE_MUSIC_ENABLED;
+  global.gridshardResolveAudioAsset=
+    gridshardResolveAudioAsset;
   global.GRIDSHARD_SFX_CUES=
     GRIDSHARD_SFX_CUES;
   global.GridshardAudioDirector=

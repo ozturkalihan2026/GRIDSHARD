@@ -8,8 +8,8 @@ def test_six_new_alpha8_modules_exist():
     for module_id, name in expected.items():
         assert get_module_definition(module_id).name_tr == name
 
-def test_alpha8_has_18_global_modules():
-    assert len(BASIC_MODULE_DEFINITIONS) == 25
+def test_catalog_has_36_modules_plus_core():
+    assert len(BASIC_MODULE_DEFINITIONS) == 37
 
 def test_new_modules_have_unique_roles():
     ids=("capacitor","railgun","reflector","barrier","targeting_computer","jammer")

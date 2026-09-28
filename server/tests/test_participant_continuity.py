@@ -30,7 +30,7 @@ def test_repeated_bootstrap_returns_same_identity_and_profile():
         f"/participants/{player_id}/bootstrap"
     ).json()
 
-    assert first["identity"]["kind"]=="web_test_participant"
+    assert first["identity"]["kind"]=="participant"
     assert first["identity"]["player_id"]==player_id
     assert second["identity"]["player_id"]==player_id
     assert second["profile"]["display_name"]=="Süreklilik Oyuncusu"

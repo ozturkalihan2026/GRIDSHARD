@@ -1,10 +1,16 @@
 import asyncio
 
-from app.game.engine import BATTLE_TIME_LIMIT_MS
 from app.game.pvp_runner import PvPTickRunner
 from app.game.pvp_session import PvPSessionService
 from app.game.pvp_websocket import PvPWebSocketAdapter
 from app.player_statistics import PlayerStatisticsService
+
+
+def destroy_core(engine, player_id):
+    # Savaş yalnız bir Çekirdek yok olunca biter.
+    for module in engine.state.players[player_id].modules.values():
+        if module.definition.id == "core":
+            module.hp = 0
 
 
 def test_runner_processes_finished_match_once():
@@ -17,14 +23,8 @@ def test_runner_processes_finished_match_once():
             session.engine.grant_module(
                 p,f"{p}-core","core"
             )
-            session.engine.grant_module(
-                p,f"{p}-gen","generator"
-            )
             session.engine.set_initial_active_module(
                 p,f"{p}-core",2,1
-            )
-            session.engine.set_initial_active_module(
-                p,f"{p}-gen",2,0
             )
 
         service.start("stats")
@@ -38,10 +38,7 @@ def test_runner_processes_finished_match_once():
             ),
         )
 
-        session.engine.state.elapsed_ms=(
-            BATTLE_TIME_LIMIT_MS-100
-        )
-
+        destroy_core(session.engine, "b")
         await runner.run_single_tick(
             "stats"
         )

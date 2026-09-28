@@ -6,7 +6,6 @@ const {
   GridshardBattleEventBus,
   GridshardBattleEffectAggregator,
   GridshardAudioStateOwner,
-  GridshardBoosterTargetMode,
 } = require("../src/battle/battle-event-bus.js");
 
 test("battle event bus publishes an event to its single channel", () => {
@@ -110,12 +109,4 @@ test("audio state owner prevents stale pool writers from overwriting battle and 
   assert.equal(owner.terminalState, null);
   assert.deepEqual(applied, ["battle", "victory", "menu"]);
   assert.equal(owner.sync({ screen:"settings" }).state, "menu");
-});
-
-test("booster targeting is explicitly cancellable", () => {
-  const mode = new GridshardBoosterTargetMode();
-  assert.equal(mode.select("emergency_repair").active, true);
-  const cancelled = mode.cancel({ reason:"normal_module_click" });
-  assert.equal(cancelled.active, false);
-  assert.equal(cancelled.reason, "normal_module_click");
 });

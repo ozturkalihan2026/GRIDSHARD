@@ -13,7 +13,6 @@ from .game.battle_pool import (
     migrate_battle_pool,
     validate_battle_pool,
 )
-from .json_schema_migrations import assert_supported_schema
 
 
 PRESET_NAME_MAX_LENGTH=24
@@ -73,7 +72,6 @@ class JsonBattlePoolPresetRepository:
         )
 
     def _read_all(self)->dict:
-        assert_supported_schema(self.path, "battle_pool_presets", dict)
         if not self.path.exists():
             return {}
 
@@ -103,7 +101,6 @@ class JsonBattlePoolPresetRepository:
         payload:dict,
     )->None:
         with self._lock:
-            assert_supported_schema(self.path, "battle_pool_presets", dict)
             try:
                 self.path.parent.mkdir(
                     parents=True,

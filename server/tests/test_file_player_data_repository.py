@@ -16,7 +16,7 @@ def snapshot(
         player_id=player_id,
         profile={
             "player_id": player_id,
-            "display_name": "Oyuncu",
+            "display_name": f"Oyuncu {player_id}",
             "level": 1,
             "experience": 0,
             "experience_into_level": 0,
@@ -34,8 +34,6 @@ def snapshot(
             "win_rate": 0,
             "average_match_duration_ms": 0,
             "total_damage_dealt": 0,
-            "module_replacements": 0,
-            "boosters_used": 0,
             "most_used_modules": [],
         },
         settings={
@@ -129,7 +127,7 @@ def test_json_repository_uses_complete_json_document(tmp_path):
         ][
             "display_name"
         ]
-        == "Oyuncu"
+        == "Oyuncu wt-file-123456"
     )
     assert not (
         tmp_path

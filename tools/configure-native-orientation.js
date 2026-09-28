@@ -47,7 +47,9 @@ function configure(platform) {
   };
   if (platform === "web") return;
   if (!targets[platform]) throw new Error("Platform android veya ios olmalı.");
-  const [relative, transform] = targets[platform];
+  const [defaultRelative, transform] = targets[platform];
+  const relative = platform === "android" && process.env.GRIDSHARD_LOCAL_DEBUG === "1"
+    ? `.mobile-debug/${defaultRelative}` : defaultRelative;
   const filename = path.join(root, relative);
   if (!fs.existsSync(filename)) throw new Error(`Önce yerel mobil projeyi oluşturun: ${relative}`);
   const before = fs.readFileSync(filename, "utf8");

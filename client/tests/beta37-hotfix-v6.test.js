@@ -8,7 +8,6 @@ const html = fs.readFileSync('./index.html', 'utf8');
 assert.ok(app.includes('battle-live-ticker'));
 assert.ok(app.includes('module-live-status-row'));
 assert.ok(app.includes('floatingFeedbackLive'));
-assert.ok(app.includes('5. hak Dron Üssü · 6. hak Güçlendirici'));
 assert.ok(css.includes('Beta.37 Hotfix V6'));
 assert.ok(css.includes('.battle-live-ticker'));
 assert.ok(css.includes('.module-live-status-row'));

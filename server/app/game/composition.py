@@ -24,7 +24,7 @@ def active_deployable_modules(player: PlayerBattleState) -> tuple[BattleModule, 
         for module in player.modules.values()
         if module.status == ModuleStatus.ACTIVE
         and module.hp > 0
-        and module.definition.id not in {"core", "generator"}
+        and module.definition.id != "core"
     )
 
 

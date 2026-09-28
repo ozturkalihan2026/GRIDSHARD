@@ -4,7 +4,6 @@
   const GRIDSHARD_BATTLE_EVENT_CHANNELS = Object.freeze({
     GAME_EFFECT: "game_effect",
     AUDIO_STATE: "audio_state",
-    BOOSTER_STATE: "booster_state",
   });
 
   class GridshardBattleEventBus {
@@ -226,10 +225,6 @@
       }
       if (screen !== "play") return "menu";
       if (context.critical && battleActive) return "critical_core";
-      if (battleActive && Number.isFinite(context.battleElapsedMs)) {
-        if (context.battleElapsedMs < 6000) return "battle_intro";
-        if (context.battleElapsedMs >= 90000 || Number(context.battlePressure || 0) >= .72) return "battle_pressure";
-      }
       if (battleActive) return "battle";
       return "pool";
     }
@@ -302,54 +297,10 @@
     }
   }
 
-  class GridshardBoosterTargetMode {
-    constructor() {
-      this.selectedBoosterId = null;
-      this.revision = 0;
-      this.lastReason = "initial";
-    }
-
-    select(boosterId, { reason = "booster_selected" } = {}) {
-      const next = String(boosterId || "") || null;
-      const changed = next !== this.selectedBoosterId;
-      this.selectedBoosterId = next;
-      this.lastReason = reason;
-      if (changed) this.revision += 1;
-      return this.snapshot({ changed });
-    }
-
-    cancel({ reason = "cancelled" } = {}) {
-      const changed = this.selectedBoosterId !== null;
-      this.selectedBoosterId = null;
-      this.lastReason = reason;
-      if (changed) this.revision += 1;
-      return this.snapshot({ changed });
-    }
-
-    handle(event) {
-      const payload = event?.payload || event || {};
-      if (payload.action === "select") {
-        return this.select(payload.boosterId, { reason: payload.reason });
-      }
-      return this.cancel({ reason: payload.reason || payload.action || "cancelled" });
-    }
-
-    snapshot(extra = {}) {
-      return {
-        active: Boolean(this.selectedBoosterId),
-        selectedBoosterId: this.selectedBoosterId,
-        revision: this.revision,
-        reason: this.lastReason,
-        ...extra,
-      };
-    }
-  }
-
   global.GRIDSHARD_BATTLE_EVENT_CHANNELS = GRIDSHARD_BATTLE_EVENT_CHANNELS;
   global.GridshardBattleEventBus = GridshardBattleEventBus;
   global.GridshardBattleEffectAggregator = GridshardBattleEffectAggregator;
   global.GridshardAudioStateOwner = GridshardAudioStateOwner;
-  global.GridshardBoosterTargetMode = GridshardBoosterTargetMode;
 
   if (typeof module !== "undefined" && module.exports) {
     module.exports = {
@@ -357,7 +308,6 @@
       GridshardBattleEventBus,
       GridshardBattleEffectAggregator,
       GridshardAudioStateOwner,
-      GridshardBoosterTargetMode,
     };
   }
 })(typeof window !== "undefined" ? window : globalThis);

@@ -14,18 +14,12 @@ class AIArchetype:
     description_tr: str
     description_en: str
     battle_pool_ids: tuple[str, ...]
-    initial_module_ids: tuple[str, ...] = ()
     expansion_module_ids: tuple[str, ...] = ()
     category_bias: tuple[tuple[str, int], ...] = ()
     attack_foundation_target: int = 2
     energy_floor: int = 0
     defense_floor: int = 0
     sabotage_floor: int = 0
-    booster_priority: tuple[str, ...] = (
-        "emergency_repair",
-        "overcharge_chip",
-        "cooling_burst",
-    )
 
     def bias_for(self, category: str) -> int:
         return dict(self.category_bias).get(category, 0)
@@ -47,15 +41,14 @@ AGGRESSIVE_AI = AIArchetype(
     id="aggressive",
     name_tr="Saldırgan",
     name_en="Aggressive",
-    description_tr="Erken hasar temposu kurar; saldırı modüllerini ve Aşırı Yük'ü öne alır.",
-    description_en="Builds early damage pressure and prioritizes attack modules and Overcharge.",
+    description_tr="Erken hasar temposu kurar; saldırı modüllerini ve Aşırı Hızlandırıcı'yı öne alır.",
+    description_en="Builds early damage pressure and prioritizes attack modules and Overclock Unit.",
     battle_pool_ids=(
         "laser", "pulse_cannon", "drone_bay", "missile_launcher", "amplifier", "overclock_unit",
     ),
     expansion_module_ids=("drone_bay", "amplifier", "overclock_unit", "pulse_cannon"),
     category_bias=(("saldırı", 7), ("destek", 2), ("savunma", -1), ("enerji", -1)),
     attack_foundation_target=3,
-    booster_priority=("overcharge_chip", "emergency_repair", "cooling_burst"),
 )
 
 DEFENSIVE_AI = AIArchetype(
@@ -71,7 +64,6 @@ DEFENSIVE_AI = AIArchetype(
     category_bias=(("savunma", 7), ("destek", 4), ("enerji", 1), ("saldırı", -1)),
     attack_foundation_target=1,
     defense_floor=2,
-    booster_priority=("emergency_repair", "cooling_burst", "overcharge_chip"),
 )
 
 SABOTAGE_AI = AIArchetype(
@@ -87,7 +79,6 @@ SABOTAGE_AI = AIArchetype(
     category_bias=(("sabotaj", 8), ("saldırı", 2), ("destek", 1), ("savunma", -1)),
     attack_foundation_target=2,
     sabotage_floor=2,
-    booster_priority=("signal_cleanser", "emergency_repair", "overcharge_chip"),
 )
 
 ECONOMY_AI = AIArchetype(
@@ -103,7 +94,6 @@ ECONOMY_AI = AIArchetype(
     category_bias=(("enerji", 8), ("saldırı", 2), ("destek", 2), ("savunma", 1)),
     attack_foundation_target=2,
     energy_floor=2,
-    booster_priority=("cooling_burst", "emergency_repair", "overcharge_chip"),
 )
 
 
@@ -124,15 +114,15 @@ BOT_ARCHETYPE_IDS = {
     "Savunma": "defensive", "Sürdürülebilirlik": "sustain", "Kontrol": "sabotage",
     "Destek Zinciri": "support_chain", "Akım Ekonomisi": "economy", "Alan Hasarı": "area_damage", "Karşı Meta": "counter_meta",
 }
-for _id, _base, _name, _name_en, _bias in (
-    ("fast_pressure", AGGRESSIVE_AI, "Hızlı Baskı", "Fast Pressure", (("saldırı", 8), ("destek", 1))),
-    ("heavy_damage", AGGRESSIVE_AI, "Ağır Hasar", "Heavy Damage", (("saldırı", 9), ("enerji", 3))),
-    ("sustain", DEFENSIVE_AI, "Sürdürülebilirlik", "Sustain", (("destek", 8), ("savunma", 3))),
-    ("support_chain", BALANCED_AI, "Destek Zinciri", "Support Chain", (("destek", 9), ("saldırı", 3))),
-    ("area_damage", AGGRESSIVE_AI, "Alan Hasarı", "Area Damage", (("saldırı", 7), ("sabotaj", 3))),
-    ("counter_meta", BALANCED_AI, "Karşı Meta", "Counter Meta", (("sabotaj", 4), ("savunma", 2))),
+for _id, _base, _name, _bias in (
+    ("fast_pressure", AGGRESSIVE_AI, "Hızlı Baskı", (("saldırı", 8), ("destek", 1))),
+    ("heavy_damage", AGGRESSIVE_AI, "Ağır Hasar", (("saldırı", 9), ("enerji", 3))),
+    ("sustain", DEFENSIVE_AI, "Sürdürülebilirlik", (("destek", 8), ("savunma", 3))),
+    ("support_chain", BALANCED_AI, "Destek Zinciri", (("destek", 9), ("saldırı", 3))),
+    ("area_damage", AGGRESSIVE_AI, "Alan Hasarı", (("saldırı", 7), ("sabotaj", 3))),
+    ("counter_meta", BALANCED_AI, "Karşı Meta", (("sabotaj", 4), ("savunma", 2))),
 ):
-    AI_ARCHETYPES[_id] = replace(_base, id=_id, name_tr=_name, name_en=_name_en, category_bias=_bias)
+    AI_ARCHETYPES[_id] = replace(_base, id=_id, name_tr=_name, category_bias=_bias)
 
 AI_ARCHETYPE_IDS: tuple[str, ...] = tuple(AI_ARCHETYPES)
 
@@ -159,13 +149,11 @@ def validate_ai_archetype_catalog() -> None:
             raise ValueError(f"{archetype.id} AI destesi 6 modül içermelidir.")
         if len(set(archetype.battle_pool_ids)) != 6:
             raise ValueError(f"{archetype.id} AI havuzunda tekrar eden modül var.")
-        if {"core", "generator"} & set(archetype.battle_pool_ids):
-            raise ValueError(f"{archetype.id} AI destesine Çekirdek/Jeneratör eklenemez.")
+        if "core" in archetype.battle_pool_ids:
+            raise ValueError(f"{archetype.id} AI destesine Çekirdek eklenemez.")
         unknown = set(archetype.battle_pool_ids) - selectable
         if unknown:
             raise ValueError(f"{archetype.id} AI havuzunda bilinmeyen modül var: {sorted(unknown)}")
-        if any(module_id not in archetype.battle_pool_ids for module_id in archetype.initial_module_ids):
-            raise ValueError(f"{archetype.id} AI başlangıç modülleri kendi havuzunda bulunmalıdır.")
         if len(archetype.expansion_module_ids) < 2:
             raise ValueError(f"{archetype.id} AI için 5. ve 6. hak planı tanımlanmalıdır.")
         if any(module_id not in archetype.battle_pool_ids for module_id in archetype.expansion_module_ids):

@@ -22,8 +22,9 @@ assert.ok(!html.includes('id="profile-player-name"'));
 assert.ok(!html.includes('id="profile-current-trophies"'));
 assert.ok(css.includes(".profile-summary-panel > .profile-identity-card { display:block; }"));
 
-assert.ok(css.includes("daily-meta-label-counter-spin"));
-assert.ok(css.includes("var(--label-counter-angle) - var(--daily-meta-stop-angle,0deg)"));
+// Yazılar çarkla aynı geçişle ters döner; merkez rozet dönen çarkın dışında.
+assert.ok(css.includes("rotate(calc(-1 * (var(--label-angle) + var(--daily-meta-rotation,0deg))))"));
+assert.ok(html.includes('<strong class="daily-meta-die"><span>7</span></strong>'));
 assert.ok(app.includes("function createBattleEmojiVisual"));
 assert.ok(app.includes("emoji?.mediaSrc ? \"img\" : \"span\""));
 assert.ok(app.includes('dataset.mediaType = /\\.gif'));

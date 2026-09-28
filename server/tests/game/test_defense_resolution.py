@@ -1,4 +1,4 @@
-from app.game.combat import counter_strategy_multiplier, defense_profile, resolve_attack, select_target
+from app.game.combat import counter_strategy_multiplier, resolve_attack, select_target
 from app.game.engine import BattleEngine
 from app.game.models import BattleState, ModuleStatus, Position
 
@@ -56,29 +56,21 @@ def test_barrier_reduces_and_gets_priority_when_powered():
     e=make_engine()
     add(e,"p2","z-shield","shield",3,1,powered=True)
     barrier=add(e,"p2","barrier","barrier",2,1,powered=True)
-    add(e,"p2","core","core",2,2)
-    add(e,"p2","gen","generator",2,3)
+    add(e,"p2","core","core",0,0)
     assert select_target(e.state.players["p2"]).instance_id=="barrier"
     rail=add(e,"p1","rail","railgun",1,1)
     r=resolve_attack("p1",rail,"p2",barrier)
-    assert r.defense_type=="Bariyer"
+    # Ray Topu savunma azaltımının bir kısmını deler ama tamamını değil.
+    assert r.defense_type.startswith("Bariyer")
+    assert "delindi" in r.defense_type
     assert r.final_damage<r.raw_damage
 
 def test_unpowered_barrier_loses_priority():
     e=make_engine()
     first=add(e,"p2","a-shield","shield",3,1,powered=True)
     add(e,"p2","z-barrier","barrier",2,1,powered=False)
-    add(e,"p2","core","core",2,2)
-    add(e,"p2","gen","generator",2,3)
+    add(e,"p2","core","core",0,0)
     assert select_target(e.state.players["p2"]).instance_id==first.instance_id
-
-def test_normal_cell_has_no_hidden_defense_bonus():
-    e=make_engine()
-    laser=add(e,"p1","laser","laser",1,1)
-    armor=add(e,"p2","armor","armor",4,2,powered=True)
-    r=resolve_attack("p1",laser,"p2",armor)
-    assert r.defense_type=="Zırh"
-    assert r.defense_multiplier==0.75
 
 def test_unpowered_armor_has_no_passive_defense():
     e=make_engine()
@@ -98,12 +90,10 @@ def test_counter_strategy_multipliers():
 
 def test_engine_reflection_applies_real_damage():
     e=make_engine()
-    add(e,"p1","p1-core","core",2,2)
-    add(e,"p1","p1-gen","generator",2,3)
-    laser=add(e,"p1","p1-laser","laser",2,1)
-    add(e,"p2","p2-core","core",2,2)
-    add(e,"p2","p2-gen","generator",2,3)
-    ref=add(e,"p2","p2-ref","reflector",2,1)
+    add(e,"p1","p1-core","core",2,1)
+    laser=add(e,"p1","p1-laser","laser",1,1)
+    add(e,"p2","p2-core","core",2,1)
+    ref=add(e,"p2","p2-ref","reflector",1,1)
     e._process_energy_flow()
     lb,rb=laser.hp,ref.hp
     e._process_combat_actions()

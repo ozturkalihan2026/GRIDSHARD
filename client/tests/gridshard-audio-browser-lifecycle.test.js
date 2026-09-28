@@ -36,7 +36,7 @@ assert.strictEqual(
 
 assert.strictEqual(
   global.GRIDSHARD_AUDIO_MIX.version,
-  "shardglass-mobile-v10"
+  "shardglass-seamless-v12"
 );
 
 assert.strictEqual(
@@ -60,14 +60,19 @@ const matchmakingTrack = director.currentTrack;
 assert.strictEqual(matchmakingTrack.loop, true);
 
 director.setState("battle");
-const battleTrack = director.currentTrack;
-assert.ok(battleTrack);
-assert.ok(battleTrack.src.includes("battle_main_v10"));
-assert.strictEqual(director.battleLayerTracks.length, 0);
+const battleLayers = [...director.battleLayerTracks];
+assert.strictEqual(battleLayers.length, 7);
+assert.strictEqual(director.currentTrack, battleLayers[0]);
+assert.ok(battleLayers.every((track) => track.loop && track.paused === false));
+assert.strictEqual(director.criticalLayerTrack, null);
+const pressureLayer = battleLayers.find(
+  (track) => track._gridshardLayer.id === "pressure"
+);
+assert.ok(pressureLayer.src.includes("battle_tension_v7_07_pressure.wav"));
 
 director.setState("critical_core");
-assert.ok(director.currentTrack.src.includes("battle_critical_v10"));
-assert.strictEqual(director.criticalLayerTrack, null);
+assert.strictEqual(director.battleLayerTracks.length, 7);
+assert.strictEqual(director.criticalLayerTrack, pressureLayer);
 
 const pressure =
   director.setBattlePressure(1);
@@ -82,15 +87,16 @@ assert.strictEqual(
 
 setTimeout(() => {
   assert.strictEqual(menuTrack.paused, true);
-    assert.strictEqual(poolTrack.paused, true);
-    assert.strictEqual(director.battleLayerTracks.length, 0);
-  assert.strictEqual(director.criticalLayerTrack, null);
+  assert.strictEqual(poolTrack.paused, true);
+  assert.ok(pressureLayer.volume > 0, "Kritik durumda pressure stem'i duyulmalı");
 
   director.setState("victory");
+  assert.strictEqual(director.battleLayerTracks.length, 0);
+  assert.ok(battleLayers.every((track) => track.paused));
   const victoryTrack = director.currentTrack;
   assert.ok(
     victoryTrack.src.includes(
-      "victory_sting."
+      "victory_sting.wav"
     )
   );
   assert.strictEqual(

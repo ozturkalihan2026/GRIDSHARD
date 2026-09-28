@@ -20,9 +20,11 @@ assert.match(css, /\.team-tabs \{ display:grid;grid-template-columns:repeat\(5,m
 
 assert.ok(app.includes("loadDailyMetaState({ present:true })"));
 assert.ok(app.includes('if (dailyMetaState?.requires_roll) event.preventDefault()'));
-assert.ok(app.includes("function dailyMetaStopAngle"));
-assert.ok(app.includes('wheel?.classList.add("is-spinning")'));
-assert.match(css, /1080deg \+ var\(--daily-meta-stop-angle,0deg\)/);
+// Tur 8: dilimler yazı açılarına ortalı; çark birikimli açıyla hep ileri döner.
+assert.ok(app.includes("function dailyMetaTargetAngle"));
+assert.ok(app.includes('wheel.classList.add("is-spinning")'));
+assert.ok(app.includes("DAILY_META_SPIN_TURNS * 360 + forward"));
+assert.match(css, /conic-gradient\(from calc\(-180deg \/ 7\)/);
 assert.strictEqual((html.match(/<span><b>(HASAR|SAVUNMA|DESTEK|SABOTAJ|SİSTEM|ÇEKİRDEK|AKIM)<\/b><\/span>/g) || []).length, 7);
 
 console.log("beta58 team profile and daily meta contract passed");

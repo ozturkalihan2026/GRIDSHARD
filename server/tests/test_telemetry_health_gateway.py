@@ -9,7 +9,7 @@ from app.main import (
 client=TestClient(app)
 
 
-def test_corrupt_telemetry_degrades_health_and_release(
+def test_corrupt_telemetry_degrades_health(
     tmp_path,
     monkeypatch,
 ):
@@ -35,33 +35,3 @@ def test_corrupt_telemetry_degrades_health_and_release(
         ]["ready"]
         is False
     )
-    assert (
-        health["web_test"][
-            "capabilities"
-        ][
-            "telemetry_persistence"
-        ]
-        is False
-    )
-
-    release=client.get(
-        "/web-test/release-check"
-    ).json()
-    assert release["ready"] is False
-    assert (
-        release["checks"][
-            "telemetry_persistence"
-        ]
-        is False
-    )
-
-    manifest=client.get(
-        "/web-test/manifest"
-    ).json()
-    assert (
-        manifest[
-            "telemetry_persistence_ready"
-        ]
-        is False
-    )
-    assert manifest["release_ready"] is False

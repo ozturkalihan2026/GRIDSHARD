@@ -16,8 +16,6 @@ import shutil
 from threading import RLock
 from uuid import uuid4
 
-from .json_schema_migrations import assert_supported_schema
-
 
 TEAM_MEMBER_LIMIT = 30
 TEAM_NAME_MAX_LENGTH = 24
@@ -30,6 +28,65 @@ REQUEST_POLICY = {
     "epic": {"weekly_limit": 1, "amount": 2},
     "legendary": {"weekly_limit": 1, "amount": 1},
 }
+
+
+# Lider Görünümü: amblem, çerçeve ve isim rengi. Takım yalnız varsayılan
+# seçeneklerle başlar; diğerleri aylık takım turnuvası ödülleriyle açılır.
+TEAM_APPEARANCE_OPTIONS: dict[str, tuple[str, ...]] = {
+    "emblem_id": (
+        "shield", "crown", "bolt", "star", "orbit",
+        "gear", "swords", "wing", "circuit", "lens",
+    ),
+    "frame_id": ("steel", "gold", "neon", "crimson", "violet", "royal"),
+    "name_color_id": ("cyan", "gold", "red", "violet", "green", "sky"),
+}
+TEAM_APPEARANCE_DEFAULTS = {
+    "emblem_id": "shield",
+    "frame_id": "steel",
+    "name_color_id": "cyan",
+}
+# Turnuva ödülü zaten açık bir seçeneği gösteriyorsa sıradaki kilitli seçenek
+# bu sırayla açılır; böylece her ay kazanılan ödül yeni bir görünüm getirir.
+TEAM_APPEARANCE_UNLOCK_ORDER: dict[str, tuple[str, ...]] = {
+    "emblem_id": ("crown", "star", "bolt", "orbit", "gear", "swords", "wing", "circuit", "lens"),
+    "frame_id": ("gold", "royal", "crimson", "violet", "neon"),
+    "name_color_id": ("gold", "violet", "red", "green", "sky"),
+}
+TEAM_PRIZE_APPEARANCE_KEYS = {
+    "team_emblem_id": "emblem_id",
+    "team_frame_id": "frame_id",
+    "team_name_color_id": "name_color_id",
+}
+
+
+def team_appearance_unlocked(cosmetics: dict | None) -> dict[str, list[str]]:
+    """Takımın açtığı görünüm seçenekleri (varsayılanlar her zaman açıktır)."""
+    stored = dict((cosmetics or {}).get("unlocked_appearance") or {})
+    unlocked = {}
+    for key, options in TEAM_APPEARANCE_OPTIONS.items():
+        values = {TEAM_APPEARANCE_DEFAULTS[key], *map(str, stored.get(key) or [])}
+        unlocked[key] = [option for option in options if option in values]
+    return unlocked
+
+
+def team_appearance(cosmetics: dict | None) -> dict:
+    """Seçili amblem/çerçeve/isim rengini, açılmış değerlerle sınırlı döndürür."""
+    source = dict(cosmetics or {})
+    unlocked = team_appearance_unlocked(source)
+    appearance = {}
+    for key, default in TEAM_APPEARANCE_DEFAULTS.items():
+        value = str(source.get(f"selected_{key}") or default)
+        appearance[key] = value if value in unlocked[key] else default
+    return appearance
+
+
+def team_appearance_for_seed(seed: str) -> dict:
+    """Yapay zekâ takımları için kararlı, çeşitli bir görünüm üretir."""
+    digest = hashlib.sha256(seed.encode("utf-8")).digest()
+    return {
+        key: options[digest[index] % len(options)]
+        for index, (key, options) in enumerate(TEAM_APPEARANCE_OPTIONS.items())
+    }
 
 
 class TeamServiceError(ValueError):
@@ -47,9 +104,8 @@ class JsonTeamRepository:
 
     def load(self) -> dict:
         with self._lock:
-            assert_supported_schema(self.path, "teams", dict)
             if not self.path.exists():
-                return {"teams": {}, "receipts": {}}
+                return {"teams": {}, "receipts": {}, "tournaments": {}}
             try:
                 raw = self.path.read_text(encoding="utf-8")
                 payload = json.loads(raw) if raw.strip() else {}
@@ -60,11 +116,12 @@ class JsonTeamRepository:
             return {
                 "teams": dict(payload.get("teams") or {}),
                 "receipts": dict(payload.get("receipts") or {}),
+                # Aylık takım turnuvası: dönem → kayıtlar ve oynanan maç ayakları.
+                "tournaments": dict(payload.get("tournaments") or {}),
             }
 
     def save(self, payload: dict) -> None:
         with self._lock:
-            assert_supported_schema(self.path, "teams", dict)
             try:
                 self.path.parent.mkdir(parents=True, exist_ok=True)
                 if self.path.exists():
@@ -90,7 +147,7 @@ class JsonTeamRepository:
 
 class InMemoryTeamRepository:
     def __init__(self):
-        self.payload = {"teams": {}, "receipts": {}}
+        self.payload = {"teams": {}, "receipts": {}, "tournaments": {}}
         self._lock = RLock()
 
     def load(self) -> dict:
@@ -120,6 +177,15 @@ class TeamService:
     def _week_key(self) -> str:
         year, week, _ = self._now().isocalendar()
         return f"{year}-W{week:02d}"
+
+    def module_request_available(self, team: dict, player_id: str) -> bool:
+        """Oyuncu bu hafta henüz modül parçası isteği açmadıysa True."""
+        week_key = self._week_key()
+        return not any(
+            item.get("requester_id") == player_id
+            and item.get("week_key") == week_key
+            for item in team.get("module_requests", [])
+        )
 
     @staticmethod
     def _fingerprint(kind: str, actor_id: str, values: dict) -> str:
@@ -230,14 +296,10 @@ class TeamService:
                 "training_challenges": [],
                 "application_ids": [],
                 "cosmetics": {
-                    "selected_avatar_id": "team_default",
-                    "selected_avatar_frame_id": "none",
-                    "selected_bar_background_id": "team_grid",
-                    "selected_name_frame_id": "none",
-                    "unlocked_avatar_ids": ["team_default"],
-                    "unlocked_avatar_frame_ids": ["none"],
-                    "unlocked_bar_background_ids": ["team_grid"],
-                    "unlocked_name_frame_ids": ["none"],
+                    **{f"selected_{key}": value for key, value in TEAM_APPEARANCE_DEFAULTS.items()},
+                    "unlocked_appearance": {
+                        key: [value] for key, value in TEAM_APPEARANCE_DEFAULTS.items()
+                    },
                 },
             }
             payload["teams"][team_id] = team
@@ -448,30 +510,86 @@ class TeamService:
             if team is None or team.get("owner_id") != owner_id:
                 raise TeamServiceError("Takım görünümünü yalnız yönetici değiştirebilir.")
             cosmetics = team.setdefault("cosmetics", {})
-            cosmetics.setdefault("selected_avatar_id", "team_default")
-            cosmetics.setdefault("selected_avatar_frame_id", "none")
-            cosmetics.setdefault("selected_bar_background_id", "team_grid")
-            cosmetics.setdefault("selected_name_frame_id", "none")
-            cosmetics.setdefault("unlocked_avatar_ids", ["team_default"])
-            cosmetics.setdefault("unlocked_avatar_frame_ids", ["none"])
-            cosmetics.setdefault("unlocked_bar_background_ids", ["team_grid"])
-            cosmetics.setdefault("unlocked_name_frame_ids", ["none"])
-            mapping = {
-                "avatar_id": ("selected_avatar_id", "unlocked_avatar_ids"),
-                "avatar_frame_id": ("selected_avatar_frame_id", "unlocked_avatar_frame_ids"),
-                "bar_background_id": ("selected_bar_background_id", "unlocked_bar_background_ids"),
-                "name_frame_id": ("selected_name_frame_id", "unlocked_name_frame_ids"),
-            }
+            unlocked = team_appearance_unlocked(cosmetics)
             for key, value in clean.items():
-                if key not in mapping:
+                if key not in TEAM_APPEARANCE_OPTIONS:
                     continue
-                selected_key, unlocked_key = mapping[key]
-                if value not in cosmetics.get(unlocked_key, []):
-                    raise TeamServiceError("Bu takım kozmetiği henüz açılmadı.")
-                cosmetics[selected_key] = value
+                if value not in TEAM_APPEARANCE_OPTIONS[key]:
+                    raise TeamServiceError("Bu takım görünümü seçeneği bulunamadı.")
+                if value not in unlocked[key]:
+                    raise TeamServiceError(
+                        "Bu takım görünümü henüz açılmadı; takım turnuvalarında kazanılır."
+                    )
+                cosmetics[f"selected_{key}"] = value
             return {"team_id": team_id, "team": team, "cosmetics": cosmetics}
 
         return self._mutate(request_id=request_id, fingerprint=fingerprint, operation=operation)
+
+    # --- Aylık takım turnuvası ---------------------------------------------
+    # Turnuva durumu takım kayıtlarından ayrı tutulur: takım dağılsa ya da
+    # kadrosu değişse bile o ayın eşleşmeleri ve oynanan maçları korunur.
+
+    @staticmethod
+    def _tournament_period(payload: dict, period_id: str) -> dict:
+        tournaments = payload.setdefault("tournaments", {})
+        period = tournaments.setdefault(str(period_id), {})
+        period.setdefault("registrations", {})
+        period.setdefault("legs", {})
+        return period
+
+    def tournament_state(self, period_id: str) -> dict:
+        payload = self.repository.load()
+        period = dict((payload.get("tournaments") or {}).get(str(period_id)) or {})
+        return json.loads(json.dumps({
+            "registrations": dict(period.get("registrations") or {}),
+            "legs": dict(period.get("legs") or {}),
+        }))
+
+    def register_tournament(
+        self,
+        team_id: str,
+        period_id: str,
+        *,
+        registered_by: str,
+        roster: list[dict],
+    ) -> dict:
+        """Takımı döneme kaydeder; kayıt açıkken tekrar çağrı kadroyu yeniler."""
+        with self._lock:
+            payload = self.repository.load()
+            team = payload["teams"].get(str(team_id))
+            if team is None:
+                raise TeamServiceError("Takım bulunamadı.")
+            period = self._tournament_period(payload, period_id)
+            previous = period["registrations"].get(str(team_id)) or {}
+            record = {
+                "team_name": str(team.get("name") or "Takım"),
+                "registered_at": previous.get("registered_at") or self._timestamp(),
+                "updated_at": self._timestamp(),
+                "registered_by": str(registered_by),
+                "roster": [
+                    {
+                        "player_id": str(member.get("player_id")),
+                        "display_name": str(member.get("display_name") or member.get("player_id")),
+                        "rating": max(0, int(member.get("rating", 0) or 0)),
+                    }
+                    for member in roster
+                    if member.get("player_id")
+                ],
+            }
+            period["registrations"][str(team_id)] = record
+            self.repository.save(payload)
+            return json.loads(json.dumps(record))
+
+    def record_tournament_leg(self, period_id: str, leg_id: str, result: dict) -> bool:
+        """Bir maç ayağının sonucunu bir kez yazar; tekrar gelen sonuç yok sayılır."""
+        with self._lock:
+            payload = self.repository.load()
+            period = self._tournament_period(payload, period_id)
+            if str(leg_id) in period["legs"]:
+                return False
+            period["legs"][str(leg_id)] = {**dict(result), "recorded_at": self._timestamp()}
+            self.repository.save(payload)
+            return True
 
     def complete_training_challenge(self, battle_session_id: str) -> bool:
         """Close accepted training invitations when their battle reaches a terminal state."""
@@ -494,27 +612,53 @@ class TeamService:
                 self.repository.save(payload)
             return changed
 
-    def grant_reward_cosmetics(self, team_id: str, rewards: dict) -> dict:
-        """Unlock team-only cosmetics from a settled tournament inbox item."""
+    def grant_reward_cosmetics(
+        self,
+        team_id: str,
+        rewards: dict,
+        grant_id: str | None = None,
+    ) -> dict[str, str]:
+        """Takım turnuvası ödülündeki görünüm seçeneklerini takıma açar.
+
+        Aynı turnuva ödülünü takımın her üyesi ayrı alır; ``grant_id`` ile
+        takım başına yalnız bir kez açılır. Ödüldeki seçenek zaten açıksa
+        sıradaki kilitli seçenek açılır. Yeni açılanları döndürür.
+        """
         with self._lock:
             payload = self.repository.load()
             team = payload["teams"].get(str(team_id))
             if team is None:
                 raise TeamServiceError("Ödülün bağlı olduğu takım bulunamadı.")
             cosmetics = team.setdefault("cosmetics", {})
-            mapping = {
-                "team_avatar_id": ("unlocked_avatar_ids", "team_default"),
-                "team_frame_id": ("unlocked_avatar_frame_ids", "none"),
-                "team_bar_background_id": ("unlocked_bar_background_ids", "team_grid"),
-                "team_name_frame_id": ("unlocked_name_frame_ids", "none"),
-            }
-            for reward_key, (inventory_key, fallback) in mapping.items():
-                value = str(rewards.get(reward_key) or "").strip()
-                values = cosmetics.setdefault(inventory_key, [fallback])
-                if value and value not in values:
-                    values.append(value)
+            granted = cosmetics.setdefault("granted_reward_ids", [])
+            if grant_id and grant_id in granted:
+                return {}
+            unlocked = team_appearance_unlocked(cosmetics)
+            stored = cosmetics.setdefault("unlocked_appearance", {})
+            opened: dict[str, str] = {}
+            for reward_key, key in TEAM_PRIZE_APPEARANCE_KEYS.items():
+                wanted = str(rewards.get(reward_key) or "").strip()
+                if not wanted:
+                    continue
+                candidates = (wanted, *TEAM_APPEARANCE_UNLOCK_ORDER[key])
+                value = next(
+                    (
+                        option for option in candidates
+                        if option in TEAM_APPEARANCE_OPTIONS[key]
+                        and option not in unlocked[key]
+                    ),
+                    None,
+                )
+                if value is None:
+                    continue
+                stored.setdefault(key, [TEAM_APPEARANCE_DEFAULTS[key]]).append(value)
+                unlocked[key].append(value)
+                opened[key] = value
+            if grant_id:
+                granted.append(grant_id)
+                cosmetics["granted_reward_ids"] = granted[-50:]
             self.repository.save(payload)
-            return json.loads(json.dumps(cosmetics))
+            return opened
 
     def create_module_request(
         self,
@@ -759,6 +903,49 @@ class TeamService:
             item["status"] = "accepted"
             item["accepted_at"] = self._timestamp()
             item["battle_session_id"] = f"team-training-{challenge_id}"
+            return {"team_id": team_id, "challenge": item}
+
+        return self._mutate(
+            request_id=request_id,
+            fingerprint=fingerprint,
+            operation=operation,
+        )
+
+    def decline_training_challenge(
+        self,
+        *,
+        team_id: str,
+        player_id: str,
+        challenge_id: str,
+        request_id: str,
+    ) -> dict:
+        """Mesaj kutusundan reddedilen antrenman isteğini kapatır."""
+        fingerprint = self._fingerprint(
+            "training_decline",
+            player_id,
+            {"team_id": team_id, "challenge_id": challenge_id},
+        )
+
+        def operation(payload: dict) -> dict:
+            team = payload["teams"].get(team_id)
+            if team is None or player_id not in team.get("member_ids", []):
+                raise TeamServiceError("Antrenman isteği için takım üyeliği gerekli.")
+            item = next(
+                (
+                    candidate
+                    for candidate in team.get("training_challenges", [])
+                    if candidate.get("challenge_id") == challenge_id
+                ),
+                None,
+            )
+            if item is None:
+                raise TeamServiceError("Antrenman isteği bulunamadı.")
+            if item.get("opponent_id") != player_id:
+                raise TeamServiceError("Bu antrenman isteği başka bir üyeye ait.")
+            if item.get("status") != "pending":
+                raise TeamServiceError("Antrenman isteği artık beklemede değil.")
+            item["status"] = "declined"
+            item["declined_at"] = self._timestamp()
             return {"team_id": team_id, "challenge": item}
 
         return self._mutate(

@@ -214,7 +214,7 @@ test("Beta.42.3 ana ekran ve ilerleme yüzeyleri tek bakışta kullanılabilir",
   assert.match(app, /kicker\.hidden = true/);
   assert.match(app, /arena-path-stage\.is-current/);
   assert.match(css, /\.home-arena-segments > i[\s\S]*grid-column:auto !important/);
-  assert.match(css, /\.module-detail-tab-content\[data-tab="talents"\][\s\S]*overflow:hidden !important/);
+  assert.match(css, /\.module-detail-tab-content\[data-tab="talents"\] \{[^}]*overflow-y:auto !important/);
 });
 
 test("Beta.43 kartlar, çekirdek ayrıntısı ve lider panosu akışlarını sunar", () => {

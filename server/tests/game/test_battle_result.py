@@ -20,7 +20,6 @@ def base_engine():
     engine.add_player("b")
     for player in ("a","b"):
         add(engine,player,f"{player}-core","core",2,1)
-        add(engine,player,f"{player}-gen","generator",2,0)
     engine.state.status=BattleStatus.RUNNING
     return engine
 
@@ -72,36 +71,7 @@ def test_simultaneous_equal_core_destruction_is_draw():
 
     assert engine.state.is_draw is True
     assert engine.state.winner_player_id is None
-    assert engine.state.finish_reason=="simultaneous_core_draw"
-
-
-def test_simultaneous_core_tiebreak_uses_living_module_count():
-    engine=base_engine()
-    extra=add(engine,"a","a-laser","laser",2,1)
-
-    for player in ("a","b"):
-        core=engine.state.players[player].modules[f"{player}-core"]
-        engine.apply_damage(player,f"{player}-core",core.hp)
-
-    engine._evaluate_battle_end()
-
-    assert engine.state.winner_player_id=="a"
-    assert engine.state.finish_reason=="simultaneous_core_tiebreak"
-
-
-def test_tiebreak_then_hp_ratio():
-    engine=base_engine()
-    a_laser=add(engine,"a","a-laser","laser",2,1)
-    b_laser=add(engine,"b","b-laser","laser",2,1)
-    b_laser.hp=10
-
-    for player in ("a","b"):
-        core=engine.state.players[player].modules[f"{player}-core"]
-        engine.apply_damage(player,f"{player}-core",core.hp)
-
-    engine._evaluate_battle_end()
-
-    assert engine.state.winner_player_id=="a"
+    assert engine.state.finish_reason=="simultaneous_core_destroyed"
 
 
 def test_summary_contains_energy_and_credit_data():

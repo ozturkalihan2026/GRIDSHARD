@@ -1,6 +1,5 @@
 from dataclasses import dataclass
 
-from .board import get_cell_effects
 from .models import BattleModule, ModuleStatus, PlayerBattleState
 from .operations import module_is_operational
 
@@ -59,7 +58,7 @@ def selectable_targets(player: PlayerBattleState) -> list[BattleModule]:
     normal_targets = [
         module
         for module in active
-        if module.definition.mechanic_id not in {"generator", "core"}
+        if module.definition.mechanic_id != "core"
     ]
     if normal_targets:
         return sorted(
@@ -82,17 +81,6 @@ def selectable_targets(player: PlayerBattleState) -> list[BattleModule]:
             ),
         )
 
-    generator_targets = [
-        module
-        for module in active
-        if module.definition.mechanic_id == "generator"
-    ]
-    if generator_targets:
-        return sorted(
-            generator_targets,
-            key=lambda module: module.instance_id,
-        )
-
     core_targets = [
         module
         for module in active
@@ -104,45 +92,14 @@ def selectable_targets(player: PlayerBattleState) -> list[BattleModule]:
     )
 
 
-def select_target(
-    player: PlayerBattleState,
-    *,
-    core_exposed: bool = False,
-) -> BattleModule | None:
-    if core_exposed:
-        cores = [
-            module
-            for module in player.modules.values()
-            if module_is_operational(module)
-            and module.definition.mechanic_id == "core"
-        ]
-        if cores:
-            return sorted(cores, key=lambda module: module.instance_id)[0]
-
+def select_target(player: PlayerBattleState) -> BattleModule | None:
+    # Süre Çekirdeği hedefe açmaz; hedef sırası her zaman modüller, sonra Çekirdek.
     targets = selectable_targets(player)
     return targets[0] if targets else None
 
 
 def attack_damage_multiplier(module: BattleModule) -> float:
     multiplier = 1.0
-
-    if module.position is not None:
-        multiplier *= float(
-            get_cell_effects(module.position).get(
-                "attack_multiplier",
-                1.0,
-            )
-        )
-
-    overcharge = module.temporary_boosters.get("overcharge_chip")
-    if overcharge is not None:
-        multiplier *= float(
-            overcharge.data.get(
-                "attack_multiplier",
-                1.0,
-            )
-        )
-
     core_effect = module.persistent_effects.get("core_overdrive")
     if core_effect is not None:
         multiplier *= float(core_effect.data.get("damage_multiplier", 1.0))
@@ -158,15 +115,67 @@ def counter_strategy_multiplier(attacker: BattleModule, target: BattleModule) ->
     return multiplier
 
 
-def defense_profile(target: BattleModule) -> tuple[str, float, float]:
+# Beta.72 imza mekanikleri --------------------------------------------------
+# Füze/Plazma hedefe kilitlenir; hazırlık süresi saldırı döngüsünün içindedir.
+ATTACK_WINDUP_MS = {"missile_launcher": 700, "plasma_mortar": 1200}
+# Birincil vuruştan sonra sıradaki hedefe giden ikincil vuruş oranı.
+SECONDARY_HIT_RATIOS = {
+    "arc_cannon": 0.45,
+    "drone_bay": 0.25,
+    "plasma_mortar": 0.35,
+    "ion_spear": 0.55,
+}
+QUANTUM_REPEAT_HITS = 4
+QUANTUM_REPEAT_ECHO_RATIO = 0.65
+SWARM_RELEASE_DRONES = 4
+SWARM_RELEASE_TARGETS = 3
+SWARM_RELEASE_RATIO_PER_TARGET = 0.25
+QUANTUM_CHARGE_DAMAGE_BONUS = 0.80
+PRISM_ENERGY_CONVERSION = 0.25
+
+# Delici silahlar ham güç almaz; yüksek enerji ve ısı karşılığında savunma
+# azaltımının bir kısmını yok sayar (oran = azaltımın korunan payı).
+PIERCE_KEPT_REDUCTION = {
+    "railgun": 0.60,
+    "ion_spear": 0.40,
+}
+# Faz Zırhı her 6 sn'nin ilk 1 sn'sinde saldırıları tamamen boşa çıkarır.
+PHASE_ARMOR_CYCLE_MS = 6000
+PHASE_ARMOR_WINDOW_MS = 1000
+GUARDIAN_DOME_CIRCUIT_REDUCTION = 0.12
+GUARDIAN_DOME_MIN_MULTIPLIER = 0.78
+
+
+def phase_armor_active(elapsed_ms: int) -> bool:
+    return elapsed_ms % PHASE_ARMOR_CYCLE_MS < PHASE_ARMOR_WINDOW_MS
+
+
+def defense_profile(
+    target: BattleModule,
+    *,
+    attacker: BattleModule | None = None,
+    elapsed_ms: int = 0,
+) -> tuple[str, float, float]:
     defense_type = "Yok"
     multiplier = 1.0
     reflection_ratio = 0.0
+    phased = False
 
     if target.definition.mechanic_id != "core" and not module_is_operational(target):
         return defense_type, multiplier, reflection_ratio
 
-    if target.definition.mechanic_id == "shield" and target.is_powered:
+    target_id = target.definition.id
+    if target_id == "guardian_dome" and target.is_powered:
+        defense_type = "Koruyucu Kubbe"
+        multiplier *= 0.68
+    elif target_id == "prism_shield" and target.is_powered:
+        defense_type = "Prizma Kalkanı"
+        multiplier *= 0.70
+    elif target_id == "phase_armor":
+        phased = phase_armor_active(elapsed_ms)
+        defense_type = "Faz Zırhı · Faz" if phased else "Faz Zırhı"
+        multiplier *= 0.0 if phased else 0.82
+    elif target.definition.mechanic_id == "shield" and target.is_powered:
         defense_type = "Kalkan"
         multiplier *= 0.65
     elif target.definition.mechanic_id == "armor":
@@ -180,23 +189,50 @@ def defense_profile(target: BattleModule) -> tuple[str, float, float]:
         defense_type = "Bariyer"
         multiplier *= 0.80
 
-    if target.position is not None:
-        durability = float(
-            get_cell_effects(target.position).get("defense_multiplier", 1.0)
-        )
-        if durability > 0 and durability != 1.0:
-            multiplier /= durability
-            defense_type = (
-                f"{defense_type} + Savunma Hücresi"
-                if defense_type != "Yok"
-                else "Savunma Hücresi"
-            )
-
     effectiveness = target.definition.effect_multiplier
-    if multiplier < 1:
+    if phased:
+        multiplier = 0.0
+    elif multiplier < 1:
         multiplier = max(.35, 1 - (1 - multiplier) * effectiveness)
+
+    kept = PIERCE_KEPT_REDUCTION.get(attacker.definition.id) if attacker is not None else None
+    if kept is not None and multiplier < 1:
+        multiplier = 1 - (1 - multiplier) * kept
+        defense_type += f" · %{round((1 - kept) * 100)} delindi"
     reflection_ratio = min(.35, reflection_ratio * effectiveness)
     return defense_type, multiplier, reflection_ratio
+
+
+def circuit_guard_multiplier(player: PlayerBattleState, target: BattleModule) -> float:
+    """Yaşayan Koruyucu Kubbe devredeki diğer modüllere gelen hasarı azaltır."""
+    if target.definition.id == "guardian_dome":
+        return 1.0
+    domes = [
+        module
+        for module in player.modules.values()
+        if module.definition.id == "guardian_dome"
+        and module_is_operational(module)
+    ]
+    if not domes:
+        return 1.0
+    strongest = max(module.definition.effect_multiplier for module in domes)
+    return max(
+        GUARDIAN_DOME_MIN_MULTIPLIER,
+        1.0 - GUARDIAN_DOME_CIRCUIT_REDUCTION * strongest,
+    )
+
+
+def secondary_targets(
+    player: PlayerBattleState,
+    primary: BattleModule,
+    count: int = 1,
+) -> list[BattleModule]:
+    """Birincil hedeften sonra aynı hedef sırasındaki sonraki modüller."""
+    return [
+        module
+        for module in selectable_targets(player)
+        if module.instance_id != primary.instance_id
+    ][:count]
 
 
 def resolve_attack(
@@ -206,6 +242,8 @@ def resolve_attack(
     target: BattleModule,
     support_damage_multiplier: float = 1.0,
     defense_effectiveness: float = 1.0,
+    circuit_guard: float = 1.0,
+    elapsed_ms: int = 0,
 ) -> AttackResolution:
     attack_multiplier = (
         attack_damage_multiplier(attacker)
@@ -218,8 +256,15 @@ def resolve_attack(
         int(round(attacker.definition.base_damage * attack_multiplier * counter_multiplier)),
     )
 
-    defense_type, defense_multiplier, reflection_ratio = defense_profile(target)
+    defense_type, defense_multiplier, reflection_ratio = defense_profile(
+        target, attacker=attacker, elapsed_ms=elapsed_ms
+    )
     defense_multiplier = 1 - (1 - defense_multiplier) * defense_effectiveness
+    if circuit_guard < 1.0:
+        defense_multiplier *= max(0.0, circuit_guard)
+        defense_type = (
+            f"{defense_type} + Kubbe" if defense_type != "Yok" else "Kubbe"
+        )
     final_damage = max(0, int(round(raw_damage * defense_multiplier)))
     reduced_damage = max(0, raw_damage - final_damage)
     reflected_damage = (

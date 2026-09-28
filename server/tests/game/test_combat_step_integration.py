@@ -19,14 +19,13 @@ def test_step_runs_energy_then_combat_without_pause():
     engine.add_player("b")
 
     for player_id in ("a", "b"):
-        activate(engine, player_id, f"{player_id}-core", "core", Position(2, 2))
-        activate(engine, player_id, f"{player_id}-gen", "generator", Position(2, 3))
+        activate(engine, player_id, f"{player_id}-core", "core", Position(2, 1))
         activate(
             engine,
             player_id,
             f"{player_id}-laser",
             "laser",
-            Position(2, 1),
+            Position(1, 1),
         )
 
     engine.start()

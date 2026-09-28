@@ -1,7 +1,6 @@
 from fastapi.testclient import TestClient
 
 from app.game.engine import (
-    BATTLE_TIME_LIMIT_MS,
     BattleEngine,
 )
 from app.game.models import (
@@ -18,6 +17,13 @@ from app.player_statistics import (
 
 
 client=TestClient(app)
+
+
+def destroy_core(engine, player_id):
+    # Savaş yalnız bir Çekirdek yok olunca biter.
+    for module in engine.state.players[player_id].modules.values():
+        if module.definition.id == "core":
+            module.hp = 0
 
 
 def finished_match(
@@ -37,28 +43,15 @@ def finished_match(
             f"{p}-core",
             "core",
         )
-        engine.grant_module(
-            p,
-            f"{p}-gen",
-            "generator",
-        )
         engine.set_initial_active_module(
             p,
             f"{p}-core",
             2,
-            2,
-        )
-        engine.set_initial_active_module(
-            p,
-            f"{p}-gen",
-            2,
-            3,
+            1,
         )
 
     engine.start()
-    engine.state.elapsed_ms = (
-        BATTLE_TIME_LIMIT_MS - 100
-    )
+    destroy_core(engine, "b")
     engine.step()
     return engine.state
 
@@ -74,10 +67,10 @@ def test_finished_match_updates_basic_counts():
     a=service.get_or_create("a")
 
     assert a.total_matches==1
-    assert a.draws==1
-    assert a.wins==0
+    assert a.draws==0
+    assert a.wins==1
     assert a.losses==0
-    assert a.average_match_duration_ms==180000
+    assert a.average_match_duration_ms==state.finished_at_ms
 
 
 def test_same_battle_is_not_counted_twice():
@@ -122,17 +115,19 @@ def test_statistics_view_has_requested_metrics():
     assert "win_rate" in view
     assert "average_match_duration_ms" in view
     assert "total_damage_dealt" in view
-    assert "module_replacements" in view
-    assert "boosters_used" in view
+    # Eski taşıma/değiştirme ve güçlendirici sayaçları kanondan kaldırıldı.
+    assert "module_replacements" not in view
+    assert "boosters_used" not in view
     assert "most_used_modules" in view
     assert view["most_used_modules"] == []
 
 
-def test_circuit_habit_excludes_fixed_core_and_generator_from_old_data():
+def test_circuit_habit_excludes_core_and_removed_cards_from_old_data():
     stats = PlayerStatisticsService().get_or_create("legacy")
     stats.module_usage.update({
         "core": 9,
         "generator": 9,
+        "energy_leech": 7,
         "laser": 3,
         "shield": 2,
     })

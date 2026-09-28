@@ -5,6 +5,7 @@ from app.meta_progression import (
     RANK_STAGES,
     archive_and_soft_reset_season,
     arena_floor_for_rating,
+    chest_sale_day,
     rank_stage_for_rating,
     trophy_delta,
 )
@@ -84,26 +85,30 @@ def test_gift_chest_uses_its_server_cooldown_and_reopens_after_expiry():
         item for item in view["chests"]["definitions"] if item["id"] == "field_3h"
     )["claim_available"] is False
 
-    clock["now"] += timedelta(hours=3, seconds=1)
+    # Tur 9: Bronz hediye sandığı 8 saatte bir yenilenir.
+    clock["now"] += timedelta(hours=8, seconds=1)
     second = service.claim_gift_chest(profile, "field_3h", "gift-2")
     assert second["request_id"] == "gift-2"
 
 
-def test_daily_shop_offer_spends_one_currency_and_awards_all_reward_families():
+def test_store_chest_spends_one_currency_and_opens_a_real_chest():
+    # Tur 9: haftalık teklifler yerine sınırsız sandık mağazası.
     now = datetime(2026, 9, 2, tzinfo=timezone.utc)
+    if now.day == chest_sale_day(now.year, now.month):
+        now += timedelta(days=1)
     service = MetaProgressionService(now_func=lambda: now)
     profile = PlayerProfileService().get_or_create("shop-player")
-    credits_before = profile.circuit_credits
+    profile.circuit_credits = 1000
 
-    first = service.purchase_daily_offer(profile, "bronze_daily", "shop-1")
+    first = service.purchase_store_chest(profile, "field_3h", "shop-1")
     after_first = service.view(profile)
-    replay = service.purchase_daily_offer(profile, "bronze_daily", "shop-1")
+    replay = service.purchase_store_chest(profile, "field_3h", "shop-1")
 
     assert first == replay
-    assert first["rewards"]["module_shards"] > 0
+    assert first["cost"] == 300
     assert "core_shards" in first["rewards"]
-    assert after_first["shop"]["offers"][0]["purchased"] is True
-    assert profile.circuit_credits >= credits_before - 120
+    assert after_first["shop"]["chest_store"]["items"][0]["definition_id"] == "field_3h"
+    assert profile.circuit_credits == 700 + first["rewards"]["circuit_credits"]
 
 
 def test_core_tree_is_normalized_and_season_result_is_archived_before_soft_reset():

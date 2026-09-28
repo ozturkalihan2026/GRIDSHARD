@@ -19,13 +19,14 @@ assert.ok(!html.includes("<h2>Turnuvalar</h2>"));
 assert.ok(html.includes('id="daily-meta-card" class="events-hero daily-meta-card"'));
 assert.ok(html.includes('id="weekly-tournament-register"'));
 assert.ok(html.includes('id="team-tournament-register"'));
-assert.ok(app.includes("function renderTournamentPrizes"));
-assert.ok(app.includes('action.textContent = fixture.status === "live" ? "CANLI MAÇA GİR"'));
+// Ödüller ayrı sayfada değil, sıralamada ilk üçün yanında sandık olarak görünür.
+assert.ok(app.includes("function appendTournamentPrizeChest"));
+assert.ok(app.includes("function renderTeamFixtures"));
 
 assert.ok(app.includes("destroyedCore.hp = 0"));
 assert.ok(app.includes("mockEnemyCoreHp = 0"));
-assert.match(css, /\.team-hub \{\s*min-height:calc\(100% - 24px\);\s*grid-template-rows:minmax\(0,1fr\) auto;/);
+assert.match(css, /#team-hub \.team-tabs \{[\s\S]*?position:fixed !important;/);
 assert.match(css, /\.profile-terminal-tabs \{[\s\S]*?grid-template-columns:repeat\(5,minmax\(0,1fr\)\) !important;/);
-assert.match(css, /\.leaderboard-reward-popover/);
+assert.match(css, /\.reward-preview-panel \{/);
 
 console.log("beta59 social and event contract passed");

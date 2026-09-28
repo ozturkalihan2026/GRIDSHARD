@@ -1,4 +1,5 @@
-const appId = process.env.GRIDSHARD_APP_ID || "com.example.gridshard";
+const localDebug = process.env.GRIDSHARD_LOCAL_DEBUG === "1";
+const appId = localDebug ? "com.gridshard.localdebug" : (process.env.GRIDSHARD_APP_ID || "com.example.gridshard");
 
 /** @type {import('@capacitor/cli').CapacitorConfig} */
 module.exports = {
@@ -6,10 +7,12 @@ module.exports = {
   appName: "GRIDSHARD",
   webDir: "dist",
   server: {
-    androidScheme: "https"
+    androidScheme: "https",
+    ...(localDebug ? { cleartext: true } : {})
   },
   android: {
-    allowMixedContent: false
+    ...(localDebug ? { path: ".mobile-debug/android" } : {}),
+    allowMixedContent: localDebug
   },
   plugins: {
     PushNotifications: {

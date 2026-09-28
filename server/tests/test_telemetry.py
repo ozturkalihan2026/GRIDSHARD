@@ -63,14 +63,14 @@ def test_summary_counts_credit_spending():
     ))
     service.record(TelemetryEvent(
         event_id="e2",
-        event_type="module_changed",
+        event_type="rematch_requested",
         timestamp_ms=2,
         player_id="a",
     ))
 
     summary = service.summary(player_id="a")
     assert summary["event_count"] == 2
-    assert summary["counts_by_type"]["module_changed"] == 1
+    assert summary["counts_by_type"]["rematch_requested"] == 1
     assert summary["total_circuit_credits_spent"] == 90
 
 
@@ -80,9 +80,10 @@ def synthetic_finished_battle():
     engine.add_player("b")
 
     engine.state.status = BattleStatus.FINISHED
-    engine.state.is_draw = True
-    engine.state.finish_reason = "time_limit_draw"
-    engine.state.finished_at_ms = 180000
+    engine.state.winner_player_id = "a"
+    engine.state.loser_player_id = "b"
+    engine.state.finish_reason = "core_destroyed"
+    engine.state.finished_at_ms = 95000
 
     engine._emit("battle_started", {})
     engine._emit("circuit_credits_spent", {
@@ -91,16 +92,6 @@ def synthetic_finished_battle():
         "reason": "modul_yerlestir:laser",
         "balance": 110,
     })
-    engine._emit("module_replaced", {
-        "player_id": "a",
-        "outgoing_module_id": "old",
-        "incoming_module_id": "new",
-    })
-    engine._emit("booster_applied", {
-        "player_id": "a",
-        "booster_id": "overcharge_chip",
-        "target_module_id": "new",
-    })
     return engine.state
 
 
@@ -108,7 +99,7 @@ def test_finished_battle_generates_verified_telemetry():
     service = InMemoryTelemetryService()
     state = synthetic_finished_battle()
 
-    assert service.ingest_finished_battle(state) == 7
+    assert service.ingest_finished_battle(state) == 5
     assert service.ingest_finished_battle(state) == 0
 
     types = [
@@ -117,9 +108,7 @@ def test_finished_battle_generates_verified_telemetry():
     ]
     assert types.count("match_started") == 2
     assert types.count("match_completed") == 2
-    assert "module_changed" in types
     assert "circuit_credit_spent" in types
-    assert "booster_used" in types
 
 
 def test_finished_battle_persists_its_event_batch_once():
@@ -141,7 +130,7 @@ def test_finished_battle_persists_its_event_batch_once():
     repository = CountingRepository()
     service = InMemoryTelemetryService(repository=repository)
 
-    assert service.ingest_finished_battle(synthetic_finished_battle()) == 7
+    assert service.ingest_finished_battle(synthetic_finished_battle()) == 5
     assert repository.save_calls == 1
 
 
