@@ -15,8 +15,8 @@ pnpm build:web
 - Birleştirilmiş ve küçültülmüş JS/CSS `bundles/gridshard-<SHA256-ilk-16>.*` adını alır. İçerik değişince HTML yeni adları kullanır. Kaynak haritası yayınlanmaz; fonksiyon/sınıf adları korunur.
 - Hedef dönüşüm Chrome 109 / Safari 15'tir. Bu, gerçek cihaz uyumluluk onayı veya eksik Web API'leri için polyfill değildir.
 - Çalışma zamanı API adresi ayrı `runtime-config.js` içindedir. Web için boş adres aynı origin demektir; istenirse `GRIDSHARD_API_BASE_URL` ile HTTPS API verilebilir. Bu dosyaya yalnız genel API adresi yazılır, sunucu sırları yazılmaz.
-- Yalnız `assets/`, `favicon.ico` ve `manifest.webmanifest` kopyalanır. Kaynak JS/CSS, testler, yerel önbellek ve geliştirme raporları dağıtılmaz.
-- `client-build-manifest.json` girdi sırasını, araç sürümünü, çıktı boyutlarını, SHA-256 özetlerini ve pakete alınmayan WAV listesini (`audio.omitted_wav`) taşır. Aynı kaynak ve yapılandırma aynı çıktıyı üretir; duvar saati eklenmez.
+- Yalnız HTML/manifest ve çalışan ses kodunda referans verilen `assets/` dosyaları, `favicon.ico` ve `manifest.webmanifest` kopyalanır. Kullanılmayan görseller, dönüştürme manifesti, testler, anahtarlar, yerel önbellek ve geliştirme raporları dağıtılmaz. Geliştirme test kancası derlenmiş JS'den çıkarılır.
+- Web çıktısındaki `client-build-manifest.json` girdi sırasını, araç sürümünü, çıktı boyutlarını, SHA-256 özetlerini ve pakete alınmayan WAV listesini (`audio.omitted_wav`) taşır. Mobil pakete bu geliştirme manifesti eklenmez. Aynı kaynak ve yapılandırma aynı çıktıyı üretir; duvar saati eklenmez.
 
 ### Sesler
 
@@ -41,7 +41,7 @@ Geliştirme modu `client/` kaynaklarını ve mevcut no-cache davranışını kor
 
 ## Mobil
 
-`GRIDSHARD_API_BASE_URL` tanımlandıktan sonra `pnpm build:mobile:web` aynı küçültülmüş paketi üretir. HTTPS zorunludur; `GRIDSHARD_ALLOW_INSECURE_MOBILE_API=1` yalnız yerel HTTP denemesi içindir, mağaza adayında kullanılmaz. Mobil manifest `platform: mobile` taşır. Web yayınına dönerken `pnpm build:web` yeniden çalıştırılmalıdır.
+`GRIDSHARD_API_BASE_URL` tanımlandıktan sonra `pnpm build:mobile:web` aynı küçültülmüş paketi üretir. HTTPS zorunludur; `GRIDSHARD_ALLOW_INSECURE_MOBILE_API=1` yalnız yerel HTTP denemesi içindir, mağaza adayında kullanılmaz. Derleme fonksiyonu mobil platform bilgisini döndürür; mobil `dist/` içinde geliştirme manifesti bulunmaz. Web yayınına dönerken `pnpm build:web` yeniden çalıştırılmalıdır.
 
 ## Docker ve CI
 

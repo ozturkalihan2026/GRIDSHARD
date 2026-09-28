@@ -17,6 +17,17 @@ function androidPortrait(source) {
   return output;
 }
 
+function androidLocalDebugNetwork(source) {
+  let matches = 0;
+  const output = source.replace(/<application\b[^>]*>/g, (tag) => {
+    matches += 1;
+    return tag.replace(/\s+android:(?:usesCleartextTraffic|allowBackup)\s*=\s*["'][^"']*["']/g, "")
+      .replace(/\s*(\/?)>$/, ' android:usesCleartextTraffic="true" android:allowBackup="false"$1>');
+  });
+  if (matches !== 1) throw new Error("AndroidManifest.xml içinde tek application bulunmalı.");
+  return output;
+}
+
 function plistValue(source, key, value, existingType) {
   const keyXml = `<key>${key}</key>`;
   const count = source.split(keyXml).length - 1;
@@ -53,7 +64,9 @@ function configure(platform) {
   const filename = path.join(root, relative);
   if (!fs.existsSync(filename)) throw new Error(`Önce yerel mobil projeyi oluşturun: ${relative}`);
   const before = fs.readFileSync(filename, "utf8");
-  const after = transform(before);
+  const oriented = transform(before);
+  const after = platform === "android" && process.env.GRIDSHARD_LOCAL_DEBUG === "1"
+    ? androidLocalDebugNetwork(oriented) : oriented;
   if (before !== after) fs.writeFileSync(filename, after, "utf8");
   console.log(`${platform}: yerel portre yönü yapılandırıldı.`);
 }
@@ -61,4 +74,4 @@ function configure(platform) {
 if (require.main === module) {
   configure(process.argv[2] || process.env.CAPACITOR_PLATFORM_NAME);
 }
-module.exports = {androidPortrait, iosPortrait};
+module.exports = {androidPortrait, androidLocalDebugNetwork, iosPortrait};

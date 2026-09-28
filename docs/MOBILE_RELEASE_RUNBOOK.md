@@ -17,6 +17,28 @@ Mağaza ürünleri yayımlanmadan önce makbuz doğrulama, idempotent teslim, ia
 
 Paket kimliği mağazada uygulama kaydı oluşturulduktan sonra değiştirilmemelidir. Bu nedenle `android/` ve `ios/` projeleri, gerçek kimlik kesinleşmeden depoya üretilmez.
 
+## Geçici yerel Android denemesi (mağazaya yüklenmez)
+
+`GRIDSHARD_LOCAL_DEBUG=1` yalnız Git tarafından yok sayılan `.mobile-debug/android/` projesini `com.gridshard.localdebug` kimliğiyle üretir. Bu kimlik üretim hesabı veya önceki test hesaplarıyla paylaşılmaz; yayın kimliği değildir. HTTP/karma içerik izni yalnız bu modda açılır ve Android yedeği kapatılır. Özel imza anahtarı depoya veya web varlıklarına kopyalanmaz; Gradle standart yerel debug imzasını kullanır.
+
+```powershell
+$env:GRIDSHARD_LOCAL_DEBUG="1"
+$env:GRIDSHARD_API_BASE_URL="http://TELEFONUN_ERISEBILDIGI_YEREL_IP:8879"
+$env:GRIDSHARD_ALLOW_INSECURE_MOBILE_API="1"
+pnpm build:mobile:web
+node node_modules/@capacitor/cli/bin/capacitor add android
+node tools/configure-native-orientation.js android
+$env:JAVA_HOME="C:\Program Files\Android\Android Studio\jbr"
+$env:ANDROID_HOME="C:\Users\S-A\AppData\Local\Android\Sdk"
+Set-Location .mobile-debug/android
+.\gradlew.bat assembleDebug
+if ($LASTEXITCODE -ne 0) { throw "Android debug derlemesi başarısız." }
+Set-Location ../..
+& ./tools/audit-mobile-debug.ps1
+```
+
+Yerel proje önceden varsa `add android` yerine `node node_modules/@capacitor/cli/bin/capacitor sync android` proje kökünde çalıştırılır. Çıktı `.mobile-debug/android/app/build/outputs/apk/debug/app-debug.apk` olur. Sunucu aynı ağda erişilebilir adreste dinlemeli ve `https://localhost` CORS kökenine izin vermelidir; IP değişirse web paketi yeniden derlenip eşitlenmelidir. Bu APK yalnız cihaz denemesi içindir: gerçek Play satın alma/reklam doğrulaması veya mağaza yayın kapısı olarak değerlendirilmez.
+
 ## Ortak mobil web paketi
 
 ```powershell

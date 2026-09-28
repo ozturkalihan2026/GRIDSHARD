@@ -143,6 +143,15 @@ test("desteklenmeyen async betik yürütme sırasını sessizce değiştiremez",
   assert.throws(() => readBuildBlock('<!-- build:scripts --><script async src="./src/first.js"></script><!-- /build:scripts -->', "scripts"));
 });
 
+test("HTML ile çağrılsa bile gizli anahtar veya test varlığı pakete alınmaz", async (t) => {
+  const { root, write } = fixture(t);
+  const htmlPath = path.join(root, "client", "index.html");
+  const html = fs.readFileSync(htmlPath, "utf8");
+  write("index.html", html.replace("</head>", '<link rel="icon" href="./assets/unused-key.txt"></head>'));
+  await assert.rejects(buildClient({ root, environment: {} }), /yasaklı varlık/);
+  assert.ok(!fs.existsSync(path.join(root, "dist")));
+});
+
 test("türevi doğrulanan WAV pakete girmez, türevsiz WAV kalır", async (t) => {
   const { root } = fixture(t, { audio: true });
   const { destination, manifest } = await buildClient({ root, environment: {} });

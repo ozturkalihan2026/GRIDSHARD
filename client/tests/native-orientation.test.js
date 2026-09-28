@@ -3,7 +3,7 @@ const assert = require("node:assert/strict");
 const fs = require("node:fs");
 const path = require("node:path");
 
-const {androidPortrait, iosPortrait} = require("../../tools/configure-native-orientation.js");
+const {androidPortrait, androidLocalDebugNetwork, iosPortrait} = require("../../tools/configure-native-orientation.js");
 
 const ANDROID_MANIFEST = `<?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
@@ -46,6 +46,12 @@ test("Android kilidi yalnız MainActivity'ye uygulanır ve tekrar çalıştırı
 
 test("Android şablonunda MainActivity yoksa sessizce devam edilmez", () => {
   assert.throws(() => androidPortrait("<manifest><application></application></manifest>"));
+});
+
+test("yerel debug HTTP izni yalnız uygulamaya eklenir, yedek kapatılır", () => {
+  const once = androidLocalDebugNetwork(ANDROID_MANIFEST);
+  assert.match(once, /<application[^>]*android:usesCleartextTraffic="true"[^>]*android:allowBackup="false"/);
+  assert.equal(androidLocalDebugNetwork(once), once);
 });
 
 test("iOS kilidi telefon ve iPad yönlerini yalnız portreye indirir", () => {

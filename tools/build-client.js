@@ -126,6 +126,15 @@ function runtimeAssets(source, html, scripts, omittedWav) {
         || relative.split("/").some((part) => part.startsWith("."))) {
       throw new Error(`Geçersiz paket varlığı: ${raw}`);
     }
+    if (!/\.(?:png|jpe?g|webp|svg|gif|woff2?|wav|ogg|m4a)$/.test(relative)
+        || /(?:^|[\/_-])(?:secret|private|test|debug|old|backup|keystore|credential|token|key)(?:[\/_-]|\.)/i.test(relative)) {
+      throw new Error(`Paket için yasaklı varlık: ${raw}`);
+    }
+    let component = source;
+    for (const part of relative.split("/")) {
+      component = path.join(component, part);
+      if (fs.lstatSync(component).isSymbolicLink()) throw new Error(`Paket varlığında sembolik bağlantı: ${raw}`);
+    }
     const file = sourceFile(source, `./${relative}`);
     if (!fs.statSync(file).isFile()) throw new Error(`Paket varlığı dosya değil: ${raw}`);
     if (!omittedWav.has(file)) assets.add(relative);
@@ -220,6 +229,9 @@ async function buildClient({ root = path.resolve(__dirname, ".."), mobile = fals
       return `./${relative}`;
     }
     const jsUrl = writeBundle("js", javascript.code);
+    if (/__GRIDSHARD_TEST_API|-----BEGIN (?:RSA |EC )?PRIVATE KEY-----|com\.example\.gridshard/.test(javascript.code)) {
+      throw new Error("Derlenmiş JavaScript test kancası, eski kimlik veya özel anahtar içeriyor.");
+    }
     const cssUrl = writeBundle("css", cssOutputs[0].contents);
     for (const file of css.outputFiles.filter((file) => !file.path.endsWith(".css"))) {
       if (path.dirname(file.path) !== bundleDirectory) throw new Error("Beklenmeyen CSS varlık yolu.");
