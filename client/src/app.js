@@ -459,6 +459,7 @@
   let activeTrophyLeaderboardScope = "general";
   let leaderboardPayload = null;
   let rewardInboxState = null;
+  let inboxDirectMessages = [];
   let publicProfileReturnDialogId = null;
   let teamProfileReturnDialogId = null;
   let teamState = null;
@@ -1053,6 +1054,7 @@
     tile.type = "button";
     tile.className = `unified-module-tile${collection ? " collection-module-tile" : ""}`;
     tile.dataset.category = item.category || definition.category || "";
+    tile.dataset.rarity = item.rarity || definition.rarity || "common";
     tile.dataset.moduleDefinitionId = item.definition_id || definition.definitionId || "";
     tile.dataset.selected = String(selected);
     tile.setAttribute("aria-label", localizedUiText(item.name_tr || definition.nameTr || "Modül"));
@@ -1366,6 +1368,61 @@
     amount.textContent = "×1";
     row.append(preview, amount);
     return row;
+  }
+
+  function createSeasonRewardLane(reward, premium = false) {
+    const lane = document.createElement("div");
+    lane.className = `season-reward-lane${premium ? " is-premium" : ""}`;
+    const heading = document.createElement("strong");
+    heading.textContent = localizedMessage(premium ? "season.premium_lane" : "season.free_lane");
+    const preview = document.createElement("div");
+    preview.className = "season-reward-preview";
+    const summary = document.createElement("button");
+    summary.type = "button";
+    summary.setAttribute("aria-label", localizedMessage("season.chest_preview"));
+    const chest = document.createElement("span");
+    chest.className = "season-reward-chest";
+    chest.dataset.tier = reward.chest_tier || (reward.is_major ? "gold" : "bronze");
+    chest.innerHTML = chestVisualMarkup(chest.dataset.tier);
+    const count = document.createElement("span");
+    count.className = "season-reward-chest-count";
+    count.textContent = premium && reward.chest_tier ? "×2" : "×1";
+    summary.append(chest, count);
+    const previewReward = premium ? {
+      ...reward,
+      circuit_credits: Number(reward.circuit_credits || 0) * 2,
+      flux_shards: Number(reward.flux_shards || 0) * 2,
+      module_shards: Number(reward.module_shards || 0) * 2,
+      core_shards: Number(reward.core_shards || 0) * 2,
+    } : reward;
+    const contents = createRewardRows(previewReward, {compact:true});
+    contents.classList.add("season-reward-items");
+    if (reward.avatar_id) contents.appendChild(createSeasonCosmeticRewardRow("avatar", reward.avatar_id));
+    if (reward.avatar_frame_id) contents.appendChild(createSeasonCosmeticRewardRow("avatar_frame", reward.avatar_frame_id));
+    preview.append(summary, contents);
+    summary.addEventListener("click", () => {
+      preview.classList.toggle("is-open");
+      window.setTimeout(() => preview.classList.remove("is-open"), 2600);
+    });
+    lane.append(heading, preview);
+    if (premium) {
+      const locked = document.createElement("span");
+      locked.className = "season-premium-locked";
+      locked.textContent = localizedMessage("season.premium_locked");
+      lane.appendChild(locked);
+    } else {
+      const action = document.createElement("button");
+      action.type = "button";
+      action.dataset.tierClaim = String(reward.tier);
+      action.disabled = !reward.claimable;
+      action.textContent = localizedMessage(reward.claimed
+        ? "reward.claimed_title"
+        : reward.claimable
+          ? "reward.claim_short"
+          : "reward.locked");
+      lane.appendChild(action);
+    }
+    return lane;
   }
 
   function aggregateChestRewards(receipts = []) {
@@ -2846,6 +2903,7 @@
       socialState = payload;
       setFriendsStatus("");
       renderFriendsScreen();
+      renderRewardInbox();
       return { ok:true, payload };
     } catch (error) {
       setFriendsStatus(error instanceof Error ? error.message : String(error), "error");
@@ -2863,6 +2921,7 @@
       );
       setFriendsStatus("");
       renderFriendsScreen();
+      renderRewardInbox();
       return { ok:true, state:socialState };
     } catch (error) {
       setFriendsStatus(error instanceof Error ? error.message : String(error), "error");
@@ -3189,6 +3248,14 @@
 
   function renderFriendsScreen() {
     if (!socialState) return;
+    for (const button of document.querySelectorAll("[data-friends-tab]")) {
+      const selected = button.dataset.friendsTab === activeFriendsTab;
+      button.classList.toggle("is-active", selected);
+      button.setAttribute("aria-selected", String(selected));
+      button.classList.toggle("has-persistent-notification", button.dataset.friendsTab === "incoming" && Boolean(socialState.incoming_requests?.length)
+        || button.dataset.friendsTab === "battle" && Boolean((socialState.battle_invites || []).some((invite) => invite.status === "pending" && invite.opponent_id === participantPlayerId)));
+    }
+    for (const panel of document.querySelectorAll("[data-friends-panel]")) panel.hidden = panel.dataset.friendsPanel !== activeFriendsTab;
     const setEmpty = (host, text) => {
       if (!host || host.children.length) return;
       const empty = document.createElement("p");
@@ -3212,12 +3279,23 @@
     const friends = document.getElementById("friend-list");
     if (friends) {
       friends.replaceChildren();
-      for (const player of socialState.friends || []) {
-        friends.appendChild(createSocialPlayerCard(player, [
-          { label:"SAVAŞA ÇAĞIR", onClick:() => socialMutation(`/social/${encodeURIComponent(participantPlayerId)}/battle-invites`, { opponent_id:player.player_id, requestKind:"friend-battle" }, "Kupasız savaş daveti gönderiliyor…") },
-        ]));
-      }
+      for (const player of socialState.friends || []) friends.appendChild(createSocialPlayerCard(player));
       setEmpty(friends, "Henüz arkadaşın yok. Oyuncu arayarak ilk bağlantını kurabilirsin.");
+    }
+    const outgoing = document.getElementById("friend-outgoing-list");
+    if (outgoing) {
+      outgoing.replaceChildren();
+      for (const player of socialState.outgoing_requests || []) outgoing.appendChild(createSocialPlayerCard(player));
+      setEmpty(outgoing, localizedMessage("social.no_outgoing_requests"));
+    }
+    const battleFriends = document.getElementById("friend-battle-friends");
+    if (battleFriends) {
+      battleFriends.replaceChildren();
+      const sorted = [...(socialState.friends || [])].sort((a, b) => Number(Boolean(b.online)) - Number(Boolean(a.online)) || String(a.display_name || "").localeCompare(String(b.display_name || ""), document.documentElement.lang));
+      for (const player of sorted) battleFriends.appendChild(createSocialPlayerCard(player, [
+        { label:localizedMessage("social.invite_to_battle"), onClick:() => socialMutation(`/social/${encodeURIComponent(participantPlayerId)}/battle-invites`, { opponent_id:player.player_id, requestKind:"friend-battle" }, localizedMessage("social.sending_battle_invite")) },
+      ]));
+      setEmpty(battleFriends, localizedMessage("social.no_friends_for_battle"));
     }
     const invites = document.getElementById("friend-battle-invites");
     if (invites) {
@@ -3256,6 +3334,8 @@
       }
       setEmpty(invites, "Bekleyen arkadaş savaşı yok.");
     }
+    const engagement = profileState.viewModel()?.engagement;
+    if (engagement) renderEngagementSummary(engagement);
   }
 
   async function searchFriends(query) {
@@ -3319,6 +3399,20 @@
     return date && !Number.isNaN(date.getTime())
       ? localizedDate(date, { day:"2-digit", month:"short" })
       : "—";
+  }
+
+  function createEventRewardChest(prize, eventKind) {
+    const chest = document.createElement("button");
+    chest.type = "button";
+    chest.className = "leaderboard-reward-chest event-standing-reward";
+    chest.dataset.rank = String(prize.position);
+    chest.innerHTML = chestVisualMarkup(prize.chest_tier || "bronze", {visualId:prize.chest_visual_id || ""});
+    chest.setAttribute("aria-label", localizedMessage("reward.chest_contents_aria", {name:localizedRewardChestName(prize)}));
+    const popover = createLeaderboardRewardPopover(prize, `${eventKind}-${prize.position}`, "event.reward_delivery_note");
+    chest.setAttribute("aria-describedby", popover.id);
+    chest.appendChild(popover);
+    chest.addEventListener("pointerup", (event) => { if (event.pointerType !== "mouse") window.setTimeout(() => chest.blur(), 1800); });
+    return chest;
   }
 
   function renderTournamentPrizes(hostId, prizes = []) {
@@ -3410,7 +3504,6 @@
         ? localizedMessage("event.joined_upper")
         : localizedMessage("event.enter_tournament", {fee:localizedNumber(tournament.entry_fee || 0)});
     }
-    renderTournamentPrizes("weekly-tournament-prizes", tournament.prizes || []);
     const participant = (tournament.standings || []).find((row) => row.player_id === participantPlayerId);
     renderEventSummary("weekly-event-summary", [
       [localizedMessage("event.duration"), localizedMessage("event.date_range", {start:eventDateLabel(tournament.period?.starts_at), end:eventDateLabel(tournament.period?.ends_at)})],
@@ -3438,6 +3531,8 @@
       const points = document.createElement("strong");
       points.className = "tournament-points";
       points.textContent = localizedMessage("arena.trophy_icon", {count:localizedNumber(row.trophies_earned || row.points)});
+      const prize = (tournament.prizes || []).find((item) => Number(item.position) === Number(row.position));
+      if (prize) points.appendChild(createEventRewardChest(prize, "weekly"));
       item.append(position, identity, points);
       host.appendChild(item);
     }
@@ -3462,7 +3557,6 @@
           ? localizedMessage("event.register_team_free")
           : localizedMessage("event.leader_registers_team");
     }
-    renderTournamentPrizes("team-tournament-prizes", tournament.prizes || []);
     const participantTeam = (tournament.standings || []).find((row) =>
       row.members?.some((member) => member.player_id === participantPlayerId)
     );
@@ -3488,6 +3582,8 @@
         const points = document.createElement("strong");
         points.className = "tournament-points";
         points.textContent = localizedMessage("event.team_points", {points:localizedNumber(row.points)});
+        const prize = (tournament.prizes || []).find((item) => Number(item.position) === Number(row.position));
+        if (prize) points.appendChild(createEventRewardChest(prize, "team"));
         item.append(position, identity, points);
         standings.appendChild(item);
       }
@@ -3495,12 +3591,14 @@
     const fixtures = document.getElementById("team-tournament-fixtures");
     if (fixtures) {
       fixtures.replaceChildren();
-      for (const fixture of tournament.fixtures || []) {
+      const ownFixtures = (tournament.fixtures || []).filter((fixture) =>
+        viewer.team_id && (fixture.home_team_id === viewer.team_id || fixture.away_team_id === viewer.team_id)
+      );
+      for (const fixture of ownFixtures) {
         const card = document.createElement("article");
-        const pairing = (fixture.member_pairings || []).find((item) =>
-          item.home_player_id === participantPlayerId || item.away_player_id === participantPlayerId
-        );
-        if (pairing) card.classList.add("is-current-fixture");
+        const ownSide = fixture.home_team_id === viewer.team_id ? "home" : "away";
+        const pairings = fixture.member_pairings || [];
+        if (pairings.some((item) => item.home_player_id === participantPlayerId || item.away_player_id === participantPlayerId)) card.classList.add("is-current-fixture");
         const teams = document.createElement("div");
         teams.className = "event-fixture-team-links";
         teams.append(
@@ -3513,21 +3611,37 @@
         const scheduleLabel = schedule && !Number.isNaN(schedule.getTime())
           ? localizedDate(schedule, { weekday:"short", hour:"2-digit", minute:"2-digit" })
           : localizedMessage("event.schedule_preparing");
-        detail.textContent = pairing
-          ? localizedMessage("event.player_pairing", {home:pairing.home_player_name, away:pairing.away_player_name, schedule:scheduleLabel})
-          : localizedMessage("event.close_trophy_pairings", {count:localizedNumber((fixture.member_pairings || []).length), schedule:scheduleLabel});
+        detail.textContent = localizedMessage("event.close_trophy_pairings", {count:localizedNumber(pairings.length), schedule:scheduleLabel});
         card.append(teams, detail);
-        if (pairing) {
-          const action = document.createElement("button");
-          action.type = "button";
-          action.className = "event-fixture-enter";
-          action.disabled = fixture.status !== "live";
-          action.textContent = localizedMessage(fixture.status === "live" ? "event.enter_live_match" : fixture.status === "completed" ? "event.match_time_passed" : "event.wait_for_match");
-          action.addEventListener("click", () => checkInTeamFixture(fixture.fixture_id));
-          card.appendChild(action);
+        const roster = document.createElement("div");
+        roster.className = "event-fixture-pairings";
+        for (const pairing of pairings) {
+          const row = document.createElement("div");
+          row.className = "event-fixture-pairing";
+          const ownPlayerId = pairing[`${ownSide}_player_id`];
+          const rivalSide = ownSide === "home" ? "away" : "home";
+          const names = document.createElement("span");
+          names.textContent = localizedMessage("event.roster_pairing", {own:pairing[`${ownSide}_player_name`] || localizedMessage("profile.player"), rival:pairing[`${rivalSide}_player_name`] || localizedMessage("profile.player")});
+          row.appendChild(names);
+          if (ownPlayerId === participantPlayerId) {
+            row.classList.add("is-current-player");
+            const matchTime = document.createElement("small");
+            matchTime.textContent = localizedMessage("event.match_at", {time:scheduleLabel});
+            row.appendChild(matchTime);
+            const action = document.createElement("button");
+            action.type = "button";
+            action.className = "event-fixture-enter";
+            action.disabled = fixture.status !== "live";
+            action.textContent = localizedMessage(fixture.status === "live" ? "event.enter_live_match" : fixture.status === "completed" ? "event.match_time_passed" : "event.wait_for_match");
+            action.addEventListener("click", () => checkInTeamFixture(fixture.fixture_id));
+            row.appendChild(action);
+          }
+          roster.appendChild(row);
         }
+        card.appendChild(roster);
         fixtures.appendChild(card);
       }
+      if (!ownFixtures.length) fixtures.textContent = localizedMessage(viewer.team_id ? "event.no_team_fixture" : "event.no_team");
     }
   }
 
@@ -3616,13 +3730,18 @@
   function renderDailyMetaCard() {
     const name = document.getElementById("daily-meta-name");
     const description = document.getElementById("daily-meta-description");
+    const effect = document.getElementById("daily-meta-effect");
     const card = document.getElementById("daily-meta-card");
     const selected = dailyMetaState?.selected ? dailyMetaState.meta : null;
     if (name) name.textContent = selected ? localizedMessage(`meta.${selected.id}.name`) : localizedMessage("meta.not_selected");
     if (description) {
       description.textContent = selected
-        ? localizedMessage("event.daily_meta_description", {description:localizedMessage(`meta.${selected.id}.description`), effect:localizedMessage(`meta.${selected.id}.effect`)}).replace(/ · $/, "")
+        ? localizedMessage(`meta.${selected.id}.description`)
         : localizedMessage("meta.roll_hint");
+    }
+    if (effect) {
+      effect.hidden = !selected;
+      effect.textContent = selected ? localizedMessage(`meta.${selected.id}.effect`) : "";
     }
     if (card) {
       card.dataset.selected = selected ? "true" : "false";
@@ -3761,6 +3880,7 @@
       );
       setTeamActionStatus("");
       renderTeamHub();
+      renderRewardInbox();
       accountDataLoader.loadProfile().then(renderProfileSummary);
       if (teamState?.application_pending) {
         setTeamActionStatus(localizedMessage("team.application_sent"), "success");
@@ -4033,6 +4153,8 @@
         moduleSelect.appendChild(option);
       }
       if ([...moduleSelect.options].some((option) => option.value === previous)) moduleSelect.value = previous;
+      const pickerButton = document.getElementById("team-module-picker-open");
+      if (pickerButton) pickerButton.textContent = moduleSelect.value ? moduleSelect.selectedOptions[0]?.textContent || localizedMessage("team.choose_module") : localizedMessage("team.choose_module");
     }
 
     const requestList = document.getElementById("team-request-list");
@@ -4209,6 +4331,42 @@
       renderTeamHub();
     });
   });
+  document.querySelectorAll("[data-friends-tab]").forEach((button) => button.addEventListener("click", () => {
+    activeFriendsTab = button.dataset.friendsTab || "friends";
+    renderFriendsScreen();
+    if (activeFriendsTab === "messages") loadDirectMessages();
+  }));
+  document.getElementById("team-module-picker-open")?.addEventListener("click", () => {
+    const select = document.getElementById("team-module-request-select");
+    const host = document.getElementById("team-module-picker-list");
+    const dialog = document.getElementById("team-module-picker");
+    if (!select || !host || !dialog) return;
+    host.replaceChildren();
+    for (const option of [...select.options].filter((item) => item.value)) {
+      const module = (metaProgressionState?.module_collection || []).find((item) => item.definition_id === option.value);
+      const card = document.createElement("button");
+      card.type = "button";
+      card.className = "team-module-picker-choice";
+      card.dataset.rarity = module?.rarity || "common";
+      card.setAttribute("aria-pressed", String(select.value === option.value));
+      const glyph = document.createElement("i");
+      glyph.textContent = moduleIconFor(metaModuleDefinition(module));
+      const copy = document.createElement("span");
+      copy.textContent = localizedRecordText(module, "name") || option.textContent;
+      const rarity = document.createElement("small");
+      rarity.textContent = moduleRarityLabel(module?.rarity);
+      card.append(glyph, copy, rarity);
+      card.addEventListener("click", () => {
+        select.value = option.value;
+        const open = document.getElementById("team-module-picker-open");
+        if (open) open.textContent = option.textContent;
+        dialog.close();
+      });
+      host.appendChild(card);
+    }
+    if (dialog.showModal) dialog.showModal(); else dialog.setAttribute("open", "");
+  });
+  document.getElementById("team-module-picker-close")?.addEventListener("click", () => document.getElementById("team-module-picker")?.close());
   document.getElementById("daily-meta-roll")?.addEventListener("click", rollDailyMeta);
   document.getElementById("daily-meta-dialog")?.addEventListener("cancel", (event) => {
     if (dailyMetaState?.requires_roll) event.preventDefault();
@@ -4541,8 +4699,11 @@
   }));
   document.getElementById("team-cosmetic-save")?.addEventListener("click", async () => {
     if (!teamState?.team_id || !teamCosmeticDraft) return;
-    const result = await mutateTeam(`/teams/${encodeURIComponent(teamState.team_id)}/cosmetics`, {...teamCosmeticDraft, requestKind:"team-cosmetics"}, localizedMessage("team.appearance_saving"));
-    if (result.ok) teamCosmeticDraft = null;
+    const draft = teamCosmeticDraft;
+    teamCosmeticDraft = null;
+    const result = await mutateTeam(`/teams/${encodeURIComponent(teamState.team_id)}/cosmetics`, {...draft, requestKind:"team-cosmetics"}, localizedMessage("team.appearance_saving"));
+    if (!result.ok) teamCosmeticDraft = draft;
+    renderTeamManagement();
   });
   document.getElementById("team-module-request-button")?.addEventListener("click", () => {
     const moduleId = document.getElementById("team-module-request-select")?.value || "";
@@ -14934,6 +15095,7 @@ function saveHumanReviewLocalNote() {
     const card = document.createElement("div");
     card.className = "pool-detail-preview-card";
     card.dataset.category = module.category || "";
+    card.dataset.rarity = module.rarity || "common";
 
     const icon = document.createElement("span");
     icon.className = "module-icon pool-detail-preview-icon";
@@ -16727,6 +16889,49 @@ function saveHumanReviewLocalNote() {
     identity.append(avatar, identityCopy, trophies);
     host.appendChild(identity);
 
+    const honorSection = document.createElement("section");
+    honorSection.className = "profile-honor-showcase";
+    const honorHeader = document.createElement("header");
+    const honorTitle = document.createElement("strong");
+    honorTitle.textContent = localizedMessage("profile.honor_collection");
+    honorHeader.appendChild(honorTitle);
+    const honorGroups = document.createElement("div");
+    honorGroups.className = "profile-honor-groups";
+    for (const group of [
+      {label:"profile.rank_trophies", ids:payload.honors?.rank_trophy_ids || [], definitions:PROFILE_RANK_TROPHIES, kind:"trophy", empty:"profile.no_rank_trophies"},
+      {label:"profile.badges", ids:payload.honors?.badge_ids || [], definitions:PROFILE_BADGES, kind:"badge", empty:"profile.no_rank_badges"},
+    ]) {
+      const wrapper = document.createElement("section");
+      const label = document.createElement("small");
+      label.textContent = localizedMessage(group.label);
+      const collection = document.createElement("div");
+      collection.className = "profile-honor-collection";
+      if (!group.ids.length) {
+        const empty = document.createElement("span");
+        empty.className = "profile-honor-empty";
+        empty.textContent = localizedMessage(group.empty);
+        collection.appendChild(empty);
+      }
+      for (const id of [...new Set(group.ids)]) {
+        const definition = group.definitions.find((item) => item.id === id);
+        const item = document.createElement("article");
+        item.className = "profile-honor-item";
+        item.dataset.kind = group.kind;
+        item.dataset.tone = definition?.tone || "cyan";
+        item.title = localizedCatalogName(group.kind, id, definition?.nameTr || id);
+        const glyph = document.createElement("span");
+        glyph.textContent = definition?.glyph || (group.kind === "trophy" ? "🏆" : "✦");
+        const name = document.createElement("small");
+        name.textContent = localizedCatalogName(`${group.kind}_short`, id, definition?.shortNameTr || id);
+        item.append(glyph, name);
+        collection.appendChild(item);
+      }
+      wrapper.append(label, collection);
+      honorGroups.appendChild(wrapper);
+    }
+    honorSection.append(honorHeader, honorGroups);
+    host.appendChild(honorSection);
+
     const deckSection = document.createElement("section");
     deckSection.className = "profile-deck-showcase";
     const deckHeading = document.createElement("div");
@@ -17044,10 +17249,35 @@ function saveHumanReviewLocalNote() {
     else returnDialog?.setAttribute("open", "");
   }
 
-  function createLeaderboardRewardPopover(reward, position) {
+  function rewardPreviewVisual(field, reward) {
+    const visual = document.createElement("i");
+    visual.className = "reward-preview-icon";
+    if (field === "avatar_id" || field === "avatar_frame_id") {
+      visual.classList.add("profile-avatar");
+      applyAvatarVisual(visual, reward.avatar_id || "default", reward.avatar_frame_id || "none");
+    } else if (field === "rank_trophy_id") visual.textContent = "🏆";
+    else if (field === "badge_id") visual.textContent = PROFILE_BADGES.find((item) => item.id === reward.badge_id)?.glyph || "✦";
+    else if (field === "emoji_id") visual.textContent = BATTLE_EMOJIS.find((item) => item.id === reward.emoji_id)?.glyph || "◇";
+    else if (field === "team_avatar_id") visual.textContent = ({team_champion:"♛", team_finalist:"✦", team_default:"⬡"})[reward.team_avatar_id] || "⬡";
+    else if (field === "team_frame_id" || field === "team_name_frame_id") {
+      visual.textContent = "▢";
+      visual.dataset.teamFrame = reward[field] || "none";
+    }
+    else if (field === "team_bar_background_id") {
+      visual.textContent = "▰";
+      visual.dataset.teamBar = reward[field] || "team_grid";
+    }
+    else if (field === "universal_module_shards") visual.textContent = "🧩";
+    else if (field === "flux_shards") visual.textContent = "◇";
+    else if (field === "circuit_credits") visual.textContent = "◉";
+    else visual.textContent = "✦";
+    return visual;
+  }
+
+  function createLeaderboardRewardPopover(reward, position, noteKey = "reward.season_delivery_note") {
     const popover = document.createElement("span");
     popover.className = "leaderboard-reward-popover";
-    popover.id = `leaderboard-reward-popover-${position}`;
+    popover.id = `${noteKey === "reward.season_delivery_note" ? "leaderboard" : "event"}-reward-popover-${position}`;
     popover.setAttribute("role", "tooltip");
 
     const title = document.createElement("strong");
@@ -17057,28 +17287,27 @@ function saveHumanReviewLocalNote() {
     const list = document.createElement("span");
     list.className = "leaderboard-reward-popover-list";
     const rewards = [
-      ["◉", localizedMessage("currency.credits_full", {amount:localizedNumber(reward.circuit_credits || 0)})],
-      ["◇", localizedMessage("currency.flux", {amount:localizedNumber(reward.flux_shards || 0)})],
-      ["🧩", localizedMessage("reward.universal_shards", {amount:localizedNumber(reward.universal_module_shards || 0)})],
+      ["circuit_credits", localizedMessage("currency.credits_full", {amount:localizedNumber(reward.circuit_credits || 0)})],
+      ["flux_shards", localizedMessage("currency.flux", {amount:localizedNumber(reward.flux_shards || 0)})],
+      ...(reward.universal_module_shards ? [["universal_module_shards", localizedMessage("reward.universal_shards", {amount:localizedNumber(reward.universal_module_shards || 0)})]] : []),
       ...[
         ["rank_trophy_id", "trophy"], ["badge_id", "badge"],
         ["avatar_id", "avatar"], ["avatar_frame_id", "frame"],
         ["emoji_id", "emoji"], ["profile_background_id", "background"],
         ["team_avatar_id", "team_cosmetic"], ["team_frame_id", "team_cosmetic"],
         ["team_name_frame_id", "team_cosmetic"], ["team_bar_background_id", "team_cosmetic"],
-      ].filter(([field]) => reward[field]).map(([field, kind]) => ["✦", localizedCatalogName(kind, reward[field])]),
+      ].filter(([field]) => reward[field]).map(([field, kind]) => [field, localizedCatalogName(kind, reward[field])]),
     ];
-    for (const [glyph, label] of rewards) {
+    for (const [field, label] of rewards) {
       const row = document.createElement("span");
-      const icon = document.createElement("i");
-      icon.textContent = glyph;
+      const icon = rewardPreviewVisual(field, reward);
       const text = document.createElement("span");
       text.textContent = label;
       row.append(icon, text);
       list.appendChild(row);
     }
     const note = document.createElement("small");
-    note.textContent = "Sezon sonunda mesaj kutusuna teslim edilir.";
+    note.textContent = localizedMessage(noteKey);
     popover.append(title, list, note);
     return popover;
   }
@@ -17172,8 +17401,10 @@ function saveHumanReviewLocalNote() {
               visualId:reward.chest_visual_id || "",
             });
             chest.setAttribute("aria-label", localizedMessage("reward.chest_contents_aria", {name:localizedUiText(reward.chest_name_tr || "Ödül sandığı")}));
-            chest.setAttribute("aria-describedby", `leaderboard-reward-popover-${row.position}`);
-            chest.appendChild(createLeaderboardRewardPopover(reward, row.position));
+            const popover = createLeaderboardRewardPopover(reward, row.position);
+            chest.setAttribute("aria-describedby", popover.id);
+            chest.appendChild(popover);
+            chest.addEventListener("pointerup", (event) => { if (event.pointerType !== "mouse") window.setTimeout(() => chest.blur(), 1800); });
             score.appendChild(chest);
           }
         }
@@ -17214,18 +17445,127 @@ function saveHumanReviewLocalNote() {
 
   function renderRewardInbox() {
     const host = document.getElementById("reward-inbox-list");
+    const heading = document.getElementById("reward-inbox-title");
+    if (heading) heading.textContent = localizedMessage("inbox.title");
     const button = document.getElementById("reward-inbox-button");
     const notification = document.getElementById("reward-inbox-notification");
-    const unclaimed = Number(rewardInboxState?.unclaimed_count || 0);
-    button?.classList.toggle("has-reward", unclaimed > 0);
-    if (notification) notification.hidden = unclaimed < 1;
+    const pendingFriends = socialState?.incoming_requests || [];
+    const pendingBattles = (socialState?.battle_invites || []).filter((invite) => invite.status === "pending" && invite.opponent_id === participantPlayerId);
+    const pendingTraining = (teamState?.training_challenges || []).filter((challenge) => challenge.can_accept);
+    const attention = Number(rewardInboxState?.unclaimed_count || 0) + pendingFriends.length + pendingBattles.length + pendingTraining.length;
+    button?.classList.toggle("has-reward", attention > 0);
+    if (notification) notification.hidden = attention < 1;
+    const engagement = profileState.viewModel()?.engagement;
+    if (engagement) renderEngagementSummary(engagement);
     if (!host) return;
     host.replaceChildren();
     const messages = rewardInboxState?.messages || [];
-    if (!messages.length) {
+    const section = (key) => {
+      const heading = document.createElement("h3");
+      heading.className = "reward-inbox-section-heading";
+      heading.textContent = localizedMessage(key);
+      host.appendChild(heading);
+    };
+    const inboxAction = (labelKey, onClick) => {
+      const action = document.createElement("button");
+      action.type = "button";
+      action.textContent = localizedMessage(labelKey);
+      action.addEventListener("click", onClick);
+      return action;
+    };
+    if (pendingFriends.length || pendingBattles.length || pendingTraining.length) section("inbox.invitations");
+    for (const player of pendingFriends) {
+      const card = document.createElement("article");
+      card.className = "reward-inbox-card";
+      const copy = document.createElement("div");
+      const title = document.createElement("strong");
+      title.textContent = localizedMessage("inbox.friend_request", {name:player.display_name || localizedMessage("profile.player")});
+      copy.appendChild(title);
+      const accept = inboxAction("inbox.accept", async () => {
+        const result = await socialMutation(`/social/${encodeURIComponent(participantPlayerId)}/requests/accept`, {requester_id:player.player_id, requestKind:"friend-accept"}, localizedMessage("inbox.accepting"));
+        if (result.ok) renderRewardInbox();
+      });
+      card.append(copy, accept);
+      host.appendChild(card);
+    }
+    for (const invite of pendingBattles) {
+      const card = document.createElement("article");
+      card.className = "reward-inbox-card";
+      const copy = document.createElement("div");
+      const title = document.createElement("strong");
+      title.textContent = localizedMessage("inbox.battle_invite", {name:invite.challenger_name || localizedMessage("profile.player")});
+      copy.appendChild(title);
+      const accept = inboxAction("inbox.accept", async () => {
+        const result = await socialMutation(`/social/${encodeURIComponent(participantPlayerId)}/battle-invites/${encodeURIComponent(invite.invite_id)}/accept`, {requestKind:"battle-accept"}, localizedMessage("inbox.accepting"));
+        if (result.ok) {
+          renderRewardInbox();
+          if (result.payload.battle) {
+            document.getElementById("reward-inbox-dialog")?.close();
+            launchSocialBattle(result.payload.battle);
+          }
+        }
+      });
+      card.append(copy, accept);
+      host.appendChild(card);
+    }
+    for (const challenge of pendingTraining) {
+      const card = document.createElement("article");
+      card.className = "reward-inbox-card";
+      const copy = document.createElement("div");
+      const title = document.createElement("strong");
+      title.textContent = localizedMessage("inbox.training_invite", {name:challenge.challenger_name || localizedMessage("profile.player")});
+      copy.appendChild(title);
+      const accept = inboxAction("inbox.accept", async () => {
+        const result = await mutateTeam(`/teams/${encodeURIComponent(teamState.team_id)}/training-challenges/${encodeURIComponent(challenge.challenge_id)}/accept`, {requestKind:"training-accept"}, localizedMessage("inbox.accepting"));
+        if (result.ok) {
+          renderRewardInbox();
+          if (result.state?.operation?.battle) {
+            document.getElementById("reward-inbox-dialog")?.close();
+            launchSocialBattle(result.state.operation.battle);
+          }
+        }
+      });
+      card.append(copy, accept);
+      host.appendChild(card);
+    }
+    if (inboxDirectMessages.length) section("inbox.messages");
+    for (const message of inboxDirectMessages.slice(-8).reverse()) {
+      const card = document.createElement("article");
+      card.className = "reward-inbox-card";
+      const copy = document.createElement("div");
+      const title = document.createElement("strong");
+      title.textContent = message.sender_id === participantPlayerId ? localizedMessage("inbox.message_sent") : localizedMessage("inbox.message_received");
+      const detail = document.createElement("small");
+      detail.textContent = message.text || "";
+      copy.append(title, detail);
+      card.append(copy, inboxAction("inbox.open_messages", () => {
+        document.getElementById("reward-inbox-dialog")?.close();
+        activeFriendsTab = "messages";
+        openAppScreen("friends");
+        renderFriendsScreen();
+        loadDirectMessages();
+      }));
+      host.appendChild(card);
+    }
+    const updates = rewardInboxState?.updates || [];
+    if (updates.length) section("inbox.updates");
+    for (const update of updates) {
+      const card = document.createElement("article");
+      card.className = "reward-inbox-card";
+      const copy = document.createElement("div");
+      const title = document.createElement("strong");
+      title.textContent = localizedMessage("inbox.version_title", {version:update.version});
+      const detail = document.createElement("small");
+      detail.textContent = localizedMessage("inbox.version_detail");
+      copy.append(title, detail);
+      card.appendChild(copy);
+      host.appendChild(card);
+    }
+    if (messages.length) section("inbox.rewards");
+    if (!messages.length && !host.children.length) {
       const empty = document.createElement("p");
       empty.className = "leaderboard-empty";
-      empty.textContent = "Yeni rekabet ödülü yok. Sezon ve hafta kapanışları burada teslim edilir.";
+      empty.textContent = localizedMessage("inbox.empty");
       host.appendChild(empty);
       return;
     }
@@ -17296,6 +17636,16 @@ function saveHumanReviewLocalNote() {
         { cache:"no-store" },
         12000
       );
+      if (open) {
+        const [social, team, direct] = await Promise.allSettled([
+          requestJsonWithDeadline(`/social/${encodeURIComponent(participantPlayerId)}`, {cache:"no-store"}, 12000),
+          requestJsonWithDeadline(`/teams/player/${encodeURIComponent(participantPlayerId)}`, {cache:"no-store"}, 12000),
+          requestJsonWithDeadline(`/social/${encodeURIComponent(participantPlayerId)}/messages`, {cache:"no-store"}, 12000),
+        ]);
+        if (social.status === "fulfilled") socialState = social.value;
+        if (team.status === "fulfilled") teamState = team.value;
+        if (direct.status === "fulfilled") inboxDirectMessages = direct.value.messages || [];
+      }
       if (status) status.textContent = "";
       renderRewardInbox();
     } catch (error) {
@@ -17391,6 +17741,7 @@ function saveHumanReviewLocalNote() {
       "daily-rewards": Boolean(loginHasNotification),
       "daily-missions": Boolean(missionHasNotification),
       rewards: Boolean(seasonHasNotification),
+      friends: Boolean(socialState?.incoming_requests?.length || (socialState?.battle_invites || []).some((invite) => invite.status === "pending" && invite.opponent_id === participantPlayerId) || (teamState?.training_challenges || []).some((challenge) => challenge.can_accept)),
     };
     for (const button of document.querySelectorAll("[data-open-screen]")) {
       const target = button.dataset.openScreen;
@@ -17404,7 +17755,7 @@ function saveHumanReviewLocalNote() {
     const lobbyProfileButton = document.getElementById("lobby-profile-button");
     lobbyProfileButton?.classList.toggle(
       "has-avatar-notification",
-      Boolean(dailyHasNotification || seasonHasNotification || notifications.avatar)
+      Boolean(dailyHasNotification || seasonHasNotification || notifications.avatar || notificationByScreen.friends)
     );
 
     const progressTrack = document.querySelector(".season-progress-track");
@@ -17503,58 +17854,12 @@ function saveHumanReviewLocalNote() {
             : "locked";
         const tier = document.createElement("span");
         tier.textContent = localizedMessage("season.tier_label", {tier:localizedNumber(reward.tier)});
-        const prize = document.createElement("div");
-        prize.className = "season-reward-prize";
-        const rewardItems = createRewardRows(reward, { compact:true });
-        rewardItems.classList.add("season-reward-items");
-        if (reward.chest_tier) {
-          const chestRow = document.createElement("div");
-          chestRow.className = "reward-resource-row season-reward-chest-item";
-          chestRow.dataset.rewardKind = "chest";
-          const chestPrize = document.createElement("div");
-          const chestTierName = {
-            bronze:"Bronz",
-            silver:"Gümüş",
-            gold:"Altın",
-            diamond:"Elmas",
-          }[reward.chest_tier] || "Sandık";
-          const chestName = localizedMessage("chest.tier_name", {tier:localizedUiText(chestTierName)});
-          chestPrize.className = "season-reward-chest";
-          chestPrize.dataset.tier = reward.chest_tier;
-          chestPrize.innerHTML = chestVisualMarkup(reward.chest_tier);
-          chestPrize.setAttribute("aria-label", chestName);
-          chestPrize.title = chestName;
-          const chestAmount = document.createElement("strong");
-          chestAmount.textContent = "×1";
-          chestRow.setAttribute("aria-label", localizedMessage("reward.single_item", {name:chestName}));
-          chestRow.title = localizedMessage("reward.single_item", {name:chestName});
-          chestRow.append(chestPrize, chestAmount);
-          rewardItems.prepend(chestRow);
-        }
-        if (reward.avatar_id) {
-          rewardItems.appendChild(createSeasonCosmeticRewardRow("avatar", reward.avatar_id));
-        }
-        if (reward.avatar_frame_id) {
-          rewardItems.appendChild(
-            createSeasonCosmeticRewardRow("avatar_frame", reward.avatar_frame_id)
-          );
-        }
-        prize.appendChild(rewardItems);
+        const lanes = document.createElement("div");
+        lanes.className = "season-reward-lanes";
+        lanes.append(createSeasonRewardLane(reward), createSeasonRewardLane(reward, true));
         const requirement = document.createElement("small");
         requirement.textContent = localizedMessage("season.xp_unlock", {xp:localizedNumber(reward.required_xp)});
-        const action = document.createElement("button");
-        action.type = "button";
-        action.dataset.tierClaim = String(reward.tier);
-        action.disabled = !reward.claimable;
-        action.textContent = localizedMessage(reward.claimed
-          ? "reward.claimed_title"
-          : reward.claimable
-            ? "reward.claim_short"
-            : "reward.locked");
-        const actionColumn = document.createElement("div");
-        actionColumn.className = "season-reward-action";
-        actionColumn.append(action, requirement);
-        card.append(tier, prize, actionColumn);
+        card.append(tier, lanes, requirement);
         rewards.appendChild(card);
       }
     }
@@ -18135,6 +18440,7 @@ function saveHumanReviewLocalNote() {
     card.className = "module-card deck-module-card";
     card.dataset.moduleId = module.instanceId;
     card.dataset.category = module.category || "";
+    card.dataset.rarity = (metaProgressionState?.module_collection || []).find((item) => item.definition_id === module.definitionId)?.rarity || module.rarity || "common";
     card.disabled = !enabled;
     card.setAttribute("aria-disabled", String(!enabled));
     card.title = enabled

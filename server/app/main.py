@@ -3963,6 +3963,7 @@ def _public_player_profile_view(player_id: str) -> dict:
             "operator_title": bot.get("archetype_tr", "Devre Operatörü"),
             "operator_title_en": get_ai_archetype(BOT_ARCHETYPE_IDS.get(bot.get("archetype_tr"), "balanced")).name_en,
             "avatar": {"selected_avatar_id": "default", "selected_avatar_frame_id": "none"},
+            "honors": {"rank_trophy_ids": [], "badge_ids": []},
             "team": {"team_id": bot.get("team_id"), "team_name": bot.get("team_name")},
             "featured_deck": {"module_ids": list(bot.get("battle_pool_ids", ())), "matches": matches},
             "selected_core": {"id": core["id"], "name_tr": core["name_tr"], "level": 1, "rarity": core["rarity"]},
@@ -4013,6 +4014,10 @@ def _public_player_profile_view(player_id: str) -> dict:
         "avatar": {
             "selected_avatar_id": profile.selected_avatar_id,
             "selected_avatar_frame_id": profile.selected_avatar_frame_id,
+        },
+        "honors": {
+            "rank_trophy_ids": list(profile.unlocked_rank_trophy_ids),
+            "badge_ids": list(profile.unlocked_badge_ids),
         },
         "team": {
             "team_id": profile.team_id,
@@ -4365,6 +4370,7 @@ def _reward_inbox_view(profile) -> dict:
     return {
         "player_id": profile.player_id,
         "messages": messages,
+        "updates": [{"id": f"release:{VERSION}", "version": VERSION}],
         "unclaimed_count": sum(item.get("status") == "unclaimed" for item in messages),
         "universal_module_shards": int(profile.universal_module_shards),
     }

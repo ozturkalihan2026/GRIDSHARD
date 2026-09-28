@@ -2,6 +2,123 @@
 body[data-app-screen="play"] .battle-layout {
   --gs-battle-card-size: min(52px, calc((100vw - 92px) / 6));
 }
+
+/* Current correction pass: compact, paired rewards and stable mobile controls. */
+body[data-app-screen="rewards"] .season-rewards-screen .season-reward-card,
+body[data-app-screen="rewards"] .season-rewards-screen .season-reward-card:where(*) {
+  padding:10px !important;
+  display:grid !important;
+  grid-template-columns:1fr !important;
+  grid-template-areas:"tier" "lanes" "requirement" !important;
+  gap:7px !important;
+}
+body[data-app-screen="rewards"] .season-reward-card > .season-reward-lanes { grid-area:lanes; }
+body[data-app-screen="rewards"] .season-reward-card > small { text-align:right; }
+.season-reward-lanes { min-width:0;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px; }
+.season-reward-lane { min-width:0;padding:7px;display:grid;align-content:start;justify-items:center;gap:6px;border:1px solid rgba(91,177,205,.35);border-radius:9px;background:#09233b; }
+.season-reward-lane.is-premium { border-color:rgba(255,213,93,.4);background:linear-gradient(150deg,#312c25,#10223a); }
+.season-reward-lane > strong { color:#78e6dc;font:800 .47rem var(--gs-font-display);text-align:center; }
+.season-reward-lane.is-premium > strong { color:#ffe082; }
+.season-reward-preview { width:100%;min-width:0; }
+.season-reward-preview > summary { width:100%;min-height:34px;display:flex;align-items:center;justify-content:center;gap:5px;cursor:pointer;list-style:none; }
+.season-reward-preview > summary::-webkit-details-marker { display:none; }
+.season-reward-preview > summary::after { content:"⌄";color:#a7ccdb;font-size:.7rem; }
+.season-reward-preview[open] > summary::after { content:"⌃"; }
+.season-reward-chest-count { color:#fff0b8;font:900 .47rem var(--gs-font-display); }
+.season-reward-lane .season-reward-items { padding-top:5px;border-top:1px solid rgba(123,180,203,.18);display:grid;grid-template-columns:1fr;gap:4px; }
+.season-reward-lane .reward-resource-row { min-width:0;grid-template-columns:20px minmax(0,1fr) auto;gap:3px; }
+.season-reward-lane .reward-resource-row > span:not(.resource-symbol) { overflow:hidden;text-overflow:ellipsis;white-space:nowrap; }
+.season-reward-lane > button,.season-premium-locked { width:100%;min-height:27px;display:grid;place-items:center;border:1px solid rgba(79,203,190,.5);border-radius:7px;color:#9bf1e5;background:#123a4b;font:800 .4rem var(--gs-font-display); }
+.season-premium-locked { border-color:rgba(255,219,113,.3);color:#f2cf78;background:#302c25; }
+.season-lane-headings { display:none !important; }
+
+.daily-meta-card { display:grid !important;grid-template-columns:1fr !important;gap:5px !important; }
+.daily-meta-card > strong,.daily-meta-card > p,.daily-meta-card > small { grid-column:1;max-width:100% !important; }
+.daily-meta-card > small { color:var(--daily-meta-accent,#ffe078);font:800 .5rem/1.35 var(--gs-font-display); }
+.event-fixture-pairings { width:100%;display:grid;gap:5px; }
+.event-fixture-pairing { min-width:0;padding:6px 7px;display:flex;align-items:center;justify-content:space-between;gap:6px;border:1px solid rgba(88,173,202,.25);border-radius:7px;color:#e5f3fa;font-size:.5rem; }
+.event-fixture-pairing.is-current-player { border-color:#6de2d0;background:#12354a; }
+.event-fixture-pairing > span { min-width:0;overflow-wrap:anywhere; }
+.event-fixture-pairing > button { flex:none; }
+
+.team-management-tabs { display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px; }
+.team-management-tabs button { min-height:34px;border:1px solid rgba(88,175,196,.4);border-radius:8px;color:#b5d0db;background:#0b243a;font:800 .44rem var(--gs-font-display); }
+.team-management-tabs button.is-active { border-color:#72e9db;color:#90f2e5;background:#174457; }
+.team-cosmetic-controls { display:grid;gap:10px; }
+.team-cosmetic-group { min-width:0;display:grid;gap:5px; }
+.team-cosmetic-group h5 { margin:0;color:#a9d3dc;font:800 .48rem var(--gs-font-display); }
+.team-cosmetic-grid { display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:5px; }
+.team-cosmetic-choice { min-width:0;min-height:59px;padding:4px 2px;display:grid;place-items:center;align-content:center;gap:3px;border:1px solid rgba(95,172,199,.33);border-radius:8px;color:#c3dfeb;background:#0c253d; }
+.team-cosmetic-choice[data-selected="true"] { border-color:#6de8d7;color:#76f4e0;background:#174356; }
+.team-cosmetic-choice[data-locked="true"] { opacity:.46; }
+.team-cosmetic-choice .team-cosmetic-glyph { font-size:1rem; }
+.team-cosmetic-choice small { max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:.36rem; }
+.team-module-picker { width:min(420px,calc(100vw - 18px));max-height:min(680px,90dvh);padding:10px;border:1px solid #65ddcf;border-radius:14px;color:#eafbff;background:#081b30; }
+.team-module-picker::backdrop { background:rgba(0,6,16,.76); }
+.team-module-picker header { display:flex;align-items:center;justify-content:space-between; }
+.team-module-picker header h2 { margin:0;font:900 .8rem var(--gs-font-display); }
+.team-module-picker header button { width:30px;height:30px;border:1px solid #47879b;border-radius:7px;color:#dcf7ff;background:#123047; }
+.team-module-picker-list { margin-top:9px;max-height:74dvh;display:grid;gap:5px;overflow:auto; }
+.team-module-picker-choice { width:100%;min-height:48px;padding:6px 10px;display:grid;grid-template-columns:30px minmax(0,1fr) auto;align-items:center;gap:8px;border:1px solid #546d7d;border-radius:8px;color:#f1faff;background:#102941;text-align:left; }
+.team-module-picker-choice[data-rarity="rare"] { border-color:#5ca6ec; }
+.team-module-picker-choice[data-rarity="epic"] { border-color:#c476eb; }
+.team-module-picker-choice[data-rarity="legendary"] { border-color:#f5c951; }
+.team-module-picker-choice i { font-style:normal;font-size:1.2rem; }
+.team-module-picker-choice span { overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font:800 .55rem var(--gs-font-display); }
+.team-module-picker-choice small { color:#9bb9ca;font-size:.42rem; }
+
+.friends-tabs { display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:3px; }
+.friends-tabs button { min-width:0;min-height:36px;padding:3px;border:1px solid rgba(81,155,180,.4);border-radius:7px;color:#a9c6d5;background:#0a243c;font:800 .36rem/1.1 var(--gs-font-display);overflow-wrap:anywhere; }
+.friends-tabs button.is-active { border-color:#6be6d5;color:#74f1df;background:#174257; }
+.friends-tabs button.has-persistent-notification::after { content:"";width:7px;height:7px;margin-left:3px;display:inline-block;border-radius:50%;background:#fa5475;box-shadow:0 0 8px #fa5475; }
+
+.leaderboard-reward-chest:focus:not(:focus-visible) .leaderboard-reward-popover { opacity:0;visibility:hidden;pointer-events:none; }
+.reward-inbox-section-heading { margin:10px 0 2px;color:#79e7d9;font:900 .53rem var(--gs-font-display);letter-spacing:.08em; }
+.reward-preview-icon[data-team-frame*="gold"] { color:#ffe073; }
+.reward-preview-icon[data-team-frame*="silver"] { color:#c9deed; }
+.reward-preview-icon[data-team-bar*="champion"] { color:#ffe073; }
+.reward-preview-icon[data-team-bar*="finalist"] { color:#dfaad9; }
+.leaderboard-reward-popover { width:min(270px,calc(100vw - 45px)); }
+.leaderboard-reward-popover-list > span { grid-template-columns:28px minmax(0,1fr);font-size:.5rem; }
+.leaderboard-reward-popover-list .reward-preview-icon { width:25px;height:25px;display:grid;place-items:center; }
+.profile-deck-visual { min-height:136px; }
+.profile-featured-core { padding-bottom:62px; }
+.profile-featured-core > .profile-featured-core-glyph { top:22px;font-size:4.1rem; }
+.profile-featured-modules { padding-top:65px; }
+.public-profile-actions { flex-direction:row !important;flex-wrap:nowrap !important; }
+
+@media(max-width:680px) {
+  body:not([data-app-screen="play"]) .app-progress-ribbon { grid-template-columns:40px minmax(0,1fr) auto !important;gap:5px !important; }
+  body:not([data-app-screen="play"]) .app-progress-ribbon .lobby-currency-cluster { gap:3px !important; }
+  body:not([data-app-screen="play"]) .app-progress-ribbon .lobby-currency-chip,
+  body:not([data-app-screen="play"]) .app-progress-ribbon .lobby-credit-chip { min-width:50px !important;padding:5px 3px 5px 20px !important; }
+  body:not([data-app-screen="play"]) .app-progress-ribbon .lobby-currency-chip > .resource-symbol { left:3px !important;width:15px !important;height:15px !important; }
+  body:not([data-app-screen="play"]) .app-progress-ribbon .lobby-player-card strong { max-height:2.4em;overflow-wrap:anywhere;white-space:normal;line-height:1.2; }
+  body:not([data-app-screen="play"]) .app-progress-ribbon .lobby-player-card > span:last-child { font-size:.48rem !important; }
+  body[data-app-screen="play"][data-local-status="battle"] .vertical-circuit-arena,
+  body[data-app-screen="play"][data-online-status="battle"] .vertical-circuit-arena { --gs-vertical-board-size:clamp(200px,min(34dvh,calc(100vw - 48px)),320px); }
+  body[data-app-screen="play"] .vertical-circuit-arena { background:radial-gradient(circle at 50% 50%,rgba(49,182,209,.12),transparent 55%),repeating-linear-gradient(90deg,transparent 0 27px,rgba(66,134,177,.035) 28px 29px); }
+}
+.unified-module-tile[data-rarity="common"],.deck-module-card[data-rarity="common"] { border-color:#9aafc1 !important; }
+.unified-module-tile[data-rarity="rare"],.deck-module-card[data-rarity="rare"] { border-color:#69aff2 !important; }
+.unified-module-tile[data-rarity="epic"],.deck-module-card[data-rarity="epic"] { border-color:#c779f1 !important; }
+.unified-module-tile[data-rarity="legendary"],.deck-module-card[data-rarity="legendary"] { border-color:#f4cc62 !important; }
+.team-screen { padding-bottom:10px !important;overflow-y:auto !important; }
+.team-hub { height:100%;min-height:0 !important;grid-template-rows:minmax(0,1fr) auto !important;overflow:hidden; }
+.team-panels { min-height:0 !important;overflow-y:auto;overscroll-behavior:contain; }
+.team-panel { min-height:100%; }
+.team-tabs { position:relative;bottom:auto;align-self:end; }
+.public-profile-header { grid-template-columns:42px minmax(0,1fr) !important;row-gap:5px; }
+.public-profile-header > div:not(.public-profile-actions) { grid-column:2 !important; }
+.public-profile-header > .public-profile-actions { grid-column:1 / -1 !important;display:flex !important;flex-direction:row !important;justify-content:flex-end;gap:5px; }
+.public-profile-actions > button { min-height:31px;flex:none; }
+.public-profile-actions > .public-profile-friend-action { width:auto;min-width:75px;border-color:#6ce5d5;color:#0a2631;background:#70e9d8; }
+@media(max-width:680px) {
+  body[data-app-screen="play"][data-local-status="battle"] .vertical-circuit-arena,
+  body[data-app-screen="play"][data-online-status="battle"] .vertical-circuit-arena { --gs-battle-card-size:calc((var(--gs-vertical-board-size) - 32px)/5); }
+  body[data-app-screen="play"] .vertical-circuit-arena .duel-enemy-side { grid-template-rows:auto calc(var(--gs-battle-card-size) * 3 + 16px) !important; }
+  body[data-app-screen="play"] .vertical-circuit-arena .duel-player-side { grid-template-rows:calc(var(--gs-battle-card-size) * 3 + 16px) auto !important; }
+}
 body[data-app-screen="play"][data-local-status="battle"] .battle-layout,
 body[data-app-screen="play"][data-online-status="battle"] .battle-layout {
   --gs-battle-card-size: min(52px, calc((100vw - 92px) / 6));
@@ -3475,3 +3592,61 @@ body[data-app-screen="play"] .module-explosion.core-explosion::after {
     box-shadow:0 -9px 24px rgba(1,9,21,.62);
   }
 }
+
+/* Final specificity for the two-lane season track and portrait arena. */
+.season-reward-preview { position:relative; }
+.season-reward-preview .season-reward-chest { width:36px;height:32px; }
+.season-reward-preview .season-reward-chest .chest-visual { width:34px;height:30px; }
+.season-reward-preview > button { width:100%;min-height:36px;padding:2px;display:flex;align-items:center;justify-content:center;gap:6px;border:0;color:#fff0ba;background:transparent;cursor:pointer; }
+.season-reward-preview > button::after { content:"⌄";color:#a7ccdb;font-size:.7rem; }
+body[data-app-screen="rewards"] .season-reward-preview > .season-reward-items { position:absolute;z-index:30;top:calc(100% + 5px);left:0;width:min(220px,calc(100vw - 48px));padding:8px;border:1px solid #6bcae0;border-radius:9px;background:#082038;box-shadow:0 12px 25px rgba(0,0,0,.6);opacity:0;visibility:hidden;pointer-events:none;transform:translateY(-3px);transition:opacity .15s ease,transform .15s ease; }
+body[data-app-screen="rewards"] .season-reward-lane.is-premium .season-reward-preview > .season-reward-items { left:auto;right:0;border-color:#e2c262; }
+body[data-app-screen="rewards"] .season-reward-preview:hover > .season-reward-items,
+body[data-app-screen="rewards"] .season-reward-preview > button:focus-visible + .season-reward-items,
+body[data-app-screen="rewards"] .season-reward-preview.is-open > .season-reward-items { opacity:1;visibility:visible;transform:translateY(0); }
+@media(hover:none) { body[data-app-screen="rewards"] .season-reward-preview:hover:not(.is-open) > .season-reward-items { opacity:0;visibility:hidden; } }
+.team-profile-statistics .public-profile-section-heading { text-align:center;justify-items:center; }
+.profile-featured-modules { padding-top:65px; }
+.team-screen { overflow-y:auto !important; }
+.team-management-panel > [data-team-management-panel][hidden] { display:none !important; }
+.friends-screen [data-friends-panel][hidden] { display:none !important; }
+body[data-app-screen="play"] .module-shelf .deck-module-card:not(:disabled) { opacity:1 !important;filter:none !important;border-color:#66e5d2;box-shadow:0 0 12px rgba(87,225,203,.17),inset 0 0 12px rgba(87,225,203,.08); }
+body[data-app-screen="play"] .module-shelf .deck-module-card:disabled { opacity:.37 !important;filter:saturate(.35);box-shadow:none !important; }
+@media(max-width:680px) {
+  body[data-app-screen="play"][data-local-status="battle"] .vertical-circuit-arena,
+  body[data-app-screen="play"][data-online-status="battle"] .vertical-circuit-arena { --gs-battle-card-size:calc((var(--gs-vertical-board-size) - 32px)/5); }
+  body[data-app-screen="play"] .vertical-circuit-arena .duel-enemy-side { grid-template-rows:auto calc(var(--gs-battle-card-size) * 3 + 16px) !important; }
+  body[data-app-screen="play"] .vertical-circuit-arena .duel-player-side { grid-template-rows:calc(var(--gs-battle-card-size) * 3 + 16px) auto !important; }
+}
+body[data-app-screen="rewards"] .season-rewards-screen .season-reward-card {
+  min-height:0 !important;
+  display:grid !important;
+  grid-template-columns:minmax(0,1fr) !important;
+  grid-template-areas:"tier" "lanes" "requirement" !important;
+  gap:7px !important;
+  padding:10px !important;
+}
+body[data-app-screen="rewards"] .season-rewards-screen .season-reward-card > .season-reward-lanes { grid-area:lanes; }
+body[data-app-screen="rewards"] .season-rewards-screen .season-reward-card > small { grid-area:requirement;text-align:right; }
+body[data-app-screen="rewards"] .season-reward-lane .season-reward-items { grid-template-columns:1fr !important; }
+.leaderboard-reward-chest:focus:not(:focus-visible) .leaderboard-reward-popover { opacity:0;visibility:hidden;pointer-events:none; }
+.profile-deck-visual { min-height:136px; }
+.profile-featured-core { padding-bottom:62px; }
+.profile-featured-core > .profile-featured-core-glyph { top:22px;font-size:4.1rem; }
+@media(max-width:680px) {
+  body:not([data-app-screen="play"]) .app-progress-ribbon { grid-template-columns:40px minmax(0,1fr) auto !important;gap:5px !important; }
+  body:not([data-app-screen="play"]) .app-progress-ribbon .lobby-currency-cluster { gap:3px !important; }
+  body:not([data-app-screen="play"]) .app-progress-ribbon .lobby-currency-chip,
+  body:not([data-app-screen="play"]) .app-progress-ribbon .lobby-credit-chip { min-width:50px !important;padding:5px 3px 5px 20px !important; }
+  body:not([data-app-screen="play"]) .app-progress-ribbon .lobby-currency-chip > .resource-symbol { left:3px !important;width:15px !important;height:15px !important; }
+  body:not([data-app-screen="play"]) .app-progress-ribbon .lobby-player-card strong { max-height:2.4em;overflow-wrap:anywhere;white-space:normal;line-height:1.2; }
+  body:not([data-app-screen="play"]) .app-progress-ribbon .lobby-player-card > span:last-child { font-size:.48rem !important; }
+  body[data-app-screen="play"][data-local-status="battle"] .vertical-circuit-arena,
+  body[data-app-screen="play"][data-online-status="battle"] .vertical-circuit-arena { --gs-vertical-board-size:clamp(200px,min(34dvh,calc(100vw - 48px)),320px); }
+  body[data-app-screen="play"] .vertical-circuit-arena { background:radial-gradient(circle at 50% 50%,rgba(49,182,209,.12),transparent 55%),repeating-linear-gradient(90deg,transparent 0 27px,rgba(66,134,177,.035) 28px 29px); }
+}
+.team-screen { padding-bottom:10px !important;overflow:hidden !important; }
+.team-hub { height:100%;min-height:0 !important;grid-template-rows:minmax(0,1fr) auto !important;overflow:hidden; }
+.team-panels { min-height:0 !important;overflow-y:auto;overscroll-behavior:contain; }
+.team-panel { min-height:100%; }
+.team-tabs { position:relative;bottom:auto;align-self:end; }
