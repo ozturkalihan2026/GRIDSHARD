@@ -11,9 +11,9 @@ Bu akış sıra kilitlidir: **Android gerçek cihaz → Google Play kapalı test
 
 ## Uygulama içi satın alma karar kapısı
 
-Beta.72 ile ücretli geçiş, Savaş Premium ve para paketlerinin fiyatları ile sunucu tarafı deneme kataloğu eklendi. **Gerçek satın alma henüz yayınlanamaz.** Google Play Billing / StoreKit istemci entegrasyonu ve Google/Apple makbuz doğrulaması yoktur; üretimde deneme alımı kapalı, gerçek sağlayıcı istekleri reddedilir. Deneme reklamı da gerçek AdMob/SSV teslimi değildir. Ayrıntılar: [Mağaza ve satın alma sınırları](STORE_PURCHASES.md).
+Ücretli sezon geçişi, Savaş Premium ve Akı/Devre Kredisi paketlerinin gerçek para akışı ile savaş sonu ödüllü reklam kodu eklendi. Sunucuda Google Play ve App Store makbuz doğrulaması, tekil teslim, Google Play tüketimi, AdMob SSV ve iade/iptal bildirimleri bulunur. Kurulum ayrıntıları: [Mağaza ve satın alma](STORE_PURCHASES.md). **Kodun eklenmesi gerçek satın almanın yayına hazır olduğu anlamına gelmez.**
 
-Mağaza ürünleri yayımlanmadan önce makbuz doğrulama, idempotent teslim, iade/iptal, bölgesel fiyat, çocuk/ebeveyn politikaları ve reklam SSV akışı ayrıca tamamlanıp gerçek cihazda doğrulanmalıdır.
+Yayından önce Pub/Sub ve App Store bildirim adresleri kurulup denenmeli; native eklentiler Sandbox/lisans hesabıyla gerçek cihazda doğrulanmalı; bölgesel fiyat, vergi ve çocuk/ebeveyn politikaları tamamlanmalıdır. Üretimde `GRIDSHARD_PURCHASE_TEST_MODE` ve `GRIDSHARD_AD_TEST_MODE` kapalı olmalıdır. Mağaza formlarında uygulama içi satın alma ve reklam beyan edilmelidir.
 
 Paket kimliği mağazada uygulama kaydı oluşturulduktan sonra değiştirilmemelidir. Bu nedenle `android/` ve `ios/` projeleri, gerçek kimlik kesinleşmeden depoya üretilmez.
 
@@ -69,7 +69,7 @@ Kaynaklar: [Capacitor CLI kancaları](https://capacitorjs.com/docs/cli/hooks), [
 1. Gerçek paket kimliğiyle bir kez `pnpm mobile:add:android` çalıştırın ve oluşan `android/` projesini depoya ekleyin.
 2. `pnpm mobile:sync:android` ile web paketini eşitleyin.
 3. Android Studio/Gradle üzerinden release keystore ile imzalı `.aab` üretin. Google Play yeni uygulamalarda Play App Signing kullanır.
-4. GitHub'daki `GRIDSHARD Real Mobile Device Gate` iş akışını çalıştırın; `android-chrome.json` kanıtının `passed: true`, `device_kind: real` ve aynı commit SHA değerinde olduğunu doğrulayın.
+4. GitHub'daki `GRIDSHARD Real Mobile Device Gate` iş akışını çalıştırın; `android-chrome.json` kanıtının `passed: true`, `device_kind: real`, aynı commit SHA değerinde olduğunu ve `performance` özetinin [savaş performans bütçesini](PERFORMANCE_BUDGET.md) geçtiğini doğrulayın.
 5. Yükleme öncesi kapıyı çalıştırın:
 
 ```powershell
@@ -116,6 +116,6 @@ python tools/mobile_release_gate.py --stage ios `
 
 - Otomatik: statik mobil paket, API yönlendirme, auth/WebSocket adresleme, CORS yapılandırması, Android/iPhone tarayıcı matrisi, gerçek cihaz kanıt şeması ve sıralı yayın kapısı.
 - Dış bağımlılık: kalıcı bundle id kararı, üretim HTTPS backend'i, mağaza hesapları, imza anahtarları/provisioning, gerçek tester grupları ve mağaza panelindeki yükleme/onay işlemleri.
-- Para kazanma: bu sürümde ertelendi; mağaza formlarında uygulama içi satın alma bulunmadığı açıkça seçilmelidir.
+- Para kazanma: ürün, sunucu doğrulaması ve iade kodu eklendi; bildirim kurulumu ve gerçek cihaz denemesi yayından önce tamamlanmalıdır. Mağaza formlarında uygulama içi satın alma ve reklam bulunduğu beyan edilmelidir.
 
 Resmî başvuru kaynakları: [Capacitor kurulumu](https://capacitorjs.com/docs), [Android App Bundle yükleme](https://developer.android.com/studio/publish/upload-bundle), [Google Play test kanalları](https://support.google.com/googleplay/android-developer/answer/9845334), [TestFlight genel bakış](https://developer.apple.com/help/app-store-connect/test-a-beta-version/testflight-overview).

@@ -43,4 +43,18 @@ assert.strictEqual(
   "18 modules · Never used"
 );
 
+// Beta.72 tur 12: ısı yüzdedir; yavaşlama açıklaması modül türüne göre.
+assert.strictEqual(
+  i18n.translateText("Isı %62 · Atış aralığı +%20", "en"),
+  "Heat 62% · Attack interval +20%"
+);
+assert.strictEqual(
+  i18n.translateText("YÜKSEK ISI %75 · Etki -%26", "en"),
+  "HIGH HEAT 75% · Effect -26%"
+);
+assert.strictEqual(
+  i18n.translateText("Aşırı ısındı · Isı %98 · %70'in altına inince yeniden çalışır", "en"),
+  "Overheated · Heat 98% · works again below 70%"
+);
+
 console.log("gridshard i18n test passed");

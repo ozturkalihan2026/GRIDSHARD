@@ -266,8 +266,8 @@ Beta.25 sonrası mobil hazırlık önceliği kapsamında eski erteleme kararı k
 - [x] **Saldırgan**: erken hasar temposu, daha yüksek saldırı omurgası ve Aşırı Yük önceliği.
 - [x] **Savunmacı**: savunma/onarım tabanı ve düşük çekirdek riski odaklı karar ağırlıkları.
 - [x] **Dengeli**: mevcut karşı-modül davranışını koruyan referans profil.
-- [x] **Sabotaj Odaklı**: EMP/Sinyal Bozucu/Kesici ve rakip enerji-destek hattını bozma önceliği.
-- [x] **Ekonomi Odaklı**: enerji rezervi/dağıtımı kurup daha pahalı saldırıya geçiş önceliği.
+- [x] **Sabotaj Odaklı**: EMP/Sinyal Bozucu/Kesici ve rakip enerji-destek hattını bozma önceliği. (Beta.72 tur 13'te kaldırıldı; yerine **Dengeli Kontrol**.)
+- [x] **Ekonomi Odaklı**: enerji rezervi/dağıtımı kurup daha pahalı saldırıya geçiş önceliği. (Beta.72 tur 13'te kaldırıldı; yerine **Dengeli Ekonomi**.)
 - [x] Beş profilin 18 modüllük kendi savaş havuzu, başlangıç modülleri, sınıf ağırlıkları ve güçlendirici önceliği sunucu tarafında kanoniktir.
 - [x] Yerel savaş hazırlığında AI arketipi oyuncu tarafından seçilebilir; 10 saniyelik PvP AI devralmasında arketip maç kimliğinden deterministik çeşitlendirilir.
 - [x] Yerel maç telemetrisi arketip kimliğini taşır; manuel savaş raporu galibiyet, süre, hasar ve modül hamlesini arketip bazında ayırır.
@@ -534,8 +534,8 @@ olarak üretilir.
 - [x] Saldırgan.
 - [x] Savunmacı.
 - [x] Dengeli.
-- [x] Sabotaj Odaklı.
-- [x] Ekonomi Odaklı.
+- [x] Sabotaj Odaklı (tur 13'te yerine Dengeli Kontrol).
+- [x] Ekonomi Odaklı (tur 13'te yerine Dengeli Ekonomi).
 - [~] Arketipler arası matchup ve insan-vs-AI karşı strateji matrisi sürekli veri biriktiren denge çalışmasıdır.
 
 ## P5 — Savaş Okunabilirliği
@@ -2100,12 +2100,16 @@ Beta.43'ten sonraki paketlerin ayrıntılı kaydı `CODEX_CHECKPOINT.md` dosyas�
      - Tur 6: sezon, Takımlar Arası Turnuva ve günlük giriş ödülleri Pazartesi başlayan dört haftalık döngüye geçti (1. döngü 28 Eylül–25 Ekim 2026). Turnuvada kayıt Pazartesi–Çarşamba, eşleşme Perşembe, maçlar Cuma–Pazar; giriş takvimi 28 gün, Pazar günleri büyük ödül.
      - Tur 7: GRIDSHARD projesinden üretim derleme hattı (esbuild, içerik özetli paket, doğrulanmış `dist/` servisi, iki aşamalı Docker) ve FCM/APNs mobil bildirim teslimi taşındı. JSON şema göçlerinde bizim çerçeve korundu; hash zinciri, yedek bütünlüğü ve üretimde otomatik dönüştürmeme eklendi (`docs/CLIENT_BUILD.md`, `docs/PUSH_NOTIFICATIONS.md`).
      - Tur 8: açılışta bir an görünen eski lobi (Beta.2x ana menü ızgarası) HTML, CSS, JS ve çevirilerden tamamen silindi; maç sonu "ZAFER" etiketi başlıktan ayrıldı. Savaşa etkisi olmayan Devre Laboratuvarı (Beta.36) istemci, sunucu ve savaş motorundan kaldırıldı; eski kayıtlarda yatırılmış Akı yüklemede iade edilir.
+     - Tur 9: günlük çark düzeltmeleri; ücretli geçiş ve Savaş Premium 99,99 TL, Akı/Devre Kredisi paketleri; savaş sonu "reklam izle x2"; hediye yalnız Bronz sandık (8 saat), Akı/Kredi ile sandık mağazası ve ayda bir %40 indirim günü.
+     - Tur 10: ses v13, savaş alanı kamera eğimi, Google Play/App Store makbuz ve AdMob SSV doğrulaması, mahremiyet kontrollü analitik, gerçek cihaz performans bütçesi, SAVAŞ düğmesine göre yeniden yazılan E2E akışları.
+     - Tur 11: yeni oynanışa göre ilk maç eğitimi; iade ve iptal bildirimleri (Google RTDN, App Store Server Notifications V2).
+     - Tur 12: ısı bütün modüllere yayıldı (yüzde ölçeği; %40'ın üstünde her %5 modülü %5 yavaşlatır, %100'de modül %70'in altına inene kadar susar); Soğutucu önce susmuş modülleri kurtaran üç hedefli karta dönüştü. Çekirdek üretimi 12 → 5,5 enerji/sn, bekleyen aksiyonlar adil enerji sırasıyla ödenir. Değerler canlı bot döngüsünü taklit eden AI–AI denge simülasyonuyla seçildi (maçlar ~1 dk, tahtada ~3–4 modül; eski değerlerle enerjinin %62'si boşa gidiyordu). 51 bot destesine Soğutucu/Batarya eklendi, yerel AI arketip desteleri güncellendi. Ses v14: savaş müziği bir kademe açık, rutin efektler kısık ve seyrek.
+     - Tur 13: hiç kazanamayan Sabotaj Odaklı ve Ekonomi Odaklı AI arketipleri kaldırıldı; yerine Dengeli davranışla oynayan, destesinde sabotaj ve ekonomi kartı taşıyan Dengeli Kontrol ve Dengeli Ekonomi geldi (simülasyonda oyuncu vekillerine karşı %0 → %48 / %58). Kontrol ve Akım Ekonomisi arena botları da bu davranışla oynar (%30 → %35, %32 → %41).
+     - Tur 14: enerji oyuncu tahtasına göre yeniden ayarlandı. Çekirdek 5,5 → 9 enerji/sn, Batarya 3 → 4,5 enerji/sn; oyuncunun 7–14 modüllük devresinde 7 modül Bataryasız, 12–14 modül iki Bataryayla döner, büyük devre Bataryasız aç kalır (oyuncu gibi yerleştiren tahta simülasyonu ve oyuncunun maç kaydıyla). Savunmacı AI destesinde Batarya yerine Darbe Topu. Savaş kartında enerji bekleyen kartın CAN barını üste taşıyıp ısı barını örten eski "ENERJİ YOK" etiketi savaş kartlarından kaldırıldı.
 8. [~] **Açık:**
-   - Ücretli geçiş gerçek parayla açılacak (kullanıcı kararı, 25 Eylül 2026); şimdilik kilitli kalır.
-     Önkoşul: mağaza makbuz doğrulaması, idempotent teslim ve iade/iptal işleme (Beta.68 IAP kararı).
-   - Denge simülasyonları ve gerçek cihaz görsel kabulü kullanıcı doğrulamasındadır.
+   - Gerçek para yayını: Pub/Sub ve App Store bildirim adresi kurulumu, eklentilerin gerçek cihazda Sandbox ile denenmesi, bölgesel fiyat ve çocuk politikaları (`docs/STORE_PURCHASES.md`).
+   - Gerçek cihaz görsel kabulü kullanıcı doğrulamasındadır. Tur 12'nin ısı değerleri AI–AI simülasyonuyla doğrulandı; enerji tur 14'te oyuncu maç kaydı ve oyuncu benzeri tahta simülasyonuyla yeniden ayarlandı, yeni değerlerle insan oyuncu denemesi bekleniyor.
    - Canlı push teslimi: Firebase/APNs sırları, native projeler ve gerçek cihaz kanıtı bekliyor (varsayılan kapalı).
-   - E2E akışları eski OYNA düğmesini arıyor; SAVAŞ düğmesine göre yeniden yazılmalı.
 
 **Sürüm ve göç kaydı (2.1.0-beta.72):**
 - Uygulama sürümü aşağıdaki yerlerde tek değerdir:

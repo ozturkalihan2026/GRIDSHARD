@@ -19,7 +19,7 @@ from .core_balance import (
 )
 from .energy import QUANTUM_CHARGE_MAX
 from .engine import INACTIVITY_FORFEIT_MS, BattleEngine
-from .heat import OVERHEAT_DEBUFF_ID
+from .heat import OVERHEAT_DEBUFF_ID, heat_penalty_percent
 from .ai_archetypes import normalize_ai_archetype_id
 from .models import BattleCommand, BattleState, BattleStatus, ModuleStatus
 from .pvp_setup import (
@@ -695,6 +695,8 @@ class PvPSessionService:
                     "energy_waiting": module.energy_waiting,
                     "action_energy_cost": module.definition.action_energy_cost,
                     "heat": module.heat,
+                    # %40'ın üzerindeki her %5 için eylem aralığının uzama yüzdesi.
+                    "heat_penalty": heat_penalty_percent(module),
                     "overheated": OVERHEAT_DEBUFF_ID in module.debuffs,
                     "debuffs": sorted(module.debuffs),
                     "signature_badges": module_signature_badges(

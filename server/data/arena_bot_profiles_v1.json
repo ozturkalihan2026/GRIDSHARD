@@ -157,7 +157,7 @@
         "laser",
         "emp",
         "repair",
-        "armor",
+        "battery",
         "amplifier"
       ],
       "decision_delay_ms": 1780,
@@ -190,7 +190,7 @@
       "core_type": "core_resonance",
       "battle_pool_ids": [
         "missile_launcher",
-        "armor",
+        "cooler",
         "repair",
         "emp",
         "battery",
@@ -208,7 +208,7 @@
       "core_type": "core_resonance",
       "battle_pool_ids": [
         "laser",
-        "repair",
+        "cooler",
         "battery",
         "pulse_cannon",
         "emp",
@@ -227,9 +227,9 @@
       "battle_pool_ids": [
         "pulse_cannon",
         "missile_launcher",
-        "amplifier",
+        "cooler",
         "emp",
-        "shield",
+        "battery",
         "laser"
       ],
       "decision_delay_ms": 1120,
@@ -335,7 +335,7 @@
       "battle_pool_ids": [
         "pulse_cannon",
         "missile_launcher",
-        "emp",
+        "battery",
         "cooler",
         "shield",
         "laser"
@@ -373,7 +373,7 @@
         "armor",
         "cooler",
         "emp",
-        "capacitor",
+        "battery",
         "missile_launcher"
       ],
       "decision_delay_ms": 900,
@@ -407,7 +407,7 @@
       "battle_pool_ids": [
         "pulse_cannon",
         "laser",
-        "targeting_computer",
+        "cooler",
         "emp",
         "shield",
         "missile_launcher"
@@ -443,7 +443,7 @@
       "battle_pool_ids": [
         "targeting_computer",
         "barrier",
-        "capacitor",
+        "battery",
         "missile_launcher",
         "amplifier",
         "repair"
@@ -462,7 +462,7 @@
         "emp",
         "missile_launcher",
         "targeting_computer",
-        "shield",
+        "battery",
         "laser",
         "cooler"
       ],
@@ -480,7 +480,7 @@
         "cooler",
         "amplifier",
         "arc_cannon",
-        "shield",
+        "battery",
         "capacitor",
         "repair"
       ],
@@ -497,7 +497,7 @@
       "battle_pool_ids": [
         "battery",
         "arc_cannon",
-        "repair",
+        "cooler",
         "capacitor",
         "barrier",
         "pulse_cannon"
@@ -515,8 +515,8 @@
       "battle_pool_ids": [
         "arc_cannon",
         "laser",
-        "emp",
-        "amplifier",
+        "battery",
+        "cooler",
         "shield",
         "pulse_cannon"
       ],
@@ -571,7 +571,7 @@
         "amplifier",
         "capacitor",
         "pulse_cannon",
-        "jammer",
+        "cooler",
         "arc_cannon"
       ],
       "decision_delay_ms": 1010,
@@ -587,7 +587,7 @@
       "battle_pool_ids": [
         "pulse_cannon",
         "drone_bay",
-        "repair",
+        "cooler",
         "jammer",
         "armor",
         "arc_cannon"
@@ -696,8 +696,8 @@
         "missile_launcher",
         "pulse_cannon",
         "emp",
-        "targeting_computer",
-        "armor",
+        "cooler",
+        "battery",
         "drone_bay"
       ],
       "decision_delay_ms": 1780,
@@ -877,7 +877,7 @@
         "railgun",
         "jammer",
         "repair",
-        "armor",
+        "cooler",
         "arc_cannon"
       ],
       "decision_delay_ms": 1780,
@@ -928,7 +928,7 @@
       "core_type": "core_guardian",
       "battle_pool_ids": [
         "pulse_cannon",
-        "targeting_computer",
+        "cooler",
         "battery",
         "laser",
         "virus",
@@ -948,7 +948,7 @@
         "missile_launcher",
         "railgun",
         "repair",
-        "virus",
+        "cooler",
         "shield",
         "pulse_cannon"
       ],
@@ -1000,7 +1000,7 @@
       "core_type": "core_overdrive",
       "battle_pool_ids": [
         "virus",
-        "emp",
+        "cooler",
         "pulse_cannon",
         "overclock_unit",
         "reflector",
@@ -1055,7 +1055,7 @@
       "battle_pool_ids": [
         "missile_launcher",
         "laser",
-        "jammer",
+        "cooler",
         "amplifier",
         "barrier",
         "railgun"
@@ -1071,7 +1071,7 @@
       "rating": 1723,
       "core_type": "core_resonance",
       "battle_pool_ids": [
-        "emp",
+        "battery",
         "shield",
         "railgun",
         "targeting_computer",
@@ -1108,7 +1108,7 @@
       "core_type": "core_resonance",
       "battle_pool_ids": [
         "pulse_cannon",
-        "targeting_computer",
+        "cooler",
         "capacitor",
         "plasma_mortar",
         "emp",
@@ -1129,7 +1129,7 @@
         "railgun",
         "nano_medic",
         "emp",
-        "reflector",
+        "cooler",
         "plasma_mortar"
       ],
       "decision_delay_ms": 1120,
@@ -1162,7 +1162,7 @@
       "core_type": "core_disruptor",
       "battle_pool_ids": [
         "nano_medic",
-        "barrier",
+        "battery",
         "capacitor",
         "laser",
         "repair",
@@ -1218,7 +1218,7 @@
         "current_balancer",
         "pulse_cannon",
         "overclock_unit",
-        "capacitor",
+        "cooler",
         "reflector",
         "battery"
       ],
@@ -1235,7 +1235,7 @@
       "battle_pool_ids": [
         "pulse_cannon",
         "railgun",
-        "virus",
+        "cooler",
         "repair",
         "guardian_dome",
         "laser"
@@ -1291,7 +1291,7 @@
         "targeting_computer",
         "current_balancer",
         "plasma_mortar",
-        "jammer",
+        "cooler",
         "arc_cannon"
       ],
       "decision_delay_ms": 1010,
@@ -1307,7 +1307,7 @@
       "battle_pool_ids": [
         "missile_launcher",
         "railgun",
-        "nano_medic",
+        "cooler",
         "jammer",
         "guardian_dome",
         "drone_bay"
@@ -1341,7 +1341,7 @@
       "rating": 2238,
       "core_type": "core_resonance",
       "battle_pool_ids": [
-        "nano_medic",
+        "cooler",
         "reflector",
         "current_balancer",
         "quantum_repeater",
@@ -1380,7 +1380,7 @@
         "repair",
         "overclock_unit",
         "laser",
-        "barrier",
+        "cooler",
         "battery",
         "chrono_relay"
       ],
@@ -1450,10 +1450,10 @@
       "core_type": "core_capacitor",
       "battle_pool_ids": [
         "swarm_fabricator",
-        "guardian_dome",
+        "battery",
         "overclock_unit",
         "emp",
-        "capacitor",
+        "cooler",
         "railgun"
       ],
       "decision_delay_ms": 900,
@@ -1471,7 +1471,7 @@
         "overclock_unit",
         "battery",
         "railgun",
-        "virus",
+        "cooler",
         "swarm_fabricator"
       ],
       "decision_delay_ms": 1010,
@@ -1505,7 +1505,7 @@
       "battle_pool_ids": [
         "shield",
         "chrono_relay",
-        "phase_armor",
+        "battery",
         "railgun",
         "capacitor",
         "barrier"
@@ -1579,7 +1579,7 @@
         "quantum_repeater",
         "overclock_unit",
         "current_balancer",
-        "barrier",
+        "cooler",
         "battery"
       ],
       "decision_delay_ms": 1670,
@@ -1596,7 +1596,7 @@
         "quantum_repeater",
         "laser",
         "jammer",
-        "chrono_relay",
+        "cooler",
         "reflector",
         "ion_spear"
       ],
@@ -1632,7 +1632,7 @@
         "laser",
         "phase_armor",
         "overclock_unit",
-        "jammer",
+        "cooler",
         "current_balancer",
         "quantum_repeater"
       ],
@@ -1649,7 +1649,7 @@
       "battle_pool_ids": [
         "pulse_cannon",
         "overclock_unit",
-        "capacitor",
+        "cooler",
         "plasma_mortar",
         "disruptor",
         "laser"
@@ -1669,7 +1669,7 @@
         "railgun",
         "chrono_relay",
         "disruptor",
-        "guardian_dome",
+        "cooler",
         "pulse_cannon"
       ],
       "decision_delay_ms": 1120,
@@ -1703,7 +1703,7 @@
       "battle_pool_ids": [
         "chrono_relay",
         "reflector",
-        "capacitor",
+        "battery",
         "quantum_repeater",
         "overclock_unit",
         "cooler"
@@ -1737,7 +1737,7 @@
       "rating": 2872,
       "core_type": "core_guardian",
       "battle_pool_ids": [
-        "repair",
+        "cooler",
         "overclock_unit",
         "ion_spear",
         "armor",
@@ -1775,8 +1775,8 @@
       "battle_pool_ids": [
         "ion_spear",
         "pulse_cannon",
-        "emp",
-        "nano_medic",
+        "cooler",
+        "battery",
         "guardian_dome",
         "swarm_fabricator"
       ],
@@ -1810,7 +1810,7 @@
       "core_type": "core_phoenix",
       "battle_pool_ids": [
         "laser",
-        "phase_armor",
+        "cooler",
         "overclock_unit",
         "virus",
         "battery",
@@ -1831,7 +1831,7 @@
         "overclock_unit",
         "current_balancer",
         "plasma_mortar",
-        "emp",
+        "cooler",
         "quantum_cannon"
       ],
       "decision_delay_ms": 1010,
@@ -1849,7 +1849,7 @@
         "railgun",
         "chrono_relay",
         "emp",
-        "reflector",
+        "cooler",
         "laser"
       ],
       "decision_delay_ms": 1120,
@@ -1955,7 +1955,7 @@
       "battle_pool_ids": [
         "ion_spear",
         "laser",
-        "jammer",
+        "cooler",
         "overclock_unit",
         "barrier",
         "quantum_repeater"
@@ -1992,7 +1992,7 @@
         "pulse_cannon",
         "prism_shield",
         "overclock_unit",
-        "emp",
+        "cooler",
         "capacitor",
         "ion_spear"
       ],
@@ -2011,7 +2011,7 @@
         "overclock_unit",
         "battery",
         "quantum_repeater",
-        "virus",
+        "cooler",
         "laser"
       ],
       "decision_delay_ms": 1010,
@@ -2028,7 +2028,7 @@
         "arc_cannon",
         "plasma_mortar",
         "chrono_relay",
-        "virus",
+        "cooler",
         "guardian_dome",
         "pulse_cannon"
       ],
@@ -2100,7 +2100,7 @@
         "phoenix_repair",
         "cooler",
         "swarm_fabricator",
-        "shield",
+        "battery",
         "capacitor",
         "omega_amplifier"
       ],
@@ -2135,9 +2135,9 @@
       "battle_pool_ids": [
         "swarm_fabricator",
         "pulse_cannon",
-        "virus",
+        "battery",
         "targeting_computer",
-        "reflector",
+        "cooler",
         "ion_spear"
       ],
       "decision_delay_ms": 1780,
@@ -2155,7 +2155,7 @@
         "armor",
         "pulse_cannon",
         "overclock_unit",
-        "capacitor",
+        "cooler",
         "disruptor"
       ],
       "decision_delay_ms": 1890,

@@ -125,6 +125,10 @@ class PlatformService(PushOutbox):
         # Varsayılan gönderici kapalıdır; açılışta ortamdan yeniden kurulur.
         self.push_sender = push_sender if push_sender is not None else PushSender()
 
+    # Mağaza makbuz defteri: makbuz → oyuncu ve verilen ürün (iade için).
+    # İşlenmiş mağaza bildirimleri tekrar gelirse ikinci kez uygulanmaz.
+    STORE_NOTIFICATION_LIMIT = 5000
+
     def _empty(self) -> dict:
         return {
             "accounts": {},
@@ -132,7 +136,95 @@ class PlatformService(PushOutbox):
             "messages": [],
             "reports": [],
             "oauth_exchanges": {},
+            "store_receipts": {},
+            "store_receipt_tokens": {},
+            "store_notifications": {},
         }
+
+    @staticmethod
+    def _store_token_digest(purchase_token: str) -> str:
+        token = str(purchase_token or "").strip()
+        return hashlib.sha256(token.encode("utf-8")).hexdigest() if token else ""
+
+    def record_store_receipt(
+        self, key: str, *, player_id: str, receipt: dict, purchase_token: str = ""
+    ) -> dict:
+        """Doğrulanmış gerçek mağaza alımını deftere yazar; ilk kayıt korunur.
+
+        Defter oyuncu kaydından bağımsızdır: makbuzun sahibini ve ne verdiğini
+        tutar, böylece aylar sonra gelen iade de doğru oyuncudan geri alınır.
+        Satın alma belirteci yalnız SHA-256 özetiyle saklanır.
+        """
+        digest = self._store_token_digest(purchase_token)
+        with self._lock:
+            data = self._read()
+            receipts = data.setdefault("store_receipts", {})
+            entry = receipts.get(key)
+            if entry is None:
+                entry = {
+                    "key": key,
+                    "player_id": str(player_id),
+                    "provider": str(receipt.get("provider") or ""),
+                    "product_id": str(receipt.get("product_id") or ""),
+                    "transaction_id": str(receipt.get("transaction_id") or ""),
+                    "granted": dict(receipt.get("granted") or {}),
+                    "environment": str(receipt.get("environment") or ""),
+                    "purchased_at": str(receipt.get("purchased_at") or ""),
+                    "token_sha256": digest,
+                    "refunded": False,
+                }
+                receipts[key] = entry
+                if digest:
+                    data.setdefault("store_receipt_tokens", {})[digest] = key
+                self._write(data)
+            return dict(entry)
+
+    def store_receipt(self, key: str) -> dict | None:
+        with self._lock:
+            entry = self._read().get("store_receipts", {}).get(key)
+        return dict(entry) if entry else None
+
+    def find_store_receipt(
+        self, provider: str, *, transaction_id: str = "", purchase_token: str = ""
+    ) -> dict | None:
+        """İade bildirimindeki işlem kimliği ya da satın alma belirteciyle arar."""
+        with self._lock:
+            data = self._read()
+        receipts = data.get("store_receipts", {})
+        entry = receipts.get(f"{provider}:{transaction_id}") if transaction_id else None
+        if entry is None and purchase_token:
+            key = data.get("store_receipt_tokens", {}).get(self._store_token_digest(purchase_token))
+            entry = receipts.get(key) if key else None
+        if entry is None or entry.get("provider") != provider:
+            return None
+        return dict(entry)
+
+    def mark_store_receipt_refunded(self, key: str, *, refunded: bool, source: str, at: str) -> None:
+        with self._lock:
+            data = self._read()
+            entry = data.get("store_receipts", {}).get(key)
+            if entry is None:
+                return
+            entry["refunded"] = bool(refunded)
+            history = list(entry.get("refund_history") or [])
+            history.append({"refunded": bool(refunded), "source": str(source), "at": str(at)})
+            entry["refund_history"] = history[-10:]
+            self._write(data)
+
+    def store_notification_seen(self, notification_id: str) -> bool:
+        with self._lock:
+            return notification_id in self._read().get("store_notifications", {})
+
+    def remember_store_notification(self, notification_id: str) -> None:
+        with self._lock:
+            data = self._read()
+            seen = data.setdefault("store_notifications", {})
+            seen[notification_id] = int(self.now_func())
+            overflow = len(seen) - self.STORE_NOTIFICATION_LIMIT
+            if overflow > 0:
+                for old in sorted(seen, key=seen.get)[:overflow]:
+                    seen.pop(old, None)
+            self._write(data)
 
     def _read(self) -> dict:
         if not self.path.exists():
@@ -190,7 +282,19 @@ class PlatformService(PushOutbox):
             and bool(os.environ.get("GRIDSHARD_SMTP_FROM", "").strip())
         )
 
-    def _deliver_verification_email(self, destination: str, code: str) -> None:
+    # Doğrulama e-postası oyuncunun dil tercihine göre yazılır (Beta.72 tur 10).
+    VERIFICATION_EMAIL_COPY = {
+        "tr": (
+            "GRIDSHARD doğrulama kodu",
+            "GRIDSHARD doğrulama kodun: {code}\n\nKod {minutes} dakika geçerlidir.",
+        ),
+        "en": (
+            "GRIDSHARD verification code",
+            "Your GRIDSHARD verification code: {code}\n\nThe code is valid for {minutes} minutes.",
+        ),
+    }
+
+    def _deliver_verification_email(self, destination: str, code: str, *, language: str = "tr") -> None:
         host = os.environ.get("GRIDSHARD_SMTP_HOST", "").strip()
         sender = os.environ.get("GRIDSHARD_SMTP_FROM", "").strip()
         if not self._email_delivery_configured():
@@ -201,12 +305,14 @@ class PlatformService(PushOutbox):
             raise PlatformServiceError("SMTP portu geçersiz.") from exc
 
         message = EmailMessage()
-        message["Subject"] = "GRIDSHARD doğrulama kodu"
+        subject, body = self.VERIFICATION_EMAIL_COPY.get(
+            language, self.VERIFICATION_EMAIL_COPY["tr"]
+        )
+        message["Subject"] = subject
         message["From"] = sender
         message["To"] = destination
         message.set_content(
-            "GRIDSHARD doğrulama kodun: "
-            f"{code}\n\nKod {self.VERIFICATION_TTL_SECONDS // 60} dakika geçerlidir."
+            body.format(code=code, minutes=self.VERIFICATION_TTL_SECONDS // 60)
         )
         username = os.environ.get("GRIDSHARD_SMTP_USERNAME", "").strip()
         password = os.environ.get("GRIDSHARD_SMTP_PASSWORD", "")
@@ -226,7 +332,9 @@ class PlatformService(PushOutbox):
         except (OSError, smtplib.SMTPException) as exc:
             raise PlatformServiceError("Doğrulama e-postası gönderilemedi.") from exc
 
-    def request_verification(self, player_id: str, channel: str, destination: str) -> dict:
+    def request_verification(
+        self, player_id: str, channel: str, destination: str, *, language: str = "tr"
+    ) -> dict:
         if channel not in {"email", "phone"}:
             raise PlatformServiceError("Doğrulama kanalı email veya phone olmalıdır.")
         destination = _clean_text(destination, maximum=180, label="İletişim adresi")
@@ -243,7 +351,7 @@ class PlatformService(PushOutbox):
             }
             self._write(data)
         if channel == "email" and self._email_delivery_configured():
-            self._deliver_verification_email(destination, code)
+            self._deliver_verification_email(destination, code, language=language)
             delivery_configured = True
         elif channel == "phone":
             delivery_configured = bool(
@@ -1066,4 +1174,16 @@ class PlatformService(PushOutbox):
             for report in data.get("reports", []):
                 if report.get("reporter_id") == player_id:
                     report["reporter_id"] = "deleted-player"
+            # Silinen hesabın mağaza defteri kayıtları da silinir; sonradan
+            # gelen iade eşleşmez (geri alınacak hesap yoktur).
+            owned = {
+                key for key, entry in data.get("store_receipts", {}).items()
+                if entry.get("player_id") == player_id
+            }
+            for key in owned:
+                data["store_receipts"].pop(key, None)
+            data["store_receipt_tokens"] = {
+                digest: key for digest, key in data.get("store_receipt_tokens", {}).items()
+                if key not in owned
+            }
             self._write(data)

@@ -13,6 +13,7 @@ from app.game.heat import (
     HIGH_HEAT_THRESHOLD,
     OVERHEAT_DEBUFF_ID,
     OVERHEAT_RECOVERY_THRESHOLD,
+    OVERHEAT_VENT_COOLING_MULTIPLIER,
     PASSIVE_COOLING_PER_TICK,
     attack_heat_gain,
     heat_performance,
@@ -80,7 +81,10 @@ def test_overheated_module_vents_faster_than_a_hot_one():
     hot.heat = vented.heat = 90.0
     engine.add_debuff("p1", "vented", OVERHEAT_DEBUFF_ID, "Aşırı Isınma", None)
     engine._process_passive_heat()
-    assert (90.0 - vented.heat) == pytest.approx(2 * (90.0 - hot.heat))
+    assert OVERHEAT_VENT_COOLING_MULTIPLIER > 1
+    assert (90.0 - vented.heat) == pytest.approx(
+        OVERHEAT_VENT_COOLING_MULTIPLIER * (90.0 - hot.heat)
+    )
 
 
 def test_cooler_picks_the_hottest_modules_wherever_they_are_placed():
@@ -89,11 +93,13 @@ def test_cooler_picks_the_hottest_modules_wherever_they_are_placed():
     far = add(engine, "p1", "far", "railgun", 4, 2)
     near = add(engine, "p1", "near", "laser", 1, 0)
     warm = add(engine, "p1", "warm", "pulse_cannon", 3, 2)
-    far.heat, near.heat, warm.heat = 95.0, 5.0, 60.0
+    cold = add(engine, "p1", "cold", "missile_launcher", 0, 2)
+    far.heat, near.heat, warm.heat, cold.heat = 95.0, 5.0, 60.0, 1.0
     engine._process_energy_flow()
 
     targets = cooler_targets(engine.state.players["p1"], cooler, engine.board.core_position)
-    assert [module.instance_id for module in targets] == ["far", "warm"][:COOLER_MAX_TARGETS]
+    assert COOLER_MAX_TARGETS == 3
+    assert [module.instance_id for module in targets] == ["far", "warm", "near"]
 
 
 def test_cooler_emits_thermal_stabilized_when_it_ends_high_heat():

@@ -1,9 +1,11 @@
+import pytest
+
 from app.game.engine import BattleEngine
 from app.game.heat import (
     CRITICAL_HEAT_THRESHOLD,
-    HIGH_HEAT_COOLDOWN_MULTIPLIER,
-    HIGH_HEAT_DAMAGE_MULTIPLIER,
+    HEAT_SLOWDOWN_PER_STEP,
     HIGH_HEAT_THRESHOLD,
+    MAX_HEAT,
     OVERHEAT_DEBUFF_ID,
     heat_performance,
 )
@@ -31,13 +33,18 @@ def test_attack_generates_heat():
     e._process_combat_actions()
     assert laser.heat>before
 
-def test_high_heat_penalizes_damage_and_cooldown():
+def test_heat_slows_every_five_percent_above_forty_without_damage_penalty():
+    # Beta.72 tur 12: ısı yüzdedir; %40'ın üzerinde her tam %5 aralığı %5 uzatır.
     e,laser,_=combat_engine()
+    assert MAX_HEAT==CRITICAL_HEAT_THRESHOLD==100
+    for heat,steps in ((0,0),(40,0),(44.9,0),(45,1),(70,6),(95,11),(99.9,11)):
+        laser.heat=heat
+        p=heat_performance(laser,e.state.elapsed_ms)
+        assert p.slowdown_steps==steps
+        assert p.cooldown_multiplier==pytest.approx(1+HEAT_SLOWDOWN_PER_STEP*steps)
+        assert p.damage_multiplier==1.0
     laser.heat=HIGH_HEAT_THRESHOLD
-    p=heat_performance(laser,e.state.elapsed_ms)
-    assert p.high_heat is True
-    assert p.damage_multiplier==HIGH_HEAT_DAMAGE_MULTIPLIER
-    assert p.cooldown_multiplier==HIGH_HEAT_COOLDOWN_MULTIPLIER
+    assert heat_performance(laser,e.state.elapsed_ms).high_heat is True
 
 def test_critical_heat_causes_overload():
     e,laser,_=combat_engine()
@@ -53,6 +60,14 @@ def test_overheated_module_cannot_attack():
     e._process_combat_actions()
     assert shield.hp==before
     assert any(ev.type=="attack_skipped_overheated" for ev in e.state.events)
+
+def test_overheated_skip_is_reported_once_per_episode():
+    e,laser,_=combat_engine()
+    e.add_debuff("p1","p1-laser",OVERHEAT_DEBUFF_ID,"Aşırı Isınma",None)
+    for _ in range(5):
+        e._process_combat_actions()
+    skips=[ev for ev in e.state.events if ev.type=="attack_skipped_overheated"]
+    assert len(skips)==1
 
 def test_overload_self_damage_is_real():
     e,laser,_=combat_engine()
@@ -79,6 +94,11 @@ def test_heat_state_exposed_in_module_event():
     laser.heat=75
     data=e._module_event_data("p1",laser)
     assert data["heat_state"]=="high"
+    assert data["heat_penalty"]==35
+    laser.heat=50
+    data=e._module_event_data("p1",laser)
+    assert data["heat_state"]=="warm"
+    assert data["heat_penalty"]==10
 
 def test_heat_never_pauses_battle():
     e,laser,_=combat_engine()

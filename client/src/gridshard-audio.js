@@ -26,7 +26,7 @@
   });
 
   const GRIDSHARD_AUDIO_MIX = Object.freeze({
-    version:"shardglass-seamless-v12",
+    version:"shardglass-seamless-v14",
     crossfadeMs:1200,
     menuPoolCrossfadeMs:480,
     resultCrossfadeMs:320,
@@ -37,8 +37,17 @@
     // v12: savaşta katmanlı müzik baskın, silah/darbe efektleri arka planda.
     // Müzik kazancı yükseldi; efekt kanalı savaş durumlarında ayrıca kısılır.
     // Katman toplamı kırpılmasın diye müzik hattı sınırlayıcıdan geçer.
-    battleMusicGain:1.85,
-    battleSfxGain:0.5,
+    // v13: savaş müziği ayrı bir Web Audio kanalında 1'in üstüne çıkabilir
+    // (önceden iz sesi 0–1 aralığında kırpıldığı için artış duyulmuyordu).
+    // Savaşta efekt sıkıştırıcısının tarayıcıdaki otomatik "makeup" kazancı
+    // (~+6,4 dB) geri alınır; rutin efektler bir kademe daha kısıldı, önemli
+    // olaylar (bkz. GRIDSHARD_SFX_VOICE_LIMIT.priorityCues) duyulur kalır.
+    // v14: savaş müziği bir kademe daha açık (+1,5 dB), rutin efektler bir
+    // kademe daha kısık (−2,4 dB); rutin efekt yoğunluğu ve sık tekrarlanan
+    // öncelikli olaylar (çekirdek isabeti) ayrıca seyreltildi.
+    battleMusicGain:2.6,
+    battleSfxGain:0.32,
+    battlePriorityCueGain:1.4,
     sfxCompressor:Object.freeze({ threshold:-20, knee:12, ratio:4, attack:.004, release:.22 }),
     musicLimiter:Object.freeze({ threshold:-3, knee:0, ratio:20, attack:.003, release:.25 }),
     criticalLayerGain:0.28,
@@ -46,6 +55,45 @@
     musicPeakDbfs:-6,
     sfxPeakDbfs:-3,
   });
+
+  // DynamicsCompressorNode çıkışına tarayıcı (Blink/WebKit/Gecko ortak
+  // çekirdeği) otomatik bir "makeup" kazancı ekler: tam ölçekli girişteki
+  // kazanç kaybının 0,6 kuvveti. Aynı statik eğri burada hesaplanır ki
+  // savaşta sıkıştırıcı yalnız tepe seviyesini düşürsün, sesi yükseltmesin.
+  function gridshardCompressorMakeupGain({threshold, knee, ratio}) {
+    const dbToLinear = (db) => Math.pow(10, db / 20);
+    const linearToDb = (value) => 20 * Math.log10(value);
+    const linearThreshold = dbToLinear(threshold);
+    const kneeCurve = (x, k) => (
+      x < linearThreshold
+        ? x
+        : linearThreshold + (1 - Math.exp(-k * (x - linearThreshold))) / k
+    );
+    const slopeAt = (x, k) => {
+      if (x < linearThreshold) return 1;
+      const x2 = x * 1.001;
+      return (
+        linearToDb(kneeCurve(x2, k)) - linearToDb(kneeCurve(x, k))
+      ) / (linearToDb(x2) - linearToDb(x));
+    };
+    const kneeStart = dbToLinear(threshold + knee);
+    let minK = .1;
+    let maxK = 10000;
+    let k = 5;
+    for (let index = 0; index < 15; index += 1) {
+      if (slopeAt(kneeStart, k) < 1 / ratio) maxK = k;
+      else minK = k;
+      k = Math.sqrt(minK * maxK);
+    }
+    const kneeThresholdDb = threshold + knee;
+    const kneeThreshold = dbToLinear(kneeThresholdDb);
+    const kneeOutputDb = linearToDb(kneeCurve(kneeThreshold, k));
+    const fullRangeGain = 1 < kneeThreshold
+      ? kneeCurve(1, k)
+      : dbToLinear(kneeOutputDb + (0 - kneeThresholdDb) / ratio);
+    const makeup = Math.pow(1 / fullRangeGain, .6);
+    return Number.isFinite(makeup) && makeup > 0 ? makeup : 1;
+  }
 
   const GRIDSHARD_MUSIC_ASSETS = Object.freeze({
     menu:"./assets/audio/menu_ensemble_v6.wav",
@@ -160,7 +208,11 @@
   // Önemli olaylar sınıra takılmaz.
   const GRIDSHARD_SFX_VOICE_LIMIT = Object.freeze({
     retriggerMs:90,
-    voiceWindowMs:320,
+    // v14: öncelikli olaylar sınırdan muaf ama aynı olay 240 ms'den sık
+    // çalmaz; geç savaşta art arda gelen çekirdek isabetleri müziği örtmez.
+    priorityRetriggerMs:240,
+    // v14: rutin efektler 420 ms'lik pencerede en fazla 3 (önceden 320 ms).
+    voiceWindowMs:420,
     maxRoutineVoices:3,
     priorityCues:Object.freeze([
       "core_hit", "kill_confirm", "module_lost", "warning",
@@ -464,8 +516,11 @@
       this._musicContext = null;
       this._musicBufferCache = new Map();
       this._sfxGainNode = null;
+      this._sfxTrimNode = null;
+      this._sfxMakeupGain = 1;
       this._resultGainNode = null;
       this._musicOutputNode = null;
+      this._battleMusicBusNode = null;
       this._activeBufferSources = new Set();
       this._resultBufferSource = null;
       this._resultBufferOutcome = null;
@@ -492,10 +547,18 @@
       try {
         this._musicContext = new AudioContextClass();
         this._sfxGainNode = this._musicContext.createGain();
+        this._sfxTrimNode = this._musicContext.createGain();
         this._resultGainNode = this._musicContext.createGain();
-        this._sfxGainNode.connect(this._createSfxCompressor(this._musicContext));
+        this._sfxTrimNode.connect(this._musicContext.destination);
+        this._sfxGainNode.connect(
+          this._createSfxCompressor(this._musicContext, this._sfxTrimNode)
+        );
         this._resultGainNode.connect(this._musicContext.destination);
         this._musicOutputNode = this._createMusicLimiter(this._musicContext);
+        // Savaş katmanları kendi kanalında toplanır; kanal kazancı 1'i
+        // aşabilir, tepe seviyesi müzik sınırlayıcısında tutulur.
+        this._battleMusicBusNode = this._musicContext.createGain();
+        this._battleMusicBusNode.connect(this._musicOutputNode);
         this._syncWebAudioVolumes();
         this._musicContext.addEventListener?.(
           "statechange",
@@ -505,8 +568,11 @@
       } catch (error) {
         this._musicContext = null;
         this._sfxGainNode = null;
+        this._sfxTrimNode = null;
+        this._sfxMakeupGain = 1;
         this._resultGainNode = null;
         this._musicOutputNode = null;
+        this._battleMusicBusNode = null;
         this._lastPlaybackError = {
           name:String(error?.name || "AudioContextError"),
           message:String(error?.message || error || "Audio context could not be created."),
@@ -539,10 +605,11 @@
     }
 
     // Üst üste binen efektlerin tepe seviyesini yumuşatır; tarayıcı
-    // desteklemiyorsa efekt kanalı doğrudan çıkışa bağlanır.
-    _createSfxCompressor(context) {
+    // desteklemiyorsa efekt kanalı doğrudan ayar düğümüne bağlanır.
+    _createSfxCompressor(context, output = context.destination) {
+      this._sfxMakeupGain = 1;
       if (typeof context.createDynamicsCompressor !== "function") {
-        return context.destination;
+        return output;
       }
       try {
         const compressor = context.createDynamicsCompressor();
@@ -552,11 +619,21 @@
         compressor.ratio.value = settings.ratio;
         compressor.attack.value = settings.attack;
         compressor.release.value = settings.release;
-        compressor.connect(context.destination);
+        compressor.connect(output);
+        this._sfxMakeupGain = gridshardCompressorMakeupGain(settings);
         return compressor;
       } catch (_) {
-        return context.destination;
+        return output;
       }
+    }
+
+    // Savaşta önemli olaylar (çekirdek isabeti, yok etme, uyarı…) kısılmış
+    // rutin efektlerin ve müziğin üstünde duyulur.
+    _cueGain(name) {
+      return GRIDSHARD_BATTLE_STATE_LAYERS[this.state]
+        && GRIDSHARD_SFX_VOICE_LIMIT.priorityCues.includes(name)
+        ? GRIDSHARD_AUDIO_MIX.battlePriorityCueGain
+        : 1;
     }
 
     // Efekt çalınacaksa true döner ve zamanını kaydeder.
@@ -564,8 +641,10 @@
       const now = Date.now();
       const rules = GRIDSHARD_SFX_VOICE_LIMIT;
       const lastAt = this._sfxLastTriggeredAt.get(name) ?? -Infinity;
-      if (now - lastAt < rules.retriggerMs) return false;
-      if (!rules.priorityCues.includes(name)) {
+      const priority = rules.priorityCues.includes(name);
+      const retriggerMs = priority ? rules.priorityRetriggerMs : rules.retriggerMs;
+      if (now - lastAt < retriggerMs) return false;
+      if (!priority) {
         this._routineSfxStarts = this._routineSfxStarts.filter(
           (startedAt) => now - startedAt < rules.voiceWindowMs
         );
@@ -653,6 +732,26 @@
           ? 0
           : this._musicTargetVolume()
       );
+      // Bu iki kazanç 1'i aşabildiği için 0–1 kırpmasından geçmez.
+      const setRawGain=(node,value)=>{
+        if (!node?.gain) return;
+        const safe=Math.max(0,Number(value) || 0);
+        if (typeof node.gain.setValueAtTime === "function") {
+          node.gain.setValueAtTime(safe,now);
+        } else {
+          node.gain.value=safe;
+        }
+      };
+      setRawGain(
+        this._sfxTrimNode,
+        GRIDSHARD_BATTLE_STATE_LAYERS[this.state]
+          ? 1 / this._sfxMakeupGain
+          : 1
+      );
+      setRawGain(
+        this._battleMusicBusNode,
+        GRIDSHARD_AUDIO_MIX.battleMusicGain
+      );
     }
 
     _loadAudioBuffer(asset) {
@@ -706,7 +805,7 @@
       return context.state === "running";
     }
 
-    async _playAudioBuffer(asset,{channel="sfx",outcome=null}={}) {
+    async _playAudioBuffer(asset,{channel="sfx",outcome=null,gain=1}={}) {
       const context=this._ensureAudioContext();
       const destination=channel === "result"
         ? this._resultGainNode
@@ -721,7 +820,15 @@
         const source=context.createBufferSource();
         source.buffer=buffer;
         source.loop=false;
-        source.connect(destination);
+        let voiceGain=null;
+        if (gain !== 1 && typeof context.createGain === "function") {
+          voiceGain=context.createGain();
+          voiceGain.gain.value=Math.max(0,Number(gain) || 0);
+          source.connect(voiceGain);
+          voiceGain.connect(destination);
+        } else {
+          source.connect(destination);
+        }
         this._activeBufferSources.add(source);
         if (channel === "result") {
           this._resultBufferSource=source;
@@ -731,6 +838,9 @@
         source.onended=()=>{
           this._activeBufferSources.delete(source);
           try { source.disconnect(); } catch (_) {}
+          if (voiceGain) {
+            try { voiceGain.disconnect(); } catch (_) {}
+          }
           if (this._resultBufferSource === source) {
             this._resultBufferSource=null;
             this._resultPlaybackPromise=null;
@@ -1171,10 +1281,18 @@
       for (const track of this.battleLayerTracks) {
         const layer = track?._gridshardLayer;
         if (!layer) continue;
+        // Web Audio izlerinde savaş kazancı kanalda uygulanır; HTML ses
+        // yedeğinde iz sesi 0–1 aralığında kalmak zorundadır.
+        const busApplied =
+          track instanceof GridshardSeamlessLoopTrack
+          && Boolean(this._battleMusicBusNode);
+        const base = busApplied
+          ? this._musicTargetVolume()
+          : this._battleMusicTargetVolume();
         const target = activeIds.includes(layer.id)
           ? Math.min(
               1,
-              this._battleMusicTargetVolume()
+              base
                 * (layer.baseGain + layer.pressureGain * normalized)
             )
           : 0;
@@ -1225,7 +1343,12 @@
       const webAudio = Boolean(context) && typeof global.fetch === "function";
       return this._battleLayerSet().map(layer => {
         const track = webAudio
-          ? new GridshardSeamlessLoopTrack(context, layer.asset, this._musicBufferCache, this._musicOutputNode)
+          ? new GridshardSeamlessLoopTrack(
+              context,
+              layer.asset,
+              this._musicBufferCache,
+              this._battleMusicBusNode || this._musicOutputNode
+            )
           : this._createHtmlAudio(layer.asset);
         track._gridshardLayer = layer;
         track._gridshardAsset = layer.asset;
@@ -1671,10 +1794,10 @@
       };
     }
 
-    _playHtmlCue(cue) {
+    _playHtmlCue(cue,{gain=1}={}) {
       if (!cue || !this._canPlayAudio()) return Promise.resolve(false);
       const audio=this._createPreloadedAudio(cue.asset);
-      audio.volume=this._sfxTargetVolume();
+      audio.volume=Math.min(1,this._sfxTargetVolume() * gain);
       this._activeSfx.add(audio);
       const release=()=>{
         this._activeSfx.delete(audio);
@@ -1729,13 +1852,14 @@
         && this.sfxVolume>0;
       const played=audible && this._admitSfxVoice(name);
       if (played) {
+        const gain=this._cueGain(name);
         if (this._ensureAudioContext()) {
-          this._playAudioBuffer(cue.asset,{channel:"sfx"})
+          this._playAudioBuffer(cue.asset,{channel:"sfx",gain})
             .then((played)=>{
-              if (!played) this._playHtmlCue(cue);
+              if (!played) this._playHtmlCue(cue,{gain});
             });
         } else {
-          this._playHtmlCue(cue);
+          this._playHtmlCue(cue,{gain});
         }
       }
 
@@ -1807,7 +1931,13 @@
 
       this.battlePressure = pressure;
       if (this.battleLayerTracks.length) {
-        this._applyBattleLayerMix(pressure);
+        // Durumun taban baskısı (ör. kritik çekirdekte tam baskı) korunur;
+        // çağıran yalnız savaşın gerilimini yükseltebilir.
+        this._applyBattleLayerMix(
+          this._battleLayerState
+            ? this._battlePressureForState(this._battleLayerState)
+            : pressure
+        );
       }
 
       if (

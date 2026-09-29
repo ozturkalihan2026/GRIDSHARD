@@ -51,6 +51,8 @@ Savaş içinde oyuncu deste rafındaki bir modüle dokunur. Yeterli **Akım** va
 
 Aksiyon enerjisi sırasıyla Çekirdek rezervinden, Kapasitörden (aksiyon başına en fazla 10) ve Bataryadan (aksiyon başına en fazla 4) karşılanır.
 
+**Enerji sırası (Beta.72 tur 12):** enerjisi yetmeyen aksiyon sıraya girer. Sonradan gelen aksiyon ancak sırada önünde bekleyenlerin payı da kalıyorsa ödenir; böylece sık ve ucuz aksiyonlar (Lazer, Dron) ağır atışları (Ray Topu, Kuantum Topu) sonsuza kadar bekletemez, enerji darlığı bütün modülleri orantılı yavaşlatır. Yeniden denemeyi bırakan modül (hedefi kalmayan, susturulan, aşırı ısınan, yok edilen) sıradaki yerini bir sonraki adımda bırakır. Füze/Plazma kilidi enerji beklerken korunur.
+
 Çekirdeğin temel enerji parametreleri:
 
 - `energy_per_second`: saniyelik enerji üretimi (dağıtım verimi %90).
@@ -59,11 +61,20 @@ Aksiyon enerjisi sırasıyla Çekirdek rezervinden, Kapasitörden (aksiyon baş�
 
 Beta.72 başlangıç değerleri:
 
-- Çekirdek Seviye 1: **12 enerji/sn**, **24 enerji rezervi**; maç 16 enerjiyle başlar.
+- Çekirdek Seviye 1: **9 enerji/sn** (Beta.72 tur 12'ye kadar 12, tur 12–13'te 5,5), **24 enerji rezervi**; maç 16 enerjiyle başlar.
 - Enerji üretimi seviye başına **%3 bileşik** artar; rezerv seviye başına **+1** artar.
-- Batarya: saniyede **3** enerji üretir, **20** enerji depolar. Kapasitör: enerji üretmez, **10** enerjilik hızlı rezervdir. Akım Dengeleyici: aksiyon ve bakım maliyetlerini **%8** azaltır, çoklu kopyada en fazla **%24**.
+- Batarya: saniyede **4,5** enerji üretir (tur 14'e kadar 3), **20** enerji depolar; devrede aynı anda en fazla **2** Batarya olur. Kapasitör: enerji üretmez, **10** enerjilik hızlı rezervdir. Akım Dengeleyici: aksiyon ve bakım maliyetlerini **%8** azaltır, çoklu kopyada en fazla **%24**.
 
-Karışık bir devre (hafif saldırı, kalkan, onarım, destek) rahat çalışır; ağır saldırı yığını (ör. dört Kuantum Topu, saniyede ~12,8 enerji) Seviye 1 Çekirdeğin ~10,8 enerji/sn dağıtımını aşar ve atışları beklemeye düşer. Böylece oyuncu ham saldırı gücüyle birlikte enerji sürdürülebilirliğini de planlar.
+Tur 12'de değer AI–AI denge simülasyonuyla 12 → 5,5'e indirildi: AI maçlarında tahtada aynı anda ~3–4 modül yaşıyor, 12'de üretilen enerjinin %62'si boşa gidiyordu. Tur 14'te oyuncu maçı bunun yetersiz bir ölçü olduğunu gösterdi: oyuncu Akım'ı hemen harcayıp kaybettiğini yeniden kurar, tahtası 7–14 modüle çıkar. Oyuncunun 192 sn'lik maç kaydında (Darbe Topu destesi) 60. saniyeden sonra her 15 saniyede 13–37 eylem enerji bekledi, 2 Batarya kurulduktan sonra da sürdü. Bu yüzden değerler oyuncu gibi yerleştiren, kaybını yeniden kuran tahta simülasyonuyla seçildi (Çekirdek ve Batarya için 5,5/3, 7/5, 8/4, 8/4,5, 8,5/4,5, 9/4, 9/4,5 denendi):
+
+| Devre (Seviye 1) | 5,5 / Batarya 3 | **9 / Batarya 4,5** |
+|---|---|---|
+| 7 modül, Darbe Topu ağırlıklı, Bataryasız | eylemlerin ~%57'si bekler | **~%6** |
+| 12–14 modül, 2 Batarya (6 Darbe Topu + Soğutucu, Onarım, Kalkan, EMP) | ~%37–43 | **~%0–6** |
+| 12 modül, tek Batarya | ~%58 | **~%22** |
+| 13 modül, Bataryasız | ~%79 | **~%56** |
+
+Darlık tahta büyüdükçe başlar: küçük ve orta devre Çekirdekle döner, büyük devrenin çözümü iki Bataryadır. Maç başındaki 16 enerjilik rezerv ilk çatışmayı karşılar. Çekirdek seviyesi üretimi (%3), modül seviyesi Batarya üretimini (%3,5) artırdığı için yüksek seviyede açık azalır. AI maçlarında (tahtada ~3 modül) enerji artık neredeyse hiç beklemez, üretimin ~%57'si boşa gider; arena botlarının arketip kazanma oranları ±3 puan içinde kaldı, uzun kilitlenen maçlar kalktı (oyuncu vekiline karşı p90 süre 186 → 96 sn). Böylece Sistem kartları büyük devrenin kararı olur: oyuncu ham saldırı gücüyle birlikte enerji sürdürülebilirliğini planlar.
 
 ### Aksiyon enerjisi ve bakım değerleri
 
@@ -88,13 +99,32 @@ Karışık bir devre (hafif saldırı, kalkan, onarım, destek) rahat çalışı
 
 Eski devre çapındaki gizli hız/hasar cezası kaldırıldı. Enerji darlığı yalnız görünür biçimde ortaya çıkar: bekleyen aksiyonlar ve kapanan sürekli sistemler. Savaş hiçbir enerji durumunda pause olmaz.
 
-### Isı
+### Isı (Beta.72 tur 12)
 
-- Her atış ısı üretir: `1,4 × temel bekleme süresi (sn) + 0,9 × aksiyon enerjisi`. Pasif soğuma saniyede **1,3**'tür; sürekli ateş eden her saldırı modülü bunu aşar. Hafif silahlar ~60 sn, enerji yoğun silahlar ~25 sn sonra Yüksek Isı'ya çıkar.
-- **70 ısı (Yüksek Isı):** hasar %85, bekleme süresi ×1,2.
-- **100 ısı (Aşırı Isınma):** modül 5 CAN hasar alır ve ısısı **70'in altına inene kadar susar**; susarken iki kat hızlı soğur (~12 sn).
-- **Soğutucu:** yerleşimden bağımsız olarak devredeki en sıcak iki modülü saniyede 8 soğutur; susmuş modülü ~4 sn'de toparlar. EMP ve hat kesintisi sürelerini de en fazla iki modülde kısaltır.
-- **Aşırı Hızlandırıcı:** devredeki en ağır (aksiyon enerjisi en yüksek) saldırı modülünü seçer; hasar ×1,2 ve bekleme ×0,8 verir, hedefe saniyede 1,5 ek ısı ekler. Birden fazla Aşırı Hızlandırıcı farklı hedefler seçer; aşırı ısınan hedef bırakılır ve sıradaki ağır saldırıya geçilir.
+Isı yüzdedir (%0–100) ve **Çekirdek ile Soğutucu dışındaki bütün modüller** için geçerlidir. Tur 12 öncesinde yalnız saldırı modülleri ısınıyordu, eşikler 70/100 (en fazla 120) idi ve tek Soğutucu (iki modüle saniyede 8) ısıyı tamamen siliyordu; maç boyunca yavaşlama ya da susma görülmüyordu.
+
+**Isının etkisi — kademeli yavaşlama:**
+- Isı **%40'ın üzerinde her tam %5** arttığında modül %5 yavaşlar: saldırı, onarım ve sabotaj modüllerinin **eylem aralığı** uzar (%45'te ×1,05, %70'te ×1,30, %95'te ×1,55). Hasar düşmez; ceza yalnız tempodadır.
+- Sürekli çalışan sistemlerin (savunma, destek, Batarya/Kapasitör, Akım Dengeleyici) **etkisi aynı oranda** düşer: etki ÷ aralık çarpanı (%70'te %23, %95'te %35 zayıf). Batarya üretimi ve depo boşaltması, Kalkan azaltımı, destek payları bu kurala uyar.
+- **%100 (Aşırı Isınma):** modül 5 CAN hasar alır ve ısısı **%70'in altına inene kadar susar** (saldırmaz, onarmaz, sabote etmez, korumaz, destek vermez, enerji üretmez/boşaltmaz, bakım ödemez). Susarken üç kat hızlı soğur (~8 sn). Susmuş modül hedeflenebilir kalır.
+
+**Isı kaynakları — çalışan her modül ısınır:**
+- **Eylem:** her saldırı, onarım ve sabotaj eylemi `1,2 × temel bekleme süresi (sn) + 2,2 × aksiyon enerjisi` ısı üretir (Lazer %3,8, Darbe Topu %14, Ray Topu %17, Kuantum Topu %20,6, Onarım %7,9, EMP %20,4; Anka dirilişi 10 enerjiyle hesaplanır). Hızlandırılmış modül daha sık çalıştığı için daha hızlı ısınır.
+- **Bakım:** sürekli sistemler aldıkları bakım enerjisinin 1,5 katı ısınır. Tek başına pasif soğumayı ancak aşar (Koruyucu Kubbe, Prizma Kalkanı yavaşça); asıl yük işten gelir.
+- **Engellenen hasar:** savunma modülü engellediği her 10 hasar için %2,5 ısınır (yoğun ateş altındaki Kalkan ısınıp zayıflar).
+- **Depo boşaltması:** Batarya ve Kapasitör depodan verdikleri her 10 enerji için %12 ısınır.
+- **Aşırı Hızlandırıcı:** hedefine saniyede %1,5 ek ısı ekler.
+- Pasif soğuma saniyede **%1,2**'dir (susmuşken %3,6).
+
+Değerler AI–AI denge simülasyonuyla seçildi: saldırı modülünün ömrü medyan ~9 sn, ortalama ~22 sn olduğu için ısı bu sürede hissedilmelidir. **Soğutulmayan, sürekli ateş eden saldırı** (tam enerjiyle): %45 eşiği Kuantum Topu ~5 sn, İyon Mızrağı ~6 sn, Darbe Topu ~7,5 sn, Ray Topu ~10 sn, Füze ~12 sn, Lazer ~16 sn; susma Kuantum Topu ~14 sn, İyon Mızrağı ~21 sn, Darbe/Ray Topu ~25 sn, Füze ~34 sn, Lazer ~47 sn. Aşırı Hızlandırılmış Darbe Topu ~16 sn'de susar. Güncel bot desteleriyle simülasyonda saldırı zamanının ~%37'si yavaş, ~%11'i susmuş geçer; maç başına ~3,4 susma olur (Soğutucusuz eski destelerle ~6). Enerji darlığı atış sayısını azalttığı için ısınmayı da yavaşlatır; Batarya eklemek daha çok atış, dolayısıyla daha çok ısı demektir: güçlü deste ikisini birlikte kurar.
+
+- **Soğutucu:** yerleşimden bağımsız olarak önce aşırı ısınıp susmuş modülleri, sonra devredeki en sıcak modülleri seçer; **en fazla üç modülü saniyede %4,5** soğutur (susmuş modülde iki kat; havalandırmayla birlikte ~2,5 sn'de toparlar). Tek Soğutucu iki-üç orta saldırıyı %45'in altında tutar. Simülasyonda Soğutucusuz destelerin saldırı zamanının ~%69'u yavaş ya da susmuş geçerken Soğutuculu destelerde ~%30; Soğutuculu destelerin kazanma oranı %58, Soğutucusuzların %37. Kendisi ısınmaz. EMP ve hat kesintisi sürelerini de en fazla üç modülde kısaltır.
+- **Aşırı Hızlandırıcı:** devredeki en ağır (aksiyon enerjisi en yüksek) saldırı modülünü seçer; hasar ×1,2 ve bekleme ×0,8 verir, hedefe saniyede %1,5 ek ısı ekler. Birden fazla Aşırı Hızlandırıcı farklı hedefler seçer; aşırı ısınan hedef bırakılır ve sıradaki ağır saldırıya geçilir.
+- **Arayüz:** kartın üst kenarındaki ısı barı yüzdedir; %40 ve %70 çentiklidir, %45'ten itibaren yavaşlama rengi ve açıklaması ("Atış aralığı +%20", sürekli sistemlerde "Etki −%17") gösterilir.
+- **Yapay zekâ:** iki ve üzeri modülü ısınan AI desteyse Soğutucu basar; enerji yükü %100'ü aşınca Batarya'yı öne alır.
+- **Bot desteleri (tur 12, denge simülasyonuyla):** ≥2 ağır saldırılı ya da Aşırı Hızlandırıcılı 40 bot destesine Soğutucu, aksiyonları zamanın ≥%20'sinde enerji bekleyen 17 desteye Batarya eklendi (51 deste; toplam Soğutuculu deste 34 → 74, Bataryalı 48 → 65). Çıkarılacak kart, botun arenasındaki kazanma oranını en az değiştiren seçenekti; Soğutucu, Batarya, Akım Dengeleyici ve Aşırı Hızlandırıcı çıkarılmadı, arketip kimliği (ör. Kontrol'ün sabotaj kartları) korundu. Yerel AI arketiplerinde Saldırgan ailesine Soğutucu (Güçlendirici yerine), Dengeli ve Savunmacı ailelerine Batarya (Kalkan / Zırh yerine) verildi (tur 14'te Savunmacı ailesinde Batarya yerine Darbe Topu). Oyuncu vekiliyle ölçüm: sistemleri kullanan oyuncuya karşı botların kazanma oranı %20 → %14, Soğutucu ve Batarya kullanmayan oyuncuya karşı %22 → %28 (arena 1–4'te %26 → %40).
+- **AI arketipleri (tur 13):** hiç kazanamayan Sabotaj Odaklı ve Ekonomi Odaklı kaldırıldı; yerine sınıf eğilimi olmayan, Dengeli davranışla oynayıp destesinde sabotaj ve ekonomi kartı taşıyan **Dengeli Kontrol** (Lazer, Darbe Topu, Batarya, Soğutucu, EMP, Sinyal Bozucu) ve **Dengeli Ekonomi** (Lazer, Darbe Topu, Batarya, Akım Dengeleyici, Kalkan, Sinyal Bozucu) geldi. Tema yalnız "en az bir kopya" tabanıyla korunur; tema kartına verilen küçük bir öncelik bile AI'yi saldırı kurmadan kilitliyordu. Kontrol ve Akım Ekonomisi arena botları da bu davranışla oynar.
+- **Savunmacı ailesi (tur 14):** enerji bollaşınca tek saldırı kartlı Savunmacı / Sürdürülebilirlik destesi (Lazer, Kalkan, Batarya, Bariyer, Onarım, Soğutucu) yalnız enerjisi tükenen rakibi yenebildiği ortaya çıktı (oyuncu vekillerine %50 → %1). Batarya yerine Darbe Topu geldi (Lazer, Darbe Topu, Kalkan, Bariyer, Onarım, Soğutucu; genişleme Bariyer, Onarım, Soğutucu); davranış ayarları aynı. Sonuç: Savunmacı %50, Sürdürülebilirlik %48.
 
 ### Enderlik ve imza mekanikleri (Beta.72)
 
@@ -333,7 +363,7 @@ Savaş rafındaki `Ç` harfi kaldırılarak seçili çekirdeğin gerçek görsel
 
 Çekirdek gelişiminin hem enerji ekonomisini hem de aktif gücü etkilediği kabul edilir. Başlangıç hedefleri:
 
-- **Seviye 1 enerji üretimi:** **12 enerji/sn**.
+- **Seviye 1 enerji üretimi:** **9 enerji/sn** (Beta.72 tur 14, oyuncu tahtası simülasyonuyla; tur 12–13'te 5,5, önceki hedef 12).
 - **Seviye 1 enerji rezervi:** **24 enerji**.
 - **Enerji üretimi seviye başına:** **%3 bileşik artış**.
 - **Enerji rezervi seviye başına:** **+1 enerji**.

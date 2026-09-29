@@ -194,6 +194,19 @@ Beta.16 hâlâ prototip mix kullanır. Final loudness, stereo imaging ve masteri
   - Yeni `battleSfxGain: 0.5`: savaş durumlarında (giriş, savaş, baskı, kritik çekirdek) efekt kanalı ayrıca yarıya iner (yaklaşık −6 dB). Menü efektleri değişmedi.
   - Varsayılan ayarlarda (müzik %70) savaş müziği yaklaşık +3 dB, savaş efektleri −6 dB oynadı.
   - Web Audio'da müzik izleri sınırlayıcıdan geçer (eşik −3 dB, oran 20:1, atak 3 ms, bırakma 250 ms): katman toplamı kırpılmaz. Tarayıcı desteklemezse doğrudan çıkışa bağlanır.
+- v13 (28 Eylül 2026, kullanıcı isteği: "efektler hâlâ müziği bastırıyor"):
+  - Kök neden 1: Web Audio `DynamicsCompressorNode` çıkışına tarayıcı otomatik bir makeup kazancı ekler (tam ölçek kaybının 0,6 kuvveti). v11 efekt sıkıştırıcısında (−20 dB, diz 12, 4:1) bu +6,4 dB'dir; v11/v12'deki efekt kısmaları bu yüzden duyulmadı. Savaş durumlarında sıkıştırıcı çıkışı `1 / makeup` ile ayarlanır (`gridshardCompressorMakeupGain`, Blink/WebKit statik eğrisiyle aynı hesap); sıkıştırıcı yalnız tepe seviyesini düşürür. Menü karışımı değişmedi.
+  - Kök neden 2: savaş katman izlerinin sesi 0–1 aralığında kırpılıyordu; müzik ayarı yüksekken `battleMusicGain` artışı hiç uygulanmıyordu. Web Audio'da savaş katmanları ayrı bir kanalda toplanır (`_battleMusicBusNode` → müzik sınırlayıcısı); kanal kazancı `battleMusicGain` 1'i aşabilir, tepe seviyesi sınırlayıcıda tutulur. HTML ses yedeği eski kırpmalı yolu kullanır.
+  - `battleMusicGain` `1.85` → `2.2` (varsayılan müzik %70'te yaklaşık +1,5 dB; müzik %100'de +4 dB, çünkü eski kırpma kalktı).
+  - `battleSfxGain` `0.5` → `0.42` (rutin efektler bir kademe, yaklaşık −1,5 dB). Makeup düzeltmesiyle birlikte savaştaki rutin efektler v12'ye göre yaklaşık −8 dB.
+  - Yeni `battlePriorityCueGain: 1.4`: savaşta öncelikli olaylar (çekirdek isabeti, yok etme, modül kaybı, uyarı, çekirdek gücü, diriliş, EMP) rutin efektlerin yaklaşık 3 dB üstünde çalar.
+  - Savaş müziği evreleri artık bağlı (Beta.71 açık işi): ilk 20 sn `battle_intro`, sonra `battle`; Devre Gerilimi başlayınca ya da kendi çekirdeğin %60'ın, rakibinki %40'ın altına inince `battle_pressure`; kendi çekirdeğin %33'ün altındayken `critical_core`. Evre yalnız ileri gider; kritik durum iyileşmeyle kalkabilir. Yerel AI ve çevrimiçi savaşta aynı kural çalışır. Çekirdeklerin zayıflığından türeyen gerilim (0–1) katman karışımını sürekli besler; `setBattlePressure` durumun taban baskısını düşüremez (önceden kritik çekirdekte baskı 0,35'e iniyordu).
+- v14 (29 Eylül 2026, kullanıcı isteği: "savaş müziğini bir tık daha açalım, efektler hâlâ baskın"):
+  - `battleMusicGain` `2.2` → `2.6` (yaklaşık +1,5 dB). Katmanlar müzik sınırlayıcısına dayandığı için tepe seviyesi aynı kalır; artış daha dolgun, daha sürekli bir müzik olarak duyulur. Asıl denge efekt tarafında kuruldu.
+  - `battleSfxGain` `0.42` → `0.32` (rutin savaş efektleri yaklaşık −2,4 dB).
+  - Rutin efekt yoğunluğu: pencere 320 → 420 ms (en fazla 3 rutin efekt; saniyede ~9 yerine ~7).
+  - Yeni `priorityRetriggerMs: 240`: öncelikli olaylar sınırdan muaf kalır ama aynı olay 240 ms'den sık çalmaz. Geç savaşta her saldırı çekirdeğe vurduğunda `core_hit` saniyede ~11 kez, ×1,4 kazançla çalıp müziği örtüyordu; artık en fazla ~4 kez.
+  - Menü karışımı değişmedi. Cihazda denetlenmeli: kulaklık ve telefon hoparlöründe savaş müziği efektlerin önünde duyulmalı; çekirdek isabeti, yok etme ve uyarı yine seçilmeli.
 
 Bu iki aşamalı yaklaşım asset dosyasındaki tepe seviyesini ve oyuncu volume slider'ından önceki runtime headroom'u ayrı tutar.
 

@@ -1,12 +1,12 @@
 from dataclasses import dataclass
 from datetime import datetime, timezone
 
+from .arena_canon import trophy_delta
 from .game.models import BattleState, BattleStatus
 from .meta_progression import (
     MetaProgressionService,
     arena_floor_for_rating,
     rank_stage_for_rating,
-    trophy_delta,
 )
 from .match_accounting import (
     applies_to_profile_progression,
@@ -256,7 +256,6 @@ class PlayerProgressionService:
                     core_power_uses=int(summary.get("core_power_uses", 0)),
                 )
             tier_after = int(updated.engagement_view()["current_tier"])
-            player = state.players[player_id]
             completed_at = datetime.now(timezone.utc)
             iso_year, iso_week, _ = completed_at.isocalendar()
             weekly_period = f"{iso_year}-W{iso_week:02d}"

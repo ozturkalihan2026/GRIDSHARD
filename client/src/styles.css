@@ -4367,54 +4367,7 @@ details.battle-pool-preset-bar { max-height:min(22dvh,170px); }
   margin-bottom: 0.75rem;
 }
 
-.tutorial-overlay {
-  position: fixed;
-  inset: 0;
-  z-index: 3002;
-  display: grid;
-  place-items: end center;
-  padding: max(1rem, env(safe-area-inset-top)) max(1rem, env(safe-area-inset-right)) max(1rem, env(safe-area-inset-bottom)) max(1rem, env(safe-area-inset-left));
-  background: rgba(3, 9, 20, 0.62);
-  pointer-events: none;
-}
-
-.tutorial-overlay[hidden] { display: none; }
-
-.tutorial-card {
-  width: min(34rem, 100%);
-  padding: 1rem;
-  border: 1px solid var(--cyan, #36e4ef);
-  border-radius: 1rem;
-  background: rgba(8, 20, 38, 0.98);
-  box-shadow: 0 0 2rem rgba(54, 228, 239, 0.22);
-  pointer-events: auto;
-}
-
-.tutorial-heading,
-.tutorial-actions {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 0.75rem;
-}
-
-.tutorial-card h2 { margin: 0.75rem 0 0.4rem; }
-.tutorial-card p { margin: 0; line-height: 1.5; }
-.tutorial-status { display: block; min-height: 1.5rem; margin-top: 0.5rem; color: #a9c9ef; }
-.tutorial-actions { margin-top: 0.75rem; }
-.tutorial-actions button { min-height: 44px; }
-
-[data-tutorial-target="true"] {
-  position: relative;
-  z-index: 3001;
-  outline: 3px solid #f6ca54 !important;
-  outline-offset: 4px;
-}
-
-@media (max-width: 700px) {
-  .tutorial-overlay { padding: 0.5rem; }
-  .tutorial-card { padding: 0.85rem; border-radius: 0.85rem; }
-}
+/* İlk maç eğitimi kartı Beta.72 tur 11'de canon.css'e taşındı. */
 
 /* Final battle viewport/readability overrides intentionally follow every
    legacy Beta layer. Keep the fixed viewport sizing desktop-only so the
@@ -4497,7 +4450,9 @@ body[data-app-screen="play"] .board-cell .hp-bar {
   white-space:nowrap;
   pointer-events:none;
 }
-.module-card.energy-disconnected::after {
+/* Savaş kartında ::after CAN barıdır; enerji durumu kırmızı ton ve ϟ rozetiyle
+   gösterilir. Etiket yalnız savaş dışı kartlarda. */
+.module-card.energy-disconnected:not(.battle-module-card)::after {
   content:"ENERJİ YOK";
   position:absolute;
   z-index:6;

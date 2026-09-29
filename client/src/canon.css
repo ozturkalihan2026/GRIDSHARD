@@ -893,7 +893,7 @@ body[data-home-matchmaking="true"] .play-online-panel { visibility:hidden !impor
 .post-match-reward-list strong { color:#fff0a0;font:900 .8rem var(--gs-font-display); }
 .post-match-reward-list[data-accounting-mode="team-tournament"] { grid-template-columns:minmax(0,190px);justify-content:center; }
 .post-match-reward-list[data-accounting-mode="neutral"] { display:none; }
-.post-match-accounting-note { width:min(430px,100%);margin:0;padding:13px 15px;border:1px solid rgba(104,232,217,.42);border-radius:12px;background:rgba(7,27,47,.72);color:#b9d6e7;font:700 .65rem/1.55 var(--gs-font-body); }
+.post-match-accounting-note { width:min(430px,100%);margin:0;padding:13px 15px;border:1px solid rgba(104,232,217,.42);border-radius:12px;background:rgba(7,27,47,.72);color:#b9d6e7;font:700 .65rem/1.55 var(--gs-font-copy); }
 .resource-symbol-team-point { display:grid;place-items:center;color:#7dffe8;text-shadow:0 0 15px rgba(93,255,225,.7);font-style:normal;font-size:1.35rem; }
 .post-match-chest-reward { width:min(430px,100%);padding:10px;border:1px solid #ffe070;border-radius:10px;color:#ffe998 !important;background:rgba(255,214,73,.08); }
 #post-match-sync-retry { width:min(430px,100%);min-height:42px;border:1px solid #ffcf68;color:#fff0a5;background:#3c2b18;font:900 .58rem var(--gs-font-display); }
@@ -1306,7 +1306,7 @@ body:not([data-app-screen="play"]) .app-progress-ribbon .lobby-currency-chip > s
 .team-action-card > span,.team-identity-card span { color:#69e5d3;font:800 .48rem var(--gs-font-display);letter-spacing:.09em; }
 .team-action-card h3,.team-identity-card h3,.team-panel h3 { margin:0;color:#f5f9ff;font:900 .86rem var(--gs-font-display); }
 .team-action-card label { display:grid;gap:5px;color:#91a9bd;font-size:.56rem; }
-.team-action-card input,.team-action-card select,.team-inline-action input,.team-inline-action select { min-width:0;min-height:42px;padding:0 11px;border:1px solid #2b6075;border-radius:9px;color:#edfaff;background:#07192d;font:700 .58rem var(--gs-font-body); }
+.team-action-card input,.team-action-card select,.team-inline-action input,.team-inline-action select { min-width:0;min-height:42px;padding:0 11px;border:1px solid #2b6075;border-radius:9px;color:#edfaff;background:#07192d;font:700 .58rem var(--gs-font-copy); }
 .team-action-card button,.team-inline-action button,.team-request-card button,.team-training-card button { min-height:40px;padding:0 12px;border:1px solid #55dac9;border-radius:9px;color:#08202b;background:#73e9d6;font:900 .52rem var(--gs-font-display); }
 .team-action-card button:disabled,.team-inline-action button:disabled,.team-request-card button:disabled { opacity:.48; }
 .team-hub { padding:10px 12px 18px;display:grid;gap:9px; }
@@ -2840,7 +2840,7 @@ body[data-app-screen="play"] .module-shelf .module-card .current-cost-badge {
   overflow:hidden;
   text-overflow:ellipsis;
   white-space:nowrap;
-  font:600 .38rem/1.15 var(--gs-font-body);
+  font:600 .38rem/1.15 var(--gs-font-copy);
 }
 .post-match-damage-row:has(.post-match-contribution) .post-match-damage-row i {
   margin-top:2px;
@@ -3235,10 +3235,15 @@ body[data-app-screen="play"] .vertical-circuit-arena .module-card.battle-module-
   content:"";
   position:absolute;
   z-index:41;
+  /* Eski enerji etiketi aynı ::after öğesinin konum/kutusunu değiştirebiliyordu. */
+  top:auto;
   right:0;
   bottom:0;
   left:0;
+  width:auto;
   height:5px;
+  padding:0;
+  border:0;
   border-radius:0 0 4px 4px;
   background:linear-gradient(
     90deg,
@@ -3630,33 +3635,35 @@ body[data-app-screen="play"] .module-explosion.core-explosion::after {
 }
 
 /* Arena sarsıntısı: hafif (imza vuruşu, çekirdeğe ağır vuruş), orta (modül
-   düştü), ağır (büyük imza boşalması), çekirdek (çekirdek yıkımı). */
+   düştü), ağır (büyük imza boşalması), çekirdek (çekirdek yıkımı).
+   Sarsıntı `transform` değil `translate` özelliğini oynatır: mobil arena
+   kuralındaki `transform:none !important` animasyonu eziyordu. */
 .duel-arena.fx-arena-pulse-light { animation:gs-arena-pulse-light .36s ease-out; }
 .duel-arena.fx-arena-pulse-medium { animation:gs-arena-pulse-medium .46s ease-out; }
 .duel-arena.fx-arena-pulse-heavy { animation:gs-arena-pulse-heavy .54s cubic-bezier(.22,.61,.36,1); }
 .duel-arena.fx-arena-pulse-core { animation:gs-arena-pulse-core .78s cubic-bezier(.22,.61,.36,1); }
 @keyframes gs-arena-pulse-light {
-  0%,100% { transform:translate(0); }
-  35% { transform:translate(-1.5px,1px); }
-  70% { transform:translate(1px,-.5px); }
+  0%,100% { translate:0 0; }
+  35% { translate:-1.5px 1px; }
+  70% { translate:1px -.5px; }
 }
 @keyframes gs-arena-pulse-medium {
-  0%,100% { transform:translate(0); }
-  28% { transform:translate(-3px,2px); }
-  56% { transform:translate(2px,-1px); }
+  0%,100% { translate:0 0; }
+  28% { translate:-3px 2px; }
+  56% { translate:2px -1px; }
 }
 @keyframes gs-arena-pulse-heavy {
-  0%,100% { transform:translate(0); filter:none; }
-  16% { transform:translate(-5px,2px); filter:brightness(1.18); }
-  38% { transform:translate(4px,-2px); }
-  62% { transform:translate(-2px,1px); filter:none; }
+  0%,100% { translate:0 0; filter:none; }
+  16% { translate:-5px 2px; filter:brightness(1.18); }
+  38% { translate:4px -2px; }
+  62% { translate:-2px 1px; filter:none; }
 }
 @keyframes gs-arena-pulse-core {
-  0%,100% { transform:translate(0); filter:none; }
-  14% { transform:translate(-7px,3px); filter:brightness(1.4); }
-  30% { transform:translate(6px,-3px); }
-  48% { transform:translate(-4px,2px); }
-  68% { transform:translate(2px,-1px); filter:brightness(1); }
+  0%,100% { translate:0 0; filter:none; }
+  14% { translate:-7px 3px; filter:brightness(1.4); }
+  30% { translate:6px -3px; }
+  48% { translate:-4px 2px; }
+  68% { translate:2px -1px; filter:brightness(1); }
 }
 @keyframes gs-arena-flash {
   0%,100% { filter:none; }
@@ -4884,7 +4891,7 @@ body:not([data-app-screen="play"]) .app-progress-ribbon #reward-inbox-button {
 .reward-preview-team-color { width:30px;height:18px;border-radius:6px;box-shadow:inset 0 0 0 1px rgba(255,255,255,.3); }
 /* CSS ile üretilen metinlerin İngilizce karşılıkları */
 html[lang="en"] .initial-circuit-picker::before { content:"CHOOSE YOUR STARTING STRATEGY"; }
-html[lang="en"] .module-card.energy-disconnected::after { content:"NO ENERGY"; }
+html[lang="en"] .module-card.energy-disconnected:not(.battle-module-card)::after { content:"NO ENERGY"; }
 html[lang="en"] body[data-home-match-transition="true"] .battle-shell::after { content:"MATCHING"; }
 
 /* === Beta.72 mobil tur 4 ================================================== */
@@ -5532,8 +5539,9 @@ html[lang="en"] body[data-home-match-transition="true"] .battle-shell::after { c
 
 /* --- Savaş kartı: üst kenarda ince ısı barı -------------------------------- */
 /* CAN barı altta, tam genişlikte ve 5 px; ısı barı üstte, iki yandan içeride
-   ve 3 px. Termometre gibi sarıdan kırmızıya ilerler; 70 (yüksek ısı) ve 100
-   (aşırı ısınma) eşikleri çentikle işaretlidir. */
+   ve 3 px. Termometre gibi sarıdan kırmızıya ilerler. Isı yüzdedir (tur 12):
+   %40 (üstünde modül kademeli yavaşlar) ve %70 (yüksek ısı; susmuş modül bunun
+   altında yeniden çalışır) çentikle işaretlidir, bar %100'de dolar. */
 body[data-app-screen="play"] .vertical-circuit-arena .module-card > .module-heat-bar {
   position:absolute;
   z-index:41;
@@ -5558,9 +5566,10 @@ body[data-app-screen="play"] .vertical-circuit-arena .module-card > .module-heat
   position:absolute;
   inset:0;
   background:
-    linear-gradient(90deg,transparent calc(58.33% - 1px),rgba(2,8,17,.95) calc(58.33% - 1px),rgba(2,8,17,.95) 58.33%,transparent 58.33%),
-    linear-gradient(90deg,transparent calc(83.33% - 1px),rgba(2,8,17,.95) calc(83.33% - 1px),rgba(2,8,17,.95) 83.33%,transparent 83.33%);
+    linear-gradient(90deg,transparent calc(40% - 1px),rgba(2,8,17,.95) calc(40% - 1px),rgba(2,8,17,.95) 40%,transparent 40%),
+    linear-gradient(90deg,transparent calc(70% - 1px),rgba(2,8,17,.95) calc(70% - 1px),rgba(2,8,17,.95) 70%,transparent 70%);
 }
+.module-heat-bar[data-heat-state="slowed"] { box-shadow:0 0 0 1px rgba(255,179,71,.45),0 0 4px rgba(255,179,71,.35); }
 .module-heat-bar[data-heat-state="high"] { box-shadow:0 0 0 1px rgba(255,122,60,.5),0 0 5px rgba(255,122,60,.45); }
 .module-heat-bar[data-heat-state="critical"],
 .module-heat-bar[data-heat-state="overheated"] { box-shadow:0 0 0 1px rgba(255,61,90,.7),0 0 7px rgba(255,61,90,.6); }
@@ -5699,3 +5708,90 @@ body[data-app-screen="play"] .vertical-circuit-arena .module-card.has-heat-bar >
 .reward-ad-stage h2 { margin:0;color:#fff3a5;font:900 1rem var(--gs-font-display); }
 .reward-ad-stage p { margin:0;color:#a5bdcf;font-size:.56rem;line-height:1.5; }
 .reward-ad-countdown { width:64px;height:64px;display:grid;place-items:center;border:2px solid #70f3df;border-radius:50%;color:#fff2a0;font:900 1.6rem var(--gs-font-display);box-shadow:0 0 22px rgba(85,239,219,.4); }
+
+/* === Beta.72 mobil tur 10 ================================================= */
+/* Savaş alanı kamera eğimi. İki tahta aynı düzlemde, VS çizgisinden geçen
+   yatay eksen etrafında geriye yatırılır: rakip tahtası uzakta küçülür, oyuncu
+   tahtası yakında büyür. Her iki tahtanın dönüş noktası ve kamerası eksen
+   ortasındadır; bu yüzden ikisi tek bir düzlem gibi görünür. Efekt katmanı
+   eğilmez: mermi, hasar yazısı ve patlama konumları ekran koordinatıyla
+   ölçüldüğü için eğik kartların üstünde kalır. Zemin ızgarası da aynı açıyla
+   yatar. Ayarlar'dan kapatılabilir (cihaza özel tercih). */
+body[data-battle-perspective="on"][data-app-screen="play"] .vertical-circuit-arena {
+  --gs-camera-tilt:24deg;
+  --gs-camera-distance:950px;
+  --gs-camera-axis-gap:7px;
+}
+@media (max-width:680px) {
+  body[data-battle-perspective="on"][data-app-screen="play"] .vertical-circuit-arena {
+    --gs-camera-axis-gap:17px;
+  }
+}
+body[data-battle-perspective="on"][data-app-screen="play"] .vertical-circuit-arena .board {
+  transform:perspective(var(--gs-camera-distance)) rotateX(var(--gs-camera-tilt));
+  will-change:transform;
+}
+body[data-battle-perspective="on"][data-app-screen="play"] .vertical-circuit-arena .enemy-board {
+  transform-origin:50% calc(100% + var(--gs-camera-axis-gap));
+}
+body[data-battle-perspective="on"][data-app-screen="play"] .vertical-circuit-arena .duel-player-side .board {
+  transform-origin:50% calc(-1 * var(--gs-camera-axis-gap));
+}
+/* Düz zemin ızgarası kalkar; aynı ızgara eğik zemin olarak arenanın arkasına
+   yerleşir ve kenarlarda söner. */
+body[data-battle-perspective="on"][data-app-screen="play"][data-local-status="battle"] .arena-panel,
+body[data-battle-perspective="on"][data-app-screen="play"][data-online-status="battle"] .arena-panel {
+  background:
+    radial-gradient(ellipse 85% 40% at 50% 10%,rgba(255,86,122,.22),transparent 70%),
+    radial-gradient(ellipse 85% 40% at 50% 90%,rgba(64,236,220,.24),transparent 70%),
+    radial-gradient(circle at 50% 50%,rgba(122,150,255,.16),transparent 46%),
+    linear-gradient(180deg,#10183a 0%,#0c2847 46%,#0b3040 54%,#0a1b36 100%) !important;
+}
+body[data-battle-perspective="on"][data-app-screen="play"][data-local-status="battle"] .vertical-circuit-arena::after,
+body[data-battle-perspective="on"][data-app-screen="play"][data-online-status="battle"] .vertical-circuit-arena::after {
+  content:"";
+  position:absolute;
+  z-index:0;
+  inset:-3% 7%;
+  pointer-events:none;
+  background:
+    repeating-linear-gradient(0deg,rgba(110,180,255,.075) 0 1px,transparent 1px 28px),
+    repeating-linear-gradient(90deg,rgba(110,180,255,.075) 0 1px,transparent 1px 28px);
+  transform:perspective(var(--gs-camera-distance)) rotateX(var(--gs-camera-tilt));
+  transform-origin:50% 50%;
+  -webkit-mask-image:radial-gradient(ellipse 72% 62% at 50% 50%,#000 52%,transparent 100%);
+  mask-image:radial-gradient(ellipse 72% 62% at 50% 50%,#000 52%,transparent 100%);
+}
+
+/* Analitik onayı (Ayarlar → Hesap ve Gizlilik; docs/ANALYTICS.md). */
+.account-platform-panel .account-analytics-toggle { display:flex;align-items:center;gap:8px;min-height:38px;padding:7px 9px;border:1px solid rgba(79,190,193,.32);border-radius:8px;color:#dff8f4;background:#06172a;font:800 .5rem var(--gs-font-display); }
+.account-platform-panel .account-analytics-toggle input { width:18px;height:18px;margin:0;flex:0 0 auto;accent-color:#65ddcf; }
+.account-platform-panel .account-analytics-note { margin:0;color:#a9bfd0;font-size:.5rem;line-height:1.45; }
+
+/* === Beta.72 tur 11: ilk maç eğitimi ipucu kartı ========================= */
+/* Savaşı durdurmaz: arka plan karartılmaz, yalnız kart dokunulabilir.
+   Kart hedefin karşı yarısına yerleşir (data-placement). */
+.tutorial-overlay { position:fixed; left:0; right:0; z-index:3002; display:flex; justify-content:center; padding:0 12px; background:none; pointer-events:none; }
+.tutorial-overlay[data-placement="bottom"] { top:auto; bottom:calc(env(safe-area-inset-bottom) + 96px); }
+.tutorial-overlay[data-placement="top"] { top:calc(env(safe-area-inset-top) + 64px); bottom:auto; }
+.tutorial-overlay[hidden] { display:none; }
+.tutorial-card { width:min(420px,100%); padding:12px 14px; border:1px solid rgba(255,225,122,.62); border-radius:14px; color:#eaf6ff; background:rgba(6,18,34,.96); box-shadow:0 12px 36px rgba(0,0,0,.55),0 0 22px rgba(255,225,122,.16); pointer-events:auto; }
+.tutorial-heading { display:flex; align-items:center; gap:8px; }
+.tutorial-kicker { flex:1; color:#ffe17a; font:900 .5rem var(--gs-font-display); letter-spacing:.08em; }
+.tutorial-heading [data-tutorial-progress] { color:#9fc3dc; font:800 .5rem var(--gs-font-display); }
+.tutorial-heading [data-tutorial-skip] { min-height:32px; padding:0 10px; border:1px solid rgba(159,195,220,.4); border-radius:8px; color:#cfe6f5; background:transparent; font:800 .5rem var(--gs-font-display); }
+.tutorial-card h2 { margin:6px 0 4px; color:#fff3a1; font:900 .85rem var(--gs-font-display); }
+.tutorial-card p { margin:0; color:#cfe0ee; font-size:.62rem; line-height:1.45; }
+.tutorial-status { display:block; margin-top:4px; color:#8fd7ff; font-size:.52rem; line-height:1.4; }
+.tutorial-status:empty { display:none; }
+.tutorial-actions { display:flex; justify-content:flex-end; margin-top:8px; }
+.tutorial-actions [data-tutorial-next] { min-height:38px; padding:0 16px; border:1px solid #65ddcf; border-radius:9px; color:#062028; background:#8ff3e4; font:900 .55rem var(--gs-font-display); }
+.tutorial-actions [data-tutorial-next][hidden] { display:none; }
+/* Hedef vurgusu konumu değiştirmez (eğik tahtalar ve sabit düğmeler bozulmasın). */
+[data-tutorial-target="true"] { outline:3px solid #ffe17a !important; outline-offset:3px; box-shadow:0 0 0 6px rgba(255,225,122,.18),0 0 24px rgba(255,225,122,.45) !important; animation:gs-tutorial-pulse 1.4s ease-in-out infinite; }
+@keyframes gs-tutorial-pulse { 50% { outline-color:rgba(255,225,122,.35); } }
+@media (prefers-reduced-motion: reduce) { [data-tutorial-target="true"] { animation:none; } }
+.settings-tutorial-replay { display:grid; gap:4px; }
+.settings-tutorial-replay button { min-height:38px; border:1px solid rgba(101,221,207,.55); border-radius:8px; color:#8ff3e4; background:#0d344a; font:800 .5rem var(--gs-font-display); }
+.settings-tutorial-replay small:empty { display:none; }
+.settings-tutorial-replay small { color:#9fc3dc; font-size:.5rem; }

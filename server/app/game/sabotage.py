@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 
+from .heat import heat_efficiency, is_overheated
 from .models import BattleModule, ModuleStatus, PlayerBattleState
 from .operations import module_is_operational
 
@@ -181,11 +182,12 @@ def sabotage_resistance(
         and module.definition.mechanic_id == "barrier"
         and module.is_powered
         and module.hp > 0
+        and not is_overheated(module)
     ]
 
     if powered_barriers:
         barrier_effect = max(
-            module.definition.effect_multiplier
+            module.definition.effect_multiplier * heat_efficiency(module)
             for module in powered_barriers
         )
         duration_multiplier *= max(
@@ -211,6 +213,7 @@ def sabotage_resistance(
     blocked = (
         target.definition.mechanic_id == "barrier"
         and target.is_powered
+        and not is_overheated(target)
         and target.definition.mechanic_id in sabotage_module.definition.weak_against
     )
 

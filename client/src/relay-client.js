@@ -1480,6 +1480,7 @@
     LOCAL_BATTLE_COMPLETED: "local_battle_completed",
     LOCAL_AI_HIT: "local_ai_hit",
     LOCAL_PLAYER_ATTACK: "local_player_attack",
+    BATTLE_PERFORMANCE: "battle_performance",
   });
 
   class RelayTelemetryDispatcher {
@@ -2652,9 +2653,13 @@
             );
 
           if (!response.ok) {
-            throw new Error(
+            const error = new Error(
               `Telemetri gönderimi başarısız: ${response.status}`
             );
+            error.permanent = response.status >= 400
+              && response.status < 500
+              && ![408, 429].includes(response.status);
+            throw error;
           }
 
           return response.json();
@@ -2745,9 +2750,11 @@
           const [eventId, event]
           of [...this.pending.entries()]
         ) {
-          await this.requestJson(
-            event
-          );
+          try {
+            await this.requestJson(event);
+          } catch (error) {
+            if (!error?.permanent) throw error;
+          }
           this.pending.delete(
             eventId
           );

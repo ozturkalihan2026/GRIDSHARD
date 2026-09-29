@@ -354,6 +354,13 @@
   let storeState = null;
   let purchaseInFlight = false;
   const pendingPurchaseIds = new Map();
+  // Mağazada ödenmiş ama sunucuya henüz işlenmemiş alımlar (ürün → alım bilgisi).
+  // Sunucu yanıtı gelmezse aynı alım ikinci ödeme olmadan yeniden gönderilir.
+  const pendingNativePurchases = new Map();
+  // Yerel uygulamada mağaza ve reklam eklentisi köprüsü; web'de null.
+  const nativeStore = globalThis.GridshardNativeStore?.NativeStoreBridge
+    ? new globalThis.GridshardNativeStore.NativeStoreBridge()
+    : null;
   // Reklamla ikiye katlanan savaşlar (savaş kimliği → sunucu makbuzu).
   const adRewardReceipts = new Map();
   let adRewardPending = false;
@@ -641,6 +648,12 @@
   let gridshardAudioDirector = null;
   let tutorialController = null;
   let criticalCoreAudioRequested = false;
+  // Savaş müziği evresi yalnız ileri gider: giriş → savaş → baskı.
+  const BATTLE_MUSIC_INTRO_MS = 20000;
+  const BATTLE_MUSIC_PHASE_ORDER = Object.freeze({ intro:0, battle:1, pressure:2 });
+  let battleMusicPhase = "intro";
+  let battleMusicTension = 0;
+  let battleOvertimeActive = false;
   const audioStateOwner =
     typeof GridshardAudioStateOwner === "function"
       ? new GridshardAudioStateOwner({
@@ -672,6 +685,7 @@
         document.body.dataset.localStatus
         || "setup",
       critical:criticalCoreAudioRequested,
+      battlePhase:battleMusicPhase,
       ...overrides,
     };
   }
@@ -776,7 +790,6 @@
     if (screen === "play") {
       // Beta.26: Oyna doğrudan tek çevrimiçi hazırlık ekranını açar.
       prepareOnlineMatch();
-      tutorialController?.maybeStart();
     }
 
     if (["profile", "avatar", "friends", "daily", "daily-rewards", "daily-missions", "rewards", "shop", "modules", "team", "events", "weekly-event", "team-event", "menu"].includes(screen)) {
@@ -2593,6 +2606,7 @@
     renderSeasonPremiumPurchase();
     renderPostMatchPremium();
     renderPostMatchAdReward();
+    void recoverNativePurchases();
     return { ok:true, state:storeState };
   }
 
@@ -2625,12 +2639,120 @@
     return card;
   }
 
+  // Satın alma ve reklam sağlayıcısı: yerel uygulamada sunucunun açtığı gerçek
+  // mağaza/AdMob, aksi hâlde sunucunun deneme sağlayıcısı (üretimde yok).
+  function currentPurchaseProvider() {
+    return nativeStore
+      ? nativeStore.purchaseProvider(storeState)
+      : storeState?.providers?.purchase || null;
+  }
+
+  function currentAdProvider() {
+    return nativeStore
+      ? nativeStore.adProvider(storeState)
+      : storeState?.providers?.ads || null;
+  }
+
+  function paidProducts() {
+    return [
+      storeState?.season_pass,
+      storeState?.battle_premium,
+      ...(storeState?.flux_packs || []),
+      ...(storeState?.credit_packs || []),
+    ].filter(Boolean);
+  }
+
+  function paidProductById(productId) {
+    return paidProducts().find((product) => product.id === productId) || null;
+  }
+
+  function paidProductByStoreId(storeProductId) {
+    return paidProducts().find((product) => product.store_product_id === storeProductId) || null;
+  }
+
+  // Uygulama ödeme ile sunucu yanıtı arasında kapanırsa alım mağazada
+  // bitirilmemiş kalır. Açılışta ve mağaza yeni işlem bildirdiğinde bu hesaba
+  // bağlı alımlar sessizce sunucuya gönderilir; sunucu aynı makbuzu ikinci kez
+  // vermez (docs/STORE_PURCHASES.md).
+  let nativePurchaseRecoveryStarted = false;
+
+  async function submitRecoveredPurchase(native) {
+    const provider = currentPurchaseProvider();
+    const product = paidProductByStoreId(native.productIdentifier);
+    if (
+      (provider !== "google_play" && provider !== "app_store")
+      || !product
+      || nativeStore.isProcessed(native)
+      || [...pendingNativePurchases.values()].some((item) => (
+        nativeStore.purchaseKey(item) === nativeStore.purchaseKey(native)
+      ))
+    ) {
+      return;
+    }
+    try {
+      const payload = await requestJsonWithDeadline(
+        `/store/${encodeURIComponent(participantPlayerId)}/purchases`,
+        {
+          method:"POST",
+          body:JSON.stringify({
+            product_id:product.id,
+            provider,
+            transaction_id:native.transactionId,
+            purchase_token:native.purchaseToken,
+          }),
+        },
+        20000
+      );
+      await nativeStore.finishPurchase(native, {
+        granted:true,
+        consumed:Boolean(payload.receipt?.consumed),
+      });
+      nativeStore.markProcessed(native);
+      storeState = payload.store || storeState;
+      if (payload.meta_progression) metaProgressionState = payload.meta_progression;
+      if (payload.profile) profileState.applyProfile(payload.profile);
+      renderProfileSummary();
+      renderMetaHubScreens();
+      renderPaidStore();
+    } catch (error) {
+      if (Number(error?.status) >= 400 && Number(error?.status) < 500) {
+        await nativeStore.finishPurchase(native, { granted:false });
+        nativeStore.markProcessed(native);
+      }
+      // Geçici hata (503, ağ): bir sonraki açılışta yeniden denenir.
+    }
+  }
+
+  async function recoverNativePurchases() {
+    const provider = currentPurchaseProvider();
+    const accountToken = storeState?.account_token || "";
+    if (
+      !nativeStore
+      || nativePurchaseRecoveryStarted
+      || (provider !== "google_play" && provider !== "app_store")
+      || !accountToken
+    ) {
+      return;
+    }
+    nativePurchaseRecoveryStarted = true;
+    nativeStore.onTransactionUpdated(
+      (native) => { void submitRecoveredPurchase(native); },
+      { accountToken }
+    );
+    const storeProductIds = paidProducts()
+      .map((product) => product.store_product_id)
+      .filter(Boolean);
+    for (const native of await nativeStore.unfinishedPurchases(storeProductIds, { accountToken })) {
+      await submitRecoveredPurchase(native);
+    }
+  }
+
   function renderPaidStore() {
     const premiumHost = document.getElementById("paid-store-premium");
     const fluxHost = document.getElementById("paid-flux-packs");
     const creditHost = document.getElementById("paid-credit-packs");
     const mode = document.getElementById("paid-store-mode");
-    const provider = storeState?.providers?.purchase || null;
+    const provider = currentPurchaseProvider();
     if (mode) {
       mode.textContent = !storeState
         ? "Yükleniyor…"
@@ -2659,34 +2781,72 @@
       statusElement.textContent = message;
       statusElement.dataset.status = state;
     };
-    const provider = storeState?.providers?.purchase || null;
+    const provider = currentPurchaseProvider();
     if (!provider) {
       setStatus("Ödeme altyapısı hazırlanıyor; gerçek ödeme henüz açılmadı.", "error");
       return { ok:false };
     }
     if (purchaseInFlight) return { ok:false };
     purchaseInFlight = true;
-    // Aynı ürün için yarım kalan istek aynı işlem kimliğiyle yinelenir; ürün iki kez verilmez.
-    let transactionId = pendingPurchaseIds.get(productId);
-    if (!transactionId) {
-      transactionId = operationRequestId("purchase");
-      pendingPurchaseIds.set(productId, transactionId);
-    }
-    setStatus(
-      provider === "test" ? "Deneme alımı işleniyor… Gerçek ödeme alınmaz." : "Ödeme doğrulanıyor…",
-      "pending"
-    );
+    const realStore = provider === "google_play" || provider === "app_store";
+    let transactionId = "";
+    let purchaseToken = "";
+    let native = null;
     renderPaidStore();
     try {
+      if (realStore) {
+        // Mağazada ödenmiş ama sunucuya işlenmemiş alım varsa yeniden ödeme
+        // penceresi açılmaz; aynı makbuz sunucuya tekrar gönderilir.
+        native = pendingNativePurchases.get(productId) || null;
+        if (!native) {
+          const product = paidProductById(productId);
+          if (!product?.store_product_id) throw new Error("Ürün mağazada bulunamadı.");
+          setStatus("Mağaza ödeme penceresi açılıyor…", "pending");
+          // Alım ödeme penceresinde bu hesaba bağlanır; sunucu başka hesabın
+          // makbuzunu kabul etmez.
+          native = await nativeStore.purchase(product, {
+            accountToken:storeState?.account_token || "",
+          });
+          pendingNativePurchases.set(productId, native);
+        }
+        transactionId = native.transactionId;
+        purchaseToken = native.purchaseToken;
+        setStatus("Ödeme doğrulanıyor…", "pending");
+      } else {
+        // Aynı ürün için yarım kalan istek aynı işlem kimliğiyle yinelenir; ürün iki kez verilmez.
+        transactionId = pendingPurchaseIds.get(productId);
+        if (!transactionId) {
+          transactionId = operationRequestId("purchase");
+          pendingPurchaseIds.set(productId, transactionId);
+        }
+        setStatus(
+          provider === "test" ? "Deneme alımı işleniyor… Gerçek ödeme alınmaz." : "Ödeme doğrulanıyor…",
+          "pending"
+        );
+      }
       const payload = await requestJsonWithDeadline(
         `/store/${encodeURIComponent(participantPlayerId)}/purchases`,
         {
           method:"POST",
-          body:JSON.stringify({ product_id:productId, provider, transaction_id:transactionId }),
+          body:JSON.stringify({
+            product_id:productId,
+            provider,
+            transaction_id:transactionId,
+            purchase_token:purchaseToken,
+          }),
         },
-        15000
+        20000
       );
       pendingPurchaseIds.delete(productId);
+      pendingNativePurchases.delete(productId);
+      if (native) {
+        // iOS'ta işlem bitirilir; Android'de sunucu tüketemediyse tüketilir.
+        await nativeStore.finishPurchase(native, {
+          granted:true,
+          consumed:Boolean(payload.receipt?.consumed),
+        });
+        nativeStore.markProcessed(native);
+      }
       storeState = payload.store || storeState;
       if (payload.meta_progression) metaProgressionState = payload.meta_progression;
       if (payload.profile) profileState.applyProfile(payload.profile);
@@ -2702,6 +2862,15 @@
     } catch (error) {
       if (Number(error?.status) >= 400 && Number(error?.status) < 500) {
         pendingPurchaseIds.delete(productId);
+        // Sunucu makbuzu reddetti (ör. hak zaten etkin): aynı makbuz yeniden
+        // gönderilmez. Google onaylanmamış alımı iade eder; iOS'ta işlem
+        // bitirilir, iadeyi oyuncu Apple'dan ister (bkz. STORE_PURCHASES.md).
+        // 503 (geçici doğrulama sorunu) ve ağ hatasında alım saklanır.
+        pendingNativePurchases.delete(productId);
+        if (native) {
+          await nativeStore.finishPurchase(native, { granted:false });
+          nativeStore.markProcessed(native);
+        }
       }
       setStatus(error instanceof Error ? error.message : String(error), "error");
       return { ok:false, error };
@@ -2720,7 +2889,7 @@
     const engagementPass = profileState.profile?.engagement?.premium_pass || null;
     const active = Boolean(pass?.active ?? engagementPass?.active);
     button.hidden = active || !(pass || engagementPass?.purchasable);
-    button.disabled = Boolean(!storeState?.providers?.purchase || purchaseInFlight);
+    button.disabled = Boolean(!currentPurchaseProvider() || purchaseInFlight);
     button.textContent = `ÜCRETLİ GEÇİŞİ AÇ · ${pass?.price_label_tr || engagementPass?.price_label_tr || "99,99 TL"}`;
   }
 
@@ -2746,7 +2915,7 @@
     }
     if (buy) {
       buy.hidden = applied || Boolean(product?.active) || !product;
-      buy.disabled = Boolean(!storeState?.providers?.purchase || purchaseInFlight);
+      buy.disabled = Boolean(!currentPurchaseProvider() || purchaseInFlight);
       buy.textContent = `SAVAŞ PREMIUM · ${product?.price_label_tr || "99,99 TL"}`;
     }
   }
@@ -2758,7 +2927,7 @@
     const battleId = postMatchSync.lastBattleId;
     const hasRewards = Boolean(progression?.profileProgressionApplied)
       && (Number(progression?.circuitCreditsAwarded || 0) > 0 || Number(progression?.xpAwarded || 0) > 0);
-    const provider = storeState?.providers?.ads || null;
+    const provider = currentAdProvider();
     const claimed = battleId ? adRewardReceipts.get(battleId) : null;
     host.hidden = !battleId || !hasRewards || !provider;
     host.dataset.claimed = String(Boolean(claimed));
@@ -2797,24 +2966,45 @@
     });
   }
 
+  async function claimAdReward(battleId, provider) {
+    const request = () => requestJsonWithDeadline(
+      `/profile/${encodeURIComponent(participantPlayerId)}/battles/${encodeURIComponent(battleId)}/ad-reward`,
+      {
+        method:"POST",
+        body:JSON.stringify({ request_id:operationRequestId("ad"), provider }),
+      },
+      15000
+    );
+    if (provider !== "admob") return request();
+    // AdMob'un imzalı SSV geri çağrısı sunucuya reklam kapandıktan birkaç
+    // saniye sonra ulaşabilir; ödül talebi kısa aralıklarla yinelenir.
+    let lastError = null;
+    for (let attempt = 0; attempt < 6; attempt += 1) {
+      try {
+        return await request();
+      } catch (error) {
+        lastError = error;
+        if (Number(error?.status) !== 422) throw error;
+        await new Promise((resolve) => window.setTimeout(resolve, 1500));
+      }
+    }
+    throw lastError;
+  }
+
   async function watchRewardAd() {
     const battleId = postMatchSync.lastBattleId;
-    const provider = storeState?.providers?.ads || null;
+    const provider = currentAdProvider();
     const status = document.getElementById("post-match-store-status");
     if (!battleId || !provider || adRewardPending || adRewardReceipts.has(battleId)) return;
     adRewardPending = true;
     renderPostMatchAdReward();
     try {
-      // Yalnız deneme sağlayıcısı var; gerçek reklam SDK'sı bağlanınca burada oynatılır.
-      await playTestRewardAd();
-      const payload = await requestJsonWithDeadline(
-        `/profile/${encodeURIComponent(participantPlayerId)}/battles/${encodeURIComponent(battleId)}/ad-reward`,
-        {
-          method:"POST",
-          body:JSON.stringify({ request_id:operationRequestId("ad"), provider }),
-        },
-        15000
-      );
+      if (provider === "admob") {
+        await nativeStore.showRewardedAd({ storeState, userId:participantPlayerId, battleId });
+      } else {
+        await playTestRewardAd();
+      }
+      const payload = await claimAdReward(battleId, provider);
       adRewardReceipts.set(battleId, payload.receipt);
       if (payload.profile) profileState.applyProfile(payload.profile);
       renderProfileSummary();
@@ -7566,7 +7756,9 @@
     client.currentDiscountRemaining = Number(player?.discounted_deployments || 0);
     client.energyLoadRatio = Number(player?.energy_load_ratio || 0);
     client.energyStock = Number(player?.energy_stock || 0);
-    document.getElementById("board")?.classList.toggle("energy-strain", client.energyLoadRatio > 1.2 && client.energyStock <= 0);
+    // Enerji sırası rezervi bekleyen aksiyon için biriktirdiği için rezerv
+    // sıfıra nadiren iner; açığı yük oranı gösterir.
+    document.getElementById("board")?.classList.toggle("energy-strain", client.energyLoadRatio > 1.1);
     const summary = document.getElementById("player-core-summary");
     if (summary) summary.title = `Enerji yükü %${Math.round(client.energyLoadRatio * 100)} · Depo ${client.energyStock}`;
     const power=player?.core_power;
@@ -8059,15 +8251,15 @@
       description_tr:"Rakibin devresine göre karşı modül seçer; saldırı ve savunmayı dengeler.",
       description_en:"Counters the opponent while balancing offense and defense.",
     },
-    sabotage:{
-      name_tr:"Sabotaj Odaklı", name_en:"Sabotage",
-      description_tr:"Rakip sistemleri susturur; EMP, Kesici ve bozucu etkilerle tempo kırar.",
-      description_en:"Silences enemy systems with EMP, Disruptor and control effects.",
+    balanced_control:{
+      name_tr:"Dengeli Kontrol", name_en:"Balanced Control",
+      description_tr:"Dengeli oynar; rakibin kilit sistemini EMP ve Sinyal Bozucu ile susturur, Batarya ve Soğutucuyla temposunu korur.",
+      description_en:"Plays balanced; silences a key enemy system with EMP and Jammer and keeps its tempo with Battery and Cooler.",
     },
-    economy:{
-      name_tr:"Ekonomi Odaklı", name_en:"Economy",
-      description_tr:"Önce enerji rezervi kurar; sonra yüksek maliyetli saldırılara geçer.",
-      description_en:"Builds an energy reserve first, then transitions into expensive attacks.",
+    balanced_economy:{
+      name_tr:"Dengeli Ekonomi", name_en:"Balanced Economy",
+      description_tr:"Dengeli oynar; Batarya ve Akım Dengeleyiciyle enerjisini sağlam tutar, Sinyal Bozucu ile rakibin destek hattını keser.",
+      description_en:"Plays balanced; keeps its energy steady with Battery and Current Balancer and cuts the enemy support line with Jammer.",
     },
   });
   let selectedAiArchetype = "balanced";
@@ -8134,6 +8326,7 @@
 
   let previousCapacity = null;
   let mockEnemyCoreHp = 300;
+  let mockEnemyCoreMaxHp = 300;
   let mockEnemyCoreBadges = [];
   let mockEnemyModuleHp = 140;
   let mockEnemyModules = [];
@@ -9357,6 +9550,8 @@
           "danger"
         );
         triggerGridshardCue("warning");
+        battleOvertimeActive = true;
+        syncCriticalCoreAudioState();
         continue;
       }
       if (
@@ -9834,6 +10029,7 @@
     mockEnemyCoreHp=Number(
       enemyCore?.hp || 0
     );
+    mockEnemyCoreMaxHp=Number(enemyCore?.max_hp || 300);
     mockEnemyCoreBadges=normalizeSignatureBadges(enemyCore?.signature_badges);
     mockEnemyModules=(
       enemy.modules || []
@@ -9876,6 +10072,7 @@
           powerReason:
             module.power_reason,
           heat:Number(module.heat || 0),
+          heatPenalty:Number(module.heat_penalty || 0),
           energyWaiting:Boolean(module.energy_waiting),
           overheated:Boolean(module.overheated),
           debuffs:Array.isArray(module.debuffs) ? module.debuffs : [],
@@ -9950,6 +10147,7 @@
           energyReceived:Number(serverModule.energy_received || 0),
           energyRequired:Number(serverModule.energy_required || 0),
           heat:Number(serverModule.heat || 0),
+          heatPenalty:Number(serverModule.heat_penalty || 0),
           energyWaiting:Boolean(serverModule.energy_waiting),
           overheated:Boolean(serverModule.overheated),
           debuffs:Array.isArray(serverModule.debuffs) ? serverModule.debuffs : [],
@@ -10095,6 +10293,7 @@
         heat:Number(
           serverModule.heat || 0
         ),
+        heatPenalty:Number(serverModule.heat_penalty || 0),
         energyWaiting:Boolean(serverModule.energy_waiting),
         overheated:Boolean(serverModule.overheated),
         debuffs:Array.isArray(serverModule.debuffs)
@@ -10635,17 +10834,27 @@
     renderPlayModeUi();
   }
 
+  // Savaş müziği durumunu yerel AI ve çevrimiçi savaşta aynı kuralla
+  // belirler: ilk 20 sn giriş, sonra savaş; Devre Gerilimi başlayınca ya da
+  // çekirdeklerden biri zayıflayınca baskı; kendi çekirdeğin %33'ün altına
+  // inince kritik çekirdek. Gerilim (0–1) katman karışımını sürekli besler.
   function syncCriticalCoreAudioState() {
-    if (
-      !gridshardAudioDirector
-      || activePlayMode !== "local"
-      || !localBattleStarted
-      || localBattleFinished
-    ) {
-      if (criticalCoreAudioRequested) {
-        criticalCoreAudioRequested = false;
-        requestOwnedAudioState("critical_core_inactive");
-      }
+    const battleActive =
+      Boolean(gridshardAudioDirector)
+      && (
+        (activePlayMode === "local" && localBattleStarted && !localBattleFinished)
+        || (activePlayMode === "online" && document.body.dataset.onlineStatus === "battle")
+      );
+    if (!battleActive) {
+      const wasActive =
+        criticalCoreAudioRequested
+        || battleMusicPhase !== "intro"
+        || battleOvertimeActive;
+      criticalCoreAudioRequested = false;
+      battleMusicPhase = "intro";
+      battleMusicTension = 0;
+      battleOvertimeActive = false;
+      if (wasActive) requestOwnedAudioState("critical_core_inactive");
       return;
     }
 
@@ -10666,26 +10875,39 @@
             core.maxHp || 300
           )
         );
+    const enemyRatio =
+      Math.max(0, Number(mockEnemyCoreHp || 0))
+      / Math.max(1, Number(mockEnemyCoreMaxHp || 300));
+    const critical = ratio > 0 && ratio <= .33;
+    const targetPhase =
+      battleOvertimeActive || ratio <= .6 || enemyRatio <= .4
+        ? "pressure"
+        : Number(client.elapsedMs || 0) < BATTLE_MUSIC_INTRO_MS
+          ? "intro"
+          : "battle";
+    const phase =
+      BATTLE_MUSIC_PHASE_ORDER[targetPhase] > BATTLE_MUSIC_PHASE_ORDER[battleMusicPhase]
+        ? targetPhase
+        : battleMusicPhase;
+    const tension = Math.round(
+      Math.max(0, Math.min(1, 1 - Math.min(ratio, enemyRatio))) * 20
+    ) / 20;
 
-    if (
-      ratio > 0
-      && ratio <= .33
-    ) {
-      criticalCoreAudioRequested = true;
-      requestOwnedAudioState("critical_core_entered");
-      if (
-        typeof gridshardAudioDirector
-          .setBattlePressure
-        === "function"
-      ) {
-        gridshardAudioDirector
-          .setBattlePressure(
-            .35
-          );
+    if (critical !== criticalCoreAudioRequested || phase !== battleMusicPhase) {
+      const reason = critical && !criticalCoreAudioRequested
+        ? "critical_core_entered"
+        : !critical && criticalCoreAudioRequested
+          ? "critical_core_cleared"
+          : `battle_music_${phase}`;
+      criticalCoreAudioRequested = critical;
+      battleMusicPhase = phase;
+      requestOwnedAudioState(reason);
+    }
+    if (tension !== battleMusicTension) {
+      battleMusicTension = tension;
+      if (typeof gridshardAudioDirector.setBattlePressure === "function") {
+        gridshardAudioDirector.setBattlePressure(tension);
       }
-    } else if (criticalCoreAudioRequested) {
-      criticalCoreAudioRequested = false;
-      requestOwnedAudioState("critical_core_cleared");
     }
   }
 
@@ -14004,29 +14226,60 @@
   }
 
   // Isı barı kartın üst kenarında durur: CAN barından ince, iki yandan içeride
-  // ve termometre gibi sarıdan kırmızıya ilerler. 70 (yüksek ısı) ve 100
-  // (aşırı ısınma) eşikleri çentikle işaretlidir; ısısı olmayan kartta çizilmez.
-  const MODULE_MAX_HEAT = 120;
+  // ve termometre gibi sarıdan kırmızıya ilerler. Isı yüzdedir: %40 (üstünde
+  // her %5 modülü %5 yavaşlatır) ve %70 (yüksek ısı; susmuş modül bunun altında
+  // yeniden çalışır) çentikle işaretlidir; bar %100'de dolar ve modül susar.
+  // Isısı olmayan kartta çizilmez.
+  const MODULE_MAX_HEAT = 100;
+  const MODULE_HEAT_SLOWDOWN_START = 40;
+  const MODULE_HEAT_SLOWDOWN_STEP = 5;
+  const MODULE_HEAT_HIGH = 70;
+  // Isı eylem modüllerinin aralığını uzatır, sürekli sistemlerin etkisini düşürür.
+  const HEAT_ACTION_DEFINITION_IDS = new Set(["repair", "nano_medic", "phoenix_repair"]);
+
+  function moduleHeatPenaltyPercent(moduleLike) {
+    const reported = Number(moduleLike?.heatPenalty);
+    if (Number.isFinite(reported) && reported > 0) return Math.round(reported);
+    const heat = Math.min(MODULE_MAX_HEAT, Math.max(0, Number(moduleLike?.heat || 0)));
+    if (heat < MODULE_HEAT_SLOWDOWN_START + MODULE_HEAT_SLOWDOWN_STEP) return 0;
+    return Math.floor((heat - MODULE_HEAT_SLOWDOWN_START) / MODULE_HEAT_SLOWDOWN_STEP) * 5;
+  }
+
+  function moduleHeatEffectLabel(moduleLike) {
+    const penalty = moduleHeatPenaltyPercent(moduleLike);
+    if (penalty <= 0) return "";
+    const category = String(moduleLike?.category || moduleLike?.kind || "");
+    if (category === "saldırı") return `Atış aralığı +%${penalty}`;
+    if (category === "sabotaj" || HEAT_ACTION_DEFINITION_IDS.has(String(moduleLike?.definitionId || ""))) {
+      return `Eylem aralığı +%${penalty}`;
+    }
+    return `Etki -%${Math.round(100 - 100 / (1 + penalty / 100))}`;
+  }
 
   function appendModuleHeatBar(card, moduleLike) {
-    const heat = Math.max(0, Number(moduleLike?.heat || 0));
+    const heat = Math.min(MODULE_MAX_HEAT, Math.max(0, Number(moduleLike?.heat || 0)));
     const overheated = Boolean(moduleLike?.overheated);
     if (!card || (heat <= 0 && !overheated)) return;
-    const percent = overheated ? 100 : Math.min(100, Math.round((heat / MODULE_MAX_HEAT) * 100));
+    const percent = overheated ? 100 : Math.round(heat);
     const bar = document.createElement("span");
     bar.className = "module-heat-bar";
     bar.dataset.heatState = overheated
       ? "overheated"
-      : heat >= 100
+      : heat >= MODULE_MAX_HEAT
         ? "critical"
-        : heat >= 70
+        : heat >= MODULE_HEAT_HIGH
           ? "high"
-          : "warm";
+          : heat >= MODULE_HEAT_SLOWDOWN_START + MODULE_HEAT_SLOWDOWN_STEP
+            ? "slowed"
+            : "warm";
     bar.style.setProperty("--heat-percent", `${percent}%`);
     bar.setAttribute("role", "img");
+    const heatEffect = moduleHeatEffectLabel(moduleLike);
     bar.setAttribute("aria-label", overheated
-      ? `Aşırı ısındı · Isı ${Math.round(heat)}`
-      : `Isı ${Math.round(heat)} / ${MODULE_MAX_HEAT}`);
+      ? `Aşırı ısındı · Isı %${Math.round(heat)}`
+      : heatEffect
+        ? `Isı %${Math.round(heat)} · ${heatEffect}`
+        : `Isı %${Math.round(heat)}`);
     const fill = document.createElement("i");
     fill.setAttribute("aria-hidden", "true");
     bar.appendChild(fill);
@@ -14056,13 +14309,14 @@
       addBadge(
         "♨",
         "heat-critical overheated",
-        `Aşırı ısındı · Isı ${Math.round(heat)} · 70'in altına inince yeniden ateşler`
+        `Aşırı ısındı · Isı %${Math.round(heat)} · %70'in altına inince yeniden çalışır`
       );
-    } else if (heat >= 70) {
+    } else if (heat >= MODULE_HEAT_HIGH) {
+      const heatEffect = moduleHeatEffectLabel(moduleLike);
       addBadge(
         "♨",
-        heat >= 100 ? "heat-critical" : "heat-high",
-        `Isı ${Math.round(heat)}`
+        heat >= MODULE_MAX_HEAT ? "heat-critical" : "heat-high",
+        heatEffect ? `Isı %${Math.round(heat)} · ${heatEffect}` : `Isı %${Math.round(heat)}`
       );
     }
 
@@ -14070,7 +14324,7 @@
       addBadge(
         "ϟ",
         "energy-waiting",
-        "Enerji bekliyor · rezerv dolunca ateşler"
+        "Enerji bekliyor · enerji sırası gelince çalışır"
       );
     }
 
@@ -17132,9 +17386,11 @@
 
   function heatStatusLabel(module) {
     const heat = Number(module.heat || 0);
-    if (heat >= 100) return `KRİTİK ISI ${heat.toFixed(0)}`;
-    if (heat >= 70) return `YÜKSEK ISI ${heat.toFixed(0)}`;
-    return `Isı ${heat.toFixed(0)}`;
+    const heatEffect = moduleHeatEffectLabel(module);
+    const suffix = heatEffect ? ` · ${heatEffect}` : "";
+    if (module.overheated || heat >= MODULE_MAX_HEAT) return `AŞIRI ISI %${heat.toFixed(0)}`;
+    if (heat >= MODULE_HEAT_HIGH) return `YÜKSEK ISI %${heat.toFixed(0)}${suffix}`;
+    return `Isı %${heat.toFixed(0)}${suffix}`;
   }
 
   function supportLabelForModule(module) {
@@ -17302,10 +17558,59 @@
     renderLog();
   }
 
+  // Gerçek cihaz savaş bütçesi için kare ve DOM ölçümü; mevcut rızaya bağlı
+  // ürün analitiği akışından bağımsızdır ve kendi başına sunucuya gönderilmez.
+  const battlePerformanceSampler =
+    typeof GridshardBattlePerformanceSampler === "function"
+      ? new GridshardBattlePerformanceSampler({
+          probe:() => ({
+            effectNodes: document.getElementById("battle-effect-layer")?.childElementCount || 0,
+            domNodes: document.getElementsByTagName?.("*").length || 0,
+          }),
+        })
+      : null;
+  let lastBattlePerformance = null;
+  if (typeof window !== "undefined") {
+    window.__GRIDSHARD_PERF = Object.freeze({
+      budget:globalThis.GRIDSHARD_PERFORMANCE_BUDGET || null,
+      get active() { return Boolean(battlePerformanceSampler?.active); },
+      get current() {
+        return battlePerformanceSampler?.active ? battlePerformanceSampler.summary() : null;
+      },
+      get last() { return lastBattlePerformance; },
+    });
+  }
+  if (battlePerformanceSampler && typeof document.addEventListener === "function") {
+    document.addEventListener("visibilitychange", () => {
+      if (document.hidden) battlePerformanceSampler.suspend();
+    });
+  }
+  function sampleBattlePerformance(now) {
+    if (!battlePerformanceSampler) return;
+    const battleActive =
+      (activePlayMode === "local" && localBattleStarted && !localBattleFinished)
+      || (activePlayMode === "online" && document.body.dataset.onlineStatus === "battle");
+    if (battleActive && !battlePerformanceSampler.active) {
+      battlePerformanceSampler.start({
+        mode:activePlayMode,
+        platform:globalThis.Capacitor?.getPlatform?.() || "web",
+        graphics_quality:settingsState.viewModel()?.graphicsQuality || null,
+        battle_perspective:document.body.dataset.battlePerspective !== "off",
+        device_memory_gb:Number(globalThis.navigator?.deviceMemory) || null,
+        cpu_cores:Number(globalThis.navigator?.hardwareConcurrency) || null,
+      });
+    }
+    if (!battlePerformanceSampler.active) return;
+    if (battleActive) battlePerformanceSampler.frame(now);
+    else lastBattlePerformance = battlePerformanceSampler.stop();
+  }
+
   let analyticsFrameWindowStart = null;
   let analyticsFrameCount = 0;
   let analyticsLastFrameReport = -60_000;
   function updateClock(now) {
+    sampleBattlePerformance(now);
+    syncFirstMatchTutorial(now);
     const analyticsBattleActive = activePlayMode === "online"
       ? document.body.dataset.onlineStatus === "battle"
       : activePlayMode === "local" && localBattleStarted && !localBattleFinished;
@@ -17790,6 +18095,33 @@
     }
   }
 
+  // Savaş perspektifi cihazda saklanan görsel bir tercihtir.
+  const BATTLE_PERSPECTIVE_STORAGE_KEY = "gridshard.battle-perspective";
+  function readBattlePerspectivePreference() {
+    try {
+      return window.localStorage?.getItem(BATTLE_PERSPECTIVE_STORAGE_KEY) !== "off";
+    } catch (_) {
+      return true;
+    }
+  }
+  function applyBattlePerspectivePreference(enabled) {
+    document.body.dataset.battlePerspective = enabled ? "on" : "off";
+  }
+  const settingsBattlePerspectiveEl = document.getElementById("settings-battle-perspective");
+  applyBattlePerspectivePreference(readBattlePerspectivePreference());
+  if (settingsBattlePerspectiveEl) {
+    settingsBattlePerspectiveEl.checked = readBattlePerspectivePreference();
+    settingsBattlePerspectiveEl.addEventListener("change", () => {
+      const enabled = settingsBattlePerspectiveEl.checked;
+      try {
+        window.localStorage?.setItem(BATTLE_PERSPECTIVE_STORAGE_KEY, enabled ? "on" : "off");
+      } catch (_) {
+        // Depolama kapalıysa tercih yalnız bu oturumda geçerli olur.
+      }
+      applyBattlePerspectivePreference(enabled);
+    });
+  }
+
   const settingsLanguageEl =
     document.getElementById(
       "settings-language"
@@ -18248,50 +18580,123 @@
   }
   /* /build:development-only */
 
+  // İlk maç eğitimi (Beta.72 tur 11). Hiç maç bitirmemiş oyuncuya Ev
+  // ekranındaki SAVAŞ düğmesinden başlayıp ilk savaş boyunca ipucu kartı
+  // gösterilir; savaş durmaz. Sunucu bu maçta AI rakibi yumuşatır (ilk hamle
+  // 15 sn sonra). Ayarlar'dan yeniden gösterilebilir.
+  const TUTORIAL_MATCH_FLOW_STATUSES = new Set([
+    "matchmaking",
+    "matched",
+    "connecting",
+    "readying",
+    "battle",
+  ]);
+  const FIRST_MATCH_TUTORIAL_STEPS = [
+    {
+      id:"home-battle",
+      title:"İlk savaşın",
+      body:"SAVAŞ'a dokun; sana uygun bir rakip bulunur. Başlangıç destendeki altı kart hazır.",
+      hint:"Eğitim savaş sırasında da ipuçlarıyla sürer; savaş durmaz.",
+      target:"#home-battle-button",
+      when:(context) => context.screen === "menu" && !context.inMatchFlow,
+      until:(context) => context.battle,
+    },
+    {
+      id:"arena",
+      title:"İki devre, tek arena",
+      body:"Üstteki devre rakibin, alttaki senin. Rakibin Çekirdeğini yok eden kazanır.",
+      target:"#enemy-board",
+      when:(context) => context.battle,
+    },
+    {
+      id:"current",
+      title:"Akım",
+      body:"Kart oynamak Akım harcar; Akım zamanla dolar. Kartın üstündeki sayı maliyetidir.",
+      target:"#shelf-credit-indicator",
+      when:(context) => context.battle,
+    },
+    {
+      id:"place",
+      title:"Dokun, yerleşsin",
+      body:"Parlayan bir karta dokun. Kart devrende uygun boş hücreye kendiliğinden yerleşir; hücre seçmen gerekmez.",
+      hint:"Akımın yetmeyen kart sönük görünür; biraz bekle.",
+      target:"#module-shelf",
+      when:(context) => context.battle,
+      until:(context, start) => context.boardCards > start.boardCards,
+    },
+    {
+      id:"auto",
+      title:"Modüller kendi savaşır",
+      body:"Yerleşen modüller kendiliğinden saldırır, savunur ya da enerji üretir. Saldırı, savunma ve desteği dengeli kur.",
+      target:"#board",
+      when:(context) => context.battle,
+    },
+    {
+      id:"core-power",
+      title:"Çekirdek Gücü",
+      body:"Düğme dolunca dokun: Çekirdeğinin özel gücü savaşın gidişini değiştirir.",
+      target:"#core-power-button",
+      when:(context) => context.battle,
+    },
+    {
+      id:"finish",
+      title:"Hazırsın",
+      body:"3. dakikadan sonra Devre Gerilimi başlar ve saldırılar hızlanır. İyi savaşlar!",
+      target:null,
+      when:(context) => context.battle,
+    },
+  ];
+
   tutorialController = new GridshardTutorialController({
     root: document.getElementById("tutorial-overlay"),
     storageKey: "gridshard.tutorial.v1",
-    steps: [
-      {
-        title: "Hazır devreyle başla",
-        body: "Dengeli 6 kartlık Başlangıç Destesi ilk maçın için hazır. Tek dokunuşla yükleyebilirsin.",
-        target: "#battle-pool-panel",
-        action: "load-starter-pool",
-        actionLabel: "Başlangıç Devresini Yükle",
-        hint: "Deste 6/6 olduğunda savaş düğmesi açılır.",
-      },
-      {
-        title: "Savaşı başlat",
-        body: "Beta boyunca Arena/Lig ve kupa aralığına uygun sunucu AI rakibi doğrudan atanır.",
-        target: "#battle-pool-confirm",
-        action: "start-matchmaking",
-        actionLabel: "Savaş",
-        hint: "Çekirdek sabit enerji kaynağıdır; altı kartlık havuzu sen seçersin.",
-      },
-      {
-        title: "Dokun, sistem yerleştirsin",
-        body: "Savaşta altı karttan birine dokun. Sunucu uygun boş hücreyi otomatik seçip yeni modülü yerleştirir.",
-        target: "#module-shelf",
-        hint: "Masaüstü ve mobilde hücre seçmeden tek dokunuş yeterlidir.",
-      },
-    ],
-    onAction: async (action) => {
-      if (action === "load-starter-pool") {
-        await loadSelectedBattlePoolPreset(STARTER_BATTLE_POOL_PRESET.name);
-        return battlePoolSelection.isComplete();
-      }
-      if (action === "start-matchmaking") {
-        if (!battlePoolSelection.isComplete()) return false;
-        setActivePlayMode("online");
-        const result = await startRealOnlineMatch();
-        return Boolean(result.ok);
-      }
-      return true;
-    },
+    steps: FIRST_MATCH_TUTORIAL_STEPS,
   });
 
-  document.getElementById("tutorial-replay")?.addEventListener("click", () => {
+  function firstMatchTutorialContext() {
+    const status = document.body.dataset.onlineStatus || "idle";
+    const finished = document.body.dataset.onlineFinished === "true";
+    return {
+      screen: document.body.dataset.appScreen || "menu",
+      status,
+      finished,
+      battle: status === "battle" && !finished,
+      inMatchFlow: TUTORIAL_MATCH_FLOW_STATUSES.has(status) && !finished,
+      boardCards: document.querySelectorAll?.("#board .module-card").length || 0,
+    };
+  }
+
+  let lastTutorialSyncAt = -Infinity;
+  function syncFirstMatchTutorial(now) {
+    if (!tutorialController || now - lastTutorialSyncAt < 250) return;
+    lastTutorialSyncAt = now;
+    const context = firstMatchTutorialContext();
+    if (!tutorialController.active) {
+      // Yalnız hiç maç bitirmemiş oyuncu; istatistik sunucudan gelmeden başlamaz.
+      if (
+        tutorialController.isCompleted()
+        || context.screen !== "menu"
+        || context.inMatchFlow
+        || statisticsState.viewModel()?.totalMatches !== 0
+      ) {
+        return;
+      }
+      tutorialController.start();
+    }
+    // İlk savaş bitti ya da bırakıldı: eğitim tamamlanır.
+    if (tutorialController.index > 0 && !context.inMatchFlow) {
+      tutorialController.finish();
+      return;
+    }
+    tutorialController.update(context);
+  }
+
+  document.getElementById("settings-tutorial-replay")?.addEventListener("click", () => {
+    tutorialController.reset();
     tutorialController.start({ force: true });
+    lastTutorialSyncAt = -Infinity;
+    const status = document.getElementById("settings-tutorial-replay-status");
+    if (status) status.textContent = "Eğitim Ev ekranında SAVAŞ düğmesiyle başlar.";
   });
 
   document.body.dataset.onlineStatus = "idle";

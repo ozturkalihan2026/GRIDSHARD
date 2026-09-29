@@ -21,6 +21,7 @@
     "/pvp/",
     "/store/",
     "/analytics/",
+    "/telemetry/",
   ];
   const API_PREFIXES = [
     "/auth/",
@@ -29,7 +30,6 @@
     "/health",
     "/leaderboards",
     "/game/",
-    "/telemetry/",
   ];
   const API_BASE_URL = (() => {
     const configured = String(globalThis.GRIDSHARD_API_BASE_URL || "").trim();

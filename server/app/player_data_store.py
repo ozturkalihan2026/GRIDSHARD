@@ -677,6 +677,9 @@ class PlayerDataStoreService:
             "ad_reward_receipts": {
                 battle_id: dict(receipt) for battle_id, receipt in profile.ad_reward_receipts.items()
             },
+            "verified_ad_views": {
+                transaction_id: dict(view) for transaction_id, view in profile.verified_ad_views.items()
+            },
             "seen_inbox_notice_ids": list(profile.seen_inbox_notice_ids),
             "direct_messages_seen_at": int(profile.direct_messages_seen_at),
             "universal_module_shards": profile.universal_module_shards,
@@ -989,6 +992,11 @@ class PlayerDataStoreService:
                 str(battle_id): dict(receipt)
                 for battle_id, receipt in dict(meta.get("ad_reward_receipts") or {}).items()
                 if isinstance(receipt, dict)
+            },
+            verified_ad_views={
+                str(transaction_id): dict(view)
+                for transaction_id, view in dict(meta.get("verified_ad_views") or {}).items()
+                if isinstance(view, dict)
             },
             seen_inbox_notice_ids=tuple(
                 str(value) for value in meta.get("seen_inbox_notice_ids", [])

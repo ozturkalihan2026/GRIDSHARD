@@ -36,6 +36,13 @@ assert.ok(app.includes("createBoard();"));
 assert.ok(css.includes("Beta.37 hotfix v3"));
 assert.ok(css.includes("Beta.37 hotfix v4"));
 assert.ok(html.includes('id="ai-archetype-picker"'));
+// Beta.72 tur 13: Sabotaj/Ekonomi Odaklı yerine Dengeli Kontrol ve Dengeli Ekonomi.
+assert.ok(html.includes('data-ai-archetype="balanced_control"'));
+assert.ok(html.includes('data-ai-archetype="balanced_economy"'));
+assert.ok(!html.includes('data-ai-archetype="sabotage"'));
+assert.ok(!html.includes('data-ai-archetype="economy"'));
+assert.ok(app.includes("balanced_control:{"));
+assert.ok(app.includes("balanced_economy:{"));
 assert.ok(html.includes('lobby-dock-home'));
 assert.ok(app.includes("ai_archetype"));
 

@@ -118,13 +118,25 @@ from .player_progression import (
     PlayerProgressionService,
 )
 from .store_catalog import (
+    STORE_PROVIDERS,
     StoreError,
     ad_test_mode_enabled,
+    mark_ad_view_claimed,
+    mark_purchase_consumed,
     process_purchase,
+    product_by_id,
     purchase_test_mode_enabled,
+    record_verified_ad_view,
+    restore_refunded_purchase,
+    revoke_purchase,
+    store_account_token,
+    store_product_id,
+    store_refund_message,
     store_view,
+    verified_ad_view_for_battle,
     verify_ad_view,
 )
+from .store_verification import StoreVerificationError, StoreVerifiers
 from .player_data_store import (
     JsonFilePlayerDataRepository,
     PlayerDataStoreError,
@@ -730,6 +742,7 @@ MATCHMAKING_AI_ONLY = os.environ.get(
 ).strip().lower() in {"1", "true", "yes", "on"}
 PURCHASE_TEST_MODE = purchase_test_mode_enabled(RUNTIME_STRICT)
 AD_TEST_MODE = ad_test_mode_enabled(RUNTIME_STRICT)
+STORE_VERIFIERS = StoreVerifiers.from_environment()
 DAILY_META_ROLL_LOCK = Lock()
 SOCIAL_LOCK = Lock()
 REWARD_INBOX_LOCK = Lock()
@@ -848,6 +861,7 @@ class PurchaseRequest(BaseModel):
     product_id: str
     provider: str
     transaction_id: str
+    purchase_token: str = ""
 
 
 class AdRewardRequest(BaseModel):
@@ -1148,7 +1162,10 @@ def request_account_verification(
         raise HTTPException(status_code=403, detail="Başka bir oyuncu adına işlem yapılamaz.")
     try:
         return platform_service.request_verification(
-            player_id, request.channel, request.destination
+            player_id,
+            request.channel,
+            request.destination,
+            language=player_settings_service.get_or_create(player_id).language,
         )
     except PlatformServiceError as exc:
         raise HTTPException(status_code=422, detail=str(exc)) from exc
@@ -4078,20 +4095,66 @@ def buy_store_chest(
     }
 
 
-@app.get("/store/{player_id}")
-def get_player_store(player_id: str) -> dict:
-    profile = player_profile_service.get_or_create(player_id)
+def _player_store_view(profile) -> dict:
     return store_view(
         profile,
         purchase_test_mode=PURCHASE_TEST_MODE,
         ad_test_mode=AD_TEST_MODE,
+        platforms=STORE_VERIFIERS.platform_view(),
     )
+
+
+@app.get("/store/{player_id}")
+def get_player_store(player_id: str) -> dict:
+    profile = player_profile_service.get_or_create(player_id)
+    return _player_store_view(profile)
 
 
 @app.post("/store/{player_id}/purchases")
 def purchase_store_product(player_id: str, request: PurchaseRequest) -> dict:
     profile = player_profile_service.get_or_create(player_id)
+    verified = None
     try:
+        if request.provider in STORE_PROVIDERS:
+            # Makbuz mağazanın sunucusundan doğrulanır; istemcinin işlem
+            # kimliğine güvenilmez.
+            verified = STORE_VERIFIERS.verify_purchase(
+                request.provider,
+                store_product_id(product_by_id(request.product_id)),
+                transaction_id=request.transaction_id,
+                purchase_token=request.purchase_token,
+            )
+            # Alım ödeme penceresinde bu hesaba bağlanır; aynı makbuz başka bir
+            # hesapta yeniden kullanılamaz (makbuz kayıtları oyuncu başınadır).
+            if verified.account_token != store_account_token(player_id):
+                raise StoreVerificationError("Mağaza alımı bu hesaba ait değil.")
+            # Makbuz defteri: iade edilmiş makbuz yeniden işlenmez; oyuncu
+            # kaydından eskiyip düşmüş makbuz ikinci kez ürün vermez.
+            ledger_entry = platform_service.store_receipt(
+                f"{verified.provider}:{verified.transaction_id}"
+            )
+            if ledger_entry is not None:
+                if ledger_entry.get("player_id") != player_id:
+                    raise StoreVerificationError("Mağaza alımı bu hesaba ait değil.")
+                if ledger_entry.get("refunded"):
+                    raise StoreVerificationError("Bu alım iade edilmiş.")
+                if ledger_entry["key"] not in profile.purchase_receipts:
+                    return {
+                        "receipt": {
+                            "key": ledger_entry["key"],
+                            "product_id": ledger_entry.get("product_id"),
+                            "provider": ledger_entry.get("provider"),
+                            "transaction_id": ledger_entry.get("transaction_id"),
+                            "granted": dict(ledger_entry.get("granted") or {}),
+                            "environment": ledger_entry.get("environment"),
+                            "test": ledger_entry.get("environment") != "production",
+                            "consumed": True,
+                            "replayed": True,
+                        },
+                        "store": _player_store_view(profile),
+                        "meta_progression": meta_progression_service.view(profile),
+                        "profile": profile.to_view(),
+                    }
         receipt = process_purchase(
             profile,
             request.product_id,
@@ -4099,20 +4162,220 @@ def purchase_store_product(player_id: str, request: PurchaseRequest) -> dict:
             request.transaction_id,
             test_mode=PURCHASE_TEST_MODE,
             now_iso=datetime.now(timezone.utc).isoformat(),
+            verified=verified,
         )
+    except StoreVerificationError as exc:
+        # Geçici doğrulama sorunu 503: istemci alımı onaylamadan saklar ve
+        # yeniden gönderir. Kalıcı ret 422.
+        raise HTTPException(
+            status_code=503 if exc.retryable else 422,
+            detail=str(exc),
+        ) from exc
     except StoreError as exc:
         raise HTTPException(status_code=422, detail=str(exc)) from exc
     persist_player_data(player_id)
+    if verified is not None:
+        # İade bildirimleri makbuzu defterden bulur (docs/STORE_PURCHASES.md).
+        try:
+            platform_service.record_store_receipt(
+                receipt["key"],
+                player_id=player_id,
+                receipt=receipt,
+                purchase_token=verified.purchase_token,
+            )
+        except PlatformServiceError as exc:
+            logging.getLogger(__name__).error(
+                "Store receipt ledger write failed; refunds for this receipt cannot be matched"
+            )
+            # Hak oyuncu kaydında kalır; istemci aynı makbuzu yeniden gönderip
+            # defter kaydını tamamlayabilsin. Sessiz başarı iade takibini bozar.
+            raise HTTPException(status_code=503, detail="Mağaza makbuzu kaydedilemedi; yeniden dene.") from exc
+    # Google Play: hak kaydedildikten sonra alım tüketilir; tüketilmezse
+    # istemci aynı belirteçle yeniden gönderir ve ürün ikinci kez verilmez.
+    if (
+        verified is not None
+        and verified.provider == "google_play"
+        and not receipt.get("consumed")
+        and STORE_VERIFIERS.google_play is not None
+        and STORE_VERIFIERS.google_play.consume(verified)
+    ):
+        mark_purchase_consumed(profile, receipt["key"])
+        receipt = {**receipt, "consumed": True}
+        persist_player_data(player_id)
     return {
         "receipt": receipt,
-        "store": store_view(
-            profile,
-            purchase_test_mode=PURCHASE_TEST_MODE,
-            ad_test_mode=AD_TEST_MODE,
-        ),
+        "store": _player_store_view(profile),
         "meta_progression": meta_progression_service.view(profile),
         "profile": profile.to_view(),
     }
+
+
+STORE_REFUND_LOCK = Lock()
+
+
+def _existing_player_profile(player_id: str):
+    """Kayıtlı oyuncunun profili; hesap silinmişse None (yeni profil açılmaz)."""
+    profile = player_profile_service._profiles.get(player_id)
+    if profile is not None:
+        return profile
+    if player_data_repository.load(player_id) is None:
+        return None
+    player_data_store_service.load_player(player_id)
+    return player_profile_service._profiles.get(player_id)
+
+
+def _apply_store_refund(
+    *,
+    provider: str,
+    source: str,
+    transaction_id: str = "",
+    purchase_token: str = "",
+    reversed_refund: bool = False,
+) -> dict:
+    """İade edilen alımın verdiğini geri alır; iade geri çevrildiyse yeniden verir.
+
+    Makbuz defteri alımın hangi oyuncuya ait olduğunu ve ne verdiğini tutar.
+    Aynı bildirim yeniden gelse de değişiklik bir kez uygulanır (kilit ve
+    defterdeki ``refunded`` durumu).
+    """
+    now_iso = datetime.now(timezone.utc).isoformat()
+    with STORE_REFUND_LOCK:
+        entry = platform_service.find_store_receipt(
+            provider,
+            transaction_id=transaction_id,
+            purchase_token=purchase_token,
+        )
+        if entry is None:
+            logging.getLogger(__name__).warning(
+                "Store refund notification did not match a recorded receipt (%s)", provider
+            )
+            return {"matched": False}
+        if bool(entry.get("refunded")) != reversed_refund:
+            return {"matched": True, "changed": False}
+        player_id = str(entry["player_id"])
+        profile = _existing_player_profile(player_id)
+        changes: dict = {}
+        if profile is not None:
+            changes = (
+                restore_refunded_purchase(profile, entry, now_iso=now_iso)
+                if reversed_refund
+                else revoke_purchase(profile, entry, now_iso=now_iso)
+            )
+            persist_player_data(player_id)
+        platform_service.mark_store_receipt_refunded(
+            entry["key"],
+            refunded=not reversed_refund,
+            source=source,
+            at=now_iso,
+        )
+    if profile is not None:
+        title, body = store_refund_message(entry, reversed_refund=reversed_refund)
+        try:
+            platform_service.queue_notification(player_id, title, body)
+        except PlatformServiceError:
+            pass
+    return {"matched": True, "changed": True, "player_found": profile is not None, "changes": changes}
+
+
+def _handle_google_store_notification(notification: dict) -> dict:
+    if notification["ignored"]:
+        return {"ok": True, "ignored": notification["ignored"]}
+    if not notification["voided"]:
+        # Test, tek seferlik alım ve abonelik bildirimleri: alım akışı ve
+        # istemci kurtarması bunları zaten işler.
+        return {"ok": True, "ignored": "test" if notification["test"] else "type"}
+    event_id = f"google:{notification['notification_id']}"
+    if platform_service.store_notification_seen(event_id):
+        return {"ok": True, "duplicate": True}
+    result = _apply_store_refund(
+        provider="google_play",
+        source="google_rtdn",
+        transaction_id=notification["order_id"],
+        purchase_token=notification["purchase_token"],
+    )
+    platform_service.remember_store_notification(event_id)
+    return {"ok": True, **result}
+
+
+@app.post("/billing/google/rtdn")
+async def google_play_rtdn(request: Request) -> dict:
+    """Google Play gerçek zamanlı geliştirici bildirimi (Pub/Sub itme).
+
+    Kimlik Bearer oturumuyla değil, Google'ın imzaladığı OIDC belirteciyle
+    doğrulanır. 2xx bildirimi onaylar; hata kodunda Pub/Sub yeniden dener.
+    Yalnız iade (voided purchase) işlenir.
+    """
+    verifier = STORE_VERIFIERS.google_notifications
+    if verifier is None:
+        raise HTTPException(status_code=404, detail="Google Play bildirimleri bu sunucuda kapalı.")
+    body = await request.body()
+    try:
+        notification = verifier.verify(request.headers.get("authorization"), body)
+    except StoreVerificationError as exc:
+        raise HTTPException(status_code=403, detail=str(exc)) from exc
+    return await asyncio.to_thread(_handle_google_store_notification, notification)
+
+
+class AppStoreNotificationRequest(BaseModel):
+    signedPayload: str
+
+
+@app.post("/billing/app-store/notifications")
+def app_store_notification(request: AppStoreNotificationRequest) -> dict:
+    """App Store Server Notifications V2.
+
+    ``REFUND`` alımın verdiğini geri alır, ``REFUND_REVERSED`` yeniden verir;
+    diğer türler onaylanıp geçilir. İmza Apple kök sertifikasına kadar
+    doğrulanır; hatalı imza 403 (Apple yeniden dener).
+    """
+    verifier = STORE_VERIFIERS.app_store
+    if verifier is None:
+        raise HTTPException(status_code=404, detail="App Store bildirimleri bu sunucuda kapalı.")
+    try:
+        notification = verifier.verify_notification(request.signedPayload)
+    except StoreVerificationError as exc:
+        raise HTTPException(status_code=403, detail=str(exc)) from exc
+    kind = notification["type"]
+    if notification["ignored"]:
+        return {"ok": True, "ignored": notification["ignored"]}
+    if kind not in {"REFUND", "REFUND_REVERSED"} or not notification["transaction_id"]:
+        return {"ok": True, "ignored": kind.lower() or "type"}
+    event_id = "apple:" + (
+        notification["notification_id"] or f"{kind}:{notification['transaction_id']}"
+    )
+    if platform_service.store_notification_seen(event_id):
+        return {"ok": True, "duplicate": True}
+    result = _apply_store_refund(
+        provider="app_store",
+        source="app_store_notification",
+        transaction_id=notification["transaction_id"],
+        reversed_refund=kind == "REFUND_REVERSED",
+    )
+    platform_service.remember_store_notification(event_id)
+    return {"ok": True, **result}
+
+
+@app.get("/ads/admob/ssv")
+def admob_ssv_callback(request: Request) -> dict:
+    """AdMob ödüllü reklam sunucu doğrulaması (SSV) geri çağrısı.
+
+    Kimlik doğrulaması Bearer belirteciyle değil, Google'ın ECDSA imzasıyla
+    yapılır; bu yüzden korumalı oyuncu yolları dışındadır.
+    """
+    if STORE_VERIFIERS.admob is None:
+        raise HTTPException(status_code=404, detail="AdMob doğrulaması bu sunucuda kapalı.")
+    try:
+        view = STORE_VERIFIERS.admob.verify(request.url.query)
+    except StoreVerificationError as exc:
+        raise HTTPException(status_code=403, detail=str(exc)) from exc
+    try:
+        profile = player_profile_service.get(view["user_id"])
+    except PlayerProfileError:
+        # AdMob konsolunun adres doğrulama isteği ya da bilinmeyen oyuncu.
+        return {"ok": True, "ignored": True}
+    if record_verified_ad_view(profile, view, now_iso=datetime.now(timezone.utc).isoformat()):
+        persist_player_data(view["user_id"])
+    return {"ok": True}
 
 
 @app.post("/profile/{player_id}/battles/{battle_id}/ad-reward")
@@ -4122,8 +4385,15 @@ def claim_battle_ad_reward(
     request: AdRewardRequest,
 ) -> dict:
     profile = player_profile_service.get_or_create(player_id)
+    verified_view = None
     try:
-        verify_ad_view(request.provider, test_mode=AD_TEST_MODE)
+        if request.provider == "admob" and STORE_VERIFIERS.admob is not None:
+            # Ödül ancak AdMob'un imzalı geri çağrısı bu savaş için geldiyse verilir.
+            existing = profile.ad_reward_receipts.get(battle_id)
+            if existing is None:
+                verified_view = verified_ad_view_for_battle(profile, battle_id)
+        else:
+            verify_ad_view(request.provider, test_mode=AD_TEST_MODE)
         receipt = player_progression_service.grant_ad_bonus(
             battle_id,
             player_id,
@@ -4131,6 +4401,8 @@ def claim_battle_ad_reward(
         )
     except (StoreError, PlayerProgressionError) as exc:
         raise HTTPException(status_code=422, detail=str(exc)) from exc
+    if verified_view is not None:
+        mark_ad_view_claimed(profile, verified_view)
     persist_player_data(player_id)
     return {"receipt": receipt, "profile": profile.to_view()}
 
@@ -5023,6 +5295,11 @@ def _local_ai_snapshot_envelope(
     }
 
 
+FIRST_MATCH_AI_FIRST_DECISION_MS = 15_000
+FIRST_MATCH_AI_DECISION_DELAY_MS = 3_500
+FIRST_MATCH_AI_MISTAKE_RATE = 0.35
+
+
 def _create_matchmaking_ai_session(
     pair,
     *,
@@ -5045,6 +5322,26 @@ def _create_matchmaking_ai_session(
     bot = dict(bot_override or select_bot(profile.rating, pair.match_id))
     bot.setdefault("match_rating", int(bot.get("rating", profile.rating)))
     match_type = str(match_type_override or "arena_ai")
+    # İlk maç eğitimi (Beta.72 tur 11): hiç maç bitirmemiş oyuncunun AI rakibi
+    # ilk hamlesini 15 sn sonra yapar, daha seyrek karar verir, daha sık hata
+    # yapar ve "Dengeli" oynar; oyuncu eğitim ipuçlarını savaş sürerken okur.
+    # Kupa ve ödül kuralları değişmez.
+    first_match = (
+        match_type == "arena_ai"
+        and player_statistics_service.get_or_create(pair.player_a_id).total_matches == 0
+    )
+    if first_match:
+        bot.update(
+            archetype_tr="Dengeli",
+            decision_delay_ms=max(
+                int(bot.get("decision_delay_ms") or 0),
+                FIRST_MATCH_AI_DECISION_DELAY_MS,
+            ),
+            mistake_rate=max(
+                float(bot.get("mistake_rate") or 0),
+                FIRST_MATCH_AI_MISTAKE_RATE,
+            ),
+        )
     ranked_eligible = (
         bool(ranked_eligible_override)
         if ranked_eligible_override is not None
@@ -5099,6 +5396,7 @@ def _create_matchmaking_ai_session(
         pair.match_id,
         pair.player_b_id,
         archetype_id=ai_archetype.id,
+        first_decision_at_ms=FIRST_MATCH_AI_FIRST_DECISION_MS if first_match else 0,
     )
 
     telemetry_call = {

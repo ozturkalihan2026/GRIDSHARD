@@ -3,6 +3,7 @@ import pytest
 from app.game.energy import (
     BASE_CORE_GENERATION_PER_SECOND,
     BATTERY_CAPACITY,
+    BATTERY_SUPPLY_PER_SECOND,
     CAPACITOR_CAPACITY,
     process_energy_tick,
     spend_action_energy,
@@ -184,7 +185,7 @@ def test_core_level_and_battery_raise_continuous_supply():
 
     battery = add(engine, "battery-supply", "battery", 4, 2)
     with_battery = process_energy_tick(player).generated
-    assert battery.definition.energy_generation > 0
+    assert battery.definition.energy_generation == BATTERY_SUPPLY_PER_SECOND
     assert with_battery > high
 
 
@@ -203,7 +204,9 @@ def test_battery_materially_reduces_shortfall_without_powering_heavy_attack_stac
     with_battery = process_energy_tick(player)
     load_with_battery = player.energy_load_ratio
 
-    assert with_battery.generated - without_battery.generated == pytest.approx(0.3)
+    assert with_battery.generated - without_battery.generated == pytest.approx(
+        BATTERY_SUPPLY_PER_SECOND * 0.1
+    )
     assert battery.is_powered is True
     assert load_with_battery < load_without_battery
     assert with_battery.unpowered_module_ids == ()

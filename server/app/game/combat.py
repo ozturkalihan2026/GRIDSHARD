@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 
-from .models import BattleModule, ModuleStatus, PlayerBattleState
+from .heat import heat_efficiency, is_overheated
+from .models import BattleModule, PlayerBattleState
 from .operations import module_is_operational
 
 
@@ -163,6 +164,9 @@ def defense_profile(
 
     if target.definition.mechanic_id != "core" and not module_is_operational(target):
         return defense_type, multiplier, reflection_ratio
+    # Aşırı ısınan savunma modülü susar; ısındıkça koruması azalır.
+    if is_overheated(target):
+        return defense_type, multiplier, reflection_ratio
 
     target_id = target.definition.id
     if target_id == "guardian_dome" and target.is_powered:
@@ -189,7 +193,7 @@ def defense_profile(
         defense_type = "Bariyer"
         multiplier *= 0.80
 
-    effectiveness = target.definition.effect_multiplier
+    effectiveness = target.definition.effect_multiplier * heat_efficiency(target)
     if phased:
         multiplier = 0.0
     elif multiplier < 1:
@@ -212,10 +216,14 @@ def circuit_guard_multiplier(player: PlayerBattleState, target: BattleModule) ->
         for module in player.modules.values()
         if module.definition.id == "guardian_dome"
         and module_is_operational(module)
+        and not is_overheated(module)
     ]
     if not domes:
         return 1.0
-    strongest = max(module.definition.effect_multiplier for module in domes)
+    strongest = max(
+        module.definition.effect_multiplier * heat_efficiency(module)
+        for module in domes
+    )
     return max(
         GUARDIAN_DOME_MIN_MULTIPLIER,
         1.0 - GUARDIAN_DOME_CIRCUIT_REDUCTION * strongest,

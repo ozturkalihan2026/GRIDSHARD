@@ -106,6 +106,8 @@ class BattleModule:
     energy_received_last_tick: float = 0.0
     energy_required_last_tick: float = 0.0
     energy_waiting: bool = False
+    # Enerji sırasında beklerken ayırdığı aksiyon maliyeti.
+    energy_wait_cost: float = 0.0
     last_action_energy_cost: float = 0.0
 
     @classmethod
@@ -141,6 +143,10 @@ class PlayerBattleState:
     energy_stock: float = 16.0
     energy_load_ratio: float = 0.0
     energy_support_multiplier: float = 1.0
+    # Enerji sırası: önce beklemeye giren aksiyon önce ödenir; sonradan gelen
+    # ucuz aksiyonlar ancak sıradakilerin payı kalıyorsa araya girer.
+    energy_wait_queue: list[str] = field(default_factory=list)
+    energy_wait_touched: set[str] = field(default_factory=set)
     core_type: str = "core_resonance"
     core_level: int = 1
     core_skills: tuple[str, ...] = ()

@@ -12,6 +12,7 @@ from .core_balance import (
     STATIC_CHARGE_INTERVAL_MS,
 )
 from .energy import action_energy_per_second, core_reserve_capacity
+from .heat import HEAT_SLOWDOWN_START, HEAT_SLOWDOWN_STEP, is_overheated
 from .models import ModuleStatus, PlayerBattleState
 
 
@@ -231,6 +232,13 @@ def choose_deploy_definition(
     ]
     deployed_counts = Counter(history)
     recent = history[-3:]
+    # Isı yavaşlatma eşiğini aşmış ya da susmuş modül sayısı (Soğutucu kararı).
+    hot_modules = sum(
+        1
+        for module in active_modules
+        if is_overheated(module)
+        or module.heat >= HEAT_SLOWDOWN_START + HEAT_SLOWDOWN_STEP
+    )
 
     candidates: list[tuple[float, int, int, str]] = []
     for definition_id in ai_player.battle_pool.module_definition_ids:
@@ -254,15 +262,22 @@ def choose_deploy_definition(
         if definition_id in archetype.expansion_module_ids:
             # Arketip kimliği küçük bir tercih; dönüşüm cezasını ezmemeli.
             score += max(0, 3 - archetype.expansion_module_ids.index(definition_id))
+        # Enerji açığında Batarya doğrudan üretim ekler; Kapasitör yalnız
+        # biriktirecek fazla varken işe yarar.
+        if definition_id == "battery" and ai_player.energy_load_ratio > 1.0:
+            score += 10 if ai_player.energy_load_ratio > 1.3 else 6
         if ai_player.energy_load_ratio > 1.2:
             if definition_id == "current_balancer":
                 score += 10
-            elif definition_id in {"battery", "capacitor"} and ai_player.energy_stock > 0:
+            elif definition_id == "capacitor" and ai_player.energy_stock > 0:
                 score += 4
             elif definition.category == "saldırı":
                 # Saldırılar enerjiyi atış anında öder; yük yüksekken
                 # saniyelik enerji talebi büyük olan kartlar geri planda kalır.
                 score -= max(0.0, action_energy_per_second(definition) - 1.5) * 4
+        if definition_id == "cooler" and hot_modules:
+            # Isınan devre Soğutucu ister; iki ve üzeri sıcak modülde öncelikli.
+            score += 9 if hot_modules >= 2 else 5
         # Tek kart spamini yasaklamadan çeşitliliği teşvik et.
         score -= counts.get(definition_id, 0) * 2.5
         score -= deployed_counts.get(definition_id, 0) * ROTATION_PENALTY

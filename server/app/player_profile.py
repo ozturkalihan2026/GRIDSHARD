@@ -446,6 +446,8 @@ class PlayerProfile:
     purchase_receipts: dict[str, dict] = field(default_factory=dict)
     # Reklamla ikiye katlanan savaş ödülleri (savaş kimliği → makbuz).
     ad_reward_receipts: dict[str, dict] = field(default_factory=dict)
+    # AdMob SSV'nin imzasını doğruladığı reklam izlemeleri (işlem kimliği → kayıt).
+    verified_ad_views: dict[str, dict] = field(default_factory=dict)
     # Mesaj kutusundaki duyurular ve doğrudan mesajlar için okundu izleri.
     seen_inbox_notice_ids: tuple[str, ...] = ()
     direct_messages_seen_at: int = 0

@@ -16,20 +16,31 @@ from .energy import (
 )
 from .support import (
     BASE_REPAIR_AMOUNT,
-    AMPLIFIER_DAMAGE_MULTIPLIER,
-    TARGETING_COOLDOWN_MULTIPLIER,
     OVERCLOCK_DAMAGE_MULTIPLIER,
     OVERCLOCK_COOLDOWN_MULTIPLIER,
     OVERCLOCK_HEAT_PER_TICK,
     COOLER_HEAT_REDUCTION_PER_TICK,
     COOLER_DEBUFF_REDUCTION_MS_PER_TICK,
     COOLER_MAX_TARGETS,
+    COOLER_OVERHEAT_MULTIPLIER,
     AMPLIFIER_PER_ATTACK_CAP,
     AMPLIFIER_TOTAL_BUDGET,
     TARGETING_PER_ATTACK_CAP,
     TARGETING_TOTAL_BUDGET,
 )
-from .heat import OVERHEAT_RECOVERY_THRESHOLD
+from .heat import (
+    CRITICAL_HEAT_THRESHOLD,
+    HEAT_EXEMPT_MODULE_IDS,
+    HEAT_PER_ACTION_ENERGY,
+    HEAT_PER_BLOCKED_DAMAGE,
+    HEAT_PER_DISCHARGED_ENERGY,
+    HEAT_PER_FIRING_SECOND,
+    HEAT_SLOWDOWN_PER_STEP,
+    HEAT_SLOWDOWN_START,
+    HEAT_SLOWDOWN_STEP,
+    HIGH_HEAT_THRESHOLD,
+    OVERHEAT_RECOVERY_THRESHOLD,
+)
 from .sabotage import (
     EMP_DURATION_MS,
     JAMMER_DURATION_MS,
@@ -69,7 +80,7 @@ CATEGORY_LABELS_EN = {
 }
 
 MODULE_COPY_EN: dict[str, tuple[str, str]] = {
-    "battery": ("Energy feed and reserve", "Supplies 3 energy per second and stores 20 energy for sudden loads."),
+    "battery": ("Energy feed and reserve", "Supplies 4.5 energy per second and stores 20 energy for sudden loads."),
     "capacitor": ("Burst energy reserve", "Generates no energy; a 10-energy reserve that charges and discharges very fast, before the Battery."),
     "current_balancer": ("Circuit efficiency", "Reduces action and upkeep energy costs by 8%; repeated copies are capped at 24%."),
     "laser": ("Sustained single-target damage", "Deals steady damage to one target."),
@@ -83,7 +94,7 @@ MODULE_COPY_EN: dict[str, tuple[str, str]] = {
     "reflector": ("Energy-attack reflection", "Redirects part of incoming energy-based damage."),
     "barrier": ("Defense-line protection", "Draws attacks onto itself and protects critical circuit cells."),
     "repair": ("Health repair", "Repairs damaged modules."),
-    "cooler": ("Heat control", "Cools the two hottest modules in the circuit and quickly restores an overheated one."),
+    "cooler": ("Heat control", "Cools the three hottest modules in the circuit, overheated ones first, and quickly brings a silenced module back."),
     "amplifier": ("Attack-line amplification", "Increases the damage of attack modules in the circuit; a 30% budget is shared among attacks, at most 15% each."),
     "targeting_computer": ("Targeting support", "Shortens the cooldown of attack modules in the circuit; a 30% budget is shared among attacks, at most 15% each."),
     "overclock_unit": ("Performance at a heat cost", "Accelerates and strengthens the heaviest attack module; that module heats up faster."),
@@ -151,6 +162,105 @@ def _action_energy_line_en(definition_id: str) -> list[str]:
     ]
 
 
+# Beta.72 tur 12 — her kart kendi ısınma biçimini ve ısı kurallarını gösterir.
+def _heat_weakening(heat: float) -> int:
+    steps = int((heat - HEAT_SLOWDOWN_START) // HEAT_SLOWDOWN_STEP)
+    return _percent(1 - 1 / (1 + HEAT_SLOWDOWN_PER_STEP * steps))
+
+
+def _heat_kind(definition_id: str) -> str:
+    definition = BASIC_MODULE_DEFINITIONS[definition_id]
+    if definition_id in HEAT_EXEMPT_MODULE_IDS:
+        return "exempt"
+    if definition.action_energy_cost > 0:
+        return "attack" if definition.category == "saldırı" else "action"
+    if definition.category == "savunma":
+        return "defense"
+    if definition_id in {"battery", "capacitor"}:
+        return definition_id
+    return "continuous"
+
+
+def _action_heat(definition_id: str) -> float:
+    definition = BASIC_MODULE_DEFINITIONS[definition_id]
+    return round(
+        HEAT_PER_FIRING_SECOND * definition.cooldown_ms / 1000
+        + HEAT_PER_ACTION_ENERGY * definition.action_energy_cost,
+        1,
+    )
+
+
+def _heat_lines(definition_id: str) -> list[str]:
+    kind = _heat_kind(definition_id)
+    if kind == "exempt":
+        return ["Kendisi ısınmaz."]
+    stop = (
+        f"%{CRITICAL_HEAT_THRESHOLD:g}'de susar ve ısısı %{OVERHEAT_RECOVERY_THRESHOLD:g}'in "
+        "altına inene kadar çalışmaz."
+    )
+    weakening = (
+        f"ısı %{HEAT_SLOWDOWN_START:g}'ı aştıkça kademeli azalır "
+        f"(%{HIGH_HEAT_THRESHOLD:g}'te %{_heat_weakening(HIGH_HEAT_THRESHOLD)}, "
+        f"%95'te %{_heat_weakening(95)})"
+    )
+    if kind in {"attack", "action"}:
+        noun = "atış" if kind == "attack" else "eylem"
+        return [
+            f"Her {noun} %{_action_heat(definition_id):g} ısı üretir. Isı %{HEAT_SLOWDOWN_START:g}'ı "
+            f"aştıkça her %{HEAT_SLOWDOWN_STEP:g}'te {noun} aralığı %{_percent(HEAT_SLOWDOWN_PER_STEP)} uzar; "
+            + stop
+        ]
+    if kind == "defense":
+        return [
+            f"Engellediği her 10 hasar %{HEAT_PER_BLOCKED_DAMAGE * 10:g} ısı üretir; "
+            f"koruması {weakening}; " + stop
+        ]
+    if kind in {"battery", "capacitor"}:
+        output = "üretimi ve boşaltması" if kind == "battery" else "boşaltması"
+        return [
+            f"Depodan verdiği her 10 enerji %{HEAT_PER_DISCHARGED_ENERGY * 10:g} ısı üretir; "
+            f"{output} {weakening}; " + stop
+        ]
+    return [f"Bakım enerjisiyle ısınır; etkisi {weakening}; " + stop]
+
+
+def _heat_lines_en(definition_id: str) -> list[str]:
+    kind = _heat_kind(definition_id)
+    if kind == "exempt":
+        return ["Does not heat up itself."]
+    stop = (
+        f"at {CRITICAL_HEAT_THRESHOLD:g}% it shuts down until its heat drops below "
+        f"{OVERHEAT_RECOVERY_THRESHOLD:g}%."
+    )
+    weakening = (
+        f"step by step above {HEAT_SLOWDOWN_START:g}% heat "
+        f"({_heat_weakening(HIGH_HEAT_THRESHOLD)}% at {HIGH_HEAT_THRESHOLD:g}%, "
+        f"{_heat_weakening(95)}% at 95%)"
+    )
+    if kind in {"attack", "action"}:
+        noun = "shot" if kind == "attack" else "action"
+        interval = "attack" if kind == "attack" else "action"
+        return [
+            f"Each {noun} adds {_action_heat(definition_id):g}% heat. Above {HEAT_SLOWDOWN_START:g}% heat, "
+            f"every {HEAT_SLOWDOWN_STEP:g}% lengthens the {interval} interval by "
+            f"{_percent(HEAT_SLOWDOWN_PER_STEP)}%; " + stop
+        ]
+    if kind == "defense":
+        return [
+            f"Every 10 blocked damage adds {HEAT_PER_BLOCKED_DAMAGE * 10:g}% heat; "
+            f"its protection weakens {weakening}; " + stop
+        ]
+    if kind in {"battery", "capacitor"}:
+        output = (
+            "its output and discharge weaken" if kind == "battery" else "its discharge weakens"
+        )
+        return [
+            f"Every 10 energy drawn from storage adds {HEAT_PER_DISCHARGED_ENERGY * 10:g}% heat; "
+            f"{output} {weakening}; " + stop
+        ]
+    return [f"Heats up from its upkeep energy; its effect weakens {weakening}; " + stop]
+
+
 def _signature_effect_lines(definition_id: str) -> list[str]:
     lines = []
     if definition_id in ATTACK_WINDUP_MS:
@@ -199,7 +309,7 @@ def _effect_lines(definition_id: str) -> list[str]:
         lines = _mechanic_effect_lines(definition_id) + signature
         if definition_id in CARD_COPY and not signature:
             lines.append(definition.description_tr)
-    return lines + _action_energy_line(definition_id)
+    return lines + _action_energy_line(definition_id) + _heat_lines(definition_id)
 
 
 def _effect_lines_en(definition_id: str) -> list[str]:
@@ -212,7 +322,7 @@ def _effect_lines_en(definition_id: str) -> list[str]:
         lines = _mechanic_effect_lines_en(definition_id) + signature
         if definition_id in CARD_COPY and copy_en and not signature:
             lines.append(copy_en[1])
-    return lines + _action_energy_line_en(definition_id)
+    return lines + _action_energy_line_en(definition_id) + _heat_lines_en(definition_id)
 
 
 def _mechanic_effect_lines(definition_id: str) -> list[str]:
@@ -294,12 +404,13 @@ def _mechanic_effect_lines(definition_id: str) -> list[str]:
     if definition_id == "cooler":
         return [
             (
-                f"Devredeki en sıcak {COOLER_MAX_TARGETS} modülün ısısını saniyede "
-                f"{COOLER_HEAT_REDUCTION_PER_TICK * 10:g} azaltır."
+                "Önce aşırı ısınıp susmuş modülleri, sonra devredeki en sıcak "
+                f"{COOLER_MAX_TARGETS} modülü seçer; her birinin ısısını saniyede "
+                f"%{COOLER_HEAT_REDUCTION_PER_TICK * 10:g} azaltır."
             ),
             (
-                "Aşırı ısınıp susan modül ısısı "
-                f"{OVERHEAT_RECOVERY_THRESHOLD:g}'in altına inince yeniden ateş eder; "
+                f"Susmuş modülde soğutma {COOLER_OVERHEAT_MULTIPLIER:g} katına çıkar; modül ısısı "
+                f"%{OVERHEAT_RECOVERY_THRESHOLD:g}'in altına inince yeniden çalışır. "
                 "Soğutucu bunu birkaç saniyeye indirir."
             ),
             (
@@ -336,7 +447,7 @@ def _mechanic_effect_lines(definition_id: str) -> list[str]:
             ),
             (
                 "Karşılığında hedef daha sık ateşlediği için hızlı ısınır ve saniyede "
-                f"{OVERCLOCK_HEAT_PER_TICK * 10:g} ek ısı alır. Hedef aşırı ısınırsa "
+                f"%{OVERCLOCK_HEAT_PER_TICK * 10:g} ek ısı alır. Hedef aşırı ısınırsa "
                 "sıradaki ağır saldırı modülüne geçer."
             ),
         ]
@@ -426,13 +537,13 @@ def _mechanic_effect_lines_en(definition_id: str) -> list[str]:
     if definition_id == "repair":
         return [f"Restores {BASE_REPAIR_AMOUNT} HP to one lowest-health-ratio living module with a base cooldown of {definition.cooldown_ms / 1000:g} sec.", "A target can be repaired only once per support step.", "Can cleanse selected sabotage effects."]
     if definition_id == "cooler":
-        return [f"Cools the {COOLER_MAX_TARGETS} hottest modules in the circuit by {COOLER_HEAT_REDUCTION_PER_TICK * 10:g} heat/sec.", f"An overheated module stays silent until its heat drops below {OVERHEAT_RECOVERY_THRESHOLD:g}; Cooler shortens this to a few seconds.", f"Shortens EMP and line-cut effects on up to {COOLER_MAX_TARGETS} modules."]
+        return [f"Picks overheated modules first, then the {COOLER_MAX_TARGETS} hottest modules in the circuit, and cools each by {COOLER_HEAT_REDUCTION_PER_TICK * 10:g}% heat per second.", f"Cooling is {COOLER_OVERHEAT_MULTIPLIER:g}x on a silenced module; it works again once its heat drops below {OVERHEAT_RECOVERY_THRESHOLD:g}%, which the Cooler cuts to a few seconds.", f"Shortens EMP and line-cut effects on up to {COOLER_MAX_TARGETS} modules."]
     if definition_id == "amplifier":
         return [f"Boosts every attack module in the circuit regardless of placement: a {_percent(AMPLIFIER_TOTAL_BUDGET)}% damage budget is shared across attack modules, at most {_percent(AMPLIFIER_PER_ATTACK_CAP)}% each."]
     if definition_id == "targeting_computer":
         return [f"Shortens every attack module's cooldown regardless of placement: a {_percent(TARGETING_TOTAL_BUDGET)}% budget is shared across attack modules, at most {_percent(TARGETING_PER_ATTACK_CAP)}% each."]
     if definition_id == "overclock_unit":
-        return [f"Picks the heaviest attack module; raises its damage to {_percent(OVERCLOCK_DAMAGE_MULTIPLIER)}% and reduces its cooldown to {_percent(OVERCLOCK_COOLDOWN_MULTIPLIER)}%.", f"The target heats faster and gains {OVERCLOCK_HEAT_PER_TICK * 10:g} extra heat/sec; an overheated target is swapped for the next heaviest attack."]
+        return [f"Picks the heaviest attack module; raises its damage to {_percent(OVERCLOCK_DAMAGE_MULTIPLIER)}% and reduces its cooldown to {_percent(OVERCLOCK_COOLDOWN_MULTIPLIER)}%.", f"The target heats faster and gains {OVERCLOCK_HEAT_PER_TICK * 10:g}% extra heat per second; an overheated target is swapped for the next heaviest attack."]
     sabotage = {
         "emp": [f"Disables the target system for {EMP_DURATION_MS / 1000:g} sec.", f"Base sabotage cooldown is {definition.cooldown_ms / 1000:g} sec."],
         "jammer": [f"Disrupts a target support or control module for {JAMMER_DURATION_MS / 1000:g} sec.", f"Base sabotage cooldown is {definition.cooldown_ms / 1000:g} sec."],

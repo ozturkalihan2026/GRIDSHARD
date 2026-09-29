@@ -6,6 +6,50 @@ from pathlib import Path
 
 PLACEHOLDER_APP_IDS = {"", "com.example.gridshard"}
 
+# Savaş performans bütçesi (docs/PERFORMANCE_BUDGET.md). İstemcideki
+# GRIDSHARD_PERFORMANCE_BUDGET (client/src/battle/battle-performance.js) ile
+# aynı olmalıdır; gerçek cihaz kanıtındaki `performance` özeti buna göre denetlenir.
+PERFORMANCE_BUDGET = {
+    "min_duration_ms": 15000,
+    "min_frames": 300,
+    "p95_frame_ms": 34,
+    "max_jank_ratio": 0.03,
+    "max_freezes": 0,
+}
+
+
+def performance_blockers(performance: object) -> list[str]:
+    """Gerçek cihaz savaş ölçümünü bütçeye göre denetler."""
+    if not isinstance(performance, dict):
+        return ["Gerçek cihaz savaş performansı ölçümü (performance) eksik."]
+    blockers: list[str] = []
+    try:
+        duration_ms = float(performance.get("duration_ms") or 0)
+        frame_count = int(performance.get("frame_count") or 0)
+        p95 = float(performance.get("frame_ms_p95") or 0)
+        jank_ratio = float(performance.get("jank_ratio") or 0)
+        freezes = int(performance.get("freeze_count") or 0)
+    except (TypeError, ValueError):
+        return ["Gerçek cihaz performans ölçümü okunamadı."]
+    if (
+        duration_ms < PERFORMANCE_BUDGET["min_duration_ms"]
+        or frame_count < PERFORMANCE_BUDGET["min_frames"]
+    ):
+        blockers.append(
+            "Performans örneği çok kısa: en az 15 sn ve 300 kare savaş ölçülmeli."
+        )
+    if p95 > PERFORMANCE_BUDGET["p95_frame_ms"]:
+        blockers.append(
+            f"Kare süresi p95 {p95:g} ms; bütçe {PERFORMANCE_BUDGET['p95_frame_ms']} ms."
+        )
+    if jank_ratio > PERFORMANCE_BUDGET["max_jank_ratio"]:
+        blockers.append(
+            f"50 ms'yi aşan kare oranı %{jank_ratio * 100:.1f}; bütçe %3."
+        )
+    if freezes > PERFORMANCE_BUDGET["max_freezes"]:
+        blockers.append(f"Savaşta {freezes} kez 1 sn'yi aşan donma ölçüldü.")
+    return blockers
+
 
 def _load_json(path: Path) -> dict:
     try:
@@ -57,6 +101,7 @@ def evaluate_release_gate(
             blockers.append("Gerçek cihaz oturum kimliği eksik.")
         if evidence.get("commit_sha") != commit_sha:
             blockers.append("Gerçek cihaz kanıtı yayın commit'i ile eşleşmiyor.")
+        blockers.extend(performance_blockers(evidence.get("performance")))
 
     if stage == "ios":
         if android_closed_test_evidence is None:

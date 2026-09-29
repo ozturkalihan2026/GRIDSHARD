@@ -8,7 +8,8 @@ BASIC_MODULE_DEFINITIONS: dict[str, ModuleDefinition] = {
         strategic_role="Ana hedef ve devre merkezi", description_tr="Devrenin ana merkezidir."),
     "battery": ModuleDefinition(id="battery", name_tr="Batarya", category="enerji", max_hp=120,
         strategic_role="Enerji besleme ve rezervi", description_tr="Devreye sürekli enerji verir ve ani yükler için enerji depolar.",
-        energy_generation=3.0,
+        # energy.BATTERY_SUPPLY_PER_SECOND ile aynı (Beta.72 tur 14: 3 → 4,5).
+        energy_generation=4.5,
         synergy_with=("pulse_cannon","shield")),
     "capacitor": ModuleDefinition(id="capacitor", name_tr="Kapasitör", category="enerji", max_hp=90,
         strategic_role="Kısa süreli güç boşaltımı", description_tr="Ani enerji desteği sağlar.", cooldown_ms=2500,
@@ -45,7 +46,7 @@ BASIC_MODULE_DEFINITIONS: dict[str, ModuleDefinition] = {
         strategic_role="Can onarımı", description_tr="En düşük CAN oranındaki tek modülü onarır.", energy_consumption=2.0, cooldown_ms=2000,
         strong_against=("virus",), weak_against=("jammer",), synergy_with=("shield","armor","barrier")),
     "cooler": ModuleDefinition(id="cooler", name_tr="Soğutucu", category="destek", max_hp=100,
-        strategic_role="Isı kontrolü", description_tr="Devredeki en sıcak iki modülün ısısını düşürür; aşırı ısınıp susmuş modülü hızla toparlar.", energy_consumption=1.0,
+        strategic_role="Isı kontrolü", description_tr="Devredeki en sıcak üç modülü, önce susmuş olanları soğutur; aşırı ısınıp susmuş modülü hızla toparlar.", energy_consumption=1.0,
         synergy_with=("railgun","reflector")),
     "amplifier": ModuleDefinition(id="amplifier", name_tr="Güçlendirici", category="destek", max_hp=90,
         strategic_role="Saldırı hattını güçlendirme", description_tr="Devredeki saldırı modüllerinin hasarını artırır; toplam %30 pay saldırılar arasında bölünür, tek saldırıya en fazla %15.", energy_consumption=1.0,
@@ -150,7 +151,7 @@ SIGNATURE_MECHANICS = {
     "repair": "En yaralı modülü onarma",
     "nano_medic": "İki modüle dağıtılmış onarım",
     "phoenix_repair": "Yok edilen modülü yeniden devreye alma",
-    "cooler": "Devredeki en sıcak iki modülü soğutma",
+    "cooler": "Devredeki en sıcak üç modülü soğutma",
     "amplifier": "Tüm saldırılara paylaşılan hasar desteği",
     "targeting_computer": "Tüm saldırılara paylaşılan hız desteği",
     "overclock_unit": "En ağır saldırıya ısı karşılığında hız ve hasar",
@@ -237,7 +238,7 @@ PASSIVE_UPKEEP = {
 }
 
 SYSTEM_COPY = {
-    "battery": ("Enerji besleme ve rezervi", "Devreye saniyede 3 enerji verir; ayrıca 20 enerji depolayarak ani yükleri karşılar."),
+    "battery": ("Enerji besleme ve rezervi", "Devreye saniyede 4,5 enerji verir; ayrıca 20 enerji depolayarak ani yükleri karşılar."),
     "capacitor": ("Ani enerji rezervi", "Enerji üretmez; 10 enerjilik, çok hızlı dolup boşalan bir rezervdir ve açıkta Bataryadan önce boşalır."),
     "current_balancer": ("Devre verimliliği", "Aksiyon ve bakım enerjisi maliyetlerini %8 azaltır. Çoklu kopyalar en fazla %24 azaltım sağlar."),
 }

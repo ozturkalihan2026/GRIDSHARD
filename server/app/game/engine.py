@@ -52,14 +52,21 @@ from .core_balance import (
 from .operations import has_disabling_sabotage, module_is_operational
 from .heat import (
     CRITICAL_HEAT_THRESHOLD,
+    HEAT_PER_BLOCKED_DAMAGE,
+    HEAT_SLOWDOWN_START,
+    HEAT_SLOWDOWN_STEP,
     HIGH_HEAT_THRESHOLD,
     MAX_HEAT,
     OVERHEAT_DEBUFF_ID,
     OVERHEAT_RECOVERY_THRESHOLD,
     OVERHEAT_SELF_DAMAGE,
+    action_heat_gain,
+    add_module_heat,
     apply_passive_cooling,
+    generates_heat,
+    heat_penalty_percent,
+    heat_tempo_multiplier,
     is_overheated,
-    attack_heat_gain,
     heat_performance,
 )
 from .result import (
@@ -95,6 +102,7 @@ from .support import (
     PHOENIX_REVIVE_HP_RATIO,
     PRECISION_MAX_STACKS,
     COOLER_HEAT_REDUCTION_PER_TICK,
+    COOLER_OVERHEAT_MULTIPLIER,
     OVERCLOCK_HEAT_PER_TICK,
     REPAIR_COOLDOWN_ID,
     attack_support_modifiers,
@@ -705,7 +713,7 @@ class BattleEngine:
         heat: float,
     ) -> None:
         module = self._require_module(player_id, instance_id)
-        module.heat = max(0.0, float(heat))
+        module.heat = min(MAX_HEAT, max(0.0, float(heat)))
         self._emit(
             "module_heat_changed",
             {
@@ -714,6 +722,83 @@ class BattleEngine:
                 "heat": module.heat,
             },
         )
+
+    # Beta.72 tur 12 — ısı bütün modüllere yayıldı. Eylem modülleri her
+    # eylemde, savunma engellediği hasarla, sürekli sistemler bakım
+    # enerjisiyle, depolar boşalttıkları enerjiyle ısınır (energy.py).
+    def _add_action_heat(
+        self,
+        player_id: str,
+        module: BattleModule,
+        energy_cost: float | None = None,
+    ) -> None:
+        heat_before = module.heat
+        added = add_module_heat(module, action_heat_gain(module, energy_cost))
+        if added <= 0:
+            return
+        self._emit(
+            "module_heat_changed",
+            {
+                "player_id": player_id,
+                "module_id": module.instance_id,
+                "heat_before": heat_before,
+                "heat_after": module.heat,
+            },
+        )
+        self._check_overheat(player_id, module)
+
+    def _heat_defense_from_block(
+        self,
+        player_id: str,
+        target: BattleModule,
+        blocked_damage: float,
+    ) -> None:
+        if (
+            blocked_damage <= 0
+            or target.definition.category != "savunma"
+            or target.status != ModuleStatus.ACTIVE
+            or target.hp <= 0
+        ):
+            return
+        if add_module_heat(target, blocked_damage * HEAT_PER_BLOCKED_DAMAGE) > 0:
+            self._check_overheat(player_id, target)
+
+    def _check_overheat(self, player_id: str, module: BattleModule) -> bool:
+        """Isı %100'e ulaşınca modül susar ve %70'in altına inene kadar çalışmaz."""
+        if (
+            module.heat < CRITICAL_HEAT_THRESHOLD
+            or is_overheated(module)
+            or not generates_heat(module)
+            or module.status != ModuleStatus.ACTIVE
+            or module.hp <= 0
+        ):
+            return False
+        self.add_debuff(
+            player_id,
+            module.instance_id,
+            OVERHEAT_DEBUFF_ID,
+            "Aşırı Isınma",
+            None,
+            {"reason": "critical_heat"},
+        )
+        module.mechanic_state.pop("overheat_skip_emitted", None)
+        self._emit(
+            "module_overheated",
+            {
+                "player_id": player_id,
+                "module_id": module.instance_id,
+                "definition_id": module.definition.id,
+                "heat": module.heat,
+                "recovery_heat": OVERHEAT_RECOVERY_THRESHOLD,
+                "self_damage": OVERHEAT_SELF_DAMAGE,
+            },
+        )
+        self.apply_damage(
+            player_id,
+            module.instance_id,
+            OVERHEAT_SELF_DAMAGE,
+        )
+        return True
 
     def set_module_stored_energy(
         self,
@@ -1020,6 +1105,9 @@ class BattleEngine:
                     )
                     continue
 
+                if is_overheated(module):
+                    continue
+
                 if not self.is_cooldown_ready(
                     attacker_player_id,
                     module.instance_id,
@@ -1110,12 +1198,14 @@ class BattleEngine:
             resistance, effective_duration_ms, is_echo,
         ) in planned_actions:
             if not is_echo:
+                # Isı %40'ı aştıkça sabotaj aralığı uzar; eylem modülü ısıtır.
                 self.start_cooldown(
                     attacker_player_id,
                     module.instance_id,
                     SABOTAGE_COOLDOWN_ID,
-                    sabotage_cooldown_ms(module),
+                    round(sabotage_cooldown_ms(module) * heat_tempo_multiplier(module)),
                 )
+                self._add_action_heat(attacker_player_id, module)
 
             if resistance.blocked:
                 self._emit(
@@ -1246,6 +1336,10 @@ class BattleEngine:
                     )
                     continue
 
+                # Aşırı ısınan destek modülü %70'in altına inene kadar susar.
+                if is_overheated(module):
+                    continue
+
                 if module.definition.id == "nano_medic":
                     self._process_nano_medic(player, module, repaired_target_ids)
                     continue
@@ -1292,12 +1386,7 @@ class BattleEngine:
                                 "cleanser": "repair",
                             },
                         )
-                        self.start_cooldown(
-                            player.player_id,
-                            module.instance_id,
-                            REPAIR_COOLDOWN_ID,
-                            module.definition.cooldown_ms,
-                        )
+                        self._finish_support_action(player, module)
                         continue
 
                     targets = repair_targets(
@@ -1352,12 +1441,7 @@ class BattleEngine:
                             },
                         )
 
-                    self.start_cooldown(
-                        player.player_id,
-                        module.instance_id,
-                        REPAIR_COOLDOWN_ID,
-                        module.definition.cooldown_ms,
-                    )
+                    self._finish_support_action(player, module)
 
                 elif module.definition.mechanic_id == "cooler":
                     for target, effect_id in cooler_reducible_debuff_targets(
@@ -1427,10 +1511,15 @@ class BattleEngine:
                         if target.instance_id in cooled_target_ids:
                             continue
                         before = target.heat
-                        target.heat = max(
-                            0.0,
-                            target.heat - COOLER_HEAT_REDUCTION_PER_TICK * module.definition.effect_multiplier * player.energy_support_multiplier,
+                        cooling = (
+                            COOLER_HEAT_REDUCTION_PER_TICK
+                            * module.definition.effect_multiplier
+                            * player.energy_support_multiplier
                         )
+                        if is_overheated(target):
+                            # Susmuş modülü yeniden devreye almak önceliklidir.
+                            cooling *= COOLER_OVERHEAT_MULTIPLIER
+                        target.heat = max(0.0, target.heat - cooling)
                         if target.heat != before:
                             cooled_target_ids.add(target.instance_id)
                             self._emit(
@@ -1464,7 +1553,7 @@ class BattleEngine:
                         if target.instance_id in overclocked_target_ids:
                             continue
                         overclocked_target_ids.add(target.instance_id)
-                        target.heat = min(MAX_HEAT, target.heat + OVERCLOCK_HEAT_PER_TICK)
+                        add_module_heat(target, OVERCLOCK_HEAT_PER_TICK)
                         self._emit(
                             "module_overclocked",
                             {
@@ -1474,6 +1563,22 @@ class BattleEngine:
                                 "heat_after": target.heat,
                             },
                         )
+                        self._check_overheat(player.player_id, target)
+
+    def _finish_support_action(
+        self,
+        player: PlayerBattleState,
+        module: BattleModule,
+        energy_cost: float | None = None,
+    ) -> None:
+        """Onarım ailesinin eylem sonu: ısıya göre uzayan bekleme ve eylem ısısı."""
+        self.start_cooldown(
+            player.player_id,
+            module.instance_id,
+            REPAIR_COOLDOWN_ID,
+            round(module.definition.cooldown_ms * heat_tempo_multiplier(module)),
+        )
+        self._add_action_heat(player.player_id, module, energy_cost)
 
     def _process_nano_medic(self, player, module, repaired_target_ids) -> None:
         if not self.is_cooldown_ready(player.player_id, module.instance_id, REPAIR_COOLDOWN_ID):
@@ -1525,9 +1630,7 @@ class BattleEngine:
                 "repair_each": amount,
             },
         )
-        self.start_cooldown(
-            player.player_id, module.instance_id, REPAIR_COOLDOWN_ID, module.definition.cooldown_ms
-        )
+        self._finish_support_action(player, module)
 
     def _try_phoenix_revive(self, player, module) -> bool:
         candidates = sorted(
@@ -1567,8 +1670,9 @@ class BattleEngine:
             target.is_powered = True
             target.energy_waiting = False
             target.mechanic_state["phoenix_revived"] = True
+            revive_cooldown_ms = round(PHOENIX_COOLDOWN_MS * heat_tempo_multiplier(module))
             self.start_cooldown(
-                player.player_id, module.instance_id, PHOENIX_COOLDOWN_ID, PHOENIX_COOLDOWN_MS
+                player.player_id, module.instance_id, PHOENIX_COOLDOWN_ID, revive_cooldown_ms
             )
             self._emit(
                 "phoenix_rebirth",
@@ -1579,9 +1683,10 @@ class BattleEngine:
                     "hp": target.hp,
                     "x": position.x,
                     "y": position.y,
-                    "cooldown_ms": PHOENIX_COOLDOWN_MS,
+                    "cooldown_ms": revive_cooldown_ms,
                 },
             )
+            self._add_action_heat(player.player_id, module, PHOENIX_REVIVE_ENERGY)
             self._emit(
                 "module_placed",
                 {
@@ -1637,9 +1742,7 @@ class BattleEngine:
                     "mechanic": "phoenix_repair",
                 },
             )
-        self.start_cooldown(
-            player.player_id, module.instance_id, REPAIR_COOLDOWN_ID, module.definition.cooldown_ms
-        )
+        self._finish_support_action(player, module)
 
     def _advance_chrono_relay(self, player, module) -> None:
         now = self.state.elapsed_ms
@@ -1689,11 +1792,9 @@ class BattleEngine:
                 },
             )
             return False
-        if self.state.elapsed_ms < ready_at:
-            return False
-        state.pop("windup_target_id", None)
-        state.pop("windup_ready_at_ms", None)
-        return True
+        # Kilit tamam; durum atış gerçekleşince temizlenir (enerji beklerken
+        # kilit kaybolmaz).
+        return self.state.elapsed_ms >= ready_at
 
     def _consume_quantum_charge(self, attacker) -> float:
         if attacker.definition.id != "quantum_cannon":
@@ -1764,6 +1865,9 @@ class BattleEngine:
                     "value": resolution.reduced_damage,
                     "unit": "damage",
                 },
+            )
+            self._heat_defense_from_block(
+                target_player_id, target, resolution.reduced_damage
             )
         self._convert_prism_energy(target_player_id, target, resolution)
 
@@ -1852,6 +1956,9 @@ class BattleEngine:
                         circuit_guard=circuit_guard_multiplier(target_player, burst_target),
                         elapsed_ms=self.state.elapsed_ms,
                     )
+                    self._heat_defense_from_block(
+                        target_player_id, burst_target, burst.reduced_damage
+                    )
                     self.apply_damage(
                         target_player_id,
                         burst_target.instance_id,
@@ -1932,14 +2039,17 @@ class BattleEngine:
 
                 heat_state = heat_performance(attacker, self.state.elapsed_ms)
                 if heat_state.overheated:
-                    self._emit(
-                        "attack_skipped_overheated",
-                        {
-                            "player_id": attacker_player_id,
-                            "module_id": attacker.instance_id,
-                            "heat": attacker.heat,
-                        },
-                    )
+                    # Susma dönemi başına tek olay; saniyede on uyarı üretmez.
+                    if not attacker.mechanic_state.get("overheat_skip_emitted"):
+                        attacker.mechanic_state["overheat_skip_emitted"] = True
+                        self._emit(
+                            "attack_skipped_overheated",
+                            {
+                                "player_id": attacker_player_id,
+                                "module_id": attacker.instance_id,
+                                "heat": attacker.heat,
+                            },
+                        )
                     continue
 
                 if not self.is_cooldown_ready(
@@ -1966,7 +2076,12 @@ class BattleEngine:
                 if not self._try_spend_action_energy(
                     attacker_player, attacker, reason="attack"
                 ):
+                    # Kilit enerji beklerken korunur; enerji gelince atış
+                    # yeniden kilitlenmeden gerçekleşir.
                     continue
+                if windup_ms:
+                    attacker.mechanic_state.pop("windup_target_id", None)
+                    attacker.mechanic_state.pop("windup_ready_at_ms", None)
 
                 support = attack_support_modifiers(
                     attacker_player,
@@ -2084,6 +2199,9 @@ class BattleEngine:
                         "unit": "damage",
                     },
                 )
+                self._heat_defense_from_block(
+                    target_player_id, target, resolution.reduced_damage
+                )
             self.apply_damage(
                 target_player_id,
                 target.instance_id,
@@ -2159,46 +2277,9 @@ class BattleEngine:
                     },
                 )
 
-            heat_before = attacker.heat
-            attacker.heat = min(
-                MAX_HEAT,
-                attacker.heat + attack_heat_gain(attacker),
-            )
-            self._emit(
-                "module_heat_changed",
-                {
-                    "player_id": attacker_player_id,
-                    "module_id": attacker.instance_id,
-                    "heat_before": heat_before,
-                    "heat_after": attacker.heat,
-                },
-            )
-
-            if attacker.heat >= CRITICAL_HEAT_THRESHOLD:
-                # Süresiz: modül ısısı toparlanma eşiğinin altına inene kadar susar.
-                self.add_debuff(
-                    attacker_player_id,
-                    attacker.instance_id,
-                    OVERHEAT_DEBUFF_ID,
-                    "Aşırı Isınma",
-                    None,
-                    {"reason": "critical_heat"},
-                )
-                self._emit(
-                    "module_overheated",
-                    {
-                        "player_id": attacker_player_id,
-                        "module_id": attacker.instance_id,
-                        "heat": attacker.heat,
-                        "recovery_heat": OVERHEAT_RECOVERY_THRESHOLD,
-                        "self_damage": OVERHEAT_SELF_DAMAGE,
-                    },
-                )
-                self.apply_damage(
-                    attacker_player_id,
-                    attacker.instance_id,
-                    OVERHEAT_SELF_DAMAGE,
-                )
+            # Her atış ısıtır; %100'de modül susar (süresiz: ısısı %70'in
+            # altına inene kadar).
+            self._add_action_heat(attacker_player_id, attacker)
 
     def _finish_battle(
         self,
@@ -2321,10 +2402,18 @@ class BattleEngine:
 
     def _process_passive_heat(self) -> None:
         for player in self.state.players.values():
+            modules = sorted(player.modules.values(), key=lambda item: item.instance_id)
+            # Bakım, engellenen hasar ve depo boşaltmasıyla %100'e ulaşan
+            # sürekli sistemler soğumadan önce susar; yoksa %100'e dayanıp
+            # her adım biraz soğuyarak hiç susmayabilirdi.
+            for module in modules:
+                if not is_overheated(module):
+                    self._check_overheat(player.player_id, module)
             apply_passive_cooling(player)
-            for module in sorted(player.modules.values(), key=lambda item: item.instance_id):
+            for module in modules:
                 if is_overheated(module) and module.heat < OVERHEAT_RECOVERY_THRESHOLD:
                     del module.debuffs[OVERHEAT_DEBUFF_ID]
+                    module.mechanic_state.pop("overheat_skip_emitted", None)
                     self._emit(
                         "module_heat_recovered",
                         {
@@ -2990,10 +3079,12 @@ class BattleEngine:
             "hp": module.hp,
             "heat": module.heat,
             "heat_state": (
-                "critical" if module.heat >= 100
-                else "high" if module.heat >= 70
+                "critical" if module.heat >= CRITICAL_HEAT_THRESHOLD
+                else "high" if module.heat >= HIGH_HEAT_THRESHOLD
+                else "warm" if module.heat >= HEAT_SLOWDOWN_START + HEAT_SLOWDOWN_STEP
                 else "normal"
             ),
+            "heat_penalty": heat_penalty_percent(module),
             "stored_energy": module.stored_energy,
             "is_powered": module.is_powered,
             "energy_received_last_tick": module.energy_received_last_tick,

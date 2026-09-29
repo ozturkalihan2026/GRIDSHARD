@@ -225,6 +225,8 @@
       }
       if (screen !== "play") return "menu";
       if (context.critical && battleActive) return "critical_core";
+      if (battleActive && context.battlePhase === "pressure") return "battle_pressure";
+      if (battleActive && context.battlePhase === "intro") return "battle_intro";
       if (battleActive) return "battle";
       return "pool";
     }

@@ -1,6 +1,6 @@
 from dataclasses import dataclass
-from .heat import is_overheated
-from .models import BattleModule, ModuleStatus, PlayerBattleState, Position
+from .heat import generates_heat, heat_efficiency, is_overheated
+from .models import BattleModule, ModuleStatus, PlayerBattleState
 from .operations import module_is_operational
 
 REPAIR_COOLDOWN_ID = "support_repair"
@@ -10,12 +10,16 @@ TARGETING_COOLDOWN_MULTIPLIER = 0.85
 OVERCLOCK_DAMAGE_MULTIPLIER = 1.20
 OVERCLOCK_COOLDOWN_MULTIPLIER = 0.80
 # Aşırı Hızlandırıcı hedefini daha sık ateşlettiği için zaten ısıtır; bu
-# ek ısı (saniyede 1,5) Soğutucu olmadan ~20 sn'de Yüksek Isı getirir.
+# ek ısı (saniyede %1,5) Soğutucu olmadan Darbe Topunu ~16 sn'de susturur.
 OVERCLOCK_HEAT_PER_TICK = 0.15
-# Soğutucu devredeki en sıcak iki modülü saniyede 8 soğutur: susmuş bir
-# modülü ~4 sn'de toparlar.
-COOLER_HEAT_REDUCTION_PER_TICK = 0.8
-COOLER_MAX_TARGETS = 2
+# Beta.72 tur 12: Soğutucu önce aşırı ısınıp susmuş modülleri, sonra en sıcak
+# modülleri seçer; en fazla üç modülü saniyede %4,5 soğutur (susmuş modülde
+# iki kat: havalandırmayla birlikte ~2,5 sn'de toparlar). Tek Soğutucu
+# iki-üç orta saldırıyı %45'in altında tutar; simülasyonda Soğutucusuz
+# saldırıların zamanının ~%65'i yavaş ya da susmuş geçerken Soğutuculuda ~%20.
+COOLER_HEAT_REDUCTION_PER_TICK = 0.45
+COOLER_MAX_TARGETS = 3
+COOLER_OVERHEAT_MULTIPLIER = 2.0
 
 # Tüm devreye etki eden destekler toplam paylarını sahadaki saldırı
 # modüllerine böler: 1-2 saldırıda her biri tam pay, daha kalabalık devrede
@@ -86,8 +90,12 @@ def _operational_supports(
             if module.definition.id == definition_id
             and module_is_operational(module)
             and JAMMER_DEBUFF_ID not in module.debuffs
+            and not is_overheated(module)
         ),
-        key=lambda module: (-module.definition.effect_multiplier, module.instance_id),
+        key=lambda module: (
+            -module.definition.effect_multiplier * heat_efficiency(module),
+            module.instance_id,
+        ),
     )
 
 
@@ -173,6 +181,7 @@ def attack_support_modifiers(player, attack_module, core_position, elapsed_ms: i
             shared_support_share(AMPLIFIER_PER_ATTACK_CAP, AMPLIFIER_TOTAL_BUDGET, attacks)
             * source.definition.effect_multiplier
             * support
+            * heat_efficiency(source)
         )
         options.append((bonus, "amplifier", source, 1 + bonus, 1.0))
 
@@ -183,12 +192,13 @@ def attack_support_modifiers(player, attack_module, core_position, elapsed_ms: i
             shared_support_share(TARGETING_PER_ATTACK_CAP, TARGETING_TOTAL_BUDGET, attacks)
             * source.definition.effect_multiplier
             * support
+            * heat_efficiency(source)
         )
         options.append((reduction, "targeting_computer", source, 1.0, max(.65, 1 - reduction)))
 
     overclock = overclock_assignments(player).get(attack_module.instance_id)
     if overclock is not None:
-        effect = overclock.definition.effect_multiplier * support
+        effect = overclock.definition.effect_multiplier * support * heat_efficiency(overclock)
         options.append((
             .40 * effect,
             "overclock_unit",
@@ -201,7 +211,7 @@ def attack_support_modifiers(player, attack_module, core_position, elapsed_ms: i
     stacks = max(0, min(PRECISION_MAX_STACKS, int(attack_module.mechanic_state.get("precision_focus_stacks", 0))))
     if matrices and stacks:
         source = matrices[0]
-        effect = source.definition.effect_multiplier * support
+        effect = source.definition.effect_multiplier * support * heat_efficiency(source)
         damage = 1 + PRECISION_DAMAGE_PER_STACK * stacks * effect
         cooldown = max(.72, 1 - PRECISION_COOLDOWN_PER_STACK * stacks * effect)
         options.append(((damage - 1) + (1 - cooldown), "precision_matrix", source, damage, cooldown))
@@ -212,7 +222,13 @@ def attack_support_modifiers(player, attack_module, core_position, elapsed_ms: i
         source = chronos[0]
         phase = chrono_phase(source, elapsed_ms)
         if phase == "boost":
-            cooldown = max(.65, 1 - (1 - CHRONO_BOOST_COOLDOWN) * source.definition.effect_multiplier * support)
+            cooldown = max(
+                .65,
+                1 - (1 - CHRONO_BOOST_COOLDOWN)
+                * source.definition.effect_multiplier
+                * support
+                * heat_efficiency(source),
+            )
             options.append((1 - cooldown, "chrono_relay", source, 1.0, cooldown))
         elif phase == "debt":
             chrono_debt = True
@@ -226,6 +242,7 @@ def attack_support_modifiers(player, attack_module, core_position, elapsed_ms: i
             shared_support_share(OMEGA_PER_ATTACK_CAP, OMEGA_BUDGET_PER_CATEGORY * diversity, attacks)
             * source.definition.effect_multiplier
             * support
+            * heat_efficiency(source)
         )
         if bonus > 0:
             options.append((bonus, "omega_amplifier", source, 1 + bonus, 1.0))
@@ -291,16 +308,22 @@ def repair_target(player, repair_module, core_position):
 
 def cooler_targets(player, cooler_module, core_position):
     # Yerleşim otomatik olduğu için Soğutucu komşuluğa değil tüm devreye bakar.
+    # Önce aşırı ısınıp susmuş modüller (yeniden devreye girsin), sonra en
+    # sıcaklar.
     del cooler_module, core_position
     return sorted(
         (
             module
             for module in player.modules.values()
-            if module.definition.id != "core"
+            if generates_heat(module)
             and module.heat > 0
             and module_is_operational(module)
         ),
-        key=lambda module: (-module.heat, module.instance_id),
+        key=lambda module: (
+            not is_overheated(module),
+            -module.heat,
+            module.instance_id,
+        ),
     )[:COOLER_MAX_TARGETS]
 
 

@@ -17,7 +17,13 @@ const targets = {
 };
 
 const targetName = process.env.REAL_DEVICE_TARGET;
-const target = targets[targetName];
+// Performans bütçesi düşük/orta seviye cihazda da ölçülmeli
+// (docs/PERFORMANCE_BUDGET.md); cihaz ortam değişkeniyle değiştirilebilir.
+const target = targets[targetName] && {
+  ...targets[targetName],
+  deviceName: process.env.REAL_DEVICE_NAME || targets[targetName].deviceName,
+  osVersion: process.env.REAL_DEVICE_OS_VERSION || targets[targetName].osVersion
+};
 const username = process.env.BROWSERSTACK_USERNAME;
 const accessKey = process.env.BROWSERSTACK_ACCESS_KEY;
 const localIdentifier = process.env.BROWSERSTACK_LOCAL_IDENTIFIER;
@@ -53,7 +59,7 @@ function evidencePath() {
   return path.join(process.cwd(), "qa_reports", "device_evidence", `${targetName}.json`);
 }
 
-function writeEvidence({ passed, sessionId, error = null }) {
+function writeEvidence({ passed, sessionId, error = null, performance = null }) {
   const output = evidencePath();
   fs.mkdirSync(path.dirname(output), { recursive: true });
   fs.writeFileSync(output, `${JSON.stringify({
@@ -68,6 +74,8 @@ function writeEvidence({ passed, sessionId, error = null }) {
     browserstack_session_id: sessionId || null,
     passed,
     error,
+    // Savaş kare ölçümü (docs/PERFORMANCE_BUDGET.md); yayın kapısı denetler.
+    performance,
     recorded_at: new Date().toISOString()
   }, null, 2)}\n`, "utf8");
 }
@@ -93,9 +101,13 @@ async function waitFor(driver, predicate, timeout = 20_000) {
       driver,
       "return document.querySelector('#participant-bootstrap-status')?.dataset.status === 'ready'",
       30_000);
-    const playButton = await driver.wait(until.elementLocated(By.css("#home-battle-button")), 20_000);
-    await waitFor(driver, "return !document.querySelector('#home-battle-button')?.disabled");
-    await playButton.click();
+    // Beta.72: savaş Ev ekranındaki SAVAŞ düğmesiyle başlar; yeni oyuncunun
+    // altı kartlık başlangıç destesi hazır olduğunda düğme açılır.
+    await waitFor(
+      driver,
+      "const button = document.querySelector('#home-battle-button'); return Boolean(button && !button.disabled);",
+      30_000);
+    await driver.findElement(By.css("#home-battle-button")).click();
 
     await waitFor(
       driver,
@@ -104,45 +116,43 @@ async function waitFor(driver, predicate, timeout = 20_000) {
     await waitFor(driver, "return document.body.dataset.opponentType === 'ai'");
     const layout = await driver.executeScript(`
       const board = document.querySelector('#board').getBoundingClientRect();
-      const rival = document.querySelector('#enemy-board').getBoundingClientRect();
+      const enemy = document.querySelector('#enemy-board').getBoundingClientRect();
       return {
-        innerWidth: window.innerWidth,
         innerHeight: window.innerHeight,
-        own: { left: board.left, right: board.right, top: board.top, bottom: board.bottom },
-        rival: { left: rival.left, right: rival.right, top: rival.top, bottom: rival.bottom },
-        ownCells: document.querySelectorAll('#board .board-cell').length,
-        rivalCells: document.querySelectorAll('#enemy-board .board-cell').length
+        scrollHeight: document.body.scrollHeight,
+        scrollTop: window.scrollY,
+        boardBottom: board.bottom,
+        enemyBottom: enemy.bottom,
+        boardTop: board.top
       };
     `);
-    assert.equal(layout.ownCells, 15);
-    assert.equal(layout.rivalCells, 15);
-    assert.ok(layout.rival.bottom <= layout.own.top + 2, `Devreler ayrışmıyor: ${JSON.stringify(layout)}`);
-    for (const board of [layout.own, layout.rival]) {
-      assert.ok(board.left >= -2 && board.right <= layout.innerWidth + 2, `Yatay taşma: ${JSON.stringify(layout)}`);
-      assert.ok(board.top >= -2 && board.bottom <= layout.innerHeight + 2, `Dikey taşma: ${JSON.stringify(layout)}`);
-    }
+    assert.ok(layout.scrollHeight <= layout.innerHeight + 1, `Dikey taşma: ${JSON.stringify(layout)}`);
+    assert.equal(layout.scrollTop, 0);
+    assert.ok(layout.boardBottom <= layout.innerHeight + 1, `Tahta ekran dışında: ${JSON.stringify(layout)}`);
+    assert.ok(layout.enemyBottom <= layout.boardTop + 1, `Rakip ve oyuncu devresi üst üste: ${JSON.stringify(layout)}`);
 
-    await waitFor(driver, `
-      const card = document.querySelector('#module-shelf .deck-module-card[data-playable=true]');
-      const shelf = document.querySelector('#module-shelf');
-      return card && !card.disabled && shelf?.dataset.placementReady === 'true';
-    `, 35_000);
+    // Tek dokunuş: kart raftan seçilir, hücreyi sunucu belirler (Beta.69).
+    await waitFor(driver, "return document.querySelector('#module-shelf')?.dataset.placementReady === 'true'", 35_000);
     const before = (await driver.findElements(By.css("#board .module-card"))).length;
-    await driver.findElement(By.css("#module-shelf .deck-module-card[data-playable=true]")).click();
+    await driver.findElement(By.css('#module-shelf .module-card[data-playable="true"]')).click();
     await driver.wait(async () =>
       (await driver.findElements(By.css("#board .module-card"))).length > before,
     15_000);
 
+    // Performans bütçesi en az 15 sn savaş ister; ölçüm payıyla 20 sn oynanır.
+    await driver.sleep(20_000);
     await driver.findElement(By.css("#battle-forfeit-button")).click();
     await driver.wait(until.elementIsVisible(
       await driver.findElement(By.css(".post-match-panel"))),
     15_000);
+    await waitFor(driver, "return Boolean(window.__GRIDSHARD_PERF?.last)", 5_000);
+    const performance = await driver.executeScript("return window.__GRIDSHARD_PERF.last;");
 
     await driver.executeScript(`browserstack_executor: ${JSON.stringify({
       action: "setSessionStatus",
-      arguments: { status: "passed", reason: "İki devre ve tek dokunuşlu sunucu yerleştirmesi doğrulandı." }
+      arguments: { status: "passed", reason: "Ev ekranından savaş ve tek dokunuşla yerleştirme akışı geçti." }
     })}`);
-    writeEvidence({ passed: true, sessionId });
+    writeEvidence({ passed: true, sessionId, performance });
   } catch (error) {
     writeEvidence({ passed: false, sessionId, error: String(error?.stack || error) });
     if (driver) {

@@ -800,6 +800,11 @@
             <option value="yuksek" selected>Yüksek</option>
           </select>
         </label>
+        <label class="settings-toggle"><input id="settings-battle-perspective" type="checkbox" checked /> Savaş Alanı Perspektifi</label>
+        <div class="settings-tutorial-replay">
+          <button id="settings-tutorial-replay" type="button">İlk Maç Eğitimini Tekrar Göster</button>
+          <small id="settings-tutorial-replay-status" role="status"></small>
+        </div>
         <label>Dil
           <select id="settings-language">
             <option value="tr" selected>Türkçe</option>
@@ -994,8 +999,8 @@
             <button type="button" data-ai-archetype="aggressive"><span aria-hidden="true">▲</span><strong>Saldırgan</strong></button>
             <button type="button" data-ai-archetype="defensive"><span aria-hidden="true">⬡</span><strong>Savunmacı</strong></button>
             <button type="button" data-ai-archetype="balanced" data-active="true"><span aria-hidden="true">◆</span><strong>Dengeli</strong></button>
-            <button type="button" data-ai-archetype="sabotage"><span aria-hidden="true">⌁</span><strong>Sabotaj</strong></button>
-            <button type="button" data-ai-archetype="economy"><span aria-hidden="true">⟐</span><strong>Ekonomi</strong></button>
+            <button type="button" data-ai-archetype="balanced_control"><span aria-hidden="true">⌁</span><strong>Dengeli Kontrol</strong></button>
+            <button type="button" data-ai-archetype="balanced_economy"><span aria-hidden="true">⟐</span><strong>Dengeli Ekonomi</strong></button>
           </div>
           <small id="ai-archetype-description">Rakibin devresine göre karşı modül seçer; saldırı ve savunmayı dengeler.</small>
         </section>
@@ -1018,8 +1023,9 @@
       <span id="play-readiness-status" data-ready="false">Oyna: Sunucu ve hesap hazırlanıyor</span>
       <button id="server-boot-retry" type="button">Sağlık Kontrolünü Yeniden Dene</button>
       <span id="telemetry-send-status" data-status="idle">Telemetri: Hazır</span>
-    </section>        </div>
+        </div>
       </details>
+    </section>
 
 
     <section class="battle-test-banner play-live-panel" data-screen-panel="play" hidden>
@@ -1143,18 +1149,17 @@
 
 
 
-    <section id="tutorial-overlay" class="tutorial-overlay" role="dialog" aria-modal="true" aria-labelledby="tutorial-title" data-active="false" hidden>
+    <section id="tutorial-overlay" class="tutorial-overlay" role="dialog" aria-modal="false" aria-labelledby="tutorial-title" aria-describedby="tutorial-body" data-active="false" data-placement="bottom" hidden>
       <div class="tutorial-card">
         <div class="tutorial-heading">
-          <span data-tutorial-progress>1 / 3</span>
-          <button type="button" data-tutorial-skip aria-label="Eğitimi kapat">Atla</button>
+          <span class="tutorial-kicker">İLK MAÇ EĞİTİMİ</span>
+          <span data-tutorial-progress>1 / 7</span>
+          <button type="button" data-tutorial-skip aria-label="Eğitimi atla">Atla</button>
         </div>
-        <h2 id="tutorial-title" data-tutorial-title>Devreni kur</h2>
-        <p data-tutorial-body></p>
+        <h2 id="tutorial-title" data-tutorial-title>İlk savaşın</h2>
+        <p id="tutorial-body" data-tutorial-body></p>
         <span class="tutorial-status" data-tutorial-status role="status"></span>
         <div class="tutorial-actions">
-          <button type="button" data-tutorial-back>Geri</button>
-          <button type="button" data-tutorial-action hidden>Uygula</button>
           <button type="button" data-tutorial-next>İleri</button>
         </div>
       </div>
@@ -1170,6 +1175,7 @@
   <!-- build:scripts -->
   <script src="./src/auth-session.js"></script>
   <script src="./src/native-push.js"></script>
+  <script src="./src/native-store.js"></script>
   <script src="./src/relay-client.js"></script>
   <script src="./src/screens/screen-controller.js"></script>
   <script src="./src/screens/card-swipe.js"></script>
@@ -1177,6 +1183,7 @@
   <script src="./src/battle/board-view.js"></script>
   <script src="./src/battle/module-card-view.js"></script>
   <script src="./src/battle/battle-event-bus.js"></script>
+  <script src="./src/battle/battle-performance.js"></script>
   <script src="./src/gridshard-audio-formats.js"></script>
   <script src="./src/gridshard-audio.js"></script>
   <script src="./src/i18n-catalog.js"></script>
