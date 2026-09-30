@@ -7,6 +7,9 @@ dist
 .client-build-*
 .audio-tools
 .audio-convert-*
+server/data/*
+!server/data/arena_bot_profiles_v1.json
+!server/data/arena_progression_v1.json
 server/data/.auth_signing_key
 __pycache__
 .pytest_cache
@@ -15,6 +18,8 @@ server/data/*.json
 server/data/*.tmp
 server/data/*.bak
 server/data/*.lock
+!server/data/arena_bot_profiles_v1.json
+!server/data/arena_progression_v1.json
 secrets
 **/google-services.json
 **/GoogleService-Info.plist

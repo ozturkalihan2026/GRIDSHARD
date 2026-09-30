@@ -30,8 +30,9 @@ assert.ok(css.includes(".daily-meta-wheel-pointer"));
 assert.ok(!css.includes(".daily-meta-wheel::before"));
 
 assert.ok(app.includes("const poweredPositions = modules"));
-assert.ok(app.includes("new Set(poweredPositions.map((position) => position.x))"));
-assert.ok(app.includes("while (cursor.y !== target.y)"));
+assert.ok(app.includes("for (const target of poweredPositions)"));
+assert.ok(app.includes("const stepY = Math.sign(target.y - core.y)"));
+assert.ok(app.includes("energizedEdges.add"));
 
 assert.ok(app.includes('challenge.status === "accepted" && challenge.battle_session_id'));
 assert.ok(app.includes('invite.status === "accepted" && invite.battle_session_id'));

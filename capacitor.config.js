@@ -15,6 +15,10 @@ module.exports = {
     allowMixedContent: localDebug
   },
   plugins: {
+    SystemBars: {
+      hidden: true,
+      insetsHandling: "css"
+    },
     PushNotifications: {
       presentationOptions: ["sound", "alert"]
     }

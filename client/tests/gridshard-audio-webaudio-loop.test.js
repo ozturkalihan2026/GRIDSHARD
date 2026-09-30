@@ -46,6 +46,7 @@ class FakeAudioContext {
   }
   decodeAudioData() { return Promise.resolve({duration: 32}); }
   resume() { this.state = "running"; return Promise.resolve(); }
+  suspend() { this.state = "suspended"; return Promise.resolve(); }
 }
 
 global.Audio = FakeAudio;
@@ -76,6 +77,18 @@ require("../src/gridshard-audio.js");
   director.setState("matchmaking");
   await new Promise((resolve) => setTimeout(resolve, 0));
   assert.strictEqual(director.currentTrack.loop, true);
+  const playingSource = director._musicContext.sources.at(-1);
+  director.setAppActive(false);
+  await Promise.resolve();
+  assert.strictEqual(playingSource.started, false);
+  assert.strictEqual(director._musicContext.state, "suspended");
+  director.setState("battle");
+  assert.strictEqual(director.battleLayerTracks.length, 0);
+  director.setAppActive(true);
+  await new Promise((resolve) => setTimeout(resolve, 0));
+  assert.strictEqual(director._musicContext.state, "running");
+  assert.strictEqual(director.battleLayerTracks.length, 7);
+  director.setAppActive(false);
   console.log("gridshard Web Audio seamless loop test passed");
 })().catch((error) => {
   console.error(error);

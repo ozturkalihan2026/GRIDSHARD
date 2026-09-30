@@ -143,7 +143,7 @@ test("module card view bilinmeyen modüle güvenli simge verir", () => {
   assert.equal(sandbox.GridshardModuleCardView.iconFor({ nameTr: "Bilinmeyen" }), "●");
 });
 
-test("tutorial controller etkileşimli adımı tamamlayıp ilerler", async () => {
+test("tutorial controller oyuncu eylemini bağlamdan izleyip ilerler", () => {
   const fields = new Map();
   const field = key => {
     if (!fields.has(key)) fields.set(key, { hidden: false, disabled: false, textContent: "", addEventListener() {} });
@@ -157,21 +157,18 @@ test("tutorial controller etkileşimli adımı tamamlayıp ilerler", async () =>
   const storage = { value: null, getItem() { return this.value; }, setItem(_key, value) { this.value = value; } };
   const document = { querySelector: () => null };
   const sandbox = load(path.join("src", "tutorial", "tutorial-controller.js"), { document, localStorage: storage });
-  const actions = [];
   const controller = new sandbox.GridshardTutorialController({
     root,
     storage,
     storageKey: "tutorial",
     steps: [
-      { title: "Havuz", body: "Yükle", action: "load", actionLabel: "Yükle" },
+      { title: "Havuz", body: "Yükle", until: (context, start) => context.loaded > (start.loaded || 0) },
       { title: "Bitti", body: "Tamam" }
-    ],
-    onAction: async action => { actions.push(action); return true; }
+    ]
   });
 
   assert.equal(controller.start(), true);
-  await controller.runAction();
-  assert.deepEqual(actions, ["load"]);
+  controller.update({ loaded: 1 });
   assert.equal(controller.index, 1);
   controller.finish();
   assert.equal(storage.value, "complete");

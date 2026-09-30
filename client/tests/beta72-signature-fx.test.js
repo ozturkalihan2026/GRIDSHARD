@@ -39,7 +39,7 @@ for (const level of ["light", "medium", "heavy", "core"]) {
 assert.ok(app.includes("settingsState.settings?.vibration_enabled === false"));
 
 // Hareket azaltma tercihinde sarsıntı yerine parlama kullanılır.
-const reducedMotion = css.slice(css.lastIndexOf("@media (prefers-reduced-motion:reduce)"));
+const reducedMotion = css.slice(css.indexOf("/* Hareket azaltma: sarsıntı yerine kısa parlama"));
 assert.ok(reducedMotion.includes("animation:gs-arena-flash"));
 assert.ok(reducedMotion.includes(".module-signature-effect > i"));
 

@@ -19,9 +19,9 @@ for (const id of [
   assert.ok(html.includes(`id="${id}"`), `${id} eksik`);
 }
 assert.match(app, /if \(!provider\) \{\s*setStatus\("Ödeme altyapısı hazırlanıyor/);
-assert.match(app, /button\.disabled = Boolean\(!storeState\?\.providers\?\.purchase \|\| purchaseInFlight\)/);
-assert.match(app, /buy\.disabled = Boolean\(!storeState\?\.providers\?\.purchase \|\| purchaseInFlight\)/);
-assert.match(app, /host\.hidden = !battleId \|\| !hasRewards \|\| !provider/);
+assert.ok(app.includes('button.disabled = Boolean(!currentPurchaseProvider() || purchaseInFlight)'));
+assert.ok(app.includes('buy.disabled = Boolean(!currentPurchaseProvider() || purchaseInFlight)'));
+assert.ok(app.includes('host.hidden = !battleId || !hasRewards || !provider'));
 
 // Sunucu yalnız açıkça etkinleştirilmiş deneme sağlayıcısını duyurur. Gerçek
 // mağaza ve reklam doğrulaması gelmeden istemci bunları var saymamalıdır.
@@ -32,4 +32,5 @@ assert.match(app, /pendingPurchaseIds\.get\(productId\)/);
 assert.match(app, /pendingPurchaseIds\.set\(productId, transactionId\)/);
 assert.match(app, /pendingPurchaseIds\.delete\(productId\)/);
 assert.match(app, /adRewardReceipts\.has\(battleId\)/);
-assert.match(app, /Yalnız deneme sağlayıcısı var; gerçek reklam SDK'sı bağlanınca burada oynatılır/);
+assert.ok(app.includes('await nativeStore.showRewardedAd({ storeState, userId:participantPlayerId, battleId })'));
+assert.ok(app.includes('await playTestRewardAd()'));

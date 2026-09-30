@@ -8213,6 +8213,18 @@
       ? new GridshardAudioDirector()
       : null;
   gridshardAudioDirector?.bindUserGestureUnlock?.(document);
+  gridshardAudioDirector?.bindAppLifecycle?.(document, globalThis);
+  if (globalThis.Capacitor?.isNativePlatform?.()) {
+    const systemBars = globalThis.Capacitor.Plugins?.SystemBars;
+    const restoreImmersiveMode = () => {
+      if (document.hidden || typeof systemBars?.hide !== "function") return;
+      try { Promise.resolve(systemBars.hide()).catch(() => {}); } catch (_) {}
+    };
+    document.addEventListener("visibilitychange", restoreImmersiveMode);
+    globalThis.addEventListener?.("focus", restoreImmersiveMode);
+    globalThis.addEventListener?.("pageshow", restoreImmersiveMode);
+    restoreImmersiveMode();
+  }
   requestOwnedAudioState("audio_director_ready", {}, { force:true });
 
   function triggerGridshardCue(

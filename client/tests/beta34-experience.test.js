@@ -43,7 +43,7 @@ assert.ok(/document\.createElement\(\s*"details"\s*\)/u.test(app));
 assert.ok(!app.includes('"rotate_module"'));
 
 assert.ok(html.includes('id="battle-pool-detail-preview"'));
-assert.ok(!audio.includes("port_connect"));
+assert.ok(audio.includes("port_connect.wav"));
 assert.ok(styles.includes('.shelf-module-tooltip'));
 
 assert.ok(audio.includes("class GridshardSeamlessLoopTrack"));

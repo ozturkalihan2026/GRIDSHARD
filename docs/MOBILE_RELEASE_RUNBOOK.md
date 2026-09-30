@@ -64,6 +64,12 @@ Paketten önce `python tools/encode_mobile_audio.py` ile OGG/AAC türevleri üre
 - Proje dosyası yoksa veya beklenmeyen bir şablon varsa komut açık hata verir; kilit uygulanmış gibi devam etmez.
 - Bu ayar web tarayıcısının yönünü zorla kilitlemez. Yeni Android büyük ekran/pencere modları ile yeni iPad pencere davranışları yön talebini geçersiz kılabilir; duyarlı CSS korunmalıdır. Telefon dönüşü ve güvenli alan doğrulaması gerçek cihazda ayrıca yapılmalıdır.
 
+### Tam ekran ve arka plan sesi
+
+Capacitor 8'in yerleşik `SystemBars` ayarı uygulama açılırken üst durum ve alt gezinme çubuklarını gizler. İstemci `viewport-fit=cover` ile kullanılabilir alanı doldurur ve uygulama odağa dönünce çubukları yeniden gizler. Android'in sistem kenar kaydırmasıyla çubukları geçici göstermesi normaldir; sistem gezinmesi kalıcı olarak engellenmez.
+
+Ses yöneticisi görünürlük, sayfadan ayrılma ve yerel uygulama odak kaybında müzik ile efektleri durdurur; öne gelince mevcut oyun ekranının müziğini yeniden başlatır. Yeni APK için mobil web paketini yeniden derleyip `cap sync android` ve `assembleDebug` çalıştırmak gerekir; eski APK bu değişiklikleri taşımaz. Gerçek cihaz kontrolü: soğuk açılışta iki sistem çubuğu gizli, Ana Ekran/Son Uygulamalar veya bildirim paneline geçince müzik sessiz, geri dönünce müzik tekrar duyulur; savaş, giriş ve klavye ekranlarında kesilme/taşma ayrıca gözlenir.
+
 Kaynaklar: [Capacitor CLI kancaları](https://capacitorjs.com/docs/cli/hooks), [Android activity yönü](https://developer.android.com/guide/topics/manifest/activity-element#screen), [Apple desteklenen yönler](https://developer.apple.com/documentation/bundleresources/information-property-list/uisupportedinterfaceorientations), [iPad tam ekran davranışı](https://developer.apple.com/documentation/bundleresources/information-property-list/uirequiresfullscreen).
 
 1. Gerçek paket kimliğiyle bir kez `pnpm mobile:add:android` çalıştırın ve oluşan `android/` projesini depoya ekleyin.

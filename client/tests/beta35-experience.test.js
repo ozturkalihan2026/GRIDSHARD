@@ -12,7 +12,7 @@ assert.ok(!app.includes('kind:"select_booster"'));
 assert.ok(!app.includes('kind:"apply_booster"'));
 assert.ok(!html.includes('id="tier-celebration"'));
 assert.ok(!app.includes("presentTierCelebration"));
-assert.ok(!audio.includes('tier_up.wav'));
+assert.ok(audio.includes('tier_up.wav'));
 assert.ok(css.includes("explosion-shockwave-secondary"));
 assert.ok(css.includes("@media (prefers-reduced-motion:reduce)"));
 assert.ok(css.includes("text-transform:uppercase"));

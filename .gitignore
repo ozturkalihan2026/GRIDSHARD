@@ -24,7 +24,11 @@ RELEASE_MANIFEST.json
 *.db
 client/.dart_tool/
 client/build/
+server/data/*
+!server/data/arena_bot_profiles_v1.json
+!server/data/arena_progression_v1.json
 server/data/.auth_signing_key
+server/data/platform_state.json*
 server/data/player_identities.json
 server/data/e2e_playwright_*.json*
 .*

@@ -56,6 +56,7 @@ const menuButtons = ["play", "profile", "statistics", "settings"].map((screen) =
 const genericPanel = () => new FakeElement("generic-panel");
 const document = {
   body: getElement("body"),
+  documentElement: { lang: "tr", style: { setProperty() {} } },
   visibilityState: "visible",
   addEventListener() {},
   getElementById: getElement,

@@ -263,7 +263,7 @@ function createClient() {
   const src=fs.readFileSync(path.join(ROOT,"src/app.js"),"utf8");
   assert.ok(src.includes("heatStatusLabel"));
   assert.ok(src.includes("YÜKSEK ISI"));
-  assert.ok(src.includes("KRİTİK ISI"));
+  assert.ok(src.includes("AŞIRI ISI"));
   assert.ok(src.includes("AŞIRI YÜK"));
   assert.ok(src.includes("Saldırı engellendi: kritik ısı"));
 }
@@ -3308,7 +3308,7 @@ function createClient() {
 
   assert.ok(html.includes('id="ui-build-version"'));
   assert.ok(app.includes("setBattlePressure"));
-  assert.ok(audio.includes('version:"shardglass-seamless-v12"'));
+  assert.ok(/version:"shardglass-seamless-v\d+"/.test(audio));
   assert.ok(audio.includes("menuPoolCrossfadeMs:480"));
   assert.ok(audio.includes("phaseLockedTransition"));
   assert.ok(audio.includes("criticalLayerMaxGain"));

@@ -264,8 +264,7 @@ class PostgresIdentityRepository:
                 cursor = connection.execute(
                     """
                     UPDATE participant_identities
-                    SET salt = %s, verifier = %s, devices = %s,
-                        created_at = NOW()
+                    SET salt = %s, verifier = %s, devices = %s
                     WHERE player_id = %s
                     """,
                     (

@@ -178,6 +178,10 @@ SERVER_DATA_DIR = (
     / "data"
 )
 RUNTIME_MODE = os.environ.get("GRIDSHARD_RUNTIME_MODE", "development").strip().lower()
+if RUNTIME_MODE not in {"development", "production"}:
+    raise RuntimeError(
+        "GRIDSHARD_RUNTIME_MODE yalnız development veya production olabilir."
+    )
 RUNTIME_STRICT = RUNTIME_MODE == "production"
 DATABASE_URL = os.environ.get("DATABASE_URL", "").strip() or None
 REDIS_URL = os.environ.get("REDIS_URL", "").strip() or None

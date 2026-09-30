@@ -1,8 +1,41 @@
 # GRIDSHARD geliştirme kontrol noktası
 
-Güncelleme tarihi: 29 Eylül 2026
+Güncelleme tarihi: 30 Eylül 2026
 
 Bu dosya güncel çalışma paketini ve korunması gereken önceki kararları içerir. Kullanıcı `checkpoint'ten devam et` dediğinde önce bu dosya, ardından `git status --short` okunmalıdır.
+
+## Aktif paket — istemci test triage ve PostgreSQL makbuz defteri (30 Eylül 2026)
+
+1. `[x]` Tam `pnpm test:client` kümesindeki 15 kırık sınıflandırıldı. Eski metin/ses/sürüm/CSS kaynak eşleşmeleri, eski akım yolu beklentileri, kaldırılmış öğretici `runAction` API'si ve sahte DOM eksikliği güncel sözleşmeye uyarlandı. Mağaza testi gerçek native/test sağlayıcı ayrımını, öğretici testi bağlamla ilerlemeyi kontrol ediyor. **Tam küme 68/68 geçti.** Paketleme testi de 8/8 geçti; ilk deneme Windows geçici klasörü sandbox erişiminden dolayı başarısız olmuştu, izinli yeniden koşuda geçti. Bu, gerçek cihaz/E2E ve mağaza sağlayıcısı doğrulaması değildir.
+2. `[~]` SERVER-2/4 hazırlığı: `004_store_ledger.sql` ile makbuz ve işlenmiş mağaza bildirimi tabloları, `PostgresStoreLedgerRepository` ile ilk makbuzu koruma, token özeti tekilliği, iade geçmişi ve bildirim idempotency kaydı eklendi. İzole PostgreSQL 16'daki oyuncu/kimlik/sosyal/makbuz entegrasyonu **3/3**, mevcut JSON makbuz/iade seçili regresyonu **2/2** geçti. Geçici PostgreSQL kümesi durdurulup kaldırıldı. **Canlı `PlatformService` hâlâ JSON kullanıyor; repository bağlanmadı ve hiçbir oyuncu verisi taşınmadı.** Bakiyeyle makbuz kaydının atomik transaction sınırı, önceki JSON kayıtlarının denetimli aktarımı ve iade/silme bağlantısı çözülmeden anahtarlama yapılmamalı.
+3. `[ ]` Sıradaki geçiş kapısı: platform/sosyal repository sınırını profil içindeki arkadaş/blok yazılarıyla tutarlı tek işlem sözleşmesine indir; canlı JSON için salt okunur çakışma/envanter denetimi hazırla. Takım ve preset JSON'larına dokunulmadı. Docker image, gerçek ödeme/iade/AdMob ve uzak sunucu dağıtımı henüz doğrulanmadı.
+
+## Aktif paket — Android tam ekran/ses yaşam döngüsü ve sunucu geçişi kapısı (29 Eylül 2026)
+
+Kullanıcının telefon ekranında Android durum ve gezinme çubukları görünüyordu; uygulama arka plana alındığında müzik sürüyordu. İkinci ekran görüntüsü yalnız gelecekteki uzak sunucu açılış/karşılama akışı için referanstır; üçüncü taraf görseli/markası kullanılmayacaktır. Hosting ve alan adı **son aşama**; henüz satın alınmadı veya uzak sunucu kurulmadı.
+
+1. `[x]` Native Capacitor `SystemBars.hidden` ve açılış/öne dönüşte `SystemBars.hide()` eklendi; `viewport-fit=cover` ayarlandı. Android sistem çubukları kenar hareketiyle geçici olarak açılabilir. Yeni yerel debug APK `.mobile-debug/android/app/build/outputs/apk/debug/app-debug.apk` üretildi; geçici kimliği `com.gridshard.localdebug`, gömülü API adresi `http://192.168.1.105:8879`. Ağ adresi değişirse yeniden derlenmeli. APK paket denetimi geçti. **Kullanıcı telefon denemesini tamamladı ve sorun kalmadığını bildirdi.**
+2. `[x]` Ses yöneticisi `visibilitychange`, `pagehide/pageshow`, native `blur/focus` ile arka planda müzik katmanlarını, sonuç sesini ve efektleri durdurup Web Audio bağlamını askıya alır; öne dönünce güncel oyun durumuna göre müziği geri kurar. **Kullanıcı telefon denemesinde sorun olmadığını bildirdi.**
+3. `[x]` Sunucu geçişi SERVER-0 paket/gizli veri sınırı: `server/data/` içinde yalnız iki statik arena JSON'u kaynak ve Docker paketinde izinli. Daha önce Git tarafından izlenen beş çalışma zamanı JSON/geçici dosyası yalnız Git indeksinden çıkarıldı; **diskteki kopyaları yerinde bırakıldı**, oyuncu verisi silinmedi. Eski Git geçmişindeki kopyalar bu işlemle temizlenmez; yayımlanmış sır/kişisel veri varsa ayrıca olay incelemesi ve anahtar rotasyonu gerekir. `tools/package_release.py` yalnız statik arena dosyalarını paketler. Docker kuralları bu iki zorunlu statik dosyayı yeniden dahil eder; Docker ikilisi bu makinede olmadığı için image doğrulaması bekler.
+4. `[x]` SERVER-1 ilk koruma: `GRIDSHARD_RUNTIME_MODE` yalnız `development`/`production` kabul eder; `prod` gibi yazım hatası artık sessizce geliştirme/JSON yoluna düşmez. Üretimde `DATABASE_URL` zorunluluğu korunur; iki negatif başlangıç testi geçti. İzole yerel PostgreSQL 16 kümesinde oyuncu/kimlik yazma-okuma testi geçti. Kimlik güncellemesinin `created_at` değerini yeniden yazma hatası düzeltildi ve gerçek DB testinde doğrulandı. Test kümesi kapatılıp yalnız kendi geçici dosyaları temizlendi. Platform/takım gibi diğer JSON depoları henüz PostgreSQL'e taşınmadı.
+5. `[~]` SERVER-2 şema hazırlığı: `003_social_runtime.sql` ile sosyal hesap, arkadaşlık/istek, blok, DM/okundu, bildirim, push aboneliği, rapor, davet ve OAuth değişim tabloları eklendi; ayrı, açık onay gerektiren yıkıcı geri alma dosyası var. İzole PostgreSQL 16'da gerçek migration/şema testi geçti; geçici küme kapatılıp temizlendi. **Henüz repository bağlanmadı ve canlı JSON verisi taşınmadı.** Mevcut `PostgresPool.open` bekleyen SQL migration'larını açılışta uyguladığından, bu eklemeler sonraki PostgreSQL açılışında boş tablolar oluşturur; iş akışını değiştirmez.
+6. `[~]` Doğrulama: odaklı mobil yaşam döngüsü ve ses testleri, web derlemesi, paketleme testleri, Gradle debug derlemesi ve APK içerik denetimi geçti. Kullanıcı gerçek telefonda iki hata için sorun kalmadığını doğruladı. SERVER-1/2 gerçek PostgreSQL entegrasyonu 30 Eylül'de 3/3; tam `pnpm test:client` 68/68 geçti. Buna rağmen gerçek mağaza/ödeme, E2E, Docker image ve üretim dağıtım kapıları **yeşil değil**.
+
+### Sunucu geçişi sırası ve açık kapılar
+
+`D:\Projects\Düzeltmeler\Sunucu Geçişi.md` içindeki faz sırası korunur; mevcut koddan çıkarılmış veri envanteri ve üretim engelleri `docs/SERVER_MIGRATION_PLAN.md` içindedir. SERVER-0 **yalnız paket sınırı düzeyinde ilerledi**, tamamlandı sayılmaz. Sır denetimi, sürüm kaydı ve Docker image testi bekliyor.
+
+- `[ ]` SERVER-1: Mevcut PostgreSQL oyuncu/kimlik kalıcılığını üretim tek kaynak kuralına bağla; oyuncu `JSONB` yapısını ilk sürümde koru, sessiz JSON fallback bırakma.
+- `[ ]` SERVER-2: Arkadaşlık, DM, bildirim, engelleme, rapor, davet, push ve mağaza makbuz defterini PostgreSQL'e taşı.
+- `[ ]` SERVER-3: Takım, başvuru, sohbet, istek/bağış, antrenman ve turnuva kayıtlarını PostgreSQL'e taşı.
+- `[ ]` SERVER-4: Ekonomi, satın alma/iade, kupa, ödül, bağış ve yükseltmelerde tek transaction/idempotency sınırı kur.
+- `[ ]` SERVER-5: Bitmiş maç sonuç/katılımcı defteri ve geçmişi; profil/ödül kaydıyla tutarlı atomik işlem.
+- `[ ]` SERVER-6: Redis presence/oturum/ownership yönlendirmesi; savaş simülasyonunu RAM'de tut.
+- `[ ]` SERVER-7: PvP reconnect, süreç kesintisi ve tek worker üretim sertleştirmesi.
+- `[ ]` SERVER-8: Kimlik/cihaz güvenliği; mobil gizli veriyi güvenli depoya taşı ve OAuth üretim sağlayıcılarını doğrula.
+- `[ ]` SERVER-9: Yedekli, dry-run/doğrulamalı JSON → PostgreSQL geçişi; canlı verileri bu aşamadan önce değiştirme.
+- `[ ]` SERVER-10: HTTPS/WSS staging ve üretim dağıtımı. Uzak API ile gerçek açılış/profil geri getirme adımlarına bağlı özgün GRIDSHARD yükleme ekranı bu aşamada yapılacak; sahte yüzde veya üçüncü taraf sanat kullanılmayacak.
+- `[ ]` SERVER-11: İzleme, geri yükleme tatbikatı, CI/yayın kapıları; istemci birim kümesi geçti, E2E/gerçek mağaza/geri yükleme kapıları bekler. Bunlar geçince hosting/alan adı için kullanıcı seçimi ve yetkisi alınır.
 
 ## Aktif paket — GRIDSHARD2.1 tur 13–14 seçici aktarımı (29 Eylül 2026)
 

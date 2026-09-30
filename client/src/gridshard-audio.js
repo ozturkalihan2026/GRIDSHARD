@@ -536,6 +536,75 @@
       this._unlockTarget = null;
       this._unlockHandler = null;
       this._gestureObserved = false;
+      this._appActive = true;
+      this._lifecycleDocument = null;
+      this._lifecycleWindow = null;
+      this._lifecycleHandlers = null;
+    }
+
+    setAppActive(active) {
+      const next = Boolean(active);
+      if (this._appActive === next) return {active:next, changed:false};
+      this._appActive = next;
+      if (!next) {
+        // Android WebView may keep HTMLAudioElement and AudioContext alive after
+        // the Activity is backgrounded. Stop both paths, including fading tracks.
+        this._stopAllMusic();
+        for (const track of [...this._fadeTimerByAudio.keys()]) this._stopAudio(track);
+        this._stopActiveSfx();
+        const context = this._musicContext;
+        if (context && context.state === "running") {
+          Promise.resolve(context.suspend()).then(() => {
+            if (this._appActive) this._resumeAudioContext();
+          }).catch(() => {});
+        }
+      } else if (this.enabled && !this.musicMuted && this.musicVolume > 0) {
+        if ([GRIDSHARD_AUDIO_STATES.VICTORY, GRIDSHARD_AUDIO_STATES.DEFEAT].includes(this.state)) {
+          this.playResultSting(this.state, {restart:true});
+        } else {
+          this._transitionToStateAsset(this.state);
+        }
+      }
+      return {active:next, changed:true};
+    }
+
+    bindAppLifecycle(targetDocument=global.document, targetWindow=global) {
+      if (!targetDocument?.addEventListener || !targetWindow?.addEventListener) return false;
+      this.unbindAppLifecycle();
+      const visible = () => this.setAppActive(!targetDocument.hidden);
+      const hidden = () => this.setAppActive(false);
+      const native = Boolean(targetWindow.Capacitor?.isNativePlatform?.());
+      targetDocument.addEventListener("visibilitychange", visible);
+      targetWindow.addEventListener("pagehide", hidden);
+      targetWindow.addEventListener("pageshow", visible);
+      // Some Android WebViews blur before visibilityState changes on Home/Recents.
+      if (native) {
+        targetWindow.addEventListener("blur", hidden);
+        targetWindow.addEventListener("focus", visible);
+      }
+      this._lifecycleDocument = targetDocument;
+      this._lifecycleWindow = targetWindow;
+      this._lifecycleHandlers = {visible, hidden, native};
+      visible();
+      return true;
+    }
+
+    unbindAppLifecycle() {
+      const doc = this._lifecycleDocument;
+      const win = this._lifecycleWindow;
+      const handlers = this._lifecycleHandlers;
+      if (!doc || !win || !handlers) return false;
+      doc.removeEventListener("visibilitychange", handlers.visible);
+      win.removeEventListener("pagehide", handlers.hidden);
+      win.removeEventListener("pageshow", handlers.visible);
+      if (handlers.native) {
+        win.removeEventListener("blur", handlers.hidden);
+        win.removeEventListener("focus", handlers.visible);
+      }
+      this._lifecycleDocument = null;
+      this._lifecycleWindow = null;
+      this._lifecycleHandlers = null;
+      return true;
     }
 
     _ensureAudioContext() {
@@ -783,6 +852,7 @@
     }
 
     async _resumeAudioContext() {
+      if (!this._appActive) return false;
       const context=this._ensureAudioContext();
       if (!context) return false;
       if (
@@ -801,11 +871,16 @@
           return false;
         }
       }
+      if (!this._appActive) {
+        if (context.state === "running") await context.suspend().catch(() => {});
+        return false;
+      }
       this._publishPlaybackState();
       return context.state === "running";
     }
 
     async _playAudioBuffer(asset,{channel="sfx",outcome=null,gain=1}={}) {
+      if (!this._appActive) return false;
       const context=this._ensureAudioContext();
       const destination=channel === "result"
         ? this._resultGainNode
@@ -813,10 +888,11 @@
       if (!context || !destination) return false;
       try {
         const buffer=await this._loadAudioBuffer(asset);
+        if (!this._appActive) return false;
         if (channel === "result" && this._resultBufferOutcome !== outcome) {
           return false;
         }
-        if (!await this._resumeAudioContext()) return false;
+        if (!await this._resumeAudioContext() || !this._appActive) return false;
         const source=context.createBufferSource();
         source.buffer=buffer;
         source.loop=false;
@@ -944,7 +1020,7 @@
     }
 
     _safePlay(audio) {
-      if (!audio || typeof audio.play !== "function") {
+      if (!this._appActive || !audio || typeof audio.play !== "function") {
         return Promise.resolve(false);
       }
       audio._gridshardPlayRequested=true;
@@ -957,6 +1033,10 @@
       }
       return Promise.resolve(result)
         .then(() => {
+          if (!this._appActive) {
+            audio.pause();
+            return false;
+          }
           this._pendingPlayback.delete(audio);
           this._lastPlaybackError = null;
           return true;
@@ -980,6 +1060,7 @@
     }
 
     async unlock() {
+      if (!this._appActive) return {ok:false, attempted:0, pending:0, state:this.state};
       this._gestureObserved = true;
       const contextReady=await this._resumeAudioContext();
       this._syncWebAudioVolumes();
@@ -1437,6 +1518,8 @@
       state
     ) {
       if (
+        !this._appActive
+        ||
         !this.enabled
         || this.musicMuted
         || this.musicVolume<=0
@@ -1632,7 +1715,7 @@
     }
 
     _playHtmlResultSting(outcome) {
-      if (!this._canPlayAudio()) return Promise.resolve(false);
+      if (!this._appActive || !this._canPlayAudio()) return Promise.resolve(false);
       this._stopResultTrack();
       const asset=GRIDSHARD_MUSIC_ASSETS[outcome];
       const track=this._createPreloadedAudio(asset);
@@ -1654,6 +1737,8 @@
 
     playResultSting(outcome,{restart=true}={}) {
       if (
+        !this._appActive
+        ||
         ![
           GRIDSHARD_AUDIO_STATES.VICTORY,
           GRIDSHARD_AUDIO_STATES.DEFEAT,
@@ -1795,7 +1880,7 @@
     }
 
     _playHtmlCue(cue,{gain=1}={}) {
-      if (!cue || !this._canPlayAudio()) return Promise.resolve(false);
+      if (!this._appActive || !cue || !this._canPlayAudio()) return Promise.resolve(false);
       const audio=this._createPreloadedAudio(cue.asset);
       audio.volume=Math.min(1,this._sfxTargetVolume() * gain);
       this._activeSfx.add(audio);
@@ -1846,7 +1931,8 @@
       }
 
       const audible=
-        this.enabled
+        this._appActive
+        && this.enabled
         && this.sfxEnabled
         && !this.soundMuted
         && this.sfxVolume>0;

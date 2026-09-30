@@ -93,7 +93,7 @@ assert.strictEqual(
 
 assert.strictEqual(
   global.GRIDSHARD_AUDIO_MIX.version,
-  "shardglass-seamless-v12"
+  "shardglass-seamless-v14"
 );
 assert.strictEqual(global.GRIDSHARD_BATTLE_LAYERS.length, 7);
 assert.strictEqual(

@@ -73,6 +73,8 @@ AdMob konsolunun adres doğrulama isteği ve tanınmayan oyuncu kimlikleri kayı
 
 Doğrulanan her gerçek alım sunucudaki **makbuz defterine** yazılır (platform deposu, `store_receipts`): makbuzun sahibi olan oyuncu, ürün ve verdiği (para birimi miktarı ya da etkin sezon). Satın alma belirteci yalnız SHA-256 özetiyle saklanır. Defter oyuncu kaydından bağımsızdır; oyuncu kaydındaki eski makbuz düşse bile iade doğru oyuncudan geri alınır ve aynı makbuz ikinci kez ürün vermez. Hesap silinince oyuncunun defter kayıtları da silinir.
 
+30 Eylül geçiş durumu: bu paragraftaki **canlı** defter hâlâ `PlatformService` JSON deposudur. PostgreSQL `004_store_ledger.sql` ve `PostgresStoreLedgerRepository` izole testten geçti, fakat henüz satın alma/iade yoluna bağlanmadı. Makbuz ile oyuncu bakiyesi tek transaction içinde güncellenip eski kayıtlar denetimli taşınmadan kaynak değiştirilmeyecek.
+
 Geri alma kuralları (`revoke_purchase`):
 
 | Ürün | İade edilince |

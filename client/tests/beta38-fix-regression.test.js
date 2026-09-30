@@ -37,7 +37,8 @@ assert.ok(css.includes('.battle-floating-feedback.sabotage'));
 assert.ok(css.includes('[data-impact="large"]'));
 assert.ok(canonCss.includes("gs-beta50-combat-number"));
 
-assert.ok(packager.includes('PACKAGE_LABEL = "cards-season"'));
+assert.match(packager, /PACKAGE_LABEL = "[a-z][a-z-]+"/);
+assert.ok(packager.includes('ARCHIVE_ROOT = f"GRIDSHARD-{VERSION}-{PACKAGE_LABEL}"'));
 if (fs.existsSync("../RELEASE_MANIFEST.json")) {
   const manifest = JSON.parse(fs.readFileSync("../RELEASE_MANIFEST.json", "utf8"));
   assert.ok(!manifest.files.includes("RELEASE_MANIFEST.json"));

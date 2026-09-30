@@ -18,12 +18,14 @@ assert.ok(css.includes(".daily-meta-wheel.has-result ~ .daily-meta-wheel-focus")
 assert.ok(css.includes("translateY(-50%)"));
 
 assert.ok(app.includes("const poweredPositions = modules"));
-assert.ok(app.includes("poweredPositions.filter((position) => position.x === column)"));
-assert.ok(app.includes("while (cursor.y !== target.y)"));
+assert.ok(app.includes("for (const target of poweredPositions)"));
+assert.ok(app.includes("const stepY = Math.sign(target.y - core.y)"));
+assert.ok(app.includes("energizedEdges.add"));
 
 assert.ok(html.includes('data-team-panel="management"'));
 assert.ok(!html.includes('id="team-management-dialog"'));
-assert.ok(app.includes('isSelf ? "TAKIMDAN AYRIL" : "TAKIMDAN ÇIKAR"'));
+assert.ok(app.includes('action.textContent = "TAKIMDAN AYRIL"'));
+assert.ok(app.includes('remove.textContent = "TAKIMDAN ÇIKAR"'));
 assert.ok(app.includes('/leave`'));
 assert.ok(html.includes('id="battle-emoji-button"'));
 assert.ok(app.includes('kind:"send_battle_emoji"'));
@@ -45,7 +47,7 @@ assert.ok(app.includes('kind:"inbox"'));
 assert.ok(html.indexOf('src="./src/native-push.js"') < html.indexOf('src="./src/app.js"'));
 assert.ok(app.includes("function createRewardChestButton"));
 assert.ok(!app.includes('preview.className = "leaderboard-reward-preview"'));
-assert.ok(!html.includes('id="daily-meta-effect"'));
+assert.ok(html.includes('id="daily-meta-effect"'));
 assert.ok(!html.includes('id="event-period-copy"'));
 
 console.log("beta62 regression contract passed");

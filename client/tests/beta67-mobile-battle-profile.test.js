@@ -18,7 +18,7 @@ assert.ok(!html.includes('id="mobile-return-module"'));
 assert.ok(!html.includes('id="mobile-cancel-placement"'));
 assert.ok(html.includes('class="duel-side duel-enemy-side"'));
 assert.ok(html.includes('class="duel-side duel-player-side"'));
-assert.ok(app.includes('target: "#module-shelf"'));
+assert.ok(app.includes('target:"#module-shelf"'));
 assert.ok(app.includes('card.addEventListener("click", () => deployDeckModule(module))'));
 assert.ok(!app.includes("placeTapSelectionOnCell"));
 assert.ok(!app.includes("tapSelectedModuleId"));

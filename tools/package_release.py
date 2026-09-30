@@ -28,6 +28,10 @@ EXCLUDED_RUNTIME_PATTERNS = (
     "server/data/*.lock",
 )
 EXCLUDED_NAMES = {"RELEASE_MANIFEST.json"}
+STATIC_SERVER_DATA_FILES = {
+    "server/data/arena_bot_profiles_v1.json",
+    "server/data/arena_progression_v1.json",
+}
 GENERATED_ROOT_PATTERNS = (
     "GRIDSHARD-*.zip",
     "GRIDSHARD-*.zip.sha256",
@@ -59,6 +63,10 @@ def release_files() -> list[Path]:
             continue
         normalized = raw.replace("\\", "/")
         if normalized in EXCLUDED_NAMES:
+            continue
+        # Runtime state and secrets are never release inputs, even when a new
+        # filename is accidentally tracked or the ignore rules drift.
+        if normalized.startswith("server/data/") and normalized not in STATIC_SERVER_DATA_FILES:
             continue
         if is_generated_root_artifact(normalized):
             continue
