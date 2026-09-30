@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from pathlib import Path
 from contextlib import contextmanager
 import json
@@ -34,6 +34,7 @@ class PlayerDataSnapshot:
     profile: dict
     statistics: dict
     settings: dict
+    revision: int | None = None
 
     def to_dict(self) -> dict:
         return {
@@ -50,7 +51,7 @@ class PlayerDataRepository(Protocol):
     def save(
         self,
         snapshot: PlayerDataSnapshot,
-    ) -> None: ...
+    ) -> int | None: ...
 
     def load(
         self,
@@ -708,6 +709,7 @@ class PlayerDataStoreService:
             profile=profile_data,
             statistics=statistics.to_view(),
             settings=settings.to_view(),
+            revision=profile.storage_revision,
         )
 
     def save_player(
@@ -717,7 +719,10 @@ class PlayerDataStoreService:
         snapshot = self.build_snapshot(
             player_id
         )
-        self.repository.save(snapshot)
+        revision = self.repository.save(snapshot)
+        if type(revision) is int:
+            self.profile_service._profiles[player_id].storage_revision = revision
+            return replace(snapshot, revision=revision)
         return snapshot
 
     def load_player(
@@ -736,6 +741,7 @@ class PlayerDataStoreService:
         self._restore_profile(
             snapshot.profile
         )
+        self.profile_service._profiles[player_id].storage_revision = snapshot.revision
         self._restore_statistics(
             snapshot.statistics
         )

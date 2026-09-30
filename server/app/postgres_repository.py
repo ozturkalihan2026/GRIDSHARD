@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 from pathlib import Path
+from contextlib import contextmanager, nullcontext
+from threading import local
 from typing import Any
 
 from .auth import AuthenticationError
@@ -43,6 +45,7 @@ class PostgresPool:
             name="gridshard-player-data",
         )
         self._opened = False
+        self._transaction_state = local()
 
     def open(self) -> None:
         if self._opened:
@@ -62,9 +65,30 @@ class PostgresPool:
             self._opened = False
 
     def connection(self):
+        active = getattr(self._transaction_state, "connection", None)
+        if active is not None:
+            return nullcontext(active)
         if not self._opened:
             self.open()
         return self.pool.connection()
+
+    @contextmanager
+    def transaction(self):
+        """Share one PostgreSQL transaction across repository calls on this thread.
+
+        Callers must let failures escape this scope so the outer connection
+        context rolls back all player and platform writes together.
+        """
+        if getattr(self._transaction_state, "connection", None) is not None:
+            raise RuntimeError("İç içe PostgreSQL transaction desteklenmez.")
+        if not self._opened:
+            self.open()
+        with self.pool.connection() as connection:
+            self._transaction_state.connection = connection
+            try:
+                yield connection
+            finally:
+                del self._transaction_state.connection
 
     def health(self) -> dict:
         try:
@@ -96,7 +120,7 @@ class PostgresPlayerDataRepository:
         self.database = pool
         _, self.Jsonb = _load_psycopg()
 
-    def save(self, snapshot: PlayerDataSnapshot) -> None:
+    def save(self, snapshot: PlayerDataSnapshot) -> int:
         try:
             with self.database.connection() as connection:
                 # All profile writers share this transaction lock, including
@@ -117,24 +141,36 @@ class PostgresPlayerDataRepository:
                         ((str(owner), str(other or owner)) for owner, other in names),
                         previous_name=previous[0] if previous else None,
                     )
-                connection.execute(
-                    """
-                    INSERT INTO player_data (player_id, profile, statistics, settings)
-                    VALUES (%s, %s, %s, %s)
-                    ON CONFLICT (player_id) DO UPDATE SET
-                        profile = EXCLUDED.profile,
-                        statistics = EXCLUDED.statistics,
-                        settings = EXCLUDED.settings,
-                        updated_at = NOW()
-                    """,
-                    (
-                        snapshot.player_id,
-                        self.Jsonb(snapshot.profile),
-                        self.Jsonb(snapshot.statistics),
-                        self.Jsonb(snapshot.settings),
-                    ),
+                values = (
+                    snapshot.player_id,
+                    self.Jsonb(snapshot.profile),
+                    self.Jsonb(snapshot.statistics),
+                    self.Jsonb(snapshot.settings),
                 )
+                if snapshot.revision is None:
+                    row = connection.execute(
+                        """INSERT INTO player_data (player_id, profile, statistics, settings)
+                           VALUES (%s, %s, %s, %s)
+                           ON CONFLICT (player_id) DO NOTHING RETURNING revision""",
+                        values,
+                    ).fetchone()
+                else:
+                    row = connection.execute(
+                        """UPDATE player_data
+                           SET profile = %s, statistics = %s, settings = %s,
+                               revision = revision + 1, updated_at = NOW()
+                           WHERE player_id = %s AND revision = %s
+                           RETURNING revision""",
+                        (values[1], values[2], values[3], snapshot.player_id, snapshot.revision),
+                    ).fetchone()
+                if row is None:
+                    raise PlayerDataStoreError(
+                        "Oyuncu kaydı eşzamanlı değişti; yeniden yükleyip deneyin."
+                    )
+                return int(row[0])
         except DisplayNameError:
+            raise
+        except PlayerDataStoreError:
             raise
         except Exception as exc:
             raise PlayerDataStoreError("PostgreSQL oyuncu verisi yazılamadı.") from exc
@@ -144,7 +180,7 @@ class PostgresPlayerDataRepository:
             with self.database.connection() as connection:
                 row = connection.execute(
                     """
-                    SELECT player_id, profile, statistics, settings
+                    SELECT player_id, profile, statistics, settings, revision
                     FROM player_data
                     WHERE player_id = %s
                     """,
@@ -159,6 +195,7 @@ class PostgresPlayerDataRepository:
             profile=dict(row[1]),
             statistics=dict(row[2]),
             settings=dict(row[3]),
+            revision=int(row[4]),
         )
 
     def list_snapshots(self) -> list[PlayerDataSnapshot]:
@@ -166,7 +203,7 @@ class PostgresPlayerDataRepository:
             with self.database.connection() as connection:
                 rows = connection.execute(
                     """
-                    SELECT player_id, profile, statistics, settings
+                    SELECT player_id, profile, statistics, settings, revision
                     FROM player_data
                     ORDER BY updated_at DESC
                     """
@@ -179,6 +216,7 @@ class PostgresPlayerDataRepository:
                 profile=dict(row[1]),
                 statistics=dict(row[2]),
                 settings=dict(row[3]),
+                revision=int(row[4]),
             )
             for row in rows
         ]

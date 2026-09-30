@@ -458,6 +458,8 @@ class PlayerProfile:
     core_skill_points: int = 1
     core_skills: dict[str, tuple[str, ...]] = field(default_factory=dict)
     core_receipts: dict[str, dict] = field(default_factory=dict)
+    # Database concurrency token; never included in a client profile view.
+    storage_revision: int | None = field(default=None, repr=False, compare=False)
 
     @property
     def league_name_tr(self) -> str:

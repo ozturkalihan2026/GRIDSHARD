@@ -172,6 +172,7 @@ def test_startup_without_migrations_touches_no_store(tmp_path):
 
 def test_registry_matches_main_store_environment_and_postgres_scope(tmp_path):
     main = (ROOT / "server" / "app" / "main.py").read_text(encoding="utf-8")
+    registry = (ROOT / "server" / "app" / "json_schema_migrations.py").read_text(encoding="utf-8")
     for variable in (
         "GRIDSHARD_PLATFORM_STATE_PATH",
         "RELAY_TELEMETRY_PATH",
@@ -180,7 +181,8 @@ def test_registry_matches_main_store_environment_and_postgres_scope(tmp_path):
         "GRIDSHARD_AUTH_IDENTITY_PATH",
         "RELAY_PLAYER_DATA_PATH",
     ):
-        assert f'"{variable}"' in main
+        assert f'"{variable}"' in registry or f'"{variable}"' in main
+    assert "RUNTIME_STORE_PATHS = json_store_paths(" in main
     assert "apply_json_store_migrations(" in main
 
     json_only = json_store_paths(tmp_path, {}, postgres=False)

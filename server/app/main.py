@@ -3,7 +3,7 @@ from __future__ import annotations
 from datetime import datetime, timezone
 from uuid import uuid4
 import asyncio
-from contextlib import asynccontextmanager
+from contextlib import asynccontextmanager, contextmanager
 import hashlib
 import logging
 import secrets
@@ -12,7 +12,7 @@ import os
 import json
 from pathlib import Path
 from threading import Lock
-from urllib.parse import parse_qs, urlencode
+from urllib.parse import parse_qs, urlencode, urlsplit
 
 from fastapi import BackgroundTasks, FastAPI, Header, HTTPException, Query, Request, WebSocket
 from fastapi.middleware.cors import CORSMiddleware
@@ -27,12 +27,20 @@ from .auth import (
     load_or_create_signing_key,
 )
 from .platform_services import PlatformService, PlatformServiceError
+from .postgres_platform import PostgresPlatformService
 from .push_delivery import PushSender
 from .json_schema_migrations import apply_json_store_migrations, json_store_paths
+from .clean_install import (
+    ensure_clean_postgres_installation,
+    ensure_clean_runtime_directory,
+    require_runtime_store_path,
+    runtime_data_directory,
+)
 from .product_analytics import (
     ProductAnalyticsService, ProductAnalyticsError, ProductAnalyticsStorageError,
     EVENT_DIMENSIONS, RETENTION_DAYS,
 )
+from .postgres_product_analytics import PostgresProductAnalyticsService
 from .display_names import DisplayNameError
 from .account_export import build_personal_export
 from .postgres_repository import (
@@ -148,6 +156,7 @@ from .telemetry import (
     TelemetryError,
     TelemetryEvent,
 )
+from .postgres_telemetry import PostgresTelemetryRepository
 
 from .static_files import (
     NoCacheStaticFiles,
@@ -160,6 +169,7 @@ from .battle_pool_presets import (
     BattlePoolPresetService,
     JsonBattlePoolPresetRepository,
 )
+from .postgres_battle_pool_presets import PostgresBattlePoolPresetRepository
 from .team_service import (
     JsonTeamRepository,
     REQUEST_POLICY as TEAM_REQUEST_POLICY,
@@ -171,6 +181,7 @@ from .team_service import (
     team_appearance_for_seed,
     team_appearance_unlocked,
 )
+from .postgres_team import PostgresTeamRepository
 
 SERVER_DATA_DIR = (
     Path(__file__).resolve()
@@ -188,20 +199,38 @@ REDIS_URL = os.environ.get("REDIS_URL", "").strip() or None
 
 if RUNTIME_STRICT and not DATABASE_URL:
     raise RuntimeError("Üretim modunda DATABASE_URL zorunludur.")
+if RUNTIME_STRICT and urlsplit(DATABASE_URL).password == "gridshard-local-only":
+    raise RuntimeError("Üretimde örnek PostgreSQL parolası kullanılamaz.")
 if RUNTIME_STRICT and not REDIS_URL:
     raise RuntimeError("Üretim modunda REDIS_URL zorunludur.")
 if RUNTIME_STRICT and not os.environ.get("GRIDSHARD_AUTH_SIGNING_KEY", "").strip():
     raise RuntimeError("Üretim modunda GRIDSHARD_AUTH_SIGNING_KEY zorunludur.")
+
+RUNTIME_DATA_DIR = runtime_data_directory(SERVER_DATA_DIR, RUNTIME_MODE, os.environ)
+RUNTIME_STORE_PATHS = json_store_paths(
+    RUNTIME_DATA_DIR, postgres=DATABASE_URL is not None,
+)
+for _store_path in RUNTIME_STORE_PATHS.values():
+    require_runtime_store_path(_store_path, RUNTIME_DATA_DIR, RUNTIME_MODE)
+ACTIVE_JSON_STORE_PATHS = {
+    key: value for key, value in RUNTIME_STORE_PATHS.items()
+    if not (RUNTIME_STRICT and key in {"platform_state", "teams", "battle_pool_presets", "telemetry"})
+}
+
+
+def _runtime_path(env_name: str, filename: str) -> Path:
+    return require_runtime_store_path(
+        Path(os.environ.get(env_name, str(RUNTIME_DATA_DIR / filename))),
+        RUNTIME_DATA_DIR, RUNTIME_MODE,
+    )
 
 postgres_pool = PostgresPool(DATABASE_URL) if DATABASE_URL else None
 # JSON depoları okunmadan önce bekleyen dosya şema göçleri uygulanır;
 # değişmiş, zinciri bozuk veya bilinmeyen göç geçmişi açılışı durdurur.
 # Üretimde mevcut veriyi dönüştüren göç otomatik uygulanmaz; operatör
 # sunucu dururken tools/json_schema_migrate.py up çalıştırır.
-apply_json_store_migrations(
-    json_store_paths(SERVER_DATA_DIR, postgres=postgres_pool is not None),
-    auto_apply=not RUNTIME_STRICT,
-)
+if not RUNTIME_STRICT:
+    apply_json_store_migrations(ACTIVE_JSON_STORE_PATHS, auto_apply=True)
 runtime_coordinator = RuntimeCoordinator(
     REDIS_URL,
     strict=RUNTIME_STRICT,
@@ -254,8 +283,20 @@ async def _push_delivery_loop(stop: asyncio.Event):
 
 @asynccontextmanager
 async def application_lifespan(_app: FastAPI):
+    global telemetry_service
     if postgres_pool is not None:
         await asyncio.to_thread(postgres_pool.open)
+        if RUNTIME_STRICT:
+            installation_id = await asyncio.to_thread(
+                ensure_clean_postgres_installation, postgres_pool
+            )
+            await asyncio.to_thread(
+                ensure_clean_runtime_directory, RUNTIME_DATA_DIR, installation_id
+            )
+            await asyncio.to_thread(
+                apply_json_store_migrations, ACTIVE_JSON_STORE_PATHS, auto_apply=False
+            )
+            telemetry_service = InMemoryTelemetryService(repository=telemetry_repository)
     await runtime_coordinator.open()
     maintenance_task = asyncio.create_task(_runtime_maintenance_loop())
     push_stop = asyncio.Event()
@@ -306,13 +347,13 @@ if CORS_ORIGINS:
 AUTH_IDENTITY_PATH = Path(
     os.environ.get(
         "GRIDSHARD_AUTH_IDENTITY_PATH",
-        str(SERVER_DATA_DIR / "player_identities.json"),
+        str(RUNTIME_DATA_DIR / "player_identities.json"),
     )
 )
 AUTH_KEY_PATH = Path(
     os.environ.get(
         "GRIDSHARD_AUTH_KEY_PATH",
-        str(SERVER_DATA_DIR / ".auth_signing_key"),
+        str(RUNTIME_DATA_DIR / ".auth_signing_key"),
     )
 )
 participant_auth_service = ParticipantAuthService(
@@ -326,20 +367,18 @@ participant_auth_service = ParticipantAuthService(
         os.environ.get("GRIDSHARD_ACCESS_TOKEN_TTL_SECONDS", "3600")
     ),
 )
-platform_service = PlatformService(
-    Path(
-        os.environ.get(
-            "GRIDSHARD_PLATFORM_STATE_PATH",
-            str(SERVER_DATA_DIR / "platform_state.json"),
-        )
-    ),
-    expose_codes=os.environ.get(
+_platform_options = {
+    "expose_codes": os.environ.get(
         "GRIDSHARD_DEV_EXPOSE_VERIFICATION_CODES", "0" if RUNTIME_STRICT else "1"
     ).strip().lower() in {"1", "true", "yes", "on"},
-    web_base_url=os.environ.get(
+    "web_base_url": os.environ.get(
         "GRIDSHARD_PUBLIC_WEB_URL",
         "https://gridshard.game" if RUNTIME_STRICT else "http://127.0.0.1:8000",
     ),
+}
+platform_service = (
+    PostgresPlatformService(postgres_pool, path=RUNTIME_STORE_PATHS["platform_state"], **_platform_options)
+    if RUNTIME_STRICT else PlatformService(RUNTIME_STORE_PATHS["platform_state"], **_platform_options)
 )
 
 
@@ -516,9 +555,7 @@ player_progression_service = PlayerProgressionService(
     meta_progression_service,
 )
 DEFAULT_TELEMETRY_PATH = (
-    Path(__file__).resolve()
-    .parent.parent
-    / "data"
+    RUNTIME_DATA_DIR
     / "web_test_telemetry.json"
 )
 TELEMETRY_PATH = Path(
@@ -535,14 +572,13 @@ TELEMETRY_MAX_EVENTS = int(
 )
 
 telemetry_repository = (
-    JsonFileTelemetryRepository(
-        TELEMETRY_PATH,
-        max_events=
-            TELEMETRY_MAX_EVENTS,
+    PostgresTelemetryRepository(postgres_pool, max_events=TELEMETRY_MAX_EVENTS)
+    if RUNTIME_STRICT else JsonFileTelemetryRepository(
+        TELEMETRY_PATH, max_events=TELEMETRY_MAX_EVENTS,
     )
 )
 telemetry_service = InMemoryTelemetryService(
-    repository=telemetry_repository
+    repository=None if RUNTIME_STRICT else telemetry_repository
 )
 
 def process_completed_pvp_battle(state) -> None:
@@ -651,9 +687,7 @@ pvp_tick_runner = PvPTickRunner(
 player_settings_service = PlayerSettingsService()
 
 DEFAULT_PLAYER_DATA_PATH = (
-    Path(__file__).resolve()
-    .parent.parent
-    / "data"
+    RUNTIME_DATA_DIR
     / "web_test_players.json"
 )
 PLAYER_DATA_PATH = Path(
@@ -670,13 +704,17 @@ player_data_repository = (
         PLAYER_DATA_PATH
     )
 )
-product_analytics_service = ProductAnalyticsService(
-    Path(os.environ.get("GRIDSHARD_PRODUCT_ANALYTICS_PATH", str(SERVER_DATA_DIR / "product_analytics.json"))),
+_analytics_options = (
+    _runtime_path("GRIDSHARD_PRODUCT_ANALYTICS_PATH", "product_analytics.json"),
     participant_auth_service.signing_key,
     lambda player_id: bool(
         (snapshot := player_data_repository.load(player_id))
         and snapshot.settings.get("analytics_consent") is True
     ),
+)
+product_analytics_service = (
+    PostgresProductAnalyticsService(postgres_pool, *_analytics_options)
+    if RUNTIME_STRICT else ProductAnalyticsService(*_analytics_options)
 )
 DEFAULT_BATTLE_POOL_PRESET_PATH = (
     PLAYER_DATA_PATH.with_name(
@@ -692,9 +730,8 @@ BATTLE_POOL_PRESET_PATH = Path(
     )
 )
 battle_pool_preset_repository = (
-    JsonBattlePoolPresetRepository(
-        BATTLE_POOL_PRESET_PATH
-    )
+    PostgresBattlePoolPresetRepository(postgres_pool)
+    if RUNTIME_STRICT else JsonBattlePoolPresetRepository(BATTLE_POOL_PRESET_PATH)
 )
 battle_pool_preset_service = (
     BattlePoolPresetService(
@@ -712,7 +749,10 @@ TEAM_DATA_PATH = Path(
         str(DEFAULT_TEAM_DATA_PATH),
     )
 )
-team_repository = JsonTeamRepository(TEAM_DATA_PATH)
+team_repository = (
+    PostgresTeamRepository(postgres_pool)
+    if RUNTIME_STRICT else JsonTeamRepository(TEAM_DATA_PATH)
+)
 team_service = TeamService(team_repository)
 
 player_data_store_service = PlayerDataStoreService(
@@ -3741,41 +3781,83 @@ def create_team_module_request(team_id: str, request: TeamModuleRequest) -> dict
     }
 
 
+TEAM_DONATION_LOCK = Lock()
+
+
+@contextmanager
+def _team_donation_transaction(team_id: str, donor_id: str, module_request_id: str):
+    """Serialize a team request and both player shard balances in production."""
+    with TEAM_DONATION_LOCK:
+        involved = [donor_id]
+        try:
+            if RUNTIME_STRICT:
+                with postgres_pool.transaction() as connection:
+                    connection.execute(
+                        "SELECT singleton FROM team_document WHERE singleton = TRUE FOR UPDATE"
+                    )
+                    team = team_service.get_team(team_id)
+                    target = next(
+                        (item for item in team.get("module_requests", [])
+                         if item.get("request_id") == module_request_id), None,
+                    )
+                    if target is None:
+                        raise HTTPException(status_code=404, detail="Modül isteği bulunamadı.")
+                    involved.append(str(target["requester_id"]))
+                    connection.execute(
+                        "SELECT player_id FROM player_data WHERE player_id = ANY(%s) "
+                        "ORDER BY player_id FOR UPDATE",
+                        (sorted(set(involved)),),
+                    )
+                    for player_id in set(involved):
+                        if player_data_repository.load(player_id) is not None:
+                            player_data_store_service.load_player(player_id)
+                    yield target
+            else:
+                team = team_service.get_team(team_id)
+                target = next(
+                    (item for item in team.get("module_requests", [])
+                     if item.get("request_id") == module_request_id), None,
+                )
+                if target is None:
+                    raise HTTPException(status_code=404, detail="Modül isteği bulunamadı.")
+                yield target
+        except BaseException:
+            if RUNTIME_STRICT:
+                for player_id in set(involved):
+                    if player_data_repository.load(player_id) is not None:
+                        player_data_store_service.load_player(player_id)
+                    else:
+                        player_profile_service._profiles.pop(player_id, None)
+            raise
+
+
 @app.post("/teams/{team_id}/module-requests/{module_request_id}/donate")
 def donate_team_module_shard(
     team_id: str,
     module_request_id: str,
     request: TeamActionRequest,
 ) -> dict:
-    donor = _team_member_profile(request.player_id)
-    team = team_service.get_team(team_id)
-    target = next(
-        (
-            item
-            for item in team.get("module_requests", [])
-            if item.get("request_id") == module_request_id
-        ),
-        None,
-    )
-    if target is None:
-        raise HTTPException(status_code=404, detail="Modül isteği bulunamadı.")
-    module_id = str(target.get("module_id", ""))
     try:
-        result = team_service.donate_module_shard(
-            team_id=team_id,
-            player_id=request.player_id,
-            module_request_id=module_request_id,
-            request_id=request.request_id,
-            available_amount=int(donor.module_shards.get(module_id, 0)),
-        )
+        with _team_donation_transaction(team_id, request.player_id, module_request_id) as target:
+            donor = _team_member_profile(request.player_id)
+            module_id = str(target.get("module_id", ""))
+            result = team_service.donate_module_shard(
+                team_id=team_id,
+                player_id=request.player_id,
+                module_request_id=module_request_id,
+                request_id=request.request_id,
+                available_amount=int(donor.module_shards.get(module_id, 0)),
+            )
+            if not result["replayed"]:
+                requester = _team_member_profile(result["requester_id"])
+                donor.module_shards[module_id] = int(donor.module_shards.get(module_id, 0)) - 1
+                requester.module_shards[module_id] = int(requester.module_shards.get(module_id, 0)) + 1
+                persist_player_data(donor.player_id)
+                persist_player_data(requester.player_id)
     except TeamServiceError as exc:
         raise HTTPException(status_code=422, detail=str(exc)) from exc
-    if not result["replayed"]:
-        requester = _team_member_profile(result["requester_id"])
-        donor.module_shards[module_id] = int(donor.module_shards.get(module_id, 0)) - 1
-        requester.module_shards[module_id] = int(requester.module_shards.get(module_id, 0)) + 1
-        persist_player_data(donor.player_id)
-        persist_player_data(requester.player_id)
+    except PlayerDataStoreError as exc:
+        raise HTTPException(status_code=503, detail="Takım bağışı kaydedilemedi; yeniden dene.") from exc
     return {
         **_team_view(team_service.get_team(team_id), request.player_id),
         "operation": result,
@@ -4108,6 +4190,33 @@ def _player_store_view(profile) -> dict:
     )
 
 
+STORE_ECONOMY_LOCK = Lock()
+
+
+@contextmanager
+def _store_economy_transaction(player_id: str):
+    """Commit a profile and its purchase/refund ledger as one unit in production."""
+    with STORE_ECONOMY_LOCK:
+        if not RUNTIME_STRICT:
+            yield
+            return
+        try:
+            with postgres_pool.transaction():
+                # The platform row serializes receipt decisions across workers.
+                with platform_service._lock:
+                    if player_data_repository.load(player_id) is not None:
+                        player_data_store_service.load_player(player_id)
+                    yield
+        except BaseException:
+            # A rolled-back database write must not leave a granted reward in
+            # this process's cached profile for the next request.
+            if player_data_repository.load(player_id) is not None:
+                player_data_store_service.load_player(player_id)
+            else:
+                player_profile_service._profiles.pop(player_id, None)
+            raise
+
+
 @app.get("/store/{player_id}")
 def get_player_store(player_id: str) -> dict:
     profile = player_profile_service.get_or_create(player_id)
@@ -4116,7 +4225,6 @@ def get_player_store(player_id: str) -> dict:
 
 @app.post("/store/{player_id}/purchases")
 def purchase_store_product(player_id: str, request: PurchaseRequest) -> dict:
-    profile = player_profile_service.get_or_create(player_id)
     verified = None
     try:
         if request.provider in STORE_PROVIDERS:
@@ -4132,42 +4240,38 @@ def purchase_store_product(player_id: str, request: PurchaseRequest) -> dict:
             # hesapta yeniden kullanılamaz (makbuz kayıtları oyuncu başınadır).
             if verified.account_token != store_account_token(player_id):
                 raise StoreVerificationError("Mağaza alımı bu hesaba ait değil.")
-            # Makbuz defteri: iade edilmiş makbuz yeniden işlenmez; oyuncu
-            # kaydından eskiyip düşmüş makbuz ikinci kez ürün vermez.
-            ledger_entry = platform_service.store_receipt(
-                f"{verified.provider}:{verified.transaction_id}"
+        with _store_economy_transaction(player_id):
+            profile = player_profile_service.get_or_create(player_id)
+            if verified is not None:
+                ledger_entry = platform_service.store_receipt(
+                    f"{verified.provider}:{verified.transaction_id}"
+                )
+                if ledger_entry is not None:
+                    if ledger_entry.get("player_id") != player_id:
+                        raise StoreVerificationError("Mağaza alımı bu hesaba ait değil.")
+                    if ledger_entry.get("refunded"):
+                        raise StoreVerificationError("Bu alım iade edilmiş.")
+                    # A ledger without the player's receipt is corruption,
+                    # never an invitation to grant the product a second time.
+                    if ledger_entry["key"] not in profile.purchase_receipts:
+                        raise PlatformServiceError("Mağaza makbuzu ve oyuncu kaydı uyuşmuyor.")
+            receipt = process_purchase(
+                profile,
+                request.product_id,
+                request.provider,
+                request.transaction_id,
+                test_mode=PURCHASE_TEST_MODE,
+                now_iso=datetime.now(timezone.utc).isoformat(),
+                verified=verified,
             )
-            if ledger_entry is not None:
-                if ledger_entry.get("player_id") != player_id:
-                    raise StoreVerificationError("Mağaza alımı bu hesaba ait değil.")
-                if ledger_entry.get("refunded"):
-                    raise StoreVerificationError("Bu alım iade edilmiş.")
-                if ledger_entry["key"] not in profile.purchase_receipts:
-                    return {
-                        "receipt": {
-                            "key": ledger_entry["key"],
-                            "product_id": ledger_entry.get("product_id"),
-                            "provider": ledger_entry.get("provider"),
-                            "transaction_id": ledger_entry.get("transaction_id"),
-                            "granted": dict(ledger_entry.get("granted") or {}),
-                            "environment": ledger_entry.get("environment"),
-                            "test": ledger_entry.get("environment") != "production",
-                            "consumed": True,
-                            "replayed": True,
-                        },
-                        "store": _player_store_view(profile),
-                        "meta_progression": meta_progression_service.view(profile),
-                        "profile": profile.to_view(),
-                    }
-        receipt = process_purchase(
-            profile,
-            request.product_id,
-            request.provider,
-            request.transaction_id,
-            test_mode=PURCHASE_TEST_MODE,
-            now_iso=datetime.now(timezone.utc).isoformat(),
-            verified=verified,
-        )
+            persist_player_data(player_id)
+            if verified is not None:
+                platform_service.record_store_receipt(
+                    receipt["key"],
+                    player_id=player_id,
+                    receipt=receipt,
+                    purchase_token=verified.purchase_token,
+                )
     except StoreVerificationError as exc:
         # Geçici doğrulama sorunu 503: istemci alımı onaylamadan saklar ve
         # yeniden gönderir. Kalıcı ret 422.
@@ -4177,35 +4281,27 @@ def purchase_store_product(player_id: str, request: PurchaseRequest) -> dict:
         ) from exc
     except StoreError as exc:
         raise HTTPException(status_code=422, detail=str(exc)) from exc
-    persist_player_data(player_id)
-    if verified is not None:
-        # İade bildirimleri makbuzu defterden bulur (docs/STORE_PURCHASES.md).
-        try:
-            platform_service.record_store_receipt(
-                receipt["key"],
-                player_id=player_id,
-                receipt=receipt,
-                purchase_token=verified.purchase_token,
-            )
-        except PlatformServiceError as exc:
-            logging.getLogger(__name__).error(
-                "Store receipt ledger write failed; refunds for this receipt cannot be matched"
-            )
-            # Hak oyuncu kaydında kalır; istemci aynı makbuzu yeniden gönderip
-            # defter kaydını tamamlayabilsin. Sessiz başarı iade takibini bozar.
-            raise HTTPException(status_code=503, detail="Mağaza makbuzu kaydedilemedi; yeniden dene.") from exc
+    except (PlatformServiceError, PlayerDataStoreError) as exc:
+        raise HTTPException(status_code=503, detail="Mağaza kaydı tamamlanamadı; yeniden dene.") from exc
     # Google Play: hak kaydedildikten sonra alım tüketilir; tüketilmezse
     # istemci aynı belirteçle yeniden gönderir ve ürün ikinci kez verilmez.
-    if (
-        verified is not None
-        and verified.provider == "google_play"
-        and not receipt.get("consumed")
-        and STORE_VERIFIERS.google_play is not None
-        and STORE_VERIFIERS.google_play.consume(verified)
-    ):
-        mark_purchase_consumed(profile, receipt["key"])
-        receipt = {**receipt, "consumed": True}
-        persist_player_data(player_id)
+    try:
+        if (
+            verified is not None
+            and verified.provider == "google_play"
+            and not receipt.get("consumed")
+            and STORE_VERIFIERS.google_play is not None
+            and STORE_VERIFIERS.google_play.consume(verified)
+        ):
+            with _store_economy_transaction(player_id):
+                profile = player_profile_service.get_or_create(player_id)
+                mark_purchase_consumed(profile, receipt["key"])
+                persist_player_data(player_id)
+            receipt = {**receipt, "consumed": True}
+    except (PlatformServiceError, PlayerDataStoreError, StoreVerificationError) as exc:
+        # The grant is already committed; a retry replays the receipt and can
+        # finish the provider consumption without issuing the reward again.
+        raise HTTPException(status_code=503, detail="Alım kaydedildi; mağaza onayı yeniden denenecek.") from exc
     return {
         "receipt": receipt,
         "store": _player_store_view(profile),
@@ -4235,6 +4331,7 @@ def _apply_store_refund(
     transaction_id: str = "",
     purchase_token: str = "",
     reversed_refund: bool = False,
+    event_id: str = "",
 ) -> dict:
     """İade edilen alımın verdiğini geri alır; iade geri çevrildiyse yeniden verir.
 
@@ -4254,24 +4351,40 @@ def _apply_store_refund(
                 "Store refund notification did not match a recorded receipt (%s)", provider
             )
             return {"matched": False}
-        if bool(entry.get("refunded")) != reversed_refund:
-            return {"matched": True, "changed": False}
         player_id = str(entry["player_id"])
-        profile = _existing_player_profile(player_id)
-        changes: dict = {}
-        if profile is not None:
-            changes = (
-                restore_refunded_purchase(profile, entry, now_iso=now_iso)
-                if reversed_refund
-                else revoke_purchase(profile, entry, now_iso=now_iso)
+        with _store_economy_transaction(player_id):
+            if event_id and platform_service.store_notification_seen(event_id):
+                return {"matched": True, "changed": False, "duplicate": True}
+            # Re-read after acquiring the shared database row lock: another
+            # worker may already have processed this provider notification.
+            entry = platform_service.find_store_receipt(
+                provider,
+                transaction_id=transaction_id,
+                purchase_token=purchase_token,
             )
-            persist_player_data(player_id)
-        platform_service.mark_store_receipt_refunded(
-            entry["key"],
-            refunded=not reversed_refund,
-            source=source,
-            at=now_iso,
-        )
+            if entry is None:
+                return {"matched": False}
+            if bool(entry.get("refunded")) != reversed_refund:
+                if event_id:
+                    platform_service.remember_store_notification(event_id)
+                return {"matched": True, "changed": False}
+            profile = _existing_player_profile(player_id)
+            changes: dict = {}
+            if profile is not None:
+                changes = (
+                    restore_refunded_purchase(profile, entry, now_iso=now_iso)
+                    if reversed_refund
+                    else revoke_purchase(profile, entry, now_iso=now_iso)
+                )
+                persist_player_data(player_id)
+            platform_service.mark_store_receipt_refunded(
+                entry["key"],
+                refunded=not reversed_refund,
+                source=source,
+                at=now_iso,
+            )
+            if event_id:
+                platform_service.remember_store_notification(event_id)
     if profile is not None:
         title, body = store_refund_message(entry, reversed_refund=reversed_refund)
         try:
@@ -4296,8 +4409,12 @@ def _handle_google_store_notification(notification: dict) -> dict:
         source="google_rtdn",
         transaction_id=notification["order_id"],
         purchase_token=notification["purchase_token"],
+        event_id=event_id,
     )
-    platform_service.remember_store_notification(event_id)
+    if not result.get("matched"):
+        # Provider notifications can precede the client purchase callback.
+        # A success acknowledgement here would permanently lose the refund.
+        raise HTTPException(status_code=503, detail="Makbuz henüz kayıtlı değil; bildirim yeniden denenecek.")
     return {"ok": True, **result}
 
 
@@ -4354,8 +4471,10 @@ def app_store_notification(request: AppStoreNotificationRequest) -> dict:
         source="app_store_notification",
         transaction_id=notification["transaction_id"],
         reversed_refund=kind == "REFUND_REVERSED",
+        event_id=event_id,
     )
-    platform_service.remember_store_notification(event_id)
+    if not result.get("matched"):
+        raise HTTPException(status_code=503, detail="Makbuz henüz kayıtlı değil; bildirim yeniden denenecek.")
     return {"ok": True, **result}
 
 

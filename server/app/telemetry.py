@@ -557,6 +557,8 @@ class InMemoryTelemetryService:
             self._validate(event)
 
         with self._lock:
+            original_events = list(self._events)
+            original_event_ids = set(self._event_ids)
             stored_events: list[TelemetryEvent] = []
             for event in events:
                 if event.event_id in self._event_ids:
@@ -604,11 +606,15 @@ class InMemoryTelemetryService:
                 stored_events
                 and self.repository is not None
             ):
-                self.repository.save(
-                    list(
-                        self._events
-                    )
-                )
+                try:
+                    if hasattr(self.repository, "append"):
+                        self.repository.append(stored_events)
+                    else:
+                        self.repository.save(list(self._events))
+                except Exception:
+                    self._events = original_events
+                    self._event_ids = original_event_ids
+                    raise
 
             return len(stored_events)
 

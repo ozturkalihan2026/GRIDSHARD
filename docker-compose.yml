@@ -6,7 +6,7 @@ services:
       POSTGRES_USER: gridshard
       POSTGRES_PASSWORD: ${GRIDSHARD_POSTGRES_PASSWORD:-gridshard-local-only}
     volumes:
-      - gridshard-postgres:/var/lib/postgresql/data
+      - gridshard-postgres-clean:/var/lib/postgresql/data
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U gridshard -d gridshard"]
       interval: 5s
@@ -17,7 +17,7 @@ services:
     image: redis:7-alpine
     command: ["redis-server", "--appendonly", "yes", "--maxmemory-policy", "noeviction"]
     volumes:
-      - gridshard-redis:/data
+      - gridshard-redis-clean:/data
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
       interval: 5s
@@ -31,6 +31,7 @@ services:
     environment:
       RELAY_TELEMETRY_MAX_EVENTS: "50000"
       GRIDSHARD_RUNTIME_MODE: ${GRIDSHARD_RUNTIME_MODE:-development}
+      GRIDSHARD_RUNTIME_DATA_DIR: /var/lib/gridshard
       GRIDSHARD_AUTH_SIGNING_KEY: ${GRIDSHARD_AUTH_SIGNING_KEY:-}
       GRIDSHARD_INSTANCE_ID: ${GRIDSHARD_INSTANCE_ID:-}
       GRIDSHARD_PUBLIC_WS_BASE_URL: ${GRIDSHARD_PUBLIC_WS_BASE_URL:-}
@@ -89,7 +90,7 @@ services:
       redis:
         condition: service_healthy
     volumes:
-      - ./server/data:/app/server/data
+      - gridshard-runtime-clean:/var/lib/gridshard
     healthcheck:
       test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health', timeout=2)"]
       interval: 5s
@@ -97,5 +98,6 @@ services:
       retries: 10
 
 volumes:
-  gridshard-postgres:
-  gridshard-redis:
+  gridshard-postgres-clean:
+  gridshard-redis-clean:
+  gridshard-runtime-clean:
