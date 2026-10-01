@@ -104,9 +104,11 @@ App Store Connect → Uygulama → App Bilgileri → "App Store Sunucu Bildiriml
 
 Sunucu `signedPayload` imzasını ve içindeki işlemi Apple kök sertifikasına kadar doğrular. `REFUND` geri alır, `REFUND_REVERSED` yeniden verir; diğer türler (ör. `CONSUMPTION_REQUEST`, `TEST`) onaylanıp geçilir. Başka uygulamaya ait ya da sunucunun kabul etmediği ortamdaki bildirim `200` ve `ignored` ile onaylanır; imza geçersizse `403` (Apple yeniden dener).
 
-### Yedek denetim
+### İade mutabakatı (yedek denetim)
 
-Bildirim teslimi kesilirse: Pub/Sub iletileri 7 gün saklar ve yeniden dener; Apple 3 güne yayılan beş deneme yapar. Daha uzun kesintide Google Play "Voided Purchases API" ve App Store "Get Notification History" ile geçmiş iadeler okunup aynı işleme verilebilir (henüz otomatik değil).
+Bildirim teslimi uzun süre kesilirse sunucu Google Play Voided Purchases API'den tek seferlik iptal/iade kayıtlarını, App Store Get Notification History'den `REFUND` ve `REFUND_REVERSED` kayıtlarını düzenli okur. Google hizmet hesabının finansal veri görüntüleme izni gerekir. Apple kayıtları canlı bildirimle aynı sertifika zincirinden doğrulanır; doğrulanamayan kayıtta kontrol noktası ilerlemez.
+
+Her sağlayıcının başarılı tarama kontrol noktası platform durumunda tutulur. Pencere 6 saat örtüşür; ilk koşu ve uzun kesintide en çok 29 gün geriye bakılır. Makbuzun oyuncu ödülüyle değişimi hedefin PostgreSQL ortak işlem sınırında gerçekleşir; eski tarihli Apple bildirimi daha yeni iade iptalini geri alamaz. Mağaza hatası, eşleşmeyen makbuz veya işlenemeyen kayıt olursa aynı pencere sonraki koşuda tekrar denenir. `GRIDSHARD_STORE_RECONCILE_INTERVAL_SECONDS` varsayılan 1800 saniyedir; en az 300, `0` kapatır. İlk koşu açılıştan yaklaşık bir dakika sonradır. `/health` içinde yalnız son koşu zamanı/başarı durumu görünür, hata ayrıntısı logdadır. Gerçek mağaza hesabıyla uçtan uca doğrulama yapılmadan bu akış yayın hazır sayılmaz.
 
 ## İstemci ayarı
 

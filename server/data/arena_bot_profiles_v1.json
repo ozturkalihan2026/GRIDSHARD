@@ -64,7 +64,7 @@
       "core_type": "core_resonance",
       "battle_pool_ids": [
         "shield",
-        "amplifier",
+        "laser",
         "armor",
         "pulse_cannon",
         "battery",
@@ -248,7 +248,7 @@
         "shield",
         "missile_launcher",
         "battery",
-        "targeting_computer"
+        "laser"
       ],
       "decision_delay_ms": 1230,
       "mistake_rate": 0.125
@@ -428,7 +428,7 @@
         "armor",
         "pulse_cannon",
         "battery",
-        "barrier"
+        "laser"
       ],
       "decision_delay_ms": 1230,
       "mistake_rate": 0.125
@@ -607,7 +607,7 @@
         "repair",
         "barrier",
         "laser",
-        "capacitor",
+        "drone_bay",
         "shield"
       ],
       "decision_delay_ms": 1230,
@@ -785,7 +785,7 @@
       "battle_pool_ids": [
         "shield",
         "cooler",
-        "barrier",
+        "drone_bay",
         "railgun",
         "battery",
         "reflector"
@@ -967,7 +967,7 @@
         "repair",
         "reflector",
         "laser",
-        "capacitor",
+        "railgun",
         "shield"
       ],
       "decision_delay_ms": 1230,
@@ -1148,7 +1148,7 @@
         "armor",
         "plasma_mortar",
         "current_balancer",
-        "barrier"
+        "railgun"
       ],
       "decision_delay_ms": 1230,
       "mistake_rate": 0.125
@@ -1325,7 +1325,7 @@
       "battle_pool_ids": [
         "armor",
         "nano_medic",
-        "barrier",
+        "laser",
         "plasma_mortar",
         "battery",
         "reflector"
@@ -1504,7 +1504,7 @@
       "core_type": "core_overdrive",
       "battle_pool_ids": [
         "shield",
-        "chrono_relay",
+        "laser",
         "battery",
         "railgun",
         "capacitor",
@@ -1684,7 +1684,7 @@
       "core_type": "core_disruptor",
       "battle_pool_ids": [
         "armor",
-        "chrono_relay",
+        "laser",
         "shield",
         "plasma_mortar",
         "current_balancer",
@@ -1865,7 +1865,7 @@
       "battle_pool_ids": [
         "shield",
         "chrono_relay",
-        "phase_armor",
+        "laser",
         "plasma_mortar",
         "battery",
         "prism_shield"
@@ -2043,7 +2043,7 @@
       "rating": 3421,
       "core_type": "core_guardian",
       "battle_pool_ids": [
-        "armor",
+        "laser",
         "chrono_relay",
         "prism_shield",
         "quantum_repeater",

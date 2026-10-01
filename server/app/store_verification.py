@@ -30,7 +30,7 @@ import os
 from pathlib import Path
 import re
 import time
-from urllib.parse import parse_qs, quote
+from urllib.parse import parse_qs, quote, urlencode
 
 
 LOGGER = logging.getLogger("gridshard.store")
@@ -113,6 +113,13 @@ def _json(response) -> dict:
     except (ValueError, UnicodeError):
         return {}
     return payload if isinstance(payload, dict) else {}
+
+
+def _int(value) -> int:
+    try:
+        return int(value or 0)
+    except (TypeError, ValueError):
+        return 0
 
 
 def _http_client():
@@ -244,6 +251,69 @@ class GooglePlayVerifier:
             consumed=int(payload.get("consumptionState", 0)) == 1,
             account_token=str(payload.get("obfuscatedExternalAccountId") or "").strip().lower(),
         )
+
+    def voided_purchases(self, start_ms: int, end_ms: int) -> list[dict]:
+        """Voided Purchases API: aralıkta iade/iptal edilen tek seferlik alımlar.
+
+        API en çok 30 gün geriye bakar ve sayfalıdır (sayfa boyu Google'ın
+        varsayılanı). Ağ ya da yetki hatası geçicidir (`retryable`); mutabakat
+        kontrol noktasını ilerletmez.
+        """
+        voided: list[dict] = []
+        page_token = ""
+        for _page in range(50):
+            # type 0: yalnız tek seferlik ürünler (abonelik yok).
+            params = {
+                "startTime": str(int(start_ms)),
+                "endTime": str(int(end_ms)),
+                "type": "0",
+            }
+            if page_token:
+                params["token"] = page_token
+            url = (
+                f"{GOOGLE_PUBLISHER_BASE}/{quote(self.package_name, safe='')}"
+                f"/purchases/voidedpurchases?{urlencode(params)}"
+            )
+            try:
+                response = self.client.get(
+                    url, headers={"Authorization": f"Bearer {self._access_token()}"}
+                )
+            except StoreVerificationError:
+                raise
+            except Exception:
+                raise StoreVerificationError(
+                    "Google Play iade listesine şu anda ulaşılamıyor.", retryable=True
+                ) from None
+            if response.status_code in {401, 403}:
+                self._token = ("", 0)
+                raise StoreVerificationError(
+                    "Google Play iade listesi yetkisiz; hizmet hesabı izinlerini denetleyin.",
+                    retryable=True,
+                )
+            if response.status_code != 200:
+                raise StoreVerificationError(
+                    "Google Play iade listesine şu anda ulaşılamıyor.", retryable=True
+                )
+            payload = _json(response)
+            for item in payload.get("voidedPurchases") or []:
+                if not isinstance(item, dict):
+                    continue
+                voided.append({
+                    "order_id": str(item.get("orderId") or "").strip(),
+                    "purchase_token": str(item.get("purchaseToken") or "").strip(),
+                    "voided_at_ms": _int(item.get("voidedTimeMillis")),
+                    # 0 kullanıcı, 1 geliştirici, 2 Google; 0–8 iade nedeni.
+                    "source": _int(item.get("voidedSource")),
+                    "reason": _int(item.get("voidedReason")),
+                })
+            pagination = payload.get("tokenPagination")
+            page_token = str((pagination if isinstance(pagination, dict) else {}).get("nextPageToken") or "")
+            if not page_token:
+                break
+        else:
+            # Kayıt kesilirse kontrol noktası ilerleyip kalan iadeler kaybolurdu.
+            raise StoreVerificationError("Google Play iade listesi beklenenden uzun.", retryable=True)
+        return voided
 
     def consume(self, verified: VerifiedPurchase) -> bool:
         """Teslim edilip kaydedilen alımı tüketir; tekrar satın almayı açar."""
@@ -467,6 +537,55 @@ class AppStoreVerifier:
             account_token=str(payload.get("appAccountToken") or "").strip().lower(),
         )
 
+    def notification_history(self, start_ms: int, end_ms: int, *, notification_type: str) -> list[str]:
+        """Get Notification History: aralıktaki seçilen türdeki bildirimlerin imzalı gövdeleri.
+
+        Apple son 180 günü tutar; yanıt sayfalıdır. Gövdeler canlı bildirim gibi
+        `verify_notification` ile doğrulanır.
+        """
+        host = APP_STORE_HOSTS[self.environment]
+        body = {
+            "startDate": int(start_ms),
+            "endDate": int(end_ms),
+            "notificationType": notification_type,
+        }
+        payloads: list[str] = []
+        page_token = ""
+        for _page in range(100):
+            url = f"{host}/inApps/v1/notifications/history"
+            if page_token:
+                url += f"?paginationToken={quote(page_token, safe='')}"
+            try:
+                response = self.client.post(
+                    url, json=body, headers={"Authorization": f"Bearer {self._authorization()}"}
+                )
+            except Exception:
+                raise StoreVerificationError(
+                    "App Store bildirim geçmişine şu anda ulaşılamıyor.", retryable=True
+                ) from None
+            if response.status_code == 401:
+                self._bearer = ("", 0)
+                raise StoreVerificationError(
+                    "App Store bildirim geçmişi yetkisiz; anahtar ayarlarını denetleyin.",
+                    retryable=True,
+                )
+            if response.status_code != 200:
+                raise StoreVerificationError(
+                    "App Store bildirim geçmişine şu anda ulaşılamıyor.", retryable=True
+                )
+            payload = _json(response)
+            for item in payload.get("notificationHistory") or []:
+                signed = str(item.get("signedPayload") or "") if isinstance(item, dict) else ""
+                if signed:
+                    payloads.append(signed)
+            page_token = str(payload.get("paginationToken") or "")
+            if not payload.get("hasMore") or not page_token:
+                break
+        else:
+            # Kayıt kesilirse kontrol noktası ilerleyip kalan iadeler kaybolurdu.
+            raise StoreVerificationError("App Store bildirim geçmişi beklenenden uzun.", retryable=True)
+        return payloads
+
     def verify_notification(self, signed_payload: str) -> dict:
         """App Store Server Notifications V2 gövdesini (``signedPayload``) doğrular.
 
@@ -483,6 +602,7 @@ class AppStoreVerifier:
             "notification_id": str(payload.get("notificationUUID") or "").strip(),
             "type": str(payload.get("notificationType") or "").strip(),
             "subtype": str(payload.get("subtype") or "").strip(),
+            "signed_date": _int(payload.get("signedDate")),
             "transaction_id": "",
             "store_product_id": "",
             "account_token": "",

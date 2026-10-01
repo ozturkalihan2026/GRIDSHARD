@@ -433,7 +433,7 @@ body[data-app-screen="play"] .battle-pool-panel:not([hidden]) {
 }
 
 .season-zero-progress-summary { display:grid;gap:7px; }
-#season-equipped-title { color:var(--gs-corelight-cyan);font-weight:900;letter-spacing:.04em; }
+.season-track-label { color:var(--gs-corelight-cyan);font-weight:900;letter-spacing:.04em; }
 #season-tier-label { color:#fff0a7; }
 .season-progress-track {
   height:13px;

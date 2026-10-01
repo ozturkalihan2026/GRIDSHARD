@@ -4,7 +4,10 @@ from datetime import datetime, timedelta, timezone
 import hashlib
 from threading import RLock, local
 
-from .display_names import DisplayNameError, normalize_display_name, ensure_display_name_available
+from .display_names import (
+    DisplayNameError, normalize_display_name, ensure_display_name_available,
+    default_operator_name, is_automatic_player_id,
+)
 
 from .arena_canon import MODULES, unlocked_reward_module_ids
 from .competition_cycle import CYCLE_EPOCH, CYCLE_LENGTH, competition_cycle, cycle_for_id
@@ -123,12 +126,12 @@ DAILY_MISSIONS = (
 )
 
 OPERATOR_TITLE_STAGES = (
-    {"title_tr": "Devre Çırağı", "required_trophies": 0, "required_wins": 0},
-    {"title_tr": "Devre Teknisyeni", "required_trophies": 300, "required_wins": 3},
-    {"title_tr": "İletken Ustası", "required_trophies": 900, "required_wins": 10},
-    {"title_tr": "Çekirdek Muhafızı", "required_trophies": 1800, "required_wins": 25},
-    {"title_tr": "Arena Mimarı", "required_trophies": 3000, "required_wins": 50},
-    {"title_tr": "GRIDSHARD Efsanesi", "required_trophies": 4200, "required_wins": 100},
+    {"id": "devre_ciragi", "title_tr": "Devre Çırağı", "required_trophies": 0, "required_wins": 0, "reward_circuit_credits": 0},
+    {"id": "devre_teknisyeni", "title_tr": "Devre Teknisyeni", "required_trophies": 300, "required_wins": 3, "reward_circuit_credits": 100},
+    {"id": "iletken_ustasi", "title_tr": "İletken Ustası", "required_trophies": 900, "required_wins": 10, "reward_circuit_credits": 150},
+    {"id": "cekirdek_muhafizi", "title_tr": "Çekirdek Muhafızı", "required_trophies": 1800, "required_wins": 25, "reward_circuit_credits": 200},
+    {"id": "arena_mimari", "title_tr": "Arena Mimarı", "required_trophies": 3000, "required_wins": 50, "reward_circuit_credits": 300},
+    {"id": "gridshard_efsanesi", "title_tr": "GRIDSHARD Efsanesi", "required_trophies": 4200, "required_wins": 100, "reward_circuit_credits": 500},
 )
 
 
@@ -154,6 +157,24 @@ def operator_title_progression(rating: int, wins: int) -> dict:
         "next": dict(next_stage) if next_stage else None,
         "stages": [dict(stage) for stage in OPERATOR_TITLE_STAGES],
     }
+
+
+def operator_title_view(rating: int, wins: int, claimed_ids=()) -> dict:
+    """Resolve title progress and one-time reward eligibility."""
+    progression = operator_title_progression(rating, wins)
+    current_id = progression["current"]["id"]
+    current_index = next(index for index, stage in enumerate(OPERATOR_TITLE_STAGES) if stage["id"] == current_id)
+    claimed = set(claimed_ids)
+    stages = []
+    for index, stage in enumerate(progression["stages"]):
+        reached = index <= current_index
+        stages.append({
+            **stage,
+            "reached": reached,
+            "claimed": stage["id"] in claimed,
+            "claimable": reached and stage["reward_circuit_credits"] > 0 and stage["id"] not in claimed,
+        })
+    return {**progression, "stages": stages, "trophies": max(0, int(rating)), "wins": max(0, int(wins))}
 
 
 # Herkese açık gerçek emojiler; savaşta ilk günden paylaşılabilir.
@@ -384,6 +405,7 @@ class PlayerProfile:
     seen_notification_keys: tuple[str, ...] = ()
     unlocked_titles: tuple[str, ...] = ("Devre Çırağı",)
     equipped_title: str = "Devre Çırağı"
+    operator_title_claims: tuple[str, ...] = ()
     unlocked_avatar_ids: tuple[str, ...] = ("default",)
     selected_avatar_id: str = "default"
     unlocked_avatar_frame_ids: tuple[str, ...] = ("none",)
@@ -478,9 +500,10 @@ class PlayerProfile:
     def to_view(self) -> dict:
         from .meta_progression import rank_stage_for_rating
 
-        title_progression = operator_title_progression(
+        title_progression = operator_title_view(
             self.rating,
             int(self.lifetime_stats.get("wins", 0)),
+            self.operator_title_claims,
         )
         current_title = title_progression["current"]["title_tr"]
         archives = [dict(item) for item in self.season_archives]
@@ -831,6 +854,7 @@ class PlayerProfileService:
     def __init__(self, now_func=None):
         self._profiles: dict[str, PlayerProfile] = {}
         self.name_lock = RLock()
+        self.persisted_display_names = lambda: ()
         self._now_func = now_func or (lambda: datetime.now(timezone.utc))
         self._settlement_clock = local()
 
@@ -863,8 +887,24 @@ class PlayerProfileService:
                 "Oyuncu kimliği boş olamaz."
             )
 
+        with self.name_lock:
+            return self._get_or_create(player_id, display_name=display_name, day_key=day_key)
+
+    def _default_display_name(self, player_id: str) -> str:
+        if not is_automatic_player_id(player_id):
+            return player_id
+        return default_operator_name(player_id, (
+            *self.persisted_display_names(),
+            *((owner, other.display_name) for owner, other in self._profiles.items()),
+        ))
+
+    def _get_or_create(self, player_id: str, *, display_name=None, day_key=None) -> PlayerProfile:
         profile = self._profiles.get(player_id)
         if profile is not None:
+            # Upgrade only the untouched auto-ID name, never a chosen name.
+            # Normal persistence saves this with the other profile changes.
+            if profile.display_name == player_id and is_automatic_player_id(player_id):
+                profile.display_name = self._default_display_name(player_id)
             self._sync_season(profile)
             self._sync_daily_missions(profile, day_key)
             self._sync_login_period(profile)
@@ -874,8 +914,8 @@ class PlayerProfileService:
             player_id=player_id,
             display_name=(
                 display_name
-                if display_name
-                else player_id
+                if display_name and display_name != player_id
+                else self._default_display_name(player_id)
             ),
             active_meta_season_id=season_descriptor(self.now())["id"],
         )

@@ -3,8 +3,8 @@
 <head>
   <meta name="theme-color" content="#07142B" />
   <meta name="application-name" content="GRIDSHARD" />
-  <link rel="icon" type="image/png" sizes="32x32" href="./assets/branding/gridshard-favicon-32.png?v=beta66">
-  <link rel="icon" type="image/png" sizes="192x192" href="./assets/branding/gridshard-favicon-192.png?v=beta66">
+  <link rel="icon" type="image/png" sizes="32x32" href="./assets/branding/gridshard-favicon-32.png?v=brand-20261001">
+  <link rel="icon" type="image/png" sizes="192x192" href="./assets/branding/gridshard-favicon-192.png?v=brand-20261001">
   <link rel="apple-touch-icon" href="./assets/branding/gridshard-store-icon-1024.png">
   <link rel="manifest" href="./manifest.webmanifest">
   <meta charset="utf-8" />
@@ -20,10 +20,44 @@
 </head>
 <!-- Açılış ekranı betikler yüklenmeden de Ev düzeninde çizilir (Ev'e özgü
      CSS ilk boyamadan geçerli). Router da "menu" ile başlar. -->
-<body data-app-screen="menu">
-  <section id="startup-loading" class="startup-loading" aria-labelledby="startup-title" aria-busy="true">
-    <div class="startup-brand"><img src="./assets/branding/gridshard-store-icon-1024.png" width="128" height="128" alt=""/><h1 id="startup-title">GRIDSHARD</h1><p>Devreni Kur. Çekirdeği Kır.</p></div>
-    <div class="startup-bottom"><p id="startup-status" role="status" aria-live="polite">Sunucuya bağlanılıyor…</p><progress id="startup-progress" value="0" max="4" aria-label="Tamamlanan açılış adımları"></progress><button id="startup-retry" type="button" hidden>Yeniden Dene</button></div>
+<body data-app-screen="menu" data-boot="loading">
+  <!-- Original GRIDSHARD2.1 branding and animations; the current server-backed
+       startup-loading.js still decides when the game is actually ready. -->
+  <section id="startup-loading" class="boot-screen" data-state="loading" aria-labelledby="startup-title" aria-busy="true">
+    <div class="boot-screen-backdrop" aria-hidden="true">
+      <span class="boot-trace boot-trace-a"></span>
+      <span class="boot-trace boot-trace-b"></span>
+      <span class="boot-trace boot-trace-c"></span>
+      <span class="boot-trace boot-trace-d"></span>
+    </div>
+    <div class="boot-screen-meta">
+      <span id="boot-version" class="boot-version" data-version="2.1.0-beta.72">Sürüm: 2.1.0-beta.72</span>
+      <button id="boot-player-id" class="boot-player-id" type="button" aria-label="Kimliğini kopyala" title="Kimliğini kopyala" hidden>
+        <span>Kimliğin:</span>
+        <strong id="boot-player-id-value"></strong>
+        <svg aria-hidden="true" viewBox="0 0 24 24"><rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2"/></svg>
+      </button>
+    </div>
+    <div class="boot-brand">
+      <div class="boot-emblem" aria-hidden="true">
+        <span class="boot-emblem-ring"></span>
+        <span class="boot-emblem-ring boot-emblem-ring-outer"></span>
+        <img class="boot-emblem-art" src="./assets/branding/gridshard-emblem.webp" alt="" width="768" height="768" decoding="async" fetchpriority="high">
+      </div>
+      <h1 id="startup-title" class="boot-title">GRIDSHARD</h1>
+      <p class="boot-tagline">Devreni Kur. Çekirdeği Kır.</p>
+    </div>
+    <div class="boot-progress">
+      <p id="boot-status" class="boot-status" role="status" aria-live="polite">Oyun başlatılıyor…</p>
+      <div id="boot-bar" class="boot-bar" role="progressbar" aria-label="Yükleme ilerlemesi" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+        <span id="boot-bar-fill" class="boot-bar-fill"></span>
+      </div>
+      <span id="boot-percent" class="boot-percent" aria-hidden="true">%0</span>
+      <div id="boot-error" class="boot-error" role="alert" hidden>
+        <p id="boot-error-message"></p>
+        <button id="boot-retry" class="boot-retry" type="button">TEKRAR DENE</button>
+      </div>
+    </div>
   </section>
   <main class="battle-shell">
     <header class="battle-header" aria-label="Savaş üst bilgi barı">
@@ -50,7 +84,7 @@
       <div class="lobby-player-card">
         <span class="lobby-ribbon-kicker">OPERATÖR</span>
         <strong id="lobby-player-name">Oyuncu</strong>
-        <span id="lobby-player-details">Devre Çırağı · 🏆 0</span>
+        <button id="lobby-player-details" type="button" aria-haspopup="dialog" aria-controls="operator-titles-dialog" title="Unvanlar">Devre Çırağı · 🏆 0</button>
       </div>
       <div class="lobby-season-progress">
         <div>
@@ -133,6 +167,20 @@
       <span id="home-matchmaking-copy">Uygun rakip aranıyor…</span>
       <button id="home-matchmaking-cancel" type="button">İPTAL ET</button>
     </div>
+
+    <dialog id="operator-titles-dialog" class="operator-titles-dialog" aria-labelledby="operator-titles-title">
+      <header class="operator-titles-header"><span>OPERATÖR UNVANLARI</span><h2 id="operator-titles-title">Devre Çırağı</h2><p id="operator-titles-summary">0 kupa · 0 galibiyet</p></header>
+      <section id="operator-titles-next" class="operator-titles-next" aria-labelledby="operator-titles-next-title">
+        <strong id="operator-titles-next-title">Sonraki: Devre Teknisyeni</strong>
+        <div class="operator-titles-meter"><span>Kupa</span><progress id="operator-titles-trophy-progress" max="1" value="0"></progress><small id="operator-titles-trophy-copy">0 / 300</small></div>
+        <div class="operator-titles-meter"><span>Galibiyetler</span><progress id="operator-titles-win-progress" max="1" value="0"></progress><small id="operator-titles-win-copy">0 / 3</small></div>
+      </section>
+      <p id="operator-titles-complete" class="operator-titles-complete"></p>
+      <p class="operator-titles-note">Unvanlar kupa ve galibiyetle açılır; her yeni unvan bir kez Devre Kredisi ödülü verir.</p>
+      <p id="operator-titles-status" role="status" aria-live="polite"></p>
+      <ol id="operator-titles-list" class="operator-titles-list"></ol>
+      <footer class="operator-titles-footer"><button id="operator-titles-close" type="button">Kapat</button></footer>
+    </dialog>
 
     <dialog id="arena-detail-dialog" class="arena-detail-dialog" aria-labelledby="arena-detail-title">
       <header class="arena-road-header">
@@ -618,7 +666,6 @@
     </section>
 
     <section class="profile-summary-panel avatar-customization-screen" id="avatar-customization-screen" data-screen-panel="avatar" hidden>
-      <div class="avatar-live-preview"><span id="avatar-preview" class="profile-avatar" data-avatar="default" data-frame="none" aria-hidden="true">◇</span><div><strong id="avatar-preview-name">Oyuncu</strong><small id="avatar-preview-title">Devre Çırağı</small></div></div>
       <section class="avatar-picker-section"><div class="profile-section-heading"><span>KİMLİK</span><h3>Avatarlar</h3></div><div id="avatar-choice-list" class="avatar-choice-list"></div></section>
       <section class="avatar-picker-section"><div class="profile-section-heading"><span>ÇERÇEVE</span><h3>Avatar Çerçeveleri</h3></div><div id="avatar-frame-choice-list" class="avatar-choice-list"></div></section>
       <section class="avatar-picker-section"><div class="profile-section-heading"><span>SAVAŞ İFADESİ</span><h3>Emojiler</h3></div><div id="battle-emoji-choice-list" class="avatar-choice-list"></div></section>
@@ -667,7 +714,7 @@
 
     <section class="engagement-summary-panel season-rewards-screen" id="season-rewards-screen" data-screen-panel="rewards" aria-label="Sezon Ödülleri" hidden>
       <div class="season-zero-progress-summary">
-        <div><span id="season-equipped-title">Devre Çırağı</span><strong id="season-tier-label">Kademe 0 / 40</strong></div>
+        <div><span class="season-track-label">Sezon Ödülleri</span><strong id="season-tier-label">Kademe 0 / 40</strong></div>
         <div class="season-progress-track" role="progressbar" aria-label="Sezon kademe ilerlemesi" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><span id="season-progress-fill"></span></div>
         <div class="season-progress-meta"><small id="season-progress-copy">0 Deneyim kaldı</small><small id="season-progress-ratio" title="Mevcut kademeye kadar toplanan deneyim / bir sonraki kademenin deneyimi">0 / 100 Deneyim</small></div>
       </div>
@@ -1194,6 +1241,7 @@
   <script src="./src/i18n-catalog.js"></script>
   <script src="./src/i18n.js"></script>
   <script src="./src/canon-data.js"></script>
+  <script src="./src/boot-screen.js"></script>
   <script src="./src/startup-loading.js"></script>
   <script src="./src/app.js"></script>
   <!-- /build:scripts -->

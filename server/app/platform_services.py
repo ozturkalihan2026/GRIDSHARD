@@ -199,16 +199,19 @@ class PlatformService(PushOutbox):
             return None
         return dict(entry)
 
-    def mark_store_receipt_refunded(self, key: str, *, refunded: bool, source: str, at: str) -> None:
+    def mark_store_receipt_refunded(self, key: str, *, refunded: bool, source: str, at: str, event_at_ms: int = 0) -> None:
         with self._lock:
             data = self._read()
             entry = data.get("store_receipts", {}).get(key)
             if entry is None:
                 return
-            entry["refunded"] = bool(refunded)
-            history = list(entry.get("refund_history") or [])
-            history.append({"refunded": bool(refunded), "source": str(source), "at": str(at)})
-            entry["refund_history"] = history[-10:]
+            if event_at_ms:
+                entry["refund_event_at_ms"] = max(int(entry.get("refund_event_at_ms") or 0), int(event_at_ms))
+            if bool(entry.get("refunded")) != bool(refunded):
+                entry["refunded"] = bool(refunded)
+                history = list(entry.get("refund_history") or [])
+                history.append({"refunded": bool(refunded), "source": str(source), "at": str(at)})
+                entry["refund_history"] = history[-10:]
             self._write(data)
 
     def store_notification_seen(self, notification_id: str) -> bool:
@@ -224,6 +227,25 @@ class PlatformService(PushOutbox):
             if overflow > 0:
                 for old in sorted(seen, key=seen.get)[:overflow]:
                     seen.pop(old, None)
+            self._write(data)
+
+    def store_reconciliation_checkpoint(self, provider: str) -> int:
+        """İade mutabakatında sağlayıcının son başarıyla okunan zamanı (ms; yoksa 0)."""
+        with self._lock:
+            entry = self._read().get("store_reconciliation", {}).get(provider) or {}
+        return int(entry.get("checkpoint_ms") or 0)
+
+    def record_store_reconciliation(
+        self, provider: str, *, checkpoint_ms: int, at: str, seen: int, applied: int
+    ) -> None:
+        """Başarılı mutabakat koşusunu yazar; kontrol noktası geri gitmez."""
+        with self._lock:
+            data = self._read()
+            entry = data.setdefault("store_reconciliation", {}).setdefault(provider, {})
+            entry["checkpoint_ms"] = max(int(entry.get("checkpoint_ms") or 0), int(checkpoint_ms))
+            entry["last_ok_at"] = str(at)
+            entry["last_seen"] = int(seen)
+            entry["last_applied"] = int(applied)
             self._write(data)
 
     def _read(self) -> dict:

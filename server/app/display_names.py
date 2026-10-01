@@ -1,5 +1,7 @@
 """One canonical name policy for memory, JSON and PostgreSQL writes."""
 from collections.abc import Iterable
+import hashlib
+import re
 import unicodedata
 
 
@@ -24,6 +26,29 @@ def display_name_key(value: str) -> str:
     # spaces must not let another account impersonate an existing name.
     value = unicodedata.normalize("NFKC", value)
     return " ".join(value.split()).translate(str.maketrans("Iİı", "iii")).casefold()
+
+
+def is_automatic_player_id(value: str) -> bool:
+    # Both UUID and timestamp/random fallback IDs emitted by the client.
+    return re.fullmatch(r"wt-[a-z0-9_-]{6,69}", value) is not None
+
+
+def default_operator_name(player_id: str, existing: Iterable[tuple[str, str]] = ()) -> str:
+    """A short, stable public name; the authentication ID stays untouched."""
+    if not is_automatic_player_id(player_id):
+        return player_id
+    names = tuple(existing)
+    for attempt in range(1000):
+        suffix = hashlib.sha256(f"{player_id}:{attempt}".encode("utf-8")).hexdigest()[:8].upper()
+        candidate = f"Pilot-{suffix}"
+        try:
+            ensure_display_name_available(player_id, candidate, names)
+        except DisplayNameError as exc:
+            if exc.code != "taken":
+                raise
+        else:
+            return candidate
+    raise DisplayNameError("Bu oyuncu adı zaten kullanılıyor. Başka bir ad seç.", code="taken")
 
 
 def ensure_display_name_available(

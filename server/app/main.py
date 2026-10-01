@@ -156,6 +156,7 @@ from .store_catalog import (
     verify_ad_view,
 )
 from .store_verification import StoreVerificationError, StoreVerifiers
+from .store_reconciliation import StoreReconciler
 from .player_data_store import (
     JsonFilePlayerDataRepository,
     PlayerDataStoreError,
@@ -317,12 +318,37 @@ async def _push_delivery_loop(stop: asyncio.Event):
             pass
 
 
+async def _store_reconciliation_loop(stop: asyncio.Event):
+    delay = min(60.0, STORE_RECONCILE_INTERVAL_SECONDS)
+    while not stop.is_set():
+        try:
+            await asyncio.wait_for(stop.wait(), timeout=delay)
+            return
+        except asyncio.TimeoutError:
+            pass
+        if RUNTIME_STRICT and not (runtime_coordinator.owns_worker and postgres_worker_guard.held):
+            return
+        try:
+            await asyncio.to_thread(
+                store_reconciler.run_once,
+                should_stop=lambda: stop.is_set() or (
+                    RUNTIME_STRICT
+                    and not (runtime_coordinator.owns_worker and postgres_worker_guard.held)
+                ),
+            )
+        except Exception:
+            logging.getLogger(__name__).warning("Store refund reconciliation failed; retrying at the next interval")
+        delay = STORE_RECONCILE_INTERVAL_SECONDS
+
+
 @asynccontextmanager
 async def application_lifespan(_app: FastAPI):
     global telemetry_service
     maintenance_task = None
     push_stop = asyncio.Event()
     push_task = None
+    reconcile_stop = asyncio.Event()
+    reconcile_task = None
     try:
         if postgres_pool is not None:
             await asyncio.to_thread(postgres_pool.open)
@@ -346,13 +372,18 @@ async def application_lifespan(_app: FastAPI):
         platform_service.push_sender = PushSender.from_environment()
         push_task = asyncio.create_task(_push_delivery_loop(push_stop))
         maintenance_task = asyncio.create_task(_runtime_maintenance_loop())
+        if STORE_RECONCILE_INTERVAL_SECONDS and store_reconciler.enabled():
+            reconcile_task = asyncio.create_task(_store_reconciliation_loop(reconcile_stop))
         yield
     finally:
         try:
             push_stop.set()
+            reconcile_stop.set()
             if push_task is not None:
                 # Süren sınırlı HTTP çağrısı bitmeden istemci kapatılmaz.
                 await push_task
+            if reconcile_task is not None:
+                await reconcile_task
             platform_service.push_sender.close()
         finally:
             try:
@@ -864,13 +895,27 @@ MATCHMAKING_AI_ONLY = os.environ.get(
 PURCHASE_TEST_MODE = purchase_test_mode_enabled(RUNTIME_STRICT)
 AD_TEST_MODE = ad_test_mode_enabled(RUNTIME_STRICT)
 STORE_VERIFIERS = StoreVerifiers.from_environment()
+
+
+def _store_reconcile_interval_seconds() -> float:
+    raw = os.environ.get("GRIDSHARD_STORE_RECONCILE_INTERVAL_SECONDS", "").strip()
+    try:
+        value = float(raw) if raw else 1800.0
+    except ValueError:
+        raise RuntimeError("GRIDSHARD_STORE_RECONCILE_INTERVAL_SECONDS saniye cinsinden sayı olmalıdır.") from None
+    if value <= 0:
+        return 0.0
+    return max(value, 300.0)
+
+
+STORE_RECONCILE_INTERVAL_SECONDS = _store_reconcile_interval_seconds()
 DAILY_META_ROLL_LOCK = Lock()
 SOCIAL_LOCK = RLock()
 RUNTIME_BOOT_ID = uuid4().hex
 REWARD_INBOX_LOCK = Lock()
 PERSISTENT_STATE = PersistentState()
 ECONOMIC_OPERATIONS = frozenset({
-    "claim_reward_inbox_item", "claim_player_arena_reward", "upgrade_player_collection_module",
+    "claim_reward_inbox_item", "claim_player_arena_reward", "claim_player_operator_title_reward", "upgrade_player_collection_module",
     "claim_player_progression_gift_chest", "open_player_progression_chest",
     "open_all_available_player_progression_chests", "buy_store_chest", "claim_battle_ad_reward",
     "unlock_player_core_skill", "upgrade_player_core", "choose_player_module_talent",
@@ -4571,6 +4616,18 @@ def claim_player_arena_reward(player_id: str, node_id: str, request: MetaOperati
     return {"receipt": receipt, "meta_progression": meta_progression_service.view(profile), "profile": profile.to_view()}
 
 
+@app.post("/profile/{player_id}/operator-titles/{title_id}/claim")
+@persistent_operation
+def claim_player_operator_title_reward(player_id: str, title_id: str, request: MetaOperationRequest) -> dict:
+    profile = player_profile_service.get_or_create(player_id)
+    try:
+        receipt = meta_progression_service.claim_operator_title_reward(profile, title_id)
+    except MetaProgressionError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+    persist_player_data(player_id)
+    return {"receipt": receipt, "meta_progression": meta_progression_service.view(profile), "profile": profile.to_view()}
+
+
 @app.post(
     "/profile/{player_id}/meta-progression/modules/{module_definition_id}/upgrade"
 )
@@ -4853,6 +4910,7 @@ def _apply_store_refund(
     purchase_token: str = "",
     reversed_refund: bool = False,
     event_id: str = "",
+    event_at_ms: int = 0,
 ) -> dict:
     """İade edilen alımın verdiğini geri alır; iade geri çevrildiyse yeniden verir.
 
@@ -4885,7 +4943,17 @@ def _apply_store_refund(
             )
             if entry is None:
                 return {"matched": False}
+            last_event_at_ms = int(entry.get("refund_event_at_ms") or 0)
+            if event_at_ms and event_at_ms < last_event_at_ms:
+                if event_id:
+                    platform_service.remember_store_notification(event_id)
+                return {"matched": True, "changed": False, "stale": True}
             if bool(entry.get("refunded")) != reversed_refund:
+                if event_at_ms > last_event_at_ms:
+                    platform_service.mark_store_receipt_refunded(
+                        entry["key"], refunded=bool(entry.get("refunded")), source=source,
+                        at=now_iso, event_at_ms=event_at_ms,
+                    )
                 if event_id:
                     platform_service.remember_store_notification(event_id)
                 return {"matched": True, "changed": False}
@@ -4903,6 +4971,7 @@ def _apply_store_refund(
                 refunded=not reversed_refund,
                 source=source,
                 at=now_iso,
+                event_at_ms=event_at_ms,
             )
             if event_id:
                 platform_service.remember_store_notification(event_id)
@@ -4962,6 +5031,30 @@ class AppStoreNotificationRequest(BaseModel):
     signedPayload: str
 
 
+def _handle_app_store_notification(notification: dict, *, source: str = "app_store_notification") -> dict:
+    kind = notification["type"]
+    if notification["ignored"]:
+        return {"ok": True, "ignored": notification["ignored"]}
+    if kind not in {"REFUND", "REFUND_REVERSED"} or not notification["transaction_id"]:
+        return {"ok": True, "ignored": kind.lower() or "type"}
+    event_id = "apple:" + (
+        notification["notification_id"] or f"{kind}:{notification['transaction_id']}"
+    )
+    if platform_service.store_notification_seen(event_id):
+        return {"ok": True, "duplicate": True}
+    result = _apply_store_refund(
+        provider="app_store",
+        source=source,
+        transaction_id=notification["transaction_id"],
+        reversed_refund=kind == "REFUND_REVERSED",
+        event_id=event_id,
+        event_at_ms=int(notification.get("signed_date") or 0),
+    )
+    if not result.get("matched"):
+        raise HTTPException(status_code=503, detail="Makbuz henüz kayıtlı değil; bildirim yeniden denenecek.")
+    return {"ok": True, **result}
+
+
 @app.post("/billing/app-store/notifications")
 def app_store_notification(request: AppStoreNotificationRequest) -> dict:
     """App Store Server Notifications V2.
@@ -4977,26 +5070,32 @@ def app_store_notification(request: AppStoreNotificationRequest) -> dict:
         notification = verifier.verify_notification(request.signedPayload)
     except StoreVerificationError as exc:
         raise HTTPException(status_code=403, detail=str(exc)) from exc
-    kind = notification["type"]
-    if notification["ignored"]:
-        return {"ok": True, "ignored": notification["ignored"]}
-    if kind not in {"REFUND", "REFUND_REVERSED"} or not notification["transaction_id"]:
-        return {"ok": True, "ignored": kind.lower() or "type"}
-    event_id = "apple:" + (
-        notification["notification_id"] or f"{kind}:{notification['transaction_id']}"
+    return _handle_app_store_notification(notification)
+
+
+def _handle_google_voided_purchase(voided: dict) -> dict:
+    order_id = str(voided.get("order_id") or "")
+    purchase_token = str(voided.get("purchase_token") or "")
+    event_id = "google-voided:" + (
+        order_id or "token-" + hashlib.sha256(purchase_token.encode("utf-8")).hexdigest()[:40]
     )
     if platform_service.store_notification_seen(event_id):
         return {"ok": True, "duplicate": True}
     result = _apply_store_refund(
-        provider="app_store",
-        source="app_store_notification",
-        transaction_id=notification["transaction_id"],
-        reversed_refund=kind == "REFUND_REVERSED",
-        event_id=event_id,
+        provider="google_play", source="google_voided_purchases",
+        transaction_id=order_id, purchase_token=purchase_token, event_id=event_id,
     )
     if not result.get("matched"):
-        raise HTTPException(status_code=503, detail="Makbuz henüz kayıtlı değil; bildirim yeniden denenecek.")
+        raise HTTPException(status_code=503, detail="Makbuz henüz kayıtlı değil; iade yeniden denenecek.")
     return {"ok": True, **result}
+
+
+store_reconciler = StoreReconciler(
+    verifiers=lambda: STORE_VERIFIERS,
+    state=platform_service,
+    handle_google_voided=_handle_google_voided_purchase,
+    handle_app_store_notification=_handle_app_store_notification,
+)
 
 
 @app.get("/ads/admob/ssv")
@@ -5915,6 +6014,11 @@ async def health() -> dict:
                 for connection in pvp_websocket_adapter.registry.connections.values()
                 if connection.connected
             ),
+        },
+        "store_reconciliation": {
+            "enabled": bool(STORE_RECONCILE_INTERVAL_SECONDS) and store_reconciler.enabled(),
+            "interval_seconds": STORE_RECONCILE_INTERVAL_SECONDS,
+            "last_runs": store_reconciler.last_runs(),
         },
     }
     if RUNTIME_STRICT and not ready:

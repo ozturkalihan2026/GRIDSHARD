@@ -62,8 +62,8 @@ def test_post_match_endpoint_returns_progression_profile_and_statistics(
         assert body["battle_id"]==battle_id
         assert body["player_id"]=="a"
         # Çekirdeği yok eden taraf kazanır: galibiyet XP'si ve +25 kupa.
-        assert body["progression"]["xp_awarded"]==120
-        assert body["profile"]["experience"]==120
+        assert body["progression"]["xp_awarded"]==40
+        assert body["profile"]["experience"]==40
         assert body["profile"]["rating"]==25
         assert body["statistics"]["total_matches"]==1
         assert body["statistics"]["wins"]==1

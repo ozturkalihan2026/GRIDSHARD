@@ -16,7 +16,7 @@ from .game.energy import (
     CORE_RESERVE_BASE_CAPACITY,
     CORE_RESERVE_PER_LEVEL,
 )
-from .player_profile import CURRENT_SEASON_ID
+from .player_profile import CURRENT_SEASON_ID, OPERATOR_TITLE_STAGES, operator_title_view
 
 
 class MetaProgressionError(ValueError):
@@ -537,6 +537,22 @@ class MetaProgressionService:
                 "module_definition_id": module_definition_id,
                 "core_type_id": core_type_id,
             }
+
+    def claim_operator_title_reward(self, profile, title_id: str) -> dict:
+        """Award an attained title once; the caller persists the profile atomically."""
+        with self._lock:
+            stage = next((item for item in OPERATOR_TITLE_STAGES if item["id"] == title_id), None)
+            reward = int(stage["reward_circuit_credits"]) if stage else 0
+            if reward <= 0:
+                raise MetaProgressionError("Unvan ödülü bulunamadı.")
+            if title_id in profile.operator_title_claims:
+                return {"title_id": title_id, "replayed": True}
+            titles = operator_title_view(profile.rating, int(profile.lifetime_stats.get("wins", 0)), profile.operator_title_claims)
+            if not any(item["id"] == title_id and item["reached"] for item in titles["stages"]):
+                raise MetaProgressionError("Bu unvana henüz ulaşmadın.")
+            profile.circuit_credits += reward
+            profile.operator_title_claims = (*profile.operator_title_claims, title_id)
+            return {"title_id": title_id, "title_tr": stage["title_tr"], "rewards": {"circuit_credits": reward}}
 
     def view(self, profile) -> dict:
         current_rank = rank_stage_for_rating(profile.rating)

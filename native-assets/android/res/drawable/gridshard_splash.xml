@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Android 12 öncesi açılış ekranı: koyu zemin, ortada amblem (bozulmadan).
+     tools/generate_brand_assets.py üretir, configure-native-fullscreen.js kopyalar. -->
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:drawable="@color/gridshard_window_background"/>
+    <item>
+        <bitmap android:gravity="center" android:src="@drawable/gridshard_splash_icon"/>
+    </item>
+</layer-list>
+

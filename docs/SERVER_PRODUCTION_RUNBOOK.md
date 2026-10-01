@@ -1,11 +1,11 @@
 # GRIDSHARD — temiz sunucu kurulum ve kurtarma rehberi
 
-Durum: 1 Ekim 2026. Bu bir **operatör rehberidir, gerçekleşmiş dağıtım raporu değildir**. Yerel PostgreSQL 16 testleri geçti; Docker/PostgreSQL 17/gerçek Redis/TLS kapıları CI veya seçilecek Linux sunucuda çalıştırılmalıdır. Eski oyuncu, takım, kimlik, makbuz ve analitik verileri **aktarılmayacak**. Eski dosya/birimleri silmeyin veya yeni kuruluma bağlamayın.
+Durum: 1 Ekim 2026. Bu bir **operatör rehberidir, gerçekleşmiş uzak dağıtım raporu değildir**. Docker Desktop Linux motorunda PostgreSQL 17/gerçek Redis, ana/bakım image build, boş kurulum/yeniden başlatma ve image yedeğinin ayrı boş DB/runtime'a geri yüklemesi geçti. Caddy/Compose yapılandırması doğrulandı. Uzak CI, seçilecek Linux sunucuda gerçek alan adı/TLS/WSS ve native/sağlayıcı kapıları açık. Eski oyuncu, takım, kimlik, makbuz ve analitik verileri **aktarılmayacak**. Eski dosya/birimleri silmeyin veya yeni kuruluma bağlamayın.
 
 ## Yayın kapıları
 
 - Tam sunucu/istemci testleri, build ve CI yeşil; tarihsel kırık testler sessizce atlanmış olmamalı.
-- `migration` CI işi gerçek PostgreSQL 17 + Redis, Caddy doğrulaması, temiz image açılışı ve profil/token korunarak yeniden başlatmayı doğrulamalı.
+- `migration` CI işi gerçek PostgreSQL 17 + Redis, Caddy doğrulaması, temiz image açılışı, profil/token korunarak yeniden başlatma ve bakım image'ıyla boş hedef geri yükleme provasını doğrulamalı. Bu kontroller yerelde geçti; uzak CI sonucu henüz alınmadı.
 - Yeni native sürüm secure-storage, tam ekran, arka plan ses duruşu, HTTPS/WSS ve bağlantı geri gelmesini gerçek telefonda geçmeli. Tarayıcı emülasyonu bunun yerine geçmez.
 - Google/Apple/OAuth, ödeme/iade, ödüllü reklam, e-posta ve push için operatörün gerçek sağlayıcı hesabı/yetkisi gerekir. Yapılandırılmayan sağlayıcı **hazır sayılmaz**; sahte ödül/doğrulama açılmamalı. Mevcut rehberler: `STORE_PURCHASES.md`, `PUSH_NOTIFICATIONS.md`, `MOBILE_RELEASE_RUNBOOK.md`.
 - Bir yedek yeni, boş hedefe geri yüklenip doğrulanmış olmalı. SHA-256 bütünlük kontrolüdür, kaynak doğrulaması veya şifreleme değildir.
@@ -78,4 +78,4 @@ docker compose -p gridshard-restore-20261001 -f docker-compose.production.yml --
 
 ## Operatörden hâlâ gerekli olanlar
 
-Alan adı ve DNS, Linux sunucu/SSH erişimi, Docker motoru, gerçek sağlayıcı hesapları/anahtarları, mobil kalıcı application ID ve imzalama anahtarı. Bunlar edinilip gerçek kapılar geçilmeden hosting geçişi tamamlanmış değildir.
+Alan adı ve DNS, Linux sunucu/SSH erişimi, gerçek sağlayıcı hesapları/anahtarları, mobil kalıcı application ID ve imzalama anahtarı. Yerel Docker motoru ve kapsayıcı doğrulaması tamamlandı; hedef Linux sunucusunda Docker/Compose kurulumu ayrıca gerekir. Bu bilgiler edinilip gerçek kapılar geçilmeden hosting geçişi tamamlanmış değildir.

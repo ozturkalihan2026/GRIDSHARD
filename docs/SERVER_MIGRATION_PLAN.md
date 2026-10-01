@@ -8,19 +8,19 @@ Eski oyuncu/kimlik/takım/platform/makbuz/analitik verileri **aktarılmaz**. Esk
 
 | Kapı | Yerel uygulama / kanıt | Henüz gerekli dış doğrulama |
 | --- | --- | --- |
-| SERVER-0 paket/sır sınırı | Runtime image izin listeli; eski oyuncu/QA/anahtar/sağlayıcı özel dosyaları dışarıda, UID 10001 ve tek worker | Gerçek image build/açılışı, geçmişte paylaşılmış anahtarların operatör değerlendirmesi |
+| SERVER-0 paket/sır sınırı | Gerçek runtime image build/açılışı geçti; izin listeli iki statik arena JSON'u, UID 10001, eski oyuncu/QA/anahtar/özel dosyalar dışarıda ve tek worker | Geçmişte paylaşılmış anahtarların operatör değerlendirmesi |
 | SERVER-1/2/3 veri/sosyal/takım | PostgreSQL kanonik; ortak `PersistentState` unit-of-work, row lock/revision, sosyal/outbox/üyelik/bağış/silme atomik, gerçek PG commit/rollback testleri | Gerçek provider/push teslimi ve staging yükü; çok-worker desteği yok |
 | SERVER-4 ekonomi | `014` oyuncu kapsamlı işlem kimliği/payload çatışması; mağaza makbuzu/bakiye/iade ortak commit | Gerçek ödeme/iade ve reklam sağlayıcısı |
 | SERVER-5 sonuç | `013` pending → atomik applied; RAM kaybı/tekrar/uzun kesinti/dönem hesabı PG'de geçti | Terminal niyet öncesi süreç kaybı aktif RAM maçı keser; sıfır kayıp/HA garantisi yok |
-| SERVER-6/7 koordinasyon | PostgreSQL tek-worker kilidi, Redis owner token/TTL/presence, fail-closed; iki gerçek tarayıcı PvP/reconnect 2/2 | Gerçek Redis, Docker yeniden başlatma ve uzak iki cihaz WSS |
+| SERVER-6/7 koordinasyon | PostgreSQL tek-worker kilidi, gerçek Redis owner token/TTL/presence ve fail-closed testleri; Docker yeniden başlatma ve önceki iki gerçek tarayıcı PvP/reconnect 2/2 geçti | Uzak iki cihaz WSS ve süreç/servis kesinti denemesi |
 | SERVER-8 kimlik/native | Dosya sırları, auth iptali, native secure-storage/recovery ve no-backup kodu/testleri | Yeni plugin'li APK, gerçek cihaz ve OAuth/mağaza hesabı |
-| SERVER-9 temiz kurulum | Boş DB/runtime ve UUID eşleşmesi PG16'da geçti, hiçbir eski kayıt içe alınmadı | PostgreSQL 17/image ile aynı kurulum ve yeniden açılış |
-| SERVER-10 dağıtım | Standalone üretim Compose/Caddy/HTTPS-WSS/host-CORS, gerçek adımlı açılış ekranı; 12/12 tarayıcı | Docker/CI, hosting/SSH/DNS, gerçek TLS ve mobil imzalı paket |
-| SERVER-11 kurtarma/işletim | Worker kilitli offline yedek, checksum/UUID/kayıt doğrulaması, boş hedef restore PG16'da geçti; bakım image ve rehber hazır | Gerçek image restore provası, dış izleme/şifreli uzak yedek/saklama; WAL/PITR kurulmadı |
+| SERVER-9 temiz kurulum | PostgreSQL 17 + gerçek image ile boş DB/runtime, kurulum ve profil/token korunarak yeniden açılış geçti; eski kayıt içe alınmadı | Hedef Linux staging üzerinde aynı kurulum |
+| SERVER-10 dağıtım | Ana/bakım image build, standalone Compose ve gerçek Caddy config doğrulaması geçti; gerçek adımlı açılış ekranı ve önceki 12/12 tarayıcı | Uzak CI, hosting/SSH/DNS, gerçek TLS ve mobil imzalı paket |
+| SERVER-11 kurtarma/işletim | Gerçek PG17/bakım image'ıyla durmuş image yedeği, ayrı boş DB/runtime'a restore, aynı token/profil ile açılış geçti; worker kilidi/checksum/UUID/kayıt doğrulaması sınandı | Staging'de ayrı Compose projesine restore, dış izleme/şifreli uzak yedek/saklama; WAL/PITR kurulmadı |
 
-Son yerel tam aktif sunucu: **988 geçti, 1 atlandı** (gerçek Redis servisi yok). İstemci **77/77**, build sözleşmeleri **8/8**, operatör/paket araçları **5/5**, web build ID `d2e19155aa306804`. 67 kaldırılmış test sözleşmesinin kaynakları ve yerine geçen kanıtlar `archive/server-test-contracts-20261001/` manifestinde korunur; eski testleri aynen geçti saymıyoruz. Yeni aktif testler kaldırılmış komut/yüzeyleri reddetme ve veri değişmemesini doğrular.
+Son Linux/PostgreSQL 17/Redis koşusunda **1019 sunucu/operatör testi geçti**; tek eksik rapor fixture'ı test ortamına bağlandıktan sonra ilgili küme **4/4 geçti** (1020 ayrı sözleşmenin tamamı doğrulandı; gerçek PG/Redis testleri atlanmadı). Son istemci **77/77**; gerçek Docker image istemci build ID **b20ec7c35515e357**. 67 kaldırılmış test sözleşmesinin kaynakları ve yerine geçen kanıtlar `archive/server-test-contracts-20261001/` manifestinde korunur; eski testleri aynen geçti saymıyoruz. Yeni aktif testler kaldırılmış komut/yüzeyleri reddetme ve veri değişmemesini doğrular.
 
-CI PostgreSQL 17 + gerçek Redis + production/maintenance image + Caddy ve tarayıcı işlerini tanımlar; **uzak CI henüz çalıştırılmadı**. Bu makinede Docker/Redis yok. İlk dış adım çalışan Docker motoru veya kullanıcı yetkili Linux test sunucusudur; ardından hosting/alan adı ve gerçek sağlayıcı/native doğrulama gelir. Bu kapılar açıkken "üretim hazır" veya "geçiş tamam" onayı verilmez.
+CI PostgreSQL 17 + gerçek Redis + production/maintenance image + Caddy, image restore ve tarayıcı işlerini tanımlar; **uzak CI henüz çalıştırılmadı**. Yerel Docker doğrulaması tamamlandı, test kapsayıcı/ağ/yeni geçici Redis birimi temizlendi; eski dosya/birimler korundu. Sıradaki dış adım kullanıcının Linux staging sunucusu/SSH ve alan adı/DNS bilgisidir; ardından gerçek sağlayıcı/native doğrulama gelir. Bu kapılar açıkken "üretim hazır" veya "geçiş tamam" onayı verilmez.
 
 ## Tarihsel veri haritası ve aşamalar — 30 Eylül 2026
 

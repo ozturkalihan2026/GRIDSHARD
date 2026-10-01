@@ -6,6 +6,7 @@ module.exports = {
   appId,
   appName: "GRIDSHARD",
   webDir: "dist",
+  backgroundColor: "#07142B",
   server: {
     androidScheme: "https",
     ...(localDebug ? { cleartext: true } : {})

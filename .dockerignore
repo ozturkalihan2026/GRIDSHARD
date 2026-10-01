@@ -13,6 +13,11 @@ server/data/*
 server/data/.auth_signing_key
 __pycache__
 .pytest_cache
+**/__pycache__
+**/.pytest_cache
+**/node_modules
+**/.git
+**/*.pyc
 qa_reports
 server/data/*.json
 server/data/*.tmp

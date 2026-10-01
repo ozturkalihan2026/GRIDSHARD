@@ -29,8 +29,10 @@ class _Ledger:
     def remember_store_notification(self, event_id):
         self.notifications.add(event_id)
 
-    def mark_store_receipt_refunded(self, _key, *, refunded, source, at):
+    def mark_store_receipt_refunded(self, _key, *, refunded, source, at, event_at_ms=0):
         self.receipt["refunded"] = refunded
+        if event_at_ms:
+            self.receipt["refund_event_at_ms"] = event_at_ms
 
     def queue_notification(self, *_args):
         pass
@@ -81,3 +83,24 @@ def test_unmatched_provider_callback_requests_retry(monkeypatch):
             "purchase_token": "token",
         })
     assert failure.value.status_code == 503
+
+
+def test_older_apple_refund_cannot_reverse_a_newer_reversal(monkeypatch):
+    ledger = _Ledger()
+    ledger.receipt["provider"] = "app_store"
+    monkeypatch.setattr(ledger, "find_store_receipt", lambda *_args, **_kwargs: dict(ledger.receipt))
+    monkeypatch.setattr(gateway, "platform_service", ledger)
+    monkeypatch.setattr(gateway, "_store_economy_transaction", lambda _player: nullcontext())
+    monkeypatch.setattr(gateway, "_existing_player_profile", lambda _player: object())
+    monkeypatch.setattr(gateway, "revoke_purchase", lambda *_args, **_kwargs: {})
+    monkeypatch.setattr(gateway, "restore_refunded_purchase", lambda *_args, **_kwargs: {})
+    monkeypatch.setattr(gateway, "persist_player_data", lambda _player: None)
+    monkeypatch.setattr(gateway, "store_refund_message", lambda *_args, **_kwargs: ("title", "body"))
+
+    kwargs = {"provider": "app_store", "source": "test", "transaction_id": "order-1"}
+    assert gateway._apply_store_refund(**kwargs, event_id="apple:refund", event_at_ms=100)["changed"]
+    assert gateway._apply_store_refund(**kwargs, event_id="apple:reversal", event_at_ms=200, reversed_refund=True)["changed"]
+    stale = gateway._apply_store_refund(**kwargs, event_id="apple:late-refund", event_at_ms=150)
+    assert stale["stale"] is True
+    assert ledger.receipt["refunded"] is False
+    assert ledger.receipt["refund_event_at_ms"] == 200

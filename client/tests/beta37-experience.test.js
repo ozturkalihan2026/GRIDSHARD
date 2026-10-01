@@ -43,6 +43,13 @@ assert.ok(!html.includes('data-ai-archetype="sabotage"'));
 assert.ok(!html.includes('data-ai-archetype="economy"'));
 assert.ok(app.includes("balanced_control:{"));
 assert.ok(app.includes("balanced_economy:{"));
+// Kaynak tur 19: unvan yolu, sezon başlığı ve kaldırılan kozmetik önizlemesi.
+assert.ok(html.includes('id="operator-titles-dialog"'));
+assert.ok(/<button id="lobby-player-details"[^>]*aria-haspopup="dialog"/.test(html));
+assert.ok(!html.includes("season-equipped-title"));
+assert.ok(!html.includes("avatar-live-preview"));
+assert.ok(app.includes("/operator-titles/"));
+assert.ok(app.includes("function renderOperatorTitles()"));
 assert.ok(html.includes('lobby-dock-home'));
 assert.ok(app.includes("ai_archetype"));
 

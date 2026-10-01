@@ -137,6 +137,16 @@ class PostgresPlayerDataRepository:
         self.database = pool
         _, self.Jsonb = _load_psycopg()
 
+    def list_display_names(self) -> list[tuple[str, str]]:
+        try:
+            with self.database.connection() as connection:
+                rows = connection.execute(
+                    "SELECT player_id, profile ->> 'display_name' FROM player_data"
+                ).fetchall()
+        except Exception as exc:
+            raise PlayerDataStoreError("PostgreSQL oyuncu verileri okunamadı.") from exc
+        return [(str(owner), str(name or owner)) for owner, name in rows]
+
     def save(self, snapshot: PlayerDataSnapshot) -> int:
         try:
             with self.database.connection() as connection:

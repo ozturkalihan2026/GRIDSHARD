@@ -7,8 +7,8 @@ const html = fs.readFileSync("./index.html", "utf8");
 const app = fs.readFileSync("./src/app.js", "utf8");
 const css = fs.readFileSync("./src/canon.css", "utf8");
 
-assert.ok(html.includes('gridshard-favicon-32.png?v=beta66'));
-assert.ok(html.includes('gridshard-favicon-192.png?v=beta66'));
+assert.ok(html.includes('gridshard-favicon-32.png?v=brand-20261001'));
+assert.ok(html.includes('gridshard-favicon-192.png?v=brand-20261001'));
 assert.ok(fs.existsSync("./assets/branding/gridshard-favicon-32.png"));
 assert.ok(fs.existsSync("./assets/branding/gridshard-favicon-192.png"));
 

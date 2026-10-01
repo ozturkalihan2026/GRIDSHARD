@@ -1,37 +1,38 @@
 (function(global) {
   "use strict";
-  class StartupLoading {
-    constructor(document) {
-      this.document = document;
-      this.root = document.getElementById("startup-loading");
-      this.progress = document.getElementById("startup-progress");
-      this.status = document.getElementById("startup-status");
-      this.retry = document.getElementById("startup-retry");
-      this.steps = new Set();
-      this.required = ["server", "profile", "collection", "account"];
+  // Original GRIDSHARD2.1 presentation, driven by the current transition's
+  // four real API-backed steps. No elapsed-time or estimated progress.
+  class StartupLoading extends global.GridshardBootScreen {
+    constructor(document, options = {}) {
+      super({
+        root:document.getElementById("startup-loading"),
+        doc:document,
+        inertTargets:Array.from(document.querySelectorAll?.(".battle-shell") || []),
+        ...options,
+      });
+      this.required = this.steps.map(step => step.id);
+      this.root?.setAttribute?.("aria-busy", "true");
     }
-    text(value) { return global.GridshardI18n?.translateText?.(value) || value; }
     begin() {
-      this.steps.clear();
-      this.root.hidden = false;
-      this.retry.hidden = true;
-      this.progress.value = 0;
-      this.stage("Sunucuya bağlanılıyor…");
+      if (this.state === "done") return;
+      this.completed.clear();
+      this.startedAt = this.now();
+      this.restart();
+      this._render(0, 0);
+      this.stage("boot.stage.server");
     }
-    stage(message) { this.status.textContent = this.text(message); }
+    stage(message) { this._setStatus(message); }
     complete(step) {
       if (!this.required.includes(step)) throw new Error("Unknown startup step");
-      this.steps.add(step);
-      // Counts completed API-backed steps, never elapsed time or estimated bytes.
-      this.progress.value = this.steps.size;
+      super.complete(step);
     }
-    fail() {
-      this.stage("Bağlantı tamamlanamadı. Yeniden deneyebilirsin.");
-      this.retry.hidden = false;
-    }
+    fail() { super.fail("boot.failed"); }
     finish() {
-      if (this.steps.size !== this.required.length) throw new Error("Startup is not ready");
-      this.root.hidden = true;
+      if (this.state !== "done" && this.completed.size !== this.required.length) {
+        throw new Error("Startup is not ready");
+      }
+      this.root?.setAttribute?.("aria-busy", "false");
+      return super.finish();
     }
   }
   global.GridshardStartupLoading = StartupLoading;

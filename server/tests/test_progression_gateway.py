@@ -72,7 +72,7 @@ def test_runner_finish_updates_profile_and_progression_endpoint():
             "/profile/a"
         ).json()
 
-        assert profile["experience"]==120
+        assert profile["experience"]==40
         assert profile["rating"]==25
 
     asyncio.run(scenario())

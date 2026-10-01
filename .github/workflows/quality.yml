@@ -124,8 +124,10 @@ jobs:
           -e GRIDSHARD_TLS_EMAIL=ci@example.com
           -v "$PWD/deploy/Caddyfile:/etc/caddy/Caddyfile:ro"
           caddy:2-alpine caddy validate --config /etc/caddy/Caddyfile
-      - name: Boot fresh image, authenticate, and restart
-        run: python tools/production_container_smoke.py --image gridshard-ci:${{ github.sha }}
+      - name: Boot fresh image, authenticate, restart, and restore its backup
+        run: >-
+          python tools/production_container_smoke.py --image gridshard-ci:${{ github.sha }}
+          --maintenance-image gridshard-maintenance-ci:${{ github.sha }}
 
   browser:
     name: Startup / mobile layout / two-client reconnect

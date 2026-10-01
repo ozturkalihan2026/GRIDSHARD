@@ -3,6 +3,13 @@
 
   // New screen copy belongs here; the legacy dictionary remains in i18n.js.
   const translations = Object.freeze({
+    "Oyun başlatılıyor…":"Starting the game…",
+    "GRIDSHARD yükleniyor":"Loading GRIDSHARD",
+    "Yükleme ilerlemesi":"Loading progress",
+    "Kimliğin:":"Your ID:",
+    "Kimliğini kopyala":"Copy your ID",
+    "Hazır!":"Ready!",
+    "Kopyalandı":"Copied",
     "Sunucuya bağlanılıyor…":"Connecting to server…",
     "Profil geri getiriliyor…":"Restoring profile…",
     "Devre koleksiyonu yükleniyor…":"Loading circuit collection…",
@@ -1086,6 +1093,15 @@
 
   // Keyed messages handle grammatical number and variable values without regex substitution.
   const messages = Object.freeze({
+    "boot.stage.server": {tr:"Sunucuya bağlanılıyor…", en:"Connecting to server…"},
+    "boot.stage.profile": {tr:"Profil geri getiriliyor…", en:"Restoring profile…"},
+    "boot.stage.collection": {tr:"Devre koleksiyonu yükleniyor…", en:"Loading circuit collection…"},
+    "boot.stage.account": {tr:"Hesap bağlantıları hazırlanıyor…", en:"Preparing account connections…"},
+    "boot.failed": {tr:"Bağlantı tamamlanamadı. Yeniden deneyebilirsin.", en:"Connection could not be completed. You can retry."},
+    "boot.ready": {tr:"Hazır!", en:"Ready!"},
+    "boot.copied": {tr:"Kopyalandı", en:"Copied"},
+    "boot.percent": {tr:"%{value}", en:"{value}%"},
+    "boot.version": {tr:"Sürüm: {version}", en:"Version: {version}"},
     "module.real_battle_effects": {tr:"GERÇEK SAVAŞ ETKİLERİ", en:"ACTUAL BATTLE EFFECTS"},
     "module.no_extra_effects": {tr:"Bu modülün ek sayısal etkisi yok.", en:"This module has no additional numerical effect."},
     "module.stats_intro": {tr:"Savaş değerleri, sınıf karşılıkları ve uyumlu modüller.", en:"Battle stats, class matchups and compatible modules."},
@@ -1755,6 +1771,11 @@
     "event.team_points": {tr:"{points} P", en:"{points} pts"},
     "event.no_team": {tr:"Takımın yok", en:"No team"},
     "season.rewards_subtitle": {tr:"{season} boyunca kademeleri aç ve sunucu doğrulamalı ödüllerini al.", en:"Unlock tiers during {season} and claim server-verified rewards."},
+    "title.summary": {tr:"{trophies} kupa · {wins} galibiyet", en:"{trophies} trophies · {wins} wins"},
+    "title.next": {tr:"Sonraki: {title}", en:"Next: {title}"},
+    "title.requirement": {tr:"{trophies} kupa · {wins} galibiyet", en:"{trophies} trophies · {wins} wins"},
+    "title.reward": {tr:"{credits} Devre Kredisi", en:"{credits} Circuit Credits"},
+    "title.reward_claimed": {tr:"Ödül alındı: {credits} Devre Kredisi", en:"Reward claimed: {credits} Circuit Credits"},
     "season.xp_unlock": {tr:"{xp} Deneyim ile açılır", en:"Unlocks at {xp} Experience"},
     "season.tier_chest": {tr:"Kademe {tier} Sandığı", en:"Tier {tier} Chest"},
     "daily.active_missions": {tr:"{count} görev aktif", en:"{count} missions active"},

@@ -278,6 +278,10 @@
   let participantBootstrapResult =
     null;
   const startupLoading = globalThis.GridshardStartupLoading ? new globalThis.GridshardStartupLoading(document) : null;
+  startupLoading?.setPlayerId(participantPlayerId);
+  function afterStartup(callback) {
+    return (startupLoading?.finished || Promise.resolve()).then(callback);
+  }
   let startupFlight = null;
 
   async function bootstrapParticipant() {
@@ -294,7 +298,7 @@
     const readiness = await checkServerReadiness();
     if (!readiness.ok) throw new Error(readiness.reason || "Sunucu bağlantısı hazır değil.");
     startupLoading?.complete("server");
-    startupLoading?.stage("Profil geri getiriliyor…");
+    startupLoading?.stage("boot.stage.profile");
     const result =
       await participantBootstrap
         .load();
@@ -339,14 +343,14 @@
       recordProductEvent("session_started");
       recordProductEvent("screen_view", {screen:appRouter.currentScreen});
       loadBattlePoolPresets();
-      startupLoading?.stage("Devre koleksiyonu yükleniyor…");
+      startupLoading?.stage("boot.stage.collection");
       await loadMetaProgression({required:true});
       startupLoading?.complete("collection");
-      startupLoading?.stage("Hesap bağlantıları hazırlanıyor…");
+      startupLoading?.stage("boot.stage.account");
       const accountResult = await loadAccountPlatform({ presentOnboarding:true });
       if (!accountResult.ok) throw new Error("Hesap bağlantıları hazırlanamadı.");
       startupLoading?.complete("account");
-      startupLoading?.finish();
+      await startupLoading?.finish();
       if (accountResult.ok && !accountResult.redirecting) {
         void nativePush?.start().catch(() => {
           setNativePushStatus("Bildirim cihaz kaydı tamamlanamadı. Bağlantı gelince yeniden denenecek.");
@@ -356,7 +360,7 @@
       loadRewardInbox();
       void loadSocialView({ quiet:true });
       startSocialPolling();
-      void consumePendingDeepLink();
+      void afterStartup(() => consumePendingDeepLink());
     }
 
     renderParticipantBootstrapStatus();
@@ -2224,6 +2228,23 @@
     }
   }
 
+  function sortModuleCollection(items) {
+    const rarityOrder = { common:0, rare:1, epic:2, legendary:3 };
+    const canon = new Map((globalThis.GRIDSHARD_CANON_MODULES || []).map(
+      (item, index) => [item.id, { ...item, index }]
+    ));
+    const arena = (item) => Number(item.unlock_arena || canon.get(item.definition_id)?.unlock_arena || 1);
+    const rarity = (item) => rarityOrder[item.rarity || canon.get(item.definition_id)?.rarity] ?? 4;
+    // Arena progression first, then rarity and the stable canon order. Never
+    // sort by a translated name: switching language must not move the cards.
+    return [...items].sort((a, b) =>
+      arena(a) - arena(b)
+      || rarity(a) - rarity(b)
+      || (canon.get(a.definition_id)?.index ?? Infinity) - (canon.get(b.definition_id)?.index ?? Infinity)
+      || String(a.definition_id).localeCompare(String(b.definition_id), "en")
+    );
+  }
+
   function renderModuleCollection() {
     document.getElementById("module-quick-actions")?.setAttribute("hidden", "");
     const state = metaProgressionState || fallbackMetaProgression();
@@ -2238,11 +2259,7 @@
     if (!host) return;
     host.replaceChildren();
     const selected = new Set(deckEditorSlots.filter(Boolean).map(clientDefinitionId));
-    const sortedModules = [...(state.module_collection || [])].sort((a, b) =>
-      localizedUiText(a.name_tr || "").localeCompare(
-        localizedUiText(b.name_tr || ""), document.documentElement.lang === "en" ? "en" : "tr"
-      )
-    );
+    const sortedModules = sortModuleCollection(state.module_collection || []);
     for (const item of sortedModules) {
       if (activeModuleFilter !== "all" && item.category !== activeModuleFilter) continue;
       const tile = unifiedModuleTile(item, { collection: true, selected: selected.has(item.definition_id) });
@@ -3826,8 +3843,11 @@
     renderAccountOnboarding();
     const dialog = document.getElementById("account-onboarding-dialog");
     if (!dialog || dialog.open) return Boolean(dialog?.open);
-    if (typeof dialog.showModal === "function") dialog.showModal();
-    else dialog.setAttribute("open", "");
+    void afterStartup(() => {
+      if (dialog.open || accountHasPersistentIdentity() || accountOnboardingWasDismissed()) return;
+      if (typeof dialog.showModal === "function") dialog.showModal();
+      else dialog.setAttribute("open", "");
+    });
     return true;
   }
 
@@ -5112,8 +5132,11 @@
       renderDailyMetaDialog();
       const dialog = document.getElementById("daily-meta-dialog");
       if (present && dailyMetaState.requires_roll && dialog && !dialog.open) {
-        if (dialog.showModal) dialog.showModal();
-        else dialog.setAttribute("open", "");
+        void afterStartup(() => {
+          if (dialog.open || !dailyMetaState?.requires_roll) return;
+          if (dialog.showModal) dialog.showModal();
+          else dialog.setAttribute("open", "");
+        });
       }
       return { ok:true, state:dailyMetaState };
     } catch (error) {
@@ -6182,7 +6205,7 @@
     request: (path, options) => requestJsonWithDeadline(path, options, 12000),
     identity: () => ({ playerId: participantPlayerId, deviceId: globalThis.GridshardAuth?.session?.deviceId?.() }),
     onStatus: setNativePushStatus,
-    onOpen: (url) => consumePendingDeepLink(url),
+    onOpen: (url) => afterStartup(() => consumePendingDeepLink(url)),
   }) : null;
   // Soğuk açılıştaki bildirim dokunuşu kaçmasın diye dinleyiciler kimlikten önce kurulur.
   void nativePush?.listen().catch(() => {});
@@ -8170,7 +8193,7 @@
   renderConnectionStatus(
     pvpConnection.status
   );
-  document.getElementById("startup-retry")?.addEventListener("click", bootstrapParticipant);
+  if (startupLoading) startupLoading.onRetry = () => { void bootstrapParticipant(); };
 
   const localPlayStartButton =
     document.getElementById(
@@ -15325,7 +15348,11 @@
       lobbyPlayerDetails.textContent= localizedUiText(
         `${activeTitle} · 🏆 ${view.rating}`
       );
+      lobbyPlayerDetails.dataset.claimable = String(
+        (view.operatorTitleProgression?.stages || []).some((stage) => stage.claimable)
+      );
     }
+    if (document.getElementById("operator-titles-dialog")?.open) renderOperatorTitles();
 
     renderProfileHighlights();
     renderProfileHonorShowcase();
@@ -15478,14 +15505,9 @@
     const frameId = cosmetics.selected_avatar_frame_id || "none";
     const backgroundId = cosmetics.selected_profile_background_id || "default";
     applyAvatarVisual(document.getElementById("profile-avatar"), avatarId, frameId);
-    applyAvatarVisual(document.getElementById("avatar-preview"), avatarId, frameId);
     applyAvatarVisual(document.getElementById("lobby-profile-avatar"), avatarId, frameId);
     document.getElementById("app-progress-ribbon")?.setAttribute("data-profile-background", backgroundId);
     document.querySelector(".profile-identity-card")?.setAttribute("data-profile-background", backgroundId);
-    const profileName = document.getElementById("avatar-preview-name");
-    const profileTitle = document.getElementById("avatar-preview-title");
-    if (profileName) profileName.textContent = view.displayName;
-    if (profileTitle) profileTitle.textContent = activeTitle || view.operatorTitle || "Devre Çırağı";
 
     const avatarHost = document.getElementById("avatar-choice-list");
     if (avatarHost) {
@@ -16592,7 +16614,6 @@
       (reward) => Number(engagement.season_xp || 0) < Number(reward.required_xp || 0)
     );
 
-    setText("season-equipped-title", engagement.equipped_title || "Devre Çırağı");
     setText(
       "season-tier-label",
       `Kademe ${engagement.current_tier || 0} / ${engagement.max_tier || 40}`
@@ -18372,6 +18393,95 @@
     renderHomeHub();
   });
 
+  function renderOperatorTitles() {
+    const list = document.getElementById("operator-titles-list");
+    if (!list) return;
+    const profile = profileState.viewModel();
+    const progression = profile?.operatorTitleProgression || {};
+    const stages = Array.isArray(progression.stages) ? progression.stages : [];
+    const trophies = Math.max(0, Number(progression.trophies ?? profile?.rating ?? 0));
+    const wins = Math.max(0, Number(progression.wins ?? statisticsState.viewModel()?.wins ?? 0));
+    const reached = (stage) => stage.reached ?? (trophies >= Number(stage.required_trophies || 0) && wins >= Number(stage.required_wins || 0));
+    const currentIndex = stages.reduce((found, stage, index) => reached(stage) ? index : found, 0);
+    const next = stages[currentIndex + 1];
+    const setText = (id, value) => { const node = document.getElementById(id); if (node) node.textContent = value; };
+    setText("operator-titles-title", localizedUiText(stages[currentIndex]?.title_tr || "Devre Çırağı"));
+    setText("operator-titles-summary", localizedMessage("title.summary", {trophies: localizedNumber(trophies), wins: localizedNumber(wins)}));
+    const nextSection = document.getElementById("operator-titles-next");
+    if (nextSection) nextSection.hidden = !next;
+    setText("operator-titles-complete", next ? "" : localizedUiText("En yüksek unvana ulaştın."));
+    if (next) {
+      setText("operator-titles-next-title", localizedMessage("title.next", {title: localizedUiText(next.title_tr)}));
+      for (const [kind, value, required] of [["trophy", trophies, next.required_trophies], ["win", wins, next.required_wins]]) {
+        const bar = document.getElementById(`operator-titles-${kind}-progress`);
+        if (bar) { bar.max = Math.max(1, Number(required)); bar.value = Math.min(value, Number(required)); }
+        setText(`operator-titles-${kind}-copy`, `${localizedNumber(Math.min(value, Number(required)))} / ${localizedNumber(required)}`);
+      }
+    }
+    list.replaceChildren(...stages.map((stage, index) => {
+      const item = document.createElement("li");
+      item.className = "operator-title-stage";
+      item.dataset.state = index === currentIndex ? "current" : (reached(stage) ? "reached" : "locked");
+      const copy = document.createElement("div");
+      copy.className = "operator-title-copy";
+      const name = document.createElement("strong");
+      name.textContent = localizedUiText(stage.title_tr);
+      const requirement = document.createElement("small");
+      requirement.textContent = index === 0 ? localizedUiText("Başlangıç unvanı") : localizedMessage("title.requirement", {trophies: localizedNumber(stage.required_trophies), wins: localizedNumber(stage.required_wins)});
+      copy.append(name, requirement);
+      const reward = Math.max(0, Number(stage.reward_circuit_credits || 0));
+      if (reward) {
+        const rewardText = document.createElement("small");
+        rewardText.className = "operator-title-reward";
+        rewardText.textContent = localizedMessage("title.reward", {credits: localizedNumber(reward)});
+        copy.append(rewardText);
+      }
+      let action;
+      if (stage.claimable) {
+        action = document.createElement("button");
+        action.type = "button";
+        action.className = "operator-title-claim";
+        action.dataset.operatorTitleClaim = stage.id;
+        action.textContent = localizedUiText("ÖDÜLÜ AL");
+      } else {
+        action = document.createElement("span");
+        action.className = "operator-title-badge";
+        action.textContent = localizedUiText(stage.claimed ? "ALINDI" : (index === currentIndex ? "ŞU ANKİ" : (reached(stage) ? "AÇILDI" : "KİLİTLİ")));
+      }
+      item.append(copy, action);
+      return item;
+    }));
+  }
+
+  document.getElementById("lobby-player-details")?.addEventListener("click", () => {
+    renderOperatorTitles();
+    const dialog = document.getElementById("operator-titles-dialog");
+    const status = document.getElementById("operator-titles-status");
+    if (status) status.textContent = "";
+    if (dialog?.showModal && !dialog.open) dialog.showModal();
+    else dialog?.setAttribute("open", "");
+  });
+  document.getElementById("operator-titles-close")?.addEventListener("click", () => {
+    const dialog = document.getElementById("operator-titles-dialog");
+    if (dialog?.close) dialog.close();
+    else dialog?.removeAttribute("open");
+  });
+  document.getElementById("operator-titles-list")?.addEventListener("click", async (event) => {
+    const button = event.target.closest?.("[data-operator-title-claim]");
+    if (!button || button.disabled) return;
+    const status = document.getElementById("operator-titles-status");
+    button.disabled = true;
+    try {
+      const payload = await metaProgressionMutation(`/profile/${encodeURIComponent(participantPlayerId)}/operator-titles/${encodeURIComponent(button.dataset.operatorTitleClaim)}/claim`);
+      const credits = Number(payload?.receipt?.rewards?.circuit_credits || 0);
+      if (status) status.textContent = credits ? localizedMessage("title.reward_claimed", {credits: localizedNumber(credits)}) : localizedUiText("Bu ödül zaten alınmış.");
+    } catch (error) {
+      if (status) status.textContent = localizedUiText(error?.message || "Ödül alınamadı.");
+    } finally {
+      renderOperatorTitles();
+    }
+  });
+
   const arenaDetailDialog = document.getElementById("arena-detail-dialog");
   // focusNodeId verilirse yol o ödül durağına kaydırılır ve durak vurgulanır;
   // verilmezse oyuncunun bulunduğu aşama ortalanır.
@@ -18716,6 +18826,8 @@
       // Yalnız hiç maç bitirmemiş oyuncu; istatistik sunucudan gelmeden başlamaz.
       if (
         tutorialController.isCompleted()
+        || startupLoading?.active
+        || (startupLoading?.root && !startupLoading.root.hidden)
         || context.screen !== "menu"
         || context.inMatchFlow
         || statisticsState.viewModel()?.totalMatches !== 0

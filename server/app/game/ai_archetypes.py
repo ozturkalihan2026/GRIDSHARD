@@ -52,7 +52,7 @@ AGGRESSIVE_AI = AIArchetype(
     battle_pool_ids=(
         "laser", "pulse_cannon", "drone_bay", "missile_launcher", "cooler", "overclock_unit",
     ),
-    expansion_module_ids=("drone_bay", "cooler", "overclock_unit", "pulse_cannon"),
+    expansion_module_ids=("cooler", "overclock_unit", "pulse_cannon", "drone_bay"),
     category_bias=(("saldırı", 7), ("destek", 2), ("savunma", -1), ("enerji", -1)),
     attack_foundation_target=3,
 )

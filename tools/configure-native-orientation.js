@@ -2,6 +2,7 @@
 
 const fs = require("node:fs");
 const path = require("node:path");
+const {configureNativeBranding} = require("./configure-native-branding.js");
 
 function androidPortrait(source) {
   // Only the Capacitor main activity is changed; OAuth/system activities
@@ -79,7 +80,8 @@ function configure(platform) {
   const after = platform === "android" && process.env.GRIDSHARD_LOCAL_DEBUG === "1"
     ? androidLocalDebugNetwork(oriented) : oriented;
   if (before !== after) fs.writeFileSync(filename, after, "utf8");
-  console.log(`${platform}: yerel portre yönü yapılandırıldı.`);
+  configureNativeBranding(platform, root, process.env.GRIDSHARD_LOCAL_DEBUG === "1");
+  console.log(`${platform}: yerel portre yönü ve kaynak marka görselleri yapılandırıldı.`);
 }
 
 if (require.main === module) {

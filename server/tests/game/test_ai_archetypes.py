@@ -71,3 +71,23 @@ def test_defensive_family_carries_a_second_attack_card():
         assert len(attacks) >= 2
         assert {"shield", "barrier", "repair"} <= set(archetype.battle_pool_ids)
         assert archetype.defense_floor == 2
+
+
+def test_aggressive_family_expands_with_cooler_before_drone_bay():
+    for archetype_id in ("aggressive", "fast_pressure", "heavy_damage", "area_damage"):
+        archetype = get_ai_archetype(archetype_id)
+        assert archetype.expansion_module_ids[0] == "cooler"
+        assert archetype.expansion_module_ids[-1] == "drone_bay"
+        assert "drone_bay" in archetype.battle_pool_ids
+
+
+def test_arena_defense_bots_carry_a_second_attack_card():
+    from app.arena_canon import BOTS
+
+    defense = [bot for bot in BOTS if bot["archetype_tr"] == "Savunma"]
+    assert len(defense) == 24
+    for bot in defense:
+        categories = [get_module_definition(module).category for module in bot["battle_pool_ids"]]
+        assert categories.count("saldırı") >= 2, bot["id"]
+        assert categories.count("savunma") >= 2, bot["id"]
+        assert len(set(bot["battle_pool_ids"])) == 6, bot["id"]

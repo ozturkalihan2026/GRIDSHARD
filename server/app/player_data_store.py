@@ -60,6 +60,8 @@ class PlayerDataRepository(Protocol):
 
     def list_snapshots(self) -> list[PlayerDataSnapshot]: ...
 
+    def list_display_names(self) -> list[tuple[str, str]]: ...
+
     def delete(
         self,
         player_id: str,
@@ -213,6 +215,11 @@ class JsonFilePlayerDataRepository:
             except (KeyError, TypeError, ValueError):
                 continue
         return snapshots
+
+    def list_display_names(self) -> list[tuple[str, str]]:
+        with self._lock:
+            return [(owner, str(item["profile"].get("display_name", owner)))
+                    for owner, item in self._read_all().items()]
 
     def backup_health(self) -> dict:
         # Windows does not allow the atomic backup replacement while another
@@ -546,6 +553,11 @@ class InMemoryPlayerDataRepository:
             for snapshot in self._snapshots.values()
         ]
 
+    def list_display_names(self) -> list[tuple[str, str]]:
+        with self._lock:
+            return [(owner, str(item.profile.get("display_name", owner)))
+                    for owner, item in self._snapshots.items()]
+
     def delete(
         self,
         player_id: str,
@@ -595,6 +607,7 @@ class PlayerDataStoreService:
             settings_service
         )
         self.repository = repository
+        self.profile_service.persisted_display_names = lambda: self.repository.list_display_names()
 
     def build_snapshot(
         self,
@@ -618,6 +631,7 @@ class PlayerDataStoreService:
             "progression_version": profile.progression_version,
             "highest_rating": max(profile.rating, profile.highest_rating),
             "arena_reward_claims": list(profile.arena_reward_claims),
+            "operator_title_claims": list(profile.operator_title_claims),
             "active_season_id": profile.active_meta_season_id,
             "season_archives": [dict(item) for item in profile.season_archives],
             "coins": profile.coins,
@@ -889,6 +903,7 @@ class PlayerDataStoreService:
             progression_version=2,
             highest_rating=max(int(data["rating"]), int(meta.get("highest_rating", 0))),
             arena_reward_claims=tuple(meta.get("arena_reward_claims", ())),
+            operator_title_claims=tuple(meta.get("operator_title_claims", ())),
             circuit_credits=int(meta.get("circuit_credits", 350)) + (
                 max(0, int(meta.get("coins", 600))) if int(meta.get("progression_version", 1)) < 2 else 0
             ),
