@@ -85,11 +85,14 @@ def test_production_rejects_test_purchases_and_unverified_store_receipts():
     with pytest.raises(StoreError, match="kapalı"):
         process_purchase(profile, "credits_1000", "test", "tx", test_mode=False, now_iso=NOW_ISO)
     for provider in ("google_play", "app_store"):
-        with pytest.raises(StoreError, match="yapılandırılmadı"):
+        with pytest.raises(StoreError, match="doğrulanmadan"):
             process_purchase(profile, "credits_1000", provider, "tx", test_mode=True, now_iso=NOW_ISO)
     assert profile.circuit_credits == credits
     view = store_view(profile, purchase_test_mode=False, ad_test_mode=False)
-    assert view["providers"] == {"purchase": None, "ads": None}
+    assert view["providers"]["purchase"] is None
+    assert view["providers"]["ads"] is None
+    assert view["providers"]["purchase_platforms"] == {"google_play": False, "app_store": False}
+    assert view["providers"]["ad_platforms"] == {"admob": False}
 
 
 def test_season_pass_purchase_opens_premium_track_for_this_season_only():

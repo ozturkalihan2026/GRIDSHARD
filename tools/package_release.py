@@ -37,10 +37,36 @@ GENERATED_ROOT_PATTERNS = (
     "GRIDSHARD-*.zip.sha256",
 )
 
+PRIVATE_OR_GENERATED_PREFIXES = (
+    "qa_reports/", "test-results/", "playwright-report/", "artifacts/",
+    ".mobile-debug/", ".venv/", "node_modules/", "dist/", "build/", "secrets/",
+)
+PRIVATE_FILE_PATTERNS = (
+    "*.key", "*.pem", "*.p8", "*.p12", "*.pfx", "*.keystore", "*.jks",
+    "*firebase-adminsdk*.json", "google-services.json", "GoogleService-Info.plist", ".env*",
+    ".auth_signing_key", "auth_signing_key", "database_url", "postgres_password",
+)
+
+
+def is_release_input(normalized: str) -> bool:
+    # A package built on Linux must not admit Windows-style casing variants of
+    # private files/directories. These names are never source inputs.
+    normalized = normalized.replace("\\", "/").casefold()
+    basename = normalized.rsplit("/", 1)[-1]
+    if normalized.startswith(PRIVATE_OR_GENERATED_PREFIXES):
+        return False
+    if any(fnmatch.fnmatchcase(basename, pattern.casefold()) for pattern in PRIVATE_FILE_PATTERNS):
+        return False
+    if normalized in {name.casefold() for name in EXCLUDED_NAMES} or is_generated_root_artifact(normalized):
+        return False
+    if normalized.startswith("server/data/") and normalized not in STATIC_SERVER_DATA_FILES:
+        return False
+    return not any(fnmatch.fnmatch(normalized, pattern) for pattern in EXCLUDED_RUNTIME_PATTERNS)
+
 
 def is_generated_root_artifact(normalized: str) -> bool:
     return "/" not in normalized and any(
-        fnmatch.fnmatch(normalized, pattern)
+        fnmatch.fnmatchcase(normalized.casefold(), pattern.casefold())
         for pattern in GENERATED_ROOT_PATTERNS
     )
 
@@ -62,17 +88,18 @@ def release_files() -> list[Path]:
         if not raw:
             continue
         normalized = raw.replace("\\", "/")
-        if normalized in EXCLUDED_NAMES:
-            continue
         # Runtime state and secrets are never release inputs, even when a new
         # filename is accidentally tracked or the ignore rules drift.
-        if normalized.startswith("server/data/") and normalized not in STATIC_SERVER_DATA_FILES:
-            continue
-        if is_generated_root_artifact(normalized):
-            continue
-        if any(fnmatch.fnmatch(normalized, pattern) for pattern in EXCLUDED_RUNTIME_PATTERNS):
+        if not is_release_input(normalized):
             continue
         path = ROOT / normalized
+        # Do not follow a tracked link/junction to files outside this checkout,
+        # or to a private runtime path disguised by a harmless archive name.
+        resolved = path.resolve()
+        if path.is_symlink() or not resolved.is_relative_to(ROOT.resolve()):
+            raise ValueError(f"Release input is not a regular checkout path: {normalized}")
+        if not is_release_input(resolved.relative_to(ROOT.resolve()).as_posix()):
+            raise ValueError(f"Release input resolves to a private path: {normalized}")
         if path.is_file():
             paths.append(path)
     return sorted(paths, key=lambda item: item.relative_to(ROOT).as_posix())

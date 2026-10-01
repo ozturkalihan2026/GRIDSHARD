@@ -37,7 +37,8 @@ def test_manifest_endpoint():
         "/web-test/manifest"
     )
 
-    assert response.status_code==200
-    body=response.json()
-    assert body["server_version"]=="2.0.0-beta.38.1"
-    assert body["pvp_protocol_version"]==1
+    assert response.status_code==410
+    body=client.get("/health").json()
+    from app.version import VERSION
+    assert body["version"]==VERSION
+    assert body["pvp_protocol_version"]==PVP_PROTOCOL_VERSION

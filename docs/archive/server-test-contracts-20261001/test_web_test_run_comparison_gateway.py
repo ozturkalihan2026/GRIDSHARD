@@ -1,0 +1,20 @@
+# Historical contract retained for reference; no longer an active release test.
+# See docs/archive/server-test-contracts-20261001/README.md for replacements.
+from fastapi.testclient import TestClient
+from app.main import app
+
+client=TestClient(app)
+
+
+def test_run_comparison_endpoint():
+    body=client.get(
+        "/web-test/test-runs/compare",
+        params={
+            "baseline_test_run_id":"old",
+            "candidate_test_run_id":"web-test-beta.13",
+        },
+    ).json()
+
+    assert body["baseline_test_run_id"]=="old"
+    assert body["candidate_test_run_id"]=="web-test-beta.13"
+    assert "metrics" in body

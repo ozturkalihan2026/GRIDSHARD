@@ -2,7 +2,7 @@ const { defineConfig, devices } = require("@playwright/test");
 
 const baseURL = process.env.GRIDSHARD_E2E_BASE_URL || "http://127.0.0.1:8879";
 const bundledPython = process.env.GRIDSHARD_PYTHON || "python";
-const localChrome = process.env.CI ? {} : { channel: "chrome" };
+const localChrome = process.env.CI ? {} : { channel: process.env.GRIDSHARD_E2E_BROWSER_CHANNEL || "chrome" };
 
 module.exports = defineConfig({
   testDir: "./e2e",
@@ -32,7 +32,7 @@ module.exports = defineConfig({
     command: `\"${bundledPython}\" ../tools/e2e_server.py`,
     cwd: "./server",
     url: `${baseURL}/health`,
-    reuseExistingServer: !process.env.CI,
+    reuseExistingServer: false,
     timeout: 60_000,
     stdout: process.env.CI ? "pipe" : "ignore",
     stderr: process.env.CI ? "pipe" : "ignore",
@@ -53,17 +53,17 @@ module.exports = defineConfig({
   projects: [
     {
       name: "desktop-chromium",
-      testMatch: /(two-client-pvp|menu-navigation|battle-density|beta33-season|beta381-battle-events)\.spec\.js/,
+      testMatch: /(startup-loading|two-client-pvp|menu-navigation|battle-density|beta33-season|beta381-battle-events)\.spec\.js/,
       use: { ...devices["Desktop Chrome"], ...localChrome }
     },
     {
       name: "android-chrome-emulated",
-      testMatch: /mobile-battle\.spec\.js/,
+      testMatch: /(startup-loading|mobile-battle)\.spec\.js/,
       use: { ...devices["Pixel 7"], ...localChrome }
     },
     {
       name: "iphone-safari-emulated",
-      testMatch: /mobile-battle\.spec\.js/,
+      testMatch: /(startup-loading|mobile-battle)\.spec\.js/,
       use: { ...devices["iPhone 15"] }
     }
   ]

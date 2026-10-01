@@ -1,4 +1,4 @@
-from types import SimpleNamespace
+from app.game.models import BattleState, BattleStatus
 
 from app import main as gateway
 from app.player_data_store import InMemoryPlayerDataRepository
@@ -106,11 +106,12 @@ def test_finished_battle_callback_closes_social_entries_by_battle_id(monkeypatch
     )
 
     gateway.process_completed_pvp_battle(
-        SimpleNamespace(
+        BattleState(
             battle_id="social-session-61",
             match_type="friend_battle",
             account_player_ids=(),
             players={},
+            status=BattleStatus.FINISHED, finished_at_ms=1000,
         )
     )
 

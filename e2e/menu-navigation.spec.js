@@ -1,10 +1,12 @@
 const { test, expect } = require("@playwright/test");
+const {waitForParticipantReady} = require("./ui-helpers");
 
 test("Ana menü güncel alt gezintideki ekranlara gidip geri döner", async ({ page }) => {
   await page.addInitScript(() =>
     localStorage.setItem("gridshard.tutorial.v1", "complete")
   );
   await page.goto("/?e2e=1", { waitUntil: "domcontentloaded" });
+  await waitForParticipantReady(page);
   await expect(page.locator('body[data-app-screen="menu"]')).toBeVisible();
 
   const screens = ["shop", "modules", "team", "events"];

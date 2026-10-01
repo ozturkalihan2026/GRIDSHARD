@@ -82,9 +82,13 @@ def test_premium_track_doubles_free_rewards_and_requires_an_active_pass():
     assert profile.premium_pass_active() is False
 
 
-def test_team_appearance_is_free_to_choose_and_validated():
+def test_team_appearance_requires_reward_unlocks_and_is_validated():
     service = TeamService(InMemoryTeamRepository())
     team_id = service.create_team("owner", "Görünüm Devresi", "create-look")["team_id"]
+    with pytest.raises(TeamServiceError):
+        service.set_cosmetics(team_id=team_id, owner_id="owner",
+                              selections={"emblem_id":"crown", "frame_id":"gold"}, request_id="locked-look")
+    service.grant_reward_cosmetics(team_id, {"team_emblem_id":"crown", "team_frame_id":"gold", "team_name_color_id":"violet"}, "fixture-reward")
     result = service.set_cosmetics(
         team_id=team_id,
         owner_id="owner",
@@ -179,7 +183,7 @@ def test_update_notice_and_direct_messages_are_unread_until_seen(isolated_gatewa
         assert gateway.get_social_view(recipient_id)["notifications"]["unread_messages"] == 1
         cleared = gateway.mark_direct_messages_seen(
             recipient_id,
-            gateway.EventRegistrationOperation(player_id=recipient_id, request_id="seen-1"),
+            gateway.DirectMessageSeenRequest(player_id=recipient_id, peer_id=sender_id, request_id="seen-1"),
         )
         assert cleared["notifications"]["unread_messages"] == 0
     finally:

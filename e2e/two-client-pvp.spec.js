@@ -96,10 +96,16 @@ test("aktif PvP bağlantısı kaldığı yerden sürer ve rematch yeni oturum a�
     await api(playerA, "POST", `/pvp/sessions/${previousSessionId}/ready`, { player_id: playerA.playerId, ready: true });
     await api(playerB, "POST", `/pvp/sessions/${previousSessionId}/ready`, { player_id: playerB.playerId, ready: true });
 
+    // Current rules deploy cards to a server-selected empty cell; module
+    // rotation and pre-placed laser fixtures are no longer supported.
+    await expect.poll(() => playerA.page.evaluate(playerId => {
+      const snapshots = window.__gridshardE2E.messages.filter(message => message.type === "snapshot");
+      return snapshots.at(-1)?.payload?.players?.[playerId]?.current || 0;
+    }, playerA.playerId), { timeout: 15_000 }).toBeGreaterThanOrEqual(2);
     await sendSocket(playerA, previousSessionId, "command", "before-drop", {
       sequence: 1,
-      kind: "rotate_module",
-      command_payload: { module_id: `${playerA.playerId}-laser` }
+      kind: "deploy_module",
+      command_payload: { definition_id: "laser" }
     });
     await expect.poll(() => playerA.page.evaluate(() =>
       window.__gridshardE2E.messages.some(message =>

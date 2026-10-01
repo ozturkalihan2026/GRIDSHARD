@@ -3,6 +3,12 @@
 
   // New screen copy belongs here; the legacy dictionary remains in i18n.js.
   const translations = Object.freeze({
+    "Sunucuya bağlanılıyor…":"Connecting to server…",
+    "Profil geri getiriliyor…":"Restoring profile…",
+    "Devre koleksiyonu yükleniyor…":"Loading circuit collection…",
+    "Hesap bağlantıları hazırlanıyor…":"Preparing account connections…",
+    "Bağlantı tamamlanamadı. Yeniden deneyebilirsin.":"Connection could not be completed. You can retry.",
+    "Tamamlanan açılış adımları":"Completed startup steps",
     "6 haneli kod":"6-digit code",
     "Aktif etkinlikler":"Active events",
     "Çekirdek bilgi başlıkları":"Core information tabs",

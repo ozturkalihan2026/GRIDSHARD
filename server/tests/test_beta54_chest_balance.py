@@ -5,7 +5,7 @@ from app.meta_progression import (
     ARENAS,
     BATTLE_CHEST_DROP_THRESHOLDS,
     CHEST_DEFINITIONS,
-    DAILY_SHOP_OFFERS,
+    STORE_CHEST_PRICES,
     MetaProgressionService,
     _hash_unit,
 )
@@ -38,9 +38,10 @@ def test_module_piece_ranges_shrink_as_module_rarity_rises():
         "field_3h", "circuit_8h", "core_24h", "diamond_24h"
     )] == [75, 145, 280, 480]
 
-    offers = {offer["tier"]: offer for offer in DAILY_SHOP_OFFERS}
-    assert offers["silver"]["shards_by_rarity"]["common"][1] > offers["silver"]["shards_by_rarity"]["rare"][1]
-    assert offers["gold"]["shards_by_rarity"]["common"][1] > offers["gold"]["shards_by_rarity"]["rare"][1] > offers["gold"]["shards_by_rarity"]["epic"][1]
+    assert STORE_CHEST_PRICES["field_3h"][0] == STORE_CHEST_PRICES["circuit_8h"][0] == "circuit_credits"
+    assert STORE_CHEST_PRICES["field_3h"][1] < STORE_CHEST_PRICES["circuit_8h"][1]
+    assert STORE_CHEST_PRICES["core_24h"][0] == STORE_CHEST_PRICES["diamond_24h"][0] == "flux_shards"
+    assert STORE_CHEST_PRICES["core_24h"][1] < STORE_CHEST_PRICES["diamond_24h"][1]
 
 
 def test_only_diamond_chests_can_award_core_pieces_and_only_occasionally():

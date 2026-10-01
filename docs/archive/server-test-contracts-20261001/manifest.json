@@ -1,0 +1,820 @@
+{
+  "format": 1,
+  "date": "2026-10-01",
+  "retired_api_paths": [
+    "/telemetry/balance-change-draft",
+    "/telemetry/balance-change-regression",
+    "/telemetry/balance-change-simulate",
+    "/telemetry/kpis",
+    "/telemetry/manual-battle-report",
+    "/web-test/audit/checklist-snapshot",
+    "/web-test/audit/launch-attempt",
+    "/web-test/audit/operation-snapshot",
+    "/web-test/audit/preflight-snapshot",
+    "/web-test/audit/session-bind",
+    "/web-test/audit/session-finish",
+    "/web-test/audit/session-start",
+    "/web-test/audit/stability-snapshot",
+    "/web-test/data-health",
+    "/web-test/feedback",
+    "/web-test/feedback/summary",
+    "/web-test/findings",
+    "/web-test/first-run-checklist",
+    "/web-test/go-no-go",
+    "/web-test/launch-readiness",
+    "/web-test/monitoring",
+    "/web-test/operation-readiness",
+    "/web-test/persistence/restore-backup",
+    "/web-test/preflight",
+    "/web-test/rc-candidate",
+    "/web-test/rc-report",
+    "/web-test/review-candidates",
+    "/web-test/status",
+    "/web-test/telemetry/restore-backup",
+    "/web-test/test-run",
+    "/web-test/test-run/finish",
+    "/web-test/test-run/report",
+    "/web-test/test-run/start",
+    "/web-test/test-run/status",
+    "/web-test/test-runs",
+    "/web-test/test-runs/compare",
+    "/web-test/test-runs/old-run/go-no-go",
+    "/web-test/test-runs/web-test-beta.13/summary"
+  ],
+  "files": [
+    {
+      "path": "server/tests/game/test_beta28_energy_placement.py",
+      "first": "import pytest",
+      "tests": [
+        "test_move_keeps_module_on_the_embedded_energy_network",
+        "test_move_does_not_require_port_orientation"
+      ],
+      "routes": null,
+      "reason": "5x3 tahta, otomatik yerleştirme ve ortak enerji: generator/topoloji, özel hücre, taşıma/swap ve laboratuvar kaldırıldı.",
+      "replacement": "server/tests/game/test_beta72_heat_energy_rework.py; server/tests/test_retired_contracts.py; e2e/mobile-battle.spec.js",
+      "archived": "docs/archive/server-test-contracts-20261001/game/test_beta28_energy_placement.py"
+    },
+    {
+      "path": "server/tests/game/test_beta31_module_swap.py",
+      "first": "import pytest",
+      "tests": [
+        "test_active_modules_swap_atomically_on_embedded_board",
+        "test_impossible_swap_is_rejected_without_partial_position_or_credit_change",
+        "test_generator_cannot_enter_normal_module_swap"
+      ],
+      "routes": null,
+      "reason": "5x3 tahta, otomatik yerleştirme ve ortak enerji: generator/topoloji, özel hücre, taşıma/swap ve laboratuvar kaldırıldı.",
+      "replacement": "server/tests/game/test_beta72_heat_energy_rework.py; server/tests/test_retired_contracts.py; e2e/mobile-battle.spec.js",
+      "archived": "docs/archive/server-test-contracts-20261001/game/test_beta31_module_swap.py"
+    },
+    {
+      "path": "server/tests/game/test_beta36_laboratory.py",
+      "first": "from app.game.battle_pool import default_battle_pool",
+      "tests": [
+        "test_laboratory_catalog_has_24_modules_and_first_spend_costs_25_flux",
+        "test_upgrade_is_atomic_idempotent_and_max_level_is_bounded",
+        "test_free_beta_reset_refunds_exact_investment_once",
+        "test_laboratory_levels_history_and_receipts_survive_profile_reload",
+        "test_ranked_snapshot_is_always_normalized_and_never_applies_lab_power",
+        "test_feature_flagged_unranked_session_applies_small_experimental_effect"
+      ],
+      "routes": null,
+      "reason": "5x3 tahta, otomatik yerleştirme ve ortak enerji: generator/topoloji, özel hücre, taşıma/swap ve laboratuvar kaldırıldı.",
+      "replacement": "server/tests/game/test_beta72_heat_energy_rework.py; server/tests/test_retired_contracts.py; e2e/mobile-battle.spec.js",
+      "archived": "docs/archive/server-test-contracts-20261001/game/test_beta36_laboratory.py"
+    },
+    {
+      "path": "server/tests/game/test_beta62_core_rarity_balance.py",
+      "first": "import pytest",
+      "tests": [
+        "test_core_rarity_curve_improves_all_axes_in_order",
+        "test_legendary_core_generates_more_energy_than_common_core",
+        "test_core_hp_profile_scales_from_canonical_core_without_mutating_catalog"
+      ],
+      "routes": null,
+      "reason": "Beta.72 çekirdek enderliği sayısal güç eğrisi değil imza mekaniği.",
+      "replacement": "server/tests/game/test_beta72_signatures.py; server/tests/test_retired_contracts.py",
+      "archived": "docs/archive/server-test-contracts-20261001/game/test_beta62_core_rarity_balance.py"
+    },
+    {
+      "path": "server/tests/game/test_embedded_energy_topology.py",
+      "first": "from app.game.engine import BattleEngine",
+      "tests": [
+        "test_embedded_cables_reach_all_orthogonally_connected_modules",
+        "test_embedded_cables_supply_occupied_cells_without_port_gating"
+      ],
+      "routes": null,
+      "reason": "5x3 tahta, otomatik yerleştirme ve ortak enerji: generator/topoloji, özel hücre, taşıma/swap ve laboratuvar kaldırıldı.",
+      "replacement": "server/tests/game/test_beta72_heat_energy_rework.py; server/tests/test_retired_contracts.py; e2e/mobile-battle.spec.js",
+      "archived": "docs/archive/server-test-contracts-20261001/game/test_embedded_energy_topology.py"
+    },
+    {
+      "path": "server/tests/game/test_energy_cell_integration.py",
+      "first": "from app.game.energy import process_energy_tick",
+      "tests": "test_generator_on_energy_cell_gets_bonus",
+      "routes": null,
+      "reason": "5x3 tahta, otomatik yerleştirme ve ortak enerji: generator/topoloji, özel hücre, taşıma/swap ve laboratuvar kaldırıldı.",
+      "replacement": "server/tests/game/test_beta72_heat_energy_rework.py; server/tests/test_retired_contracts.py; e2e/mobile-battle.spec.js",
+      "archived": "docs/archive/server-test-contracts-20261001/game/test_energy_cell_integration.py"
+    },
+    {
+      "path": "server/tests/game/test_special_cells.py",
+      "first": "import pytest",
+      "tests": [
+        "test_exactly_four_class_restricted_special_cells_exist",
+        "test_all_four_special_cell_types_exist_once",
+        "test_attack_cell_metadata_is_15_percent_bonus",
+        "test_defense_cell_metadata_is_15_percent_bonus",
+        "test_energy_cell_metadata_is_15_percent_bonus",
+        "test_repair_cell_metadata_is_20_percent_bonus",
+        "test_normal_cell_has_no_special_effects",
+        "test_special_cells_remain_placeable",
+        "test_special_cells_expose_their_placement_restrictions",
+        "test_engine_rejects_wrong_module_class_for_special_cell",
+        "test_engine_exposes_current_cell_effects_for_active_module",
+        "test_module_event_data_contains_cell_effect_metadata"
+      ],
+      "routes": null,
+      "reason": "5x3 tahta, otomatik yerleştirme ve ortak enerji: generator/topoloji, özel hücre, taşıma/swap ve laboratuvar kaldırıldı.",
+      "replacement": "server/tests/game/test_beta72_heat_energy_rework.py; server/tests/test_retired_contracts.py; e2e/mobile-battle.spec.js",
+      "archived": "docs/archive/server-test-contracts-20261001/game/test_special_cells.py"
+    },
+    {
+      "path": "server/tests/test_audit_funnel_kpis.py",
+      "first": "from app.telemetry import (",
+      "tests": [
+        "test_audit_funnel_rates",
+        "test_non_completed_finish_event_not_counted"
+      ],
+      "routes": null,
+      "reason": "Kaldırılmış web-test yönetim/KPI/audit/run uçları ve artık kabul edilmeyen telemetri olayları.",
+      "replacement": "server/tests/test_retired_contracts.py; server/tests/test_runtime_hardening.py; e2e/startup-loading.spec.js",
+      "archived": "docs/archive/server-test-contracts-20261001/test_audit_funnel_kpis.py"
+    },
+    {
+      "path": "server/tests/test_audit_kpis.py",
+      "first": "from app.telemetry import (",
+      "tests": [
+        "test_audit_to_session_rate_counts_only_started_audits",
+        "test_unknown_bound_source_does_not_inflate_conversion",
+        "test_audit_kpis_respect_player_filter"
+      ],
+      "routes": null,
+      "reason": "Kaldırılmış web-test yönetim/KPI/audit/run uçları ve artık kabul edilmeyen telemetri olayları.",
+      "replacement": "server/tests/test_retired_contracts.py; server/tests/test_runtime_hardening.py; e2e/startup-loading.spec.js",
+      "archived": "docs/archive/server-test-contracts-20261001/test_audit_kpis.py"
+    },
+    {
+      "path": "server/tests/test_balance_change_draft_gateway.py",
+      "first": "from fastapi.testclient import TestClient",
+      "tests": "test_balance_draft_gateway_is_blocked_before_review_ready",
+      "routes": "/telemetry/balance-change-draft",
+      "reason": "Kaldırılmış web-test insan inceleme/taslak simülasyon zinciri ve eski move/unlock komutları.",
+      "replacement": "server/tests/test_retired_contracts.py; server/tests/game/test_beta72_heat_energy_rework.py",
+      "archived": "docs/archive/server-test-contracts-20261001/test_balance_change_draft_gateway.py"
+    },
+    {
+      "path": "server/tests/test_balance_change_drafts.py",
+      "first": "from pathlib import Path",
+      "tests": [
+        "test_draft_is_blocked_without_review_ready",
+        "test_draft_never_exposes_apply_until_checks_pass",
+        "test_draft_can_be_ready_but_still_has_no_apply_endpoint"
+      ],
+      "routes": null,
+      "reason": "Kaldırılmış web-test insan inceleme/taslak simülasyon zinciri ve eski move/unlock komutları.",
+      "replacement": "server/tests/test_retired_contracts.py; server/tests/game/test_beta72_heat_energy_rework.py",
+      "archived": "docs/archive/server-test-contracts-20261001/test_balance_change_drafts.py"
+    },
+    {
+      "path": "server/tests/test_balance_regression.py",
+      "first": "import pytest",
+      "tests": [
+        "test_credit_regression_uses_real_engine_and_never_mutates_canonical",
+        "test_credit_regression_rejects_engine_invalid_tick_income",
+        "test_module_interaction_regression_uses_real_engine",
+        "test_local_ai_pressure_uses_separate_server_side_adapter"
+      ],
+      "routes": null,
+      "reason": "Kaldırılmış web-test insan inceleme/taslak simülasyon zinciri ve eski move/unlock komutları.",
+      "replacement": "server/tests/test_retired_contracts.py; server/tests/game/test_beta72_heat_energy_rework.py",
+      "archived": "docs/archive/server-test-contracts-20261001/test_balance_regression.py"
+    },
+    {
+      "path": "server/tests/test_balance_regression_gateway.py",
+      "first": "from fastapi.testclient import TestClient",
+      "tests": "test_review_ready_credit_draft_runs_simulation_then_real_engine_regression",
+      "routes": [
+        "/telemetry/balance-change-draft",
+        "/telemetry/balance-change-regression",
+        "/telemetry/balance-change-simulate"
+      ],
+      "reason": "Kaldırılmış web-test insan inceleme/taslak simülasyon zinciri ve eski move/unlock komutları.",
+      "replacement": "server/tests/test_retired_contracts.py; server/tests/game/test_beta72_heat_energy_rework.py",
+      "archived": "docs/archive/server-test-contracts-20261001/test_balance_regression_gateway.py"
+    },
+    {
+      "path": "server/tests/test_balance_simulation.py",
+      "first": "import pytest",
+      "tests": [
+        "test_local_ai_pressure_simulation_is_isolated",
+        "test_circuit_credit_simulation_compares_60_second_income",
+        "test_module_interaction_simulation_compares_unlock_window",
+        "test_unsupported_review_area_never_mutates_balance"
+      ],
+      "routes": null,
+      "reason": "Kaldırılmış web-test insan inceleme/taslak simülasyon zinciri ve eski move/unlock komutları.",
+      "replacement": "server/tests/test_retired_contracts.py; server/tests/game/test_beta72_heat_energy_rework.py",
+      "archived": "docs/archive/server-test-contracts-20261001/test_balance_simulation.py"
+    },
+    {
+      "path": "server/tests/test_beta36_laboratory_api.py",
+      "first": "from uuid import uuid4",
+      "tests": [
+        "test_laboratory_api_purchase_replay_and_reset_flow",
+        "test_laboratory_api_rejects_unknown_module_without_spending_flux"
+      ],
+      "routes": null,
+      "reason": "Laboratuvar alım/reset uçları ve deneysel güç kaldırıldı.",
+      "replacement": "server/tests/test_retired_contracts.py; server/tests/test_postgres_persistent_operations.py",
+      "archived": "docs/archive/server-test-contracts-20261001/test_beta36_laboratory_api.py"
+    },
+    {
+      "path": "server/tests/test_checklist_snapshot_kpi.py",
+      "first": "from app.telemetry import InMemoryTelemetryService, TelemetryEvent",
+      "tests": "test_checklist_ready_rate_global_and_per_run",
+      "routes": null,
+      "reason": "Kaldırılmış web-test yönetim/KPI/audit/run uçları ve artık kabul edilmeyen telemetri olayları.",
+      "replacement": "server/tests/test_retired_contracts.py; server/tests/test_runtime_hardening.py; e2e/startup-loading.spec.js",
+      "archived": "docs/archive/server-test-contracts-20261001/test_checklist_snapshot_kpi.py"
+    },
+    {
+      "path": "server/tests/test_launch_attempt_kpis.py",
+      "first": "from app.telemetry import (",
+      "tests": [
+        "test_launch_ready_kpi_counts_attempts_and_rate",
+        "test_test_run_summary_filters_launch_kpis_by_run",
+        "test_launch_ready_go_no_go_signal_is_behavior_only"
+      ],
+      "routes": null,
+      "reason": "Kaldırılmış web-test yönetim/KPI/audit/run uçları ve artık kabul edilmeyen telemetri olayları.",
+      "replacement": "server/tests/test_retired_contracts.py; server/tests/test_runtime_hardening.py; e2e/startup-loading.spec.js",
+      "archived": "docs/archive/server-test-contracts-20261001/test_launch_attempt_kpis.py"
+    },
+    {
+      "path": "server/tests/test_manual_battle_report_dict_regression.py",
+      "first": "from fastapi.testclient import TestClient",
+      "tests": "test_manual_report_accepts_dict_events_from_telemetry_service",
+      "routes": "/telemetry/manual-battle-report",
+      "reason": "Kaldırılmış web-test yönetim/KPI/audit/run uçları ve artık kabul edilmeyen telemetri olayları.",
+      "replacement": "server/tests/test_retired_contracts.py; server/tests/test_runtime_hardening.py; e2e/startup-loading.spec.js",
+      "archived": "docs/archive/server-test-contracts-20261001/test_manual_battle_report_dict_regression.py"
+    },
+    {
+      "path": "server/tests/test_manual_battle_report_gateway.py",
+      "first": "from fastapi.testclient import TestClient",
+      "tests": "test_manual_battle_report_endpoint_starts_empty",
+      "routes": "/telemetry/manual-battle-report",
+      "reason": "Kaldırılmış web-test yönetim/KPI/audit/run uçları ve artık kabul edilmeyen telemetri olayları.",
+      "replacement": "server/tests/test_retired_contracts.py; server/tests/test_runtime_hardening.py; e2e/startup-loading.spec.js",
+      "archived": "docs/archive/server-test-contracts-20261001/test_manual_battle_report_gateway.py"
+    },
+    {
+      "path": "server/tests/test_operation_readiness_gateway.py",
+      "first": "from fastapi.testclient import TestClient",
+      "tests": "test_operation_readiness_endpoint",
+      "routes": "/web-test/operation-readiness",
+      "reason": "Kaldırılmış web-test yönetim/KPI/audit/run uçları ve artık kabul edilmeyen telemetri olayları.",
+      "replacement": "server/tests/test_retired_contracts.py; server/tests/test_runtime_hardening.py; e2e/startup-loading.spec.js",
+      "archived": "docs/archive/server-test-contracts-20261001/test_operation_readiness_gateway.py"
+    },
+    {
+      "path": "server/tests/test_operation_snapshot_kpi.py",
+      "first": "from app.telemetry import InMemoryTelemetryService, TelemetryEvent",
+      "tests": "test_operation_running_rate_global_and_per_run",
+      "routes": null,
+      "reason": "Kaldırılmış web-test yönetim/KPI/audit/run uçları ve artık kabul edilmeyen telemetri olayları.",
+      "replacement": "server/tests/test_retired_contracts.py; server/tests/test_runtime_hardening.py; e2e/startup-loading.spec.js",
+      "archived": "docs/archive/server-test-contracts-20261001/test_operation_snapshot_kpi.py"
+    },
+    {
+      "path": "server/tests/test_persistence_restore_gateway.py",
+      "first": "from fastapi.testclient import TestClient",
+      "tests": [
+        "test_restore_requires_admin_token_configuration",
+        "test_restore_rejects_wrong_admin_token",
+        "test_restore_only_runs_when_main_is_unhealthy",
+        "test_controlled_restore_recovers_backup_and_health"
+      ],
+      "routes": "/web-test/persistence/restore-backup",
+      "reason": "Canlı HTTP üzerinden JSON yedeği restore artık yok; çevrimdışı boş PostgreSQL hedefi gerekir.",
+      "replacement": "server/tests/test_server_backup.py; server/tests/test_retired_contracts.py",
+      "archived": "docs/archive/server-test-contracts-20261001/test_persistence_restore_gateway.py"
+    },
+    {
+      "path": "server/tests/test_preflight_snapshot_kpi.py",
+      "first": "from app.telemetry import InMemoryTelemetryService, TelemetryEvent",
+      "tests": "test_preflight_ready_rate_global_and_per_run",
+      "routes": null,
+      "reason": "Kaldırılmış web-test yönetim/KPI/audit/run uçları ve artık kabul edilmeyen telemetri olayları.",
+      "replacement": "server/tests/test_retired_contracts.py; server/tests/test_runtime_hardening.py; e2e/startup-loading.spec.js",
+      "archived": "docs/archive/server-test-contracts-20261001/test_preflight_snapshot_kpi.py"
+    },
+    {
+      "path": "server/tests/test_run_started_kpis.py",
+      "first": "from app.telemetry import InMemoryTelemetryService, TelemetryEvent",
+      "tests": "test_run_started_kpis_count_events_and_unique_runs",
+      "routes": null,
+      "reason": "Kaldırılmış web-test yönetim/KPI/audit/run uçları ve artık kabul edilmeyen telemetri olayları.",
+      "replacement": "server/tests/test_retired_contracts.py; server/tests/test_runtime_hardening.py; e2e/startup-loading.spec.js",
+      "archived": "docs/archive/server-test-contracts-20261001/test_run_started_kpis.py"
+    },
+    {
+      "path": "server/tests/test_stability_snapshot_kpi.py",
+      "first": "from app.telemetry import InMemoryTelemetryService, TelemetryEvent",
+      "tests": "test_stability_stable_rate_global_and_per_run",
+      "routes": null,
+      "reason": "Kaldırılmış web-test yönetim/KPI/audit/run uçları ve artık kabul edilmeyen telemetri olayları.",
+      "replacement": "server/tests/test_retired_contracts.py; server/tests/test_runtime_hardening.py; e2e/startup-loading.spec.js",
+      "archived": "docs/archive/server-test-contracts-20261001/test_stability_snapshot_kpi.py"
+    },
+    {
+      "path": "server/tests/test_telemetry_restore_gateway.py",
+      "first": "from fastapi.testclient import TestClient",
+      "tests": [
+        "test_telemetry_restore_requires_correct_admin_token",
+        "test_telemetry_restore_reloads_memory_and_kpis",
+        "test_telemetry_restore_rejected_when_main_healthy"
+      ],
+      "routes": "/web-test/telemetry/restore-backup",
+      "reason": "Canlı HTTP üzerinden JSON yedeği restore artık yok; çevrimdışı boş PostgreSQL hedefi gerekir.",
+      "replacement": "server/tests/test_server_backup.py; server/tests/test_retired_contracts.py",
+      "archived": "docs/archive/server-test-contracts-20261001/test_telemetry_restore_gateway.py"
+    },
+    {
+      "path": "server/tests/test_web_test_checklist_audit.py",
+      "first": "from fastapi.testclient import TestClient",
+      "tests": "test_checklist_snapshot_audit_is_minimal",
+      "routes": "/web-test/audit/checklist-snapshot",
+      "reason": "Kaldırılmış web-test yönetim/KPI/audit/run uçları ve artık kabul edilmeyen telemetri olayları.",
+      "replacement": "server/tests/test_retired_contracts.py; server/tests/test_runtime_hardening.py; e2e/startup-loading.spec.js",
+      "archived": "docs/archive/server-test-contracts-20261001/test_web_test_checklist_audit.py"
+    },
+    {
+      "path": "server/tests/test_web_test_checklist_gateway.py",
+      "first": "from fastapi.testclient import TestClient",
+      "tests": "test_first_run_checklist_endpoint",
+      "routes": "/web-test/first-run-checklist",
+      "reason": "Kaldırılmış web-test yönetim/KPI/audit/run uçları ve artık kabul edilmeyen telemetri olayları.",
+      "replacement": "server/tests/test_retired_contracts.py; server/tests/test_runtime_hardening.py; e2e/startup-loading.spec.js",
+      "archived": "docs/archive/server-test-contracts-20261001/test_web_test_checklist_gateway.py"
+    },
+    {
+      "path": "server/tests/test_web_test_data_health.py",
+      "first": "from fastapi.testclient import TestClient",
+      "tests": [
+        "test_data_health_combines_player_and_telemetry_state",
+        "test_data_health_reports_independent_backup_states",
+        "test_data_health_ready_false_if_one_store_corrupt"
+      ],
+      "routes": "/web-test/data-health",
+      "reason": "Kaldırılmış web-test yönetim/KPI/audit/run uçları ve artık kabul edilmeyen telemetri olayları.",
+      "replacement": "server/tests/test_retired_contracts.py; server/tests/test_runtime_hardening.py; e2e/startup-loading.spec.js",
+      "archived": "docs/archive/server-test-contracts-20261001/test_web_test_data_health.py"
+    },
+    {
+      "path": "server/tests/test_web_test_feedback_gateway.py",
+      "first": "from fastapi.testclient import TestClient",
+      "tests": [
+        "test_feedback_requires_finished_run",
+        "test_feedback_submission_and_summary"
+      ],
+      "routes": [
+        "/web-test/feedback",
+        "/web-test/feedback/summary",
+        "/web-test/test-run/finish",
+        "/web-test/test-run/start"
+      ],
+      "reason": "Kaldırılmış web-test yönetim/KPI/audit/run uçları ve artık kabul edilmeyen telemetri olayları.",
+      "replacement": "server/tests/test_retired_contracts.py; server/tests/test_runtime_hardening.py; e2e/startup-loading.spec.js",
+      "archived": "docs/archive/server-test-contracts-20261001/test_web_test_feedback_gateway.py"
+    },
+    {
+      "path": "server/tests/test_web_test_feedback_service.py",
+      "first": "import pytest",
+      "tests": [
+        "test_feedback_validation_and_note_limit",
+        "test_feedback_summary_is_aggregate"
+      ],
+      "routes": null,
+      "reason": "Kaldırılmış web-test yönetim/KPI/audit/run uçları ve artık kabul edilmeyen telemetri olayları.",
+      "replacement": "server/tests/test_retired_contracts.py; server/tests/test_runtime_hardening.py; e2e/startup-loading.spec.js",
+      "archived": "docs/archive/server-test-contracts-20261001/test_web_test_feedback_service.py"
+    },
+    {
+      "path": "server/tests/test_web_test_findings.py",
+      "first": "from app.telemetry import (",
+      "tests": [
+        "test_findings_reports_insufficient_data_without_inventing_concerns",
+        "test_findings_correlates_feedback_with_gameplay_window"
+      ],
+      "routes": null,
+      "reason": "Kaldırılmış web-test yönetim/KPI/audit/run uçları ve artık kabul edilmeyen telemetri olayları.",
+      "replacement": "server/tests/test_retired_contracts.py; server/tests/test_runtime_hardening.py; e2e/startup-loading.spec.js",
+      "archived": "docs/archive/server-test-contracts-20261001/test_web_test_findings.py"
+    },
+    {
+      "path": "server/tests/test_web_test_findings_gateway.py",
+      "first": "from fastapi.testclient import TestClient",
+      "tests": "test_findings_endpoint_starts_as_insufficient_data",
+      "routes": "/web-test/findings",
+      "reason": "Kaldırılmış web-test yönetim/KPI/audit/run uçları ve artık kabul edilmeyen telemetri olayları.",
+      "replacement": "server/tests/test_retired_contracts.py; server/tests/test_runtime_hardening.py; e2e/startup-loading.spec.js",
+      "archived": "docs/archive/server-test-contracts-20261001/test_web_test_findings_gateway.py"
+    },
+    {
+      "path": "server/tests/test_web_test_go_no_go_gateway.py",
+      "first": "from fastapi.testclient import TestClient",
+      "tests": "test_go_no_go_endpoint",
+      "routes": "/web-test/go-no-go",
+      "reason": "Kaldırılmış web-test yönetim/KPI/audit/run uçları ve artık kabul edilmeyen telemetri olayları.",
+      "replacement": "server/tests/test_retired_contracts.py; server/tests/test_runtime_hardening.py; e2e/startup-loading.spec.js",
+      "archived": "docs/archive/server-test-contracts-20261001/test_web_test_go_no_go_gateway.py"
+    },
+    {
+      "path": "server/tests/test_web_test_launch_attempt_audit.py",
+      "first": "from fastapi.testclient import TestClient",
+      "tests": [
+        "test_launch_attempt_audit_records_minimal_gate_snapshot",
+        "test_launch_attempt_same_timestamp_is_idempotent"
+      ],
+      "routes": "/web-test/audit/launch-attempt",
+      "reason": "Kaldırılmış web-test yönetim/KPI/audit/run uçları ve artık kabul edilmeyen telemetri olayları.",
+      "replacement": "server/tests/test_retired_contracts.py; server/tests/test_runtime_hardening.py; e2e/startup-loading.spec.js",
+      "archived": "docs/archive/server-test-contracts-20261001/test_web_test_launch_attempt_audit.py"
+    },
+    {
+      "path": "server/tests/test_web_test_launch_gateway.py",
+      "first": "from fastapi.testclient import TestClient",
+      "tests": "test_launch_readiness_endpoint",
+      "routes": "/web-test/launch-readiness",
+      "reason": "Kaldırılmış web-test yönetim/KPI/audit/run uçları ve artık kabul edilmeyen telemetri olayları.",
+      "replacement": "server/tests/test_retired_contracts.py; server/tests/test_runtime_hardening.py; e2e/startup-loading.spec.js",
+      "archived": "docs/archive/server-test-contracts-20261001/test_web_test_launch_gateway.py"
+    },
+    {
+      "path": "server/tests/test_web_test_metrics.py",
+      "first": "from fastapi.testclient import TestClient",
+      "tests": [
+        "test_kpis_deduplicate_matches_by_session",
+        "test_kpis_measure_gameplay_signals",
+        "test_kpi_player_filter_isolated",
+        "test_kpi_endpoint",
+        "test_second_match_transition_uses_post_completion_matchmaking",
+        "test_losing_player_rematch_rate_links_previous_session"
+      ],
+      "routes": "/telemetry/kpis",
+      "reason": "Kaldırılmış web-test yönetim/KPI/audit/run uçları ve artık kabul edilmeyen telemetri olayları.",
+      "replacement": "server/tests/test_retired_contracts.py; server/tests/test_runtime_hardening.py; e2e/startup-loading.spec.js",
+      "archived": "docs/archive/server-test-contracts-20261001/test_web_test_metrics.py"
+    },
+    {
+      "path": "server/tests/test_web_test_monitoring_gateway.py",
+      "first": "from fastapi.testclient import TestClient",
+      "tests": "test_monitoring_endpoint",
+      "routes": "/web-test/monitoring",
+      "reason": "Kaldırılmış web-test yönetim/KPI/audit/run uçları ve artık kabul edilmeyen telemetri olayları.",
+      "replacement": "server/tests/test_retired_contracts.py; server/tests/test_runtime_hardening.py; e2e/startup-loading.spec.js",
+      "archived": "docs/archive/server-test-contracts-20261001/test_web_test_monitoring_gateway.py"
+    },
+    {
+      "path": "server/tests/test_web_test_operation_history.py",
+      "first": "from app.telemetry import InMemoryTelemetryService, TelemetryEvent",
+      "tests": "test_operation_history_is_aggregate_only",
+      "routes": null,
+      "reason": "Kaldırılmış web-test yönetim/KPI/audit/run uçları ve artık kabul edilmeyen telemetri olayları.",
+      "replacement": "server/tests/test_retired_contracts.py; server/tests/test_runtime_hardening.py; e2e/startup-loading.spec.js",
+      "archived": "docs/archive/server-test-contracts-20261001/test_web_test_operation_history.py"
+    },
+    {
+      "path": "server/tests/test_web_test_operation_snapshot_audit.py",
+      "first": "from fastapi.testclient import TestClient",
+      "tests": "test_operation_snapshot_audit_is_minimal",
+      "routes": "/web-test/audit/operation-snapshot",
+      "reason": "Kaldırılmış web-test yönetim/KPI/audit/run uçları ve artık kabul edilmeyen telemetri olayları.",
+      "replacement": "server/tests/test_retired_contracts.py; server/tests/test_runtime_hardening.py; e2e/startup-loading.spec.js",
+      "archived": "docs/archive/server-test-contracts-20261001/test_web_test_operation_snapshot_audit.py"
+    },
+    {
+      "path": "server/tests/test_web_test_operation_transitions.py",
+      "first": "from app.telemetry import InMemoryTelemetryService, TelemetryEvent",
+      "tests": "test_operation_transition_summary_counts_only_aggregate_changes",
+      "routes": null,
+      "reason": "Kaldırılmış web-test yönetim/KPI/audit/run uçları ve artık kabul edilmeyen telemetri olayları.",
+      "replacement": "server/tests/test_retired_contracts.py; server/tests/test_runtime_hardening.py; e2e/startup-loading.spec.js",
+      "archived": "docs/archive/server-test-contracts-20261001/test_web_test_operation_transitions.py"
+    },
+    {
+      "path": "server/tests/test_web_test_preflight_audit.py",
+      "first": "from fastapi.testclient import TestClient",
+      "tests": "test_preflight_snapshot_audit_is_minimal",
+      "routes": "/web-test/audit/preflight-snapshot",
+      "reason": "Kaldırılmış web-test yönetim/KPI/audit/run uçları ve artık kabul edilmeyen telemetri olayları.",
+      "replacement": "server/tests/test_retired_contracts.py; server/tests/test_runtime_hardening.py; e2e/startup-loading.spec.js",
+      "archived": "docs/archive/server-test-contracts-20261001/test_web_test_preflight_audit.py"
+    },
+    {
+      "path": "server/tests/test_web_test_preflight_gateway.py",
+      "first": "from fastapi.testclient import TestClient",
+      "tests": "test_preflight_endpoint",
+      "routes": "/web-test/preflight",
+      "reason": "Kaldırılmış web-test yönetim/KPI/audit/run uçları ve artık kabul edilmeyen telemetri olayları.",
+      "replacement": "server/tests/test_retired_contracts.py; server/tests/test_runtime_hardening.py; e2e/startup-loading.spec.js",
+      "archived": "docs/archive/server-test-contracts-20261001/test_web_test_preflight_gateway.py"
+    },
+    {
+      "path": "server/tests/test_web_test_rc_candidate_gateway.py",
+      "first": "from fastapi.testclient import TestClient",
+      "tests": "test_rc_candidate_endpoint_is_single_aggregate_snapshot",
+      "routes": "/web-test/rc-candidate",
+      "reason": "Kaldırılmış web-test yönetim/KPI/audit/run uçları ve artık kabul edilmeyen telemetri olayları.",
+      "replacement": "server/tests/test_retired_contracts.py; server/tests/test_runtime_hardening.py; e2e/startup-loading.spec.js",
+      "archived": "docs/archive/server-test-contracts-20261001/test_web_test_rc_candidate_gateway.py"
+    },
+    {
+      "path": "server/tests/test_web_test_rc_report.py",
+      "first": "from fastapi.testclient import TestClient",
+      "tests": [
+        "test_rc_report_combines_manifest_release_and_kpis",
+        "test_rc_report_endpoint"
+      ],
+      "routes": "/web-test/rc-report",
+      "reason": "Kaldırılmış web-test yönetim/KPI/audit/run uçları ve artık kabul edilmeyen telemetri olayları.",
+      "replacement": "server/tests/test_retired_contracts.py; server/tests/test_runtime_hardening.py; e2e/startup-loading.spec.js",
+      "archived": "docs/archive/server-test-contracts-20261001/test_web_test_rc_report.py"
+    },
+    {
+      "path": "server/tests/test_web_test_readiness.py",
+      "first": "from fastapi.testclient import TestClient",
+      "tests": [
+        "test_health_exposes_web_test_readiness",
+        "test_web_test_status_has_required_capabilities"
+      ],
+      "routes": "/web-test/status",
+      "reason": "Kaldırılmış web-test yönetim/KPI/audit/run uçları ve artık kabul edilmeyen telemetri olayları.",
+      "replacement": "server/tests/test_retired_contracts.py; server/tests/test_runtime_hardening.py; e2e/startup-loading.spec.js",
+      "archived": "docs/archive/server-test-contracts-20261001/test_web_test_readiness.py"
+    },
+    {
+      "path": "server/tests/test_web_test_review_candidates_gateway.py",
+      "first": "from fastapi.testclient import TestClient",
+      "tests": "test_review_candidates_endpoint_waits_without_feedback",
+      "routes": "/web-test/review-candidates",
+      "reason": "Kaldırılmış web-test yönetim/KPI/audit/run uçları ve artık kabul edilmeyen telemetri olayları.",
+      "replacement": "server/tests/test_retired_contracts.py; server/tests/test_runtime_hardening.py; e2e/startup-loading.spec.js",
+      "archived": "docs/archive/server-test-contracts-20261001/test_web_test_review_candidates_gateway.py"
+    },
+    {
+      "path": "server/tests/test_web_test_run.py",
+      "first": "from app.telemetry import (",
+      "tests": "test_run_summary_filters_events_by_test_run_id",
+      "routes": null,
+      "reason": "Kaldırılmış web-test yönetim/KPI/audit/run uçları ve artık kabul edilmeyen telemetri olayları.",
+      "replacement": "server/tests/test_retired_contracts.py; server/tests/test_runtime_hardening.py; e2e/startup-loading.spec.js",
+      "archived": "docs/archive/server-test-contracts-20261001/test_web_test_run.py"
+    },
+    {
+      "path": "server/tests/test_web_test_run_catalog.py",
+      "first": "from app.telemetry import (",
+      "tests": [
+        "test_catalog_lists_runs_without_player_details",
+        "test_catalog_includes_active_empty_run"
+      ],
+      "routes": null,
+      "reason": "Kaldırılmış web-test yönetim/KPI/audit/run uçları ve artık kabul edilmeyen telemetri olayları.",
+      "replacement": "server/tests/test_retired_contracts.py; server/tests/test_runtime_hardening.py; e2e/startup-loading.spec.js",
+      "archived": "docs/archive/server-test-contracts-20261001/test_web_test_run_catalog.py"
+    },
+    {
+      "path": "server/tests/test_web_test_run_catalog_gateway.py",
+      "first": "from fastapi.testclient import TestClient",
+      "tests": "test_run_catalog_endpoint",
+      "routes": "/web-test/test-runs",
+      "reason": "Kaldırılmış web-test yönetim/KPI/audit/run uçları ve artık kabul edilmeyen telemetri olayları.",
+      "replacement": "server/tests/test_retired_contracts.py; server/tests/test_runtime_hardening.py; e2e/startup-loading.spec.js",
+      "archived": "docs/archive/server-test-contracts-20261001/test_web_test_run_catalog_gateway.py"
+    },
+    {
+      "path": "server/tests/test_web_test_run_comparison.py",
+      "first": "from app.telemetry import (",
+      "tests": "test_run_comparison_reports_aggregate_rate_deltas",
+      "routes": null,
+      "reason": "Kaldırılmış web-test yönetim/KPI/audit/run uçları ve artık kabul edilmeyen telemetri olayları.",
+      "replacement": "server/tests/test_retired_contracts.py; server/tests/test_runtime_hardening.py; e2e/startup-loading.spec.js",
+      "archived": "docs/archive/server-test-contracts-20261001/test_web_test_run_comparison.py"
+    },
+    {
+      "path": "server/tests/test_web_test_run_comparison_gateway.py",
+      "first": "from fastapi.testclient import TestClient",
+      "tests": "test_run_comparison_endpoint",
+      "routes": "/web-test/test-runs/compare",
+      "reason": "Kaldırılmış web-test yönetim/KPI/audit/run uçları ve artık kabul edilmeyen telemetri olayları.",
+      "replacement": "server/tests/test_retired_contracts.py; server/tests/test_runtime_hardening.py; e2e/startup-loading.spec.js",
+      "archived": "docs/archive/server-test-contracts-20261001/test_web_test_run_comparison_gateway.py"
+    },
+    {
+      "path": "server/tests/test_web_test_run_comparison_sample.py",
+      "first": "from app.telemetry import InMemoryTelemetryService, TelemetryEvent",
+      "tests": [
+        "test_comparison_marks_insufficient_data_when_one_run_small",
+        "test_comparison_marks_comparable_when_both_meet_threshold"
+      ],
+      "routes": null,
+      "reason": "Kaldırılmış web-test yönetim/KPI/audit/run uçları ve artık kabul edilmeyen telemetri olayları.",
+      "replacement": "server/tests/test_retired_contracts.py; server/tests/test_runtime_hardening.py; e2e/startup-loading.spec.js",
+      "archived": "docs/archive/server-test-contracts-20261001/test_web_test_run_comparison_sample.py"
+    },
+    {
+      "path": "server/tests/test_web_test_run_finish.py",
+      "first": "from fastapi.testclient import TestClient",
+      "tests": [
+        "test_finish_requires_started_run",
+        "test_finish_is_idempotent_and_status_becomes_finished"
+      ],
+      "routes": [
+        "/web-test/test-run/finish",
+        "/web-test/test-run/start",
+        "/web-test/test-run/status"
+      ],
+      "reason": "Kaldırılmış web-test yönetim/KPI/audit/run uçları ve artık kabul edilmeyen telemetri olayları.",
+      "replacement": "server/tests/test_retired_contracts.py; server/tests/test_runtime_hardening.py; e2e/startup-loading.spec.js",
+      "archived": "docs/archive/server-test-contracts-20261001/test_web_test_run_finish.py"
+    },
+    {
+      "path": "server/tests/test_web_test_run_gateway.py",
+      "first": "from fastapi.testclient import TestClient",
+      "tests": [
+        "test_current_test_run_is_non_personal_server_identifier",
+        "test_audit_chain_carries_same_test_run_id"
+      ],
+      "routes": [
+        "/web-test/audit/session-bind",
+        "/web-test/audit/session-finish",
+        "/web-test/audit/session-start",
+        "/web-test/test-run",
+        "/web-test/test-runs/web-test-beta.13/summary"
+      ],
+      "reason": "Kaldırılmış web-test yönetim/KPI/audit/run uçları ve artık kabul edilmeyen telemetri olayları.",
+      "replacement": "server/tests/test_retired_contracts.py; server/tests/test_runtime_hardening.py; e2e/startup-loading.spec.js",
+      "archived": "docs/archive/server-test-contracts-20261001/test_web_test_run_gateway.py"
+    },
+    {
+      "path": "server/tests/test_web_test_run_go_no_go_gateway.py",
+      "first": "from fastapi.testclient import TestClient",
+      "tests": "test_run_specific_go_no_go_endpoint_marks_historical_run",
+      "routes": "/web-test/test-runs/old-run/go-no-go",
+      "reason": "Kaldırılmış web-test yönetim/KPI/audit/run uçları ve artık kabul edilmeyen telemetri olayları.",
+      "replacement": "server/tests/test_retired_contracts.py; server/tests/test_runtime_hardening.py; e2e/startup-loading.spec.js",
+      "archived": "docs/archive/server-test-contracts-20261001/test_web_test_run_go_no_go_gateway.py"
+    },
+    {
+      "path": "server/tests/test_web_test_run_lifecycle.py",
+      "first": "from app.telemetry import InMemoryTelemetryService, TelemetryEvent",
+      "tests": [
+        "test_empty_run_lifecycle",
+        "test_active_run_lifecycle",
+        "test_completed_run_lifecycle"
+      ],
+      "routes": null,
+      "reason": "Kaldırılmış web-test yönetim/KPI/audit/run uçları ve artık kabul edilmeyen telemetri olayları.",
+      "replacement": "server/tests/test_retired_contracts.py; server/tests/test_runtime_hardening.py; e2e/startup-loading.spec.js",
+      "archived": "docs/archive/server-test-contracts-20261001/test_web_test_run_lifecycle.py"
+    },
+    {
+      "path": "server/tests/test_web_test_run_report_gateway.py",
+      "first": "from fastapi.testclient import TestClient",
+      "tests": "test_run_report_endpoint_is_available",
+      "routes": "/web-test/test-run/report",
+      "reason": "Kaldırılmış web-test yönetim/KPI/audit/run uçları ve artık kabul edilmeyen telemetri olayları.",
+      "replacement": "server/tests/test_retired_contracts.py; server/tests/test_runtime_hardening.py; e2e/startup-loading.spec.js",
+      "archived": "docs/archive/server-test-contracts-20261001/test_web_test_run_report_gateway.py"
+    },
+    {
+      "path": "server/tests/test_web_test_run_start.py",
+      "first": "from fastapi.testclient import TestClient",
+      "tests": [
+        "test_web_test_run_start_requires_active_run_id",
+        "test_web_test_run_start_is_idempotent_when_preflight_ready"
+      ],
+      "routes": "/web-test/test-run/start",
+      "reason": "Kaldırılmış web-test yönetim/KPI/audit/run uçları ve artık kabul edilmeyen telemetri olayları.",
+      "replacement": "server/tests/test_retired_contracts.py; server/tests/test_runtime_hardening.py; e2e/startup-loading.spec.js",
+      "archived": "docs/archive/server-test-contracts-20261001/test_web_test_run_start.py"
+    },
+    {
+      "path": "server/tests/test_web_test_run_started_summary.py",
+      "first": "from app.telemetry import InMemoryTelemetryService, TelemetryEvent",
+      "tests": [
+        "test_run_summary_reports_started_state_and_time",
+        "test_unstarted_run_summary_reports_false"
+      ],
+      "routes": null,
+      "reason": "Kaldırılmış web-test yönetim/KPI/audit/run uçları ve artık kabul edilmeyen telemetri olayları.",
+      "replacement": "server/tests/test_retired_contracts.py; server/tests/test_runtime_hardening.py; e2e/startup-loading.spec.js",
+      "archived": "docs/archive/server-test-contracts-20261001/test_web_test_run_started_summary.py"
+    },
+    {
+      "path": "server/tests/test_web_test_run_status.py",
+      "first": "from fastapi.testclient import TestClient",
+      "tests": [
+        "test_run_status_false_before_start",
+        "test_run_status_true_after_start"
+      ],
+      "routes": [
+        "/web-test/test-run/start",
+        "/web-test/test-run/status"
+      ],
+      "reason": "Kaldırılmış web-test yönetim/KPI/audit/run uçları ve artık kabul edilmeyen telemetri olayları.",
+      "replacement": "server/tests/test_retired_contracts.py; server/tests/test_runtime_hardening.py; e2e/startup-loading.spec.js",
+      "archived": "docs/archive/server-test-contracts-20261001/test_web_test_run_status.py"
+    },
+    {
+      "path": "server/tests/test_web_test_run_time_window.py",
+      "first": "from app.telemetry import (",
+      "tests": [
+        "test_run_summary_reports_technical_time_window",
+        "test_empty_run_has_no_personal_timeline_and_zero_duration",
+        "test_catalog_exposes_only_aggregate_run_window"
+      ],
+      "routes": null,
+      "reason": "Kaldırılmış web-test yönetim/KPI/audit/run uçları ve artık kabul edilmeyen telemetri olayları.",
+      "replacement": "server/tests/test_retired_contracts.py; server/tests/test_runtime_hardening.py; e2e/startup-loading.spec.js",
+      "archived": "docs/archive/server-test-contracts-20261001/test_web_test_run_time_window.py"
+    },
+    {
+      "path": "server/tests/test_web_test_session_audit.py",
+      "first": "from fastapi.testclient import TestClient",
+      "tests": [
+        "test_session_audit_records_minimal_operational_metadata",
+        "test_session_audit_does_not_store_profile_or_battle_content",
+        "test_session_audit_is_idempotent_for_same_player_and_timestamp"
+      ],
+      "routes": "/web-test/audit/session-start",
+      "reason": "Kaldırılmış web-test yönetim/KPI/audit/run uçları ve artık kabul edilmeyen telemetri olayları.",
+      "replacement": "server/tests/test_retired_contracts.py; server/tests/test_runtime_hardening.py; e2e/startup-loading.spec.js",
+      "archived": "docs/archive/server-test-contracts-20261001/test_web_test_session_audit.py"
+    },
+    {
+      "path": "server/tests/test_web_test_session_audit_binding.py",
+      "first": "from fastapi.testclient import TestClient",
+      "tests": [
+        "test_bind_links_audit_event_to_real_session",
+        "test_bind_rejects_unknown_audit_event",
+        "test_bind_is_idempotent_for_same_audit_and_session",
+        "test_bound_audit_contains_no_profile_or_battle_content"
+      ],
+      "routes": [
+        "/web-test/audit/session-bind",
+        "/web-test/audit/session-start"
+      ],
+      "reason": "Kaldırılmış web-test yönetim/KPI/audit/run uçları ve artık kabul edilmeyen telemetri olayları.",
+      "replacement": "server/tests/test_retired_contracts.py; server/tests/test_runtime_hardening.py; e2e/startup-loading.spec.js",
+      "archived": "docs/archive/server-test-contracts-20261001/test_web_test_session_audit_binding.py"
+    },
+    {
+      "path": "server/tests/test_web_test_session_audit_finish.py",
+      "first": "from fastapi.testclient import TestClient",
+      "tests": [
+        "test_finish_records_minimal_completed_audit",
+        "test_finish_requires_existing_audit_session_binding",
+        "test_finish_is_idempotent"
+      ],
+      "routes": [
+        "/web-test/audit/session-bind",
+        "/web-test/audit/session-finish",
+        "/web-test/audit/session-start"
+      ],
+      "reason": "Kaldırılmış web-test yönetim/KPI/audit/run uçları ve artık kabul edilmeyen telemetri olayları.",
+      "replacement": "server/tests/test_retired_contracts.py; server/tests/test_runtime_hardening.py; e2e/startup-loading.spec.js",
+      "archived": "docs/archive/server-test-contracts-20261001/test_web_test_session_audit_finish.py"
+    },
+    {
+      "path": "server/tests/test_web_test_stability_history.py",
+      "first": "from app.telemetry import InMemoryTelemetryService, TelemetryEvent",
+      "tests": "test_stability_history_is_aggregate_only",
+      "routes": null,
+      "reason": "Kaldırılmış web-test yönetim/KPI/audit/run uçları ve artık kabul edilmeyen telemetri olayları.",
+      "replacement": "server/tests/test_retired_contracts.py; server/tests/test_runtime_hardening.py; e2e/startup-loading.spec.js",
+      "archived": "docs/archive/server-test-contracts-20261001/test_web_test_stability_history.py"
+    },
+    {
+      "path": "server/tests/test_web_test_stability_snapshot_audit.py",
+      "first": "from fastapi.testclient import TestClient",
+      "tests": "test_stability_snapshot_audit_is_minimal",
+      "routes": "/web-test/audit/stability-snapshot",
+      "reason": "Kaldırılmış web-test yönetim/KPI/audit/run uçları ve artık kabul edilmeyen telemetri olayları.",
+      "replacement": "server/tests/test_retired_contracts.py; server/tests/test_runtime_hardening.py; e2e/startup-loading.spec.js",
+      "archived": "docs/archive/server-test-contracts-20261001/test_web_test_stability_snapshot_audit.py"
+    }
+  ]
+}

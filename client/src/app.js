@@ -277,14 +277,32 @@
 
   let participantBootstrapResult =
     null;
+  const startupLoading = globalThis.GridshardStartupLoading ? new globalThis.GridshardStartupLoading(document) : null;
+  let startupFlight = null;
 
   async function bootstrapParticipant() {
+    if (startupFlight) return startupFlight;
+    startupFlight = performParticipantBootstrap().catch((error) => {
+      startupLoading?.fail();
+      return {ok:false, reason:error instanceof Error ? error.message : String(error)};
+    }).finally(() => { startupFlight = null; });
+    return startupFlight;
+  }
+
+  async function performParticipantBootstrap() {
+    startupLoading?.begin();
+    const readiness = await checkServerReadiness();
+    if (!readiness.ok) throw new Error(readiness.reason || "Sunucu bağlantısı hazır değil.");
+    startupLoading?.complete("server");
+    startupLoading?.stage("Profil geri getiriliyor…");
     const result =
       await participantBootstrap
         .load();
 
     participantBootstrapResult =
       result;
+    if (!result.ok) throw new Error(result.reason || "Hesap verileri yüklenemedi.");
+    startupLoading?.complete("profile");
 
     if (result.ok) {
       const preferredPoolIds = definitionIdsToInstanceIds(
@@ -312,6 +330,7 @@
           "matchmaking",
           "Katılımcı kimliği sunucu hesabıyla eşleşmiyor. Oyna güvenlik amacıyla kapatıldı."
         );
+        throw new Error("Katılımcı kimliği sunucu hesabıyla eşleşmiyor.");
       }
 
       renderProfileSummary();
@@ -320,8 +339,14 @@
       recordProductEvent("session_started");
       recordProductEvent("screen_view", {screen:appRouter.currentScreen});
       loadBattlePoolPresets();
-      loadMetaProgression();
+      startupLoading?.stage("Devre koleksiyonu yükleniyor…");
+      await loadMetaProgression({required:true});
+      startupLoading?.complete("collection");
+      startupLoading?.stage("Hesap bağlantıları hazırlanıyor…");
       const accountResult = await loadAccountPlatform({ presentOnboarding:true });
+      if (!accountResult.ok) throw new Error("Hesap bağlantıları hazırlanamadı.");
+      startupLoading?.complete("account");
+      startupLoading?.finish();
       if (accountResult.ok && !accountResult.redirecting) {
         void nativePush?.start().catch(() => {
           setNativePushStatus("Bildirim cihaz kaydı tamamlanamadı. Bağlantı gelince yeniden denenecek.");
@@ -902,7 +927,7 @@
     };
   }
 
-  async function loadMetaProgression() {
+  async function loadMetaProgression({required = false} = {}) {
     try {
       const response = await fetchWithDeadline(
         `/profile/${encodeURIComponent(participantPlayerId)}/meta-progression`,
@@ -915,6 +940,7 @@
         await persistBattlePoolDefinitionIds(repair.definitionIds);
       }
     } catch (_error) {
+      if (required) throw _error;
       metaProgressionState ||= fallbackMetaProgression();
       for (const id of ["module-action-status", "shop-action-status"]) {
         const status = document.getElementById(id);
@@ -3661,7 +3687,7 @@
           `/social/${encodeURIComponent(participantPlayerId)}/invite-codes/accept`,
           {
             method:"POST",
-            body:JSON.stringify({ player_id:participantPlayerId, code:target.value }),
+            body:JSON.stringify({ player_id:participantPlayerId, code:target.value, request_id:socialRequestId("invite-code-accept") }),
           },
           12000
         );
@@ -4123,7 +4149,7 @@
     try {
       await requestJsonWithDeadline(
         `/social/${encodeURIComponent(participantPlayerId)}/messages`,
-        {method:"POST",body:JSON.stringify({player_id:participantPlayerId,recipient_id:peer,text:message})},
+        {method:"POST",body:JSON.stringify({player_id:participantPlayerId,recipient_id:peer,text:message,request_id:socialRequestId("message-send")})},
         12000
       );
       if (input) input.value = "";
@@ -6123,6 +6149,9 @@
       return;
     }
     try {
+      const authSession = globalThis.GridshardAuth?.session;
+      if (!authSession) throw new Error("Güvenli cihaz oturumu yüklenemedi.");
+      await authSession.stageRecoverySecret(participantPlayerId, newDeviceSecret);
       await requestJsonWithDeadline(
         "/account-recovery/confirm",
         {
@@ -6136,7 +6165,7 @@
         },
         12000
       );
-      globalThis.GridshardAuth?.session?.replaceDeviceSecret?.(newDeviceSecret);
+      await authSession.finishRecoverySecret(newDeviceSecret);
       if (status) status.textContent = "Hesap kurtarıldı. Güvenli oturum yeniden açılıyor…";
       globalThis.location?.reload?.();
     } catch (error) {
@@ -8141,7 +8170,7 @@
   renderConnectionStatus(
     pvpConnection.status
   );
-  checkServerReadiness();
+  document.getElementById("startup-retry")?.addEventListener("click", bootstrapParticipant);
 
   const localPlayStartButton =
     document.getElementById(
@@ -18465,7 +18494,7 @@
     try {
       socialState = (await requestJsonWithDeadline(
         `/social/${encodeURIComponent(participantPlayerId)}/block`,
-        {method:"POST",body:JSON.stringify({player_id:participantPlayerId,target_player_id:activePublicProfileId,blocked:true})},
+        {method:"POST",body:JSON.stringify({player_id:participantPlayerId,target_player_id:activePublicProfileId,blocked:true,request_id:socialRequestId("player-block")})},
         12000
       )).social;
       if (status) status.textContent = "Oyuncu engellendi.";

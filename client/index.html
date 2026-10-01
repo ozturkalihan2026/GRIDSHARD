@@ -21,6 +21,10 @@
 <!-- Açılış ekranı betikler yüklenmeden de Ev düzeninde çizilir (Ev'e özgü
      CSS ilk boyamadan geçerli). Router da "menu" ile başlar. -->
 <body data-app-screen="menu">
+  <section id="startup-loading" class="startup-loading" aria-labelledby="startup-title" aria-busy="true">
+    <div class="startup-brand"><img src="./assets/branding/gridshard-store-icon-1024.png" width="128" height="128" alt=""/><h1 id="startup-title">GRIDSHARD</h1><p>Devreni Kur. Çekirdeği Kır.</p></div>
+    <div class="startup-bottom"><p id="startup-status" role="status" aria-live="polite">Sunucuya bağlanılıyor…</p><progress id="startup-progress" value="0" max="4" aria-label="Tamamlanan açılış adımları"></progress><button id="startup-retry" type="button" hidden>Yeniden Dene</button></div>
+  </section>
   <main class="battle-shell">
     <header class="battle-header" aria-label="Savaş üst bilgi barı">
       <div class="battle-player-hud">
@@ -1173,6 +1177,7 @@
 
   <script src="./runtime-config.js"></script>
   <!-- build:scripts -->
+  <script src="./src/native-secure-storage.js"></script>
   <script src="./src/auth-session.js"></script>
   <script src="./src/native-push.js"></script>
   <script src="./src/native-store.js"></script>
@@ -1189,6 +1194,7 @@
   <script src="./src/i18n-catalog.js"></script>
   <script src="./src/i18n.js"></script>
   <script src="./src/canon-data.js"></script>
+  <script src="./src/startup-loading.js"></script>
   <script src="./src/app.js"></script>
   <!-- /build:scripts -->
 </body>

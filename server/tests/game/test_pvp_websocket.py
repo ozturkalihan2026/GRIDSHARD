@@ -53,6 +53,23 @@ def request_snapshot_message():
     }
 
 
+def test_authorization_is_rechecked_after_idle_socket_receives_command():
+    async def scenario():
+        adapter = PvPWebSocketAdapter(setup_service())
+        socket = FakeWebSocket([request_snapshot_message()])
+        allowed = [True]
+        async def authorize():
+            if not allowed[0]:
+                raise PermissionError("revoked")
+        await adapter.connect(connection_id="revocable", session_id="match", player_id="a", socket=socket, authorize=authorize)
+        allowed[0] = False
+        with pytest.raises(PermissionError, match="revoked"):
+            await adapter.handle_one("revocable")
+        assert socket.sent == []
+        assert adapter.registry.get("revocable").messages_received == 0
+    asyncio.run(scenario())
+
+
 def test_connect_accepts_socket_and_binds_identity():
     async def scenario():
         service = setup_service()

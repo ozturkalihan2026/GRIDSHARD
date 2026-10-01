@@ -74,6 +74,38 @@ def test_asymmetric_existing_edge_is_not_silently_repaired():
         mutate_friend_pair("reject", "a", "b", _profile(incoming=("b",)), _profile())
 
 
+@pytest.mark.parametrize("full_player", ["a", "b"])
+def test_accept_rechecks_friend_limit_without_consuming_the_request(full_player):
+    a, b = _profile(incoming=("b",)), _profile(outgoing=("a",))
+    full = a if full_player == "a" else b
+    full["meta_progression_state"]["friend_ids"] = [f"other-{i}" for i in range(100)]
+    with pytest.raises(SocialTransactionError, match="friend_limit"):
+        mutate_friend_pair("accept", "a", "b", a, b)
+    assert a["meta_progression_state"]["incoming_friend_request_ids"] == ["b"]
+    assert b["meta_progression_state"]["outgoing_friend_request_ids"] == ["a"]
+
+
+@pytest.mark.parametrize("blocking_player", ["a", "b"])
+def test_accept_cannot_bypass_either_players_block(blocking_player):
+    a, b = _profile(incoming=("b",)), _profile(outgoing=("a",))
+    (a if blocking_player == "a" else b)["meta_progression_state"]["blocked_player_ids"] = [
+        "b" if blocking_player == "a" else "a"
+    ]
+    with pytest.raises(SocialTransactionError, match="blocked_relation"):
+        mutate_friend_pair("accept", "a", "b", a, b)
+
+
+@pytest.mark.parametrize("kind", ["request", "accept"])
+def test_friendship_clears_crossed_requests_in_both_directions(kind):
+    a, b, _ = mutate_friend_pair(
+        kind, "a", "b", _profile(incoming=("b",), outgoing=("b",)),
+        _profile(incoming=("a",), outgoing=("a",)),
+    )
+    for profile in (a, b):
+        assert not profile["meta_progression_state"]["incoming_friend_request_ids"]
+        assert not profile["meta_progression_state"]["outgoing_friend_request_ids"]
+
+
 def test_battle_invite_copies_are_symmetric_and_reuse_pending_invite():
     a, b = _profile(friends=("b",)), _profile(friends=("a",))
     a, b, invite, created = create_battle_invite_pair("a", "b", "request-1", a, b)

@@ -2577,6 +2577,11 @@ body[data-app-screen="rewards"] .season-reward-panel > .season-action-status:not
 }
 body[data-app-screen="rewards"] .season-rewards-screen > .profile-terminal-tabs {
   display:grid !important;
+  /* This panel has 12px padding, unlike the old 18px terminal frame. */
+  margin-left:0 !important;
+  margin-right:0 !important;
+  min-width:0;
+  width:100%;
 }
 
 .post-match-reward-stage .post-match-reward-outcome,
@@ -5795,3 +5800,18 @@ body[data-battle-perspective="on"][data-app-screen="play"][data-online-status="b
 .settings-tutorial-replay button { min-height:38px; border:1px solid rgba(101,221,207,.55); border-radius:8px; color:#8ff3e4; background:#0d344a; font:800 .5rem var(--gs-font-display); }
 .settings-tutorial-replay small:empty { display:none; }
 .settings-tutorial-replay small { color:#9fc3dc; font-size:.5rem; }
+
+/* Progress advances only when server/profile/collection/account steps succeed. */
+.startup-loading { position:fixed; inset:0; z-index:10000; display:flex; flex-direction:column; justify-content:center; align-items:center; padding:max(24px,env(safe-area-inset-top)) 24px max(30px,env(safe-area-inset-bottom)); color:#f5faff; background:radial-gradient(ellipse at 50% 35%,#12305a 0%,#0d2342 35%,#07142b 75%); }
+.startup-loading[hidden] { display:none; }
+.startup-brand { text-align:center; margin:auto 0; }
+.startup-brand img { border-radius:26px; box-shadow:0 0 55px #48f4e035; }
+.startup-brand h1 { font:900 clamp(1.5rem,7vw,3rem) var(--gs-font-display); letter-spacing:.05em; margin:22px 0 10px; }
+.startup-brand p { color:#82fff1; font-size:1rem; }
+.startup-bottom { width:min(420px,100%); text-align:center; }
+.startup-bottom p { min-height:2em; font-size:1rem; }
+.startup-bottom progress { appearance:none; display:block; width:100%; height:14px; border:1px solid #48f4e055; border-radius:20px; overflow:hidden; background:#040c1b; }
+.startup-bottom progress::-webkit-progress-bar { background:#040c1b; }
+.startup-bottom progress::-webkit-progress-value { background:linear-gradient(90deg,#ffd56a,#ffb84d); }
+.startup-bottom progress::-moz-progress-bar { background:#ffd56a; }
+.startup-bottom button { min-height:48px; margin-top:16px; padding:0 28px; border-radius:12px; background:#ffd56a; color:#07142b; border:0; font-weight:800; }

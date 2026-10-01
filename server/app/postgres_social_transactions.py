@@ -1,8 +1,8 @@
-"""Staged, atomic two-player social writes for the PostgreSQL migration.
+"""Atomic two-player social writes for the clean PostgreSQL installation.
 
-This is deliberately not connected to the live API until legacy JSON has been
-reconciled. Profile social lists and normalized edges are dual-written inside
-one transaction, with an idempotency receipt in the same commit.
+Friend operations are used by the production API; battle invites remain staged.
+Profile social lists, normalized edges and receipts share one transaction. The
+API also updates the live platform document inside that transaction.
 """
 
 from __future__ import annotations
@@ -87,6 +87,10 @@ def mutate_friend_pair(
     elif kind == "accept":
         if target_id not in a["incoming_friend_request_ids"] and target_id not in a["friend_ids"]:
             raise SocialTransactionError("request_missing")
+        if target_id in a["blocked_player_ids"] or actor_id in b["blocked_player_ids"]:
+            raise SocialTransactionError("blocked_relation")
+        if target_id not in a["friend_ids"] and (len(a["friend_ids"]) >= 100 or len(b["friend_ids"]) >= 100):
+            raise SocialTransactionError("friend_limit")
         _add(a["friend_ids"], target_id)
         _add(b["friend_ids"], actor_id)
         _remove(a["incoming_friend_request_ids"], target_id)
@@ -105,6 +109,11 @@ def mutate_friend_pair(
             _remove(a["blocked_player_ids"], target_id)
         for left, right in ((a, target_id), (b, actor_id)):
             for key in ("friend_ids", "incoming_friend_request_ids", "outgoing_friend_request_ids"):
+                _remove(left[key], right)
+
+    if transition in {"friendship", "already_friends"}:
+        for left, right in ((a, target_id), (b, actor_id)):
+            for key in ("incoming_friend_request_ids", "outgoing_friend_request_ids"):
                 _remove(left[key], right)
 
     actor["meta_progression_state"].update(a)
@@ -163,8 +172,14 @@ def create_battle_invite_pair(
     }
     for profile in (challenger, opponent):
         invites = profile["meta_progression_state"]["social_battle_invites"]
+        if sum(value.get("status") in {"pending", "accepted"} for value in invites) >= 50:
+            raise SocialTransactionError("battle_invite_limit")
         invites.append(dict(item))
-        profile["meta_progression_state"]["social_battle_invites"] = invites[-50:]
+        live = [value for value in invites if value.get("status") in {"pending", "accepted"}]
+        terminal = [value for value in invites if value.get("status") not in {"pending", "accepted"}]
+        # Never prune an accepted arena or its pending counterpart. Closing
+        # those sessions must still be able to update both canonical copies.
+        profile["meta_progression_state"]["social_battle_invites"] = terminal[-max(0, 50 - len(live)):] + live if len(live) < 50 else live
     return challenger, opponent, item, True
 
 
@@ -219,7 +234,7 @@ class PostgresSocialTransactionRepository:
                         "updated_at = NOW() WHERE player_id = %s",
                         (self.Jsonb(profile), player_id),
                     )
-                self._sync_pair(connection, actor_id, target_id, actor, target)
+            self._sync_pair(connection, actor_id, target_id, actor, target)
             result = {"transition": transition, "changed": changed}
             connection.execute(
                 """INSERT INTO social_operation_receipts

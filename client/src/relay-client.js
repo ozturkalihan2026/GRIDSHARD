@@ -1142,7 +1142,7 @@
         }
       };
 
-      socket.onclose = () => {
+      socket.onclose = (event = {}) => {
         if (this.socket !== socket) return;
         this._clearHeartbeatTimer();
 
@@ -1159,6 +1159,20 @@
           this._setStatus(
             WS_CONNECTION_STATUS.CLOSED
           );
+          return;
+        }
+
+        if ([4401, 4403, 4404].includes(event.code)) {
+          this.socket = null;
+          this.outgoingQueue = [];
+          this._clearReconnectTimer();
+          this.pvpState.connected = false;
+          this.pvpState.phase = PVP_PHASE.ERROR;
+          this.pvpState.lastError = event.code === 4404
+            ? "Savaş oturumu sona erdi. Ana ekrandan yeni bir maç başlatabilirsin."
+            : "Oturum doğrulanamadı. Yeniden giriş yapmalısın.";
+          this._setStatus(WS_CONNECTION_STATUS.ERROR);
+          this.onMessageApplied?.({type:"error", payload:{code:"session_closed", message:this.pvpState.lastError}}, {ok:false, reason:this.pvpState.lastError});
           return;
         }
 

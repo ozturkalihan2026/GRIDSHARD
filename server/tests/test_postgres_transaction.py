@@ -75,3 +75,16 @@ def test_nested_transaction_is_rejected():
         with pytest.raises(RuntimeError, match="İç içe"):
             with database.transaction():
                 pass
+
+
+def test_joined_transaction_does_not_commit_a_partial_inner_operation():
+    database = _repository_pool()
+    with pytest.raises(RuntimeError):
+        with database.transaction() as outer:
+            with database.joined_transaction() as inner:
+                assert outer is inner
+                inner.append("notification")
+            assert inner.committed == []
+            raise RuntimeError("profile failure")
+    assert outer.committed == []
+    assert not database.in_transaction

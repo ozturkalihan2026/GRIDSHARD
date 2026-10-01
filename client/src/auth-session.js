@@ -43,6 +43,7 @@
     }
   })();
   const DEVICE_SECRET_KEY = "gridshard.auth.device-secret";
+  const RECOVERY_SECRET_KEY = "gridshard.auth.recovery-candidate";
   const DEVICE_ID_KEY = "gridshard.auth.device-id";
   const PLAYER_ID_KEY = "project-relay.web-test.participant-id";
 
@@ -54,6 +55,8 @@
       this.expiresAt = 0;
       this.playerId = null;
       this.pendingLogin = null;
+      this.secretStore = new globalThis.GridshardDeviceSecretStore({storage:this.storage});
+      this.secretPromise = null;
     }
 
     isProtected(input) {
@@ -125,15 +128,28 @@
       return this._deviceId();
     }
 
-    replaceDeviceSecret(secret) {
+    async replaceDeviceSecret(secret) {
       const value = String(secret || "");
       if (value.length < 32) {
         throw new Error("Yeni cihaz sırrı en az 32 karakter olmalıdır.");
       }
-      this.storage?.setItem(DEVICE_SECRET_KEY, value);
+      await this.secretStore.write(DEVICE_SECRET_KEY, value);
+      this.secretPromise = Promise.resolve(value);
       this.accessToken = null;
       this.expiresAt = 0;
       return value;
+    }
+
+    async stageRecoverySecret(playerId, secret) {
+      if (!playerId || String(secret || "").length < 32) throw new Error("Geçersiz kurtarma cihaz kaydı.");
+      // Must succeed BEFORE the server consumes the code/rotates the verifier.
+      await this.secretStore.write(RECOVERY_SECRET_KEY, JSON.stringify({playerId, secret}));
+    }
+
+    async finishRecoverySecret(secret) {
+      await this.replaceDeviceSecret(secret);
+      // A failed cleanup is harmless: the primary secret was verified first.
+      try { await this.secretStore.remove(RECOVERY_SECRET_KEY); } catch (_error) {}
     }
 
     async completeProviderLogin(exchange) {
@@ -144,7 +160,7 @@
           headers: { "content-type": "application/json" },
           body: JSON.stringify({
             exchange,
-            device_secret: this._deviceSecret(),
+            device_secret: await this._deviceSecret(),
             device_id: this._deviceId(),
             device_name: this._deviceName(),
             platform: this._platform(),
@@ -166,17 +182,29 @@
     }
 
     async _openSession(playerId) {
-      const response = await this.fetchImpl(this._apiInput("/auth/session"), {
+      const open = (deviceSecret) => this.fetchImpl(this._apiInput("/auth/session"), {
         method: "POST",
         headers: { "content-type": "application/json" },
         body: JSON.stringify({
           player_id: playerId,
-          device_secret: this._deviceSecret(),
+          device_secret: deviceSecret,
           device_id: this._deviceId(),
           device_name: this._deviceName(),
           platform: this._platform(),
         }),
       });
+      let response = await open(await this._deviceSecret());
+      let recoveredSecret = null;
+      if (response.status === 401) {
+        const staged = await this.secretStore.read(RECOVERY_SECRET_KEY);
+        if (staged) {
+          const candidate = JSON.parse(staged);
+          if (candidate.playerId === playerId && typeof candidate.secret === "string" && candidate.secret.length >= 32) {
+            response = await open(candidate.secret);
+            if (response.ok) recoveredSecret = candidate.secret;
+          }
+        }
+      }
       if (!response.ok) {
         throw new Error(`Oyuncu kimliği doğrulanamadı: ${response.status}`);
       }
@@ -184,6 +212,7 @@
       if (payload.player_id !== playerId || !payload.access_token) {
         throw new Error("Kimlik sunucusu geçersiz yanıt döndürdü.");
       }
+      if (recoveredSecret) await this.finishRecoverySecret(recoveredSecret);
       this.playerId = playerId;
       this.accessToken = payload.access_token;
       this.expiresAt = Number(payload.expires_at || 0);
@@ -231,30 +260,20 @@
       }
     }
 
-    _deviceSecret() {
-      try {
-        const existing = this.storage?.getItem(DEVICE_SECRET_KEY);
-        if (existing && existing.length >= 32) {
-          return existing;
-        }
-      } catch (_error) {
-        // Bellekte üretilen sırla devam edilir.
+    async _deviceSecret() {
+      if (!this.secretPromise) {
+        this.secretPromise = (async () => {
+          const existing = await this.secretStore.existing(DEVICE_SECRET_KEY);
+          if (existing && existing.length >= 32) return existing;
+          if (!globalThis.crypto?.getRandomValues) throw new Error("Güvenli cihaz sırrı üretilemiyor.");
+          const bytes = new Uint8Array(32);
+          globalThis.crypto.getRandomValues(bytes);
+          const secret = Array.from(bytes, (value) => value.toString(16).padStart(2, "0")).join("");
+          await this.secretStore.write(DEVICE_SECRET_KEY, secret);
+          return secret;
+        })().catch((error) => { this.secretPromise = null; throw error; });
       }
-
-      let secret;
-      if (globalThis.crypto?.getRandomValues) {
-        const bytes = new Uint8Array(32);
-        globalThis.crypto.getRandomValues(bytes);
-        secret = Array.from(bytes, (value) => value.toString(16).padStart(2, "0")).join("");
-      } else {
-        secret = `${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}-${Math.random().toString(36).slice(2)}-gridshard`;
-      }
-      try {
-        this.storage?.setItem(DEVICE_SECRET_KEY, secret);
-      } catch (_error) {
-        // Gizli değer yalnızca bu sayfa ömründe kullanılabilir.
-      }
-      return secret;
+      return this.secretPromise;
     }
 
     _deviceId() {

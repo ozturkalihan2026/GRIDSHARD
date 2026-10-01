@@ -149,6 +149,7 @@ class PlayerProgressionService:
     def process_finished_battle(
         self,
         state: BattleState,
+        *, completed_at: datetime | None = None,
     ) -> bool:
         if state.status != BattleStatus.FINISHED:
             raise PlayerProgressionError(
@@ -256,7 +257,7 @@ class PlayerProgressionService:
                     core_power_uses=int(summary.get("core_power_uses", 0)),
                 )
             tier_after = int(updated.engagement_view()["current_tier"])
-            completed_at = datetime.now(timezone.utc)
+            completed_at = (completed_at or datetime.now(timezone.utc)).astimezone(timezone.utc)
             iso_year, iso_week, _ = completed_at.isocalendar()
             weekly_period = f"{iso_year}-W{iso_week:02d}"
             if (
@@ -478,22 +479,22 @@ class PlayerProgressionService:
         cores = stats.setdefault("cores", {})
         cores[player.core_type] = cores.get(player.core_type, 0) + 1
 
-    def grant_ad_bonus(self, battle_id: str, player_id: str, *, now_iso: str) -> dict:
+    def grant_ad_bonus(self, battle_id: str, player_id: str, *, now_iso: str, durable_result: dict | None = None) -> dict:
         """Reklam izlenince bu savaşın kredi ve deneyim ödülünü bir kez daha verir.
 
         Kupa ve takım puanı değişmez. Savaş başına bir kez; aynı istek yeniden
-        gelirse ilk makbuz döner. Sonuç bu süreçteki savaş kaydından okunur.
+        gelirse ilk makbuz döner. Üretimde sonuç kalıcı katılımcı defterinden okunur.
         """
         profile = self.profile_service.get_or_create(player_id)
         existing = profile.ad_reward_receipts.get(battle_id)
         if existing is not None:
             return {**existing, "replayed": True}
-        result = self._results_by_battle_id.get(battle_id, {}).get(player_id)
+        result = durable_result if durable_result is not None else self.player_result(battle_id, player_id)
         if result is None:
             raise PlayerProgressionError("Bu savaşın sonucu bulunamadı; reklam ödülü verilemez.")
-        credits = max(0, int(result.circuit_credits_awarded))
-        xp = max(0, int(result.xp_awarded))
-        if not result.profile_progression_applied or (credits <= 0 and xp <= 0):
+        credits = max(0, int(result["circuit_credits_awarded"]))
+        xp = max(0, int(result["xp_awarded"]))
+        if not result["profile_progression_applied"] or (credits <= 0 and xp <= 0):
             raise PlayerProgressionError("Bu savaş türünde reklam ödülü yok.")
         tier_before = int(profile.engagement_view()["current_tier"])
         profile.circuit_credits += credits

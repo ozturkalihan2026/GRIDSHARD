@@ -3,6 +3,7 @@ const path = require("node:path");
 const { spawnSync } = require("node:child_process");
 
 module.exports = async () => {
+  if (process.env.GRIDSHARD_E2E_EXTERNAL_SERVER) return;
   const pidPath = path.resolve(__dirname, "..", "qa_reports", "e2e-server.pid.json");
   if (!fs.existsSync(pidPath)) return;
 

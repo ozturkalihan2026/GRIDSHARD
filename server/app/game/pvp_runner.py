@@ -1,6 +1,7 @@
 from __future__ import annotations
 import asyncio
 import hashlib
+from inspect import isawaitable
 from dataclasses import dataclass
 from typing import Awaitable, Callable
 from .engine import TICK_MS
@@ -127,9 +128,11 @@ class PvPTickRunner:
             # remain on a pending reward state.
             if self.match_finished_callback is not None:
                 try:
-                    self.match_finished_callback(
+                    completion = self.match_finished_callback(
                         session.engine.state
                     )
+                    if isawaitable(completion):
+                        await completion
                 except Exception:
                     # Projection failure is recorded, but the terminal result
                     # is still delivered so the battle itself never hangs.

@@ -4,7 +4,7 @@ import asyncio
 import time
 from collections import deque
 from dataclasses import dataclass, field
-from typing import Any, Protocol
+from typing import Any, Protocol, Callable, Awaitable
 
 from .pvp_protocol import protocol_error_envelope
 from .pvp_protocol_handler import PvPProtocolHandler
@@ -31,6 +31,7 @@ class PvPConnection:
     last_seen_at: float = 0.0
     last_rtt_ms: float | None = None
     recent_message_times: deque[float] = field(default_factory=deque)
+    authorize: Callable[[], Awaitable[None]] | None = None
 
 
 @dataclass(slots=True)
@@ -115,7 +116,10 @@ class PvPWebSocketAdapter:
         session_id: str,
         player_id: str,
         socket: WebSocketConnection,
+        authorize: Callable[[], Awaitable[None]] | None = None,
     ) -> PvPConnection:
+        if authorize is not None:
+            await authorize()
         session = self.service.get_session(session_id)
         session.slot_for(player_id)
 
@@ -127,6 +131,7 @@ class PvPWebSocketAdapter:
             player_id=player_id,
             socket=socket,
             last_seen_at=self.now_func(),
+            authorize=authorize,
         )
         self.registry.bind(connection)
 
@@ -249,6 +254,12 @@ class PvPWebSocketAdapter:
         # kapanmış sokete tekrar send_json çağrılmasına izin vermez; hata üstteki
         # bağlantı yaşam döngüsüne kadar yükseltilir.
         raw = await connection.socket.receive_json()
+        # Recheck after receiving: an idle connection may have been revoked or
+        # its worker fenced while waiting for the next command.
+        if connection.authorize is not None:
+            await connection.authorize()
+        if not connection.connected:
+            raise PvPSessionError("Kapalı bağlantı mesaj işleyemez.")
         connection.messages_received += 1
 
         now = self.now_func()

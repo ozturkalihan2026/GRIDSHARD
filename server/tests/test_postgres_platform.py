@@ -77,3 +77,18 @@ def test_platform_document_nested_lock_and_failure_roll_back(tmp_path):
             service.set_block("one", "three", True)
             raise RuntimeError("abort")
     assert service.is_blocked("one", "three") is False
+
+
+def test_social_block_mirror_uses_complete_lists_and_preserves_account_fields(tmp_path):
+    pool = _Pool()
+    service = PostgresPlatformService(pool, path=tmp_path / "unused.json")
+    with service._lock:
+        data = service._read()
+        account = service._account(data, "one")
+        account["oauth_links"] = {"google": {"subject": "unchanged"}}
+        service._write(data)
+        service.sync_social_blocks({"one": ["two", "two", "three"], "two": []})
+    assert pool.connection_value.state["accounts"]["one"]["blocked_player_ids"] == ["three", "two"]
+    assert pool.connection_value.state["accounts"]["one"]["oauth_links"] == {"google": {"subject": "unchanged"}}
+    service.sync_social_blocks({"one": []})
+    assert service.is_blocked("one", "two") is False

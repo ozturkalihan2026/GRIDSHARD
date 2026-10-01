@@ -1,7 +1,8 @@
 from dataclasses import dataclass, field
+from contextlib import contextmanager
 from datetime import datetime, timedelta, timezone
 import hashlib
-from threading import RLock
+from threading import RLock, local
 
 from .display_names import DisplayNameError, normalize_display_name, ensure_display_name_available
 
@@ -831,6 +832,24 @@ class PlayerProfileService:
         self._profiles: dict[str, PlayerProfile] = {}
         self.name_lock = RLock()
         self._now_func = now_func or (lambda: datetime.now(timezone.utc))
+        self._settlement_clock = local()
+
+    def now(self):
+        return getattr(self._settlement_clock, "moment", None) or self._now_func()
+
+    @contextmanager
+    def settlement_time(self, moment):
+        """Replay a committed result in its completion period, not reboot day.
+
+        The gateway drains results before other profile operations/rollover.
+        A thread-local override never changes unrelated request clocks.
+        """
+        previous = getattr(self._settlement_clock, "moment", None)
+        self._settlement_clock.moment = moment
+        try:
+            yield
+        finally:
+            self._settlement_clock.moment = previous
 
     def get_or_create(
         self,
@@ -858,7 +877,7 @@ class PlayerProfileService:
                 if display_name
                 else player_id
             ),
-            active_meta_season_id=season_descriptor(self._now_func())["id"],
+            active_meta_season_id=season_descriptor(self.now())["id"],
         )
         self._profiles[player_id] = profile
         self._sync_season(profile)
@@ -867,9 +886,13 @@ class PlayerProfileService:
         return profile
 
     def _sync_season(self, profile: PlayerProfile) -> bool:
-        season = season_descriptor(self._now_func())
+        season = season_descriptor(self.now())
         if profile.active_meta_season_id == season["id"]:
             return False
+        if getattr(self._settlement_clock, "moment", None) is not None and any(
+            item.get("season_id") == season["id"] for item in profile.season_archives
+        ):
+            raise PlayerProfileError("Tamamlanmamış savaşın dönemi önceden kapatılmış; otomatik geri sarma reddedildi.")
 
         from .meta_progression import archive_and_soft_reset_season
 
@@ -1005,7 +1028,7 @@ class PlayerProfileService:
         profile: PlayerProfile,
         day_key: str | None = None,
     ) -> None:
-        current_day = day_key or utc_day_key(self._now_func())
+        current_day = day_key or utc_day_key(self.now())
         if profile.daily_mission_day == current_day:
             return
         profile.daily_mission_day = current_day
@@ -1017,7 +1040,7 @@ class PlayerProfileService:
 
     def _sync_login_period(self, profile: PlayerProfile) -> None:
         """Giriş takvimi sezonla aynı döngüdür: 28 gün, Pazartesi başlar."""
-        now = self._now_func().astimezone(timezone.utc)
+        now = self.now().astimezone(timezone.utc)
         cycle = competition_cycle(now)
         if profile.login_period_id != cycle["id"]:
             profile.login_period_id = cycle["id"]

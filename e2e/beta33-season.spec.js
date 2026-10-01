@@ -1,7 +1,8 @@
 const { test, expect } = require("@playwright/test");
+const { waitForParticipantReady } = require("./ui-helpers");
 
 
-test("Sezon Sıfır ekranları ve belirgin başlangıç stratejisi gerçek tarayıcıda görünür", async ({ page }) => {
+test("Güncel günlük emirler ve 40 kademeli sezon yolu gerçek tarayıcıda görünür", async ({ page }) => {
   const errors = [];
   page.on("pageerror", error => errors.push(String(error)));
   await page.addInitScript(() =>
@@ -9,12 +10,15 @@ test("Sezon Sıfır ekranları ve belirgin başlangıç stratejisi gerçek taray
   );
 
   await page.goto("/?e2e=1", { waitUntil: "domcontentloaded" });
-  await page.locator('[data-open-screen="daily"]').click();
-  await expect(page.locator("#daily-mission-list .daily-mission-card")).toHaveCount(3);
-  await page.locator('[data-open-screen="menu"]').click();
-  await page.locator('[data-open-screen="rewards"]').click();
-  await expect(page.locator("#season-reward-track .season-reward-card")).toHaveCount(10);
-  await expect(page.locator("#season-tier-label")).toContainText("Kademe 0 / 10");
+  await waitForParticipantReady(page);
+  await page.locator("#lobby-profile-button").click();
+  await page.locator('[data-screen-panel="profile"] [data-open-screen="daily"]').click();
+  await page.locator('#rewards-hub-screen [data-open-screen="daily-missions"]').click();
+  await expect(page.locator("#daily-mission-list .daily-mission-card")).toHaveCount(6);
+  await page.locator('#daily-missions-screen .reward-back-link').click();
+  await page.locator('#rewards-hub-screen [data-open-screen="rewards"]').click();
+  await expect(page.locator("#season-reward-track .season-pass-row")).toHaveCount(40);
+  await expect(page.locator("#season-tier-label")).toContainText("Kademe 0 / 40");
   await expect(page.locator("#season-equipped-title")).toContainText("Devre Çırağı");
 
   const seasonVisual = await page.locator(".season-rewards-screen").evaluate(element => {
@@ -33,24 +37,9 @@ test("Sezon Sıfır ekranları ve belirgin başlangıç stratejisi gerçek taray
   expect(seasonVisual.progressHeight).toBeGreaterThanOrEqual(10);
   expect(seasonVisual.scrollWidth).toBeLessThanOrEqual(seasonVisual.clientWidth + 1);
 
-  await page.locator('[data-open-screen="menu"]').click();
-  await page.locator('[data-open-screen="play"]').click();
-  const starter = page.locator(".initial-circuit-picker");
-  await expect(starter).toBeVisible();
-  const starterVisual = await starter.evaluate(element => {
-    const strategy = element.querySelector(".initial-strategy-panel");
-    const style = getComputedStyle(strategy);
-    const badge = element.querySelector(".initial-circuit-kicker");
-    const choices = [...element.querySelectorAll(".initial-module-choice")];
-    return {
-      borderColor: style.borderColor,
-      background: style.backgroundImage,
-      badge: badge?.textContent || "",
-      minimumChoiceHeight: Math.min(...choices.map(choice => choice.getBoundingClientRect().height)),
-    };
-  });
-  expect(starterVisual.background).toContain("gradient");
-  expect(starterVisual.badge).toContain("BAŞLANGIÇ STRATEJİNİ SEÇ");
-  expect(starterVisual.minimumChoiceHeight).toBeGreaterThanOrEqual(34);
+  await page.locator('[data-shell-screen="menu"]').click();
+  await expect(page.locator('body[data-app-screen="menu"]')).toBeVisible();
+  // Retired manual initial placement must not become a test prerequisite.
+  await expect(page.locator(".initial-circuit-picker")).not.toBeVisible();
   expect(errors).toEqual([]);
 });

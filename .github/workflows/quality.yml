@@ -32,6 +32,8 @@ jobs:
       - name: Run server tests
         working-directory: server
         run: python -m pytest
+      - name: Run release and operator tool contracts
+        run: python -m pytest tools/tests
 
   client:
     name: Client contracts
@@ -63,9 +65,106 @@ jobs:
           if-no-files-found: error
           retention-days: 14
 
+  migration:
+    name: PostgreSQL / Redis / production image
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_USER: gridshard
+          POSTGRES_PASSWORD: ci-isolated-only
+          POSTGRES_DB: gridshard_test
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U gridshard -d gridshard_test"
+          --health-interval 5s --health-timeout 3s --health-retries 12
+      redis:
+        image: redis:7-alpine
+        ports: ["6379:6379"]
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 5s --health-timeout 3s --health-retries 12
+    env:
+      GRIDSHARD_TEST_DATABASE_URL: postgresql://gridshard:ci-isolated-only@127.0.0.1:5432/gridshard_test
+      GRIDSHARD_TEST_REDIS_URL: redis://127.0.0.1:6379/15
+      GRIDSHARD_TEST_PG_BIN: /usr/lib/postgresql/17/bin
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install server test and PostgreSQL client tools
+        run: |
+          python -m pip install -r server/requirements-test.txt
+          sudo apt-get update
+          sudo apt-get install -y postgresql-client-17
+      - name: Real persistence and restart contracts
+        run: >-
+          python -m pytest -q
+          server/tests/test_postgres_platform.py
+          server/tests/test_postgres_social_api.py
+          server/tests/test_postgres_persistent_operations.py
+          server/tests/test_postgres_battle_results.py
+          server/tests/test_worker_ownership.py
+          server/tests/test_real_redis_runtime.py
+          server/tests/test_production_config.py
+          server/tests/test_production_deployment_contract.py
+          server/tests/test_server_backup.py
+      - name: Build isolated production image (no push)
+        run: docker build --tag gridshard-ci:${{ github.sha }} .
+      - name: Build offline maintenance image (no push)
+        run: |
+          docker build --file deploy/Dockerfile.maintenance --tag gridshard-maintenance-ci:${{ github.sha }} .
+          docker run --rm --read-only --cap-drop ALL gridshard-maintenance-ci:${{ github.sha }} --help
+      - name: Validate real Caddy configuration
+        run: >-
+          docker run --rm -e GRIDSHARD_HOST=gridshard.invalid
+          -e GRIDSHARD_TLS_EMAIL=ci@example.com
+          -v "$PWD/deploy/Caddyfile:/etc/caddy/Caddyfile:ro"
+          caddy:2-alpine caddy validate --config /etc/caddy/Caddyfile
+      - name: Boot fresh image, authenticate, and restart
+        run: python tools/production_container_smoke.py --image gridshard-ci:${{ github.sha }}
+
+  browser:
+    name: Startup / mobile layout / two-client reconnect
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 11.19.0
+          run_install: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: pnpm
+      - name: Install isolated test tools
+        run: |
+          python -m pip install -r server/requirements-test.txt
+          pnpm install --frozen-lockfile --ignore-scripts
+          pnpm exec playwright install --with-deps chromium webkit
+      - name: Startup, current UI and mobile layouts (AI-only fixture)
+        env:
+          GRIDSHARD_E2E_HUMAN_MATCHMAKING: '0'
+        run: >-
+          pnpm exec playwright test e2e/startup-loading.spec.js
+          e2e/menu-navigation.spec.js e2e/beta33-season.spec.js
+          e2e/beta381-battle-events.spec.js e2e/battle-density.spec.js
+          e2e/mobile-battle.spec.js
+      - name: Two real browser clients and reconnect (explicit human fixture)
+        env:
+          GRIDSHARD_E2E_HUMAN_MATCHMAKING: '1'
+        run: pnpm exec playwright test e2e/two-client-pvp.spec.js --project=desktop-chromium
+
   package:
     name: Reproducible source package
-    needs: [server, client]
+    needs: [server, client, migration, browser]
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:

@@ -81,3 +81,21 @@ class PostgresPlatformService(PlatformService):
             "UPDATE platform_document SET state = %s, updated_at = NOW() WHERE singleton = TRUE",
             (Jsonb(data),),
         )
+
+    def sync_social_blocks(self, blocks_by_player: dict[str, list[str]]) -> None:
+        """Mirror canonical profile blocks, preserving every other account field.
+
+        The caller holds the platform lock before player row locks and shares
+        its outer database transaction with the social repository.
+        """
+        with self._lock:
+            data = self._read()
+            changed = False
+            for player_id, blocked_ids in blocks_by_player.items():
+                account = self._account(data, player_id)
+                values = sorted(set(blocked_ids))
+                if account.get("blocked_player_ids", []) != values:
+                    account["blocked_player_ids"] = values
+                    changed = True
+            if changed:
+                self._write(data)

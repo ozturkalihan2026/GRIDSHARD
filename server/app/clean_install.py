@@ -25,6 +25,8 @@ PERSISTENT_TABLES = (
     "platform_document", "team_document", "battle_pool_presets",
     "product_analytics_document",
     "telemetry_events",
+    "battle_results", "battle_participant_results",
+    "player_economic_operations",
 )
 
 

@@ -1,0 +1,124 @@
+# Standalone production file. Never merge it with the development compose file.
+name: gridshard-production
+
+services:
+  postgres:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: gridshard
+      POSTGRES_USER: gridshard
+      POSTGRES_PASSWORD_FILE: /run/secrets/postgres_password
+    secrets: [postgres_password]
+    volumes: [gridshard-postgres-production-clean:/var/lib/postgresql/data]
+    networks: [backend]
+    healthcheck:
+      test: [CMD-SHELL, "pg_isready -U gridshard -d gridshard"]
+      interval: 5s
+      timeout: 3s
+      retries: 12
+
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    command: [redis-server, --appendonly, 'yes', --maxmemory, 256mb, --maxmemory-policy, noeviction]
+    volumes: [gridshard-redis-production-clean:/data]
+    networks: [backend]
+    healthcheck:
+      test: [CMD, redis-cli, ping]
+      interval: 5s
+      timeout: 3s
+      retries: 12
+
+  relay-web:
+    build: .
+    restart: unless-stopped
+    init: true
+    read_only: true
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    tmpfs: [/tmp:rw,noexec,nosuid,size=32m]
+    environment:
+      GRIDSHARD_RUNTIME_MODE: production
+      GRIDSHARD_RUNTIME_DATA_DIR: /var/lib/gridshard
+      DATABASE_URL_FILE: /run/secrets/database_url
+      GRIDSHARD_AUTH_SIGNING_KEY_FILE: /run/secrets/auth_signing_key
+      REDIS_URL: redis://redis:6379/0
+      GRIDSHARD_PUBLIC_WEB_URL: https://${GRIDSHARD_HOST:?Set GRIDSHARD_HOST}
+      GRIDSHARD_PUBLIC_WS_BASE_URL: wss://${GRIDSHARD_HOST:?Set GRIDSHARD_HOST}
+      GRIDSHARD_CORS_ORIGINS: https://${GRIDSHARD_HOST},https://localhost,capacitor://localhost,http://localhost
+      GRIDSHARD_DEV_EXPOSE_VERIFICATION_CODES: '0'
+      GRIDSHARD_PURCHASE_TEST_MODE: '0'
+      GRIDSHARD_AD_TEST_MODE: '0'
+      GRIDSHARD_PUSH_ENABLED: '0'
+      GRIDSHARD_INSTANCE_ID: production-single
+    secrets: [database_url, auth_signing_key]
+    volumes: [gridshard-runtime-production-clean:/var/lib/gridshard]
+    networks: [backend, edge]
+    depends_on:
+      postgres: {condition: service_healthy}
+      redis: {condition: service_healthy}
+    stop_grace_period: 30s
+    healthcheck:
+      test: [CMD, python, -c, "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health', timeout=2)"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+      start_period: 30s
+    logging:
+      options: {max-size: 10m, max-file: '3'}
+
+  caddy:
+    image: caddy:2-alpine
+    restart: unless-stopped
+    environment:
+      GRIDSHARD_HOST: ${GRIDSHARD_HOST:?Set GRIDSHARD_HOST}
+      GRIDSHARD_TLS_EMAIL: ${GRIDSHARD_TLS_EMAIL:?Set GRIDSHARD_TLS_EMAIL}
+    ports: ['80:80', '443:443', '443:443/udp']
+    volumes:
+      - ./deploy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - gridshard-caddy-production-clean:/data
+      - gridshard-caddy-config-production-clean:/config
+    networks: [edge]
+    depends_on:
+      relay-web: {condition: service_healthy}
+    logging:
+      options: {max-size: 10m, max-file: '3'}
+
+  maintenance:
+    profiles: [maintenance]
+    build:
+      context: .
+      dockerfile: deploy/Dockerfile.maintenance
+    read_only: true
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    tmpfs: [/tmp:rw,noexec,nosuid,size=32m]
+    environment:
+      DATABASE_URL_FILE: /run/secrets/database_url
+    secrets: [database_url]
+    volumes:
+      - ${GRIDSHARD_BACKUPS_DIR:?Set external GRIDSHARD_BACKUPS_DIR}:/backups
+      - gridshard-runtime-production-clean:/var/lib/gridshard
+    networks: [backend]
+    depends_on:
+      postgres: {condition: service_healthy}
+
+networks:
+  backend: {internal: true}
+  edge: {}
+
+volumes:
+  gridshard-postgres-production-clean:
+  gridshard-redis-production-clean:
+  gridshard-runtime-production-clean:
+  gridshard-caddy-production-clean:
+  gridshard-caddy-config-production-clean:
+
+secrets:
+  postgres_password:
+    file: ${GRIDSHARD_SECRETS_DIR:?Set external GRIDSHARD_SECRETS_DIR}/postgres_password
+  database_url:
+    file: ${GRIDSHARD_SECRETS_DIR:?Set external GRIDSHARD_SECRETS_DIR}/database_url
+  auth_signing_key:
+    file: ${GRIDSHARD_SECRETS_DIR:?Set external GRIDSHARD_SECRETS_DIR}/auth_signing_key

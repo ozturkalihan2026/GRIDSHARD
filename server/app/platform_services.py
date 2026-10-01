@@ -942,6 +942,7 @@ class PlatformService(PushOutbox):
     def queue_notification(self, player_id: str, title: str, body: str, deep_link: str = "", *, source_player_id=None) -> dict:
         item = {
             "notification_id": secrets.token_urlsafe(10),
+            "source_player_id": source_player_id,
             "title": _clean_text(title, maximum=80, label="Bildirim başlığı"),
             "body": _clean_text(body, maximum=240, label="Bildirim metni"),
             "deep_link": str(deep_link or ""),
@@ -1171,9 +1172,27 @@ class PlatformService(PushOutbox):
                 item for item in data.get("messages", [])
                 if player_id not in {item.get("sender_id"), item.get("recipient_id")}
             ]
+            data["oauth_exchanges"] = {
+                key: value for key, value in data.get("oauth_exchanges", {}).items()
+                if value.get("player_id") != player_id
+            }
+            for account in data["accounts"].values():
+                account["blocked_player_ids"] = [value for value in account.get("blocked_player_ids", []) if value != player_id]
+                account.get("direct_message_reads", {}).pop(player_id, None)
+                removed_notices = {
+                    job.get("notification_id") for job in account.get("push_jobs", [])
+                    if job.get("source_player_id") == player_id
+                }
+                account["notifications"] = [
+                    item for item in account.get("notifications", [])
+                    if item.get("source_player_id") != player_id and item.get("notification_id") not in removed_notices
+                ]
+                account["push_jobs"] = [job for job in account.get("push_jobs", []) if job.get("source_player_id") != player_id]
             for report in data.get("reports", []):
                 if report.get("reporter_id") == player_id:
                     report["reporter_id"] = "deleted-player"
+                if report.get("target_id") == player_id:
+                    report["target_id"] = "deleted-player"
             # Silinen hesabın mağaza defteri kayıtları da silinir; sonradan
             # gelen iade eşleşmez (geri alınacak hesap yoktur).
             owned = {

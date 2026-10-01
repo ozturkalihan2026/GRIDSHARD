@@ -1,0 +1,18 @@
+# PostgreSQL client tools match the production server's major version.
+# This image is an offline operator tool, never a public API or DB server.
+FROM postgres:17-bookworm
+USER root
+RUN apt-get update && apt-get install -y --no-install-recommends python3 python3-venv \
+    && rm -rf /var/lib/apt/lists/*
+WORKDIR /app
+COPY server/requirements.txt /app/server/requirements.txt
+RUN python3 -m venv /opt/maintenance \
+    && /opt/maintenance/bin/pip install --no-cache-dir -r /app/server/requirements.txt
+COPY server/app /app/server/app
+COPY server/migrations /app/server/migrations
+COPY tools/server_backup.py /app/tools/server_backup.py
+RUN groupadd --gid 10001 gridshard && useradd --uid 10001 --gid 10001 --no-create-home gridshard \
+    && mkdir -p /var/lib/gridshard && chown gridshard:gridshard /var/lib/gridshard
+USER 10001:10001
+ENTRYPOINT ["/opt/maintenance/bin/python", "/app/tools/server_backup.py"]
+CMD ["--help"]

@@ -359,6 +359,8 @@ class ParticipantAuthService:
             raise AuthenticationError("Kimlik belirteci başlığı geçersiz.")
         if expires_at <= int(self.now_func()):
             raise AuthenticationError("Kimlik belirtecinin süresi doldu.")
+        if self.repository.get(player_id) is None:
+            raise AuthenticationError("Oyuncu hesabı artık mevcut değil.")
         return AuthenticatedIdentity(
             player_id=player_id,
             expires_at=expires_at,
@@ -383,7 +385,8 @@ class ParticipantAuthService:
 
 
 def load_or_create_signing_key(path: Path) -> bytes:
-    configured = os.environ.get("GRIDSHARD_AUTH_SIGNING_KEY", "").strip()
+    from .production_config import environment_secret
+    configured = environment_secret("GRIDSHARD_AUTH_SIGNING_KEY", os.environ)
     if configured:
         value = configured.encode("utf-8")
         if len(value) < 32:

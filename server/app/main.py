@@ -4,6 +4,8 @@ from datetime import datetime, timezone
 from uuid import uuid4
 import asyncio
 from contextlib import asynccontextmanager, contextmanager
+from functools import wraps
+from inspect import signature
 import hashlib
 import logging
 import secrets
@@ -11,11 +13,14 @@ import time
 import os
 import json
 from pathlib import Path
-from threading import Lock
+from threading import Lock, RLock
 from urllib.parse import parse_qs, urlencode, urlsplit
 
 from fastapi import BackgroundTasks, FastAPI, Header, HTTPException, Query, Request, WebSocket
 from fastapi.middleware.cors import CORSMiddleware
+from starlette.middleware.trustedhost import TrustedHostMiddleware
+from .production_config import environment_secret, production_endpoints
+from .postgres_economic_operations import PostgresEconomicOperations, EconomicOperationConflict
 from fastapi.responses import JSONResponse, RedirectResponse
 from fastapi.websockets import WebSocketDisconnect
 from pydantic import BaseModel
@@ -28,6 +33,12 @@ from .auth import (
 )
 from .platform_services import PlatformService, PlatformServiceError
 from .postgres_platform import PostgresPlatformService
+from .postgres_social_transactions import PostgresSocialTransactionRepository, SocialTransactionError
+from .postgres_social_runtime import PostgresSocialRuntime, social_operation_id
+from .postgres_account_erasure import PostgresAccountErasure
+from .persistent_state import PersistentState
+from .postgres_battle_results import PostgresBattleResults
+from .postgres_worker_guard import PostgresWorkerGuard
 from .push_delivery import PushSender
 from .json_schema_migrations import apply_json_store_migrations, json_store_paths
 from .clean_install import (
@@ -194,8 +205,8 @@ if RUNTIME_MODE not in {"development", "production"}:
         "GRIDSHARD_RUNTIME_MODE yalnız development veya production olabilir."
     )
 RUNTIME_STRICT = RUNTIME_MODE == "production"
-DATABASE_URL = os.environ.get("DATABASE_URL", "").strip() or None
-REDIS_URL = os.environ.get("REDIS_URL", "").strip() or None
+DATABASE_URL = environment_secret("DATABASE_URL", os.environ) or None
+REDIS_URL = environment_secret("REDIS_URL", os.environ) or None
 
 if RUNTIME_STRICT and not DATABASE_URL:
     raise RuntimeError("Üretim modunda DATABASE_URL zorunludur.")
@@ -203,10 +214,11 @@ if RUNTIME_STRICT and urlsplit(DATABASE_URL).password == "gridshard-local-only":
     raise RuntimeError("Üretimde örnek PostgreSQL parolası kullanılamaz.")
 if RUNTIME_STRICT and not REDIS_URL:
     raise RuntimeError("Üretim modunda REDIS_URL zorunludur.")
-if RUNTIME_STRICT and not os.environ.get("GRIDSHARD_AUTH_SIGNING_KEY", "").strip():
+if RUNTIME_STRICT and not environment_secret("GRIDSHARD_AUTH_SIGNING_KEY", os.environ):
     raise RuntimeError("Üretim modunda GRIDSHARD_AUTH_SIGNING_KEY zorunludur.")
 
 RUNTIME_DATA_DIR = runtime_data_directory(SERVER_DATA_DIR, RUNTIME_MODE, os.environ)
+PRODUCTION_ENDPOINTS = production_endpoints(os.environ) if RUNTIME_STRICT else None
 RUNTIME_STORE_PATHS = json_store_paths(
     RUNTIME_DATA_DIR, postgres=DATABASE_URL is not None,
 )
@@ -225,6 +237,7 @@ def _runtime_path(env_name: str, filename: str) -> Path:
     )
 
 postgres_pool = PostgresPool(DATABASE_URL) if DATABASE_URL else None
+postgres_worker_guard = PostgresWorkerGuard(postgres_pool) if RUNTIME_STRICT else None
 # JSON depoları okunmadan önce bekleyen dosya şema göçleri uygulanır;
 # değişmiş, zinciri bozuk veya bilinmeyen göç geçmişi açılışı durdurur.
 # Üretimde mevcut veriyi dönüştüren göç otomatik uygulanmaz; operatör
@@ -241,6 +254,25 @@ async def _runtime_maintenance_loop() -> None:
     last_analytics_prune = 0.0
     while True:
         await asyncio.sleep(5.0)
+        if RUNTIME_STRICT:
+            try:
+                await runtime_coordinator.renew_worker()
+                await asyncio.to_thread(postgres_worker_guard.check)
+            except Exception:
+                runtime_coordinator._lease_lost = True
+                await pvp_tick_runner.stop_all()
+                for connection in list(pvp_websocket_adapter.registry.connections.values()):
+                    if connection.connected:
+                        try:
+                            await pvp_websocket_adapter.disconnect(connection.connection_id, close_code=1013)
+                        except Exception:
+                            pass
+                logging.getLogger(__name__).error("Worker ownership lost; API disabled until restart")
+                return
+            try:
+                await asyncio.to_thread(_recover_pending_battle_results)
+            except Exception:
+                logging.getLogger(__name__).warning("Pending battle results require retry", exc_info=True)
         if time.monotonic() - last_analytics_prune >= 3600:
             last_analytics_prune = time.monotonic()
             try:
@@ -262,7 +294,11 @@ async def _runtime_maintenance_loop() -> None:
                 if RUNTIME_STRICT:
                     raise
         for session_id in pvp_service.active_session_ids():
-            await runtime_coordinator.touch_session(session_id, ttl_seconds=360)
+            state = pvp_service.get_session(session_id).engine.state
+            await runtime_coordinator.touch_session(
+                session_id, ttl_seconds=360, player_ids=tuple(state.players),
+                status=state.status.value, websocket_base_url=MATCHMAKING_PUBLIC_WS_BASE_URL,
+            )
         await runtime_coordinator.local_limiter.cleanup()
 
 
@@ -284,43 +320,61 @@ async def _push_delivery_loop(stop: asyncio.Event):
 @asynccontextmanager
 async def application_lifespan(_app: FastAPI):
     global telemetry_service
-    if postgres_pool is not None:
-        await asyncio.to_thread(postgres_pool.open)
-        if RUNTIME_STRICT:
-            installation_id = await asyncio.to_thread(
-                ensure_clean_postgres_installation, postgres_pool
-            )
-            await asyncio.to_thread(
-                ensure_clean_runtime_directory, RUNTIME_DATA_DIR, installation_id
-            )
-            await asyncio.to_thread(
-                apply_json_store_migrations, ACTIVE_JSON_STORE_PATHS, auto_apply=False
-            )
-            telemetry_service = InMemoryTelemetryService(repository=telemetry_repository)
-    await runtime_coordinator.open()
-    maintenance_task = asyncio.create_task(_runtime_maintenance_loop())
+    maintenance_task = None
     push_stop = asyncio.Event()
     push_task = None
     try:
+        if postgres_pool is not None:
+            await asyncio.to_thread(postgres_pool.open)
+            if RUNTIME_STRICT:
+                await asyncio.to_thread(postgres_worker_guard.acquire)
+                installation_id = await asyncio.to_thread(
+                    ensure_clean_postgres_installation, postgres_pool
+                )
+                await asyncio.to_thread(
+                    ensure_clean_runtime_directory, RUNTIME_DATA_DIR, installation_id
+                )
+                await asyncio.to_thread(
+                    apply_json_store_migrations, ACTIVE_JSON_STORE_PATHS, auto_apply=False
+                )
+                telemetry_service = InMemoryTelemetryService(repository=telemetry_repository)
+        await runtime_coordinator.open()
+        if RUNTIME_STRICT:
+            await asyncio.to_thread(_postgres_social_runtime().close_sessions, stale_boot=True)
+            await asyncio.to_thread(_recover_pending_battle_results)
         # GRIDSHARD_PUSH_ENABLED=1 değilse gönderici kapalıdır, bağlantı açmaz.
         platform_service.push_sender = PushSender.from_environment()
         push_task = asyncio.create_task(_push_delivery_loop(push_stop))
+        maintenance_task = asyncio.create_task(_runtime_maintenance_loop())
         yield
     finally:
-        push_stop.set()
-        if push_task is not None:
-            # Süren sınırlı HTTP çağrısı bitmeden istemci kapatılmaz.
-            await push_task
-        platform_service.push_sender.close()
-        maintenance_task.cancel()
         try:
-            await maintenance_task
-        except asyncio.CancelledError:
-            pass
-        await pvp_tick_runner.stop_all()
-        await runtime_coordinator.close()
-        if postgres_pool is not None:
-            await asyncio.to_thread(postgres_pool.close)
+            push_stop.set()
+            if push_task is not None:
+                # Süren sınırlı HTTP çağrısı bitmeden istemci kapatılmaz.
+                await push_task
+            platform_service.push_sender.close()
+        finally:
+            try:
+                if maintenance_task is not None:
+                    maintenance_task.cancel()
+                    try:
+                        await maintenance_task
+                    except asyncio.CancelledError:
+                        pass
+            finally:
+                try:
+                    await pvp_tick_runner.stop_all()
+                finally:
+                    try:
+                        await runtime_coordinator.close()
+                    finally:
+                        try:
+                            if postgres_worker_guard is not None:
+                                await asyncio.to_thread(postgres_worker_guard.release)
+                        finally:
+                            if postgres_pool is not None:
+                                await asyncio.to_thread(postgres_pool.close)
 
 
 app = FastAPI(
@@ -328,6 +382,8 @@ app = FastAPI(
     version=VERSION,
     lifespan=application_lifespan,
 )
+if PRODUCTION_ENDPOINTS:
+    app.add_middleware(TrustedHostMiddleware, allowed_hosts=[PRODUCTION_ENDPOINTS[2], "127.0.0.1", "localhost"], www_redirect=False)
 
 
 CORS_ORIGINS = tuple(
@@ -373,7 +429,7 @@ _platform_options = {
     ).strip().lower() in {"1", "true", "yes", "on"},
     "web_base_url": os.environ.get(
         "GRIDSHARD_PUBLIC_WEB_URL",
-        "https://gridshard.game" if RUNTIME_STRICT else "http://127.0.0.1:8000",
+        "http://127.0.0.1:8000",
     ),
 }
 platform_service = (
@@ -432,6 +488,10 @@ def _path_claimed_player_id(path: str) -> str | None:
 @app.middleware("http")
 async def require_participant_authentication(request: Request, call_next):
     path = request.url.path
+    if RUNTIME_STRICT and runtime_coordinator.strict and (
+        not runtime_coordinator.owns_worker or not postgres_worker_guard.held
+    ) and path != "/health":
+        return JSONResponse(status_code=503, content={"detail": "Savaş sunucusu yeniden başlatılmayı bekliyor."})
     protected = any(path.startswith(prefix) for prefix in PROTECTED_PLAYER_PREFIXES)
     if not auth_is_required() or not protected or request.method == "OPTIONS":
         return await call_next(request)
@@ -440,9 +500,14 @@ async def require_participant_authentication(request: Request, call_next):
         token = participant_auth_service.bearer_token(
             request.headers.get("authorization")
         )
-        identity = participant_auth_service.verify_access_token(token)
-        if platform_service.token_is_revoked(identity.player_id, identity.token_id):
-            raise AuthenticationError("Bu cihaz oturumu sonlandırılmış.")
+        def verify_identity():
+            identity = participant_auth_service.verify_access_token(token)
+            if platform_service.token_is_revoked(identity.player_id, identity.token_id):
+                raise AuthenticationError("Bu cihaz oturumu sonlandırılmış.")
+            return identity
+        # Identity and revocation reads use PostgreSQL in production. Do not
+        # stall every battle socket/tick on the event loop while they run.
+        identity = await asyncio.to_thread(verify_identity)
     except AuthenticationError as exc:
         return JSONResponse(
             status_code=401,
@@ -473,6 +538,7 @@ async def require_participant_authentication(request: Request, call_next):
             status_code=403,
             content={"detail": "Başka bir oyuncu adına işlem yapılamaz."},
         )
+    await runtime_coordinator.touch_player(identity.player_id)
 
     request.state.authenticated_player_id = identity.player_id
     request.state.authenticated_token_id = identity.token_id
@@ -582,6 +648,9 @@ telemetry_service = InMemoryTelemetryService(
 )
 
 def process_completed_pvp_battle(state) -> None:
+    if RUNTIME_STRICT:
+        _process_durable_battle_result(state)
+        return
     # /local-ai/sessions uses local-ai-<uuid> for isolated test battles.
     # Matchmaking fallback uses local-ai-match-<uuid> and must complete the
     # normal statistics/progression/post-match pipeline.
@@ -677,11 +746,17 @@ def process_completed_pvp_battle(state) -> None:
                 )
             )
 
+async def _finish_battle_off_thread(state):
+    await asyncio.to_thread(process_completed_pvp_battle, state)
+    if state.players:
+        await _matchmaking_clear_match(next(iter(state.players)))
+
+
 pvp_tick_runner = PvPTickRunner(
     pvp_service,
     pvp_websocket_adapter,
     match_finished_callback=(
-        process_completed_pvp_battle
+        _finish_battle_off_thread
     ),
 )
 player_settings_service = PlayerSettingsService()
@@ -774,7 +849,9 @@ MATCHMAKING_PUBLIC_WS_BASE_URL = os.environ.get(
 ).strip()
 redis_matchmaking_service = RedisMatchmakingService(
     lambda: runtime_coordinator.redis,
-    namespace=runtime_coordinator.namespace,
+    # Simulations are intentionally not restored after process loss. A new
+    # boot must never route players to a ready match from the former RAM owner.
+    namespace=(f"{runtime_coordinator.namespace}:boot:{runtime_coordinator.owner_id}" if RUNTIME_STRICT else runtime_coordinator.namespace),
     instance_id=MATCHMAKING_INSTANCE_ID,
     websocket_base_url=MATCHMAKING_PUBLIC_WS_BASE_URL,
 )
@@ -788,18 +865,212 @@ PURCHASE_TEST_MODE = purchase_test_mode_enabled(RUNTIME_STRICT)
 AD_TEST_MODE = ad_test_mode_enabled(RUNTIME_STRICT)
 STORE_VERIFIERS = StoreVerifiers.from_environment()
 DAILY_META_ROLL_LOCK = Lock()
-SOCIAL_LOCK = Lock()
+SOCIAL_LOCK = RLock()
+RUNTIME_BOOT_ID = uuid4().hex
 REWARD_INBOX_LOCK = Lock()
+PERSISTENT_STATE = PersistentState()
+ECONOMIC_OPERATIONS = frozenset({
+    "claim_reward_inbox_item", "claim_player_arena_reward", "upgrade_player_collection_module",
+    "claim_player_progression_gift_chest", "open_player_progression_chest",
+    "open_all_available_player_progression_chests", "buy_store_chest", "claim_battle_ad_reward",
+    "unlock_player_core_skill", "upgrade_player_core", "choose_player_module_talent",
+    "reset_player_module_talents", "claim_daily_mission_reward", "claim_login_period_reward",
+    "claim_season_tier_reward", "claim_premium_season_tier_reward",
+})
+
+
+def _replay_economic_operation(player_id, outcome):
+    profile = _team_member_profile(player_id)
+    layout = outcome["layout"]
+    if layout == "meta":
+        response = {"meta_progression": meta_progression_service.view(profile)}
+    elif layout == "inbox":
+        response = _reward_inbox_view(profile)
+    elif layout == "engagement":
+        response = {**profile.to_view(), "tier_advanced": None}
+    else:
+        response = {}
+    if outcome["with_profile"]:
+        response["profile"] = profile.to_view()
+    response.update(outcome["receipts"])
+    response["replayed"] = True
+    if isinstance(response.get("receipt"), dict):
+        response["receipt"] = {**response["receipt"], "replayed": True}
+    return response
+
+
+@contextmanager
+def _persistent_operation(player_ids=()):
+    if not RUNTIME_STRICT:
+        yield
+        return
+    with PERSISTENT_STATE.operation(
+        pool=postgres_pool, store=player_data_store_service, platform=platform_service,
+        teams=team_service, social_lock=SOCIAL_LOCK, player_ids=player_ids,
+        safety_check=_require_worker_ownership,
+    ):
+        yield
+
+
+def _require_worker_ownership():
+    if RUNTIME_STRICT and runtime_coordinator.strict and (
+        not runtime_coordinator.owns_worker or not postgres_worker_guard.held
+    ):
+        raise HTTPException(status_code=503, detail="Worker sahipliği kaybedildi; yeniden başlatma gerekir.")
+
+
+def persistent_operation(function):
+    """Explicit sync-handler boundary; do not decorate async/provider I/O."""
+    parameters = signature(function)
+
+    @wraps(function)
+    def guarded(*args, **kwargs):
+        arguments = parameters.bind(*args, **kwargs).arguments
+        player_ids = [arguments.get("player_id")]
+        request = arguments.get("request")
+        if isinstance(request, BaseModel):
+            player_ids.extend(getattr(request, name, None) for name in (
+                "player_id", "target_player_id", "requester_id", "member_id", "applicant_id",
+            ))
+        with PERSISTENT_STATE.lock, _pending_results_barrier(), _persistent_operation(player_ids):
+            actor_id = arguments.get("player_id") or getattr(request, "player_id", None)
+            if (RUNTIME_STRICT and runtime_coordinator.strict and actor_id
+                and function.__name__ not in {"create_participant_auth_session", "create_provider_auth_session"}
+                and player_data_repository.load(actor_id) is None):
+                raise HTTPException(status_code=401, detail="Oyuncu hesabı artık mevcut değil.")
+            kind = function.__name__
+            request_id = getattr(request, "request_id", None)
+            economic = RUNTIME_STRICT and kind in ECONOMIC_OPERATIONS and actor_id and request_id
+            if not economic:
+                return function(*args, **kwargs)
+            payload = {key: value.model_dump(mode="json", exclude={"request_id"}) if isinstance(value, BaseModel) else value
+                       for key, value in arguments.items()}
+            receipts = PostgresEconomicOperations(postgres_pool)
+            try:
+                key, previous = receipts.begin(actor_id, request_id, kind, payload)
+            except EconomicOperationConflict as exc:
+                raise HTTPException(status_code=409, detail=str(exc)) from exc
+            if previous is not None:
+                return _replay_economic_operation(actor_id, previous)
+            response = function(*args, **kwargs)
+            layout = ("meta" if "meta_progression" in response else "inbox" if kind == "claim_reward_inbox_item"
+                      else "engagement" if kind.startswith(("claim_daily_", "claim_login_", "claim_season_", "claim_premium_")) else "basic")
+            receipts.complete(actor_id, key, response, layout)
+            return response
+
+    return guarded
+
+
+@contextmanager
+def _pending_results_barrier():
+    # A failed result may not be overtaken by a season rollover, prize claim
+    # or another economic mutation. Nested helpers are already in the UOW.
+    if RUNTIME_STRICT and not PERSISTENT_STATE.active:
+        _drain_pending_battle_results()
+    yield
+
+
+def _process_durable_battle_result(state, *, replaying=False) -> None:
+    if state.match_type == "local_test":
+        telemetry_service.ingest_finished_battle(state)
+        return
+    ledger = PostgresBattleResults(postgres_pool)
+    account_ids = tuple(state.account_player_ids or tuple(state.players))
+    with PERSISTENT_STATE.lock:
+        _require_worker_ownership()
+        if not replaying:
+            _drain_pending_battle_results()
+        # This commit precedes the grant transaction. A failure afterwards
+        # leaves a recoverable pending intention, not partially awarded players.
+        if ledger.record_terminal(state) == "aborted":
+            return
+        try:
+            with _persistent_operation(account_ids):
+                entry = ledger.lock(state.battle_id)
+                if entry["status"] == "pending":
+                    if any(player_data_repository.load(owner) is None for owner in account_ids):
+                        ledger.abort(state.battle_id, "participant_missing")
+                        return  # Never resurrect a deleted account from a battle.
+                    # Memory deduplication is not the authority. Clear this
+                    # battle only; the durable locked ledger decides replay.
+                    _forget_pending_battle_projection(state.battle_id)
+                    with player_profile_service.settlement_time(entry["completed_at"]):
+                        player_statistics_service.process_finished_battle(state)
+                        player_progression_service.process_finished_battle(
+                            state, completed_at=entry["completed_at"],
+                        )
+                        if state.match_type == "team_tournament":
+                            _record_team_tournament_leg(state)
+                        _complete_social_battle_invites(state.battle_id)
+                        team_service.complete_training_challenge(state.battle_id)
+                        for owner in account_ids:
+                            persist_player_data(owner)
+                    ledger.apply(state.battle_id, {
+                        owner: player_progression_service.player_result(state.battle_id, owner)
+                        for owner in account_ids
+                    })
+        except BaseException:
+            _forget_pending_battle_projection(state.battle_id)
+            raise
+        # Optional observability is separate from authoritative economic state.
+        # Repository event IDs are stable and permit later retry without grants.
+        try:
+            telemetry_service.ingest_finished_battle(state)
+            mode = "team" if state.match_type == "team_tournament" else "friend" if state.match_type in {"friend_battle", "team_training"} else "arena"
+            duration = int(state.finished_at_ms if state.finished_at_ms is not None else state.elapsed_ms)
+            bucket = "under_60s" if duration < 60_000 else "60_179s" if duration < 180_000 else "180s_plus"
+            for owner in account_ids:
+                product_analytics_service.record(
+                    owner, "battle_completed",
+                    {"result": "draw" if state.is_draw else "win" if state.winner_player_id == owner else "loss",
+                     "mode": mode, "duration": bucket},
+                    request_id=hashlib.sha256(f"product:battle:{state.battle_id}:{owner}".encode()).hexdigest()[:32],
+                    client=False,
+                )
+        except Exception:
+            logging.getLogger(__name__).warning("Committed battle observability unavailable", exc_info=True)
+    if state.players:
+        matchmaking_service.clear_match(next(iter(state.players)))
+
+
+def _forget_pending_battle_projection(battle_id):
+    player_statistics_service._processed_battle_ids.discard(battle_id)
+    player_progression_service._processed_battle_ids.discard(battle_id)
+    player_progression_service._results_by_battle_id.pop(battle_id, None)
+
+
+def _drain_pending_battle_results():
+    with PERSISTENT_STATE.lock:
+        while True:
+            pending = PostgresBattleResults(postgres_pool).pending()
+            if not pending:
+                return
+            for state in pending:
+                _process_durable_battle_result(state, replaying=True)
+
+
+def _recover_pending_battle_results():
+    # Failed first writes may still be recoverable from a finished RAM session;
+    # persisted pending results also survive complete loss of that RAM state.
+    _drain_pending_battle_results()
+    for session in list(pvp_service._sessions.values()):
+        if session.engine.state.status == BattleStatus.FINISHED:
+            _process_durable_battle_result(session.engine.state)
 
 
 def persist_player_data(
     player_id: str,
 ) -> None:
+    if RUNTIME_STRICT:
+        PERSISTENT_STATE.require_touched(player_id)
     player_data_store_service.save_player(
         player_id
     )
+    if RUNTIME_STRICT:
+        PERSISTENT_STATE.saved(player_id)
 
 
+@persistent_operation
 def attach_player_progression_to_session(
     session_id: str,
     player_id: str,
@@ -1075,12 +1346,14 @@ class PushSubscriptionRequest(BaseModel):
 class InviteCodeRequest(BaseModel):
     player_id: str
     code: str | None = None
+    request_id: str | None = None
 
 
 class DirectMessageRequest(BaseModel):
     player_id: str
     recipient_id: str
     text: str
+    request_id: str | None = None
 
 
 class DirectMessageSeenRequest(BaseModel):
@@ -1093,6 +1366,7 @@ class DirectMessageSeenRequest(BaseModel):
 class SocialSafetyRequest(BaseModel):
     player_id: str
     target_player_id: str
+    request_id: str | None = None
     blocked: bool | None = None
     reason: str | None = None
     detail: str | None = None
@@ -1130,6 +1404,7 @@ class ProductAnalyticsEventRequest(BaseModel):
 
 
 @app.post("/auth/session")
+@persistent_operation
 def create_participant_auth_session(
     request: AuthSessionRequest,
 ) -> dict:
@@ -1153,6 +1428,11 @@ def create_participant_auth_session(
             identity.token_id,
             identity.expires_at,
         )
+        if RUNTIME_STRICT and player_data_repository.load(request.player_id) is None:
+            # An authenticated first-time account must have durable profile
+            # state before entering its first match (no client data import).
+            player_profile_service.get_or_create(request.player_id)
+            persist_player_data(request.player_id)
         return {**result, "device_id": device_id}
     except AuthenticationError as exc:
         raise HTTPException(
@@ -1164,9 +1444,11 @@ def create_participant_auth_session(
 
 
 @app.post("/auth/provider-session")
+@persistent_operation
 def create_provider_auth_session(request: ProviderSessionRequest) -> dict:
     try:
         exchange = platform_service.consume_oauth_exchange(request.exchange)
+        PERSISTENT_STATE.touch(exchange["player_id"])
         result = participant_auth_service.authorize_device(
             exchange["player_id"],
             request.device_secret,
@@ -1183,6 +1465,9 @@ def create_provider_auth_session(request: ProviderSessionRequest) -> dict:
             identity.token_id,
             identity.expires_at,
         )
+        if RUNTIME_STRICT and player_data_repository.load(exchange["player_id"]) is None:
+            player_profile_service.get_or_create(exchange["player_id"])
+            persist_player_data(exchange["player_id"])
         return {
             **result,
             "device_id": request.device_id,
@@ -1299,6 +1584,7 @@ async def complete_apple_oauth(request: Request):
 
 
 @app.delete("/accounts/{player_id}/devices/{device_id}")
+@persistent_operation
 def revoke_account_device(
     player_id: str,
     device_id: str,
@@ -1323,6 +1609,7 @@ def request_account_recovery(request: RecoveryRequest) -> dict:
 
 
 @app.post("/account-recovery/confirm")
+@persistent_operation
 def confirm_account_recovery(request: RecoveryConfirmRequest) -> dict:
     try:
         platform_service.confirm_recovery(request.player_id, request.code)
@@ -1379,9 +1666,13 @@ def create_social_invite_code(player_id: str, request: InviteCodeRequest) -> dic
 
 
 @app.post("/social/{player_id}/invite-codes/accept")
+@persistent_operation
 def accept_social_invite_code(player_id: str, request: InviteCodeRequest) -> dict:
     if request.player_id != player_id:
         raise HTTPException(status_code=403, detail="Başka bir oyuncu adına işlem yapılamaz.")
+    if RUNTIME_STRICT:
+        result = _apply_postgres_social_workflow("accept_code", player_id, request.code, request.request_id)
+        return {key: value for key, value in result.items() if key not in {"affected_player_ids", "social"}} | {"social": result["social"]}
     try:
         result = platform_service.accept_invite(player_id, request.code or "")
         inviter_id = result["inviter_id"]
@@ -1411,15 +1702,20 @@ def accept_social_invite_code(player_id: str, request: InviteCodeRequest) -> dic
 
 
 @app.get("/social/{player_id}/messages")
+@persistent_operation
 def get_direct_messages(player_id: str, peer_id: str | None = None) -> dict:
     return {"messages": platform_service.messages(player_id, peer_id)}
 
 
 @app.post("/social/{player_id}/messages/seen")
+@persistent_operation
 def mark_direct_messages_seen(player_id: str, request: DirectMessageSeenRequest) -> dict:
     if request.player_id != player_id:
         raise HTTPException(status_code=403, detail="Başka bir oyuncu adına işlem yapılamaz.")
     peer_id = str(request.peer_id or "").strip() or None
+    if RUNTIME_STRICT:
+        result = _apply_postgres_social_workflow("mark_seen", player_id, peer_id, request.request_id)
+        return {**result["social"], "replayed": result["replayed"]}
     platform_service.mark_conversation_seen(player_id, peer_id)
     if peer_id is None:
         with SOCIAL_LOCK:
@@ -1430,9 +1726,13 @@ def mark_direct_messages_seen(player_id: str, request: DirectMessageSeenRequest)
 
 
 @app.post("/social/{player_id}/messages")
+@persistent_operation
 def send_direct_message(player_id: str, request: DirectMessageRequest) -> dict:
     if request.player_id != player_id:
         raise HTTPException(status_code=403, detail="Başka bir oyuncu adına işlem yapılamaz.")
+    if RUNTIME_STRICT:
+        result = _apply_postgres_social_workflow("send_message", player_id, request.recipient_id.strip(), request.text, request.request_id)
+        return {"message": result["message"], "replayed": result["replayed"]}
     sender = _team_member_profile(player_id)
     recipient = _team_member_profile(request.recipient_id)
     if request.recipient_id not in sender.friend_ids:
@@ -1460,10 +1760,20 @@ def send_direct_message(player_id: str, request: DirectMessageRequest) -> dict:
 
 
 @app.post("/social/{player_id}/block")
+@persistent_operation
 def set_social_block(player_id: str, request: SocialSafetyRequest) -> dict:
     if request.player_id != player_id or request.target_player_id == player_id:
         raise HTTPException(status_code=403, detail="Geçersiz engelleme işlemi.")
     blocked = request.blocked is not False
+    if RUNTIME_STRICT:
+        result = _apply_postgres_friend_operation(
+            "block" if blocked else "unblock", player_id,
+            request.target_player_id.strip(), request.request_id,
+        )
+        return {
+            "blocked_player_ids": list(_team_member_profile(player_id).blocked_player_ids),
+            "social": result["social"], "replayed": result["replayed"],
+        }
     with SOCIAL_LOCK:
         profile = _team_member_profile(player_id)
         target = _team_member_profile(request.target_player_id)
@@ -1511,6 +1821,7 @@ def share_player_profile(player_id: str, target_player_id: str) -> dict:
 
 
 @app.get("/accounts/{player_id}/data-export")
+@persistent_operation
 def export_account_data(player_id: str) -> JSONResponse:
     # Export is a read, not a save: do not overwrite a cold account with a
     # default profile, and do not hand a client any restore capability.
@@ -1529,11 +1840,24 @@ def export_account_data(player_id: str) -> JSONResponse:
 
 
 @app.post("/accounts/{player_id}/delete")
+@persistent_operation
 def delete_account_data(player_id: str, request: GdprDeleteRequest) -> dict:
     if request.player_id != player_id:
         raise HTTPException(status_code=403, detail="Başka bir oyuncu adına işlem yapılamaz.")
     if request.confirmation.strip() != f"SIL {player_id}":
         raise HTTPException(status_code=422, detail=f"Onay metni `SIL {player_id}` olmalıdır.")
+    if RUNTIME_STRICT:
+        with SOCIAL_LOCK:
+            result = PostgresAccountErasure(
+                postgres_pool, platform_service, team_service, player_data_repository,
+                participant_auth_service.repository, product_analytics_service,
+            ).erase(player_id)
+            for owner_id in result.pop("affected_player_ids"):
+                player_data_store_service.load_player(owner_id)
+            player_profile_service._profiles.pop(player_id, None)
+            player_statistics_service._statistics.pop(player_id, None)
+            player_settings_service._settings.pop(player_id, None)
+            return {"player_id": player_id, **result, "gdpr_erasure_completed": True}
     profile = _team_member_profile(player_id)
     if profile.team_id:
         try:
@@ -1758,6 +2082,34 @@ def _ensure_human_match_session(pair: MatchmakingPair) -> None:
     attach_player_progression_to_session(session.session_id, pair.player_b_id)
 
 
+@persistent_operation
+def _matchmaking_player_details(player_id):
+    profile = player_profile_service.get_or_create(player_id)
+    return {"rating":profile.rating, "league_name_tr":profile.league_name_tr,
+            "level":profile.level, "match_level":round((sum(1 + profile.module_upgrade_levels.get(mid, 0)
+                for mid in profile.preferred_battle_pool_ids) / 6 + 1 + profile.core_upgrade_levels.get(profile.selected_core_type, 0)) / 2)}
+
+
+def _provision_match_state(pair, background_tasks):
+    accounts = [pair.player_a_id] if pair.opponent_type == "ai" else [pair.player_a_id, pair.player_b_id]
+    with PERSISTENT_STATE.lock:
+        existed = pair.match_id in pvp_service._sessions
+        try:
+            with _pending_results_barrier(), _persistent_operation(accounts):
+                if RUNTIME_STRICT and any(player_data_repository.load(owner) is None for owner in accounts):
+                    raise HTTPException(status_code=404, detail="Eşleşme katılımcısı artık mevcut değil.")
+                if pair.opponent_type == "ai":
+                    _create_matchmaking_ai_session(pair, background_tasks=background_tasks)
+                else:
+                    _ensure_human_match_session(pair)
+        except BaseException:
+            # A new, half-provisioned RAM session must never be published as
+            # ready on the next retry. Existing live sessions are not removed.
+            if not existed:
+                pvp_service.delete_session(pair.match_id)
+            raise
+
+
 async def _provision_match_session(
     pair: MatchmakingPair,
     background_tasks: BackgroundTasks | None = None,
@@ -1771,16 +2123,15 @@ async def _provision_match_session(
     ):
         return pair
 
-    if pair.opponent_type == "ai":
-        _create_matchmaking_ai_session(pair, background_tasks=background_tasks)
-    else:
-        _ensure_human_match_session(pair)
+    await asyncio.to_thread(_provision_match_state, pair, background_tasks)
 
     if distributed:
         pair = await redis_matchmaking_service.mark_ready(pair)
         await runtime_coordinator.touch_session(
             pair.match_id,
             ttl_seconds=360,
+            player_ids=(pair.player_a_id, pair.player_b_id),
+            websocket_base_url=MATCHMAKING_PUBLIC_WS_BASE_URL,
         )
     return pair
 
@@ -1835,13 +2186,12 @@ async def matchmaking_join(
                 "queue": await _matchmaking_snapshot(request.player_id),
             }
 
-        profile = player_profile_service.get_or_create(request.player_id)
+        profile = await asyncio.to_thread(_matchmaking_player_details, request.player_id)
         queue_entry = await _matchmaking_enqueue(
             request.player_id,
-            rating=profile.rating,
-            league_name_tr=profile.league_name_tr,
-            level=round((sum(1 + profile.module_upgrade_levels.get(mid, 0) for mid in profile.preferred_battle_pool_ids) / 6
-                         + 1 + profile.core_upgrade_levels.get(profile.selected_core_type, 0)) / 2),
+            rating=profile["rating"],
+            league_name_tr=profile["league_name_tr"],
+            level=profile["match_level"],
         )
         if isinstance(queue_entry, MatchmakingPair):
             queue_entry = await _provision_match_session(
@@ -1867,9 +2217,9 @@ async def matchmaking_join(
             event_type="matchmaking_started",
             player_id=request.player_id,
             metadata={
-                "rating": profile.rating,
-                "league_name_tr": profile.league_name_tr,
-                "level": profile.level,
+                "rating": profile["rating"],
+                "league_name_tr": profile["league_name_tr"],
+                "level": profile["level"],
             },
         )
 
@@ -1968,6 +2318,7 @@ async def matchmaking_status(
 
 
 @app.get("/settings/{player_id}")
+@persistent_operation
 def get_player_settings(
     player_id: str,
 ) -> dict:
@@ -2034,6 +2385,7 @@ def delete_my_product_analytics(request: Request) -> dict:
 
 
 @app.put("/settings/{player_id}")
+@persistent_operation
 def update_player_settings(
     player_id: str,
     request: PlayerSettingsRequest,
@@ -2072,11 +2424,12 @@ def update_player_settings(
 
 
 @app.get("/progression/battles/{battle_id}/{player_id}")
+@persistent_operation
 def get_battle_progression(
     battle_id: str,
     player_id: str,
 ) -> dict:
-    result = (
+    result = PostgresBattleResults(postgres_pool).player_result(battle_id, player_id) if RUNTIME_STRICT else (
         player_progression_service
         .player_result(
             battle_id,
@@ -2098,7 +2451,7 @@ def get_post_match_sync(
     battle_id: str,
     player_id: str,
 ) -> dict:
-    progression = (
+    progression = PostgresBattleResults(postgres_pool).player_result(battle_id, player_id) if RUNTIME_STRICT else (
         player_progression_service
         .player_result(
             battle_id,
@@ -2117,7 +2470,7 @@ def get_post_match_sync(
                 )
         except Exception:
             pass
-        progression = (
+        progression = PostgresBattleResults(postgres_pool).player_result(battle_id, player_id) if RUNTIME_STRICT else (
             player_progression_service
             .player_result(
                 battle_id,
@@ -2130,6 +2483,11 @@ def get_post_match_sync(
             detail="Maç sonu ilerleme sonucu bulunamadı.",
         )
 
+    with _persistent_operation([player_id]):
+        return _post_match_view(battle_id, player_id, progression)
+
+
+def _post_match_view(battle_id, player_id, progression):
     return {
         "battle_id": battle_id,
         "player_id": player_id,
@@ -2155,6 +2513,7 @@ def get_post_match_sync(
 
 
 @app.get("/statistics/{player_id}")
+@persistent_operation
 def get_statistics(
     player_id: str,
 ) -> dict:
@@ -2163,6 +2522,12 @@ def get_statistics(
         .get_or_create(player_id)
         .to_view()
     )
+
+
+@app.get("/profile/{player_id}/battle-history")
+@persistent_operation
+def get_player_battle_history(player_id: str, limit: int = 30) -> dict:
+    return {"battles": PostgresBattleResults(postgres_pool).history(player_id, limit) if RUNTIME_STRICT else []}
 
 
 def _leaderboard_profile_rows() -> list[dict]:
@@ -2513,6 +2878,7 @@ def _public_player_profile_view(player_id: str) -> dict:
 
 
 @app.get("/public-profiles/{player_id}")
+@persistent_operation
 def get_public_player_profile(player_id: str) -> dict:
     return _public_player_profile_view(player_id)
 
@@ -2622,11 +2988,13 @@ def _public_team_profile_view(team_id: str) -> dict:
 
 
 @app.get("/team-profiles/{team_id}")
+@persistent_operation
 def get_public_team_profile(team_id: str) -> dict:
     return _public_team_profile_view(team_id)
 
 
 @app.get("/leaderboards")
+@persistent_operation
 def get_leaderboards(player_id: str | None = None) -> dict:
     players = _leaderboard_profile_rows()
     teams: dict[str, dict] = {}
@@ -2957,6 +3325,7 @@ def _reward_inbox_view(profile) -> dict:
 
 
 @app.post("/profile/{player_id}/reward-inbox/notices/seen")
+@persistent_operation
 def mark_reward_inbox_notices_seen(player_id: str, request: InboxNoticeSeenRequest) -> dict:
     if request.player_id != player_id:
         raise HTTPException(status_code=403, detail="Başka bir oyuncu adına işlem yapılamaz.")
@@ -2972,12 +3341,14 @@ def mark_reward_inbox_notices_seen(player_id: str, request: InboxNoticeSeenReque
 
 
 @app.get("/profile/{player_id}/reward-inbox")
+@persistent_operation
 def get_reward_inbox(player_id: str) -> dict:
     _settle_competition_rewards(player_id)
     return _reward_inbox_view(_team_member_profile(player_id))
 
 
 @app.post("/profile/{player_id}/reward-inbox/{message_id}/claim")
+@persistent_operation
 def claim_reward_inbox_item(player_id: str, message_id: str, request: MetaOperationRequest) -> dict:
     with REWARD_INBOX_LOCK:
         profile = _team_member_profile(player_id)
@@ -3027,6 +3398,8 @@ def claim_reward_inbox_item(player_id: str, message_id: str, request: MetaOperat
 
 
 def _team_member_profile(player_id: str):
+    if RUNTIME_STRICT:
+        PERSISTENT_STATE.touch(player_id)
     if player_id not in player_profile_service._profiles:
         snapshot = player_data_repository.load(player_id)
         if snapshot is not None:
@@ -3044,7 +3417,7 @@ def _social_player_summary(player_id: str) -> dict:
         "rank_name_tr": profile.league_name_tr,
         "team_id": profile.team_id,
         "team_name": profile.team_name,
-        "online": player_id in player_profile_service._profiles,
+        "online": runtime_coordinator.player_online(player_id) if RUNTIME_STRICT else player_id in player_profile_service._profiles,
         "avatar": {
             "selected_avatar_id": profile.selected_avatar_id,
             "selected_avatar_frame_id": profile.selected_avatar_frame_id,
@@ -3083,6 +3456,12 @@ def _complete_social_battle_invites(session_id: str) -> bool:
     clean_session_id = str(session_id or "").strip()
     if not clean_session_id:
         return False
+    if RUNTIME_STRICT:
+        with SOCIAL_LOCK:
+            affected = _postgres_social_runtime().close_sessions(session_id=clean_session_id)
+            for owner_id in affected:
+                player_data_store_service.load_player(owner_id)
+            return bool(affected)
     changed = False
     with SOCIAL_LOCK:
         candidates = set(player_profile_service._profiles)
@@ -3134,6 +3513,11 @@ def _direct_message_conversations(profile) -> list[dict]:
 
 def _social_view(player_id: str) -> dict:
     profile = _team_member_profile(player_id)
+    if RUNTIME_STRICT:
+        for stored in tuple(profile.social_battle_invites):
+            if stored.get("status") == "accepted" and _battle_session_finished(stored.get("battle_session_id")):
+                _complete_social_battle_invites(stored["battle_session_id"])
+        profile = _team_member_profile(player_id)
     invitations = []
     changed = False
     for stored in profile.social_battle_invites[-50:]:
@@ -3207,11 +3591,13 @@ def _create_unranked_social_session(
 
 
 @app.get("/social/{player_id}")
+@persistent_operation
 def get_social_view(player_id: str) -> dict:
     return _social_view(player_id)
 
 
 @app.get("/players/search")
+@persistent_operation
 def search_players(
     player_id: str = Query(...),
     q: str = Query("", min_length=1, max_length=24),
@@ -3238,13 +3624,86 @@ def search_players(
     return {"query": q, "players": rows}
 
 
+def _postgres_social_runtime() -> PostgresSocialRuntime:
+    return PostgresSocialRuntime(postgres_pool, platform_service, boot_id=RUNTIME_BOOT_ID)
+
+
+def _social_workflow_http_error(exc: SocialTransactionError) -> HTTPException:
+    messages = {
+        "player_missing": (404, "Kayıtlı oyuncu bulunamadı."),
+        "invite_missing": (404, "Arkadaş savaşı daveti bulunamadı."),
+        "invalid_request_id": (422, "Geçerli bir işlem kimliği gerekli; istemciyi güncelle."),
+        "invalid_social_operation": (422, "Geçerli bir oyuncu ve işlem seç."),
+        "blocked_relation": (422, "Bu oyuncuyla arkadaşlık isteği kullanılamıyor."),
+        "friend_limit": (422, "Arkadaş sınırı 100 oyuncudur."),
+        "request_missing": (422, "Bekleyen arkadaşlık isteği bulunamadı."),
+        "friendship_required": (422, "Bu işlem için önce arkadaş olmalısınız."),
+        "invite_closed": (409, "Bu davet artık beklemede değil."),
+        "invite_code_missing": (422, "Davet kodu geçersiz veya süresi dolmuş."),
+        "idempotency_conflict": (409, "İşlem kimliği farklı bir istek için kullanılmış."),
+    }
+    status, detail = messages.get(exc.code, (409, "Sosyal kayıtlar tutarsız; işlem kaydedilmedi."))
+    return HTTPException(status_code=status, detail=detail)
+
+
+def _apply_postgres_social_workflow(method: str, player_id: str, *args, **kwargs) -> dict:
+    with SOCIAL_LOCK:
+        try:
+            result = getattr(_postgres_social_runtime(), method)(player_id, *args, **kwargs)
+        except SocialTransactionError as exc:
+            raise _social_workflow_http_error(exc) from exc
+        except PlatformServiceError as exc:
+            raise HTTPException(status_code=422, detail=str(exc)) from exc
+        for owner_id in result.get("affected_player_ids", []):
+            player_data_store_service.load_player(owner_id)
+        return {**result, "social": _social_view(player_id)}
+
+
+def _apply_postgres_friend_operation(
+    kind: str, player_id: str, target_id: str, request_id: str | None,
+) -> dict:
+    # Scope client IDs to the authenticated actor, not the operation/target:
+    # changing either with the same ID must still conflict, not create a write.
+    try:
+        operation_id = social_operation_id(player_id, request_id)
+    except SocialTransactionError as exc:
+        raise _social_workflow_http_error(exc) from exc
+    with SOCIAL_LOCK:
+        try:
+            with postgres_pool.joined_transaction():
+                # Store transactions use this same lock order. Locking the
+                # platform document after players would permit a deadlock.
+                with platform_service._lock:
+                    result = PostgresSocialTransactionRepository(postgres_pool).apply_friend_operation(
+                        kind, player_id, target_id, operation_id,
+                    )
+                    blocks = {}
+                    for owner_id in (player_id, target_id):
+                        snapshot = player_data_repository.load(owner_id)
+                        if snapshot is None:
+                            raise SocialTransactionError("player_missing")
+                        blocks[owner_id] = snapshot.profile.get("meta_progression_state", {}).get("blocked_player_ids", [])
+                    platform_service.sync_social_blocks(blocks)
+        except SocialTransactionError as exc:
+            raise _social_workflow_http_error(exc) from exc
+        # No live profile is mutated before commit. Reload committed revisions
+        # so later ordinary profile saves cannot overwrite the social changes.
+        for owner_id in (player_id, target_id):
+            player_data_store_service.load_player(owner_id)
+        return {**result, "social": _social_view(player_id)}
+
+
 @app.post("/social/{player_id}/requests")
+@persistent_operation
 def send_friend_request(player_id: str, request: FriendRequestOperation) -> dict:
     if request.player_id != player_id:
         raise HTTPException(status_code=403, detail="Başka bir oyuncu adına işlem yapılamaz.")
     target_id = str(request.target_player_id).strip()
     if not target_id or target_id == player_id:
         raise HTTPException(status_code=422, detail="Geçerli bir oyuncu seç.")
+    if RUNTIME_STRICT:
+        result = _apply_postgres_friend_operation("request", player_id, target_id, request.request_id)
+        return {**result["social"], "replayed": result["replayed"]}
     with SOCIAL_LOCK:
         profile = _team_member_profile(player_id)
         target = _team_member_profile(target_id)
@@ -3268,15 +3727,23 @@ def send_friend_request(player_id: str, request: FriendRequestOperation) -> dict
 
 
 @app.post("/social/{player_id}/requests/accept")
+@persistent_operation
 def accept_friend_request(player_id: str, request: FriendDecisionOperation) -> dict:
     if request.player_id != player_id:
         raise HTTPException(status_code=403, detail="Başka bir oyuncu adına işlem yapılamaz.")
     requester_id = str(request.requester_id).strip()
+    if RUNTIME_STRICT:
+        result = _apply_postgres_friend_operation("accept", player_id, requester_id, request.request_id)
+        return {**result["social"], "replayed": result["replayed"]}
     with SOCIAL_LOCK:
         profile = _team_member_profile(player_id)
         requester = _team_member_profile(requester_id)
         if requester_id not in profile.incoming_friend_request_ids and requester_id not in profile.friend_ids:
             raise HTTPException(status_code=422, detail="Bekleyen arkadaşlık isteği bulunamadı.")
+        if requester_id in profile.blocked_player_ids or player_id in requester.blocked_player_ids:
+            raise HTTPException(status_code=422, detail="Bu oyuncuyla arkadaşlık isteği kullanılamıyor.")
+        if requester_id not in profile.friend_ids and (len(profile.friend_ids) >= 100 or len(requester.friend_ids) >= 100):
+            raise HTTPException(status_code=422, detail="Arkadaş sınırı 100 oyuncudur.")
         _replace_tuple(profile, "friend_ids", (*profile.friend_ids, requester_id))
         _replace_tuple(requester, "friend_ids", (*requester.friend_ids, player_id))
         _replace_tuple(profile, "incoming_friend_request_ids", (value for value in profile.incoming_friend_request_ids if value != requester_id))
@@ -3287,10 +3754,14 @@ def accept_friend_request(player_id: str, request: FriendDecisionOperation) -> d
 
 
 @app.post("/social/{player_id}/requests/reject")
+@persistent_operation
 def reject_friend_request(player_id: str, request: FriendDecisionOperation) -> dict:
     if request.player_id != player_id:
         raise HTTPException(status_code=403, detail="Başka bir oyuncu adına işlem yapılamaz.")
     requester_id = str(request.requester_id).strip()
+    if RUNTIME_STRICT:
+        result = _apply_postgres_friend_operation("reject", player_id, requester_id, request.request_id)
+        return {**result["social"], "replayed": result["replayed"]}
     with SOCIAL_LOCK:
         profile = _team_member_profile(player_id)
         requester = _team_member_profile(requester_id)
@@ -3302,10 +3773,14 @@ def reject_friend_request(player_id: str, request: FriendDecisionOperation) -> d
 
 
 @app.post("/social/{player_id}/requests/cancel")
+@persistent_operation
 def cancel_friend_request(player_id: str, request: FriendRequestCancelOperation) -> dict:
     if request.player_id != player_id:
         raise HTTPException(status_code=403, detail="Başka bir oyuncu adına işlem yapılamaz.")
     target_id = str(request.target_player_id).strip()
+    if RUNTIME_STRICT:
+        result = _apply_postgres_friend_operation("cancel", player_id, target_id, request.request_id)
+        return {**result["social"], "replayed": result["replayed"]}
     with SOCIAL_LOCK:
         profile = _team_member_profile(player_id)
         target = _team_member_profile(target_id)
@@ -3317,6 +3792,7 @@ def cancel_friend_request(player_id: str, request: FriendRequestCancelOperation)
 
 
 @app.post("/social/{player_id}/battle-invites/{invite_id}/decline")
+@persistent_operation
 def decline_social_battle_invite(
     player_id: str,
     invite_id: str,
@@ -3324,6 +3800,9 @@ def decline_social_battle_invite(
 ) -> dict:
     if request.player_id != player_id:
         raise HTTPException(status_code=403, detail="Başka bir oyuncu adına işlem yapılamaz.")
+    if RUNTIME_STRICT:
+        result = _apply_postgres_social_workflow("decide_battle_invite", player_id, invite_id, request.request_id, accept=False)
+        return {**result["social"], "replayed": result["replayed"], "inbox": _reward_inbox_view(_team_member_profile(player_id))}
     with SOCIAL_LOCK:
         profile = _team_member_profile(player_id)
         invite = next((item for item in profile.social_battle_invites if item.get("invite_id") == invite_id), None)
@@ -3342,10 +3821,14 @@ def decline_social_battle_invite(
 
 
 @app.post("/social/{player_id}/battle-invites")
+@persistent_operation
 def create_social_battle_invite(player_id: str, request: SocialBattleInviteOperation) -> dict:
     if request.player_id != player_id:
         raise HTTPException(status_code=403, detail="Başka bir oyuncu adına işlem yapılamaz.")
     opponent_id = str(request.opponent_id).strip()
+    if RUNTIME_STRICT:
+        result = _apply_postgres_social_workflow("create_battle_invite", player_id, opponent_id, request.request_id)
+        return {**result["social"], "replayed": result["replayed"]}
     with SOCIAL_LOCK:
         profile = _team_member_profile(player_id)
         opponent = _team_member_profile(opponent_id)
@@ -3394,6 +3877,7 @@ def create_social_battle_invite(player_id: str, request: SocialBattleInviteOpera
 
 
 @app.post("/social/{player_id}/battle-invites/{invite_id}/accept")
+@persistent_operation
 def accept_social_battle_invite(
     player_id: str,
     invite_id: str,
@@ -3401,6 +3885,13 @@ def accept_social_battle_invite(
 ) -> dict:
     if request.player_id != player_id:
         raise HTTPException(status_code=403, detail="Başka bir oyuncu adına işlem yapılamaz.")
+    if RUNTIME_STRICT:
+        result = _apply_postgres_social_workflow("decide_battle_invite", player_id, invite_id, request.request_id, accept=True)
+        invite = _postgres_social_runtime().invite(player_id, invite_id)
+        if invite["status"] != "accepted" or invite.get("owner_boot_id") != RUNTIME_BOOT_ID:
+            raise HTTPException(status_code=409, detail="Bu arkadaş savaşı artık açık değil.")
+        battle = _create_unranked_social_session(invite["battle_session_id"], invite["challenger_id"], player_id, match_type="friend_battle")
+        return {**result["social"], "replayed": result["replayed"], "battle": battle}
     with SOCIAL_LOCK:
         profile = _team_member_profile(player_id)
         invite = next((item for item in profile.social_battle_invites if item.get("invite_id") == invite_id), None)
@@ -3578,6 +4069,7 @@ def _team_view(team: dict, player_id: str) -> dict:
 
 
 @app.get("/teams")
+@persistent_operation
 def list_teams() -> dict:
     return {
         "teams": [_team_summary(team) for team in team_service.list_teams()]
@@ -3585,14 +4077,15 @@ def list_teams() -> dict:
 
 
 @app.get("/teams/player/{player_id}")
+@persistent_operation
 def get_player_team(player_id: str) -> dict:
     team = team_service.team_for_player(player_id)
     profile = _team_member_profile(player_id)
+    membership = (team["team_id"], team["name"]) if team else (None, None)
+    if (profile.team_id, profile.team_name) != membership:
+        profile.team_id, profile.team_name = membership
+        persist_player_data(player_id)
     if team is None:
-        if profile.team_id or profile.team_name:
-            profile.team_id = None
-            profile.team_name = None
-            persist_player_data(player_id)
         listed_teams = team_service.list_teams()
         pending_team = next(
             (candidate for candidate in listed_teams if player_id in candidate.get("application_ids", [])),
@@ -3610,12 +4103,30 @@ def get_player_team(player_id: str) -> dict:
             ][:50],
             "request_policy": TEAM_REQUEST_POLICY,
         }
-    profile.team_id = team["team_id"]
-    profile.team_name = team["name"]
+    return _team_view(team, player_id)
+
+
+def _sync_team_membership(player_id: str) -> None:
+    # A receipt is historical evidence, not a current membership snapshot.
+    # Replaying an old acceptance/removal must not undo a later leave/join.
+    team = team_service.team_for_player(player_id)
+    profile = _team_member_profile(player_id)
+    membership = (team["team_id"], team["name"]) if team else (None, None)
+    if (profile.team_id, profile.team_name) != membership:
+        profile.team_id, profile.team_name = membership
+        persist_player_data(player_id)
+
+
+def _current_team_operation_view(team_id: str, player_id: str) -> dict:
+    try:
+        team = team_service.get_team(team_id)
+    except TeamServiceError:
+        return get_player_team(player_id)
     return _team_view(team, player_id)
 
 
 @app.post("/teams")
+@persistent_operation
 def create_team(request: TeamCreateRequest) -> dict:
     try:
         result = team_service.create_team(
@@ -3625,14 +4136,12 @@ def create_team(request: TeamCreateRequest) -> dict:
         )
     except TeamServiceError as exc:
         raise HTTPException(status_code=422, detail=str(exc)) from exc
-    profile = _team_member_profile(request.player_id)
-    profile.team_id = result["team_id"]
-    profile.team_name = result["team"]["name"]
-    persist_player_data(request.player_id)
-    return {**_team_view(result["team"], request.player_id), "replayed": result["replayed"]}
+    _sync_team_membership(request.player_id)
+    return {**_current_team_operation_view(result["team_id"], request.player_id), "replayed": result["replayed"]}
 
 
 @app.post("/teams/{team_id}/join")
+@persistent_operation
 def join_team(team_id: str, request: TeamJoinRequest) -> dict:
     try:
         result = team_service.join_team(
@@ -3657,6 +4166,7 @@ def join_team(team_id: str, request: TeamJoinRequest) -> dict:
 
 
 @app.post("/teams/{team_id}/applications/review")
+@persistent_operation
 def review_team_application(team_id: str, request: TeamApplicationActionRequest) -> dict:
     try:
         result = team_service.review_application(
@@ -3668,15 +4178,12 @@ def review_team_application(team_id: str, request: TeamApplicationActionRequest)
         )
     except TeamServiceError as exc:
         raise HTTPException(status_code=422, detail=str(exc)) from exc
-    if result["accepted"]:
-        applicant = _team_member_profile(request.applicant_id)
-        applicant.team_id = team_id
-        applicant.team_name = result["team"]["name"]
-        persist_player_data(applicant.player_id)
-    return {**_team_view(result["team"], request.player_id), "replayed": result["replayed"]}
+    _sync_team_membership(request.applicant_id)
+    return {**_current_team_operation_view(team_id, request.player_id), "replayed": result["replayed"]}
 
 
 @app.post("/teams/{team_id}/members/remove")
+@persistent_operation
 def remove_team_member(team_id: str, request: TeamMemberActionRequest) -> dict:
     try:
         result = team_service.remove_member(
@@ -3687,14 +4194,12 @@ def remove_team_member(team_id: str, request: TeamMemberActionRequest) -> dict:
         )
     except TeamServiceError as exc:
         raise HTTPException(status_code=422, detail=str(exc)) from exc
-    member = _team_member_profile(request.member_id)
-    member.team_id = None
-    member.team_name = None
-    persist_player_data(member.player_id)
-    return {**_team_view(result["team"], request.player_id), "replayed": result["replayed"]}
+    _sync_team_membership(request.member_id)
+    return {**_current_team_operation_view(team_id, request.player_id), "replayed": result["replayed"]}
 
 
 @app.post("/teams/{team_id}/leave")
+@persistent_operation
 def leave_team(team_id: str, request: TeamActionRequest) -> dict:
     try:
         result = team_service.leave_team(
@@ -3704,10 +4209,7 @@ def leave_team(team_id: str, request: TeamActionRequest) -> dict:
         )
     except TeamServiceError as exc:
         raise HTTPException(status_code=422, detail=str(exc)) from exc
-    profile = _team_member_profile(request.player_id)
-    profile.team_id = None
-    profile.team_name = None
-    persist_player_data(profile.player_id)
+    _sync_team_membership(request.player_id)
     return {
         "joined": False,
         "replayed": result["replayed"],
@@ -3721,6 +4223,7 @@ def leave_team(team_id: str, request: TeamActionRequest) -> dict:
 
 
 @app.post("/teams/{team_id}/owner/transfer")
+@persistent_operation
 def transfer_team_owner(team_id: str, request: TeamMemberActionRequest) -> dict:
     try:
         result = team_service.transfer_ownership(
@@ -3731,10 +4234,11 @@ def transfer_team_owner(team_id: str, request: TeamMemberActionRequest) -> dict:
         )
     except TeamServiceError as exc:
         raise HTTPException(status_code=422, detail=str(exc)) from exc
-    return {**_team_view(result["team"], request.player_id), "replayed": result["replayed"]}
+    return {**_current_team_operation_view(team_id, request.player_id), "replayed": result["replayed"]}
 
 
 @app.post("/teams/{team_id}/cosmetics")
+@persistent_operation
 def update_team_cosmetics(team_id: str, request: TeamCosmeticsRequest) -> dict:
     try:
         result = team_service.set_cosmetics(
@@ -3749,10 +4253,11 @@ def update_team_cosmetics(team_id: str, request: TeamCosmeticsRequest) -> dict:
         )
     except TeamServiceError as exc:
         raise HTTPException(status_code=422, detail=str(exc)) from exc
-    return {**_team_view(result["team"], request.player_id), "replayed": result["replayed"]}
+    return {**_current_team_operation_view(team_id, request.player_id), "replayed": result["replayed"]}
 
 
 @app.post("/teams/{team_id}/module-requests")
+@persistent_operation
 def create_team_module_request(team_id: str, request: TeamModuleRequest) -> dict:
     from .arena_canon import MODULES, unlocked_module_ids
 
@@ -3791,7 +4296,7 @@ def _team_donation_transaction(team_id: str, donor_id: str, module_request_id: s
         involved = [donor_id]
         try:
             if RUNTIME_STRICT:
-                with postgres_pool.transaction() as connection:
+                with postgres_pool.joined_transaction() as connection:
                     connection.execute(
                         "SELECT singleton FROM team_document WHERE singleton = TRUE FOR UPDATE"
                     )
@@ -3832,6 +4337,7 @@ def _team_donation_transaction(team_id: str, donor_id: str, module_request_id: s
 
 
 @app.post("/teams/{team_id}/module-requests/{module_request_id}/donate")
+@persistent_operation
 def donate_team_module_shard(
     team_id: str,
     module_request_id: str,
@@ -3865,6 +4371,7 @@ def donate_team_module_shard(
 
 
 @app.post("/teams/{team_id}/messages")
+@persistent_operation
 def post_team_message(team_id: str, request: TeamMessageRequest) -> dict:
     try:
         result = team_service.post_message(
@@ -3882,6 +4389,7 @@ def post_team_message(team_id: str, request: TeamMessageRequest) -> dict:
 
 
 @app.post("/teams/{team_id}/training-challenges")
+@persistent_operation
 def create_team_training_challenge(
     team_id: str,
     request: TeamTrainingChallengeRequest,
@@ -3904,6 +4412,7 @@ def create_team_training_challenge(
 
 
 @app.post("/teams/{team_id}/training-challenges/{challenge_id}/accept")
+@persistent_operation
 def accept_team_training_challenge(
     team_id: str,
     challenge_id: str,
@@ -3932,6 +4441,7 @@ def accept_team_training_challenge(
 
 
 @app.post("/teams/{team_id}/training-challenges/{challenge_id}/decline")
+@persistent_operation
 def decline_team_training_challenge(
     team_id: str,
     challenge_id: str,
@@ -4032,6 +4542,7 @@ def bootstrap_test_participant(
 
 
 @app.get("/profile/{player_id}")
+@persistent_operation
 def get_profile(
     player_id: str,
 ) -> dict:
@@ -4042,12 +4553,14 @@ def get_profile(
 
 
 @app.get("/profile/{player_id}/meta-progression")
+@persistent_operation
 def get_player_meta_progression(player_id: str) -> dict:
     profile = player_profile_service.get_or_create(player_id)
     return meta_progression_service.view(profile)
 
 
 @app.post("/profile/{player_id}/meta-progression/arena/{node_id}/claim")
+@persistent_operation
 def claim_player_arena_reward(player_id: str, node_id: str, request: MetaOperationRequest) -> dict:
     profile = player_profile_service.get_or_create(player_id)
     try:
@@ -4061,6 +4574,7 @@ def claim_player_arena_reward(player_id: str, node_id: str, request: MetaOperati
 @app.post(
     "/profile/{player_id}/meta-progression/modules/{module_definition_id}/upgrade"
 )
+@persistent_operation
 def upgrade_player_collection_module(
     player_id: str,
     module_definition_id: str,
@@ -4086,6 +4600,7 @@ def upgrade_player_collection_module(
 @app.post(
     "/profile/{player_id}/meta-progression/chests/gifts/{definition_id}/claim"
 )
+@persistent_operation
 def claim_player_progression_gift_chest(
     player_id: str,
     definition_id: str,
@@ -4111,6 +4626,7 @@ def claim_player_progression_gift_chest(
 @app.post(
     "/profile/{player_id}/meta-progression/chests/{chest_id}/open"
 )
+@persistent_operation
 def open_player_progression_chest(
     player_id: str,
     chest_id: str,
@@ -4136,6 +4652,7 @@ def open_player_progression_chest(
 @app.post(
     "/profile/{player_id}/meta-progression/chests/{definition_id}/open-all"
 )
+@persistent_operation
 def open_all_available_player_progression_chests(
     player_id: str,
     definition_id: str,
@@ -4159,6 +4676,7 @@ def open_all_available_player_progression_chests(
 
 
 @app.post("/store/{player_id}/chests/{definition_id}/buy")
+@persistent_operation
 def buy_store_chest(
     player_id: str,
     definition_id: str,
@@ -4196,12 +4714,12 @@ STORE_ECONOMY_LOCK = Lock()
 @contextmanager
 def _store_economy_transaction(player_id: str):
     """Commit a profile and its purchase/refund ledger as one unit in production."""
-    with STORE_ECONOMY_LOCK:
+    with _persistent_operation([player_id]), STORE_ECONOMY_LOCK:
         if not RUNTIME_STRICT:
             yield
             return
         try:
-            with postgres_pool.transaction():
+            with postgres_pool.joined_transaction():
                 # The platform row serializes receipt decisions across workers.
                 with platform_service._lock:
                     if player_data_repository.load(player_id) is not None:
@@ -4218,6 +4736,7 @@ def _store_economy_transaction(player_id: str):
 
 
 @app.get("/store/{player_id}")
+@persistent_operation
 def get_player_store(player_id: str) -> dict:
     profile = player_profile_service.get_or_create(player_id)
     return _player_store_view(profile)
@@ -4315,6 +4834,8 @@ STORE_REFUND_LOCK = Lock()
 
 def _existing_player_profile(player_id: str):
     """Kayıtlı oyuncunun profili; hesap silinmişse None (yeni profil açılmaz)."""
+    if RUNTIME_STRICT:
+        PERSISTENT_STATE.touch(player_id)
     profile = player_profile_service._profiles.get(player_id)
     if profile is not None:
         return profile
@@ -4491,17 +5012,18 @@ def admob_ssv_callback(request: Request) -> dict:
         view = STORE_VERIFIERS.admob.verify(request.url.query)
     except StoreVerificationError as exc:
         raise HTTPException(status_code=403, detail=str(exc)) from exc
-    try:
-        profile = player_profile_service.get(view["user_id"])
-    except PlayerProfileError:
-        # AdMob konsolunun adres doğrulama isteği ya da bilinmeyen oyuncu.
-        return {"ok": True, "ignored": True}
-    if record_verified_ad_view(profile, view, now_iso=datetime.now(timezone.utc).isoformat()):
-        persist_player_data(view["user_id"])
+    # Provider verification/key refresh is outside the economic transaction.
+    with _persistent_operation([view["user_id"]]):
+        profile = _existing_player_profile(view["user_id"])
+        if profile is None:
+            return {"ok": True, "ignored": True}
+        if record_verified_ad_view(profile, view, now_iso=datetime.now(timezone.utc).isoformat()):
+            persist_player_data(view["user_id"])
     return {"ok": True}
 
 
 @app.post("/profile/{player_id}/battles/{battle_id}/ad-reward")
+@persistent_operation
 def claim_battle_ad_reward(
     player_id: str,
     battle_id: str,
@@ -4517,10 +5039,14 @@ def claim_battle_ad_reward(
                 verified_view = verified_ad_view_for_battle(profile, battle_id)
         else:
             verify_ad_view(request.provider, test_mode=AD_TEST_MODE)
+        durable_result = PostgresBattleResults(postgres_pool).player_result(battle_id, player_id) if RUNTIME_STRICT else None
+        if RUNTIME_STRICT and durable_result is None:
+            raise PlayerProgressionError("Bu savaşın kalıcı sonucu bulunamadı; reklam ödülü verilemez.")
         receipt = player_progression_service.grant_ad_bonus(
             battle_id,
             player_id,
             now_iso=datetime.now(timezone.utc).isoformat(),
+            durable_result=durable_result,
         )
     except (StoreError, PlayerProgressionError) as exc:
         raise HTTPException(status_code=422, detail=str(exc)) from exc
@@ -4531,6 +5057,7 @@ def claim_battle_ad_reward(
 
 
 @app.put("/profile/{player_id}/meta-progression/core")
+@persistent_operation
 def select_player_core_type(
     player_id: str,
     request: CoreSelectionRequest,
@@ -4547,6 +5074,7 @@ def select_player_core_type(
 @app.post(
     "/profile/{player_id}/meta-progression/cores/{core_type_id}/skills/{skill_id}"
 )
+@persistent_operation
 def unlock_player_core_skill(
     player_id: str,
     core_type_id: str,
@@ -4571,6 +5099,7 @@ def unlock_player_core_skill(
 
 
 @app.post("/profile/{player_id}/meta-progression/cores/{core_type_id}/upgrade")
+@persistent_operation
 def upgrade_player_core(player_id: str, core_type_id: str, request: MetaOperationRequest) -> dict:
     profile = player_profile_service.get_or_create(player_id)
     try:
@@ -4582,6 +5111,7 @@ def upgrade_player_core(player_id: str, core_type_id: str, request: MetaOperatio
 
 
 @app.post("/profile/{player_id}/meta-progression/modules/{module_id}/talents/{tier}/{choice}")
+@persistent_operation
 def choose_player_module_talent(player_id: str, module_id: str, tier: str, choice: str, request: MetaOperationRequest) -> dict:
     profile = player_profile_service.get_or_create(player_id)
     try:
@@ -4593,6 +5123,7 @@ def choose_player_module_talent(player_id: str, module_id: str, tier: str, choic
 
 
 @app.post("/profile/{player_id}/meta-progression/modules/{module_id}/talents/reset")
+@persistent_operation
 def reset_player_module_talents(
     player_id: str,
     module_id: str,
@@ -4616,6 +5147,7 @@ def reset_player_module_talents(
 
 
 @app.get("/events")
+@persistent_operation
 def get_events(player_id: str | None = Query(None)) -> dict:
     """Competition hub plus viewer registration/readiness state."""
     view = _events_view()
@@ -4662,6 +5194,7 @@ def get_events(player_id: str | None = Query(None)) -> dict:
 
 
 @app.post("/events/weekly/register")
+@persistent_operation
 def register_weekly_tournament(request: EventRegistrationOperation) -> dict:
     profile = _team_member_profile(request.player_id)
     # Registration resets weekly counters, so materialize an unopened reward
@@ -4684,6 +5217,7 @@ def register_weekly_tournament(request: EventRegistrationOperation) -> dict:
 
 
 @app.post("/events/team/register")
+@persistent_operation
 def register_team_tournament(request: EventRegistrationOperation) -> dict:
     profile = _team_member_profile(request.player_id)
     _settle_competition_rewards(request.player_id)
@@ -4714,6 +5248,7 @@ def register_team_tournament(request: EventRegistrationOperation) -> dict:
 
 
 @app.post("/events/team/fixtures/{fixture_id}/check-in")
+@persistent_operation
 def check_in_team_tournament_fixture(
     fixture_id: str,
     request: EventRegistrationOperation,
@@ -4819,12 +5354,14 @@ def _daily_meta_view(profile) -> dict:
 
 
 @app.get("/profile/{player_id}/daily-meta")
+@persistent_operation
 def get_player_daily_meta(player_id: str) -> dict:
     """Return the player's immutable choice for the current UTC day."""
     return _daily_meta_view(_team_member_profile(player_id))
 
 
 @app.post("/profile/{player_id}/daily-meta/roll")
+@persistent_operation
 def roll_player_daily_meta(
     player_id: str,
     request: MetaOperationRequest,
@@ -4850,6 +5387,7 @@ def roll_player_daily_meta(
 
 
 @app.post("/profile/{player_id}/engagement/missions/{mission_id}/claim")
+@persistent_operation
 def claim_daily_mission_reward(
     player_id: str,
     mission_id: str,
@@ -4890,6 +5428,7 @@ def claim_daily_mission_reward(
 
 
 @app.post("/profile/{player_id}/engagement/login/{day}/claim")
+@persistent_operation
 def claim_login_period_reward(
     player_id: str,
     day: int,
@@ -4928,6 +5467,7 @@ def _tier_advanced_payload(
 
 
 @app.post("/profile/{player_id}/engagement/tiers/{tier}/claim")
+@persistent_operation
 def claim_season_tier_reward(
     player_id: str,
     tier: int,
@@ -4995,6 +5535,7 @@ def claim_season_tier_reward(
 
 
 @app.post("/profile/{player_id}/engagement/tiers/{tier}/premium/claim")
+@persistent_operation
 def claim_premium_season_tier_reward(
     player_id: str,
     tier: int,
@@ -5054,6 +5595,7 @@ def claim_premium_season_tier_reward(
 
 
 @app.put("/profile/{player_id}/display-name")
+@persistent_operation
 def update_profile_display_name(
     player_id: str,
     request: ProfileNameRequest,
@@ -5077,6 +5619,7 @@ def update_profile_display_name(
 
 
 @app.put("/profile/{player_id}/battle-pool")
+@persistent_operation
 def update_profile_battle_pool(
     player_id: str,
     request: ProfileBattlePoolRequest,
@@ -5101,6 +5644,7 @@ def update_profile_battle_pool(
 
 
 @app.put("/profile/{player_id}/cosmetics")
+@persistent_operation
 def update_profile_cosmetics(
     player_id: str,
     request: ProfileCosmeticsRequest,
@@ -5120,6 +5664,7 @@ def update_profile_cosmetics(
 
 
 @app.post("/profile/{player_id}/notifications/{section}/seen")
+@persistent_operation
 def mark_profile_notifications_seen(player_id: str, section: str) -> dict:
     try:
         profile = player_profile_service.mark_notifications_seen(
@@ -5145,6 +5690,7 @@ def list_battle_pool_presets(
 
 
 @app.put("/profile/{player_id}/battle-pool-presets")
+@persistent_operation
 def save_battle_pool_preset(
     player_id:str,
     request:BattlePoolPresetRequest,
@@ -5178,6 +5724,7 @@ def save_battle_pool_preset(
 
 
 @app.patch("/profile/{player_id}/battle-pool-presets/rename")
+@persistent_operation
 def rename_battle_pool_preset(
     player_id:str,
     request:BattlePoolPresetRenameRequest,
@@ -5210,6 +5757,7 @@ def rename_battle_pool_preset(
 
 
 @app.patch("/profile/{player_id}/battle-pool-presets/{preset_name}/meta")
+@persistent_operation
 def update_battle_pool_preset_meta(
     player_id:str,
     preset_name:str,
@@ -5244,6 +5792,7 @@ def update_battle_pool_preset_meta(
 
 
 @app.delete("/profile/{player_id}/battle-pool-presets/{preset_name}")
+@persistent_operation
 def delete_battle_pool_preset(
     player_id:str,
     preset_name:str,
@@ -5318,16 +5867,22 @@ def gridshard_identity() -> dict:
 
 @app.get("/health")
 async def health() -> dict:
-    player_persistence = (
-        player_data_persistence_health()
-    )
-    telemetry_persistence = (
-        telemetry_persistence_health()
+    player_persistence, telemetry_persistence = await asyncio.gather(
+        asyncio.to_thread(player_data_persistence_health),
+        asyncio.to_thread(telemetry_persistence_health),
     )
     runtime_health = await runtime_coordinator.health()
+    if RUNTIME_STRICT:
+        # Public readiness is not a database diagnostic endpoint. Exceptions
+        # can carry hostnames, paths and connection parameters.
+        player_persistence = {key: player_persistence[key] for key in ("ready", "state", "backend") if key in player_persistence}
+        telemetry_persistence = {key: telemetry_persistence[key] for key in ("ready", "state", "backend") if key in telemetry_persistence}
+        runtime_health = {key: runtime_health[key] for key in ("ready", "state", "backend", "worker_lease_ready", "latency_ms") if key in runtime_health}
     ready = bool(player_persistence["ready"]) and bool(telemetry_persistence["ready"])
+    if RUNTIME_STRICT:
+        ready = ready and bool(runtime_health["ready"]) and bool(postgres_worker_guard and postgres_worker_guard.held)
 
-    return {
+    payload = {
         "status": "ok" if ready else "degraded",
         "version": VERSION,
         "pvp_protocol_version": PVP_PROTOCOL_VERSION,
@@ -5362,6 +5917,9 @@ async def health() -> dict:
             ),
         },
     }
+    if RUNTIME_STRICT and not ready:
+        return JSONResponse(status_code=503, content=payload)
+    return payload
 
 
 def _local_ai_battle_pool(
@@ -5690,6 +6248,7 @@ def local_ai_session_snapshot(
 
 
 @app.post("/pvp/sessions")
+@persistent_operation
 def create_pvp_session(
     request: CreateSessionRequest,
 ) -> dict:
@@ -5716,6 +6275,7 @@ def create_pvp_session(
 
 
 @app.post("/pvp/sessions/{session_id}/join")
+@persistent_operation
 def join_pvp_session(
     session_id: str,
     request: JoinSessionRequest,
@@ -5745,6 +6305,7 @@ def join_pvp_session(
 
 
 @app.post("/pvp/sessions/{session_id}/setup")
+@persistent_operation
 def setup_pvp_session(
     session_id: str,
     request: SetupSessionRequest,
@@ -5888,22 +6449,26 @@ async def pvp_websocket(
     connection_id = str(uuid4())
     connected = False
 
-    try:
+    def verify_socket_identity():
+        _require_worker_ownership()
         if auth_is_required():
-            identity = participant_auth_service.verify_access_token(
-                access_token or ""
-            )
+            identity = participant_auth_service.verify_access_token(access_token or "")
             if platform_service.token_is_revoked(identity.player_id, identity.token_id):
                 raise AuthenticationError("Bu cihaz oturumu sonlandırılmış.")
             if identity.player_id != player_id:
-                raise AuthenticationError(
-                    "WebSocket oyuncu kimliği belirteçle eşleşmiyor."
-                )
+                raise AuthenticationError("WebSocket oyuncu kimliği belirteçle eşleşmiyor.")
+
+    async def authorize_socket():
+        await asyncio.to_thread(verify_socket_identity)
+        await runtime_coordinator.touch_player(player_id)
+
+    try:
         await pvp_websocket_adapter.connect(
             connection_id=connection_id,
             session_id=session_id,
             player_id=player_id,
             socket=websocket,
+            authorize=authorize_socket,
         )
         connected = True
 
@@ -5930,17 +6495,11 @@ async def pvp_websocket(
     except WebSocketDisconnect:
         pass
     except AuthenticationError as exc:
-        if not connected:
-            await websocket.close(
-                code=4401,
-                reason=str(exc),
-            )
+        await websocket.close(code=4401, reason=str(exc))
     except PvPSessionError as exc:
-        if not connected:
-            await websocket.close(
-                code=4404,
-                reason=str(exc),
-            )
+        await websocket.close(code=4404, reason=str(exc))
+    except HTTPException:
+        await websocket.close(code=1013, reason="Savaş sunucusu yeniden başlatılmayı bekliyor.")
     finally:
         if connected:
             try:
@@ -5949,6 +6508,17 @@ async def pvp_websocket(
                 )
             except PvPSessionError:
                 pass
+
+
+# Retired diagnostic/admin surfaces are explicit tombstones, not a browser
+# static-file 404/405 and never a way to restore live player data.
+@app.api_route("/web-test", methods=["GET", "POST", "PUT", "PATCH", "DELETE", "HEAD"], include_in_schema=False)
+@app.api_route("/web-test/{retired_path:path}", methods=["GET", "POST", "PUT", "PATCH", "DELETE", "HEAD"], include_in_schema=False)
+@app.api_route("/laboratory/{retired_path:path}", methods=["GET", "POST", "PUT", "PATCH", "DELETE", "HEAD"], include_in_schema=False)
+@app.api_route("/telemetry/{retired_path:path}", methods=["GET", "POST", "PUT", "PATCH", "DELETE", "HEAD"], include_in_schema=False)
+def retired_diagnostic_surface(retired_path: str = ""):
+    # /telemetry/events is a real route declared above this catch-all.
+    raise HTTPException(status_code=410, detail="Bu eski yönetim/deneme arayüzü kaldırıldı; canlı kayıtlar bu uçtan değiştirilemez.")
 
 
 # API ve WebSocket rotalarından sonra istemciyi aynı origin altında servis et.

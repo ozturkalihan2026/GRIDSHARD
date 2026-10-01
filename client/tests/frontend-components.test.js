@@ -10,6 +10,9 @@ function load(relativePath, extra = {}) {
   const sandbox = { ...extra };
   sandbox.globalThis = sandbox;
   vm.createContext(sandbox);
+  if (relativePath === path.join("src", "auth-session.js")) {
+    vm.runInContext(fs.readFileSync(path.join(ROOT, "src", "native-secure-storage.js"), "utf8"), sandbox);
+  }
   vm.runInContext(fs.readFileSync(path.join(ROOT, relativePath), "utf8"), sandbox);
   return sandbox;
 }

@@ -1,4 +1,7 @@
 from fastapi.testclient import TestClient
+from types import SimpleNamespace
+import pytest
+from app import main as gateway
 
 from app.main import (
     app,
@@ -11,11 +14,31 @@ from app.main import (
 client = TestClient(app)
 
 
+@pytest.fixture(autouse=True)
+def human_matchmaking_contract(monkeypatch):
+    # The current beta defaults to AI; these tests deliberately cover human matching.
+    monkeypatch.setattr(gateway, "MATCHMAKING_AI_ONLY", False)
+
+
 def reset():
     matchmaking_service._queue.clear()
     matchmaking_service._matches_by_player.clear()
     player_profile_service._profiles.clear()
     pvp_service._sessions.clear()
+
+
+def test_partial_provision_is_removed_and_retry_builds_a_complete_session(monkeypatch):
+    reset()
+    pair = SimpleNamespace(match_id="partial-human", player_a_id="a", player_b_id="b", opponent_type="human")
+    attach = gateway.attach_player_progression_to_session
+    with monkeypatch.context() as patch:
+        patch.setattr(gateway, "attach_player_progression_to_session", lambda *args: (_ for _ in ()).throw(RuntimeError("fixture provision failure")))
+        with pytest.raises(RuntimeError):
+            gateway._provision_match_state(pair, None)
+    assert pair.match_id not in pvp_service._sessions
+    gateway._provision_match_state(pair, None)
+    assert set(pvp_service.get_session(pair.match_id).engine.state.players) == {"a", "b"}
+    assert gateway.attach_player_progression_to_session is attach
 
 
 def test_first_player_can_discover_match_after_second_joins():

@@ -18,6 +18,7 @@ from app.schema_migrations import (  # noqa: E402
     migration_status,
     rollback_latest_migration,
 )
+from app.production_config import environment_secret
 
 
 def main() -> int:
@@ -31,7 +32,7 @@ def main() -> int:
         help="Yalnız down komutunda veri değiştiren geri almayı açıkça onaylar.",
     )
     args = parser.parse_args()
-    database_url = os.environ.get("DATABASE_URL", "").strip()
+    database_url = environment_secret("DATABASE_URL", os.environ)
     if not database_url:
         parser.error("DATABASE_URL zorunludur.")
 

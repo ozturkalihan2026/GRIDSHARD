@@ -1,27 +1,13 @@
 from fastapi.testclient import TestClient
 from app.main import app
 
-client=TestClient(app)
+client = TestClient(app)
 
-
-def test_beta21_review_status_markup():
-    html=client.get("/").text
-
-    assert (
-        'id="human-review-decision-state"'
-        in html
-    )
-    assert (
-        '<option value="hold">Beklet</option>'
-        in html
-    )
-    assert (
-        '<option value="reject">Reddet</option>'
-        in html
-    )
-    assert (
-        '<option value="revisit">İleride değerlendir</option>'
-        in html
-    )
-    assert "Yerel İnceleme Durumu" in html
-    assert "yalnız bu tarayıcıda tutulur" in html
+def test_retired_local_review_panel_is_absent_and_real_account_choices_remain():
+    html = client.get("/").text
+    for old in ('id="human-review-decision-state"', "Yerel İnceleme Durumu",
+                '<option value="revisit">'):
+        assert old not in html
+    for provider in ("google", "apple", "email"):
+        assert f'id="account-onboarding-{provider}"' in html
+    assert 'id="account-onboarding-status" role="status"' in html

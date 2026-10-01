@@ -1,0 +1,22 @@
+{
+    email {$GRIDSHARD_TLS_EMAIL}
+    # Do not enable request access logs: WebSocket URLs contain session tokens.
+}
+
+{$GRIDSHARD_HOST} {
+    encode zstd gzip
+    header {
+        Strict-Transport-Security "max-age=31536000"
+        X-Content-Type-Options "nosniff"
+        Referrer-Policy "no-referrer"
+        -Server
+    }
+    reverse_proxy relay-web:8000 {
+        health_uri /health
+        health_interval 10s
+        health_timeout 3s
+        health_headers {
+            Host {$GRIDSHARD_HOST}
+        }
+    }
+}

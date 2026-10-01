@@ -16,6 +16,8 @@ def _device_evidence(path: Path, target: str, commit_sha: str) -> Path:
         "passed": True,
         "commit_sha": commit_sha,
         "browserstack_session_id": "session-123",
+        "performance": {"duration_ms": 20000, "frame_count": 1000, "frame_ms_p95": 25,
+                        "jank_ratio": 0.01, "freeze_count": 0},
     })
 
 

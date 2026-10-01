@@ -90,6 +90,23 @@ class PostgresPool:
             finally:
                 del self._transaction_state.connection
 
+    @property
+    def in_transaction(self) -> bool:
+        return getattr(self._transaction_state, "connection", None) is not None
+
+    @contextmanager
+    def joined_transaction(self):
+        """Compose a domain operation with an existing outer unit of work.
+
+        Unlike transaction(), this deliberately does not own a nested commit.
+        Exceptions must propagate to the outer owner for rollback.
+        """
+        if self.in_transaction:
+            yield self._transaction_state.connection
+        else:
+            with self.transaction() as connection:
+                yield connection
+
     def health(self) -> dict:
         try:
             with self.connection() as connection:

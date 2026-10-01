@@ -192,7 +192,10 @@ def test_finished_match_can_be_cleared_from_every_redis_index():
     run(scenario())
 
 
-def test_gateway_provisions_owner_session_and_returns_websocket_route():
+def test_gateway_provisions_owner_session_and_returns_websocket_route(monkeypatch):
+    from fastapi import BackgroundTasks
+    from app import main as gateway
+    monkeypatch.setattr(gateway, "MATCHMAKING_AI_ONLY", False)
     async def scenario():
         from app import main as gateway
 
@@ -209,12 +212,12 @@ def test_gateway_provisions_owner_session_and_returns_websocket_route():
         gateway.player_profile_service._profiles.clear()
         try:
             first = await gateway.matchmaking_join(
-                gateway.MatchmakingJoinRequest(player_id="gateway-a")
+                gateway.MatchmakingJoinRequest(player_id="gateway-a"), BackgroundTasks()
             )
             assert first["matched"] is False
 
             second = await gateway.matchmaking_join(
-                gateway.MatchmakingJoinRequest(player_id="gateway-b")
+                gateway.MatchmakingJoinRequest(player_id="gateway-b"), BackgroundTasks()
             )
             assert second["matched"] is True
             assert second["match_owner"] == "gateway-node"
@@ -225,7 +228,7 @@ def test_gateway_provisions_owner_session_and_returns_websocket_route():
             session = gateway.pvp_service.get_session(second["session_id"])
             assert set(session.slots) == {"gateway-a", "gateway-b"}
 
-            discovered = await gateway.matchmaking_status("gateway-a")
+            discovered = await gateway.matchmaking_status("gateway-a", BackgroundTasks())
             assert discovered["matched"] is True
             assert discovered["session_id"] == second["session_id"]
         finally:
