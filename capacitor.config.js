@@ -1,5 +1,5 @@
 const localDebug = process.env.GRIDSHARD_LOCAL_DEBUG === "1";
-const appId = localDebug ? "com.gridshard.localdebug" : (process.env.GRIDSHARD_APP_ID || "com.example.gridshard");
+const appId = localDebug ? "com.gridshard.localdebug" : (process.env.GRIDSHARD_APP_ID || "com.gridshardgame.app");
 
 /** @type {import('@capacitor/cli').CapacitorConfig} */
 module.exports = {

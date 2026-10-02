@@ -35,7 +35,7 @@ Değişken yoksa ilgili doğrulayıcı kapalıdır ve o sağlayıcı reddedilir.
 
 | Değişken | Kullanım |
 | --- | --- |
-| `GRIDSHARD_GOOGLE_PLAY_PACKAGE_NAME` | Uygulama paket kimliği (`GRIDSHARD_APP_ID` ile aynı) |
+| `GRIDSHARD_GOOGLE_PLAY_PACKAGE_NAME` | `com.gridshardgame.app`; Play Console kaydı ve `GRIDSHARD_APP_ID` ile aynı kalıcı Android kimliği |
 | `GRIDSHARD_GOOGLE_PLAY_SERVICE_ACCOUNT_FILE` | Play Console'a bağlı hizmet hesabının JSON anahtar dosyası |
 
 Hizmet hesabına Play Console → Kullanıcılar ve izinler bölümünde "Finansal verileri görüntüle" ve "Siparişleri ve abonelikleri yönet" izinleri verilir. Ürünler Play Console'da yukarıdaki kimliklerle "tek seferlik ürün" olarak açılır.
@@ -55,10 +55,28 @@ Hizmet hesabına Play Console → Kullanıcılar ve izinler bölümünde "Finans
 
 ### AdMob ödüllü reklam
 
+**Güncel hesap (2 Ekim 2026):** Kullanıcı eski kuruluş AdMob hesabını yeniden kurup **bireysel** hesapla devam ettiğini bildirdi. Yeni herkese açık yayıncı satırı `google.com, pub-4974825529326987, DIRECT, f08c47fec0942fa0`; `public-site/app-ads.txt` bu satıra güncellendi. Kullanıcı yeni site paketini Cloudflare Pages'e yayımladı; gerçek `https://gridshardgame.com/app-ads.txt` adresi HTTP 200, `text/plain; charset=utf-8` ve satırın birebir eşleşmesiyle tekrar doğrulandı. Dosya yayını AdMob tarama/uygulama veya canlı reklam hazır onayı değildir.
+
+**Android AdMob uygulama kimliği:** `ca-app-pub-4974825529326987~9642213924`, kullanıcı tarafından 2 Ekim 2026'da sağlandı. Yayıncı kimliğiyle eşleşir; uygulama/reklam birimi kimlikleri yayıncı kimliğinden türetilmez. Eski hesabın kimlikleri artık aktif kurulum için kullanılmaz. Android paket adı **`com.gridshardgame.app` değişmez**; bu AdMob hesabından farklı bir tanımlayıcıdır.
+
+Üretim `android/` projesi henüz oluşturulmadı. Oluşturulduğunda `android/app/src/main/AndroidManifest.xml` içindeki `<application>` alanına aşağıdaki metadata eklenip gerçek paket içinde doğrulanmalı. Burada kayıt altına alınması manifest/SDK veya canlı reklam yapılandırmasının tamamlandığı anlamına gelmez. Yerel debug/test için Google'ın test kimlikleri ve test reklamları kullanılmalıdır.
+
+```xml
+<meta-data
+    android:name="com.google.android.gms.ads.APPLICATION_ID"
+    android:value="ca-app-pub-4974825529326987~9642213924" />
+```
+
+**Android normal ödüllü reklam birimi:** `ca-app-pub-4974825529326987/6776291719`. Kullanıcı 2 Ekim 2026'da kimliği ve **ödüllü reklam** türünü bildirdi; yeni yayıncı kimliğiyle eşleşir. Yeni birim `.env.example` içine kaydedildi; iOS birimi boş, `GRIDSHARD_ADMOB_SSV_ENABLED=0` kalır. Gerçek `.env`, SDK/native proje veya Google panelleri değiştirilmedi. Panel kaydı/kimlik, gerçek reklam gösterimi veya uygulama hazır onayı değildir.
+
+Yeni uygulama ve ödüllü birimi tekrar oluşturma. **Ödüllü geçiş** birimi yerine normal ödüllü biçim kullanılmalı. Önerilen tanınabilir ad `Android_SavasSonu_Odullu`, ödül miktarı `1`, öğesi `Savaş ödülü artırımı`. Bu miktar bir doğrulanmış izleme hakkını temsil eder; oyun ödül tutarı sunucudaki savaş kaydından hesaplanır, AdMob panelindeki etiketten bakiye eklenmez. Gerçek HTTPS oyun API'si hazır olmadan SSV adresine tanıtım sitesini veya örnek adresi yazma; UMP/onay, test cihazı ve sunucu doğrulaması tamamlanmadan canlı reklam açılmamalı.
+
+Kaynaklar: [Google Android SDK uygulama kimliği](https://developers.google.com/admob/android/quick-start), [AdMob ödüllü reklam birimi oluşturma](https://support.google.com/admob/answer/7311747?hl=tr).
+
 | Değişken | Kullanım |
 | --- | --- |
 | `GRIDSHARD_ADMOB_SSV_ENABLED` | `1` ile sunucu doğrulamasını açar |
-| `GRIDSHARD_ADMOB_REWARDED_AD_UNIT_ANDROID` | Android ödüllü reklam birimi (`ca-app-pub-…/…`) |
+| `GRIDSHARD_ADMOB_REWARDED_AD_UNIT_ANDROID` | `ca-app-pub-4974825529326987/6776291719`; yeni bireysel hesabın Android normal ödüllü reklam birimi |
 | `GRIDSHARD_ADMOB_REWARDED_AD_UNIT_IOS` | iOS ödüllü reklam birimi |
 
 AdMob'da reklam biriminin "Sunucu tarafı doğrulama" ayarına `https://<api-adresi>/ads/admob/ssv` yazılır. Akış:

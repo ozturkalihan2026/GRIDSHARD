@@ -4,7 +4,7 @@ Bu akış sıra kilitlidir: **Android gerçek cihaz → Google Play kapalı test
 
 ## Bir kez verilecek ürün kararları
 
-1. Kalıcı paket kimliğini seçin (`GRIDSHARD_APP_ID`, ör. `com.sirket.gridshard`). `com.example.gridshard` yayın için bilerek reddedilir.
+1. Kalıcı Android paket kimliği **`com.gridshardgame.app`** olarak seçildi; kullanıcı 2 Ekim 2026'da bu kimlikle Play Console uygulama oluşturma adımını tamamladığını bildirdi. Capacitor varsayılanı, `GRIDSHARD_APP_ID` ve sunucunun `GRIDSHARD_GOOGLE_PLAY_PACKAGE_NAME` ayarı aynı kimliği kullanmalıdır. `com.example.gridshard` yayın için bilerek reddedilir. Bu kayıt, mağazada yayın veya üretim erişimi onayı değildir.
 2. HTTPS üretim API adresini hazırlayın (`GRIDSHARD_API_BASE_URL`). Mobil paket backend'i içine gömmez; yalnız bu adresi runtime yapılandırmasına yazar.
 3. Backend'de `GRIDSHARD_CORS_ORIGINS=https://localhost,capacitor://localhost` değerini ayarlayın.
 4. Google Play Console, Apple Developer/App Store Connect ve BrowserStack kimliklerini GitHub secrets olarak tanımlayın.
@@ -15,7 +15,7 @@ Bu akış sıra kilitlidir: **Android gerçek cihaz → Google Play kapalı test
 
 Yayından önce Pub/Sub ve App Store bildirim adresleri kurulup denenmeli; native eklentiler Sandbox/lisans hesabıyla gerçek cihazda doğrulanmalı; bölgesel fiyat, vergi ve çocuk/ebeveyn politikaları tamamlanmalıdır. Üretimde `GRIDSHARD_PURCHASE_TEST_MODE` ve `GRIDSHARD_AD_TEST_MODE` kapalı olmalıdır. Mağaza formlarında uygulama içi satın alma ve reklam beyan edilmelidir.
 
-Paket kimliği mağazada uygulama kaydı oluşturulduktan sonra değiştirilmemelidir. Bu nedenle `android/` ve `ios/` projeleri, gerçek kimlik kesinleşmeden depoya üretilmez.
+Paket kimliği mağazada uygulama kaydı oluşturulduktan sonra değiştirilmemelidir. Android kimliği artık kesinleşti; bu karar tek başına native proje, imzalı AAB veya mağaza yayını üretmez. Gerçek HTTPS API, sağlayıcı ve imza ayarları tamamlanıp doğrulanmalıdır. `GRIDSHARD_LOCAL_DEBUG=1` ile üretilen yerel proje mağazaya yüklenmez.
 
 ## Geçici yerel Android denemesi (mağazaya yüklenmez)
 
@@ -42,7 +42,7 @@ Yerel proje önceden varsa `add android` yerine `node node_modules/@capacitor/cl
 ## Ortak mobil web paketi
 
 ```powershell
-$env:GRIDSHARD_APP_ID="com.sirket.gridshard"
+$env:GRIDSHARD_APP_ID="com.gridshardgame.app"
 $env:GRIDSHARD_API_BASE_URL="https://api.gridshard.example"
 pnpm build:mobile:web
 ```
@@ -91,7 +91,7 @@ python tools/mobile_release_gate.py --stage android `
   "schema_version": 1,
   "stage": "android_closed_test",
   "passed": true,
-  "app_id": "com.sirket.gridshard",
+  "app_id": "com.gridshardgame.app",
   "commit_sha": "tam-git-sha",
   "play_release_name": "2.1.0-beta.72",
   "completed_at": "ISO-8601"
@@ -121,7 +121,7 @@ python tools/mobile_release_gate.py --stage ios `
 ## Bu depoda otomatik olanlar / dış bağımlılıklar
 
 - Otomatik: statik mobil paket, API yönlendirme, auth/WebSocket adresleme, CORS yapılandırması, Android/iPhone tarayıcı matrisi, gerçek cihaz kanıt şeması ve sıralı yayın kapısı.
-- Dış bağımlılık: kalıcı bundle id kararı, üretim HTTPS backend'i, mağaza hesapları, imza anahtarları/provisioning, gerçek tester grupları ve mağaza panelindeki yükleme/onay işlemleri.
+- Dış bağımlılık: üretim HTTPS backend'i, sağlayıcı ayarları, imza anahtarları/provisioning, gerçek tester grupları ve mağaza panelindeki yükleme/onay işlemleri. Android paket kimliği seçildi; Apple uygulama kaydı ve provisioning henüz doğrulanmadı.
 - Para kazanma: ürün, sunucu doğrulaması ve iade kodu eklendi; bildirim kurulumu ve gerçek cihaz denemesi yayından önce tamamlanmalıdır. Mağaza formlarında uygulama içi satın alma ve reklam bulunduğu beyan edilmelidir.
 
 Resmî başvuru kaynakları: [Capacitor kurulumu](https://capacitorjs.com/docs), [Android App Bundle yükleme](https://developer.android.com/studio/publish/upload-bundle), [Google Play test kanalları](https://support.google.com/googleplay/android-developer/answer/9845334), [TestFlight genel bakış](https://developer.apple.com/help/app-store-connect/test-a-beta-version/testflight-overview).
