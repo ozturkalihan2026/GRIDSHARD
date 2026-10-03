@@ -32,8 +32,8 @@
     </div>
     <div class="boot-screen-meta">
       <span id="boot-version" class="boot-version" data-version="2.1.0-beta.72">Sürüm: 2.1.0-beta.72</span>
-      <button id="boot-player-id" class="boot-player-id" type="button" aria-label="Kimliğini kopyala" title="Kimliğini kopyala" hidden>
-        <span>Kimliğin:</span>
+      <button id="boot-player-id" class="boot-player-id" type="button" aria-label="GRIDSHARD oyuncu kimliğini kopyala" title="Oyun hesabının kimliğidir; Play Games kimliğinden farklıdır. Kopyalamak için dokun." hidden>
+        <span id="boot-player-id-label">GRIDSHARD ID:</span>
         <strong id="boot-player-id-value"></strong>
         <svg aria-hidden="true" viewBox="0 0 24 24"><rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2"/></svg>
       </button>
@@ -260,6 +260,7 @@
         <h2 id="account-onboarding-title">Devreni Güvenceye Al</h2>
         <p>İlerlemeni cihazlar arasında korumak ve hesabını kurtarabilmek için bir giriş yöntemi seç.</p>
         <div class="account-onboarding-providers">
+            <button id="account-onboarding-play-games" type="button" hidden>PLAY GAMES İLE DEVAM ET</button>
           <button id="account-onboarding-google" type="button">GOOGLE İLE DEVAM ET</button>
           <button id="account-onboarding-apple" type="button">APPLE İLE DEVAM ET</button>
         </div>
@@ -832,18 +833,49 @@
 
     <section class="settings-summary-panel" id="settings-summary-panel" data-screen-panel="settings" hidden>
       <span id="settings-title" hidden>Ayarlar</span><span hidden>Ses · Müzik · Titreşim · Grafik · Dil</span><strong id="settings-load-status" data-status="idle" hidden>Yerel önizleme</strong>
+      <div class="settings-category-tabs" role="tablist" aria-label="Ayarlar bölümleri">
+        <button id="settings-tab-general" type="button" role="tab" aria-controls="settings-panel-general" aria-selected="true" data-settings-tab="general">Genel</button>
+        <button id="settings-tab-audio" type="button" role="tab" aria-controls="settings-panel-audio" aria-selected="false" tabindex="-1" data-settings-tab="audio">Ses</button>
+        <button id="settings-tab-graphics" type="button" role="tab" aria-controls="settings-panel-graphics" aria-selected="false" tabindex="-1" data-settings-tab="graphics">Grafik</button>
+        <button id="settings-tab-account" type="button" role="tab" aria-controls="settings-panel-account" aria-selected="false" tabindex="-1" data-settings-tab="account">Hesap ve Gizlilik</button>
+      </div>
+      <section id="settings-panel-general" role="tabpanel" aria-labelledby="settings-tab-general" data-settings-panel="general">
       <div class="profile-name-form">
         <label for="profile-display-name">Görünen Oyuncu Adı</label>
         <input id="profile-display-name" type="text" maxlength="24" value="Oyuncu" autocomplete="off" />
         <button id="profile-display-name-save" type="button">Görünen Adı Değiştir</button>
-        <span id="profile-name-save-status"></span>
+        <small id="profile-name-change-note">Oyuncu adını yalnız bir kez değiştirebilirsin.</small>
+        <span id="profile-name-save-status" role="status"></span>
       </div>
+      <div class="settings-form">
+        <label>Dil
+          <select id="settings-language"><option value="tr" selected>Türkçe</option><option value="en">English</option></select>
+        </label>
+        <label class="settings-toggle"><input id="settings-vibration" type="checkbox" checked /> Titreşim</label>
+        <div class="settings-tutorial-replay">
+          <button id="settings-tutorial-replay" type="button">İlk Maç Eğitimini Tekrar Göster</button>
+          <small id="settings-tutorial-replay-status" role="status"></small>
+        </div>
+      </div>
+      <section class="settings-about-panel" aria-labelledby="settings-about-title">
+        <div><span class="screen-kicker">ÜRÜN BİLGİSİ</span><h3 id="settings-about-title">Hakkında</h3><p>GRIDSHARD · Devreni kur, çekirdeği kır.</p></div>
+        <dl><div><dt>Sürüm</dt><dd id="ui-build-version">2.1.0-beta.72</dd></div></dl>
+      </section>
+      </section>
+      <section id="settings-panel-audio" role="tabpanel" aria-labelledby="settings-tab-audio" data-settings-panel="audio" hidden>
       <div class="settings-form">
         <label>Ses <input id="settings-sound" type="range" min="0" max="100" value="100" /></label>
         <label class="settings-toggle"><input id="settings-sound-muted" type="checkbox" /> Sesi Sessize Al</label>
         <label>Müzik <input id="settings-music" type="range" min="0" max="100" value="70" /></label>
         <label class="settings-toggle"><input id="settings-music-muted" type="checkbox" /> Müziği Sessize Al</label>
-        <label><input id="settings-vibration" type="checkbox" checked /> Titreşim</label>
+        <div class="audio-preview-actions">
+          <button id="settings-preview-music" type="button">Müziği Önizle</button>
+          <button id="settings-preview-sfx" type="button">SFX Önizle</button>
+        </div>
+      </div>
+      </section>
+      <section id="settings-panel-graphics" role="tabpanel" aria-labelledby="settings-tab-graphics" data-settings-panel="graphics" hidden>
+      <div class="settings-form">
         <label>Grafik
           <select id="settings-graphics">
             <option value="dusuk">Düşük</option>
@@ -852,23 +884,9 @@
           </select>
         </label>
         <label class="settings-toggle"><input id="settings-battle-perspective" type="checkbox" checked /> Savaş Alanı Perspektifi</label>
-        <div class="settings-tutorial-replay">
-          <button id="settings-tutorial-replay" type="button">İlk Maç Eğitimini Tekrar Göster</button>
-          <small id="settings-tutorial-replay-status" role="status"></small>
-        </div>
-        <label>Dil
-          <select id="settings-language">
-            <option value="tr" selected>Türkçe</option>
-            <option value="en">English</option>
-          </select>
-        </label>
-        <label class="settings-toggle"><input id="settings-analytics-consent" type="checkbox" /> Takma kimlikli ürün analitiğine izin ver</label>
-        <p class="settings-privacy-note">İsteğe bağlıdır. Oturum, ekran, eşleştirme, savaş sonucu ve performans kategorileri 30 gün tutulur; kapattığında kayıtların silinir.</p>
-        <div class="audio-preview-actions">
-          <button id="settings-preview-music" type="button">Müziği Önizle</button>
-          <button id="settings-preview-sfx" type="button">SFX Önizle</button>
-        </div>
       </div>
+      </section>
+      <section id="settings-panel-account" role="tabpanel" aria-labelledby="settings-tab-account" data-settings-panel="account" hidden>
       <section class="account-platform-panel" aria-labelledby="account-platform-title">
         <div class="profile-section-heading"><span>HESAP VE GİZLİLİK</span><h3 id="account-platform-title">Bağlı Hesap</h3></div>
         <p id="account-platform-status">Hesap güvenliği yükleniyor…</p>
@@ -879,7 +897,7 @@
           <input id="account-verification-code" type="text" inputmode="numeric" maxlength="6" placeholder="6 haneli kod">
           <button id="account-verification-confirm" type="button">DOĞRULA</button>
         </div>
-        <div class="account-oauth-actions"><button id="account-oauth-google" type="button">GOOGLE BAĞLA</button><button id="account-oauth-apple" type="button">APPLE BAĞLA</button></div>
+        <div class="account-oauth-actions"><button id="account-oauth-play-games" type="button" hidden>PLAY GAMES BAĞLA</button><button id="account-oauth-google" type="button">GOOGLE BAĞLA</button><button id="account-oauth-apple" type="button">APPLE BAĞLA</button></div>
         <div class="account-recovery-form">
           <strong>Hesap Kurtarma</strong>
           <input id="account-recovery-identifier" type="text" maxlength="180" placeholder="Doğrulanmış e-posta veya telefon">
@@ -893,15 +911,15 @@
         <div class="account-data-actions"><button id="account-data-export" type="button">VERİLERİMİ DIŞA AKTAR</button><input id="account-delete-confirmation" type="text" placeholder="SIL oyuncu-kimliğin"><button id="account-data-delete" type="button">HESABI VE VERİLERİ SİL</button></div>
         <p>Kişisel veri kopyası oyun kaydı değildir. Kart, kupa ve ilerleme yalnız sunucuda güncellenir; dosyadan geri yüklenemez.</p>
       </section>
-      <section class="settings-about-panel" aria-labelledby="settings-about-title">
-        <div>
-          <span class="screen-kicker">ÜRÜN BİLGİSİ</span>
-          <h3 id="settings-about-title">Hakkında</h3>
-          <p>GRIDSHARD · Devreni kur, çekirdeği kır.</p>
-        </div>
-        <dl>
-          <div><dt>Sürüm</dt><dd id="ui-build-version">2.1.0-beta.72</dd></div>
-        </dl>
+      <div class="settings-form">
+        <section id="ad-privacy-panel" hidden>
+          <button id="ad-privacy-options" type="button">REKLAM GİZLİLİK TERCİHLERİ</button>
+          <p>Reklam tercihlerini Google'ın onay ekranından yönetebilirsin. Bu seçim ürün analitiği izninden ayrıdır.</p>
+          <p id="ad-privacy-status" role="status" aria-live="polite"></p>
+        </section>
+        <label class="settings-toggle"><input id="settings-analytics-consent" type="checkbox" /> Takma kimlikli ürün analitiğine izin ver</label>
+        <p class="settings-privacy-note">İsteğe bağlıdır. Oturum, ekran, eşleştirme, savaş sonucu ve performans kategorileri 30 gün tutulur; kapattığında kayıtların silinir.</p>
+      </div>
       </section>
       <nav class="profile-terminal-tabs" aria-label="Operatör terminali bölümleri"><button type="button" data-open-screen="profile">PROFİL</button><button type="button" data-open-screen="avatar">KOZMETİK</button><button type="button" data-open-screen="daily">ÖDÜLLER</button><button type="button" data-open-screen="friends">ARKADAŞ</button><button type="button" class="is-active" data-open-screen="settings">AYARLAR</button></nav>
     </section>
@@ -1187,7 +1205,7 @@
           <button id="post-match-premium-buy" type="button" hidden>SAVAŞ PREMIUM · 99,99 TL</button>
         </div>
         <div id="post-match-ad-reward" class="post-match-ad-reward" hidden>
-          <div><strong>REKLAM İZLE, ÖDÜLÜ İKİYE KATLA</strong><small id="post-match-ad-copy">Devre Kredisi ve Deneyim x2 · kupa hariç</small></div>
+          <div><strong id="post-match-ad-heading">REKLAM İZLE, ÖDÜLÜ İKİYE KATLA</strong><small id="post-match-ad-copy">Devre Kredisi ve Deneyim x2 · kupa hariç</small></div>
           <button id="post-match-ad-button" type="button">▶ REKLAM İZLE · x2</button>
         </div>
         <p id="post-match-store-status" class="post-match-store-status" role="status"></p>
@@ -1226,6 +1244,8 @@
   <!-- build:scripts -->
   <script src="./src/native-secure-storage.js"></script>
   <script src="./src/auth-session.js"></script>
+  <script src="./src/native-oauth.js"></script>
+  <script src="./src/play-games.js"></script>
   <script src="./src/native-push.js"></script>
   <script src="./src/native-store.js"></script>
   <script src="./src/relay-client.js"></script>

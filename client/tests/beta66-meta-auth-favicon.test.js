@@ -17,7 +17,9 @@ assert.ok(css.includes(".daily-meta-wheel-labels span > b"));
 assert.ok(css.includes("translateY(calc(-1 * var(--wheel-label-radius)))"));
 assert.ok(app.includes('selected?.effect_tr || ""'));
 
-assert.ok(app.includes('oauthParams.get("oauth_status")'));
+assert.ok(app.includes('oauthParams.has("oauth_status")'));
+assert.ok(app.includes('await nativeOAuth?.consume(returnUrl)'));
+assert.ok(!app.includes('completeProviderLogin(oauthExchange)'));
 assert.ok(app.includes("Yerel geliştirme kodu doğrulama alanına yerleştirildi."));
 assert.ok(app.includes('document.getElementById("account-verification-code")'));
 

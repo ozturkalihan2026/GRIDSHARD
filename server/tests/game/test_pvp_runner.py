@@ -35,6 +35,45 @@ def test_runner_interval_is_real_10hz():
     r=PvPTickRunner(s,PvPWebSocketAdapter(s))
     assert r.tick_interval_seconds==0.1
 
+
+def test_broken_socket_does_not_stop_opponents_terminal_result():
+    async def scenario():
+        s, session = running_service()
+        adapter = PvPWebSocketAdapter(s, grace_period_seconds=30)
+        class BrokenSocket(FakeSocket):
+            async def send_json(self, data):
+                raise RuntimeError("closed transport")
+        bad, good = BrokenSocket(), FakeSocket()
+        await adapter.connect(connection_id="bad", session_id="match", player_id="b", socket=bad)
+        await adapter.connect(connection_id="good", session_id="match", player_id="a", socket=good)
+        destroy_core(session.engine, "b")
+        runner = PvPTickRunner(s, adapter)
+        await runner.run_single_tick("match")
+        assert any(m["type"] == "match_finished" for m in good.sent)
+        assert good.closed
+        assert not adapter.pending_disconnect_deadlines
+    asyncio.run(scenario())
+
+
+def test_slow_projection_and_socket_are_bounded_at_match_end():
+    async def scenario():
+        s, session = running_service()
+        adapter = PvPWebSocketAdapter(s, send_timeout_seconds=.02)
+        class SlowSocket(FakeSocket):
+            async def send_json(self, data):
+                await asyncio.Event().wait()
+        good = FakeSocket()
+        await adapter.connect(connection_id="slow", session_id="match", player_id="b", socket=SlowSocket())
+        await adapter.connect(connection_id="good", session_id="match", player_id="a", socket=good)
+        async def blocked_projection(state):
+            await asyncio.Event().wait()
+        destroy_core(session.engine, "b")
+        runner = PvPTickRunner(s, adapter, match_finished_callback=blocked_projection, completion_timeout_seconds=.02)
+        await asyncio.wait_for(runner.run_single_tick("match"), timeout=.5)
+        assert any(m["type"] == "match_finished" for m in good.sent)
+        assert runner.stats_for("match").match_finished_callback_failures == 1
+    asyncio.run(scenario())
+
 def test_run_ticks_advances_engine_without_client_step():
     async def scenario():
         s,x=running_service()

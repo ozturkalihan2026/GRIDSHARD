@@ -1,6 +1,7 @@
 from __future__ import annotations
 import asyncio
 import hashlib
+import logging
 from inspect import isawaitable
 from dataclasses import dataclass
 from typing import Awaitable, Callable
@@ -32,6 +33,7 @@ class PvPTickRunner:
         snapshot_every_ticks: int = 10,
         ai_decision_interval_ms: int = 5_000,
         match_finished_callback=None,
+        completion_timeout_seconds: float = 5.0,
     ):
         self.service=service
         self.websocket_adapter=websocket_adapter
@@ -39,6 +41,7 @@ class PvPTickRunner:
         self.snapshot_every_ticks=snapshot_every_ticks
         self.ai_decision_interval_ms=max(1_000,int(ai_decision_interval_ms))
         self.match_finished_callback=match_finished_callback
+        self.completion_timeout_seconds = max(.01, float(completion_timeout_seconds))
         self.tick_interval_seconds=TICK_MS/1000.0
         self._tasks={}
         self._stats={}
@@ -132,11 +135,12 @@ class PvPTickRunner:
                         session.engine.state
                     )
                     if isawaitable(completion):
-                        await completion
-                except Exception:
+                        await asyncio.wait_for(completion, timeout=self.completion_timeout_seconds)
+                except Exception as exc:
                     # Projection failure is recorded, but the terminal result
                     # is still delivered so the battle itself never hangs.
                     stats.match_finished_callback_failures += 1
+                    logging.getLogger(__name__).warning("Battle projection requires recovery (%s)", type(exc).__name__)
 
             # Anlık görüntü her karede gitmez. Savaş arada bir karede bittiyse
             # (ör. modül ve çekirdek aynı saniyede öldü) son tahta da gönderilir;
@@ -175,5 +179,7 @@ class PvPTickRunner:
                 if session.engine.state.status != BattleStatus.RUNNING:
                     break
                 await self.sleep_func(self.tick_interval_seconds)
+        except Exception as exc:
+            logging.getLogger(__name__).error("Battle runner stopped unexpectedly (%s)", type(exc).__name__)
         finally:
             self._tasks.pop(session_id,None)

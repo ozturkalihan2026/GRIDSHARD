@@ -94,12 +94,17 @@ test("retry button resumes the guarded server startup", () => {
   assert.equal(loading.errorEl.hidden,true);
 });
 
-test("player ID is shortened on screen but copied in full, not an auth token", async () => {
+test("confirmed GRIDSHARD player ID is labeled separately from Play Games and copied in full", async () => {
   const copied = [];
   const {loading} = setup({clipboard:{writeText:async text => copied.push(text)}});
   const playerId = "wt-9ba222e4-1122-3344-5566-123456789abc";
+  assert.equal(loading.playerButtonEl.hidden,true);
+  assert.equal(await loading.copyPlayerId(),false);
   loading.setPlayerId(playerId);
   assert.equal(loading.playerButtonEl.hidden,false);
+  assert.equal(loading.playerLabelEl.textContent,"GRIDSHARD ID:");
+  assert.equal(loading.playerButtonEl.attributes["aria-label"],"GRIDSHARD oyuncu kimliğini kopyala");
+  assert.match(loading.playerButtonEl.attributes.title,/Play Games kimliğinden farklıdır/);
   assert.ok(loading.playerValueEl.textContent.length < playerId.length);
   assert.equal(await loading.copyPlayerId(),true);
   assert.deepEqual(copied,[playerId]);
@@ -107,9 +112,49 @@ test("player ID is shortened on screen but copied in full, not an auth token", a
   clearTimeout(loading._copiedTimer);
 });
 
+test("a startup retry hides the previous identity until the account is confirmed again", async () => {
+  const {loading} = setup({clipboard:{writeText:async () => {}}});
+  loading.setPlayerId("wt-confirmed-player");
+  await loading.copyPlayerId();
+  loading.fail();
+  loading.begin();
+  assert.equal(loading.playerId,"");
+  assert.equal(loading.playerValueEl.textContent,"");
+  assert.equal(loading.playerButtonEl.hidden,true);
+  assert.equal(loading.playerButtonEl.dataset.copied,undefined);
+  assert.equal(loading._copiedTimer,null);
+  assert.equal(await loading.copyPlayerId(),false);
+});
+
+test("pending clipboard feedback cannot label a changed or cleared account as copied", async () => {
+  let release;
+  const {loading} = setup({clipboard:{writeText:() => new Promise(resolve => { release = resolve; })}});
+  loading.setPlayerId("wt-first-confirmed-player");
+  const copy = loading.copyPlayerId();
+  loading.setPlayerId("wt-restored-confirmed-player");
+  release();
+  await copy;
+  assert.equal(loading.playerButtonEl.dataset.copied,undefined);
+  assert.match(loading.playerValueEl.textContent,/wt-restor/);
+  assert.equal(loading._copiedTimer,null);
+});
+
+test("startup publishes an identity only after the server continuity check succeeds", () => {
+  const app = fs.readFileSync("src/app.js","utf8");
+  assert.equal((app.match(/startupLoading\?\.setPlayerId\(/g) || []).length,1);
+  const confirmAt = app.indexOf("startupLoading?.setPlayerId(continuity.returnedPlayerId)");
+  const rejectAt = app.indexOf('throw new Error("Katılımcı kimliği sunucu hesabıyla eşleşmiyor.")');
+  assert.ok(confirmAt > rejectAt && rejectAt > app.indexOf("const continuity ="));
+  const html = fs.readFileSync("index.html","utf8");
+  assert.match(html,/<span id="boot-player-id-label">GRIDSHARD ID:<\/span>/);
+});
+
 test("boot labels, percentages, errors and ready text use language keys", async () => {
   const {loading} = setup({language:"en"});
   loading.begin();
+  assert.equal(loading.playerLabelEl.textContent,"GRIDSHARD ID:");
+  assert.equal(loading.playerButtonEl.attributes["aria-label"],"Copy your GRIDSHARD player ID");
+  assert.equal(loading.playerButtonEl.attributes.title,"This identifies your game account, not your Play Games account. Tap to copy.");
   assert.equal(loading.statusEl.textContent,"Connecting to server…");
   loading.complete("server");
   assert.equal(loading.percentEl.textContent,"25%");

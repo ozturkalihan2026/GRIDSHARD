@@ -48,3 +48,35 @@ test("mobil savaşta iki devre aynı ekranda ve tek dokunuşla yerleştirme çal
   expect(errors).toEqual([]);
   await closeActiveBattle(page);
 });
+
+test("mobil güvenli viewport'ta dock savaş düğmesini örtmez ve titreşim yatay hizalıdır", async ({page}, testInfo) => {
+  await page.addInitScript(() => localStorage.setItem("gridshard.tutorial.v1", "complete"));
+  await page.goto("/?e2e=1", {waitUntil:"domcontentloaded"});
+  await waitForParticipantReady(page);
+  const original = page.viewportSize();
+  // Native camera/top padding reduces the WebView once, with no bottom reserve.
+  // This checks the resulting web layout, not Android's actual system bars.
+  await page.setViewportSize({width:original.width, height:original.height - 48});
+  await expect(page.locator("#home-battle-button")).toBeVisible();
+  const layout = await page.evaluate(() => {
+    const battle = document.querySelector("#home-battle-button").getBoundingClientRect();
+    const dock = document.querySelector("#app-bottom-dock").getBoundingClientRect();
+    const top = document.querySelector("#app-progress-ribbon").getBoundingClientRect();
+    return {separate:battle.bottom <= dock.top + 1, dockFits:dock.bottom <= innerHeight + 1, topFits:top.top >= 0};
+  });
+  expect(layout).toEqual({separate:true, dockFits:true, topFits:true});
+  await page.locator("#lobby-profile-button").click();
+  await page.locator("#profile-summary-panel [data-open-screen=settings]").click();
+  const row = page.locator("label.settings-toggle").filter({has:page.locator("#settings-vibration")});
+  await row.scrollIntoViewIfNeeded();
+  const alignment = await row.evaluate(label => {
+    const input = label.querySelector("input").getBoundingClientRect();
+    const range = document.createRange();
+    range.selectNodeContents([...label.childNodes].find(node => node.nodeType === Node.TEXT_NODE && node.textContent.trim()));
+    const text = range.getBoundingClientRect();
+    return {centers:Math.abs(input.top + input.height / 2 - text.top - text.height / 2), horizontal:input.right < text.left};
+  });
+  expect(alignment.horizontal).toBe(true);
+  expect(alignment.centers).toBeLessThan(4);
+  await page.screenshot({path:testInfo.outputPath("settings-vibration-aligned.png")});
+});

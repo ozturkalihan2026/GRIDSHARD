@@ -11,6 +11,8 @@ Bu akış sıra kilitlidir: **Android gerçek cihaz → Google Play kapalı test
 
 ## Uygulama içi satın alma karar kapısı
 
+Google/Apple hesabı için Android sistem tarayıcısı, doğrulanmış HTTPS App Links ve cihaz doğrulamalı tek kullanımlık exchange köprüsü eklendi. Panel/dış sırlar/güncel backend/fiziksel giriş kapıları hâlâ açık: [Native OAuth kurulumu](NATIVE_OAUTH.md). App/Browser eklentileri gerçek bağlantı onayı değildir; iOS Universal Links ayrıca gereklidir. Uzak APK denetimi artık App/Browser kayıtlarını, DEX sınıflarını ve yalnız API hostu `/native-auth/android-test` yolundaki doğrulanmış HTTPS filtresini de zorunlu tutar.
+
 Ücretli sezon geçişi, Savaş Premium ve Akı/Devre Kredisi paketlerinin gerçek para akışı ile savaş sonu ödüllü reklam kodu eklendi. Sunucuda Google Play ve App Store makbuz doğrulaması, tekil teslim, Google Play tüketimi, AdMob SSV ve iade/iptal bildirimleri bulunur. Kurulum ayrıntıları: [Mağaza ve satın alma](STORE_PURCHASES.md). **Kodun eklenmesi gerçek satın almanın yayına hazır olduğu anlamına gelmez.**
 
 Yayından önce Pub/Sub ve App Store bildirim adresleri kurulup denenmeli; native eklentiler Sandbox/lisans hesabıyla gerçek cihazda doğrulanmalı; bölgesel fiyat, vergi ve çocuk/ebeveyn politikaları tamamlanmalıdır. Üretimde `GRIDSHARD_PURCHASE_TEST_MODE` ve `GRIDSHARD_AD_TEST_MODE` kapalı olmalıdır. Mağaza formlarında uygulama içi satın alma ve reklam beyan edilmelidir.
@@ -19,10 +21,11 @@ Paket kimliği mağazada uygulama kaydı oluşturulduktan sonra değiştirilmeme
 
 ## Geçici yerel Android denemesi (mağazaya yüklenmez)
 
-`GRIDSHARD_LOCAL_DEBUG=1` yalnız Git tarafından yok sayılan `.mobile-debug/android/` projesini `com.gridshard.localdebug` kimliğiyle üretir. Bu kimlik üretim hesabı veya önceki test hesaplarıyla paylaşılmaz; yayın kimliği değildir. HTTP/karma içerik izni yalnız bu modda açılır ve Android yedeği kapatılır. Özel imza anahtarı depoya veya web varlıklarına kopyalanmaz; Gradle standart yerel debug imzasını kullanır.
+`GRIDSHARD_LOCAL_DEBUG=1` yalnız Git tarafından yok sayılan `.mobile-debug/android/` projesini `com.gridshard.localdebug` kimliğiyle üretir. Bu kimlik üretim hesabı veya önceki test hesaplarıyla paylaşılmaz; yayın kimliği değildir. Debug kimliği tek başına HTTP/karma içerik izni açmaz. Bu izin yalnız ayrıca `GRIDSHARD_ALLOW_INSECURE_MOBILE_API=1` ve özel/loopback ağdaki HTTP API seçilince açılır; uzak HTTPS testinde iki izin kapalıdır. Android yedeği her iki modda da kapatılır. Özel imza anahtarı depoya veya web varlıklarına kopyalanmaz; Gradle standart yerel debug imzasını kullanır.
 
 ```powershell
 $env:GRIDSHARD_LOCAL_DEBUG="1"
+Remove-Item Env:GRIDSHARD_REMOTE_DEBUG -ErrorAction SilentlyContinue
 $env:GRIDSHARD_API_BASE_URL="http://TELEFONUN_ERISEBILDIGI_YEREL_IP:8879"
 $env:GRIDSHARD_ALLOW_INSECURE_MOBILE_API="1"
 pnpm build:mobile:web
@@ -41,13 +44,58 @@ Yerel proje önceden varsa `add android` yerine `node node_modules/@capacitor/cl
 
 ## Ortak mobil web paketi
 
+### Ayar kategorileri ve tek oyuncu adı değişimi (3 Ekim r7)
+
+Ayarlar **Genel / Ses / Grafik / Hesap ve Gizlilik** alt sekmelerine ayrılır. Genel: oyuncu adı, dil, titreşim, eğitim ve sürüm; Ses: ses/müzik ve önizleme; Grafik: kalite ve savaş perspektifi; Hesap ve Gizlilik: sağlayıcı bağlantıları, kurtarma, cihazlar/bildirim, veri dışa aktarımı/silme ve analitik rızası. Mevcut otomatik kaydetme ve TR/EN metinleri korunur.
+
+Oyuncu adını değiştirme hakkı cihaz başına değil **oyun hesabı başına bir kez** verilir ve sunucuda profil verisiyle saklanır. Başarısız/geçersiz/taken ad hakkı tüketmez; aynı normalize ada tekrar gönderim idempotenttir. Değiştirmeden önce açık uyarı/onay vardır; hak kullanıldıktan sonra alan ve düğme kilitlenir. Sayaçsız eski profilde otomatik `Pilot-XXXXXXXX` adı veya değişmemiş hesap kimliği ilk hakkını korur; mevcut özel ad zaten kullanılmış sayılır. Play Games bağlantısı/yeniden kurulum/sunucu yeniden başlatma yeni hak vermez; gerçek hesap kimliği değiştirilmez.
+
+Tablet dokunmatik genişliğinde (en az 600 CSS px) oyun kabuğu ekran genişliğine uyarlanır; masaüstünün portre önizlemesi korunur. Dock'un yuvarlak fiziksel köşelerden yatay küçük payı vardır; altta kalıcı Android gezinme alanı eklenmez. 360/800 genişlik ve Android Chrome/iPhone Safari emülasyonu fiziksel tablet/telefon köşe ve OEM sistem çubuğu teyidinin yerine geçmez.
+
+### Uzak HTTPS Android debug denemesi (mağazaya yüklenmez)
+
+Cloudflare HTTPS/WSS ve HTTP→HTTPS doğrulandıktan sonra, kullanıcı kararıyla **ayrı** `GRIDSHARD_REMOTE_DEBUG=1` paketi hazırlanır: kimlik `com.gridshard.remotedebug`, ad **GRIDSHARD TEST**, kaynak/çıktı `.mobile-debug/remote-android/`. `GRIDSHARD_LOCAL_DEBUG=1` de gereklidir; kalıcı mağaza kimliği değiştirilmez. Eski yerel uygulama, cihaz verisi ve debug projesi korunur; eski hesaplar yeni uygulamaya veya temiz sunucuya aktarılmaz. Yerel HTTP istisnası uzak modda bayrak verilse bile reddedilir; manifest ve Capacitor ağ politikası HTTPS-only olarak eşitlenir.
+
 ```powershell
+$env:GRIDSHARD_LOCAL_DEBUG="1"
+$env:GRIDSHARD_REMOTE_DEBUG="1"
+$env:GRIDSHARD_API_BASE_URL="https://play.gridshardgame.com"
+Remove-Item Env:GRIDSHARD_ALLOW_INSECURE_MOBILE_API -ErrorAction SilentlyContinue
+pnpm build:mobile:web
+# Proje yoksa add, varsa sync kullanılır; eski proje silinmez.
+node node_modules/@capacitor/cli/bin/capacitor sync android
+$env:JAVA_HOME="C:\Program Files\Android\Android Studio\jbr"
+$env:ANDROID_HOME="C:\Users\S-A\AppData\Local\Android\Sdk"
+Set-Location .mobile-debug/remote-android
+.\gradlew.bat assembleDebug
+if ($LASTEXITCODE -ne 0) { throw "Android HTTPS debug derlemesi başarısız." }
+Set-Location ../..
+& ./tools/audit-mobile-debug.ps1 -RemoteDebug -ApkPath ".mobile-debug/remote-android/app/build/outputs/apk/debug/app-debug.apk" -ExpectedApiBaseUrl "https://play.gridshardgame.com"
+```
+
+Denetim web dosyalarını içerik özetiyle karşılaştırır, özel anahtar/test/QA/geliştirme dosyalarını reddeder, HTTPS için plaintext/karma içerik ve Android yedeğinin kapalı olduğunu kontrol eder. SecureStorage native köprüsünün kaydı ve derlenmiş sınıfı da zorunludur; bu statik kontrol gerçek cihazda güvenli kayıt, soğuk açılış ve hesabın geri gelmesi denemesi yerine geçmez. Debug kancası varsayılan olarak AdMob SDK açılış çökmesini önlemek için Google'ın resmi örnek uygulama kimliğini ekler; yalnız aşağıdaki açık HTTPS debug yapılandırması yayıncı kimliğini kullanabilir. Hiçbiri sunucu SSV/gerçek reklam kapısını açmaz ([resmi kurulum](https://developers.google.com/admob/android/quick-start)). APK debug imzalıdır; Play yayını/gerçek satın alma/SSV/OAuth/push onayı değildir.
+
+### Kontrollü AdMob native paketi (3 Ekim r8)
+
+`GRIDSHARD_ADMOB_TEST_CONFIG` yalnız `GRIDSHARD_LOCAL_DEBUG=1`, `GRIDSHARD_REMOTE_DEBUG=1` ve açık HTTPS API ile kullanılabilir. Yol gerçek dosya çözümlemesinden sonra ignored `artifacts/` içinde kalmalıdır. JSON'un yalnız `appId`, `adUnitId`, `testingDevices` alanları bulunabilir; aynı yayıncının geçerli public app/birim kimlikleri, en çok sekiz SDK test cihazı özeti (32 büyük hex) kabul edilir. Sır/AAID/OAuth JSON'u veya ekstra alan kabul edilmez. Cihaz listesi boşsa mod **`ump-only`** olur ve kendi birimi yüklenemez; doluysa SDK test cihazı true denetimi yükleme öncesinde zorunludur.
+
+Normal build'de bu ortam değişkeni yoksa mod `disabled`, demo app ID ve boş cihaz listesi üretilir. Yayın hazırlanırken `GRIDSHARD_ADMOB_TEST_CONFIG` kaldırılmalıdır; test yapılandırması otomatik üretim ayarı değildir. Native `verifyLiveBuild` debug ve `ump-only` paketleri reddeder; şu an hiçbir helper production `live` yetkilendirmesi üretmez. Sunucu compatibility beyanı bir native build/test cihazı doğrulaması yerine geçmez.
+
+Android kancası Ads SDK `25.4.0` doğrudan bağımlılığını sabitler, ölçüm başlangıcını erteler ve `AD_ID` / üç AdServices iznini manifest birleşiminden çıkarır. Denetimde yayıncı paketi için `-ExpectedAdMobAppId` ve `-ExpectedAdMobMode ump-only|test` birlikte ve `-RemoteDebug` ile verilmelidir. `GridshardAdSafety` derlenmiş sınıfı, mod/kaynaklar, APK web hash'leri, güvenli depo ve mevcut PGS kimlikleri ayrıca doğrulanır; binary manifest izinleri AAPT ile kontrol edilir.
+
+Son r8: `artifacts/mobile-https-20261003/GRIDSHARD-TEST-2.1.0-beta.72-20261003-r8.apk`, versionCode **8**, versionName **2.1.0-beta.72-https-debug.8**, mobile build **`47f0ff6d889e01cd`**, **21.348.913 byte**, SHA-256 **`d11c6b3569b8ed4f610bd42a606eb7ec4c36b14a1d055602403304453b58e143`**. Mode `ump-only`; test cihazı listesi boş, canlı birim yetkisi yok. `com.gridshard.remotedebug` / min24 / target36 ve r7 ile aynı debug sertifika özeti (`942ec01abb22d136744ac0103c8d566f9316b831d1ab6b002bf2e599f9a36a96`) doğrulandı. Eski r7 dosyası/hash'i korunur. Yeni paket bu tur telefona kurulmadı; gerçek UMP/native cihaz denemesi ayrıca yapılacaktır. Mobil `dist` web sunucusuna kopyalanmaz.
+
+```powershell
+Remove-Item Env:GRIDSHARD_LOCAL_DEBUG -ErrorAction SilentlyContinue
+Remove-Item Env:GRIDSHARD_REMOTE_DEBUG -ErrorAction SilentlyContinue
+Remove-Item Env:GRIDSHARD_ALLOW_INSECURE_MOBILE_API -ErrorAction SilentlyContinue
+Remove-Item Env:GRIDSHARD_ADMOB_TEST_CONFIG -ErrorAction SilentlyContinue
 $env:GRIDSHARD_APP_ID="com.gridshardgame.app"
 $env:GRIDSHARD_API_BASE_URL="https://api.gridshard.example"
 pnpm build:mobile:web
 ```
 
-Komut web yayınıyla aynı üretim hattını kullanır (`tools/build-client.js`, ayrıntı: [Üretim istemci paketi](CLIENT_BUILD.md)). JS ve CSS'yi içerik özetli tek pakete derler, `dist/` içine yalnız izin verilen varlıkları kopyalar ve HTTPS API adresini ayrı `dist/runtime-config.js` dosyasına yazar. Önce `pnpm install --frozen-lockfile --ignore-scripts` ile sabit `esbuild` kurulmalıdır. HTTP adresleri ancak açık yerel geliştirme bayrağıyla kabul edilir; mağaza adayı için kabul edilmez.
+Komut web yayınıyla aynı üretim hattını kullanır (`tools/build-client.js`, ayrıntı: [Üretim istemci paketi](CLIENT_BUILD.md)). JS ve CSS'yi içerik özetli tek pakete derler, `dist/` içine yalnız izin verilen varlıkları kopyalar ve HTTPS API adresini ayrı `dist/runtime-config.js` dosyasına yazar. Önce `pnpm install --frozen-lockfile --ignore-scripts` ile sabit `esbuild` kurulmalıdır. HTTP adresleri ancak iki açık yerel debug bayrağı ve özel/loopback host ile kabul edilir; mağaza adayı için kabul edilmez. `tools/mobile-network-policy.js` derleme, Capacitor ve Android manifesti için ortak sözleşmedir; Docker builder bu yardımcıyı da kopyalar, son runtime image'a girmez.
 
 ### Mobil ses biçimleri
 
@@ -57,7 +105,7 @@ Paketten önce `python tools/encode_mobile_audio.py` ile OGG/AAC türevleri üre
 
 ### Yerel portre yönü
 
-`mobile:add:android` / `mobile:add:ios` komutları yerel proje üretildikten sonra `tools/configure-native-orientation.js` aracını uygular. Sonraki `cap sync` işlemlerinde aynı araç `capacitor:sync:after` kancasıyla tekrar çalışır. İşlem tekrar çalıştırılabilir; uygulama kimliği, izinler ve diğer etkinlikler değiştirilmez.
+`mobile:add:android` / `mobile:add:ios` komutları yerel proje üretildikten sonra `tools/configure-native-orientation.js` aracını uygular. Sonraki `cap sync` işlemlerinde aynı araç `capacitor:sync:after` kancasıyla tekrar çalışır. İşlem tekrar çalıştırılabilir; mevcut uygulama kimliği ve diğer etkinlikler değiştirilmez. Android application üzerinde ortak ağ/yedek politikası, debug modunda varsayılan örnek AdMob metadata'sı (açık test yapılandırmasında kontrollü yayıncı ID'si) ve native reklam kapıları ayrıca uygulanır.
 
 - Android: yalnız `MainActivity` için `android:screenOrientation="portrait"`.
 - iPhone/iPad: `UISupportedInterfaceOrientations` ve `UISupportedInterfaceOrientations~ipad` yalnız portre; eski iPad sürümleri için `UIRequiresFullScreen=true`.
@@ -66,7 +114,11 @@ Paketten önce `python tools/encode_mobile_audio.py` ile OGG/AAC türevleri üre
 
 ### Tam ekran ve arka plan sesi
 
-Capacitor 8'in yerleşik `SystemBars` ayarı uygulama açılırken üst durum ve alt gezinme çubuklarını gizler. İstemci `viewport-fit=cover` ile kullanılabilir alanı doldurur ve uygulama odağa dönünce çubukları yeniden gizler. Android'in sistem kenar kaydırmasıyla çubukları geçici göstermesi normaldir; sistem gezinmesi kalıcı olarak engellenmez.
+Capacitor 8'in yerleşik `SystemBars` ayarı uygulama açılırken üst durum ve alt gezinme çubuklarını gizler. Android'de sync kancası `tools/native-templates/GridshardActivity.java` kaynağını projeye kopyalar ve mevcut `MainActivity` kimliği/kodu korunarak bu etkinlikten türetir. `insetsHandling=disable` ile tek inset sahibi native etkinliktir: kamera/durum alanı üstte ve gerekli yan kenarlarda görünürlükten bağımsız olarak, oyun arka plan rengi `#07142B` üzerinde korunur. **Altta gezinme çubuğu için kalıcı boşluk yoktur; oyun fiziksel alt kenara kadar uzanır.** Sistem tuşları geçici olarak oyunun üstüne açılır; WebView viewport'u ve dock yeniden boyutlanmaz/yer değiştirmez. Gezinme inset'i de tüketilir, WebView/CSS bu boşluğu yeniden ekleyemez. Klavye açılınca yalnız IME yüksekliği alt alanı daraltır, yazma engellenmez. Şeffaf çubuklar kenar kaydırmasıyla geçici açılır; oyuna dokunup bırakınca veya odak geri gelince yeniden gizlenir. OS/OEM erişilebilirlik politikaları şeffaflığı/gizlenmeyi sınırlayabilir; sistem gezinmesi kalıcı engellenmez. Bu karar 3 Ekim'deki önceki üst+alt kalıcı boşluk politikasının yerine geçer.
+
+APK, Capacitor ile paketlenmiş **hibrit uygulamadır**: HTML/CSS/JavaScript oyun arayüzü APK içindeki yerel varlıklardan Android WebView'da çalışır; hesaplar, eşleştirme ve diğer API çağrıları HTTPS/WSS ile sunucuya bağlanır. `server.url` ile uzaktaki web sitesini açan bir paket değildir. Android WebView'ın Chrome user-agent bilgisi tarayıcı oturumu anlamına gelmez. Native oturum adı artık `ANDROID · GRIDSHARD` (iOS için `IOS · GRIDSHARD`), gerçek web tarayıcısı ise `WEB · Chrome/Edge/Safari` olarak kaydedilir. Yeni oturum açılırken mevcut cihaz kimliği korunarak adı güncellenir; uygulamayı/veriyi silmek gerekmez.
+
+Kaynaklar: [Android immersive mode](https://developer.android.com/develop/ui/views/layout/immersive), [edge-to-edge ve üç düğmeli gezinme kontrastı](https://developer.android.com/develop/ui/views/layout/edge-to-edge).
 
 Ses yöneticisi görünürlük, sayfadan ayrılma ve yerel uygulama odak kaybında müzik ile efektleri durdurur; öne gelince mevcut oyun ekranının müziğini yeniden başlatır. Yeni APK için mobil web paketini yeniden derleyip `cap sync android` ve `assembleDebug` çalıştırmak gerekir; eski APK bu değişiklikleri taşımaz. Gerçek cihaz kontrolü: soğuk açılışta iki sistem çubuğu gizli, Ana Ekran/Son Uygulamalar veya bildirim paneline geçince müzik sessiz, geri dönünce müzik tekrar duyulur; savaş, giriş ve klavye ekranlarında kesilme/taşma ayrıca gözlenir.
 

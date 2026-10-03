@@ -361,6 +361,7 @@ def store_view(profile, *, purchase_test_mode: bool, ad_test_mode: bool, platfor
             "purchase_platforms": dict(platforms.get("purchase_platforms") or {"google_play": False, "app_store": False}),
             "ad_platforms": dict(platforms.get("ad_platforms") or {"admob": False}),
             "ad_units": dict(platforms.get("ad_units") or {}),
+            "ad_policy": platforms.get("ad_policy"),
         },
         "season_pass": {
             **_product_view(PRODUCTS_BY_ID["season_pass_premium"]),

@@ -40,10 +40,15 @@ server/data/*.schema-v*-*.bak
 server/data/product_analytics.json*
 server/data/*.lock
 secrets/
+/artifacts/
 **/google-services.json
 **/GoogleService-Info.plist
 *.p8
 *firebase-adminsdk*.json
+**/google_oauth_client_secret
+**/apple_oauth_client_secret
+**/play_games_client_secret
+**/client_secret*.json
 !/.github/
 /.github/*
 !/.github/workflows/

@@ -2,7 +2,7 @@
 
 ## Durum ve kapsam
 
-Beta.72 tur 9'da ürünler ve fiyatlar (`server/app/store_catalog.py`), tur 10'da gerçek mağaza ve reklam doğrulaması (`server/app/store_verification.py`), tur 11'de iade ve iptal bildirimleri eklendi. **Gerçek ödeme ve gerçek reklam henüz hiçbir cihazda denenmedi.** Test, sunucu ve mobil proje üretimi çalıştırılmadı (kullanıcı kararı); doğrulama statiktir.
+Beta.72 tur 9'da ürünler ve fiyatlar (`server/app/store_catalog.py`), tur 10'da gerçek mağaza ve reklam doğrulaması (`server/app/store_verification.py`), tur 11'de iade ve iptal bildirimleri eklendi. 3 Ekim'de Google örnek ödüllü reklamı fiziksel Android cihazında açılıp kapandı; yerel testler ve kontrollü r8 Android derlemesi tamamlandı. **Gerçek ödeme, yayıncının kendi biriminde doğrulanmış test gösterimi ve gerçek Google imzalı SSV/oyun ödülü henüz uçtan uca doğrulanmadı.** Canlı sağlayıcılar kapalıdır; aşağıdaki eski tarihli kayıtlar o aşamanın kapsamını belirtir.
 
 | Ürün | Mağaza ürün kimliği | Fiyat | Tür |
 | --- | --- | --- | --- |
@@ -73,19 +73,69 @@ Yeni uygulama ve ödüllü birimi tekrar oluşturma. **Ödüllü geçiş** birim
 
 Kaynaklar: [Google Android SDK uygulama kimliği](https://developers.google.com/admob/android/quick-start), [AdMob ödüllü reklam birimi oluşturma](https://support.google.com/admob/answer/7311747?hl=tr).
 
+#### UMP ve erken reklam kapatma (3 Ekim 2026, yerel devam)
+
+`native-store.js` sunucunun AdMob sağlayıcısı açıkken yeni uygulama açılışında UMP bilgisini sorgular. Açılış sorgusu oyun yüklemesini veya reklam SDK başlatılmasını bekletmez; reklam gösterimi öncesi SDK'nın `canRequestAds` sonucu **gerçek boolean true** olmalıdır. Rıza uygulamanın kendi localStorage bayrağından çıkarılmaz. Sorgu hatası bu uygulamada reklamı kapalı bırakır, normal oyun devam eder. `canRequestAds` kişiselleştirilmiş reklama rıza anlamına gelmez. Aşağıdaki çocuk/yaşı bilinmeyen korumasında beklenmeyen `REQUIRED` sonucu form açmak yerine reklamı engeller. [Resmî UMP rehberi](https://developers.google.com/admob/android/privacy).
+
+UMP gerekli diyorsa **Ayarlar > Hesap ve Gizlilik > Reklam Gizlilik Tercihleri** görünür. Bu seçim analitik izninden ayrıdır. Formdan sonra UMP yeniden sorgulanır; hata eski yetkiyle reklam başlatmaz. Tek işlem kilidi ve arka plan yenileme koruması form/ödüllü gösterim yarışını engeller.
+
+Yüklü `@capacitor-community/admob` 8.1.0 uygulamasında ödül kazanılmadan kapama/gösterim hatası, ödül promise'ini sonuçlandırmayabilir. Köprü gösterimden önce ödül, kapama ve gösterim-hatası dinleyicileri kurar; bitişte temizler. Erken kapama ve hata kilidi serbest bırakır ve ödül istemez. Ödül kazanılsa da reklam kapanmadan oyun ödül çağrısı yapılmaz; istemci olayı SSV yerine geçmez.
+
+Panel kurulumu mevcut GRIDSHARD uygulamasını/reklam birimini kullanır; yeniden oluşturulmaz. Mesaj adı için `GRIDSHARD Reklam Gizlilik Onayı`, Türkçe/İngilizce önizleme, görünür reddetme seçeneği ve gizlilik URL'si `https://gridshardgame.com/privacy/` gözden geçirilir. Hedefleme açık bir panel seçimidir; yalnız GDPR ülkeleri seçilmişse Türkiye cihazında otomatik form çıkacağı varsayılmaz. Test coğrafyası yalnız kayıtlı debug test cihazında kullanılır, yayın koduna taşınmaz. [Google mesaj oluşturma adımları](https://support.google.com/admob/answer/10113207?hl=tr).
+
+**Mesaj/test cihazı teyidi (3 Ekim):** Kullanıcının panel ekranında `GRIDSHARD Reklam Gizlilik Onayı` mevcut GRIDSHARD uygulamasına bağlı, Türkçe +1 dil ve **Yayınlandı** durumundadır. Reddetme düğmesi masaüstü/dikey önizlemede görünür. Kullanıcı daha sonra AdMob test cihazı kaydını tamamladığını bildirdi; AAID depoya/sohbete aktarılmadı. Bu, gerçek cihazda form gösterimi veya canlı reklam hazır onayı değildir. [Google test cihazı kurulumu](https://support.google.com/admob/answer/9691433?hl=tr).
+
+#### Çocukları da kapsayan kitle — korumalı yerel hazırlık
+
+Kullanıcı oyunun genel kitleye yönelik olduğunu, çocukların daha çok oynayabileceğini bildirdi. Yetişkin-only kabulü yapılmaz. İncelenmiş tarafsız yaş akışı olmadığı için mevcut **yerel** köprü bütün reklam isteklerini çocuk/yaşı bilinmeyen korumasında tutar; yaş/doğum tarihi toplamaz veya Play Games bağlantısından yaş çıkarmaya çalışmaz:
+
+- UMP sorgusu: `tagForUnderAgeOfConsent:true`. Bu sinyal UMP'den reklam SDK'sına otomatik aktarılmaz. Bu durumda Google onay formu istemeyebilir; form çıkmaması tek başına bozuk UMP kanıtı değildir. Beklenmeyen `REQUIRED`, önceki `canRequestAds:true` ile dahi reklam açmaz. [Google UMP yaş etiketi](https://developers.google.com/admob/android/privacy/gdpr).
+- Reklam SDK başlatma: `tagForChildDirectedTreatment:true`, `maxAdContentRating:"General"` (G). Yüklü AdMob 8.1.0 Android/iOS kodunda yapılandırma `MobileAds.initialize/start` öncesindedir. Reklam SDK çağrısında eski TFCD ve TFUA aynı anda true yapılmaz; UMP'deki TFUA ayrı çağrıdır. Her ödüllü istekte ayrıca `npa:true` kullanılır. Güncel Google rehberindeki yeni `ageRestrictedTreatment` API'si bu eklentinin public seçeneklerinde bulunmaz; desteklenmeyen seçenek gönderilmedi, mevcut legacy çocuk etiketi kullanıldı. [Google hedefleme/yaş/içerik rehberi](https://developers.google.com/admob/android/targeting).
+- Bu seçenekler tek başına Families uyumluluk onayı değildir. Karma kitle için tarafsız yaş akışı, Play Console gerçek hedef yaş grupları, SDK sürümü/manifest izinleri ve başlatma ölçümü, sosyal/PGS/veri paylaşımı, gizlilik metni ve veri güvenliği beyanları **genel yayın kapısı** olarak ayrıca incelenmelidir. [Google Play Families politikası](https://support.google.com/googleplay/android-developer/answer/9893335?hl=en), [sertifikalı SDK listesi](https://support.google.com/googleplay/android-developer/answer/12955712?hl=en-GB).
+
+Çocuk etiketi Android reklam kimliğinin iletimini engeller. Bu nedenle panelde AAID ile kayıt yapılmış olmasından kendi reklam biriminin mutlaka test modunda olacağı çıkarılmaz. Kontrollü cihaz/SDK test doğrulaması olmadan kendi birimine istek yapılmaz. İlk güvenli cihaz denemesinde Google demo ödüllü birimi kullanılabilir, fakat demo birimi yayıncının SSV uç noktasına bağlı değildir ve **gerçek oyun ödülü/SSV başarı kanıtı sayılmaz**. [Google test reklam rehberi](https://developers.google.com/admob/android/test-ads).
+
+Canlı sunucu SSV/AdMob sağlayıcısı kapalı kalır. Eski r7 APK bu yeni UMP/çocuk korumasını taşımadığından, sağlayıcıyı herkese açmak eski istemcileri de etkiler; cihaz testi ve eski istemciyi engelleyen kontrollü açma kapısı kurulmadan global etkinleştirme yapılmaz. Mevcut APK/signer/profil korunur; kaldırıp kurma veya veri temizleme yapılmaz.
+
+**Açık yayın kapıları:** Gerçek AdMob uygulama kimliğiyle UMP cihaz testi, test cihazı/test reklam işaretleri, hedef kitle/çocuk ayarları ve imzalı SSV ödül tekliği. Güncel r7 debug APK örnek Google uygulama kimliğini kullanır; yalnız panel kaydı bu paketi gerçek UMP mesajına bağlamaz. Üretim sağlayıcısı/SSV bu yerel değişiklikle açılmadı, yeni APK üretilmedi. Kamuya açık gizlilik metnindeki yayın öncesi sağlayıcı/saklama bilgileri de genel yayın öncesi tamamlanmalıdır.
+
+#### USB cihaz denemesi — Google demo birimi (3 Ekim 2026)
+
+Fiziksel r7 Android cihazında, uygulamanın kendi debug WebView'ına yalnız bu oturum için eklenen düğmeyle son yerel köprü RAM içinde denendi. Reklam ancak kullanıcının dokunuşuyla açıldı. Google demo ödüllü ID'si, `isTesting:true`, `npa:true` zorlandı; SSV bilgisi gerçek native isteğe gönderilmedi ve oyun ödül uç noktası çağrılmadı. UMP'ye `tagForUnderAgeOfConsent:true` gönderildi; sonuç `NOT_REQUIRED / canRequestAds:true`, gizlilik tercih gereksinimi `NOT_REQUIRED` oldu. SDK çocuk/G yapılandırmasından sonra demo birimini yükledi. Gösterim, kazanım ve kapama olayları alındı; sonunda dinleyici sayısı sıfır ve reklam işlem kilidi serbestti. Kullanıcı reklamın açılıp kapandığını teyit etti. Geçici test düğmesi/durum nesnesi ve ADB portları temizlendi; APK kurulmadı veya hesap verisi değiştirilmedi.
+
+Bu deneme native SDK gösterimi ve köprünün kazanım/kapama temizliğini doğrular; r7'ye yeni kaynakların kalıcı kurulumu, yayıncının UMP mesajı, kendi biriminde test cihazı güvenliği veya imzalı SSV/gerçek ek ödül doğrulaması değildir. Çocuk etiketiyle `NOT_REQUIRED` görülmesi yetişkin rızası olarak yorumlanmaz. Fiziksel erken kapama henüz denenmedi; offline demo helper testleri **6/6** ile erken kapama/UMP engeli/yanlış birim/vazgeçme ve kullanıcı dokunuşu öncesi sıfır SDK isteğini kapsar. Kontrollü yeni native paket ve eski istemci reklam kapısı olmadan üretim sağlayıcısı açılmaz.
+
 | Değişken | Kullanım |
 | --- | --- |
 | `GRIDSHARD_ADMOB_SSV_ENABLED` | `1` ile sunucu doğrulamasını açar |
+| `GRIDSHARD_ADMOB_ROLLOUT_MODE` | Varsayılan `disabled`; doğrulayıcının açılması tek başına istemcide reklam açmaz. `test` yalnız açık izin listesini, `live` genel yayın kapısını seçer. |
+| `GRIDSHARD_ADMOB_TEST_PLAYER_IDS` | Yalnız `test` modunda gerekli, virgülle ayrılmış özel oyuncu izin listesi; istemciye yayımlanmaz. Diğer modlarda dolu olması veya test modunda boş olması başlangıcı reddeder. |
 | `GRIDSHARD_ADMOB_REWARDED_AD_UNIT_ANDROID` | `ca-app-pub-4974825529326987/6776291719`; yeni bireysel hesabın Android normal ödüllü reklam birimi |
 | `GRIDSHARD_ADMOB_REWARDED_AD_UNIT_IOS` | iOS ödüllü reklam birimi |
 
-AdMob'da reklam biriminin "Sunucu tarafı doğrulama" ayarına `https://<api-adresi>/ads/admob/ssv` yazılır. Akış:
+### Kontrollü açma kapısı ve r8 (3 Ekim)
+
+Sunucu `/store/{player_id}` ve satın alma dönüşünde yalnız o istekteki `ad_protocol=child-safe-v1&ad_platform=android|ios` beyanını kabul eder. Sağlayıcı, platform birimi ve açma politikası uygun değilse reklam birimi/`ad_policy` verilmez. Beyan kaydedilmez; eski APK'nın normal isteği kapalı kalır. **Bu protokol cihaz doğrulaması veya onay kanıtı değildir**; kimlik doğrulama, native UMP/yaş koruması ve Google imzalı SSV ayrı kapılardır. AdMob ödül talebi aynı beyanı ve platformu gerektirir. Satın alma doğrulayıcıları bundan bağımsızdır.
+
+Android `GridshardAdSafety` testte debug paketini, aynı yayıncı app/birim kimliğini ve SDK test cihazı yapılandırmasını doğrular. SDK `AdRequest.isTestDevice` sonucu yüklemeden önce true olmalıdır; yüklenen birim de beklenen kimlikle karşılaştırılır. Yalnız panel AAID kaydı yeterli sayılmaz. Debug/`ump-only` paket, sunucunun `live` yanıtında dahi kendi birimini yükleyemez. Üretim native `live` yetkilendirmesini şu an hiçbir build helper üretmez; genel yayın ayrıca incelenmelidir. [Google test cihazı rehberi](https://developers.google.com/admob/android/test-ads).
+
+r8 app ID'si yayıncı kimliğidir; SDK test cihazı özeti mevcut hedef uygulama Ads logunda bulunamadığı için yapılandırma **`ump-only`**, cihaz listesi boştur. Native ölçüm başlangıcı ertelenir; `AD_ID` ve üç AdServices izni birleşik manifestten ve binary APK'dan çıkarılmıştır. Reklam/SSV üretimde kapalı olduğu için r8 kurulunca otomatik olarak onay formu veya reklam beklenmez. Kontrollü UMP-only cihaz sorgusu ayrı yapılacaktır. r7/signer/profil korunur; uygulama kaldırılmaz veya verisi silinmez.
+
+Test modundaki maç sonu UI açıkça **test reklamı / gerçek ek ödül yok** der ve başarılı gösterimden sonra gerçek ödül talebine geçmez. Test reklamı, Google imzalı SSV ödül doğrulamasının yerine geçmez. Yüklü eklentinin rehberine göre test reklamları SSV uç noktasını çağırmaz; SDK gösterimi ve AdMob panelinin imzalı adres doğrulaması ayrı testlerdir. [Eklentinin ödüllü reklam rehberi](https://github.com/capacitor-community/admob/blob/main/docs/rewarded.md), [Google SSV rehberi](https://developers.google.com/admob/android/ssv).
+
+Son yerel sonuçlar: istemci **154/154**, sunucu **1039 geçti / 36 atlandı**, build fixture **9/9**. SSV imza/tekrar/tek ödül testleri yerel ECDSA fixture'ıdır, gerçek Google callback denemesi değildir. Yeni backend kaynağı canlıya dağıtılmadı; reklam açma değişkenleri değiştirilmedi.
+
+### Panel adres doğrulaması — henüz yapılandırılmadı
+
+Kullanıcının `221445` ekranında mevcut normal ödüllü birim ve **“Geri çağırma URL'si verilmedi”** görüldü. Mevcut birim yeniden oluşturulmaz. Planlanan adres `https://play.gridshardgame.com/ads/admob/ssv`; yeni sunucu kapısı kontrollü dağıtılıp doğrulayıcı hazır olmadan panelde kaydedilmez. İmza doğrulayıcı açık, rollout `disabled` tutulduğunda Google imzası denetlenebilir fakat hiçbir oyuncu izlemesi/ödülü kaydedilmez. Panel denemesinde gerçek hesap veya maç yerine ayrı, var olmayan probe kimlikleri kullanılır. `Verify URL` başarılı olunca `Use verified URL` ve `Save` uygulanır; unsigned mock callback kabul edilmez. [Google panel kurulum adımları](https://support.google.com/admob/answer/9603226).
+
+Üretim kapıları ayrıca tamamlandıktan sonra gerçek ödüllü reklam akışı:
 
 1. Oyuncu savaş sonunda "REKLAM İZLE · x2"ye dokunur; istemci reklamı SSV seçenekleriyle açar (`userId` = oyuncu kimliği, `customData` = savaş kimliği).
 2. Reklam ödülü verince AdMob sunucuya imzalı geri çağrı gönderir. Sunucu ECDSA imzasını Google'ın yayımladığı anahtarlarla (`verifier-keys.json`) doğrular, reklam birimini ve zaman damgasını (en çok 1 saat) denetler ve izlemeyi oyuncunun profiline kaydeder (`verified_ad_views`, işlem kimliğiyle tekil).
 3. İstemci ödülü ister; sunucu yalnız bu savaş için doğrulanmış ve kullanılmamış bir izleme varsa ödülü verir. Geri çağrı birkaç saniye gecikebildiği için istemci talebi kısa aralıklarla yineler.
 
-AdMob konsolunun adres doğrulama isteği ve tanınmayan oyuncu kimlikleri kayıt oluşturmadan `200` alır.
+Doğrulayıcı açıkken geçerli imzalı panel isteği, kapalı rollout veya tanınmayan oyuncu kayıt oluşturmadan `200` alır. İmzasız/geçersiz callback `403`, henüz kapalı doğrulayıcı `503` döner; sırf adres doğrulaması için bu kontroller gevşetilmez.
 
 ## İade ve iptal
 
@@ -150,5 +200,5 @@ pnpm mobile:sync:ios
 1. Üretim sunucusunda `GRIDSHARD_PURCHASE_TEST_MODE` ve `GRIDSHARD_AD_TEST_MODE` açık değil.
 2. Google Play: lisans test hesabıyla her ürün alınır; makbuzda `environment: test`, ürün bir kez verilir, alım tüketilir.
 3. App Store: Sandbox hesabıyla (`GRIDSHARD_APP_STORE_ENVIRONMENT=sandbox`) aynı kontrol; üretime geçerken `production`.
-4. AdMob: test reklam birimiyle ödül yalnız SSV geri çağrısından sonra verilir; aynı savaş için ikinci ödül verilmez.
+4. AdMob: Google demo birimi yalnız güvenli gösterim/erken kapama denemesidir, yayıncının SSV kanıtı değildir. Yayıncının kendi birimiyle yalnız doğrulanmış test cihazında SSV denemesi yapılır; ödül imzalı geri çağrıdan sonra verilir, aynı savaş için ikinci ödül verilmez.
 5. İade bildirimleri: Play Console'dan test bildirimi `200` alır; lisans test hesabıyla alınıp Play Console'dan iade edilen paketin miktarı oyuncudan düşer. App Store'da sandbox alımı iade edilince (`REFUND`) aynı kontrol.

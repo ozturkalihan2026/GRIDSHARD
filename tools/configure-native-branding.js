@@ -12,7 +12,7 @@ function nativeAssetPlan(platform, root, localDebug = false) {
   const source = path.join(root, "native-assets", platform);
   if (platform === "android") {
     const res = path.join(source, "res");
-    const target = path.join(root, ...(localDebug ? [".mobile-debug"] : []), "android", "app", "src", "main", "res");
+    const target = path.join(root, ...(localDebug ? [".mobile-debug"] : []), localDebug === "remote" ? "remote-android" : "android", "app", "src", "main", "res");
     const names = [
       ...DENSITIES.flatMap(density => [
         ...ICONS.map(icon => `mipmap-${density}/${icon}.png`),

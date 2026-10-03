@@ -18,6 +18,9 @@ test("native artwork is complete and debug/production targets stay separate", ()
   }
   const debug = nativeAssetPlan("android",root,true);
   assert.ok(debug.every(([,target]) => target.startsWith(path.join(root,".mobile-debug","android"))));
+  const remoteDebug = nativeAssetPlan("android",root,"remote");
+  assert.ok(remoteDebug.every(([,target]) => target.startsWith(path.join(root,".mobile-debug","remote-android"))));
+  assert.deepEqual(remoteDebug.map(([source]) => source), debug.map(([source]) => source));
   assert.throws(() => nativeAssetPlan("web",root),/Platform/);
 });
 
@@ -36,6 +39,6 @@ test("Android splash themes are idempotent and unrelated styles stay unchanged",
 test("native application icon remains exactly the same as the store artwork", () => {
   assert.deepEqual(fs.readFileSync(path.join(root,"native-assets/ios/AppIcon-512@2x.png")),fs.readFileSync(path.join(root,"client/assets/branding/gridshard-store-icon-1024.png")));
   const script = fs.readFileSync(path.join(root,"tools/configure-native-orientation.js"),"utf8");
-  assert.ok(script.includes('configureNativeBranding(platform, root, process.env.GRIDSHARD_LOCAL_DEBUG === "1")'));
+  assert.ok(script.includes('configureNativeBranding(platform, root, nativeDebugTarget)'));
   assert.ok(script.includes("androidNoBackup(transform(before))"));
 });

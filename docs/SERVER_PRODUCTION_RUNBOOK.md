@@ -4,6 +4,8 @@ Durum: 1 Ekim 2026. Bu bir **operatör rehberidir, gerçekleşmiş uzak dağıt�
 
 ## Yayın kapıları
 
+Google/Apple native/web hesabının dış dosya ve isteğe bağlı Compose katmanları: [NATIVE_OAUTH.md](NATIVE_OAUTH.md). Sağlayıcı hazırken `docker-compose.oauth-google.yml` / `docker-compose.oauth-apple.yml` mevcut üretim+Cloudflare yapılandırmasına eklenir. Client secret/private key kaynak/image/APK'ya girmez; App Links public SHA-256 ayarları test/yayın için ayrıdır. Yerel kod eklemesi canlı provider kurulumu değildir.
+
 - Tam sunucu/istemci testleri, build ve CI yeşil; tarihsel kırık testler sessizce atlanmış olmamalı.
 - `migration` CI işi gerçek PostgreSQL 17 + Redis, Caddy doğrulaması, temiz image açılışı, profil/token korunarak yeniden başlatma ve bakım image'ıyla boş hedef geri yükleme provasını doğrulamalı. Bu kontroller yerelde geçti; uzak CI sonucu henüz alınmadı.
 - Yeni native sürüm secure-storage, tam ekran, arka plan ses duruşu, HTTPS/WSS ve bağlantı geri gelmesini gerçek telefonda geçmeli. Tarayıcı emülasyonu bunun yerine geçmez.
@@ -45,11 +47,32 @@ Compose yeni `*-production-clean` birimleri kullanır. API ilk açılışta şem
 
 TLS/CORS değişikliğinden sonra native paketin kalıcı uygulama kimliği, HTTPS API ve WSS adresini `MOBILE_RELEASE_RUNBOOK.md` ile güncelleyin. Debug cleartext/Wi-Fi paketi mağaza sürümü değildir. Test ödeme/reklam modlarını üretimde açmayın.
 
+### Cloudflare proxy + Origin CA seçeneği
+
+Origin IP'sini DNS yanıtında göstermemek isteyen kurulumlarda `docker-compose.production.yml` ardından **yalnız** `docker-compose.cloudflare.yml` kullanılır. Compose **2.24.4 veya üzeri** gerekir: `!override` origin port listesini yalnız TCP 443 ile değiştirir; 80/UDP 443 eklenmez. Veritabanı/API yine yayınlanmaz. Bu alternatif, varsayılan public-ACME dosyasını değiştirmez.
+
+1. Özel anahtar Linux sunucuda yeni root/0700 dizinine üretilir; key root/0600 kalır. CSR yalnız seçilen oyun hostname'ini kapsar. Özel anahtarı indirmeyin, sohbete/Git'e koymayın. Cloudflare **SSL/TLS → Origin Server → Create Certificate → Use my private key and CSR** alanına yalnız public CSR yapıştırılır. İmzalı **public** sertifika PEM biçiminde alınır; sunucuda yeni `origin_cert.pem` dosyasına, kaynak ağacı dışında kurulur. Anahtar eşleşmesi, SAN, issuer/zincir ve geçerlilik kontrol edilmeden Caddy açılmaz. Bu dosyaların dökümü loglanmaz.
+2. `GRIDSHARD_ORIGIN_TLS_DIR` dış dizini göstermeli; `origin_cert.pem` ve `origin_key.pem` salt okunur Compose secrets olarak bağlanır. Yapılandırma `tls` dosyalarını kullanır, otomatik HTTP yönlendirmesi/ACME yoktur. Cloudflare tarafında HTTPS zorlaması yapılır.
+3. Güvenlik grubunda iki yönetici SSH `/32` kaynağı korunur; TCP 443 **yalnız [Cloudflare'ın güncel origin IP aralıklarına](https://www.cloudflare.com/ips/)** açılır. 80/UDP 443/5432/6379/8000 veya `0.0.0.0/0` gerekmez. Docker yayınları UFW'yi atlayabilir; host UFW tek başına origin sınırı kabul edilmez. IPv6 kullanılmıyorsa AAAA eklemeyin. Cloudflare IP sınırı zone'a özel istemci kimlik doğrulaması değildir; Authenticated Origin Pulls ayrı sertleştirme kapısıdır.
+4. Yalnız oyun alt alan adına sunucunun A kaydı eklenir, **Proxied / turuncu bulut** açık kalır. Root/`www` Pages destek sitesi ve e-posta kayıtları korunur. Sertifika kurulduktan sonra SSL modu **Full (strict)** olmalı; Flexible kullanılmaz. Origin CA doğrudan tarayıcı/telefon için public-CA değildir; proxy kapatılmaz. TLS sona erme zamanı operatör tarafından izlenir, otomatik ACME yenilemesi yoktur.
+
+```sh
+export GRIDSHARD_ORIGIN_TLS_DIR=/etc/gridshard-origin-tls
+docker compose -f docker-compose.production.yml -f docker-compose.cloudflare.yml config --quiet
+docker compose -f docker-compose.production.yml -f docker-compose.cloudflare.yml up -d postgres redis relay-web caddy
+```
+
+Yukarıdaki dosya çifti bu kurulumun **stop/run/backup/restore/ps** komutlarında da korunur. Gerçek DNS/proxy/Full-strict, edge HTTPS `/health`, WSS ve iki cihaz testi geçmeden yayın tamamlandı sayılmaz. Kaynaklar: [Cloudflare Origin CA](https://developers.cloudflare.com/ssl/origin-configuration/origin-ca/), [Full (strict)](https://developers.cloudflare.com/ssl/origin-configuration/ssl-modes/full-strict/), [Compose override semantiği](https://docs.docker.com/reference/compose-file/merge/).
+
 ## 3. İzleme ve bakım
 
 Bağımsız dış kontrolde HTTPS `/health` yanıtını, Compose container sağlık durumunu, disk/birim kullanımını, yedek yaşını ve yeniden başlatma sayılarını izleyin. Sağlıksız durumda oyuncu ekranı yeniden deneme sunar; işletim sistemi/sağlayıcı alarmı ayrıca kurulmalıdır. `docker compose logs --tail 100 relay-web caddy` içeriğini paylaşmadan önce kişisel veri/sır kontrolü yapın. Log rotasyonu Compose'da sınırlıdır; PostgreSQL/Redis disk doluluğu ayrıca izlenmelidir.
 
 Redis yalnız geçici presence/routing/rate-limit/worker lease içindir; PostgreSQL ödül ve profil kaynağıdır. Redis veya worker sahipliği kaybedilirse API/WS fail-closed durur. Tek süreç yeniden başlatılmadan eski lease'i elle değiştirmeyin. Planlı bakımda oyuncuları önceden bilgilendirin ve aktif maçları bitirin; API duruşu RAM maçlarını keser.
+
+3 Ekim r7 onarımı: worker lease yenilemesi temizlik/ödül kurtarma işlerinden bağımsız bir task'tadır; PostgreSQL advisory sahiplik kontrolü süre sınırlıdır. Bakım geçişindeki hata kaydedilip tekrar denenir. TTL ile kaldırılmış oturumun gecikmiş disconnect kaydı güvenle silinir; bitmiş maçın socket kapanışı yeni grace kaydı oluşturmaz. Yavaş/kopuk bir socket diğer oyuncunun sonucunu engellemez; yayın/kapama 2 saniye, async sonuç projeksiyonu 5 saniye ile sınırlıdır. Bu sınırlar ödülü istemciye devretmez: kalıcı ledger ve idempotent kurtarma korunur. Gerçek sahiplik kaybında API yine fail-closed durur; korumayı kaldırarak iyileştirmeyin.
+
+Yeni image'ı üretim birimlerine bağlamadan ayrı PostgreSQL/Redis fixture'larıyla `tools/production_container_smoke.py --soak-seconds 330` çalıştırın; bu test profil/tek-ad-değişim hakkı, worker lease, restart ve boş hedefe backup/restore kapılarını denetler. Canlı geçişte önce aktif maç/socket olmadığını doğrulayın; aynı kurulum, sırlar ve Compose katmanlarıyla API/Caddy'yi durdurup yeni tarihli özel yedek alın. Kurulum kimliği, profil/kimlik/ledger sayıları ve dump SHA-256 eşleşmeden image'ı değiştirmeyin. Sonrasında iç/HTTPS health ve en az 330 saniye worker lease kontrolü yapın. Başarısız rollout'ta eski image/config'e dönmek veritabanını eski dump'a geri yüklemek anlamına gelmez; canlı profilleri silmeyin.
 
 ## 4. Bakımda yedek
 

@@ -7,6 +7,7 @@ from contextlib import asynccontextmanager, contextmanager
 from functools import wraps
 from inspect import signature
 import hashlib
+import base64
 import logging
 import secrets
 import time
@@ -21,7 +22,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from starlette.middleware.trustedhost import TrustedHostMiddleware
 from .production_config import environment_secret, production_endpoints
 from .postgres_economic_operations import PostgresEconomicOperations, EconomicOperationConflict
-from fastapi.responses import JSONResponse, RedirectResponse
+from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse
 from fastapi.websockets import WebSocketDisconnect
 from pydantic import BaseModel
 
@@ -32,6 +33,7 @@ from .auth import (
     load_or_create_signing_key,
 )
 from .platform_services import PlatformService, PlatformServiceError
+from .native_oauth import NATIVE_AUTH_TARGETS, asset_links, native_return_url
 from .postgres_platform import PostgresPlatformService
 from .postgres_social_transactions import PostgresSocialTransactionRepository, SocialTransactionError
 from .postgres_social_runtime import PostgresSocialRuntime, social_operation_id
@@ -156,6 +158,7 @@ from .store_catalog import (
     verify_ad_view,
 )
 from .store_verification import StoreVerificationError, StoreVerifiers
+from .ad_rollout import AdRollout
 from .store_reconciliation import StoreReconciler
 from .player_data_store import (
     JsonFilePlayerDataRepository,
@@ -251,16 +254,18 @@ runtime_coordinator = RuntimeCoordinator(
 )
 
 
-async def _runtime_maintenance_loop() -> None:
-    last_analytics_prune = 0.0
+async def _runtime_worker_lease_loop() -> None:
+    # Never let cleanup, a slow projection or the persistent-state lock starve
+    # the fencing lease. Database advisory ownership remains mandatory too.
     while True:
         await asyncio.sleep(5.0)
         if RUNTIME_STRICT:
             try:
                 await runtime_coordinator.renew_worker()
-                await asyncio.to_thread(postgres_worker_guard.check)
+                await asyncio.wait_for(asyncio.to_thread(postgres_worker_guard.check), timeout=5.0)
             except Exception:
                 runtime_coordinator._lease_lost = True
+                logging.getLogger(__name__).error("Worker ownership lost; API disabled until restart")
                 await pvp_tick_runner.stop_all()
                 for connection in list(pvp_websocket_adapter.registry.connections.values()):
                     if connection.connected:
@@ -268,39 +273,51 @@ async def _runtime_maintenance_loop() -> None:
                             await pvp_websocket_adapter.disconnect(connection.connection_id, close_code=1013)
                         except Exception:
                             pass
-                logging.getLogger(__name__).error("Worker ownership lost; API disabled until restart")
                 return
-            try:
-                await asyncio.to_thread(_recover_pending_battle_results)
-            except Exception:
-                logging.getLogger(__name__).warning("Pending battle results require retry", exc_info=True)
+
+
+async def _runtime_maintenance_loop() -> None:
+    last_analytics_prune = 0.0
+    while True:
+        await asyncio.sleep(5.0)
+        if RUNTIME_STRICT and not runtime_coordinator.owns_worker:
+            return
+        try:
+            await _runtime_maintenance_pass()
+        except Exception as exc:
+            # One stale transport/session must not kill all future maintenance.
+            # Log only a category, never request URLs/tokens or player payloads.
+            logging.getLogger(__name__).warning("Runtime maintenance will retry (%s)", type(exc).__name__)
         if time.monotonic() - last_analytics_prune >= 3600:
             last_analytics_prune = time.monotonic()
             try:
                 await asyncio.to_thread(product_analytics_service.prune_expired)
-            except (ProductAnalyticsError, OSError):
-                logging.getLogger(__name__).warning("Product analytics retention cleanup failed", exc_info=True)
-        await pvp_websocket_adapter.sweep_connection_health()
-        expired_session_ids = pvp_service.cleanup_expired_sessions()
-        for session_id in expired_session_ids:
-            await pvp_tick_runner.stop_session(session_id)
-            await runtime_coordinator.delete_session(session_id)
-        if runtime_coordinator.redis is None:
-            matchmaking_service.cleanup_expired()
-        else:
-            try:
-                await redis_matchmaking_service.cleanup_expired()
-            except Exception as exc:
-                runtime_coordinator.last_error = str(exc)
-                if RUNTIME_STRICT:
-                    raise
-        for session_id in pvp_service.active_session_ids():
-            state = pvp_service.get_session(session_id).engine.state
-            await runtime_coordinator.touch_session(
-                session_id, ttl_seconds=360, player_ids=tuple(state.players),
-                status=state.status.value, websocket_base_url=MATCHMAKING_PUBLIC_WS_BASE_URL,
-            )
-        await runtime_coordinator.local_limiter.cleanup()
+            except Exception:
+                logging.getLogger(__name__).warning("Product analytics retention cleanup will retry")
+
+
+async def _runtime_maintenance_pass() -> None:
+    if RUNTIME_STRICT:
+        try:
+            await asyncio.to_thread(_recover_pending_battle_results)
+        except Exception:
+            logging.getLogger(__name__).warning("Pending battle results require retry")
+    await pvp_websocket_adapter.sweep_connection_health()
+    expired_session_ids = pvp_service.cleanup_expired_sessions()
+    for session_id in expired_session_ids:
+        await pvp_tick_runner.stop_session(session_id)
+        await runtime_coordinator.delete_session(session_id)
+    if runtime_coordinator.redis is None:
+        matchmaking_service.cleanup_expired()
+    else:
+        await redis_matchmaking_service.cleanup_expired()
+    for session_id in pvp_service.active_session_ids():
+        state = pvp_service.get_session(session_id).engine.state
+        await runtime_coordinator.touch_session(
+            session_id, ttl_seconds=360, player_ids=tuple(state.players),
+            status=state.status.value, websocket_base_url=MATCHMAKING_PUBLIC_WS_BASE_URL,
+        )
+    await runtime_coordinator.local_limiter.cleanup()
 
 
 async def _push_delivery_loop(stop: asyncio.Event):
@@ -345,6 +362,7 @@ async def _store_reconciliation_loop(stop: asyncio.Event):
 async def application_lifespan(_app: FastAPI):
     global telemetry_service
     maintenance_task = None
+    worker_lease_task = None
     push_stop = asyncio.Event()
     push_task = None
     reconcile_stop = asyncio.Event()
@@ -365,13 +383,14 @@ async def application_lifespan(_app: FastAPI):
                 )
                 telemetry_service = InMemoryTelemetryService(repository=telemetry_repository)
         await runtime_coordinator.open()
+        worker_lease_task = asyncio.create_task(_runtime_worker_lease_loop(), name="runtime-worker-lease")
         if RUNTIME_STRICT:
             await asyncio.to_thread(_postgres_social_runtime().close_sessions, stale_boot=True)
             await asyncio.to_thread(_recover_pending_battle_results)
         # GRIDSHARD_PUSH_ENABLED=1 değilse gönderici kapalıdır, bağlantı açmaz.
         platform_service.push_sender = PushSender.from_environment()
         push_task = asyncio.create_task(_push_delivery_loop(push_stop))
-        maintenance_task = asyncio.create_task(_runtime_maintenance_loop())
+        maintenance_task = asyncio.create_task(_runtime_maintenance_loop(), name="runtime-maintenance")
         if STORE_RECONCILE_INTERVAL_SECONDS and store_reconciler.enabled():
             reconcile_task = asyncio.create_task(_store_reconciliation_loop(reconcile_stop))
         yield
@@ -387,12 +406,13 @@ async def application_lifespan(_app: FastAPI):
             platform_service.push_sender.close()
         finally:
             try:
-                if maintenance_task is not None:
-                    maintenance_task.cancel()
-                    try:
-                        await maintenance_task
-                    except asyncio.CancelledError:
-                        pass
+                for task in (maintenance_task, worker_lease_task):
+                    if task is not None:
+                        task.cancel()
+                        try:
+                            await task
+                        except asyncio.CancelledError:
+                            pass
             finally:
                 try:
                     await pvp_tick_runner.stop_all()
@@ -577,7 +597,9 @@ async def require_participant_authentication(request: Request, call_next):
 
 
 def _rate_limit_policy(path: str) -> tuple[str, int, int] | None:
-    if path in {"/auth/session", "/auth/provider-session"}:
+    if path in {"/auth/session", "/auth/provider-session"} or (
+        path.startswith("/accounts/") and path.endswith(("/play-games/start", "/play-games/complete"))
+    ):
         return ("auth", 10, 60)
     if path.endswith("/commands") or path == "/matchmaking/join":
         return ("commands", 30, 1)
@@ -895,6 +917,7 @@ MATCHMAKING_AI_ONLY = os.environ.get(
 PURCHASE_TEST_MODE = purchase_test_mode_enabled(RUNTIME_STRICT)
 AD_TEST_MODE = ad_test_mode_enabled(RUNTIME_STRICT)
 STORE_VERIFIERS = StoreVerifiers.from_environment()
+AD_ROLLOUT = AdRollout.from_environment()
 
 
 def _store_reconcile_interval_seconds() -> float:
@@ -1228,6 +1251,8 @@ class AdRewardRequest(BaseModel):
     model_config = {"extra": "forbid"}
     request_id: str
     provider: str
+    ad_protocol: str = ""
+    ad_platform: str = ""
 
 
 class TeamCreateRequest(BaseModel):
@@ -1347,10 +1372,24 @@ class AuthSessionRequest(BaseModel):
 
 class ProviderSessionRequest(BaseModel):
     exchange: str
+    code_verifier: str = ""
     device_secret: str
     device_id: str
     device_name: str | None = None
     platform: str = "web"
+
+
+class PlayGamesStartRequest(BaseModel):
+    mode: str = "link"
+    code_challenge: str
+
+
+class PlayGamesCompleteRequest(BaseModel):
+    state: str
+    code: str
+    code_verifier: str
+
+    model_config = {"extra": "forbid"}
 
 
 class ContactVerificationRequest(BaseModel):
@@ -1492,7 +1531,7 @@ def create_participant_auth_session(
 @persistent_operation
 def create_provider_auth_session(request: ProviderSessionRequest) -> dict:
     try:
-        exchange = platform_service.consume_oauth_exchange(request.exchange)
+        exchange = platform_service.consume_oauth_exchange(request.exchange, code_verifier=request.code_verifier)
         PERSISTENT_STATE.touch(exchange["player_id"])
         result = participant_auth_service.authorize_device(
             exchange["player_id"],
@@ -1525,6 +1564,24 @@ def create_provider_auth_session(request: ProviderSessionRequest) -> dict:
 @app.get("/accounts/{player_id}")
 def get_account_platform_view(player_id: str) -> dict:
     return platform_service.account_view(player_id)
+
+
+@app.post("/accounts/{player_id}/play-games/start")
+def start_play_games_sign_in(player_id: str, request: PlayGamesStartRequest):
+    try:
+        result = platform_service.start_play_games(player_id, request.mode, request.code_challenge)
+        return JSONResponse(result, headers={"Cache-Control": "no-store"})
+    except PlatformServiceError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+
+
+@app.post("/accounts/{player_id}/play-games/complete")
+def complete_play_games_sign_in(player_id: str, request: PlayGamesCompleteRequest):
+    try:
+        result = platform_service.complete_play_games(player_id, request.state, request.code, request.code_verifier)
+        return JSONResponse(result, headers={"Cache-Control": "no-store"})
+    except PlatformServiceError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
 
 
 @app.post("/accounts/{player_id}/verification/request")
@@ -1566,9 +1623,15 @@ def start_account_oauth(
     player_id: str,
     provider: str,
     mode: str = Query(default="link"),
+    native_target: str = Query(default="", max_length=32),
+    code_challenge: str = Query(default="", max_length=128),
 ) -> dict:
     try:
-        return platform_service.start_oauth(player_id, provider, mode=mode)
+        if mode == "login" and not code_challenge and platform_service.oauth_status().get(provider, {}).get("configured"):
+            raise PlatformServiceError("Hesap girişi için cihaz doğrulama anahtarı gerekli; uygulamayı yenileyin.")
+        result = platform_service.start_oauth(player_id, provider, mode=mode,
+                                             native_target=native_target, code_challenge=code_challenge)
+        return JSONResponse(result, headers={"Cache-Control": "no-store", "Referrer-Policy": "no-referrer"})
     except PlatformServiceError as exc:
         raise HTTPException(status_code=422, detail=str(exc)) from exc
 
@@ -1580,26 +1643,62 @@ def _oauth_callback_redirect(
     error: str,
 ):
     query = {"oauth_provider": provider}
+    context = platform_service.oauth_return_context(provider, state)
+    if context.get("handoff"):
+        query["oauth_handoff"] = context["handoff"]
+    destination = f"{platform_service.web_base_url}/"
+    if context.get("native_target"):
+        try:
+            destination = native_return_url(platform_service.web_base_url, context["native_target"])
+        except ValueError:
+            platform_service.cancel_oauth(provider, state)
+            return RedirectResponse(f"{destination}?oauth_status=error", status_code=303,
+                                    headers={"Cache-Control": "no-store", "Referrer-Policy": "no-referrer"})
+    def redirect():
+        return RedirectResponse(f"{destination}?{urlencode(query)}", status_code=303,
+                                headers={"Cache-Control": "no-store", "Referrer-Policy": "no-referrer"})
     if error:
+        platform_service.cancel_oauth(provider, state)
         query["oauth_status"] = "cancelled"
-        return RedirectResponse(
-            f"{platform_service.web_base_url}/?{urlencode(query)}",
-            status_code=303,
-        )
+        return redirect()
     try:
         result = platform_service.complete_oauth(provider, state, code)
     except PlatformServiceError:
         query["oauth_status"] = "error"
-        return RedirectResponse(
-            f"{platform_service.web_base_url}/?{urlencode(query)}",
-            status_code=303,
-        )
+        return redirect()
     query["oauth_status"] = "linked"
     if result.get("exchange"):
         query["oauth_exchange"] = result["exchange"]
-    return RedirectResponse(
-        f"{platform_service.web_base_url}/?{urlencode(query)}",
-        status_code=303,
+    return redirect()
+
+
+@app.get("/.well-known/assetlinks.json")
+def android_auth_asset_links():
+    try:
+        return JSONResponse(asset_links(), headers={"Cache-Control": "public, max-age=300"})
+    except ValueError as exc:
+        raise HTTPException(status_code=503, detail=str(exc)) from exc
+
+
+@app.get("/native-auth/{target}")
+def native_auth_landing(target: str):
+    # Fallback if the OS has not yet verified the app link. No credentials,
+    # exchange codes or external assets are embedded in this response body.
+    if target not in NATIVE_AUTH_TARGETS:
+        raise HTTPException(status_code=404)
+    package = NATIVE_AUTH_TARGETS[target][1]
+    script = ("const u=new URL(location.href);u.hash='';"
+              f"document.getElementById('return').href='intent://'+u.host+u.pathname+u.search+'#Intent;scheme=https;package={package};end';")
+    script_hash = base64.b64encode(hashlib.sha256(script.encode()).digest()).decode()
+    return HTMLResponse(
+        '<!doctype html><html lang="tr"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">'
+        '<title>GRIDSHARD — Uygulamaya dön</title><body><h1>GRIDSHARD</h1>'
+        '<p>Hesap işlemini tamamlamak için oyun uygulamasına dönün. / Return to the game to finish signing in.</p>'
+        '<p><a id="return">GRIDSHARD uygulamasına dön / Return to GRIDSHARD</a></p>'
+        '<p>Bağlantı açılmıyorsa Android uygulama ayarlarında desteklenen bağlantıları açmaya izin verin.</p>'
+        f'<script>{script}</script></body></html>',
+        headers={"Cache-Control": "no-store", "Referrer-Policy": "no-referrer", "X-Frame-Options": "DENY",
+                 "Content-Security-Policy": f"default-src 'none'; script-src 'sha256-{script_hash}'; base-uri 'none'; frame-ancestors 'none'"},
     )
 
 
@@ -4756,12 +4855,15 @@ def buy_store_chest(
     }
 
 
-def _player_store_view(profile) -> dict:
+def _player_store_view(profile, *, ad_protocol: str = "", ad_platform: str = "") -> dict:
     return store_view(
         profile,
         purchase_test_mode=PURCHASE_TEST_MODE,
         ad_test_mode=AD_TEST_MODE,
-        platforms=STORE_VERIFIERS.platform_view(),
+        platforms=AD_ROLLOUT.platform_view(
+            STORE_VERIFIERS.platform_view(), player_id=profile.player_id,
+            protocol=ad_protocol, platform=ad_platform,
+        ),
     )
 
 
@@ -4794,13 +4896,13 @@ def _store_economy_transaction(player_id: str):
 
 @app.get("/store/{player_id}")
 @persistent_operation
-def get_player_store(player_id: str) -> dict:
+def get_player_store(player_id: str, ad_protocol: str = "", ad_platform: str = "") -> dict:
     profile = player_profile_service.get_or_create(player_id)
-    return _player_store_view(profile)
+    return _player_store_view(profile, ad_protocol=ad_protocol, ad_platform=ad_platform)
 
 
 @app.post("/store/{player_id}/purchases")
-def purchase_store_product(player_id: str, request: PurchaseRequest) -> dict:
+def purchase_store_product(player_id: str, request: PurchaseRequest, ad_protocol: str = "", ad_platform: str = "") -> dict:
     verified = None
     try:
         if request.provider in STORE_PROVIDERS:
@@ -4880,7 +4982,7 @@ def purchase_store_product(player_id: str, request: PurchaseRequest) -> dict:
         raise HTTPException(status_code=503, detail="Alım kaydedildi; mağaza onayı yeniden denenecek.") from exc
     return {
         "receipt": receipt,
-        "store": _player_store_view(profile),
+        "store": _player_store_view(profile, ad_protocol=ad_protocol, ad_platform=ad_platform),
         "meta_progression": meta_progression_service.view(profile),
         "profile": profile.to_view(),
     }
@@ -5111,6 +5213,8 @@ def admob_ssv_callback(request: Request) -> dict:
         view = STORE_VERIFIERS.admob.verify(request.url.query)
     except StoreVerificationError as exc:
         raise HTTPException(status_code=403, detail=str(exc)) from exc
+    if not AD_ROLLOUT.permits_player(view["user_id"]):
+        return {"ok": True, "ignored": True}
     # Provider verification/key refresh is outside the economic transaction.
     with _persistent_operation([view["user_id"]]):
         profile = _existing_player_profile(view["user_id"])
@@ -5132,6 +5236,11 @@ def claim_battle_ad_reward(
     verified_view = None
     try:
         if request.provider == "admob" and STORE_VERIFIERS.admob is not None:
+            if not AD_ROLLOUT.platform_view(
+                STORE_VERIFIERS.platform_view(), player_id=player_id,
+                protocol=request.ad_protocol, platform=request.ad_platform,
+            )["ad_platforms"]["admob"]:
+                raise StoreError("Bu uygulama sürümü veya hesap için reklam henüz açık değil.")
             # Ödül ancak AdMob'un imzalı geri çağrısı bu savaş için geldiyse verilir.
             existing = profile.ad_reward_receipts.get(battle_id)
             if existing is None:
@@ -5702,17 +5811,20 @@ def update_profile_display_name(
     with player_profile_service.name_lock:
         profile = _team_member_profile(player_id)
         previous_name = profile.display_name
+        previous_changes = profile.display_name_changes
         try:
             profile = player_profile_service.set_display_name(player_id, request.display_name)
             persist_player_data(player_id)
         except (DisplayNameError, PlayerProfileError) as exc:
             profile.display_name = previous_name
+            profile.display_name_changes = previous_changes
             raise HTTPException(
-                status_code=409 if getattr(exc, "code", "") == "taken" else 422,
+                status_code=409 if getattr(exc, "code", "") in {"taken", "limit_reached"} else 422,
                 detail=str(exc),
             ) from exc
         except Exception:
             profile.display_name = previous_name
+            profile.display_name_changes = previous_changes
             raise
         return profile.to_view()
 

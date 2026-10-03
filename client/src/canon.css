@@ -1783,8 +1783,8 @@ body[data-app-screen="rewards"] .season-rewards-screen .season-reward-track {
 @media(max-width:420px) {
   .profile-identity-card { grid-template-columns:auto minmax(0,1fr); }
   .profile-identity-card > strong { grid-column:2; }
-  .profile-current-season { grid-template-columns:1fr 1fr; }
-  .profile-current-season > div:first-child { grid-column:1/-1; }
+  .profile-current-season { grid-template-columns:minmax(0,1fr) auto minmax(0,1.2fr);align-items:center; }
+  .profile-current-season > div:first-child { grid-column:auto; }
   body[data-app-screen="rewards"] .season-rewards-screen .season-reward-track { grid-template-columns:repeat(2,minmax(0,1fr)) !important; }
   .monthly-login-track { grid-template-columns:repeat(4,minmax(0,1fr)); }
 }
@@ -6015,7 +6015,7 @@ body[data-battle-perspective="on"][data-app-screen="play"][data-online-status="b
 }
 
 /* Operator title progression */
-.app-progress-ribbon #lobby-player-details { appearance:none; max-width:100%; min-height:0; margin:0; padding:0; border:0; background:none; color:#b7cbdc; font:600 .7rem/1.35 var(--gs-font-copy); letter-spacing:0; text-align:left; cursor:pointer; text-decoration:none; }
+.app-progress-ribbon #lobby-player-details { appearance:none; max-width:100%; min-height:0; margin:0; padding:0 2px; border:0; background:none; box-shadow:none; filter:none; text-shadow:none; color:#b7cbdc; font:600 .7rem/1.35 var(--gs-font-copy); letter-spacing:0; text-align:left; cursor:pointer; text-decoration:none; }
 .app-progress-ribbon #lobby-player-details:hover { color:#d7ecef; text-decoration:underline dotted rgba(97,238,220,.5); text-underline-offset:3px; }
 .app-progress-ribbon #lobby-player-details:focus-visible { outline:2px solid #61eedc; outline-offset:2px; border-radius:3px; }
 .app-progress-ribbon #lobby-player-details[data-claimable="true"]::before { content:""; display:inline-block; width:7px; height:7px; margin-right:5px; border:1px solid var(--gs-notification-ring); box-sizing:border-box; border-radius:50%; background:var(--gs-notification-light); box-shadow:var(--gs-notification-glow); vertical-align:middle; }
@@ -6047,3 +6047,29 @@ body[data-battle-perspective="on"][data-app-screen="play"][data-online-status="b
 .operator-title-claim:disabled { opacity:.6; cursor:wait; }
 .operator-titles-footer { display:flex; justify-content:center; margin-top:12px; }
 .operator-titles-footer button { padding:9px 22px; border:1px solid rgba(97,238,220,.5); border-radius:10px; background:rgba(97,238,220,.1); color:#e8f6ff; font:800 .72rem var(--gs-font-display); cursor:pointer; }
+
+/* Device feedback: use a tablet's available width, retain the desktop preview.
+   Corner clearance is visual geometry, never a bottom system-bar reservation. */
+@media (min-width:600px) and (pointer:coarse) {
+  :root { --gs-phone-width:100vw; }
+}
+#app-bottom-dock {
+  width:min(calc(100vw - 24px),calc(var(--gs-phone-width) - 24px)) !important;
+  border-radius:24px !important;
+}
+.battle-shell .profile-terminal-tabs {
+  width:min(calc(100vw - 24px),calc(var(--gs-phone-width) - 24px)) !important;
+}
+body:not([data-app-screen="play"]) .app-progress-ribbon .lobby-player-card { position:relative; z-index:2; }
+body:not([data-app-screen="play"]) .app-progress-ribbon .lobby-currency-chip { overflow:hidden; }
+.profile-current-season { align-items:center; }
+.profile-current-season #profile-season-league { white-space:normal; overflow:visible; text-overflow:clip; }
+.settings-category-tabs { position:sticky; top:0; z-index:65; display:grid; grid-template-columns:repeat(3,minmax(0,1fr)) minmax(0,1.6fr); gap:4px; padding:6px; margin-bottom:12px; border:1px solid #315974; border-radius:12px; background:#07182c; }
+.settings-category-tabs button { min-width:0; min-height:44px; padding:6px 3px; border:1px solid transparent; border-radius:8px; color:#b8ccdd; background:transparent; font:800 .65rem/1.3 var(--gs-font-copy); cursor:pointer; }
+.settings-category-tabs button[aria-selected="true"] { color:#71f5e1; border-color:#65ddcf; background:#103446; }
+.settings-category-tabs button:focus-visible { outline:2px solid #ffe06d; outline-offset:1px; }
+[data-settings-panel][hidden] { display:none !important; }
+#settings-summary-panel [data-settings-panel] { min-width:0; }
+#settings-summary-panel .settings-form { margin-top:12px; }
+#profile-name-change-note { color:#b6cddd; font-size:.8rem; line-height:1.4; }
+#profile-display-name:disabled, #profile-display-name-save:disabled { opacity:.6; cursor:not-allowed; }

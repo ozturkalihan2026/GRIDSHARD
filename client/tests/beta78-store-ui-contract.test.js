@@ -21,7 +21,9 @@ for (const id of [
 assert.match(app, /if \(!provider\) \{\s*setStatus\("Ödeme altyapısı hazırlanıyor/);
 assert.ok(app.includes('button.disabled = Boolean(!currentPurchaseProvider() || purchaseInFlight)'));
 assert.ok(app.includes('buy.disabled = Boolean(!currentPurchaseProvider() || purchaseInFlight)'));
-assert.ok(app.includes('host.hidden = !battleId || !hasRewards || !provider'));
+assert.ok(app.includes('host.hidden = !battleId || !hasRewards'));
+assert.ok(app.includes('button.disabled = !provider || Boolean(claimed) || adRewardPending'));
+assert.ok(app.includes('if (!battleId || !provider || adRewardPending || adRewardReceipts.has(battleId)) return'));
 
 // Sunucu yalnız açıkça etkinleştirilmiş deneme sağlayıcısını duyurur. Gerçek
 // mağaza ve reklam doğrulaması gelmeden istemci bunları var saymamalıdır.

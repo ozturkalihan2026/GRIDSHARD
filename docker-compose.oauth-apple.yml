@@ -1,0 +1,13 @@
+# Optional: Apple Services ID + Sign in with Apple private key, external files.
+services:
+  relay-web:
+    environment:
+      GRIDSHARD_APPLE_OAUTH_CLIENT_ID: ${GRIDSHARD_APPLE_OAUTH_CLIENT_ID:?Set Apple Services ID}
+      GRIDSHARD_APPLE_OAUTH_TEAM_ID: ${GRIDSHARD_APPLE_OAUTH_TEAM_ID:?Set Apple team ID}
+      GRIDSHARD_APPLE_OAUTH_KEY_ID: ${GRIDSHARD_APPLE_OAUTH_KEY_ID:?Set Apple key ID}
+      GRIDSHARD_APPLE_OAUTH_PRIVATE_KEY_FILE: /run/secrets/apple_oauth_private_key
+      GRIDSHARD_APPLE_OAUTH_REDIRECT_URI: https://${GRIDSHARD_HOST:?Set GRIDSHARD_HOST}/oauth/apple/callback
+    secrets: [apple_oauth_private_key]
+secrets:
+  apple_oauth_private_key:
+    file: ${GRIDSHARD_SECRETS_DIR:?Set external GRIDSHARD_SECRETS_DIR}/apple_oauth_private_key.p8

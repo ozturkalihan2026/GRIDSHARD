@@ -17,6 +17,17 @@
   // yeniden göndermesin. Sunucu zaten ikinci kez ürün vermez.
   const PROCESSED_PURCHASES_KEY = "gridshard.store.processed-purchases";
   const PROCESSED_PURCHASES_LIMIT = 100;
+  const AD_PROTOCOL = "child-safe-v1";
+
+  // Until a reviewed mixed-audience age flow exists, do not infer adulthood
+  // from Play Games, an analytics checkbox or a saved UMP consent. Treat all
+  // ad requests conservatively, including users whose age is unknown.
+  // UMP's TFUA signal is separate from the advertising SDK's request config.
+  const AD_CONSENT_CONFIGURATION = Object.freeze({ tagForUnderAgeOfConsent: true });
+  const AD_REQUEST_CONFIGURATION = Object.freeze({
+    tagForChildDirectedTreatment: true,
+    maxAdContentRating: "General",
+  }); // Do not set the legacy TFCD and TFUA flags together on ad requests.
 
   function purchaseKey(native) {
     return String(native?.purchaseToken || native?.transactionId || "");
@@ -48,6 +59,10 @@
       this.native = ["android", "ios"].includes(this.platform);
       this.storage = storage;
       this.adsInitialized = null;
+      this.adsConsent = null;
+      this.adsConsentFlight = null;
+      this.adsPrivacyOptionsRequired = false;
+      this.adsBusy = false;
     }
 
     plugin(name) {
@@ -72,12 +87,25 @@
     adProvider(storeState) {
       if (
         storeState?.providers?.ad_platforms?.admob
+        && storeState?.providers?.ad_policy?.protocol === AD_PROTOCOL
+        && ["test", "live"].includes(storeState?.providers?.ad_policy?.mode)
         && storeState?.providers?.ad_units?.[this.platform]
         && this.plugin("AdMob")
       ) {
         return "admob";
       }
       return storeState?.providers?.ads || null;
+    }
+
+    adCapability() {
+      return this.plugin("AdMob")
+        ? {ad_protocol:AD_PROTOCOL, ad_platform:this.platform} : {};
+    }
+
+    adQuery() {
+      const capability = this.adCapability();
+      return capability.ad_protocol
+        ? `?ad_protocol=${encodeURIComponent(capability.ad_protocol)}&ad_platform=${encodeURIComponent(capability.ad_platform)}` : "";
     }
 
     // Mağazanın ödeme penceresini açar. Oyuncu vazgeçerse eklenti hata verir.
@@ -196,24 +224,141 @@
       }
     }
 
+    _rememberAdsConsent(info) {
+      // UMP is the source of truth; never persist or infer consent ourselves.
+      this.adsConsent = {
+        status: String(info?.status || "UNKNOWN"),
+        canRequestAds: info?.canRequestAds === true,
+        privacyOptionsRequired: info?.privacyOptionsRequirementStatus === "REQUIRED",
+      };
+      this.adsPrivacyOptionsRequired = this.adsConsent.privacyOptionsRequired;
+      return this.adsConsent;
+    }
+
+    async refreshAdsConsent({ storeState, force = false } = {}) {
+      if (this.adProvider(storeState) !== "admob") return null;
+      if (this.adsConsentFlight) return this.adsConsentFlight;
+      if (this.adsConsent && !force) return this.adsConsent;
+      const plugin = this.plugin("AdMob");
+      if (typeof plugin?.requestConsentInfo !== "function") {
+        throw new Error("Reklam gizlilik desteği bu cihazda kullanılamıyor.");
+      }
+      this.adsConsentFlight = Promise.resolve().then(() => plugin.requestConsentInfo({ ...AD_CONSENT_CONFIGURATION }))
+        .then(info => this._rememberAdsConsent(info))
+        .catch(error => {
+          this.adsConsent = null; // An unsuccessful refresh never permits ads.
+          throw error;
+        }).finally(() => { this.adsConsentFlight = null; });
+      return this.adsConsentFlight;
+    }
+
+    async showAdsPrivacyOptions({ storeState } = {}) {
+      if (this.adsBusy) throw new Error("Reklam işlemi zaten devam ediyor.");
+      this.adsBusy = true;
+      try {
+        if (this.adProvider(storeState) !== "admob") return false;
+        if (!this.adsPrivacyOptionsRequired) await this.refreshAdsConsent({ storeState });
+        if (!this.adsPrivacyOptionsRequired) return false;
+        // No ad can race a revocation while the native form is on screen.
+        this.adsConsent = null;
+        await this.plugin("AdMob").showPrivacyOptionsForm();
+        await this.refreshAdsConsent({ storeState, force:true });
+        return true;
+      } finally { this.adsBusy = false; }
+    }
+
+    async _showRewardUntilClosed(plugin, adId) {
+      // SDK 8.1.0 resolves showRewardVideoAd on earned reward, but not on
+      // dismissal/failure without a reward. Observe those terminal events too.
+      const handles = [];
+      let earned = null, settled = false;
+      let finish;
+      const result = new Promise((resolve, reject) => {
+        finish = (error, reward) => {
+          if (settled) return;
+          settled = true;
+          if (error) reject(error); else resolve(reward);
+        };
+      });
+      // Install listeners before show, including synchronous test/native events.
+      try {
+        handles.push(await plugin.addListener("onRewardedVideoAdReward", reward => { earned = reward; }));
+        handles.push(await plugin.addListener("onRewardedVideoAdDismissed", () => {
+          finish(earned ? null : new Error("Reklam tamamlanmadan kapatıldı; ek ödül verilmedi."), earned);
+        }));
+        handles.push(await plugin.addListener("onRewardedVideoAdFailedToShow", () => {
+          finish(new Error("Reklam gösterilemedi. Daha sonra yeniden deneyebilirsin."));
+        }));
+        Promise.resolve().then(() => plugin.showRewardVideoAd({ adId }))
+          .then(reward => { if (!settled && reward) earned = reward; }, error => finish(error));
+        return await result;
+      } finally {
+        await Promise.allSettled(handles.map(async handle => handle.remove()));
+      }
+    }
+
     // Ödüllü reklamı gösterir. SSV isteğine oyuncu ve savaş kimliği gömülür;
     // sunucu ödülü yalnız bu imzalı geri çağrı ulaştığında verir.
     async showRewardedAd({ storeState, userId, battleId }) {
       const plugin = this.plugin("AdMob");
       const adId = storeState?.providers?.ad_units?.[this.platform];
-      if (!plugin || !adId) throw new Error("Reklam eklentisi bu cihazda yok.");
-      if (!this.adsInitialized) {
-        this.adsInitialized = Promise.resolve(plugin.initialize?.({})).catch((error) => {
-          this.adsInitialized = null;
-          throw error;
-        });
+      if (this.adProvider(storeState) !== "admob" || !plugin || !adId) {
+        throw new Error("Ödüllü reklam henüz etkin değil.");
       }
-      await this.adsInitialized;
-      await plugin.prepareRewardVideoAd({
-        adId,
-        ssv: { userId: String(userId), customData: String(battleId) },
-      });
-      return plugin.showRewardVideoAd();
+      if (this.adsBusy) throw new Error("Reklam işlemi zaten devam ediyor.");
+      this.adsBusy = true;
+      try {
+        const info = await this.refreshAdsConsent({ storeState });
+        // UMP should not request consent under the conservative age tag. An
+        // unexpected REQUIRED result must not ask a child/unknown user to
+        // authorize personal-data processing or reuse a previous permission.
+        if (info?.status === "REQUIRED" || !info?.canRequestAds) {
+          throw new Error("Reklam için gizlilik onayı tamamlanamadı. Oynamaya devam edebilirsin.");
+        }
+        const testMode = storeState?.providers?.ad_policy?.mode === "test";
+        let testSettings = null;
+        const safety = this.plugin("GridshardAdSafety");
+        if (testMode) {
+          if (!safety?.getTestSettings || !safety?.verifyTestDevice) throw new Error("Güvenli reklam test paketi gerekli.");
+          testSettings = await safety.getTestSettings();
+          if (testSettings?.mode !== "test" || testSettings?.adUnitId !== adId
+              || !Array.isArray(testSettings?.testingDevices) || !testSettings.testingDevices.length
+              || testSettings.testingDevices.some(id => typeof id !== "string" || !/^[A-F0-9]{32}$/.test(id))) {
+            throw new Error("Reklam test yapılandırması doğrulanamadı.");
+          }
+        } else if (this.platform === "android" && adId !== "ca-app-pub-3940256099942544/5224354917") {
+          // The official demo unit is harmless; our publisher unit needs a
+          // reviewed release build. Server policy cannot authorize debug ads.
+          if (!safety?.verifyLiveBuild) throw new Error("Bu paket canlı reklam için yetkilendirilmedi.");
+          const liveBuild = await safety.verifyLiveBuild({adId});
+          if (liveBuild?.verified !== true || liveBuild?.mode !== "live") {
+            throw new Error("Bu paket canlı reklam için yetkilendirilmedi.");
+          }
+        }
+        if (!this.adsInitialized) {
+          // AdMob 8.1.0 applies these flags BEFORE MobileAds.initialize/start.
+          this.adsInitialized = Promise.resolve().then(() => plugin.initialize({ ...AD_REQUEST_CONFIGURATION,
+            ...(testMode ? {initializeForTesting:true,testingDevices:[...testSettings.testingDevices]} : {}),
+          })).catch((error) => {
+            this.adsInitialized = null;
+            throw error;
+          });
+        }
+        await this.adsInitialized;
+        if (testMode) {
+          const verified = await safety.verifyTestDevice({adId});
+          if (verified?.verified !== true || verified?.mode !== "test") throw new Error("Test cihazı doğrulanamadı.");
+        }
+        const loaded = await plugin.prepareRewardVideoAd({
+          adId,
+          immersiveMode:true,
+          npa:true,
+          ...(testMode ? {isTesting:true} : {}),
+          ssv: { userId: String(userId), customData: String(battleId) },
+        });
+        if (loaded?.adUnitId !== adId) throw new Error("Yüklenen reklam birimi beklenen birim değil.");
+        return await this._showRewardUntilClosed(plugin, adId);
+      } finally { this.adsBusy = false; }
     }
   }
 

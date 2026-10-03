@@ -9,6 +9,7 @@ from typing import Any, Protocol, Callable, Awaitable
 from .pvp_protocol import protocol_error_envelope
 from .pvp_protocol_handler import PvPProtocolHandler
 from .pvp_session import PvPSessionError, PvPSessionService
+from .models import BattleStatus
 
 
 class WebSocketConnection(Protocol):
@@ -99,6 +100,7 @@ class PvPWebSocketAdapter:
         silent_timeout_seconds: float = 12.0,
         grace_period_seconds: float = 0.0,
         max_messages_per_second: int = 60,
+        send_timeout_seconds: float = 2.0,
     ):
         self.service = service
         self.handler = PvPProtocolHandler(service)
@@ -107,6 +109,7 @@ class PvPWebSocketAdapter:
         self.silent_timeout_seconds = silent_timeout_seconds
         self.grace_period_seconds = grace_period_seconds
         self.max_messages_per_second = max(1, int(max_messages_per_second))
+        self.send_timeout_seconds = max(.01, float(send_timeout_seconds))
         self.pending_disconnect_deadlines: dict[tuple[str,str],float] = {}
 
     async def connect(
@@ -162,10 +165,10 @@ class PvPWebSocketAdapter:
             connection.player_id,
         )
         if not remaining:
-            self.service.disconnect(
-                connection.session_id,
-                connection.player_id,
-            )
+            try:
+                self.service.disconnect(connection.session_id, connection.player_id)
+            except PvPSessionError:
+                pass  # Session retention can expire before transport teardown.
 
         await connection.socket.close(
             code=close_code
@@ -182,6 +185,16 @@ class PvPWebSocketAdapter:
             connection.player_id,
         )
         if remaining:
+            return
+
+        try:
+            session = self.service.get_session(connection.session_id)
+        except PvPSessionError:
+            self.pending_disconnect_deadlines.pop((connection.session_id, connection.player_id), None)
+            return
+        if session.engine.state.status == BattleStatus.FINISHED:
+            self.pending_disconnect_deadlines.pop((connection.session_id, connection.player_id), None)
+            session.slot_for(connection.player_id).connected = False
             return
 
         if self.grace_period_seconds > 0:
@@ -227,10 +240,13 @@ class PvPWebSocketAdapter:
             if now < deadline:
                 continue
             session_id,player_id=key
-            if not self.registry.active_for_player(session_id,player_id):
-                self.service.disconnect(session_id,player_id)
-                grace_expired+=1
             self.pending_disconnect_deadlines.pop(key,None)
+            if not self.registry.active_for_player(session_id,player_id):
+                try:
+                    self.service.disconnect(session_id,player_id)
+                except PvPSessionError:
+                    continue  # Already deleted by the session TTL sweep.
+                grace_expired+=1
 
         return {
             "timed_out_connections":timed_out,
@@ -397,25 +413,26 @@ class PvPWebSocketAdapter:
         return response
 
     async def broadcast_live_events(self, session_id: str) -> int:
-        sent = 0
-        for connection in list(self.registry.connections.values()):
-            if not connection.connected or connection.session_id != session_id:
-                continue
-            if await self.send_live_events(connection.connection_id) is not None:
-                sent += 1
-        return sent
+        return await self._broadcast(session_id, self.send_live_events)
+
+    async def _broadcast(self, session_id: str, send, **kwargs) -> int:
+        async def deliver(connection):
+            try:
+                result = await asyncio.wait_for(
+                    send(connection.connection_id, **kwargs), timeout=self.send_timeout_seconds,
+                )
+                return int(result is not None)
+            except Exception:
+                # A dead/slow socket must not stop the opponent's simulation.
+                # The normal grace/reconnect path supplies authoritative state.
+                await self.connection_lost(connection.connection_id)
+                return 0
+        connections = [c for c in list(self.registry.connections.values())
+                       if c.connected and c.session_id == session_id]
+        return sum(await asyncio.gather(*(deliver(c) for c in connections)))
 
     async def broadcast_snapshot(self, session_id: str) -> int:
-        sent = 0
-        for connection in list(self.registry.connections.values()):
-            if not connection.connected or connection.session_id != session_id:
-                continue
-            await self.send_snapshot(
-                connection.connection_id,
-                request_id="server-live-snapshot",
-            )
-            sent += 1
-        return sent
+        return await self._broadcast(session_id, self.send_snapshot, request_id="server-live-snapshot")
 
     async def send_match_finished(
         self,
@@ -440,20 +457,7 @@ class PvPWebSocketAdapter:
         self,
         session_id: str,
     ) -> int:
-        sent = 0
-        for connection in list(
-            self.registry.connections.values()
-        ):
-            if (
-                not connection.connected
-                or connection.session_id != session_id
-            ):
-                continue
-            await self.send_match_finished(
-                connection.connection_id
-            )
-            sent += 1
-        return sent
+        return await self._broadcast(session_id, self.send_match_finished)
 
     async def close_finished_session_connections(
         self,
@@ -476,9 +480,11 @@ class PvPWebSocketAdapter:
                 continue
 
             connection.connected = False
-            await connection.socket.close(
-                code=close_code
-            )
+            connection.last_seen_at = self.now_func()
+            try:
+                await asyncio.wait_for(connection.socket.close(code=close_code), timeout=self.send_timeout_seconds)
+            except Exception:
+                pass  # A failed close must not prevent closing other sockets.
             closed += 1
 
         for slot in session.slots.values():

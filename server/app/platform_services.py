@@ -28,6 +28,9 @@ from urllib.request import Request as UrlRequest, urlopen
 from .platform_storage_lock import PlatformStorageLock
 from .push_delivery import PushSender
 from .push_outbox import PushOutbox
+from .native_oauth import native_return_url, pkce_challenge
+from .production_config import environment_secret
+from .play_games import configuration as play_games_configuration, verified_subject as play_games_subject
 
 
 class PlatformServiceError(ValueError):
@@ -418,6 +421,7 @@ class PlatformService(PushOutbox):
         google = self._oauth_configuration("google")
         apple = self._oauth_configuration("apple")
         return {
+            "google_play_games": {"configured": self.play_games_configuration()["configured"]},
             "google": {
                 "configured": bool(
                     google["client_id"]
@@ -447,11 +451,90 @@ class PlatformService(PushOutbox):
             },
         }
 
+    @staticmethod
+    def play_games_configuration() -> dict:
+        try:
+            return play_games_configuration()
+        except (RuntimeError, ValueError) as exc:
+            raise PlatformServiceError(str(exc)) from exc
+
+    def start_play_games(self, player_id: str, mode: str, code_challenge: str) -> dict:
+        if mode not in {"login", "link"} or not re.fullmatch(r"[A-Za-z0-9_-]{43}", code_challenge):
+            raise PlatformServiceError("Play Games giriş isteği geçersiz.")
+        config = self.play_games_configuration()
+        if not config["configured"]:
+            return {"configured": False}
+        state = secrets.token_urlsafe(32)
+        with self._lock:
+            data = self._read()
+            account = self._account(data, player_id)
+            account["oauth_states"]["google_play_games"] = {
+                "state_hash": self._code_hash(state), "expires_at": int(self.now_func()) + 600,
+                "mode": mode, "code_challenge": code_challenge,
+            }
+            self._write(data)
+        return {"configured": True, "state": state, "game_id": config["game_id"],
+                "server_client_id": config["client_id"]}
+
+    def complete_play_games(self, player_id: str, state: str, code: str, code_verifier: str) -> dict:
+        state = _clean_text(state, maximum=256, label="Play Games durumu")
+        code = _clean_text(code, maximum=2048, label="Play Games kodu")
+        config = self.play_games_configuration()
+        if not config["configured"]:
+            raise PlatformServiceError("Play Games sunucuda henüz hazır değil.")
+        now = int(self.now_func())
+        with self._lock:
+            data = self._read()
+            account = self._account(data, player_id)
+            pending = account["oauth_states"].get("google_play_games", {})
+            try:
+                proof = secrets.compare_digest(pkce_challenge(code_verifier), pending.get("code_challenge", ""))
+            except ValueError:
+                proof = False
+            if (int(pending.get("expires_at", 0)) <= now or not proof
+                    or not secrets.compare_digest(pending.get("state_hash", ""), self._code_hash(state))):
+                raise PlatformServiceError("Play Games cihaz doğrulaması başarısız.")
+            account["oauth_states"].pop("google_play_games", None)
+            self._write(data)
+        # Consume first, before network calls; a failed code requires a new attempt.
+        try:
+            subject = play_games_subject(config, code, self._request_oauth_json)
+        except ValueError as exc:
+            raise PlatformServiceError(str(exc)) from exc
+        with self._lock:
+            data = self._read()
+            if player_id not in data.get("accounts", {}):
+                raise PlatformServiceError("Play Games giriş profili artık mevcut değil.")
+            account = self._account(data, player_id)
+            owner = next((key for key, value in data.get("accounts", {}).items()
+                          if value.get("oauth_links", {}).get("google_play_games", {}).get("subject") == subject), None)
+            existing = account.get("oauth_links", {}).get("google_play_games", {})
+            if existing and existing.get("subject") != subject:
+                raise PlatformServiceError("Bu profil başka bir Play Games hesabına bağlı.")
+            if owner and owner != player_id:
+                if pending["mode"] != "login" or account.get("contacts") or account.get("oauth_links"):
+                    raise PlatformServiceError("Play Games hesabı başka bir oyuncuya bağlı; mevcut profil korunuyor.")
+            target_id = owner or player_id
+            target = self._account(data, target_id)
+            target["oauth_links"]["google_play_games"] = {"subject": subject, "linked_at": now}
+            exchange = secrets.token_urlsafe(32)
+            exchanges = data.setdefault("oauth_exchanges", {})
+            exchanges[self._code_hash(exchange)] = {"player_id": target_id, "provider": "google_play_games",
+                "expires_at": now + self.OAUTH_EXCHANGE_TTL_SECONDS, "code_challenge": pending["code_challenge"]}
+            data["oauth_exchanges"] = {key: value for key, value in exchanges.items()
+                                       if int(value.get("expires_at", 0)) > now}
+            self._write(data)
+        return {"provider": "google_play_games", "linked": True, "exchange": exchange}
+
     def _oauth_configuration(self, provider: str) -> dict:
         prefix = f"GRIDSHARD_{provider.upper()}_OAUTH"
+        try:
+            client_secret = environment_secret(f"{prefix}_CLIENT_SECRET", os.environ)
+        except RuntimeError as exc:
+            raise PlatformServiceError(str(exc)) from exc
         return {
             "client_id": os.environ.get(f"{prefix}_CLIENT_ID", "").strip(),
-            "client_secret": os.environ.get(f"{prefix}_CLIENT_SECRET", "").strip(),
+            "client_secret": client_secret,
             "authorize_url": (
                 os.environ.get(f"{prefix}_AUTHORIZE_URL", "").strip()
                 or (
@@ -495,16 +578,27 @@ class PlatformService(PushOutbox):
         provider: str,
         *,
         mode: str = "link",
+        native_target: str = "",
+        code_challenge: str = "",
     ) -> dict:
         if provider not in {"google", "apple"}:
             raise PlatformServiceError("Desteklenmeyen OAuth sağlayıcısı.")
         if mode not in {"link", "login"}:
             raise PlatformServiceError("OAuth işlemi link veya login olmalıdır.")
+        if native_target:
+            try:
+                native_return_url(self.web_base_url, native_target)
+            except ValueError as exc:
+                raise PlatformServiceError(str(exc)) from exc
+        if native_target or code_challenge:
+            if not re.fullmatch(r"[A-Za-z0-9_-]{43}", code_challenge):
+                raise PlatformServiceError("Native OAuth S256 challenge gerekli.")
         config = self._oauth_configuration(provider)
         if not self.oauth_status()[provider]["configured"]:
             return {"provider": provider, "configured": False, "authorization_url": None}
         state = secrets.token_urlsafe(24)
         nonce = secrets.token_urlsafe(24) if provider == "apple" else ""
+        handoff = secrets.token_urlsafe(24) if code_challenge else ""
         with self._lock:
             data = self._read()
             account = self._account(data, player_id)
@@ -513,6 +607,9 @@ class PlatformService(PushOutbox):
                 "expires_at": int(self.now_func()) + 600,
                 "mode": mode,
                 "nonce_hash": self._code_hash(nonce) if nonce else "",
+                "native_target": native_target,
+                "code_challenge": code_challenge,
+                "handoff": handoff,
             }
             self._write(data)
         params = {
@@ -526,10 +623,35 @@ class PlatformService(PushOutbox):
         if provider == "apple":
             params["response_mode"] = "form_post"
             params["nonce"] = nonce
-        return {
+        result = {
             "provider": provider, "configured": True,
             "authorization_url": f"{config['authorize_url']}?{urlencode(params)}",
         }
+        if handoff:
+            result["handoff"] = handoff
+        return result
+
+    def oauth_return_context(self, provider: str, state: str) -> dict:
+        """Read routing only from an unexpired server-owned state, never a URL."""
+        now = int(self.now_func())
+        with self._lock:
+            for account in self._read().get("accounts", {}).values():
+                pending = account.get("oauth_states", {}).get(provider)
+                if (pending and int(pending.get("expires_at", 0)) > now
+                        and secrets.compare_digest(str(pending.get("state_hash", "")), self._code_hash(state))):
+                    return {"native_target": pending.get("native_target", ""),
+                            "handoff": pending.get("handoff", "")}
+        return {}
+
+    def cancel_oauth(self, provider: str, state: str) -> None:
+        with self._lock:
+            data = self._read()
+            for account in data.get("accounts", {}).values():
+                pending = account.get("oauth_states", {}).get(provider)
+                if pending and secrets.compare_digest(str(pending.get("state_hash", "")), self._code_hash(state)):
+                    account["oauth_states"].pop(provider, None)
+                    self._write(data)
+                    return
 
     def _request_oauth_json(
         self,
@@ -582,8 +704,8 @@ class PlatformService(PushOutbox):
                 self._apple_private_key(config),
                 password=None,
             )
-            if not isinstance(private_key, ec.EllipticCurvePrivateKey):
-                raise TypeError("Apple anahtarı EC türünde değil.")
+            if not isinstance(private_key, ec.EllipticCurvePrivateKey) or not isinstance(private_key.curve, ec.SECP256R1):
+                raise TypeError("Apple anahtarı ES256/P-256 türünde değil.")
             now = int(self.now_func())
             header = {"alg": "ES256", "kid": config["key_id"]}
             claims = {
@@ -785,13 +907,14 @@ class PlatformService(PushOutbox):
                 "verified_at": now,
             }
             exchange = None
-            if mode == "login":
+            if mode == "login" or (pending_state or {}).get("code_challenge"):
                 exchange = secrets.token_urlsafe(32)
                 exchanges = data.setdefault("oauth_exchanges", {})
                 exchanges[self._code_hash(exchange)] = {
                     "player_id": target_player_id,
                     "provider": provider,
                     "expires_at": now + self.OAUTH_EXCHANGE_TTL_SECONDS,
+                    "code_challenge": str((pending_state or {}).get("code_challenge", "")),
                 }
                 data["oauth_exchanges"] = {
                     key: value
@@ -808,18 +931,27 @@ class PlatformService(PushOutbox):
             result["exchange"] = exchange
         return result
 
-    def consume_oauth_exchange(self, exchange: str) -> dict:
+    def consume_oauth_exchange(self, exchange: str, *, code_verifier: str = "") -> dict:
         exchange = _clean_text(exchange, maximum=256, label="OAuth değişim kodu")
         exchange_hash = self._code_hash(exchange)
         now = int(self.now_func())
         with self._lock:
             data = self._read()
-            pending = data.setdefault("oauth_exchanges", {}).pop(
-                exchange_hash, None
-            )
+            exchanges = data.setdefault("oauth_exchanges", {})
+            pending = exchanges.get(exchange_hash)
+            if not pending or int(pending.get("expires_at", 0)) <= now:
+                raise PlatformServiceError("OAuth değişim kodu yok veya süresi dolmuş.")
+            challenge = str(pending.get("code_challenge", ""))
+            if challenge:
+                try:
+                    verified = secrets.compare_digest(pkce_challenge(code_verifier), challenge)
+                except ValueError:
+                    verified = False
+                if not verified:
+                    # Do not let an intercepted callback consume another device's code.
+                    raise PlatformServiceError("OAuth cihaz doğrulaması başarısız.")
+            exchanges.pop(exchange_hash)
             self._write(data)
-        if not pending or int(pending.get("expires_at", 0)) <= now:
-            raise PlatformServiceError("OAuth değişim kodu yok veya süresi dolmuş.")
         return {
             "player_id": str(pending["player_id"]),
             "provider": str(pending["provider"]),

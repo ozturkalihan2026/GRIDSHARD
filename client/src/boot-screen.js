@@ -70,9 +70,11 @@
       this.errorMessageEl = this._part("boot-error-message");
       this.retryEl = this._part("boot-retry");
       this.playerButtonEl = this._part("boot-player-id");
+      this.playerLabelEl = this._part("boot-player-id-label");
       this.playerValueEl = this._part("boot-player-id-value");
       this.versionEl = this._part("boot-version");
 
+      this.setPlayerId("");
       this.retryEl?.addEventListener?.("click", () => this.retry());
       this.playerButtonEl?.addEventListener?.("click", () => { void this.copyPlayerId(); });
 
@@ -136,19 +138,29 @@
     }
 
     setPlayerId(playerId) {
+      global.clearTimeout?.(this._copiedTimer);
+      this._copiedTimer = null;
       this.playerId = String(playerId || "");
+      if (this.playerLabelEl) this.playerLabelEl.textContent = this.text("boot.player_id.label");
       if (!this.playerButtonEl || !this.playerValueEl) return;
+      delete this.playerButtonEl.dataset.copied;
+      this.playerButtonEl.setAttribute("aria-label", this.text("boot.player_id.copy"));
+      this.playerButtonEl.setAttribute("title", this.text("boot.player_id.explanation"));
       this.playerValueEl.textContent = shortPlayerId(this.playerId);
       this.playerButtonEl.hidden = !this.playerId;
     }
 
     async copyPlayerId() {
       if (!this.playerId || typeof this.clipboard?.writeText !== "function") return false;
+      const copiedPlayerId = this.playerId;
       try {
-        await this.clipboard.writeText(this.playerId);
+        await this.clipboard.writeText(copiedPlayerId);
       } catch (_error) {
         return false;
       }
+      // Retry/provider return may change or clear the displayed account while
+      // clipboard permission is pending. Never mark a different ID as copied.
+      if (this.playerId !== copiedPlayerId) return true;
       if (this.playerButtonEl?.dataset) this.playerButtonEl.dataset.copied = "true";
       if (this.playerValueEl) this.playerValueEl.textContent = this.text(GRIDSHARD_BOOT_COPIED_LABEL);
       global.clearTimeout?.(this._copiedTimer);

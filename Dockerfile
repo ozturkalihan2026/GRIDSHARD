@@ -1,11 +1,11 @@
 FROM node:22-slim AS client-build
 WORKDIR /build
 RUN npm install --global pnpm@11.19.0
-COPY package.json pnpm-lock.yaml ./
+COPY tools/web-build/package.json tools/web-build/pnpm-lock.yaml ./
 RUN pnpm install --frozen-lockfile --ignore-scripts
 COPY client ./client
-COPY tools/build-client.js ./tools/build-client.js
-RUN pnpm build:web
+COPY tools/build-client.js tools/mobile-network-policy.js ./tools/
+RUN node tools/build-client.js
 
 FROM python:3.12-slim
 WORKDIR /app

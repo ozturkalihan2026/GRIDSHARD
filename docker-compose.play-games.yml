@@ -1,0 +1,11 @@
+# Dedicated Android PGS credential; never use this as browser Google OAuth.
+services:
+  relay-web:
+    environment:
+      GRIDSHARD_PLAY_GAMES_ID: ${GRIDSHARD_PLAY_GAMES_ID:?Set Play Games numeric ID}
+      GRIDSHARD_PLAY_GAMES_SERVER_CLIENT_ID: ${GRIDSHARD_PLAY_GAMES_SERVER_CLIENT_ID:?Set Play Games web client ID}
+      GRIDSHARD_PLAY_GAMES_CLIENT_SECRET_FILE: /run/secrets/play_games_client_secret
+    secrets: [play_games_client_secret]
+secrets:
+  play_games_client_secret:
+    file: ${GRIDSHARD_SECRETS_DIR:?Set external GRIDSHARD_SECRETS_DIR}/play_games_client_secret

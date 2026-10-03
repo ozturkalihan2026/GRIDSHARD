@@ -5,12 +5,13 @@ const fs = require("node:fs");
 const path = require("node:path");
 const test = require("node:test");
 const vm = require("node:vm");
+const { createRequire } = require("node:module");
 
 const root = path.resolve(__dirname, "../..");
 const source = fs.readFileSync(path.join(root, "capacitor.config.js"), "utf8");
 
 function configuration(env = {}) {
-  const context = { module: { exports: {} }, process: { env } };
+  const context = { module: { exports: {} }, process: { env }, require: createRequire(path.join(root, "capacitor.config.js")) };
   vm.runInNewContext(source, context, { filename: "capacitor.config.js" });
   return context.module.exports;
 }
@@ -20,19 +21,47 @@ test("native default matches the registered Play Console package", () => {
   assert.equal(config.appId, "com.gridshardgame.app");
   assert.equal(config.appName, "GRIDSHARD");
   assert.equal(config.server.androidScheme, "https");
-  assert.equal(config.server.cleartext, undefined);
+  assert.equal(config.server.cleartext, false);
   assert.equal(config.android.allowMixedContent, false);
 });
 
-test("local debug keeps its separate identity, path and network settings", () => {
+test("HTTPS debug keeps its separate identity without opening plaintext or mixed content", () => {
   const config = configuration({
     GRIDSHARD_LOCAL_DEBUG: "1",
     GRIDSHARD_APP_ID: "com.gridshardgame.app",
+    GRIDSHARD_API_BASE_URL: "https://play.gridshardgame.com",
   });
   assert.equal(config.appId, "com.gridshard.localdebug");
   assert.equal(config.android.path, ".mobile-debug/android");
-  assert.equal(config.server.cleartext, true);
-  assert.equal(config.android.allowMixedContent, true);
+  assert.equal(config.server.cleartext, false);
+  assert.equal(config.android.allowMixedContent, false);
+});
+
+test("only an explicitly selected private LAN debug API opens plaintext", () => {
+  const env = { GRIDSHARD_LOCAL_DEBUG: "1", GRIDSHARD_ALLOW_INSECURE_MOBILE_API: "1",
+    GRIDSHARD_API_BASE_URL: "http://192.168.1.105:8879" };
+  assert.equal(configuration(env).server.cleartext, true);
+  assert.equal(configuration(env).android.allowMixedContent, true);
+  assert.throws(() => configuration({ ...env, GRIDSHARD_LOCAL_DEBUG: "0" }), /HTTPS/);
+  assert.throws(() => configuration({ ...env, GRIDSHARD_ALLOW_INSECURE_MOBILE_API: "0" }), /HTTPS/);
+  assert.throws(() => configuration({ ...env, GRIDSHARD_API_BASE_URL: "http://play.gridshardgame.com" }), /HTTPS/);
+  const https = configuration({ ...env, GRIDSHARD_API_BASE_URL: "https://play.gridshardgame.com" });
+  assert.equal(https.server.cleartext, false);
+  assert.equal(https.android.allowMixedContent, false);
+});
+
+test("remote debug is separate from LAN debug and the permanent store identity", () => {
+  const env = { GRIDSHARD_LOCAL_DEBUG: "1", GRIDSHARD_REMOTE_DEBUG: "1",
+    GRIDSHARD_API_BASE_URL: "https://play.gridshardgame.com" };
+  const config = configuration(env);
+  assert.equal(config.appId, "com.gridshard.remotedebug");
+  assert.equal(config.appName, "GRIDSHARD TEST");
+  assert.equal(config.android.path, ".mobile-debug/remote-android");
+  assert.equal(config.server.cleartext, false);
+  assert.equal(config.android.allowMixedContent, false);
+  assert.throws(() => configuration({ ...env, GRIDSHARD_LOCAL_DEBUG: "0" }), /LOCAL_DEBUG/);
+  assert.throws(() => configuration({ ...env, GRIDSHARD_API_BASE_URL: "" }), /zorunludur/);
+  assert.throws(() => configuration({ ...env, GRIDSHARD_API_BASE_URL: "http://192.168.1.2", GRIDSHARD_ALLOW_INSECURE_MOBILE_API: "1" }), /HTTPS/);
 });
 
 test("explicit native application ID configuration still works", () => {

@@ -374,6 +374,7 @@ def utc_day_key(moment: datetime | None = None) -> str:
 class PlayerProfile:
     player_id: str
     display_name: str
+    display_name_changes: int = 0
     level: int = 1
     experience: int = 0
     rating: int = DEFAULT_RATING
@@ -517,6 +518,8 @@ class PlayerProfile:
         return {
             "player_id": self.player_id,
             "display_name": self.display_name,
+            "display_name_changes": self.display_name_changes,
+            "display_name_changes_remaining": max(0, 1 - self.display_name_changes),
             "level": self.level,
             "experience": self.experience,
             "experience_into_level": self.experience_into_level,
@@ -960,6 +963,15 @@ class PlayerProfileService:
             profile = self.get_or_create(player_id)
             try:
                 clean = normalize_display_name(display_name)
+                # Retrying a committed rename is harmless and must remain safe
+                # after a lost HTTP response. Only a different name consumes it.
+                if clean == profile.display_name:
+                    return profile
+                if profile.display_name_changes >= 1:
+                    raise DisplayNameError(
+                        "Oyuncu adı yalnız bir kez değiştirilebilir; hakkın kullanıldı.",
+                        code="limit_reached",
+                    )
                 ensure_display_name_available(
                     player_id, clean,
                     ((owner, other.display_name) for owner, other in self._profiles.items()),
@@ -968,6 +980,7 @@ class PlayerProfileService:
             except DisplayNameError as exc:
                 raise PlayerProfileError(str(exc), code=exc.code) from exc
             profile.display_name = clean
+            profile.display_name_changes += 1
             return profile
 
     def set_preferred_battle_pool(

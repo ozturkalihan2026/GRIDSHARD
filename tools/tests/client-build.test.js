@@ -77,8 +77,22 @@ test("API ayarı web için aynı origin'e izin verir, mobilde açık adres ister
   for (const url of ["http://game.example", "https://user:pass@game.example", "https://game.example/?token=x", "https://game.example/#x"]) {
     assert.throws(() => apiBaseForBuild({ GRIDSHARD_API_BASE_URL: url }, true));
   }
-  assert.equal(apiBaseForBuild({ GRIDSHARD_API_BASE_URL: "http://localhost:8000", GRIDSHARD_ALLOW_INSECURE_MOBILE_API: "1" }, true), "http://localhost:8000");
+  assert.equal(apiBaseForBuild({ GRIDSHARD_API_BASE_URL: "http://localhost:8000", GRIDSHARD_LOCAL_DEBUG: "1", GRIDSHARD_ALLOW_INSECURE_MOBILE_API: "1" }, true), "http://localhost:8000");
   assert.throws(() => apiBaseForBuild({ GRIDSHARD_API_BASE_URL: "file:///private", GRIDSHARD_ALLOW_INSECURE_MOBILE_API: "1" }, true));
+});
+
+test("HTTP istisnası hem debug bayrağı hem özel/loopback ağ ister", () => {
+  const env = { GRIDSHARD_LOCAL_DEBUG: "1", GRIDSHARD_ALLOW_INSECURE_MOBILE_API: "1" };
+  for (const host of ["10.0.0.2", "192.168.1.2", "172.16.0.2", "172.31.255.254", "127.0.0.1", "localhost", "[::1]"]) {
+    assert.equal(apiBaseForBuild({ ...env, GRIDSHARD_API_BASE_URL: `http://${host}:8879` }, true), `http://${host}:8879`);
+  }
+  for (const host of ["game.example", "localhost.example", "10.example", "172.15.0.1", "172.32.0.1", "192.169.1.1", "8.8.8.8", "[2001:db8::1]"]) {
+    assert.throws(() => apiBaseForBuild({ ...env, GRIDSHARD_API_BASE_URL: `http://${host}` }, true), /HTTPS/);
+  }
+  const lan = { ...env, GRIDSHARD_API_BASE_URL: "http://192.168.1.2:8879" };
+  assert.throws(() => apiBaseForBuild({ ...lan, GRIDSHARD_LOCAL_DEBUG: "0" }, true), /HTTPS/);
+  assert.throws(() => apiBaseForBuild({ ...lan, GRIDSHARD_ALLOW_INSECURE_MOBILE_API: "0" }, true), /HTTPS/);
+  assert.throws(() => apiBaseForBuild({ ...lan, GRIDSHARD_REMOTE_DEBUG: "1" }, true), /HTTPS/);
 });
 
 test("paket sırası, içerik özetleri, deterministik çıktı ve izin listesi", async (t) => {

@@ -29,6 +29,10 @@ secrets
 **/google-services.json
 **/GoogleService-Info.plist
 **/*.p8
+**/client_secret*.json
+**/google_oauth_client_secret
+**/apple_oauth_client_secret
+**/play_games_client_secret
 **/*firebase-adminsdk*.json
 *.zip
 .mobile-debug

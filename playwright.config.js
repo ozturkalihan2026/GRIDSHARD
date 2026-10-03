@@ -58,12 +58,12 @@ module.exports = defineConfig({
     },
     {
       name: "android-chrome-emulated",
-      testMatch: /(startup-loading|mobile-battle)\.spec\.js/,
+      testMatch: /(startup-loading|mobile-battle|settings-layout)\.spec\.js/,
       use: { ...devices["Pixel 7"], ...localChrome }
     },
     {
       name: "iphone-safari-emulated",
-      testMatch: /(startup-loading|mobile-battle)\.spec\.js/,
+      testMatch: /(startup-loading|mobile-battle|settings-layout)\.spec\.js/,
       use: { ...devices["iPhone 15"] }
     }
   ]

@@ -1,0 +1,23 @@
+{
+    auto_https disable_redirects
+    # No access logs: WebSocket URLs contain session tokens.
+}
+
+https://{$GRIDSHARD_HOST} {
+    tls /run/secrets/origin_certificate /run/secrets/origin_private_key
+    encode zstd gzip
+    header {
+        Strict-Transport-Security "max-age=31536000"
+        X-Content-Type-Options "nosniff"
+        Referrer-Policy "no-referrer"
+        -Server
+    }
+    reverse_proxy relay-web:8000 {
+        health_uri /health
+        health_interval 10s
+        health_timeout 3s
+        health_headers {
+            Host {$GRIDSHARD_HOST}
+        }
+    }
+}

@@ -2552,6 +2552,12 @@ body[data-app-screen="menu"] .main-menu-panel {
   background:rgba(7,11,20,.48);
 }
 
+.settings-form .settings-toggle > input[type="checkbox"] {
+  flex:0 0 auto;
+  width:auto;
+  margin:0;
+}
+
 .settings-form .settings-privacy-note {
   margin:0;
   color:var(--muted, #9bb4c9);

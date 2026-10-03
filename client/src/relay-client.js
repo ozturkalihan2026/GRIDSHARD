@@ -3053,6 +3053,9 @@
 
 
   class RelayTestParticipantIdentity {
+    // Historical web-test name/prefix, now also used by real game accounts.
+    // Keep persisted IDs unchanged: provider linking maps to this account and
+    // must not replace it with a Google Play Games subject or discard progress.
     constructor({
       storage = null,
       storageKey =

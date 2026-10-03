@@ -1,0 +1,15 @@
+# Use ONLY after docker-compose.production.yml. Requires Compose >= 2.24.4.
+# Never combine this with the development Compose file.
+services:
+  caddy:
+    # Replace, don't append: no public HTTP or QUIC origin port is needed.
+    ports: !override ['443:443']
+    volumes:
+      - ./deploy/Caddyfile.cloudflare:/etc/caddy/Caddyfile:ro
+    secrets: [origin_certificate, origin_private_key]
+
+secrets:
+  origin_certificate:
+    file: ${GRIDSHARD_ORIGIN_TLS_DIR:?Set external GRIDSHARD_ORIGIN_TLS_DIR}/origin_cert.pem
+  origin_private_key:
+    file: ${GRIDSHARD_ORIGIN_TLS_DIR:?Set external GRIDSHARD_ORIGIN_TLS_DIR}/origin_key.pem

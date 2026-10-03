@@ -1,0 +1,12 @@
+# Optional: include only after Google Cloud's web OAuth client is configured.
+# Secret stays outside the source/image/APK, mounted as a read-only file.
+services:
+  relay-web:
+    environment:
+      GRIDSHARD_GOOGLE_OAUTH_CLIENT_ID: ${GRIDSHARD_GOOGLE_OAUTH_CLIENT_ID:?Set Google web client ID}
+      GRIDSHARD_GOOGLE_OAUTH_CLIENT_SECRET_FILE: /run/secrets/google_oauth_client_secret
+      GRIDSHARD_GOOGLE_OAUTH_REDIRECT_URI: https://${GRIDSHARD_HOST:?Set GRIDSHARD_HOST}/oauth/google/callback
+    secrets: [google_oauth_client_secret]
+secrets:
+  google_oauth_client_secret:
+    file: ${GRIDSHARD_SECRETS_DIR:?Set external GRIDSHARD_SECRETS_DIR}/google_oauth_client_secret

@@ -41,7 +41,7 @@ Geliştirme modu `client/` kaynaklarını ve mevcut no-cache davranışını kor
 
 ## Mobil
 
-`GRIDSHARD_API_BASE_URL` tanımlandıktan sonra `pnpm build:mobile:web` aynı küçültülmüş paketi üretir. HTTPS zorunludur; `GRIDSHARD_ALLOW_INSECURE_MOBILE_API=1` yalnız yerel HTTP denemesi içindir, mağaza adayında kullanılmaz. Derleme fonksiyonu mobil platform bilgisini döndürür; mobil `dist/` içinde geliştirme manifesti bulunmaz. Web yayınına dönerken `pnpm build:web` yeniden çalıştırılmalıdır.
+`GRIDSHARD_API_BASE_URL` tanımlandıktan sonra `pnpm build:mobile:web` aynı küçültülmüş paketi üretir. HTTPS zorunludur; HTTP istisnası hem `GRIDSHARD_LOCAL_DEBUG=1` hem `GRIDSHARD_ALLOW_INSECURE_MOBILE_API=1` ve özel/loopback host gerektirir, mağaza adayında kullanılmaz. Ortak `tools/mobile-network-policy.js`, Capacitor/Android için de aynı kararı verir; uzak HTTPS debug paketi plaintext/karma içerik izni açmaz. Derleme fonksiyonu mobil platform bilgisini döndürür; mobil `dist/` içinde geliştirme manifesti bulunmaz. Web yayınına dönerken `pnpm build:web` yeniden çalıştırılmalıdır.
 
 ## Docker ve CI
 

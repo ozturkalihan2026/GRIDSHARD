@@ -18,6 +18,7 @@
       this.completed.clear();
       this.startedAt = this.now();
       this.restart();
+      this.setPlayerId("");
       this._render(0, 0);
       this.stage("boot.stage.server");
     }

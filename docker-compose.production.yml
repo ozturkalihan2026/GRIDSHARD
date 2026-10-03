@@ -37,7 +37,7 @@ services:
     read_only: true
     cap_drop: [ALL]
     security_opt: [no-new-privileges:true]
-    tmpfs: [/tmp:rw,noexec,nosuid,size=32m]
+    tmpfs: ['/tmp:rw,noexec,nosuid,size=32m']
     environment:
       GRIDSHARD_RUNTIME_MODE: production
       GRIDSHARD_RUNTIME_DATA_DIR: /var/lib/gridshard
@@ -48,8 +48,15 @@ services:
       GRIDSHARD_PUBLIC_WS_BASE_URL: wss://${GRIDSHARD_HOST:?Set GRIDSHARD_HOST}
       GRIDSHARD_CORS_ORIGINS: https://${GRIDSHARD_HOST},https://localhost,capacitor://localhost,http://localhost
       GRIDSHARD_DEV_EXPOSE_VERIFICATION_CODES: '0'
+      GRIDSHARD_ANDROID_AUTH_CERT_SHA256: ${GRIDSHARD_ANDROID_AUTH_CERT_SHA256:-}
+      GRIDSHARD_ANDROID_TEST_AUTH_CERT_SHA256: ${GRIDSHARD_ANDROID_TEST_AUTH_CERT_SHA256:-}
       GRIDSHARD_PURCHASE_TEST_MODE: '0'
       GRIDSHARD_AD_TEST_MODE: '0'
+      GRIDSHARD_ADMOB_SSV_ENABLED: ${GRIDSHARD_ADMOB_SSV_ENABLED:-0}
+      GRIDSHARD_ADMOB_ROLLOUT_MODE: ${GRIDSHARD_ADMOB_ROLLOUT_MODE:-disabled}
+      GRIDSHARD_ADMOB_TEST_PLAYER_IDS: ${GRIDSHARD_ADMOB_TEST_PLAYER_IDS:-}
+      GRIDSHARD_ADMOB_REWARDED_AD_UNIT_ANDROID: ${GRIDSHARD_ADMOB_REWARDED_AD_UNIT_ANDROID:-}
+      GRIDSHARD_ADMOB_REWARDED_AD_UNIT_IOS: ${GRIDSHARD_ADMOB_REWARDED_AD_UNIT_IOS:-}
       GRIDSHARD_STORE_RECONCILE_INTERVAL_SECONDS: ${GRIDSHARD_STORE_RECONCILE_INTERVAL_SECONDS:-1800}
       GRIDSHARD_PUSH_ENABLED: '0'
       GRIDSHARD_INSTANCE_ID: production-single
@@ -94,7 +101,7 @@ services:
     read_only: true
     cap_drop: [ALL]
     security_opt: [no-new-privileges:true]
-    tmpfs: [/tmp:rw,noexec,nosuid,size=32m]
+    tmpfs: ['/tmp:rw,noexec,nosuid,size=32m']
     environment:
       DATABASE_URL_FILE: /run/secrets/database_url
     secrets: [database_url]

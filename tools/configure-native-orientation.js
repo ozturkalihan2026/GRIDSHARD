@@ -3,6 +3,11 @@
 const fs = require("node:fs");
 const path = require("node:path");
 const {configureNativeBranding} = require("./configure-native-branding.js");
+const {insecureLocalDebugForBuild} = require("./mobile-network-policy.js");
+const {configureNativeDisplay} = require("./configure-native-display.js");
+const {configureNativeOAuth} = require("./configure-native-oauth.js");
+const {configureNativePlayGames} = require("./configure-native-play-games.js");
+const {DEMO_APP_ID, adTestConfig, configureNativeAdSafety} = require("./configure-native-ad-safety.js");
 
 function androidPortrait(source) {
   // Only the Capacitor main activity is changed; OAuth/system activities
@@ -18,12 +23,12 @@ function androidPortrait(source) {
   return output;
 }
 
-function androidLocalDebugNetwork(source) {
+function androidLocalDebugNetwork(source, allowCleartext = true) {
   let matches = 0;
   const output = source.replace(/<application\b[^>]*>/g, (tag) => {
     matches += 1;
     return tag.replace(/\s+android:(?:usesCleartextTraffic|allowBackup)\s*=\s*["'][^"']*["']/g, "")
-      .replace(/\s*(\/?)>$/, ' android:usesCleartextTraffic="true" android:allowBackup="false"$1>');
+      .replace(/\s*(\/?)>$/, ` android:usesCleartextTraffic="${allowCleartext}" android:allowBackup="false"$1>`);
   });
   if (matches !== 1) throw new Error("AndroidManifest.xml içinde tek application bulunmalı.");
   return output;
@@ -37,6 +42,28 @@ function androidNoBackup(source) {
       .replace(/\s*(\/?)>$/, ' android:allowBackup="false"$1>');
   });
   if (matches !== 1) throw new Error("AndroidManifest.xml içinde tek application bulunmalı.");
+  return output;
+}
+
+function androidDebugAdMob(source, appId = DEMO_APP_ID) {
+  // The SDK's startup provider needs an app ID even when server-side ads are
+  // disabled. Default is Google's demo; publisher tests require a separately
+  // validated remote-debug config and a native test-device gate.
+  if (!/^ca-app-pub-\d{16}~\d{10}$/.test(appId)) throw new Error("Invalid AdMob application ID.");
+  const declaration = `<meta-data android:name="com.google.android.gms.ads.APPLICATION_ID" android:value="${appId}" />`;
+  let applications = 0;
+  const output = source.replace(/(<application\b[^>]*>)([\s\S]*?)(<\/application>)/g, (_all, open, body, close) => {
+    applications += 1;
+    let declarations = 0;
+    const nextBody = body.replace(/<meta-data\b[^>]*?\/>|<meta-data\b[^>]*>[\s\S]*?<\/meta-data>/g, (tag) => {
+      if (!/android:name\s*=\s*["']com\.google\.android\.gms\.ads\.APPLICATION_ID["']/.test(tag)) return tag;
+      declarations += 1;
+      return declaration;
+    });
+    if (declarations > 1) throw new Error("Android debug AdMob uygulama kimliği yinelenmiş.");
+    return `${open}${declarations ? nextBody : "\n        " + declaration + body}${close}`;
+  });
+  if (applications !== 1) throw new Error("AndroidManifest.xml içinde tek application bulunmalı.");
   return output;
 }
 
@@ -64,6 +91,7 @@ function iosPortrait(source) {
 
 function configure(platform) {
   const root = path.resolve(__dirname, "..");
+  const adConfig = adTestConfig(process.env, root);
   const targets = {
     android: ["android/app/src/main/AndroidManifest.xml", androidPortrait],
     ios: ["ios/App/App/Info.plist", iosPortrait],
@@ -71,20 +99,32 @@ function configure(platform) {
   if (platform === "web") return;
   if (!targets[platform]) throw new Error("Platform android veya ios olmalı.");
   const [defaultRelative, transform] = targets[platform];
+  const nativeDebugTarget = process.env.GRIDSHARD_LOCAL_DEBUG === "1"
+    ? (process.env.GRIDSHARD_REMOTE_DEBUG === "1" ? "remote" : true) : false;
   const relative = platform === "android" && process.env.GRIDSHARD_LOCAL_DEBUG === "1"
-    ? `.mobile-debug/${defaultRelative}` : defaultRelative;
+    ? (nativeDebugTarget === "remote" ? ".mobile-debug/remote-android/app/src/main/AndroidManifest.xml" : `.mobile-debug/${defaultRelative}`)
+    : defaultRelative;
   const filename = path.join(root, relative);
   if (!fs.existsSync(filename)) throw new Error(`Önce yerel mobil projeyi oluşturun: ${relative}`);
   const before = fs.readFileSync(filename, "utf8");
   const oriented = platform === "android" ? androidNoBackup(transform(before)) : transform(before);
+  const networked = platform === "android"
+    ? androidLocalDebugNetwork(oriented, insecureLocalDebugForBuild(process.env)) : oriented;
   const after = platform === "android" && process.env.GRIDSHARD_LOCAL_DEBUG === "1"
-    ? androidLocalDebugNetwork(oriented) : oriented;
+    ? androidDebugAdMob(networked, adConfig.appId) : networked;
   if (before !== after) fs.writeFileSync(filename, after, "utf8");
-  configureNativeBranding(platform, root, process.env.GRIDSHARD_LOCAL_DEBUG === "1");
+  configureNativeBranding(platform, root, nativeDebugTarget);
+  if (platform === "android") {
+    const nativeRoot = path.resolve(filename, "../../../..");
+    configureNativeDisplay(nativeRoot, root);
+    configureNativeOAuth(nativeRoot, nativeDebugTarget);
+    configureNativePlayGames(nativeRoot, root);
+    configureNativeAdSafety(nativeRoot, root, adConfig);
+  }
   console.log(`${platform}: yerel portre yönü ve kaynak marka görselleri yapılandırıldı.`);
 }
 
 if (require.main === module) {
   configure(process.argv[2] || process.env.CAPACITOR_PLATFORM_NAME);
 }
-module.exports = {androidPortrait, androidLocalDebugNetwork, androidNoBackup, iosPortrait};
+module.exports = {androidPortrait, androidLocalDebugNetwork, androidNoBackup, androidDebugAdMob, iosPortrait};

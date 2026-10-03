@@ -1,0 +1,8 @@
+{
+  "name": "gridshard-web-build",
+  "private": true,
+  "packageManager": "pnpm@11.19.0",
+  "dependencies": {
+    "esbuild": "0.28.2"
+  }
+}

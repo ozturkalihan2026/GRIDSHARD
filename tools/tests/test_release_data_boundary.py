@@ -13,14 +13,17 @@ class ReleaseDataBoundaryTests(unittest.TestCase):
         for path in ("qa_reports/startup-phone.png", "artifacts/app-debug.apk",
                      ".mobile-debug/old-identities.json", "deploy/.env.production",
                      "android/signing.jks", "nested/auth.key", "nested/app.p12",
-                     "nested/google-services.json", "nested/project-firebase-adminsdk-secret.json"):
+                     "nested/google-services.json", "nested/project-firebase-adminsdk-secret.json",
+                     "deploy/google_oauth_client_secret", "deploy/apple_oauth_client_secret", "deploy/play_games_client_secret",
+                     "nested/client_secret_123.apps.googleusercontent.com.json", "nested/AuthKey_ABC.p8"):
             self.assertFalse(is_release_input(path), path)
         for path in ("QA_REPORTS/phone.png", "SECRETS/value.txt", "deploy/AUTH_SIGNING_KEY",
                      "deploy/database_url", "deploy/postgres_password", "nested/CERT.PEM",
                      "nested/GOOGLESERVICE-INFO.PLIST", "RELEASE_MANIFEST.JSON"):
             self.assertFalse(is_release_input(path), path)
-        for path in ("deploy/Caddyfile", "deploy/Dockerfile.maintenance",
-                     "tools/server_backup.py", "server/migrations/014_economic_operations.sql"):
+        for path in ("deploy/Caddyfile", "deploy/Caddyfile.cloudflare", "docker-compose.cloudflare.yml", "deploy/Dockerfile.maintenance",
+                     "tools/server_backup.py", "server/migrations/014_economic_operations.sql",
+                     "docker-compose.oauth-google.yml", "docker-compose.oauth-apple.yml"):
             self.assertTrue(is_release_input(path), path)
 
     def test_only_static_arena_data_enters_source_release(self) -> None:

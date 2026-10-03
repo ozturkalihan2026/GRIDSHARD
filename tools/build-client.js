@@ -5,27 +5,11 @@ const fs = require("node:fs");
 const path = require("node:path");
 const vm = require("node:vm");
 const esbuild = require("esbuild");
+const { apiBaseForBuild } = require("./mobile-network-policy.js");
 
 const TARGETS = ["chrome109", "safari15"];
 const digest = (bytes) => crypto.createHash("sha256").update(bytes).digest("hex");
 const readText = (file) => fs.readFileSync(file, "utf8").replace(/\r\n/g, "\n");
-
-function apiBaseForBuild(environment, mobile) {
-  const raw = String(environment.GRIDSHARD_API_BASE_URL || "").trim();
-  if (!raw) {
-    if (mobile) throw new Error("GRIDSHARD_API_BASE_URL mobil pakette zorunludur.");
-    return ""; // Web yayını: aynı origin API; dağıtım adresi pakete gömülmez.
-  }
-  const url = new URL(raw);
-  const insecure = environment.GRIDSHARD_ALLOW_INSECURE_MOBILE_API === "1";
-  if (url.protocol !== "https:" && !(url.protocol === "http:" && insecure)) {
-    throw new Error("API adresi HTTPS olmalıdır; HTTP yalnız açık yerel geliştirme bayrağıyla kullanılabilir.");
-  }
-  if (url.username || url.password || url.search || url.hash) {
-    throw new Error("API adresi kimlik bilgisi, sorgu veya fragment içeremez.");
-  }
-  return url.href.replace(/\/+$/, "");
-}
 
 function readBuildBlock(html, kind) {
   const start = `<!-- build:${kind} -->`;

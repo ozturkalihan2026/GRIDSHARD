@@ -45,6 +45,7 @@ PRIVATE_FILE_PATTERNS = (
     "*.key", "*.pem", "*.p8", "*.p12", "*.pfx", "*.keystore", "*.jks",
     "*firebase-adminsdk*.json", "google-services.json", "GoogleService-Info.plist", ".env*",
     ".auth_signing_key", "auth_signing_key", "database_url", "postgres_password",
+    "google_oauth_client_secret", "apple_oauth_client_secret", "play_games_client_secret", "client_secret*.json",
 )
 
 

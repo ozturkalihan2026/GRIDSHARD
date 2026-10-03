@@ -43,7 +43,7 @@ def _wait_profile(client, actor, headers):
 
 
 def _assert_profile_preserved(before, after):
-    for key in ("player_id", "display_name", "rating", "level", "experience", "cosmetics", "preferred_battle_pool_ids"):
+    for key in ("player_id", "display_name", "display_name_changes", "display_name_changes_remaining", "rating", "level", "experience", "cosmetics", "preferred_battle_pool_ids"):
         assert after[key] == before[key], f"Profile field changed after restart/restore: {key}"
     assert after["engagement"]["season_xp"] == before["engagement"]["season_xp"]
 
@@ -86,7 +86,7 @@ def _restore_drill(image, maintenance_image, network, root, private, arguments, 
         _assert_profile_preserved(before, _wait_profile(client, actor, headers))
 
 
-def smoke(image, network="host", maintenance_image=None):
+def smoke(image, network="host", maintenance_image=None, soak_seconds=0):
     url = os.environ["GRIDSHARD_TEST_DATABASE_URL"]
     parsed = urlsplit(url)
     assert parsed.hostname in {"localhost", "127.0.0.1"} and parsed.path == "/gridshard_test"
@@ -148,6 +148,26 @@ def smoke(image, network="host", maintenance_image=None):
                 headers = {"Authorization": "Bearer " + auth.json()["access_token"]}
                 assert client.get(f"/store/{actor}", headers=headers).status_code == 200
                 before = _wait_profile(client, actor, headers)
+                assert before["display_name_changes_remaining"] == 1
+                name = "Test-" + uuid4().hex[:12]
+                renamed = client.put(f"/profile/{actor}/display-name", headers=headers, json={"display_name":name})
+                assert renamed.status_code == 200
+                before = renamed.json()
+                assert before["display_name_changes_remaining"] == 0
+                assert client.put(f"/profile/{actor}/display-name", headers=headers, json={"display_name":name}).status_code == 200
+                assert client.put(f"/profile/{actor}/display-name", headers=headers, json={"display_name":name+"2"}).status_code == 409
+                if soak_seconds:
+                    assert 0 < soak_seconds <= 3600
+                    deadline = time.monotonic() + soak_seconds
+                    checks = 0
+                    while time.monotonic() < deadline:
+                        health = client.get("/health")
+                        assert health.status_code == 200 and health.json()["runtime"]["redis"]["worker_lease_ready"]
+                        assert client.get(f"/profile/{actor}", headers=headers).status_code == 200
+                        checks += 1
+                        if checks % 3 == 0:
+                            print(f"Isolated production lease/profile soak: {checks} successful checks", flush=True)
+                        time.sleep(min(10, max(0, deadline - time.monotonic())))
                 subprocess.run(["docker", "restart", container], check=True, stdout=subprocess.DEVNULL, timeout=40)
                 # Docker Desktop can assign a new random host port on restart.
                 with httpx.Client(base_url=_base_url(container, network), timeout=3) as restarted_client:
@@ -171,5 +191,6 @@ if __name__ == "__main__":
     parser.add_argument("--image", required=True)
     parser.add_argument("--network", default="host", help="Isolated Docker bridge for Desktop; publishes a random localhost API port")
     parser.add_argument("--maintenance-image", help="Also back up the stopped image and restore its profile/token into a new empty database/runtime")
+    parser.add_argument("--soak-seconds", type=int, default=0, help="Bounded health/lease soak on the disposable test image only")
     args = parser.parse_args()
-    smoke(args.image, args.network, args.maintenance_image)
+    smoke(args.image, args.network, args.maintenance_image, args.soak_seconds)

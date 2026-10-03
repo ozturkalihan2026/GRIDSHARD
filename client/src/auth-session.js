@@ -152,7 +152,7 @@
       try { await this.secretStore.remove(RECOVERY_SECRET_KEY); } catch (_error) {}
     }
 
-    async completeProviderLogin(exchange) {
+    async completeProviderLogin(exchange, {codeVerifier = ""} = {}) {
       const response = await this.fetchImpl(
         this._apiInput("/auth/provider-session"),
         {
@@ -160,6 +160,7 @@
           headers: { "content-type": "application/json" },
           body: JSON.stringify({
             exchange,
+            ...(codeVerifier ? {code_verifier:codeVerifier} : {}),
             device_secret: await this._deviceSecret(),
             device_id: this._deviceId(),
             device_name: this._deviceName(),
@@ -301,6 +302,11 @@
 
     _deviceName() {
       const platform = this._platform();
+      // WebView's Chrome/Safari user agent describes the engine, not a browser
+      // session. Keep the existing device ID so a native update renames it.
+      if (platform === "android" || platform === "ios") {
+        return `${platform.toUpperCase()} · GRIDSHARD`;
+      }
       const userAgent = String(globalThis.navigator?.userAgent || "");
       const browser = /Edg\//.test(userAgent)
         ? "Edge"

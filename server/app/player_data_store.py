@@ -5,6 +5,7 @@ from pathlib import Path
 from contextlib import contextmanager
 import json
 import os
+import re
 import shutil
 from threading import RLock, get_ident
 import time
@@ -787,6 +788,12 @@ class PlayerDataStoreService:
             display_name=data[
                 "display_name"
             ],
+            # Pre-policy custom names have already used their one change.
+            # Automatic Pilot names and unchanged legacy IDs keep the right.
+            display_name_changes=max(0, int(data.get("display_name_changes", int(
+                data["display_name"] != player_id
+                and re.fullmatch(r"Pilot-[A-F0-9]{8}", data["display_name"]) is None
+            )))),
             team_id=(str(data["team_id"]) if data.get("team_id") else None),
             team_name=(str(data["team_name"]) if data.get("team_name") else None),
             level=int(data["level"]),

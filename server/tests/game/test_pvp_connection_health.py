@@ -85,3 +85,59 @@ def test_default_zero_grace_keeps_legacy_immediate_disconnect():
         await a.connection_lost("c1")
         assert s.get_session("m").slots["a"].connected is False
     asyncio.run(scenario())
+
+
+def test_deleted_session_during_grace_does_not_kill_sweep():
+    async def scenario():
+        clock = Clock()
+        s = service()
+        adapter = PvPWebSocketAdapter(s, now_func=clock.now, grace_period_seconds=30)
+        await adapter.connect(connection_id="c1", session_id="m", player_id="a", socket=FakeSocket())
+        await adapter.connection_lost("c1")
+        s.delete_session("m")  # TTL cleanup happens while grace is still pending.
+        clock.advance(31)
+        await adapter.sweep_connection_health()
+        assert not adapter.pending_disconnect_deadlines
+        await adapter.connection_lost("c1")  # Late route-finally is harmless too.
+        await adapter.sweep_connection_health()
+    asyncio.run(scenario())
+
+
+def test_finished_transport_close_cannot_recreate_grace_deadline():
+    from app.game.models import BattleStatus
+    async def scenario():
+        s = service()
+        adapter = PvPWebSocketAdapter(s, grace_period_seconds=30)
+        await adapter.connect(connection_id="c1", session_id="m", player_id="a", socket=FakeSocket())
+        s.get_session("m").engine.state.status = BattleStatus.FINISHED
+        await adapter.close_finished_session_connections("m")
+        await adapter.connection_lost("c1")
+        assert not adapter.pending_disconnect_deadlines
+    asyncio.run(scenario())
+
+
+def test_finished_ttl_300_intersects_old_disconnect_grace_30_safely():
+    from app.game.models import BattleStatus
+    async def scenario():
+        clock = Clock()
+        s = PvPSessionService(now_func=clock.now, finished_ttl_seconds=300)
+        session = s.create_session("ttl-match")
+        s.join("ttl-match", "a")
+        s.join("ttl-match", "b")
+        adapter = PvPWebSocketAdapter(s, now_func=clock.now, grace_period_seconds=30)
+        await adapter.connect(connection_id="ttl-c", session_id="ttl-match", player_id="a", socket=FakeSocket())
+        session.engine.state.status = BattleStatus.FINISHED
+        session.finished_at = clock.now()
+        clock.advance(295)
+        await adapter.connection_lost("ttl-c")
+        assert not adapter.pending_disconnect_deadlines
+        # Also tolerate an old pending deadline created before the terminal
+        # close, whose 30 seconds extend beyond the 300 second session TTL.
+        adapter.pending_disconnect_deadlines[("ttl-match", "a")] = clock.now() + 30
+        clock.advance(6)
+        assert s.cleanup_expired_sessions() == ("ttl-match",)
+        clock.advance(25)
+        await adapter.sweep_connection_health()
+        await adapter.sweep_connection_health()
+        assert not adapter.pending_disconnect_deadlines
+    asyncio.run(scenario())

@@ -278,7 +278,6 @@
   let participantBootstrapResult =
     null;
   const startupLoading = globalThis.GridshardStartupLoading ? new globalThis.GridshardStartupLoading(document) : null;
-  startupLoading?.setPlayerId(participantPlayerId);
   function afterStartup(callback) {
     return (startupLoading?.finished || Promise.resolve()).then(callback);
   }
@@ -337,6 +336,9 @@
         throw new Error("Katılımcı kimliği sunucu hesabıyla eşleşmiyor.");
       }
 
+      // Show the server-confirmed game account, not a provisional local ID
+      // or a provider's Play Games subject. Linking keeps this account stable.
+      startupLoading?.setPlayerId(continuity.returnedPlayerId);
       renderProfileSummary();
       renderStatisticsSummary();
       renderSettingsForm();
@@ -351,6 +353,7 @@
       if (!accountResult.ok) throw new Error("Hesap bağlantıları hazırlanamadı.");
       startupLoading?.complete("account");
       await startupLoading?.finish();
+      void loadStoreState(); // Native UMP info refresh; never blocks game startup.
       if (accountResult.ok && !accountResult.redirecting) {
         void nativePush?.start().catch(() => {
           setNativePushStatus("Bildirim cihaz kaydı tamamlanamadı. Bağlantı gelince yeniden denenecek.");
@@ -2638,7 +2641,7 @@
   async function loadStoreState() {
     try {
       storeState = await requestJsonWithDeadline(
-        `/store/${encodeURIComponent(participantPlayerId)}`,
+        `/store/${encodeURIComponent(participantPlayerId)}${nativeStore?.adQuery() || ""}`,
         { cache:"no-store" },
         12000
       );
@@ -2649,6 +2652,7 @@
     renderSeasonPremiumPurchase();
     renderPostMatchPremium();
     renderPostMatchAdReward();
+    void refreshNativeAdConsent();
     void recoverNativePurchases();
     return { ok:true, state:storeState };
   }
@@ -2696,6 +2700,24 @@
       : storeState?.providers?.ads || null;
   }
 
+  function renderAdsPrivacyOptions() {
+    const panel = document.getElementById("ad-privacy-panel");
+    const button = document.getElementById("ad-privacy-options");
+    const required = currentAdProvider() === "admob" && nativeStore?.adsPrivacyOptionsRequired === true;
+    if (panel) panel.hidden = !required;
+    if (button) button.disabled = !required || nativeStore?.adsBusy === true;
+  }
+
+  async function refreshNativeAdConsent() {
+    // A background store refresh must not overlap the native consent/reward UI.
+    if (nativeStore?.adsBusy) { renderAdsPrivacyOptions(); return; }
+    try {
+      await nativeStore?.refreshAdsConsent({ storeState });
+    } catch (_error) {
+      // Failed UMP refresh leaves ads gated, not gameplay or account startup.
+    } finally { renderAdsPrivacyOptions(); }
+  }
+
   function paidProducts() {
     return [
       storeState?.season_pass,
@@ -2734,7 +2756,7 @@
     }
     try {
       const payload = await requestJsonWithDeadline(
-        `/store/${encodeURIComponent(participantPlayerId)}/purchases`,
+        `/store/${encodeURIComponent(participantPlayerId)}/purchases${nativeStore?.adQuery() || ""}`,
         {
           method:"POST",
           body:JSON.stringify({
@@ -2868,7 +2890,7 @@
         );
       }
       const payload = await requestJsonWithDeadline(
-        `/store/${encodeURIComponent(participantPlayerId)}/purchases`,
+        `/store/${encodeURIComponent(participantPlayerId)}/purchases${nativeStore?.adQuery() || ""}`,
         {
           method:"POST",
           body:JSON.stringify({
@@ -2972,19 +2994,27 @@
       && (Number(progression?.circuitCreditsAwarded || 0) > 0 || Number(progression?.xpAwarded || 0) > 0);
     const provider = currentAdProvider();
     const claimed = battleId ? adRewardReceipts.get(battleId) : null;
-    host.hidden = !battleId || !hasRewards || !provider;
+    const isPublisherTest = provider === "admob" && storeState?.providers?.ad_policy?.mode === "test";
+    host.hidden = !battleId || !hasRewards;
     host.dataset.claimed = String(Boolean(claimed));
     const button = document.getElementById("post-match-ad-button");
     const copy = document.getElementById("post-match-ad-copy");
+    const heading = document.getElementById("post-match-ad-heading");
+    if (heading) heading.textContent = localizedUiText(isPublisherTest
+      ? "ÖDÜLLÜ REKLAM TESTİ" : "REKLAM İZLE, ÖDÜLÜ İKİYE KATLA");
     if (button) {
-      button.disabled = Boolean(claimed) || adRewardPending;
+      button.disabled = !provider || Boolean(claimed) || adRewardPending;
       button.textContent = claimed
         ? "x2 ÖDÜL ALINDI"
-        : adRewardPending ? "REKLAM OYNATILIYOR…" : "▶ REKLAM İZLE · x2";
+        : !provider ? "REKLAM HENÜZ HAZIR DEĞİL"
+        : adRewardPending ? "REKLAM OYNATILIYOR…"
+        : isPublisherTest ? localizedUiText("▶ TEST REKLAMINI AÇ") : "▶ REKLAM İZLE · x2";
     }
     if (copy) {
       copy.textContent = claimed
         ? `+${claimed.circuit_credits} Devre Kredisi ve +${claimed.xp} Deneyim eklendi · kupa hariç`
+        : !provider ? "Ödüllü reklam sağlayıcısı bu sunucuda henüz etkin değil."
+        : isPublisherTest ? localizedUiText("Test reklamı · gerçek ek ödül verilmez")
         : "Devre Kredisi ve Deneyim x2 · kupa hariç";
     }
   }
@@ -3014,7 +3044,7 @@
       `/profile/${encodeURIComponent(participantPlayerId)}/battles/${encodeURIComponent(battleId)}/ad-reward`,
       {
         method:"POST",
-        body:JSON.stringify({ request_id:operationRequestId("ad"), provider }),
+        body:JSON.stringify({ request_id:operationRequestId("ad"), provider, ...(provider === "admob" ? nativeStore?.adCapability() : {}) }),
       },
       15000
     );
@@ -3044,6 +3074,10 @@
     try {
       if (provider === "admob") {
         await nativeStore.showRewardedAd({ storeState, userId:participantPlayerId, battleId });
+        if (storeState?.providers?.ad_policy?.mode === "test") {
+          if (status) status.textContent = localizedUiText("Test reklamı tamamlandı; gerçek ek ödül verilmez.");
+          return; // Test ads are not proof of a signed SSV callback.
+        }
       } else {
         await playTestRewardAd();
       }
@@ -3058,6 +3092,7 @@
     } finally {
       adRewardPending = false;
       renderPostMatchAdReward();
+      renderAdsPrivacyOptions();
     }
   }
 
@@ -3754,6 +3789,7 @@
           ? `${provider.toUpperCase()} BAĞLA`
           : `${provider.toUpperCase()} YAPILANDIRILMADI`;
     }
+    renderPlayGamesButtons();
     const devices = document.getElementById("account-device-list");
     if (devices) {
       devices.replaceChildren();
@@ -3815,11 +3851,14 @@
           ? `${provider.toUpperCase()} İLE DEVAM ET`
           : `${provider.toUpperCase()} HENÜZ HAZIR DEĞİL`;
     }
+    renderPlayGamesButtons();
     if (status && !message && state && !accountHasPersistentIdentity(state)) {
       const configuredProviders = ["google", "apple"].filter(
         (provider) => state.oauth?.[provider]?.configured
       );
-      status.textContent = configuredProviders.length
+      status.textContent = playGames?.configured && state.oauth?.google_play_games?.configured
+        ? "Play Games ile profilini güvenceye al veya misafir olarak devam et."
+        : configuredProviders.length
         ? "Bir sağlayıcı seç veya e-posta adresini doğrula."
         : "Google ve Apple bağlantıları sunucu ayarlarını bekliyor; e-posta ya da misafir seçeneğini kullanabilirsin.";
     }
@@ -3829,6 +3868,7 @@
     if (dismiss) {
       try {
         globalThis.localStorage?.setItem(ACCOUNT_ONBOARDING_DISMISSED_KEY, "1");
+        if (playGames?.configured) globalThis.localStorage?.setItem("gridshard.play-games.prompt-seen", "1");
       } catch {
         // Depolama kapalıysa yalnızca mevcut oturumda devam edilir.
       }
@@ -3839,12 +3879,19 @@
   }
 
   function maybePresentAccountOnboarding() {
-    if (accountHasPersistentIdentity() || accountOnboardingWasDismissed()) return false;
+    const dismissed = () => {
+      // Existing guest installs get one explicit choice after this feature update.
+      let seen = true;
+      try { seen = globalThis.localStorage?.getItem("gridshard.play-games.prompt-seen") === "1"; } catch (_) {}
+      const newPlayGamesChoice = playGames?.configured && accountPlatformState?.oauth?.google_play_games?.configured && !seen;
+      return accountOnboardingWasDismissed() && !newPlayGamesChoice;
+    };
+    if (accountHasPersistentIdentity() || dismissed()) return false;
     renderAccountOnboarding();
     const dialog = document.getElementById("account-onboarding-dialog");
     if (!dialog || dialog.open) return Boolean(dialog?.open);
     void afterStartup(() => {
-      if (dialog.open || accountHasPersistentIdentity() || accountOnboardingWasDismissed()) return;
+      if (dialog.open || accountHasPersistentIdentity() || dismissed()) return;
       if (typeof dialog.showModal === "function") dialog.showModal();
       else dialog.setAttribute("open", "");
     });
@@ -3854,22 +3901,32 @@
   async function loadAccountPlatform({ presentOnboarding = false } = {}) {
     const status = document.getElementById("account-platform-status");
     const oauthParams = new URLSearchParams(globalThis.location?.search || "");
-    const oauthExchange = oauthParams.get("oauth_exchange");
+    let returnError = "";
+    let returnedOAuth = null;
     try {
-      if (oauthExchange) {
-        const authSession = globalThis.GridshardAuth?.session;
-        if (typeof authSession?.completeProviderLogin !== "function") {
-          throw new Error("Sağlayıcı oturum köprüsü hazır değil.");
-        }
-        await authSession.completeProviderLogin(oauthExchange);
+      await playGamesReady;
+      if (oauthParams.has("oauth_status") && !["android", "ios"].includes(globalThis.Capacitor?.getPlatform?.())) {
+        const returnUrl = globalThis.location.href;
+        // Scrub the one-time code from the address before sending API requests.
         oauthParams.delete("oauth_exchange");
         oauthParams.delete("oauth_status");
         oauthParams.delete("oauth_provider");
+        oauthParams.delete("oauth_handoff");
         const query = oauthParams.toString();
-        globalThis.location?.replace?.(
-          `${globalThis.location?.pathname || "/"}${query ? `?${query}` : ""}`
-        );
-        return {ok:true,presented:false,redirecting:true};
+        const cleanUrl = `${globalThis.location?.pathname || "/"}${query ? `?${query}` : ""}`;
+        globalThis.history?.replaceState?.({}, "", cleanUrl);
+        try {
+          const result = await nativeOAuth?.consume(returnUrl);
+          if (!result?.handled) throw new Error("Hesap dönüş bağlantısı doğrulanamadı.");
+          if (result.status === "linked") {
+            globalThis.location?.replace?.(cleanUrl);
+            return {ok:true,presented:false,redirecting:true};
+          }
+          returnedOAuth = {status:result.status, provider:new URL(returnUrl).searchParams.get("oauth_provider")};
+        } catch (error) {
+          // An unsolicited/expired link must not stop ordinary guest startup.
+          returnError = error instanceof Error ? error.message : String(error);
+        }
       }
       accountPlatformState = await requestJsonWithDeadline(
         `/accounts/${encodeURIComponent(participantPlayerId)}`,
@@ -3877,8 +3934,9 @@
         12000
       );
       renderAccountPlatform();
-      const oauthStatus = oauthParams.get("oauth_status");
-      const oauthProvider = (oauthParams.get("oauth_provider") || "Google").toUpperCase();
+      if (returnError && status) status.textContent = returnError;
+      const oauthStatus = returnedOAuth?.status;
+      const oauthProvider = (returnedOAuth?.provider || "Google").toUpperCase();
       if (oauthStatus) {
         const message = oauthStatus === "linked"
           ? `${oauthProvider} hesabı başarıyla bağlandı.`
@@ -3889,6 +3947,7 @@
         renderAccountOnboarding(message);
         oauthParams.delete("oauth_status");
         oauthParams.delete("oauth_provider");
+        oauthParams.delete("oauth_handoff");
         const query = oauthParams.toString();
         globalThis.history?.replaceState?.(
           {}, "", `${globalThis.location?.pathname || "/"}${query ? `?${query}` : ""}`
@@ -6012,15 +6071,77 @@
   });
   globalThis.addEventListener?.("gridshard:deep-link", (event) => {
     const rawUrl = event?.detail?.url || event?.detail || "";
-    void consumePendingDeepLink(rawUrl);
+    void afterStartup(() => handleApplicationUrl(rawUrl));
   });
-  const nativeAppPlugin = globalThis.Capacitor?.Plugins?.App;
+  const nativeOAuth = globalThis.GridshardNativeOAuth
+    ? new globalThis.GridshardNativeOAuth({request:requestJsonWithDeadline}) : null;
+  const playGames = globalThis.GridshardPlayGames
+    ? new globalThis.GridshardPlayGames({request:requestJsonWithDeadline}) : null;
+  const playGamesReady = playGames ? Promise.race([
+    playGames.prepare(), new Promise(resolve => setTimeout(() => resolve(false), 8000)),
+  ]) : Promise.resolve(false);
+  function renderPlayGamesButtons() {
+    const provider = accountPlatformState?.oauth?.google_play_games || {};
+    for (const [id, label] of [["account-onboarding-play-games", "PLAY GAMES İLE DEVAM ET"], ["account-oauth-play-games", "PLAY GAMES BAĞLA"]]) {
+      const button = document.getElementById(id);
+      if (!button) continue;
+      button.hidden = !playGames?.configured;
+      button.disabled = Boolean(playGames?.busy || provider.linked || !provider.configured);
+      button.textContent = localizedMessage(provider.linked ? "PLAY GAMES BAĞLI" : provider.configured ? label : "PLAY GAMES SUNUCUDA HAZIR DEĞİL");
+    }
+    const guest = document.getElementById("account-onboarding-guest");
+    if (guest) guest.disabled = Boolean(playGames?.busy);
+  }
+  for (const [id, mode, statusId] of [["account-onboarding-play-games", "login", "account-onboarding-status"], ["account-oauth-play-games", "link", "account-platform-status"]]) {
+    document.getElementById(id)?.addEventListener("click", async () => {
+      const status = document.getElementById(statusId);
+      if (playGames?.busy) return;
+      try {
+        if (status) status.textContent = localizedMessage("Play Games hesabı doğrulanıyor…");
+        const signingIn = playGames.begin(participantPlayerId, mode);
+        renderPlayGamesButtons();
+        await signingIn;
+        globalThis.location.replace("/");
+      } catch (error) {
+        if (status) status.textContent = localizedMessage(error instanceof Error ? error.message : String(error));
+      } finally { renderPlayGamesButtons(); }
+    });
+  }
+  async function handleApplicationUrl(url) {
+    try {
+      const result = await nativeOAuth?.consume(url);
+      if (result?.handled) {
+        if (result.status === "linked" && !result.duplicate) {
+          // Bootstrap again from the server-selected profile, not the old guest.
+          globalThis.location.replace("/");
+        } else if (!result.duplicate) {
+          const message = result.status === "cancelled" ? "Hesap bağlantısı iptal edildi." : "Hesap bağlantısı tamamlanamadı.";
+          renderAccountOnboarding(message);
+          const status = document.getElementById("account-platform-status");
+          if (status) status.textContent = message;
+        }
+        return;
+      }
+      await consumePendingDeepLink(url);
+    } catch (error) {
+      const status = document.getElementById("account-platform-status");
+      if (status) status.textContent = error instanceof Error ? error.message : String(error);
+      renderAccountOnboarding(error instanceof Error ? error.message : String(error));
+    }
+  }
+  async function beginAccountOAuth(provider, mode, status) {
+    if (!nativeOAuth) throw new Error("Sağlayıcı oturum köprüsü hazır değil.");
+    const result = await nativeOAuth.begin(participantPlayerId, provider, mode);
+    if (!result.configured && status) status.textContent = `${provider.toUpperCase()} bağlantısı sunucuda henüz yapılandırılmadı.`;
+  }
+  const nativeAppPlugin = globalThis.Capacitor?.Plugins?.App
+    || (["android", "ios"].includes(globalThis.Capacitor?.getPlatform?.()) ? globalThis.Capacitor?.registerPlugin?.("App") : null);
   nativeAppPlugin?.addListener?.("appUrlOpen", ({ url }) => {
-    void consumePendingDeepLink(url);
+    void afterStartup(() => handleApplicationUrl(url));
   });
   const nativeLaunchUrl = nativeAppPlugin?.getLaunchUrl?.();
   nativeLaunchUrl?.then((result) => {
-    if (result?.url) void consumePendingDeepLink(result.url);
+    if (result?.url) void afterStartup(() => handleApplicationUrl(result.url));
   }).catch(() => {});
   document.getElementById("account-onboarding-dialog")?.addEventListener("cancel", (event) => {
     event.preventDefault();
@@ -6032,13 +6153,7 @@
     document.getElementById(`account-onboarding-${provider}`)?.addEventListener("click", async () => {
       const status = document.getElementById("account-onboarding-status");
       try {
-        const result = await requestJsonWithDeadline(
-          `/accounts/${encodeURIComponent(participantPlayerId)}/oauth/${provider}/start?mode=login`,
-          {cache:"no-store"},
-          12000
-        );
-        if (result.authorization_url) globalThis.location.assign(result.authorization_url);
-        else if (status) status.textContent = `${provider.toUpperCase()} bağlantısı sunucuda henüz yapılandırılmadı.`;
+        await beginAccountOAuth(provider, "login", status);
       } catch (error) {
         if (status) status.textContent = error instanceof Error ? error.message : String(error);
       }
@@ -6129,13 +6244,7 @@
     document.getElementById(`account-oauth-${provider}`)?.addEventListener("click", async () => {
       const status = document.getElementById("account-platform-status");
       try {
-        const result = await requestJsonWithDeadline(
-          `/accounts/${encodeURIComponent(participantPlayerId)}/oauth/${provider}/start`,
-          {cache:"no-store"},
-          12000
-        );
-        if (result.authorization_url) window.location.assign(result.authorization_url);
-        else if (status) status.textContent = `${provider.toUpperCase()} OAuth sağlayıcısı yapılandırılmadı.`;
+        await beginAccountOAuth(provider, "link", status);
       } catch (error) {
         if (status) status.textContent = error instanceof Error ? error.message : String(error);
       }
@@ -15326,7 +15435,13 @@
     if (nameInput) {
       nameInput.value =
         view.displayName;
+      nameInput.disabled = profileState.profile?.display_name_changes_remaining !== 1;
     }
+    const nameSave = document.getElementById("profile-display-name-save");
+    if (nameSave) nameSave.disabled = profileState.profile?.display_name_changes_remaining !== 1;
+    setText("profile-name-change-note", profileState.profile?.display_name_changes_remaining === 1
+      ? localizedUiText("Oyuncu adını yalnız bir kez değiştirebilirsin.")
+      : localizedUiText("Ad değiştirme hakkın kullanıldı. Oyuncu adın artık sabit."));
     if (battleProfileNameEl) {
       battleProfileNameEl.textContent =
         view.displayName;
@@ -16871,6 +16986,7 @@
 
     const button = document.getElementById("profile-display-name-save");
     if (button?.disabled) return { ok:false, pending:true };
+    if (!window.confirm(localizedUiText("Oyuncu adını yalnız bir kez değiştirebilirsin. Bu adı kaydetmek istiyor musun?"))) return { ok:false, cancelled:true };
     if (button) button.disabled = true;
     if (status) status.textContent = "Oyuncu adı kaydediliyor…";
 
@@ -17997,6 +18113,32 @@
       );
   }
 
+  const settingsTabs = [...document.querySelectorAll("[data-settings-tab]")];
+  function selectSettingsCategory(tab, focus = false) {
+    for (const candidate of settingsTabs) {
+      const active = candidate === tab;
+      candidate.setAttribute("aria-selected", String(active));
+      candidate.tabIndex = active ? 0 : -1;
+    }
+    for (const panel of document.querySelectorAll("[data-settings-panel]")) {
+      panel.hidden = panel.dataset.settingsPanel !== tab.dataset.settingsTab;
+    }
+    if (focus) tab.focus();
+    const settingsPanel = document.getElementById("settings-summary-panel");
+    if (settingsPanel) settingsPanel.scrollTop = 0;
+  }
+  settingsTabs.forEach((tab, index) => {
+    tab.addEventListener("click", () => selectSettingsCategory(tab));
+    tab.addEventListener("keydown", event => {
+      const offset = {ArrowRight:1, ArrowLeft:-1}[event.key];
+      const target = event.key === "Home" ? 0 : event.key === "End" ? settingsTabs.length - 1
+        : offset ? (index + offset + settingsTabs.length) % settingsTabs.length : null;
+      if (target === null) return;
+      event.preventDefault();
+      selectSettingsCategory(settingsTabs[target], true);
+    });
+  });
+
   const dailyMissionList = document.getElementById("daily-mission-list");
   dailyMissionList?.addEventListener("click", (event) => {
     const button = event.target.closest("[data-mission-claim]");
@@ -18125,6 +18267,18 @@
       }
     );
   }
+
+  document.getElementById("ad-privacy-options")?.addEventListener("click", async () => {
+    const status = document.getElementById("ad-privacy-status");
+    try {
+      const pending = nativeStore?.showAdsPrivacyOptions({ storeState });
+      renderAdsPrivacyOptions();
+      const shown = await pending;
+      if (status) status.textContent = shown ? "Reklam gizlilik tercihlerin güncellendi." : "";
+    } catch (_error) {
+      if (status) status.textContent = "Reklam gizlilik tercihleri açılamadı. Daha sonra yeniden deneyebilirsin.";
+    } finally { renderAdsPrivacyOptions(); }
+  });
 
   for (
     const controlId
