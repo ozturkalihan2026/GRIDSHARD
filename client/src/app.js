@@ -2652,6 +2652,7 @@
     renderSeasonPremiumPurchase();
     renderPostMatchPremium();
     renderPostMatchAdReward();
+    void refreshNativeProductPrices();
     void refreshNativeAdConsent();
     void recoverNativePurchases();
     return { ok:true, state:storeState };
@@ -2679,8 +2680,8 @@
     copy.appendChild(detail);
     const button = document.createElement("button");
     button.type = "button";
-    button.textContent = product.active ? "ETKİN" : String(product.price_label_tr || "");
-    button.disabled = Boolean(product.active || !provider || purchaseInFlight);
+    button.textContent = product.active ? "ETKİN" : paidProductPrice(product);
+    button.disabled = Boolean(product.active || !provider || purchaseInFlight || !paidProductAvailable(product));
     button.addEventListener("click", () => purchasePaidProduct(product.id));
     card.append(icon, copy, button);
     return card;
@@ -2692,6 +2693,25 @@
     return nativeStore
       ? nativeStore.purchaseProvider(storeState)
       : storeState?.providers?.purchase || null;
+  }
+
+  function paidProductAvailable(product) {
+    return !["google_play","app_store"].includes(currentPurchaseProvider())
+      || Boolean(nativeStore?.priceForProduct?.(product));
+  }
+
+  function paidProductPrice(product, fallback = "") {
+    if (["google_play","app_store"].includes(currentPurchaseProvider())) {
+      return nativeStore?.priceForProduct?.(product)?.priceLabel || "Şu an kullanılamıyor";
+    }
+    return String(product?.price_label_tr || fallback);
+  }
+
+  async function refreshNativeProductPrices() {
+    const state = storeState;
+    await nativeStore?.refreshProductPrices?.(paidProducts(),state);
+    if (storeState !== state) return; // Do not rerender an old account response.
+    renderPaidStore(); renderSeasonPremiumPurchase(); renderPostMatchPremium();
   }
 
   function currentAdProvider() {
@@ -2954,8 +2974,8 @@
     const engagementPass = profileState.profile?.engagement?.premium_pass || null;
     const active = Boolean(pass?.active ?? engagementPass?.active);
     button.hidden = active || !(pass || engagementPass?.purchasable);
-    button.disabled = Boolean(!currentPurchaseProvider() || purchaseInFlight);
-    button.textContent = `ÜCRETLİ GEÇİŞİ AÇ · ${pass?.price_label_tr || engagementPass?.price_label_tr || "99,99 TL"}`;
+    button.disabled = Boolean(!currentPurchaseProvider() || purchaseInFlight || !paidProductAvailable(pass));
+    button.textContent = `ÜCRETLİ GEÇİŞİ AÇ · ${paidProductPrice(pass, engagementPass?.price_label_tr || "99,99 TL")}`;
   }
 
   function renderPostMatchPremium() {
@@ -2980,8 +3000,8 @@
     }
     if (buy) {
       buy.hidden = applied || Boolean(product?.active) || !product;
-      buy.disabled = Boolean(!currentPurchaseProvider() || purchaseInFlight);
-      buy.textContent = `SAVAŞ PREMIUM · ${product?.price_label_tr || "99,99 TL"}`;
+      buy.disabled = Boolean(!currentPurchaseProvider() || purchaseInFlight || !paidProductAvailable(product));
+      buy.textContent = `SAVAŞ PREMIUM · ${paidProductPrice(product,"99,99 TL")}`;
     }
   }
 

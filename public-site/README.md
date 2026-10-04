@@ -35,11 +35,19 @@ Direct Upload projects cannot be converted to Git-integrated Pages projects in p
 
 ## Release boundaries
 
+4 October 2026 read-only check: live `/privacy/` is HTTP200 and identifies
+GRIDSHARD, but it still contains the old Oracle provider copy, no AWS provider
+copy, and the pending retention schedule. The local AWS copy update has not
+been deployed. Finalize publisher/backup/support retention decisions and update
+the existing `gridshard-public` project; do not mark the live policy final merely
+because the URL loads. The game server itself is already running on AWS; no new
+game server or Pages project is needed for this correction.
+
 - The account deletion page opens an email draft and also publishes the address and manual steps. **It does not submit a form or perform deletion itself.** Support requests need an actual monitored mailbox and minimal ownership verification; never request session/recovery secrets, passwords or payment card details by email. The existing authenticated in-app deletion route is not modified.
 - Privacy text reflects the inspected code: opt-in product analytics is off by default, raw events last 30 days, opt-out erases them; production account deletion covers profile/identity/social/push/telemetry/analytics records. Operational telemetry is separately count-limited, not the obsolete environment-comment claim of a 180-day product retention period.
 - This is **pre-release copy, not legal advice or production/Play approval**. Backup and support-correspondence retention schedules, audience/age classification, actual enabled providers, Google Play Data safety and SDK/UMP disclosures must be finalized by the publisher before releasing the game. The public privacy page explicitly discloses the outstanding production retention schedule; do not submit this as a final release policy without completing it.
-- Live AdMob UMP/consent/device validation, real purchase pricing/receipt/refund validation and Oracle HTTPS/WSS remain open. A public publisher ID is not an AdMob app ID or rewarded ad unit ID.
-- `com.gridshardgame.app` is the registered Play Console package and current Capacitor default; changing AdMob accounts does not change it. `play.gridshardgame.com` / `api.gridshardgame.com` are proposed, not live addresses. The root site should not be assumed to be the origin used by the current same-origin game client.
+- Real rewarded-ad/SSV match bonus, AdMob app readiness and purchase receipt/refund validation remain open. The SSV Console URL verification/save and Play Games profile restoration were separately user-confirmed; neither is real-ad/billing approval. A public publisher ID is not an AdMob app ID or rewarded ad unit ID.
+- `com.gridshardgame.app` is the registered Play Console package and current Capacitor default; changing AdMob accounts does not change it. The Android production API is `https://play.gridshardgame.com` on the existing AWS service. The root public site is separate from the game origin; do not infer that `api.gridshardgame.com` is active.
 - The advanced clean PostgreSQL/Redis server migration and old-data-exclusion decision are preserved; this site does not touch or import `server/data`.
 
 References: [Direct Upload](https://developers.cloudflare.com/pages/get-started/direct-upload/), [custom domain](https://developers.cloudflare.com/pages/configuration/custom-domains/), [AdMob app-ads.txt](https://support.google.com/admob/answer/9363762), [Google Play user data](https://support.google.com/googleplay/android-developer/answer/10144311), [account deletion](https://support.google.com/googleplay/android-developer/answer/13327111).

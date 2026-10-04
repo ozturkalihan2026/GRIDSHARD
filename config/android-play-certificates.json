@@ -1,0 +1,33 @@
+{
+  "schemaVersion": 1,
+  "packageName": "com.gridshardgame.app",
+  "playGamesProjectNumber": "376018782491",
+  "source": {
+    "archiveName": "certificates.zip",
+    "archiveSha256": "84e9eb276a2a5a2e0a419e4db6e0020e86d5276c4137dbe0ac9d306cb4cf24ec",
+    "verifiedDate": "2026-10-04"
+  },
+  "certificates": [
+    {
+      "archiveEntry": "deployment_cert.der",
+      "role": "deployment",
+      "suggestedAndroidOAuthName": "GRIDSHARD Play",
+      "sha1": "7C:FD:F8:68:FE:78:6E:BA:DF:B0:3B:31:D8:E6:15:5B:05:55:B0:0F",
+      "sha256": "09:6A:CD:18:59:57:46:7C:B9:25:92:00:74:12:C3:19:B6:42:BA:3C:EE:C4:DB:CB:8E:D7:A6:48:21:3C:A0:E6"
+    },
+    {
+      "archiveEntry": "hybrid_classical_cert.der",
+      "role": "hybrid-classical",
+      "suggestedAndroidOAuthName": "GRIDSHARD Play Hybrid Classical",
+      "sha1": "7B:97:CD:22:11:1B:F6:0F:68:F0:1A:D2:E8:79:05:38:B7:99:BD:12",
+      "sha256": "07:04:D9:16:9B:33:2A:E4:5B:F1:C4:2E:BF:40:BE:BF:79:1E:97:A6:C7:79:9B:DC:EE:8F:C2:F3:79:F3:56:AB"
+    },
+    {
+      "archiveEntry": "hybrid_pqc_cert.der",
+      "role": "hybrid-pqc",
+      "suggestedAndroidOAuthName": "GRIDSHARD Play Hybrid PQC",
+      "sha1": "B4:4E:55:F6:80:66:66:DE:83:2F:EF:7C:EE:99:CF:E9:1B:8E:C7:63",
+      "sha256": "30:3F:8C:AA:74:36:BE:AA:12:98:F0:FE:6E:4A:BE:9E:29:F8:CE:98:AA:9D:6E:D3:BA:3B:FC:35:7B:E9:F7:2D"
+    }
+  ]
+}

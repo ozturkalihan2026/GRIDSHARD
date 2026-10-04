@@ -101,3 +101,49 @@ def test_signed_callback_and_reward_replay_are_scoped_and_fail_closed(monkeypatc
     assert client.post(claim,json=body).status_code == 200
     assert profile.circuit_credits == after
     assert client.get("/ads/admob/ssv?"+_ssv_query(key,user_id="not-allowlisted",custom_data=battle)).json()["ignored"]
+
+
+def test_signature_only_callback_never_opens_a_player_transaction(monkeypatch):
+    verifier,key=_admob()
+    monkeypatch.setattr(main,"STORE_VERIFIERS",StoreVerifiers(admob=verifier))
+    monkeypatch.setattr(main,"AD_ROLLOUT",AdRollout())
+
+    def forbidden_transaction(*args, **kwargs):
+        raise AssertionError("Disabled rollout must not access a player transaction")
+
+    monkeypatch.setattr(main,"_persistent_operation",forbidden_transaction)
+    client=TestClient(main.app)
+    assert client.get("/ads/admob/ssv?user_id=probe&signature=fake").status_code == 403
+    response=client.get("/ads/admob/ssv?"+_ssv_query(key,user_id="non-player-probe",custom_data="non-battle-probe",reward_item="Savaş ödülü artırımı"))
+    assert response.status_code == 200
+    assert response.json() == {"ok":True,"ignored":True}
+
+
+def test_ssv_rejection_logs_only_fixed_reason_not_callback_data(monkeypatch,caplog):
+    verifier,key=_admob()
+    monkeypatch.setattr(main,"STORE_VERIFIERS",StoreVerifiers(admob=verifier))
+    monkeypatch.setattr(main,"AD_ROLLOUT",AdRollout())
+    query=_ssv_query(key,user_id="private-player-marker",custom_data="private-battle-marker")
+    response=TestClient(main.app).get("/ads/admob/ssv?"+query.replace("private-battle-marker","tampered"))
+    assert response.status_code==403
+    messages=[record.getMessage() for record in caplog.records if record.name==main.__name__]
+    assert messages==["admob_ssv_rejected reason=invalid_signature"]
+    assert all("private-player-marker" not in message and "private-battle-marker" not in message and "signature=" not in message for message in messages)
+
+
+@pytest.mark.parametrize("mode", ["disabled", "test", "live"])
+def test_panel_probe_never_accesses_economy_even_in_live_mode(monkeypatch, mode):
+    verifier, key = _admob()
+    monkeypatch.setattr(main, "STORE_VERIFIERS", StoreVerifiers(admob=verifier))
+    monkeypatch.setattr(main, "AD_ROLLOUT", AdRollout(mode))
+    def forbidden(*args, **kwargs):
+        raise AssertionError("Configuration probe must never access player data")
+    monkeypatch.setattr(main, "_persistent_operation", forbidden)
+    client = TestClient(main.app)
+    for user, data in verifier.CONFIGURATION_PROBES:
+        query = _ssv_query(key,user_id=user,custom_data=data,ad_unit="synthetic-panel-unit")
+        for _ in range(2):
+            response = client.get("/ads/admob/ssv?" + query)
+            assert response.status_code == 200
+            assert response.json() == {"ok":True,"ignored":True}
+        assert client.get("/ads/admob/ssv?" + query.replace("synthetic", "tampered")).status_code == 403

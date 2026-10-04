@@ -19,8 +19,8 @@ for (const id of [
   assert.ok(html.includes(`id="${id}"`), `${id} eksik`);
 }
 assert.match(app, /if \(!provider\) \{\s*setStatus\("Ödeme altyapısı hazırlanıyor/);
-assert.ok(app.includes('button.disabled = Boolean(!currentPurchaseProvider() || purchaseInFlight)'));
-assert.ok(app.includes('buy.disabled = Boolean(!currentPurchaseProvider() || purchaseInFlight)'));
+assert.ok(app.includes('button.disabled = Boolean(!currentPurchaseProvider() || purchaseInFlight || !paidProductAvailable(pass))'));
+assert.ok(app.includes('buy.disabled = Boolean(!currentPurchaseProvider() || purchaseInFlight || !paidProductAvailable(product))'));
 assert.ok(app.includes('host.hidden = !battleId || !hasRewards'));
 assert.ok(app.includes('button.disabled = !provider || Boolean(claimed) || adRewardPending'));
 assert.ok(app.includes('if (!battleId || !provider || adRewardPending || adRewardReceipts.has(battleId)) return'));

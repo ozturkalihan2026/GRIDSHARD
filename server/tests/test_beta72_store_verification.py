@@ -9,7 +9,7 @@ from __future__ import annotations
 import base64
 from datetime import datetime, timedelta, timezone
 import json
-from urllib.parse import urlencode
+from urllib.parse import quote, unquote, urlencode
 
 import pytest
 from cryptography import x509
@@ -329,8 +329,9 @@ def _ssv_query(key, **overrides) -> str:
         "user_id": "wt-player-1",
         **overrides,
     }
-    message = urlencode(fields)
-    signature = key.sign(message.encode("utf-8"), ec.ECDSA(hashes.SHA256()))
+    message = urlencode(fields, quote_via=quote)
+    # Match Google's URI.getQuery() signature format, including escaped UTF-8.
+    signature = key.sign(unquote(message).encode("utf-8"), ec.ECDSA(hashes.SHA256()))
     return f"{message}&signature={_b64url(signature)}&key_id=77"
 
 
@@ -365,6 +366,120 @@ def test_admob_ssv_rejects_tampered_stale_and_foreign_callbacks():
         verifier.verify(_ssv_query(key, ad_unit="9999999999"))
     with pytest.raises(StoreVerificationError, match="imzasız"):
         verifier.verify("user_id=wt-player-1&transaction_id=x")
+
+
+def test_ssv_full_unit_must_match_exact_publisher_and_unit():
+    verifier, key = _admob()
+    full = verifier.ad_units_by_platform["android"]
+    assert verifier.verify(_ssv_query(key, ad_unit=full))["ad_unit"] == full
+    with pytest.raises(StoreVerificationError) as error:
+        verifier.verify(_ssv_query(key, ad_unit="ca-app-pub-9999999999/1111111111"))
+    assert error.value.reason == "unknown_ad_unit"
+
+
+@pytest.mark.parametrize("user_id,custom_data", sorted(AdMobSsvVerifier.CONFIGURATION_PROBES))
+def test_signed_configuration_probe_is_distinct_from_real_reward(user_id, custom_data):
+    verifier, key = _admob()
+    query = _ssv_query(key, user_id=user_id, custom_data=custom_data, ad_unit="synthetic-panel-unit")
+    assert verifier.verify(query)["configuration_probe"] is True
+    for changed in ({"user_id":"real-player"}, {"custom_data":"real-battle"}):
+        with pytest.raises(StoreVerificationError) as error:
+            verifier.verify(_ssv_query(key, **{"user_id":user_id,"custom_data":custom_data,
+                                              "ad_unit":"synthetic-panel-unit",**changed}))
+        assert error.value.reason == "unknown_ad_unit"
+    with pytest.raises(StoreVerificationError) as error:
+        verifier.verify(query.replace("synthetic-panel-unit", "tampered-panel-unit"))
+    assert error.value.reason == "invalid_signature"
+    with pytest.raises(StoreVerificationError) as error:
+        verifier.verify(_ssv_query(key, user_id=user_id, custom_data=custom_data,
+                                  ad_unit="synthetic-panel-unit",timestamp=str(int((NOW-7200)*1000))))
+    assert error.value.reason == "stale_callback"
+
+
+@pytest.mark.parametrize("reward_item,custom_data", [
+    ("Savaş ödülü artırımı", "probe-no-battle-20261004"),
+    ("hello world", "user@example.com"),
+    ("A+B", "battle%2F42"),
+    ("ödül 🎁", "e\u0301%"),
+])
+def test_admob_ssv_matches_google_reference_percent_decoding(reward_item,custom_data):
+    verifier,key=_admob()
+    view=verifier.verify(_ssv_query(key,reward_item=reward_item,custom_data=custom_data))
+    assert view["reward_item"]==reward_item and view["battle_id"]==custom_data
+    assert view["user_id"]=="wt-player-1"
+
+
+def test_admob_ssv_accepts_independently_signed_decoded_reference_query():
+    verifier,key=_admob()
+    timestamp=str(int(NOW*1000))
+    # Independent expected bytes: do not build the signing message with the
+    # same percent-decoder as the implementation or the shared helper.
+    prefix="ad_network=5450213213286189855&ad_unit=1111111111&custom_data=battle-42&reward_amount=1&reward_item="
+    suffix="&timestamp="+timestamp+"&transaction_id=ssv-tx-1&user_id=wt-player-1"
+    message=prefix+"Sava%C5%9F%20%C3%B6d%C3%BCl%C3%BC%20art%C4%B1r%C4%B1m%C4%B1"+suffix
+    expected=(prefix+"Savaş ödülü artırımı"+suffix).encode("utf-8")
+    signature=key.sign(expected,ec.ECDSA(hashes.SHA256()))
+    view=verifier.verify(message+"&signature="+_b64url(signature)+"&key_id=77")
+    assert view["reward_item"]=="Savaş ödülü artırımı" and view["battle_id"]=="battle-42"
+
+
+def test_admob_ssv_preserves_literal_plus_in_signed_bytes():
+    verifier,key=_admob()
+    query=_ssv_query(key,reward_item="A+B",custom_data="battle+42").replace("%2B","+")
+    # URI.getQuery() preserves '+', unlike form decoding with unquote_plus().
+    view=verifier.verify(query)
+    assert view["reward_item"]=="A+B" and view["battle_id"]=="battle+42"
+
+
+@pytest.mark.parametrize("custom_data", ["battle&note=value", "battle&user_id=other-player"])
+def test_admob_ssv_rejects_escaped_parameter_boundary_ambiguity(custom_data):
+    verifier,key=_admob()
+    with pytest.raises(StoreVerificationError) as error:
+        verifier.verify(_ssv_query(key,custom_data=custom_data))
+    assert error.value.reason=="ambiguous_parameters"
+
+
+def test_admob_ssv_rejects_duplicate_business_field_even_with_valid_signature():
+    verifier,key=_admob()
+    query=_ssv_query(key)
+    message=query.split("&signature=",1)[0]+"&user_id=other-player"
+    signature=key.sign(unquote(message).encode("utf-8"),ec.ECDSA(hashes.SHA256()))
+    with pytest.raises(StoreVerificationError) as error:
+        verifier.verify(message+"&signature="+_b64url(signature)+"&key_id=77")
+    assert error.value.reason=="ambiguous_parameters"
+
+
+@pytest.mark.parametrize("trailing", ["&key_id=77", "&signature=fake", "&user_id=other-player"])
+def test_admob_ssv_requires_signature_and_key_id_to_be_last(trailing):
+    verifier,key=_admob()
+    with pytest.raises(StoreVerificationError) as error:
+        verifier.verify(_ssv_query(key)+trailing)
+    assert error.value.reason=="missing_signature"
+
+
+def test_admob_ssv_rejects_turkish_value_tampering_after_decoding():
+    verifier,key=_admob()
+    query=_ssv_query(key,reward_item="Savaş ödülü artırımı")
+    with pytest.raises(StoreVerificationError) as error:
+        verifier.verify(query.replace(quote("Savaş"),quote("Başka")))
+    assert error.value.reason=="invalid_signature"
+
+
+def test_admob_ssv_does_not_accept_old_encoded_byte_signature():
+    verifier,key=_admob()
+    query=_ssv_query(key,reward_item="hello world")
+    message=query.split("&signature=",1)[0]
+    signature=key.sign(message.encode("utf-8"),ec.ECDSA(hashes.SHA256()))
+    with pytest.raises(StoreVerificationError) as error:
+        verifier.verify(message+"&signature="+_b64url(signature)+"&key_id=77")
+    assert error.value.reason=="invalid_signature"
+
+
+def test_admob_ssv_rejects_invalid_utf8_without_server_error():
+    verifier,key=_admob()
+    with pytest.raises(StoreVerificationError) as error:
+        verifier.verify(_ssv_query(key).replace("battle-42","battle-%FF"))
+    assert error.value.reason=="invalid_encoding"
 
 
 # --- Hesap bağı ve geçici hatalar (uç nokta) -------------------------------------

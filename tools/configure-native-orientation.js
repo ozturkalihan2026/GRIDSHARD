@@ -7,7 +7,7 @@ const {insecureLocalDebugForBuild} = require("./mobile-network-policy.js");
 const {configureNativeDisplay} = require("./configure-native-display.js");
 const {configureNativeOAuth} = require("./configure-native-oauth.js");
 const {configureNativePlayGames} = require("./configure-native-play-games.js");
-const {DEMO_APP_ID, adTestConfig, configureNativeAdSafety} = require("./configure-native-ad-safety.js");
+const {DEMO_APP_ID, adBuildConfig, configureNativeAdSafety} = require("./configure-native-ad-safety.js");
 
 function androidPortrait(source) {
   // Only the Capacitor main activity is changed; OAuth/system activities
@@ -91,7 +91,7 @@ function iosPortrait(source) {
 
 function configure(platform) {
   const root = path.resolve(__dirname, "..");
-  const adConfig = adTestConfig(process.env, root);
+  const adConfig = adBuildConfig(process.env, root);
   const targets = {
     android: ["android/app/src/main/AndroidManifest.xml", androidPortrait],
     ios: ["ios/App/App/Info.plist", iosPortrait],
@@ -110,7 +110,7 @@ function configure(platform) {
   const oriented = platform === "android" ? androidNoBackup(transform(before)) : transform(before);
   const networked = platform === "android"
     ? androidLocalDebugNetwork(oriented, insecureLocalDebugForBuild(process.env)) : oriented;
-  const after = platform === "android" && process.env.GRIDSHARD_LOCAL_DEBUG === "1"
+  const after = platform === "android"
     ? androidDebugAdMob(networked, adConfig.appId) : networked;
   if (before !== after) fs.writeFileSync(filename, after, "utf8");
   configureNativeBranding(platform, root, nativeDebugTarget);
@@ -120,6 +120,12 @@ function configure(platform) {
     configureNativeOAuth(nativeRoot, nativeDebugTarget);
     configureNativePlayGames(nativeRoot, root);
     configureNativeAdSafety(nativeRoot, root, adConfig);
+    if (!nativeDebugTarget) {
+      const gradle = path.join(nativeRoot,"app/build.gradle");
+      const beforeGradle = fs.readFileSync(gradle,"utf8");
+      const managed = "apply from: rootProject.file('../tools/native-templates/android-release-signing.gradle')";
+      if (!beforeGradle.includes(managed)) fs.writeFileSync(gradle,beforeGradle.trimEnd()+"\n\n"+managed+"\n");
+    }
   }
   console.log(`${platform}: yerel portre yönü ve kaynak marka görselleri yapılandırıldı.`);
 }

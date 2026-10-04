@@ -36,6 +36,50 @@ Canlı dağıtımda production + Cloudflare + Play Games Compose katmanları bir
 
 PGS taslakken telefonun Google hesabı **Play Console → Play Oyun Hizmetleri → Test kullanıcıları** ve gerekliyse **Google Auth Platform → Audience → Test users** listesinde bulunmalı. Cloud OAuth kaydı ayrıca PGS credential'a bağlanmış olmalı. Properties'teki oyuncuya görünen oyun adı GRIDSHARD olarak kontrol edilmeli. Mağaza yayını ve PGS yayını ayrı kapılardır; yerel debug denemesi için oyunu herkese yayımlama.
 
+### Diğer test kullanıcıları giriş yapamıyorsa
+
+Dahili/kapalı Play dağıtım listesini doldurmak tek başına taslak PGS erişimi
+vermez. Aynı oyunun **Kullanıcı sayısını artırın → Play Oyun Hizmetleri → Kurulum
+ve yönetim → Test kullanıcıları** bölümünde ya oyuncunun Play Games'te gerçekten
+seçtiği Google hesabı tek tek eklenir, ya da **Sürüm kanalları / Release tracks**
+sekmesinden mevcut ilgili test kanalı **Kanal ekle / Add tracks** ile PGS testine
+yetkilendirilir. Liste/kanal kaydedilir; kullanıcının kendi kayıtları silinmez.
+Google, tekil tester erişiminin birkaç saat içinde yayılabileceğini belirtir.
+
+Kanal katılımı ve Play Games'teki oyun hesabı aynı Google hesabıyla kontrol edilir;
+çok hesaplı telefonda seçilen PGS hesabının farklı olduğu varsayılmaz, doğrulanır.
+OAuth consent Audience durumu Testing ise aynı hesapların oradaki tester erişimi
+de kontrol edilir. Bu koşullar sağlanıp hata sürüyorsa tam hata ekranı ve kurulum
+kaynağı (Play'deki aynı canonical sürüm mü/eski APK mı) istenir; e-posta/ham token
+ve Google şifresi paylaşılmaz. Paket/SHA1/istemci yeniden oluşturma veya oyun
+verilerini silme ilk çözüm değildir; sahibin Uç hesabında giriş zaten kullanıcıca
+başarılıdır. Yanlış hesabı mevcut PGS sahipli hesaba link etmeye çalışılmaz.
+
+PGS testine kanal ekleme, uygulamayı genel Play mağazasında yayımlamak veya
+12 katılımcı/14 günlük kapalı test koşulunu otomatik karşılamak değildir.
+[Resmi PGS tester ve kanal erişimi](https://developer.android.com/games/pgs/console/publish),
+[OAuth consent erişimi](https://developer.android.com/games/pgs/console/setup).
+
+**4 Ekim tester ekran kanıtı:** Bir oyuncunun görüntüsünde Google'ın açık
+“uygulama şu anda test edilmektedir / yalnız onaylanan test kullanıcıları” metni
+ve **403 access_denied** var. Bu, Google OAuth audience test erişimi engelidir;
+AdMob SSV403 veya AWS sağlık kanıtı değildir. Öncelik mevcut bağlı Cloud proje
+376018782491 → **Google Auth Platform → Audience → Test users → Add users**
+altında oyuncunun gerçekten seçtiği hesabın izinli olduğunu kontrol etmek ve
+kaydetmektir. Mevcut PGS tester/kanal erişimi ayrı korunur. Panel bağımsız okunmadı;
+görüntüden tam client ID veya hangi giriş düğmesinin seçildiği anlaşılamaz.
+Yalnız bu mesajı gidermek için public OAuth publish, yeni client/key veya
+doğrulamayı atlama talimatı verilmez. Ekrandaki üçüncü kişinin e-postası receipt,
+kaynak veya log'a kopyalanmaz.
+[OAuth Audience test modu](https://support.google.com/cloud/answer/15549945?hl=en).
+
+İkinci tester ekranı Play Store'da canonical paket için genel “indirilemiyor”
+mesajıdır. Nedeni tek başına kesin değildir: aynı hesabın opt-in/Store seçimi,
+diğer uygulamaların indirilmesi, depolama/ağ ve eski elle kurulmuş canonical APK
+olup olmadığı kontrol edilir. `unreviewed` geçici mağaza etiketi neden olarak
+sunulmaz; imza farkı yalnız eski APK gerçekten varsa ayrıca araştırılır. Hesabı
+PGS'ye bağlı olmayan başka oyuncuya kaldırma/veri temizleme talimatı verilmez.
+
 Telefon: mevcut uygulamayı kaldırmadan güncelle; Play Games seçimi, iptal/misafir, aynı profil/kupa/kredi, kapat-aç, başka temiz cihazda login, yanlış PGS hesabına geçişte eski profilin korunması ve offline davranışı doğrula. SDK'nın derlenmesi veya taklit HTTP testi bu fiziksel kapıları kapatmaz. Üretim paket/SHA-1 ve iOS ayrıca açık kalır.
 
 Resmî kaynaklar: [Android platform authentication](https://developer.android.com/games/pgs/android/android-signin), [server access](https://developer.android.com/games/pgs/android/server-access), [applications.verify](https://developer.android.com/games/services/web/api/rest/v1/applications/verify).

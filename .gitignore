@@ -44,6 +44,12 @@ secrets/
 **/google-services.json
 **/GoogleService-Info.plist
 *.p8
+*.p12
+*.pfx
+*.jks
+*.keystore
+**/credential.dpapi.xml
+**/keystore.properties
 *firebase-adminsdk*.json
 **/google_oauth_client_secret
 **/apple_oauth_client_secret

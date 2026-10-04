@@ -1,6 +1,43 @@
 # Gerçek para alımı ve ödüllü reklam
 
+## Güncel — kalıcı Android / r10 (4 Ekim 2026)
+
+SSV düzeltmesi aynı production verileriyle r10'a aktarıldı. R9'un gerçek callback
+ret nedeni güvenli loglarda `unknown_ad_unit` olarak görüldü; Google imzası geçiyordu.
+Kayıtlı exact-full ve sayısal birimler desteklenir; foreign publisher suffix'i
+reddedilir. Ayrılmış Google imzalı güncel panel probe'u live modda dahi200/ignored,
+profil/ledger/ödül işlemi yok. Bu panel testinin ekonomik ödülden ayrılmasıdır;
+gerçek oyuncuya yanlış birim, sahte imza veya eski timestamp hâlâ403 verir.
+
+Kalıcı `com.gridshardgame.app` release APK/AAB ve imza anahtarı hazırdır;
+native bölge fiyatı/tek teklif alınmadan ödeme başlamaz. **Gerçek satış/reklam ödülü
+henüz açık değil.** Kullanıcı ürün/API kurmadığını doğruladı. PGS kalıcı sertifika,
+Play ürün/API/RTDN, AdMob Verify/Save ve cihaz kontrolleri için tek belge:
+[Kalıcı Android kurulum adımları](ANDROID_PRODUCTION_SETUP.md).
+Önceki tarihli r9/r8 metinleri tarihsel durumdur, güncel tamamlanma iddiası değildir.
+
+**AdMob panel sonucu:** Kullanıcı “Doğrulandı ve kaydedildi” dedi; gerçek Google
+panel URL doğrulaması/kaydı başarılı. Bu aşama artık bloke değil; gerçek SDK
+gösterimi/maç bonusu ve mağaza erişimi kontrollerinin yerine geçmez.
+
+**Güncel kalıcı cihaz / PGS sonucu:** Mevcut v1 dahili sürüm yayımlandı; üç Play
+OAuth istemcisi bağlaması kullanıcıca teyit edildi. Güncel özel sunucu yedeğinden
+sonra onaylı tek-telefon geçişinde kullanıcı **Uç** oturumunun, kupa/Akı/Devre
+Kredisi bakiyelerinin geri geldiğini teyit etti. Son USB envanterinde cihaz yoktu;
+Play installer/imzası bağımsız okunmadı, eski yerel APK hash kontrolü tarihsel
+kayıttır. Yeni yedek5/5/40/sameinstallation/SHA/TOC doğrulandı; mevcut sunucu
+sağlıklı yeniden açıldı. Bu son kullanıcı teyidinde yeniden build/deploy veya
+reklam/ödeme açma yapılmadı. Şimdi Play Console Kontrol panelindeki mağaza kurulum
+eksikleri tamamlanır; genel yayın/AdMob hazırlık onayı ve gerçek ödül ayrıca
+doğrulanır. Play ürünleri/API/RTDN henüz oluşturulmadı.
+
 ## Durum ve kapsam
+
+**4 Ekim 2026 güncel canlı durum — r9:** Kullanıcı onayıyla imza-kodlama düzeltmesi backend'e dağıtıldı; yalnız Google SSV doğrulayıcı açıktır. `SSV_ENABLED=1`, rollout `disabled`, test listesi boş, satın alma/reklam test ödülü `0`: gerçek reklam veya oyun bonusu açılmadı. Yeni özel r9 backup3/3/39, r8 backup3/3/39 ve r7 backup3/3/31; aynı kurulum/birimler/sırlar/PGS korundu. Son canlı profil/kimlik/maç3/3/39, pending0. Yerel server **1056 geçti / 36 dış servis testi atlandı**; yeni izole PG/Redis **85/85**, imaj restart/boş-hedef restore +330 saniye, bağımsız UTF-8 imza/tamper imaj testi ve canlı +330 saniye/33 sağlık kontrolü geçti. Job success/exit0, kritik marker0; HTTPS/TLS/assetlinks ve Google production public key erişimi başarılı. İmzasız callback403 olması beklenen güvenlik davranışıdır. **Gerçek Google imzalı panel isteği henüz yeniden doğrulanmadı**; aşağıdaki eski yerel/kapalı/dağıtılmadı kayıtları kendi aşamalarına aittir. Bu işlem yeni APK gerektirmedi.
+
+**4 Ekim panel403 düzeltmesi — r9'da canlı:** Kullanıcının tam panel görüntüsünde aşağıdaki URL ve iki probe alanı doğrudur. Eski verifier ham URL kodlu metni imza kontrolüne veriyordu; Türkçe ödül etiketiyle bu uyumsuzluk yerelde yeniden üretildi. [Google Tink referansı](https://github.com/tink-crypto/tink-java-apps/blob/main/rewardedads/src/main/java/com/google/crypto/tink/apps/rewardedads/RewardedAdsVerifier.java) ve [encoded-URL testi](https://github.com/tink-crypto/tink-java-apps/blob/main/rewardedads/src/test/java/com/google/crypto/tink/apps/rewardedads/RewardedAdsVerifierTest.java) doğrultusunda kod imza öncesi bir kez percent-decode yapar; sıra/literal `+` korunur. Yinelenen alanlar/escape edilmiş ayırıcı belirsizliği reddedilir; ret logları yalnız sabit neden kodudur, callback/kimlik/imza içermez. Ham-imza fallback veya üretimde test key güveni eklenmedi. Kullanıcı onayıyla yeni yedek/rollback/izole test kapılarından sonra r9'a aktarıldı. **Bu kesin kod uyumsuzluğu, gerçek Google isteğinin tek ret nedeni olduğuna dair henüz canlı kanıt değildir.** Aynı alanlarla paneli yeniden test etmek gerekir; 403 devam ederse yalnız redakte sabit neden koduyla araştırılmalıdır. Yeni APK gerekmez.
+
+Panel testi (r9 backend artık hazır): mevcut birim SSV kalemi → `https://play.gridshardgame.com/ads/admob/ssv`, User ID `gridshard-ssv-probe-20261004`, Custom data `probe-no-battle-20261004`. Mevcut doğru alanları değiştirmeden URL'yi doğrula'ya tekrar basın. İki test alanını boş bırakmayın; gerçek oyuncu/maç kimliği kullanmayın. Başarılıysa doğrulanan URL'yi kullan → Kaydet. Kapalı rollout geçerli Google imzasından sonra oyuncu transaction'ına girmeden `200/ignored` verir; bu oyun ödülü/SDK test gösterimi değildir. [Google panel rehberi](https://support.google.com/admob/answer/9603226?hl=tr).
 
 Beta.72 tur 9'da ürünler ve fiyatlar (`server/app/store_catalog.py`), tur 10'da gerçek mağaza ve reklam doğrulaması (`server/app/store_verification.py`), tur 11'de iade ve iptal bildirimleri eklendi. 3 Ekim'de Google örnek ödüllü reklamı fiziksel Android cihazında açılıp kapandı; yerel testler ve kontrollü r8 Android derlemesi tamamlandı. **Gerçek ödeme, yayıncının kendi biriminde doğrulanmış test gösterimi ve gerçek Google imzalı SSV/oyun ödülü henüz uçtan uca doğrulanmadı.** Canlı sağlayıcılar kapalıdır; aşağıdaki eski tarihli kayıtlar o aşamanın kapsamını belirtir.
 
@@ -119,7 +156,9 @@ Sunucu `/store/{player_id}` ve satın alma dönüşünde yalnız o istekteki `ad
 
 Android `GridshardAdSafety` testte debug paketini, aynı yayıncı app/birim kimliğini ve SDK test cihazı yapılandırmasını doğrular. SDK `AdRequest.isTestDevice` sonucu yüklemeden önce true olmalıdır; yüklenen birim de beklenen kimlikle karşılaştırılır. Yalnız panel AAID kaydı yeterli sayılmaz. Debug/`ump-only` paket, sunucunun `live` yanıtında dahi kendi birimini yükleyemez. Üretim native `live` yetkilendirmesini şu an hiçbir build helper üretmez; genel yayın ayrıca incelenmelidir. [Google test cihazı rehberi](https://developers.google.com/admob/android/test-ads).
 
-r8 app ID'si yayıncı kimliğidir; SDK test cihazı özeti mevcut hedef uygulama Ads logunda bulunamadığı için yapılandırma **`ump-only`**, cihaz listesi boştur. Native ölçüm başlangıcı ertelenir; `AD_ID` ve üç AdServices izni birleşik manifestten ve binary APK'dan çıkarılmıştır. Reklam/SSV üretimde kapalı olduğu için r8 kurulunca otomatik olarak onay formu veya reklam beklenmez. Kontrollü UMP-only cihaz sorgusu ayrı yapılacaktır. r7/signer/profil korunur; uygulama kaldırılmaz veya verisi silinmez.
+r8 app ID'si yayıncı kimliğidir; SDK test cihazı özeti mevcut hedef uygulama Ads logunda bulunamadığı için yapılandırma **`ump-only`**, cihaz listesi boştur. Native ölçüm başlangıcı ertelenir; `AD_ID` ve üç AdServices izni birleşik manifestten ve binary APK'dan çıkarılmıştır. Reklam/SSV üretimde kapalı olduğu için r8 kurulunca otomatik olarak onay formu veya reklam beklenmez. r7/signer/profil korunur; uygulama kaldırılmaz veya verisi silinmez.
+
+**4 Ekim fiziksel r8 sorgusu:** Kullanıcı oyunu açtı; USB yalnız kendi hazır debug uygulamasında native canlı/test kapıları beklenen hatalarla reddetti. Ardından tek çocuk/unknown UMP sorgusu `NOT_REQUIRED / canRequestAds:true / isConsentFormAvailable:false / privacyOptionsRequirementStatus:NOT_REQUIRED` döndü. Reklam SDK initialize/load/show, form gösterimi/reset, hesap/maç API'si veya uygulama storage erişimi yapılmadı. Geçici RAM probe'u ve kendi ADB forward'ları temizlendi; oyun settings/ready kaldı. Bu, yayıncının mesajının görünmesi/gerçek ödül/çocuk politikası uygunluk kanıtı değildir. Offline helper testleri **4/4** geçti; APK yeniden üretilmedi. Canlı salt-okunur audit sağlıklı ve SSV/AdMob kapalı; yeni backend dağıtımı/kısa bakım için kullanıcı onayı beklenir.
 
 Test modundaki maç sonu UI açıkça **test reklamı / gerçek ek ödül yok** der ve başarılı gösterimden sonra gerçek ödül talebine geçmez. Test reklamı, Google imzalı SSV ödül doğrulamasının yerine geçmez. Yüklü eklentinin rehberine göre test reklamları SSV uç noktasını çağırmaz; SDK gösterimi ve AdMob panelinin imzalı adres doğrulaması ayrı testlerdir. [Eklentinin ödüllü reklam rehberi](https://github.com/capacitor-community/admob/blob/main/docs/rewarded.md), [Google SSV rehberi](https://developers.google.com/admob/android/ssv).
 
@@ -135,7 +174,7 @@ Kullanıcının `221445` ekranında mevcut normal ödüllü birim ve **“Geri �
 2. Reklam ödülü verince AdMob sunucuya imzalı geri çağrı gönderir. Sunucu ECDSA imzasını Google'ın yayımladığı anahtarlarla (`verifier-keys.json`) doğrular, reklam birimini ve zaman damgasını (en çok 1 saat) denetler ve izlemeyi oyuncunun profiline kaydeder (`verified_ad_views`, işlem kimliğiyle tekil).
 3. İstemci ödülü ister; sunucu yalnız bu savaş için doğrulanmış ve kullanılmamış bir izleme varsa ödülü verir. Geri çağrı birkaç saniye gecikebildiği için istemci talebi kısa aralıklarla yineler.
 
-Doğrulayıcı açıkken geçerli imzalı panel isteği, kapalı rollout veya tanınmayan oyuncu kayıt oluşturmadan `200` alır. İmzasız/geçersiz callback `403`, henüz kapalı doğrulayıcı `503` döner; sırf adres doğrulaması için bu kontroller gevşetilmez.
+Doğrulayıcı açıkken geçerli imzalı panel isteği, kapalı rollout veya tanınmayan oyuncu kayıt oluşturmadan `200` alır. İmzasız/geçersiz callback `403`, henüz kapalı doğrulayıcı `404` döner; sırf adres doğrulaması için bu kontroller gevşetilmez.
 
 ## İade ve iptal
 
@@ -200,5 +239,5 @@ pnpm mobile:sync:ios
 1. Üretim sunucusunda `GRIDSHARD_PURCHASE_TEST_MODE` ve `GRIDSHARD_AD_TEST_MODE` açık değil.
 2. Google Play: lisans test hesabıyla her ürün alınır; makbuzda `environment: test`, ürün bir kez verilir, alım tüketilir.
 3. App Store: Sandbox hesabıyla (`GRIDSHARD_APP_STORE_ENVIRONMENT=sandbox`) aynı kontrol; üretime geçerken `production`.
-4. AdMob: Google demo birimi yalnız güvenli gösterim/erken kapama denemesidir, yayıncının SSV kanıtı değildir. Yayıncının kendi birimiyle yalnız doğrulanmış test cihazında SSV denemesi yapılır; ödül imzalı geri çağrıdan sonra verilir, aynı savaş için ikinci ödül verilmez.
+4. AdMob: Google demo birimi ve yayıncının SDK test reklamı yalnız güvenli gösterim/erken kapama denemesidir, yayıncının SSV kanıtı değildir. Kendi birimine SDK isteği yalnız doğrulanmış test cihazında yapılır. İmzalı adres testi AdMob panelinden ayrı probe kimlikleriyle yapılır; gerçek oyun ödülü ise ayrıca yetkilendirilmiş üretim akışında imzalı geri çağrıdan sonra verilir, aynı savaş için ikinci ödül verilmez.
 5. İade bildirimleri: Play Console'dan test bildirimi `200` alır; lisans test hesabıyla alınıp Play Console'dan iade edilen paketin miktarı oyuncudan düşer. App Store'da sandbox alımı iade edilince (`REFUND`) aynı kontrol.

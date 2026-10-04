@@ -1,0 +1,24 @@
+// No embedded passwords, no debug signer fallback. This file is source; keys
+// and DPAPI credentials remain outside Android's packaged assets/source ZIP.
+def releaseNames = ['GRIDSHARD_ANDROID_KEYSTORE', 'GRIDSHARD_ANDROID_STORE_PASSWORD',
+                    'GRIDSHARD_ANDROID_KEY_ALIAS', 'GRIDSHARD_ANDROID_KEY_PASSWORD']
+def releaseValues = releaseNames.collectEntries { [(it): System.getenv(it)] }
+def releaseConfigured = releaseValues.values().every { it != null && !it.isEmpty() }
+if (releaseConfigured) {
+    android.signingConfigs.create('gridshardRelease') {
+        storeFile file(releaseValues.GRIDSHARD_ANDROID_KEYSTORE)
+        storePassword releaseValues.GRIDSHARD_ANDROID_STORE_PASSWORD
+        keyAlias releaseValues.GRIDSHARD_ANDROID_KEY_ALIAS
+        keyPassword releaseValues.GRIDSHARD_ANDROID_KEY_PASSWORD
+        storeType 'PKCS12'
+    }
+    android.buildTypes.release.signingConfig = android.signingConfigs.gridshardRelease
+    android.buildTypes.release.debuggable = false
+}
+gradle.taskGraph.whenReady { graph ->
+    def buildsRelease = graph.allTasks.any { it.project == project && it.name.toLowerCase().contains('release') }
+    if (buildsRelease && (!releaseConfigured || !android.signingConfigs.gridshardRelease.storeFile.isFile()
+            || android.defaultConfig.applicationId != 'com.gridshardgame.app')) {
+        throw new GradleException('Release signing requires the permanent key and canonical package. No debug fallback.')
+    }
+}

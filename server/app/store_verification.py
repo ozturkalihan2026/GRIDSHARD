@@ -30,7 +30,7 @@ import os
 from pathlib import Path
 import re
 import time
-from urllib.parse import parse_qs, quote, urlencode
+from urllib.parse import parse_qs, quote, unquote, urlencode
 
 
 LOGGER = logging.getLogger("gridshard.store")
@@ -53,6 +53,10 @@ GOOGLE_OIDC_KEYS_TTL_SECONDS = 3600
 ADMOB_KEYS_TTL_SECONDS = 24 * 3600
 # SSV geri çağrısı ödülden hemen sonra gelir; eski imzalı istekler kabul edilmez.
 ADMOB_CALLBACK_MAX_AGE_SECONDS = 3600
+ADMOB_REJECTION_REASONS = frozenset({
+    "missing_signature", "invalid_encoding", "invalid_signature", "key_unavailable",
+    "missing_identity", "stale_callback", "unknown_ad_unit", "ambiguous_parameters",
+})
 
 
 class StoreVerificationError(ValueError):
@@ -63,9 +67,10 @@ class StoreVerificationError(ValueError):
     yeniden gönderir; kalıcı retlerde Google onaylanmamış alımı iade eder.
     """
 
-    def __init__(self, message: str, *, retryable: bool = False):
+    def __init__(self, message: str, *, retryable: bool = False, reason: str = ""):
         super().__init__(message)
         self.retryable = retryable
+        self.reason = reason
 
 
 @dataclass(frozen=True)
@@ -766,6 +771,13 @@ class GooglePlayNotificationVerifier:
 class AdMobSsvVerifier:
     """AdMob ödüllü reklam sunucu doğrulaması (SSV) geri çağrısı."""
 
+    # Reserved non-player/non-battle pairs for AdMob's signed configuration
+    # check. Panel probes may use a synthetic unit; they never enter economy.
+    CONFIGURATION_PROBES = frozenset({
+        ("gridshard-ssv-probe", "configuration-check-no-reward"),
+        ("gridshard-ssv-probe-20261004", "probe-no-battle-20261004"),
+    })
+
     def __init__(self, *, ad_unit_ids: frozenset[str], ad_units_by_platform: dict[str, str], client, now_func=time.time):
         self.ad_unit_ids = ad_unit_ids
         self.ad_units_by_platform = dict(ad_units_by_platform)
@@ -785,7 +797,8 @@ class AdMobSsvVerifier:
         units = {platform: unit for platform, unit in units.items() if unit}
         if not units or not all(re.fullmatch(r"ca-app-pub-[0-9]+/[0-9]+", unit) for unit in units.values()):
             raise ValueError("AdMob yapılandırması geçersiz; docs/STORE_PURCHASES.md belgesine bakın.")
-        # SSV geri çağrısındaki ad_unit yalnız sayısal birim kimliğidir.
+        # Google's documented callback uses the numeric ID. Also allow the
+        # exact configured full ID; never accept a foreign publisher by suffix.
         numeric_ids = frozenset(unit.rsplit("/", 1)[1] for unit in units.values())
         return cls(ad_unit_ids=numeric_ids, ad_units_by_platform=units, client=client_factory())
 
@@ -807,7 +820,7 @@ class AdMobSsvVerifier:
                 self._keys_loaded_at = self.now()
         key = self._keys.get(key_id)
         if key is None:
-            raise StoreVerificationError("AdMob doğrulama anahtarı bulunamadı.")
+            raise StoreVerificationError("AdMob doğrulama anahtarı bulunamadı.", reason="key_unavailable")
         return key
 
     def verify(self, raw_query: str) -> dict:
@@ -818,19 +831,39 @@ class AdMobSsvVerifier:
         raw_query = str(raw_query or "")
         marker = raw_query.find("&signature=")
         if marker <= 0:
-            raise StoreVerificationError("AdMob geri çağrısı imzasız.")
+            raise StoreVerificationError("AdMob geri çağrısı imzasız.", reason="missing_signature")
         message = raw_query[:marker]
-        trailer = parse_qs(raw_query[marker + 1:], keep_blank_values=True)
+        # Google's Tink reference uses Java URI.getQuery(), not getRawQuery():
+        # percent-decode once, retain parameter order and literal '+'. Never
+        # parse/re-encode or normalize Unicode before signature verification.
+        # Parse business fields from the original encoded query afterwards so
+        # escaped '&'/'=' inside a value cannot become parameter boundaries.
         try:
-            signature = _b64url_decode(trailer["signature"][0])
-            key_id = int(trailer["key_id"][0])
-        except (KeyError, IndexError, ValueError):
-            raise StoreVerificationError("AdMob geri çağrısı imzasız.") from None
+            signed_bytes = unquote(message, encoding="utf-8", errors="strict").encode("utf-8")
+            decoded_trailer = unquote(raw_query[marker + 1:], encoding="utf-8", errors="strict")
+        except UnicodeError:
+            raise StoreVerificationError("AdMob geri çağrısı kodlaması geçersiz.", reason="invalid_encoding") from None
+        # Decoded signing bytes cannot distinguish an escaped '&' in a value
+        # from a field separator. Reject that ambiguity rather than letting a
+        # signed custom_data value inject/hide a different player/battle field.
+        # '+' is literal URI data, not an application/x-www-form-urlencoded space.
+        parsed_fields = parse_qs(message.replace("+", "%2B"), keep_blank_values=True)
+        if any(len(values) != 1 or "&" in name or "&" in values[0]
+               for name, values in parsed_fields.items()):
+            raise StoreVerificationError("AdMob geri çağrısı alanları belirsiz.", reason="ambiguous_parameters")
+        trailer_match = re.fullmatch(r"signature=([A-Za-z0-9_-]+={0,2})&key_id=([0-9]+)", decoded_trailer)
+        if trailer_match is None:
+            raise StoreVerificationError("AdMob geri çağrısı imzasız.", reason="missing_signature")
         try:
-            self._public_key(key_id).verify(signature, message.encode("utf-8"), ec.ECDSA(hashes.SHA256()))
+            signature = _b64url_decode(trailer_match.group(1))
+            key_id = int(trailer_match.group(2))
+        except ValueError:
+            raise StoreVerificationError("AdMob geri çağrısı imzasız.", reason="missing_signature") from None
+        try:
+            self._public_key(key_id).verify(signature, signed_bytes, ec.ECDSA(hashes.SHA256()))
         except InvalidSignature:
-            raise StoreVerificationError("AdMob geri çağrısının imzası geçersiz.") from None
-        fields = {name: values[0] for name, values in parse_qs(message, keep_blank_values=True).items()}
+            raise StoreVerificationError("AdMob geri çağrısının imzası geçersiz.", reason="invalid_signature") from None
+        fields = {name: values[0] for name, values in parsed_fields.items()}
         transaction_id = fields.get("transaction_id", "").strip()
         user_id = fields.get("user_id", "").strip()
         custom_data = fields.get("custom_data", "").strip()
@@ -839,12 +872,14 @@ class AdMobSsvVerifier:
         except ValueError:
             timestamp_ms = 0
         if not transaction_id or not user_id or not custom_data:
-            raise StoreVerificationError("AdMob geri çağrısında oyuncu ya da savaş bilgisi yok.")
+            raise StoreVerificationError("AdMob geri çağrısında oyuncu ya da savaş bilgisi yok.", reason="missing_identity")
         if abs(self.now() - timestamp_ms / 1000) > ADMOB_CALLBACK_MAX_AGE_SECONDS:
-            raise StoreVerificationError("AdMob geri çağrısı süresi geçmiş.")
-        if self.ad_unit_ids and fields.get("ad_unit", "") not in self.ad_unit_ids:
-            raise StoreVerificationError("AdMob reklam birimi tanınmıyor.")
-        return {
+            raise StoreVerificationError("AdMob geri çağrısı süresi geçmiş.", reason="stale_callback")
+        configuration_probe = (user_id, custom_data) in self.CONFIGURATION_PROBES
+        allowed_units = self.ad_unit_ids | frozenset(self.ad_units_by_platform.values())
+        if not configuration_probe and fields.get("ad_unit", "") not in allowed_units:
+            raise StoreVerificationError("AdMob reklam birimi tanınmıyor.", reason="unknown_ad_unit")
+        view = {
             "transaction_id": transaction_id[:128],
             "user_id": user_id[:96],
             "battle_id": custom_data[:160],
@@ -853,6 +888,9 @@ class AdMobSsvVerifier:
             "reward_item": fields.get("reward_item", ""),
             "timestamp_ms": timestamp_ms,
         }
+        if configuration_probe:
+            view["configuration_probe"] = True
+        return view
 
 
 @dataclass

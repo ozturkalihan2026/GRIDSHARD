@@ -157,7 +157,7 @@ from .store_catalog import (
     verified_ad_view_for_battle,
     verify_ad_view,
 )
-from .store_verification import StoreVerificationError, StoreVerifiers
+from .store_verification import ADMOB_REJECTION_REASONS, StoreVerificationError, StoreVerifiers
 from .ad_rollout import AdRollout
 from .store_reconciliation import StoreReconciler
 from .player_data_store import (
@@ -5212,7 +5212,18 @@ def admob_ssv_callback(request: Request) -> dict:
     try:
         view = STORE_VERIFIERS.admob.verify(request.url.query)
     except StoreVerificationError as exc:
+        # Fixed reason codes only: never log callback URLs, signatures or IDs.
+        reason = getattr(exc, "reason", "")
+        logging.getLogger(__name__).warning(
+            "admob_ssv_rejected reason=%s",
+            reason if reason in ADMOB_REJECTION_REASONS else "verification_failed",
+        )
         raise HTTPException(status_code=403, detail=str(exc)) from exc
+    if view.get("configuration_probe"):
+        # Even in live mode a signed panel check must never read/create a
+        # profile, record a transaction, or grant any reward.
+        logging.getLogger(__name__).info("admob_ssv_configuration_probe_verified")
+        return {"ok": True, "ignored": True}
     if not AD_ROLLOUT.permits_player(view["user_id"]):
         return {"ok": True, "ignored": True}
     # Provider verification/key refresh is outside the economic transaction.

@@ -86,7 +86,7 @@ def _restore_drill(image, maintenance_image, network, root, private, arguments, 
         _assert_profile_preserved(before, _wait_profile(client, actor, headers))
 
 
-def smoke(image, network="host", maintenance_image=None, soak_seconds=0):
+def smoke(image, network="host", maintenance_image=None, soak_seconds=0, admob_signature_only=False):
     url = os.environ["GRIDSHARD_TEST_DATABASE_URL"]
     parsed = urlsplit(url)
     assert parsed.hostname in {"localhost", "127.0.0.1"} and parsed.path == "/gridshard_test"
@@ -120,6 +120,11 @@ def smoke(image, network="host", maintenance_image=None, soak_seconds=0):
                    "DATABASE_URL_FILE": "/run/secrets/database_url", "GRIDSHARD_AUTH_SIGNING_KEY_FILE": "/run/secrets/auth_key",
                    "REDIS_URL": os.environ.get("GRIDSHARD_SMOKE_CONTAINER_REDIS_URL", "redis://127.0.0.1:6379/14"), "GRIDSHARD_PUBLIC_WEB_URL": "https://gridshard.invalid",
                    "GRIDSHARD_PUBLIC_WS_BASE_URL": "wss://gridshard.invalid", "GRIDSHARD_PURCHASE_TEST_MODE": "0", "GRIDSHARD_AD_TEST_MODE": "0"}
+            if admob_signature_only:
+                env.update({"GRIDSHARD_ADMOB_SSV_ENABLED":"1", "GRIDSHARD_ADMOB_ROLLOUT_MODE":"disabled",
+                            "GRIDSHARD_ADMOB_TEST_PLAYER_IDS":"",
+                            "GRIDSHARD_ADMOB_REWARDED_AD_UNIT_ANDROID":"ca-app-pub-4974825529326987/6776291719",
+                            "GRIDSHARD_ADMOB_REWARDED_AD_UNIT_IOS":""})
             arguments = ["docker", "run", "--detach", "--name", container, "--network", network, "--read-only", "--cap-drop", "ALL",
                          "--security-opt", "no-new-privileges:true", "--tmpfs", "/tmp:rw,noexec,nosuid,size=32m",
                          "--mount", f"type=bind,source={runtime},target=/var/lib/gridshard",
@@ -147,6 +152,12 @@ def smoke(image, network="host", maintenance_image=None, soak_seconds=0):
                 assert auth.status_code == 200, "First account creation failed"
                 headers = {"Authorization": "Bearer " + auth.json()["access_token"]}
                 assert client.get(f"/store/{actor}", headers=headers).status_code == 200
+                if admob_signature_only:
+                    for query in ("", "?ad_protocol=child-safe-v1&ad_platform=android"):
+                        providers=client.get(f"/store/{actor}{query}", headers=headers).json()["providers"]
+                        assert providers["ad_platforms"] == {"admob":False}
+                        assert providers["ad_units"] == {} and providers["ad_policy"] is None
+                    assert client.get("/ads/admob/ssv?user_id=non-player-probe&signature=invalid").status_code == 403
                 before = _wait_profile(client, actor, headers)
                 assert before["display_name_changes_remaining"] == 1
                 name = "Test-" + uuid4().hex[:12]
@@ -192,5 +203,6 @@ if __name__ == "__main__":
     parser.add_argument("--network", default="host", help="Isolated Docker bridge for Desktop; publishes a random localhost API port")
     parser.add_argument("--maintenance-image", help="Also back up the stopped image and restore its profile/token into a new empty database/runtime")
     parser.add_argument("--soak-seconds", type=int, default=0, help="Bounded health/lease soak on the disposable test image only")
+    parser.add_argument("--admob-signature-only", action="store_true", help="Enable signature verification while asserting ads/units remain hidden for both legacy and new clients")
     args = parser.parse_args()
-    smoke(args.image, args.network, args.maintenance_image, args.soak_seconds)
+    smoke(args.image, args.network, args.maintenance_image, args.soak_seconds, args.admob_signature_only)

@@ -63,6 +63,8 @@
       this.adsConsentFlight = null;
       this.adsPrivacyOptionsRequired = false;
       this.adsBusy = false;
+      this.storePrices = new Map();
+      this.storePriceFlight = null;
     }
 
     plugin(name) {
@@ -111,9 +113,49 @@
     // Mağazanın ödeme penceresini açar. Oyuncu vazgeçerse eklenti hata verir.
     // Otomatik onay kapalı: sunucu reddederse Google onaylanmamış alımı 3 gün
     // içinde iade eder; önceden onaylanan alım iade edilmez.
+    async refreshProductPrices(products, storeState) {
+      const provider = this.purchaseProvider(storeState);
+      if (!["google_play","app_store"].includes(provider)) return;
+      while (this.storePriceFlight) {
+        try { await this.storePriceFlight; } catch (_error) { /* Prior query failed closed. */ }
+      }
+      const ids = [...new Set(products.map(product => product?.store_product_id).filter(Boolean))];
+      if (!ids.length) return;
+      // One batch: the native billing client does not support parallel queries.
+      const flight = (async () => {
+        for (const id of ids) this.storePrices.delete(id);
+        const plugin = this.plugin("NativePurchases");
+        if (!plugin?.getProducts) return;
+        const result = await plugin.getProducts({productIdentifiers:ids,productType:"inapp"});
+        const grouped = new Map();
+        for (const product of result?.products || []) {
+          if (!ids.includes(product?.identifier)) continue;
+          const entries = grouped.get(product.identifier) || [];
+          entries.push(product); grouped.set(product.identifier,entries);
+        }
+        for (const [id, entries] of grouped) {
+          // An ambiguous offer needs explicit selection; never show one price
+          // and buy another. Current catalog uses one normal purchase option.
+          if (entries.length !== 1) continue;
+          const product = entries[0];
+          if (typeof product.priceString !== "string" || !product.priceString.trim()
+              || !Number.isFinite(product.price) || product.price < 0) continue;
+          this.storePrices.set(id,{priceLabel:product.priceString,
+            offerToken:typeof product.offerToken === "string" ? product.offerToken : ""});
+        }
+      })();
+      this.storePriceFlight = flight;
+      try { await flight; } catch (_error) { /* Unavailable price = no new charge. */ }
+      finally { if (this.storePriceFlight === flight) this.storePriceFlight = null; }
+    }
+
+    priceForProduct(product) { return this.storePrices.get(product?.store_product_id) || null; }
+
     async purchase(product, { accountToken = "" } = {}) {
       const plugin = this.plugin("NativePurchases");
       if (!plugin) throw new Error("Mağaza eklentisi bu cihazda yok.");
+      const price = this.priceForProduct(product);
+      if (!price) throw new Error("Ürün veya güncel mağaza fiyatı alınamadı; ödeme başlatılmadı.");
       const options = {
         productIdentifier: product.store_product_id,
         productType: "inapp",
@@ -121,6 +163,7 @@
         autoAcknowledgePurchases: false,
         isConsumable: false,
       };
+      if (this.platform === "android" && price.offerToken) options.offerToken = price.offerToken;
       if (accountToken) options.appAccountToken = accountToken;
       const native = nativePurchase(await plugin.purchaseProduct(options), this.platform);
       if (!native.transactionId && !native.purchaseToken) throw new Error("Mağaza alım bilgisi döndürmedi.");

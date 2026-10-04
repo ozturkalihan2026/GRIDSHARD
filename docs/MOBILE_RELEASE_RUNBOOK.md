@@ -1,5 +1,17 @@
 # GRIDSHARD Mobil Yayın Akışı
 
+## Kalıcı Android paketi — 4 Ekim 2026
+
+`android/` kalıcı proje artık vardır; ilk signed versionCode1,
+`com.gridshardgame.app`, mobile build `8d95b420f541bb12`.
+Tekrar üretim `tools/build-android-production.ps1` ile aynı private upload
+anahtarını kullanır; key eksikse release başarısız olur, debug signer'a düşmez.
+Teslim APK/AAB `artifacts/android-production-20261004-v1/`, detaylı audit aynı
+klasördedir. Yerel derleme/signature audit, gerçek cihaz ve Play yayın kapısını
+geçtiğini iddia etmez; eski debug uygulaması kuruludur/verileri korunur.
+PGS ve Play App Signing sertifikaları, ürün/API/RTDN ve anahtarın güvenli
+taşınabilir yedeği için [bir defalık kalıcı kurulum](ANDROID_PRODUCTION_SETUP.md).
+
 Bu akış sıra kilitlidir: **Android gerçek cihaz → Google Play kapalı test → iPhone gerçek cihaz → TestFlight**. Android kapalı test kanıtı olmadan iOS yayın kapısı açılmaz.
 
 ## Bir kez verilecek ürün kararları
@@ -84,6 +96,8 @@ Normal build'de bu ortam değişkeni yoksa mod `disabled`, demo app ID ve boş c
 Android kancası Ads SDK `25.4.0` doğrudan bağımlılığını sabitler, ölçüm başlangıcını erteler ve `AD_ID` / üç AdServices iznini manifest birleşiminden çıkarır. Denetimde yayıncı paketi için `-ExpectedAdMobAppId` ve `-ExpectedAdMobMode ump-only|test` birlikte ve `-RemoteDebug` ile verilmelidir. `GridshardAdSafety` derlenmiş sınıfı, mod/kaynaklar, APK web hash'leri, güvenli depo ve mevcut PGS kimlikleri ayrıca doğrulanır; binary manifest izinleri AAPT ile kontrol edilir.
 
 Son r8: `artifacts/mobile-https-20261003/GRIDSHARD-TEST-2.1.0-beta.72-20261003-r8.apk`, versionCode **8**, versionName **2.1.0-beta.72-https-debug.8**, mobile build **`47f0ff6d889e01cd`**, **21.348.913 byte**, SHA-256 **`d11c6b3569b8ed4f610bd42a606eb7ec4c36b14a1d055602403304453b58e143`**. Mode `ump-only`; test cihazı listesi boş, canlı birim yetkisi yok. `com.gridshard.remotedebug` / min24 / target36 ve r7 ile aynı debug sertifika özeti (`942ec01abb22d136744ac0103c8d566f9316b831d1ab6b002bf2e599f9a36a96`) doğrulandı. Eski r7 dosyası/hash'i korunur. Yeni paket bu tur telefona kurulmadı; gerçek UMP/native cihaz denemesi ayrıca yapılacaktır. Mobil `dist` web sunucusuna kopyalanmaz.
+
+4 Ekim güncellemesi: Kullanıcı kurulumundan sonra cihazda versionCode8 ve açık r8 doğrulandı. Gerçek native live/test kapıları beklenen biçimde reddetti; tek korumalı UMP sorgusu NOT_REQUIRED/canRequestAds true/formAvailable false/privacyOptions NOT_REQUIRED döndü. Tanılama reklam başlatmadı veya form/reset yapmadı; geçici RAM/forward temizlendi. Yeni APK derlemesi veya agent kurulumu yok. Gerçek mesaj gösterimi, kendi biriminde SDK test modu ve SSV/ödül tekliği ayrı kapılardır.
 
 ```powershell
 Remove-Item Env:GRIDSHARD_LOCAL_DEBUG -ErrorAction SilentlyContinue

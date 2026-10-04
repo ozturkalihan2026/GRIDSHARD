@@ -32,6 +32,23 @@ function adTestConfig(environment, root = path.resolve(__dirname, "..")) {
   return {mode:input.testingDevices.length ? "test" : "ump-only", appId:input.appId, adUnitId:input.adUnitId, testingDevices:[...new Set(input.testingDevices)]};
 }
 
+function adBuildConfig(environment, root = path.resolve(__dirname, "..")) {
+  if (environment.GRIDSHARD_ANDROID_PRODUCTION !== "1") return adTestConfig(environment, root);
+  const input = JSON.parse(fs.readFileSync(path.join(root,"config/android-production.json"),"utf8"));
+  if (environment.GRIDSHARD_LOCAL_DEBUG === "1" || environment.GRIDSHARD_REMOTE_DEBUG === "1"
+      || environment.GRIDSHARD_ADMOB_TEST_CONFIG || environment.GRIDSHARD_ALLOW_INSECURE_MOBILE_API === "1"
+      || environment.GRIDSHARD_APP_ID !== "com.gridshardgame.app" || input.appId !== environment.GRIDSHARD_APP_ID
+      || apiBaseForBuild(environment,true) !== input.apiBaseUrl
+      || input.apiBaseUrl !== "https://play.gridshardgame.com"
+      || !/^ca-app-pub-\d{16}~\d{10}$/.test(input.admobAppId)
+      || !/^ca-app-pub-\d{16}\/\d{10}$/.test(input.admobRewardedUnitId)
+      || input.admobAppId.split("~")[0] !== input.admobRewardedUnitId.split("/")[0]
+      || input.admobAppId === DEMO_APP_ID) {
+    throw new Error("Production ads require canonical release identity, HTTPS and no debug/test configuration.");
+  }
+  return {mode:"live",appId:input.admobAppId,adUnitId:input.admobRewardedUnitId,testingDevices:[]};
+}
+
 function adSafetyManifest(source) {
   if (!source.includes('xmlns:tools=')) source = source.replace(/<manifest\b/, '<manifest xmlns:tools="http://schemas.android.com/tools"');
   const permissions = ["com.google.android.gms.permission.AD_ID", "android.permission.ACCESS_ADSERVICES_AD_ID",
@@ -65,4 +82,4 @@ function configureNativeAdSafety(nativeRoot, repositoryRoot, config) {
   const manifest = path.join(nativeRoot,"app/src/main/AndroidManifest.xml");
   fs.writeFileSync(manifest, adSafetyManifest(fs.readFileSync(manifest,"utf8")));
 }
-module.exports = {DEMO_APP_ID, adTestConfig, adSafetyManifest, adSafetyGradle, configureNativeAdSafety};
+module.exports = {DEMO_APP_ID, adTestConfig, adBuildConfig, adSafetyManifest, adSafetyGradle, configureNativeAdSafety};

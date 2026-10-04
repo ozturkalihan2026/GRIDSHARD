@@ -3,7 +3,22 @@ const assert = require("node:assert/strict");
 const fs = require("node:fs");
 const os = require("node:os");
 const path = require("node:path");
-const {adTestConfig,adSafetyManifest,adSafetyGradle,DEMO_APP_ID} = require("../../tools/configure-native-ad-safety.js");
+const {adTestConfig,adBuildConfig,adSafetyManifest,adSafetyGradle,DEMO_APP_ID} = require("../../tools/configure-native-ad-safety.js");
+
+test("production ads require explicit canonical HTTPS build and cannot promote a debug package", () => {
+  const root = path.resolve("..");
+  const env = {GRIDSHARD_ANDROID_PRODUCTION:"1",GRIDSHARD_APP_ID:"com.gridshardgame.app",
+    GRIDSHARD_API_BASE_URL:"https://play.gridshardgame.com"};
+  const config = adBuildConfig(env,root);
+  assert.equal(config.mode,"live"); assert.deepEqual(config.testingDevices,[]);
+  assert.notEqual(config.appId,DEMO_APP_ID);
+  for (const change of [{GRIDSHARD_LOCAL_DEBUG:"1"},{GRIDSHARD_REMOTE_DEBUG:"1"},
+      {GRIDSHARD_ADMOB_TEST_CONFIG:"fixture.json"},{GRIDSHARD_APP_ID:"com.gridshard.remotedebug"},
+      {GRIDSHARD_API_BASE_URL:"https://other.example.test"},{GRIDSHARD_ALLOW_INSECURE_MOBILE_API:"1"}]) {
+    assert.throws(()=>adBuildConfig({...env,...change},root));
+  }
+  assert.equal(adBuildConfig({}).mode,"disabled");
+});
 
 test("publisher configuration is explicit, debug/HTTPS-only, identifier-safe and never present in normal builds", t => {
   assert.deepEqual(adTestConfig({}),{mode:"disabled",appId:DEMO_APP_ID,adUnitId:"",testingDevices:[]});

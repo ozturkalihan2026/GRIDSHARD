@@ -49,6 +49,14 @@ Apple hazırsa `-f docker-compose.oauth-apple.yml` eklenir; hazır olmayan sağl
 
 Mağaza için ayrı `GRIDSHARD_ANDROID_AUTH_CERT_SHA256`, **Play App Signing** sertifikasını kullanır; upload key/debug sertifikası değil. Birden fazla public özet virgülle ayrılabilir; private signing key istenmez.
 
+4 Ekim 2026: Play'den indirilen `certificates.zip` içindeki deployment, hybrid
+classical ve hybrid PQC sertifikaları doğrulandı. Üç SHA256 public kayıt
+`config/android-play-certificates.json` içindedir. Native tarayıcı OAuth/App Links
+dağıtımı yapılırken bu üç özet virgülle ayrılarak yukarıdaki production değişkenine
+eklenir; mevcut debug hedefi korunur. Bu yalnız yerel kayıt: bu tur canlı env veya
+assetlinks.json değiştirilmedi. PGS'nin SHA-1 Android istemci bağlaması ayrı işlemdir
+ve tarayıcı OAuth sağlayıcısını açmayı gerektirmez; bkz. `ANDROID_PRODUCTION_SETUP.md`.
+
 `https://play.gridshardgame.com/.well-known/assetlinks.json` 200/application-json ve doğru paket/sertifikayı vermeli; login/Cloudflare challenge/başka hosta redirect istememelidir. Kurulumdan sonra doğrulamaya süre tanıyın. Android 12+ bağlı cihazda:
 
 ```sh

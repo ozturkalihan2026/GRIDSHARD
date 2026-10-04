@@ -6,7 +6,7 @@ const fs = require("node:fs");
 const path = require("node:path");
 const crypto = require("node:crypto");
 const { outputPlan, renderPage, pagePath, adsText, ASSETS, PAGES } = require("../build-public-site.js");
-const { content } = require("../../public-site/content.js");
+const { site, content } = require("../../public-site/content.js");
 const root = path.resolve(__dirname, "../..");
 const hash = (bytes) => crypto.createHash("sha256").update(bytes).digest("hex");
 
@@ -73,6 +73,28 @@ test("pre-release state and unfinished production policy are disclosed", () => {
   assert.match(renderPage("en", "home"), /Preparing for Google Play/);
   assert.match(renderPage("tr", "privacy"), /en fazla 30 gün/);
   assert.match(renderPage("tr", "privacy"), /varsayılan olarak kapalıdır/);
+  assert.match(renderPage("tr", "privacy"), /kesin saklama takvimi/);
+  assert.match(renderPage("en", "privacy"), /precise retention schedule/);
+});
+
+test("both privacy translations name the deployed AWS provider, not the former planned Oracle server", () => {
+  for (const language of ["tr", "en"]) {
+    const html = renderPage(language, "privacy");
+    assert.match(html, /Amazon Web Services \/ AWS/);
+    assert.match(html, /https:\/\/aws\.amazon\.com\/privacy\//);
+    assert.doesNotMatch(html, /Oracle|oracle\.com/);
+  }
+  assert.match(renderPage("tr", "privacy"), /genel yayın öncesinde/);
+  assert.match(renderPage("en", "privacy"), /before public launch/);
+});
+
+test("both privacy translations identify the user-confirmed public publisher without claiming pending retention is deployed", () => {
+  assert.equal(site.publisher, "Alihan ÖZTÜRK");
+  for (const language of ["tr", "en"]) {
+    const html = renderPage(language, "privacy");
+    assert.ok(html.includes(site.publisher));
+    assert.match(html, /mailto:gridshardgame@gmail\.com/);
+  }
   assert.match(renderPage("tr", "privacy"), /kesin saklama takvimi/);
   assert.match(renderPage("en", "privacy"), /precise retention schedule/);
 });
