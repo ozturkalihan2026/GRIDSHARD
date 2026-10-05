@@ -31,9 +31,17 @@ assert.strictEqual(
   false
 );
 
-assert.ok(
-  global.GRIDSHARD_MUSIC_ASSETS.menu
-    .includes("menu_ensemble_v6.wav")
+assert.deepStrictEqual(
+  [...global.GRIDSHARD_MENU_PLAYLIST],
+  [
+    "./assets/audio/menu_v8_01_durgun_devre.wav",
+    "./assets/audio/menu_v8_02_akim_hatti.wav",
+    "./assets/audio/menu_v8_03_cekirdek_odasi.wav",
+  ]
+);
+assert.strictEqual(
+  global.GRIDSHARD_MUSIC_ASSETS.menu,
+  global.GRIDSHARD_MENU_PLAYLIST[0]
 );
 assert.ok(
   global.GRIDSHARD_SFX_CUES.core_hit

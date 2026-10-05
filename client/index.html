@@ -17,6 +17,7 @@
   <link rel="stylesheet" href="./src/styles.css" />
   <link rel="stylesheet" href="./src/canon.css" />
   <link rel="stylesheet" href="./src/account-session-controls.css" />
+  <link rel="stylesheet" href="./src/review-access.css" />
   <!-- /build:styles -->
 </head>
 <!-- Açılış ekranı betikler yüklenmeden de Ev düzeninde çizilir (Ev'e özgü
@@ -25,6 +26,7 @@
   <!-- Original GRIDSHARD2.1 branding and animations; the current server-backed
        startup-loading.js still decides when the game is actually ready. -->
   <section id="startup-loading" class="boot-screen" data-state="loading" aria-labelledby="startup-title" aria-busy="true">
+    <button class="review-access-launch review-access-startup" type="button" data-review-access-open>REVIEW / DEMO SIGN-IN</button>
     <div class="boot-screen-backdrop" aria-hidden="true">
       <span class="boot-trace boot-trace-a"></span>
       <span class="boot-trace boot-trace-b"></span>
@@ -60,7 +62,20 @@
     <p id="account-session-recovery-status" role="status" aria-live="polite">Bu cihazın oturumu kapatılmış veya giriş izni geçersiz. Oturumu kapatmak profilini silmez. Aynı Play Games hesabıyla yeniden giriş yap.</p>
     <button id="account-session-recovery-login" type="button">AYNI PLAY GAMES HESABIYLA GİRİŞ YAP</button>
     <button id="account-session-recovery-retry" type="button">BAĞLANTIYI YENİDEN DENE</button>
+    <button class="review-access-launch" type="button" data-review-access-open>REVIEW / DEMO SIGN-IN</button>
     <p><a href="mailto:gridshardgame@gmail.com">Destek ile iletişime geç</a></p>
+  </dialog>
+  <dialog id="review-access-dialog" class="review-access-dialog" lang="en" aria-labelledby="review-access-title">
+    <h2 id="review-access-title">Review / demo sign-in</h2>
+    <p>Private review account only. Your existing profile is kept separately.</p>
+    <form id="review-access-form" autocomplete="off">
+      <label>Username<input id="review-access-username" type="text" required maxlength="100" autocomplete="off" autocapitalize="none" spellcheck="false"></label>
+      <label>Password<input id="review-access-password" type="password" required maxlength="100" autocomplete="off"></label>
+      <button id="review-access-submit" class="review-access-launch" type="submit">SIGN IN TO REVIEW</button>
+    </form>
+    <p id="review-access-status" role="status" aria-live="polite"></p>
+    <button id="review-access-restore" class="review-access-launch" type="button" hidden>RETURN TO PREVIOUS PROFILE</button>
+    <button id="review-access-close" class="review-access-launch" type="button">CLOSE</button>
   </dialog>
   <main class="battle-shell">
     <header class="battle-header" aria-label="Savaş üst bilgi barı">
@@ -279,6 +294,7 @@
         </div>
         <p id="account-onboarding-status" role="status" aria-live="polite"></p>
         <button id="account-onboarding-guest" class="account-onboarding-guest" type="button">ŞİMDİLİK MİSAFİR OLARAK DEVAM ET</button>
+        <button class="review-access-launch" type="button" data-review-access-open>REVIEW / DEMO SIGN-IN</button>
         <small>Misafir ilerlemesi bu cihazda korunur. Daha sonra Ayarlar → Hesap ve Gizlilik bölümünden hesabını bağlayabilirsin.</small>
       </section>
     </dialog>
@@ -926,6 +942,7 @@
       <section class="account-platform-panel" aria-labelledby="account-platform-title">
         <div class="profile-section-heading"><h3 id="account-platform-title">Bağlı Hesap</h3></div>
         <p id="account-platform-status">Hesap güvenliği yükleniyor…</p>
+        <button class="review-access-launch" type="button" data-review-access-open>REVIEW / DEMO SIGN-IN</button>
         <div class="account-verification-form">
           <select id="account-contact-channel"><option value="email">E-posta</option><option value="phone">Telefon</option></select>
           <input id="account-contact-destination" type="text" maxlength="180" placeholder="E-posta veya telefon">
@@ -1300,6 +1317,7 @@
   <script src="./src/boot-screen.js"></script>
   <script src="./src/startup-loading.js"></script>
   <script src="./src/account-session-controls.js"></script>
+  <script src="./src/review-access.js"></script>
   <script src="./src/app.js"></script>
   <!-- /build:scripts -->
 </body>

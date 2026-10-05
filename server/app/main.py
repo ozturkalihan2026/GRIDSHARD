@@ -33,6 +33,7 @@ from .auth import (
     load_or_create_signing_key,
 )
 from .platform_services import PlatformService, PlatformServiceError
+from .review_access import ReviewAccessService, load_review_config, review_access_router
 from .native_oauth import NATIVE_AUTH_TARGETS, asset_links, native_return_url
 from .postgres_platform import PostgresPlatformService
 from .postgres_social_transactions import PostgresSocialTransactionRepository, SocialTransactionError
@@ -85,7 +86,8 @@ from .game.pvp_protocol import PVP_PROTOCOL_VERSION
 from .game.pvp_setup import InitialModulePlacement, PvPSetupPayload
 from .game.pvp_websocket import PvPWebSocketAdapter
 from .game.pvp_runner import PvPTickRunner
-from .game.tutorial import TUTORIAL_ENEMY_DECK, TutorialDirector
+from .game.tutorial import TUTORIAL_ENEMY_DECK, TUTORIAL_PLAYER_DECK, TutorialDirector
+from .match_accounting import TUTORIAL_TRAINING_MATCH_TYPE
 from .version import VERSION
 from .player_profile import (
     PlayerProfileError,
@@ -558,6 +560,10 @@ async def require_participant_authentication(request: Request, call_next):
             identity = participant_auth_service.verify_access_token(token)
             if platform_service.token_is_revoked(identity.player_id, identity.token_id):
                 raise AuthenticationError("Bu cihaz oturumu sonlandırılmış.")
+            review_access_service.assert_identity_allowed(identity)
+            parts = path.split("/")
+            if len(parts) > 3 and parts[1] == "accounts" and parts[3] in {"oauth", "play-games", "verification"}:
+                review_access_service.assert_external_login_allowed(identity.player_id)
             return identity
         # Identity and revocation reads use PostgreSQL in production. Do not
         # stall every battle socket/tick on the event loop while they run.
@@ -773,7 +779,7 @@ def process_completed_pvp_battle(state) -> None:
     analytics_mode = (
         "team" if state.match_type == "team_tournament"
         else "friend" if state.match_type in {"friend", "social_friend", "team_training"}
-        else "training" if state.match_type == "local_test"
+        else "training" if state.match_type in {"local_test", TUTORIAL_TRAINING_MATCH_TYPE}
         else "arena"
     )
     duration_ms = int(state.finished_at_ms if state.finished_at_ms is not None else state.elapsed_ms)
@@ -1088,7 +1094,7 @@ def _process_durable_battle_result(state, *, replaying=False) -> None:
         # Repository event IDs are stable and permit later retry without grants.
         try:
             telemetry_service.ingest_finished_battle(state)
-            mode = "team" if state.match_type == "team_tournament" else "friend" if state.match_type in {"friend_battle", "team_training"} else "arena"
+            mode = "team" if state.match_type == "team_tournament" else "friend" if state.match_type in {"friend_battle", "team_training"} else "training" if state.match_type == TUTORIAL_TRAINING_MATCH_TYPE else "arena"
             duration = int(state.finished_at_ms if state.finished_at_ms is not None else state.elapsed_ms)
             bucket = "under_60s" if duration < 60_000 else "60_179s" if duration < 180_000 else "180s_plus"
             for owner in account_ids:
@@ -1366,8 +1372,9 @@ class BattlePoolPresetMetaRequest(BaseModel):
 
 class MatchmakingJoinRequest(BaseModel):
     player_id: str
-    # İlk oyun deneyimi: istemci yönetmenli ilk savaşı ister. Yalnız hiç maç
-    # bitirmemiş oyuncu için geçerlidir (bkz. game/tutorial.py).
+    # İlk oyun deneyimi: istemci yönetmenli savaş ister. Hiç maç bitirmemiş
+    # oyuncunun ilk Arena maçı yönetilir; eğitimi yeniden başlatan oyuncu ise
+    # hesaba işlenmeyen bir eğitim maçı oynar (bkz. game/tutorial.py).
     tutorial: bool = False
 
 
@@ -1377,6 +1384,7 @@ class AuthSessionRequest(BaseModel):
     device_id: str | None = None
     device_name: str | None = None
     platform: str = "web"
+    existing_only: bool = False
 
 
 class ProviderSessionRequest(BaseModel):
@@ -1512,6 +1520,9 @@ def create_participant_auth_session(
         device_id = str(request.device_id or "").strip() or hashlib.sha256(
             request.device_secret.encode("utf-8")
         ).hexdigest()[:24]
+        review_access_service.assert_device_allowed(request.player_id, device_id)
+        if request.existing_only and participant_auth_service.repository.get(request.player_id) is None:
+            raise AuthenticationError("Mevcut hesap bulunamadı; yeniden oluşturulmadı.")
         result = participant_auth_service.register_or_login(
             request.player_id,
             request.device_secret,
@@ -1533,6 +1544,7 @@ def create_participant_auth_session(
             # state before entering its first match (no client data import).
             player_profile_service.get_or_create(request.player_id)
             persist_player_data(request.player_id)
+        review_access_service.record_session(request.player_id, device_id, result)
         return {**result, "device_id": device_id}
     except AuthenticationError as exc:
         raise HTTPException(
@@ -1548,6 +1560,7 @@ def create_participant_auth_session(
 def create_provider_auth_session(request: ProviderSessionRequest) -> dict:
     try:
         exchange = platform_service.consume_oauth_exchange(request.exchange, code_verifier=request.code_verifier)
+        review_access_service.assert_external_login_allowed(exchange["player_id"])
         if exchange.get("recovery") and (
             participant_auth_service.repository.get(exchange["player_id"]) is None
             or (RUNTIME_STRICT and player_data_repository.load(exchange["player_id"]) is None)
@@ -2147,8 +2160,31 @@ def _redis_matchmaking_enabled() -> bool:
     return runtime_coordinator.redis is not None
 
 
+def _tutorial_training_deck(match_id) -> list[str] | None:
+    """Eğitim maçında oyuncunun kurulumda göndereceği deste; diğer maçlarda None."""
+    try:
+        session = pvp_service.get_session(str(match_id or ""))
+    except PvPSessionError:
+        return None
+    if (
+        session.tutorial is None
+        or session.engine.state.match_type != TUTORIAL_TRAINING_MATCH_TYPE
+    ):
+        return None
+    return list(TUTORIAL_PLAYER_DECK)
+
+
+def _with_tutorial_training_deck(response: dict) -> dict:
+    # Alan yalnız eğitim maçında bulunur; istemci desteyi buna göre değiştirir.
+    if response.get("matched"):
+        deck = _tutorial_training_deck(response.get("session_id"))
+        if deck:
+            response["tutorial_deck"] = deck
+    return response
+
+
 def _matchmaking_pair_response(pair: MatchmakingPair) -> dict:
-    return {
+    return _with_tutorial_training_deck({
         "matched": True,
         "session_id": pair.match_id,
         "players": [pair.player_a_id, pair.player_b_id],
@@ -2156,7 +2192,7 @@ def _matchmaking_pair_response(pair: MatchmakingPair) -> dict:
         "opponent_type": pair.opponent_type,
         "match_owner": pair.owner_instance_id or None,
         "websocket_base_url": pair.websocket_base_url or None,
-    }
+    })
 
 
 async def _matchmaking_pair_for(player_id: str) -> MatchmakingPair | None:
@@ -2273,12 +2309,6 @@ def _matchmaking_player_details(player_id):
                 for mid in profile.preferred_battle_pool_ids) / 6 + 1 + profile.core_upgrade_levels.get(profile.selected_core_type, 0)) / 2)}
 
 
-@persistent_operation
-def _tutorial_battle_eligible(player_id: str) -> bool:
-    """Yönetmenli ilk savaş yalnız hiç maç bitirmemiş oyuncuya açılır."""
-    return player_statistics_service.get_or_create(player_id).total_matches == 0
-
-
 def _provision_match_state(pair, background_tasks, tutorial=False):
     accounts = [pair.player_a_id] if pair.opponent_type == "ai" else [pair.player_a_id, pair.player_b_id]
     with PERSISTENT_STATE.lock:
@@ -2382,9 +2412,9 @@ async def matchmaking_join(
             }
 
         profile = await asyncio.to_thread(_matchmaking_player_details, request.player_id)
-        tutorial_match = bool(request.tutorial) and await asyncio.to_thread(
-            _tutorial_battle_eligible, request.player_id
-        )
+        # Yönetmenli savaş her zaman AI rakiple oynanır. İlk maç mı, eğitim
+        # maçı mı olduğuna oturum kurulurken karar verilir.
+        tutorial_match = bool(request.tutorial)
         queue_entry = await _matchmaking_enqueue(
             request.player_id,
             rating=profile["rating"],
@@ -2508,7 +2538,7 @@ async def matchmaking_status(
             pair = await _matchmaking_match_with_ai(player_id)
             pair = await _provision_match_session(pair, background_tasks)
             snapshot = await _matchmaking_snapshot(player_id)
-        return snapshot
+        return _with_tutorial_training_deck(snapshot)
     except (MatchmakingError, PvPSessionError, ValueError) as exc:
         raise HTTPException(status_code=409, detail=str(exc)) from exc
     except HTTPException:
@@ -2537,6 +2567,7 @@ def _analytics_actor(request: Request) -> str:
         identity = participant_auth_service.verify_access_token(token)
         if platform_service.token_is_revoked(identity.player_id, identity.token_id):
             raise AuthenticationError("Bu cihaz oturumu sonlandırılmış.")
+        review_access_service.assert_identity_allowed(identity)
         return identity.player_id
     except AuthenticationError as exc:
         raise HTTPException(status_code=401, detail=str(exc)) from exc
@@ -4150,7 +4181,7 @@ def _team_summary(team: dict) -> dict:
 
 
 # Takım kurma bedeli (Devre Kredisi). Kurucu öder; başvuru ücretsizdir.
-TEAM_CREATION_COST_CIRCUIT_CREDITS = 300
+TEAM_CREATION_COST_CIRCUIT_CREDITS = 3000
 TEAM_DIRECTORY_LIMIT = 100
 
 
@@ -4371,8 +4402,13 @@ def _current_team_operation_view(team_id: str, player_id: str) -> dict:
 def create_team(request: TeamCreateRequest) -> dict:
     profile = _team_member_profile(request.player_id)
     cost = TEAM_CREATION_COST_CIRCUIT_CREDITS
-    # Aynı isteğin yinelenmesinde oyuncu zaten takımdadır; bedel yeniden sorulmaz.
-    if profile.circuit_credits < cost and team_service.team_for_player(request.player_id) is None:
+    # Yinelenen istek makbuzdan yanıtlanır; bedel yeniden sorulmaz (kurucu o
+    # arada takımdan ayrılmış olsa da). Takımdaki oyuncuyu hizmet reddeder.
+    if (
+        profile.circuit_credits < cost
+        and team_service.team_for_player(request.player_id) is None
+        and not team_service.has_receipt(request.request_id)
+    ):
         raise HTTPException(
             status_code=422,
             detail=f"Takım kurmak için {cost} Devre Kredisi gerekli.",
@@ -6341,24 +6377,33 @@ def _create_matchmaking_ai_session(
     profile = player_profile_service.get_or_create(pair.player_a_id)
     bot = dict(bot_override or select_bot(profile.rating, pair.match_id))
     bot.setdefault("match_rating", int(bot.get("rating", profile.rating)))
-    match_type = str(match_type_override or "arena_ai")
+    played_before = (
+        player_statistics_service.get_or_create(pair.player_a_id).total_matches > 0
+    )
+    # İlk oyun deneyimini Ayarlar'dan yeniden başlatan oyuncunun savaşı eğitim
+    # maçıdır: ilk savaş gibi yönetilir ama hesaba işlenmez (kupa, ödül ve
+    # istatistik yok; bkz. match_accounting).
+    training = bool(tutorial) and match_type_override is None and played_before
+    match_type = str(
+        match_type_override
+        or (TUTORIAL_TRAINING_MATCH_TYPE if training else "arena_ai")
+    )
     # İlk maç eğitimi (Beta.72 tur 11): hiç maç bitirmemiş oyuncunun AI rakibi
     # ilk hamlesini 15 sn sonra yapar, daha seyrek karar verir, daha sık hata
     # yapar ve "Dengeli" oynar; oyuncu eğitim ipuçlarını savaş sürerken okur.
-    # Kupa ve ödül kuralları değişmez.
-    first_match = (
-        match_type == "arena_ai"
-        and player_statistics_service.get_or_create(pair.player_a_id).total_matches == 0
-    )
-    # İlk oyun deneyimi: istemci istediyse ilk maç sahne sahne yönetilir.
-    # Betiğin rakibe kurduğu kartlar rakip destesinde bulunmalıdır.
-    directed = bool(tutorial) and first_match
+    # Kupa ve ödül kuralları değişmez. Eğitim maçında da rakip aynı yumuşaklıkta
+    # oynar: yönetmen çekilirse (deste eğitime uymuyorsa) savaş kolay kalır.
+    first_match = match_type == "arena_ai" and not played_before
+    softened = first_match or training
+    # İlk oyun deneyimi: istemci istediyse ilk maç ve eğitim maçı sahne sahne
+    # yönetilir. Betiğin rakibe kurduğu kartlar rakip destesinde bulunmalıdır.
+    directed = bool(tutorial) and softened
     if directed:
         bot.update(
             battle_pool_ids=list(TUTORIAL_ENEMY_DECK),
             core_type="core_resonance",
         )
-    if first_match:
+    if softened:
         bot.update(
             archetype_tr="Dengeli",
             decision_delay_ms=max(
@@ -6426,7 +6471,7 @@ def _create_matchmaking_ai_session(
         pair.match_id,
         pair.player_b_id,
         archetype_id=ai_archetype.id,
-        first_decision_at_ms=FIRST_MATCH_AI_FIRST_DECISION_MS if first_match else 0,
+        first_decision_at_ms=FIRST_MATCH_AI_FIRST_DECISION_MS if softened else 0,
     )
 
     telemetry_call = {
@@ -6804,6 +6849,7 @@ async def pvp_websocket(
             identity = participant_auth_service.verify_access_token(access_token or "")
             if platform_service.token_is_revoked(identity.player_id, identity.token_id):
                 raise AuthenticationError("Bu cihaz oturumu sonlandırılmış.")
+            review_access_service.assert_identity_allowed(identity)
             if identity.player_id != player_id:
                 raise AuthenticationError("WebSocket oyuncu kimliği belirteçle eşleşmiyor.")
 
@@ -6868,6 +6914,25 @@ async def pvp_websocket(
 def retired_diagnostic_surface(retired_path: str = ""):
     # /telemetry/events is a real route declared above this catch-all.
     raise HTTPException(status_code=410, detail="Bu eski yönetim/deneme arayüzü kaldırıldı; canlı kayıtlar bu uçtan değiştirilemez.")
+
+
+@contextmanager
+def _review_account_operation(player_id):
+    with PERSISTENT_STATE.lock, _pending_results_barrier(), _persistent_operation((player_id,)):
+        if not RUNTIME_STRICT and player_id not in player_profile_service._profiles and player_data_repository.load(player_id) is not None:
+            # Production's PersistentState already hydrates the locked profile.
+            # JSON development must likewise keep the demo's existing progress.
+            player_data_store_service.load_player(player_id)
+        yield
+
+
+review_access_service = ReviewAccessService(
+    load_review_config(os.environ), participant_auth_service, platform_service,
+    player_profile_service,
+    profile_exists=lambda player_id: player_id in player_profile_service._profiles or player_data_repository.load(player_id) is not None,
+    persist=persist_player_data, operation=_review_account_operation,
+)
+app.include_router(review_access_router(lambda: review_access_service))
 
 
 # API ve WebSocket rotalarından sonra istemciyi aynı origin altında servis et.

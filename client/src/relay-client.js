@@ -1808,6 +1808,9 @@
       this.pollTimer = null;
       this.readyTimer = null;
       this.pendingSetup = null;
+      // Eğitim maçında sunucunun bildirdiği deste (tanım kimlikleri); diğer
+      // maçlarda null. Raf bu maç boyunca bu desteyi gösterir.
+      this.tutorialDeckIds = null;
       this.lastError = null;
       this.attemptId = 0;
       this.cancelRequest = null;
@@ -1853,6 +1856,7 @@
             })
           ),
       };
+      this.tutorialDeckIds = null;
 
       this.lastError = null;
 
@@ -2013,6 +2017,7 @@
       this.connectionManager.clearOutgoingQueue();
       this.matchmakingState.reset();
       this.pendingSetup = null;
+      this.tutorialDeckIds = null;
       this._setStatus(ONLINE_PLAY_STATUS.CANCELLED);
 
       const cancelRequest = Promise.resolve().then(() => this.requestJson(
@@ -2038,6 +2043,7 @@
       this.connectionManager.disconnect?.();
       this.connectionManager.clearOutgoingQueue();
       this.pendingSetup = null;
+      this.tutorialDeckIds = null;
       this.lastError = null;
       this.matchmakingState.reset();
       this._setStatus(
@@ -2109,6 +2115,21 @@
 
       this.connectionManager
         .clearOutgoingQueue();
+
+      // Eğitim maçı (ilk oyun deneyimi yeniden başlatıldığında): oyuncu kendi
+      // destesiyle değil sunucunun bildirdiği desteyle girer. Kayıtlı deste
+      // değişmez; yalnız bu maçın kurulumu ve rafı etkilenir.
+      const tutorialDeck = response.tutorial_deck;
+      this.tutorialDeckIds =
+        Array.isArray(tutorialDeck) && tutorialDeck.length === 6 && this.pendingSetup
+          ? tutorialDeck.map(String)
+          : null;
+      if (this.tutorialDeckIds) {
+        this.pendingSetup = {
+          ...this.pendingSetup,
+          battlePoolIds: [...this.tutorialDeckIds],
+        };
+      }
 
       this.connectionManager.sendSetup(
         this.pendingSetup
@@ -3203,7 +3224,8 @@
     _isValid(value) {
       return (
         typeof value === "string"
-        && /^wt-[a-z0-9_-]{6,69}$/
+        // Syntax only: review identities still need server device/token proof.
+        && /^(?:wt-[a-z0-9_-]{6,69}|review-[0-9a-f]{32})$/
           .test(value)
       );
     }

@@ -68,6 +68,7 @@ MATCH_LABELS_TR = {
     "unranked_ai": "Derecesiz AI",
     "friend_battle": "Arkadaş Savaşı",
     "team_training": "Takım Antrenmanı",
+    "tutorial_training": "Eğitim Savaşı",
     "local_test": "Yerel Test",
 }
 

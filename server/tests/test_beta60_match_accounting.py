@@ -59,7 +59,7 @@ def _normal_profile_snapshot(profile) -> dict:
     }
 
 
-@pytest.mark.parametrize("match_type", ("friend_battle", "team_training"))
+@pytest.mark.parametrize("match_type", ("friend_battle", "team_training", "tutorial_training"))
 def test_training_modes_are_completely_profile_neutral(match_type):
     profiles = PlayerProfileService()
     progression = PlayerProgressionService(profiles)

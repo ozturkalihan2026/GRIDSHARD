@@ -380,6 +380,20 @@
       return true;
     }
 
+    // Akışı belirli bir adımdan sürdürür (ör. yönetmenli savaşa yeniden
+    // bağlanıldığında savaş adımından).
+    startAt(stepId) {
+      if (this.active) return true;
+      const index = this.steps.findIndex((step) => step.id === stepId);
+      if (index < 0) return false;
+      this.index = index;
+      this.active = true;
+      this.entered = false;
+      this.stuckSince = null;
+      this.write(this.progressKey, stepId);
+      return true;
+    }
+
     stop() {
       this.active = false;
       this.entered = false;

@@ -15,7 +15,13 @@ from app.game.tutorial import (
     ABANDON_DISCONNECTED_SECONDS,
     STAGES,
     TUTORIAL_ENEMY_DECK,
+    TUTORIAL_PLAYER_DECK,
     TutorialDirector,
+    deck_supports_tutorial,
+)
+from app.match_accounting import (
+    TUTORIAL_TRAINING_MATCH_TYPE,
+    applies_to_profile_progression,
 )
 
 
@@ -80,8 +86,24 @@ def command(kind, **payload):
     return BattleCommand(player_id=PLAYER, kind=kind, payload=payload)
 
 
-async def play(service, session, runner, *, on_stage=None, max_ticks=4000):
+async def play(
+    service,
+    session,
+    runner,
+    *,
+    on_stage=None,
+    max_ticks=4000,
+    session_id=SESSION,
+    player_id=PLAYER,
+):
     """Betiği bir oyuncu gibi oynar; ziyaret edilen sahneleri döndürür."""
+    def send(kind, **payload):
+        service.submit_command(
+            session_id,
+            player_id,
+            BattleCommand(player_id=player_id, kind=kind, payload=payload),
+        )
+
     visited = []
     for _ in range(max_ticks):
         if session.engine.state.status != BattleStatus.RUNNING:
@@ -92,12 +114,10 @@ async def play(service, session, runner, *, on_stage=None, max_ticks=4000):
             if on_stage is not None:
                 on_stage(view)
         if view["paused"] and view["kind"] == "ack":
-            service.submit_command(SESSION, PLAYER, command("tutorial_ack", stage=view["stage"]))
+            send("tutorial_ack", stage=view["stage"])
         elif view["paused"] and view["kind"] == "deploy":
-            service.submit_command(
-                SESSION, PLAYER, command("deploy_module", definition_id=view["deploy"])
-            )
-        assert await runner.run_single_tick(SESSION)
+            send("deploy_module", definition_id=view["deploy"])
+        assert await runner.run_single_tick(session_id)
     return visited
 
 
@@ -270,6 +290,10 @@ def test_new_player_gets_a_directed_battle_when_the_client_asks(monkeypatch, ai_
         session.engine.state.players[ai_player_id].battle_pool.module_definition_ids
         == TUTORIAL_ENEMY_DECK
     )
+    # İlk savaş normal Arena maçıdır: kupa ve ödül verir, oyuncu kendi destesiyle girer.
+    assert session.engine.state.match_type == "arena_ai"
+    assert session.engine.state.ranked_eligible is True
+    assert "tutorial_deck" not in payload
 
 
 def test_plain_join_keeps_the_softened_first_match(monkeypatch):
@@ -288,7 +312,45 @@ def test_plain_join_keeps_the_softened_first_match(monkeypatch):
     assert session.ai_next_decision_at_ms[ai_player_id] == gateway.FIRST_MATCH_AI_FIRST_DECISION_MS
 
 
-def test_experienced_player_cannot_request_a_directed_battle(monkeypatch):
+def test_tutorial_training_deck_teaches_every_card_and_stays_off_the_books():
+    assert deck_supports_tutorial(TUTORIAL_PLAYER_DECK)
+    assert len(TUTORIAL_PLAYER_DECK) == 6
+    assert applies_to_profile_progression(TUTORIAL_TRAINING_MATCH_TYPE) is False
+
+
+@pytest.mark.parametrize("ai_only", [True, False])
+def test_replaying_player_gets_a_directed_training_match(monkeypatch, ai_only):
+    from fastapi.testclient import TestClient
+
+    gateway = _reset_gateway(monkeypatch, ai_only=ai_only)
+    gateway.player_statistics_service.get_or_create("veteran-player").total_matches = 3
+    client = TestClient(gateway.app)
+
+    payload = client.post(
+        "/matchmaking/join",
+        json={"player_id": "veteran-player", "tutorial": True},
+    ).json()
+
+    assert payload["matched"] is True and payload["opponent_type"] == "ai"
+    session = gateway.pvp_service.get_session(payload["session_id"])
+    assert isinstance(session.tutorial, TutorialDirector)
+    assert session.engine.state.match_type == TUTORIAL_TRAINING_MATCH_TYPE
+    assert session.engine.state.ranked_eligible is False
+    # Oyuncu kendi destesiyle değil eğitim destesiyle girer; sunucu desteyi bildirir.
+    assert payload["tutorial_deck"] == list(TUTORIAL_PLAYER_DECK)
+    # Eşleşme yanıtı kaçtıysa durum sorgusu da aynı desteyi bildirir.
+    status = client.get("/matchmaking/veteran-player").json()
+    assert status["matched"] is True
+    assert status["tutorial_deck"] == list(TUTORIAL_PLAYER_DECK)
+    ai_player_id = next(iter(session.ai_player_ids))
+    assert (
+        session.engine.state.players[ai_player_id].battle_pool.module_definition_ids
+        == TUTORIAL_ENEMY_DECK
+    )
+    assert session.ai_next_decision_at_ms[ai_player_id] == gateway.FIRST_MATCH_AI_FIRST_DECISION_MS
+
+
+def test_experienced_player_plays_a_normal_match_without_the_tutorial_request(monkeypatch):
     from fastapi.testclient import TestClient
 
     gateway = _reset_gateway(monkeypatch, ai_only=True)
@@ -296,10 +358,87 @@ def test_experienced_player_cannot_request_a_directed_battle(monkeypatch):
 
     payload = TestClient(gateway.app).post(
         "/matchmaking/join",
-        json={"player_id": "veteran-player", "tutorial": True},
+        json={"player_id": "veteran-player"},
     ).json()
 
-    assert gateway.pvp_service.get_session(payload["session_id"]).tutorial is None
+    session = gateway.pvp_service.get_session(payload["session_id"])
+    assert session.tutorial is None
+    assert session.engine.state.match_type == "arena_ai"
+    assert "tutorial_deck" not in payload
+    ai_player_id = next(iter(session.ai_player_ids))
+    assert session.ai_next_decision_at_ms[ai_player_id] == 0
+
+
+def test_training_match_is_won_and_leaves_the_account_untouched(monkeypatch):
+    from fastapi.testclient import TestClient
+
+    gateway = _reset_gateway(monkeypatch, ai_only=True)
+    player_id = "training-veteran"
+    profile = gateway.player_profile_service.get_or_create(player_id)
+    profile.rating = 640
+    profile.highest_rating = 700
+    statistics = gateway.player_statistics_service.get_or_create(player_id)
+    statistics.total_matches = 12
+    statistics.wins = 7
+    before = {
+        "rating": profile.rating,
+        "highest_rating": profile.highest_rating,
+        "experience": profile.experience,
+        "season_xp": profile.season_xp,
+        "circuit_credits": profile.circuit_credits,
+        "lifetime_stats": dict(profile.lifetime_stats),
+        "chest_slots": [dict(item) for item in profile.chest_slots],
+        "daily_mission_progress": dict(profile.daily_mission_progress),
+    }
+
+    payload = TestClient(gateway.app).post(
+        "/matchmaking/join",
+        json={"player_id": player_id, "tutorial": True},
+    ).json()
+    session_id = payload["session_id"]
+    session = gateway.pvp_service.get_session(session_id)
+    gateway.pvp_service.submit_setup(
+        session_id,
+        player_id,
+        PvPSetupPayload(
+            battle_pool_ids=tuple(payload["tutorial_deck"]),
+            initial_modules=(InitialModulePlacement("core-1", "core", 2, 1),),
+        ),
+    )
+    gateway.pvp_service.set_ready(session_id, player_id, True)
+    runner = PvPTickRunner(
+        gateway.pvp_service,
+        PvPWebSocketAdapter(gateway.pvp_service),
+        match_finished_callback=gateway.process_completed_pvp_battle,
+    )
+
+    visited = asyncio.run(play(
+        gateway.pvp_service, session, runner,
+        session_id=session_id, player_id=player_id,
+    ))
+
+    state = session.engine.state
+    assert visited == [stage.id for stage in STAGES]
+    assert state.status == BattleStatus.FINISHED
+    assert state.winner_player_id == player_id
+    assert runner.stats_for(session_id).match_finished_callback_failures == 0
+    result = gateway.player_progression_service.player_result(session_id, player_id)
+    assert result["match_type"] == TUTORIAL_TRAINING_MATCH_TYPE
+    assert result["match_label_tr"] == "Eğitim Savaşı"
+    assert result["profile_progression_applied"] is False
+    assert (result["rating_delta"], result["circuit_credits_awarded"], result["xp_awarded"]) == (0, 0, 0)
+    assert result["chest_awarded"] is None
+    assert {
+        "rating": profile.rating,
+        "highest_rating": profile.highest_rating,
+        "experience": profile.experience,
+        "season_xp": profile.season_xp,
+        "circuit_credits": profile.circuit_credits,
+        "lifetime_stats": dict(profile.lifetime_stats),
+        "chest_slots": [dict(item) for item in profile.chest_slots],
+        "daily_mission_progress": dict(profile.daily_mission_progress),
+    } == before
+    assert (statistics.total_matches, statistics.wins) == (12, 7)
 
 
 def test_new_account_can_upgrade_the_laser_once():

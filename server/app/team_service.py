@@ -273,6 +273,11 @@ class TeamService:
             self.repository.save(payload)
             return stored
 
+    def has_receipt(self, request_id: str) -> bool:
+        """İşlem kimliği daha önce tamamlandıysa (istek yineleniyorsa) True."""
+        receipt_id = str(request_id or "").strip()
+        return bool(receipt_id) and receipt_id in self.repository.load()["receipts"]
+
     def team_for_player(self, player_id: str) -> dict | None:
         payload = self.repository.load()
         team = self._find_team_for_player(payload, player_id)

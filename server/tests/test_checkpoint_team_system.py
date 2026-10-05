@@ -149,6 +149,7 @@ def test_gateway_team_view_sorts_trophies_and_transfers_one_unlocked_shard(monke
         alpha.rating = 100
         beta.rating = 900
         beta.module_shards["laser"] = 2
+        alpha.circuit_credits = gateway.TEAM_CREATION_COST_CIRCUIT_CREDITS
 
         created = gateway.create_team(gateway.TeamCreateRequest(
             player_id=alpha.player_id,

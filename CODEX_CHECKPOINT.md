@@ -2,6 +2,254 @@
 
 Güncelleme tarihi: 5 Ekim 2026
 
+## Son yetki — inceleme erişimini çalışır sürüme hazırlama
+
+5 Ekim gece: Kullanıcı zorunlu tam erişim kutusu nedeniyle “ne yapmamız
+gerekiyor ise yapalım” dedi. Bu inceleme erişimini tamamlamak için eşleşen
+backend dağıtımı ve aynı Android anahtarıyla yeni versionCode 2 paketi artık
+yetkilidir; aşağıdaki kaynak-yalnız sınırı tarihsel önceki aşamadır. Gerçek
+reklam/ödeme açma, hesap sıfırlama ve üretime herkese yayın yetkisi verilmedi.
+Diğer aracın sonradan tamamladığı müzikler bu sabit ara sürüme eklenmedi. Yeni özel Compose
+katmanı `docker-compose.play-review.yml`; varsayılan dağıtım hâlâ kapalıdır.
+Yerel izole PostgreSQL/Android imza ve canlı yedek/geri dönüş kapıları
+tamamlanmadan tam erişim kutusu doğrulandı sayılmayacak.
+
+Ara durum: aynı imza anahtarıyla **versionCode 2 APK/AAB üretildi**, APK/AAB
+imzaları, 61'er web varlığının build ile eşleşmesi, HTTPS/normal manifest ve
+inceleme sırlarının pakete gömülmemesi doğrulandı.
+`artifacts/android-production-20261005-v2/` altındaki AAB SHA-256:
+`389bdae5df6fbcedaf69bfe194f7ffd0cb6901ea1ff251badc79a7403cdd72b5`.
+Build ID `2b56167427155dda`; bu, birleştirilmiş son kapalı test değil, inceleme
+erişimi için **sabit kaynak anından üretilmiş ara dahili test paketidir**.
+Başlayan yeni müzik WAV/türevleri bu anın dışında; diğer aracın yeni dosyaları
+korunur, ara pakete eklenmiş sayılmaz. Play yüklemesi/telefonda versionCode 2
+kurulumu bağımsız doğrulanmadı; aşağıdaki son kullanıcı giriş teyidine bak.
+
+Yerel tam sunucu süiti, yeni loopback PG16 kümesiyle **1154 geçti /1 Redis
+atlandı**; inceleme PostgreSQL commit/rollback ikisi de geçti. Takım test
+fixture'ı yeni 3000 krediye geçtiği için eski 321→339 sabiti yalnız testte
+dinamik başlangıç bakiyesi +18/+19 olarak düzeltildi. İstemci 203, araç 30,
+güncel kaynak tarayıcı demo/geri dönüş dört boyut tekrar geçti. Yeni tek kullanımlık
+PG test kümeleri yalnız kendi `artifacts/play-review-access/postgres-*` dizininde
+çalıştı ve durduruldu; mevcut sistem/sunucu DB'sine bağlanmadı.
+
+**Canlı r11 geçişi tamamlandı (5 Ekim 23:28 TSİ).** Yeni API image kimliği
+`sha256:8dd93d8ed5e619d3dba8d281e435562c988fda403f7b51e776c13f2395cb55b4`.
+Eski r10 API image geri dönüş için korunuyor:
+`sha256:0726e9dfd3837a2f63622f0987dc1c25ec6a2d6a1e7f1c4bf519090cee5db65d`.
+Kaynak ZIP SHA `f79354517beea86a7d5559a35509e89f12eb064522ecf96d37481416a224a4ad`;
+ayrı PG17/Redis süiti **1152 geçti /1 host pg_dump atlandı**, Windows QA
+raporları paket dışında olduğu için iki yerel kanıt testi uzak süitte ayrıca
+hariç tutuldu (yerelde geçti, uzak sahte rapor oluşturulmadı). Gerçek bakım
+container backup/restore ve demo-token restart kontrolü ile **330s izole soak geçti**.
+Verifier tek dosya, UID10001/0400,
+API read-only mount; parola/DPAPI kasası sunucuya gönderilmedi.
+
+Canlı geçişte fresh offline backup/UUID/count/SHA/pg_restore-list, eski
+profil/kimlik/takım satır özetleri eşitliği, mevcut volumes/PGS/auth-key/TLS ve
+**330s HTTPS lease geçti**, kritik log işareti 0. Fresh yedek:
+`/var/backups/gridshard-production/20261005-before-play-review-r11`.
+Eski live DB geri yükleme/silme yok; gerçek reklam/ödeme/test modu kapalı kaldı.
+Canlı HTTPS demo kontrolü: ayrı sunucu seçimi profil, iki cihaz kanıtı, tüm premium
+kademeler/Savaş Premium, demo kredisiyle gerçek sandık alımı, premium ödül alma,
+ödül korunarak cüzdan doldurma ve normal kayıtlı-cihaz refresh geçti. Gerçek ödeme
+veya sahte billing receipt yok; DPAPI sırları yalnız bellekte kullanıldı.
+Demo oluşturulduktan sonraki son kontrol de **11 eski profil, 11 kimlik ve tüm
+takım satırları aynı**, yalnız 1 ayrı demo profil/kimliği eklendi. Kanıtlar:
+`artifacts/play-review-access/server-receipts/{isolated-verification,deployment-receipt,review-account-preservation}.json`
+ve `artifacts/play-review-access/live-api-verification.json`.
+
+**USB cihaz kapısı:** Kullanıcı telefonu bağladı ve önceki Play giriş hatasını
+yeniden denemeyi istedi. Bağlı cihaz `57abfae6`, model `25113PN0EG`; kurulu
+`com.gridshardgame.app` **versionCode 1**, Play Store yüklemesi (4 Ekim 19:55).
+Salt okunur APK imza kontrolü Play SHA-1
+`7C:FD:F8:68:FE:78:6E:BA:DF:B0:3B:31:D8:E6:15:5B:05:55:B0:0F` ve SHA-256
+`09:6A:CD:18:59:57:46:7C:B9:25:92:00:74:12:C3:19:B6:42:BA:3C:EE:C4:DB:CB:8E:D7:A6:48:21:3C:A0:E6`
+ile eşleşti. Bu imza yerel upload-key APK'dan farklıdır: **USB APK install/uninstall
+ve veri silme yapma; AAB'yi aynı dahili test kanalına yükleyip Play'den güncelle.**
+Kullanıcı normal giriş denemesini bildirdi: Play Games hesabı bağlanıyor, ancak
+**Uç** profili açılışta “Profil geri getiriliyor / Bağlantı tamamlanamadı” noktasında
+kalıyor. Daha önce Ayarlar → Hesap/Gizlilik'te cihaz oturumlarını kapatmış; bu,
+iş bilgisayarında düzeltilen aynı revoked-device bootstrap kilididir. Kurulu
+Play APK'sının tüm paketlenmiş JS/HTML dosyaları salt okunur karşılaştırıldı:
+**v1'de recovery endpoint/reauth gate/recovery dialog/openRecovery yok; v2'de hepsi var**.
+Sunucu veya profil sıfırlama/hesap taşıma ile çözmeye çalışma. Gereken adım aynı
+dahili test kanalından v2 güncellemesi ve gerçek bağlı Play Games hesabıyla yeni
+yeniden-giriş dialog'unu kullanmak.
+
+**Son kullanıcı teyidi — 5 Ekim gece:** Kullanıcı **“giriş tamam”** dedi; Uç
+profiline normal Play Games geri giriş kapısı kullanıcı teyidiyle tamamlandı.
+Aynı tur salt okunur ADB kontrolünde bağlı cihaz yok, bu nedenle yeni versionCode,
+Play yüklemesi veya hangi yeniden-giriş adımının çalıştığı bağımsız doğrulanmadı.
+Kullanıcı teyidini tüm native testler geçti olarak genelleme. Tekrar hesap taşıma,
+oturum kapatma, uygulama kaldırma/veri temizleme yaptırma.
+Ardından kullanıcı Ayarlar → Hesap ve Gizlilik'teki **REVIEW / DEMO SIGN-IN**
+düğmesinin göründüğünü (**“görünüyor”**) ve özel demo girişi sonrası profilin
+açıldığını (**“açıldı”**) teyit etti. Demo sırlarını kendi özel Windows
+PowerShell penceresinde kasadan alması tarif edildi; AI parola/kullanıcı adını okumadı veya
+sohbete yazmadı. Bu native demo girişinin kullanıcı teyididir; paket versionCode/
+Play yükleme kanıtı veya premium/yeniden açılış/geri dönüş testi yerine geçmez.
+**Sıradaki kapılar:** demo profilinde premium ödülü ödeme gerektirmeden alma,
+demo cüzdanı/mağaza erişimi, uygulamayı yeniden açınca aynı demo ve
+**RETURN TO PREVIOUS PROFILE** üzerinden aynı Uç'a dönüş. Bunlar henüz bekliyor.
+Oturumu kapatılmış/revoke olmuş gerçek hesaba demo erişimiyle
+yeniden yetki verilmez. Console tam erişim kutusu bu native kapıdan önce tamamlandı
+sayılmaz. AAB yüklemesi bu tur bağımsız doğrulanmadı; herkese üretim yayını yapılmadı.
+
+## Son yetkili iş — Google Play incelemeci/demo erişimi, yalnız kaynakta
+
+**5 Ekim 2026 akşamı:** Kullanıcı diğer aracın başka işle meşgul olduğunu
+belirtip güvenli, tekrar kullanılabilir Google Play incelemeci erişimini **Codex'in
+uygulamasını açıkça istedi**. Önceki “bu Console turunda kaynakları değiştirme”
+sınırı yalnız bu iş için kaldırıldı. **APK/AAB üretme ve sunucuya dağıtma yasağı
+devam ediyor.** Diğer aracın mevcut takım/tutorial/UI değişiklikleri korundu;
+geniş yeniden yazım, commit/push, Android sync/build, canlı hesap/veritabanı
+değişikliği veya deploy/restart yapılmadı.
+
+Yeni kaynaklar: `server/app/review_access.py`, `client/src/review-access.js` ve
+`.css`; `auth.py`, `main.py`, `auth-session.js`, `index.html` için küçük entegrasyonlar.
+`app.js` demo için otomatik kişisel hesap bağlantısı ve ilk-oyuncu eğitimini bastırır;
+incelemeci eğitimi Ayarlar'dan elle başlatabilir. Normal oyuncu eğitimi korunur.
+Günlük meta normal şekilde seçilir; gecikmiş açılış penceresi inceleme formunu örtemez.
+`relay-client.js` yalnız `review-<32 hex>` kimlik sözdizimini de kabul eder.
+Bu ek kabul sunucu giriş kanıtı değildir. Tarayıcı testinde eski `wt-`-yalnız
+kontrolün demoyu yeniden misafire çevirdiği ve açılış hesabı penceresinin inceleme
+formunun üzerine açıldığı yakalandı; ikisi düzeltildi ve gerçek düğme tıklamalarıyla
+yeniden doğrulandı. Önceki oyuncu hesabı cihaz kanıtıyla ayrıca saklanır/geri açılır.
+
+Varsayılan kapalı API: `/auth/review-session`. Yalnız API ortamında mutlak
+`GRIDSHARD_PLAY_REVIEW_CONFIG_FILE` ayarı özel parola doğrulayıcısını açar.
+Parola PBKDF2-SHA256/600000 saltlı özetle doğrulanır, sabit sunucu seçimi rastgele
+ayrılmış `review-...` hesaba normal cihaz/JWT oturumu verir. Kimlik `devices`
+JSON/JSONB içindeki özel işaret kalıcıdır; mevcut işaretsiz/başka sahibin hesabı
+asla yükseltilmez. Premium sezon/Savaş Premium, tüm premium kademelere yetecek
+sezon XP'si ve demo cüzdan tabanları yalnız bu demo profiline verilir. Mevcut
+oyuncu adları/takımları/kupaları/paraları değiştirilmez; gerçek ödeme/receipt
+doğrulaması veya normal giriş güvenliği kaldırılmaz. Demo kişisel provider/email
+bağlantısı ve genel secret reset'i reddedilir; kapatma/rotasyon kayıtlı demo
+cihazlarını ve tokenlarını da reddeder. İstemciye parola/sunucu sırrı gömülmez.
+
+İngilizce işletim, doğrulama ve **482 karakterlik Console erişim metni**:
+`docs/PLAY_REVIEW_ACCESS.md`. Yerel hazırlama aracı
+`tools/new-play-review-access.ps1`; doğrulama aracı
+`tools/check-play-review-access.js`. Ev PC'sinde
+`secrets/play-review-20261005-vault/` altında ACL korumalı verifier ve Windows
+kullanıcı/PC bağlı `credential.dpapi.xml` hazırlandı; ikisinin eşleşmesi sırları
+çıktıya yazmadan doğrulandı. Git/Docker dışında. **Kasa farklı iş bilgisayarında
+doğrudan çözülemez**; kullanıcı kendi şifreli parola yöneticisiyle taşımalı.
+İlk sandbox DPAPI denemesi `secrets/play-review-20261005/` altında başarısız kaldı;
+o dosyalar aktivasyon için **kullanılmaz**. Gerçek parola hiçbir sohbet/log'a yazılmadı.
+
+Yerel kontroller: istemci **195/195**, araçlar **30/30**, sunucu tam süiti
+**1117 geçti /38 atlandı**. Yeni inceleme erişimi odak süiti **15/15** geçti;
+JSON backend soğuk yeniden açılışında demo adı/kupası/alınmış ödülü korundu.
+Yeni PostgreSQL commit/rollback testleri yerel izole DB olmadığı için **2 atlandı**;
+canlı PostgreSQL doğrulaması iddia edilmez. Gerçek kaynak uygulama + ayrı geçici
+loopback API ile 1280×900,393×852,320×740,740×320: görünür İngilizce giriş,
+yeniden açılışta aynı demo, sunucudan premium hakları/tüm kademe erişimi ve
+orijinal misafire dönüş geçti. Son tekrar açılış katmanının ve gecikmiş günlük
+meta seçim penceresinin bitmesini bekler; profil terminali → Ayarlar → Hesap ve
+Gizlilik → demo → geri dönüş gerçek görünür düğmelerle doğrulandı. İlk-oyuncu
+eğitiminin demo erişimini örtebildiği ek durum yakalanıp yalnız demo için düzeltildi.
+Takılan kaynak testlerinin yalnız kendilerine ait geçici API/tarayıcı süreçleri
+kapatıldı; son dört boyut testi başarıyla tamamlanıp kendi süreçlerini kapattı.
+Sırrı maskeleyen ekranlar
+`artifacts/play-review-access/layout/` altında, Git dışında. Test verileri yalnız
+ayrı OS temp alanlarında; gerçek kullanıcı/sunucu/Google servislerine erişilmedi.
+
+**Sonraki kapı:** eşleşen backend ve yeni Android sürümünün ayrı yetkili
+dağıtımı sırasında özel config'i read-only mount et; yeni kurulum ve mevcut
+misafir Android cihazında erişim/geri dönüş/premium/cüzdanı doğrula. **Şu an
+canlıda etkin değil**; eski beta.72 telefonda bu yeni giriş yok. Console tam
+erişim onay kutusunu sırf yerel kaynak testiyle tamamlandı sayma.
+
+### Console'da son gözlenen nokta
+
+21:28 özet ekranlarında IARC yanıtları ve önizleme: fantastik/insan-olmayan
+şiddet, sıklıkla atmosferik korkunç öğeler; dijital satın alma ve **ücretli rastgele
+öğeler Evet**; sohbet/engelleme/bildirme Evet, denetim ve yalnız davetli arkadaş
+kısıtlaması Hayır. Avrupa PEGI7,AlmanyaUSK12+,Brezilya18+,Kuzey Amerika10+;
+görüntü Console önizlemesidir, kalıcı son onay değildir. Resmî PEGI genel ölçütleri
+ile bu önizleme arasındaki farkın nedeni **doğrulanamadı**, gerekçe uydurma.
+Kaydet önerildi fakat bağımsız kayıt başarı/sertifika teyidi yok.
+21:35 **Hedef kitle ve içerik**, “Oturum açma bilgileri bölümünü tamamlayın”
+mesajıyla kilitli. Demo erişimi son sürümde etkinleştirilmeden bu engel dürüstçe
+tamamlanmış sayılmaz. Son sürüm SDK/veri akışlarıyla Veri güvenliği ve hedef
+kitle beyanları ayrıca doğrulanacak; kapalı test henüz başlamadı.
+
+## Ev bilgisayarı devam — önce Play Console kurulumu, paket kapalı test geçişinde
+
+**5 Ekim 2026 akşamı, yeni kullanıcı talimatı:** Öncelik Play Console'daki
+kurulum beyanlarını ve mağaza girişini tamamlamaktır. Kullanıcının
+`Ekran görüntüsü_5-10-2026_193152_play.google.com.jpeg` görüntüsünde **1/11
+tamamlandı**; gizlilik politikası işaretli, diğer on görev bekliyor. Bu ekran,
+önceki kullanıcı gizlilik kaydı teyidini destekler; inceleme/yayın onayı değildir.
+
+**Önceki “evde hemen birleşik test güncellemesi” sırası ertelendi.** Yeni APK/AAB
+**kapalı teste geçiş aşamasında** hazırlanacak. Diğer yapay zekâ backend/frontend
+düzenlemelerini paralel sürdürecek; bu Console çalışması ortak oyun kaynaklarını,
+Android projesini veya canlı sunucuyu değiştirmez. Build, deploy/restart,
+dahili/kapalı test sürümü yayını ve gerçek reklam/ödeme açılması bu tur yapılmadı.
+Paket aşamasında birleşik kaynak ve eşleşen backend yeniden doğrulanmalıdır.
+
+Bekleyen kurulum: Oturum açma bilgileri, Reklam, İçerik derecelendirme,
+Hedef kitle, Veri güvenliği, Resmi kurum uygulamaları, Finans ile ilgili
+özellikler, Sağlık, kategori/iletişim bilgileri ve mağaza girişi. Console
+formlarını yalnız yeni ekran veya açık kullanıcı teyidiyle tamamlandı işaretle.
+Bu oturumun bağlı tarayıcı envanterinde Play Console sekmesi görülmedi;
+şimdilik kullanıcı ekranlarıyla adım adım ilerlenir.
+
+İlk adım **Oturum açma bilgileri** ekranını açmak. Yerel istemcide
+“ŞİMDİLİK MİSAFİR OLARAK DEVAM ET” ve isteğe bağlı Play Games bağlantısı var;
+bu kaynak bulgusu tüm özelliklerin Google incelemecisine sınırsız açık olduğunu
+tek başına kanıtlamaz. Erişim/ücretli özellikler için doğru talimat hazırlanır;
+kişisel Google şifresi veya mevcut oyuncunun hesabı inceleme erişimi diye verilmez.
+Çocukları da kapsayan önceki kitle niyeti korunur; yaş grupları kullanıcıyla
+netleştirilir. Veri güvenliği beyanı son gönderilecek sürümün SDK/veri akışlarıyla
+uyumlu olmalı; formun kaydı teknik uyumluluk veya yayın onayı sayılmaz.
+
+**19:42 TR ekranları — Oturum açma bilgileri henüz tamamlanmadı:** Kullanıcı
+“Evet” seçimi sonrası “Oturum açma bilgisi ekle” formunu paylaştı. Ad sınırı60,
+diğer erişim bilgileri500 karakter; kullanıcı adı/şifre alanları ve premium
+dahil tüm özelliklere tam erişim onayı var. `GRIDSHARD guest access` adıyla
+misafir düğmesine basmayı ve isteğe bağlı PGS bağlantısını açıklayan İngilizce
+taslak hazırlanır; bu metin premium kilidini açtığı iddiası değildir.
+Kaynakta sezon premium/Savaş Premium hakları profil bazında kısıtlı ve
+doğrulanmış, özel bir Google inceleme erişimi henüz bulunmadı. Mevcut ekonomik
+haklar veya canlı hesaplar değiştirilmedi. Tam erişim kutusunu yalnız misafir
+talimatıyla işaretleme, sahte inceleme kullanıcı adı/şifre üretme. Gereken
+yeniden kullanılabilir tam inceleme erişimi son kapalı test paketinden önce
+doğrulanmalı; bu kalem şimdilik beklerken diğer Console görevleri yapılabilir.
+Resmî koşul: https://support.google.com/googleplay/android-developer/answer/15748846
+
+### Console anketi devam — şiddet ve korku taslağı, sonuç henüz gönderilmedi
+
+**5 Ekim akşamı:** Reklam ekranında mevcut AdMob entegrasyonu nedeniyle
+“Evet, uygulamam reklam içeriyor” → Kaydet önerildi; bağımsız kayıt başarı
+ekranı/teyidi yok, bu beyan gerçek reklam/ödül rollout'unu açmaz. Kullanıcı
+sonra IARC anketinin Oyun kategorisindeki soruları paylaştı. Anket sonucu,
+sertifika veya yeni tamamlanan-görev sayacı henüz görülmedi.
+
+Şiddet taslağı: Evet; yalnız insan olmayanlara şiddet; Fantastik ortam;
+pikselleştirilmiş/çocuksu tarz Hayır; tepkiler Gerçekçi olmayan; normal tüm-tahta
+görünümüne göre Genellikle uzak açı; ilişkili kan Hiçbiri; insan gibi davranma
+ve gerçek hayvanlara şiddet Hayır. Son gönderilecek sürüm farklı karakter,
+kamera, kan veya ses içeriği getirirse bu yanıtlar yeniden değerlendirilir.
+
+Korku tanımlarına ait Google yardım URL'leri web aracından erişilemedi.
+Etiketlerin günlük dildeki anlamından kategorinin şiddeti çıkarılmadı;
+kullanıcı yardım açıklamalarını paylaştı. **“Korkunç öğeler” açıklaması**
+küçük çocuklara korkutucu gelebilen genel atmosferi ve rahatsız edici/saldırgan
+müziği kapsıyor. **İkinci açıklama (“Korkutucu öğeler”; önceki formda
+“Ürkütücü öğeler”)** yoğun tehdit/dehşet, korkmuş insanlar ve ani korkutmayı
+kapsıyor. Güncel `docs/AUDIO_DIRECTION.md`/ses kaynağı disonanslı gerilim,
+kritik çekirdekte siren ve kalp katmanları içeriyor; bu tur ses dosyaları
+dinlenmedi. Bu kaynak ve kullanıcının verdiği tanımlara dayalı **öneri**:
+korku Evet, yalnız ilk **Korkunç öğeler** seçeneği; yoğun dehşet/ani korkutma
+seçeneğini işaretleme. Bu, otomatik IARC sonucu veya uygulamada korkutucu
+karakter bulunduğu iddiası değil; kullanıcı seçimi/kayıt henüz doğrulanmadı.
+Sıradaki ekran: seçimin açtığı ek sorular varsa paylaş, yoksa Cinsellik bölümü.
+
 ## İş bilgisayarı kapanış — Play gizlilik kaydı tamam / evde birleşik test güncellemesi
 
 **5 Ekim 2026 16:32 TR:** Kullanıcı **“tamam kaydettim”** diyerek Play Console'da

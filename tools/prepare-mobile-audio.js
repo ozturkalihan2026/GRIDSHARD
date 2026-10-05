@@ -61,6 +61,7 @@ function main() {
     }
     const cues = new Set([
       ...Object.values(global.GRIDSHARD_MUSIC_ASSETS),
+      ...global.GRIDSHARD_MENU_PLAYLIST,
       ...global.GRIDSHARD_BATTLE_LAYERS.map((layer) => layer.asset),
       ...Object.values(global.GRIDSHARD_SFX_CUES).map((cue) => cue.asset),
     ].map(filename));

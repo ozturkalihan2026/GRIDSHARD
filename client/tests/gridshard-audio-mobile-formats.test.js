@@ -61,7 +61,9 @@ global.GRIDSHARD_AUDIO_ENCODINGS = {
   version: 1,
   formats: {
     ogg: [
-      "menu_ensemble_v6",
+      "menu_v8_01_durgun_devre",
+      "menu_v8_02_akim_hatti",
+      "menu_v8_03_cekirdek_odasi",
       "battle_tension_v7_01_sub",
       "battle_tension_v7_02_pulse",
       "battle_tension_v7_03_percussion",
@@ -81,14 +83,25 @@ const settle = () => new Promise((resolve) => setTimeout(resolve, 0));
 (async () => {
   const resolve = global.gridshardResolveAudioAsset;
   assert.strictEqual(
-    resolve("./assets/audio/menu_ensemble_v6.wav"),
-    "./assets/audio/mobile/menu_ensemble_v6.ogg"
+    resolve("./assets/audio/menu_v8_02_akim_hatti.wav"),
+    "./assets/audio/mobile/menu_v8_02_akim_hatti.ogg"
   );
   assert.strictEqual(
     resolve("./assets/audio/core_hit.wav"),
     "./assets/audio/core_hit.wav",
     "Manifestte olmayan ses kanonik WAV olarak kalmalı"
   );
+
+  // Menü çalma listesi belleğe açılmaz; ses öğesi mobil türevi akıtır.
+  const menuDirector = new global.GridshardAudioDirector();
+  menuDirector.setState("menu");
+  assert.ok(menuDirector.currentTrack instanceof FakeAudio);
+  assert.match(
+    menuDirector.currentTrack.src,
+    /^\.\/assets\/audio\/mobile\/menu_v8_0[123]_[a-z_]+\.ogg$/
+  );
+  assert.deepStrictEqual(fetched, []);
+  menuDirector.setAppActive(false);
 
   assert.strictEqual(global.GRIDSHARD_BATTLE_MUSIC_ENABLED, true);
   const battleAssets = ["battle_intro", "battle", "battle_pressure", "critical_core"]

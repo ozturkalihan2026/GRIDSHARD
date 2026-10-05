@@ -70,8 +70,11 @@ Beta.33 oyuncu bağlılığı kararıyla eski kapsam kilidi kontrollü biçimde 
 Beta.25 sonrası mobil hazırlık önceliği kapsamında eski erteleme kararı kaldırıldı:
 
 - [x] Dengeli 18 modüllük yerleşik `Başlangıç Devresi` eklendi.
-- [x] Hazır havuzu yükleten, sunucu otoriteli AI maçını başlatan ve dokun-seç/yerleştir kontrolünü anlatan üç adımlı eğitim eklendi.
-- [x] Eğitim ilk çalıştırmada açılır, atlanabilir ve Ayarlar ekranından yeniden başlatılabilir.
+- [x] Hazır havuzu yükleten, sunucu otoriteli AI maçını başlatan ve dokun-seç/yerleştir kontrolünü anlatan üç adımlı eğitim eklendi. *(Tarihsel: Ekim 2026'da yerini aşağıdaki ilk oyun deneyimi aldı.)*
+- [~] Ekim 2026 ilk oyun deneyimi: hiç maçı olmayan oyuncu ilk çalıştırmada oklu menü turundan (Mağaza, Kartlar, Takım, Etkinlik) ve sunucunun sahne sahne yönettiği ilk savaştan geçer. Eğitim **atlanamaz**; Ayarlar ekranından yeniden başlatılabilir. Gerçek cihaz doğrulaması bekliyor.
+- [x] Yönetmenli ilk savaş normal Arena maçıdır (kupa ve ödül verir, oyuncu kazanır). Bilgi kartı okunurken savaş durur; bu, "savaş hiçbir zaman durmaz" kararının yalnız eğitim savaşına özgü istisnasıdır.
+- [x] Ayarlar'dan yeniden başlatılan eğitimin savaşı **eğitim maçıdır**: Başlangıç Devresi ile oynanır; kupa, ödül, istatistik ve görev ilerlemesi vermez.
+- [x] Eğitimde takım kurdurulmaz; Takım ekranı yalnız incelenir. Takım kurma bedeli 3000 Devre Kredisidir.
 
 ---
 
@@ -326,6 +329,7 @@ Beta.25 sonrası mobil hazırlık önceliği kapsamında eski erteleme kararı k
 - [x] Üç adımlı ilk maç eğitimi uygulandı.
 - [x] Yerleşik 18 modüllük Başlangıç Devresi tek dokunuşla yükleniyor.
 - [x] Eğitim tamamlanma durumu cihazda tutuluyor ve Ayarlar'dan yeniden başlatılabiliyor.
+- [~] Ekim 2026: üç adımlı eğitimin yerini atlanamayan ilk oyun deneyimi aldı (bkz. "Eğitim kararı").
 
 ## FAZ 23 — Web Test Sürümü
 

@@ -30,6 +30,8 @@
     crossfadeMs:1200,
     menuPoolCrossfadeMs:480,
     resultCrossfadeMs:320,
+    // Menü çalma listesinde bir parçadan sıradakine geçiş.
+    playlistCrossfadeMs:2400,
     musicBaseGain:0.72,
     // v11: savaş efektleri müziği bastırmasın; efektler kısık, savaş
     // müziği açık, efekt kanalı sıkıştırıcıdan geçer.
@@ -95,8 +97,20 @@
     return Number.isFinite(makeup) && makeup > 0 ? makeup : 1;
   }
 
+  // Menü müziği çalma listesi. Tek parça varsa o parça kesintisiz döner.
+  // Birden çok parça varsa her biri bir kez çalar ve bitmeden sıradakine
+  // geçilir; savaştan menüye her dönüşte sıradaki parça başlar. Parçalar aynı
+  // tempo ızgarasını (32 saniyede 52 vuruş) paylaşmalı ve süreleri 32
+  // saniyenin katı olmalıdır: Menü ↔ Hazırlık geçişi fazı korur.
+  // Parçaları tools/generate_menu_playlist_audio.py üretir (128 sn).
+  const GRIDSHARD_MENU_PLAYLIST = Object.freeze([
+    "./assets/audio/menu_v8_01_durgun_devre.wav",
+    "./assets/audio/menu_v8_02_akim_hatti.wav",
+    "./assets/audio/menu_v8_03_cekirdek_odasi.wav",
+  ]);
+
   const GRIDSHARD_MUSIC_ASSETS = Object.freeze({
-    menu:"./assets/audio/menu_ensemble_v6.wav",
+    menu:GRIDSHARD_MENU_PLAYLIST[0],
     pool:"./assets/audio/pool_ensemble_v6.wav",
     matchmaking:"./assets/audio/matchmaking_rise.wav",
     // Savaş durumları katmanlı çalar; buradaki değer o durumu tanımlayan
@@ -405,6 +419,10 @@
       }
     }
 
+    get duration() {
+      return this._buffer ? this._buffer.duration : NaN;
+    }
+
     get currentTime() {
       if (!this.paused && this._buffer) {
         const elapsed = Math.max(0, this.context.currentTime - this._startedAt);
@@ -497,7 +515,14 @@
   }
 
   class GridshardAudioDirector {
-    constructor() {
+    constructor({menuPlaylist=GRIDSHARD_MENU_PLAYLIST}={}) {
+      // Menü çalma listesi: sıradaki parça, bitiş denetimi ve (arka plandan ya
+      // da Hazırlık ekranından dönüşte) kalınan yer.
+      this._menuPlaylist = [...menuPlaylist];
+      this._menuPlaylistIndex = -1;
+      this._menuAdvanceTimer = null;
+      this._menuResume = null;
+      this._htmlVolumeControl = undefined;
       this.state = GRIDSHARD_AUDIO_STATES.MENU;
       this.enabled = true;
       this.sfxEnabled = true;
@@ -549,6 +574,7 @@
       if (!next) {
         // Android WebView may keep HTMLAudioElement and AudioContext alive after
         // the Activity is backgrounded. Stop both paths, including fading tracks.
+        this._rememberMenuPosition();
         this._stopAllMusic();
         for (const track of [...this._fadeTimerByAudio.keys()]) this._stopAudio(track);
         this._stopActiveSfx();
@@ -750,6 +776,123 @@
         );
       }
       return this._createHtmlAudio(asset);
+    }
+
+    _menuPlaylistEnabled() {
+      return this._menuPlaylist.length > 1;
+    }
+
+    // Uzun çalma listesi parçaları belleğe açılmadan akıtılır (HTML ses
+    // öğesi). HTML ses seviyesi ayarlanamayan ortamda (iOS) geçişler ve müzik
+    // ayarı çalışmayacağı için Web Audio yolu kullanılır.
+    _htmlVolumeControllable() {
+      if (this._htmlVolumeControl === undefined) {
+        this._htmlVolumeControl = false;
+        try {
+          const probe = new global.Audio();
+          probe.volume = .5;
+          this._htmlVolumeControl = probe.volume === .5;
+        } catch (_) {
+          // Ses öğesi yoksa çağıran zaten çalmaz.
+        }
+      }
+      return this._htmlVolumeControl;
+    }
+
+    _createMenuPlaylistTrack(asset) {
+      return this._htmlVolumeControllable()
+        ? this._createHtmlAudio(asset)
+        : this._createMusicTrack(asset, {seamless:true});
+    }
+
+    // Menüye girişte çalınacak parça ve başlangıç konumu. Kalınan yer
+    // hatırlanıyorsa aynı parça oradan sürer; yoksa sıradaki parça başlar.
+    _selectMenuTrack({advance=false}={}) {
+      const resume = this._menuResume;
+      this._menuResume = null;
+      const count = this._menuPlaylist.length;
+      if (!advance && resume && this._menuPlaylist.includes(resume.asset)) {
+        let index = this._menuPlaylist.indexOf(resume.asset);
+        // Hazırlık ekranı aynı ızgarada çalmayı sürdürdü; geçen süre eklenir.
+        const elapsed = resume.running ? (Date.now() - resume.at) / 1000 : 0;
+        let position = Math.max(0, resume.position + elapsed);
+        // Parça o arada bittiyse liste de ilerlemiş sayılır.
+        if (resume.duration > 0 && position >= resume.duration) {
+          index = (index + Math.floor(position / resume.duration)) % count;
+          position %= resume.duration;
+        }
+        this._menuPlaylistIndex = index;
+        return {asset:this._menuPlaylist[index], position};
+      }
+      this._menuPlaylistIndex = this._menuPlaylistIndex < 0
+        ? Math.floor(Math.random() * count) % count
+        : (this._menuPlaylistIndex + 1) % count;
+      return {asset:this._menuPlaylist[this._menuPlaylistIndex], position:0};
+    }
+
+    _rememberMenuPosition({running=false}={}) {
+      const track = this.currentTrack;
+      if (
+        !this._menuPlaylistEnabled()
+        || track?._gridshardState !== GRIDSHARD_AUDIO_STATES.MENU
+      ) {
+        return;
+      }
+      this._menuResume = {
+        asset:track._gridshardAsset,
+        position:Math.max(0, Number(track.currentTime) || 0),
+        // Yüklenmemiş parçada NaN: taşma denetimi atlanır.
+        duration:Number(track.duration),
+        at:Date.now(),
+        running,
+      };
+    }
+
+    // Web Audio yolunda çözülmüş parçalar büyüktür; çalmayanlar bırakılır.
+    _releaseMenuBuffers(keep=null) {
+      for (const asset of this._menuPlaylist) {
+        if (asset !== keep) this._musicBufferCache.delete(asset);
+      }
+    }
+
+    _clearMenuAdvance() {
+      if (this._menuAdvanceTimer === null) return;
+      if (typeof global.clearInterval === "function") {
+        global.clearInterval(this._menuAdvanceTimer);
+      }
+      this._menuAdvanceTimer = null;
+    }
+
+    _armMenuAdvance() {
+      this._clearMenuAdvance();
+      if (typeof global.setInterval !== "function") return;
+      const timer = global.setInterval(() => this._checkMenuAdvance(), 500);
+      // Node testlerinde süreç bu zamanlayıcı yüzünden açık kalmasın.
+      timer?.unref?.();
+      this._menuAdvanceTimer = timer;
+    }
+
+    // Çalan menü parçası sonuna yaklaştıysa sıradakine geçer.
+    _checkMenuAdvance() {
+      const track = this.currentTrack;
+      if (
+        this.state !== GRIDSHARD_AUDIO_STATES.MENU
+        || track?._gridshardState !== GRIDSHARD_AUDIO_STATES.MENU
+        || !this._menuPlaylistEnabled()
+      ) {
+        this._clearMenuAdvance();
+        return false;
+      }
+      const lead = GRIDSHARD_AUDIO_MIX.playlistCrossfadeMs / 1000;
+      const duration = Number(track.duration);
+      // Süre henüz bilinmiyorsa (parça yükleniyor) beklenir.
+      if (!Number.isFinite(duration) || duration <= lead * 2) return false;
+      if (Number(track.currentTime) < duration - lead) return false;
+      this._transitionToStateAsset(
+        GRIDSHARD_AUDIO_STATES.MENU,
+        {playlistAdvance:true}
+      );
+      return true;
     }
 
     _createHtmlAudio(asset) {
@@ -1515,7 +1658,8 @@
     }
 
     _transitionToStateAsset(
-      state
+      state,
+      {playlistAdvance=false}={}
     ) {
       if (
         !this._appActive
@@ -1526,6 +1670,10 @@
         || !this._canPlayAudio()
       ) {
         return;
+      }
+
+      if (state !== GRIDSHARD_AUDIO_STATES.MENU) {
+        this._clearMenuAdvance();
       }
 
       if (
@@ -1540,18 +1688,40 @@
       this._stopResultBuffer();
 
       if (this._isLayeredBattleState(state)) {
+        // Savaş katmanları bellekte yer tutar; çalma listesinin çözülmüş
+        // parçaları bırakılır (tek parçalı listede döngü önbellekte kalır).
+        if (this._menuPlaylistEnabled()) this._releaseMenuBuffers();
         this._transitionToBattleLayers(state);
         return;
       }
 
-      const asset=
-        GRIDSHARD_MUSIC_ASSETS[
-          state
-        ];
-      if (!asset) return;
-
       const previous=
         this.currentTrack;
+      const previousState = previous?._gridshardState || null;
+      const playlistTrack =
+        state === GRIDSHARD_AUDIO_STATES.MENU
+        && this._menuPlaylistEnabled();
+      if (
+        state === GRIDSHARD_AUDIO_STATES.POOL
+        && previousState === GRIDSHARD_AUDIO_STATES.MENU
+      ) {
+        this._rememberMenuPosition({running:true});
+      }
+      const selection = playlistTrack
+        ? this._selectMenuTrack({advance:playlistAdvance})
+        : null;
+      // Tek parçalı listede menü o parçayı kesintisiz döndürür.
+      const asset=selection
+        ? selection.asset
+        : (
+            state === GRIDSHARD_AUDIO_STATES.MENU
+            && this._menuPlaylist[0]
+          )
+          || GRIDSHARD_MUSIC_ASSETS[
+            state
+          ];
+      if (!asset) return;
+
       const leavingLayeredBattle = this.battleLayerTracks.length > 0;
       if (leavingLayeredBattle) {
         this._stopBattleLayers();
@@ -1561,19 +1731,26 @@
         GRIDSHARD_AUDIO_STATES.POOL,
         GRIDSHARD_AUDIO_STATES.MATCHMAKING,
       ].includes(state);
-      const next=
-        this._createMusicTrack(
-          asset,
-          {seamless:seamlessState}
-        );
-      const previousState = previous?._gridshardState || null;
+      const next=playlistTrack
+        ? this._createMenuPlaylistTrack(asset)
+        : this._createMusicTrack(
+            asset,
+            {seamless:seamlessState}
+          );
+      // Listeden yeni seçilen parça baştan başlar; fazı yalnız kaldığı yerden
+      // süren parça devralır.
+      const freshPlaylistTrack =
+        Boolean(selection) && !(selection.position > 0);
       const phaseLockedTransition =
         [GRIDSHARD_AUDIO_STATES.MENU, GRIDSHARD_AUDIO_STATES.POOL]
           .includes(previousState)
         && [GRIDSHARD_AUDIO_STATES.MENU, GRIDSHARD_AUDIO_STATES.POOL]
-          .includes(state);
+          .includes(state)
+        && !freshPlaylistTrack;
       const transitionMs =
-        phaseLockedTransition
+        playlistAdvance
+          ? GRIDSHARD_AUDIO_MIX.playlistCrossfadeMs
+          : phaseLockedTransition
           ? GRIDSHARD_AUDIO_MIX.menuPoolCrossfadeMs
           : (
               [
@@ -1587,7 +1764,10 @@
       next._gridshardState = state;
       next._gridshardAsset = asset;
       next.preload = "auto";
-      if (
+      if (selection && selection.position > 0) {
+        // Kalınan yer: arka plandan ya da Hazırlık ekranından dönüş.
+        next.currentTime = selection.position;
+      } else if (
         phaseLockedTransition
         && Number.isFinite(Number(previous?.currentTime))
       ) {
@@ -1595,6 +1775,9 @@
           Math.max(0, Number(previous.currentTime))
           % GRIDSHARD_CONTINUOUS_LOOP_SECONDS
         );
+      }
+      if (playlistTrack) {
+        this._releaseMenuBuffers(asset);
       }
 
       next.loop=
@@ -1614,6 +1797,11 @@
         : 0;
       this.currentTrack=next;
       this._safePlay(next);
+      if (playlistTrack) {
+        this._armMenuAdvance();
+      } else {
+        this._clearMenuAdvance();
+      }
 
       if (!terminalState) {
         this._fade(
@@ -1793,6 +1981,7 @@
     }
 
     _stopAllMusic() {
+      this._clearMenuAdvance();
       const current=
         this.currentTrack;
       this.currentTrack=null;
@@ -1827,6 +2016,16 @@
       this.state=state;
       // Savaşa girişte/çıkışta efekt kanalının kısma çarpanı güncellenir.
       if (changed) this._syncWebAudioVolumes();
+      // Menüden gerçekten çıkıldıysa (eşleşme, savaş, sonuç) kalınan yer
+      // unutulur; dönüşte sıradaki parça başlar.
+      if (
+        ![
+          GRIDSHARD_AUDIO_STATES.MENU,
+          GRIDSHARD_AUDIO_STATES.POOL,
+        ].includes(state)
+      ) {
+        this._menuResume=null;
+      }
 
       if (
         [
@@ -2203,6 +2402,8 @@
     GRIDSHARD_AUDIO_MIX;
   global.GRIDSHARD_MUSIC_ASSETS=
     GRIDSHARD_MUSIC_ASSETS;
+  global.GRIDSHARD_MENU_PLAYLIST=
+    GRIDSHARD_MENU_PLAYLIST;
   global.GRIDSHARD_CRITICAL_LAYER=
     GRIDSHARD_CRITICAL_LAYER;
   global.GRIDSHARD_CONTINUOUS_LOOP_SECONDS=

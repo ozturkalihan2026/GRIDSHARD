@@ -46,6 +46,8 @@
   const RECOVERY_SECRET_KEY = "gridshard.auth.recovery-candidate";
   const DEVICE_ID_KEY = "gridshard.auth.device-id";
   const PLAYER_ID_KEY = "project-relay.web-test.participant-id";
+  const REVIEW_ORIGIN_KEY = "gridshard.auth.review-origin";
+  const REVIEW_PLAYER_KEY = "gridshard.auth.review-player";
 
   class GridshardAuthSession {
     constructor({ fetchImpl = null, storage = null } = {}) {
@@ -191,12 +193,97 @@
       return payload;
     }
 
+    async completeReviewLogin(username, password) {
+      if (this.reviewSwitchPending) throw new Error("Review sign-in is already in progress.");
+      this.reviewSwitchPending = true;
+      try {
+        const endpoint = this._apiInput("/auth/review-session");
+        const url = this._url(endpoint);
+        if (url.protocol !== "https:" && !(url.protocol === "http:" && ["localhost", "127.0.0.1", "[::1]"].includes(url.hostname))) {
+          throw new Error("Review sign-in requires HTTPS.");
+        }
+        if (url.username || url.password) throw new Error("Invalid review API address.");
+        if (this.pendingLogin) await this.pendingLogin.catch(() => {});
+        const deviceSecret = await this._deviceSecret();
+        const previousId = this._storedPlayerId();
+        // Native secure storage; never persist the reviewer PASSWORD. Preserve
+        // the existing player/device proof before switching the remembered ID.
+        const reviewId = this.storage?.getItem(REVIEW_PLAYER_KEY);
+        if (previousId && previousId !== reviewId) {
+          await this.secretStore.write(REVIEW_ORIGIN_KEY, JSON.stringify({
+            playerId:previousId, secret:deviceSecret, deviceId:this._deviceId(),
+          }));
+        }
+        const response = await this.fetchImpl(endpoint, {
+          method:"POST", cache:"no-store", headers:{"content-type":"application/json"},
+          body:JSON.stringify({username, password, device_secret:deviceSecret,
+            device_id:this._deviceId(), device_name:this._deviceName(), platform:this._platform()}),
+        });
+        if (!response.ok) throw new Error(response.status === 429
+          ? "Too many attempts. Wait one minute and try again."
+          : "Review sign-in failed. Check the credentials or contact the developer.");
+        const payload = await response.json();
+        if (payload.review_access !== true || !/^review-[0-9a-f]{32}$/.test(payload.player_id || "") || !payload.access_token) {
+          throw new Error("Invalid review sign-in response. The current profile was not changed.");
+        }
+        // All writes precede the ID commit. Failed storage leaves the old ID
+        // and device secret usable. Neither account is imported or merged.
+        this.storage.setItem(REVIEW_PLAYER_KEY, payload.player_id);
+        this.storage.setItem(`gridshard.account-onboarding.dismissed:${payload.player_id}`, "1");
+        this.storage.setItem(PLAYER_ID_KEY, payload.player_id);
+        this.playerId = payload.player_id;
+        this.accessToken = payload.access_token;
+        this.expiresAt = Number(payload.expires_at || 0);
+        this.requiresReauthentication = false;
+        return payload;
+      } finally { this.reviewSwitchPending = false; }
+    }
+
+    isReviewProfile() {
+      return Boolean(this._storedPlayerId() && this._storedPlayerId() === this.storage?.getItem(REVIEW_PLAYER_KEY));
+    }
+
+    async returnFromReview() {
+      if (this.reviewSwitchPending) throw new Error("A profile switch is already in progress.");
+      this.reviewSwitchPending = true;
+      try {
+        const saved = await this.secretStore.read(REVIEW_ORIGIN_KEY);
+        if (!saved) throw new Error("No previous profile is saved on this device.");
+        const previous = JSON.parse(saved);
+        if (!previous.playerId || typeof previous.secret !== "string" || previous.secret.length < 32 || !previous.deviceId) {
+          throw new Error("The previous profile record is invalid.");
+        }
+        if (this.pendingLogin) await this.pendingLogin.catch(() => {});
+        // Verify the unchanged original device proof FIRST. A revoked device
+        // still needs normal recovery; never authorize it through demo access.
+        const response = await this.fetchImpl(this._apiInput("/auth/session"), {
+          method:"POST", cache:"no-store", headers:{"content-type":"application/json"},
+          body:JSON.stringify({player_id:previous.playerId, device_secret:previous.secret,
+            device_id:previous.deviceId, device_name:this._deviceName(), platform:this._platform(), existing_only:true}),
+        });
+        if (!response.ok) throw new Error("The previous device session could not be verified. Use normal account recovery.");
+        const payload = await response.json();
+        if (payload.player_id !== previous.playerId || !payload.access_token) throw new Error("Invalid profile restore response.");
+        await this.stageRecoverySecret(previous.playerId, previous.secret);
+        this.storage.setItem(DEVICE_ID_KEY, previous.deviceId);
+        this.storage.setItem(PLAYER_ID_KEY, previous.playerId);
+        await this.finishRecoverySecret(previous.secret);
+        this.playerId = previous.playerId;
+        this.accessToken = payload.access_token;
+        this.expiresAt = Number(payload.expires_at || 0);
+        this.requiresReauthentication = false;
+        // Keep the secure backup even if cleanup/storage fails during a switch.
+        return payload;
+      } finally { this.reviewSwitchPending = false; }
+    }
+
     async _openSession(playerId) {
       const open = (deviceSecret) => this.fetchImpl(this._apiInput("/auth/session"), {
         method: "POST",
         headers: { "content-type": "application/json" },
         body: JSON.stringify({
           player_id: playerId,
+          ...(this.isReviewProfile() ? {existing_only:true} : {}),
           device_secret: deviceSecret,
           device_id: this._deviceId(),
           device_name: this._deviceName(),

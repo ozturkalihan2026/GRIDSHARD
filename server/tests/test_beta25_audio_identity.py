@@ -39,7 +39,9 @@ def test_beta25_audio_runtime_uses_shardglass_mix():
     assert 'version:"shardglass-seamless-v14"' in source
     assert "GRIDSHARD_BATTLE_LAYERS" in source
     for name in (
-        "menu_ensemble_v6.wav",
+        "menu_v8_01_durgun_devre.wav",
+        "menu_v8_02_akim_hatti.wav",
+        "menu_v8_03_cekirdek_odasi.wav",
         "pool_ensemble_v6.wav",
         "battle_tension_v7_01_sub.wav",
         "battle_tension_v7_07_pressure.wav",

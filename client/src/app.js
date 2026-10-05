@@ -4092,6 +4092,10 @@
   }
 
   function maybePresentAccountOnboarding() {
+    // The isolated review profile uses private demo credentials, never an
+    // automatic personal Play Games link prompt. Normal onboarding is unchanged.
+    if (globalThis.GridshardAuth?.session?.isReviewProfile?.()
+        || document.getElementById("review-access-dialog")?.open) return false;
     const dismissed = () => {
       // Existing guest installs get one explicit choice after this feature update.
       let seen = true;
@@ -4105,6 +4109,7 @@
     if (!dialog || dialog.open) return Boolean(dialog?.open);
     void afterStartup(() => {
       if (dialog.open || accountHasPersistentIdentity() || dismissed()) return;
+      if (document.getElementById("review-access-dialog")?.open) return;
       if (typeof dialog.showModal === "function") dialog.showModal();
       else dialog.setAttribute("open", "");
     });
@@ -5440,7 +5445,8 @@
       const dialog = document.getElementById("daily-meta-dialog");
       if (present && dailyMetaState.requires_roll && dialog && !dialog.open) {
         void afterStartup(() => {
-          if (dialog.open || !dailyMetaState?.requires_roll) return;
+          if (dialog.open || !dailyMetaState?.requires_roll
+            || document.getElementById("review-access-dialog")?.open) return;
           if (dialog.showModal) dialog.showModal();
           else dialog.setAttribute("open", "");
         });
@@ -7303,7 +7309,10 @@
     const teamPointCard = document.getElementById("post-match-team-point-card");
     const matchType = progression?.matchType || result?.match_type || "local_test";
     const teamTournament = matchType === "team_tournament";
-    const profileNeutral = ["friend_battle", "team_training"].includes(matchType);
+    // Eğitim maçı: ilk oyun deneyimi Ayarlar'dan yeniden başlatıldığında oynanır.
+    const tutorialTraining = matchType === "tutorial_training";
+    const profileNeutral = tutorialTraining
+      || ["friend_battle", "team_training"].includes(matchType);
     const localTest = activePlayMode === "local"
       && (!result || result.match_type === "local_test");
     const pendingLabel = postMatchSync.lastError
@@ -7326,9 +7335,11 @@
     if (heading) {
       heading.textContent = teamTournament
         ? "TAKIM TURNUVASI SONUCU"
-        : profileNeutral
-          ? "ANTRENMAN SONUCU"
-          : "SAVAŞ ÖDÜLLERİ";
+        : tutorialTraining
+          ? "EĞİTİM SAVAŞI SONUCU"
+          : profileNeutral
+            ? "ANTRENMAN SONUCU"
+            : "SAVAŞ ÖDÜLLERİ";
     }
     if (rewardList) {
       rewardList.dataset.accountingMode = teamTournament
@@ -7345,9 +7356,11 @@
       accountingNote.hidden = !(teamTournament || profileNeutral);
       accountingNote.textContent = teamTournament
         ? "Bu maç yalnız takım turnuvası katkı puanına işlendi; kupa ve profil ilerlemesi değişmedi."
-        : profileNeutral
-          ? "Bu antrenman maçı profile, kupaya veya Devre Yolu ilerlemesine etki etmedi."
-          : "";
+        : tutorialTraining
+          ? "Bu bir eğitim savaşıydı; kupa, ödül veya ilerleme vermez."
+          : profileNeutral
+            ? "Bu antrenman maçı profile, kupaya veya Devre Yolu ilerlemesine etki etmedi."
+            : "";
     }
     if (!storeState) void loadStoreState();
     renderPostMatchPremium();
@@ -8008,6 +8021,15 @@
     return battlePoolSelection
       .selectedIds()
       .map(clientDefinitionId);
+  }
+
+  // Savaşta rafın gösterdiği deste. Eğitim maçında (ilk oyun deneyimi
+  // Ayarlar'dan yeniden başlatıldığında) oyuncunun destesi değil, sunucunun
+  // bildirdiği ve kurulumda gönderilen eğitim destesidir.
+  function battleDeckInstanceIds() {
+    const tutorialDeck = activePlayMode === "online" ? onlinePlay.tutorialDeckIds : null;
+    const instanceIds = tutorialDeck ? definitionIdsToInstanceIds(tutorialDeck) : [];
+    return instanceIds.length === 6 ? instanceIds : battlePoolSelection.selectedIds();
   }
 
   function buildInitialOnlineSetup() {
@@ -18109,7 +18131,7 @@
 
   function renderShelf() {
     const placement = modulePlacementSlotState();
-    const deckModules = battlePoolSelection.selectedIds().map(id => client.modules.get(id)).filter(Boolean);
+    const deckModules = battleDeckInstanceIds().map(id => client.modules.get(id)).filter(Boolean);
     const discounted = Number(client.currentDiscountRemaining || 0) > 0;
     const costFor = m => Math.max(1, Number(m.currentCost) - (discounted ? 1 : 0));
     const signature = JSON.stringify([
@@ -18214,9 +18236,10 @@
       : String(module?.nameTr || "");
   }
 
-  // Savaş kartındaki ad satırı: etkin dile çevrilmiş kısa ad. On bir harf ve
-  // üstü adlar dar kartta taşmasın diye işaretlenir (bkz. canon.css,
-  // "Savaşta modül adları").
+  // Savaş kartındaki ad satırı: etkin dile çevrilmiş kısa ad. Ad yalnız raf
+  // kartında görünür; devreye yerleşen kartta gizlidir. On bir harf ve üstü
+  // adlar dar kartta taşmasın diye işaretlenir (bkz. canon.css, "Savaşta
+  // modül adları").
   function fillBattleCardName(element, moduleLike) {
     const text = localizedUiText(moduleShortNameFor(moduleLike));
     element.textContent = text;
@@ -18508,7 +18531,7 @@
     }
 
     const placement = modulePlacementSlotState();
-    const affordable = battlePoolSelection.selectedIds().some((instanceId) => {
+    const affordable = battleDeckInstanceIds().some((instanceId) => {
       const module = client.modules.get(instanceId);
       return module && client.circuitCredits >= Number(module.currentCost || 0);
     });
@@ -19899,9 +19922,12 @@
   //
   // İlk savaşı sunucu sahne sahne yönetir (server/app/game/tutorial.py):
   // oyuncu okurken savaş durur; sahne anlık görüntüdeki `tutorial` alanıyla
-  // gelir, "İLERİ" sunucuya `tutorial_ack` komutuyla bildirilir. Sunucu savaşı
-  // yönetmiyorsa (değiştirilmiş deste, Ayarlar'dan tekrar) savaşı durdurmayan
-  // ipucu kartları gösterilir.
+  // gelir, "İLERİ" sunucuya `tutorial_ack` komutuyla bildirilir. İlk savaş
+  // normal Arena maçıdır. Eğitim Ayarlar'dan yeniden başlatıldığında aynı
+  // savaş eğitim maçı olarak oynanır: kupa ve ödül vermez, oyuncu Başlangıç
+  // Devresi ile girer (bkz. battleDeckInstanceIds). Sunucu savaşı
+  // yönetmiyorsa (ör. ilk maçta değiştirilmiş deste) savaşı durdurmayan ipucu
+  // kartları gösterilir.
   const TUTORIAL_MATCH_FLOW_STATUSES = new Set([
     "matchmaking",
     "matched",
@@ -20175,22 +20201,30 @@
     };
   }
 
+  // `c.veteran`: oyuncunun bitmiş maçı var, yani eğitimi Ayarlar'dan yeniden
+  // başlatmış; sunucu bu savaşı eğitim maçı olarak kurar.
   const ONBOARDING_START_BATTLE = Object.freeze({
-    key:"start",
+    // İstatistik geç yüklenirse metin doğru sürüme döner.
+    key:(c) => (c.veteran ? "start-training" : "start"),
     target:"#home-battle-button",
     mode:"tap",
     // Düğme kapalıysa (ör. bağlantı yok) adım geçilmez; oyuncu serbest kalır.
     stuck:"release",
-    title:"İlk savaşın",
-    body:"Sıra savaşta. SAVAŞ'a dokun; ilk savaşında sana adım adım eşlik edeceğim.",
+    title:(c) => (c.veteran ? "Eğitim savaşı" : "İlk savaşın"),
+    body:(c) => (c.veteran
+      ? "Sıra eğitim savaşında. SAVAŞ'a dokun; sana adım adım eşlik edeceğim. Bu savaş Başlangıç Devresi ile oynanır; kupa ve ödül vermez."
+      : "Sıra savaşta. SAVAŞ'a dokun; ilk savaşında sana adım adım eşlik edeceğim."),
   });
 
   const ONBOARDING_STEPS = [
     {
       id:"welcome",
       when:(c) => c.screen === "menu" && !c.inMatchFlow,
+      key:(c) => (c.veteran ? "veteran" : ""),
       title:"GRIDSHARD'a hoş geldin!",
-      body:"Birkaç dakikada ekranları tanıyacak, ilk ödülünü alacak ve ilk savaşını kazanacaksın.",
+      body:(c) => (c.veteran
+        ? "Ekranları yeniden dolaşacak ve bir eğitim savaşı oynayacaksın. Eğitim savaşı kupa ve ödül vermez."
+        : "Birkaç dakikada ekranları tanıyacak, ilk ödülünü alacak ve ilk savaşını kazanacaksın."),
       nextLabel:"BAŞLA",
     },
     {
@@ -20383,24 +20417,29 @@
       // Maç ekranı kapandıysa (ya da savaş kaybedildiyse) kutlama gösterilmez.
       skip:(c) => !c.finished || c.screen !== "play" || !c.won,
       // Sonuç paneli (Çekirdek patlamasından sonra) görününce kutlanır.
+      // `c.trainingMatch`: biten savaş eğitim maçıydı (eğitim yeniden başlatıldı).
       present:(c) => (!c.postMatchVisible ? null : c.postMatchStage === "rewards"
         ? {
-            key:"rewards",
+            key:c.trainingMatch ? "rewards-training" : "rewards",
             target:"#post-match-continue",
             mode:"tap",
             place:"top",
             shade:"soft",
-            title:"Savaş ödülleri",
-            body:"Her zaferde kupa, Devre Kredisi ve deneyim kazanırsın. Kupa topladıkça yeni arenalar ve kartlar açılır. DEVAM'a dokun.",
+            title:c.trainingMatch ? "Eğitim savaşı" : "Savaş ödülleri",
+            body:c.trainingMatch
+              ? "Bu bir eğitim savaşıydı; kupa, Devre Kredisi ve deneyim vermez. Arena savaşlarında her zaferde bunları kazanırsın. DEVAM'a dokun."
+              : "Her zaferde kupa, Devre Kredisi ve deneyim kazanırsın. Kupa topladıkça yeni arenalar ve kartlar açılır. DEVAM'a dokun.",
           }
         : {
-            key:"damage",
+            key:c.trainingMatch ? "damage-training" : "damage",
             target:"#post-match-continue",
             mode:"tap",
             place:"top",
             shade:"soft",
             title:"Tebrikler, kazandın!",
-            body:"İlk savaşını kazandın. Bu ekranda hangi modülünün ne kadar hasar verdiğini görürsün. DEVAM'a dokun.",
+            body:c.trainingMatch
+              ? "Eğitim savaşını kazandın. Bu ekranda hangi modülünün ne kadar hasar verdiğini görürsün. DEVAM'a dokun."
+              : "İlk savaşını kazandın. Bu ekranda hangi modülünün ne kadar hasar verdiğini görürsün. DEVAM'a dokun.",
           }),
     },
     {
@@ -20462,6 +20501,10 @@
       weeklyAffordable: credits >= weeklyFee,
       snapshotReady: Boolean(snapshot?.players),
       directed: snapshot?.tutorial || null,
+      // Oyuncunun bitmiş maçı var: eğitim Ayarlar'dan yeniden başlatılmıştır.
+      veteran: Number(statisticsState.viewModel()?.totalMatches) > 0,
+      // Süren ya da biten savaş eğitim maçı (son anlık görüntü maç sonunda da durur).
+      trainingMatch: pvpState.snapshot?.match_type === "tutorial_training",
       postMatchStage: document.getElementById("post-match-continue")?.dataset.postMatchStage || "",
       postMatchVisible: finished
         && Boolean(onboardingVisible(document.getElementById("post-match-continue"))),
@@ -20490,11 +20533,26 @@
     tutorialController.update(context);
   }
 
+  let reviewTutorialRequested = false;
   let lastTutorialSyncAt = -Infinity;
   function syncFirstMatchTutorial(now, { force = false } = {}) {
     if (!force && now - lastTutorialSyncAt < 200) return;
     lastTutorialSyncAt = now;
+    // A private demo must be freely inspectable, not trapped by the automatic
+    // first-player guide. This is UI only; it grants no server access. Reviewers
+    // can still request the tutorial explicitly from Settings.
+    if (document.getElementById("review-access-dialog")?.open
+      || (globalThis.GridshardAuth?.session?.isReviewProfile?.() && !reviewTutorialRequested)) {
+      onboardingOverlay.hide();
+      return;
+    }
     const context = onboardingContext();
+    if (!onboardingFlow.active && context.directed && !ONBOARDING_AUTOMATION_OPT_OUT) {
+      // Yönetmenli savaşa akış dışında bağlanıldı (ör. eğitim maçı sürerken
+      // uygulama yeniden açıldı). Akış savaş adımından sürer; yoksa savaş,
+      // oyuncuyu bekleyen sahnede yönlendirmesiz kalırdı.
+      onboardingFlow.startAt("battle");
+    }
     if (!onboardingFlow.active) {
       // Yalnız hiç maç bitirmemiş oyuncu; istatistik sunucudan gelmeden başlamaz.
       if (
@@ -20524,6 +20582,7 @@
   };
 
   document.getElementById("settings-tutorial-replay")?.addEventListener("click", () => {
+    reviewTutorialRequested = true;
     onboardingFlow.reset();
     onboardingFlow.start({ force: true });
     openAppScreen("menu");

@@ -6745,33 +6745,10 @@ body:not([data-app-screen="play"]) #app-bottom-dock .menu-action.has-persistent-
 body:not([data-app-screen="play"]) #app-bottom-dock .menu-action.has-persistent-notification { overflow:visible !important; }
 
 /* === Savaşta modül adları (Ekim 2026) ===================================== */
-/* Deneme oyuncusu yalnız simgeye bakarak kartı tanıyamadı. Tahtadaki ve raftaki
-   kartlarda simgenin altında tek satır ad yazar. Uzun adlar
-   module-card-view.js içindeki kısa adla gelir; tam ad kartın başlığındadır. */
-body[data-app-screen="play"] .vertical-circuit-arena .module-card.battle-module-card > .module-icon {
-  inset:0 0 calc(5px + var(--gs-battle-card-size) * .19) 0 !important;
-  height:auto !important;
-}
-body[data-app-screen="play"] .vertical-circuit-arena .module-card.battle-module-card > .name {
-  position:absolute;
-  z-index:40;
-  right:1px;
-  bottom:6px;
-  left:1px;
-  display:block !important;
-  overflow:hidden;
-  color:#e9f5ff;
-  font:700 clamp(7px,calc(var(--gs-battle-card-size) * .17),10px)/1.15 var(--gs-font-copy) !important;
-  letter-spacing:0;
-  text-align:center;
-  text-shadow:0 1px 2px #020811,0 0 4px #020811;
-  white-space:nowrap;
-  pointer-events:none;
-}
-/* İmza rozetleri ad satırının üstünde durur. */
-body[data-app-screen="play"] .vertical-circuit-arena .module-card.battle-module-card > .module-signature-row {
-  bottom:calc(7px + var(--gs-battle-card-size) * .2);
-}
+/* Deneme oyuncusu yalnız simgeye bakarak kartı tanıyamadı. Raftaki kartta
+   simgenin altında tek satır ad yazar; devreye yerleşen kartta ad yazmaz
+   (oyuncu kartı rafta tanır). Uzun adlar module-card-view.js içindeki kısa
+   adla gelir; tam ad kartın başlığındadır. */
 
 /* Raf kartı: simge, ad ve Akım bedeli alt alta. Raf satırı 63 px olduğundan
    kart kareden yüksek olabilir; panelin 96 px yüksekliği değişmez. */
@@ -6827,10 +6804,6 @@ body[data-app-screen="play"] .module-shelf .module-card.deck-module-card[data-pl
 
 /* On bir harf ve üstü adlar (Güçlendirici, Hızlandırıcı…) 360 px ekranda
    44 px'lik karta sığsın. */
-body[data-app-screen="play"] .vertical-circuit-arena .module-card.battle-module-card > .name[data-long="true"] {
-  font-size:clamp(6.4px,calc(var(--gs-battle-card-size) * .153),9px) !important;
-  letter-spacing:-.04em;
-}
 body[data-app-screen="play"] .module-shelf .module-card.deck-module-card > .name[data-long="true"] {
   font-size:clamp(6.6px,calc(var(--gs-battle-card-size) * .158),9px) !important;
   letter-spacing:-.04em;

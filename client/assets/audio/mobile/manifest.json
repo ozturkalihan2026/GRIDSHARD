@@ -113,6 +113,24 @@
       "ogg_bytes": 162607,
       "m4a_bytes": 527165
     },
+    "menu_v8_01_durgun_devre": {
+      "sha256": "ec766a40b9a564d91cca17cb312a0511b520361a744986c6f1310254fc8a2deb",
+      "wav_bytes": 11289644,
+      "ogg_bytes": 1033312,
+      "m4a_bytes": 2133461
+    },
+    "menu_v8_02_akim_hatti": {
+      "sha256": "779c7e0c6f691e4b352e66ed4b10a4a5fb576607757eb70779272c75ad19960d",
+      "wav_bytes": 11289644,
+      "ogg_bytes": 1061024,
+      "m4a_bytes": 2256394
+    },
+    "menu_v8_03_cekirdek_odasi": {
+      "sha256": "66a1bd55c4d77ad2d712a1067a27d64dc73c8445cd85ad0c4a8c0c6bf51c7407",
+      "wav_bytes": 11289644,
+      "ogg_bytes": 1062819,
+      "m4a_bytes": 2306507
+    },
     "missile_fire": {
       "sha256": "4090cbe9e7546b2a468bbb2e33a387a614390e72d196e0be95107a7c67bc6efe",
       "wav_bytes": 72368,

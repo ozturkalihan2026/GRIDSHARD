@@ -235,6 +235,88 @@ test("yeniden gösterme tamamlandı izini ve ilerlemeyi siler", () => {
   assert.ok(overlay.hidden >= 1);
 });
 
+test("yönetmenli savaşa akış dışında bağlanılınca akış savaş adımından sürer", () => {
+  const { flow, overlay, storage } = build([
+    { id: "welcome", title: "Hoş geldin" },
+    { id: "battle", title: "Savaş", done: (c) => c.finished },
+    { id: "after", title: "Sonra" },
+  ], { storage: memoryStorage({ done: "complete" }) });
+
+  assert.equal(flow.startAt("yok"), false);
+  assert.equal(flow.active, false);
+
+  assert.equal(flow.startAt("battle"), true);
+  flow.update({});
+  assert.equal(overlay.current.title, "Savaş");
+  assert.equal(storage.getItem("step"), "battle");
+
+  flow.update({ finished: true });
+  assert.equal(overlay.current.title, "Sonra");
+  overlay.current.onNext();
+  assert.equal(flow.active, false);
+  assert.equal(storage.getItem("done"), "complete");
+});
+
+test("eğitimde takım kurdurulmaz: takım adımı ekranı yalnız gösterir", () => {
+  const app = fs.readFileSync(path.join(ROOT, "src", "app.js"), "utf8");
+  const steps = app.slice(
+    app.indexOf("const ONBOARDING_STEPS = ["),
+    app.indexOf("const onboardingOverlay = new GridshardGuideOverlay()")
+  );
+  const start = steps.indexOf('id:"team",');
+  const teamStep = steps.slice(start, steps.indexOf('id:"open-events"', start));
+
+  assert.ok(start > 0 && teamStep.length > 0);
+  // `done` ve dokunma kipi yok: adım İLERİ ile geçilir; katman dokunuşu ekrana iletmez.
+  assert.equal(/\b(done|mode|onNext|onTargetTap):/.test(teamStep), false);
+  assert.equal(steps.includes("team-create"), false);
+});
+
+test("eğitim yeniden başlatılınca savaş eğitim maçıdır: metin, deste ve maç sonu", () => {
+  const app = fs.readFileSync(path.join(ROOT, "src", "app.js"), "utf8");
+  const relay = fs.readFileSync(path.join(ROOT, "src", "relay-client.js"), "utf8");
+
+  // Oyuncunun maçı varsa (tekrar gösterim) metinler eğitim savaşını anlatır.
+  assert.match(app, /veteran: Number\(statisticsState\.viewModel\(\)\?\.totalMatches\) > 0/);
+  assert.match(app, /trainingMatch: pvpState\.snapshot\?\.match_type === "tutorial_training"/);
+  assert.match(app, /c\.veteran\s*\?\s*"Sıra eğitim savaşında\./);
+  assert.match(app, /c\.trainingMatch\s*\?\s*"Eğitim savaşını kazandın\./);
+  // Sunucu deste bildirirse kurulum ve raf o desteyi kullanır.
+  assert.match(relay, /const tutorialDeck = response\.tutorial_deck;/);
+  assert.match(app, /const deckModules = battleDeckInstanceIds\(\)\.map/);
+  assert.match(app, /const affordable = battleDeckInstanceIds\(\)\.some/);
+  // Maç sonu ekranı ödül kartlarını göstermez.
+  assert.match(app, /const tutorialTraining = matchType === "tutorial_training";/);
+  assert.match(app, /const profileNeutral = tutorialTraining\s*\|\| \["friend_battle", "team_training"\]\.includes\(matchType\);/);
+  // Yönetmenli savaşa akış dışında bağlanılırsa akış savaş adımından sürer.
+  assert.match(app, /context\.directed && !ONBOARDING_AUTOMATION_OPT_OUT\) \{[\s\S]{0,400}onboardingFlow\.startAt\("battle"\);/);
+});
+
+test("eğitim metinlerinin hepsinin İngilizcesi vardır", () => {
+  require(path.join(ROOT, "src", "i18n-catalog.js"));
+  const i18n = require(path.join(ROOT, "src", "i18n.js"));
+  const app = fs.readFileSync(path.join(ROOT, "src", "app.js"), "utf8");
+  const block = app.slice(
+    app.indexOf("const FIRST_MATCH_TUTORIAL_STEPS = ["),
+    app.indexOf("const onboardingOverlay = new GridshardGuideOverlay()")
+  );
+  const texts = new Set();
+  // Tek kelimelik başlıklar ve düğme etiketleri.
+  for (const match of block.matchAll(/(?:title|nextLabel|hint):\s*"([^"\n]+)"/g)) texts.add(match[1]);
+  // Cümleler: boşluk içeren, seçici olmayan çift tırnaklı metinler (koşullu
+  // metinler dahil). Yorumlar ve diğer dizgi türleri sırayla tüketilir ki
+  // içlerindeki tırnaklar yanlış eşleşmesin.
+  const tokens = /\/\/[^\n]*|\/\*[\s\S]*?\*\/|"((?:[^"\\\n]|\\.)*)"|'(?:[^'\\\n]|\\.)*'|`(?:[^`\\]|\\.)*`/g;
+  for (const match of block.matchAll(tokens)) {
+    const text = match[1];
+    if (text && text.includes(" ") && !/^[#.\[]/.test(text)) texts.add(text);
+  }
+
+  assert.ok(texts.size > 80, `beklenenden az metin bulundu: ${texts.size}`);
+  const missing = [...texts].filter((text) => i18n.translateText(text, "en") === text);
+  assert.deepEqual(missing, []);
+});
+
 test("uygulama adımları: atlama düğmesi yoktur ve savaş sunucudan yönetmenli istenir", () => {
   const app = fs.readFileSync(path.join(ROOT, "src", "app.js"), "utf8");
   const html = fs.readFileSync(path.join(ROOT, "index.html"), "utf8");

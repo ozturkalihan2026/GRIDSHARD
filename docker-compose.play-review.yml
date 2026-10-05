@@ -1,0 +1,9 @@
+# Opt-in reviewer access: API-only verifier, never client credentials.
+services:
+  relay-web:
+    environment:
+      GRIDSHARD_PLAY_REVIEW_CONFIG_FILE: /run/secrets/play_review_config
+    secrets: [play_review_config]
+secrets:
+  play_review_config:
+    file: ${GRIDSHARD_SECRETS_DIR:?Set external GRIDSHARD_SECRETS_DIR}/play_review_config

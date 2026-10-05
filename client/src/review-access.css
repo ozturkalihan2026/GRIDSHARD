@@ -1,0 +1,22 @@
+.review-access-launch {
+  border:1px solid #73b9d9; border-radius:8px; padding:10px 14px;
+  background:#102237; color:#d7f4ff; font:600 12px system-ui,sans-serif;
+  cursor:pointer; min-height:44px;
+}
+.review-access-startup { position:absolute; bottom:max(12px,env(safe-area-inset-bottom)); right:12px; z-index:3; }
+.review-access-dialog {
+  width:min(420px,calc(100vw - 32px)); box-sizing:border-box; max-height:90dvh;
+  overflow:auto; border:1px solid #73b9d9; border-radius:16px; padding:22px;
+  background:#102237; color:#e5f7ff; font:15px/1.5 system-ui,sans-serif;
+}
+.review-access-dialog::backdrop { background:#020b19cc; }
+.review-access-dialog h2 { font-size:20px; margin-top:0; }
+.review-access-dialog label { display:block; margin:12px 0; }
+.review-access-dialog input {
+  display:block; box-sizing:border-box; width:100%; min-height:44px; padding:10px;
+  background:#061628; color:#fff; border:1px solid #73b9d9; border-radius:6px; font:inherit;
+}
+.review-access-dialog button { display:block; width:100%; margin-top:10px; }
+.review-access-dialog button[hidden] { display:none; }
+.review-access-dialog button:disabled { opacity:.5; cursor:wait; }
+.review-access-dialog :focus-visible { outline:2px solid #f5cd7a; outline-offset:3px; }

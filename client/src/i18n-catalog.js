@@ -1246,6 +1246,15 @@
     "Güçlendirici kartına dokun; Lazerlerinin hasarını artırır.":"Tap the Amplifier card; it increases your Lasers' damage.",
     "Sıra sende!":"Your turn!",
     "Akımın doldukça kart oyna ve rakibin Çekirdeğini yok et!":"Play cards as your Current fills and destroy the enemy Core!",
+    // Eğitim Ayarlar'dan yeniden başlatıldığında: savaş bir eğitim maçıdır.
+    "Ekranları yeniden dolaşacak ve bir eğitim savaşı oynayacaksın. Eğitim savaşı kupa ve ödül vermez.":"You'll tour the screens again and play a training battle. The training battle gives no trophies or rewards.",
+    "Eğitim savaşı":"Training battle",
+    "Eğitim Savaşı":"Training Battle",
+    "Sıra eğitim savaşında. SAVAŞ'a dokun; sana adım adım eşlik edeceğim. Bu savaş Başlangıç Devresi ile oynanır; kupa ve ödül vermez.":"Time for the training battle. Tap BATTLE; I'll walk you through it step by step. This battle is played with the Starter Circuit and gives no trophies or rewards.",
+    "Eğitim savaşını kazandın. Bu ekranda hangi modülünün ne kadar hasar verdiğini görürsün. DEVAM'a dokun.":"You won the training battle. This screen shows how much damage each of your modules dealt. Tap CONTINUE.",
+    "Bu bir eğitim savaşıydı; kupa, Devre Kredisi ve deneyim vermez. Arena savaşlarında her zaferde bunları kazanırsın. DEVAM'a dokun.":"This was a training battle; it gives no trophies, Circuit Credits or experience. In Arena battles every win earns them. Tap CONTINUE.",
+    "EĞİTİM SAVAŞI SONUCU":"TRAINING BATTLE RESULT",
+    "Bu bir eğitim savaşıydı; kupa, ödül veya ilerleme vermez.":"This was a training battle; it gives no trophies, rewards or progress.",
   });
 
   // Keyed messages handle grammatical number and variable values without regex substitution.

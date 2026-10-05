@@ -154,6 +154,8 @@ class ParticipantAuthService:
         value = str(device_id or "legacy").strip()
         if not value or len(value) > 96:
             raise AuthenticationError("Cihaz kimliği 1-96 karakter olmalıdır.")
+        if value == "__play_review__":
+            raise AuthenticationError("Bu cihaz kimliği ayrılmıştır.")
         return value
 
     def _device_record(self, device_secret: str) -> dict:
@@ -316,8 +318,11 @@ class ParticipantAuthService:
         device_secret = str(device_secret or "")
         if len(device_secret) < DEVICE_SECRET_MIN_LENGTH:
             raise AuthenticationError("Cihaz sırrı en az 32 karakter olmalıdır.")
-        if self.repository.get(player_id) is None:
+        record = self.repository.get(player_id)
+        if record is None:
             raise AuthenticationError("Oyuncu kimliği bulunamadı.")
+        if "__play_review__" in (record.get("devices") or {}):
+            raise AuthenticationError("İnceleme hesabı yalnız özel inceleme girişiyle açılabilir.")
         device = self._device_record(device_secret)
         self.repository.update(
             player_id,

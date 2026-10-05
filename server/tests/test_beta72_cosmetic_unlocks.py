@@ -162,6 +162,7 @@ def test_team_view_reports_unlocked_appearance_and_prize_sources(monkeypatch):
     service = TeamService(InMemoryTeamRepository())
     monkeypatch.setattr(gateway, "team_service", service)
     owner = gateway.player_profile_service.get_or_create("beta72-team-owner")
+    owner.circuit_credits = gateway.TEAM_CREATION_COST_CIRCUIT_CREDITS
     try:
         created = gateway.create_team(gateway.TeamCreateRequest(
             player_id=owner.player_id, name="Görünüm Devresi", request_id="beta72-create",

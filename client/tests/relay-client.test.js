@@ -3523,6 +3523,71 @@ function createClient() {
   assert.strictEqual(pool.isComplete(), true);
 }
 
+{
+  // Eğitim maçı: sunucu deste bildirirse kurulum oyuncunun destesiyle değil
+  // o desteyle gönderilir; sonraki normal maçta iz kalmaz.
+  const {
+    RelayPvPClientState,
+    RelayMatchmakingClientState,
+    RelayOnlinePlayCoordinator,
+  } = require("../src/relay-client.js");
+
+  const ownDeck = ["rail", "armor", "emp", "virus", "drone", "barrier"];
+  const tutorialDeck = ["laser", "shield", "repair", "cooler", "battery", "amplifier"];
+  const core = [{instanceId:"core-1",definitionId:"core",x:2,y:1}];
+  const setups = [];
+  let response = {matched:true,session_id:"training-1",players:["a","b"],tutorial_deck:tutorialDeck};
+  const coordinator = new RelayOnlinePlayCoordinator({
+    playerId:"a",
+    pvpState:new RelayPvPClientState({playerId:"a"}),
+    matchmakingState:new RelayMatchmakingClientState(),
+    connectionManager:{
+      disconnect(){},
+      clearOutgoingQueue(){},
+      sendSetup(setup) { setups.push(setup); },
+      sendReady(){},
+      connect(){},
+    },
+    requestJson:async () => response,
+    webSocketUrlFactory:(sessionId) => `ws://test/${sessionId}`,
+    setTimer() { return 1; },
+    clearTimer() {},
+  });
+
+  asyncTests.push((async () => {
+    assert.strictEqual(coordinator.tutorialDeckIds, null);
+    await coordinator.start({battlePoolIds:ownDeck,initialModules:core,tutorial:true});
+    assert.deepStrictEqual(setups[0].battlePoolIds, tutorialDeck);
+    assert.deepStrictEqual(coordinator.tutorialDeckIds, tutorialDeck);
+    // Oyuncunun kendi listesi değişmez.
+    assert.deepStrictEqual(ownDeck, ["rail", "armor", "emp", "virus", "drone", "barrier"]);
+
+    response = {matched:true,session_id:"arena-1",players:["a","b"]};
+    await coordinator.start({battlePoolIds:ownDeck,initialModules:core});
+    assert.deepStrictEqual(setups[1].battlePoolIds, ownDeck);
+    assert.strictEqual(coordinator.tutorialDeckIds, null);
+
+    // Geçersiz deste bildirimi yok sayılır.
+    response = {matched:true,session_id:"arena-2",players:["a","b"],tutorial_deck:["laser"]};
+    await coordinator.start({battlePoolIds:ownDeck,initialModules:core});
+    assert.deepStrictEqual(setups[2].battlePoolIds, ownDeck);
+    assert.strictEqual(coordinator.tutorialDeckIds, null);
+
+    // Özel savaş (arkadaş, takım) eğitim destesinden etkilenmez.
+    response = {matched:true,session_id:"training-2",players:["a","b"],tutorial_deck:tutorialDeck};
+    await coordinator.start({battlePoolIds:ownDeck,initialModules:core,tutorial:true});
+    assert.deepStrictEqual(coordinator.tutorialDeckIds, tutorialDeck);
+    coordinator.connectSession({session_id:"friend-1",players:["a","b"]},{battlePoolIds:ownDeck,initialModules:core});
+    assert.deepStrictEqual(setups[4].battlePoolIds, ownDeck);
+    assert.strictEqual(coordinator.tutorialDeckIds, null);
+
+    await coordinator.start({battlePoolIds:ownDeck,initialModules:core,tutorial:true});
+    assert.deepStrictEqual(coordinator.tutorialDeckIds, tutorialDeck);
+    coordinator.reset();
+    assert.strictEqual(coordinator.tutorialDeckIds, null);
+  })());
+}
+
 Promise.all(asyncTests).then(() => {
   console.log("176 client tests passed");
 }).catch((error) => {

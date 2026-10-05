@@ -5,6 +5,10 @@ bilgi kartını okurken ya da gösterilen kartı koymadan önce savaş durur
 (motor adım atmaz); yalnız izleme sahnelerinde ilerler. Rakip AI karar
 vermez, rakibin hamlelerini betik yapar.
 
+Eğitimi Ayarlar'dan yeniden başlatan oyuncu aynı betiği eğitim maçı olarak
+oynar: maç hesaba işlenmez (kupa, ödül, istatistik yok) ve oyuncu kendi
+destesiyle değil ``TUTORIAL_PLAYER_DECK`` ile girer.
+
 Maç gerçek motorla ve gerçek kurallarla oynanır; betik yalnız sahne
 sınırlarında durumu hazırlar: gereken Akımı verir, Lazeri ısıtır, enerjiyi
 keser, rakibe modül kurar. Böylece oyuncu ısı, CAN, enerji ve devre dengesi
@@ -18,6 +22,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass, replace
 
+from .battle_pool import DEFAULT_BATTLE_POOL_IDS
 from .catalog import get_module_definition
 from .combat import select_target
 from .heat import MAX_HEAT, is_overheated
@@ -27,6 +32,9 @@ from .models import BattleCommand, BattleModule, BattleStatus, ModuleStatus
 # Oyuncunun eğitimde kurduğu kartlar. Destesinde hepsi yoksa (ör. desteyi
 # değiştirmiş eski hesap) savaş yönetilmez; yumuşatılmış ilk maç oynanır.
 TUTORIAL_REQUIRED_CARDS = ("laser", "cooler", "repair", "battery", "amplifier")
+# Eğitim maçının oyuncu destesi: eğitim kartlarının hepsini içerir ve her
+# hesapta açıktır (Başlangıç Devresi).
+TUTORIAL_PLAYER_DECK = tuple(DEFAULT_BATTLE_POOL_IDS)
 # Betiğin rakibe kurduğu kartları içeren geçerli altılı deste.
 TUTORIAL_ENEMY_DECK = ("laser", "shield", "armor", "repair", "battery", "amplifier")
 

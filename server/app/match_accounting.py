@@ -1,7 +1,12 @@
 """Canonical account-impact rules for every battle mode."""
 
 RANKED_PVP_MATCH_TYPES = frozenset({"arena_ai", "ranked_pvp"})
-PROFILE_NEUTRAL_MATCH_TYPES = frozenset({"friend_battle", "team_training"})
+# İlk oyun deneyimi Ayarlar'dan yeniden başlatıldığında oynanan yönetmenli
+# savaş. İlk savaşın aksine hesaba hiçbir etkisi yoktur (bkz. game/tutorial.py).
+TUTORIAL_TRAINING_MATCH_TYPE = "tutorial_training"
+PROFILE_NEUTRAL_MATCH_TYPES = frozenset(
+    {"friend_battle", "team_training", TUTORIAL_TRAINING_MATCH_TYPE}
+)
 TOURNAMENT_ONLY_MATCH_TYPES = frozenset({"team_tournament"})
 PROFILE_EXCLUDED_MATCH_TYPES = (
     PROFILE_NEUTRAL_MATCH_TYPES | TOURNAMENT_ONLY_MATCH_TYPES

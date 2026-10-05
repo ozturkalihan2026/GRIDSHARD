@@ -92,6 +92,12 @@ def team_db(social_db, monkeypatch):
     baseline = deepcopy(repository.load())
     service = TeamService(repository)
     monkeypatch.setattr(gateway, "team_service", service)
+    # Kurma bedeli: fixture oyuncularının kredisi takım kurmaya yetsin.
+    for player_id in ids:
+        gateway.player_profile_service.get_or_create(player_id).circuit_credits = (
+            gateway.TEAM_CREATION_COST_CIRCUIT_CREDITS
+        )
+        gateway.persist_player_data(player_id)
     yield pool, players, platform, ids, service
     with pool.transaction():
         baseline["_revision"] = repository.load()["_revision"]
@@ -160,6 +166,7 @@ def test_old_team_receipts_do_not_restore_later_membership(team_db):
 
 def test_parallel_cache_mutations_refresh_canonical_state_and_rollback(team_db):
     _, players, _, (a, _, _), _ = team_db
+    initial_credits = players.load(a).profile["meta_progression_state"]["circuit_credits"]
     start = Barrier(2)
 
     @gateway.persistent_operation
@@ -179,11 +186,11 @@ def test_parallel_cache_mutations_refresh_canonical_state_and_rollback(team_db):
         futures = [executor.submit(parallel, amount) for amount in (7, 11)]
         for future in futures:
             future.result(timeout=15)
-    assert players.load(a).profile["meta_progression_state"]["circuit_credits"] == 339
+    assert players.load(a).profile["meta_progression_state"]["circuit_credits"] == initial_credits + 18
     with pytest.raises(RuntimeError, match="injected"):
         credit(a, 1000, fail=True)
-    assert gateway.player_profile_service.get_or_create(a).circuit_credits == 339
-    assert credit(a, 1) == 340
+    assert gateway.player_profile_service.get_or_create(a).circuit_credits == initial_credits + 18
+    assert credit(a, 1) == initial_credits + 19
 
 
 def test_failed_settings_opt_out_rolls_back_settings_and_cache(team_db, monkeypatch):

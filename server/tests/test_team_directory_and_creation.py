@@ -79,9 +79,21 @@ def team_gateway(monkeypatch):
 
     forget()
     try:
-        yield [gateway.player_profile_service.get_or_create(player_id) for player_id in players], service
+        profiles = [gateway.player_profile_service.get_or_create(player_id) for player_id in players]
+        # Yeni hesabın kredisi kurma bedeline yetmez; kurucu testlerde ayrıca fonlanır.
+        for profile in profiles:
+            profile.circuit_credits = gateway.TEAM_CREATION_COST_CIRCUIT_CREDITS
+        yield profiles, service
     finally:
         forget()
+
+
+def test_a_new_account_cannot_afford_a_team():
+    from app.player_profile import PlayerProfileService
+
+    assert gateway.TEAM_CREATION_COST_CIRCUIT_CREDITS == 3000
+    starter = PlayerProfileService().get_or_create("team-fee-starter")
+    assert starter.circuit_credits < gateway.TEAM_CREATION_COST_CIRCUIT_CREDITS
 
 
 def test_creating_a_team_charges_the_fee_once(team_gateway):
@@ -114,6 +126,31 @@ def test_creating_a_team_charges_the_fee_once(team_gateway):
         ))
     assert beta.circuit_credits == cost - 1
     assert service.team_for_player(beta.player_id) is None
+
+
+def test_replayed_creation_is_answered_from_the_receipt_after_the_founder_left(team_gateway):
+    (alpha, *_), service = team_gateway
+    request = gateway.TeamCreateRequest(
+        player_id=alpha.player_id, name="Ayrılan", request_id="create-then-leave",
+    )
+    team_id = gateway.create_team(request)["team_id"]
+    gateway.leave_team(team_id, gateway.TeamActionRequest(
+        player_id=alpha.player_id, request_id="leave",
+    ))
+    assert alpha.circuit_credits == 0
+
+    # Kredisi kalmayan, takımsız kurucunun yinelenen isteği reddedilmez ve
+    # yeniden takım kurmaz.
+    replay = gateway.create_team(request)
+
+    assert replay["replayed"] is True
+    assert alpha.circuit_credits == 0
+    assert service.team_for_player(alpha.player_id) is None
+    # Yeni bir istek ise bedeli ister.
+    with pytest.raises(HTTPException, match="Devre Kredisi gerekli"):
+        gateway.create_team(gateway.TeamCreateRequest(
+            player_id=alpha.player_id, name="Yeni", request_id="create-again",
+        ))
 
 
 def test_lobby_lists_full_teams_and_marks_the_pending_application(team_gateway):

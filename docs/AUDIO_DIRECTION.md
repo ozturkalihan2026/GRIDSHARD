@@ -416,3 +416,33 @@ Kanonik kaynak `client/assets/audio/*.wav` olarak kalır. `tools/encode_mobile_a
 - Durumlar aynı dosyayı paylaşmaz: `battle_intro` sub/pulse/percussion, `battle` +ostinato/shards, `battle_pressure` +dissonance, `critical_core` +pressure stem'lerini açar. Baskı değeri etkin küme içindeki kazançları değiştirir.
 - `navigator.deviceMemory <= 2` bildiren cihazlarda çözülmüş PCM bütçesini düşürmek için yalnız sub/pulse/percussion/pressure stem'leri yüklenir.
 - AAC kodlayıcı gecikmesini ffmpeg MP4 edit list ile işaretler; 32 sn döngü dikişinin iOS'ta duyulmadığı gerçek cihazda doğrulanmalıdır.
+
+## 20. Menü Çalma Listesi (Ekim 2026)
+
+Oyuncular menü müziğinin sürekli aynı melodiyi tekrar ettiğini bildirdi. Kök neden dosya uzunluğu değil içeriktir: V6 menü parçasında melodi sekiz notalık tek cümledir (4,9 sn) ve hiç susmaz; akor dizisi 9,8 saniyede döner; davul her ölçüde aynıdır. Beta.23'te döngü 10 saniyeden 32 saniyeye uzatılmış ama içindeki müzik aynı kısalıkta kalmıştı.
+
+Çalışma zamanı (`client/src/gridshard-audio.js`):
+
+- `GRIDSHARD_MENU_PLAYLIST` menü durumunda çalınacak parçaları sıralar. Tek parça varsa eski davranış aynen sürer: Web Audio ile kesintisiz döngü.
+- Birden çok parça varsa ilk parça rastgele seçilir, sonra sıra döner; aynı parça art arda gelmez. Parça bitmeden `playlistCrossfadeMs` (2400 ms) kala sıradakine yumuşak geçilir. Eşleşme, savaş ya da sonuç ekranından menüye her dönüşte sıradaki parça baştan başlar.
+- Uygulama arka plandan dönünce ya da Hazırlık ekranından menüye geçilince aynı parça kaldığı yerden sürer. Hazırlık ekranında parçanın sonu geçildiyse liste o arada ilerlemiş sayılır; faz yine korunur.
+- Uzun parçalar belleğe açılmaz, HTML ses öğesiyle akıtılır: 128 saniyelik stereo bir parça Web Audio'da çözülünce yaklaşık 49 MB tutar. HTML ses seviyesi ayarlanamayan ortamda (iOS) Web Audio yolu kullanılır; orada çalmayan parçaların çözülmüş verisi bırakılır, savaşa girerken hepsi bırakılır.
+- Parçalar menü ızgarasını paylaşmalıdır: 32 saniyede 52 vuruş (97,5 BPM) ve 32 saniyenin katı süre. Menü ↔ Hazırlık geçişi fazı bu ızgarayla korur.
+
+Parçalar (`tools/generate_menu_playlist_audio.py`; ses yapı taşları `tools/menu_playlist_synth.py`; yalnız standart kitaplık, çıktı deterministik):
+
+| Dosya | Ad | Karakter |
+| --- | --- | --- |
+| `menu_v8_01_durgun_devre.wav` | Durgun Devre | Ped, cam arpej, çan ve yumuşak lead; dingin |
+| `menu_v8_02_akim_hatti.wav` | Akım Hattı | Süzgeçli testere bas dizisi, elektro davul, güç akoru vuruşları, kayan lead; Re–Do–Si♭–La döngüsü |
+| `menu_v8_03_cekirdek_odasi.wav` | Çekirdek Odası | Yarı tempolu, karanlık; kapılı reaktör darbesi, onaltılık minör motor, sonar ve veri akışı, Re–Mi♭ gerilimi |
+
+- Her parça 128 sn (52 ölçü, 208 vuruş), stereo, 22.050 Hz. Bölümler: giriş 0:00, birinci ana bölüm 0:20, ara 0:49, ikinci ana bölüm 1:09, çıkış 1:48. Melodi aralarda susar ve her gelişinde farklı bir cümle çalar; çıkış girişe kesintisiz bağlanır.
+- Ortalama seviye üçünde de eski menü döngüsüyle aynıdır (RMS −22,6 dBFS; tepe −6 dBFS'nin altında): oyun bütün parçaları aynı kazançla çalar.
+- Elektronik iki parça savaş müziğinin ses sözlüğünü (§17) menü temposuna taşır. Kullanıcı geri bildirimi (5 Ekim 2026): dingin parça "fazla dinlendirici" bulundu; oyunun dünyasına ait, daha elektrikli ve elektronik müzik isteniyor. Üç parça da listede kaldı; yeni parçalar bu yönde üretilmelidir.
+- `menu_ensemble_v6.wav` listeden çıktı. Dosya ve üreticisi depoda durur ama pakete girmez. Hazırlık ekranı `pool_ensemble_v6.wav` ile çalmayı sürdürür (eski melodinin çeşitlemesi).
+- Paket etkisi: üç parça OGG olarak 3,0 MB, AAC olarak 6,4 MB tutar; eski döngü çıkınca net artış 8,7 MB'tır (paketteki ses toplamı 4,3 MB OGG + 10,7 MB AAC). Android yalnız OGG çalar; AAC dosyaları iOS/Safari içindir. Kaynak WAV'lar depoya 32 MB ekler, pakete girmez.
+
+Yeni parça eklemek: üreticiye düzenleme ve `TRACKS` kaydı eklenir; `python tools/generate_menu_playlist_audio.py <ad>` ile üretilir; dosya `GRIDSHARD_MENU_PLAYLIST` listesine yazılır; `python tools/encode_mobile_audio.py` türevleri üretir (ffmpeg gerekir). Listeyi, dosyaları ve türevleri `server/tests/test_menu_playlist_audio.py` ile `client/tests/gridshard-audio-menu-playlist.test.js` denetler.
+
+Doğrulama (5 Ekim 2026): masaüstü Chrome'da telefon boyutunda, oyunun kendisiyle denendi: OGG türevinden akıtma, ekranlar arasında kesintisiz çalma, parça sonunda geçiş, arka plandan dönüş, savaştan dönüşte sıradaki parça. Android WebView'da gerçek cihazda henüz dinlenmedi; menü müziği orada ilk kez ses öğesiyle akıtılacak (önceden Web Audio döngüsüydü).

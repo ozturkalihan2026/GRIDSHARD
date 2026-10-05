@@ -12,6 +12,9 @@ assert.ok(html.includes('id="post-match-accounting-note"'));
 assert.ok(app.includes('matchType === "team_tournament"'));
 assert.ok(app.includes('["friend_battle", "team_training"]'));
 assert.ok(app.includes("Bu antrenman maçı profile, kupaya veya Devre Yolu ilerlemesine etki etmedi."));
+// Eğitim maçı (ilk oyun deneyimi yeniden başlatıldığında) da hesaba işlenmez.
+assert.ok(app.includes('matchType === "tutorial_training"'));
+assert.ok(app.includes("Bu bir eğitim savaşıydı; kupa, ödül veya ilerleme vermez."));
 
 const state = new RelayProgressionClientState();
 const view = state.applyResult({

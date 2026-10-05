@@ -59,7 +59,12 @@ global.fetch = async () => ({
 require("../src/gridshard-audio.js");
 
 (async () => {
-  const director = new global.GridshardAudioDirector();
+  // Tek parçalı listede menü de Hazırlık ve eşleşme gibi Web Audio ile
+  // kesintisiz döner; çok parçalı liste akıtılır (bkz.
+  // gridshard-audio-menu-playlist.test.js).
+  const director = new global.GridshardAudioDirector({
+    menuPlaylist: [global.GRIDSHARD_MENU_PLAYLIST[0]],
+  });
   assert.strictEqual(director.previewMusic("menu").ok, true);
   await new Promise((resolve) => setTimeout(resolve, 0));
 

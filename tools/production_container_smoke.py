@@ -48,8 +48,21 @@ def _assert_profile_preserved(before, after):
     assert after["engagement"]["season_xp"] == before["engagement"]["season_xp"]
 
 
+def _assert_review_access(client, actor, headers):
+    response = client.get(f"/profile/{actor}", headers=headers)
+    assert response.status_code == 200
+    profile = response.json()
+    assert profile["engagement"]["premium_pass"]["active"]
+    assert all(item["unlocked"] for item in profile["engagement"]["premium_reward_track"])
+    assert profile["engagement"]["flux_shards"] >= 1050
+    assert profile["meta_progression_summary"]["circuit_credits"] >= 9000
+    store = client.get(f"/store/{actor}", headers=headers)
+    assert store.status_code == 200 and store.json()["battle_premium"]["active"]
+    return profile
+
+
 def _restore_drill(image, maintenance_image, network, root, private, arguments, container,
-                   url, container_database, databases, cleanup, actor, headers, before):
+                   url, container_database, databases, cleanup, actor, headers, before, review_session=None):
     subprocess.run(["docker", "stop", container], check=True, stdout=subprocess.DEVNULL, timeout=40)
     backups = root / "backups"
     backups.mkdir(mode=0o777)
@@ -84,9 +97,12 @@ def _restore_drill(image, maintenance_image, network, root, private, arguments, 
     subprocess.run([*restored_arguments, image], check=True, stdout=subprocess.DEVNULL, timeout=30)
     with httpx.Client(base_url=_base_url(restored_container, network), timeout=3) as client:
         _assert_profile_preserved(before, _wait_profile(client, actor, headers))
+        if review_session:
+            _wait_profile(client, *review_session)
+            _assert_review_access(client, *review_session)
 
 
-def smoke(image, network="host", maintenance_image=None, soak_seconds=0, admob_signature_only=False):
+def smoke(image, network="host", maintenance_image=None, soak_seconds=0, admob_signature_only=False, play_review=False):
     url = os.environ["GRIDSHARD_TEST_DATABASE_URL"]
     parsed = urlsplit(url)
     assert parsed.hostname in {"localhost", "127.0.0.1"} and parsed.path == "/gridshard_test"
@@ -114,12 +130,19 @@ def smoke(image, network="host", maintenance_image=None, soak_seconds=0, admob_s
             private.mkdir(mode=0o755)
             (private / "database_url").write_text(container_source_url)
             (private / "auth_key").write_text(secrets.token_hex(48))
+            review_session = None
+            if play_review:
+                from server.app.review_access import new_review_config
+                review_config, review_password = new_review_config()
+                (private / "play_review_config").write_text(json.dumps(review_config))
             for item in private.iterdir():
                 item.chmod(0o644)  # Disposable fixture mount for the unprivileged container.
             env = {"GRIDSHARD_RUNTIME_MODE": "production", "GRIDSHARD_RUNTIME_DATA_DIR": "/var/lib/gridshard",
                    "DATABASE_URL_FILE": "/run/secrets/database_url", "GRIDSHARD_AUTH_SIGNING_KEY_FILE": "/run/secrets/auth_key",
                    "REDIS_URL": os.environ.get("GRIDSHARD_SMOKE_CONTAINER_REDIS_URL", "redis://127.0.0.1:6379/14"), "GRIDSHARD_PUBLIC_WEB_URL": "https://gridshard.invalid",
                    "GRIDSHARD_PUBLIC_WS_BASE_URL": "wss://gridshard.invalid", "GRIDSHARD_PURCHASE_TEST_MODE": "0", "GRIDSHARD_AD_TEST_MODE": "0"}
+            if play_review:
+                env["GRIDSHARD_PLAY_REVIEW_CONFIG_FILE"] = "/run/secrets/play_review_config"
             if admob_signature_only:
                 env.update({"GRIDSHARD_ADMOB_SSV_ENABLED":"1", "GRIDSHARD_ADMOB_ROLLOUT_MODE":"disabled",
                             "GRIDSHARD_ADMOB_TEST_PLAYER_IDS":"",
@@ -167,6 +190,25 @@ def smoke(image, network="host", maintenance_image=None, soak_seconds=0, admob_s
                 assert before["display_name_changes_remaining"] == 0
                 assert client.put(f"/profile/{actor}/display-name", headers=headers, json={"display_name":name}).status_code == 200
                 assert client.put(f"/profile/{actor}/display-name", headers=headers, json={"display_name":name+"2"}).status_code == 409
+                if play_review:
+                    for index in range(2):
+                        signed = client.post("/auth/review-session", json={
+                            "username": review_config["username"], "password": review_password,
+                            "device_id": f"isolated-review-{index}", "device_secret": secrets.token_hex(32)})
+                        assert signed.status_code == 200 and signed.headers["Cache-Control"] == "no-store"
+                        result = signed.json()
+                        assert result["player_id"] == review_config["player_id"] and result["review_access"]
+                        review_headers = {"Authorization": "Bearer " + result["access_token"]}
+                        _assert_review_access(client, result["player_id"], review_headers)
+                    review_session = (result["player_id"], review_headers)
+                    _assert_profile_preserved(before, _wait_profile(client, actor, headers))
+                    assert client.put(f"/profile/{actor}/display-name", headers=review_headers,
+                                      json={"display_name": "forbidden"}).status_code == 403
+                    rejected = client.post("/auth/review-session", json={
+                        "username": review_config["username"], "password": "incorrect-fixture-password",
+                        "device_id": "denied", "device_secret": secrets.token_hex(32)})
+                    assert rejected.status_code == 401
+                    print("Private fixture review sign-in/premium/two devices/ordinary-profile preservation passed", flush=True)
                 if soak_seconds:
                     assert 0 < soak_seconds <= 3600
                     deadline = time.monotonic() + soak_seconds
@@ -183,11 +225,14 @@ def smoke(image, network="host", maintenance_image=None, soak_seconds=0, admob_s
                 # Docker Desktop can assign a new random host port on restart.
                 with httpx.Client(base_url=_base_url(container, network), timeout=3) as restarted_client:
                     _assert_profile_preserved(before, _wait_profile(restarted_client, actor, headers))
+                    if review_session:
+                        _wait_profile(restarted_client, *review_session)
+                        _assert_review_access(restarted_client, *review_session)
             subprocess.run(["docker", "exec", container, "python", "-c",
                             "from pathlib import Path; import os; assert os.getuid()==10001; assert not Path('/app/server/tests').exists(); assert not Path('/app/server/data/player_data.json').exists(); assert not Path('/app/.env').exists()"], check=True, timeout=10)
             if maintenance_image:
                 _restore_drill(image, maintenance_image, network, root, private, arguments, container,
-                               url, container_database, databases, cleanup, actor, headers, before)
+                               url, container_database, databases, cleanup, actor, headers, before, review_session)
     finally:
         subprocess.run(["docker", "rm", "--force", container], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, timeout=30)
         with psycopg.connect(url, autocommit=True) as admin:
@@ -204,5 +249,6 @@ if __name__ == "__main__":
     parser.add_argument("--maintenance-image", help="Also back up the stopped image and restore its profile/token into a new empty database/runtime")
     parser.add_argument("--soak-seconds", type=int, default=0, help="Bounded health/lease soak on the disposable test image only")
     parser.add_argument("--admob-signature-only", action="store_true", help="Enable signature verification while asserting ads/units remain hidden for both legacy and new clients")
+    parser.add_argument("--play-review", action="store_true", help="Verify reviewer access with random disposable fixture credentials, including restart/restore")
     args = parser.parse_args()
-    smoke(args.image, args.network, args.maintenance_image, args.soak_seconds, args.admob_signature_only)
+    smoke(args.image, args.network, args.maintenance_image, args.soak_seconds, args.admob_signature_only, args.play_review)

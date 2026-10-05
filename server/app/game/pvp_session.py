@@ -787,6 +787,7 @@ class PvPSessionService:
                 "team_tournament": "Takım Turnuvası",
                 "ranked_pvp": "Dereceli PvP",
                 "unranked_ai": "Derecesiz AI",
+                "tutorial_training": "Eğitim Savaşı",
                 "local_test": "Yerel Test",
             }.get(state.match_type, state.match_type),
             "season_id": state.season_id,

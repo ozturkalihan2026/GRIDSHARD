@@ -143,6 +143,7 @@ def test_team_tab_and_public_profile_share_the_same_server_summary(monkeypatch):
         member = gateway.player_profile_service.get_or_create(member_id)
         owner.rating = 420
         member.rating = 180
+        owner.circuit_credits = gateway.TEAM_CREATION_COST_CIRCUIT_CREDITS
         owner_stats = gateway.player_statistics_service.get_or_create(owner_id)
         member_stats = gateway.player_statistics_service.get_or_create(member_id)
         owner_stats.total_matches, owner_stats.wins = 8, 5
