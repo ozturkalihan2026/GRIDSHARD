@@ -1,6 +1,414 @@
 # GRIDSHARD geliştirme kontrol noktası
 
-Güncelleme tarihi: 4 Ekim 2026
+Güncelleme tarihi: 5 Ekim 2026
+
+## İş bilgisayarı kapanış — Play gizlilik kaydı tamam / evde birleşik test güncellemesi
+
+**5 Ekim 2026 16:32 TR:** Kullanıcı **“tamam kaydettim”** diyerek Play Console'da
+`https://gridshardgame.com/privacy/` gizlilik URL'sini kaydettiğini teyit etti.
+Bu **kullanıcı teyididir**; yeni Console ekranı/success toast görülmedi ve Google
+inceleme/genel yayın/AdMob onayı anlamına gelmez. Public site'nin16:23 canlı
+9/9 HTTPS/hash/no-transform/AWS/app-ads doğrulaması aşağıda korunur.
+
+Kullanıcı iş bilgisayarındaki bu çalışmayı bitirdi; diğer yapay zekâ hâlâ
+çalışıyor. **Commit/push kullanıcı tarafından**, iki çalışmanın kaynak/test/
+belgeleri birlikte incelenerek yapılacak; ev bilgisayarında **pull sonrası**
+devam edilecek. Bu tur yalnız kapanış notları yazıldı: stage/commit/push,
+ortak build, APK/AAB, Play test yayını, oyun deploy/restart veya başka AI'nın
+dosyalarında değişiklik yok. Kullanıcı evde devam edene ve diğer çalışma
+tamamlanana kadar bu işleri başlatma; otomatik devam/monitor kurulmadı.
+
+**Evde devam sırası:**
+
+1. Pull sonrası bu checkpoint'i oku; branch/commit ve çalışma ağacı durumunu
+   doğrula. Diğer AI'nın son savaş/CSS ve olası ek değişikliklerini birleşik
+   kaynakta incele; eski çalışma ağacına göre hazır build kullanma. Çakışma/
+   eksik untracked kaynak/test dosyası varsa yayın öncesi gider.
+2. Güvenli giriş kaynak düzeltmesi aşağıda kayıtlıdır:116 odaklı test +8
+   kaynak tarayıcı kontrolü önce geçti; **canlı sunucu ve telefona henüz
+   uygulanmış sayılmaz**. Birleşik sürümün auth/Play Games recovery ve savaş/
+   CSS/native regresyonlarını yeniden çalıştır. Sunucu recovery endpoint'leri
+   ile Android istemcisinin sürüm uyumunu doğrula; sadece AAB yüklemek yeterli
+   kabul edilmez. Gerekli sunucu yayını varsa o aşamanın mevcut dağıtım/onay
+   sınırlarına göre ele al; canlı oyuncu verisini reset/restore etme.
+3. Kontroller geçince mevcut paket/imzalama düzenini koruyarak, Play'deki
+   son versionCode'dan yüksek sürümle **dahili test güncellemesini** hazırla ve
+   evde devam talimatı kapsamında yayın akışını tamamla. Eski Uç profilini aynı
+   Play Games hesabıyla geri getirme ve oturum kontrollerini gerçek telefonda
+   doğrula; mevcut profil/veri silme, boş hesaba taşıma veya tokenı geri açma yok.
+
+**Tekrar kurulmayacak tamamlanan işler:** Cloudflare public politika ve
+iletişim düzeltmesi canlı; Play gizlilik URL kaydı kullanıcıca tamamlandı;
+30gün yedek ve90gün destek görevleri önceki ayrı onaylarla etkin. Yerel
+`tools/support-retention/Code.gs` hâlâ güvenli dry-run şablonudur; bunu özel
+canlı script'e tekrar yükleyip görevi kapatma. İlk zamanlı çalışma/gerçek
+expiry silme henüz gözlenmiş değildir; önceki sınırlar korunur.
+
+**Commit sınırı:** checkpoint ve ilgili yeni kaynak/test/operasyon belgeleri
+de commit'e dahil edilmeli. `.env`, SSH PEM, imzalama/OAuth sırları, kişisel
+veri ve ignored `artifacts/`/build paketleri commit'e zorla eklenmez. Özel
+ignored receipt/ekran/ZIP'ler Git pull ile eve gelmez; kalıcı, sır içermeyen
+devam bilgisi bu checkpoint ve operasyon belgelerindedir. Evde gerekli
+yerel anahtar/ayarların mevcut olduğu sırlarını göstermeden kontrol edilir.
+
+### Tarihsel aşama — 16:23 public-site doğrulandı / Play kaydı henüz bekliyordu
+
+**5Ekim16:23TR:** Kullanıcı **“yayınladım”** dedi. Anonim salt-okunur HTTPS
+kontrolünde8TR/EN HTML route +app-ads.txt **9/9 HTTP200**; yönlendirmesiz mevcut
+custom-domain URL'leri. **9/9 dosya boyut/SHA256 build manifestiyle birebir**.
+Tüm yanıtlar **no-transform, public, max-age=300** ve değişmemiş script-free
+CSP döndürüyor.8HTML'de açık destek adresi ve doğrudan mailto var;
+email-protection/data-cfemail/script tag yok. TR/EN hesap-silme düğmesi subject
+parametreli doğrudan mailto. İki gizlilik sayfasında AWS/yayıncı/kayıtlı
+kapanış90gün var, Oracle yok. app-ads.txt doğru yeni yayıncı satırıyla birebir
+ve text/plain. Bu tur yeni tarayıcı görsel QA/e-posta istemcisi açma testi yok;
+HTTP içerik/başlık/hash kanıtıdır, önceki statik QA korunur.
+
+**Cloudflare header düzeltmesi canlı doğrulandı.** Kullanıcı yayın yaptı;
+agent Cloudflare hesap/DNS/security/analytics ayarı veya external write yapmadı.
+Receipt `artifacts/public-site-20261005-privacy/public-live-no-transform-verified.json`
+ignored; önceki başarısız iletişim receipt/screenshot tarihsel korunur.
+**Sıradaki iş:** Play Console → GRIDSHARD → Gizlilik Politikası → mevcut
+`https://gridshardgame.com/privacy/` URL'sini **Kaydet**, ardından kayıt
+başarısını kullanıcı screenshot/teyidiyle doğrula. Play kaydı henüz görülmedi;
+incelemeye gönderme/genel yayın/AdMob crawler onayı yok. Oyun build/deploy/
+restart/APK/AAB/dahili test ertelemesi, mail/yedek görevlerinin önceki sınırları
+korunur. Bu tur e-posta/yedek silmesi veya yeni görev kurulmadı.
+
+### Tarihsel aşama — 16:15 Cloudflare e-posta dönüşümü düzeltmesi bekliyordu
+
+**5Ekim16:15TR:** Kullanıcı **“açtım ve yüklemeyi yaptım”** dedi. Anonim
+salt-okunur custom-domain HTTPS kontrolünde8TR/EN sayfa ve app-ads.txt **200**.
+TR/EN gizlilik metninde **AWS / Alihan ÖZTÜRK / kayıtlı kapanıştan90gün** var,
+**Oracle yok**. app-ads.txt yeni yayıncı satırı ve SHA ile birebir eşleşir.
+Bu içerik yayınının kanıtıdır; Play Kaydet, genel yayın veya AdMob onayı değildir.
+
+Ancak8HTML dosyasının hash'i build'den farklı: Cloudflare e-posta obfuscation
+ve Web Analytics beacon script'i ekliyor. `/privacy/`, `/support/`,
+`/delete-account/` yanıtlarında değişmemiş `default-src 'none'` CSP var;
+adresler `__cf_email__` / `data-cfemail` / email-protection bağlantılarına
+dönüşmüş. CUA canlı hesap-silme DOM ve screenshot'ta destek adresi gerçekten
+**[email protected]**; e-posta hazırlama düğmesi mailto yerine proxy bağlantısı.
+Script çalışmasını açmak için CSP gevşetilmedi. Dev logs boş döndü;
+console hata satırı gözlendi denmez. Web aracı doğrudan canlı URL'leri
+okuyamadı; doğrulama ayrı HTTPS ve CUA kanıtından gelir.
+
+Yalnız public builder'ın `_headers` çıktısına tüm statik dosyalar için
+**Cache-Control: public, max-age=300, no-transform** eklendi. Cloudflare'ın
+resmî dokümanı bunun email obfuscation ve otomatik analytics injection'ı
+engellediğini belirtir. app-ads'e ayrı aynı başlığı tekrarlama kaldırıldı;
+CSP/diğer güvenlik kuralları aynı. **21/21** public/support testi geçti.
+Yeni **GRIDSHARD-public-20261005-no-transform.zip** aynı ignored artifact
+klasöründe,248128byte,19/19 dosya manifest adı/boyut/SHA kontrolü başarılı.
+Önceki retention-ready ZIP ile karşılaştırmada **yalnız _headers farklı**;
+HTML/CSS/marka/app-ads içerikleri aynı, yeni görsel QA iddiası yok.
+
+**Sıradaki iş:** kullanıcı mevcut gridshard-public → Create deployment →
+Production ekranında **no-transform ZIP** → **Save and deploy**. Ardından
+custom-domain Cache-Control/no-transform,8HTML manifest hash'i, TR/EN açık
+e-posta ve mailto hesap-silme bağlantısı, script injection olmaması ve
+app-ads satırı yeniden doğrulanmalı. Henüz bu header düzeltmesi canlıda
+doğrulanmadı; Play gizlilik Kaydet bekliyor. Önceki retention-ready paketi
+yeniden yükleme; içerik canlıdır fakat edge dönüşümünü önleyen başlığı yok.
+Kanıt `public-live-verification-result.json` ve `public-live-email-blocked.jpg`
+yalnız ignored artifacts'ta. Oyun build/deploy/restart/APK/AAB/dahili test
+ertelemesi korunur; Cloudflare hesap/güvenlik/analytics ayarı değiştirilmedi.
+
+### Tarihsel aşama — 15:26 destek görevi etkin / ilk yayın paketi hazır
+
+**5Ekim15:26TR — ayrı onayla tamamlandı:** Kullanıcı **“Evet, bu kapsamda
+günlük görevi etkinleştir”** dedi. Risk sorusu geri alınamaz kalıcı silmeyi,
+tam Gmail OAuth kapsamını ve dar sınırı açıkladı: yalnız yayıncının CLOSE
+etiketiyle kapattığı taleplerin kayıtlı mesajları, kayıtlı kapanıştan90gün
+sonra; yeni yanıtta reopen, etiketsiz mail/tüm Çöp Kutusu topluca silinmez.
+Kullanıcı **“Hayır, yalnız destek Gmail hesabında tutuluyor”** diyerek dış
+kopya olmadığını teyit etti; bu dış disk audit'i değildir.
+
+Yalnız özel script'teki dryRun false / tam confirmation değişti; yeniden
+yükleme sonrası normalize kaynak birebir eşleşti. Manifest/kalan kod aynı.
+**Yerel Code.gs güvenli dryRun true/confirmation boş şablondur**; canlı modu
+buradan çıkarma veya dosyayı haber vermeden tekrar yükleme. İlk etkin
+runSupportRetention15:23:56–15:24:00 başarılı: dryRun false, bütün sayaçlar0,
+**deletedMessages0**. Installer15:26:01–15:26:02 başarılı; UI'de **tek
+runSupportRetention / Ana / Zaman tabanlı** tetikleyici. Salt-okunur edit
+ekranı **günlük04:00–05:00GMT+03**, hata bildirimi **günlük**; ayar değiştirmeden
+İptal ile kapatıldı. Henüz ilk zamanlı çalışma/gerçek90gün expiry veya silme
+gözlenmedi. Google izin ekranına agent tıklamadı; başarılı Gmail/ScriptApp
+çağrıları erişimi doğrular, izin formu/onay eylemi gözlendi denmez.
+
+Yayıncı çözdüğü talebe **GRIDSHARD_SUPPORT_CLOSE** etiketi vermeli. Günlük
+görev kapanış/mesaj kimliklerini kaydeder, CLOSED'a taşır; yeni yanıtta OPEN
+olur. Kapanışı içerikten tahmin etmez; eski tarih uydurma. Hata/limit/backlog
+hedefi aşabilir: Google günlük hata bildirimi/Executions takip edilir.
+Yedek işinin önceki güvenli durma/yeni-yedek ve otomatik uyarı eksikliği korunur.
+Yeni Codex monitor/hatırlatıcı veya posta connector'ı kurulmadı.
+
+TR/EN politika gerçek dar kurulumlara göre güncellendi; backupVerified ve
+supportVerified **true**, manifest privacyRetentionVerified **true**. Bunlar
+tüm geçmiş maillerin temizliği/gelecekte hatasız çalışması/live-site veya Play
+onayı değildir. Etiketsiz eski talepler/dış kopyalar, hata/limit sınırı ve
+henüz gerçek90gün silme gözlenmediği açıkça yazılır. **20/20** public/support
+testi, **12/12** CUA kontrolü:8desktop route +4TR/EN mobil privacy; form/script/
+taşma yok.393px istek tarayıcıda394 ölçüldü: ilk katı genişlik eşitliği kontrolü
+durdu, taşma yoktu; ölçek yuvarlamasıyla tekrar geçti.320px birebir. Geçici
+viewport reset ve loopback server/QA sekmesi kapatıldı. Önceki24/24 layout
+kanıtı tarihsel; bu tur güncel12kontrol. Bir EN full-page screenshot capture
+başarısız; DOM ve mobil kontrolleri geçti. Diğer kanıt ekranları ignored'dır.
+
+Yeni ignored **GRIDSHARD-public-20261005-retention-ready.zip**, aynı
+`artifacts/public-site-20261005-privacy/` altında;248122byte,19/19 dosya adı/
+uzunluk/SHA manifestine eşleşir, kökte index.html, yalnız statik dosyalar.
+Oracle TR/EN'de **AWS** olarak düzeltilmiştir; kullanıcı bunu ayrıca hatırlattı.
+Canlı sitedeki eski Oracle metni henüz değişmedi: Cloudflare yayını bekliyor.
+Özel proje URL/digest/receipt/ekranlar yalnız ignored operator artifacts'ta;
+özel script, manifest, anahtar veya veri ZIP'e girmez. Eski privacy-draft ZIP
+stale; yükleme. **Sıradaki iş:** mevcut gridshard-public → Create deployment
+→ Production ekranına yeni ZIP → custom-domain TR/EN politika/app-ads doğrulama
+→ Play'de mevcut `/privacy/` URL'sini Kaydet. Yeni Pages/domain/DNS/oyun
+deploy/restart/APK/AAB/dahili test yayını yok. Script sekmesi handoff bırakılır.
+
+### Tarihsel ara aşama — 13:30 silmesiz kurulum
+
+**5Ekim13:30TR:** Kullanıcı tek Google hesaplı oturumu **“hazır”** diye
+bildirdi. Doğru `gridshardgame@gmail.com` hesabında özel **GRIDSHARD Support
+Retention** projesi oluşturuldu. Yerel `tools/support-retention/Code.gs`,
+editördeki `Kod.gs` dosyasına; manifest `appsscript.json` dosyasına aktarıldı.
+Kaydedip sayfayı yeniden yükledikten sonra normalize kaynak metni birebir,
+manifest yapısal olarak aynı: Gmail advanced v1, Europe/Istanbul, V8, açık
+OAuth kapsamları. Google'ın varsayılan ayrı Cloud projesi korundu; mevcut
+Play Games projesine bağlama, web-app Deploy/paylaşım yapılmadı.
+
+`prepareSupportLabels` **13:29:02–13:29:03 başarılı**: doğru-mailbox guard
+sonrası üç destek etiketi hazırlanır. Ardından `runSupportRetention`
+**13:30:30–13:30:31 başarılı**: `dryRun:true`, closureRequests/kept/expired/
+reopened/invalid/missing/limited **0**, deletedMessages **0**. Bu, gerçek
+Gmail erişimi ve boş kapsamda silmesiz çalışmanın kanıtıdır; dolu talep,
+gerçek 90gün expiry veya kalıcı silme denemesi değildir. Google izin ekranına
+agent tıklamadı; izin formu/onay eylemi gözlenmedi, yalnız başarılı Gmail
+çağrıları doğrulandı. Kaynak `dryRun:true` / `confirmation:''` korunur;
+`installSupportRetentionTrigger` çalıştırılmadı. Tetikleyiciler ekranında
+kurulum öncesi ve dry-run sonrası **0** görüldü; activation sonrası **1**
+sayımı yukarıda ve ignored receipt'te tutulur.
+Yerel support güvenlik mock testleri **11/11** geçti; gerçek mesaj içerikleri,
+kimlikler, tokenlar veya kapanış kayıtları sohbete/Git'e alınmadı.
+
+Özel proje bağlantısı ve kişisel-verisiz kanıt yalnız ignored
+`artifacts/public-site-20261005-privacy/support-retention-setup-result.json`
+ve `support-retention-dry-run.jpg` altında; public ZIP/Git'e girmez. Proje
+sekmesi devam için handoff olarak bırakılır. **13:30 aşamasında** kalıcı silme/
+trigger onayı yoktu; iki bayrak false'tu. Sonraki ayrı15:26 activation kanıtı
+yukarıdadır. Onaylı kapsam dışında mevcut mesajlara keyfi etiket verme.
+Gerekirse yayıncının seçtiği kişisel-verisiz test konuşmasıyla kapanış dalı
+silmesiz doğrulanır; eski tarih uydurulmaz. Nihai Cloudflare/Play gizlilik
+kaydı bekliyor. Oyun ortak build/Play yayını/deploy/restart ertelemesi korunur.
+
+## Son kullanıcı sınırı — giriş kaynak düzeltmesi hazır / test yayını bekletiliyor
+
+Kullanıcı **“güvenli girişi düzeltip kaldığımız yerden devam et”** ile aşağıdaki
+dar kaynak değişikliğini onayladı. Ardından **“dahili test güncellemesini hemen
+yapmayalım; diğer yapay zeka ile yaptığım işlemler de bitsin”** dedi. Bu son
+talimat geçerlidir: **APK/AAB veya ortak web build üretme, Play'e yeni sürüm
+yükleme/yayınlama, oyun sunucusu release/restart/deploy başlatma.** Diğer savaş/
+CSS çalışmasının tamamlandığı kullanıcıca bildirilmeden güncellemeye geçme.
+Yerel testler bu erteleme kapsamında tamamlandı; canlı veya telefon düzeltildi
+denmez. Mevcut test sürümü aynı eski davranışı gösterir; kullanıcıdan tekrar
+kurulum/veri temizleme/hesap taşıma isteme.
+
+- Önceki salt-okunur Uç denetimi (5Ekim08:50:35UTC): aynı **167 kupa /32 maç**
+  profili ve Play Games bağlantısı korunmuş; yetkili cihaz0/platform cihaz0,
+  iptal token7. Oturumların kapatılması hesabı silmemiş. Sonuç ignored
+  `artifacts/account-revocation-20261005/uc-readonly-audit-result.json`; sırlar,
+  provider subject veya özel hesap/veri dump'ı public site/Git'e girmez.
+- Hata: iptal edilmiş cihaz sırrıyla `/auth/session`401; açılış yalnız aynı
+  başarısız yöntemi deniyor, sağlayıcı giriş UI'si başarılı açılışı bekliyordu.
+  Auth kapısı kaldırılmadı, eski cihaz izni/iptal tokenlar geri açılmadı;
+  canlı Uç veya başka hesap üzerinde yazma/migration yapılmadı.
+- Kaynak çözümü: açılıştan bağımsız yeniden giriş dialog'u, aynı Play Games
+  hesabıyla açık kullanıcı giriş eylemi; bu cihaz etiketi ve çıkış öncesi onay.
+  Güvenli bağlı giriş hazır değilse mevcut cihazdan yanlışlıkla çıkış engellenir.
+  Diğer cihazdan çıkış mevcut cihazın oturumunu kapatmaz. 401 yalnız RAM tokenı
+  temizler; hatırlanan profil kimliği/güvenli cihaz sırrı korunur. Ağ/503 tek
+  başına iptal edilmiş hesap sayılmaz. TR/EN ve klavye odağı kontrol edildi.
+- Sunucuda yeni `/auth/play-games/recovery/start|complete`: 10dk/tek-kullanım
+  nonce, PKCE, mevcut IP auth limiti10/dk ve en fazla100 bekleyen istek.
+  Start mevcut/olmayan hesap için aynı yanıtı verir ve hesap oluşturmaz.
+  Google sunucu kodu + Games uygulama doğrulaması yapılmadan giriş yok; yalnız
+  tek mevcut provider sahibinin hatırlanan profile birebir eşleşmesi kabul
+  edilir. Yanlış Google/başka sahip/çoklu sahip/silinmiş hesap reddedilir.
+  Mevcut bir-kullanımlık provider-session proof üzerinden cihaz yetkilendirilir;
+  eski iptal tokenlar iptal kalır. Recovery proof eksik kalıcı identity veya
+  production profilini yeniden oluşturamaz. Erasure nonce/exchange'i temizler.
+  Şema, paket, Google OAuth/PGS istemcileri ve imza anahtarı değişmedi.
+- Dokunulan auth dosyaları: `client/src/auth-session.js`, `play-games.js`,
+  `i18n-catalog.js`, yeni `account-session-controls.js/.css`; `client/index.html`
+  ve `client/src/app.js` içinde **yalnız gerekli auth entegrasyonu**. Savaş/CSS
+  değişiklikleri korunur; `battle/board-view.js`/`canon.css` tarafına bu işte
+  yazma yapılmadı. Ortak dosyaların büyük diff'ini auth değişikliği sanma,
+  topluca stage/commit veya başka AI düzenlemesini geri alma.
+- Doğrulama: ilgili client **63/63**, server auth/PGS/OAuth/platform/integrity
+  **53/53**; PostgreSQL belgesi sentetik row-lock fixture ile (canlı DB değil)
+  kontrol edildi. Source-only loopback browser **8/8**: desktop/393px/320px/
+  yatay740×320, TR/EN, modal üst katman/taşma/odağın geri gelişi/iptal/retry.
+  `tools/check-account-session-controls.js` app build veya dış istek yapmaz;
+  ekranlar ignored `artifacts/account-revocation-20261005/layout/` altında.
+  İlk server denemesinde eksik Field importu bulundu/düzeltildi, seçili venv'de
+  pytest olmadığı için mevcut sistem Python'uyla test edildi; dependency kurulmadı.
+  Telefonun gerçek Play Games girişi/yeni test sürümü/canlı deployment test
+  edilmiş değildir. Commit/push/Play yayını/canlı değişiklik bu tur yok.
+- Bekleyen sıra: test yayınını ertele; aşağıdaki yedek30gün günlük görev
+  kullanıcı onayıyla kuruldu/doğrulandı. Destek90gün Apps Script özel setup ve
+  dry-run onaylandı; özel kaynak kurulumu/etiket hazırlığı/boş kapsamda gerçek
+  dry-run yukarıdaki son devamda tamamlandı. Activation/trigger adımları
+  yukarıdaki15:26 ayrı onayıyla tamamlandı. Final Cloudflare
+  politika yayını/Play Kaydet hazır sayılmaz. Diğer AI bittikten sonra ortak
+  kaynakların yeniden testi ve uyumlu backend + tek birleşik dahili sürüm için
+  kullanıcıyla ilerle; şimdi eski APK/AAB'yi yeniden üretme veya yükletme.
+
+## Güncel devam — iş bilgisayarı / Play gizlilik adımı (5 Ekim)
+
+Kullanıcı başka bir AI ile savaş motoru/CSS düzenliyor; ilk kapsam yalnız
+public-site, destek saklama hazırlığı ve ilgili operator belgeleriydi. Son
+giriş düzeltmesi onayıyla dar auth kapsamı yukarıdaki son kayıtta eklenmiştir.
+`client/index.html`, `client/src/app.js`, `client/src/battle/board-view.js`,
+`client/src/canon.css` içindeki savaş/CSS değişiklikleri diğer çalışmaya aittir;
+dokunma, topluca stage/commit etme, ortak APK/AAB/web build veya oyun sunucusu
+release'i üretme. Index/app içindeki dar auth patch'i ayrı korunur.
+Mevcut r10, canlı hesaplar/takımlar, DB/Redis ve kalıcı imza/paket korunur.
+
+- Kullanıcı Play gizlilik formunda doğru `https://gridshardgame.com/privacy/`
+  adresini gösterdi. Henüz Kaydet yapılmış/Google'a gönderilmiş sayılmaz.
+- İlk iş ağında MEB games filtresi görüldü; kullanıcı farklı ağa geçti. Yeni
+  ağda public politika bağımsız HTTPS200/text-html; canlı eski Oracle metni,
+  eksik Alihan yayıncı adı ve bekleyen saklama takvimi doğrulandı. Yerel AWS/ad
+  metni hâlâ yayınlanmamış; Cloudflare ekranı mevcut **gridshard-public → Create
+  deployment / Production** hazır, fakat dosya yükleme/yayın yapılmadı.
+- Yeni EC2 ekranı aynı adlı çalışan/3-3 başarılı instance'ın genel IPv4'ünün
+  değiştiğini gösterdi. Önceki adrese güvenme; güncel adresi son kullanıcı
+  ekranından al, origin IP'yi Git'e yazma. Hem eski hem güncel hedefte yalnız
+  kimlik doğrulamasız SSH el sıkışması önce `connection reset` ile kesildi.
+  Kullanıcıdan **Güvenlik → bağlı güvenlik grubu → Gelen kuralları**
+  ekranı alındı:3 dar SSH22/32 ve15 Cloudflare HTTPS443 kuralı görünüyor.
+  AWS'nin resmi checkip hizmetinden alınan güncel ağ IPv4'ü bu3 SSH kaynağının
+  hiçbirisiyle eşleşmiyor; dar erişim için eksik bir izin doğrulandı (reset'in
+  başka ağ nedeni olmadığı ayrıca kanıtlanmadı). Kullanıcı ek dar SSH/TCP22
+  ağIPv4/32 kuralını **“kaydettim”** diye teyit etti; erişim ardından düzeldi.
+  Mevcut ev/iş/Cloudflare kurallarına dokunma ve `0.0.0.0/0` açma. Agent kural
+  yazmadı. Güncel geçici ağ IP'si sohbette sağlanır, Git'e konmaz.
+- **5Ekim11:42TR salt-okunur yedek audit geçti:** Girişten önce ED25519
+  `SHA256:mUVfmM7mNK+USvleLKEHIfYfOQQLP0UOVWGaSL7teTo` eski kullanıcı
+  doğrulamasıyla birebir eşleşti. Yalnız bu işin ignored known_hosts dosyasına
+  sabitlendi; sonra mevcut özel anahtarla SSH giriş yapıldı. Özel anahtar
+  okunmadı/gösterilmedi/kopyalanmadı. `/var/backups/gridshard-production/`
+  kökü0700, **9 yedek /9 manifest-SHA ve pg_restore--list başarılı**, dump0600,
+  dizin0700; manifest7×0644/2×0600, üst dizin erişim sınırı korunuyor.
+  Manifestler2–4Ekim, en eski yaklaşık2.59gün, **30gün dolan0**. SELECT-only
+  canlı kurulum kimliği özeti9yedeğin tümüyle eşleşti. Bu arşiv/kimlik audit'i
+  tam restore provası veya sıfır veri kaybı garantisi değildir.
+  `/var/backups`, `/opt/gridshard`, `/home/ubuntu` içinde taranan adlandırılmış
+  dump/backup/sql.gz/sql.zip adaylarında ek kopya yok; tüm sunucu/disk/snapshot,
+  başka bilgisayar veya dışa aktarım kopyaları denetlendi denmez.
+  Systemd listesinde17timer var, GRIDSHARD saklama işi yok; sınırlı systemd/cron/
+  yerel operator dizini taramasında saklama referansı bulunmadı. Caddy/API/PG/
+  Redis çalışıyor; yeni iş/timer, servis duruşu, backup/restore/DB değişikliği
+  veya silme yapılmadı. Kişisel-verisiz sonuç ignored
+  `artifacts/public-site-20261005-privacy/backup-readonly-audit-result.json`;
+  salt-okunur helper ve pin aynı dizinde, public ZIP'e girmez.
+- `https://play.gridshardgame.com/health` bağımsız HTTP200, beta.72/production,
+  PostgreSQL/Redis/worker ready, aktifPvP0/socket0 sonucunu verdi; bu snapshot
+  SSH erişimi, yedek expiry veya reklam/billing onayı değildir. Oyun çalışıyor;
+  IP değişti diye DNS/redeploy/newserver işlemi yapma.
+- Kaynak politika tarihi5Ekim; onaylı **yedek30 gün / kapanıştan sonra destek90
+  gün** süreleri şimdi açıkça belirtilir, ancak süreçler etkinmiş gibi yazılmaz.
+  `site.retention.backupVerified` aşağıdaki gerçek kurulumla **true**;
+  bu ilk aşamada supportVerified ve manifest false'tu; son support activation
+  kanıtıyla ikisi **true**.
+  TR/EN yerel metin etkin yedek işi, daha yeni sağlam yedek yokken durması/
+  30gün hedefini aşabilmesi ve bekleyen e-posta sürecini ayrı anlatır.
+  Bu, nihai Play kaydı/yayın paketi değildir; Cloudflare yayını yapılmadı.
+- Kullanıcı elle destek takibinde süre kaçırılacağını belirtti; otomatik süreç
+  istedi. **`tools/support-retention/Code.gs` + appsscript.json/README** özel
+  destek hesabı için Google Apps Script kurulum adayı hazır: varsayılan dry-run,
+  doğru-mailbox guard, açık kapanış etiketi/otomatik timestamp,90gün kapısı,
+  yeni mesajda reopen, yalnız kayıtlı mesaj IDs, yarış/kısmi API hata koruması,
+  açık activation confirmation ve ayrı günlük tetikleyici. İlk kaynak hazırlığı
+  sırasında Gmail erişimi/izin/kurulum/tetikleyici/mesaj silme yapılmadı;
+  son özel setup/etiket/dry-run durumu yukarıda ayrı kayıtlıdır. Tam Gmail OAuth kapsamı
+  ve kalıcı silme riski ayrıca yayıncıya açıklanıp onun kurulumu/onayı gerekir;
+  script mevcut Play Games projesine bağlanmaz, public Pages'e yüklenmez.
+- Doğrulama: public-site9/9 + support mock11/11 = **20/20**, public-site
+  desktop/393px/320px × TR/EN ×4route **24/24** yerel browser/layout geçti.
+  Özgün marka varlıkları/app-ads.txt korunur; izin listesi19 statik dosya.
+  Gerçek Apps Script/Gmail veya canlı yedek işlemi test edilmiş gibi gösterme.
+- Yerel aday ZIP `artifacts/public-site-20261005-privacy/GRIDSHARD-public-20261005-privacy-draft.zip`;
+  yalnız19 statik dosya, **draft**. Kaynak, operator manifest/script, oyun
+  dosyaları ve sırlar pakete girmez. Nihai kopyayı üretmeden 30/90 süreçlerinin
+  gerçek kurulumu doğrulanmalı; mevcut draft Play'e nihai politika diye kaydedilmez.
+
+**5Ekim12:54TR yedek görevi tamamlandı:** Kullanıcı **“Evet, bu kapsamda kur”**
+dedi. `tools/backup-retention/` operator/tests/install/service/timer/README
+hazır; sabit hedef yalnız `/var/backups/gridshard-production/`, süre30gün.
+Linux'ta izole sentetik **22/22** güvenlik testi geçti; gerçek dry-run9valid/
+0expired/0deleted. İlk guard mevcut0700 kökün UID10001'ini reddederek durdu;
+son kökte mevcut güvenilir writer'ı kabul eden dar düzeltme sonrası kendi
+bilinen eski operator hash'ine eşleşerek resume onarımı yapıldı. **Kök/atası
+sahiplik ve izinleri değiştirilmedi.** İki unit ve root0600 kapsam config'i
+kuruldu; source/unit/config hash'leri canlı byte'larla eşleşti. İlk etkin service
+success/exit0,9valid/0expired/**0deleted**; timer **enabled/active/waiting**,
+Türkiye04:00 günlük, sonraki **6Ekim04:00TR**, Persistent=true. Service'in
+inactive/dead olması bitmiş oneshot için normaldir. Son doğrulama pinned SSH
+host ile geçti; oyun4container id/restart_count/started_at aynı kaldı.
+HTTPS health ok/beta.72/production/PG-Redis-worker ready. Receipt ignored
+`artifacts/public-site-20261005-privacy/backup-retention-install-result.json`;
+kurulum hash'i/anahtar/IP/veri public ZIP/Git'e eklenmez. Üretimde30gün dolan
+yedek olmadığından gerçek expired deletion gözlendi denmez. Yeni rutin backup,
+restore, DB/migration, game release/restart veya test yayını yapılmadı.
+Görev, süresi dolmamış daha yeni sağlam yedek yoksa/verify hata verirse durur;
+son yedeği körlemesine silmez. **Yeni düzenli yedek ve otomatik hata bildirimi
+kurulmadı**; journal failure/birikme ve güncel backup yayıncıca izlenmelidir.
+Bu güvenli durma30gün hedefini aşabilir; ayrı bakım/backup kararı gerekir.
+
+**Sıradaki kapı:** Dar SSH/host pin/yedek görevi tamamlandı; ilk kurulum veya
+timer activation'ı tekrarlama. Kullanıcı **“Kurulum ve silmesiz denemeye geç”**
+diyerek yalnız `gridshardgame@gmail.com` özel Apps Script setup/dry-run
+onayladı. Tam Gmail OAuth kapsamı açıklandı; izin ekranını yayıncı kendisi
+onaylar. Bu **ilk setup/dry-run kararı** silme/trigger kapsamıyordu;
+sonraki ayrı açık activation kararı ve gerçek durum en üstte kayıtlıdır.
+Aşağıdaki ilk çoklu-hesap denemesi geçmiş kayıttır;
+son tek-hesap kurulum/etiket/dry-run sonucu en üstteki son devamdadır.
+Uygulama içi tarayıcıda `https://script.google.com/home` açıldı; ilk navigation
+timeout sonrası mevcut sekme kontrol edildi, kontrol paneli görünür oldu.
+İlk sekmede seçili hesap destek hesabı değildi. Kullanıcı **“açtım devam et”**
+dedi; yeni `/u/1/home` sekmesinin hesap düğmesinde **gridshardgame@gmail.com**
+doğrulandı. Ancak Apps Script oluşturma düğmesi yeni sekmede `/accounts?...`
+yönlendirmesiyle **“Maalesef şu anda dosyayı açamıyoruz”** hatası verdi;
+Google'ın verdiği continue hedefini tek doğrudan deneme de aynı hatayı verdi.
+Resmi alternatif Drive→Yeni→Diğer→Google Apps Komutu denendi: Drive doğru
+destek hesabındaydı, fakat açılan create editor **diğer Google hesabına**
+yönlenip **“komut dosyası oluşturulamadı”** hatası verdi. Proje oluşturulduğu
+kanıtı yok; kod yükleme, Gmail OAuth/izin, etiket/mesaj değişikliği, dry-run veya
+trigger yapılmadı. Google'ın resmi Apps Script projects belgesi çoklu Google
+girişinin desteklenmediğini ve tek hesap/private oturum önerisini doğrular;
+gözlenen yönlendirme bu sorunla uyumlu. Bu ilk denemede tek-hesap yolu bekliyordu;
+sonraki “hazır” ile başarılı kurulum yukarıda kayıtlıdır. Kullanıcı yalnız bu
+Codex tarayıcısının Google oturumlarında diğer hesaplardan
+çıkıp sadece destek hesabına kendisi girmeli; oyun içi GRIDSHARD oturumlarına
+dokunulmaz. Alternatif kullanıcı ayrı/private tarayıcıda yalnız destek hesabıyla
+editör açabilir. Google authentication/izin ekranını agent otomatik geçmez.
+Doğru destek Apps Script dashboard sekmesi handoff olarak bırakılır; başarısız
+agent-created geçici sekmeler kapatılır. Mevcut/başka PGS projesini değiştirme;
+ilk denemede özel support script kurulumu ve gerçek dry-run bekliyordu.
+Son kaynak doğrulaması: public-site9 + support mock11 =20/20, yalnız public
+statik build/layout24/24. Bu ilk build'de support/manifest false'tu; son
+activation/build/ZIP kaydı en üsttedir. Eski draft ZIP stale; uzak site/Play
+kaydı yok. Oyun/client ortak build üretilmedi.
+Destek hesabında Apps Script'in ayrı onaylı activation/trigger
+adımları → gerçek süreçle tutarlı nihai TR/EN metin/paket → aynı gridshard-public
+projesinde yayın → gerçek custom-domain metin/app-ads doğrulaması → Play Kaydet.
+Yeni sağlanan ekranları ilk kurulum/PGS/account migration sanma ve tekrarlama.
+
+Saklama işletim yönergesi: `docs/PRIVACY_RETENTION_OPERATIONS.md`. Bu tur yalnız
+onaylı server operator/timer kurulumu oldu; silinen yedek0. Commit/push,
+uzak public-site/oyun dağıtımı, test güncellemesi veya eski kayıt taşıma yok.
 
 ## Oturum kapanışı — ev bilgisayarı / iş bilgisayarında devam
 

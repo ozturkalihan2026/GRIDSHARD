@@ -149,3 +149,190 @@ def test_http_requires_current_owner_and_rejects_client_identity(games, monkeypa
     login = client.post("/auth/provider-session", json={"exchange":result.json()["exchange"], "code_verifier":VERIFIER,
         "device_secret":"e"*64, "device_id":"games-fixture-device", "platform":"android"})
     assert login.status_code == 200 and login.json()["player_id"] == "play-games-http-fixture"
+
+
+def recovery_start(service, player="original"):
+    return service.start_play_games_recovery(player, pkce_challenge(VERIFIER))
+
+
+def test_recovery_restores_only_proven_existing_owner_without_new_accounts(games):
+    service, _, _, _ = games
+    complete(service, "original")
+    before = service._read()["accounts"]
+    started = recovery_start(service)
+    result = service.complete_play_games_recovery(started["state"], "fixture", VERIFIER)
+    assert service._read()["accounts"] == before
+    with pytest.raises(PlatformServiceError):
+        service.consume_oauth_exchange(result["exchange"], code_verifier="b" * 64)
+    proof = service.consume_oauth_exchange(result["exchange"], code_verifier=VERIFIER)
+    assert proof == {"player_id":"original", "provider":"google_play_games", "recovery":True}
+    with pytest.raises(PlatformServiceError):
+        service.consume_oauth_exchange(result["exchange"], code_verifier=VERIFIER)
+    with pytest.raises(PlatformServiceError):
+        service.complete_play_games_recovery(started["state"], "fixture", VERIFIER)
+
+
+@pytest.mark.parametrize("case", ["unknown", "wrong-owner", "wrong-google", "duplicate-owner", "deleted"])
+def test_recovery_never_claims_switches_or_recreates_an_account(games, case):
+    service, _, _, subject = games
+    complete(service, "original")
+    player = "unknown" if case == "unknown" else "original"
+    if case == "wrong-owner":
+        complete(service, "second", "login")
+        player = "second"
+    if case == "duplicate-owner":
+        with service._lock:
+            data = service._read()
+            service._account(data, "duplicate")["oauth_links"]["google_play_games"] = {"subject":subject[0]}
+            service._write(data)
+    started = recovery_start(service, player)
+    if case == "wrong-google": subject[0] = "different-google"
+    if case == "deleted": service.erase("original")
+    before = service._read()["accounts"]
+    with pytest.raises(PlatformServiceError):
+        service.complete_play_games_recovery(started["state"], "fixture", VERIFIER)
+    assert service._read()["accounts"] == before
+
+
+def test_recovery_pkce_expiry_and_quota_fail_closed(games):
+    service, now, calls, _ = games
+    started = recovery_start(service)
+    assert service._read()["accounts"] == {}
+    with pytest.raises(PlatformServiceError):
+        service.complete_play_games_recovery(started["state"], "fixture", "b" * 64)
+    assert calls == []
+    now[0] += 601
+    with pytest.raises(PlatformServiceError):
+        service.complete_play_games_recovery(started["state"], "fixture", VERIFIER)
+    assert calls == []
+    for _ in range(100): recovery_start(service)
+    with pytest.raises(PlatformServiceError): recovery_start(service)
+    now[0] += 601
+    assert recovery_start(service)["configured"] is True
+    assert len(service._read()["play_games_recovery_states"]) == 1
+
+
+def test_recovery_upstream_failure_consumes_state_and_preserves_accounts(games):
+    service, _, _, _ = games
+    complete(service, "original")
+    started = recovery_start(service)
+    before = service._read()["accounts"]
+    def rejected(request, timeout): raise HTTPError(request.full_url, 400, "secret-response", {}, None)
+    service.http_open = rejected
+    with pytest.raises(PlatformServiceError):
+        service.complete_play_games_recovery(started["state"], "bad-code", VERIFIER)
+    with pytest.raises(PlatformServiceError):
+        service.complete_play_games_recovery(started["state"], "bad-code", VERIFIER)
+    assert service._read()["accounts"] == before
+
+
+def test_revoked_device_recovery_http_keeps_auth_guards_and_reauthorizes_only_after_proof(games, monkeypatch, tmp_path):
+    from app import main
+    from app.auth import ParticipantAuthService, JsonIdentityRepository
+    service, _, _, _ = games
+    complete(service, "original")
+    auth = ParticipantAuthService(JsonIdentityRepository(tmp_path / "identities.json"), b"k" * 32)
+    monkeypatch.setattr(main, "platform_service", service)
+    monkeypatch.setattr(main, "participant_auth_service", auth)
+    monkeypatch.setenv("GRIDSHARD_AUTH_REQUIRED", "1")
+    client = TestClient(main.app)
+    device = {"player_id":"original", "device_secret":"s" * 64, "device_id":"own-phone"}
+    session = client.post("/auth/session", json=device).json()
+    headers = {"authorization":f"Bearer {session['access_token']}"}
+    assert client.request("DELETE", "/accounts/original/devices/own-phone", json={"player_id":"original"}, headers=headers).status_code == 200
+    assert client.post("/auth/session", json=device).status_code == 401
+    assert client.get("/accounts/original", headers=headers).status_code == 401
+    start = client.post("/auth/play-games/recovery/start", json={"expected_player_id":"original", "code_challenge":pkce_challenge(VERIFIER)})
+    assert start.status_code == 200 and start.headers["cache-control"] == "no-store"
+    completion = {"state":start.json()["state"], "code":"fixture", "code_verifier":VERIFIER}
+    assert client.post("/auth/play-games/recovery/complete", json={**completion, "player_id":"victim"}).status_code == 422
+    result = client.post("/auth/play-games/recovery/complete", json=completion)
+    assert result.status_code == 200 and result.headers["cache-control"] == "no-store"
+    assert client.post("/auth/session", json=device).status_code == 401, "Proof alone has not yet registered a device"
+    payload = {"exchange":result.json()["exchange"], "code_verifier":VERIFIER,
+               "device_secret":device["device_secret"], "device_id":device["device_id"], "platform":"android"}
+    restored = client.post("/auth/provider-session", json=payload)
+    assert restored.status_code == 200 and restored.json()["player_id"] == "original"
+    assert client.post("/auth/session", json=device).status_code == 200
+    assert client.get("/accounts/original", headers=headers).status_code == 401, "Old revoked token remains revoked"
+    assert client.post("/auth/provider-session", json=payload).status_code == 422
+    assert set(service._read()["accounts"]) == {"original"}
+    for path in ("/auth/play-games/recovery/start", "/auth/play-games/recovery/complete"):
+        assert main._rate_limit_policy(path) == ("auth", 10, 60)
+
+
+def test_recovery_exchange_cannot_recreate_missing_identity(games, monkeypatch, tmp_path):
+    from app import main
+    from app.auth import ParticipantAuthService, JsonIdentityRepository
+    service, _, _, _ = games
+    complete(service, "original")
+    started = recovery_start(service)
+    result = service.complete_play_games_recovery(started["state"], "fixture", VERIFIER)
+    auth = ParticipantAuthService(JsonIdentityRepository(tmp_path / "identities.json"), b"k" * 32)
+    monkeypatch.setattr(main, "platform_service", service)
+    monkeypatch.setattr(main, "participant_auth_service", auth)
+    response = TestClient(main.app).post("/auth/provider-session", json={"exchange":result["exchange"],
+        "code_verifier":VERIFIER, "device_secret":"s" * 64, "device_id":"own-phone", "platform":"android"})
+    assert response.status_code == 422
+    assert auth.repository.get("original") is None
+
+
+def test_recovery_exchange_cannot_recreate_missing_production_profile(games, monkeypatch, tmp_path):
+    from app import main
+    from app.auth import ParticipantAuthService, JsonIdentityRepository
+    from types import SimpleNamespace
+    from fastapi import HTTPException
+    service, _, _, _ = games
+    complete(service, "original")
+    started = recovery_start(service)
+    proof = service.complete_play_games_recovery(started["state"], "fixture", VERIFIER)
+    auth = ParticipantAuthService(JsonIdentityRepository(tmp_path / "identities.json"), b"k" * 32)
+    auth.register_or_login("original", "s" * 64, device_id="own-phone")
+    auth.revoke_device("original", "own-phone")
+    before = auth.repository.get("original")
+    monkeypatch.setattr(main, "platform_service", service)
+    monkeypatch.setattr(main, "participant_auth_service", auth)
+    monkeypatch.setattr(main, "RUNTIME_STRICT", True)
+    monkeypatch.setattr(main, "player_data_repository", SimpleNamespace(load=lambda _player:None))
+    request = main.ProviderSessionRequest(exchange=proof["exchange"], code_verifier=VERIFIER,
+        device_secret="s" * 64, device_id="own-phone", platform="android")
+    # Exercise the production profile guard directly, without a production DB/worker.
+    with pytest.raises(HTTPException) as error:
+        main.create_provider_auth_session.__wrapped__(request)
+    assert error.value.status_code == 422
+    assert auth.repository.get("original") == before
+
+
+def test_recovery_start_is_non_enumerating_and_rejects_malformed_claims(games, monkeypatch):
+    from app import main
+    service, _, _, _ = games
+    complete(service, "original")
+    monkeypatch.setattr(main, "platform_service", service)
+    client = TestClient(main.app)
+    results = []
+    for player in ("original", "nonexistent"):
+        response = client.post("/auth/play-games/recovery/start", json={
+            "expected_player_id":player, "code_challenge":pkce_challenge(VERIFIER)})
+        assert response.status_code == 200
+        results.append({key:value for key, value in response.json().items() if key != "state"})
+    assert results[0] == results[1]
+    for claim in ({"expected_player_id":"a/b", "code_challenge":pkce_challenge(VERIFIER)},
+                  {"expected_player_id":"original", "code_challenge":"a" * 42},
+                  {"expected_player_id":"original", "code_challenge":"+" * 43},
+                  {"expected_player_id":"original", "code_challenge":pkce_challenge(VERIFIER), "player_id":"victim"}):
+        assert client.post("/auth/play-games/recovery/start", json=claim).status_code == 422
+    assert set(service._read()["accounts"]) == {"original"}
+
+
+def test_erasure_removes_pending_recovery_states_and_exchanges(games):
+    service, _, _, _ = games
+    complete(service, "original")
+    first, second = recovery_start(service), recovery_start(service)
+    proof = service.complete_play_games_recovery(first["state"], "fixture", VERIFIER)
+    service.erase("original")
+    with pytest.raises(PlatformServiceError):
+        service.complete_play_games_recovery(second["state"], "fixture", VERIFIER)
+    with pytest.raises(PlatformServiceError):
+        service.consume_oauth_exchange(proof["exchange"], code_verifier=VERIFIER)
+    assert service._read()["accounts"] == {}
+    assert service._read()["play_games_recovery_states"] == {}

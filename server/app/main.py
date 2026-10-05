@@ -24,7 +24,7 @@ from .production_config import environment_secret, production_endpoints
 from .postgres_economic_operations import PostgresEconomicOperations, EconomicOperationConflict
 from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse
 from fastapi.websockets import WebSocketDisconnect
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 from .auth import (
     AuthenticationError,
@@ -85,6 +85,7 @@ from .game.pvp_protocol import PVP_PROTOCOL_VERSION
 from .game.pvp_setup import InitialModulePlacement, PvPSetupPayload
 from .game.pvp_websocket import PvPWebSocketAdapter
 from .game.pvp_runner import PvPTickRunner
+from .game.tutorial import TUTORIAL_ENEMY_DECK, TutorialDirector
 from .version import VERSION
 from .player_profile import (
     PlayerProfileError,
@@ -189,6 +190,8 @@ from .team_service import (
     JsonTeamRepository,
     REQUEST_POLICY as TEAM_REQUEST_POLICY,
     TEAM_APPEARANCE_OPTIONS,
+    TEAM_DESCRIPTION_MAX_LENGTH,
+    TEAM_MIN_TROPHY_OPTIONS,
     TEAM_PRIZE_APPEARANCE_KEYS,
     TeamService,
     TeamServiceError,
@@ -597,7 +600,8 @@ async def require_participant_authentication(request: Request, call_next):
 
 
 def _rate_limit_policy(path: str) -> tuple[str, int, int] | None:
-    if path in {"/auth/session", "/auth/provider-session"} or (
+    if path in {"/auth/session", "/auth/provider-session",
+                "/auth/play-games/recovery/start", "/auth/play-games/recovery/complete"} or (
         path.startswith("/accounts/") and path.endswith(("/play-games/start", "/play-games/complete"))
     ):
         return ("auth", 10, 60)
@@ -1259,6 +1263,8 @@ class TeamCreateRequest(BaseModel):
     player_id: str
     name: str
     request_id: str
+    description: str = ""
+    min_trophies: int = 0
 
 
 class TeamJoinRequest(BaseModel):
@@ -1360,6 +1366,9 @@ class BattlePoolPresetMetaRequest(BaseModel):
 
 class MatchmakingJoinRequest(BaseModel):
     player_id: str
+    # İlk oyun deneyimi: istemci yönetmenli ilk savaşı ister. Yalnız hiç maç
+    # bitirmemiş oyuncu için geçerlidir (bkz. game/tutorial.py).
+    tutorial: bool = False
 
 
 class AuthSessionRequest(BaseModel):
@@ -1388,6 +1397,13 @@ class PlayGamesCompleteRequest(BaseModel):
     state: str
     code: str
     code_verifier: str
+
+    model_config = {"extra": "forbid"}
+
+
+class PlayGamesRecoveryStartRequest(BaseModel):
+    expected_player_id: str = Field(min_length=3, max_length=72)
+    code_challenge: str = Field(min_length=43, max_length=43)
 
     model_config = {"extra": "forbid"}
 
@@ -1532,6 +1548,11 @@ def create_participant_auth_session(
 def create_provider_auth_session(request: ProviderSessionRequest) -> dict:
     try:
         exchange = platform_service.consume_oauth_exchange(request.exchange, code_verifier=request.code_verifier)
+        if exchange.get("recovery") and (
+            participant_auth_service.repository.get(exchange["player_id"]) is None
+            or (RUNTIME_STRICT and player_data_repository.load(exchange["player_id"]) is None)
+        ):
+            raise PlatformServiceError("Kurtarılacak mevcut profil bulunamadı; yeni profil oluşturulmadı.")
         PERSISTENT_STATE.touch(exchange["player_id"])
         result = participant_auth_service.authorize_device(
             exchange["player_id"],
@@ -1564,6 +1585,24 @@ def create_provider_auth_session(request: ProviderSessionRequest) -> dict:
 @app.get("/accounts/{player_id}")
 def get_account_platform_view(player_id: str) -> dict:
     return platform_service.account_view(player_id)
+
+
+@app.post("/auth/play-games/recovery/start")
+def start_play_games_recovery(request: PlayGamesRecoveryStartRequest):
+    try:
+        result = platform_service.start_play_games_recovery(request.expected_player_id, request.code_challenge)
+        return JSONResponse(result, headers={"Cache-Control": "no-store"})
+    except PlatformServiceError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+
+
+@app.post("/auth/play-games/recovery/complete")
+def complete_play_games_recovery(request: PlayGamesCompleteRequest):
+    try:
+        result = platform_service.complete_play_games_recovery(request.state, request.code, request.code_verifier)
+        return JSONResponse(result, headers={"Cache-Control": "no-store"})
+    except PlatformServiceError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
 
 
 @app.post("/accounts/{player_id}/play-games/start")
@@ -2234,7 +2273,13 @@ def _matchmaking_player_details(player_id):
                 for mid in profile.preferred_battle_pool_ids) / 6 + 1 + profile.core_upgrade_levels.get(profile.selected_core_type, 0)) / 2)}
 
 
-def _provision_match_state(pair, background_tasks):
+@persistent_operation
+def _tutorial_battle_eligible(player_id: str) -> bool:
+    """Yönetmenli ilk savaş yalnız hiç maç bitirmemiş oyuncuya açılır."""
+    return player_statistics_service.get_or_create(player_id).total_matches == 0
+
+
+def _provision_match_state(pair, background_tasks, tutorial=False):
     accounts = [pair.player_a_id] if pair.opponent_type == "ai" else [pair.player_a_id, pair.player_b_id]
     with PERSISTENT_STATE.lock:
         existed = pair.match_id in pvp_service._sessions
@@ -2243,7 +2288,11 @@ def _provision_match_state(pair, background_tasks):
                 if RUNTIME_STRICT and any(player_data_repository.load(owner) is None for owner in accounts):
                     raise HTTPException(status_code=404, detail="Eşleşme katılımcısı artık mevcut değil.")
                 if pair.opponent_type == "ai":
-                    _create_matchmaking_ai_session(pair, background_tasks=background_tasks)
+                    _create_matchmaking_ai_session(
+                        pair,
+                        background_tasks=background_tasks,
+                        tutorial=tutorial,
+                    )
                 else:
                     _ensure_human_match_session(pair)
         except BaseException:
@@ -2257,6 +2306,8 @@ def _provision_match_state(pair, background_tasks):
 async def _provision_match_session(
     pair: MatchmakingPair,
     background_tasks: BackgroundTasks | None = None,
+    *,
+    tutorial: bool = False,
 ) -> MatchmakingPair:
     distributed = _redis_matchmaking_enabled()
     if distributed and pair.ready:
@@ -2267,7 +2318,7 @@ async def _provision_match_session(
     ):
         return pair
 
-    await asyncio.to_thread(_provision_match_state, pair, background_tasks)
+    await asyncio.to_thread(_provision_match_state, pair, background_tasks, tutorial)
 
     if distributed:
         pair = await redis_matchmaking_service.mark_ready(pair)
@@ -2331,6 +2382,9 @@ async def matchmaking_join(
             }
 
         profile = await asyncio.to_thread(_matchmaking_player_details, request.player_id)
+        tutorial_match = bool(request.tutorial) and await asyncio.to_thread(
+            _tutorial_battle_eligible, request.player_id
+        )
         queue_entry = await _matchmaking_enqueue(
             request.player_id,
             rating=profile["rating"],
@@ -2371,7 +2425,7 @@ async def matchmaking_join(
         # sunucu denetimli AI rakibe bağlanır; insan kuyruğu beklenmez.
         match = (
             await _matchmaking_match_with_ai(request.player_id)
-            if MATCHMAKING_AI_ONLY
+            if MATCHMAKING_AI_ONLY or tutorial_match
             else await _matchmaking_try_match(request.player_id)
         )
         if match is None:
@@ -2380,7 +2434,11 @@ async def matchmaking_join(
                 "queue": await _matchmaking_snapshot(request.player_id),
             }
 
-        match = await _provision_match_session(match, background_tasks)
+        match = await _provision_match_session(
+            match,
+            background_tasks,
+            tutorial=tutorial_match,
+        )
         if not match.ready:
             return {
                 "matched": False,
@@ -3444,6 +3502,18 @@ def _inbox_notices(profile) -> list[dict]:
     return notices
 
 
+def _team_notification_summary(profile) -> dict:
+    """Takım lideri için bekleyen başvuru sayısı; diğer oyuncular için sıfır."""
+    pending = 0
+    is_owner = False
+    if getattr(profile, "team_id", None):
+        team = team_service.team_for_player(profile.player_id)
+        if team and team.get("owner_id") == profile.player_id:
+            is_owner = True
+            pending = len(team.get("application_ids", []))
+    return {"is_owner": is_owner, "pending_applications": pending}
+
+
 def _reward_inbox_view(profile) -> dict:
     messages = [dict(item) for item in reversed(profile.reward_inbox)]
     invitations = _inbox_invitations(profile)
@@ -3460,6 +3530,7 @@ def _reward_inbox_view(profile) -> dict:
         "universal_module_shards": int(profile.universal_module_shards),
         "invitations": invitations,
         "notices": notices,
+        "team": _team_notification_summary(profile),
         "unread_count": (
             unclaimed_count
             + actionable_invitations
@@ -4063,12 +4134,53 @@ def _team_summary(team: dict) -> dict:
     ratings = []
     for member_id in team.get("member_ids", []):
         ratings.append(max(0, int(_team_member_profile(member_id).rating)))
+    member_count = len(team.get("member_ids", []))
+    member_limit = int(team.get("member_limit", 30))
     return {
         "team_id": team["team_id"],
         "name": team["name"],
-        "member_count": len(team.get("member_ids", [])),
-        "member_limit": int(team.get("member_limit", 30)),
+        "member_count": member_count,
+        "member_limit": member_limit,
         "total_trophies": sum(ratings),
+        "description": str(team.get("description") or ""),
+        "min_trophies": int(team.get("min_trophies", 0) or 0),
+        "full": member_count >= member_limit,
+        "appearance": team_appearance(team.get("cosmetics")),
+    }
+
+
+# Takım kurma bedeli (Devre Kredisi). Kurucu öder; başvuru ücretsizdir.
+TEAM_CREATION_COST_CIRCUIT_CREDITS = 300
+TEAM_DIRECTORY_LIMIT = 100
+
+
+def _team_lobby_view(player_id: str) -> dict:
+    """Takımı olmayan oyuncunun gördüğü liste ve kurma koşulları."""
+    listed_teams = team_service.list_teams()
+    pending_team = next(
+        (candidate for candidate in listed_teams if player_id in candidate.get("application_ids", [])),
+        None,
+    )
+    directory = sorted(
+        (_team_summary(candidate) for candidate in listed_teams),
+        key=lambda item: (-item["total_trophies"], item["name"].casefold()),
+    )[:TEAM_DIRECTORY_LIMIT]
+    profile = _team_member_profile(player_id)
+    return {
+        "joined": False,
+        "application_pending": pending_team is not None,
+        "applied_team_id": pending_team.get("team_id") if pending_team else None,
+        # Dolu takımlar da listelenir; başvuru düğmesi yalnız yeri olanda çıkar.
+        "teams": directory,
+        "available_teams": [item for item in directory if not item["full"]][:50],
+        "creation": {
+            "cost_circuit_credits": TEAM_CREATION_COST_CIRCUIT_CREDITS,
+            "circuit_credits": max(0, int(profile.circuit_credits)),
+            "min_trophy_options": list(TEAM_MIN_TROPHY_OPTIONS),
+            "description_max_length": TEAM_DESCRIPTION_MAX_LENGTH,
+        },
+        "viewer_trophies": max(0, int(profile.rating)),
+        "request_policy": TEAM_REQUEST_POLICY,
     }
 
 
@@ -4199,6 +4311,7 @@ def _team_view(team: dict, player_id: str) -> dict:
         "appearance_unlocked": team_appearance_unlocked(team.get("cosmetics")),
         "appearance_unlock_sources": _team_appearance_unlock_sources(),
         "applications": applicants,
+        "pending_application_count": len(applicants) if team.get("owner_id") == player_id else 0,
         "members": members,
         "module_requests": requests,
         "module_request_available": team_service.module_request_available(team, player_id),
@@ -4230,23 +4343,7 @@ def get_player_team(player_id: str) -> dict:
         profile.team_id, profile.team_name = membership
         persist_player_data(player_id)
     if team is None:
-        listed_teams = team_service.list_teams()
-        pending_team = next(
-            (candidate for candidate in listed_teams if player_id in candidate.get("application_ids", [])),
-            None,
-        )
-        return {
-            "joined": False,
-            "application_pending": pending_team is not None,
-            "applied_team_id": pending_team.get("team_id") if pending_team else None,
-            "available_teams": [
-                _team_summary(candidate)
-                for candidate in listed_teams
-                if len(candidate.get("member_ids", []))
-                < int(candidate.get("member_limit", 30))
-            ][:50],
-            "request_policy": TEAM_REQUEST_POLICY,
-        }
+        return _team_lobby_view(player_id)
     return _team_view(team, player_id)
 
 
@@ -4272,14 +4369,27 @@ def _current_team_operation_view(team_id: str, player_id: str) -> dict:
 @app.post("/teams")
 @persistent_operation
 def create_team(request: TeamCreateRequest) -> dict:
+    profile = _team_member_profile(request.player_id)
+    cost = TEAM_CREATION_COST_CIRCUIT_CREDITS
+    # Aynı isteğin yinelenmesinde oyuncu zaten takımdadır; bedel yeniden sorulmaz.
+    if profile.circuit_credits < cost and team_service.team_for_player(request.player_id) is None:
+        raise HTTPException(
+            status_code=422,
+            detail=f"Takım kurmak için {cost} Devre Kredisi gerekli.",
+        )
     try:
         result = team_service.create_team(
             request.player_id,
             request.name,
             request.request_id,
+            description=request.description,
+            min_trophies=request.min_trophies,
         )
     except TeamServiceError as exc:
         raise HTTPException(status_code=422, detail=str(exc)) from exc
+    if not result["replayed"] and cost > 0:
+        profile.circuit_credits -= cost
+        persist_player_data(request.player_id)
     _sync_team_membership(request.player_id)
     return {**_current_team_operation_view(result["team_id"], request.player_id), "replayed": result["replayed"]}
 
@@ -4287,26 +4397,36 @@ def create_team(request: TeamCreateRequest) -> dict:
 @app.post("/teams/{team_id}/join")
 @persistent_operation
 def join_team(team_id: str, request: TeamJoinRequest) -> dict:
+    profile = _team_member_profile(request.player_id)
     try:
         result = team_service.join_team(
+            request.player_id,
+            team_id,
+            request.request_id,
+            trophies=max(0, int(profile.rating)),
+        )
+    except TeamServiceError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+    return {
+        **_team_lobby_view(request.player_id),
+        "application_pending": True,
+        "applied_team_id": result["team_id"],
+        "replayed": result["replayed"],
+    }
+
+
+@app.post("/teams/{team_id}/applications/withdraw")
+@persistent_operation
+def withdraw_team_application(team_id: str, request: TeamJoinRequest) -> dict:
+    try:
+        result = team_service.withdraw_application(
             request.player_id,
             team_id,
             request.request_id,
         )
     except TeamServiceError as exc:
         raise HTTPException(status_code=422, detail=str(exc)) from exc
-    return {
-        "joined": False,
-        "application_pending": True,
-        "applied_team_id": result["team_id"],
-        "replayed": result["replayed"],
-        "available_teams": [
-            _team_summary(candidate)
-            for candidate in team_service.list_teams()
-            if len(candidate.get("member_ids", [])) < int(candidate.get("member_limit", 30))
-        ][:50],
-        "request_policy": TEAM_REQUEST_POLICY,
-    }
+    return {**_team_lobby_view(request.player_id), "replayed": result["replayed"]}
 
 
 @app.post("/teams/{team_id}/applications/review")
@@ -4354,16 +4474,7 @@ def leave_team(team_id: str, request: TeamActionRequest) -> dict:
     except TeamServiceError as exc:
         raise HTTPException(status_code=422, detail=str(exc)) from exc
     _sync_team_membership(request.player_id)
-    return {
-        "joined": False,
-        "replayed": result["replayed"],
-        "available_teams": [
-            _team_summary(candidate)
-            for candidate in team_service.list_teams()
-            if len(candidate.get("member_ids", [])) < int(candidate.get("member_limit", 30))
-        ][:50],
-        "request_policy": TEAM_REQUEST_POLICY,
-    }
+    return {**_team_lobby_view(request.player_id), "replayed": result["replayed"]}
 
 
 @app.post("/teams/{team_id}/owner/transfer")
@@ -6215,6 +6326,7 @@ def _create_matchmaking_ai_session(
     bot_override: dict | None = None,
     match_type_override: str | None = None,
     ranked_eligible_override: bool | None = None,
+    tutorial: bool = False,
 ) -> None:
     """İnsan kuyruğu zaman aşımında normal PvP protokolüne AI slotu ekler."""
     try:
@@ -6238,6 +6350,14 @@ def _create_matchmaking_ai_session(
         match_type == "arena_ai"
         and player_statistics_service.get_or_create(pair.player_a_id).total_matches == 0
     )
+    # İlk oyun deneyimi: istemci istediyse ilk maç sahne sahne yönetilir.
+    # Betiğin rakibe kurduğu kartlar rakip destesinde bulunmalıdır.
+    directed = bool(tutorial) and first_match
+    if directed:
+        bot.update(
+            battle_pool_ids=list(TUTORIAL_ENEMY_DECK),
+            core_type="core_resonance",
+        )
     if first_match:
         bot.update(
             archetype_tr="Dengeli",
@@ -6285,6 +6405,8 @@ def _create_matchmaking_ai_session(
     ).get("id", "")
     session.ai_profile_options[pair.player_b_id] = bot
     attach_player_progression_to_session(pair.match_id, pair.player_a_id)
+    if directed:
+        session.tutorial = TutorialDirector(session, pair.player_a_id, pair.player_b_id)
 
     ai_archetype = get_ai_archetype(BOT_ARCHETYPE_IDS[bot["archetype_tr"]])
     ai_pool = tuple(bot["battle_pool_ids"])

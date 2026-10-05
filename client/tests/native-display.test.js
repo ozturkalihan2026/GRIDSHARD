@@ -41,6 +41,10 @@ test("camera reservation stays stable; bottom is edge-to-edge except for the key
   assert.match(source, /boolean handled = super\.dispatchTouchEvent\(event\)/);
   assert.match(source, /return handled/);
   assert.match(source, /setDisplayCutout\(null\)/);
+  // Sistem yazı boyutu sabit ölçülü oyun arayüzünü taşırmamalı.
+  assert.match(source, /getWebView\(\)\.getSettings\(\)\.setTextZoom\(100\)/);
+  const android = path.join(root, "android/app/src/main/java/com/gridshard/nativeui/GridshardActivity.java");
+  if (fs.existsSync(android)) assert.equal(fs.readFileSync(android, "utf8"), source);
 });
 
 test("all settings checkboxes use the same horizontal toggle layout", () => {

@@ -94,7 +94,7 @@ test("retry button resumes the guarded server startup", () => {
   assert.equal(loading.errorEl.hidden,true);
 });
 
-test("confirmed GRIDSHARD player ID is labeled separately from Play Games and copied in full", async () => {
+test("confirmed GRIDSHARD player ID is shown in full under the name form and copied in full", async () => {
   const copied = [];
   const {loading} = setup({clipboard:{writeText:async text => copied.push(text)}});
   const playerId = "wt-9ba222e4-1122-3344-5566-123456789abc";
@@ -102,10 +102,11 @@ test("confirmed GRIDSHARD player ID is labeled separately from Play Games and co
   assert.equal(await loading.copyPlayerId(),false);
   loading.setPlayerId(playerId);
   assert.equal(loading.playerButtonEl.hidden,false);
-  assert.equal(loading.playerLabelEl.textContent,"GRIDSHARD ID:");
+  assert.equal(loading.playerLabelEl.textContent,"Kimliğin:");
   assert.equal(loading.playerButtonEl.attributes["aria-label"],"GRIDSHARD oyuncu kimliğini kopyala");
   assert.match(loading.playerButtonEl.attributes.title,/Play Games kimliğinden farklıdır/);
-  assert.ok(loading.playerValueEl.textContent.length < playerId.length);
+  // Hesap silerken kimliğin tamamı gerekir; kısaltılmaz.
+  assert.equal(loading.playerValueEl.textContent,playerId);
   assert.equal(await loading.copyPlayerId(),true);
   assert.deepEqual(copied,[playerId]);
   assert.equal(loading.playerValueEl.textContent,"Kopyalandı");
@@ -146,13 +147,18 @@ test("startup publishes an identity only after the server continuity check succe
   const rejectAt = app.indexOf('throw new Error("Katılımcı kimliği sunucu hesabıyla eşleşmiyor.")');
   assert.ok(confirmAt > rejectAt && rejectAt > app.indexOf("const continuity ="));
   const html = fs.readFileSync("index.html","utf8");
-  assert.match(html,/<span id="boot-player-id-label">GRIDSHARD ID:<\/span>/);
+  // Kimlik açılış ekranında değil, Ayarlar → Genel'de ad formunun altındadır.
+  assert.match(html,/<span id="account-player-id-label">Kimliğin:<\/span>/);
+  assert.ok(html.indexOf('id="account-player-id"') > html.indexOf('id="profile-name-change-note"'));
+  assert.ok(html.indexOf('id="account-player-id"') < html.indexOf('id="settings-language"'));
+  const boot = html.slice(html.indexOf('id="startup-loading"'),html.indexOf('<main class="battle-shell">'));
+  assert.equal(boot.includes("player-id"),false);
 });
 
 test("boot labels, percentages, errors and ready text use language keys", async () => {
   const {loading} = setup({language:"en"});
   loading.begin();
-  assert.equal(loading.playerLabelEl.textContent,"GRIDSHARD ID:");
+  assert.equal(loading.playerLabelEl.textContent,"Your ID:");
   assert.equal(loading.playerButtonEl.attributes["aria-label"],"Copy your GRIDSHARD player ID");
   assert.equal(loading.playerButtonEl.attributes.title,"This identifies your game account, not your Play Games account. Tap to copy.");
   assert.equal(loading.statusEl.textContent,"Connecting to server…");

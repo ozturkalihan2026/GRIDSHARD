@@ -92,3 +92,31 @@ def test_social_block_mirror_uses_complete_lists_and_preserves_account_fields(tm
     assert pool.connection_value.state["accounts"]["one"]["oauth_links"] == {"google": {"subject": "unchanged"}}
     service.sync_social_blocks({"one": []})
     assert service.is_blocked("one", "two") is False
+
+
+def test_recovery_uses_postgres_document_and_releases_lock_before_provider_io(tmp_path, monkeypatch):
+    from app import platform_services
+    from app.native_oauth import pkce_challenge
+    monkeypatch.setenv("GRIDSHARD_PLAY_GAMES_ID", "123456789")
+    monkeypatch.setenv("GRIDSHARD_PLAY_GAMES_SERVER_CLIENT_ID", "123456789-fixture.apps.googleusercontent.com")
+    monkeypatch.setenv("GRIDSHARD_PLAY_GAMES_CLIENT_SECRET", "fixture-secret")
+    monkeypatch.delenv("GRIDSHARD_PLAY_GAMES_CLIENT_SECRET_FILE", raising=False)
+    pool = _Pool()
+    path = tmp_path / "never-written.json"
+    service = PostgresPlatformService(pool, path=path)
+    with service._lock:
+        data = service._read()
+        service._account(data, "original")["oauth_links"]["google_play_games"] = {"subject":"verified-fixture"}
+        service._write(data)
+    before = deepcopy(pool.connection_value.state["accounts"])
+    def verified(*_args):
+        assert service._lock.state.depth == 0, "No PostgreSQL lock spans Google network I/O"
+        return "verified-fixture"
+    monkeypatch.setattr(platform_services, "play_games_subject", verified)
+    verifier = "a" * 64
+    started = service.start_play_games_recovery("original", pkce_challenge(verifier))
+    result = service.complete_play_games_recovery(started["state"], "fixture-code", verifier)
+    assert service.consume_oauth_exchange(result["exchange"], code_verifier=verifier) == {
+        "player_id":"original", "provider":"google_play_games", "recovery":True}
+    assert pool.connection_value.state["accounts"] == before
+    assert not path.exists()

@@ -1,0 +1,29 @@
+[Unit]
+Description=GRIDSHARD verified backup retention (30 days)
+After=docker.service time-sync.target
+Requires=docker.service
+
+[Service]
+Type=oneshot
+User=root
+Group=root
+EnvironmentFile=/etc/gridshard-backup-retention.conf
+Environment=DOCKER_CONFIG=/run/gridshard-backup-retention
+ExecStart=/usr/bin/python3 -B /usr/local/lib/gridshard-backup-retention/retention.py --apply --installation-sha256 ${GRIDSHARD_BACKUP_INSTALLATION_SHA256} --confirmation ${GRIDSHARD_BACKUP_RETENTION_CONFIRMATION}
+RuntimeDirectory=gridshard-backup-retention
+RuntimeDirectoryMode=0700
+UMask=0077
+TimeoutStartSec=600
+NoNewPrivileges=yes
+PrivateTmp=yes
+PrivateDevices=yes
+ProtectSystem=strict
+ProtectHome=yes
+ReadWritePaths=/var/backups/gridshard-production /run/gridshard-backup-retention
+ProtectKernelTunables=yes
+ProtectKernelModules=yes
+ProtectControlGroups=yes
+RestrictAddressFamilies=AF_UNIX
+LockPersonality=yes
+StandardOutput=journal
+StandardError=journal

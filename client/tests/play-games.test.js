@@ -56,12 +56,23 @@ test('web/iOS do not start Android Play Games; no credential storage',async()=>{
     assert.equal(await instance.prepare(),false); await assert.rejects(instance.begin('guest')); assert.deepEqual(calls,[]);
   }
   const source=fs.readFileSync('src/play-games.js','utf8');
-  assert.doesNotMatch(source,/localStorage|sessionStorage|console\.|client_secret|player_id\s*:/);
+  assert.doesNotMatch(source,/localStorage|sessionStorage|console\.|client_secret|(?:^|[,{]\s*)player_id\s*:/);
 });
 test('duplicate clicks cannot run concurrent sign-in',async()=>{
   const {instance}=harness(); await instance.prepare();
   const first=instance.begin('guest');
   await assert.rejects(instance.begin('guest'),/zaten sürüyor/); await first;
+});
+test('recovery uses public proof routes, preserves remembered owner binding and never creates a guest',async()=>{
+  const {instance,calls,getVerifier}=harness();
+  await instance.prepare();
+  assert.equal((await instance.begin('remembered-owner','recover')).player_id,'server-owner');
+  assert.equal(calls[0][0],'/auth/play-games/recovery/start');
+  assert.equal(calls[0][1].expected_player_id,'remembered-owner');
+  assert.equal(calls[0][1].mode,undefined);
+  assert.equal(calls[0][1].code_challenge,createHash('sha256').update(getVerifier()).digest('base64url'));
+  assert.equal(calls[2][0],'/auth/play-games/recovery/complete');
+  assert.equal(calls[3][0],'session');
 });
 test('native sync pins SDK, preserves metadata/activity/provider and is idempotent',()=>{
   assert.equal(SDK,'com.google.android.gms:play-services-games-v2:22.1.0');

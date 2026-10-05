@@ -123,6 +123,7 @@ for (const relativePath of [
   ["src", "screens", "screen-controller.js"],
   ["src", "screens", "card-swipe.js"],
   ["src", "tutorial", "tutorial-controller.js"],
+  ["src", "tutorial", "onboarding.js"],
   ["src", "battle", "board-view.js"],
   ["src", "battle", "module-card-view.js"],
 ]) {

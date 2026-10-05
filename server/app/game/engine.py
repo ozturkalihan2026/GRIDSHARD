@@ -2916,6 +2916,49 @@ class BattleEngine:
             },
         )
 
+    def deploy_scripted_module(
+        self,
+        player_id: str,
+        definition_id: str,
+        *,
+        base_damage: float | None = None,
+        cooldown_ms: int | None = None,
+    ) -> BattleModule | None:
+        """Betikli yerleştirme (eğitim savaşı, bkz. tutorial.py).
+
+        Akım harcamadan ve sınıf sınırlarına bakmadan Çekirdeğe en yakın boş
+        hücreye bir modül kurar; boş hücre yoksa None döner. Kart oyuncunun
+        destesinde olmalıdır.
+        """
+        from dataclasses import replace
+
+        player = self._require_player(player_id)
+        instance_id = self._next_deployed_instance_id(player_id, definition_id)
+        module = self.grant_module(player_id, instance_id, definition_id)
+        candidates = self._deployment_candidates(player_id, module)
+        if not candidates:
+            player.modules.pop(instance_id, None)
+            return None
+        if base_damage is not None:
+            module.definition = replace(module.definition, base_damage=float(base_damage))
+        if cooldown_ms is not None:
+            module.definition = replace(module.definition, cooldown_ms=int(cooldown_ms))
+        core = self.board.core_position
+        module.status = ModuleStatus.ACTIVE
+        module.position = min(
+            candidates,
+            key=lambda item: (abs(item.x - core.x) + abs(item.y - core.y), item.y, item.x),
+        )
+        module.is_powered = True
+        self._emit(
+            "module_placed",
+            {
+                **self._module_event_data(player_id, module),
+                "placement_mode": "server_automatic",
+            },
+        )
+        return module
+
 
     def _simulate(self) -> None:
         """

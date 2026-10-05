@@ -31,6 +31,7 @@ from .push_outbox import PushOutbox
 from .native_oauth import native_return_url, pkce_challenge
 from .production_config import environment_secret
 from .play_games import configuration as play_games_configuration, verified_subject as play_games_subject
+from .auth import AuthenticationError, validate_player_id
 
 
 class PlatformServiceError(ValueError):
@@ -526,6 +527,72 @@ class PlatformService(PushOutbox):
             self._write(data)
         return {"provider": "google_play_games", "linked": True, "exchange": exchange}
 
+    def start_play_games_recovery(self, expected_player_id: str, code_challenge: str) -> dict:
+        """Anonymous proof initiation, not permission to access the claimed account."""
+        try:
+            expected_player_id = validate_player_id(expected_player_id)
+        except AuthenticationError as exc:
+            raise PlatformServiceError("Play Games kurtarma isteği geçersiz.") from exc
+        if not re.fullmatch(r"[A-Za-z0-9_-]{43}", code_challenge):
+            raise PlatformServiceError("Play Games kurtarma isteği geçersiz.")
+        config = self.play_games_configuration()
+        if not config["configured"]:
+            return {"configured": False}
+        state = secrets.token_urlsafe(32)
+        now = int(self.now_func())
+        with self._lock:
+            data = self._read()
+            pending = {key: item for key, item in data.get("play_games_recovery_states", {}).items()
+                       if int(item.get("expires_at", 0)) > now}
+            if len(pending) >= 100:
+                raise PlatformServiceError("Kurtarma şu anda yoğun; biraz sonra yeniden dene.")
+            pending[self._code_hash(state)] = {"expected_player_id": expected_player_id,
+                "code_challenge": code_challenge, "expires_at": now + 600}
+            data["play_games_recovery_states"] = pending
+            self._write(data)
+        # Identical response for existing/non-existing IDs: no account enumeration or guest creation.
+        return {"configured": True, "state": state, "game_id": config["game_id"],
+                "server_client_id": config["client_id"]}
+
+    def complete_play_games_recovery(self, state: str, code: str, code_verifier: str) -> dict:
+        state = _clean_text(state, maximum=256, label="Play Games durumu")
+        code = _clean_text(code, maximum=2048, label="Play Games kodu")
+        config = self.play_games_configuration()
+        if not config["configured"]:
+            raise PlatformServiceError("Play Games sunucuda henüz hazır değil.")
+        now = int(self.now_func())
+        with self._lock:
+            data = self._read()
+            pending = data.get("play_games_recovery_states", {}).get(self._code_hash(state))
+            try:
+                proof = pending and secrets.compare_digest(pkce_challenge(code_verifier), pending["code_challenge"])
+            except (ValueError, KeyError):
+                proof = False
+            if not proof or int(pending.get("expires_at", 0)) <= now:
+                raise PlatformServiceError("Play Games cihaz doğrulaması başarısız.")
+            data["play_games_recovery_states"].pop(self._code_hash(state))
+            self._write(data)
+        # One-use state consumed before upstream I/O; failure requires a fresh explicit attempt.
+        try:
+            subject = play_games_subject(config, code, self._request_oauth_json)
+        except ValueError as exc:
+            raise PlatformServiceError(str(exc)) from exc
+        with self._lock:
+            data = self._read()
+            owners = [key for key, account in data.get("accounts", {}).items()
+                      if account.get("oauth_links", {}).get("google_play_games", {}).get("subject") == subject]
+            if len(owners) != 1 or owners[0] != pending["expected_player_id"]:
+                raise PlatformServiceError("Aynı profile bağlı Play Games hesabını seç. Mevcut profil değiştirilmedi.")
+            exchange = secrets.token_urlsafe(32)
+            exchanges = {key: item for key, item in data.get("oauth_exchanges", {}).items()
+                         if int(item.get("expires_at", 0)) > now}
+            exchanges[self._code_hash(exchange)] = {"player_id": owners[0], "provider": "google_play_games",
+                "expires_at": now + self.OAUTH_EXCHANGE_TTL_SECONDS,
+                "code_challenge": pending["code_challenge"], "recovery": True}
+            data["oauth_exchanges"] = exchanges
+            self._write(data)
+        return {"provider": "google_play_games", "exchange": exchange, "recovered": True}
+
     def _oauth_configuration(self, provider: str) -> dict:
         prefix = f"GRIDSHARD_{provider.upper()}_OAUTH"
         try:
@@ -955,6 +1022,7 @@ class PlatformService(PushOutbox):
         return {
             "player_id": str(pending["player_id"]),
             "provider": str(pending["provider"]),
+            **({"recovery": True} if pending.get("recovery") else {}),
         }
 
     def register_device(
@@ -1318,6 +1386,10 @@ class PlatformService(PushOutbox):
         with self._lock:
             data = self._read()
             data["accounts"].pop(player_id, None)
+            data["play_games_recovery_states"] = {
+                key: item for key, item in data.get("play_games_recovery_states", {}).items()
+                if item.get("expected_player_id") != player_id
+            }
             data["invites"] = {
                 code: item for code, item in data["invites"].items()
                 if item.get("inviter_id") != player_id

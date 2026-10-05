@@ -10,7 +10,7 @@ test("failed server startup stays covered and retry restores the authenticated h
   const overlay = page.locator("#startup-loading");
   await expect(overlay).toBeVisible();
   await expect(page.locator("#boot-retry")).toBeVisible();
-  await expect(page.locator("#boot-player-id")).toBeHidden();
+  await expect(page.locator("#account-player-id")).toBeHidden();
   await expect(page.locator("#boot-bar")).toHaveAttribute("aria-valuenow", "0");
   const bounds = await overlay.boundingBox();
   const viewport = page.viewportSize();
@@ -36,7 +36,7 @@ test("a failed profile request does not advance past server readiness", async ({
   await page.goto("/?e2e=1", {waitUntil:"domcontentloaded"});
   await expect(page.locator("#boot-retry")).toBeVisible();
   await expect(page.locator("#boot-bar")).toHaveAttribute("aria-valuenow", "25");
-  await expect(page.locator("#boot-player-id")).toBeHidden();
+  await expect(page.locator("#account-player-id")).toBeHidden();
   await expect(page.locator("#startup-loading")).toBeVisible();
   failProfile = false;
   await page.locator("#boot-retry").click();
@@ -51,16 +51,20 @@ test("original emblem and animations cover the game until account loading finish
   await page.addInitScript(() => localStorage.setItem("gridshard.tutorial.v1", "complete"));
   await page.goto("/?e2e=1", {waitUntil:"domcontentloaded"});
   await expect(page.locator("#boot-bar")).toHaveAttribute("aria-valuenow","75");
-  await expect(page.locator("#boot-player-id")).toBeVisible();
-  await expect(page.locator("#boot-player-id-label")).toHaveText("GRIDSHARD ID:");
-  await expect(page.locator("#boot-player-id")).toHaveAttribute("title", /Play Games kimliğinden farklıdır/);
+  // Kimlik sunucu doğrulayınca yayımlanır; açılış ekranında değil, Ayarlar →
+  // Genel'de ad formunun altında ve kısaltılmadan gösterilir.
+  await expect(page.locator("#account-player-id")).not.toHaveAttribute("hidden", "");
+  await expect(page.locator("#account-player-id-label")).toHaveText("Kimliğin:");
+  await expect(page.locator("#account-player-id")).toHaveAttribute("title", /Play Games kimliğinden farklıdır/);
   const confirmedIds = await page.evaluate(() => ({
     account: GridshardAuth.session.playerId,
     stored: localStorage.getItem("project-relay.web-test.participant-id"),
-    shown: document.getElementById("boot-player-id-value").textContent,
+    shown: document.getElementById("account-player-id-value").textContent,
+    splash: document.getElementById("startup-loading").textContent,
   }));
   expect(confirmedIds.account).toBe(confirmedIds.stored);
-  expect(confirmedIds.shown).toBe(`${confirmedIds.account.slice(0,10)}…${confirmedIds.account.slice(-6)}`);
+  expect(confirmedIds.shown).toBe(confirmedIds.account);
+  expect(confirmedIds.splash).not.toContain(confirmedIds.account.slice(0,10));
   await expect(page.locator("#startup-loading")).toBeVisible();
   await expect(page.locator("#account-onboarding-dialog")).not.toHaveAttribute("open", "");
   const presentation = await page.evaluate(() => {
@@ -93,8 +97,8 @@ test("a mismatched server account never appears as a confirmed startup ID", asyn
   await page.goto("/?e2e=1", {waitUntil:"domcontentloaded"});
   await expect(page.locator("#boot-retry")).toBeVisible();
   await expect(page.locator("#startup-loading")).toBeVisible();
-  await expect(page.locator("#boot-player-id")).toBeHidden();
-  await expect(page.locator("#boot-player-id-value")).toHaveText("");
+  await expect(page.locator("#account-player-id")).toBeHidden();
+  await expect(page.locator("#account-player-id-value")).toHaveText("");
 });
 
 test("unsolicited OAuth return is scrubbed without signing in or blocking guest startup", async ({page}) => {

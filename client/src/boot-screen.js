@@ -27,6 +27,16 @@
     return value.length > 18 ? `${value.slice(0, 10)}…${value.slice(-6)}` : value;
   }
 
+  // Oyuncu kimliği açılış ekranında değil, Ayarlar → Genel'de ad değiştirme
+  // alanının altında gösterilir (hesap silerken tamamı gerekir). Kimlik yine
+  // yalnız sunucu hesabı doğruladıktan sonra yayımlanır; bu sınıf onu, yeniden
+  // denemede gizlemeyi ve kopyalamayı yönetir.
+  const PLAYER_ID_PARTS = Object.freeze({
+    button:"account-player-id",
+    label:"account-player-id-label",
+    value:"account-player-id-value",
+  });
+
   class GridshardBootScreen {
     constructor({
       root = null,
@@ -69,9 +79,9 @@
       this.errorEl = this._part("boot-error");
       this.errorMessageEl = this._part("boot-error-message");
       this.retryEl = this._part("boot-retry");
-      this.playerButtonEl = this._part("boot-player-id");
-      this.playerLabelEl = this._part("boot-player-id-label");
-      this.playerValueEl = this._part("boot-player-id-value");
+      this.playerButtonEl = this._part(PLAYER_ID_PARTS.button);
+      this.playerLabelEl = this._part(PLAYER_ID_PARTS.label);
+      this.playerValueEl = this._part(PLAYER_ID_PARTS.value);
       this.versionEl = this._part("boot-version");
 
       this.setPlayerId("");
@@ -146,7 +156,7 @@
       delete this.playerButtonEl.dataset.copied;
       this.playerButtonEl.setAttribute("aria-label", this.text("boot.player_id.copy"));
       this.playerButtonEl.setAttribute("title", this.text("boot.player_id.explanation"));
-      this.playerValueEl.textContent = shortPlayerId(this.playerId);
+      this.playerValueEl.textContent = this.playerId;
       this.playerButtonEl.hidden = !this.playerId;
     }
 
@@ -166,7 +176,7 @@
       global.clearTimeout?.(this._copiedTimer);
       this._copiedTimer = global.setTimeout?.(() => {
         if (this.playerButtonEl?.dataset) delete this.playerButtonEl.dataset.copied;
-        if (this.playerValueEl) this.playerValueEl.textContent = shortPlayerId(this.playerId);
+        if (this.playerValueEl) this.playerValueEl.textContent = this.playerId;
       }, 1600);
       return true;
     }

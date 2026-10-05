@@ -1816,6 +1816,7 @@
     async start({
       battlePoolIds,
       initialModules,
+      tutorial = false,
     }) {
       if (
         !Array.isArray(battlePoolIds)
@@ -1873,6 +1874,8 @@
               body: JSON.stringify({
                 player_id:
                   this.playerId,
+                // İlk oyun deneyimi: yönetmenli ilk savaş isteği.
+                ...(tutorial ? { tutorial: true } : {}),
               }),
             }
           );

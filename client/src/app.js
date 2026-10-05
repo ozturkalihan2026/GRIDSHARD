@@ -259,6 +259,115 @@
     analytics_consent: false,
   });
 
+  // Grafik kademesi. Sunucudaki ayar hesapla birlikte her cihaza taşınır;
+  // "Otomatik" ise cihaza özeldir: donanıma göre başlar ve savaşta kare hızı
+  // düşük kalırsa bir kademe iner. Kademe `body[data-graphics]` ile CSS'e,
+  // parçacık bütçesiyle de efekt koduna yansır.
+  const GRAPHICS_TIERS = Object.freeze(["dusuk", "orta", "yuksek"]);
+  const GRAPHICS_MODE_STORAGE_KEY = "gridshard.graphics-mode";
+  const GRAPHICS_AUTO_TIER_STORAGE_KEY = "gridshard.graphics-auto-tier";
+  let autoGraphicsTier = null;
+
+  function readDevicePreference(key) {
+    try {
+      return globalThis.localStorage?.getItem(key) ?? null;
+    } catch (_) {
+      return null;
+    }
+  }
+
+  function writeDevicePreference(key, value) {
+    try {
+      globalThis.localStorage?.setItem(key, value);
+    } catch (_) {
+      // Depolama kapalıysa tercih yalnız bu oturumda geçerlidir.
+    }
+  }
+
+  function graphicsBuildVersion() {
+    return document.getElementById("boot-version")?.dataset?.version || "";
+  }
+
+  function detectDeviceGraphicsTier() {
+    const nav = globalThis.navigator || {};
+    const native = Boolean(globalThis.Capacitor?.isNativePlatform?.());
+    const mobile = native || /Android|iPhone|iPad|iPod/i.test(String(nav.userAgent || ""));
+    if (!mobile) return "yuksek";
+    // deviceMemory en yakın ikinin kuvvetine yuvarlanır (6 GB → 4); iOS vermez.
+    const memory = Number(nav.deviceMemory) || 0;
+    const cores = Number(nav.hardwareConcurrency) || 0;
+    if ((memory && memory <= 2) || (cores && cores <= 4)) return "dusuk";
+    if ((memory && memory <= 4) || (cores && cores <= 6)) return "orta";
+    return "yuksek";
+  }
+
+  function resolveAutoGraphicsTier() {
+    if (autoGraphicsTier) return autoGraphicsTier;
+    // Savaşta düşürülen kademe aynı sürüm boyunca hatırlanır; yeni sürüm
+    // iyileştirme getirmiş olabileceği için ölçüm baştan yapılır.
+    const [tier, version] = String(
+      readDevicePreference(GRAPHICS_AUTO_TIER_STORAGE_KEY) || ""
+    ).split("@");
+    autoGraphicsTier =
+      GRAPHICS_TIERS.includes(tier) && version === graphicsBuildVersion()
+        ? tier
+        : detectDeviceGraphicsTier();
+    return autoGraphicsTier;
+  }
+
+  function graphicsModeIsAuto() {
+    const mode = readDevicePreference(GRAPHICS_MODE_STORAGE_KEY);
+    if (mode === "auto") return true;
+    if (mode === "manual") return false;
+    // Tercih yokken: hesap ayarı varsayılandan farklıysa oyuncu kendi seçmiştir.
+    return (settingsState.settings?.graphics_quality || "yuksek") === "yuksek";
+  }
+
+  function battleGraphicsQuality() {
+    if (graphicsModeIsAuto()) return resolveAutoGraphicsTier();
+    const stored = settingsState.settings?.graphics_quality;
+    return GRAPHICS_TIERS.includes(stored) ? stored : "yuksek";
+  }
+
+  function applyGraphicsQuality() {
+    const tier = battleGraphicsQuality();
+    if (document.body.dataset.graphics !== tier) {
+      document.body.dataset.graphics = tier;
+    }
+    // Düşük kademede kamera eğimi kapanır; oyuncunun tercihi saklı kalır.
+    const perspective =
+      tier !== "dusuk" && readDevicePreference("gridshard.battle-perspective") !== "off"
+        ? "on"
+        : "off";
+    if (document.body.dataset.battlePerspective !== perspective) {
+      document.body.dataset.battlePerspective = perspective;
+    }
+    return tier;
+  }
+
+  // Otomatik kademede savaş kare hızı kötü kalırsa bir kademe iner.
+  function lowerAutoGraphicsTier() {
+    if (!graphicsModeIsAuto()) return null;
+    const index = GRAPHICS_TIERS.indexOf(resolveAutoGraphicsTier());
+    if (index <= 0) return null;
+    autoGraphicsTier = GRAPHICS_TIERS[index - 1];
+    writeDevicePreference(
+      GRAPHICS_AUTO_TIER_STORAGE_KEY,
+      `${autoGraphicsTier}@${graphicsBuildVersion()}`
+    );
+    applyGraphicsQuality();
+    return autoGraphicsTier;
+  }
+
+  // Savaş düzeni dönemi: tahta boyutu değişince artar. Kablo geometrisi bir
+  // dönem boyunca bir kez ölçülür; her çizimde düzen okumak (offsetLeft)
+  // yazmalarla iç içe geçip tarayıcıyı saniyede binlerce kez düzen hesabına
+  // zorluyordu.
+  let battleLayoutEpoch = 0;
+  const boardCableStates = new WeakMap();
+  let battleLayoutObserver = null;
+  let battleLayoutRefreshQueued = false;
+
   const participantContinuity =
     new RelayParticipantContinuityState({
       expectedPlayerId:
@@ -287,6 +396,9 @@
     if (startupFlight) return startupFlight;
     startupFlight = performParticipantBootstrap().catch((error) => {
       startupLoading?.fail();
+      if (globalThis.GridshardAuth?.session?.requiresReauthentication) {
+        void accountSessionControls?.openRecovery();
+      }
       return {ok:false, reason:error instanceof Error ? error.message : String(error)};
     }).finally(() => { startupFlight = null; });
     return startupFlight;
@@ -405,6 +517,7 @@
   let activeModuleFilter = "all";
   let selectedCollectionModuleId = "laser";
   let activeCardPage = "modules";
+  let activeCosmeticTab = "avatar";
   let selectedCollectionCoreId = "core_resonance";
   let activeLeaderboardTab = "trophies";
   let activeTrophyLeaderboardScope = "general";
@@ -797,12 +910,14 @@
     }
   }
 
-  function openAppScreen(screen) {
+  function openAppScreen(screen, { keepSubTab=false }={}) {
+    const previousScreen = appRouter.currentScreen;
     const result = appRouter.go(screen);
     if (!result.ok) {
       logClientMessage(result.reason);
       return result;
     }
+    if (!keepSubTab) resetScreenSubTabs(screen, previousScreen);
 
     if (
       screen === "play"
@@ -1036,14 +1151,56 @@
       tile.appendChild(check);
     }
     if (collection) {
+      // Koleksiyon kartı: üstte seviye rozeti, ortada simge ve modülün adı,
+      // altta yükseltme için toplanan parça sayısı ve ilerleme çubuğu. Seviye,
+      // parça simgesi ve sayı ayrı satırlardadır; dar kartta üst üste binmez.
       const level = Math.max(0, Number(item.level || 0)) + 1;
+      const maxed = level >= 15;
       const required = Math.max(1, Number(item.next_upgrade_cost?.shards || 1));
       const shards = Math.max(0, Number(item.shards || 0));
+      const unlocked = item.unlocked !== false;
+      const moduleName = item.name_tr || definition.nameTr || "Modül";
+      const levelBadge = document.createElement("span");
+      levelBadge.className = "unified-module-level";
+      if (unlocked) {
+        levelBadge.textContent = `SV ${level}`;
+      } else {
+        const unlockArena = globalThis.GRIDSHARD_CANON_MODULES
+          ?.find((module) => module.id === tile.dataset.moduleDefinitionId)?.unlock_arena;
+        levelBadge.textContent = unlockArena ? `ARENA ${unlockArena}` : "KİLİTLİ";
+        levelBadge.dataset.locked = "true";
+      }
+      const name = document.createElement("span");
+      name.className = "unified-module-name";
+      name.textContent = moduleName;
       const footer = document.createElement("span");
       footer.className = "unified-module-progress";
-      const piece = createModulePuzzlePiece({ category:tile.dataset.category }).outerHTML;
-      footer.innerHTML = `<strong>SV ${level}</strong><span>${level >= 15 ? "AZAMİ" : `${piece}${shards} / ${required}`}</span><i style="--module-progress:${level >= 15 ? 100 : Math.min(100, Math.round((shards / required) * 100))}%"></i>`;
-      tile.appendChild(footer);
+      const upgradeReady = unlocked && !maxed && shards >= required;
+      footer.dataset.ready = String(upgradeReady);
+      const count = document.createElement("span");
+      count.className = "unified-module-shards";
+      if (maxed) {
+        count.textContent = "AZAMİ";
+      } else {
+        const amount = document.createElement("b");
+        amount.textContent = `${shards}/${required}`;
+        count.append(createModulePuzzlePiece({ category:tile.dataset.category }), amount);
+      }
+      const bar = document.createElement("i");
+      bar.style.setProperty(
+        "--module-progress",
+        `${maxed ? 100 : Math.min(100, Math.round((shards / required) * 100))}%`
+      );
+      footer.append(count, bar);
+      tile.append(levelBadge, name, footer);
+      tile.setAttribute(
+        "aria-label",
+        localizedUiText(
+          unlocked
+            ? `${moduleName} · Seviye ${level} · ${maxed ? "Azami seviye" : `Parça ${shards} / ${required}`}`
+            : `${moduleName} · Kilitli`
+        )
+      );
     }
     return tile;
   }
@@ -1855,7 +2012,46 @@
   }
   function openCoreCollection() {
     setCardCollectionPage("cores");
-    openAppScreen("modules");
+    openAppScreen("modules", { keepSubTab:true });
+  }
+
+  // Kozmetik alt sekmeleri: Avatar, Çerçeve, Emoji, Arka Plan.
+  function openCosmeticTab(tab) {
+    activeCosmeticTab = ["avatar", "frame", "emoji", "background"].includes(tab)
+      ? tab
+      : "avatar";
+    for (const button of document.querySelectorAll("[data-cosmetic-tab]")) {
+      const active = button.dataset.cosmeticTab === activeCosmeticTab;
+      button.classList.toggle("is-active", active);
+      button.setAttribute("aria-pressed", String(active));
+    }
+    for (const panel of document.querySelectorAll("[data-cosmetic-panel]")) {
+      panel.hidden = panel.dataset.cosmeticPanel !== activeCosmeticTab;
+    }
+  }
+
+  // Bir bölüme yeniden girildiğinde ilk alt sekmesi açılır (ör. Kartlar →
+  // Modüller) ve liste başa döner. Bölümün kendi içinde gezinirken sekme
+  // korunur.
+  function resetScreenSubTabs(screen, previousScreen) {
+    if (screen === previousScreen) return;
+    if (screen === "modules" && activeCardPage !== "modules") {
+      setCardCollectionPage("modules");
+    }
+    if (screen === "avatar") openCosmeticTab("avatar");
+    if (screen === "team") activeTeamLobbyTab = "list";
+    if (screen === "friends" && activeFriendsTab !== "friends") {
+      if (activeDirectMessagePeerId) closeDirectMessageThread();
+      openFriendsTab("friends");
+    }
+    if (screen === "settings") {
+      const general = document.getElementById("settings-tab-general");
+      if (general && general.getAttribute("aria-selected") !== "true") {
+        selectSettingsCategory(general);
+      }
+    }
+    const panel = document.querySelector(`[data-screen-panel="${screen}"]`);
+    if (panel) panel.scrollTop = 0;
   }
 
   function setCardCollectionPage(page) {
@@ -3816,23 +4012,20 @@
       for (const device of state.devices || []) {
         const row = document.createElement("article");
         const name = document.createElement("strong");
-        name.textContent = device.name || "Cihaz";
+        name.textContent = accountSessionControls?.deviceLabel(device) || device.name || "Cihaz";
         const meta = document.createElement("small");
         meta.textContent = `${String(device.platform || "web").toUpperCase()} · ${new Date(Number(device.last_seen_at || 0) * 1000).toLocaleString(uiLocale())}`;
         const revoke = document.createElement("button");
         revoke.type = "button";
         revoke.textContent = "OTURUMU KAPAT";
         revoke.addEventListener("click", async () => {
+          revoke.disabled = true;
           try {
-            accountPlatformState = await requestJsonWithDeadline(
-              `/accounts/${encodeURIComponent(participantPlayerId)}/devices/${encodeURIComponent(device.device_id)}`,
-              { method:"DELETE", body:JSON.stringify({player_id:participantPlayerId}) },
-              12000
-            );
-            renderAccountPlatform();
+            const result = await accountSessionControls.revokeDevice(device);
+            if (result.blocked && status) status.textContent = result.message;
           } catch (error) {
             if (status) status.textContent = error instanceof Error ? error.message : String(error);
-          }
+          } finally { revoke.disabled = false; }
         });
         row.append(name, meta, revoke);
         devices.appendChild(row);
@@ -4522,6 +4715,18 @@
     renderSocialNotificationDots();
   }
 
+  // Arama kutusunu ve sonuç panelini kapatır (× düğmesi ve istek gönderimi).
+  function clearFriendSearch() {
+    const panel = document.getElementById("friend-search-panel");
+    if (panel) panel.hidden = true;
+    document.getElementById("friend-search-results")?.replaceChildren();
+    const input = document.getElementById("friend-search-input");
+    if (input) {
+      input.value = "";
+      input.blur?.();
+    }
+  }
+
   async function searchFriends(query) {
     const host = document.getElementById("friend-search-results");
     if (!host) return;
@@ -4537,7 +4742,30 @@
       host.replaceChildren();
       for (const player of payload.players || []) {
         host.appendChild(createSocialPlayerCard(player, [
-          { label:"ARKADAŞ EKLE", onClick:() => socialMutation(`/social/${encodeURIComponent(participantPlayerId)}/requests`, { target_player_id:player.player_id, requestKind:"friend-request" }, "Arkadaşlık isteği gönderiliyor…") },
+          {
+            label:"ARKADAŞ EKLE",
+            onClick:async (event) => {
+              const button = event?.currentTarget;
+              if (button) button.disabled = true;
+              const result = await socialMutation(
+                `/social/${encodeURIComponent(participantPlayerId)}/requests`,
+                { target_player_id:player.player_id, requestKind:"friend-request" },
+                "Arkadaşlık isteği gönderiliyor…"
+              );
+              if (result?.ok) {
+                // İstek gitti: arama sonucu ve kutusu kendiliğinden temizlenir.
+                clearFriendSearch();
+                setFriendsStatus(
+                  localizedMessage("friends.request_sent", {
+                    name:player.display_name || localizedUiText("Oyuncu"),
+                  }),
+                  "success"
+                );
+              } else if (button) {
+                button.disabled = false;
+              }
+            },
+          },
         ]));
       }
       if (!host.children.length) {
@@ -5822,6 +6050,186 @@
     }
   }
 
+  // --- Takım: takımı olmayan oyuncunun ekranı ------------------------------
+  // İlk sekme mevcut takımların listesidir (yeri olan takımın karşısında
+  // BAŞVUR); ikinci sekmede takım oluşturulur.
+  let activeTeamLobbyTab = "list";
+
+  function openTeamLobbyTab(tab) {
+    activeTeamLobbyTab = tab === "create" ? "create" : "list";
+    for (const button of document.querySelectorAll("[data-team-lobby-tab]")) {
+      const active = button.dataset.teamLobbyTab === activeTeamLobbyTab;
+      button.classList.toggle("is-active", active);
+      button.setAttribute("aria-pressed", String(active));
+    }
+    for (const panel of document.querySelectorAll("[data-team-lobby-panel]")) {
+      panel.hidden = panel.dataset.teamLobbyPanel !== activeTeamLobbyTab;
+    }
+  }
+
+  function createTeamDirectoryRow(team) {
+    const pending = Boolean(teamState.application_pending);
+    const applied = pending && teamState.applied_team_id === team.team_id;
+    const viewerTrophies = Number(teamState.viewer_trophies || 0);
+    const minTrophies = Number(team.min_trophies || 0);
+    const row = document.createElement("article");
+    row.className = "team-directory-row";
+    row.dataset.teamId = team.team_id;
+    row.dataset.applied = String(applied);
+    row.dataset.full = String(Boolean(team.full));
+
+    const badge = document.createElement("span");
+    badge.className = "team-directory-badge";
+    const copy = document.createElement("div");
+    copy.className = "team-directory-copy";
+    const name = createTeamProfileLink(team.team_id, team.name, { className:"team-directory-name" });
+    applyTeamAppearance(row, team.appearance, { emblemHost:badge, nameHost:name });
+    const meta = document.createElement("small");
+    const trophies = Number(team.total_trophies || 0).toLocaleString(uiLocale());
+    meta.textContent = localizedMessage("team.directory_meta", {
+      members:team.member_count,
+      limit:team.member_limit,
+      trophies,
+    }) + (minTrophies > 0
+      ? localizedMessage("team.directory_requirement", { trophies:localizedNumber(minTrophies) })
+      : "");
+    copy.append(name, meta);
+    if (team.description) {
+      const description = document.createElement("p");
+      description.textContent = team.description;
+      copy.appendChild(description);
+    }
+
+    const action = document.createElement("button");
+    action.type = "button";
+    action.className = "team-directory-action";
+    if (applied) {
+      action.textContent = "BAŞVURUYU GERİ ÇEK";
+      action.dataset.variant = "quiet";
+      action.addEventListener("click", () => mutateTeam(
+        `/teams/${encodeURIComponent(team.team_id)}/applications/withdraw`,
+        { requestKind:"withdraw" },
+        "Başvuru geri çekiliyor…"
+      ));
+    } else if (team.full) {
+      action.textContent = "DOLU";
+      action.disabled = true;
+    } else if (viewerTrophies < minTrophies) {
+      action.textContent = "KUPA YETERSİZ";
+      action.disabled = true;
+    } else {
+      action.textContent = "BAŞVUR";
+      // Aynı anda tek başvuru yapılabilir; diğer takımlar bekleme süresince kapalıdır.
+      action.disabled = pending;
+      action.addEventListener("click", () => mutateTeam(
+        `/teams/${encodeURIComponent(team.team_id)}/join`,
+        { requestKind:"join" },
+        "Takım başvurusu gönderiliyor…"
+      ));
+    }
+    row.append(badge, copy, action);
+    return row;
+  }
+
+  function renderTeamLobby() {
+    openTeamLobbyTab(activeTeamLobbyTab);
+    const list = document.getElementById("team-directory-list");
+    if (list) {
+      list.replaceChildren();
+      // Eski sunucu yalnız yeri olan takımları gönderir.
+      const teams = teamState.teams || teamState.available_teams || [];
+      // Başvurulan takım en üstte durur.
+      const ordered = [...teams].sort((left, right) =>
+        Number(right.team_id === teamState.applied_team_id) - Number(left.team_id === teamState.applied_team_id)
+      );
+      for (const team of ordered) list.appendChild(createTeamDirectoryRow(team));
+      if (!list.children.length) {
+        const empty = document.createElement("div");
+        empty.className = "friends-empty-state";
+        const title = document.createElement("strong");
+        title.textContent = "HENÜZ TAKIM YOK";
+        const text = document.createElement("small");
+        text.textContent = "İlk takımı sen kur: Takım Oluştur sekmesine geç.";
+        empty.append(title, text);
+        list.appendChild(empty);
+      }
+    }
+
+    const creation = teamState.creation || {};
+    const cost = Math.max(0, Number(creation.cost_circuit_credits || 0));
+    const credits = Number(creation.circuit_credits ?? metaProgressionState?.circuit_credits ?? 0);
+    const costCopy = document.getElementById("team-create-cost");
+    if (costCopy) {
+      costCopy.textContent = cost > 0
+        ? localizedMessage("team.creation_cost", {
+            cost:localizedNumber(cost),
+            credits:localizedNumber(credits),
+          })
+        : "Takım kurmak ücretsiz.";
+      costCopy.dataset.affordable = String(credits >= cost);
+    }
+    const createButton = document.getElementById("team-create-button");
+    if (createButton) {
+      createButton.disabled = Boolean(teamState.application_pending) || credits < cost;
+      createButton.textContent = teamState.application_pending
+        ? "ÖNCE BAŞVURUNU GERİ ÇEK"
+        : credits < cost ? "DEVRE KREDİSİ YETERSİZ" : "OLUŞTUR";
+    }
+    const requirement = document.getElementById("team-create-min-trophies");
+    const options = creation.min_trophy_options || [0];
+    if (requirement && requirement.dataset.options !== options.join(",")) {
+      const previous = requirement.value;
+      requirement.dataset.options = options.join(",");
+      requirement.replaceChildren();
+      for (const value of options) {
+        const option = document.createElement("option");
+        option.value = String(value);
+        option.textContent = Number(value) > 0
+          ? localizedMessage("team.minimum_trophies", { trophies:localizedNumber(value) })
+          : "Şart yok";
+        requirement.appendChild(option);
+      }
+      if (options.map(String).includes(previous)) requirement.value = previous;
+    }
+    const description = document.getElementById("team-create-description");
+    if (description && creation.description_max_length) {
+      description.maxLength = Number(creation.description_max_length);
+    }
+  }
+
+  // Takım liderine bekleyen başvuru ışığı: alt gezinmedeki TAKIM düğmesi,
+  // takım amblemi (yönetim girişi) ve Üye Yönetimi sekmesi. Sayı takım
+  // ekranı açıkken takım durumundan, diğer ekranlarda mesaj kutusu
+  // tazelemesinden gelir.
+  let pendingTeamApplications = 0;
+
+  function noteTeamApplicationsFromTeamState() {
+    if (!teamState) return;
+    pendingTeamApplications = teamState.joined && teamState.is_owner
+      ? Math.max(0, Number(teamState.pending_application_count ?? teamState.applications?.length ?? 0))
+      : 0;
+  }
+
+  function noteTeamApplicationsFromInbox() {
+    if (!rewardInboxState?.team) return;
+    pendingTeamApplications = Math.max(0, Number(rewardInboxState.team.pending_applications || 0));
+    renderTeamNotificationLights();
+  }
+
+  function renderTeamNotificationLights() {
+    const count = pendingTeamApplications;
+    const has = count > 0;
+    for (const button of document.querySelectorAll('#app-bottom-dock [data-open-screen="team"]')) {
+      button.classList.toggle("has-persistent-notification", has);
+    }
+    document.getElementById("team-management-open")?.classList.toggle("has-team-application", has);
+    const badge = document.getElementById("team-application-badge");
+    if (badge) {
+      badge.hidden = !has;
+      badge.textContent = has ? String(Math.min(99, count)) : "";
+    }
+  }
+
   function renderTeamHub() {
     const onboarding = document.getElementById("team-onboarding");
     const hub = document.getElementById("team-hub");
@@ -5829,29 +6237,10 @@
     onboarding.hidden = Boolean(teamState.joined);
     hub.hidden = !teamState.joined;
 
+    noteTeamApplicationsFromTeamState();
+    renderTeamNotificationLights();
     if (!teamState.joined) {
-      const joinButton = document.getElementById("team-join-button");
-      if (joinButton) {
-        joinButton.disabled = Boolean(teamState.application_pending);
-        joinButton.textContent = teamState.application_pending ? "BAŞVURU BEKLİYOR" : "BAŞVUR";
-      }
-      const select = document.getElementById("team-join-select");
-      if (select) {
-        select.replaceChildren();
-        const teams = teamState.available_teams || [];
-        const placeholder = document.createElement("option");
-        placeholder.value = "";
-        placeholder.textContent = teams.length ? "Takım seç" : "Açık takım yok";
-        select.appendChild(placeholder);
-        for (const team of teams) {
-          const option = document.createElement("option");
-          option.value = team.team_id;
-          option.textContent = `${team.name} · ${team.member_count}/${team.member_limit} · ${Number(team.total_trophies || 0).toLocaleString(uiLocale())} 🏆`;
-          select.appendChild(option);
-        }
-        if (teamState.applied_team_id) select.value = teamState.applied_team_id;
-        select.disabled = Boolean(teamState.application_pending);
-      }
+      renderTeamLobby();
       return;
     }
 
@@ -5860,6 +6249,11 @@
       if (element) element.textContent = String(value);
     };
     setText("team-name", teamState.name || "Takım");
+    const teamDescription = document.getElementById("team-description");
+    if (teamDescription) {
+      teamDescription.textContent = teamState.description || "";
+      teamDescription.hidden = !teamState.description;
+    }
     setText("team-member-count", `${teamState.member_count || 0} / ${teamState.member_limit || 30} ÜYE`);
     renderTrophyValue("team-total-trophies", Number(teamState.total_trophies || 0));
     const statistics = teamState.statistics || {};
@@ -6006,14 +6400,74 @@
     }
   }
 
-  function renderMetaHubScreens() {
+  // Merkez ekranları. Her veri tazelemesinde ve ekran geçişinde hepsini baştan
+  // kurmak düşük donanımda geçişleri ağırlaştırıyor, savaş başında da
+  // takılma yaratıyordu. Görünen ekran hemen çizilir; diğerleri kirli
+  // işaretlenip tarayıcı boştayken sırayla çizilir. Savaş ekranında bekletilir.
+  const META_HUB_SECTIONS = Object.freeze([
+    { id:"home", screens:["menu"], render:() => renderHomeHub() },
+    {
+      id:"cards",
+      screens:["modules"],
+      render:() => {
+        renderModuleCollection();
+        renderCoreCollection();
+      },
+    },
+    { id:"shop", screens:["shop"], render:() => renderShop() },
+    {
+      id:"profile",
+      screens:["profile", "statistics"],
+      render:() => {
+        renderCanonStatistics();
+        renderProfileHighlights();
+      },
+    },
+    { id:"team", screens:["team"], render:() => renderTeamHub() },
+  ]);
+  const metaHubDirtySections = new Set();
+  let metaHubFlushHandle = null;
+
+  function flushMetaHubSections({ all=false }={}) {
+    metaHubFlushHandle = null;
+    if (!all && appRouter.currentScreen === RelayAppScreen.PLAY) return;
+    for (const section of META_HUB_SECTIONS) {
+      if (!metaHubDirtySections.has(section.id)) continue;
+      metaHubDirtySections.delete(section.id);
+      section.render();
+      if (!all) break;
+    }
+    scheduleMetaHubFlush();
+  }
+
+  // Ev ekranı görünmüyorken (ör. savaş başlarken) çizimi ekrana dönüşe bırakır.
+  function renderHomeHubWhenVisible() {
+    if (appRouter.currentScreen === RelayAppScreen.PLAY) {
+      metaHubDirtySections.add("home");
+      return;
+    }
+    metaHubDirtySections.delete("home");
     renderHomeHub();
-    renderModuleCollection();
-    renderShop();
-    renderCoreCollection();
-    renderCanonStatistics();
-    renderProfileHighlights();
-    renderTeamHub();
+  }
+
+  function scheduleMetaHubFlush() {
+    if (metaHubFlushHandle !== null || !metaHubDirtySections.size) return;
+    if (appRouter.currentScreen === RelayAppScreen.PLAY) return;
+    metaHubFlushHandle = typeof globalThis.requestIdleCallback === "function"
+      ? globalThis.requestIdleCallback(() => flushMetaHubSections(), { timeout:900 })
+      : window.setTimeout(() => flushMetaHubSections(), 60);
+  }
+
+  function renderMetaHubScreens() {
+    const current = appRouter.currentScreen;
+    for (const section of META_HUB_SECTIONS) {
+      if (section.screens.includes(current)) {
+        metaHubDirtySections.delete(section.id);
+        section.render();
+      } else {
+        metaHubDirtySections.add(section.id);
+      }
+    }
     const state = metaProgressionState;
     if (state) {
       const credits = document.getElementById("lobby-circuit-credits");
@@ -6021,6 +6475,7 @@
       const flux = document.getElementById("lobby-flux-shards");
       if (flux) flux.textContent = String(state.flux_shards || 0);
     }
+    scheduleMetaHubFlush();
   }
 
   document.querySelectorAll("[data-team-tab]").forEach((button) => {
@@ -6083,12 +6538,7 @@
   document.querySelectorAll("[data-friends-tab]").forEach((button) => {
     button.addEventListener("click", () => openFriendsTab(button.dataset.friendsTab));
   });
-  document.getElementById("friend-search-close")?.addEventListener("click", () => {
-    const panel = document.getElementById("friend-search-panel");
-    if (panel) panel.hidden = true;
-    const input = document.getElementById("friend-search-input");
-    if (input) input.value = "";
-  });
+  document.getElementById("friend-search-close")?.addEventListener("click", clearFriendSearch);
   globalThis.addEventListener?.("gridshard:deep-link", (event) => {
     const rawUrl = event?.detail?.url || event?.detail || "";
     void afterStartup(() => handleApplicationUrl(rawUrl));
@@ -6100,6 +6550,14 @@
   const playGamesReady = playGames ? Promise.race([
     playGames.prepare(), new Promise(resolve => setTimeout(() => resolve(false), 8000)),
   ]) : Promise.resolve(false);
+  const accountSessionControls = globalThis.GridshardAccountSessionControls
+    ? new globalThis.GridshardAccountSessionControls({
+      document, auth:globalThis.GridshardAuth?.session, playGames, ready:playGamesReady,
+      playerId:participantPlayerId, request:requestJsonWithDeadline,
+      canRecoverCurrent:() => Boolean(playGames?.configured && accountPlatformState?.oauth?.google_play_games?.linked
+        && accountPlatformState?.oauth?.google_play_games?.configured),
+      onRevoked:state => { accountPlatformState = state; renderAccountPlatform(); },
+    }) : null;
   function renderPlayGamesButtons() {
     const provider = accountPlatformState?.oauth?.google_play_games || {};
     for (const [id, label] of [["account-onboarding-play-games", "PLAY GAMES İLE DEVAM ET"], ["account-oauth-play-games", "PLAY GAMES BAĞLA"]]) {
@@ -6391,29 +6849,33 @@
   });
   document.getElementById("team-create-button")?.addEventListener("click", async () => {
     const input = document.getElementById("team-create-name");
+    const description = document.getElementById("team-create-description");
+    const requirement = document.getElementById("team-create-min-trophies");
     const name = input?.value?.trim() || "";
     if (!name) {
       setTeamActionStatus("Takım adı gerekli.", "error");
+      input?.focus?.();
       return;
     }
     const result = await mutateTeam(
       "/teams",
-      { name, requestKind:"create" },
+      {
+        name,
+        description:description?.value?.trim() || "",
+        min_trophies:Number(requirement?.value || 0),
+        requestKind:"create",
+      },
       "Takım oluşturuluyor…"
     );
-    if (result.ok && input) input.value = "";
-  });
-  document.getElementById("team-join-button")?.addEventListener("click", () => {
-    const teamId = document.getElementById("team-join-select")?.value || "";
-    if (!teamId) {
-      setTeamActionStatus("Başvurmak için bir takım seç.", "error");
-      return;
+    if (result.ok) {
+      if (input) input.value = "";
+      if (description) description.value = "";
+      // Kurma bedeli düştü: kaynak barı ve mağaza güncellensin.
+      void loadMetaProgression();
     }
-    mutateTeam(
-      `/teams/${encodeURIComponent(teamId)}/join`,
-      { requestKind:"join" },
-      "Takım başvurusu gönderiliyor…"
-    );
+  });
+  document.querySelectorAll("[data-team-lobby-tab]").forEach((button) => {
+    button.addEventListener("click", () => openTeamLobbyTab(button.dataset.teamLobbyTab));
   });
   document.getElementById("team-management-open")?.addEventListener("click", () => {
     if (!teamState?.is_owner) return;
@@ -6510,6 +6972,22 @@
   });
   document.querySelectorAll("[data-card-page]").forEach((button) => {
     button.addEventListener("click", () => setCardCollectionPage(button.dataset.cardPage));
+  });
+  document.querySelectorAll("[data-cosmetic-tab]").forEach((button) => {
+    button.addEventListener("click", () => openCosmeticTab(button.dataset.cosmeticTab));
+  });
+  // Kaynak barındaki Akı / Devre Kredisi mağazayı ilgili paketlerin önünde açar.
+  document.querySelectorAll("[data-resource-shop]").forEach((button) => {
+    button.addEventListener("click", () => {
+      // Ekran geçişi aynı dokunuşla başlar; kaydırma mağaza çizildikten sonra yapılır.
+      window.setTimeout(() => {
+        const target = document.getElementById(
+          button.dataset.resourceShop === "flux" ? "paid-flux-packs" : "paid-credit-packs"
+        );
+        const heading = target?.previousElementSibling || target;
+        heading?.scrollIntoView?.({ block:"start", behavior:"auto" });
+      }, 0);
+    });
   });
   document.getElementById("module-quick-info")?.addEventListener("click", openModuleDetail);
   document.getElementById("module-quick-select")?.addEventListener("click", selectCollectionModule);
@@ -7554,7 +8032,7 @@
     const active = ["matchmaking", "matched", "connecting", "readying", "error"].includes(String(status || ""));
     overlay.hidden = !active;
     document.body.dataset.homeMatchmaking = String(active);
-    for (const panel of document.querySelectorAll("[data-screen-panel], #app-progress-ribbon, #app-bottom-dock")) {
+    for (const panel of document.querySelectorAll("[data-screen-panel], #app-resource-bar, #app-progress-ribbon, #app-bottom-dock")) {
       panel.inert = active;
     }
     const title = document.getElementById("home-matchmaking-title");
@@ -7691,7 +8169,7 @@
       }
     }
     renderPlayModeUi();
-    renderHomeHub();
+    renderHomeHubWhenVisible();
     requestOwnedAudioState("online_status_update");
   }
 
@@ -7724,6 +8202,9 @@
           selectedBattlePoolDefinitionIds(),
         initialModules:
           buildInitialOnlineSetup(),
+        // İlk oyun deneyimi: sunucudan yönetmenli ilk savaş istenir.
+        tutorial:
+          onboardingWantsDirectedBattle(),
       });
 
     if (result.cancelled) return result;
@@ -7822,12 +8303,28 @@
       "battle-pool-preset-select"
     );
 
+  let renderedCorePowerSignature = null;
+
   function renderCorePowerControl() {
     if (!corePowerButtonEl) return;
     const charge=Math.max(0,Math.min(100,Math.round(corePowerCharge)));
+    const selectedCore = metaProgressionState?.cores?.selected_core_type || "core_resonance";
+    // Her sunucu mesajında çağrılır; görünüm değişmediyse DOM'a dokunma.
+    const signature = [
+      charge,
+      corePowerReady,
+      corePowerTargeting,
+      localBattleFinished,
+      selectedCore,
+      document.documentElement?.lang || "tr",
+    ].join("|");
+    if (signature === renderedCorePowerSignature) {
+      renderBattleEmojiControl();
+      return;
+    }
+    renderedCorePowerSignature = signature;
     corePowerButtonEl.style.setProperty("--core-charge",`${charge}%`);
     corePowerButtonEl.dataset.ready=String(corePowerReady);
-    const selectedCore = metaProgressionState?.cores?.selected_core_type || "core_resonance";
     const coreVisual = applyCoreVisualIdentity(corePowerButtonEl, selectedCore);
     const glyph = coreVisual.glyph;
     const buttonArt = corePowerButtonEl.querySelector(".core-power-glyph");
@@ -7873,21 +8370,30 @@
     battleEmojiButtonEl?.setAttribute("aria-expanded", "false");
   }
 
+  let renderedBattleEmojiSignature = null;
+
   function renderBattleEmojiControl() {
     if (!battleEmojiButtonEl) return;
     const cosmetics = profileState.viewModel()?.cosmetics;
     const available = availableBattleEmojis(cosmetics);
     const coolingDown = Date.now() < battleEmojiCooldownUntil;
+    const quick = quickBattleEmoji(cosmetics) || { glyph:"🙂", real:true };
+    if (localBattleFinished || coolingDown) closeBattleEmojiTray();
+    // Düğme görseli yeniden kurulursa animasyonu baştan başlar; değişmediyse bırak.
+    const signature = [
+      available.map((emoji) => emoji.id).join(","),
+      coolingDown,
+      localBattleFinished,
+      quick.id || quick.glyph,
+    ].join("|");
+    if (signature === renderedBattleEmojiSignature) return;
+    renderedBattleEmojiSignature = signature;
     battleEmojiButtonEl.hidden = !available.length;
     battleEmojiButtonEl.disabled = localBattleFinished || coolingDown;
     battleEmojiButtonEl.dataset.cooldown = String(coolingDown);
     if (battleEmojiButtonGlyphEl) {
-      renderBattleEmojiVisual(
-        battleEmojiButtonGlyphEl,
-        quickBattleEmoji(cosmetics) || { glyph:"🙂", real:true }
-      );
+      renderBattleEmojiVisual(battleEmojiButtonGlyphEl, quick);
     }
-    if (localBattleFinished || coolingDown) closeBattleEmojiTray();
   }
 
   function openBattleEmojiTray() {
@@ -8514,6 +9020,8 @@
   // gelir; olaydan önce alınmış bayat bir görüntü ölü modülü geri getirmez.
   const serverDestroyedModuleAt = new Map();
   const moduleAnchorRects = new Map();
+  // Modül kimliği → en son çizildiği hücre (düzen okumadan tutulur).
+  const moduleAnchorCells = new Map();
   const floatingFeedbackLive = new Map();
   let battleLiveTickerTimer = null;
 
@@ -9134,6 +9642,52 @@
     ) || null;
   }
 
+  // Efekt çapaları. Bir sunucu mesajı onlarca efekt üretir; her efektin kendi
+  // getBoundingClientRect okuması, araya giren DOM yazmalarıyla tarayıcıyı her
+  // seferinde düzen hesabına zorluyordu. Aynı görev içindeki ilk istek katmanı
+  // ve tahtadaki bütün kartları tek okuma turunda ölçer; kalan istekler bu
+  // ölçümden yanıtlanır. Ölçüm görev bitince atılır, böylece bayatlamaz.
+  let battleAnchorBatch = null;
+
+  function battleAnchorRects() {
+    if (battleAnchorBatch) return battleAnchorBatch;
+    const batch = { layer:null, modules:new Map() };
+    const layer = document.getElementById("battle-effect-layer");
+    if (layer && typeof layer.getBoundingClientRect === "function") {
+      batch.layer = layer.getBoundingClientRect();
+    }
+    for (const root of [board, enemyBoard]) {
+      if (!root || typeof root.querySelectorAll !== "function") continue;
+      for (const element of root.querySelectorAll("[data-module-id]")) {
+        if (typeof element.getBoundingClientRect !== "function") continue;
+        batch.modules.set(String(element.dataset.moduleId), element.getBoundingClientRect());
+      }
+    }
+    battleAnchorBatch = batch;
+    const release = () => {
+      if (battleAnchorBatch === batch) battleAnchorBatch = null;
+    };
+    if (typeof queueMicrotask === "function") queueMicrotask(release);
+    else Promise.resolve().then(release);
+    return batch;
+  }
+
+  function battleEffectLayerRect(layer) {
+    const batch = battleAnchorRects();
+    if (batch.layer) return batch.layer;
+    return layer.getBoundingClientRect();
+  }
+
+  function rememberModuleAnchor(moduleId, rect) {
+    moduleAnchorRects.set(String(moduleId), {
+      left: rect.left,
+      top: rect.top,
+      width: rect.width,
+      height: rect.height,
+      capturedAt: Date.now(),
+    });
+  }
+
   function recordModuleAnchor(
     moduleId,
     element
@@ -9145,26 +9699,32 @@
     ) {
       return;
     }
-    const rect = element.getBoundingClientRect();
-    moduleAnchorRects.set(String(moduleId), {
-      left: rect.left,
-      top: rect.top,
-      width: rect.width,
-      height: rect.height,
-      capturedAt: Date.now(),
-    });
+    rememberModuleAnchor(moduleId, element.getBoundingClientRect());
   }
 
   function resolveModuleAnchor(
     moduleId,
     { core=false }={}
   ) {
+    const key = String(moduleId);
+    const batch = battleAnchorRects();
+    const measured = batch.modules.get(key);
+    if (measured) {
+      rememberModuleAnchor(key, measured);
+      return measured;
+    }
+    // Kartı tahtadan kalkmış modül (ör. imha sonrası gecikmeli geri bildirim):
+    // önce son çizildiği hücre, sonra Çekirdek hücresi, en son eski ölçüm.
     let target = document.querySelector(
       `[data-module-id="${moduleId}"]`
     );
+    if (!target) {
+      const cell = moduleAnchorCells.get(key);
+      if (cell?.isConnected) target = cell;
+    }
     if (!target && core) {
       target = document.querySelector(
-        String(moduleId || "").startsWith("enemy-")
+        key.startsWith("enemy-")
           ? ".duel-enemy-side .core-cell"
           : ".duel-player-side .core-cell"
       );
@@ -9173,10 +9733,97 @@
       target
       && typeof target.getBoundingClientRect === "function"
     ) {
-      recordModuleAnchor(moduleId, target);
-      return target.getBoundingClientRect();
+      const rect = target.getBoundingClientRect();
+      batch.modules.set(key, rect);
+      rememberModuleAnchor(key, rect);
+      return rect;
     }
-    return moduleAnchorRects.get(String(moduleId)) || null;
+    return moduleAnchorRects.get(key) || null;
+  }
+
+  // Efekt süpürücüsü. Her efekt öğesi ve vurgu sınıfı için ayrı zamanlayıcı
+  // kurmak yoğun savaşta ana iş parçacığını saniyede onlarca kez uyandırıyordu;
+  // her uyanışta da o an çalışan bütün animasyonların stili yeniden
+  // hesaplanır (animasyonlu öğe sıradan öğenin on katından pahalıdır). Süresi
+  // dolan işler HUD turunda ve her sunucu mesajında topluca çalışır;
+  // animasyonu biten öğe o ana kadar görünmez bekler.
+  const battleSweepQueue = [];
+
+  function scheduleBattleSweep(delayMs, run) {
+    const entry = {
+      at:performance.now() + Math.max(0, Number(delayMs) || 0),
+      run,
+      cancelled:false,
+    };
+    battleSweepQueue.push(entry);
+    return entry;
+  }
+
+  function runBattleSweep(now=performance.now()) {
+    if (!battleSweepQueue.length) return;
+    let kept = 0;
+    for (let index = 0; index < battleSweepQueue.length; index += 1) {
+      const entry = battleSweepQueue[index];
+      if (entry.cancelled) continue;
+      if (entry.at <= now) {
+        try {
+          entry.run();
+        } catch (_error) {
+          // Temizlik hatası savaşı durdurmamalı.
+        }
+        continue;
+      }
+      battleSweepQueue[kept] = entry;
+      kept += 1;
+    }
+    battleSweepQueue.length = kept;
+  }
+
+  // Kart/öğe üzerinde süreli vurgu sınıfı. Eski yöntem (`void el.offsetWidth`)
+  // her çağrıda eşzamanlı stil ve düzen hesabı yaptırıyordu. Sınıf yoksa doğrudan
+  // eklenir. Süren bir vurgu varken: Yüksek kademede sınıf kaldırılıp iki kare
+  // sonra geri eklenir (animasyon baştan oynar); diğer kademelerde yalnız sınıf
+  // değişir ve süre uzar, çünkü baştan başlatma iki ek ana kare ister.
+  const battleFxStates = new WeakMap();
+
+  function playBattleFxClass(element, className, durationMs, groupClasses=[className]) {
+    if (!element?.classList) return;
+    const previous = battleFxStates.get(element);
+    if (previous) {
+      if (previous.entry) previous.entry.cancelled = true;
+      if (previous.frame && typeof window.cancelAnimationFrame === "function") {
+        window.cancelAnimationFrame(previous.frame);
+      }
+    }
+    const state = { entry:null, frame:null };
+    battleFxStates.set(element, state);
+    const scheduleRemoval = () => {
+      state.entry = scheduleBattleSweep(durationMs, () => {
+        element.classList.remove(className);
+        if (battleFxStates.get(element) === state) battleFxStates.delete(element);
+      });
+    };
+    const active = groupClasses.some((name) => element.classList.contains(name));
+    if (
+      !active
+      || battleGraphicsQuality() !== "yuksek"
+      || typeof window.requestAnimationFrame !== "function"
+    ) {
+      for (const name of groupClasses) {
+        if (name !== className) element.classList.remove(name);
+      }
+      element.classList.add(className);
+      scheduleRemoval();
+      return;
+    }
+    element.classList.remove(...groupClasses);
+    state.frame = window.requestAnimationFrame(() => {
+      state.frame = window.requestAnimationFrame(() => {
+        state.frame = null;
+        element.classList.add(className);
+        scheduleRemoval();
+      });
+    });
   }
 
   function setBattleLiveTicker(
@@ -9188,12 +9835,13 @@
     }
     battleLiveTickerEl.textContent = message;
     battleLiveTickerEl.dataset.kind = kind;
-    battleLiveTickerEl.classList.remove("pulse");
-    void battleLiveTickerEl.offsetWidth;
-    battleLiveTickerEl.classList.add("pulse");
+    // Bir mesajda onlarca olay gelebilir; süren vurguyu her biri için baştan
+    // başlatmak yerine yalnız metin güncellenir.
+    if (!battleLiveTickerEl.classList.contains("pulse")) {
+      playBattleFxClass(battleLiveTickerEl, "pulse", 420);
+    }
     window.clearTimeout(battleLiveTickerTimer);
     battleLiveTickerTimer = window.setTimeout(() => {
-      battleLiveTickerEl.classList.remove("pulse");
       if (!localBattleFinished) {
         battleLiveTickerEl.textContent = "Devreler çalışıyor · etkiler modüllerin üzerinde görünür.";
         battleLiveTickerEl.dataset.kind = "neutral";
@@ -9239,7 +9887,7 @@
   function removeFloatingFeedbackRecord(effectId) {
     const record = floatingFeedbackLive.get(effectId);
     if (!record) return false;
-    window.clearTimeout(record.removalTimer);
+    if (record.removal) record.removal.cancelled = true;
     record.chip?.remove?.();
     floatingFeedbackLive.delete(effectId);
     battleEffectAggregator?.release?.(effectId);
@@ -9249,10 +9897,10 @@
   function scheduleFloatingFeedbackRemoval(effectId, lifetimeMs=1240) {
     const record = floatingFeedbackLive.get(effectId);
     if (!record) return;
-    window.clearTimeout(record.removalTimer);
-    record.removalTimer = window.setTimeout(
-      () => removeFloatingFeedbackRecord(effectId),
-      lifetimeMs
+    if (record.removal) record.removal.cancelled = true;
+    record.removal = scheduleBattleSweep(
+      lifetimeMs,
+      () => removeFloatingFeedbackRecord(effectId)
     );
   }
 
@@ -9281,7 +9929,7 @@
       return false;
     }
 
-    const layerRect = layer.getBoundingClientRect();
+    const layerRect = battleEffectLayerRect(layer);
     const parsed = parseFloatingFeedbackText(text);
     const semanticKey = parsed
       ? `${parsed.percent ? "percent" : "value"}:${parsed.suffix}`
@@ -9322,28 +9970,20 @@
       removeFloatingFeedbackRecord(eventResult.replacedRecordId);
     }
 
+    // Biriken değer güncellenince yazı baştan canlanmalı. Animasyonu yerinde
+    // yeniden başlatmak (zorunlu düzen ya da iki ek kare) yerine yazı öğesi
+    // yenisiyle değiştirilir; yeni öğe animasyonuna kendiliğinden baştan başlar.
     const existing = floatingFeedbackLive.get(eventResult.id);
-    if (existing?.chip?.isConnected) {
-      existing.chip.textContent = Number.isFinite(eventResult.amount)
-        ? formatFloatingFeedbackAmount(
-            eventResult.amount,
-            eventResult.metadata?.suffix || parsed?.suffix || "",
-            {
-              explicitSign:Boolean(eventResult.metadata?.explicitSign),
-              percent:Boolean(eventResult.metadata?.percent),
-            }
-          )
-        : eventResult.text;
-      updateFloatingFeedbackImportance(existing.chip, eventResult.amount ?? 0);
-      existing.chip.classList.remove("stacked");
-      void existing.chip.offsetWidth;
-      existing.chip.classList.add("stacked");
-      scheduleFloatingFeedbackRemoval(eventResult.id);
-      return true;
+    const stacked = Boolean(existing?.chip?.isConnected);
+    if (existing) {
+      if (existing.removal) existing.removal.cancelled = true;
+      existing.chip?.remove?.();
     }
 
     const chip = document.createElement("span");
-    chip.className = `battle-floating-feedback ${variant}`;
+    chip.className = stacked
+      ? `battle-floating-feedback ${variant} stacked`
+      : `battle-floating-feedback ${variant}`;
     chip.dataset.effectId = eventResult.id;
     chip.dataset.lane = String(eventResult.lane || 0);
     chip.style.setProperty(
@@ -9367,7 +10007,7 @@
 
     floatingFeedbackLive.set(eventResult.id, {
       chip,
-      removalTimer:null,
+      removal:null,
     });
     scheduleFloatingFeedbackRemoval(eventResult.id);
     return true;
@@ -10362,11 +11002,12 @@
     }
 
     localServerAuthoritative=true;
-    document.body.dataset.battleAuthority=
-      "server";
+    if (document.body.dataset.battleAuthority !== "server") {
+      document.body.dataset.battleAuthority="server";
+    }
     renderEnemyBoard();
-    renderCredits();
-    renderPlayerCoreSummary();
+    // Durum bu mesajla değişti: HUD, raf ve kendi tahtan hemen yenilenir.
+    renderBattleHud();
 
     if (snapshot.status === "finished") {
       presentOnlineMatchFinished();
@@ -10794,6 +11435,7 @@
     snapshotModuleHp.clear();
     serverDestroyedModuleAt.clear();
     moduleAnchorRects.clear();
+    moduleAnchorCells.clear();
     for (const effectId of [...floatingFeedbackLive.keys()]) {
       removeFloatingFeedbackRecord(effectId);
     }
@@ -11433,15 +12075,7 @@
       "fx-feedback-status",
     ];
 
-    element.classList.remove(
-      ...feedbackClasses
-    );
-    void element.offsetWidth;
-    element.classList.add(className);
-    window.setTimeout(
-      () => element.classList.remove(className),
-      720
-    );
+    playBattleFxClass(element, className, 720, feedbackClasses);
     return true;
   }
 
@@ -11466,18 +12100,31 @@
     const flash=
       document.createElement("span");
     flash.className="duel-impact-flash";
-    const ring=
-      document.createElement("span");
-    ring.className="duel-impact-ring";
-    impact.append(flash,ring);
-    for (let index=0;index<10;index+=1) {
-      const spark=
-        document.createElement("i");
-      spark.style.setProperty(
-        "--impact-angle",
-        `${index*36+(index%2)*9}deg`
-      );
-      impact.appendChild(spark);
+    impact.appendChild(flash);
+    // Kalabalık savaşta yalnız parlama kalır. Yüksek kademede on ayrı kıvılcım,
+    // Orta kademede aynı görüntüyü veren tek öğelik patlama çizilir.
+    if (battleEffectLoad(layer) === 0) {
+      const ring=
+        document.createElement("span");
+      ring.className="duel-impact-ring";
+      impact.appendChild(ring);
+      const quality=battleGraphicsQuality();
+      if (quality === "yuksek") {
+        for (let index=0;index<10;index+=1) {
+          const spark=
+            document.createElement("i");
+          spark.style.setProperty(
+            "--impact-angle",
+            `${index*36+(index%2)*9}deg`
+          );
+          impact.appendChild(spark);
+        }
+      } else if (quality === "orta") {
+        const burst=
+          document.createElement("span");
+        burst.className="duel-impact-burst";
+        impact.appendChild(burst);
+      }
     }
     layer.appendChild(impact);
     pulseBattleFx(
@@ -11486,10 +12133,7 @@
         ? "shield"
         : "hit"
     );
-    window.setTimeout(
-      () => impact.remove(),
-      940
-    );
+    scheduleBattleSweep(940, () => impact.remove());
   }
 
   function emitDuelAttackEffect(
@@ -11535,11 +12179,13 @@
     }
 
     const layerRect=
-      layer.getBoundingClientRect();
+      battleEffectLayerRect(layer);
     const sourceRect=
-      source.getBoundingClientRect();
+      resolveModuleAnchor(sourceModuleId)
+      || source.getBoundingClientRect();
     const targetRect=
-      target.getBoundingClientRect();
+      resolveModuleAnchor(targetModuleId)
+      || target.getBoundingClientRect();
     const x1=
       sourceRect.left
       + sourceRect.width/2
@@ -11585,15 +12231,21 @@
       `${presentation.travelMs}ms`
     );
 
-    const muzzle=
-      document.createElement("span");
-    muzzle.className="duel-shot-muzzle";
+    // Efekt bütçesi aşıldıysa atış çizgisi sadeleşir; iki katı aşıldıysa hiç
+    // çizilmez (vuruş parlaması ve hasar yazısı yine gösterilir).
+    const effectLoad=battleEffectLoad(layer);
     const beam=
       document.createElement("span");
     beam.className="duel-shot-beam";
-    line.append(muzzle,beam);
+    if (effectLoad === 0) {
+      const muzzle=
+        document.createElement("span");
+      muzzle.className="duel-shot-muzzle";
+      line.appendChild(muzzle);
+    }
+    line.appendChild(beam);
     const projectileCount=
-      presentation.fx === "drone"
+      presentation.fx === "drone" && effectLoad === 0
         ? 3
         : 1;
     for (
@@ -11609,18 +12261,15 @@
         String(index);
       line.appendChild(projectile);
     }
-    layer.appendChild(line);
+    if (effectLoad < 2) layer.appendChild(line);
 
-    source.classList.remove("fx-fire");
-    void source.offsetWidth;
-    source.classList.add("fx-fire");
+    playBattleFxClass(source, "fx-fire", presentation.travelMs);
     window.setTimeout(
       () => {
         if (visualGeneration !== battleVisualGeneration) {
           line.remove();
           return;
         }
-        source.classList.remove("fx-fire");
         emitDuelImpactEffect({
           layer,
           x:x2,
@@ -11632,10 +12281,7 @@
       },
       presentation.travelMs
     );
-    window.setTimeout(
-      () => line.remove(),
-      presentation.travelMs + 520
-    );
+    scheduleBattleSweep(presentation.travelMs + 520, () => line.remove());
     return presentation.travelMs;
   }
 
@@ -11658,7 +12304,7 @@
       return false;
     }
 
-    const layerRect = layer.getBoundingClientRect();
+    const layerRect = battleEffectLayerRect(layer);
     const targetRoot = moduleId.startsWith("enemy-")
       ? document.getElementById("enemy-board")
       : document.getElementById("board");
@@ -11690,7 +12336,7 @@
       effect.appendChild(secondaryShockwave);
     }
 
-    const particleCount = core ? 30 : 16;
+    const particleCount = battleParticleBudget(core ? 30 : 16);
     for (let index = 0; index < particleCount; index += 1) {
       const particle = document.createElement("i");
       particle.style.setProperty(
@@ -11712,10 +12358,7 @@
         ? "core_hit"
         : (moduleId.startsWith("enemy-") ? "kill_confirm" : "module_lost")
     );
-    window.setTimeout(
-      () => effect.remove(),
-      core ? 2450 : 980
-    );
+    scheduleBattleSweep(core ? 2450 : 980, () => effect.remove());
     return true;
   }
 
@@ -11769,9 +12412,16 @@
     ) {
       return false;
     }
+    // Eşzamanlı düzen zorlamadan yeniden başlatma (bkz. playBattleFxClass).
+    const restarting = ARENA_PULSE_CLASSES.some((name) => arena.classList.contains(name));
     arena.classList.remove(...ARENA_PULSE_CLASSES);
-    void arena.offsetWidth;
-    arena.classList.add(config.className);
+    if (restarting && typeof window.requestAnimationFrame === "function") {
+      window.requestAnimationFrame(() => window.requestAnimationFrame(() => {
+        if (arenaPulseLevel === level) arena.classList.add(config.className);
+      }));
+    } else {
+      arena.classList.add(config.className);
+    }
     arenaPulseLevel = level;
     window.clearTimeout(arenaPulseTimer);
     arenaPulseTimer = window.setTimeout(() => {
@@ -11829,8 +12479,24 @@
   const signatureEffectLastAt = new Map();
   let signatureEffectsLive = 0;
 
-  function battleGraphicsQuality() {
-    return settingsState.settings?.graphics_quality || "yuksek";
+  // Efekt yükü. Savaş kalabalıklaştıkça aynı anda yaşayan efekt öğeleri artar
+  // ve her biri her ana karede stil hesabına girer; düşük donanımda kareleri
+  // asıl düşüren budur. Katmandaki canlı efekt kökü sayısı kademe bütçesini
+  // aşınca süs parçaları (namlu parlaması, halka, kıvılcım), iki katını aşınca
+  // atış çizgisi atlanır. Hasar yazısı ve kart vurgusu her zaman kalır.
+  const BATTLE_EFFECT_ROOT_BUDGET = Object.freeze({ dusuk:8, orta:14, yuksek:32 });
+  function battleEffectLoad(layer) {
+    const budget = BATTLE_EFFECT_ROOT_BUDGET[battleGraphicsQuality()] || 32;
+    const live = Number(layer?.childElementCount || 0);
+    if (live >= budget * 2) return 2;
+    return live >= budget ? 1 : 0;
+  }
+
+  // Patlama parçacığı bütçesi; her parçacık ayrı bir animasyonlu öğedir.
+  function battleParticleBudget(baseCount) {
+    const quality = battleGraphicsQuality();
+    if (quality === "dusuk") return Math.min(4, Math.ceil(baseCount / 4));
+    return quality === "orta" ? Math.ceil(baseCount / 2) : baseCount;
   }
 
   function signatureEffectMinimumPriority() {
@@ -11877,7 +12543,7 @@
     if (!layer || typeof layer.getBoundingClientRect !== "function") {
       return [];
     }
-    const layerRect = layer.getBoundingClientRect();
+    const layerRect = battleEffectLayerRect(layer);
     const anchor = signatureAnchorPoint(layerRect, anchorId);
     if (!anchor) return [];
     const nodes = [];
@@ -11982,10 +12648,10 @@
             particleCount:signatureParticleCount(config.particles),
           })
         : [];
-      window.setTimeout(() => {
+      scheduleBattleSweep(lifetime, () => {
         for (const node of nodes) node.remove();
         signatureEffectsLive = Math.max(0, signatureEffectsLive - 1);
-      }, lifetime);
+      });
     });
     if (config.cue) {
       triggerBattleCue(config.cue, { minIntervalMs:config.cueIntervalMs ?? 160 });
@@ -14161,34 +14827,80 @@
     return layer;
   }
 
-  function createCircuitCableLine(layer, first, second, className) {
-    const boardElement = layer.parentElement;
-    const firstCell = boardElement?.querySelector(
-      `.board-cell[data-x="${first.x}"][data-y="${first.y}"]`
-    );
-    const secondCell = boardElement?.querySelector(
-      `.board-cell[data-x="${second.x}"][data-y="${second.y}"]`
-    );
-    if (!boardElement || !firstCell || !secondCell) return null;
-    const width = Math.max(1, boardElement.clientWidth);
-    const height = Math.max(1, boardElement.clientHeight);
-    layer.setAttribute("viewBox", `0 0 ${width} ${height}`);
+  // Akım çizgileri ayrı katmandadır: animasyon yalnız bu ince katmanı yeniden
+  // boyar, hücre ve kartların bulunduğu tahta katmanı boyanmış kalır.
+  function ensureBoardCurrentLayer(boardElement, baseLayer) {
+    let layer=boardElement.querySelector(":scope > .board-cable-current-layer");
+    if (layer) return layer;
+    layer=document.createElementNS("http://www.w3.org/2000/svg","svg");
+    layer.classList.add("board-cable-current-layer");
+    layer.setAttribute("viewBox","0 0 500 300");
+    layer.setAttribute("preserveAspectRatio","none");
+    layer.setAttribute("aria-hidden","true");
+    if (typeof baseLayer.after === "function") baseLayer.after(layer);
+    else boardElement.prepend(layer);
+    return layer;
+  }
+
+  function invalidateBattleLayout() {
+    battleLayoutEpoch += 1;
+    if (battleLayoutRefreshQueued) return;
+    battleLayoutRefreshQueued = true;
+    const refresh = () => {
+      battleLayoutRefreshQueued = false;
+      if (board) renderBoardCables(board, playerCircuitCableModules());
+      if (enemyBoard) renderBoardCables(enemyBoard, enemyCircuitCableModules());
+    };
+    if (typeof window.requestAnimationFrame === "function") window.requestAnimationFrame(refresh);
+    else refresh();
+  }
+
+  function observeBattleLayout(element) {
+    if (!element || typeof ResizeObserver !== "function") return;
+    if (!battleLayoutObserver) {
+      battleLayoutObserver = new ResizeObserver(() => invalidateBattleLayout());
+    }
+    battleLayoutObserver.observe(element);
+  }
+
+  function measureBoardCableGeometry(boardElement) {
+    // Yalnız okuma: tek düzen hesabı yeter.
+    const geometry = {
+      width:Math.max(1, boardElement.clientWidth),
+      height:Math.max(1, boardElement.clientHeight),
+      cells:new Map(),
+    };
+    for (const cell of boardElement.querySelectorAll(".board-cell")) {
+      geometry.cells.set(`${cell.dataset.x},${cell.dataset.y}`, {
+        left:cell.offsetLeft,
+        top:cell.offsetTop,
+        width:cell.offsetWidth,
+        height:cell.offsetHeight,
+      });
+    }
+    return geometry;
+  }
+
+  function createCircuitCableLine(layer, geometry, first, second, className) {
+    const firstCell = geometry.cells.get(cablePositionKey(first));
+    const secondCell = geometry.cells.get(cablePositionKey(second));
+    if (!firstCell || !secondCell) return null;
     const firstCenter = {
-      x:firstCell.offsetLeft + (firstCell.offsetWidth / 2),
-      y:firstCell.offsetTop + (firstCell.offsetHeight / 2),
+      x:firstCell.left + (firstCell.width / 2),
+      y:firstCell.top + (firstCell.height / 2),
     };
     const secondCenter = {
-      x:secondCell.offsetLeft + (secondCell.offsetWidth / 2),
-      y:secondCell.offsetTop + (secondCell.offsetHeight / 2),
+      x:secondCell.left + (secondCell.width / 2),
+      y:secondCell.top + (secondCell.height / 2),
     };
     const horizontal = first.y === second.y;
     const forward = horizontal ? second.x > first.x : second.y > first.y;
     const start = horizontal
-      ? { x:firstCell.offsetLeft + (forward ? firstCell.offsetWidth : 0), y:firstCenter.y }
-      : { x:firstCenter.x, y:firstCell.offsetTop + (forward ? firstCell.offsetHeight : 0) };
+      ? { x:firstCell.left + (forward ? firstCell.width : 0), y:firstCenter.y }
+      : { x:firstCenter.x, y:firstCell.top + (forward ? firstCell.height : 0) };
     const end = horizontal
-      ? { x:secondCell.offsetLeft + (forward ? 0 : secondCell.offsetWidth), y:secondCenter.y }
-      : { x:secondCenter.x, y:secondCell.offsetTop + (forward ? 0 : secondCell.offsetHeight) };
+      ? { x:secondCell.left + (forward ? 0 : secondCell.width), y:secondCenter.y }
+      : { x:secondCenter.x, y:secondCell.top + (forward ? 0 : secondCell.height) };
     const line=document.createElementNS("http://www.w3.org/2000/svg","line");
     line.classList.add(...className.split(" ").filter(Boolean));
     line.setAttribute("x1",String(start.x));
@@ -14199,13 +14911,54 @@
     return line;
   }
 
+  function boardCableState(boardElement, layer) {
+    const hasObserver = typeof ResizeObserver === "function";
+    let state = boardCableStates.get(layer);
+    if (
+      state
+      && state.epoch === battleLayoutEpoch
+      && hasObserver
+      && layer.childElementCount > 0
+    ) {
+      return state;
+    }
+    if (!state) observeBattleLayout(boardElement);
+    const geometry = measureBoardCableGeometry(boardElement);
+    const currentLayer = ensureBoardCurrentLayer(boardElement, layer);
+    layer.replaceChildren();
+    currentLayer.replaceChildren();
+    layer.setAttribute("viewBox", `0 0 ${geometry.width} ${geometry.height}`);
+    currentLayer.setAttribute("viewBox", `0 0 ${geometry.width} ${geometry.height}`);
+    const cells = new Set(BOARD_CELLS.map(([x,y]) => `${x},${y}`));
+    const edges = [];
+    for (const [x,y] of BOARD_CELLS) {
+      const first = {x,y};
+      for (const {dx,dy} of CIRCUIT_CABLE_DIRECTIONS) {
+        const second = {x:x+dx,y:y+dy};
+        if (!cells.has(cablePositionKey(second))) continue;
+        createCircuitCableLine(layer, geometry, first, second, "circuit-cable-base");
+        edges.push({
+          first,
+          second,
+          forwardKey:`${cablePositionKey(first)}>${cablePositionKey(second)}`,
+          reverseKey:`${cablePositionKey(second)}>${cablePositionKey(first)}`,
+          direction:"none",
+          current:null,
+          glow:null,
+        });
+      }
+    }
+    state = { epoch:battleLayoutEpoch, geometry, edges, currentLayer, fedSignature:null };
+    boardCableStates.set(layer, state);
+    return state;
+  }
+
   function renderBoardCables(boardElement, moduleIterable=[]) {
     const layer = ensureBoardCableLayer(boardElement);
     if (!layer) return;
-    layer.replaceChildren();
+    const cableState = boardCableState(boardElement, layer);
     const modules = [...moduleIterable];
     const liveCore = modules.some(m => (m.definitionId === "core" || m.nameTr === "Çekirdek") && Number(m.hp) > 0);
-    const cells = new Set(BOARD_CELLS.map(([x,y]) => `${x},${y}`));
 
     // Keep the cell itself aware of the incoming current.  This lets the
     // cable layer stay underneath the card while the cell edge still pulses
@@ -14251,27 +15004,40 @@
         }
       }
     }
-    for (const cell of boardElement.querySelectorAll(".board-cell")) {
-      const key = `${cell.dataset.x},${cell.dataset.y}`;
-      const fed = liveCore && fedCells.has(key);
-      cell.classList.toggle("energy-fed-cell", fed);
-      cell.dataset.energyFed = String(fed);
+    const fedSignature = liveCore ? [...fedCells].sort().join("|") : "";
+    if (cableState.fedSignature !== fedSignature) {
+      cableState.fedSignature = fedSignature;
+      for (const cell of boardElement.querySelectorAll(".board-cell")) {
+        const key = `${cell.dataset.x},${cell.dataset.y}`;
+        const fed = liveCore && fedCells.has(key);
+        cell.classList.toggle("energy-fed-cell", fed);
+        cell.dataset.energyFed = String(fed);
+      }
     }
 
-    for (const [x,y] of BOARD_CELLS) {
-      const first = {x,y};
-      for (const {dx,dy} of CIRCUIT_CABLE_DIRECTIONS) {
-        const second = {x:x+dx,y:y+dy};
-        if (!cells.has(cablePositionKey(second))) continue;
-        createCircuitCableLine(layer, first, second, "circuit-cable-base");
-        const forwardKey = `${cablePositionKey(first)}>${cablePositionKey(second)}`;
-        const reverseKey = `${cablePositionKey(second)}>${cablePositionKey(first)}`;
-        if (energizedEdges.has(forwardKey)) {
-          createCircuitCableLine(layer, first, second, "circuit-cable-current");
-        } else if (energizedEdges.has(reverseKey)) {
-          createCircuitCableLine(layer, second, first, "circuit-cable-current");
-        }
-      }
+    // Kablo tabanı sabittir; yalnız akım yönü değişen kenarın çizgisi yenilenir.
+    for (const edge of cableState.edges) {
+      const direction = energizedEdges.has(edge.forwardKey)
+        ? "forward"
+        : energizedEdges.has(edge.reverseKey)
+          ? "reverse"
+          : "none";
+      if (direction === edge.direction) continue;
+      edge.direction = direction;
+      edge.current?.remove();
+      edge.glow?.remove();
+      edge.current = null;
+      edge.glow = null;
+      if (direction === "none") continue;
+      const from = direction === "forward" ? edge.first : edge.second;
+      const to = direction === "forward" ? edge.second : edge.first;
+      // Parıltı, çizgi başına SVG filtresi yerine geniş ve soluk bir alt çizgidir.
+      edge.glow = createCircuitCableLine(
+        cableState.currentLayer, cableState.geometry, from, to, "circuit-cable-glow"
+      );
+      edge.current = createCircuitCableLine(
+        cableState.currentLayer, cableState.geometry, from, to, "circuit-cable-current"
+      );
     }
     if (boardElement === board) renderCorePowerControl();
   }
@@ -14657,7 +15423,7 @@
     card.appendChild(icon);
     const label=document.createElement("span");
     label.className="name";
-    label.textContent=name;
+    fillBattleCardName(label, {nameTr:name});
     card.appendChild(label);
     appendHpBar(card,hp,maxHp,{ battle:true });
     const isSource=
@@ -14679,46 +15445,97 @@
     }
     appendModuleLiveStatus(card, power);
     if (!isSource) appendModuleHeatBar(card, power);
-    window.requestAnimationFrame(
-      () => recordModuleAnchor(moduleId, card)
-    );
+    appendModuleFxOverlay(card);
     return card;
   }
 
-  function renderEnemyBoard() {
+  // Vuruş/destek geri bildirimi katmanı. Orta ve Düşük grafik kademesinde kart
+  // yerine bu katmanın opaklığı canlandırılır (bkz. canon.css, grafik kademeleri).
+  function appendModuleFxOverlay(card) {
+    const overlay = document.createElement("span");
+    overlay.className = "module-fx-overlay";
+    overlay.setAttribute("aria-hidden", "true");
+    card.appendChild(overlay);
+  }
+
+  // Kartın görünümünü belirleyen alanlar. Hücre imzası değişmedikçe kart
+  // yeniden kurulmaz (bkz. GridshardBattleBoardView).
+  function battleModuleRenderSignature(moduleLike) {
+    return JSON.stringify([
+      moduleLike.instanceId ?? moduleLike.id,
+      moduleLike.nameTr ?? moduleLike.name,
+      moduleLike.category ?? moduleLike.kind,
+      moduleLike.status ?? "active",
+      moduleLike.hp,
+      moduleLike.maxHp,
+      Math.round(Number(moduleLike.heat || 0)),
+      moduleLike.heatPenalty || 0,
+      Boolean(moduleLike.overheated),
+      Boolean(moduleLike.energyWaiting),
+      moduleLike.isPowered,
+      Math.round(Number(moduleLike.energyReceived || 0) * 10),
+      Math.round(Number(moduleLike.energyRequired || 0) * 10),
+      moduleLike.powerReason || "",
+      moduleLike.debuffs || [],
+      moduleLike.signatureBadges || [],
+    ]);
+  }
+
+  const enemyBoardCellSignatures = new WeakMap();
+
+  function renderEnemyBoard({ force=false }={}) {
     if (!enemyBoard) return;
     if (!enemyBoard.children?.length) {
       createEnemyBoard();
     }
-    for (const cell of enemyBoard.querySelectorAll(".board-cell")) {
-      cell.innerHTML="";
-      cell.dataset.occupied="false";
-      cell.dataset.debris="false";
-      cell.classList.remove("debris-cell");
-    }
-    appendCellDebris(enemyBoard, enemyCellDebris);
-    const place=(x,y,card)=>{
-      const cell=enemyBoard.querySelector(`.board-cell[data-x="${x}"][data-y="${y}"]`);
-      if (cell) {
-        cell.dataset.occupied="true";
-        cell.appendChild(card);
-      }
-    };
-    place(2,1,enemyCard("enemy-core","Çekirdek",mockEnemyCoreHp,300,"core",{ signatureBadges:mockEnemyCoreBadges }));
+    const language = document.documentElement?.lang || "tr";
+    const debrisByCell = new Map(
+      (enemyCellDebris || []).map((debris) => [
+        `${Number(debris.x)},${Number(debris.y)}`,
+        debris,
+      ])
+    );
+    const cardByCell = new Map();
+    cardByCell.set("2,1", {
+      id:"enemy-core",
+      signature:JSON.stringify([mockEnemyCoreHp, mockEnemyCoreBadges]),
+      build:() => enemyCard("enemy-core","Çekirdek",mockEnemyCoreHp,300,"core",{ signatureBadges:mockEnemyCoreBadges }),
+    });
     for (const module of mockEnemyModules) {
       if (module.hp<=0) continue;
-      place(
-        module.position.x,
-        module.position.y,
-        enemyCard(
+      cardByCell.set(`${Number(module.position.x)},${Number(module.position.y)}`, {
+        id:module.id,
+        signature:battleModuleRenderSignature(module),
+        build:() => enemyCard(
           module.id,
           module.name,
           module.hp,
           module.maxHp,
           module.kind,
           module
-        )
-      );
+        ),
+      });
+    }
+    for (const cell of enemyBoard.querySelectorAll(".board-cell")) {
+      const key=`${Number(cell.dataset.x)},${Number(cell.dataset.y)}`;
+      const debris=debrisByCell.get(key) || null;
+      const entry=cardByCell.get(key) || null;
+      const seconds=debris
+        ? Math.max(1, Math.ceil(Number(debris.remaining_ms || 0) / 1000))
+        : 0;
+      const signature=`${language}|${seconds}|${entry ? entry.signature : ""}`;
+      if (!force && enemyBoardCellSignatures.get(cell) === signature) continue;
+      enemyBoardCellSignatures.set(cell, signature);
+      cell.innerHTML="";
+      cell.dataset.occupied="false";
+      cell.dataset.debris="false";
+      cell.classList.remove("debris-cell");
+      if (debris) appendCellDebris(enemyBoard, [debris]);
+      if (entry) {
+        cell.dataset.occupied="true";
+        cell.appendChild(entry.build());
+        moduleAnchorCells.set(String(entry.id), cell);
+      }
     }
     mockEnemyModuleHp=enemyLivingModules().reduce((sum,module)=>sum+module.hp,0);
     if (enemyBoardStatusEl) {
@@ -14749,17 +15566,35 @@
     return short;
   }
 
+  let renderedBattleIdentitySignature = null;
+
   function renderBattleIdentityPanels() {
     const playerName=
       profileState.viewModel()?.displayName
       || "Oyuncu";
+    const opponentName=opponentBattleDisplayName();
+    const canOpenProfile = isPublicProfileTarget(enemyBattlePlayerId)
+      && matchmakingState.opponentType !== "ai";
+    const deckIds=(enemyBattlePoolDefinitionIds.length
+      ? enemyBattlePoolDefinitionIds
+      : STARTER_BATTLE_POOL_PRESET.module_definition_ids
+    ).slice(0,6);
+    // Her sunucu mesajında çağrılır; kimlik ve deste değişmediyse DOM'a dokunma.
+    const signature=JSON.stringify([
+      playerName,
+      opponentName,
+      canOpenProfile,
+      deckIds,
+      moduleDefinitions.length,
+      document.documentElement?.lang || "tr",
+    ]);
+    if (signature === renderedBattleIdentitySignature) return;
+    renderedBattleIdentitySignature = signature;
     if (playerBattleNameEl) {
       playerBattleNameEl.textContent=playerName;
     }
     if (enemyBattleNameEl) {
-      enemyBattleNameEl.textContent=opponentBattleDisplayName();
-      const canOpenProfile = isPublicProfileTarget(enemyBattlePlayerId)
-        && matchmakingState.opponentType !== "ai";
+      enemyBattleNameEl.textContent=opponentName;
       enemyBattleNameEl.disabled = !canOpenProfile;
       enemyBattleNameEl.classList.toggle("is-profile-enabled", canOpenProfile);
       enemyBattleNameEl.title = canOpenProfile ? "Oyuncu profilini gör" : "";
@@ -14770,11 +15605,7 @@
     label.className="enemy-deck-label";
     label.textContent=localizedUiText("Deste");
     enemyDeckPreviewEl.appendChild(label);
-    const ids=(enemyBattlePoolDefinitionIds.length
-      ? enemyBattlePoolDefinitionIds
-      : STARTER_BATTLE_POOL_PRESET.module_definition_ids
-    ).slice(0,6);
-    for (const definitionId of ids) {
+    for (const definitionId of deckIds) {
       const module=moduleDefinitions.find(
         (candidate) => candidate.definitionId === definitionId
       );
@@ -15103,7 +15934,9 @@
     }
     if (graphics) {
       graphics.value =
-        view.graphicsQuality;
+        graphicsModeIsAuto()
+          ? "otomatik"
+          : view.graphicsQuality;
     }
     if (language) {
       language.value =
@@ -15111,6 +15944,7 @@
     }
     if (analyticsConsent) analyticsConsent.checked = view.analyticsConsent === true;
 
+    applyGraphicsQuality();
     applyLanguagePreference(
       view.language
     );
@@ -15194,9 +16028,11 @@
             Boolean(
               vibration?.checked
             ),
+          // "Otomatik" sunucuya gitmez; hesaptaki son seçim korunur.
           graphics_quality:
-            graphics?.value
-            || "yuksek",
+            GRAPHICS_TIERS.includes(graphics?.value)
+              ? graphics.value
+              : (settingsState.settings?.graphics_quality || "yuksek"),
           language:
             language?.value
             || "tr",
@@ -15487,6 +16323,16 @@
         (view.operatorTitleProgression?.stages || []).some((stage) => stage.claimable)
       );
     }
+    // Profil barı yalnız Ev ekranındadır; Profil ekranı kimliği kendi başlığında gösterir.
+    const profileHeroName = document.getElementById("profile-hero-name");
+    const profileHeroDetails = document.getElementById("profile-hero-details");
+    if (profileHeroName) profileHeroName.textContent = view.displayName;
+    if (profileHeroDetails) {
+      profileHeroDetails.textContent = localizedUiText(
+        `${activeTitle} · 🏆 ${view.rating}`
+      );
+      profileHeroDetails.dataset.claimable = lobbyPlayerDetails?.dataset.claimable || "false";
+    }
     if (document.getElementById("operator-titles-dialog")?.open) renderOperatorTitles();
 
     renderProfileHighlights();
@@ -15641,6 +16487,7 @@
     const backgroundId = cosmetics.selected_profile_background_id || "default";
     applyAvatarVisual(document.getElementById("profile-avatar"), avatarId, frameId);
     applyAvatarVisual(document.getElementById("lobby-profile-avatar"), avatarId, frameId);
+    applyAvatarVisual(document.getElementById("profile-hero-avatar"), avatarId, frameId);
     document.getElementById("app-progress-ribbon")?.setAttribute("data-profile-background", backgroundId);
     document.querySelector(".profile-identity-card")?.setAttribute("data-profile-background", backgroundId);
 
@@ -15858,11 +16705,9 @@
     deckSection.className = "profile-deck-showcase";
     const deckHeading = document.createElement("div");
     deckHeading.className = "profile-section-heading";
-    const deckKicker = document.createElement("span");
-    deckKicker.textContent = "DEVRE ALIŞKANLIĞI";
     const deckTitle = document.createElement("h3");
     deckTitle.textContent = "En Çok Kullanılan Deste";
-    deckHeading.append(deckKicker, deckTitle);
+    deckHeading.append(deckTitle);
     const deckVisual = document.createElement("div");
     deckVisual.className = "profile-deck-visual";
     const core = document.createElement("div");
@@ -15917,11 +16762,9 @@
     seasonSection.className = "profile-season-history";
     const seasonHeading = document.createElement("div");
     seasonHeading.className = "profile-section-heading";
-    const seasonKicker = document.createElement("span");
-    seasonKicker.textContent = "SEZONLAR";
     const seasonTitle = document.createElement("h3");
     seasonTitle.textContent = "Sezon Geçmişi";
-    seasonHeading.append(seasonKicker, seasonTitle);
+    seasonHeading.append(seasonTitle);
     // Güncel sezon tek satırdır: solda sezon adı, sağ üstte lig ve kupa.
     const currentSeason = document.createElement("article");
     currentSeason.className = "profile-current-season public-profile-current-season";
@@ -15968,11 +16811,9 @@
     statsSection.className = "public-profile-statistics";
     const statsHeading = document.createElement("div");
     statsHeading.className = "profile-section-heading";
-    const statsKicker = document.createElement("span");
-    statsKicker.textContent = "SAVAŞ ARŞİVİ";
     const statsTitle = document.createElement("h3");
     statsTitle.textContent = "İstatistikler";
-    statsHeading.append(statsKicker, statsTitle);
+    statsHeading.append(statsTitle);
     const statsGrid = document.createElement("div");
     statsGrid.className = "statistics-metrics-grid public-profile-stat-grid";
     const durationSeconds = Math.max(0, Math.round(Number(statistics.average_match_duration_ms || 0) / 1000));
@@ -16107,11 +16948,9 @@
     membersSection.className = "team-profile-members";
     const membersHeading = document.createElement("div");
     membersHeading.className = "profile-section-heading";
-    const membersKicker = document.createElement("span");
-    membersKicker.textContent = "KADRO";
     const membersTitle = document.createElement("h3");
     membersTitle.textContent = "Üyeler";
-    membersHeading.append(membersKicker, membersTitle);
+    membersHeading.append(membersTitle);
     const memberList = document.createElement("ol");
     memberList.className = "team-member-list team-profile-member-list";
     for (const [index, member] of (payload.members || []).entries()) {
@@ -16482,6 +17321,7 @@
   }
 
   function renderRewardInbox() {
+    noteTeamApplicationsFromInbox();
     const button = document.getElementById("reward-inbox-button");
     const notification = document.getElementById("reward-inbox-notification");
     const unclaimed = Number(rewardInboxState?.unclaimed_count || 0);
@@ -17251,7 +18091,7 @@
     icon.textContent = moduleIconFor(module);
     const name = document.createElement("span");
     name.className = "name";
-    name.textContent = localizedUiText(module.nameTr);
+    fillBattleCardName(name, module);
     const stats = document.createElement("span");
     stats.className = "module-stats";
     const cost = document.createElement("span");
@@ -17345,6 +18185,16 @@
         createModuleCard,
         cellDebris: playerCellDebris,
         debrisLabel: localizedUiText("Enkaz"),
+        // Çekirdek kartı hedefleme durumuna göre de değişir.
+        moduleSignature: (module) => (
+          `${battleModuleRenderSignature(module)}|${
+            module.nameTr === "Çekirdek" && corePowerTargeting ? 1 : 0
+          }|${document.documentElement?.lang || "tr"}`
+        ),
+        onCardPlaced: (module, cell) => {
+          moduleAnchorCells.set(String(module.instanceId), cell);
+        },
+        force,
       }
     );
     renderBoardCables(
@@ -17355,6 +18205,22 @@
 
   function moduleIconFor(module) {
     return GridshardModuleCardView.iconFor(module);
+  }
+
+  // Savaş kartına sığan kısa ad (bkz. module-card-view.js).
+  function moduleShortNameFor(module) {
+    return typeof GridshardModuleCardView.shortNameFor === "function"
+      ? GridshardModuleCardView.shortNameFor(module)
+      : String(module?.nameTr || "");
+  }
+
+  // Savaş kartındaki ad satırı: etkin dile çevrilmiş kısa ad. On bir harf ve
+  // üstü adlar dar kartta taşmasın diye işaretlenir (bkz. canon.css,
+  // "Savaşta modül adları").
+  function fillBattleCardName(element, moduleLike) {
+    const text = localizedUiText(moduleShortNameFor(moduleLike));
+    element.textContent = text;
+    if (text.length >= 11) element.dataset.long = "true";
   }
 
   function createModuleCard(module) {
@@ -17406,7 +18272,7 @@
 
     const name = document.createElement("span");
     name.className = "name";
-    name.textContent = module.nameTr;
+    fillBattleCardName(name, module);
 
     const stats =
       document.createElement("span");
@@ -17537,6 +18403,7 @@
       );
       appendModuleLiveStatus(card, module);
       if (module.definitionId !== "core") appendModuleHeatBar(card, module);
+      appendModuleFxOverlay(card);
     }
 
     card.addEventListener(
@@ -17567,9 +18434,6 @@
       }
     );
 
-    window.requestAnimationFrame(
-      () => recordModuleAnchor(module.instanceId, card)
-    );
     return card;
   }
 
@@ -17783,16 +18647,43 @@
       if (document.hidden) battlePerformanceSampler.suspend();
     });
   }
-  function sampleBattlePerformance(now) {
+  // Kare ölçümü pencereleri. Her karede rAF istemek tarayıcıyı her taramada
+  // ana iş parçacığında kare üretmeye zorlar; o zaman çalışan bütün CSS
+  // animasyonlarının (bileşimcinin kendi oynattıkları dahil) stili her karede
+  // yeniden hesaplanır. Bu yüzden oyun döngüsü HUD hızında döner ve kareler
+  // yalnız kısa ölçüm pencerelerinde tek tek izlenir. `?e2e=1` (cihaz kanıtı
+  // ve tarayıcı testleri) savaşın tamamını ölçer.
+  const FRAME_SAMPLING_FULL = (() => {
+    try {
+      return new URLSearchParams(globalThis.location?.search || "").get("e2e") === "1";
+    } catch (_) {
+      return false;
+    }
+  })();
+  const FRAME_SAMPLING_PERIOD_MS = 10000;
+  const FRAME_SAMPLING_WINDOW_MS = 1200;
+  function frameSamplingActive(now, battleActive) {
+    if (!battleActive || !Number.isFinite(now)) return false;
+    if (FRAME_SAMPLING_FULL) return true;
+    return now % FRAME_SAMPLING_PERIOD_MS < FRAME_SAMPLING_WINDOW_MS;
+  }
+
+  function sampleBattlePerformance(now, sampling=true) {
     if (!battlePerformanceSampler) return;
     const battleActive =
       (activePlayMode === "local" && localBattleStarted && !localBattleFinished)
       || (activePlayMode === "online" && document.body.dataset.onlineStatus === "battle");
+    if (battleActive && !sampling) {
+      // Pencere dışı: aradaki süre kare sayılmasın.
+      if (battlePerformanceSampler.active) battlePerformanceSampler.suspend();
+      return;
+    }
     if (battleActive && !battlePerformanceSampler.active) {
       battlePerformanceSampler.start({
         mode:activePlayMode,
         platform:globalThis.Capacitor?.getPlatform?.() || "web",
-        graphics_quality:settingsState.viewModel()?.graphicsQuality || null,
+        graphics_quality:battleGraphicsQuality(),
+        graphics_auto:graphicsModeIsAuto(),
         battle_perspective:document.body.dataset.battlePerspective !== "off",
         device_memory_gb:Number(globalThis.navigator?.deviceMemory) || null,
         cpu_cores:Number(globalThis.navigator?.hardwareConcurrency) || null,
@@ -17803,35 +18694,92 @@
     else lastBattlePerformance = battlePerformanceSampler.stop();
   }
 
-  let analyticsFrameWindowStart = null;
+  let analyticsFrameDurationMs = 0;
   let analyticsFrameCount = 0;
+  let analyticsLastFrameAt = null;
   let analyticsLastFrameReport = -60_000;
+  const BATTLE_HUD_RENDER_INTERVAL_MS = 250;
+  let lastBattleHudRenderAt = -Infinity;
+  let renderedClockText = null;
+  let renderedClockOvertime = null;
+
+  // Otomatik grafik kademesi: ölçüm pencerelerinde ortalama kare süresi ya da
+  // takılma oranı art arda iki kez kötü çıkarsa kademe bir iner.
+  const AUTO_GRAPHICS_WINDOW_MS = 4000;
+  const AUTO_GRAPHICS_MIN_WINDOW_MS = 1000;
+  const AUTO_GRAPHICS_SLOW_AVERAGE_MS = 26;
+  const AUTO_GRAPHICS_SLOW_RATIO = 0.08;
+  let autoGraphicsWindow = null;
+  let autoGraphicsBadWindows = 0;
+  function closeAutoGraphicsWindow() {
+    const window_ = autoGraphicsWindow;
+    autoGraphicsWindow = null;
+    if (!window_) return;
+    const elapsed = window_.last - window_.start;
+    if (elapsed < AUTO_GRAPHICS_MIN_WINDOW_MS || window_.frames < 10) return;
+    const bad =
+      elapsed / window_.frames > AUTO_GRAPHICS_SLOW_AVERAGE_MS
+      || window_.slow / window_.frames > AUTO_GRAPHICS_SLOW_RATIO;
+    autoGraphicsBadWindows = bad ? autoGraphicsBadWindows + 1 : 0;
+    if (autoGraphicsBadWindows >= 2) {
+      autoGraphicsBadWindows = 0;
+      lowerAutoGraphicsTier();
+    }
+  }
+  function trackAutoGraphics(now, sampling) {
+    if (!sampling || document.hidden || !Number.isFinite(now)) {
+      closeAutoGraphicsWindow();
+      return;
+    }
+    if (!autoGraphicsWindow) {
+      autoGraphicsWindow = { start:now, last:now, frames:0, slow:0 };
+      return;
+    }
+    const gap = now - autoGraphicsWindow.last;
+    if (gap < 0 || gap > 1000) {
+      // Arka plandan dönüş: pencere baştan başlar.
+      autoGraphicsWindow = null;
+      return;
+    }
+    autoGraphicsWindow.last = now;
+    autoGraphicsWindow.frames += 1;
+    if (gap > 50) autoGraphicsWindow.slow += 1;
+    if (now - autoGraphicsWindow.start >= AUTO_GRAPHICS_WINDOW_MS) closeAutoGraphicsWindow();
+  }
+
   function updateClock(now) {
-    sampleBattlePerformance(now);
-    syncFirstMatchTutorial(now);
     const analyticsBattleActive = activePlayMode === "online"
       ? document.body.dataset.onlineStatus === "battle"
       : activePlayMode === "local" && localBattleStarted && !localBattleFinished;
-    if (analyticsBattleActive && !document.hidden && settingsState.viewModel()?.analyticsConsent === true && Number.isFinite(now)) {
-      if (analyticsFrameWindowStart === null) analyticsFrameWindowStart = now;
-      analyticsFrameCount += 1;
-      if (now - analyticsFrameWindowStart >= 5000) {
+    const frameSampling = frameSamplingActive(now, analyticsBattleActive);
+    sampleBattlePerformance(now, frameSampling);
+    syncFirstMatchTutorial(now);
+    trackAutoGraphics(now, frameSampling);
+    if (frameSampling && !document.hidden && settingsState.viewModel()?.analyticsConsent === true) {
+      // Yalnız ölçüm penceresindeki ardışık kareler sayılır.
+      const gap = analyticsLastFrameAt === null ? null : now - analyticsLastFrameAt;
+      analyticsLastFrameAt = now;
+      if (gap !== null && gap >= 0 && gap <= 1000) {
+        analyticsFrameCount += 1;
+        analyticsFrameDurationMs += gap;
+      }
+      if (analyticsFrameDurationMs >= 5000) {
         if (now - analyticsLastFrameReport >= 60_000) {
-          const fps = analyticsFrameCount * 1000 / Math.max(1, now - analyticsFrameWindowStart);
+          const fps = analyticsFrameCount * 1000 / Math.max(1, analyticsFrameDurationMs);
           const bucket = fps < 20 ? "under_20" : fps < 30 ? "20_29" : fps < 45 ? "30_44" : fps < 60 ? "45_59" : "60_plus";
           recordProductEvent("performance_sample", {screen:"play", fps:bucket});
           analyticsLastFrameReport = now;
         }
-        analyticsFrameWindowStart = now;
+        analyticsFrameDurationMs = 0;
         analyticsFrameCount = 0;
       }
     } else {
-      analyticsFrameWindowStart = null;
-      analyticsFrameCount = 0;
+      analyticsLastFrameAt = null;
+      if (!analyticsBattleActive) {
+        analyticsFrameDurationMs = 0;
+        analyticsFrameCount = 0;
+      }
     }
-    let elapsedMs =
-      client.elapsedMs;
-
     if (
       activePlayMode
       === "local"
@@ -17870,28 +18818,53 @@
         }
         lastBattleAnimationNow=now;
       }
-
-      // Sayaç her zaman sunucu anlık görüntüsünü izler; sonuçtan sonra
-      // son değer korunarak kesin biçimde dondurulur.
-      elapsedMs=
-        client.elapsedMs;
-    } else if (
-      activePlayMode
-      === "idle"
-    ) {
-      elapsedMs = 0;
     }
 
+    // HUD ve tahta denetimi her karede çalışmaz: sunucu mesajı uygulanınca
+    // (bkz. syncOnlineServerBattle) ve yedek olarak bu turda yenilenir.
+    if (
+      !frameSampling
+      || !Number.isFinite(now)
+      || now - lastBattleHudRenderAt >= BATTLE_HUD_RENDER_INTERVAL_MS
+      || now < lastBattleHudRenderAt
+    ) {
+      renderBattleHud(now);
+    }
+
+    if (frameSampling || typeof window.setTimeout !== "function") {
+      requestAnimationFrame(updateClock);
+    } else {
+      // rAF sekme arka plandayken bekler; zamanlayıcı yalnız aralığı belirler.
+      window.setTimeout(
+        () => requestAnimationFrame(updateClock),
+        BATTLE_HUD_RENDER_INTERVAL_MS - 16
+      );
+    }
+  }
+
+  // Savaş saati, HUD, raf ve tahta denetimi; süresi dolan efektleri de süpürür.
+  // Saat her zaman sunucu anlık görüntüsünü izler; sonuçtan sonra son değer
+  // korunarak dondurulur.
+  function renderBattleHud(now=performance.now()) {
+    lastBattleHudRenderAt = Number.isFinite(now) ? now : 0;
+    runBattleSweep();
+    const elapsedMs = activePlayMode === "idle" ? 0 : client.elapsedMs;
     const seconds = elapsedMs / 1000;
     const minutes = Math.floor(seconds / 60);
     const secs = seconds - minutes * 60;
-    timeEl.textContent =
+    const clockText =
       `${String(minutes).padStart(2, "0")}:${secs.toFixed(1).padStart(4, "0")}`;
-    timeEl.classList.toggle(
-      "is-overtime",
+    if (clockText !== renderedClockText) {
+      renderedClockText = clockText;
+      timeEl.textContent = clockText;
+    }
+    const overtime =
       elapsedMs >= 180000
-      && (localServerAuthoritative || activePlayMode === "online")
-    );
+      && (localServerAuthoritative || activePlayMode === "online");
+    if (overtime !== renderedClockOvertime) {
+      renderedClockOvertime = overtime;
+      timeEl.classList.toggle("is-overtime", overtime);
+    }
 
     renderLockState();
     renderCapacity();
@@ -17906,12 +18879,8 @@
 
     renderCredits();
     renderPlayerCoreSummary();
-    if (Math.floor(elapsedMs / 250) !== Math.floor((elapsedMs - 16) / 250)) {
-      renderShelf();
-      renderBoard();
-    }
-
-    requestAnimationFrame(updateClock);
+    renderShelf();
+    renderBoard();
   }
 
   if (quickLoadoutFilterAllEl) {
@@ -18340,11 +19309,13 @@
       return true;
     }
   }
+  // Eğim, grafik kademesiyle birlikte uygulanır (Düşük kademede kapalıdır).
   function applyBattlePerspectivePreference(enabled) {
-    document.body.dataset.battlePerspective = enabled ? "on" : "off";
+    document.body.dataset.battlePerspective =
+      enabled && battleGraphicsQuality() !== "dusuk" ? "on" : "off";
   }
   const settingsBattlePerspectiveEl = document.getElementById("settings-battle-perspective");
-  applyBattlePerspectivePreference(readBattlePerspectivePreference());
+  applyGraphicsQuality();
   if (settingsBattlePerspectiveEl) {
     settingsBattlePerspectiveEl.checked = readBattlePerspectivePreference();
     settingsBattlePerspectiveEl.addEventListener("change", () => {
@@ -18357,6 +19328,19 @@
       applyBattlePerspectivePreference(enabled);
     });
   }
+
+  // Grafik seçimi: "Otomatik" cihaza özeldir, diğerleri hesap ayarıdır.
+  document.getElementById("settings-graphics")?.addEventListener("change", (event) => {
+    writeDevicePreference(
+      GRAPHICS_MODE_STORAGE_KEY,
+      event.target.value === "otomatik" ? "auto" : "manual"
+    );
+    if (GRAPHICS_TIERS.includes(event.target.value) && settingsState.settings) {
+      // Seçim sunucuya kaydedilene kadar da hemen uygulanır.
+      settingsState.patch({ graphics_quality:event.target.value });
+    }
+    applyGraphicsQuality();
+  });
 
   const settingsLanguageEl =
     document.getElementById(
@@ -18534,7 +19518,7 @@
         if (copy) copy.textContent = error.message || "Eşleştirme başlatılamadı";
       } finally {
         homeMatchmakingLaunchPending = false;
-        renderHomeHub();
+        renderHomeHubWhenVisible();
       }
     }
   );
@@ -18627,14 +19611,16 @@
     }));
   }
 
-  document.getElementById("lobby-player-details")?.addEventListener("click", () => {
+  const openOperatorTitlesDialog = () => {
     renderOperatorTitles();
     const dialog = document.getElementById("operator-titles-dialog");
     const status = document.getElementById("operator-titles-status");
     if (status) status.textContent = "";
     if (dialog?.showModal && !dialog.open) dialog.showModal();
     else dialog?.setAttribute("open", "");
-  });
+  };
+  document.getElementById("lobby-player-details")?.addEventListener("click", openOperatorTitlesDialog);
+  document.getElementById("profile-hero-details")?.addEventListener("click", openOperatorTitlesDialog);
   document.getElementById("operator-titles-close")?.addEventListener("click", () => {
     const dialog = document.getElementById("operator-titles-dialog");
     if (dialog?.close) dialog.close();
@@ -18905,10 +19891,17 @@
   }
   /* /build:development-only */
 
-  // İlk maç eğitimi (Beta.72 tur 11). Hiç maç bitirmemiş oyuncuya Ev
-  // ekranındaki SAVAŞ düğmesinden başlayıp ilk savaş boyunca ipucu kartı
-  // gösterilir; savaş durmaz. Sunucu bu maçta AI rakibi yumuşatır (ilk hamle
-  // 15 sn sonra). Ayarlar'dan yeniden gösterilebilir.
+  // İlk oyun deneyimi (Ekim 2026). Hiç maç bitirmemiş oyuncu, atlama seçeneği
+  // olmadan ve hareketli okla adım adım yönlendirilir: mağazada hediye sandığı,
+  // kartlarda Lazer yükseltme, takım ve etkinlik ekranları, haftalık turnuva
+  // kaydı ve ilk savaş. Akış ile katman tutorial/onboarding.js içindedir;
+  // burada adımlar ve uygulama bağlamı tanımlanır.
+  //
+  // İlk savaşı sunucu sahne sahne yönetir (server/app/game/tutorial.py):
+  // oyuncu okurken savaş durur; sahne anlık görüntüdeki `tutorial` alanıyla
+  // gelir, "İLERİ" sunucuya `tutorial_ack` komutuyla bildirilir. Sunucu savaşı
+  // yönetmiyorsa (değiştirilmiş deste, Ayarlar'dan tekrar) savaşı durdurmayan
+  // ipucu kartları gösterilir.
   const TUTORIAL_MATCH_FLOW_STATUSES = new Set([
     "matchmaking",
     "matched",
@@ -18916,16 +19909,22 @@
     "readying",
     "battle",
   ]);
+  const ONBOARDING_HUB_SCREENS = new Set(["menu", "shop", "modules", "team", "events"]);
+  const ONBOARDING_COMPLETE_KEY = "gridshard.tutorial.v1";
+  const ONBOARDING_PROGRESS_KEY = "gridshard.onboarding.step.v1";
+  // Tarayıcı testleri (?e2e=1) taze hesaplarla menüleri dolaşır; eğitimi yalnız
+  // açıkça isteyen (&onboarding=1) görür.
+  const ONBOARDING_AUTOMATION_OPT_OUT = (() => {
+    try {
+      const query = new URLSearchParams(globalThis.location?.search || "");
+      return query.get("e2e") === "1" && query.get("onboarding") !== "1";
+    } catch (_) {
+      return false;
+    }
+  })();
+
+  // Yönetmensiz savaşta gösterilen, savaşı durdurmayan ipucu kartları.
   const FIRST_MATCH_TUTORIAL_STEPS = [
-    {
-      id:"home-battle",
-      title:"İlk savaşın",
-      body:"SAVAŞ'a dokun; sana uygun bir rakip bulunur. Başlangıç destendeki altı kart hazır.",
-      hint:"Eğitim savaş sırasında da ipuçlarıyla sürer; savaş durmaz.",
-      target:"#home-battle-button",
-      when:(context) => context.screen === "menu" && !context.inMatchFlow,
-      until:(context) => context.battle,
-    },
     {
       id:"arena",
       title:"İki devre, tek arena",
@@ -18936,7 +19935,7 @@
     {
       id:"current",
       title:"Akım",
-      body:"Kart oynamak Akım harcar; Akım zamanla dolar. Kartın üstündeki sayı maliyetidir.",
+      body:"Kart oynamak Akım harcar; Akım zamanla dolar. Kartın altındaki sayı bedelidir.",
       target:"#shelf-credit-indicator",
       when:(context) => context.battle,
     },
@@ -18974,56 +19973,561 @@
 
   tutorialController = new GridshardTutorialController({
     root: document.getElementById("tutorial-overlay"),
-    storageKey: "gridshard.tutorial.v1",
+    // Tamamlanma izini akış tutar; ipucu kartları iz bırakmaz.
+    storage: { getItem:() => null, setItem() {}, removeItem() {} },
+    storageKey: "gridshard.tutorial.hints",
     steps: FIRST_MATCH_TUTORIAL_STEPS,
   });
 
-  function firstMatchTutorialContext() {
-    const status = document.body.dataset.onlineStatus || "idle";
-    const finished = document.body.dataset.onlineFinished === "true";
+  function onboardingVisible(element) {
+    const rect = element?.getBoundingClientRect?.();
+    return rect && rect.width > 0 && rect.height > 0 ? element : null;
+  }
+
+  function onboardingDock(screen) {
+    return onboardingVisible(
+      document.querySelector(`#app-bottom-dock [data-open-screen="${screen}"]`)
+    );
+  }
+
+  function onboardingShelfCard(definitionId) {
+    return [...document.querySelectorAll("#module-shelf .deck-module-card")].find(
+      (card) => clientDefinitionId(card.dataset.moduleId || "") === definitionId
+    ) || null;
+  }
+
+  function onboardingBoardCard(definitionId) {
+    if (!definitionId) return null;
+    const cards = [...document.querySelectorAll("#board .module-card")];
+    for (const module of client.modules.values()) {
+      if (module.status !== "active" || Number(module.hp || 0) <= 0) continue;
+      if ((module.definitionId || clientDefinitionId(module.instanceId)) !== definitionId) continue;
+      const card = cards.find((item) => item.dataset.moduleId === module.instanceId);
+      if (card) return card;
+    }
+    return null;
+  }
+
+  function closeOnboardingModuleDetail() {
+    const dialog = document.getElementById("module-detail-dialog");
+    if (dialog?.open) dialog.close();
+    document.getElementById("module-quick-actions")?.setAttribute("hidden", "");
+  }
+
+  function openOnboardingLaserDetail() {
+    selectedCollectionModuleId = "laser";
+    openModuleDetail();
+  }
+
+  // Yönetmenli savaşın sahne metinleri. Sahne kimlikleri sunucudaki
+  // tutorial.STAGES ile aynıdır; hedefi sunucunun `deploy` ve `focus` alanları
+  // ya da buradaki `target` belirler.
+  const DIRECTED_BATTLE_STAGES = Object.freeze({
+    arena:{
+      title:"Savaş alanı",
+      body:"Üstteki devre rakibin, alttaki senin. Ortadaki elmas Çekirdek: rakibin Çekirdeğini yok eden kazanır.",
+      target:() => document.getElementById("enemy-board"),
+    },
+    current:{
+      title:"Akım",
+      body:"Kart oynamak Akım harcar; Akım zamanla dolar. Kartın altındaki sayı o kartın bedelidir.",
+      target:() => document.getElementById("shelf-credit-indicator"),
+    },
+    deploy_laser:{
+      title:"İlk modülün",
+      body:"Lazer kartına dokun. Kart devrende boş bir hücreye kendiliğinden yerleşir.",
+    },
+    watch_laser:{
+      title:"Lazer ateş ediyor",
+      body:"Modüller kendiliğinden savaşır. Lazerin rakibin Çekirdeğine ateş ediyor.",
+    },
+    type_attack:{
+      title:"Saldırı modülleri",
+      body:"Lazer bir SALDIRI modülüdür: rakibin modüllerine ve Çekirdeğine hasar verir. Maçı saldırı modülleri kazandırır.",
+      target:() => onboardingShelfCard("laser"),
+    },
+    type_defense:{
+      title:"Savunma modülleri",
+      body:"Kalkan bir SAVUNMA modülüdür. Rakip önce savunma modüllerine ateş eder; Kalkan hasarı emer, diğer modüllerin ayakta kalır.",
+      target:() => onboardingShelfCard("shield"),
+    },
+    type_support:{
+      title:"Destek modülleri",
+      body:"Onarım hasarlı modülleri onarır, Soğutucu ısınan modülleri soğutur, Güçlendirici saldırı gücünü artırır. Bunlar DESTEK modülleridir.",
+      target:() => document.getElementById("module-shelf"),
+      emphasize:() => ["repair", "cooler", "amplifier"].map(onboardingShelfCard),
+    },
+    type_system:{
+      title:"Sistem modülleri",
+      body:"Batarya bir SİSTEM modülüdür: devrene ek enerji sağlar. Devren büyüdükçe enerji ihtiyacın artar.",
+      target:() => onboardingShelfCard("battery"),
+    },
+    limits:{
+      title:"Devre sınırları",
+      body:[
+        "Devrende Çekirdek dışında 14 hücre var.",
+        "Savunma, Destek ve Sistem modüllerinden aynı anda en çok 3'er tane, aynı karttan en çok 2 tane kurabilirsin.",
+        "Saldırı dışı modüllerin sayısı, saldırı modüllerini en fazla 2 geçebilir.",
+      ],
+      target:() => document.getElementById("board"),
+    },
+    hp_bar:{
+      title:"Can çubuğu",
+      body:"Her modülün altındaki yeşil çubuk CAN'ıdır. Hasar aldıkça kısalır; bitince modül yok olur.",
+    },
+    heat_bar:{
+      title:"Isı çubuğu",
+      body:"Üstteki çubuk ISI'dır. Modül çalıştıkça ısınır; ısı %100'e ulaşınca modül susar ve soğuyana kadar çalışmaz. Lazerin aşırı ısındı: ateş edemiyor!",
+    },
+    deploy_cooler:{
+      title:"Soğutucu",
+      body:"Soğutucu kartına dokun; ısınan modüllerini soğutur.",
+    },
+    watch_cooler:{
+      title:"Lazer soğuyor",
+      body:"Soğutucu Lazeri soğutuyor; birazdan yeniden ateş edecek.",
+    },
+    enemy_attack:{
+      title:"Rakip saldırıyor!",
+      body:"Rakip bir Lazer kurdu ve modüllerine ateş ediyor.",
+    },
+    deploy_repair:{
+      title:"Onarım",
+      body:"Soğutucunun canı azaldı. Onarım kartına dokun; hasarlı modüllerini onarır.",
+    },
+    watch_repair:{
+      title:"Onarılıyor",
+      body:"Onarım modülü, canı en az olan modülünü onarıyor.",
+    },
+    energy_low:{
+      title:"Enerji azaldı",
+      body:"Devren büyüdü; modüllerin enerji bekliyor.",
+    },
+    deploy_battery:{
+      title:"Batarya",
+      body:"Modüller enerjiyle çalışır; ϟ işareti enerji bekleyen modülü gösterir. Batarya kartına dokun; devrene enerji sağlar.",
+    },
+    watch_battery:{
+      title:"Enerji geldi",
+      body:"Batarya devreni besliyor; modüllerin yeniden çalışıyor.",
+    },
+    enemy_boost:{
+      title:"Rakip güçlendi",
+      body:"Rakip devresine Kalkan ve Güçlendirici ekledi: artık daha dayanıklı ve daha sert vuruyor. Sen de devreni güçlendir.",
+      target:() => document.getElementById("enemy-board"),
+    },
+    deploy_laser_2:{
+      title:"Devre dengesi",
+      body:"Güçlendirici için önce saldırı gücün artmalı: saldırı dışı modüller, saldırı modüllerini en fazla 2 geçebilir. İkinci bir Lazer koy.",
+    },
+    deploy_amplifier:{
+      title:"Güçlendirici",
+      body:"Güçlendirici kartına dokun; Lazerlerinin hasarını artırır.",
+    },
+    finale:{
+      title:"Sıra sende!",
+      body:"Akımın doldukça kart oyna ve rakibin Çekirdeğini yok et!",
+    },
+  });
+  // Serbest oyunda kart oyuncunun önünü kapatmaz; bir süre sonra kaybolur.
+  const DIRECTED_FINALE_BANNER_MS = 9000;
+  const DIRECTED_TAP_DEBOUNCE_MS = 1500;
+  let directedStageSeen = { stage:"", at:0 };
+  let directedTapAt = -Infinity;
+
+  function sendTutorialAcknowledgement(stageId) {
+    sendPvPCommand({ kind:"tutorial_ack", payload:{ stage:stageId } });
+  }
+
+  function directedBattleView(stage) {
+    const copy = DIRECTED_BATTLE_STAGES[stage.stage];
+    if (!copy) return null;
+    const now = performance.now();
+    if (directedStageSeen.stage !== stage.stage) directedStageSeen = { stage:stage.stage, at:now };
+    const finale = stage.stage === "finale";
+    if (finale && now - directedStageSeen.at > DIRECTED_FINALE_BANNER_MS) return null;
+    const deploy = stage.kind === "deploy";
     return {
-      screen: document.body.dataset.appScreen || "menu",
-      status,
-      finished,
-      battle: status === "battle" && !finished,
-      inMatchFlow: TUTORIAL_MATCH_FLOW_STATUSES.has(status) && !finished,
-      boardCards: document.querySelectorAll?.("#board .module-card").length || 0,
+      key:stage.stage,
+      part:Number(stage.index || 0) / Math.max(1, Number(stage.total || 1)),
+      tone:"battle",
+      place:"top",
+      title:copy.title,
+      body:copy.body,
+      target:deploy
+        ? onboardingShelfCard(stage.deploy)
+        : copy.target ? copy.target() : onboardingBoardCard(stage.focus),
+      emphasize:copy.emphasize ? copy.emphasize() : [],
+      mode:stage.kind === "ack" ? "next" : deploy ? "tap" : "wait",
+      shade:stage.kind === "watch" ? "none" : "soft",
+      blocking:!finale,
+      stuck:"release",
+      onNext:() => sendTutorialAcknowledgement(stage.stage),
+      // Sunucu sahneyi değiştirene kadar ikinci dokunuş ikinci kart koymasın.
+      onTargetTap:() => {
+        const tappedAt = performance.now();
+        if (tappedAt - directedTapAt < DIRECTED_TAP_DEBOUNCE_MS) return;
+        const card = onboardingShelfCard(stage.deploy);
+        if (!card || card.disabled) return;
+        directedTapAt = tappedAt;
+        card.click();
+      },
     };
   }
 
-  let lastTutorialSyncAt = -Infinity;
-  function syncFirstMatchTutorial(now) {
-    if (!tutorialController || now - lastTutorialSyncAt < 250) return;
-    lastTutorialSyncAt = now;
-    const context = firstMatchTutorialContext();
-    if (!tutorialController.active) {
-      // Yalnız hiç maç bitirmemiş oyuncu; istatistik sunucudan gelmeden başlamaz.
-      if (
-        tutorialController.isCompleted()
-        || startupLoading?.active
-        || (startupLoading?.root && !startupLoading.root.hidden)
-        || context.screen !== "menu"
-        || context.inMatchFlow
-        || statisticsState.viewModel()?.totalMatches !== 0
-      ) {
-        return;
-      }
-      tutorialController.start();
-    }
-    // İlk savaş bitti ya da bırakıldı: eğitim tamamlanır.
-    if (tutorialController.index > 0 && !context.inMatchFlow) {
-      tutorialController.finish();
+  const ONBOARDING_START_BATTLE = Object.freeze({
+    key:"start",
+    target:"#home-battle-button",
+    mode:"tap",
+    // Düğme kapalıysa (ör. bağlantı yok) adım geçilmez; oyuncu serbest kalır.
+    stuck:"release",
+    title:"İlk savaşın",
+    body:"Sıra savaşta. SAVAŞ'a dokun; ilk savaşında sana adım adım eşlik edeceğim.",
+  });
+
+  const ONBOARDING_STEPS = [
+    {
+      id:"welcome",
+      when:(c) => c.screen === "menu" && !c.inMatchFlow,
+      title:"GRIDSHARD'a hoş geldin!",
+      body:"Birkaç dakikada ekranları tanıyacak, ilk ödülünü alacak ve ilk savaşını kazanacaksın.",
+      nextLabel:"BAŞLA",
+    },
+    {
+      id:"open-shop",
+      when:(c) => c.hub,
+      target:() => onboardingDock("shop"),
+      done:(c) => c.screen === "shop",
+      onNext:() => openAppScreen("shop"),
+      title:"Mağaza",
+      body:"Önce hediyeni alalım. Alttaki MAĞAZA sekmesine dokun.",
+    },
+    {
+      id:"gift-chest",
+      when:(c) => c.screen === "shop" && c.metaReady,
+      skip:(c) => c.metaReady && !c.giftAvailable && !c.chestDialogOpen,
+      target:"#gift-chest-list .gift-chest-action",
+      done:(c) => c.chestDialogOpen,
+      title:"Hediye Sandık",
+      body:"Her 8 saatte bir bedava sandık açabilirsin. HEDİYE SANDIK AÇ'a dokun.",
+    },
+    {
+      id:"chest-reward",
+      when:(c) => c.chestDialogOpen,
+      target:"#chest-reveal-close",
+      // Kart üstte durur ve karartma hafiftir; sandıktan çıkanlar okunur.
+      place:"top",
+      shade:"soft",
+      done:(c) => !c.chestDialogOpen,
+      title:"İlk ödülün!",
+      body:"Sandıklardan Devre Kredisi ve modül parçaları çıkar; bunlarla kartlarını yükseltirsin. DEVAM'a dokun.",
+    },
+    {
+      id:"currencies",
+      when:(c) => c.screen === "shop",
+      target:"#app-resource-bar",
+      title:"Akı ve Devre Kredisi",
+      body:"Üstte iki paran var. Devre Kredisiyle kart yükseltir, turnuvalara katılırsın; Akı daha değerlidir. Yanlarındaki + seni mağazaya getirir.",
+    },
+    {
+      id:"open-cards",
+      when:(c) => c.hub,
+      target:() => onboardingDock("modules"),
+      done:(c) => c.screen === "modules",
+      onNext:() => openAppScreen("modules"),
+      title:"Kartlar",
+      body:"Şimdi kartlarına bakalım. KARTLAR sekmesine dokun.",
+    },
+    {
+      id:"deck",
+      when:(c) => c.screen === "modules",
+      target:"#module-deck-strip",
+      title:"Savaş desten",
+      body:"Savaşa bu altı kartla girersin. Aşağıdaki koleksiyondan kart seçerek desteni değiştirebilirsin.",
+    },
+    {
+      id:"select-laser",
+      when:(c) => c.screen === "modules" && c.metaReady,
+      target:'#module-collection-grid .collection-module-tile[data-module-definition-id="laser"]',
+      done:(c) => c.laserQuickOpen || c.moduleDetailOpen,
+      onNext:openOnboardingLaserDetail,
+      title:"Lazer",
+      body:"Koleksiyondaki Lazer kartına dokun.",
+    },
+    {
+      id:"laser-info",
+      when:(c) => c.screen === "modules",
+      target:"#module-quick-info",
+      done:(c) => c.moduleDetailOpen,
+      onNext:openOnboardingLaserDetail,
+      title:"Kart bilgisi",
+      body:"Bilgi'ye dokun; kartın gücünü, seviyesini ve ne işe yaradığını gör.",
+    },
+    {
+      id:"laser-upgrade",
+      when:(c) => c.moduleDetailOpen,
+      // Uygulama bu adımda yeniden açıldıysa pencere kapalıdır; adım geçilir.
+      skip:(c, start) => !start.moduleDetailOpen,
+      target:"#module-detail-upgrade",
+      mode:(c, start) => (start.laserUpgradable ? "tap" : "next"),
+      done:(c, start) => start.laserUpgradable && c.laserLevel > start.laserLevel,
+      title:"Yükselt",
+      body:(c, start) => (start.laserUpgradable
+        ? "Hesabına 2 Lazer parçası hediye edildi. Parça ve Devre Kredisi yetince kart seviye atlar. YÜKSELT'e dokun."
+        : "Kart yükseltmek için modül parçası ve Devre Kredisi gerekir. Parçalar sandıklardan çıkar; yetince bu düğme açılır."),
+    },
+    {
+      id:"laser-upgraded",
+      when:(c) => c.moduleDetailOpen,
+      skip:(c, start) => !start.moduleDetailOpen || c.laserLevel < 1,
+      target:"#module-detail-level",
+      title:"Lazer güçlendi!",
+      body:"Seviye atlayan kartın hasarı ve canı artar. Parça topladıkça diğer kartlarını da yükselt.",
+    },
+    {
+      id:"open-team",
+      when:(c) => c.hub,
+      onEnter:closeOnboardingModuleDetail,
+      target:() => onboardingDock("team"),
+      done:(c) => c.screen === "team",
+      onNext:() => openAppScreen("team"),
+      title:"Takım",
+      body:"Oyuncular takım kurar, birbirine modül parçası bağışlar ve takım turnuvasına katılır. TAKIM sekmesine dokun.",
+    },
+    {
+      id:"team",
+      when:(c) => c.screen === "team",
+      target:() => onboardingVisible(document.querySelector(".team-lobby-tabs")),
+      title:"Takımlar",
+      body:"Burada açık takımları görürsün: BAŞVUR ile birine katılır ya da TAKIM OLUŞTUR ile kendi takımını kurarsın. Buna sonra dönersin.",
+    },
+    {
+      id:"open-events",
+      when:(c) => c.hub,
+      target:() => onboardingDock("events"),
+      done:(c) => c.screen === "events" || c.screen === "weekly-event",
+      onNext:() => openAppScreen("events"),
+      title:"Etkinlikler",
+      body:"Sırada turnuvalar var. ETKİNLİK sekmesine dokun.",
+    },
+    {
+      id:"open-weekly",
+      when:(c) => c.screen === "events",
+      target:'.event-directory [data-open-screen="weekly-event"]',
+      done:(c) => c.screen === "weekly-event",
+      onNext:() => openAppScreen("weekly-event"),
+      title:"Haftalık Devre Turnuvası",
+      body:"Her hafta yenilenen bireysel turnuva. Üstüne dokun.",
+    },
+    {
+      id:"weekly-register",
+      when:(c) => c.screen === "weekly-event" && c.eventsReady,
+      target:"#weekly-tournament-register",
+      mode:(c, start) => (start.weeklyRegistered || !c.weeklyAffordable ? "next" : "tap"),
+      done:(c, start) => !start.weeklyRegistered && c.weeklyRegistered,
+      title:"Turnuvaya katıl",
+      body:(c, start) => (start.weeklyRegistered
+        ? "Bu haftanın turnuvasına kayıtlısın. Arena savaşlarında kazandığın kupalar haftalık sıralamana eklenir."
+        : !c.weeklyAffordable
+          ? "Katılım 100 Devre Kredisidir; şu an kredin yetmiyor. Kredin olunca buradan katılabilirsin."
+          : "Katılım 100 Devre Kredisidir. Katıldıktan sonra Arena savaşlarında kazandığın kupalar haftalık sıralamana eklenir; hafta sonunda ödül sandığı kazanırsın. TURNUVAYA KATIL'a dokun."),
+    },
+    {
+      id:"weekly-joined",
+      when:(c) => c.screen === "weekly-event",
+      skip:(c) => !c.weeklyRegistered,
+      target:"#weekly-event-summary",
+      title:"Kaydın tamam",
+      body:"Sıran ve kazandığın kupalar burada görünür. Her zafer seni yukarı taşır.",
+    },
+    {
+      id:"leave-weekly",
+      when:(c) => c.screen === "weekly-event",
+      skip:(c) => c.screen !== "weekly-event" || Boolean(onboardingDock("menu")),
+      target:'#weekly-event-screen [data-open-screen="events"]',
+      done:(c) => c.screen !== "weekly-event",
+      onNext:() => openAppScreen("events"),
+      title:"Geri dön",
+      body:"Sol üstteki okla etkinlik listesine dön.",
+    },
+    {
+      id:"open-home",
+      when:(c) => c.hub || c.screen === "weekly-event",
+      target:() => onboardingDock("menu"),
+      done:(c) => c.screen === "menu",
+      onNext:() => openAppScreen("menu"),
+      title:"Ev",
+      body:"Artık hazırsın. EV sekmesine dön.",
+    },
+    {
+      id:"home",
+      when:(c) => c.screen === "menu" && !c.inMatchFlow,
+      target:"#app-progress-ribbon",
+      title:"Profilin",
+      body:"Adın, unvanın ve kupaların burada. Sağdaki mesaj kutusuna ödüller ve duyurular gelir.",
+    },
+    {
+      id:"battle",
+      // İlerleme çubuğunda savaş, menü turunun yarısı kadar yer tutar.
+      weight:12,
+      done:(c) => c.finished,
+      present:(c) => {
+        // Eşleştirme iptal edildiyse ok yeniden SAVAŞ düğmesini gösterir.
+        if (!c.inMatchFlow) return c.screen === "menu" ? ONBOARDING_START_BATTLE : null;
+        if (!c.snapshotReady || !c.directed) return null;
+        return directedBattleView(c.directed);
+      },
+    },
+    {
+      id:"victory",
+      // Maç ekranı kapandıysa (ya da savaş kaybedildiyse) kutlama gösterilmez.
+      skip:(c) => !c.finished || c.screen !== "play" || !c.won,
+      // Sonuç paneli (Çekirdek patlamasından sonra) görününce kutlanır.
+      present:(c) => (!c.postMatchVisible ? null : c.postMatchStage === "rewards"
+        ? {
+            key:"rewards",
+            target:"#post-match-continue",
+            mode:"tap",
+            place:"top",
+            shade:"soft",
+            title:"Savaş ödülleri",
+            body:"Her zaferde kupa, Devre Kredisi ve deneyim kazanırsın. Kupa topladıkça yeni arenalar ve kartlar açılır. DEVAM'a dokun.",
+          }
+        : {
+            key:"damage",
+            target:"#post-match-continue",
+            mode:"tap",
+            place:"top",
+            shade:"soft",
+            title:"Tebrikler, kazandın!",
+            body:"İlk savaşını kazandın. Bu ekranda hangi modülünün ne kadar hasar verdiğini görürsün. DEVAM'a dokun.",
+          }),
+    },
+    {
+      id:"farewell",
+      when:(c) => c.screen === "menu" && !c.inMatchFlow,
+      title:"Hazırsın!",
+      body:"Artık oyunu tanıyorsun: sandıklarını aç, kartlarını yükselt, turnuvalarda yüksel. İyi savaşlar!",
+      nextLabel:"TAMAM",
+    },
+  ];
+
+  const onboardingOverlay = new GridshardGuideOverlay();
+  const onboardingFlow = new GridshardOnboardingFlow({
+    steps: ONBOARDING_STEPS,
+    overlay: onboardingOverlay,
+    completeKey: ONBOARDING_COMPLETE_KEY,
+    progressKey: ONBOARDING_PROGRESS_KEY,
+  });
+
+  function onboardingContext() {
+    const status = document.body.dataset.onlineStatus || "idle";
+    const finished = document.body.dataset.onlineFinished === "true";
+    const screen = document.body.dataset.appScreen || "menu";
+    const battle = status === "battle" && !finished;
+    const meta = metaProgressionState;
+    const gift = (meta?.chests?.definitions || []).find(
+      (definition) => definition.gift ?? definition.id === "field_3h"
+    );
+    const laser = (meta?.module_collection || []).find((item) => item.definition_id === "laser");
+    const laserCost = laser?.next_upgrade_cost;
+    const credits = Number(meta?.circuit_credits || 0);
+    const snapshot = battle ? pvpState.snapshot : null;
+    const result = pvpState.finalResult;
+    const weeklyFee = Number(eventsState?.weekly_tournament?.entry_fee ?? 100);
+    return {
+      screen,
+      status,
+      finished,
+      battle,
+      hub: ONBOARDING_HUB_SCREENS.has(screen),
+      inMatchFlow: TUTORIAL_MATCH_FLOW_STATUSES.has(status) && !finished,
+      modals: [...document.querySelectorAll("dialog[open]")].filter(
+        (dialog) => !dialog.classList.contains("guide-overlay") && dialog.matches(":modal")
+      ),
+      metaReady: Boolean(meta) && !meta.unavailable,
+      giftAvailable: Boolean(gift)
+        && gift.claim_available !== false
+        && Number(gift.claim_remaining_seconds || 0) <= 0,
+      chestDialogOpen: Boolean(document.getElementById("chest-reveal-dialog")?.open),
+      moduleDetailOpen: Boolean(document.getElementById("module-detail-dialog")?.open),
+      laserQuickOpen: selectedCollectionModuleId === "laser"
+        && document.getElementById("module-quick-actions")?.hidden === false,
+      laserLevel: Number(laser?.level || 0),
+      laserUpgradable: Boolean(laser && laser.unlocked !== false && laserCost)
+        && Number(laser.shards || 0) + Number(meta?.universal_module_shards || 0) >= Number(laserCost.shards || 0)
+        && credits >= Number(laserCost.circuit_credits || 0),
+      eventsReady: Boolean(eventsState?.weekly_tournament),
+      weeklyRegistered: Boolean(eventsState?.viewer?.weekly_registered),
+      weeklyAffordable: credits >= weeklyFee,
+      snapshotReady: Boolean(snapshot?.players),
+      directed: snapshot?.tutorial || null,
+      postMatchStage: document.getElementById("post-match-continue")?.dataset.postMatchStage || "",
+      postMatchVisible: finished
+        && Boolean(onboardingVisible(document.getElementById("post-match-continue"))),
+      won: Boolean(result) && result.winner_player_id === participantPlayerId,
+      boardCards: battle ? document.querySelectorAll("#board .module-card").length : 0,
+    };
+  }
+
+  // İlk savaş yönetmenli istenir; yalnız akış savaş adımına geldiyse.
+  function onboardingWantsDirectedBattle() {
+    return onboardingFlow.active && onboardingFlow.currentStep()?.id === "battle";
+  }
+
+  // Yönetmensiz ilk savaşta eski ipucu kartları gösterilir.
+  function syncBattleHints(context) {
+    const wanted = onboardingFlow.active
+      && onboardingFlow.currentStep()?.id === "battle"
+      && context.battle
+      && context.snapshotReady
+      && !context.directed;
+    if (!wanted) {
+      if (tutorialController.active) tutorialController.finish();
       return;
     }
+    if (!tutorialController.active) tutorialController.start({ force: true });
     tutorialController.update(context);
   }
 
+  let lastTutorialSyncAt = -Infinity;
+  function syncFirstMatchTutorial(now, { force = false } = {}) {
+    if (!force && now - lastTutorialSyncAt < 200) return;
+    lastTutorialSyncAt = now;
+    const context = onboardingContext();
+    if (!onboardingFlow.active) {
+      // Yalnız hiç maç bitirmemiş oyuncu; istatistik sunucudan gelmeden başlamaz.
+      if (
+        ONBOARDING_AUTOMATION_OPT_OUT
+        || onboardingFlow.isCompleted()
+        || startupLoading?.active
+        || (startupLoading?.root && !startupLoading.root.hidden)
+        || !context.hub
+        || context.inMatchFlow
+      ) {
+        return;
+      }
+      const totalMatches = statisticsState.viewModel()?.totalMatches;
+      if (totalMatches !== 0) {
+        // Yarıda kalan akış ilk maçtan sonra sürdürülmez; izi kapatılır.
+        if (totalMatches > 0 && onboardingFlow.read(ONBOARDING_PROGRESS_KEY)) onboardingFlow.finish();
+        return;
+      }
+      onboardingFlow.start();
+    }
+    onboardingFlow.update(context);
+    syncBattleHints(context);
+  }
+  // Hedefe dokunuş ekranı değiştirdiyse sıradaki adım beklemeden görünür.
+  onboardingOverlay.afterTap = () => {
+    requestAnimationFrame(() => syncFirstMatchTutorial(performance.now(), { force: true }));
+  };
+
   document.getElementById("settings-tutorial-replay")?.addEventListener("click", () => {
-    tutorialController.reset();
-    tutorialController.start({ force: true });
-    lastTutorialSyncAt = -Infinity;
-    const status = document.getElementById("settings-tutorial-replay-status");
-    if (status) status.textContent = "Eğitim Ev ekranında SAVAŞ düğmesiyle başlar.";
+    onboardingFlow.reset();
+    onboardingFlow.start({ force: true });
+    openAppScreen("menu");
+    syncFirstMatchTutorial(performance.now(), { force: true });
   });
 
   document.body.dataset.onlineStatus = "idle";

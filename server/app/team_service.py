@@ -19,6 +19,9 @@ from uuid import uuid4
 
 TEAM_MEMBER_LIMIT = 30
 TEAM_NAME_MAX_LENGTH = 24
+TEAM_DESCRIPTION_MAX_LENGTH = 120
+# Takım kurucusunun seçebileceği başvuru şartı (en az kupa). 0: şart yok.
+TEAM_MIN_TROPHY_OPTIONS = (0, 100, 300, 600, 1000, 1500, 2000, 3000)
 CHAT_MESSAGE_MAX_LENGTH = 240
 REQUEST_POLICY = {
     # A player may open one module request per week.  The requested piece
@@ -218,6 +221,25 @@ class TeamService:
         return clean
 
     @staticmethod
+    def _clean_team_description(description: str | None) -> str:
+        clean = " ".join(str(description or "").split())
+        if len(clean) > TEAM_DESCRIPTION_MAX_LENGTH:
+            raise TeamServiceError(
+                f"Takım açıklaması en fazla {TEAM_DESCRIPTION_MAX_LENGTH} karakter olabilir."
+            )
+        return clean
+
+    @staticmethod
+    def _clean_min_trophies(value) -> int:
+        try:
+            number = int(value or 0)
+        except (TypeError, ValueError) as exc:
+            raise TeamServiceError("Kupa şartı geçersiz.") from exc
+        if number not in TEAM_MIN_TROPHY_OPTIONS:
+            raise TeamServiceError("Kupa şartı geçersiz.")
+        return number
+
+    @staticmethod
     def _find_team_for_player(payload: dict, player_id: str) -> dict | None:
         for team in payload["teams"].values():
             if player_id in team.get("member_ids", []):
@@ -269,9 +291,25 @@ class TeamService:
         teams.sort(key=lambda item: str(item.get("name", "")).casefold())
         return teams
 
-    def create_team(self, player_id: str, name: str, request_id: str) -> dict:
+    def create_team(
+        self,
+        player_id: str,
+        name: str,
+        request_id: str,
+        *,
+        description: str | None = None,
+        min_trophies: int = 0,
+    ) -> dict:
         clean_name = self._clean_team_name(name)
-        fingerprint = self._fingerprint("create", player_id, {"name": clean_name})
+        clean_description = self._clean_team_description(description)
+        clean_min_trophies = self._clean_min_trophies(min_trophies)
+        # Eski istemcinin (yalnız ad gönderen) makbuzu aynı parmak iziyle kalır.
+        values: dict = {"name": clean_name}
+        if clean_description:
+            values["description"] = clean_description
+        if clean_min_trophies:
+            values["min_trophies"] = clean_min_trophies
+        fingerprint = self._fingerprint("create", player_id, values)
 
         def operation(payload: dict) -> dict:
             if self._find_team_for_player(payload, player_id):
@@ -291,6 +329,8 @@ class TeamService:
                 "member_limit": TEAM_MEMBER_LIMIT,
                 "member_ids": [player_id],
                 "created_at": self._timestamp(),
+                "description": clean_description,
+                "min_trophies": clean_min_trophies,
                 "module_requests": [],
                 "messages": [],
                 "training_challenges": [],
@@ -311,8 +351,19 @@ class TeamService:
             operation=operation,
         )
 
-    def join_team(self, player_id: str, team_id: str, request_id: str) -> dict:
-        """Create a leader-reviewed application instead of joining immediately."""
+    def join_team(
+        self,
+        player_id: str,
+        team_id: str,
+        request_id: str,
+        *,
+        trophies: int | None = None,
+    ) -> dict:
+        """Create a leader-reviewed application instead of joining immediately.
+
+        ``trophies`` is the applicant's current trophy count; when given, the
+        team's minimum-trophy requirement is enforced.
+        """
         clean_team_id = str(team_id or "").strip()
         fingerprint = self._fingerprint(
             "join", player_id, {"team_id": clean_team_id}
@@ -342,6 +393,11 @@ class TeamService:
             members = list(team.get("member_ids", []))
             if len(members) >= int(team.get("member_limit", TEAM_MEMBER_LIMIT)):
                 raise TeamServiceError("Takımın üye kapasitesi dolu.")
+            required = int(team.get("min_trophies", 0) or 0)
+            if trophies is not None and int(trophies) < required:
+                raise TeamServiceError(
+                    f"Bu takıma başvurmak için en az {required} kupa gerekli."
+                )
             applications = team.setdefault("application_ids", [])
             if player_id not in applications:
                 applications.append(player_id)
@@ -350,6 +406,29 @@ class TeamService:
                 "team": team,
                 "application_pending": True,
             }
+
+        return self._mutate(
+            request_id=request_id,
+            fingerprint=fingerprint,
+            operation=operation,
+        )
+
+    def withdraw_application(self, player_id: str, team_id: str, request_id: str) -> dict:
+        """Let an applicant take back a pending application."""
+        clean_team_id = str(team_id or "").strip()
+        fingerprint = self._fingerprint(
+            "team_application_withdraw", player_id, {"team_id": clean_team_id}
+        )
+
+        def operation(payload: dict) -> dict:
+            team = payload["teams"].get(clean_team_id)
+            if team is None:
+                raise TeamServiceError("Takım bulunamadı.")
+            applications = team.setdefault("application_ids", [])
+            if player_id not in applications:
+                raise TeamServiceError("Bekleyen takım başvurusu bulunamadı.")
+            applications.remove(player_id)
+            return {"team_id": clean_team_id, "team": team, "withdrawn": True}
 
         return self._mutate(
             request_id=request_id,

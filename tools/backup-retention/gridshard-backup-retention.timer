@@ -1,0 +1,11 @@
+[Unit]
+Description=Daily GRIDSHARD backup expiry check
+
+[Timer]
+OnCalendar=*-*-* 04:00:00 Europe/Istanbul
+AccuracySec=1min
+Persistent=true
+Unit=gridshard-backup-retention.service
+
+[Install]
+WantedBy=timers.target

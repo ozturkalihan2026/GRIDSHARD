@@ -55,6 +55,7 @@
       this.expiresAt = 0;
       this.playerId = null;
       this.pendingLogin = null;
+      this.requiresReauthentication = false;
       this.secretStore = new globalThis.GridshardDeviceSecretStore({storage:this.storage});
       this.secretPromise = null;
     }
@@ -128,6 +129,13 @@
       return this._deviceId();
     }
 
+    markSignedOut() {
+      this.accessToken = null;
+      this.expiresAt = 0;
+      this.requiresReauthentication = true;
+      // Preserve the remembered player ID and device secret until a real provider proof succeeds.
+    }
+
     async replaceDeviceSecret(secret) {
       const value = String(secret || "");
       if (value.length < 32) {
@@ -179,6 +187,7 @@
       this.playerId = payload.player_id;
       this.accessToken = payload.access_token;
       this.expiresAt = Number(payload.expires_at || 0);
+      this.requiresReauthentication = false;
       return payload;
     }
 
@@ -207,7 +216,10 @@
         }
       }
       if (!response.ok) {
-        throw new Error(`Oyuncu kimliği doğrulanamadı: ${response.status}`);
+        if (response.status === 401) this.markSignedOut();
+        const error = new Error(`Oyuncu kimliği doğrulanamadı: ${response.status}`);
+        error.status = response.status;
+        throw error;
       }
       const payload = await response.json();
       if (payload.player_id !== playerId || !payload.access_token) {
@@ -217,6 +229,7 @@
       this.playerId = playerId;
       this.accessToken = payload.access_token;
       this.expiresAt = Number(payload.expires_at || 0);
+      this.requiresReauthentication = false;
       return this.accessToken;
     }
 

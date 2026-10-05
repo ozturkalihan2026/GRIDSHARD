@@ -60,14 +60,16 @@ function outputPlan(root, publisherId) {
     if (fs.lstatSync(sourcePath).isSymbolicLink()) throw new Error(`Symbolic-link source rejected: ${source}`);
     files.set(target, fs.readFileSync(sourcePath));
   }
+  // Preserve plain mailto links and the script-free CSP at the Cloudflare edge.
+  // https://developers.cloudflare.com/web-analytics/get-started/#sites-proxied-through-cloudflare
   files.set("_headers", Buffer.from(`/*
   Content-Security-Policy: default-src 'none'; img-src 'self'; style-src 'self'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'; object-src 'none'; upgrade-insecure-requests
   X-Content-Type-Options: nosniff
   Referrer-Policy: no-referrer
   Permissions-Policy: camera=(), microphone=(), geolocation=(), payment=()
+  Cache-Control: public, max-age=300, no-transform
 /app-ads.txt
   Content-Type: text/plain; charset=utf-8
-  Cache-Control: public, max-age=300
 `));
   files.set("_redirects", Buffer.from("/privacy /privacy/ 301\n/delete-account /delete-account/ 301\n/support /support/ 301\n/en /en/ 301\n/en/privacy /en/privacy/ 301\n/en/delete-account /en/delete-account/ 301\n/en/support /en/support/ 301\n"));
   files.set("404.html", Buffer.from(`<!doctype html><html lang="tr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>GRIDSHARD — 404</title><link rel="stylesheet" href="/site.css"></head><body><main class="shell document"><h1>404</h1><p>Sayfa bulunamadı / Page not found.</p><p><a href="/">Türkçe</a> · <a href="/en/">English</a></p></main></body></html>\n`));
@@ -115,8 +117,12 @@ function buildPublicSite({ root = path.resolve(__dirname, ".."), publisherId } =
   const manifest = {
     site: site.origin, contact: site.email, updated: site.updated,
     appAdsConfigured: Boolean(publisherId),
+    // A working URL or an approved duration does not prove operational retention.
+    privacyRetentionVerified: Boolean(site.retention?.backupVerified && site.retention?.supportVerified),
+    retentionEvidence: { backupVerified: site.retention.backupVerified, supportVerified: site.retention.supportVerified },
+    approvedRetention: { backupDays: site.retention.backupDays, supportDaysAfterClosure: site.retention.supportDaysAfterClosure },
     files: [...files].map(([file, bytes]) => ({ file, size: bytes.length, sha256: digest(bytes) })),
-    pending: ["Production backup/support retention policy and target-age review", "Live game server and payment/ad consent/provider validation", ...(publisherId ? [] : ["AdMob public publisher ID and app-ads.txt verification"])],
+    pending: [...(site.retention.backupVerified ? [] : ["Production backup retention activation and target-age review"]), ...(site.retention.supportVerified ? [] : ["Support email retention permission, dry-run, activation and trigger verification"]), "Final public privacy deployment and live-copy verification", "Live game server and payment/ad consent/provider validation", ...(publisherId ? [] : ["AdMob public publisher ID and app-ads.txt verification"])],
   };
   fs.writeFileSync(path.join(root, "build/public-site-manifest.json"), `${JSON.stringify(manifest, null, 2)}\n`);
   return { output, manifest };

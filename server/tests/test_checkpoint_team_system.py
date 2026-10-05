@@ -195,6 +195,8 @@ def test_gateway_team_view_sorts_trophies_and_transfers_one_unlocked_shard(monke
             ),
         )
         request_id = requested["operation"]["module_request"]["request_id"]
+        # Yeni hesap başlangıç Lazer parçalarıyla gelir; bağış bunun üstüne eklenir.
+        alpha_before = alpha.module_shards["laser"]
         action = gateway.TeamActionRequest(
             player_id=beta.player_id,
             request_id="gateway-donate",
@@ -203,7 +205,7 @@ def test_gateway_team_view_sorts_trophies_and_transfers_one_unlocked_shard(monke
         gateway.donate_team_module_shard(created["team_id"], request_id, action)
 
         assert beta.module_shards["laser"] == 1
-        assert alpha.module_shards["laser"] == 1
+        assert alpha.module_shards["laser"] == alpha_before + 1
         assert team_service.get_team(created["team_id"])["module_requests"][0]["donated_amount"] == 1
     finally:
         for player_id in profiles:

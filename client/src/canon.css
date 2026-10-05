@@ -6073,3 +6073,935 @@ body:not([data-app-screen="play"]) .app-progress-ribbon .lobby-currency-chip { o
 #settings-summary-panel .settings-form { margin-top:12px; }
 #profile-name-change-note { color:#b6cddd; font-size:.8rem; line-height:1.4; }
 #profile-display-name:disabled, #profile-display-name-save:disabled { opacity:.6; cursor:not-allowed; }
+
+/* === Savaş performansı ve grafik kademeleri ================================ */
+/* Akım çizgileri kendi SVG katmanındadır (bkz. ensureBoardCurrentLayer):
+   animasyon yalnız bu ince katmanı yeniden boyar. Çizgi başına SVG filtresi
+   yoktur; parıltı geniş ve soluk bir alt çizgiyle verilir. Filtreli çizgiler
+   her karede yeniden bulanıklaştırılıyor ve orta sınıf telefonlarda kareleri
+   düşürüyordu. */
+body[data-app-screen="play"] .vertical-circuit-arena .board-cable-current-layer {
+  position:absolute;
+  inset:0;
+  z-index:3;
+  width:100%;
+  height:100%;
+  overflow:visible;
+  pointer-events:none;
+  will-change:transform;
+}
+body[data-app-screen="play"] .vertical-circuit-arena .circuit-cable-base,
+body[data-app-screen="play"] .vertical-circuit-arena .circuit-cable-current,
+body[data-app-screen="play"] .vertical-circuit-arena .board.core-wave .circuit-cable-current {
+  filter:none !important;
+}
+.circuit-cable-glow {
+  fill:none;
+  stroke:rgba(72,244,224,.3);
+  stroke-width:9;
+  stroke-linecap:round;
+  vector-effect:non-scaling-stroke;
+}
+.board.core-wave .circuit-cable-glow {
+  stroke:color-mix(in srgb,var(--core-wave-color,var(--core-accent,#56f1df)) 42%,transparent);
+  stroke-width:13;
+}
+
+/* Orta: kesik çizgi akışı (stroke-dashoffset) ana iş parçacığında her karede
+   stil hesabı ve boyama ister. Onun yerine akım katmanının tamamı nabız gibi
+   parlar; opaklık animasyonunu bileşimci oynatır. Hücre parlaması ve tahta
+   gölgesi sabittir, simge parıltısı filtre yerine yazı gölgesidir. */
+body[data-graphics="orta"][data-app-screen="play"] .vertical-circuit-arena .circuit-cable-current {
+  animation:none !important;
+}
+body[data-graphics="orta"][data-app-screen="play"] .vertical-circuit-arena .board-cable-current-layer {
+  animation:gs-cable-layer-pulse 1.1s ease-in-out infinite;
+}
+@keyframes gs-cable-layer-pulse {
+  0%,100% { opacity:.5; }
+  50% { opacity:1; }
+}
+@media (prefers-reduced-motion:reduce) {
+  body[data-graphics="orta"][data-app-screen="play"] .vertical-circuit-arena .board-cable-current-layer {
+    animation:none;
+  }
+}
+body[data-graphics="orta"][data-app-screen="play"] .vertical-circuit-arena .board-cell.energy-fed-cell,
+body[data-graphics="dusuk"][data-app-screen="play"] .vertical-circuit-arena .board-cell.energy-fed-cell {
+  animation:none !important;
+  filter:none !important;
+}
+body[data-graphics="orta"][data-app-screen="play"] .vertical-circuit-arena .board,
+body[data-graphics="dusuk"][data-app-screen="play"] .vertical-circuit-arena .board {
+  filter:none !important;
+}
+body[data-graphics="orta"][data-app-screen="play"] .board-cell .module-card .module-icon,
+body[data-graphics="dusuk"][data-app-screen="play"] .board-cell .module-card .module-icon {
+  filter:none !important;
+  text-shadow:0 0 8px currentColor;
+}
+
+/* Kart geri bildirimi. Kartın kendi animasyonu box-shadow, outline ve filter
+   canlandırır; bunlar her karede ana iş parçacığında boyama ister. Orta ve
+   Düşük kademede kart sabit kalır, üstündeki katmanın yalnız opaklığı
+   canlandırılır; bunu bileşimci oynatır. */
+.module-fx-overlay {
+  position:absolute;
+  inset:0;
+  z-index:40;
+  display:none;
+  border-radius:inherit;
+  opacity:0;
+  pointer-events:none;
+}
+body[data-graphics="orta"][data-app-screen="play"] .module-card > .module-fx-overlay,
+body[data-graphics="dusuk"][data-app-screen="play"] .module-card > .module-fx-overlay {
+  display:block;
+  outline:2px solid var(--grid-feedback-color,#d8ecff);
+  outline-offset:-3px;
+  box-shadow:inset 0 0 18px color-mix(in srgb,var(--grid-feedback-color,#d8ecff) 46%,transparent);
+}
+body[data-graphics="orta"][data-app-screen="play"] .module-card.fx-hit,
+body[data-graphics="orta"][data-app-screen="play"] .module-card.fx-fire,
+body[data-graphics="orta"][data-app-screen="play"] .module-card.fx-shield,
+body[data-graphics="orta"][data-app-screen="play"] .module-card.fx-sabotage,
+body[data-graphics="orta"][data-app-screen="play"] .module-card[class*="fx-feedback-"],
+body[data-graphics="dusuk"][data-app-screen="play"] .module-card.fx-hit,
+body[data-graphics="dusuk"][data-app-screen="play"] .module-card.fx-fire,
+body[data-graphics="dusuk"][data-app-screen="play"] .module-card.fx-shield,
+body[data-graphics="dusuk"][data-app-screen="play"] .module-card.fx-sabotage,
+body[data-graphics="dusuk"][data-app-screen="play"] .module-card[class*="fx-feedback-"] {
+  animation:none !important;
+}
+body[data-app-screen="play"] .module-card.fx-hit { --grid-feedback-color:#ff5d6c; }
+body[data-app-screen="play"] .module-card.fx-fire { --grid-feedback-color:#f4fbff; }
+body[data-app-screen="play"] .module-card.fx-shield { --grid-feedback-color:#74b7ff; }
+body[data-app-screen="play"] .module-card.fx-sabotage { --grid-feedback-color:#c58aff; }
+body[data-graphics="orta"][data-app-screen="play"] .module-card.fx-hit > .module-fx-overlay,
+body[data-graphics="orta"][data-app-screen="play"] .module-card.fx-shield > .module-fx-overlay,
+body[data-graphics="orta"][data-app-screen="play"] .module-card.fx-sabotage > .module-fx-overlay,
+body[data-graphics="dusuk"][data-app-screen="play"] .module-card.fx-hit > .module-fx-overlay,
+body[data-graphics="dusuk"][data-app-screen="play"] .module-card.fx-shield > .module-fx-overlay,
+body[data-graphics="dusuk"][data-app-screen="play"] .module-card.fx-sabotage > .module-fx-overlay {
+  animation:gs-module-fx-overlay .5s ease-out;
+}
+body[data-graphics="orta"][data-app-screen="play"] .module-card.fx-fire > .module-fx-overlay,
+body[data-graphics="dusuk"][data-app-screen="play"] .module-card.fx-fire > .module-fx-overlay {
+  animation:gs-module-fx-overlay .24s ease-out;
+}
+body[data-graphics="orta"][data-app-screen="play"] .module-card[class*="fx-feedback-"] > .module-fx-overlay,
+body[data-graphics="dusuk"][data-app-screen="play"] .module-card[class*="fx-feedback-"] > .module-fx-overlay {
+  animation:gs-module-fx-overlay .7s ease-out;
+}
+@keyframes gs-module-fx-overlay {
+  0%,100% { opacity:0; }
+  34% { opacity:1; }
+}
+
+/* Orta kademede vuruş kıvılcımları tek öğedir: sekiz nokta kutu gölgesiyle
+   çizilir ve öğe büyürken dışarı saçılır (on ayrı öğe yerine bir animasyon). */
+.duel-impact-burst {
+  position:absolute;
+  width:4px;
+  height:4px;
+  margin:-2px 0 0 -2px;
+  border-radius:50%;
+  box-shadow:
+    17px 0 0 0 var(--impact-color),
+    12px 12px 0 0 #fff,
+    0 17px 0 0 var(--impact-color),
+    -12px 12px 0 0 #fff,
+    -17px 0 0 0 var(--impact-color),
+    -12px -12px 0 0 #fff,
+    0 -17px 0 0 var(--impact-color),
+    12px -12px 0 0 #fff;
+  animation:gs-hit-burst .58s cubic-bezier(.12,.66,.24,1) forwards;
+}
+@keyframes gs-hit-burst {
+  0% { opacity:1; transform:scale(.12); }
+  100% { opacity:0; transform:scale(2); }
+}
+
+/* Düşük: sürekli animasyon ve bulanıklık yok; mermi ve vuruş parlamaları
+   gölgesizdir. */
+body[data-graphics="dusuk"][data-app-screen="play"] .vertical-circuit-arena .circuit-cable-current {
+  animation:none !important;
+}
+body[data-graphics="dusuk"][data-app-screen="play"] .battle-effect-layer span,
+body[data-graphics="dusuk"][data-app-screen="play"] .battle-effect-layer i,
+body[data-graphics="dusuk"][data-app-screen="play"] .battle-effect-layer span::before,
+body[data-graphics="dusuk"][data-app-screen="play"] .battle-effect-layer span::after {
+  box-shadow:none !important;
+  filter:none !important;
+}
+body[data-graphics="dusuk"][data-app-screen="play"] .duel-arena[class*="fx-arena-pulse-"] {
+  animation:none !important;
+}
+body[data-graphics="dusuk"] .lobby-backdrop .lobby-core-orbit,
+body[data-graphics="dusuk"] .lobby-backdrop .shard-core-mark,
+body[data-graphics="dusuk"] .lobby-backdrop .shard-core-mark * {
+  animation:none !important;
+}
+.settings-graphics-note { display:block; margin-top:6px; color:#a9bfd0; font-size:.72rem; line-height:1.4; }
+
+
+/* === Ekim 2026 arayüz turu ================================================= */
+/* Üst bölüm iki ayrı bardır:
+   - Kaynak barı (Akı, Devre Kredisi): Ev, Kartlar ve Mağaza ekranlarında.
+     Dokununca mağaza açılır.
+   - Profil barı (avatar, operatör adı, kupa, mesaj kutusu): yalnız Ev'de.
+   Takım, Etkinlik ve Profil ekranlarında ikisi de görünmez; ekran alanı
+   içeriğe kalır. `--gs-shell-top` ekran panellerinin üst boşluğudur. */
+:root { --gs-shell-top:8px; }
+body[data-app-screen="menu"] { --gs-shell-top:122px; }
+body[data-app-screen="shop"],
+body[data-app-screen="modules"] { --gs-shell-top:50px; }
+
+.app-resource-bar { display:none; }
+body[data-app-screen="menu"] .app-resource-bar,
+body[data-app-screen="shop"] .app-resource-bar,
+body[data-app-screen="modules"] .app-resource-bar {
+  position:absolute;
+  z-index:61;
+  top:6px;
+  right:7px;
+  left:7px;
+  height:38px;
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:8px;
+}
+.app-resource-chip {
+  min-width:0;
+  height:38px;
+  padding:0 5px 0 8px;
+  display:grid;
+  grid-template-columns:24px minmax(0,1fr) 28px;
+  align-items:center;
+  gap:6px;
+  border:1px solid rgba(96,205,226,.36);
+  border-radius:12px;
+  color:#f4f9ff;
+  background:linear-gradient(180deg,rgba(13,40,68,.96),rgba(6,22,42,.98));
+  box-shadow:inset 0 1px rgba(255,255,255,.05);
+  cursor:pointer;
+  -webkit-tap-highlight-color:transparent;
+}
+.app-resource-chip > .resource-symbol {
+  width:24px;
+  height:24px;
+  display:grid;
+  place-items:center;
+}
+.app-resource-chip > .resource-symbol svg { width:20px; height:20px; }
+.app-resource-chip > strong {
+  min-width:0;
+  overflow:hidden;
+  color:#fff3b0;
+  font:900 .86rem/1 var(--gs-font-display);
+  letter-spacing:.02em;
+  text-align:right;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+}
+.app-resource-flux > strong { color:#e9d6ff; }
+.app-resource-plus {
+  width:26px;
+  height:26px;
+  display:grid;
+  place-items:center;
+  border:1px solid rgba(255,225,120,.72);
+  border-radius:8px;
+  color:#1c1403;
+  background:linear-gradient(180deg,#ffe58a,#f5b233);
+  font:900 1.05rem/1 var(--gs-font-copy);
+}
+.app-resource-chip:active .app-resource-plus { transform:scale(.94); }
+.app-resource-chip:focus-visible { outline:2px solid #ffe06d; outline-offset:2px; }
+body[data-app-screen="shop"] .app-resource-plus { visibility:hidden; }
+
+body:not([data-app-screen="menu"]) .app-progress-ribbon { display:none !important; }
+body[data-app-screen="menu"] .app-progress-ribbon {
+  top:50px !important;
+  height:64px !important;
+  min-height:64px !important;
+  max-height:64px !important;
+  padding:7px 10px !important;
+  grid-template-columns:50px minmax(0,1fr) 46px !important;
+  grid-template-rows:minmax(0,1fr) !important;
+  column-gap:10px !important;
+  row-gap:0 !important;
+  align-items:center !important;
+  border-radius:16px !important;
+}
+body[data-app-screen="menu"] .app-progress-ribbon .lobby-profile-button {
+  grid-column:1;
+  grid-row:1;
+  width:50px;
+  height:50px;
+  padding:0;
+  border-radius:13px;
+}
+body[data-app-screen="menu"] .app-progress-ribbon .lobby-profile-button .profile-avatar {
+  border-radius:12px;
+  font-size:1.25rem;
+}
+body[data-app-screen="menu"] .app-progress-ribbon .lobby-player-card {
+  grid-column:2;
+  grid-row:1;
+  gap:3px;
+  align-content:center;
+  text-align:left;
+}
+body[data-app-screen="menu"] .app-progress-ribbon .lobby-player-card strong {
+  font-size:1rem !important;
+  line-height:1.1;
+}
+body[data-app-screen="menu"] .app-progress-ribbon #lobby-player-details {
+  justify-self:start;
+  font-size:.78rem;
+}
+body[data-app-screen="menu"] .app-progress-ribbon #reward-inbox-button {
+  grid-column:3;
+  grid-row:1;
+  width:46px;
+  min-width:46px;
+  height:42px;
+  justify-self:end;
+  align-self:center;
+}
+.app-progress-ribbon .lobby-season-progress[hidden] { display:none !important; }
+
+/* Profil ekranı kimliği kendi başlığında gösterir. */
+.profile-hero {
+  display:grid;
+  grid-template-columns:56px minmax(0,1fr);
+  align-items:center;
+  gap:12px;
+  padding:4px 2px 12px;
+}
+.profile-hero > .profile-avatar { width:56px; height:56px; border-radius:14px; font-size:1.35rem; }
+.profile-hero-copy { min-width:0; display:grid; gap:4px; justify-items:start; }
+.profile-hero-copy > strong {
+  max-width:100%;
+  overflow:hidden;
+  color:#f7fbff;
+  font:900 1.05rem/1.1 var(--gs-font-display);
+  text-overflow:ellipsis;
+  white-space:nowrap;
+}
+#profile-hero-details {
+  appearance:none;
+  min-height:0;
+  margin:0;
+  padding:0;
+  border:0;
+  background:none;
+  box-shadow:none;
+  color:#b7cbdc;
+  font:600 .8rem/1.3 var(--gs-font-copy);
+  text-align:left;
+  cursor:pointer;
+}
+#profile-hero-details[data-claimable="true"]::before {
+  content:"";
+  display:inline-block;
+  width:7px;
+  height:7px;
+  margin-right:5px;
+  border:1px solid var(--gs-notification-ring);
+  box-sizing:border-box;
+  border-radius:50%;
+  background:var(--gs-notification-light);
+  box-shadow:var(--gs-notification-glow);
+  vertical-align:middle;
+}
+
+/* Kozmetik alt sekmeleri dört bölümdür. */
+.friends-tabs.cosmetic-tabs { grid-template-columns:repeat(4,minmax(0,1fr)); margin-bottom:10px; }
+[data-cosmetic-panel][hidden] { display:none !important; }
+
+/* Oyuncu kimliği: Ayarlar → Genel'de ad formunun altında, tamamı görünür ve
+   dokununca kopyalanır. */
+.account-player-id {
+  width:100%;
+  min-height:44px;
+  margin-top:10px;
+  padding:8px 10px;
+  display:grid;
+  grid-template-columns:auto minmax(0,1fr) 18px;
+  align-items:center;
+  gap:8px;
+  border:1px solid rgba(96,205,226,.36);
+  border-radius:10px;
+  color:#dbe9f4;
+  background:rgba(6,22,42,.72);
+  font:600 .82rem/1.35 var(--gs-font-copy);
+  text-align:left;
+  cursor:pointer;
+}
+.account-player-id[hidden] { display:none; }
+.account-player-id > span { color:#9fb6c9; white-space:nowrap; }
+.account-player-id > strong {
+  min-width:0;
+  color:#f4f9ff;
+  font-weight:700;
+  font-variant-numeric:tabular-nums;
+  overflow-wrap:anywhere;
+}
+.account-player-id > svg { width:18px; height:18px; fill:none; stroke:currentColor; stroke-width:2; stroke-linejoin:round; }
+.account-player-id[data-copied="true"] { border-color:rgba(72,244,224,.75); color:#8ff3e4; }
+
+/* Arkadaşlar: oyuncu kartı her genişlikte tek satırdır (avatar, ad, işlem).
+   Dar ekranda düğmeleri alt satıra iten eski kural satır kaymasına yol
+   açıyordu. Sekme adları kısadır ve gerekirse iki satıra bölünür. */
+.social-player-card {
+  grid-template-columns:36px minmax(0,1fr) auto !important;
+}
+.social-player-card > .social-player-actions {
+  grid-column:auto !important;
+  flex-wrap:nowrap !important;
+  align-items:center;
+}
+.social-player-actions button {
+  min-height:34px;
+  padding:0 8px;
+  white-space:nowrap;
+}
+.social-player-card small { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.friends-tabs button {
+  padding:2px 2px;
+  overflow:hidden;
+  overflow-wrap:anywhere;
+  letter-spacing:0;
+}
+.friends-hero {
+  grid-template-columns:auto auto;
+  justify-content:center;
+  align-items:baseline;
+  gap:8px;
+}
+html { -webkit-text-size-adjust:100%; text-size-adjust:100%; }
+
+/* Bağlı hesap sağlayıcıları simgeleriyle gösterilir. Düğme yazısını JS
+   değiştirdiği için simge düğmenin kendi ::before öğesidir. */
+#account-oauth-play-games,
+#account-oauth-google,
+#account-oauth-apple,
+#account-onboarding-play-games,
+#account-onboarding-google,
+#account-onboarding-apple {
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  gap:8px;
+}
+#account-oauth-play-games[hidden],
+#account-onboarding-play-games[hidden] { display:none; }
+#account-oauth-play-games::before,
+#account-oauth-google::before,
+#account-oauth-apple::before,
+#account-onboarding-play-games::before,
+#account-onboarding-google::before,
+#account-onboarding-apple::before {
+  content:"";
+  flex:none;
+  width:18px;
+  height:18px;
+  background:center / contain no-repeat;
+}
+#account-oauth-play-games::before,
+#account-onboarding-play-games::before { background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%2334A853' d='M4.6 3.7v16.6a1.3 1.3 0 0 0 1.98 1.1l13.3-8.3a1.3 1.3 0 0 0 0-2.2L6.58 2.6A1.3 1.3 0 0 0 4.6 3.7z'/%3E%3Cpath fill='none' stroke='%23ffffff' stroke-width='1.6' stroke-linecap='round' d='M8.2 12h3.6M10 10.2v3.6'/%3E%3Ccircle cx='14.3' cy='12' r='1.1' fill='%23ffffff'/%3E%3C/svg%3E"); }
+#account-oauth-google::before,
+#account-onboarding-google::before { background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 48'%3E%3Cpath fill='%23EA4335' d='M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z'/%3E%3Cpath fill='%234285F4' d='M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z'/%3E%3Cpath fill='%23FBBC05' d='M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z'/%3E%3Cpath fill='%2334A853' d='M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z'/%3E%3C/svg%3E"); }
+#account-oauth-apple::before,
+#account-onboarding-apple::before { background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%23ffffff' d='M12.152 6.896c-.948 0-2.415-1.078-3.96-1.04-2.04.027-3.91 1.183-4.961 3.014-2.117 3.675-.546 9.103 1.519 12.09 1.013 1.454 2.208 3.09 3.792 3.039 1.52-.065 2.09-.987 3.935-.987 1.831 0 2.35.987 3.96.948 1.637-.026 2.676-1.48 3.676-2.948 1.156-1.688 1.636-3.325 1.662-3.415-.039-.013-3.182-1.221-3.22-4.857-.026-3.04 2.48-4.494 2.597-4.559-1.429-2.09-3.623-2.324-4.39-2.376-2-.156-3.675 1.09-4.61 1.09zM15.53 3.83c.843-1.012 1.4-2.427 1.245-3.83-1.207.052-2.662.805-3.532 1.818-.78.896-1.454 2.338-1.273 3.714 1.338.104 2.715-.688 3.559-1.701'/%3E%3C/svg%3E"); }
+.account-oauth-actions { grid-template-columns:1fr !important; }
+.account-oauth-actions button { min-height:44px; }
+
+/* Koleksiyon kartı: seviye rozeti, simge, modül adı ve parça ilerlemesi ayrı
+   satırlardadır. Eski düzende "SV n", parça simgesi ve "x / y" tek dar satıra
+   sığmayıp üst üste biniyordu ve kartın hangi modül olduğu yazmıyordu. */
+body[data-app-screen="modules"] .module-collection-grid {
+  grid-template-columns:repeat(4,minmax(0,1fr));
+  justify-content:stretch;
+  gap:8px;
+  padding:3px 2px 96px;
+}
+.collection-module-tile {
+  width:auto;
+  min-width:0;
+  height:auto;
+  min-height:0;
+  padding:20px 4px 6px;
+  display:grid;
+  grid-template-rows:36px auto auto;
+  justify-items:center;
+  align-content:start;
+  gap:3px;
+  overflow:hidden;
+}
+.collection-module-tile .unified-module-art {
+  height:36px;
+  display:grid;
+  place-items:center;
+  font-size:1.6rem;
+}
+.unified-module-level {
+  position:absolute;
+  top:3px;
+  left:3px;
+  padding:1px 5px;
+  border-radius:6px;
+  color:var(--module-accent);
+  background:color-mix(in srgb,var(--module-accent) 20%,#06162a);
+  font:900 .5rem/1.5 var(--gs-font-display);
+  letter-spacing:.02em;
+  white-space:nowrap;
+}
+.unified-module-level[data-locked="true"] { color:#c3d0de; background:#14263d; }
+.unified-module-name {
+  width:100%;
+  min-height:2.3em;
+  display:-webkit-box;
+  -webkit-box-orient:vertical;
+  -webkit-line-clamp:2;
+  overflow:hidden;
+  color:#eaf4ff;
+  font:700 .62rem/1.15 var(--gs-font-copy);
+  text-align:center;
+  overflow-wrap:anywhere;
+}
+.collection-module-tile .unified-module-progress {
+  position:static;
+  width:100%;
+  min-height:0;
+  padding:0;
+  display:grid;
+  grid-template-columns:minmax(0,1fr);
+  gap:3px;
+  border:0;
+  border-radius:0;
+  background:none;
+}
+.unified-module-shards {
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:3px;
+  color:#cfe0f0;
+  font:700 .6rem/1 var(--gs-font-copy);
+  white-space:nowrap;
+}
+.unified-module-shards > b { font-weight:800; font-variant-numeric:tabular-nums; }
+.unified-module-shards .resource-symbol-module-piece {
+  width:11px;
+  height:11px;
+  margin:0;
+  display:inline-block;
+  flex:none;
+  vertical-align:middle;
+}
+.collection-module-tile .unified-module-progress > i { grid-column:1; height:4px; }
+.unified-module-progress[data-ready="true"] .unified-module-shards { color:#8ff3a8; }
+.unified-module-progress[data-ready="true"] > i {
+  background:#63e58a;
+  box-shadow:0 0 6px rgba(99,229,138,.6);
+}
+.collection-module-tile .unified-module-selected { top:3px; right:3px; }
+
+/* Takım: takımı olmayan oyuncu için liste ve oluşturma sekmeleri. */
+.team-onboarding { align-content:start; }
+.friends-tabs.team-lobby-tabs { grid-template-columns:repeat(2,minmax(0,1fr)); }
+.team-lobby-panel[hidden] { display:none !important; }
+.team-directory-list { display:grid; gap:8px; }
+.team-directory-row {
+  min-width:0;
+  padding:10px;
+  display:grid;
+  grid-template-columns:40px minmax(0,1fr) auto;
+  align-items:center;
+  gap:10px;
+  border:1px solid rgba(74,142,178,.3);
+  border-radius:12px;
+  background:#0b233b;
+}
+.team-directory-row[data-applied="true"] { border-color:rgba(255,211,110,.6); }
+.team-directory-badge {
+  width:40px;
+  height:40px;
+  display:grid;
+  place-items:center;
+  border:2px solid var(--team-frame-color,#7b93ab);
+  border-radius:10px;
+  color:var(--team-emblem-color,#5ff0da);
+  background:#081a2e;
+}
+.team-directory-copy { min-width:0; display:grid; gap:2px; justify-items:start; }
+.team-directory-name {
+  max-width:100%;
+  min-height:0;
+  padding:0;
+  overflow:hidden;
+  border:0;
+  background:none;
+  font:900 .82rem var(--gs-font-display);
+  text-align:left;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+}
+.team-directory-copy small { color:#9fb6c9; font-size:.68rem; }
+.team-directory-copy p {
+  margin:0;
+  display:-webkit-box;
+  -webkit-box-orient:vertical;
+  -webkit-line-clamp:2;
+  overflow:hidden;
+  color:#b9cbdb;
+  font-size:.68rem;
+  line-height:1.3;
+}
+.team-directory-action {
+  min-height:38px;
+  max-width:104px;
+  padding:0 10px;
+  border:1px solid #63ddcd;
+  border-radius:9px;
+  color:#0b222b;
+  background:#70e6d4;
+  font:900 .58rem/1.15 var(--gs-font-display);
+}
+.team-directory-action:disabled { color:#8ea6ba; background:#102a42; border-color:#2f5a78; }
+.team-directory-action[data-variant="quiet"] { color:#ffe2a0; background:#2a2412; border-color:rgba(255,211,110,.6); }
+.team-create-card textarea {
+  width:100%;
+  min-height:56px;
+  padding:9px 11px;
+  resize:none;
+  border:1px solid #2b6075;
+  border-radius:9px;
+  color:#edfaff;
+  background:#07192d;
+  font:700 .58rem/1.35 var(--gs-font-copy);
+  box-sizing:border-box;
+}
+.team-create-cost { margin:0; color:#ffe2a0; font-size:.72rem; }
+.team-create-cost[data-affordable="false"] { color:#ff9ba8; }
+.team-description { margin:2px 0 0; color:#b9cbdb; font-size:.7rem; line-height:1.3; }
+.team-description[hidden] { display:none; }
+/* Lider için bekleyen başvuru ışığı. */
+#team-management-open.has-team-application { position:relative; }
+#team-management-open.has-team-application::after {
+  content:"";
+  position:absolute;
+  top:-3px;
+  right:-3px;
+  width:10px;
+  height:10px;
+  border:1px solid var(--gs-notification-ring);
+  border-radius:50%;
+  background:var(--gs-notification-light);
+  box-shadow:var(--gs-notification-glow);
+}
+.team-application-badge {
+  min-width:16px;
+  height:16px;
+  margin-left:6px;
+  padding:0 4px;
+  display:inline-grid;
+  place-items:center;
+  border-radius:8px;
+  color:#fff;
+  background:var(--gs-notification-light);
+  font:900 .55rem/1 var(--gs-font-copy);
+  font-style:normal;
+  vertical-align:middle;
+}
+.team-application-badge[hidden] { display:none; }
+
+/* Alt gezinmede bildirim ışığı (ör. takım liderine bekleyen başvuru). Dock
+   düğmelerinin ::after öğesi başka amaçla kapatıldığı için burada açıkça
+   yeniden tanımlanır. */
+body:not([data-app-screen="play"]) #app-bottom-dock .menu-action.has-persistent-notification { position:relative; }
+body:not([data-app-screen="play"]) #app-bottom-dock .menu-action.has-persistent-notification::after {
+  content:"" !important;
+  display:block !important;
+  position:absolute;
+  top:6px !important;
+  right:auto !important;
+  bottom:auto !important;
+  left:calc(50% + 8px) !important;
+  width:9px !important;
+  height:9px !important;
+  border:1px solid var(--gs-notification-ring) !important;
+  box-sizing:border-box;
+  border-radius:50% !important;
+  background:var(--gs-notification-light) !important;
+  box-shadow:var(--gs-notification-glow) !important;
+  opacity:1 !important;
+  transform:none !important;
+  animation:none !important;
+}
+body:not([data-app-screen="play"]) #app-bottom-dock .menu-action.has-persistent-notification { overflow:visible !important; }
+
+/* === Savaşta modül adları (Ekim 2026) ===================================== */
+/* Deneme oyuncusu yalnız simgeye bakarak kartı tanıyamadı. Tahtadaki ve raftaki
+   kartlarda simgenin altında tek satır ad yazar. Uzun adlar
+   module-card-view.js içindeki kısa adla gelir; tam ad kartın başlığındadır. */
+body[data-app-screen="play"] .vertical-circuit-arena .module-card.battle-module-card > .module-icon {
+  inset:0 0 calc(5px + var(--gs-battle-card-size) * .19) 0 !important;
+  height:auto !important;
+}
+body[data-app-screen="play"] .vertical-circuit-arena .module-card.battle-module-card > .name {
+  position:absolute;
+  z-index:40;
+  right:1px;
+  bottom:6px;
+  left:1px;
+  display:block !important;
+  overflow:hidden;
+  color:#e9f5ff;
+  font:700 clamp(7px,calc(var(--gs-battle-card-size) * .17),10px)/1.15 var(--gs-font-copy) !important;
+  letter-spacing:0;
+  text-align:center;
+  text-shadow:0 1px 2px #020811,0 0 4px #020811;
+  white-space:nowrap;
+  pointer-events:none;
+}
+/* İmza rozetleri ad satırının üstünde durur. */
+body[data-app-screen="play"] .vertical-circuit-arena .module-card.battle-module-card > .module-signature-row {
+  bottom:calc(7px + var(--gs-battle-card-size) * .2);
+}
+
+/* Raf kartı: simge, ad ve Akım bedeli alt alta. Raf satırı 63 px olduğundan
+   kart kareden yüksek olabilir; panelin 96 px yüksekliği değişmez. */
+body[data-app-screen="play"] .module-shelf {
+  align-items:center !important;
+}
+body[data-app-screen="play"] .module-shelf .module-card.deck-module-card {
+  height:min(100%,calc(var(--gs-battle-card-size) + 16px)) !important;
+  min-height:0 !important;
+  max-height:none !important;
+  padding:3px 1px 3px !important;
+  display:grid !important;
+  grid-template-columns:minmax(0,1fr) !important;
+  grid-template-rows:minmax(0,1fr) auto auto !important;
+  place-items:center !important;
+  gap:1px !important;
+  aspect-ratio:auto !important;
+}
+body[data-app-screen="play"] .module-shelf .module-card.deck-module-card > .module-icon {
+  position:static !important;
+  grid-row:1;
+  width:auto !important;
+  height:auto !important;
+  place-self:center !important;
+  font-size:clamp(1rem,4.8vw,1.4rem) !important;
+  line-height:1 !important;
+}
+body[data-app-screen="play"] .module-shelf .module-card.deck-module-card > .name {
+  grid-row:2;
+  display:block !important;
+  width:100%;
+  overflow:hidden;
+  color:#e9f5ff;
+  font:700 clamp(7.5px,calc(var(--gs-battle-card-size) * .178),10px)/1.15 var(--gs-font-copy) !important;
+  letter-spacing:0;
+  text-align:center;
+  white-space:nowrap;
+}
+body[data-app-screen="play"] .module-shelf .module-card.deck-module-card > .current-cost-badge {
+  position:static !important;
+  grid-row:3;
+  inset:auto !important;
+  padding:1px 5px !important;
+  border-radius:6px !important;
+  font-size:.54rem !important;
+  line-height:1.25;
+}
+/* Akımı yetmeyen kartın adı okunur kalsın: kart solar ama silinmez. */
+body[data-app-screen="play"] .module-shelf .module-card.deck-module-card[data-playable="false"] {
+  opacity:.74 !important;
+  filter:saturate(.3) brightness(.82) !important;
+}
+
+/* On bir harf ve üstü adlar (Güçlendirici, Hızlandırıcı…) 360 px ekranda
+   44 px'lik karta sığsın. */
+body[data-app-screen="play"] .vertical-circuit-arena .module-card.battle-module-card > .name[data-long="true"] {
+  font-size:clamp(6.4px,calc(var(--gs-battle-card-size) * .153),9px) !important;
+  letter-spacing:-.04em;
+}
+body[data-app-screen="play"] .module-shelf .module-card.deck-module-card > .name[data-long="true"] {
+  font-size:clamp(6.6px,calc(var(--gs-battle-card-size) * .158),9px) !important;
+  letter-spacing:-.04em;
+  text-overflow:clip;
+}
+
+/* === İlk oyun deneyimi: yönlendirme katmanı (tutorial/onboarding.js) ====== */
+/* Katman bir <dialog> öğesidir. Engelleyen adımda en üst katmanda durur ve
+   bütün dokunuşu alır; yalnız delikteki hedefe gelen dokunuş hedefe iletilir.
+   Karartma deliğin gölgesidir; delik, ok ve kart yalnız transform/opacity ile
+   canlanır. */
+.guide-overlay {
+  position:fixed;
+  inset:0;
+  z-index:4000;
+  width:100vw;
+  max-width:none;
+  height:100dvh;
+  max-height:none;
+  margin:0;
+  padding:0;
+  border:0;
+  overflow:hidden;
+  color:#eaf6ff;
+  background:transparent;
+  touch-action:none;
+  user-select:none;
+  -webkit-tap-highlight-color:transparent;
+}
+.guide-overlay:not([open]) { display:none; }
+.guide-overlay::backdrop { background:transparent; }
+.guide-overlay[data-target="false"][data-shade="full"] { background:rgba(2,8,17,.74); }
+.guide-overlay[data-target="false"][data-shade="soft"] { background:rgba(2,8,17,.5); }
+.guide-overlay[data-blocking="false"],
+.guide-overlay[data-blocking="false"] .guide-card { pointer-events:none; }
+
+.guide-hole {
+  position:absolute;
+  border-radius:12px;
+  box-shadow:0 0 0 200vmax rgba(2,8,17,.76);
+  pointer-events:none;
+}
+.guide-hole[hidden] { display:none; }
+.guide-overlay[data-shade="soft"] .guide-hole { box-shadow:0 0 0 200vmax rgba(2,8,17,.52); }
+.guide-overlay[data-shade="none"] .guide-hole { box-shadow:none; }
+.guide-hole::after {
+  content:"";
+  position:absolute;
+  inset:-3px;
+  border:3px solid #ffe17a;
+  border-radius:14px;
+  box-shadow:0 0 18px rgba(255,225,122,.55),inset 0 0 12px rgba(255,225,122,.22);
+  animation:gs-guide-ring 1.3s ease-in-out infinite;
+}
+@keyframes gs-guide-ring {
+  50% { opacity:.4;transform:scale(1.035); }
+}
+
+.guide-arrow {
+  position:absolute;
+  width:40px;
+  height:44px;
+  margin-left:-20px;
+  pointer-events:none;
+  animation:gs-guide-arrow .62s ease-in-out infinite alternate;
+}
+.guide-arrow[hidden] { display:none; }
+.guide-arrow svg {
+  display:block;
+  width:100%;
+  height:100%;
+  fill:#ffe17a;
+  stroke:#3b2a04;
+  stroke-width:2.5;
+  stroke-linejoin:round;
+  paint-order:stroke;
+}
+/* Yol aşağıyı gösterir; hedefin altındaki ok yukarı döner. */
+.guide-arrow[data-side="below"] svg { transform:rotate(180deg); }
+@keyframes gs-guide-arrow {
+  from { transform:translateY(-7px); }
+  to { transform:translateY(4px); }
+}
+.guide-arrow[data-side="below"] { animation-name:gs-guide-arrow-up; }
+@keyframes gs-guide-arrow-up {
+  from { transform:translateY(7px); }
+  to { transform:translateY(-4px); }
+}
+.guide-overlay.is-nudged .guide-arrow { animation-duration:.16s; }
+.guide-overlay.is-nudged .guide-hole::after { animation-duration:.26s;border-color:#fff; }
+
+.guide-card {
+  position:absolute;
+  left:50%;
+  width:min(calc(100vw - 20px),430px);
+  padding:11px 14px 12px;
+  border:1px solid rgba(255,225,122,.72);
+  border-radius:16px;
+  background:linear-gradient(180deg,rgba(14,34,62,.98),rgba(6,18,34,.98));
+  box-shadow:0 14px 38px rgba(0,0,0,.6),0 0 22px rgba(255,225,122,.16);
+  transform:translateX(-50%);
+  pointer-events:auto;
+}
+.guide-overlay[data-place="top"] .guide-card { margin-top:env(safe-area-inset-top); }
+.guide-progress {
+  height:3px;
+  margin-bottom:9px;
+  overflow:hidden;
+  border-radius:3px;
+  background:rgba(143,243,228,.16);
+}
+.guide-progress > i {
+  display:block;
+  height:100%;
+  border-radius:3px;
+  background:linear-gradient(90deg,#6ff1e0,#ffe17a);
+}
+.guide-title {
+  margin:0 0 5px;
+  color:#fff3a1;
+  font:900 .94rem/1.2 var(--gs-font-display);
+  letter-spacing:.02em;
+}
+.guide-body p {
+  margin:0;
+  color:#dbe9f4;
+  font:600 .86rem/1.4 var(--gs-font-copy);
+}
+.guide-body p + p { margin-top:5px; }
+.guide-actions {
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+  margin-top:10px;
+}
+.guide-overlay[data-mode="wait"] .guide-actions { display:none; }
+.guide-hint {
+  color:#8fd7ff;
+  font:800 .58rem/1.2 var(--gs-font-display);
+  letter-spacing:.06em;
+  text-transform:uppercase;
+}
+.guide-next {
+  min-width:116px;
+  min-height:42px;
+  margin-left:auto;
+  padding:0 18px;
+  border:1px solid #ffd76a;
+  border-radius:11px;
+  color:#2a1c02;
+  background:linear-gradient(135deg,#ffe98a,#ffb84d);
+  box-shadow:0 5px 16px rgba(255,190,66,.3);
+  font:900 .72rem/1 var(--gs-font-display);
+  letter-spacing:.06em;
+  cursor:pointer;
+}
+.guide-next[hidden],
+.guide-hint[hidden] { display:none; }
+/* Savaşta kart küçüktür; tahtalar görünür kalır. */
+.guide-overlay[data-tone="battle"] .guide-card { padding:9px 12px 10px; }
+.guide-overlay[data-tone="battle"] .guide-title { font-size:.84rem; }
+.guide-overlay[data-tone="battle"] .guide-body p { font-size:.8rem;line-height:1.34; }
+.guide-overlay[data-tone="battle"] .guide-actions { margin-top:8px; }
+.guide-overlay[data-tone="battle"] .guide-next { min-height:38px; }
+/* Birlikte anlatılan kartlar (ör. üç destek kartı). */
+[data-guide-emphasis="true"] {
+  outline:2px solid #ffe17a !important;
+  outline-offset:2px;
+}
+@media (prefers-reduced-motion:reduce) {
+  .guide-hole::after,
+  .guide-arrow { animation:none; }
+}

@@ -4,7 +4,7 @@
 
 ## Ne ölçülür
 
-Savaş başladığı andan (yerel AI savaşı ya da çevrimiçi `onlineStatus = battle`) bittiği ana kadar her animasyon karesinin süresi:
+Savaş sürerken (yerel AI savaşı ya da çevrimiçi `onlineStatus = battle`) animasyon karelerinin süresi. Oyuncunun cihazında kareler yalnız kısa ölçüm pencerelerinde izlenir: her 10 saniyenin ilk 1,2 saniyesi (`FRAME_SAMPLING_PERIOD_MS`, `FRAME_SAMPLING_WINDOW_MS`). Pencere dışında oyun döngüsü HUD hızında (250 ms) döner; her karede boş bir `requestAnimationFrame` çalıştırmak tarayıcıyı bütün animasyonları ana iş parçacığında yeniden hesaplamaya zorluyordu. Tarayıcı testleri ve gerçek cihaz kanıtı (`?e2e=1`) savaşın tamamını ölçer; bütçe bu tam ölçüme göre değerlendirilir.
 
 | Alan | Anlam |
 | --- | --- |
@@ -33,6 +33,22 @@ Aynı sayılar `GRIDSHARD_PERFORMANCE_BUDGET` (istemci) ve `PERFORMANCE_BUDGET` 
 
 Gözlem (kapıyı kapatmaz, eğilim için): `effect_nodes_max`, `dom_nodes_max`, `js_heap_mb_max`. Gerçek cihaz verisi birikince bunlar için de eşik konulabilir.
 
+## Grafik kademeleri
+
+Ayarlar → Grafik sekmesi → Grafik: **Otomatik** (varsayılan), Düşük, Orta, Yüksek. Kademe `body[data-graphics]` ile uygulanır; kuralları `client/src/canon.css` içindeki "Savaş performansı ve grafik kademeleri" bölümündedir.
+
+| Kademe | Fark |
+| --- | --- |
+| Yüksek | Bütün efektler; vuruşta on ayrı kıvılcım; kart parlamaları kartın kendisinde |
+| Orta | Kablo akımı tek katmanın opaklığıyla canlanır, hücre ve tahta filtreleri yoktur; vuruş tek öğelik patlamadır; kart geri bildirimi kartın üstündeki katmanda (`.module-fx-overlay`) oynar; parçacık sayısı yarıdır |
+| Düşük | Orta kademeye ek olarak tahta eğimi (perspektif) kapanır ve parçacıklar en fazla dörttür |
+
+Aynı anda yaşayan efekt kökü sayısı kademeye göre sınırlıdır (`BATTLE_EFFECT_ROOT_BUDGET`: 8 / 14 / 32); sınır aşılınca yeni efektler sadeleşir.
+
+**Otomatik** kip cihaza göre başlar (`detectDeviceGraphicsTier`): masaüstü Yüksek; mobilde bellek ≤ 2 GB ya da ≤ 4 çekirdek Düşük, bellek ≤ 4 GB ya da ≤ 6 çekirdek Orta, diğerleri Yüksek. `navigator.deviceMemory` ikinin kuvvetine yuvarlandığından 6 GB bellekli telefon 4 olarak görünür ve Orta kademede başlar. Ölçüm pencerelerinde ortalama kare süresi 26 ms'yi ya da 50 ms'yi aşan kare oranı %8'i art arda iki kez aşarsa kademe bir iner (`trackAutoGraphics`). İnen kademe cihazda aynı sürüm boyunca hatırlanır; yeni sürümde ölçüm baştan yapılır. Oyuncu elle kademe seçerse otomatik düşürme yapılmaz.
+
+Ekim 2026 turunda ölçümler masaüstü Chrome'da işlemci 4× ve 6× yavaşlatılarak yapıldı; gerçek telefonda doğrulanmadı.
+
 ## Nereden okunur
 
 - Tarayıcıda: `window.__GRIDSHARD_PERF.current` (süren savaş), `.last` (son biten savaş), `.budget`.
@@ -47,5 +63,5 @@ Gözlem (kapıyı kapatmaz, eğilim için): `effect_nodes_max`, `dom_nodes_max`,
 
 1. `effect_nodes_max` yüksekse efekt öğeleri temizlenmiyordur (`clearBattleVisualElement`, efekt havuzu).
 2. `battle_perspective: true` ve p95 yüksekse perspektifi kapatıp karşılaştırın (Ayarlar → Savaş Alanı Perspektifi); eğik tahta düşük GPU'larda bileşim maliyeti getirebilir.
-3. `graphics_quality` düşürülünce iyileşme yoksa darboğaz DOM güncellemeleridir (`renderShelf`/`renderBoard` her 250 ms'de bir çalışır).
+3. `graphics_quality` düşürülünce iyileşme yoksa darboğaz DOM güncellemeleridir. Tahtalar hücre imzasıyla karşılaştırılır ve yalnız değişen hücre yeniden kurulur (`GridshardBattleBoardView`, `renderEnemyBoard`); kablo geometrisi tahta boyutu değişmedikçe yeniden ölçülmez (`renderBoardCables`). Chrome izinde "Forced reflow" uyarıları artmışsa bir çizim yolu yerleşim okumayı (`getBoundingClientRect`, `offsetLeft`) yazmalarla iç içe yapıyordur.
 

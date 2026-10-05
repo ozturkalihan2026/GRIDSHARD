@@ -1,0 +1,31 @@
+.account-session-dialog {
+  width: min(28rem, calc(100vw - 2rem));
+  max-height: calc(100dvh - 2rem);
+  box-sizing: border-box;
+  overflow: auto;
+  padding: 1.25rem;
+  color: #e7f4ff;
+  background: #07142b;
+  border: 1px solid #609cb9;
+  border-radius: 1rem;
+  font-family: inherit;
+}
+.account-session-dialog::backdrop { background: rgb(0 0 0 / 75%); }
+.account-session-dialog h2 { margin: 0 0 1rem; font-size: 1.4rem; }
+.account-session-dialog p { line-height: 1.5; overflow-wrap: anywhere; }
+.account-session-dialog button {
+  display: block;
+  width: 100%;
+  min-height: 44px;
+  white-space: normal;
+  margin-top: .75rem;
+  padding: .75rem;
+  color: #e7f4ff;
+  background: #14344c;
+  border: 1px solid #609cb9;
+  border-radius: .5rem;
+  cursor: pointer;
+}
+.account-session-dialog button:disabled { opacity: .55; cursor: wait; }
+.account-session-dialog a { color: #a4e5ff; }
+.account-session-dialog :focus-visible { outline: 3px solid #ffd978; outline-offset: 3px; }

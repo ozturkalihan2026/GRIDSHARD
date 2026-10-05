@@ -28,6 +28,7 @@ from .pvp_setup import (
     validate_setup_payload,
 )
 from .support import PRECISION_MAX_STACKS, chrono_phase, circuit_category_diversity
+from .tutorial import ACK_COMMAND as TUTORIAL_ACK_COMMAND, deck_supports_tutorial
 
 
 MAX_PVP_PLAYERS = 2
@@ -169,6 +170,8 @@ class PvPSession:
     ai_archetypes: dict[str, str] = field(default_factory=dict)
     ai_profile_options: dict[str, dict] = field(default_factory=dict)
     ai_level_reference_player_ids: dict[str, str] = field(default_factory=dict)
+    # İlk oyun deneyimi: yönetmenli ilk savaş (bkz. tutorial.TutorialDirector).
+    tutorial: object | None = None
 
     @property
     def is_full(self) -> bool:
@@ -342,6 +345,15 @@ class PvPSessionService:
         unlocked = session.engine.state.player_unlocked_modules.get(player_id)
         if unlocked is not None and any(module_id not in unlocked for module_id in payload.battle_pool_ids):
             raise PvPSessionError("Destede henüz açılmamış kart var. Modüller ekranından açık kartları seçin.")
+        director = session.tutorial
+        if (
+            director is not None
+            and player_id == director.player_id
+            and not deck_supports_tutorial(payload.battle_pool_ids)
+        ):
+            # Eğitim kartları destede yok: savaş yönetilmez, AI normal oynar.
+            director.release()
+            session.tutorial = None
         player.modules.clear()
         player.battle_pool = None
         slot.ready = False
@@ -487,6 +499,14 @@ class PvPSessionService:
             raise PvPSessionError(
                 "Komut yalnızca çalışan PvP maçına gönderilebilir."
             )
+
+        if session.tutorial is not None:
+            if not session.tutorial.handle_command(command):
+                self._touch(session)
+                return
+        elif command.kind == TUTORIAL_ACK_COMMAND:
+            # Yönetmensiz oturumda geç kalan onay motora girmez.
+            return
 
         try:
             session.engine.enqueue_command(command)
@@ -753,8 +773,14 @@ class PvPSessionService:
 
             players[player_id] = player_data
 
+        director = session.tutorial
         return {
             "session_id": session_id,
+            "tutorial": (
+                director.view()
+                if director is not None and viewer_player_id == director.player_id
+                else None
+            ),
             "match_type": state.match_type,
             "match_label_tr": {
                 "arena_ai": "Arena Savaşı",

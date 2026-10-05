@@ -41,6 +41,9 @@ assert.ok(app.includes("viewer_trophy_group"));
 assert.ok(app.includes("top_ten_rewards"));
 assert.ok(app.includes("loadRewardInbox"));
 assert.ok(app.includes("renderTeamManagement"));
-assert.ok(app.includes('? "BAŞVURU BEKLİYOR" : "BAŞVUR"'));
+// Bekleyen başvuru artık takım listesinde gösterilir ve geri çekilebilir.
+assert.ok(app.includes('action.textContent = "BAŞVURUYU GERİ ÇEK"'));
+assert.ok(app.includes('/applications/withdraw'));
+assert.ok(app.includes('action.disabled = pending;'));
 
 console.log("beta61 social rewards and management contract passed");

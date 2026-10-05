@@ -83,7 +83,20 @@ class PvPTickRunner:
         if session.engine.state.status != BattleStatus.RUNNING:
             return False
         stats=self.stats_for(session_id)
-        for ai_player_id in sorted(session.ai_player_ids):
+        # İlk oyun deneyimi: yönetmenli savaşta oyuncu okurken motor durur ve
+        # rakibin hamlelerini betik yapar (bkz. tutorial.TutorialDirector).
+        director=session.tutorial
+        if director is not None:
+            running=director.before_tick(self.service.now_func())
+            if director.abandoned:
+                await self._abandon_session(session_id)
+                return False
+            if not running:
+                if director.consume_dirty():
+                    stats.live_event_broadcasts += await self.websocket_adapter.broadcast_live_events(session_id)
+                    stats.snapshot_broadcasts += await self.websocket_adapter.broadcast_snapshot(session_id)
+                return True
+        for ai_player_id in (() if director is not None else sorted(session.ai_player_ids)):
             next_decision_at=session.ai_next_decision_at_ms.get(
                 ai_player_id,
                 0,
@@ -119,8 +132,13 @@ class PvPTickRunner:
             )
         self.service.step(session_id)
         stats.ticks_executed+=1
+        if director is not None:
+            director.after_tick()
         stats.live_event_broadcasts += await self.websocket_adapter.broadcast_live_events(session_id)
         snapshot_sent = stats.ticks_executed % self.snapshot_every_ticks == 0
+        # Sahne değişti: istemci yeni sahneyi bir sonraki dönemi beklemeden görsün.
+        if director is not None and director.consume_dirty():
+            snapshot_sent = True
         if snapshot_sent:
             stats.snapshot_broadcasts += await self.websocket_adapter.broadcast_snapshot(session_id)
 
@@ -161,6 +179,14 @@ class PvPTickRunner:
 
         return True
 
+    async def _abandon_session(self,session_id: str) -> None:
+        """Yarım bırakılan eğitim savaşını sonuç yazmadan kapatır."""
+        try:
+            await self.websocket_adapter.close_finished_session_connections(session_id)
+        except Exception:
+            pass  # Oturum zaten temizlenmiş olabilir.
+        self.service.delete_session(session_id)
+
     async def run_ticks(self,session_id: str,count: int) -> int:
         executed=0
         for _ in range(count):
@@ -175,7 +201,8 @@ class PvPTickRunner:
                 session=self.service.get_session(session_id)
                 if session.engine.state.status != BattleStatus.RUNNING:
                     break
-                await self.run_single_tick(session_id)
+                if not await self.run_single_tick(session_id):
+                    break
                 if session.engine.state.status != BattleStatus.RUNNING:
                     break
                 await self.sleep_func(self.tick_interval_seconds)

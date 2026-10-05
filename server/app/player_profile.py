@@ -370,6 +370,12 @@ def utc_day_key(moment: datetime | None = None) -> str:
     return (moment or datetime.now(timezone.utc)).astimezone(timezone.utc).date().isoformat()
 
 
+# İlk oyun deneyimi: yeni hesap Lazerini bir kez yükseltebilsin diye ilk
+# yükseltmenin parça bedeli (2) hazır gelir; Devre Kredisi bedeli başlangıç
+# bakiyesinden ödenir.
+STARTER_MODULE_SHARDS = {"laser": 2}
+
+
 @dataclass(slots=True)
 class PlayerProfile:
     player_id: str
@@ -431,7 +437,7 @@ class PlayerProfile:
     lifetime_stats: dict = field(default_factory=dict)
     module_shards: dict[str, int] = field(
         default_factory=lambda: {
-            module_id: 0
+            module_id: STARTER_MODULE_SHARDS.get(module_id, 0)
             for module_id in MODULES
         }
     )

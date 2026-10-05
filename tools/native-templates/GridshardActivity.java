@@ -26,6 +26,10 @@ public class GridshardActivity extends BridgeActivity {
         registerPlugin(GridshardAdSafety.class);
         super.onCreate(savedInstanceState);
         if (getBridge() == null) return;
+        // The system font-size setting scales WebView text by default. The game
+        // UI is laid out in fixed cells, so scaled labels spill out of their
+        // boxes; keep text at the designed size.
+        getBridge().getWebView().getSettings().setTextZoom(100);
         Window window = getWindow();
         WindowCompat.setDecorFitsSystemWindows(window, false);
         if (Build.VERSION.SDK_INT >= 28) {
