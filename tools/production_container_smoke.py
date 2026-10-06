@@ -183,7 +183,9 @@ def smoke(image, network="host", maintenance_image=None, soak_seconds=0, admob_s
                     assert client.get("/ads/admob/ssv?user_id=non-player-probe&signature=invalid").status_code == 403
                 before = _wait_profile(client, actor, headers)
                 assert before["display_name_changes_remaining"] == 1
-                name = "Test-" + uuid4().hex[:12]
+                # Ad süzgeci en fazla 4 rakama izin verir (docs/CHILD_AUDIENCE_AUDIT.md);
+                # benzersiz ek yalnız sessiz harflerden oluşur.
+                name = "Test-" + "".join(secrets.choice("bcdfghjklmnprstvyz") for _ in range(12))
                 renamed = client.put(f"/profile/{actor}/display-name", headers=headers, json={"display_name":name})
                 assert renamed.status_code == 200
                 before = renamed.json()

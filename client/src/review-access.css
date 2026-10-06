@@ -3,7 +3,10 @@
   background:#102237; color:#d7f4ff; font:600 12px system-ui,sans-serif;
   cursor:pointer; min-height:44px;
 }
-.review-access-startup { position:absolute; bottom:max(12px,env(safe-area-inset-bottom)); right:12px; z-index:3; }
+/* Açılış ekranında sağ üstte durur. Sağ alttayken, açılış başarısız olduğunda
+   çıkan "TEKRAR DENE" düğmesinin üstüne biniyordu (telefon genişliklerinde;
+   360 px ve altında düğmenin ortasını kapatıyordu). */
+.review-access-startup { position:absolute; top:max(12px,env(safe-area-inset-top)); right:12px; z-index:3; }
 .review-access-dialog {
   width:min(420px,calc(100vw - 32px)); box-sizing:border-box; max-height:90dvh;
   overflow:auto; border:1px solid #73b9d9; border-radius:16px; padding:22px;
