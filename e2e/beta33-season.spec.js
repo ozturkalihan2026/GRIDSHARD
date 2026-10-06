@@ -19,7 +19,6 @@ test("Güncel günlük emirler ve 40 kademeli sezon yolu gerçek tarayıcıda g�
   await page.locator('#rewards-hub-screen [data-open-screen="rewards"]').click();
   await expect(page.locator("#season-reward-track .season-pass-row")).toHaveCount(40);
   await expect(page.locator("#season-tier-label")).toContainText("Kademe 0 / 40");
-  await expect(page.locator("#season-equipped-title")).toContainText("Devre Çırağı");
 
   const seasonVisual = await page.locator(".season-rewards-screen").evaluate(element => {
     const style = getComputedStyle(element);
@@ -39,6 +38,11 @@ test("Güncel günlük emirler ve 40 kademeli sezon yolu gerçek tarayıcıda g�
 
   await page.locator('[data-shell-screen="menu"]').click();
   await expect(page.locator('body[data-app-screen="menu"]')).toBeVisible();
+  // Operatör unvanı artık sezon ekranında değil, Ev ekranından açılan unvan
+  // penceresinde gösterilir.
+  await page.locator("#lobby-player-details").click();
+  await expect(page.locator("#operator-titles-title")).toContainText("Devre Çırağı");
+  await page.locator("#operator-titles-close").click();
   // Retired manual initial placement must not become a test prerequisite.
   await expect(page.locator(".initial-circuit-picker")).not.toBeVisible();
   expect(errors).toEqual([]);

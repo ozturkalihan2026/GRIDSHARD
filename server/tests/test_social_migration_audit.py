@@ -2,9 +2,15 @@
 
 import json
 import sys
+from pathlib import Path
 
-from server.app.social_migration_audit import audit_legacy_social
-from tools.audit_social_migration import main as audit_cli_main
+# Denetim modülü ve komut satırı aracı depo kökünden içe aktarılır. Kalite
+# denetimi testleri server/ klasöründen koşar; kök yola eklenmezse bu dosya
+# toplanamaz ve bütün sunucu testleri koşmadan durur.
+sys.path.append(str(Path(__file__).resolve().parents[2]))
+
+from server.app.social_migration_audit import audit_legacy_social  # noqa: E402
+from tools.audit_social_migration import main as audit_cli_main  # noqa: E402
 
 
 def _player(player_id, *, friends=(), incoming=(), outgoing=(), blocked=()):

@@ -17,6 +17,9 @@ module.exports = defineConfig({
   retries: process.env.CI ? 1 : 0,
   reporter: [
     ["line"],
+    // Kalite denetiminde kırılan test, iş açıklaması olarak da yazılır; günlüğü
+    // indirmeden hangi testin neden kırıldığı görülür.
+    ...(process.env.CI ? [["github"]] : []),
     ["html", { outputFolder: "playwright-report", open: "never" }],
     ["json", { outputFile: "qa_reports/playwright-results.json" }]
   ],

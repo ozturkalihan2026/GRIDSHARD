@@ -1,6 +1,17 @@
 # Claude devir notu — 6 Ekim 2026 (iş bilgisayarı)
 
-İş bilgisayarındaki ilk tur `9fd8107`, 5 Ekim akşamındaki ev turu `ae967ed` commit'iyle depoya girdi. Aşağıdaki 6 Ekim değişikliği **commit edilmedi**; commit'i kullanıcı yapacak. Aynı ağaçta Codex de çalışıyor (`CODEX_CHECKPOINT.md`, Play Console kurulumu); o dosyaya ve Codex'in değişikliklerine dokunulmadı.
+İş bilgisayarındaki ilk tur `9fd8107`, 5 Ekim akşamındaki ev turu `ae967ed` commit'iyle depoya girdi. 6 Ekim'deki çocuk hedef kitle işi `7511db8` commit'iyle depoya girdi; onun altındaki kalite denetimi düzeltmeleri **commit edilmedi**. Commit'i kullanıcı yapar. Aynı ağaçta Codex de çalışıyor (`CODEX_CHECKPOINT.md`, Play Console kurulumu); o dosyaya ve Codex'in değişikliklerine dokunulmadı.
+
+## 6 Ekim (iş bilgisayarı): kalite denetimi (GitHub Actions) düzeltmeleri
+
+Kullanıcı `7511db8` commit'ini push etti ve önerilen yayın sırasını başlattı. İlk adım olan kalite denetimine bakıldı: beş işten yalnız "Client contracts" geçiyordu ve kırıklar bugünkü işten önceye gidiyordu (önceki dört commit'te de kırmızı). Günlükler oturum açmadan okunamıyor; bulgular iş adımı sonuçlarından, iş açıklamalarından ve aynı komutların yerelde koşulmasından geliyor.
+
+- **Server contracts:** `server/tests/test_social_migration_audit.py`, `server.app…` ve `tools…` içe aktarıyor ama iş testleri `server/` klasöründen koşuyor; dosya toplanamıyor ve **hiçbir sunucu testi koşmadan** iş 2 koduyla bitiyordu. Test artık depo kökünü yola ekliyor. Temiz bir kopyada (yalnız izlenen dosyalar, LF satır sonu) işin komutuyla: 1185 geçti, 39 atlandı, 2 başarısız (yalnız bu makinede `fakeredis` yok; iş onu kuruyor).
+- **PostgreSQL / Redis / production image:** `apt-get install postgresql-client-17` paketi bulamıyordu (çıkış kodu 100). İş artık PostgreSQL'in resmî apt deposunu ekliyor (`postgresql-common` içindeki `apt.postgresql.org.sh -y`). **Yerelde denenemedi**; ilk push'ta görülecek.
+- **Tarayıcı işi:** 15 dakikalık süre sınırında iptal oluyordu. Süre 30 dakikaya çıkarıldı ve Playwright'a kalite denetiminde `github` raporlayıcısı eklendi (kırılan test iş açıklaması olarak yazılır; günlük indirmeden görülür). İşin içindeki eski `e2e/beta33-season.spec.js` iki yerden kırıktı: sezon ekranında artık olmayan `#season-equipped-title` (unvan Ev ekranındaki pencereye taşınmış; test oraya bakıyor) ve gerçek bir yerleşim hatası.
+- **Sezon ekranı, masaüstü genişliği (gerçek hata):** 680 px üstünde sekme çubuğu akışın içinde ve genel kural onu 456 px yapıyordu; ızgara sütunu 26 px genişleyip "Kademe 0 / 40" satırını ve ödül yolunu sağdan kırpıyordu. `client/src/canon.css` sonuna yalnız bu ekran ve bu genişlik için düzeltme eklendi; telefon genişlikleri değişmedi. Diğer profil terminali ekranlarında taşma yok (ölçüldü).
+- **Yerelde doğrulama:** işin tarayıcı listesi masaüstü + Android 17/17, iPhone/WebKit 7/7, iki istemcili test 2/2; istemci 235/235. Kalite denetiminde neden 14 dakikadan uzun sürdüğü bilinmiyor; yerelde tamamı yaklaşık 5 dakika.
+- **Bu düzeltmeler commit edilmedi**: `.github/workflows/quality.yml`, `playwright.config.js`, `e2e/beta33-season.spec.js`, `server/tests/test_social_migration_audit.py`, `client/src/canon.css`. Push'tan sonra koşu `https://api.github.com/repos/ozturkalihan2026/GRIDSHARD/actions/runs` adresinden (depo herkese açık) okunabilir; bu makinede `gh` yok.
 
 ## 6 Ekim (iş bilgisayarı): çocuk hedef kitle — hazır mesajlar ve ad süzgeci
 

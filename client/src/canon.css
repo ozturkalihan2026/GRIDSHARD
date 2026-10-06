@@ -7064,3 +7064,12 @@ body[data-app-screen="play"] .module-shelf .module-card.deck-module-card > .name
 .open-source-licenses pre { max-height:260px;margin:0 0 10px;padding:8px;overflow:auto;border-radius:8px;color:#dbe9f3;background:#041120;font:500 .62rem/1.45 ui-monospace,Consolas,monospace;white-space:pre-wrap;overflow-wrap:anywhere; }
 #friend-invite-create:disabled,
 #friend-search-form :disabled { opacity:.45; }
+
+/* === Sezon ekranı, 680 px üstü (masaüstü tarayıcı) ==========================
+   Sekme çubuğu bu genişlikte akışın içindedir. Genel "telefon genişliği − 24 px"
+   kuralı sezon ekranında ızgara sütununu 26 px genişletip kademe satırını ve
+   ödül yolunu sağdan kırpıyordu; çubuk burada panelin kendi genişliğini kullanır. */
+@media (min-width:681px) {
+  body[data-app-screen="rewards"] .season-rewards-screen { grid-template-columns:minmax(0,1fr); }
+  body[data-app-screen="rewards"] .season-rewards-screen > .profile-terminal-tabs { width:100% !important; }
+}

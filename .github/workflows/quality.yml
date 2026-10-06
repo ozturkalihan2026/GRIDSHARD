@@ -98,7 +98,11 @@ jobs:
       - name: Install server test and PostgreSQL client tools
         run: |
           python -m pip install -r server/requirements-test.txt
+          # Ubuntu'nun kendi deposunda PostgreSQL 17 istemcisi yok; PostgreSQL'in
+          # resmî apt deposu (PGDG) eklenir. Betik postgresql-common paketindedir.
           sudo apt-get update
+          sudo apt-get install -y postgresql-common
+          sudo /usr/share/postgresql-common/pgdg/apt.postgresql.org.sh -y
           sudo apt-get install -y postgresql-client-17
       - name: Real persistence and restart contracts
         run: >-
@@ -132,7 +136,9 @@ jobs:
   browser:
     name: Startup / mobile layout / two-client reconnect
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    # Üç tarayıcı projesi (masaüstü, Android, iPhone/WebKit) 15 dakikayı aşıyor
+    # ve iş sonuç vermeden iptal oluyordu.
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
