@@ -11,7 +11,10 @@ const manifest = JSON.parse(fs.readFileSync("./manifest.webmanifest", "utf8"));
 assert.ok(html.includes('id="account-onboarding-dialog"'));
 assert.ok(html.includes('id="account-onboarding-google"'));
 assert.ok(html.includes('id="account-onboarding-apple"'));
-assert.ok(html.includes('id="account-onboarding-email"'));
+// Yeni e-posta alınmaz: e-posta ile kayıt alanı yoktur (docs/CHILD_AUDIENCE_AUDIT.md).
+assert.ok(!html.includes('id="account-onboarding-email"'));
+assert.ok(!html.includes('id="account-onboarding-code"'));
+assert.ok(html.includes('id="account-onboarding-guest"'));
 assert.ok(app.includes("function maybePresentAccountOnboarding"));
 assert.ok(app.includes("accountHasPersistentIdentity"));
 assert.ok(app.includes("finishAccountOnboarding({ dismiss:true })"));

@@ -178,7 +178,7 @@ def test_update_notice_and_direct_messages_are_unread_until_seen(isolated_gatewa
 
         gateway.send_direct_message(
             sender_id,
-            gateway.DirectMessageRequest(player_id=sender_id, recipient_id=recipient_id, text="Savaşa var mısın?"),
+            gateway.DirectMessageRequest(player_id=sender_id, recipient_id=recipient_id, preset_id="battle"),
         )
         assert gateway.get_social_view(recipient_id)["notifications"]["unread_messages"] == 1
         cleared = gateway.mark_direct_messages_seen(

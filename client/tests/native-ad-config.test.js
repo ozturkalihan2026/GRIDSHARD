@@ -3,7 +3,7 @@ const assert = require("node:assert/strict");
 const fs = require("node:fs");
 const os = require("node:os");
 const path = require("node:path");
-const {adTestConfig,adBuildConfig,adSafetyManifest,adSafetyGradle,DEMO_APP_ID} = require("../../tools/configure-native-ad-safety.js");
+const {adTestConfig,adBuildConfig,adSafetyManifest,adSafetyGradle,DEMO_APP_ID,STARTUP_META_DATA} = require("../../tools/configure-native-ad-safety.js");
 
 test("production ads require explicit canonical HTTPS build and cannot promote a debug package", () => {
   const root = path.resolve("..");
@@ -42,6 +42,18 @@ test("unknown-age manifest removes advertising permissions and defers app measur
   const once=adSafetyManifest(initial);
   assert.equal(adSafetyManifest(once),once);
   assert.match(once,/DELAY_APP_MEASUREMENT_INIT" android:value="true"/);
+  // Bildirim altyapısı açılışta kendiliğinden başlamaz; oyuncu bildirimi açınca eklenti başlatır.
+  assert.match(once,/firebase_messaging_auto_init_enabled" android:value="false"/);
+  assert.match(once,/firebase_analytics_collection_enabled" android:value="false"/);
+  // Elle açılmış bir ayar derlemede yeniden kapatılır ve tek kayıt kalır.
+  const reopened=adSafetyManifest(once.replace('firebase_messaging_auto_init_enabled" android:value="false"','firebase_messaging_auto_init_enabled" android:value="true"'));
+  assert.equal(reopened,once);
+  for(const [name] of STARTUP_META_DATA) assert.equal(once.split(`android:name="${name}"`).length,2,name);
+  // Depodaki manifest aracın çıktısıyla aynıdır.
+  const committed=fs.readFileSync("../android/app/src/main/AndroidManifest.xml","utf8").replace(/\r\n/g,"\n");
+  assert.equal(adSafetyManifest(committed),committed);
+  const push=fs.readFileSync("../node_modules/@capacitor/push-notifications/android/src/main/java/com/capacitorjs/plugins/pushnotifications/PushNotificationsPlugin.java","utf8");
+  assert.match(push,/public void register\(PluginCall call\) \{\s*FirebaseMessaging\.getInstance\(\)\.setAutoInitEnabled\(true\);/);
   for(const p of ["AD_ID","ACCESS_ADSERVICES_AD_ID","ACCESS_ADSERVICES_ATTRIBUTION","ACCESS_ADSERVICES_TOPICS"]) assert.match(once,new RegExp(`${p}" tools:node="remove"`));
   assert.equal(adSafetyGradle(adSafetyGradle("plugins {}\n")),adSafetyGradle("plugins {}\n"));
   const java=fs.readFileSync("../tools/native-templates/GridshardAdSafety.java","utf8");

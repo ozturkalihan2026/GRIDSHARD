@@ -655,6 +655,14 @@ class MetaProgressionService:
                 "module_drop_chance": definition["module_drop_chance"],
                 "core_drop_chance": definition.get("core_drop_chance", 0.0),
                 "rarity_odds": dict(definition["rarity_odds"]),
+                # Mağazada satın almadan önce gösterilen olasılık tablosu
+                # (Google Play ödeme politikası): enderliğe göre mutlak
+                # olasılık ve o enderlikte çıkan parça aralığı.
+                "module_rarity_drop_odds": dict(definition["module_rarity_drop_odds"]),
+                "shards_by_rarity": {
+                    rarity: list(amounts)
+                    for rarity, amounts in definition["shards_by_rarity"].items()
+                },
             })
         return {
             # İndirimin hangi gün olduğu önceden yayınlanmaz; yalnız bugün görünür.

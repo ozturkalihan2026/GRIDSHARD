@@ -126,6 +126,8 @@ for (const relativePath of [
   ["src", "tutorial", "onboarding.js"],
   ["src", "battle", "board-view.js"],
   ["src", "battle", "module-card-view.js"],
+  ["src", "battle", "graphics-tier.js"],
+  ["src", "social", "safe-chat.js"],
 ]) {
   const moduleSource = fs.readFileSync(
     path.join(CLIENT_ROOT, ...relativePath),

@@ -32,6 +32,7 @@ from .native_oauth import native_return_url, pkce_challenge
 from .production_config import environment_secret
 from .play_games import configuration as play_games_configuration, verified_subject as play_games_subject
 from .auth import AuthenticationError, validate_player_id
+from .safe_chat import SafeChatError, require_preset_message, visible_message
 
 
 class PlatformServiceError(ValueError):
@@ -682,10 +683,13 @@ class PlatformService(PushOutbox):
         params = {
             "client_id": config["client_id"], "redirect_uri": config["redirect_uri"],
             "response_type": "code",
-            "scope": "openid email profile" if provider == "google" else "name email",
             "state": state,
         }
+        # Sağlayıcıdan yalnız hesabı tanıtan kimlik istenir; e-posta, ad ve profil
+        # istenmez (docs/CHILD_AUDIENCE_AUDIT.md). Apple kapsam istenmeden de
+        # kimlik belirtecinde hesabın kimliğini verir.
         if provider == "google":
+            params["scope"] = "openid"
             params["prompt"] = "select_account"
         if provider == "apple":
             params["response_mode"] = "form_post"
@@ -930,10 +934,10 @@ class PlatformService(PushOutbox):
                 config,
                 str((pending_state or {}).get("nonce_hash", "")),
             )
+        # Oyuncu, sağlayıcının verdiği değişmeyen kimlikle tanınır. Yanıtta e-posta
+        # gelse de okunmaz ve saklanmaz (docs/CHILD_AUDIENCE_AUDIT.md).
         subject = str(userinfo.get("sub", "")).strip()
-        email = str(userinfo.get("email", "")).strip()
-        email_verified = userinfo.get("email_verified") in {True, "true", "True", 1}
-        if not subject or (email and not email_verified):
+        if not subject:
             raise PlatformServiceError(
                 f"{provider.title()} hesabı doğrulanamadı."
             )
@@ -945,8 +949,6 @@ class PlatformService(PushOutbox):
                 linked = candidate.get("oauth_links", {}).get(provider, {})
                 if linked.get("subject") == subject:
                     linked_owner = candidate_id
-                    if not email:
-                        email = str(linked.get("email", "")).strip()
                     break
             mode = str((pending_state or {}).get("mode", "link"))
             if linked_owner and linked_owner != player_id and mode != "login":
@@ -954,25 +956,12 @@ class PlatformService(PushOutbox):
                     f"{provider.title()} hesabı başka bir oyuncuya bağlı."
                 )
             target_player_id = linked_owner or player_id
-            if not email or not email_verified:
-                existing = self._account(data, target_player_id).get(
-                    "oauth_links", {}
-                ).get(provider, {})
-                email = str(existing.get("email", "")).strip()
-                if not email:
-                    raise PlatformServiceError(
-                        f"{provider.title()} hesabının doğrulanmış e-postası alınamadı."
-                    )
             account = self._account(data, target_player_id)
-            account["oauth_links"][provider] = {
-                "subject": subject,
-                "email": email,
-                "linked_at": now,
-            }
-            account["contacts"]["email"] = {
-                "value": email,
-                "verified_at": now,
-            }
+            # Yeni bağlantı yalnız kimliği tutar. Karardan önce aynı hesapla
+            # kurulmuş bağlantının kaydına (eski e-posta dahil) dokunulmaz.
+            previous = account["oauth_links"].get(provider) or {}
+            kept = previous if previous.get("subject") == subject else {}
+            account["oauth_links"][provider] = {**kept, "subject": subject, "linked_at": now}
             exchange = None
             if mode == "login" or (pending_state or {}).get("code_challenge"):
                 exchange = secrets.token_urlsafe(32)
@@ -1188,6 +1177,94 @@ class PlatformService(PushOutbox):
                 "push": self._push_view(account),
             }
 
+    # -- Ebeveyn denetimi -------------------------------------------------------
+    # Yetişkin, bu hesabın sohbetini, özel mesajını ve arkadaşlık isteklerini
+    # 4 haneli bir şifreyle kapatır; yeniden açmak aynı şifreyi ister
+    # (docs/CHILD_AUDIENCE_AUDIT.md). Şifre düz saklanmaz ve hiçbir görünümde
+    # dönmez; art arda yanlış deneme açmayı bir süre kilitler.
+    PARENTAL_PIN_ATTEMPTS = 5
+    PARENTAL_LOCK_SECONDS = 15 * 60
+
+    @staticmethod
+    def _parental_pin(pin: object) -> str:
+        clean = str(pin or "").strip()
+        if not re.fullmatch(r"[0-9]{4}", clean):
+            raise PlatformServiceError("Ebeveyn şifresi 4 rakam olmalıdır.")
+        return clean
+
+    @staticmethod
+    def _parental_pin_hash(pin: str, salt: str) -> str:
+        return hashlib.pbkdf2_hmac(
+            "sha256", pin.encode("utf-8"), bytes.fromhex(salt), 120_000,
+        ).hex()
+
+    @staticmethod
+    def _parental_view(parental: dict, now: int) -> dict:
+        locked_until = int(parental.get("locked_until", 0) or 0)
+        return {
+            "social_closed": bool(parental.get("social_closed")),
+            "locked_until": locked_until if locked_until > now else 0,
+        }
+
+    def parental_view(self, player_id: str) -> dict:
+        with self._lock:
+            account = self._read()["accounts"].get(player_id) or {}
+            return self._parental_view(account.get("parental") or {}, int(self.now_func()))
+
+    def social_closed(self, player_id: str) -> bool:
+        return self.parental_view(player_id)["social_closed"]
+
+    def close_social_features(self, player_id: str, pin: object) -> dict:
+        pin = self._parental_pin(pin)
+        salt = secrets.token_hex(16)
+        now = int(self.now_func())
+        with self._lock:
+            data = self._read()
+            account = self._account(data, player_id)
+            if (account.get("parental") or {}).get("social_closed"):
+                raise PlatformServiceError("Sosyal özellikler zaten kapalı.")
+            account["parental"] = {
+                "social_closed": True,
+                "pin_salt": salt,
+                "pin_hash": self._parental_pin_hash(pin, salt),
+                "closed_at": now,
+                "failed_attempts": 0,
+                "locked_until": 0,
+            }
+            # Daha önce üretilmiş davet kodları da kullanılamaz.
+            data["invites"] = {
+                code: item for code, item in data.get("invites", {}).items()
+                if item.get("inviter_id") != player_id
+            }
+            self._write(data)
+            return self._parental_view(account["parental"], now)
+
+    def open_social_features(self, player_id: str, pin: object) -> dict:
+        pin = self._parental_pin(pin)
+        now = int(self.now_func())
+        with self._lock:
+            data = self._read()
+            account = self._account(data, player_id)
+            parental = account.get("parental") or {}
+            if not parental.get("social_closed"):
+                raise PlatformServiceError("Sosyal özellikler zaten açık.")
+            if int(parental.get("locked_until", 0) or 0) > now:
+                raise PlatformServiceError(
+                    "Çok fazla yanlış deneme yapıldı. Bir süre sonra yeniden dene."
+                )
+            expected = str(parental.get("pin_hash", ""))
+            candidate = self._parental_pin_hash(pin, str(parental.get("pin_salt", "")))
+            if not expected or not secrets.compare_digest(candidate, expected):
+                parental["failed_attempts"] = int(parental.get("failed_attempts", 0)) + 1
+                if parental["failed_attempts"] >= self.PARENTAL_PIN_ATTEMPTS:
+                    parental["failed_attempts"] = 0
+                    parental["locked_until"] = now + self.PARENTAL_LOCK_SECONDS
+                self._write(data)
+                raise PlatformServiceError("Ebeveyn şifresi yanlış.")
+            account["parental"] = {"social_closed": False, "opened_at": now}
+            self._write(data)
+            return self._parental_view(account["parental"], now)
+
     def create_invite(self, player_id: str) -> dict:
         code = secrets.token_hex(4).upper()
         now = int(self.now_func())
@@ -1220,11 +1297,17 @@ class PlatformService(PushOutbox):
             self._write(data)
             return {"inviter_id": item["inviter_id"], "code": code, "accepted": True}
 
-    def send_message(self, sender_id: str, recipient_id: str, text: str) -> dict:
+    def send_message(self, sender_id: str, recipient_id: str, preset_id: str) -> dict:
+        # Serbest yazı yoktur: yalnız hazır mesaj kimliği saklanır (safe_chat.py).
+        try:
+            preset = require_preset_message(preset_id)
+        except SafeChatError as exc:
+            raise PlatformServiceError(str(exc)) from exc
         item = {
             "message_id": secrets.token_urlsafe(10),
             "sender_id": sender_id, "recipient_id": recipient_id,
-            "text": _clean_text(text, maximum=500, label="Mesaj"),
+            "preset_id": preset["id"],
+            "text": preset["text"],
             "sent_at": int(self.now_func()),
         }
         with self._lock:
@@ -1244,9 +1327,11 @@ class PlatformService(PushOutbox):
     def messages(self, player_id: str, peer_id: str | None = None) -> list[dict]:
         with self._lock:
             rows = [
-                dict(item) for item in self._read().get("messages", [])
+                visible for item in self._read().get("messages", [])
                 if _message_peer(item, player_id)
                 and (not peer_id or _message_peer(item, player_id) == peer_id)
+                # Eski serbest metinler gösterilmez.
+                and (visible := visible_message(item)) is not None
             ]
         return rows[-(DIRECT_MESSAGE_THREAD_LIMIT if peer_id else 100):]
 
@@ -1261,9 +1346,11 @@ class PlatformService(PushOutbox):
             order: dict[str, int] = {}
             for index, item in enumerate(data.get("messages", [])):
                 peer_id = _message_peer(item, player_id)
-                if not peer_id:
+                visible = visible_message(item) if peer_id else None
+                # Eski serbest metinler sohbet listesinde de sayılmaz.
+                if visible is None:
                     continue
-                threads.setdefault(peer_id, []).append(dict(item))
+                threads.setdefault(peer_id, []).append(visible)
                 order[peer_id] = index
         summaries = []
         for peer_id, rows in threads.items():
@@ -1276,7 +1363,7 @@ class PlatformService(PushOutbox):
                 ),
                 "last_message": {
                     key: last.get(key)
-                    for key in ("message_id", "sender_id", "recipient_id", "text", "sent_at")
+                    for key in ("message_id", "sender_id", "recipient_id", "preset_id", "text", "sent_at")
                 },
             })
         summaries.sort(key=lambda item: order[item["peer_id"]], reverse=True)
@@ -1360,6 +1447,7 @@ class PlatformService(PushOutbox):
                     for device in account.get("devices", {}).values()
                 ],
                 "push": self._push_view(account),
+                "parental": self._parental_view(account.get("parental") or {}, int(self.now_func())),
             }
 
     def export_data(self, player_id: str) -> dict:
@@ -1375,6 +1463,9 @@ class PlatformService(PushOutbox):
                 ],
                 "notifications": account.get("notifications", []),
                 "blocked_player_ids": account.get("blocked_player_ids", []),
+                "parental_controls": {
+                    "social_closed": bool((account.get("parental") or {}).get("social_closed")),
+                },
             }
             messages = [
                 item for item in data.get("messages", [])

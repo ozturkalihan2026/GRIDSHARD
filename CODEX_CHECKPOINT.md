@@ -1,6 +1,139 @@
 # GRIDSHARD geliştirme kontrol noktası
 
-Güncelleme tarihi: 5 Ekim 2026
+Güncelleme tarihi: 6 Ekim 2026
+
+## Son devam — Veri türleri / e-posta ve telefon kapatma kapsamı
+
+6 Ekim11:50 screenshot'ta Kişisel bilgiler altında yalnız E-posta seçili;
+kullanıcı diğer AI ile telefon/e-posta girişini kapattıklarını belirtti.
+Güncel kaynakta onboarding e-posta ve iletişim bağlama UI kaldırılmış;
+main.py verification/request ve confirm422 CONTACT_BINDING_CLOSED_MESSAGE
+veriyor. Fakat client/index.html account-recovery-identifier hâlâ
+doğrulanmış e-posta/telefon alıyor; app.js kurtarma isteği ve
+platform_services.request_recovery yolu duruyor. Google/Apple OAuth
+scope/email saklama yolu da kaynakta var; PGS verified_subject yalnız
+oyuncu kimliği döndürüyor. Normal iletişim bağlama kapalı olması tüm
+e-posta/telefon aktarımı kapalı demek değil. Mağaza paketi ve backend
+birlikte doğrulanmadan bu veri türlerini kaldırmayın. Yeni UI/backend
+değişikliklerinin canlı/pakette uygulanmış olduğu bu tur doğrulanmadı.
+Kişisel bilgiler için Ad (takma ad dahil) ve Kullanıcı kimlikleri gerekli;
+diğer kişisel kategoriler için yeni kanıt yok. Google veri türleri
+tanımı6Ekim tekrar okundu. Bu tur kaynak kodu değiştirilmedi; mevcut
+diğer AI sohbet/child değişiklikleri kaynakta görülmüş olsa da eski
+09:34 ön denetimi veya yayın/hukuk kapıları tamamlandı sayılmadı.
+
+## Son devam — Play Veri güvenliği / ilk sayfa taslağı
+
+6 Ekim kullanıcı Veri toplama ve güvenlik ekranını paylaştı ve birlikte
+doldurmayı istedi. Screenshot'ta veri toplama/paylaşma ilk sorusu Evet,
+şifreleme ve hesap yöntemleri boş. Kaynak eşleştirme önerisi: ilk soru
+Evet; üretim HTTPS/WSS ve cleartext-kapalı yapılandırmasına göre aktarım
+şifrelemesi Evet; hesap yöntemleri OAuth (Play Games/Google) ve Diğer
+(kalıcı misafir profili, cihazda güvenli üretilen anahtarla doğrulama).
+Diğer açıklaması için kullanıcı parola belirlemediğini belirtin. Normal
+oyuncunun kullanıcı adı/parola kayıt akışı yok; inceleme demo erişim
+şifresi normal hesap oluşturma yöntemi sayılmadı. Hesap oluşturmaya izin
+vermiyor seçeneği doğru değil. Bağımsız güvenlik değerlendirmesi/UPI
+rozetleri için kanıt yok; seçilmemeli. Bunlar **öneri/taslak**; kullanıcı
+henüz seçim/İleri/Kaydet teyidi vermedi. Agent Console'a işlem yapmadı.
+Bir sonraki ekranda veri türlerini gerçek dağıtılan paket/SDK davranışı
+ile eşleştirin; gerçek reklam/ödeme kapalı olması SDK veri toplamaz
+demek değil. Hedef kitle yasal onayı bu formdan çıkarılmaz.
+Bu tur kaynak manifestinde FCM auto-init ve Firebase analytics false
+satırları görüldü; bunlar diğer çalışmanın değişiklikleri olabilir,
+önceki09:34 raporunu tüm çocuk güvenliği tamamlandı diye yorumlamayın.
+Google Veri güvenliği ve hesap silme rehberleri6Ekim okundu:
+https://support.google.com/googleplay/android-developer/answer/10787469
+https://support.google.com/googleplay/android-developer/answer/13327111
+
+## Son devam — sınırlı çocuk-kitle denetimi / başka araca güvenli devir
+
+6 Ekim kullanıcı çocuk-kitle denetimini onayladı; haftalık hakkın bitmesi
+halinde başka AI aracına aktarılabilir kayıt istedi. Bu tur davranışsal
+çocuk-güvenliği kodu veya canlı değişiklik başlatılmıyor; salt-okunur
+denetim ve rapor hazırlanıyor. Ana kayıt: `docs/CHILD_AUDIENCE_AUDIT.md`.
+Hesap kontrolünde haftalık %97 kullanılmış/%3 kalmış; sıfırlanma
+10 Ekim 2026 00:14:06 TR. Kalan yüzden kesin iş miktarı çıkartılmaz.
+09:34 TR kaynak ön denetimi tamamlandı: serbest takım/DM zincirinde
+çocuk güvenlik hatırlatması/yetişkin yönetimi doğrulanmadı; server kimlik
+ve arkadaş/engel kontrolleri bu denetimin yerine geçmiyor. Analitik default
+kapalı ve push isteğe bağlı, fakat çocuk izin/SDK soğuk-açılış veri davranışı
+açık. Reklam TFUA/TFCD/G/NPA kaynağı, Android kaynak manifest izin kaldırma
+ve Google25.4.0 sürümü incelendi; resmî Families listesi19.0.0+ içeriyor.
+`node --test client/tests/native-ad-consent.test.js`:16/16 geçti; mock
+testidir, gerçek çocuk cihaz/paket/hukuk kanıtı değildir. Rapor net bulgu,
+altı adımlı uygulama planı, kabul testleri ve diğer AI'ya aktarım talimatı
+içeriyor. Sıradaki iş kullanıcıyla çocuk/unknown sohbet–DM/yetişkin yönetimi
+kapsamını belirlemek; yeni kod için yetki alınmalı. Tam uyum veya yayın
+tamamlanmadı. AWS/Cloudflare/Gmail/Play ayarı/build/deploy yapılmadı.
+Kullanım belgesi limit aktif turda dolarsa adil kullanım sınırlarıyla
+devam edebileceğini söylüyor; garanti veya otomatik yeni tur varsayılmaz.
+Rapor/kontrol noktası kullanıcı commit/pull işlemine dahil edilmeli;
+diğer AI'nın dirty performans/UI değişiklikleri korunur. Çocuklarla
+ilgili yasal uyum kutusu hâlâ doğrulanmış/onaylanmış sayılmaz.
+
+## Son devam — çocuk hedef kitle seçildi / yasal uyumluluk beyanı henüz doğrulanmadı
+
+**6 Ekim09:23TR Uygulama ayrıntıları ekranı:** Kullanıcı Hedef yaş adımı
+tamamlanmış, ikinci adım açık screenshot paylaştı. “Bu uygulamanın (tüm
+API'ler, SDK'lar ve reklamlar dahil) çocuklarla ilgili tüm geçerli yasalara
+ve yönetmeliklere uyduğunu onaylıyorum” kutusu **boş**; COPPA/GDPR örnekleri
+var. Bu kutuyu otomatik işaretleme veya tüm çocuk uyumu tamam demek için
+kanıt yok. Önceki9–12 dahil hedef kitle niyeti korunur; işi kolaylaştırmak
+için13+/18+ olarak değiştirme önerilmez.
+
+Dar salt-okunur kontrol: native-store.js22–30 tüm/unknown istekler için
+TFUA/TFCD/G korumasını gösteriyor ve incelenmiş karma yaş akışı olmadığını
+açıklıyor. STORE_PURCHASES çocuk-kitle notunda tarafsız yaş akışı, SDK/paket,
+sosyal/PGS/veri paylaşımı denetimleri açık kapı olarak kayıtlı. Gizlilik
+metni hesap/cihaz kaydı, takım sohbeti ve özel mesajları açıklıyor. Bu
+önlemler tek başına COPPA/GDPR veya Families uyumunu kanıtlamaz. Kaynak
+kelime taraması tüm app/SDK davranışını doğrulamaz; bu tur yeni paket,
+gerçek çocuk hesabı/veri veya ebeveyn akışı test edilmedi.
+
+**Şimdiki devam kapısı:** Bu onay kutusunu işaretlemeden çocuk kullanıcı
+giriş/veri, sosyal güvenlik-yetişkin kontrolleri ve gerçek reklam/SDK
+yapılandırması denetimi tamamlanmalı. Yasal uygunluk gerekirse uzmanla
+değerlendirilir; teknik inceleme tüm mevzuata sertifika değildir. Yeni
+çocuk-güvenliği kaynak/UX değişikliği için kullanıcı yönü alınmalı;
+yalnız Console screenshot gönderimi geniş uygulama değişikliği yetkisi
+değildir. Agent checkbox/İleri/Kaydet, kaynak build/deploy veya diğer AI
+dosyalarında değişiklik yapmadı. Resmî Families rehberi6Ekim okundu:
+https://support.google.com/googleplay/android-developer/answer/9893335?hl=tr
+
+### Önceki teyit — inceleme erişimi ve karma hedef kitle niyeti
+
+**6 Ekim 2026 09:15 TR, iş bilgisayarı:** Kullanıcı dün akşam evde Uç
+profilinden demo oturuma geçtiğini, demo profilinde premium ve ödeme yapmadan
+erişim sağladığını, ardından önceki Uç profiline sorunsuz döndüğünü bildirdi.
+Play Console'da premium/ücretli içerik dahil tam erişim sağlandığı beyanını
+işaretleyip kaydettiğini teyit etti. Bunlar **kullanıcı cihaz/Console teyididir**;
+bu tur yeni bağımsız native UI, kurulu versionCode, her premium ödül işlemi,
+cüzdan veya uygulama yeniden açılışı testi yapılmadı. Önceki demo/native
+kapılarında kullanıcının artık teyit ettiği premium/ücretsiz erişim ve Uç'a
+geri dönüş bekliyor sayılmamalı; kapsam dışı kontroller geçmiş kanıtıyla ayrılır.
+Gerçek reklam/ödeme veya herkese üretim yayını yetkisi çıkartılmaz.
+
+**6 Ekim09:21TR hedef kitle teyidi:** Kullanıcı ekranı paylaştı; henüz kutu
+seçilmemiş, ESRB uyarısı nedeniyle5yaş ve altı /6–8 seçenekleri kapalıydı.
+“9–12 yaş grubunu da gerçekten hedefliyor muyuz?” sorusuna **“hedefliyoruz”**
+dedi. Önceki genel kitle niyetiyle birlikte Console'da seçilecek gruplar:
+**9–12,13–15,16–17,18 yaş ve üstü**. Yalnız niyet teyit edilmiştir; kutuların
+işaretlendiği/İleri/Kaydet veya Google onayı henüz görülmedi. Sıradaki iş bu
+gruplarla İleri ve açılan Uygulama ayrıntıları/reklam ekranını paylaşma.
+Çocuklar-only veya yetişkin-only kabulü yapılmaz;5–8 grupları eklenmez.
+Bu beyan içerik derecelendirme anketinden ayrıdır. Çocuk yaş grubunu dahil
+etmek Families/reklam/veri/sosyal özellik uyumunu ayrıca gerektirir; yerel
+korumalı reklam etiketleri tek başına uyum kanıtı değildir. Tarafsız yaş
+ekranı, reklam SDK/çocuk koruması ve sosyal güvenlik soruları gerçek uygulama
+durumuna göre yanıtlanmalı; mevcut olmayan özelliğe “var” denmemeli. Bu
+niyet onayı uygulama kaynak değişikliği, gerçek reklam açma veya genel yayın
+yetkisi değildir. Resmî rehber6Ekim okundu:
+https://support.google.com/googleplay/android-developer/answer/9867159?hl=tr
+
+Bu tur yalnız mevcut checkpoint/not ve resmî rehber incelendi; diğer AI'nın
+devam eden performans/UI dosyaları korunur. Oyun build/deploy/restart,
+Play/Cloudflare hesap ayarı, demo sırları veya canlı oyuncu verisi değiştirilmedi.
 
 ## Son yetki — inceleme erişimini çalışır sürüme hazırlama
 

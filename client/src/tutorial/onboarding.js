@@ -134,6 +134,8 @@
       root.dataset.shade = view.shade || (view.mode === "wait" ? "none" : "full");
       root.dataset.blocking = String(blocking);
       root.dataset.place = view.place || "auto";
+      // Adım kimliği metinden bağımsızdır; uçtan uca test akışı bununla izler.
+      root.dataset.step = view.key;
       if (changed) {
         this.title.textContent = view.title || "";
         const lines = Array.isArray(view.body) ? view.body : [view.body];

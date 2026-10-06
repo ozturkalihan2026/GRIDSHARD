@@ -5,7 +5,6 @@ from app import main as gateway
 from app.player_data_store import InMemoryPlayerDataRepository
 from app.team_service import (
     InMemoryTeamRepository,
-    TEAM_DESCRIPTION_MAX_LENGTH,
     TeamService,
     TeamServiceError,
 )
@@ -18,14 +17,19 @@ def test_team_stores_description_and_trophy_requirement():
         "alpha",
         "Akım Birliği",
         "create",
-        description="  Her   akşam turnuva  ",
+        description_id="tournament",
         min_trophies=300,
     )
 
-    assert created["team"]["description"] == "Her akşam turnuva"
+    assert created["team"]["description_id"] == "tournament"
+    assert created["team"]["description"] == "Turnuva için oynuyoruz."
     assert created["team"]["min_trophies"] == 300
-    with pytest.raises(TeamServiceError, match="en fazla"):
-        service.create_team("beta", "Uzun", "long", description="x" * (TEAM_DESCRIPTION_MAX_LENGTH + 1))
+    # Açıklama hazır seçeneklerden biridir: serbest metin ve bilinmeyen kimlik reddedilir.
+    with pytest.raises(TeamServiceError, match="hazır seçeneklerden"):
+        service.create_team("beta", "Serbest", "free", description="Okulumdan arkadaşlar")
+    with pytest.raises(TeamServiceError, match="hazır seçeneklerden"):
+        service.create_team("beta", "Bilinmeyen", "unknown", description_id="yok")
+    assert service.team_for_player("beta") is None
     with pytest.raises(TeamServiceError, match="Kupa şartı"):
         service.create_team("beta", "Şartlı", "odd", min_trophies=123)
 
@@ -104,7 +108,7 @@ def test_creating_a_team_charges_the_fee_once(team_gateway):
         player_id=alpha.player_id,
         name="Bedelli",
         request_id="paid-create",
-        description="Haftalık turnuva takımı",
+        description_id="tournament",
         min_trophies=100,
     )
 
@@ -112,7 +116,8 @@ def test_creating_a_team_charges_the_fee_once(team_gateway):
     replay = gateway.create_team(request)
 
     assert created["joined"] is True
-    assert created["description"] == "Haftalık turnuva takımı"
+    assert created["description_id"] == "tournament"
+    assert created["description"] == "Turnuva için oynuyoruz."
     assert created["min_trophies"] == 100
     assert replay["replayed"] is True
     assert alpha.circuit_credits == 40

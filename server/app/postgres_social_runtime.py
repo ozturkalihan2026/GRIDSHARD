@@ -150,13 +150,13 @@ class PostgresSocialRuntime:
             raise SocialTransactionError("invite_missing")
         return dict(row[0])
 
-    def send_message(self, actor, target, text, request_id):
+    def send_message(self, actor, target, preset_id, request_id):
         def send(_connection, profiles, _operation_id):
             self._require_friends(actor, target, profiles)
-            message = self.platform.send_message(actor, target, text)
+            message = self.platform.send_message(actor, target, preset_id)
             self.platform.queue_notification(target, "Yeni mesaj", f"{profiles[actor]['display_name']} sana mesaj gönderdi.", f"gridshard://friends/messages/{actor}", source_player_id=actor)
             return {"message": message}
-        return self._operation("message:send", actor, target, request_id, {"text": text}, send)
+        return self._operation("message:send", actor, target, request_id, {"preset_id": preset_id}, send)
 
     def mark_seen(self, actor, peer, request_id):
         def seen(connection, profiles, _operation_id):

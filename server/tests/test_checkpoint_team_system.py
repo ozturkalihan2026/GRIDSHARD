@@ -104,7 +104,7 @@ def test_chat_is_moderation_ready_and_training_is_explicitly_unranked():
     message = service.post_message(
         team_id=team_id,
         player_id="alpha",
-        message="Hazır mısın?",
+        preset_id="ready",
         request_id="message",
     )["message"]
     challenge = service.create_training_challenge(
@@ -120,7 +120,9 @@ def test_chat_is_moderation_ready_and_training_is_explicitly_unranked():
         request_id="accept",
     )["challenge"]
 
-    assert message["moderation_status"] == "pending"
+    # Hazır mesaj: içerik listeden gelir, moderasyon beklemez.
+    assert message["moderation_status"] == "preset"
+    assert (message["preset_id"], message["text"]) == ("ready", "Hazırım!")
     assert message["visibility"] == "visible"
     assert message["reports"] == []
     assert accepted["protocol"] == "team_training_v1"

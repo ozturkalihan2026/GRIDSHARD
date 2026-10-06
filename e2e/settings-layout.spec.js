@@ -44,7 +44,17 @@ test("responsive tablet, seasons and categorized settings with one rename", asyn
   await tab("account").press("Home");
   await expect(tab("general")).toBeFocused();
   await expect(tab("general")).toHaveAttribute("aria-selected", "true");
-  await page.locator("#profile-display-name").fill(`Tek-${Date.now()}`);
+  // Ad süzgeci (docs/CHILD_AUDIENCE_AUDIT.md): telefon numarası gibi çok rakamlı
+  // ad reddedilir ve tek ad değiştirme hakkı harcanmaz.
+  await page.locator("#profile-display-name").fill("Ara 05551112233");
+  page.once("dialog", dialog => dialog.accept());
+  await page.locator("#profile-display-name-save").click();
+  await expect(page.locator("#profile-name-save-status")).toContainText("rakam");
+  await expect(page.locator("#profile-display-name-save")).toBeEnabled();
+  // Geçerli ad en fazla 4 rakam içerir; benzersiz ek sessiz harflerden oluşur.
+  const consonants = "bcdfghjklmnprstvyz";
+  const suffix = Array.from({length:8}, () => consonants[Math.floor(Math.random() * consonants.length)]).join("");
+  await page.locator("#profile-display-name").fill(`Tek-${suffix}`);
   page.once("dialog", dialog => dialog.accept());
   await page.locator("#profile-display-name-save").click();
   await expect(page.locator("#profile-display-name-save")).toBeDisabled();

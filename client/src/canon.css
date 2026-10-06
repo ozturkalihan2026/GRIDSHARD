@@ -4691,28 +4691,6 @@ body:not([data-app-screen="play"]) .app-progress-ribbon #reward-inbox-button {
 #direct-message-list .direct-message p { margin:0;color:#edf7ff;font-size:.6rem;line-height:1.4;overflow-wrap:anywhere; }
 #direct-message-list .direct-message time { justify-self:end;color:#8fa8bc;font:700 .4rem var(--gs-font-display); }
 #direct-message-list > .team-empty-state { align-self:center; }
-.direct-message-panel #direct-message-form { display:grid;grid-template-columns:minmax(0,1fr) auto;gap:7px; }
-.direct-message-panel #direct-message-form input {
-  min-width:0;
-  min-height:42px;
-  padding:0 11px;
-  border:1px solid #2b6075;
-  border-radius:9px;
-  color:#edfaff;
-  background:#07192d;
-  font:600 .66rem var(--gs-font-copy);
-}
-.direct-message-panel #direct-message-form button {
-  grid-column:auto;
-  min-height:42px;
-  padding:0 14px;
-  border:1px solid #55dac9;
-  border-radius:9px;
-  color:#08202b;
-  background:#73e9d6;
-  font:900 .52rem var(--gs-font-display);
-}
-.direct-message-panel #direct-message-form :disabled { opacity:.48; }
 .direct-message-note { margin:0;color:#ffe7a8;font-size:.54rem;line-height:1.4; }
 .direct-message-note[hidden] { display:none !important; }
 /* Açık sohbet: başlık ve arama gizlenir, yazışma alanı kalan yüksekliği alır. */
@@ -6673,18 +6651,6 @@ body[data-app-screen="modules"] .module-collection-grid {
 }
 .team-directory-action:disabled { color:#8ea6ba; background:#102a42; border-color:#2f5a78; }
 .team-directory-action[data-variant="quiet"] { color:#ffe2a0; background:#2a2412; border-color:rgba(255,211,110,.6); }
-.team-create-card textarea {
-  width:100%;
-  min-height:56px;
-  padding:9px 11px;
-  resize:none;
-  border:1px solid #2b6075;
-  border-radius:9px;
-  color:#edfaff;
-  background:#07192d;
-  font:700 .58rem/1.35 var(--gs-font-copy);
-  box-sizing:border-box;
-}
 .team-create-cost { margin:0; color:#ffe2a0; font-size:.72rem; }
 .team-create-cost[data-affordable="false"] { color:#ff9ba8; }
 .team-description { margin:2px 0 0; color:#b9cbdb; font-size:.7rem; line-height:1.3; }
@@ -6978,3 +6944,123 @@ body[data-app-screen="play"] .module-shelf .module-card.deck-module-card > .name
   .guide-hole::after,
   .guide-arrow { animation:none; }
 }
+
+/* === Hazır mesaj seçici (takım sohbeti ve özel mesaj) ======================
+   Serbest yazı alanı yoktur; oyuncu grup sekmesinden bir hazır mesaj seçer
+   (social/safe-chat.js, docs/CHILD_AUDIENCE_AUDIT.md). */
+.preset-message-picker { display:grid;gap:7px; }
+.preset-message-tabs { display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:5px; }
+.preset-message-picker .preset-message-tabs button {
+  min-width:0;
+  min-height:36px;
+  padding:0 2px;
+  border:1px solid #2b6075;
+  border-radius:9px;
+  color:#a9c6d8;
+  background:#07192d;
+  font:900 .5rem/1 var(--gs-font-display);
+  letter-spacing:.03em;
+}
+.preset-message-picker .preset-message-tabs button.is-active {
+  border-color:#55dac9;
+  color:#08202b;
+  background:#73e9d6;
+}
+/* En kalabalık grup dört satır tutar; alan sabit kalır, sekme değişince
+   sohbet listesi zıplamaz. */
+.preset-message-chips {
+  min-height:178px;
+  display:flex;
+  flex-wrap:wrap;
+  align-content:flex-start;
+  gap:7px;
+}
+.preset-message-picker .preset-message-chips button {
+  min-height:40px;
+  padding:0 13px;
+  border:1px solid #2f6f86;
+  border-radius:999px;
+  color:#edfaff;
+  background:#123650;
+  font:700 .66rem/1.2 var(--gs-font-copy);
+  text-align:center;
+}
+.preset-message-picker .preset-message-chips[data-group="tepki"] button {
+  min-width:52px;
+  padding:0 8px;
+  font-size:1.15rem;
+}
+.preset-message-picker .preset-message-chips button:disabled { opacity:.48; }
+.preset-message-hint { margin:0;color:#8fa8bc;font-size:.56rem;line-height:1.4; }
+/* Kısa ekranda mesajlar tek satırda yana kayar: sohbet listesine yer kalır.
+   Sağ kenardaki solma, devamı olduğunu gösterir. */
+@media (max-height:700px) {
+  .preset-message-chips {
+    min-height:0;
+    padding-right:26px;
+    flex-wrap:nowrap;
+    overflow-x:auto;
+    overscroll-behavior-x:contain;
+    scrollbar-width:none;
+    -webkit-mask-image:linear-gradient(90deg,#000 calc(100% - 26px),transparent);
+    mask-image:linear-gradient(90deg,#000 calc(100% - 26px),transparent);
+  }
+  .preset-message-chips::-webkit-scrollbar { display:none; }
+  .preset-message-picker .preset-message-chips button { flex:0 0 auto;white-space:nowrap; }
+}
+/* Herkese görünen ad alanlarının altındaki güvenlik hatırlatması. */
+.public-name-hint { margin:0;color:#ffe2a0;font-size:.6rem;line-height:1.4; }
+.profile-name-form .public-name-hint { font-size:.8rem; }
+
+/* === Ebeveyn denetimi (Ayarlar → Hesap ve Gizlilik) ========================
+   Yetişkin, sohbeti, özel mesajı ve arkadaşlık isteklerini şifreyle kapatır
+   (docs/CHILD_AUDIENCE_AUDIT.md). Kapalıyken sohbet seçicisi gizlenir. */
+.preset-message-picker[hidden],
+.preset-message-picker[hidden] + .preset-message-hint { display:none; }
+#parental-controls-state { margin:0;color:#70e3d2;font-size:.8rem;font-weight:700; }
+#parental-controls-state[data-closed="true"] { color:#ffe2a0; }
+.parental-controls-note { margin:0;color:#b6cddd;font-size:.8rem;line-height:1.4; }
+.parental-controls-form { display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px; }
+.parental-controls-form input {
+  min-width:0;
+  min-height:44px;
+  padding:0 10px;
+  border:1px solid #2b6075;
+  border-radius:9px;
+  color:#edfaff;
+  background:#07192d;
+  font:700 .9rem var(--gs-font-copy);
+}
+.parental-controls-form input[hidden] { display:none; }
+.parental-controls-form button { grid-column:1 / -1;min-height:44px; }
+#parental-controls-status { min-height:1.2em;margin:0;color:#ffe2a0;font-size:.8rem;line-height:1.4; }
+.friends-social-closed {
+  margin:0;
+  padding:9px 11px;
+  border:1px solid rgba(255,211,110,.5);
+  border-radius:10px;
+  color:#ffe2a0;
+  background:#2a2412;
+  font-size:.62rem;
+  line-height:1.4;
+}
+.friends-social-closed[hidden] { display:none; }
+/* Mağaza sandıklarının olasılıkları: kartta özet, düğmeyle tam tablo. */
+.chest-store-odds { color:#b6cddd;font-size:.5rem;line-height:1.35;text-align:center; }
+.shop-chest-actions > .chest-odds-action { min-height:34px;border-color:#2f6f86;color:#a9dff0;background:#0a2238;font-size:.44rem; }
+.chest-odds-dialog { width:min(380px,92vw);max-height:calc(100dvh - 24px);padding:18px 16px 14px;border:1px solid rgba(84,232,217,.35);border-radius:16px;color:#e8f6ff;background:linear-gradient(180deg,#0b2240,#07142b);overflow:auto; }
+.chest-odds-dialog::backdrop { background:rgba(2,8,20,.72); }
+.chest-odds-kicker { color:#69e5d3;font:800 .5rem var(--gs-font-display);letter-spacing:.09em; }
+.chest-odds-dialog h2 { margin:4px 0 10px;color:#fff0a0;font:900 1rem var(--gs-font-display); }
+.chest-odds-list { margin:0 0 10px;padding:0;display:grid;gap:6px;list-style:none; }
+.chest-odds-list li { padding:8px 10px;border-radius:9px;color:#edf7ff;background:#0d2b45;font-size:.74rem;line-height:1.3; }
+.chest-odds-list li.is-nested { margin-left:14px;color:#cfe3f1;background:#0a2238;font-size:.68rem; }
+.chest-odds-note { margin:0 0 12px;color:#a9bfd0;font-size:.6rem;line-height:1.45; }
+.chest-odds-dialog > button { width:100%;min-height:44px;border:1px solid #55dac9;border-radius:10px;color:#08202b;background:#73e9d6;font:900 .6rem var(--gs-font-display); }
+/* Açık kaynak lisansları (Ayarlar → Hesap ve Gizlilik, kapalı açılır bölüm). */
+.open-source-licenses { margin:10px;padding:4px 12px;border:1px solid rgba(79,190,193,.28);border-radius:13px;color:#b6cddd;background:#07192e;font-size:.8rem;line-height:1.4; }
+.open-source-licenses summary { min-height:44px;display:flex;align-items:center;color:#dff8f4;font-weight:700;cursor:pointer; }
+.open-source-licenses h4 { margin:10px 0 4px;color:#70e3d2;font:800 .6rem var(--gs-font-display); }
+.open-source-licenses pre { max-height:260px;margin:0 0 10px;padding:8px;overflow:auto;border-radius:8px;color:#dbe9f3;background:#041120;font:500 .62rem/1.45 ui-monospace,Consolas,monospace;white-space:pre-wrap;overflow-wrap:anywhere; }
+#friend-invite-create:disabled,
+#friend-search-form :disabled { opacity:.45; }

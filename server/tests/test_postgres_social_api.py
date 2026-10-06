@@ -335,7 +335,7 @@ def test_invite_decline_completion_and_restart_cannot_resurrect_arena(social_db)
 def test_dm_and_notification_are_atomic_and_message_replay_checks_payload(social_db, monkeypatch):
     _, _, platform, (a, b, _) = social_db
     _friends(a, b)
-    request = gateway.DirectMessageRequest(player_id=a, recipient_id=b, text="fixture message", request_id="dm")
+    request = gateway.DirectMessageRequest(player_id=a, recipient_id=b, preset_id="hello", request_id="dm")
     original = platform.queue_notification
     def fail(*args, **kwargs):
         original(*args, **kwargs)
@@ -351,14 +351,14 @@ def test_dm_and_notification_are_atomic_and_message_replay_checks_payload(social
     assert replay["replayed"] is True
     assert len(platform.messages(a, b)) == len(platform.notification_view(b)["notifications"]) == 1
     with pytest.raises(HTTPException) as conflict:
-        gateway.send_direct_message(a, request.model_copy(update={"text": "changed"}))
+        gateway.send_direct_message(a, request.model_copy(update={"preset_id": "yes"}))
     assert conflict.value.status_code == 409
     seen = gateway.DirectMessageSeenRequest(player_id=b, peer_id=a, request_id="seen")
     assert gateway.mark_direct_messages_seen(b, seen)["notifications"]["unread_messages"] == 0
     assert gateway.mark_direct_messages_seen(b, seen)["replayed"] is True
     _block(a, b, True, "block-dm")
     with pytest.raises(HTTPException):
-        gateway.send_direct_message(b, gateway.DirectMessageRequest(player_id=b, recipient_id=a, text="blocked", request_id="blocked-dm"))
+        gateway.send_direct_message(b, gateway.DirectMessageRequest(player_id=b, recipient_id=a, preset_id="hello", request_id="blocked-dm"))
 
 
 def test_invite_code_use_rolls_back_on_block_and_replays_once(social_db):

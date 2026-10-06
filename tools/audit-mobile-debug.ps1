@@ -138,6 +138,15 @@ try {
     if ($adMeasurement.Count -ne 1 -or $adMeasurement[0].GetAttribute("value", $androidNamespace) -ne "true") {
         throw "Reklam ölçümü UMP/çocuk ayarlarından önce başlatılmamalı."
     }
+    # Bildirim altyapısı oyuncu bildirimi açmadan başlamamalı; analitik toplaması kapalı olmalı.
+    foreach ($startupFlag in @("firebase_messaging_auto_init_enabled", "firebase_analytics_collection_enabled")) {
+        $startupMeta = @($manifestXml.manifest.application.'meta-data' | Where-Object {
+            $_.GetAttribute("name", $androidNamespace) -eq $startupFlag
+        })
+        if ($startupMeta.Count -ne 1 -or $startupMeta[0].GetAttribute("value", $androidNamespace) -ne "false") {
+            throw "Firebase açılışta kendiliğinden başlamamalı; $startupFlag false olmalı."
+        }
+    }
     $adPermissions = @("com.google.android.gms.permission.AD_ID", "android.permission.ACCESS_ADSERVICES_AD_ID",
         "android.permission.ACCESS_ADSERVICES_ATTRIBUTION", "android.permission.ACCESS_ADSERVICES_TOPICS")
     foreach ($permission in $manifestXml.manifest.'uses-permission') {

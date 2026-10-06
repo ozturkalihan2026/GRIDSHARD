@@ -10,10 +10,9 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <title>GRIDSHARD — Devreni Kur. Çekirdeği Kır.</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600;700;800;900&amp;family=Rajdhani:wght@400;500;600;700&amp;display=swap" rel="stylesheet" />
+  <!-- Yazı tipleri pakete gömülüdür (src/fonts.css); açılışta dış adrese istek gitmez. -->
   <!-- build:styles -->
+  <link rel="stylesheet" href="./src/fonts.css" />
   <link rel="stylesheet" href="./src/styles.css" />
   <link rel="stylesheet" href="./src/canon.css" />
   <link rel="stylesheet" href="./src/account-session-controls.css" />
@@ -285,13 +284,8 @@
           <button id="account-onboarding-google" type="button">GOOGLE İLE DEVAM ET</button>
           <button id="account-onboarding-apple" type="button">APPLE İLE DEVAM ET</button>
         </div>
-        <div class="account-onboarding-divider"><span>E-POSTA İLE KAYIT</span></div>
-        <div class="account-onboarding-email">
-          <input id="account-onboarding-email" type="email" maxlength="180" autocomplete="email" placeholder="E-posta adresin">
-          <button id="account-onboarding-code-request" type="button">KOD GÖNDER</button>
-          <input id="account-onboarding-code" type="text" inputmode="numeric" maxlength="6" autocomplete="one-time-code" placeholder="6 haneli kod">
-          <button id="account-onboarding-code-confirm" type="button">HESABI OLUŞTUR</button>
-        </div>
+        <!-- E-posta ile kayıt yoktur: oyuncunun yaşı sorulmadığı için yeni e-posta ya da
+             telefon alınmaz (docs/CHILD_AUDIENCE_AUDIT.md). -->
         <p id="account-onboarding-status" role="status" aria-live="polite"></p>
         <button id="account-onboarding-guest" class="account-onboarding-guest" type="button">ŞİMDİLİK MİSAFİR OLARAK DEVAM ET</button>
         <button class="review-access-launch" type="button" data-review-access-open>REVIEW / DEMO SIGN-IN</button>
@@ -395,6 +389,18 @@
       </div>
     </dialog>
 
+    <!-- Mağaza sandıklarının içerik olasılıkları: satın almadan önce, satın alma
+         düğmesinin yanındaki OLASILIKLAR düğmesiyle açılır (Google Play ödeme
+         politikası; docs/CHILD_AUDIENCE_AUDIT.md). Satırlar sunucudan gelen
+         tabloyla doldurulur. -->
+    <dialog id="chest-odds-dialog" class="chest-odds-dialog" aria-labelledby="chest-odds-title">
+      <span class="chest-odds-kicker">İÇERİK VE OLASILIKLAR</span>
+      <h2 id="chest-odds-title">Sandık</h2>
+      <ul id="chest-odds-list" class="chest-odds-list"></ul>
+      <p class="chest-odds-note">Yüzde, sandığın o ödülü içerme olasılığıdır. Modül parçası, açılmış modüllerinden rastgele birine verilir; o enderlikte açılmış modülün yoksa başka enderlikteki bir modülüne verilir.</p>
+      <button id="chest-odds-close" type="button">TAMAM</button>
+    </dialog>
+
     <section id="modules-screen" class="mobile-hub-screen modules-screen" data-screen-panel="modules" hidden>
       <div class="cards-page is-active" data-card-page-panel="modules">
         <section class="module-deck-editor" aria-labelledby="module-deck-title">
@@ -454,7 +460,9 @@
           <article class="team-action-card team-create-card">
             <h3>Takım oluştur</h3>
             <label>Takım adı<input id="team-create-name" maxlength="24" autocomplete="off" placeholder="Takım adı"></label>
-            <label>Açıklama<textarea id="team-create-description" maxlength="120" rows="2" placeholder="Takımını bir cümleyle tanıt (isteğe bağlı)"></textarea></label>
+            <p class="public-name-hint">Takım adını herkes görür. Gerçek ad, okul ya da telefon numarası yazma.</p>
+            <!-- Açıklama serbest yazı değildir; hazır seçenekler social/safe-chat.js listesinden doldurulur. -->
+            <label>Açıklama<select id="team-create-description"><option value="">Açıklama yok</option></select></label>
             <label>Başvuru şartı<select id="team-create-min-trophies"><option value="0">Şart yok</option></select></label>
             <p id="team-create-cost" class="team-create-cost"></p>
             <button id="team-create-button" type="button">OLUŞTUR</button>
@@ -509,7 +517,9 @@
           </section>
           <section data-team-panel="chat" class="team-panel" hidden>
             <h3>Takım sohbeti</h3><div id="team-message-list" class="team-message-list" aria-live="polite"></div>
-            <div class="team-inline-action"><input id="team-message-input" maxlength="240" autocomplete="off" placeholder="Mesaj yaz"><button id="team-message-send" type="button">GÖNDER</button></div>
+            <!-- Serbest yazı yoktur: oyuncu hazır mesajlardan seçer (social/safe-chat.js). -->
+            <div id="team-message-picker" class="preset-message-picker" role="group" aria-label="Hazır mesajlar"></div>
+            <p class="preset-message-hint">Güvenli sohbet: yalnız hazır mesajlar gönderilir.</p>
           </section>
           <section data-team-panel="battle" class="team-panel" hidden>
             <h3>Antrenman savaşı</h3><p class="team-policy-note">Antrenman protokolü derecesizdir; kupa ve ödül ekonomisini etkilemez.</p>
@@ -824,6 +834,7 @@
       </div>
       <output id="friend-invite-output" class="friend-invite-output" hidden></output>
       <p id="friends-action-status" class="season-action-status" role="status" aria-live="polite"></p>
+      <p id="friends-social-closed" class="friends-social-closed" hidden>Sosyal özellikler ebeveyn ayarıyla kapalı. Arkadaş listen durur; sohbet, özel mesaj ve arkadaşlık istekleri kapalıdır.</p>
       <section id="friend-search-panel" class="friends-search-panel" hidden>
         <div class="friends-search-heading"><strong>Arama Sonuçları</strong><button id="friend-search-close" type="button" aria-label="Aramayı kapat">×</button></div>
         <div id="friend-search-results" class="social-player-list"></div>
@@ -852,11 +863,8 @@
             <div><strong id="direct-message-peer-name">Oyuncu</strong><small id="direct-message-peer-meta"></small></div>
           </header>
           <div id="direct-message-list" class="direct-message-list" aria-live="polite"></div>
-          <form id="direct-message-form" class="direct-message-form team-inline-action">
-            <label for="direct-message-text" class="visually-hidden">Mesaj</label>
-            <input id="direct-message-text" maxlength="500" autocomplete="off" placeholder="Mesaj yaz">
-            <button type="submit">GÖNDER</button>
-          </form>
+          <div id="direct-message-picker" class="preset-message-picker" role="group" aria-label="Hazır mesajlar"></div>
+          <p class="preset-message-hint">Güvenli sohbet: yalnız hazır mesajlar gönderilir.</p>
           <p id="direct-message-note" class="direct-message-note" hidden></p>
         </section>
       </section>
@@ -888,6 +896,7 @@
         <input id="profile-display-name" type="text" maxlength="24" value="Oyuncu" autocomplete="off" />
         <button id="profile-display-name-save" type="button">Görünen Adı Değiştir</button>
         <small id="profile-name-change-note">Oyuncu adını yalnız bir kez değiştirebilirsin.</small>
+        <small class="public-name-hint">Adını herkes görür. Gerçek adını, okulunu ya da telefon numaranı yazma.</small>
         <span id="profile-name-save-status" role="status"></span>
         <!-- Oyun hesabının kimliği sunucu doğruladıktan sonra burada görünür
              (bkz. boot-screen.js setPlayerId); dokununca tamamı kopyalanır. -->
@@ -943,13 +952,6 @@
         <div class="profile-section-heading"><h3 id="account-platform-title">Bağlı Hesap</h3></div>
         <p id="account-platform-status">Hesap güvenliği yükleniyor…</p>
         <button class="review-access-launch" type="button" data-review-access-open>REVIEW / DEMO SIGN-IN</button>
-        <div class="account-verification-form">
-          <select id="account-contact-channel"><option value="email">E-posta</option><option value="phone">Telefon</option></select>
-          <input id="account-contact-destination" type="text" maxlength="180" placeholder="E-posta veya telefon">
-          <button id="account-verification-request" type="button">KOD GÖNDER</button>
-          <input id="account-verification-code" type="text" inputmode="numeric" maxlength="6" placeholder="6 haneli kod">
-          <button id="account-verification-confirm" type="button">DOĞRULA</button>
-        </div>
         <div class="account-oauth-actions"><button id="account-oauth-play-games" type="button" hidden>PLAY GAMES BAĞLA</button><button id="account-oauth-google" type="button">GOOGLE BAĞLA</button><button id="account-oauth-apple" type="button">APPLE BAĞLA</button></div>
         <div class="account-recovery-form">
           <strong>Hesap Kurtarma</strong>
@@ -964,6 +966,20 @@
         <div class="account-data-actions"><button id="account-data-export" type="button">VERİLERİMİ DIŞA AKTAR</button><input id="account-delete-confirmation" type="text" placeholder="SIL oyuncu-kimliğin"><button id="account-data-delete" type="button">HESABI VE VERİLERİ SİL</button></div>
         <p>Kişisel veri kopyası oyun kaydı değildir. Kart, kupa ve ilerleme yalnız sunucuda güncellenir; dosyadan geri yüklenemez.</p>
       </section>
+      <!-- Ebeveyn denetimi: yetişkin, bu hesabın sohbetini, özel mesajını ve arkadaşlık
+           isteklerini 4 haneli bir şifreyle kapatır. Karar sunucuda saklanır; şifre
+           cihazda tutulmaz (docs/CHILD_AUDIENCE_AUDIT.md). -->
+      <section id="parental-controls-panel" class="account-platform-panel parental-controls-panel" aria-labelledby="parental-controls-title">
+        <div class="profile-section-heading"><h3 id="parental-controls-title">Ebeveyn Denetimi</h3></div>
+        <p id="parental-controls-state" data-closed="false">Sosyal özellikler açık.</p>
+        <p class="parental-controls-note">Bu bölüm ebeveynler içindir. Kapatınca bu hesapta takım sohbeti, özel mesaj ve arkadaşlık istekleri çalışmaz. Yeniden açmak için belirlediğin 4 haneli şifre gerekir; şifreyi unutma.</p>
+        <div class="parental-controls-form">
+          <input id="parental-controls-pin" type="password" inputmode="numeric" maxlength="4" autocomplete="off" placeholder="4 haneli şifre" aria-label="Ebeveyn şifresi">
+          <input id="parental-controls-pin-repeat" type="password" inputmode="numeric" maxlength="4" autocomplete="off" placeholder="Şifreyi yinele" aria-label="Ebeveyn şifresini yinele">
+          <button id="parental-controls-submit" type="button">SOSYAL ÖZELLİKLERİ KAPAT</button>
+        </div>
+        <p id="parental-controls-status" role="status" aria-live="polite"></p>
+      </section>
       <div class="settings-form">
         <section id="ad-privacy-panel" hidden>
           <button id="ad-privacy-options" type="button">REKLAM GİZLİLİK TERCİHLERİ</button>
@@ -973,6 +989,201 @@
         <label class="settings-toggle"><input id="settings-analytics-consent" type="checkbox" /> Takma kimlikli ürün analitiğine izin ver</label>
         <p class="settings-privacy-note">İsteğe bağlıdır. Oturum, ekran, eşleştirme, savaş sonucu ve performans kategorileri 30 gün tutulur; kapattığında kayıtların silinir.</p>
       </div>
+      <!-- Gömülü yazı tiplerinin lisansı pakette de bulunur: SIL OFL 1.1 her kopyada telif
+           bildirimini ve lisans metnini ister. Metinler client/assets/fonts altındaki
+           dosyaların aynısıdır (client/tests/embedded-fonts.test.js denetler). -->
+      <details id="open-source-licenses" class="open-source-licenses">
+        <summary>Açık kaynak lisansları</summary>
+        <p>Oyun, SIL Open Font License 1.1 ile dağıtılan Orbitron ve Rajdhani yazı tiplerini kullanır.</p>
+        <h4 translate="no">Orbitron</h4>
+        <pre translate="no" data-license="OFL-Orbitron.txt">Copyright 2018 The Orbitron Project Authors (https://github.com/theleagueof/orbitron), with Reserved Font Name: "Orbitron"
+
+This Font Software is licensed under the SIL Open Font License, Version 1.1.
+This license is copied below, and is also available with a FAQ at:
+http://scripts.sil.org/OFL
+
+
+-----------------------------------------------------------
+SIL OPEN FONT LICENSE Version 1.1 - 26 February 2007
+-----------------------------------------------------------
+
+PREAMBLE
+The goals of the Open Font License (OFL) are to stimulate worldwide
+development of collaborative font projects, to support the font creation
+efforts of academic and linguistic communities, and to provide a free and
+open framework in which fonts may be shared and improved in partnership
+with others.
+
+The OFL allows the licensed fonts to be used, studied, modified and
+redistributed freely as long as they are not sold by themselves. The
+fonts, including any derivative works, can be bundled, embedded, 
+redistributed and/or sold with any software provided that any reserved
+names are not used by derivative works. The fonts and derivatives,
+however, cannot be released under any other type of license. The
+requirement for fonts to remain under this license does not apply
+to any document created using the fonts or their derivatives.
+
+DEFINITIONS
+"Font Software" refers to the set of files released by the Copyright
+Holder(s) under this license and clearly marked as such. This may
+include source files, build scripts and documentation.
+
+"Reserved Font Name" refers to any names specified as such after the
+copyright statement(s).
+
+"Original Version" refers to the collection of Font Software components as
+distributed by the Copyright Holder(s).
+
+"Modified Version" refers to any derivative made by adding to, deleting,
+or substituting -- in part or in whole -- any of the components of the
+Original Version, by changing formats or by porting the Font Software to a
+new environment.
+
+"Author" refers to any designer, engineer, programmer, technical
+writer or other person who contributed to the Font Software.
+
+PERMISSION &amp; CONDITIONS
+Permission is hereby granted, free of charge, to any person obtaining
+a copy of the Font Software, to use, study, copy, merge, embed, modify,
+redistribute, and sell modified and unmodified copies of the Font
+Software, subject to the following conditions:
+
+1) Neither the Font Software nor any of its individual components,
+in Original or Modified Versions, may be sold by itself.
+
+2) Original or Modified Versions of the Font Software may be bundled,
+redistributed and/or sold with any software, provided that each copy
+contains the above copyright notice and this license. These can be
+included either as stand-alone text files, human-readable headers or
+in the appropriate machine-readable metadata fields within text or
+binary files as long as those fields can be easily viewed by the user.
+
+3) No Modified Version of the Font Software may use the Reserved Font
+Name(s) unless explicit written permission is granted by the corresponding
+Copyright Holder. This restriction only applies to the primary font name as
+presented to the users.
+
+4) The name(s) of the Copyright Holder(s) or the Author(s) of the Font
+Software shall not be used to promote, endorse or advertise any
+Modified Version, except to acknowledge the contribution(s) of the
+Copyright Holder(s) and the Author(s) or with their explicit written
+permission.
+
+5) The Font Software, modified or unmodified, in part or in whole,
+must be distributed entirely under this license, and must not be
+distributed under any other license. The requirement for fonts to
+remain under this license does not apply to any document created
+using the Font Software.
+
+TERMINATION
+This license becomes null and void if any of the above conditions are
+not met.
+
+DISCLAIMER
+THE FONT SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO ANY WARRANTIES OF
+MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT
+OF COPYRIGHT, PATENT, TRADEMARK, OR OTHER RIGHT. IN NO EVENT SHALL THE
+COPYRIGHT HOLDER BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+INCLUDING ANY GENERAL, SPECIAL, INDIRECT, INCIDENTAL, OR CONSEQUENTIAL
+DAMAGES, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+FROM, OUT OF THE USE OR INABILITY TO USE THE FONT SOFTWARE OR FROM
+OTHER DEALINGS IN THE FONT SOFTWARE.</pre>
+        <h4 translate="no">Rajdhani</h4>
+        <pre translate="no" data-license="OFL-Rajdhani.txt">Copyright (c) 2014, Indian Type Foundry (info@indiantypefoundry.com).
+
+This Font Software is licensed under the SIL Open Font License, Version 1.1.
+This license is copied below, and is also available with a FAQ at:
+http://scripts.sil.org/OFL
+
+
+-----------------------------------------------------------
+SIL OPEN FONT LICENSE Version 1.1 - 26 February 2007
+-----------------------------------------------------------
+
+PREAMBLE
+The goals of the Open Font License (OFL) are to stimulate worldwide
+development of collaborative font projects, to support the font creation
+efforts of academic and linguistic communities, and to provide a free and
+open framework in which fonts may be shared and improved in partnership
+with others.
+
+The OFL allows the licensed fonts to be used, studied, modified and
+redistributed freely as long as they are not sold by themselves. The
+fonts, including any derivative works, can be bundled, embedded, 
+redistributed and/or sold with any software provided that any reserved
+names are not used by derivative works. The fonts and derivatives,
+however, cannot be released under any other type of license. The
+requirement for fonts to remain under this license does not apply
+to any document created using the fonts or their derivatives.
+
+DEFINITIONS
+"Font Software" refers to the set of files released by the Copyright
+Holder(s) under this license and clearly marked as such. This may
+include source files, build scripts and documentation.
+
+"Reserved Font Name" refers to any names specified as such after the
+copyright statement(s).
+
+"Original Version" refers to the collection of Font Software components as
+distributed by the Copyright Holder(s).
+
+"Modified Version" refers to any derivative made by adding to, deleting,
+or substituting -- in part or in whole -- any of the components of the
+Original Version, by changing formats or by porting the Font Software to a
+new environment.
+
+"Author" refers to any designer, engineer, programmer, technical
+writer or other person who contributed to the Font Software.
+
+PERMISSION &amp; CONDITIONS
+Permission is hereby granted, free of charge, to any person obtaining
+a copy of the Font Software, to use, study, copy, merge, embed, modify,
+redistribute, and sell modified and unmodified copies of the Font
+Software, subject to the following conditions:
+
+1) Neither the Font Software nor any of its individual components,
+in Original or Modified Versions, may be sold by itself.
+
+2) Original or Modified Versions of the Font Software may be bundled,
+redistributed and/or sold with any software, provided that each copy
+contains the above copyright notice and this license. These can be
+included either as stand-alone text files, human-readable headers or
+in the appropriate machine-readable metadata fields within text or
+binary files as long as those fields can be easily viewed by the user.
+
+3) No Modified Version of the Font Software may use the Reserved Font
+Name(s) unless explicit written permission is granted by the corresponding
+Copyright Holder. This restriction only applies to the primary font name as
+presented to the users.
+
+4) The name(s) of the Copyright Holder(s) or the Author(s) of the Font
+Software shall not be used to promote, endorse or advertise any
+Modified Version, except to acknowledge the contribution(s) of the
+Copyright Holder(s) and the Author(s) or with their explicit written
+permission.
+
+5) The Font Software, modified or unmodified, in part or in whole,
+must be distributed entirely under this license, and must not be
+distributed under any other license. The requirement for fonts to
+remain under this license does not apply to any document created
+using the Font Software.
+
+TERMINATION
+This license becomes null and void if any of the above conditions are
+not met.
+
+DISCLAIMER
+THE FONT SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO ANY WARRANTIES OF
+MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT
+OF COPYRIGHT, PATENT, TRADEMARK, OR OTHER RIGHT. IN NO EVENT SHALL THE
+COPYRIGHT HOLDER BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+INCLUDING ANY GENERAL, SPECIAL, INDIRECT, INCIDENTAL, OR CONSEQUENTIAL
+DAMAGES, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+FROM, OUT OF THE USE OR INABILITY TO USE THE FONT SOFTWARE OR FROM
+OTHER DEALINGS IN THE FONT SOFTWARE.</pre>
+      </details>
       </section>
       <nav class="profile-terminal-tabs" aria-label="Operatör terminali bölümleri"><button type="button" data-open-screen="profile">PROFİL</button><button type="button" data-open-screen="avatar">KOZMETİK</button><button type="button" data-open-screen="daily">ÖDÜLLER</button><button type="button" data-open-screen="friends">ARKADAŞ</button><button type="button" class="is-active" data-open-screen="settings">AYARLAR</button></nav>
     </section>
@@ -1309,6 +1520,8 @@
   <script src="./src/battle/module-card-view.js"></script>
   <script src="./src/battle/battle-event-bus.js"></script>
   <script src="./src/battle/battle-performance.js"></script>
+  <script src="./src/battle/graphics-tier.js"></script>
+  <script src="./src/social/safe-chat.js"></script>
   <script src="./src/gridshard-audio-formats.js"></script>
   <script src="./src/gridshard-audio.js"></script>
   <script src="./src/i18n-catalog.js"></script>

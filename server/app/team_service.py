@@ -16,13 +16,20 @@ import shutil
 from threading import RLock
 from uuid import uuid4
 
+from .safe_chat import (
+    FREE_DESCRIPTION_CLOSED_MESSAGE,
+    SafeChatError,
+    require_preset_message,
+    require_team_description_id,
+    team_description_text,
+)
+from .text_safety import public_name_rejection
+
 
 TEAM_MEMBER_LIMIT = 30
 TEAM_NAME_MAX_LENGTH = 24
-TEAM_DESCRIPTION_MAX_LENGTH = 120
 # Takım kurucusunun seçebileceği başvuru şartı (en az kupa). 0: şart yok.
 TEAM_MIN_TROPHY_OPTIONS = (0, 100, 300, 600, 1000, 1500, 2000, 3000)
-CHAT_MESSAGE_MAX_LENGTH = 240
 REQUEST_POLICY = {
     # A player may open one module request per week.  The requested piece
     # count is determined by the selected module's rarity.
@@ -218,16 +225,21 @@ class TeamService:
             )
         if not re.search(r"[0-9A-Za-zÇĞİÖŞÜçğıöşü]", clean):
             raise TeamServiceError("Takım adı en az bir harf veya rakam içermelidir.")
+        # Herkese görünen ad: iletişim bilgisi ve kaba söz süzülür.
+        rejection = public_name_rejection(clean, label="Takım adı")
+        if rejection:
+            raise TeamServiceError(rejection)
         return clean
 
     @staticmethod
-    def _clean_team_description(description: str | None) -> str:
-        clean = " ".join(str(description or "").split())
-        if len(clean) > TEAM_DESCRIPTION_MAX_LENGTH:
-            raise TeamServiceError(
-                f"Takım açıklaması en fazla {TEAM_DESCRIPTION_MAX_LENGTH} karakter olabilir."
-            )
-        return clean
+    def _clean_team_description(description: str | None, description_id: str | None) -> str:
+        """Takım açıklaması hazır seçeneklerden biridir; serbest metin kabul edilmez."""
+        if " ".join(str(description or "").split()):
+            raise TeamServiceError(FREE_DESCRIPTION_CLOSED_MESSAGE)
+        try:
+            return require_team_description_id(description_id)
+        except SafeChatError as exc:
+            raise TeamServiceError(str(exc)) from exc
 
     @staticmethod
     def _clean_min_trophies(value) -> int:
@@ -303,15 +315,16 @@ class TeamService:
         request_id: str,
         *,
         description: str | None = None,
+        description_id: str | None = None,
         min_trophies: int = 0,
     ) -> dict:
         clean_name = self._clean_team_name(name)
-        clean_description = self._clean_team_description(description)
+        description_id = self._clean_team_description(description, description_id)
         clean_min_trophies = self._clean_min_trophies(min_trophies)
         # Eski istemcinin (yalnız ad gönderen) makbuzu aynı parmak iziyle kalır.
         values: dict = {"name": clean_name}
-        if clean_description:
-            values["description"] = clean_description
+        if description_id:
+            values["description_id"] = description_id
         if clean_min_trophies:
             values["min_trophies"] = clean_min_trophies
         fingerprint = self._fingerprint("create", player_id, values)
@@ -334,7 +347,8 @@ class TeamService:
                 "member_limit": TEAM_MEMBER_LIMIT,
                 "member_ids": [player_id],
                 "created_at": self._timestamp(),
-                "description": clean_description,
+                "description_id": description_id,
+                "description": team_description_text(description_id),
                 "min_trophies": clean_min_trophies,
                 "module_requests": [],
                 "messages": [],
@@ -872,18 +886,16 @@ class TeamService:
         *,
         team_id: str,
         player_id: str,
-        message: str,
+        preset_id: str,
         request_id: str,
     ) -> dict:
-        clean = " ".join(str(message or "").strip().split())
-        if not clean:
-            raise TeamServiceError("Sohbet mesajı boş olamaz.")
-        if len(clean) > CHAT_MESSAGE_MAX_LENGTH:
-            raise TeamServiceError(
-                f"Sohbet mesajı en fazla {CHAT_MESSAGE_MAX_LENGTH} karakter olabilir."
-            )
+        # Serbest yazı yoktur: yalnız hazır mesaj kimliği kabul edilir (safe_chat.py).
+        try:
+            preset = require_preset_message(preset_id)
+        except SafeChatError as exc:
+            raise TeamServiceError(str(exc)) from exc
         fingerprint = self._fingerprint(
-            "message", player_id, {"team_id": team_id, "message": clean}
+            "message", player_id, {"team_id": team_id, "preset_id": preset["id"]}
         )
 
         def operation(payload: dict) -> dict:
@@ -893,10 +905,11 @@ class TeamService:
             item = {
                 "message_id": "message-" + uuid4().hex,
                 "author_id": player_id,
-                "text": clean,
+                "preset_id": preset["id"],
+                "text": preset["text"],
                 "created_at": self._timestamp(),
                 "visibility": "visible",
-                "moderation_status": "pending",
+                "moderation_status": "preset",
                 "reports": [],
             }
             messages = team.setdefault("messages", [])

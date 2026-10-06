@@ -58,12 +58,15 @@ module.exports = defineConfig({
     },
     {
       name: "android-chrome-emulated",
-      testMatch: /(startup-loading|mobile-battle|settings-layout)\.spec\.js/,
+      testMatch: /(startup-loading|mobile-battle|settings-layout|onboarding)\.spec\.js/,
       use: { ...devices["Pixel 7"], ...localChrome }
     },
     {
       name: "iphone-safari-emulated",
-      testMatch: /(startup-loading|mobile-battle|settings-layout)\.spec\.js/,
+      // Windows'taki WebKit öykünmesi yavaştır: testler işlevsel olarak geçer ama
+      // 60 sn sınırına dayanır (ayar ekranı testi tek başına 58 sn sürdü).
+      timeout: 150_000,
+      testMatch: /(startup-loading|mobile-battle|settings-layout|onboarding)\.spec\.js/,
       use: { ...devices["iPhone 15"] }
     }
   ]

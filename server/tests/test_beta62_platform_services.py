@@ -45,7 +45,7 @@ def test_invite_dm_block_report_export_and_erasure_are_durable(tmp_path):
     platform = service(tmp_path)
     invite = platform.create_invite("player-a")
     accepted = platform.accept_invite("player-b", invite["code"])
-    message = platform.send_message("player-a", "player-b", "Merhaba")
+    message = platform.send_message("player-a", "player-b", "hello")
     report = platform.report("player-b", "player-a", "spam", "tekrar ediyor")
     blocked = platform.set_block("player-b", "player-a", True)
     exported = platform.export_data("player-b")
@@ -77,7 +77,7 @@ def test_oauth_adapter_does_not_fake_an_unconfigured_provider(tmp_path, monkeypa
     }
 
 
-def test_google_oauth_callback_exchanges_code_and_links_verified_email(tmp_path, monkeypatch):
+def test_google_oauth_callback_exchanges_code_and_links_without_storing_email(tmp_path, monkeypatch):
     monkeypatch.setenv("GRIDSHARD_GOOGLE_OAUTH_CLIENT_ID", "client-id")
     monkeypatch.setenv("GRIDSHARD_GOOGLE_OAUTH_CLIENT_SECRET", "client-secret")
     monkeypatch.setenv(
@@ -123,7 +123,9 @@ def test_google_oauth_callback_exchanges_code_and_links_verified_email(tmp_path,
     assert result == {"provider": "google", "player_id": "player-a", "linked": True}
     view = platform.account_view("player-a")
     assert view["oauth"]["google"]["linked"] is True
-    assert view["contacts"]["email"]["masked"] == "pi***@example.com"
+    # Sağlayıcı e-posta gönderse de saklanmaz; oyuncu sağlayıcı kimliğiyle tanınır.
+    assert view["contacts"] == {}
+    assert "pilot@example.com" not in json.dumps(platform._read())
     assert len(calls) == 2
 
 

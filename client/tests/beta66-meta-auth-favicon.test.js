@@ -20,7 +20,11 @@ assert.ok(app.includes('selected?.effect_tr || ""'));
 assert.ok(app.includes('oauthParams.has("oauth_status")'));
 assert.ok(app.includes('await nativeOAuth?.consume(returnUrl)'));
 assert.ok(!app.includes('completeProviderLogin(oauthExchange)'));
-assert.ok(app.includes("Yerel geliştirme kodu doğrulama alanına yerleştirildi."));
-assert.ok(app.includes('document.getElementById("account-verification-code")'));
+// Yeni e-posta/telefon bağlama kapalıdır; doğrulanmış bilgiyle kurtarma durur.
+assert.ok(!app.includes("/verification/request"));
+assert.ok(!app.includes("/verification/confirm"));
+assert.ok(!html.includes('id="account-contact-destination"'));
+assert.ok(html.includes('id="account-recovery-identifier"'));
+assert.ok(app.includes('"/account-recovery/request"'));
 
 console.log("beta66 meta, provider auth and favicon contract passed");

@@ -10,6 +10,7 @@ from .display_names import (
 )
 
 from .arena_canon import MODULES, unlocked_reward_module_ids
+from .text_safety import public_name_rejection
 from .competition_cycle import CYCLE_EPOCH, CYCLE_LENGTH, competition_cycle, cycle_for_id
 from .season_competition import LEADERBOARD_PRIZES, TEAM_PRIZES, WEEKLY_PRIZES
 from .game.battle_pool import default_battle_pool, validate_battle_pool
@@ -973,6 +974,10 @@ class PlayerProfileService:
                 # after a lost HTTP response. Only a different name consumes it.
                 if clean == profile.display_name:
                     return profile
+                # Herkese görünen ad: iletişim bilgisi ve kaba söz süzülür.
+                rejection = public_name_rejection(clean, label="Oyuncu adı")
+                if rejection:
+                    raise DisplayNameError(rejection, code="unsafe")
                 if profile.display_name_changes >= 1:
                     raise DisplayNameError(
                         "Oyuncu adı yalnız bir kez değiştirilebilir; hakkın kullanıldı.",

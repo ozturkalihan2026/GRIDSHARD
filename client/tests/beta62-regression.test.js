@@ -35,7 +35,9 @@ assert.ok(html.includes('id="account-data-delete"'));
 assert.ok(html.includes('id="account-recovery-confirm"'));
 assert.ok(html.includes('id="account-push-enable"'));
 assert.ok(html.includes('id="account-push-disable"'));
-assert.ok(html.includes('id="direct-message-form"'));
+// Özel mesajda serbest yazı kutusu yoktur; hazır mesaj seçici vardır.
+assert.ok(html.includes('id="direct-message-picker"'));
+assert.ok(!html.includes('id="direct-message-form"'));
 assert.ok(html.includes('id="friend-invite-create"'));
 assert.ok(app.includes("function parseGridshardDeepLink"));
 assert.ok(app.includes("gridshard:deep-link"));

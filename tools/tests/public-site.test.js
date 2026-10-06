@@ -149,3 +149,61 @@ test("both verified scoped retention jobs disclose their safety limits and untes
   assert.doesNotMatch(en, /Activation of the support email deletion process has not yet been verified/);
   assert.doesNotMatch(en, /do not claim that automated backup/);
 });
+
+test("both privacy translations describe the limits the game enforces for all players, without claiming legal compliance", () => {
+  assert.equal(site.updated, "2026-10-06");
+  const tr = renderPage("tr", "privacy");
+  const en = renderPage("en", "privacy");
+  // Preset-only chat and the public name filter.
+  assert.match(tr, /Takım sohbetinde ve özel mesajda serbest yazı yoktur/);
+  assert.match(en, /Team chat and private messages have no free-text entry/);
+  assert.match(tr, /adına gerçek adını, okulunu veya telefon numaranı yazma/);
+  assert.match(en, /do not put your real name, school or phone number in a name/);
+  // Parental controls.
+  assert.match(tr, /Ebeveyn Denetimi bölümünden/);
+  assert.match(tr, /Şifrenin kendisi saklanmaz/);
+  assert.match(en, /Parental Controls; turning them back on requires the same passcode/);
+  assert.match(en, /The passcode itself is not stored/);
+  // Sign-in providers are not asked for an email; no new email or phone is taken.
+  assert.match(tr, /yalnız sağlayıcının verdiği hesap kimliği saklanır/);
+  assert.match(tr, /Oyun yeni e-posta adresi veya telefon numarası almaz/);
+  assert.match(en, /only the account identifier supplied by the provider is stored/);
+  assert.match(en, /does not take new email addresses or phone numbers/);
+  // Embedded typefaces and child-directed ad requests.
+  assert.match(tr, /üçüncü taraf bir yazı tipi hizmetine istek göndermez/);
+  assert.match(en, /does not contact a third-party font service at startup/);
+  assert.match(tr, /çocuklara yönelik, genel izleyiciye uygun ve kişiselleştirilmemiş/);
+  assert.match(en, /child-directed, suitable for general audiences and non-personalised/);
+  // No age question; the section describes the implementation only.
+  assert.match(tr, /Oyun oyuncunun yaşını sormaz/);
+  assert.match(en, /does not ask for a player’s age/);
+  assert.match(tr, /Bu bölüm teknik uygulamayı anlatır/);
+  assert.match(en, /This section describes the technical implementation/);
+  for (const html of [tr, en]) assert.doesNotMatch(html, /COPPA|GDPR|uyumludur|is compliant|complies with/);
+});
+
+test("the privacy statements above still match the code they describe", () => {
+  const read = (...parts) => fs.readFileSync(path.join(root, ...parts), "utf8");
+  // Sign-in asks Google only for the account identity and never stores an email.
+  const platform = read("server", "app", "platform_services.py");
+  assert.ok(platform.includes('params["scope"] = "openid"'));
+  assert.doesNotMatch(platform, /openid email|"name email"/);
+  assert.doesNotMatch(platform, /account\["contacts"\]\["email"\] = \{\s*"value": email/);
+  // New email/phone linking is rejected; chat accepts preset identifiers only.
+  const gateway = read("server", "app", "main.py");
+  assert.ok(gateway.includes("CONTACT_BINDING_CLOSED_MESSAGE"));
+  assert.ok(gateway.includes("_require_social_open(player_id, request.recipient_id.strip())"));
+  assert.ok(read("server", "app", "safe_chat.py").includes("def require_preset_message"));
+  assert.ok(read("server", "app", "text_safety.py").includes("def public_name_rejection"));
+  // The parental passcode is stored as a salted digest only.
+  assert.ok(platform.includes('"pin_hash": self._parental_pin_hash(pin, salt)'));
+  // The client loads no external typeface or script.
+  const client = read("client", "index.html");
+  assert.doesNotMatch(client, /fonts\.(?:googleapis|gstatic)\.com/);
+  // Ad requests are child-directed and non-personalised; the advertising ID permission is removed.
+  const ads = read("client", "src", "native-store.js");
+  assert.match(ads, /tagForChildDirectedTreatment: true/);
+  assert.match(ads, /maxAdContentRating: "General"/);
+  assert.match(ads, /npa:true/);
+  assert.match(read("android", "app", "src", "main", "AndroidManifest.xml"), /com\.google\.android\.gms\.permission\.AD_ID" tools:node="remove"/);
+});

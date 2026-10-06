@@ -87,6 +87,7 @@ from .game.pvp_setup import InitialModulePlacement, PvPSetupPayload
 from .game.pvp_websocket import PvPWebSocketAdapter
 from .game.pvp_runner import PvPTickRunner
 from .game.tutorial import TUTORIAL_ENEMY_DECK, TUTORIAL_PLAYER_DECK, TutorialDirector
+from .safe_chat import team_description_text, visible_message
 from .match_accounting import TUTORIAL_TRAINING_MATCH_TYPE
 from .version import VERSION
 from .player_profile import (
@@ -192,7 +193,6 @@ from .team_service import (
     JsonTeamRepository,
     REQUEST_POLICY as TEAM_REQUEST_POLICY,
     TEAM_APPEARANCE_OPTIONS,
-    TEAM_DESCRIPTION_MAX_LENGTH,
     TEAM_MIN_TROPHY_OPTIONS,
     TEAM_PRIZE_APPEARANCE_KEYS,
     TeamService,
@@ -1269,7 +1269,10 @@ class TeamCreateRequest(BaseModel):
     player_id: str
     name: str
     request_id: str
+    # Takım açıklaması hazır seçeneklerden biridir (safe_chat.py). Serbest
+    # metin gönderen eski istemci reddedilir.
     description: str = ""
+    description_id: str = ""
     min_trophies: int = 0
 
 
@@ -1291,7 +1294,9 @@ class TeamActionRequest(BaseModel):
 
 class TeamMessageRequest(BaseModel):
     player_id: str
-    message: str
+    # Serbest yazı kapalıdır: yalnız hazır mesaj kimliği kabul edilir.
+    preset_id: str = ""
+    message: str = ""
     request_id: str
 
 
@@ -1460,7 +1465,9 @@ class InviteCodeRequest(BaseModel):
 class DirectMessageRequest(BaseModel):
     player_id: str
     recipient_id: str
-    text: str
+    # Serbest yazı kapalıdır: yalnız hazır mesaj kimliği kabul edilir.
+    preset_id: str = ""
+    text: str = ""
     request_id: str | None = None
 
 
@@ -1478,6 +1485,11 @@ class SocialSafetyRequest(BaseModel):
     blocked: bool | None = None
     reason: str | None = None
     detail: str | None = None
+
+
+class ParentalControlRequest(BaseModel):
+    player_id: str
+    pin: str = ""
 
 
 class GdprDeleteRequest(BaseModel):
@@ -1636,6 +1648,17 @@ def complete_play_games_sign_in(player_id: str, request: PlayGamesCompleteReques
         raise HTTPException(status_code=422, detail=str(exc)) from exc
 
 
+# Çocuk hedef kitle kararı (docs/CHILD_AUDIENCE_AUDIT.md): oyuncunun yaşı
+# sorulmadığı için yeni e-posta ya da telefon alınmaz. Uçlar eski istemci
+# için durur ama her isteği kayıttan ve kod gönderiminden önce reddeder.
+# Daha önce doğrulanmış iletişim bilgisiyle kurtarma (/account-recovery/…)
+# çalışmaya devam eder.
+CONTACT_BINDING_CLOSED_MESSAGE = (
+    "E-posta ya da telefon bağlama kapalı. "
+    "Hesabını Ayarlar'daki giriş yöntemlerinden biriyle koruyabilirsin."
+)
+
+
 @app.post("/accounts/{player_id}/verification/request")
 def request_account_verification(
     player_id: str,
@@ -1643,15 +1666,7 @@ def request_account_verification(
 ) -> dict:
     if request.player_id != player_id:
         raise HTTPException(status_code=403, detail="Başka bir oyuncu adına işlem yapılamaz.")
-    try:
-        return platform_service.request_verification(
-            player_id,
-            request.channel,
-            request.destination,
-            language=player_settings_service.get_or_create(player_id).language,
-        )
-    except PlatformServiceError as exc:
-        raise HTTPException(status_code=422, detail=str(exc)) from exc
+    raise HTTPException(status_code=422, detail=CONTACT_BINDING_CLOSED_MESSAGE)
 
 
 @app.post("/accounts/{player_id}/verification/confirm")
@@ -1661,13 +1676,46 @@ def confirm_account_verification(
 ) -> dict:
     if request.player_id != player_id:
         raise HTTPException(status_code=403, detail="Başka bir oyuncu adına işlem yapılamaz.")
+    # Karardan önce istenmiş bir kod da yeni bağlama oluşturamaz.
+    raise HTTPException(status_code=422, detail=CONTACT_BINDING_CLOSED_MESSAGE)
+
+
+# Ebeveyn denetimi (docs/CHILD_AUDIENCE_AUDIT.md): yetişkin, bu hesabın takım
+# sohbetini, özel mesajını ve arkadaşlık isteklerini 4 haneli bir şifreyle
+# kapatabilir. Karar sunucuda saklanır; kapalıyken ilgili işlemler yerel ve
+# katı PostgreSQL yolunda kayıttan önce reddedilir.
+SOCIAL_CLOSED_MESSAGE = "Sosyal özellikler ebeveyn ayarıyla kapalı."
+SOCIAL_CLOSED_PEER_MESSAGE = "Bu oyuncu mesaj ve arkadaşlık isteği almıyor."
+
+
+def _require_social_open(player_id: str, *peer_ids: str) -> None:
+    if platform_service.social_closed(player_id):
+        raise HTTPException(status_code=422, detail=SOCIAL_CLOSED_MESSAGE)
+    for peer_id in peer_ids:
+        if peer_id and platform_service.social_closed(peer_id):
+            raise HTTPException(status_code=422, detail=SOCIAL_CLOSED_PEER_MESSAGE)
+
+
+@app.post("/accounts/{player_id}/parental-controls/close-social")
+def close_social_features(player_id: str, request: ParentalControlRequest) -> dict:
+    if request.player_id != player_id:
+        raise HTTPException(status_code=403, detail="Başka bir oyuncu adına işlem yapılamaz.")
     try:
-        result = platform_service.confirm_verification(
-            player_id, request.channel, request.code
-        )
-        return {**result, "account": platform_service.account_view(player_id)}
+        platform_service.close_social_features(player_id, request.pin)
     except PlatformServiceError as exc:
         raise HTTPException(status_code=422, detail=str(exc)) from exc
+    return {"account": platform_service.account_view(player_id)}
+
+
+@app.post("/accounts/{player_id}/parental-controls/open-social")
+def open_social_features(player_id: str, request: ParentalControlRequest) -> dict:
+    if request.player_id != player_id:
+        raise HTTPException(status_code=403, detail="Başka bir oyuncu adına işlem yapılamaz.")
+    try:
+        platform_service.open_social_features(player_id, request.pin)
+    except PlatformServiceError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+    return {"account": platform_service.account_view(player_id)}
 
 
 @app.get("/accounts/{player_id}/oauth/{provider}/start")
@@ -1858,6 +1906,7 @@ def unsubscribe_platform_push(player_id: str, device_id: str, request: Request) 
 def create_social_invite_code(player_id: str, request: InviteCodeRequest) -> dict:
     if request.player_id != player_id:
         raise HTTPException(status_code=403, detail="Başka bir oyuncu adına işlem yapılamaz.")
+    _require_social_open(player_id)
     return platform_service.create_invite(player_id)
 
 
@@ -1866,6 +1915,7 @@ def create_social_invite_code(player_id: str, request: InviteCodeRequest) -> dic
 def accept_social_invite_code(player_id: str, request: InviteCodeRequest) -> dict:
     if request.player_id != player_id:
         raise HTTPException(status_code=403, detail="Başka bir oyuncu adına işlem yapılamaz.")
+    _require_social_open(player_id)
     if RUNTIME_STRICT:
         result = _apply_postgres_social_workflow("accept_code", player_id, request.code, request.request_id)
         return {key: value for key, value in result.items() if key not in {"affected_player_ids", "social"}} | {"social": result["social"]}
@@ -1900,6 +1950,8 @@ def accept_social_invite_code(player_id: str, request: InviteCodeRequest) -> dic
 @app.get("/social/{player_id}/messages")
 @persistent_operation
 def get_direct_messages(player_id: str, peer_id: str | None = None) -> dict:
+    if platform_service.social_closed(player_id):
+        return {"messages": []}
     return {"messages": platform_service.messages(player_id, peer_id)}
 
 
@@ -1926,8 +1978,9 @@ def mark_direct_messages_seen(player_id: str, request: DirectMessageSeenRequest)
 def send_direct_message(player_id: str, request: DirectMessageRequest) -> dict:
     if request.player_id != player_id:
         raise HTTPException(status_code=403, detail="Başka bir oyuncu adına işlem yapılamaz.")
+    _require_social_open(player_id, request.recipient_id.strip())
     if RUNTIME_STRICT:
-        result = _apply_postgres_social_workflow("send_message", player_id, request.recipient_id.strip(), request.text, request.request_id)
+        result = _apply_postgres_social_workflow("send_message", player_id, request.recipient_id.strip(), request.preset_id, request.request_id)
         return {"message": result["message"], "replayed": result["replayed"]}
     sender = _team_member_profile(player_id)
     recipient = _team_member_profile(request.recipient_id)
@@ -1941,7 +1994,7 @@ def send_direct_message(player_id: str, request: DirectMessageRequest) -> dict:
         raise HTTPException(status_code=422, detail="Engellenen oyuncuya mesaj gönderilemez.")
     try:
         message = platform_service.send_message(
-            player_id, request.recipient_id, request.text
+            player_id, request.recipient_id, request.preset_id
         )
         platform_service.queue_notification(
             request.recipient_id,
@@ -3775,7 +3828,9 @@ def _social_view(player_id: str) -> dict:
         invitations.append(item)
     if changed:
         persist_player_data(player_id)
-    conversations = _direct_message_conversations(profile)
+    # Ebeveyn ayarı kapalıysa sohbetler ve arkadaşlık istekleri gösterilmez.
+    social_closed = platform_service.social_closed(player_id)
+    conversations = [] if social_closed else _direct_message_conversations(profile)
     unread_messages = sum(int(item["unread_count"]) for item in conversations)
     pending_battle_invites = sum(
         1 for item in invitations
@@ -3784,17 +3839,18 @@ def _social_view(player_id: str) -> dict:
     return {
         "player_id": player_id,
         "friend_limit": 100,
+        "social_closed": social_closed,
         "notifications": {
-            "incoming_requests": len(profile.incoming_friend_request_ids),
+            "incoming_requests": 0 if social_closed else len(profile.incoming_friend_request_ids),
             "battle_invites": pending_battle_invites,
             "unread_messages": unread_messages,
         },
         "friends": [_social_player_summary(value) for value in profile.friend_ids],
-        "incoming_requests": [
+        "incoming_requests": [] if social_closed else [
             _social_player_summary(value)
             for value in profile.incoming_friend_request_ids
         ],
-        "outgoing_requests": [
+        "outgoing_requests": [] if social_closed else [
             _social_player_summary(value)
             for value in profile.outgoing_friend_request_ids
         ],
@@ -3947,6 +4003,7 @@ def send_friend_request(player_id: str, request: FriendRequestOperation) -> dict
     target_id = str(request.target_player_id).strip()
     if not target_id or target_id == player_id:
         raise HTTPException(status_code=422, detail="Geçerli bir oyuncu seç.")
+    _require_social_open(player_id, target_id)
     if RUNTIME_STRICT:
         result = _apply_postgres_friend_operation("request", player_id, target_id, request.request_id)
         return {**result["social"], "replayed": result["replayed"]}
@@ -3978,6 +4035,7 @@ def accept_friend_request(player_id: str, request: FriendDecisionOperation) -> d
     if request.player_id != player_id:
         raise HTTPException(status_code=403, detail="Başka bir oyuncu adına işlem yapılamaz.")
     requester_id = str(request.requester_id).strip()
+    _require_social_open(player_id, requester_id)
     if RUNTIME_STRICT:
         result = _apply_postgres_friend_operation("accept", player_id, requester_id, request.request_id)
         return {**result["social"], "replayed": result["replayed"]}
@@ -4173,7 +4231,12 @@ def _team_summary(team: dict) -> dict:
         "member_count": member_count,
         "member_limit": member_limit,
         "total_trophies": sum(ratings),
-        "description": str(team.get("description") or ""),
+        # Yalnız hazır açıklama gösterilir; eski serbest metin gösterilmez.
+        "description_id": (
+            str(team.get("description_id") or "")
+            if team_description_text(team.get("description_id")) else ""
+        ),
+        "description": team_description_text(team.get("description_id")),
         "min_trophies": int(team.get("min_trophies", 0) or 0),
         "full": member_count >= member_limit,
         "appearance": team_appearance(team.get("cosmetics")),
@@ -4208,7 +4271,6 @@ def _team_lobby_view(player_id: str) -> dict:
             "cost_circuit_credits": TEAM_CREATION_COST_CIRCUIT_CREDITS,
             "circuit_credits": max(0, int(profile.circuit_credits)),
             "min_trophy_options": list(TEAM_MIN_TROPHY_OPTIONS),
-            "description_max_length": TEAM_DESCRIPTION_MAX_LENGTH,
         },
         "viewer_trophies": max(0, int(profile.rating)),
         "request_policy": TEAM_REQUEST_POLICY,
@@ -4282,14 +4344,16 @@ def _team_view(team: dict, player_id: str) -> dict:
             "requester_name": names.get(item.get("requester_id"), "Oyuncu"),
             "is_own": item.get("requester_id") == player_id,
         })
+    # Yalnız hazır mesajlar gösterilir; eski serbest metinler gösterilmez.
     messages = [
         {
-            **dict(item),
+            **visible,
             "author_name": names.get(item.get("author_id"), "Oyuncu"),
             "is_own": item.get("author_id") == player_id,
         }
         for item in team.get("messages", [])[-100:]
         if item.get("visibility", "visible") == "visible"
+        and (visible := visible_message(item)) is not None
     ]
     challenges = []
     completed_session_ids: set[str] = set()
@@ -4326,8 +4390,11 @@ def _team_view(team: dict, player_id: str) -> dict:
             "rank_name_tr": applicant.league_name_tr,
         })
     overview = _public_team_profile_view(team["team_id"])
+    # Ebeveyn ayarı kapalıysa takım sohbeti bu oyuncuya gösterilmez.
+    social_closed = platform_service.social_closed(player_id)
     return {
         "joined": True,
+        "social_closed": social_closed,
         **_team_summary(team),
         "average_trophies": overview["average_trophies"],
         "statistics": overview["statistics"],
@@ -4346,7 +4413,7 @@ def _team_view(team: dict, player_id: str) -> dict:
         "members": members,
         "module_requests": requests,
         "module_request_available": team_service.module_request_available(team, player_id),
-        "messages": messages,
+        "messages": [] if social_closed else messages,
         "training_challenges": challenges,
         "request_policy": TEAM_REQUEST_POLICY,
         "online_opponents": [
@@ -4419,6 +4486,7 @@ def create_team(request: TeamCreateRequest) -> dict:
             request.name,
             request.request_id,
             description=request.description,
+            description_id=request.description_id,
             min_trophies=request.min_trophies,
         )
     except TeamServiceError as exc:
@@ -4664,11 +4732,12 @@ def donate_team_module_shard(
 @app.post("/teams/{team_id}/messages")
 @persistent_operation
 def post_team_message(team_id: str, request: TeamMessageRequest) -> dict:
+    _require_social_open(request.player_id)
     try:
         result = team_service.post_message(
             team_id=team_id,
             player_id=request.player_id,
-            message=request.message,
+            preset_id=request.preset_id,
             request_id=request.request_id,
         )
     except TeamServiceError as exc:

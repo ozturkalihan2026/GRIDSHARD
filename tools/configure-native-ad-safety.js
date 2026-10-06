@@ -3,6 +3,13 @@ const fs = require("node:fs");
 const path = require("node:path");
 const {apiBaseForBuild} = require("./mobile-network-policy.js");
 const DEMO_APP_ID = "ca-app-pub-3940256099942544~3347511713";
+// Paket, oyuncu bir şey seçmeden kendiliğinden veri toplamaya başlamaz
+// (docs/CHILD_AUDIENCE_AUDIT.md): reklam ölçümü ertelenir; Firebase Messaging
+// kayıt jetonunu açılışta değil, oyuncu bildirimi açınca üretir (eklentinin
+// register() çağrısı otomatik başlatmayı o zaman açar); Firebase Analytics
+// toplaması kapalıdır.
+const STARTUP_META_DATA = [["com.google.android.gms.ads.DELAY_APP_MEASUREMENT_INIT","true"],
+  ["firebase_messaging_auto_init_enabled","false"], ["firebase_analytics_collection_enabled","false"]];
 
 function adTestConfig(environment, root = path.resolve(__dirname, "..")) {
   const filename = environment.GRIDSHARD_ADMOB_TEST_CONFIG;
@@ -57,8 +64,11 @@ function adSafetyManifest(source) {
     const escaped = permission.replace(/\./g,"\\.");
     source = source.replace(new RegExp(`\\s*<uses-permission\\b[^>]*android:name=["']${escaped}["'][^>]*(?:\\/>|>[\\s\\S]*?<\\/uses-permission>)\\s*`,"g"),"");
   }
-  source = source.replace(/\s*<meta-data\b[^>]*android:name=["']com\.google\.android\.gms\.ads\.DELAY_APP_MEASUREMENT_INIT["'][^>]*\/>\s*/g, "");
-  source = source.replace(/(<application\b[^>]*>)\s*/, '$1\n        <meta-data android:name="com.google.android.gms.ads.DELAY_APP_MEASUREMENT_INIT" android:value="true" />\n        ');
+  for (const [name] of STARTUP_META_DATA) {
+    source = source.replace(new RegExp(`\\s*<meta-data\\b[^>]*android:name=["']${name.replace(/\./g,"\\.")}["'][^>]*\\/>\\s*`,"g"), "");
+  }
+  source = source.replace(/(<application\b[^>]*>)\s*/, "$1\n        "
+    + STARTUP_META_DATA.map(([name,value]) => `<meta-data android:name="${name}" android:value="${value}" />`).join("\n        ") + "\n        ");
   source = source.replace(/\s*(<application\b)/, "\n    " + permissions.map(p => `<uses-permission android:name="${p}" tools:node="remove" />`).join("\n    ") + "\n    $1");
   return source.replace(/\n[ \t]*\n+/g,"\n");
 }
@@ -82,4 +92,4 @@ function configureNativeAdSafety(nativeRoot, repositoryRoot, config) {
   const manifest = path.join(nativeRoot,"app/src/main/AndroidManifest.xml");
   fs.writeFileSync(manifest, adSafetyManifest(fs.readFileSync(manifest,"utf8")));
 }
-module.exports = {DEMO_APP_ID, adTestConfig, adBuildConfig, adSafetyManifest, adSafetyGradle, configureNativeAdSafety};
+module.exports = {DEMO_APP_ID, STARTUP_META_DATA, adTestConfig, adBuildConfig, adSafetyManifest, adSafetyGradle, configureNativeAdSafety};

@@ -263,10 +263,7 @@
   // "Otomatik" ise cihaza özeldir: donanıma göre başlar ve savaşta kare hızı
   // düşük kalırsa bir kademe iner. Kademe `body[data-graphics]` ile CSS'e,
   // parçacık bütçesiyle de efekt koduna yansır.
-  const GRAPHICS_TIERS = Object.freeze(["dusuk", "orta", "yuksek"]);
-  const GRAPHICS_MODE_STORAGE_KEY = "gridshard.graphics-mode";
-  const GRAPHICS_AUTO_TIER_STORAGE_KEY = "gridshard.graphics-auto-tier";
-  let autoGraphicsTier = null;
+  const GRAPHICS_TIERS = GridshardGraphicsTier.tiers;
 
   function readDevicePreference(key) {
     try {
@@ -284,49 +281,30 @@
     }
   }
 
-  function graphicsBuildVersion() {
-    return document.getElementById("boot-version")?.dataset?.version || "";
-  }
-
-  function detectDeviceGraphicsTier() {
-    const nav = globalThis.navigator || {};
-    const native = Boolean(globalThis.Capacitor?.isNativePlatform?.());
-    const mobile = native || /Android|iPhone|iPad|iPod/i.test(String(nav.userAgent || ""));
-    if (!mobile) return "yuksek";
-    // deviceMemory en yakın ikinin kuvvetine yuvarlanır (6 GB → 4); iOS vermez.
-    const memory = Number(nav.deviceMemory) || 0;
-    const cores = Number(nav.hardwareConcurrency) || 0;
-    if ((memory && memory <= 2) || (cores && cores <= 4)) return "dusuk";
-    if ((memory && memory <= 4) || (cores && cores <= 6)) return "orta";
-    return "yuksek";
-  }
-
-  function resolveAutoGraphicsTier() {
-    if (autoGraphicsTier) return autoGraphicsTier;
-    // Savaşta düşürülen kademe aynı sürüm boyunca hatırlanır; yeni sürüm
-    // iyileştirme getirmiş olabileceği için ölçüm baştan yapılır.
-    const [tier, version] = String(
-      readDevicePreference(GRAPHICS_AUTO_TIER_STORAGE_KEY) || ""
-    ).split("@");
-    autoGraphicsTier =
-      GRAPHICS_TIERS.includes(tier) && version === graphicsBuildVersion()
-        ? tier
-        : detectDeviceGraphicsTier();
-    return autoGraphicsTier;
-  }
+  // Kademe kararları battle/graphics-tier.js içindedir; burada cihazın
+  // bildirdikleri toplanır ve sonuç ekrana uygulanır.
+  const graphicsTier = new GridshardGraphicsTier.Controller({
+    read: readDevicePreference,
+    write: writeDevicePreference,
+    version: () => document.getElementById("boot-version")?.dataset?.version || "",
+    accountTier: () => settingsState.settings?.graphics_quality,
+    device: () => {
+      const nav = globalThis.navigator || {};
+      const native = Boolean(globalThis.Capacitor?.isNativePlatform?.());
+      return {
+        mobile: native || /Android|iPhone|iPad|iPod/i.test(String(nav.userAgent || "")),
+        deviceMemory: nav.deviceMemory,
+        hardwareConcurrency: nav.hardwareConcurrency,
+      };
+    },
+  });
 
   function graphicsModeIsAuto() {
-    const mode = readDevicePreference(GRAPHICS_MODE_STORAGE_KEY);
-    if (mode === "auto") return true;
-    if (mode === "manual") return false;
-    // Tercih yokken: hesap ayarı varsayılandan farklıysa oyuncu kendi seçmiştir.
-    return (settingsState.settings?.graphics_quality || "yuksek") === "yuksek";
+    return graphicsTier.isAuto();
   }
 
   function battleGraphicsQuality() {
-    if (graphicsModeIsAuto()) return resolveAutoGraphicsTier();
-    const stored = settingsState.settings?.graphics_quality;
-    return GRAPHICS_TIERS.includes(stored) ? stored : "yuksek";
+    return graphicsTier.tier();
   }
 
   function applyGraphicsQuality() {
@@ -343,20 +321,6 @@
       document.body.dataset.battlePerspective = perspective;
     }
     return tier;
-  }
-
-  // Otomatik kademede savaş kare hızı kötü kalırsa bir kademe iner.
-  function lowerAutoGraphicsTier() {
-    if (!graphicsModeIsAuto()) return null;
-    const index = GRAPHICS_TIERS.indexOf(resolveAutoGraphicsTier());
-    if (index <= 0) return null;
-    autoGraphicsTier = GRAPHICS_TIERS[index - 1];
-    writeDevicePreference(
-      GRAPHICS_AUTO_TIER_STORAGE_KEY,
-      `${autoGraphicsTier}@${graphicsBuildVersion()}`
-    );
-    applyGraphicsQuality();
-    return autoGraphicsTier;
   }
 
   // Savaş düzeni dönemi: tahta boyutu değişince artar. Kablo geometrisi bir
@@ -2566,6 +2530,13 @@
           inventoryStatus.textContent = `Envanter ${openableCount} / ${ownedCount} açılabilir`;
           card.appendChild(inventoryStatus);
         }
+        const oddsSummary = chestOddsSummary(item);
+        if (oddsSummary) {
+          const odds = document.createElement("small");
+          odds.className = "chest-store-odds";
+          odds.textContent = oddsSummary;
+          card.appendChild(odds);
+        }
         const actions = document.createElement("div");
         actions.className = "shop-chest-actions";
         const buy = document.createElement("button");
@@ -2581,6 +2552,14 @@
         buy.disabled = Boolean(state.unavailable || Number(state[item.currency] || 0) < Number(item.cost));
         buy.addEventListener("click", () => buyStoreChest(item.definition_id));
         actions.appendChild(buy);
+        if (oddsSummary) {
+          const oddsAction = document.createElement("button");
+          oddsAction.type = "button";
+          oddsAction.className = "chest-odds-action";
+          oddsAction.textContent = "OLASILIKLAR";
+          oddsAction.addEventListener("click", () => openChestOdds(item.definition_id));
+          actions.appendChild(oddsAction);
+        }
         if (ownedCount > 0) {
           const openAllAction = document.createElement("button");
           openAllAction.type = "button";
@@ -2597,6 +2576,75 @@
     renderPaidStore();
     ensureShopCountdownTimer();
  }
+
+  // Mağaza sandığının içerik olasılıkları. Sunucudan gelir ve satın almadan
+  // önce, satın alma düğmesinin yanında gösterilir (Google Play ödeme
+  // politikası; docs/CHILD_AUDIENCE_AUDIT.md). Yüzde, sandığın o ödülü içerme
+  // olasılığıdır.
+  function chestOddsPercent(value) {
+    return localizedNumber(Math.round(Number(value || 0) * 1000) / 10);
+  }
+
+  function chestOddsSummary(item) {
+    if (item?.module_drop_chance === undefined || !item.module_rarity_drop_odds) return "";
+    const module = chestOddsPercent(item.module_drop_chance);
+    return Number(item.core_drop_chance || 0) > 0
+      ? localizedMessage("store.odds_card_core", { module, core:chestOddsPercent(item.core_drop_chance) })
+      : localizedMessage("store.odds_card", { module });
+  }
+
+  function chestOddsLines(item) {
+    const preview = item.reward_preview || {};
+    const range = (values) => {
+      const low = Number(values?.[0] ?? 0);
+      const high = Number(values?.[1] ?? low);
+      return low === high ? localizedNumber(low) : `${localizedNumber(low)}–${localizedNumber(high)}`;
+    };
+    const lines = [
+      { text:localizedMessage("store.odds_guaranteed", { label:localizedUiText("Devre Kredisi"), range:range(preview.circuit_credits) }) },
+      { text:localizedMessage("store.odds_guaranteed", { label:localizedUiText("Akı"), range:range(preview.flux_shards) }) },
+      { text:localizedMessage("store.odds_module", { chance:chestOddsPercent(item.module_drop_chance) }) },
+    ];
+    const rarityNames = { common:"Yaygın", rare:"Nadir", epic:"Epik", legendary:"Efsanevi" };
+    for (const rarity of ["common", "rare", "epic", "legendary"]) {
+      const chance = Number(item.module_rarity_drop_odds?.[rarity] || 0);
+      if (!(chance > 0)) continue;
+      lines.push({
+        nested:true,
+        text:localizedMessage("store.odds_rarity", {
+          rarity:localizedUiText(rarityNames[rarity]),
+          chance:chestOddsPercent(chance),
+          range:range(item.shards_by_rarity?.[rarity]),
+          count:Number(item.shards_by_rarity?.[rarity]?.[1] ?? 0),
+        }),
+      });
+    }
+    if (Number(item.core_drop_chance || 0) > 0) {
+      lines.push({ text:localizedMessage("store.odds_core", { chance:chestOddsPercent(item.core_drop_chance) }) });
+    }
+    return lines;
+  }
+
+  function openChestOdds(definitionId) {
+    const item = metaProgressionState?.shop?.chest_store?.items?.find(
+      (entry) => entry.definition_id === definitionId
+    );
+    const dialog = document.getElementById("chest-odds-dialog");
+    const list = document.getElementById("chest-odds-list");
+    if (!item || !dialog || !list || !chestOddsSummary(item)) return;
+    const title = document.getElementById("chest-odds-title");
+    if (title) title.textContent = item.name_tr || "Sandık";
+    list.replaceChildren(...chestOddsLines(item).map((line) => {
+      const row = document.createElement("li");
+      if (line.nested) row.className = "is-nested";
+      row.textContent = line.text;
+      return row;
+    }));
+    const close = document.getElementById("chest-odds-close");
+    if (close) close.onclick = () => dialog.close();
+    dialog.onclick = (event) => { if (event.target === dialog) dialog.close(); };
+    if (!dialog.open) dialog.showModal();
+  }
 
  function formatChestCountdown(seconds) {
     const total = Math.max(0, Math.ceil(Number(seconds) || 0));
@@ -3982,6 +4030,61 @@
     return { ok:true, target };
   }
 
+  // Ebeveyn denetimi (Ayarlar → Hesap ve Gizlilik): yetişkin, sohbeti, özel
+  // mesajı ve arkadaşlık isteklerini 4 haneli bir şifreyle kapatır. Durum
+  // sunucudan gelir (hesap görünümü); şifre cihazda saklanmaz, yalnız istekle
+  // gönderilir.
+  function renderParentalControls() {
+    const closed = Boolean(accountPlatformState?.parental?.social_closed);
+    const state = document.getElementById("parental-controls-state");
+    if (state) {
+      state.dataset.closed = String(closed);
+      state.textContent = closed ? "Sosyal özellikler kapalı." : "Sosyal özellikler açık.";
+    }
+    const repeat = document.getElementById("parental-controls-pin-repeat");
+    if (repeat) repeat.hidden = closed;
+    const submit = document.getElementById("parental-controls-submit");
+    if (submit) submit.textContent = closed ? "SOSYAL ÖZELLİKLERİ AÇ" : "SOSYAL ÖZELLİKLERİ KAPAT";
+  }
+
+  async function submitParentalControls() {
+    const status = document.getElementById("parental-controls-status");
+    const pinInput = document.getElementById("parental-controls-pin");
+    const repeatInput = document.getElementById("parental-controls-pin-repeat");
+    const submit = document.getElementById("parental-controls-submit");
+    const closed = Boolean(accountPlatformState?.parental?.social_closed);
+    const pin = pinInput?.value?.trim() || "";
+    const say = (message) => { if (status) status.textContent = message; };
+    if (!/^[0-9]{4}$/.test(pin)) {
+      say("Ebeveyn şifresi 4 rakam olmalıdır.");
+      return;
+    }
+    if (!closed && pin !== (repeatInput?.value?.trim() || "")) {
+      say("Şifreler aynı değil.");
+      return;
+    }
+    if (submit) submit.disabled = true;
+    try {
+      const result = await requestJsonWithDeadline(
+        `/accounts/${encodeURIComponent(participantPlayerId)}/parental-controls/${closed ? "open-social" : "close-social"}`,
+        {method:"POST",body:JSON.stringify({player_id:participantPlayerId,pin})},
+        12000
+      );
+      accountPlatformState = result.account;
+      renderAccountPlatform();
+      say(closed ? "Sosyal özellikler açıldı." : "Sosyal özellikler kapatıldı.");
+      // Arkadaş ve takım ekranları yeni duruma göre yenilenir.
+      void loadSocialView({ quiet:true });
+      void loadTeamView();
+    } catch (error) {
+      say(error instanceof Error ? error.message : String(error));
+    } finally {
+      if (pinInput) pinInput.value = "";
+      if (repeatInput) repeatInput.value = "";
+      if (submit) submit.disabled = false;
+    }
+  }
+
   function renderAccountPlatform() {
     const state = accountPlatformState;
     if (!state) return;
@@ -4006,6 +4109,7 @@
           : `${provider.toUpperCase()} YAPILANDIRILMADI`;
     }
     renderPlayGamesButtons();
+    renderParentalControls();
     const devices = document.getElementById("account-device-list");
     if (devices) {
       devices.replaceChildren();
@@ -4072,8 +4176,8 @@
       status.textContent = playGames?.configured && state.oauth?.google_play_games?.configured
         ? "Play Games ile profilini güvenceye al veya misafir olarak devam et."
         : configuredProviders.length
-        ? "Bir sağlayıcı seç veya e-posta adresini doğrula."
-        : "Google ve Apple bağlantıları sunucu ayarlarını bekliyor; e-posta ya da misafir seçeneğini kullanabilirsin.";
+        ? "Bir sağlayıcı seç veya misafir olarak devam et."
+        : "Google ve Apple bağlantıları sunucu ayarlarını bekliyor; misafir olarak devam edebilirsin.";
     }
   }
 
@@ -4220,6 +4324,91 @@
     return avatar;
   }
 
+  // Hazır mesajlar (social/safe-chat.js): takım sohbetinde ve özel mesajda
+  // serbest yazı yoktur. Gösterilen metin her zaman listeden gelir; hazır
+  // mesaj olmayan kayıt (eski serbest yazı) boş döner ve çizilmez.
+  function presetMessageText(message) {
+    return globalThis.GridshardSafeChat?.messageText(message) || "";
+  }
+
+  function teamDescriptionText(team) {
+    return globalThis.GridshardSafeChat?.teamDescriptionText(team) || "";
+  }
+
+  // Hazır mesaj seçici: grup sekmeleri ve seçili grubun mesajları. Dokunulan
+  // mesajın yalnız kimliği gönderilir. Durum kutunun kendisinde durur
+  // (data-group, data-locked, data-sending); çizim işlevleri her tazelemede
+  // çağırabilir, grup değişmedikçe düğmeler yeniden kurulmaz.
+  function renderPresetMessagePicker(hostId, send, { locked = false } = {}) {
+    const host = document.getElementById(hostId);
+    const catalog = globalThis.GridshardSafeChat;
+    if (!host || !catalog) return;
+    if (!host.dataset.group) {
+      host.dataset.group = catalog.groups[0].id;
+      const tabs = document.createElement("div");
+      tabs.className = "preset-message-tabs";
+      for (const group of catalog.groups) {
+        const tab = document.createElement("button");
+        tab.type = "button";
+        tab.dataset.presetGroup = group.id;
+        tab.textContent = group.label;
+        tabs.appendChild(tab);
+      }
+      const chips = document.createElement("div");
+      chips.className = "preset-message-chips";
+      host.replaceChildren(tabs, chips);
+      host.addEventListener("click", async (event) => {
+        const tab = event.target.closest("[data-preset-group]");
+        const chip = event.target.closest("[data-preset-id]");
+        if (tab) {
+          host.dataset.group = tab.dataset.presetGroup;
+        } else if (chip && !chip.disabled) {
+          host.dataset.sending = "true";
+          drawPresetMessagePicker(host);
+          try {
+            await send(chip.dataset.presetId);
+            // Tek dokunuşla gönderilir; art arda dokunuş sohbeti doldurmasın.
+            await new Promise((resolve) => setTimeout(resolve, 1000));
+          } finally {
+            host.dataset.sending = "false";
+          }
+        } else {
+          return;
+        }
+        drawPresetMessagePicker(host);
+      });
+    }
+    host.dataset.locked = String(Boolean(locked));
+    drawPresetMessagePicker(host);
+  }
+
+  function drawPresetMessagePicker(host) {
+    const { group, locked, sending } = host.dataset;
+    const chips = host.querySelector(".preset-message-chips");
+    if (!chips) return;
+    if (chips.dataset.group !== group) {
+      chips.dataset.group = group;
+      chips.replaceChildren(...globalThis.GridshardSafeChat.messages
+        .filter((message) => message.group === group)
+        .map((message) => {
+          const chip = document.createElement("button");
+          chip.type = "button";
+          chip.dataset.presetId = message.id;
+          chip.textContent = message.text;
+          return chip;
+        }));
+      // Kısa ekranda mesajlar yana kayar; yeni grup baştan görünür.
+      chips.scrollLeft = 0;
+      for (const tab of host.querySelectorAll("[data-preset-group]")) {
+        const active = tab.dataset.presetGroup === group;
+        tab.classList.toggle("is-active", active);
+        tab.setAttribute("aria-pressed", String(active));
+      }
+    }
+    const disabled = locked === "true" || sending === "true";
+    for (const chip of chips.children) chip.disabled = disabled;
+  }
+
   function createDirectMessageThreadCard(conversation) {
     const peer = conversation.peer || {};
     const card = document.createElement("button");
@@ -4239,10 +4428,9 @@
       self.textContent = "Sen: ";
       preview.appendChild(self);
     }
-    // Oyuncu yazısı çeviri katmanına girmez.
+    // Hazır mesaj: metin listeden gelir ve oyuncunun diline çevrilir.
     const previewText = document.createElement("span");
-    previewText.setAttribute("translate", "no");
-    previewText.textContent = last.text || "";
+    previewText.textContent = presetMessageText(last);
     preview.appendChild(previewText);
     copy.append(name, preview);
     const meta = document.createElement("span");
@@ -4274,8 +4462,10 @@
       threads.replaceChildren(...conversations.map(createDirectMessageThreadCard));
       if (!conversations.length) {
         threads.appendChild(createFriendsEmptyState(
-          "HENÜZ SOHBET YOK",
-          "Aşağıdan bir arkadaşını seçip ilk mesajı gönder."
+          socialState?.social_closed ? "SOHBET KAPALI" : "HENÜZ SOHBET YOK",
+          socialState?.social_closed
+            ? "Sosyal özellikler ebeveyn ayarıyla kapalı."
+            : "Aşağıdan bir arkadaşını seçip ilk mesajı gönder."
         ));
       }
     }
@@ -4283,7 +4473,7 @@
     if (starters) {
       starters.replaceChildren();
       const active = new Set(conversations.map((item) => item.peer_id));
-      for (const friend of sortedFriendsForBattle()) {
+      for (const friend of socialState?.social_closed ? [] : sortedFriendsForBattle()) {
         if (active.has(friend.player_id)) continue;
         starters.appendChild(createSocialPlayerCard(friend, [
           { label:"YAZ", variant:"quiet", onClick:() => openDirectMessageThread(friend.player_id) },
@@ -4292,9 +4482,11 @@
       if (!starters.children.length) {
         const empty = document.createElement("p");
         empty.className = "social-empty-state";
-        empty.textContent = socialState?.friends?.length
-          ? "Bütün arkadaşlarınla bir sohbetin var."
-          : "Mesajlaşmak için önce arkadaş ekle.";
+        empty.textContent = socialState?.social_closed
+          ? "Sosyal özellikler ebeveyn ayarıyla kapalı."
+          : socialState?.friends?.length
+            ? "Bütün arkadaşlarınla bir sohbetin var."
+            : "Mesajlaşmak için önce arkadaş ekle.";
         starters.appendChild(empty);
       }
     }
@@ -4346,14 +4538,15 @@
       const stickToBottom = host.scrollHeight - host.scrollTop - host.clientHeight < 48;
       host.replaceChildren();
       for (const message of directMessagesCache) {
+        const messageText = presetMessageText(message);
+        if (!messageText) continue;
         const own = message.sender_id === participantPlayerId;
         const row = document.createElement("article");
         row.className = `team-message direct-message${own ? " is-own" : ""}`;
         const author = document.createElement("strong");
         author.textContent = own ? "Sen" : (peer?.display_name || "Oyuncu");
         const text = document.createElement("p");
-        text.setAttribute("translate", "no");
-        text.textContent = message.text || "";
+        text.textContent = messageText;
         const time = document.createElement("time");
         time.textContent = directMessageTimeLabel(message.sent_at);
         row.append(author, text, time);
@@ -4363,7 +4556,7 @@
         const empty = document.createElement("p");
         empty.className = "team-empty-state";
         empty.textContent = directMessageLoadedPeerId === peerId
-          ? "Sohbeti başlatmak için ilk mesajı yaz."
+          ? "Sohbeti başlatmak için aşağıdan bir mesaj seç."
           : "Mesajlar yükleniyor…";
         host.appendChild(empty);
       }
@@ -4374,10 +4567,9 @@
       host.dataset.signature = signature;
     }
 
-    const input = document.getElementById("direct-message-text");
-    const submit = document.querySelector("#direct-message-form button[type=submit]");
-    if (input) input.disabled = !isFriend;
-    if (submit) submit.disabled = !isFriend;
+    renderPresetMessagePicker("direct-message-picker", sendDirectMessage, {
+      locked:!isFriend || Boolean(socialState?.social_closed),
+    });
     const note = document.getElementById("direct-message-note");
     if (note) {
       note.hidden = isFriend;
@@ -4436,28 +4628,20 @@
     }
   }
 
-  async function sendDirectMessage() {
+  async function sendDirectMessage(presetId) {
     const peer = activeDirectMessagePeerId;
-    const input = document.getElementById("direct-message-text");
-    const message = input?.value?.trim() || "";
-    if (!peer || !message) return;
-    const submit = document.querySelector("#direct-message-form button[type=submit]");
-    if (submit) submit.disabled = true;
+    if (!peer || !presetId) return;
     try {
       await requestJsonWithDeadline(
         `/social/${encodeURIComponent(participantPlayerId)}/messages`,
-        {method:"POST",body:JSON.stringify({player_id:participantPlayerId,recipient_id:peer,text:message,request_id:socialRequestId("message-send")})},
+        {method:"POST",body:JSON.stringify({player_id:participantPlayerId,recipient_id:peer,preset_id:presetId,request_id:socialRequestId("message-send")})},
         12000
       );
-      if (input) input.value = "";
       setFriendsStatus("");
       await loadDirectMessageThread();
       void loadSocialView({ quiet:true });
     } catch (error) {
       setFriendsStatus(error instanceof Error ? error.message : String(error), "error");
-    } finally {
-      if (submit) submit.disabled = false;
-      renderDirectMessageThread();
     }
   }
 
@@ -4580,10 +4764,6 @@
     renderSocialNotificationDots();
     renderDirectMessageThread();
     void loadDirectMessageThread();
-    // Dokunmatik ekranda klavye kendiliğinden açılıp sohbeti örtmesin.
-    if (globalThis.matchMedia?.("(pointer: fine)")?.matches) {
-      document.getElementById("direct-message-text")?.focus({ preventScroll:true });
-    }
   }
 
   function renderFriendsScreen() {
@@ -4591,11 +4771,24 @@
     const summary = document.getElementById("friends-summary");
     if (summary) summary.textContent = `${socialState.friends?.length || 0} / ${socialState.friend_limit || 100} arkadaş`;
 
+    // Ebeveyn ayarı: sohbet, özel mesaj ve arkadaşlık isteği yolları kapanır;
+    // arkadaş listesi ve arkadaş savaşı durur. Asıl engel sunucudadır.
+    const socialClosed = Boolean(socialState.social_closed);
+    const closedNote = document.getElementById("friends-social-closed");
+    if (closedNote) closedNote.hidden = !socialClosed;
+    for (const control of [
+      document.getElementById("friend-invite-create"),
+      document.getElementById("friend-search-input"),
+      document.querySelector("#friend-search-form button"),
+    ]) {
+      if (control) control.disabled = socialClosed;
+    }
+
     const friends = document.getElementById("friend-list");
     if (friends) {
       friends.replaceChildren();
       for (const player of sortedFriendsForBattle()) {
-        friends.appendChild(createSocialPlayerCard(player, [
+        friends.appendChild(createSocialPlayerCard(player, socialClosed ? [] : [
           { label:"MESAJ", variant:"quiet", onClick:() => openDirectMessageThread(player.player_id) },
         ]));
       }
@@ -6100,9 +6293,10 @@
       ? localizedMessage("team.directory_requirement", { trophies:localizedNumber(minTrophies) })
       : "");
     copy.append(name, meta);
-    if (team.description) {
+    const descriptionText = teamDescriptionText(team);
+    if (descriptionText) {
       const description = document.createElement("p");
-      description.textContent = team.description;
+      description.textContent = descriptionText;
       copy.appendChild(description);
     }
 
@@ -6197,9 +6391,15 @@
       }
       if (options.map(String).includes(previous)) requirement.value = previous;
     }
+    // Açıklama serbest yazı değildir; hazır seçenekler bir kez doldurulur.
     const description = document.getElementById("team-create-description");
-    if (description && creation.description_max_length) {
-      description.maxLength = Number(creation.description_max_length);
+    if (description && description.options.length <= 1) {
+      for (const item of globalThis.GridshardSafeChat?.teamDescriptions || []) {
+        const option = document.createElement("option");
+        option.value = item.id;
+        option.textContent = item.text;
+        description.appendChild(option);
+      }
     }
   }
 
@@ -6257,8 +6457,9 @@
     setText("team-name", teamState.name || "Takım");
     const teamDescription = document.getElementById("team-description");
     if (teamDescription) {
-      teamDescription.textContent = teamState.description || "";
-      teamDescription.hidden = !teamState.description;
+      const descriptionText = teamDescriptionText(teamState);
+      teamDescription.textContent = descriptionText;
+      teamDescription.hidden = !descriptionText;
     }
     setText("team-member-count", `${teamState.member_count || 0} / ${teamState.member_limit || 30} ÜYE`);
     renderTrophyValue("team-total-trophies", Number(teamState.total_trophies || 0));
@@ -6300,11 +6501,13 @@
     const messageList = document.getElementById("team-message-list");
     if (messageList) {
       messageList.replaceChildren();
-      const messages = teamState.messages || [];
+      const messages = (teamState.messages || []).filter((message) => presetMessageText(message));
       if (!messages.length) {
         const empty = document.createElement("p");
         empty.className = "team-empty-state";
-        empty.textContent = "Takım sohbetini başlatabilirsin.";
+        empty.textContent = teamState.social_closed
+          ? "Sosyal özellikler ebeveyn ayarıyla kapalı."
+          : "Takım sohbetini başlatabilirsin.";
         messageList.appendChild(empty);
       }
       for (const message of messages) {
@@ -6315,13 +6518,15 @@
           message.author_name || "Oyuncu"
         );
         const text = document.createElement("p");
-        text.setAttribute("translate", "no");
-        text.textContent = message.text || "";
+        text.textContent = presetMessageText(message);
         row.append(author, text);
         messageList.appendChild(row);
       }
       messageList.scrollTop = messageList.scrollHeight;
     }
+    renderPresetMessagePicker("team-message-picker", sendTeamMessage);
+    const teamMessagePicker = document.getElementById("team-message-picker");
+    if (teamMessagePicker) teamMessagePicker.hidden = Boolean(teamState.social_closed);
 
     const opponent = document.getElementById("team-training-opponent");
     if (opponent) {
@@ -6536,10 +6741,6 @@
       }
     }
   });
-  document.getElementById("direct-message-form")?.addEventListener("submit", (event) => {
-    event.preventDefault();
-    sendDirectMessage();
-  });
   document.getElementById("direct-message-back")?.addEventListener("click", closeDirectMessageThread);
   document.querySelectorAll("[data-friends-tab]").forEach((button) => {
     button.addEventListener("click", () => openFriendsTab(button.dataset.friendsTab));
@@ -6643,87 +6844,6 @@
       }
     });
   }
-  document.getElementById("account-onboarding-code-request")?.addEventListener("click", async () => {
-    const status = document.getElementById("account-onboarding-status");
-    const email = document.getElementById("account-onboarding-email")?.value?.trim() || "";
-    if (!email) {
-      if (status) status.textContent = "Doğrulama kodu için e-posta adresini gir.";
-      return;
-    }
-    try {
-      const result = await requestJsonWithDeadline(
-        `/accounts/${encodeURIComponent(participantPlayerId)}/verification/request`,
-        {method:"POST",body:JSON.stringify({player_id:participantPlayerId,channel:"email",destination:email})},
-        12000
-      );
-      const codeInput = document.getElementById("account-onboarding-code");
-      if (result.development_code && codeInput) codeInput.value = result.development_code;
-      if (status) status.textContent = result.delivery_configured
-        ? `Kod ${result.destination} adresine gönderildi.`
-        : result.development_code
-          ? "Yerel geliştirme kodu alana yerleştirildi."
-          : "E-posta sağlayıcısı henüz yapılandırılmadı; doğrulama isteği kaydedildi.";
-    } catch (error) {
-      if (status) status.textContent = error instanceof Error ? error.message : String(error);
-    }
-  });
-  document.getElementById("account-onboarding-code-confirm")?.addEventListener("click", async () => {
-    const status = document.getElementById("account-onboarding-status");
-    const code = document.getElementById("account-onboarding-code")?.value?.trim() || "";
-    if (!/^\d{6}$/.test(code)) {
-      if (status) status.textContent = "Altı haneli doğrulama kodunu gir.";
-      return;
-    }
-    try {
-      const result = await requestJsonWithDeadline(
-        `/accounts/${encodeURIComponent(participantPlayerId)}/verification/confirm`,
-        {method:"POST",body:JSON.stringify({player_id:participantPlayerId,channel:"email",code})},
-        12000
-      );
-      accountPlatformState = result.account;
-      renderAccountPlatform();
-      finishAccountOnboarding();
-    } catch (error) {
-      if (status) status.textContent = error instanceof Error ? error.message : String(error);
-    }
-  });
-  document.getElementById("account-verification-request")?.addEventListener("click", async () => {
-    const status = document.getElementById("account-platform-status");
-    const channel = document.getElementById("account-contact-channel")?.value || "email";
-    const destination = document.getElementById("account-contact-destination")?.value?.trim() || "";
-    try {
-      const result = await requestJsonWithDeadline(
-        `/accounts/${encodeURIComponent(participantPlayerId)}/verification/request`,
-        {method:"POST",body:JSON.stringify({player_id:participantPlayerId,channel,destination})},
-        12000
-      );
-      const codeInput = document.getElementById("account-verification-code");
-      if (result.development_code && codeInput) codeInput.value = result.development_code;
-      if (status) status.textContent = result.delivery_configured
-        ? `Kod ${result.destination} adresine gönderildi.`
-        : result.development_code
-          ? "Yerel geliştirme kodu doğrulama alanına yerleştirildi."
-          : "E-posta teslimi için SMTP sağlayıcısı yapılandırılmalı.";
-    } catch (error) {
-      if (status) status.textContent = error instanceof Error ? error.message : String(error);
-    }
-  });
-  document.getElementById("account-verification-confirm")?.addEventListener("click", async () => {
-    const status = document.getElementById("account-platform-status");
-    const channel = document.getElementById("account-contact-channel")?.value || "email";
-    const code = document.getElementById("account-verification-code")?.value?.trim() || "";
-    try {
-      const result = await requestJsonWithDeadline(
-        `/accounts/${encodeURIComponent(participantPlayerId)}/verification/confirm`,
-        {method:"POST",body:JSON.stringify({player_id:participantPlayerId,channel,code})},
-        12000
-      );
-      accountPlatformState = result.account;
-      renderAccountPlatform();
-    } catch (error) {
-      if (status) status.textContent = error instanceof Error ? error.message : String(error);
-    }
-  });
   for (const provider of ["google", "apple"]) {
     document.getElementById(`account-oauth-${provider}`)?.addEventListener("click", async () => {
       const status = document.getElementById("account-platform-status");
@@ -6734,6 +6854,7 @@
       }
     });
   }
+  document.getElementById("parental-controls-submit")?.addEventListener("click", submitParentalControls);
   document.getElementById("account-recovery-request")?.addEventListener("click", async () => {
     const status = document.getElementById("account-platform-status");
     const identifier = document.getElementById("account-recovery-identifier")?.value?.trim() || "";
@@ -6867,7 +6988,7 @@
       "/teams",
       {
         name,
-        description:description?.value?.trim() || "",
+        description_id:description?.value || "",
         min_trophies:Number(requirement?.value || 0),
         requestKind:"create",
       },
@@ -6937,24 +7058,14 @@
     activeTeamRequestRarity = button.dataset.requestRarity || "all";
     renderTeamRequestComposer();
   });
-  async function sendTeamMessage() {
-    const input = document.getElementById("team-message-input");
-    const message = input?.value?.trim() || "";
-    if (!message || !teamState?.team_id) return;
-    const result = await mutateTeam(
+  async function sendTeamMessage(presetId) {
+    if (!presetId || !teamState?.team_id) return;
+    await mutateTeam(
       `/teams/${encodeURIComponent(teamState.team_id)}/messages`,
-      { message, requestKind:"message" },
+      { preset_id:presetId, requestKind:"message" },
       "Mesaj gönderiliyor…"
     );
-    if (result.ok && input) input.value = "";
   }
-  document.getElementById("team-message-send")?.addEventListener("click", sendTeamMessage);
-  document.getElementById("team-message-input")?.addEventListener("keydown", (event) => {
-    if (event.key === "Enter" && !event.shiftKey) {
-      event.preventDefault();
-      sendTeamMessage();
-    }
-  });
   document.getElementById("team-training-send")?.addEventListener("click", () => {
     const opponentId = document.getElementById("team-training-opponent")?.value || "";
     if (!opponentId || !teamState?.team_id) {
@@ -18726,48 +18837,12 @@
   let renderedClockText = null;
   let renderedClockOvertime = null;
 
-  // Otomatik grafik kademesi: ölçüm pencerelerinde ortalama kare süresi ya da
-  // takılma oranı art arda iki kez kötü çıkarsa kademe bir iner.
-  const AUTO_GRAPHICS_WINDOW_MS = 4000;
-  const AUTO_GRAPHICS_MIN_WINDOW_MS = 1000;
-  const AUTO_GRAPHICS_SLOW_AVERAGE_MS = 26;
-  const AUTO_GRAPHICS_SLOW_RATIO = 0.08;
-  let autoGraphicsWindow = null;
-  let autoGraphicsBadWindows = 0;
-  function closeAutoGraphicsWindow() {
-    const window_ = autoGraphicsWindow;
-    autoGraphicsWindow = null;
-    if (!window_) return;
-    const elapsed = window_.last - window_.start;
-    if (elapsed < AUTO_GRAPHICS_MIN_WINDOW_MS || window_.frames < 10) return;
-    const bad =
-      elapsed / window_.frames > AUTO_GRAPHICS_SLOW_AVERAGE_MS
-      || window_.slow / window_.frames > AUTO_GRAPHICS_SLOW_RATIO;
-    autoGraphicsBadWindows = bad ? autoGraphicsBadWindows + 1 : 0;
-    if (autoGraphicsBadWindows >= 2) {
-      autoGraphicsBadWindows = 0;
-      lowerAutoGraphicsTier();
-    }
-  }
+  // Otomatik grafik kademesi: ölçüm pencerelerinde kare hızı art arda iki kez
+  // kötü çıkarsa kademe bir iner (eşikler battle/graphics-tier.js içinde).
   function trackAutoGraphics(now, sampling) {
-    if (!sampling || document.hidden || !Number.isFinite(now)) {
-      closeAutoGraphicsWindow();
-      return;
+    if (graphicsTier.trackFrame(now, { sampling, hidden:document.hidden })) {
+      applyGraphicsQuality();
     }
-    if (!autoGraphicsWindow) {
-      autoGraphicsWindow = { start:now, last:now, frames:0, slow:0 };
-      return;
-    }
-    const gap = now - autoGraphicsWindow.last;
-    if (gap < 0 || gap > 1000) {
-      // Arka plandan dönüş: pencere baştan başlar.
-      autoGraphicsWindow = null;
-      return;
-    }
-    autoGraphicsWindow.last = now;
-    autoGraphicsWindow.frames += 1;
-    if (gap > 50) autoGraphicsWindow.slow += 1;
-    if (now - autoGraphicsWindow.start >= AUTO_GRAPHICS_WINDOW_MS) closeAutoGraphicsWindow();
   }
 
   function updateClock(now) {
@@ -19354,10 +19429,7 @@
 
   // Grafik seçimi: "Otomatik" cihaza özeldir, diğerleri hesap ayarıdır.
   document.getElementById("settings-graphics")?.addEventListener("change", (event) => {
-    writeDevicePreference(
-      GRAPHICS_MODE_STORAGE_KEY,
-      event.target.value === "otomatik" ? "auto" : "manual"
-    );
+    graphicsTier.setMode(event.target.value === "otomatik" ? "auto" : "manual");
     if (GRAPHICS_TIERS.includes(event.target.value) && settingsState.settings) {
       // Seçim sunucuya kaydedilene kadar da hemen uygulanır.
       settingsState.patch({ graphics_quality:event.target.value });
@@ -20261,7 +20333,7 @@
       when:(c) => c.screen === "shop",
       target:"#app-resource-bar",
       title:"Akı ve Devre Kredisi",
-      body:"Üstte iki paran var. Devre Kredisiyle kart yükseltir, turnuvalara katılırsın; Akı daha değerlidir. Yanlarındaki + seni mağazaya getirir.",
+      body:"Üstte iki paran var. Devre Kredisiyle kart yükseltir, turnuvalara katılırsın. Akı daha nadirdir; değerli sandıklar ve yetenekler içindir. Yanlarındaki + seni mağazaya getirir.",
     },
     {
       id:"open-cards",
@@ -20333,7 +20405,7 @@
       when:(c) => c.screen === "team",
       target:() => onboardingVisible(document.querySelector(".team-lobby-tabs")),
       title:"Takımlar",
-      body:"Burada açık takımları görürsün: BAŞVUR ile birine katılır ya da TAKIM OLUŞTUR ile kendi takımını kurarsın. Buna sonra dönersin.",
+      body:"Burada açık takımları görürsün: BAŞVUR ile bir takıma başvurur ya da TAKIM OLUŞTUR ile kendi takımını kurarsın. Buna sonra dönersin.",
     },
     {
       id:"open-events",
@@ -20364,7 +20436,7 @@
         ? "Bu haftanın turnuvasına kayıtlısın. Arena savaşlarında kazandığın kupalar haftalık sıralamana eklenir."
         : !c.weeklyAffordable
           ? "Katılım 100 Devre Kredisidir; şu an kredin yetmiyor. Kredin olunca buradan katılabilirsin."
-          : "Katılım 100 Devre Kredisidir. Katıldıktan sonra Arena savaşlarında kazandığın kupalar haftalık sıralamana eklenir; hafta sonunda ödül sandığı kazanırsın. TURNUVAYA KATIL'a dokun."),
+          : "Katılım 100 Devre Kredisidir. Katıldıktan sonra Arena savaşlarında kazandığın kupalar haftalık sıralamana eklenir; hafta sonunda ilk üçe girenler ödül kasası kazanır. TURNUVAYA KATIL'a dokun."),
     },
     {
       id:"weekly-joined",

@@ -16,26 +16,26 @@ def ticking_platform(tmp_path) -> PlatformService:
 def test_each_conversation_keeps_its_own_history(tmp_path, monkeypatch):
     monkeypatch.setattr(platform_services, "DIRECT_MESSAGE_THREAD_LIMIT", 3)
     platform = ticking_platform(tmp_path)
-    platform.send_message("player-c", "player-a", "C'den tek mesaj")
+    platform.send_message("player-c", "player-a", "thanks")
     for index in range(5):
         sender, recipient = (("player-a", "player-b"), ("player-b", "player-a"))[index % 2]
-        platform.send_message(sender, recipient, f"AB {index}")
+        platform.send_message(sender, recipient, ("hello", "yes", "no", "okay", "ready")[index])
 
     with_b = platform.messages("player-a", "player-b")
     with_c = platform.messages("player-a", "player-c")
 
     # Yoğun A–B sohbeti yalnız kendi eski mesajlarını budar; C sohbeti kalır.
-    assert [item["text"] for item in with_b] == ["AB 2", "AB 3", "AB 4"]
-    assert [item["text"] for item in with_c] == ["C'den tek mesaj"]
+    assert [item["preset_id"] for item in with_b] == ["no", "okay", "ready"]
+    assert [item["preset_id"] for item in with_c] == ["thanks"]
     assert platform.messages("player-b", "player-c") == []
 
 
 def test_conversations_count_unread_per_peer_and_mark_seen(tmp_path):
     platform = ticking_platform(tmp_path)
-    platform.send_message("player-b", "player-a", "B1")
-    platform.send_message("player-b", "player-a", "B2")
-    platform.send_message("player-c", "player-a", "C1")
-    platform.send_message("player-a", "player-b", "A1")
+    platform.send_message("player-b", "player-a", "hello")
+    platform.send_message("player-b", "player-a", "yes")
+    platform.send_message("player-c", "player-a", "hello")
+    platform.send_message("player-a", "player-b", "okay")
 
     conversations = platform.conversations("player-a")
     assert [item["peer_id"] for item in conversations] == ["player-b", "player-c"]
@@ -43,7 +43,8 @@ def test_conversations_count_unread_per_peer_and_mark_seen(tmp_path):
         "player-b": 2,
         "player-c": 1,
     }
-    assert conversations[0]["last_message"]["text"] == "A1"
+    assert conversations[0]["last_message"]["preset_id"] == "okay"
+    assert conversations[0]["last_message"]["text"] == "Tamam."
     assert conversations[0]["message_count"] == 3
 
     assert platform.mark_conversation_seen("player-a", "player-b") == 1
@@ -52,7 +53,7 @@ def test_conversations_count_unread_per_peer_and_mark_seen(tmp_path):
     unread = {item["peer_id"]: item["unread_count"] for item in platform.conversations("player-a")}
     assert unread == {"player-b": 0, "player-c": 1}
 
-    platform.send_message("player-b", "player-a", "B3")
+    platform.send_message("player-b", "player-a", "ready")
     unread = {item["peer_id"]: item["unread_count"] for item in platform.conversations("player-a")}
     assert unread == {"player-b": 1, "player-c": 1}
 
@@ -63,16 +64,16 @@ def test_conversations_count_unread_per_peer_and_mark_seen(tmp_path):
 def test_legacy_seen_time_and_trimmed_marker(tmp_path, monkeypatch):
     monkeypatch.setattr(platform_services, "DIRECT_MESSAGE_THREAD_LIMIT", 2)
     platform = ticking_platform(tmp_path)
-    first = platform.send_message("player-b", "player-a", "eski")
-    platform.send_message("player-b", "player-a", "yeni")
+    first = platform.send_message("player-b", "player-a", "hello")
+    platform.send_message("player-b", "player-a", "yes")
 
     # İşaret yokken eski tek okundu zamanı geçerlidir.
     legacy = platform.conversations("player-a", legacy_seen_at=first["sent_at"])
     assert legacy[0]["unread_count"] == 1
 
     platform.mark_conversation_seen("player-a", "player-b")
-    platform.send_message("player-b", "player-a", "1")
-    platform.send_message("player-b", "player-a", "2")
+    platform.send_message("player-b", "player-a", "no")
+    platform.send_message("player-b", "player-a", "okay")
     # İşaretli mesaj sınır yüzünden silindi; kalan iki mesaj ondan yenidir.
     assert platform.conversations("player-a")[0]["unread_count"] == 2
 
@@ -115,10 +116,10 @@ def test_social_view_lists_conversations_and_marks_one_thread_seen(tmp_path, mon
         beta.friend_ids = (alpha.player_id,)
         gamma.friend_ids = (alpha.player_id,)
         gateway.send_direct_message(beta.player_id, gateway.DirectMessageRequest(
-            player_id=beta.player_id, recipient_id=alpha.player_id, text="Selam",
+            player_id=beta.player_id, recipient_id=alpha.player_id, preset_id="hello",
         ))
         gateway.send_direct_message(gamma.player_id, gateway.DirectMessageRequest(
-            player_id=gamma.player_id, recipient_id=alpha.player_id, text="Maç?",
+            player_id=gamma.player_id, recipient_id=alpha.player_id, preset_id="battle",
         ))
 
         view = gateway.get_social_view(alpha.player_id)
@@ -140,7 +141,7 @@ def test_social_view_lists_conversations_and_marks_one_thread_seen(tmp_path, mon
         } == {beta.player_id: 0, gamma.player_id: 1}
 
         thread = gateway.get_direct_messages(alpha.player_id, peer_id=gamma.player_id)
-        assert [item["text"] for item in thread["messages"]] == ["Maç?"]
+        assert [item["preset_id"] for item in thread["messages"]] == ["battle"]
     finally:
         for player_id in players:
             gateway.player_profile_service._profiles.pop(player_id, None)
