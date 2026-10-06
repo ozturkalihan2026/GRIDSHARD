@@ -1,6 +1,42 @@
 # Claude devir notu — 6 Ekim 2026 (iş bilgisayarı)
 
-İş bilgisayarındaki ilk tur `9fd8107`, 5 Ekim akşamındaki ev turu `ae967ed` commit'iyle depoya girdi. 6 Ekim'deki çocuk hedef kitle işi `7511db8` commit'iyle depoya girdi; onun altındaki kalite denetimi düzeltmeleri **commit edilmedi**. Commit'i kullanıcı yapar. Aynı ağaçta Codex de çalışıyor (`CODEX_CHECKPOINT.md`, Play Console kurulumu); o dosyaya ve Codex'in değişikliklerine dokunulmadı.
+6 Ekim'deki işlerin hepsi depoda (`7511db8`, `1249d87`, `f61412f`); bu dosyadaki son eklemeler ve duman testi tanılaması için bir commit daha gerekir. Commit'i kullanıcı yapar. Aynı ağaçta Codex de çalışıyor (`CODEX_CHECKPOINT.md`); o dosyaya ve Codex'in değişikliklerine dokunulmaz.
+
+## Ev bilgisayarında devam sırası (6 Ekim, kullanıcı kararı)
+
+Kullanıcı sunucu güncellemesini, APK/AAB paketini ve Play Console işlerini ev bilgisayarında sürdürmeye karar verdi. İş bilgisayarında Android imza anahtarı yok; sunucunun genel IP adresi de hiçbir dosyada tutulmuyor. Bu liste o oturum içindir.
+
+**Başlamadan önce**
+
+1. `git pull`, sonra `git status --short`. Bu dosyayı, `CODEX_CHECKPOINT.md` dosyasını ve `docs/CHILD_AUDIENCE_AUDIT.md` sonundaki "6 Ekim" bölümlerini oku. Ağaç Codex ile ortak; onun değişikliklerine dokunma, `CODEX_CHECKPOINT.md` dosyasını düzenleme. Commit'i kullanıcı yapar.
+2. Kalite denetiminin son commit için yeşil olduğuna bak: `https://api.github.com/repos/ozturkalihan2026/GRIDSHARD/actions/runs` (depo herkese açık; iş açıklamaları `check-runs/{iş kimliği}/annotations`). Son koşuda (`f61412f`) yalnız imaj duman testi kırıktı; **önce onu çöz** (ayrıntı aşağıda "kalite denetimi" bölümünde): yeni push'tan sonra iş açıklamasında kırılan satır yazar, Docker varsa betik yerelde de koşulabilir.
+3. Evde olması gerekenleri denetle, içeriklerini gösterme: `secrets\android-release\gridshard-upload.p12` ve `credential.dpapi.xml` (paket imzası); sunucunun SSH anahtarı (yolunu kullanıcı söyler); Docker; Codex'in r11 kayıtları (`artifacts/play-review-access/server-receipts/`).
+
+**Sunucu (r11'den yeni sürüme)**
+
+4. Kullanıcıdan EC2 panelindeki güncel genel IPv4 adresini al (dosyaya yazma; depo herkese açık). SSH yalnız güvenlik grubunda izinli adreslerden kabul edilir; ev ağının dış adresi için kural gerekebilir, kuralı kullanıcı ekler. Bağlanmadan önce sunucu anahtarının parmak izini `CODEX_CHECKPOINT.md` içindeki kayıtlı ED25519 değeriyle karşılaştır; eşleşmeden bağlanma. Kullanıcı adı `ubuntu`.
+5. Önce yalnız oku: çalışan Compose projesi, kullandığı dosyalar ve klasör, imaj etiketleri, yedek klasörü. Codex'in düzeni: değişmez sürüm klasörleri `/opt/gridshard/releases/…`, yedekler `/var/backups/gridshard-production/`, katmanlar `docker-compose.production.yml` + `docker-compose.cloudflare.yml` + `docker-compose.play-review.yml`. Yol: `docs/SERVER_PRODUCTION_RUNBOOK.md` ve Codex'in r11 notları.
+6. Yeni sürümü ayrı klasöre kur, özel ortam dosyasını çalışan sürümden al, imajları yeni etiketle derle. Canlıya bağlamadan ayrı PostgreSQL/Redis ile `tools/production_container_smoke.py --soak-seconds 330` koş. Taze yedek al ve doğrula.
+7. **Geçişten hemen önce kullanıcıdan açık onay al.** Geçişten sonra HTTPS `/health`, giriş, profil ve takım kayıt sayılarının aynı kaldığını, inceleme (demo) hesabının durduğunu denetle. Önceki imajı geri dönüş için sakla.
+8. Bu sürümde veritabanı şeması değişmedi; yeni alanlar mevcut belge kayıtlarının içine yazılıyor (takım mesajında `preset_id`, takımda `description_id`, hesapta `parental`). Eski kayıtlar olduğu gibi okunur.
+9. Sunucu paketten önce çıkarsa telefondaki eski uygulama (sürüm kodu 2) çalışmaya devam eder; şunlar hata mesajıyla reddedilir: sohbete yazı yazmak, e-postayla kayıt, serbest takım açıklaması, 4'ten çok rakamlı ad. Sandık olasılıkları ve ebeveyn denetimi yeni pakette görünür.
+
+**Android paketi**
+
+10. `config/android-production.json` içinde `versionCode` 2'den 3'e çıkmalı (yapılmadı). Sürüm adını kullanıcıya sor; `2.1.0-beta.72` kalacaksa başka değişiklik gerekmez, değişecekse `server/app/version.py` ve `tools/release_guard.py` içindeki beklenen sürüm de değişir.
+11. `tools/build-android-production.ps1` ile aynı yükleme anahtarıyla imzalı APK/AAB üret. Denetle: imza önceki paketle aynı; birleşmiş manifestte reklam kimliği izni yok ve `firebase_messaging_auto_init_enabled` ile `firebase_analytics_collection_enabled` `false`; pakette yazı tipi dosyaları var ve `fonts.googleapis.com` geçmiyor.
+12. Telefona USB ile APK kurma (Play imzası farklı; Codex'in uyarısı). AAB'yi kullanıcı aynı dahili test kanalına yükler, telefon Play'den güncellenir.
+
+**Gerçek cihazda denenecekler (kullanıcı)**
+
+13. Takım sohbeti ve özel mesajda hazır mesaj seçici; ad retleri; ebeveyn denetimi (kapat, yanlış şifre, aç); mağazada OLASILIKLAR penceresi; Ayarlar'da "Açık kaynak lisansları"; bildirimi açınca bildirimin gelmesi (Firebase artık açılışta başlamıyor); Google/Play Games ile giriş; açılış başarısız olduğunda TEKRAR DENE düğmesi.
+
+**Site ve Play Console**
+
+14. Site paketi iş bilgisayarında kaldı (depoda değil). Evde yeniden üret: `node -e "require('./tools/build-public-site.js').buildPublicSite()"`, `node tools/check-public-site.js`, sonra `build/public-site` içeriğini kökte `index.html` olacak şekilde ziple. Kullanıcı Cloudflare'de gridshard-public → Create deployment → Production ile yükler. **Sunucu ve paket çıktıktan sonra**; gizlilik metni yeni davranışı anlatıyor.
+15. İçerik derecelendirme anketi: önerilen cevaplar `docs/CHILD_AUDIENCE_AUDIT.md` içinde "İçerik derecelendirme anketi için notlar". Veri güvenliği formu için cevap listesi henüz hazırlanmadı. Yasal uyum kutusu kullanıcının kararıdır; teknik denetim uyum belgesi değildir.
+
+**Açık kalanlar** (ayrıntı denetim belgesinde): analitik iznini yaşı bilinmeyen oyuncunun da açabilmesi; Play Games'in her açılışta başlaması; eski saklı e-postalar ve serbest metinler; ebeveyn denetiminin sınırları (hesaba bağlı, şifre sıfırlama yok); hazır mesaj için sunucu hız sınırı; şikâyet nedeninin serbest yazı olması; Google/Apple girişinin gerçek sağlayıcıya karşı denenmesi.
 
 ## 6 Ekim (iş bilgisayarı): kalite denetimi (GitHub Actions) düzeltmeleri
 
@@ -14,7 +50,9 @@ Kullanıcı `7511db8` commit'ini push etti ve önerilen yayın sırasını başl
 - **İkinci push (`1249d87`) sonucu:** "Server contracts" ve "Client contracts" yeşil. PostgreSQL işinde kurulum düzeldi; PostgreSQL 17 ve gerçek Redis testleri, iki imaj derlemesi ve Caddy doğrulaması geçti, iş bu kez imaj duman testinde düştü. Tarayıcı işi 30 dakika içinde bitti ve yalnız iPhone/WebKit projesindeki iki açılış testi kırıldı (artık iş açıklamalarından okunuyor).
 - **Duman testi:** `tools/production_container_smoke.py` oyuncu adını `Test-` + 12 onaltılık haneyle veriyordu; bugünkü ad süzgeci (en fazla 4 rakam) bunu reddediyor. Ad artık yalnız harflerden oluşuyor. Bu betik sunucu güncellemesinden önceki yalıtılmış doğrulamada da kullanılıyor. Docker motoru kapalı olduğu için yerelde koşulamadı.
 - **Açılış ekranı (gerçek hata):** `client/src/review-access.css` içindeki "REVIEW / DEMO SIGN-IN" düğmesi sağ alttaydı ve açılış başarısız olduğunda çıkan "TEKRAR DENE" düğmesinin üstüne biniyordu (bütün telefon genişliklerinde; 360 px ve altında düğmenin ortasını kapatıyordu, Chromium ve WebKit'te ölçüldü). Düğme sağ üste alındı. Dosya Codex'in inceleme erişimi işine ait; yalnız konum değişti. Açılış testleri üç projede 15/15, istemci 235/235.
-- **Henüz commit edilmeyenler:** `tools/production_container_smoke.py`, `client/src/review-access.css` ve bu dosya. Push'tan sonra koşu `https://api.github.com/repos/ozturkalihan2026/GRIDSHARD/actions/runs` adresinden (depo herkese açık) okunabilir; iş açıklamaları `check-runs/{iş kimliği}/annotations` altında. Bu makinede `gh` yok.
+- **Üçüncü push (`f61412f`) sonucu:** "Server contracts", "Client contracts" ve tarayıcı işi yeşil (tarayıcı işi 215 sn). PostgreSQL işinde PostgreSQL 17 ve gerçek Redis testleri, iki imaj derlemesi ve Caddy doğrulaması geçiyor; **imaj duman testi hâlâ düşüyor** (7 saniyede, çıkış kodu 1). Ad düzeltmesi nedeni çözmedi; neden bilinmiyor, çünkü günlük oturum açmadan okunamıyor ve Docker motoru bu makinede kapalı.
+- **Duman testine tanılama eklendi (commit bekliyor):** `tools/production_container_smoke.py` başarısız olursa kırılan satırı ve kapsayıcının son çıktısını GitHub iş açıklamasına yazar. Bir sonraki push'ta neden `check-runs/{iş kimliği}/annotations` altında okunur. **Sunucu güncellemesinden önce bu çözülmeli**: aynı betik geçiş öncesi yalıtılmış doğrulamada kullanılıyor ve kırık, bugünkü değişikliklerden kaynaklanan gerçek bir üretim hatası olabilir. Docker olan makinede betik doğrudan da koşulabilir.
+- Koşular `https://api.github.com/repos/ozturkalihan2026/GRIDSHARD/actions/runs` adresinden okunabilir (depo herkese açık). İş bilgisayarında `gh` yok.
 - **Sunucu ve paket için bulunanlar:** sunucunun SSH anahtarı bu bilgisayarda, depo dışında duruyor (yalnız kullanıcıya okuma izni var). Anahtarın yolu ve sunucunun genel IP adresi bu depo herkese açık olduğu için bilerek hiçbir izlenen dosyaya yazılmaz; IP, EC2 panelinden alınır ve SSH yalnız güvenlik grubunda izinli adreslerden kabul edilir. Android imza anahtarı bu makinede bulunamadı (ada göre arandı).
 
 ## 6 Ekim (iş bilgisayarı): çocuk hedef kitle — hazır mesajlar ve ad süzgeci

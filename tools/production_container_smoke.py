@@ -13,6 +13,7 @@ import secrets
 import subprocess
 import tempfile
 import time
+import traceback
 from urllib.parse import urlsplit, urlunsplit
 from uuid import uuid4
 
@@ -27,6 +28,33 @@ def _base_url(container, network):
         binding = subprocess.check_output(["docker", "port", container, "8000/tcp"], text=True, timeout=10).strip()
         port = int(binding.rsplit(":", 1)[1])
     return f"http://127.0.0.1:{port}"
+
+
+def _note_container_logs(container):
+    """On failure, keep the last container output with the error before the container is removed."""
+    def on_exit(_exc_type, error, _traceback):
+        if error is not None and hasattr(error, "add_note"):
+            try:
+                logs = subprocess.run(["docker", "logs", "--tail", "40", container],
+                                      capture_output=True, text=True, timeout=20)
+                error.add_note("Container output (last lines):\n" + (logs.stdout + logs.stderr)[-3000:])
+            except (OSError, subprocess.SubprocessError):
+                pass
+        return False
+    return on_exit
+
+
+def _report_failure(error):
+    """Write the failing line to the GitHub job annotations; the log itself needs a signed-in reader."""
+    frames = traceback.extract_tb(error.__traceback__)
+    where = next((frame for frame in reversed(frames) if frame.filename == __file__), frames[-1] if frames else None)
+    parts = [f"{type(error).__name__}: {error}"]
+    if where is not None:
+        parts.append(f"line {where.lineno}: {where.line}")
+    parts.extend(getattr(error, "__notes__", []))
+    message = "\n".join(parts)[-3500:]
+    print("::error title=production_container_smoke::"
+          + message.replace("%", "%25").replace("\r", "%0D").replace("\n", "%0A"), flush=True)
 
 
 def _wait_profile(client, actor, headers):
@@ -121,6 +149,7 @@ def smoke(image, network="host", maintenance_image=None, soak_seconds=0, admob_s
             # LIFO: remove our container before deleting its mounted files.
             cleanup.callback(subprocess.run, ["docker", "rm", "--force", container],
                              stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, timeout=30)
+            cleanup.push(_note_container_logs(container))  # runs before the removal above
             root = Path(directory)
             root.chmod(0o755)
             runtime = root / "runtime"
@@ -253,4 +282,9 @@ if __name__ == "__main__":
     parser.add_argument("--admob-signature-only", action="store_true", help="Enable signature verification while asserting ads/units remain hidden for both legacy and new clients")
     parser.add_argument("--play-review", action="store_true", help="Verify reviewer access with random disposable fixture credentials, including restart/restore")
     args = parser.parse_args()
-    smoke(args.image, args.network, args.maintenance_image, args.soak_seconds, args.admob_signature_only, args.play_review)
+    try:
+        smoke(args.image, args.network, args.maintenance_image, args.soak_seconds, args.admob_signature_only, args.play_review)
+    except Exception as failure:
+        if os.environ.get("GITHUB_ACTIONS") == "true":
+            _report_failure(failure)
+        raise
