@@ -46,15 +46,62 @@ def _note_container_logs(container):
 
 def _report_failure(error):
     """Write the failing line to the GitHub job annotations; the log itself needs a signed-in reader."""
-    frames = traceback.extract_tb(error.__traceback__)
-    where = next((frame for frame in reversed(frames) if frame.filename == __file__), frames[-1] if frames else None)
-    parts = [f"{type(error).__name__}: {error}"]
-    if where is not None:
-        parts.append(f"line {where.lineno}: {where.line}")
-    parts.extend(getattr(error, "__notes__", []))
-    message = "\n".join(parts)[-3500:]
+    parts = []
+    seen = set()
+    # A failure during cleanup replaces the original one; report the whole chain.
+    while error is not None and id(error) not in seen:
+        seen.add(id(error))
+        frames = traceback.extract_tb(error.__traceback__)
+        where = next((frame for frame in reversed(frames) if frame.filename == __file__), frames[-1] if frames else None)
+        parts.append(("While handling: " if parts else "") + f"{type(error).__name__}: {error}")
+        if where is not None:
+            parts.append(f"line {where.lineno}: {where.line}")
+        notes = "\n".join(getattr(error, "__notes__", []))
+        if notes:
+            parts.append(notes[-1200:])  # container output: the end matters
+        error = error.__cause__ or error.__context__
+    message = "\n".join(parts)[:3500]
     print("::error title=production_container_smoke::"
           + message.replace("%", "%25").replace("\r", "%0D").replace("\n", "%0A"), flush=True)
+
+
+_ISOLATED = ["--network", "none", "--read-only", "--cap-drop", "ALL", "--security-opt", "no-new-privileges:true"]
+
+
+def _purge_container_files(image, root):
+    """Delete what the containers wrote into the bind mounts, as the image's own user.
+
+    On a Linux host those files belong to uid 10001 (the backup directory is 0700):
+    an unprivileged user running this script, such as a CI runner, can neither read
+    nor remove them. Docker Desktop hides the difference.
+    """
+    script = ("import pathlib, shutil\n"
+              "for name in ('runtime', 'backups', 'restored-runtime'):\n"
+              "    directory = pathlib.Path('/work', name)\n"
+              "    for child in (directory.iterdir() if directory.is_dir() else ()):\n"
+              "        if child.is_dir() and not child.is_symlink():\n"
+              "            shutil.rmtree(child, ignore_errors=True)\n"
+              "        else:\n"
+              "            child.unlink(missing_ok=True)\n")
+    try:
+        subprocess.run(["docker", "run", "--rm", *_ISOLATED, "--mount", f"type=bind,source={root},target=/work",
+                        "--entrypoint", "python", image, "-c", script],
+                       stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, timeout=60)
+    except (OSError, subprocess.SubprocessError):
+        pass  # The directory removal that follows reports what is left.
+
+
+def _warn_if_left_behind(root):
+    if root.exists():
+        prefix = "::warning title=production_container_smoke::" if os.environ.get("GITHUB_ACTIONS") == "true" else "Warning: "
+        print(f"{prefix}fixture directory could not be removed: {root}", flush=True)
+
+
+def _backup_metadata(maintenance_image, backups):
+    """Read the drill's backup.json as the maintenance image's user (see `_purge_container_files`)."""
+    return json.loads(subprocess.check_output(
+        ["docker", "run", "--rm", *_ISOLATED, "--mount", f"type=bind,source={backups},target=/backups,readonly",
+         "--entrypoint", "cat", maintenance_image, "/backups/drill/backup.json"], encoding="utf-8", timeout=60))
 
 
 def _wait_profile(client, actor, headers):
@@ -102,7 +149,7 @@ def _restore_drill(image, maintenance_image, network, root, private, arguments, 
               "--env", "DATABASE_URL_FILE=/run/secrets/database_url"]
     subprocess.run([*common, maintenance_image, "backup", "--directory", "/backups/drill"],
                    check=True, stdout=subprocess.DEVNULL, timeout=120)
-    metadata = json.loads((backups / "drill" / "backup.json").read_text())
+    metadata = _backup_metadata(maintenance_image, backups)
     target = "gridshard_container_test_" + uuid4().hex
     with psycopg.connect(url, autocommit=True) as admin:
         admin.execute(sql.SQL("CREATE DATABASE {}").format(sql.Identifier(target)))
@@ -145,12 +192,16 @@ def smoke(image, network="host", maintenance_image=None, soak_seconds=0, admob_s
         admin.execute(sql.SQL("CREATE DATABASE {}").format(sql.Identifier(database)))
     try:
         with ExitStack() as cleanup:
-            directory = cleanup.enter_context(tempfile.TemporaryDirectory(prefix="gridshard-container-smoke-"))
-            # LIFO: remove our container before deleting its mounted files.
+            # A leftover fixture directory must not replace the failure being reported.
+            fixture = tempfile.TemporaryDirectory(prefix="gridshard-container-smoke-", ignore_cleanup_errors=True)
+            root = Path(fixture.name)
+            # LIFO: remove our container, then the files it wrote, then the directory.
+            cleanup.callback(_warn_if_left_behind, root)
+            cleanup.enter_context(fixture)
+            cleanup.callback(_purge_container_files, image, root)
             cleanup.callback(subprocess.run, ["docker", "rm", "--force", container],
                              stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, timeout=30)
             cleanup.push(_note_container_logs(container))  # runs before the removal above
-            root = Path(directory)
             root.chmod(0o755)
             runtime = root / "runtime"
             runtime.mkdir(mode=0o777)

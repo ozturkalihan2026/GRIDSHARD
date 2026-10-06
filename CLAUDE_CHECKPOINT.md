@@ -1,6 +1,16 @@
-# Claude devir notu — 6 Ekim 2026 (iş bilgisayarı)
+# Claude devir notu — 6 Ekim 2026 (ev bilgisayarı, akşam)
 
-6 Ekim'deki işlerin hepsi depoda (`7511db8`, `1249d87`, `f61412f`); bu dosyadaki son eklemeler ve duman testi tanılaması için bir commit daha gerekir. Commit'i kullanıcı yapar. Aynı ağaçta Codex de çalışıyor (`CODEX_CHECKPOINT.md`); o dosyaya ve Codex'in değişikliklerine dokunulmaz.
+İş bilgisayarındaki 6 Ekim işlerinin hepsi depoda (son commit `c2307d2`). Ev bilgisayarında yapılan tek kod değişikliği **commit edilmedi**: `tools/production_container_smoke.py` (kalite denetimindeki duman testi düzeltmesi) ve bu dosya. Commit'i kullanıcı yapar. Aynı ağaçta Codex de çalışıyor (`CODEX_CHECKPOINT.md`); o dosyaya ve Codex'in değişikliklerine dokunulmaz.
+
+## 6 Ekim akşamı (ev bilgisayarı): devam sırasının ilk üç adımı
+
+- **Depo:** `git pull` yapılmış, ağaç temiz, `main` uzak depoyla aynı (`c2307d2`). Notlar okundu.
+- **Kalite denetimi (`c2307d2`):** dört iş yeşil; yalnız "PostgreSQL / Redis / production image" işindeki imaj duman testi kırık. Eklenen tanılama nedeni gösterdi: `PermissionError: [Errno 1] Operation not permitted: '…/backups/drill'`.
+- **Neden (üretim hatası değil, test betiğinin sorunu):** yedek aracı klasörünü yalnız kendine açık kurar (`0700`, kapsayıcı kullanıcısı 10001). GitHub'ın Linux makinesinde betik sıradan kullanıcıyla koşar; `backup.json` dosyasını okuyamaz (asıl hata, Errno 13) ve geçici klasörü silemez (görünen hata, Errno 1; asıl hatayı örtüyordu). Docker Desktop'ta bu fark görünmez; sunucuda da görünmemiş olması, betiğin orada yönetici yetkisiyle koşulmasındandır (Codex'in "ubuntu Docker grubuna eklenmedi" notundan çıkarım, doğrulanmadı). İş daha önce kurulum adımında düştüğü için GitHub'da bu adıma hiç gelinmemişti. Kırılmadan önceki adımlar (açılış, hesap, yeni ad süzgeciyle ad değişimi, yeniden başlatma, yedek alma) GitHub'da geçmişti.
+- **Düzeltme (commit bekliyor):** betik yedek bilgisini ve temizliği imajın kendi kullanıcısıyla, kapsayıcı içinden yapar; temizlik hatası artık asıl hatanın yerine geçmez ve rapor hata zincirinin tamamını yazar. Docker'ın Linux dosya sisteminde aynı iki hata üretildi ve düzeltmenin ikisini de giderdiği görüldü (geçici betik, depoda değil). **Betiğin tamamı gerçek imajlarla koşulmadı**: bu makinede taban imajlar yok (yaklaşık 1 GB indirme gerekir). Kesin sonuç bir sonraki push'ta, aynı işte görülecek.
+- **Son iş ("Reproducible source package")** önceki işler kırık olduğu için günlerdir atlanıyordu. Komutları yerelde koşuldu: `python tools/release_guard.py` ve `python tools/package_release.py` geçti (915 dosya, 83 MB).
+- **Evde olanlar (içerikleri açılmadı):** `secrets\android-release\gridshard-upload.p12` ve `credential.dpapi.xml` var; Codex'in r11 kayıtları var (`artifacts/play-review-access/server-receipts/`: 11 profil, 11 kimlik, 58 savaş sonucu, yedek `20261005-before-play-review-r11`); sunucunun sabitlenmiş açık anahtar kaydı var (`artifacts/play-review-access/ssh/known_hosts`); Docker çalışıyor (29.6.2). `gh` yok; koşular genel API'den okunuyor. Sunucunun SSH özel anahtarının yolu ve güncel IP adresi kullanıcıdan alınacak.
+- **Kullanıcıdan beklenenler:** (1) commit + push, ardından kalite denetimi sonucu okunacak; (2) sunucu için EC2 panelindeki güncel genel IPv4 ve SSH anahtarının yolu; (3) paket için sürüm adı kararı (`2.1.0-beta.72` kalırsa yalnız `versionCode` 3 olur).
 
 ## Ev bilgisayarında devam sırası (6 Ekim, kullanıcı kararı)
 
@@ -9,7 +19,7 @@ Kullanıcı sunucu güncellemesini, APK/AAB paketini ve Play Console işlerini e
 **Başlamadan önce**
 
 1. `git pull`, sonra `git status --short`. Bu dosyayı, `CODEX_CHECKPOINT.md` dosyasını ve `docs/CHILD_AUDIENCE_AUDIT.md` sonundaki "6 Ekim" bölümlerini oku. Ağaç Codex ile ortak; onun değişikliklerine dokunma, `CODEX_CHECKPOINT.md` dosyasını düzenleme. Commit'i kullanıcı yapar.
-2. Kalite denetiminin son commit için yeşil olduğuna bak: `https://api.github.com/repos/ozturkalihan2026/GRIDSHARD/actions/runs` (depo herkese açık; iş açıklamaları `check-runs/{iş kimliği}/annotations`). Son koşuda (`f61412f`) yalnız imaj duman testi kırıktı; **önce onu çöz** (ayrıntı aşağıda "kalite denetimi" bölümünde): yeni push'tan sonra iş açıklamasında kırılan satır yazar, Docker varsa betik yerelde de koşulabilir.
+2. *(6 Ekim akşamı yapıldı; sonuç yukarıda.)* Kalite denetiminin son commit için yeşil olduğuna bak: `https://api.github.com/repos/ozturkalihan2026/GRIDSHARD/actions/runs` (depo herkese açık; iş açıklamaları `check-runs/{iş kimliği}/annotations`). Son koşuda (`f61412f`) yalnız imaj duman testi kırıktı; **önce onu çöz** (ayrıntı aşağıda "kalite denetimi" bölümünde): yeni push'tan sonra iş açıklamasında kırılan satır yazar, Docker varsa betik yerelde de koşulabilir.
 3. Evde olması gerekenleri denetle, içeriklerini gösterme: `secrets\android-release\gridshard-upload.p12` ve `credential.dpapi.xml` (paket imzası); sunucunun SSH anahtarı (yolunu kullanıcı söyler); Docker; Codex'in r11 kayıtları (`artifacts/play-review-access/server-receipts/`).
 
 **Sunucu (r11'den yeni sürüme)**
@@ -140,7 +150,7 @@ Oyuncular menü müziğinin sürekli aynı melodiyi tekrar ettiğini bildirdi. K
 
 ## Kalan işler
 
-- **Yayın (paket + sunucu + site) bu bilgisayardan yapılamaz:** `secrets\android-release` ve sunucu SSH anahtarı burada yok. Yeni site paketi hazır ama yüklenmedi: `D:\Projects\GRIDSHARD-public-20261006-privacy.zip`. Sıra ve ayrıntı `docs/CHILD_AUDIENCE_AUDIT.md` sonundaki "Yayın hazırlığı" bölümünde. Paket için `config/android-production.json` içindeki versionCode 2'den 3'e çıkarılmalı (yapılmadı).
+- **Yayın (paket + sunucu + site) ev bilgisayarından yapılır:** iş bilgisayarında `secrets\android-release` yok. İş bilgisayarında hazırlanan site paketi orada kaldı (`D:\Projects\GRIDSHARD-public-20261006-privacy.zip`, yüklenmedi); evde yeniden üretilecek (yukarıda 14. adım). Sıra ve ayrıntı `docs/CHILD_AUDIENCE_AUDIT.md` sonundaki "Yayın hazırlığı" bölümünde. Paket için `config/android-production.json` içindeki versionCode 2'den 3'e çıkarılmalı (yapılmadı).
 - **Cihaz ve yayın kullanıcıda:** gerçek cihaz testi (realme 8 Pro), yeni APK/AAB, sunucu güncellemesi. Codex'in notuna göre paket kapalı teste geçiş aşamasında hazırlanacak. Cihazda menü müziği de dinlenmeli: açılışta çalması, 2 dakika sonra parçanın değişmesi, uygulamadan çıkıp dönünce sürmesi, savaştan dönüşte sıradaki parça.
 - **Menü müziği istemci değişikliğidir**; sunucu kodu değişmedi. Mobil uygulamaya yeni paketle (APK/AAB), web sürümüne sunucu imajındaki istemciyle gelir.
 - **İstemci ve sunucu birlikte yayınlanmalı.** Eski sunucu + yeni istemci: tekrar gösterimde savaş normal Arena maçı olur ve ipucu kartları çıkar (eski davranış). Yeni sunucu + eski istemci: savaş eğitim maçı olur ama oyuncu kendi destesiyle girer; destede eğitim kartları yoksa yönetilmez.
