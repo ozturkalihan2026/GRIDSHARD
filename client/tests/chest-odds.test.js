@@ -22,11 +22,25 @@ for (const id of ["chest-odds-title", "chest-odds-list", "chest-odds-close"]) {
   assert.ok(dialog.includes(`id="${id}"`), id);
 }
 
-// Her mağaza kartında özet satırı ve satın alma düğmesinin yanında OLASILIKLAR düğmesi vardır.
+// Her mağaza kartında özet satırı satın alma düğmesinin üstünde durur; tam tablo
+// sandık bölümünün köşesindeki ÖDÜL LİSTESİ sekmesiyle açılır.
 const card = app.slice(app.indexOf('card.className = "shop-chest-card chest-store-card";'), app.indexOf("renderPaidStore();"));
 assert.ok(card.indexOf('odds.className = "chest-store-odds";') > 0);
-assert.ok(card.indexOf("actions.appendChild(buy);") < card.indexOf('oddsAction.textContent = "OLASILIKLAR";'));
-assert.ok(card.includes("openChestOdds(item.definition_id)"));
+assert.ok(card.indexOf('odds.className = "chest-store-odds";') < card.indexOf("actions.appendChild(buy);"));
+assert.ok(card.includes("oddsTab.hidden = !(chestStore?.items || []).some((item) => chestOddsSummary(item));"));
+assert.ok(card.includes("oddsTab.onclick = openChestOdds;"));
+const storeSection = /<section class="shop-section chest-store-section"[\s\S]*?<\/section>/.exec(html)?.[0] || "";
+assert.match(storeSection, /<button id="chest-odds-open" class="chest-odds-tab" type="button" hidden>ÖDÜL LİSTESİ<\/button>/);
+assert.ok(storeSection.indexOf('id="chest-odds-open"') < storeSection.indexOf('id="chest-store-list"'));
+
+// Pencere mağazadaki bütün sandıkları tek listede gösterir ve dışındaki boş yere
+// dokununca kapanır.
+const odds = app.slice(app.indexOf("function openChestOdds()"), app.indexOf("function formatChestCountdown"));
+assert.ok(odds.includes("metaProgressionState?.shop?.chest_store?.items"));
+assert.ok(odds.includes('group.className = "chest-odds-group";'));
+assert.ok(odds.includes("chestOddsLines(item)"));
+assert.match(odds, /dialog\.onclick = \(event\) => \{[\s\S]*?getBoundingClientRect\(\)[\s\S]*?if \(!inside\) dialog\.close\(\);/);
+assert.ok(odds.includes("close.onclick = () => dialog.close();"));
 
 // İstemcinin gösterdiği her alan sunucunun mağaza görünümünde vardır.
 const storeView = server.slice(server.indexOf("def _chest_store_view"), server.indexOf("def _owned_chest_inventory_view"));
@@ -54,7 +68,8 @@ assert.equal(line("store.odds_core", { chance:"6" }, "tr"), "Çekirdek parçası
 assert.equal(line("store.odds_core", { chance:"6" }, "en"), "Core shard: 6% · 1 shard");
 
 for (const text of [
-  "OLASILIKLAR",
+  "ÖDÜL LİSTESİ",
+  "Ödül Listesi",
   "İÇERİK VE OLASILIKLAR",
   "Yüzde, sandığın o ödülü içerme olasılığıdır. Modül parçası, açılmış modüllerinden rastgele birine verilir; o enderlikte açılmış modülün yoksa başka enderlikteki bir modülüne verilir.",
 ]) {

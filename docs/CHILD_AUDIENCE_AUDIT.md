@@ -295,3 +295,111 @@ Kullanıcı sitenin güncellenmesini istedi ve Codex'in yaptığı gibi paket ha
 - **Site paketi:** `build/public-site` depodaki kaynaktan yeniden derlendi; `tools/check-public-site.js` 24 sayfa/yerleşim denetimini geçti (masaüstü, 393 ve 320 px, iki dil; dış istek yok). Yeni paket `D:\Projects\GRIDSHARD-public-20261006-privacy.zip` (249.796 bayt, 19 dosya, kökte `index.html`; SHA-256 `1699d5a2bbe2b6c6e41d41172439809afab2c94e51cc62b0f9e2c7ea8ed56ea3`). Önceki pakete (`GRIDSHARD-public-20261005-no-transform.zip`) göre yalnız iki gizlilik sayfasının içeriği ve destek/hesap silme sayfalarındaki tarih değişti; önceki paket yerinde duruyor. **Yüklenmedi**; oyun güncellemesiyle birlikte yüklenmeli.
 - **Paket ve sunucu:** bu bilgisayarda yapılamıyor. `secrets\android-release` (yükleme anahtarı ve DPAPI kimlik kaydı) ve sunucunun SSH anahtarı bu makinede yok; Docker motoru kapalı. Anahtarların bulunduğu bilgisayarda aynı adımlar izlenebilir (`tools/build-android-production.ps1`, `docs/SERVER_PRODUCTION_RUNBOOK.md`, Codex'in r11 kayıtları).
 - **Önerilen sıra:** kullanıcı commit ve push → kalite denetimi yeşil → sunucu (taze yedek, yalıtılmış doğrulama, geçiş, önceki imaj geri dönüş için saklı) → `config/android-production.json` içinde versionCode 3 ve aynı anahtarla imzalı paket → Play dahili test → site paketi → içerik derecelendirme ve veri güvenliği formları. Canlıya çıkış kullanıcının açık onayını ister.
+
+## 6 Ekim akşamı — yayın, hedef kitle ekranları ve analitik yaş sorusu (Claude, ev bilgisayarı)
+
+Bu bölümü Claude ekledi. Sunucu ve paket işinin ayrıntısı `CLAUDE_CHECKPOINT.md` içindedir; burada yalnız çocuk hedef kitleyle ilgili olanlar var.
+
+### Yayın durumu
+
+- Sunucu **r12** canlıda (6 Ekim 20:00): yalnız hazır mesaj, ad süzgeci, ebeveyn denetimi, e-posta/telefon bağlamanın kapalı olması ve e-postasız Google/Apple girişi artık canlı davranıştır.
+- **v3 paketi** (sürüm kodu 3) üretildi ve denetlendi; kullanıcı Play'e yüklediğini ve sitenin güncel gizlilik metniyle yayında olduğunu bildirdi (kullanıcı teyidi; Play Console ve canlı site bu turda ayrıca denetlenmedi).
+
+### v3 paketinin içindekiler (devam planı 5 için kanıt)
+
+- **Çözülmüş SDK listesi** (Gradle `releaseRuntimeClasspath`): Google Mobile Ads 25.4.0 (UMP 4.0.0 ve reklam ölçüm bileşenleriyle), Play Games v2 22.1.0, Firebase Messaging 25.0.1 (installations ve datatransport ile), Play Billing 9.1.0. Başka şirketin izleme ya da analitik SDK'sı yok.
+- **Paketin izinleri** (`aapt dump badging`): internet, ağ durumu, bildirim gönderme, ödeme, uyanık tutma, ön plan hizmeti, bildirim alımı. Reklam kimliği, konum, rehber, kamera, mikrofon ve telefon durumu izni yok.
+- **Manifest:** `firebase_messaging_auto_init_enabled` ve `firebase_analytics_collection_enabled` pakette `false` (denetim betiği artık bunu da sınıyor).
+- Reklam SDK'sı istemci kodunda yalnız ödüllü reklam gösterilirken başlatılır (`client/src/native-store.js`); sunucuda reklam kapalı olduğu için bu yol çalışmaz. SDK'ların uygulama açılırken kendiliğinden yaptığı ağ istekleri aşağıda "Soğuk açılış ölçümü" başlığında.
+
+### Hedef kitle ve içerik ekranları
+
+- Hedef yaş: önerilen ve kullanıcının sabahki kararıyla aynı olan seçim 9–12, 13–15, 16–17, 18 yaş ve üstü.
+- **Güncelleme (6 Ekim gece, kullanıcı kararı):** kullanıcı hedef kitleyi **13 yaş ve üzeri** olarak belirlediğini bildirdi ("hedef ve içerik kalitesini 13 yaş ve üzeri olarak belirledim"; Play Console ekranı bu turda görülmedi). Çocuk yaş grubu seçilmediği için hedef kitle yardım sayfasındaki kurala göre Aile Politikası'nın çocuklara yönelik uygulama koşulları bu beyanla devreye girmez; "reklamların hepsi çocuklara uygun mu" sorusu da akıştan çıkar. Bu belgedeki korumalar (hazır mesaj, ad süzgeci, ebeveyn denetimi, analitik yaş sorusu, reklam kimliğinin kullanılmaması) yerinde kalır; beyanın gerektirdiğinden sıkıdır. Hedef kitle yardım sayfası (6 Ekim gece yeniden okundu) iki şeyi ayrıca söyler: (1) uygulama 13 yaşından küçükler için tasarlanmadığı hâlde mağaza girişinde çocuklara hitap eden pazarlama öğeleri varsa (örnekleri: küçük çocuklara yönelik animasyonlar, küçük yaştaki karakterler) Google Play uygulamayı reddedebilir; çözüm o öğeleri kaldırmak ya da hedef yaşı değiştirmektir. (2) Uygulama 21 yaşından küçükleri hedefliyorsa, bu kişilerin yerel yasalara göre çocuk sayılıp sayılmadığı dikkate alınmalıdır. İkincisi Play akışını değil hukuki değerlendirmeyi ilgilendirir; açık kalanlardaki madde geçerlidir.
+- **Reklam Kimliği beyanı** ("Uygulamanız reklam kimliği kullanıyor mu?"): önerilen yanıt **Hayır**. Manifest `com.google.android.gms.permission.AD_ID` ve üç `ACCESS_ADSERVICES_*` iznini `tools:node="remove"` ile kaldırır (`tools/configure-native-ad-safety.js`); böylece Google Mobile Ads SDK'sının kendi manifestindeki izin pakete birleşmez. v3 denetim kaydında `advertising_id_permissions: false`. İstemci reklamı herkes için çocuklara yönelik ve kişiselleştirilmemiş ister (`client/src/native-store.js`). İleride kişiselleştirilmiş reklam istenirse üç şey birlikte değişir: izin, bu beyan ve veri güvenliği formu.
+- "Uygulama ayrıntıları" adımındaki yasal uyum kutusu için öneri: açıklar kapanmadan kaydetmemek. Karar kullanıcının; kutunun işaretlendiği görülmedi.
+- Okunan birincil kaynaklar (6 Ekim): [Aile Politikası](https://support.google.com/googleplay/android-developer/answer/9893335?hl=tr), [hedef kitle ayarları](https://support.google.com/googleplay/android-developer/answer/9867159?hl=tr), [Google API kullanıcı verileri politikası](https://developers.google.com/terms/api-services-user-data-policy).
+  - Aile Politikası, sosyal özelliği olan uygulamalardan yetişkinlerin bu özellikleri yönetebileceği bir yol ister ve "yetişkin PIN'i"ni doğrulama örneği sayar; serbest biçimli paylaşımdan önce hatırlatma ister. Oyunda serbest biçimli paylaşım yok; ebeveyn denetimi şifreyle kapatır.
+  - Hedef kitle yardım sayfası 9–12 için "kullanıcıların birbirleriyle doğrudan iletişim kurmalarına fırsat veren uygulamalar"ın uygun olmayabileceğini, "sınırlı ve denetimli paylaşım"ın uygun olabileceğini söyler (ipucu; kural metni değil).
+  - Google'ın API politikası: karma kitleli uygulama Google hesabıyla girişi zorunlu tutmamalı, Google ile girişi ve Play Games'i isteğe bağlı sunabilir; oyunun tamamı giriş yapmadan kullanılabilmelidir. Oyun misafir olarak tam oynanıyor.
+
+### Play Games'in açılışta başlaması (kapandı)
+
+Kullanıcı sordu: oyuncu bir kez izin verdikten sonra her oturumda kendiliğinden bağlanmasında ne sakınca var? Sakınca görülmedi: yukarıdaki politika Play Games'in isteğe bağlı sunulmasına izin veriyor, bağlantı oyuncunun Play Games hesabındaki kendi izniyle oluyor ve oyun bağlanmadan da tam oynanıyor. Bu madde açık kalanlardan çıkarıldı. Geriye kalan tek soru genel ölçümdür: paket açılırken, oyuncu hiçbir şeye dokunmadan, SDK'ların ne gönderdiği.
+
+### Analitik izni: kapalı gelir, açmak isteyene yaş sorulur (uygulandı, yayınlanmadı)
+
+Kullanıcı kararı (6 Ekim akşamı): **"analitik izni kapalı gelsin, açmak isteyene yaş sorulsun."**
+
+- **Kural:** izin kapalı gelir (zaten öyleydi). Oyuncu açmak isterse doğum yılı sorulur; kararı sunucu verir. Yıl farkı 18 ve üstüyse izin açılır, altındaysa açılmaz. Eşik 18 seçildi (Claude'un seçimi; tek sabit: `ANALYTICS_MINIMUM_AGE`, `server/app/player_settings.py`). Yıl farkıyla hesaplandığı için eşiği geçen en genç oyuncu o yıl 18'ine giren oyuncudur.
+- **Saklanan:** doğum yılı saklanmaz. Hesapta yalnız sonuç (`analytics_age_gate`: `adult` ya da `minor`) ve sorunun sorulduğu takvim yılı kalır.
+- **Yeniden deneme:** "minor" yanıtından sonra aynı takvim yılı içinde soru yeniden sorulmaz; başka bir yıl göndermek sonucu değiştirmez. Takvim yılı değişince yeniden sorulabilir. Yetişkin yanıtı verildikten sonra izni kapatıp açmak yeniden soru gerektirmez.
+- **Soru yönlendirmesizdir:** alan boş gelir, gereken yaş yazmaz; ret metni de yaşı söylemez ("Ürün analitiği bu hesapta açılamıyor.").
+- **Eski izinler:** yaş sorusundan önce verilmiş izin geçerli sayılmaz. Analitik kaydı artık "izin açık **ve** yetişkin yanıtı var" koşuluna bağlıdır (`analytics_enabled`); eski izinli hesap yeniden açmak isterse soru sorulur.
+- **Eski istemci (v3 paketi dahil):** kutuyu işaretleyince sunucu isteği reddeder ve "Ürün analitiğini açmadan önce doğum yılı sorulur. Bunun için uygulamayı güncelle." yanıtını verir; yani sunucu güncellenince eski pakette analitik hiç açılamaz. Soru ekranı yeni web istemcisinde ve bir sonraki pakette görünür.
+- **Dosyalar:** `server/app/player_settings.py`, `server/app/player_data_store.py`, `server/app/main.py`; `client/index.html`, `client/src/app.js`, `client/src/relay-client.js`, `client/src/canon.css`, `client/src/i18n-catalog.js`; gizlilik metni `public-site/content.js` (iki dil).
+- **Testler:** `server/tests/test_analytics_age_gate.py` (14 test), `client/tests/analytics-age-gate.test.js`, `tools/tests/public-site.test.js` (metin ve metnin anlattığı kod). Sunucu 1209 geçti, 38 atlandı; istemci 236/236; araçlar 32/32.
+- **Tarayıcıda denendi** (geçici betik, depoda değil; yalıtılmış yerel sunucu, telefon boyutunda Chrome): izin kapalı gelir; kutuyu işaretleyince soru açılır ve yanıt gelene kadar istek gitmez; iki rakamlı yıl kabul edilmez; yetişkin yanıtıyla açılır, yanıtta ve cihazda doğum yılı yoktur; kapatıp açınca yeniden sorulmaz; küçük yanıtıyla kutu kilitlenir, sayfa yenilenince kilit sürer, yetişkin yılı elle gönderilse de açılmaz; 360 ve 320 px genişlikte taşma yok; İngilizce metinler çevrili.
+- **Yayın için gerekenler:** sunucu güncellemesi (web istemcisi onunla birlikte gelir), güncel gizlilik metniyle site paketi ve soru ekranı için yeni uygulama paketi. Hiçbiri yapılmadı.
+- **Sınırlar:** yanıt oyuncunun beyanıdır, doğrulanmaz. Oyun verisini silip yeni misafir hesap açan oyuncuya soru yeniden sorulur.
+
+### Soğuk açılış ölçümü (v3 paketi, emülatör, 6 Ekim gecesi)
+
+Soru: paket ilk kez açıldığında, oyuncu hiçbir şeye dokunmadan, uygulama kimlere bağlanıyor?
+
+- **Düzen:** yeni kurulmuş geçici bir emülatör (Android 16, Google Play imajı, Google hesabı yok; ölçümden sonra silindi, kullanıcının emülatörüne dokunulmadı). Cihazın sistem vekili bu bilgisayardaki küçük bir kayıt vekiline yönlendirildi; vekil yalnız hedef adını ve tarayıcı kimliğini görür, şifreli içeriği açmaz. **Oyun sunucusunun adresi vekilde reddedildi**; böylece canlı sunucuda hesap oluşmadı ve uygulama açılış ekranında "Bağlantı tamamlanamadı" durumunda kaldı. Sıra: 150 sn boşta kayıt → v3 kurulumu → 60 sn bekleme → uygulamayı açma → dokunmadan 90 sn.
+- **Uygulamanın kendi kullanıcı kimliğiyle (UID) aktardığı toplam veri** (Android'in ağ sayaçları; vekilden geçsin geçmesin hepsini sayar): yaklaşık 7,3 KB alındı, 4,7 KB gönderildi; 28 ve 27 paket.
+- **Uygulamanın web görünümünden çıkan bağlantılar** (tarayıcı kimliğinde `wv`): oyun sunucusuna 2 deneme (reddedildi) ve `content-autofill.googleapis.com` adresine 1 bağlantı. Başka yok.
+- **Görülmeyenler:** reklam sunumu ve ölçümü adresleri (`doubleclick.net`, `googlesyndication.com`, `app-measurement.com`, `googleadservices.com`), Firebase kurulum kaydı (`firebaseinstallations.googleapis.com`) ve yazı tipi adresleri uygulama açıkken hiç istenmedi. Uygulamanın toplam veri miktarı da bunlara yer bırakmıyor.
+- **Bulgu — web görünümünün otomatik doldurma sorgusu:** `content-autofill.googleapis.com`, Android'in sistem web görünümünün (Chromium) sayfadaki form alanlarının türünü tahmin etmek için Google'a yaptığı sorgudur; paketteki bir SDK'dan değil, cihazın web görünümünden gelir ve uygulamanın kimliğiyle gider. Gönderilen şey alanların yapısından üretilen imzalardır; oyuncunun yazdığı değer gitmez (Chromium'un bilinen davranışı; bu ölçümde içerik açılmadı, yalnız bağlantı görüldü). Düşük riskli, ama çocuk kitlesi için gereksiz: sonraki pakette web görünümünde otomatik doldurma kapatılarak kaldırılabilir (`importantForAutofill`), sonra aynı ölçümle doğrulanır. **Yapılmadı.**
+- **Ayırt edilemeyenler:** cihazdaki Google Play hizmetleri bu 90 saniyede Google adreslerine bağlanmayı sürdürdü (`play.googleapis.com`, `www.googleapis.com`, `android.googleapis.com`, güncelleme indirmeleri). Aynı adresler uygulama kurulmadan önceki boşta kayıtta da var; bunlar Play hizmetlerinin kendi kimliğiyle gider ve hangisinin uygulama açıldığı için yapıldığı bu yöntemle ayırt edilemez. Play Games, bildirim ve ödeme SDK'ları Google'la bu yoldan konuşur.
+- **Sınırlar:** emülatör, gerçek cihaz değil; Google hesabı yoktu (Play Games'in hesaplı davranışı ölçülmedi); oyun sunucusu kapalı tutulduğu için giriş sonrası ekranlar ölçülmedi; yalnız ilk 90 saniye. Emülatörün paket kaydı (`-tcpdump`) boş çıktı, kullanılmadı.
+- Kanıt dosyaları `artifacts/android-production-20261006-v3/cold-start-measurement/` altında (git'te izlenmez): vekil kaydı, zaman işaretleri, ağ sayaçları, ekran görüntüsü.
+
+### Mağaza: olasılıkların yeri ve hediye düğmesi (6 Ekim gecesi; uygulandı, yayınlanmadı)
+
+Kullanıcı kararı: ayrı "Hediye Sandık" bölümü kalksın, hediye düğmesi satın alınan Bronz Sandık kartına gelsin; olasılıklar sandık bölümünün sağ üst köşesindeki küçük "ÖDÜL LİSTESİ" sekmesinden açılsın ve pencere boş yere dokununca kapansın.
+
+- **Olasılıklar hâlâ satın almadan önce, satın alma düğmesinin yanında:** her karttaki özet satırı ("Modül parçası %35") satın alma düğmesinin hemen üstünde duruyor. Tam tablo artık kart başına ayrı düğmeyle değil, aynı bölümdeki tek sekmeyle açılıyor ve dört sandığı tek listede gösteriyor. Kartlardaki "OLASILIKLAR" düğmesi kaldırıldı (yukarıdaki "Sandık olasılıkları" maddesindeki düzen bununla değişti).
+- Tablonun içeriği ve sunucu denetimi değişmedi (`_chest_store_view`, `server/tests/test_chest_odds_disclosure.py`).
+- **Yorum payı:** sekmenin adı "Ödül Listesi"; "olasılık" sözcüğü sekmede değil, pencerenin üst yazısında ("İÇERİK VE OLASILIKLAR") ve kartlardaki yüzdelerde geçiyor. Ödeme politikası olasılıkların satın almadan önce ve satın almaya yakın bir yerde açıkça gösterilmesini ister. Claude'un okuması kartlardaki yüzde satırının bunu karşıladığı yönünde; bu bir uyum belgesi değildir.
+- Hediye sandığı ücretsizdir ve 8 saatte bir alınır; düğmesi satın alma düğmesinden ayrı renkte ve altındadır, beklerken kapalıdır ve kalan süreyi yazar.
+- Dosyalar, testler ve tarayıcı doğrulaması `CLAUDE_CHECKPOINT.md` içindedir.
+
+### Veri güvenliği formu için cevap listesi (Claude, 7 Ekim)
+
+Kullanıcı Play Console'da Veri güvenliği formuna geldi. Liste koddan, gizlilik metninden ve Google'ın 7 Ekim'de okunan sayfalarından çıkarıldı: [form yardımı ve tanımlar](https://support.google.com/googleplay/android-developer/answer/10787469?hl=tr), [AdMob](https://developers.google.com/admob/android/privacy/play-data-disclosure), [Firebase](https://firebase.google.com/docs/android/play-data-disclosure), [Play Games](https://developer.android.com/games/pgs/data-collection). Form geliştiricinin beyanıdır; Google'ın sayfası sorumluluğun geliştiricide olduğunu söyler. Bu liste öneridir.
+
+**Adım 2 (Veri toplama ve güvenlik)** — kullanıcının ekranındaki yanıtlar kodla uyuşuyor: veri toplanıyor (Evet); aktarım şifreli (Evet: manifestte `usesCleartextTraffic="false"`, API adresi yalnız HTTPS); hesap oluşturma yöntemi OAuth ve Diğer (misafir profil); hesap silme adresi `/delete-account/` (sayfa sitede var); hesabı silmeden veri silme Evet ve `/privacy/`. Son yanıt için gizlilik metnine adımları açıkça yazan bir paragraf eklendi (`public-site/content.js`, iki dil; **site yeniden yayınlanınca görünür**): analitik kayıtları izin kapatılınca silinir, diğer veriler için e-postayla talep. Bu, kısmi silme taleplerinin elle karşılanacağı anlamına gelir.
+
+**Adım 3–4 (Veri türleri, kullanım ve işleme)** — hiçbiri "kısa süreli" değil:
+
+| Veri türü | Toplanıyor | Paylaşılıyor | Zorunlu mu | Amaç | Dayanak |
+| --- | --- | --- | --- | --- | --- |
+| Yaklaşık konum | Evet | Evet | İsteğe bağlı | Reklam veya pazarlama; Analiz; Sahtekarlığı önleme | Yalnız reklam: AdMob IP adresinden genel konum tahmin edebilir |
+| Ad | Evet | Hayır | İsteğe bağlı | Uygulama işlevselliği; Hesap yönetimi | Oyuncu adı (takma ad). Hesap "Pilot-XXXX" otomatik adıyla açılır; oyuncu isterse kendi adını yazar |
+| E-posta adresi | Evet | Hayır | İsteğe bağlı | Hesap yönetimi | Hesap kurtarma kutusu; eski bağlı e-postalar saklı |
+| Kullanıcı kimlikleri | Evet | Hayır | Zorunlu | Uygulama işlevselliği; Hesap yönetimi; Sahtekarlığı önleme, güvenlik | Oyuncu kimliği; Google, Apple, Play Games hesap kimliği |
+| Telefon numarası | Evet | Hayır | İsteğe bağlı | Hesap yönetimi | Hesap kurtarma kutusu |
+| Diğer bilgiler | Evet | Hayır | İsteğe bağlı | Sahtekarlığı önleme, güvenlik ve kanunlara uygunluk | Analitik yaş sorusu: doğum yılı gönderilir, sonucu saklanır (r13 ile) |
+| İşlem geçmişi | Evet | Hayır | İsteğe bağlı | Uygulama işlevselliği; Sahtekarlığı önleme, güvenlik | Satın alma doğrulaması: ürün ve işlem kimlikleri (ödeme açılınca) |
+| Diğer uygulama içi mesajlar | Evet | Hayır | İsteğe bağlı | Uygulama işlevselliği | Takım sohbeti ve özel mesaj kayıtları |
+| Uygulama işlemleri | Evet | Evet | Zorunlu | Analiz; Reklam veya pazarlama; Sahtekarlığı önleme | İşletim telemetrisi (`/telemetry/events`), izinli analitik; paylaşım yalnız AdMob |
+| Kullanıcı tarafından oluşturulan diğer içerikler | Evet | Hayır | İsteğe bağlı | Uygulama işlevselliği; Sahtekarlığı önleme, güvenlik | Şikâyet açıklaması (serbest yazı), takım adı |
+| Diğer işlemler | Evet | Hayır | Zorunlu | Uygulama işlevselliği; Analiz | Oyun ilerlemesi, maç sonuçları, sosyal işlemler |
+| Teşhisler | Evet | Evet | Zorunlu | Analiz; Reklam veya pazarlama; Sahtekarlığı önleme | Savaş performans örnekleri; SDK teşhisleri; paylaşım yalnız AdMob |
+| Cihaz veya diğer kimlikler | Evet | Evet | Zorunlu | Uygulama işlevselliği; Hesap yönetimi; Sahtekarlığı önleme, güvenlik; Reklam veya pazarlama; Analiz | Uygulamanın ürettiği cihaz kimliği; bildirim jetonu ve Firebase kurulum kimliği; AdMob uygulama grubu kimliği |
+
+Paylaşılan dört türde paylaşma amacı: Reklam veya pazarlama; Analiz; Sahtekarlığı önleme (AdMob'un kendi açıklaması bu üç amacı sayar).
+
+- **Bilerek önceden beyan edilenler:** reklam ve gerçek ödeme sunucudan açılır, yeni paket gerekmez; bu yüzden AdMob'un topladıkları ve işlem geçmişi şimdiden listede. Analitik yaş sorusu r13 ile canlıya çıkar. Reklam beyanı ("uygulama reklam içerir") zaten Evet.
+- **İşaretlenmeyenler:** kilitlenme günlükleri (uygulama kilitlenme raporu göndermiyor), uygulama içi arama geçmişi (oyuncu arama sorgusu saklanmıyor), kullanıcı ödeme bilgileri (kart bilgisi Google Play'de kalır), tam konum, kişiler, fotoğraf, ses, dosya, takvim, sağlık, web geçmişi, yüklü uygulamalar.
+- **Paylaşım sayılmayanlar:** AWS (barındırma), Cloudflare (ağ), Firebase (bildirim teslimi) geliştirici adına işleyen servis sağlayıcılardır. Oyuncu adının ve mesajların diğer oyunculara görünmesi kullanıcının başlattığı işlemdir.
+- **Sonradan değişebilecekler:** hesap kurtarma kutusu kaldırılır ve eski e-postalar silinirse e-posta ve telefon listeden çıkar. Kişiselleştirilmiş reklam açılırsa reklam kimliği beyanı ve izin birlikte değişir. Reklam hiç açılmayacaksa yaklaşık konum ve dört türdeki paylaşım çıkar.
+
+### Açık kalanlar (güncel)
+
+1. Web görünümünün otomatik doldurma sorgusunu sonraki pakette kapatmak ve ölçümü yinelemek; ölçümü gerçek cihazda ve Google hesabıyla yinelemek (yapılabilirse).
+2. Analitik yaş sorusunun yayınlanması (sunucu, site, paket).
+3. Hukuki değerlendirme: oyun ebeveyn izni almıyor, izin gerektirecek veriyi toplamamaya çalışıyor; bunun yeterliliği hukuki bir yargıdır.
+4. Önceki bölümlerdeki maddeler geçerli: saklanan eski e-postalar ve serbest metinler, ad süzgecinin ve ebeveyn denetiminin sınırları, hazır mesaj için sunucu hız sınırı, Google/Apple girişinin gerçek sağlayıcıya karşı denenmesi, gerçek cihaz denemeleri.

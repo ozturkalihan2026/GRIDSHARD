@@ -510,7 +510,6 @@ body[data-app-screen="play"] .power-state-chip { display:none !important; }
 .module-talent-choices button:disabled { opacity:.6;filter:grayscale(.45); }
 
 /* Four canonical chest tiers and their opening scene. */
-.gift-chest-list { grid-template-columns:repeat(2,minmax(0,1fr)) !important; }
 .shop-chest-card[data-tier="bronze"] { border-color:rgba(206,125,73,.62); }
 .shop-chest-card[data-tier="silver"] { border-color:rgba(195,219,238,.65); }
 .shop-chest-card[data-tier="gold"] { border-color:rgba(255,216,89,.68); }
@@ -921,7 +920,6 @@ body[data-home-matchmaking="true"] .play-online-panel { visibility:hidden !impor
   background:rgba(11,35,54,.92);
 }
 .home-core-hero-copy { top:48px !important; }
-.chest-countdown { color:#ffe17a !important; font:800 .42rem var(--gs-font-display); letter-spacing:.04em; }
 .shop-chest-card > button:disabled { color:#8fa4b8; border-color:#38536d; background:#10263d; }
 .rewards-hub-links { display:grid; gap:12px; margin:auto 0; }
 .rewards-hub-links button { min-height:96px; padding:18px; display:grid; place-items:center; text-align:center; border:1px solid rgba(89,226,216,.35); border-radius:16px; background:linear-gradient(135deg,#163d5c,#0a1c35); color:#f3fbff; box-shadow:0 8px 22px rgba(0,0,0,.2); }
@@ -4464,6 +4462,10 @@ body:not([data-app-screen="play"]) .app-progress-ribbon #reward-inbox-button {
   padding:3px;
   display:grid;
   grid-template-columns:repeat(4,minmax(0,1fr));
+  /* Satırlar içerik kadar yüksek olur. Bu olmadan yükseklik sınırı satırları
+     kutucuğun en küçük yüksekliğinde tutar; Android web görünümü 8 pikselden
+     küçük yazıyı büyüttüğünde sıkışan satır modül adı olur ve alttan kesilir. */
+  grid-auto-rows:max-content;
   gap:7px;
   overflow-y:auto;
   overscroll-behavior:contain;
@@ -4498,15 +4500,18 @@ body:not([data-app-screen="play"]) .app-progress-ribbon #reward-inbox-button {
 .team-request-module:focus-visible { outline:2px solid #fff0a0;outline-offset:2px; }
 .team-request-module strong {
   max-width:100%;
+  /* Ad satırı küçülmez: taşmayı gizleyen öğenin en küçük yüksekliği sıfır
+     sayıldığı için, yer daralınca ilk sıkışan satır bu olurdu. */
+  min-height:min-content;
   display:-webkit-box;
   overflow:hidden;
   color:#f4f8fd;
-  font:800 .46rem/1.2 var(--gs-font-display);
+  font:800 .5rem/1.25 var(--gs-font-display);
   overflow-wrap:anywhere;
   -webkit-box-orient:vertical;
   -webkit-line-clamp:2;
 }
-.team-request-module small { color:var(--rarity-accent);font:800 .4rem var(--gs-font-display);letter-spacing:.04em; }
+.team-request-module small { color:var(--rarity-accent);font:800 .5rem var(--gs-font-display);letter-spacing:.04em; }
 .team-request-module em { color:#b7cbdc;font:700 .56rem var(--gs-font-copy);font-style:normal; }
 .team-request-module-progress {
   position:absolute;
@@ -5514,13 +5519,12 @@ body[data-app-screen="play"] .vertical-circuit-arena .module-card.has-heat-bar >
 
 /* === Beta.72 mobil tur 9 ================================================== */
 
-/* --- Mağaza: tek hediye sandığı, sandık mağazası, ücretli alım --------------- */
-.gift-chest-list { grid-template-columns:minmax(0,1fr) !important; }
-.gift-chest-card { grid-template-columns:52px minmax(0,1fr) minmax(118px,auto);align-items:center;justify-items:start;text-align:left;padding:9px 10px; }
-.gift-chest-card > .shop-chest-actions { grid-column:3;grid-row:1 / span 2; }
-.gift-chest-card > .chest-visual { grid-row:1 / span 2; }
+/* --- Mağaza: sandık mağazası (hediye düğmesi Bronz Sandık kartında), ücretli alım --- */
 .chest-store-list { display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px; }
-.chest-store-card { position:relative; }
+/* Hediye düğmesi Bronz kartı uzatır; aynı sıradaki kartın içeriği gerilmez,
+   üstten dizilir ve satın alma düğmeleri aynı hizada kalır. */
+.chest-store-card { position:relative;align-content:start; }
+.chest-store-card > strong { line-height:1.2; }
 .chest-store-card[data-sale="true"]::before {
   content:"%40";
   position:absolute;
@@ -6588,6 +6592,21 @@ body[data-app-screen="modules"] .module-collection-grid {
 }
 .collection-module-tile .unified-module-selected { top:3px; right:3px; }
 
+/* Karta dokununca altında açılan Bilgi / Seç kutusu. Genişliği kartla aynıdır
+   (positionQuickActions); yazı ve düğmeler kartın yanında küçük kalmasın diye
+   parmakla basılacak boydadır. */
+.module-quick-actions { padding:7px;gap:6px; }
+.module-quick-actions strong {
+  overflow:visible;
+  color:#f3f9ff;
+  font-size:.58rem;
+  line-height:1.2;
+  text-overflow:clip;
+  white-space:normal;
+  overflow-wrap:anywhere;
+}
+.module-quick-actions button { min-height:38px;padding:6px 4px;font-size:.6rem;letter-spacing:.02em; }
+
 /* Takım: takımı olmayan oyuncu için liste ve oluşturma sekmeleri. */
 .team-onboarding { align-content:start; }
 .friends-tabs.team-lobby-tabs { grid-template-columns:repeat(2,minmax(0,1fr)); }
@@ -7034,6 +7053,25 @@ body[data-app-screen="play"] .module-shelf .module-card.deck-module-card > .name
 .parental-controls-form input[hidden] { display:none; }
 .parental-controls-form button { grid-column:1 / -1;min-height:44px; }
 #parental-controls-status { min-height:1.2em;margin:0;color:#ffe2a0;font-size:.8rem;line-height:1.4; }
+/* Ürün analitiği yaş sorusu: izin kutusunun hemen altında açılır. */
+.analytics-age-panel { display:grid;gap:6px; }
+.analytics-age-panel[hidden] { display:none; }
+.analytics-age-panel > label { color:#b6cddd;font-size:.8rem;line-height:1.4; }
+.analytics-age-form { display:grid;grid-template-columns:minmax(0,1fr) auto auto;gap:6px; }
+.analytics-age-form input {
+  min-width:0;
+  min-height:44px;
+  padding:0 10px;
+  border:1px solid #2b6075;
+  border-radius:9px;
+  color:#edfaff;
+  background:#07192d;
+  font:700 .9rem var(--gs-font-copy);
+}
+.analytics-age-form button { min-height:44px;padding:0 12px; }
+#analytics-age-status { color:#ffe2a0; }
+#analytics-age-status[hidden] { display:none; }
+#settings-analytics-consent:disabled { opacity:.5; }
 .friends-social-closed {
   margin:0;
   padding:9px 11px;
@@ -7045,9 +7083,38 @@ body[data-app-screen="play"] .module-shelf .module-card.deck-module-card > .name
   line-height:1.4;
 }
 .friends-social-closed[hidden] { display:none; }
-/* Mağaza sandıklarının olasılıkları: kartta özet, düğmeyle tam tablo. */
+/* Mağaza sandıklarının olasılıkları: kartta özet, ÖDÜL LİSTESİ sekmesiyle tam tablo. */
 .chest-store-odds { color:#b6cddd;font-size:.5rem;line-height:1.35;text-align:center; }
-.shop-chest-actions > .chest-odds-action { min-height:34px;border-color:#2f6f86;color:#a9dff0;background:#0a2238;font-size:.44rem; }
+/* Ödül listesi sekmesi: sandık bölümünün sağ üst köşesinde, kenardan dışarı
+   çıkan küçük bir sekme. Dokunma alanı görünen düğmeden geniştir. */
+.chest-store-section { position:relative;margin-top:24px; }
+.chest-odds-tab {
+  position:absolute;
+  top:-23px;
+  right:14px;
+  z-index:1;
+  min-height:24px;
+  padding:0 11px;
+  border:1px solid rgba(84,232,217,.5);
+  border-bottom:0;
+  border-radius:9px 9px 0 0;
+  color:#a9f3e6;
+  background:linear-gradient(180deg,#123a52,#0a2238);
+  font:900 .5rem var(--gs-font-display);
+  letter-spacing:.06em;
+}
+.chest-odds-tab[hidden] { display:none; }
+.chest-odds-tab::after { content:"";position:absolute;inset:-12px -10px -8px; }
+.shop-gift-note { margin:8px 0 0;color:#8ea8c0;font-size:.55rem;line-height:1.35;text-align:center; }
+.shop-chest-actions > .gift-chest-action:disabled { border-color:#38536d;color:#8fa4b8;background:#10263d; }
+.chest-odds-groups { margin:0 0 10px;display:grid;gap:12px;max-height:min(54dvh,440px);overflow-y:auto;overscroll-behavior:contain;padding-right:2px; }
+.chest-odds-group { display:grid;gap:6px;padding-left:9px;border-left:3px solid rgba(89,170,224,.5); }
+.chest-odds-group[data-tier="bronze"] { border-left-color:rgba(206,125,73,.85); }
+.chest-odds-group[data-tier="silver"] { border-left-color:rgba(195,219,238,.85); }
+.chest-odds-group[data-tier="gold"] { border-left-color:rgba(255,216,89,.9); }
+.chest-odds-group[data-tier="diamond"] { border-left-color:rgba(85,239,255,.9); }
+.chest-odds-group h3 { margin:0;color:#edf7ff;font:900 .66rem var(--gs-font-display); }
+.chest-odds-group .chest-odds-list { margin:0; }
 .chest-odds-dialog { width:min(380px,92vw);max-height:calc(100dvh - 24px);padding:18px 16px 14px;border:1px solid rgba(84,232,217,.35);border-radius:16px;color:#e8f6ff;background:linear-gradient(180deg,#0b2240,#07142b);overflow:auto; }
 .chest-odds-dialog::backdrop { background:rgba(2,8,20,.72); }
 .chest-odds-kicker { color:#69e5d3;font:800 .5rem var(--gs-font-display);letter-spacing:.09em; }

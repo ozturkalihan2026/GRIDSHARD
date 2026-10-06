@@ -20,8 +20,11 @@ from .player_profile import (
     PlayerProfileService,
 )
 from .player_settings import (
+    ANALYTICS_AGE_ADULT,
+    ANALYTICS_AGE_MINOR,
     PlayerSettings,
     PlayerSettingsService,
+    analytics_enabled,
 )
 from .player_statistics import (
     PlayerStatistics,
@@ -1160,5 +1163,13 @@ class PlayerDataStoreService:
             language=str(
                 data["language"]
             ),
-            analytics_consent=data.get("analytics_consent") is True,
+            # Yaş sorusundan önce verilmiş izin geçerli sayılmaz; oyuncu
+            # yeniden açmak isterse soru sorulur (player_settings.py).
+            analytics_consent=analytics_enabled(data),
+            analytics_age_gate=(
+                data.get("analytics_age_gate")
+                if data.get("analytics_age_gate") in (ANALYTICS_AGE_ADULT, ANALYTICS_AGE_MINOR)
+                else ""
+            ),
+            analytics_age_asked_year=int(data.get("analytics_age_asked_year") or 0),
         )

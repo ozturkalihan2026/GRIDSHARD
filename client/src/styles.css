@@ -8467,7 +8467,6 @@ body[data-home-matchmaking="true"] #app-bottom-dock { visibility:hidden !importa
 .mobile-section-heading { margin-bottom:9px; }
 .mobile-section-heading h3 { font-size:.82rem; }
 .mobile-section-heading small { color:#829ab3; font-size:.58rem; }
-.gift-chest-list { display:grid; grid-template-columns:repeat(3,1fr); gap:7px; }
 .shop-chest-card {
   min-width:0;
   padding:9px 5px 6px;

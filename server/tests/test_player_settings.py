@@ -40,6 +40,8 @@ def test_update_all_basic_preferences():
         graphics_quality="orta",
         language="en",
         analytics_consent=True,
+        analytics_birth_year=1990,
+        current_year=2026,
     )
 
     assert settings.sound_volume==40

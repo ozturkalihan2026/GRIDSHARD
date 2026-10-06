@@ -174,9 +174,13 @@ test("both privacy translations describe the limits the game enforces for all pl
   assert.match(en, /does not contact a third-party font service at startup/);
   assert.match(tr, /çocuklara yönelik, genel izleyiciye uygun ve kişiselleştirilmemiş/);
   assert.match(en, /child-directed, suitable for general audiences and non-personalised/);
-  // No age question; the section describes the implementation only.
-  assert.match(tr, /Oyun oyuncunun yaşını sormaz/);
-  assert.match(en, /does not ask for a player’s age/);
+  // Age is asked in one place only: before optional analytics can be turned on.
+  assert.match(tr, /Oyun oynamak için yaş sorulmaz/);
+  assert.match(en, /You are not asked for your age to play/);
+  assert.match(tr, /önce doğum yılın sorulur; yıl saklanmaz/);
+  assert.match(en, /first asked for your year of birth; the year is not stored/);
+  assert.match(tr, /18 yaşından küçükler için analitik açılmaz/);
+  assert.match(en, /Analytics is not turned on for players under 18/);
   assert.match(tr, /Bu bölüm teknik uygulamayı anlatır/);
   assert.match(en, /This section describes the technical implementation/);
   for (const html of [tr, en]) assert.doesNotMatch(html, /COPPA|GDPR|uyumludur|is compliant|complies with/);
@@ -195,6 +199,12 @@ test("the privacy statements above still match the code they describe", () => {
   assert.ok(gateway.includes("_require_social_open(player_id, request.recipient_id.strip())"));
   assert.ok(read("server", "app", "safe_chat.py").includes("def require_preset_message"));
   assert.ok(read("server", "app", "text_safety.py").includes("def public_name_rejection"));
+  // Analytics needs an adult answer to the birth-year question; the year itself is never stored.
+  const settings = read("server", "app", "player_settings.py");
+  assert.ok(settings.includes("ANALYTICS_MINIMUM_AGE = 18"));
+  assert.ok(settings.includes('and settings.get("analytics_age_gate") == ANALYTICS_AGE_ADULT'));
+  assert.doesNotMatch(settings.slice(settings.indexOf("class PlayerSettings:"), settings.indexOf("class PlayerSettingsError")), /birth/);
+  assert.ok(gateway.includes("and analytics_enabled(snapshot.settings)"));
   // The parental passcode is stored as a salted digest only.
   assert.ok(platform.includes('"pin_hash": self._parental_pin_hash(pin, salt)'));
   // The client loads no external typeface or script.

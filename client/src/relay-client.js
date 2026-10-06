@@ -830,6 +830,15 @@
           this.settings.language,
         analyticsConsent:
           this.settings.analytics_consent === true,
+        // Analitiği açmadan önce doğum yılı sorulur; karar sunucudadır.
+        // "adult": soru yanıtlandı, izin serbestçe açılıp kapanır.
+        // "minor": sorulduğu takvim yılı boyunca açılamaz.
+        analyticsAgeGate:
+          ["adult", "minor"].includes(this.settings.analytics_age_gate)
+            ? this.settings.analytics_age_gate
+            : "",
+        analyticsAgeAskedYear:
+          Number(this.settings.analytics_age_asked_year) || 0,
       };
     }
   }

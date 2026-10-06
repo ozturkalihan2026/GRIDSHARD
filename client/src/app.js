@@ -257,6 +257,8 @@
     graphics_quality: "yuksek",
     language: "tr",
     analytics_consent: false,
+    analytics_age_gate: "",
+    analytics_age_asked_year: 0,
   });
 
   // Grafik kademesi. Sunucudaki ayar hesapla birlikte her cihaza taşınır;
@@ -2380,15 +2382,8 @@
     for (const tile of document.querySelectorAll(".collection-module-tile")) {
       tile.classList.toggle("is-focused", tile === anchor);
     }
-    const screen = document.getElementById("modules-screen");
-    if (screen) {
-      const screenRect = screen.getBoundingClientRect();
-      const anchorRect = anchor.getBoundingClientRect();
-      const panelWidth = Math.max(anchorRect.width + 12, panel.offsetWidth || 0);
-      const proposedLeft = anchorRect.left - screenRect.left + screen.scrollLeft - ((panelWidth - anchorRect.width) / 2);
-      panel.style.left = `${Math.max(4, Math.min(screen.scrollWidth - panelWidth - 4, proposedLeft))}px`;
-      panel.style.top = `${anchorRect.bottom - screenRect.top + screen.scrollTop - 3}px`;
-    }
+    // Kutu en az kart genişliğindedir ve kartın altına ortalanır (çekirdeklerle aynı kural).
+    positionQuickActions(panel, anchor, document.getElementById("modules-screen"));
   }
 
   function sortModuleCollection(items) {
@@ -2456,7 +2451,6 @@
     };
     setText("shop-flux-balance", `${state.flux_shards || 0} Akı`);
     setText("shop-credit-balance", `${state.circuit_credits || 0} DK`);
-    const giftHost = document.getElementById("gift-chest-list");
     const inventory = state.chests?.inventory || [];
     const slots = state.chests?.slots || [];
     const ownedChests = (definitionId) => inventory.find((item) => item.definition_id === definitionId) || {
@@ -2464,44 +2458,11 @@
       openable_count: slots.filter((slot) => slot.definition_id === definitionId).length,
       locked_count: 0,
     };
-    if (giftHost) {
-      giftHost.replaceChildren();
-      // Hediye olarak yalnız Bronz Sandık kalır; 8 saatte bir yenilenir.
-      const giftDefinitions = (state.chests?.definitions || []).filter(
-        (definition) => definition.gift ?? definition.id === "field_3h"
-      );
-      for (const definition of giftDefinitions) {
-        const card = document.createElement("article");
-        card.className = "shop-chest-card gift-chest-card";
-        const tier = chestTier(definition);
-        card.dataset.tier = tier;
-        const remaining = Math.max(0, Number(definition.claim_remaining_seconds || 0));
-        card.dataset.definitionId = definition.id;
-        card.dataset.claimRemaining = String(remaining);
-        card.innerHTML = `${chestVisualMarkup(tier)}<strong>${definition.name_tr}</strong>`;
-        if (remaining > 0) {
-          const countdown = document.createElement("small");
-          countdown.className = "chest-countdown";
-          countdown.textContent = "Yenilenmesine " + formatChestCountdown(remaining);
-          card.appendChild(countdown);
-        }
-        const actions = document.createElement("div");
-        actions.className = "shop-chest-actions";
-        const giftAction = document.createElement("button");
-        giftAction.type = "button";
-        giftAction.className = "gift-chest-action";
-        giftAction.textContent = remaining > 0 ? formatChestCountdown(remaining) : "HEDİYE SANDIK AÇ";
-        giftAction.disabled = Boolean(
-          state.unavailable
-          || remaining > 0
-          || definition.claim_available === false
-        );
-        giftAction.addEventListener("click", () => claimGiftChest(definition.id));
-        actions.appendChild(giftAction);
-        card.appendChild(actions);
-        giftHost.appendChild(card);
-      }
-    }
+    // Hediye olarak yalnız Bronz Sandık verilir; 8 saatte bir yenilenir. Ayrı bir
+    // bölümü yoktur: düğmesi, satın alınan Bronz Sandık kartında durur.
+    const giftDefinitions = (state.chests?.definitions || []).filter(
+      (definition) => definition.gift ?? definition.id === "field_3h"
+    );
     const chestStore = state.shop?.chest_store || null;
     const saleCopy = document.getElementById("chest-store-sale");
     if (saleCopy) {
@@ -2552,13 +2513,23 @@
         buy.disabled = Boolean(state.unavailable || Number(state[item.currency] || 0) < Number(item.cost));
         buy.addEventListener("click", () => buyStoreChest(item.definition_id));
         actions.appendChild(buy);
-        if (oddsSummary) {
-          const oddsAction = document.createElement("button");
-          oddsAction.type = "button";
-          oddsAction.className = "chest-odds-action";
-          oddsAction.textContent = "OLASILIKLAR";
-          oddsAction.addEventListener("click", () => openChestOdds(item.definition_id));
-          actions.appendChild(oddsAction);
+        const gift = giftDefinitions.find((definition) => definition.id === item.definition_id);
+        if (gift) {
+          const remaining = Math.max(0, Number(gift.claim_remaining_seconds || 0));
+          // Geri sayım zamanlayıcısı kartı bu iki öznitelikle bulur.
+          card.dataset.definitionId = gift.id;
+          card.dataset.claimRemaining = String(remaining);
+          const giftAction = document.createElement("button");
+          giftAction.type = "button";
+          giftAction.className = "gift-chest-action";
+          giftAction.textContent = giftChestActionLabel(remaining);
+          giftAction.disabled = Boolean(
+            state.unavailable
+            || remaining > 0
+            || gift.claim_available === false
+          );
+          giftAction.addEventListener("click", () => claimGiftChest(gift.id));
+          actions.appendChild(giftAction);
         }
         if (ownedCount > 0) {
           const openAllAction = document.createElement("button");
@@ -2573,9 +2544,20 @@
         storeHost.appendChild(card);
       }
     }
+    const oddsTab = document.getElementById("chest-odds-open");
+    if (oddsTab) {
+      oddsTab.hidden = !(chestStore?.items || []).some((item) => chestOddsSummary(item));
+      oddsTab.onclick = openChestOdds;
+    }
     renderPaidStore();
     ensureShopCountdownTimer();
  }
+
+  function giftChestActionLabel(remainingSeconds) {
+    return remainingSeconds > 0
+      ? `HEDİYE · ${formatChestCountdown(remainingSeconds)}`
+      : "HEDİYE SANDIK AÇ";
+  }
 
   // Mağaza sandığının içerik olasılıkları. Sunucudan gelir ve satın almadan
   // önce, satın alma düğmesinin yanında gösterilir (Google Play ödeme
@@ -2625,24 +2607,40 @@
     return lines;
   }
 
-  function openChestOdds(definitionId) {
-    const item = metaProgressionState?.shop?.chest_store?.items?.find(
-      (entry) => entry.definition_id === definitionId
-    );
+  // Ödül listesi: mağazadaki bütün sandıkların içeriği ve olasılıkları tek pencerede.
+  function openChestOdds() {
+    const items = (metaProgressionState?.shop?.chest_store?.items || [])
+      .filter((item) => chestOddsSummary(item));
     const dialog = document.getElementById("chest-odds-dialog");
-    const list = document.getElementById("chest-odds-list");
-    if (!item || !dialog || !list || !chestOddsSummary(item)) return;
-    const title = document.getElementById("chest-odds-title");
-    if (title) title.textContent = item.name_tr || "Sandık";
-    list.replaceChildren(...chestOddsLines(item).map((line) => {
-      const row = document.createElement("li");
-      if (line.nested) row.className = "is-nested";
-      row.textContent = line.text;
-      return row;
+    const host = document.getElementById("chest-odds-list");
+    if (!items.length || !dialog || !host) return;
+    host.replaceChildren(...items.map((item) => {
+      const group = document.createElement("section");
+      group.className = "chest-odds-group";
+      group.dataset.tier = item.tier;
+      const heading = document.createElement("h3");
+      heading.textContent = item.name_tr || "Sandık";
+      const list = document.createElement("ul");
+      list.className = "chest-odds-list";
+      list.replaceChildren(...chestOddsLines(item).map((line) => {
+        const row = document.createElement("li");
+        if (line.nested) row.className = "is-nested";
+        row.textContent = line.text;
+        return row;
+      }));
+      group.append(heading, list);
+      return group;
     }));
+    host.scrollTop = 0;
     const close = document.getElementById("chest-odds-close");
     if (close) close.onclick = () => dialog.close();
-    dialog.onclick = (event) => { if (event.target === dialog) dialog.close(); };
+    // Pencerenin dışındaki boş yere dokunmak kapatır; içine dokunmak kapatmaz.
+    dialog.onclick = (event) => {
+      const box = dialog.getBoundingClientRect();
+      const inside = event.clientX >= box.left && event.clientX <= box.right
+        && event.clientY >= box.top && event.clientY <= box.bottom;
+      if (!inside) dialog.close();
+    };
     if (!dialog.open) dialog.showModal();
   }
 
@@ -2666,14 +2664,12 @@
         const previous = Math.max(0, Number(card.dataset.claimRemaining || 0));
         const next = Math.max(0, previous - 1);
         card.dataset.claimRemaining = String(next);
-        const countdown = card.querySelector(".chest-countdown");
         const button = card.querySelector(".gift-chest-action");
-        if (countdown) countdown.textContent = "Yenilenmesine " + formatChestCountdown(next);
+        if (button && next > 0) button.textContent = giftChestActionLabel(next);
         if (button && next === 0 && previous > 0) becameAvailable = true;
         if (button && next === 0 && !metaProgressionState?.unavailable) {
           button.disabled = false;
-          button.textContent = "HEDİYE SANDIK AÇ";
-          countdown?.remove();
+          button.textContent = giftChestActionLabel(0);
         }
       }
       if (becameAvailable) loadMetaProgression();
@@ -2818,16 +2814,21 @@
     if (close) { close.disabled = false; close.textContent = "DEVAM"; }
   }
 
-  function restoreShopAction({ chestId = null, definitionId = null, storeChestId = null } = {}) {
-    let card = null;
-    if (chestId) card = [...document.querySelectorAll("[data-chest-id]")]
-      .find((item) => item.dataset.chestId === String(chestId));
-    if (!card && definitionId) card = [...document.querySelectorAll("[data-definition-id]")]
-      .find((item) => item.dataset.definitionId === String(definitionId));
-    if (!card && storeChestId) card = [...document.querySelectorAll("[data-store-chest-id]")]
-      .find((item) => item.dataset.storeChestId === String(storeChestId));
-    const button = card?.querySelector("button");
-    if (button) button.disabled = false;
+  // Başarısız işlemden sonra o işlemin düğmesini yeniden açar. Sandık kartında
+  // birden çok düğme olabilir (satın al, hediye, hepsini aç); `action` hangisi
+  // olduğunu söyler.
+  function restoreShopAction({ chestId = null, definitionId = null, storeChestId = null, action = "" } = {}) {
+    const find = (attribute, value) => [...document.querySelectorAll(`[${attribute}]`)]
+      .find((item) => item.getAttribute(attribute) === String(value));
+    const card = (chestId && find("data-chest-id", chestId))
+      || (definitionId && (find("data-definition-id", definitionId) || find("data-store-chest-id", definitionId)))
+      || (storeChestId && find("data-store-chest-id", storeChestId))
+      || null;
+    const selector = { gift:".gift-chest-action", "open-all":".chest-open-all-action", buy:".chest-store-buy" }[action];
+    const button = card?.querySelector(selector || "button");
+    // Geri sayımı süren hediye düğmesi kapalı kalır.
+    const waiting = action === "gift" && Number(card?.dataset.claimRemaining || 0) > 0;
+    if (button && !waiting) button.disabled = false;
   }
 
   function showClaimedChest(receipt) {
@@ -2872,7 +2873,7 @@
       showChestReveal(payload.receipt);
     } catch (error) {
       if (status) status.textContent = error instanceof Error ? error.message : String(error);
-      restoreShopAction({ storeChestId: definitionId });
+      restoreShopAction({ storeChestId: definitionId, action:"buy" });
       showChestFailure(error);
     }
   }
@@ -3397,7 +3398,7 @@
       showBulkChestReveal(payload.receipt);
     } catch (error) {
       if (status) status.textContent = error instanceof Error ? error.message : String(error);
-      restoreShopAction({ definitionId });
+      restoreShopAction({ definitionId, action:"open-all" });
       showChestFailure(error);
     }
   }
@@ -3419,7 +3420,7 @@
       showChestReveal(payload.receipt);
     } catch (error) {
       if (status) status.textContent = error instanceof Error ? error.message : String(error);
-      restoreShopAction({ definitionId });
+      restoreShopAction({ definitionId, action:"gift" });
       showChestFailure(error);
     }
   }
@@ -16076,6 +16077,7 @@
         view.language;
     }
     if (analyticsConsent) analyticsConsent.checked = view.analyticsConsent === true;
+    renderAnalyticsAgeGate();
 
     applyGraphicsQuality();
     applyLanguagePreference(
@@ -16087,6 +16089,67 @@
   }
 
   let settingsAutoSaveTimer = null;
+  // Ürün analitiği yaş sorusu. İzin kapalı gelir; açmak isteyene doğum yılı
+  // sorulur. Kararı sunucu verir ve yılı saklamaz; istemci yalnız sorar ve
+  // sonucu gösterir, yılı cihazda tutmaz.
+  let analyticsBirthYearAnswer = null;
+
+  function analyticsAgeLocked(view = settingsState.viewModel()) {
+    return view?.analyticsAgeGate === "minor"
+      && view.analyticsAgeAskedYear >= new Date().getFullYear();
+  }
+
+  function renderAnalyticsAgeGate({ asking = false, message = "" } = {}) {
+    const locked = analyticsAgeLocked();
+    const checkbox = document.getElementById("settings-analytics-consent");
+    const panel = document.getElementById("analytics-age-panel");
+    const status = document.getElementById("analytics-age-status");
+    if (checkbox) checkbox.disabled = locked;
+    if (panel) panel.hidden = !asking || locked;
+    const text = message || (locked ? "Ürün analitiği bu hesapta açılamıyor." : "");
+    if (status) {
+      status.hidden = !text;
+      status.textContent = localizedUiText(text);
+    }
+  }
+
+  function onAnalyticsConsentChanged() {
+    const checkbox = document.getElementById("settings-analytics-consent");
+    const input = document.getElementById("analytics-age-year");
+    analyticsBirthYearAnswer = null;
+    if (input) input.value = "";
+    if (checkbox?.checked && settingsState.viewModel()?.analyticsAgeGate !== "adult") {
+      // İlk açılış: önce soru. Yanıt gelene kadar izin gönderilmez.
+      renderAnalyticsAgeGate({ asking:true });
+      input?.focus();
+      return;
+    }
+    renderAnalyticsAgeGate();
+    scheduleSettingsAutoSave(0);
+  }
+
+  function confirmAnalyticsBirthYear() {
+    const input = document.getElementById("analytics-age-year");
+    const value = String(input?.value || "").trim();
+    if (!/^\d{4}$/.test(value)) {
+      renderAnalyticsAgeGate({ asking:true, message:"Doğum yılını dört rakamla yaz." });
+      return;
+    }
+    analyticsBirthYearAnswer = Number(value);
+    if (input) input.value = "";
+    renderAnalyticsAgeGate();
+    void saveSettingsForm();
+  }
+
+  function cancelAnalyticsBirthYear() {
+    const checkbox = document.getElementById("settings-analytics-consent");
+    const input = document.getElementById("analytics-age-year");
+    analyticsBirthYearAnswer = null;
+    if (checkbox) checkbox.checked = false;
+    if (input) input.value = "";
+    renderAnalyticsAgeGate();
+  }
+
   function scheduleSettingsAutoSave(delayMs = 240) {
     if (settingsAutoSaveTimer) {
       clearTimeout(settingsAutoSaveTimer);
@@ -16142,6 +16205,10 @@
     );
 
     const wasAnalyticsEnabled = settingsState.viewModel()?.analyticsConsent === true;
+    // Yaş sorusu yanıtlanmadan izin gönderilmez (sunucu da reddeder).
+    const analyticsAnswered = settingsState.viewModel()?.analyticsAgeGate === "adult";
+    const analyticsBirthYear = analyticsBirthYearAnswer;
+    analyticsBirthYearAnswer = null;
     const result =
       await accountDataLoader
         .saveSettings({
@@ -16169,7 +16236,9 @@
           language:
             language?.value
             || "tr",
-          analytics_consent: analyticsConsent?.checked === true,
+          analytics_consent: analyticsConsent?.checked === true
+            && (analyticsAnswered || analyticsBirthYear !== null),
+          ...(analyticsBirthYear !== null ? { analytics_birth_year:analyticsBirthYear } : {}),
         });
 
     renderSettingsForm();
@@ -19390,13 +19459,20 @@
         eventName,
         () => {
           previewAudioSettingsFromControls();
-          if (controlId !== "settings-language") {
-            scheduleSettingsAutoSave(controlId === "settings-analytics-consent" ? 0 : control.type === "range" ? 320 : 120);
+          if (controlId === "settings-analytics-consent") {
+            onAnalyticsConsentChanged();
+          } else if (controlId !== "settings-language") {
+            scheduleSettingsAutoSave(control.type === "range" ? 320 : 120);
           }
         }
       );
     }
   }
+  document.getElementById("analytics-age-confirm")?.addEventListener("click", confirmAnalyticsBirthYear);
+  document.getElementById("analytics-age-cancel")?.addEventListener("click", cancelAnalyticsBirthYear);
+  document.getElementById("analytics-age-year")?.addEventListener("keydown", (event) => {
+    if (event.key === "Enter") confirmAnalyticsBirthYear();
+  });
 
   // Savaş perspektifi cihazda saklanan görsel bir tercihtir.
   const BATTLE_PERSPECTIVE_STORAGE_KEY = "gridshard.battle-perspective";
@@ -20312,7 +20388,7 @@
       id:"gift-chest",
       when:(c) => c.screen === "shop" && c.metaReady,
       skip:(c) => c.metaReady && !c.giftAvailable && !c.chestDialogOpen,
-      target:"#gift-chest-list .gift-chest-action",
+      target:"#chest-store-list .gift-chest-action",
       done:(c) => c.chestDialogOpen,
       title:"Hediye Sandık",
       body:"Her 8 saatte bir bedava sandık açabilirsin. HEDİYE SANDIK AÇ'a dokun.",

@@ -2686,7 +2686,10 @@
 
     [/^(\p{L}[\p{L} ]*) %([\d.,]+)$/u, (_, label, value) => `${en(label)} ${value}%`],
     [/^%([\d.,]+)$/u, "$1%"],
-    [/^Yenilenmesine ([^·]+)$/u, "Refreshes in $1"],
+    // Hediye sandığı düğmesindeki geri sayım: saat/dakika/saniye kısaltmaları da çevrilir.
+    [/^HEDİYE · (\d+)s (\d+)dk$/u, "GIFT · $1h $2m"],
+    [/^HEDİYE · (\d+)dk (\d+)sn$/u, "GIFT · $1m $2s"],
+    [/^HEDİYE · (\d+)sn$/u, "GIFT · $1s"],
     [/^\+(\d+)% HIZ$/u, "+$1% SPEED"],
     [/^Devrede (\d+) \/ (\d+)$/u, "In circuit $1 / $2"],
     [/^(\p{L}[\p{L} ]*) ([\d.,]+) sn$/u, (_, label, value) => `${en(label)} ${value} sec`],
@@ -2799,6 +2802,9 @@
     [/^([\d.,]+) \/ ([\d.,]+) orders completed$/u, "$1 / $2 emir tamamlandı"],
     [/^Resets in (\d+)h (\d+)m$/u, "Yenilenme $1 sa $2 dk"],
     [/^Resets in (\d+)m$/u, "Yenilenme $1 dk"],
+    [/^GIFT · (\d+)h (\d+)m$/u, "HEDİYE · $1s $2dk"],
+    [/^GIFT · (\d+)m (\d+)s$/u, "HEDİYE · $1dk $2sn"],
+    [/^GIFT · (\d+)s$/u, "HEDİYE · $1sn"],
     [/^(.+) · Level (\d+) · ([^·]+) · (\d+) Rating Points · (\d+) XP$/u, (_, name, level, league, rating, xp) => `${name} · Seviye ${level} · ${tr(league)} · ${rating} Derece Puanı · ${xp} XP`],
     [/^Player ID: (.+)$/u, "Oyuncu Kimliği: $1"],
     [/^Inactivity: deploy a card within (\d+) sec or you forfeit$/u, "Hareketsizlik: $1 sn içinde kart basmazsan savaştan çekilmiş sayılırsın"],

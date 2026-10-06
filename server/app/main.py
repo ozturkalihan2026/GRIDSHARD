@@ -130,6 +130,7 @@ from .player_statistics import (
 from .player_settings import (
     PlayerSettingsError,
     PlayerSettingsService,
+    analytics_enabled,
 )
 from .matchmaking import (
     MatchmakingEntry,
@@ -845,9 +846,10 @@ player_data_repository = (
 _analytics_options = (
     _runtime_path("GRIDSHARD_PRODUCT_ANALYTICS_PATH", "product_analytics.json"),
     participant_auth_service.signing_key,
+    # İzin tek başına yetmez; yaş sorusuna yetişkin yanıtı da gerekir.
     lambda player_id: bool(
         (snapshot := player_data_repository.load(player_id))
-        and snapshot.settings.get("analytics_consent") is True
+        and analytics_enabled(snapshot.settings)
     ),
 )
 product_analytics_service = (
@@ -1515,6 +1517,8 @@ class PlayerSettingsRequest(BaseModel):
     graphics_quality: str | None = None
     language: str | None = None
     analytics_consent: bool | None = None
+    # Yalnız analitiği ilk kez açarken gönderilir; saklanmaz (player_settings.py).
+    analytics_birth_year: int | None = None
 
 
 class ProductAnalyticsEventRequest(BaseModel):
@@ -2691,6 +2695,7 @@ def update_player_settings(
             ),
             language=request.language,
             analytics_consent=request.analytics_consent,
+            analytics_birth_year=request.analytics_birth_year,
         )
     except PlayerSettingsError as exc:
         raise HTTPException(
@@ -2701,7 +2706,8 @@ def update_player_settings(
     persist_player_data(
         player_id
     )
-    if request.analytics_consent is False:
+    # Kapatma isteği ve açılamayan izin (yaş yanıtı) aynı sonucu verir: kayıt kalmaz.
+    if request.analytics_consent is not None and not settings.analytics_consent:
         try:
             product_analytics_service.erase_player(player_id)
         except ProductAnalyticsStorageError as exc:

@@ -1306,7 +1306,9 @@
     "Takım adı uygun değil; başka bir ad seç.":"That team name isn't allowed; pick another one.",
     // Ebeveyn denetimi ve kapalı e-posta/telefon bağlama.
     "Ebeveyn Denetimi":"Parental Controls",
-    "OLASILIKLAR":"ODDS",
+    "ÖDÜL LİSTESİ":"REWARD LIST",
+    "Ödül Listesi":"Reward List",
+    "Bronz Sandık hediyesi 8 saatte bir yenilenir.":"The Bronze Chest gift refreshes every 8 hours.",
     "İÇERİK VE OLASILIKLAR":"CONTENTS AND ODDS",
     "Yüzde, sandığın o ödülü içerme olasılığıdır. Modül parçası, açılmış modüllerinden rastgele birine verilir; o enderlikte açılmış modülün yoksa başka enderlikteki bir modülüne verilir.":"The percentage is the chance that the chest contains that reward. Module shards go to a random module you have unlocked; if you have no unlocked module of that rarity, they go to one of your modules of another rarity.",
     "Açık kaynak lisansları":"Open-source licenses",
@@ -1332,6 +1334,15 @@
     "Sosyal özellikler zaten kapalı.":"Social features are already off.",
     "Sosyal özellikler zaten açık.":"Social features are already on.",
     "Bu oyuncu mesaj ve arkadaşlık isteği almıyor.":"This player doesn't accept messages or friend requests.",
+    // Ürün analitiği yaş sorusu (yönlendirmesiz: gereken yaş yazmaz).
+    "Bu ayarı açmadan önce doğum yılını soruyoruz. Yıl kaydedilmez.":"Before turning this on we ask for your year of birth. The year is not stored.",
+    "Doğum yılı":"Year of birth",
+    "ONAYLA":"CONFIRM",
+    "VAZGEÇ":"CANCEL",
+    "Doğum yılını dört rakamla yaz.":"Enter your year of birth as four digits.",
+    "Ürün analitiği bu hesapta açılamıyor.":"Product analytics can't be turned on for this account.",
+    "Ürün analitiğini açmadan önce doğum yılı sorulur. Bunun için uygulamayı güncelle.":"Product analytics asks for your year of birth first. Update the app to continue.",
+    "Doğum yılı geçersiz.":"That year of birth isn't valid.",
     "E-posta ya da telefon bağlama kapalı. Hesabını Ayarlar'daki giriş yöntemlerinden biriyle koruyabilirsin.":"Linking an email or phone is turned off. You can protect your account with one of the sign-in methods in Settings.",
   });
 

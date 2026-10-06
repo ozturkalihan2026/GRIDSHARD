@@ -351,13 +351,15 @@
     </nav>
 
     <section id="shop-screen" class="mobile-hub-screen shop-screen" data-screen-panel="shop" hidden>
-      <section class="shop-section" aria-labelledby="gift-chest-title">
-        <div class="mobile-section-heading"><div><h3 id="gift-chest-title">Hediye Sandık</h3></div><small>8 saatte bir yenilenir</small></div>
-        <div id="gift-chest-list" class="gift-chest-list"></div>
-      </section>
-      <section class="shop-section" aria-labelledby="chest-store-title">
+      <section class="shop-section chest-store-section" aria-labelledby="chest-store-title">
+        <!-- Sandıkların içeriği ve olasılıkları: bölümün köşesindeki bu sekmeyle, satın
+             almadan önce açılır; her kartta ayrıca özet satırı durur (Google Play ödeme
+             politikası; docs/CHILD_AUDIENCE_AUDIT.md). -->
+        <button id="chest-odds-open" class="chest-odds-tab" type="button" hidden>ÖDÜL LİSTESİ</button>
         <div class="mobile-section-heading"><div><h3 id="chest-store-title">Sandık Satın Al</h3></div><small id="chest-store-sale">Her ay sürpriz bir günde %40 indirim</small></div>
         <div id="chest-store-list" class="chest-store-list"></div>
+        <!-- Hediye sandık ayrı bir bölüm değildir: Bronz Sandık kartındaki düğmeyle açılır. -->
+        <p class="shop-gift-note">Bronz Sandık hediyesi 8 saatte bir yenilenir.</p>
       </section>
       <section class="shop-section paid-store-section" aria-labelledby="paid-store-title">
         <div class="mobile-section-heading"><div><h3 id="paid-store-title">Premium ve Paketler</h3></div><small id="paid-store-mode"></small></div>
@@ -389,14 +391,13 @@
       </div>
     </dialog>
 
-    <!-- Mağaza sandıklarının içerik olasılıkları: satın almadan önce, satın alma
-         düğmesinin yanındaki OLASILIKLAR düğmesiyle açılır (Google Play ödeme
-         politikası; docs/CHILD_AUDIENCE_AUDIT.md). Satırlar sunucudan gelen
-         tabloyla doldurulur. -->
+    <!-- Mağaza sandıklarının içerik olasılıkları: mağazadaki ÖDÜL LİSTESİ sekmesiyle
+         açılır, pencerenin dışına dokununca kapanır. Bütün sandıklar tek listede
+         gösterilir; satırlar sunucudan gelen tabloyla doldurulur. -->
     <dialog id="chest-odds-dialog" class="chest-odds-dialog" aria-labelledby="chest-odds-title">
       <span class="chest-odds-kicker">İÇERİK VE OLASILIKLAR</span>
-      <h2 id="chest-odds-title">Sandık</h2>
-      <ul id="chest-odds-list" class="chest-odds-list"></ul>
+      <h2 id="chest-odds-title">Ödül Listesi</h2>
+      <div id="chest-odds-list" class="chest-odds-groups"></div>
       <p class="chest-odds-note">Yüzde, sandığın o ödülü içerme olasılığıdır. Modül parçası, açılmış modüllerinden rastgele birine verilir; o enderlikte açılmış modülün yoksa başka enderlikteki bir modülüne verilir.</p>
       <button id="chest-odds-close" type="button">TAMAM</button>
     </dialog>
@@ -988,6 +989,17 @@
         </section>
         <label class="settings-toggle"><input id="settings-analytics-consent" type="checkbox" /> Takma kimlikli ürün analitiğine izin ver</label>
         <p class="settings-privacy-note">İsteğe bağlıdır. Oturum, ekran, eşleştirme, savaş sonucu ve performans kategorileri 30 gün tutulur; kapattığında kayıtların silinir.</p>
+        <!-- Yaş sorusu yönlendirmesizdir: ön değer ve gereken yaş yazmaz. Yıl sunucuya
+             yalnız kararı vermesi için gider ve saklanmaz (server/app/player_settings.py). -->
+        <div id="analytics-age-panel" class="analytics-age-panel" hidden>
+          <label for="analytics-age-year">Bu ayarı açmadan önce doğum yılını soruyoruz. Yıl kaydedilmez.</label>
+          <div class="analytics-age-form">
+            <input id="analytics-age-year" type="text" inputmode="numeric" maxlength="4" autocomplete="off" placeholder="Doğum yılı" aria-label="Doğum yılı">
+            <button id="analytics-age-confirm" type="button">ONAYLA</button>
+            <button id="analytics-age-cancel" type="button">VAZGEÇ</button>
+          </div>
+        </div>
+        <p id="analytics-age-status" class="settings-privacy-note" role="status" aria-live="polite" hidden></p>
       </div>
       <!-- Gömülü yazı tiplerinin lisansı pakette de bulunur: SIL OFL 1.1 her kopyada telif
            bildirimini ve lisans metnini ister. Metinler client/assets/fonts altındaki
