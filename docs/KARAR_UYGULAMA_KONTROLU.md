@@ -75,8 +75,8 @@ Bu belge, daha önce alınan görsel kimlik / ekran / ses / isim kararlarının 
 
 ## 8. İsim / marka
 - [x] Kullanıcı-facing oyun adı `GRIDSHARD`.
-- [x] `Devreni Kur. Çekirdeği Kır.`
-- [x] `Build the Circuit. Break the Core.`
+- [x] `Devreni kur. Stratejini konuştur.`
+- [x] `Build your circuit. Make your strategy count.`
 - [x] Dört kapılı kırık çekirdek `Shard Core` ana sembol.
 - [x] Browser title / lobby / identity endpoint GRIDSHARD.
 - [x] Backward compatibility için dahili `Relay*` sembolleri ayrı migration yapılmadan kırılmadı.

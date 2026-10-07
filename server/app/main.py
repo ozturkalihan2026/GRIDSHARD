@@ -6286,9 +6286,9 @@ def gridshard_identity() -> dict:
     return {
         "name":"GRIDSHARD",
         "tagline_tr":
-            "Devreni Kur. Çekirdeği Kır.",
+            "Devreni kur. Stratejini konuştur.",
         "tagline_en":
-            "Build the Circuit. Break the Core.",
+            "Build your circuit. Make your strategy count.",
         "identity_version":
             VERSION,
         "palette":{

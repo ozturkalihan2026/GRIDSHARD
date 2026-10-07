@@ -1,7 +1,7 @@
 {
   "name": "GRIDSHARD",
   "short_name": "GRIDSHARD",
-  "description": "Devreni Kur. Çekirdeği Kır.",
+  "description": "Devreni kur. Stratejini konuştur.",
   "start_url": "/",
   "display": "standalone",
   "orientation": "portrait",

@@ -2,8 +2,8 @@
 
 **Identity package:** `2.0.0-beta.25`
 **Game name:** `GRIDSHARD`  
-**Tagline (TR):** `Devreni Kur. Çekirdeği Kır.`  
-**Tagline (EN):** `Build the Circuit. Break the Core.`
+**Tagline (TR):** `Devreni kur. Stratejini konuştur.`  
+**Tagline (EN):** `Build your circuit. Make your strategy count.`
 
 ---
 

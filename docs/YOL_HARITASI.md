@@ -758,8 +758,8 @@ Beta.14'ten önce oyun kimliği sabitlenmiştir.
 
 ## İsim / marka
 - [x] Kullanıcı-facing oyun adı `Project Relay` yerine `GRIDSHARD` oldu.
-- [x] Türkçe slogan `Devreni Kur. Çekirdeği Kır.` olarak sabitlendi.
-- [x] İngilizce slogan `Build the Circuit. Break the Core.` olarak dokümante edildi.
+- [x] Türkçe slogan `Devreni kur. Stratejini konuştur.` (7 Ekim 2026'da kullanıcı kararıyla güncellendi).
+- [x] İngilizce slogan `Build your circuit. Make your strategy count.`.
 - [x] Browser title, ana lobby ve server identity metadata GRIDSHARD kullanıyor.
 - [x] Dahili `Relay*` sınıf adları ve API route isimleri backward compatibility için bu pakette topluca rename edilmedi.
 

@@ -1,6 +1,34 @@
 # GRIDSHARD geliştirme kontrol noktası
 
-Güncelleme tarihi: 6 Ekim 2026
+Güncelleme tarihi: 7 Ekim 2026
+
+## Son devam — iş bilgisayarı / Play Console kurulumu tamamlandı
+
+**7 Ekim 2026, kullanıcı teyidi:** Kullanıcı iş bilgisayarında olduğunu,
+diğer yapay zekâ aracıyla ilerlediklerini ve Play Console kurulumunu
+tamamladıklarını bildirdi. Bu, kullanıcı teyididir; bu oturumda Console
+ekranı görülmedi. Kapalı testin yayımlandığı, test kullanıcılarının
+katıldığı veya üretime erişimin açıldığı sonucu çıkarılmadı.
+
+`CODEX_HANDOFF_R13_V4.md` tamamen okundu; `CLAUDE_CHECKPOINT.md` güncel
+devir bölümleri incelendi. Yerel HEAD `f8b24fe`; bekleyenler Claude
+checkpoint değişikliği ve izlenmeyen devir notuydu. Codex uygulama kodunu,
+bu iki dosyayı veya imza ayarlarını değiştirmedi; commit/push yapmadı.
+
+Diğer aracın kaydına göre canlı sunucu r12, Play dahili test paketi
+versionCode 3 (`2.1.0-beta.72`); hedef kitle kullanıcı kararıyla 13 yaş ve
+üzeri. Bu oturumda canlı durum ve Play paketi bağımsız doğrulanmadı.
+Önceki çocuk yaş grubu niyetini anlatan bölümler tarihsel kayıttır;
+güncel hedef kitle kararıyla karıştırılmamalı.
+
+**Devam sırası:** İş bilgisayarında kapalı test kanalının güncel ekranı
+üzerinden ülke/test kullanıcıları/sürüm durumu netleştirilebilir. Sunucu
+r13, yeni imzalı Android paketi (önerilen versionCode 4) ve güncel site
+paketi ev bilgisayarında hazırlanacak. Önce devir notundaki yerel
+betikler ve kayıtlar okunacak; canlı geçiş için yeni açık onay, paket
+üretimi için kullanıcı talimatı alınacak. Kaynak değişikliği yayımlanmış
+ürün veya tamamlanmış yasal uygunluk sayılmaz. Gerçek reklam/ödeme kapalı
+kalacak; oyuncu ve inceleme hesabı verilerine dokunulmayacak.
 
 ## Son devam — Veri türleri / e-posta ve telefon kapatma kapsamı
 

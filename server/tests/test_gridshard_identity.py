@@ -10,7 +10,7 @@ def test_identity_endpoint_exposes_gridshard_brand():
 
     body=response.json()
     assert body["name"]=="GRIDSHARD"
-    assert body["tagline_tr"]=="Devreni Kur. Çekirdeği Kır."
+    assert body["tagline_tr"]=="Devreni kur. Stratejini konuştur."
     assert body["palette"]["arc_cyan"]=="#48F4E0"
     assert body["palette"]["reactor_gold"]=="#FFD56A"
 
@@ -21,6 +21,6 @@ def test_home_exposes_gridshard_identity():
     assert "GRIDSHARD" in html
     assert "GRIDSHARD // CORE ARENA" not in html
     assert 'class="mobile-home-hub"' in html
-    assert "Devreni Kur." in html
-    assert "Çekirdeği Kır." in html
+    assert "Devreni kur." in html
+    assert "Stratejini konuştur." in html
     assert "gridshard-audio.js" in html

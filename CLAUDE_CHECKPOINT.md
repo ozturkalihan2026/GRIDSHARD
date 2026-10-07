@@ -21,8 +21,12 @@ Ekran: Kullanıcı sayısını artırın → Play Store'daki varlığı → Mağ
 
 1. Konsolda kısa ve tam açıklamayı yapıştır; simgeyi, özellik grafiğini ve sekiz ekran görüntüsünü sırasıyla yükle; yapay zekâ beyanını seç; kaydet. Tam açıklama kutusunda satır aralarının durduğuna bak (inceleme bölümü metni tek paragraf gösteriyor). Tablet, Chromebook, XR bölümleri ve video isteğe bağlıdır, boş kalabilir.
 2. İngilizce giriş istenirse: Mağaza girişleri → çeviri ekle → İngilizce (en-US); metinler ve görseller `en-US/` klasöründe.
-3. Slogan kararı: özellik grafiğinde tanıtım sitesindeki "Devreni kur. Stratejini konuştur." kullanıldı. `docs/BRAND_IDENTITY.md` içindeki eski slogan "Devreni Kur. Çekirdeği Kır." idi; istenirse grafik bir komutla yeniden üretilir (betikler iş bilgisayarında).
+3. Slogan kararı verildi (7 Ekim, kullanıcı): slogan "Devreni kur. Stratejini konuştur." / "Build your circuit. Make your strategy count." Eski slogan oyundan ve belgelerden kaldırıldı: açılış ekranı, sayfa başlığı, web bildirimi, `/identity` uç noktası, çeviriler, marka belgesi. Özellik grafiği zaten bu sloganla üretilmişti. **Bu değişiklik sunucu ve istemci kodundadır; r13 ve yeni paket bu commit'ten sonra üretilmelidir.** Açılış ekranında gerçek cihazda görülmedi.
 4. Commit + push: liste aşağıda "Commit bekleyen dosyalar" başlığında.
+
+## Yayın işi Codex'e devredildi (7 Ekim, kullanıcı kararı)
+
+Kullanıcı: "diğer yapay zeka aracında kullanım hakkım var. ona yeni sunucu sürümü ve v3 apk ve aab üretimi için not bırak onunla devam edeyim." Sunucu r13 ve yeni paket için tek başına yeterli devir notu depo kökünde: `CODEX_HANDOFF_R13_V4.md` (durum, kurallar, r12 yöntemiyle adımlar, paket denetimi, site paketi). Kullanıcı "v3" dedi; sürüm kodu 3 Play'e yüklendiği için notta yeni paketin **sürüm kodu 4** olması gerektiği yazıldı ve kullanıcıya söylendi. İş ev bilgisayarında yapılır. `f8b24fe` (bu oturumun bütün değişiklikleri) push edildi ve kalite denetimi yeşil; **commit bekleyenler yalnız `CODEX_HANDOFF_R13_V4.md` ve bu dosya.** Sonraki Claude oturumu önce `CODEX_HANDOFF_R13_V4.md` sonundaki sonuç bölümüne ve `CODEX_CHECKPOINT.md` başına bakmalı: r13 ve v4 yapıldı mı, canlıda ne var.
 
 ## 7 Ekim (iş bilgisayarı): mağaza sandıkları — günlük alım sınırı, yeni fiyatlar, tek açma düğmesi (uygulandı, yayınlanmadı)
 

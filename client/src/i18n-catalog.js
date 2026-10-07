@@ -160,7 +160,7 @@
     "Telefon":"Phone",
     "Oturum":"Session",
     "Hesap":"Account",
-    "GRIDSHARD — Devreni Kur. Çekirdeği Kır.":"GRIDSHARD — Build Your Circuit. Break the Core.",
+    "GRIDSHARD — Devreni kur. Stratejini konuştur.":"GRIDSHARD — Build your circuit. Make your strategy count.",
     "Bağlantı: Hazır":"Connection: Ready",
     "Oyna: Sunucu ve hesap hazırlanıyor":"Play: Preparing server and account",
     "Sağlık Kontrolünü Yeniden Dene":"Retry Health Check",

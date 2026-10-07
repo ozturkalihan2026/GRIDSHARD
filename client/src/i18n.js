@@ -716,7 +716,7 @@
     "Deneyim hesaplanıyor":"Calculating Experience",
     "KAYBETTİN · Savaşı bıraktın":"YOU LOST · You forfeited",
     // --- Beta.72 tur 3: arayüz metinleri (index.html) ---
-    "GRIDSHARD — Devreni Kur. Çekirdeği Kır.":"GRIDSHARD — Build Your Circuit. Break the Core.",
+    "GRIDSHARD — Devreni kur. Stratejini konuştur.":"GRIDSHARD — Build your circuit. Make your strategy count.",
     "Yerel AI":"Local AI",
     "Akım: 6 / 12":"Current: 6 / 12",
     "Devre Çırağı · 🏆 0":"Circuit Apprentice · 🏆 0",
@@ -1964,7 +1964,7 @@
     "Takım bu turnuvaya kayıtlı değil.":"The team isn't registered for this tournament.",
     "Turnuva eşleşmesi bulunamadı.":"Tournament pairing not found.",
     "Bu fikstürde oyuncuya atanmış maç yok.":"No match is assigned to the player in this fixture.",
-    "Devreni Kur. Çekirdeği Kır.":"Build Your Circuit. Break the Core.",
+    "Devreni kur. Stratejini konuştur.":"Build your circuit. Make your strategy count.",
     "WebSocket oyuncu kimliği belirteçle eşleşmiyor.":"The WebSocket player ID doesn't match the token.",
     "Oyuncu kimliği boş olamaz.":"Player ID can't be empty.",
     "Oyuncu eşleştirme kuyruğunda değil.":"The player isn't in the matchmaking queue.",

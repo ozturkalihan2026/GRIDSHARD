@@ -3217,9 +3217,9 @@ function createClient() {
   const css=fs.readFileSync("./src/styles.css","utf8");
   const app=fs.readFileSync("./src/app.js","utf8");
 
-  assert.ok(html.includes("<title>GRIDSHARD — Devreni Kur. Çekirdeği Kır.</title>"));
-  assert.ok(html.includes("Devreni Kur."));
-  assert.ok(html.includes("Çekirdeği Kır."));
+  assert.ok(html.includes("<title>GRIDSHARD — Devreni kur. Stratejini konuştur.</title>"));
+  assert.ok(html.includes('<p class="boot-tagline">Devreni kur. Stratejini konuştur.</p>'));
+  assert.ok(!html.includes("Çekirdeği Kır"));
   assert.ok(html.includes("shard-core-mark"));
   assert.ok(css.includes("--gs-arc-cyan:#36D9FF"));
   assert.ok(css.includes("--gs-reactor-gold:#F4C85A"));
