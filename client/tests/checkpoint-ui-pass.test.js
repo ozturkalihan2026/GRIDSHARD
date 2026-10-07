@@ -53,7 +53,7 @@ assert.ok(app.includes("has-persistent-notification"));
 assert.ok(app.includes("giftAction.textContent = giftChestActionLabel(remaining);"));
 assert.match(app, /function giftChestActionLabel\(remainingSeconds\) \{[\s\S]*?formatChestCountdown\(remainingSeconds\)[\s\S]*?"HEDİYE SANDIK AÇ"/);
 assert.ok(app.includes('if (ownedCount > 0)'));
-assert.ok(app.includes('"HEPSİNİ AÇ"'));
+assert.ok(app.includes('"SANDIK AÇ"'));
 assert.ok(app.includes("function openAllAvailableChests"));
 assert.ok(app.includes("function showBulkChestReveal"));
 assert.match(css, /\[data-open-screen\]\.has-persistent-notification::after/);

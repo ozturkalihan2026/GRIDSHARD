@@ -1309,6 +1309,8 @@
     "ÖDÜL LİSTESİ":"REWARD LIST",
     "Ödül Listesi":"Reward List",
     "Bronz Sandık hediyesi 8 saatte bir yenilenir.":"The Bronze Chest gift refreshes every 8 hours.",
+    "SINIR DOLDU":"LIMIT REACHED",
+    "SANDIK AÇ":"OPEN CHEST",
     "İÇERİK VE OLASILIKLAR":"CONTENTS AND ODDS",
     "Yüzde, sandığın o ödülü içerme olasılığıdır. Modül parçası, açılmış modüllerinden rastgele birine verilir; o enderlikte açılmış modülün yoksa başka enderlikteki bir modülüne verilir.":"The percentage is the chance that the chest contains that reward. Module shards go to a random module you have unlocked; if you have no unlocked module of that rarity, they go to one of your modules of another rarity.",
     "Açık kaynak lisansları":"Open-source licenses",

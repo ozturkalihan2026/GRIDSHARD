@@ -70,6 +70,8 @@ def test_published_odds_match_what_purchased_chests_really_give(definition_id, m
     unlocked = {MODULE_RARITY.get(module_id, "common") for module_id in unlocked_reward_module_ids(0, 99999)}
     assert unlocked == set(RARITIES)
     profile.circuit_credits = profile.flux_shards = 10**9
+    # Bu test içeriği ölçer; günlük alım sınırı ayrı testtedir (test_store_chest_daily_limit.py).
+    monkeypatch.setattr(meta_progression, "STORE_CHEST_DAILY_LIMITS", dict.fromkeys(STORE_CHEST_PRICES, 10**9))
     item = store_items(profile)[definition_id]
     service = MetaProgressionService()
 
@@ -107,6 +109,7 @@ def test_a_new_player_only_receives_shards_for_modules_they_have_unlocked(monkey
     monkeypatch.setattr(meta_progression, "uuid4", lambda: SimpleNamespace(hex=f"{next(counter):032x}"))
     profile = PlayerProfileService().get_or_create("odds-newcomer")
     profile.circuit_credits = profile.flux_shards = 10**9
+    monkeypatch.setattr(meta_progression, "STORE_CHEST_DAILY_LIMITS", dict.fromkeys(STORE_CHEST_PRICES, 10**9))
     unlocked = set(unlocked_reward_module_ids(profile.rating, profile.highest_rating))
     service = MetaProgressionService()
 

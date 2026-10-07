@@ -105,10 +105,10 @@ def test_store_chest_spends_one_currency_and_opens_a_real_chest():
     replay = service.purchase_store_chest(profile, "field_3h", "shop-1")
 
     assert first == replay
-    assert first["cost"] == 300
+    assert first["cost"] == 1000
     assert "core_shards" in first["rewards"]
     assert after_first["shop"]["chest_store"]["items"][0]["definition_id"] == "field_3h"
-    assert profile.circuit_credits == 700 + first["rewards"]["circuit_credits"]
+    assert profile.circuit_credits == first["rewards"]["circuit_credits"]
 
 
 def test_core_tree_is_normalized_and_season_result_is_archived_before_soft_reset():

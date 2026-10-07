@@ -1007,9 +1007,9 @@
         { id: "diamond_24h", name_tr: "Elmas Sandık", visual_tier: "diamond", unlock_hours: 0, open_seconds: 1, gift: false, claim_available: false, claim_remaining_seconds: 0 },
       ], inventory: [] },
       shop: { chest_store: { sale_active: false, discount_percent: 40, sale_ends_at: null, items: [
-        { definition_id: "field_3h", name_tr: "Bronz Sandık", tier: "bronze", currency: "circuit_credits", cost: 300, base_cost: 300 },
-        { definition_id: "circuit_8h", name_tr: "Gümüş Sandık", tier: "silver", currency: "circuit_credits", cost: 1000, base_cost: 1000 },
-        { definition_id: "core_24h", name_tr: "Altın Sandık", tier: "gold", currency: "flux_shards", cost: 250, base_cost: 250 },
+        { definition_id: "field_3h", name_tr: "Bronz Sandık", tier: "bronze", currency: "circuit_credits", cost: 1000, base_cost: 1000 },
+        { definition_id: "circuit_8h", name_tr: "Gümüş Sandık", tier: "silver", currency: "circuit_credits", cost: 2000, base_cost: 2000 },
+        { definition_id: "core_24h", name_tr: "Altın Sandık", tier: "gold", currency: "flux_shards", cost: 500, base_cost: 500 },
         { definition_id: "diamond_24h", name_tr: "Elmas Sandık", tier: "diamond", currency: "flux_shards", cost: 1000, base_cost: 1000 },
       ] } },
     };
@@ -2498,44 +2498,66 @@
           odds.textContent = oddsSummary;
           card.appendChild(odds);
         }
+        // Günlük alım hakkı: sayımı sunucu yapar. Bu alanları göndermeyen eski
+        // sunucuda satır çıkmaz ve düğme yalnız bakiyeye bakar.
+        const dailyLimit = Math.max(0, Number(item.daily_limit || 0));
+        const remainingToday = dailyLimit > 0
+          ? Math.max(0, Number(item.remaining_today ?? dailyLimit))
+          : null;
+        const limitReached = remainingToday === 0;
+        if (dailyLimit > 0) {
+          const limitStatus = document.createElement("small");
+          limitStatus.className = "chest-store-limit";
+          limitStatus.dataset.exhausted = String(limitReached);
+          limitStatus.textContent = `Günlük alım hakkı ${remainingToday} / ${dailyLimit}`;
+          card.appendChild(limitStatus);
+        }
         const actions = document.createElement("div");
         actions.className = "shop-chest-actions";
         const buy = document.createElement("button");
         buy.type = "button";
         buy.className = "chest-store-buy";
-        if (Number(item.cost) < Number(item.base_cost)) {
+        buy.dataset.limitReached = String(limitReached);
+        if (limitReached) {
+          buy.textContent = "SINIR DOLDU";
+        } else if (Number(item.cost) < Number(item.base_cost)) {
           const base = document.createElement("s");
           base.textContent = `${item.base_cost} ${currency}`;
           buy.append(base, document.createTextNode(` ${item.cost} ${currency}`));
         } else {
           buy.textContent = `${item.cost} ${currency}`;
         }
-        buy.disabled = Boolean(state.unavailable || Number(state[item.currency] || 0) < Number(item.cost));
+        buy.disabled = Boolean(
+          state.unavailable
+          || limitReached
+          || Number(state[item.currency] || 0) < Number(item.cost)
+        );
         buy.addEventListener("click", () => buyStoreChest(item.definition_id));
         actions.appendChild(buy);
         const gift = giftDefinitions.find((definition) => definition.id === item.definition_id);
+        const remaining = gift ? Math.max(0, Number(gift.claim_remaining_seconds || 0)) : 0;
+        const giftReady = Boolean(gift && remaining === 0 && gift.claim_available !== false);
         if (gift) {
-          const remaining = Math.max(0, Number(gift.claim_remaining_seconds || 0));
           // Geri sayım zamanlayıcısı kartı bu iki öznitelikle bulur.
           card.dataset.definitionId = gift.id;
           card.dataset.claimRemaining = String(remaining);
+        }
+        // Tek açma düğmesi (7 Ekim 2026, kullanıcı kararı): hediye hazırsa önce
+        // hediyeyi açar (HEDİYE SANDIK AÇ), sonra eldeki sandıkları (SANDIK AÇ).
+        // Hediye beklerken elde sandık da yoksa düğme kalan süreyi yazar.
+        if (gift && (giftReady || ownedCount === 0)) {
           const giftAction = document.createElement("button");
           giftAction.type = "button";
           giftAction.className = "gift-chest-action";
           giftAction.textContent = giftChestActionLabel(remaining);
-          giftAction.disabled = Boolean(
-            state.unavailable
-            || remaining > 0
-            || gift.claim_available === false
-          );
+          giftAction.disabled = Boolean(state.unavailable || !giftReady);
           giftAction.addEventListener("click", () => claimGiftChest(gift.id));
           actions.appendChild(giftAction);
-        }
-        if (ownedCount > 0) {
+        } else if (ownedCount > 0) {
           const openAllAction = document.createElement("button");
           openAllAction.type = "button";
           openAllAction.className = "chest-open-all-action";
-          openAllAction.textContent = "HEPSİNİ AÇ";
+          openAllAction.textContent = "SANDIK AÇ";
           openAllAction.disabled = Boolean(state.unavailable || openableCount === 0);
           openAllAction.addEventListener("click", () => openAllAvailableChests(item.definition_id));
           actions.appendChild(openAllAction);
@@ -2543,6 +2565,16 @@
         card.appendChild(actions);
         storeHost.appendChild(card);
       }
+    }
+    // Alım haklarının yenilendiği saat oyuncunun kendi saatiyle yazılır.
+    const limitNote = document.getElementById("chest-store-limit-note");
+    if (limitNote) {
+      const resetsAt = chestStore?.limit_resets_at ? new Date(chestStore.limit_resets_at) : null;
+      const known = Boolean(resetsAt && !Number.isNaN(resetsAt.getTime()));
+      limitNote.hidden = !known;
+      limitNote.textContent = known
+        ? `Alım hakları her gün yenilenir (saat ${String(resetsAt.getHours()).padStart(2, "0")}:${String(resetsAt.getMinutes()).padStart(2, "0")}).`
+        : "";
     }
     const oddsTab = document.getElementById("chest-odds-open");
     if (oddsTab) {
@@ -2666,7 +2698,9 @@
         card.dataset.claimRemaining = String(next);
         const button = card.querySelector(".gift-chest-action");
         if (button && next > 0) button.textContent = giftChestActionLabel(next);
-        if (button && next === 0 && previous > 0) becameAvailable = true;
+        // Hediye düğmesi o an görünmüyor olabilir (kartta SANDIK AÇ duruyorsa);
+        // süre dolunca mağaza yine yenilenir ve düğme hediyeye döner.
+        if (next === 0 && previous > 0) becameAvailable = true;
         if (button && next === 0 && !metaProgressionState?.unavailable) {
           button.disabled = false;
           button.textContent = giftChestActionLabel(0);

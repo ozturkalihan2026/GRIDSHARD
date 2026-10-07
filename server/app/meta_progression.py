@@ -267,13 +267,24 @@ BATTLE_CHEST_DROP_THRESHOLDS: tuple[tuple[float, str], ...] = (
 # kalır. Diğer sandıklar savaşta kazanılır veya sandık mağazasından alınır.
 GIFT_CHEST_ID = "field_3h"
 
-# Sandık mağazası: sınırsız alım, her alım gerçek bir sandık açar. Her ay
-# sunucunun belirlediği rastgele bir UTC gününde bütün sandıklar %40 indirimli.
+# Sandık mağazası: her alım gerçek bir sandık açar. Her ay sunucunun belirlediği
+# rastgele bir UTC gününde bütün sandıklar %40 indirimli. Fiyatlar 7 Ekim 2026'da
+# kullanıcı kararıyla yükseltildi (önceki: 300 / 1000 Devre Kredisi, 250 / 1000 Akı).
 STORE_CHEST_PRICES: dict[str, tuple[str, int]] = {
-    "field_3h": ("circuit_credits", 300),
-    "circuit_8h": ("circuit_credits", 1000),
-    "core_24h": ("flux_shards", 250),
+    "field_3h": ("circuit_credits", 1000),
+    "circuit_8h": ("circuit_credits", 2000),
+    "core_24h": ("flux_shards", 500),
     "diamond_24h": ("flux_shards", 1000),
+}
+# Günlük alım sınırı (7 Ekim 2026, kullanıcı kararı): her sandık türü bir UTC
+# gününde en çok bu kadar satın alınır. 8 saatte bir verilen hediye Bronz Sandık
+# ve savaşta kazanılan sandıklar sınıra girmez. Sayım mağaza makbuzlarından
+# yapılır; ayrı sayaç tutulmadığı için kayıt biçimi değişmez.
+STORE_CHEST_DAILY_LIMITS: dict[str, int] = {
+    "field_3h": 5,
+    "circuit_8h": 3,
+    "core_24h": 2,
+    "diamond_24h": 1,
 }
 STORE_SALE_DISCOUNT_PERCENT = 40
 STORE_RECEIPT_LIMIT = 200
@@ -299,6 +310,17 @@ def store_chest_price(definition_id: str, now: datetime) -> tuple[str, int, int]
     if chest_sale_active(now):
         return currency, int(round(base * (100 - STORE_SALE_DISCOUNT_PERCENT) / 100)), base
     return currency, base, base
+
+
+def store_chest_purchases_today(profile, definition_id: str, now: datetime) -> int:
+    """Oyuncunun bu UTC gününde mağazadan aldığı sandık sayısı (makbuzlardan)."""
+    day = now.astimezone(timezone.utc).date().isoformat()
+    return sum(
+        1
+        for receipt in profile.shop_receipts.values()
+        if receipt.get("store_chest_id") == definition_id
+        and str(receipt.get("purchased_at", ""))[:10] == day
+    )
 
 
 def utc_now() -> datetime:
@@ -639,6 +661,8 @@ class MetaProgressionService:
         for definition_id in STORE_CHEST_PRICES:
             definition = CHEST_DEFINITIONS[definition_id]
             currency, cost, base_cost = store_chest_price(definition_id, now)
+            daily_limit = STORE_CHEST_DAILY_LIMITS[definition_id]
+            purchased_today = store_chest_purchases_today(profile, definition_id, now)
             items.append({
                 "definition_id": definition_id,
                 "name_tr": definition["name_tr"],
@@ -647,6 +671,9 @@ class MetaProgressionService:
                 "cost": cost,
                 "base_cost": base_cost,
                 "affordable": int(getattr(profile, currency)) >= cost,
+                "daily_limit": daily_limit,
+                "purchased_today": purchased_today,
+                "remaining_today": max(0, daily_limit - purchased_today),
                 "reward_preview": {
                     "circuit_credits": list(definition["coins"]),
                     "flux_shards": list(definition["flux"]),
@@ -669,6 +696,8 @@ class MetaProgressionService:
             "sale_active": sale,
             "discount_percent": STORE_SALE_DISCOUNT_PERCENT,
             "sale_ends_at": iso_utc(tomorrow) if sale else None,
+            # Günlük alım hakları UTC gün dönümünde yenilenir.
+            "limit_resets_at": iso_utc(tomorrow),
             "items": items,
         }
 
@@ -1303,6 +1332,12 @@ class MetaProgressionService:
         if definition_id not in STORE_CHEST_PRICES:
             raise MetaProgressionError("Mağazada böyle bir sandık yok.")
         now = self._now_func()
+        daily_limit = STORE_CHEST_DAILY_LIMITS[definition_id]
+        if store_chest_purchases_today(profile, definition_id, now) >= daily_limit:
+            name = CHEST_DEFINITIONS[definition_id]["name_tr"]
+            raise MetaProgressionError(
+                f"Bugünkü alım sınırına ulaştın: {name} günde en çok {daily_limit} kez alınır."
+            )
         currency, cost, base_cost = store_chest_price(definition_id, now)
         balance = int(getattr(profile, currency))
         if balance < cost:

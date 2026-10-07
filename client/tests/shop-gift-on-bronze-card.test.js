@@ -1,8 +1,8 @@
 "use strict";
 
-// Mağazada ayrı bir "Hediye Sandık" bölümü yoktur: hediye düğmesi, satın alınan
-// Bronz Sandık kartında satın alma düğmesinin altında durur ve geri sayım
-// düğmenin üstünde yazar.
+// Mağazada ayrı bir "Hediye Sandık" bölümü ve ayrı bir hediye düğmesi yoktur:
+// Bronz Sandık kartındaki tek açma düğmesi hediye hazırken HEDİYE SANDIK AÇ,
+// sonra SANDIK AÇ olur; elde sandık yokken hediyenin kalan süresini yazar.
 const assert = require("node:assert/strict");
 const fs = require("node:fs");
 const path = require("node:path");
@@ -38,11 +38,20 @@ assert.ok(render.indexOf("actions.appendChild(buy);") < render.indexOf("actions.
 assert.ok(render.indexOf("actions.appendChild(giftAction);") < render.indexOf("actions.appendChild(openAllAction);"));
 assert.ok(render.includes("card.dataset.definitionId = gift.id;"));
 assert.ok(render.includes("card.dataset.claimRemaining = String(remaining);"));
-assert.match(render, /giftAction\.disabled = Boolean\(\s*state\.unavailable\s*\|\| remaining > 0\s*\|\| gift\.claim_available === false\s*\);/);
+assert.ok(render.includes("const giftReady = Boolean(gift && remaining === 0 && gift.claim_available !== false);"));
+assert.ok(render.includes("giftAction.disabled = Boolean(state.unavailable || !giftReady);"));
+// Tek düğme: hediye hazırsa (ya da elde sandık yoksa) hediye düğmesi, değilse açma düğmesi.
+assert.match(render, /if \(gift && \(giftReady \|\| ownedCount === 0\)\) \{[\s\S]*?actions\.appendChild\(giftAction\);\s*\} else if \(ownedCount > 0\) \{[\s\S]*?actions\.appendChild\(openAllAction\);/);
+assert.ok(render.includes('openAllAction.textContent = "SANDIK AÇ";'));
+assert.ok(!render.includes('"HEPSİNİ AÇ"'));
+assert.equal(i18n.translateText("SANDIK AÇ", "en"), "OPEN CHEST");
+assert.equal(i18n.translateText("OPEN CHEST", "tr"), "SANDIK AÇ");
 assert.ok(render.includes('giftAction.addEventListener("click", () => claimGiftChest(gift.id));'));
 const timer = app.slice(app.indexOf("function ensureShopCountdownTimer()"), app.indexOf("async function metaProgressionMutation"));
 assert.ok(timer.includes('document.querySelectorAll("[data-definition-id][data-claim-remaining]")'));
 assert.ok(timer.includes("if (button && next > 0) button.textContent = giftChestActionLabel(next);"));
+// Hediye düğmesi görünmezken de süre dolunca mağaza yenilenir.
+assert.ok(timer.includes("if (next === 0 && previous > 0) becameAvailable = true;"));
 
 // Eğitimin hediye adımı yeni düğmeyi gösterir.
 assert.match(app, /id:"gift-chest",[\s\S]{0,200}?target:"#chest-store-list \.gift-chest-action",/);

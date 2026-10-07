@@ -403,6 +403,10 @@ Savaşlardan 3 / 8 / 24 saatlik sandıklar kazanılır. Ödül havuzu Devre Kred
 
 Günlük teklif sandıkları **Devre Kredisi** ile alınır. Akı mağaza harcaması olarak kullanılmaz; yetenek/çekirdek gelişimi için korunur.
 
+### Sandık mağazası ve günlük alım sınırı (7 Ekim 2026)
+
+Mağazada dört sandık satılır: Bronz 1000 ve Gümüş 2000 Devre Kredisi, Altın 500 ve Elmas 1000 Akı (7 Ekim 2026'da yükseltildi; önceki fiyatlar 300 / 1000 Devre Kredisi ve 250 / 1000 Akı). Her alım sandığı hemen açar. Her sandık türü bir UTC gününde sınırlı sayıda alınır: **Bronz 5, Gümüş 3, Altın 2, Elmas 1** (`STORE_CHEST_DAILY_LIMITS`, `server/app/meta_progression.py`). Haklar UTC gün dönümünde (Türkiye saatiyle 03.00) yenilenir. 8 saatte bir verilen hediye Bronz Sandık ve savaşta kazanılan sandıklar sınıra girmez. Ayda bir günlük %40 indirim sürer; o gün de aynı sınır geçerlidir. Sayım mağaza makbuzlarından yapılır; oyuncu kaydına yeni alan eklenmedi.
+
 ### Sezon ve turnuva takvimi: dört haftalık döngü (Beta.72 tur 6)
 
 Sezon ve Takımlar Arası Turnuva aynı takvimi kullanır. Her döngü Pazartesi 00:00 UTC'de başlar ve dört hafta (28 gün) sürer; 1. döngü 28 Eylül 2026'dır. Sezon değişince kupa arşivlenir ve yumuşak sıfırlama yapılır (sezon deneyimi ve alınan kademeler sıfırlanır, lig oyuncuları 3600 kupaya iner).

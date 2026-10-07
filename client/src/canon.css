@@ -7140,3 +7140,10 @@ body[data-app-screen="play"] .module-shelf .module-card.deck-module-card > .name
   body[data-app-screen="rewards"] .season-rewards-screen { grid-template-columns:minmax(0,1fr); }
   body[data-app-screen="rewards"] .season-rewards-screen > .profile-terminal-tabs { width:100% !important; }
 }
+
+/* Sandık mağazası günlük alım hakkı (7 Ekim 2026): kartta olasılık özetinin
+   altında "kalan / sınır"; hak bitince satır uyarı rengine döner ve satın alma
+   düğmesi "SINIR DOLDU" yazar. Yazı .5rem altına inmez (Android web görünümü). */
+.chest-store-limit { color:#8fe8dc;font-size:.5rem;line-height:1.35;text-align:center; }
+.chest-store-limit[data-exhausted="true"] { color:#ffb84d; }
+.shop-limit-note[hidden] { display:none; }

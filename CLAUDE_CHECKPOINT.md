@@ -1,36 +1,65 @@
-# Claude devir notu — 7 Ekim 2026 (ev bilgisayarı, gece yarısından sonra)
+# Claude devir notu — 7 Ekim 2026 (iş bilgisayarı)
 
-İş bilgisayarındaki 6 Ekim işleri, evde yapılan duman testi düzeltmesi, `versionCode` 3 ve paket denetimi betiği depoda (son commit `60d0cbb`; kalite denetimi yeşil). **Sunucu r12 canlıda; kullanıcı v3 paketini Play'e yüklediğini ve siteyi yayınladığını bildirdi.** Kullanıcı Play Console'da hedef kitleyi **13 yaş ve üzeri** olarak belirledi, uygulama içeriği beyanlarını (reklam kimliği, finans, veri güvenliği) ve mağaza ayarlarını (kategori, etiketler) geçti; **şimdi "Varsayılan mağaza girişi" ekranında ve bu işi iş bilgisayarına bıraktı (hemen aşağıda).** Evde yapılıp **commit edilmeyenler:** **analitik yaş sorusu** (sunucu, istemci, gizlilik metni ve testleri), **mağaza / Kartlar / takım isteği arayüz düzeltmeleri** (yalnız istemci), gizlilik metnine eklenen kısmi veri silme paragrafı, `docs/CHILD_AUDIENCE_AUDIT.md` ve bu dosya. Commit'i kullanıcı yapar; **iş bilgisayarı güncel ağaçla başlasın diye evden çıkmadan commit + push gerekir.**
+Depo iş bilgisayarına `894bb0e` ile geldi; ağaç temizdi ve kalite denetimi bu commit için yeşil. Canlıda sunucu r12, Play dahili testte v3 paketi var; hedef kitle 13 yaş ve üzeri. Evde yapılan analitik yaş sorusu ile mağaza / Kartlar / takım isteği arayüz düzeltmeleri depoda ama **yayınlanmadı** (sunucu r13 ve v4 paketi evde yapılır; aşağıda). **7 Ekim'de iş bilgisayarında Play Console mağaza girişinin metinleri ve görselleri hazırlandı; konsola yüklenmedi** (hemen aşağıda). Aynı gün mağaza sandıklarına **günlük alım sınırı** eklendi (sunucu + istemci; yayınlanmadı; ikinci bölüm). Kullanıcı mağaza girişini doldurdu ve **kapalı test** kanalına geçmek üzere (üçüncü bölüm). Commit bekleyenler aşağıda "Commit bekleyen dosyalar" başlığında. Commit'i kullanıcı yapar. Aynı ağaçta Codex de çalışıyor (`CODEX_CHECKPOINT.md`); o dosyaya ve Codex'in değişikliklerine dokunulmaz.
 
-## Sıradaki oturum (iş bilgisayarı): Play Console mağaza girişi
+## 7 Ekim (iş bilgisayarı): Play Console mağaza girişi hazırlandı (yüklenmedi)
 
-Kullanıcı kararı (7 Ekim gece): "bunla ilgili notunu al yarın iş bilgisayarında yapalım bu kısmı." Ekran: Kullanıcı sayısını artırın → Play Store'daki varlığı → Mağaza girişleri → Varsayılan mağaza girişi (dil: Türkçe, tr-TR).
+Ekran: Kullanıcı sayısını artırın → Play Store'daki varlığı → Mağaza girişleri → Varsayılan mağaza girişi (tr-TR). Metinlerin tamamı, uyulan kurallar, dosya listesi, alternatif metinler ve üretim yöntemi `docs/PLAY_STORE_LISTING.md` içinde.
 
-**Ekrandaki alanlar ve ölçüler (7 Ekim'de görüldü):**
+- **Kurallar birincil kaynaktan okundu** (7 Ekim): meta veri politikası ve önizleme öğeleri yardım sayfaları. Önceki notta "okunmadı" diye işaretlenen madde kapandı.
+- **Metinler (belgede, kopyaları teslim klasöründe):** Türkçe kısa açıklama 73/80, tam açıklama 2073/4000 karakter; İngilizce karşılıkları 74/80 ve 2050/4000. Açıklamadaki her özellik koddan, oyunun ekranlarından ya da kanon belgesinden doğrulandı. Cihazda doğrulanmamış (Play Games ile giriş) ve kapalı (gerçek parayla satın alma, reklam) özellikler yazılmadı. Sıralama, fiyat, "yeni", "ücretsiz" gibi sözcükler ve çağrı cümleleri yok; bir betik dört metni bu açıdan denetledi.
+- **Görseller** `artifacts/play-store-listing-20261007/` altında (git'te izlenmez; **yalnız iş bilgisayarında**): `tr-TR/` ve `en-US/` klasörlerinde sekizer telefon ekran görüntüsü (`phone/01…08`, 1080×1920, 24 bit PNG, her biri 1,5 MB altında) ve özellik grafiği (`feature-graphic-1024x500.png`, 24 bit PNG). Uygulama simgesi depodaki `client/assets/branding/gridshard-store-icon-512.png` (512×512, 234 KB).
+- **Ekran sırası:** savaş, çekirdek gücü, kartlar, çekirdekler, Devre Yolu, maç sonucu (zafer), takım sohbeti, ana ekran. İlk üçü oyunun kendisini gösterir (Play'in oyunlar için öne çıkarma koşulu).
+- **Sete bilerek alınmayanlar:** mağaza ("Her ay sürpriz bir günde %40 indirim" yazısı ve "Ödeme altyapısı hazırlanıyor" notu) ve sezon ödülleri ("Ücretli geçişi aç · 99,99 TL"). Play, görsellerde fiyat ve indirim bilgisi istemiyor.
+- **Nasıl üretildi:** yalıtılmış yerel sunucu (geçici veri klasörü, yalnız yapay zekâ eşleşmesi, reklam ve ödeme kapalı) ve kurulu Chrome; 360×640 CSS pikseli × 3. Hesap ve takım bu çekim için oluşturulmuş örnek veridir (Arena 7, 1846 kupa); savaşlar gerçekten oynandı. Görüntülere yazı ya da çerçeve eklenmedi. Canlı sunucuya ve gerçek veriye dokunulmadı. **Gerçek cihazdan alınmadı.**
+- **Arayüz sürümü:** görüntüler çalışma ağacındaki arayüzdendir (v3'ten sonraki düzeltmelerle). Seçilen ekranlar, o düzeltmelerin dokunduğu ekranlar (mağaza, Kartlar'daki Bilgi / Seç kutusu, takım isteği, analitik sorusu) değildir; bu, değişiklik listesinden çıkarımdır, v3 paketiyle yan yana karşılaştırılmadı.
+- **Yapay zekayla üretilmiş öğe beyanı** (mağaza girişi ekranının sonunda; kullanıcı ekranı 7 Ekim'de paylaştı, kısa açıklama, tam açıklama ve simge girilmişti): Google'ın yardım sayfası ve AB Yapay Zekâ Tüzüğü madde 50 okundu. Görsellerin hiçbiri görsel üreten bir modelin çıktısı değil (simge çizim betiğinin, özellik grafiği HTML/CSS düzeninin çıktısı; ekran görüntüleri gerçek); açıklama metinlerini Claude yazdı, kullanıcı gözden geçirdi. Önerilen seçenek "Öğeleri etiketleme"; bu bir kapsam değerlendirmesidir, hukuki görüş değildir ve karar kullanıcınındır. Olgular, kaynaklar ve gönüllü etiketleme seçeneği `docs/PLAY_STORE_LISTING.md` sonunda. Kullanıcının seçimi henüz görülmedi.
+- **Betikler** geçicidir ve depoda değildir; kopyaları ve kısa kullanım notu `artifacts/play-store-listing-20261007/tools/` altında.
+- **Çekim sırasında öğrenilen (hata değil):** hiç maç oynamamış hesapta yapay zekâ rakip ilk hamlesini 15 saniye sonra yapar (ilk maç kolaylığı, `server/app/main.py`). Boş devreye karşı çekirdek 10–15 saniyede düşer; savaş görüntüsü için hesaba maç geçmişi yazmak gerekti.
 
-- Uygulama adı: `GRIDSHARD` (dolu, 9/30).
-- Kısa açıklama: en çok 80 karakter (**boş**). Tam açıklama: en çok 4000 karakter (**boş**).
-- Uygulama simgesi: 512×512, PNG ya da JPEG, en çok 1 MB (**boş**). Depoda hazır: `client/assets/branding/gridshard-store-icon-512.png` (512×512, 234 KB).
-- Özellik grafiği: 1024×500, PNG ya da JPEG, en çok 15 MB (**boş; depoda yok, yapılacak**).
-- Video: isteğe bağlı YouTube adresi.
-- Telefon ekran görüntüleri: 2–8 adet, 16:9 ya da 9:16, kenarlar 320–3840 piksel, her biri en çok 8 MB (**boş**). Tanıtımdan yararlanmak için en az 4 görüntü ve en az 3'ü 16:9 ya da 9:16, en az 1080 piksel.
-- Tablet, PC üzerinde Google Play Games, masaüstü ve Android XR öğeleri isteğe bağlı bölümlerdir.
+**Kullanıcıda kalanlar**
 
-**Yapılacaklar (iş bilgisayarında yapılabilir; paket ve sunucu gerektirmez):**
+1. Konsolda kısa ve tam açıklamayı yapıştır; simgeyi, özellik grafiğini ve sekiz ekran görüntüsünü sırasıyla yükle; yapay zekâ beyanını seç; kaydet. Tam açıklama kutusunda satır aralarının durduğuna bak (inceleme bölümü metni tek paragraf gösteriyor). Tablet, Chromebook, XR bölümleri ve video isteğe bağlıdır, boş kalabilir.
+2. İngilizce giriş istenirse: Mağaza girişleri → çeviri ekle → İngilizce (en-US); metinler ve görseller `en-US/` klasöründe.
+3. Slogan kararı: özellik grafiğinde tanıtım sitesindeki "Devreni kur. Stratejini konuştur." kullanıldı. `docs/BRAND_IDENTITY.md` içindeki eski slogan "Devreni Kur. Çekirdeği Kır." idi; istenirse grafik bir komutla yeniden üretilir (betikler iş bilgisayarında).
+4. Commit + push: liste aşağıda "Commit bekleyen dosyalar" başlığında.
 
-1. Kısa ve tam açıklama taslağı (Türkçe; istenirse İngilizce giriş). Kaynak: tanıtım sitesindeki oyun anlatımı (`public-site/content.js`) ve `docs/YOL_HARITASI.md`. Hiçbir taslak yazılmadı.
-2. Telefon ekran görüntüleri: oyunun kendisinden, yerel sunucu ve kurulu Chrome ile 1080×1920 (360×640 CSS pikseli, 3 kat). Çalışma ağacındaki arayüz v4 paketinin arayüzüdür (yeni mağaza düzeni dahil); görüntüler buradan alınırsa çıkacak paketle uyuşur. Yeni hesap boş göründüğü için ilerlemiş bir hesap durumu gerekir (yerel sunucuda; canlı veriye dokunmadan).
-3. Özellik grafiği 1024×500.
-4. Dosyaları kullanıcı konsola yükler ve kaydeder.
+## 7 Ekim (iş bilgisayarı): mağaza sandıkları — günlük alım sınırı, yeni fiyatlar, tek açma düğmesi (uygulandı, yayınlanmadı)
 
-**Hatırlatmalar:** hedef kitle 13+ olduğu için mağaza girişinde küçük çocuklara hitap eden görsel ya da karakter olmamalı (Google reddedebilir; `docs/CHILD_AUDIENCE_AUDIT.md`). Görüntüler oyunun gerçek ekranlarını göstermeli. Ad, simge ve açıklamada sıralama ya da fiyat iddiası ve anahtar kelime yığını kullanılmamalı (Play meta veri politikası; **bu turda birincil kaynaktan okunmadı**, yazmadan önce okunmalı).
+Kullanıcı isteği: "mağazada satın alınabilen sandıklara sınır koymamışız. 8 saatte bir hediye edilen bronz sandık böyle devam edecek… bronz, gümüş, altın ve elmas sandık sınırsızca alınıyor buna haftalık yada günlük sınır koyalım."
+
+- **Seçilen kural (sayıları ve "günlük"ü Claude seçti; kullanıcı yalnız "haftalık ya da günlük" dedi, sayı vermedi):** sandık türü başına günlük sınır — Bronz 5, Gümüş 3, Altın 2, Elmas 1. Haklar UTC gün dönümünde (Türkiye saatiyle 03.00) yenilenir. Sayılar tek yerde: `STORE_CHEST_DAILY_LIMITS` (`server/app/meta_progression.py`); değiştirmek tek satırdır, yanında `server/tests/test_store_chest_daily_limit.py` içindeki beklenen tablo ve kanon belgesi güncellenir.
+- **Sınıra girmeyenler:** 8 saatte bir verilen hediye Bronz Sandık, savaşta kazanılan sandıklar, eldeki sandıkları açmak (HEPSİNİ AÇ). Aylık %40 indirim günü sürer; o gün de aynı sınır geçerlidir.
+- **Sunucu:** sayım mağaza makbuzlarından (`shop_receipts`) yapılır; oyuncu kaydına alan eklenmedi, veritabanı biçimi değişmedi. Mağaza görünümü her sandık için `daily_limit`, `purchased_today`, `remaining_today` ve mağaza için `limit_resets_at` gönderir. Sınır dolunca alım reddedilir (bakiye düşmez): "Bugünkü alım sınırına ulaştın: Bronz Sandık günde en çok 5 kez alınır." Aynı isteğin yinelenmesi sınır doluyken de makbuzdan yanıtlanır. Günlük en çok 11 alım olduğu için 200'lük makbuz sınırı sayımı bozmaz.
+- **İstemci:** kartta olasılık özetinin altında "Günlük alım hakkı 3 / 5"; hak bitince satır uyarı renginde, satın alma düğmesi "SINIR DOLDU" yazar ve kapanır. Sandıkların altında "Alım hakları her gün yenilenir (saat 03:00)." notu (saat oyuncunun kendi saatiyle). İngilizceleri eklendi. Sınır alanlarını göndermeyen eski sunucuda (r12) satır çıkmaz, düğme eskisi gibi çalışır.
+- **Eski istemci (Play'deki v3):** sunucu güncellenince sınırı aşan alımda sunucunun iletisini görür; kartta kalan hak yazmaz. Kalan hak yeni pakette (v4) ve yeni web arayüzünde görünür.
+- **Testler:** `server/tests/test_store_chest_daily_limit.py` (yeni, 8 test: sınır tablosu, görünüm, dört sandık için sınırda durma ve bakiyenin düşmemesi, UTC gün dönümünde yenilenme, hediye sandığın dışarıda kalması, uç noktanın 422 yanıtı ve kayıttan yeniden yüklemede sınırın sürmesi); `client/tests/store-chest-daily-limit.test.js` (yeni). `server/tests/test_chest_odds_disclosure.py` binlerce alımla içerik ölçtüğü için o testte sınır devre dışı bırakılır.
+- **Doğrulama:** sunucu tam paket 1208 geçti, 39 atlandı, 2 başarısız (yalnız bu makinede `fakeredis` olmadığı için; PostgreSQL testleri atlananların içinde); istemci 239/239; araçlar 32/32. Oyunun kendisi yalıtılmış yerel sunucuda, telefon boyutunda Chrome'da (360×640 ve 320×568; Android'in en küçük yazı boyu taklit edilerek) denendi: sayaç 5'ten 0'a iniyor, beşinci alımdan sonra düğme "SINIR DOLDU" olup kapanıyor, hediye sandık yine alınıyor ve sayacı değiştirmiyor, kapalı düğme zorlanınca sunucu iletisiyle reddediyor, sayfa yenilenince sınır sürüyor, İngilizce metinler doğru, taşma yok. **Gerçek cihazda ve PostgreSQL'e karşı denenmedi** (PostgreSQL testleri push sonrası kalite denetiminde koşar).
+- **Yeni fiyatlar (kullanıcı kararı, 7 Ekim: "günlük sınır güzel ancak dk ve akı fiyatlarını artıralım"):** Bronz 1000 Devre Kredisi (önce 300), Gümüş 2000 (önce 1000), Altın 500 Akı (önce 250), Elmas 1000 Akı (değişmedi). `STORE_CHEST_PRICES`; indirim gününde %40 düşer (Bronz 600). Fiyat sunucudan geldiği için Play'deki v3 de sunucu güncellenince yeni fiyatı gösterir. Yeni hesap 350 Devre Kredisiyle başlar; Bronz Sandık'ı hemen satın alamaz, hediye sandık sürer.
+- **Tek açma düğmesi (kullanıcı isteği: "hediye sandık için ayrı buton yerine sandık aç butonu hediye sandık aç olarak değişse, yani hediye varsa önce hediye sandık aç olacak buton, sonra sandık aç"):** Bronz kartta ayrı hediye düğmesi kalktı. Kartlarda en çok iki düğme var: satın alma ve açma. Açma düğmesi hediye hazırken "HEDİYE SANDIK AÇ" (hediyeyi açar), sonra "SANDIK AÇ" (eldeki sandıkları açar; eski adı "HEPSİNİ AÇ" idi, adı kullanıcının sözüne göre Claude değiştirdi); hediye beklerken elde sandık da yoksa kapalıdır ve kalan süreyi yazar ("HEDİYE · 7s 59dk"). Elde sandık varken hediyenin kalan süresi kartta görünmez; süre dolunca mağaza kendiliğinden yenilenir ve düğme hediyeye döner (zamanlayıcı buna göre düzeltildi). Eğitimin hediye adımı aynı düğmeyi gösterir; hediye hazır değilse adım zaten atlanır.
+- **İkinci tur doğrulama:** sunucu tam paket 1208 geçti, 39 atlandı, 2 başarısız (yalnız `fakeredis`); istemci 239/239; araçlar 32/32. Tarayıcıda (360×640, yalıtılmış yerel sunucu): yeni fiyatlar kartlarda; Bronz kartta hediye hazırken "HEDİYE SANDIK AÇ", alındıktan sonra "SANDIK AÇ", eldeki açıldıktan sonra kapalı geri sayım; diğer kartlarda "SANDIK AÇ"; İngilizceleri doğru; taşma yok. **Günlük sınırın tarayıcı denemesi fiyat değişikliğinden önce yapıldı, sonra yinelenmedi** (deneme hesabının bakiyesi yeni fiyatla beş alıma yetmiyor); sınır mantığı değişmedi ve sunucu testleri yeni fiyatlarla geçiyor.
+- **Yayın:** sunucu r13 ve v4 paketiyle birlikte (ikisi de evde). Ekonomi dengesi (bu sayıların ilerleme hızına etkisi) ölçülmedi; sayılar başlangıç değeridir.
+
+## 7 Ekim: Play Console durumu (kullanıcının paylaştığı ekranlardan)
+
+- Mağaza girişi: kısa açıklama, tam açıklama ve simge girilmiş görüldü. Yapay zekâ beyanı için öneri verildi; kullanıcının seçimi ve kaydı görülmedi.
+- Kullanıcı **Kapalı test - Alpha** ekranına geçti: kanal "Etkin değil"; görevler: ülke seç, test kullanıcılarını seç, yeni sürüm oluştur, sürümü önizle ve onayla, incelemeye gönder. Bu adımlar için henüz yönlendirme yapılmadı.
+- Kullanıcı kapalı testten önce başka düzeltmeler de istediğini söyledi; yalnız sandık sınırını örnek verdi. Diğerleri sorulacak.
+
+## Kullanım hakkı ve yayın zamanı (7 Ekim, 14.40 TSİ)
+
+Kullanıcı sordu: "kalan kullanım hakkımız yeni paketi üretmemizi ve sunucu güncellememize yeter mi?" Uygulamanın gösterdiği durum: Pro planı; haftalık hakkın %94'ü dolu (12 Ekim Pazartesi 07.00 TSİ'de sıfırlanır); 5 saatlik hakkın %59'u dolu (bugün 14.30 TSİ'de sıfırlanır); ek kullanım kapalı. Verilen yanıt: kalan %6 ile r13 ve v4'ün ikisi büyük olasılıkla bitmez; canlı geçişin ortasında hakkın bitmesi en kötü durumdur, bu yüzden geçiş haftalık sıfırlamadan sonraya (ya da ek kullanım açılırsa daha erkene) önerildi. Karar kullanıcının. Kapalı test, Play'deki v3 ile de başlatılabilir (r12 ile uyumlu); yeni fiyatlar, sınır ve tek düğme r13 + v4 ile gelir.
+
+## Commit bekleyen dosyalar (7 Ekim, iş bilgisayarı)
+
+`CLAUDE_CHECKPOINT.md`, `docs/PLAY_STORE_LISTING.md` (yeni), `docs/GRIDSHARD_2_1_KANONIK_TASARIM.md`, `server/app/meta_progression.py`, `server/tests/test_store_chest_daily_limit.py` (yeni), `server/tests/test_chest_odds_disclosure.py`, `client/index.html`, `client/src/app.js`, `client/src/canon.css`, `client/src/i18n.js`, `client/src/i18n-catalog.js`, `client/tests/store-chest-daily-limit.test.js` (yeni), `client/tests/shop-gift-on-bronze-card.test.js`, `client/tests/checkpoint-ui-pass.test.js`, `server/tests/test_beta72_store_economy.py`, `server/tests/test_beta40_meta_progression.py`.
 
 ## Yalnız ev bilgisayarında yapılabilenler (bekliyor)
 
 İş bilgisayarında Android imza anahtarı yok. Sunucu sürüm betikleri, sabitlenmiş sunucu anahtar kaydı ve önceki sürüm kayıtları yalnız evde (`artifacts/`, git'te izlenmez); iş bilgisayarında Docker motoru kapalıydı. Kullanıcı da bunu hatırlattı: "o bilgisayarda aab/apk üretimi ve sunucu güncellemesi yapamıyorduk."
 
 1. Kullanıcı commit + push (evde) → kalite denetimi yeşil.
-2. Sunucu **r13** (analitik yaş sorusu ve yeni web arayüzü; r12 ile aynı yöntem, canlı geçiş kullanıcının açık onayıyla).
+2. Sunucu **r13** (analitik yaş sorusu, mağaza sandıklarında günlük alım sınırı ve yeni web arayüzü; r12 ile aynı yöntem, canlı geçiş kullanıcının açık onayıyla).
 3. Güncel site paketi (gizlilik metni: yaş sorusu ve kısmi silme paragrafı); Cloudflare'e kullanıcı yükler.
 4. **v4 paketi** (sürüm kodu 4; kullanıcının "üret" demesi gerekir). Yanıt bekleyen soru: web görünümünde otomatik doldurma kapatılsın mı? Mağaza ekran görüntüleri alınırken bulunan arayüz düzeltmeleri de bu pakete girer.
 

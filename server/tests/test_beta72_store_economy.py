@@ -168,38 +168,38 @@ def test_only_bronze_is_a_gift_every_eight_hours():
 
 def test_store_chest_prices_and_monthly_sale_day():
     assert STORE_CHEST_PRICES == {
-        "field_3h": ("circuit_credits", 300),
-        "circuit_8h": ("circuit_credits", 1000),
-        "core_24h": ("flux_shards", 250),
+        "field_3h": ("circuit_credits", 1000),
+        "circuit_8h": ("circuit_credits", 2000),
+        "core_24h": ("flux_shards", 500),
         "diamond_24h": ("flux_shards", 1000),
     }
     for year, month in ((2026, 10), (2026, 11), (2027, 2)):
         day = chest_sale_day(year, month)
         assert day == chest_sale_day(year, month)
         sale = datetime(year, month, day, 9, tzinfo=timezone.utc)
-        assert store_chest_price("field_3h", sale) == ("circuit_credits", 180, 300)
+        assert store_chest_price("field_3h", sale) == ("circuit_credits", 600, 1000)
         assert store_chest_price("diamond_24h", sale) == ("flux_shards", 600, 1000)
     normal = _non_sale_moment()
-    assert store_chest_price("core_24h", normal) == ("flux_shards", 250, 250)
+    assert store_chest_price("core_24h", normal) == ("flux_shards", 500, 500)
 
 
 def test_store_chest_purchase_spends_currency_opens_real_chest_and_is_idempotent():
     moment = _non_sale_moment()
     service = MetaProgressionService(now_func=lambda: moment)
     profile = PlayerProfileService().get_or_create("store-chest")
-    profile.flux_shards = 300
+    profile.flux_shards = 550
     receipt = service.purchase_store_chest(profile, "core_24h", "chest-1")
     replay = service.purchase_store_chest(profile, "core_24h", "chest-1")
     assert replay == receipt
-    assert receipt["cost"] == 250 and receipt["sale"] is False
+    assert receipt["cost"] == 500 and receipt["sale"] is False
     assert receipt["rewards"]["circuit_credits"] > 0
     assert profile.flux_shards == 50 + receipt["rewards"]["flux_shards"]
     assert profile.chest_slots == []
-    second = service.purchase_store_chest(profile, "field_3h", "chest-2") if profile.circuit_credits >= 300 else None
+    second = service.purchase_store_chest(profile, "field_3h", "chest-2") if profile.circuit_credits >= 1000 else None
     if second is not None:
         assert second["chest"]["chest_id"] != receipt["chest"]["chest_id"]
     profile.flux_shards = 10
-    with pytest.raises(MetaProgressionError, match="250 Akı"):
+    with pytest.raises(MetaProgressionError, match="500 Akı"):
         service.purchase_store_chest(profile, "core_24h", "chest-3")
     store = service.view(profile)["shop"]["chest_store"]
     assert [item["definition_id"] for item in store["items"]] == list(STORE_CHEST_PRICES)
