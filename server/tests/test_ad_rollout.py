@@ -69,13 +69,14 @@ def test_store_and_purchase_responses_do_not_leak_activation_to_legacy_client(mo
     assert not replay["ad_platforms"]["admob"]  # No persisted client capability.
 
 
-def test_signed_callback_and_reward_replay_are_scoped_and_fail_closed(monkeypatch):
+@pytest.mark.parametrize("mode", ["test", "live"])
+def test_signed_callback_and_reward_replay_are_scoped_and_fail_closed(monkeypatch, mode):
     verifier,key=_admob()
     monkeypatch.setattr(main,"STORE_VERIFIERS",StoreVerifiers(admob=verifier))
     monkeypatch.setattr(main,"AD_TEST_MODE",False)
     player=f"ad-ssv-{uuid4().hex}"
     battle=f"ad-battle-{uuid4().hex}"
-    monkeypatch.setattr(main,"AD_ROLLOUT",AdRollout("test",frozenset({player})))
+    monkeypatch.setattr(main,"AD_ROLLOUT",AdRollout(mode,frozenset({player}) if mode == "test" else frozenset()))
     state=BattleState(battle_id=battle,match_type="arena_ai",ranked_eligible=True)
     engine=BattleEngine(state)
     for p in (player,"fixture-opponent"): engine.add_player(p)
@@ -93,6 +94,7 @@ def test_signed_callback_and_reward_replay_are_scoped_and_fail_closed(monkeypatc
     assert client.get("/ads/admob/ssv?"+query).status_code == 200
     assert client.get("/ads/admob/ssv?"+query).status_code == 200
     assert len(profile.verified_ad_views) == 1
+    assert profile.circuit_credits == credits  # SSV alone never grants a bonus.
     assert client.post(claim,json={"request_id":"legacy","provider":"admob"}).status_code == 422
     first=client.post(claim,json=body)
     assert first.status_code == 200, first.text
@@ -100,7 +102,8 @@ def test_signed_callback_and_reward_replay_are_scoped_and_fail_closed(monkeypatc
     assert after > credits
     assert client.post(claim,json=body).status_code == 200
     assert profile.circuit_credits == after
-    assert client.get("/ads/admob/ssv?"+_ssv_query(key,user_id="not-allowlisted",custom_data=battle)).json()["ignored"]
+    if mode == "test":
+        assert client.get("/ads/admob/ssv?"+_ssv_query(key,user_id="not-allowlisted",custom_data=battle)).json()["ignored"]
 
 
 def test_signature_only_callback_never_opens_a_player_transaction(monkeypatch):

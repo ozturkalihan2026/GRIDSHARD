@@ -1,8 +1,11 @@
 [CmdletBinding()]
-param([string]$Directory = 'D:\Projects\GRIDSHARD\artifacts\android-production-20261005-v2', [int]$VersionCode = 2)
+param([string]$Directory = 'D:\Projects\GRIDSHARD\artifacts\android-production-20261005-v2', [int]$VersionCode = 2,
+    [string]$JavaHome, [string]$AndroidSdkRoot, [string]$BuildToolsVersion = '36.0.0')
 $ErrorActionPreference = 'Stop'
 Add-Type -AssemblyName System.IO.Compression.FileSystem
 $taskRoot = Split-Path -Parent $PSScriptRoot
+. (Join-Path $PSScriptRoot 'android-toolchain.ps1')
+$taskTools = Resolve-GridshardAndroidToolchain -JavaHome $JavaHome -AndroidSdkRoot $AndroidSdkRoot -BuildToolsVersion $BuildToolsVersion
 $taskCert = Get-Content -LiteralPath (Join-Path $taskRoot 'secrets\android-release\public-certificate.json') -Raw | ConvertFrom-Json
 $taskCredential = Import-Clixml -LiteralPath (Join-Path $taskRoot 'secrets\play-review-20261005-vault\credential.dpapi.xml')
 $taskPassword = $taskCredential.GetNetworkCredential().Password
@@ -60,17 +63,17 @@ try {
             $taskFonts[[IO.Path]::GetExtension($taskArchive)] = $taskFontCount
         } finally { $taskZip.Dispose() }
     }
-    $taskSignerOutput = & 'C:/Users/S-A/AppData/Local/Android/Sdk/build-tools/36.0.0/apksigner.bat' verify --print-certs $taskApk
+    $taskSignerOutput = & $taskTools.ApkSigner verify --print-certs $taskApk
     if ($LASTEXITCODE -ne 0 -or ($taskSignerOutput -join "`n") -notmatch $taskCert.sha256.Replace(':', '').ToLower()) { throw 'APK signer mismatch' }
-    $taskAabSignature = & 'C:/Program Files/Android/Android Studio/jbr/bin/jarsigner.exe' -verify $taskAab
+    $taskAabSignature = & $taskTools.JarSigner -verify $taskAab
     if ($LASTEXITCODE -ne 0 -or ($taskAabSignature -join "`n") -notmatch 'jar verified') { throw 'AAB signature invalid' }
-    $taskAabCertificate = & 'C:/Program Files/Android/Android Studio/jbr/bin/keytool.exe' -printcert -jarfile $taskAab
+    $taskAabCertificate = & $taskTools.Keytool -printcert -jarfile $taskAab
     if ($LASTEXITCODE -ne 0 -or ($taskAabCertificate -join "`n") -notmatch [regex]::Escape($taskCert.sha256)) { throw 'AAB signer mismatch' }
-    $taskBadging = & 'C:/Users/S-A/AppData/Local/Android/Sdk/build-tools/36.0.0/aapt.exe' dump badging $taskApk
+    $taskBadging = & $taskTools.Aapt dump badging $taskApk
     $taskBadgingText = $taskBadging -join "`n"
     if ($LASTEXITCODE -ne 0 -or $taskBadgingText -notmatch "package: name='com.gridshardgame.app' versionCode='$VersionCode' versionName='2\.1\.0-beta\.72'" -or $taskBadgingText -match 'application-debuggable|uses-permission.*(AD_ID|ACCESS_ADSERVICES)') { throw 'Release identity/permission gate failed' }
     # Firebase must not start by itself: no registration token before the player turns notifications on.
-    $taskManifest = (& 'C:/Users/S-A/AppData/Local/Android/Sdk/build-tools/36.0.0/aapt.exe' dump xmltree $taskApk AndroidManifest.xml) -join "`n"
+    $taskManifest = (& $taskTools.Aapt dump xmltree $taskApk AndroidManifest.xml) -join "`n"
     if ($LASTEXITCODE -ne 0) { throw 'Packaged manifest could not be read' }
     foreach ($taskFlag in @('firebase_messaging_auto_init_enabled', 'firebase_analytics_collection_enabled')) {
         if ($taskManifest -notmatch ('"' + $taskFlag + '"[^\n]*\n[^\n]*android:value[^\n]*(\(type 0x12\)0x0(?![0-9a-f])|="false")')) { throw "Startup flag is not disabled in the packaged manifest: $taskFlag" }

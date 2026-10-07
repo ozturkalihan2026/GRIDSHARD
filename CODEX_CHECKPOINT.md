@@ -2,6 +2,294 @@
 
 Güncelleme tarihi: 7 Ekim 2026
 
+## Son tamamlanan — canlı reklam sunucu tarafında açık / r13 ve imzalı v4 bekliyor
+
+Kullanıcının açık talebiyle **mevcut r12 imajında yalnız reklam rollout ayarı
+`live` yapıldı**. SSV1, Android rewarded birimi doğru, test oyuncu listesi
+boş, sahte reklam/ödeme test kipleri0. UMP/child-safe-v1/SSV/kalıcı sonuç/
+tek ödül korumaları kaldırılmadı. Eski protokol ve web istemcisi reklam
+yetkisi alamıyor. Gerçek ödeme açılmadı. **r13 kaynak/imaj geçişi yapılmadı.**
+
+R2 systemd `gridshard-admob-live-20261007-r2.service` **Result=success /
+ExecMainStatus0 / active-exited / AD_LIVE_ACTIVATION_PASSED**. Aynı image
+`sha256:39645c83dcc8e5fa689112e9942c4d4dd106fceb04897e906c26149d9ffd86d8`,
+aynı dört Compose katmanı/env (yalnız rollout farkı)/mountlar. Dört private
+secret mount read-only. Kalıcı satır fingerprint/sayıları halka tekrar
+açılmadan önce birebir; son audit **12 profil / 12 kimlik / 65 savaş**, tüm
+kalıcı tablo sayıları yedek öncesiyle aynı, pending0/kritik log marker0.
+DB restore, silme, oyuncu hesabı veya ekonomi işlemi yapılmadı.
+
+Yeni çevrimdışı yedek
+`/var/backups/gridshard-production/20261007-before-admob-live-r12-r2`,
+**217726 byte**, SHA
+`1569f58651372c8897ca97207323b8dd2d67281f05cbda8d9715b8807ce8e8b2`;
+aynı kurulum/sayılar/SHA ve bağımsız `pg_restore --list` doğrulandı.
+Yedek dizini0700, dump/manifest0600; dump repo/iş bilgisayarına taşınmadı.
+R1'in ayrı yedeği/logu ve root0600 eski .env geri dönüş kopyaları korunur.
+
+**34 iç sağlık kontrolü + iş bilgisayarından 331.302s / 34 bağımsız HTTPS
+kontrolü geçti**, unsigned SSV403. AWS urllib dış isteği Cloudflare403
+aldığından bağımsız dış kontrol bu makinede yapıldı; Cloudflare/WAF/DNS
+değiştirilmedi. Dış kanıt root0600, olmadan R2 başarı yazamaz. Son bağımsız
+salt-okunur audit başarılı. Yerel kişisel-verisiz makbuz:
+`artifacts/admob-readiness-20261007/live-activation-final-audit.json`.
+Operatör root0500 SHA
+`4a1f402b4a680b121bed0a417f7ab15475d2d85f9f20e218b230b27aed905386`;
+14 saf ayar/witness testi geçti. Önceki R1 başarısız denemesi aşağıda kayıtlı.
+Yerel monitor session46239 tamamlandı/exit0; bekleyen exec yok.
+
+Bu **sunucu canlı ayar doğrulamasıdır**, gerçek Android reklam gösterimi,
+Google SSV ödülü veya AdMob tam sunum onayı değildir. Panel son kullanıcı
+ekranında sınırlı sunum; doluluk garantisi yok. Kendi gerçek reklam trafiği
+üretilmedi. Kaynak versionCode4 hazır, fakat **imzalı APK/AAB üretilmedi**:
+kullanıcı evdeki aynı upload anahtarına şu an erişemiyor; işte JDK/SDK ve
+özel audit dosyaları da eksik. Anahtar/parola taşınmadı, yeni anahtar yok.
+
+**Sırada:** kullanıcı commit/push + güncel CI → r13 yalıtılmış imaj/smoke/
+yedek-restore ve canlı ön kontrol → r13 geçişinden hemen önce ayrı onay →
+veriyi koruyan geçiş → evde aynı upload anahtarıyla v4 build/binary audit →
+kullanıcı Play kapalı teste yükler. R13 özel ortamı mevcut r12'nin **live**
+ayarını korumalı; eski devirdeki reklamı kapatma notları artık geçerli ürün
+kararı değil. Yeni imaj geçişi, r13'ün yeni arayüzü ve fiziksel cihaz/ödül
+doğrulaması tamamlandı diye sunulmaz. Commit/push yapılmadı.
+
+## Son devam — canlı reklam açma işi başlatıldı (sonuç bekleniyor)
+
+**R1 sonucu / R2 takip:** R1 yeni yedeği doğruladı ve live ayarını uyguladı,
+fakat AWS'den Cloudflare dış sağlık isteği403 verince otomatik olarak aynı
+imajda disabled'a döndü; DB restore yapılmadı. Son salt-okunur denetim API
+healthy/disabled, iş bilgisayarından HTTPSok; AWS urllib isteği403. WAF/DNS
+değiştirilmedi. İlk yedek217726byte, SHA
+`824417df7b696b448c511998f918479b7f499be163a7ae82c45040ee984d8c73` ve
+R1 script/job/log korundu. R1'in başarısızlığı canlı reklam açıldı diye
+sunulmamalı.
+
+R2 operatör root0500 SHA
+`4a1f402b4a680b121bed0a417f7ab15475d2d85f9f20e218b230b27aed905386`,
+`/opt/gridshard/operators/admob-live-20261007-r2/activate-live.py`, systemd
+`gridshard-admob-live-20261007-r2.service` başladı. Son dry-run tekrar
+12profil/12kimlik/65savaş/idle0/pending0; **14 saf env/health-witness testi
+geçti**. Yeni yedek ayrı `20261007-before-admob-live-r12-r2` adı kullanır.
+R2 en az330s/34 iç health, iş bilgisayarından en az330s/34 HTTPS health ve
+unsignedSSV403 kanıtı olmadan tamamlanmaz. Dış kanıt root0600
+`external-health.json`; gelmez/başarısız olursa disabled'a geri döner.
+Yerel bağımsız denetim `artifacts/admob-readiness-20261007/external-health-r2.ps1`
+exec session46239 içinde sürüyor; tamamlanmış sonucu alınmalı. **R2 sonuç
+makbuzu ve son audit henüz bekleniyor; tamamlandı denmez.**
+
+Kullanıcı yeni ağın SSH /32 iznini ekledi. Git/OpenSSH keyscan ile ED25519
+`SHA256:mUVfmM7mNK+USvleLKEHIfYfOQQLP0UOVWGaSL7teTo` birebir eşleşti;
+ignored host kaydı sabitlendi ve sıkı SSH doğrulamasıyla giriş yapıldı.
+Canlı r12 API sağlıklı, **12 profil / 12 kimlik / 65 savaş**, pending0,
+aktifPvP0/socket0. Gerçek ortam **SSV1 / rollout disabled / test kipleri0**;
+Android birimi doğru, test listesi boş, PGS/review secrets yerinde.
+R12 image ID `sha256:39645c83dcc8e5fa689112e9942c4d4dd106fceb04897e906c26149d9ffd86d8`;
+production + cloudflare + play-games + play-review dört Compose katmanı.
+
+Kullanıcının bu turdaki açık canlı reklam talebi kapsamında **yalnız ayar
+değişimi** başlatıldı; r13 imajı veya yeni kaynak aktarılmadı. Özel operatör
+root0500 SHA `b33108a85bb60de46e76b20792819e62873a13f6f0443e0983280e3b6e7fef4a`,
+`/opt/gridshard/operators/admob-live-20261007-r1/activate-live.py`; systemd
+`gridshard-admob-live-20261007-r1.service`. Yedi saf ayar/red testi geçti;
+son salt-okunur ön deneme geçti. Reklam/SSV ve callback/claim kodu mevcut
+test edilmiş kaynakla eşleşir (ilk hash farkı CRLF/Windows stdin kodlaması;
+LF/UTF-8 karşılaştırmasıyla giderildi). Özel .env root0600.
+
+İşin kapsamı: aktif oyuncu yokken API/Caddy kısa duruşu → yeni özel yedek
+`/var/backups/gridshard-production/20261007-before-admob-live-r12` → aynı
+kurulum/sayılar/SHA/0700/0600/bağımsız pg_restore--list → yalnız özel .env
+rollout=live → aynı imaj/env/mountlar ve kalıcı kayıtları yeniden açmadan
+önce eşleştir → Caddy aç → en az330s/34 iç+dış sağlık kontrolü → unsigned
+SSV403. Hata olursa eski disabled ayarı/imajla açar, DB restore yapmaz.
+**Şu an tamamlandı denmez:** systemd sonucu, güvenli JSON stage satırları ve
+root0600 `result.json` takip edilmeli. Ham .env/backup/private log basılmaz.
+Gerçek reklam gösterimi/Google SSV ödülü test edilmedi; v4 imzalı paket yok.
+
+## Son devam — işte imzalı v4 / canlı reklam için güncel engeller
+
+**Yeni Wi-Fi sonrası son kontrol:** Kullanıcı ağını değiştirdi. HTTPS
+`/health` yeniden `ok / 2.1.0-beta.72`; TCP 22 artık erişilebilir. Buna
+rağmen hem keyscan hem kimlik doğrulamasız sıkı SSH denemesinde bağlantı
+sunucu banner/host anahtarı alınmadan `Connection reset` ile kesildi.
+Özel anahtar kullanılmadı, bilinmeyen anahtar kabul edilmedi, giriş veya
+uzak komut çalıştırılmadı. Yeni ağın dış IPv4'ü doğrulandı (bu açık dosyaya
+yazılmaz); mevcut güvenlik grubundaki SSH /32 kaynakları ile karşılaştırma
+gerekiyor. Kaynağın eksikliği olası, henüz kanıtlı neden değil. Aşağıdaki
+MEB engeli ve TCP erişimsizliği önceki ağa aittir; güncel sonuçla
+karıştırılmamalı. Reklam rollout'u hâlâ uygulanmadı.
+
+Kullanıcı bu bilgisayarda imzalı v4 üretmek ve kapalı testte gerçek savaş
+sonu reklamını açmak istedi. Bu, reklam rollout'unu güvenli kontrollerden
+sonra açma yetkisidir; reklamı açmak için aynı soru yeniden sorulmamalı.
+Tam r13 imaj geçişinin hemen öncesindeki ayrı onay/yedek/veri koruma
+kuralları ve gerçek ödeme kapalı kararı korunuyor.
+
+Kullanıcı sunucu adresinin değişmediğini teyit etti; adres bu herkese açık
+dosyaya yazılmadı. Tekrar salt-okunur TCP 22 kontrolü başarısız. Son HTTPS
+istekleri bu iş ağında açıkça `MEB Erişim Engeli`, kategori `games` yanıtı
+verdi. Önceki başarılı `/health` yanıtı bu son ağ kontrolünün sonucu gibi
+sunulmamalı. SSH bağlantısı/host anahtarı doğrulaması tamamlanamadı; canlı
+ortam, reklam rollout'u, güvenlik grubu veya sunucu verileri değiştirilmedi.
+SSH sorununun yalnız güvenlik grubundan kaynaklandığı kanıtlanmış değil.
+Kurumun izin verdiği bağlantıda tekrar kontrol ve güncel SSH gelen kuralları
+gerekir; `Her yer` kuralı veya ağ kısıtını aşan proxy kurulmaz.
+
+Kullanıcı mevcut upload anahtarına şu anda erişemediğini bildirdi.
+`secrets/android-release/gridshard-upload.p12` burada yok. İmzalı v4 henüz
+üretilemez; yeni upload anahtarı oluşturulmadı veya anahtar sıfırlanmadı.
+Mevcut özel anahtar ve parolası güvenli yerel erişimle sağlanmalı veya
+paket evde üretilmeli; DPAPI kaydı farklı Windows hesabında açılmaz.
+
+İş/ev yol bağımlılığı giderildi: `tools/android-toolchain.ps1` yerel JDK
+21+ ve SDK platform 36/build-tools 36.0.0'ı açık parametreler/ortam/default
+kurulum yollarından çözer; Java 8 veya eksik SDK ile durur. Build ve binary
+audit betikleri bu çözücüyü kullanır; build özel upload anahtarı/yerel DPAPI
+yoksa web varlıklarını yeniden üretmeden durur. Araçlar kurulmadı, sistem
+PATH'i değiştirilmedi. `tools/tests/test_android_toolchain.py`: **4/4 geçti**
+(Windows sandbox temp izin engelinden sonra normal Windows izinlerinde).
+Üç PowerShell dosyasının syntax kontrolü geçti. Mevcut audit'in özel review
+vault ve public sertifika dosyaları burada da eksik; bu kontroller atlanmaz.
+
+Sıradaki iş: izinli ağ + sıkı host anahtarı kontrolüyle salt-okunur sunucu
+ön kontrolü; r13 geçiş kapılarını tamamla; kullanıcı tarafından istenen canlı
+reklamı yalnız özel operatör ayarında aç, UMP/SSV/tek-ödül korumalarını tut.
+AdMob `Sınırlı reklam sunumu` tüm reklamların engellendiği anlamına gelmez,
+ama gerçek reklam doluluğu garanti değildir. Aynı upload anahtarı erişilebilir
+olunca yerel JDK/SDK hazırlığı, v4 imzalama ve tam binary audit yapılır.
+
+## Son devam — reklam akışı düzeltildi / v4 kaynak hazırlığı
+
+7 Ekim, kullanıcı `devam et` dedi; önceki AdMob hazırlığının teknik kısmı
+uygulandı. `client/src/app.js` içinde tamamlanan canlı reklam için RAM'de
+savaş kimliğine bağlı bekleyen talep tutuluyor. SSV veya bağlantı gecikince
+`ÖDÜLÜ KONTROL ET` yeniden reklam açmadan talebi yineliyor; başarıda işaret
+siliniyor. `ÖDÜL DOĞRULANIYOR…` ayrı bekleme durumu. Reklam kipinin karar
+anı sabitlendi; test sırasında panel yanıtı değişse bile test reklamından
+gerçek ödül talebi çıkmaz. Erken kapanma/native hata işaret oluşturmaz.
+Bu RAM işareti yalnız açık profil oturumunda yaşar, yeniden açılışta kaybolur
+ve hiçbir zaman ödül kanıtı sayılmaz. SSV ve kalıcı savaş sonucu zorunlu,
+aynı savaşın ödülü bir kez; kupa/takım puanı ikiye katlanmaz. Türkçe ve
+İngilizce yeni metinler eklendi.
+
+Doğrulama:
+
+- Tam istemci Node test paketi **246/246 geçti** (reklam alt kümesi 32/32).
+- Sunucu reklam rollout/SSV/kalıcı savaş ödülü/bütünlük alt kümesi Linux
+  Python 3.12 ve yalıtılmış gerçek PostgreSQL 17 üzerinde **73/73 geçti**.
+  Yerel imza fixture'ı kullanıldı, Google'a gerçek reklam isteği gönderilmedi.
+  Yeni production-strict test gerçek oturum doğrulamasını kullanır: oturumsuz
+  401, başka oyuncu 403, SSV yokken 422; callback tek kez saklanır ve tek
+  başına bonus vermez. RAM profil/progression önbelleği boşaltılınca ödül
+  kalıcı kayıttan bir kez verilir; yeni request_id ile tekrar bakiye artırmaz.
+- Web derleme sözleşmeleri **9/9 geçti**, release_guard ve JS syntax geçti.
+  Windows sandbox temp rename engeli yüzünden build testinin ilk koşusu
+  hata verdi; aynı test normal Windows izinlerinde geçmiştir. Önceki
+  sunucu Windows koşusunun yarım kalması bu Linux sonuçlarıyla giderildi.
+- Yerel web `dist/` paketi başarıyla üretildi; build_id `6989184f47fa786e`.
+  `git diff --check` temiz. Tam r13 imaj smoke/backup/restore, gerçek Android,
+  gerçek Google SSV ve canlı ödül bu tur denenmedi.
+
+`config/android-production.json` ve `android/app/build.gradle` **versionCode
+4** için güncellendi; sürüm adı `2.1.0-beta.72`. **APK/AAB imzalanmadı veya
+yüklenmedi.** Reklam rollout/SSV özel ortamı, gerçek ödeme, canlı sunucu,
+AdMob/Play/Cloudflare paneli değiştirilmedi. Commit/push kullanıcıda.
+Diğer AI'nın checkpoint dosyasına dokunulmadı.
+
+Yeniden başlatılabilir yayın notu: `docs/REWARDED_AD_LAUNCH.md`.
+`CODEX_HANDOFF_R13_V4.md` hâlâ r13 geçiş/yedek/rollback adımlarının kaynağı;
+oradaki reklamı kalıcı kapalı tutma kararı 7 Ekim kullanıcı talebiyle
+değişti; yukarıdaki son mesaj reklam açma yetkisini açıkça verir. Tam r13
+imaj geçişinin hemen öncesindeki ayrı onay şartı değişmedi. AdMob sınırlı sunumu
+toplam yasak değildir; mağaza ilişkilendirmesi/full serving onayı yok ve
+doluluk garantisi verilemez. Testler kendi gerçek reklam trafiğini üretmez.
+13+ herkes yetişkin demek değildir; mevcut UMP/G/NPA/izin korumaları korunur.
+
+Sırada: kullanıcı commit/push → CI kontrolü → r13 yalıtılmış imaj doğrulama
+ve canlı salt-okunur ön kontrol → yeni açık canlı geçiş onayı → taze,
+doğrulanmış çevrimdışı yedekle geçiş → aynı upload anahtarıyla imzalı v4
+üretim/binary denetimi → native güvenli reklam testi → kullanıcı Play'e
+yükler. İş bilgisayarında beklenen Android Java/SDK, upload anahtarı/DPAPI
+ve r12 özel betik/known_hosts kayıtları bulunamadı; evde devam veya araç/
+aynı anahtarın güvenli aktarımı için kullanıcı seçimi gerekir. Yeni upload
+anahtarı üretilmez, evdeki DPAPI kaydı başka Windows hesabında kullanılamaz.
+
+## Son devam — savaş sonu reklam açma isteği / AdMob mağaza kapısı
+
+**7 Ekim, doğrudan kullanıcı kararı:** Son sürüm ve kapalı testten önce
+savaş sonu ödüllü reklamı etkinleştirmek istiyor; Play hedef kitlesinin
+13 yaş ve üzeri seçildiğini yeniden teyit etti. Önceki reklamı kapalı
+tutma notları artık kalıcı ürün kararı değildir; açma hazırlığı kapsamda.
+Bu karar gerçek ödemeyi açma, gizlilik/yaş korumalarını kaldırma veya
+doğrulanmamış canlı geçiş yapma yetkisi değildir.
+
+AdMob genel bakış ekranı `İnceleme gerekli`, istek ve gösterim 0.
+Mevcut uygulamaya mağaza ekleme ekranında `com.gridshardgame.app`
+arandı; kullanıcı sonuç çıkmadığını bildirdi. Dahili test katılım
+bağlantısı mağaza kaydı yerine kullanılamaz. Yanlış uygulama veya
+yayınlanmadığı başka mağaza seçilmemeli; mevcut AdMob uygulaması ve
+ödüllü reklam birimi yeniden oluşturulmamalı. Mağaza eşleşmesi,
+app-ads.txt doğrulama durumu ve AdMob hazırlık incelemesi hâlâ dış kapı.
+Bu oturumda panel ayarı, sunucu rollout veya reklam ödülü açılmadı.
+
+**Yeni ekranla düzeltme (7 Ekim, 13950 ekranı):** Tüm uygulamalar
+satırında `İnceleme gerekli` yanında `Sınırlı reklam sunumu / Limiti
+kaldırmak için mağaza ekleyin` ve bir etkin reklam birimi görülüyor.
+Bu durum tüm reklamların engellendiği anlamına gelmez; yayınlanmamış
+uygulama onaya kadar sınırlı sunum alabilir (Google'ın 9989980 yardım
+sayfası). Önceki `gerçek reklam ancak Hazır sonrası açılabilir` ifadesi
+mutlak teknik kısıt olarak kullanılmamalı. Tam sunum/inceleme için
+mağaza bağı ve doğrulamalar gerekir; sınırlı durum reklam doluluğu
+garantisi değildir. Geliştirme testleri test reklamı/doğrulanmış test
+cihazıyla yapılmalı. Bu yeni bilgi canlı rollout'u kendiliğinden açmadı;
+SDK, rıza, imzalı ödül ve canlı geçiş doğrulama kapıları korunuyor.
+https://support.google.com/admob/answer/9989980?hl=tr
+
+**app-ads.txt ekranı (7 Ekim, 131525):** Panel `Henüz app-ads.txt
+dosyasının uygulandığı reklam isteği yok` diyor, tablo boş. Bu dosyanın
+yok veya bozuk olduğu kanıtı değil. Aynı tur salt-okunur canlı HTTPS
+kontrolünde `https://gridshardgame.com/app-ads.txt` HTTP 200,
+`text/plain; charset=utf-8`, mevcut yayıncı satırı birebir eşleşti.
+Bu HTTP kontrolü AdMob tarafından doğrulandı demek değil. Google
+tarayıcısı geliştirici web sitesini mağaza girişinden bulur; destek/
+geliştirici web sitesi `https://gridshardgame.com/` olmalı (gizlilik
+politikası bağlantısı bu alanın yerine geçmez). Mevcut 0 istek ve eksik
+mağaza eşleşmesiyle boş ekran uyumlu; yeni dosya/app/domain kurulmadı.
+https://support.google.com/admob/answer/9776740?hl=en
+
+Kaynak incelemesi: native köprü, UMP, release/debug kapısı, imzalı SSV
+ve tek-savaş ödülü zaten var; rollout `disabled`/`test`/`live` ayrımı
+mevcut. 13+ hedefi her oyuncunun yetişkin/rıza verebilir olduğunu
+kanıtlamaz; mevcut G-dereceli kişiselleştirilmemiş ve bilinmeyen yaş
+korumaları kaldırılmadı. Yerel üç reklam istemci dosyasında 25/25 test
+geçti (mock/statik); gerçek cihaz, gerçek reklam ve gerçek SSV ödülü
+kanıtı değildir. Sunucu testleri ilk koşuda sandbox geçici dosya izin
+hatasıyla toplanamadı; ayrı workspace runtime ile tekrar başlatıldı,
+tamamlanmayınca yalnız o pytest oturumu durduruldu. Sunucu test paketi
+bu tur geçti diye raporlanmamalı. Uygulama kaynak kodu değiştirilmedi.
+
+İş bilgisayarı güncel hazırlık kontrolü: Docker motoru 29.8.2 çalışıyor
+(sandbox dışındaki salt-okunur `docker version` ile doğrulandı); önceki
+devirdeki `Docker kapalı` kaydı güncel değil. EC2 anahtarı mevcut, fakat
+beklenen r12 yayın/known_hosts kayıtları, Android upload anahtarı ve
+DPAPI kaydı burada bulunamadı. Derleme betiğinin beklediği Java/Android
+SDK ve bunları gösteren ortam ayarları da bulunamadı. Sunucu kaynak ve
+doğrulama hazırlığı burada mümkün; imzalı v4 için araçlar ile aynı
+upload anahtarının güvenli aktarımı veya evde derleme gerekir. Yeni
+imza anahtarı üretilmez; parola sohbete veya Git'e yazılmaz.
+
+HEAD bu oturum sırasında kullanıcı tarafından `53d3212` oldu; commit
+başlığındaki `v4` derlenmiş/imzalanmış/yüklenmiş paket kanıtı değildir.
+Sıradaki güvenli yol: r13/v4 hazırlığı ve kapalı test reklam onayını
+beklemek zorunda değil; gerçek reklam açma ayrıca AdMob kapıları,
+güncel SDK/cihaz doğrulaması ve canlı rollout kontrolüyle yapılacak.
+Resmî kaynaklar 7 Ekim okundu:
+https://support.google.com/admob/answer/10564477?hl=tr
+https://support.google.com/admob/answer/10037806?hl=tr
+https://support.google.com/admob/answer/14538460?hl=tr
+https://support.google.com/admob/answer/9388275?hl=tr
+https://developers.google.com/admob/android/privacy
+https://developers.google.com/admob/android/ssv
+
 ## Son devam — iş bilgisayarı / Play Console kurulumu tamamlandı
 
 **7 Ekim 2026, kullanıcı teyidi:** Kullanıcı iş bilgisayarında olduğunu,

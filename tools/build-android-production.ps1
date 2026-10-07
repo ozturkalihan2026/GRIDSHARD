@@ -1,7 +1,8 @@
 [CmdletBinding()]
-param([switch]$PrepareOnly, [switch]$Offline)
+param([switch]$PrepareOnly, [switch]$Offline, [string]$JavaHome, [string]$AndroidSdkRoot)
 $ErrorActionPreference = 'Stop'
 $taskRoot = Split-Path -Parent $PSScriptRoot
+. (Join-Path $PSScriptRoot 'android-toolchain.ps1')
 $taskConfig = Get-Content -LiteralPath (Join-Path $taskRoot 'config\android-production.json') -Raw | ConvertFrom-Json
 $taskEnvNames = @('GRIDSHARD_ANDROID_PRODUCTION','GRIDSHARD_APP_ID','GRIDSHARD_API_BASE_URL',
     'GRIDSHARD_PLAY_GAMES_ID','GRIDSHARD_PLAY_GAMES_SERVER_CLIENT_ID','GRIDSHARD_LOCAL_DEBUG',
@@ -26,8 +27,20 @@ try {
     }
     if ($taskConfig.appId -ne 'com.gridshardgame.app' -or $taskConfig.apiBaseUrl -ne 'https://play.gridshardgame.com' `
         -or $taskConfig.versionCode -lt 1 -or $taskConfig.versionName -notmatch '^[a-zA-Z0-9.\-]+$') { throw 'Invalid canonical release configuration.' }
-    $env:JAVA_HOME = 'C:\Program Files\Android\Android Studio\jbr'
-    $env:ANDROID_HOME = Join-Path $env:LOCALAPPDATA 'Android\Sdk'
+    if (!$PrepareOnly) {
+        $taskTools = Resolve-GridshardAndroidToolchain -JavaHome $JavaHome -AndroidSdkRoot $AndroidSdkRoot
+        $env:JAVA_HOME = $taskTools.JavaHome
+        $env:ANDROID_HOME = $taskTools.AndroidSdkRoot
+        $taskKeyDirectory = Join-Path $taskRoot 'secrets\android-release'
+        foreach ($taskKeyItem in @('gridshard-upload.p12', 'credential.dpapi.xml')) {
+            if (!(Test-Path -LiteralPath (Join-Path $taskKeyDirectory $taskKeyItem) -PathType Leaf)) {
+                throw 'The existing upload key and this Windows account''s DPAPI credential are required. Never generate a replacement key.'
+            }
+        }
+        try { $taskCredential = Import-Clixml -LiteralPath (Join-Path $taskKeyDirectory 'credential.dpapi.xml') }
+        catch { throw 'Upload credential cannot be opened by this Windows account. Re-enter the existing password locally; do not send it to chat.' }
+        if ($taskCredential -isnot [System.Management.Automation.PSCredential]) { throw 'Invalid upload credential.' }
+    }
     Invoke-TaskChecked 'node' @('tools/build-mobile-web.js')
     if (!(Test-Path -LiteralPath (Join-Path $taskRoot 'android'))) {
         Invoke-TaskChecked 'node' @('node_modules/@capacitor/cli/bin/capacitor','add','android')
@@ -47,8 +60,6 @@ try {
         [IO.File]::AppendAllText($taskVariables,"`n// Pin the certified Google SDK; no floating ad dependency.`next { playServicesAdsVersion = '25.4.0' }`n",[Text.UTF8Encoding]::new($false))
     }
     if ($PrepareOnly) { Write-Output 'Canonical native project prepared; not signed, installed or published.'; return }
-    $taskKeyDirectory = Join-Path $taskRoot 'secrets\android-release'
-    $taskCredential = Import-Clixml -LiteralPath (Join-Path $taskKeyDirectory 'credential.dpapi.xml')
     $env:GRIDSHARD_ANDROID_KEYSTORE = Join-Path $taskKeyDirectory 'gridshard-upload.p12'
     $env:GRIDSHARD_ANDROID_KEY_ALIAS = $taskCredential.UserName
     $env:GRIDSHARD_ANDROID_STORE_PASSWORD = $taskCredential.GetNetworkCredential().Password

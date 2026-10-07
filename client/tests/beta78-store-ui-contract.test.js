@@ -34,5 +34,5 @@ assert.match(app, /pendingPurchaseIds\.get\(productId\)/);
 assert.match(app, /pendingPurchaseIds\.set\(productId, transactionId\)/);
 assert.match(app, /pendingPurchaseIds\.delete\(productId\)/);
 assert.match(app, /adRewardReceipts\.has\(battleId\)/);
-assert.ok(app.includes('await nativeStore.showRewardedAd({ storeState, userId:participantPlayerId, battleId })'));
+assert.ok(app.includes('await nativeStore.showRewardedAd({ storeState:adStoreState, userId:participantPlayerId, battleId })'));
 assert.ok(app.includes('await playTestRewardAd()'));

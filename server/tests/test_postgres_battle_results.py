@@ -11,6 +11,10 @@ from app.player_progression import PlayerProgressionService
 from app.postgres_battle_results import BattleResultError, PostgresBattleResults, restore_terminal, terminal_projection
 from app.telemetry import InMemoryTelemetryService
 from app.player_profile import season_descriptor
+from app.ad_rollout import AD_PROTOCOL, AdRollout
+from app.store_verification import StoreVerifiers
+from fastapi.testclient import TestClient
+from tests.test_beta72_store_verification import _admob, _ssv_query
 from test_postgres_persistent_operations import team_db, social_db  # noqa: F401
 from test_postgres_social_api import erasure_db  # noqa: F401
 
@@ -140,6 +144,56 @@ def test_ad_bonus_uses_durable_result_after_restart_once(battle_db, monkeypatch)
     assert first["receipt"]["replayed"] is False
     assert second["receipt"]["replayed"] is True
     assert players.load(a).profile["meta_progression_state"]["circuit_credits"] == before + original["circuit_credits_awarded"]
+
+
+def test_live_signed_ad_bonus_survives_cache_loss_and_response_retry(battle_db, erasure_db, monkeypatch):
+    _, players, (a, b, _), ledger = battle_db
+    verifier, key = _admob()
+    monkeypatch.setattr(gateway, "STORE_VERIFIERS", StoreVerifiers(admob=verifier))
+    monkeypatch.setattr(gateway, "AD_ROLLOUT", AdRollout("live"))
+    monkeypatch.setattr(gateway, "AD_TEST_MODE", False)
+    state = finished_state(a, b)
+    gateway.process_completed_pvp_battle(state)
+    result = ledger.player_result(state.battle_id, a)
+    before = deepcopy(players.load(a).profile)
+    claim = f"/profile/{a}/battles/{state.battle_id}/ad-reward"
+    body = {"provider":"admob", "request_id":uuid4().hex,
+            "ad_protocol":AD_PROTOCOL, "ad_platform":"android"}
+    client = TestClient(gateway.app)
+    headers = {}
+    for owner in (a, b):
+        secret, device = "ssv-fixture-" + "x" * 40, "ssv-fixture-device"
+        gateway.participant_auth_service.reset_device_secret(owner, secret, device)
+        session = gateway.participant_auth_service.register_or_login(owner, secret, device)
+        headers[owner] = {"Authorization":"Bearer " + session["access_token"]}
+    assert client.post(claim, json=body).status_code == 401
+    assert client.post(claim, json=body, headers=headers[a]).status_code == 422
+    assert players.load(a).profile == before
+    assert client.get("/ads/admob/ssv?user_id=fake&signature=fake").status_code == 403
+    transaction_id = uuid4().hex
+    callback = _ssv_query(key, user_id=a, custom_data=state.battle_id, transaction_id=transaction_id)
+    for _ in range(2):
+        assert client.get("/ads/admob/ssv?" + callback).status_code == 200
+    recorded = players.load(a).profile
+    assert len(recorded["meta_progression_state"]["verified_ad_views"]) == 1
+    assert recorded["meta_progression_state"]["circuit_credits"] == before["meta_progression_state"]["circuit_credits"]
+    assert client.post(claim.replace(a, b), json=body, headers=headers[a]).status_code == 403
+    assert client.post(claim.replace(a, b), json=body, headers=headers[b]).status_code == 422  # Not the SSV owner.
+    gateway.player_profile_service._profiles.clear()
+    monkeypatch.setattr(gateway, "player_progression_service", PlayerProgressionService(gateway.player_profile_service))
+    first = client.post(claim, json=body, headers=headers[a])
+    assert first.status_code == 200, first.text
+    assert first.json()["receipt"]["replayed"] is False
+    assert first.json()["receipt"]["xp"] == result["xp_awarded"]
+    saved = players.load(a).profile
+    assert saved["meta_progression_state"]["circuit_credits"] == before["meta_progression_state"]["circuit_credits"] + result["circuit_credits_awarded"]
+    assert saved["rating"] == before["rating"]
+    assert saved["meta_progression_state"]["verified_ad_views"][transaction_id]["claimed"] is True
+    gateway.player_profile_service._profiles.clear()
+    second = client.post(claim, json={**body, "request_id":uuid4().hex}, headers=headers[a])
+    assert second.status_code == 200, second.text
+    assert second.json()["receipt"]["replayed"] is True
+    assert players.load(a).profile == saved  # Even a new retry ID cannot double the reward.
 
 
 def test_pending_result_precedes_rollover_after_a_multi_period_outage(battle_db, monkeypatch):

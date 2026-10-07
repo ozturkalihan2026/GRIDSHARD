@@ -2,6 +2,21 @@
 
 ## Kalıcı Android paketi — 4 Ekim 2026
 
+**7 Ekim / iş-ev derleme yolları:** Release build ve binary audit artık
+`tools/android-toolchain.ps1` kullanır. `-JavaHome` ve `-AndroidSdkRoot`
+ile bu makinedeki kurulumu açıkça seçebilirsiniz; parametre verilmezse
+JAVA_HOME, ANDROID_HOME/ANDROID_SDK_ROOT ve yerel varsayılan kurulum yolları
+kullanılır. JDK 21+, Android platform 36 ve build-tools 36.0.0 zorunludur;
+Java 8 veya eksik SDK ile imzalama başlamaz. Araçların kurulması private
+upload anahtarının yerini tutmaz. Aynı `.p12` ve bu Windows hesabında
+açılabilen credential gerekir; evdeki DPAPI dosyası başka Windows hesabında
+doğrudan kullanılamaz. Yeni upload anahtarı veya debug signer oluşturulmaz.
+`-PrepareOnly` yalnız native kaynak hazırlığıdır, imzalı paket değildir.
+V4 audit çağrısında çıktı dizini ve `-VersionCode 4` açıkça verilir; mevcut
+public sertifika ve özel review-vault kontrolleri atlanmaz. Güncel canlı
+reklam durumu için `docs/REWARDED_AD_LAUNCH.md` ve checkpoint'in en üst
+bölümünü kullanın; eski kapalı/test kayıtları tarihsel olabilir.
+
 `android/` kalıcı proje artık vardır; ilk signed versionCode1,
 `com.gridshardgame.app`, mobile build `8d95b420f541bb12`.
 Tekrar üretim `tools/build-android-production.ps1` ile aynı private upload

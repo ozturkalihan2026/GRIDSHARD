@@ -68,7 +68,7 @@ test("wrong loaded unit cannot be shown and test mode never requests a real bonu
   await assert.rejects(f.bridge.showRewardedAd(f.options),/beklenen birim/);
   assert.equal(f.calls.includes("show"),false);
   const app=fs.readFileSync("src/app.js","utf8");
-  assert.match(app,/ad_policy\?\.mode === "test"[\s\S]*?return; \/\/ Test ads are not proof/);
+  assert.match(app,/if \(isPublisherTest\)[\s\S]*?return; \/\/ Test ads are not proof/);
   assert.ok(app.indexOf("// Test ads are not proof") < app.indexOf("const payload = await claimAdReward(battleId, provider)"));
 });
 
@@ -81,6 +81,7 @@ test("post-match publisher test UI does not promise a real x2 reward", () => {
       document:{getElementById:id=>elements[id]},
       progressionState:{viewModel:()=>({profileProgressionApplied:true,circuitCreditsAwarded:10})},
       postMatchSync:{lastBattleId:"fixture-battle"},adRewardReceipts:new Map(),adRewardPending:false,
+      pendingAdRewardClaims:new Set(),adRewardClaimPending:false,
       storeState:{providers:{ad_policy:{mode}}},currentAdProvider:()=>"admob",localizedUiText:t=>t,
     });
     assert.equal(elements["post-match-ad-button"].disabled,false);

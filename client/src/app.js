@@ -473,7 +473,12 @@
     : null;
   // Reklamla ikiye katlanan savaşlar (savaş kimliği → sunucu makbuzu).
   const adRewardReceipts = new Map();
+  // Yalnız bu profilin açık uygulama oturumunda tamamladığı canlı reklamlar.
+  // SSV/bağlantı gecikirse yeniden reklam oynatmadan ödül talebi yinelenir.
+  // Bu işaret ödül kanıtı değildir; sunucu yine imzalı SSV'yi zorunlu tutar.
+  const pendingAdRewardClaims = new Set();
   let adRewardPending = false;
+  let adRewardClaimPending = false;
   // Günlük meta çarkının birikimli açısı (derece). Dönüş hep saat yönünde
   // ileri gider; geri sarma olmaz, aynı yöndeki açıya yeniden dokunulmaz.
   let dailyMetaWheelRotation = 0;
@@ -3294,6 +3299,7 @@
     const provider = currentAdProvider();
     const claimed = battleId ? adRewardReceipts.get(battleId) : null;
     const isPublisherTest = provider === "admob" && storeState?.providers?.ad_policy?.mode === "test";
+    const awaitingClaim = provider === "admob" && !isPublisherTest && pendingAdRewardClaims.has(battleId);
     host.hidden = !battleId || !hasRewards;
     host.dataset.claimed = String(Boolean(claimed));
     const button = document.getElementById("post-match-ad-button");
@@ -3306,7 +3312,8 @@
       button.textContent = claimed
         ? "x2 ÖDÜL ALINDI"
         : !provider ? "REKLAM HENÜZ HAZIR DEĞİL"
-        : adRewardPending ? "REKLAM OYNATILIYOR…"
+        : adRewardPending ? (adRewardClaimPending ? localizedUiText("ÖDÜL DOĞRULANIYOR…") : "REKLAM OYNATILIYOR…")
+        : awaitingClaim ? localizedUiText("ÖDÜLÜ KONTROL ET")
         : isPublisherTest ? localizedUiText("▶ TEST REKLAMINI AÇ") : "▶ REKLAM İZLE · x2";
     }
     if (copy) {
@@ -3314,6 +3321,7 @@
         ? `+${claimed.circuit_credits} Devre Kredisi ve +${claimed.xp} Deneyim eklendi · kupa hariç`
         : !provider ? "Ödüllü reklam sağlayıcısı bu sunucuda henüz etkin değil."
         : isPublisherTest ? localizedUiText("Test reklamı · gerçek ek ödül verilmez")
+        : awaitingClaim ? localizedUiText("Reklam tamamlandı. Ödülü yeniden reklam izlemeden kontrol edebilirsin.")
         : "Devre Kredisi ve Deneyim x2 · kupa hariç";
     }
   }
@@ -3339,11 +3347,12 @@
   }
 
   async function claimAdReward(battleId, provider) {
+    const requestId = operationRequestId("ad");
     const request = () => requestJsonWithDeadline(
       `/profile/${encodeURIComponent(participantPlayerId)}/battles/${encodeURIComponent(battleId)}/ad-reward`,
       {
         method:"POST",
-        body:JSON.stringify({ request_id:operationRequestId("ad"), provider, ...(provider === "admob" ? nativeStore?.adCapability() : {}) }),
+        body:JSON.stringify({ request_id:requestId, provider, ...(provider === "admob" ? nativeStore?.adCapability() : {}) }),
       },
       15000
     );
@@ -3357,7 +3366,7 @@
       } catch (error) {
         lastError = error;
         if (Number(error?.status) !== 422) throw error;
-        await new Promise((resolve) => window.setTimeout(resolve, 1500));
+        if (attempt < 5) await new Promise((resolve) => window.setTimeout(resolve, 1500));
       }
     }
     throw lastError;
@@ -3366,22 +3375,32 @@
   async function watchRewardAd() {
     const battleId = postMatchSync.lastBattleId;
     const provider = currentAdProvider();
+    const adStoreState = storeState;
+    const isPublisherTest = provider === "admob" && adStoreState?.providers?.ad_policy?.mode === "test";
     const status = document.getElementById("post-match-store-status");
     if (!battleId || !provider || adRewardPending || adRewardReceipts.has(battleId)) return;
     adRewardPending = true;
+    adRewardClaimPending = provider === "admob" && !isPublisherTest && pendingAdRewardClaims.has(battleId);
+    if (status) status.textContent = "";
     renderPostMatchAdReward();
     try {
       if (provider === "admob") {
-        await nativeStore.showRewardedAd({ storeState, userId:participantPlayerId, battleId });
-        if (storeState?.providers?.ad_policy?.mode === "test") {
+        if (isPublisherTest || !pendingAdRewardClaims.has(battleId)) {
+          await nativeStore.showRewardedAd({ storeState:adStoreState, userId:participantPlayerId, battleId });
+        }
+        if (isPublisherTest) {
           if (status) status.textContent = localizedUiText("Test reklamı tamamlandı; gerçek ek ödül verilmez.");
           return; // Test ads are not proof of a signed SSV callback.
         }
+        pendingAdRewardClaims.add(battleId);
       } else {
         await playTestRewardAd();
       }
+      adRewardClaimPending = true;
+      renderPostMatchAdReward();
       const payload = await claimAdReward(battleId, provider);
       adRewardReceipts.set(battleId, payload.receipt);
+      pendingAdRewardClaims.delete(battleId);
       if (payload.profile) profileState.applyProfile(payload.profile);
       renderProfileSummary();
       if (status) status.textContent = "";
@@ -3390,6 +3409,7 @@
       if (status) status.textContent = error instanceof Error ? error.message : String(error);
     } finally {
       adRewardPending = false;
+      adRewardClaimPending = false;
       renderPostMatchAdReward();
       renderAdsPrivacyOptions();
     }

@@ -83,3 +83,38 @@ Gizlilik metni (`public-site/content.js`) yaş sorusunu ve kısmi veri silmeyi a
 - Uçtan uca testler izlenen `qa_reports/startup-*.png` dosyalarının üzerine yazar; koşudan sonra `git restore qa_reports/startup-*.png`.
 - Hiç maç oynamamış hesapta yapay zekâ rakip ilk hamlesini 15 saniye sonra yapar (ilk maç kolaylığı); canlıda yeni hesapla yapılan bir denemede bu hata sanılmasın.
 - Bu notun r12 ile ilgili sayıları (sürüm klasörü, etiketler, test sayıları) Claude'un 6 Ekim ev oturumunun kaydından alınmıştır; sunucudaki gerçek durum salt okunur denetimle teyit edilmelidir.
+
+## 10. Codex sonucu — 7 Ekim, iş bilgisayarı
+
+Kullanıcı son sürüm/kapalı test öncesinde savaş sonu reklamını açmak istedi;
+4. maddedeki reklamı kalıcı kapalı tutma kararı bununla değişti. Gerçek ödeme
+ve doğrulanmamış canlı geçiş açılmadı; yeni canlı onay şartı korunuyor.
+Geciken SSV/bağlantıda ikinci reklam yerine ödül kontrolü eklendi; test
+reklamı gerçek ödül üretmez. Kaynak versionCode artık 4 (config + Gradle),
+imzalı APK/AAB henüz yok. Tam istemci 246, PostgreSQL 17 dahil reklam/ödül
+alt kümesi 73, build sözleşmesi 9 test geçti; yerel web build üretildi.
+Gerçek Android/SSV ve tam r13 imaj smoke/backup/restore bu değişikliklerle
+henüz denenmedi. Ayrıntı `CODEX_CHECKPOINT.md` ve `docs/REWARDED_AD_LAUNCH.md`.
+Docker işte çalışıyor; Java/Android SDK, upload anahtarı ve r12 özel
+betik/known_hosts kayıtları beklenen konumlarda bulunamadı. AdMob sınırlı
+sunum gösteriyor: tüm reklamların engellendiği sonucunu çıkarmayın; tam
+sunum mağaza/doğrulama bekliyor, doluluk garanti değil. Commit/push kullanıcıda.
+
+Son kullanıcı mesajı canlı reklam rollout'u için açık yetki verdi; tam r13
+imaj geçişinin hemen öncesindeki ayrı onay/yedek kapıları korunur. Son erişim
+kontrolünde TCP 22 yanıtsız, iş ağında HTTPS `MEB Erişim Engeli / games`;
+canlı ayar uygulanmadı. Kullanıcı upload anahtarına şu anda erişemiyor,
+dolayısıyla burada imzalı v4 henüz yok. Build/audit araç yolları iş/ev için
+parametreli hale getirildi; JDK/SDK çözümleyicisinin dört testi geçti, araç
+kurulmadı. Güncel devam noktası `CODEX_CHECKPOINT.md` en üst bölümüdür.
+
+**En son sonuç — canlı reklam açıldı:** Dar SSH izni sonrası güvenilen
+ED25519 eşleşti. Mevcut r12 imajında yalnız özel rollout `live`; SSV1 ve
+test0/UMP/kalıcı tek-ödül korumaları sürer. Taze offline yedek + değişmeyen
+kalıcı fingerprint/sayılar (12profil/12kimlik/65savaş),34 iç ve331s/34 dış
+health/unsignedSSV403/son audit geçti. R1 Cloudflare-egress403 nedeniyle
+disabled'a güvenli döndü; R2 bağımsız dış witness ile success/0. Cloudflare
+değiştirilmedi, DB restore/silme yok. R13 geçişinde mevcut **live** ayarını
+koruyun; eski kapalı reklam talimatı güncel karar değil. **R13 dağıtılmadı,
+imzalı v4 ve gerçek cihaz/Google SSV ödül testi hâlâ yok**; aynı upload
+anahtarı kullanıcıya işte erişilebilir değil. Checkpoint en üstü günceldir.

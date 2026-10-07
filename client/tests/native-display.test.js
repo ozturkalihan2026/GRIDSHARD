@@ -63,7 +63,8 @@ test("unconfigured ads explain availability without starting a fake reward", () 
     progressionState:{viewModel:() => ({profileProgressionApplied:true, circuitCreditsAwarded:35})},
     postMatchSync:{lastBattleId:"own-finished-battle"}, currentAdProvider:() => provider,
     storeState:{providers:{ad_policy:{mode:"live"}}},
-    adRewardReceipts:new Map(), adRewardPending:false};
+    adRewardReceipts:new Map(), adRewardPending:false,
+    pendingAdRewardClaims:new Set(), adRewardClaimPending:false};
   vm.runInNewContext(render + "renderPostMatchAdReward();", context);
   assert.equal(nodes["post-match-ad-reward"].hidden, false);
   assert.equal(nodes["post-match-ad-button"].disabled, true);
