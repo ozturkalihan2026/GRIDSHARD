@@ -1,0 +1,14 @@
+# Opt-in only. Local preparation is not authorization to apply this live.
+# Requires separately approved AWS/Cloud trust + docs/GOOGLE_PLAY_AWS_WIF.md gates.
+services:
+  relay-web:
+    environment:
+      GRIDSHARD_GOOGLE_PLAY_AUTH_MODE: aws_wif
+      GRIDSHARD_GOOGLE_PLAY_PACKAGE_NAME: com.gridshardgame.app
+      GRIDSHARD_GOOGLE_PLAY_WIF_CONFIG_FILE: /run/secrets/google_play_wif_config
+      GRIDSHARD_GOOGLE_PLAY_SERVICE_ACCOUNT_EMAIL: ${GRIDSHARD_GOOGLE_PLAY_SERVICE_ACCOUNT_EMAIL:?Set verified Play billing service account}
+      GRIDSHARD_GOOGLE_PLAY_WIF_AUDIENCE: ${GRIDSHARD_GOOGLE_PLAY_WIF_AUDIENCE:?Set verified AWS WIF provider audience}
+    secrets: [google_play_wif_config]
+secrets:
+  google_play_wif_config:
+    file: ${GRIDSHARD_SECRETS_DIR:?Set external GRIDSHARD_SECRETS_DIR}/google_play_wif_config

@@ -172,8 +172,16 @@ açma veya yeni canlı dağıtım için otomatik onay değildir.
 | `gridshard.credits_2200` | 2.200 Devre Kredisi | 59,99 TL |
 | `gridshard.credits_4000` | 4.000 Devre Kredisi | 99,99 TL |
 | `gridshard.credits_9000` | 9.000 Devre Kredisi | 199,99 TL |
-| `gridshard.season_pass_premium` | Mevcut sezon premium ödül hattı | 99,99 TL |
-| `gridshard.battle_rewards_premium` | Mevcut sezon savaş kredi/XP +%50; kupa hariç | 99,99 TL |
+| `gridshard.season_pass_premium` | Mevcut sezon premium ödül hattı | 199,99 TL |
+| `gridshard.battle_rewards_premium` | Mevcut sezon savaş kredi/XP +%50; kupa hariç | 199,99 TL |
+
+7 Ekim akşamı kullanıcı kararıyla bu iki premium ürünün hedef fiyatı
+99,99 TL'den **199,99 TL**'ye çıktı. Güncel kaynak/istemci ve yerel testler
+bu fiyatı kullanır; Play Console'daki iki Türkiye fiyatı henüz bağımsız
+doğrulanmadı. Android'de gösterilen/tahsil edilen fiyat Play'den gelir;
+yerel fiyat değişikliği Console fiyatını güncellemez. Akı/Devre Kredisi
+paketleri değişmedi. Eski dondurulmuş aday yerine güncel kaynakla yeniden
+aday hazırlanmalı; bu not ürün etkinleştirme veya satış açma onayı değildir.
 
 Tek seferlik ürün, tek normal seçenek `standard` / **Satın al**, içerik
 **Dijital içerik**, çoklu miktar kapalı, simge/etiketler boş bırakılabilir.
@@ -261,3 +269,160 @@ belirlemez. ABD satış/uyum doğrulanmadı ve etkinleştirilmez.
 **Bu not turunun kapsamı:** yalnız iki Markdown devir dosyası; kod, ürünler,
 Cloud/Play/AWS ayarları, canlı veri ve sırlar değişmedi. Build/deploy,
 anahtar oluşturma, ödeme/ürün etkinleştirme, commit/push yapılmadı.
+
+## 12. Codex sonucu — 7 Ekim evde anahtarsız ödeme hazırlığı
+
+Bu bölüm, önceki kayıtların ardından yapılan **yerel** çalışmayı anlatır.
+Canlı r12 veya Play v3 güncellenmedi; v4 APK/AAB üretilmedi.
+
+- Başlangıç HEAD `f2a6723` ve o commit'in CI koşusu `37628923191` yeşildi.
+  Evden salt-okunur canlı ön kontrol başarılıydı: r12 sağlıklı, reklam
+  `live`/SSV1/test0; 12 profil/12 kimlik/66 savaş, pending0. Bu bir anlık
+  kontroldür, yeni geçiş öncesi yeniden yapılmalıdır.
+- Kaynak adayı yerelde donduruldu:
+  `artifacts/server-aws-20261007-analytics-store-r13-candidate/GRIDSHARD-2.1.0-beta.72-signatures-social.zip`,
+  SHA256 `177f9a2e4ac242c0b11e019b4e9cf42b7a80ebc313d8614265b976c7080bd624`.
+  ZIP/imaj karşılaştırma hazırlığı dışında remote image build/yalıtılmış
+  PG17–Redis test/deploy yapılmadı. **Bu ZIP aşağıdaki WIF kodunu ve aynı
+  akşam diğer aracın yeni fiyat/arayüz değişikliklerini içermez.** Sessizce
+  üzerine yazma; yeni commit/CI sonrası taze aday/audit gerekir.
+- Mevcut Play billing hizmet hesabı etkin; kullanıcı gerekli üç GRIDSHARD
+  uygulama iznini teyit etti. Cloud Anahtarlar listesi boş. Onaylanan JSON
+  anahtar denemesi `iam.disableServiceAccountKeyCreation` ile engellendi;
+  anahtar/dosya üretilmedi. Politika, Play izinleri veya proje değiştirilmedi.
+- Kullanıcı anahtarsız desteğin **yerel hazırlanıp test edilmesini**
+  onayladı. `server/app/google_play_wif.py`, opt-in `aws_wif` doğrulayıcı,
+  `google-auth>=2.60,<3.0`, çevrimdışı preflight ve **uygulanmamış**
+  API-only `docker-compose.google-play-wif.yml` hazır. IMDSv2 / exact
+  audience+mevcut hesap / kısa ömürlü token yolu dış kaynak keşfetmez;
+  statik key/ADC/fallback/istenmeyen URL ve karışık config reddedilir.
+  Varsayılan RSA yolu korunur, token/credential gövdeleri loglanmaz.
+- Son yerel testler: **sunucu 1.290 geçti, 39 atlandı; araçlar 17/17**.
+  Gerçek Google SDK 2.60.0 ve sahte HTTP yanıtları kullanıldı. Atlananlar
+  yalıtılmış PostgreSQL/gerçek Redis gerektirir. `pip check`, release guard
+  ve diff whitespace kontrolü geçti. Bunlar gerçek WIF bağlantısı, imaj
+  çalışması, ödeme/iade veya RTDN kanıtı değildir. İngilizce rehber:
+  `docs/GOOGLE_PLAY_AWS_WIF.md`.
+- Son IAM/IMDS salt-okunur SSH denemesi **connect timeout** oldu; uzak
+  script çalışmadı, IAM rolü/instance profile/metadata seçenekleri henüz
+  doğrulanamadı. Erişim kuralı genişletilmedi, host-key kontrolü korunur.
+  Sonraki kullanıcı EC2 Güvenlik ekranı **IAM rolü "—"** gösterdi; rol
+  bağlı değil. Hedef AWS hesabı/instance ekranla belirlenip özel operator
+  kaydına alındı; metadata/instance-profile API incelemesi hâlâ yapılmadı.
+  Teyit edilen adrese yeni SSH denemesi de connect timeout verdi. Önerilen
+  `gridshard-play-billing-wif` EC2 rolü/profile (ek AWS servis yetkisi
+  olmadan) oluşturma ve yalnız bu instance'a bağlama kullanıcı tarafından
+  **onaylandı**. Kullanıcı
+  yerleşik tarayıcıya kendisi giriş yaptı. Bağımsız Console kontrolünde
+  hesap `583365237571`, Frankfurt instance'ı `i-0c00d7409aa5dcff1`,
+  IAM rolü "—" ve **IMDSv2 Required** doğrulandı. IAM listesindeki üç
+  hizmet-bağlantılı rolde hedef adla çakışma yoktu. Kullanıcı son rol
+  inceleme ekranında **"bağla"** diyerek işlem-anı onayı verdi. Rol ve aynı
+  isimli instance profile **oluşturuldu ve yalnız bu instance'a bağlandı**:
+  `gridshard-play-billing-wif`, yalnız `ec2.amazonaws.com` /
+  `sts:AssumeRole`, **İzinler politikaları (0)**, maksimum oturum 1 saat.
+  Gerçek rol ARN'si `arn:aws:iam::583365237571:role/gridshard-play-billing-wif`,
+  profile ARN'si
+  `arn:aws:iam::583365237571:instance-profile/gridshard-play-billing-wif`.
+  EC2 başarı bildirimi ve instance ayrıntılarındaki IAM rolü doğrulandı;
+  IMDSv2 Required korundu. Başka rol veya AWS yetki politikası, metadata,
+  güvenlik grubu, Google IAM, deploy veya oyuncu verisi değişmedi.
+  Sonuç ekranı açık, görsel kanıtlar özel artifacts kaydında. Host metadata
+  credential gövdesi/gerçek Google token alınmadı; WIF bağlantısı henüz
+  doğrulanmış değil. Ayrıntılar `CODEX_CHECKPOINT.md` en üstte.
+  Sonraki Google pool-provider / scoped impersonation değişiklikleri için
+  **ayrı onay gerekir**. IMDS hop-limit gibi ağ/güvenlik değişikliği de ayrıca
+  değerlendirilir; IMDSv1/static keys/privileged container çözümü kullanılmaz.
+- Google Cloud sonraki aşaması **kullanıcının Edge'inde elle** yürütülecek.
+  Araç Edge'e bağlı değil (yalnız IAB/MCP Apps); kullanıcı IAB alternatifini
+  reddedip elle Edge seçti. AWS aşaması sonunda Cloud oturumu/proje/pool/API
+  kontrolü veya Google kaynak/IAM yazısı yapılmamıştı. Workload Identity Pools
+  ekranıyla başla, durum ve izin kapsamı doğrulanmadan nihai kayıt yapma.
+  IMDSv2 credential config için Google rehberinin `gcloud --enable-imdsv2`
+  yolu gereklidir; yerel CLI bulunmadı. Özel anahtar veya IMDSv1 kullanılmaz.
+- Diğer aracın 199,99 TL premium fiyatları/arayüz değişiklikleri ve
+  `CLAUDE_CHECKPOINT.md` korundu. WIF yerel değişiklikleri henüz commit/CI
+  kapsamında değildir; kullanıcı commit/push eder. AWS IAM'da yalnız yukarıda
+  onaylanan EC2 identity oluşturma/bağlama yapıldı; o aşamada Google Cloud IAM, canlı
+  mount/env, RTDN, ürün etkinleştirme, oyuncu verisi değişmedi. r13 geçiş
+  onayı, taze doğrulanmış yedek, aynı signer v4 ve gerçek cihaz test kapıları
+  geçerlidir; yerel test sonucu bunların yerine geçmez.
+
+### Son Google sonucu — havuz ve dar impersonation bağlantısı kaydedildi
+
+Kullanıcı Edge'deki dar kapsamlı havuz/sağlayıcı kaydını işlem öncesinde
+**"onaylıyorum"** diyerek onayladı; Save'e kendisi bastı. 7 Ekim `233658`
+ekranı `gridshard-play-billing` havuzunu **Enabled**, **GRIDSHARD EC2** AWS
+sağlayıcısını etkin ve principal içindeki proje numarasını `376018782491`
+gösteriyor. Sonraki salt-okunur Cloud Shell listesi gerçek sağlayıcıyı
+`projects/376018782491/locations/global/workloadIdentityPools/gridshard-play-billing/providers/aws-ec2`,
+**ACTIVE**, AWS accountId `583365237571` olarak ayrıca doğruladı.
+Kaydetmeden önce görülen ve son CLI çıktısında aynen doğrulanan CEL koşulu:
+
+```text
+assertion.account == '583365237571' && assertion.arn.startsWith('arn:aws:sts::583365237571:assumed-role/gridshard-play-billing-wif/')
+```
+
+`google.subject = assertion.arn` görüldü; uzun varsayılan `attribute.aws_role`
+ifadesi ekranda kısmen görünüyordu; son CLI çıktısında normalize assumed-role
+ARN eşleştirmesinin tamamı ve kalıcı koşul doğrulandı. `234243` ekranı mevcut
+`gridshard-play-billing@project-37a84396-b930-4141-b4d.iam.gserviceaccount.com`
+adresini doğruladı. Grant access using service account impersonation formu
+(`234153`) **subject** filtresinde yalnız şu beklenen kimliği gösterdi:
+
+```text
+arn:aws:sts::583365237571:assumed-role/gridshard-play-billing-wif/i-0c00d7409aa5dcff1
+```
+
+Kimlik bilinen rol/instance ve EC2 biçiminden türetildi; gerçek
+GetCallerIdentity henüz alınmadı. Kullanıcı dar hesap bağlantısını **ayrıca
+"onaylıyorum"** diyerek onayladı ve Save'e kendisi bastı. `234355` ekranında
+aynı hizmet hesabıyla Configure your application ve **Policy updated**
+bildirimi görüldü. Tüm havuz `/*`, Owner/Editor veya geniş Token Creator
+seçilmedi. `234550` listesinde billing hesabı, açılan `234643` satırında
+kalıcı **google.subject** filtresinin tam EC2 ARN'siyle eşleşmesi doğrulandı.
+Son Cloud Shell **get-iam-policy** çıktısı yalnız bir binding doğruladı:
+`roles/iam.workloadIdentityUser`, yalnız bu exact `principal://` subject
+üyesi. Bu SA-resource policy kontrolüdür; inherited proje IAM'ının tamamını
+denetlemez ve gerçek GetCallerIdentity/token kanıtı değildir.
+**services list --enabled** beş gerekli API'yi zaten açık gösterdi:
+Android Publisher, Cloud Resource Manager, IAM, IAM Credentials ve STS.
+Bu tur API etkinleştirme veya ücretsiz deneme/billing değişikliği yapılmadı.
+**Config üretimi:** aynı Edge Cloud Shell'de özel/yeni operator klasöründe
+`create-cred-config --aws --enable-imdsv2` (global STS, doğrulanmış audience
+ve SA, varsayılan 1 saat) → config indirme → yerelde çevrimdışı pin/preflight.
+Kullanıcının çıktısı Cloud Shell'de
+`./gridshard-wif-20261007-MMZ5NV/google_play_wif_config.json` üretildiğini
+bildirdi; SHA256
+`08acb21901427a430ed810ff06b8b107fd41b42a10e0bdde442934eb2990a030`.
+8 Ekim kullanıcı indirdi; yerel 966 byte dosyanın hash'i birebir eşleşti.
+Mevcut özel `secrets/google-play-billing-20261007/google_play_wif_config.json`
+konumuna üzerine yazmadan kopyalandı. Yalnız kullanıcı+SYSTEM Allow ACL,
+Git ignore ve tracked config0 doğrulandı; özgün indirme silinmedi.
+Her iki kopyada offline preflight **exit0**: doğru audience/SA, IMDSv2,
+private_key=false, lifetime3600, network_calls0 ve
+**external_connection_verified=false**. Config/secrets gerçek release
+input listesinden dışlandı; ZIP/build üretilmedi. Ek testler **11/11**;
+ilk sandbox TEMP/cache izin hatasından sonra yeni workspace temp ve cache
+kapalı tekrar geçti, test/kod değişmedi. Kaynak/version guard da geçti.
+Kanıt `artifacts/google-play-wif-local-20261007/CONFIG_LOCAL_VERIFICATION_20261008.md`.
+Raw config/token basma, Cloud Shell'de AWS config ile oturum/test yapma.
+**Önceki bağlantı denemesi:** read-only SSH/IMDS denemesi sandbox'ta
+bağlantı öncesi Permission denied, ağ izinli denemede 8 saniye connect timeout
+verdi. Uzak script çalışmadı; credential gövdesi/Google token yok.
+**8 Ekim SSH düzeldi ve host metadata doğrulandı:** Kullanıcının SG düzenleme
+ekranındaki SSH `/32` kaynakları güncel doğrudan dış IPv4 ile eşleşmedi.
+Yalnız mevcut IP için SSH/TCP22 `/32` ekleme kapsamı açıklandı, kullanıcı
+"kat-ydettim" dedi. Ajan AWS kuralı yazmadı; nihai SG kaydı ayrıca API ile
+okunmadı. Kaynak eşleşmesi ve pinned host-key doğrulamasıyla SSH **exit0**:
+instance `i-0c00d7409aa5dcff1`, rol `gridshard-play-billing-wif`,
+profile `arn:aws:iam::583365237571:instance-profile/gridshard-play-billing-wif`,
+IMDSv2 mevcut/zorunlu, iam-info/rol-listesi HTTP200.
+**credential_body_requests0 / google_requests0**; gerçek GetCallerIdentity
+ve WIF/Play token testi yapılmadı. Host sonucu bridged Docker IMDS erişimini
+kanıtlamaz. Kanıt:
+`artifacts/google-play-wif-local-20261007/EC2_HOST_IDENTITY_20261008.md`.
+Config transferi, yalıtılmış token/Play salt-okunur erişim testi ve canlı
+mount/deploy için ayrı onay gerekir. SSH Her yer'e açılmaz. JSON özel anahtarı, Play izin/politika
+değişikliği, canlı mount/env/deploy, APK/AAB, ürün etkinleştirme, satın alma
+ve oyuncu verisi işlemi yapılmadı. Edge'de elle devam edilir.

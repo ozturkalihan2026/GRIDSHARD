@@ -3259,7 +3259,7 @@
     const active = Boolean(pass?.active ?? engagementPass?.active);
     button.hidden = active || !(pass || engagementPass?.purchasable);
     button.disabled = Boolean(!currentPurchaseProvider() || purchaseInFlight || !paidProductAvailable(pass));
-    button.textContent = `ÜCRETLİ GEÇİŞİ AÇ · ${paidProductPrice(pass, engagementPass?.price_label_tr || "99,99 TL")}`;
+    button.textContent = `ÜCRETLİ GEÇİŞİ AÇ · ${paidProductPrice(pass, engagementPass?.price_label_tr || "199,99 TL")}`;
   }
 
   function renderPostMatchPremium() {
@@ -3285,7 +3285,7 @@
     if (buy) {
       buy.hidden = applied || Boolean(product?.active) || !product;
       buy.disabled = Boolean(!currentPurchaseProvider() || purchaseInFlight || !paidProductAvailable(product));
-      buy.textContent = `SAVAŞ PREMIUM · ${paidProductPrice(product,"99,99 TL")}`;
+      buy.textContent = `SAVAŞ PREMIUM · ${paidProductPrice(product,"199,99 TL")}`;
     }
   }
 

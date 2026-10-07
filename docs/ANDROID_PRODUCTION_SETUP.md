@@ -267,8 +267,8 @@ oyunda native `getProducts` ile gösterilir. Eksik fiyat veya belirsiz teklif
 
 | Play ürün kimliği | İçerik | TR temel fiyatı |
 | --- | --- | --- |
-| gridshard.season_pass_premium | Bu sezon premium geçiş | 99,99 TL |
-| gridshard.battle_rewards_premium | Bu sezon Savaş Premium | 99,99 TL |
+| gridshard.season_pass_premium | Bu sezon premium geçiş | 199,99 TL |
+| gridshard.battle_rewards_premium | Bu sezon Savaş Premium | 199,99 TL |
 | gridshard.flux_120 | 120 Akı | 29,99 TL |
 | gridshard.flux_260 | 260 Akı | 59,99 TL |
 | gridshard.flux_480 | 480 Akı | 99,99 TL |

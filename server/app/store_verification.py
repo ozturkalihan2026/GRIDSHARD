@@ -138,18 +138,34 @@ def _http_client():
 class GooglePlayVerifier:
     """Android Publisher API ile tek seferlik ürün satın alma doğrulaması."""
 
-    def __init__(self, *, package_name: str, email: str, key, client, now_func=time.time):
+    def __init__(self, *, package_name: str, email: str, key, client, now_func=time.time, token_provider=None):
         self.package_name = package_name
         self.email = email
         self.key = key
         self.client = client
         self.now = now_func
         self._token = ("", 0)
+        self.token_provider = token_provider
 
     @classmethod
-    def from_environment(cls, client_factory=_http_client):
+    def from_environment(cls, client_factory=_http_client, *, wif_client_factory=None):
         package_name = os.environ.get("GRIDSHARD_GOOGLE_PLAY_PACKAGE_NAME", "").strip()
         service_file = os.environ.get("GRIDSHARD_GOOGLE_PLAY_SERVICE_ACCOUNT_FILE", "").strip()
+        auth_mode = os.environ.get("GRIDSHARD_GOOGLE_PLAY_AUTH_MODE", "service_account").strip() or "service_account"
+        wif_file = os.environ.get("GRIDSHARD_GOOGLE_PLAY_WIF_CONFIG_FILE", "").strip()
+        wif_email = os.environ.get("GRIDSHARD_GOOGLE_PLAY_SERVICE_ACCOUNT_EMAIL", "").strip()
+        wif_audience = os.environ.get("GRIDSHARD_GOOGLE_PLAY_WIF_AUDIENCE", "").strip()
+        if auth_mode not in {"service_account", "aws_wif"} or (auth_mode == "service_account" and any((wif_file, wif_email, wif_audience))):
+            raise ValueError("Google Play kimlik yöntemi geçersiz veya karışık; docs/GOOGLE_PLAY_AWS_WIF.md belgesine bakın.")
+        if auth_mode == "aws_wif":
+            from .google_play_wif import AwsWifTokenProvider, CONFIG_ERROR
+
+            if service_file or not re.fullmatch(r"[A-Za-z][A-Za-z0-9_]*(\.[A-Za-z][A-Za-z0-9_]*)+", package_name):
+                raise ValueError(CONFIG_ERROR)
+            provider = AwsWifTokenProvider.from_file(
+                wif_file, email=wif_email, audience=wif_audience, client_factory=wif_client_factory,
+            )
+            return cls(package_name=package_name, email=wif_email, key=None, client=client_factory(), token_provider=provider)
         if not package_name and not service_file:
             return None
         from cryptography.hazmat.primitives import serialization
@@ -173,6 +189,13 @@ class GooglePlayVerifier:
         return cls(package_name=package_name, email=service["client_email"], key=key, client=client_factory())
 
     def _access_token(self) -> str:
+        if self.token_provider is not None:
+            from .google_play_wif import WifTokenError
+
+            try:
+                return self.token_provider.token()
+            except WifTokenError:
+                raise StoreVerificationError("Google Play doğrulama yetkisi alınamadı.", retryable=True) from None
         now = int(self.now())
         token, expires = self._token
         if token and expires > now + 60:
@@ -199,6 +222,11 @@ class GooglePlayVerifier:
         self._token = (payload["access_token"], now + int(payload.get("expires_in", 3600)))
         return payload["access_token"]
 
+    def _invalidate_token(self):
+        self._token = ("", 0)
+        if self.token_provider is not None:
+            self.token_provider.invalidate()
+
     def _purchase_url(self, store_product_id: str, purchase_token: str, action: str = "") -> str:
         return (
             f"{GOOGLE_PUBLISHER_BASE}/{quote(self.package_name, safe='')}"
@@ -222,7 +250,7 @@ class GooglePlayVerifier:
                 "Google Play doğrulamasına şu anda ulaşılamıyor.", retryable=True
             ) from None
         if response.status_code in {401, 403}:
-            self._token = ("", 0)
+            self._invalidate_token()
             raise StoreVerificationError(
                 "Google Play doğrulaması yetkisiz; hizmet hesabı izinlerini denetleyin.",
                 retryable=True,
@@ -290,7 +318,7 @@ class GooglePlayVerifier:
                     "Google Play iade listesine şu anda ulaşılamıyor.", retryable=True
                 ) from None
             if response.status_code in {401, 403}:
-                self._token = ("", 0)
+                self._invalidate_token()
                 raise StoreVerificationError(
                     "Google Play iade listesi yetkisiz; hizmet hesabı izinlerini denetleyin.",
                     retryable=True,
@@ -332,6 +360,8 @@ class GooglePlayVerifier:
         except Exception:
             LOGGER.warning("Google Play tüketimi yapılamadı; istemci yeniden deneyecek.")
             return False
+        if response.status_code in {401, 403}:
+            self._invalidate_token()
         return 200 <= response.status_code < 300
 
 

@@ -15,6 +15,7 @@ class ReleaseDataBoundaryTests(unittest.TestCase):
                      "android/signing.jks", "nested/auth.key", "nested/app.p12",
                      "nested/google-services.json", "nested/project-firebase-adminsdk-secret.json",
                      "deploy/google_oauth_client_secret", "deploy/apple_oauth_client_secret", "deploy/play_games_client_secret",
+                     "deploy/google_play_service_account.json", "deploy/google_play_wif_config", "deploy/google_play_wif_config.json",
                      "nested/client_secret_123.apps.googleusercontent.com.json", "nested/AuthKey_ABC.p8"):
             self.assertFalse(is_release_input(path), path)
         for path in ("QA_REPORTS/phone.png", "SECRETS/value.txt", "deploy/AUTH_SIGNING_KEY",

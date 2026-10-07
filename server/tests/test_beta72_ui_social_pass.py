@@ -61,9 +61,9 @@ def test_premium_track_doubles_free_rewards_and_requires_an_active_pass():
     profile.season_xp = SEASON_REWARD_TRACK[0]["required_xp"]
     view = profile.engagement_view()
     assert view["premium_pass"]["active"] is False
-    # Tur 9: ücretli geçiş 99,99 TL ile satın alınabilir (kullanıcı kararı).
+    # Tur 9: ücretli geçiş satın alınabilir; fiyatı 7 Ekim'de 199,99 TL oldu (kullanıcı kararı).
     assert view["premium_pass"]["purchasable"] is True
-    assert view["premium_pass"]["price_label_tr"] == "99,99 TL"
+    assert view["premium_pass"]["price_label_tr"] == "199,99 TL"
     assert view["premium_reward_track"][0]["unlocked"] is True
     assert view["premium_reward_track"][0]["claimable"] is False
     with pytest.raises(PlayerProfileError):

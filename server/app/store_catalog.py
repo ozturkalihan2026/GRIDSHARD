@@ -1,7 +1,10 @@
 """Gerçek parayla satılan ürünler, fiyatlar ve doğrulama sağlayıcıları.
 
-Beta.72 tur 9 (kullanıcı kararı, 28 Eylül 2026): ücretli sezon geçişi 99,99 TL,
-Savaş Premium 99,99 TL, dört Akı ve dört Devre Kredisi paketi.
+Beta.72 tur 9 (kullanıcı kararı, 28 Eylül 2026): ücretli sezon geçişi, Savaş
+Premium, dört Akı ve dört Devre Kredisi paketi. Ücretli sezon geçişi ve Savaş
+Premium 99,99 TL idi; 7 Ekim 2026'da kullanıcı kararıyla 199,99 TL oldu.
+Android'de gösterilen ve tahsil edilen fiyat Play Console'daki üründen gelir;
+buradaki değer onunla aynı tutulmalıdır.
 
 Ödeme yalnız sunucuda doğrulanır ve işlenir; istemci hiçbir zaman kendi
 başına ürün veremez. Sağlayıcılar:
@@ -65,7 +68,7 @@ PAID_PRODUCTS: tuple[dict, ...] = (
         "kind": "season_pass",
         "name_tr": "Ücretli Sezon Geçişi",
         "description_tr": "Bu sezonun premium ödül hattını açar; premium ödüller iki kattır.",
-        "price_kurus": 9999,
+        "price_kurus": 19999,
     },
     {
         "id": "battle_rewards_premium",
@@ -75,7 +78,7 @@ PAID_PRODUCTS: tuple[dict, ...] = (
             f"Bu sezon savaş sonu Devre Kredisi ve Deneyim ödülleri "
             f"%{BATTLE_PREMIUM_BONUS_PERCENT} artar (kupa hariç)."
         ),
-        "price_kurus": 9999,
+        "price_kurus": 19999,
     },
     # Paket bonusu en küçük paketin TL başına miktarına göredir.
     _pack("flux_120", "flux_shards", 120, 2999),

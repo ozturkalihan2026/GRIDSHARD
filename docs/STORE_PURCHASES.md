@@ -43,8 +43,8 @@ Beta.72 tur 9'da ürünler ve fiyatlar (`server/app/store_catalog.py`), tur 10'd
 
 | Ürün | Mağaza ürün kimliği | Fiyat | Tür |
 | --- | --- | --- | --- |
-| Ücretli Sezon Geçişi | `gridshard.season_pass_premium` | 99,99 TL | Tüketilebilir (hak sunucuda, sezon başına) |
-| Savaş Premium | `gridshard.battle_rewards_premium` | 99,99 TL | Tüketilebilir (hak sunucuda, sezon başına) |
+| Ücretli Sezon Geçişi | `gridshard.season_pass_premium` | 199,99 TL (7 Ekim 2026'dan önce 99,99 TL) | Tüketilebilir (hak sunucuda, sezon başına) |
+| Savaş Premium | `gridshard.battle_rewards_premium` | 199,99 TL (7 Ekim 2026'dan önce 99,99 TL) | Tüketilebilir (hak sunucuda, sezon başına) |
 | 120 / 260 / 480 / 1.050 Akı | `gridshard.flux_120` … `gridshard.flux_1050` | 29,99 / 59,99 / 99,99 / 199,99 TL | Tüketilebilir |
 | 1.000 / 2.200 / 4.000 / 9.000 Devre Kredisi | `gridshard.credits_1000` … `gridshard.credits_9000` | aynı fiyatlar | Tüketilebilir |
 
@@ -74,8 +74,20 @@ Değişken yoksa ilgili doğrulayıcı kapalıdır ve o sağlayıcı reddedilir.
 | --- | --- |
 | `GRIDSHARD_GOOGLE_PLAY_PACKAGE_NAME` | `com.gridshardgame.app`; Play Console kaydı ve `GRIDSHARD_APP_ID` ile aynı kalıcı Android kimliği |
 | `GRIDSHARD_GOOGLE_PLAY_SERVICE_ACCOUNT_FILE` | Play Console'a bağlı hizmet hesabının JSON anahtar dosyası |
+| `GRIDSHARD_GOOGLE_PLAY_AUTH_MODE` | Varsayılan `service_account`; yalnız açıkça seçilirse anahtarsız `aws_wif` |
+| `GRIDSHARD_GOOGLE_PLAY_WIF_CONFIG_FILE` | `aws_wif` için doğrulanmış, özel anahtar içermeyen AWS IMDSv2 WIF yapılandırma dosyası |
+| `GRIDSHARD_GOOGLE_PLAY_SERVICE_ACCOUNT_EMAIL` | `aws_wif` için Play'de yetkili mevcut hizmet hesabının sabitlenen e-postası |
+| `GRIDSHARD_GOOGLE_PLAY_WIF_AUDIENCE` | `aws_wif` için proje **numarası**, pool ve provider içeren sabitlenen tam audience |
 
 Hizmet hesabına Play Console → Kullanıcılar ve izinler bölümünde "Finansal verileri görüntüle" ve "Siparişleri ve abonelikleri yönet" izinleri verilir. Ürünler Play Console'da yukarıdaki kimliklerle "tek seferlik ürün" olarak açılır.
+
+7 Ekim yerel hazırlık: kuruluş `iam.disableServiceAccountKeyCreation` politikası
+JSON özel anahtarını engelliyorsa politikayı gevşetmek yerine AWS WIF desteği
+seçilebilir. [Anahtarsız kurulum ve ayrı onay kapıları](GOOGLE_PLAY_AWS_WIF.md).
+Yerel kod/test hazırlığı canlı ödeme bağlantısı değildir. Varsayılan kip,
+mevcut sunucu/Compose/env ve Play izinleri değişmez; yeni katman kendiliğinden
+uygulanmaz. `aws_wif` kipinde özel anahtar dosyası, karışık veya eksik ayarlar,
+ADC/kullanıcı hesabı kaynakları ve statik AWS anahtarları kabul edilmez.
 
 ### App Store
 

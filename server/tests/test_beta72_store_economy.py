@@ -54,13 +54,13 @@ def _non_sale_moment() -> datetime:
     return moment
 
 
-def test_catalog_has_four_flux_and_four_credit_packs_and_99_99_premiums():
+def test_catalog_has_four_flux_and_four_credit_packs_and_199_99_premiums():
     packs = [product for product in PAID_PRODUCTS if product["kind"] == "currency"]
     assert len([p for p in packs if p["currency"] == "flux_shards"]) == 4
     assert len([p for p in packs if p["currency"] == "circuit_credits"]) == 4
     by_id = {product["id"]: product for product in PAID_PRODUCTS}
-    assert price_label_tr(by_id["season_pass_premium"]["price_kurus"]) == "99,99 TL"
-    assert price_label_tr(by_id["battle_rewards_premium"]["price_kurus"]) == "99,99 TL"
+    assert price_label_tr(by_id["season_pass_premium"]["price_kurus"]) == "199,99 TL"
+    assert price_label_tr(by_id["battle_rewards_premium"]["price_kurus"]) == "199,99 TL"
     for currency in ("flux_shards", "circuit_credits"):
         ordered = [p for p in packs if p["currency"] == currency]
         rates = [p["amount"] / p["price_kurus"] for p in ordered]
@@ -209,7 +209,7 @@ def test_store_endpoints_use_test_provider_in_development():
     player_id = f"store-api-{uuid4()}"
     view = client.get(f"/store/{player_id}").json()
     assert view["providers"]["purchase"] == "test"
-    assert view["season_pass"]["price_label_tr"] == "99,99 TL"
+    assert view["season_pass"]["price_label_tr"] == "199,99 TL"
     response = client.post(
         f"/store/{player_id}/purchases",
         json={"product_id": "credits_2200", "provider": "test", "transaction_id": "api-tx-1"},
