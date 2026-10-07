@@ -118,3 +118,146 @@ değiştirilmedi, DB restore/silme yok. R13 geçişinde mevcut **live** ayarın�
 koruyun; eski kapalı reklam talimatı güncel karar değil. **R13 dağıtılmadı,
 imzalı v4 ve gerçek cihaz/Google SSV ödül testi hâlâ yok**; aynı upload
 anahtarı kullanıcıya işte erişilebilir değil. Checkpoint en üstü günceldir.
+
+## 11. Evde devam — ödeme paneli, r13 ve v4 (7 Ekim)
+
+**Kullanıcı kararı:** iş bilgisayarında dur; yarım kalan ödeme işini, r13
+sunucu güncellemesini ve imzalı v4 APK/AAB'yi ev bilgisayarında sürdür.
+Bu bölüm önceki "ürünler/API henüz yok" ve "sürüm kodu 3" durumlarını
+günceller; önceki r12 reklam canlı açılış sonucu korunur. Bu not ödeme
+açma veya yeni canlı dağıtım için otomatik onay değildir.
+
+### Panelde tamamlananlar ve kanıt sınırı
+
+- **Cloud projesi:** My First Project; numara `376018782491`,
+  ID `project-37a84396-b930-4141-b4d`. Dashboard numarası ve mevcut
+  OAuth client ID önekleri eşleşiyor. Clients ekranında **GRIDSHARD Play
+  Hybrid PQC**, **GRIDSHARD Play Hybrid Classical**, **GRIDSHARD Play**,
+  **GRIDSHARD Android Release**, **GRIDSHARD Play Games Server** (Web),
+  **GRIDSHARD TEST Android** var. Audience altında eski test kullanıcıları
+  da görüldü (adresler redakte; bu nota alınmadı). Yeni proje/OAuth
+  istemcisi veya test listesi açma, eski çalışan girişi değiştirme.
+- **API etkinliği bağımsız ekran kanıtı:** Google Play Android Developer
+  API / `androidpublisher.googleapis.com` / **API Enabled**.
+- **Hizmet hesabı:** oluşturulduğu ve Play'de davet düğmesine basıldığı
+  kullanıcı teyidi. Önerilen hesap adı GRIDSHARD Play Billing,
+  ID `gridshard-play-billing` idi; **gerçek e-posta/ID henüz okunmadı**.
+  Cloud tarafında Owner/Editor veya gereksiz proje rolü verilmemesi istendi.
+  Play izin modalında yalnız **GRIDSHARD** için finansal verileri görüntüleme
+  ve siparişleri/abonelikleri yönetme seçiliydi; yönetici ve diğer izinler
+  kapalıydı. `Uygula` zorunlu temel erişim seçilmediği için kapalıydı;
+  **Uygulama bilgilerini görüntüleme (salt okunur)** da seçilmesi söylendi.
+  Kullanıcı ardından davete bastığını bildirdi. **Son kullanıcı listesi,
+  davetin durumu ve nihai üç izin henüz bağımsız görülmedi.** İlk devamda
+  mevcut hizmet hesabı/Play kaydını kontrol et; tekrar hesap/davet oluşturma.
+- **Lisans testi:** kullanıcı hesap düzeyindeki listeyi kaydettiğini
+  bildirdi; liste/telefondaki gerçek Play kurulum hesabı henüz okunmadı.
+  OAuth Audience, Play Games Testers, kapalı test ve lisans testi ayrı
+  erişim kapılarıdır; birindeki kayıt diğerinin yerine geçmez.
+- **Ürün listesi:** 10/10 tam kimlikler ekranla eşleşti, her üründe etkin
+  satın alma seçeneği/teklif **0**. İlk ürünün ayrıntısında `standard`,
+  Satın al, Türkiye, **Taslak**, eski sürümlerle uyumlu etiketi görüldü.
+  Nihai Türkiye fiyatı **29,99 TL** ayrı tablo görüntüsüyle doğrulandı.
+  Diğer dokuz ürünün ayrıntı/fiyat/ülke ayarı tek tek doğrulanmadı.
+
+### Ürünlerde hedeflenen ayarlar (satış açma talimatı değildir)
+
+| Ürün kimliği | İçerik | Hedef nihai Türkiye fiyatı |
+| --- | --- | --- |
+| `gridshard.flux_120` | 120 Akı | 29,99 TL |
+| `gridshard.flux_260` | 260 Akı | 59,99 TL |
+| `gridshard.flux_480` | 480 Akı | 99,99 TL |
+| `gridshard.flux_1050` | 1.050 Akı | 199,99 TL |
+| `gridshard.credits_1000` | 1.000 Devre Kredisi | 29,99 TL |
+| `gridshard.credits_2200` | 2.200 Devre Kredisi | 59,99 TL |
+| `gridshard.credits_4000` | 4.000 Devre Kredisi | 99,99 TL |
+| `gridshard.credits_9000` | 9.000 Devre Kredisi | 199,99 TL |
+| `gridshard.season_pass_premium` | Mevcut sezon premium ödül hattı | 99,99 TL |
+| `gridshard.battle_rewards_premium` | Mevcut sezon savaş kredi/XP +%50; kupa hariç | 99,99 TL |
+
+Tek seferlik ürün, tek normal seçenek `standard` / **Satın al**, içerik
+**Dijital içerik**, çoklu miktar kapalı, simge/etiketler boş bırakılabilir.
+Sezon ürünleri otomatik yenilenen abonelik değildir. Hak sunucuda sezon
+başına tutulur; başka sezon tekrar alım tüketilebilir işlemle mümkündür.
+
+Bu hazırlıkta **yalnız Türkiye kullanılabilir**, diğer bölgeler kullanılamaz
+olacak şekilde yönlendirildi. İlk ürün bu kapsamda taslak kaydedildi;
+diğer dokuzunun kapsamını ayrıca denetle. Bölgesel nihai fiyatı esas al:
+toplu fiyat aracına 29,99 girilince ekranda %20 vergiyle **35,99** çıktı;
+Türkiye satırının fiyatı doğrudan **29,99** olarak düzeltildi. Tüm bölgeler
+kullanılabilir ama çoğunun fiyatı boşken **taslak kaydı da hata verdi**;
+diğer bölgeler kullanılamaz yapılınca ilk kayıt başarıyla taslakta göründü.
+Ürün ayrıntısındaki ABD yaş derecesi **Belirtilmemiş** yalnız taslak hazırlık
+olarak bırakıldı; hedef kitle 13+ olması ürünün ABD yaş derecesini otomatik
+belirlemez. ABD satış/uyum doğrulanmadı ve etkinleştirilmez.
+
+### Henüz yapılmayan ödeme işleri
+
+1. **Hizmet hesabı JSON anahtarı oluşturulmadı veya indirilmedi.** Önce
+   mevcut hesabın e-postasını, proje/Play uygulama kapsamını ve güvenli
+   aktarım yolunu doğrula. Anahtarı sohbet/Git/APK/kaynak ZIP'e koyma;
+   içerik/token/makbuz/private key basma. Cloud rol genişletme veya güvenlik
+   politikasını atlatma yok. Anahtar oluşturma/kapsam genişletme adımında
+   kullanıcı bilgilendirilip açık onayı alınır; tek gerekli anahtar kullanılır.
+2. **Canlı Google Play sağlayıcısı henüz kurulmadı.** Kaynak doğrulayıcı
+   `GRIDSHARD_GOOGLE_PLAY_PACKAGE_NAME=com.gridshardgame.app` ve
+   `GRIDSHARD_GOOGLE_PLAY_SERVICE_ACCOUNT_FILE` bekliyor. JSON sunucunun
+   repo/image dışı özel sır alanında, uygun kullanıcı/izinlerle read-only
+   mount edilmelidir. Ham `.env`/sır dosyası basılmadan merge/preflight
+   denetlenir. Sırf fake purchase test modu 0 olması Google sağlayıcısını
+   açmaz. R13'e ödeme mount/env değişiklikleri sessizce eklenmez; izole
+   doğrulama ve canlı uygulamadan önce ayrı onay gerekir.
+3. **Kimlik doğrulamalı Pub/Sub RTDN + iade mutabakatı bekliyor.** Gerekli
+   topic/abonelik/kimlik/audience/paket eşleşmeleri, gerçek test bildirimi,
+   voided-purchase takibi kaynak ve runbook üzerinden yeniden doğrulanır;
+   dış hizmet entegrasyonu çalışmış varsayılmaz. Ayrıntı
+   `docs/STORE_PURCHASES.md` ve `docs/ANDROID_PRODUCTION_SETUP.md`.
+4. **Ödeme profili/mağaza hazır oluşu doğrulanmadı.** Ürün oluşturulabilmesi
+   banka/vergi/merchant kurulumunun tamamlandığının kanıtı değildir;
+   hassas banka/vergi verileri yalnız Google'ın ilgili ekranında kullanıcıca
+   girilir, repo/sohbet içine alınmaz.
+5. **Satın alma/iade uçtan uca denenmedi:** lisans test hesabıyla test ödeme
+   ibaresi, fiyat/tek seçenek, pending ödeme, uygulama kapanması/ağ kesilmesi,
+   hesap bağı, tek kalıcı teslimat, yeniden gönderim, tüketme/onay ve iade
+   sonrası geri alma kontrolü gerekir. Test ödeme profili görülmeden
+   deneme düğmesine basma; test kanalı tek başına ücretsiz ödeme değildir.
+   Test için gerekli ürün etkinleştirme ve gerçek satış açma ayrı kullanıcı
+   kararlarıdır. Başarılı cihaz ödemesi görülmeden hazır/çalışıyor deme.
+
+### Evde çalışma sırası ve korunacak durum
+
+- Not yazılmadan önce işte yerel HEAD **`dd76af8` / add admob**, çalışma
+  ağacı temizdi. Bu belge değişikliklerini **kullanıcı commit/push eder**.
+  Evde güncel kaynak, çalışma ağacı ve son CI doğrulanır; yerel değişiklik
+  varsa korunur. Otomatik reset/restore veya kullanıcının dosyalarını silme yok.
+- Evde aynı upload anahtarı/yerel DPAPI kaydı, JDK/SDK, Docker ve önceki
+  özel deploy/audit dosyaları bulunur. İşte anahtara erişilemedi; yeniden
+  anahtar üretme. Config ve Gradle **versionCode 4** / **2.1.0-beta.72**
+  olarak bu tur okunup doğrulandı. **İmzalı v4 APK/AAB henüz üretilmedi.**
+- Son iş-PC bağlantısı strict pinned host-key ile **banner exchange
+  timeout** verdi. Yeni sunucu denetimi/ayar değişikliği yapılmadı.
+  IP ve özel SSH anahtar yolu izlenen belgelere yazılmaz; evde kullanıcıdan
+  güncel erişim alınıp mevcut güvenilir fingerprint/known_hosts eşleşmesi
+  sağlanır. SSH Her yer'e açılmaz, host-key kontrolü kapatılmaz.
+- **r12 reklam `live` korunur.** Kullanıcı v3 ile reklam oynattığını bildirdi;
+  bu bağımsız Google SSV/ekonomik ödül/ledger kanıtı değildir. AdMob paneli
+  en son sınırlı sunum gösteriyordu; tam sunum ve doluluk garanti edilmez.
+  Yeni r13 geçişinde mevcut mount/PGS/demo giriş/UMP/SSV/test0 ve oyuncu
+  ilerlemesi korunur. Gerçek ödeme bu panel adımlarıyla açılmadı.
+- Önce **r13 yalıtılmış test + smoke/backup-restore + canlı ön kontrol**;
+  ardından kullanıcıdan geçiş öncesi ayrı onay, taze doğrulanmış yedek ve
+  veriyi koruyan canlı geçiş. Yeni ödeme ayarları ayrıca doğrulanıp
+  onaylanır; test kapıları hazır değilse gerçek satış kapalı kalır.
+- Sonra **aynı signer ile v4 APK/AAB + binary audit**. Mevcut Play v3'e
+  USB'den yerel APK yükleme yok; AAB'yi kullanıcı test kanalına yükler.
+  Kapalı testin ülke/hedefleme ve gerçek opt-in durumunu kontrol et;
+  önceki kayıtta 10 kişi seçilmiş, iki kişi daha eklenecekti. Listeye kişi
+  eklemek 12 gerçek katılımcı/aralıksız 14 gün koşulunun sağlandığı kanıtı
+  değildir. Süre veya test yayını başlamış varsayılmaz.
+- Site/politika paketi için 7. bölüm geçerli: yeni davranışları anlatan
+  metin, r13 davranışı doğrulanmadan yayımlanmaz. Diğer araca/ev makinesine
+  devam için bu bölüm ve `CODEX_CHECKPOINT.md` en üst kayıt birlikte okunur.
+
+**Bu not turunun kapsamı:** yalnız iki Markdown devir dosyası; kod, ürünler,
+Cloud/Play/AWS ayarları, canlı veri ve sırlar değişmedi. Build/deploy,
+anahtar oluşturma, ödeme/ürün etkinleştirme, commit/push yapılmadı.

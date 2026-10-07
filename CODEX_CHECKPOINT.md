@@ -2,6 +2,63 @@
 
 Güncelleme tarihi: 7 Ekim 2026
 
+## En güncel devam noktası — ödeme paneli hazırlığı / evde r13 + v4
+
+Kullanıcı iş bilgisayarındaki devamı durdurup **yarım kalan ödeme kurulumunu,
+r13 sunucu geçişini ve v4 APK/AAB üretimini ev bilgisayarında** sürdürmemizi
+istedi. Bu tur yalnız devir notu yazıldı; canlı sunucu/Cloud/Play ayarı,
+ürün etkinleştirmesi, anahtar oluşturma, build, commit veya push yapılmadı.
+Not öncesi çalışma ağacı temiz, yerel HEAD `dd76af8` (`add admob`);
+evde güncel commit/CI ve yerel değişiklikler yeniden kontrol edilecek.
+
+- **Doğru Cloud projesi ekranlarla doğrulandı:** My First Project,
+  proje numarası `376018782491`, ID `project-37a84396-b930-4141-b4d`.
+  Eski altı GRIDSHARD OAuth istemcisi ve Audience test kullanıcıları duruyor;
+  yeni proje/OAuth istemcisi oluşturulmadı, eskiler değiştirilmedi.
+- **Google Play Android Developer API açık:** son kullanıcı ekranında
+  `API Enabled`, servis `androidpublisher.googleapis.com` görüldü.
+- **10 tek seferlik ürün oluşturuldu:** Console listesinde tam kimlikler
+  eşleşiyor, her üründe etkin satın alma seçeneği/teklif sayısı **0**.
+  İlk `gridshard.flux_120` ayrıntısında `standard`, Türkiye, **Taslak** ve
+  nihai bölgesel fiyat **29,99 TL** görüldü. Diğer ürünlerin fiyat/ülke/
+  ayrıntıları tek tek bağımsız okunmadı; hedef tablo ve tuzaklar devirde.
+- **Kullanıcı teyidi:** lisans testi listesi kaydedildi, Cloud hizmet hesabı
+  oluşturuldu, Play davet ekranında `Kullanıcı davet et` düğmesine basıldı.
+  GRIDSHARD'a özel izin görüntüsünde finansal verileri görüntüleme ve
+  siparişleri/abonelikleri yönetme seçili, yönetici/yayın yetkileri kapalıydı.
+  Zorunlu temel erişim için salt-okunur uygulama bilgisi izni ayrıca önerildi.
+  **Davet sonrası liste, tam hizmet hesabı e-postası ve nihai üç izin henüz
+  görülmedi.** Evde mevcut kaydı doğrula; hesabı/daveti yeniden oluşturma.
+- **JSON anahtarı oluşturulmadı/indirilmedi**, sunucuya ödeme sağlayıcısı
+  kurulmadı. RTDN, iade takibi ve gerçek/lisans testi satın alma uçtan uca
+  doğrulanmadı. Ürün taslakları satın almanın açık olduğu anlamına gelmez.
+- Son iş-PC SSH denemesi sıkı host-key denetimiyle **banner exchange timeout**
+  verdi; güncel sunucu denetimi yapılamadı, güvenlik grubu değiştirilmedi.
+  Önceki başarılı r12 reklam audit'i aşağıda tarihli kayıt olarak korunur;
+  evde yeni salt-okunur kontrol gerekir. IP/SSH anahtar yolu bu nota eklenmez.
+- Kullanıcı **v3'te reklam oynattığını** bildirdi. Bu kullanıcı teyididir;
+  Google imzalı SSV ile tek ekonomik ödül/ledger kaydı bağımsız doğrulanmadı.
+  Önceki doğrulanmış canlı reklam `live` ayarı r13'e taşınırken korunacak;
+  sırf eski devir metni reklam kapalı diyor diye kapatılmayacak.
+- Yerelde config ve Gradle yeniden okundu: **versionCode 4**,
+  versionName `2.1.0-beta.72`, paket `com.gridshardgame.app`.
+  r13 dağıtılmadı, imzalı v4 APK/AAB üretilmedi; evde **aynı upload anahtarı**
+  kullanılacak, yeni anahtar/sertifika veya USB'den Play uygulamasının
+  üzerine kurulum yapılmayacak.
+
+**Evde devam sırası:** güncel kaynak + CI / gerekli özel araçlar → mevcut
+r12 ve sır mount'ları salt-okunur kontrol → r13 yalıtılmış test/smoke/
+backup-restore → kullanıcıdan geçiş öncesi ayrı onay + taze doğrulanmış yedek
+→ veriyi ve mevcut reklam ayarını koruyan r13 → ödeme anahtarı/sağlayıcı/
+kimlik doğrulamalı RTDN kurulumu ve test kapıları (ayrı kapsam/onay)
+→ aynı signer ile imzalı v4 APK/AAB + binary audit → kullanıcı Play kapalı
+test yüklemesi/cihaz denemesi. Ödeme kapıları hazır değilse gerçek satış
+kapalı kalır; r13/v4 başarısı ödeme testi yerine geçmez.
+
+Ayrıntılı bağımsız devam listesi:
+[evde ödeme/r13/v4 devir bölümü](CODEX_HANDOFF_R13_V4.md#11-evde-devam--ödeme-paneli-r13-ve-v4-7-ekim).
+Aşağıdaki eski tamamlanma/bekleme ifadeleri bu en üst kayıtla birlikte okunur.
+
 ## Son tamamlanan — canlı reklam sunucu tarafında açık / r13 ve imzalı v4 bekliyor
 
 Kullanıcının açık talebiyle **mevcut r12 imajında yalnız reklam rollout ayarı
