@@ -1,5 +1,41 @@
 # Codex için devir notu — sunucu r13 ve Android paketi (sürüm kodu 4)
 
+**8 Ekim en yeni Codex sonucu:** exact commit `804da6f3` için CI beş iş yeşil.
+Taze `server-aws-20261008-billing-r13-candidate` kaynak ZIP'i
+`b0a2cb4fc9e9a1bf97035f918d273d59bb71cb592a0c61867bfc155f960951eb`;
+API image `billing-r13-20261008-r2` / `sha256:3064683905f36f88c8aded85c0a27d2be900ad84ac622ed6ec59405ed30fd4d1`.
+Hedef Linux source sunucu1326/1skip; Windows checkout araçları17/17,
+istemci248 ve Node araçları32 geçti. Yalıtılmış PG17/Redis7 reviewer premium,
+r13 API fiyat/sınır/UTC reset/yeni UI,330s lease,restart ve maintenance
+backup/restore **geçti**, kendi disposable ortamı temizlendi. Operator ZIP
+mode/umask ve Git olmayan arşiv test bağlamı hataları kaynak korumalarını
+kaldırmadan düzeltildi; ayrıntılı skip/sınırlar checkpoint'te, eski loglar saklı.
+Gerçek host Google WIF/impersonation200 başarılı ama Play finans erişimi401
+permissionDenied ve ürün listesi403: **ödeme kapalı**, ürün etkinleştirme/izin
+genişletme yok. Canlı r12/PGS/demo/reklam live/SSV1/test0 korunuyor.
+**Son taze onay alındı; r13 deploy-r2 exit0 ve imzalı v4 APK/AAB hazır.**
+İlk geçişin iç330s kontrolü geçti ama dış ham HTML, Cloudflare'ın e-posta
+gizleme/beacon dönüşümleri nedeniyle eşleşmedi. Güvenli r12 image/config
+rollback doğrulandı, DB geri yüklenmedi;12 profil/12 kimlik/66 savaş korundu.
+Ignored operator witness yalnız bilinen edge dönüşümlerini ayırır ve kalan
+HTML'yi pinned SHA ile birebir karşılaştırır; negatif fixture ve gerçek r12
+origin karşılaştırması geçti. Aynı imajla ayrı taze yedek/log/witness kullanan
+ikinci deneme exit0 tamamlandı: `2026-10-07T22:25:22Z` (8 Ekim01:25TR).
+İç+dış330s/33, unsigned SSV403, kritik log0; reviewer1/1 ve tüm eski
+profil/kimlik/takım fingerprint'leri aynı. Backup/rollback/private env/secret
+mount bağımsız post-check de geçti. Mevcut v3 upload signer ile offline v4
+build32s ve binary audit exit0: `artifacts/android-production-20261008-v4/`.
+APK SHA `79ef8f3638cc67da6823b5fec14318f4c11d129d26e81128905941fcde7bc5d1`;
+AAB SHA `9577008d0bd068614ac95daebf80fb2c409b55fc794acc3f33c69665afe6443f`.
+Her pakette74 asset/9 gömülü font; özel sır/AD_ID/debuggable/remote-web yok,
+Firebase auto-init kapalı; source hâlâ804da6f, yalnız iki devir belgesi değişik.
+Audit/provenance aynı teslim klasöründe. USB/Play yüklemesi ve fiziksel cihaz
+testi yapılmadı; AAB'yi kullanıcı dahili teste yükler ve verileri silmeden
+Play üzerinden güncelleyip PGS eski profil/reviewer premium doğrular.
+Gerçek/sahte ödeme kapalı, Play API yetki sorunu ve canonical App Link ayrı
+kaldı; Console fiyatları veya tam erişim/yasal beyan doğrulanmış sayılmaz.
+Commit/push kullanıcıda; bu ek yalnız devir kanıtıdır, uygulama source değişmedi.
+
 **Yazan:** Claude, 7 Ekim 2026, iş bilgisayarı. **Neden:** Claude'un haftalık kullanım hakkı dolmak üzere; kullanıcı yayın işini Codex ile sürdürecek. Bu dosya o iş için tek başına yeterli olacak şekilde yazıldı; ayrıntı gerekirse `CLAUDE_CHECKPOINT.md` (özellikle "6 Ekim akşamı (ev bilgisayarı): kalite denetimi yeşil, sunucu r12 canlıda" bölümü) ve `docs/SERVER_PRODUCTION_RUNBOOK.md`, `docs/MOBILE_RELEASE_RUNBOOK.md`.
 
 **İstenen iş:** (1) canlı sunucuyu r12'den r13'e güncellemek, (2) yeni imzalı APK/AAB üretmek. Kullanıcı sohbette "v3 apk ve aab" dedi; sürüm kodu 3 Play'in dahili test kanalına yüklendiği için yeni paket **sürüm kodu 4** olmalıdır (Play aynı kodu ikinci kez kabul etmez). Kullanıcıya bunu teyit ettir.

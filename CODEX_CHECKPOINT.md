@@ -2,7 +2,138 @@
 
 Güncelleme tarihi: 8 Ekim 2026
 
-## En güncel devam noktası — EC2 kimliği doğrulandı, gerçek Google WIF testi bekliyor
+## En güncel devam noktası — r13 canlı ve imzalı v4 APK/AAB hazır; ödeme kapalı
+
+8 Ekim ev bilgisayarı. Kullanıcı yalıtılmış gerçek WIF/API kontrolünü,
+sunucu güncellemesi ve imzalı APK/AAB **versionCode4** hazırlığını onayladı.
+**Kullanıcı son canlı geçiş + ardından v4 üretimi için taze "onaylıyorum" yanıtını verdi.** Ürün etkinleştirme,
+gerçek ödeme açma, geniş IAM/Play izinleri, yeni anahtar, USB kurulum veya
+Play yüklemesi bu işlemlerin parçası değildir. Edge'de elle çalışma korunur.
+
+- Kullanıcı commit/push yaptı: `804da6f3a3527a749103d682d800b2864091a16a`
+  (`GRIDSHARD 2.1 v4 fix`). Bu exact commit'in CI koşusu
+  [37688896714](https://github.com/ozturkalihan2026/GRIDSHARD/actions/runs/37688896714)
+  **completed/success**, beş işin tamamı yeşil. İstemci 248/248, Node araçları
+  32/32; Windows gerçek checkout araçları 17/17 geçti. Windows'taki ek tam
+  sunucu koşusu ilerlemediği için yalnız o koşunun doğrulanan kendi iki PID'si
+  durduruldu; başarılı sayılmadı. Hedef Linux'ta tam kaynak sunucu testleri
+  **1.326 geçti / 1 atlandı** (hostta pg_dump/pg_restore yok).
+- Özel, ayrı host test alanında IMDSv2 → Google STS **200** → mevcut billing
+  hizmet hesabı impersonation **200**: gerçek kısa ömürlü `androidpublisher`
+  token alındı; bellek önbelleği ve 1 saat üst sınırı doğrulandı. Özel config
+  özeti önceki `08acb219...` ile aynı. Credential/token/raw body basılmadı.
+  Mevcut canlı `.env`, mount, oyuncu DB'si veya IAM/metadata ayarı değişmedi.
+  Ancak salt-okunur Play finans API'si **401 / permissionDenied /
+  insufficient permissions**, ürün liste API'si **403** verdi. Bu nedenle
+  **Play uygulama erişimi ve gerçek ödeme hazır değildir**. Son izin ekranı
+  üç GRIDSHARD iznini doğru gösteriyor; yönetici kapalı. Aynı hizmet hesabı,
+  paket/kayıt ve etkin erişim/yayılım kontrolü ayrıca gerekli; yetkiyi genişletme.
+  Ürünlerde etkin satın alma seçenekleri0 satın alınabilirliği engeller;
+  finans API yetki hatasını gidermek için ürün etkinleştirme yapılmaz.
+- Taze kaynak ZIP, eski adayın üzerine yazılmadan
+  `artifacts/server-aws-20261008-billing-r13-candidate/` altında donduruldu:
+  SHA256 `b0a2cb4fc9e9a1bf97035f918d273d59bb71cb592a0c61867bfc155f960951eb`,
+  83.300.960 byte; manifest exact commit yukarıdakiyle aynı. r12 karşılaştırması:
+  migration/JSON migration, Dockerfile, mevcut dört Compose katmanı ve client
+  build lock'ları aynı; onaylanan Google-auth bağımlılığı/opt-in WIF katmanı
+  ve uygulama/istemci farkları mevcut. WIF katmanı **canlıya uygulanmadı**.
+- Hedef aday dizini `/opt/gridshard/releases/aws-20261008-billing-r13`.
+  API `gridshard-production-relay-web:billing-r13-20261008-r2`, image
+  `sha256:3064683905f36f88c8aded85c0a27d2be900ad84ac622ed6ec59405ed30fd4d1`;
+  bakım `gridshard-production-maintenance:billing-r13-20261008-r2`, image
+  `sha256:ac0eaad022544c80b2856b5f60cf7cd25855435cfb38344f644ef53813a850f5`.
+  İlk candidate build operator umask077/ZIP izinleri nedeniyle non-root kod
+  okumasında durdu; yalnız public kaynak izinleri normalize edildi, özel
+  `.env`0600 korundu. İlk imaj/başarısız loglar korunup ayrı r2 tagleri kullanıldı.
+  Bu uygulama kodu değişikliği değildir; dondurulmuş commit değişmedi.
+- Kaynak ZIP'inde iki dış QA-report testi ve Git-list bağımlı araç testi
+  çalışamaz. Tam source CI bu testleri kapsıyor; gerçek Windows checkout
+  araçları17/17 ayrıca geçti. Linux araçları12/4 skip/1 deselect; dört skip
+  Windows PowerShell fixture'ları. Bunlar geçti diye raporlanmadı. İlk araç
+  koşusunun Git eksikliği ve Windows fixture TEMP'nin kaynak içinde olması
+  hataları korundu; korumalar kaldırılmadan test ortamı düzeltildi.
+- `verify-r3` ayrı PostgreSQL17/Redis7/sentetik reviewer sırlarıyla **exit0** tamamlandı.
+  `verify-r2` tam sunucu testleri geçti ama canonical smoke'un sentetik sır
+  dizini operator umask077 altında0700 olduğu için durdu. Yalnız disposable
+  smoke subprocess'i canonical CI umask022 ile tekrar başlatıldı; gerçek
+  sırların izinleri değişmedi. r13 image API'sinde premium19999 kuruş, sandık
+  5/3/2/1 günlük sınırı/base fiyatları/UTC reset/yeni UI ve billing-closed;
+  reviewer premium/iki cihaz/ordinary-profile koruması geçti.
+  **330s soak (33 kontrol), restart ve gerçek maintenance backup/restore geçti**.
+  `isolated-verification.json` exact image/hash/commit ile yazıldı; disposable
+  PostgreSQL/Redis ve kendi test ağı temizlendi. Tarih: `2026-10-07T21:59:19Z`.
+  Özet kanıt `logs/isolated-verification-export.json`; ilk operator hatalarının
+  log/hash/exit kayıtları korunur. Source testler verify-r2, image smoke verify-r3;
+  iki sonucu birleştiren makbuz yeni test koşusu diye sunulmaz.
+- Aday bridge ağından IMDSv2 token/rol-listesi okunabildi; beklenen rol eşleşti.
+  **credential_body_requests0/google_requests0/metadata_options_changed=false**.
+  Bu bir gerçek candidate Google token/ödeme testi veya production network
+  testi değildir. HTML SHA256
+  `2b8af3f64e4e3adaf692a13220e59d8e32f8d95f463f9ccb0e818a30951d6877`;
+  bağımsız dış HTTPS witness bu exact web sayfasını kullanacak.
+  Dış HTTPS r12 health/lease/player-data hazır. Mevcut public assetlinks yalnız
+  `com.gridshard.remotedebug` gösteriyor; canonical release App Link onaylanmış
+  sayılmaz. PGS'nin native girişiyle bunu karıştırma; yeni link/sertifika/provider
+  yazılmadı, cutover witness mevcut public debug linkini koruma kontrolüdür.
+- Taze son onay sonrası ilk canlı denemede offline yedek ve değişmeyen satır
+  fingerprint'leri doğrulandı; iç330s/33 sağlık kontrolü geçti. Ancak dış
+  ham HTML özeti Cloudflare email-obfuscation ve beacon ekleri yüzünden
+  eşleşmedi; witness teslim edilmedi ve **otomatik r12 image/config rollback
+  yapıldı, canlı DB geri yüklenmedi**. Sonra r12 healthy,12 profil/12 kimlik/
+  66 savaş,pending0/aktif0 yeniden doğrulandı. İlk yedek/log/exit1 saklıdır.
+  Yalnız ignored operator proof düzeltildi: bilinen iki public e-posta
+  dönüşümü ve tam tanımlı Cloudflare script'leri ayrılır, kalan HTML'nin
+  **bütün byte'ları pinned image HTML SHA ile aynı olmalıdır**. Fixture'lar
+  gerçek içerik farkını/bilinmeyen script'i/yinelenen dönüşümü reddediyor;
+  canlı r12 origin SHA ile ayrıca tam eşleşme geçti. Uygulama/imaj/source
+  değişmedi; Cloudflare/IAM/network ayarı değiştirilmedi.
+- `deploy-r2` **exit0** tamamlandı: `2026-10-07T22:25:22.336667Z`
+  (8 Ekim01:25 Türkiye). Yeni `20261008-before-billing-r13-attempt2` yedeği
+  SHA/0600/kurulum/kayıt sayıları ve pg_restore-list ile doğrulandı.
+  İç ve bağımsız dış **330s/33** kontrol geçti; TLS doğrulandı, unsigned SSV403,
+  kritik log işareti0. Geçiş anında12 profil/12 kimlik/66 savaş/pending0 ve
+  tüm profil/kimlik/takım satır fingerprint'leri aynı; reviewer satırları1/1.
+  `deployment-receipt.json` SHA
+  `2d14cf8f4863a05d8ab81e3dc5f9a4fd427f1aa5eb1136fb2eae38dec77f7bb5`.
+  Bağımsız post-check exact image, mevcut read-only sırlar/unchanged private
+  env, taze backup SHA ve eski r12 rollback image'in kaldığını ayrıca doğruladı.
+  Sanitized yerel kanıtlar ignored candidate `server-receipts/` altında.
+  Reklam **live/SSV1/test0**, mevcut PGS/demo salt-okunur sırları ve dört
+  Compose/volume korunur; gerçek/sahte ödeme ve WIF layer kapalıdır.
+- Android JDK21/SDK36 ve mevcut upload/DPAPI kullanılabilir; PrepareOnly
+  tamamlandı, mobile build `1bb510de60ab21c5`. **İmzalı v4 üretildi**:
+  r13 receipt/post-check sonrasında `build-v4.ps1` offline Gradle
+  assembleRelease+bundleRelease **BUILD SUCCESSFUL (32s), exit0**; aynı upload
+  signer ile ayrı `artifacts/android-production-20261008-v4/` dizinine
+  overwrite-false copy ve binary audit geçti. Paket `com.gridshardgame.app`,
+  versionCode4/versionName `2.1.0-beta.72`; V3 ile aynı signer
+  `03:A4:5C:59:28:F2:4B:5D:79:DC:A8:73:1C:C5:54:C2:24:88:E2:C4:B1:82:A2:E7:DA:39:E3:C3:23:F6:1F:88`.
+  APK `GRIDSHARD-2.1.0-beta.72-v4.apk`,28.291.480 byte, SHA256
+  `79ef8f3638cc67da6823b5fec14318f4c11d129d26e81128905941fcde7bc5d1`.
+  AAB `GRIDSHARD-2.1.0-beta.72-v4.aab`,27.684.311 byte, SHA256
+  `9577008d0bd068614ac95daebf80fb2c409b55fc794acc3f33c69665afe6443f`.
+  İki imza doğrulandı, her pakette74 web asset birebir güncel dist ile eşleşti;
+  9 font gömülü, external font host yok; özel reviewer malzemesi/anahtar/env
+  yok, debuggable/AD_ID/remote-web URL yok, Firebase auto-init kapalı.
+  `release-audit.json` ve server/source/CI/signer bağlayan
+  `release-provenance.json` aynı ignored teslim klasöründe. V3 teslim dosyaları
+  değiştirilmedi. Gradle flatDir/line-ending uyarıları hata değildir; source
+  karşılaştırması yalnız iki devir belgesinde değişiklik gösterdi.
+  Paket sonrası canlı independent post-check yeniden geçti.
+- **Kalan kullanıcı adımı:** AAB'yi kullanıcı Play dahili teste yükler; uygulamayı
+  kaldırmadan/veri silmeden Play üzerinden güncelleyip PGS eski profil ve
+  reviewer premium erişimi gerçek cihazda doğrulanır. USB install/Play upload,
+  gerçek cihaz ve tam erişim beyanı **bu işlemde yapılmadı/doğrulanmadı**;
+  audit'teki ilgili bayraklar false tutuldu. Ödeme API yetki hatası ayrı kaldı:
+  gerçek/sahte ödeme veya ürün etkinleştirme açılmaz, geniş IAM eklenmez.
+  Public canonical App Link hâlâ yok; yalnız eski debug link korundu.
+
+Bu yeni bölümün yazılması yalnız kanıt/devir belgesidir; uygulama source
+804da6f olarak dondurulmuştur. Kanıt/script/loglar özel ignored candidate
+klasöründedir. Sunucu IP'si/SSH key yolu, private config ve player verileri
+izlenen bu kayda alınmadı; commit/push kullanıcıda kalır.
+
+## Önceki devam noktası — EC2 kimliği doğrulandı, gerçek Google WIF testi bekliyordu
 
 7 Ekim, kullanıcının Edge'inde elle ilerlenen Google Cloud aşaması:
 
