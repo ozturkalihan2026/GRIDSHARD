@@ -204,7 +204,7 @@ class PlatformService(PushOutbox):
             return None
         return dict(entry)
 
-    def mark_store_receipt_refunded(self, key: str, *, refunded: bool, source: str, at: str, event_at_ms: int = 0) -> None:
+    def mark_store_receipt_refunded(self, key: str, *, refunded: bool, source: str, at: str, event_at_ms: int = 0, refund_effect: dict | None = None) -> None:
         with self._lock:
             data = self._read()
             entry = data.get("store_receipts", {}).get(key)
@@ -212,11 +212,32 @@ class PlatformService(PushOutbox):
                 return
             if event_at_ms:
                 entry["refund_event_at_ms"] = max(int(entry.get("refund_event_at_ms") or 0), int(event_at_ms))
+            if refund_effect is not None:
+                entry["refund_effect"] = dict(refund_effect)
             if bool(entry.get("refunded")) != bool(refunded):
                 entry["refunded"] = bool(refunded)
                 history = list(entry.get("refund_history") or [])
                 history.append({"refunded": bool(refunded), "source": str(source), "at": str(at)})
                 entry["refund_history"] = history[-10:]
+            self._write(data)
+
+    def record_store_refund_review(self, key: str, *, case_id: str, reviewed_by: str, at: str, refund_effect: dict | None = None) -> None:
+        """Trusted server operator only; deliberately NOT exposed by an HTTP route."""
+        if not all(re.fullmatch(r"[A-Za-z0-9._/-]{1,80}", value) for value in (case_id, reviewed_by)):
+            raise PlatformServiceError("İnceleme referansı ve inceleyen zorunludur; sır/kişisel veri yazmayın.")
+        with self._lock:
+            data = self._read()
+            entry = data.get("store_receipts", {}).get(key)
+            if entry is None:
+                raise PlatformServiceError("İncelenecek makbuz bulunamadı.")
+            if entry.get("refund_review"):
+                raise PlatformServiceError("Makbuzun yayıncı-hatası incelemesi zaten kaydedildi.")
+            entry["refund_review"] = {
+                "decision": "publisher_error_verified", "case_id": case_id,
+                "reviewed_by": reviewed_by, "reviewed_at": at,
+            }
+            if refund_effect is not None:
+                entry["refund_effect"] = dict(refund_effect)
             self._write(data)
 
     def store_notification_seen(self, notification_id: str) -> bool:

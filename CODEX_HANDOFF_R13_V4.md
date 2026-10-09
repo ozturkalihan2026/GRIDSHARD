@@ -1,5 +1,158 @@
 # Codex için devir notu — sunucu r13 ve Android paketi (sürüm kodu 4)
 
+**10 Ekim en son durum — Google OAuth marka yayını tamamlandı:**
+Kullanıcı mevcut doğrulanmış GRIDSHARD adı/logo/bağlantıların Google izin
+ekranında yayımlanmasını ayrıca onayladı. Mevcut projede Publish branding
+kullanıldı; panel **Your branding has been verified and is being shown to
+users** gösterdi. Başarı gözlemi10 Ekim2026 00:35:54TR (9Ekim21:35:54UTC).
+Kanıt `test-results/oauth-publishing/branding-published-20261010.jpg` ignored.
+Marka doğrulama/yayın/24 saat bekleme kapıları tamam; aşağıdaki bekliyor
+kayıtları tarihçedir. Tekrar verification veya Publish branding çalıştırma.
+Mevcut marka bilgileri, External/In production, üç non-sensitive kapsam,
+Search Console owner/TXT korundu; DNS/IAM/istemci/sır değişmedi. Oyun/server/
+Android/config HEAD diff boş; r13/Playv4/APKAAB/ödeme/ürün/PGS/Billing korundu.
+Checkpoint/readiness güncellendi; test/kurulum/deploy/commit/push yok.
+Sonraki uygun kontrol cihazda Google/PGS giriş ve mevcut profilin gelmesidir;
+konsol başarısını gerçek cihaz testinin yerine koyma. Uygulamayı kaldırma veya
+verilerini silme; bu yayın Play Store üretime çıkış veya ödeme açılması değil.
+
+**10 Ekim önceki aşama — marka doğrulandı, Publish branding bekliyordu:**
+Kullanıcı erken denemenin aynı uyarıyı döndürebileceği açıklandıktan sonra
+**dene** dedi. View issues / I have fixed the issues → Proceed ile yeni
+kontrol tamamlandı; Google **Your branding has been verified, but is not
+yet being shown to users** gösterdi. Başarı gözlemi10 Ekim2026 00:33:52TR
+(9Ekim21:33:52UTC). Publish branding etkin; doğrulama sonucu7 gün içinde
+yayımlanmalı. Publish branding basılmadı; mevcut doğrulanmış marka yayını
+için ayrı açık kullanıcı onayı istenmeli.24 saat bekleme önceki aşamanın
+yönlendirmesidir; yeni başarıyı yok sayarak yeniden doğrulama çalıştırma.
+Kanıt `test-results/oauth-publishing/branding-verified-awaits-publish-20261010.jpg`
+ignored. Marka alanları/üç kapsam/DNS/IAM değiştirilmedi; OAuth In production,
+Search Console owner/TXT/r13/Playv4/APKAAB/ödeme/ürün/PGS/Billing korundu.
+Checkpoint/readiness güncellendi; test/kurulum/deploy/commit/push yok.
+
+**10 Ekim önceki aşama — Search Console alan sahipliği doğrulandı:**
+Kullanıcının dar action-time onayıyla mevcut Google hesabı
+`ozturkalihan2010@gmail.com` için `gridshardgame.com` Domain property eklendi.
+Manuel DNS/TXT yolu kullanıldı; geniş Cloudflare/Domain Connect erişimi yok.
+Mevcut Cloudflare root Pages CNAME ve play A kayıtları içerik/proxy/TTL dahil
+aynen korundu; yalnız root Google TXT / DNS only / Auto eklendi. Reload
+karşılaştırması2 eski satırın korunmasını ve toplam3 satırı doğruladı.
+Yetkili NS TXT sorgusu exact challenge döndürdü; Search Console Doğrula
+**Sahiplik doğrulandı / Alan adı sağlayıcı** sonucunu verdi. TXT'yi kaldırma.
+Başarı gözlemi10 Ekim2026 00:28:06TR (9Ekim21:28:06UTC). Google Branding
+panelinin24 saat bekleme koşuluyla **11 Ekim2026 00:30TR'den önce yeniden
+kontrol yapma**. Marka onayı yok; I have fixed the issues / issues are
+incorrect seçilmedi, otomasyon oluşturulmadı. Sonraki tur mevcut marka
+akışında bekleme dolduğunu kontrol ederek ilerlemeli; sahipliği tekrar kurma.
+Kanıt `test-results/oauth-publishing/search-console-ownership-verified-20261010.jpg`
+ve `dns-ownership-txt-saved-20261010.jpg` ignored. Oyun/server/Android/config
+HEAD diff boş; OAuth In production/üç non-sensitive kapsam/r13/Playv4/
+APKAAB/ödeme/ürün/PGS/IAM/Billing korunur. Test/kurulum/deploy/commit/push yok.
+Aşağıdaki mülk/owner henüz yok kayıtları önceki aşamanın tarihçesidir.
+
+**10 Ekim önceki aşama — marka kontrolü sahiplik uyarısıyla sonuçlandı:**
+Kullanıcı mevcut ad/logo/link/iletişim ile marka doğrulama akışını ayrıca
+onayladı. Verify branding otomatik kontrolü bitti; View issues tek sorun
+bildirdi: ana sayfa kullanıcıya kayıtlı değil. Panel önce sahiplik doğrula,
+sonra24 saat bekleyip yeniden dene diyor. Marka onayı/manual review kabul
+kanıtı yok. Aynı hesap Search Console'da welcome / Web sitesi ekle var,
+mevcut mülk görünmüyor. Mülk eklenmedi/owner doğrulanmadı. Read-only NS
+sorgusu Cloudflare DNS'i doğruladı; hiçbir DNS kaydı değişmedi.
+Sonraki ayrı onaylı dar işlem: `gridshardgame.com` alan mülkü, tek yeni
+Google TXT kaydı, mevcut `ozturkalihan2010@gmail.com` hesabının doğrulanmış
+owner yapılması. Mevcut kayıt/başka owner token'ı silme veya ezme;
+Cloudflare geniş servis bağlama yetkisi verme. Başarı ve panelde istenen
+bekleme olmadan I have fixed the issues / issues are incorrect beyanı yapma.
+Kanıt `test-results/oauth-publishing/branding-domain-ownership-issue-20261010.jpg`.
+OAuth In production/üç non-sensitive kapsam/r13/Playv4/oyun/APKAAB/ödeme/
+ürün/PGS/IAM/Billing korunur. Test/kurulum/deploy/commit/push yok. Aşağıdaki
+Verify branding basılmadı kayıtları önceki aşamanın tarihçesidir.
+
+**10 Ekim önceki tamamlanan aşama — OAuth In production:**
+Kullanıcının ayrıca onayladığı yalnız OAuth üretim geçişi mevcut projede
+Audience Publish app → Confirm ile tamamlandı. Reload sonrası External /
+In production ve Back to testing doğrulandı. Tekrar Publish app veya
+Testing'e geri dönüş yapma. Verification Center artık sensitive/restricted
+kapsam olmadığından Data Access doğrulaması gerekmediğini; Branding'in
+henüz kullanıcılara gösterilmediğini ve doğrulanması gerektiğini bildirir.
+Mevcut ad/logo/home/privacy/Terms/yetkili alan/iletişim salt-okunur doğrulandı,
+Save pasif, Verify branding etkin. **Verify branding basılmadı, başvuru yok,
+Search Console alan sahipliği kanıtı kontrol edilmedi.** Sonraki marka
+başvurusu ayrı onaylı akıştır; yeni kapsam/erişim/DNS ayrıca yetki ister.
+Kanıtlar `test-results/oauth-publishing/audience-production-20261010.jpg`
+ve `branding-needs-verification-20261010.jpg` ignored. Canlır13/Playkapalıv4/
+APKAAB/ödeme/ürünler/PGS/IAM/Billing korunur, oyun kaynakları HEAD'e göre
+temiz. Test/kurulum/deploy/commit/push yok. Aşağıdaki Testing ve Publish app
+basılmadı kayıtları önceki tamamlanan aşamanın tarihçesidir.
+
+**10 Ekim önceki tamamlanan aşama — OAuth Data Access üç kapsamla kaydedildi:**
+Kullanıcı yalnız `openid`, `https://www.googleapis.com/auth/games_lite` ve
+`https://www.googleapis.com/auth/drive.appdata` kaydını açıkça onayladı.
+Kullanıcının Edge'de yaptığı seçim38 satır boyunca kontrol edildi; agent
+Update/Save yaptı. Reload sonrası üç satır korundu, Save pasifti.
+Üçü non-sensitive; sensitive/restricted boş. E-posta/profil/tam Drive/
+Gmail/legacy games/androidpublisher eklenmedi; Kaydedilmiş Oyunlar kapalı.
+Mevcut normal Google ve PGS SDK server-access koduyla eşleşir; oyun kodu
+değişmedi. Client PGS6/6; yerel `.venv` pytest içermediği için backend test
+çalışmadı, kurulum yapılmadı. R13/Playv4/APK-AAB/ödeme/ürün/IAM/Billing korunur.
+Verification Center Testing nedeniyle verification gerekmediğini gösterir;
+marka/alan sahipliği doğrulandı demek değildir. Audience External/Testing,
+11 tester; Publish app artık etkin **ama basılmadı**. Sonraki ayrı onaylı
+işlem yalnız OAuth In production, sonra gerçek brand/domain kapılarının
+salt-okunur kontrolüdür; verification başvurusu otomatik yapılmaz.
+Kanıtlar `test-results/oauth-publishing/` altında ignored; commit/push yok.
+Aşağıdaki Data Access henüz bekliyor kaydı önceki aşamanın tarihçesidir.
+
+**9 Ekim önceki tamamlanan aşama — Terms yayımlandı ve Google URL kaydedildi:**
+Kullanıcının scoped action-time onayıyla mevcut Cloudflare `gridshard-public`
+Production deployment `528af2d9-8685-4649-826f-1fe24ddd0473` tamamlandı.
+21 dosya/261327byte ZIP özeti
+`60bd39d1d288e876b457c99c76dac98c9a4152a415b59356b45d248a2bb7b60b`.
+Edge upload izni değiştirilmedi; kullanıcı ZIP'i elle seçti.10TR/EN HTML ve
+app-ads.txt **11/11 HTTPS200**, birebir manifest hash/size, no-transform/CSP ve
+plain mailto ile doğrulandı. `/terms/` ve `/en/terms/` artık canlı;14 madde/dil.
+Google Branding'e yalnız `https://gridshardgame.com/terms/` eklendi; Save ve
+reload sonrasında korunması/pasif Save doğrulandı. Mevcut logo/home/privacy/
+domain/contact korundu, Testing devam ediyor, Publish app kullanılmadı.
+15/15 test ve18 Edge yerleşim kontrolü geçti; Chromium yüklenmedi, viewport
+sıfırlandı, loopback kapatıldı. İlk TR paragrafın yazım/sıra düzeltmesi ve
+Privacy sağlayıcı bulunabilirliği açıklaması dışında onaylı maddeler korundu.
+Tam iade-politikası kodu, satış ön bilgisi/hukuki/yaş/ülke ve uygulama içi
+şartlar onayı ayrı kapılar olarak sürer. Canlır13/Playv4/ödeme/ürünler/APK-AAB/
+OAuth Audience/IAM/kapsam/anahtar/Cloud Billing değişmedi; commit/push yapılmadı.
+Ignored receipt/screenshots/ZIP Git ile otomatik taşınmaz. Ayrıntılar checkpoint
+ve `docs/PLAY_PUBLISHING_READINESS_20261009.md` içinde. Sonraki iş Terms'ü
+yeniden yayımlamak değil, kalan OAuth alan sahipliği/Data Access incelemesi ve
+ücretli satış öncesi politika uygulama kapılarıdır; ayrı yetki gerekir.
+
+**9 Ekim önceki yerel taslak aşaması — aşağıdaki kayıt tarihçedir:**
+HEAD `748a8d523b5a4822059d8abd581588b42e75c008`, devir notları mevcut; tur
+başlangıcında çalışma ağacı temiz. PGS özellikleri/altı credential **Yayınlandı**,
+Yayınlama **Yayınlanacak değişiklik yok** ekranlarıyla doğrulandı. Tekrar PGS
+yayını/kimlik oluşturma önerme. OAuth Audience ayrı **External / Testing**,
+11 tester; Branding eksik nedeniyle Publish app pasif. Son Branding ekranında
+ad/iletişim var, logo/URL/yetkili alanlar boş; sonraki kayıt kanıtı ve Data Access
+gerçek kapsamları henüz yok. TLS doğrulanmış GET ana sayfa/gizlilik200, Terms404.
+
+Kullanıcı TR/EN Terms metnini uygun buldu, ortak iade politikasını "anlaşalım"
+ile onayladı. Terms bölüm9 ve STORE_PURCHASES güncellendi: yalnız ilgili para
+birimi gerekirse eksiye iner, oyunla kapatılır; gerçek para borcu/zorunlu alım/
+tek başına hesap veya ücretsiz maç engeli yok. Premium ilgili sezonda kapanır;
+alınmış ödül/geliştirme/sonuç korunur. Doğrulanmış yayıncı hatasında açık
+yüklenmez; işlem/miktar/kalan açık açıklanır, inceleme yolu vardır. Tam teknik
+uygulama **bekliyor**: yayıncı-hatası istisnası, ayrıntılı TR/EN bildirim ve
+erişim/harcama/replay/reversal testleri. Bu tur kod/bakiye değişmedi.
+`docs/TERMS_OF_SERVICE_DRAFT_20261009.md` yayına hazırlık, hukuki kontrol ve
+yürürlük tarihi bekler; site kaynaklarına/yayın paketine eklenmedi.
+Gizlilikteki reklam hazırlığı cümlesi gerçek r13 durumuyla
+yayın öncesi uzlaştırılmalı. Ayrı onaylı entegrasyon/yayın ve canlı TR/EN doğru
+içerik/HTTPS200 olmadan Terms URL kullanılmaz. Bu tur deploy/AAB/ödeme/ürün,
+Google ayarı/IAM/kapsam/anahtar/Cloud Billing veya commit/push yetkisi yok;
+canlı r13 ve Play kapalı test v4 korunur. Ayrıntılar yayın hazırlığı belgesinde.
+TR/EN 14 bölüm/draft dışlama kontrolleri ve public-site12/12 geçti; diff-check
+temiz, uygulama/site kaynakları değişmedi. Bunlar hukuki onay/yayın kanıtı değil.
+Aşağıdaki iş bilgisayarı "PGS yayın henüz doğrulanmadı" kayıtları tarihçedir.
+
 **9 Ekim son kullanıcı talimatı — ev bilgisayarına devir:** İş bilgisayarında
 iş bitti; burada devir kaydı dışında yeni işlem yapma. Son HEAD
 `f3a60f2e01efbc426f4a067782b8ce36a5afe403`; ea25c1c ile uygulama kaynakları aynı

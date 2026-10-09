@@ -751,12 +751,14 @@ def test_refund_revokes_what_the_purchase_granted():
     assert revoke_purchase(profile, old_entry, now_iso=NOW_ISO) == {}
     assert profile.premium_pass_active() is True
 
-    assert store_refund_message(entry, reversed_refund=False) == (
-        "Alım iade edildi", "İade edilen 1.050 Akı hesabından düşüldü."
-    )
-    assert store_refund_message(pass_entry, reversed_refund=True) == (
-        "İade geri alındı", "Ücretli Sezon Geçişi yeniden açıldı."
-    )
+    title, body = store_refund_message(entry, reversed_refund=False, changes={
+        "currency": "flux_shards", "amount": -1050, "balance": -950,
+    })
+    assert title == "Alım iade edildi"
+    assert "1.050 Akı" in body and "Geri alınan: 1050; açık: 950" in body
+    title, body = store_refund_message(pass_entry, reversed_refund=True, changes={"active": True})
+    assert title == "İade geri alındı"
+    assert "Ücretli Sezon Geçişi" in body and "Premium hak açıldı" in body
 
 
 def test_store_ledger_records_owner_once_and_erases_with_account(tmp_path):

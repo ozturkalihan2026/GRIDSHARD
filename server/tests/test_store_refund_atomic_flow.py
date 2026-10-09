@@ -29,7 +29,7 @@ class _Ledger:
     def remember_store_notification(self, event_id):
         self.notifications.add(event_id)
 
-    def mark_store_receipt_refunded(self, _key, *, refunded, source, at, event_at_ms=0):
+    def mark_store_receipt_refunded(self, _key, *, refunded, source, at, event_at_ms=0, refund_effect=None):
         self.receipt["refunded"] = refunded
         if event_at_ms:
             self.receipt["refund_event_at_ms"] = event_at_ms

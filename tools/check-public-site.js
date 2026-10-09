@@ -8,7 +8,7 @@ const assert = require("node:assert/strict");
 const { chromium } = require("@playwright/test");
 const { buildPublicSite, pagePath, PAGES } = require("./build-public-site.js");
 
-async function check() {
+async function startPreviewServer() {
   const { output, manifest } = buildPublicSite();
   const allowed = new Set(manifest.files.map((item) => item.file));
   const types = { ".html": "text/html; charset=utf-8", ".css": "text/css; charset=utf-8", ".txt": "text/plain; charset=utf-8", ".webp": "image/webp", ".png": "image/png", ".ico": "image/x-icon" };
@@ -24,10 +24,14 @@ async function check() {
     response.end(fs.readFileSync(path.join(output, selected)));
   });
   await new Promise((resolve) => server.listen(0, "127.0.0.1", resolve));
+  return { server, origin: `http://127.0.0.1:${server.address().port}` };
+}
+
+async function check() {
+  const { server, origin } = await startPreviewServer();
   let browser;
   try {
     browser = await chromium.launch();
-    const origin = `http://127.0.0.1:${server.address().port}`;
     const screenshots = path.resolve(__dirname, "../test-results/public-site");
     fs.mkdirSync(screenshots, { recursive: true });
     let checks = 0;
@@ -51,6 +55,7 @@ async function check() {
             await page.screenshot({ path: path.join(screenshots, `home-${language}-${viewport.width}.png`), fullPage: true, animations: "disabled" });
           }
           if (route === "delete-account" && viewport.width === 393) await page.screenshot({ path: path.join(screenshots, `delete-account-${language}-393.png`), fullPage: true });
+          if (route === "terms") await page.screenshot({ path: path.join(screenshots, `terms-${language}-${viewport.width}.png`), fullPage: true });
           checks += 1;
         }
       }
@@ -69,5 +74,10 @@ async function check() {
   }
 }
 
-if (require.main === module) check().catch((error) => { console.error(error); process.exitCode = 1; });
-module.exports = { check };
+if (require.main === module) {
+  const run = process.argv.includes("--serve")
+    ? () => startPreviewServer().then(({ origin }) => console.log(`Local-only preview: ${origin}`))
+    : check;
+  run().catch((error) => { console.error(error); process.exitCode = 1; });
+}
+module.exports = { check, startPreviewServer };

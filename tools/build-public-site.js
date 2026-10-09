@@ -5,7 +5,7 @@ const path = require("node:path");
 const crypto = require("node:crypto");
 const { site, content } = require("../public-site/content.js");
 
-const PAGES = ["home", "support", "privacy", "delete-account"];
+const PAGES = ["home", "support", "privacy", "terms", "delete-account"];
 const ASSETS = [
   ["client/assets/branding/gridshard-emblem.webp", "assets/gridshard-emblem.webp"],
   ["client/assets/branding/gridshard-favicon-32.png", "assets/gridshard-favicon-32.png"],
@@ -71,7 +71,7 @@ function outputPlan(root, publisherId) {
 /app-ads.txt
   Content-Type: text/plain; charset=utf-8
 `));
-  files.set("_redirects", Buffer.from("/privacy /privacy/ 301\n/delete-account /delete-account/ 301\n/support /support/ 301\n/en /en/ 301\n/en/privacy /en/privacy/ 301\n/en/delete-account /en/delete-account/ 301\n/en/support /en/support/ 301\n"));
+  files.set("_redirects", Buffer.from("/privacy /privacy/ 301\n/terms /terms/ 301\n/delete-account /delete-account/ 301\n/support /support/ 301\n/en /en/ 301\n/en/privacy /en/privacy/ 301\n/en/terms /en/terms/ 301\n/en/delete-account /en/delete-account/ 301\n/en/support /en/support/ 301\n"));
   files.set("404.html", Buffer.from(`<!doctype html><html lang="tr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>GRIDSHARD — 404</title><link rel="stylesheet" href="/site.css"></head><body><main class="shell document"><h1>404</h1><p>Sayfa bulunamadı / Page not found.</p><p><a href="/">Türkçe</a> · <a href="/en/">English</a></p></main></body></html>\n`));
   files.set("robots.txt", Buffer.from(`User-agent: *\nAllow: /\nSitemap: ${site.origin}/sitemap.xml\n`));
   files.set("sitemap.xml", Buffer.from(`<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">${Object.keys(content).flatMap((language) => PAGES.map((page) => `<url><loc>${site.origin}${pagePath(language, page)}</loc></url>`)).join("")}</urlset>\n`));

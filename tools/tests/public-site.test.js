@@ -10,6 +10,79 @@ const { site, content } = require("../../public-site/content.js");
 const root = path.resolve(__dirname, "../..");
 const hash = (bytes) => crypto.createHash("sha256").update(bytes).digest("hex");
 
+test("fallback preview binds loopback and serves only allowlisted static files", async () => {
+  const { startPreviewServer } = require("../check-public-site.js");
+  const { server, origin } = await startPreviewServer();
+  try {
+    assert.equal(server.address().address, "127.0.0.1");
+    for (const route of ["/terms/", "/en/terms/"]) {
+      const response = await fetch(`${origin}${route}`);
+      assert.equal(response.status, 200);
+      assert.match(response.headers.get("content-type"), /text\/html/);
+      assert.match(response.headers.get("content-security-policy"), /default-src 'none'/);
+      assert.equal((await response.text()).match(/<section\b/g).length, 14);
+    }
+    for (const route of ["/.env", "/public-site-manifest.json", "/server/app/main.py"]) {
+      assert.equal((await fetch(`${origin}${route}`)).status, 404);
+    }
+    const ads = await fetch(`${origin}/app-ads.txt`);
+    assert.equal(await ads.text(), adsText("pub-4974825529326987"));
+  } finally {
+    await new Promise((resolve, reject) => server.close((error) => error ? reject(error) : resolve()));
+  }
+});
+
+test("public Terms preserve all 14 approved clauses in both languages, not operator notes", () => {
+  const draft = fs.readFileSync(path.join(root, "docs/TERMS_OF_SERVICE_DRAFT_20261009.md"), "utf8").replace(/\r\n/g, "\n");
+  const files = outputPlan(root, "pub-4974825529326987");
+  const markers = ["## Türkçe metin — yayın öncesi taslak", "## English text — pre-publication draft", "## Hazırlama dayanakları"];
+  for (const [index, language] of ["tr", "en"].entries()) {
+    const body = draft.slice(draft.indexOf(markers[index]) + markers[index].length, draft.indexOf(markers[index + 1]));
+    const headings = [...body.matchAll(/^### (\d+)\. (.+)$/gm)];
+    const sections = content[language].terms.sections;
+    assert.equal(headings.length, 14);
+    assert.equal(sections.length, 14);
+    headings.forEach((heading, sectionIndex) => {
+      const paragraphs = body.slice(heading.index + heading[0].length, headings[sectionIndex + 1]?.index ?? body.length).trim().split(/\n\s*\n/).map((paragraph) => paragraph.replace(/\[([^\]]+)\]\((?:https:\/\/|mailto:)[^\s)]+\)/g, "$1").replace(/\s+/g, " ").trim());
+      assert.equal(sections[sectionIndex].title, `${heading[1]}. ${heading[2]}`);
+      assert.deepEqual(sections[sectionIndex].paragraphs, paragraphs);
+    });
+    const html = renderPage(language, "terms");
+    const route = pagePath(language, "terms");
+    assert.ok(files.has(`${route.slice(1)}index.html`));
+    assert.ok(html.includes(`rel="canonical" href="${site.origin}${route}"`));
+    assert.ok(html.includes(`href="${route}" aria-current="page"`));
+    assert.ok(files.get("sitemap.xml").toString().includes(`${site.origin}${route}`));
+    assert.equal((html.match(/<section\b/g) || []).length, 14);
+    assert.doesNotMatch(html, /Yayıncı incelemesi ve yayın kapıları|Hazırlama dayanakları|Kodun tam politika|CODEX_CHECKPOINT|server\/app|docs\/|TODO|APK\/AAB/);
+    assert.doesNotMatch(html, /öMağazada|ayrı zelliğin/);
+  }
+  assert.match(files.get("_redirects").toString(), /^\/terms \/terms\/ 301$/m);
+  assert.match(files.get("_redirects").toString(), /^\/en\/terms \/en\/terms\/ 301$/m);
+});
+
+test("Terms disclose disabled sales and preserve agreed refund safeguards", () => {
+  const tr = renderPage("tr", "terms");
+  const en = renderPage("en", "terms");
+  assert.match(tr, /Ücretli satın almalar şu anda etkin değildir/);
+  assert.match(en, /Paid purchases are not currently enabled/);
+  assert.match(tr, /yeni satın alma yapmak zorunda değilsin/);
+  assert.match(en, /not required to make another purchase/);
+  assert.match(tr, /normal ücretsiz maçlara girişini engellemez/);
+  assert.match(en, /does not close your account or block normal free matches/);
+  assert.match(tr, /Diğer para birimine kesinti uygulanmaz/);
+  assert.match(en, /No deduction is made from another currency/);
+  assert.match(tr, /Bizden kaynaklandığı doğrulanan/);
+  assert.match(en, /confirmed to be our responsibility/);
+  assert.match(tr, /kalan açık bildirilir/);
+  assert.match(en, /any remaining shortfall/);
+  assert.match(tr, /otomatik yenilenmezler/i);
+  assert.match(en, /do not renew automatically/);
+  for (const html of [tr, en]) assert.doesNotMatch(html, /99[,.]99|199[,.]99/);
+  assert.match(renderPage("tr", "privacy"), /ücretli satın almaların etkin olduğu anlamına gelmez/);
+  assert.match(renderPage("en", "privacy"), /does not mean that paid purchases are enabled/);
+});
+
 test("both languages have every public route and a matching language switch", () => {
   for (const language of ["tr", "en"]) {
     for (const page of PAGES) {
@@ -25,7 +98,7 @@ test("both languages have every public route and a matching language switch", ()
 
 test("the static site has no game code, credentials, login form or tracking script", () => {
   const files = outputPlan(root, "pub-4974825529326987");
-  assert.equal(files.size, 19);
+  assert.equal(files.size, 21);
   for (const [file, bytes] of files) {
     assert.doesNotMatch(file, /(?:^|\/)(?:\.env|server|src|node_modules|data|README|content\.js)(?:\/|$)/);
     if (file.endsWith(".html")) {
@@ -151,7 +224,7 @@ test("both verified scoped retention jobs disclose their safety limits and untes
 });
 
 test("both privacy translations describe the limits the game enforces for all players, without claiming legal compliance", () => {
-  assert.equal(site.updated, "2026-10-06");
+  assert.equal(site.updated, "2026-10-09");
   const tr = renderPage("tr", "privacy");
   const en = renderPage("en", "privacy");
   // Preset-only chat and the public name filter.

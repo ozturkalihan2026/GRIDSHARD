@@ -214,11 +214,41 @@ Doğrulayıcı açıkken geçerli imzalı panel isteği, kapalı rollout veya ta
 
 ## İade ve iptal
 
+### 9 Ekim 2026 onaylı politika — uygulama durumu ayrı
+
+Kullanıcı Terms metnini uygun buldu ve aşağıdaki iade/eksi bakiye politikasını
+birlikte değerlendirerek "anlaşalım" yanıtıyla onayladı:
+
+- Para paketi iadesinde yalnız işlemle verilen miktar ilgili para biriminden
+  geri alınır. Harcanmışsa bakiye eksiye düşebilir; başka para birimi kesilmez.
+  Açık aynı para birimini oyun içinde kazanarak kapatılabilir. Yeterli bakiye
+  oluşmadan harcama yapılamaz; yeniden satın alma zorunluluğu/gerçek para borcu yok.
+- İade kaydı tek başına hesap kapanmasına veya normal ücretsiz maç engeline
+  neden olmaz. Önceden alınmış ödül, kart geliştirmesi ve maç sonucu geri çevrilmez.
+- Premium iadesi yalnız iade edilen sezon hâlâ etkinse ilgili hakkı kapatır.
+- Yayıncıdan kaynaklandığı doğrulanan teslimat/sunucu hatası nedeniyle yapılan
+  iadelerde oyuncuya açık yüklenmez. Her iade hile sayılmaz; tekrarlanan kötüye
+  kullanım ayrıca incelenir.
+- Oyuncuya işlem/ürün, geri alınan miktar ve varsa kalan açık açıklanır;
+  hatalı kesinti için destek incelemesi sunulur. Belirteç/sır bildirimde gösterilmez.
+
+**Politika onayı tam teknik uygulama veya canlı satış kanıtı değildir.** Mevcut
+`revoke_purchase` para birimini eksiye indirebilir ve sezon hakkını geri alır;
+fakat yayıncı-hatası istisnasını uygulamaz. `store_refund_message` yalnız genel
+ürün bildirimi verir; miktar/kalan açık ve tam TR/EN açıklaması henüz eklenmedi.
+Mağazanın sebep kodu tek başına yayıncı hatası veya kötüye kullanım kanıtı sayılmaz;
+işlem/teslimat kayıtlarıyla inceleme ve düzeltme yolu tasarlanmalıdır. Tüm harcama,
+ücretsiz maç erişimi, hata istisnası, yinelenen bildirim ve iade geri çevirme
+akışlarının politika ile uyumu kod çalışmasında ayrıca test edilir.
+Bu karar turunda yalnız belgeler değişti; kod/oyuncu bakiyesi/canlı sunucu/ödeme
+durumu değiştirilmedi. TR/EN Terms kaynağı:
+`docs/TERMS_OF_SERVICE_DRAFT_20261009.md` bölüm9.
+
 Doğrulanan her gerçek alım sunucudaki **makbuz defterine** yazılır (platform deposu, `store_receipts`): makbuzun sahibi olan oyuncu, ürün ve verdiği (para birimi miktarı ya da etkin sezon). Satın alma belirteci yalnız SHA-256 özetiyle saklanır. Defter oyuncu kaydından bağımsızdır; oyuncu kaydındaki eski makbuz düşse bile iade doğru oyuncudan geri alınır ve aynı makbuz ikinci kez ürün vermez. Hesap silinince oyuncunun defter kayıtları da silinir.
 
 30 Eylül geçiş durumu: bu paragraftaki **canlı** defter hâlâ `PlatformService` JSON deposudur. PostgreSQL `004_store_ledger.sql` ve `PostgresStoreLedgerRepository` izole testten geçti, fakat henüz satın alma/iade yoluna bağlanmadı. Makbuz ile oyuncu bakiyesi tek transaction içinde güncellenip eski kayıtlar denetimli taşınmadan kaynak değiştirilmeyecek.
 
-Geri alma kuralları (`revoke_purchase`):
+Mevcut temel geri alma davranışı (`revoke_purchase`; yukarıdaki yeni politikanın tam uygulaması değildir):
 
 | Ürün | İade edilince |
 | --- | --- |

@@ -1,5 +1,50 @@
 # GRIDSHARD public site — Cloudflare Pages
 
+## 9 October 2026, 23:57–23:59 TR — Terms published and Google URL saved
+
+The user approved publishing the agreed TR/EN Terms in the existing
+`gridshard-public` Production environment, then saving only
+`https://gridshardgame.com/terms/` in the existing Google Branding form.
+The user manually selected the ZIP because Edge lacks local-file upload
+permission; no extension/security settings were changed. The agent completed
+Save and deploy after scoped action-time approval. Production deployment
+`528af2d9-8685-4649-826f-1fe24ddd0473` succeeded in the existing project.
+Anonymous HTTPS verified all11 custom-domain responses (10 TR/EN HTML routes
+plus app-ads.txt): HTTP200, exact manifest sizes/SHA256, no-transform and
+script-free CSP, plain mailto links, no email obfuscation or injected scripts.
+Both live Terms pages have14 clauses and working language navigation.
+Google Branding Terms URL Save was verified by reload with the field retained
+and Save disabled. Existing logo, home/privacy URLs, domain and contacts stayed
+unchanged. The page still indicates Testing; Publish app was not used.
+
+Candidate: `artifacts/public-site-terms-20261009/GRIDSHARD-public-20261009-terms.zip`,
+21 entries, 261327 bytes, SHA256
+`60bd39d1d288e876b457c99c76dac98c9a4152a415b59356b45d248a2bb7b60b`.
+Every ZIP entry name, size and SHA256 matches the build manifest. The manifest,
+operator notes, source files and screenshots are not in the upload.
+The agreed 14 clauses per language are preserved; a misplaced phrase in the
+TR first paragraph was repaired to match its EN meaning. Navigation, sitemap
+and redirects include Terms. The introduction explicitly says paid purchases
+are disabled and publication does not enable payments or obtain in-app consent.
+Only the stale provider-availability sentence in Privacy was clarified; data
+flows, retention periods, assets, app-ads.txt and security protections stay intact.
+
+Local checks: 15/15 content/security/loopback tests passed (loopback needs
+network access outside the sandbox); 18 Edge DOM/layout checks passed (10 desktop routes, then
+TR/EN Terms and Privacy at requested393px/measured394px and320px). No overflow,
+scripts/forms or broken desktop images. Desktop TR and320px EN screenshots
+were visually inspected. The normal headless checker could not start because
+Chromium is absent; no browser was installed. Use `node tools/check-public-site.js
+--serve` for the loopback-only fallback. Browser sizing was reset and the
+loopback server is stopped after QA. A read-only custom-domain checker is
+available as `node tools/verify-public-site-live.js` after building the manifest.
+The ignored publication receipt/screenshots/ZIP do not travel through Git.
+
+Do not change the game server, payment/product state, APK/AAB, OAuth Audience,
+clients/scopes/IAM, DNS/settings or Cloud Billing in this website task. The
+refund-policy implementation gaps remain a gate before enabling paid sales.
+Earlier deployment records below are historical.
+
 Domain: `gridshardgame.com` (purchased through Cloudflare Registrar). Public support email: `gridshardgame@gmail.com`. The user supplied the public AdMob authorization line in `app-ads.txt`; it is not a secret and must be public.
 
 Current publisher: **`pub-4974825529326987`**, supplied on 2 October 2026 after the user recreated AdMob as an individual account. The earlier deployment/ZIP uses the retired account; rebuild and create a **new production deployment in the existing `gridshard-public` Pages project**, then verify the live `/app-ads.txt`. Do not create another Pages project or change the custom domain. The new Android rewarded ad unit is recorded separately in `.env.example`; the new AdMob app ID is recorded in `docs/STORE_PURCHASES.md`. Neither belongs in this static public site or should be derived from the publisher ID.
@@ -18,8 +63,8 @@ node tools/check-public-site.js
 
 Output: `build/public-site/`; only this directory goes to Pages. `build/public-site-manifest.json` is an operator-only file outside the uploaded directory. The builder explicitly allowlists files and refuses symlink output or unexpected existing files rather than deleting/packaging them. No dependency installation is needed.
 
-TR: `/`, `/support/`, `/privacy/`, `/delete-account/`.
-EN: `/en/`, `/en/support/`, `/en/privacy/`, `/en/delete-account/`.
+TR: `/`, `/support/`, `/privacy/`, `/terms/`, `/delete-account/`.
+EN: `/en/`, `/en/support/`, `/en/privacy/`, `/en/terms/`, `/en/delete-account/`.
 Language switching uses ordinary links; the site needs no JavaScript or cookies. The explicit `404.html` prevents missing files such as a missing app-ads.txt from returning a misleading successful SPA page. Security headers are provided through Pages `_headers`.
 
 The wildcard response header includes `Cache-Control: public, max-age=300,

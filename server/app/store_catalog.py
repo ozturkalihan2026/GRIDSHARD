@@ -21,6 +21,8 @@ from __future__ import annotations
 import os
 import uuid
 
+from .store_refund_policy import refund_debit
+
 
 CURRENCY = "TRY"
 BATTLE_PREMIUM_BONUS_PERCENT = 50
@@ -246,17 +248,19 @@ def revoke_purchase(profile, entry: dict, *, now_iso: str) -> dict:
     changes: dict = {}
     currency = str(granted.get("currency") or "")
     if currency in {"flux_shards", "circuit_credits"}:
-        amount = max(0, int(granted.get("amount", 0)))
+        amount, waived = refund_debit(entry, int(getattr(profile, currency)))
         setattr(profile, currency, int(getattr(profile, currency)) - amount)
         changes = {"currency": currency, "amount": -amount, "balance": int(getattr(profile, currency))}
+        if waived:
+            changes["waived_amount"] = waived
     elif granted.get("season_pass_season_id"):
         season_id = str(granted["season_pass_season_id"])
-        if profile.season_premium_pass_season_id == season_id:
+        if season_id == profile.active_meta_season_id and profile.season_premium_pass_season_id == season_id:
             profile.season_premium_pass_season_id = ""
             changes = {"season_pass_season_id": season_id, "active": False}
     elif granted.get("battle_premium_season_id"):
         season_id = str(granted["battle_premium_season_id"])
-        if profile.battle_premium_season_id == season_id:
+        if season_id == profile.active_meta_season_id and profile.battle_premium_season_id == season_id:
             profile.battle_premium_season_id = ""
             changes = {"battle_premium_season_id": season_id, "active": False}
     _mark_receipt_refund(profile, str(entry.get("key", "")), refunded=True, now_iso=now_iso)
@@ -271,6 +275,13 @@ def restore_refunded_purchase(profile, entry: dict, *, now_iso: str) -> dict:
     currency = str(granted.get("currency") or "")
     if currency in {"flux_shards", "circuit_credits"}:
         amount = max(0, int(granted.get("amount", 0)))
+        effect = entry.get("refund_effect")
+        if effect is not None:
+            if effect.get("currency") != currency:
+                raise StoreError("İade bakiye kaydı doğrulanamadı.")
+            amount = int(effect.get("debited_amount", -1))
+            if not 0 <= amount <= int(granted.get("amount", 0)):
+                raise StoreError("İade bakiye kaydı doğrulanamadı.")
         setattr(profile, currency, int(getattr(profile, currency)) + amount)
         changes = {"currency": currency, "amount": amount, "balance": int(getattr(profile, currency))}
     elif granted.get("season_pass_season_id"):
@@ -287,20 +298,49 @@ def restore_refunded_purchase(profile, entry: dict, *, now_iso: str) -> dict:
     return changes
 
 
-def store_refund_message(entry: dict, *, reversed_refund: bool) -> tuple[str, str]:
+def store_refund_message(
+    entry: dict, *, reversed_refund: bool, changes: dict | None = None, language: str = "tr"
+) -> tuple[str, str]:
     """Oyuncunun gelen kutusuna düşen iade bildirimi (başlık, metin)."""
     product = PRODUCTS_BY_ID.get(str(entry.get("product_id") or ""), {})
+    changes = dict(changes or {})
+    english = language == "en"
     name = str(product.get("name_tr") or "Mağaza alımı")
-    currency = product.get("kind") == "currency"
-    if reversed_refund:
-        return (
-            "İade geri alındı",
-            f"{name} yeniden hesabına eklendi." if currency else f"{name} yeniden açıldı.",
-        )
-    return (
-        "Alım iade edildi",
-        f"İade edilen {name} hesabından düşüldü." if currency else f"İade edilen {name} kapatıldı.",
+    if english:
+        name = {
+            "season_pass_premium": "Season Pass",
+            "battle_rewards_premium": "Battle Premium",
+        }.get(product.get("id"), "Store purchase")
+        if product.get("kind") == "currency":
+            unit = "Flux" if product.get("currency") == "flux_shards" else "Circuit Credits"
+            name = f"{product['amount']} {unit}"
+    # Only a Play order reference is displayed, never a token/fallback hash.
+    transaction = str(entry.get("transaction_id") or "")
+    reference = transaction if transaction.startswith("GPA.") and len(transaction) <= 40 and all(
+        char.isalnum() or char in ".-" for char in transaction
+    ) else ""
+    label = "Order" if english else "İşlem"
+    ref = f" {label}: {reference}." if reference else ""
+    title = ("Refund reversed" if reversed_refund else "Purchase refunded") if english else (
+        "İade geri alındı" if reversed_refund else "Alım iade edildi"
     )
+    if changes.get("currency"):
+        amount = abs(int(changes.get("amount", 0)))
+        deficit = max(0, -int(changes.get("balance", 0)))
+        if english:
+            action = "Restored" if reversed_refund else "Removed"
+            detail = f"{action}: {amount}; deficit: {deficit}. Earn in-game to clear; no cash debt."
+        else:
+            action = "Eklenen" if reversed_refund else "Geri alınan"
+            detail = f"{action}: {amount}; açık: {deficit}. Oynayarak kapanır; para borcu değildir."
+    elif changes.get("active") is not None:
+        detail = ("Entitlement restored." if changes["active"] else "Entitlement revoked.") if english else (
+            "Premium hak açıldı." if changes["active"] else "Premium hak kapatıldı."
+        )
+    else:
+        detail = "Past-season rewards unchanged." if english else "Geçmiş sezon ödülleri değişmedi."
+    support = "Support" if english else "Destek"
+    return title, f"{name}.{ref} {detail} {support}: gridshardgame@gmail.com"
 
 
 def record_verified_ad_view(profile, view: dict, *, now_iso: str) -> bool:

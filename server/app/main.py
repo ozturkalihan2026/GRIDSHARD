@@ -13,6 +13,7 @@ import secrets
 import time
 import os
 import json
+import re
 from pathlib import Path
 from threading import Lock, RLock
 from urllib.parse import parse_qs, urlencode, urlsplit
@@ -33,6 +34,7 @@ from .auth import (
     load_or_create_signing_key,
 )
 from .platform_services import PlatformService, PlatformServiceError
+from .store_refund_policy import CURRENCIES, publisher_error_correction, publisher_error_verified, refund_effect
 from .review_access import ReviewAccessService, load_review_config, review_access_router
 from .native_oauth import NATIVE_AUTH_TARGETS, asset_links, native_return_url
 from .postgres_platform import PostgresPlatformService
@@ -5279,12 +5281,17 @@ def _apply_store_refund(
                 return {"matched": True, "changed": False}
             profile = _existing_player_profile(player_id)
             changes: dict = {}
+            effect: dict | None = None
             if profile is not None:
+                currency = str((entry.get("granted") or {}).get("currency") or "")
+                before = int(getattr(profile, currency)) if currency in CURRENCIES else 0
                 changes = (
                     restore_refunded_purchase(profile, entry, now_iso=now_iso)
                     if reversed_refund
                     else revoke_purchase(profile, entry, now_iso=now_iso)
                 )
+                if not reversed_refund and currency in CURRENCIES:
+                    effect = refund_effect(entry, changes, before)
                 persist_player_data(player_id)
             platform_service.mark_store_receipt_refunded(
                 entry["key"],
@@ -5292,16 +5299,64 @@ def _apply_store_refund(
                 source=source,
                 at=now_iso,
                 event_at_ms=event_at_ms,
+                refund_effect=effect,
             )
+            if profile is not None:
+                title, body = store_refund_message(
+                    entry, reversed_refund=reversed_refund, changes=changes,
+                    language=player_settings_service.get_or_create(player_id).language,
+                )
+                # The inbox and push outbox must commit with the balance and
+                # receipt. A failed notification retries the whole transaction.
+                platform_service.queue_notification(player_id, title, body)
             if event_id:
                 platform_service.remember_store_notification(event_id)
-    if profile is not None:
-        title, body = store_refund_message(entry, reversed_refund=reversed_refund)
-        try:
-            platform_service.queue_notification(player_id, title, body)
-        except PlatformServiceError:
-            pass
     return {"matched": True, "changed": True, "player_found": profile is not None, "changes": changes}
+
+
+def _review_store_refund_publisher_error(
+    receipt_key: str, *, case_id: str, reviewed_by: str, apply: bool = False
+) -> dict:
+    """Private operator workflow after verifying delivery/server evidence.
+
+    No HTTP endpoint, client flag or store reason code can invoke this review.
+    Dry-run is the default. Actual operator execution must use the current
+    release's private runtime and the same joined transaction as purchases.
+    """
+    if not all(re.fullmatch(r"[A-Za-z0-9._/-]{1,80}", value) for value in (case_id, reviewed_by)):
+        raise ValueError("Geçerli inceleme referansı ve inceleyen gereklidir.")
+    now_iso = datetime.now(timezone.utc).isoformat()
+    with STORE_REFUND_LOCK:
+        entry = platform_service.store_receipt(receipt_key)
+        if entry is None:
+            raise ValueError("İncelenecek makbuz bulunamadı.")
+        with _store_economy_transaction(str(entry["player_id"])):
+            entry = platform_service.store_receipt(receipt_key)
+            if entry is None:
+                raise ValueError("İncelenecek makbuz bulunamadı.")
+            if publisher_error_verified(entry):
+                return {"applied": False, "duplicate": True, "correction": 0}
+            correction, effect = publisher_error_correction(entry)
+            profile = _existing_player_profile(str(entry["player_id"]))
+            if profile is None:
+                raise ValueError("Oyuncu artık mevcut değil; hesap yeniden oluşturulmadı.")
+            result = {"applied": False, "duplicate": False, "correction": correction}
+            if not apply:
+                return result
+            platform_service.record_store_refund_review(
+                receipt_key, case_id=case_id, reviewed_by=reviewed_by, at=now_iso,
+                refund_effect=effect if entry.get("refunded") else None,
+            )
+            if correction:
+                currency = effect["currency"]
+                setattr(profile, currency, int(getattr(profile, currency)) + correction)
+                changes = {"currency": currency, "amount": correction, "balance": int(getattr(profile, currency))}
+                language = player_settings_service.get_or_create(str(entry["player_id"])).language
+                _, body = store_refund_message(entry, reversed_refund=True, changes=changes, language=language)
+                title = "Refund correction" if language == "en" else "İade düzeltildi"
+                platform_service.queue_notification(str(entry["player_id"]), title, body)
+                persist_player_data(str(entry["player_id"]))
+            return {**result, "applied": True}
 
 
 def _handle_google_store_notification(notification: dict) -> dict:
