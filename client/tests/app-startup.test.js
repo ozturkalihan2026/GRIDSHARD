@@ -1,6 +1,7 @@
 const fs = require("fs");
 const path = require("path");
 const vm = require("vm");
+const assert = require("node:assert/strict");
 
 const CLIENT_ROOT = path.join(__dirname, "..");
 const relayApi = require(path.join(CLIENT_ROOT, "src", "relay-client.js"));
@@ -127,6 +128,9 @@ for (const relativePath of [
   ["src", "battle", "board-view.js"],
   ["src", "battle", "module-card-view.js"],
   ["src", "battle", "graphics-tier.js"],
+  ["src", "battle", "battle-presentation.js"],
+  ["src", "battle", "battle-countdown.js"],
+  ["src", "battle", "battle-lifecycle.js"],
   ["src", "social", "safe-chat.js"],
 ]) {
   const moduleSource = fs.readFileSync(
@@ -142,7 +146,24 @@ const canonDataSource = fs.readFileSync(
 );
 vm.runInContext(canonDataSource, sandbox, { filename: "canon-data.js" });
 const source = fs.readFileSync(path.join(CLIENT_ROOT, "src", "app.js"), "utf8");
-vm.runInContext(source, sandbox, { filename: "app.js" });
+// Private test-only seam: exercise the actual app snapshot/render paths.
+// No additional API or state mutation helper ships to the browser.
+const closing = source.lastIndexOf("\n})();");
+assert.ok(closing>0);
+const auditSeam = `
+  globalThis.__battleAudit = {
+    playerId:participantPlayerId,
+    applyOnline:applyOnlineBattleSnapshot,
+    applyLocal:applyLocalServerSnapshotEnvelope,
+    core:() => client.requireModule("core-1"),
+    enemyCard,
+    bindLocal(id) { activePlayMode="local"; localServerSessionId=id; localServerState.bindSession(id); },
+    cursor:() => localServerEventCursor,
+    transportReady:battleTransportReady,
+    onlineTransport(open) { activePlayMode="online"; pvpConnection.status=open ? "open" : "reconnecting"; pvpState.connected=open; },
+  };
+`;
+vm.runInContext(source.slice(0,closing) + auditSeam + source.slice(closing), sandbox, { filename: "app.js" });
 
 for (const button of menuButtons) {
   if (typeof button._listeners.click !== "function") {
@@ -228,6 +249,31 @@ if (activeWithoutServer.some((moduleId) => moduleId !== "core-1")) {
   if (document.body.dataset.localStatus !== "setup") {
     throw new Error(`Sunucusuz savaş hazırlığa dönmedi: ${document.body.dataset.localStatus}`);
   }
+  const audit=sandbox.__battleAudit;
+  const core=(id,hp,maxHp) => ({instance_id:id,definition_id:"core",name_tr:"Çekirdek",status:"active",x:2,y:1,hp,max_hp:maxHp});
+  const snapshot=(tick,hp,maxHp) => ({session_id:"audit-local",tick,elapsed_ms:tick*100,status:"running",
+    players:{[audit.playerId]:{player_id:audit.playerId,modules:[core("own",hp,maxHp)],circuit_credits:6},
+      enemy:{player_id:"enemy",modules:[core("enemy",hp,maxHp)]}}});
+  audit.bindLocal("audit-local");
+  assert.equal(audit.applyOnline(snapshot(10,450,450)),true);
+  assert.equal(audit.core().hp,450);
+  assert.equal(audit.core().maxHp,450);
+  assert.equal(audit.enemyCard("enemy-core","Çekirdek",450,450,"core").style["--hp-ratio"],"1");
+  assert.equal(audit.applyLocal({snapshot:snapshot(11,450,600),events:[],event_cursor:9}),true);
+  assert.equal(audit.core().maxHp,600);
+  const card=audit.enemyCard("enemy-core","Çekirdek",450,600,"core");
+  assert.equal(card.style["--hp-ratio"],"0.75");
+  assert.equal(card.title,"Çekirdek · HP 450/600");
+  assert.equal(getElement("enemy-board-status").textContent,"Çekirdek 450/600");
+  assert.equal(audit.applyLocal({snapshot:snapshot(10,450,450),events:[],event_cursor:8}),false);
+  assert.equal(audit.core().maxHp,600);
+  assert.equal(audit.cursor(),9);
+  assert.equal(audit.applyLocal({snapshot:{...snapshot(12,1,1),session_id:"previous-match"}}),false);
+  assert.equal(audit.core().hp,450);
+  audit.onlineTransport(false);
+  assert.equal(audit.transportReady(),false);
+  audit.onlineTransport(true);
+  assert.equal(audit.transportReady(),true);
   console.log("app startup + menu + server-only battle guard test passed");
   process.exit(0);
 })().catch((error) => {

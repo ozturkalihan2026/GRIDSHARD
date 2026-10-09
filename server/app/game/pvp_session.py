@@ -1,6 +1,7 @@
 from copy import deepcopy
 from dataclasses import dataclass, field
 import time
+from math import ceil
 from typing import Callable
 
 from .combat import (
@@ -165,6 +166,8 @@ class PvPSession:
     created_at: float = 0.0
     last_activity_at: float = 0.0
     finished_at: float | None = None
+    combat_starts_at: float = 0.0
+    result_delivery_pending: bool = False
     ai_player_ids: set[str] = field(default_factory=set)
     ai_next_decision_at_ms: dict[str, int] = field(default_factory=dict)
     ai_archetypes: dict[str, str] = field(default_factory=dict)
@@ -199,10 +202,12 @@ class PvPSessionService:
         disconnected_ttl_seconds: float = 90.0,
         finished_ttl_seconds: float = 300.0,
         inactivity_forfeit_ms: int | None = INACTIVITY_FORFEIT_MS,
+        countdown_seconds: float = 0.0,
     ):
         self._sessions: dict[str, PvPSession] = {}
         self.inactivity_forfeit_ms = inactivity_forfeit_ms
         self.now_func = now_func
+        self.countdown_seconds = min(3.0, max(0.0, float(countdown_seconds)))
         self.waiting_ttl_seconds = waiting_ttl_seconds
         self.disconnected_ttl_seconds = disconnected_ttl_seconds
         self.finished_ttl_seconds = finished_ttl_seconds
@@ -415,6 +420,7 @@ class PvPSessionService:
         return {
             "session_id": session_id,
             "status": session.engine.state.status.value,
+            "countdown_remaining_ms": self.countdown_remaining_ms(session_id),
             "setup_required": session.setup_required,
             "auto_start_when_ready": session.auto_start_when_ready,
             "player_count": len(session.slots),
@@ -458,6 +464,7 @@ class PvPSessionService:
         # Setup is final here and no combat module has been deployed yet.
         if session.engine.state.status == BattleStatus.WAITING:
             self._sync_ai_progression(session)
+            session.combat_starts_at = self.now_func() + self.countdown_seconds
         session.engine.start()
         self._touch(session)
 
@@ -499,6 +506,8 @@ class PvPSessionService:
             raise PvPSessionError(
                 "Komut yalnızca çalışan PvP maçına gönderilebilir."
             )
+        if self.countdown_remaining_ms(session_id) and command.kind != "forfeit_battle":
+            raise PvPSessionError("Savaş başlangıç geri sayımı henüz tamamlanmadı.")
 
         if session.tutorial is not None:
             if not session.tutorial.handle_command(command):
@@ -627,13 +636,15 @@ class PvPSessionService:
                     session_id,
                     player_id,
                 )
-                if session.engine.state.status == BattleStatus.FINISHED
+                if session.engine.state.status == BattleStatus.FINISHED and not session.result_delivery_pending
                 else None
             ),
         }
 
     def step(self, session_id: str) -> None:
         session = self.get_session(session_id)
+        if self.countdown_remaining_ms(session_id):
+            return
         session.engine.step()
         if session.engine.state.status == BattleStatus.FINISHED and session.finished_at is None:
             session.finished_at = self.now_func()
@@ -795,9 +806,11 @@ class PvPSessionService:
             "normalized": state.normalized,
             "viewer_player_id": viewer_player_id,
             "status": state.status.value,
+            "result_delivery_pending": session.result_delivery_pending,
             "tick": state.tick,
             "snapshot_revision": session.snapshot_revision,
             "elapsed_ms": state.elapsed_ms,
+            "countdown_remaining_ms": self.countdown_remaining_ms(session_id),
             "overtime": session.engine.overtime_view(),
             "winner_player_id": state.winner_player_id,
             "loser_player_id": state.loser_player_id,
@@ -810,6 +823,12 @@ class PvPSessionService:
             ),
             "players": players,
         }
+
+    def countdown_remaining_ms(self, session_id: str) -> int:
+        session = self.get_session(session_id)
+        if session.engine.state.status != BattleStatus.RUNNING:
+            return 0
+        return max(0, ceil((session.combat_starts_at - self.now_func()) * 1000))
 
     def events_since(
         self,
@@ -832,8 +851,8 @@ class PvPSessionService:
             "cursor": len(events),
             "snapshot_revision": session.snapshot_revision,
             "events": [
-                visible_event
-                for event in events[cursor:]
+                {**visible_event, "cursor": index + 1}
+                for index, event in enumerate(events[cursor:], start=cursor)
                 if (
                     visible_event
                     := self._event_for_viewer(

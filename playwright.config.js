@@ -61,7 +61,7 @@ module.exports = defineConfig({
     },
     {
       name: "android-chrome-emulated",
-      testMatch: /(startup-loading|mobile-battle|settings-layout|onboarding)\.spec\.js/,
+      testMatch: /(startup-loading|two-client-pvp|mobile-battle|settings-layout|onboarding)\.spec\.js/,
       use: { ...devices["Pixel 7"], ...localChrome }
     },
     {

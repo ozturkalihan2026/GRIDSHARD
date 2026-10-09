@@ -2,7 +2,7 @@ from dataclasses import dataclass
 from statistics import mean
 from typing import Callable
 
-from .engine import BattleEngine, TICK_MS
+from .engine import BattleEngine
 from .models import BattleState, ModuleDefinition
 
 

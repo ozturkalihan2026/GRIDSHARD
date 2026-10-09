@@ -16,7 +16,7 @@ client = TestClient(app)
 
 @pytest.fixture(autouse=True)
 def human_matchmaking_contract(monkeypatch):
-    # The current beta defaults to AI; these tests deliberately cover human matching.
+    # Preserve the human-first contract even when an operator/test env forces AI.
     monkeypatch.setattr(gateway, "MATCHMAKING_AI_ONLY", False)
 
 
@@ -109,3 +109,49 @@ def test_queue_status_explicitly_reports_not_matched():
 
     assert body["queued"] is True
     assert body["matched"] is False
+
+
+def test_normal_pvp_waits_ten_seconds_then_falls_back_once(monkeypatch):
+    reset()
+    now = [100.0]
+    monkeypatch.setattr(matchmaking_service, "now_func", lambda: now[0])
+    first = client.post("/matchmaking/join", json={"player_id": "a"}).json()
+    assert first["matched"] is False
+    assert first["queue"]["ai_only"] is False
+    assert first["queue"]["ai_fallback_after_seconds"] == 10
+    now[0] = 109.999
+    assert client.get("/matchmaking/a").json()["queued"] is True
+    now[0] = 110.0
+    matched = client.get("/matchmaking/a").json()
+    assert matched["matched"] is True
+    assert matched["opponent_type"] == "ai"
+    assert client.get("/matchmaking/a").json()["session_id"] == matched["session_id"]
+    assert len(pvp_service._sessions) == 1
+
+
+def test_human_at_fallback_boundary_wins_over_bot(monkeypatch):
+    reset()
+    now = [100.0]
+    monkeypatch.setattr(matchmaking_service, "now_func", lambda: now[0])
+    client.post("/matchmaking/join", json={"player_id": "a"})
+    # Enqueue directly to exercise the status path, not join's immediate match.
+    source = matchmaking_service._queue["a"]
+    matchmaking_service.enqueue("b", rating=source.rating, league_name_tr=source.league_name_tr, level=source.level)
+    now[0] = 110.0
+    matched = client.get("/matchmaking/a").json()
+    assert matched["opponent_type"] == "human"
+    assert set(matched["players"]) == {"a", "b"}
+    assert len(pvp_service._sessions) == 1
+
+
+def test_cancelled_queue_never_falls_back_to_bot(monkeypatch):
+    reset()
+    now = [100.0]
+    monkeypatch.setattr(matchmaking_service, "now_func", lambda: now[0])
+    client.post("/matchmaking/join", json={"player_id": "a"})
+    assert client.delete("/matchmaking/a").json()["cancelled"] is True
+    now[0] = 120.0
+    status = client.get("/matchmaking/a").json()
+    assert status["queued"] is False
+    assert status["matched"] is False
+    assert not pvp_service._sessions

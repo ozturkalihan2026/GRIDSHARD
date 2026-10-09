@@ -1,0 +1,8 @@
+target-version = "py312"
+
+[lint]
+select = ["F", "B", "ASYNC", "PERF"]
+
+[lint.per-file-ignores]
+# Closing/receiving one failed socket must not abort the next iteration.
+"server/app/game/pvp_websocket.py" = ["PERF203"]

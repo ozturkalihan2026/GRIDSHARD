@@ -2,6 +2,7 @@ from __future__ import annotations
 import asyncio
 import hashlib
 import logging
+import time
 from inspect import isawaitable
 from dataclasses import dataclass
 from typing import Awaitable, Callable
@@ -15,6 +16,8 @@ SleepFunc = Callable[[float], Awaitable[None]]
 
 @dataclass(slots=True)
 class RunnerStats:
+    # Broadcast counters count accepted delivery requests (queued in the
+    # application). PvPConnection.messages_sent counts successful socket sends.
     ticks_executed: int = 0
     live_event_broadcasts: int = 0
     snapshot_broadcasts: int = 0
@@ -30,6 +33,7 @@ class PvPTickRunner:
         websocket_adapter: PvPWebSocketAdapter,
         *,
         sleep_func: SleepFunc = asyncio.sleep,
+        clock_func: Callable[[], float] = time.monotonic,
         snapshot_every_ticks: int = 10,
         ai_decision_interval_ms: int = 5_000,
         match_finished_callback=None,
@@ -38,6 +42,7 @@ class PvPTickRunner:
         self.service=service
         self.websocket_adapter=websocket_adapter
         self.sleep_func=sleep_func
+        self.clock_func=clock_func
         self.snapshot_every_ticks=snapshot_every_ticks
         self.ai_decision_interval_ms=max(1_000,int(ai_decision_interval_ms))
         self.match_finished_callback=match_finished_callback
@@ -83,6 +88,11 @@ class PvPTickRunner:
         if session.engine.state.status != BattleStatus.RUNNING:
             return False
         stats=self.stats_for(session_id)
+        if self.service.countdown_remaining_ms(session_id):
+            # Both boards show the same server-owned start gate. Neither AI,
+            # energy regeneration nor combat advances behind the overlay.
+            stats.snapshot_broadcasts += await self.websocket_adapter.broadcast_snapshot(session_id)
+            return True
         # İlk oyun deneyimi: yönetmenli savaşta oyuncu okurken motor durur ve
         # rakibin hamlelerini betik yapar (bkz. tutorial.TutorialDirector).
         director=session.tutorial
@@ -131,6 +141,7 @@ class PvPTickRunner:
                 + int(options.get("decision_delay_ms", self.ai_decision_interval_ms))
             )
         self.service.step(session_id)
+        session.result_delivery_pending = session.engine.state.status == BattleStatus.FINISHED
         stats.ticks_executed+=1
         if director is not None:
             director.after_tick()
@@ -159,6 +170,10 @@ class PvPTickRunner:
                     # is still delivered so the battle itself never hangs.
                     stats.match_finished_callback_failures += 1
                     logging.getLogger(__name__).warning("Battle projection requires recovery (%s)", type(exc).__name__)
+
+            # A final board can be shown during persistence, but it must not
+            # authorize progression sync yet (including a concurrent reconnect).
+            session.result_delivery_pending = False
 
             # Anlık görüntü her karede gitmez. Savaş arada bir karede bittiyse
             # (ör. modül ve çekirdek aynı saniyede öldü) son tahta da gönderilir;
@@ -196,6 +211,7 @@ class PvPTickRunner:
         return executed
 
     async def _run_loop(self,session_id: str) -> None:
+        next_tick_at = self.clock_func()
         try:
             while True:
                 session=self.service.get_session(session_id)
@@ -205,7 +221,13 @@ class PvPTickRunner:
                     break
                 if session.engine.state.status != BattleStatus.RUNNING:
                     break
-                await self.sleep_func(self.tick_interval_seconds)
+                next_tick_at += self.tick_interval_seconds
+                now = self.clock_func()
+                if next_tick_at < now:
+                    # Do not replay missed ticks in a catch-up burst after an
+                    # event-loop stall. Resume a regular cadence instead.
+                    next_tick_at = now + self.tick_interval_seconds
+                await self.sleep_func(max(0.0, next_tick_at - now))
         except Exception as exc:
             logging.getLogger(__name__).error("Battle runner stopped unexpectedly (%s)", type(exc).__name__)
         finally:

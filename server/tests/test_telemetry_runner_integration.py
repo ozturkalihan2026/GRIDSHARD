@@ -14,7 +14,9 @@ def destroy_core(engine, player_id):
             module.hp = 0
 
 
-def test_main_runner_records_match_completion_telemetry():
+def test_main_runner_records_match_completion_telemetry(monkeypatch):
+    clock = [100.0]
+    monkeypatch.setattr(pvp_service, "now_func", lambda: clock[0])
     async def scenario():
         pvp_service._sessions.clear()
         telemetry_service.clear()
@@ -28,6 +30,7 @@ def test_main_runner_records_match_completion_telemetry():
             )
 
         pvp_service.start("telemetry-runner")
+        clock[0] += 3.0
         destroy_core(session.engine, "b")
         await pvp_tick_runner.run_single_tick("telemetry-runner")
 

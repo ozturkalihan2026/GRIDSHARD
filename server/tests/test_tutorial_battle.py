@@ -373,6 +373,8 @@ def test_training_match_is_won_and_leaves_the_account_untouched(monkeypatch):
     from fastapi.testclient import TestClient
 
     gateway = _reset_gateway(monkeypatch, ai_only=True)
+    clock = Clock()
+    monkeypatch.setattr(gateway.pvp_service, "now_func", clock)
     player_id = "training-veteran"
     profile = gateway.player_profile_service.get_or_create(player_id)
     profile.rating = 640
@@ -406,6 +408,7 @@ def test_training_match_is_won_and_leaves_the_account_untouched(monkeypatch):
         ),
     )
     gateway.pvp_service.set_ready(session_id, player_id, True)
+    clock.now += 3.0
     runner = PvPTickRunner(
         gateway.pvp_service,
         PvPWebSocketAdapter(gateway.pvp_service),

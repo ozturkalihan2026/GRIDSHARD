@@ -13,11 +13,13 @@ class PvPProtocolHandler:
     def __init__(self,service: PvPSessionService):
         self.service=service
 
-    def handle(self,raw_message: dict,authenticated_player_id: str) -> dict:
+    def handle(self,raw_message: dict,authenticated_player_id: str, *, expected_session_id: str | None = None) -> dict:
         request_id=None
         try:
             envelope=parse_client_envelope(raw_message)
             request_id=envelope.request_id
+            if expected_session_id is not None and envelope.session_id != expected_session_id:
+                raise PvPSessionError("Mesaj oturumu bağlı savaş oturumuyla eşleşmiyor.")
             if envelope.player_id!=authenticated_player_id:
                 raise PvPSessionError(
                     "Mesaj oyuncu kimliği doğrulanmış kimlikle eşleşmiyor."
@@ -76,6 +78,11 @@ class PvPProtocolHandler:
                     raise PvPSessionError(
                         "Heartbeat `sent_at_ms` sayısal olmalıdır."
                     )
+                cursor = envelope.payload.get("event_cursor")
+                if cursor is not None:
+                    if type(cursor) is not int or cursor < 0:
+                        raise PvPSessionError("Heartbeat olay imleci geçerli bir tam sayı olmalıdır.")
+                    self.service.acknowledge_events(envelope.session_id, authenticated_player_id, cursor)
                 return server_envelope(
                     "heartbeat_ack",
                     {"sent_at_ms":sent_at_ms},

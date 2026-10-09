@@ -179,12 +179,13 @@
         pvpEnvelope,
       });
 
+      let delivery;
       if (
         typeof pvpConnection !== "undefined"
         && pvpConnection.status === "open"
         && pvpEnvelope
       ) {
-        pvpConnection.sendEnvelope(
+        delivery = pvpConnection.sendEnvelope(
           pvpEnvelope
         );
       } else if (
@@ -195,13 +196,16 @@
         sendLocalServerCommand(
           command
         );
+        delivery = { ok:true };
       } else {
         logClientMessage(
           "Komut gönderilemedi: sunucu savaş oturumu bağlı değil."
         );
+        delivery = { ok:false, reason:"Sunucu bağlantısı bekleniyor." };
       }
 
       renderLog();
+      return delivery;
     },
   });
 
@@ -213,7 +217,7 @@
   const pvpState = new RelayPvPClientState({
     playerId: participantPlayerId,
     sessionId: "local-preview",
-    battleClient: client,
+    // app.js applies the mapped, dynamic module instances once per UI frame.
   });
   pvpState.markConnected();
 
@@ -718,7 +722,7 @@
           responseError.status = response.status;
           if (attempt === 0 && [500, 502, 503, 504].includes(response.status)) {
             lastError = responseError;
-            await new Promise((resolve) => window.setTimeout(resolve, 150));
+            await new Promise((resolve) => { window.setTimeout(resolve, 150); });
             continue;
           }
           throw responseError;
@@ -727,7 +731,7 @@
       } catch (error) {
         lastError = error;
         if (attempt === 0 && canRetry && !Number(error?.status)) {
-          await new Promise((resolve) => window.setTimeout(resolve, 150));
+          await new Promise((resolve) => { window.setTimeout(resolve, 150); });
           continue;
         }
         throw error;
@@ -3366,7 +3370,7 @@
       } catch (error) {
         lastError = error;
         if (Number(error?.status) !== 422) throw error;
-        if (attempt < 5) await new Promise((resolve) => window.setTimeout(resolve, 1500));
+        if (attempt < 5) await new Promise((resolve) => { window.setTimeout(resolve, 1500); });
       }
     }
     throw lastError;
@@ -3379,6 +3383,7 @@
     const isPublisherTest = provider === "admob" && adStoreState?.providers?.ad_policy?.mode === "test";
     const status = document.getElementById("post-match-store-status");
     if (!battleId || !provider || adRewardPending || adRewardReceipts.has(battleId)) return;
+    gridshardAudioDirector?.stopResultPlayback();
     adRewardPending = true;
     adRewardClaimPending = provider === "admob" && !isPublisherTest && pendingAdRewardClaims.has(battleId);
     if (status) status.textContent = "";
@@ -4423,7 +4428,7 @@
           try {
             await send(chip.dataset.presetId);
             // Tek dokunuşla gönderilir; art arda dokunuş sohbeti doldurmasın.
-            await new Promise((resolve) => setTimeout(resolve, 1000));
+            await new Promise((resolve) => { setTimeout(resolve, 1000); });
           } finally {
             host.dataset.sending = "false";
           }
@@ -6810,7 +6815,7 @@
   const playGames = globalThis.GridshardPlayGames
     ? new globalThis.GridshardPlayGames({request:requestJsonWithDeadline}) : null;
   const playGamesReady = playGames ? Promise.race([
-    playGames.prepare(), new Promise(resolve => setTimeout(() => resolve(false), 8000)),
+    playGames.prepare(), new Promise(resolve => { setTimeout(() => resolve(false), 8000); }),
   ]) : Promise.resolve(false);
   const accountSessionControls = globalThis.GridshardAccountSessionControls
     ? new globalThis.GridshardAccountSessionControls({
@@ -7246,14 +7251,6 @@
         rating:
           profileState.profile?.rating
           ?? 1000,
-      });
-  }
-
-  function trackRematchRequest() {
-    return telemetryDispatcher
-      .trackRematchRequested({
-        previous_session_id:
-          pvpState.sessionId,
       });
   }
 
@@ -7871,6 +7868,7 @@
   }
 
   async function syncFinishedMatch() {
+    if (!pvpState.resultDeliveryReady) return { ok:false, pending:true };
     const battleId =
       pvpState.finalResult
         ?.session_id
@@ -8027,6 +8025,18 @@
     }
   }
 
+  const battleCountdown = new GridshardBattleCountdown({
+    element:document.getElementById("battle-start-countdown"),
+    onChange:() => { renderShelf(); renderCorePowerControl(); },
+  });
+  const onlineBattlePresentation = new GridshardBattlePresentationQueue({
+    requestFrame:(run) => window.requestAnimationFrame(run),
+    cancelFrame:(id) => window.cancelAnimationFrame(id),
+    rememberEvents:rememberServerDestructions,
+    present:({ snapshot, events, snapshotChanged }) => syncOnlineServerBattle({
+      type:"presentation", payload:{ snapshot, events, snapshotChanged },
+    }),
+  });
   const pvpConnection =
     new RelayWebSocketConnectionManager({
       pvpState,
@@ -8058,9 +8068,7 @@
               ?.markBattleStarted();
           }
 
-          syncOnlineServerBattle(
-            _message
-          );
+          onlineBattlePresentation.push(_message, result);
 
           if (
             _message?.type
@@ -8069,13 +8077,14 @@
               pvpState.phase
                 === "finished"
               && pvpState.finalResult
+              && pvpState.resultDeliveryReady
             )
           ) {
+            onlineBattlePresentation.flush();
             presentOnlineMatchFinished();
             void syncFinishedMatch();
           }
 
-          render();
         },
     });
 
@@ -8343,13 +8352,15 @@
         appRouter.go(RelayAppScreen.PLAY);
         screenController.render();
       }
-      resetBattleVisualSurface();
-      resetClientModulesForBattleStart();
-      resetBattleResultPresentation();
-      destructionFxPlayed.clear();
-      preparedCorePowerFx.clear();
-      snapshotModuleHp.clear();
-      serverDestroyedModuleAt.clear();
+      if (battleJustStarted) {
+        resetBattleVisualSurface();
+        resetClientModulesForBattleStart();
+        resetBattleResultPresentation();
+        destructionFxPlayed.clear();
+        preparedCorePowerFx.clear();
+        snapshotModuleHp.clear();
+        serverDestroyedModuleAt.clear();
+      }
       if (document.documentElement) document.documentElement.scrollTop = 0;
       document.body.scrollTop = 0;
       if (battleJustStarted) {
@@ -8422,15 +8433,9 @@
     return result;
   }
 
-  function connectPvP(url) {
-    pvpConnection.connect(url);
-  }
-
-  function disconnectPvP() {
-    pvpConnection.disconnect();
-  }
-
   function sendPvPCommand(command) {
+    if (battleCountdown.active && command.kind !== "forfeit_battle") return { ok:false, reason:"Savaş başlangıç geri sayımı devam ediyor." };
+    if (!battleTransportReady()) return { ok:false, reason:"Sunucu bağlantısı bekleniyor." };
     return pvpConnection.sendCommand(
       command
     );
@@ -8438,15 +8443,6 @@
 
   function buildPvPCommandEnvelope(command) {
     return pvpState.buildCommandMessage(command);
-  }
-
-  function applyPvPServerEnvelope(message) {
-    const result = pvpState.applyServerEnvelope(message);
-    if (!result.ok) {
-      logClientMessage(result.reason);
-    }
-    render();
-    return result;
   }
 
   const board = document.getElementById("board");
@@ -8472,8 +8468,6 @@
   let corePowerTargeting = false;
   const timeEl = document.getElementById("battle-time");
   const creditEl = document.getElementById("credit-indicator");
-  const combatSummaryEl = document.getElementById("combat-summary");
-  const energySummaryEl = document.getElementById("energy-summary");
   const battleResultSummaryEl = document.getElementById("battle-result-summary");
   const capacityEl = document.getElementById("capacity-indicator");
   const lockLabel = document.getElementById("shelf-lock-label");
@@ -8503,6 +8497,8 @@
       corePowerReady,
       corePowerTargeting,
       localBattleFinished,
+      battleCountdown.active,
+      battleTransportReady(),
       selectedCore,
       document.documentElement?.lang || "tr",
     ].join("|");
@@ -8529,7 +8525,7 @@
     }
     applyCoreVisualIdentity(board, selectedCore);
     corePowerButtonEl.dataset.targeting=String(corePowerTargeting);
-    corePowerButtonEl.disabled=localBattleFinished || !corePowerReady;
+    corePowerButtonEl.disabled=localBattleFinished || battleCountdown.active || !corePowerReady || !battleTransportReady();
     corePowerButtonEl.setAttribute("aria-pressed",String(corePowerTargeting));
     // Kuantum · Yarım Faz: güç %50'de kullanılabilir, tam dolmadan yalnız kalkan verir.
     const halfPhaseReady = corePowerReady && charge < 100;
@@ -9199,7 +9195,8 @@
   let localServerSyncTimer = null;
   let localServerAuthoritative = false;
   let localServerEventCursor = 0;
-  let localServerLastSnapshotTick = -1;
+  const localServerRequests = new GridshardBattleRequestScope();
+  const localServerState = new RelayPvPClientState({ playerId:participantPlayerId });
   let localServerFinalResult = null;
   let localBattleOutcome = "pending";
   const destructionFxPlayed = new Set();
@@ -9213,11 +9210,9 @@
   const floatingFeedbackLive = new Map();
   let battleLiveTickerTimer = null;
 
-  let previousCapacity = null;
   let mockEnemyCoreHp = 300;
   let mockEnemyCoreMaxHp = 300;
   let mockEnemyCoreBadges = [];
-  let mockEnemyModuleHp = 140;
   let mockEnemyModules = [];
   let enemyBattlePlayerId = null;
   let enemyBattleDisplayName = "";
@@ -9226,10 +9221,6 @@
   ];
   let playerCellDebris = [];
   let enemyCellDebris = [];
-
-  function enemyLivingModules() {
-    return mockEnemyModules.filter((module)=>Number(module.hp||0)>0);
-  }
 
   let lastBattleAnimationNow = null;
   let battleVisualGeneration = 0;
@@ -9750,6 +9741,7 @@
   }
 
   function stopLocalServerPolling() {
+    localServerRequests.reset();
     if (
       localServerSyncTimer
       !== null
@@ -9876,20 +9868,6 @@
     });
   }
 
-  function recordModuleAnchor(
-    moduleId,
-    element
-  ) {
-    if (
-      !moduleId
-      || !element
-      || typeof element.getBoundingClientRect !== "function"
-    ) {
-      return;
-    }
-    rememberModuleAnchor(moduleId, element.getBoundingClientRect());
-  }
-
   function resolveModuleAnchor(
     moduleId,
     { core=false }={}
@@ -9935,36 +9913,14 @@
   // hesaplanır (animasyonlu öğe sıradan öğenin on katından pahalıdır). Süresi
   // dolan işler HUD turunda ve her sunucu mesajında topluca çalışır;
   // animasyonu biten öğe o ana kadar görünmez bekler.
-  const battleSweepQueue = [];
+  const battleSweepQueue = new GridshardBattleDeferredQueue();
 
   function scheduleBattleSweep(delayMs, run) {
-    const entry = {
-      at:performance.now() + Math.max(0, Number(delayMs) || 0),
-      run,
-      cancelled:false,
-    };
-    battleSweepQueue.push(entry);
-    return entry;
+    return battleSweepQueue.schedule(delayMs, run);
   }
 
   function runBattleSweep(now=performance.now()) {
-    if (!battleSweepQueue.length) return;
-    let kept = 0;
-    for (let index = 0; index < battleSweepQueue.length; index += 1) {
-      const entry = battleSweepQueue[index];
-      if (entry.cancelled) continue;
-      if (entry.at <= now) {
-        try {
-          entry.run();
-        } catch (_error) {
-          // Temizlik hatası savaşı durdurmamalı.
-        }
-        continue;
-      }
-      battleSweepQueue[kept] = entry;
-      kept += 1;
-    }
-    battleSweepQueue.length = kept;
+    battleSweepQueue.flush(now);
   }
 
   // Kart/öğe üzerinde süreli vurgu sınıfı. Eski yöntem (`void el.offsetWidth`)
@@ -9976,6 +9932,7 @@
 
   function playBattleFxClass(element, className, durationMs, groupClasses=[className]) {
     if (!element?.classList) return;
+    const generation = battleVisualGeneration;
     const previous = battleFxStates.get(element);
     if (previous) {
       if (previous.entry) previous.entry.cancelled = true;
@@ -10006,7 +9963,9 @@
     }
     element.classList.remove(...groupClasses);
     state.frame = window.requestAnimationFrame(() => {
+      if (generation !== battleVisualGeneration) return;
       state.frame = window.requestAnimationFrame(() => {
+        if (generation !== battleVisualGeneration) return;
         state.frame = null;
         element.classList.add(className);
         scheduleRemoval();
@@ -10028,13 +9987,13 @@
     if (!battleLiveTickerEl.classList.contains("pulse")) {
       playBattleFxClass(battleLiveTickerEl, "pulse", 420);
     }
-    window.clearTimeout(battleLiveTickerTimer);
-    battleLiveTickerTimer = window.setTimeout(() => {
+    if (battleLiveTickerTimer) battleLiveTickerTimer.cancelled = true;
+    battleLiveTickerTimer = scheduleBattleSweep(2100, () => {
       if (!localBattleFinished) {
         battleLiveTickerEl.textContent = "Devreler çalışıyor · etkiler modüllerin üzerinde görünür.";
         battleLiveTickerEl.dataset.kind = "neutral";
       }
-    }, 2100);
+    });
   }
 
   function parseFloatingFeedbackText(text) {
@@ -10299,6 +10258,8 @@
     return { text:`+${rendered}${unit}`, variant:"energy" };
   }
 
+  const coreWaveEntries = new WeakMap();
+
   function presentCorePowerActivation(snapshot, data) {
     const waveEffect = data.effect_kind || corePowerEffect(data.power_id);
     const affectedTargets = Array.isArray(data.affected_targets)
@@ -10311,12 +10272,18 @@
       ? (affectedTargets[0]?.player_id || data.player_id)
       : data.player_id;
     const waveBoard = wavePlayerId === participantPlayerId ? board : enemyBoard;
-    if (waveBoard) waveBoard.dataset.coreWaveEffect = waveEffect;
-    waveBoard?.classList.add("core-wave");
-    window.setTimeout(() => {
-      waveBoard?.classList.remove("core-wave");
-      delete waveBoard?.dataset.coreWaveEffect;
-    }, 900);
+    if (waveBoard) {
+      const previous = coreWaveEntries.get(waveBoard);
+      if (previous) previous.cancelled = true;
+      waveBoard.dataset.coreWaveEffect = waveEffect;
+      waveBoard.classList.add("core-wave");
+      const cleanup = scheduleBattleSweep(900, () => {
+        waveBoard.classList.remove("core-wave");
+        delete waveBoard.dataset.coreWaveEffect;
+        coreWaveEntries.delete(waveBoard);
+      });
+      coreWaveEntries.set(waveBoard, cleanup);
+    }
     if (waveEffect === "sabotage") {
       const sourceId = data.player_id === participantPlayerId ? "core-1" : "enemy-core";
       const targetId = data.player_id === participantPlayerId ? "enemy-core" : "core-1";
@@ -10696,7 +10663,7 @@
             data.source_module_id
           );
           if (sourceModule?.definition_id === "core") {
-            window.setTimeout(feedback, 170);
+            scheduleBattleSweep(170, feedback);
           } else {
             feedback();
           }
@@ -10710,13 +10677,13 @@
           data.unit || ""
         );
         if (Number(data.value || 0) > 0) {
-          window.setTimeout(() => emitServerModuleFeedback(
+          scheduleBattleSweep(170, () => emitServerModuleFeedback(
             snapshot,
             data.target_player_id || data.player_id,
             data.target_module_id || data.module_id,
             feedback.text,
             feedback.variant
-          ), 170);
+          ));
         }
         continue;
       }
@@ -11100,12 +11067,6 @@
           signatureBadges:normalizeSignatureBadges(module.signature_badges),
         })
       );
-    mockEnemyModuleHp=
-      enemyLivingModules().reduce(
-        (sum,module) =>
-          sum + module.hp,
-        0
-      );
     return true;
   }
 
@@ -11133,14 +11094,18 @@
       return false;
     }
 
-    const events=
-      message.type === "events"
-      || message.type
-        === "reconnect_state"
-        ? payload.events || []
-        : [];
-    rememberServerDestructions(events);
+    const events = payload.events || [];
+    const applyState = payload.snapshotChanged !== false || events.some(event => event.type === "module_destroyed");
 
+    if (applyState && !applyOnlineBattleSnapshot(snapshot)) return false;
+    processLocalServerEvents(events, snapshot);
+    renderBattleHud();
+    if (snapshot.status === "finished") presentOnlineMatchFinished();
+    return true;
+  }
+
+  function applyOnlineBattleSnapshot(snapshot) {
+    battleCountdown.sync(snapshot);
     const ownPlayer = snapshot.players[participantPlayerId];
     syncCorePowerFromSnapshot(ownPlayer);
     if (ownPlayer) {
@@ -11158,6 +11123,7 @@
         client.applyServerModuleState({
           instanceId:clientModuleId,
           hp:destroyed ? 0 : Number(serverModule.hp || 0),
+          maxHp:Number(serverModule.max_hp ?? client.requireModule(clientModuleId).maxHp),
           status:destroyed ? "destroyed" : serverModule.status,
           position:
             destroyed || serverModule.x === null || serverModule.y === null
@@ -11178,10 +11144,6 @@
       client.clearPendingPlacements();
     }
 
-    processLocalServerEvents(
-      events,
-      snapshot
-    );
     processSnapshotDestructionFx(
       snapshot
     );
@@ -11194,12 +11156,7 @@
       document.body.dataset.battleAuthority="server";
     }
     renderEnemyBoard();
-    // Durum bu mesajla değişti: HUD, raf ve kendi tahtan hemen yenilenir.
-    renderBattleHud();
-
-    if (snapshot.status === "finished") {
-      presentOnlineMatchFinished();
-    }
+    render();
     return true;
   }
 
@@ -11218,8 +11175,20 @@
       return false;
     }
 
+    if (snapshot.session_id !== localServerSessionId) return false;
+    const changed = localServerState.applySnapshot(snapshot) !== false;
+    const events = localServerState.applyEventsPage({
+      events:envelope?.events || [], cursor:envelope?.event_cursor,
+    });
+    localServerEventCursor = localServerState.eventCursor;
+    if (!changed) {
+      processLocalServerEvents(events, localServerState.snapshot);
+      return false;
+    }
+
+    battleCountdown.sync(snapshot);
     processLocalServerEvents(
-      envelope?.events || [],
+      events,
       snapshot
     );
     processSnapshotDestructionFx(
@@ -11263,10 +11232,6 @@
     localServerAuthoritative=true;
     document.body.dataset.battleAuthority=
       "server";
-    localServerLastSnapshotTick=
-      Number(
-        snapshot.tick || 0
-      );
     client.updateElapsedMs(
       Number(
         snapshot.elapsed_ms || 0
@@ -11292,6 +11257,7 @@
       client.applyServerModuleState({
         instanceId:clientModuleId,
         hp:Number(serverModule.hp || 0),
+        maxHp:Number(serverModule.max_hp ?? client.requireModule(clientModuleId).maxHp),
         status:serverModule.status,
         position:
           serverModule.x === null
@@ -11335,11 +11301,6 @@
     renderEnemyBoard();
     renderCredits();
     renderPlayerCoreSummary();
-    localServerEventCursor=
-      Number(
-        envelope?.event_cursor
-        ?? localServerEventCursor
-      );
 
     if (
       snapshot.status
@@ -11372,26 +11333,26 @@
     ) {
       return false;
     }
+    const sessionId = localServerSessionId;
     try {
-      const response=await fetchWithDeadline(
-        `/local-ai/sessions/${encodeURIComponent(localServerSessionId)}/snapshot`
-        + `?player_id=${encodeURIComponent(participantPlayerId)}`
-        + `&cursor=${localServerEventCursor}`,
-        { cache:"no-store" },
-        5000
-      );
-      if (!response.ok) {
-        return;
-      }
-      applyLocalServerSnapshotEnvelope(
-        await response.json()
-      );
+      return await localServerRequests.run(async () => {
+        const response=await fetchWithDeadline(
+          `/local-ai/sessions/${encodeURIComponent(sessionId)}/snapshot`
+          + `?player_id=${encodeURIComponent(participantPlayerId)}`
+          + `&cursor=${localServerEventCursor}`,
+          { cache:"no-store" },
+          5000
+        );
+        return response.ok ? response.json() : null;
+      }, payload => sessionId === localServerSessionId && applyLocalServerSnapshotEnvelope(payload));
     } catch (_error) {
       // Sunucu köprüsü açılamazsa mevcut çevrimdışı test savaşı kesilmez.
     }
   }
 
   async function connectLocalServerBattle() {
+    stopLocalServerPolling();
+    const generation = localServerRequests.generation;
     try {
       const response=await fetchWithDeadline(
         "/local-ai/sessions",
@@ -11423,21 +11384,15 @@
         return false;
       }
       const payload=await response.json();
-      if (
-        !payload?.session_id
-        || !applyLocalServerSnapshotEnvelope(
-          payload
-        )
-      ) {
-        return false;
-      }
+      if (!localServerRequests.isCurrent(generation) || !payload?.session_id) return false;
 
       localServerSessionId=
         payload.session_id;
+      localServerState.bindSession(localServerSessionId);
+      if (!applyLocalServerSnapshotEnvelope(payload)) return false;
       telemetryDispatcher.setSession(
         localServerSessionId
       );
-      stopLocalServerPolling();
       localServerSyncTimer=
         window.setInterval(
           pollLocalServerBattle,
@@ -11461,9 +11416,11 @@
     ) {
       return;
     }
+    const sessionId = localServerSessionId;
+    const generation = localServerRequests.generation;
     try {
       const response=await fetchWithDeadline(
-        `/local-ai/sessions/${encodeURIComponent(localServerSessionId)}/commands`,
+        `/local-ai/sessions/${encodeURIComponent(sessionId)}/commands`,
         {
           method:"POST",
           headers:{
@@ -11479,6 +11436,7 @@
         },
         5000
       );
+      if (!localServerRequests.isCurrent(generation) || sessionId !== localServerSessionId) return false;
       if (!response.ok) {
         const detail=await response
           .json()
@@ -11492,7 +11450,7 @@
       await pollLocalServerBattle();
       return true;
     } catch (_error) {
-      logClientMessage(
+      if (localServerRequests.isCurrent(generation)) logClientMessage(
         "Sunucu savaş komutuna ulaşılamadı."
       );
       return false;
@@ -11509,7 +11467,17 @@
   }
 
   function resetBattleVisualSurface() {
+    battleCountdown.cancel();
+    onlineBattlePresentation.reset();
     battleVisualGeneration += 1;
+    battleSweepQueue.reset();
+    battleLiveTickerTimer = null;
+    battleLiveTickerEl?.classList.remove("pulse");
+    for (const battleBoard of [board, enemyBoard]) {
+      battleBoard?.classList.remove("core-wave");
+      if (battleBoard) delete battleBoard.dataset.coreWaveEffect;
+    }
+    creditEl?.classList.remove("credit-insufficient");
     clearArenaPulse();
     signatureEffectsLive = 0;
     signatureEffectLastAt.clear();
@@ -11576,7 +11544,7 @@
     localServerSessionId=null;
     localServerAuthoritative=false;
     localServerEventCursor=0;
-    localServerLastSnapshotTick=-1;
+    localServerState.reset();
     localServerFinalResult=null;
     localBattleOutcome="pending";
     document.body.dataset.battleAuthority=
@@ -11605,8 +11573,6 @@
       [];
     mockEnemyModules =
       [];
-    mockEnemyModuleHp =
-      0;
 
     client.applyServerEconomyState({
       circuitCredits:6,
@@ -12604,8 +12570,9 @@
     const restarting = ARENA_PULSE_CLASSES.some((name) => arena.classList.contains(name));
     arena.classList.remove(...ARENA_PULSE_CLASSES);
     if (restarting && typeof window.requestAnimationFrame === "function") {
+      const generation = battleVisualGeneration;
       window.requestAnimationFrame(() => window.requestAnimationFrame(() => {
-        if (arenaPulseLevel === level) arena.classList.add(config.className);
+        if (generation === battleVisualGeneration && arenaPulseLevel === level) arena.classList.add(config.className);
       }));
     } else {
       arena.classList.add(config.className);
@@ -12827,6 +12794,7 @@
     // Olaylar yeni anlık görüntü çizilmeden işlenir; konumu çizimden sonra ölç.
     // Sekme arka plandayken bekleyen kareler dönüşte topluca çizilmez.
     window.requestAnimationFrame(() => {
+      if (visualGeneration !== battleVisualGeneration) return;
       const fresh = performance.now() - now < 600;
       const nodes = fresh && visualGeneration === battleVisualGeneration
         ? buildSignatureEffectNodes(kind, anchorId, {
@@ -15686,8 +15654,8 @@
     const cardByCell = new Map();
     cardByCell.set("2,1", {
       id:"enemy-core",
-      signature:JSON.stringify([mockEnemyCoreHp, mockEnemyCoreBadges]),
-      build:() => enemyCard("enemy-core","Çekirdek",mockEnemyCoreHp,300,"core",{ signatureBadges:mockEnemyCoreBadges }),
+      signature:JSON.stringify([mockEnemyCoreHp, mockEnemyCoreMaxHp, mockEnemyCoreBadges]),
+      build:() => enemyCard("enemy-core","Çekirdek",mockEnemyCoreHp,mockEnemyCoreMaxHp,"core",{ signatureBadges:mockEnemyCoreBadges }),
     });
     for (const module of mockEnemyModules) {
       if (module.hp<=0) continue;
@@ -15725,9 +15693,8 @@
         moduleAnchorCells.set(String(entry.id), cell);
       }
     }
-    mockEnemyModuleHp=enemyLivingModules().reduce((sum,module)=>sum+module.hp,0);
     if (enemyBoardStatusEl) {
-      enemyBoardStatusEl.textContent=`Çekirdek ${Math.max(0,mockEnemyCoreHp)}/300`;
+      enemyBoardStatusEl.textContent=`Çekirdek ${Math.max(0,mockEnemyCoreHp)}/${mockEnemyCoreMaxHp}`;
     }
     renderBattleIdentityPanels();
     renderBoardCables(
@@ -18241,6 +18208,12 @@
   let renderedShelfSignature = null;
   let renderedBoardSignature = null;
 
+  function battleTransportReady() {
+    return activePlayMode === "local"
+      ? Boolean(localServerAuthoritative && localServerSessionId)
+      : pvpConnection.status === "open" && pvpState.connected;
+  }
+
   function modulePlacementSlotState() {
     const limit = 15;
     const currentLimit = 15;
@@ -18256,6 +18229,8 @@
       available,
       ready:
         !localBattleFinished
+        && !battleCountdown.active
+        && battleTransportReady()
         && available > 0,
     };
   }
@@ -18483,9 +18458,6 @@
   function createModuleCard(module) {
     const card = document.createElement("div");
     card.className = "module-card";
-    const reservePlacementReady =
-      module.status !== "reserve"
-      || modulePlacementSlotState().ready;
     card.dataset.moduleId =
       module.instanceId;
     card.dataset.category =
@@ -18715,9 +18687,9 @@
   function supportLabelForModule(module) {
     if (module.nameTr === "Onarım Modülü") return "Onarım";
     if (module.nameTr === "Soğutucu") return "Soğutma";
-    if (module.nameTr === "Güçlendirici") return "Hasar +%15";
-    if (module.nameTr === "Hedefleme Bilgisayarı") return "Cooldown -%15";
-    if (module.nameTr === "Aşırı Hızlandırıcı") return "Hasar +%20 · Cooldown -%20 · Isı +";
+    if (module.nameTr === "Güçlendirici") return "Tüm saldırılara paylaşılan hasar desteği";
+    if (module.nameTr === "Hedefleme Bilgisayarı") return "Tüm saldırılara paylaşılan hız desteği";
+    if (module.nameTr === "Aşırı Hızlandırıcı") return "En ağır saldırıya ısı karşılığında hız ve hasar";
     return "";
   }
 
@@ -18734,9 +18706,9 @@
 
   function flashInsufficientCredits() {
     creditEl.classList.add("credit-insufficient");
-    window.setTimeout(() => {
+    scheduleBattleSweep(700, () => {
       creditEl.classList.remove("credit-insufficient");
-    }, 700);
+    });
   }
 
 
@@ -18748,7 +18720,6 @@
     );
     capacityEl.dataset.state = placement.available > 0 ? "ready" : "complete";
     capacityEl.classList.remove("capacity-opened");
-    previousCapacity = placement.currentLimit;
   }
 
   function renderLockState() {
@@ -20065,6 +20036,22 @@
     window.__GRIDSHARD_TEST_API={
       startQuickLocalBattle,
       fillBattlePoolForQuickTest,
+      // Uses the same authenticated setup/ready/render path as an accepted
+      // friend invitation. This entire API is removed by production builds.
+      launchSocialBattle,
+      dropOnlineConnection:() => pvpConnection.socket?.close(4000, "e2e-network-drop"),
+      getOnlineBattleState:() => ({
+        phase:pvpState.phase,
+        connected:pvpState.connected,
+        onlineStatus:onlinePlay.status,
+        lastError:pvpState.lastError || onlinePlay.lastError || null,
+        lobby:pvpState.lobby,
+        cursor:pvpState.eventCursor,
+        historySize:pvpState.events.length,
+        elapsedMs:pvpState.snapshot?.elapsed_ms || 0,
+        countdownActive:battleCountdown.active,
+        droppedEffects:onlineBattlePresentation.droppedEffects,
+      }),
       getAudioState:() =>
         audioStateOwner
           ?.currentState

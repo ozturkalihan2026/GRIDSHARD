@@ -30,9 +30,12 @@ class PvPConnection:
     messages_sent: int = 0
     last_pushed_event_cursor: int = 0
     last_seen_at: float = 0.0
-    last_rtt_ms: float | None = None
     recent_message_times: deque[float] = field(default_factory=deque)
     authorize: Callable[[], Awaitable[None]] | None = None
+    send_lock: asyncio.Lock = field(default_factory=asyncio.Lock)
+    pending_broadcasts: set[str] = field(default_factory=set)
+    broadcast_task: asyncio.Task | None = None
+    coalesced_snapshots: int = 0
 
 
 @dataclass(slots=True)
@@ -101,6 +104,7 @@ class PvPWebSocketAdapter:
         grace_period_seconds: float = 0.0,
         max_messages_per_second: int = 60,
         send_timeout_seconds: float = 2.0,
+        background_broadcasts: bool = False,
     ):
         self.service = service
         self.handler = PvPProtocolHandler(service)
@@ -110,6 +114,7 @@ class PvPWebSocketAdapter:
         self.grace_period_seconds = grace_period_seconds
         self.max_messages_per_second = max(1, int(max_messages_per_second))
         self.send_timeout_seconds = max(.01, float(send_timeout_seconds))
+        self.background_broadcasts = background_broadcasts
         self.pending_disconnect_deadlines: dict[tuple[str,str],float] = {}
 
     async def connect(
@@ -158,6 +163,7 @@ class PvPWebSocketAdapter:
     ) -> None:
         connection = self.registry.unbind(connection_id)
         connection.last_seen_at = self.now_func()
+        await self._stop_broadcasts(connection)
 
         # Aynı oyuncunun başka aktif bağlantısı yoksa slot disconnected olur.
         remaining = self.registry.active_for_player(
@@ -170,16 +176,18 @@ class PvPWebSocketAdapter:
             except PvPSessionError:
                 pass  # Session retention can expire before transport teardown.
 
-        await connection.socket.close(
-            code=close_code
-        )
+        await asyncio.wait_for(connection.socket.close(code=close_code), timeout=self.send_timeout_seconds)
 
     async def connection_lost(
         self,
         connection_id: str,
     ) -> None:
-        connection = self.registry.unbind(connection_id)
+        connection = self.registry.get(connection_id)
+        if not connection.connected:
+            return
+        self.registry.unbind(connection_id)
         connection.last_seen_at = self.now_func()
+        await self._stop_broadcasts(connection)
         remaining = self.registry.active_for_player(
             connection.session_id,
             connection.player_id,
@@ -211,17 +219,10 @@ class PvPWebSocketAdapter:
     def mark_seen(
         self,
         connection_id: str,
-        *,
-        heartbeat_sent_at_ms: float | None = None,
     ) -> None:
         connection=self.registry.get(connection_id)
         now=self.now_func()
         connection.last_seen_at=now
-        if heartbeat_sent_at_ms is not None:
-            connection.last_rtt_ms=max(
-                0.0,
-                (now*1000.0)-heartbeat_sent_at_ms,
-            )
 
     async def sweep_connection_health(self) -> dict[str,int]:
         now=self.now_func()
@@ -290,34 +291,94 @@ class PvPWebSocketAdapter:
                 "WebSocket mesaj hızı sınırı aşıldı.",
                 code="rate_limited",
             ).to_dict()
-            await connection.socket.send_json(response)
-            connection.messages_sent += 1
+            await self._send_response(connection, response)
             return response
         connection.recent_message_times.append(now)
 
-        heartbeat_sent_at_ms=None
-        if (
-            isinstance(raw,dict)
-            and raw.get("type")=="heartbeat"
-            and isinstance(raw.get("payload"),dict)
-        ):
-            value=raw["payload"].get("sent_at_ms")
-            if isinstance(value,(int,float)):
-                heartbeat_sent_at_ms=float(value)
-
-        self.mark_seen(
-            connection_id,
-            heartbeat_sent_at_ms=heartbeat_sent_at_ms,
-        )
+        # Heartbeats echo the client's timestamp. Different machines' clocks
+        # cannot be subtracted to infer RTT; the client measures the round trip.
+        self.mark_seen(connection_id)
 
         response = self.handler.handle(
             raw,
             authenticated_player_id=connection.player_id,
+            expected_session_id=connection.session_id,
         )
 
-        await connection.socket.send_json(response)
-        connection.messages_sent += 1
+        await self._send_response(connection, response)
         return response
+
+    async def _deliver_locked(self, connection: PvPConnection, response: dict) -> dict:
+        if not connection.connected:
+            raise PvPSessionError("Kapalı bağlantıya mesaj gönderilemez.")
+        await asyncio.wait_for(connection.socket.send_json(response), timeout=self.send_timeout_seconds)
+        connection.messages_sent += 1
+        payload = response.get("payload", {})
+        cursor = None
+        if response.get("type") == "reconnect_state":
+            cursor = payload.get("event_cursor")
+        elif response.get("type") == "events":
+            cursor = payload.get("cursor")
+        if cursor is not None:
+            # This is a delivered cursor, never an enqueue cursor.
+            connection.last_pushed_event_cursor = max(connection.last_pushed_event_cursor, cursor)
+        return response
+
+    async def _send_response(self, connection: PvPConnection, response: dict) -> dict:
+        async with connection.send_lock:
+            return await self._deliver_locked(connection, response)
+
+    async def send_reconnect_state(self, connection_id: str, *, request_id="server-connect") -> dict:
+        connection = self.registry.get(connection_id)
+        async with connection.send_lock:
+            return await self._deliver_locked(connection, {
+                "version": 1, "type": "reconnect_state", "request_id": request_id,
+                "payload": self.service.reconnect_payload(connection.session_id, connection.player_id),
+            })
+
+    async def _stop_broadcasts(self, connection: PvPConnection) -> None:
+        connection.pending_broadcasts.clear()
+        task = connection.broadcast_task
+        if task is not None and task is not asyncio.current_task():
+            task.cancel()
+            await asyncio.gather(task, return_exceptions=True)
+
+    async def _pump_broadcasts(self, connection: PvPConnection) -> None:
+        try:
+            while connection.connected and connection.pending_broadcasts:
+                pending = set(connection.pending_broadcasts)
+                connection.pending_broadcasts.clear()
+                if "events" in pending:
+                    await self.send_live_events(connection.connection_id)
+                if "snapshot" in pending:
+                    await self.send_snapshot(connection.connection_id, request_id="server-live-snapshot")
+        except asyncio.CancelledError:
+            raise
+        except Exception:
+            await self.connection_lost(connection.connection_id)
+            try:
+                await asyncio.wait_for(connection.socket.close(code=1013), timeout=self.send_timeout_seconds)
+            except Exception:
+                pass  # Release a failed transport without delaying another socket.
+        finally:
+            if connection.broadcast_task is asyncio.current_task():
+                connection.broadcast_task = None
+
+    def _queue_broadcast(self, session_id: str, kind: str) -> int:
+        queued = 0
+        for connection in tuple(self.registry.connections.values()):
+            if not connection.connected or connection.session_id != session_id:
+                continue
+            if kind == "snapshot" and kind in connection.pending_broadcasts:
+                connection.coalesced_snapshots += 1
+            # At most two dirty flags per socket, not one envelope per tick.
+            # Build events/snapshots at delivery time from the latest state;
+            # reliable events remain in the engine until successfully sent.
+            connection.pending_broadcasts.add(kind)
+            if connection.broadcast_task is None:
+                connection.broadcast_task = asyncio.create_task(self._pump_broadcasts(connection))
+            queued += 1
+        return queued
 
     async def serve(
         self,
@@ -344,19 +405,15 @@ class PvPWebSocketAdapter:
     ) -> dict[str, Any]:
         connection = self.registry.get(connection_id)
 
-        response = {
-            "version": 1,
-            "type": "snapshot",
-            "request_id": request_id,
-            "payload": self.service.snapshot(
-                connection.session_id,
-                connection.player_id,
-            ),
-        }
+        async with connection.send_lock:
+            response = {
+                "version": 1,
+                "type": "snapshot",
+                "request_id": request_id,
+                "payload": self.service.snapshot(connection.session_id, connection.player_id),
+            }
 
-        await connection.socket.send_json(response)
-        connection.messages_sent += 1
-        return response
+            return await self._deliver_locked(connection, response)
 
     async def send_events_since_ack(
         self,
@@ -385,8 +442,7 @@ class PvPWebSocketAdapter:
             "payload": payload,
         }
 
-        await connection.socket.send_json(response)
-        connection.messages_sent += 1
+        await self._send_response(connection, response)
         return response
 
     async def send_live_events(
@@ -394,25 +450,19 @@ class PvPWebSocketAdapter:
         connection_id: str,
     ) -> dict[str, Any] | None:
         connection = self.registry.get(connection_id)
-        page = self.service.events_since(
-            connection.session_id,
-            connection.player_id,
-            connection.last_pushed_event_cursor,
-        )
-        if not page["events"]:
-            return None
-        response = {
-            "version": 1,
-            "type": "events",
-            "request_id": "server-live-events",
-            "payload": page,
-        }
-        await connection.socket.send_json(response)
-        connection.messages_sent += 1
-        connection.last_pushed_event_cursor = page["cursor"]
-        return response
+        async with connection.send_lock:
+            page = self.service.events_since(connection.session_id, connection.player_id, connection.last_pushed_event_cursor)
+            if not page["events"]:
+                # Invisible events still advance this socket's scan position.
+                connection.last_pushed_event_cursor = page["cursor"]
+                return None
+            return await self._deliver_locked(connection, {
+                "version": 1, "type": "events", "request_id": "server-live-events", "payload": page,
+            })
 
     async def broadcast_live_events(self, session_id: str) -> int:
+        if self.background_broadcasts:
+            return self._queue_broadcast(session_id, "events")
         return await self._broadcast(session_id, self.send_live_events)
 
     async def _broadcast(self, session_id: str, send, **kwargs) -> int:
@@ -432,6 +482,8 @@ class PvPWebSocketAdapter:
         return sum(await asyncio.gather(*(deliver(c) for c in connections)))
 
     async def broadcast_snapshot(self, session_id: str) -> int:
+        if self.background_broadcasts:
+            return self._queue_broadcast(session_id, "snapshot")
         return await self._broadcast(session_id, self.send_snapshot, request_id="server-live-snapshot")
 
     async def send_match_finished(
@@ -439,6 +491,20 @@ class PvPWebSocketAdapter:
         connection_id: str,
     ) -> dict[str, Any]:
         connection = self.registry.get(connection_id)
+        # Terminal delivery drains this socket only. A slow opponent must not
+        # postpone the healthy client's result. _broadcast bounds the drain.
+        task = connection.broadcast_task
+        if task is not None:
+            try:
+                await asyncio.shield(task)
+            except asyncio.CancelledError:
+                # Disconnect cancels the writer, not the terminal runner.
+                # An actual cancellation of this sender must still propagate.
+                if asyncio.current_task().cancelling():
+                    raise
+                if not connection.connected:
+                    raise PvPSessionError("Sonuç gönderilirken bağlantı kapandı.") from None
+                raise
         payload = self.service.final_result_payload(
             connection.session_id,
             connection.player_id,
@@ -449,8 +515,7 @@ class PvPWebSocketAdapter:
             "request_id": "server-match-finished",
             "payload": payload,
         }
-        await connection.socket.send_json(response)
-        connection.messages_sent += 1
+        await self._send_response(connection, response)
         return response
 
     async def broadcast_match_finished(
@@ -481,6 +546,7 @@ class PvPWebSocketAdapter:
 
             connection.connected = False
             connection.last_seen_at = self.now_func()
+            await self._stop_broadcasts(connection)
             try:
                 await asyncio.wait_for(connection.socket.close(code=close_code), timeout=self.send_timeout_seconds)
             except Exception:

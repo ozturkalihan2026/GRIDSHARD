@@ -203,7 +203,7 @@ class MatchmakingService:
         self,
         player_id: str,
     ) -> MatchmakingPair:
-        """32 saniyelik pencere sonunda kuyruğu aynı kademe AI rakiple kapatır."""
+        """Gateway bekleme penceresi sonunda aynı kademe AI rakibi oluşturur."""
         if player_id not in self._queue:
             existing = self.matched_pair_for(player_id)
             if existing is not None:

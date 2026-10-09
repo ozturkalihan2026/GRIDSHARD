@@ -253,8 +253,11 @@ function createClient() {
   const fs=require("fs");
   const src=fs.readFileSync(path.join(ROOT,"src/app.js"),"utf8");
   assert.ok(src.includes("supportLabelForModule"));
-  assert.ok(src.includes("Cooldown -%15"));
-  assert.ok(src.includes("Hasar +%20"));
+  assert.ok(src.includes("Tüm saldırılara paylaşılan hasar desteği"));
+  assert.ok(src.includes("Tüm saldırılara paylaşılan hız desteği"));
+  assert.ok(!src.includes('return "Hasar +%15"'));
+  assert.ok(!src.includes('return "Cooldown -%15"'));
+  assert.ok(src.includes("En ağır saldırıya ısı karşılığında hız ve hasar"));
   assert.ok(src.includes("Aşırı Hızlandırma"));
 }
 
@@ -612,7 +615,8 @@ function createClient() {
   const fs=require("fs");
   const src=fs.readFileSync(path.join(ROOT,"src/app.js"),"utf8");
   assert.ok(src.includes("buildPvPCommandEnvelope"));
-  assert.ok(src.includes("applyPvPServerEnvelope"));
+  assert.ok(src.includes("new GridshardBattlePresentationQueue"));
+  assert.ok(!src.includes("function applyPvPServerEnvelope")); // Removed unused per-message renderer.
 }
 
 {

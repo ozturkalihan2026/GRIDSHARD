@@ -15,6 +15,8 @@ test("10+10 aktif modül dikey savaş alanında üç masaüstü viewportunda ta�
   await expect(page.locator("body")).toHaveAttribute("data-online-status", "battle", {
     timeout: 40_000
   });
+  // Transport may enter BATTLE before the first snapshot's next UI frame.
+  await expect(page.locator("#enemy-board .module-card").first()).toBeVisible();
 
   for (const viewport of [
     { width: 1366, height: 630 },

@@ -36,7 +36,7 @@ def test_beta25_audio_runtime_uses_shardglass_mix():
     source = (ROOT / "client" / "src" / "gridshard-audio.js").read_text(
         encoding="utf-8"
     )
-    assert 'version:"shardglass-seamless-v14"' in source
+    assert 'version:"shardglass-seamless-v15"' in source
     assert "GRIDSHARD_BATTLE_LAYERS" in source
     for name in (
         "menu_v8_01_durgun_devre.wav",

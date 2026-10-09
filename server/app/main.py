@@ -17,7 +17,7 @@ from pathlib import Path
 from threading import Lock, RLock
 from urllib.parse import parse_qs, urlencode, urlsplit
 
-from fastapi import BackgroundTasks, FastAPI, Header, HTTPException, Query, Request, WebSocket
+from fastapi import BackgroundTasks, FastAPI, HTTPException, Query, Request, WebSocket
 from fastapi.middleware.cors import CORSMiddleware
 from starlette.middleware.trustedhost import TrustedHostMiddleware
 from .production_config import environment_secret, production_endpoints
@@ -69,15 +69,10 @@ from .game.pvp_session import (
     PvPSessionService,
 )
 from .game.models import BattleCommand, BattleStatus
-from .game.catalog import (
-    BASIC_MODULE_DEFINITIONS,
-    PLAYER_SELECTABLE_MODULE_IDS,
-)
 from .game.ai_archetypes import (
     AI_ARCHETYPE_IDS,
     get_ai_archetype,
     normalize_ai_archetype_id,
-    select_ai_archetype_for_key,
 )
 from .game.catalog_view import (
     build_module_catalog_view,
@@ -667,9 +662,10 @@ CLIENT_DIR = client_directory(
     override=os.environ.get("GRIDSHARD_CLIENT_DIR", ""),
 )
 
-pvp_service = PvPSessionService()
+pvp_service = PvPSessionService(countdown_seconds=3.0)
 pvp_websocket_adapter = PvPWebSocketAdapter(
     pvp_service,
+    background_broadcasts=True,
     silent_timeout_seconds=float(
         os.environ.get("GRIDSHARD_PVP_SILENT_TIMEOUT_SECONDS", "12")
     ),
@@ -920,11 +916,12 @@ redis_matchmaking_service = RedisMatchmakingService(
     instance_id=MATCHMAKING_INSTANCE_ID,
     websocket_base_url=MATCHMAKING_PUBLIC_WS_BASE_URL,
 )
-MATCHMAKING_AI_FALLBACK_SECONDS = 32
-# Beta clients play server-controlled AI; live PvP can be explicitly enabled.
+MATCHMAKING_AI_FALLBACK_SECONDS = 10
+# Normal PvP searches for a fair human opponent first. AI-only remains an
+# explicit operations/test override; guided tutorial battles still use AI.
 MATCHMAKING_AI_ONLY = os.environ.get(
     "GRIDSHARD_MATCHMAKING_AI_ONLY",
-    "1" if "beta" in VERSION.lower() else "0",
+    "0",
 ).strip().lower() in {"1", "true", "yes", "on"}
 PURCHASE_TEST_MODE = purchase_test_mode_enabled(RUNTIME_STRICT)
 AD_TEST_MODE = ad_test_mode_enabled(RUNTIME_STRICT)
@@ -2508,8 +2505,8 @@ async def matchmaking_join(
             },
         )
 
-        # Beta yayınına kadar oyuncu doğrudan kendi arena/kupa aralığındaki
-        # sunucu denetimli AI rakibe bağlanır; insan kuyruğu beklenmez.
+        # Normal PvP prefers a human; only tutorials/explicit AI-only mode
+        # skip the search window. Status polling tries humans before AI too.
         match = (
             await _matchmaking_match_with_ai(request.player_id)
             if MATCHMAKING_AI_ONLY or tutorial_match
@@ -3328,12 +3325,13 @@ def get_leaderboards(player_id: str | None = None) -> dict:
             },
         )
         group["players"].append(player)
-    ordered_groups = []
-    for group in sorted(trophy_groups.values(), key=lambda item: item["minimum_rating"]):
-        ordered_groups.append({
+    ordered_groups = [
+        {
             **{key: value for key, value in group.items() if key != "players"},
             "standings": _ranked_player_rows(group["players"], "rating"),
-        })
+        }
+        for group in sorted(trophy_groups.values(), key=lambda item: item["minimum_rating"])
+    ]
     viewer_group = None
     if player_id:
         viewer = next(
@@ -4226,9 +4224,7 @@ def accept_social_battle_invite(
 
 
 def _team_summary(team: dict) -> dict:
-    ratings = []
-    for member_id in team.get("member_ids", []):
-        ratings.append(max(0, int(_team_member_profile(member_id).rating)))
+    ratings = [max(0, int(_team_member_profile(member_id).rating)) for member_id in team.get("member_ids", [])]
     member_count = len(team.get("member_ids", []))
     member_limit = int(team.get("member_limit", 30))
     return {
@@ -6943,20 +6939,7 @@ async def pvp_websocket(
         connected = True
 
         # Bağlantı açılışında güvenli reconnect durumu gönderilir.
-        reconnect_payload = (
-            pvp_service.reconnect_payload(
-                session_id,
-                player_id,
-            )
-        )
-        await websocket.send_json(
-            {
-                "version": 1,
-                "type": "reconnect_state",
-                "request_id": "server-connect",
-                "payload": reconnect_payload,
-            }
-        )
+        await pvp_websocket_adapter.send_reconnect_state(connection_id)
 
         while True:
             await pvp_websocket_adapter.handle_one(connection_id)

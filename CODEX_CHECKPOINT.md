@@ -1,8 +1,83 @@
 # GRIDSHARD geliştirme kontrol noktası
 
-Güncelleme tarihi: 8 Ekim 2026
+Güncelleme tarihi: 9 Ekim 2026
 
-## En güncel devam noktası — r13 canlı ve imzalı v4 APK/AAB hazır; ödeme kapalı
+## En güncel devam noktası — kapsamlı savaş audit + insan önceliği + ses yerelde
+
+9 Ekim. Kullanıcı tüm savaş backend/frontend koduna debugging, refactoring,
+review/static lint, bağımsız peer review ve ardından 10 sn insan öncelikli
+PvP + reklamda duran/kısık sonuç müziği + daha kısık VFX/daha açık savaş
+müziği istedi. **Bu değişiklikler yalnız çalışma ağacında; yeni yayın yetkisi
+yok. Deploy/APK/AAB/commit/push yapılmadı.** Önceki canlı yayın aşağıda korunur.
+
+- Ana audit: `docs/BATTLE_CODE_AUDIT_20261008.md`; önceki iki belge korunur.
+- Socket başına serialized bounded writer, latest snapshot coalesce; ağ motoru
+  bekletmez. Socket/session sınırı, terminal cancel/drain, publication/reconnect
+  yarışları kapandı. Client publication marker olmadan ekonomik sync yapmaz.
+- HTTP tek-flight/session-generation; monoton snapshot/cursor; maxHP doğru;
+  RAF/sweep/ticker/core-wave rematch generation; başarısız deploy pending yaratmaz.
+- Normal PvP insan-first, fallback 10 sn; tutorial ve açık AI-only override korunur.
+  İki yerel başlatıcı default 0; canlı env okunmadı/değiştirilmedi.
+- Mix v15: battle 2.85, SFX 0.28, result 0.55/320 ms attack; terminal combat duck
+  korunur. Reklam basışı persistent per-result stop; geç decode/resume/play ve
+  fallback kuşak kontrolü, slider restart yok. Ses dosyaları yeniden
+  üretilmedi; kullanıcı tercihleri ve SSV ödül güvenliği korunur.
+- Peer review bulguları kapandı. Bağımsız lifecycle 7/7, audio 14/14 ve son
+  countdown/presentation receiver regresyonu 5/5 geçti; engelleyici bulgu yok.
+- Son tam client 272, server 1313/39 skip, build 9 başarılı. Ruff game/main/
+  matchmaking/profile: 0 hata; ESLint battle/app/relay/audio: 0 hata,
+  10 legacy unused uyarısı. Genel import checker: 13 eski bulgu;
+  ayrıntılar raporda, repo tümü temiz sayılmaz.
+- Ek mobil E2E countdown native timer receiver `Illegal invocation` yakaladı;
+  wrapper+regresyon eklendi. Yoğunluk fixture ilk snapshot/render'ı bekler.
+  Son geniş 9 E2E senaryosu **9/9 geçti (2,3 dk)**. Arkadaş maçında iki client'ın
+  page error listesi boş; Desktop + Pixel7 viewport dört client freeze 0.
+  p95 kare: Desktop 30,5–31,5 ms, Pixel7 23,5–25,5 ms. Gerçek telefon değildir.
+  Kanıt `artifacts/battle-audit-20261009/nine-scenarios-final.json`;
+  SHA256 `2c3e97d7f6af3109814d78c650dac97d1053fa90ada5bce1f746744abd8604d8`.
+- Offline profiler `tools/battle_profile.py`: 8208 step p95 0,667 ms; sentetik
+  50 ms socket eski admission 80,722 ms → yeni 0,509 ms. Gerçek telefon ölçümü değildir.
+- Fiziksel telefon yoğun insan PvP/ses henüz doğrulanmadı. Sayısal modül/rarity
+  değişikliği yok. Eski Uç/Sinem raw event dizisi silinmiş; kesin donma anı
+  kanıtlanamadı. Oyuncu/maç kimliklerini checkpoint veya rapora ekleme.
+
+Yerel uygulama/test/rapor tamamlandı. Aşağıdaki önceki local bölüm tarihsel
+kayıttır; yeni çalışma için fiziksel cihaz doğrulaması veya ayrı yayın talebi beklenir.
+
+## Önceki yerel çalışma — PvP donma düzeltmesi / 3–2–1 / modül incelemesi
+
+8 Ekim 2026. Kullanıcı arkadaş/insan PvP'de donup ardından biriken olayların
+hızla akmasını düzeltme, enderlik korunarak modül incelemesi ve büyük altın
+3–2–1 istedi. Ayrıca kendi son ortak arkadaş maçını salt-okunur inceledik;
+sonuç uygulanmıştı fakat ayrıntılı motor zaman çizelgesi silinmiş olduğundan
+donma anı/tek nedeni kanıtlanamadı. Oyuncu kimliklerini bu dosyada tutma.
+
+- Bu turdaki değişiklikler **yalnız çalışma ağacında**; canlı r13 ve mevcut
+  versionCode4 paketlere dahil değil. Dağıtım, APK/AAB, commit/push yapılmadı.
+  Başlangıç HEAD: `d9416ee18cc1fd2638ac9e62d311a1f60485a6b0`.
+- WebSocket her-message render / çift snapshot uygulama kaldırıldı;
+  presentation queue tek RAF, son snapshot, en fazla 80 FX / 1.200 ms yaş.
+  Yok edilme kayıtları FX'den önce korunur, önemli uyarılar korunur.
+- Reconnect/live cursor monoton ilerler; client olay başına tekrar eleme,
+  son 256 tanısal olay, heartbeat ACK cursor, eski snapshot'a geri dönüş yok.
+  Yetki/görünürlük/oyuncu hesap güvenliği değiştirilmedi.
+- Sunucu başlangıç kapısı 3 sn: motor/AI/enerji durur, erken komut reddi;
+  büyük altın 3–2–1, kart/güç kilidi; reconnect geri sayımı yeniden başlatmaz.
+- 36 modül / 7 çekirdek incelendi, enderlik/sayılar korundu. Üç yanıltıcı
+  destek kısa etiketi paylaşılan etkiye göre düzeltildi. Tekillik/Kesici
+  maliyet ayrımı yalnız gerekçeli **öneri**, uygulanmadı.
+- Yerel istemci 252/252, build 9/9; tam sunucu 1.294 başarılı / 39 skip.
+  İki-client E2E Desktop Chrome + Pixel7 emülasyonunda **6/6**: gerçek
+  arkadaş arayüzü 3/2/1 + socket drop + unique cursor + sonuç; normal PvP
+  sonucu; reconnect/rematch. Desktop/Android geri sayım görseli incelendi.
+  Gerçek telefon yoğun maç/FPS doğrulaması değildir.
+- Ayrıntılar: `docs/BATTLE_PERFORMANCE_FIX_20261008.md`,
+  `docs/MODULE_REVIEW_20261008.md`. Yerel özel okuma script'i ignored
+  `artifacts/battle-performance-20261008/` altında; sırlara dokunma.
+- Yavaş socket mevcut broadcast timeout'u (2 sn) değişmedi. Telefon testi,
+  uzun yoğun savaş ölçümü ve gelecekteki dağıtım için ayrı talep gerekir.
+
+## Önceki yayın noktası — r13 canlı ve imzalı v4 APK/AAB hazır; ödeme kapalı
 
 8 Ekim ev bilgisayarı. Kullanıcı yalıtılmış gerçek WIF/API kontrolünü,
 sunucu güncellemesi ve imzalı APK/AAB **versionCode4** hazırlığını onayladı.

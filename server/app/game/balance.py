@@ -27,10 +27,13 @@ class BalanceAnalysis:
     is_acceptable: bool
 
 
+DEFAULT_BALANCE_THRESHOLDS = BalanceThresholds()
+
+
 def analyze_balance(
     report: SimulationReport,
     layouts: tuple[BattleLayoutSpec, ...],
-    thresholds: BalanceThresholds = BalanceThresholds(),
+    thresholds: BalanceThresholds = DEFAULT_BALANCE_THRESHOLDS,
 ) -> BalanceAnalysis:
     total = len(report.matches)
     side_a_wins = 0

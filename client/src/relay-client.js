@@ -177,8 +177,11 @@
           definition_id:cleanDefinitionId,
         },
       };
+      const delivery = this.emitCommand(command);
+      if (delivery === false || delivery?.ok === false) {
+        return { ok:false, reason:delivery?.reason || "Sunucu bağlantısı bekleniyor." };
+      }
       this.pendingDeployments += 1;
-      this.emitCommand(command);
       return { ok: true, command };
     }
 
@@ -248,6 +251,7 @@
       this.lobby = null;
       this.snapshot = null;
       this.finalResult = null;
+      this.resultDeliveryReady = false;
       this.events = [];
       this.lastError = null;
     }
@@ -263,6 +267,7 @@
       this.lobby = null;
       this.snapshot = null;
       this.finalResult = null;
+      this.resultDeliveryReady = false;
       this.events = [];
       this.lastError = null;
     }
@@ -278,6 +283,7 @@
       this.lobby = null;
       this.snapshot = null;
       this.finalResult = null;
+      this.resultDeliveryReady = false;
       this.events = [];
       this.lastError = null;
       return this.phase;
@@ -353,6 +359,7 @@
     buildHeartbeat(sentAtMs) {
       return this.envelope("heartbeat", {
         sent_at_ms: sentAtMs,
+        event_cursor: this.eventCursor,
       });
     }
 
@@ -409,13 +416,11 @@
       }
 
       if (message.type === "snapshot") {
-        this.applySnapshot(payload);
-        return { ok: true };
+        return { ok: true, ignored: this.applySnapshot(payload) === false };
       }
 
       if (message.type === "events") {
-        this.applyEventsPage(payload);
-        return { ok: true };
+        return { ok: true, events: this.applyEventsPage(payload) };
       }
 
       if (message.type === "reconnect_state") {
@@ -424,20 +429,19 @@
           this.commandSequence,
           Number(payload.last_command_sequence || 0)
         );
-        this.eventCursor = Number(payload.event_cursor || this.eventCursor);
-        if (payload.snapshot) this.applySnapshot(payload.snapshot);
-        if (Array.isArray(payload.events)) {
-          this.events.push(...payload.events);
-        }
-        if (payload.final_result) {
+        const ignored = payload.snapshot && this.applySnapshot(payload.snapshot) === false;
+        const events = this.applyEventsPage({ ...payload, cursor: payload.event_cursor });
+        if (payload.final_result && !payload.snapshot?.result_delivery_pending) {
           this.finalResult = payload.final_result;
+          this.resultDeliveryReady = true;
           this.phase = PVP_PHASE.FINISHED;
         }
-        return { ok: true };
+        return { ok: true, events, ignored };
       }
 
       if (message.type === "match_finished") {
         this.finalResult = payload;
+        this.resultDeliveryReady = true;
         this.phase = PVP_PHASE.FINISHED;
         this.connected = false;
         return { ok: true };
@@ -460,7 +464,14 @@
 
     applyEventsPage(page) {
       const incoming = Array.isArray(page.events) ? page.events : [];
-      this.events.push(...incoming);
+      const cursor = Number(page.cursor || 0);
+      const fresh = cursor <= this.eventCursor ? [] : incoming.filter(event => (
+        !Number.isInteger(event.cursor) || event.cursor > this.eventCursor
+      ));
+      // History is diagnostic only; game state comes from snapshots. Avoid
+      // growing it for the whole match or spreading a reconnect-sized array.
+      for (const event of fresh) this.events.push(event);
+      if (this.events.length > 256) this.events.splice(0, this.events.length - 256);
       this.eventCursor = Math.max(
         this.eventCursor,
         Number(page.cursor || 0)
@@ -469,9 +480,13 @@
         this.snapshotRevision,
         Number(page.snapshot_revision || 0)
       );
+      return fresh;
     }
 
     applySnapshot(snapshot) {
+      const revision = Number(snapshot.snapshot_revision || snapshot.tick || 0);
+      const currentRevision = Number(this.snapshot?.snapshot_revision || this.snapshot?.tick || 0);
+      if (revision < currentRevision || (this.phase === PVP_PHASE.FINISHED && snapshot.status !== "finished")) return false;
       this.snapshot = snapshot;
       this.snapshotRevision = Math.max(
         this.snapshotRevision,
@@ -942,7 +957,7 @@
     constructor({
       pvpState,
       createWebSocket = (url) => new WebSocket(url),
-      now = () => Date.now(),
+      now = () => performance.now(),
       setTimer = (fn, ms) => setTimeout(fn, ms),
       clearTimer = (id) => clearTimeout(id),
       heartbeatIntervalMs = 5000,
@@ -978,6 +993,7 @@
       this.outgoingQueue = [];
       this.lastHeartbeatSentAtMs = null;
       this.lastHeartbeatAckAtMs = null;
+      this.lastHeartbeatRoundTripMs = null;
     }
 
     connect(url) {
@@ -1093,6 +1109,9 @@
       socket.onopen = () => {
         if (this.socket !== socket || this.manualClose) return;
         this.reconnectAttempts = 0;
+        this.lastHeartbeatSentAtMs = null;
+        this.lastHeartbeatAckAtMs = null;
+        this.lastHeartbeatRoundTripMs = null;
         this.pvpState.markConnected();
         this._setStatus(WS_CONNECTION_STATUS.OPEN);
 
@@ -1129,6 +1148,11 @@
         ) {
           this.lastHeartbeatAckAtMs =
             this.now();
+          const echoed = message.payload?.sent_at_ms;
+          if (Number.isFinite(echoed) && echoed === this.lastHeartbeatSentAtMs && echoed <= this.lastHeartbeatAckAtMs) {
+            // Both ends of this interval use the client's own monotonic clock.
+            this.lastHeartbeatRoundTripMs = this.lastHeartbeatAckAtMs - echoed;
+          }
         }
 
         if (
@@ -1155,7 +1179,7 @@
         if (this.socket !== socket) return;
         this._clearHeartbeatTimer();
 
-        if (this.pvpState.phase === PVP_PHASE.FINISHED) {
+        if (this.pvpState.phase === PVP_PHASE.FINISHED && this.pvpState.resultDeliveryReady) {
           this.socket = null;
           this._clearReconnectTimer();
           this._setStatus(

@@ -26,7 +26,7 @@
   });
 
   const GRIDSHARD_AUDIO_MIX = Object.freeze({
-    version:"shardglass-seamless-v14",
+    version:"shardglass-seamless-v15",
     crossfadeMs:1200,
     menuPoolCrossfadeMs:480,
     resultCrossfadeMs:320,
@@ -47,8 +47,12 @@
     // v14: savaş müziği bir kademe daha açık (+1,5 dB), rutin efektler bir
     // kademe daha kısık (−2,4 dB); rutin efekt yoğunluğu ve sık tekrarlanan
     // öncelikli olaylar (çekirdek isabeti) ayrıca seyreltildi.
-    battleMusicGain:2.6,
-    battleSfxGain:0.32,
+    // v15: +0.8 dB battle music, -1.2 dB combat SFX. Keep the combat
+    // attenuation through the result so an explosion tail cannot jump up.
+    // Result stings have their own -5.2 dB trim and 320 ms soft attack.
+    battleMusicGain:2.85,
+    battleSfxGain:0.28,
+    resultMusicGain:0.55,
     battlePriorityCueGain:1.4,
     sfxCompressor:Object.freeze({ threshold:-20, knee:12, ratio:4, attack:.004, release:.22 }),
     musicLimiter:Object.freeze({ threshold:-3, knee:0, ratio:20, attack:.003, release:.25 }),
@@ -551,8 +555,11 @@
       this._resultBufferOutcome = null;
       this._resultPlaybackPromise = null;
       this._pendingResultOutcome = null;
+      this._resultPlaybackGeneration = 0;
+      this._resultSuppressed = false;
       this._pendingPlayback = new Map();
       this._activeSfx = new Set();
+      this._sfxPlaybackGeneration = 0;
       this._sfxLastTriggeredAt = new Map();
       this._routineSfxStarts = [];
       this._preloadedAudio = new Map();
@@ -942,7 +949,7 @@
         this._resultGainNode,
         this.musicMuted
           ? 0
-          : this._musicTargetVolume()
+          : this._resultMusicTargetVolume()
       );
       // Bu iki kazanç 1'i aşabildiği için 0–1 kırpmasından geçmez.
       const setRawGain=(node,value)=>{
@@ -956,7 +963,7 @@
       };
       setRawGain(
         this._sfxTrimNode,
-        GRIDSHARD_BATTLE_STATE_LAYERS[this.state]
+        this._usesCombatSfxMix()
           ? 1 / this._sfxMakeupGain
           : 1
       );
@@ -1022,7 +1029,7 @@
       return context.state === "running";
     }
 
-    async _playAudioBuffer(asset,{channel="sfx",outcome=null,gain=1}={}) {
+    async _playAudioBuffer(asset,{channel="sfx",outcome=null,gain=1,resultGeneration=null,sfxGeneration=this._sfxPlaybackGeneration}={}) {
       if (!this._appActive) return false;
       const context=this._ensureAudioContext();
       const destination=channel === "result"
@@ -1032,17 +1039,27 @@
       try {
         const buffer=await this._loadAudioBuffer(asset);
         if (!this._appActive) return false;
-        if (channel === "result" && this._resultBufferOutcome !== outcome) {
+        if (channel === "sfx" && sfxGeneration !== this._sfxPlaybackGeneration) return false;
+        if (channel === "result" && (this._resultSuppressed || this._resultBufferOutcome !== outcome || this._resultPlaybackGeneration !== resultGeneration)) {
           return false;
         }
         if (!await this._resumeAudioContext() || !this._appActive) return false;
+        if (channel === "sfx" && sfxGeneration !== this._sfxPlaybackGeneration) return false;
+        // A stop/new battle can occur while decode or context resume awaits.
+        if (channel === "result" && (this._resultSuppressed || this._resultBufferOutcome !== outcome || this._resultPlaybackGeneration !== resultGeneration)) return false;
         const source=context.createBufferSource();
         source.buffer=buffer;
         source.loop=false;
         let voiceGain=null;
-        if (gain !== 1 && typeof context.createGain === "function") {
+        if ((gain !== 1 || channel === "result") && typeof context.createGain === "function") {
           voiceGain=context.createGain();
-          voiceGain.gain.value=Math.max(0,Number(gain) || 0);
+          const target=Math.max(0,Number(gain) || 0);
+          if (channel === "result" && typeof voiceGain.gain.linearRampToValueAtTime === "function") {
+            voiceGain.gain.setValueAtTime(0,context.currentTime);
+            voiceGain.gain.linearRampToValueAtTime(target,context.currentTime + GRIDSHARD_AUDIO_MIX.resultCrossfadeMs / 1000);
+          } else {
+            voiceGain.gain.value=target;
+          }
           source.connect(voiceGain);
           voiceGain.connect(destination);
         } else {
@@ -1145,9 +1162,18 @@
       );
     }
 
+    _resultMusicTargetVolume() {
+      return this._musicTargetVolume() * GRIDSHARD_AUDIO_MIX.resultMusicGain;
+    }
+
+    _usesCombatSfxMix() {
+      return this._isLayeredBattleState(this.state)
+        || [GRIDSHARD_AUDIO_STATES.VICTORY, GRIDSHARD_AUDIO_STATES.DEFEAT].includes(this.state);
+    }
+
     _sfxTargetVolume() {
       // Savaş durumlarında efektler katmanlı müziğin arkasında kalır.
-      const battleDuck = GRIDSHARD_BATTLE_STATE_LAYERS[this.state]
+      const battleDuck = this._usesCombatSfxMix()
         ? GRIDSHARD_AUDIO_MIX.battleSfxGain
         : 1;
       return Math.max(
@@ -1167,6 +1193,7 @@
         return Promise.resolve(false);
       }
       audio._gridshardPlayRequested=true;
+      const playGeneration=audio._gridshardPlayGeneration || 0;
       let result;
       try {
         result=audio.play();
@@ -1176,15 +1203,25 @@
       }
       return Promise.resolve(result)
         .then(() => {
-          if (!this._appActive) {
+          if (playGeneration !== (audio._gridshardPlayGeneration || 0)) return false;
+          if (!this._appActive || !audio._gridshardPlayRequested) {
             audio.pause();
             return false;
+          }
+          if (audio===this._resultTrack && audio._gridshardResultStarting) {
+            // Start the attack at actual playback, not during network loading
+            // or an autoplay rejection. Gesture retries take this same path.
+            audio._gridshardResultStarting=false;
+            audio._gridshardResultAttackUntil=Date.now() + GRIDSHARD_AUDIO_MIX.resultCrossfadeMs;
+            this._retargetResultTrack(audio);
           }
           this._pendingPlayback.delete(audio);
           this._lastPlaybackError = null;
           return true;
         })
         .catch((error) => {
+          if (playGeneration !== (audio._gridshardPlayGeneration || 0)) return false;
+          if (!audio._gridshardPlayRequested) return false;
           this._recordPlaybackFailure(audio, error);
           return false;
         });
@@ -1310,6 +1347,7 @@
     _stopAudio(audio) {
       if (!audio) return;
       audio._gridshardPlayRequested=false;
+      audio._gridshardPlayGeneration=(audio._gridshardPlayGeneration || 0) + 1;
       this._pendingPlayback.delete(audio);
       this._cancelFade(audio);
       try {
@@ -1510,9 +1548,10 @@
         const busApplied =
           track instanceof GridshardSeamlessLoopTrack
           && Boolean(this._battleMusicBusNode);
-        const base = busApplied
-          ? this._musicTargetVolume()
-          : this._battleMusicTargetVolume();
+        // HTML only clamps the final per-stem level. Clamping the boosted
+        // bus first silently erased battle-gain changes at default volume.
+        const base = this._musicTargetVolume()
+          * (busApplied ? 1 : GRIDSHARD_AUDIO_MIX.battleMusicGain);
         const target = activeIds.includes(layer.id)
           ? Math.min(
               1,
@@ -1853,7 +1892,8 @@
         return Promise.resolve(false);
       }
       if (
-        !this.enabled
+        this._resultSuppressed
+        || !this.enabled
         || this.musicMuted
         || this.musicVolume<=0
       ) {
@@ -1882,6 +1922,7 @@
     }
 
     _stopResultBuffer() {
+      this._resultPlaybackGeneration++;
       const source=this._resultBufferSource;
       this._resultBufferSource=null;
       this._resultBufferOutcome=null;
@@ -1903,14 +1944,16 @@
     }
 
     _playHtmlResultSting(outcome) {
-      if (!this._appActive || !this._canPlayAudio()) return Promise.resolve(false);
+      if (this._resultSuppressed || !this._appActive || !this._canPlayAudio()) return Promise.resolve(false);
       this._stopResultTrack();
       const asset=GRIDSHARD_MUSIC_ASSETS[outcome];
       const track=this._createPreloadedAudio(asset);
       track._gridshardState=outcome;
       track._gridshardAsset=asset;
       track.loop=false;
-      track.volume=this._musicTargetVolume();
+      track.volume=0;
+      track._gridshardResultStarting=true;
+      track._gridshardResultTarget=undefined;
       this._resultTrack=track;
       this.currentTrack=track;
       this._pendingResultOutcome=null;
@@ -1920,12 +1963,37 @@
           if (this.currentTrack===track) this.currentTrack=null;
         },{once:true});
       }
-      return this._safePlay(track);
+      const playback=this._safePlay(track);
+      this._resultPlaybackPromise=playback;
+      return playback;
+    }
+
+    _retargetResultTrack(track=this._resultTrack) {
+      if (!track) return;
+      if (track._gridshardResultStarting) return;
+      const target=this._resultMusicTargetVolume();
+      if (track._gridshardResultTarget===target) return;
+      track._gridshardResultTarget=target;
+      const remaining=Math.max(0,(track._gridshardResultAttackUntil || 0) - Date.now());
+      if (remaining>0) this._fade(track,Number(track.volume || 0),target,remaining);
+      else {
+        this._cancelFade(track);
+        track.volume=target;
+      }
+    }
+
+    stopResultPlayback() {
+      // Reward-ad press is a per-result stop, not a change to user settings.
+      // Render, unlock, preference and foreground handlers must not restart it.
+      this._resultSuppressed=true;
+      this._stopResultTrack();
+      this._stopResultBuffer();
     }
 
     playResultSting(outcome,{restart=true}={}) {
       if (
-        !this._appActive
+        this._resultSuppressed
+        || !this._appActive
         ||
         ![
           GRIDSHARD_AUDIO_STATES.VICTORY,
@@ -1949,23 +2017,27 @@
         !restart
         && this._resultTrack?._gridshardState===outcome
       ) {
-        this._resultTrack.volume=this._musicTargetVolume();
+        // Do not bypass an in-progress soft attack on repeated render calls.
+        this._retargetResultTrack();
         return this._safePlay(this._resultTrack);
       }
 
       this._stopAllMusic();
       const asset=GRIDSHARD_MUSIC_ASSETS[outcome];
+      const resultGeneration=this._resultPlaybackGeneration;
       if (this._ensureAudioContext()) {
         this._resultBufferOutcome=outcome;
         this._pendingResultOutcome=outcome;
         this._publishPlaybackState();
         const playback=this._playAudioBuffer(
           asset,
-          {channel:"result",outcome}
+          {channel:"result",outcome,resultGeneration}
         ).then((played)=>{
           if (played) return true;
           if (
-            this.state!==outcome
+            this._resultSuppressed
+            || this._resultPlaybackGeneration!==resultGeneration
+            || this.state!==outcome
             || this._resultBufferOutcome!==outcome
           ) {
             return false;
@@ -2013,6 +2085,7 @@
 
       const changed=
         this.state!==state;
+      if (changed) this._resultSuppressed=false;
       this.state=state;
       // Savaşa girişte/çıkışta efekt kanalının kısma çarpanı güncellenir.
       if (changed) this._syncWebAudioVolumes();
@@ -2101,6 +2174,7 @@
     }
 
     _stopActiveSfx() {
+      this._sfxPlaybackGeneration++;
       for (const source of [...this._activeBufferSources]) {
         if (source === this._resultBufferSource) continue;
         this._activeBufferSources.delete(source);
@@ -2139,9 +2213,10 @@
       if (played) {
         const gain=this._cueGain(name);
         if (this._ensureAudioContext()) {
-          this._playAudioBuffer(cue.asset,{channel:"sfx",gain})
+          const sfxGeneration=this._sfxPlaybackGeneration;
+          this._playAudioBuffer(cue.asset,{channel:"sfx",gain,sfxGeneration})
             .then((played)=>{
-              if (!played) this._playHtmlCue(cue,{gain});
+              if (!played && sfxGeneration===this._sfxPlaybackGeneration) this._playHtmlCue(cue,{gain});
             });
         } else {
           this._playHtmlCue(cue,{gain});
@@ -2316,7 +2391,8 @@
           GRIDSHARD_AUDIO_STATES.DEFEAT,
         ].includes(this.state)
       ) {
-        this.playResultSting(this.state,{restart:true});
+        this._retargetResultTrack();
+        this.ensureResultPlayback(this.state);
       } else if (
         this.battleLayerTracks.length
       ) {
@@ -2370,9 +2446,11 @@
         )
       );
 
+      this._syncWebAudioVolumes();
+
       if (this.currentTrack) {
-        this.currentTrack.volume=
-          this._musicTargetVolume();
+        if (this.currentTrack===this._resultTrack) this._retargetResultTrack();
+        else this.currentTrack.volume=this._musicTargetVolume();
       }
       if (this.battleLayerTracks.length) {
         this._applyBattleLayerMix(this.battlePressure);

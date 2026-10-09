@@ -7147,3 +7147,22 @@ body[data-app-screen="play"] .module-shelf .module-card.deck-module-card > .name
 .chest-store-limit { color:#8fe8dc;font-size:.5rem;line-height:1.35;text-align:center; }
 .chest-store-limit[data-exhausted="true"] { color:#ffb84d; }
 .shop-limit-note[hidden] { display:none; }
+/* A server-owned three-second gate; no expensive filters or particle effects. */
+.battle-start-countdown {
+  position:fixed;
+  inset:0;
+  z-index:1500;
+  display:grid;
+  place-items:center;
+  background:rgba(4,8,16,.36);
+  pointer-events:auto;
+}
+.battle-start-countdown[hidden] { display:none; }
+.battle-start-countdown strong {
+  color:var(--gs-corelight-gold, #FFD56A);
+  font-family:"Orbitron", sans-serif;
+  font-size:clamp(110px, 28vw, 240px);
+  font-weight:900;
+  line-height:1;
+  text-shadow:0 3px 0 #6b430c, 0 0 20px rgba(255,209,102,.35);
+}

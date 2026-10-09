@@ -300,7 +300,7 @@ def spend_action_energy(
     return ActionEnergySpend(True, effective, 0.0, requested - effective, balancer_ids)
 
 
-def process_energy_tick(player: PlayerBattleState, core_position: Position = Position(2, 1)) -> EnergyTickResult:
+def process_energy_tick(player: PlayerBattleState, core_position: Position | None = None) -> EnergyTickResult:
     del core_position  # The GRIDSHARD 2.1 board has an embedded energy bus.
     prune_energy_queue(player)
     active = [m for m in player.modules.values() if m.status == ModuleStatus.ACTIVE and m.hp > 0]
@@ -460,21 +460,21 @@ def process_energy_tick(player: PlayerBattleState, core_position: Position = Pos
         }
         for module_id, generation_per_second in battery_generation_by_module.items()
     ]
-    for module_id, amount in discharged_by_module.items():
-        module_contributions.append(
-            {"module_id": module_id, "contribution_kind": "energy_supplied", "value": amount}
-        )
+    module_contributions.extend(
+        {"module_id": module_id, "contribution_kind": "energy_supplied", "value": amount}
+        for module_id, amount in discharged_by_module.items()
+    )
     upkeep_saved = max(0.0, raw_upkeep - upkeep) * TICK_SECONDS
     if upkeep_saved > 0 and balancers:
         strength = sum(module.definition.effect_multiplier for module in balancers)
-        for module in balancers:
-            module_contributions.append(
-                {
-                    "module_id": module.instance_id,
-                    "contribution_kind": "energy_saved",
-                    "value": upkeep_saved * module.definition.effect_multiplier / strength,
-                }
-            )
+        module_contributions.extend(
+            {
+                "module_id": module.instance_id,
+                "contribution_kind": "energy_saved",
+                "value": upkeep_saved * module.definition.effect_multiplier / strength,
+            }
+            for module in balancers
+        )
     return EnergyTickResult(
         generated,
         distributed,

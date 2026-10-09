@@ -9,7 +9,7 @@ if [ ! -x ".venv/bin/python" ]; then
 fi
 
 export RELAY_TELEMETRY_MAX_EVENTS="50000"
-export GRIDSHARD_MATCHMAKING_AI_ONLY="1"
+export GRIDSHARD_MATCHMAKING_AI_ONLY="${GRIDSHARD_MATCHMAKING_AI_ONLY:-0}"
 
 .venv/bin/python tools/release_guard.py
 

@@ -45,7 +45,8 @@ if errorlevel 1 (
 )
 
 set RELAY_TELEMETRY_MAX_EVENTS=50000
-set GRIDSHARD_MATCHMAKING_AI_ONLY=1
+rem Human-first PvP by default; a deliberate AI-only test override is preserved.
+if not defined GRIDSHARD_MATCHMAKING_AI_ONLY set GRIDSHARD_MATCHMAKING_AI_ONLY=0
 
 rem Dogrudan cift tikla baslatildiginda da 8000-8010 arasinda ilk bos portu sec.
 rem HIZLI_SAVAS_TESTI bir port belirlediyse o deger aynen korunur.

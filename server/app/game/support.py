@@ -136,7 +136,7 @@ def overclock_assignments(player: PlayerBattleState) -> dict[str, BattleModule]:
     )
     return {
         target.instance_id: overclock
-        for overclock, target in zip(overclocks, attacks)
+        for overclock, target in zip(overclocks, attacks, strict=False)
     }
 
 

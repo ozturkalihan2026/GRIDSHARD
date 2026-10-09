@@ -20,20 +20,21 @@ def service():
     s.join("m","a"); s.join("m","b"); s.start("m")
     return s
 
-def test_heartbeat_updates_last_seen_and_rtt():
+def test_heartbeat_updates_last_seen_and_echoes_foreign_clock_without_fake_rtt():
     async def scenario():
         c=Clock(); s=service()
         sock=FakeSocket([{
             "version":1,"type":"heartbeat","session_id":"m",
             "player_id":"a","request_id":"hb",
-            "payload":{"sent_at_ms":100000.0},
+            "payload":{"sent_at_ms":1791400000000.0},
         }])
         a=PvPWebSocketAdapter(s,now_func=c.now,silent_timeout_seconds=12,grace_period_seconds=15)
         conn=await a.connect(connection_id="c1",session_id="m",player_id="a",socket=sock)
         c.advance(.125)
         r=await a.handle_one("c1")
         assert r["type"]=="heartbeat_ack"
-        assert round(conn.last_rtt_ms,3)==125.0
+        assert r["payload"]["sent_at_ms"] == 1791400000000.0
+        assert not hasattr(conn, "last_rtt_ms")
         assert conn.last_seen_at==c.now()
     asyncio.run(scenario())
 

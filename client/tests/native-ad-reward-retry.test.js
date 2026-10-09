@@ -14,7 +14,7 @@ function fixture(mode = "live") {
     "post-match-ad-reward", "post-match-ad-button", "post-match-ad-copy",
     "post-match-ad-heading", "post-match-store-status",
   ].map(id => [id, {dataset:{}}]));
-  const calls = {ads:[], requests:[], profiles:[], waits:[]};
+  const calls = {ads:[], requests:[], profiles:[], waits:[], audioStops:0};
   const context = vm.createContext({
     Error, Map, Set, Promise,
     document:{getElementById:id => elements[id]},
@@ -25,6 +25,7 @@ function fixture(mode = "live") {
     adRewardPending:false, adRewardClaimPending:false,
     storeState:{providers:{ad_policy:{mode}}},
     currentAdProvider:() => "admob", localizedUiText:text => text,
+    gridshardAudioDirector:{stopResultPlayback() {calls.audioStops++;}},
     nativeStore:{
       async showRewardedAd(options) {calls.ads.push(options);},
       adCapability:() => ({ad_protocol:"child-safe-v1", ad_platform:"android"}),
@@ -146,4 +147,19 @@ test("reopened publisher test UI does not promote an old live marker to a reward
   assert.equal(calls.ads.length, 1);
   assert.equal(calls.requests.length, 0);
   assert.equal(c.adRewardReceipts.size, 0);
+});
+
+test("watch-ad press stops result music synchronously before native presentation", async () => {
+  const {context:c,calls} = fixture("test");
+  let finish;
+  c.nativeStore.showRewardedAd = () => {
+    assert.equal(calls.audioStops,1);
+    return new Promise(resolve => {finish=resolve;});
+  };
+  const watching=c.watchRewardAd();
+  assert.equal(calls.audioStops,1);
+  await c.watchRewardAd(); // Double press does not re-enter the stop/ad workflow.
+  assert.equal(calls.audioStops,1);
+  finish();
+  await watching;
 });

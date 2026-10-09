@@ -20,7 +20,7 @@ class PvPSetupValidationError(ValueError):
 
 def validate_setup_payload(payload: PvPSetupPayload) -> None:
     try:
-        pool = validate_battle_pool(payload.battle_pool_ids)
+        validate_battle_pool(payload.battle_pool_ids)
     except BattlePoolValidationError as exc:
         raise PvPSetupValidationError(str(exc)) from exc
 

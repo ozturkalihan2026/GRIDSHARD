@@ -18,14 +18,20 @@ function initialModules(playerId) {
   ];
 }
 
-async function createAuthenticatedClient(browser, baseURL, playerId) {
-  const context = await browser.newContext();
+async function createAuthenticatedClient(browser, baseURL, playerId, contextOptions = {}) {
+  // Real app identities require this historical prefix. Otherwise bootstrap
+  // creates another identity and the test's API player differs from its UI.
+  if (!playerId.startsWith("wt-")) playerId = `wt-${playerId}`;
+  const context = await browser.newContext(contextOptions);
   const deviceSecret = `e2e-secret-${playerId}-0123456789`;
   await context.addInitScript(({ id, secret }) => {
+    if (!/^https?:$/.test(location.protocol)) return;
     localStorage.setItem("project-relay.web-test.participant-id", id);
     localStorage.setItem("gridshard.auth.device-secret", secret);
   }, { id: playerId, secret: deviceSecret });
   const page = await context.newPage();
+  const pageErrors=[];
+  page.on("pageerror", error => pageErrors.push(error.stack || String(error)));
 
   await page.goto(`${baseURL}/?e2e=1`, { waitUntil: "domcontentloaded" });
   const token = await page.evaluate(async id => {
@@ -34,7 +40,7 @@ async function createAuthenticatedClient(browser, baseURL, playerId) {
   }, playerId);
 
   expect(token).toBeTruthy();
-  return { context, page, playerId, token };
+  return { context, page, playerId, token, pageErrors };
 }
 
 async function api(client, method, path, body) {
