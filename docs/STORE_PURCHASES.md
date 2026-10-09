@@ -1,5 +1,42 @@
 # Gerçek para alımı ve ödüllü reklam
 
+## 10 Ekim 2026 — iade politikası kodlandı; satış henüz açılmadı
+
+`31b0388480816ada79fc25a34d80b61f840cd65e` kullanıcı tarafından commit/push
+edildi; [Quality run 37996501300](https://github.com/ozturkalihan2026/GRIDSHARD/actions/runs/37996501300)
+beş işin tamamında başarılı. Bu commit sürüm kodu4 içerir. Kullanıcının istediği
+yeni kapalı-test güncellemesi için yerel Android sürüm kodu5 hazırlandı;
+son sürüm commit'i, onun CI sonucu ve eşleşen sunucu geçişi ayrıca gerekir.
+
+Onaylı iade politikasının yayıncı-hatası istisnası artık yerel sunucu kodundadır:
+yalnız güvenilen operatörün teslimat/sunucu kanıtlarıyla doğruladığı destek
+vakası kabul edilir. Mağaza sebep kodu veya istemci beyanı yeterli değildir.
+Normal iade ilgili para biriminin tamamını geri alabilir; doğrulanmış yayıncı
+hatası yeni açık oluşturmaz, başka işlemden kalan açığı silmez. İade anındaki
+nedensel bakiye kaydı eksik/bozuk eski işlemlerde otomatik düzeltme reddedilir.
+Premium yalnız iade edilen sezon halen etkinse kapanır. Geri çevirme yalnız
+gerçekte kesilen miktarı geri verir; muaf tutulan miktarı yeniden vermez.
+
+TR/EN gelen-kutusu bildirimi ürün/uygun Play sipariş referansı, kesilen miktar,
+kalan açık ve destek yolunu açıklar; purchase token/sır içermez. Bildirim,
+bakiye ve makbuz işlemi aynı transaction içinde; başarısız bildirim kalıcı
+kesintiyi yarım bırakmaz. Tekrar işleme ve hesap silme korumaları testlidir.
+
+İnceleme aracı mevcut özel sunucu runtime'ında `python -m app.store_refund_review`
+olarak kullanılabilir. Varsayılan dry-run bakiye/makbuz değiştirmez; modül
+başlatılması mevcut runtime'ı yüklediğinden rastgele bir veri/config kopyasında
+çalıştırılmaz. `--apply` için ayrı vaka kanıtı, yetkilendirme ve güncel yedek
+gerekir. Bu tur canlı inceleme veya oyuncu bakiye değişikliği yapılmadı.
+
+Yerel sunucu1344 geçti/39 altyapı testi atlandı, istemci272 geçti, odaklı
+ödeme/WIF/politika192 geçti; ayrıca paketleme/operator18 ve web/site24 geçti.
+CI'daki gerçek PostgreSQL/Redis, imaj/restart/boş-hedef restore ve tarayıcı
+işleri başarılıdır. Bunlar gerçek Google Play alım/iade cihaz kanıtı değildir.
+Mevcut canlı r13'te billing ayarları boş, test alımı0; ürünler etkinleştirilmedi.
+Ücretli Cloud Billing/RTDN/Pub/Sub açılmaz; mevcut AWS WIF + periyodik denetim
+yolu korunur. Yeni APK/AAB ve açık yayın kapıları:
+[V5 hazırlık kaydı](ANDROID_V5_BILLING_RELEASE_20261010.md).
+
 ## 9 Ekim 2026 — seçilen Android satın alma yolu: ücretli Cloud olmadan
 
 Kullanıcı Cloud Billing/ücretsiz deneme/kart eklemeyi istemiyor. Mevcut Cloud
@@ -232,23 +269,17 @@ birlikte değerlendirerek "anlaşalım" yanıtıyla onayladı:
 - Oyuncuya işlem/ürün, geri alınan miktar ve varsa kalan açık açıklanır;
   hatalı kesinti için destek incelemesi sunulur. Belirteç/sır bildirimde gösterilmez.
 
-**Politika onayı tam teknik uygulama veya canlı satış kanıtı değildir.** Mevcut
-`revoke_purchase` para birimini eksiye indirebilir ve sezon hakkını geri alır;
-fakat yayıncı-hatası istisnasını uygulamaz. `store_refund_message` yalnız genel
-ürün bildirimi verir; miktar/kalan açık ve tam TR/EN açıklaması henüz eklenmedi.
-Mağazanın sebep kodu tek başına yayıncı hatası veya kötüye kullanım kanıtı sayılmaz;
-işlem/teslimat kayıtlarıyla inceleme ve düzeltme yolu tasarlanmalıdır. Tüm harcama,
-ücretsiz maç erişimi, hata istisnası, yinelenen bildirim ve iade geri çevirme
-akışlarının politika ile uyumu kod çalışmasında ayrıca test edilir.
-Bu karar turunda yalnız belgeler değişti; kod/oyuncu bakiyesi/canlı sunucu/ödeme
-durumu değiştirilmedi. TR/EN Terms kaynağı:
-`docs/TERMS_OF_SERVICE_DRAFT_20261009.md` bölüm9.
+**Politika onayı veya yerel uygulama canlı satış kanıtı değildir.** Yukarıdaki
+10 Ekim kaydı yerel kod/test hazırlığını günceller; 9 Ekim karar turunda yalnız
+belgeler değişmişti. Canlı r13 henüz yeni istisna/bildirim kodunu taşımıyor.
+Mağazanın sebep kodu tek başına yayıncı hatası veya kötüye kullanım kanıtı
+sayılmaz. TR/EN Terms kaynağı `docs/TERMS_OF_SERVICE_DRAFT_20261009.md` bölüm9.
 
 Doğrulanan her gerçek alım sunucudaki **makbuz defterine** yazılır (platform deposu, `store_receipts`): makbuzun sahibi olan oyuncu, ürün ve verdiği (para birimi miktarı ya da etkin sezon). Satın alma belirteci yalnız SHA-256 özetiyle saklanır. Defter oyuncu kaydından bağımsızdır; oyuncu kaydındaki eski makbuz düşse bile iade doğru oyuncudan geri alınır ve aynı makbuz ikinci kez ürün vermez. Hesap silinince oyuncunun defter kayıtları da silinir.
 
 30 Eylül geçiş durumu: bu paragraftaki **canlı** defter hâlâ `PlatformService` JSON deposudur. PostgreSQL `004_store_ledger.sql` ve `PostgresStoreLedgerRepository` izole testten geçti, fakat henüz satın alma/iade yoluna bağlanmadı. Makbuz ile oyuncu bakiyesi tek transaction içinde güncellenip eski kayıtlar denetimli taşınmadan kaynak değiştirilmeyecek.
 
-Mevcut temel geri alma davranışı (`revoke_purchase`; yukarıdaki yeni politikanın tam uygulaması değildir):
+Normal iadenin temel geri alma davranışı (`revoke_purchase`; doğrulanmış yayıncı-hatası istisnası yukarıda):
 
 | Ürün | İade edilince |
 | --- | --- |

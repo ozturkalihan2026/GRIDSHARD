@@ -1,5 +1,26 @@
 # Codex için devir notu — sunucu r13 ve Android paketi (sürüm kodu 4)
 
+**10 Ekim en son durum — imzalı v5 aday hazır, canlı hâlâ r13/Playv4:**
+Ödeme politikası/Terms değişiklikleri kullanıcı commit/push
+`31b0388480816ada79fc25a34d80b61f840cd65e` içinde. GitHub main eşleşti;
+Quality run37996501300 beş işte başarılı (gerçek PG/Redis/imaj/restore dahil).
+Bu commit sürüm kodu4'tür. Kullanıcının yeni kapalı-test APK/AAB talebi üzerine
+sonrasında canonical config ve Android Gradle yerelde5'e yükseltildi; bunlar ve
+hazırlık belgeleri **yeniden kullanıcı commit/push gerektirir**. Agent yapmaz.
+Parent CI'yı son v5 commit kanıtı sayma. İmzalı/audit geçmiş v5 aday
+`artifacts/android-production-20261010-v5-candidate/`; APK/AAB imza, manifest,
+74 web dosyası/9 font ve private/debug/remote-web korumaları doğrulandı.
+Manifest pakette; ayrı Play yükleme dosyası değil. Frozen provenance, son CI,
+yalıtılmış WIF/Play provası, taze yedek ve geçiş kapsamı sonraki kapılardır.
+Yerel server1344/39skip, client272, ödeme-focused192; ek tools18/web-site24.
+İade yayıncı-hatası istisnası ve atomic ayrıntılı TR/EN bildirim yerel kodda;
+CLI --apply ile canlı bakiye değişikliği yapılmadı, yeni HTTP yetkisi yok.
+Canlı healthy r13 billing boş/test0; ürünler taslak, ücretsiz lisans-test alımı
+ve v5 kurulumu/yayını yok. USB mevcut Playv4 doğrulandı; kaldır/data-clear yapma.
+Ücretli Cloud Billing/PubSub/RTDN yok; Google proje/API/SA + AWS WIF korunur.
+Tam hashler/signer/gates: `docs/ANDROID_V5_BILLING_RELEASE_20261010.md`.
+Aşağıdaki OAuth yayını tamam, tekrar çalışma gerektirmez.
+
 **10 Ekim en son durum — Google OAuth marka yayını tamamlandı:**
 Kullanıcı mevcut doğrulanmış GRIDSHARD adı/logo/bağlantıların Google izin
 ekranında yayımlanmasını ayrıca onayladı. Mevcut projede Publish branding

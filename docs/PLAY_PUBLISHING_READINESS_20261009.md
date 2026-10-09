@@ -1,5 +1,16 @@
 # PGS ve OAuth yayın hazırlığı — 9 Ekim 2026
 
+## 10 Ekim ek durum — yeni kapalı-test Android v5 adayı
+
+OAuth marka yayını aşağıdaki kayıtta tamam. Sonraki aktif iş gerçek Google Play
+Billing ve eşleşen sunucu/kapalı-test güncellemesi. Kullanıcı commit/push
+`31b0388` için beş Quality işi başarılı. Yerel v5 sürüm yükseltmesi bu commit'ten
+sonra yapıldı; son commit/CI henüz yok. İmzalı APK/AAB ve manifest/imza/asset
+denetimi başarılı; **yayın/cihaz kurulumu/sunucu geçişi/gerçek ödeme yapılmadı**.
+Ürünler taslak; fiziksel lisans-test alımı/iade ayrı kapı. Mevcut r13/Playv4,
+OAuth/scopes/PGS/Ads ve Google ücretli Cloud kapalı durumu korunur.
+Kanıtlar ve devam sırası: [v5 hazırlık kaydı](ANDROID_V5_BILLING_RELEASE_20261010.md).
+
 ## Son durum — 10 Ekim: Google OAuth markası doğrulandı ve yayımlandı
 
 Kullanıcı mevcut doğrulanmış GRIDSHARD adı/logo/bağlantıların Google izin

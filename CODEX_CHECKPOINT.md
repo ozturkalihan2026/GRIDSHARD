@@ -2,7 +2,54 @@
 
 Güncelleme tarihi: 10 Ekim 2026
 
-## En son durum — Google OAuth marka yayını tamamlandı
+## En son durum — ödeme politikası commit edildi, imzalı v5 aday hazır
+
+10 Ekim kullanıcı gerçek Android ödemesi için devam istedi; USB telefonu
+bağladı ve mevcut değişiklikleri commit/push yaptı. Kullanıcı sunucu geçişiyle
+birlikte kapalı testin ilk düzeltme APK/AAB paketini ayrıca istedi.
+
+- HEAD/remote main `31b0388480816ada79fc25a34d80b61f840cd65e` eşleşti.
+  Quality run37996501300 **beş işin tamamında success**: server/client,
+  gerçek PG17/Redis/imaj/restart/boş-hedef restore, browser ve kaynak paketi.
+- Bu commit'in canonical Android sürüm kodu4'tü. Sonrasında yerelde yalnız
+  `config/android-production.json` ve `android/app/build.gradle`4→5 yükseltildi.
+  **Bu son kaynak değişikliği ve hazırlık belgeleri henüz commit/push değil.**
+  Kullanıcı bunları gönderince son SHA/CI üzerinden frozen release hazırlanır;
+  parent CI'yı yeni commit'in CI'sı gibi sunma. Agent commit/push yapmaz.
+- Mevcut upload key/DPAPI ile offline assembleRelease/bundleRelease başarılı.
+  `artifacts/android-production-20261010-v5-candidate/` içinde imzalı APK/AAB,
+  audit/candidate-provenance ve okunabilir bundle manifest kopyası var.
+  APK SHA8506b4c6ad0ceb6fd30b4d92d591911bda463332359c1be8fabec3e26516f240;
+  AAB SHA46025964f182026f9f8b89c715db31b09bc20dc68c03fcae3b2e7679e6fb66aa.
+  Kalıcı appId, Beta72 adı/signer korunur. Audit imzalar/74 web dosyası/9 font,
+  debug/remote-web/private-review sızıntısı yok, Firebase otomatik başlangıcı
+  kapalı sonuçlarını doğruladı. AAB manifest entry mevcut; bundle manifest
+  kimlik/v5/min24/target36 doğru. APK/AAB **adaydır, yayımlanmadı/kurulmadı**.
+- Yerel server1344 geçti/39 altyapı atlandı; client272 ve odaklı ödeme/WIF/
+  politika192 geçti. Bu tur ek operator18 ve web/site24 testi geçti;
+  release_guard/diff-check temiz. CI gerçek altyapı işlerinin başarısı ayrı kanıt.
+- Yeni iade kodu yalnız kanıtlı operatör vakasında yayıncı-hatası istisnası,
+  nedensel bakiye kaydı ve TR/EN miktar/açık/destek bildirimini içerir.
+  Bildirim/bakiye/makbuz aynı transaction; replay/reversal/deleted-player
+  korumaları testli. Private CLI dry-run varsayılan; hiçbir canlı vaka/bakiye
+  işlemi uygulanmadı, provider sebep kodu istemci muafiyeti sağlamaz.
+- Canlı r13 healthy, billing auth/package/WIF ayarları boş, purchase test0;
+  dört Compose katmanı ve reklam/PGS/inceleme ayarları korunur. Server deploy,
+  ürün etkinleştirme ve gerçek ödeme **yok**. WIF dosya SHA önceki pin ile eşleşti.
+  Ücretli Google Cloud Billing/free trial/kart/PubSub/RTDN açılmaz; mevcut Google
+  proje/API/SA + AWS WIF ve opt-in polling katmanları korunur.
+- USB mevcut Play installer v4/Beta72 doğrulandı; kaldırma/data-clear/install
+  yapılmadı. Kapalı testten v5 güncellemesi ve test banner/kart/lisans hesabı
+  kanıtından sonra ücretsiz lisans-test alımı gerekir; kapalı test tek başına
+  lisans-test demek değildir. Play'de10 ürünün etkin seçeneği0; Savaş Premium
+  taslak Türkiye199,99TL. Sezon fiyatı taze panelde henüz kontrol edilmedi.
+
+Devam: [v5 kaynak/aday/yayın kapıları](docs/ANDROID_V5_BILLING_RELEASE_20261010.md).
+Son commit/yeşil CI/frozen provenance, yalıtılmış WIF/Play provası, taze yedek ve
+action-time geçiş kapsamı olmadan canlıya çıkma. Aşağıdaki OAuth durumu tamamdır;
+verification/Publish branding tekrar yapılmaz. Ignored aday/proof Git ile taşınmaz.
+
+## Önceki tamamlanan durum — Google OAuth marka yayını tamamlandı
 
 10 Ekim kullanıcı mevcut doğrulanmış GRIDSHARD adı/logo/bağlantıların Google
 izin ekranında **Publish branding** ile yayımlanmasını ayrıca açıkça onayladı.
