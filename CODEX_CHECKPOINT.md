@@ -2,7 +2,126 @@
 
 Güncelleme tarihi: 10 Ekim 2026
 
-## En son durum — ödeme politikası commit edildi, imzalı v5 aday hazır
+## En son durum — r14 canlıda, Alpha v5 Google incelemesinde
+
+10 Ekim kullanıcı kısa bakım/taze yedekle r14 geçişini ve ardından yalnız
+Alpha v5'in incelemeye gönderilmesini açıkça onayladı. Sunucu geçişi tamamlandı;
+kullanıcı son Play gönderim düğmesine kendisi bastı ve **incelemeye gönderdim**
+dedi. Edge'deki mevcut Yayın özeti salt-okunur kontrolü **Değişiklikleriniz şu
+anda inceleniyor** sonucunu doğruladı: yalnız **Kapalı test – Alpha /
+5 (2.1.0-beta.72)**. Gözlem10 Ekim2026 **02:04:34 Türkiye**
+(`2026-10-09T23:04:34Z`); bu gözlem zamanı, kesin gönderim zamanı değildir.
+
+- Frozen oyun/server/Android kaynağı hâlâ `a3095c33a17cb2b29daa13648cfe495c3c67f51b`;
+  son Quality run37998290434 beş işte success. APK/AAB hashleri aşağıdaki
+  final paketle aynı. Bu tur yalnız operasyon belgeleri/provenance güncellendi;
+  yeniden AAB üretimi veya agent commit/push yapılmadı.
+- Canlı r14 API image
+  `sha256:dbc3feee11e514721c43dea5e3228f6393911f585f718618a528d7eac49ccf09`,
+  bakım image
+  `sha256:6d18ddc6fc8e52ccc70dc553ab862fbb6726308decd072408774b71e1e501c77`.
+  Başarı10 Ekim2026 **01:58:16 Türkiye**; durable executor exit0. Taze özel
+  yedek `/var/backups/gridshard-production/20261010-before-billing-r14` hash/
+  izin/restore-TOC kontrolleri geçti. Eski r13 API/bakım geri dönüş imajları
+  `before-billing-r14-20261010` tag'lerinde korunur. Canlı DB restore/volume
+  silme yapılmadı; bu yedeği canlı DB üstüne geri yükleme.
+- Geçiş anı aktif maç/WS0; veri fingerprint kontrolü **39 profil/39 kimlik/
+  91 savaş kaydı/pending0** korunduğunu gösterdi. Mevcut PG/Redis volume'leri,
+  Ads LIVE/SSV, PGS ve inceleme ayarları korunur. Gerçek nonroot10001/read-only
+  rootfs ve WIF mount doğrulandı. Altı Compose katmanla AWS WIF keyless ödeme
+  doğrulaması ve1800s iade taraması canlıda; ilk gerçek Google read-only scan
+  başarılı. RTDN/static SA anahtarı/ücretli Cloud Billing açılmadı.
+- İç canlı worker/health/polling ve bağımsız dış HTTPS/TLS/HTML kontrolleri
+  ayrı ayrı **330s/33 kontrol** geçti. Restart0, unsigned SSV403. Bu kanıt
+  gerçek satın alma/consume/iade testinin yerine geçmez.
+- İlk deploy denemesi maintenance profilinin Compose config'te dışarıda
+  kalması nedeniyle **servis durdurulmadan/yedek aşamasından önce** durdu.
+  Operatör koruması düzeltildi; gerçek6 katman config ve **10 offline guard
+  testi** geçti. İkinci deneme başarılı; ilk hata kanıtı silinmedi. Frozen
+  uygulama kaynağı değişmedi. `deploy.py` tamamlandı; yeniden çalıştırma.
+- Play'de **Yönetilen yayınlama etkinleştirildi** korunur. V5 henüz onaylanmış
+  veya testerlara yayımlanmış değildir; son yayın8 Ekim/v4. Onay sonrasında
+  ayrıca yalnız Alpha yayın adımı gerekir; tüm bekleyen değişiklikleri topluca
+  yayımlama. Üretim kanalı, mevcut tester/ülkeler ve ücretli ürünler değişmedi.
+  Kanıt `test-results/billing-v5/alpha-v5-review-submitted.jpg`; mevcut Edge
+  sekmesi Google sonucundan sonra devam için handoff bırakıldı.
+- USB telefon son kontrolde bağlı görünmedi. Cihaz güncelleme/kaldırma/veri
+  silme yok. Google onayı ve Alpha yayını sonrasında Play'den v5 güncellemesi,
+  test hesabı/test satın alması/test kartı doğrulaması ve ücretsiz uçtan uca
+  teslim/consume/replay/iade testi sonraki kapıdır. Ürün etkinleştirme ve gerçek
+  ücretli satış/yasal bilgilendirme ayrı kapsamdır.
+
+Kanıt/provenance: `artifacts/server-aws-20261010-billing-r14/deployment-verified-sanitized.json`
+ve `artifacts/android-production-20261010-v5/release-provenance.json` (ignored).
+Aşağıdaki hazır/çalıştırılmadı/gönderilmedi kayıtları **önceki aşamanın tarihçesidir**.
+Güncel ayrıntılar [v5 yayın kaydı](docs/ANDROID_V5_BILLING_RELEASE_20261010.md).
+
+## Önceki aşama — son commit v5 Alpha taslağında, r14 provası geçti
+
+10 Ekim kullanıcı son commit/push'u tamamladı ve yalnız v5 Alpha taslağının
+hazırlanmasını onayladı. Edge yerel dosya izni değiştirilmeden kullanıcı
+AAB'yi elle seçti, **yükledim** dedi. Play kabulü ve taslak kaydı doğrulandı.
+
+- HEAD/remote main `a3095c33a17cb2b29daa13648cfe495c3c67f51b` eşleşti.
+  [Quality run37998290434](https://github.com/ozturkalihan2026/GRIDSHARD/actions/runs/37998290434)
+  **beş işin tamamında success**. Önceki parent run bu son commit yerine kullanılmadı.
+- Temiz bu kaynaktan offline APK/AAB yeniden üretildi ve audit geçti.
+  Nihai dizin `artifacts/android-production-20261010-v5/`; kaynak/imza/manifest/
+  74 web varlığı/9 font denetimi ve `release-provenance.json` mevcut.
+  APK SHA `8506b4c6ad0ceb6fd30b4d92d591911bda463332359c1be8fabec3e26516f240`;
+  AAB SHA `46025964f182026f9f8b89c715db31b09bc20dc68c03fcae3b2e7679e6fb66aa`.
+  Önceki adayla aynı hash olması son kaynaktan yeniden üretme kanıtını değiştirmez.
+  Canonical paket `com.gridshardgame.app`, v5/Beta72/min24/target36 ve signer korunur.
+  Manifest AAB'de gömülü; ayrıca Play'e yüklenmez.
+- Play **Alpha v5 (2.1.0-beta.72) taslağı kaydedildi**. TR mağaza/ödeme/iade
+  sürüm notları girildi. Önizleme2/2'de iki uyarı var, engelleyen hata yok:
+  mapping dosyası (minifyEnabled false; sahte mapping üretme) ve native debug
+  sembolleri (önceden derlenmiş bağımlılıklar). Desteklenen cihaz kaybı0.
+  **Önizleme Kaydet / incelemeye gönderme / yayınlama yapılmadı.** Mevcut ülke/
+  tester ayarları değişmedi; aktif dağıtım hâlâ v4. Taslak onayı nihai yayın onayı değildir.
+  Kanıt `test-results/billing-v5/alpha-v5-draft-saved.jpg` ve
+  `alpha-v5-preview-awaits-approval.jpg` (ignored); Edge sekmesi handoff bırakıldı.
+- Aynı commit'in temiz kaynak ZIP'i SHA
+  `5d7b137672f5f708d38c7b70b9fbdb883f0d47a66c9b367f853a2f4dc71eea2c`.
+  Taze `aws-20261010-billing-r14` aday dizinine pinli SSH ile aktarıldı;
+  bütünlük/CRC/kaynak sınırı kontrolü geçti. API/bakım imajları yalnız ayrı
+  `billing-r14-20261010` tag'lerinde hazır; canlı latest/container değişmedi.
+- Gerçek Google salt-okunur WIF + PG17/Redis aday-imaj provası **başarılı**:
+  330s worker/profile/reviewer soak; restart ve boş test hedefi restore;
+  checkpoint her iki durumda ilk yeni scan öncesinde birebir korundu;
+  initial/restarted/restored üç gerçek başarılı iade taraması. Cold-cache ve
+  zorlanmış yakın-expiry yenilemesi/financial GET200 geçti; bir saat fiilen
+  beklenmiş gibi sunma. Publisher write0, token ifşası0, gerçek alım/iade yok.
+  Ayrı etiketli disposable PG/Redis/network kaldırıldı ve yoklukları doğrulandı;
+  yalnız bu tur oluşturulan test verileri temizlendi, canlı birimler korunur.
+- Yeni Linux bağımlılıklarıyla son extracted server source **1342 geçti/39
+  altyapı atlandı/1 TestClient deprecation uyarısı**. İki operator QA-report
+  testi bu komutta bilinçli dışarıda; son CI ayrı kapsamda geçti. Atlamaları
+  başarı sayma. Yalıtılmış gerçek altyapı/image ve CI ayrıca başarılı.
+  Hazırlanan deploy runtime korumaları6 offline testte geçti.
+- Son read-only kontrol: canlı r13 image hâlâ
+  `sha256:3064683905f36f88c8aded85c0a27d2be900ad84ac622ed6ec59405ed30fd4d1`;
+  receipts0/notifications0, candidate env eski env ile byte-identical/private,
+  üretim WIF dosyası kurulmamış, disk5.23GB/RAM1.14GB kullanılabilir.
+  Ads/PGS/reviewer, billing kapalı/test0 ve oyuncu verileri korunur.
+- `artifacts/server-aws-20261010-billing-r14/deploy.py` **hazır, çalıştırılmadı**.
+  Source/CI/test/image/resource pinleri, gerçek readonly mount/nonroot guards,
+  taze özel yedek ve eski imaj/konfigürasyon geri dönüşü var. Canlı DB restore
+  veya volume silme yok. Eski `deploy-r2.sh` gibi hardcoded r13 araçlarını çalıştırma.
+  Sonraki işlem explicit bakım/geçiş onayı + o anda aktif maç/bağlantı0 kontrolü;
+  taze yedek `20261010-before-billing-r14` ve r14 WIF/polling6 katman uygulaması,
+  sonra330s canlı + bağımsız TLS/HTML/health tanığı. Henüz yeni canlı yedek yok.
+- **Canlı deploy / Play inceleme-yayın / ürün etkinleştirme / cihaz güncelleme /
+  gerçek lisans-test alımı yapılmadı.** Yeni kapsam için ayrı onay gerekir.
+  Google ücretli Cloud Billing/free trial/kart/PubSub/RTDN açılmaz.
+  USB profilini kaldırma/veri silme; v5'i Play'den güncelle. Ürün/test/yasal satış
+  kapıları ayrıdır. Mevcut fiyat ve OAuth tamamlanma geçmişini yeniden kurma.
+
+Bu tur yalnız operasyon kayıtları güncellendi; frozen oyun/server/Android
+kaynağı a309 olarak kalır. Agent commit/push yapmadı. Doküman güncellemeleri
+yeni AAB gerektirmez. Ayrıntılar [v5 yayın kaydı](docs/ANDROID_V5_BILLING_RELEASE_20261010.md).
+
+## Önceki hazırlık — ödeme politikası commit edildi, imzalı v5 aday hazır
 
 10 Ekim kullanıcı gerçek Android ödemesi için devam istedi; USB telefonu
 bağladı ve mevcut değişiklikleri commit/push yaptı. Kullanıcı sunucu geçişiyle

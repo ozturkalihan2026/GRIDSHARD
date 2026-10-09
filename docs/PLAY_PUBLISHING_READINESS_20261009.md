@@ -1,6 +1,49 @@
 # PGS ve OAuth yayın hazırlığı — 9 Ekim 2026
 
-## 10 Ekim ek durum — yeni kapalı-test Android v5 adayı
+## 10 Ekim güncel durum — r14 canlıda, Alpha v5 inceleniyor
+
+Kullanıcının açık r14 bakım/geçiş + yalnız Alpha inceleme onayıyla canlı
+geçiş01:58:16TR başarı/exit0 tamamlandı. Taze özel yedek ve eski imaj/config
+geri dönüşü korunur;39 profil/39 kimlik/91 savaş kayıt fingerprint'i korundu,
+canlı DB restore/volume deletion yok. Altı Compose katmanla AWS WIF/keyless
+Google doğrulaması ve1800s polling canlı; ilk gerçek read-only scan başarılı.
+İç ve bağımsız dış HTTPS/TLS/HTML330s kontrolleri geçti. Ücretli Cloud Billing/
+kart/free trial/PubSub/RTDN/static SA key yok; Ads/PGS/reviewer korunur.
+
+Kullanıcı son Play gönderim düğmesine kendisi bastı.10 Ekim02:04:34TR gözlemi
+**Değişiklikleriniz şu anda inceleniyor** ve yalnız **Kapalı test – Alpha /
+5 (2.1.0-beta.72)** doğruladı. **Yönetilen yayınlama etkinleştirildi** korunur.
+Bu nedenle Google onayı sonrasında ayrıca Alpha yayınlama gerekir; v5 şu an
+testerlara dağıtılmıyor. Son yayın8 Ekim/v4; üretim kanalı/tester/ülkeler/
+ücretli ürünler değişmedi. Toplu tüm değişiklikleri yayınlama veya yönetilen
+yayınlamayı kapatma bu onay kapsamında değildir.
+
+Kanıt `test-results/billing-v5/alpha-v5-review-submitted.jpg` (ignored).
+Son exact-commit CI beş success/frozena309/APK-AAB hashleri korunur; yalnız
+operasyon kayıtları güncellendi, yeni paket/agent commit-push yok. Gerçek
+cihaz v5/lisans-test alımı/consume/replay/iade ve ücretli satış-yasal kapıları
+henüz tamamlanmadı. Son USB kontrolünde telefon bağlı değildi.
+Detay: [v5 yayın kaydı](ANDROID_V5_BILLING_RELEASE_20261010.md).
+
+## 10 Ekim önceki aşama — v5 Alpha taslağı kaydedildi, r14 provası geçti
+
+Son kullanıcı commit/push `a3095c33a17cb2b29daa13648cfe495c3c67f51b`;
+Quality run37998290434 beş işte success. Temiz son kaynaktan v5 yeniden
+üretildi, manifest/imza/asset audit geçti. Kullanıcı AAB'yi elle seçti;
+Play Alpha taslağı kaydedildi. Önizleme2/2'de mapping/native debug sembol
+iki uyarı, engelleyen hata yok. **Kaydet/incelemeye gönderme/yayın henüz yok**;
+taslak onayı nihai dağıtım yetkisi değildir, tester/ülke ayarları korunur.
+Gerçek read-only Google WIF + PG17/Redis/330s soak/restart/boş-hedef restore
+ve checkpoint/reviewer koruması geçti. Yeni Linux dependency source1342pass/
+39skip, iki operator rapor testi hariç/CI ayrı;6 offline deploy guard pass.
+Canlı r13/ödemekapalı/ürünleretkin0/Playaktifv4 korunur. Hazır deploy.py
+çalıştırılmadı. Sonraki kapı kullanıcı bakım onayı, taze maç/WS0 ve özel yedek;
+başarılı sunucu geçişinden sonra ayrıca yetkili Alpha inceleme/sunum.
+Üretim kanalı, gerçek ürün etkinleştirme/lisans-test/yasal satış kapıları
+bu taslak işleminden ayrı. Google ücretli Cloud Billing/kart/PubSub/RTDN yok.
+Kaynak/provenance/kanıtlar: [v5 yayın kaydı](ANDROID_V5_BILLING_RELEASE_20261010.md).
+
+## 10 Ekim önceki hazırlık — yeni kapalı-test Android v5 adayı
 
 OAuth marka yayını aşağıdaki kayıtta tamam. Sonraki aktif iş gerçek Google Play
 Billing ve eşleşen sunucu/kapalı-test güncellemesi. Kullanıcı commit/push
