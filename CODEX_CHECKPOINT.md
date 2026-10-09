@@ -2,7 +2,221 @@
 
 Güncelleme tarihi: 9 Ekim 2026
 
-## En güncel devam noktası — kapsamlı savaş audit + insan önceliği + ses yerelde
+## En güncel kullanıcı akışı — PGS/OAuth yayın hazırlığı; kod ve canlı sürüm korunur
+
+Kullanıcı yayın altyapısını önce tamamlamak, mevcut kapalı test sürerken
+post-v4 kod güncellemelerini korumak, tester geri bildirimi sonrasında ayrı
+sunucu güncellemesi ve yeni AAB hazırlamak istiyor. Bu karar mevcut canlı
+sunucuya ödeme katmanı uygulama veya ürünleri etkinleştirme onayı değildir.
+
+- Yerel HEAD `ea25c1c92489ff4de484f2700da50bcb41084b32`; uygulama kaynaklarında
+  HEAD'e göre kayıtsız değişiklik yok. Post-v4 değişiklikler commitlerde korunur.
+  Canlı r13 ve Play v4 yerine yeni deploy/AAB bu panel hazırlığında yapılmadı.
+- Son PGS özellik ekranlarında iki dilde GRIDSHARD, mevcut TR/EN açıklamaları
+  ve Strateji kategorisi kaydedildi. Kullanıcı varsayılan dili Türkçe yapıp
+  kaydettiğini bildirdi. Son Yayınlama ekranı beş Android/bir oyun sunucusu
+  credential için **tr-TR yerel ayarında ad eksik** gösteriyor; Yayınla pasif.
+  Sıradaki adım mevcut credential'ın Türkçe ad alanını doğrulayıp GRIDSHARD
+  ile tamamlamak; client ID/paket/SHA/sırlar değişmez ve kimlikler silinmez.
+  Kullanıcının dil geçişi denemesinde grafik alanı ortak çıktı; önceki ayrı
+  dil grafiği/ters kayıt yorumu yanlıştı. Varsayılan Play mağaza girişinin
+  aynı Türkçe grafiği kullanılacak. Yeni nesil kimlikler açık, Recall ve
+  Kaydedilmiş oyunlar kapalı kalır. Tüm yayın engelleri henüz kalkmış sayılmaz.
+- Cloud Branding'de ad GRIDSHARD; bağlantılar ve yetkili alanlar boş görüldü.
+  Ana sayfa/gizlilik HTTPS200, `/terms/` HTTPS404: olmayan kullanım şartları
+  bağlantısını girmeyin. Mevcut Data Access kapsamları ve alan sahipliği,
+  OAuth üretim/marka yayını öncesinde ayrıca doğrulanacak.
+- PGS yayını, OAuth üretim durumu ve uygulamanın Play üretim dağıtımı ayrı
+  kapılardır. Henüz hiçbir yayın düğmesine basıldığı doğrulanmadı. Kart,
+  deneme, Cloud Billing, yeni anahtar/kapsam/IAM izni eklenmez.
+- Ayrıntılı devam planı: `docs/PLAY_PUBLISHING_READINESS_20261009.md`.
+  Sonraki canlı geçişte taze onay/yedek/yalıtılmış test kapıları yeniden gerekir;
+  yeni AAB sürüm kodu güncel Play kaydıyla doğrulanıp kullanılmamış daha yüksek
+  bir değer seçilir. Tester katılımı ve geri bildirim koşulları ayrıca doğrulanır.
+
+## En güncel devam noktası — kullanıcı ücretli Cloud istemiyor; AWS + API + periyodik iade
+
+9 Ekim, sonraki kullanıcı kararı: **Cloud Billing hesabı/kart/ücretsiz deneme
+açılmaz.** Mevcut Google projesi, Play API, billing servis hesabı, dar AWS WIF
+ve PGS/OAuth ayarları korunur. Pub/Sub RTDN yerine mevcut tek-seferlik ürünlerin
+iadeleri AWS üzerinde Voided Purchases API ile düzenli denetlenir. WIF-only
+`StoreVerifiers` geçerlidir; önceki RTDN-only constructor ret sonucu RTDN'nin
+her satın alma için zorunlu olduğu anlamına gelmez.
+
+- Yeni **uygulanmamış** opt-in `docker-compose.google-play-polling.yml`: API
+  için tarama1800 sn, RTDN audience/sender boş. Mevcut WIF katmanından sonra
+  eklenir; sır, reklam/test kipi, ürün, kaynak imaj veya Android paketi değişmez.
+- Belgeler ücretsiz API/kimlik yoluyla süreli Cloud denemesini ayırır. IAM API
+  ücretsiz; API kotaları vardır. İade API'si belgelenen6000/gün/30 per30sn;
+  olağan tek sayfalı30dk tarama yaklaşık48/gün, tester başına değildir.
+  Gerçek proje quota değerleri ayrıca doğrulanmadı. Süresiz fiyat/limitsiz
+  kullanım garantisi verilmez; Cloud hizmeti otomatik etkinleştirilmez.
+- İade **anlık değildir**; Google API'ye yansıma +2dk bitiş payı/tarama/hata
+  gecikmesi vardır. Son başarılı tarama izlenir, başarısız/stale tarama operatör
+  işi ister.29gün lookback'ten uzun kesinti tam telafi sayılmaz. Geliştirici
+  Google'da revoke seçmeden iade ederse kayıt API'de görünmez. Google'ın ek
+  RTDN önerisi ve bu yöntemin abonelik yaşam döngüsüne yetmemesi belgede açık.
+- Yerel WIF/verification/reconciliation/atomic refund/operator katman testleri
+  **142 geçti**. İki yeni WIF-only tam constructor/checkpoint testinin RTDN
+  değişkenleri hem yokken hem boşken çalışması doğrulandı. Token expiry/cache,
+ 401/403 invalidation ve sahte/doğrulanmamış alım ret kontrolleri korunur.
+  Testler gerçek cihaz satın alması veya üretim imajı kanıtı değildir.
+  Özel test-deps yalnız ignored artifacts'te: google-auth2.61.0,
+  cryptography46.0.7; ilk import adı hatası düzeltildi, Windows TEMP izin
+  sorunu yeni workspace geçici yolu ile giderildi.
+- Git SSH banner zaman aşımı verdi; TCP22/banner ve TLS doğrulaması açık
+  Windows CA deposuyla HTTPS200/ok görüldü. Aynı ED25519 pin/anahtarla Windows
+  OpenSSH erişti. AWS/SSH izinleri değiştirilmedi. `sudo -n docker` gerekir;
+  ubuntu Docker grubuna eklenmedi. API/bakım/PG17/Redis SHA pinleri aynı.
+- Mevcut r13 imajıyla sınırlı yalıtılmış PG17/Redis/WIF-only330sn/restart/restore
+  provası **geçti** (9 Ekim 11:52 UTC). Canlı ağ/DB/sır kullanılmadı;
+  localhost-only API/PG, yeni test ağı, PG256MB/Redis64MB/API320MB sınırları.
+  Özel WIF config önce eski SHA ile doğrulanır, yalnız yalıtılmış UID10001/0400
+  kopyası salt okunur bağlanır; canlı secrets dizinine kopyalanmaz. İlk hazırlık
+  host test aracında FastAPI eksikliği nedeniyle API başlamadan durdu, kendi
+  PG/Redis/ağ/config kopyasını temizledi, production ID/starttime aynıydı.
+  Eksik araç bağımlılığı yalnız özel test klasörüne kondu. Ardından salt-okunur
+  fixture klasöründeki nested mount hedefi boş dosyayla ve probe import'u
+  `server.app` ile düzeltildi; güvenlik kısıtları gevşetilmedi. Gerçek yalıtılmış
+  tarama ve cold/cache/forced-expiry refresh geçti. 330sn soak sırasında kaynak
+  IP değişip SSH koptu; bu deneme tam başarılı sayılmadı. Kullanıcı yeni dar
+  SSH /32 kuralını kaydedince erişim döndü. Sonradan önceki geçici ağ/kapsayıcı/
+  WIF kopyasının temizlendiği ve canlı dört ID/starttime'ın aynı kaldığı görüldü.
+  Bağlantıdan bağımsız özel log/JSON kaydıyla beşinci deneme host umask077'nin
+  sahte fixture secrets dizinini700 yapması nedeniyle durdu; kaynaklarını
+  temizledi. Yalnız fake fixture klasöründe açık755 chmod eklendi, gerçek WIF
+  dosyası UID10001/0400/salt-okunur kaldı. Altıncı denemede gerçek WIF cold/cache/
+  forced-expiry refresh ve iade taraması ilk açılış, API restart ve boş hedef
+  restore sonrası geçti. 330sn/33 başarılı lease/profil kontrolü, ordinary ve
+  reviewer fixture profil/token korunması doğrulandı. PostgreSQL checkpoint
+  restartta aynı kaldı; restore'da API açılmadan önce kaynakla birebir eşleşti.
+  Sonradan geçici test kapsayıcı/ağ/fixture dizini/WIF kopyası yokluğu ayrıca
+  doğrulandı. Kalıcı özel test logları/dependency/helper dosyaları operatör
+  klasöründe korunur. Canlı dört ID/starttime aynı; dış HTTPS200/ok, Redis lease
+  hazır, canlı iade kontrolü **disabled**. Yerel özel proof: ignored
+  `artifacts/google-play-billing-20261009/attempt-6-result.json`, `attempt-6.log`.
+  Gerçek bir saatlik token süresi beklenmedi; expiry testi
+  özel probe nesnesinin cache süresini eşik altına çekip gerçek refresh yapar.
+- Kullanıcının 9 Ekim ürün listesinde 10 doğru kimlik var, **0 etkin satın alma
+  seçeneği/teklif**. `gridshard.flux_120` ayrıntısı: `standard`, Buy, eski sürüm
+  uyumlu, Taslak; yalnız Türkiye, 29,99 TL. Liste diğer dokuz fiyatı doğrulamaz.
+  Kapalı testin tüm ülkelere açılması ürün satış bölgelerini açmaz.
+- Lisans testi ekranında yalnız 1 kişilik `geliştirici` listesi seçili;
+  11 kişilik `GRIDSHARD Test` seçili değil. Kullanıcı telefonunda Play'den
+  indiren hesabın seçili geliştirici hesabıyla aynı olduğunu teyit etti.
+  Gerçek ödeme penceresinde test kartı/banner henüz görülmedi. Diğer kapalı
+  tester'ların satın almaları lisans testi seçilmeden ücretsiz sayılmaz.
+- **Canlı ödeme kapalı.** Live env/mount/restart/deploy, Cloud Billing/RTDN
+  bağlantısı, IAM değişikliği, ürün etkinleştirme veya gerçek consume/refund yok.
+  Gerçek lisans-test cihazı ve pending/interrupt/replay/tekil teslim/tüketim/iade
+  kanıtı kalır. Yalıtılmış prova geçti; taze canlı geçiş onayı hâlâ alınmadı.
+  Kullanıcının yeni savaş kodu bu config-only ödeme işine eklenmez; commit/push
+  kullanıcıda, CLAUDE_CHECKPOINT kullanıcı değişikliği korunur.
+
+## Önceki 9 Ekim devam noktası — RTDN hazırlığı ve Cloud Billing kontrolü
+
+9 Ekim iş bilgisayarı. Kullanıcı yarım kalan gerçek mağaza satın alma kurulumuna
+devam etti. Güncel kaynak-IP `/32` SSH kuralı kullanıcı tarafından eklenince
+ED25519 parmak izi eski bağımsız kayıtla birebir eşleşti; sıkı pinli SSH başarılı.
+IP/özel anahtar yolu izlenen dosyalara yazılmadı. AWS kuralı ajan tarafından
+değiştirilmedi; yeni geniş izin, özel anahtar veya metadata ayarı yok.
+
+- Canlı image hâlâ `sha256:3064683905f36f88c8aded85c0a27d2be900ad84ac622ed6ec59405ed30fd4d1`;
+  r13 ve mevcut dört Compose katmanı korunuyor. API/PG17/Redis sağlıklı;
+  dış HTTPS `/health` **200 / ok**. Reklam `live`, SSV1; sahte ödeme/reklam0.
+- Önceki özel host WIF probe'u çalıştırılmadan önce okundu. Auth modülü mevcut
+  kaynakla LF-normalized SHA üzerinden aynı; config SHA eski bağımsız pinle aynı.
+  Gerçek IMDSv2 → Google STS **200** → billing SA impersonation **200**;
+  kısa ömür/token sınırı ve bellek cache yeniden doğrulandı. Raw sır/token/body yok.
+- Play `purchases/voidedpurchases` sınırlı finans okuması artık **200** (0 kayıt);
+  önceki **401 permissionDenied engeli kalktı**. Ürün katalog liste API'si hâlâ
+  **403**, nedeni netleşmedi; buna dayanarak katalog/admin yetkisi genişletilmez.
+  Finans okuması gerçek satın alma teslimi/tüketim/iade testi değildir.
+- Canlı API kapsayıcısından IMDSv2 token/instance-id/rol-adı kontrolleri **200**;
+  beklenen instance/rol eşleşti. Bu kapsayıcı kontrolünde rol credential gövdesi
+  veya Google token istenmedi; hostta başarılı WIF'in kapsayıcıda tam token testi
+  yerine geçtiği iddia edilmez. IMDS hop-limit değişikliği gerektiren hata görülmedi.
+- Canlı API'de Google Play config/package ve RTDN audience/sender ayarları yok;
+  WIF opt-in katmanı uygulanmamış, **gerçek ödeme hâlâ kapalı**. Ürünlerin güncel
+  etkinlik/fiyat durumu bu tur panelden doğrulanmadı; son kanıt taslak/0 etkin.
+- Kullanıcının sonraki create-topic/ayrıntı ekranları doğru mevcut project ID'yi
+  `project-37a84396-b930-4141-b4d` ve oluşturulan tam konu adını doğruladı:
+  `projects/project-37a84396-b930-4141-b4d/topics/gridshard-play-rtdn`.
+  Varsayılan abonelik/schema/ingestion/topic-retention/export/transform kapalı,
+  Google-managed encryption seçiliydi. Konu üzerinde yalnız Google Play'in
+  `google-play-developer-notifications@system.gserviceaccount.com` principal'ına
+  `Pub/Sub Publisher` kullanıcı tarafından kaydedildi; izin paneli bunu gösterir.
+  Oluşturma anındaki abonelik yok/mesaj kaybı uyarısı aşağıdaki abonelikle
+  giderildi; Play'de RTDN etkinleştirme/test yayını henüz yapılmaz.
+- Kullanıcı ayrı `gridshard-play-rtdn-push` hizmet hesabını oluşturdu. Liste
+  `gridshard-play-rtdn-push@project-37a84396-b930-4141-b4d.iam.gserviceaccount.com`
+  için Enabled / No keys gösteriyor; mevcut billing hesabı korunur. Oluştururken
+  proje rolleri/kullanıcı erişimi boş bırakılması istendi; gerçek IAM policy
+  ayrıca okunmadı. Sıradaki dar izin: yalnız bu push hesabının policy'sinde
+  `service-376018782491@gcp-sa-pubsub.iam.gserviceaccount.com` Pub/Sub agent'ına
+  `roles/iam.serviceAccountOpenIdTokenCreator` (yalnız getOpenIdToken).
+  Kullanıcı formu paylaştıktan sonra kaydetti; Google-provided role grants
+  gösterimi açılınca beklenen principal/OIDC rolü bu push hesabının ekranında
+  göründü (OIDC satırında inheritance boş). Cloud Pub/Sub Service Agent rolü
+  projeden kalıtılmış ayrı satırdır, değiştirilmez. Yeni binding ekran kanıtıyla
+  doğrulandı; raw IAM policy veya gerçek push token/teslim testi henüz okunmadı.
+  Proje geneli Token Creator, billing hesabına binding veya key eklenmedi.
+  Google Pub/Sub dokümanı push için getOpenIdToken'ı yeterli kabul eder;
+  IAM OIDC-only rolü bu izni içerir. Kullanıcı aboneliği oluşturdu;
+  başarılı oluşturma/active ve kaydedilmiş Details ekranları doğrulandı:
+  `gridshard-play-rtdn-sub`, mevcut RTDN konusu, Push;
+  endpoint/audience `https://play.gridshardgame.com/billing/google/rtdn`,
+  authentication açık ve mevcut RTDN Push SA; payload unwrapping kapalı.
+  Exponential retry 10–600 sn, ack30 sn, retention7 gün, expiration Never;
+  dead lettering/exactly-once/message-ordering/acked-retention kapalı.
+  Gerçek teslim testi ve Play RTDN bağlantısı henüz yok; active görünmesi
+  sunucunun bildirimi aldığına kanıt değildir. Canlı RTDN config kapalı
+  olduğundan erken test yayını yapılmaz.
+  Yeni IAM/kaynak yazısı, ürün etkinleştirme, canlı
+  ödeme geçişi ve satın alma/iade testi ayrı açık onay kapıları olarak korunur.
+- Yerel kaynak incelemesi ve ağsız constructor probe'u: RTDN ile satın alma
+  doğrulayıcısı aynı `GRIDSHARD_GOOGLE_PLAY_PACKAGE_NAME` değişkenini kullanır.
+  Yalnız paket + RTDN audience/sender açılırsa `StoreVerifiers.from_environment`
+  eksik satın alma kimliği nedeniyle ValueError verir; r13 bu kısmi ayarla
+  başlatılmaz. İlgili auth kaynakları frozen804da6f ile aynı. Aynı r13 imajıyla
+  **RTDN yolunda** ilerlemek WIF + RTDN'nin birlikte yapılandırılmasını gerektirir; bu işlem
+  satın alma doğrulamasını da açar, bildirim-only geçiş diye sunulmaz.
+  Canlı değişiklik öncesi yalıtılmış imaj/token/restart/expiry/backup kontrolleri
+  ve taze açık geçiş onayı hâlâ gerekir; ürün etkinleştirme ayrı kalır.
+- Yerel sahte HTTP/veri testleri: store verification + reconciliation + atomic
+  refund **60 geçti**. İlk çalışma yerel venv'de pytest bulunmadığı, sonraki
+  denemeler Windows geçici klasör izinleri nedeniyle tamamlanmadı; sistem
+  Python ve doğrulanmış yeni özel pytest yolu ile exit0. Bunlar gerçek Google
+  teslimi, canlı imajın yalıtılmış PG17/Redis testi veya gerçek satın alma değildir.
+- Kullanıcı kart/banka bilgilerini erteleyerek devam etmek istedi. Aynı proje
+  Billing / Linked account ekranı **This project has no billing account**
+  ve projenin hiçbir faturalandırma hesabına bağlı olmadığını gösteriyor.
+  Konu/abonelik oluşturulmuş olması aktif Cloud Billing veya çalışan RTDN
+  teslimine kanıt sayılmaz. Resmî Pub/Sub Console quickstart ve Free Tier
+  koşulları aktif Cloud Billing bağlantısı ister; gerçek bildirim akışı için
+  bu ayrı kapı tamamlanmalıdır. Play/AdMob gelir alma IBAN'ı ile Cloud hizmet
+  bedeli ödeme yöntemi farklıdır. Hesap/deneme/kart/proje bağlantısı yapılmadı.
+  Manage billing accounts ekranında önce seçili Cloud organization filtresi,
+  sonra kullanıcı `None selected` ile kuruluş filtresini kaldırdı. Her iki
+  ekranda da hesap satırı yok, yalnız Add billing account var. Bu oturumun
+  erişebildiği varsayılan aktif hesap listesinde mevcut hesap bulunamadı;
+  başka Google oturumlarının/kapalı hesapların yokluğu iddia edilmez. Kullanıcı
+  bireysel geliştirici olduğunu doğruladı; şirket/kuruluş ödeme profili açılmaz.
+  Gerçek RTDN akışı için yeni Cloud Billing kurulum/ödeme yöntemi kapısı
+  kullanıcı kararını bekler. Hesap oluşturma/bağlama veya deneme başlatma
+  ayrıca onaylanmadı; kart girişi yalnız Google'ın resmî panelinde yapılır.
+  Kaynaklar: https://docs.cloud.google.com/pubsub/docs/publish-receive-messages-console
+  ve https://docs.cloud.google.com/free/docs/free-cloud-features .
+- Sunucu salt-okunur yeniden envanteri: canlı servisler sağlıklı, yalnız mevcut
+  iki production ağı + varsayılan Docker ağları var; API/bakım/PG17/Redis image
+  kimlikleri mevcut ve sabitlenmiş, WIF config SHA eski pinle aynı. Yalıtılmış
+  WIF + RTDN imaj/PG17/Redis/restart/restore çalışması henüz başlatılmadı;
+  bu tur yeni uzak konteyner/ağ/birim, config kopyası veya mount oluşturulmadı.
+- Oyuncu verisi okunmadı/değiştirilmedi; deploy/build/restart/commit/push yok.
+  Yerel özel kanıt `artifacts/google-play-billing-20261009/READINESS.json`.
+  Son savaş audit kaynakları commit edilmiş olsa da bu canlı r13/v4'e eklenmedi.
+
+## Önceki yerel devam noktası — kapsamlı savaş audit + insan önceliği + ses yerelde
 
 9 Ekim. Kullanıcı tüm savaş backend/frontend koduna debugging, refactoring,
 review/static lint, bağımsız peer review ve ardından 10 sn insan öncelikli

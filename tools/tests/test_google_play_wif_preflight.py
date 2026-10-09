@@ -90,3 +90,14 @@ def test_source_and_operator_templates_remain_release_inputs():
     assert is_release_input("server/app/google_play_wif.py")
     assert is_release_input("docker-compose.google-play-wif.yml")
     assert is_release_input("tools/google_play_wif_preflight.py")
+
+
+def test_polling_only_layer_changes_no_identity_secrets_ads_or_test_modes():
+    yaml = pytest.importorskip("yaml")
+    layer = yaml.safe_load((ROOT / "docker-compose.google-play-polling.yml").read_text(encoding="utf-8"))
+    assert layer == {"services": {"relay-web": {"environment": {
+        "GRIDSHARD_STORE_RECONCILE_INTERVAL_SECONDS": "1800",
+        "GRIDSHARD_GOOGLE_RTDN_AUDIENCE": "",
+        "GRIDSHARD_GOOGLE_RTDN_SERVICE_ACCOUNT": "",
+    }}}}
+    assert is_release_input("docker-compose.google-play-polling.yml")

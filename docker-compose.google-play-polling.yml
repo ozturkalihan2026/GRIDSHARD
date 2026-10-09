@@ -1,0 +1,9 @@
+# Optional API-only refund strategy; apply AFTER google-play-wif.yml.
+# User chose no Cloud Billing / Pub/Sub on 9 October 2026.
+# This is local preparation, not authorization to enable purchases live.
+services:
+  relay-web:
+    environment:
+      GRIDSHARD_STORE_RECONCILE_INTERVAL_SECONDS: "1800"
+      GRIDSHARD_GOOGLE_RTDN_AUDIENCE: ""
+      GRIDSHARD_GOOGLE_RTDN_SERVICE_ACCOUNT: ""

@@ -1,4 +1,4 @@
-# Claude devir notu — 7 Ekim 2026 (iş bilgisayarı)
+# Claude devir notu — 8 Ekim 2026 (iş bilgisayarı)
 
 Depo iş bilgisayarına `894bb0e` ile geldi; ağaç temizdi ve kalite denetimi bu commit için yeşil. Canlıda sunucu r12, Play dahili testte v3 paketi var; hedef kitle 13 yaş ve üzeri. Evde yapılan analitik yaş sorusu ile mağaza / Kartlar / takım isteği arayüz düzeltmeleri depoda ama **yayınlanmadı** (sunucu r13 ve v4 paketi evde yapılır; aşağıda). **7 Ekim'de iş bilgisayarında Play Console mağaza girişinin metinleri ve görselleri hazırlandı; konsola yüklenmedi** (hemen aşağıda). Aynı gün mağaza sandıklarına **günlük alım sınırı** eklendi (sunucu + istemci; yayınlanmadı; ikinci bölüm). Kullanıcı mağaza girişini doldurdu ve **kapalı test** kanalına geçmek üzere (üçüncü bölüm). Commit bekleyenler aşağıda "Commit bekleyen dosyalar" başlığında. Commit'i kullanıcı yapar. Aynı ağaçta Codex de çalışıyor (`CODEX_CHECKPOINT.md`); o dosyaya ve Codex'in değişikliklerine dokunulmaz.
 
@@ -33,6 +33,16 @@ Ekran: Kullanıcı sayısını artırın → Play Store'daki varlığı → Mağ
 2. İngilizce giriş istenirse: Mağaza girişleri → çeviri ekle → İngilizce (en-US); metinler ve görseller `en-US/` klasöründe.
 3. Slogan kararı verildi (7 Ekim, kullanıcı): slogan "Devreni kur. Stratejini konuştur." / "Build your circuit. Make your strategy count." Eski slogan oyundan ve belgelerden kaldırıldı: açılış ekranı, sayfa başlığı, web bildirimi, `/identity` uç noktası, çeviriler, marka belgesi. Özellik grafiği zaten bu sloganla üretilmişti. **Bu değişiklik sunucu ve istemci kodundadır; r13 ve yeni paket bu commit'ten sonra üretilmelidir.** Açılış ekranında gerçek cihazda görülmedi.
 4. Commit + push: liste aşağıda "Commit bekleyen dosyalar" başlığında.
+
+## 8 Ekim: kapalı test başladı (kullanıcı bildirdi)
+
+Kullanıcı: "kapalı testi başlattık." Hangi sürümle ve kaç test kullanıcısıyla başladığı Claude tarafından görülmedi. Depo `d9416ee` (`main` = `origin/main`, ağaç temiz); `config/android-production.json` sürüm kodu 4.
+
+- **Yayın durumu Codex'in kaydında:** `CODEX_CHECKPOINT.md` başına göre 8 Ekim'de evde sunucu **r13 canlıya alındı** ve imzalı **v4** APK/AAB üretildi; gerçek ödeme kapalı. Ayrıntı orada ve `CODEX_HANDOFF_R13_V4.md` içindeki 10–12. bölümlerde. Claude canlıyı ve paketi bu oturumda doğrulamadı; 7 Ekim 14.37'den sonraki commit'leri (`dd76af8` "add admob" ve sonrası) okumadı.
+- **Üretime geçiş koşulu (Google'ın yardım sayfası `support.google.com/googleplay/android-developer/answer/14151465`, 8 Ekim'de okundu):** 13 Kasım 2023'ten sonra açılmış **kişisel** geliştirici hesaplarında kapalı testte **en az 12 test kullanıcısı kesintisiz en az 14 gün** katılımcı kalmalı; sonra Kontrol panelinden üretim erişimine başvurulur. Hesabın bu kapsama girip girmediğini kullanıcı bilir (Play Console'da Üretim bölümünün kilitli olması bunun işaretidir).
+- **Başvuru formu üç bölüm sorar:** kapalı test (kullanıcı bulmanın kolaylığı, kullanıcıların bütün özellikleri kullanıp kullanmadığı, kullanımın beklenen oyuncu davranışına benzeyip benzemediği, geri bildirimin özeti ve nasıl toplandığı), oyun (hedef kitle, oyunu özgün kılan şey, ilk yıl için tahmini yükleme aralığı), üretime hazırlık (testte öğrenilenlere göre yapılan değişiklikler, hazır olduğuna nasıl karar verildiği). İnceleme çoğunlukla 7 gün ya da daha kısa sürer; 12'den az katılımcı ya da yetersiz kullanım varsa Google testin sürmesini isteyebilir.
+- **14 gün boyunca tutulacak kayıt (başvuruda gerekecek):** katılımcı sayısı ve 12'ye ulaşılan gün; gelen geri bildirimler (tarih, cihaz, sorun, ne yapıldı); test sırasında yapılan değişiklikler. Geri bildirim Play Console'da İzleyin ve geliştirin → Puanlar ve yorumlar → Test geri bildirimi altında da görünür.
+- **Dikkat:** katılımcı testten çıkarsa 12'nin altına düşülebilir; kullanıcılara 14 gün boyunca testte kalmaları söylenmeli. Açık test, üretim erişiminden sonra açılır.
 
 ## Yayın işi Codex'e devredildi (7 Ekim, kullanıcı kararı)
 

@@ -1,6 +1,6 @@
 # Google Play billing: keyless AWS workload authentication
 
-## Status and scope
+## Historical local preparation status and scope — 7 October 2026
 
 Prepared locally on 7 October 2026. The implementation is opt-in; the existing
 production environment and default `service_account` mode are unchanged.
@@ -24,6 +24,72 @@ information, financial-data and order/subscription permissions; do not add
 Play administrator/publishing or Cloud Owner/Editor privileges.
 
 ## Authentication behavior
+
+### Selected Android path — no paid Cloud service (9 October 2026)
+
+The user explicitly chose not to create/link a Cloud Billing account or start
+a free trial. Keep the existing Cloud project, Play API, billing service
+account, restricted AWS WIF trust and game-login OAuth configuration. These
+provide API identity, not Google-hosted compute. IAM API use is free; this
+path is not a time-limited Cloud trial. API quotas and account/service policies
+still apply; do not promise unlimited calls or permanent pricing.
+
+Do not confuse this workload identity with the separate OAuth Audience
+`Testing` status shown earlier for game login. OAuth testing has its own
+test-user/authorization restrictions, dependent on requested scopes; it is
+not a seven-day lifetime for the Cloud project or billing service account.
+Public game-login readiness is a separate release gate, not a reason to buy
+Cloud services or publish OAuth settings during this billing preparation.
+See [OAuth app audience](https://support.google.com/cloud/answer/15549945?hl=en).
+
+For the current **one-time** Android products, use Play Billing on the phone,
+AWS-hosted purchase verification/consumption and the existing periodic
+Voided Purchases reconciliation. `StoreVerifiers.from_environment()` accepts
+WIF without RTDN; reconciliation depends on the purchase verifier, not on a
+notification subscription. The earlier RTDN-only startup rejection does
+**not** mean WIF requires RTDN.
+
+Prepare the existing WIF layer plus `docker-compose.google-play-polling.yml`.
+The latter explicitly sets reconciliation to 1800 seconds and both RTDN
+identity settings to empty. Neither layer has been applied to production.
+Preserve the four existing production layers and ad/test settings. Do not
+link Play RTDN, publish test notifications, delete the prepared Pub/Sub
+resources or change IAM as part of selecting this route.
+
+Refund detection is **not real-time**: it occurs only after Google exposes the
+revoked purchase and a scan succeeds. The two-minute end margin and retries
+can add delay. Check `/health` reconciliation `enabled`, interval and last
+successful run; a stalled/erroring scan needs operator attention. Google
+returns only 30 days of voided purchases; our safe lookback is 29 days, so a
+long outage cannot be claimed fully recoverable. Developer refunds without
+Google's revoke option are not listed by this API. Google recommends RTDN as
+an additional best practice; the user-selected polling route does not provide
+the same notification guarantees, and is not a subscription-lifecycle design.
+
+The documented Voided Purchases limits are 6000 queries/day and 30 queries
+per 30 seconds, per package. At 1800-second intervals, an ordinary one-page
+day is about 48 queries, **not per tester/player**. Pagination/retries and
+purchase verification/consumption also use API quotas; confirm actual project
+limits in Console before scale-up. A quota failure is a retryable API failure,
+not permission to buy capacity or enable paid services automatically.
+
+References: [IAM pricing](https://cloud.google.com/iam/pricing),
+[Play API quotas](https://developers.google.com/android-publisher/quotas),
+[Voided Purchases limits and caveats](https://developers.google.com/android-publisher/voided-purchases).
+
+9 October verification: **142 local mocked regression tests passed**. The
+existing pinned r13 API/maintenance images then passed a disposable PG17/Redis
+drill: real WIF cold/cache/forced-near-expiry refresh and read-only refund scans
+on initial startup, API restart and restored startup; 330 seconds/33 successful
+lease/profile checks; ordinary/reviewer fixture profile/token preservation.
+The PostgreSQL reconciliation checkpoint was unchanged on restart and matched
+exactly after restoration into an empty target, before API startup. Temporary
+test containers/network/fixture/WIF copy were independently confirmed removed;
+private operator proof/logs remain retained. Production IDs/start times and
+configuration stayed unchanged, public health returned200/ok and live
+reconciliation remains disabled. No real elapsed one-hour expiry or physical
+device purchase/consumption/refund was tested. Live transition, fresh verified
+backup and product activation remain separate approval gates.
 
 The AWS EC2 workload's temporary role credentials are retrieved using IMDSv2.
 Google's auth library signs an AWS `GetCallerIdentity` request, exchanges it
@@ -199,9 +265,11 @@ candidate/image and CI verification; the earlier frozen r13 ZIP is unchanged.
 - Revalidate deployment/Compose/security boundaries and cold/restart/expiry
   behavior in the isolated image with PostgreSQL17/Redis and backup/restore.
   These production-image/external tests are not covered by local mocked HTTP.
-- Complete authenticated Pub/Sub RTDN, package/audience/sender verification
-  and voided-purchase reconciliation. WIF replaces outbound billing auth,
-  **not** the RTDN push OIDC verification or its subscription setup.
+- For the selected polling-only Android path above, prove a successful scan,
+  durable checkpoint/retry behavior, restart/restore and a license-test refund
+  revocation without RTDN. If RTDN is separately approved later, complete its
+  authenticated Pub/Sub delivery and package/audience/sender verification.
+  WIF never replaces RTDN push OIDC verification when RTDN is used.
 - Confirm license-test users and the actual test payment banner. A testing
   track alone does not make payments free. Product/offer activation is a
   separate decision; do not activate drafts or launch real sales implicitly.

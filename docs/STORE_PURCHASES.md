@@ -1,5 +1,29 @@
 # Gerçek para alımı ve ödüllü reklam
 
+## 9 Ekim 2026 — seçilen Android satın alma yolu: ücretli Cloud olmadan
+
+Kullanıcı Cloud Billing/ücretsiz deneme/kart eklemeyi istemiyor. Mevcut Cloud
+projesi, Play Developer API, billing servis hesabı ve dar AWS WIF kimliği
+korunur; sunucu mevcut AWS'de kalır. Telefon Google Play Billing ile öder,
+sunucu Google'dan doğrulayıp tekil kalıcı teslimden sonra tüketir. Mevcut tek
+seferlik ürünlerin iadeleri, RTDN olmadan mevcut Voided Purchases mutabakatıyla
+kontrol edilir. Google'ın RTDN önerisi kaldırılmış değildir; kullanıcı anlık
+bildirim yerine gecikmeli denetimi seçti. Bu yol otomatik yenilenen abonelik
+yaşam döngüsü için yeterli sayılmaz.
+
+Yerel opt-in katmanlar: `docker-compose.google-play-wif.yml` ardından
+`docker-compose.google-play-polling.yml` (1800 sn, RTDN ayarları boş).
+**Canlıya uygulanmadı; gerçek ödeme hâlâ kapalı.** İlk kontrol yaklaşık bir
+dakika sonra, sonraki kontroller 30 dakikada bir; API'ye yansıma, iki dakikalık
+bitiş payı ve hata/yeniden deneme nedeniyle 30 dakikada kesin iade sözü verilmez.
+Başarılı son tarama ve kalıcı checkpoint izlenir; 29 günlük lookback'ten uzun
+kesinti tam telafi edilemeyebilir. İade testi Google'da revoke seçeneğiyle
+yapılmalıdır; revoke yapılmayan geliştirici iadeleri listelenmez.
+Yalıtılmış imaj/PG17/Redis ve gerçek lisans-test cihazı kontrolleri, ürün
+etkinleştirme kararı ve taze canlı geçiş onayı korunur.
+
+Ayrıntılar ve kota/maliyet ayrımı: [Anahtarsız AWS + periyodik iade yolu](GOOGLE_PLAY_AWS_WIF.md#selected-android-path--no-paid-cloud-service-9-october-2026).
+
 ## Güncel — kalıcı Android / r10 (4 Ekim 2026)
 
 SSV düzeltmesi aynı production verileriyle r10'a aktarıldı. R9'un gerçek callback

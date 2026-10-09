@@ -1,5 +1,85 @@
 # Codex için devir notu — sunucu r13 ve Android paketi (sürüm kodu 4)
 
+**9 Ekim sonraki aktif akış — önce yayın altyapısı:** Kullanıcı PGS/OAuth
+hazırlığını tamamlamak, post-v4 kodlarını korumak ve gerçek tester geri
+bildiriminden sonra ayrı sunucu/AAB güncellemesi yapmak istiyor. Yerel HEAD
+`ea25c1c92489ff4de484f2700da50bcb41084b32`; uygulama kaynakları HEAD'e göre
+temiz. Bu tur deploy, AAB, ürün etkinleştirme veya canlı ödeme onayı yok.
+Son PGS özellik ekranlarında iki dilde GRIDSHARD/TR-EN açıklamaları/Strateji
+kaydedildi. Kullanıcı varsayılan dili Türkçe yapıp kaydettiğini bildirdi;
+Yayınlama beş Android/bir oyun sunucusu için **tr-TR ad eksik** gösteriyor.
+Mevcut credential'ların Türkçe adları tamamlanacak; ID/paket/SHA/sırlar korunur.
+Kullanıcının dil geçişi denemesinde grafik alanı ortak çıktı; önceki ayrı dil
+grafikleri/ters kayıt yorumu yanlıştı. Ana Play mağaza grafiğinin aynısı
+kullanılır. Kimlik/Recall/Saved Games ayarları değişmez. Cloud kapsam/alan sahipliği ve gerçek kullanım
+şartları sayfası henüz açık kapı; `/terms/` 404, sahte bağlantı girilmez.
+PGS/OAuth/Play uygulama üretim yayını birbirinden ayrıdır ve henüz doğrulanmadı.
+Sıradaki kullanıcı adımı ve sınırlar: `docs/PLAY_PUBLISHING_READINESS_20261009.md`.
+Canlı geçiş için taze onay/yedek ve yayın kapıları yeniden gerekir.
+
+**9 Ekim en yeni karar — ücretli Cloud yok:** Kullanıcı Cloud Billing/kart/
+deneme istemiyor ve ücretsiz yolu seçti. Mevcut proje, Play API, billing SA,
+AWS WIF ve PGS/OAuth korunur; mevcut tek-seferlik ürünlerde AWS satın alma
+doğrulaması/tüketimi + periyodik Voided Purchases iade kontrolü kullanılır.
+RTDN zorunlu değildir; önceki RTDN-only startup ret sonucu WIF-only yolu
+engellemez. Yeni opt-in `docker-compose.google-play-polling.yml` yerelde
+hazır (1800sn, RTDN değişkenleri boş), canlıya uygulanmadı. İadeler anlık
+değil, başarılı sonraki taramada; stale/hata/29gün kesinti/revoke caveat'leri
+`docs/GOOGLE_PLAY_AWS_WIF.md` ve `docs/STORE_PURCHASES.md` içinde.
+Yerel **142 test geçti**. Windows OpenSSH aynı pinle bağlandı; Git SSH banner
+timeout ve Docker için sudo ihtiyacı nedeniyle güvenlik kuralı/grup değişmedi.
+Mevcut r13 imajında ayrı PG17/Redis/WIF-only330sn/restart/restore provası
+**geçti** (9 Ekim11:52 UTC): 33 lease/profil kontrolü, gerçek WIF cold/cache/
+zorlanmış expiry refresh ve iade taraması üç açılışta başarılı. PostgreSQL
+checkpoint restartta ve boş hedef backup/restore'da birebir korundu; ordinary/
+reviewer fixture profil/token da korundu. Tam bir saatlik gerçek token expiry
+beklenmedi; cache eşiği zorlanıp gerçek refresh yapıldı. Hazırlık bağımlılık/
+mount/import/umask hataları ve SSH kaynak-IP değişimi checkpoint'te kayıtlı.
+Güvenlik kısıtları gevşetilmedi, gerçek WIF UID10001/0400/salt-okunur. Son geçici
+ağ/kapsayıcı/fixture/WIF kopyası temizliği ayrıca doğrulandı; özel proof/loglar
+korundu. Canlı dört ID/starttime aynı, HTTPS200/ok ve lease hazır; canlı
+mutabakat disabled. Taze canlı geçiş onayı henüz yok.
+Yeni ekranlarda 10 ürünün etkin seçenek sayısı0; 120 Akı standard/Buy/legacy
+compatible/Taslak ve yalnız Türkiye29,99 TL. Diğer fiyatlar teyit edilmedi.
+Lisans testinde geliştirici1 seçili, GRIDSHARD Test11 seçili değil; telefonun
+indiren hesabının seçili hesapla aynı olduğu kullanıcı teyidi var. Ödeme
+test kartı/banner henüz kanıtlanmadı. **Gerçek ödeme hâlâ kapalı; yeni canlı
+geçiş/ürün etkinleştirme/lisans cihazı testi ayrı onay ve kanıt ister.**
+
+**9 Ekim ödeme devamı:** Güncel dar SSH kaynak kuralından sonra pinli SSH yeniden
+başarılı; canlı r13 image ve dört Compose katmanı, reklam live/SSV1/test0 korunuyor.
+Özel host WIF probe'unda STS/SA impersonation200 ve Play finans/iade okuması artık
+**200**; aşağıdaki 8 Ekim401 sonucu tarihsel. Katalog listesi403 sürüyor; izin
+genişletilmedi. API kapsayıcısı IMDSv2/instance/rol-adı200 ve dış HTTPS sağlık200.
+Google Play/WIF ve RTDN canlı ayarları henüz yok; **ödeme hâlâ kapalı**. Kullanıcı
+doğru mevcut projede `gridshard-play-rtdn` konusunu ve Google Play'e yalnız konu
+üzerinde Publisher iznini kaydetti; ayrı `gridshard-play-rtdn-push` hesabı
+Enabled / No keys. Yeni push hesabı üzerinde Pub/Sub agent'ına dar OIDC-only
+token izni kullanıcı tarafından kaydedildi ve ekranla doğrulandı.
+`gridshard-play-rtdn-sub` authenticated Push aboneliği oluşturuldu/active;
+kaydedilmiş endpoint/audience aynı `/billing/google/rtdn`, push SA doğru,
+unwrapping0, retry10–600sn, ack30sn, retention7gün, Never expire doğrulandı.
+Gerçek teslim testi ve Play RTDN bağlantısı yapılmadı. Mevcut r13 auth kodunda
+RTDN ile satın alma aynı paket değişkenini paylaşır; RTDN-only eksik auth
+config startup'ta reddedilir (ağsız probe doğrulandı). RTDN kullanılacaksa aynı
+r13 imajında WIF + RTDN birlikte açılır; bu satın alma doğrulamasını da etkinleştirir, canlı
+değişiklik için yeni açık onay gerekir. Yerel sahte HTTP/veri testleri60 geçti;
+gerçek teslim/yalıtılmış üretim imajı kanıtı değildir. Sonra yalıtılmış token/restart/iade kontrolleri
+→ ayrı canlı geçiş/ürün etkinleştirme/lisans testi onayları sıradadır. Deploy,
+oyuncu verisi, APK/AAB veya ürünlerde değişiklik yapılmadı. Yeni savaş kaynakları
+commit edilmiş olsa da canlı r13/v4'e sessizce eklenmez. Ayrıntı CODEX_CHECKPOINT'te.
+
+**9 Ekim sonraki Cloud Billing kontrolü:** Kullanıcı aynı proje Billing ekranını
+paylaştı: proje bir faturalandırma hesabına bağlı **değil**. Resmî Pub/Sub / Free
+Tier koşulları aktif Cloud Billing ister; konu/abonelik active görünümü gerçek
+teslimin kanıtı değildir. Kart/deneme/hesap bağlantısı veya canlı geçiş yapılmadı.
+Manage billing accounts kullanıcı tarafından salt-okunur kontrol edildi;
+`None selected` ile kuruluş filtresi kaldırılınca da aktif hesap listesi boş.
+Kullanıcı bireysel geliştirici; şirket ödeme profili kurulmaz. Yeni Cloud
+Billing/ödeme yöntemi kurulumu veya erteleme kullanıcı kararını bekler;
+hesap açma/bağlama/deneme onayı yok. Son yeniden SSH envanteri sağlıklı;
+yalıtılmış WIF + RTDN konteyner/PG17/Redis provası henüz başlatılmadı.
+
 **8 Ekim en yeni Codex sonucu:** exact commit `804da6f3` için CI beş iş yeşil.
 Taze `server-aws-20261008-billing-r13-candidate` kaynak ZIP'i
 `b0a2cb4fc9e9a1bf97035f918d273d59bb71cb592a0c61867bfc155f960951eb`;

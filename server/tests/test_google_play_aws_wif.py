@@ -18,8 +18,10 @@ from app.google_play_wif import (
     WifTokenError, _BoundedAuthRequest, load_aws_wif_config,
 )
 from app.player_profile import PlayerProfileService
+from app.platform_services import PlatformService
 from app.store_catalog import StoreError, process_purchase, store_account_token
-from app.store_verification import GooglePlayVerifier, StoreVerificationError
+from app.store_reconciliation import END_MARGIN_MS, StoreReconciler
+from app.store_verification import GooglePlayVerifier, StoreVerificationError, StoreVerifiers
 
 
 EMAIL = "billing@test-project.iam.gserviceaccount.com"
@@ -32,6 +34,7 @@ AUTH_ENV = (
     "GRIDSHARD_GOOGLE_PLAY_SERVICE_ACCOUNT_EMAIL", "GRIDSHARD_GOOGLE_PLAY_WIF_AUDIENCE",
     "GOOGLE_APPLICATION_CREDENTIALS", "AWS_ACCESS_KEY_ID", "AWS_SECRET_ACCESS_KEY",
     "AWS_SESSION_TOKEN", "AWS_REGION", "AWS_DEFAULT_REGION",
+    "GRIDSHARD_GOOGLE_RTDN_AUDIENCE", "GRIDSHARD_GOOGLE_RTDN_SERVICE_ACCOUNT",
 )
 
 
@@ -166,6 +169,39 @@ def test_real_google_auth_imdsv2_sts_impersonation_and_store_flow(monkeypatch, t
     assert network.iam_calls == 1
     assert all(request.extensions["timeout"]["connect"] == 10 for request in network.calls if request.url.host != "androidpublisher.googleapis.com")
     assert not any("oauth2.googleapis.com" in str(request.url) for request in network.calls)
+
+
+@pytest.mark.parametrize("rtdn_value", [None, ""])
+def test_wif_only_full_verifier_configuration_reconciles_without_rtdn(monkeypatch, tmp_path, rtdn_value):
+    """No Pub/Sub identity is needed for outbound verification or refund scans."""
+    network = FixtureNetwork()
+    configure(monkeypatch, config_file(tmp_path))
+    if rtdn_value is not None:
+        monkeypatch.setenv("GRIDSHARD_GOOGLE_RTDN_AUDIENCE", rtdn_value)
+        monkeypatch.setenv("GRIDSHARD_GOOGLE_RTDN_SERVICE_ACCOUNT", rtdn_value)
+    original = GooglePlayVerifier.from_environment
+    monkeypatch.setattr(GooglePlayVerifier, "from_environment", classmethod(
+        lambda cls: original(client_factory=lambda: network.client, wif_client_factory=lambda: network.client)
+    ))
+    verifiers = StoreVerifiers.from_environment()
+    assert verifiers.google_play is not None and verifiers.google_notifications is None
+    assert network.calls == []
+    state = PlatformService(tmp_path / "polling-platform.json")
+    now = time.time()
+    reconciler = StoreReconciler(
+        verifiers=lambda: verifiers, state=state, now_func=lambda: now,
+        handle_google_voided=lambda _item: pytest.fail("Empty fixture page has no refunds"),
+        handle_app_store_notification=lambda *_args, **_kwargs: pytest.fail("No Apple fixture"),
+    )
+    assert reconciler.enabled()
+    result = reconciler.run_once()["google_play"]
+    assert result["ok"] and result["seen"] == 0 and result["applied"] == 0
+    assert state.store_reconciliation_checkpoint("google_play") == int(now * 1000) - END_MARGIN_MS
+    assert network.iam_calls == 1
+    # A cold process retains its checkpoint without a push subscription.
+    restarted = PlatformService(tmp_path / "polling-platform.json")
+    assert restarted.store_reconciliation_checkpoint("google_play") == state.store_reconciliation_checkpoint("google_play")
+    assert not any("pubsub.googleapis.com" in str(request.url) for request in network.calls)
 
 
 @pytest.mark.parametrize("operation,status", [("verify", 401), ("verify", 403), ("voided", 403), ("consume", 401)])

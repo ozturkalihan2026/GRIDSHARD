@@ -257,10 +257,14 @@ reklam TFCD/G ve NPA; AD_ID/AdServices izinleri çıkarılmıştır. Kişiselle�
 yetişkin reklama geçiş yok. Play hedef yaşları, veri güvenliği ve gizlilik
 beyanları gerçek uygulama işlevleriyle ayrıca tutarlı tamamlanmalıdır.
 
-## Ürünler — oluşturulması gerekiyor
+## Ürünler — 9 Ekim 2026: kayıtlar var, etkinleştirme henüz yok
 
-Kullanıcı Play Console ürünlerini ve Android Developer API erişimini henüz
-oluşturmadığını doğruladı. Bunlar tamamlanana kadar gerçek ödeme kapalıdır.
+Kullanıcının güncel Play Console ekranında aşağıdaki 10 ürün mevcut; tümünde
+etkin satın alma seçeneği/teklif sayısı0. `gridshard.flux_120` için `standard`
+Buy seçeneği Taslak, eski sürüm uyumlu ve yalnız Türkiye29,99 TL olarak
+doğrulandı. Diğer dokuz ürünün güncel fiyat/bölge ayrıntıları henüz görülmedi.
+Android Developer API ve dar billing servis hesabı/AWS WIF hazırlanmış durumda;
+canlı API katmanı uygulanmadığından gerçek ödeme hâlâ kapalıdır.
 Mevcut kullanıcı kararı katalog fiyatları aşağıdadır; Play'in cihaz/bölge fiyatı
 oyunda native `getProducts` ile gösterilir. Eksik fiyat veya belirsiz teklif
 ödeme açmaz; makbuz sunucuda doğrulanıp kalıcı yazılmadan tüketilmez.
@@ -285,13 +289,20 @@ aynı sezonda ikinci satın alma sunucu/UI tarafından engellenir.
 Gerekli dış adımlar:
 
 1. AAB'yi önce Play test kanalına yükle; Play App Signing ve PGS dağıtım sertifikası bağlamasını tamamla.
-2. Yukarıdaki 10 ürünü aynı kimliklerle oluştur/etkinleştir. Ülke/vergi/fiyat
-   onayını Play Console üzerinden yap; fiyatı tahmin ederek ürün açma yok.
-3. Aynı Cloud projesinde Google Play Android Developer API'yi aç; yalnız gerekli
-   satın alma/sipariş yetkileri olan hizmet hesabına Play Console erişimi ver.
-   Anahtar sunucunun private secrets alanına aktarılır; APK/Git/sohbete konmaz.
-4. Kimlik doğrulamalı Pub/Sub RTDN ve iade takibini bağla; servis hesabı,
-   audience ve paket doğru olmalı. Makbuz/iade/tekrar/hesap bağı uçtan uca doğrula.
+2. Mevcut ürünleri yeniden oluşturma. Satın alma seçeneklerinin ülke/fiyat
+   ayrıntılarını kontrol et; kapalı test dağıtım bölgeleri ürün satış bölgeleri
+   değildir. Lisans-test hesabını ve test ödeme penceresini doğrula. Ürünleri
+   açık etkinleştirme kararı olmadan açma; ilk kontrollü testte tek ürün yeterli.
+3. Mevcut projedeki Android Developer API, uygulama-sınırlı billing hesabı ve
+   dar AWS WIF kimliğini koru. JSON anahtarı üretme/indirme, IAM yetkisini
+   genişletme. WIF config yalnız API'ye UID10001/0400 ve salt-okunur bağlanır;
+   APK/Git'e girmez. Canlı katman/yedek/restart için taze onay gerekir.
+4. Kullanıcının seçimi: Cloud Billing/kart/deneme/Pub/Sub açmadan AWS üzerinde
+   periyodik Voided Purchases kontrolü (1800sn). İadeler anlık değildir;
+   checkpoint/başarılı son tarama izlenir. Makbuz/pending/tüketim/iade/tekrar/
+   hesap bağı gerçek lisans-test cihazında ayrıca doğrulanır. Ayrıntılar:
+   `docs/GOOGLE_PLAY_AWS_WIF.md`, `docs/STORE_PURCHASES.md`. RTDN ayrı gelecekteki
+   karar olabilir; mevcut konuyu/aboneliği silme veya Play'e bağlama yok.
 5. Reklam içerir, hedef kitle/yaş, veri güvenliği, gizlilik politikası, hesap
    silme bağlantısı, içerik derecelendirmesi ve mağaza görsellerini tamamla.
 6. Hesabın Play üretim erişim koşullarını geçmeden genel yayın yapılmaz.
