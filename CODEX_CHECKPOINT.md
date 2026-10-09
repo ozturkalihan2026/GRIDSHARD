@@ -2,6 +2,35 @@
 
 Güncelleme tarihi: 9 Ekim 2026
 
+## En son devir — iş bilgisayarında bitti, ev bilgisayarında devam
+
+Kullanıcı bu bilgisayardaki çalışmayı bitirdi; bundan sonrası ev bilgisayarında
+devam edecek. Devir kaydı dışında yeni panel/SSH/deploy/AAB/ödeme işlemi yapma.
+Son yerel HEAD `f3a60f2e01efbc426f4a067782b8ce36a5afe403` (kullanıcının fix
+commit'i); önceki `ea25c1c` uygulama kaynakları ile bu HEAD arasında server/app,
+client, android, config ve public-site farkı yok, bu kaynaklar çalışma ağacında
+da temiz. Agent commit/push/pull/cihaz aktarımı yapmadı. Son panel kanıtları ve
+bu devir güncellemesi aşağıdaki üç dosyada yerel değişiklik olarak durur;
+ev checkout'una otomatik aktarılmış sayılmaz:
+
+- `CODEX_CHECKPOINT.md`
+- `CODEX_HANDOFF_R13_V4.md`
+- `docs/PLAY_PUBLISHING_READINESS_20261009.md`
+
+Evde ilk adım: aynı sohbet ve güncel repo/devir notlarıyla **PGS yayınına
+basıldı mı, yayımlandı mı** sonuç ekranından doğrula. Son kanıt yalnız
+Yayınlamaya hazır/etkin Yayınla idi; tamamlandı diye varsayma, yayımlanmışsa
+tekrar yayın/yeniden kimlik oluşturma. Sonra aynı mevcut Google projesinde
+Google Auth Platform Audience, Data Access ve Branding durumlarını incele;
+önceki Testing/eksik link/alan sahipliği kapıları ayrı kaldı. Varsayılan Türkçe,
+EN çeviri, altı GRIDSHARD adı ve ortak grafik düzeltmesini yeniden yaptırma.
+Canlı r13 ve Play kapalı test v4 korunur; ödeme/ürünler açılmaz. Gelecek
+sunucu/AAB geçişi için ayrı taze onay/yedek/test kapıları geçerlidir.
+Ignored artifacts/görseller/provalar Git ile otomatik taşınmaz; evde dosya
+varlığını doğrula. Hiçbir sır/anahtar/credential dosyası Git'e eklenmez.
+Evden SSH gerekirse kaynak-IP erişimini yeni ortamda doğrula; izinleri
+genişletme veya host-key kontrolünü kapatma. Şimdi bu bilgisayarda dur.
+
 ## En güncel kullanıcı akışı — PGS/OAuth yayın hazırlığı; kod ve canlı sürüm korunur
 
 Kullanıcı yayın altyapısını önce tamamlamak, mevcut kapalı test sürerken
@@ -9,19 +38,22 @@ post-v4 kod güncellemelerini korumak, tester geri bildirimi sonrasında ayrı
 sunucu güncellemesi ve yeni AAB hazırlamak istiyor. Bu karar mevcut canlı
 sunucuya ödeme katmanı uygulama veya ürünleri etkinleştirme onayı değildir.
 
-- Yerel HEAD `ea25c1c92489ff4de484f2700da50bcb41084b32`; uygulama kaynaklarında
+- Yerel HEAD `f3a60f2e01efbc426f4a067782b8ce36a5afe403`; uygulama kaynaklarında
   HEAD'e göre kayıtsız değişiklik yok. Post-v4 değişiklikler commitlerde korunur.
   Canlı r13 ve Play v4 yerine yeni deploy/AAB bu panel hazırlığında yapılmadı.
 - Son PGS özellik ekranlarında iki dilde GRIDSHARD, mevcut TR/EN açıklamaları
   ve Strateji kategorisi kaydedildi. Kullanıcı varsayılan dili Türkçe yapıp
-  kaydettiğini bildirdi. Son Yayınlama ekranı beş Android/bir oyun sunucusu
-  credential için **tr-TR yerel ayarında ad eksik** gösteriyor; Yayınla pasif.
-  Sıradaki adım mevcut credential'ın Türkçe ad alanını doğrulayıp GRIDSHARD
-  ile tamamlamak; client ID/paket/SHA/sırlar değişmez ve kimlikler silinmez.
+  kaydettiğini bildirdi. Altı credential adını tamamladıktan sonraki son
+  Yayınlama ekranı **Kimlik Bilgisi — Yayınlamaya hazır** gösteriyor; altı
+  taslak kayıt/birer değişiklik, Yayınla etkin ve görünür eksik uyarısı yok.
+  **PGS yayına hazır, henüz yayımlandığı doğrulanmadı.** Sıradaki kullanıcı
+  adımı yalnız PGS Yayınla ve onay/sonuç kanıtı; OAuth Audience/Branding ayrı
+  açık kapıdır. Client ID/paket/SHA/sırlar korunur, TEST Android silinmez.
   Kullanıcının dil geçişi denemesinde grafik alanı ortak çıktı; önceki ayrı
   dil grafiği/ters kayıt yorumu yanlıştı. Varsayılan Play mağaza girişinin
   aynı Türkçe grafiği kullanılacak. Yeni nesil kimlikler açık, Recall ve
-  Kaydedilmiş oyunlar kapalı kalır. Tüm yayın engelleri henüz kalkmış sayılmaz.
+  Kaydedilmiş oyunlar kapalı kalır. PGS'nin konsol engelleri kalktı; genel
+  OAuth/marka ve Play uygulama üretim kapıları tamamlanmış sayılmaz.
 - Cloud Branding'de ad GRIDSHARD; bağlantılar ve yetkili alanlar boş görüldü.
   Ana sayfa/gizlilik HTTPS200, `/terms/` HTTPS404: olmayan kullanım şartları
   bağlantısını girmeyin. Mevcut Data Access kapsamları ve alan sahipliği,

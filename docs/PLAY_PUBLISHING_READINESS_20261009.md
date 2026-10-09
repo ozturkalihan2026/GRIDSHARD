@@ -1,5 +1,17 @@
 # PGS ve OAuth yayın hazırlığı — 9 Ekim 2026
 
+## Son devir: ev bilgisayarında devam
+
+Kullanıcı iş bilgisayarındaki çalışmayı bitirdi. Son kanıt PGS Yayınlamaya
+hazır ve etkin Yayınla; yayımlama sonucu henüz gelmedi. Evde önce yayın
+durumunu doğrula, sonra OAuth Audience/Data Access/Branding'e geç. Türkçe
+varsayılan/EN çeviri, isimler ve ortak görsel alanı işlemlerini yeniden yaptırma.
+Bu belge ve iki kök devir notunun son değişiklikleri henüz yerel; agent
+commit/push/cihaz aktarımı yapmadı. Güncel repo ve notlar ev checkout'una
+senkronize edilmeden orası güncel sayılmaz. Ignored artifacts/görsellerin
+varlığını ayrıca kontrol et; sır/anahtar dosyaları Git'e eklenmez. Canlı
+sunucu, ödeme, ürün etkinleştirme ve yeni AAB işlemleri bu devirde yapılmaz.
+
 ## Amaç ve kapsam
 
 Önce mevcut Play Games/OAuth yayın altyapısı hazırlanır. Kullanıcının bildirdiği
@@ -27,14 +39,20 @@ geniş kapsam/izin veya yeni Google projesi oluşturulmaz.
 - Yeni nesil kimlikler AÇIK, Recall KAPALI, Kaydedilmiş oyunlar KAPALI;
   Firebase bağlı değil. Bunlar değiştirilmez. Aynı paket için birden fazla
   mevcut Android credential ve oyun sunucusu credential'ı silinmez.
-- Son Yayınlama ekranı altı mevcut credential için **tr-TR yerel ayarında ad
-  eksik** gösteriyor: beş Android ve bir oyun sunucusu. Yayınla pasif.
-  Önce mevcut bir credential'ın formunu açıp Türkçe ad alanını doğrula;
-  GRIDSHARD adını tamamla ve kaydet. Sonra diğer mevcut credential'larda
-  aynı yerel ad eksikliği giderilir. OAuth client ID, paket/SHA, gizli değer,
-  hesap kimliği değiştirilmez; credential silinmez/yeniden oluşturulmaz.
-  Genel Özellikler ve tüm yayın engellerinin kalktığı sonraki tam Yayınlama
-  ekranından doğrulanır. Yayın gerçekleştiği henüz doğrulanmadı.
+- Son yapılandırma ekranında altı mevcut credential adı GRIDSHARD görünüyor.
+  Kullanıcı ardından Yayınlama ekranını paylaştı: **Kimlik Bilgisi —
+  Yayınlamaya hazır**, altı taslak credential/her biri bir değişiklik,
+  Yayınla etkin ve görünür eksik uyarısı yok. Önceki tr-TR ad eksikliği kalktı.
+  PGS konsol yayın hazırlığı geçti; **yayın henüz gerçekleşmiş sayılmaz**.
+- Kullanıcı yalnız mevcut ad alanlarını tamamlayarak ilerledi. OAuth client
+  ID/paket/SHA/sırlar değiştirilmez. Eski `com.gridshard.remotedebug` TEST
+  Android credential korunur; yeni yüklemeler seçimi ve korsanlık ayarları
+  değiştirilmez. Bu credential, Play kapalı test kanalı değildir.
+- Sıradaki adım yalnız PGS için Yayınla; ek onay veya sonuç ekranı doğrulanır.
+  Resmî belgeye göre PGS yayını, yapılandırılmış hizmetleri oyunun kurulu
+  kopyalarına açar; APK/AAB yayımlamaz veya uygulamayı Play'de üretime açmaz.
+  Yayılım iki saate kadar sürebilir; tester verileri otomatik silinmez.
+  OAuth Audience/Branding ayrı açık kapıdır, bu adım onu üretime geçirmez.
 
 Metin kaynağı `docs/PLAY_STORE_LISTING.md`; görseller
 `artifacts/play-store-listing-20261007/en-US/feature-graphic-1024x500.png`,
@@ -56,7 +74,7 @@ PGS yayını, OAuth Audience üretim durumu/marka doğrulaması ve Play uygulama
 
 ## Korunan kod ve sonraki sürüm
 
-HEAD `ea25c1c92489ff4de484f2700da50bcb41084b32`; server/app, client, android,
+HEAD `f3a60f2e01efbc426f4a067782b8ce36a5afe403`; server/app, client, android,
 config ve public-site kaynaklarında HEAD'e göre kayıtsız değişiklik yok.
 Kullanıcının diğer kirli dosyaları korunur; commit/push/reset yapılmaz.
 Gelecek deploy öncesi taze onay, doğrulanmış yedek, yalıtılmış test ve oyuncu

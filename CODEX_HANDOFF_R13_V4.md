@@ -1,14 +1,35 @@
 # Codex için devir notu — sunucu r13 ve Android paketi (sürüm kodu 4)
 
+**9 Ekim son kullanıcı talimatı — ev bilgisayarına devir:** İş bilgisayarında
+iş bitti; burada devir kaydı dışında yeni işlem yapma. Son HEAD
+`f3a60f2e01efbc426f4a067782b8ce36a5afe403`; ea25c1c ile uygulama kaynakları aynı
+ve çalışma ağacında temiz. Son panel kanıtı **PGS Yayınlamaya hazır**, etkin
+Yayınla; kullanıcıya yayın düğmesi önerildi ama yayın sonucu henüz yok.
+Evde önce yayımlanma durumunu doğrula, ardından aynı Google projesinde OAuth
+Audience/Data Access/Branding kapılarını tamamla. Türkçe varsayılan/EN çeviri,
+altı GRIDSHARD adı/ortak grafik düzeltmesi yeniden yapılmaz. TEST Android ve
+mevcut kimlikler korunur. Canlı r13/Play kapalı test v4 değiştirilmez;
+ödeme katmanı/deploy/yeni AAB için taze ayrı onay gerekir.
+Bu dosya, CODEX_CHECKPOINT ve yayın hazırlığı belgesinin son güncellemeleri
+**yerel, henüz commit/push/ev bilgisayarına aktarım yapılmadı**. Kullanıcı
+repo/notları senkronize etmeden ev checkout'u güncel sayılmaz. Ignored
+artifacts/görseller/provalar ve dış sırlar Git ile taşınmaz; sırları Git'e
+ekleme. Evde dosya ve gerekirse SSH kaynak-IP/pinli erişim tekrar doğrulanır.
+
 **9 Ekim sonraki aktif akış — önce yayın altyapısı:** Kullanıcı PGS/OAuth
 hazırlığını tamamlamak, post-v4 kodlarını korumak ve gerçek tester geri
 bildiriminden sonra ayrı sunucu/AAB güncellemesi yapmak istiyor. Yerel HEAD
-`ea25c1c92489ff4de484f2700da50bcb41084b32`; uygulama kaynakları HEAD'e göre
+`f3a60f2e01efbc426f4a067782b8ce36a5afe403`; uygulama kaynakları HEAD'e göre
 temiz. Bu tur deploy, AAB, ürün etkinleştirme veya canlı ödeme onayı yok.
 Son PGS özellik ekranlarında iki dilde GRIDSHARD/TR-EN açıklamaları/Strateji
 kaydedildi. Kullanıcı varsayılan dili Türkçe yapıp kaydettiğini bildirdi;
-Yayınlama beş Android/bir oyun sunucusu için **tr-TR ad eksik** gösteriyor.
-Mevcut credential'ların Türkçe adları tamamlanacak; ID/paket/SHA/sırlar korunur.
+Altı Türkçe credential adı tamamlandı; son Yayınlama **Yayınlamaya hazır**,
+altı taslak/birer değişiklik ve etkin Yayınla gösteriyor. **PGS hazır,
+yayın gerçekleştiği henüz doğrulanmadı.** Sıradaki adım yalnız PGS Yayınla
+ve onay/sonuç kanıtı; OAuth Audience/Branding ayrı açık kapı. ID/paket/SHA/
+sırlar ve eski TEST Android credential korunur; yeni yükleme/korsanlık ayarı
+değişmez. PGS yayını, Play APK/AAB üretim dağıtımı veya OAuth üretim geçişi
+değildir.
 Kullanıcının dil geçişi denemesinde grafik alanı ortak çıktı; önceki ayrı dil
 grafikleri/ters kayıt yorumu yanlıştı. Ana Play mağaza grafiğinin aynısı
 kullanılır. Kimlik/Recall/Saved Games ayarları değişmez. Cloud kapsam/alan sahipliği ve gerçek kullanım
