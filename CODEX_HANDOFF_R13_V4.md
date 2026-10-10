@@ -1,5 +1,15 @@
 # Codex için devir notu — r14 canlı / Play v6 cihazda (r13/v4 tarihçesi)
 
+**10 Ekim23:17 güncel — testli commit CI5/5, v7 yerel aday:** Kullanıcı
+1aa1db5 commit/push ve sıralı devamı onayladı. Quality38082575391 exactSHA,
+success5/5. GerçekPG/Redis63PASS ve image/restart/backup-restore; browser24
++reconnect3PASS. Config/native versionCode7 yeni ve kullanıcı commit'i
+bekler. İmzalı v7 aday audit74asset/9font/canonical/imza/manifest7/policy
+bundlePASS;v6hashleri korundu. Adayı final/Play'e yüklenmiş sayma.
+Akış: metadata commit→exactCI→final rebuild→Alpha→cihaz+isolatedpolicyQA→
+Terms+UTC→yedekli geçiş. r14/Terms/env/eskiUç/Playv6 değişmedi. Ayrıntı:
+docs/ANDROID_V7_PREMIUM_RECOVERY_RELEASE_20261010.md. Agent push yapmaz.
+
 **10 Ekim 23:03 güncel — yeni premium iade politikası yerel aday:** Kullanıcı
 yalnız kod/test/TR-EN Terms taslağını onayladı. `season-rewards-v1` private
 claim/chest gerçek çıktıları ve kaynak defteri, signed deficit persistence,

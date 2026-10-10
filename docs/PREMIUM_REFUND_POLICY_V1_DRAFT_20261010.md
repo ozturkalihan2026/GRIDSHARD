@@ -1,6 +1,6 @@
 # Ücretli Sezon Geçişi iade politikası — yerel aday / Terms taslağı
 
-10 Ekim 2026. Kullanıcı yalnız kod, testler ve taslağı onayladı. **Yayımlanmadı; canlı sunucuda etkin değil.** Bu belge hukuk uygunluğu garantisi değildir. Mevcut yayımlanmış Terms değiştirilmedi; aşağıdaki metin yayın öncesi son değerlendirme içindir.
+10 Ekim 2026. İlk onay kod, testler ve taslak içindi. Kullanıcı daha sonra commit/push'u tamamlayıp kalan işlemlerin sıralı ilerlemesini onayladı. **Yayımlanmadı; canlı sunucuda etkin değil.** Bu belge hukuk uygunluğu garantisi değildir. Mevcut yayımlanmış Terms değiştirilmedi; aşağıdaki metin yayın öncesi son değerlendirme içindir. Yürürlük zamanı cihaz/QA kapılarından sonra belirlenecek. Güncel ilerleme: [v7 yayın kaydı](ANDROID_V7_PREMIUM_RECOVERY_RELEASE_20261010.md).
 
 ## Kapsam ve davranış
 
@@ -45,7 +45,7 @@ Yeni istemci yalnız sezon geçişinde TR/EN onayını ödeme penceresinden önc
 
 Ödül/hak/makbuz/private provenance aynı üretim işleminde yazılır. Tier doğrudan ödülü ve bütün sandıklar tamamlanmadan işlem commit edilmez. Sunucu defteri istemciye çıkarılmaz; yalnız açık miktarları gösterilir. Defter sezon geçişinde korunur; hesap silme saklama davranışı ve yedekten dönüş gerçek PostgreSQL testleriyle ayrıca doğrulanmalıdır.
 
-Yayın sırası henüz yürütülmedi:
+Yayın kapıları (23:17 TR: ilk implementation commit CI5/5 geçti; version7 metadata/final kaynak sabitlemesi bekler):
 
 1. Aday kod commit/push **kullanıcı tarafından**; aynı commit'in tüm CI işleri ve yeni PostgreSQL rollback/restart testleri yeşil olmalı. Yerel SQL/Redis atlamaları PASS sayılmaz.
 2. Yeni istemci APK/AAB üretilip kapalı testte kurulmalı. Mevcut v6 AAB bu değişiklikleri içermez. Varsayılan legacy sunucuda geriye uyumluluk; izole yeni-policy ortamda checkout onayı/iptali, pending, kurtarma, iade, yeniden alım, kaynağı oynayarak kapatma ve eski alımlar sınanmalı. Canlı oyuncu bakiye manipülasyonu yok.

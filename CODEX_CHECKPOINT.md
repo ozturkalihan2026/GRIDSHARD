@@ -2,6 +2,29 @@
 
 Güncelleme tarihi: 10 Ekim 2026
 
+## En son durum — 10 Ekim 23:17 TR, commit CI geçti / v7 aday hazır
+
+Kullanıcı commit/push ve kalan işlemlerin sıralı ilerlemesini onayladı.
+`1aa1db5d231eb28b0675fac217c4947c0ed8f101` için Quality38082575391
+push/main/attempt1/completed-success5/5. GerçekPG/Redis persistence63PASS,
+production image/restart/backup-restore smoke PASS; browser24+reconnect3PASS.
+1410server/41skip, araç14PASS/4skip ayrı kayıttır; skipler PASS'a çevrilmedi.
+
+VersionCode6→7 config ve native Gradle metadata değişti; agent commit/push
+yapmadı. Aynı testli app/server kodundan imzalı v7 APK/AAB aday build/audit
+PASS:74asset/9font/imzalar/canonical/debug-private gate; kendiAABmanifest7
+ve yeni policy/recovery-consent kodu doğrulandı. Adaylar
+`artifacts/android-production-20261010-v7-candidate`; final/exactCI paket
+değildir. V6 hashleri aynı ve dosyalar korunuyor. Yeni metadata4toolchain/
+24build-site PASS. Gerçek telefon kurulumu/yeni ödeme/iade/Play upload yok.
+
+Sıradaki kapı kullanıcı version7 metadata+operasyon kayıtlarını commit/push,
+exactCI→final clean rebuild/archive/audit→mevcutAlpha v7→cihaz/izolepolicyQA→
+Terms+UTC→yedekli sunucu geçişi. Genel onay testleri kaldırmaz; ödeme son
+onayı insanda, Terms UI yayınında eylem-anı onayı gerekiyorsa alınır.
+PublicTerms/yürürlük tarihi/r14/env/Uç eski ödüller değişmedi. Güncel akış ve
+kanıt: `docs/ANDROID_V7_PREMIUM_RECOVERY_RELEASE_20261010.md`.
+
 ## En son durum — 10 Ekim 23:03 TR, yeni premium iade kuralı yerel aday
 
 Kullanıcı yeni alımlarda premium kaynakları/sandık gerçek içeriklerini kaynak
