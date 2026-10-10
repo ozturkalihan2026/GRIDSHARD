@@ -1,7 +1,7 @@
 {
   "appId": "com.gridshardgame.app",
   "apiBaseUrl": "https://play.gridshardgame.com",
-  "versionCode": 5,
+  "versionCode": 6,
   "versionName": "2.1.0-beta.72",
   "admobAppId": "ca-app-pub-4974825529326987~9642213924",
   "admobRewardedUnitId": "ca-app-pub-4974825529326987/6776291719",

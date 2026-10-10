@@ -1,6 +1,101 @@
-# Codex için devir notu — r14 canlı / Android v5 incelemede (r13/v4 tarihçesi)
+# Codex için devir notu — r14 canlı / Play v5 cihazda (r13/v4 tarihçesi)
 
-**10 Ekim güncel durum — r14 canlıda, Alpha v5 Google incelemesinde:**
+**10 Ekim güncel durum — v6 Billing düzeltmesi/adayı hazır; kullanıcı commit/push + CI bekleniyor:**
+Dar kapsam onaylandı. Android native ürün/kurtarma/purchase/consume çağrıları
+promise tamamlanana kadar sıralanır; eski/eksik fiyatla ödeme koruması korunur.
+Kalıcı sync tool/Java template sadece bilinen INAPP ID/sayısal query+unfetched
+status loglar; hesap/token/debug metni yok. pnpm ortak store inode'u korunur.
+16 odaklı,284 client,9 build testi geçti; gerçek9.1.0 Java derlemesi ve
+lintVitalRelease/signed build/audit geçti. Ek tam lint offline test-dep eksikliği
+sonrası repository erişimiyle tamamlandı: XML0 hata/3 sürüm-bağımlılık uyarısı,
+Java helper0 bulgu. Uyarılar gizlenmedi, bağımlılık yükseltilmedi.
+V6 aday klasörü artifacts/android-production-20261010-v6-candidate; AAB SHA
+aba0023e3b36f0b007814766efd2af4b0b8e2346194e74ee32791e4821124beb.
+Henüz final/publishable değil: sourceHEAD0db yeni app değişikliklerini içermez;
+kullanıcı tüm tool/Java/test/config/app dosyalarını commit/push etmeli. Yeni
+exact CI + final rebuild/audit sonrası ayrıca Alpha onayı gerekir.
+Telefon/v5, canlı r14, diğer9 DRAFT, veri ve yayın değişmedi; v5 hashleri aynı.
+120Akı cihaz fiyatı/gerçek ücretsiz alım hâlâ doğrulanmadı. Detay
+docs/ANDROID_V6_BILLING_RELEASE_20261010.md.
+
+**10 Ekim önceki tanılama — bağlantı çakışması kanıtlandı; fiyat yokluğu henüz çözülmedi:**
+09:56:06.630/631 TR getProducts/getPurchases paralel başlıyor; native ortak
+BillingClient sorgu sürerken kapanıyor. 09:56:11.650 timeout ve 09:56:12.667
+setup -1/SERVICE_DISCONNECTED görüldü. Kaynakta loadStoreState paralel çağrıları
+ve native executor'ın callback ömrünü beklememesi bu çakışmayı açıklıyor.
+Ancak 09:56:56.770 TR getPurchases çakışması görülmeyen sorgu da setup/query0,
+fetched0: bağlantı yarışı fiyat yokluğunun tek nedeni olarak kanıtlanmadı.
+UnfetchedProduct neden kodları v5'te aktarılmıyor. Önerilen dar bağlantı sıralaması
+düzeltmesi ve güvenli ürün-bazlı neden tanılaması için kapsam onayı bekleniyor;
+henüz uygulama değişikliği yok. Yeni cihaz kodu testli yeni APK/AAB ve kullanıcı
+commit/push + CI + Alpha kapıları ister; server-only güncelleme yetmez.
+Son katalog 09:50:36 TR yalnız flux120 ACTIVE/TR2999, diğer9 DRAFT.
+Önbellek temizliğinin yapıldığı insan tarafından açıkça teyit edilmedi.
+Veri silme/kurulum/hesap değişimi, ürün/ödeme/server write, build/deploy yok.
+Yeni güvenli zaman çizelgesi mevcut ignored device-billing-empty-products kanıtına
+eklendi; ham log/token/hesap bilgisi yok. Frozen a309/v5/r14 pinleri korunur.
+
+**10 Ekim önceki tanılama — cihazda Billing OK fakat ürün listesi boş:**
+120 Akı hâlâ kullanılamıyor. Read-only ADB v5/Play installer ve modern Play
+Store53.4.34;09:48:00/09:48:12TR native sorgular doğruflux120/inapp,
+setup0/query0/fetched0. Ham log/token/hesap bilgisi yayımlanmadı. Yeni katalog
+GET20009:50:36TR yalnızflux120 ACTIVE/standard/legacyCompatible true/
+TR AVAILABLE/2999 kuruş, diğer9 DRAFT. Kullanıcı Play ülkesini Türkiye diye
+teyit etti; SDK storefront/ödeme hesabı henüz bağımsız değil. Alt sebep
+belirsiz: metadata yayılımı/önbellek veya hesap/teklif uygunluğu ayrılmadı.
+V5 eklentisi UnfetchedProduct neden kodunu loglamıyor; elde edilmiş sayma.
+Fiyat testleri4/4 geçti, cihaz alımı değil. Sonraki kullanıcı adımı yalnız
+Play Store önbelleğini temizleyip Store/oyunu normal açarak yeniden sorgulama;
+uygulama/Play Store/Play Services veri silme, kaldır-kur, hesap/ülke değişimi
+yok. Sonra güvenli ADB query kanıtı; gerçek ödeme veya diğer9 aktivasyon yok.
+Ignored kanıt device-billing-empty-products-20261010.json. Oyun/server/Android/
+node_modules değişmedi; yalnız ignored katalog probe güvenli alanları genişledi.
+Yeni AAB/build/deploy/agent commit/push yok. Önceki pinler/kanıtlar korunur.
+
+**10 Ekim önceki aşama — yalnız 120 Akı etkin, test ödeme ekranı bekleniyordu:**
+Lisans-test dışı Alpha kullanıcılarına gerçek satış açılabileceği açıklanarak
+kullanıcıdan yalnız 120 Akı / standard / Türkiye / 29,99 TL için scoped onay
+alındı. Kullanıcı Edge'de elle etkinleştirdi; ekran doğru ürün/seçenek/ülke ve
+Etkin gösteriyor. Yeni mevcut WIF read-only katalog GET200 tek sayfa/10 ürün:
+yalnız gridshard.flux_120 ACTIVE, TR AVAILABLE /2999 kuruş; diğer dokuz DRAFT.
+Kontrol tamamlanma10 Ekim09:43:46TR, kesin aktivasyon zamanı değil. Publisher
+write0; yeni ignored kanıt google-catalog-flux120-active-20261010.json.
+Provenance kısmi aktivasyonu kaydeder; eski all-DRAFT kanıtı korunur.
+
+Telefonda mağazayı yeniden açıp120 Akı29,99TL ve Google ödeme penceresindeki
+test uyarısı/test kartı/doğru hesabı doğrula; son satın alma onayı henüz yok.
+Gerçek ücretsiz teslim/consume/replay/iade ve profil bütünlüğü henüz test değil.
+Diğer dokuz ürünü açma, yeni teklif/fiyat/ülke/izin/tester ayarı değiştirme veya
+gerçek kartla deneme yapma. Geniş satış/yasal test kapıları hâlâ ayrı. Oyun kodu,
+server deploy, AAB, cihaz verileri ve frozena309 değişmedi; agent commit/push yok.
+
+**10 Ekim önceki aşama — kullanıcı yayımladı; Play kurulumlu v5 doğrulandı:**
+Kullanıcı Alpha yayını ve telefon güncellemesini bildirdi. Bilinen USB cihazda
+read-only ADB canonical package/versionCode5/Beta72/min24/target36 ve Play
+installer/initiator doğruladı. Son güncelleme10 Ekim08:41:10TR, ilk kurulum
+4 Ekim19:55:08TR (cihaz Europe/Istanbul). Agent install/uninstall/data-clear
+yok. Paket sorgusu oyun içi profil/bakiye bütünlüğü testi değildir.
+Edge artık bağlı değil; yalnız boş yerleşik/MCP tarayıcı yüzeyleri var. Alpha
+konsol durumu/yönetilen yayınlama taze gözlemi yok; yayını yeniden gönderme.
+
+R14 taze pinli read-only health OK; exact image/WIF/nonroot/read-only/polling
+1800s/Google scan OK/restart0/Ads/PGS/reviewer korunur. Geçiş receipt39/39/91
+bugünkü canlı sayım değildir. Deploy tekrar yok. Kullanıcı mağaza görüntüsünde
+on üründe fiyat yok/Şu an kullanılamıyor. Mevcut WIF tek read-only katalog GET200:
+10/10 üründe birer DRAFT option/ACTIVE0; TR AVAILABLE, premiumlar19999 kuruş,
+paketler2999/5999/9999/19999. Somut engel taslak seçenekler; fiyat-güvenlik
+korumasını kaldırma. İlk helper import yolu API öncesi düzeltildi, oyun kodu yok.
+
+Kullanıcı indiren hesabın lisans-test listesinde olduğunu teyit etti; console/
+ödeme banner/test kartı bağımsız görülmedi. Hiçbir ürün aktive/ödeme/iade yok.
+Aktivasyon lisans-test dışı Alpha kullanıcısına gerçek satış açabilir; yeni dar
+onay ve satış/yasal kapıları gerekir. Sonraki uygun görünüm120 Akı ürün detayı;
+toplu on ürün açma/gerçek kartla deneme yapma. Kanıtlar device-v5-update ve
+google-catalog-readonly JSON'ları test-results/billing-v5 içinde (ignored).
+Kullanıcı HEAD0db145d yalnız dört operasyon belgesini commit etti; frozen
+releasea309/source-image-package değişmedi. Agent commit/push/build/deploy yok.
+
+**10 Ekim önceki aşama — r14 canlıda, Alpha v5 Google incelemesinde:**
 Kullanıcı kısa bakım/taze yedekle r14 + yalnız Alpha inceleme gönderimini
 onayladı. R14 geçişi10 Ekim01:58:16TR başarı/exit0 ile tamamlandı. Kullanıcı
 son Play gönderimini kendisi yaptı; salt-okunur Edge paneli10 Ekim02:04:34TR

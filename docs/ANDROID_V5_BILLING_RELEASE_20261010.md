@@ -1,7 +1,12 @@
 # Android v5 ve ödeme sunucusu — 10 Ekim 2026 yayın kaydı
 
-Durum: **r14 canlı sunucu geçişi tamamlandı; final imzalı v5 Alpha sürümü
-Google incelemesinde. Henüz onaylanmadı/testerlara yayımlanmadı.**
+Yeni dar Billing düzeltmesi ve sürüm kodu6 yerel adayı hazır; kullanıcı
+commit/push + exact yeni CI bekleniyor. V5 dosyaları/pinleri ve cihaz kurulumu
+değişmedi. Bu dosyadaki v5/frozen a309 yayın kaydı yeni adaya uygulanmaz.
+Güncel durum: [Android v6 kayıt](ANDROID_V6_BILLING_RELEASE_20261010.md).
+
+Durum: **r14 canlı; kullanıcı Alpha yayını bildirdi. Play kurulumlu v5
+telefonda doğrulandı; yalnız 120 Akı satın alma seçeneği ACTIVE, kalan9 DRAFT.**
 Kullanıcı mevcut değişiklikleri commit/push etti ve sunucu güncellemesiyle
 birlikte kapalı testin ilk düzeltme APK/AAB'sini istedi. Commit/push yine
 kullanıcı tarafından yapılır.
@@ -11,8 +16,121 @@ gönderimini ayrıca açıkça onayladı; son Play gönderim düğmesine kendisi
 10 Ekim02:04:34TR (`2026-10-09T23:04:34Z`) salt-okunur Edge gözlemi
 **Değişiklikleriniz şu anda inceleniyor** ve yalnız Alpha v5'i doğruladı.
 Bu gözlem zamanı kesin gönderim zamanı değildir. Yönetilen yayınlama açık:
-Google onayından sonra ayrıca yalnız Alpha yayınlama adımı gerekir.
-Üretim kanalı/ücretli ürünler/cihaz kurulumu değişmedi.
+Google onayından sonra ayrıca yalnız Alpha yayınlama adımı gerekiyordu.
+Bu, önceki aşamanın tarihçesidir. Kullanıcı daha sonra yayımladığını bildirdi;
+10 Ekim sabahı USB canonical v5/Play installer doğrulandı. Edge şu an bağlı
+olmadığından güncel kanal/yönetilen yayınlama konsol durumu bağımsız yeniden
+görülmedi. Agent üretim kanalı/ürün/cihaz kurulumu değiştirmedi.
+
+## 10 Ekim güncel durum — bağlantı yarışı bulundu, ürün sorgusu hâlâ boş
+
+Son güvenli cihaz logları: 09:56:06.630/631 TR `getProducts` ve `getPurchases`
+beraber başlıyor; ürün sorgusu devam ederken ortak BillingClient kapatılıyor.
+09:56:11.650 setup timeout ve 09:56:12.667 setup `-1/SERVICE_DISCONNECTED`
+görüldü. `loadStoreState` paralel fiyat/kurtarma çağrıları yapıyor; eklentinin
+single-thread executor'ı asenkron sorgu callback ömrünü sıralamıyor. Mevcut
+storePriceFlight kilidi yalnız fiyat sorgularını koruyor. Bu somut güvenilirlik
+kusuru, kaynağa ve cihaz zaman çizelgesine dayanıyor.
+
+Ancak 09:56:56.770 TR logda kurtarma çakışması olmayan sorgu da setup/query
+0/OK ve fetched0 döndü. Boş listenin tek veya kesin nedeni henüz bilinmiyor.
+V5 eklentisi `UnfetchedProduct` neden kodlarını aktarmıyor; Google bu kodlarla
+ürün-bazlı sorgu başarısızlığının ayrılmasını destekliyor.
+[Google Billing entegrasyon belgesi](https://developer.android.com/google/play/billing/integrate).
+
+Önerilen sonraki adım dar bağlantı sıralaması düzeltmesi + yalnız bilinen
+ürün ID/nümerik neden kodu içeren tanılama; kapsam onayı bekleniyor. App/native
+kodu henüz değiştirilmedi. Değişiklik telefona yeni testli APK/AAB ve kullanıcı
+commit/push, yeni CI, Alpha yayın kapılarıyla gider; server-only geçiş yetmez.
+Diğer9 ürün DRAFT kalır; satın alma/test banner doğrulaması henüz yapılmadı.
+Önbellek temizliği yapıldığı açıkça teyit edilmedi. Veri silme/kurulum/hesap
+değişimi, yeni build/deploy veya ödeme onayı yok. Frozen pinler değişmedi.
+Güvenli kanıt `test-results/billing-v5/device-billing-empty-products-20261010.json`.
+
+## 10 Ekim önceki tanılama — 120 Akı etkin ama SDK ürün listesi boş
+
+Kullanıcı120 Akı telefonda hâlâ kullanılamıyor dedi. Read-only ADB canonical
+Play kurulumlu v5/Beta72 ve Play Store53.4.34 doğruladı. Yalnız oyun işlemindeki
+bounded logcat güvenli zaman/kod/sayı alanlarına indirildi; ham log veya
+token/hesap bilgisi yayımlanmadı.09:48:00 ve09:48:12TR sorgularında doğru
+`gridshard.flux_120`/`inapp`, setup **0/OK**, query **0/OK**, fetched **0**.
+Bu, fiyatın JS filtresine ulaşmadığını gösterir; alt sebebi tek başına çözmez.
+Eklenti UnfetchedProduct neden kodlarını loglamıyor.
+
+Yeni mevcut WIF read-only katalog GET200 kontrolü09:50:36TR:
+yalnızflux120 ACTIVE/standard/legacyCompatible true/tek TR AVAILABLE/2999
+kuruş; diğer9 DRAFT. Kullanıcı Play etkin ülkesini Türkiye diye teyit etti,
+SDK storefront/ödeme hesabı bağımsız doğrulanmadı. Metadata yayılımı/önbellek
+veya hesap/teklif uygunluğu henüz ayrılmadı; kesin bekleme süresi yok.
+Mevcut native fiyat testleri4/4 geçti; fiziksel ücretsiz alım yerine geçmez.
+
+Sonraki dar kullanıcı adımı yalnız Play Store **önbelleğini** temizleyip
+Store/oyunu normal açarak mağazayı tekrar sorgulama, sonra güvenli ADB kanıtı.
+Play Store/Services/GRIDSHARD verisi silme, kaldır-kur veya hesap/ülke değişimi
+yok. Diğer9 ürün aktivasyonu/ödeme onayı yok; oyun/server/Android/node_modules
+değişmedi, yeni AAB/build/deploy/agent commit-push yapılmadı. Yalnız ignored
+katalog helper güvenli standard/legacy/regional-count alanlarıyla genişletildi.
+Ignored kanıt `test-results/billing-v5/device-billing-empty-products-20261010.json`.
+[Google ürün sorgusu ve UnfetchedProduct açıklaması](https://developer.android.com/google/play/billing/integrate).
+
+## 10 Ekim önceki aşama — yalnız 120 Akı etkin
+
+Kullanıcı, aktivasyonun lisans-test dışındaki Alpha kullanıcılarına gerçek
+ücretli satış da açabileceği açıklamasından sonra yalnız **120 Akı / standard /
+Türkiye /29,99 TL** kapsamını onayladı. Edge'de işlemi kullanıcı elle yaptı;
+paylaşılan ekran `gridshard.flux_120`, `standard`, Türkiye ve **Etkin**.
+
+Yeni mevcut WIF read-only katalog GET **200**:10 ürün/tek sayfa/ürün başına
+tek seçenek; yalnız `gridshard.flux_120` **ACTIVE**, TR AVAILABLE /2999 kuruş,
+kalan dokuz **DRAFT**. Premiumlar19999 kuruş ve taslak. Kontrol tamamlanma
+**10 Ekim09:43:46TR** (`2026-10-10T06:43:46Z`), kesin etkinleştirme zamanı değil.
+Publisher write0; agent ürün/teklif/fiyat/ülke değiştirmedi. Ignored kanıt
+`test-results/billing-v5/google-catalog-flux120-active-20261010.json`;
+eski tüm-DRAFT kanıtı ve frozen source/package/image pinleri korunur.
+
+Sonraki adım telefonda120 Akı29,99TL görünmesi ve Google ödeme penceresindeki
+test uyarısı/test ödeme aracı/doğru hesabın görülmesidir. Son satın alma onayı
+henüz verilmedi; ücretsiz teslim/consume/replay/iade testi henüz yok. Diğer9
+ürün açılmaz; geniş ücretli satış/yasal hazırlık tamamlanmış sayılmaz.
+Yeni AAB, server deploy, cihaz install/uninstall/data-clear veya agent
+commit/push yapılmadı. Lisans-test hesabı yalnız kullanıcı beyanıyla teyitli.
+[Google test ödeme ekranı ve ücret ayrımı](https://developer.android.com/google/play/billing/test).
+
+## 10 Ekim önceki sabah aşaması — yayın sonrası salt-okunur kontrol
+
+- Kullanıcı **yayınladık, telefondaki uygulama güncellendi** dedi. Bilinen
+  USB cihaz canonical package/versionCode5/Beta72/min24/target36; installer
+  ve initiatingPackage `com.android.vending`. Europe/Istanbul cihaz saatinde
+  lastUpdate10 Ekim08:41:10, firstInstall4 Ekim19:55:08. Agent install/
+  uninstall/data-clear yok; ilk kurulum korunur. Paket bilgisi oyun içi
+  profil/bakiye bütünlüğü kanıtı değildir.
+- Taze pinli SSH health r14 exact image/OK, Google scan OK/polling1800s/
+  worker-lease/persistence ready/restart0. WIF/nonroot/read-only/Ads/PGS/
+  reviewer korunur. Receipt39/39/91 değerleri geçiş baseline'ıdır.
+- Kullanıcı mağaza ekranında on üründe **Şu an kullanılamıyor**, fiyat yok.
+  Native geçerli fiyat/tek anlamlı offer gelmeden paidProductPrice bu metni
+  gösterir ve satın alma kapalı kalır. Fiyatı uydurma veya güvenlik korumasını
+  bypass etme; ekran tek başına tüm olası metadata hatalarını ayırmaz.
+- Mevcut WIF ile bir publisher katalog GET200: canonical10 üründe birer
+  **DRAFT** option/**ACTIVE0**, TR AVAILABLE. İki premium19999 kuruş; dört
+  Akı ve dört Devre Kredisi paketi2999/5999/9999/19999 kuruş. Taslak seçenekler
+  somut erişim engelidir. İlk helper import yolu API isteğinden önce düzeltildi;
+  ignored operator helper dışında uygulama kodu değişmedi. Publisher mutation0.
+- Kullanıcı indiren Google hesabının lisans-test listesinde olduğunu teyit
+  etti. Bu insan beyanı; bağımsız console/billing banner/test ödeme aracı
+  görülmedi. Ücretsiz alım/consume/replay/iade henüz yok; ürünler aktive edilmedi.
+  Aktivasyon lisans-test dışındaki Alpha kullanıcılarına gerçek satış açabilir;
+  scoped onay ve satış/yasal kapıları gerekir. İlk uygun dar ürün120 Akı;
+  toplu on ürünü açma veya gerçek kartla test yapma.
+- Kullanıcı HEAD `0db145d26c2576f0ba801acf0e324fde3b5bf051` yalnız dört operasyon
+  belgesini commit etti. Frozen build/deploy kaynağıa309; source/image/package
+  değişmedi. Agent commit/push, yeni AAB veya sunucu deploy yapılmadı.
+
+Ignored proof: `test-results/billing-v5/device-v5-update-20261010.json` ve
+`google-catalog-readonly-20261010.json`. Android provenance güncellendi;
+kesin Alpha konsol/yayın zamanı yalnız kullanıcı beyanıyla doldurulmaz.
+[Google ürün state tanımı](https://developers.google.com/android-publisher/api-ref/rest/v3/monetization.onetimeproducts),
+[lisans-test ve gerçek ücret ayrımı](https://developer.android.com/google/play/billing/test).
 
 ## Kaynak ve yayın kapısı
 
@@ -126,7 +244,7 @@ Canlı geçiş doğrulamaları:
 bağımsız `external-witness.json` ve final Android `release-provenance.json`.
 Bu başarı gerçek satın alma/consume/iade testinin yerine geçmez.
 
-## Play Alpha incelemesi
+## Önceki aşama — Play Alpha incelemesi
 
 Kullanıcı yalnız final v5 Alpha taslağı hazırlama/yüklemeyi onayladı. Edge
 dosya erişim izni değiştirilmedi; AAB'yi kullanıcı elle seçti ve **yükledim**
@@ -151,15 +269,15 @@ Kanıt: `test-results/billing-v5/alpha-v5-draft-saved.jpg`,
 `alpha-v5-review-submitted.jpg`. Edge sekmesi Google sonucu sonrası devam için
 handoff bırakıldı. Gönderim gözlemi10 Ekim02:04:34TR; onay/dağıtım tarihi yok.
 
-Fiziksel telefon `com.gridshardgame.app` v4/Beta72, Play installer,
+Önceki fiziksel telefon gözlemi `com.gridshardgame.app` v4/Beta72, Play installer,
 ilk kurulum4 Ekim, son güncelleme8 Ekim (önceki bağlı cihaz gözlemi).
 Son geçiş kontrolünde USB telefon bağlı görünmedi. Kurulum/veri temizleme yok.
 Play App Signing sertifikası upload signer'dan farklı olabilir; v5'i kapalı
 testten **güncelle**, kör `adb install -r`/kaldır-kur yapma.
 
-Play'deki10 ürünün etkin satın alma seçeneği0. Savaş Premium standart taslak
-Türkiye fiyatı199,99TL doğrulandı; Sezon Geçişi fiyatının taze panel kontrolü
-henüz yok. Ürün etkinleştirme ve fiziksel lisans-test alımı yapılmadı.
+Yeni read-only katalog GET200: Play'deki10 ürünün etkin satın alma seçeneği0,
+hepsi DRAFT; **Savaş Premium ve Sezon Geçişi** TR199,99TL. Ürün etkinleştirme
+ve fiziksel lisans-test alımı yapılmadı. Taze Alpha konsol ekranı henüz yok.
 Kapalı test tek başına lisans-test güvencesi değildir: ödeme onayından önce
 test hesabı, test satın alması ibaresi ve test kartı doğrulanmalı.
 
@@ -172,10 +290,12 @@ test hesabı, test satın alması ibaresi ve test kartı doğrulanmalı.
 4. **Tamam:** explicit r14/Alpha inceleme onayı; taze maç/WS0/resource kapısı,
    özel yedek,6 katman WIF/polling canlı geçişi, fingerprint/runtime korumaları,
    330s iç ve bağımsız dış kontroller; kullanıcı Alpha v5 inceleme gönderimi.
-5. **Bekliyor:** Google inceleme sonucu; yönetilen yayınlama nedeniyle ayrıca
-   yalnız Alpha v5 yayınlama. Üretim/diğer değişiklikler/ürünler ayrı kapsam.
-6. Mevcut profili koruyarak Play'den v5 güncelle; lisans-test satın alma,
-   tek teslim/consume/replay ve revoke iade/yeniden başlatma kanıtları.
+5. **Kullanıcı tamamladı:** Alpha yayın beyanı + Play kurulumlu v5 cihazda
+   bağımsız doğrulandı. Güncel kanal/yönetilen yayınlama konsol görünümü
+   Edge bağlı olmadığından yeniden okunmadı; yayını tekrar gönderme.
+6. **Bekliyor:** oyun içi profil doğrulaması; DRAFT seçenek için ayrı dar
+   etkinleştirme kapsamı/yasal satış kapıları; lisans-test banner/test kartı,
+   ücretsiz alım/tek teslim/consume/replay/revoke iade/yeniden başlatma kanıtı.
 7. Gerçek ücretli satış yalnız kalan ürün/test/yasal bilgilendirme kapıları
    geçince açılır. Ücretli Google Cloud Billing/kart/free trial/PubSub/RTDN
    yok; mevcut Google proje/API/SA + AWS WIF ve periyodik iade denetimi korunur.

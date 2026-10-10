@@ -65,6 +65,7 @@
       this.adsBusy = false;
       this.storePrices = new Map();
       this.storePriceFlight = null;
+      this.billingOperationTail = Promise.resolve();
     }
 
     plugin(name) {
@@ -110,19 +111,29 @@
         ? `?ad_protocol=${encodeURIComponent(capability.ad_protocol)}&ad_platform=${encodeURIComponent(capability.ad_platform)}` : "";
     }
 
-    // Mağazanın ödeme penceresini açar. Oyuncu vazgeçerse eklenti hata verir.
-    // Otomatik onay kapalı: sunucu reddederse Google onaylanmamış alımı 3 gün
-    // içinde iade eder; önceden onaylanan alım iade edilmez.
+    // Android's plugin replaces one shared BillingClient on every operation.
+    // Serialize the entire native promise, not just entry into its executor:
+    // product queries, recovery, purchase and consume must not close each
+    // other's connection while an asynchronous callback is still pending.
+    // A rejection releases the queue; a still-pending call never does. Do not
+    // use a JS timeout that would allow a second call over a live native one.
+    _withBillingOperation(operation) {
+      if (this.platform !== "android") return Promise.resolve().then(operation);
+      const flight = this.billingOperationTail.then(operation);
+      this.billingOperationTail = flight.then(() => undefined, () => undefined);
+      return flight;
+    }
+
     async refreshProductPrices(products, storeState) {
       const provider = this.purchaseProvider(storeState);
       if (!["google_play","app_store"].includes(provider)) return;
+      // Retain the existing price-only serialization on iOS as well.
       while (this.storePriceFlight) {
         try { await this.storePriceFlight; } catch (_error) { /* Prior query failed closed. */ }
       }
       const ids = [...new Set(products.map(product => product?.store_product_id).filter(Boolean))];
       if (!ids.length) return;
-      // One batch: the native billing client does not support parallel queries.
-      const flight = (async () => {
+      const flight = this._withBillingOperation(async () => {
         for (const id of ids) this.storePrices.delete(id);
         const plugin = this.plugin("NativePurchases");
         if (!plugin?.getProducts) return;
@@ -143,7 +154,7 @@
           this.storePrices.set(id,{priceLabel:product.priceString,
             offerToken:typeof product.offerToken === "string" ? product.offerToken : ""});
         }
-      })();
+      });
       this.storePriceFlight = flight;
       try { await flight; } catch (_error) { /* Unavailable price = no new charge. */ }
       finally { if (this.storePriceFlight === flight) this.storePriceFlight = null; }
@@ -154,21 +165,25 @@
     async purchase(product, { accountToken = "" } = {}) {
       const plugin = this.plugin("NativePurchases");
       if (!plugin) throw new Error("Mağaza eklentisi bu cihazda yok.");
-      const price = this.priceForProduct(product);
-      if (!price) throw new Error("Ürün veya güncel mağaza fiyatı alınamadı; ödeme başlatılmadı.");
-      const options = {
-        productIdentifier: product.store_product_id,
-        productType: "inapp",
-        quantity: 1,
-        autoAcknowledgePurchases: false,
-        isConsumable: false,
-      };
-      if (this.platform === "android" && price.offerToken) options.offerToken = price.offerToken;
-      if (accountToken) options.appAccountToken = accountToken;
-      const native = nativePurchase(await plugin.purchaseProduct(options), this.platform);
-      if (!native.transactionId && !native.purchaseToken) throw new Error("Mağaza alım bilgisi döndürmedi.");
-      if (!native.productIdentifier) native.productIdentifier = product.store_product_id;
-      return native;
+      return this._withBillingOperation(async () => {
+        // Re-check inside the queue: a prior refresh may have invalidated the
+        // price/offer while this purchase was waiting for its turn.
+        const price = this.priceForProduct(product);
+        if (!price) throw new Error("Ürün veya güncel mağaza fiyatı alınamadı; ödeme başlatılmadı.");
+        const options = {
+          productIdentifier: product.store_product_id,
+          productType: "inapp",
+          quantity: 1,
+          autoAcknowledgePurchases: false,
+          isConsumable: false,
+        };
+        if (this.platform === "android" && price.offerToken) options.offerToken = price.offerToken;
+        if (accountToken) options.appAccountToken = accountToken;
+        const native = nativePurchase(await plugin.purchaseProduct(options), this.platform);
+        if (!native.transactionId && !native.purchaseToken) throw new Error("Mağaza alım bilgisi döndürmedi.");
+        if (!native.productIdentifier) native.productIdentifier = product.store_product_id;
+        return native;
+      });
     }
 
     // Sunucu kararından sonra alımı mağazada kapatır. iOS: işlem bitirilir
@@ -184,7 +199,7 @@
           return true;
         }
         if (this.platform === "android" && granted && !consumed && native.purchaseToken) {
-          await plugin.consumePurchase({ purchaseToken: native.purchaseToken });
+          await this._withBillingOperation(() => plugin.consumePurchase({ purchaseToken: native.purchaseToken }));
           return true;
         }
       } catch (_error) {
@@ -204,7 +219,7 @@
       if (this.platform === "android") options.productType = "inapp";
       let result;
       try {
-        result = await plugin.getPurchases(options);
+        result = await this._withBillingOperation(() => plugin.getPurchases(options));
       } catch (_error) {
         return [];
       }

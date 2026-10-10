@@ -7,6 +7,7 @@ const {insecureLocalDebugForBuild} = require("./mobile-network-policy.js");
 const {configureNativeDisplay} = require("./configure-native-display.js");
 const {configureNativeOAuth} = require("./configure-native-oauth.js");
 const {configureNativePlayGames} = require("./configure-native-play-games.js");
+const {configureNativeBilling} = require("./configure-native-billing.js");
 const {DEMO_APP_ID, adBuildConfig, configureNativeAdSafety} = require("./configure-native-ad-safety.js");
 
 function androidPortrait(source) {
@@ -115,6 +116,7 @@ function configure(platform) {
   if (before !== after) fs.writeFileSync(filename, after, "utf8");
   configureNativeBranding(platform, root, nativeDebugTarget);
   if (platform === "android") {
+    configureNativeBilling(root);
     const nativeRoot = path.resolve(filename, "../../../..");
     configureNativeDisplay(nativeRoot, root);
     configureNativeOAuth(nativeRoot, nativeDebugTarget);
