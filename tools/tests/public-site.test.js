@@ -61,11 +61,24 @@ test("public Terms preserve all 14 approved clauses in both languages, not opera
   assert.match(files.get("_redirects").toString(), /^\/en\/terms \/en\/terms\/ 301$/m);
 });
 
-test("Terms disclose disabled sales and preserve agreed refund safeguards", () => {
+test("Terms accurately disclose pre-release purchase availability and preserve agreed refund safeguards", () => {
   const tr = renderPage("tr", "terms");
   const en = renderPage("en", "terms");
-  assert.match(tr, /Ücretli satın almalar şu anda etkin değildir/);
-  assert.match(en, /Paid purchases are not currently enabled/);
+  assert.match(tr, /GRIDSHARD genel kullanıma henüz açılmamıştır/);
+  assert.match(en, /GRIDSHARD has not yet launched publicly/);
+  assert.match(tr, /sürüme, test kanalına ve ülkeye göre değişebilir/);
+  assert.match(en, /vary by version, test track and country/);
+  assert.match(tr, /test kanalına katılmak tek başına alımları ücretsiz yapmaz/);
+  assert.match(en, /joining a test track alone does not make purchases free/);
+  assert.match(tr, /ödeme alınmayacağı/);
+  assert.match(en, /you will not be charged/);
+  assert.doesNotMatch(tr, /Ücretli satın almalar şu anda etkin değildir/);
+  assert.doesNotMatch(en, /Paid purchases are not currently enabled/);
+  for (const language of ["tr", "en"]) {
+    assert.equal(content[language].terms.updated, "2026-10-10");
+    assert.match(renderPage(language, "terms"), /<time datetime="2026-10-10">/);
+    assert.ok(renderPage(language, "privacy").includes(`<time datetime="${site.updated}">`), "Unchanged policies keep their previous update date.");
+  }
   assert.match(tr, /yeni satın alma yapmak zorunda değilsin/);
   assert.match(en, /not required to make another purchase/);
   assert.match(tr, /normal ücretsiz maçlara girişini engellemez/);

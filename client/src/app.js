@@ -717,9 +717,10 @@
         }
         if (!response.ok) {
           const responseError = new Error(
-            payload.detail || `Sunucu işlemi reddetti (${response.status}).`
+            payload.detail?.message || payload.detail || `Sunucu işlemi reddetti (${response.status}).`
           );
           responseError.status = response.status;
+          responseError.code = payload.detail?.code || "";
           if (attempt === 0 && [500, 502, 503, 504].includes(response.status)) {
             lastError = responseError;
             await new Promise((resolve) => { window.setTimeout(resolve, 150); });
@@ -2929,7 +2930,7 @@
   async function loadStoreState() {
     try {
       storeState = await requestJsonWithDeadline(
-        `/store/${encodeURIComponent(participantPlayerId)}${nativeStore?.adQuery() || ""}`,
+        `/store/${encodeURIComponent(participantPlayerId)}${storePolicyQuery()}`,
         { cache:"no-store" },
         12000
       );
@@ -2963,7 +2964,7 @@
     copy.appendChild(name);
     const detail = document.createElement("small");
     detail.textContent = premium
-      ? String(product.description_tr || "")
+      ? String((document.documentElement.lang === "en" && product.description_en) || product.description_tr || "")
       : product.bonus_percent ? `+%${product.bonus_percent} bonus` : "Temel paket";
     copy.appendChild(detail);
     const button = document.createElement("button");
@@ -2984,6 +2985,7 @@
   }
 
   function paidProductAvailable(product) {
+    if (product?.purchasable === false || product?.update_required) return false;
     return !["google_play","app_store"].includes(currentPurchaseProvider())
       || Boolean(nativeStore?.priceForProduct?.(product));
   }
@@ -3048,8 +3050,19 @@
   // bağlı alımlar sessizce sunucuya gönderilir; sunucu aynı makbuzu ikinci kez
   // vermez (docs/STORE_PURCHASES.md).
   let nativePurchaseRecoveryStarted = false;
+  const declinedPremiumRecoveries = new Set();
 
-  async function submitRecoveredPurchase(native) {
+  function storePolicyQuery() {
+    return globalThis.GridshardPremiumRefundPolicy.query(nativeStore?.adQuery() || "");
+  }
+
+  function confirmPremiumRefundPolicy(product) {
+    return globalThis.GridshardPremiumRefundPolicy.acknowledge(
+      product, (message) => window.confirm(message), document.documentElement.lang
+    );
+  }
+
+  async function submitRecoveredPurchase(native, premiumPolicyAck = "") {
     const provider = currentPurchaseProvider();
     const product = paidProductByStoreId(native.productIdentifier);
     if (
@@ -3064,7 +3077,7 @@
     }
     try {
       const payload = await requestJsonWithDeadline(
-        `/store/${encodeURIComponent(participantPlayerId)}/purchases${nativeStore?.adQuery() || ""}`,
+        `/store/${encodeURIComponent(participantPlayerId)}/purchases${storePolicyQuery()}`,
         {
           method:"POST",
           body:JSON.stringify({
@@ -3072,6 +3085,7 @@
             provider,
             transaction_id:native.transactionId,
             purchase_token:native.purchaseToken,
+            ...(premiumPolicyAck ? {premium_policy_ack:premiumPolicyAck} : {}),
           }),
         },
         20000
@@ -3088,6 +3102,21 @@
       renderMetaHubScreens();
       renderPaidStore();
     } catch (error) {
+      if (error?.code === "premium_policy_ack_required" && !premiumPolicyAck) {
+        const key = nativeStore.purchaseKey(native);
+        if (!declinedPremiumRecoveries.has(key)) {
+          const acknowledgement = confirmPremiumRefundPolicy({...product,
+            reward_recovery_on_refund:true,
+            refund_policy_version:globalThis.GridshardPremiumRefundPolicy.VERSION});
+          if (acknowledgement) return submitRecoveredPurchase(native, acknowledgement);
+          declinedPremiumRecoveries.add(key);
+        }
+        // Retain this already-paid receipt for an explicit later retry from
+        // the Store button, rather than opening a second payment window.
+        pendingNativePurchases.set(product.id, native);
+        // Never consume or mark a paid receipt as granted on declined consent.
+        return;
+      }
       if (Number(error?.status) >= 400 && Number(error?.status) < 500) {
         await nativeStore.finishPurchase(native, { granted:false });
         nativeStore.markProcessed(native);
@@ -3139,6 +3168,21 @@
       for (const product of [storeState?.season_pass, storeState?.battle_premium].filter(Boolean)) {
         premiumHost.appendChild(createPaidProductCard(product, { premium:true, provider }));
       }
+      const language = document.documentElement.lang;
+      const deficits = globalThis.GridshardPremiumRefundPolicy.deficits(
+        storeState?.premium_refund_status, language, (resource) => {
+          const [kind, id] = resource.split(":");
+          const name = localizedUiText(metaModuleDefinition({definition_id:id})?.nameTr || id);
+          return `${name} ${language === "en" ? "pieces" : kind === "module_shards" ? "modül parçası" : "çekirdek parçası"}`;
+        }
+      );
+      if (deficits.length) {
+        const notice = document.createElement("p");
+        notice.className = "paid-refund-deficits";
+        notice.setAttribute("role", "status");
+        notice.textContent = `${language === "en" ? "Refund deficits (clear by playing; no cash debt)" : "İade açıkları (oynayarak kapanır; para borcu değildir)"}: ${deficits.join(" · ")}`;
+        premiumHost.appendChild(notice);
+      }
     }
     for (const [host, packs] of [[fluxHost, storeState?.flux_packs], [creditHost, storeState?.credit_packs]]) {
       if (!host) continue;
@@ -3165,14 +3209,17 @@
     let transactionId = "";
     let purchaseToken = "";
     let native = null;
+    let premiumPolicyAck = "";
     renderPaidStore();
     try {
+      const product = paidProductById(productId);
+      premiumPolicyAck = confirmPremiumRefundPolicy(product);
+      if (premiumPolicyAck === null) return {ok:false, cancelled:true};
       if (realStore) {
         // Mağazada ödenmiş ama sunucuya işlenmemiş alım varsa yeniden ödeme
         // penceresi açılmaz; aynı makbuz sunucuya tekrar gönderilir.
         native = pendingNativePurchases.get(productId) || null;
         if (!native) {
-          const product = paidProductById(productId);
           if (!product?.store_product_id) throw new Error("Ürün mağazada bulunamadı.");
           setStatus("Mağaza ödeme penceresi açılıyor…", "pending");
           // Alım ödeme penceresinde bu hesaba bağlanır; sunucu başka hesabın
@@ -3198,7 +3245,7 @@
         );
       }
       const payload = await requestJsonWithDeadline(
-        `/store/${encodeURIComponent(participantPlayerId)}/purchases${nativeStore?.adQuery() || ""}`,
+        `/store/${encodeURIComponent(participantPlayerId)}/purchases${storePolicyQuery()}`,
         {
           method:"POST",
           body:JSON.stringify({
@@ -3206,6 +3253,7 @@
             provider,
             transaction_id:transactionId,
             purchase_token:purchaseToken,
+            ...(premiumPolicyAck ? {premium_policy_ack:premiumPolicyAck} : {}),
           }),
         },
         20000

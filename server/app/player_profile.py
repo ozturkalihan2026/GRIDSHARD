@@ -15,6 +15,7 @@ from .competition_cycle import CYCLE_EPOCH, CYCLE_LENGTH, competition_cycle, cyc
 from .season_competition import LEADERBOARD_PRIZES, TEAM_PRIZES, WEEKLY_PRIZES
 from .game.battle_pool import default_battle_pool, validate_battle_pool
 from .store_catalog import BATTLE_PREMIUM_BONUS_PERCENT, PRODUCTS_BY_ID, price_label_tr
+from .premium_reward_recovery import active_reward_snapshot, record_reward_delta
 
 
 DEFAULT_RATING = 0
@@ -471,6 +472,9 @@ class PlayerProfile:
     # Ücretli geçişin açık olduğu sezon; başka sezonda geçiş etkin sayılmaz.
     season_premium_pass_season_id: str = ""
     claimed_premium_season_tiers: tuple[int, ...] = ()
+    # Private, durable prospective receipt/claim provenance; never in to_view.
+    season_premium_purchase_key: str = ""
+    premium_reward_recovery: dict[str, dict] = field(default_factory=dict)
     # Savaş Premium'un açık olduğu sezon: savaş sonu kredi ve deneyim artar (kupa hariç).
     battle_premium_season_id: str = ""
     # Gerçek para alımlarının makbuzları (sağlayıcı:işlem kimliği → makbuz).
@@ -1310,6 +1314,7 @@ class PlayerProfileService:
             base_reward,
             f"season-premium:{profile.active_meta_season_id}:{profile.player_id}:{tier}",
         )
+        premium_before = active_reward_snapshot(profile)
         profile.circuit_credits += int(reward.get("circuit_credits", 0))
         profile.flux_shards += int(reward.get("flux_shards", 0))
         core_shards = int(reward.get("core_shards", 0))
@@ -1332,4 +1337,5 @@ class PlayerProfileService:
                 "tier": tier,
                 "season_id": profile.active_meta_season_id,
             }
+        record_reward_delta(profile, f"tier:{tier}", premium_before)
         return profile

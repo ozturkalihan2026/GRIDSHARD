@@ -39,10 +39,18 @@ from app.store_verification import (
     GooglePlayVerifier,
     StoreVerificationError,
     VerifiedPurchase,
+    _purchase_time_ms,
 )
 
 NOW = 1_790_000_000.0
 NOW_ISO = datetime.fromtimestamp(NOW, tz=timezone.utc).isoformat()
+
+
+def test_provider_purchase_timestamp_parser_does_not_guess_missing_or_malformed_dates():
+    assert _purchase_time_ms("1790000000000") == 1790000000000
+    assert _purchase_time_ms(1790000000000) == 1790000000000
+    for value in (None, True, False, -1, 0, "", "-1", "1.5", "bad", 1.5, 10**20):
+        assert _purchase_time_ms(value) == 0
 
 
 class FakeResponse:
@@ -99,7 +107,8 @@ def _google_verifier(purchase: dict | FakeResponse) -> tuple[GooglePlayVerifier,
 
 
 def test_google_play_purchase_is_verified_granted_once_and_consumed():
-    verifier, client = _google_verifier({"purchaseState": 0, "consumptionState": 0, "orderId": "GPA.1234-5678"})
+    verifier, client = _google_verifier({"purchaseState": 0, "consumptionState": 0, "orderId": "GPA.1234-5678",
+                                        "purchaseTimeMillis": "1790000000000"})
     profiles = PlayerProfileService()
     profile = profiles.get_or_create("google-buyer")
     credits = profile.circuit_credits
@@ -108,6 +117,7 @@ def test_google_play_purchase_is_verified_granted_once_and_consumed():
     verified = verifier.verify("gridshard.credits_2200", token)
     assert verified.transaction_id == "GPA.1234-5678"
     assert verified.environment == "production"
+    assert verified.purchased_at_ms == 1790000000000
     receipt = process_purchase(
         profile, "credits_2200", "google_play", "client-says-anything",
         test_mode=False, now_iso=NOW_ISO, verified=verified,
@@ -263,11 +273,12 @@ BASE_TRANSACTION = {
 
 def test_app_store_transaction_with_trusted_chain_is_accepted():
     token = store_account_token("apple-buyer")
-    verifier = _app_store_verifier({**BASE_TRANSACTION, "appAccountToken": token})
+    verifier = _app_store_verifier({**BASE_TRANSACTION, "appAccountToken": token, "purchaseDate": 1790000000000})
     verified = verifier.verify("gridshard.season_pass_premium", "2000000123456789")
     assert verified.provider == "app_store"
     assert verified.transaction_id == "2000000123456789"
     assert verified.account_token == token
+    assert verified.purchased_at_ms == 1790000000000
     profile = PlayerProfileService().get_or_create("apple-buyer")
     receipt = process_purchase(
         profile, "season_pass_premium", "app_store", "2000000123456789",

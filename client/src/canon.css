@@ -5573,6 +5573,7 @@ body[data-app-screen="play"] .vertical-circuit-arena .module-card.has-heat-bar >
 .paid-product-card.is-premium > button { grid-column:3;grid-row:1; }
 .resource-symbol-premium { color:#ffe071;background:#4a3610;font-size:.9rem; }
 .paid-product-card .resource-symbol { width:26px;height:26px; }
+.paid-refund-deficits { margin:4px 0;padding:8px;border:1px solid rgba(255,214,95,.4);border-radius:8px;color:#ffe071;font-size:.55rem;line-height:1.5;overflow-wrap:anywhere; }
 
 /* --- Sezon ödülleri: ücretli geçiş satın alma -------------------------------- */
 .season-premium-buy {

@@ -1,6 +1,274 @@
-# Codex için devir notu — r14 canlı / Play v5 cihazda (r13/v4 tarihçesi)
+# Codex için devir notu — r14 canlı / Play v6 cihazda (r13/v4 tarihçesi)
 
-**10 Ekim güncel durum — v6 Billing düzeltmesi/adayı hazır; kullanıcı commit/push + CI bekleniyor:**
+**10 Ekim 23:03 güncel — yeni premium iade politikası yerel aday:** Kullanıcı
+yalnız kod/test/TR-EN Terms taslağını onayladı. `season-rewards-v1` private
+claim/chest gerçek çıktıları ve kaynak defteri, signed deficit persistence,
+atomic refund/claim, tekrar bildirim/yeniden alım/restore/past season ve trusted
+publisher-error düzeltmesi eklendi. Verified provider satın alma zamanı +
+UTC cutover + açık istemci onayı gerekir; defaultlegacy. Eski Uç/legacy alım
+ve makbuz replay'e retro-kesinti yok. Yeni client onay/deficit UI hazır.
+1410 sunucu PASS /41 SQL-Redis vb skip;293 istemci PASS;24 build/site PASS;
+31script gerçek kaynak bundle in-memory compile PASS. Yeni Ruff kontrolleri
+PASS, 4HEAD-baseline unused lint bulgusu ayrı. 2yeniSQL test CI migration
+dosyasında, yerel DB olmadığı için çalıştırılmadı. Taslak ve rollout kapıları:
+docs/PREMIUM_REFUND_POLICY_V1_DRAFT_20261010.md. Proof:
+test-results/premium-recovery-candidate-20261010.json. Yayın/deploy/env/Terms
+write/yeni AAB/commit-push yok; v6 bu kodu içermez. Kullanıcı commit/push ve
+yeni tamCI + yeni istemci kapalı test + ayrı Terms/UTC/deploy onayı bekler.
+Savaş Premium bonus iade kapsamı/testi ve genel üretim kapıları hâlâ açık.
+
+**10 Ekim 22:22 önceki — telefon iadesi geçti, ödül-retention açığı açık:**
+Kullanıcı normal reopen: sezon geçişi pasif,1110/5476,mağaza normal teyit etti.
+22:22:02 READ ONLY aynı refunded makbuz/ledger/history1/hakfalse/claimed17;
+sonraki doğal scan21:53:52 seen1/applied0. Current-policy iade ve kalıcılık
+geçti; anti-abuse PASS değildir. Kullanıcı tüm premium ödülleri alıp iade
+edebilme açığını işaretledi. Kod ve yayımlanmış Terms bilinçli olarak eski
+ödülleri koruyor. Premium claim+sandık gerçek çıktıları purchase-attribution
+ve clawback önerisi için politika onayı gerekir; henüz kod/Terms/canlı write
+yok. Eski Uç test ödüllerini geriye dönük kesme. Üretim kapısı açık tutulur.
+Kanıt: test-results/billing-v6/season-pass-refund-uc-20261010.json.
+
+**10 Ekim 20:24 önceki — sezon geçişi iadesi doğal worker ile geçti:**
+Kullanıcı yalnız eşleşen ücretsiz test siparişi iadesini tamamladı. Google
+GET 20:22 exact-match1/developer-initiated/voided_at20:17:40 TR doğruladı.
+20:23:51 doğal scan seen1/applied1; 20:24:24 READ ONLY aynı tek makbuz/ledger
+refundedtrue, history1/Google voided işlenmiş, sezon hakkıfalse. Alınmış17
+tier ve1110Akı/5476kredi korunuyor; Savaş Premium false ve makbuz/ledger0.
+İlk erken provider0 ve worker öncesi haktrue kanıtları saklandı. Phone normal
+reopen/pasif hak/aynı bakiyeler/mağaza normal teyidi soruldu, yanıt bekliyor.
+Sonraki doğal scan idempotency ayrıca açık; manuel scan/restart/forced replay
+veya provider/player write yok. Ham order/hash/token kaydı yok. Kanıt:
+test-results/billing-v6/season-pass-refund-uc-20261010.json.
+Policy/source/CI/AAB aynı; diğer premium ve üretim kapıları açık.
+
+**10 Ekim20:14 önceki — sezon geçişi teslim/consume/normal reopen geçti:**
+Uç kullanıcı free sezon geçişi alımını tamamladı.20:09/20:10/20:13 dar READ
+ONLY: tek test makbuzu+tek ledger/consumedtrue/refundedfalse; sezon hakkıtrue,
+grant stored active sezonla eşit. Normal reopen kullanıcı hakkın sürmesini
+ve mağazanın çalışmasını teyit etti; server aynı1110Akı/5476kredi/claimed17.
+Baseline842/1456/claimed0; ödül alınmadan test şartı korunmamış, bakiye delta
+tamamen tek bir nedene atfedilmez. Mevcut premium refund politikası alınmış
+ödülleri geri almaz; bakiye/claimed resetleme veya kural değiştirme yok.
+
+20:12 Console liste görüntüsü Test: Ücretli Sezon Geçişi/İşlendi/199,99TRY/
+20:07 alımı;20:13:58TR exact-order RAM karşılaştırması receipt1/ledger1/
+console_order_matchestrue. Ham order/hash/token kimliklerini proof'a yazma.
+Refund henüz yok: yalnız exact ücretsiz sezon geçişi siparişinin100% iade+
+yararlanma hakkını kaldır işlemini insan yapacak. Sonra doğal scan/hakfalse/
+tek refund history/preserved rewards ve normal reopen kontrolü. Son scan
+20:13 tanığında19:53:50TR/seen1/applied0; manuel scan/restart/lease bypass yok.
+Savaş Premium makbuz/ledger0/hakfalse, kendi testleri hâlâ açık. Kanıt
+test-results/billing-v6/season-pass-purchase-uc-20261010.json. Scoped helper
+read-only-uc-premium-20261010.py artık optional --expect-order-sha256 destekler;
+digest yalnızRAM, çıktı kimliksiz. Checkout image yok; test/no-charge insan
+teyidi ve ayrıca receipt_is_testtrue. Genel kapılar/source/CI/AAB aynı.
+
+**10 Ekim20:04 önceki — kullanıcı Terms yayımladı; v6 native10/10:**
+Kullanıcı ZIP+Save'i tamamladı; agent submit yapmadı. CUA Success ve reload
+sonrası gridshard-public Production b92f1b0b-8330-4546-bd38-a8506d19ccdb/domain
+doğrulandı. HTTPS11/11 route200/byte/SHA/header adaya eşit; Terms canlıdır.
+14 madde/iade/eksi bakiye aynı. Kanıt terms-production-live-20261010.json.
+
+20:02:55TR ADB tek cihaz/v6/Play;20:01TR iki güvenli query0/10 fetched/0
+unfetched. UI tek tek fiyatlar ayrıca görülmedi. Yeni AAB veya server deploy
+yok. Kanıt test-results/billing-v6/device-all-products-v6-20261010.json.
+
+20:04:15TR READ ONLY Uç:842Akı/1456kredi, iki premiumfalse/claimed tier0,
+iki premium makbuz/ledger0. Kullanıcı sezon geçişi checkout test kartı+no-charge
+uyarısını teyit etti; screenshot yok ve ek ekran istemeden devam istedi.
+İnsan yalnız doğru ürün/test kartı/no-charge uyarısı hâlâ görünürse tek
+ücretsiz sezon geçişi alımını tamamlayacak. Agent purchase/refund/manual scan/
+hak veya bakiye write yapmadı. Sonrası receipt/ledger test=true, consume,
+sezon grant/hak, tek teslim ve normal reopen kontrolü; ardından ayrı ücretsiz
+premium iade/revoke testi için exact-order doğrulaması gerekir. Premium PASS
+henüz yok. Kanıt premium-pre-purchase-uc-20261010.json. Diğer genel kapılar
+açık; source/CI/AAB pinleri aynı. Commit/push kullanıcıya ait.
+
+**10 Ekim19:11 önceki — Terms upload formu ve premium baseline:**
+Browser-first CUA ile mevcut Edge Cloudflare URL/proje/Production doğrulandı;
+gridshard-public eski Production528af2d9. Approved21 dosyalık ZIP SHA6e892191...
+ve tüm manifest isim/size/hash eşleşmeleri doğru. Filechooser setFiles local
+file URL izni nedeniyle failed; güvenlik/izin değişimi yok, dosya listesi boş/
+Save and deploy disabled, yeni yayın yok. Kullanıcı elle ZIP seçimi (Save'e
+basmadan) istendi. CUA termsCloudflareTab Edge3/tab1378260585; handoff mark
+korunuyor. Sonraki tur current state oku;21 dosya doğrulanınca action-time
+publication onayı ve ardından live bytes. Kanıt
+`test-results/public-site/terms-publication-preflight-20261010.json`.
+
+19:11TR Uç dar READ ONLY başlangıcı:iki premiumfalse/claimed tier0/iki premium
+makbuz ve ledger0,838Akı/1404kredi. USB cihaz0; kullanıcıya USB+Uç Mağaza
+hazırlığı soruldu. Premium test-no-charge ekranı/ödeme/iade henüz yok. Kanıt
+`test-results/billing-v6/premium-baseline-uc-20261010.json` ve scoped helper
+`read-only-uc-premium-20261010.py`. İlk lisans-test alımı için kullanıcıdan
+Google ücretsiz test banner ve always-approve card ekranı almadan final
+onay yok. Live main import/manuel worker/ledger veya hak write yapılmayacak.
+Source/CI/AAB/14madde politikası aynı; genel production kapıları açık.
+
+**10 Ekim18:25 güncel durum — tüm ürünler Google tarafında ACTIVE:**
+Kullanıcı kalan seçenekleri etkinleştirdi. Bağımsız tek salt-okunur Google
+catalog GET200/complete single page:10 ürün/10 ACTIVE seçenek; tek standard/
+legacyCompatible/TR AVAILABLE, fiyatlar önceki snapshotla aynı. Agent ürün
+write/deploy/ödeme yapmadı.18:23TR v6 current-process native iki query0/
+fetched1/unfetched9; telefon10/10 henüz doğrulanmadı. Normal reopen ve mağaza
+fiyat ekranı istendi; kaldırma/data clear/app launch/log clear yok. Premium
+teslim/iade ve diğer ürünlerin testlerini tamamlandı sayma. Güvenli kanıt
+`test-results/billing-v6/catalog-all-active-20261010.json`.
+
+Terms yayını onaylı, önceki tur Computer Use URL doğrulama engeliyle durdu;
+10 Ekim adayı henüz Cloudflare'e yayımlanmadı. Kaynak/CI/AAB ve14 madde/iade/
+eksi bakiye politikası aynı. Genel üretim erişimi/rapor/vitals/savaş QA ve
+backup operasyonu hâlâ ayrı kapılar. Commit/push kullanıcıya ait.
+
+**10 Ekim17:58 güncel durum — v6 kurulu/mağaza geçti, Ön lansman sonucu yok:**
+17:53:11TR ADB salt-okunur:canonical/versionCode6/Play installer/tek cihaz;
+device lastUpdateTime17:11:39. Current process/tag-only kimliksiz native
+query17:51:21TR code0/fetched1/unfetched9; diğer9 product status3=
+PRODUCT_NOT_FOUND. Global BillingUnavailable3 diye yorumlama. Önceki DRAFT
+katalogla uyumlu çıkarım; provider bu tur yeniden kontrol edilmedi. Kullanıcı
+120Akı29,99/bakiyeler aynı838/1404/düğmeler korunuyor teyidi verdi. Temel v6
+store geçer; tümrace/purchase/consume/replay bu sürümde kanıtlandı deme.
+
+Ön lansman17:55 Genel bakış boş, rapor sonucu yok;17:57 Ayarlar no credentials,
+3 boş deep link, özel dil/Robo script yok, disable kontrolü görünmüyor.
+Exact cause bilinmiyor; Google lab kapasitesine bağlı. Missing report=0error
+veya missing upload değildir. Ayar/upload/yeni AAB değişimi yapılmadı. Rapor/
+vitals, iki-phone savaş QA, Terms onaylı yayını, diğer ürün kapsamı ve backup
+operation kapıları korunur. Kanıtlar
+`test-results/billing-v6/device-v6-store-check-20261010.json`,
+`test-results/billing-v6/prelaunch-report-status-20261010.json`.
+
+**10 Ekim17:12 önceki durum — v6 güncellemesi geldi, cihaz teyidi bekliyordu:**
+Kullanıcı güncellemenin geldiğini söyledi; kurulum tamamlandı demedi.
+17:12:32TR normal ortamdaki salt-okunur ADB yetkili fiziksel telefon0;
+versionCode6/Play installer kontrolü yok. Sandbox ilk query failure ürün hatası
+değil; normal diagnostic sorgu başarılı. Kullanıcı Play güncellemesi+USB+mağaza
+fiyat/bakiye kontrolüne yönlendirildi; yeni ödeme/kaldırma/data clear/install yok.
+Güvenli ignored kayıt `test-results/billing-v6/v6-update-availability-20261010.json`.
+Önceki testler/source/CI/AAB aynı; v6 cihaz QA veya yeni konsol statüsü varsayma.
+
+**10 Ekim17:04 önceki durum — ret/bekleyen/yavaş onay ve normal reopen:**
+Yavaş-onay testinde17:02TR beklerken yeni grant yok718/1404;17:03TR tek yeni
+test makbuzu/ledger/consume/grant120, console order/sahip eşleşiyor838/1404.
+Kullanıcı normal reopen ve mağaza responsive teyidi verdi;17:03:58TR dar
+READ ONLY aynı bakiyeyi/tek yeni makbuzu doğruladı. Toplam2 makbuz: eski
+refunded+yenisi nonrefunded. İki yavaş testin son onayını kullanıcı kendisi
+yaptı; ödeme yöntemi/no-charge ekranı önceden agent'a gösterilmedi. Yeni
+başarılı kaydın test=true olduğu sunucuda bağımsız doğrulandı. Ret/pending
+kanıtı forced replay veya pending sırasında restart kanıtı değildir.
+
+16:51 ve17:00TR READ ONLY: orijinal iade sonraki doğal scan seen1/applied0,
+history/debit1/effect838→718/debit120; ikinci kesinti yok. Always-denied ekranı
+ve sonrasında tek eski makbuz/no grant718/1404.16:58 pending ekranı→kullanıcı
+iptal bildirimi→16:59/17:00 no grant718/1404; mağaza normal kullanıcı teyidi.
+Ek yerel refund/reconciliation/policy51/51 geçti.14:01 backup audit scope:
+2 tarihsel transient migration job'u/timer0/dört sistem cron+root/ubuntu job0;
+16 backup/latestSHA sağlam; regular creation doğrulanmadı/retention OnFailure
+boş, dış scheduler
+ve offsite bilinmiyor. Scheduler/restore/restart kurulmadı. USB16:52 cihaz0.
+
+Ignored kanıtlar `test-results/billing-v6/refund-repeat-and-decline-uc-20261010.json`,
+`test-results/billing-v6/pending-tests-uc-20261010.json`,
+`test-results/production-backup-scheduler-readonly-20261010.json`.
+Agent purchase/refund/revoke/consume/manualscan/balancewrite/deploy/commitpush
+yok. Source/CI/AAB aynı. Kalanlar: v6 cihaz/QA,12 kişi14gün, Terms onaylı
+yayını, diğer ürün kapsamı/testleri ve yedek operasyonu; genel üretim PASS değil.
+
+**10 Ekim önceki durum — test iadesi kalıcı işlendi / cihaz718:**
+13:55:21TR dar READ ONLY: aynı tek120Akı ücretsiz test makbuzu/defteri refunded=true,
+normal13:53:46TR scan seen1/applied1; kalıcı işlem13:53:47TR. refund_effect
+flux838→718/debit120/waived0; tek history/debit, voided event işlenmiş. Kullanıcı
+cihaz718 bildirdi. Devre Kredisi önceki ve sonraki tanıkta1404. İlk uçtan uca
+iade akışı geçti; ikinci doğal scan/applied0/ikinci debit yok canlı kanıtı hâlâ
+bekliyor. Forced replay yok; son kullanıcı yanıtında restart açıkça belirtilmedi.
+Diğer ürün/premium/eksi bakiye senaryolarını PASS sayma. Agent canlı write,
+yeni refund/revoke/consume/manualscan/deploy/commitpush yok; source/CI/AAB aynı.
+Güvenli ignored kayıt `test-results/billing-v6/refund-uc-server-applied-20261010.json`.
+
+**10 Ekim önceki durum — test iadesi / sunucu uygulaması bekleniyordu:**
+Kullanıcı aynı ücretsiz120Akı test siparişini iade etti;13:36TR ekranı
+refunded/toplam0,00TRY gösteriyor.13:40:58TR WIF Voided Purchases GET aynı
+tek siparişin hak geri almasını doğruladı (13:35:56TR,geliştirici kaynaklı).
+13:42:23TR READ ONLY sunucu defteri henüz refunded=false/history0/eventseen=false;
+Akı838/Devre Kredisi1404. Son normal tarama13:23:46TR iadeden önceydi;
+sonraki yaklaşık13:54TR. Arada aktivite yoksa120 kesinti sonrası718 beklenir.
+Uçtan uca iade PASS değil: doğal taramada kalıcı refund_effect/debit120/
+history1/eventseen ve normal reopen, sonra ikinci taramada ikinci debit yok
+kanıtı gerekiyor. Agent yeni iade/consume/revoke/manualworker/bakiye write yok.
+Ham order/token/digest saklanmadı. Güvenli ignored kayıt
+`test-results/billing-v6/refund-uc-provider-confirmed-20261010.json`.
+Pinler/diğer ürünler/Terms adayı/üretim kapsamı aynı.
+
+**10 Ekim önceki durum — üretim hazırlığı:** Kullanıcının son v6 bildirimi
+incelemede. Dashboard12 katılımcı/1 gün, üretim etkin değil ve başvuru kapalı;
+14 gün tamamlanmadı. Uygulama içeriği0 bekleyen/10 tamamlanan beyan; form
+detayları ayrıca onaylanmış sayılmaz. Kullanıcı normal reopen sonrası Uç
+bakiyesi832 kaldı dedi; canlı replay/iade veya v6 kurulumu kanıtı değil.
+
+Salt-okunur preflight:99 backend ödeme/iade+17 istemci+26 site/saklama testi,
+30 yerel görünüm kontrolü geçti. Canlı eski site11/11, r14/health/polling
+checkpoint ve retention timer başarılı. Katalog10/10/TR; iki premium199,99 TL,
+yalnız120Akı ACTIVE/diğer9 DRAFT. Düzenli yeni yedek oluşturma ve hata bildirimi
+doğrulanmadı; eldeki16 yedekte30 gün geçen0, en yenisi11,21h/SHA sağlam.
+
+Yerel Terms giriş/tarih düzeltmesi hazır;14 onaylı madde değişmedi.21 dosyalık
+adayda yalnız TR/EN Terms HTML farklı; canlı yayın yapılmadı. Oyun kodu/AAB
+değişmedi, yeni AAB gerekmez. Commit/push kullanıcıya ait. Yeni site kodu
+frozen a451221/source ZIP/CI içinde değildir; mevcut v6 hash/CI5/5 aynıdır.
+Detay `docs/PRODUCTION_READINESS_20261010.md`; güvenli ignored kanıt
+`test-results/production-preflight-20261010.json`. Sonraki kapılar başarısız/
+bekleyen ödeme, doğru ücretsiz test siparişinde onaylı iade/geri alma,
+satışa açılacak ürünlerin testi, v6 cihaz/rapor kontrolü ve yedek operasyonudur.
+Agent canlı write/yayın/ödeme/iade/aktivasyon/deploy/commit-push yapmadı.
+
+**10 Ekim önceki durum — Uç hesabında ücretsiz 120 Akı test alımı tamamlandı:**
+12:48 TR paylaşılan Google Play ekranında 120 Akı / 29,99 TL, test kartı
+her zaman onaylanır ve ödeme alınmayacağı bildirimi görsel doğrulandı.
+Kullanıcı onay/oyuna dönüş/+120 Akı/Uç hesabı bildirdi. Son cihaz bildirimi v5;
+fiyat veya bu alım v6 fix'in cihaz kanıtı değildir. V6 Play yayını insan beyanı.
+12:56:44 TR pinned SSH / PostgreSQL READ ONLY: tek Uç profili, 12:40 sonrası
+tek flux_120 makbuzu ve tek matching ledger. Alım 12:49:24 TR, google_play,
+test=true/environment=test, flux_shards grant120, consumed=true; sahip/grant
+eşleşiyor, refunded=false, token digest varlığı boolean. Güncel bakiye832.
+Kalıcı kayıtlar sorgulandı; doğrudan Google GET/consume POST/live replay/iade yok.
+Agent canlı write/deploy/yeni alım/diğer ürün aktivasyonu/commit-push yapmadı.
+Ignored güvenli kanıt test-results/billing-v6/test-purchase-uc-20261010.json.
+Sıradaki adım normal kapat/aç sonrası ikinci +120 olmamasını teyit; henüz
+reopen/replay/iade veya telefonda v6 kurulumu kanıtlanmadı. Veri silme/kaldırma
+yok. Diğer9 son bağımsız katalogda DRAFT; final source/CI/hash pinleri korunur.
+
+**10 Ekim önceki durum — v6 Play yayını kullanıcı bildirdi; cihaz v5'te120 Akı fiyatı döndü:**
+Read-only ADB12:43TR canonical/Play installer/versionCode5; son update08:41:10TR.
+Manuel yerel v6 APK paket çakışması bildirdi. Kurulu public signer09:6A:CD…A0:E6,
+yerel upload signer03:A4:5C…1F:88 farklı; agent install/uninstall/data-clear yok.
+Tekrar APK deneme/kaldırma/veri silme/key-package değişimi önerme.
+Kullanıcı v6 AAB upload/publish bildirdi; konsol bağımsız doğrulanmadı, agent
+upload/publish yapmadı. Aynı yayını tekrarlama. Sonra v5'te120 Akı29,99TL tuşu
+aktif dedi; UI/native query bağımsız doğrulanmadı, v6 fix etkisi diye sunma.
+Google ödeme ekranında test uyarısı ve ücretsiz test ödeme yöntemi görülmeden
+son ödeme onayı yok; hesap/kart/token/ham log paylaşma. Play Store'dan v6
+update'i/versionCode6 ayrıca doğrulanacak; final kaynak/CI/hash pinleri aynı.
+Ignored device-signature-and-price-status-20261010.json billing-v6 klasöründe.
+
+**10 Ekim önceki kaynak freeze — a451221 CI yeşil, final v6 doğrulandı; Alpha onayı bekleniyordu:**
+Kullanıcı commit/push yaptı; `a45122176ea8c81ebd2de2f92052c884d9bad1ff`.
+Quality38034762931 aynı SHA/push/main/attempt1 completed/success; beş iş geçti.
+Clean kaynak ZIP961 dosya+manifest, runtime data yok;8 fingerprint testli adayla
+eşleşiyor. Offline incremental final build22sn, lintVital ve mevcut imza/audit
+74 asset/9font/manifest6/queue/native class-tag kontrolleri geçti. Aynı kaynak
+önceki full lint0hata/3uyarı/helper0 bulgu raporu korundu, yeniden full lint yok.
+Final artifacts/android-production-20261010-v6; AAB SHA
+aba0023e3b36f0b007814766efd2af4b0b8e2346194e74ee32791e4821124beb;
+APK3702ae9534abb3f36df59d861440eec3c2bbb0b5b06525cdaa41a40e20dc976c.
+ZIPc505db1d1167d1943c9ebe0817f3126ca1305f61368b2a3be1b93d09e74544ab.
+Final byte'lar testli adayla aynı; clean/exact CI provenance artık doğrulandı.
+Build/audit öncesi ve sonrası tree clean; sonradan yalnız operasyon notları
+güncellendi. Agent commit/push yok. V5 pinleri yeniden doğrulandı; r14 aynı.
+Play upload/yayın/telefon kurulumu/diğer ürün aktivasyonu yok. Yalnız Alpha v6
+taslak/yükleme için ayrı onay al; gönderme/yayın ayrı kapı. Diğer9 DRAFT;
+120Akı fiyatı/test banner/ücretsiz alım/teslim/consume/replay/iade cihazda kanıtlanmadı.
+Detay docs/ANDROID_V6_BILLING_RELEASE_20261010.md ve final release-provenance.json.
+
+**10 Ekim önceki durum — v6 Billing düzeltmesi/adayı hazır; kullanıcı commit/push + CI bekleniyordu:**
 Dar kapsam onaylandı. Android native ürün/kurtarma/purchase/consume çağrıları
 promise tamamlanana kadar sıralanır; eski/eksik fiyatla ödeme koruması korunur.
 Kalıcı sync tool/Java template sadece bilinen INAPP ID/sayısal query+unfetched

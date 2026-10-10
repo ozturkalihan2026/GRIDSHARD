@@ -21,7 +21,12 @@ from __future__ import annotations
 import os
 import uuid
 
-from .store_refund_policy import refund_debit
+from .store_refund_policy import CURRENCIES, refund_debit
+from .premium_reward_recovery import (
+    LEGACY_POLICY, POLICY_VERSION as PREMIUM_REFUND_POLICY,
+    adjust_refund as adjust_premium_refund,
+    register_purchase as register_premium_purchase, refund_status_view,
+)
 
 
 CURRENCY = "TRY"
@@ -177,6 +182,7 @@ def process_purchase(
     test_mode: bool,
     now_iso: str,
     verified=None,
+    premium_refund_policy: str = "legacy",
 ) -> dict:
     """Ürünü bir kez verir. Gerçek mağazada ``verified`` mağaza sunucusunun
     doğruladığı alımdır (``store_verification.VerifiedPurchase``); işlem
@@ -200,6 +206,8 @@ def process_purchase(
         if existing.get("product_id") != product["id"]:
             raise StoreError("İşlem kimliği farklı bir ürüne ait.")
         return {**existing, "replayed": True}
+    if premium_refund_policy not in {LEGACY_POLICY, PREMIUM_REFUND_POLICY}:
+        raise StoreError("Premium iade politikası geçersiz.")
     granted = _grant(profile, product)
     receipt = {
         "key": key,
@@ -215,6 +223,15 @@ def process_purchase(
         "consumed": provider != "google_play",
         "replayed": False,
     }
+    if product["id"] == "season_pass_premium":
+        profile.season_premium_purchase_key = key
+        if premium_refund_policy == PREMIUM_REFUND_POLICY:
+            restored = register_premium_purchase(profile, key, profile.active_meta_season_id)
+            receipt["refund_policy_version"] = PREMIUM_REFUND_POLICY
+            if verified is not None:
+                receipt["provider_purchased_at_ms"] = verified.purchased_at_ms
+            if restored:
+                receipt["restored_premium_resources"] = restored
     profile.purchase_receipts[key] = dict(receipt)
     while len(profile.purchase_receipts) > PURCHASE_RECEIPT_LIMIT:
         profile.purchase_receipts.pop(next(iter(profile.purchase_receipts)))
@@ -242,10 +259,15 @@ def revoke_purchase(profile, entry: dict, *, now_iso: str) -> dict:
     inebilir ve oyuncu yeniden kazanana kadar o para birimini harcayamaz
     (sunucudaki bütün harcama denetimleri bakiyeyi karşılaştırır). Ücretli
     geçiş ve Savaş Premium yalnız iade edilen sezon için etkinse kapatılır;
-    önceden alınmış premium ödüller geri alınmaz.
+    eski makbuzlarda önceden alınmış premium ödüller geri alınmaz. Sürüm
+    damgalı yeni sezon geçişlerinde gerçek kazanımlar bir kez geri alınır.
     """
     granted = dict(entry.get("granted") or {})
     changes: dict = {}
+    premium_changes = adjust_premium_refund(profile, entry, reversed_refund=False)
+    if premium_changes is not None:
+        _mark_receipt_refund(profile, str(entry.get("key", "")), refunded=True, now_iso=now_iso)
+        return premium_changes
     currency = str(granted.get("currency") or "")
     if currency in {"flux_shards", "circuit_credits"}:
         amount, waived = refund_debit(entry, int(getattr(profile, currency)))
@@ -255,8 +277,10 @@ def revoke_purchase(profile, entry: dict, *, now_iso: str) -> dict:
             changes["waived_amount"] = waived
     elif granted.get("season_pass_season_id"):
         season_id = str(granted["season_pass_season_id"])
-        if season_id == profile.active_meta_season_id and profile.season_premium_pass_season_id == season_id:
+        if (season_id == profile.active_meta_season_id and profile.season_premium_pass_season_id == season_id
+                and profile.season_premium_purchase_key in {"", str(entry.get("key", ""))}):
             profile.season_premium_pass_season_id = ""
+            profile.season_premium_purchase_key = ""
             changes = {"season_pass_season_id": season_id, "active": False}
     elif granted.get("battle_premium_season_id"):
         season_id = str(granted["battle_premium_season_id"])
@@ -272,6 +296,10 @@ def restore_refunded_purchase(profile, entry: dict, *, now_iso: str) -> dict:
     yeniden verir. Geçiş ve Savaş Premium yalnız aynı sezon sürüyorsa açılır."""
     granted = dict(entry.get("granted") or {})
     changes: dict = {}
+    premium_changes = adjust_premium_refund(profile, entry, reversed_refund=True)
+    if premium_changes is not None:
+        _mark_receipt_refund(profile, str(entry.get("key", "")), refunded=False, now_iso=now_iso)
+        return premium_changes
     currency = str(granted.get("currency") or "")
     if currency in {"flux_shards", "circuit_credits"}:
         amount = max(0, int(granted.get("amount", 0)))
@@ -333,6 +361,23 @@ def store_refund_message(
         else:
             action = "Eklenen" if reversed_refund else "Geri alınan"
             detail = f"{action}: {amount}; açık: {deficit}. Oynayarak kapanır; para borcu değildir."
+    elif changes.get("premium_refund_policy"):
+        if reversed_refund:
+            resources = changes.get("restored_premium_resources") or {}
+            flux = int(resources.get("flux_shards", 0))
+            credits = int(resources.get("circuit_credits", 0))
+            parts = sum(amount for resource, amount in resources.items() if resource not in CURRENCIES)
+            detail = f"Restored: {flux} Flux, {credits} Credits, {parts} pieces." if english else (
+                f"Eklenen: {flux} Akı, {credits} DK, {parts} parça."
+            )
+        else:
+            resources = changes.get("premium_resources") or {}
+            flux = int((resources.get("flux_shards") or {}).get("debited_amount", 0))
+            credits = int((resources.get("circuit_credits") or {}).get("debited_amount", 0))
+            parts = sum(int(item["debited_amount"]) for resource, item in resources.items() if resource not in CURRENCIES)
+            detail = f"Removed: {flux} Flux, {credits} Credits, {parts} pieces. Deficits: Store." if english else (
+                f"Geri alınan: {flux} Akı, {credits} DK, {parts} parça. Açıklar: Mağaza."
+            )
     elif changes.get("active") is not None:
         detail = ("Entitlement restored." if changes["active"] else "Entitlement revoked.") if english else (
             "Premium hak açıldı." if changes["active"] else "Premium hak kapatıldı."
@@ -389,9 +434,20 @@ def _product_view(product: dict) -> dict:
     }
 
 
-def store_view(profile, *, purchase_test_mode: bool, ad_test_mode: bool, platforms: dict | None = None) -> dict:
+def store_view(profile, *, purchase_test_mode: bool, ad_test_mode: bool, platforms: dict | None = None,
+               premium_refund_policy: str = LEGACY_POLICY) -> dict:
     packs = [_product_view(product) for product in PAID_PRODUCTS if product["kind"] == "currency"]
     platforms = platforms or {}
+    season_pass = _product_view(PRODUCTS_BY_ID["season_pass_premium"])
+    if premium_refund_policy == PREMIUM_REFUND_POLICY:
+        season_pass["description_tr"] += (
+            " İadede premium kazanımlar geri alınır; harcanan miktar ilgili kaynakta oyunla kapatılan açık oluşturabilir."
+        )
+        season_pass["description_en"] = (
+            "Unlocks this season's premium reward track; premium rewards are doubled. "
+            "Refunds reclaim premium resources and actual chest contents; spent amounts may become "
+            "same-resource deficits clearable by playing, not cash debt."
+        )
     return {
         "currency": CURRENCY,
         # Yerel uygulama ödeme penceresine geçirir (appAccountToken).
@@ -407,8 +463,10 @@ def store_view(profile, *, purchase_test_mode: bool, ad_test_mode: bool, platfor
             "ad_policy": platforms.get("ad_policy"),
         },
         "season_pass": {
-            **_product_view(PRODUCTS_BY_ID["season_pass_premium"]),
+            **season_pass,
             "active": profile.premium_pass_active(),
+            "refund_policy_version": premium_refund_policy,
+            "reward_recovery_on_refund": premium_refund_policy == PREMIUM_REFUND_POLICY,
         },
         "battle_premium": {
             **_product_view(PRODUCTS_BY_ID["battle_rewards_premium"]),
@@ -417,4 +475,5 @@ def store_view(profile, *, purchase_test_mode: bool, ad_test_mode: bool, platfor
         },
         "flux_packs": [pack for pack in packs if pack["currency"] == "flux_shards"],
         "credit_packs": [pack for pack in packs if pack["currency"] == "circuit_credits"],
+        "premium_refund_status": refund_status_view(profile),
     }

@@ -85,6 +85,8 @@ class VerifiedPurchase:
     # obfuscatedExternalAccountId, Apple appAccountToken); mağaza imzalı
     # verisinden okunur. Sunucu bunu oyuncunun belirteciyle karşılaştırır.
     account_token: str = ""
+    # Authenticated provider timestamp only; zero means unavailable.
+    purchased_at_ms: int = 0
 
 
 def _b64url(value: bytes) -> str:
@@ -125,6 +127,17 @@ def _int(value) -> int:
         return int(value or 0)
     except (TypeError, ValueError):
         return 0
+
+
+def _purchase_time_ms(value) -> int:
+    # Malformed authenticated timestamps cannot silently grandfather a new
+    # purchase. Return unavailable so the prospective policy fails closed.
+    if isinstance(value, bool) or not isinstance(value, (int, str)):
+        return 0
+    if isinstance(value, str) and not re.fullmatch(r"[0-9]{1,19}", value):
+        return 0
+    milliseconds = int(value)
+    return milliseconds if 0 < milliseconds <= 9223372036854775807 else 0
 
 
 def _http_client():
@@ -283,6 +296,7 @@ class GooglePlayVerifier:
             purchase_token=purchase_token,
             consumed=int(payload.get("consumptionState", 0)) == 1,
             account_token=str(payload.get("obfuscatedExternalAccountId") or "").strip().lower(),
+            purchased_at_ms=_purchase_time_ms(payload.get("purchaseTimeMillis")),
         )
 
     def voided_purchases(self, start_ms: int, end_ms: int) -> list[dict]:
@@ -570,6 +584,7 @@ class AppStoreVerifier:
             store_product_id=store_product_id,
             environment=environment,
             account_token=str(payload.get("appAccountToken") or "").strip().lower(),
+            purchased_at_ms=_purchase_time_ms(payload.get("purchaseDate")),
         )
 
     def notification_history(self, start_ms: int, end_ms: int, *, notification_type: str) -> list[str]:

@@ -10,9 +10,85 @@ import pytest
 from app import main as gateway
 from app.postgres_team import PostgresTeamRepository
 from app.team_service import TeamService
+from app.store_catalog import process_purchase
+from app.premium_reward_recovery import POLICY_VERSION, wallet_snapshot
+from app.player_profile import SEASON_PREMIUM_REWARD_TRACK
 from fastapi import HTTPException
 from test_postgres_social_api import social_db  # noqa: F401 -- shared guarded DB fixture
 from test_postgres_social_api import erasure_db  # noqa: F401
+
+
+def _premium_fixture(social_db, request):
+    pool, _, platform, (player, _, _) = social_db
+    with gateway._store_economy_transaction(player):
+        profile = gateway.player_profile_service.get_or_create(player)
+        profile.season_xp = 20000
+        receipt = process_purchase(profile, "season_pass_premium", "test", uuid4().hex,
+                                   test_mode=True, now_iso="2026-10-10T00:00:00Z", premium_refund_policy=POLICY_VERSION)
+        gateway.persist_player_data(player)
+        platform.record_store_receipt(receipt["key"], player_id=player, receipt=receipt)
+    def cleanup():
+        with pool.transaction(), platform._lock:
+            data = platform._read()
+            data.get("store_receipts", {}).pop(receipt["key"], None)
+            data.get("store_notifications", {}).pop("premium-refund-" + receipt["transaction_id"], None)
+            platform._write(data)
+    request.addfinalizer(cleanup)
+    return player, receipt
+
+
+def test_premium_chest_refund_rollback_and_restart_are_one_database_transaction(social_db, monkeypatch, request):
+    _, players, platform, _ = social_db
+    player, receipt = _premium_fixture(social_db, request)
+    baseline = wallet_snapshot(gateway.player_profile_service.get_or_create(player))
+    tier = next(item["tier"] for item in SEASON_PREMIUM_REWARD_TRACK if item.get("chest_tier"))
+    request = gateway.MetaOperationRequest(request_id=uuid4().hex)
+    gateway.claim_premium_season_tier_reward(player, tier, request)
+    before = deepcopy(players.load(player).profile)
+    original_receipt = deepcopy(platform.store_receipt(receipt["key"]))
+    event = "premium-refund-" + receipt["transaction_id"]
+    kwargs = dict(provider="test", source="fixture", transaction_id=receipt["transaction_id"], event_id=event)
+    def fail(*_args):
+        raise RuntimeError("injected premium notification failure")
+    with monkeypatch.context() as patch:
+        patch.setattr(platform, "queue_notification", fail)
+        with pytest.raises(RuntimeError, match="premium notification failure"):
+            gateway._apply_store_refund(**kwargs)
+    assert players.load(player).profile == before
+    assert platform.store_receipt(receipt["key"]) == original_receipt
+    assert not platform.store_notification_seen(event)
+    assert gateway._apply_store_refund(**kwargs)["changed"]
+    gateway.player_profile_service._profiles.pop(player)
+    gateway.player_data_store_service.load_player(player)
+    profile = gateway.player_profile_service.get_or_create(player)
+    assert wallet_snapshot(profile) == baseline and not profile.premium_pass_active()
+    assert profile.premium_reward_recovery[profile.active_meta_season_id]["recovered"]
+    assert not gateway._apply_store_refund(**kwargs)["changed"]
+    replay = gateway.claim_premium_season_tier_reward(player, tier, request)
+    assert replay["replayed"] and wallet_snapshot(gateway.player_profile_service.get_or_create(player)) == baseline
+
+
+def test_premium_chest_interruption_rolls_back_claim_ledger_wallet_and_operation_id(social_db, monkeypatch, request):
+    pool, players, _, _ = social_db
+    player, _ = _premium_fixture(social_db, request)
+    before = deepcopy(players.load(player).profile)
+    tier = next(item["tier"] for item in SEASON_PREMIUM_REWARD_TRACK if item.get("chest_tier"))
+    award = gateway.meta_progression_service.award_instant_chest
+    def fail(*args):
+        award(*args)
+        raise RuntimeError("injected premium chest failure")
+    request = gateway.MetaOperationRequest(request_id=uuid4().hex)
+    with monkeypatch.context() as patch:
+        patch.setattr(gateway.meta_progression_service, "award_instant_chest", fail)
+        with pytest.raises(RuntimeError, match="premium chest failure"):
+            gateway.claim_premium_season_tier_reward(player, tier, request)
+    assert players.load(player).profile == before
+    with pool.connection() as connection:
+        assert connection.execute("SELECT COUNT(*) FROM player_economic_operations WHERE player_id = %s", (player,)).fetchone()[0] == 0
+    gateway.claim_premium_season_tier_reward(player, tier, request)
+    saved = players.load(player).profile["meta_progression_state"]
+    assert saved["claimed_premium_season_tiers"] == [tier]
+    assert len(saved["premium_reward_recovery"][saved["active_season_id"]]["claims"]) >= 2
 
 
 def test_recovery_rolls_back_code_identity_and_revocations_together(erasure_db, monkeypatch):

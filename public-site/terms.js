@@ -8,8 +8,8 @@ module.exports = {
     "description": "GRIDSHARD kullanım, hesap, adil oyun, isteğe bağlı satın alma ve iade kuralları.",
     "eyebrow": "OYUN VE HESAP KURALLARI",
     "headline": "Kullanım şartları",
-    "updated": "2026-10-09",
-    "intro": "Bu sayfa GRIDSHARD kullanım ve destek kurallarını açıklar. Ücretli satın almalar şu anda etkin değildir. Satın alma ve iade maddeleri satış etkin olduğunda uygulanacak politikayı belirtir; bu sayfanın yayımlanması ödeme açıldığını, uygulama içi şartlar onayı alındığını veya teknik hazırlığın tamamlandığını göstermez.",
+    "updated": "2026-10-10",
+    "intro": "Bu sayfa GRIDSHARD kullanım ve destek kurallarını açıklar. GRIDSHARD genel kullanıma henüz açılmamıştır. Satın alma seçeneklerinin bulunabilirliği sürüme, test kanalına ve ülkeye göre değişebilir; tüm ürünlerin satışta olduğu varsayılmamalıdır. Bir ödeme yalnız Google Play onay ekranında açıkça test siparişi olduğu ve ödeme alınmayacağı belirtiliyorsa ücretsiz testtir; test kanalına katılmak tek başına alımları ücretsiz yapmaz. Satın alma ve iade maddeleri ilgili seçenek etkin olduğunda uygulanır; bu sayfanın yayımlanması uygulama içi şartlar onayı alındığını veya teknik hazırlığın tamamlandığını göstermez.",
     "sections": [
       {
         "title": "1. Kapsam ve iletişim",
@@ -139,8 +139,8 @@ module.exports = {
     "description": "GRIDSHARD account, fair play, optional purchase and refund rules.",
     "eyebrow": "GAME AND ACCOUNT RULES",
     "headline": "Terms of Service",
-    "updated": "2026-10-09",
-    "intro": "This page explains GRIDSHARD use and support rules. Paid purchases are not currently enabled. Purchase and refund clauses describe the policy for when sales are enabled; publishing this page does not mean that payments have been enabled, in-app terms acceptance has been obtained, or technical preparation is complete.",
+    "updated": "2026-10-10",
+    "intro": "This page explains GRIDSHARD use and support rules. GRIDSHARD has not yet launched publicly. Purchase option availability may vary by version, test track and country; do not assume that all products are on sale. A payment is a free test only when the Google Play confirmation screen explicitly identifies it as a test order and states that you will not be charged; joining a test track alone does not make purchases free. Purchase and refund clauses apply when the relevant option is enabled; publishing this page does not mean that in-app terms acceptance has been obtained or technical preparation is complete.",
     "sections": [
       {
         "title": "1. Scope and contact",

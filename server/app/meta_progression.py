@@ -883,7 +883,9 @@ class MetaProgressionService:
             if not cost:
                 raise MetaProgressionError("Çekirdek azami seviyede.")
             owned = profile.core_shards_by_type.get(core_id, 0)
-            if profile.flux_shards < cost["flux_shards"] or owned + profile.core_shards < cost["shards"]:
+            if owned < 0:
+                raise MetaProgressionError("Bu çekirdek parçasının iade açığını oynayarak kapatmalısın.")
+            if profile.flux_shards < cost["flux_shards"] or owned + max(0, profile.core_shards) < cost["shards"]:
                 raise MetaProgressionError(f"Gerekli: {cost['flux_shards']} Akı ve {cost['shards']} çekirdek parçası.")
             profile.flux_shards -= cost["flux_shards"]
             used = min(owned, cost["shards"])
@@ -980,6 +982,8 @@ class MetaProgressionService:
             raise MetaProgressionError("Modül azami seviyede.")
         cost = module_upgrade_cost(module_id, level)
         shards = int(profile.module_shards.get(module_id, 0))
+        if shards < 0:
+            raise MetaProgressionError("Bu modül parçasının iade açığını oynayarak kapatmalısın.")
         universal_shards = max(0, int(profile.universal_module_shards))
         if profile.circuit_credits < cost["circuit_credits"] or shards + universal_shards < cost["shards"]:
             raise MetaProgressionError(f"Gerekli: {cost['circuit_credits']} Devre Kredisi ve {cost['shards']} modül parçası.")
@@ -987,7 +991,7 @@ class MetaProgressionService:
         card_shards_spent = min(shards, int(cost["shards"]))
         universal_spent = int(cost["shards"]) - card_shards_spent
         profile.module_shards[module_id] = shards - card_shards_spent
-        profile.universal_module_shards = universal_shards - universal_spent
+        profile.universal_module_shards -= universal_spent  # Preserve deficits when spending only specific pieces.
         profile.module_upgrade_levels[module_id] = int(cost["next_level"])
         receipt = {
             "request_id": request_id,

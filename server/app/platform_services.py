@@ -179,6 +179,12 @@ class PlatformService(PushOutbox):
                     "refunded": False,
                 }
                 receipts[key] = entry
+                # Only process_purchase's server-stamped prospective version
+                # is copied. Old ledger entries are never upgraded on replay.
+                if receipt.get("refund_policy_version") == "season-rewards-v1":
+                    entry["refund_policy_version"] = "season-rewards-v1"
+                    if receipt.get("provider_purchased_at_ms"):
+                        entry["provider_purchased_at_ms"] = receipt["provider_purchased_at_ms"]
                 if digest:
                     data.setdefault("store_receipt_tokens", {})[digest] = key
                 self._write(data)

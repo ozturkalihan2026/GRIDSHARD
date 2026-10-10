@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, replace
+from copy import deepcopy
 from pathlib import Path
 from contextlib import contextmanager
 import json
@@ -689,6 +690,8 @@ class PlayerDataStoreService:
             "social_battle_invites": [dict(item) for item in profile.social_battle_invites],
             "season_premium_pass_season_id": profile.season_premium_pass_season_id,
             "claimed_premium_season_tiers": list(profile.claimed_premium_season_tiers),
+            "season_premium_purchase_key": profile.season_premium_purchase_key,
+            "premium_reward_recovery": deepcopy(profile.premium_reward_recovery),
             "battle_premium_season_id": profile.battle_premium_season_id,
             "purchase_receipts": {
                 key: dict(receipt) for key, receipt in profile.purchase_receipts.items()
@@ -781,7 +784,7 @@ class PlayerDataStoreService:
             for module_id in MODULES
         }
         stored_shards = {
-            str(module_id): max(0, int(amount))
+            str(module_id): int(amount)
             for module_id, amount in dict(
                 meta.get("module_shards", {})
             ).items()
@@ -918,7 +921,8 @@ class PlayerDataStoreService:
                 max(0, int(meta.get("coins", 600))) if int(meta.get("progression_version", 1)) < 2 else 0
             ),
             core_shards=int(meta.get("core_shards", 0)),
-            core_shards_by_type={str(k): max(0, int(v)) for k, v in meta.get("core_shards_by_type", {}).items()},
+            # Signed fragment balances are prospective premium refund deficits.
+            core_shards_by_type={str(k): int(v) for k, v in meta.get("core_shards_by_type", {}).items()},
             core_upgrade_levels={str(k): max(0, min(14, int(v))) for k, v in meta.get("core_upgrade_levels", {}).items()},
             module_talents={str(k): dict(v) for k, v in meta.get("module_talents", {}).items()},
             lifetime_stats=dict(meta.get("lifetime_stats", {})),
@@ -1013,6 +1017,8 @@ class PlayerDataStoreService:
             claimed_premium_season_tiers=tuple(
                 int(value) for value in meta.get("claimed_premium_season_tiers", [])
             ),
+            season_premium_purchase_key=str(meta.get("season_premium_purchase_key", "")),
+            premium_reward_recovery=deepcopy(dict(meta.get("premium_reward_recovery") or {})),
             battle_premium_season_id=str(meta.get("battle_premium_season_id", "")),
             purchase_receipts={
                 str(key): dict(receipt)
@@ -1033,7 +1039,7 @@ class PlayerDataStoreService:
                 str(value) for value in meta.get("seen_inbox_notice_ids", [])
             ),
             direct_messages_seen_at=max(0, int(meta.get("direct_messages_seen_at", 0) or 0)),
-            universal_module_shards=max(0, int(meta.get("universal_module_shards", 0))),
+            universal_module_shards=int(meta.get("universal_module_shards", 0)),
             reward_inbox=[
                 dict(item)
                 for item in meta.get("reward_inbox", [])

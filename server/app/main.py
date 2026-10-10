@@ -35,6 +35,12 @@ from .auth import (
 )
 from .platform_services import PlatformService, PlatformServiceError
 from .store_refund_policy import CURRENCIES, publisher_error_correction, publisher_error_verified, refund_effect
+from .premium_reward_recovery import (
+    PremiumRecoveryError, PremiumPolicyAcknowledgementRequired, policy_from_environment,
+    cutover_from_environment, policy_for_purchase, active_reward_snapshot, record_reward_delta,
+    publisher_error_correction as premium_publisher_error_correction,
+    apply_publisher_error_correction as apply_premium_publisher_error_correction,
+)
 from .review_access import ReviewAccessService, load_review_config, review_access_router
 from .native_oauth import NATIVE_AUTH_TARGETS, asset_links, native_return_url
 from .postgres_platform import PostgresPlatformService
@@ -926,6 +932,8 @@ MATCHMAKING_AI_ONLY = os.environ.get(
     "0",
 ).strip().lower() in {"1", "true", "yes", "on"}
 PURCHASE_TEST_MODE = purchase_test_mode_enabled(RUNTIME_STRICT)
+SEASON_PASS_REFUND_POLICY = policy_from_environment()
+SEASON_PASS_REFUND_CUTOVER_MS = cutover_from_environment(SEASON_PASS_REFUND_POLICY)
 AD_TEST_MODE = ad_test_mode_enabled(RUNTIME_STRICT)
 STORE_VERIFIERS = StoreVerifiers.from_environment()
 AD_ROLLOUT = AdRollout.from_environment()
@@ -1256,6 +1264,7 @@ class PurchaseRequest(BaseModel):
     provider: str
     transaction_id: str
     purchase_token: str = ""
+    premium_policy_ack: str = ""
 
 
 class AdRewardRequest(BaseModel):
@@ -5075,16 +5084,23 @@ def buy_store_chest(
     }
 
 
-def _player_store_view(profile, *, ad_protocol: str = "", ad_platform: str = "") -> dict:
-    return store_view(
+def _player_store_view(profile, *, ad_protocol: str = "", ad_platform: str = "", premium_refund_policy: str = "") -> dict:
+    policy = SEASON_PASS_REFUND_POLICY if int(datetime.now(timezone.utc).timestamp() * 1000) >= SEASON_PASS_REFUND_CUTOVER_MS else "legacy"
+    view = store_view(
         profile,
         purchase_test_mode=PURCHASE_TEST_MODE,
         ad_test_mode=AD_TEST_MODE,
+        premium_refund_policy=policy,
         platforms=AD_ROLLOUT.platform_view(
             STORE_VERIFIERS.platform_view(), player_id=profile.player_id,
             protocol=ad_protocol, platform=ad_platform,
         ),
     )
+    if policy != "legacy" and premium_refund_policy != policy:
+        # Old clients can keep their paid rights and all other products, but
+        # cannot open a fresh pass checkout without displaying the new terms.
+        view["season_pass"].update(purchasable=False, store_product_id=None, update_required=True)
+    return view
 
 
 STORE_ECONOMY_LOCK = Lock()
@@ -5116,13 +5132,13 @@ def _store_economy_transaction(player_id: str):
 
 @app.get("/store/{player_id}")
 @persistent_operation
-def get_player_store(player_id: str, ad_protocol: str = "", ad_platform: str = "") -> dict:
+def get_player_store(player_id: str, ad_protocol: str = "", ad_platform: str = "", premium_refund_policy: str = "") -> dict:
     profile = player_profile_service.get_or_create(player_id)
-    return _player_store_view(profile, ad_protocol=ad_protocol, ad_platform=ad_platform)
+    return _player_store_view(profile, ad_protocol=ad_protocol, ad_platform=ad_platform, premium_refund_policy=premium_refund_policy)
 
 
 @app.post("/store/{player_id}/purchases")
-def purchase_store_product(player_id: str, request: PurchaseRequest, ad_protocol: str = "", ad_platform: str = "") -> dict:
+def purchase_store_product(player_id: str, request: PurchaseRequest, ad_protocol: str = "", ad_platform: str = "", premium_refund_policy: str = "") -> dict:
     verified = None
     try:
         if request.provider in STORE_PROVIDERS:
@@ -5153,6 +5169,15 @@ def purchase_store_product(player_id: str, request: PurchaseRequest, ad_protocol
                     # never an invitation to grant the product a second time.
                     if ledger_entry["key"] not in profile.purchase_receipts:
                         raise PlatformServiceError("Mağaza makbuzu ve oyuncu kaydı uyuşmuyor.")
+            policy = "legacy"
+            if request.product_id == "season_pass_premium":
+                key = f"{verified.provider}:{verified.transaction_id}" if verified is not None else f"{request.provider}:{request.transaction_id}"
+                if key not in profile.purchase_receipts:
+                    policy = policy_for_purchase(
+                        SEASON_PASS_REFUND_POLICY, SEASON_PASS_REFUND_CUTOVER_MS,
+                        verified.purchased_at_ms if verified is not None else int(datetime.now(timezone.utc).timestamp() * 1000),
+                        request.premium_policy_ack,
+                    )
             receipt = process_purchase(
                 profile,
                 request.product_id,
@@ -5161,6 +5186,7 @@ def purchase_store_product(player_id: str, request: PurchaseRequest, ad_protocol
                 test_mode=PURCHASE_TEST_MODE,
                 now_iso=datetime.now(timezone.utc).isoformat(),
                 verified=verified,
+                premium_refund_policy=policy,
             )
             persist_player_data(player_id)
             if verified is not None:
@@ -5170,6 +5196,8 @@ def purchase_store_product(player_id: str, request: PurchaseRequest, ad_protocol
                     receipt=receipt,
                     purchase_token=verified.purchase_token,
                 )
+    except PremiumPolicyAcknowledgementRequired as exc:
+        raise HTTPException(status_code=503, detail={"code": "premium_policy_ack_required", "message": str(exc)}) from exc
     except StoreVerificationError as exc:
         # Geçici doğrulama sorunu 503: istemci alımı onaylamadan saklar ve
         # yeniden gönderir. Kalıcı ret 422.
@@ -5179,7 +5207,7 @@ def purchase_store_product(player_id: str, request: PurchaseRequest, ad_protocol
         ) from exc
     except StoreError as exc:
         raise HTTPException(status_code=422, detail=str(exc)) from exc
-    except (PlatformServiceError, PlayerDataStoreError) as exc:
+    except (PlatformServiceError, PlayerDataStoreError, PremiumRecoveryError) as exc:
         raise HTTPException(status_code=503, detail="Mağaza kaydı tamamlanamadı; yeniden dene.") from exc
     # Google Play: hak kaydedildikten sonra alım tüketilir; tüketilmezse
     # istemci aynı belirteçle yeniden gönderir ve ürün ikinci kez verilmez.
@@ -5202,7 +5230,7 @@ def purchase_store_product(player_id: str, request: PurchaseRequest, ad_protocol
         raise HTTPException(status_code=503, detail="Alım kaydedildi; mağaza onayı yeniden denenecek.") from exc
     return {
         "receipt": receipt,
-        "store": _player_store_view(profile, ad_protocol=ad_protocol, ad_platform=ad_platform),
+        "store": _player_store_view(profile, ad_protocol=ad_protocol, ad_platform=ad_platform, premium_refund_policy=premium_refund_policy),
         "meta_progression": meta_progression_service.view(profile),
         "profile": profile.to_view(),
     }
@@ -5292,6 +5320,8 @@ def _apply_store_refund(
                 )
                 if not reversed_refund and currency in CURRENCIES:
                     effect = refund_effect(entry, changes, before)
+                elif not reversed_refund and changes.get("premium_refund_policy"):
+                    effect = {"premium_resources": changes["premium_resources"]}
                 persist_player_data(player_id)
             platform_service.mark_store_receipt_refunded(
                 entry["key"],
@@ -5336,17 +5366,31 @@ def _review_store_refund_publisher_error(
                 raise ValueError("İncelenecek makbuz bulunamadı.")
             if publisher_error_verified(entry):
                 return {"applied": False, "duplicate": True, "correction": 0}
-            correction, effect = publisher_error_correction(entry)
             profile = _existing_player_profile(str(entry["player_id"]))
             if profile is None:
                 raise ValueError("Oyuncu artık mevcut değil; hesap yeniden oluşturulmadı.")
+            premium_corrections, premium_effect = premium_publisher_error_correction(profile, entry)
+            correction, effect = publisher_error_correction(entry)
+            if premium_corrections:
+                effect = premium_effect
             result = {"applied": False, "duplicate": False, "correction": correction}
+            if premium_corrections:
+                result["premium_corrections"] = premium_corrections
             if not apply:
                 return result
             platform_service.record_store_refund_review(
                 receipt_key, case_id=case_id, reviewed_by=reviewed_by, at=now_iso,
                 refund_effect=effect if entry.get("refunded") else None,
             )
+            if premium_corrections:
+                apply_premium_publisher_error_correction(profile, entry, premium_corrections, effect)
+                language = player_settings_service.get_or_create(str(entry["player_id"])).language
+                platform_service.queue_notification(
+                    str(entry["player_id"]), "Refund correction" if language == "en" else "İade düzeltildi",
+                    "Premium resource deficits caused by a verified publisher error were corrected. Support: gridshardgame@gmail.com" if language == "en" else
+                    "Doğrulanmış yayıncı hatasından oluşan premium kaynak açıkları düzeltildi. Destek: gridshardgame@gmail.com",
+                )
+                persist_player_data(str(entry["player_id"]))
             if correction:
                 currency = effect["currency"]
                 setattr(profile, currency, int(getattr(profile, currency)) + correction)
@@ -6033,6 +6077,18 @@ def claim_premium_season_tier_reward(
     tier: int,
     request: MetaOperationRequest | None = None,
 ) -> dict:
+    # Share the purchase/refund lock and joined production transaction: no
+    # chest or claim can race past an entitlement revocation.
+    with _store_economy_transaction(player_id):
+        try:
+            return _claim_premium_season_tier_reward(player_id, tier, request)
+        except PremiumRecoveryError as exc:
+            raise HTTPException(status_code=503, detail="Premium ödül kaydı tamamlanamadı; yeniden dene.") from exc
+
+
+def _claim_premium_season_tier_reward(
+    player_id: str, tier: int, request: MetaOperationRequest | None = None,
+) -> dict:
     engagement_request_id = request.request_id if request else None
     before_profile = player_profile_service.get_or_create(player_id)
     replayed = bool(
@@ -6064,12 +6120,14 @@ def claim_premium_season_tier_reward(
             if replayed:
                 receipt = profile.chest_receipts.get(chest_request_id)
             else:
+                premium_before = active_reward_snapshot(profile)
                 receipt = meta_progression_service.award_instant_chest(
                     profile,
                     chest_definition_ids[str(reward["chest_tier"])],
                     f"season-premium-tier:{profile.active_meta_season_id}:{tier}:{index}",
                     chest_request_id,
                 )
+                record_reward_delta(profile, f"tier:{tier}:chest:{index}", premium_before)
             if receipt:
                 chest_receipts.append(receipt)
     persist_player_data(player_id)

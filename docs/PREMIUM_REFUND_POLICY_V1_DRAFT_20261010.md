@@ -1,0 +1,62 @@
+# Ücretli Sezon Geçişi iade politikası — yerel aday / Terms taslağı
+
+10 Ekim 2026. Kullanıcı yalnız kod, testler ve taslağı onayladı. **Yayımlanmadı; canlı sunucuda etkin değil.** Bu belge hukuk uygunluğu garantisi değildir. Mevcut yayımlanmış Terms değiştirilmedi; aşağıdaki metin yayın öncesi son değerlendirme içindir.
+
+## Kapsam ve davranış
+
+- Yalnız `season_pass_premium` ve açıkça `season-rewards-v1` damgalanmış yeni alımlar. Akı/DK paketlerinin mevcut iade kuralı korunur. Savaş Premium bonuslarının geri alınması bu adayın kapsamında değildir; bu ürünün ayrı satın alma/iade testi hâlâ açıktır.
+- Premium kademenin doğrudan verdiği Akı, DK, modül/çekirdek/evrensel parçalar ve premium sandıkların **gerçek** kaynak çıktıları sunucu tarafında kaydedilir. Ücretsiz hat, XP, kupa, maç sonucu, kozmetikler ve tamamlanmış geliştirmeler geri çevrilmez; enderlik ve sandık olasılıkları değişmez.
+- Son geçerli yeni-politika makbuzu iade edildiğinde kaydedilen premium miktarlar bir kez geri alınır. Harcanan miktar yalnız aynı oyun kaynağında açık oluşturabilir. Oynayarak kazanılan aynı kaynak açığı azaltır. Para borcu, zorunlu satın alma, otomatik yasak veya ücretsiz maç engeli yoktur. Başka kaynakta açık, ihtiyaç duymadığı bir geliştirmeyi engellemez.
+- Aynı sezonda yeniden alım/iadenin geri çevrilmesi, gerçekten geri alınmış miktarları geri yükler. Alınmış kademeler yeniden açılmaz; sandık yeniden zar atmaz. Yinelenen bildirim veya makbuz ikinci kesinti/ödül üretmez. Geçmiş sezondaki yeni-politika alımının iadesi, kayıtlı kaynaklarını etkiler fakat güncel sezon hakkını kapatmaz.
+- Doğrulanmış yayıncı hatası istisnası yalnız özel sunucu operatörü incelemesiyle uygulanır. Mağaza neden kodu veya istemci alanı bu istisnayı açamaz. Hâlâ elde olan miktar geri alınabilir; bu iadeden doğan yeni açık yüklenmez. Sonradan inceleme, yalnız bu işlemin yarattığı açığı düzeltir; başka işlemin açığını silmez.
+- Uç hesabının geçmiş ücretsiz lisans-test alımı ve kazanılmış 17 kademe **yeniden sınıflandırılmaz veya kesilmez**. Önceki alım aynı makbuzla tekrar geldiğinde politika damgası yükseltilmez.
+
+## Terms madde 9 için Türkçe aday
+
+İade taleplerinde ilgili mağazanın güncel kuralları ve bulunduğun yerdeki emredici tüketici hakları geçerlidir. Google Play işlemleri için Google Play iade bilgilerini inceleyebilir veya bize başvurabilirsin. Dijital içerik/hizmetlerde cayma kuralları işlem ve yürürlükteki hukuka göre değişebilir. Bu şartlar bütün satın almaları iade dışı bırakmaz, cayma hakkından genel feragat oluşturmaz ve ayıplı ya da teslim edilmemiş içerikle ilgili haklarını kaldırmaz.
+
+Oyun içi para birimi paketinde mağazanın doğruladığı iade veya ödeme iptalinde yalnız o işlemle verilen miktar ilgili para biriminden geri alınır. Para birimi harcanmışsa bakiye eksiye düşebilir. Açığı aynı para birimini oyun içinde kazanarak kapatabilirsin; yeni satın alma yapmak zorunda değilsin. Yeterli bakiye oluşana kadar o para birimiyle harcama yapılamaz. Bu düzeltme gerçek para borcu veya ek tahsilat oluşturmaz; diğer para birimine kesinti yapılmaz.
+
+**[YÜRÜRLÜK TARİHİ VE SAATİ — UTC VE TÜRKİYE SAATİ YAYINDAN ÖNCE DOLDURULACAK]** tarihinden itibaren, satın alma öncesinde uygulamada `season-rewards-v1` iade koşuluyla sunulan Ücretli Sezon Geçişi alımlarında yalnız bu geçişten kazanılan premium oyun kaynakları ve premium sandıklardan gerçekten çıkan kaynaklar iade ile geri alınır. Harcanmış kaynak, aynı Akı, Devre Kredisi veya aynı parça türünde oynayarak kapatılabilen açık oluşturabilir. Mağazada kaynak türü ve açık gösterilir. Yeterli miktar oluşana kadar açık olan kaynak harcanamaz; başka kaynaklarla yapılabilen işlemler ve normal ücretsiz maçlar engellenmez. Ücretsiz ödül hattı, XP, kupalar, maç sonuçları, kozmetikler ve tamamlanmış kart/çekirdek geliştirmeleri geri çevrilmez. Enderlik değişmez. Aynı sezon geçişini yeniden almak veya iadenin geri çevrilmesi, yalnız daha önce geri alınmış miktarları geri yükler; alınmış kademeler veya sandık içerikleri ikinci kez üretilmez.
+
+Bu yeni kural önceki alımlara geriye dönük uygulanmaz. Sınıflandırmada mağazanın doğruladığı satın alma zamanı kullanılır; sunucuya geç ulaşma tek başına eski alımı yeni kurala taşımaz. Önceki sezon geçişi alımlarında ve Savaş Premium ürününde ilgili sezon hâlâ etkinse yalnız iade edilen sezon hakkı kapatılır; önceden kazanılmış ödüller korunur. Geçmiş sezonda yeni kuralla alınmış sezon geçişinin kayıtlı kaynak iadesi güncel sezon hakkını kapatmaz. Bizden kaynaklandığı doğrulanan teslimat veya sunucu hatası nedeniyle yapılan iadelerde bu işlemden doğan yeni kaynak açığı oyuncuya yüklenmez.
+
+Hangi işlemin iade edildiği, geri alınan miktar ve varsa açık bildirilir. Hatalı kesintinin incelenmesini gridshardgame@gmail.com adresinden isteyebilirsin; şifre, kart bilgisi veya satın alma jetonu gönderme. Mağaza bildirimi ve doğrulama gecikmeleri nedeniyle düzeltme anlık olmayabilir. İade kaydı tek başına hesabını kapatmaz; her iade kötüye kullanım sayılmaz. Tekrarlanan kötüye kullanım ayrıca incelenir.
+
+## English candidate for Terms clause 9
+
+Refund requests are subject to the relevant store's current rules and mandatory consumer rights in your jurisdiction. For Google Play transactions, consult Google Play's refund information or contact us. Withdrawal rules for digital content and services depend on the transaction and applicable law. These terms do not make every purchase non-refundable, create a blanket waiver of withdrawal rights, or remove rights concerning defective or undelivered content.
+
+For an in-game currency pack, when the store confirms a refund or payment reversal, only the amount granted by that transaction is reclaimed from the corresponding currency. If spent, the balance may become negative. You can clear the shortfall by earning the same currency through gameplay; another purchase is not required. That currency cannot be spent until sufficient balance is available. This adjustment creates no cash debt or additional charge; no deduction is made from another currency.
+
+From **[EFFECTIVE DATE AND TIME — UTC AND TÜRKİYE TIME TO BE COMPLETED BEFORE PUBLICATION]**, Season Pass purchases offered in the app with the `season-rewards-v1` refund condition before checkout reclaim only the premium in-game resources gained from that pass and the actual resources obtained from its premium chests. Spent amounts may become deficits in the same Flux, Circuit Credits or piece type, clearable by playing. Resource types and deficits are shown in the Store. A resource with a deficit cannot be spent until sufficient quantities are available; operations using other sufficient resources and normal free matches remain available. Free-track rewards, XP, trophies, match results, cosmetics and completed card/core upgrades are not reversed. Rarity is unchanged. Repurchasing the same season's pass or reversing a refund restores only previously reclaimed quantities; claimed tiers and chest contents are not generated again.
+
+This new rule does not apply retroactively. Classification uses the store-verified purchase time; late delivery to the server alone does not move an earlier purchase into the new rule. For earlier Season Pass purchases and Battle Premium, only the refunded season's entitlement is disabled if that season remains active; previously gained rewards remain. Reclaiming recorded resources from a previous season's new-policy pass does not disable the current season's entitlement. Refunds caused by a delivery or server error confirmed to be our responsibility do not impose a new resource deficit arising from that transaction.
+
+You will be told which transaction was refunded, reclaimed quantities and any deficit. Request review of an incorrect deduction at gridshardgame@gmail.com; do not send passwords, card details or purchase tokens. Store notification and verification delays mean adjustments may not be immediate. A refund record alone does not close your account; not every refund is abuse. Repeated abuse is reviewed separately.
+
+## Teknik yürürlük ve yayın kapıları
+
+Varsayılan `GRIDSHARD_SEASON_PASS_REFUND_POLICY=legacy`. Canlı çevre dosyaları değiştirilmedi. `season-rewards-v1` seçilirse ayrıca açık UTC `GRIDSHARD_SEASON_PASS_REFUND_POLICY_FROM` gerekir; eksik/yanlış tarih açılışı reddeder. Taslaktaki tarih henüz seçilmedi ve doldurulmadan yayınlanamaz.
+
+Google `purchaseTimeMillis`, Apple imzalı `purchaseDate` kullanılır; istemci tarihi kabul edilmez. Eksik doğrulanmış tarih yeni alımı kesinti kuralıyla işlemek yerine 503/retry bırakır; tüketme yok. Eski makbuz tekrarında ilk sınıflandırma korunur. Bunların kaynak sözleşmeleri: [Google ProductPurchase](https://developers.google.com/android-publisher/api-ref/rest/v3/purchases.products), [Apple purchaseDate](https://developer.apple.com/documentation/appstoreserverapi/purchasedate). İade edilen içeriklerin geri alınması ve oyun içi açık yaklaşımı [Google Billing güvenlik rehberinde](https://developer.android.com/google/play/billing/security) de ele alınır; bu teknik kaynaklar hukuk uygunluğu teyidi değildir.
+
+Yeni istemci yalnız sezon geçişinde TR/EN onayını ödeme penceresinden önce gösterir. Kabul edilmezse ödeme açılmaz. Eski sunucuya yeni onay alanı otomatik gönderilmez. Yeni kural yürürlükteyken eski istemciye yeni geçiş checkout'u sunulmaz; diğer dokuz ürün ve mevcut haklar korunur. Ödenmiş/yeni-politika alımı kurtarmada açık onay olmadan hak verilmez veya makbuz tüketilmez. Ağ/503 hâlinde makbuz saklanır. Eski istemcide önbellekteki checkout'tan ödeme gibi geçiş yarışları yayın öncesi lisans testiyle sınanmalı; oyuncunun onaylamadığı alıma sessizce yeni kural uygulanmamalı. Bu yol için destek/iade yönergesi de doğrulanmalıdır.
+
+Ödül/hak/makbuz/private provenance aynı üretim işleminde yazılır. Tier doğrudan ödülü ve bütün sandıklar tamamlanmadan işlem commit edilmez. Sunucu defteri istemciye çıkarılmaz; yalnız açık miktarları gösterilir. Defter sezon geçişinde korunur; hesap silme saklama davranışı ve yedekten dönüş gerçek PostgreSQL testleriyle ayrıca doğrulanmalıdır.
+
+Yayın sırası henüz yürütülmedi:
+
+1. Aday kod commit/push **kullanıcı tarafından**; aynı commit'in tüm CI işleri ve yeni PostgreSQL rollback/restart testleri yeşil olmalı. Yerel SQL/Redis atlamaları PASS sayılmaz.
+2. Yeni istemci APK/AAB üretilip kapalı testte kurulmalı. Mevcut v6 AAB bu değişiklikleri içermez. Varsayılan legacy sunucuda geriye uyumluluk; izole yeni-policy ortamda checkout onayı/iptali, pending, kurtarma, iade, yeniden alım, kaynağı oynayarak kapatma ve eski alımlar sınanmalı. Canlı oyuncu bakiye manipülasyonu yok.
+3. TR/EN Terms metni ve açık yürürlük zamanı birlikte son onay almalı; ayrı yayın onayıyla yayımlanıp canlı metin doğrulanmalı. Yeni uygulamadaki Terms bağlantısı etkin kuralı doğru açıklamadan özellik açılmamalı.
+4. Yedek/geri dönüş/operatör inceleme akışı ve yarış testleri doğrulanınca ayrıca onaylı sunucu geçişi. Bayrağı legacy'ye almak **zaten damgalanmış makbuzların** iade sorumluluğunu kaldırmaz; eski, defteri bilmeyen sunucu sürümüne kör rollback yapılmaz.
+5. Savaş Premium teslim/iade testi ve kalan genel üretim kapıları tamamlanmadan “üretime hazır” denmez.
+
+## Yerel kontrol kaydı
+
+Son kontrol 10 Ekim 23:03 TR: **1410 sunucu testi geçti /41 test atlandı; 293 istemci testi ve 24 build/site testi geçti.** Son odaklı paket 156 PASS. Gerçek istemci kaynakları 31 betik/yeni politika modülü dahil bellekte derlendi; mevcut dist veya APK/AAB çıktıları değiştirilmedi. Atlanan altyapı testleri geçilmiş sayılmadı.
+
+Odaklı test kaydı `test-results/premium-recovery-focused-20261010.xml`; tam regresyon `test-results/premium-recovery-server-all-20261010.xml`. Yeni PostgreSQL testleri mevcut migration CI işinin çalıştırdığı `test_postgres_persistent_operations.py` içine eklendi; yerel veritabanı tanımlı olmadığından burada çalıştırılmadı. Canlı Google/Apple/AWS, telefon, Terms yayını, yeni ödeme/iade veya Uç hesabına write yapılmadı.
+
+Yeni politika modülü, main/store/verifier/profil/platform entegrasyonu ve testleri Ruff 0.17.0 `E9,F` kontrolünden geçti; pytest'in import edilmiş fixture parametreleri için test dosyasında `F811` istisnası kullanıldı. `meta_progression.py` (3) ve `player_data_store.py` (1) üzerinde HEAD'de de bulunan dört eski unused import/variable bulgusu ayrıca doğrulandı; bu adayda yeni lint hatası oluşturulmadı. Python derleme ve JS syntax kontrolleri geçti. Bu kayıt tam depo lint'inin temiz olduğu iddiası değildir.
