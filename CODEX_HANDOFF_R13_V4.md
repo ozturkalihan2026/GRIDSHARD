@@ -1,4 +1,23 @@
-# Codex için devir notu — r15 yeni iade kuralı canlı / v7 Alpha (tarihçe aşağıda)
+# Codex için devir notu — r16 canlı / v8 AAB hazır (tarihçe aşağıda)
+
+**11 Ekim 23:03 TR — onaylı sunucu geçişi tamam, v8 insan Alpha yayınına hazır:**
+Exact commit `12524b8a17941be991becf16fa965cfabb5196ee`, push CI38169062735
+beş job SUCCESS. R16 yeni özel offline yedek + 136 gerçek PG17/Redis test +
+image restart/empty restore + 330s/32 live sağlık/WIF-polling gözlemi PASS.
+Bakiyeler/fingerprint/env/secrets/volumes ve mevcut season-rewards-v1
+11 Ekim 08:20 TR korunur. R16 API
+`sha256:bea56ddbecfaeb62bebeeb1a7382ac1b2bd46c6544150d44dc29d7aadf486c7d`.
+İmzalı v8: `artifacts/android-production-20261011-v8/GRIDSHARD-2.1.0-beta.72-v8.aab`,
+SHA `cc30f0821027ab4402432637183b8a02e1c8c121102c3cbc34ce7c5839cd4cc1`;
+aynı package/upload key, versionCode8, gömülü manifest/signatures/assets ve
+executable DEX main-thread dispatch PASS. Cihaz/Google code4 çözümü hâlâ
+kanıtlanmadı; ücretsiz insan testi gerekir. Ajan UI/commit/push/Play yayın/
+telefon kurulumu/gerçek ödeme yapmadı. İnsan mevcut Alpha kanalına AAB'yi
+yükler/inceleme-yayın/Play update/test; `YAYIN_VE_TEST.md` ve sürüm notu hazır.
+Site/Terms/tarih değişmedi; yeni site ZIP yok. R16 mailbox veri oluştuktan
+sonra r15'e kör rollback veya live DB restore yok. En güncel ayrıntı
+`CODEX_CHECKPOINT.md` üstü ve v8 `release-provenance.json`. Devir/checkpoint
+belgeleri binary/source FREEZE SONRASI güncellendi; yeni oyun kodu yok.
 
 **11 Ekim 21:49 TR — v8 yedi maddelik kod adayı tamam, commit/push bekliyor:**
 En güncel kayıt `CODEX_CHECKPOINT.md` üstünde, ayrıntı

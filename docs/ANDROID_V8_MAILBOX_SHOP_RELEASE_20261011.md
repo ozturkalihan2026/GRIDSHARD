@@ -1,8 +1,18 @@
 # v8 — mağaza ve sandık mesaj kutusu
 
-Durum: yerel kod adayı. Commit/push kullanıcıda; yeni CI, canlı sunucu geçişi,
-imzalı v8 AAB ve kapalı test yayını henüz yapılmadı. Bilgisayar kullanım/UI
-otomasyonu kullanılmaz. Telefon ve Play Console test/yayın adımları insanda.
+Durum (11 Ekim 23:03 TR): kullanıcının push ettiği exact
+`12524b8a17941be991becf16fa965cfabb5196ee` commit'inin CI38169062735 beş job'ı
+başarılı. R16 sunucu yedekli geçiş ve 330s sağlık/WIF-polling gözlemiyle
+canlı; mevcut season-rewards-v1/08:20 TR kuralı ve oyuncu verileri korundu.
+İmzalı, manifest/imza/varlık/DEX audit'li v8 AAB hazır:
+`artifacts/android-production-20261011-v8/GRIDSHARD-2.1.0-beta.72-v8.aab`.
+SHA256 `cc30f0821027ab4402432637183b8a02e1c8c121102c3cbc34ce7c5839cd4cc1`.
+136 ek gerçek yalıtılmış PG17/Redis test ve image restart/empty restore
+başarılı. Play Console upload/publish ve telefon testleri insanın sıradaki
+adımıdır; henüz tamamlanmış sayılmaz. Bilgisayar kullanım/UI otomasyonu
+kullanılmadı. Teslim adımları/notlar v8 klasöründeki YAYIN_VE_TEST.md ve
+PLAY_RELEASE_NOTES.txt içinde. Bu durum belgesi SOURCE FREEZE sonrasında
+güncellendi; paket exact CI commit'inden üretildi, sonradan değiştirilmedi.
 
 ## Yedi kararın uygulaması
 

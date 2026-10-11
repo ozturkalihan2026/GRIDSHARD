@@ -2,6 +2,65 @@
 
 Güncelleme tarihi: 11 Ekim 2026
 
+## Son teslim — 11 Ekim 23:03 TR: r16 sunucu canlı, imzalı v8 AAB hazır
+
+Kullanıcı commit/push tamam dedi ve sunucu geçişi + v8 AAB/kapalı test
+teslimini istedi. Exact kaynak `12524b8a17941be991becf16fa965cfabb5196ee`
+(`beta 72 v8 fix`), kaynak build/freeze sırasında temiz. Yeni push CI
+`38169062735`: beş job SUCCESS (client/server/gerçek PG17-Redis-production
+image/browser-mobile-two-client/source package). Eski CI kullanılmadı.
+
+İmzalı offline build: 29s, 378 task/67 executed; lintVitalRelease PASS.
+`artifacts/android-production-20261011-v8/GRIDSHARD-2.1.0-beta.72-v8.aab`
+27.690.415 byte; SHA256
+`cc30f0821027ab4402432637183b8a02e1c8c121102c3cbc34ce7c5839cd4cc1`.
+Sürüm kodu8/ad beta.72/package com.gridshardgame.app; önceki upload anahtarı.
+APK/AAB imza + 74 web varlığı/9 font/private boundary PASS. AAB'nin kendi
+protobuf manifesti bağımsız parse edildi; ayrı manifest dosyası yok.
+Executable DEX NativePurchasesPlugin$5.onProductDetailsResponse →
+Activity.runOnUiThread ve lambda → BillingClient.launchBillingFlow PASS.
+Bu gerçek cihaz/Google checkout testi değildir; ITEM_UNAVAILABLE düzeldi
+iddiası hâlâ YOK. APK Play-imzalı telefon üstüne yüklenmez/kaldırma yok.
+Frozen source ZIP SHA `2ac4a056d2245fd65a905089b617c334f5cb06ecb4f2701b1e02403415ce3e6c`,
+975 kaynak + manifest; tüm kaynak SHA'ları release-provenance içinde.
+
+Canlı r16 source root
+`/opt/gridshard/releases/aws-20261011-mailbox-r16-candidate/GRIDSHARD-2.1.0-beta.72-signatures-social`.
+API `sha256:bea56ddbecfaeb62bebeeb1a7382ac1b2bd46c6544150d44dc29d7aadf486c7d`,
+maintenance `sha256:3231e32f797e1e8289de48fb67e20abad30d4c4dc1ef89d6cfb3cf1c89aa69a4`.
+Yeni özel offline yedek `/var/backups/gridshard-production/20261011-before-mailbox-r16`:
+SHA/counts/installation/private mode/pg_restore TOC doğrulandı; LIVE DB
+restore/deletion YOK. Durmuş geçişte player/identity/team/platform/economic
+fingerprints aynı; config/env/secrets/volumes aynı. season-rewards-v1 ve
+`2026-10-11T05:20:00Z` (08:20 TR) aynen korunur, kural tekrar açılmadı.
+Önce 136 gerçek yalıtılmış PG17/Redis mailbox/refund/tournament test PASS,
+0fail/0skip, sonra gerçek image restart/empty-target backup restore PASS.
+İlk image provası fixture umask077 private-directory UID erişiminden
+başarısızdı; yalnız fixture mkdir umask022 ile ayrı ikinci prova PASS.
+Canlı etkilenmedi, ürün kodu değiştirilmedi. İlk yerel build SDK env ve
+sandbox Gradle cache izin hatası doğru açık SDK + yetkili offline build ile
+geçti; kontroller atlanmadı.
+
+Geçiş 19:56:19→20:01:58 UTC; durable runner exit0; 330s/32 sağlık kontrolü,
+WIF refund polling1800s PASS. 23:03 TR dış HTTPS health200, persistence ve
+Redis lease hazır. Running image dört baked backend dosya hash'i exact
+commit ile eşleşir. Web executable `gridshard-dfa3996b07df033f.js` dışarıdan
+byte-hash eşleşir. HTML ham hash eşleşmedi: Cloudflare email-decode/beacon
+ekliyor; başvuru bunu aynı-byte HTML diye yanlış kaydetmez. WAF/CF ayarı yok.
+
+Kanıt: `artifacts/server-aws-20261011-mailbox-r16-candidate/` ve v8
+`release-provenance.json`, `release-audit.json`, `bundle-audit.json`,
+`native-dex-audit.json`. Play yayın notu `PLAY_RELEASE_NOTES.txt`, insan
+adımları `YAYIN_VE_TEST.md`. Play upload/publish/telefon kurulumu/gerçek
+ödeme ajan tarafından YOK; bilgisayar kullanım becerisi kullanılmadı,
+commit/push yapılmadı. Sonraki kapı: insan mevcut Alpha kanalına v8 AAB
+yükler/inceleme-yayın → Play güncellemesi → yedi özellik ve ücretsiz lisans
+Billing testi. Server r16 önce geçti; v7 season opt-in backward compatibility
+korunur. Yeni mailbox veri varsa r15'e kör downgrade/DB restore yapma.
+Terms/site/politika tarihi değişmedi; yeni site ZIP'i gerekmiyor. Bu bölüm ve
+teslim belgeleri SOURCE FREEZE SONRASI operasyon güncellemesidir; frozen
+binary/source ZIP içerikleri değiştirilmedi. Ek oyun kodu değişikliği yok.
+
 ## Son durum — 11 Ekim 21:49 TR: yedi mağaza/mesaj kutusu değişikliği v8 adayı hazır
 
 Kullanıcı altı maddeye tek sandık düğmesi kuralını ekledi (toplam 7); kodu
