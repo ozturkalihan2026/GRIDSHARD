@@ -1,4 +1,226 @@
-# Codex için devir notu — r14 canlı / Play v6 cihazda (r13/v4 tarihçesi)
+# Codex için devir notu — r15 yeni iade kuralı canlı / v7 Alpha (tarihçe aşağıda)
+
+**11 Ekim 21:49 TR — v8 yedi maddelik kod adayı tamam, commit/push bekliyor:**
+En güncel kayıt `CODEX_CHECKPOINT.md` üstünde, ayrıntı
+`docs/ANDROID_V8_MAILBOX_SHOP_RELEASE_20261011.md`. Tek sandık düğmesi hazır
+hediye → stok(adet) → fiyat; Altın/Elmas hizası/olasılık kaldırma; Onarım
+adı/hilal ortak simge; earned chest inbox→TOPLA→stok→open; başarılı alım
+mesajı; üç inbox sekmesi/altta bildirimler. Enderlik/denge korunur.
+Premium provenance/iade ve fixed tournament contents korunur, duplicated
+collect/open grant yok. Server önce geçişte v7 eski sezon receipt sözleşmesi
+korunur; v8 query `chest_delivery=inbox-v1`. DB migration yok.
+
+Client301/tools36/final izole PGserver1465 PASS;1Redis skip,0fail. RuffPASS,
+ESLint0error/10eski-unused-warning, mobileweb91301c9a018205a6 build/diff PASS.
+Yeni reward_delivery modülü/test/istemci test/runner/release doc UNTRACKED;
+önceki native main-thread untracked test/doc dahil insan commit'e eklemeli.
+Android config+Gradle versionCode8. Agent commit/push yapmaz. Computer-use
+yasak; UI/telefon testi insanda. Native code4 kesin neden/ücretsiz gerçek
+Google satın alımı henüz PASS değil. Canlı r15/v7/08:20policy/site değişmedi.
+
+Sıra: insan commit/push → bu exact commit yeni greenCI → yedekli server
+cutover (aktif kural/date/data/credentials koru) → exactsource signedv8 AAB
+embeddedManifest/hash/provenance → insan Alpha upload/yayın/manuelQA.
+ÖncekiCI38083415413 yeniden kullanma. Signedv8 henüz üretilmedi. Bu yedi
+madde Terms/siteyi değiştirmedi; mevcut08:20TRpublicZIPkorunur.
+
+**11 Ekim 21:10 TR hazırlık tamam (yayında değil):** Kullanıcı `hazırla`
+onayıyla `tools/configure-native-billing.js` yalnız launch bloğunu aynı
+Activity/params ile main-thread'e taşır. Stable native-purchases8.8.1 /
+Billing9.1 exact patch/idempotent/fail-closed/pnpm inode-safe. Generated SDK
+yalnız launch bölgesi değişti; ürün/teklif/hesap/adet/fiyat/ack/consume/iade
+kuralı aynı. Yeni `client/tests/native-billing-main-thread.test.js` UNTRACKED
+commit'e dahil edilmeli; agent commit/push yok. 27 odaklı ve son kaynağa karşı
+client295/0/0 PASS; JVM80case + eski bloğun negatif kontrolü PASS; gerçek
+SDK36 Debug/Release native compile PASS, app bundle değil. İlk fixture/
+sandbox/SDK-env denemeleri harness/environment hatası olarak kaydedildi.
+Devir `docs/ANDROID_BILLING_MAIN_THREAD_FIX_20261011.md`, r15 artifact
+`billing-main-thread-fix-preparation-20261011.json`. Yeni CI/version/AAB/
+APK/Play/server/site/policy/cihaz ödeme/UI yok. Frozen v7 değişmedi;
+code4 nedeni/native gerçek ödeme QA henüz kanıtlanmadı. Hazırlık tamam;
+sonraki gate insan commit/push ve CI sonrası yeni AAB/Play teslim ve test.
+
+**11 Ekim 19:58 TR somut bulgu:** Başka v7 cihaz/farklı lisans-test hesabı
+120 Akı aynı hatayı verdi (insan bildirimi, ikinci USB kanıtı değil). Mevcut
+telefon tekrar bağlı; read-only 16:58:23UTC v7/Play doğrulandı. Sezon Geçişi
+19:37/19:58 ve9000DK19:58: INAPP/adet1/offer+account present/auto flags false,
+freshquery0/details1/launch0/callback4/purchases0. Launch satırları main=false,
+callback main=true: Google main-thread sözleşme ihlali gerçek cihazda görüldü.
+Same v6 SDK nedeniyle code4 kök neden bağlantısı hâlâ kanıtlanmadı. Kanıt
+r15 `native-billing-parameters-thread-20261011.json`. İade diff yeniden
+incelendi: ack server POST'a, policy Google parametresi değil; 9000DK confirm
+olmadan da hata veriyor. Auto ack/consume false server-grant sonrası tasarım.
+USB/diğer test soruları tamamlandı, tekrar sorma. Tek değişkenli native main
+thread düzeltmesi + test hazırlığı önerilecek; henüz app/SDK/production/kural/
+AAB/site/commit/push/UI değişmedi. Ödeme/native policy QA PASS değil.
+
+**11 Ekim 19:44 TR takip:** Kullanıcı mevcut v6 test telefonu olmadığını,
+tüm test telefonlarının v7 olduğunu bildirdi. v6 tekrar isteme ve v7
+kaldırma/düşürme. ADB bu takipte `device not found`; yeni telefon parametresi
+ve thread bilgisi okunamadı, 09:51 kanıtı tarihçedir. Mevcut v7 USB bağlantısı
+ve başka mevcut lisans-test hesabı/v7 telefonunda yalnız 120 Akı checkout
+aç/kapat (SON onay yok) async soruldu; yanıtları bekle. Hesap/ülke/ayar yok.
+Native SDK callback içinden launch çağrısında açık main-thread dispatch yok;
+resmi Google kılavuzu main thread istiyor. Aynı v6 kodu, gerçek launch thread
+gözlenmedi; bu aday code4 nedenini kanıtlamaz. Tanı parseri tür/adet/hesap
+varlığı/auto flags/thread boolean için genişletildi; offline 9 güvenli olay
+fixture PASS, gerçek cihaz QA değil. Artifact/scripts ve operasyon docs
+dışında app/SDK/server/policy/AAB/site/commit/push/UI değişmedi. Native QA açık.
+
+**11 Ekim09:51TR native kontrol tamam:** İnsan120Akı aynı hata/tüm mağaza
+diyor. GüvenliUSB06:51:38UTC log: Sezon Geçişi/Savaş Premium/120Akı (09:43)
+ve120Akı kontrolü09:50:48→callback09:50:50; tümfreshquery0/details1/launch0,
+callback4/purchases0. 3ürün/kategori bağımsız doğrulandı (10checkout değil).
+Yalnız yeni Season Pass confirmation ile sınırlı değil; exact shared root
+cause hâlâ bilinmiyor. Native/config/JS bridge/katalog/account-token Git
+eşitliği + offline25test tam Android/Google QA değildir. Kanıt r15
+`native-flux120-control-diag-20261011.json` ve
+`native-store-wide-failure-summary-20261011.json`; diagnosis/ops güncellendi.
+v6 cihaz sorusu yanıtlandı: yok, hepsi v7. Mevcutv7 uninstall/downgrade/cacheclear/account
+change/flag toggle/new AAB/speculativefix/oyuncu write yok. Önceki120kontrol
+tamam, tekrar isteme. Native yeni-policy QA açık, açılışı yeniden çalıştırma.
+
+**11 Ekim09:49TR regresyon incelemesi:** Kullanıcı Console değişmedi/sorun
+ödül recovery sonrası diyor; tüm mağaza iddiasını araştır. Screenshot
+Türkiye TRY199,99/Kullanılabilir. Google-origin code4 app regresyonunu dışlamaz.
+v6/v7 frozen AAB hash doğrulandı; üç DEX/native-bridge/Capacitor config/plugins/
+runtime-config aynı. Native JS/billing patch/dependency lock Git aynı.
+Actual app fonksiyonları offline VM/fake SDK: 10 ürün native parametre eşit;
+code4 ret sonrası bütün-store latch/queue release/no POST-consume doğru;
+25 odaklı istemci test PASS (ilk sandbox hard-link EPERM harness, rerun25/0).
+Yeni Android window.confirm lifecycle etkisi OFFLINE ile kanıtlanmadı!
+Async insan kontrolü istendi: mevcut lisans-test hesabında 120Akı checkout
+açma, SON ödeme onayı yok, geri/iptal; aynı hata varsa screenshot. Yanıt
+bekleniyor, tekrar sorma. Üretim/app fix/toggle/AAB/commit/push/UI yok.
+Kanıt r15 `v6-v7-native-package-comparison-20261011.json`,
+`offline-v6-v7-store-regression-20261011.json`, diagnosis JSON. Native QA açık.
+
+**11 Ekim09:41TR yeni tanı:** Hata screenshot Google Play sheet; USB read-only
+v7/Play installer doğrulandı. Katalog code0/fetched10/unfetched0, doğru Season
+Pass kimliği, taze satın alma sorgusu code0/details1/offer-token mevcut,
+launch code0. İnsan `Anladım` ile döndü; 09:37:34 cihaz-local callback code4
+ITEM_UNAVAILABLE/purchases0 (proof 06:37:54 UTC). Native reject sonraki server
+purchase POST'tan önce; kaynak akışı çıkarımıdır, access-log yokluğu değil.
+09:41:37 Console screenshot standard Etkin/Türkiye/eski sürüm uyumunu teyit
+eder; ayrıntı fiyat/uygunluk/adet sınırı görünmez. İnsan standard sağ ok
+ayrıntı ekranını paylaşmalı; ayar/yeni ödeme yok. Exact uygunluk/cache/teklif/
+Google yayılım nedeni henüz kesin değil.
+Raw log/token/hesap kaydı/UI/ödeme/cacheclear/source fix yok. Sunucu access
+parsed0 olduğundan boş POST sayısı yokluk kanıtı değil. Native alım/İptal
+PASS değil. `native-policy-checkout-diagnosis-20261011.json` ve
+`native-billing-safe-diag-20261011.json` ve
+`native-billing-return-diag-20261011.json`; 08:38 kayıtları tarihçedir.
+
+**11 Ekim 08:38 TR son native test:** Yeni açıklama screenshot'ta görünür;
+OK sonrası kullanıcı `içerik bulunamadı` diyor. Native alım/İptal testi henüz
+PASS değil. 05:38:19 UTC kural hâlâ açık/healthy; toggle yapılmadı. Hata ekranı
+istendi, USB telefon görünmüyor. Ekran veya güvenli sayısal Billing kodu
+gelmeden Google katalog/offer/cache/app/server nedeni kesinleştirme. Ham
+token/hesap/makbuz logları yok; alım/source fix/oyuncu write yapılmadı.
+Kanıt `native-policy-checkout-observation-20261011.json`.
+
+**11 Ekim 08:20 TR güncel:** İnsan yeni tarihli siteyi yayımladı;
+05:14:13 UTC canlı 11/11 exact manifest doğrulandı. İkinci açılış
+05:17:52 UTC, ayrı `*-v1-0820` kayıtları ve yeni özel
+`20261011-before-premium-policy-v1-0820` yedeğiyle yapıldı. Yedek ve
+geçiş fingerprint/env/secrets/volume kontrolleri geçti. Aynı r15 imajı,
+yalnız iki env; FROM `2026-10-11T05:20:00Z`, 05:20:07 UTC healthy/timegate true.
+05:25:30 UTC exit0: final 330 sn iç43, dış39 kontrol (31 cutover sonrası) PASS.
+Kanıtlar `policy-result-v1-0820.json` ve `external-policy-witness-0820.json`.
+Terms tanığı 05:26:10 UTC exit0: 16 başarılı 11-route kontrol/11 postcutover.
+Her iki yerel süreç tamamlandı; aktif session yok. Son runtime 05:26:44 UTC
+healthy/timegate true. Site `witness-completion-v1-0820.json` ve r15
+`policy-final-runtime-v1-0820.json` ek kanıtlardır.
+Launch/backup tekrar çalıştırma. Hata: aynı r15 flagOFF, DBrestore/r14 yok.
+Mevcut v7 yeterli; eski Uç 17 ödül/alımlar korunur, native yeni-policy QA açık.
+UI/son ücretsiz ödeme-iade insanda; bilgisayar kullanımı ve agent commit/push yok.
+Alt kayıtlar tarihçedir, güncel durum bu bloktur.
+
+Sıradaki insan QA: normal reopen, yeni Sezon Geçişi açıklaması ekranı,
+ilk denemede İptal/no Google checkout/no balance-right change. Son ödeme/iade
+yalnız no-charge lisans-test kartı doğrulandıktan sonra insanda. Eski Uç
+17 kademe yeniden açılmaz; yeni uygun kademe/normal lisans-test hesabı gerekir,
+oyuncu reset veya ödül grant ile test üretme.
+
+**11 Ekim08:05TR en güncel:** İlk00:30kural açılışı staleTerms90sguard ile
+00:29:21TR'de safe-r15-legacy rollback/exit1 yaptı. Onayaltyapısıusage-limit
+sonrasılokalwitness kesildi; externalfinalassertion başarısız, PASS değil.
+05:02UTC read-onlyserverhealthy/googlepollok/source/env aynı, v1receipt/profile0,
+newpolicyOFF/FROMempty/privatebackupretained. Kanıt `policy-attempt-1-observation.json`.
+Eski launch/backup/markers tekrar kullanılmaz; failedhistory korunur.
+Kullanıcı **11 Ekim08:20TR/05:20UTC** yeni tarihi onayladı. Yeni21fileZIP
+`artifacts/public-site-premium-refund-20261011-0820/GRIDSHARD-public-20261011-0820-premium-refund.zip`,
+262445bytes SHA `3bb0af9643fd711edb75d31f8367d0699623cba1c9baecf0738fa3207a4a8ada`.
+16unit/30headlesslayout/21SHA PASS. İnsanCloudflareProduction deploy bekler.
+NewdatedTerms liveverify→freshbackup/uniquenewattemptsameimage2envonly;
+08:20'ye yetişmezse OFF ve yenidenkarar. No computer-use/commit/push.
+Mevcutv7 nativeQA açık, eskiUç17ödül korunur.
+
+**11 Ekim00:16TR güncel karar:** Kullanıcı emülatör önerisini reddetti, mevcut
+v7'de yeni kuralın global açılmasını ve test yapılmasını istedi. 11 Ekim2026
+00:30TR /10 Ekim21:30UTC açıkça onaylandı. NativeQA henüz PASS değil. Yeni
+Terms21dosyaZIP hazır: `artifacts/public-site-premium-refund-20261011/GRIDSHARD-public-20261011-premium-refund.zip`;
+262451bytes SHA `d38d862bf199fdc67d4d4f22e2e2ae34de370bc3b71f618857efcbefeb5f34d5`.
+16unit/30localheadlesslayout/fullZIPstreamSHA/diğer19dosyaaynı/appinputsaynı
+PASS. İnsanCloudflareProduction yayını bekler; canlıTerms doğrulanmadan flagOFF.
+21:30UTC'ye yetişmezse tarih yeniden kararlaştırılır; backdate yok. R15imaj/
+source/v7 korunur; yalnız yeni opsComposeoverride ile2policyenv, yeni offline
+yedek sonrası. Original.env/secrets/volumes korunur. V1receipt sonrası eski
+r14rollback/liveDBrestore yok; gerekirse aynır15flagOFF. EskiUç17ödül korunur.
+Computer-use yok; insanConsole/purchase/refund finaltaps. Alttakiemülatör
+önerisi geçmiş sıra olup bu karar tarafından değiştirildi.
+
+**11 Ekim00:04TR:** Kullanıcı refunded Sezon Geçişi için `pasif` teyit etti.
+Önceki fiyat/bakiye normal yanıtıyla v7 temel mağaza kullanıcı QA tamamlandı;
+exact değerler veya agent UI gözlemi yok. Yeni-policy native QA hâlâ açık.
+Global flag açmadan ayrı native test ortamı gerekir: main.py store yalnız
+globalpolicy+UTC ile onay sunuyor, canonicalclient API sabit. Read-only yerel
+Pixel_10 AVD GooglePlay/PlayStoreenabledtrue; çalıştırılmadı/değiştirilmedi.
+AyrıtestAPK/privateDB/emülatör pilotu önerildi, insan koordinasyonu bekliyor.
+Google Billing/test aynıpackage+license-tester debugAPK sideload destekler;
+Google giriş/son ücretsiz satın alma-iade onayları insanda. Productionlegacy,
+telefonverileri/eskiUç/Terms/UTC/siteZIP aynı; pilot başlatılmadı.
+
+**11 Ekim00:01TR son kullanıcı teyidi:** `bakiyeler normal, fiyatlar tamam`.
+V7 fiyat/bakiye kullanıcı geriye uyum kontrolü PASS; exact değerler yeniden
+verilmedi. Refunded Sezon Geçişi UI pasifliği/normal reopen açık teyidi henüz
+yok. Yeni nativepolicyQA/TermsUTC/siteZIP/enable açık; legacy/OFF korundu.
+Proof `artifacts/android-production-20261010-v7/store-regression-user-confirmation.json`.
+
+**10 Ekim20:59UTC/23:59TR güncel:** Final commitccc5e99/exactCI38083415413
+success5/5, temiz finalv7 build/audit/embeddedManifest7/sourceZIP PASS;
+`artifacts/android-production-20261010-v7`. Kullanıcı upload teyit etti,
+telefon güncellendi dedi. Salt-okunur USB package-manager: canonicalapp,
+versionCode7/versionName2.1.0-beta.72, Playinstaller/initiatorcom.android.vending
+doğrulandı; cihazv7 PASS, Console review/kanal bağımsız doğrulanmadı. No UI/
+purchase/data-delete. Mağaza10ürün/fiyat/hak/bakiye/reopen kullanıcı QA bekliyor.
+Proof `artifacts/android-production-20261010-v7/device-update-verification.json`.
+Yeni appcommit veya metadata push beklenmiyor.
+Buildprovenance freeze snapshot'ı; sonra yalnız operasyon dokümanı değişiyor.
+
+**UI kontrolü YASAK:** Kullanıcı bilgisayar-kullanım aracını kullanmamamızı
+istedi. Console/Cloudflare/Play UI işlemleri insana, file/CLI/pinnedSSH agent'a.
+Commit/push yine kullanıcıya ait. Mevcut Alpha tester/ülkeleri korunur.
+
+Onaylı sunucu sırası: **r15 kodu legacy/OFF önce**, v7 Alpha paralel;
+v7 native/yeni-policy QA + yayımlanmışTR/EN Terms + aynıUTC FROM sonra enable.
+İzole gerçekPG/Redis67PASS/0skip, iki gerçekpolicyimage/reviewer/oldclientgate/
+chest+signeddeficit/privateledger+wallet+receipt restart/empty restore PASS.
+Önceki iki fixtureowner/Redislease hatası loglarda korunur, guardlar değişmedi.
+20:45:43UTC durable geçiş başladı, **20:51:28UTC başarıyla bitti**; taze offlinebackup
+SHA/count/installation/600/TOC ve kesinti fingerprint/env/secrets/volume/TLS
+doğrulandı. İç330sn/32başarılı, dış330sn/31HTTPS+exactHTML/TLS/doğalGooglepoll
+başarılı,20:52:31UTC. Kanıt `deployment-receipt-legacy.json` ve
+`external-witness.json`, runner exit0. Launch'ı tekrar çalıştırma.
+No liveDBrestore/deletion. Localr15helpers
+`artifacts/server-aws-20261010-premium-r15-candidate`; doküman ayrıntısı
+`docs/ANDROID_V7_PREMIUM_RECOVERY_RELEASE_20261010.md`.
+
+Yeni refundpolicy hâlâlegacy, FROMempty; eskiUç17ödül korunur. PublicTerms
+eski, yeniUTC/TR taslak placeholder; **son21dosyalık yeni siteZIP verilmedi**.
+QA/tarih/metin sonrası üretip kullanıcıya teslim etmeyi unutma; eskiavailability
+ZIP'i yeni policy site diye sunma. BattlePremium/nativeQA/genel üretim kapıları
+açık. Aşağıdaki önceki kayıtlar tarihçedir.
 
 **10 Ekim23:17 güncel — testli commit CI5/5, v7 yerel aday:** Kullanıcı
 1aa1db5 commit/push ve sıralı devamı onayladı. Quality38082575391 exactSHA,

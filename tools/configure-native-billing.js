@@ -11,6 +11,27 @@ const MANAGED = 'Log.d(TAG, "onProductDetailsResponse() called for query");\n'
   + `                        ${MARKER}\n`
   + '                        GridshardBillingDiagnostics.report(billingResult, queryProductDetailsResult);\n'
   + '                        Log.d(TAG, "Query result: " + billingResult.getResponseCode());';
+const FLOW_MARKER = "// GRIDSHARD main-thread Billing flow (managed v1)";
+const FLOW_ORIGINAL = `// Launch the billing flow
+                        Log.d(TAG, "Launching billing flow");
+                        BillingResult billingResult2 = billingClient.launchBillingFlow(getActivity(), billingFlowParams);
+                        Log.d(
+                            TAG,
+                            "Billing flow launch result: " + billingResult2.getResponseCode() + " - " + billingResult2.getDebugMessage()
+                        );
+                        Log.i(NativePurchasesPlugin.TAG, "onProductDetailsResponse2" + billingResult2);`;
+const FLOW_MANAGED = `${FLOW_MARKER}
+                        final android.app.Activity billingActivity = getActivity();
+                        billingActivity.runOnUiThread(() -> {
+                            // Launch the billing flow
+                            Log.d(TAG, "Launching billing flow");
+                            BillingResult billingResult2 = billingClient.launchBillingFlow(billingActivity, billingFlowParams);
+                            Log.d(
+                                TAG,
+                                "Billing flow launch result: " + billingResult2.getResponseCode() + " - " + billingResult2.getDebugMessage()
+                            );
+                            Log.i(NativePurchasesPlugin.TAG, "onProductDetailsResponse2" + billingResult2);
+                        });`;
 
 function billingDiagnosticsSource(source) {
   const normalized = source.replace(/\r\n/g, "\n");
@@ -23,6 +44,24 @@ function billingDiagnosticsSource(source) {
   }
   if (occurrences(ORIGINAL) !== 1) throw new Error("Unsupported native product-query template; review before patching.");
   return normalized.replace(ORIGINAL, MANAGED);
+}
+
+function billingMainThreadSource(source) {
+  const normalized = source.replace(/\r\n/g, "\n");
+  const occurrences = value => normalized.split(value).length - 1;
+  if (occurrences("billingClient.launchBillingFlow(") !== 1) {
+    throw new Error("Unexpected Billing launch count; review before patching.");
+  }
+  if (occurrences(FLOW_MARKER)) {
+    if (occurrences(FLOW_MARKER) !== 1 || occurrences(FLOW_MANAGED) !== 1 || occurrences(FLOW_ORIGINAL)) {
+      throw new Error("Unexpected managed Billing main-thread flow; refusing a partial or duplicate patch.");
+    }
+    return normalized;
+  }
+  if (occurrences(FLOW_ORIGINAL) !== 1) throw new Error("Unsupported native Billing launch template; review before patching.");
+  // Only dispatch changes. The same Activity and already-built parameters
+  // reach Billing; product/offer/account IDs, grant/consume and policy stay put.
+  return normalized.replace(FLOW_ORIGINAL, FLOW_MANAGED);
 }
 
 function atomicGeneratedWrite(filename, source) {
@@ -47,11 +86,13 @@ function configureNativeBilling(repositoryRoot) {
   if (!/def billing_version = "9\.1\.0"/.test(gradle)) throw new Error("Unreviewed Billing Library version.");
   const javaRoot = path.join(dependency, "android/src/main/java/ee/forgr/nativepurchases");
   const pluginFile = path.join(javaRoot, "NativePurchasesPlugin.java");
-  const patched = billingDiagnosticsSource(fs.readFileSync(pluginFile, "utf8"));
+  // Validate both exact templates before any generated dependency is written.
+  const patched = billingMainThreadSource(billingDiagnosticsSource(fs.readFileSync(pluginFile, "utf8")));
   const helper = fs.readFileSync(path.join(repositoryRoot, "tools/native-templates/GridshardBillingDiagnostics.java"), "utf8");
   atomicGeneratedWrite(path.join(javaRoot, "GridshardBillingDiagnostics.java"), helper);
   atomicGeneratedWrite(pluginFile, patched);
 }
 
 if (require.main === module) configureNativeBilling(path.resolve(__dirname, ".."));
-module.exports = {SUPPORTED_VERSION, MARKER, ORIGINAL, MANAGED, billingDiagnosticsSource, configureNativeBilling};
+module.exports = {SUPPORTED_VERSION, MARKER, ORIGINAL, MANAGED, FLOW_MARKER, FLOW_ORIGINAL, FLOW_MANAGED,
+  billingDiagnosticsSource, billingMainThreadSource, configureNativeBilling};

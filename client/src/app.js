@@ -1440,6 +1440,7 @@
     return [
       { kind:"circuit_credits", amount:Number(rewards.circuit_credits || 0), label:"Devre Kredisi", suffix:"" },
       { kind:"flux_shards", amount:Number(rewards.flux_shards || 0), label:"Akı", suffix:"" },
+      { kind:"universal_module_shards", amount:Number(rewards.universal_module_shards || 0), label:"Evrensel Modül Parçası", suffix:"" },
       { kind:"module_shards", amount:Number(rewards.module_shards || 0), label:`${module.nameTr} Parçası`, suffix:"" },
       { kind:"core_shards", amount:Number(rewards.core_shards || 0), label:`${core.nameTr} Parçası`, suffix:"" },
     ].filter((item) => item.amount > 0);
@@ -1471,6 +1472,7 @@
       flux_shards: 0,
       module_shards: 0,
       core_shards: 0,
+      universal_module_shards: 0,
       module_rewards: [],
       core_rewards: [],
     };
@@ -1480,6 +1482,7 @@
       const rewards = receipt?.rewards || {};
       totals.circuit_credits += Math.max(0, Number(rewards.circuit_credits || 0));
       totals.flux_shards += Math.max(0, Number(rewards.flux_shards || 0));
+      totals.universal_module_shards += Math.max(0, Number(rewards.universal_module_shards || 0));
       const moduleAmount = Math.max(0, Number(rewards.module_shards || 0));
       const moduleId = String(rewards.module_definition_id || "");
       if (moduleAmount > 0 && moduleId) {
@@ -1512,6 +1515,7 @@
     const list = createRewardRows({
       circuit_credits: totals.circuit_credits,
       flux_shards: totals.flux_shards,
+      universal_module_shards: totals.universal_module_shards,
     });
     const appendRows = (rewards) => {
       const rows = createRewardRows(rewards);
@@ -1519,7 +1523,22 @@
     };
     for (const reward of totals.module_rewards || []) appendRows(reward);
     for (const reward of totals.core_rewards || []) appendRows(reward);
+    for (const receipt of receipts) appendChestCosmeticRows(list, receipt.rewards);
     return list;
+  }
+
+  function appendChestCosmeticRows(list, rewards = {}) {
+    const cosmetics = Object.fromEntries(["avatar_id", "avatar_frame_id", "emoji_id", "profile_background_id", "badge_id", "rank_trophy_id", "team_emblem_id", "team_frame_id", "team_name_color_id"].filter((key) => rewards[key]).map((key) => [key, rewards[key]]));
+    for (const entry of rewardPreviewEntries(cosmetics)) {
+      const row = document.createElement("div");
+      row.className = "reward-resource-row";
+      const label = document.createElement("span");
+      label.textContent = entry.label;
+      const amount = document.createElement("strong");
+      amount.textContent = entry.amount;
+      row.append(entry.visual, label, amount);
+      list.appendChild(row);
+    }
   }
 
   // Ödül sandığı önizlemesi. Sandığın içindeki her ödül gerçek görseliyle
@@ -2453,6 +2472,15 @@
     return `<span class="chest-visual chest-visual-${safeTier}${safeVisual ? ` chest-visual-event chest-visual-${safeVisual}` : ""}${large ? " chest-visual-large" : ""}" aria-hidden="true"><i></i><b></b><em>${safeVisual.startsWith("team_") ? "⬡" : safeVisual.startsWith("weekly_") ? "✦" : "◆"}</em></span>`;
   }
 
+  function shopChestAction({ gift, ownedCount, openableCount, item, state }) {
+    const giftReady = gift && Number(gift.claim_remaining_seconds || 0) === 0 && gift.claim_available !== false;
+    if (giftReady) return { kind:"gift", label:"HEDİYE SANDIK AÇ", disabled:Boolean(state.unavailable) };
+    if (ownedCount > 0) return { kind:"open-all", label:`SANDIK AÇ (${ownedCount})`, disabled:Boolean(state.unavailable || openableCount === 0) };
+    const exhausted = Number(item.daily_limit || 0) > 0 && Number(item.remaining_today ?? item.daily_limit) === 0;
+    return { kind:"buy", label:exhausted ? "SINIR DOLDU" : `${item.cost} ${item.currency === "flux_shards" ? "Akı" : "DK"}`,
+      disabled:Boolean(state.unavailable || exhausted || Number(state[item.currency] || 0) < Number(item.cost)) };
+  }
+
   function renderShop() {
     const state = metaProgressionState || fallbackMetaProgression();
     const setText = (id, value) => {
@@ -2495,19 +2523,8 @@
         card.dataset.storeChestId = item.definition_id;
         card.dataset.sale = String(Number(item.cost) < Number(item.base_cost));
         card.innerHTML = `${chestVisualMarkup(item.tier)}<strong>${item.name_tr}</strong>`;
-        if (ownedCount > 0) {
-          const inventoryStatus = document.createElement("small");
-          inventoryStatus.className = "chest-inventory-status";
-          inventoryStatus.textContent = `Envanter ${openableCount} / ${ownedCount} açılabilir`;
-          card.appendChild(inventoryStatus);
-        }
-        const oddsSummary = chestOddsSummary(item);
-        if (oddsSummary) {
-          const odds = document.createElement("small");
-          odds.className = "chest-store-odds";
-          odds.textContent = oddsSummary;
-          card.appendChild(odds);
-        }
+        const metadata = document.createElement("div");
+        metadata.className = "chest-store-metadata";
         // Günlük alım hakkı: sayımı sunucu yapar. Bu alanları göndermeyen eski
         // sunucuda satır çıkmaz ve düğme yalnız bakiyeye bakar.
         const dailyLimit = Math.max(0, Number(item.daily_limit || 0));
@@ -2520,59 +2537,43 @@
           limitStatus.className = "chest-store-limit";
           limitStatus.dataset.exhausted = String(limitReached);
           limitStatus.textContent = `Günlük alım hakkı ${remainingToday} / ${dailyLimit}`;
-          card.appendChild(limitStatus);
+          metadata.appendChild(limitStatus);
         }
         const actions = document.createElement("div");
         actions.className = "shop-chest-actions";
-        const buy = document.createElement("button");
-        buy.type = "button";
-        buy.className = "chest-store-buy";
-        buy.dataset.limitReached = String(limitReached);
-        if (limitReached) {
-          buy.textContent = "SINIR DOLDU";
-        } else if (Number(item.cost) < Number(item.base_cost)) {
-          const base = document.createElement("s");
-          base.textContent = `${item.base_cost} ${currency}`;
-          buy.append(base, document.createTextNode(` ${item.cost} ${currency}`));
-        } else {
-          buy.textContent = `${item.cost} ${currency}`;
-        }
-        buy.disabled = Boolean(
-          state.unavailable
-          || limitReached
-          || Number(state[item.currency] || 0) < Number(item.cost)
-        );
-        buy.addEventListener("click", () => buyStoreChest(item.definition_id));
-        actions.appendChild(buy);
         const gift = giftDefinitions.find((definition) => definition.id === item.definition_id);
         const remaining = gift ? Math.max(0, Number(gift.claim_remaining_seconds || 0)) : 0;
-        const giftReady = Boolean(gift && remaining === 0 && gift.claim_available !== false);
         if (gift) {
           // Geri sayım zamanlayıcısı kartı bu iki öznitelikle bulur.
           card.dataset.definitionId = gift.id;
           card.dataset.claimRemaining = String(remaining);
         }
-        // Tek açma düğmesi (7 Ekim 2026, kullanıcı kararı): hediye hazırsa önce
-        // hediyeyi açar (HEDİYE SANDIK AÇ), sonra eldeki sandıkları (SANDIK AÇ).
-        // Hediye beklerken elde sandık da yoksa düğme kalan süreyi yazar.
-        if (gift && (giftReady || ownedCount === 0)) {
-          const giftAction = document.createElement("button");
-          giftAction.type = "button";
-          giftAction.className = "gift-chest-action";
-          giftAction.textContent = giftChestActionLabel(remaining);
-          giftAction.disabled = Boolean(state.unavailable || !giftReady);
-          giftAction.addEventListener("click", () => claimGiftChest(gift.id));
-          actions.appendChild(giftAction);
-        } else if (ownedCount > 0) {
-          const openAllAction = document.createElement("button");
-          openAllAction.type = "button";
-          openAllAction.className = "chest-open-all-action";
-          openAllAction.textContent = "SANDIK AÇ";
-          openAllAction.disabled = Boolean(state.unavailable || openableCount === 0);
-          openAllAction.addEventListener("click", () => openAllAvailableChests(item.definition_id));
-          actions.appendChild(openAllAction);
+        if (gift && remaining > 0) {
+          const timer = document.createElement("small");
+          timer.className = "chest-gift-countdown";
+          timer.textContent = giftChestActionLabel(remaining);
+          metadata.appendChild(timer);
         }
-        card.appendChild(actions);
+        const selectedAction = shopChestAction({ gift, ownedCount, openableCount, item, state });
+        const action = document.createElement("button");
+        action.type = "button";
+        action.className = `shop-chest-action ${{ gift:"gift-chest-action", "open-all":"chest-open-all-action", buy:"chest-store-buy" }[selectedAction.kind]}`;
+        action.textContent = selectedAction.label;
+        action.dataset.limitReached = String(limitReached);
+        action.disabled = selectedAction.disabled;
+        if (selectedAction.kind === "buy" && !limitReached && Number(item.cost) < Number(item.base_cost)) {
+          const base = document.createElement("s");
+          base.textContent = `${item.base_cost} ${currency}`;
+          action.prepend(base, document.createTextNode(" "));
+        }
+        action.addEventListener("click", () => {
+          action.disabled = true;
+          if (selectedAction.kind === "gift") void claimGiftChest(gift.id);
+          else if (selectedAction.kind === "open-all") void openAllAvailableChests(item.definition_id);
+          else void buyStoreChest(item.definition_id);
+        });
+        actions.appendChild(action);
+        card.append(metadata, actions);
         storeHost.appendChild(card);
       }
     }
@@ -2706,15 +2707,11 @@
         const previous = Math.max(0, Number(card.dataset.claimRemaining || 0));
         const next = Math.max(0, previous - 1);
         card.dataset.claimRemaining = String(next);
-        const button = card.querySelector(".gift-chest-action");
-        if (button && next > 0) button.textContent = giftChestActionLabel(next);
+        const timer = card.querySelector(".chest-gift-countdown");
+        if (timer && next > 0) timer.textContent = giftChestActionLabel(next);
         // Hediye düğmesi o an görünmüyor olabilir (kartta SANDIK AÇ duruyorsa);
         // süre dolunca mağaza yine yenilenir ve düğme hediyeye döner.
         if (next === 0 && previous > 0) becameAvailable = true;
-        if (button && next === 0 && !metaProgressionState?.unavailable) {
-          button.disabled = false;
-          button.textContent = giftChestActionLabel(0);
-        }
       }
       if (becameAvailable) loadMetaProgression();
     }, 1000);
@@ -2745,6 +2742,7 @@
         if (payload.profile) profileState.applyProfile(payload.profile);
         renderProfileSummary();
         renderMetaHubScreens();
+        void loadRewardInbox({ quiet:true });
         return payload;
       } catch (error) {
         if (Number(error?.status) >= 400 && Number(error?.status) < 500) {
@@ -2785,6 +2783,7 @@
     if (host) {
       host.replaceChildren();
       host.appendChild(createRewardRows(rewards));
+      appendChestCosmeticRows(host.firstChild, rewards);
     }
     const dialog = document.getElementById("chest-reveal-dialog");
     if (dialog?.showModal && !dialog.open) dialog.showModal();
@@ -3101,6 +3100,7 @@
       renderProfileSummary();
       renderMetaHubScreens();
       renderPaidStore();
+      void loadRewardInbox({ quiet:true });
     } catch (error) {
       if (error?.code === "premium_policy_ack_required" && !premiumPolicyAck) {
         const key = nativeStore.purchaseKey(native);
@@ -3260,6 +3260,7 @@
       );
       pendingPurchaseIds.delete(productId);
       pendingNativePurchases.delete(productId);
+      void loadRewardInbox({ quiet:true });
       if (native) {
         // iOS'ta işlem bitirilir; Android'de sunucu tüketemediyse tüketilir.
         await nativeStore.finishPurchase(native, {
@@ -17529,7 +17530,7 @@
     const icon = document.createElement("span");
     icon.className = "inbox-card-icon";
     icon.setAttribute("aria-hidden", "true");
-    icon.textContent = notice.kind === "game" ? "◈" : "✦";
+    icon.textContent = notice.category === "purchase" ? "▣" : notice.kind === "game" ? "◈" : "✦";
     const copy = document.createElement("div");
     const title = document.createElement("strong");
     title.textContent = notice.title_tr || "Bildirim";
@@ -17553,7 +17554,7 @@
       visualId:reward.chest_visual_id || "",
       reward:{ ...reward, chest_is_container:true },
       title:reward.chest_name_tr || "Ödül Kasası",
-      note:message.status === "claimed" ? "Bu kasa açıldı." : "AL VE AÇ ile ödüller hesabına eklenir.",
+      note:"Topla ile mağazadaki sandık stoğuna ekle; içeriği açtığında verilir.",
       className:"inbox-reward-chest",
     });
     const copy = document.createElement("div");
@@ -17564,16 +17565,16 @@
     copy.append(title, detail);
     const claim = document.createElement("button");
     claim.type = "button";
-    claim.textContent = message.status === "claimed" ? "ALINDI" : "AL VE AÇ";
+    claim.textContent = message.status === "claimed" ? "ALINDI" : "TOPLA";
     claim.disabled = message.status === "claimed";
     claim.addEventListener("click", async () => {
       claim.disabled = true;
       const status = document.getElementById("reward-inbox-status");
-      if (status) status.textContent = "Ödül kasası açılıyor…";
+      if (status) status.textContent = "Sandık toplanıyor…";
       try {
         const payload = await requestJsonWithDeadline(
           `/profile/${encodeURIComponent(participantPlayerId)}/reward-inbox/${encodeURIComponent(message.message_id)}/claim`,
-          { method:"POST", body:JSON.stringify({ request_id:`inbox:${message.message_id}:${Date.now()}` }) },
+          { method:"POST", body:JSON.stringify({ request_id:`inbox:${message.message_id}` }) },
           30000
         );
         rewardInboxState = payload;
@@ -17581,7 +17582,7 @@
         await loadMetaProgression();
         renderRewardInbox();
         renderProfileSummary();
-        if (status) status.textContent = `${reward.chest_name_tr || "Ödül kasası"} açıldı.`;
+        if (status) status.textContent = "Sandık mağazadaki stoğuna eklendi.";
       } catch (error) {
         claim.disabled = false;
         if (status) status.textContent = error instanceof Error ? error.message : String(error);
@@ -17589,6 +17590,22 @@
     });
     card.append(chest, copy, claim);
     return card;
+  }
+
+  let activeInboxTab = "reward";
+
+  function setRewardInboxTab(tab, { focus = false } = {}) {
+    if (!["battle", "purchase", "reward"].includes(tab)) return;
+    activeInboxTab = tab;
+    for (const button of document.querySelectorAll("[data-inbox-tab]")) {
+      const selected = button.dataset.inboxTab === tab;
+      button.setAttribute("aria-selected", String(selected));
+      button.tabIndex = selected ? 0 : -1;
+      const panel = document.getElementById(button.getAttribute("aria-controls"));
+      if (panel) panel.hidden = !selected;
+      if (selected && focus) button.focus();
+    }
+    if (document.getElementById("reward-inbox-dialog")?.open) void markInboxNoticesSeen();
   }
 
   function renderRewardInbox() {
@@ -17619,7 +17636,10 @@
       }
     };
     fill("reward-inbox-invitations", rewardInboxState?.invitations || [], createInboxInvitationCard, "Bekleyen savaş daveti yok.");
-    fill("reward-inbox-list", rewardInboxState?.messages || [], createInboxRewardCard, "Yeni ödül sandığı yok. Sezon, hafta ve takım turnuvası ödülleri burada teslim edilir.");
+    const rewards = (rewardInboxState?.messages || []).filter((item) => item.status === "unclaimed");
+    fill("reward-inbox-battle-rewards", rewards.filter((item) => item.category === "battle"), createInboxRewardCard, "Yeni savaş sandığı yok.");
+    fill("reward-inbox-list", rewards.filter((item) => item.category !== "battle"), createInboxRewardCard, "Yeni ödül sandığı yok. Sezon, lig ve turnuva sandıkları burada teslim edilir.");
+    fill("reward-inbox-purchases", rewardInboxState?.purchases || [], createInboxNoticeCard, "Henüz satın alım mesajı yok.");
     fill("reward-inbox-notices", rewardInboxState?.notices || [], createInboxNoticeCard, "Yeni oyun bildirimi yok.");
   }
 
@@ -17643,7 +17663,7 @@
   }
 
   async function markInboxNoticesSeen() {
-    const unseen = (rewardInboxState?.notices || []).filter((notice) => !notice.seen);
+    const unseen = [...(rewardInboxState?.notices || []), ...(activeInboxTab === "purchase" ? rewardInboxState?.purchases || [] : [])].filter((notice) => !notice.seen);
     if (!unseen.length) return;
     try {
       rewardInboxState = await requestJsonWithDeadline(
@@ -18060,12 +18080,6 @@
         )?.find((reward) => String(reward.tier) === String(id))
       : null;
     const opensChest = Boolean(selectedReward?.chest_tier);
-    if (opensChest) {
-      showChestOpening({
-        tier: selectedReward.chest_tier,
-        title: `Kademe ${selectedReward.tier} Sandığı`,
-      });
-    }
     if (button) button.disabled = true;
     if (status) status.textContent = "Ödül alınıyor…";
     const engagement = profileState.viewModel()?.engagement || {};
@@ -18082,6 +18096,7 @@
     if (!result.ok && button) button.disabled = false;
     if (result.ok) {
       await loadMetaProgression();
+      await loadRewardInbox({ quiet:true });
       const premiumReceipts = result.payload?.season_chest_receipts || [];
       if (premiumReceipts.length > 1) {
         showBulkChestReveal({
@@ -18093,13 +18108,11 @@
       } else if (result.payload?.season_chest_receipt) {
         showChestReveal(result.payload.season_chest_receipt);
       }
-    } else if (opensChest) {
-      showChestFailure(result.reason || "Sezon sandığı açılamadı.");
     }
     renderProfileSummary();
     renderRemoteDataStatus();
     if (status) {
-      status.textContent = result.ok ? "" : (result.reason || "Ödül alınamadı.");
+      status.textContent = result.ok ? (opensChest ? "Sandık mesaj kutusuna gönderildi." : "") : (result.reason || "Ödül alınamadı.");
       status.dataset.status = result.ok ? "success" : "error";
     }
     return result;
@@ -20044,6 +20057,17 @@
   // Deneme reklamı süresi dolmadan kapatılamaz; ödül yalnız izleme bitince istenir.
   document.getElementById("reward-ad-dialog")?.addEventListener("cancel", (event) => event.preventDefault());
   document.getElementById("reward-inbox-close")?.addEventListener("click", () => document.getElementById("reward-inbox-dialog")?.close());
+  for (const tab of document.querySelectorAll("[data-inbox-tab]")) {
+    tab.addEventListener("click", () => setRewardInboxTab(tab.dataset.inboxTab));
+    tab.addEventListener("keydown", (event) => {
+      const tabs = ["battle", "purchase", "reward"];
+      const index = tabs.indexOf(activeInboxTab);
+      const next = { ArrowRight:(index + 1) % tabs.length, ArrowLeft:(index + tabs.length - 1) % tabs.length, Home:0, End:tabs.length - 1 }[event.key];
+      if (next === undefined) return;
+      event.preventDefault();
+      setRewardInboxTab(tabs[next], { focus:true });
+    });
+  }
   document.getElementById("team-profile-close")?.addEventListener("click", closeTeamProfile);
   document.getElementById("profile-clan-title")?.addEventListener("click", (event) => {
     const teamId = event.currentTarget?.dataset?.teamId || "";

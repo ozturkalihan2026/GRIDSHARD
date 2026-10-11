@@ -80,11 +80,13 @@ def test_leaderboard_chest_claim_unlocks_its_special_cosmetics(monkeypatch):
             "status": "unclaimed",
             "chest": prize,
         })
-        gateway.claim_reward_inbox_item(
+        collected = gateway.claim_reward_inbox_item(
             player_id,
             "season_leaderboard:2026-08:" + player_id,
             gateway.MetaOperationRequest(request_id="beta72-leaderboard-claim"),
         )
+        assert prize["avatar_id"] not in profile.unlocked_avatar_ids
+        gateway.open_player_progression_chest(player_id, collected["receipt"]["chest"]["chest_id"], gateway.MetaOperationRequest(request_id="beta72-leaderboard-open"))
         assert prize["avatar_id"] in profile.unlocked_avatar_ids
         assert prize["avatar_frame_id"] == "season_crown"
         assert prize["avatar_frame_id"] in profile.unlocked_avatar_frame_ids

@@ -321,8 +321,14 @@
     <dialog id="reward-inbox-dialog" class="reward-inbox-dialog" aria-labelledby="reward-inbox-title">
       <header><div><h2 id="reward-inbox-title">Mesaj Kutusu</h2></div><button id="reward-inbox-close" type="button" aria-label="Kapat">×</button></header>
       <p id="reward-inbox-status" role="status" aria-live="polite"></p>
-      <section class="reward-inbox-section" aria-labelledby="reward-inbox-invitations-title"><h3 id="reward-inbox-invitations-title">Savaş Davetleri</h3><div id="reward-inbox-invitations" class="reward-inbox-list"></div></section>
-      <section class="reward-inbox-section" aria-labelledby="reward-inbox-rewards-title"><h3 id="reward-inbox-rewards-title">Ödül Sandıkları</h3><div id="reward-inbox-list" class="reward-inbox-list"></div></section>
+      <nav class="reward-inbox-tabs" role="tablist" aria-label="Mesaj kategorileri">
+        <button id="inbox-tab-battle" type="button" role="tab" data-inbox-tab="battle" aria-controls="inbox-panel-battle" aria-selected="false" tabindex="-1">Savaş</button>
+        <button id="inbox-tab-purchase" type="button" role="tab" data-inbox-tab="purchase" aria-controls="inbox-panel-purchase" aria-selected="false" tabindex="-1">Satın Alım</button>
+        <button id="inbox-tab-reward" type="button" role="tab" data-inbox-tab="reward" aria-controls="inbox-panel-reward" aria-selected="true">Ödül</button>
+      </nav>
+      <section id="inbox-panel-battle" role="tabpanel" aria-labelledby="inbox-tab-battle" class="reward-inbox-section" hidden><h3 id="reward-inbox-invitations-title">Savaş Davetleri</h3><div id="reward-inbox-invitations" class="reward-inbox-list"></div><h3>Savaş Sandıkları</h3><div id="reward-inbox-battle-rewards" class="reward-inbox-list"></div></section>
+      <section id="inbox-panel-purchase" role="tabpanel" aria-labelledby="inbox-tab-purchase" class="reward-inbox-section" hidden><h3>Satın Alım Mesajları</h3><div id="reward-inbox-purchases" class="reward-inbox-list"></div></section>
+      <section id="inbox-panel-reward" role="tabpanel" aria-labelledby="inbox-tab-reward" class="reward-inbox-section"><h3 id="reward-inbox-rewards-title">Ödül Sandıkları</h3><div id="reward-inbox-list" class="reward-inbox-list"></div></section>
       <section class="reward-inbox-section" aria-labelledby="reward-inbox-notices-title"><h3 id="reward-inbox-notices-title">Oyun Bildirimleri</h3><div id="reward-inbox-notices" class="reward-inbox-list"></div></section>
     </dialog>
 

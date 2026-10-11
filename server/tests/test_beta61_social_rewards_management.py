@@ -121,6 +121,31 @@ def test_finished_battle_callback_closes_social_entries_by_battle_id(monkeypatch
     ]
 
 
+def test_deferred_team_crate_keeps_personal_contents_after_team_dissolves(monkeypatch):
+    player = "mail-team-dissolved-fixture"
+    repository = InMemoryPlayerDataRepository()
+    teams = TeamService(InMemoryTeamRepository())
+    monkeypatch.setattr(gateway, "team_service", teams)
+    monkeypatch.setattr(gateway, "player_data_repository", repository)
+    monkeypatch.setattr(gateway.player_data_store_service, "repository", repository)
+    _clear_players(player)
+    try:
+        profile = gateway.player_profile_service.get_or_create(player)
+        team_id = teams.create_team(player, "Old circuit", "create-fixture")["team_id"]
+        prize = dict(TEAM_PRIZES[0])
+        profile.reward_inbox.append({"message_id": "team-crate", "source": "team_tournament", "team_id": team_id,
+                                     "period_id": "2026-10", "status": "unclaimed", "chest": prize})
+        collected = gateway.claim_reward_inbox_item(player, "team-crate", gateway.MetaOperationRequest(request_id="collect-team"))
+        teams.leave_team(team_id=team_id, player_id=player, request_id="dissolve")
+        before = profile.circuit_credits
+        result = gateway.open_player_progression_chest(player, collected["receipt"]["chest"]["chest_id"], gateway.MetaOperationRequest(request_id="open-team"))
+        assert profile.circuit_credits == before + prize["circuit_credits"]
+        assert result["receipt"]["team_unlocks"] == {}
+        assert not profile.chest_slots and teams.list_teams() == []
+    finally:
+        _clear_players(player)
+
+
 def test_weekly_reward_is_queued_once_and_claim_unlocks_inventory(monkeypatch):
     winner_id = "beta61-weekly-winner"
     runner_up_id = "beta61-weekly-runner-up"
@@ -156,6 +181,8 @@ def test_weekly_reward_is_queued_once_and_claim_unlocks_inventory(monkeypatch):
         )
 
         assert claimed["unclaimed_count"] == 0
+        assert winner.circuit_credits == before_credits
+        gateway.open_player_progression_chest(winner_id, claimed["receipt"]["chest"]["chest_id"], gateway.MetaOperationRequest(request_id="open-beta61-weekly"))
         assert winner.circuit_credits == before_credits + WEEKLY_PRIZES[0]["circuit_credits"]
         assert WEEKLY_PRIZES[0]["avatar_id"] in winner.unlocked_avatar_ids
         assert WEEKLY_PRIZES[0]["avatar_frame_id"] in winner.unlocked_avatar_frame_ids

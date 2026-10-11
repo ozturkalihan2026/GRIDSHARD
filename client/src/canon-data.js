@@ -23,7 +23,7 @@ globalThis.GRIDSHARD_CANON_MODULES = Object.freeze([
   },
   {
     "id": "repair",
-    "name_tr": "Onarım Modülü",
+    "name_tr": "Onarım",
     "category": "destek",
     "rarity": "common",
     "unlock_arena": 1,

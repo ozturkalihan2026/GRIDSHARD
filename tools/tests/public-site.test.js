@@ -75,25 +75,50 @@ test("Terms accurately disclose pre-release purchase availability and preserve a
   assert.doesNotMatch(tr, /Ücretli satın almalar şu anda etkin değildir/);
   assert.doesNotMatch(en, /Paid purchases are not currently enabled/);
   for (const language of ["tr", "en"]) {
-    assert.equal(content[language].terms.updated, "2026-10-10");
-    assert.match(renderPage(language, "terms"), /<time datetime="2026-10-10">/);
+    assert.equal(content[language].terms.updated, "2026-10-11");
+    assert.match(renderPage(language, "terms"), /<time datetime="2026-10-11">/);
     assert.ok(renderPage(language, "privacy").includes(`<time datetime="${site.updated}">`), "Unchanged policies keep their previous update date.");
   }
   assert.match(tr, /yeni satın alma yapmak zorunda değilsin/);
-  assert.match(en, /not required to make another purchase/);
-  assert.match(tr, /normal ücretsiz maçlara girişini engellemez/);
-  assert.match(en, /does not close your account or block normal free matches/);
-  assert.match(tr, /Diğer para birimine kesinti uygulanmaz/);
-  assert.match(en, /No deduction is made from another currency/);
+  assert.match(en, /another purchase is not required/);
+  assert.match(tr, /normal ücretsiz maçlar engellenmez/);
+  assert.match(en, /normal free matches remain available/);
+  assert.match(tr, /diğer para birimine kesinti yapılmaz/);
+  assert.match(en, /no deduction is made from another currency/);
   assert.match(tr, /Bizden kaynaklandığı doğrulanan/);
   assert.match(en, /confirmed to be our responsibility/);
-  assert.match(tr, /kalan açık bildirilir/);
-  assert.match(en, /any remaining shortfall/);
+  assert.match(tr, /varsa açık bildirilir/);
+  assert.match(en, /reclaimed quantities and any deficit/);
   assert.match(tr, /otomatik yenilenmezler/i);
   assert.match(en, /do not renew automatically/);
   for (const html of [tr, en]) assert.doesNotMatch(html, /99[,.]99|199[,.]99/);
   assert.match(renderPage("tr", "privacy"), /ücretli satın almaların etkin olduğu anlamına gelmez/);
   assert.match(renderPage("en", "privacy"), /does not mean that paid purchases are enabled/);
+});
+
+test("prospective Season Pass policy has the approved UTC/TR cutover and protects earlier purchases", () => {
+  const tr = renderPage("tr", "terms");
+  const en = renderPage("en", "terms");
+  assert.match(tr, /11 Ekim 2026 saat 08:20 Türkiye saati \(11 Ekim 2026 saat 05:20 UTC\)/);
+  assert.match(en, /11 October 2026 at 05:20 UTC \(11 October 2026 at 08:20 Türkiye time, UTC\+03:00\)/);
+  for (const html of [tr, en]) assert.doesNotMatch(html, /21:30 UTC|00:30 Türkiye/);
+  assert.match(tr, /satın alma öncesinde uygulamada season-rewards-v1/);
+  assert.match(en, /season-rewards-v1 refund condition before checkout/);
+  assert.match(tr, /önceki alımlara geriye dönük uygulanmaz/);
+  assert.match(en, /does not apply retroactively/);
+  assert.match(tr, /mağazanın doğruladığı satın alma zamanı/);
+  assert.match(en, /store-verified purchase time/);
+  assert.match(tr, /premium sandıklardan gerçekten çıkan kaynaklar/);
+  assert.match(en, /actual resources obtained from its premium chests/);
+  assert.match(tr, /alınmış kademeler veya sandık içerikleri ikinci kez üretilmez/);
+  assert.match(en, /claimed tiers and chest contents are not generated again/);
+  assert.match(tr, /Ücretsiz ödül hattı, XP, kupalar, maç sonuçları, kozmetikler/);
+  assert.match(en, /Free-track rewards, XP, trophies, match results, cosmetics/);
+  assert.match(tr, /Savaş Premium ürününde/);
+  assert.match(en, /earlier Season Pass purchases and Battle Premium/);
+  assert.match(tr, /güncel sezon hakkını kapatmaz/);
+  assert.match(en, /does not disable the current season&#39;s entitlement/);
+  for (const html of [tr, en]) assert.doesNotMatch(html, /YÜRÜRLÜK TARİHİ|TO BE COMPLETED|DOLDURULACAK/);
 });
 
 test("both languages have every public route and a matching language switch", () => {

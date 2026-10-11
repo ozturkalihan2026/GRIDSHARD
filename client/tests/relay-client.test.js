@@ -3405,7 +3405,7 @@ function createClient() {
     requestJson: async (requestPath, options) => {
       assert.strictEqual(
         requestPath,
-        "/profile/season-player/engagement/tiers/2/claim"
+        "/profile/season-player/engagement/tiers/2/claim?chest_delivery=inbox-v1"
       );
       assert.strictEqual(options.method, "POST");
       return {

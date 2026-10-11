@@ -58,6 +58,9 @@ def test_server_timed_chest_has_public_odds_and_replay_safe_receipt():
     chest = service.award_battle_chest(profile, "ranked-win", True)
     assert chest is not None
     assert service.view(profile)["chests"]["definitions"][0]["rarity_odds"]
+    from app.reward_delivery import collect_chest
+    assert not profile.chest_slots
+    collect_chest(profile, profile.reward_inbox[0], "collect-battle", now.isoformat())
 
     clock["now"] = now + timedelta(hours=25)
     first = service.open_chest(profile, chest["chest_id"], "open-1")

@@ -307,16 +307,27 @@ def apply_refund(receipt, event="event-1", reverse=False):
                                       event_id=event, reversed_refund=reverse)
 
 
+def open_delivered_chests(profile):
+    for message in list(profile.reward_inbox):
+        if message.get("status") != "unclaimed" or not message.get("inventory_chest"):
+            continue
+        collected = gateway.claim_reward_inbox_item(profile.player_id, message["message_id"], gateway.MetaOperationRequest(request_id=f"collect:{message['message_id']}"))
+        chest_id = collected["receipt"]["chest"]["chest_id"]
+        gateway.open_player_progression_chest(profile.player_id, chest_id, gateway.MetaOperationRequest(request_id=f"open:{chest_id}"))
+
+
 def test_endpoint_captures_chest_real_contents_and_replays_without_grant(runtime):
     _, profile, receipt, platform = runtime
     tier = next(item["tier"] for item in SEASON_PREMIUM_REWARD_TRACK if item.get("chest_tier"))
     baseline = wallet_snapshot(profile)
     request = gateway.MetaOperationRequest(request_id="premium-chest-fixture")
-    gateway.claim_premium_season_tier_reward(profile.player_id, tier, request)
+    gateway.claim_premium_season_tier_reward(profile.player_id, tier, request, chest_delivery="inbox-v1")
+    assert not profile.chest_receipts
+    open_delivered_chests(profile)
     earned = wallet_snapshot(profile)
     root = profile.premium_reward_recovery[profile.active_meta_season_id]
-    assert any(":chest:" in key for key in root["claims"])
-    gateway.claim_premium_season_tier_reward(profile.player_id, tier, request)
+    assert any(key.startswith("delivered-chest:") for key in root["claims"])
+    gateway.claim_premium_season_tier_reward(profile.player_id, tier, request, chest_delivery="inbox-v1")
     assert wallet_snapshot(profile) == earned
     assert platform.store_receipt(receipt["key"])["refund_policy_version"] == POLICY_VERSION
     assert apply_refund(receipt)["changed"]
@@ -333,9 +344,10 @@ def test_all_tiers_and_actual_chests_recover_once_and_preserve_free_wallet(runti
     baseline = wallet_snapshot(profile)
     for tier in range(1, 41):
         request = gateway.MetaOperationRequest(request_id=f"all-premium:{tier}")
-        gateway.claim_premium_season_tier_reward(profile.player_id, tier, request)
+        gateway.claim_premium_season_tier_reward(profile.player_id, tier, request, chest_delivery="inbox-v1")
+        open_delivered_chests(profile)
         earned = wallet_snapshot(profile)
-        gateway.claim_premium_season_tier_reward(profile.player_id, tier, request)
+        gateway.claim_premium_season_tier_reward(profile.player_id, tier, request, chest_delivery="inbox-v1")
         assert wallet_snapshot(profile) == earned
     assert len(profile.premium_reward_recovery[profile.active_meta_season_id]["claims"]) > 40
     apply_refund(receipt)
@@ -345,21 +357,45 @@ def test_all_tiers_and_actual_chests_recover_once_and_preserve_free_wallet(runti
     assert wallet_snapshot(profile) == baseline
 
 
+def test_v7_premium_receipt_contract_still_opens_and_records_refundable_contents(runtime):
+    _, profile, receipt, _ = runtime
+    tier = next(item["tier"] for item in SEASON_PREMIUM_REWARD_TRACK if item.get("chest_tier"))
+    baseline = wallet_snapshot(profile)
+    request = gateway.MetaOperationRequest(request_id="legacy-client-chest")
+    first = gateway.claim_premium_season_tier_reward(profile.player_id, tier, request)
+    assert first["season_chest_receipts"] and not first["season_chest_deliveries"]
+    assert not profile.reward_inbox and not profile.chest_slots
+    earned = wallet_snapshot(profile)
+    assert gateway.claim_premium_season_tier_reward(profile.player_id, tier, request)["season_chest_receipts"] == first["season_chest_receipts"]
+    assert wallet_snapshot(profile) == earned
+    apply_refund(receipt)
+    assert wallet_snapshot(profile) == baseline
+
+
+def test_unknown_delivery_protocol_never_mutates_reward(runtime):
+    _, profile, _, _ = runtime
+    before = profile_snapshot(profile)
+    with pytest.raises(gateway.HTTPException) as error:
+        gateway.claim_premium_season_tier_reward(profile.player_id, 1, chest_delivery="unknown")
+    assert error.value.status_code == 422
+    assert profile_snapshot(profile) == before
+
+
 def test_failed_chest_roll_rolls_back_claim_and_provenance(runtime, monkeypatch):
     _, profile, _, _ = runtime
     tier = next(item["tier"] for item in SEASON_PREMIUM_REWARD_TRACK if item.get("chest_tier"))
     before = profile_snapshot(profile)
-    award = gateway.meta_progression_service.award_instant_chest
-    def fail(*args):
-        award(*args)
+    award = gateway.meta_progression_service.deliver_reward_chest
+    def fail(*args, **kwargs):
+        award(*args, **kwargs)
         raise RuntimeError("fixture chest interruption")
     request = gateway.MetaOperationRequest(request_id="interrupted-chest")
     with monkeypatch.context() as patch:
-        patch.setattr(gateway.meta_progression_service, "award_instant_chest", fail)
+        patch.setattr(gateway.meta_progression_service, "deliver_reward_chest", fail)
         with pytest.raises(RuntimeError, match="chest interruption"):
-            gateway.claim_premium_season_tier_reward(profile.player_id, tier, request)
+            gateway.claim_premium_season_tier_reward(profile.player_id, tier, request, chest_delivery="inbox-v1")
     assert profile_snapshot(profile) == before
-    gateway.claim_premium_season_tier_reward(profile.player_id, tier, request)
+    gateway.claim_premium_season_tier_reward(profile.player_id, tier, request, chest_delivery="inbox-v1")
 
 
 @pytest.mark.parametrize("purchase_date,ack,expected", [(1, "", "legacy"), (100, "", "ack"),

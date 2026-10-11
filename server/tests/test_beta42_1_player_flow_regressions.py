@@ -29,9 +29,11 @@ def test_guaranteed_arena_chest_is_claimed_when_regular_slots_are_full():
 
     assert receipt["node_id"] == "arena_2_600"
     assert "arena_2_600" in profile.arena_reward_claims
+    assert len(profile.chest_slots) == 4
+    assert profile.reward_inbox[-1]["source"] == "arena_2_600"
+    from app.reward_delivery import collect_chest
+    collect_chest(profile, profile.reward_inbox[-1], "collect-arena", datetime.now(timezone.utc).isoformat())
     assert len(profile.chest_slots) == 5
-    assert profile.chest_slots[-1]["source"] == "arena_2_600"
-    assert profile.chest_slots[-1]["overflow"] is True
 
 
 def test_module_upgrade_spends_credits_and_shards_and_changes_level():

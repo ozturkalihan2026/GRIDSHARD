@@ -42,7 +42,7 @@ class PostgresEconomicOperations:
         # Balances/inventory/profile are refreshed at replay time. Only the
         # original award facts (including random chest contents) are retained.
         receipts = {name: value for name, value in response.items()
-                    if name == "receipt" or name.endswith("_receipt") or name.endswith("_receipts")}
+                    if name == "receipt" or name.endswith(("_receipt", "_receipts", "_delivery", "_deliveries"))}
         outcome = {"layout": layout, "receipts": receipts,
                    "with_profile": "profile" in response}
         with self.pool.connection() as connection:

@@ -2559,9 +2559,10 @@
 
       try {
         const payload = await this.requestJson(
-          kind === "premium-tiers"
+          (kind === "premium-tiers"
             ? `/profile/${encodeURIComponent(this.playerId)}/engagement/tiers/${encodeURIComponent(id)}/premium/claim`
-            : `/profile/${encodeURIComponent(this.playerId)}/engagement/${kind}/${encodeURIComponent(id)}/claim`,
+            : `/profile/${encodeURIComponent(this.playerId)}/engagement/${kind}/${encodeURIComponent(id)}/claim`)
+            + (["tiers", "premium-tiers"].includes(kind) ? "?chest_delivery=inbox-v1" : ""),
           {
             method: "POST",
             ...(requestId

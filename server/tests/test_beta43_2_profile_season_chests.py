@@ -225,7 +225,7 @@ def test_instant_shop_gift_does_not_fail_when_battle_chest_slots_are_full():
     ]
 
 
-def test_season_chest_tier_opens_real_chest_and_persists_reward(monkeypatch):
+def test_season_chest_tier_delivers_then_collects_opens_and_persists_reward(monkeypatch):
     player_id = "season-chest-endpoint-player"
     repository = InMemoryPlayerDataRepository()
     monkeypatch.setattr(gateway, "player_data_repository", repository)
@@ -238,7 +238,7 @@ def test_season_chest_tier_opens_real_chest_and_persists_reward(monkeypatch):
     client = TestClient(gateway.app)
 
     response = client.post(
-        f"/profile/{player_id}/engagement/tiers/10/claim",
+        f"/profile/{player_id}/engagement/tiers/10/claim?chest_delivery=inbox-v1",
         json={"request_id": "season-tier-10-receipt"},
     )
 
@@ -246,7 +246,12 @@ def test_season_chest_tier_opens_real_chest_and_persists_reward(monkeypatch):
     payload = response.json()
     assert payload["season_reward_receipt"]["module_definition_id"]
     assert payload["season_reward_receipt"]["core_type_id"]
-    assert payload["season_chest_receipt"]["definition_id"] == "core_24h"
-    assert payload["season_chest_receipt"]["rewards"]["circuit_credits"] > 0
+    assert payload["season_chest_receipt"] is None
+    assert payload["season_chest_delivery"]["definition_id"] == "core_24h"
+    assert profile.reward_inbox[-1]["status"] == "unclaimed"
     assert profile.chest_slots == []
     assert repository.load(player_id) is not None
+    delivery = payload["season_chest_delivery"]
+    collected = gateway.claim_reward_inbox_item(player_id, delivery["message_id"], gateway.MetaOperationRequest(request_id="collect-season"))
+    opened = gateway.open_player_progression_chest(player_id, collected["receipt"]["chest"]["chest_id"], gateway.MetaOperationRequest(request_id="open-season"))
+    assert opened["receipt"]["rewards"]["circuit_credits"] > 0

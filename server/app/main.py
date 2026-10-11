@@ -168,6 +168,7 @@ from .store_catalog import (
 from .store_verification import ADMOB_REJECTION_REASONS, StoreVerificationError, StoreVerifiers
 from .ad_rollout import AdRollout
 from .store_reconciliation import StoreReconciler
+from .reward_delivery import collect_chest, mailbox_messages, premium_origin, queue_purchase_notice
 from .player_data_store import (
     JsonFilePlayerDataRepository,
     PlayerDataStoreError,
@@ -1032,6 +1033,10 @@ def persistent_operation(function):
                 return function(*args, **kwargs)
             payload = {key: value.model_dump(mode="json", exclude={"request_id"}) if isinstance(value, BaseModel) else value
                        for key, value in arguments.items()}
+            # FastAPI supplies optional query defaults; legacy receipt hashes
+            # must remain identical while v7 and mailbox clients coexist.
+            if payload.get("chest_delivery") == "":
+                payload.pop("chest_delivery")
             receipts = PostgresEconomicOperations(postgres_pool)
             try:
                 key, previous = receipts.begin(actor_id, request_id, kind, payload)
@@ -3396,7 +3401,6 @@ def _queue_competition_reward(profile, *, source: str, period_id: str, position:
         "team_id": team_id,
         "chest": dict(prize),
     })
-    profile.reward_inbox[:] = profile.reward_inbox[-60:]
     return True
 
 
@@ -3614,7 +3618,7 @@ def _team_notification_summary(profile) -> dict:
 
 
 def _reward_inbox_view(profile) -> dict:
-    messages = [dict(item) for item in reversed(profile.reward_inbox)]
+    messages, purchases = mailbox_messages(profile)
     invitations = _inbox_invitations(profile)
     notices = _inbox_notices(profile)
     unclaimed_count = sum(item.get("status") == "unclaimed" for item in messages)
@@ -3625,6 +3629,7 @@ def _reward_inbox_view(profile) -> dict:
     return {
         "player_id": profile.player_id,
         "messages": messages,
+        "purchases": purchases,
         "unclaimed_count": unclaimed_count,
         "universal_module_shards": int(profile.universal_module_shards),
         "invitations": invitations,
@@ -3634,6 +3639,7 @@ def _reward_inbox_view(profile) -> dict:
             unclaimed_count
             + actionable_invitations
             + sum(not item["seen"] for item in notices)
+            + sum(not item["seen"] for item in purchases)
         ),
     }
 
@@ -3646,10 +3652,11 @@ def mark_reward_inbox_notices_seen(player_id: str, request: InboxNoticeSeenReque
     with REWARD_INBOX_LOCK:
         profile = _team_member_profile(player_id)
         current = [item["notice_id"] for item in _inbox_notices(profile)]
-        wanted = [value for value in request.notice_ids if value in current] or current
+        current.extend(item["notice_id"] for item in mailbox_messages(profile)[1])
+        wanted = [value for value in request.notice_ids if value in current] if request.notice_ids else current
         profile.seen_inbox_notice_ids = tuple(
             dict.fromkeys((*profile.seen_inbox_notice_ids, *wanted))
-        )[-200:]
+        )
         persist_player_data(player_id)
         return _reward_inbox_view(profile)
 
@@ -3664,48 +3671,25 @@ def get_reward_inbox(player_id: str) -> dict:
 @app.post("/profile/{player_id}/reward-inbox/{message_id}/claim")
 @persistent_operation
 def claim_reward_inbox_item(player_id: str, message_id: str, request: MetaOperationRequest) -> dict:
-    with REWARD_INBOX_LOCK:
+    with _store_economy_transaction(player_id), REWARD_INBOX_LOCK:
         profile = _team_member_profile(player_id)
         if request.request_id in profile.reward_inbox_receipts:
-            return {**_reward_inbox_view(profile), "receipt": dict(profile.reward_inbox_receipts[request.request_id]), "replayed": True}
+            previous = profile.reward_inbox_receipts[request.request_id]
+            if previous.get("message_id") != message_id:
+                raise HTTPException(status_code=409, detail="Talep kimliği farklı bir ödüle ait.")
+            return {**_reward_inbox_view(profile), "receipt": dict(previous), "profile": profile.to_view(), "replayed": True}
         message = next((item for item in profile.reward_inbox if item.get("message_id") == message_id), None)
         if message is None:
             raise HTTPException(status_code=404, detail="Ödül mesajı bulunamadı.")
         if message.get("status") != "unclaimed":
+            previous = next((item for item in profile.reward_inbox_receipts.values() if item.get("message_id") == message_id), None)
+            if previous:
+                return {**_reward_inbox_view(profile), "receipt": dict(previous), "profile": profile.to_view(), "replayed": True}
             raise HTTPException(status_code=422, detail="Bu ödül daha önce alındı.")
-        reward = dict(message.get("chest") or {})
-        profile.circuit_credits += max(0, int(reward.get("circuit_credits", 0)))
-        profile.flux_shards += max(0, int(reward.get("flux_shards", 0)))
-        profile.universal_module_shards += max(0, int(reward.get("universal_module_shards", 0)))
-        player_unlocks = {
-            "avatar_id": "unlocked_avatar_ids",
-            "avatar_frame_id": "unlocked_avatar_frame_ids",
-            "emoji_id": "unlocked_battle_emoji_ids",
-            "profile_background_id": "unlocked_profile_background_ids",
-            "badge_id": "unlocked_badge_ids",
-            "rank_trophy_id": "unlocked_rank_trophy_ids",
-        }
-        for reward_key, attribute in player_unlocks.items():
-            value = str(reward.get(reward_key) or "").strip()
-            if value:
-                setattr(profile, attribute, tuple(dict.fromkeys((*getattr(profile, attribute), value))))
-        team_unlocks: dict[str, str] = {}
-        if message.get("source") == "team_tournament" and message.get("team_id"):
-            # Ödülü her üye alır; takım görünümü takım ve dönem başına bir kez açılır.
-            team_unlocks = team_service.grant_reward_cosmetics(
-                str(message["team_id"]),
-                reward,
-                grant_id=f"team_tournament:{message.get('period_id')}:{message['team_id']}",
-            )
-        message["status"] = "claimed"
-        receipt = {
-            "request_id": request.request_id,
-            "message_id": message_id,
-            "source": message.get("source"),
-            "position": message.get("position"),
-            "chest": reward,
-            "team_unlocks": team_unlocks,
-        }
+        try:
+            receipt = collect_chest(profile, message, request.request_id, datetime.now(timezone.utc).isoformat())
+        except PremiumRecoveryError as exc:
+            raise HTTPException(status_code=422, detail=str(exc)) from exc
         profile.reward_inbox_receipts[request.request_id] = dict(receipt)
         persist_player_data(player_id)
         return {**_reward_inbox_view(profile), "receipt": receipt, "profile": profile.to_view(), "replayed": False}
@@ -5008,10 +4992,37 @@ def claim_player_progression_gift_chest(
     }
 
 
+def chest_economy_operation(function):
+    @wraps(function)
+    def guarded(player_id: str, *args, **kwargs):
+        # Collection/opening shares the same row lock and transaction as the
+        # refund worker, including when a deferred chest belongs to an old season.
+        with _store_economy_transaction(player_id):
+            return function(player_id, *args, **kwargs)
+    return guarded
+
+
+def _complete_chest_team_rewards(receipt: dict) -> None:
+    for item in receipt.get("receipts", [receipt]):
+        team = item.get("team_reward")
+        if team:
+            # A collected crate can outlive its original team. Its personal
+            # contents must remain claimable; never award cosmetics to a new team.
+            try:
+                team_service.get_team(str(team["team_id"]))
+            except TeamServiceError:
+                item["team_unlocks"] = {}
+                continue
+            item["team_unlocks"] = team_service.grant_reward_cosmetics(
+                str(team["team_id"]), item["rewards"], grant_id=team["grant_id"],
+            )
+
+
 @app.post(
     "/profile/{player_id}/meta-progression/chests/{chest_id}/open"
 )
 @persistent_operation
+@chest_economy_operation
 def open_player_progression_chest(
     player_id: str,
     chest_id: str,
@@ -5026,6 +5037,7 @@ def open_player_progression_chest(
         )
     except MetaProgressionError as exc:
         raise HTTPException(status_code=422, detail=str(exc)) from exc
+    _complete_chest_team_rewards(receipt)
     persist_player_data(player_id)
     return {
         "receipt": receipt,
@@ -5038,6 +5050,7 @@ def open_player_progression_chest(
     "/profile/{player_id}/meta-progression/chests/{definition_id}/open-all"
 )
 @persistent_operation
+@chest_economy_operation
 def open_all_available_player_progression_chests(
     player_id: str,
     definition_id: str,
@@ -5052,6 +5065,7 @@ def open_all_available_player_progression_chests(
         )
     except MetaProgressionError as exc:
         raise HTTPException(status_code=422, detail=str(exc)) from exc
+    _complete_chest_team_rewards(receipt)
     persist_player_data(player_id)
     return {
         "receipt": receipt,
@@ -5188,6 +5202,7 @@ def purchase_store_product(player_id: str, request: PurchaseRequest, ad_protocol
                 verified=verified,
                 premium_refund_policy=policy,
             )
+            queue_purchase_notice(profile, receipt, product_name=product_by_id(request.product_id)["name_tr"], product_id=request.product_id)
             persist_player_data(player_id)
             if verified is not None:
                 platform_service.record_store_receipt(
@@ -6002,13 +6017,21 @@ def _tier_advanced_payload(
     }
 
 
+def _uses_chest_mailbox(protocol: str) -> bool:
+    if protocol not in {"", "inbox-v1"}:
+        raise HTTPException(status_code=422, detail="Bilinmeyen sandık teslim yöntemi.")
+    return protocol == "inbox-v1"
+
+
 @app.post("/profile/{player_id}/engagement/tiers/{tier}/claim")
 @persistent_operation
 def claim_season_tier_reward(
     player_id: str,
     tier: int,
     request: MetaOperationRequest | None = None,
+    chest_delivery: str = "",
 ) -> dict:
+    use_mailbox = _uses_chest_mailbox(chest_delivery)
     before_profile = player_profile_service.get_or_create(player_id)
     tier_before = int(before_profile.engagement_view()["current_tier"])
     engagement_request_id = request.request_id if request else None
@@ -6039,15 +6062,23 @@ def claim_season_tier_reward(
         "diamond": "diamond_24h",
     }
     chest_request_id = f"season-tier:{profile.player_id}:{profile.active_meta_season_id}:{tier}"
+    delivery = None
     if reward and reward.get("chest_tier") and replayed:
         chest_receipt = profile.chest_receipts.get(chest_request_id)
     elif reward and reward.get("chest_tier"):
-        chest_receipt = meta_progression_service.award_instant_chest(
+        award = meta_progression_service.deliver_reward_chest if use_mailbox else meta_progression_service.award_instant_chest
+        result = award(
             profile,
             chest_definition_ids[str(reward["chest_tier"])],
             f"season-tier:{profile.active_meta_season_id}:{tier}",
             chest_request_id,
         )
+        if use_mailbox:
+            delivery = result
+        else:
+            chest_receipt = result
+    if reward and reward.get("chest_tier") and replayed and not chest_receipt:
+        delivery = {"message_id": chest_request_id, "definition_id": chest_definition_ids[str(reward["chest_tier"])], "delivered": True}
     persist_player_data(player_id)
     view = profile.to_view()
     tier_after = int(view["engagement"]["current_tier"])
@@ -6061,6 +6092,7 @@ def claim_season_tier_reward(
         **view,
         "season_reward_receipt": season_reward_receipt,
         "season_chest_receipt": chest_receipt,
+        "season_chest_delivery": delivery,
         "tier_advanced": _tier_advanced_payload(
             player_id,
             f"reward:{tier}",
@@ -6076,19 +6108,23 @@ def claim_premium_season_tier_reward(
     player_id: str,
     tier: int,
     request: MetaOperationRequest | None = None,
+    chest_delivery: str = "",
 ) -> dict:
+    _uses_chest_mailbox(chest_delivery)
     # Share the purchase/refund lock and joined production transaction: no
     # chest or claim can race past an entitlement revocation.
     with _store_economy_transaction(player_id):
         try:
-            return _claim_premium_season_tier_reward(player_id, tier, request)
+            return _claim_premium_season_tier_reward(player_id, tier, request, chest_delivery)
         except PremiumRecoveryError as exc:
             raise HTTPException(status_code=503, detail="Premium ödül kaydı tamamlanamadı; yeniden dene.") from exc
 
 
 def _claim_premium_season_tier_reward(
     player_id: str, tier: int, request: MetaOperationRequest | None = None,
+    chest_delivery: str = "",
 ) -> dict:
+    use_mailbox = _uses_chest_mailbox(chest_delivery)
     engagement_request_id = request.request_id if request else None
     before_profile = player_profile_service.get_or_create(player_id)
     replayed = bool(
@@ -6114,12 +6150,23 @@ def _claim_premium_season_tier_reward(
         "diamond": "diamond_24h",
     }
     chest_receipts = []
+    chest_deliveries = []
     if reward and reward.get("chest_tier"):
         for index in range(int(reward.get("chest_count", 0) or 0)):
             chest_request_id = f"season-premium-tier:{profile.player_id}:{profile.active_meta_season_id}:{tier}:{index}"
             if replayed:
                 receipt = profile.chest_receipts.get(chest_request_id)
+            elif use_mailbox:
+                chest_deliveries.append(meta_progression_service.deliver_reward_chest(
+                    profile,
+                    chest_definition_ids[str(reward["chest_tier"])],
+                    f"season-premium-tier:{profile.active_meta_season_id}:{tier}:{index}",
+                    chest_request_id,
+                    origin=premium_origin(profile),
+                ))
+                receipt = None
             else:
+                # Keep v7's opening animation/receipt contract during rollout.
                 premium_before = active_reward_snapshot(profile)
                 receipt = meta_progression_service.award_instant_chest(
                     profile,
@@ -6128,6 +6175,8 @@ def _claim_premium_season_tier_reward(
                     chest_request_id,
                 )
                 record_reward_delta(profile, f"tier:{tier}:chest:{index}", premium_before)
+            if replayed and not receipt:
+                chest_deliveries.append({"message_id": chest_request_id, "definition_id": chest_definition_ids[str(reward["chest_tier"])], "delivered": True})
             if receipt:
                 chest_receipts.append(receipt)
     persist_player_data(player_id)
@@ -6141,6 +6190,7 @@ def _claim_premium_season_tier_reward(
             else None
         ),
         "season_chest_receipts": chest_receipts,
+        "season_chest_deliveries": chest_deliveries,
     }
 
 

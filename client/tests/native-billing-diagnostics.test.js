@@ -5,7 +5,7 @@ const fs = require("node:fs");
 const os = require("node:os");
 const path = require("node:path");
 const {spawnSync} = require("node:child_process");
-const {ORIGINAL,MANAGED,billingDiagnosticsSource,configureNativeBilling} = require("../../tools/configure-native-billing.js");
+const {ORIGINAL,MANAGED,FLOW_ORIGINAL,FLOW_MANAGED,billingDiagnosticsSource,configureNativeBilling} = require("../../tools/configure-native-billing.js");
 const root = path.resolve(__dirname,"../..");
 const helper = fs.readFileSync(path.join(root,"tools/native-templates/GridshardBillingDiagnostics.java"),"utf8");
 function temporary(t) {
@@ -41,18 +41,27 @@ test("fresh pinned dependencies receive reproducible diagnostic sources without 
   fs.writeFileSync(path.join(dependency,"android/build.gradle"),'def billing_version = "9.1.0"\n');
   fs.writeFileSync(path.join(directory,"tools/native-templates/GridshardBillingDiagnostics.java"),helper);
   const shared=path.join(directory,"shared-store-fixture.java");
-  fs.writeFileSync(shared,ORIGINAL);fs.linkSync(shared,plugin);
+  const originalPlugin=`${ORIGINAL}\n${FLOW_ORIGINAL}`;
+  const managedPlugin=`${MANAGED}\n${FLOW_MANAGED}`;
+  fs.writeFileSync(shared,originalPlugin);fs.linkSync(shared,plugin);
   configureNativeBilling(directory);
-  assert.equal(fs.readFileSync(shared,"utf8"),ORIGINAL,"hard-linked pnpm store must remain untouched");
-  assert.equal(fs.readFileSync(plugin,"utf8"),MANAGED);
+  assert.equal(fs.readFileSync(shared,"utf8"),originalPlugin,"hard-linked pnpm store must remain untouched");
+  assert.equal(fs.readFileSync(plugin,"utf8"),managedPlugin);
   assert.equal(fs.readFileSync(path.join(java,"GridshardBillingDiagnostics.java"),"utf8"),helper);
-  configureNativeBilling(directory);assert.equal(fs.readFileSync(plugin,"utf8"),MANAGED);
+  configureNativeBilling(directory);assert.equal(fs.readFileSync(plugin,"utf8"),managedPlugin);
   assert.equal(fs.readdirSync(java).some(name=>name.endsWith(".tmp")),false);
   fs.writeFileSync(path.join(dependency,"package.json"),JSON.stringify({version:"8.9.0"}));
   assert.throws(()=>configureNativeBilling(directory),/reviewed/);
   fs.writeFileSync(path.join(dependency,"package.json"),JSON.stringify({version:"8.8.1"}));
   fs.writeFileSync(path.join(dependency,"android/build.gradle"),'def billing_version = "9.2.0"');
   assert.throws(()=>configureNativeBilling(directory),/Unreviewed/);
+  fs.writeFileSync(path.join(dependency,"android/build.gradle"),'def billing_version = "9.1.0"');
+  const malformedPlugin=managedPlugin.replace("runOnUiThread","unreviewedDispatcher");
+  const generatedHelper=path.join(java,"GridshardBillingDiagnostics.java");
+  fs.writeFileSync(plugin,malformedPlugin);fs.writeFileSync(generatedHelper,"unchanged helper fixture");
+  assert.throws(()=>configureNativeBilling(directory),/Unexpected managed Billing main-thread/);
+  assert.equal(fs.readFileSync(plugin,"utf8"),malformedPlugin,"drift must fail before generated source writes");
+  assert.equal(fs.readFileSync(generatedHelper,"utf8"),"unchanged helper fixture");
 });
 
 test("Android sync always regenerates the pinned helper, with no pricing or purchase authority",()=>{

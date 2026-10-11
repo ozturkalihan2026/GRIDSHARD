@@ -42,7 +42,7 @@ BASIC_MODULE_DEFINITIONS: dict[str, ModuleDefinition] = {
         strategic_role="Savunma hattını koruma", description_tr="Kritik devre hücrelerini korur.", energy_consumption=1.0,
         strong_against=("emp",), weak_against=("railgun",), synergy_with=("repair",)),
 
-    "repair": ModuleDefinition(id="repair", name_tr="Onarım Modülü", category="destek", max_hp=100,
+    "repair": ModuleDefinition(id="repair", name_tr="Onarım", category="destek", max_hp=100,
         strategic_role="Can onarımı", description_tr="En düşük CAN oranındaki tek modülü onarır.", energy_consumption=2.0, cooldown_ms=2000,
         strong_against=("virus",), weak_against=("jammer",), synergy_with=("shield","armor","barrier")),
     "cooler": ModuleDefinition(id="cooler", name_tr="Soğutucu", category="destek", max_hp=100,
@@ -191,7 +191,7 @@ COUNTERPLAY_TR = {
     "chrono_relay": "Zaman borcu penceresinde sahibinin saldırıları yavaşlar; baskıyı o anda kurun.",
     "precision_matrix": "Hedef değişimi odağı sıfırlar; Sinyal Bozucu keser.",
     "omega_amplifier": "Tek sınıfa dayalı destede rezonans zayıftır; Sinyal Bozucu keser.",
-    "virus": "Onarım Modülü virüsü temizler; Bariyer süreyi kısaltır.",
+    "virus": "Onarım virüsü temizler; Bariyer süreyi kısaltır.",
     "disruptor": "Enerjili Bariyer süreyi kısaltır ve yankıyı engelleyebilir.",
     "singularity_projector": "Enerji maliyeti ve bekleme süresi yüksektir; Bariyer süreyi kısaltır.",
 }

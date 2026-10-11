@@ -28,16 +28,13 @@ assert.ok(render.length > 0);
 // Kartta "kalan / sınır" satırı, olasılık özetinin altında ve düğmelerin üstünde.
 assert.ok(render.includes('limitStatus.className = "chest-store-limit";'));
 assert.ok(render.includes("limitStatus.textContent = `Günlük alım hakkı ${remainingToday} / ${dailyLimit}`;"));
-assert.ok(render.indexOf('odds.className = "chest-store-odds";') < render.indexOf('limitStatus.className = "chest-store-limit";'));
-assert.ok(render.indexOf('limitStatus.className = "chest-store-limit";') < render.indexOf("actions.appendChild(buy);"));
+assert.ok(render.indexOf('limitStatus.className = "chest-store-limit";') < render.indexOf("actions.appendChild(action);"));
 
 // Hak bitince düğme kapanır ve fiyat yerine durumu yazar.
 assert.ok(render.includes("const limitReached = remainingToday === 0;"));
-assert.ok(render.includes('buy.textContent = "SINIR DOLDU";'));
-assert.match(
-  render,
-  /buy\.disabled = Boolean\(\s*state\.unavailable\s*\|\| limitReached\s*\|\| Number\(state\[item\.currency\] \|\| 0\) < Number\(item\.cost\)\s*\);/
-);
+const decision = app.slice(app.indexOf("function shopChestAction"), app.indexOf("function renderShop"));
+assert.ok(decision.includes('exhausted ? "SINIR DOLDU"'));
+assert.ok(decision.includes("state.unavailable || exhausted || Number(state[item.currency] || 0) < Number(item.cost)"));
 
 // Sınır alanlarını göndermeyen eski sunucuda satır çıkmaz, düğme kapanmaz.
 assert.ok(render.includes("const dailyLimit = Math.max(0, Number(item.daily_limit || 0));"));
@@ -45,8 +42,8 @@ assert.match(render, /const remainingToday = dailyLimit > 0\s*\? Math\.max\(0, N
 assert.match(render, /if \(dailyLimit > 0\) \{\s*const limitStatus/);
 
 // Hediye düğmesi ve HEPSİNİ AÇ sınıra bakmaz.
-const gift = render.slice(render.indexOf("giftAction.disabled = Boolean("), render.indexOf("giftAction.addEventListener"));
-const openAll = render.slice(render.indexOf("openAllAction.disabled = "), render.indexOf("openAllAction.addEventListener"));
+const gift = decision.slice(decision.indexOf("if (giftReady)"), decision.indexOf("if (ownedCount"));
+const openAll = decision.slice(decision.indexOf("if (ownedCount"), decision.indexOf("const exhausted"));
 assert.ok(gift.length > 0 && openAll.length > 0);
 assert.ok(!gift.includes("limitReached") && !openAll.includes("limitReached"));
 

@@ -3,7 +3,6 @@ from __future__ import annotations
 import calendar
 from datetime import datetime, timedelta, timezone
 import hashlib
-import math
 from typing import Callable
 from uuid import uuid4
 
@@ -17,6 +16,11 @@ from .game.energy import (
     CORE_RESERVE_PER_LEVEL,
 )
 from .player_profile import CURRENT_SEASON_ID, OPERATOR_TITLE_STAGES, operator_title_view
+from .premium_reward_recovery import wallet_snapshot
+from .reward_delivery import (
+    apply_fixed_contents, chest_available, public_chest, queue_chest, queue_purchase_notice,
+    record_opened_premium_chest,
+)
 
 
 class MetaProgressionError(ValueError):
@@ -24,7 +28,7 @@ class MetaProgressionError(ValueError):
 
 
 from .arena_canon import (
-    ARENAS, MODULES, RANK_STAGES, rank_stage_for_rating, trophy_delta,
+    ARENAS, MODULES, RANK_STAGES, rank_stage_for_rating, trophy_delta as trophy_delta,
     module_stats, unlocked_module_ids, unlocked_reward_module_ids,
     module_talent_options,
 )
@@ -412,12 +416,14 @@ def _aggregate_chest_rewards(receipts: list[dict]) -> dict:
     """Combine a bulk opening into one server-authored reward summary."""
     circuit_credits = 0
     flux_shards = 0
+    universal_module_shards = 0
     module_rewards: dict[str, dict] = {}
     core_rewards: dict[str, dict] = {}
     for receipt in receipts:
         rewards = dict(receipt.get("rewards") or {})
         circuit_credits += max(0, int(rewards.get("circuit_credits", 0)))
         flux_shards += max(0, int(rewards.get("flux_shards", 0)))
+        universal_module_shards += max(0, int(rewards.get("universal_module_shards", 0)))
 
         module_amount = max(0, int(rewards.get("module_shards", 0)))
         module_id = str(rewards.get("module_definition_id") or "")
@@ -441,6 +447,7 @@ def _aggregate_chest_rewards(receipts: list[dict]) -> dict:
     return {
         "circuit_credits": circuit_credits,
         "flux_shards": flux_shards,
+        "universal_module_shards": universal_module_shards,
         "module_shards": sum(item["module_shards"] for item in module_rewards.values()),
         "core_shards": sum(item["core_shards"] for item in core_rewards.values()),
         "module_rewards": list(module_rewards.values()),
@@ -545,12 +552,10 @@ class MetaProgressionService:
             if rewards.get("chest_id"):
                 definition = CHEST_DEFINITIONS[rewards["chest_id"]]
                 now = self._now_func()
-                profile.chest_slots.append({"chest_id": f"arena-{uuid4().hex}", "definition_id": definition["id"],
+                queue_chest(profile, {"chest_id": f"arena-{uuid4().hex}", "definition_id": definition["id"],
                     "name_tr": definition["name_tr"], "source": node_id, "source_battle_id": None,
-                    # Kept as legacy display metadata; it no longer blocks
-                    # accumulation or bulk opening beyond four chests.
-                    "overflow": len(profile.chest_slots) >= 4,
-                    "awarded_at": iso_utc(now), "unlocks_at": iso_utc(now + timedelta(hours=definition["unlock_hours"]))})
+                    "awarded_at": iso_utc(now), "unlocks_at": iso_utc(now)},
+                    message_id=f"arena-chest:{node_id}", title="Lig yolu sandığı")
             profile.arena_reward_claims = (*profile.arena_reward_claims, node_id)
             return {
                 "node_id": node_id,
@@ -626,7 +631,7 @@ class MetaProgressionService:
                 for module_id in MODULES
             ],
             "chests": {
-                "slots": [dict(item) for item in profile.chest_slots],
+                "slots": [public_chest(item) for item in profile.chest_slots if chest_available(profile, item)],
                 "inventory": self._owned_chest_inventory_view(profile, now),
                 "definitions": [
                     self._gift_chest_definition_view(profile, definition, now)
@@ -708,6 +713,7 @@ class MetaProgressionService:
                 chest
                 for chest in profile.chest_slots
                 if str(chest.get("definition_id")) == str(definition["id"])
+                and chest_available(profile, chest)
             ]
             openable = []
             locked_until: list[datetime] = []
@@ -787,11 +793,6 @@ class MetaProgressionService:
         definition = BASIC_MODULE_DEFINITIONS[module_id]
         rarity = MODULE_RARITY.get(module_id, "common")
         unlock_arena = MODULES[module_id]["unlock_arena"]
-        current_arena = (
-            int(current_rank["index"])
-            if current_rank["kind"] == "arena"
-            else 12
-        )
         level = int(profile.module_upgrade_levels.get(module_id, 0))
         selected_talent_count = len(profile.module_talents.get(module_id, {}))
         return {
@@ -1107,6 +1108,19 @@ class MetaProgressionService:
         with self._lock:
             return self._award_battle_chest(profile, battle_id, won)
 
+    def deliver_reward_chest(self, profile, definition_id: str, source_id: str, request_id: str, *, origin=None) -> dict:
+        with self._lock:
+            definition = CHEST_DEFINITIONS.get(definition_id)
+            if not definition:
+                raise MetaProgressionError("Ödül sandığı türü bulunamadı.")
+            now = self._now_func()
+            chest = {"chest_id": f"reward-{uuid4().hex}", "definition_id": definition_id,
+                     "name_tr": definition["name_tr"], "source": source_id, "source_battle_id": None,
+                     "awarded_at": iso_utc(now), "unlocks_at": iso_utc(now)}
+            if origin:
+                chest["premium_origin"] = dict(origin)
+            return queue_chest(profile, chest, message_id=request_id, title="Sezon ödülü sandığı")
+
     def award_instant_chest(
         self,
         profile,
@@ -1150,6 +1164,9 @@ class MetaProgressionService:
             return None
         if any(item.get("source_battle_id") == battle_id for item in profile.chest_slots):
             return next(item for item in profile.chest_slots if item.get("source_battle_id") == battle_id)
+        existing = next((item for item in profile.reward_inbox if item.get("message_id") == f"battle-chest:{battle_id}"), None)
+        if existing:
+            return public_chest(existing["inventory_chest"])
         roll = _hash_unit(f"{battle_id}:{profile.player_id}:chest")
         definition_id = next(
             chest_id
@@ -1163,10 +1180,12 @@ class MetaProgressionService:
             "definition_id": definition_id,
             "name_tr": definition["name_tr"],
             "source_battle_id": battle_id,
+            "source": "battle",
             "awarded_at": iso_utc(awarded_at),
-            "unlocks_at": iso_utc(awarded_at + timedelta(hours=definition["unlock_hours"])),
+            "unlocks_at": iso_utc(awarded_at),
         }
-        profile.chest_slots.append(chest)
+        queue_chest(profile, chest, message_id=f"battle-chest:{battle_id}", title="Savaş zaferi sandığı", category="battle")
+        chest["delivery"] = "inbox"
         return dict(chest)
 
     def open_chest(self, profile, chest_id: str, request_id: str) -> dict:
@@ -1203,6 +1222,8 @@ class MetaProgressionService:
             for chest in profile.chest_slots:
                 if str(chest.get("definition_id")) != definition_id:
                     continue
+                if not chest_available(profile, chest):
+                    continue
                 try:
                     unlocks_at = parse_utc(str(chest.get("unlocks_at", "")))
                 except (TypeError, ValueError):
@@ -1235,6 +1256,7 @@ class MetaProgressionService:
                 1
                 for chest in profile.chest_slots
                 if str(chest.get("definition_id")) == definition_id
+                and chest_available(profile, chest)
             )
             batch_receipt = {
                 "request_id": clean_request_id,
@@ -1262,7 +1284,19 @@ class MetaProgressionService:
         chest = next((item for item in profile.chest_slots if item.get("chest_id") == chest_id), None)
         if chest is None:
             raise MetaProgressionError("Sandık bulunamadı veya daha önce açıldı.")
+        if not chest_available(profile, chest):
+            raise MetaProgressionError("İade edilmiş premium sandık açılamaz.")
         now = self._now_func()
+        premium_before = wallet_snapshot(profile)
+        if chest.get("fixed_reward") is not None:
+            rewards = dict(chest["fixed_reward"])
+            apply_fixed_contents(profile, rewards)
+            record_opened_premium_chest(profile, chest, premium_before)
+            profile.chest_slots = [item for item in profile.chest_slots if item.get("chest_id") != chest_id]
+            receipt = {"request_id": request_id, "chest_id": chest_id, "definition_id": chest["definition_id"],
+                       "opened_at": iso_utc(now), "rewards": rewards, "team_reward": chest.get("team_reward")}
+            profile.chest_receipts[request_id] = dict(receipt)
+            return receipt
         definition = CHEST_DEFINITIONS[str(chest["definition_id"])]
         seed = f"{profile.player_id}:{chest_id}"
         coins = _hash_range(f"{seed}:coins", *definition["coins"])
@@ -1298,6 +1332,7 @@ class MetaProgressionService:
         profile.module_shards.setdefault(module_id, int(profile.module_shards.get(module_id, 0)))
         if shards:
             profile.module_shards[module_id] += shards
+        record_opened_premium_chest(profile, chest, premium_before)
         profile.chest_slots = [item for item in profile.chest_slots if item.get("chest_id") != chest_id]
         receipt = {
             "request_id": request_id,
@@ -1374,6 +1409,7 @@ class MetaProgressionService:
             "purchased_at": iso_utc(now),
         }
         profile.shop_receipts[request_id] = dict(receipt)
+        queue_purchase_notice(profile, receipt, product_name=definition["name_tr"], product_id=definition_id)
         while len(profile.shop_receipts) > STORE_RECEIPT_LIMIT:
             profile.shop_receipts.pop(next(iter(profile.shop_receipts)))
         return receipt

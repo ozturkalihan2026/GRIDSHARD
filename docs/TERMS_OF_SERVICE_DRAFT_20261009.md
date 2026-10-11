@@ -1,5 +1,26 @@
 # GRIDSHARD kullanım şartları / Terms of Service — yerel taslak
 
+11 Ekim 08:20 TR güncel yayın kaydı: Kullanıcı yeni 08:20 tarihli 21 dosyalık
+ZIP'i Cloudflare Production'a yayımladı. 05:14:13 UTC canlı TR/EN dahil
+11/11 HTTPS ve tam dosya hash doğrulaması geçti. Yeni kuralın UTC kapısı
+05:20:07 UTC healthy sunucuda açık olarak doğrulandı. 05:25:30 UTC açılış
+exit0; son 330 sn iç43/dış39 teknik sağlık kontrolü PASS. Uygulama v7 değişmedi. Eski alımlar/ödüller korunur;
+yeni alımın uygulama içi açık onayı ve ücretsiz native test ayrı adımdır.
+Aşağıdaki eski zaman damgalı bloklar tarihçedir, güncel madde 9 esas alınır.
+
+11 Ekim08:05TR en güncel yayın adayı: kullanıcı **11 Ekim08:20TR/05:20UTC**
+yeni yürürlüğünü onayladı. İlk00:30sunucu açılışıstaleproofnedeniyle00:29'da
+güvenlikguardıylaiptaledildi, eski veya aradaki alımlar yeniden sınıflandırılmadı.
+TR/ENmadde9 yalnız tarihi güncellendi; yeni21fileZIP insanProductionyayını
+bekler. Diğer13madde/gizlilik ve uygulama kodu değişmez. Aşağıdakieskisaat
+operasyonnotlarıtarihselkayıttır; madde9günceltarihesasalınır.
+
+11 Ekim 2026 güncel yayın adayı: kullanıcı yeni Sezon Geçişi iade kuralını ve
+11 Ekim 00:30 Türkiye saati /10 Ekim21:30UTC yürürlüğünü onayladı. Aşağıdaki
+iki dilde yalnız madde9 güncellendi; diğer13madde ve gizlilik metni korundu.
+Canlı site doğrulanmadan sunucu kuralı açılmaz. Aşağıdaki eski operasyon
+notları tarihsel kayıttır; yeni politika için güncel yayın kaydı esas alınır.
+
 Hazırlama tarihi: 9 Ekim 2026. Durum: **ONAYLI TR/EN BİLGİLENDİRME SAYFASI YAYINLANDI; SATIŞ/TEKNİK POLİTİKA KAPILARI AÇIK.**
 Site son güncellemesi 9 Ekim 2026'dır. Oyuncudan alınmış şartlar onayı veya
 tamamlanmış mağaza/yasal uygunluk kanıtı değildir; satış/uygulama içi yürürlük
@@ -164,23 +185,13 @@ kuralları işlem ve yürürlükteki hukuka göre değişebilir. Bu şartlar bü
 satın almaları iade dışı bırakmaz, cayma hakkından genel feragat oluşturmaz
 ve ayıplı ya da teslim edilmemiş içerikle ilgili haklarını kaldırmaz.
 
-Mağazanın doğruladığı iade veya ödeme iptalinde yalnız o işlemle verilen miktar
-ilgili oyun içi para biriminden geri alınır. Para birimi harcanmışsa bakiye eksiye
-düşebilir. Açığı aynı para birimini oyun içinde kazanarak kapatabilirsin; yeni
-satın alma yapmak zorunda değilsin. Yeterli bakiye oluşana kadar o para birimiyle
-harcama yapılamaz. Bu kayıt düzeltmesi gerçek para borcu veya ek tahsilat
-oluşturmaz. İade kaydı tek başına hesabını kapatmaz veya normal ücretsiz
-maçlara girişini engellemez. Diğer para birimine kesinti uygulanmaz.
+Oyun içi para birimi paketinde mağazanın doğruladığı iade veya ödeme iptalinde yalnız o işlemle verilen miktar ilgili para biriminden geri alınır. Para birimi harcanmışsa bakiye eksiye düşebilir. Açığı aynı para birimini oyun içinde kazanarak kapatabilirsin; yeni satın alma yapmak zorunda değilsin. Yeterli bakiye oluşana kadar o para birimiyle harcama yapılamaz. Bu düzeltme gerçek para borcu veya ek tahsilat oluşturmaz; diğer para birimine kesinti yapılmaz.
 
-Premium ürün iadesinde yalnız iade edilen sezon hâlâ etkinse ilgili sezon hakkı
-kapatılır. Bu iade düzeltmelerinde önceden alınmış ödüller, kart geliştirmeleri
-ve maç sonuçları geri çevrilmez. Bizden kaynaklandığı doğrulanan teslimat veya sunucu hatası nedeniyle
-yapılan iadelerde oyuncuya bakiye açığı yüklenmez. Her iade kötüye kullanım
-sayılmaz; tekrarlanan kötüye kullanım ayrıca incelenir.
+11 Ekim 2026 saat 08:20 Türkiye saati (11 Ekim 2026 saat 05:20 UTC) tarihinden itibaren, satın alma öncesinde uygulamada season-rewards-v1 iade koşuluyla sunulan Ücretli Sezon Geçişi alımlarında yalnız bu geçişten kazanılan premium oyun kaynakları ve premium sandıklardan gerçekten çıkan kaynaklar iade ile geri alınır. Harcanmış kaynak, aynı Akı, Devre Kredisi veya aynı parça türünde oynayarak kapatılabilen açık oluşturabilir. Mağazada kaynak türü ve açık gösterilir. Yeterli miktar oluşana kadar açık olan kaynak harcanamaz; başka kaynaklarla yapılabilen işlemler ve normal ücretsiz maçlar engellenmez. Ücretsiz ödül hattı, XP, kupalar, maç sonuçları, kozmetikler ve tamamlanmış kart/çekirdek geliştirmeleri geri çevrilmez. Enderlik değişmez. Aynı sezon geçişini yeniden almak veya iadenin geri çevrilmesi, yalnız daha önce geri alınmış miktarları geri yükler; alınmış kademeler veya sandık içerikleri ikinci kez üretilmez.
 
-Hangi işlemin iade edildiği, geri alınan miktar ve varsa kalan açık bildirilir.
-Hatalı kesintinin incelenmesini destek adresinden isteyebilirsin. Mağaza bildirimi
-ve doğrulama gecikmeleri nedeniyle düzeltme anlık olmayabilir.
+Bu yeni kural önceki alımlara geriye dönük uygulanmaz. Sınıflandırmada mağazanın doğruladığı satın alma zamanı kullanılır; sunucuya geç ulaşma tek başına eski alımı yeni kurala taşımaz. Önceki sezon geçişi alımlarında ve Savaş Premium ürününde ilgili sezon hâlâ etkinse yalnız iade edilen sezon hakkı kapatılır; önceden kazanılmış ödüller korunur. Geçmiş sezonda yeni kuralla alınmış sezon geçişinin kayıtlı kaynak iadesi güncel sezon hakkını kapatmaz. Bizden kaynaklandığı doğrulanan teslimat veya sunucu hatası nedeniyle yapılan iadelerde bu işlemden doğan yeni kaynak açığı oyuncuya yüklenmez.
+
+Hangi işlemin iade edildiği, geri alınan miktar ve varsa açık bildirilir. Hatalı kesintinin incelenmesini gridshardgame@gmail.com adresinden isteyebilirsin; şifre, kart bilgisi veya satın alma jetonu gönderme. Mağaza bildirimi ve doğrulama gecikmeleri nedeniyle düzeltme anlık olmayabilir. İade kaydı tek başına hesabını kapatmaz; her iade kötüye kullanım sayılmaz. Tekrarlanan kötüye kullanım ayrıca incelenir.
 
 ### 10. İsteğe bağlı ödüllü reklamlar
 
@@ -352,24 +363,13 @@ transaction and applicable law. These terms do not make every purchase
 non-refundable, create a blanket waiver of withdrawal rights, or remove rights
 concerning defective or undelivered content.
 
-When the store confirms a refund or payment reversal, only the amount granted
-by that transaction is reclaimed from the corresponding in-game currency.
-If it has been spent, the balance may become negative. You can clear the shortfall
-by earning the same currency through gameplay; you are not required to make
-another purchase. Spending that currency is unavailable until you have a
-sufficient balance. This adjustment does not create a real-money debt or an
-additional charge. A refund record alone does not close your account or block
-normal free matches. No deduction is made from another currency.
+For an in-game currency pack, when the store confirms a refund or payment reversal, only the amount granted by that transaction is reclaimed from the corresponding currency. If spent, the balance may become negative. You can clear the shortfall by earning the same currency through gameplay; another purchase is not required. That currency cannot be spent until sufficient balance is available. This adjustment creates no cash debt or additional charge; no deduction is made from another currency.
 
-For a premium product refund, the entitlement is disabled only if the refunded
-season is still active. These refund adjustments do not reverse previously
-received rewards, card upgrades or match results. Refunds caused by a delivery or server error confirmed
-to be our responsibility do not impose a balance shortfall on the player.
-Not every refund is abuse; repeated abuse is reviewed separately.
+From 11 October 2026 at 05:20 UTC (11 October 2026 at 08:20 Türkiye time, UTC+03:00), Season Pass purchases offered in the app with the season-rewards-v1 refund condition before checkout reclaim only the premium in-game resources gained from that pass and the actual resources obtained from its premium chests. Spent amounts may become deficits in the same Flux, Circuit Credits or piece type, clearable by playing. Resource types and deficits are shown in the Store. A resource with a deficit cannot be spent until sufficient quantities are available; operations using other sufficient resources and normal free matches remain available. Free-track rewards, XP, trophies, match results, cosmetics and completed card/core upgrades are not reversed. Rarity is unchanged. Repurchasing the same season's pass or reversing a refund restores only previously reclaimed quantities; claimed tiers and chest contents are not generated again.
 
-You will be told which transaction was refunded, the reclaimed amount and any
-remaining shortfall. You may ask support to review an incorrect deduction.
-Store notification and verification delays mean that adjustments may not be immediate.
+This new rule does not apply retroactively. Classification uses the store-verified purchase time; late delivery to the server alone does not move an earlier purchase into the new rule. For earlier Season Pass purchases and Battle Premium, only the refunded season's entitlement is disabled if that season remains active; previously gained rewards remain. Reclaiming recorded resources from a previous season's new-policy pass does not disable the current season's entitlement. Refunds caused by a delivery or server error confirmed to be our responsibility do not impose a new resource deficit arising from that transaction.
+
+You will be told which transaction was refunded, reclaimed quantities and any deficit. Request review of an incorrect deduction at gridshardgame@gmail.com; do not send passwords, card details or purchase tokens. Store notification and verification delays mean adjustments may not be immediate. A refund record alone does not close your account; not every refund is abuse. Repeated abuse is reviewed separately.
 
 ### 10. Optional rewarded advertising
 

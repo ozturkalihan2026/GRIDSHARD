@@ -34,22 +34,19 @@ for (const source of [css, styles]) {
 const render = app.slice(app.indexOf("function renderShop()"), app.indexOf("function giftChestActionLabel"));
 assert.ok(!render.includes("gift-chest-list"));
 assert.ok(render.includes("const gift = giftDefinitions.find((definition) => definition.id === item.definition_id);"));
-assert.ok(render.indexOf("actions.appendChild(buy);") < render.indexOf("actions.appendChild(giftAction);"));
-assert.ok(render.indexOf("actions.appendChild(giftAction);") < render.indexOf("actions.appendChild(openAllAction);"));
+assert.equal((render.match(/actions\.appendChild\(/g) || []).length, 1);
+assert.ok(render.includes("actions.appendChild(action);"));
 assert.ok(render.includes("card.dataset.definitionId = gift.id;"));
 assert.ok(render.includes("card.dataset.claimRemaining = String(remaining);"));
-assert.ok(render.includes("const giftReady = Boolean(gift && remaining === 0 && gift.claim_available !== false);"));
-assert.ok(render.includes("giftAction.disabled = Boolean(state.unavailable || !giftReady);"));
-// Tek düğme: hediye hazırsa (ya da elde sandık yoksa) hediye düğmesi, değilse açma düğmesi.
-assert.match(render, /if \(gift && \(giftReady \|\| ownedCount === 0\)\) \{[\s\S]*?actions\.appendChild\(giftAction\);\s*\} else if \(ownedCount > 0\) \{[\s\S]*?actions\.appendChild\(openAllAction\);/);
-assert.ok(render.includes('openAllAction.textContent = "SANDIK AÇ";'));
+assert.ok(render.includes("shopChestAction({ gift, ownedCount, openableCount, item, state })"));
+assert.ok(render.includes("action.disabled = selectedAction.disabled;"));
 assert.ok(!render.includes('"HEPSİNİ AÇ"'));
 assert.equal(i18n.translateText("SANDIK AÇ", "en"), "OPEN CHEST");
 assert.equal(i18n.translateText("OPEN CHEST", "tr"), "SANDIK AÇ");
-assert.ok(render.includes('giftAction.addEventListener("click", () => claimGiftChest(gift.id));'));
+assert.ok(render.includes('if (selectedAction.kind === "gift") void claimGiftChest(gift.id);'));
 const timer = app.slice(app.indexOf("function ensureShopCountdownTimer()"), app.indexOf("async function metaProgressionMutation"));
 assert.ok(timer.includes('document.querySelectorAll("[data-definition-id][data-claim-remaining]")'));
-assert.ok(timer.includes("if (button && next > 0) button.textContent = giftChestActionLabel(next);"));
+assert.ok(timer.includes("if (timer && next > 0) timer.textContent = giftChestActionLabel(next);"));
 // Hediye düğmesi görünmezken de süre dolunca mağaza yenilenir.
 assert.ok(timer.includes("if (next === 0 && previous > 0) becameAvailable = true;"));
 

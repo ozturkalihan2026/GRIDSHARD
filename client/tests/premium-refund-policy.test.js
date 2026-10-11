@@ -42,6 +42,7 @@ function fixture(confirm = true) {
     requestJsonWithDeadline:async (_path, options) => {calls.push(JSON.parse(options.body)); return {receipt:{consumed:true}};},
     renderPaidStore:() => {}, renderSeasonPremiumPurchase:() => {}, renderPostMatchPremium:() => {},
     renderProfileSummary:() => {}, renderMetaHubScreens:() => {}, profileState:{applyProfile:() => {}},
+    loadRewardInbox:async () => {},
   });
   const confirmation = source.slice(source.indexOf("  function confirmPremiumRefundPolicy("), source.indexOf("  async function submitRecoveredPurchase("));
   const purchase = source.slice(source.indexOf("  async function purchasePaidProduct("), source.indexOf("  function renderSeasonPremiumPurchase("));

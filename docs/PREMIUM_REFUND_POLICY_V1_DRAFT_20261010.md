@@ -1,8 +1,47 @@
 # Ücretli Sezon Geçişi iade politikası — yerel aday / Terms taslağı
 
+11 Ekim 08:20 TR güncel: Yeni tarihli TR/EN Terms insan tarafından yayımlandı;
+05:14:13 UTC 11/11 canlı doğrulama geçti. Yeni yedekli ikinci açılış aynı r15
+imajında yalnız iki env değiştirdi. 05:20:07 UTC healthy ve UTC kapısı true;
+05:25:30 UTC açılış exit0; 330 sn iç43/dış39 kontrol PASS. Yeni kural yalnız açık onaylı, mağazanın
+doğruladığı yeni alımlara uygulanır; eski alımlar/ödüller korunur.
+Terms tanığı 05:26:10 UTC exit0/16 başarılı 11-route kontrol (11 postcutover),
+05:26:44 UTC son runtime healthy/timegate true.
+Native Google Play yeni-politika testi henüz tamamlanmadı. Aşağıdaki önceki
+operasyon kayıtları tarihçedir; güncel Terms tarihi madde 9'daki 08:20 TR'dir.
+
+11 Ekim08:05TR en güncel: ilk00:30activation staleTermsproof nedeniyle
+yürürlüktenönce00:29:21'de safe-r15legacy rollback yaptı; v1receipt/profile0.
+Kullanıcı yeni **11 Ekim08:20TR /05:20UTC** yürürlüğünü onayladı. Aşağıdaki
+TR/ENmadde9 tarihlerigüncel. Yeni21dosyaZIP hazır; manuelCloudflareProduction
+yayın+liveproof önce, freshuniquebackup/sameimagepolicyenv-onlyretry sonra.
+SunucuOFF, nativeQA henüzaçık. Alttaki00:30operasyon notları tarihçedir.
+
 10 Ekim 2026. İlk onay kod, testler ve taslak içindi. Kullanıcı daha sonra commit/push'u tamamlayıp kalan işlemlerin sıralı ilerlemesini onayladı. **Yayımlanmadı; canlı sunucuda etkin değil.** Bu belge hukuk uygunluğu garantisi değildir. Mevcut yayımlanmış Terms değiştirilmedi; aşağıdaki metin yayın öncesi son değerlendirme içindir. Yürürlük zamanı cihaz/QA kapılarından sonra belirlenecek. Güncel ilerleme: [v7 yayın kaydı](ANDROID_V7_PREMIUM_RECOVERY_RELEASE_20261010.md).
 
 ## Kapsam ve davranış
+
+11 Ekim güncel karar: kullanıcı mevcut v7'de global yeni kuralı açıp lisans-test
+yapılmasını ve 11 Ekim2026 00:30TR /10 Ekim2026 21:30UTC yürürlüğünü onayladı.
+Önceki emülatör önerisi artık geçerli sıra değildir; nativeQA henüz tamamlanmadı.
+Aşağıdaki Terms madde9 tarihleri bu açık onayla dolduruldu. Yerel site adayı
+16unit/30layout kontrolünden geçti; ZIP/canlıyayın doğrulaması tamamlanmadan
+sunucuOFF korunur. Tarihe yetişmezse yeni yürürlük tekrar kararlaştırılır.
+Alttaki zaman damgalı operasyon kayıtları tarihsel durumdur.
+
+11 Ekim00:04TR ek not: v7 temel mağaza fiyat/bakiye/refunded hak pasifliği
+kullanıcı teyitleri tamamlandı. Native yeni-policy QA için ayrı test APK,
+privateDB ve emülatör yolu öneriliyor; production global flag açılmadı ve pilot
+başlatılmadı. UTC/TR tarihi ve son site ZIP'i bu kapı sonrası tamamlanacak.
+
+Güncel operasyon notu20:59UTC: final ccc5e99/CI38083415413 success5/5 ve v7
+temiz paket hazır. USB package-manager v7/Playinstaller kurulumunu doğruladı;
+Console review/kanal, mağaza/hak/bakiye/reopen ve yeni-policy native QA ayrı
+açık kalır. R15 kod geçişi legacy ile tamamlandı; iç/dış330sn health/TLS/
+exactHTML/Googlepoll geçti. **Yeni davranış etkin değil**.
+İzole gerçekPG/Redis67PASS/0skip ve iki gerçekpolicy image/restart/empty restore
+geçti, native Play testi sayılmaz. UTC/TR yürürlük kararı ve publicTerms/siteZIP
+hâlâ açık; kodun canlıya gelmesi yayını veya politika aktivasyonunu tamamlamaz.
 
 - Yalnız `season_pass_premium` ve açıkça `season-rewards-v1` damgalanmış yeni alımlar. Akı/DK paketlerinin mevcut iade kuralı korunur. Savaş Premium bonuslarının geri alınması bu adayın kapsamında değildir; bu ürünün ayrı satın alma/iade testi hâlâ açıktır.
 - Premium kademenin doğrudan verdiği Akı, DK, modül/çekirdek/evrensel parçalar ve premium sandıkların **gerçek** kaynak çıktıları sunucu tarafında kaydedilir. Ücretsiz hat, XP, kupa, maç sonucu, kozmetikler ve tamamlanmış geliştirmeler geri çevrilmez; enderlik ve sandık olasılıkları değişmez.
@@ -17,7 +56,7 @@
 
 Oyun içi para birimi paketinde mağazanın doğruladığı iade veya ödeme iptalinde yalnız o işlemle verilen miktar ilgili para biriminden geri alınır. Para birimi harcanmışsa bakiye eksiye düşebilir. Açığı aynı para birimini oyun içinde kazanarak kapatabilirsin; yeni satın alma yapmak zorunda değilsin. Yeterli bakiye oluşana kadar o para birimiyle harcama yapılamaz. Bu düzeltme gerçek para borcu veya ek tahsilat oluşturmaz; diğer para birimine kesinti yapılmaz.
 
-**[YÜRÜRLÜK TARİHİ VE SAATİ — UTC VE TÜRKİYE SAATİ YAYINDAN ÖNCE DOLDURULACAK]** tarihinden itibaren, satın alma öncesinde uygulamada `season-rewards-v1` iade koşuluyla sunulan Ücretli Sezon Geçişi alımlarında yalnız bu geçişten kazanılan premium oyun kaynakları ve premium sandıklardan gerçekten çıkan kaynaklar iade ile geri alınır. Harcanmış kaynak, aynı Akı, Devre Kredisi veya aynı parça türünde oynayarak kapatılabilen açık oluşturabilir. Mağazada kaynak türü ve açık gösterilir. Yeterli miktar oluşana kadar açık olan kaynak harcanamaz; başka kaynaklarla yapılabilen işlemler ve normal ücretsiz maçlar engellenmez. Ücretsiz ödül hattı, XP, kupalar, maç sonuçları, kozmetikler ve tamamlanmış kart/çekirdek geliştirmeleri geri çevrilmez. Enderlik değişmez. Aynı sezon geçişini yeniden almak veya iadenin geri çevrilmesi, yalnız daha önce geri alınmış miktarları geri yükler; alınmış kademeler veya sandık içerikleri ikinci kez üretilmez.
+11 Ekim 2026 saat 08:20 Türkiye saati (11 Ekim 2026 saat 05:20 UTC) tarihinden itibaren, satın alma öncesinde uygulamada `season-rewards-v1` iade koşuluyla sunulan Ücretli Sezon Geçişi alımlarında yalnız bu geçişten kazanılan premium oyun kaynakları ve premium sandıklardan gerçekten çıkan kaynaklar iade ile geri alınır. Harcanmış kaynak, aynı Akı, Devre Kredisi veya aynı parça türünde oynayarak kapatılabilen açık oluşturabilir. Mağazada kaynak türü ve açık gösterilir. Yeterli miktar oluşana kadar açık olan kaynak harcanamaz; başka kaynaklarla yapılabilen işlemler ve normal ücretsiz maçlar engellenmez. Ücretsiz ödül hattı, XP, kupalar, maç sonuçları, kozmetikler ve tamamlanmış kart/çekirdek geliştirmeleri geri çevrilmez. Enderlik değişmez. Aynı sezon geçişini yeniden almak veya iadenin geri çevrilmesi, yalnız daha önce geri alınmış miktarları geri yükler; alınmış kademeler veya sandık içerikleri ikinci kez üretilmez.
 
 Bu yeni kural önceki alımlara geriye dönük uygulanmaz. Sınıflandırmada mağazanın doğruladığı satın alma zamanı kullanılır; sunucuya geç ulaşma tek başına eski alımı yeni kurala taşımaz. Önceki sezon geçişi alımlarında ve Savaş Premium ürününde ilgili sezon hâlâ etkinse yalnız iade edilen sezon hakkı kapatılır; önceden kazanılmış ödüller korunur. Geçmiş sezonda yeni kuralla alınmış sezon geçişinin kayıtlı kaynak iadesi güncel sezon hakkını kapatmaz. Bizden kaynaklandığı doğrulanan teslimat veya sunucu hatası nedeniyle yapılan iadelerde bu işlemden doğan yeni kaynak açığı oyuncuya yüklenmez.
 
@@ -29,7 +68,7 @@ Refund requests are subject to the relevant store's current rules and mandatory 
 
 For an in-game currency pack, when the store confirms a refund or payment reversal, only the amount granted by that transaction is reclaimed from the corresponding currency. If spent, the balance may become negative. You can clear the shortfall by earning the same currency through gameplay; another purchase is not required. That currency cannot be spent until sufficient balance is available. This adjustment creates no cash debt or additional charge; no deduction is made from another currency.
 
-From **[EFFECTIVE DATE AND TIME — UTC AND TÜRKİYE TIME TO BE COMPLETED BEFORE PUBLICATION]**, Season Pass purchases offered in the app with the `season-rewards-v1` refund condition before checkout reclaim only the premium in-game resources gained from that pass and the actual resources obtained from its premium chests. Spent amounts may become deficits in the same Flux, Circuit Credits or piece type, clearable by playing. Resource types and deficits are shown in the Store. A resource with a deficit cannot be spent until sufficient quantities are available; operations using other sufficient resources and normal free matches remain available. Free-track rewards, XP, trophies, match results, cosmetics and completed card/core upgrades are not reversed. Rarity is unchanged. Repurchasing the same season's pass or reversing a refund restores only previously reclaimed quantities; claimed tiers and chest contents are not generated again.
+From 11 October 2026 at 05:20 UTC (11 October 2026 at 08:20 Türkiye time, UTC+03:00), Season Pass purchases offered in the app with the `season-rewards-v1` refund condition before checkout reclaim only the premium in-game resources gained from that pass and the actual resources obtained from its premium chests. Spent amounts may become deficits in the same Flux, Circuit Credits or piece type, clearable by playing. Resource types and deficits are shown in the Store. A resource with a deficit cannot be spent until sufficient quantities are available; operations using other sufficient resources and normal free matches remain available. Free-track rewards, XP, trophies, match results, cosmetics and completed card/core upgrades are not reversed. Rarity is unchanged. Repurchasing the same season's pass or reversing a refund restores only previously reclaimed quantities; claimed tiers and chest contents are not generated again.
 
 This new rule does not apply retroactively. Classification uses the store-verified purchase time; late delivery to the server alone does not move an earlier purchase into the new rule. For earlier Season Pass purchases and Battle Premium, only the refunded season's entitlement is disabled if that season remains active; previously gained rewards remain. Reclaiming recorded resources from a previous season's new-policy pass does not disable the current season's entitlement. Refunds caused by a delivery or server error confirmed to be our responsibility do not impose a new resource deficit arising from that transaction.
 
@@ -37,7 +76,15 @@ You will be told which transaction was refunded, reclaimed quantities and any de
 
 ## Teknik yürürlük ve yayın kapıları
 
-Varsayılan `GRIDSHARD_SEASON_PASS_REFUND_POLICY=legacy`. Canlı çevre dosyaları değiştirilmedi. `season-rewards-v1` seçilirse ayrıca açık UTC `GRIDSHARD_SEASON_PASS_REFUND_POLICY_FROM` gerekir; eksik/yanlış tarih açılışı reddeder. Taslaktaki tarih henüz seçilmedi ve doldurulmadan yayınlanamaz.
+Kod varsayılanı `GRIDSHARD_SEASON_PASS_REFUND_POLICY=legacy`. 11 Ekim 2026
+08:20 TR açılışında kaynak ve özgün `.env` değiştirilmeden, ayrı operasyon
+Compose katmanıyla yalnız `season-rewards-v1` ve açık UTC
+`GRIDSHARD_SEASON_PASS_REFUND_POLICY_FROM=2026-10-11T05:20:00Z` aktarıldı.
+Eksik/yanlış tarih açılışı reddeder. 08:20 tarihli TR/EN Terms yürürlükten önce
+yayımlanıp doğrulandı. Bundan sonraki aynı r15 operasyonlarında yedinci
+`docker-compose.premium-refund-policy-0820.yml` katmanı korunmalıdır.
+Hata hâlinde aynı defteri bilen r15 ile yeni checkout kapatılır; eski imaja
+veya canlı DB yedeğine dönülmez. Native ücretsiz test kapısı hâlâ açıktır.
 
 Google `purchaseTimeMillis`, Apple imzalı `purchaseDate` kullanılır; istemci tarihi kabul edilmez. Eksik doğrulanmış tarih yeni alımı kesinti kuralıyla işlemek yerine 503/retry bırakır; tüketme yok. Eski makbuz tekrarında ilk sınıflandırma korunur. Bunların kaynak sözleşmeleri: [Google ProductPurchase](https://developers.google.com/android-publisher/api-ref/rest/v3/purchases.products), [Apple purchaseDate](https://developer.apple.com/documentation/appstoreserverapi/purchasedate). İade edilen içeriklerin geri alınması ve oyun içi açık yaklaşımı [Google Billing güvenlik rehberinde](https://developer.android.com/google/play/billing/security) de ele alınır; bu teknik kaynaklar hukuk uygunluğu teyidi değildir.
 

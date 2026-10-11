@@ -5521,9 +5521,12 @@ body[data-app-screen="play"] .vertical-circuit-arena .module-card.has-heat-bar >
 
 /* --- Mağaza: sandık mağazası (hediye düğmesi Bronz Sandık kartında), ücretli alım --- */
 .chest-store-list { display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px; }
-/* Hediye düğmesi Bronz kartı uzatır; aynı sıradaki kartın içeriği gerilmez,
-   üstten dizilir ve satın alma düğmeleri aynı hizada kalır. */
-.chest-store-card { position:relative;align-content:start; }
+/* Tek düğme: hediye → stok → fiyat. Başlık ve bilgi satırları ayrıdır;
+   Altın/Elmas kartlarının düğmeleri aynı satırda kalır. */
+.chest-store-card { position:relative;align-content:start;grid-template-rows:auto 2.4em minmax(2.7em,auto) auto; }
+.chest-store-card > strong { align-self:center; }
+.chest-store-metadata { align-self:start;display:grid;gap:3px; }
+.chest-store-card > .shop-chest-actions { align-self:end; }
 .chest-store-card > strong { line-height:1.2; }
 .chest-store-card[data-sale="true"]::before {
   content:"%40";
@@ -7147,6 +7150,11 @@ body[data-app-screen="play"] .module-shelf .module-card.deck-module-card > .name
    düğmesi "SINIR DOLDU" yazar. Yazı .5rem altına inmez (Android web görünümü). */
 .chest-store-limit { color:#8fe8dc;font-size:.5rem;line-height:1.35;text-align:center; }
 .chest-store-limit[data-exhausted="true"] { color:#ffb84d; }
+
+.reward-inbox-tabs { display:flex;gap:6px;padding:10px 14px 0; }
+.reward-inbox-tabs > button { flex:1;min-width:0;min-height:38px;border:1px solid #3b7893;border-radius:9px;color:#dffcff;background:#123552;font:800 .54rem var(--gs-font-display); }
+.reward-inbox-tabs > button[aria-selected="true"] { color:#08232e;border-color:#ffe071;background:#ffe071; }
+.reward-inbox-section[hidden] { display:none !important; }
 .shop-limit-note[hidden] { display:none; }
 /* A server-owned three-second gate; no expensive filters or particle effects. */
 .battle-start-countdown {

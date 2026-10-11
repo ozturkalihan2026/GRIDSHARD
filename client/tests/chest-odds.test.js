@@ -25,8 +25,8 @@ for (const id of ["chest-odds-title", "chest-odds-list", "chest-odds-close"]) {
 // Her mağaza kartında özet satırı satın alma düğmesinin üstünde durur; tam tablo
 // sandık bölümünün köşesindeki ÖDÜL LİSTESİ sekmesiyle açılır.
 const card = app.slice(app.indexOf('card.className = "shop-chest-card chest-store-card";'), app.indexOf("renderPaidStore();"));
-assert.ok(card.indexOf('odds.className = "chest-store-odds";') > 0);
-assert.ok(card.indexOf('odds.className = "chest-store-odds";') < card.indexOf("actions.appendChild(buy);"));
+assert.ok(!card.includes('odds.className = "chest-store-odds";'));
+assert.ok(card.includes("actions.appendChild(action);"));
 assert.ok(card.includes("oddsTab.hidden = !(chestStore?.items || []).some((item) => chestOddsSummary(item));"));
 assert.ok(card.includes("oddsTab.onclick = openChestOdds;"));
 const storeSection = /<section class="shop-section chest-store-section"[\s\S]*?<\/section>/.exec(html)?.[0] || "";
