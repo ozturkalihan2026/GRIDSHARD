@@ -1,6 +1,15 @@
-# Claude devir notu — 8 Ekim 2026 (iş bilgisayarı)
+# Claude devir notu — 12 Ekim 2026 (iş bilgisayarı)
 
 Depo iş bilgisayarına `894bb0e` ile geldi; ağaç temizdi ve kalite denetimi bu commit için yeşil. Canlıda sunucu r12, Play dahili testte v3 paketi var; hedef kitle 13 yaş ve üzeri. Evde yapılan analitik yaş sorusu ile mağaza / Kartlar / takım isteği arayüz düzeltmeleri depoda ama **yayınlanmadı** (sunucu r13 ve v4 paketi evde yapılır; aşağıda). **7 Ekim'de iş bilgisayarında Play Console mağaza girişinin metinleri ve görselleri hazırlandı; konsola yüklenmedi** (hemen aşağıda). Aynı gün mağaza sandıklarına **günlük alım sınırı** eklendi (sunucu + istemci; yayınlanmadı; ikinci bölüm). Kullanıcı mağaza girişini doldurdu ve **kapalı test** kanalına geçmek üzere (üçüncü bölüm). Commit bekleyenler aşağıda "Commit bekleyen dosyalar" başlığında. Commit'i kullanıcı yapar. Aynı ağaçta Codex de çalışıyor (`CODEX_CHECKPOINT.md`); o dosyaya ve Codex'in değişikliklerine dokunulmaz.
+
+## SIRADAKİ İŞ — oyun düzenlemeleri (12 Ekim, kullanıcı isteği)
+
+Kullanıcı 31 maddelik "Oyun Düzenlemeler" belgesini verdi: "Bu dosyaya göre yapılacak işlerini planla ve yap." Maddelerin tamamı, sıra, öneriler ve durum **`docs/OYUN_DUZENLEMELERI_PLANI.md`** içinde (belgenin kendisi yalnız iş bilgisayarının masaüstünde; plan onsuz da yeterli). **12 Ekim'de yalnız plan yazıldı; hiçbir madde uygulanmadı.**
+
+- **Sıra:** Faz 1 arayüz düzeltmeleri (üç çizgi menüsü, takım sayfası, sezon düğmesi, yükseltme okları, +değer gösterimi, indirim göstergesi, meta metni) → Faz 2 Devre Yolu / ligler / modül açılışları / unvanlar / maliyet tablosu → Faz 3 savaş mekaniği (enerji tüketimi, seviye gelişimi, yetenekler) → Faz 4 kozmetik içerik.
+- **Başlarken:** plan dosyasını oku, `git status` ile Codex'in işine bak, Faz 1'in ilk maddesinden başla; her madde bitince plan dosyasındaki kutuyu ve kayıt tablosunu güncelle.
+- **Depo durumu (12 Ekim sabahı):** `aedce13`, ağaç temiz. Codex'in kaydına göre canlıda sunucu **r16**, kapalı testte **v8** paketi var (11 Ekim gecesi). 8–11 Ekim arasındaki değişiklikler (posta kutusu, iade, sezon ödülleri kuralı, satın alma düzeltmeleri) bu oturumda okunmadı; ilgili koda dokunmadan önce okunmalı.
+- **Neden plan aşamasında kalındı:** 12 Ekim'deki oturum çok uzamıştı (bağlam 620 bin belirteç); her adım kullanım hakkından orantısız yiyordu. Uygulama yeni bir oturumda sürdürülmeli. Commit bekleyenler: `docs/OYUN_DUZENLEMELERI_PLANI.md` (yeni) ve bu dosya.
 
 ## 7 Ekim akşamı (ev bilgisayarı): ücretli geçiş ve Savaş Premium 199,99 TL (commit bekliyor, yayınlanmadı)
 
